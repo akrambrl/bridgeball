@@ -592,21 +592,11 @@ async function fetchClubLogo(clubName) {
   if (LOGO_CACHE[clubName] !== undefined) return LOGO_CACHE[clubName];
   try {
     const searchName = CLUB_NAME_SEARCH[clubName] || clubName;
-    // Use Wikipedia for club logos
-    const searchRes = await fetch(
-      `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(searchName + " football club")}&format=json&origin=*&srlimit=1`
+    const res = await fetch(
+      `https://www.thesportsdb.com/api/v1/json/3/searchteams.php?t=${encodeURIComponent(searchName)}`
     );
-    const searchData = await searchRes.json();
-    const pageTitle = searchData?.query?.search?.[0]?.title;
-    if (!pageTitle) { LOGO_CACHE[clubName] = null; return null; }
-
-    const imgRes = await fetch(
-      `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(pageTitle)}&prop=pageimages&format=json&origin=*&pithumbsize=120`
-    );
-    const imgData = await imgRes.json();
-    const pages = imgData?.query?.pages;
-    const page = pages ? Object.values(pages)[0] : null;
-    const logo = page?.thumbnail?.source || null;
+    const data = await res.json();
+    const logo = data?.teams?.[0]?.strTeamBadge || null;
     LOGO_CACHE[clubName] = logo;
     return logo;
   } catch {
@@ -651,22 +641,10 @@ const PLAYER_PHOTO_CACHE = {};
 async function fetchPlayerPhoto(playerName) {
   if (PLAYER_PHOTO_CACHE[playerName] !== undefined) return PLAYER_PHOTO_CACHE[playerName];
   try {
-    // Step 1: search Wikipedia for the player
-    const searchRes = await fetch(
-      `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(playerName + " footballer")}&format=json&origin=*&srlimit=1`
-    );
-    const searchData = await searchRes.json();
-    const pageTitle = searchData?.query?.search?.[0]?.title;
-    if (!pageTitle) { PLAYER_PHOTO_CACHE[playerName] = null; return null; }
-
-    // Step 2: get the page thumbnail
-    const imgRes = await fetch(
-      `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(pageTitle)}&prop=pageimages&format=json&origin=*&pithumbsize=200`
-    );
-    const imgData = await imgRes.json();
-    const pages = imgData?.query?.pages;
-    const page = pages ? Object.values(pages)[0] : null;
-    const photo = page?.thumbnail?.source || null;
+    const encoded = encodeURIComponent(playerName);
+    const res = await fetch(`https://www.thesportsdb.com/api/v1/json/3/searchplayers.php?p=${encoded}`);
+    const data = await res.json();
+    const photo = data?.player?.[0]?.strThumb || data?.player?.[0]?.strCutout || null;
     PLAYER_PHOTO_CACHE[playerName] = photo;
     return photo;
   } catch {
