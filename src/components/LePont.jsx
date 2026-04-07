@@ -242,36 +242,6 @@ const PLAYERS = [
   { name:"Serge Gnabry", clubs:["Arsenal", "Bayern Munich"], diff:"expert" },
   { name:"Timo Werner", clubs:["RB Leipzig", "Chelsea", "Tottenham"], diff:"expert" },
   { name:"Andre Schurrle", clubs:["Bayer Leverkusen", "Chelsea", "Borussia Dortmund", "Wolfsburg"], diff:"expert" },
-  // ── 2016-2026 ──
-  { name:"Ederson", clubs:["Benfica", "Manchester City"], diff:"expert" },
-  { name:"Alisson Becker", clubs:["Roma", "Liverpool"], diff:"moyen" },
-  { name:"Marc-Andre ter Stegen", clubs:["Borussia Monchengladbach", "Barcelona"], diff:"moyen" },
-  { name:"Kepa Arrizabalaga", clubs:["Athletic Bilbao", "Chelsea", "Real Madrid"], diff:"expert" },
-  { name:"Andre Onana", clubs:["Ajax", "Inter Milan", "Manchester United"], diff:"expert" },
-  { name:"Mike Maignan", clubs:["Lille", "AC Milan"], diff:"moyen" },
-  { name:"Gregor Kobel", clubs:["Stuttgart", "Borussia Dortmund"], diff:"expert" },
-  { name:"Trent Alexander-Arnold", clubs:["Liverpool", "Real Madrid"], diff:"moyen" },
-  { name:"Reece James", clubs:["Chelsea"], diff:"expert" },
-  { name:"Achraf Hakimi", clubs:["Real Madrid", "Borussia Dortmund", "Inter Milan", "PSG"], diff:"moyen" },
-  { name:"Ferland Mendy", clubs:["Lyon", "Real Madrid"], diff:"expert" },
-  { name:"Alphonso Davies", clubs:["Vancouver Whitecaps", "Bayern Munich"], diff:"moyen" },
-  { name:"Josko Gvardiol", clubs:["Dinamo Zagreb", "RB Leipzig", "Manchester City"], diff:"moyen" },
-  { name:"Ibrahima Konate", clubs:["RC Lens", "RB Leipzig", "Liverpool"], diff:"expert" },
-  { name:"Kim Min-jae", clubs:["Fenerbahce", "Napoli", "Bayern Munich"], diff:"expert" },
-  { name:"Pau Torres", clubs:["Villarreal", "Aston Villa"], diff:"expert" },
-  { name:"Jurrien Timber", clubs:["Ajax", "Arsenal"], diff:"expert" },
-  { name:"Leny Yoro", clubs:["Lille", "Manchester United"], diff:"expert" },
-  { name:"Dominik Szoboszlai", clubs:["Salzburg", "RB Leipzig", "Liverpool"], diff:"moyen" },
-  { name:"Phil Foden", clubs:["Manchester City"], diff:"facile" },
-  { name:"Bruno Guimaraes", clubs:["Athletico Paranaense", "Lyon", "Newcastle"], diff:"expert" },
-  { name:"Xavi Simons", clubs:["PSG", "PSV", "RB Leipzig"], diff:"moyen" },
-  { name:"Arda Guler", clubs:["Fenerbahce", "Real Madrid"], diff:"expert" },
-  { name:"Christopher Nkunku", clubs:["PSG", "RB Leipzig", "Chelsea"], diff:"moyen" },
-  { name:"Evan Ferguson", clubs:["Brighton"], diff:"expert" },
-  { name:"Franco Mastantuono", clubs:["River Plate", "Real Madrid"], diff:"expert" },
-  { name:"Joao Neves", clubs:["Benfica", "PSG"], diff:"expert" },
-  { name:"Nuno Mendes", clubs:["Sporting CP", "PSG"], diff:"expert" },
-  { name:"Ivan Toney", clubs:["Brentford", "Al Ahli"], diff:"expert" },
 ];
 
 
@@ -1079,14 +1049,11 @@ export default function BridgeBall() {
   }
 
   function footballPoints(sc, list) {
-    // Comparer à mon propre meilleur score, pas au #1 global
-    const myEntry = list.find(e => (e.player_name || e.name) === playerName.trim());
-    const myBest = myEntry ? myEntry.score : 0;
-    if(myBest === 0) return 10;        // Premier score = toujours victoire
-    if(sc > myBest) return 10;         // Nouveau record perso = victoire
-    if(sc >= myBest * 0.85) return 5;  // Proche du record = nul
-    return 0;                           // Loin = défaite
-  }
+    const best = list.length > 0 ? list[0].score : 0;
+    if(best === 0) return 10;       // premier score = victoire
+    if(sc > best) return 10;        // victoire
+    if(sc >= best * 0.85) return 5; // nul (dans les 15%)
+    return 0;                       // défaite
   }
 
   async function submitToLeaderboard(name, sc, mode, d) {
@@ -2363,7 +2330,7 @@ export default function BridgeBall() {
   if(screen==="final") return makeResultScreen(total,"pont",false);
 
   return <div style={{...shell,justifyContent:"center",alignItems:"center"}}><div style={{color:G.white}}>Chargement…</div></div>;
-
+}
   // ── 2016-2026 ──
   { name:"Ederson", clubs:["Benfica", "Manchester City"], diff:"expert" },
   { name:"Alisson Becker", clubs:["Roma", "Liverpool"], diff:"moyen" },
@@ -2398,4 +2365,4 @@ export default function BridgeBall() {
   { name:"Franco Mastantuono", clubs:["River Plate", "Real Madrid"], diff:"expert" },
   { name:"Lamine Camara", clubs:["Metz", "Monaco"], diff:"expert" },
   { name:"Joao Neves", clubs:["Benfica", "PSG"], diff:"expert" },
-  { name:"Nuno Mendes", clubs:["Sporting CP", "PSG"], diff:"expert" },}
+  { name:"Nuno Mendes", clubs:["Sporting CP", "PSG"], diff:"expert" },
