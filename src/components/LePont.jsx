@@ -1,4 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_ANON_KEY
+);
 
 // ── CONSTANTS ──
 const ROUND_DURATION = 90;
@@ -7,6 +13,12 @@ const COMBO_THRESHOLD = 3;
 
 // ── PLAYER DATABASE ──
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_ANON_KEY
+);
 
 // ── CONSTANTS ──
 // ── PLAYER DATABASE ──
@@ -1035,12 +1047,18 @@ export default function BridgeBall() {
   },[screen,timeLeft]);
 
   // Leaderboard (localStorage)
-  function loadLeaderboard(mode, d) {
+  async function loadLeaderboard(mode, d) {
     try {
       const key = `bb_lb_${mode}_${d}`;
-      const data = localStorage.getItem(key);
-      setLeaderboard(data ? JSON.parse(data) : []);
-    } catch { setLeaderboard([]); }
+      const local = localStorage.getItem(key);
+      if(local) setLeaderboard(JSON.parse(local));
+    } catch {}
+    try {
+      const { data } = await supabase.rpc("get_leaderboard", {
+        p_game_mode: mode, p_difficulty: d,
+      });
+      if (data && data.length > 0) setLeaderboard(data);
+    } catch(e) { console.error("Supabase load:", e); }
   }
 
   function footballPoints(sc, list) {
@@ -1051,7 +1069,7 @@ export default function BridgeBall() {
     return 0;                       // défaite
   }
 
-  function submitToLeaderboard(name, sc, mode, d) {
+  async function submitToLeaderboard(name, sc, mode, d) {
     const displayName = (name||"").trim() || "Anonyme";
     try {
       const key = `bb_lb_${mode}_${d}`;
@@ -1088,6 +1106,26 @@ export default function BridgeBall() {
       setLeaderboard(top50);
       setMyLastPts(pts);
     } catch(e) { console.error(e); }
+    // Submit to Supabase for global leaderboard
+    try {
+      await supabase.rpc("submit_score", {
+        p_player_name: displayName,
+        p_score: sc,
+        p_game_mode: mode,
+        p_difficulty: d,
+        p_total_rounds: totalRounds,
+        p_max_combo: maxCombo,
+      });
+      const { data } = await supabase.rpc("get_leaderboard", {
+        p_game_mode: mode,
+        p_difficulty: d,
+      });
+      if (data && data.length > 0) {
+        setLeaderboard(data);
+        const rank = data.findIndex(e => e.player_name === displayName) + 1;
+        if (rank > 0) setMyLbRank(rank);
+      }
+    } catch(e) { console.error("Supabase error:", e); }
   }
 
   function handleCorrectAnswer(base, isChain=false) {
