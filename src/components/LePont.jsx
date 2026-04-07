@@ -1079,11 +1079,14 @@ export default function BridgeBall() {
   }
 
   function footballPoints(sc, list) {
-    const best = list.length > 0 ? list[0].score : 0;
-    if(best === 0) return 10;       // premier score = victoire
-    if(sc > best) return 10;        // victoire
-    if(sc >= best * 0.85) return 5; // nul (dans les 15%)
-    return 0;                       // défaite
+    // Comparer à mon propre meilleur score, pas au #1 global
+    const myEntry = list.find(e => (e.player_name || e.name) === playerName.trim());
+    const myBest = myEntry ? myEntry.score : 0;
+    if(myBest === 0) return 10;        // Premier score = toujours victoire
+    if(sc > myBest) return 10;         // Nouveau record perso = victoire
+    if(sc >= myBest * 0.85) return 5;  // Proche du record = nul
+    return 0;                           // Loin = défaite
+  }
   }
 
   async function submitToLeaderboard(name, sc, mode, d) {
