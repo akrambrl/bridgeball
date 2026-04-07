@@ -339,7 +339,7 @@ function buildPontDB() {
   const pairMap = {};
   // Track how many pairs each player appears in (cap for variety)
   const playerPairCount = {};
-  const MAX_PAIRS_PER_PLAYER = { facile: 4, moyen: 3, expert: 3 };
+  const MAX_PAIRS_PER_PLAYER = { facile: 6, moyen: 5, expert: 5 };
 
   for (const p of PLAYERS) {
     const bigClubs = p.clubs.filter(c => PONT_CLUBS.has(c));
@@ -2331,3 +2331,38 @@ export default function BridgeBall() {
 
   return <div style={{...shell,justifyContent:"center",alignItems:"center"}}><div style={{color:G.white}}>Chargement…</div></div>;
 }
+  // ── 2016-2026 ──
+  { name:"Ederson", clubs:["Benfica", "Manchester City"], diff:"expert" },
+  { name:"Alisson Becker", clubs:["Roma", "Liverpool"], diff:"moyen" },
+  { name:"Marc-Andre ter Stegen", clubs:["Borussia Monchengladbach", "Barcelona"], diff:"moyen" },
+  { name:"Kepa Arrizabalaga", clubs:["Athletic Bilbao", "Chelsea", "Real Madrid"], diff:"expert" },
+  { name:"Andre Onana", clubs:["Ajax", "Inter Milan", "Manchester United"], diff:"expert" },
+  { name:"Mike Maignan", clubs:["Lille", "AC Milan"], diff:"moyen" },
+  { name:"Gregor Kobel", clubs:["Stuttgart", "Borussia Dortmund"], diff:"expert" },
+  { name:"Trent Alexander-Arnold", clubs:["Liverpool", "Real Madrid"], diff:"moyen" },
+  { name:"Reece James", clubs:["Chelsea"], diff:"expert" },
+  { name:"Achraf Hakimi", clubs:["Real Madrid", "Borussia Dortmund", "Inter Milan", "PSG"], diff:"moyen" },
+  { name:"Ferland Mendy", clubs:["Lyon", "Real Madrid"], diff:"expert" },
+  { name:"Alphonso Davies", clubs:["Vancouver Whitecaps", "Bayern Munich"], diff:"moyen" },
+  { name:"Josko Gvardiol", clubs:["Dinamo Zagreb", "RB Leipzig", "Manchester City"], diff:"moyen" },
+  { name:"Ibrahima Konate", clubs:["RC Lens", "RB Leipzig", "Liverpool"], diff:"expert" },
+  { name:"Kim Min-jae", clubs:["Fenerbahce", "Napoli", "Bayern Munich"], diff:"expert" },
+  { name:"Pau Torres", clubs:["Villarreal", "Aston Villa"], diff:"expert" },
+  { name:"Jurrien Timber", clubs:["Ajax", "Arsenal"], diff:"expert" },
+  { name:"Castello Lukeba", clubs:["Lyon", "RB Leipzig"], diff:"expert" },
+  { name:"Leny Yoro", clubs:["Lille", "Manchester United"], diff:"expert" },
+  { name:"Dominik Szoboszlai", clubs:["Salzburg", "RB Leipzig", "Liverpool"], diff:"moyen" },
+  { name:"Phil Foden", clubs:["Manchester City"], diff:"facile" },
+  { name:"Bruno Guimaraes", clubs:["Athletico Paranaense", "Lyon", "Newcastle"], diff:"expert" },
+  { name:"Youri Tielemans", clubs:["Monaco", "Leicester City", "Aston Villa"], diff:"expert" },
+  { name:"Graeme Souness", clubs:["Liverpool"], diff:"expert" },
+  { name:"Xavi Simons", clubs:["PSG", "PSV", "RB Leipzig"], diff:"moyen" },
+  { name:"Arda Guler", clubs:["Fenerbahce", "Real Madrid"], diff:"expert" },
+  { name:"Bukayo Saka", clubs:["Arsenal"], diff:"facile" },
+  { name:"Ivan Toney", clubs:["Brentford", "Al Ahli"], diff:"expert" },
+  { name:"Christopher Nkunku", clubs:["PSG", "RB Leipzig", "Chelsea"], diff:"moyen" },
+  { name:"Evan Ferguson", clubs:["Brighton"], diff:"expert" },
+  { name:"Franco Mastantuono", clubs:["River Plate", "Real Madrid"], diff:"expert" },
+  { name:"Lamine Camara", clubs:["Metz", "Monaco"], diff:"expert" },
+  { name:"Joao Neves", clubs:["Benfica", "PSG"], diff:"expert" },
+  { name:"Nuno Mendes", clubs:["Sporting CP", "PSG"], diff:"expert" },
