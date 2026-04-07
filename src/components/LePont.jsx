@@ -1,10 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
+import { supabase } from "@/integrations/supabase/client";
 
 // ── CONSTANTS ──
 const ROUND_DURATION = 90;
@@ -13,12 +8,7 @@ const COMBO_THRESHOLD = 3;
 
 // ── PLAYER DATABASE ──
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
+import { supabase } from "@/integrations/supabase/client";
 
 // ── CONSTANTS ──
 // ── PLAYER DATABASE ──
