@@ -1,14 +1,11 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
+
 // ── CONSTANTS ──
 const ROUND_DURATION = 90;
 const CHAIN_DURATION = 90;
 const COMBO_THRESHOLD = 3;
-
-// ── PLAYER DATABASE ──
-import React, { useState, useEffect, useRef, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
 
 // ── CONSTANTS ──
 // ── PLAYER DATABASE ──
