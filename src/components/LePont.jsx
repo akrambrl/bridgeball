@@ -975,6 +975,8 @@ export default function LePont() {
   const [scoreAnim, setScoreAnim] = useState(null);
   const [isNewRecord, setIsNewRecord] = useState(false);
 
+  const [qTimeLeft, setQTimeLeft] = useState(5);
+  const qTimerRef = useRef(null);
   const [combo, setCombo] = useState(0);
   const [maxCombo, setMaxCombo] = useState(0);
   const [comboFloat, setComboFloat] = useState(null);
