@@ -1892,7 +1892,7 @@ export default function LePont() {
                   );
                 })}
               </div>
-              <button onClick={handlePass} disabled={!!flash} style={{padding:"11px",background:"transparent",color:"#bbb",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:700,opacity:flash?.3:1}}>Passer → (−0.5 pt)</button>
+              <button onClick={handlePass} disabled={!!flash} style={{padding:"11px",background:"transparent",color:"#bbb",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:700,opacity:flash ? 0.3 : 1}}>Passer → (−0.5 pt)</button>
             </div>
           ):(
             <div style={{display:"flex",flexDirection:"column",gap:8}}>
@@ -1901,7 +1901,7 @@ export default function LePont() {
                 style={{width:"100%",background:flash==="ko"?"#fee2e2":flash==="ok"?"#dcfce7":G.offWhite,border:`2px solid ${flash==="ko"?G.red:flash==="ok"?G.accent:"#e5e5e0"}`,borderRadius:16,padding:"14px 16px",fontFamily:G.font,fontSize:17,fontWeight:700,color:G.dark,outline:"none",textAlign:"center",transition:"all .15s"}}/>
               <div style={{display:"flex",gap:8}}>
                 <button onClick={handleSubmit} style={{flex:2,padding:"14px",background:G.dark,color:G.white,border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800}}>Valider</button>
-                <button onClick={handlePass} disabled={!!flash} style={{flex:1,padding:14,background:G.offWhite,color:"#aaa",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700,opacity:flash?.3:1}}>Passer →</button>
+                <button onClick={handlePass} disabled={!!flash} style={{flex:1,padding:14,background:G.offWhite,color:"#aaa",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700,opacity:flash ? 0.3 : 1}}>Passer →</button>
               </div>
             </div>
           )}
@@ -2151,7 +2151,7 @@ export default function LePont() {
                   );
                 })}
               </div>
-              <button onClick={handlePass} disabled={!!flash} style={{padding:"12px",background:"transparent",color:"#bbb",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700,opacity:flash?.3:1}}>Passer → (−0.5 pt)</button>
+              <button onClick={handlePass} disabled={!!flash} style={{padding:"12px",background:"transparent",color:"#bbb",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700,opacity:flash ? 0.3 : 1}}>Passer → (−0.5 pt)</button>
             </div>
           ):(
             <div style={{display:"flex",flexDirection:"column",gap:10}}>
@@ -2160,7 +2160,7 @@ export default function LePont() {
                 style={{width:"100%",background:flash==="ko"?"#fee2e2":flash==="ok"?"#dcfce7":G.offWhite,border:`2px solid ${flash==="ko"?G.red:flash==="ok"?G.accent:"#e5e5e0"}`,borderRadius:18,padding:"15px 18px",fontFamily:G.font,fontSize:18,fontWeight:700,color:G.dark,outline:"none",textAlign:"center",transition:"all .15s",animation:flash==="ko"?"answerKo .4s ease":flash==="ok"?"answerOk .4s ease":"none"}}/>
               <div style={{display:"flex",gap:10}}>
                 <button onClick={handleSubmit} style={{flex:2,padding:"15px",background:G.dark,color:G.white,border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:16,fontWeight:800}}>Valider</button>
-                <button onClick={handlePass} disabled={!!flash} style={{flex:1,padding:15,background:G.offWhite,color:"#aaa",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700,opacity:flash?.3:1}}>Passer →</button>
+                <button onClick={handlePass} disabled={!!flash} style={{flex:1,padding:15,background:G.offWhite,color:"#aaa",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700,opacity:flash ? 0.3 : 1}}>Passer →</button>
               </div>
             </div>
           )}
@@ -2238,13 +2238,13 @@ export default function LePont() {
           style={{width:"100%",background:flash==="ko"?"#fee2e2":flash==="ok"?"#dcfce7":G.offWhite,border:`2px solid ${flash==="ko"?G.red:flash==="ok"?G.accent:"#e5e5e0"}`,borderRadius:18,padding:"16px 18px",fontFamily:G.font,fontSize:18,fontWeight:700,color:G.dark,outline:"none",textAlign:"center",transition:"all .15s"}}/>
         <div style={{display:"flex",gap:10}}>
           <button onClick={handleChainSubmit} style={{flex:2,padding:"16px",background:G.dark,color:G.white,border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:16,fontWeight:800}}>Valider</button>
-          <button onClick={handleChainPass} disabled={!!flash} style={{flex:1,padding:16,background:G.offWhite,color:"#aaa",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700,opacity:flash?.3:1}}>Passer →</button>
+          <button onClick={handleChainPass} disabled={!!flash} style={{flex:1,padding:16,background:G.offWhite,color:"#aaa",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700,opacity:flash ? 0.3 : 1}}>Passer →</button>
         </div>
         {chainHistory.length>0 && (
           <div style={{flex:1,overflowY:"auto",display:"flex",flexDirection:"column",gap:4}}>
             <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"#ccc",textAlign:"center"}}>Chaîne</div>
             {chainHistory.map((h,i)=>(
-              <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"7px 12px",background:G.offWhite,borderRadius:12,animation:`slideIn .3s ease ${i*.04}s both`,opacity:h.passed?.7:1}}>
+              <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"7px 12px",background:G.offWhite,borderRadius:12,animation:`slideIn .3s ease ${i*.04}s both`,opacity:h.passed ? 0.7 : 1}}>
                 <span style={{fontSize:10,color:"#bbb",fontWeight:700,minWidth:18}}>{i+1}.</span>
                 <PlayerAvatarMini name={h.player} size={26}/>
                 <span style={{fontSize:12,color:G.dark,fontWeight:700,flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{h.player}</span>
