@@ -1503,6 +1503,134 @@ export default function LePont() {
   );
 
 
+  // ── LA PASSE SCREENS ──
+  if (lpScreen === 'menu') return (
+    <div style={{...shell, animation:"fadeUp .4s ease"}} key="lp-menu">
+      <div style={stripes}/>
+      <div style={{zIndex:1, padding:"44px 20px 16px", textAlign:"center"}}>
+        <div style={{fontSize:52, marginBottom:8}}>🃏</div>
+        <div style={{fontFamily:G.heading, fontSize:"clamp(40px,10vw,60px)", color:G.white, letterSpacing:2}}>LA PASSE</div>
+        <div style={{fontSize:13, color:"rgba(255,255,255,.55)", marginTop:6}}>Vide ta main avant les autres !</div>
+      </div>
+      <div style={sheet}>
+        <div>
+          <div style={{fontSize:11, fontWeight:700, letterSpacing:2, textTransform:"uppercase", color:"#bbb", marginBottom:8, textAlign:"center"}}>Adversaires IA</div>
+          <div style={{display:"flex", gap:10, justifyContent:"center"}}>
+            {[1,2,3].map(function(n) { return (
+              <button key={n} onClick={function() { setLpNumAi(n); }}
+                style={{width:64, height:64, borderRadius:16, border:"2px solid "+(lpNumAi===n?G.dark:"#e5e5e0"), background:lpNumAi===n?G.dark:G.offWhite, color:lpNumAi===n?G.white:"#888", fontFamily:G.heading, fontSize:32, cursor:"pointer"}}>{n}</button>
+            );})}
+          </div>
+        </div>
+        <div style={{background:G.offWhite, borderRadius:16, padding:"16px"}}>
+          <div style={{fontSize:13, fontWeight:700, color:G.dark, marginBottom:8}}>Règles</div>
+          <div style={{fontSize:12, color:"#555", lineHeight:1.9}}>
+            🃏 10 cartes chacun (5 clubs + 5 joueurs)<br/>
+            🏟️ Si CLUB visible → pose un JOUEUR qui y a joué<br/>
+            ⚽ Si JOUEUR visible → pose un CLUB où il a joué<br/>
+            📤 Tu peux pas jouer ? Pioche !<br/>
+            🏆 Premier à 0 carte gagne !
+          </div>
+        </div>
+        <button onClick={function() { lpStartGame(lpNumAi); }}
+          style={{width:"100%", padding:"18px", background:G.dark, color:G.white, border:"none", borderRadius:50, cursor:"pointer", fontFamily:G.font, fontSize:17, fontWeight:800, display:"flex", alignItems:"center", justifyContent:"center", gap:10}}>
+          {Icon.ball(18, G.white)} Jouer !
+        </button>
+        <button onClick={function() { setLpScreen(null); }}
+          style={{background:"transparent", color:"#bbb", border:"none", cursor:"pointer", fontFamily:G.font, fontSize:14}}>
+          ↩ Retour
+        </button>
+      </div>
+    </div>
+  );
+
+  if (lpScreen === 'game' || lpScreen === 'end') {
+    const isMyTurn = lpTurn === 0 && lpScreen === 'game';
+    const needType = lpTopCard ? (lpTopCard.type === 'club' ? 'player' : 'club') : null;
+    const validInHand = isMyTurn ? lpValidCards(lpHand, lpTopCard) : [];
+    const canDraw = isMyTurn && validInHand.length === 0;
+    return (
+      <div style={{...shell, overflow:"hidden"}} key="la-passe">
+        <div style={stripes}/>
+        <div style={{zIndex:3, padding:"12px 16px 0", display:"flex", justifyContent:"space-between", alignItems:"center"}}>
+          {backBtn(function() { setLpScreen(null); })}
+          <div style={{fontFamily:G.heading, fontSize:24, color:G.white, letterSpacing:2}}>LA PASSE</div>
+          <div style={{background:"rgba(255,255,255,.13)", borderRadius:12, padding:"6px 12px", color:G.white}}>
+            <span style={{fontSize:11}}>Main : </span><span style={{fontFamily:G.heading, fontSize:20}}>{lpHand.length}</span>
+          </div>
+        </div>
+        <div style={{padding:"6px 16px", display:"flex", gap:8, justifyContent:"center", flexWrap:"wrap"}}>
+          {lpAiHands.map(function(h, i) { return (
+            <div key={i} style={{background:lpTurn===i+1?"rgba(251,191,36,.25)":"rgba(255,255,255,.1)", border:lpTurn===i+1?"1px solid #fbbf24":"1px solid transparent", borderRadius:20, padding:"5px 12px", color:G.white, fontSize:12, display:"flex", alignItems:"center", gap:6}}>
+              🤖 Joueur {i+1} <span style={{fontFamily:G.heading, fontSize:18, color:lpTurn===i+1?G.gold:G.white}}>{h.length}</span>
+              {lpTurn===i+1 && <span>⏳</span>}
+            </div>
+          );})}
+        </div>
+        <div style={{display:"flex", flexDirection:"column", alignItems:"center", padding:"8px 16px", gap:8}}>
+          <div style={{fontSize:11, letterSpacing:3, textTransform:"uppercase", color:"rgba(255,255,255,.5)", fontWeight:700}}>Carte du dessus</div>
+          {lpTopCard && (function() {
+            const isClub = lpTopCard.type === 'club';
+            const cols = isClub ? getClubColors(lpTopCard.name) : ["#1e3a5f","#2563eb"];
+            return (
+              <div style={{width:110, height:145, borderRadius:16, background:"linear-gradient(135deg,"+cols[0]+","+cols[1]+")", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:6, padding:10, border:"2px solid rgba(255,255,255,.2)", boxShadow:"0 8px 24px rgba(0,0,0,.3)"}}>
+                <div style={{fontSize:10, letterSpacing:2, textTransform:"uppercase", color:"rgba(255,255,255,.6)", fontWeight:700}}>{isClub?"CLUB":"JOUEUR"}</div>
+                {isClub ? <ClubLogo club={lpTopCard.name} size={36}/> : <span style={{fontSize:30}}>⚽</span>}
+                <div style={{fontSize:13, fontWeight:800, color:"#fff", textAlign:"center", lineHeight:1.2}}>{lpTopCard.name.length>14?lpTopCard.name.slice(0,13)+"…":lpTopCard.name}</div>
+              </div>
+            );
+          })()}
+          {needType && <div style={{fontSize:13, color:"rgba(255,255,255,.8)", fontWeight:700, textAlign:"center"}}>→ Pose un <span style={{color:G.gold, fontWeight:900}}>{needType==="player"?"JOUEUR":"CLUB"}</span>{needType==="player"?" ayant joué à "+lpTopCard.name:" de "+lpTopCard.name}</div>}
+        </div>
+        <div style={{textAlign:"center", padding:"4px 16px"}}>
+          <div style={{background:"rgba(0,0,0,.3)", borderRadius:20, padding:"6px 16px", display:"inline-block", fontSize:13, color:G.white, fontWeight:700}}>{lpScreen==="end"?(lpWinner==="player"?"🏆 Tu as gagné !":"😅 L'IA a gagné !"):lpMsg}</div>
+        </div>
+        <div style={{...sheet, borderRadius:"28px 28px 0 0", flexShrink:0, padding:"12px 12px 20px", gap:10}}>
+          <div style={{fontSize:11, fontWeight:700, letterSpacing:2, textTransform:"uppercase", color:"#bbb", textAlign:"center"}}>{isMyTurn?"Ta main — sélectionne une carte":"Ta main"}</div>
+          <div style={{display:"flex", gap:8, overflowX:"auto", paddingBottom:4}}>
+            {lpHand.map(function(card, i) {
+              const isValid = validInHand.includes(card);
+              const isSel = lpSelected===i;
+              const isClub = card.type==="club";
+              const cols = isClub ? getClubColors(card.name) : ["#1e3a5f","#2563eb"];
+              return (
+                <div key={i} onClick={isMyTurn?function() { if(lpSelected===i){lpPlayCard(card);}else{setLpSelected(i);} }:undefined}
+                  style={{width:76, height:100, borderRadius:12, background:"linear-gradient(135deg,"+cols[0]+","+cols[1]+")", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:3, padding:6, flexShrink:0, cursor:isMyTurn?"pointer":"default",
+                    border:isSel?"3px solid #fbbf24":isMyTurn&&isValid?"2px solid #4ade80":"2px solid rgba(255,255,255,.2)",
+                    opacity:isMyTurn&&!isValid?0.35:1, transform:isSel?"scale(1.08) translateY(-6px)":"scale(1)", transition:"all .2s",
+                    boxShadow:isSel?"0 0 20px rgba(251,191,36,.5)":isMyTurn&&isValid?"0 0 10px rgba(74,222,128,.3)":"none"}}>
+                  <div style={{fontSize:8, letterSpacing:2, textTransform:"uppercase", color:"rgba(255,255,255,.6)", fontWeight:700}}>{isClub?"CLUB":"JOUEUR"}</div>
+                  {isClub?<ClubLogo club={card.name} size={22}/>:<span style={{fontSize:18}}>⚽</span>}
+                  <div style={{fontSize:9, fontWeight:800, color:"#fff", textAlign:"center", lineHeight:1.2}}>{card.name.length>11?card.name.slice(0,10)+"…":card.name}</div>
+                </div>
+              );
+            })}
+          </div>
+          {lpScreen==="end" ? (
+            <div style={{display:"flex", gap:8}}>
+              <button onClick={function(){lpStartGame(lpNumAi);}} style={{flex:1, padding:"14px", background:G.dark, color:G.white, border:"none", borderRadius:50, cursor:"pointer", fontFamily:G.font, fontSize:15, fontWeight:800}}>🔄 Rejouer</button>
+              <button onClick={function(){setLpScreen(null);}} style={{flex:1, padding:"14px", background:"transparent", color:"#bbb", border:"2px solid #e5e5e0", borderRadius:50, cursor:"pointer", fontFamily:G.font, fontSize:14}}>↩ Menu</button>
+            </div>
+          ) : isMyTurn && lpSelected!==null ? (
+            <div style={{display:"flex", gap:8}}>
+              <button onClick={function(){lpPlayCard(lpHand[lpSelected]);}} style={{flex:1, padding:"14px", background:"#16a34a", color:G.white, border:"none", borderRadius:50, cursor:"pointer", fontFamily:G.font, fontSize:15, fontWeight:800}}>✓ Poser cette carte</button>
+              <button onClick={function(){setLpSelected(null);}} style={{padding:"14px 20px", background:"transparent", color:"#bbb", border:"2px solid #e5e5e0", borderRadius:50, cursor:"pointer", fontFamily:G.font, fontSize:14}}>✕</button>
+            </div>
+          ) : canDraw ? (
+            <button onClick={lpPlayerDraw} style={{width:"100%", padding:"14px", background:"#1e3a8a", color:G.white, border:"none", borderRadius:50, cursor:"pointer", fontFamily:G.font, fontSize:15, fontWeight:800}}>
+              📤 Piocher une carte {needType==="player"?"joueur":"club"}
+            </button>
+          ) : !isMyTurn ? (
+            <div style={{textAlign:"center", color:"#999", fontSize:13, padding:"8px"}}>⏳ Tour du joueur {lpTurn}...</div>
+          ) : (
+            <div style={{textAlign:"center", color:"#999", fontSize:13, padding:"8px"}}>👆 Clique sur une carte verte pour la sélectionner</div>
+          )}
+          <button onClick={function(){setLpScreen(null);}} style={{background:"transparent", color:"#bbb", border:"2px solid #e5e5e0", borderRadius:50, cursor:"pointer", fontFamily:G.font, fontSize:13, padding:"10px"}}>↩ Retour</button>
+        </div>
+      </div>
+    );
+  }
+
   // ── HOME ──
   if(screen==="home") return (
     <div style={{...shell,animation:"fadeUp .5s ease"}} key="home">
