@@ -583,8 +583,8 @@ const CLUB_LOGO_URLS = {
   "Chelsea": "https://crests.football-data.org/61.svg",
   "Arsenal": "https://crests.football-data.org/57.svg",
   "Tottenham": "https://crests.football-data.org/73.svg",
-  "Napoli": "https://crests.football-data.org/113.svg",
-  "Roma": "https://crests.football-data.org/100.svg",
+  "Napoli": "https://a.espncdn.com/i/teamlogos/soccer/500/3051.png",
+  "Roma": "https://a.espncdn.com/i/teamlogos/soccer/500/104.png",
   "Lazio": "https://crests.football-data.org/110.svg",
   "Fiorentina": "https://upload.wikimedia.org/wikipedia/commons/a/a4/ACF_Fiorentina_logo_2022.png",
   "Atalanta": "https://upload.wikimedia.org/wikipedia/en/6/66/AtalantaBC.svg",
@@ -598,10 +598,10 @@ const CLUB_LOGO_URLS = {
   "Real Betis": "https://upload.wikimedia.org/wikipedia/en/1/13/Real_betis_logo.svg",
   "Marseille": "https://crests.football-data.org/516.svg",
   "Lyon": "https://crests.football-data.org/523.svg",
-  "Monaco": "https://crests.football-data.org/548.svg",
+  "Monaco": "https://a.espncdn.com/i/teamlogos/soccer/500/3771.png",
   "Lille": "https://crests.football-data.org/521.svg",
-  "Benfica": "https://crests.football-data.org/1903.svg",
-  "Porto": "https://crests.football-data.org/503.svg",
+  "Benfica": "https://a.espncdn.com/i/teamlogos/soccer/500/161.png",
+  "Porto": "https://a.espncdn.com/i/teamlogos/soccer/500/164.png",
   "Sporting CP": "https://crests.football-data.org/498.svg",
   "Ajax": "https://crests.football-data.org/678.svg",
   "Newcastle": "https://crests.football-data.org/67.svg",
@@ -721,7 +721,7 @@ function ClubLogo({ club, size = 48 }) {
   );
   if (!logo) return null;
   return (
-    <img src={logo} alt={club} onError={function(e){e.target.onerror=null;e.target.style.display="none";e.target.parentNode.innerHTML="<div style=\"width:"+size+"px;height:"+size+"px;border-radius:50%;background:#eee;display:flex;align-items:center;justify-content:center;font-size:"+(size*0.35)+"px;font-weight:900;color:#999\">"+(club.slice(0,2).toUpperCase())+"</div>";}} src={logo} alt={club} style={{width:size,height:size,objectFit:"contain",filter:"drop-shadow(0 2px 6px rgba(0,0,0,.3))"}}
+    <img src={logo} alt={club} style={{mixBlendMode:"multiply",background:"transparent"}} onError={function(e){e.target.onerror=null;e.target.style.display="none";e.target.parentNode.innerHTML="<div style=\"width:"+size+"px;height:"+size+"px;border-radius:50%;background:#eee;display:flex;align-items:center;justify-content:center;font-size:"+(size*0.35)+"px;font-weight:900;color:#999\">"+(club.slice(0,2).toUpperCase())+"</div>";}} src={logo} alt={club} style={{mixBlendMode:"multiply",width:size,height:size,objectFit:"contain",filter:"drop-shadow(0 2px 6px rgba(0,0,0,.3))"}}
       onError={e=>{e.target.style.display="none";}}/>
   );
 }
