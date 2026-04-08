@@ -1,4 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient("https://ialjlsrgcolocoaegzrc.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhbGpsc3JnY29sb2NvYWVnenJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1MDM3NzksImV4cCI6MjA5MTA3OTc3OX0.-SU8anuPhnpoa-PYhIHQqrcuOBsHxdtBJKRZuiGcGwM");
 
 
 // ── CONSTANTS ──
@@ -765,49 +768,6 @@ function getPlayersForClub(club){return CLUB_INDEX[club]||[];}
 
 const MAX_PLAYERS = 10;
 
-function mpStore(key) { return `bb_mp_${key}`; }
-
-function mpGetRoom(code) {
-  try { const d = localStorage.getItem(mpStore(code)); return d ? JSON.parse(d) : null; } catch { return null; }
-}
-
-function mpSaveRoom(code, room) {
-  try { localStorage.setItem(mpStore(code), JSON.stringify(room)); } catch {}
-}
-
-function mpDeleteRoom(code) {
-  try { localStorage.removeItem(mpStore(code)); } catch {}
-}
-
-function createRoom(code, hostName, diff, gameMode, totalRounds) {
-  const room = {
-    code, hostName, diff, gameMode, totalRounds: totalRounds || 1,
-    status: "lobby",
-    seed: Math.floor(Math.random() * 9999999),
-    createdAt: Date.now(),
-    players: [{ id: code + "_0", name: hostName, score: 0, status: "waiting", isHost: true, joinedAt: Date.now() }],
-  };
-  mpSaveRoom(code, room);
-  return room;
-}
-
-function joinRoom(code, playerName) {
-  const room = mpGetRoom(code);
-  if (!room) return { error: "Partie introuvable" };
-  if (room.status !== "lobby") return { error: "Partie déjà commencée" };
-  if (room.players.length >= MAX_PLAYERS) return { error: `Maximum ${MAX_PLAYERS} joueurs atteint` };
-  if (room.players.find(p => p.name === playerName)) return { error: "Ce pseudo est déjà pris" };
-  const player = { id: code + "_" + room.players.length, name: playerName, score: 0, status: "waiting", isHost: false, joinedAt: Date.now() };
-  room.players.push(player);
-  mpSaveRoom(code, room);
-  return { room, player };
-}
-
-function generateCode() {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  return Array.from({length:4}, ()=>chars[Math.floor(Math.random()*chars.length)]).join("");
-}
-
 function getClubColors(name){return CLUB_COLORS[name]||["#1a7a3a","#FFFFFF"];}
 function textColor(hex){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return(r*299+g*587+b*114)/1000>128?"#111":"#FFF";}
 function generateOptions(correctPlayers,allPairs){
@@ -998,96 +958,103 @@ export default function LePont() {
   const [mpFinalScores, setMpFinalScores] = useState([]);
   const mpChannel = useRef(null);
   const mpPollRef = useRef(null);
+  const mpTokenRef = useRef(null);
+  const mpMyIdRef = useRef(null);
+  const mpChannelRef = useRef(null);
   const MAX_PLAYERS = 4;
 
-  // ── MP HELPERS (localStorage-based) ──
-  function mpStore(code) { return "bb_room_" + code; }
-  function mpGetRoom(code) {
-    try { const d = localStorage.getItem(mpStore(code)); return d ? JSON.parse(d) : null; } catch { return null; }
-  }
-  function mpSaveRoom(code, room) {
-    try { localStorage.setItem(mpStore(code), JSON.stringify(room)); } catch {}
-  }
-  function mpDeleteRoom(code) {
-    try { localStorage.removeItem(mpStore(code)); } catch {}
-  }
-  function mpBroadcast(msg) {
-    if (mpChannel.current) mpChannel.current.postMessage(msg);
-  }
-  function mpUpdateMyScore(score) {
-    const room = mpGetRoom(mpCode);
-    if (!room) return;
-    const p = room.players.find(function(x) { return x.id === mpMyId; });
-    if (p) { p.score = score; p.status = "playing"; mpSaveRoom(mpCode, room); mpBroadcast({ type: "update" }); }
-  }
-  function createRoom(code, playerName, diff, gameMode, totalRounds) {
-    const player = { id: code + "_0", name: playerName, score: 0, status: "waiting", isHost: true };
-    const room = { code, diff, gameMode, totalRounds, seed: Math.floor(Math.random() * 9999999), status: "lobby", players: [player] };
-    mpSaveRoom(code, room);
-    return room;
-  }
-  function joinRoom(code, playerName) {
-    const room = mpGetRoom(code);
-    if (!room) return { error: "Partie introuvable" };
-    if (room.status !== "lobby") return { error: "Partie déjà commencée" };
-    if (room.players.length >= MAX_PLAYERS) return { error: "Partie pleine" };
-    if (room.players.find(function(p) { return p.name === playerName; })) return { error: "Pseudo déjà pris" };
-    const player = { id: code + "_" + room.players.length, name: playerName, score: 0, status: "waiting", isHost: false };
-    room.players.push(player);
-    mpSaveRoom(code, room);
-    return { room, player };
-  }
+  // ── MP HELPERS (Supabase realtime) ──
   function generateCode() {
     const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
     return Array.from({ length: 4 }, function() { return chars[Math.floor(Math.random() * chars.length)]; }).join("");
   }
-  function startMpChannel(code) {
-    try {
-      if (mpChannel.current) mpChannel.current.close();
-      const ch = new BroadcastChannel("bb_" + code);
-      mpChannel.current = ch;
-      ch.onmessage = function() { mpRefreshRoom(code); };
-    } catch {}
-    clearInterval(mpPollRef.current);
-    mpPollRef.current = setInterval(function() { mpRefreshRoom(code); }, 1500);
+
+  async function mpCreateRoom(code, playerName, d, gameMode, rounds) {
+    const token = crypto.randomUUID();
+    const seed = Math.floor(Math.random() * 9999999);
+    const { data: room, error: re } = await supabase.from("bb_rooms")
+      .insert({ code, diff: d, game_mode: gameMode, total_rounds: rounds, seed, status: "lobby" })
+      .select().single();
+    if (re || !room) { setMpError("Erreur création partie"); return null; }
+    const { data: player, error: pe } = await supabase.from("bb_players")
+      .insert({ room_id: room.id, token, name: playerName, is_host: true, status: "waiting" })
+      .select().single();
+    if (pe || !player) { setMpError("Erreur inscription"); return null; }
+    mpTokenRef.current = token;
+    return { room, player };
   }
-  function mpRefreshRoom(code) {
-    const room = mpGetRoom(code || mpCode);
-    if (!room) return;
-    setMpPlayers([...room.players]);
-    setMpRoom(room);
-    if (room.status === "playing" && mpScreen === "mpLobby") { startMpGame(room); }
-    if (room.status === "finished" && mpScreen === "mpPlaying") { setMpFinalScores([...room.players].sort(function(a,b) { return b.score - a.score; })); setMpScreen("mpResults"); }
+
+  async function mpJoinRoom(code, playerName) {
+    const { data: room, error: re } = await supabase.from("bb_rooms")
+      .select("*").eq("code", code.toUpperCase()).eq("status", "lobby").single();
+    if (re || !room) { setMpError("Partie introuvable ou déjà commencée"); return null; }
+    const { data: existing } = await supabase.from("bb_players").select("id").eq("room_id", room.id);
+    if (existing && existing.length >= MAX_PLAYERS) { setMpError("Partie pleine"); return null; }
+    const token = crypto.randomUUID();
+    const { data: player, error: pe } = await supabase.from("bb_players")
+      .insert({ room_id: room.id, token, name: playerName, is_host: false, status: "waiting" })
+      .select().single();
+    if (pe || !player) { setMpError("Erreur en rejoignant"); return null; }
+    mpTokenRef.current = token;
+    return { room, player };
   }
-  function startMpGame(room) {
-    const s0 = room.seed;
-    let s = s0;
+
+  async function mpUpdateScore(score, status) {
+    if (!mpMyIdRef.current) return;
+    await supabase.from("bb_players")
+      .update({ score, status })
+      .eq("id", mpMyIdRef.current).eq("token", mpTokenRef.current);
+  }
+
+  async function mpStartRoom(roomId) {
+    await supabase.from("bb_rooms").update({ status: "playing" }).eq("id", roomId);
+  }
+
+  function mpSubscribe(roomId) {
+    if (mpChannelRef.current) supabase.removeChannel(mpChannelRef.current);
+    const ch = supabase.channel("bb_room_" + roomId)
+      .on("postgres_changes", { event: "*", schema: "public", table: "bb_players", filter: "room_id=eq." + roomId },
+        async function() {
+          const { data: players } = await supabase.from("bb_players").select("*").eq("room_id", roomId);
+          if (!players) return;
+          setMpPlayers(players);
+          if (players.every(function(p) { return p.status === "finished"; })) {
+            await supabase.from("bb_rooms").update({ status: "finished" }).eq("id", roomId);
+            setMpFinalScores([...players].sort(function(a,b) { return b.score - a.score; }));
+            setMpScreen("mpResults");
+          }
+        })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "bb_rooms", filter: "id=eq." + roomId },
+        function(payload) {
+          const room = payload.new;
+          if (room.status === "playing" && mpScreen === "mpLobby") {
+            mpStartGame(room);
+          }
+          setMpRoom(room);
+        })
+      .subscribe();
+    mpChannelRef.current = ch;
+  }
+
+  function mpStartGame(room) {
+    let s = room.seed;
     function rng() { s = (s * 1664525 + 1013904223) & 0x7fffffff; return s / 0x7fffffff; }
     const dbPool = [...(DB[room.diff] || DB.facile)];
-    for (let i = dbPool.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); const tmp = dbPool[i]; dbPool[i] = dbPool[j]; dbPool[j] = tmp; }
+    for (let i = dbPool.length - 1; i > 0; i--) {
+      const j = Math.floor(rng() * (i + 1));
+      const tmp = dbPool[i]; dbPool[i] = dbPool[j]; dbPool[j] = tmp;
+    }
     setQueue(dbPool);
     setScore(0); scoreRef.current = 0;
     setTimeLeft(ROUND_DURATION); setGuess(""); setFlash(null); setFeedback(null);
     setCombo(0); setMaxCombo(0); comboRef.current = 0; lastAnswerTime.current = Date.now();
     setCurrentRound(1); setAnimKey(0); setMpScreen("mpPlaying"); setScreen("game");
   }
-  function endMpGame() {
+
+  async function endMpGame() {
     clearInterval(timerRef.current);
     const finalScore = scoreRef.current;
-    mpUpdateMyScore(finalScore);
-    const room = mpGetRoom(mpCode);
-    if (room) {
-      const p = room.players.find(function(x) { return x.id === mpMyId; });
-      if (p) { p.status = "finished"; }
-      if (room.players.every(function(x) { return x.status === "finished"; })) { room.status = "finished"; }
-      mpSaveRoom(mpCode, room);
-      mpBroadcast({ type: "update" });
-    }
-    setTimeout(function() {
-      const r2 = mpGetRoom(mpCode);
-      if (r2) { setMpFinalScores([...r2.players].sort(function(a,b) { return b.score - a.score; })); }
-      setMpScreen("mpResults");
-    }, 800);
+    await mpUpdateScore(finalScore, "finished");
   }
 
 
@@ -1242,13 +1209,16 @@ export default function LePont() {
             );})}
           </div>
         </div>
-        <button onClick={function(){
+        <button onClick={async function(){
           if(!playerName.trim()){setMpError("Entre ton pseudo d'abord !");return;}
           const code=generateCode();
-          const room=createRoom(code,playerName.trim(),diff,mpGameMode,totalRounds);
-          setMpCode(code); setMpRoom(room); setMpMyId(room.players[0].id);
-          setMpPlayers([...room.players]);
-          startMpChannel(code);
+          const result = await mpCreateRoom(code,playerName.trim(),diff,mpGameMode,totalRounds);
+          if (!result) return;
+          setMpCode(code); setMpRoom(result.room);
+          setMpMyId(result.player.id); mpMyIdRef.current = result.player.id;
+          const { data: players } = await supabase.from("bb_players").select("*").eq("room_id", result.room.id);
+          setMpPlayers(players || [result.player]);
+          mpSubscribe(result.room.id);
           setMpError(""); setMpScreen("mpLobby");
         }} style={{width:"100%", padding:"18px", background:G.dark, color:G.white, border:"none", borderRadius:50, cursor:"pointer", fontFamily:G.font, fontSize:16, fontWeight:800, display:"flex", alignItems:"center", justifyContent:"center", gap:10}}>
           {Icon.ball(18,G.white)} Créer une partie
@@ -1284,14 +1254,12 @@ export default function LePont() {
             style={{width:"100%", background:G.offWhite, border:"2px solid "+(mpJoinInput.length===4?"#16a34a":"#e5e5e0"), borderRadius:14, padding:"16px", fontFamily:G.heading, fontSize:52, fontWeight:800, color:G.dark, outline:"none", textAlign:"center", letterSpacing:12, boxSizing:"border-box", transition:"border .2s"}}/>
         </div>
         {mpError && <div style={{textAlign:"center", fontSize:13, color:G.red, fontWeight:700, animation:"popIn .3s ease"}}>{mpError}</div>}
-        <button onClick={function(){
+        <button onClick={async function(){
           if(!playerName.trim()){setMpError("Entre ton pseudo d'abord !");return;}
           if(mpJoinInput.length!==4){setMpError("Le code doit faire 4 caractères");return;}
-          const res=joinRoom(mpJoinInput,playerName.trim());
-          if(res.error){setMpError(res.error);return;}
-          setMpCode(mpJoinInput); setMpRoom(res.room); setMpMyId(res.player.id);
+          // joinRoom replaced by mpJoinRoom async above
+          setMpCode(mpJoinInput); setMpRoom(res.room); setMpMyId(res.player.id); mpMyIdRef.current = res.player.id;
           setMpPlayers([...res.room.players]);
-          startMpChannel(mpJoinInput);
           setMpError(""); setMpScreen("mpLobby");
         }} disabled={mpJoinInput.length!==4 || !playerName.trim()}
           style={{width:"100%", padding:"18px", background:mpJoinInput.length===4&&playerName.trim()?G.dark:"#ccc", color:G.white, border:"none", borderRadius:50, cursor:"pointer", fontFamily:G.font, fontSize:16, fontWeight:800, display:"flex", alignItems:"center", justifyContent:"center", gap:10, transition:"background .2s"}}>
@@ -1303,7 +1271,8 @@ export default function LePont() {
   );
 
   if (mpScreen === "mpLobby") {
-    const isHost = mpRoom && mpRoom.players[0] && mpRoom.players[0].id === mpMyId;
+    const mePlayer = mpPlayers.find(function(p) { return p.id === mpMyId; });
+    const isHost = mePlayer ? mePlayer.is_host : false;
     return (
       <div style={{...shell, animation:"fadeUp .4s ease"}} key="mp-lobby">
         <div style={stripes}/>
@@ -1324,8 +1293,8 @@ export default function LePont() {
               <div key={p.id} style={{display:"flex", alignItems:"center", gap:12, padding:"12px 16px", background:p.id===mpMyId?"linear-gradient(135deg,#fef3c7,#fde68a)":G.offWhite, borderRadius:16, border:p.id===mpMyId?"1.5px solid #fbbf24":"1.5px solid #f0f0ea", animation:"slideIn .3s ease both"}}>
                 <div style={{fontFamily:G.heading, fontSize:24, color:G.dark, minWidth:32}}>{i+1}</div>
                 <div style={{flex:1}}>
-                  <div style={{fontSize:14, fontWeight:800, color:G.dark}}>{p.name}{p.id===mpMyId?" (toi)":""}</div>
-                  <div style={{fontSize:11, color:"#aaa"}}>{p.isHost?"👑 Hôte":"Joueur"}</div>
+                  <div style={{fontSize:14, fontWeight:800, color:G.dark}}>{p.name}{String(p.id)===String(mpMyId)?" (toi)":""}</div>
+                  <div style={{fontSize:11, color:"#aaa"}}>{p.is_host?"👑 Hôte":"Joueur"}</div>
                 </div>
                 <div style={{width:10, height:10, borderRadius:"50%", background:p.status==="playing"?"#16a34a":"#e5e5e0"}}/>
               </div>
@@ -1337,14 +1306,9 @@ export default function LePont() {
             )}
           </div>
           {isHost && mpPlayers.length >= 1 ? (
-            <button onClick={function(){
-              const room=mpGetRoom(mpCode);
-              if(!room) return;
-              room.status="playing";
-              mpSaveRoom(mpCode,room);
-              mpBroadcast({type:"start"});
-              setMpScreen("mpPlaying");
-              startMpGame(room);
+            <button onClick={async function(){
+              if(!mpRoom) return;
+              await mpStartRoom(mpRoom.id);
             }} style={{width:"100%", padding:"18px", background:G.bg, color:G.white, border:"none", borderRadius:50, cursor:"pointer", fontFamily:G.font, fontSize:16, fontWeight:800, display:"flex", alignItems:"center", justifyContent:"center", gap:10}}>
               {Icon.whistle(18,G.white)} Lancer ({mpPlayers.length} joueur{mpPlayers.length > 1 ? "s" : ""})
             </button>
@@ -1484,8 +1448,7 @@ export default function LePont() {
             })}
           </div>
           <button onClick={function(){
-            if(mpChannel.current) mpChannel.current.close();
-            clearInterval(mpPollRef.current);
+            if(mpChannelRef.current) supabase.removeChannel(mpChannelRef.current);
             setMpScreen(null); setMpCode(""); setMpRoom(null); setMpPlayers([]); setMpFinalScores([]);
             setScreen("home");
           }} style={{width:"100%", padding:"14px", background:G.dark, color:G.white, border:"none", borderRadius:50, cursor:"pointer", fontFamily:G.font, fontSize:16, fontWeight:800}}>
