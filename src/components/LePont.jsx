@@ -983,6 +983,107 @@ export default function LePont() {
   const [myLbRank, setMyLbRank] = useState(null);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
 
+  const cur = queue[qIdx%Math.max(queue.length,1)];
+  const total = roundScores.reduce((a,b)=>a+b,0);
+  const duration = gameMode==="chaine"?CHAIN_DURATION:ROUND_DURATION;
+  const tPct = timeLeft/duration;
+  const urgent = timeLeft<=10&&timeLeft>0;
+
+  // ── DESIGN SYSTEM ──
+  const G = {
+    bg:"#0d6e2e", bgLight:"#15943e", dark:"#0a0a0a", white:"#ffffff",
+    offWhite:"#f7f7f2", accent:"#4ade80", gold:"#fbbf24", red:"#ef4444",
+    font:"'Inter',system-ui,sans-serif", heading:"'Bebas Neue',cursive,sans-serif",
+  };
+  const isUrgent = (screen==="game"||screen==="chainGame")&&timeLeft<=10&&timeLeft>0;
+  const shell = {
+    minHeight:"100vh", display:"flex", flexDirection:"column",
+    background:`linear-gradient(175deg,${G.bg} 0%,${G.bgLight} 40%,${G.bg} 100%)`,
+    fontFamily:G.font, position:"relative", overflow:"hidden",
+  };
+  const stripes = {position:"absolute",inset:0,zIndex:0,pointerEvents:"none",background:"repeating-linear-gradient(90deg,transparent 0px,transparent 40px,rgba(255,255,255,.03) 40px,rgba(255,255,255,.03) 80px)"};
+  const sheet = {background:G.white,borderRadius:"32px 32px 0 0",flex:1,padding:"20px 18px 28px",display:"flex",flexDirection:"column",gap:14,zIndex:1,boxShadow:"0 -8px 40px rgba(0,0,0,.12)"};
+
+  const backBtn = (onClick) => (
+    <button onClick={onClick} style={{background:"rgba(255,255,255,.15)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,.2)",borderRadius:14,width:40,height:40,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",zIndex:10,color:G.white,fontSize:18,fontWeight:700,flexShrink:0}}>←</button>
+  );
+
+  const timerCircle = (size=76) => {
+    const r=(size/2)-5; const circ=2*Math.PI*r;
+    return (
+      <div style={{position:"relative",width:size,height:size,animation:urgent?"heartbeat .8s ease infinite":"none"}}>
+        <svg style={{width:size,height:size,transform:"rotate(-90deg)"}} viewBox={"0 0 "+size+" "+size}>
+          <circle fill={urgent?"rgba(239,68,68,.15)":"rgba(255,255,255,.08)"} cx={size/2} cy={size/2} r={size/2}/>
+          <circle fill="none" stroke="rgba(255,255,255,.15)" strokeWidth={4} cx={size/2} cy={size/2} r={r}/>
+          <circle fill="none" stroke={timeLeft<=20?"#ef4444":timeLeft<=40?"#fbbf24":G.accent} strokeWidth={urgent?6:4}
+            strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={circ*(1-tPct)}
+            cx={size/2} cy={size/2} r={r} style={{transition:"stroke-dashoffset .9s linear"}}/>
+        </svg>
+        <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:G.heading,fontSize:size*.3,color:urgent?"#ef4444":G.white,animation:urgent?"urgentPulse 1s ease infinite":"none"}}>{timeLeft}</div>
+      </div>
+    );
+  };
+
+  const scoreDisplay = (sc, anim) => (
+    <span style={{fontFamily:G.heading,fontSize:34,color:G.white,display:"inline-block",animation:anim==="up"?"scoreUp .5s ease":anim==="down"?"scoreDn .5s ease":"none"}}>{sc}</span>
+  );
+
+  const comboDisplay = combo>=3?(
+    <div key={combo} style={{position:"absolute",top:-8,left:"50%",transform:"translateX(-50%)",background:"linear-gradient(135deg,#f59e0b,#ef4444)",color:G.white,borderRadius:20,padding:"4px 14px",fontSize:12,fontWeight:800,letterSpacing:1,animation:"comboFire .5s ease",zIndex:20,whiteSpace:"nowrap",boxShadow:"0 4px 15px rgba(245,158,11,.4)"}}>{getComboLabel(combo)}</div>
+  ):null;
+
+  const floatingPoints = comboFloat&&(
+    <div style={{position:"fixed",top:"30%",left:"50%",transform:"translateX(-50%)",fontFamily:G.heading,fontSize:28,color:G.gold,letterSpacing:2,animation:"floatUp 1.2s ease forwards",zIndex:100,textShadow:"0 2px 10px rgba(0,0,0,.3)",pointerEvents:"none"}}>{comboFloat}</div>
+  );
+
+  const CONFETTI_COLORS=["#fbbf24","#ef4444","#4ade80","#3b82f6","#a855f7","#f97316"];
+  const confettiOverlay = showConfetti&&(
+    <div style={{position:"fixed",inset:0,zIndex:300,pointerEvents:"none",overflow:"hidden"}}>
+      {Array.from({length:40}).map((_,i)=>{
+        const left=Math.random()*100,delay=Math.random()*2,dur=2+Math.random()*2,size=6+Math.random()*8;
+        return <div key={i} style={{position:"absolute",top:-20,left:left+"%",width:size,height:size,background:CONFETTI_COLORS[i%CONFETTI_COLORS.length],borderRadius:Math.random()>.5?"50%":2,animation:"confettiFall "+dur+"s ease "+delay+"s forwards"}}/>;
+      })}
+    </div>
+  );
+
+  const feedbackBar = (fb) => {
+    if(!fb) return null;
+    return (
+      <div style={{borderRadius:16,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"12px 16px",
+        background:fb==="ok"?"#dcfce7":fb==="ko"?"#fee2e2":"#fef9c3",
+        border:"2px solid "+(fb==="ok"?G.accent:fb==="ko"?G.red:"#fbbf24"),
+        animation:fb==="ok"?"answerOk .5s ease":fb==="ko"?"answerKo .4s ease":"popIn .3s ease",
+      }}>
+        {fb==="ok"&&<><div style={{display:"flex",alignItems:"center",gap:8,fontSize:17,fontWeight:800,color:"#16a34a"}}>{Icon.ball(18,"#16a34a")} BONNE RÉPONSE !</div><div style={{fontSize:12,fontWeight:600,color:"#16a34a",opacity:.7}}>+2 pts</div></>}
+        {fb==="ko"&&<><div style={{display:"flex",alignItems:"center",gap:8,fontSize:17,fontWeight:800,color:G.red}}>{Icon.whistle(18,G.red)} MAUVAISE RÉPONSE</div><div style={{fontSize:12,fontWeight:600,color:G.red,opacity:.7}}>−1 pt</div></>}
+        {fb==="used"&&<div style={{display:"flex",alignItems:"center",gap:8,fontSize:15,fontWeight:800,color:"#d97706"}}>{Icon.flag(16,"#d97706")} CLUB DÉJÀ UTILISÉ</div>}
+      </div>
+    );
+  };
+
+  const instructionsPopup = showInstructions&&(
+    <div style={{position:"fixed",inset:0,zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,.6)",backdropFilter:"blur(6px)",animation:"fadeIn .2s ease"}}>
+      <div style={{background:G.white,borderRadius:28,padding:"32px 24px",maxWidth:360,width:"calc(100% - 40px)",animation:"popIn .3s ease",textAlign:"center"}}>
+        <div style={{marginBottom:12,display:"flex",justifyContent:"center"}}>{showInstructions==="pont"?Icon.pitch(52,G.dark):Icon.transfer(52,G.dark)}</div>
+        <div style={{fontFamily:G.heading,fontSize:32,color:G.dark,letterSpacing:2,marginBottom:16}}>{showInstructions==="pont"?"LE PONT":"LA CHAÎNE"}</div>
+        {showInstructions==="pont"?(
+          <div style={{fontSize:14,color:"#555",lineHeight:1.8,marginBottom:20}}>
+            Deux clubs s'affichent. Trouve <strong>un joueur</strong> qui a joué dans les deux !<br/><br/>
+            <span style={{color:"#16a34a",fontWeight:800}}>✓ +2</span> bonne · <span style={{color:G.red,fontWeight:800}}>✗ −1</span> mauvaise · <span style={{color:"#aaa",fontWeight:800}}>→ −0.5</span> passer<br/><br/>
+            <span style={{fontSize:12,color:"#999"}}>🔥 Réponds vite pour les combos !</span>
+          </div>
+        ):(
+          <div style={{fontSize:14,color:"#555",lineHeight:1.8,marginBottom:20}}>
+            Un joueur → donne un <strong>club</strong> → nouveau joueur de ce club → etc.<br/><br/>
+            <strong>Un club ne peut être cité qu'une seule fois.</strong>
+          </div>
+        )}
+        <button onClick={dismissInstructions} style={{width:"100%",padding:"16px",background:G.dark,color:G.white,border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:16,fontWeight:800,letterSpacing:1}}>C'est parti ! →</button>
+      </div>
+    </div>
+  );
+
+
   // ── HOME ──
   if(screen==="home") return (
     <div style={{...shell,animation:"fadeUp .5s ease"}} key="home">
