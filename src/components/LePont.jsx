@@ -718,7 +718,6 @@ function PlayerPhoto({ name, size = 48, fallbackColors }) {
   }, [name]);
 
   const initials = name.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();
-  const [ca, cb] = fallbackColors || ["#2d6a4f","#1b4332"];
 
   // Always show avatar, overlay photo when loaded
   return (
@@ -1013,15 +1012,6 @@ export default function LePont() {
   const [showInstructions, setShowInstructions] = useState(null);
   const seenInstructions = useRef(new Set());
 
-  const [myLastPts, setMyLastPts] = useState(null);
-  const [wasAway, setWasAway] = useState(false);
-  const [notifGranted, setNotifGranted] = useState(false);
-  const [showNotifPrompt, setShowNotifPrompt] = useState(false);
-  const [lbMode, setLbMode] = useState("pont");
-  const [lbDiff, setLbDiff] = useState("facile");
-  const [playerName, setPlayerName] = useState("");
-  const [showInstructions, setShowInstructions] = useState(null);
-  const seenInstructions = useRef(new Set());
   const timerRef = useRef(null);
   const inputRef = useRef(null);
   const scoreRef = useRef(0);
