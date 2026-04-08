@@ -1171,7 +1171,6 @@ export default function LePont() {
     if(sc >= myBest * 0.85) return 5;  // Proche du record = nul
     return 0;                           // Loin = défaite
   }
-  }
 
   function submitToLeaderboard(name, sc, mode, d) {
     const displayName = (name||"").trim() || "Anonyme";
@@ -1277,28 +1276,6 @@ export default function LePont() {
       clearInterval(mpPollRef.current);
       mpPollRef.current = setInterval(() => mpRefreshRoom(code), 2000);
     } catch {}
-  }
-
-  function startMpGame(room) {
-    // Use seeded shuffle for same questions across all players
-    function seededRng(seed) {
-      let s = seed;
-      return () => { s = (s*1664525+1013904223)&0x7fffffff; return s/0x7fffffff; };
-    }
-    const rng = seededRng(room.seed);
-    const dbPool = [...(DB[room.diff]||DB.facile)];
-    for (let i = dbPool.length-1; i > 0; i--) {
-      const j = Math.floor(rng()*(i+1));
-      [dbPool[i],dbPool[j]] = [dbPool[j],dbPool[i]];
-    }
-    setQueue(dbPool);
-    setQIdx(0);
-    setScore(0); scoreRef.current = 0;
-    setTimeLeft(ROUND_DURATION);
-    setGuess(""); setFlash(null); setFeedback(null);
-    if (room.diff === "facile") setOptions(generateOptions(dbPool[0].p, DB[room.diff]||DB.facile));
-    setAnimKey(0);
-    setCombo(0); setMaxCombo(0); comboRef.current = 0; lastAnswerTime.current = Date.now();
   }
 
   function mpUpdateMyScore(finalScore) {
