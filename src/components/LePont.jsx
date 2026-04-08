@@ -962,6 +962,8 @@ export default function LePont() {
   const mpMyIdRef = useRef(null);
   const mpChannelRef = useRef(null);
   const mpScreenRef = useRef(null);
+  const mpRoomIdRef = useRef(null);
+  const mpRoomRef = useRef(null);
   mpScreenRef.current = mpScreen; // always current - set during render
   const MAX_PLAYERS = 4;
 
@@ -1232,7 +1234,7 @@ export default function LePont() {
           const code=generateCode();
           const result = await mpCreateRoom(code,playerName.trim(),diff,mpGameMode,totalRounds);
           if (!result) return;
-          setMpCode(code); setMpRoom(result.room);
+          setMpCode(code); setMpRoom(result.room); mpRoomRef.current = result.room; mpRoomIdRef.current = result.room.id;
           setMpMyId(result.player.id); mpMyIdRef.current = result.player.id;
           const { data: players } = await supabase.from("bb_players").select("*").eq("room_id", result.room.id);
           setMpPlayers(players || [result.player]);
@@ -1331,19 +1333,14 @@ export default function LePont() {
             )}
           </div>
           {isHost && mpPlayers.length >= 1 ? (
-            <button onClick={async function(){
-              if(!mpRoom) { setMpError("Erreur: partie introuvable"); return; }
-              setMpError("Lancement...");
-              try {
-                const { error } = await supabase.from("bb_rooms")
-                  .update({ status: "playing" })
-                  .eq("id", mpRoom.id);
-                if (error) { setMpError("Erreur Supabase: " + error.message); return; }
-                setMpError("");
-                mpStartGame(mpRoom);
-              } catch(e) {
-                setMpError("Erreur: " + e.message);
-              }
+            <button onClick={function(){
+              const room = mpRoomRef.current || mpRoom;
+              if(!room) { setMpError("Erreur: room null"); return; }
+              // Start game immediately for host
+              mpStartGame(room);
+              // Update Supabase in background for guest sync
+              supabase.from("bb_rooms").update({ status: "playing" }).eq("id", room.id)
+                .then(function(res) { if(res.error) setMpError("Sync: " + res.error.message); });
             }} style={{width:"100%", padding:"18px", background:G.bg, color:G.white, border:"none", borderRadius:50, cursor:"pointer", fontFamily:G.font, fontSize:16, fontWeight:800, display:"flex", alignItems:"center", justifyContent:"center", gap:10}}>
               {Icon.whistle(18,G.white)} Lancer ({mpPlayers.length} joueur{mpPlayers.length > 1 ? "s" : ""})
             </button>
@@ -1359,6 +1356,7 @@ export default function LePont() {
           }} style={{background:"transparent", color:"#bbb", border:"none", cursor:"pointer", fontFamily:G.font, fontSize:14}}>
             ✕ Quitter
           </button>
+          {mpError && <div style={{textAlign:"center",fontSize:13,color:G.red,fontWeight:700,padding:"8px",background:"#fee2e2",borderRadius:10,marginTop:6}}>{mpError}</div>}
         </div>
       </div>
     );
@@ -1860,3 +1858,4 @@ export default function LePont() {
 
   return <div style={{...shell,justifyContent:"center",alignItems:"center"}}><div style={{color:G.white}}>Chargement…</div></div>;
 }
+          {mpError && <div style={{textAlign:"center",fontSize:13,color:G.red,fontWeight:700,padding:"8px",background:"#fee2e2",borderRadius:10,marginBottom:4}}>{mpError}</div>}
