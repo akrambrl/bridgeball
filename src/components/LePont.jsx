@@ -961,6 +961,8 @@ export default function LePont() {
   const mpTokenRef = useRef(null);
   const mpMyIdRef = useRef(null);
   const mpChannelRef = useRef(null);
+  const mpScreenRef = useRef(null);
+  mpScreenRef.current = mpScreen; // always current - set during render
   const MAX_PLAYERS = 4;
 
   // ── MP HELPERS (Supabase realtime) ──
@@ -1027,7 +1029,7 @@ export default function LePont() {
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "bb_rooms", filter: "id=eq." + roomId },
         function(payload) {
           const room = payload.new;
-          if (room.status === "playing" && mpScreen === "mpLobby") {
+          if (room.status === "playing" && (mpScreenRef.current === "mpLobby" || mpScreenRef.current === null)) {
             mpStartGame(room);
           }
           setMpRoom(room);
