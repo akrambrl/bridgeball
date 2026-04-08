@@ -1798,7 +1798,7 @@ export default function LePont() {
     const tc1=textColor(ca1); const tc2=textColor(ca2);
 
     // End round handler for multiplayer
-    function endMpGame() {
+    const endMpGame = () => {
       clearInterval(timerRef.current);
       const finalScore = scoreRef.current;
       mpUpdateMyScore(finalScore);
