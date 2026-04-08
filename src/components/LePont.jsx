@@ -984,6 +984,113 @@ export default function LePont() {
   const [showLeaderboard, setShowLeaderboard] = useState(false);
 
   // ── MISSING STATE ──
+
+  // ── MULTIPLAYER STATE ──
+  const [mpScreen, setMpScreen] = useState(null);
+  const [mpCode, setMpCode] = useState("");
+  const [mpJoinInput, setMpJoinInput] = useState("");
+  const [mpRoom, setMpRoom] = useState(null);
+  const [mpMyId, setMpMyId] = useState(null);
+  const [mpPlayers, setMpPlayers] = useState([]);
+  const [mpError, setMpError] = useState("");
+  const [mpCopied, setMpCopied] = useState(false);
+  const [mpGameMode, setMpGameMode] = useState("pont");
+  const [mpFinalScores, setMpFinalScores] = useState([]);
+  const mpChannel = useRef(null);
+  const mpPollRef = useRef(null);
+  const MAX_PLAYERS = 4;
+
+  // ── MP HELPERS (localStorage-based) ──
+  function mpStore(code) { return "bb_room_" + code; }
+  function mpGetRoom(code) {
+    try { const d = localStorage.getItem(mpStore(code)); return d ? JSON.parse(d) : null; } catch { return null; }
+  }
+  function mpSaveRoom(code, room) {
+    try { localStorage.setItem(mpStore(code), JSON.stringify(room)); } catch {}
+  }
+  function mpDeleteRoom(code) {
+    try { localStorage.removeItem(mpStore(code)); } catch {}
+  }
+  function mpBroadcast(msg) {
+    if (mpChannel.current) mpChannel.current.postMessage(msg);
+  }
+  function mpUpdateMyScore(score) {
+    const room = mpGetRoom(mpCode);
+    if (!room) return;
+    const p = room.players.find(function(x) { return x.id === mpMyId; });
+    if (p) { p.score = score; p.status = "playing"; mpSaveRoom(mpCode, room); mpBroadcast({ type: "update" }); }
+  }
+  function createRoom(code, playerName, diff, gameMode, totalRounds) {
+    const player = { id: code + "_0", name: playerName, score: 0, status: "waiting", isHost: true };
+    const room = { code, diff, gameMode, totalRounds, seed: Math.floor(Math.random() * 9999999), status: "lobby", players: [player] };
+    mpSaveRoom(code, room);
+    return room;
+  }
+  function joinRoom(code, playerName) {
+    const room = mpGetRoom(code);
+    if (!room) return { error: "Partie introuvable" };
+    if (room.status !== "lobby") return { error: "Partie déjà commencée" };
+    if (room.players.length >= MAX_PLAYERS) return { error: "Partie pleine" };
+    if (room.players.find(function(p) { return p.name === playerName; })) return { error: "Pseudo déjà pris" };
+    const player = { id: code + "_" + room.players.length, name: playerName, score: 0, status: "waiting", isHost: false };
+    room.players.push(player);
+    mpSaveRoom(code, room);
+    return { room, player };
+  }
+  function generateCode() {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    return Array.from({ length: 4 }, function() { return chars[Math.floor(Math.random() * chars.length)]; }).join("");
+  }
+  function startMpChannel(code) {
+    try {
+      if (mpChannel.current) mpChannel.current.close();
+      const ch = new BroadcastChannel("bb_" + code);
+      mpChannel.current = ch;
+      ch.onmessage = function() { mpRefreshRoom(code); };
+    } catch {}
+    clearInterval(mpPollRef.current);
+    mpPollRef.current = setInterval(function() { mpRefreshRoom(code); }, 1500);
+  }
+  function mpRefreshRoom(code) {
+    const room = mpGetRoom(code || mpCode);
+    if (!room) return;
+    setMpPlayers([...room.players]);
+    setMpRoom(room);
+    if (room.status === "playing" && mpScreen === "mpLobby") { startMpGame(room); }
+    if (room.status === "finished" && mpScreen === "mpPlaying") { setMpFinalScores([...room.players].sort(function(a,b) { return b.score - a.score; })); setMpScreen("mpResults"); }
+  }
+  function startMpGame(room) {
+    const s0 = room.seed;
+    let s = s0;
+    function rng() { s = (s * 1664525 + 1013904223) & 0x7fffffff; return s / 0x7fffffff; }
+    const dbPool = [...(DB[room.diff] || DB.facile)];
+    for (let i = dbPool.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); const tmp = dbPool[i]; dbPool[i] = dbPool[j]; dbPool[j] = tmp; }
+    setQueue(dbPool);
+    setScore(0); scoreRef.current = 0;
+    setTimeLeft(ROUND_DURATION); setGuess(""); setFlash(null); setFeedback(null);
+    setCombo(0); setMaxCombo(0); comboRef.current = 0; lastAnswerTime.current = Date.now();
+    setCurrentRound(1); setAnimKey(0); setMpScreen("mpPlaying"); setScreen("game");
+  }
+  function endMpGame() {
+    clearInterval(timerRef.current);
+    const finalScore = scoreRef.current;
+    mpUpdateMyScore(finalScore);
+    const room = mpGetRoom(mpCode);
+    if (room) {
+      const p = room.players.find(function(x) { return x.id === mpMyId; });
+      if (p) { p.status = "finished"; }
+      if (room.players.every(function(x) { return x.status === "finished"; })) { room.status = "finished"; }
+      mpSaveRoom(mpCode, room);
+      mpBroadcast({ type: "update" });
+    }
+    setTimeout(function() {
+      const r2 = mpGetRoom(mpCode);
+      if (r2) { setMpFinalScores([...r2.players].sort(function(a,b) { return b.score - a.score; })); }
+      setMpScreen("mpResults");
+    }, 800);
+  }
+
+
   const [showInstructions, setShowInstructions] = useState(null);
   const seenInstructions = useRef(new Set());
   const [playerName, setPlayerName] = useState("");
@@ -1102,6 +1209,292 @@ export default function LePont() {
 
   const notifPrompt = null;
   const welcomeBack = null;
+
+  // ── MULTIPLAYER SCREENS ──
+  if (mpScreen === "mpMenu") return (
+    <div style={{...shell, animation:"fadeUp .4s ease"}} key="mp-menu">
+      <div style={stripes}/>
+      <div style={{zIndex:1, padding:"44px 20px 16px", textAlign:"center"}}>
+        <div style={{display:"flex", justifyContent:"center", marginBottom:10}}>{Icon.stadium(44,G.white)}</div>
+        <div style={{fontFamily:G.heading, fontSize:"clamp(36px,9vw,54px)", color:G.white, letterSpacing:2}}>MULTIJOUEUR</div>
+        <div style={{fontSize:13, color:"rgba(255,255,255,.55)", marginTop:6}}>Jusqu'à {MAX_PLAYERS} joueurs</div>
+      </div>
+      <div style={sheet}>
+        <div>
+          <div style={{fontSize:11, fontWeight:700, letterSpacing:2, textTransform:"uppercase", color:"#bbb", marginBottom:6}}>Ton pseudo</div>
+          <input value={playerName} onChange={function(e){setPlayerName(e.target.value);try{localStorage.setItem("bb_name",e.target.value);}catch{}}}
+            placeholder="Entre ton pseudo..." maxLength={20}
+            style={{width:"100%", background:G.offWhite, border:"2px solid #e5e5e0", borderRadius:14, padding:"12px 16px", fontFamily:G.font, fontSize:15, fontWeight:600, color:G.dark, outline:"none", boxSizing:"border-box"}}/>
+        </div>
+        <div>
+          <div style={{fontSize:11, fontWeight:700, letterSpacing:2, textTransform:"uppercase", color:"#bbb", marginBottom:8}}>Mode</div>
+          <div style={{display:"flex", gap:8}}>
+            {[["pont","⚽ Le Pont"],["chaine","🔗 La Chaîne"]].map(function([m,lbl]) { return (
+              <button key={m} onClick={function(){setMpGameMode(m);}} style={{flex:1, padding:"12px", borderRadius:12, border:"2px solid "+(mpGameMode===m?G.dark:"#e5e5e0"), background:mpGameMode===m?G.dark:G.offWhite, color:mpGameMode===m?G.white:"#666", fontFamily:G.font, fontSize:13, fontWeight:700, cursor:"pointer"}}>{lbl}</button>
+            );})}
+          </div>
+        </div>
+        <div>
+          <div style={{fontSize:11, fontWeight:700, letterSpacing:2, textTransform:"uppercase", color:"#bbb", marginBottom:8}}>Difficulté</div>
+          <div style={{display:"flex", gap:8}}>
+            {["facile","moyen","expert"].map(function(d) { return (
+              <button key={d} onClick={function(){setDiff(d);}} style={{flex:1, padding:"10px", borderRadius:12, border:"2px solid "+(diff===d?G.dark:"#e5e5e0"), background:diff===d?G.dark:G.offWhite, color:diff===d?G.white:"#666", fontFamily:G.font, fontSize:12, fontWeight:700, cursor:"pointer", textTransform:"capitalize"}}>{d}</button>
+            );})}
+          </div>
+        </div>
+        <button onClick={function(){
+          if(!playerName.trim()){setMpError("Entre ton pseudo d'abord !");return;}
+          const code=generateCode();
+          const room=createRoom(code,playerName.trim(),diff,mpGameMode,totalRounds);
+          setMpCode(code); setMpRoom(room); setMpMyId(room.players[0].id);
+          setMpPlayers([...room.players]);
+          startMpChannel(code);
+          setMpError(""); setMpScreen("mpLobby");
+        }} style={{width:"100%", padding:"18px", background:G.dark, color:G.white, border:"none", borderRadius:50, cursor:"pointer", fontFamily:G.font, fontSize:16, fontWeight:800, display:"flex", alignItems:"center", justifyContent:"center", gap:10}}>
+          {Icon.ball(18,G.white)} Créer une partie
+        </button>
+        <div style={{textAlign:"center", fontSize:13, color:"#bbb", fontWeight:600}}>— ou —</div>
+        <button onClick={function(){setMpError("");setMpJoinInput("");setMpScreen("mpJoin");}} style={{width:"100%", padding:"16px", background:G.offWhite, color:G.dark, border:"2px solid #e5e5e0", borderRadius:50, cursor:"pointer", fontFamily:G.font, fontSize:16, fontWeight:800, display:"flex", alignItems:"center", justifyContent:"center", gap:10}}>
+          {Icon.transfer(18,G.dark)} Rejoindre avec un code
+        </button>
+        {mpError && <div style={{textAlign:"center", fontSize:13, color:G.red, fontWeight:700}}>{mpError}</div>}
+        <button onClick={function(){setMpScreen(null);setMpError("");}} style={{background:"transparent", color:"#bbb", border:"none", cursor:"pointer", fontFamily:G.font, fontSize:14}}>↩ Retour</button>
+      </div>
+    </div>
+  );
+
+  if (mpScreen === "mpJoin") return (
+    <div style={{...shell, animation:"fadeUp .4s ease"}} key="mp-join">
+      <div style={stripes}/>
+      <div style={{zIndex:1, padding:"44px 20px 16px", textAlign:"center"}}>
+        <div style={{fontFamily:G.heading, fontSize:"clamp(32px,8vw,50px)", color:G.white, letterSpacing:2}}>REJOINDRE</div>
+        <div style={{fontSize:13, color:"rgba(255,255,255,.55)", marginTop:6}}>Entre le code de la partie</div>
+      </div>
+      <div style={sheet}>
+        <div>
+          <div style={{fontSize:11, fontWeight:700, letterSpacing:2, textTransform:"uppercase", color:"#bbb", marginBottom:6}}>Ton pseudo</div>
+          <input value={playerName} onChange={function(e){setPlayerName(e.target.value);try{localStorage.setItem("bb_name",e.target.value);}catch{}}}
+            placeholder="Entre ton pseudo..." maxLength={20}
+            style={{width:"100%", background:G.offWhite, border:"2px solid #e5e5e0", borderRadius:14, padding:"12px 16px", fontFamily:G.font, fontSize:15, fontWeight:600, color:G.dark, outline:"none", boxSizing:"border-box"}}/>
+        </div>
+        <div>
+          <div style={{fontSize:11, fontWeight:700, letterSpacing:2, textTransform:"uppercase", color:"#bbb", marginBottom:6}}>Code de la partie</div>
+          <input value={mpJoinInput} onChange={function(e){setMpJoinInput(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,4));}}
+            placeholder="XXXX" maxLength={4}
+            style={{width:"100%", background:G.offWhite, border:"2px solid "+(mpJoinInput.length===4?"#16a34a":"#e5e5e0"), borderRadius:14, padding:"16px", fontFamily:G.heading, fontSize:52, fontWeight:800, color:G.dark, outline:"none", textAlign:"center", letterSpacing:12, boxSizing:"border-box", transition:"border .2s"}}/>
+        </div>
+        {mpError && <div style={{textAlign:"center", fontSize:13, color:G.red, fontWeight:700, animation:"popIn .3s ease"}}>{mpError}</div>}
+        <button onClick={function(){
+          if(!playerName.trim()){setMpError("Entre ton pseudo d'abord !");return;}
+          if(mpJoinInput.length!==4){setMpError("Le code doit faire 4 caractères");return;}
+          const res=joinRoom(mpJoinInput,playerName.trim());
+          if(res.error){setMpError(res.error);return;}
+          setMpCode(mpJoinInput); setMpRoom(res.room); setMpMyId(res.player.id);
+          setMpPlayers([...res.room.players]);
+          startMpChannel(mpJoinInput);
+          setMpError(""); setMpScreen("mpLobby");
+        }} disabled={mpJoinInput.length!==4 || !playerName.trim()}
+          style={{width:"100%", padding:"18px", background:mpJoinInput.length===4&&playerName.trim()?G.dark:"#ccc", color:G.white, border:"none", borderRadius:50, cursor:"pointer", fontFamily:G.font, fontSize:16, fontWeight:800, display:"flex", alignItems:"center", justifyContent:"center", gap:10, transition:"background .2s"}}>
+          {Icon.ball(18,G.white)} Rejoindre
+        </button>
+        <button onClick={function(){setMpScreen("mpMenu");setMpError("");}} style={{background:"transparent", color:"#bbb", border:"none", cursor:"pointer", fontFamily:G.font, fontSize:14}}>↩ Retour</button>
+      </div>
+    </div>
+  );
+
+  if (mpScreen === "mpLobby") {
+    const isHost = mpRoom && mpRoom.players[0] && mpRoom.players[0].id === mpMyId;
+    return (
+      <div style={{...shell, animation:"fadeUp .4s ease"}} key="mp-lobby">
+        <div style={stripes}/>
+        <div style={{zIndex:1, padding:"36px 20px 14px", textAlign:"center"}}>
+          <div style={{fontFamily:G.heading, fontSize:"clamp(52px,14vw,80px)", color:G.gold, letterSpacing:2}}>CODE</div>
+          <div style={{fontFamily:G.heading, fontSize:"clamp(40px,12vw,64px)", color:G.white, letterSpacing:8, marginTop:-8}}>{mpCode}</div>
+          <div style={{fontSize:12, color:"rgba(255,255,255,.45)", marginTop:4}}>{mpPlayers.length}/{MAX_PLAYERS} joueur{mpPlayers.length > 1 ? "s" : ""}</div>
+        </div>
+        <div style={{...sheet, overflow:"hidden"}}>
+          <div style={{display:"flex", gap:8}}>
+            <button onClick={function(){try{navigator.clipboard.writeText(mpCode);}catch{}setMpCopied(true);setTimeout(function(){setMpCopied(false);},2000);}}
+              style={{flex:1, padding:"12px", background:mpCopied?"#dcfce7":G.offWhite, color:mpCopied?"#16a34a":G.dark, border:"2px solid "+(mpCopied?"#86efac":"#e5e5e0"), borderRadius:50, cursor:"pointer", fontFamily:G.font, fontSize:13, fontWeight:700}}>
+              {mpCopied ? "✓ Copié !" : "📋 Copier le code"}
+            </button>
+          </div>
+          <div style={{flex:1, overflowY:"auto", display:"flex", flexDirection:"column", gap:8}}>
+            {mpPlayers.map(function(p, i) { return (
+              <div key={p.id} style={{display:"flex", alignItems:"center", gap:12, padding:"12px 16px", background:p.id===mpMyId?"linear-gradient(135deg,#fef3c7,#fde68a)":G.offWhite, borderRadius:16, border:p.id===mpMyId?"1.5px solid #fbbf24":"1.5px solid #f0f0ea", animation:"slideIn .3s ease both"}}>
+                <div style={{fontFamily:G.heading, fontSize:24, color:G.dark, minWidth:32}}>{i+1}</div>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:14, fontWeight:800, color:G.dark}}>{p.name}{p.id===mpMyId?" (toi)":""}</div>
+                  <div style={{fontSize:11, color:"#aaa"}}>{p.isHost?"👑 Hôte":"Joueur"}</div>
+                </div>
+                <div style={{width:10, height:10, borderRadius:"50%", background:p.status==="playing"?"#16a34a":"#e5e5e0"}}/>
+              </div>
+            );})}
+            {mpPlayers.length < MAX_PLAYERS && (
+              <div style={{padding:"12px 16px", borderRadius:16, border:"2px dashed #e5e5e0", textAlign:"center", color:"#ccc", fontSize:13}}>
+                En attente de joueurs...
+              </div>
+            )}
+          </div>
+          {isHost && mpPlayers.length >= 1 ? (
+            <button onClick={function(){
+              const room=mpGetRoom(mpCode);
+              if(!room) return;
+              room.status="playing";
+              mpSaveRoom(mpCode,room);
+              mpBroadcast({type:"start"});
+              setMpScreen("mpPlaying");
+              startMpGame(room);
+            }} style={{width:"100%", padding:"18px", background:G.bg, color:G.white, border:"none", borderRadius:50, cursor:"pointer", fontFamily:G.font, fontSize:16, fontWeight:800, display:"flex", alignItems:"center", justifyContent:"center", gap:10}}>
+              {Icon.whistle(18,G.white)} Lancer ({mpPlayers.length} joueur{mpPlayers.length > 1 ? "s" : ""})
+            </button>
+          ) : !isHost ? (
+            <div style={{textAlign:"center", padding:"16px", background:"#fffbeb", borderRadius:16, border:"1.5px solid #fde68a"}}>
+              <div style={{fontSize:13, color:"#92400e", fontWeight:700}}>⏳ En attente que l'hôte lance...</div>
+            </div>
+          ) : null}
+          <button onClick={function(){
+            if(mpChannel.current) mpChannel.current.close();
+            clearInterval(mpPollRef.current);
+            setMpScreen(null); setMpCode(""); setMpRoom(null); setMpPlayers([]);
+          }} style={{background:"transparent", color:"#bbb", border:"none", cursor:"pointer", fontFamily:G.font, fontSize:14}}>
+            ✕ Quitter
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (mpScreen === "mpPlaying") {
+    const cur2 = queue[qIdx % Math.max(queue.length, 1)];
+    const tPct2 = timeLeft / ROUND_DURATION;
+    const urgent2 = timeLeft <= 10 && timeLeft > 0;
+    if (!cur2) return <div style={{...shell, justifyContent:"center", alignItems:"center"}}><div style={{color:G.white}}>Chargement...</div></div>;
+    const ca1 = getClubColors(cur2.c1)[0]; const cb1 = getClubColors(cur2.c1)[1];
+    const ca2 = getClubColors(cur2.c2)[0]; const cb2 = getClubColors(cur2.c2)[1];
+    const tc1 = textColor(ca1); const tc2 = textColor(ca2);
+    return (
+      <div style={{...shell, animation:"fadeIn .2s ease"}} key={"mp-game-"+animKey}>
+        <div style={stripes}/>
+        {floatingPoints}
+        <div style={{position:"fixed", inset:0, pointerEvents:"none", zIndex:10, animation:feedback==="ok"?"flashOk .6s ease":feedback==="ko"?"flashKo .6s ease":"none"}}/>
+        <div style={{zIndex:3, padding:"10px 14px 0", display:"flex", justifyContent:"space-between", alignItems:"center", gap:8, flexShrink:0}}>
+          <div style={{background:"rgba(255,255,255,.13)", backdropFilter:"blur(10px)", borderRadius:16, padding:"7px 14px", display:"flex", alignItems:"center", gap:8, position:"relative"}}>
+            {comboDisplay}
+            <span style={{fontFamily:G.heading, fontSize:30, color:G.white, animation:scoreAnim==="up"?"scoreUp .5s ease":scoreAnim==="down"?"scoreDn .5s ease":"none"}}>{score}</span>
+            <span style={{fontSize:10, color:"rgba(255,255,255,.5)"}}>pts</span>
+          </div>
+          <div style={{position:"relative", width:64, height:64, animation:urgent2?"heartbeat .8s ease infinite":"none"}}>
+            <svg style={{width:64, height:64, transform:"rotate(-90deg)"}} viewBox="0 0 64 64">
+              <circle fill={urgent2?"rgba(239,68,68,.15)":"rgba(255,255,255,.08)"} cx={32} cy={32} r={32}/>
+              <circle fill="none" stroke="rgba(255,255,255,.15)" strokeWidth={4} cx={32} cy={32} r={27}/>
+              <circle fill="none" stroke={timeLeft<=20?"#ef4444":timeLeft<=40?"#fbbf24":G.accent} strokeWidth={urgent2?6:4}
+                strokeLinecap="round" strokeDasharray={169.6} strokeDashoffset={169.6*(1-tPct2)}
+                cx={32} cy={32} r={27} style={{transition:"stroke-dashoffset .9s linear"}}/>
+            </svg>
+            <div style={{position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center", fontFamily:G.heading, fontSize:20, color:urgent2?"#ef4444":G.white}}>{timeLeft}</div>
+          </div>
+          <div style={{background:"rgba(255,255,255,.13)", backdropFilter:"blur(10px)", borderRadius:16, padding:"7px 12px", display:"flex", alignItems:"center", gap:6}}>
+            <span style={{fontSize:11, color:"rgba(255,255,255,.6)", fontWeight:600}}>VS</span>
+            <span style={{fontFamily:G.heading, fontSize:18, color:G.white}}>{mpPlayers.length}</span>
+          </div>
+        </div>
+        <div key={"mp-clubs-"+animKey} style={{flex:1, display:"flex", flexDirection:"column", gap:0, padding:"8px 0 0", zIndex:1, minHeight:0}}>
+          <div style={{flex:1, margin:"0 12px 0 12px", borderRadius:24, background:"linear-gradient(145deg,"+ca1+" 0%,"+cb1+" 100%)", boxShadow:"0 12px 40px "+ca1+"55", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", position:"relative", overflow:"hidden", animation:"clubSlideLeft .55s cubic-bezier(.22,1,.36,1)", animationFillMode:"both"}}>
+            <div style={{fontSize:9, letterSpacing:5, textTransform:"uppercase", color:tc1==="#FFF"?"rgba(255,255,255,.55)":"rgba(0,0,0,.35)", fontWeight:700, marginBottom:8, zIndex:1}}>Club 1</div>
+            <ClubLogo club={cur2.c1} size={52}/>
+            <div style={{fontFamily:G.heading, fontSize:"clamp(22px,6vw,40px)", color:tc1==="#FFF"?"#ffffff":"#111", lineHeight:1.05, textAlign:"center", padding:"0 16px", zIndex:1, letterSpacing:1, marginTop:6}}>{cur2.c1}</div>
+          </div>
+          <div style={{display:"flex", justifyContent:"center", alignItems:"center", height:40, zIndex:2, flexShrink:0}}>
+            <div style={{fontFamily:G.heading, fontSize:18, color:G.white, letterSpacing:4, background:"rgba(0,0,0,.4)", backdropFilter:"blur(12px)", borderRadius:30, padding:"4px 16px", border:"1.5px solid rgba(255,255,255,.15)", animation:"vsAppear .5s cubic-bezier(.22,1,.36,1) .3s both"}}>VS</div>
+          </div>
+          <div style={{flex:1, margin:"0 12px 8px 12px", borderRadius:24, background:"linear-gradient(145deg,"+ca2+" 0%,"+cb2+" 100%)", boxShadow:"0 12px 40px "+ca2+"55", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", position:"relative", overflow:"hidden", animation:"clubSlideRight .55s cubic-bezier(.22,1,.36,1)", animationFillMode:"both"}}>
+            <div style={{fontSize:9, letterSpacing:5, textTransform:"uppercase", color:tc2==="#FFF"?"rgba(255,255,255,.55)":"rgba(0,0,0,.35)", fontWeight:700, marginBottom:8, zIndex:1}}>Club 2</div>
+            <ClubLogo club={cur2.c2} size={52}/>
+            <div style={{fontFamily:G.heading, fontSize:"clamp(22px,6vw,40px)", color:tc2==="#FFF"?"#ffffff":"#111", lineHeight:1.05, textAlign:"center", padding:"0 16px", zIndex:1, letterSpacing:1, marginTop:6}}>{cur2.c2}</div>
+          </div>
+        </div>
+        <div style={{...sheet, borderRadius:"28px 28px 0 0", flexShrink:0, paddingTop:12, gap:10}}>
+          {feedbackBar(feedback)}
+          {diff === "facile" ? (
+            <div style={{display:"flex", flexDirection:"column", gap:10}}>
+              <div key={"mp-opts-"+animKey} style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:10}}>
+                {options.map(function(opt, oi) {
+                  const isOk = flash==="ok" && checkGuess(opt, cur2.p);
+                  const isKo = flash===opt;
+                  const pe = PLAYERS.find(function(p) { return p.name===opt; });
+                  const mc = pe && pe.clubs[0] ? pe.clubs[0] : "";
+                  const oca = getClubColors(mc)[0]; const ocb = getClubColors(mc)[1];
+                  return (
+                    <button key={opt} onClick={function(){handleOptionClick(opt);}} disabled={!!flash}
+                      style={{padding:"14px 10px", borderRadius:16, cursor:"pointer", fontFamily:G.font, fontSize:"clamp(12px,3vw,15px)", fontWeight:800, transition:"all .15s", position:"relative", overflow:"hidden",
+                        border:"2px solid "+(isOk?G.accent:isKo?G.red:oca+"44"),
+                        background:isOk?"#dcfce7":isKo?"#fee2e2":"linear-gradient(145deg,"+oca+"22,"+ocb+"11)",
+                        color:isOk?"#16a34a":isKo?G.red:G.dark,
+                        animation:isOk?"answerOk .4s ease":isKo?"answerKo .4s ease":"optionIn .4s cubic-bezier(.22,1,.36,1) "+(oi*0.07)+"s both"}}>
+                      {!isOk&&!isKo&&<div style={{position:"absolute", top:0, left:0, right:0, height:3, background:"linear-gradient(90deg,"+oca+","+ocb+")", borderRadius:"16px 16px 0 0"}}/>}
+                      <div style={{fontSize:"clamp(13px,3.2vw,17px)", fontWeight:800}}>{opt}</div>
+                    </button>
+                  );
+                })}
+              </div>
+              <button onClick={handlePass} disabled={!!flash} style={{padding:"12px", background:"transparent", color:"#bbb", border:"2px solid #e5e5e0", borderRadius:50, cursor:"pointer", fontFamily:G.font, fontSize:13, fontWeight:700, opacity:flash ? 0.3 : 1}}>Passer → (−0.5 pt)</button>
+            </div>
+          ) : (
+            <div style={{display:"flex", flexDirection:"column", gap:10}}>
+              <input ref={inputRef} value={guess} onChange={function(e){setGuess(e.target.value);}} onKeyDown={function(e){if(e.key==="Enter")handleSubmit();}}
+                placeholder="Nom du joueur..." autoComplete="off"
+                style={{width:"100%", background:flash==="ko"?"#fee2e2":flash==="ok"?"#dcfce7":G.offWhite, border:"2px solid "+(flash==="ko"?G.red:flash==="ok"?G.accent:"#e5e5e0"), borderRadius:18, padding:"15px 18px", fontFamily:G.font, fontSize:18, fontWeight:700, color:G.dark, outline:"none", textAlign:"center", transition:"all .15s"}}/>
+              <div style={{display:"flex", gap:10}}>
+                <button onClick={handleSubmit} style={{flex:2, padding:"15px", background:G.dark, color:G.white, border:"none", borderRadius:50, cursor:"pointer", fontFamily:G.font, fontSize:16, fontWeight:800}}>Valider</button>
+                <button onClick={handlePass} disabled={!!flash} style={{flex:1, padding:15, background:G.offWhite, color:"#aaa", border:"2px solid #e5e5e0", borderRadius:50, cursor:"pointer", fontFamily:G.font, fontSize:14, fontWeight:700, opacity:flash ? 0.3 : 1}}>Passer →</button>
+              </div>
+            </div>
+          )}
+          <button onClick={endMpGame} style={{padding:"10px", background:"transparent", color:"#e5e5e0", border:"1px solid rgba(255,255,255,.2)", borderRadius:50, cursor:"pointer", fontFamily:G.font, fontSize:13, alignSelf:"center"}}>
+            Terminer ma partie →
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (mpScreen === "mpResults") {
+    const myRank = mpFinalScores.findIndex(function(p) { return p.id === mpMyId; }) + 1;
+    const medals = ["🥇","🥈","🥉"];
+    return (
+      <div style={{...shell, animation:"fadeUp .4s ease"}} key="mp-results">
+        {confettiOverlay}<div style={stripes}/>
+        <div style={{zIndex:1, padding:"36px 20px 16px", textAlign:"center"}}>
+          <div style={{fontSize:48, marginBottom:8, animation:"popIn .6s ease", display:"flex", justifyContent:"center"}}>{myRank===1?Icon.trophy(56,G.gold):Icon.ball(52,G.white)}</div>
+          <div style={{fontFamily:G.heading, fontSize:"clamp(28px,7vw,46px)", color:myRank===1?G.gold:G.white, letterSpacing:2}}>{myRank===1?"VICTOIRE !":myRank===2?"PODIUM !":"RÉSULTATS"}</div>
+          <div style={{fontSize:13, color:"rgba(255,255,255,.5)", marginTop:4}}>{mpFinalScores.length} joueur{mpFinalScores.length>1?"s":""}</div>
+        </div>
+        <div style={sheet}>
+          <div style={{display:"flex", flexDirection:"column", gap:8, flex:1, overflowY:"auto"}}>
+            {mpFinalScores.map(function(p, i) {
+              const isMe = p.id === mpMyId;
+              return (
+                <div key={p.id} style={{display:"flex", alignItems:"center", gap:10, padding:"12px 16px", background:isMe?"linear-gradient(135deg,#fef3c7,#fde68a)":G.offWhite, borderRadius:14, border:isMe?"2px solid #fbbf24":"1.5px solid #f0f0ea", animation:"slideIn .3s ease "+(i*0.06)+"s both"}}>
+                  <span style={{fontFamily:G.heading, fontSize:22, minWidth:32}}>{medals[i]||i+1}</span>
+                  <span style={{flex:1, fontSize:14, fontWeight:800, color:isMe?"#92400e":G.dark}}>{p.name}{isMe?" (toi)":""}</span>
+                  <span style={{fontFamily:G.heading, fontSize:26, color:i===0?G.dark:"#666"}}>{p.score}</span>
+                </div>
+              );
+            })}
+          </div>
+          <button onClick={function(){
+            if(mpChannel.current) mpChannel.current.close();
+            clearInterval(mpPollRef.current);
+            setMpScreen(null); setMpCode(""); setMpRoom(null); setMpPlayers([]); setMpFinalScores([]);
+            setScreen("home");
+          }} style={{width:"100%", padding:"14px", background:G.dark, color:G.white, border:"none", borderRadius:50, cursor:"pointer", fontFamily:G.font, fontSize:16, fontWeight:800}}>
+            ↩ Retour à l'accueil
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // ── HOME ──
   if(screen==="home") return (
