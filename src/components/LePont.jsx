@@ -1054,6 +1054,7 @@ export default function LePont() {
   }
 
   function mpStartGame(room) {
+    try {
     if (!room) { setMpError("Erreur: room undefined"); return; }
     const seed = room.seed || room.total_rounds || 42;
     let s = seed;
@@ -1070,7 +1071,8 @@ export default function LePont() {
     setCombo(0); setMaxCombo(0); comboRef.current = 0; lastAnswerTime.current = Date.now();
     setCurrentRound(1); setAnimKey(0); setMpScreen("mpPlaying"); setScreen("game");
   }
-
+    } catch(e) { setMpError("Erreur démarrage: " + e.message); }
+  }
   async function endMpGame() {
     clearInterval(timerRef.current);
     const finalScore = scoreRef.current;
@@ -1334,13 +1336,14 @@ export default function LePont() {
           </div>
           {isHost && mpPlayers.length >= 1 ? (
             <button onClick={function(){
-              const room = mpRoomRef.current || mpRoom;
-              if(!room) { setMpError("Erreur: room null"); return; }
-              // Start game immediately for host
-              mpStartGame(room);
-              // Update Supabase in background for guest sync
-              supabase.from("bb_rooms").update({ status: "playing" }).eq("id", room.id)
-                .then(function(res) { if(res.error) setMpError("Sync: " + res.error.message); });
+              try {
+                const room = mpRoomRef.current || mpRoom;
+                setMpError("Click OK, room: " + (room ? room.id : "NULL"));
+                if(!room) return;
+                mpStartGame(room);
+                supabase.from("bb_rooms").update({ status: "playing" }).eq("id", room.id)
+                  .then(function(res) { if(res.error) setMpError("Sync: " + res.error.message); });
+              } catch(e) { setMpError("Click err: " + e.message); }
             }} style={{width:"100%", padding:"18px", background:G.bg, color:G.white, border:"none", borderRadius:50, cursor:"pointer", fontFamily:G.font, fontSize:16, fontWeight:800, display:"flex", alignItems:"center", justifyContent:"center", gap:10}}>
               {Icon.whistle(18,G.white)} Lancer ({mpPlayers.length} joueur{mpPlayers.length > 1 ? "s" : ""})
             </button>
