@@ -1798,7 +1798,7 @@ export default function LePont() {
     const tc1=textColor(ca1); const tc2=textColor(ca2);
 
     // End round handler for multiplayer
-    function endMpGame() {
+    const endMpGame = () => {
       clearInterval(timerRef.current);
       const finalScore = scoreRef.current;
       mpUpdateMyScore(finalScore);
@@ -1810,7 +1810,7 @@ export default function LePont() {
           setMpScreen("mpResults");
         }
       }, 800);
-    }
+    };
 
     return (
       <div style={{...shell,animation:"fadeIn .2s ease"}} key={"mp-game-"+animKey}>
@@ -1881,7 +1881,7 @@ export default function LePont() {
                   const [oca,ocb]=getClubColors(mc);
                   return(
                     <button key={opt} onClick={()=>handleOptionClick(opt)} disabled={!!flash}
-                      style={{padding:"14px 10px",borderRadius:16,cursor:"pointer",fontFamily:G.font,fontSize:"clamp(12px,3vw,15px)",fontWeight:800,transition:"all .15s",position:"relative",overflow:"hidden",border:`2px solid ${isOk?G.accent:isKo?G.red:`${oca}44`}`,background:isOk?"#dcfce7":isKo?"#fee2e2":`linear-gradient(145deg,${oca}22,${ocb}11)`,color:isOk?"#16a34a":isKo?G.red:G.dark,animation:isOk?"answerOk .4s ease":isKo?"answerKo .4s ease":`optionIn .4s cubic-bezier(.22,1,.36,1) ${oi*.07}s both`}}>
+                      style={{padding:"14px 10px",borderRadius:16,cursor:"pointer",fontFamily:G.font,fontSize:"clamp(12px,3vw,15px)",fontWeight:800,transition:"all .15s",position:"relative",overflow:"hidden",border:isOk?"2px solid "+G.accent:isKo?"2px solid "+G.red:"2px solid "+oca+"44",background:isOk?"#dcfce7":isKo?"#fee2e2":"linear-gradient(145deg,"+oca+"22,"+ocb+"11)",color:isOk?"#16a34a":isKo?G.red:G.dark,animation:isOk?"answerOk .4s ease":isKo?"answerKo .4s ease":"optionIn .4s cubic-bezier(.22,1,.36,1) "+oi*.07+"s both"}}>
                       {!isOk&&!isKo&&<div style={{position:"absolute",top:0,left:0,right:0,height:3,background:`linear-gradient(90deg,${oca},${ocb})`,borderRadius:"16px 16px 0 0"}}/>}
                       <div style={{display:"flex",alignItems:"center",gap:6,justifyContent:"center"}}>
                         {!isOk&&!isKo&&<PlayerPhoto name={opt} size={30} fallbackColors={[oca,ocb]}/>}
