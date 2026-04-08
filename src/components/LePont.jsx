@@ -1257,9 +1257,16 @@ export default function LePont() {
         <button onClick={async function(){
           if(!playerName.trim()){setMpError("Entre ton pseudo d'abord !");return;}
           if(mpJoinInput.length!==4){setMpError("Le code doit faire 4 caractères");return;}
-          // joinRoom replaced by mpJoinRoom async above
-          setMpCode(mpJoinInput); setMpRoom(res.room); setMpMyId(res.player.id); mpMyIdRef.current = res.player.id;
-          setMpPlayers([...res.room.players]);
+          setMpError("Connexion...");
+          const result = await mpJoinRoom(mpJoinInput.toUpperCase(), playerName.trim());
+          if (!result) return;
+          setMpCode(mpJoinInput.toUpperCase());
+          setMpRoom(result.room);
+          setMpMyId(result.player.id);
+          mpMyIdRef.current = result.player.id;
+          const { data: players } = await supabase.from("bb_players").select("*").eq("room_id", result.room.id);
+          setMpPlayers(players || [result.player]);
+          mpSubscribe(result.room.id);
           setMpError(""); setMpScreen("mpLobby");
         }} disabled={mpJoinInput.length!==4 || !playerName.trim()}
           style={{width:"100%", padding:"18px", background:mpJoinInput.length===4&&playerName.trim()?G.dark:"#ccc", color:G.white, border:"none", borderRadius:50, cursor:"pointer", fontFamily:G.font, fontSize:16, fontWeight:800, display:"flex", alignItems:"center", justifyContent:"center", gap:10, transition:"background .2s"}}>
