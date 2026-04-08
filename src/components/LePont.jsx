@@ -718,6 +718,7 @@ function PlayerPhoto({ name, size = 48, fallbackColors }) {
   }, [name]);
 
   const initials = name.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();
+  const [ca, cb] = fallbackColors || ["#2d6a4f","#1b4332"];
 
   // Always show avatar, overlay photo when loaded
   return (
@@ -967,6 +968,26 @@ export default function LePont() {
   const [animKey, setAnimKey] = useState(0);
   const [scoreAnim, setScoreAnim] = useState(null);
   const [isNewRecord, setIsNewRecord] = useState(false);
+
+  // LA PASSE
+  const [lpScreen, setLpScreen] = useState(null);
+  const [lpHand, setLpHand] = useState([]);
+  const [lpAiHands, setLpAiHands] = useState([]);
+  const [lpTopCard, setLpTopCard] = useState(null);
+  const [lpClubDeck, setLpClubDeck] = useState([]);
+  const [lpPlayerDeck, setLpPlayerDeck] = useState([]);
+  const [lpTurn, setLpTurn] = useState(0);
+  const [lpWinner, setLpWinner] = useState(null);
+  const [lpMsg, setLpMsg] = useState('');
+  const [lpNumAi, setLpNumAi] = useState(1);
+  const [lpSelected, setLpSelected] = useState(null);
+  const [lpDrawnCard, setLpDrawnCard] = useState(null);
+  const lpAiHandsRef = useRef([]);
+  const lpClubDeckRef = useRef([]);
+  const lpPlayerDeckRef = useRef([]);
+  const lpTopRef = useRef(null);
+  const lpTurnRef = useRef(0);
+
   const [showConfetti, setShowConfetti] = useState(false);
   const [combo, setCombo] = useState(0);
   const [maxCombo, setMaxCombo] = useState(0);
@@ -981,46 +1002,36 @@ export default function LePont() {
   const [leaderboard, setLeaderboard] = useState([]);
   const [myLbRank, setMyLbRank] = useState(null);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
-  // ── LA PASSE STATE ──
-  const [lpScreen, setLpScreen] = useState(null); // null | 'game' | 'end'
-  const [lpHand, setLpHand] = useState([]); // [{type:'club'|'player', name:'...'}]
-  const [lpAiHands, setLpAiHands] = useState([]); // array of arrays
-  const [lpTopCard, setLpTopCard] = useState(null); // {type, name}
-  const [lpClubDeck, setLpClubDeck] = useState([]);
-  const [lpPlayerDeck, setLpPlayerDeck] = useState([]);
-  const [lpTurn, setLpTurn] = useState(0); // 0=player, 1+ = AI
-  const [lpWinner, setLpWinner] = useState(null); // 'player' | 'ai1' | etc
-  const [lpMsg, setLpMsg] = useState('');
-  const [lpNumAi, setLpNumAi] = useState(1);
-  const [lpSelected, setLpSelected] = useState(null);
-  const [lpDrawnCard, setLpDrawnCard] = useState(null);
-  const lpAiHandsRef = useRef([]);
-  const lpClubDeckRef = useRef([]);
-  const lpPlayerDeckRef = useRef([]);
-  const lpTopRef = useRef(null);
-  const lpTurnRef = useRef(0);
 
+  const [myLastPts, setMyLastPts] = useState(null);
+  const [wasAway, setWasAway] = useState(false);
+  const [notifGranted, setNotifGranted] = useState(false);
+  const [showNotifPrompt, setShowNotifPrompt] = useState(false);
   const [lbMode, setLbMode] = useState("pont");
   const [lbDiff, setLbDiff] = useState("facile");
+  const [playerName, setPlayerName] = useState("");
   const [showInstructions, setShowInstructions] = useState(null);
-  const [playerName, setPlayerName] = useState(() => { try { return localStorage.getItem("bb_name")||""; } catch { return ""; } });
-  const [wasAway, setWasAway] = useState(false);
-  const [showNotifPrompt, setShowNotifPrompt] = useState(false);
-  const [notifGranted, setNotifGranted] = useState(false);
-  const [myLastPts, setMyLastPts] = useState(null);
   const seenInstructions = useRef(new Set());
-  const scoreRef = useRef(0);
+
+  const [myLastPts, setMyLastPts] = useState(null);
+  const [wasAway, setWasAway] = useState(false);
+  const [notifGranted, setNotifGranted] = useState(false);
+  const [showNotifPrompt, setShowNotifPrompt] = useState(false);
+  const [lbMode, setLbMode] = useState("pont");
+  const [lbDiff, setLbDiff] = useState("facile");
+  const [playerName, setPlayerName] = useState("");
+  const [showInstructions, setShowInstructions] = useState(null);
+  const seenInstructions = useRef(new Set());
   const timerRef = useRef(null);
   const inputRef = useRef(null);
-
+  const scoreRef = useRef(0);
+  const chainScoreRef = useRef(0);
   const comboRef = useRef(0);
   const lastAnswerTime = useRef(Date.now());
   const historyEndRef = useRef(null);
   const hasEndedRef = useRef(false);
-  const chainScoreRef = useRef(0);
   const chainLogoRef = useRef({});
 
-  // ── INIT + SYNC EFFECTS ──
   useEffect(() => {
     try {
       const r = localStorage.getItem("bb_record"); if(r) setRecord(JSON.parse(r));
@@ -1035,7 +1046,7 @@ export default function LePont() {
   useEffect(()=>{comboRef.current=combo;},[combo]);
   useEffect(()=>{if(historyEndRef.current)historyEndRef.current.scrollIntoView({behavior:"smooth"});},[chainHistory]);
 
-  // ── TIMER ──
+  // Timer
   useEffect(()=>{
     if(screen!=="game"&&screen!=="chainGame"){hasEndedRef.current=false;return;}
     hasEndedRef.current=false;
@@ -1047,10 +1058,272 @@ export default function LePont() {
   useEffect(()=>{
     if((screen!=="game"&&screen!=="chainGame")||timeLeft>0||hasEndedRef.current)return;
     hasEndedRef.current=true;
+    if(screen==="mpPlaying"){const r=mpGetRoom(mpCode);mpUpdateMyScore(scoreRef.current);setTimeout(()=>{const room=mpGetRoom(mpCode);if(room){setMpFinalScores([...room.players].sort((a,b)=>b.score-a.score));setMpScreen("mpResults");}},600);return;}
     if(screen==="game")endRound();
     else endChain();
   },[screen,timeLeft]);
 
+
+  // Leaderboard (localStorage)
+  function lpShuffle(arr) {
+    const a=[...arr];
+    for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));const t=a[i];a[i]=a[j];a[j]=t;}
+    return a;
+  }
+  function lpGetAllClubs() {
+    const clubs=new Set();
+    PLAYERS.forEach(function(p){p.clubs.forEach(function(cl){clubs.add(cl);});});
+    return Array.from(clubs);
+  }
+  function lpCanPlay(card, top) {
+    if(!top) return true;
+    if(top.type==='club'){
+      if(card.type!=='player') return false;
+      const p=PLAYERS.find(function(x){return x.name===card.name;});
+      return p?p.clubs.includes(top.name):false;
+    } else {
+      if(card.type!=='club') return false;
+      const p=PLAYERS.find(function(x){return x.name===top.name;});
+      return p?p.clubs.includes(card.name):false;
+    }
+  }
+  function lpValidCards(hand, top){return hand.filter(function(c){return lpCanPlay(c,top);});}
+  function lpStartGame(numAi) {
+    const allClubs=lpShuffle(lpGetAllClubs()).map(function(cl){return {type:'club',name:cl};});
+    const allPlayers=lpShuffle(PLAYERS.map(function(p){return p.name;})).map(function(n){return {type:'player',name:n};});
+    const hand=[];
+    const aiH=Array.from({length:numAi},function(){return [];});
+    let ci=0,pi=0;
+    for(let i=0;i<5;i++){hand.push(allClubs[ci++]);aiH.forEach(function(h){h.push(allClubs[ci++]);});}
+    for(let i=0;i<5;i++){hand.push(allPlayers[pi++]);aiH.forEach(function(h){h.push(allPlayers[pi++]);});}
+    const top=allClubs[ci++];
+    lpAiHandsRef.current=aiH;
+    lpClubDeckRef.current=allClubs.slice(ci);
+    lpPlayerDeckRef.current=allPlayers.slice(pi);
+    lpTopRef.current=top;
+    lpTurnRef.current=0;
+    setLpHand(hand);setLpAiHands(aiH.map(function(h){return [...h];}));
+    setLpTopCard(top);setLpClubDeck(allClubs.slice(ci));setLpPlayerDeck(allPlayers.slice(pi));
+    setLpTurn(0);setLpWinner(null);setLpMsg('A toi de jouer !');setLpSelected(null);setLpDrawnCard(null);setLpNumAi(numAi);setLpScreen('game');
+  }
+  function lpNextTurn(cur, numAi) {
+    const next=(cur+1)%(1+numAi);
+    lpTurnRef.current=next;setLpTurn(next);
+    if(next!==0){setTimeout(function(){lpAiPlay(next);},1200);}
+    else{setLpMsg('A toi de jouer !');}
+  }
+  function lpAiPlay(aiIdx) {
+    const top=lpTopRef.current;
+    const hands=lpAiHandsRef.current;
+    const hand=hands[aiIdx-1];
+    const valid=lpValidCards(hand,top);
+    let newHand;
+    if(valid.length>0){
+      const card=valid[Math.floor(Math.random()*valid.length)];
+      newHand=hand.filter(function(c){return c!==card;});
+      lpTopRef.current=card;setLpTopCard(card);
+      setLpMsg('Joueur '+aiIdx+' pose : '+card.name);
+    } else {
+      const needed=top&&top.type==='club'?'player':'club';
+      const deck=needed==='club'?lpClubDeckRef.current:lpPlayerDeckRef.current;
+      if(deck.length>0){const d=deck[0];const nd=deck.slice(1);if(needed==='club'){lpClubDeckRef.current=nd;setLpClubDeck(nd);}else{lpPlayerDeckRef.current=nd;setLpPlayerDeck(nd);}newHand=[...hand,d];}
+      else{newHand=hand;}
+      setLpMsg('Joueur '+aiIdx+' pioche...');
+    }
+    hands[aiIdx-1]=newHand;lpAiHandsRef.current=hands;setLpAiHands(hands.map(function(h){return [...h];}));
+    if(newHand.length===0){setLpWinner('ai'+aiIdx);setLpScreen('end');}
+    else{setTimeout(function(){lpNextTurn(lpTurnRef.current,lpNumAi);},800);}
+  }
+  function lpPlayCard(card) {
+    if(!lpCanPlay(card,lpTopRef.current)){setLpMsg('Cette carte ne convient pas !');return;}
+    const newHand=lpHand.filter(function(c){return c!==card;});
+    lpTopRef.current=card;setLpTopCard(card);setLpHand(newHand);setLpSelected(null);
+    if(newHand.length===0){setLpWinner('player');setLpScreen('end');}
+    else{lpNextTurn(0,lpNumAi);}
+  }
+  function lpPlayerDraw() {
+    const top=lpTopRef.current;
+    const needed=top&&top.type==='club'?'player':'club';
+    const deck=needed==='club'?lpClubDeckRef.current:lpPlayerDeckRef.current;
+    if(deck.length===0){setLpMsg('Pioche vide !');return;}
+    const drawn=deck[0];const newDeck=deck.slice(1);
+    if(needed==='club'){lpClubDeckRef.current=newDeck;setLpClubDeck(newDeck);}
+    else{lpPlayerDeckRef.current=newDeck;setLpPlayerDeck(newDeck);}
+    setLpHand([...lpHand,drawn]);setLpDrawnCard(drawn);
+    setLpMsg('Tu as pioche : '+drawn.name+' !');
+    setTimeout(function(){setLpDrawnCard(null);lpNextTurn(0,lpNumAi);},1800);
+  }
+
+  function loadLeaderboard(mode, d) {
+    try {
+      const key = `bb_lb_${mode}_${d}`;
+      const data = localStorage.getItem(key);
+      setLeaderboard(data ? JSON.parse(data) : []);
+    } catch { setLeaderboard([]); }
+  }
+
+  function footballPoints(sc, list) {
+    // Comparer à mon propre meilleur score, pas au #1 global
+    const myEntry = list.find(e => (e.player_name || e.name) === playerName.trim());
+    const myBest = myEntry ? myEntry.score : 0;
+    if(myBest === 0) return 10;        // Premier score = toujours victoire
+    if(sc > myBest) return 10;         // Nouveau record perso = victoire
+    if(sc >= myBest * 0.85) return 5;  // Proche du record = nul
+    return 0;                           // Loin = défaite
+  }
+  }
+
+  function submitToLeaderboard(name, sc, mode, d) {
+    const displayName = (name||"").trim() || "Anonyme";
+    try {
+      const key = `bb_lb_${mode}_${d}`;
+      const data = localStorage.getItem(key);
+      const list = data ? JSON.parse(data) : [];
+      // Find if player already has an entry to accumulate pts
+      const pts = footballPoints(sc, list);
+      const existingIdx = list.findIndex(e => e.name === displayName);
+      if(existingIdx >= 0) {
+        // Update best score if better, always add football pts
+        list[existingIdx].pts = (list[existingIdx].pts || 0) + pts;
+        list[existingIdx].played = (list[existingIdx].played || 1) + 1;
+        list[existingIdx].wins = (list[existingIdx].wins || 0) + (pts===3?1:0);
+        list[existingIdx].draws = (list[existingIdx].draws || 0) + (pts===1?1:0);
+        if(sc > list[existingIdx].score) {
+          list[existingIdx].score = sc;
+          list[existingIdx].combo = maxCombo;
+          list[existingIdx].date = new Date().toLocaleDateString("fr-FR");
+        }
+        list[existingIdx].lastPts = pts;
+      } else {
+        list.push({
+          name: displayName, score: sc, combo: maxCombo,
+          date: new Date().toLocaleDateString("fr-FR"),
+          pts, played:1, wins: pts===3?1:0, draws: pts===1?1:0, lastPts: pts,
+        });
+      }
+      // Sort by football points, then by best score
+      list.sort((a,b) => (b.pts||0)-(a.pts||0) || b.score-a.score);
+      const top50 = list.slice(0,50);
+      localStorage.setItem(key, JSON.stringify(top50));
+      const rank = top50.findIndex(e => e.name === displayName) + 1;
+      setMyLbRank(rank || null);
+      setLeaderboard(top50);
+      setMyLastPts(pts);
+    } catch(e) { console.error(e); }
+  }
+
+  function handleCorrectAnswer(base, isChain=false) {
+    const now = Date.now();
+    const elapsed = (now - lastAnswerTime.current) / 1000;
+    lastAnswerTime.current = now;
+    const speedBonus = elapsed <= COMBO_THRESHOLD ? 1 : 0;
+    const newCombo = comboRef.current + 1;
+    const comboBonus = newCombo>=10?3:newCombo>=5?2:newCombo>=3?1:0;
+    const total = base + speedBonus + comboBonus;
+    setCombo(newCombo); if(newCombo>maxCombo) setMaxCombo(newCombo);
+    if(comboBonus>0||speedBonus>0){
+      const parts=[];
+      if(speedBonus)parts.push("⚡ SPEED");
+      if(comboBonus)parts.push(`x${newCombo} COMBO +${comboBonus}`);
+      setComboFloat(parts.join(" · "));
+      playSound("combo");
+      setTimeout(()=>setComboFloat(null),1200);
+    }else{playSound("ok");}
+    if(isChain){setChainScore(s=>{chainScoreRef.current=s+total;return s+total;});}
+    else{setScore(s=>{scoreRef.current=s+total;return s+total;});}
+    setScoreAnim("up"); setTimeout(()=>setScoreAnim(null),600);
+    return total;
+  }
+
+  function handleWrongAnswer(penalty, isChain=false) {
+    setCombo(0); comboRef.current=0; playSound("ko");
+    if(isChain){setChainScore(s=>{chainScoreRef.current=s-penalty;return s-penalty;});}
+    else{setScore(s=>{scoreRef.current=s-penalty;return s-penalty;});}
+    setScoreAnim("down"); setTimeout(()=>setScoreAnim(null),600);
+  }
+
+
+  // ── MP HELPERS ──
+  const mpBroadcast = useCallback((msg) => {
+    try { mpChannel.current?.postMessage(msg); } catch {}
+  }, []);
+
+  const mpRefreshRoom = useCallback((code) => {
+    const room = mpGetRoom(code || mpCode);
+    if (room) {
+      setMpPlayers([...room.players]);
+      setMpRoom(room);
+      if (room.status === "playing" && mpScreen === "mpLobby") {
+        setMpScreen("mpPlaying");
+        startMpGame(room);
+      }
+      if (room.status === "finished" && mpScreen === "mpPlaying") {
+        setMpFinalScores([...room.players].sort((a,b) => b.score - a.score));
+        setMpScreen("mpResults");
+      }
+    }
+  }, [mpCode, mpScreen]);
+
+  function startMpChannel(code) {
+    try {
+      if (mpChannel.current) mpChannel.current.close();
+      const ch = new BroadcastChannel(`bb_room_${code}`);
+      ch.onmessage = (e) => {
+        if (e.data.type === "update") mpRefreshRoom(code);
+        if (e.data.type === "start") { mpRefreshRoom(code); }
+      };
+      mpChannel.current = ch;
+      // Poll every 2s as fallback
+      clearInterval(mpPollRef.current);
+      mpPollRef.current = setInterval(() => mpRefreshRoom(code), 2000);
+    } catch {}
+  }
+
+  function startMpGame(room) {
+    // Use seeded shuffle for same questions across all players
+    function seededRng(seed) {
+      let s = seed;
+      return () => { s = (s*1664525+1013904223)&0x7fffffff; return s/0x7fffffff; };
+    }
+    const rng = seededRng(room.seed);
+    const dbPool = [...(DB[room.diff]||DB.facile)];
+    for (let i = dbPool.length-1; i > 0; i--) {
+      const j = Math.floor(rng()*(i+1));
+      [dbPool[i],dbPool[j]] = [dbPool[j],dbPool[i]];
+    }
+    setQueue(dbPool);
+    setQIdx(0);
+    setScore(0); scoreRef.current = 0;
+    setTimeLeft(ROUND_DURATION);
+    setGuess(""); setFlash(null); setFeedback(null);
+    if (room.diff === "facile") setOptions(generateOptions(dbPool[0].p, DB[room.diff]||DB.facile));
+    setAnimKey(0);
+    setCombo(0); setMaxCombo(0); comboRef.current = 0; lastAnswerTime.current = Date.now();
+  }
+
+  function mpUpdateMyScore(finalScore) {
+    const room = mpGetRoom(mpCode);
+    if (!room) return;
+    const p = room.players.find(p => p.id === mpMyId);
+    if (p) {
+      p.score = finalScore;
+      p.status = "finished";
+    }
+    // Check if all finished
+    if (room.players.every(p => p.status === "finished")) {
+      room.status = "finished";
+    }
+    mpSaveRoom(mpCode, room);
+    mpBroadcast({ type: "update" });
+    mpRefreshRoom(mpCode);
+  }
+
+  useEffect(() => {
+    return () => {
+      mpChannel.current?.close();
+      clearInterval(mpPollRef.current);
+    };
+  }, []);
 
   function endRound() {
     clearInterval(timerRef.current);
@@ -1222,185 +1495,7 @@ export default function LePont() {
     if(mode==="chaine")startChain();
     else{setCombo(0);setMaxCombo(0);comboRef.current=0;lastAnswerTime.current=Date.now();setRoundScores([]);setCurrentRound(1);setIsNewRecord(false);setMyLbRank(null);startRound(1);}
   }
-  const cur = queue[qIdx%Math.max(queue.length,1)];
-  const total = roundScores.reduce((a,b)=>a+b,0);
-  const duration = gameMode==="chaine"?CHAIN_DURATION:ROUND_DURATION;
-  const tPct = timeLeft/duration;
-  const urgent = timeLeft<=10&&timeLeft>0;
 
-
-  // ── LA PASSE FUNCTIONS ──
-  function lpShuffle(arr) {
-    const a = [...arr];
-    for (let i = a.length-1; i > 0; i--) {
-      const j = Math.floor(Math.random()*(i+1));
-      const t = a[i]; a[i] = a[j]; a[j] = t;
-    }
-    return a;
-  }
-
-  function lpGetAllClubs() {
-    const clubs = new Set();
-    PLAYERS.forEach(function(p) { p.clubs.forEach(function(c) { clubs.add(c); }); });
-    return Array.from(clubs);
-  }
-
-  function lpCanPlay(card, topCard) {
-    if (!topCard) return true;
-    if (topCard.type === 'club') {
-      // Need to play a player who played at this club
-      if (card.type !== 'player') return false;
-      const p = PLAYERS.find(function(x) { return x.name === card.name; });
-      return p ? p.clubs.includes(topCard.name) : false;
-    } else {
-      // Need to play a club where this player played
-      if (card.type !== 'club') return false;
-      const p = PLAYERS.find(function(x) { return x.name === topCard.name; });
-      return p ? p.clubs.includes(card.name) : false;
-    }
-  }
-
-  function lpValidCards(hand, topCard) {
-    return hand.filter(function(card) { return lpCanPlay(card, topCard); });
-  }
-
-  function lpStartGame(numAi) {
-    const allClubs = lpShuffle(lpGetAllClubs());
-    const allPlayers = lpShuffle(PLAYERS.map(function(p) { return p.name; }));
-
-    // Build decks
-    const clubDeck = allClubs.map(function(c) { return {type:'club', name:c}; });
-    const playerDeck = allPlayers.map(function(p) { return {type:'player', name:p}; });
-
-    // Deal 5 clubs + 5 players to each
-    const totalPlayers = 1 + numAi;
-    const playerHand = [];
-    const aiHands = Array.from({length: numAi}, function() { return []; });
-
-    let cIdx = 0; let pIdx = 0;
-    for (let i = 0; i < 5; i++) {
-      playerHand.push({type:'club', name:clubDeck[cIdx++].name});
-      aiHands.forEach(function(h) { h.push({type:'club', name:clubDeck[cIdx++].name}); });
-    }
-    for (let i = 0; i < 5; i++) {
-      playerHand.push({type:'player', name:playerDeck[pIdx++].name});
-      aiHands.forEach(function(h) { h.push({type:'player', name:playerDeck[pIdx++].name}); });
-    }
-
-    // Top card: a club
-    const topCard = {type:'club', name:clubDeck[cIdx++].name};
-    const remClubs = clubDeck.slice(cIdx);
-    const remPlayers = playerDeck.slice(pIdx);
-
-    // Sync refs
-    lpAiHandsRef.current = aiHands;
-    lpClubDeckRef.current = remClubs;
-    lpPlayerDeckRef.current = remPlayers;
-    lpTopRef.current = topCard;
-    lpTurnRef.current = 0;
-
-    setLpHand(playerHand);
-    setLpAiHands(aiHands.map(function(h) { return [...h]; }));
-    setLpTopCard(topCard);
-    setLpClubDeck(remClubs);
-    setLpPlayerDeck(remPlayers);
-    setLpTurn(0);
-    setLpWinner(null);
-    setLpMsg('À toi de jouer !');
-    setLpSelected(null);
-    setLpDrawnCard(null);
-    setLpNumAi(numAi);
-    setLpScreen('game');
-  }
-
-  function lpDrawCard(hand, type) {
-    const deck = type === 'club' ? lpClubDeckRef.current : lpPlayerDeckRef.current;
-    if (deck.length === 0) return hand;
-    const card = deck[0];
-    const newDeck = deck.slice(1);
-    if (type === 'club') { lpClubDeckRef.current = newDeck; setLpClubDeck(newDeck); }
-    else { lpPlayerDeckRef.current = newDeck; setLpPlayerDeck(newDeck); }
-    return [...hand, card];
-  }
-
-  function lpCheckWin(hand, who) {
-    if (hand.length === 0) {
-      setLpWinner(who);
-      setLpScreen('end');
-      return true;
-    }
-    return false;
-  }
-
-  function lpNextTurn(currentTurn, numAi) {
-    const next = (currentTurn + 1) % (1 + numAi);
-    lpTurnRef.current = next;
-    setLpTurn(next);
-    if (next !== 0) {
-      setTimeout(function() { lpAiPlay(next); }, 1200);
-    } else {
-      setLpMsg('À toi de jouer !');
-    }
-  }
-
-  function lpAiPlay(aiIdx) {
-    const top = lpTopRef.current;
-    const hands = lpAiHandsRef.current;
-    const hand = hands[aiIdx - 1];
-    const valid = lpValidCards(hand, top);
-    let newHand;
-    let newTop;
-    if (valid.length > 0) {
-      const card = valid[Math.floor(Math.random() * valid.length)];
-      newHand = hand.filter(function(c) { return c !== card; });
-      newTop = card;
-      lpTopRef.current = newTop;
-      setLpTopCard(newTop);
-      setLpMsg('Joueur ' + aiIdx + ' pose : ' + card.name);
-    } else {
-      const needed = top && top.type === 'club' ? 'player' : 'club';
-      newHand = lpDrawCard(hand, needed);
-      setLpMsg('Joueur ' + aiIdx + ' pioche une carte ' + (needed === 'club' ? 'club' : 'joueur'));
-    }
-    hands[aiIdx - 1] = newHand;
-    lpAiHandsRef.current = hands;
-    setLpAiHands(hands.map(function(h) { return [...h]; }));
-    if (!lpCheckWin(newHand, 'ai' + aiIdx)) {
-      setTimeout(function() { lpNextTurn(lpTurnRef.current, lpNumAi); }, 800);
-    }
-  }
-
-  function lpPlayCard(card) {
-    const top = lpTopRef.current;
-    if (!lpCanPlay(card, top)) {
-      setLpMsg('Ce joueur/club ne convient pas !');
-      return;
-    }
-    const newHand = lpHand.filter(function(c) { return c !== card; });
-    lpTopRef.current = card;
-    setLpTopCard(card);
-    setLpHand(newHand);
-    setLpSelected(null);
-    if (!lpCheckWin(newHand, 'player')) {
-      lpNextTurn(0, lpNumAi);
-    }
-  }
-
-  function lpPlayerDraw() {
-    const top = lpTopRef.current;
-    const needed = top && top.type === 'club' ? 'player' : 'club';
-    const deck = needed === 'club' ? lpClubDeckRef.current : lpPlayerDeckRef.current;
-    if (deck.length === 0) { setLpMsg('Pioche vide !'); return; }
-    const drawnCard = deck[0];
-    const newDeck = deck.slice(1);
-    if (needed === 'club') { lpClubDeckRef.current = newDeck; setLpClubDeck(newDeck); }
-    else { lpPlayerDeckRef.current = newDeck; setLpPlayerDeck(newDeck); }
-    const newHand = [...lpHand, drawnCard];
-    setLpHand(newHand);
-    setLpDrawnCard(drawnCard);
-    setLpMsg('Tu as pioché : ' + drawnCard.name + ' !');
-    setTimeout(function() { setLpDrawnCard(null); lpNextTurn(0, lpNumAi); }, 1800);
-  }
 
   // Design system
   const G = {
@@ -1544,145 +1639,192 @@ export default function LePont() {
   );
 
 
-  // ── LA PASSE SCREENS ──
-  if (lpScreen === 'menu') return (
-    <div style={{...shell, animation:"fadeUp .4s ease"}} key="lp-menu">
+  const notifPrompt = null;
+  const welcomeBack = null;
+
+  // ── LEADERBOARD SCREEN ──
+  if(showLeaderboard) return (
+    <div style={{...shell,animation:"fadeUp .4s ease"}} key="lb">
       <div style={stripes}/>
-      <div style={{zIndex:1, padding:"44px 20px 16px", textAlign:"center"}}>
-        <div style={{fontSize:52, marginBottom:8}}>🃏</div>
-        <div style={{fontFamily:G.heading, fontSize:"clamp(40px,10vw,60px)", color:G.white, letterSpacing:2}}>LA PASSE</div>
-        <div style={{fontSize:13, color:"rgba(255,255,255,.55)", marginTop:6}}>Vide ta main avant les autres !</div>
+      <div style={{zIndex:1,padding:"32px 20px 12px",textAlign:"center"}}>
+        <div style={{fontFamily:G.heading,fontSize:"clamp(32px,8vw,52px)",color:G.white,letterSpacing:2,display:"flex",alignItems:"center",justifyContent:"center",gap:12}}>{Icon.trophy(40,G.gold)} CLASSEMENT</div>
+        <div style={{fontSize:11,letterSpacing:3,color:"rgba(255,255,255,.5)",textTransform:"uppercase",marginTop:4}}>10 pts victoire · 5 pts nul · 0 défaite</div>
       </div>
-      <div style={sheet}>
-        <div>
-          <div style={{fontSize:11, fontWeight:700, letterSpacing:2, textTransform:"uppercase", color:"#bbb", marginBottom:8, textAlign:"center"}}>Adversaires IA</div>
-          <div style={{display:"flex", gap:10, justifyContent:"center"}}>
-            {[1,2,3].map(function(n) { return (
-              <button key={n} onClick={function() { setLpNumAi(n); }}
-                style={{width:64, height:64, borderRadius:16, border:"2px solid "+(lpNumAi===n?G.dark:"#e5e5e0"), background:lpNumAi===n?G.dark:G.offWhite, color:lpNumAi===n?G.white:"#888", fontFamily:G.heading, fontSize:32, cursor:"pointer"}}>{n}</button>
-            );})}
-          </div>
+      <div style={{...sheet,flex:1,overflow:"hidden",display:"flex",flexDirection:"column",gap:10}}>
+        <div style={{display:"flex",gap:8}}>
+          {[["pont","⚽ Le Pont"],["chaine","🔗 La Chaîne"]].map(([m,lbl])=>(
+            <button key={m} onClick={()=>{setLbMode(m);loadLeaderboard(m,lbDiff);}} style={{flex:1,padding:"10px",borderRadius:12,border:`2px solid ${lbMode===m?G.dark:"#e5e5e0"}`,background:lbMode===m?G.dark:G.offWhite,color:lbMode===m?G.white:"#666",fontFamily:G.font,fontSize:13,fontWeight:700,cursor:"pointer"}}>{lbl}</button>
+          ))}
         </div>
-        <div style={{background:G.offWhite, borderRadius:16, padding:"16px"}}>
-          <div style={{fontSize:13, fontWeight:700, color:G.dark, marginBottom:8}}>Règles</div>
-          <div style={{fontSize:12, color:"#555", lineHeight:1.9}}>
-            🃏 10 cartes chacun (5 clubs + 5 joueurs)<br/>
-            🏟️ Si CLUB visible → pose un JOUEUR qui y a joué<br/>
-            ⚽ Si JOUEUR visible → pose un CLUB où il a joué<br/>
-            📤 Tu peux pas jouer ? Pioche !<br/>
-            🏆 Premier à 0 carte gagne !
-          </div>
+        <div style={{display:"flex",gap:6}}>
+          {["facile","moyen","expert"].map(d=>(
+            <button key={d} onClick={()=>{setLbDiff(d);loadLeaderboard(lbMode,d);}} style={{flex:1,padding:"8px",borderRadius:10,border:`2px solid ${lbDiff===d?"#16a34a":"#e5e5e0"}`,background:lbDiff===d?"#16a34a":G.offWhite,color:lbDiff===d?G.white:"#666",fontFamily:G.font,fontSize:12,fontWeight:700,cursor:"pointer",textTransform:"capitalize"}}>{d}</button>
+          ))}
         </div>
-        <button onClick={function() { lpStartGame(lpNumAi); }}
-          style={{width:"100%", padding:"18px", background:G.dark, color:G.white, border:"none", borderRadius:50, cursor:"pointer", fontFamily:G.font, fontSize:17, fontWeight:800, display:"flex", alignItems:"center", justifyContent:"center", gap:10}}>
-          {Icon.ball(18, G.white)} Jouer !
-        </button>
-        <button onClick={function() { setLpScreen(null); }}
-          style={{background:"transparent", color:"#bbb", border:"none", cursor:"pointer", fontFamily:G.font, fontSize:14}}>
-          ↩ Retour
-        </button>
+        <div style={{flex:1,overflowY:"auto",display:"flex",flexDirection:"column",gap:6}}>
+          {leaderboard.length===0&&<div style={{textAlign:"center",color:"#bbb",padding:20,fontSize:14}}>Aucun score encore.<br/>Sois le premier ! 🏆</div>}
+          {leaderboard.map((e,i)=>{
+            const isMe=myLbRank!==null&&i+1===myLbRank;
+            const medal=i===0?"🥇":i===1?"🥈":i===2?"🥉":null;
+            const w=e.wins||0, d2=e.draws||0, l=(e.played||1)-w-d2;
+            return(
+              <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"12px 14px",background:isMe?"linear-gradient(135deg,#fef3c7,#fde68a)":G.offWhite,borderRadius:14,border:isMe?"2px solid #fbbf24":i<3?"2px solid #e5e5e0":"1px solid #f0f0ea",animation:`slideIn .3s ease ${Math.min(i,15)*.03}s both`}}>
+                <span style={{fontFamily:G.heading,fontSize:18,color:i<3?G.dark:"#bbb",minWidth:24,textAlign:"center"}}>{medal||i+1}</span>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:13,fontWeight:800,color:isMe?"#92400e":G.dark,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{e.name}{isMe?" (toi)":""}</div>
+                  <div style={{fontSize:10,color:"#bbb",marginTop:1}}>{w}V · {d2}N · {l}D &nbsp;|&nbsp; Best: {e.score}pts</div>
+                </div>
+                {e.combo>=3&&<span style={{fontSize:10,color:"#f59e0b"}}>🔥x{e.combo}</span>}
+                <div style={{textAlign:"center",minWidth:36}}>
+                  <div style={{fontFamily:G.heading,fontSize:22,color:i===0?"#f59e0b":i<3?G.dark:"#666"}}>{e.pts||0}</div>
+                  <div style={{fontSize:9,color:"#bbb",letterSpacing:1}}>PTS</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        {myLbRank&&<div style={{padding:"10px 16px",background:"linear-gradient(135deg,#fef3c7,#fde68a)",borderRadius:14,textAlign:"center",border:"2px solid #fbbf24"}}><span style={{fontSize:14,fontWeight:700,color:"#92400e"}}>🎯 Ton classement : #{myLbRank}</span></div>}
+        <button onClick={()=>setShowLeaderboard(false)} style={{width:"100%",padding:"14px",background:G.dark,color:G.white,border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:16,fontWeight:800}}>↩ Retour</button>
       </div>
     </div>
   );
 
-  if (lpScreen === 'game' || lpScreen === 'end') {
-    const isMyTurn = lpTurn === 0 && lpScreen === 'game';
-    const needType = lpTopCard ? (lpTopCard.type === 'club' ? 'player' : 'club') : null;
-    const validInHand = isMyTurn ? lpValidCards(lpHand, lpTopCard) : [];
-    const canDraw = isMyTurn && validInHand.length === 0;
-    return (
-      <div style={{...shell, overflow:"hidden"}} key="la-passe">
-        <div style={stripes}/>
-        <div style={{zIndex:3, padding:"12px 16px 0", display:"flex", justifyContent:"space-between", alignItems:"center"}}>
-          {backBtn(function() { setLpScreen(null); })}
-          <div style={{fontFamily:G.heading, fontSize:24, color:G.white, letterSpacing:2}}>LA PASSE</div>
-          <div style={{background:"rgba(255,255,255,.13)", borderRadius:12, padding:"6px 12px", color:G.white}}>
-            <span style={{fontSize:11}}>Main : </span><span style={{fontFamily:G.heading, fontSize:20}}>{lpHand.length}</span>
+
+  // ── MULTIPLAYER SCREENS ──
+
+
+
+  // ── HOME ──
+
+  if(lpScreen==='menu') return (
+    <div style={{...shell,animation:"fadeUp .4s ease"}} key="lp-menu">
+      <div style={stripes}/>
+      <div style={{zIndex:1,padding:"44px 20px 16px",textAlign:"center"}}>
+        <div style={{fontSize:52,marginBottom:8}}>{"\U0001F0CF"}</div>
+        <div style={{fontFamily:G.heading,fontSize:"clamp(40px,10vw,60px)",color:G.white,letterSpacing:2}}>LA PASSE</div>
+        <div style={{fontSize:13,color:"rgba(255,255,255,.55)",marginTop:6}}>Vide ta main avant les autres !</div>
+      </div>
+      <div style={sheet}>
+        <div>
+          <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"#bbb",marginBottom:8,textAlign:"center"}}>Adversaires IA</div>
+          <div style={{display:"flex",gap:10,justifyContent:"center"}}>
+            {[1,2,3].map(function(n){return(
+              <button key={n} onClick={function(){setLpNumAi(n);}} style={{width:64,height:64,borderRadius:16,border:"2px solid "+(lpNumAi===n?G.dark:"#e5e5e0"),background:lpNumAi===n?G.dark:G.offWhite,color:lpNumAi===n?G.white:"#888",fontFamily:G.heading,fontSize:32,cursor:"pointer"}}>{n}</button>
+            );}) }
           </div>
         </div>
-        <div style={{padding:"6px 16px", display:"flex", gap:8, justifyContent:"center", flexWrap:"wrap"}}>
-          {lpAiHands.map(function(h, i) { return (
-            <div key={i} style={{background:lpTurn===i+1?"rgba(251,191,36,.25)":"rgba(255,255,255,.1)", border:lpTurn===i+1?"1px solid #fbbf24":"1px solid transparent", borderRadius:20, padding:"5px 12px", color:G.white, fontSize:12, display:"flex", alignItems:"center", gap:6}}>
-              🤖 Joueur {i+1} <span style={{fontFamily:G.heading, fontSize:18, color:lpTurn===i+1?G.gold:G.white}}>{h.length}</span>
-              {lpTurn===i+1 && <span>⏳</span>}
+        <div style={{background:G.offWhite,borderRadius:16,padding:"16px"}}>
+          <div style={{fontSize:13,fontWeight:700,color:G.dark,marginBottom:8}}>Regles</div>
+          <div style={{fontSize:12,color:"#555",lineHeight:1.9}}>
+            🃏 10 cartes chacun (5 clubs + 5 joueurs)<br/>
+            🏟️ CLUB visible → pose un JOUEUR qui y a joue<br/>
+            ⚽ JOUEUR visible → pose un CLUB où il a joue<br/>
+            📤 Tu peux pas jouer ? Pioche !<br/>
+            🏆 Premier a 0 carte gagne !
+          </div>
+        </div>
+        <button onClick={function(){lpStartGame(lpNumAi);}} style={{width:"100%",padding:"18px",background:G.dark,color:G.white,border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:17,fontWeight:800}}>
+          Jouer !
+        </button>
+        <button onClick={function(){setLpScreen(null);}} style={{background:"transparent",color:"#bbb",border:"none",cursor:"pointer",fontFamily:G.font,fontSize:14}}>↩ Retour</button>
+      </div>
+    </div>
+  );
+
+  if(lpScreen==='game'||lpScreen==='end') {
+    const isMyTurn=lpTurn===0&&lpScreen==='game';
+    const needType=lpTopCard?(lpTopCard.type==='club'?'player':'club'):null;
+    const validH=isMyTurn?lpValidCards(lpHand,lpTopCard):[];
+    const canDraw=isMyTurn&&validH.length===0;
+    return(
+      <div style={{...shell,overflow:"hidden"}} key="la-passe">
+        <div style={stripes}/>
+        <div style={{zIndex:3,padding:"12px 16px 0",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          {backBtn(function(){setLpScreen(null);})}
+          <div style={{fontFamily:G.heading,fontSize:24,color:G.white,letterSpacing:2}}>LA PASSE</div>
+          <div style={{background:"rgba(255,255,255,.13)",borderRadius:12,padding:"6px 12px",color:G.white}}>
+            <span style={{fontSize:11}}>Main : </span><span style={{fontFamily:G.heading,fontSize:20}}>{lpHand.length}</span>
+          </div>
+        </div>
+        <div style={{padding:"6px 16px",display:"flex",gap:8,justifyContent:"center",flexWrap:"wrap"}}>
+          {lpAiHands.map(function(h,i){return(
+            <div key={i} style={{background:lpTurn===i+1?"rgba(251,191,36,.25)":"rgba(255,255,255,.1)",border:lpTurn===i+1?"1px solid #fbbf24":"1px solid transparent",borderRadius:20,padding:"5px 12px",color:G.white,fontSize:12,display:"flex",alignItems:"center",gap:6}}>
+              🤖 {i+1} <span style={{fontFamily:G.heading,fontSize:18,color:lpTurn===i+1?G.gold:G.white}}>{h.length}</span>
+              {lpTurn===i+1&&<span>⏳</span>}
             </div>
           );})}
         </div>
-        <div style={{display:"flex", flexDirection:"column", alignItems:"center", padding:"8px 16px", gap:8}}>
-          <div style={{fontSize:11, letterSpacing:3, textTransform:"uppercase", color:"rgba(255,255,255,.5)", fontWeight:700}}>Carte du dessus</div>
-          {lpTopCard && (function() {
-            const isClub = lpTopCard.type === 'club';
-            const cols = isClub ? getClubColors(lpTopCard.name) : ["#1e3a5f","#2563eb"];
-            return (
-              <div style={{width:110, height:145, borderRadius:16, background:"linear-gradient(135deg,"+cols[0]+","+cols[1]+")", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:6, padding:10, border:"2px solid rgba(255,255,255,.2)", boxShadow:"0 8px 24px rgba(0,0,0,.3)"}}>
-                <div style={{fontSize:10, letterSpacing:2, textTransform:"uppercase", color:"rgba(255,255,255,.6)", fontWeight:700}}>{isClub?"CLUB":"JOUEUR"}</div>
-                {isClub ? <ClubLogo club={lpTopCard.name} size={36}/> : <span style={{fontSize:30}}>⚽</span>}
-                <div style={{fontSize:13, fontWeight:800, color:"#fff", textAlign:"center", lineHeight:1.2}}>{lpTopCard.name.length>14?lpTopCard.name.slice(0,13)+"…":lpTopCard.name}</div>
-              </div>
-            );
+        <div style={{display:"flex",flexDirection:"column",alignItems:"center",padding:"6px 16px",gap:6}}>
+          <div style={{fontSize:11,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.5)",fontWeight:700}}>Carte du dessus</div>
+          {lpTopCard&&(function(){
+            const isC=lpTopCard.type==='club';
+            const cols=isC?getClubColors(lpTopCard.name):["#1e3a5f","#2563eb"];
+            return(<div style={{width:100,height:130,borderRadius:14,background:"linear-gradient(135deg,"+cols[0]+","+cols[1]+")",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:5,padding:8,border:"2px solid rgba(255,255,255,.2)",boxShadow:"0 6px 20px rgba(0,0,0,.3)"}}>
+              <div style={{fontSize:9,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.6)",fontWeight:700}}>{isC?"CLUB":"JOUEUR"}</div>
+              {isC?<ClubLogo club={lpTopCard.name} size={34}/>:<span style={{fontSize:28}}>⚽</span>}
+              <div style={{fontSize:11,fontWeight:800,color:"#fff",textAlign:"center",lineHeight:1.2}}>{lpTopCard.name.length>14?lpTopCard.name.slice(0,13)+"…":lpTopCard.name}</div>
+            </div>);
           })()}
-          {needType && <div style={{fontSize:13, color:"rgba(255,255,255,.8)", fontWeight:700, textAlign:"center"}}>→ Pose un <span style={{color:G.gold, fontWeight:900}}>{needType==="player"?"JOUEUR":"CLUB"}</span>{needType==="player"?" ayant joué à "+lpTopCard.name:" de "+lpTopCard.name}</div>}
+          {needType&&<div style={{fontSize:12,color:"rgba(255,255,255,.85)",fontWeight:700,textAlign:"center"}}>→ Pose un <span style={{color:G.gold,fontWeight:900}}>{needType==="player"?"JOUEUR":"CLUB"}</span></div>}
         </div>
-        {lpDrawnCard && (
-          <div style={{display:"flex", flexDirection:"column", alignItems:"center", gap:6, animation:"popIn .4s ease"}}>
-            <div style={{fontSize:11, letterSpacing:2, textTransform:"uppercase", color:G.gold, fontWeight:700}}>Tu as pioché !</div>
-            <div style={{width:90, height:118, borderRadius:14, background:"linear-gradient(135deg,"+(lpDrawnCard.type==="club"?getClubColors(lpDrawnCard.name)[0]+","+getClubColors(lpDrawnCard.name)[1]:"#1e3a5f,#2563eb")+")", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:4, padding:8, border:"3px solid "+G.gold, boxShadow:"0 0 24px rgba(251,191,36,.6)", animation:"popIn .4s ease"}}>
-              <div style={{fontSize:9, letterSpacing:2, textTransform:"uppercase", color:"rgba(255,255,255,.6)", fontWeight:700}}>{lpDrawnCard.type==="club"?"CLUB":"JOUEUR"}</div>
-              {lpDrawnCard.type==="club"?<ClubLogo club={lpDrawnCard.name} size={28}/>:<span style={{fontSize:22}}>⚽</span>}
-              <div style={{fontSize:10, fontWeight:800, color:"#fff", textAlign:"center", lineHeight:1.2}}>{lpDrawnCard.name.length>13?lpDrawnCard.name.slice(0,12)+"…":lpDrawnCard.name}</div>
+        {lpDrawnCard&&(
+          <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,animation:"popIn .4s ease"}}>
+            <div style={{fontSize:11,color:G.gold,fontWeight:700,letterSpacing:2}}>Tu as pioche !</div>
+            <div style={{width:80,height:104,borderRadius:12,background:"linear-gradient(135deg,"+(lpDrawnCard.type==="club"?getClubColors(lpDrawnCard.name)[0]+","+getClubColors(lpDrawnCard.name)[1]:"#1e3a5f,#2563eb")+")",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:3,padding:6,border:"3px solid "+G.gold,boxShadow:"0 0 20px rgba(251,191,36,.5)"}}>
+              <div style={{fontSize:8,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.6)"}}>{lpDrawnCard.type==="club"?"CLUB":"JOUEUR"}</div>
+              {lpDrawnCard.type==="club"?<ClubLogo club={lpDrawnCard.name} size={26}/>:<span style={{fontSize:20}}>⚽</span>}
+              <div style={{fontSize:9,fontWeight:800,color:"#fff",textAlign:"center",lineHeight:1.2}}>{lpDrawnCard.name.length>11?lpDrawnCard.name.slice(0,10)+"…":lpDrawnCard.name}</div>
             </div>
           </div>
         )}
-        <div style={{textAlign:"center", padding:"4px 16px"}}>
-          <div style={{background:"rgba(0,0,0,.3)", borderRadius:20, padding:"6px 16px", display:"inline-block", fontSize:13, color:G.white, fontWeight:700}}>{lpScreen==="end"?(lpWinner==="player"?"🏆 Tu as gagné !":"😅 L'IA a gagné !"):lpMsg}</div>
+        <div style={{textAlign:"center",padding:"4px 16px"}}>
+          <div style={{background:"rgba(0,0,0,.3)",borderRadius:20,padding:"6px 16px",display:"inline-block",fontSize:13,color:G.white,fontWeight:700}}>
+            {lpScreen==="end"?(lpWinner==="player"?"🏆 Tu as gagne !":"😅 L'IA a gagne !"):lpMsg}
+          </div>
         </div>
-        <div style={{...sheet, borderRadius:"28px 28px 0 0", flexShrink:0, padding:"12px 12px 20px", gap:10}}>
-          <div style={{fontSize:11, fontWeight:700, letterSpacing:2, textTransform:"uppercase", color:"#bbb", textAlign:"center"}}>{isMyTurn?"Ta main — sélectionne une carte":"Ta main"}</div>
-          <div style={{display:"grid", gridTemplateColumns:"repeat(5, 1fr)", gap:6}}>
-            {lpHand.map(function(card, i) {
-              const isValid = validInHand.includes(card);
-              const isSel = lpSelected===i;
-              const isClub = card.type==="club";
-              const cols = isClub ? getClubColors(card.name) : ["#1e3a5f","#2563eb"];
-              return (
-                <div key={i} onClick={isMyTurn?function() { if(lpSelected===i){lpPlayCard(card);}else{setLpSelected(i);} }:undefined}
-                  style={{width:76, height:100, borderRadius:12, background:"linear-gradient(135deg,"+cols[0]+","+cols[1]+")", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:3, padding:6, flexShrink:0, cursor:isMyTurn?"pointer":"default",
-                    border:isSel?"3px solid #fbbf24":isMyTurn&&isValid?"2px solid #4ade80":"2px solid rgba(255,255,255,.2)",
-                    opacity:1, transform:isSel?"scale(1.08) translateY(-6px)":"scale(1)", transition:"all .2s",
-                    boxShadow:isSel?"0 0 20px rgba(251,191,36,.5)":isMyTurn&&isValid?"0 0 10px rgba(74,222,128,.3)":"none"}}>
-                  <div style={{fontSize:8, letterSpacing:2, textTransform:"uppercase", color:"rgba(255,255,255,.6)", fontWeight:700}}>{isClub?"CLUB":"JOUEUR"}</div>
-                  {isClub?<ClubLogo club={card.name} size={22}/>:<span style={{fontSize:18}}>⚽</span>}
-                  <div style={{fontSize:9, fontWeight:800, color:"#fff", textAlign:"center", lineHeight:1.2}}>{card.name.length>11?card.name.slice(0,10)+"…":card.name}</div>
-                </div>
-              );
+        <div style={{...sheet,borderRadius:"28px 28px 0 0",flexShrink:0,padding:"10px 10px 16px",gap:8}}>
+          <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"#bbb",textAlign:"center"}}>{isMyTurn?"Ta main — clique pour selectionner":"Ta main"}</div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:5}}>
+            {lpHand.map(function(card,i){
+              const isValid=validH.includes(card);const isSel=lpSelected===i;
+              const isC=card.type==="club";const cols=isC?getClubColors(card.name):["#1e3a5f","#2563eb"];
+              return(<div key={i} onClick={isMyTurn?function(){if(lpSelected===i){lpPlayCard(card);}else{setLpSelected(i);}}:undefined}
+                style={{borderRadius:10,background:"linear-gradient(135deg,"+cols[0]+","+cols[1]+")",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2,padding:4,cursor:isMyTurn?"pointer":"default",aspectRatio:"3/4",
+                  border:isSel?"2.5px solid #fbbf24":isMyTurn&&isValid?"2px solid #4ade80":"1.5px solid rgba(255,255,255,.2)",
+                  transform:isSel?"scale(1.06) translateY(-3px)":"scale(1)",transition:"all .15s",
+                  boxShadow:isSel?"0 0 14px rgba(251,191,36,.5)":isMyTurn&&isValid?"0 0 8px rgba(74,222,128,.3)":"none"}}>
+                <div style={{fontSize:7,letterSpacing:1,textTransform:"uppercase",color:"rgba(255,255,255,.6)",fontWeight:700}}>{isC?"CLUB":"JR"}</div>
+                {isC?<ClubLogo club={card.name} size={18}/>:<span style={{fontSize:14}}>⚽</span>}
+                <div style={{fontSize:7,fontWeight:800,color:"#fff",textAlign:"center",lineHeight:1.1}}>{card.name.length>9?card.name.slice(0,8)+"…":card.name}</div>
+              </div>);
             })}
           </div>
-          {lpScreen==="end" ? (
-            <div style={{display:"flex", gap:8}}>
-              <button onClick={function(){lpStartGame(lpNumAi);}} style={{flex:1, padding:"14px", background:G.dark, color:G.white, border:"none", borderRadius:50, cursor:"pointer", fontFamily:G.font, fontSize:15, fontWeight:800}}>🔄 Rejouer</button>
-              <button onClick={function(){setLpScreen(null);}} style={{flex:1, padding:"14px", background:"transparent", color:"#bbb", border:"2px solid #e5e5e0", borderRadius:50, cursor:"pointer", fontFamily:G.font, fontSize:14}}>↩ Menu</button>
+          {lpScreen==="end"?(
+            <div style={{display:"flex",gap:8}}>
+              <button onClick={function(){lpStartGame(lpNumAi);}} style={{flex:1,padding:"12px",background:G.dark,color:G.white,border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>🔄 Rejouer</button>
+              <button onClick={function(){setLpScreen(null);}} style={{flex:1,padding:"12px",background:"transparent",color:"#bbb",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13}}>↩ Menu</button>
             </div>
-          ) : isMyTurn && lpSelected!==null ? (
-            <div style={{display:"flex", gap:8}}>
-              <button onClick={function(){lpPlayCard(lpHand[lpSelected]);}} style={{flex:1, padding:"14px", background:"#16a34a", color:G.white, border:"none", borderRadius:50, cursor:"pointer", fontFamily:G.font, fontSize:15, fontWeight:800}}>✓ Poser cette carte</button>
-              <button onClick={function(){setLpSelected(null);}} style={{padding:"14px 20px", background:"transparent", color:"#bbb", border:"2px solid #e5e5e0", borderRadius:50, cursor:"pointer", fontFamily:G.font, fontSize:14}}>✕</button>
+          ):isMyTurn&&lpSelected!==null?(
+            <div style={{display:"flex",gap:8}}>
+              <button onClick={function(){lpPlayCard(lpHand[lpSelected]);}} style={{flex:1,padding:"12px",background:"#16a34a",color:G.white,border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>✓ Poser</button>
+              <button onClick={function(){setLpSelected(null);}} style={{padding:"12px 16px",background:"transparent",color:"#bbb",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13}}>✕</button>
             </div>
-          ) : canDraw ? (
-            <button onClick={lpPlayerDraw} style={{width:"100%", padding:"14px", background:"#1e3a8a", color:G.white, border:"none", borderRadius:50, cursor:"pointer", fontFamily:G.font, fontSize:15, fontWeight:800}}>
+          ):canDraw?(
+            <button onClick={lpPlayerDraw} style={{width:"100%",padding:"12px",background:"#1e3a8a",color:G.white,border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>
               📤 Piocher une carte {needType==="player"?"joueur":"club"}
             </button>
-          ) : !isMyTurn ? (
-            <div style={{textAlign:"center", color:"#999", fontSize:13, padding:"8px"}}>⏳ Tour du joueur {lpTurn}...</div>
-          ) : (
-            <div style={{textAlign:"center", color:"#999", fontSize:13, padding:"8px"}}>👆 Clique sur une carte verte pour la sélectionner</div>
+          ):!isMyTurn?(
+            <div style={{textAlign:"center",color:"#999",fontSize:12,padding:"6px"}}>⏳ Tour du joueur {lpTurn}...</div>
+          ):(
+            <div style={{textAlign:"center",color:"#999",fontSize:12,padding:"6px"}}>👆 Clique sur une carte verte</div>
           )}
-          <button onClick={function(){setLpScreen(null);}} style={{background:"transparent", color:"#bbb", border:"2px solid #e5e5e0", borderRadius:50, cursor:"pointer", fontFamily:G.font, fontSize:13, padding:"10px"}}>↩ Retour</button>
+          <button onClick={function(){setLpScreen(null);}} style={{background:"transparent",color:"#bbb",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:12,padding:"8px"}}>↩ Retour</button>
         </div>
       </div>
     );
   }
 
-  // ── HOME ──
+
   if(screen==="home") return (
     <div style={{...shell,animation:"fadeUp .5s ease"}} key="home">
       <div style={stripes}/>
@@ -1740,13 +1882,9 @@ export default function LePont() {
           </button>
         </div>
 
-        {/* La Passe */}
-        <button onClick={function() { setLpScreen('menu'); }}
-          style={{width:"100%", padding:"16px", background:"linear-gradient(135deg,#7c3aed,#4f46e5)", color:G.white,
-            border:"none", borderRadius:20, cursor:"pointer", fontFamily:G.font, textAlign:"center"}}>
-          <div style={{marginBottom:4, display:"flex", justifyContent:"center"}}>{Icon.transfer(28,"rgba(255,255,255,.9)")}</div>
-          <div style={{fontFamily:G.heading, fontSize:20, letterSpacing:2}}>LA PASSE</div>
-          <div style={{fontSize:11, color:"rgba(255,255,255,.6)", marginTop:2}}>Jeu de cartes · Vide ta main</div>
+        <button onClick={function(){setLpScreen('menu');}} style={{width:"100%",padding:"16px",background:"linear-gradient(135deg,#7c3aed,#4f46e5)",color:G.white,border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
+          <div style={{fontFamily:G.heading,fontSize:22,letterSpacing:2}}>🃏 LA PASSE</div>
+          <div style={{fontSize:11,color:"rgba(255,255,255,.65)"}}>Jeu de cartes · Vide ta main</div>
         </button>
 
         {/* Records */}
@@ -1766,7 +1904,10 @@ export default function LePont() {
             style={{flex:1,padding:"12px",background:"#f0f9f4",color:"#16a34a",border:"2px solid #86efac",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
             {Icon.trophy(15,"#16a34a")} Classement
           </button>
-          
+          <button onClick={()=>{setMpError("");setMpJoinInput("");setMpScreen("mpMenu");}}
+            style={{flex:1,padding:"12px",background:"#eff6ff",color:"#2563eb",border:"2px solid #93c5fd",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+            {Icon.transfer(15,"#2563eb")} Inviter un ami
+          </button>
         </div>
       </div>
     </div>
