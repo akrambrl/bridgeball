@@ -983,6 +983,22 @@ export default function LePont() {
   const [myLbRank, setMyLbRank] = useState(null);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
 
+  // ── MISSING STATE ──
+  const [showInstructions, setShowInstructions] = useState(null);
+  const seenInstructions = useRef(new Set());
+  const [playerName, setPlayerName] = useState("");
+  const [showNotifPrompt, setShowNotifPrompt] = useState(false);
+  const [notifGranted, setNotifGranted] = useState(false);
+  const [wasAway, setWasAway] = useState(false);
+  const [myLastPts, setMyLastPts] = useState(null);
+  const [shaking, setShaking] = useState(false);
+  const comboRef = useRef(0);
+  const lastAnswerTime = useRef(Date.now());
+  const historyEndRef = useRef(null);
+  const hasEndedRef = useRef(false);
+  const chainScoreRef = useRef(0);
+  const chainLogoRef = useRef({});
+
   const cur = queue[qIdx%Math.max(queue.length,1)];
   const total = roundScores.reduce((a,b)=>a+b,0);
   const duration = gameMode==="chaine"?CHAIN_DURATION:ROUND_DURATION;
