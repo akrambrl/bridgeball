@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 
 // ── CONSTANTS ──
 const ROUND_DURATION = 90;
+const QUESTION_DURATION = 5;
 const CHAIN_DURATION = 90;
 const COMBO_THRESHOLD = 3;
 
@@ -935,6 +936,8 @@ export default function LePont() {
   const [lpNumAi, setLpNumAi] = useState(1);
   const [lpSelected, setLpSelected] = useState(null);
   const [lpDrawnCard, setLpDrawnCard] = useState(null);
+  const [qTimeLeft, setQTimeLeft] = useState(5);
+  const qTimerRef = useRef(null);
   const lpAiHandsRef = useRef([]);
   const lpClubDeckRef = useRef([]);
   const lpPlayerDeckRef = useRef([]);
@@ -1259,6 +1262,7 @@ export default function LePont() {
   }
 
   function nextQ() {
+    setQTimeLeft(QUESTION_DURATION);
     setQIdx(i=>{
       const next = i+1;
       // If we've gone through the whole queue, rebuild with fresh shuffle
@@ -1288,6 +1292,7 @@ export default function LePont() {
   }
 
   function handlePass() {
+    clearInterval(qTimerRef.current);
     setScore(s=>{scoreRef.current=s-.5;return s-.5;});
     nextQ();
   }
@@ -1884,6 +1889,18 @@ export default function LePont() {
           )}
         </div>
       </div>
+      {/* Question timer bar */}
+      {screen==="game" ? (
+        <div style={{position:"fixed", bottom:0, left:0, right:0, height:4, background:"rgba(255,255,255,.15)", zIndex:100}}>
+          <div style={{
+            height:"100%",
+            background: qTimeLeft > 3 ? "#4ade80" : qTimeLeft > 1 ? "#fbbf24" : "#ef4444",
+            width: (qTimeLeft / QUESTION_DURATION * 100) + "%",
+            transition:"width 1s linear",
+            borderRadius:"0 2px 2px 0",
+          }}/>
+        </div>
+      ) : null}
     );
   }
 
