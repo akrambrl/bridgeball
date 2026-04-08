@@ -975,6 +975,11 @@ export default function LePont() {
   const [scoreAnim, setScoreAnim] = useState(null);
   const [isNewRecord, setIsNewRecord] = useState(false);
 
+  const [combo, setCombo] = useState(0);
+  const [maxCombo, setMaxCombo] = useState(0);
+  const [comboFloat, setComboFloat] = useState(null);
+  const [shaking, setShaking] = useState(false);
+
   const [lbMode, setLbMode] = useState("pont");
   const [lbDiff, setLbDiff] = useState("facile");
   const [playerName, setPlayerName] = useState("");
