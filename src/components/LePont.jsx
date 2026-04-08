@@ -1100,6 +1100,9 @@ export default function LePont() {
   );
 
 
+  const notifPrompt = null;
+  const welcomeBack = null;
+
   // ── HOME ──
   if(screen==="home") return (
     <div style={{...shell,animation:"fadeUp .5s ease"}} key="home">
