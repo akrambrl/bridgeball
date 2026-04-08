@@ -984,6 +984,27 @@ export default function LePont() {
   const [lbDiff, setLbDiff] = useState("facile");
   const [playerName, setPlayerName] = useState("");
   const [showInstructions, setShowInstructions] = useState(null);
+  // Chain game state
+  const [chainPlayer, setChainPlayer] = useState('');
+  const [chainUsedClubs, setChainUsedClubs] = useState(new Set());
+  const [chainUsedPlayers, setChainUsedPlayers] = useState(new Set());
+  const [chainCount, setChainCount] = useState(0);
+  const [chainScore, setChainScore] = useState(0);
+  const [chainLastClub, setChainLastClub] = useState('');
+  const [chainHistory, setChainHistory] = useState([]);
+
+  // UI state
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [wasAway, setWasAway] = useState(false);
+  const [showNotifPrompt, setShowNotifPrompt] = useState(false);
+  const [notifGranted, setNotifGranted] = useState(false);
+  const [myLastPts, setMyLastPts] = useState(null);
+
+  // Leaderboard state
+  const [leaderboard, setLeaderboard] = useState([]);
+  const [myLbRank, setMyLbRank] = useState(null);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
+
   const seenInstructions = useRef(new Set());
 
   const timerRef = useRef(null);
