@@ -1052,9 +1052,12 @@ export default function LePont() {
   }
 
   function mpStartGame(room) {
-    let s = room.seed;
+    if (!room) { setMpError("Erreur: room undefined"); return; }
+    const seed = room.seed || room.total_rounds || 42;
+    let s = seed;
     function rng() { s = (s * 1664525 + 1013904223) & 0x7fffffff; return s / 0x7fffffff; }
-    const dbPool = [...(DB[room.diff] || DB.facile)];
+    const roomDiff = room.diff || room.game_mode || "facile";
+    const dbPool = [...(DB[roomDiff] || DB.facile)];
     for (let i = dbPool.length - 1; i > 0; i--) {
       const j = Math.floor(rng() * (i + 1));
       const tmp = dbPool[i]; dbPool[i] = dbPool[j]; dbPool[j] = tmp;
@@ -1329,10 +1332,18 @@ export default function LePont() {
           </div>
           {isHost && mpPlayers.length >= 1 ? (
             <button onClick={async function(){
-              if(!mpRoom) return;
-              await mpStartRoom(mpRoom.id);
-              // Host starts immediately, guest will get realtime event
-              mpStartGame(mpRoom);
+              if(!mpRoom) { setMpError("Erreur: partie introuvable"); return; }
+              setMpError("Lancement...");
+              try {
+                const { error } = await supabase.from("bb_rooms")
+                  .update({ status: "playing" })
+                  .eq("id", mpRoom.id);
+                if (error) { setMpError("Erreur Supabase: " + error.message); return; }
+                setMpError("");
+                mpStartGame(mpRoom);
+              } catch(e) {
+                setMpError("Erreur: " + e.message);
+              }
             }} style={{width:"100%", padding:"18px", background:G.bg, color:G.white, border:"none", borderRadius:50, cursor:"pointer", fontFamily:G.font, fontSize:16, fontWeight:800, display:"flex", alignItems:"center", justifyContent:"center", gap:10}}>
               {Icon.whistle(18,G.white)} Lancer ({mpPlayers.length} joueur{mpPlayers.length > 1 ? "s" : ""})
             </button>
