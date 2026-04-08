@@ -990,6 +990,10 @@ export default function LePont() {
   const [notifGranted, setNotifGranted] = useState(false);
   const [myLastPts, setMyLastPts] = useState(null);
   const seenInstructions = useRef(new Set());
+  const scoreRef = useRef(0);
+  const timerRef = useRef(null);
+  const inputRef = useRef(null);
+
   const comboRef = useRef(0);
   const lastAnswerTime = useRef(Date.now());
   const historyEndRef = useRef(null);
@@ -1167,6 +1171,12 @@ export default function LePont() {
     if(mode==="chaine")startChain();
     else{setCombo(0);setMaxCombo(0);comboRef.current=0;lastAnswerTime.current=Date.now();setRoundScores([]);setCurrentRound(1);setIsNewRecord(false);setMyLbRank(null);startRound(1);}
   }
+  const cur = queue[qIdx%Math.max(queue.length,1)];
+  const total = roundScores.reduce((a,b)=>a+b,0);
+  const duration = gameMode==="chaine"?CHAIN_DURATION:ROUND_DURATION;
+  const tPct = timeLeft/duration;
+  const urgent = timeLeft<=10&&timeLeft>0;
+
   // Design system
   const G = {
     bg:"#0d6e2e",bgLight:"#15943e",dark:"#0a0a0a",white:"#ffffff",
@@ -1384,10 +1394,7 @@ export default function LePont() {
             style={{flex:1,padding:"12px",background:"#f0f9f4",color:"#16a34a",border:"2px solid #86efac",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
             {Icon.trophy(15,"#16a34a")} Classement
           </button>
-          <button onClick={()=>{setMpError("");setMpJoinInput("");setMpScreen("mpMenu");}}
-            style={{flex:1,padding:"12px",background:"#eff6ff",color:"#2563eb",border:"2px solid #93c5fd",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
-            {Icon.transfer(15,"#2563eb")} Inviter un ami
-          </button>
+          
         </div>
       </div>
     </div>
