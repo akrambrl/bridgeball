@@ -1616,8 +1616,6 @@ export default function LePont() {
   );
 
 
-  const notifPrompt = null;
-  const welcomeBack = null;
 
   // ── LEADERBOARD SCREEN ──
   if(showLeaderboard) return (
