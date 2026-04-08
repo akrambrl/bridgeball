@@ -583,7 +583,7 @@ const CLUB_LOGO_URLS = {
   "Chelsea": "https://crests.football-data.org/61.svg",
   "Arsenal": "https://crests.football-data.org/57.svg",
   "Tottenham": "https://crests.football-data.org/73.svg",
-  "Napoli": "https://a.espncdn.com/i/teamlogos/soccer/500/3051.png",
+  "Napoli": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/SSC_Napoli_logo.svg/200px-SSC_Napoli_logo.svg.png",
   "Roma": "https://a.espncdn.com/i/teamlogos/soccer/500/104.png",
   "Lazio": "https://crests.football-data.org/110.svg",
   "Fiorentina": "https://upload.wikimedia.org/wikipedia/commons/a/a4/ACF_Fiorentina_logo_2022.png",
@@ -592,17 +592,17 @@ const CLUB_LOGO_URLS = {
   "RB Leipzig": "https://upload.wikimedia.org/wikipedia/en/0/04/RB_Leipzig_2014_logo.svg",
   "Eintracht Frankfurt": "https://upload.wikimedia.org/wikipedia/commons/0/04/Eintracht_Frankfurt_Logo.svg",
   "Sevilla": "https://crests.football-data.org/559.svg",
-  "Valencia": "https://crests.football-data.org/532.svg",
+  "Valencia": "https://upload.wikimedia.org/wikipedia/en/thumb/c/ce/Valenciacf.svg/200px-Valenciacf.svg.png",
   "Villarreal": "https://crests.football-data.org/449.svg",
   "Athletic Bilbao": "https://upload.wikimedia.org/wikipedia/en/9/98/Club_Athletic_de_Bilbao_logo.svg",
   "Real Betis": "https://upload.wikimedia.org/wikipedia/en/1/13/Real_betis_logo.svg",
   "Marseille": "https://crests.football-data.org/516.svg",
   "Lyon": "https://crests.football-data.org/523.svg",
-  "Monaco": "https://a.espncdn.com/i/teamlogos/soccer/500/3771.png",
+  "Monaco": "https://upload.wikimedia.org/wikipedia/en/thumb/e/ea/AS_Monaco_FC.svg/200px-AS_Monaco_FC.svg.png",
   "Lille": "https://crests.football-data.org/521.svg",
-  "Benfica": "https://a.espncdn.com/i/teamlogos/soccer/500/161.png",
-  "Porto": "https://a.espncdn.com/i/teamlogos/soccer/500/164.png",
-  "Sporting CP": "https://crests.football-data.org/498.svg",
+  "Benfica": "https://upload.wikimedia.org/wikipedia/en/thumb/8/8c/SL_Benfica_logo.svg/200px-SL_Benfica_logo.svg.png",
+  "Porto": "https://upload.wikimedia.org/wikipedia/en/thumb/3/36/FC_Porto.svg/200px-FC_Porto.svg.png",
+  "Sporting CP": "https://upload.wikimedia.org/wikipedia/en/thumb/f/f8/Sporting_CP_%E2%80%93_Logo.svg/200px-Sporting_CP_%E2%80%93_Logo.svg.png",
   "Ajax": "https://crests.football-data.org/678.svg",
   "Newcastle": "https://crests.football-data.org/67.svg",
   "Everton": "https://crests.football-data.org/62.svg",
@@ -721,7 +721,7 @@ function ClubLogo({ club, size = 48 }) {
   );
   if (!logo) return null;
   return (
-    <img src={logo} alt={club} style={{mixBlendMode:"multiply",background:"transparent"}} onError={function(e){e.target.onerror=null;e.target.style.display="none";e.target.parentNode.innerHTML="<div style=\"width:"+size+"px;height:"+size+"px;border-radius:50%;background:#eee;display:flex;align-items:center;justify-content:center;font-size:"+(size*0.35)+"px;font-weight:900;color:#999\">"+(club.slice(0,2).toUpperCase())+"</div>";}} src={logo} alt={club} style={{mixBlendMode:"multiply",width:size,height:size,objectFit:"contain",filter:"drop-shadow(0 2px 6px rgba(0,0,0,.3))"}}
+    <img src={logo} alt={club} style={{mixBlendMode:"multiply",width:size,height:size,objectFit:"contain"}} onError={function(e){e.target.onerror=null;e.target.style.display="none";e.target.parentNode.innerHTML="<div style=\"width:"+size+"px;height:"+size+"px;border-radius:50%;background:#eee;display:flex;align-items:center;justify-content:center;font-size:"+(size*0.35)+"px;font-weight:900;color:#999\">"+(club.slice(0,2).toUpperCase())+"</div>";}} src={logo} alt={club} style={{mixBlendMode:"multiply",width:size,height:size,objectFit:"contain",filter:"drop-shadow(0 2px 6px rgba(0,0,0,.3))"}}
       onError={e=>{e.target.style.display="none";}}/>
   );
 }
