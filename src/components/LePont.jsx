@@ -1020,6 +1020,38 @@ export default function LePont() {
   const chainScoreRef = useRef(0);
   const chainLogoRef = useRef({});
 
+  // ── INIT + SYNC EFFECTS ──
+  useEffect(() => {
+    try {
+      const r = localStorage.getItem("bb_record"); if(r) setRecord(JSON.parse(r));
+      const cr = localStorage.getItem("bb_chain_record"); if(cr) setChainRecord(JSON.parse(cr));
+      const n = localStorage.getItem("bb_name"); if(n) setPlayerName(n);
+      const seen = localStorage.getItem("bb_seen"); if(seen) JSON.parse(seen).forEach(s=>seenInstructions.current.add(s));
+    } catch {}
+    loadLeaderboard("pont","facile");
+  }, []);
+
+  useEffect(()=>{scoreRef.current=score;},[score]);
+  useEffect(()=>{comboRef.current=combo;},[combo]);
+  useEffect(()=>{if(historyEndRef.current)historyEndRef.current.scrollIntoView({behavior:"smooth"});},[chainHistory]);
+
+  // ── TIMER ──
+  useEffect(()=>{
+    if(screen!=="game"&&screen!=="chainGame"){hasEndedRef.current=false;return;}
+    hasEndedRef.current=false;
+    clearInterval(timerRef.current);
+    timerRef.current=setInterval(()=>{setTimeLeft(t=>Math.max(t-1,0));},1000);
+    return()=>clearInterval(timerRef.current);
+  },[screen,currentRound]);
+
+  useEffect(()=>{
+    if((screen!=="game"&&screen!=="chainGame")||timeLeft>0||hasEndedRef.current)return;
+    hasEndedRef.current=true;
+    if(screen==="game")endRound();
+    else endChain();
+  },[screen,timeLeft]);
+
+
   function endRound() {
     clearInterval(timerRef.current);
     const rs = scoreRef.current;
@@ -1616,7 +1648,7 @@ export default function LePont() {
                 <div key={i} onClick={isMyTurn?function() { if(lpSelected===i){lpPlayCard(card);}else{setLpSelected(i);} }:undefined}
                   style={{width:76, height:100, borderRadius:12, background:"linear-gradient(135deg,"+cols[0]+","+cols[1]+")", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:3, padding:6, flexShrink:0, cursor:isMyTurn?"pointer":"default",
                     border:isSel?"3px solid #fbbf24":isMyTurn&&isValid?"2px solid #4ade80":"2px solid rgba(255,255,255,.2)",
-                    opacity:isMyTurn&&!isValid?0.35:1, transform:isSel?"scale(1.08) translateY(-6px)":"scale(1)", transition:"all .2s",
+                    opacity:1, transform:isSel?"scale(1.08) translateY(-6px)":"scale(1)", transition:"all .2s",
                     boxShadow:isSel?"0 0 20px rgba(251,191,36,.5)":isMyTurn&&isValid?"0 0 10px rgba(74,222,128,.3)":"none"}}>
                   <div style={{fontSize:8, letterSpacing:2, textTransform:"uppercase", color:"rgba(255,255,255,.6)", fontWeight:700}}>{isClub?"CLUB":"JOUEUR"}</div>
                   {isClub?<ClubLogo club={card.name} size={22}/>:<span style={{fontSize:18}}>⚽</span>}
