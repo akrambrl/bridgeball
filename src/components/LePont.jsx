@@ -981,6 +981,24 @@ export default function LePont() {
   const [leaderboard, setLeaderboard] = useState([]);
   const [myLbRank, setMyLbRank] = useState(null);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
+  // ── LA PASSE STATE ──
+  const [lpScreen, setLpScreen] = useState(null); // null | 'game' | 'end'
+  const [lpHand, setLpHand] = useState([]); // [{type:'club'|'player', name:'...'}]
+  const [lpAiHands, setLpAiHands] = useState([]); // array of arrays
+  const [lpTopCard, setLpTopCard] = useState(null); // {type, name}
+  const [lpClubDeck, setLpClubDeck] = useState([]);
+  const [lpPlayerDeck, setLpPlayerDeck] = useState([]);
+  const [lpTurn, setLpTurn] = useState(0); // 0=player, 1+ = AI
+  const [lpWinner, setLpWinner] = useState(null); // 'player' | 'ai1' | etc
+  const [lpMsg, setLpMsg] = useState('');
+  const [lpNumAi, setLpNumAi] = useState(1);
+  const [lpSelected, setLpSelected] = useState(null);
+  const lpAiHandsRef = useRef([]);
+  const lpClubDeckRef = useRef([]);
+  const lpPlayerDeckRef = useRef([]);
+  const lpTopRef = useRef(null);
+  const lpTurnRef = useRef(0);
+
   const [lbMode, setLbMode] = useState("pont");
   const [lbDiff, setLbDiff] = useState("facile");
   const [showInstructions, setShowInstructions] = useState(null);
@@ -1176,6 +1194,172 @@ export default function LePont() {
   const duration = gameMode==="chaine"?CHAIN_DURATION:ROUND_DURATION;
   const tPct = timeLeft/duration;
   const urgent = timeLeft<=10&&timeLeft>0;
+
+
+  // ── LA PASSE FUNCTIONS ──
+  function lpShuffle(arr) {
+    const a = [...arr];
+    for (let i = a.length-1; i > 0; i--) {
+      const j = Math.floor(Math.random()*(i+1));
+      const t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+
+  function lpGetAllClubs() {
+    const clubs = new Set();
+    PLAYERS.forEach(function(p) { p.clubs.forEach(function(c) { clubs.add(c); }); });
+    return Array.from(clubs);
+  }
+
+  function lpCanPlay(card, topCard) {
+    if (!topCard) return true;
+    if (topCard.type === 'club') {
+      // Need to play a player who played at this club
+      if (card.type !== 'player') return false;
+      const p = PLAYERS.find(function(x) { return x.name === card.name; });
+      return p ? p.clubs.includes(topCard.name) : false;
+    } else {
+      // Need to play a club where this player played
+      if (card.type !== 'club') return false;
+      const p = PLAYERS.find(function(x) { return x.name === topCard.name; });
+      return p ? p.clubs.includes(card.name) : false;
+    }
+  }
+
+  function lpValidCards(hand, topCard) {
+    return hand.filter(function(card) { return lpCanPlay(card, topCard); });
+  }
+
+  function lpStartGame(numAi) {
+    const allClubs = lpShuffle(lpGetAllClubs());
+    const allPlayers = lpShuffle(PLAYERS.map(function(p) { return p.name; }));
+
+    // Build decks
+    const clubDeck = allClubs.map(function(c) { return {type:'club', name:c}; });
+    const playerDeck = allPlayers.map(function(p) { return {type:'player', name:p}; });
+
+    // Deal 5 clubs + 5 players to each
+    const totalPlayers = 1 + numAi;
+    const playerHand = [];
+    const aiHands = Array.from({length: numAi}, function() { return []; });
+
+    let cIdx = 0; let pIdx = 0;
+    for (let i = 0; i < 5; i++) {
+      playerHand.push({type:'club', name:clubDeck[cIdx++].name});
+      aiHands.forEach(function(h) { h.push({type:'club', name:clubDeck[cIdx++].name}); });
+    }
+    for (let i = 0; i < 5; i++) {
+      playerHand.push({type:'player', name:playerDeck[pIdx++].name});
+      aiHands.forEach(function(h) { h.push({type:'player', name:playerDeck[pIdx++].name}); });
+    }
+
+    // Top card: a club
+    const topCard = {type:'club', name:clubDeck[cIdx++].name};
+    const remClubs = clubDeck.slice(cIdx);
+    const remPlayers = playerDeck.slice(pIdx);
+
+    // Sync refs
+    lpAiHandsRef.current = aiHands;
+    lpClubDeckRef.current = remClubs;
+    lpPlayerDeckRef.current = remPlayers;
+    lpTopRef.current = topCard;
+    lpTurnRef.current = 0;
+
+    setLpHand(playerHand);
+    setLpAiHands(aiHands.map(function(h) { return [...h]; }));
+    setLpTopCard(topCard);
+    setLpClubDeck(remClubs);
+    setLpPlayerDeck(remPlayers);
+    setLpTurn(0);
+    setLpWinner(null);
+    setLpMsg('À toi de jouer !');
+    setLpSelected(null);
+    setLpNumAi(numAi);
+    setLpScreen('game');
+  }
+
+  function lpDrawCard(hand, type) {
+    const deck = type === 'club' ? lpClubDeckRef.current : lpPlayerDeckRef.current;
+    if (deck.length === 0) return hand;
+    const card = deck[0];
+    const newDeck = deck.slice(1);
+    if (type === 'club') { lpClubDeckRef.current = newDeck; setLpClubDeck(newDeck); }
+    else { lpPlayerDeckRef.current = newDeck; setLpPlayerDeck(newDeck); }
+    return [...hand, card];
+  }
+
+  function lpCheckWin(hand, who) {
+    if (hand.length === 0) {
+      setLpWinner(who);
+      setLpScreen('end');
+      return true;
+    }
+    return false;
+  }
+
+  function lpNextTurn(currentTurn, numAi) {
+    const next = (currentTurn + 1) % (1 + numAi);
+    lpTurnRef.current = next;
+    setLpTurn(next);
+    if (next !== 0) {
+      setTimeout(function() { lpAiPlay(next); }, 1200);
+    } else {
+      setLpMsg('À toi de jouer !');
+    }
+  }
+
+  function lpAiPlay(aiIdx) {
+    const top = lpTopRef.current;
+    const hands = lpAiHandsRef.current;
+    const hand = hands[aiIdx - 1];
+    const valid = lpValidCards(hand, top);
+    let newHand;
+    let newTop;
+    if (valid.length > 0) {
+      const card = valid[Math.floor(Math.random() * valid.length)];
+      newHand = hand.filter(function(c) { return c !== card; });
+      newTop = card;
+      lpTopRef.current = newTop;
+      setLpTopCard(newTop);
+      setLpMsg('Joueur ' + aiIdx + ' pose : ' + card.name);
+    } else {
+      const needed = top && top.type === 'club' ? 'player' : 'club';
+      newHand = lpDrawCard(hand, needed);
+      setLpMsg('Joueur ' + aiIdx + ' pioche une carte ' + (needed === 'club' ? 'club' : 'joueur'));
+    }
+    hands[aiIdx - 1] = newHand;
+    lpAiHandsRef.current = hands;
+    setLpAiHands(hands.map(function(h) { return [...h]; }));
+    if (!lpCheckWin(newHand, 'ai' + aiIdx)) {
+      setTimeout(function() { lpNextTurn(lpTurnRef.current, lpNumAi); }, 800);
+    }
+  }
+
+  function lpPlayCard(card) {
+    const top = lpTopRef.current;
+    if (!lpCanPlay(card, top)) {
+      setLpMsg('Ce joueur/club ne convient pas !');
+      return;
+    }
+    const newHand = lpHand.filter(function(c) { return c !== card; });
+    lpTopRef.current = card;
+    setLpTopCard(card);
+    setLpHand(newHand);
+    setLpSelected(null);
+    if (!lpCheckWin(newHand, 'player')) {
+      lpNextTurn(0, lpNumAi);
+    }
+  }
+
+  function lpPlayerDraw() {
+    const top = lpTopRef.current;
+    const needed = top && top.type === 'club' ? 'player' : 'club';
+    const newHand = lpDrawCard(lpHand, needed);
+    setLpHand(newHand);
+    setLpMsg('Tu as pioché une carte ' + (needed === 'club' ? 'club' : 'joueur') + ' !');
+    lpNextTurn(0, lpNumAi);
+  }
 
   // Design system
   const G = {
@@ -1376,6 +1560,15 @@ export default function LePont() {
             <div style={{fontSize:11,color:"rgba(255,255,255,.5)",marginTop:2}}>joueur → club → ...</div>
           </button>
         </div>
+
+        {/* La Passe */}
+        <button onClick={function() { setLpScreen('menu'); }}
+          style={{width:"100%", padding:"16px", background:"linear-gradient(135deg,#7c3aed,#4f46e5)", color:G.white,
+            border:"none", borderRadius:20, cursor:"pointer", fontFamily:G.font, textAlign:"center"}}>
+          <div style={{marginBottom:4, display:"flex", justifyContent:"center"}}>{Icon.transfer(28,"rgba(255,255,255,.9)")}</div>
+          <div style={{fontFamily:G.heading, fontSize:20, letterSpacing:2}}>LA PASSE</div>
+          <div style={{fontSize:11, color:"rgba(255,255,255,.6)", marginTop:2}}>Jeu de cartes · Vide ta main</div>
+        </button>
 
         {/* Records */}
         <div style={{display:"flex",gap:8}}>
