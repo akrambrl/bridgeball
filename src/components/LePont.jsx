@@ -1571,6 +1571,9 @@ export default function LePont() {
             style={{flex:1,padding:"12px",background:"#f0f9f4",color:"#16a34a",border:"2px solid #86efac",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
             {Icon.trophy(15,"#16a34a")} Classement
           </button>
+          <button onClick={()=>{setMpError("");setMpJoinInput("");setMpScreen("mpMenu");}} style={{flex:1,padding:"12px",background:"#eff6ff",color:"#2563eb",border:"2px solid #bfdbfe",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+            {Icon.transfer(15,"#2563eb")} Multijoueur
+          </button>
         </div>
       </div>
     </div>
