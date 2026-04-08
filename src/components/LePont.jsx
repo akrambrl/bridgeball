@@ -1036,6 +1036,19 @@ export default function LePont() {
         })
       .subscribe();
     mpChannelRef.current = ch;
+
+    // Polling fallback in case realtime misses the event
+    clearInterval(mpPollRef.current);
+    mpPollRef.current = setInterval(async function() {
+      const { data: room } = await supabase.from("bb_rooms").select("*").eq("id", roomId).single();
+      if (room && room.status === "playing" && mpScreenRef.current === "mpLobby") {
+        clearInterval(mpPollRef.current);
+        mpStartGame(room);
+      }
+      if (room && room.status === "finished") {
+        clearInterval(mpPollRef.current);
+      }
+    }, 2000);
   }
 
   function mpStartGame(room) {
@@ -1318,6 +1331,8 @@ export default function LePont() {
             <button onClick={async function(){
               if(!mpRoom) return;
               await mpStartRoom(mpRoom.id);
+              // Host starts immediately, guest will get realtime event
+              mpStartGame(mpRoom);
             }} style={{width:"100%", padding:"18px", background:G.bg, color:G.white, border:"none", borderRadius:50, cursor:"pointer", fontFamily:G.font, fontSize:16, fontWeight:800, display:"flex", alignItems:"center", justifyContent:"center", gap:10}}>
               {Icon.whistle(18,G.white)} Lancer ({mpPlayers.length} joueur{mpPlayers.length > 1 ? "s" : ""})
             </button>
