@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
 
 
 // ── CONSTANTS ──
@@ -566,82 +565,83 @@ function PlayerAvatarMini({ name, size = 28 }) {
 
 // ── CLUB LOGOS (TheSportsDB) ──
 const LOGO_CACHE = {};
-const CLUB_NAME_SEARCH = {
-  "Manchester United": "Manchester United",
-  "Manchester City": "Manchester City",
-  "Real Madrid": "Real Madrid CF",
-  "Barcelona": "FC Barcelona",
-  "Atletico Madrid": "Atletico Madrid",
-  "AC Milan": "AC Milan",
-  "Inter Milan": "Internazionale",
-  "Bayern Munich": "Bayern Munich",
-  "Borussia Dortmund": "Borussia Dortmund",
-  "PSG": "Paris Saint-Germain",
-  "Juventus": "Juventus",
-  "Liverpool": "Liverpool",
-  "Chelsea": "Chelsea",
-  "Arsenal": "Arsenal",
-  "Tottenham": "Tottenham Hotspur",
-  "Napoli": "Napoli",
-  "Roma": "AS Roma",
-  "Lazio": "Lazio",
-  "Fiorentina": "Fiorentina",
-  "Atalanta": "Atalanta",
-  "Bayer Leverkusen": "Bayer Leverkusen",
-  "RB Leipzig": "RB Leipzig",
-  "Eintracht Frankfurt": "Eintracht Frankfurt",
-  "Sevilla": "Sevilla",
-  "Valencia": "Valencia",
-  "Villarreal": "Villarreal",
-  "Athletic Bilbao": "Athletic Club",
-  "Real Betis": "Real Betis",
-  "Marseille": "Olympique Marseille",
-  "Lyon": "Olympique Lyonnais",
-  "Monaco": "AS Monaco",
-  "Lille": "LOSC Lille",
-  "Benfica": "SL Benfica",
-  "Porto": "FC Porto",
-  "Sporting CP": "Sporting CP",
-  "Ajax": "Ajax",
-  "Newcastle": "Newcastle United",
-  "Everton": "Everton",
-  "West Ham": "West Ham United",
-  "Aston Villa": "Aston Villa",
-  "Leicester City": "Leicester City",
-  "Wolverhampton": "Wolverhampton Wanderers",
-  "Brighton": "Brighton & Hove Albion",
-  "Galatasaray": "Galatasaray",
-  "Borussia Monchengladbach": "Borussia Monchengladbach",
-  "Schalke": "Schalke 04",
-  "Werder Bremen": "Werder Bremen",
-  "Wolfsburg": "VfL Wolfsburg",
+// Direct logo URLs from Wikipedia (SVG/PNG badges)
+const CLUB_LOGO_URLS = {
+  "Manchester United": "https://upload.wikimedia.org/wikipedia/en/7/7a/Manchester_United_FC_crest.svg",
+  "Manchester City": "https://upload.wikimedia.org/wikipedia/en/e/eb/Manchester_City_FC_badge.svg",
+  "Real Madrid": "https://upload.wikimedia.org/wikipedia/en/5/56/Real_Madrid_CF.svg",
+  "Barcelona": "https://upload.wikimedia.org/wikipedia/en/4/47/FC_Barcelona_%28crest%29.svg",
+  "Atletico Madrid": "https://upload.wikimedia.org/wikipedia/en/f/f4/Atletico_de_Madrid_2017_logo.svg",
+  "AC Milan": "https://upload.wikimedia.org/wikipedia/commons/d/d0/Logo_of_AC_Milan.svg",
+  "Inter Milan": "https://upload.wikimedia.org/wikipedia/commons/0/05/FC_Internazionale_Milano_2021.svg",
+  "Bayern Munich": "https://upload.wikimedia.org/wikipedia/commons/1/1b/FC_Bayern_M%C3%BCnchen_logo_%282002%E2%80%932017%29.svg",
+  "Borussia Dortmund": "https://upload.wikimedia.org/wikipedia/commons/6/67/Borussia_Dortmund_logo.svg",
+  "PSG": "https://upload.wikimedia.org/wikipedia/en/a/a7/Paris_Saint-Germain_F.C..svg",
+  "Juventus": "https://upload.wikimedia.org/wikipedia/commons/1/15/Juventus_FC_2017_logo.svg",
+  "Liverpool": "https://upload.wikimedia.org/wikipedia/en/0/0c/Liverpool_FC.svg",
+  "Chelsea": "https://upload.wikimedia.org/wikipedia/en/c/cc/Chelsea_FC.svg",
+  "Arsenal": "https://upload.wikimedia.org/wikipedia/en/5/53/Arsenal_FC.svg",
+  "Tottenham": "https://upload.wikimedia.org/wikipedia/en/b/b4/Tottenham_Hotspur.svg",
+  "Napoli": "https://upload.wikimedia.org/wikipedia/commons/2/2d/SSC_Napoli_logo.svg",
+  "Roma": "https://upload.wikimedia.org/wikipedia/en/f/f7/AS_Roma_logo_%282017%29.svg",
+  "Lazio": "https://upload.wikimedia.org/wikipedia/en/7/71/SS_Lazio_Badge.svg",
+  "Fiorentina": "https://upload.wikimedia.org/wikipedia/commons/a/a4/ACF_Fiorentina_logo_2022.png",
+  "Atalanta": "https://upload.wikimedia.org/wikipedia/en/6/66/AtalantaBC.svg",
+  "Bayer Leverkusen": "https://upload.wikimedia.org/wikipedia/en/5/59/Bayer_04_Leverkusen_logo.svg",
+  "RB Leipzig": "https://upload.wikimedia.org/wikipedia/en/0/04/RB_Leipzig_2014_logo.svg",
+  "Eintracht Frankfurt": "https://upload.wikimedia.org/wikipedia/commons/0/04/Eintracht_Frankfurt_Logo.svg",
+  "Sevilla": "https://upload.wikimedia.org/wikipedia/en/3/3b/Sevilla_FC_logo.svg",
+  "Valencia": "https://upload.wikimedia.org/wikipedia/en/c/ce/Valenciacf.svg",
+  "Villarreal": "https://upload.wikimedia.org/wikipedia/en/b/b9/Villarreal_CF_logo-en.svg",
+  "Athletic Bilbao": "https://upload.wikimedia.org/wikipedia/en/9/98/Club_Athletic_de_Bilbao_logo.svg",
+  "Real Betis": "https://upload.wikimedia.org/wikipedia/en/1/13/Real_betis_logo.svg",
+  "Marseille": "https://upload.wikimedia.org/wikipedia/commons/d/d8/Olympique_Marseille_logo.svg",
+  "Lyon": "https://upload.wikimedia.org/wikipedia/en/e/e9/Olympique_Lyonnais_%28logo%29.svg",
+  "Monaco": "https://upload.wikimedia.org/wikipedia/en/e/ea/AS_Monaco_FC.svg",
+  "Lille": "https://upload.wikimedia.org/wikipedia/commons/6/62/Logo_LOSC_Lille_2018.svg",
+  "Benfica": "https://upload.wikimedia.org/wikipedia/en/8/8c/SL_Benfica_logo.svg",
+  "Porto": "https://upload.wikimedia.org/wikipedia/en/f/f1/FC_Porto.svg",
+  "Sporting CP": "https://upload.wikimedia.org/wikipedia/en/f/f8/Sporting_CP_%E2%80%93_Logo.svg",
+  "Ajax": "https://upload.wikimedia.org/wikipedia/en/7/79/Ajax_Amsterdam.svg",
+  "Newcastle": "https://upload.wikimedia.org/wikipedia/en/5/56/Newcastle_United_Logo.svg",
+  "Everton": "https://upload.wikimedia.org/wikipedia/en/7/7c/Everton_FC_logo.svg",
+  "West Ham": "https://upload.wikimedia.org/wikipedia/en/c/c2/West_Ham_United_FC_logo.svg",
+  "Aston Villa": "https://upload.wikimedia.org/wikipedia/en/f/f9/Aston_Villa_FC_crest_%282016%29.svg",
+  "Leicester City": "https://upload.wikimedia.org/wikipedia/en/2/2d/Leicester_City_crest.svg",
+  "Galatasaray": "https://upload.wikimedia.org/wikipedia/commons/4/42/Galatasaray_Sports_Club_Logo.svg",
+  "Borussia Monchengladbach": "https://upload.wikimedia.org/wikipedia/commons/8/81/Borussia_M%C3%B6nchengladbach_logo.svg",
+  "Schalke": "https://upload.wikimedia.org/wikipedia/commons/6/6d/FC_Schalke_04_Logo.svg",
+  "Werder Bremen": "https://upload.wikimedia.org/wikipedia/en/8/8f/SV_Werder_Bremen.svg",
+  "Wolfsburg": "https://upload.wikimedia.org/wikipedia/en/c/ce/VfL_Wolfsburg_Logo.svg",
+  "Rennes": "https://upload.wikimedia.org/wikipedia/en/4/4e/Stade_Rennais_FC.svg",
+  "Fenerbahce": "https://upload.wikimedia.org/wikipedia/en/e/e4/Fenerbahce.svg",
+  "Besiktas": "https://upload.wikimedia.org/wikipedia/commons/9/98/Be%C5%9Fikta%C5%9F_JK_logo.svg",
+  "Brentford": "https://upload.wikimedia.org/wikipedia/en/2/2a/Brentford_FC_crest.svg",
+  "Brighton": "https://upload.wikimedia.org/wikipedia/en/f/fd/Brighton_%26_Hove_Albion_logo.svg",
+  "Crystal Palace": "https://upload.wikimedia.org/wikipedia/en/0/0c/Crystal_Palace_FC_logo.svg",
+  "Wolverhampton": "https://upload.wikimedia.org/wikipedia/en/f/fc/Wolverhampton_Wanderers.svg",
+  "Southampton": "https://upload.wikimedia.org/wikipedia/en/c/c9/FC_Southampton.svg",
+  "Leeds United": "https://upload.wikimedia.org/wikipedia/en/5/54/Leeds_United_F.C._logo.svg",
+  "Sunderland": "https://upload.wikimedia.org/wikipedia/en/7/77/Logo_Sunderland.svg",
+  "Nottingham Forest": "https://upload.wikimedia.org/wikipedia/en/e/e5/Nottingham_Forest_F.C._logo.svg",
+  "Girona": "https://upload.wikimedia.org/wikipedia/en/6/6e/Girona_FC_logo.svg",
+  "Real Sociedad": "https://upload.wikimedia.org/wikipedia/en/f/f1/Real_Sociedad_logo.png",
+  "PSV": "https://upload.wikimedia.org/wikipedia/en/0/05/PSV_Eindhoven.svg",
+  "Al Nassr": "https://upload.wikimedia.org/wikipedia/en/d/d2/Al-Nassr_FC_Logo.svg",
+  "Al Hilal": "https://upload.wikimedia.org/wikipedia/en/3/36/Al-Hilal_Saudi_Club_Logo.svg",
+  "Al Ittihad": "https://upload.wikimedia.org/wikipedia/en/9/9b/Al-Ittihad_Club_Logo.svg",
+  "Inter Miami": "https://upload.wikimedia.org/wikipedia/en/3/37/Logo_of_Inter_Miami_CF.svg",
+  "Los Angeles FC": "https://upload.wikimedia.org/wikipedia/en/3/37/Los_Angeles_FC_logo.svg",
 };
+
+const CLUB_NAME_SEARCH = {};
 
 async function fetchClubLogo(clubName) {
   if (LOGO_CACHE[clubName] !== undefined) return LOGO_CACHE[clubName];
-  try {
-    const searchName = CLUB_NAME_SEARCH[clubName] || clubName;
-    // Use Wikipedia for club logos
-    const searchRes = await fetch(
-      `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(searchName + " football club")}&format=json&origin=*&srlimit=1`
-    );
-    const searchData = await searchRes.json();
-    const pageTitle = searchData?.query?.search?.[0]?.title;
-    if (!pageTitle) { LOGO_CACHE[clubName] = null; return null; }
-
-    const imgRes = await fetch(
-      `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(pageTitle)}&prop=pageimages&format=json&origin=*&pithumbsize=120`
-    );
-    const imgData = await imgRes.json();
-    const pages = imgData?.query?.pages;
-    const page = pages ? Object.values(pages)[0] : null;
-    const logo = page?.thumbnail?.source || null;
-    LOGO_CACHE[clubName] = logo;
-    return logo;
-  } catch {
-    LOGO_CACHE[clubName] = null;
-    return null;
-  }
+  // Use direct URL if available
+  const directUrl = CLUB_LOGO_URLS[clubName] || null;
+  LOGO_CACHE[clubName] = directUrl;
+  return directUrl;
 }
 
 function ClubLogo({ club, size = 48 }) {
@@ -737,6 +737,7 @@ function PlayerPhoto({ name, size = 48, fallbackColors }) {
     </div>
   );
 }
+
 
 // ── HELPERS ──
 function shuffle(arr) {
@@ -947,7 +948,7 @@ function scheduleNextNotif() {
 }
 
 
-export default function BridgeBall() {
+export default function LePont() {
   const [screen, setScreen] = useState("home");
   const [gameMode, setGameMode] = useState("pont");
   const [diff, setDiff] = useState("facile");
@@ -1012,6 +1013,7 @@ export default function BridgeBall() {
   const lastAnswerTime = useRef(Date.now());
   const historyEndRef = useRef(null);
   const hasEndedRef = useRef(false);
+  const chainLogoRef = useRef({});
 
   // Load persisted data
   useEffect(() => {
@@ -1064,18 +1066,12 @@ export default function BridgeBall() {
   },[screen,timeLeft]);
 
   // Leaderboard (localStorage)
-  async function loadLeaderboard(mode, d) {
+  function loadLeaderboard(mode, d) {
     try {
       const key = `bb_lb_${mode}_${d}`;
-      const local = localStorage.getItem(key);
-      if(local) setLeaderboard(JSON.parse(local));
-    } catch {}
-    try {
-      const { data } = await supabase.rpc("get_leaderboard", {
-        p_game_mode: mode, p_difficulty: d,
-      });
-      if (data && data.length > 0) setLeaderboard(data);
-    } catch(e) { console.error("Supabase load:", e); }
+      const data = localStorage.getItem(key);
+      setLeaderboard(data ? JSON.parse(data) : []);
+    } catch { setLeaderboard([]); }
   }
 
   function footballPoints(sc, list) {
@@ -1089,7 +1085,7 @@ export default function BridgeBall() {
   }
   }
 
-  async function submitToLeaderboard(name, sc, mode, d) {
+  function submitToLeaderboard(name, sc, mode, d) {
     const displayName = (name||"").trim() || "Anonyme";
     try {
       const key = `bb_lb_${mode}_${d}`;
@@ -1126,26 +1122,6 @@ export default function BridgeBall() {
       setLeaderboard(top50);
       setMyLastPts(pts);
     } catch(e) { console.error(e); }
-    // Submit to Supabase for global leaderboard
-    try {
-      await supabase.rpc("submit_score", {
-        p_player_name: displayName,
-        p_score: sc,
-        p_game_mode: mode,
-        p_difficulty: d,
-        p_total_rounds: totalRounds,
-        p_max_combo: maxCombo,
-      });
-      const { data } = await supabase.rpc("get_leaderboard", {
-        p_game_mode: mode,
-        p_difficulty: d,
-      });
-      if (data && data.length > 0) {
-        setLeaderboard(data);
-        const rank = data.findIndex(e => e.player_name === displayName) + 1;
-        if (rank > 0) setMyLbRank(rank);
-      }
-    } catch(e) { console.error("Supabase error:", e); }
   }
 
   function handleCorrectAnswer(base, isChain=false) {
@@ -1312,6 +1288,8 @@ export default function BridgeBall() {
     const eligible=PLAYERS.filter(p=>p.clubs.length>=2);
     const start=eligible[Math.floor(Math.random()*eligible.length)];
     const usedP=new Set([start.name]);
+    // Prefetch logos for starting player clubs
+    start.clubs.forEach(club => fetchClubLogo(club).then(url => { if(url) chainLogoRef.current[club]=url; }));
     setChainPlayer(start.name); setChainUsedClubs(new Set()); setChainUsedPlayers(usedP);
     setChainCount(0); setChainScore(0); chainScoreRef.current=0;
     setChainLastClub(""); setChainHistory([]); setGuess(""); setFlash(null); setFeedback(null);
@@ -1386,6 +1364,8 @@ export default function BridgeBall() {
       if(clubPlayers.length===0){setTimeout(()=>{setFeedback(null);setFlash(null);endChain();},800);return;}
       const next=clubPlayers[Math.floor(Math.random()*clubPlayers.length)];
       const newUsedP=new Set(chainUsedPlayers); newUsedP.add(next);
+      // Prefetch logos for next player
+      getPlayerClubs(next).forEach(club => fetchClubLogo(club).then(url => { if(url) chainLogoRef.current[club]=url; }));
       setTimeout(()=>{setChainPlayer(next);setChainUsedPlayers(newUsedP);setChainLastClub(matched);setGuess("");setFeedback(null);setFlash(null);setTimeout(()=>inputRef.current?.focus(),100);},700);
     }else if(matchClub(g,playerClubs)){
       setFlash("used"); setFeedback("used"); playSound("ko");
