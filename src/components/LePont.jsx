@@ -1889,10 +1889,10 @@ export default function LePont() {
           )}
         </div>
       {/* Question timer bar */}
-      {/* Question timer bar */}
       <div style={{position:"fixed", bottom:0, left:0, right:0, height:5, background:"rgba(255,255,255,.15)", zIndex:100}}>
         <div style={{height:"100%", background:qTimeLeft>3?"#4ade80":qTimeLeft>1?"#fbbf24":"#ef4444", width:(qTimeLeft/QUESTION_DURATION*100)+"%", transition:"width 1s linear", borderRadius:"0 3px 3px 0"}}/>
       </div>
+    </div>
     );
   }
 
