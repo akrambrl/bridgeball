@@ -993,6 +993,7 @@ export default function LePont() {
   const [lpMsg, setLpMsg] = useState('');
   const [lpNumAi, setLpNumAi] = useState(1);
   const [lpSelected, setLpSelected] = useState(null);
+  const [lpDrawnCard, setLpDrawnCard] = useState(null);
   const lpAiHandsRef = useRef([]);
   const lpClubDeckRef = useRef([]);
   const lpPlayerDeckRef = useRef([]);
@@ -1275,6 +1276,7 @@ export default function LePont() {
     setLpWinner(null);
     setLpMsg('À toi de jouer !');
     setLpSelected(null);
+    setLpDrawnCard(null);
     setLpNumAi(numAi);
     setLpScreen('game');
   }
@@ -1355,10 +1357,17 @@ export default function LePont() {
   function lpPlayerDraw() {
     const top = lpTopRef.current;
     const needed = top && top.type === 'club' ? 'player' : 'club';
-    const newHand = lpDrawCard(lpHand, needed);
+    const deck = needed === 'club' ? lpClubDeckRef.current : lpPlayerDeckRef.current;
+    if (deck.length === 0) { setLpMsg('Pioche vide !'); return; }
+    const drawnCard = deck[0];
+    const newDeck = deck.slice(1);
+    if (needed === 'club') { lpClubDeckRef.current = newDeck; setLpClubDeck(newDeck); }
+    else { lpPlayerDeckRef.current = newDeck; setLpPlayerDeck(newDeck); }
+    const newHand = [...lpHand, drawnCard];
     setLpHand(newHand);
-    setLpMsg('Tu as pioché une carte ' + (needed === 'club' ? 'club' : 'joueur') + ' !');
-    lpNextTurn(0, lpNumAi);
+    setLpDrawnCard(drawnCard);
+    setLpMsg('Tu as pioché : ' + drawnCard.name + ' !');
+    setTimeout(function() { setLpDrawnCard(null); lpNextTurn(0, lpNumAi); }, 1800);
   }
 
   // Design system
@@ -1582,12 +1591,22 @@ export default function LePont() {
           })()}
           {needType && <div style={{fontSize:13, color:"rgba(255,255,255,.8)", fontWeight:700, textAlign:"center"}}>→ Pose un <span style={{color:G.gold, fontWeight:900}}>{needType==="player"?"JOUEUR":"CLUB"}</span>{needType==="player"?" ayant joué à "+lpTopCard.name:" de "+lpTopCard.name}</div>}
         </div>
+        {lpDrawnCard && (
+          <div style={{display:"flex", flexDirection:"column", alignItems:"center", gap:6, animation:"popIn .4s ease"}}>
+            <div style={{fontSize:11, letterSpacing:2, textTransform:"uppercase", color:G.gold, fontWeight:700}}>Tu as pioché !</div>
+            <div style={{width:90, height:118, borderRadius:14, background:"linear-gradient(135deg,"+(lpDrawnCard.type==="club"?getClubColors(lpDrawnCard.name)[0]+","+getClubColors(lpDrawnCard.name)[1]:"#1e3a5f,#2563eb")+")", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:4, padding:8, border:"3px solid "+G.gold, boxShadow:"0 0 24px rgba(251,191,36,.6)", animation:"popIn .4s ease"}}>
+              <div style={{fontSize:9, letterSpacing:2, textTransform:"uppercase", color:"rgba(255,255,255,.6)", fontWeight:700}}>{lpDrawnCard.type==="club"?"CLUB":"JOUEUR"}</div>
+              {lpDrawnCard.type==="club"?<ClubLogo club={lpDrawnCard.name} size={28}/>:<span style={{fontSize:22}}>⚽</span>}
+              <div style={{fontSize:10, fontWeight:800, color:"#fff", textAlign:"center", lineHeight:1.2}}>{lpDrawnCard.name.length>13?lpDrawnCard.name.slice(0,12)+"…":lpDrawnCard.name}</div>
+            </div>
+          </div>
+        )}
         <div style={{textAlign:"center", padding:"4px 16px"}}>
           <div style={{background:"rgba(0,0,0,.3)", borderRadius:20, padding:"6px 16px", display:"inline-block", fontSize:13, color:G.white, fontWeight:700}}>{lpScreen==="end"?(lpWinner==="player"?"🏆 Tu as gagné !":"😅 L'IA a gagné !"):lpMsg}</div>
         </div>
         <div style={{...sheet, borderRadius:"28px 28px 0 0", flexShrink:0, padding:"12px 12px 20px", gap:10}}>
           <div style={{fontSize:11, fontWeight:700, letterSpacing:2, textTransform:"uppercase", color:"#bbb", textAlign:"center"}}>{isMyTurn?"Ta main — sélectionne une carte":"Ta main"}</div>
-          <div style={{display:"flex", gap:8, overflowX:"auto", paddingBottom:4}}>
+          <div style={{display:"grid", gridTemplateColumns:"repeat(5, 1fr)", gap:6}}>
             {lpHand.map(function(card, i) {
               const isValid = validInHand.includes(card);
               const isSel = lpSelected===i;
