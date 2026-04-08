@@ -1363,6 +1363,12 @@ export default function LePont() {
   }
 
 
+  const cur = queue[qIdx%Math.max(queue.length,1)];
+  const total = roundScores.reduce((a,b)=>a+b,0);
+  const duration = gameMode==="chaine"?CHAIN_DURATION:ROUND_DURATION;
+  const tPct = timeLeft/duration;
+  const urgent = timeLeft<=10&&timeLeft>0;
+
   // Design system
   const G = {
     bg:"#0d6e2e",bgLight:"#15943e",dark:"#0a0a0a",white:"#ffffff",
