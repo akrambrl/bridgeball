@@ -1858,4 +1858,3 @@ export default function LePont() {
 
   return <div style={{...shell,justifyContent:"center",alignItems:"center"}}><div style={{color:G.white}}>Chargement…</div></div>;
 }
-          {mpError && <div style={{textAlign:"center",fontSize:13,color:G.red,fontWeight:700,padding:"8px",background:"#fee2e2",borderRadius:10,marginBottom:4}}>{mpError}</div>}
