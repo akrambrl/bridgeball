@@ -718,7 +718,6 @@ function PlayerPhoto({ name, size = 48, fallbackColors }) {
   }, [name]);
 
   const initials = name.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();
-  const [ca, cb] = fallbackColors || ["#2d6a4f","#1b4332"];
 
   // Always show avatar, overlay photo when loaded
   return (
@@ -979,9 +978,6 @@ export default function LePont() {
   const [chainScore, setChainScore] = useState(0);
   const [chainHistory, setChainHistory] = useState([]);
   const [chainLastClub, setChainLastClub] = useState("");
-  const [leaderboard, setLeaderboard] = useState([]);
-  const [myLbRank, setMyLbRank] = useState(null);
-  const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [leaderboard, setLeaderboard] = useState([]);
   const [myLbRank, setMyLbRank] = useState(null);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
