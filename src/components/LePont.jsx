@@ -760,52 +760,6 @@ function getPlayerClubs(name){const p=PLAYERS.find(x=>x.name===name);return p?p.
 function getPlayersForClub(club){return CLUB_INDEX[club]||[];}
 
 // ══ MULTIPLAYER ENGINE (BroadcastChannel + localStorage) ══
-// Works between browser tabs. Replace with Supabase for cross-device.
-
-const MAX_PLAYERS = 10;
-
-function mpStore(key) { return `bb_mp_${key}`; }
-
-function mpGetRoom(code) {
-  try { const d = localStorage.getItem(mpStore(code)); return d ? JSON.parse(d) : null; } catch { return null; }
-}
-
-function mpSaveRoom(code, room) {
-  try { localStorage.setItem(mpStore(code), JSON.stringify(room)); } catch {}
-}
-
-function mpDeleteRoom(code) {
-  try { localStorage.removeItem(mpStore(code)); } catch {}
-}
-
-function createRoom(code, hostName, diff, gameMode, totalRounds) {
-  const room = {
-    code, hostName, diff, gameMode, totalRounds: totalRounds || 1,
-    status: "lobby",
-    seed: Math.floor(Math.random() * 9999999),
-    createdAt: Date.now(),
-    players: [{ id: code + "_0", name: hostName, score: 0, status: "waiting", isHost: true, joinedAt: Date.now() }],
-  };
-  mpSaveRoom(code, room);
-  return room;
-}
-
-function joinRoom(code, playerName) {
-  const room = mpGetRoom(code);
-  if (!room) return { error: "Partie introuvable" };
-  if (room.status !== "lobby") return { error: "Partie déjà commencée" };
-  if (room.players.length >= MAX_PLAYERS) return { error: `Maximum ${MAX_PLAYERS} joueurs atteint` };
-  if (room.players.find(p => p.name === playerName)) return { error: "Ce pseudo est déjà pris" };
-  const player = { id: code + "_" + room.players.length, name: playerName, score: 0, status: "waiting", isHost: false, joinedAt: Date.now() };
-  room.players.push(player);
-  mpSaveRoom(code, room);
-  return { room, player };
-}
-
-function generateCode() {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  return Array.from({length:4}, ()=>chars[Math.floor(Math.random()*chars.length)]).join("");
-}
 
 function getClubColors(name){return CLUB_COLORS[name]||["#1a7a3a","#FFFFFF"];}
 function textColor(hex){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return(r*299+g*587+b*114)/1000>128?"#111":"#FFF";}
@@ -1048,7 +1002,7 @@ export default function LePont() {
   useEffect(()=>{
     if((screen!=="game"&&screen!=="chainGame")||timeLeft>0||hasEndedRef.current)return;
     hasEndedRef.current=true;
-    if(screen==="mpPlaying"){const r=mpGetRoom(mpCode);mpUpdateMyScore(scoreRef.current);setTimeout(()=>{const room=mpGetRoom(mpCode);if(room){setMpFinalScores([...room.players].sort((a,b)=>b.score-a.score));setMpScreen("mpResults");}},600);return;}
+    
     if(screen==="game")endRound();
     else endChain();
   },[screen,timeLeft]);
@@ -1233,64 +1187,9 @@ export default function LePont() {
 
 
   // ── MP HELPERS ──
-  const mpBroadcast = useCallback((msg) => {
-    try { mpChannel.current?.postMessage(msg); } catch {}
-  }, []);
 
-  const mpRefreshRoom = useCallback((code) => {
-    const room = mpGetRoom(code || mpCode);
-    if (room) {
-      setMpPlayers([...room.players]);
-      setMpRoom(room);
-      if (room.status === "playing" && mpScreen === "mpLobby") {
-        setMpScreen("mpPlaying");
-        startMpGame(room);
-      }
-      if (room.status === "finished" && mpScreen === "mpPlaying") {
-        setMpFinalScores([...room.players].sort((a,b) => b.score - a.score));
-        setMpScreen("mpResults");
-      }
-    }
-  }, [mpCode, mpScreen]);
 
-  function startMpChannel(code) {
-    try {
-      if (mpChannel.current) mpChannel.current.close();
-      const ch = new BroadcastChannel(`bb_room_${code}`);
-      ch.onmessage = (e) => {
-        if (e.data.type === "update") mpRefreshRoom(code);
-        if (e.data.type === "start") { mpRefreshRoom(code); }
-      };
-      mpChannel.current = ch;
-      // Poll every 2s as fallback
-      clearInterval(mpPollRef.current);
-      mpPollRef.current = setInterval(() => mpRefreshRoom(code), 2000);
-    } catch {}
-  }
 
-  function mpUpdateMyScore(finalScore) {
-    const room = mpGetRoom(mpCode);
-    if (!room) return;
-    const p = room.players.find(p => p.id === mpMyId);
-    if (p) {
-      p.score = finalScore;
-      p.status = "finished";
-    }
-    // Check if all finished
-    if (room.players.every(p => p.status === "finished")) {
-      room.status = "finished";
-    }
-    mpSaveRoom(mpCode, room);
-    mpBroadcast({ type: "update" });
-    mpRefreshRoom(mpCode);
-  }
-
-  useEffect(() => {
-    return () => {
-      mpChannel.current?.close();
-      clearInterval(mpPollRef.current);
-    };
-  }, []);
 
   function endRound() {
     clearInterval(timerRef.current);
@@ -1868,10 +1767,6 @@ export default function LePont() {
           <button onClick={()=>{setLbMode("pont");setLbDiff(diff);loadLeaderboard("pont",diff);setShowLeaderboard(true);}}
             style={{flex:1,padding:"12px",background:"#f0f9f4",color:"#16a34a",border:"2px solid #86efac",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
             {Icon.trophy(15,"#16a34a")} Classement
-          </button>
-          <button onClick={()=>{setMpError("");setMpJoinInput("");setMpScreen("mpMenu");}}
-            style={{flex:1,padding:"12px",background:"#eff6ff",color:"#2563eb",border:"2px solid #93c5fd",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
-            {Icon.transfer(15,"#2563eb")} Inviter un ami
           </button>
         </div>
       </div>
