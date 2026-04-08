@@ -1054,15 +1054,13 @@ export default function LePont() {
   }
 
   function mpStartGame(room) {
-    try {
     if (!room) { setMpError("Erreur: room undefined"); return; }
-    const seed = room.seed || room.total_rounds || 42;
+    const seed = room.seed || 42;
     let s = seed;
-    function rng() { s = (s * 1664525 + 1013904223) & 0x7fffffff; return s / 0x7fffffff; }
-    const roomDiff = room.diff || room.game_mode || "facile";
+    const roomDiff = room.diff || "facile";
     const dbPool = [...(DB[roomDiff] || DB.facile)];
     for (let i = dbPool.length - 1; i > 0; i--) {
-      const j = Math.floor(rng() * (i + 1));
+      const j = Math.floor(((s = (s * 1664525 + 1013904223) & 0x7fffffff) / 0x7fffffff) * (i + 1));
       const tmp = dbPool[i]; dbPool[i] = dbPool[j]; dbPool[j] = tmp;
     }
     setQueue(dbPool);
@@ -1071,8 +1069,7 @@ export default function LePont() {
     setCombo(0); setMaxCombo(0); comboRef.current = 0; lastAnswerTime.current = Date.now();
     setCurrentRound(1); setAnimKey(0); setMpScreen("mpPlaying"); setScreen("game");
   }
-    } catch(e) { setMpError("Erreur démarrage: " + e.message); }
-  }
+
   async function endMpGame() {
     clearInterval(timerRef.current);
     const finalScore = scoreRef.current;
