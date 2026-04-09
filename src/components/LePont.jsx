@@ -545,8 +545,7 @@ const PLAYERS = [
   { name:"Daniel Boateng", clubs:["Arsenal"], diff:"expert" },
   { name:"Kyle Bartley", clubs:["Arsenal", "Swansea"], diff:"expert" },
   { name:"Jay Emmanuel-Thomas", clubs:["Arsenal", "Ipswich"], diff:"expert" },
-  { name:"Nacer Barazite", clubs:["Arsenal", "Twente"], diff:"expert" }
-
+  { name:"Nacer Barazite", clubs:["Arsenal", "Twente"], diff:"expert" },
   { name:"David Villa", clubs:["Valencia","Barcelona","Atletico Madrid","New York City FC","Vissel Kobe"], diff:"moyen" },
   { name:"Jordan Veretout", clubs:["Nantes","Aston Villa","Saint-Etienne","Fiorentina","Roma","Marseille","Lyon","Al Arabi"], diff:"moyen" },
   { name:"Bafetimbi Gomis", clubs:["Saint-Etienne","Lyon","Swansea","Marseille","Galatasaray","Al Hilal"], diff:"moyen" },
