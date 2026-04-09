@@ -1386,6 +1386,14 @@ export default function LePont() {
   const [friendScores, setFriendScores] = useState([]);
   const [friendMsg, setFriendMsg] = useState("");
   const [friendLoading, setFriendLoading] = useState(false);
+  // Duels
+  const [duels, setDuels] = useState([]);
+  const [duelLoading, setDuelLoading] = useState(false);
+  const [showDuelCreate, setShowDuelCreate] = useState(null); // friend object
+  const [duelMode, setDuelMode] = useState("pont");
+  const [duelDiff, setDuelDiff] = useState("facile");
+  const [activeDuel, setActiveDuel] = useState(null); // duel being played
+
   const [qTimeLeft, setQTimeLeft] = useState(5);
   const qTimerRef = useRef(null);
   const seenInstructions = useRef(new Set());
@@ -1409,6 +1417,7 @@ export default function LePont() {
     } catch {}
     loadLeaderboard("pont","facile");
     loadFriends().then(function(ids){fetchFriendScores(ids);});
+    loadDuels();
   }, []);
 
   useEffect(()=>{scoreRef.current=score;},[score]);
@@ -1449,6 +1458,75 @@ export default function LePont() {
 
 
   // Leaderboard (localStorage)
+  // ── DUEL FUNCTIONS ──
+  async function loadDuels() {
+    try {
+      const data = await sbFetch("bb_duels?or=(challenger_id.eq." + playerId + ",opponent_id.eq." + playerId + ")&order=created_at.desc&limit=20");
+      setDuels(data || []);
+    } catch(e) { console.error(e); }
+  }
+
+  async function createDuel(friend) {
+    const name = (playerName || "Anonyme").trim();
+    try {
+      await sbFetch("bb_duels", {
+        method: "POST",
+        body: JSON.stringify({
+          challenger_id: playerId,
+          challenger_name: name,
+          opponent_id: friend.id,
+          opponent_name: friend.name,
+          mode: duelMode,
+          diff: duelMode === "pont" ? duelDiff : null,
+          status: "pending",
+        })
+      });
+      setShowDuelCreate(null);
+      loadDuels();
+    } catch(e) { console.error(e); }
+  }
+
+  async function playDuel(duel) {
+    setActiveDuel(duel);
+    setShowFriends(false);
+    const isChallenger = duel.challenger_id === playerId;
+    if (duel.mode === "chaine") {
+      startChain();
+    } else {
+      setDiff(duel.diff || "facile");
+      setCombo(0); setMaxCombo(0); comboRef.current = 0;
+      lastAnswerTime.current = Date.now();
+      setRoundScores([]); setCurrentRound(1);
+      setIsNewRecord(false); setMyLbRank(null);
+      startRound(1);
+    }
+  }
+
+  async function submitDuelScore(sc) {
+    if (!activeDuel) return;
+    const isChallenger = activeDuel.challenger_id === playerId;
+    const update = isChallenger
+      ? { challenger_score: sc, status: activeDuel.opponent_score !== null ? "complete" : "challenger_played" }
+      : { opponent_score: sc, status: activeDuel.challenger_score !== null ? "complete" : "opponent_played" };
+    try {
+      await sbFetch("bb_duels?id=eq." + activeDuel.id, { method: "PATCH", body: JSON.stringify(update), headers: {"Prefer": "return=minimal"} });
+    } catch(e) { console.error(e); }
+    setActiveDuel(null);
+    loadDuels();
+  }
+
+  function getPendingDuels() {
+    return duels.filter(function(d) {
+      if (d.challenger_id === playerId) return d.status === "pending" || d.status === "opponent_played";
+      return d.status === "pending" || d.status === "challenger_played";
+    }).filter(function(d) {
+      // Only show duels where I haven't played yet
+      if (d.challenger_id === playerId) return d.challenger_score === null;
+      return d.opponent_score === null;
+    });
+  }
+
+
   // ── FRIEND FUNCTIONS ──
   async function loadFriends() {
     try {
@@ -1966,6 +2044,7 @@ export default function LePont() {
                 <div key={i} style={{background:"rgba(255,255,255,.04)",borderRadius:16,padding:12,marginBottom:8,border:"1px solid rgba(255,255,255,.06)"}}>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
                     <div style={{fontFamily:G.heading,fontSize:17,color:G.white}}>{friend.name}</div>
+                    <button onClick={function(){setShowDuelCreate({id:friend.scores[0].player_id,name:friend.name});}} style={{padding:"6px 12px",background:G.accent,color:"#000",border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800}}>⚡ Défier</button>
                     <button onClick={function(){removeFriend(friend.scores[0].player_id);}}
                       style={{background:"transparent",border:"none",color:"rgba(255,255,255,.3)",cursor:"pointer",fontSize:16,padding:"0 4px"}}>✕</button>
                   </div>
@@ -1979,6 +2058,33 @@ export default function LePont() {
               );})}
             </div>
           )}
+
+          {/* Completed duels */}
+          {duels.filter(function(d){return d.status==="complete";}).length > 0 && (
+            <div>
+              <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.3)",marginBottom:8}}>Résultats de duels</div>
+              {duels.filter(function(d){return d.status==="complete";}).slice(0,5).map(function(d){
+                const isChallenger = d.challenger_id === playerId;
+                const myScore = isChallenger ? d.challenger_score : d.opponent_score;
+                const theirScore = isChallenger ? d.opponent_score : d.challenger_score;
+                const oppName = isChallenger ? d.opponent_name : d.challenger_name;
+                const won = myScore > theirScore;
+                const draw = myScore === theirScore;
+                return(
+                  <div key={d.id} style={{background:"rgba(255,255,255,.04)",borderRadius:12,padding:"10px 14px",marginBottom:6,border:"1px solid rgba(255,255,255,.06)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                    <div>
+                      <div style={{fontSize:12,fontWeight:800,color:won?"#00E676":draw?G.gold:"#FF3D57"}}>{won?"🏆 Victoire":draw?"🤝 Égalité":"😅 Défaite"}</div>
+                      <div style={{fontSize:11,color:"rgba(255,255,255,.4)"}}>vs {oppName} · {d.mode==="pont"?"Le Pont":"La Chaîne"}</div>
+                    </div>
+                    <div style={{textAlign:"right"}}>
+                      <div style={{fontFamily:G.heading,fontSize:20,color:G.white}}>{myScore} <span style={{fontSize:11,color:"rgba(255,255,255,.3)"}}>pts</span></div>
+                      <div style={{fontSize:11,color:"rgba(255,255,255,.35)"}}>{oppName}: {theirScore}</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
           <button onClick={function(){setShowFriends(false);}} style={{background:"rgba(255,255,255,.05)",color:"rgba(255,255,255,.5)",border:"1px solid rgba(255,255,255,.1)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,padding:"10px"}}>↩ Retour</button>
         </div>
       </div>
@@ -1989,6 +2095,39 @@ export default function LePont() {
   // ── HOME ──
   if(screen==="home") return (
     <div style={{...shell,animation:"fadeUp .5s ease"}} key="home">
+      {/* Duel create modal */}
+      {showDuelCreate && (
+        <div style={{position:"fixed",inset:0,zIndex:300,background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+          <div style={{background:"#1E1E1E",borderRadius:24,padding:"28px 24px",maxWidth:340,width:"calc(100% - 32px)",border:"1px solid rgba(255,255,255,.1)"}}>
+            <div style={{fontFamily:G.heading,fontSize:28,color:G.white,marginBottom:4}}>DÉFIER</div>
+            <div style={{fontSize:14,color:"rgba(255,255,255,.5)",marginBottom:20}}>vs <strong style={{color:G.gold}}>{showDuelCreate.name}</strong></div>
+            <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:8}}>Mode</div>
+            <div style={{display:"flex",gap:8,marginBottom:16}}>
+              {["pont","chaine"].map(function(m){return(
+                <button key={m} onClick={function(){setDuelMode(m);}} style={{flex:1,padding:"10px",borderRadius:12,border:"1.5px solid "+(duelMode===m?G.accent:"rgba(255,255,255,.15)"),background:duelMode===m?"rgba(0,230,118,.1)":"transparent",color:duelMode===m?G.accent:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:13}}>
+                  {m==="pont"?"Le Pont":"La Chaîne"}
+                </button>
+              );})}
+            </div>
+            {duelMode==="pont" && (
+              <div style={{marginBottom:16}}>
+                <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:8}}>Difficulté</div>
+                <div style={{display:"flex",gap:8}}>
+                  {["facile","moyen","expert"].map(function(d){return(
+                    <button key={d} onClick={function(){setDuelDiff(d);}} style={{flex:1,padding:"8px",borderRadius:10,border:"1.5px solid "+(duelDiff===d?G.gold:"rgba(255,255,255,.15)"),background:duelDiff===d?"rgba(255,214,0,.1)":"transparent",color:duelDiff===d?G.gold:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:12,textTransform:"capitalize"}}>
+                      {d}
+                    </button>
+                  );})}
+                </div>
+              </div>
+            )}
+            <div style={{display:"flex",gap:8,marginTop:8}}>
+              <button onClick={function(){setShowDuelCreate(null);}} style={{flex:1,padding:"12px",background:"rgba(255,255,255,.07)",color:"rgba(255,255,255,.5)",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14}}>Annuler</button>
+              <button onClick={function(){createDuel(showDuelCreate);}} style={{flex:2,padding:"12px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>Envoyer le défi ⚡</button>
+            </div>
+          </div>
+        </div>
+      )}
       <div style={stripes}/>
       <BouncingBall/>
       {confettiOverlay}
@@ -2030,6 +2169,26 @@ export default function LePont() {
           </div>
         </div>
 
+
+        {/* Pending duels */}
+        {getPendingDuels().length > 0 && (
+          <div style={{background:"linear-gradient(135deg,rgba(255,214,0,.12),rgba(255,140,0,.08))",border:"1px solid rgba(255,214,0,.3)",borderRadius:16,padding:"12px 16px"}}>
+            <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:G.gold,marginBottom:8}}>⚡ Duels en attente ({getPendingDuels().length})</div>
+            {getPendingDuels().slice(0,3).map(function(d){
+              const isChallenger = d.challenger_id === playerId;
+              const opponentName = isChallenger ? d.opponent_name : d.challenger_name;
+              return(
+                <div key={d.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderTop:"1px solid rgba(255,255,255,.06)"}}>
+                  <div>
+                    <div style={{fontSize:13,fontWeight:700,color:G.white}}>vs {opponentName}</div>
+                    <div style={{fontSize:11,color:"rgba(255,255,255,.4)"}}>{d.mode==="pont"?"Le Pont":"La Chaîne"}{d.diff?" · "+d.diff:""}</div>
+                  </div>
+                  <button onClick={function(){playDuel(d);}} style={{padding:"8px 16px",background:G.gold,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:800}}>Jouer ▶</button>
+                </div>
+              );
+            })}
+          </div>
+        )}
         {/* Game modes */}
         <div style={{display:"flex",gap:10}}>
           <button onClick={()=>tryStart("pont")} style={{flex:1,padding:"18px 10px",background:G.dark,color:G.white,border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,textAlign:"center"}}>
@@ -2061,7 +2220,7 @@ export default function LePont() {
             style={{flex:1,padding:"12px",background:"#f0f9f4",color:"#16a34a",border:"2px solid #86efac",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
             {Icon.trophy(15,"#16a34a")} Classement
           </button>
-          <button onClick={function(){setShowFriends(true);fetchFriendScores(friendsList);}} style={{flex:1,padding:"14px",background:"rgba(255,255,255,.07)",color:G.white,border:"1px solid rgba(255,255,255,.1)",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>👥 Amis</button>
+          <button onClick={function(){setShowFriends(true);fetchFriendScores(friendsList);loadDuels();}} style={{flex:1,padding:"14px",background:"rgba(255,255,255,.07)",color:G.white,border:"1px solid rgba(255,255,255,.1)",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>👥 Amis</button>
         </div>
       </div>
     </div>
