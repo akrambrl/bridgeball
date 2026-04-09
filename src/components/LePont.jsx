@@ -1,4 +1,34 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
+const SB_URL = "https://ialjlsrgcolocoaegzrc.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhbGpsc3JnY29sb2NvYWVnenJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1MDM3NzksImV4cCI6MjA5MTA3OTc3OX0.-SU8anuPhnpoa-PYhIHQqrcuOBsHxdtBJKRZuiGcGwM";
+
+async function sbFetch(path, options) {
+  const res = await fetch(SB_URL + "/rest/v1/" + path, {
+    ...options,
+    headers: {
+      "apikey": SB_KEY,
+      "Authorization": "Bearer " + SB_KEY,
+      "Content-Type": "application/json",
+      "Prefer": options && options.method === "POST" ? "return=minimal" : undefined,
+      ...(options && options.headers),
+    }
+  });
+  if (!res.ok && res.status !== 201) return null;
+  if (res.status === 201 || res.headers.get("content-length") === "0") return [];
+  try { return await res.json(); } catch { return []; }
+}
+
+function getPlayerId() {
+  let id = localStorage.getItem("bb_player_id");
+  if (!id) {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    id = Array.from({length:6}, function(){return chars[Math.floor(Math.random()*chars.length)];}).join("");
+    localStorage.setItem("bb_player_id", id);
+  }
+  return id;
+}
+
+
 
 
 // ── CONSTANTS ──
@@ -272,6 +302,246 @@ const PLAYERS = [
   { name:"Joao Neves", clubs:["Benfica", "PSG"], diff:"expert" },
   { name:"Nuno Mendes", clubs:["Sporting CP", "PSG"], diff:"expert" },
   { name:"Ivan Toney", clubs:["Brentford", "Al Ahli"], diff:"expert" },
+,
+  { name:"Vinicius Jr", clubs:["Real Madrid"], diff:"facile" },
+  { name:"Bukayo Saka", clubs:["Arsenal"], diff:"facile" },
+  { name:"Federico Valverde", clubs:["Real Madrid"], diff:"facile" },
+  { name:"Thibaut Courtois", clubs:["Chelsea", "Real Madrid"], diff:"facile" },
+  { name:"Alisson", clubs:["Roma", "Liverpool"], diff:"facile" },
+  { name:"Joshua Kimmich", clubs:["Bayern Munich"], diff:"facile" },
+  { name:"Romelu Lukaku", clubs:["Manchester United", "Chelsea", "Inter Milan", "Roma", "Napoli"], diff:"facile" },
+  { name:"Son Heung-min", clubs:["Tottenham"], diff:"facile" },
+  { name:"Carlos Puyol", clubs:["Barcelona"], diff:"moyen" },
+  { name:"Carles Puyol", clubs:["Barcelona"], diff:"moyen" },
+  { name:"Falcao", clubs:["Porto", "Atletico Madrid", "Monaco", "Manchester United", "Chelsea"], diff:"moyen" },
+  { name:"Samir Nasri", clubs:["Marseille", "Arsenal", "Manchester City"], diff:"moyen" },
+  { name:"Bacary Sagna", clubs:["Arsenal", "Manchester City"], diff:"moyen" },
+  { name:"Nicolas Anelka", clubs:["Arsenal", "Real Madrid", "PSG", "Manchester City", "Chelsea", "Bolton"], diff:"moyen" },
+  { name:"Sylvain Wiltord", clubs:["Bordeaux", "Arsenal"], diff:"moyen" },
+  { name:"Marc Overmars", clubs:["Ajax", "Arsenal", "Barcelona"], diff:"moyen" },
+  { name:"Robert Pires", clubs:["Arsenal", "Marseille", "Villarreal"], diff:"moyen" },
+  { name:"Claude Makelele", clubs:["Real Madrid", "Chelsea"], diff:"moyen" },
+  { name:"Peter Cech", clubs:["Chelsea", "Arsenal"], diff:"moyen" },
+  { name:"Didier Deschamps", clubs:["Juventus", "Chelsea", "Monaco"], diff:"moyen" },
+  { name:"Marcel Desailly", clubs:["Marseille", "AC Milan", "Chelsea"], diff:"moyen" },
+  { name:"Lilian Thuram", clubs:["Monaco", "Parma", "Juventus", "Barcelona"], diff:"moyen" },
+  { name:"William Gallas", clubs:["Chelsea", "Arsenal", "Tottenham"], diff:"moyen" },
+  { name:"Frederic Kanoute", clubs:["West Ham", "Tottenham", "Sevilla"], diff:"moyen" },
+  { name:"Yaya Toure", clubs:["Monaco", "Barcelona", "Manchester City"], diff:"moyen" },
+  { name:"Kolo Toure", clubs:["Arsenal", "Manchester City", "Liverpool"], diff:"moyen" },
+  { name:"Mikel Essien", clubs:["Lyon", "Chelsea"], diff:"moyen" },
+  { name:"Oliver Kahn", clubs:["Bayern Munich"], diff:"moyen" },
+  { name:"Karl-Heinz Riedle", clubs:["Borussia Dortmund", "Liverpool"], diff:"moyen" },
+  { name:"Stefan Effenberg", clubs:["Bayern Munich"], diff:"moyen" },
+  { name:"Lothar Matthaus", clubs:["Bayern Munich", "Inter Milan"], diff:"moyen" },
+  { name:"Jürgen Klinsmann", clubs:["Bayern Munich", "Tottenham"], diff:"moyen" },
+  { name:"Alessandro Nesta", clubs:["Lazio", "AC Milan"], diff:"moyen" },
+  { name:"Paolo Maldini", clubs:["AC Milan"], diff:"moyen" },
+  { name:"Franco Baresi", clubs:["AC Milan"], diff:"moyen" },
+  { name:"Andrea Pirlo", clubs:["Inter Milan", "AC Milan", "Juventus", "New York City FC"], diff:"moyen" },
+  { name:"Dida", clubs:["AC Milan"], diff:"moyen" },
+  { name:"Rivaldo", clubs:["Barcelona", "AC Milan"], diff:"moyen" },
+  { name:"Cafu", clubs:["Roma", "AC Milan"], diff:"moyen" },
+  { name:"Roberto Carlos", clubs:["Real Madrid", "Fenerbahce"], diff:"moyen" },
+  { name:"Lucio", clubs:["Bayer Leverkusen", "Bayern Munich", "Inter Milan"], diff:"moyen" },
+  { name:"Luis Figo", clubs:["Sporting CP", "Barcelona", "Real Madrid", "Inter Milan"], diff:"moyen" },
+  { name:"Simao Sabrosa", clubs:["Barcelona", "Atletico Madrid", "Besiktas"], diff:"moyen" },
+  { name:"Raul", clubs:["Real Madrid", "Schalke"], diff:"moyen" },
+  { name:"Fernando Hierro", clubs:["Real Madrid"], diff:"moyen" },
+  { name:"Emilio Butragueno", clubs:["Real Madrid"], diff:"moyen" },
+  { name:"Jamie Carragher", clubs:["Liverpool"], diff:"moyen" },
+  { name:"Robbie Fowler", clubs:["Liverpool", "Manchester City"], diff:"moyen" },
+  { name:"Kevin Keegan", clubs:["Liverpool", "Newcastle"], diff:"moyen" },
+  { name:"Peter Schmeichel", clubs:["Manchester United"], diff:"moyen" },
+  { name:"Roy Keane", clubs:["Manchester United", "Celtic"], diff:"moyen" },
+  { name:"Paul Scholes", clubs:["Manchester United"], diff:"moyen" },
+  { name:"Gary Neville", clubs:["Manchester United"], diff:"moyen" },
+  { name:"Ole Gunnar Solskjaer", clubs:["Manchester United"], diff:"moyen" },
+  { name:"Teddy Sheringham", clubs:["Manchester United", "Tottenham"], diff:"moyen" },
+  { name:"Andy Cole", clubs:["Manchester United", "Newcastle", "Blackburn"], diff:"moyen" },
+  { name:"Dwight Yorke", clubs:["Manchester United", "Aston Villa"], diff:"moyen" },
+  { name:"Nwankwo Kanu", clubs:["Ajax", "Inter Milan", "Arsenal", "West Brom"], diff:"moyen" },
+  { name:"Abedi Pele", clubs:["Marseille"], diff:"moyen" },
+  { name:"George Weah", clubs:["Marseille", "PSG", "AC Milan", "Chelsea"], diff:"moyen" },
+  { name:"Jay-Jay Okocha", clubs:["PSG", "Bolton"], diff:"moyen" },
+  { name:"El Hadji Diouf", clubs:["Lens", "Liverpool", "Bolton"], diff:"moyen" },
+  { name:"Hasan Salihamidzic", clubs:["Bayern Munich"], diff:"moyen" },
+  { name:"Oliver Neuville", clubs:["Borussia Dortmund", "Bayer Leverkusen"], diff:"moyen" },
+  { name:"Alessandro Del Piero", clubs:["Juventus"], diff:"moyen" },
+  { name:"Francesco Totti", clubs:["Roma"], diff:"moyen" },
+  { name:"Javier Zanetti", clubs:["Inter Milan"], diff:"moyen" },
+  { name:"Nicola Ventola", clubs:["Bari", "Inter Milan", "Atalanta"], diff:"moyen" },
+  { name:"Boudewijn Zenden", clubs:["Barcelona", "Chelsea", "Liverpool", "Marseille"], diff:"moyen" },
+  { name:"Marc Wilmots", clubs:["Schalke", "Inter Milan"], diff:"moyen" },
+  { name:"Johan Cruyff", clubs:["Ajax", "Barcelona"], diff:"moyen" },
+  { name:"Marco van Basten", clubs:["Ajax", "AC Milan"], diff:"moyen" },
+  { name:"Ruud Gullit", clubs:["AC Milan", "Chelsea"], diff:"moyen" },
+  { name:"Frank Rijkaard", clubs:["Ajax", "AC Milan"], diff:"moyen" },
+  { name:"Ronald Koeman", clubs:["Ajax", "Barcelona"], diff:"moyen" },
+  { name:"Romario", clubs:["Barcelona", "PSV"], diff:"moyen" },
+  { name:"Bebeto", clubs:["Deportivo", "Sevilla"], diff:"moyen" },
+  { name:"Denilson", clubs:["Real Betis", "Bordeaux"], diff:"moyen" },
+  { name:"Rui Patricio", clubs:["Sporting CP", "Wolves", "Roma"], diff:"moyen" },
+  { name:"Pepe Reina", clubs:["Barcelona", "Villarreal", "Liverpool", "Napoli"], diff:"moyen" },
+  { name:"Kevin Gameiro", clubs:["Lorient", "PSG", "Sevilla", "Atletico Madrid", "Valencia"], diff:"expert" },
+  { name:"Djibril Cisse", clubs:["Auxerre", "Liverpool", "Marseille"], diff:"expert" },
+  { name:"Nicolas Mahut", clubs:["Angers"], diff:"expert" },
+  { name:"Youri Djorkaeff", clubs:["PSG", "Inter Milan", "Bolton"], diff:"expert" },
+  { name:"Mirandinha", clubs:["Newcastle"], diff:"expert" },
+  { name:"Jonathan Woodgate", clubs:["Real Madrid", "Newcastle", "Tottenham"], diff:"expert" },
+  { name:"Sean Wright-Phillips", clubs:["Manchester City", "Chelsea"], diff:"expert" },
+  { name:"Mikael Silvestre", clubs:["Manchester United", "Arsenal"], diff:"expert" },
+  { name:"Quinton Fortune", clubs:["Manchester United", "Atletico Madrid"], diff:"expert" },
+  { name:"Luke Chadwick", clubs:["Manchester United"], diff:"expert" },
+  { name:"Corentin Tolisso", clubs:["Lyon", "Bayern Munich"], diff:"expert" },
+  { name:"Mathieu Valbuena", clubs:["Marseille", "Lyon", "Fenerbahce"], diff:"expert" },
+  { name:"Hatem Ben Arfa", clubs:["Lyon", "Marseille", "Newcastle", "Nice", "PSG"], diff:"expert" },
+  { name:"Frederic Piquionne", clubs:["Monaco", "Lyon"], diff:"expert" },
+  { name:"Mahamadou Diarra", clubs:["Lyon", "Real Madrid", "Atletico Madrid"], diff:"expert" },
+  { name:"Juninho", clubs:["Lyon", "Atletico Madrid"], diff:"expert" },
+  { name:"Sidney Govou", clubs:["Lyon"], diff:"expert" },
+  { name:"Gregory Coupet", clubs:["Lyon"], diff:"expert" },
+  { name:"Remi Garde", clubs:["Lyon", "Arsenal"], diff:"expert" },
+  { name:"Claudio Pizarro", clubs:["Werder Bremen", "Bayern Munich", "Chelsea"], diff:"expert" },
+  { name:"Stephane Dalmat", clubs:["PSG", "Inter Milan", "Tottenham"], diff:"expert" },
+  { name:"David Rozehnal", clubs:["PSG", "Newcastle"], diff:"expert" },
+  { name:"Noe Pamarot", clubs:["Tottenham", "Nice"], diff:"expert" },
+  { name:"Gael Clichy", clubs:["Arsenal", "Manchester City"], diff:"expert" },
+  { name:"Johan Djourou", clubs:["Arsenal"], diff:"expert" },
+  { name:"Justin Hoyte", clubs:["Arsenal"], diff:"expert" },
+  { name:"Jan Kirchhoff", clubs:["Bayern Munich", "Manchester City", "Sunderland"], diff:"expert" },
+  { name:"Pierre Webo", clubs:["Mallorca", "Atletico Madrid"], diff:"expert" },
+  { name:"Mutu", clubs:["Parma", "Chelsea", "Fiorentina"], diff:"expert" },
+  { name:"Bogdan Lobont", clubs:["Ajax", "Roma"], diff:"expert" },
+  { name:"Bogdan Stancu", clubs:["Galatasaray"], diff:"expert" },
+  { name:"Chidi Odiah", clubs:["CSKA Moscow"], diff:"expert" },
+  { name:"Thierry Henry", clubs:["Monaco", "Juventus", "Arsenal", "Barcelona", "New York Red Bulls"], diff:"facile" },
+  { name:"Emmanuel Adebayor", clubs:["Monaco", "Arsenal", "Manchester City", "Real Madrid", "Tottenham"], diff:"moyen" },
+  { name:"Nicolas Bendtner", clubs:["Arsenal", "Juventus"], diff:"expert" },
+  { name:"Sylvain Distin", clubs:["Manchester City", "Everton"], diff:"expert" },
+  { name:"Abdoulaye Meite", clubs:["Monaco", "Marseille", "Bolton"], diff:"expert" }
+,
+  { name:"Gabri Veiga", clubs:["Celta Vigo", "Al Qadsiah"], diff:"facile" },
+  { name:"Ben White", clubs:["Arsenal"], diff:"facile" },
+  { name:"Gabriel Magalhaes", clubs:["Lille", "Arsenal"], diff:"facile" },
+  { name:"David Raya", clubs:["Brentford", "Arsenal"], diff:"facile" },
+  { name:"Alexander Isak", clubs:["Borussia Dortmund", "Real Sociedad", "Newcastle"], diff:"facile" },
+  { name:"Darwin Nunez", clubs:["Benfica", "Liverpool"], diff:"facile" },
+  { name:"Luis Diaz", clubs:["Porto", "Liverpool"], diff:"facile" },
+  { name:"Cody Gakpo", clubs:["PSV", "Liverpool"], diff:"facile" },
+  { name:"Ryan Gravenberch", clubs:["Ajax", "Bayern Munich", "Liverpool"], diff:"facile" },
+  { name:"Antonio Rudiger", clubs:["Stuttgart", "Roma", "Chelsea", "Real Madrid"], diff:"facile" },
+  { name:"Fabian Ruiz", clubs:["Napoli", "PSG"], diff:"facile" },
+  { name:"Marco Asensio", clubs:["Real Madrid", "PSG"], diff:"facile" },
+  { name:"Milan Skriniar", clubs:["Inter Milan", "PSG"], diff:"facile" },
+  { name:"Hakan Calhanoglu", clubs:["AC Milan", "Inter Milan"], diff:"facile" },
+  { name:"Stefan de Vrij", clubs:["Lazio", "Inter Milan"], diff:"facile" },
+  { name:"Alessandro Bastoni", clubs:["Inter Milan"], diff:"facile" },
+  { name:"Ansu Fati", clubs:["Barcelona"], diff:"facile" },
+  { name:"Ferran Torres", clubs:["Valencia", "Manchester City", "Barcelona"], diff:"facile" },
+  { name:"Alexis Sanchez", clubs:["Udinese", "Barcelona", "Arsenal", "Manchester United", "Inter Milan", "Marseille"], diff:"facile" },
+  { name:"Mesut Ozil", clubs:["Werder Bremen", "Real Madrid", "Arsenal", "Fenerbahce"], diff:"moyen" },
+  { name:"Per Mertesacker", clubs:["Werder Bremen", "Arsenal"], diff:"moyen" },
+  { name:"Lars Bender", clubs:["Bayer Leverkusen"], diff:"moyen" },
+  { name:"Sven Bender", clubs:["Borussia Dortmund", "Bayer Leverkusen"], diff:"moyen" },
+  { name:"Sergio Aguero", clubs:["Atletico Madrid", "Manchester City", "Barcelona"], diff:"moyen" },
+  { name:"Javier Mascherano", clubs:["Liverpool", "Barcelona"], diff:"moyen" },
+  { name:"Goran Pandev", clubs:["Lazio", "Inter Milan", "Napoli", "Genoa"], diff:"moyen" },
+  { name:"Diego Milito", clubs:["Genoa", "Inter Milan"], diff:"moyen" },
+  { name:"Esteban Cambiasso", clubs:["Real Madrid", "Inter Milan"], diff:"moyen" },
+  { name:"Julio Cesar", clubs:["Inter Milan"], diff:"moyen" },
+  { name:"Maicon", clubs:["Monaco", "Inter Milan"], diff:"moyen" },
+  { name:"Samuel Eto'o", clubs:["Barcelona", "Inter Milan", "Chelsea", "Everton"], diff:"moyen" },
+  { name:"Sulley Muntari", clubs:["Udinese", "Portsmouth", "Inter Milan", "AC Milan"], diff:"moyen" },
+  { name:"Dejan Stankovic", clubs:["Lazio", "Inter Milan"], diff:"moyen" },
+  { name:"Ivan Cordoba", clubs:["Inter Milan"], diff:"moyen" },
+  { name:"Robinho", clubs:["Real Madrid", "Manchester City", "AC Milan", "Santos"], diff:"moyen" },
+  { name:"Jo", clubs:["CSKA Moscow", "Manchester City", "Everton"], diff:"moyen" },
+  { name:"Elano", clubs:["Shakhtar", "Manchester City", "Galatasaray"], diff:"moyen" },
+  { name:"Vedran Corluka", clubs:["Manchester City", "Tottenham"], diff:"moyen" },
+  { name:"Robbie Keane", clubs:["Tottenham", "Liverpool", "LA Galaxy"], diff:"moyen" },
+  { name:"Jermain Defoe", clubs:["Tottenham", "Portsmouth"], diff:"moyen" },
+  { name:"Ledley King", clubs:["Tottenham"], diff:"moyen" },
+  { name:"Michael Carrick", clubs:["Tottenham", "Manchester United"], diff:"moyen" },
+  { name:"Darren Bent", clubs:["Tottenham", "Sunderland", "Aston Villa"], diff:"moyen" },
+  { name:"Pascal Chimbonda", clubs:["Wigan", "Tottenham"], diff:"moyen" },
+  { name:"Niko Kranjcar", clubs:["Tottenham", "Portsmouth"], diff:"moyen" },
+  { name:"Dimitar Berbatov", clubs:["Bayer Leverkusen", "Tottenham", "Manchester United"], diff:"moyen" },
+  { name:"Kyle Walker", clubs:["Tottenham", "Manchester City"], diff:"moyen" },
+  { name:"Hugo Lloris", clubs:["Lyon", "Tottenham"], diff:"moyen" },
+  { name:"Jan Vertonghen", clubs:["Ajax", "Tottenham", "Benfica"], diff:"moyen" },
+  { name:"Toby Alderweireld", clubs:["Ajax", "Atletico Madrid", "Tottenham"], diff:"moyen" },
+  { name:"Mousa Dembele", clubs:["Tottenham", "Fulham"], diff:"moyen" },
+  { name:"Victor Wanyama", clubs:["Celtic", "Southampton", "Tottenham"], diff:"moyen" },
+  { name:"Dele Alli", clubs:["Tottenham", "Everton"], diff:"moyen" },
+  { name:"Eric Dier", clubs:["Sporting CP", "Tottenham", "Bayern Munich"], diff:"moyen" },
+  { name:"Moussa Sissoko", clubs:["Newcastle", "Tottenham"], diff:"moyen" },
+  { name:"Rafael van der Vaart", clubs:["Ajax", "Real Madrid", "Tottenham"], diff:"moyen" },
+  { name:"Wilson Palacios", clubs:["Wigan", "Tottenham", "Stoke"], diff:"moyen" },
+  { name:"Nabil Fekir", clubs:["Lyon", "Real Betis"], diff:"moyen" },
+  { name:"Morgan Schneiderlin", clubs:["Southampton", "Manchester United", "Everton"], diff:"moyen" },
+  { name:"Victor Moses", clubs:["Chelsea", "Fenerbahce", "Spartak Moscow", "Inter Milan"], diff:"moyen" },
+  { name:"Willian", clubs:["Chelsea", "Arsenal"], diff:"moyen" },
+  { name:"Oscar", clubs:["Chelsea", "Shanghai SIPG"], diff:"moyen" },
+  { name:"John Obi Mikel", clubs:["Chelsea", "Trabzonspor"], diff:"moyen" },
+  { name:"Ramires", clubs:["Benfica", "Chelsea", "Jiangsu Suning"], diff:"moyen" },
+  { name:"David Luiz", clubs:["Benfica", "Chelsea", "PSG", "Arsenal"], diff:"moyen" },
+  { name:"Gary Cahill", clubs:["Bolton", "Chelsea", "Crystal Palace"], diff:"moyen" },
+  { name:"Branislav Ivanovic", clubs:["Chelsea", "West Brom"], diff:"moyen" },
+  { name:"Ryan Bertrand", clubs:["Chelsea", "Southampton"], diff:"moyen" },
+  { name:"Michael Essien", clubs:["Bastia", "Lyon", "Chelsea"], diff:"moyen" },
+  { name:"Shaun Wright-Phillips", clubs:["Manchester City", "Chelsea"], diff:"moyen" },
+  { name:"Joe Cole", clubs:["West Ham", "Chelsea", "Liverpool"], diff:"moyen" },
+  { name:"Florent Malouda", clubs:["Guingamp", "Lyon", "Chelsea"], diff:"moyen" },
+  { name:"Andriy Shevchenko", clubs:["Dynamo Kyiv", "AC Milan", "Chelsea"], diff:"moyen" },
+  { name:"Salomon Kalou", clubs:["Chelsea", "Lille", "Hertha Berlin"], diff:"moyen" },
+  { name:"Gus Poyet", clubs:["Chelsea", "Tottenham"], diff:"moyen" },
+  { name:"Robert Huth", clubs:["Chelsea", "Stoke", "Leicester"], diff:"moyen" },
+  { name:"Paulo Ferreira", clubs:["Porto", "Chelsea"], diff:"moyen" },
+  { name:"Steve Sidwell", clubs:["Chelsea", "Aston Villa", "Fulham"], diff:"moyen" },
+  { name:"Freddy Adu", clubs:["DC United", "Real Sociedad", "Benfica"], diff:"expert" },
+  { name:"Jaroslaw Bieniuk", clubs:["Legia Warsaw"], diff:"expert" },
+  { name:"Eidur Gudjohnsen", clubs:["Chelsea", "Barcelona", "Monaco"], diff:"expert" },
+  { name:"Celestine Babayaro", clubs:["Ajax", "Newcastle"], diff:"expert" },
+  { name:"Nii Lamptey", clubs:["PSV", "Aston Villa"], diff:"expert" },
+  { name:"Paul Furlong", clubs:["Chelsea", "Birmingham City"], diff:"expert" },
+  { name:"Scott Parker", clubs:["Chelsea", "Newcastle", "Tottenham"], diff:"expert" },
+  { name:"Glen Johnson", clubs:["Chelsea", "Liverpool"], diff:"expert" },
+  { name:"Carlton Cole", clubs:["Chelsea", "West Ham"], diff:"expert" },
+  { name:"Mikael Forssell", clubs:["Chelsea", "Birmingham City"], diff:"expert" },
+  { name:"Jimmy Floyd Hasselbaink", clubs:["Atletico Madrid", "Chelsea"], diff:"expert" },
+  { name:"Slavisa Jokanovic", clubs:["Chelsea", "Deportivo"], diff:"expert" },
+  { name:"Winston Bogarde", clubs:["Ajax", "AC Milan", "Chelsea"], diff:"expert" },
+  { name:"Mario Melchiot", clubs:["Ajax", "Chelsea"], diff:"expert" },
+  { name:"Enrique De Lucas", clubs:["Chelsea", "Espanyol"], diff:"expert" },
+  { name:"Jody Morris", clubs:["Chelsea"], diff:"expert" },
+  { name:"Samassi Abou", clubs:["West Ham", "Chelsea"], diff:"expert" },
+  { name:"Muzzy Izzet", clubs:["Chelsea", "Leicester"], diff:"expert" },
+  { name:"Neil Clement", clubs:["Chelsea", "West Brom"], diff:"expert" },
+  { name:"Thor Gudjonsson", clubs:["Leicester", "Bayer Leverkusen"], diff:"expert" },
+  { name:"David Grondin", clubs:["Arsenal", "Saint-Etienne"], diff:"expert" },
+  { name:"Alberto Mendez", clubs:["Arsenal"], diff:"expert" },
+  { name:"Igors Stepanovs", clubs:["Arsenal"], diff:"expert" },
+  { name:"Pascal Cygan", clubs:["Lille", "Arsenal"], diff:"expert" },
+  { name:"Jerome Thomas", clubs:["Arsenal", "West Brom"], diff:"expert" },
+  { name:"Quincy Owusu-Abeyie", clubs:["Arsenal", "Spartak Moscow"], diff:"expert" },
+  { name:"Jeremie Aliadiere", clubs:["Arsenal", "Middlesbrough"], diff:"expert" },
+  { name:"Francis Jeffers", clubs:["Arsenal", "Everton"], diff:"expert" },
+  { name:"Stathis Tavlaridis", clubs:["Arsenal", "Lille"], diff:"expert" },
+  { name:"Moritz Volz", clubs:["Arsenal", "Fulham"], diff:"expert" },
+  { name:"Stuart Taylor", clubs:["Arsenal", "Aston Villa"], diff:"expert" },
+  { name:"Graham Stack", clubs:["Arsenal"], diff:"expert" },
+  { name:"Rohan Ricketts", clubs:["Arsenal", "Tottenham"], diff:"expert" },
+  { name:"Mark Randall", clubs:["Arsenal"], diff:"expert" },
+  { name:"Craig Eastmond", clubs:["Arsenal", "Southend"], diff:"expert" },
+  { name:"Nico Yennaris", clubs:["Arsenal"], diff:"expert" },
+  { name:"Vito Mannone", clubs:["Arsenal", "Sunderland"], diff:"expert" },
+  { name:"Sanchez Watt", clubs:["Arsenal"], diff:"expert" },
+  { name:"Henri Lansbury", clubs:["Arsenal", "Nottingham Forest"], diff:"expert" },
+  { name:"Daniel Boateng", clubs:["Arsenal"], diff:"expert" },
+  { name:"Kyle Bartley", clubs:["Arsenal", "Swansea"], diff:"expert" },
+  { name:"Jay Emmanuel-Thomas", clubs:["Arsenal", "Ipswich"], diff:"expert" },
+  { name:"Nacer Barazite", clubs:["Arsenal", "Twente"], diff:"expert" }
 ];
 
 
@@ -685,6 +955,61 @@ const CLUB_LOGO_URLS = {
   "Vancouver Whitecaps": "https://upload.wikimedia.org/wikipedia/en/a/a7/Vancouver_Whitecaps_FC_logo.svg",
   "Vissel Kobe": "https://upload.wikimedia.org/wikipedia/en/e/ef/Vissel_Kobe_logo.svg",
   "Watford": "https://upload.wikimedia.org/wikipedia/en/e/e2/Watford.svg",
+
+  "Wolverhampton": "https://crests.football-data.org/76.svg",
+  "Crystal Palace": "https://crests.football-data.org/354.svg",
+  "Brentford": "https://crests.football-data.org/402.svg",
+  "Aston Villa": "https://crests.football-data.org/58.svg",
+  "Southampton": "https://crests.football-data.org/340.svg",
+  "West Brom": "https://crests.football-data.org/74.svg",
+  "Sunderland": "https://crests.football-data.org/356.svg",
+  "Fulham": "https://crests.football-data.org/63.svg",
+  "Middlesbrough": "https://crests.football-data.org/343.svg",
+  "Stoke": "https://crests.football-data.org/70.svg",
+  "Wigan": "https://crests.football-data.org/75.svg",
+  "Bolton": "https://crests.football-data.org/341.svg",
+  "Blackburn": "https://crests.football-data.org/59.svg",
+  "Portsmouth": "https://crests.football-data.org/2314.svg",
+  "Bayer Leverkusen": "https://crests.football-data.org/3.svg",
+  "RB Leipzig": "https://crests.football-data.org/721.svg",
+  "Eintracht Frankfurt": "https://crests.football-data.org/19.svg",
+  "Werder Bremen": "https://crests.football-data.org/12.svg",
+  "Schalke": "https://crests.football-data.org/6.svg",
+  "Borussia Monchengladbach": "https://crests.football-data.org/18.svg",
+  "Stuttgart": "https://crests.football-data.org/10.svg",
+  "PSV": "https://crests.football-data.org/674.svg",
+  "Fiorentina": "https://crests.football-data.org/99.svg",
+  "Udinese": "https://crests.football-data.org/115.svg",
+  "Genoa": "https://crests.football-data.org/107.svg",
+  "Atalanta": "https://crests.football-data.org/102.svg",
+  "Parma": "https://crests.football-data.org/112.svg",
+  "Fenerbahce": "https://crests.football-data.org/2007.svg",
+  "Besiktas": "https://crests.football-data.org/2006.svg",
+  "Trabzonspor": "https://crests.football-data.org/2008.svg",
+  "Dynamo Kyiv": "https://crests.football-data.org/958.svg",
+  "Shakhtar": "https://crests.football-data.org/960.svg",
+  "CSKA Moscow": "https://crests.football-data.org/601.svg",
+  "Spartak Moscow": "https://crests.football-data.org/603.svg",
+  "Al Hilal": "https://upload.wikimedia.org/wikipedia/en/thumb/1/1b/Al-Hilal_FC_new_logo.svg/200px-Al-Hilal_FC_new_logo.svg.png",
+  "Al Nassr": "https://upload.wikimedia.org/wikipedia/en/thumb/e/e4/Al_Nassr_FC.svg/200px-Al_Nassr_FC.svg.png",
+  "Al Qadsiah": "https://upload.wikimedia.org/wikipedia/en/thumb/2/2e/Al-Qadsiah.svg/200px-Al-Qadsiah.svg.png",
+  "Inter Miami": "https://upload.wikimedia.org/wikipedia/en/thumb/8/82/Inter_Miami_CF_crest.svg/200px-Inter_Miami_CF_crest.svg.png",
+  "New York City FC": "https://crests.football-data.org/18183.svg",
+  "New York Red Bulls": "https://crests.football-data.org/18182.svg",
+  "LA Galaxy": "https://crests.football-data.org/18183.svg",
+  "Montreal Impact": "https://upload.wikimedia.org/wikipedia/en/thumb/8/89/CF_Montreal_crest.svg/200px-CF_Montreal_crest.svg.png",
+  "Real Betis": "https://crests.football-data.org/90.svg",
+  "Celta Vigo": "https://crests.football-data.org/558.svg",
+  "Deportivo": "https://upload.wikimedia.org/wikipedia/en/thumb/f/f3/RC_Deportivo_de_la_Coru%C3%B1a_logo.svg/200px-RC_Deportivo_de_la_Coru%C3%B1a_logo.svg.png",
+  "Espanyol": "https://crests.football-data.org/85.svg",
+  "Malaga": "https://crests.football-data.org/89.svg",
+  "Osasuna": "https://crests.football-data.org/79.svg",
+  "Racing Club": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Racing_Club_de_Avellaneda.svg/200px-Racing_Club_de_Avellaneda.svg.png",
+  "River Plate": "https://upload.wikimedia.org/wikipedia/en/thumb/8/83/River_Plate_crest.svg/200px-River_Plate_crest.svg.png",
+  "Boca Juniors": "https://upload.wikimedia.org/wikipedia/en/thumb/9/9f/Boca_Juniors_logo.svg/200px-Boca_Juniors_logo.svg.png",
+  "Santos": "https://upload.wikimedia.org/wikipedia/en/thumb/2/2b/Santos_FC_Logo.svg/200px-Santos_FC_Logo.svg.png",
+  "Flamengo": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Flamengo_braz_logo.svg/200px-Flamengo_braz_logo.svg.png",
+  "Palmeiras": "https://upload.wikimedia.org/wikipedia/en/thumb/1/10/Palmeiras_logo.svg/200px-Palmeiras_logo.svg.png",
 };
 
 const CLUB_NAME_SEARCH = {};
@@ -975,6 +1300,15 @@ export default function LePont() {
   const [scoreAnim, setScoreAnim] = useState(null);
   const [isNewRecord, setIsNewRecord] = useState(false);
 
+  // ── FRIENDS ──
+  const [playerId] = useState(() => getPlayerId());
+  const [friendInput, setFriendInput] = useState("");
+  const [friendsList, setFriendsList] = useState([]);
+  const [friendScores, setFriendScores] = useState([]);
+  const [showFriends, setShowFriends] = useState(false);
+  const [friendMsg, setFriendMsg] = useState("");
+  const [friendLoading, setFriendLoading] = useState(false);
+
   const [qTimeLeft, setQTimeLeft] = useState(5);
   const qTimerRef = useRef(null);
   const [combo, setCombo] = useState(0);
@@ -1027,6 +1361,7 @@ export default function LePont() {
       const seen = localStorage.getItem("bb_seen"); if(seen) JSON.parse(seen).forEach(s=>seenInstructions.current.add(s));
     } catch {}
     loadLeaderboard("pont","facile");
+    loadFriends().then(function(ids){fetchFriendScores(ids);});
   }, []);
 
   useEffect(()=>{scoreRef.current=score;},[score]);
@@ -1052,6 +1387,75 @@ export default function LePont() {
 
 
   // Leaderboard (localStorage)
+  // ── FRIEND FUNCTIONS ──
+  async function loadFriends() {
+    try {
+      const stored = localStorage.getItem("bb_friends");
+      const ids = stored ? JSON.parse(stored) : [];
+      setFriendsList(ids);
+      return ids;
+    } catch { return []; }
+  }
+
+  async function fetchFriendScores(ids) {
+    if (!ids || ids.length === 0) { setFriendScores([]); return; }
+    setFriendLoading(true);
+    try {
+      const allIds = [playerId, ...ids];
+      const filter = "player_id=in.(" + allIds.join(",") + ")";
+      const data = await sbFetch("bb_scores?select=player_id,player_name,score,mode,diff,created_at&" + filter + "&order=score.desc");
+      const best = {};
+      (data || []).forEach(function(row) {
+        const key = row.player_id + "_" + row.mode + "_" + (row.diff || "");
+        if (!best[key] || row.score > best[key].score) best[key] = row;
+      });
+      setFriendScores(Object.values(best).sort(function(a,b){return b.score-a.score;}));
+    } catch(e) { console.error(e); }
+    setFriendLoading(false);
+  }
+
+  async function addFriend(code) {
+    const clean = code.trim().toUpperCase();
+    if (clean.length !== 6) { setFriendMsg("Code invalide (6 caractères)"); return; }
+    if (clean === playerId) { setFriendMsg("C'est ton propre code !"); return; }
+    if (friendsList.includes(clean)) { setFriendMsg("Ami déjà ajouté !"); return; }
+
+    // Verify player exists
+    const data = await sbFetch("bb_scores?select=player_name&player_id=eq." + clean + "&limit=1");
+
+    if (!data || data.length === 0) { setFriendMsg("Joueur introuvable. Il doit avoir joué au moins une partie."); return; }
+
+    const newList = [...friendsList, clean];
+    localStorage.setItem("bb_friends", JSON.stringify(newList));
+    setFriendsList(newList);
+    setFriendMsg("✓ " + data[0].player_name + " ajouté !");
+    setFriendInput("");
+    fetchFriendScores(newList);
+  }
+
+  function removeFriend(code) {
+    const newList = friendsList.filter(function(id){return id !== code;});
+    localStorage.setItem("bb_friends", JSON.stringify(newList));
+    setFriendsList(newList);
+    fetchFriendScores(newList);
+  }
+
+  async function submitScore(name, sc, mode, d) {
+    try {
+      await sbFetch("bb_scores", {
+        method: "POST",
+        body: JSON.stringify({
+          player_id: playerId,
+          player_name: (name || "Anonyme").trim(),
+          score: sc,
+          mode: mode,
+          diff: d || null,
+        })
+      });
+    } catch(e) { console.error(e); }
+  }
+
+
   function loadLeaderboard(mode, d) {
     try {
       const key = `bb_lb_${mode}_${d}`;
@@ -1071,6 +1475,7 @@ export default function LePont() {
   }
 
   function submitToLeaderboard(name, sc, mode, d) {
+    submitScore(name, sc, mode, d);
     const displayName = (name||"").trim() || "Anonyme";
     try {
       const key = `bb_lb_${mode}_${d}`;
@@ -1522,6 +1927,95 @@ export default function LePont() {
 
   // ── HOME ──
 
+  // ── FRIENDS SCREEN ──
+  if (showFriends) {
+    const myScores = friendScores.filter(function(s){return s.player_id===playerId;});
+    const otherScores = friendScores.filter(function(s){return s.player_id!==playerId;});
+    const grouped = {};
+    otherScores.forEach(function(s){
+      if(!grouped[s.player_id]) grouped[s.player_id]={name:s.player_name,scores:[]};
+      grouped[s.player_id].scores.push(s);
+    });
+    return (
+      <div style={{...shell, overflow:"auto"}} key="friends">
+        <div style={stripes}/>
+        <div style={{zIndex:3,padding:"12px 16px 0",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          {backBtn(function(){setShowFriends(false);setFriendMsg("");})}
+          <div style={{fontFamily:G.heading,fontSize:26,color:G.white,letterSpacing:2}}>AMIS</div>
+          <div style={{background:"rgba(255,255,255,.15)",borderRadius:12,padding:"6px 12px",textAlign:"center"}}>
+            <div style={{fontSize:9,color:"rgba(255,255,255,.6)",letterSpacing:2,textTransform:"uppercase"}}>Ton code</div>
+            <div style={{fontFamily:G.heading,fontSize:20,color:G.gold,letterSpacing:4}}>{playerId}</div>
+          </div>
+        </div>
+
+        <div style={{...sheet,borderRadius:"28px 28px 0 0",marginTop:16}}>
+
+          {/* Add friend */}
+          <div style={{background:G.offWhite,borderRadius:16,padding:16}}>
+            <div style={{fontSize:12,fontWeight:700,color:"#888",letterSpacing:2,textTransform:"uppercase",marginBottom:8}}>Ajouter un ami</div>
+            <div style={{display:"flex",gap:8}}>
+              <input
+                value={friendInput}
+                onChange={function(e){setFriendInput(e.target.value.toUpperCase());setFriendMsg("");}}
+                placeholder="Code ami (6 lettres)"
+                maxLength={6}
+                style={{flex:1,padding:"10px 14px",borderRadius:12,border:"2px solid #e5e5e0",fontFamily:G.font,fontSize:15,fontWeight:700,letterSpacing:3,textTransform:"uppercase",outline:"none"}}
+              />
+              <button onClick={function(){addFriend(friendInput);}}
+                style={{padding:"10px 16px",background:G.dark,color:G.white,border:"none",borderRadius:12,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>
+                +
+              </button>
+            </div>
+            {friendMsg && <div style={{marginTop:8,fontSize:13,color:friendMsg.startsWith("✓")?"#16a34a":"#ef4444",fontWeight:700}}>{friendMsg}</div>}
+            <div style={{marginTop:8,fontSize:11,color:"#bbb"}}>Partage ton code à tes amis pour comparer vos scores</div>
+          </div>
+
+          {/* My scores */}
+          <div>
+            <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"#bbb",marginBottom:8}}>Mes meilleurs scores</div>
+            {myScores.length===0 && <div style={{fontSize:13,color:"#bbb",textAlign:"center",padding:12}}>Joue une partie pour voir tes scores ici !</div>}
+            {myScores.map(function(s,i){return(
+              <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 14px",background:G.offWhite,borderRadius:12,marginBottom:6}}>
+                <div>
+                  <div style={{fontSize:13,fontWeight:800,color:G.dark}}>{s.mode==="pont"?"Le Pont":"La Chaîne"}{s.diff?" · "+s.diff:""}</div>
+                  <div style={{fontSize:11,color:"#aaa"}}>{new Date(s.created_at).toLocaleDateString("fr-FR")}</div>
+                </div>
+                <div style={{fontFamily:G.heading,fontSize:24,color:G.dark}}>{s.score} <span style={{fontSize:12,color:"#aaa"}}>pts</span></div>
+              </div>
+            );})}
+          </div>
+
+          {/* Friends scores */}
+          {friendsList.length>0 && (
+            <div>
+              <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"#bbb",marginBottom:8}}>Scores de tes amis</div>
+              {friendLoading && <div style={{textAlign:"center",color:"#bbb",fontSize:13,padding:12}}>Chargement...</div>}
+              {!friendLoading && Object.values(grouped).map(function(friend,i){return(
+                <div key={i} style={{background:G.offWhite,borderRadius:16,padding:12,marginBottom:8}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+                    <div style={{fontFamily:G.heading,fontSize:17,color:G.dark}}>{friend.name}</div>
+                    <button onClick={function(){removeFriend(friend.scores[0].player_id);}}
+                      style={{background:"transparent",border:"none",color:"#ccc",cursor:"pointer",fontSize:16,padding:"0 4px"}}>✕</button>
+                  </div>
+                  {friend.scores.map(function(s,j){return(
+                    <div key={j} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"6px 0",borderTop:j>0?"1px solid #eee":"none"}}>
+                      <div style={{fontSize:12,color:"#666"}}>{s.mode==="pont"?"Le Pont":"La Chaîne"}{s.diff?" · "+s.diff:""}</div>
+                      <div style={{fontFamily:G.heading,fontSize:18,color:G.dark}}>{s.score} <span style={{fontSize:11,color:"#aaa"}}>pts</span></div>
+                    </div>
+                  );})}
+                </div>
+              );})}
+              {!friendLoading && Object.keys(grouped).length===0 && (
+                <div style={{fontSize:13,color:"#bbb",textAlign:"center",padding:12}}>Tes amis n'ont pas encore joué</div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+
   if(screen==="home") return (
     <div style={{...shell,animation:"fadeUp .5s ease"}} key="home">
       <div style={stripes}/>
@@ -1597,6 +2091,7 @@ export default function LePont() {
             style={{flex:1,padding:"12px",background:"#f0f9f4",color:"#16a34a",border:"2px solid #86efac",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
             {Icon.trophy(15,"#16a34a")} Classement
           </button>
+          <button onClick={function(){setShowFriends(true);fetchFriendScores(friendsList);}} style={{flex:1,padding:"14px",background:G.offWhite,color:G.dark,border:"2px solid #e5e5e0",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>👥 Amis</button>
         </div>
       </div>
     </div>
