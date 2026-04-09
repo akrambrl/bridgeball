@@ -1394,6 +1394,7 @@ export default function LePont() {
   const [showDuelCreate, setShowDuelCreate] = useState(null); // friend object
   const [duelMode, setDuelMode] = useState("pont");
   const [duelDiff, setDuelDiff] = useState("facile");
+  const [duelRounds, setDuelRounds] = useState(1);
   const [activeDuel, setActiveDuel] = useState(null); // duel being played
 
   const [qTimeLeft, setQTimeLeft] = useState(5);
@@ -1501,7 +1502,8 @@ export default function LePont() {
           opponent_id: friend.id,
           opponent_name: friend.name,
           mode: duelMode,
-          diff: duelMode === "pont" ? duelDiff : null,
+          diff: duelDiff,
+          rounds: duelRounds,
           status: "pending",
         })
       });
@@ -1517,10 +1519,11 @@ export default function LePont() {
   }
   async function playDuel(duel) {
     setActiveDuel(duel);
-    setTotalRounds(1);
+    setTotalRounds(duel.rounds || 1);
     setShowFriends(false);
     const isChallenger = duel.challenger_id === playerId;
     if (duel.mode === "chaine") {
+      if (duel.diff) setDiff(duel.diff);
       startChain();
     } else {
       const duelDiffVal = duel.diff || "facile";
@@ -2108,6 +2111,30 @@ export default function LePont() {
               );})}
             </div>
             {duelMode==="pont" && (
+              <div style={{marginBottom:16}}>
+                <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:8}}>Difficulté</div>
+                <div style={{display:"flex",gap:8}}>
+                  {["facile","moyen","expert"].map(function(d){return(
+                    <button key={d} onClick={function(){setDuelDiff(d);}} style={{flex:1,padding:"8px",borderRadius:10,border:"1.5px solid "+(duelDiff===d?G.gold:"rgba(255,255,255,.15)"),background:duelDiff===d?"rgba(255,214,0,.1)":"transparent",color:duelDiff===d?G.gold:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:12,textTransform:"capitalize"}}>
+                      {d}
+                    </button>
+                  );})}
+                </div>
+              </div>
+            )}
+
+            <div style={{marginBottom:16}}>
+              <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:8}}>Manches</div>
+              <div style={{display:"flex",gap:8}}>
+                {[1,2,3].map(function(r){return(
+                  <button key={r} onClick={function(){setDuelRounds(r);}} style={{flex:1,padding:"10px",borderRadius:12,border:"1.5px solid "+(duelRounds===r?"#fff":"rgba(255,255,255,.15)"),background:duelRounds===r?"rgba(255,255,255,.1)":"transparent",color:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:15}}>
+                    {r}
+                  </button>
+                );})}
+              </div>
+            </div>
+
+            {duelMode==="chaine" && (
               <div style={{marginBottom:16}}>
                 <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:8}}>Difficulté</div>
                 <div style={{display:"flex",gap:8}}>
