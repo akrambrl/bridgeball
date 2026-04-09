@@ -2096,11 +2096,11 @@ export default function LePont() {
         <div key={"clubs-"+animKey} style={{flex:1,display:"flex",flexDirection:"column",gap:0,padding:"10px 0 0",zIndex:1,minHeight:0}}>
           {/* Club 1 */}
           <div style={{flex:1,margin:"0 14px 0 14px",borderRadius:28,background:"linear-gradient(145deg,"+ca1+" 0%,"+cb1+" 100%)",boxShadow:"0 12px 40px "+ca1+"55",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",position:"relative",overflow:"hidden",animation:"clubSlideLeft .55s cubic-bezier(.22,1,.36,1)",animationFillMode:"both"}}>
-            <div style={{position:"absolute",width:220,height:220,borderRadius:"50%",border:(tc1==="#FFF"?"3px solid rgba(255,255,255,.12)":"3px solid rgba(0,0,0,.08)"),top:-40,right:-40}}/>
-            <div style={{position:"absolute",width:120,height:120,borderRadius:"50%",border:(tc1==="#FFF"?"2px solid rgba(255,255,255,.07)":"2px solid rgba(0,0,0,.05)"),bottom:20,left:-20}}/>
-            <div style={{fontSize:10,letterSpacing:5,textTransform:"uppercase",color:tc1==="#FFF"?"rgba(255,255,255,.55)":"rgba(0,0,0,.35)",fontWeight:700,marginBottom:8,zIndex:1}}>Club 1</div>
+            <div style={{position:"absolute",width:220,height:220,borderRadius:"50%",border:("3px solid rgba(255,255,255,.12)"),top:-40,right:-40}}/>
+            <div style={{position:"absolute",width:120,height:120,borderRadius:"50%",border:("2px solid rgba(255,255,255,.07)"),bottom:20,left:-20}}/>
+            <div style={{fontSize:10,letterSpacing:5,textTransform:"uppercase",color:"rgba(255,255,255,.55)",fontWeight:700,marginBottom:8,zIndex:1}}>Club 1</div>
             <div style={{marginBottom:8,display:"flex",justifyContent:"center",zIndex:1}}><ClubLogo club={cur.c1} size={52}/></div>
-            <div style={{fontFamily:G.heading,fontSize:"clamp(20px,5.5vw,36px)",color:tc1==="#FFF"?"#ffffff":"#111",lineHeight:1.05,textAlign:"center",padding:"0 20px",zIndex:1,textShadow:tc1==="#FFF"?"0 3px 12px rgba(0,0,0,.25)":"none",letterSpacing:1}}>{cur.c1}</div>
+            <div style={{fontFamily:G.heading,fontSize:"clamp(20px,5.5vw,36px)",color:"#ffffff",lineHeight:1.05,textAlign:"center",padding:"0 20px",zIndex:1,textShadow:"0 3px 12px rgba(0,0,0,.4)",letterSpacing:1}}>{cur.c1}</div>
           </div>
 
           {/* VS */}
@@ -2110,11 +2110,11 @@ export default function LePont() {
 
           {/* Club 2 */}
           <div style={{flex:1,margin:"0 14px 10px 14px",borderRadius:28,background:"linear-gradient(145deg,"+ca2+" 0%,"+cb2+" 100%)",boxShadow:"0 12px 40px "+ca2+"55",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",position:"relative",overflow:"hidden",animation:"clubSlideRight .55s cubic-bezier(.22,1,.36,1)",animationFillMode:"both"}}>
-            <div style={{position:"absolute",width:200,height:200,borderRadius:"50%",border:(tc2==="#FFF"?"3px solid rgba(255,255,255,.12)":"3px solid rgba(0,0,0,.08)"),bottom:-30,left:-30}}/>
-            <div style={{position:"absolute",width:100,height:100,borderRadius:"50%",border:(tc2==="#FFF"?"2px solid rgba(255,255,255,.07)":"2px solid rgba(0,0,0,.05)"),top:10,right:-10}}/>
-            <div style={{fontSize:10,letterSpacing:5,textTransform:"uppercase",color:tc2==="#FFF"?"rgba(255,255,255,.55)":"rgba(0,0,0,.35)",fontWeight:700,marginBottom:8,zIndex:1}}>Club 2</div>
+            <div style={{position:"absolute",width:200,height:200,borderRadius:"50%",border:("3px solid rgba(255,255,255,.12)"),bottom:-30,left:-30}}/>
+            <div style={{position:"absolute",width:100,height:100,borderRadius:"50%",border:("2px solid rgba(255,255,255,.07)"),top:10,right:-10}}/>
+            <div style={{fontSize:10,letterSpacing:5,textTransform:"uppercase",color:"rgba(255,255,255,.55)",fontWeight:700,marginBottom:8,zIndex:1}}>Club 2</div>
             <div style={{marginBottom:8,display:"flex",justifyContent:"center",zIndex:1}}><ClubLogo club={cur.c2} size={52}/></div>
-            <div style={{fontFamily:G.heading,fontSize:"clamp(20px,5.5vw,36px)",color:tc2==="#FFF"?"#ffffff":"#111",lineHeight:1.05,textAlign:"center",padding:"0 20px",zIndex:1,textShadow:tc2==="#FFF"?"0 3px 12px rgba(0,0,0,.25)":"none",letterSpacing:1}}>{cur.c2}</div>
+            <div style={{fontFamily:G.heading,fontSize:"clamp(20px,5.5vw,36px)",color:"#ffffff",lineHeight:1.05,textAlign:"center",padding:"0 20px",zIndex:1,textShadow:"0 3px 12px rgba(0,0,0,.4)",letterSpacing:1}}>{cur.c2}</div>
           </div>
         </div>
 
