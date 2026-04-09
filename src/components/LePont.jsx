@@ -1386,6 +1386,8 @@ export default function LePont() {
   const [friendScores, setFriendScores] = useState([]);
   const [friendMsg, setFriendMsg] = useState("");
   const [friendLoading, setFriendLoading] = useState(false);
+  const [friendRequests, setFriendRequests] = useState([]); // incoming pending requests
+  const [sentRequests, setSentRequests] = useState([]);     // requests I sent
   // Duels
   const [duels, setDuels] = useState([]);
   const [duelLoading, setDuelLoading] = useState(false);
@@ -1418,6 +1420,7 @@ export default function LePont() {
     loadLeaderboard("pont","facile");
     loadFriends().then(function(ids){fetchFriendScores(ids);});
     loadDuels();
+    loadFriendRequests();
   }, []);
 
   useEffect(()=>{scoreRef.current=score;},[score]);
@@ -1554,24 +1557,69 @@ export default function LePont() {
     setFriendLoading(false);
   }
 
-  function addFriend(code) {
+  async function addFriend(code) {
     const clean = code.trim().toUpperCase();
     if (clean.length !== 6) { setFriendMsg("Code invalide (6 caractères)"); return; }
     if (clean === playerId) { setFriendMsg("C'est ton propre code !"); return; }
-    if (friendsList.includes(clean)) { setFriendMsg("Ami déjà ajouté !"); return; }
-    const newList = [...friendsList, clean];
+    if (friendsList.includes(clean)) { setFriendMsg("Vous êtes déjà amis !"); return; }
+    // Check if already sent
+    const alreadySent = sentRequests.find(function(r){return r.to_id===clean;});
+    if (alreadySent) { setFriendMsg("Demande déjà envoyée !"); return; }
+    const name = (playerName||"Anonyme").trim();
+    try {
+      await sbFetch("bb_friend_requests", {
+        method: "POST",
+        body: JSON.stringify({from_id:playerId, from_name:name, to_id:clean, status:"pending"})
+      });
+      setFriendMsg("✓ Demande envoyée ! En attente d'acceptation.");
+      setFriendInput("");
+      loadFriendRequests();
+    } catch(e) { setFriendMsg("Erreur. Vérifie le code."); }
+  }
+
+  async function acceptRequest(req) {
+    try {
+      await sbFetch("bb_friend_requests?id=eq."+req.id, {
+        method: "PATCH",
+        body: JSON.stringify({status:"accepted"}),
+        headers: {"Prefer":"return=minimal"}
+      });
+      // Add to local friends list
+      const newList = [...friendsList, req.from_id];
+      localStorage.setItem("bb_friends", JSON.stringify(newList));
+      setFriendsList(newList);
+      fetchFriendScores(newList);
+      loadFriendRequests();
+    } catch(e) { console.error(e); }
+  }
+
+  async function declineRequest(req) {
+    try {
+      await sbFetch("bb_friend_requests?id=eq."+req.id, {
+        method: "PATCH",
+        body: JSON.stringify({status:"declined"}),
+        headers: {"Prefer":"return=minimal"}
+      });
+      loadFriendRequests();
+    } catch(e) { console.error(e); }
+  }
+
+  function removeFriend(fid) {
+    const newList = friendsList.filter(function(id){return id !== fid;});
     localStorage.setItem("bb_friends", JSON.stringify(newList));
     setFriendsList(newList);
-    setFriendMsg("✓ Ami ajouté ! Ses scores apparaîtront dès qu'il aura joué.");
-    setFriendInput("");
     fetchFriendScores(newList);
   }
 
-  function removeFriend(code) {
-    const newList = friendsList.filter(function(id){return id !== code;});
-    localStorage.setItem("bb_friends", JSON.stringify(newList));
-    setFriendsList(newList);
-    fetchFriendScores(newList);
+  async function loadFriendRequests() {
+    try {
+      // Incoming pending requests
+      const incoming = await sbFetch("bb_friend_requests?to_id=eq."+playerId+"&status=eq.pending&order=created_at.desc");
+      setFriendRequests(Array.isArray(incoming) ? incoming : []);
+      // Sent requests
+      const sent = await sbFetch("bb_friend_requests?from_id=eq."+playerId+"&order=created_at.desc&limit=20");
+      setSentRequests(Array.isArray(sent) ? sent : []);
+    } catch(e) { setFriendRequests([]); setSentRequests([]); }
   }
 
   async function submitScore(name, sc, mode, d) {
@@ -2025,6 +2073,19 @@ export default function LePont() {
           </div>
 
           {/* All friends with Défier */}
+          {/* Sent requests pending */}
+          {sentRequests.filter(function(r){return r.status==="pending";}).length > 0 && (
+            <div style={{marginBottom:8}}>
+              <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.3)",marginBottom:8}}>Demandes envoyées</div>
+              {sentRequests.filter(function(r){return r.status==="pending";}).map(function(r){return(
+                <div key={r.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 14px",background:"rgba(255,255,255,.04)",borderRadius:12,marginBottom:6,border:"1px solid rgba(255,214,0,.2)"}}>
+                  <div style={{fontSize:13,fontWeight:700,color:G.white}}>{r.to_id}</div>
+                  <div style={{fontSize:11,color:G.gold,fontWeight:700}}>⏳ En attente</div>
+                </div>
+              );})}
+            </div>
+          )}
+
           {friendsList.length > 0 && (
             <div>
               <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.3)",marginBottom:8}}>Mes amis</div>
@@ -2243,7 +2304,7 @@ export default function LePont() {
             style={{flex:1,padding:"12px",background:"#f0f9f4",color:"#16a34a",border:"2px solid #86efac",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
             {Icon.trophy(15,"#16a34a")} Classement
           </button>
-          <button onClick={function(){setShowFriends(true);fetchFriendScores(friendsList);loadDuels();}} style={{flex:1,padding:"14px",background:"rgba(255,255,255,.07)",color:G.white,border:"1px solid rgba(255,255,255,.1)",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>👥 Amis</button>
+          <button onClick={function(){setShowFriends(true);fetchFriendScores(friendsList);loadDuels();loadFriendRequests();}} style={{flex:1,padding:"14px",background:"rgba(255,255,255,.07)",color:G.white,border:"1px solid rgba(255,255,255,.1)",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>👥 Amis</button>
         </div>
       </div>
     </div>
