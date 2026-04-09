@@ -2721,9 +2721,9 @@ export default function LePont() {
           <button onClick={handleChainPass} disabled={!!flash} style={{flex:1,padding:16,background:G.offWhite,color:"#aaa",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700,opacity:flash ? 0.3 : 1}}>Passer →</button>
         </div>
         {chainHistory.length>0 && (
-          <div style={{flex:1,overflowY:"auto",display:"flex",flexDirection:"column",gap:4}}>
+          <div style={{maxHeight:200,overflowY:"auto",display:"flex",flexDirection:"column",gap:4}}>
             <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"#ccc",textAlign:"center"}}>Chaîne</div>
-            {chainHistory.map((h,i)=>(
+            {[...chainHistory].reverse().map((h,i)=>(
               <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"7px 12px",background:G.offWhite,borderRadius:12,animation:`slideIn .3s ease ${i*.04}s both`,opacity:h.passed ? 0.7 : 1}}>
                 <span style={{fontSize:10,color:"#bbb",fontWeight:700,minWidth:18}}>{i+1}.</span>
                 <PlayerAvatarMini name={h.player} size={26}/>
@@ -2732,7 +2732,6 @@ export default function LePont() {
                 <span style={{display:"flex",alignItems:"center",gap:4,flexShrink:0}}><ClubLogo club={h.club} size={18}/><span style={{fontSize:12,color:h.passed?"#aaa":G.bg,fontWeight:700}}>{h.club}</span></span>
               </div>
             ))}
-            <div ref={historyEndRef}/>
           </div>
         )}
       </div>
