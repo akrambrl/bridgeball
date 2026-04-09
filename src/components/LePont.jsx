@@ -1506,10 +1506,15 @@ export default function LePont() {
         })
       });
       setShowDuelCreate(null);
-      loadDuels();
+      // Fetch the newly created duel and play it immediately
+      const data = await sbFetch("bb_duels?challenger_id=eq."+playerId+"&challenger_score=is.null&order=created_at.desc&limit=1");
+      if (Array.isArray(data) && data.length > 0) {
+        setTimeout(function(){ playDuel(data[0]); }, 200);
+      } else {
+        loadDuels();
+      }
     } catch(e) { console.error(e); }
   }
-
   async function playDuel(duel) {
     setActiveDuel(duel);
     setTotalRounds(1);
@@ -1531,21 +1536,20 @@ export default function LePont() {
 
   async function submitDuelScore(sc) {
     if (!activeDuel) return;
+    const duelId = activeDuel.id;
+    const isChallenger = activeDuel.challenger_id === playerId;
+    const otherScore = isChallenger ? activeDuel.opponent_score : activeDuel.challenger_score;
+    const newStatus = (otherScore !== null && otherScore !== undefined) ? "complete" : (isChallenger ? "challenger_played" : "opponent_played");
+    const update = isChallenger ? { challenger_score: sc, status: newStatus } : { opponent_score: sc, status: newStatus };
+    setActiveDuel(null); // Clear immediately so screen doesn't stay white
     try {
-      const isChallenger = activeDuel.challenger_id === playerId;
-      const otherScore = isChallenger ? activeDuel.opponent_score : activeDuel.challenger_score;
-      const newStatus = otherScore !== null && otherScore !== undefined ? "complete" : (isChallenger ? "challenger_played" : "opponent_played");
-      const update = isChallenger
-        ? { challenger_score: sc, status: newStatus }
-        : { opponent_score: sc, status: newStatus };
-      await sbFetch("bb_duels?id=eq." + activeDuel.id, {
+      await sbFetch("bb_duels?id=eq." + duelId, {
         method: "PATCH",
         body: JSON.stringify(update),
         headers: {"Prefer": "return=minimal"}
       });
-    } catch(e) { console.error(e); }
-    setActiveDuel(null);
-    loadDuels();
+      loadDuels();
+    } catch(e) { console.error("Duel score submit error:", e); }
   }
 
   function getPendingDuels() {
