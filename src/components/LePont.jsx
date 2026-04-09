@@ -1378,6 +1378,14 @@ export default function LePont() {
   const [lbDiff, setLbDiff] = useState("facile");
   const [playerName, setPlayerName] = useState("");
   const [showInstructions, setShowInstructions] = useState(null);
+  // Friends
+  const [playerId] = useState(() => getPlayerId());
+  const [showFriends, setShowFriends] = useState(false);
+  const [friendInput, setFriendInput] = useState("");
+  const [friendsList, setFriendsList] = useState([]);
+  const [friendScores, setFriendScores] = useState([]);
+  const [friendMsg, setFriendMsg] = useState("");
+  const [friendLoading, setFriendLoading] = useState(false);
   const seenInstructions = useRef(new Set());
   const timerRef = useRef(null);
   const inputRef = useRef(null);
