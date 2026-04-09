@@ -1,0 +1,29 @@
+{
+  "name": "BridgeBall",
+  "short_name": "BridgeBall",
+  "description": "Trouve le joueur qui fait le pont entre deux clubs de football !",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1E5C2A",
+  "theme_color": "#1E5C2A",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
