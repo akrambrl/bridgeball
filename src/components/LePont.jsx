@@ -2427,7 +2427,7 @@ export default function LePont() {
           )}
       {/* Question timer bar */}
       <div style={{position:"fixed",bottom:0,left:0,right:0,height:5,background:"rgba(255,255,255,.08)",zIndex:100}}>
-        <div style={{height:"100%",background:qTimeLeft>3?"#00E676":qTimeLeft>1?"#FFD600":"#FF3D57",width:(qTimeLeft/QUESTION_DURATION*100)+"%",transition:"width 1s linear",borderRadius:"3px 0 0 3px",marginLeft:"auto"}}/>
+        <div key={animKey} style={{height:"100%",background:qTimeLeft>3?"#00E676":qTimeLeft>1?"#FFD600":"#FF3D57",width:(qTimeLeft/QUESTION_DURATION*100)+"%",transition:"width 0.3s linear",borderRadius:"3px 0 0 3px",marginLeft:"auto"}}/>
       </div>
     </div>
     </div>
