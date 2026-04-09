@@ -2139,9 +2139,9 @@ export default function LePont() {
                         padding:"14px 10px", borderRadius:18, cursor:"pointer",
                         fontFamily:G.font, fontSize:"clamp(12px,3vw,16px)", fontWeight:800,
                         lineHeight:1.3, transition:"all .15s", position:"relative", overflow:"hidden",
-                        border: isOk?"3px solid #16a34a": isKo?"3px solid #ef4444":"2px solid "+oca+"44",
-                        background: isOk?"#dcfce7": isKo?"#fee2e2": "linear-gradient(145deg,"+oca+"22 0%,"+ocb+"11 100%)",
-                        color: isOk?"#16a34a": isKo?G.red: G.dark,
+                        border: isOk?"2px solid #00E676": isKo?"2px solid #FF3D57":"1.5px solid "+oca+"88",
+                        background: isOk?"#052e16": isKo?"#2d0a0a": ("linear-gradient(145deg,"+oca+"33 0%,"+ocb+"22 100%)"),
+                        color: isOk?"#00E676": isKo?G.red: G.white,
                         boxShadow: isOk?"0 0 20px rgba(74,222,128,.4)": isKo?"0 0 20px rgba(239,68,68,.3)": "0 3px 12px "+oca+"22",
                         animation: isOk?"answerOk .4s ease": isKo?"answerKo .4s ease": "optionIn .4s cubic-bezier(.22,1,.36,1) "+(oi*.07)+"s both",
                       }}>
@@ -2151,7 +2151,7 @@ export default function LePont() {
                       {!isOk&&!isKo&&<PlayerAvatarMini name={opt} size={30}/>}
                       {isOk&&<span style={{fontSize:16}}>✓</span>}
                       {isKo&&<span style={{fontSize:16}}>✗</span>}
-                      <span style={{fontSize:"clamp(12px,3vw,16px)",fontWeight:800,color:isOk?"#16a34a":isKo?G.red:G.dark}}>{opt}</span>
+                      <span style={{fontSize:"clamp(12px,3vw,16px)",fontWeight:800,color:isOk?"#00E676":isKo?G.red:G.white}}>{opt}</span>
                     </div>
                     </button>
                   );
