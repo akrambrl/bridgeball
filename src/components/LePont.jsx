@@ -1614,9 +1614,15 @@ export default function LePont() {
         body: JSON.stringify({status:"accepted"}),
         headers: {"Prefer":"return=minimal"}
       });
-      // Add to local friends list
+      // Add to local friends list (save id and name)
       const newList = [...friendsList, req.from_id];
       localStorage.setItem("bb_friends", JSON.stringify(newList));
+      // Save friend name
+      try {
+        const names = JSON.parse(localStorage.getItem("bb_friend_names") || "{}");
+        names[req.from_id] = req.from_name;
+        localStorage.setItem("bb_friend_names", JSON.stringify(names));
+      } catch {}
       setFriendsList(newList);
       fetchFriendScores(newList);
       loadFriendRequests();
@@ -2143,7 +2149,11 @@ export default function LePont() {
               <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.3)",marginBottom:8}}>Mes amis</div>
               {friendsList.map(function(fid, i) {
                 const scores = friendScores.filter(function(s){return s.player_id===fid;});
-                const fname = scores.length > 0 ? scores[0].player_name : fid;
+                let fname = fid;
+                try {
+                  const names = JSON.parse(localStorage.getItem("bb_friend_names") || "{}");
+                  fname = names[fid] || (scores.length > 0 ? scores[0].player_name : fid);
+                } catch { fname = scores.length > 0 ? scores[0].player_name : fid; }
                 return (
                   <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 14px",background:"rgba(255,255,255,.04)",borderRadius:12,marginBottom:6,border:"1px solid rgba(255,255,255,.06)"}}>
                     <div>
@@ -2356,7 +2366,7 @@ export default function LePont() {
             style={{flex:1,padding:"12px",background:"#f0f9f4",color:"#16a34a",border:"2px solid #86efac",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
             {Icon.trophy(15,"#16a34a")} Classement
           </button>
-          <button onClick={function(){setShowFriends(true);fetchFriendScores(friendsList);loadDuels();loadFriendRequests();}} style={{flex:1,padding:"14px",background:"rgba(255,255,255,.07)",color:G.white,border:"1px solid rgba(255,255,255,.1)",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>👥 Amis</button>
+          <button onClick={function(){setShowFriends(true);fetchFriendScores(friendsList);loadDuels();loadFriendRequests();}} style={{flex:1,padding:"14px",background:"rgba(255,255,255,.07)",color:G.white,border:"1px solid rgba(255,255,255,.1)",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}><span style={{position:"relative"}}>👥 Amis{friendRequests.length>0&&<span style={{position:"absolute",top:-8,right:-10,background:"#FF3D57",color:"#fff",borderRadius:"50%",width:16,height:16,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:900}}>{friendRequests.length}</span>}</span></button>
         </div>
       </div>
     </div>
