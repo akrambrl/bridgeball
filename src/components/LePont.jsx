@@ -1420,21 +1420,16 @@ export default function LePont() {
     setFriendLoading(false);
   }
 
-  async function addFriend(code) {
+  function addFriend(code) {
     const clean = code.trim().toUpperCase();
     if (clean.length !== 6) { setFriendMsg("Code invalide (6 caractères)"); return; }
     if (clean === playerId) { setFriendMsg("C'est ton propre code !"); return; }
     if (friendsList.includes(clean)) { setFriendMsg("Ami déjà ajouté !"); return; }
 
-    // Verify player exists
-    const data = await sbFetch("bb_scores?select=player_name&player_id=eq." + clean + "&limit=1");
-
-    if (!data || data.length === 0) { setFriendMsg("Joueur introuvable. Il doit avoir joué au moins une partie."); return; }
-
     const newList = [...friendsList, clean];
     localStorage.setItem("bb_friends", JSON.stringify(newList));
     setFriendsList(newList);
-    setFriendMsg("✓ " + data[0].player_name + " ajouté !");
+    setFriendMsg("✓ Ami ajouté ! Ses scores apparaîtront dès qu'il aura joué.");
     setFriendInput("");
     fetchFriendScores(newList);
   }
