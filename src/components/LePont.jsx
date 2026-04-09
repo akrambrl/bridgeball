@@ -76,7 +76,7 @@ const PLAYERS = [
   { name:"Sadio Mane", clubs:["Metz", "Salzburg", "Southampton", "Liverpool", "Bayern Munich", "Al Nassr"], diff:"moyen" },
   { name:"Raheem Sterling", clubs:["Liverpool", "Manchester City", "Chelsea", "Arsenal"], diff:"moyen" },
   { name:"Ousmane Dembele", clubs:["Rennes", "Borussia Dortmund", "Barcelona", "PSG"], diff:"moyen" },
-  { name:"Marcus Rashford", clubs:["Manchester United", "Aston Villa"], diff:"moyen" },
+  { name:"Marcus Rashford", clubs:["Manchester United","Barcelona"], diff:"facile" },
   { name:"Jack Grealish", clubs:["Aston Villa", "Manchester City"], diff:"moyen" },
   { name:"Declan Rice", clubs:["West Ham", "Arsenal"], diff:"moyen" },
   { name:"Bernardo Silva", clubs:["Monaco", "Manchester City"], diff:"moyen" },
@@ -443,7 +443,7 @@ const PLAYERS = [
   { name:"Alessandro Bastoni", clubs:["Inter Milan"], diff:"facile" },
   { name:"Ansu Fati", clubs:["Barcelona"], diff:"facile" },
   { name:"Ferran Torres", clubs:["Valencia", "Manchester City", "Barcelona"], diff:"facile" },
-  { name:"Alexis Sanchez", clubs:["Udinese", "Barcelona", "Arsenal", "Manchester United", "Inter Milan", "Marseille"], diff:"facile" },
+  { name:"Alexis Sanchez", clubs:["Udinese","Barcelona","Arsenal","Manchester United","Inter Milan","Marseille","Sevilla"], diff:"facile" },
   { name:"Mesut Ozil", clubs:["Werder Bremen", "Real Madrid", "Arsenal", "Fenerbahce"], diff:"moyen" },
   { name:"Per Mertesacker", clubs:["Werder Bremen", "Arsenal"], diff:"moyen" },
   { name:"Lars Bender", clubs:["Bayer Leverkusen"], diff:"moyen" },
@@ -546,6 +546,15 @@ const PLAYERS = [
   { name:"Kyle Bartley", clubs:["Arsenal", "Swansea"], diff:"expert" },
   { name:"Jay Emmanuel-Thomas", clubs:["Arsenal", "Ipswich"], diff:"expert" },
   { name:"Nacer Barazite", clubs:["Arsenal", "Twente"], diff:"expert" }
+
+  { name:"David Villa", clubs:["Valencia","Barcelona","Atletico Madrid","New York City FC","Vissel Kobe"], diff:"moyen" },
+  { name:"Jordan Veretout", clubs:["Nantes","Aston Villa","Saint-Etienne","Fiorentina","Roma","Marseille","Lyon","Al Arabi"], diff:"moyen" },
+  { name:"Bafetimbi Gomis", clubs:["Saint-Etienne","Lyon","Swansea","Marseille","Galatasaray","Al Hilal"], diff:"moyen" },
+  { name:"Benjamin Mendy", clubs:["Le Havre","Marseille","Monaco","Manchester City"], diff:"moyen" },
+  { name:"Aymen Abdennour", clubs:["Toulouse","Monaco","Valencia","Marseille"], diff:"expert" },
+  { name:"Patrice Evra", clubs:["Nice","Monaco","Manchester United","Juventus","Marseille","West Ham"], diff:"moyen" },
+  { name:"Alexandre Lacazette", clubs:["Lyon","Arsenal"], diff:"facile" },
+  { name:"Emre Can", clubs:["Bayern Munich","Bayer Leverkusen","Liverpool","Juventus","Borussia Dortmund"], diff:"moyen" },
 ];
 
 // Remove malformed entries
