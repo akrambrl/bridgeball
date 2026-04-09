@@ -1386,6 +1386,8 @@ export default function LePont() {
   const [friendScores, setFriendScores] = useState([]);
   const [friendMsg, setFriendMsg] = useState("");
   const [friendLoading, setFriendLoading] = useState(false);
+  const [qTimeLeft, setQTimeLeft] = useState(5);
+  const qTimerRef = useRef(null);
   const seenInstructions = useRef(new Set());
   const timerRef = useRef(null);
   const inputRef = useRef(null);
