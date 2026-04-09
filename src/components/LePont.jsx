@@ -9,7 +9,7 @@ async function sbFetch(path, options) {
       "apikey": SB_KEY,
       "Authorization": "Bearer " + SB_KEY,
       "Content-Type": "application/json",
-      "Prefer": options && options.method === "POST" ? "return=minimal" : undefined,
+      ...(options && options.method === "POST" ? {"Prefer": "return=minimal"} : {}),
       ...(options && options.headers),
     }
   });
@@ -19,13 +19,18 @@ async function sbFetch(path, options) {
 }
 
 function getPlayerId() {
-  let id = localStorage.getItem("bb_player_id");
-  if (!id) {
+  try {
+    let id = localStorage.getItem("bb_player_id");
+    if (!id) {
+      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+      id = Array.from({length:6}, function(){return chars[Math.floor(Math.random()*chars.length)];}).join("");
+      localStorage.setItem("bb_player_id", id);
+    }
+    return id;
+  } catch(e) {
     const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-    id = Array.from({length:6}, function(){return chars[Math.floor(Math.random()*chars.length)];}).join("");
-    localStorage.setItem("bb_player_id", id);
+    return Array.from({length:6}, function(){return chars[Math.floor(Math.random()*chars.length)];}).join("");
   }
-  return id;
 }
 
 
@@ -642,6 +647,7 @@ function buildPontDB() {
   const MAX_PAIRS_PER_PLAYER = { facile: 6, moyen: 5, expert: 5 };
 
   for (const p of PLAYERS) {
+    if (!p || !p.clubs) continue;
     const bigClubs = p.clubs.filter(c => PONT_CLUBS.has(c));
     if (bigClubs.length < 2) continue;
     const max = MAX_PAIRS_PER_PLAYER[p.diff] || 3;
