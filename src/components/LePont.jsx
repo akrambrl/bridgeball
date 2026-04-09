@@ -31,7 +31,7 @@ function getPlayerId() {
 
 // ── CONSTANTS ──
 const ROUND_DURATION = 90;
-const QUESTION_DURATION = 5;
+const QUESTION_DURATION = 10;
 const CHAIN_DURATION = 90;
 const COMBO_THRESHOLD = 3;
 
