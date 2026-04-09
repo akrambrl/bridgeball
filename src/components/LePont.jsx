@@ -1424,6 +1424,16 @@ export default function LePont() {
     loadFriendRequests();
   }, []);
 
+
+  // Poll for friend requests and duels every 15s
+  useEffect(() => {
+    const poll = setInterval(function() {
+      loadFriendRequests();
+      loadDuels();
+    }, 15000);
+    return () => clearInterval(poll);
+  }, []);
+
   useEffect(()=>{scoreRef.current=score;},[score]);
   useEffect(()=>{comboRef.current=combo;},[combo]);
   useEffect(()=>{if(historyEndRef.current)historyEndRef.current.scrollIntoView({behavior:"smooth"});},[chainHistory]);
@@ -2082,6 +2092,25 @@ export default function LePont() {
           </div>
         </div>
         <div style={{...sheet,borderRadius:"28px 28px 0 0",marginTop:16}}>
+
+          {/* Incoming friend requests */}
+          {friendRequests.length > 0 && (
+            <div style={{background:"rgba(0,230,118,.08)",border:"1px solid rgba(0,230,118,.25)",borderRadius:16,padding:14}}>
+              <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:G.accent,marginBottom:10}}>👋 Demandes reçues</div>
+              {friendRequests.map(function(req){return(
+                <div key={req.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+                  <div>
+                    <div style={{fontSize:14,fontWeight:800,color:G.white}}>{req.from_name}</div>
+                    <div style={{fontSize:11,color:"rgba(255,255,255,.4)"}}>veut être ton ami · {req.from_id}</div>
+                  </div>
+                  <div style={{display:"flex",gap:6}}>
+                    <button onClick={function(){acceptRequest(req);}} style={{padding:"8px 14px",background:G.accent,color:"#000",border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:800}}>✓</button>
+                    <button onClick={function(){declineRequest(req);}} style={{padding:"8px 12px",background:"rgba(255,255,255,.07)",color:"rgba(255,255,255,.4)",border:"none",borderRadius:20,cursor:"pointer",fontSize:13}}>✕</button>
+                  </div>
+                </div>
+              );})}
+            </div>
+          )}
           <div style={{background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",borderRadius:16,padding:16}}>
             <div style={{fontSize:12,fontWeight:700,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginBottom:8}}>Ajouter un ami</div>
             <div style={{display:"flex",gap:8}}>
