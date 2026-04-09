@@ -32,6 +32,7 @@ function getPlayerId() {
 // ── CONSTANTS ──
 const ROUND_DURATION = 90;
 const QUESTION_DURATION = 10;
+const CHAIN_QUESTION_DURATION = 15;
 const CHAIN_DURATION = 90;
 const COMBO_THRESHOLD = 3;
 
@@ -1441,23 +1442,25 @@ export default function LePont() {
 
   // Timer
 
-  // Question timer (Le Pont)
+  // Question timer (Le Pont + La Chaîne)
   useEffect(()=>{
-    if(screen!=="game"){clearInterval(qTimerRef.current);return;}
+    if(screen!=="game"&&screen!=="chainGame"){clearInterval(qTimerRef.current);return;}
+    const duration = screen==="chainGame" ? CHAIN_QUESTION_DURATION : QUESTION_DURATION;
     const qStart = Date.now();
-    setQTimeLeft(QUESTION_DURATION);
+    setQTimeLeft(duration);
     clearInterval(qTimerRef.current);
     qTimerRef.current=setInterval(()=>{
       const elapsed = Math.floor((Date.now() - qStart) / 1000);
-      const remaining = Math.max(QUESTION_DURATION - elapsed, 0);
+      const remaining = Math.max(duration - elapsed, 0);
       setQTimeLeft(remaining);
       if(remaining <= 0){
         clearInterval(qTimerRef.current);
-        handlePass();
+        if(screen==="chainGame") handleChainPass();
+        else handlePass();
       }
     },300);
     return()=>clearInterval(qTimerRef.current);
-  },[screen,animKey]);
+  },[screen,animKey,chainCount]);
 
   useEffect(()=>{
     if(screen!=="game"&&screen!=="chainGame"){hasEndedRef.current=false;return;}
@@ -1675,12 +1678,25 @@ export default function LePont() {
   }
 
 
-  function loadLeaderboard(mode, d) {
+  async function loadLeaderboard(mode, d) {
     try {
-      const key = `bb_lb_${mode}_${d}`;
-      const data = localStorage.getItem(key);
-      setLeaderboard(data ? JSON.parse(data) : []);
-    } catch { setLeaderboard([]); }
+      // Fetch top 50 from Supabase, keeping best score per player
+      const filter = d ? ("mode=eq."+mode+"&diff=eq."+d) : ("mode=eq."+mode);
+      const data = await sbFetch("bb_scores?"+filter+"&order=score.desc&limit=200&select=player_id,player_name,score,created_at");
+      if (!Array.isArray(data)) { setLeaderboard([]); return; }
+      // Keep best score per player
+      const best = {};
+      data.forEach(function(row) {
+        if (!best[row.player_id] || row.score > best[row.player_id].score) {
+          best[row.player_id] = row;
+        }
+      });
+      const sorted = Object.values(best)
+        .sort(function(a,b){return b.score-a.score;})
+        .slice(0,50)
+        .map(function(r,i){return {rank:i+1, name:r.player_name, score:r.score, date:new Date(r.created_at).toLocaleDateString("fr-FR")};});
+      setLeaderboard(sorted);
+    } catch(e) { setLeaderboard([]); }
   }
 
   function footballPoints(sc, list) {
@@ -1940,6 +1956,7 @@ export default function LePont() {
   }
 
   const cur = queue[qIdx % Math.max(queue.length, 1)];
+  const total = roundScores.length > 0 ? roundScores.reduce(function(a,b){return a+b;},0) : 0;
   const duration = gameMode === "chaine" ? CHAIN_DURATION : ROUND_DURATION;
   const tPct = timeLeft / duration;
   const urgent = timeLeft <= 10 && timeLeft > 0;
@@ -2002,7 +2019,7 @@ export default function LePont() {
   const feedbackBar = (fb) => {
     if(!fb) return null;
     return (
-      <div style={{borderRadius:16,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"12px 16px",
+      <div style={{position:"fixed",top:0,left:0,right:0,zIndex:50,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"10px 16px",
         background:fb==="ok"?"#dcfce7":fb==="ko"?"#fee2e2":"#fef9c3",
         border:`2px solid ${fb==="ok"?G.accent:fb==="ko"?G.red:"#fbbf24"}`,
         animation:fb==="ok"?"answerOk .5s ease":fb==="ko"?"answerKo .4s ease":"popIn .3s ease",
@@ -2511,7 +2528,7 @@ export default function LePont() {
                   );
                 })}
               </div>
-              <button onClick={handlePass} disabled={!!flash} style={{padding:"12px",background:"transparent",color:"#bbb",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700,opacity:flash ? 0.3 : 1}}>Passer → (−0.5 pt)</button>
+              <button onClick={handlePass} disabled={!!flash} style={{padding:"12px",pointerEvents:flash?"none":"auto",background:"transparent",color:"#bbb",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700,opacity:flash ? 0.3 : 1}}>Passer → (−0.5 pt)</button>
             </div>
           ):(
             <div style={{display:"flex",flexDirection:"column",gap:10}}>
@@ -2520,7 +2537,7 @@ export default function LePont() {
                 style={{width:"100%",background:flash==="ko"?"#fee2e2":flash==="ok"?"#dcfce7":G.offWhite,border:("2px solid "+(flash==="ko"?G.red:flash==="ok"?G.accent:"#e5e5e0")+""),borderRadius:18,padding:"15px 18px",fontFamily:G.font,fontSize:18,fontWeight:700,color:G.dark,outline:"none",textAlign:"center",transition:"all .15s",animation:flash==="ko"?"answerKo .4s ease":flash==="ok"?"answerOk .4s ease":"none"}}/>
               <div style={{display:"flex",gap:10}}>
                 <button onClick={handleSubmit} style={{flex:2,padding:"15px",background:G.dark,color:G.white,border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:16,fontWeight:800}}>Valider</button>
-                <button onClick={handlePass} disabled={!!flash} style={{flex:1,padding:15,background:G.offWhite,color:"#aaa",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700,opacity:flash ? 0.3 : 1}}>Passer →</button>
+                <button onClick={handlePass} disabled={!!flash} style={{flex:1,padding:15,pointerEvents:flash?"none":"auto",background:G.offWhite,color:"#aaa",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700,opacity:flash ? 0.3 : 1}}>Passer →</button>
               </div>
             </div>
           )}
@@ -2620,11 +2637,16 @@ export default function LePont() {
           </div>
         )}
       </div>
+      {/* Chain question timer bar */}
+      <div style={{position:"fixed",bottom:0,left:0,right:0,height:5,background:"rgba(255,255,255,.08)",zIndex:100}}>
+        <div key={chainCount} style={{height:"100%",background:qTimeLeft>8?"#00E676":qTimeLeft>4?"#FFD600":"#FF3D57",width:(qTimeLeft/CHAIN_QUESTION_DURATION*100)+"%",borderRadius:"3px 0 0 3px",marginLeft:"auto"}}/>
+      </div>
     </div>
     );
   }
 
 
+  // ── CHAIN GAME TIMER BAR (injected via CSS position:fixed, already in game screen) ──
   // ── ROUND END ──
   if(screen==="roundEnd") return (
     <div style={{...shell,animation:"fadeUp .4s ease"}} key="roundEnd">
