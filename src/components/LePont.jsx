@@ -2084,9 +2084,9 @@ export default function LePont() {
         {/* Club cards — full height */}
         <div key={"clubs-"+animKey} style={{flex:1,display:"flex",flexDirection:"column",gap:0,padding:"10px 0 0",zIndex:1,minHeight:0}}>
           {/* Club 1 */}
-          <div style={{flex:1,margin:"0 14px 0 14px",borderRadius:28,background:`linear-gradient(145deg,${ca1} 0%,${cb1} 100%)`,boxShadow:`0 12px 40px ${ca1}55`,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",position:"relative",overflow:"hidden",animation:"clubSlideLeft .55s cubic-bezier(.22,1,.36,1)",animationFillMode:"both"}}>
-            <div style={{position:"absolute",width:220,height:220,borderRadius:"50%",border:`3px solid ${tc1==="#FFF"?"rgba(255,255,255,.12)":"rgba(0,0,0,.08)"}`,top:-40,right:-40}}/>
-            <div style={{position:"absolute",width:120,height:120,borderRadius:"50%",border:`2px solid ${tc1==="#FFF"?"rgba(255,255,255,.07)":"rgba(0,0,0,.05)"}`,bottom:20,left:-20}}/>
+          <div style={{flex:1,margin:"0 14px 0 14px",borderRadius:28,background:"linear-gradient(145deg,"+ca1+" 0%,"+cb1+" 100%)",boxShadow:"0 12px 40px "+ca1+"55",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",position:"relative",overflow:"hidden",animation:"clubSlideLeft .55s cubic-bezier(.22,1,.36,1)",animationFillMode:"both"}}>
+            <div style={{position:"absolute",width:220,height:220,borderRadius:"50%",border:(tc1==="#FFF"?"3px solid rgba(255,255,255,.12)":"3px solid rgba(0,0,0,.08)"),top:-40,right:-40}}/>
+            <div style={{position:"absolute",width:120,height:120,borderRadius:"50%",border:(tc1==="#FFF"?"2px solid rgba(255,255,255,.07)":"2px solid rgba(0,0,0,.05)"),bottom:20,left:-20}}/>
             <div style={{fontSize:10,letterSpacing:5,textTransform:"uppercase",color:tc1==="#FFF"?"rgba(255,255,255,.55)":"rgba(0,0,0,.35)",fontWeight:700,marginBottom:8,zIndex:1}}>Club 1</div>
             <div style={{marginBottom:8,display:"flex",justifyContent:"center",zIndex:1}}><ClubLogo club={cur.c1} size={52}/></div>
             <div style={{fontFamily:G.heading,fontSize:"clamp(20px,5.5vw,36px)",color:tc1==="#FFF"?"#ffffff":"#111",lineHeight:1.05,textAlign:"center",padding:"0 20px",zIndex:1,textShadow:tc1==="#FFF"?"0 3px 12px rgba(0,0,0,.25)":"none",letterSpacing:1}}>{cur.c1}</div>
@@ -2098,9 +2098,9 @@ export default function LePont() {
           </div>
 
           {/* Club 2 */}
-          <div style={{flex:1,margin:"0 14px 10px 14px",borderRadius:28,background:`linear-gradient(145deg,${ca2} 0%,${cb2} 100%)`,boxShadow:`0 12px 40px ${ca2}55`,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",position:"relative",overflow:"hidden",animation:"clubSlideRight .55s cubic-bezier(.22,1,.36,1)",animationFillMode:"both"}}>
-            <div style={{position:"absolute",width:200,height:200,borderRadius:"50%",border:`3px solid ${tc2==="#FFF"?"rgba(255,255,255,.12)":"rgba(0,0,0,.08)"}`,bottom:-30,left:-30}}/>
-            <div style={{position:"absolute",width:100,height:100,borderRadius:"50%",border:`2px solid ${tc2==="#FFF"?"rgba(255,255,255,.07)":"rgba(0,0,0,.05)"}`,top:10,right:-10}}/>
+          <div style={{flex:1,margin:"0 14px 10px 14px",borderRadius:28,background:"linear-gradient(145deg,"+ca2+" 0%,"+cb2+" 100%)",boxShadow:"0 12px 40px "+ca2+"55",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",position:"relative",overflow:"hidden",animation:"clubSlideRight .55s cubic-bezier(.22,1,.36,1)",animationFillMode:"both"}}>
+            <div style={{position:"absolute",width:200,height:200,borderRadius:"50%",border:(tc2==="#FFF"?"3px solid rgba(255,255,255,.12)":"3px solid rgba(0,0,0,.08)"),bottom:-30,left:-30}}/>
+            <div style={{position:"absolute",width:100,height:100,borderRadius:"50%",border:(tc2==="#FFF"?"2px solid rgba(255,255,255,.07)":"2px solid rgba(0,0,0,.05)"),top:10,right:-10}}/>
             <div style={{fontSize:10,letterSpacing:5,textTransform:"uppercase",color:tc2==="#FFF"?"rgba(255,255,255,.55)":"rgba(0,0,0,.35)",fontWeight:700,marginBottom:8,zIndex:1}}>Club 2</div>
             <div style={{marginBottom:8,display:"flex",justifyContent:"center",zIndex:1}}><ClubLogo club={cur.c2} size={52}/></div>
             <div style={{fontFamily:G.heading,fontSize:"clamp(20px,5.5vw,36px)",color:tc2==="#FFF"?"#ffffff":"#111",lineHeight:1.05,textAlign:"center",padding:"0 20px",zIndex:1,textShadow:tc2==="#FFF"?"0 3px 12px rgba(0,0,0,.25)":"none",letterSpacing:1}}>{cur.c2}</div>
@@ -2128,14 +2128,14 @@ export default function LePont() {
                         padding:"14px 10px", borderRadius:18, cursor:"pointer",
                         fontFamily:G.font, fontSize:"clamp(12px,3vw,16px)", fontWeight:800,
                         lineHeight:1.3, transition:"all .15s", position:"relative", overflow:"hidden",
-                        border: isOk?"3px solid #16a34a": isKo?"3px solid #ef4444":`2px solid ${oca}44`,
-                        background: isOk?"#dcfce7": isKo?"#fee2e2": `linear-gradient(145deg,${oca}22 0%,${ocb}11 100%)`,
+                        border: isOk?"3px solid #16a34a": isKo?"3px solid #ef4444":"2px solid "+oca+"44",
+                        background: isOk?"#dcfce7": isKo?"#fee2e2": "linear-gradient(145deg,"+oca+"22 0%,"+ocb+"11 100%)",
                         color: isOk?"#16a34a": isKo?G.red: G.dark,
-                        boxShadow: isOk?"0 0 20px rgba(74,222,128,.4)": isKo?"0 0 20px rgba(239,68,68,.3)": `0 3px 12px ${oca}22`,
-                        animation: isOk?"answerOk .4s ease": isKo?"answerKo .4s ease": `optionIn .4s cubic-bezier(.22,1,.36,1) ${oi*.07}s both`,
+                        boxShadow: isOk?"0 0 20px rgba(74,222,128,.4)": isKo?"0 0 20px rgba(239,68,68,.3)": "0 3px 12px "+oca+"22",
+                        animation: isOk?"answerOk .4s ease": isKo?"answerKo .4s ease": "optionIn .4s cubic-bezier(.22,1,.36,1) "+(oi*.07)+"s both",
                       }}>
                       {/* Club color strip */}
-                      {!isOk&&!isKo&&<div style={{position:"absolute",top:0,left:0,right:0,height:3,background:`linear-gradient(90deg,${oca},${ocb})`,borderRadius:"18px 18px 0 0"}}/>}
+                      {!isOk&&!isKo&&<div style={{position:"absolute",top:0,left:0,right:0,height:3,background:"linear-gradient(90deg,"+oca+","+ocb+")",borderRadius:"18px 18px 0 0"}}/>}
                       <div style={{display:"flex",alignItems:"center",gap:8,justifyContent:"center"}}>
                       {!isOk&&!isKo&&<PlayerAvatarMini name={opt} size={30}/>}
                       {isOk&&<span style={{fontSize:16}}>✓</span>}
@@ -2152,7 +2152,7 @@ export default function LePont() {
             <div style={{display:"flex",flexDirection:"column",gap:10}}>
               <input ref={inputRef} value={guess} onChange={e=>setGuess(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleSubmit()}
                 placeholder="Nom du joueur..." autoComplete="off"
-                style={{width:"100%",background:flash==="ko"?"#fee2e2":flash==="ok"?"#dcfce7":G.offWhite,border:`2px solid ${flash==="ko"?G.red:flash==="ok"?G.accent:"#e5e5e0"}`,borderRadius:18,padding:"15px 18px",fontFamily:G.font,fontSize:18,fontWeight:700,color:G.dark,outline:"none",textAlign:"center",transition:"all .15s",animation:flash==="ko"?"answerKo .4s ease":flash==="ok"?"answerOk .4s ease":"none"}}/>
+                style={{width:"100%",background:flash==="ko"?"#fee2e2":flash==="ok"?"#dcfce7":G.offWhite,border:("2px solid "+(flash==="ko"?G.red:flash==="ok"?G.accent:"#e5e5e0")+""),borderRadius:18,padding:"15px 18px",fontFamily:G.font,fontSize:18,fontWeight:700,color:G.dark,outline:"none",textAlign:"center",transition:"all .15s",animation:flash==="ko"?"answerKo .4s ease":flash==="ok"?"answerOk .4s ease":"none"}}/>
               <div style={{display:"flex",gap:10}}>
                 <button onClick={handleSubmit} style={{flex:2,padding:"15px",background:G.dark,color:G.white,border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:16,fontWeight:800}}>Valider</button>
                 <button onClick={handlePass} disabled={!!flash} style={{flex:1,padding:15,background:G.offWhite,color:"#aaa",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700,opacity:flash ? 0.3 : 1}}>Passer →</button>
@@ -2163,6 +2163,7 @@ export default function LePont() {
       <div style={{position:"fixed",bottom:0,left:0,right:0,height:5,background:"rgba(255,255,255,.08)",zIndex:100}}>
         <div style={{height:"100%",background:qTimeLeft>3?"#00E676":qTimeLeft>1?"#FFD600":"#FF3D57",width:(qTimeLeft/QUESTION_DURATION*100)+"%",transition:"width 1s linear",borderRadius:"0 3px 3px 0"}}/>
       </div>
+    </div>
     </div>
     );
   }
@@ -2233,7 +2234,7 @@ export default function LePont() {
         {feedbackBar(feedback)}
         <input ref={inputRef} value={guess} onChange={e=>setGuess(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleChainSubmit()}
           placeholder="Nom du club..." autoComplete="off"
-          style={{width:"100%",background:flash==="ko"?"#fee2e2":flash==="ok"?"#dcfce7":G.offWhite,border:`2px solid ${flash==="ko"?G.red:flash==="ok"?G.accent:"#e5e5e0"}`,borderRadius:18,padding:"16px 18px",fontFamily:G.font,fontSize:18,fontWeight:700,color:G.dark,outline:"none",textAlign:"center",transition:"all .15s"}}/>
+          style={{width:"100%",background:flash==="ko"?"#fee2e2":flash==="ok"?"#dcfce7":G.offWhite,border:("2px solid "+(flash==="ko"?G.red:flash==="ok"?G.accent:"#e5e5e0")+""),borderRadius:18,padding:"16px 18px",fontFamily:G.font,fontSize:18,fontWeight:700,color:G.dark,outline:"none",textAlign:"center",transition:"all .15s"}}/>
         <div style={{display:"flex",gap:10}}>
           <button onClick={handleChainSubmit} style={{flex:2,padding:"16px",background:G.dark,color:G.white,border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:16,fontWeight:800}}>Valider</button>
           <button onClick={handleChainPass} disabled={!!flash} style={{flex:1,padding:16,background:G.offWhite,color:"#aaa",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700,opacity:flash ? 0.3 : 1}}>Passer →</button>
