@@ -1398,6 +1398,7 @@ export default function LePont() {
 
   const [qTimeLeft, setQTimeLeft] = useState(5);
   const qTimerRef = useRef(null);
+  const roundStartTime = useRef(null);
   const seenInstructions = useRef(new Set());
   const timerRef = useRef(null);
   const inputRef = useRef(null);
@@ -1432,14 +1433,18 @@ export default function LePont() {
   // Question timer (Le Pont)
   useEffect(()=>{
     if(screen!=="game"){clearInterval(qTimerRef.current);return;}
+    const qStart = Date.now();
     setQTimeLeft(QUESTION_DURATION);
     clearInterval(qTimerRef.current);
     qTimerRef.current=setInterval(()=>{
-      setQTimeLeft(t=>{
-        if(t<=1){clearInterval(qTimerRef.current);handlePass();return QUESTION_DURATION;}
-        return t-1;
-      });
-    },1000);
+      const elapsed = Math.floor((Date.now() - qStart) / 1000);
+      const remaining = Math.max(QUESTION_DURATION - elapsed, 0);
+      setQTimeLeft(remaining);
+      if(remaining <= 0){
+        clearInterval(qTimerRef.current);
+        handlePass();
+      }
+    },300);
     return()=>clearInterval(qTimerRef.current);
   },[screen,animKey]);
 
@@ -1447,7 +1452,13 @@ export default function LePont() {
     if(screen!=="game"&&screen!=="chainGame"){hasEndedRef.current=false;return;}
     hasEndedRef.current=false;
     clearInterval(timerRef.current);
-    timerRef.current=setInterval(()=>{setTimeLeft(t=>Math.max(t-1,0));},1000);
+    const duration = screen==="chainGame" ? CHAIN_DURATION : ROUND_DURATION;
+    roundStartTime.current = Date.now();
+    timerRef.current=setInterval(()=>{
+      const elapsed = Math.floor((Date.now() - roundStartTime.current) / 1000);
+      const remaining = Math.max(duration - elapsed, 0);
+      setTimeLeft(remaining);
+    },500);
     return()=>clearInterval(timerRef.current);
   },[screen,currentRound]);
 
@@ -1759,6 +1770,7 @@ export default function LePont() {
   }
 
   function startRound(round) {
+    roundStartTime.current = null;
     const q=shuffle(DB[diff]);
     setQueue(q); setQIdx(0); setScore(0); scoreRef.current=0;
     setTimeLeft(ROUND_DURATION); setGuess(""); setFlash(null); setFeedback(null);
@@ -2415,7 +2427,7 @@ export default function LePont() {
           )}
       {/* Question timer bar */}
       <div style={{position:"fixed",bottom:0,left:0,right:0,height:5,background:"rgba(255,255,255,.08)",zIndex:100}}>
-        <div style={{height:"100%",background:qTimeLeft>3?"#00E676":qTimeLeft>1?"#FFD600":"#FF3D57",width:(qTimeLeft/QUESTION_DURATION*100)+"%",transition:"width 1s linear",borderRadius:"0 3px 3px 0"}}/>
+        <div style={{height:"100%",background:qTimeLeft>3?"#00E676":qTimeLeft>1?"#FFD600":"#FF3D57",width:(qTimeLeft/QUESTION_DURATION*100)+"%",transition:"width 1s linear",borderRadius:"3px 0 0 3px",marginLeft:"auto"}}/>
       </div>
     </div>
     </div>
