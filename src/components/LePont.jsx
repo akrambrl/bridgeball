@@ -1422,7 +1422,7 @@ export default function LePont() {
       const n = localStorage.getItem("bb_name"); if(n) setPlayerName(n);
       const seen = localStorage.getItem("bb_seen"); if(seen) JSON.parse(seen).forEach(s=>seenInstructions.current.add(s));
     } catch {}
-    loadLeaderboard("pont","facile");
+    loadLeaderboard("pont");
     loadFriends().then(function(ids){fetchFriendScores(ids);});
     loadDuels();
     loadFriendRequests();
@@ -1681,31 +1681,27 @@ export default function LePont() {
   }
 
 
-  async function loadLeaderboard(mode, d) {
+  async function loadLeaderboard(mode) {
     try {
-      const filter = d ? ("mode=eq."+mode+"&diff=eq."+d) : ("mode=eq."+mode);
-      // Fetch all scores for this mode
-      const data = await sbFetch("bb_scores?"+filter+"&order=score.desc&limit=500&select=player_id,player_name,score,created_at");
+      const filter = mode ? "mode=eq."+mode+"&" : "";
+      const data = await sbFetch("bb_scores?"+filter+"order=score.desc&limit=1000&select=player_id,player_name,score,mode");
       if (!Array.isArray(data)) { setLeaderboard([]); return; }
-      // Compute per-player stats
       const stats = {};
       data.forEach(function(row) {
-        if (!stats[row.player_id]) stats[row.player_id] = { name:row.player_name, best:row.score, played:0, date:row.created_at };
-        if (row.score > stats[row.player_id].best) { stats[row.player_id].best = row.score; stats[row.player_id].date = row.created_at; }
+        if (!stats[row.player_id]) stats[row.player_id] = { name:row.player_name, best:row.score, played:0 };
+        if (row.score > stats[row.player_id].best) stats[row.player_id].best = row.score;
         stats[row.player_id].played += 1;
       });
-      // Fetch duel results for wins/draws/losses
-      const duels = await sbFetch("bb_duels?status=eq.complete&mode=eq."+mode+"&select=challenger_id,opponent_id,challenger_score,opponent_score&limit=500");
+      const duels = await sbFetch("bb_duels?status=eq.complete"+(mode?"&mode=eq."+mode:"")+"&select=challenger_id,opponent_id,challenger_score,opponent_score&limit=500");
       if (Array.isArray(duels)) {
         duels.forEach(function(d) {
-          const cs = d.challenger_score, os = d.opponent_score;
           [d.challenger_id, d.opponent_id].forEach(function(pid) {
             if (!stats[pid]) return;
             if (!stats[pid].wins) stats[pid].wins = 0;
             if (!stats[pid].draws) stats[pid].draws = 0;
             if (!stats[pid].losses) stats[pid].losses = 0;
-            const myScore = pid === d.challenger_id ? cs : os;
-            const theirScore = pid === d.challenger_id ? os : cs;
+            const myScore = pid === d.challenger_id ? d.challenger_score : d.opponent_score;
+            const theirScore = pid === d.challenger_id ? d.opponent_score : d.challenger_score;
             if (myScore > theirScore) stats[pid].wins++;
             else if (myScore === theirScore) stats[pid].draws++;
             else stats[pid].losses++;
@@ -1715,7 +1711,7 @@ export default function LePont() {
       const sorted = Object.values(stats)
         .sort(function(a,b){ return b.best - a.best; })
         .slice(0,50)
-        .map(function(r,i){ return {rank:i+1, name:r.name, score:r.best, played:r.played, wins:r.wins||0, draws:r.draws||0, losses:r.losses||0, date:new Date(r.date).toLocaleDateString("fr-FR")}; });
+        .map(function(r,i){ return {rank:i+1, name:r.name, score:r.best, played:r.played, wins:r.wins||0, draws:r.draws||0, losses:r.losses||0}; });
       setLeaderboard(sorted);
     } catch(e) { setLeaderboard([]); }
   }
@@ -2329,8 +2325,6 @@ export default function LePont() {
 
 
   if(showLeaderboard) {
-    const modes = ["pont","chaine"];
-    const diffs = ["facile","moyen","expert"];
     return (
       <div style={{...shell,animation:"fadeUp .4s ease",overflow:"auto"}} key="lb">
         <div style={stripes}/>
@@ -2339,25 +2333,13 @@ export default function LePont() {
           <div style={{fontSize:12,color:"rgba(255,255,255,.4)",marginTop:4}}>Top 50 mondial</div>
         </div>
         <div style={{...sheet,borderRadius:"28px 28px 0 0"}}>
-          {/* Mode tabs */}
           <div style={{display:"flex",gap:8}}>
-            {modes.map(function(m){return(
-              <button key={m} onClick={function(){setLbMode(m);loadLeaderboard(m,lbDiff);}} style={{flex:1,padding:"10px",borderRadius:12,border:"1.5px solid "+(lbMode===m?G.accent:"rgba(255,255,255,.15)"),background:lbMode===m?"rgba(0,230,118,.1)":"transparent",color:lbMode===m?G.accent:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:13}}>
-                {m==="pont"?"Le Pont":"La Chaîne"}
+            {["pont","chaine"].map(function(m){return(
+              <button key={m} onClick={function(){setLbMode(m);loadLeaderboard(m);}} style={{flex:1,padding:"11px",borderRadius:12,border:"1.5px solid "+(lbMode===m?G.accent:"rgba(255,255,255,.12)"),background:lbMode===m?"rgba(0,230,118,.1)":"transparent",color:lbMode===m?G.accent:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:14}}>
+                {m==="pont"?"🏟 Le Pont":"⛓ La Chaîne"}
               </button>
             );})}
           </div>
-          {/* Diff tabs (only for pont) */}
-          {lbMode==="pont" && (
-            <div style={{display:"flex",gap:6}}>
-              {diffs.map(function(d){return(
-                <button key={d} onClick={function(){setLbDiff(d);loadLeaderboard(lbMode,d);}} style={{flex:1,padding:"8px",borderRadius:10,border:"1.5px solid "+(lbDiff===d?G.gold:"rgba(255,255,255,.1)"),background:lbDiff===d?"rgba(255,214,0,.1)":"transparent",color:lbDiff===d?G.gold:"rgba(255,255,255,.5)",fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:12,textTransform:"capitalize"}}>
-                  {d}
-                </button>
-              );})}
-            </div>
-          )}
-          {/* Rankings */}
           {leaderboard.length === 0 && (
             <div style={{textAlign:"center",padding:"32px 0",color:"rgba(255,255,255,.3)",fontSize:14}}>Aucun score pour le moment</div>
           )}
@@ -2529,7 +2511,7 @@ export default function LePont() {
         </div>
 
         <div style={{display:"flex",gap:8}}>
-          <button onClick={()=>{setLbMode("pont");setLbDiff(diff);loadLeaderboard("pont",diff);setShowLeaderboard(true);}}
+          <button onClick={()=>{setLbMode("pont");setLbDiff(diff);loadLeaderboard(lbMode);setShowLeaderboard(true);}}
             style={{flex:1,padding:"12px",background:"#f0f9f4",color:"#16a34a",border:"2px solid #86efac",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
             {Icon.trophy(15,"#16a34a")} Classement
           </button>
@@ -2849,7 +2831,7 @@ export default function LePont() {
             <div style={{fontSize:11,color:"#888",marginTop:2}}>{myLastPts===10?"Tu bats le record actuel !":myLastPts===5?"Proche du record !":"Reviens à la charge !"}</div>
           </div>
         )}
-        <button onClick={()=>{setLbMode(mode);setLbDiff(diff);loadLeaderboard(mode,diff);setShowLeaderboard(true);}}
+        <button onClick={()=>{setLbMode(mode);setLbDiff(diff);loadLeaderboard(lbMode);setShowLeaderboard(true);}}
           style={{width:"100%",padding:"14px",background:"#f0f9f4",color:"#16a34a",border:"2px solid #86efac",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800}}>
           <span style={{display:"flex",alignItems:"center",gap:8,justifyContent:"center"}}>{Icon.stadium(16,"#16a34a")} Voir le classement{myLbRank?` · #${myLbRank}`:""}</span>
         </button>
