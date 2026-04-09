@@ -5,13 +5,12 @@ const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 async function sbFetch(path, options) {
   const res = await fetch(SB_URL + "/rest/v1/" + path, {
     ...options,
-    headers: {
+    headers: Object.assign({
       "apikey": SB_KEY,
       "Authorization": "Bearer " + SB_KEY,
       "Content-Type": "application/json",
-      ...(options && options.method === "POST" ? {"Prefer": "return=minimal"} : {}),
-      ...(options && options.headers),
-    }
+    }, options && options.method === "POST" ? {"Prefer": "return=minimal"} : {},
+       options && options.headers ? options.headers : {})
   });
   if (!res.ok && res.status !== 201) return null;
   if (res.status === 201 || res.headers.get("content-length") === "0") return [];
@@ -700,6 +699,7 @@ const DB = buildPontDB();
 
 const CLUB_INDEX = {};
 for (const p of PLAYERS) {
+  if (!p || !p.clubs) continue;
   for (const c of p.clubs) {
     if (!CLUB_INDEX[c]) CLUB_INDEX[c] = [];
     if (!CLUB_INDEX[c].includes(p.name)) CLUB_INDEX[c].push(p.name);
@@ -1604,7 +1604,7 @@ export default function LePont() {
 
   function startChain() {
     setIsNewRecord(false); setMyLastPts(null); setCombo(0); setMaxCombo(0); comboRef.current=0; lastAnswerTime.current=Date.now();
-    const eligible=PLAYERS.filter(p=>p.clubs.length>=2);
+    const eligible=PLAYERS.filter(p=>p&&p.clubs&&p.clubs.length>=2);
     const start=eligible[Math.floor(Math.random()*eligible.length)];
     const usedP=new Set([start.name]);
     // Prefetch logos for starting player clubs
