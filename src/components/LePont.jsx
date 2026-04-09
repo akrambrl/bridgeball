@@ -1399,7 +1399,9 @@ export default function LePont() {
   const [activeDuel, setActiveDuel] = useState(null); // duel being played
 
   const [qTimeLeft, setQTimeLeft] = useState(5);
+  const [showQuitConfirm, setShowQuitConfirm] = useState(false);
   const qTimerRef = useRef(null);
+  const chainPassedRef = useRef(false);
   const roundStartTime = useRef(null);
   const seenInstructions = useRef(new Set());
   const timerRef = useRef(null);
@@ -1444,6 +1446,7 @@ export default function LePont() {
 
   // Question timer (Le Pont + La Chaîne)
   useEffect(()=>{
+    chainPassedRef.current = false;
     if(screen!=="game"&&screen!=="chainGame"){clearInterval(qTimerRef.current);return;}
     const duration = screen==="chainGame" ? CHAIN_QUESTION_DURATION : QUESTION_DURATION;
     const qStart = Date.now();
@@ -1455,7 +1458,7 @@ export default function LePont() {
       setQTimeLeft(remaining);
       if(remaining <= 0){
         clearInterval(qTimerRef.current);
-        if(screen==="chainGame") handleChainPass();
+        if(screen==="chainGame"){ if(!chainPassedRef.current){ chainPassedRef.current=true; handleChainPass(); } }
         else handlePass();
       }
     },300);
@@ -1924,6 +1927,8 @@ export default function LePont() {
   }
 
   function handleChainPass() {
+    clearInterval(qTimerRef.current);
+    chainPassedRef.current = true;
     setChainScore(s=>{chainScoreRef.current=s-.5;return s-.5;});
     const validClubs=(PLAYERS_CLEAN.find(p=>p.name===chainPlayer)?.clubs||[]).filter(c=>!chainUsedClubs.has(c));
     const chosen=validClubs.length>0?validClubs[Math.floor(Math.random()*validClubs.length)]:null;
@@ -2304,6 +2309,66 @@ export default function LePont() {
   }
 
 
+
+  if(showLeaderboard) {
+    const modes = ["pont","chaine"];
+    const diffs = ["facile","moyen","expert"];
+    return (
+      <div style={{...shell,animation:"fadeUp .4s ease",overflow:"auto"}} key="lb">
+        <div style={stripes}/>
+        <div style={{zIndex:1,padding:"32px 20px 12px",textAlign:"center"}}>
+          <div style={{fontFamily:G.heading,fontSize:"clamp(32px,8vw,52px)",color:G.white,letterSpacing:3}}>CLASSEMENT</div>
+          <div style={{fontSize:12,color:"rgba(255,255,255,.4)",marginTop:4}}>Top 50 mondial</div>
+        </div>
+        <div style={{...sheet,borderRadius:"28px 28px 0 0"}}>
+          {/* Mode tabs */}
+          <div style={{display:"flex",gap:8}}>
+            {modes.map(function(m){return(
+              <button key={m} onClick={function(){setLbMode(m);loadLeaderboard(m,lbDiff);}} style={{flex:1,padding:"10px",borderRadius:12,border:"1.5px solid "+(lbMode===m?G.accent:"rgba(255,255,255,.15)"),background:lbMode===m?"rgba(0,230,118,.1)":"transparent",color:lbMode===m?G.accent:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:13}}>
+                {m==="pont"?"Le Pont":"La Chaîne"}
+              </button>
+            );})}
+          </div>
+          {/* Diff tabs (only for pont) */}
+          {lbMode==="pont" && (
+            <div style={{display:"flex",gap:6}}>
+              {diffs.map(function(d){return(
+                <button key={d} onClick={function(){setLbDiff(d);loadLeaderboard(lbMode,d);}} style={{flex:1,padding:"8px",borderRadius:10,border:"1.5px solid "+(lbDiff===d?G.gold:"rgba(255,255,255,.1)"),background:lbDiff===d?"rgba(255,214,0,.1)":"transparent",color:lbDiff===d?G.gold:"rgba(255,255,255,.5)",fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:12,textTransform:"capitalize"}}>
+                  {d}
+                </button>
+              );})}
+            </div>
+          )}
+          {/* Rankings */}
+          {leaderboard.length === 0 && (
+            <div style={{textAlign:"center",padding:"32px 0",color:"rgba(255,255,255,.3)",fontSize:14}}>Aucun score pour le moment</div>
+          )}
+          {leaderboard.map(function(entry, i){
+            const isMe = entry.name === playerName;
+            const medals = ["🥇","🥈","🥉"];
+            return(
+              <div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",borderRadius:14,background:isMe?"rgba(0,230,118,.08)":"rgba(255,255,255,.03)",border:isMe?"1px solid rgba(0,230,118,.25)":"1px solid rgba(255,255,255,.05)",marginBottom:6}}>
+                <div style={{fontFamily:G.heading,fontSize:22,width:32,textAlign:"center",color:i<3?["#FFD600","#C0C0C0","#CD7F32"][i]:"rgba(255,255,255,.3)"}}>
+                  {i<3?medals[i]:(i+1)}
+                </div>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:14,fontWeight:800,color:isMe?G.accent:G.white}}>{entry.name}{isMe?" (toi)":""}</div>
+                  <div style={{fontSize:11,color:"rgba(255,255,255,.35)"}}>{entry.date}</div>
+                </div>
+                <div style={{fontFamily:G.heading,fontSize:26,color:i===0?G.gold:G.white}}>{entry.score} <span style={{fontSize:12,color:"rgba(255,255,255,.3)"}}>pts</span></div>
+              </div>
+            );
+          })}
+          <button onClick={function(){setShowLeaderboard(false);}} style={{width:"100%",padding:"14px",background:"rgba(255,255,255,.05)",color:"rgba(255,255,255,.5)",border:"1px solid rgba(255,255,255,.1)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700,marginTop:8}}>
+            ↩ Retour à l'accueil
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ── HOME ──
+
   // ── HOME ──
   if(screen==="home") return (
     <div style={{...shell,animation:"fadeUp .5s ease"}} key="home">
@@ -2446,13 +2511,33 @@ export default function LePont() {
     return (
       <div style={{...shell,animation:"fadeIn .2s ease"}} key={"game-"+currentRound}>
         <div style={stripes}/>
+        {showQuitConfirm && (
+        <div style={{position:"fixed",inset:0,zIndex:300,background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+          <div style={{background:"#1E1E1E",borderRadius:24,padding:"28px 24px",maxWidth:320,width:"calc(100% - 32px)",border:"1px solid rgba(255,255,255,.1)",textAlign:"center"}}>
+            <div style={{fontSize:40,marginBottom:12}}>🏳️</div>
+            <div style={{fontFamily:G.heading,fontSize:26,color:G.white,marginBottom:8}}>ABANDONNER ?</div>
+            <div style={{fontSize:14,color:"rgba(255,255,255,.5)",marginBottom:24}}>Ta partie sera perdue et ton score sera de 0.</div>
+            <div style={{display:"flex",gap:10}}>
+              <button onClick={function(){setShowQuitConfirm(false);}} style={{flex:1,padding:"13px",background:"rgba(255,255,255,.07)",color:G.white,border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>Continuer</button>
+              <button onClick={function(){
+                setShowQuitConfirm(false);
+                clearInterval(timerRef.current);
+                clearInterval(qTimerRef.current);
+                if(activeDuel){submitDuelScore(0);}
+                setScreen("home");
+              }} style={{flex:1,padding:"13px",background:"#FF3D57",color:"#fff",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>Abandonner</button>
+            </div>
+          </div>
+        </div>
+      )}
+
         {floatingPoints}
         {/* Screen flash */}
         <div style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:10,animation:feedback==="ok"?"flashOk .6s ease":feedback==="ko"?"flashKo .6s ease":"none"}}/>
 
         {/* Top bar */}
         <div style={{zIndex:3,padding:"12px 16px 0",display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,flexShrink:0}}>
-          {backBtn(()=>{clearInterval(timerRef.current);setScreen("home");})}
+          {backBtn(()=>{setShowQuitConfirm(true);})}
           <div style={{background:"rgba(255,255,255,.13)",backdropFilter:"blur(10px)",borderRadius:18,padding:"8px 18px",display:"flex",alignItems:"center",gap:8,position:"relative"}}>
             {comboDisplay}
             <span style={{fontSize:11,color:"rgba(255,255,255,.4)",fontWeight:700,letterSpacing:1}}>M{currentRound}/{totalRounds}</span>
@@ -2563,9 +2648,23 @@ export default function LePont() {
     return (
     <div style={{...shell,animation:"fadeIn .3s ease",overflow:"auto"}} key={"chain-"+chainCount}>
       <div style={stripes}/>
+      {showQuitConfirm && (
+        <div style={{position:"fixed",inset:0,zIndex:300,background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+          <div style={{background:"#1E1E1E",borderRadius:24,padding:"28px 24px",maxWidth:320,width:"calc(100% - 32px)",border:"1px solid rgba(255,255,255,.1)",textAlign:"center"}}>
+            <div style={{fontSize:40,marginBottom:12}}>🏳️</div>
+            <div style={{fontFamily:G.heading,fontSize:26,color:G.white,marginBottom:8}}>ABANDONNER ?</div>
+            <div style={{fontSize:14,color:"rgba(255,255,255,.5)",marginBottom:24}}>Ta partie sera perdue et ton score sera de 0.</div>
+            <div style={{display:"flex",gap:10}}>
+              <button onClick={function(){setShowQuitConfirm(false);}} style={{flex:1,padding:"13px",background:"rgba(255,255,255,.07)",color:G.white,border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>Continuer</button>
+              <button onClick={function(){setShowQuitConfirm(false);clearInterval(timerRef.current);clearInterval(qTimerRef.current);if(activeDuel){submitDuelScore(0);}setChainPlayer("");setScreen("home");}} style={{flex:1,padding:"13px",background:"#FF3D57",color:"#fff",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>Abandonner</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {floatingPoints}
       <div style={{zIndex:2,padding:"12px 16px 8px",display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,position:"sticky",top:0}}>
-        {backBtn(()=>{clearInterval(timerRef.current);setScreen("home");})}
+        {backBtn(()=>{setShowQuitConfirm(true);})}
         <div style={{background:"rgba(255,255,255,.12)",backdropFilter:"blur(8px)",borderRadius:18,padding:"8px 14px",display:"flex",alignItems:"center",gap:8,position:"relative"}}>
           {comboDisplay}
           <span style={{fontFamily:G.heading,fontSize:30,color:G.white,display:"inline-block",animation:scoreAnim==="up"?"scoreUp .5s ease":scoreAnim==="down"?"scoreDn .5s ease":"none"}}>{chainScore}</span>
