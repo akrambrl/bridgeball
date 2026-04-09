@@ -1683,21 +1683,39 @@ export default function LePont() {
 
   async function loadLeaderboard(mode, d) {
     try {
-      // Fetch top 50 from Supabase, keeping best score per player
       const filter = d ? ("mode=eq."+mode+"&diff=eq."+d) : ("mode=eq."+mode);
-      const data = await sbFetch("bb_scores?"+filter+"&order=score.desc&limit=200&select=player_id,player_name,score,created_at");
+      // Fetch all scores for this mode
+      const data = await sbFetch("bb_scores?"+filter+"&order=score.desc&limit=500&select=player_id,player_name,score,created_at");
       if (!Array.isArray(data)) { setLeaderboard([]); return; }
-      // Keep best score per player
-      const best = {};
+      // Compute per-player stats
+      const stats = {};
       data.forEach(function(row) {
-        if (!best[row.player_id] || row.score > best[row.player_id].score) {
-          best[row.player_id] = row;
-        }
+        if (!stats[row.player_id]) stats[row.player_id] = { name:row.player_name, best:row.score, played:0, date:row.created_at };
+        if (row.score > stats[row.player_id].best) { stats[row.player_id].best = row.score; stats[row.player_id].date = row.created_at; }
+        stats[row.player_id].played += 1;
       });
-      const sorted = Object.values(best)
-        .sort(function(a,b){return b.score-a.score;})
+      // Fetch duel results for wins/draws/losses
+      const duels = await sbFetch("bb_duels?status=eq.complete&mode=eq."+mode+"&select=challenger_id,opponent_id,challenger_score,opponent_score&limit=500");
+      if (Array.isArray(duels)) {
+        duels.forEach(function(d) {
+          const cs = d.challenger_score, os = d.opponent_score;
+          [d.challenger_id, d.opponent_id].forEach(function(pid) {
+            if (!stats[pid]) return;
+            if (!stats[pid].wins) stats[pid].wins = 0;
+            if (!stats[pid].draws) stats[pid].draws = 0;
+            if (!stats[pid].losses) stats[pid].losses = 0;
+            const myScore = pid === d.challenger_id ? cs : os;
+            const theirScore = pid === d.challenger_id ? os : cs;
+            if (myScore > theirScore) stats[pid].wins++;
+            else if (myScore === theirScore) stats[pid].draws++;
+            else stats[pid].losses++;
+          });
+        });
+      }
+      const sorted = Object.values(stats)
+        .sort(function(a,b){ return b.best - a.best; })
         .slice(0,50)
-        .map(function(r,i){return {rank:i+1, name:r.player_name, score:r.score, date:new Date(r.created_at).toLocaleDateString("fr-FR")};});
+        .map(function(r,i){ return {rank:i+1, name:r.name, score:r.best, played:r.played, wins:r.wins||0, draws:r.draws||0, losses:r.losses||0, date:new Date(r.date).toLocaleDateString("fr-FR")}; });
       setLeaderboard(sorted);
     } catch(e) { setLeaderboard([]); }
   }
@@ -2347,15 +2365,33 @@ export default function LePont() {
             const isMe = entry.name === playerName;
             const medals = ["🥇","🥈","🥉"];
             return(
-              <div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",borderRadius:14,background:isMe?"rgba(0,230,118,.08)":"rgba(255,255,255,.03)",border:isMe?"1px solid rgba(0,230,118,.25)":"1px solid rgba(255,255,255,.05)",marginBottom:6}}>
-                <div style={{fontFamily:G.heading,fontSize:22,width:32,textAlign:"center",color:i<3?["#FFD600","#C0C0C0","#CD7F32"][i]:"rgba(255,255,255,.3)"}}>
-                  {i<3?medals[i]:(i+1)}
+              <div key={i} style={{borderRadius:14,background:isMe?"rgba(0,230,118,.08)":"rgba(255,255,255,.03)",border:isMe?"1px solid rgba(0,230,118,.25)":"1px solid rgba(255,255,255,.05)",marginBottom:6,overflow:"hidden"}}>
+                <div style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px"}}>
+                  <div style={{fontFamily:G.heading,fontSize:22,width:32,textAlign:"center",color:i<3?["#FFD600","#C0C0C0","#CD7F32"][i]:"rgba(255,255,255,.3)"}}>
+                    {i<3?medals[i]:(i+1)}
+                  </div>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:14,fontWeight:800,color:isMe?G.accent:G.white}}>{entry.name}{isMe?" (toi)":""}</div>
+                    <div style={{fontSize:11,color:"rgba(255,255,255,.35)"}}>{entry.played} partie{entry.played>1?"s":""}</div>
+                  </div>
+                  <div style={{fontFamily:G.heading,fontSize:26,color:i===0?G.gold:G.white}}>{entry.score} <span style={{fontSize:12,color:"rgba(255,255,255,.3)"}}>pts</span></div>
                 </div>
-                <div style={{flex:1}}>
-                  <div style={{fontSize:14,fontWeight:800,color:isMe?G.accent:G.white}}>{entry.name}{isMe?" (toi)":""}</div>
-                  <div style={{fontSize:11,color:"rgba(255,255,255,.35)"}}>{entry.date}</div>
-                </div>
-                <div style={{fontFamily:G.heading,fontSize:26,color:i===0?G.gold:G.white}}>{entry.score} <span style={{fontSize:12,color:"rgba(255,255,255,.3)"}}>pts</span></div>
+                {(entry.wins>0||entry.draws>0||entry.losses>0) && (
+                  <div style={{display:"flex",borderTop:"1px solid rgba(255,255,255,.06)"}}>
+                    <div style={{flex:1,padding:"6px 0",textAlign:"center",borderRight:"1px solid rgba(255,255,255,.06)"}}>
+                      <div style={{fontFamily:G.heading,fontSize:18,color:"#00E676"}}>{entry.wins}</div>
+                      <div style={{fontSize:9,color:"rgba(255,255,255,.35)",letterSpacing:1,textTransform:"uppercase"}}>Victoires</div>
+                    </div>
+                    <div style={{flex:1,padding:"6px 0",textAlign:"center",borderRight:"1px solid rgba(255,255,255,.06)"}}>
+                      <div style={{fontFamily:G.heading,fontSize:18,color:G.gold}}>{entry.draws}</div>
+                      <div style={{fontSize:9,color:"rgba(255,255,255,.35)",letterSpacing:1,textTransform:"uppercase"}}>Nuls</div>
+                    </div>
+                    <div style={{flex:1,padding:"6px 0",textAlign:"center"}}>
+                      <div style={{fontFamily:G.heading,fontSize:18,color:"#FF3D57"}}>{entry.losses}</div>
+                      <div style={{fontSize:9,color:"rgba(255,255,255,.35)",letterSpacing:1,textTransform:"uppercase"}}>Défaites</div>
+                    </div>
+                  </div>
+                )}
               </div>
             );
           })}
