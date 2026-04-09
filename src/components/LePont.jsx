@@ -1980,7 +1980,6 @@ export default function LePont() {
   );
 
   // ── LEADERBOARD SCREEN ──
-  const notifPrompt = null;
   // ── FRIENDS SCREEN ──
   if (showFriends) {
     const myScores = friendScores.filter(function(s){return s.player_id===playerId;});
