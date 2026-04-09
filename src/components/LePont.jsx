@@ -1462,8 +1462,8 @@ export default function LePont() {
   async function loadDuels() {
     try {
       const data = await sbFetch("bb_duels?or=(challenger_id.eq." + playerId + ",opponent_id.eq." + playerId + ")&order=created_at.desc&limit=20");
-      setDuels(data || []);
-    } catch(e) { console.error(e); }
+      setDuels(Array.isArray(data) ? data : []);
+    } catch(e) { setDuels([]); }
   }
 
   async function createDuel(friend) {
@@ -2023,6 +2023,29 @@ export default function LePont() {
             {friendMsg && <div style={{marginTop:8,fontSize:13,color:friendMsg.startsWith("✓")?"#00E676":"#FF3D57",fontWeight:700}}>{friendMsg}</div>}
             <div style={{marginTop:8,fontSize:11,color:"rgba(255,255,255,.3)"}}>Partage ton code à tes amis pour comparer vos scores</div>
           </div>
+
+          {/* All friends with Défier */}
+          {friendsList.length > 0 && (
+            <div>
+              <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.3)",marginBottom:8}}>Mes amis</div>
+              {friendsList.map(function(fid, i) {
+                const scores = friendScores.filter(function(s){return s.player_id===fid;});
+                const fname = scores.length > 0 ? scores[0].player_name : fid;
+                return (
+                  <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 14px",background:"rgba(255,255,255,.04)",borderRadius:12,marginBottom:6,border:"1px solid rgba(255,255,255,.06)"}}>
+                    <div>
+                      <div style={{fontSize:14,fontWeight:800,color:G.white}}>{fname}</div>
+                      <div style={{fontSize:11,color:"rgba(255,255,255,.3)"}}>{scores.length > 0 ? scores[0].score+" pts" : "Pas encore joué"}</div>
+                    </div>
+                    <div style={{display:"flex",gap:6}}>
+                      <button onClick={function(){setShowDuelCreate({id:fid,name:fname});}} style={{padding:"7px 12px",background:G.accent,color:"#000",border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800}}>⚡ Défier</button>
+                      <button onClick={function(){removeFriend(fid);}} style={{padding:"7px 10px",background:"transparent",border:"1px solid rgba(255,255,255,.15)",borderRadius:20,cursor:"pointer",color:"rgba(255,255,255,.4)",fontSize:12}}>✕</button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
           <div>
             <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.3)",marginBottom:8}}>Mes meilleurs scores</div>
             {myScores.length===0 && <div style={{fontSize:13,color:"rgba(255,255,255,.3)",textAlign:"center",padding:12}}>Joue une partie pour voir tes scores ici !</div>}
