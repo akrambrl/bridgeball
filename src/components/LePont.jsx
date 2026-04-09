@@ -802,7 +802,7 @@ function PlayerAvatar({ name, size = 56 }) {
     : name.slice(0, 2).toUpperCase();
 
   const playerEntry = PLAYERS_CLEAN.find(p => p.name === name);
-  const mainClub = playerEntry?.clubs?.[0] || "";
+  const mainClub = (playerEntry&&playerEntry.clubs&&playerEntry.clubs[0]) || "";
   const [ca, cb] = getClubColors(mainClub);
   const tc = textColor(ca);
   const fontSize = size * 0.36;
@@ -1072,7 +1072,7 @@ async function fetchPlayerPhoto(playerName) {
       `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(playerName + " footballer")}&format=json&origin=*&srlimit=1`
     );
     const searchData = await searchRes.json();
-    const pageTitle = searchData?.query?.search?.[0]?.title;
+    const pageTitle = searchData&&searchData.query&&searchData.query.search&&searchData.query.search[0]&&searchData.query.search[0].title;
     if (!pageTitle) { PLAYER_PHOTO_CACHE[playerName] = null; return null; }
 
     // Step 2: get the page thumbnail
@@ -1584,88 +1584,6 @@ export default function LePont() {
     setScoreAnim("down"); setTimeout(()=>setScoreAnim(null),600);
   }
 
-
-  // ── MP HELPERS ──
-  const mpBroadcast = useCallback((msg) => {
-    try { mpChannel.current?.postMessage(msg); } catch {}
-  }, []);
-
-  const mpRefreshRoom = useCallback((code) => {
-    const room = mpGetRoom(code || mpCode);
-    if (room) {
-      setMpPlayers([...room.players]);
-      setMpRoom(room);
-      if (room.status === "playing" && mpScreen === "mpLobby") {
-        setMpScreen("mpPlaying");
-        startMpGame(room);
-      }
-      if (room.status === "finished" && mpScreen === "mpPlaying") {
-        setMpFinalScores([...room.players].sort((a,b) => b.score - a.score));
-        setMpScreen("mpResults");
-      }
-    }
-  }, [mpCode, mpScreen]);
-
-  function startMpChannel(code) {
-    try {
-      if (mpChannel.current) mpChannel.current.close();
-      const ch = new BroadcastChannel(`bb_room_${code}`);
-      ch.onmessage = (e) => {
-        if (e.data.type === "update") mpRefreshRoom(code);
-        if (e.data.type === "start") { mpRefreshRoom(code); }
-      };
-      mpChannel.current = ch;
-      // Poll every 2s as fallback
-      clearInterval(mpPollRef.current);
-      mpPollRef.current = setInterval(() => mpRefreshRoom(code), 2000);
-    } catch {}
-  }
-
-  function startMpGame(room) {
-    // Use seeded shuffle for same questions across all players
-    function seededRng(seed) {
-      let s = seed;
-      return () => { s = (s*1664525+1013904223)&0x7fffffff; return s/0x7fffffff; };
-    }
-    const rng = seededRng(room.seed);
-    const dbPool = [...(DB[room.diff]||DB.facile)];
-    for (let i = dbPool.length-1; i > 0; i--) {
-      const j = Math.floor(rng()*(i+1));
-      [dbPool[i],dbPool[j]] = [dbPool[j],dbPool[i]];
-    }
-    setQueue(dbPool);
-    setQIdx(0);
-    setScore(0); scoreRef.current = 0;
-    setTimeLeft(ROUND_DURATION);
-    setGuess(""); setFlash(null); setFeedback(null);
-    if (room.diff === "facile") setOptions(generateOptions(dbPool[0].p, DB[room.diff]||DB.facile));
-    setAnimKey(0);
-    setCombo(0); setMaxCombo(0); comboRef.current = 0; lastAnswerTime.current = Date.now();
-  }
-
-  function mpUpdateMyScore(finalScore) {
-    const room = mpGetRoom(mpCode);
-    if (!room) return;
-    const p = room.players.find(p => p.id === mpMyId);
-    if (p) {
-      p.score = finalScore;
-      p.status = "finished";
-    }
-    // Check if all finished
-    if (room.players.every(p => p.status === "finished")) {
-      room.status = "finished";
-    }
-    mpSaveRoom(mpCode, room);
-    mpBroadcast({ type: "update" });
-    mpRefreshRoom(mpCode);
-  }
-
-  useEffect(() => {
-    return () => {
-      mpChannel.current?.close();
-      clearInterval(mpPollRef.current);
-    };
-  }, []);
 
   function endRound() {
     clearInterval(timerRef.current);
@@ -2201,7 +2119,7 @@ export default function LePont() {
                   const isOk=flash==="ok"&&checkGuess(opt,cur.p);
                   const isKo=flash===opt;
                   const playerEntry = PLAYERS_CLEAN.find(p=>p.name===opt);
-                  const mainClub = playerEntry?.clubs?.[0] || "";
+                  const mainClub = (playerEntry&&playerEntry.clubs&&playerEntry.clubs[0]) || "";
                   const [oca,ocb] = getClubColors(mainClub);
                   const otc = textColor(oca);
                   return(
