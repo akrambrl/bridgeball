@@ -548,6 +548,10 @@ const PLAYERS = [
   { name:"Nacer Barazite", clubs:["Arsenal", "Twente"], diff:"expert" }
 ];
 
+// Remove malformed entries
+const PLAYERS_CLEAN = PLAYERS.filter(function(p){return p&&p.name&&p.clubs&&Array.isArray(p.clubs);});
+
+
 
 const CLUB_ALIASES = {
   "PSG":["paris saint germain","paris saint-germain","paris sg","paris","psg"],
@@ -645,7 +649,7 @@ function buildPontDB() {
   const playerPairCount = {};
   const MAX_PAIRS_PER_PLAYER = { facile: 6, moyen: 5, expert: 5 };
 
-  for (const p of PLAYERS) {
+  for (const p of PLAYERS_CLEAN) {
     if (!p || !p.clubs) continue;
     const bigClubs = p.clubs.filter(c => PONT_CLUBS.has(c));
     if (bigClubs.length < 2) continue;
@@ -698,7 +702,7 @@ function buildPontDB() {
 const DB = buildPontDB();
 
 const CLUB_INDEX = {};
-for (const p of PLAYERS) {
+for (const p of PLAYERS_CLEAN) {
   if (!p || !p.clubs) continue;
   for (const c of p.clubs) {
     if (!CLUB_INDEX[c]) CLUB_INDEX[c] = [];
@@ -798,7 +802,7 @@ function PlayerAvatar({ name, size = 56 }) {
     ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
     : name.slice(0, 2).toUpperCase();
 
-  const playerEntry = PLAYERS.find(p => p.name === name);
+  const playerEntry = PLAYERS_CLEAN.find(p => p.name === name);
   const mainClub = playerEntry?.clubs?.[0] || "";
   const [ca, cb] = getClubColors(mainClub);
   const tc = textColor(ca);
@@ -1140,7 +1144,7 @@ function matchClub(input,playerClubs){
   }
   return null;
 }
-function getPlayerClubs(name){const p=PLAYERS.find(x=>x.name===name);return p?p.clubs:[];}
+function getPlayerClubs(name){const p=PLAYERS_CLEAN.find(x=>x.name===name);return p?p.clubs:[];}
 function getPlayersForClub(club){return CLUB_INDEX[club]||[];}
 
 // ══ MULTIPLAYER ENGINE (BroadcastChannel + localStorage) ══
@@ -1599,7 +1603,7 @@ export default function LePont() {
 
   function startChain() {
     setIsNewRecord(false); setMyLastPts(null); setCombo(0); setMaxCombo(0); comboRef.current=0; lastAnswerTime.current=Date.now();
-    const eligible=PLAYERS.filter(p=>p&&p.clubs&&p.clubs.length>=2);
+    const eligible=PLAYERS_CLEAN.filter(p=>p&&p.clubs&&p.clubs.length>=2);
     const start=eligible[Math.floor(Math.random()*eligible.length)];
     const usedP=new Set([start.name]);
     // Prefetch logos for starting player clubs
@@ -1694,7 +1698,7 @@ export default function LePont() {
 
   function handleChainPass() {
     setChainScore(s=>{chainScoreRef.current=s-.5;return s-.5;});
-    const validClubs=(PLAYERS.find(p=>p.name===chainPlayer)?.clubs||[]).filter(c=>!chainUsedClubs.has(c));
+    const validClubs=(PLAYERS_CLEAN.find(p=>p.name===chainPlayer)?.clubs||[]).filter(c=>!chainUsedClubs.has(c));
     const chosen=validClubs.length>0?validClubs[Math.floor(Math.random()*validClubs.length)]:null;
     if(!chosen){endChain();return;}
     const newUsed=new Set(chainUsedClubs); newUsed.add(chosen);
@@ -2160,7 +2164,7 @@ export default function LePont() {
                 {options.map((opt,oi)=>{
                   const isOk=flash==="ok"&&checkGuess(opt,cur.p);
                   const isKo=flash===opt;
-                  const playerEntry = PLAYERS.find(p=>p.name===opt);
+                  const playerEntry = PLAYERS_CLEAN.find(p=>p.name===opt);
                   const mainClub = playerEntry?.clubs?.[0] || "";
                   const [oca,ocb] = getClubColors(mainClub);
                   const otc = textColor(oca);
@@ -2212,7 +2216,7 @@ export default function LePont() {
 
   // ── CHAIN GAME ──
   if(screen==="chainGame") {
-    const chainPlayerEntry = PLAYERS.find(p => p.name === chainPlayer);
+    const chainPlayerEntry = PLAYERS_CLEAN.find(p => p.name === chainPlayer);
     const chainPlayerClubs = chainPlayerEntry ? chainPlayerEntry.clubs : [];
     const chainMainClub = chainPlayerClubs[0] || "";
     const [pca, pcb] = getClubColors(chainMainClub);
