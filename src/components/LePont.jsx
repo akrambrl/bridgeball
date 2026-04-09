@@ -1502,28 +1502,37 @@ export default function LePont() {
 
   async function playDuel(duel) {
     setActiveDuel(duel);
+    setTotalRounds(1);
     setShowFriends(false);
     const isChallenger = duel.challenger_id === playerId;
     if (duel.mode === "chaine") {
       startChain();
     } else {
-      setDiff(duel.diff || "facile");
+      const duelDiffVal = duel.diff || "facile";
+      setDiff(duelDiffVal);
       setCombo(0); setMaxCombo(0); comboRef.current = 0;
       lastAnswerTime.current = Date.now();
       setRoundScores([]); setCurrentRound(1);
       setIsNewRecord(false); setMyLbRank(null);
-      startRound(1);
+      // Use timeout to let diff state update before startRound reads it
+      setTimeout(function() { startRound(1); }, 50);
     }
   }
 
   async function submitDuelScore(sc) {
     if (!activeDuel) return;
-    const isChallenger = activeDuel.challenger_id === playerId;
-    const update = isChallenger
-      ? { challenger_score: sc, status: activeDuel.opponent_score !== null ? "complete" : "challenger_played" }
-      : { opponent_score: sc, status: activeDuel.challenger_score !== null ? "complete" : "opponent_played" };
     try {
-      await sbFetch("bb_duels?id=eq." + activeDuel.id, { method: "PATCH", body: JSON.stringify(update), headers: {"Prefer": "return=minimal"} });
+      const isChallenger = activeDuel.challenger_id === playerId;
+      const otherScore = isChallenger ? activeDuel.opponent_score : activeDuel.challenger_score;
+      const newStatus = otherScore !== null && otherScore !== undefined ? "complete" : (isChallenger ? "challenger_played" : "opponent_played");
+      const update = isChallenger
+        ? { challenger_score: sc, status: newStatus }
+        : { opponent_score: sc, status: newStatus };
+      await sbFetch("bb_duels?id=eq." + activeDuel.id, {
+        method: "PATCH",
+        body: JSON.stringify(update),
+        headers: {"Prefer": "return=minimal"}
+      });
     } catch(e) { console.error(e); }
     setActiveDuel(null);
     loadDuels();
@@ -1748,6 +1757,7 @@ export default function LePont() {
           }
         }catch{}
         submitToLeaderboard(playerName,total,"pont",diff);
+        if(activeDuel){submitDuelScore(total);}
         setScreen("final");
       }else{setScreen("roundEnd");}
       return next;
@@ -1766,6 +1776,7 @@ export default function LePont() {
       }else{setIsNewRecord(false);}
     }catch{}
     submitToLeaderboard(playerName,sc,"chaine",diff);
+    if(activeDuel){submitDuelScore(sc);}
     setScreen("chainEnd");
   }
 
@@ -2562,7 +2573,7 @@ export default function LePont() {
         <div style={{fontFamily:G.heading,fontSize:"clamp(30px,8vw,50px)",color:isNewRecord?G.gold:G.white,letterSpacing:2,animation:"fadeUp .5s ease .1s both"}}>{isNewRecord?"NOUVEAU RECORD !":isChain?"TEMPS ÉCOULÉ !":"RÉSULTATS FINAUX"}</div>
       </div>
       <div style={sheet}>
-        <div style={{background:G.offWhite,borderRadius:20,padding:"20px",textAlign:"center",border:"1.5px solid #eee"}}>
+        <div style={{background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.08)",borderRadius:20,padding:"20px",textAlign:"center",border:"1.5px solid #eee"}}>
           <div style={{fontSize:11,letterSpacing:3,textTransform:"uppercase",color:"#bbb"}}>Score{isChain?"":" total"}</div>
           <div style={{fontFamily:G.heading,fontSize:"clamp(54px,13vw,80px)",color:G.dark,lineHeight:1}}>{sc}</div>
           <div style={{fontSize:11,color:"#bbb"}}>pts{isChain?` · ${chainCount} lien${chainCount>1?"s":""}`:`  ·  ${totalRounds} manche${totalRounds>1?"s":""}`}</div>
