@@ -1766,6 +1766,11 @@ export default function LePont() {
     if(mode==="chaine")startChain();
     else{setCombo(0);setMaxCombo(0);comboRef.current=0;lastAnswerTime.current=Date.now();setRoundScores([]);setCurrentRound(1);setIsNewRecord(false);setMyLbRank(null);startRound(1);}
   }
+
+  const cur = queue[qIdx % Math.max(queue.length, 1)];
+  const duration = gameMode === "chaine" ? CHAIN_DURATION : ROUND_DURATION;
+  const tPct = timeLeft / duration;
+  const urgent = timeLeft <= 10 && timeLeft > 0;
   // Design system
   const G = {
     bg:"#0A0A0A",bgPanel:"#1E1E1E",bgCard:"#141414",dark:"#0a0a0a",white:"#ffffff",
@@ -2057,10 +2062,6 @@ export default function LePont() {
             {Icon.trophy(15,"#16a34a")} Classement
           </button>
           <button onClick={function(){setShowFriends(true);fetchFriendScores(friendsList);}} style={{flex:1,padding:"14px",background:"rgba(255,255,255,.07)",color:G.white,border:"1px solid rgba(255,255,255,.1)",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>👥 Amis</button>
-          <button onClick={()=>{setMpError("");setMpJoinInput("");setMpScreen("mpMenu");}}
-            style={{flex:1,padding:"12px",background:"#eff6ff",color:"#2563eb",border:"2px solid #93c5fd",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
-            {Icon.transfer(15,"#2563eb")} Inviter un ami
-          </button>
         </div>
       </div>
     </div>
