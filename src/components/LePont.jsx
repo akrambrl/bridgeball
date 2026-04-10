@@ -1384,6 +1384,7 @@ export default function LePont() {
   const [playerId] = useState(() => getPlayerId());
   const [showFriends, setShowFriends] = useState(false);
   const [selectedFriend, setSelectedFriend] = useState(null); // {id, name}
+  const [confirmRemove, setConfirmRemove] = useState(null); // {id, name}
   const [friendInput, setFriendInput] = useState("");
   const [friendsList, setFriendsList] = useState([]);
   const [friendScores, setFriendScores] = useState([]);
@@ -2028,8 +2029,8 @@ export default function LePont() {
     if (clean.length !== 6) { setFriendMsg("Code invalide (6 caractères)"); return; }
     if (clean === playerId) { setFriendMsg("C'est ton propre code !"); return; }
     if (friendsList.includes(clean)) { setFriendMsg("Vous êtes déjà amis !"); return; }
-    // Check if already sent
-    const alreadySent = sentRequests.find(function(r){return r.to_id===clean;});
+    // Check if already sent et toujours en attente
+    const alreadySent = sentRequests.find(function(r){return r.to_id===clean && r.status==="pending";});
     if (alreadySent) { setFriendMsg("Demande déjà envoyée !"); return; }
     const name = (playerName||"Anonyme").trim();
     try {
@@ -2076,11 +2077,17 @@ export default function LePont() {
     } catch(e) { console.error(e); }
   }
 
-  function removeFriend(fid) {
+  async function removeFriend(fid) {
     const newList = friendsList.filter(function(id){return id !== fid;});
     localStorage.setItem("bb_friends", JSON.stringify(newList));
     setFriendsList(newList);
     fetchFriendScores(newList);
+    // Nettoie les demandes dans Supabase dans les deux sens
+    try {
+      await sbFetch("bb_friend_requests?from_id=eq."+playerId+"&to_id=eq."+fid, {method:"DELETE"});
+      await sbFetch("bb_friend_requests?from_id=eq."+fid+"&to_id=eq."+playerId, {method:"DELETE"});
+      loadFriendRequests();
+    } catch(e) { console.error(e); }
   }
 
   async function loadFriendRequests() {
@@ -2673,6 +2680,20 @@ export default function LePont() {
             </div>
           </div>
         )}
+        {/* Modal confirmation suppression ami */}
+        {confirmRemove && (
+          <div style={{position:"fixed",inset:0,zIndex:400,background:"rgba(0,0,0,.75)",backdropFilter:"blur(6px)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+            <div style={{background:"rgba(15,20,15,.97)",borderRadius:24,padding:"28px 24px",maxWidth:320,width:"calc(100% - 40px)",border:"1px solid rgba(255,255,255,.1)",textAlign:"center"}}>
+              <div style={{fontSize:32,marginBottom:12}}>👋</div>
+              <div style={{fontFamily:G.heading,fontSize:22,color:G.white,marginBottom:8}}>Supprimer {confirmRemove.name} ?</div>
+              <div style={{fontSize:13,color:"rgba(255,255,255,.4)",marginBottom:24}}>Il devra renvoyer une demande pour être à nouveau dans ta liste.</div>
+              <div style={{display:"flex",gap:10}}>
+                <button onClick={function(){setConfirmRemove(null);}} style={{flex:1,padding:"12px",background:"rgba(255,255,255,.07)",color:"rgba(255,255,255,.6)",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>Annuler</button>
+                <button onClick={function(){removeFriend(confirmRemove.id);setConfirmRemove(null);}} style={{flex:1,padding:"12px",background:"#FF3D57",color:"#fff",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>Supprimer</button>
+              </div>
+            </div>
+          </div>
+        )}
         <div style={{zIndex:3,padding:"12px 16px 0",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
           {backBtn(function(){setShowFriends(false);setFriendMsg("");setSelectedFriend(null);})}
           <div style={{fontFamily:G.heading,fontSize:26,color:G.white,letterSpacing:2}}>AMIS</div>
@@ -2713,26 +2734,23 @@ export default function LePont() {
             {friendMsg && <div style={{fontSize:12,marginTop:6,color:friendMsg.includes("✓")?"#00E676":"#FF3D57",fontWeight:700}}>{friendMsg}</div>}
             <div style={{marginTop:8,fontSize:11,color:"rgba(255,255,255,.3)"}}>Partage ton code à tes amis pour se connecter</div>
           </div>
-          {/* Demandes envoyées en attente */}
-          {sentRequests.filter(function(r){return r.status==="pending";}).length > 0 && (
-            <div style={{background:"rgba(255,214,0,.04)",border:"1px solid rgba(255,214,0,.15)",borderRadius:16,padding:14}}>
-              <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:G.gold,marginBottom:8}}>⏳ Demandes envoyées</div>
-              {sentRequests.filter(function(r){return r.status==="pending";}).map(function(r){return(
-                <div key={r.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:"1px solid rgba(255,255,255,.05)"}}>
-                  <div style={{fontSize:13,fontWeight:700,color:G.white}}>{r.to_id}</div>
-                  <div style={{fontSize:11,color:G.gold,fontWeight:700}}>En attente</div>
-                </div>
-              );})}
-            </div>
-          )}
-          {/* Liste des amis */}
+          {/* Liste des amis + demandes en attente */}
           <div>
             <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.3)",marginBottom:8}}>
               Mes amis {friendsList.length>0&&<span style={{color:G.accent}}>({friendsList.length})</span>}
             </div>
-            {friendsList.length===0 && (
+            {friendsList.length===0 && sentRequests.filter(function(r){return r.status==="pending";}).length===0 && (
               <div style={{textAlign:"center",padding:"24px 0",color:"rgba(255,255,255,.3)",fontSize:14}}>Aucun ami pour l'instant 👋</div>
             )}
+            {/* Demandes en attente intégrées dans la liste */}
+            {sentRequests.filter(function(r){return r.status==="pending";}).map(function(r,i){return(
+              <div key={"pending-"+i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 14px",background:"rgba(255,214,0,.04)",borderRadius:14,marginBottom:8,border:"1px dashed rgba(255,214,0,.25)"}}>
+                <div>
+                  <div style={{fontSize:15,fontWeight:800,color:"rgba(255,255,255,.5)"}}>{r.to_id}</div>
+                  <div style={{fontSize:11,color:G.gold}}>⏳ En attente d'acceptation</div>
+                </div>
+              </div>
+            );})}
             {friendsList.map(function(fid, i) {
               let fname = fid;
               try {
@@ -2750,7 +2768,7 @@ export default function LePont() {
                   </div>
                   <div style={{display:"flex",gap:8,alignItems:"center"}}>
                     <button onClick={function(e){e.stopPropagation();setShowDuelCreate({id:fid,name:fname});}} style={{padding:"7px 12px",background:G.accent,color:"#000",border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800}}>⚡ Défier</button>
-                    <button onClick={function(e){e.stopPropagation();removeFriend(fid);}} style={{padding:"7px 10px",background:"transparent",border:"1px solid rgba(255,255,255,.15)",borderRadius:20,cursor:"pointer",color:"rgba(255,255,255,.4)",fontSize:12}}>✕</button>
+                    <button onClick={function(e){e.stopPropagation();setConfirmRemove({id:fid,name:fname});}} style={{padding:"7px 10px",background:"transparent",border:"1px solid rgba(255,255,255,.15)",borderRadius:20,cursor:"pointer",color:"rgba(255,255,255,.4)",fontSize:12}}>✕</button>
                     <span style={{color:"rgba(255,255,255,.3)",fontSize:18}}>›</span>
                   </div>
                 </div>
