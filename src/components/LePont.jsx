@@ -1486,9 +1486,12 @@ export default function LePont() {
   // Question timer (Le Pont + La Chaîne)
   useEffect(()=>{
     chainPassedRef.current = false;
+    clearInterval(qTimerRef.current);
     if(screen!=="game"&&screen!=="chainGame"){clearInterval(qTimerRef.current);return;}
     const duration = screen==="chainGame" ? CHAIN_QUESTION_DURATION : QUESTION_DURATION;
     const qStart = Date.now();
+    const capturedChainCount = chainCount;
+    chainPassedRef.current = false;
     setQTimeLeft(duration);
     clearInterval(qTimerRef.current);
     qTimerRef.current=setInterval(()=>{
@@ -1497,8 +1500,12 @@ export default function LePont() {
       setQTimeLeft(remaining);
       if(remaining <= 0){
         clearInterval(qTimerRef.current);
-        if(screen==="chainGame"){ if(!chainPassedRef.current){ chainPassedRef.current=true; handleChainPass(); } }
-        else handlePass();
+        if(screen==="chainGame"){
+          if(!chainPassedRef.current && capturedChainCount === chainCount){
+            chainPassedRef.current=true;
+            handleChainPass();
+          }
+        } else handlePass();
       }
     },300);
     return()=>clearInterval(qTimerRef.current);
@@ -1511,6 +1518,7 @@ export default function LePont() {
     const duration = screen==="chainGame" ? CHAIN_DURATION : ROUND_DURATION;
     roundStartTime.current = Date.now();
     timerRef.current=setInterval(()=>{
+      if(!roundStartTime.current) roundStartTime.current = Date.now();
       const elapsed = Math.floor((Date.now() - roundStartTime.current) / 1000);
       const remaining = Math.max(duration - elapsed, 0);
       setTimeLeft(remaining);
@@ -2222,7 +2230,7 @@ export default function LePont() {
   }
 
   function startRound(round) {
-    roundStartTime.current = null;
+    roundStartTime.current = null; // timer will set on next tick
     const q=shuffle(DB[diff]);
     setQueue(q); setQIdx(0); setScore(0); scoreRef.current=0;
     setTimeLeft(ROUND_DURATION); setGuess(""); setFlash(null); setFeedback(null);
@@ -2232,6 +2240,7 @@ export default function LePont() {
   }
 
   function startChain() {
+    roundStartTime.current = null; // reset so timer reinits on screen change
     setIsNewRecord(false); setMyLastPts(null); setCombo(0); setMaxCombo(0); comboRef.current=0; lastAnswerTime.current=Date.now();
     const eligible=PLAYERS_CLEAN.filter(p=>p.clubs.length>=2);
     const start=eligible[Math.floor(Math.random()*eligible.length)];
@@ -2326,6 +2335,7 @@ export default function LePont() {
   }
 
   function handleChainPass() {
+    if(chainPassedRef.current) return; // already passed this question
     clearInterval(qTimerRef.current);
     chainPassedRef.current = true;
     setChainScore(s=>{chainScoreRef.current=s-.5;return s-.5;});
