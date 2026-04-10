@@ -1410,6 +1410,11 @@ export default function LePont() {
   const countdownRef = useRef(null);
 
   const [qTimeLeft, setQTimeLeft] = useState(5);
+  const [pseudoScreen, setPseudoScreen] = useState(false); // show pseudo creation screen
+  const [pseudoInput, setPseudoInput] = useState("");
+  const [pseudoChecking, setPseudoChecking] = useState(false);
+  const [pseudoMsg, setPseudoMsg] = useState("");
+  const [pseudoConfirmed, setPseudoConfirmed] = useState(false);
   const [showQuitConfirm, setShowQuitConfirm] = useState(false);
   const qTimerRef = useRef(null);
   const chainPassedRef = useRef(false);
@@ -1434,6 +1439,7 @@ export default function LePont() {
       const seen = localStorage.getItem("bb_seen"); if(seen) JSON.parse(seen).forEach(s=>seenInstructions.current.add(s));
     } catch {}
     loadLeaderboard("pont");
+    initPseudo();
     loadFriends().then(function(ids){fetchFriendScores(ids);});
     loadDuels();
     loadFriendRequests();
@@ -1859,6 +1865,78 @@ export default function LePont() {
     setRoom(null);
     setRoomMsg("");
     setDuelCountdown(null);
+  }
+
+
+  // ── PSEUDO FUNCTIONS ──
+  async function checkAndSavePseudo(pseudo) {
+    const clean = pseudo.trim();
+    if (clean.length < 2) { setPseudoMsg("Minimum 2 caractères"); return; }
+    if (clean.length > 20) { setPseudoMsg("Maximum 20 caractères"); return; }
+    if (!/^[a-zA-Z0-9_\-\.]+$/.test(clean)) { setPseudoMsg("Lettres, chiffres, _ - . uniquement"); return; }
+    setPseudoChecking(true);
+    setPseudoMsg("Vérification...");
+    try {
+      // Check if pseudo already taken
+      const existing = await sbFetch("bb_pseudos?pseudo=eq."+encodeURIComponent(clean)+"&limit=1");
+      if (Array.isArray(existing) && existing.length > 0) {
+        if (existing[0].player_id === playerId) {
+          // It's mine - confirm it
+          setPseudoConfirmed(true);
+          setPseudoScreen(false);
+          setPlayerName(clean);
+          try { localStorage.setItem("bb_name", clean); } catch {}
+          setPseudoMsg("");
+        } else {
+          setPseudoMsg("❌ Ce pseudo est déjà pris !");
+        }
+        setPseudoChecking(false);
+        return;
+      }
+      // Check if I already have a pseudo
+      const mine = await sbFetch("bb_pseudos?player_id=eq."+playerId+"&limit=1");
+      if (Array.isArray(mine) && mine.length > 0) {
+        // Update existing pseudo
+        await sbFetch("bb_pseudos?player_id=eq."+playerId, {
+          method: "PATCH",
+          body: JSON.stringify({pseudo: clean}),
+          headers: {"Prefer": "return=minimal"}
+        });
+      } else {
+        // Create new pseudo
+        await sbFetch("bb_pseudos", {
+          method: "POST",
+          body: JSON.stringify({player_id: playerId, pseudo: clean})
+        });
+      }
+      setPlayerName(clean);
+      try { localStorage.setItem("bb_name", clean); } catch {}
+      setPseudoConfirmed(true);
+      setPseudoScreen(false);
+      setPseudoMsg("✓ Pseudo réservé !");
+    } catch(e) {
+      setPseudoMsg("Erreur: "+e.message);
+    }
+    setPseudoChecking(false);
+  }
+
+  async function initPseudo() {
+    // Check if player already has a confirmed pseudo
+    const saved = (() => { try { return localStorage.getItem("bb_name"); } catch { return null; } })();
+    if (saved && saved.trim().length >= 2) {
+      // Verify it's still valid in DB
+      try {
+        const mine = await sbFetch("bb_pseudos?player_id=eq."+playerId+"&limit=1");
+        if (Array.isArray(mine) && mine.length > 0) {
+          setPlayerName(mine[0].pseudo);
+          localStorage.setItem("bb_name", mine[0].pseudo);
+          setPseudoConfirmed(true);
+          return;
+        }
+      } catch {}
+    }
+    // No pseudo yet - show pseudo screen
+    setPseudoScreen(true);
   }
 
 
@@ -2747,6 +2825,49 @@ export default function LePont() {
   }
 
 
+  // ── PSEUDO SCREEN ──
+  if (pseudoScreen) {
+    return (
+      <div style={{...shell,alignItems:"center",justifyContent:"center"}} key="pseudo">
+        <div style={stripes}/>
+        <div style={{zIndex:1,padding:"0 28px",width:"100%",maxWidth:400,margin:"0 auto"}}>
+          <div style={{textAlign:"center",marginBottom:32}}>
+            <div style={{fontFamily:G.heading,fontSize:"clamp(52px,13vw,80px)",lineHeight:.9,color:G.white}}>BRIDGE<span style={{color:G.accent}}>BALL</span></div>
+            <div style={{fontSize:13,color:"rgba(255,255,255,.4)",marginTop:8,letterSpacing:2}}>CHOISIS TON PSEUDO</div>
+          </div>
+          <div style={{background:"#1E1E1E",borderRadius:20,padding:"24px",border:"1px solid rgba(255,255,255,.1)"}}>
+            <div style={{fontSize:12,color:"rgba(255,255,255,.4)",marginBottom:8,letterSpacing:1}}>Pseudo unique · visible dans le classement</div>
+            <input
+              value={pseudoInput}
+              onChange={function(e){setPseudoInput(e.target.value);setPseudoMsg("");}}
+              onKeyDown={function(e){if(e.key==="Enter")checkAndSavePseudo(pseudoInput);}}
+              placeholder="Ton pseudo..."
+              maxLength={20}
+              autoFocus
+              style={{width:"100%",background:"rgba(255,255,255,.06)",border:"1.5px solid rgba(255,255,255,.15)",borderRadius:12,padding:"14px 16px",fontFamily:G.font,fontSize:18,color:G.white,outline:"none",boxSizing:"border-box",marginBottom:10}}
+            />
+            {pseudoMsg && (
+              <div style={{fontSize:13,fontWeight:700,color:pseudoMsg.startsWith("❌")?"#FF3D57":pseudoMsg.startsWith("✓")?"#00E676":"rgba(255,255,255,.5)",marginBottom:10}}>
+                {pseudoMsg}
+              </div>
+            )}
+            <div style={{fontSize:11,color:"rgba(255,255,255,.25)",marginBottom:14}}>
+              2-20 caractères · lettres, chiffres, _ - . · pas d'espace
+            </div>
+            <button
+              onClick={function(){checkAndSavePseudo(pseudoInput);}}
+              disabled={pseudoChecking || pseudoInput.trim().length < 2}
+              style={{width:"100%",padding:"14px",background:pseudoInput.trim().length>=2?G.accent:"rgba(255,255,255,.1)",color:pseudoInput.trim().length>=2?"#000":"rgba(255,255,255,.3)",border:"none",borderRadius:50,cursor:pseudoInput.trim().length>=2?"pointer":"not-allowed",fontFamily:G.font,fontSize:16,fontWeight:800,transition:"all .2s"}}
+            >
+              {pseudoChecking?"Vérification...":"Confirmer mon pseudo →"}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+
   // ── WAITING ROOM ──
   if (waitingDuel) {
     const isChal = waitingDuel.challenger_id === playerId;
@@ -2873,9 +2994,10 @@ export default function LePont() {
 
         {/* Pseudo + Difficulté + Manches en compact */}
         <div style={{display:"flex",flexDirection:"column",gap:8}}>
-          <input value={playerName} onChange={e=>{setPlayerName(e.target.value);try{localStorage.setItem("bb_name",e.target.value);}catch{}}}
-            placeholder="Ton pseudo..."  maxLength={20}
-            style={{width:"100%",background:"rgba(255,255,255,.06)",border:"1.5px solid rgba(255,255,255,.12)",borderRadius:12,padding:"10px 14px",fontFamily:G.font,fontSize:15,color:G.white,outline:"none",boxSizing:"border-box"}}/>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",background:"rgba(255,255,255,.06)",border:"1.5px solid rgba(255,255,255,.12)",borderRadius:12,padding:"10px 14px"}}>
+            <div style={{fontFamily:G.font,fontSize:15,color:G.white,fontWeight:700}}>👤 {playerName}</div>
+            <button onClick={function(){setPseudoInput(playerName);setPseudoMsg("");setPseudoScreen(true);}} style={{background:"transparent",border:"none",color:"rgba(255,255,255,.4)",cursor:"pointer",fontSize:12,fontFamily:G.font}}>Modifier</button>
+          </div>
           <div style={{display:"flex",gap:6}}>
             {["facile","moyen","expert"].map(function(d){return(
               <button key={d} onClick={()=>setDiff(d)} style={{flex:1,padding:"8px 4px",borderRadius:10,border:"1.5px solid "+(diff===d?G.accent:"rgba(255,255,255,.12)"),background:diff===d?"rgba(0,230,118,.12)":"transparent",color:diff===d?G.accent:"rgba(255,255,255,.5)",fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:12,textTransform:"capitalize"}}>
