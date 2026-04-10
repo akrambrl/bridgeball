@@ -1977,30 +1977,34 @@ export default function LePont() {
     try {
       const stored = localStorage.getItem("bb_friends");
       let ids = stored ? JSON.parse(stored) : [];
-      // Sync depuis Supabase : demandes acceptées envoyées par moi (j'ai envoyé, l'autre a accepté)
+      // Blacklist des amis supprimés explicitement
+      const removed = JSON.parse(localStorage.getItem("bb_removed_friends") || "[]");
+      // Sync depuis Supabase : demandes acceptées envoyées par moi
       const accepted = await sbFetch("bb_friend_requests?from_id=eq."+playerId+"&status=eq.accepted&select=to_id,to_name");
       if (Array.isArray(accepted)) {
         const names = JSON.parse(localStorage.getItem("bb_friend_names") || "{}");
         accepted.forEach(function(r) {
-          if (!ids.includes(r.to_id)) {
+          if (!ids.includes(r.to_id) && !removed.includes(r.to_id)) {
             ids.push(r.to_id);
             if (r.to_name) names[r.to_id] = r.to_name;
           }
         });
         localStorage.setItem("bb_friend_names", JSON.stringify(names));
       }
-      // Sync depuis Supabase : demandes acceptées reçues par moi (l'autre a envoyé, j'ai accepté)
+      // Sync depuis Supabase : demandes acceptées reçues par moi
       const received = await sbFetch("bb_friend_requests?to_id=eq."+playerId+"&status=eq.accepted&select=from_id,from_name");
       if (Array.isArray(received)) {
         const names = JSON.parse(localStorage.getItem("bb_friend_names") || "{}");
         received.forEach(function(r) {
-          if (!ids.includes(r.from_id)) {
+          if (!ids.includes(r.from_id) && !removed.includes(r.from_id)) {
             ids.push(r.from_id);
             if (r.from_name) names[r.from_id] = r.from_name;
           }
         });
         localStorage.setItem("bb_friend_names", JSON.stringify(names));
       }
+      // Filtrer aussi les ids existants qui auraient été supprimés
+      ids = ids.filter(function(id){ return !removed.includes(id); });
       localStorage.setItem("bb_friends", JSON.stringify(ids));
       setFriendsList(ids);
       return ids;
@@ -2060,6 +2064,9 @@ export default function LePont() {
         const names = JSON.parse(localStorage.getItem("bb_friend_names") || "{}");
         names[req.from_id] = req.from_name;
         localStorage.setItem("bb_friend_names", JSON.stringify(names));
+        // Retirer de la blacklist si l'ami avait été supprimé avant
+        const removed = JSON.parse(localStorage.getItem("bb_removed_friends") || "[]");
+        localStorage.setItem("bb_removed_friends", JSON.stringify(removed.filter(function(id){return id!==req.from_id;})));
       } catch {}
       setFriendsList(newList);
       fetchFriendScores(newList);
@@ -2081,6 +2088,12 @@ export default function LePont() {
   async function removeFriend(fid) {
     const newList = friendsList.filter(function(id){return id !== fid;});
     localStorage.setItem("bb_friends", JSON.stringify(newList));
+    // Ajouter à la blacklist pour éviter la re-sync depuis Supabase
+    try {
+      const removed = JSON.parse(localStorage.getItem("bb_removed_friends") || "[]");
+      if (!removed.includes(fid)) removed.push(fid);
+      localStorage.setItem("bb_removed_friends", JSON.stringify(removed));
+    } catch {}
     setFriendsList(newList);
     fetchFriendScores(newList);
     // Nettoie les demandes dans Supabase dans les deux sens
