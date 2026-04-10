@@ -2792,8 +2792,7 @@ export default function LePont() {
 
   // ── HOME ──
   if(screen==="home") return (
-    <div style={{...shell,animation:"fadeUp .5s ease"}} key="home">
-      {/* Duel create modal */}
+    <div style={{...shell,animation:"fadeUp .5s ease",overflow:"auto"}} key="home">
       {showDuelCreate && (
         <div style={{position:"fixed",inset:0,zIndex:300,background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center"}}>
           <div style={{background:"#1E1E1E",borderRadius:24,padding:"28px 24px",maxWidth:340,width:"calc(100% - 32px)",border:"1px solid rgba(255,255,255,.1)"}}>
@@ -2826,7 +2825,6 @@ export default function LePont() {
           </div>
         </div>
       )}
-      <div style={stripes}/>
       {showRoomCreate && (
         <div style={{position:"fixed",inset:0,zIndex:300,background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center"}}>
           <div style={{background:"#1E1E1E",borderRadius:24,padding:"28px 24px",maxWidth:340,width:"calc(100% - 32px)",border:"1px solid rgba(255,255,255,.1)"}}>
@@ -2862,118 +2860,113 @@ export default function LePont() {
             {roomMsg && <div style={{marginTop:10,fontSize:13,color:roomMsg.startsWith("Création")?"rgba(255,255,255,.5)":"#FF3D57",fontWeight:700,textAlign:"center"}}>{roomMsg}</div>}
           </div>
         </div>
-      )}
-      <BouncingBall/>
-      {confettiOverlay}
-      {instructionsPopup}
-      {notifPrompt}
-      {welcomeBack}
-      <div style={{zIndex:1,padding:"36px 20px 16px",textAlign:"center"}}>
-        <div style={{fontSize:11,letterSpacing:5,textTransform:"uppercase",color:"rgba(255,255,255,.65)",marginBottom:6,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>{Icon.ball(14,"rgba(255,255,255,.65)")} Jeu des transferts</div>
-        <div style={{fontFamily:G.heading,fontSize:"clamp(64px,15vw,100px)",lineHeight:.88,letterSpacing:2,color:G.white,textShadow:"0 4px 30px rgba(0,0,0,.3)"}}>BRIDGE<span style={{color:G.accent}}>BALL</span></div>
-        <div style={{fontSize:11,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.55)",marginTop:8}}>Football · Transferts · Quiz</div>
+      )
+      <div style={stripes}/>
+
+      {/* ── HEADER compact ── */}
+      <div style={{zIndex:1,padding:"18px 20px 10px",textAlign:"center"}}>
+        <div style={{fontSize:9,letterSpacing:5,textTransform:"uppercase",color:"rgba(255,255,255,.35)"}}>⚽ JEU DES TRANSFERTS</div>
+        <div style={{fontFamily:G.heading,fontSize:"clamp(42px,11vw,68px)",lineHeight:.9,letterSpacing:2,color:G.white}}>BRIDGE<span style={{color:G.accent}}>BALL</span></div>
       </div>
 
-      <div style={{...sheet}}>
-        {/* Name input */}
-        <div>
-          <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"#bbb",marginBottom:6}}>Ton pseudo (classement)</div>
+      <div style={{...sheet,gap:10}}>
+
+        {/* Pseudo + Difficulté + Manches en compact */}
+        <div style={{display:"flex",flexDirection:"column",gap:8}}>
           <input value={playerName} onChange={e=>{setPlayerName(e.target.value);try{localStorage.setItem("bb_name",e.target.value);}catch{}}}
-            placeholder="Entre ton pseudo..." maxLength={20}
-            style={{width:"100%",background:G.offWhite,border:"2px solid #e5e5e0",borderRadius:14,padding:"12px 16px",fontFamily:G.font,fontSize:15,fontWeight:600,color:G.dark,outline:"none",boxSizing:"border-box"}}/>
-        </div>
-
-        {/* Difficulty */}
-        <div>
-          <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"#bbb",marginBottom:8,textAlign:"center"}}>Difficulté</div>
-          <div style={{display:"flex",gap:8}}>
-            {["facile","moyen","expert"].map(d=>(
-              <button key={d} onClick={()=>setDiff(d)} style={{flex:1,padding:"10px 4px",borderRadius:14,border:`2px solid ${diff===d?G.dark:"#e5e5e0"}`,background:diff===d?G.dark:G.offWhite,color:diff===d?G.white:"#777",fontFamily:G.font,fontSize:13,fontWeight:700,cursor:"pointer",transition:"all .18s",textTransform:"capitalize"}}>{d}</button>
-            ))}
+            placeholder="Ton pseudo..."  maxLength={20}
+            style={{width:"100%",background:"rgba(255,255,255,.06)",border:"1.5px solid rgba(255,255,255,.12)",borderRadius:12,padding:"10px 14px",fontFamily:G.font,fontSize:15,color:G.white,outline:"none",boxSizing:"border-box"}}/>
+          <div style={{display:"flex",gap:6}}>
+            {["facile","moyen","expert"].map(function(d){return(
+              <button key={d} onClick={()=>setDiff(d)} style={{flex:1,padding:"8px 4px",borderRadius:10,border:"1.5px solid "+(diff===d?G.accent:"rgba(255,255,255,.12)"),background:diff===d?"rgba(0,230,118,.12)":"transparent",color:diff===d?G.accent:"rgba(255,255,255,.5)",fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:12,textTransform:"capitalize"}}>
+                {d}
+              </button>
+            );})}
+            {[1,2,3].map(function(n){return(
+              <button key={n} onClick={()=>setTotalRounds(n)} style={{width:36,padding:"8px 4px",borderRadius:10,border:"1.5px solid "+(totalRounds===n?"#fff":"rgba(255,255,255,.12)"),background:totalRounds===n?"rgba(255,255,255,.15)":"transparent",color:totalRounds===n?G.white:"rgba(255,255,255,.4)",fontFamily:G.heading,fontWeight:700,cursor:"pointer",fontSize:15}}>
+                {n}
+              </button>
+            );})}
           </div>
         </div>
 
-        {/* Rounds (pont only) */}
-        <div>
-          <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"#bbb",marginBottom:8,textAlign:"center"}}>Manches</div>
-          <div style={{display:"flex",gap:10,justifyContent:"center"}}>
-            {[1,2,3].map(n=>(
-              <button key={n} onClick={()=>setTotalRounds(n)} style={{width:64,height:64,borderRadius:16,border:`2px solid ${totalRounds===n?G.dark:"#e5e5e0"}`,background:totalRounds===n?G.dark:G.offWhite,color:totalRounds===n?G.white:"#888",fontFamily:G.heading,fontSize:30,cursor:"pointer",transition:"all .18s"}}>{n}</button>
-            ))}
-          </div>
-        </div>
-
-
-        {/* Pending duels */}
-        {getPendingDuels().length > 0 && (
-          <div style={{background:"linear-gradient(135deg,rgba(255,214,0,.12),rgba(255,140,0,.08))",border:"1px solid rgba(255,214,0,.3)",borderRadius:16,padding:"12px 16px"}}>
-            <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:G.gold,marginBottom:8}}>⚡ Défis reçus ({getPendingDuels().length})</div>
-            {getPendingDuels().slice(0,3).map(function(d){
-              const isChallenger = d.challenger_id === playerId;
-              const opponentName = isChallenger ? d.opponent_name : d.challenger_name;
-              return(
-                <div key={d.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderTop:"1px solid rgba(255,255,255,.06)"}}>
-                  <div>
-                    <div style={{fontSize:13,fontWeight:700,color:G.white}}>vs {opponentName}</div>
-                    <div style={{fontSize:11,color:"rgba(255,255,255,.4)"}}>{d.mode==="pont"?"Le Pont":"La Chaîne"}{d.diff?" · "+d.diff:""}</div>
-                  </div>
-                  <button onClick={function(){joinDuel(d);}} style={{padding:"8px 16px",background:G.gold,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:800}}>Rejoindre ▶</button>
-                </div>
-              );
-            })}
+        {/* Bandeau demandes d'amis */}
+        {friendRequests.length > 0 && (
+          <div style={{background:"rgba(0,230,118,.08)",border:"1px solid rgba(0,230,118,.25)",borderRadius:12,padding:"10px 14px"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+              <div style={{fontSize:12,fontWeight:700,color:G.accent}}>👋 {friendRequests.length} demande{friendRequests.length>1?"s":""} d'ami</div>
+              <button onClick={function(){setShowFriends(true);loadFriendRequests();}} style={{padding:"5px 12px",background:G.accent,color:"#000",border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800}}>Voir</button>
+            </div>
           </div>
         )}
 
-        {/* Multijoueur */}
-        <div style={{background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",borderRadius:16,padding:"14px 16px"}}>
-          <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.3)",marginBottom:10}}>Multijoueur (2-8 joueurs)</div>
-          <div style={{display:"flex",gap:8}}>
-            <input value={roomInput} onChange={function(e){setRoomInput(e.target.value.toUpperCase());setRoomMsg("");}}
-              placeholder="Code salle" maxLength={6}
-              style={{flex:1,padding:"10px 14px",borderRadius:12,border:"1.5px solid rgba(255,255,255,.15)",background:"#141414",color:G.white,fontFamily:G.font,fontSize:15,fontWeight:700,letterSpacing:3,textTransform:"uppercase",outline:"none"}}/>
-            <button onClick={function(){joinRoom(roomInput);}} style={{padding:"10px 14px",background:"rgba(255,255,255,.07)",color:G.white,border:"1px solid rgba(255,255,255,.15)",borderRadius:12,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700}}>Rejoindre</button>
-            <button onClick={function(){setShowRoomCreate(true);}} style={{padding:"10px 14px",background:G.accent,color:"#000",border:"none",borderRadius:12,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:800}}>+ Créer</button>
+        {/* Défis en attente */}
+        {getPendingDuels().length > 0 && (
+          <div style={{background:"rgba(255,214,0,.08)",border:"1px solid rgba(255,214,0,.25)",borderRadius:12,padding:"10px 14px"}}>
+            {getPendingDuels().slice(0,2).map(function(d){
+              const oppName = d.challenger_id===playerId?d.opponent_name:d.challenger_name;
+              return(
+                <div key={d.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                  <div style={{fontSize:12,fontWeight:700,color:G.gold}}>⚡ Défi de {oppName}</div>
+                  <button onClick={function(){joinDuel(d);}} style={{padding:"5px 12px",background:G.gold,color:"#000",border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800}}>Rejoindre</button>
+                </div>
+                        })}
           </div>
-          {roomMsg && <div style={{marginTop:8,fontSize:13,color:"#FF3D57",fontWeight:700}}>{roomMsg}</div>}
-        </div>
-        {/* Game modes */}
+        )}
+
+        {/* Modes de jeu */}
         <div style={{display:"flex",gap:10}}>
-          <button onClick={()=>tryStart("pont")} style={{flex:1,padding:"18px 10px",background:G.dark,color:G.white,border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,textAlign:"center"}}>
-            <div style={{marginBottom:6,display:"flex",justifyContent:"center"}}>{Icon.pitch(32,"rgba(255,255,255,.9)")}</div>
-            <div style={{fontFamily:G.heading,fontSize:20,letterSpacing:2}}>LE PONT</div>
-            <div style={{fontSize:11,color:"rgba(255,255,255,.5)",marginTop:2}}>2 clubs → joueur</div>
+          <button onClick={()=>tryStart("pont")} style={{flex:1,padding:"16px 10px",background:G.dark,borderRadius:20,border:"1px solid rgba(255,255,255,.1)",cursor:"pointer",color:G.white,textAlign:"center"}}>
+            <div style={{marginBottom:4,display:"flex",justifyContent:"center"}}>{Icon.pitch(28,"rgba(255,255,255,.9)")}</div>
+            <div style={{fontFamily:G.heading,fontSize:18,letterSpacing:2}}>LE PONT</div>
+            <div style={{fontSize:10,color:"rgba(255,255,255,.4)",marginTop:2}}>2 clubs → joueur</div>
           </button>
-          <button onClick={()=>tryStart("chaine")} style={{flex:1,padding:"18px 10px",background:"linear-gradient(135deg,#1a4e2e,#0d6e2e)",color:G.white,border:"2px solid rgba(255,255,255,.15)",borderRadius:20,cursor:"pointer",fontFamily:G.font,textAlign:"center"}}>
-            <div style={{marginBottom:6,display:"flex",justifyContent:"center"}}>{Icon.transfer(32,"rgba(255,255,255,.9)")}</div>
-            <div style={{fontFamily:G.heading,fontSize:20,letterSpacing:2}}>LA CHAÎNE</div>
-            <div style={{fontSize:11,color:"rgba(255,255,255,.5)",marginTop:2}}>joueur → club → ...</div>
+          <button onClick={()=>tryStart("chaine")} style={{flex:1,padding:"16px 10px",background:"linear-gradient(145deg,#0F3D2E,#1F7A5C)",borderRadius:20,border:"1px solid rgba(255,255,255,.1)",cursor:"pointer",color:G.white,textAlign:"center"}}>
+            <div style={{marginBottom:4,display:"flex",justifyContent:"center"}}>{Icon.transfer(28,"rgba(255,255,255,.9)")}</div>
+            <div style={{fontFamily:G.heading,fontSize:18,letterSpacing:2}}>LA CHAÎNE</div>
+            <div style={{fontSize:10,color:"rgba(255,255,255,.4)",marginTop:2}}>joueur → club → ...</div>
           </button>
         </div>
 
         {/* Records */}
+        {(record||chainRecord) && (
+          <div style={{display:"flex",gap:8}}>
+            {record&&<div style={{flex:1,background:"linear-gradient(135deg,#fef3c7,#fde68a)",borderRadius:14,padding:"8px 12px",textAlign:"center"}}>
+              <div style={{fontSize:9,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"#92400e"}}>🏆 Record Pont</div>
+              <div style={{fontFamily:G.heading,fontSize:22,color:"#92400e"}}>{record.score}</div>
+            </div>}
+            {chainRecord&&<div style={{flex:1,background:"linear-gradient(135deg,#e0f2fe,#bae6fd)",borderRadius:14,padding:"8px 12px",textAlign:"center"}}>
+              <div style={{fontSize:9,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"#075985"}}>→ Record Chaîne</div>
+              <div style={{fontFamily:G.heading,fontSize:22,color:"#075985"}}>{chainRecord.score}</div>
+            </div>}
+          </div>
+        )}
+
+        {/* Multijoueur */}
         <div style={{display:"flex",gap:8}}>
-          {record&&<div style={{flex:1,background:"linear-gradient(135deg,#fef3c7,#fde68a)",borderRadius:14,padding:"10px 14px",textAlign:"center",border:"1.5px solid #fbbf24"}}>
-            <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"#92400e",marginBottom:2,display:"flex",alignItems:"center",justifyContent:"center",gap:4}}>{Icon.trophy(14,"#92400e")} Record Pont</div>
-            <div style={{fontFamily:G.heading,fontSize:26,color:"#92400e"}}>{record.score}</div>
-          </div>}
-          {chainRecord&&<div style={{flex:1,background:"linear-gradient(135deg,#e0f2fe,#bae6fd)",borderRadius:14,padding:"10px 14px",textAlign:"center",border:"1.5px solid #7dd3fc"}}>
-            <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"#075985",marginBottom:2,display:"flex",alignItems:"center",justifyContent:"center",gap:4}}>{Icon.transfer(14,"#075985")} Record Chaîne</div>
-            <div style={{fontFamily:G.heading,fontSize:26,color:"#075985"}}>{chainRecord.score}</div>
-          </div>}
+          <input value={roomInput} onChange={function(e){setRoomInput(e.target.value.toUpperCase());setRoomMsg("");}}
+            placeholder="Code salle" maxLength={6}
+            style={{flex:1,padding:"10px 12px",borderRadius:12,border:"1.5px solid rgba(255,255,255,.12)",background:"rgba(255,255,255,.05)",color:G.white,fontFamily:G.font,fontSize:14,fontWeight:700,letterSpacing:3,textTransform:"uppercase",outline:"none"}}/>
+          <button onClick={function(){joinRoom(roomInput);}} style={{padding:"10px 12px",background:"rgba(255,255,255,.07)",color:G.white,border:"1px solid rgba(255,255,255,.12)",borderRadius:12,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700}}>Rejoindre</button>
+          <button onClick={function(){setShowRoomCreate(true);}} style={{padding:"10px 12px",background:G.accent,color:"#000",border:"none",borderRadius:12,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:800}}>+ Créer</button>
+        </div>
+        {roomMsg && <div style={{fontSize:12,color:"#FF3D57",fontWeight:700,marginTop:-4}}>{roomMsg}</div>}
+
+        {/* Actions */}
+        <div style={{display:"flex",gap:8}}>
+          <button onClick={()=>{loadLeaderboard(lbMode);setShowLeaderboard(true);}} style={{flex:1,padding:"12px",background:"rgba(0,230,118,.08)",color:G.accent,border:"1px solid rgba(0,230,118,.2)",borderRadius:14,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+            {Icon.trophy(14,G.accent)} Classement
+          </button>
+          <button onClick={function(){setShowFriends(true);fetchFriendScores(friendsList);loadDuels();loadFriendRequests();}} style={{flex:1,padding:"12px",background:"rgba(255,255,255,.05)",color:G.white,border:"1px solid rgba(255,255,255,.1)",borderRadius:14,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",gap:6,position:"relative"}}>
+            👥 Amis{friendRequests.length>0&&<span style={{position:"absolute",top:-4,right:-4,background:"#FF3D57",color:"#fff",borderRadius:"50%",width:16,height:16,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:900}}>{friendRequests.length}</span>}
+          </button>
         </div>
 
-        <div style={{display:"flex",gap:8}}>
-          <button onClick={()=>{setLbMode("pont");setLbDiff(diff);loadLeaderboard(lbMode);setShowLeaderboard(true);}}
-            style={{flex:1,padding:"12px",background:"#f0f9f4",color:"#16a34a",border:"2px solid #86efac",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
-            {Icon.trophy(15,"#16a34a")} Classement
-          </button>
-          <button onClick={function(){setShowFriends(true);fetchFriendScores(friendsList);loadDuels();loadFriendRequests();}} style={{flex:1,padding:"14px",background:"rgba(255,255,255,.07)",color:G.white,border:"1px solid rgba(255,255,255,.1)",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}><span style={{position:"relative"}}>👥 Amis{friendRequests.length>0&&<span style={{position:"absolute",top:-8,right:-10,background:"#FF3D57",color:"#fff",borderRadius:"50%",width:16,height:16,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:900}}>{friendRequests.length}</span>}</span></button>
-        </div>
       </div>
     </div>
   );
 
-  // ── PONT GAME ──
+
   if(screen==="game"&&cur) {
     const [ca1,cb1]=getClubColors(cur.c1);
     const [ca2,cb2]=getClubColors(cur.c2);
