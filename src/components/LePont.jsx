@@ -2362,6 +2362,7 @@ export default function LePont() {
     setChainHistory(prev=>[...prev,{player:chainPlayer,club:chosen,passed:true}]);
     setChainPlayer(next); setChainLastClub(chosen); setGuess("");
     setTimeout(()=>inputRef.current?.focus(),100);
+    setAnimKey(k=>k+1); // relance le timer de question pour le nouveau joueur
   }
 
   function tryStart(mode) {
