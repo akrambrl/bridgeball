@@ -1397,6 +1397,7 @@ export default function LePont() {
   const [duelDiff, setDuelDiff] = useState("facile");
   const [duelRounds, setDuelRounds] = useState(1);
   const [activeDuel, setActiveDuel] = useState(null); // duel being played
+  const [duelResult, setDuelResult] = useState(null); // completed duel for result screen
 
   const [qTimeLeft, setQTimeLeft] = useState(5);
   const [showQuitConfirm, setShowQuitConfirm] = useState(false);
@@ -1546,17 +1547,25 @@ export default function LePont() {
   async function submitDuelScore(sc) {
     if (!activeDuel) return;
     const duelId = activeDuel.id;
+    const duelCopy = Object.assign({}, activeDuel);
     const isChallenger = activeDuel.challenger_id === playerId;
     const otherScore = isChallenger ? activeDuel.opponent_score : activeDuel.challenger_score;
     const newStatus = (otherScore !== null && otherScore !== undefined) ? "complete" : (isChallenger ? "challenger_played" : "opponent_played");
     const update = isChallenger ? { challenger_score: sc, status: newStatus } : { opponent_score: sc, status: newStatus };
-    setActiveDuel(null); // Clear immediately so screen doesn't stay white
+    setActiveDuel(null);
     try {
       await sbFetch("bb_duels?id=eq." + duelId, {
         method: "PATCH",
         body: JSON.stringify(update),
         headers: {"Prefer": "return=minimal"}
       });
+      // If duel is now complete, build result object and show result screen
+      if (newStatus === "complete") {
+        const myScore = sc;
+        const theirScore = otherScore;
+        const oppName = isChallenger ? duelCopy.opponent_name : duelCopy.challenger_name;
+        setDuelResult({ myScore, theirScore, oppName, mode: duelCopy.mode });
+      }
       loadDuels();
     } catch(e) { console.error("Duel score submit error:", e); }
   }
@@ -1688,7 +1697,7 @@ export default function LePont() {
       if (!Array.isArray(data)) { setLeaderboard([]); return; }
       const stats = {};
       data.forEach(function(row) {
-        if (!stats[row.player_id]) stats[row.player_id] = { name:row.player_name, best:row.score, played:0 };
+        if (!stats[row.player_id]) stats[row.player_id] = { name:row.player_name, pid:row.player_id, best:row.score, played:0 };
         if (row.score > stats[row.player_id].best) stats[row.player_id].best = row.score;
         stats[row.player_id].played += 1;
       });
@@ -1711,7 +1720,7 @@ export default function LePont() {
       const sorted = Object.values(stats)
         .sort(function(a,b){ return b.best - a.best; })
         .slice(0,50)
-        .map(function(r,i){ return {rank:i+1, name:r.name, score:r.best, played:r.played, wins:r.wins||0, draws:r.draws||0, losses:r.losses||0}; });
+        .map(function(r,i){ return {rank:i+1, name:r.name, pid:r.pid||"", score:r.best, played:r.played, wins:r.wins||0, draws:r.draws||0, losses:r.losses||0}; });
       setLeaderboard(sorted);
     } catch(e) { setLeaderboard([]); }
   }
@@ -2344,7 +2353,7 @@ export default function LePont() {
             <div style={{textAlign:"center",padding:"32px 0",color:"rgba(255,255,255,.3)",fontSize:14}}>Aucun score pour le moment</div>
           )}
           {leaderboard.map(function(entry, i){
-            const isMe = entry.name === playerName;
+            const isMe = entry.pid === playerId;
             const medals = ["🥇","🥈","🥉"];
             return(
               <div key={i} style={{borderRadius:14,background:isMe?"rgba(0,230,118,.08)":"rgba(255,255,255,.03)",border:isMe?"1px solid rgba(0,230,118,.25)":"1px solid rgba(255,255,255,.05)",marginBottom:6,overflow:"hidden"}}>
@@ -2354,7 +2363,7 @@ export default function LePont() {
                   </div>
                   <div style={{flex:1}}>
                     <div style={{fontSize:14,fontWeight:800,color:isMe?G.accent:G.white}}>{entry.name}{isMe?" (toi)":""}</div>
-                    <div style={{fontSize:11,color:"rgba(255,255,255,.35)"}}>{entry.played} partie{entry.played>1?"s":""}</div>
+                    <div style={{fontSize:11,color:"rgba(255,255,255,.35)"}}>{entry.played} partie{entry.played>1?"s":""} · <span style={{fontFamily:G.heading,letterSpacing:2,fontSize:10}}>{entry.pid}</span></div>
                   </div>
                   <div style={{fontFamily:G.heading,fontSize:26,color:i===0?G.gold:G.white}}>{entry.score} <span style={{fontSize:12,color:"rgba(255,255,255,.3)"}}>pts</span></div>
                 </div>
@@ -2840,6 +2849,48 @@ export default function LePont() {
       </div>
     </div>
   );
+
+
+  // ── DUEL RESULT SCREEN ──
+  if (duelResult) {
+    const won = duelResult.myScore > duelResult.theirScore;
+    const draw = duelResult.myScore === duelResult.theirScore;
+    const emoji = won ? "🏆" : draw ? "🤝" : "😅";
+    const label = won ? "VICTOIRE !" : draw ? "ÉGALITÉ !" : "DÉFAITE";
+    const labelColor = won ? G.accent : draw ? G.gold : "#FF3D57";
+    return (
+      <div style={{...shell,animation:"fadeUp .4s ease"}} key="duelResult">
+        <div style={stripes}/>
+        <div style={{zIndex:1,padding:"40px 20px 16px",textAlign:"center"}}>
+          <div style={{fontSize:72,marginBottom:8,animation:"popIn .6s ease"}}>{emoji}</div>
+          <div style={{fontFamily:G.heading,fontSize:"clamp(36px,9vw,56px)",color:labelColor,letterSpacing:2}}>{label}</div>
+          <div style={{fontSize:14,color:"rgba(255,255,255,.4)",marginTop:4}}>Duel {duelResult.mode==="pont"?"Le Pont":"La Chaîne"}</div>
+        </div>
+        <div style={{...sheet,borderRadius:"28px 28px 0 0"}}>
+          {/* Scores */}
+          <div style={{display:"flex",gap:12,marginBottom:8}}>
+            <div style={{flex:1,background:"rgba(0,230,118,.08)",border:"2px solid "+(won?"#00E676":"rgba(255,255,255,.08)"),borderRadius:20,padding:"20px 12px",textAlign:"center"}}>
+              <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:6}}>Toi</div>
+              <div style={{fontFamily:G.heading,fontSize:52,color:won?G.accent:G.white,lineHeight:1}}>{duelResult.myScore}</div>
+              <div style={{fontSize:11,color:"rgba(255,255,255,.3)",marginTop:4}}>pts</div>
+            </div>
+            <div style={{display:"flex",alignItems:"center",fontFamily:G.heading,fontSize:24,color:"rgba(255,255,255,.3)"}}>VS</div>
+            <div style={{flex:1,background:"rgba(255,255,255,.04)",border:"2px solid "+(!won&&!draw?"#FF3D57":"rgba(255,255,255,.08)"),borderRadius:20,padding:"20px 12px",textAlign:"center"}}>
+              <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:6}}>{duelResult.oppName}</div>
+              <div style={{fontFamily:G.heading,fontSize:52,color:(!won&&!draw)?"#FF3D57":G.white,lineHeight:1}}>{duelResult.theirScore}</div>
+              <div style={{fontSize:11,color:"rgba(255,255,255,.3)",marginTop:4}}>pts</div>
+            </div>
+          </div>
+          <div style={{fontSize:13,color:"rgba(255,255,255,.3)",textAlign:"center",padding:"8px 0"}}>
+            {won?"Tu as battu "+duelResult.oppName+" 🎉":draw?"Personne ne s'impose !":""+duelResult.oppName+" a gagné cette fois !"}
+          </div>
+          <button onClick={function(){setDuelResult(null);setScreen("home");}} style={{width:"100%",padding:"16px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800,marginTop:8}}>
+            Retour à l'accueil
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if(screen==="chainEnd") return makeResultScreen(chainScore,"chaine",true);
   if(screen==="final") return makeResultScreen(total,"pont",false);
