@@ -2211,7 +2211,7 @@ export default function LePont() {
           }
         }catch{}
         submitToLeaderboard(playerName,total,"pont",diff);
-        if(activeDuel&&activeDuel.isRoom){submitRoomScore(total);}else if(activeDuel){submitDuelScore(total); setScreen("final");}else{setScreen("final");}
+        if(activeDuel&&activeDuel.isRoom){setScreen("home");submitRoomScore(total);}else if(activeDuel){submitDuelScore(total); setScreen("final");}else{setScreen("final");}
       }else{setScreen("roundEnd");}
       return next;
     });
@@ -2229,7 +2229,7 @@ export default function LePont() {
       }else{setIsNewRecord(false);}
     }catch{}
     submitToLeaderboard(playerName,sc,"chaine",diff);
-    if(activeDuel&&activeDuel.isRoom){submitRoomScore(sc);}else if(activeDuel){submitDuelScore(sc); setScreen("chainEnd");}else{setScreen("chainEnd");}
+    if(activeDuel&&activeDuel.isRoom){setScreen("home");submitRoomScore(sc);}else if(activeDuel){submitDuelScore(sc); setScreen("chainEnd");}else{setScreen("chainEnd");}
   }
 
   function startRound(round) {
