@@ -1439,12 +1439,29 @@ export default function LePont() {
       const seen = localStorage.getItem("bb_seen"); if(seen) JSON.parse(seen).forEach(s=>seenInstructions.current.add(s));
     } catch {}
     loadLeaderboard("pont");
-    initPseudo();
     loadFriends().then(function(ids){fetchFriendScores(ids);});
     loadDuels();
     loadFriendRequests();
   }, []);
 
+
+
+  // Load pseudo silently on mount
+  useEffect(() => {
+    (async function() {
+      try {
+        const mine = await sbFetch("bb_pseudos?player_id=eq."+playerId+"&limit=1");
+        if (Array.isArray(mine) && mine.length > 0) {
+          setPlayerName(mine[0].pseudo);
+          try { localStorage.setItem("bb_name", mine[0].pseudo); } catch {}
+          setPseudoConfirmed(true);
+        } else {
+          const saved = localStorage.getItem("bb_name");
+          if (saved && saved.trim().length >= 2) setPlayerName(saved);
+        }
+      } catch {}
+    })();
+  }, []);
 
   // Poll for friend requests and duels every 15s
   useEffect(() => {
@@ -1920,7 +1937,7 @@ export default function LePont() {
     setPseudoChecking(false);
   }
 
-  async function initPseudo() {
+  async function /* removed */ {
     // Check if player already has a confirmed pseudo
     const saved = (() => { try { return localStorage.getItem("bb_name"); } catch { return null; } })();
     if (saved && saved.trim().length >= 2) {
