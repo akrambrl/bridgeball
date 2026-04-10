@@ -1416,6 +1416,7 @@ export default function LePont() {
   const [pseudoMsg, setPseudoMsg] = useState("");
   const [pseudoConfirmed, setPseudoConfirmed] = useState(false);
   const [showQuitConfirm, setShowQuitConfirm] = useState(false);
+  const [waitingForRoom, setWaitingForRoom] = useState(false);
   const qTimerRef = useRef(null);
   const chainPassedRef = useRef(false);
   const roundStartTime = useRef(null);
@@ -1826,6 +1827,7 @@ export default function LePont() {
 
   async function submitRoomScore(sc) {
     if (!activeDuel || !activeDuel.isRoom) return;
+    setWaitingForRoom(true);
     try {
       const data = await sbFetch("bb_rooms?id=eq."+activeDuel.id+"&limit=1");
       if (!Array.isArray(data) || data.length === 0) return;
@@ -1869,6 +1871,7 @@ export default function LePont() {
   }
 
   function showRoomResults(r) {
+    setWaitingForRoom(false);
     const players = typeof r.players === "string" ? JSON.parse(r.players) : r.players;
     const sorted = [...players].sort(function(a,b){return (b.score||0)-(a.score||0);});
     setDuelResult({isRoom:true, players:sorted, mode:r.mode});
@@ -2197,8 +2200,7 @@ export default function LePont() {
           }
         }catch{}
         submitToLeaderboard(playerName,total,"pont",diff);
-        if(activeDuel&&activeDuel.isRoom){submitRoomScore(total);}else if(activeDuel){submitDuelScore(total);}
-        setScreen("final");
+        if(activeDuel&&activeDuel.isRoom){submitRoomScore(total);}else if(activeDuel){submitDuelScore(total); setScreen("final");}else{setScreen("final");}
       }else{setScreen("roundEnd");}
       return next;
     });
@@ -2216,8 +2218,7 @@ export default function LePont() {
       }else{setIsNewRecord(false);}
     }catch{}
     submitToLeaderboard(playerName,sc,"chaine",diff);
-    if(activeDuel&&activeDuel.isRoom){submitRoomScore(sc);}else if(activeDuel){submitDuelScore(sc);}
-    setScreen("chainEnd");
+    if(activeDuel&&activeDuel.isRoom){submitRoomScore(sc);}else if(activeDuel){submitDuelScore(sc); setScreen("chainEnd");}else{setScreen("chainEnd");}
   }
 
   function startRound(round) {
@@ -3424,6 +3425,21 @@ export default function LePont() {
       </div>
     </div>
   );
+
+
+  // ── WAITING FOR ROOM RESULTS ──
+  if (waitingForRoom) {
+    return (
+      <div style={{...shell,alignItems:"center",justifyContent:"center"}} key="waitingRoom">
+        <div style={stripes}/>
+        <div style={{textAlign:"center",zIndex:1,padding:"0 32px"}}>
+          <div style={{fontSize:48,marginBottom:16,animation:"spin 2s linear infinite",display:"inline-block"}}>⏳</div>
+          <div style={{fontFamily:G.heading,fontSize:28,color:G.white,marginBottom:8}}>EN ATTENTE</div>
+          <div style={{fontSize:14,color:"rgba(255,255,255,.4)"}}>En attente des autres joueurs...</div>
+        </div>
+      </div>
+    );
+  }
 
 
   // ── DUEL RESULT SCREEN ──
