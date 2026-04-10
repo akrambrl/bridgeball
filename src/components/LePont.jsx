@@ -1391,7 +1391,7 @@ export default function LePont() {
   const [friendMsg, setFriendMsg] = useState("");
   const [friendLoading, setFriendLoading] = useState(false);
   const [friendRequests, setFriendRequests] = useState([]); // incoming pending requests
-  const [sentRequests, setSentRequests] = useState([]);     // requests I sent
+  const [sentRequests, setSentRequests] = useState(function(){ try { return JSON.parse(localStorage.getItem("bb_pending_sent") || "[]"); } catch { return []; } });     // requests I sent
   // Duels
   const [duels, setDuels] = useState([]);
   const [duelLoading, setDuelLoading] = useState(false);
@@ -2044,7 +2044,14 @@ export default function LePont() {
       });
       setFriendMsg("✓ Demande envoyée ! En attente d'acceptation.");
       setFriendInput("");
-      // Mise à jour immédiate
+      // Persister localement pour survivre au polling et rechargements
+      try {
+        const pending = JSON.parse(localStorage.getItem("bb_pending_sent") || "[]");
+        if (!pending.find(function(p){return p.to_id===clean;})) {
+          pending.push({id:"tmp-"+Date.now(), from_id:playerId, to_id:clean, status:"pending"});
+          localStorage.setItem("bb_pending_sent", JSON.stringify(pending));
+        }
+      } catch {}
       setSentRequests(function(prev){return [...prev, {id:"tmp-"+Date.now(), from_id:playerId, to_id:clean, status:"pending"}];});
     } catch(e) { setFriendMsg("Erreur. Vérifie le code."); }
   }
@@ -2093,6 +2100,9 @@ export default function LePont() {
       const removed = JSON.parse(localStorage.getItem("bb_removed_friends") || "[]");
       if (!removed.includes(fid)) removed.push(fid);
       localStorage.setItem("bb_removed_friends", JSON.stringify(removed));
+      // Nettoyer aussi les demandes pending locales
+      const pending = JSON.parse(localStorage.getItem("bb_pending_sent") || "[]");
+      localStorage.setItem("bb_pending_sent", JSON.stringify(pending.filter(function(p){return p.to_id!==fid;})));
     } catch {}
     setFriendsList(newList);
     fetchFriendScores(newList);
@@ -2109,13 +2119,25 @@ export default function LePont() {
       const incoming = await sbFetch("bb_friend_requests?to_id=eq."+playerId+"&status=eq.pending&order=created_at.desc");
       if (Array.isArray(incoming)) setFriendRequests(incoming);
       const sent = await sbFetch("bb_friend_requests?from_id=eq."+playerId+"&order=created_at.desc&limit=20");
+      // Charger les demandes en attente persistées localement
+      let localPending = [];
+      try { localPending = JSON.parse(localStorage.getItem("bb_pending_sent") || "[]"); } catch {}
       if (Array.isArray(sent)) {
-        // Conserver les entrées optimistes (tmp-) qui ne sont pas encore dans Supabase
+        // Retirer du localStorage les demandes qui ont été traitées (acceptée/refusée/trouvée dans Supabase)
+        const updatedLocal = localPending.filter(function(p) {
+          const found = sent.find(function(s){return s.to_id===p.to_id;});
+          return !found; // garder seulement celles absentes de Supabase
+        });
+        try { localStorage.setItem("bb_pending_sent", JSON.stringify(updatedLocal)); } catch {}
+        // Merger : entrées locales + résultats Supabase
+        const merged = [...updatedLocal, ...sent];
+        setSentRequests(merged);
+      } else {
+        // Supabase inaccessible : afficher au moins les locales
         setSentRequests(function(prev) {
-          const optimistic = prev.filter(function(r) {
-            return String(r.id).startsWith("tmp-") && !sent.find(function(s){return s.to_id===r.to_id;});
-          });
-          return [...optimistic, ...sent];
+          const existingIds = prev.map(function(r){return r.to_id;});
+          const toAdd = localPending.filter(function(p){return !existingIds.includes(p.to_id);});
+          return [...prev, ...toAdd];
         });
       }
     } catch(e) { console.error(e); }
