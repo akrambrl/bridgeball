@@ -2847,8 +2847,6 @@ export default function LePont() {
 <button onClick={createRoom} style={{flex:2,padding:"12px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>Créer la salle 🚀</button>
             </div>
             {roomMsg && <div style={{marginTop:10,fontSize:13,color:roomMsg.startsWith("Création")?"rgba(255,255,255,.5)":"#FF3D57",fontWeight:700,textAlign:"center"}}>{roomMsg}</div>}
-            <div style={{display:"none"}}
-            </div>
           </div>
         </div>
       )}
