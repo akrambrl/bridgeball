@@ -1666,8 +1666,15 @@ export default function LePont() {
     const me = [{id:playerId, name:name, score:null, status:"waiting"}];
     setRoomMsg("Création en cours...");
     try {
-      const res = await sbFetch("bb_rooms", {
+      // POST to create room
+      const postRes = await fetch(SB_URL+"/rest/v1/bb_rooms", {
         method:"POST",
+        headers:{
+          "apikey":SB_KEY,
+          "Authorization":"Bearer "+SB_KEY,
+          "Content-Type":"application/json",
+          "Prefer":"return=representation"
+        },
         body:JSON.stringify({
           code: code,
           host_id: playerId,
@@ -1679,19 +1686,24 @@ export default function LePont() {
           players: me
         })
       });
-      // Fetch the created room
-      const data = await sbFetch("bb_rooms?code=eq."+code+"&limit=1");
-      if (Array.isArray(data) && data.length > 0) {
-        setRoom(data[0]);
+      if (!postRes.ok) {
+        const errText = await postRes.text();
+        setRoomMsg("Erreur INSERT: "+errText.slice(0,80));
+        return;
+      }
+      const created = await postRes.json();
+      const roomData = Array.isArray(created) ? created[0] : created;
+      if (roomData && roomData.id) {
+        setRoom(roomData);
         setShowRoomCreate(false);
         setRoomMsg("");
-        startRoomPolling(data[0].id);
+        startRoomPolling(roomData.id);
       } else {
-        setRoomMsg("Erreur: table bb_rooms introuvable. Lance le SQL d'abord !");
+        setRoomMsg("Salle créée mais non trouvée - réessaie");
       }
     } catch(e) { 
       console.error(e); 
-      setRoomMsg("Erreur création salle: "+e.message);
+      setRoomMsg("Erreur: "+e.message);
     }
   }
 
