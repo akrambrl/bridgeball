@@ -1247,7 +1247,7 @@ if(typeof document!=="undefined"&&!document.getElementById("bb-css")){
     @keyframes slideIn{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:translateX(0)}}
     @keyframes scoreUp{0%{transform:scale(1)}50%{transform:scale(1.5);color:#4ade80}100%{transform:scale(1)}}
     @keyframes scoreDn{0%{transform:scale(1)}50%{transform:scale(1.3);color:#ef4444}100%{transform:scale(1)}}
-    @keyframes comboFire{0%{transform:scale(1) rotate(0)}25%{transform:scale(1.3) rotate(-3deg)}50%{transform:scale(1.1) rotate(3deg)}100%{transform:scale(1) rotate(0)}}
+    @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}} @keyframes comboFire{0%{transform:scale(1) rotate(0)}25%{transform:scale(1.3) rotate(-3deg)}50%{transform:scale(1.1) rotate(3deg)}100%{transform:scale(1) rotate(0)}}
     @keyframes floatUp{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-60px) scale(1.3)}}
     @keyframes confettiFall{0%{transform:translateY(-100vh) rotate(0deg);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
     @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
@@ -1398,6 +1398,16 @@ export default function LePont() {
   const [duelRounds, setDuelRounds] = useState(1);
   const [activeDuel, setActiveDuel] = useState(null); // duel being played
   const [duelResult, setDuelResult] = useState(null); // completed duel for result screen
+  const [waitingDuel, setWaitingDuel] = useState(null); // duel in waiting room
+  // Room system (multi-player up to 8)
+  const [room, setRoom] = useState(null);
+  const [roomInput, setRoomInput] = useState("");
+  const [roomMsg, setRoomMsg] = useState("");
+  const [showRoomCreate, setShowRoomCreate] = useState(false);
+  const roomPollRef = useRef(null);
+  const [duelCountdown, setDuelCountdown] = useState(null); // 3..2..1 before launch
+  const duelPollRef = useRef(null);
+  const countdownRef = useRef(null);
 
   const [qTimeLeft, setQTimeLeft] = useState(5);
   const [showQuitConfirm, setShowQuitConfirm] = useState(false);
@@ -1436,7 +1446,11 @@ export default function LePont() {
       loadFriendRequests();
       loadDuels();
     }, 15000);
-    return () => clearInterval(poll);
+    return () => {
+      clearInterval(poll);
+      clearInterval(duelPollRef.current);
+      clearInterval(countdownRef.current);
+    };
   }, []);
 
   useEffect(()=>{scoreRef.current=score;},[score]);
@@ -1511,18 +1525,79 @@ export default function LePont() {
           mode: duelMode,
           diff: duelDiff,
           rounds: duelRounds,
-          status: "pending",
+          status: "waiting",
         })
       });
       setShowDuelCreate(null);
-      // Fetch the newly created duel and play it immediately
-      const data = await sbFetch("bb_duels?challenger_id=eq."+playerId+"&challenger_score=is.null&order=created_at.desc&limit=1");
+      // Enter waiting room
+      const data = await sbFetch("bb_duels?challenger_id=eq."+playerId+"&status=eq.waiting&order=created_at.desc&limit=1");
       if (Array.isArray(data) && data.length > 0) {
-        setTimeout(function(){ playDuel(data[0]); }, 200);
+        setWaitingDuel(data[0]);
+        startDuelPolling(data[0]);
       } else {
         loadDuels();
       }
     } catch(e) { console.error(e); }
+  }
+
+  function startDuelPolling(duel) {
+    clearInterval(duelPollRef.current);
+    duelPollRef.current = setInterval(async function() {
+      try {
+        const data = await sbFetch("bb_duels?id=eq."+duel.id+"&select=id,status,challenger_id,opponent_id,challenger_name,opponent_name,mode,diff,rounds,challenger_score,opponent_score");
+        if (!Array.isArray(data) || data.length === 0) return;
+        const updated = data[0];
+        setWaitingDuel(updated);
+        if (updated.status === "ready") {
+          clearInterval(duelPollRef.current);
+          startCountdown(updated);
+        }
+      } catch(e) {}
+    }, 3000);
+  }
+
+  function startCountdown(duel) {
+    setDuelCountdown(3);
+    let count = 3;
+    countdownRef.current = setInterval(function() {
+      count--;
+      setDuelCountdown(count);
+      if (count <= 0) {
+        clearInterval(countdownRef.current);
+        setDuelCountdown(null);
+        setWaitingDuel(null);
+        playDuel(duel);
+      }
+    }, 1000);
+  }
+
+  async function joinDuel(duel) {
+    try {
+      await sbFetch("bb_duels?id=eq."+duel.id, {
+        method: "PATCH",
+        body: JSON.stringify({status: "ready"}),
+        headers: {"Prefer": "return=minimal"}
+      });
+      const readyDuel = Object.assign({}, duel, {status: "ready"});
+      setWaitingDuel(readyDuel);
+      // Opponent starts countdown immediately (they just set status to ready)
+      startCountdown(readyDuel);
+    } catch(e) { console.error(e); }
+  }
+
+  function cancelWaiting() {
+    clearInterval(duelPollRef.current);
+    clearInterval(countdownRef.current);
+    if (waitingDuel) {
+      sbFetch("bb_duels?id=eq."+waitingDuel.id, {
+        method: "PATCH",
+        body: JSON.stringify({status: "cancelled"}),
+        headers: {"Prefer": "return=minimal"}
+      }).catch(function(){});
+    }
+    setWaitingDuel(null);
+    setDuelCountdown(null);
+    loadDuels();
   }
   async function playDuel(duel) {
     setActiveDuel(duel);
@@ -1571,14 +1646,193 @@ export default function LePont() {
   }
 
   function getPendingDuels() {
+    // For opponent: show duels where challenger is waiting for them to join
     return duels.filter(function(d) {
-      if (d.challenger_id === playerId) return d.status === "pending" || d.status === "opponent_played";
-      return d.status === "pending" || d.status === "challenger_played";
-    }).filter(function(d) {
-      // Only show duels where I haven't played yet
-      if (d.challenger_id === playerId) return d.challenger_score === null;
-      return d.opponent_score === null;
+      if (d.challenger_id === playerId) return false; // challenger handles via waitingDuel state
+      return d.status === "waiting"; // opponent sees "join" invite
     });
+  }
+
+
+  // ── ROOM FUNCTIONS (multi up to 8) ──
+  function makeRoomCode() {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    return Array.from({length:6}, function(){return chars[Math.floor(Math.random()*chars.length)];}).join("");
+  }
+
+  async function createRoom() {
+    const name = (playerName||"Anonyme").trim();
+    const code = makeRoomCode();
+    const me = {id:playerId, name:name, score:null, status:"waiting"};
+    try {
+      await sbFetch("bb_rooms", {
+        method:"POST",
+        body:JSON.stringify({
+          code, host_id:playerId, host_name:name,
+          mode:duelMode, diff:duelDiff, rounds:duelRounds,
+          status:"waiting", players:JSON.stringify([me])
+        })
+      });
+      const data = await sbFetch("bb_rooms?code=eq."+code+"&limit=1");
+      if (Array.isArray(data) && data.length > 0) {
+        setRoom(data[0]);
+        setShowRoomCreate(false);
+        startRoomPolling(data[0].id);
+      }
+    } catch(e) { console.error(e); setRoomMsg("Erreur création salle"); }
+  }
+
+  async function joinRoom(code) {
+    const clean = code.trim().toUpperCase();
+    if (clean.length !== 6) { setRoomMsg("Code invalide"); return; }
+    const name = (playerName||"Anonyme").trim();
+    try {
+      const data = await sbFetch("bb_rooms?code=eq."+clean+"&limit=1");
+      if (!Array.isArray(data) || data.length === 0) { setRoomMsg("Salle introuvable"); return; }
+      const r = data[0];
+      if (r.status !== "waiting") { setRoomMsg("Partie déjà lancée !"); return; }
+      const players = typeof r.players === "string" ? JSON.parse(r.players) : r.players;
+      if (players.length >= 8) { setRoomMsg("Salle pleine (8/8)"); return; }
+      if (players.find(function(p){return p.id===playerId;})) {
+        setRoom(r); startRoomPolling(r.id); return;
+      }
+      const newPlayers = [...players, {id:playerId, name:name, score:null, status:"waiting"}];
+      await sbFetch("bb_rooms?id=eq."+r.id, {
+        method:"PATCH",
+        body:JSON.stringify({players:JSON.stringify(newPlayers)}),
+        headers:{"Prefer":"return=minimal"}
+      });
+      const updated = await sbFetch("bb_rooms?id=eq."+r.id+"&limit=1");
+      if (Array.isArray(updated) && updated.length > 0) {
+        setRoom(updated[0]);
+        setRoomInput("");
+        setRoomMsg("");
+        startRoomPolling(r.id);
+      }
+    } catch(e) { console.error(e); setRoomMsg("Erreur connexion"); }
+  }
+
+  function startRoomPolling(roomId) {
+    clearInterval(roomPollRef.current);
+    roomPollRef.current = setInterval(async function() {
+      try {
+        const data = await sbFetch("bb_rooms?id=eq."+roomId+"&limit=1");
+        if (!Array.isArray(data) || data.length === 0) return;
+        const r = data[0];
+        setRoom(r);
+        if (r.status === "playing") {
+          clearInterval(roomPollRef.current);
+          // Start countdown then play
+          setRoom(r);
+          startRoomCountdown(r);
+        } else if (r.status === "complete") {
+          clearInterval(roomPollRef.current);
+        }
+      } catch(e) {}
+    }, 2000);
+  }
+
+  function startRoomCountdown(r) {
+    setDuelCountdown(3);
+    let count = 3;
+    countdownRef.current = setInterval(function() {
+      count--;
+      setDuelCountdown(count);
+      if (count <= 0) {
+        clearInterval(countdownRef.current);
+        setDuelCountdown(null);
+        launchRoomGame(r);
+      }
+    }, 1000);
+  }
+
+  function launchRoomGame(r) {
+    setActiveDuel({id:r.id, isRoom:true, challenger_id:r.host_id, mode:r.mode, diff:r.diff, rounds:r.rounds});
+    setTotalRounds(r.rounds || 1);
+    if (r.mode === "chaine") {
+      if (r.diff) setDiff(r.diff);
+      startChain();
+    } else {
+      setDiff(r.diff || "facile");
+      setCombo(0); setMaxCombo(0); comboRef.current = 0;
+      lastAnswerTime.current = Date.now();
+      setRoundScores([]); setCurrentRound(1);
+      setIsNewRecord(false); setMyLbRank(null);
+      setTimeout(function(){ startRound(1); }, 50);
+    }
+  }
+
+  async function startRoomGame() {
+    if (!room) return;
+    try {
+      await sbFetch("bb_rooms?id=eq."+room.id, {
+        method:"PATCH",
+        body:JSON.stringify({status:"playing"}),
+        headers:{"Prefer":"return=minimal"}
+      });
+      clearInterval(roomPollRef.current);
+      startRoomCountdown(room);
+    } catch(e) { console.error(e); }
+  }
+
+  async function submitRoomScore(sc) {
+    if (!activeDuel || !activeDuel.isRoom) return;
+    try {
+      const data = await sbFetch("bb_rooms?id=eq."+activeDuel.id+"&limit=1");
+      if (!Array.isArray(data) || data.length === 0) return;
+      const r = data[0];
+      const players = typeof r.players === "string" ? JSON.parse(r.players) : r.players;
+      const updated = players.map(function(p){
+        return p.id === playerId ? Object.assign({}, p, {score:sc, status:"done"}) : p;
+      });
+      const allDone = updated.every(function(p){return p.status==="done";});
+      await sbFetch("bb_rooms?id=eq."+activeDuel.id, {
+        method:"PATCH",
+        body:JSON.stringify({players:JSON.stringify(updated), status:allDone?"complete":"playing"}),
+        headers:{"Prefer":"return=minimal"}
+      });
+      // Poll for all results
+      if (!allDone) {
+        startRoomResultPolling(activeDuel.id);
+      } else {
+        const finalData = await sbFetch("bb_rooms?id=eq."+activeDuel.id+"&limit=1");
+        if (Array.isArray(finalData) && finalData.length > 0) {
+          showRoomResults(finalData[0]);
+        }
+      }
+    } catch(e) { console.error(e); }
+  }
+
+  function startRoomResultPolling(roomId) {
+    const poll = setInterval(async function() {
+      try {
+        const data = await sbFetch("bb_rooms?id=eq."+roomId+"&limit=1");
+        if (!Array.isArray(data) || data.length === 0) return;
+        const r = data[0];
+        const players = typeof r.players === "string" ? JSON.parse(r.players) : r.players;
+        const allDone = players.every(function(p){return p.status==="done";});
+        if (allDone || r.status === "complete") {
+          clearInterval(poll);
+          showRoomResults(r);
+        }
+      } catch(e) {}
+    }, 2000);
+  }
+
+  function showRoomResults(r) {
+    const players = typeof r.players === "string" ? JSON.parse(r.players) : r.players;
+    const sorted = [...players].sort(function(a,b){return (b.score||0)-(a.score||0);});
+    setDuelResult({isRoom:true, players:sorted, mode:r.mode});
+    setActiveDuel(null);
+    setRoom(null);
+  }
+
+  function leaveRoom() {
+    clearInterval(roomPollRef.current);
+    clearInterval(countdownRef.current);
+    setRoom(null);
+    setRoomMsg("");
+    setDuelCountdown(null);
   }
 
 
@@ -1822,7 +2076,7 @@ export default function LePont() {
           }
         }catch{}
         submitToLeaderboard(playerName,total,"pont",diff);
-        if(activeDuel){submitDuelScore(total);}
+        if(activeDuel&&activeDuel.isRoom){submitRoomScore(total);}else if(activeDuel){submitDuelScore(total);}
         setScreen("final");
       }else{setScreen("roundEnd");}
       return next;
@@ -1841,7 +2095,7 @@ export default function LePont() {
       }else{setIsNewRecord(false);}
     }catch{}
     submitToLeaderboard(playerName,sc,"chaine",diff);
-    if(activeDuel){submitDuelScore(sc);}
+    if(activeDuel&&activeDuel.isRoom){submitRoomScore(sc);}else if(activeDuel){submitDuelScore(sc);}
     setScreen("chainEnd");
   }
 
@@ -2396,6 +2650,120 @@ export default function LePont() {
 
   // ── HOME ──
 
+  // ── ROOM LOBBY ──
+  if (room) {
+    const players = typeof room.players === "string" ? JSON.parse(room.players) : (room.players || []);
+    const isHost = room.host_id === playerId;
+    const me = players.find(function(p){return p.id===playerId;});
+    if (duelCountdown !== null) {
+      const oppName = players.filter(function(p){return p.id!==playerId;}).map(function(p){return p.name;}).join(", ");
+      return (
+        <div style={{...shell,alignItems:"center",justifyContent:"center"}} key="countdown">
+          <div style={stripes}/>
+          <div style={{textAlign:"center",zIndex:1}}>
+            <div style={{fontSize:14,color:"rgba(255,255,255,.5)",letterSpacing:3,textTransform:"uppercase",marginBottom:16}}>C'est parti !</div>
+            <div style={{fontFamily:G.heading,fontSize:120,color:G.accent,lineHeight:1,animation:"popIn .3s ease"}} key={duelCountdown}>{duelCountdown}</div>
+            <div style={{fontSize:14,color:"rgba(255,255,255,.4)",marginTop:16}}>{players.length} joueurs</div>
+          </div>
+        </div>
+      );
+    }
+    return (
+      <div style={{...shell,overflow:"auto"}} key="room">
+        <div style={stripes}/>
+        <div style={{zIndex:1,padding:"20px 18px 0",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          {backBtn(leaveRoom)}
+          <div style={{fontFamily:G.heading,fontSize:24,color:G.white,letterSpacing:2}}>SALLE</div>
+          <div style={{background:"rgba(255,255,255,.07)",border:"1px solid rgba(255,255,255,.1)",borderRadius:12,padding:"6px 14px",textAlign:"center"}}>
+            <div style={{fontSize:9,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase"}}>Code</div>
+            <div style={{fontFamily:G.heading,fontSize:20,color:G.gold,letterSpacing:4}}>{room.code}</div>
+          </div>
+        </div>
+        <div style={{...sheet,borderRadius:"28px 28px 0 0",marginTop:16}}>
+          <div style={{background:"rgba(255,255,255,.04)",borderRadius:14,padding:"10px 14px",marginBottom:4}}>
+            <div style={{fontSize:11,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginBottom:2}}>Mode</div>
+            <div style={{fontSize:15,fontWeight:800,color:G.white}}>{room.mode==="pont"?"Le Pont":"La Chaîne"}{room.diff?" · "+room.diff:""} · {room.rounds||1} manche{(room.rounds||1)>1?"s":""}</div>
+          </div>
+          <div>
+            <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.3)",marginBottom:8}}>
+              Joueurs ({players.length}/8)
+            </div>
+            {players.map(function(p, i){return(
+              <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",background:"rgba(255,255,255,.04)",borderRadius:12,marginBottom:6,border:p.id===playerId?"1px solid rgba(0,230,118,.3)":"1px solid rgba(255,255,255,.05)"}}>
+                <div style={{width:32,height:32,borderRadius:"50%",background:"linear-gradient(135deg,#1E5C2A,#00E676)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:800,color:"#fff",flexShrink:0}}>
+                  {p.name.charAt(0).toUpperCase()}
+                </div>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:14,fontWeight:800,color:p.id===playerId?G.accent:G.white}}>{p.name}{p.id===room.host_id?" 👑":""}{p.id===playerId?" (toi)":""}</div>
+                </div>
+                <div style={{fontSize:11,color:"rgba(255,255,255,.4)"}}>✓ Prêt</div>
+              </div>
+            );})}
+          </div>
+          {players.length < 2 && (
+            <div style={{textAlign:"center",padding:"8px 0",fontSize:13,color:"rgba(255,255,255,.3)"}}>
+              Partage le code <strong style={{color:G.gold}}>{room.code}</strong> à tes amis
+            </div>
+          )}
+          {isHost ? (
+            <button onClick={startRoomGame} disabled={players.length < 2}
+              style={{width:"100%",padding:"16px",background:players.length>=2?G.accent:"rgba(255,255,255,.1)",color:players.length>=2?"#000":"rgba(255,255,255,.3)",border:"none",borderRadius:50,cursor:players.length>=2?"pointer":"not-allowed",fontFamily:G.font,fontSize:15,fontWeight:800,marginTop:4}}>
+              {players.length < 2 ? "En attente de joueurs..." : "🚀 Lancer la partie ("+players.length+" joueurs)"}
+            </button>
+          ) : (
+            <div style={{textAlign:"center",padding:"14px",fontSize:13,color:"rgba(255,255,255,.4)",background:"rgba(255,255,255,.04)",borderRadius:16}}>
+              ⏳ En attente que {room.host_name} lance la partie...
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+
+  // ── WAITING ROOM ──
+  if (waitingDuel) {
+    const isChal = waitingDuel.challenger_id === playerId;
+    const oppName = isChal ? waitingDuel.opponent_name : waitingDuel.challenger_name;
+    const isReady = waitingDuel.status === "ready";
+    if (duelCountdown !== null) {
+      return (
+        <div style={{...shell,alignItems:"center",justifyContent:"center"}} key="countdown">
+          <div style={stripes}/>
+          <div style={{textAlign:"center",zIndex:1}}>
+            <div style={{fontSize:14,color:"rgba(255,255,255,.5)",letterSpacing:3,textTransform:"uppercase",marginBottom:16}}>Adversaire trouvé !</div>
+            <div style={{fontFamily:G.heading,fontSize:120,color:G.accent,lineHeight:1,animation:"popIn .3s ease"}} key={duelCountdown}>{duelCountdown}</div>
+            <div style={{fontSize:16,color:"rgba(255,255,255,.5)",marginTop:16}}>vs <strong style={{color:G.white}}>{oppName}</strong></div>
+          </div>
+        </div>
+      );
+    }
+    return (
+      <div style={{...shell,alignItems:"center",justifyContent:"center"}} key="waiting">
+        <div style={stripes}/>
+        <div style={{textAlign:"center",zIndex:1,padding:"0 32px"}}>
+          <div style={{fontSize:48,marginBottom:16,animation:"spin 2s linear infinite",display:"inline-block"}}>⚽</div>
+          <div style={{fontFamily:G.heading,fontSize:32,color:G.white,marginBottom:8}}>
+            {isReady ? "PRÊT !" : "EN ATTENTE..."}
+          </div>
+          <div style={{fontSize:14,color:"rgba(255,255,255,.5)",marginBottom:32}}>
+            {isReady ? "La partie va commencer !" : "En attente de "+oppName+"..."}
+          </div>
+          <div style={{background:"rgba(255,255,255,.06)",borderRadius:20,padding:"16px 24px",marginBottom:24,border:"1px solid rgba(255,255,255,.08)"}}>
+            <div style={{fontSize:11,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>Mode</div>
+            <div style={{fontSize:16,fontWeight:800,color:G.white}}>{waitingDuel.mode==="pont"?"Le Pont":"La Chaîne"}{waitingDuel.diff?" · "+waitingDuel.diff:""}</div>
+          </div>
+          {!isReady && (
+            <button onClick={cancelWaiting} style={{padding:"12px 28px",background:"rgba(255,61,87,.15)",color:"#FF3D57",border:"1px solid rgba(255,61,87,.3)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>
+              Annuler
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+
   // ── HOME ──
   if(screen==="home") return (
     <div style={{...shell,animation:"fadeUp .5s ease"}} key="home">
@@ -2433,6 +2801,41 @@ export default function LePont() {
         </div>
       )}
       <div style={stripes}/>
+      {showRoomCreate && (
+        <div style={{position:"fixed",inset:0,zIndex:300,background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+          <div style={{background:"#1E1E1E",borderRadius:24,padding:"28px 24px",maxWidth:340,width:"calc(100% - 32px)",border:"1px solid rgba(255,255,255,.1)"}}>
+            <div style={{fontFamily:G.heading,fontSize:28,color:G.white,marginBottom:20}}>CRÉER UNE SALLE</div>
+            <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:8}}>Mode</div>
+            <div style={{display:"flex",gap:8,marginBottom:16}}>
+              {["pont","chaine"].map(function(m){return(
+                <button key={m} onClick={function(){setDuelMode(m);}} style={{flex:1,padding:"10px",borderRadius:12,border:"1.5px solid "+(duelMode===m?G.accent:"rgba(255,255,255,.15)"),background:duelMode===m?"rgba(0,230,118,.1)":"transparent",color:duelMode===m?G.accent:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:13}}>
+                  {m==="pont"?"Le Pont":"La Chaîne"}
+                </button>
+              );})}
+            </div>
+            <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:8}}>Difficulté</div>
+            <div style={{display:"flex",gap:8,marginBottom:16}}>
+              {["facile","moyen","expert"].map(function(d){return(
+                <button key={d} onClick={function(){setDuelDiff(d);}} style={{flex:1,padding:"8px",borderRadius:10,border:"1.5px solid "+(duelDiff===d?G.gold:"rgba(255,255,255,.15)"),background:duelDiff===d?"rgba(255,214,0,.1)":"transparent",color:duelDiff===d?G.gold:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:12,textTransform:"capitalize"}}>
+                  {d}
+                </button>
+              );})}
+            </div>
+            <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:8}}>Manches</div>
+            <div style={{display:"flex",gap:8,marginBottom:20}}>
+              {[1,2,3].map(function(r){return(
+                <button key={r} onClick={function(){setDuelRounds(r);}} style={{flex:1,padding:"10px",borderRadius:12,border:"1.5px solid "+(duelRounds===r?"#fff":"rgba(255,255,255,.15)"),background:duelRounds===r?"rgba(255,255,255,.1)":"transparent",color:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:15}}>
+                  {r}
+                </button>
+              );})}
+            </div>
+            <div style={{display:"flex",gap:8}}>
+              <button onClick={function(){setShowRoomCreate(false);}} style={{flex:1,padding:"12px",background:"rgba(255,255,255,.07)",color:"rgba(255,255,255,.5)",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14}}>Annuler</button>
+              <button onClick={createRoom} style={{flex:2,padding:"12px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>Créer la salle 🚀</button>
+            </div>
+          </div>
+        </div>
+      )}
       <BouncingBall/>
       {confettiOverlay}
       {instructionsPopup}
@@ -2477,7 +2880,7 @@ export default function LePont() {
         {/* Pending duels */}
         {getPendingDuels().length > 0 && (
           <div style={{background:"linear-gradient(135deg,rgba(255,214,0,.12),rgba(255,140,0,.08))",border:"1px solid rgba(255,214,0,.3)",borderRadius:16,padding:"12px 16px"}}>
-            <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:G.gold,marginBottom:8}}>⚡ Duels en attente ({getPendingDuels().length})</div>
+            <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:G.gold,marginBottom:8}}>⚡ Défis reçus ({getPendingDuels().length})</div>
             {getPendingDuels().slice(0,3).map(function(d){
               const isChallenger = d.challenger_id === playerId;
               const opponentName = isChallenger ? d.opponent_name : d.challenger_name;
@@ -2487,12 +2890,25 @@ export default function LePont() {
                     <div style={{fontSize:13,fontWeight:700,color:G.white}}>vs {opponentName}</div>
                     <div style={{fontSize:11,color:"rgba(255,255,255,.4)"}}>{d.mode==="pont"?"Le Pont":"La Chaîne"}{d.diff?" · "+d.diff:""}</div>
                   </div>
-                  <button onClick={function(){playDuel(d);}} style={{padding:"8px 16px",background:G.gold,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:800}}>Jouer ▶</button>
+                  <button onClick={function(){joinDuel(d);}} style={{padding:"8px 16px",background:G.gold,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:800}}>Rejoindre ▶</button>
                 </div>
               );
             })}
           </div>
         )}
+
+        {/* Multijoueur */}
+        <div style={{background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",borderRadius:16,padding:"14px 16px"}}>
+          <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.3)",marginBottom:10}}>Multijoueur (2-8 joueurs)</div>
+          <div style={{display:"flex",gap:8}}>
+            <input value={roomInput} onChange={function(e){setRoomInput(e.target.value.toUpperCase());setRoomMsg("");}}
+              placeholder="Code salle" maxLength={6}
+              style={{flex:1,padding:"10px 14px",borderRadius:12,border:"1.5px solid rgba(255,255,255,.15)",background:"#141414",color:G.white,fontFamily:G.font,fontSize:15,fontWeight:700,letterSpacing:3,textTransform:"uppercase",outline:"none"}}/>
+            <button onClick={function(){joinRoom(roomInput);}} style={{padding:"10px 14px",background:"rgba(255,255,255,.07)",color:G.white,border:"1px solid rgba(255,255,255,.15)",borderRadius:12,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700}}>Rejoindre</button>
+            <button onClick={function(){setShowRoomCreate(true);}} style={{padding:"10px 14px",background:G.accent,color:"#000",border:"none",borderRadius:12,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:800}}>+ Créer</button>
+          </div>
+          {roomMsg && <div style={{marginTop:8,fontSize:13,color:"#FF3D57",fontWeight:700}}>{roomMsg}</div>}
+        </div>
         {/* Game modes */}
         <div style={{display:"flex",gap:10}}>
           <button onClick={()=>tryStart("pont")} style={{flex:1,padding:"18px 10px",background:G.dark,color:G.white,border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,textAlign:"center"}}>
@@ -2852,6 +3268,34 @@ export default function LePont() {
 
 
   // ── DUEL RESULT SCREEN ──
+  if (duelResult && duelResult.isRoom) {
+    const medals = ["🥇","🥈","🥉"];
+    const myEntry = duelResult.players.find(function(p){return p.id===playerId;});
+    const myRank = duelResult.players.findIndex(function(p){return p.id===playerId;}) + 1;
+    return (
+      <div style={{...shell,animation:"fadeUp .4s ease",overflow:"auto"}} key="roomResult">
+        <div style={stripes}/>
+        <div style={{zIndex:1,padding:"32px 20px 16px",textAlign:"center"}}>
+          <div style={{fontSize:52,marginBottom:8}}>{myRank<=3?medals[myRank-1]:myRank+"ème"}</div>
+          <div style={{fontFamily:G.heading,fontSize:"clamp(30px,8vw,50px)",color:myRank===1?G.gold:G.white,letterSpacing:2}}>
+            {myRank===1?"VICTOIRE !":myRank===2?"2ÈME PLACE":myRank===3?"3ÈME PLACE":"RÉSULTATS"}
+          </div>
+        </div>
+        <div style={{...sheet,borderRadius:"28px 28px 0 0"}}>
+          {duelResult.players.map(function(p,i){return(
+            <div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",borderRadius:14,background:p.id===playerId?"rgba(0,230,118,.08)":"rgba(255,255,255,.03)",border:p.id===playerId?"1px solid rgba(0,230,118,.25)":"1px solid rgba(255,255,255,.05)",marginBottom:6}}>
+              <div style={{fontFamily:G.heading,fontSize:22,width:32,textAlign:"center",color:i<3?["#FFD600","#C0C0C0","#CD7F32"][i]:"rgba(255,255,255,.3)"}}>{i<3?medals[i]:i+1}</div>
+              <div style={{flex:1,fontSize:14,fontWeight:800,color:p.id===playerId?G.accent:G.white}}>{p.name}{p.id===playerId?" (toi)":""}</div>
+              <div style={{fontFamily:G.heading,fontSize:26,color:i===0?G.gold:G.white}}>{p.score||0} <span style={{fontSize:12,color:"rgba(255,255,255,.3)"}}>pts</span></div>
+            </div>
+          );})}
+          <button onClick={function(){setDuelResult(null);setScreen("home");}} style={{width:"100%",padding:"16px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800,marginTop:8}}>
+            Retour à l'accueil
+          </button>
+        </div>
+      </div>
+    );
+  }
   if (duelResult) {
     const won = duelResult.myScore > duelResult.theirScore;
     const draw = duelResult.myScore === duelResult.theirScore;
