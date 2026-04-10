@@ -1663,23 +1663,36 @@ export default function LePont() {
   async function createRoom() {
     const name = (playerName||"Anonyme").trim();
     const code = makeRoomCode();
-    const me = {id:playerId, name:name, score:null, status:"waiting"};
+    const me = [{id:playerId, name:name, score:null, status:"waiting"}];
+    setRoomMsg("Création en cours...");
     try {
-      await sbFetch("bb_rooms", {
+      const res = await sbFetch("bb_rooms", {
         method:"POST",
         body:JSON.stringify({
-          code, host_id:playerId, host_name:name,
-          mode:duelMode, diff:duelDiff, rounds:duelRounds,
-          status:"waiting", players:JSON.stringify([me])
+          code: code,
+          host_id: playerId,
+          host_name: name,
+          mode: duelMode,
+          diff: duelDiff,
+          rounds: duelRounds,
+          status: "waiting",
+          players: me
         })
       });
+      // Fetch the created room
       const data = await sbFetch("bb_rooms?code=eq."+code+"&limit=1");
       if (Array.isArray(data) && data.length > 0) {
         setRoom(data[0]);
         setShowRoomCreate(false);
+        setRoomMsg("");
         startRoomPolling(data[0].id);
+      } else {
+        setRoomMsg("Erreur: table bb_rooms introuvable. Lance le SQL d'abord !");
       }
-    } catch(e) { console.error(e); setRoomMsg("Erreur création salle"); }
+    } catch(e) { 
+      console.error(e); 
+      setRoomMsg("Erreur création salle: "+e.message);
+    }
   }
 
   async function joinRoom(code) {
@@ -2831,7 +2844,10 @@ export default function LePont() {
             </div>
             <div style={{display:"flex",gap:8}}>
               <button onClick={function(){setShowRoomCreate(false);}} style={{flex:1,padding:"12px",background:"rgba(255,255,255,.07)",color:"rgba(255,255,255,.5)",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14}}>Annuler</button>
-              <button onClick={createRoom} style={{flex:2,padding:"12px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>Créer la salle 🚀</button>
+<button onClick={createRoom} style={{flex:2,padding:"12px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>Créer la salle 🚀</button>
+            </div>
+            {roomMsg && <div style={{marginTop:10,fontSize:13,color:roomMsg.startsWith("Création")?"rgba(255,255,255,.5)":"#FF3D57",fontWeight:700,textAlign:"center"}}>{roomMsg}</div>}
+            <div style={{display:"none"}}
             </div>
           </div>
         </div>
