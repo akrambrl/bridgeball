@@ -3192,10 +3192,8 @@ export default function LePont() {
               <div style={{fontFamily:G.heading,fontSize:"clamp(42px,11vw,64px)",color:G.white,letterSpacing:2,lineHeight:1,marginBottom:10}}>
                 {activeCard==="pont"?"LE PONT":"LA CHAÎNE"}
               </div>
-              <div style={{fontSize:14,color:"rgba(255,255,255,.5)",lineHeight:1.5,marginBottom:16}}>
-                {activeCard==="pont"?"Trouve le joueur qui relie
-les deux clubs":"Enchaîne joueur → club
-le plus longtemps possible"}
+              <div style={{fontSize:14,color:"rgba(255,255,255,.5)",lineHeight:1.5,marginBottom:16,whiteSpace:"pre-line"}}>
+                {activeCard==="pont"?"Trouve le joueur qui relie\nles deux clubs":"Enchaîne joueur → club\nle plus longtemps possible"}
               </div>
               <div style={{flex:1}}/>
               <div style={{display:"flex",alignItems:"center",gap:12}}>
