@@ -2042,7 +2042,8 @@ export default function LePont() {
       setFriendInput("");
       // Mise à jour immédiate sans attendre Supabase
       setSentRequests(function(prev){return [...prev, {id:"tmp-"+Date.now(), from_id:playerId, to_id:clean, status:"pending"}];});
-      loadFriendRequests();
+      // Refresh depuis Supabase après un court délai pour éviter la race condition
+      setTimeout(loadFriendRequests, 1500);
     } catch(e) { setFriendMsg("Erreur. Vérifie le code."); }
   }
 
@@ -2096,11 +2097,11 @@ export default function LePont() {
     try {
       // Incoming pending requests
       const incoming = await sbFetch("bb_friend_requests?to_id=eq."+playerId+"&status=eq.pending&order=created_at.desc");
-      setFriendRequests(Array.isArray(incoming) ? incoming : []);
+      if (Array.isArray(incoming)) setFriendRequests(incoming);
       // Sent requests
       const sent = await sbFetch("bb_friend_requests?from_id=eq."+playerId+"&order=created_at.desc&limit=20");
-      setSentRequests(Array.isArray(sent) ? sent : []);
-    } catch(e) { setFriendRequests([]); setSentRequests([]); }
+      if (Array.isArray(sent)) setSentRequests(sent);
+    } catch(e) { console.error(e); }
   }
 
   async function submitScore(name, sc, mode, d) {
