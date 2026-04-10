@@ -1937,7 +1937,7 @@ export default function LePont() {
     setPseudoChecking(false);
   }
 
-  async function /* removed */ {
+  async function initPseudo() {
     // Check if player already has a confirmed pseudo
     const saved = (() => { try { return localStorage.getItem("bb_name"); } catch { return null; } })();
     if (saved && saved.trim().length >= 2) {
