@@ -55,17 +55,17 @@ const PLAYERS = [
   { name:"Harry Kane", clubs:["Tottenham", "Bayern Munich"], diff:"facile" },
   { name:"N'Golo Kante", clubs:["Leicester City", "Chelsea", "Al Ittihad"], diff:"facile" },
   { name:"Sergio Ramos", clubs:["Sevilla", "Real Madrid", "PSG"], diff:"facile" },
-  { name:"Antoine Griezmann", clubs:["Atletico Madrid", "Barcelona"], diff:"facile" },
+  { name:"Antoine Griezmann", clubs:["Real Sociedad", "Atletico Madrid", "Barcelona"], diff:"facile" },
   { name:"Eden Hazard", clubs:["Lille", "Chelsea", "Real Madrid"], diff:"facile" },
   { name:"Luis Suarez", clubs:["Ajax", "Liverpool", "Barcelona", "Atletico Madrid"], diff:"facile" },
-  { name:"Zlatan Ibrahimovic", clubs:["Juventus", "Inter Milan", "Barcelona", "AC Milan", "PSG", "Manchester United"], diff:"facile" },
+  { name:"Zlatan Ibrahimovic", clubs:["Malmo", "Ajax", "Juventus", "Inter Milan", "Barcelona", "AC Milan", "PSG", "Manchester United", "LA Galaxy"], diff:"facile" },
   { name:"Gareth Bale", clubs:["Southampton", "Tottenham", "Real Madrid"], diff:"facile" },
   { name:"Wayne Rooney", clubs:["Everton", "Manchester United"], diff:"facile" },
-  { name:"Toni Kroos", clubs:["Bayern Munich", "Real Madrid"], diff:"facile" },
-  { name:"Luka Modric", clubs:["Tottenham", "Real Madrid"], diff:"facile" },
+  { name:"Toni Kroos", clubs:["Bayern Munich", "Bayer Leverkusen", "Real Madrid"], diff:"facile" },
+  { name:"Luka Modric", clubs:["Dinamo Zagreb", "Tottenham", "Real Madrid"], diff:"facile" },
   { name:"Paul Pogba", clubs:["Manchester United", "Juventus"], diff:"facile" },
   { name:"Didier Drogba", clubs:["Le Mans", "Guingamp", "Marseille", "Chelsea", "Galatasaray"], diff:"facile" },
-  { name:"Samuel Etoo", clubs:["Real Madrid", "Mallorca", "Barcelona", "Inter Milan", "Chelsea", "Everton"], diff:"facile" },
+  { name:"Samuel Eto'o", clubs:["Real Madrid", "Mallorca", "Barcelona", "Inter Milan", "Anzhi", "Chelsea", "Everton"], diff:"facile" },
   { name:"Virgil van Dijk", clubs:["Celtic", "Southampton", "Liverpool"], diff:"facile" },
   { name:"David Beckham", clubs:["Manchester United", "Real Madrid", "AC Milan", "PSG", "LA Galaxy"], diff:"facile" },
   { name:"Sadio Mane", clubs:["Metz", "Salzburg", "Southampton", "Liverpool", "Bayern Munich", "Al Nassr"], diff:"moyen" },
@@ -112,7 +112,7 @@ const PLAYERS = [
   { name:"Enzo Fernandez", clubs:["River Plate", "Benfica", "Chelsea"], diff:"moyen" },
   { name:"Alexis Mac Allister", clubs:["Brighton", "Liverpool"], diff:"moyen" },
   { name:"Angel Di Maria", clubs:["Benfica", "Real Madrid", "Manchester United", "PSG", "Juventus"], diff:"moyen" },
-  { name:"Carlos Tevez", clubs:["Manchester United", "Manchester City", "Juventus", "Boca Juniors"], diff:"moyen" },
+  { name:"Carlos Tevez", clubs:["Boca Juniors", "Corinthians", "West Ham", "Manchester United", "Manchester City", "Juventus"], diff:"moyen" },
   { name:"Radamel Falcao", clubs:["Porto", "Atletico Madrid", "Monaco", "Manchester United", "Chelsea"], diff:"moyen" },
   { name:"James Rodriguez", clubs:["Monaco", "Real Madrid", "Bayern Munich", "Everton"], diff:"moyen" },
   { name:"Heung-min Son", clubs:["Bayer Leverkusen", "Tottenham"], diff:"moyen" },
@@ -221,7 +221,7 @@ const PLAYERS = [
   { name:"Diego Forlan", clubs:["Manchester United", "Atletico Madrid", "Inter Milan"], diff:"expert" },
   { name:"Hernan Crespo", clubs:["Lazio", "Inter Milan", "Chelsea", "AC Milan"], diff:"expert" },
   { name:"Juan Sebastian Veron", clubs:["Lazio", "Manchester United", "Inter Milan", "Chelsea"], diff:"expert" },
-  { name:"Clarence Seedorf", clubs:["Ajax", "Real Madrid", "Inter Milan", "AC Milan"], diff:"expert" },
+  { name:"Clarence Seedorf", clubs:["Ajax", "Sampdoria", "Real Madrid", "Inter Milan", "AC Milan"], diff:"expert" },
   { name:"Patrick Vieira", clubs:["AC Milan", "Arsenal", "Juventus", "Inter Milan", "Manchester City"], diff:"expert" },
   { name:"Emmanuel Petit", clubs:["Monaco", "Arsenal", "Barcelona", "Chelsea"], diff:"expert" },
   { name:"Peter Crouch", clubs:["Aston Villa", "Southampton", "Liverpool", "Tottenham"], diff:"expert" },
@@ -310,16 +310,15 @@ const PLAYERS = [
   { name:"Joshua Kimmich", clubs:["Bayern Munich"], diff:"facile" },
   { name:"Romelu Lukaku", clubs:["Manchester United", "Chelsea", "Inter Milan", "Roma", "Napoli"], diff:"facile" },
   { name:"Son Heung-min", clubs:["Tottenham"], diff:"facile" },
-  { name:"Carlos Puyol", clubs:["Barcelona"], diff:"moyen" },
   { name:"Carles Puyol", clubs:["Barcelona"], diff:"moyen" },
-  { name:"Falcao", clubs:["Porto", "Atletico Madrid", "Monaco", "Manchester United", "Chelsea"], diff:"moyen" },
+  { name:"Radamel Falcao", clubs:["Porto", "Atletico Madrid", "Monaco", "Manchester United", "Chelsea"], diff:"moyen" },
   { name:"Samir Nasri", clubs:["Marseille", "Arsenal", "Manchester City"], diff:"moyen" },
   { name:"Bacary Sagna", clubs:["Arsenal", "Manchester City"], diff:"moyen" },
   { name:"Nicolas Anelka", clubs:["Arsenal", "Real Madrid", "PSG", "Manchester City", "Chelsea", "Bolton"], diff:"moyen" },
   { name:"Sylvain Wiltord", clubs:["Bordeaux", "Arsenal"], diff:"moyen" },
   { name:"Marc Overmars", clubs:["Ajax", "Arsenal", "Barcelona"], diff:"moyen" },
   { name:"Robert Pires", clubs:["Arsenal", "Marseille", "Villarreal"], diff:"moyen" },
-  { name:"Claude Makelele", clubs:["Real Madrid", "Chelsea"], diff:"moyen" },
+  { name:"Claude Makelele", clubs:["Nantes", "Marseille", "Celta Vigo", "Real Madrid", "Chelsea", "PSG"], diff:"moyen" },
   { name:"Peter Cech", clubs:["Chelsea", "Arsenal"], diff:"moyen" },
   { name:"Didier Deschamps", clubs:["Juventus", "Chelsea", "Monaco"], diff:"moyen" },
   { name:"Marcel Desailly", clubs:["Marseille", "AC Milan", "Chelsea"], diff:"moyen" },
@@ -328,7 +327,7 @@ const PLAYERS = [
   { name:"Frederic Kanoute", clubs:["West Ham", "Tottenham", "Sevilla"], diff:"moyen" },
   { name:"Yaya Toure", clubs:["Monaco", "Barcelona", "Manchester City"], diff:"moyen" },
   { name:"Kolo Toure", clubs:["Arsenal", "Manchester City", "Liverpool"], diff:"moyen" },
-  { name:"Mikel Essien", clubs:["Lyon", "Chelsea"], diff:"moyen" },
+
   { name:"Oliver Kahn", clubs:["Bayern Munich"], diff:"moyen" },
   { name:"Karl-Heinz Riedle", clubs:["Borussia Dortmund", "Liverpool"], diff:"moyen" },
   { name:"Stefan Effenberg", clubs:["Bayern Munich"], diff:"moyen" },
@@ -339,11 +338,11 @@ const PLAYERS = [
   { name:"Franco Baresi", clubs:["AC Milan"], diff:"moyen" },
   { name:"Andrea Pirlo", clubs:["Inter Milan", "AC Milan", "Juventus", "New York City FC"], diff:"moyen" },
   { name:"Dida", clubs:["AC Milan"], diff:"moyen" },
-  { name:"Rivaldo", clubs:["Barcelona", "AC Milan"], diff:"moyen" },
+  { name:"Rivaldo", clubs:["Deportivo", "Barcelona", "AC Milan"], diff:"moyen" },
   { name:"Cafu", clubs:["Roma", "AC Milan"], diff:"moyen" },
-  { name:"Roberto Carlos", clubs:["Real Madrid", "Fenerbahce"], diff:"moyen" },
+  { name:"Roberto Carlos", clubs:["Palmeiras", "Inter Milan", "Real Madrid", "Fenerbahce"], diff:"moyen" },
   { name:"Lucio", clubs:["Bayer Leverkusen", "Bayern Munich", "Inter Milan"], diff:"moyen" },
-  { name:"Luis Figo", clubs:["Sporting CP", "Barcelona", "Real Madrid", "Inter Milan"], diff:"moyen" },
+  { name:"Figo", clubs:["Sporting CP", "Barcelona", "Real Madrid", "Inter Milan"], diff:"expert" },
   { name:"Simao Sabrosa", clubs:["Barcelona", "Atletico Madrid", "Besiktas"], diff:"moyen" },
   { name:"Raul", clubs:["Real Madrid", "Schalke"], diff:"moyen" },
   { name:"Fernando Hierro", clubs:["Real Madrid"], diff:"moyen" },
@@ -450,7 +449,7 @@ const PLAYERS = [
   { name:"Esteban Cambiasso", clubs:["Real Madrid", "Inter Milan"], diff:"moyen" },
   { name:"Julio Cesar", clubs:["Inter Milan"], diff:"moyen" },
   { name:"Maicon", clubs:["Monaco", "Inter Milan"], diff:"moyen" },
-  { name:"Samuel Eto'o", clubs:["Barcelona", "Inter Milan", "Chelsea", "Everton"], diff:"moyen" },
+
   { name:"Sulley Muntari", clubs:["Udinese", "Portsmouth", "Inter Milan", "AC Milan"], diff:"moyen" },
   { name:"Dejan Stankovic", clubs:["Lazio", "Inter Milan"], diff:"moyen" },
   { name:"Ivan Cordoba", clubs:["Inter Milan"], diff:"moyen" },
@@ -504,7 +503,7 @@ const PLAYERS = [
   { name:"Celestine Babayaro", clubs:["Ajax", "Newcastle"], diff:"expert" },
   { name:"Nii Lamptey", clubs:["PSV", "Aston Villa"], diff:"expert" },
   { name:"Paul Furlong", clubs:["Chelsea", "Birmingham City"], diff:"expert" },
-  { name:"Scott Parker", clubs:["Chelsea", "Newcastle", "Tottenham"], diff:"expert" },
+  { name:"Scott Parker", clubs:["Charlton Athletic", "Chelsea", "Newcastle", "West Ham", "Tottenham", "Fulham"], diff:"expert" },
   { name:"Glen Johnson", clubs:["Chelsea", "Liverpool"], diff:"expert" },
   { name:"Carlton Cole", clubs:["Chelsea", "West Ham"], diff:"expert" },
   { name:"Mikael Forssell", clubs:["Chelsea", "Birmingham City"], diff:"expert" },
@@ -2756,9 +2755,13 @@ export default function LePont() {
         {/* Overlay sombre pour lisibilité */}
         <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.45)"}}/>
       </div>
-        <div style={{zIndex:1,padding:"32px 20px 12px",textAlign:"center"}}>
-          <div style={{fontFamily:G.heading,fontSize:"clamp(32px,8vw,52px)",color:G.white,letterSpacing:3}}>CLASSEMENT</div>
-          <div style={{fontSize:12,color:"rgba(255,255,255,.4)",marginTop:4}}>Top 50 mondial</div>
+        <div style={{zIndex:1,padding:"12px 20px 12px",display:"flex",alignItems:"center",gap:12}}>
+          {backBtn(function(){setShowLeaderboard(false);})}
+          <div style={{flex:1,textAlign:"center"}}>
+            <div style={{fontFamily:G.heading,fontSize:"clamp(28px,7vw,46px)",color:G.white,letterSpacing:3}}>CLASSEMENT</div>
+            <div style={{fontSize:12,color:"rgba(255,255,255,.4)"}}>Top 50 mondial</div>
+          </div>
+          <div style={{width:40}}/>{/* spacer pour centrer le titre */}
         </div>
         <div style={{...sheet,borderRadius:"28px 28px 0 0"}}>
           <div style={{display:"flex",gap:8}}>
@@ -2808,9 +2811,6 @@ export default function LePont() {
               </div>
             );
           })}
-          <button onClick={function(){setShowLeaderboard(false);}} style={{width:"100%",padding:"14px",background:"rgba(255,255,255,.05)",color:"rgba(255,255,255,.5)",border:"1px solid rgba(255,255,255,.1)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700,marginTop:8}}>
-            ↩ Retour à l'accueil
-          </button>
         </div>
       </div>
     );
