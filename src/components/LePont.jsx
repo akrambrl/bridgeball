@@ -1377,7 +1377,7 @@ export default function LePont() {
   const [wasAway, setWasAway] = useState(false);
   const [notifGranted, setNotifGranted] = useState(false);
   const [showNotifPrompt, setShowNotifPrompt] = useState(false);
-  const [lbMode, setLbMode] = useState("pont");
+  const [lbMode, setLbMode] = useState("global");
   const [lbDiff, setLbDiff] = useState("facile");
   const [playerName, setPlayerName] = useState("");
   const [showInstructions, setShowInstructions] = useState(null);
@@ -2081,16 +2081,19 @@ export default function LePont() {
 
   async function loadLeaderboard(mode) {
     try {
-      const filter = mode ? "mode=eq."+mode+"&" : "";
+      const isGlobal = mode === "global";
+      const filter = (!mode || isGlobal) ? "" : "mode=eq."+mode+"&";
       const data = await sbFetch("bb_scores?"+filter+"order=score.desc&limit=1000&select=player_id,player_name,score,mode");
       if (!Array.isArray(data)) { setLeaderboard([]); return; }
       const stats = {};
       data.forEach(function(row) {
-        if (!stats[row.player_id]) stats[row.player_id] = { name:row.player_name, pid:row.player_id, best:row.score, played:0 };
+        if (!stats[row.player_id]) stats[row.player_id] = { name:row.player_name, pid:row.player_id, best:row.score, played:0, bestPont:0, bestChaine:0 };
         if (row.score > stats[row.player_id].best) stats[row.player_id].best = row.score;
         stats[row.player_id].played += 1;
+        if (row.mode === "pont" && row.score > stats[row.player_id].bestPont) stats[row.player_id].bestPont = row.score;
+        if (row.mode === "chaine" && row.score > stats[row.player_id].bestChaine) stats[row.player_id].bestChaine = row.score;
       });
-      const duels = await sbFetch("bb_duels?status=eq.complete"+(mode?"&mode=eq."+mode:"")+"&select=challenger_id,opponent_id,challenger_score,opponent_score&limit=500");
+      const duels = await sbFetch("bb_duels?status=eq.complete"+((!mode||isGlobal)?"":"&mode=eq."+mode)+"&select=challenger_id,opponent_id,challenger_score,opponent_score&limit=500");
       if (Array.isArray(duels)) {
         duels.forEach(function(d) {
           [d.challenger_id, d.opponent_id].forEach(function(pid) {
@@ -2107,9 +2110,10 @@ export default function LePont() {
         });
       }
       const sorted = Object.values(stats)
-        .sort(function(a,b){ return b.best - a.best; })
+        .map(function(r){ return {name:r.name, pid:r.pid||"", score:isGlobal?(r.bestPont+r.bestChaine):r.best, bestPont:r.bestPont, bestChaine:r.bestChaine, played:r.played, wins:r.wins||0, draws:r.draws||0, losses:r.losses||0}; })
+        .sort(function(a,b){ return b.score - a.score; })
         .slice(0,50)
-        .map(function(r,i){ return {rank:i+1, name:r.name, pid:r.pid||"", score:r.best, played:r.played, wins:r.wins||0, draws:r.draws||0, losses:r.losses||0}; });
+        .map(function(r,i){ return {...r, rank:i+1}; });
       setLeaderboard(sorted);
     } catch(e) { setLeaderboard([]); }
   }
@@ -2766,9 +2770,9 @@ export default function LePont() {
         </div>
         <div style={{...sheet,borderRadius:"28px 28px 0 0"}}>
           <div style={{display:"flex",gap:8}}>
-            {["pont","chaine"].map(function(m){return(
-              <button key={m} onClick={function(){setLbMode(m);loadLeaderboard(m);}} style={{flex:1,padding:"11px",borderRadius:12,border:"1.5px solid "+(lbMode===m?G.accent:"rgba(255,255,255,.12)"),background:lbMode===m?"rgba(0,230,118,.1)":"transparent",color:lbMode===m?G.accent:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:14}}>
-                {m==="pont"?"🏟 Le Pont":"⛓ La Chaîne"}
+            {["global","pont","chaine"].map(function(m){return(
+              <button key={m} onClick={function(){setLbMode(m);loadLeaderboard(m);}} style={{flex:1,padding:"11px",borderRadius:12,border:"1.5px solid "+(lbMode===m?G.accent:"rgba(255,255,255,.12)"),background:lbMode===m?"rgba(0,230,118,.1)":"transparent",color:lbMode===m?G.accent:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:13}}>
+                {m==="global"?"🌍 Global":m==="pont"?"🏟 Pont":"⛓ Chaîne"}
               </button>
             );})}
           </div>
@@ -2786,7 +2790,10 @@ export default function LePont() {
                   </div>
                   <div style={{flex:1}}>
                     <div style={{fontSize:14,fontWeight:800,color:isMe?G.accent:G.white}}>{entry.name}{isMe?" (toi)":""}</div>
-                    <div style={{fontSize:11,color:"rgba(255,255,255,.35)"}}>{entry.played} partie{entry.played>1?"s":""} · <span style={{fontFamily:G.heading,letterSpacing:2,fontSize:10}}>{entry.pid}</span></div>
+                    {lbMode==="global"
+                      ? <div style={{fontSize:11,color:"rgba(255,255,255,.35)"}}>🏟 {entry.bestPont} pts &nbsp;·&nbsp; ⛓ {entry.bestChaine} pts</div>
+                      : <div style={{fontSize:11,color:"rgba(255,255,255,.35)"}}>{entry.played} partie{entry.played>1?"s":""} · <span style={{fontFamily:G.heading,letterSpacing:2,fontSize:10}}>{entry.pid}</span></div>
+                    }
                   </div>
                   <div style={{fontFamily:G.heading,fontSize:26,color:i===0?G.gold:G.white}}>{entry.score} <span style={{fontSize:12,color:"rgba(255,255,255,.3)"}}>pts</span></div>
                 </div>
