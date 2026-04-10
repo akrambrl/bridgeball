@@ -1416,6 +1416,9 @@ export default function LePont() {
   const [pseudoMsg, setPseudoMsg] = useState("");
   const [pseudoConfirmed, setPseudoConfirmed] = useState(false);
   const [showQuitConfirm, setShowQuitConfirm] = useState(false);
+  const [gameConfigModal, setGameConfigModal] = useState(null);
+  const [activeCard, setActiveCard] = useState("pont");
+  const [swipeDelta, setSwipeDelta] = useState(0); // "pont" | "chaine" | "room-pont" | "room-chaine"
   const [waitingForRoom, setWaitingForRoom] = useState(false);
   const qTimerRef = useRef(null);
   const chainPassedRef = useRef(false);
@@ -2526,7 +2529,20 @@ export default function LePont() {
     });
     return (
       <div style={{...shell,overflow:"auto"}} key="friends">
-        <div style={stripes}/>
+        <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
+        {/* Bandes pelouse */}
+        {[0,1,2,3,4,5,6].map(function(i){return(
+          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"rgba(0,0,0,.08)":"transparent"}}/>
+        );})}
+        {/* Ligne médiane */}
+        <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:"rgba(255,255,255,.15)",transform:"translateY(-50%)"}}/>
+        {/* Cercle central */}
+        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:180,height:180,borderRadius:"50%",border:"2px solid rgba(255,255,255,.15)"}}/>
+        {/* Point central */}
+        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:8,height:8,borderRadius:"50%",background:"rgba(255,255,255,.2)"}}/>
+        {/* Overlay sombre pour lisibilité */}
+        <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.55)"}}/>
+      </div>
       {/* Duel create modal */}
       {showDuelCreate && (
         <div style={{position:"fixed",inset:0,zIndex:300,background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center"}}>
@@ -2722,7 +2738,20 @@ export default function LePont() {
   if(showLeaderboard) {
     return (
       <div style={{...shell,animation:"fadeUp .4s ease",overflow:"auto"}} key="lb">
-        <div style={stripes}/>
+        <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
+        {/* Bandes pelouse */}
+        {[0,1,2,3,4,5,6].map(function(i){return(
+          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"rgba(0,0,0,.08)":"transparent"}}/>
+        );})}
+        {/* Ligne médiane */}
+        <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:"rgba(255,255,255,.15)",transform:"translateY(-50%)"}}/>
+        {/* Cercle central */}
+        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:180,height:180,borderRadius:"50%",border:"2px solid rgba(255,255,255,.15)"}}/>
+        {/* Point central */}
+        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:8,height:8,borderRadius:"50%",background:"rgba(255,255,255,.2)"}}/>
+        {/* Overlay sombre pour lisibilité */}
+        <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.55)"}}/>
+      </div>
         <div style={{zIndex:1,padding:"32px 20px 12px",textAlign:"center"}}>
           <div style={{fontFamily:G.heading,fontSize:"clamp(32px,8vw,52px)",color:G.white,letterSpacing:3}}>CLASSEMENT</div>
           <div style={{fontSize:12,color:"rgba(255,255,255,.4)",marginTop:4}}>Top 50 mondial</div>
@@ -2791,7 +2820,20 @@ export default function LePont() {
       const oppName = players.filter(function(p){return p.id!==playerId;}).map(function(p){return p.name;}).join(", ");
       return (
         <div style={{...shell,alignItems:"center",justifyContent:"center"}} key="countdown">
-          <div style={stripes}/>
+          <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
+        {/* Bandes pelouse */}
+        {[0,1,2,3,4,5,6].map(function(i){return(
+          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"rgba(0,0,0,.08)":"transparent"}}/>
+        );})}
+        {/* Ligne médiane */}
+        <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:"rgba(255,255,255,.15)",transform:"translateY(-50%)"}}/>
+        {/* Cercle central */}
+        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:180,height:180,borderRadius:"50%",border:"2px solid rgba(255,255,255,.15)"}}/>
+        {/* Point central */}
+        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:8,height:8,borderRadius:"50%",background:"rgba(255,255,255,.2)"}}/>
+        {/* Overlay sombre pour lisibilité */}
+        <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.55)"}}/>
+      </div>
           <div style={{textAlign:"center",zIndex:1}}>
             <div style={{fontSize:14,color:"rgba(255,255,255,.5)",letterSpacing:3,textTransform:"uppercase",marginBottom:16}}>C'est parti !</div>
             <div style={{fontFamily:G.heading,fontSize:120,color:G.accent,lineHeight:1,animation:"popIn .3s ease"}} key={duelCountdown}>{duelCountdown}</div>
@@ -2802,7 +2844,20 @@ export default function LePont() {
     }
     return (
       <div style={{...shell,overflow:"auto"}} key="room">
-        <div style={stripes}/>
+        <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
+        {/* Bandes pelouse */}
+        {[0,1,2,3,4,5,6].map(function(i){return(
+          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"rgba(0,0,0,.08)":"transparent"}}/>
+        );})}
+        {/* Ligne médiane */}
+        <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:"rgba(255,255,255,.15)",transform:"translateY(-50%)"}}/>
+        {/* Cercle central */}
+        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:180,height:180,borderRadius:"50%",border:"2px solid rgba(255,255,255,.15)"}}/>
+        {/* Point central */}
+        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:8,height:8,borderRadius:"50%",background:"rgba(255,255,255,.2)"}}/>
+        {/* Overlay sombre pour lisibilité */}
+        <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.55)"}}/>
+      </div>
         <div style={{zIndex:1,padding:"20px 18px 0",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
           {backBtn(leaveRoom)}
           <div style={{fontFamily:G.heading,fontSize:24,color:G.white,letterSpacing:2}}>SALLE</div>
@@ -2853,47 +2908,35 @@ export default function LePont() {
   }
 
 
-  // ── PSEUDO SCREEN ──
-  if (pseudoScreen) {
-    return (
-      <div style={{...shell,alignItems:"center",justifyContent:"center"}} key="pseudo">
-        <div style={stripes}/>
-        <div style={{zIndex:1,padding:"0 28px",width:"100%",maxWidth:400,margin:"0 auto"}}>
-          <div style={{textAlign:"center",marginBottom:32}}>
-            <div style={{fontFamily:G.heading,fontSize:"clamp(52px,13vw,80px)",lineHeight:.9,color:G.white}}>BRIDGE<span style={{color:G.accent}}>BALL</span></div>
-            <div style={{fontSize:13,color:"rgba(255,255,255,.4)",marginTop:8,letterSpacing:2}}>CHOISIS TON PSEUDO</div>
-          </div>
-          <div style={{background:"#1E1E1E",borderRadius:20,padding:"24px",border:"1px solid rgba(255,255,255,.1)"}}>
-            <div style={{fontSize:12,color:"rgba(255,255,255,.4)",marginBottom:8,letterSpacing:1}}>Pseudo unique · visible dans le classement</div>
-            <input
-              value={pseudoInput}
-              onChange={function(e){setPseudoInput(e.target.value);setPseudoMsg("");}}
-              onKeyDown={function(e){if(e.key==="Enter")checkAndSavePseudo(pseudoInput);}}
-              placeholder="Ton pseudo..."
-              maxLength={20}
-              autoFocus
-              style={{width:"100%",background:"rgba(255,255,255,.06)",border:"1.5px solid rgba(255,255,255,.15)",borderRadius:12,padding:"14px 16px",fontFamily:G.font,fontSize:18,color:G.white,outline:"none",boxSizing:"border-box",marginBottom:10}}
-            />
-            {pseudoMsg && (
-              <div style={{fontSize:13,fontWeight:700,color:pseudoMsg.startsWith("❌")?"#FF3D57":pseudoMsg.startsWith("✓")?"#00E676":"rgba(255,255,255,.5)",marginBottom:10}}>
-                {pseudoMsg}
-              </div>
-            )}
-            <div style={{fontSize:11,color:"rgba(255,255,255,.25)",marginBottom:14}}>
-              2-20 caractères · lettres, chiffres, _ - . · pas d'espace
-            </div>
-            <button
-              onClick={function(){checkAndSavePseudo(pseudoInput);}}
-              disabled={pseudoChecking || pseudoInput.trim().length < 2}
-              style={{width:"100%",padding:"14px",background:pseudoInput.trim().length>=2?G.accent:"rgba(255,255,255,.1)",color:pseudoInput.trim().length>=2?"#000":"rgba(255,255,255,.3)",border:"none",borderRadius:50,cursor:pseudoInput.trim().length>=2?"pointer":"not-allowed",fontFamily:G.font,fontSize:16,fontWeight:800,transition:"all .2s"}}
-            >
-              {pseudoChecking?"Vérification...":"Confirmer mon pseudo →"}
-            </button>
-          </div>
+  // ── PSEUDO MODAL (first time only) ──
+  const pseudoModal = pseudoScreen ? (
+    <div style={{position:"fixed",inset:0,zIndex:400,background:"rgba(0,0,0,.92)",backdropFilter:"blur(12px)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+      <div style={{width:"calc(100% - 40px)",maxWidth:360,background:"#1A1A1A",borderRadius:28,padding:"32px 24px",border:"1px solid rgba(255,255,255,.1)"}}>
+        <div style={{textAlign:"center",marginBottom:24}}>
+          <div style={{fontFamily:G.heading,fontSize:52,color:G.white,lineHeight:.9}}>BRIDGE<span style={{color:G.accent}}>BALL</span></div>
+          <div style={{fontSize:12,color:"rgba(255,255,255,.4)",marginTop:8,letterSpacing:2}}>CHOISIS TON PSEUDO</div>
         </div>
+        <input
+          value={pseudoInput}
+          onChange={function(e){setPseudoInput(e.target.value);setPseudoMsg("");}}
+          onKeyDown={function(e){if(e.key==="Enter")checkAndSavePseudo(pseudoInput);}}
+          placeholder="Ton pseudo unique..."
+          maxLength={20}
+          autoFocus
+          style={{width:"100%",background:"rgba(255,255,255,.06)",border:"1.5px solid rgba(255,255,255,.15)",borderRadius:14,padding:"14px 16px",fontFamily:G.font,fontSize:17,color:G.white,outline:"none",boxSizing:"border-box",marginBottom:8,textAlign:"center"}}
+        />
+        {pseudoMsg && <div style={{fontSize:13,fontWeight:700,color:pseudoMsg.startsWith("❌")?"#FF3D57":"rgba(255,255,255,.4)",marginBottom:8,textAlign:"center"}}>{pseudoMsg}</div>}
+        <div style={{fontSize:11,color:"rgba(255,255,255,.2)",marginBottom:16,textAlign:"center"}}>2-20 caractères · pas d'espace · définitif</div>
+        <button
+          onClick={function(){checkAndSavePseudo(pseudoInput);}}
+          disabled={pseudoChecking||pseudoInput.trim().length<2}
+          style={{width:"100%",padding:"15px",background:pseudoInput.trim().length>=2?G.accent:"rgba(255,255,255,.08)",color:pseudoInput.trim().length>=2?"#000":"rgba(255,255,255,.3)",border:"none",borderRadius:50,cursor:pseudoInput.trim().length>=2?"pointer":"not-allowed",fontFamily:G.font,fontSize:15,fontWeight:800}}
+        >
+          {pseudoChecking?"Vérification...":"Confirmer →"}
+        </button>
       </div>
-    );
-  }
+    </div>
+  ) : null;
 
 
   // ── WAITING ROOM ──
@@ -2904,7 +2947,20 @@ export default function LePont() {
     if (duelCountdown !== null) {
       return (
         <div style={{...shell,alignItems:"center",justifyContent:"center"}} key="countdown">
-          <div style={stripes}/>
+          <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
+        {/* Bandes pelouse */}
+        {[0,1,2,3,4,5,6].map(function(i){return(
+          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"rgba(0,0,0,.08)":"transparent"}}/>
+        );})}
+        {/* Ligne médiane */}
+        <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:"rgba(255,255,255,.15)",transform:"translateY(-50%)"}}/>
+        {/* Cercle central */}
+        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:180,height:180,borderRadius:"50%",border:"2px solid rgba(255,255,255,.15)"}}/>
+        {/* Point central */}
+        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:8,height:8,borderRadius:"50%",background:"rgba(255,255,255,.2)"}}/>
+        {/* Overlay sombre pour lisibilité */}
+        <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.55)"}}/>
+      </div>
           <div style={{textAlign:"center",zIndex:1}}>
             <div style={{fontSize:14,color:"rgba(255,255,255,.5)",letterSpacing:3,textTransform:"uppercase",marginBottom:16}}>Adversaire trouvé !</div>
             <div style={{fontFamily:G.heading,fontSize:120,color:G.accent,lineHeight:1,animation:"popIn .3s ease"}} key={duelCountdown}>{duelCountdown}</div>
@@ -2915,7 +2971,20 @@ export default function LePont() {
     }
     return (
       <div style={{...shell,alignItems:"center",justifyContent:"center"}} key="waiting">
-        <div style={stripes}/>
+        <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
+        {/* Bandes pelouse */}
+        {[0,1,2,3,4,5,6].map(function(i){return(
+          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"rgba(0,0,0,.08)":"transparent"}}/>
+        );})}
+        {/* Ligne médiane */}
+        <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:"rgba(255,255,255,.15)",transform:"translateY(-50%)"}}/>
+        {/* Cercle central */}
+        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:180,height:180,borderRadius:"50%",border:"2px solid rgba(255,255,255,.15)"}}/>
+        {/* Point central */}
+        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:8,height:8,borderRadius:"50%",background:"rgba(255,255,255,.2)"}}/>
+        {/* Overlay sombre pour lisibilité */}
+        <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.55)"}}/>
+      </div>
         <div style={{textAlign:"center",zIndex:1,padding:"0 32px"}}>
           <div style={{fontSize:48,marginBottom:16,animation:"spin 2s linear infinite",display:"inline-block"}}>⚽</div>
           <div style={{fontFamily:G.heading,fontSize:32,color:G.white,marginBottom:8}}>
@@ -3010,7 +3079,20 @@ export default function LePont() {
           </div>
         </div>
       )}
-      <div style={stripes}/>
+      <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
+        {/* Bandes pelouse */}
+        {[0,1,2,3,4,5,6].map(function(i){return(
+          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"rgba(0,0,0,.08)":"transparent"}}/>
+        );})}
+        {/* Ligne médiane */}
+        <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:"rgba(255,255,255,.15)",transform:"translateY(-50%)"}}/>
+        {/* Cercle central */}
+        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:180,height:180,borderRadius:"50%",border:"2px solid rgba(255,255,255,.15)"}}/>
+        {/* Point central */}
+        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:8,height:8,borderRadius:"50%",background:"rgba(255,255,255,.2)"}}/>
+        {/* Overlay sombre pour lisibilité */}
+        <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.55)"}}/>
+      </div>
 
       {/* ── HEADER compact ── */}
       <div style={{zIndex:1,padding:"18px 20px 10px",textAlign:"center"}}>
@@ -3022,22 +3104,7 @@ export default function LePont() {
 
         {/* Pseudo + Difficulté + Manches en compact */}
         <div style={{display:"flex",flexDirection:"column",gap:8}}>
-          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",background:"rgba(255,255,255,.06)",border:"1.5px solid rgba(255,255,255,.12)",borderRadius:12,padding:"10px 14px"}}>
-            <div style={{fontFamily:G.font,fontSize:15,color:G.white,fontWeight:700}}>👤 {playerName}</div>
-            <button onClick={function(){setPseudoInput(playerName);setPseudoMsg("");setPseudoScreen(true);}} style={{background:"transparent",border:"none",color:"rgba(255,255,255,.4)",cursor:"pointer",fontSize:12,fontFamily:G.font}}>Modifier</button>
-          </div>
-          <div style={{display:"flex",gap:6}}>
-            {["facile","moyen","expert"].map(function(d){return(
-              <button key={d} onClick={()=>setDiff(d)} style={{flex:1,padding:"8px 4px",borderRadius:10,border:"1.5px solid "+(diff===d?G.accent:"rgba(255,255,255,.12)"),background:diff===d?"rgba(0,230,118,.12)":"transparent",color:diff===d?G.accent:"rgba(255,255,255,.5)",fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:12,textTransform:"capitalize"}}>
-                {d}
-              </button>
-            );})}
-            {[1,2,3].map(function(n){return(
-              <button key={n} onClick={()=>setTotalRounds(n)} style={{width:36,padding:"8px 4px",borderRadius:10,border:"1.5px solid "+(totalRounds===n?"#fff":"rgba(255,255,255,.12)"),background:totalRounds===n?"rgba(255,255,255,.15)":"transparent",color:totalRounds===n?G.white:"rgba(255,255,255,.4)",fontFamily:G.heading,fontWeight:700,cursor:"pointer",fontSize:15}}>
-                {n}
-              </button>
-            );})}
-          </div>
+          <div style={{fontFamily:G.font,fontSize:14,color:"rgba(255,255,255,.5)",padding:"4px 2px"}}>👤 <strong style={{color:G.white}}>{playerName}</strong></div>
         </div>
 
         {/* Bandeau demandes d'amis */}
@@ -3064,44 +3131,132 @@ export default function LePont() {
           </div>
         )}
 
-        {/* Modes de jeu */}
-        <div style={{display:"flex",gap:10}}>
-          <button onClick={()=>tryStart("pont")} style={{flex:1,padding:"16px 10px",background:G.dark,borderRadius:20,border:"1px solid rgba(255,255,255,.1)",cursor:"pointer",color:G.white,textAlign:"center"}}>
-            <div style={{marginBottom:4,display:"flex",justifyContent:"center"}}>{Icon.pitch(28,"rgba(255,255,255,.9)")}</div>
-            <div style={{fontFamily:G.heading,fontSize:18,letterSpacing:2}}>LE PONT</div>
-            <div style={{fontSize:10,color:"rgba(255,255,255,.4)",marginTop:2}}>2 clubs → joueur</div>
-          </button>
-          <button onClick={()=>tryStart("chaine")} style={{flex:1,padding:"16px 10px",background:"linear-gradient(145deg,#0F3D2E,#1F7A5C)",borderRadius:20,border:"1px solid rgba(255,255,255,.1)",cursor:"pointer",color:G.white,textAlign:"center"}}>
-            <div style={{marginBottom:4,display:"flex",justifyContent:"center"}}>{Icon.transfer(28,"rgba(255,255,255,.9)")}</div>
-            <div style={{fontFamily:G.heading,fontSize:18,letterSpacing:2}}>LA CHAÎNE</div>
-            <div style={{fontSize:10,color:"rgba(255,255,255,.4)",marginTop:2}}>joueur → club → ...</div>
-          </button>
+        {/* ── GAME CARDS (swipe) ── */}
+        <div
+          style={{position:"relative",height:215,touchAction:"pan-y",marginBottom:10}}
+          onTouchStart={function(e){window._swipeX=e.touches[0].clientX; window._swiping=true;}}
+          onTouchMove={function(e){
+            if(!window._swiping) return;
+            const dx=e.touches[0].clientX-window._swipeX;
+            setSwipeDelta(dx);
+          }}
+          onTouchEnd={function(e){
+            const dx=e.changedTouches[0].clientX-window._swipeX;
+            window._swiping=false;
+            setSwipeDelta(0);
+            if(Math.abs(dx)>40){setActiveCard(dx<0?"chaine":"pont");}
+          }}
+        >
+          {/* LA CHAÎNE */}
+          <div
+            onClick={function(){setGameConfigModal("chaine");}}
+            style={{
+              position:"absolute",top:0,left:0,right:0,
+              borderRadius:28,cursor:"pointer",overflow:"hidden",minHeight:200,
+              background:"linear-gradient(145deg,#0F2A1A,#1A6B3C,#0C3320)",
+              border:"1px solid rgba(255,255,255,.12)",
+              transform:activeCard==="chaine"
+                ? ("rotate(-1.2deg) translateX("+swipeDelta*0.6+"px) rotate("+(swipeDelta*0.02)+"deg)")
+                : ("rotate(1.8deg) translateX("+(6+swipeDelta*0.3)+"px)"),
+              zIndex:activeCard==="chaine"?2:1,
+              boxShadow:activeCard==="chaine"?"0 12px 36px rgba(0,0,0,.5)":"0 4px 16px rgba(0,0,0,.3)",
+              transition:swipeDelta===0?"transform .35s cubic-bezier(.22,1,.36,1), box-shadow .35s ease":"none",
+              opacity:activeCard==="chaine"?1:0.85,
+            }}
+          >
+            <div style={{position:"absolute",top:-30,right:-30,width:130,height:130,borderRadius:"50%",background:"radial-gradient(circle,rgba(0,230,118,.2) 0%,transparent 70%)",pointerEvents:"none"}}/>
+            <div style={{position:"absolute",top:14,right:14,opacity:.1,pointerEvents:"none"}}>{Icon.transfer(60,"#fff")}</div>
+            <div style={{padding:"22px 22px 18px",position:"relative",zIndex:1}}>
+              <div style={{fontSize:10,letterSpacing:4,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:6}}>Mode 2</div>
+              <div style={{fontFamily:G.heading,fontSize:36,color:G.white,letterSpacing:2,lineHeight:1,marginBottom:6}}>LA CHAÎNE</div>
+              <div style={{fontSize:12,color:"rgba(255,255,255,.45)",marginBottom:16}}>joueur → club → joueur...</div>
+              <div style={{display:"flex",alignItems:"center",gap:10}}>
+                <div style={{background:G.accent,borderRadius:50,padding:"8px 20px",color:"#000",fontFamily:G.font,fontWeight:800,fontSize:13}}>▶ Jouer</div>
+                {chainRecord&&<div style={{display:"flex",alignItems:"center",gap:4,background:"rgba(255,255,255,.08)",borderRadius:20,padding:"5px 10px"}}>
+                  <span style={{fontSize:10,color:G.accent}}>⛓</span><span style={{fontFamily:G.heading,fontSize:13,color:G.accent}}>{chainRecord.score}</span>
+                </div>}
+              </div>
+            </div>
+          </div>
+
+          {/* LE PONT */}
+          <div
+            onClick={function(){setGameConfigModal("pont");}}
+            style={{
+              position:"absolute",top:0,left:0,right:0,
+              borderRadius:28,cursor:"pointer",overflow:"hidden",minHeight:200,
+              background:"linear-gradient(145deg,#0B1624,#1C3D73,#0B2644)",
+              border:"1px solid rgba(255,255,255,.15)",
+              transform:activeCard==="pont"
+                ? ("rotate(-1.2deg) translateX("+swipeDelta*0.6+"px) rotate("+(swipeDelta*0.02)+"deg)")
+                : ("rotate(1.8deg) translateX("+(6+swipeDelta*0.3)+"px)"),
+              zIndex:activeCard==="pont"?2:1,
+              boxShadow:activeCard==="pont"?"0 12px 36px rgba(0,0,0,.5)":"0 4px 16px rgba(0,0,0,.3)",
+              transition:swipeDelta===0?"transform .35s cubic-bezier(.22,1,.36,1), box-shadow .35s ease":"none",
+              opacity:activeCard==="pont"?1:0.85,
+            }}
+          >
+            <div style={{position:"absolute",top:-30,right:-30,width:140,height:140,borderRadius:"50%",background:"radial-gradient(circle,rgba(0,150,255,.15) 0%,transparent 70%)",pointerEvents:"none"}}/>
+            <div style={{position:"absolute",top:14,right:14,opacity:.1,pointerEvents:"none"}}>{Icon.pitch(60,"#fff")}</div>
+            <div style={{padding:"22px 22px 18px",position:"relative",zIndex:1}}>
+              <div style={{fontSize:10,letterSpacing:4,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:6}}>Mode 1</div>
+              <div style={{fontFamily:G.heading,fontSize:36,color:G.white,letterSpacing:2,lineHeight:1,marginBottom:6}}>LE PONT</div>
+              <div style={{fontSize:12,color:"rgba(255,255,255,.45)",marginBottom:16}}>2 clubs → trouve le joueur</div>
+              <div style={{display:"flex",alignItems:"center",gap:10}}>
+                <div style={{background:G.accent,borderRadius:50,padding:"8px 20px",color:"#000",fontFamily:G.font,fontWeight:800,fontSize:13}}>▶ Jouer</div>
+                {record&&<div style={{display:"flex",alignItems:"center",gap:4,background:"rgba(255,255,255,.08)",borderRadius:20,padding:"5px 10px"}}>
+                  <span style={{fontSize:10,color:G.gold}}>🏆</span><span style={{fontFamily:G.heading,fontSize:13,color:G.gold}}>{record.score}</span>
+                </div>}
+              </div>
+            </div>
+          </div>
+
+          {/* Dots */}
+          <div style={{position:"absolute",bottom:8,left:0,right:0,display:"flex",justifyContent:"center",gap:6}}>
+            <div onClick={function(){setActiveCard("pont");}} style={{width:activeCard==="pont"?20:6,height:6,borderRadius:3,background:activeCard==="pont"?"#fff":"rgba(255,255,255,.3)",transition:"all .3s ease",cursor:"pointer"}}/>
+            <div onClick={function(){setActiveCard("chaine");}} style={{width:activeCard==="chaine"?20:6,height:6,borderRadius:3,background:activeCard==="chaine"?"#00E676":"rgba(255,255,255,.3)",transition:"all .3s ease",cursor:"pointer"}}/>
+          </div>
         </div>
 
-        {/* Records */}
-        {(record||chainRecord) && (
-          <div style={{display:"flex",gap:8}}>
-            {record&&<div style={{flex:1,background:"linear-gradient(135deg,#fef3c7,#fde68a)",borderRadius:14,padding:"8px 12px",textAlign:"center"}}>
-              <div style={{fontSize:9,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"#92400e"}}>🏆 Record Pont</div>
-              <div style={{fontFamily:G.heading,fontSize:22,color:"#92400e"}}>{record.score}</div>
-            </div>}
-            {chainRecord&&<div style={{flex:1,background:"linear-gradient(135deg,#e0f2fe,#bae6fd)",borderRadius:14,padding:"8px 12px",textAlign:"center"}}>
-              <div style={{fontSize:9,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"#075985"}}>→ Record Chaîne</div>
-              <div style={{fontFamily:G.heading,fontSize:22,color:"#075985"}}>{chainRecord.score}</div>
-            </div>}
+        {/* ── CONFIG MODAL ── */}
+        {gameConfigModal && (
+          <div style={{position:"fixed",inset:0,zIndex:300,background:"rgba(0,0,0,.85)",backdropFilter:"blur(12px)",display:"flex",alignItems:"flex-end",justifyContent:"center"}} onClick={function(e){if(e.target===e.currentTarget)setGameConfigModal(null);}}>
+            <div style={{background:"#1A1A1A",borderRadius:"28px 28px 0 0",padding:"24px 20px 44px",width:"100%",maxWidth:480,border:"1px solid rgba(255,255,255,.1)",borderBottom:"none"}}>
+              <div style={{width:40,height:4,background:"rgba(255,255,255,.2)",borderRadius:2,margin:"0 auto 20px"}}/>
+              <div style={{fontFamily:G.heading,fontSize:34,color:G.white,letterSpacing:2,marginBottom:4}}>{gameConfigModal==="pont"?"LE PONT":"LA CHAÎNE"}</div>
+              <div style={{fontSize:13,color:"rgba(255,255,255,.4)",marginBottom:20}}>{gameConfigModal==="pont"?"2 clubs → trouve le joueur commun":"joueur → club → joueur..."}</div>
+              <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.35)",marginBottom:8}}>Difficulté</div>
+              <div style={{display:"flex",gap:8,marginBottom:18}}>
+                {["facile","moyen","expert"].map(function(d){return(
+                  <button key={d} onClick={function(){setDiff(d);}} style={{flex:1,padding:"11px 4px",borderRadius:12,border:"1.5px solid "+(diff===d?G.accent:"rgba(255,255,255,.12)"),background:diff===d?"rgba(0,230,118,.1)":"transparent",color:diff===d?G.accent:"rgba(255,255,255,.5)",fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:12,textTransform:"capitalize"}}>
+                    {d}
+                  </button>
+                );})}
+              </div>
+              <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.35)",marginBottom:8}}>Manches</div>
+              <div style={{display:"flex",gap:8,marginBottom:24}}>
+                {[1,2,3].map(function(n){return(
+                  <button key={n} onClick={function(){setTotalRounds(n);}} style={{flex:1,padding:"11px",borderRadius:12,border:"1.5px solid "+(totalRounds===n?"#fff":"rgba(255,255,255,.12)"),background:totalRounds===n?"rgba(255,255,255,.12)":"transparent",color:totalRounds===n?G.white:"rgba(255,255,255,.4)",fontFamily:G.heading,fontWeight:700,cursor:"pointer",fontSize:20}}>
+                    {n}
+                  </button>
+                );})}
+              </div>
+              <div style={{display:"flex",gap:10}}>
+                <button onClick={function(){const m=gameConfigModal;setGameConfigModal(null);tryStart(m);}} style={{flex:2,padding:"15px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800}}>▶ Jouer seul</button>
+                <button onClick={function(){setDuelMode(gameConfigModal);setDuelDiff(diff);setDuelRounds(totalRounds);setGameConfigModal(null);setShowRoomCreate(true);}} style={{flex:1,padding:"15px",background:"rgba(255,255,255,.07)",color:G.white,border:"1px solid rgba(255,255,255,.12)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700}}>👥 Multi</button>
+              </div>
+            </div>
           </div>
         )}
 
-        {/* Multijoueur */}
+        {/* Multijoueur - rejoindre */}
         <div style={{display:"flex",gap:8}}>
           <input value={roomInput} onChange={function(e){setRoomInput(e.target.value.toUpperCase());setRoomMsg("");}}
             placeholder="Code salle" maxLength={6}
             style={{flex:1,padding:"10px 12px",borderRadius:12,border:"1.5px solid rgba(255,255,255,.12)",background:"rgba(255,255,255,.05)",color:G.white,fontFamily:G.font,fontSize:14,fontWeight:700,letterSpacing:3,textTransform:"uppercase",outline:"none"}}/>
-          <button onClick={function(){joinRoom(roomInput);}} style={{padding:"10px 12px",background:"rgba(255,255,255,.07)",color:G.white,border:"1px solid rgba(255,255,255,.12)",borderRadius:12,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700}}>Rejoindre</button>
-          <button onClick={function(){setShowRoomCreate(true);}} style={{padding:"10px 12px",background:G.accent,color:"#000",border:"none",borderRadius:12,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:800}}>+ Créer</button>
+          <button onClick={function(){joinRoom(roomInput);}} style={{padding:"10px 14px",background:"rgba(255,255,255,.07)",color:G.white,border:"1px solid rgba(255,255,255,.12)",borderRadius:12,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700}}>Rejoindre</button>
         </div>
         {roomMsg && <div style={{fontSize:12,color:"#FF3D57",fontWeight:700,marginTop:-4}}>{roomMsg}</div>}
-
         {/* Actions */}
         <div style={{display:"flex",gap:8}}>
           <button onClick={()=>{loadLeaderboard(lbMode);setShowLeaderboard(true);}} style={{flex:1,padding:"12px",background:"rgba(0,230,118,.08)",color:G.accent,border:"1px solid rgba(0,230,118,.2)",borderRadius:14,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
@@ -3123,7 +3278,20 @@ export default function LePont() {
     const tc1=textColor(ca1); const tc2=textColor(ca2);
     return (
       <div style={{...shell,animation:"fadeIn .2s ease"}} key={"game-"+currentRound}>
-        <div style={stripes}/>
+        <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
+        {/* Bandes pelouse */}
+        {[0,1,2,3,4,5,6].map(function(i){return(
+          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"rgba(0,0,0,.08)":"transparent"}}/>
+        );})}
+        {/* Ligne médiane */}
+        <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:"rgba(255,255,255,.15)",transform:"translateY(-50%)"}}/>
+        {/* Cercle central */}
+        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:180,height:180,borderRadius:"50%",border:"2px solid rgba(255,255,255,.15)"}}/>
+        {/* Point central */}
+        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:8,height:8,borderRadius:"50%",background:"rgba(255,255,255,.2)"}}/>
+        {/* Overlay sombre pour lisibilité */}
+        <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.55)"}}/>
+      </div>
         {showQuitConfirm && (
         <div style={{position:"fixed",inset:0,zIndex:300,background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center"}}>
           <div style={{background:"#1E1E1E",borderRadius:24,padding:"28px 24px",maxWidth:320,width:"calc(100% - 32px)",border:"1px solid rgba(255,255,255,.1)",textAlign:"center"}}>
@@ -3260,7 +3428,20 @@ export default function LePont() {
     const clTagColor = chainLastClub ? textColor(cla) : "#fff";
     return (
     <div style={{...shell,animation:"fadeIn .3s ease",overflow:"auto"}} key={"chain-"+chainCount}>
-      <div style={stripes}/>
+      <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
+        {/* Bandes pelouse */}
+        {[0,1,2,3,4,5,6].map(function(i){return(
+          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"rgba(0,0,0,.08)":"transparent"}}/>
+        );})}
+        {/* Ligne médiane */}
+        <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:"rgba(255,255,255,.15)",transform:"translateY(-50%)"}}/>
+        {/* Cercle central */}
+        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:180,height:180,borderRadius:"50%",border:"2px solid rgba(255,255,255,.15)"}}/>
+        {/* Point central */}
+        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:8,height:8,borderRadius:"50%",background:"rgba(255,255,255,.2)"}}/>
+        {/* Overlay sombre pour lisibilité */}
+        <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.55)"}}/>
+      </div>
       {showQuitConfirm && (
         <div style={{position:"fixed",inset:0,zIndex:300,background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center"}}>
           <div style={{background:"#1E1E1E",borderRadius:24,padding:"28px 24px",maxWidth:320,width:"calc(100% - 32px)",border:"1px solid rgba(255,255,255,.1)",textAlign:"center"}}>
@@ -3361,7 +3542,20 @@ export default function LePont() {
   // ── ROUND END ──
   if(screen==="roundEnd") return (
     <div style={{...shell,animation:"fadeUp .4s ease"}} key="roundEnd">
-      <div style={stripes}/>
+      <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
+        {/* Bandes pelouse */}
+        {[0,1,2,3,4,5,6].map(function(i){return(
+          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"rgba(0,0,0,.08)":"transparent"}}/>
+        );})}
+        {/* Ligne médiane */}
+        <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:"rgba(255,255,255,.15)",transform:"translateY(-50%)"}}/>
+        {/* Cercle central */}
+        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:180,height:180,borderRadius:"50%",border:"2px solid rgba(255,255,255,.15)"}}/>
+        {/* Point central */}
+        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:8,height:8,borderRadius:"50%",background:"rgba(255,255,255,.2)"}}/>
+        {/* Overlay sombre pour lisibilité */}
+        <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.55)"}}/>
+      </div>
       <div style={{zIndex:1,padding:"40px 20px 20px",textAlign:"center"}}>
         <div style={{fontSize:13,letterSpacing:4,textTransform:"uppercase",color:"rgba(255,255,255,.5)",fontWeight:600}}>Fin de manche {currentRound} · {diff}</div>
         <div style={{fontFamily:G.heading,fontSize:"clamp(36px,9vw,56px)",color:totalRounds===2&&currentRound===1?G.gold:G.white,letterSpacing:2,marginTop:6}}>
@@ -3388,7 +3582,20 @@ export default function LePont() {
   // ── FINAL ──
   const makeResultScreen = (sc, mode, isChain) => (
     <div style={{...shell,animation:"fadeUp .4s ease"}} key={isChain?"chainEnd":"final"}>
-      {confettiOverlay}<div style={stripes}/>
+      {confettiOverlay}<div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
+        {/* Bandes pelouse */}
+        {[0,1,2,3,4,5,6].map(function(i){return(
+          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"rgba(0,0,0,.08)":"transparent"}}/>
+        );})}
+        {/* Ligne médiane */}
+        <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:"rgba(255,255,255,.15)",transform:"translateY(-50%)"}}/>
+        {/* Cercle central */}
+        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:180,height:180,borderRadius:"50%",border:"2px solid rgba(255,255,255,.15)"}}/>
+        {/* Point central */}
+        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:8,height:8,borderRadius:"50%",background:"rgba(255,255,255,.2)"}}/>
+        {/* Overlay sombre pour lisibilité */}
+        <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.55)"}}/>
+      </div>
       <div style={{zIndex:1,padding:"32px 20px 16px",textAlign:"center"}}>
         <div style={{fontSize:52,marginBottom:8,animation:"popIn .6s ease",display:"flex",justifyContent:"center"}}>{isNewRecord?Icon.trophy(60,G.gold):sc>=20?<span style={{fontSize:52}}>🔥</span>:Icon.ball(56,G.white)}</div>
         <div style={{fontFamily:G.heading,fontSize:"clamp(30px,8vw,50px)",color:isNewRecord?G.gold:G.white,letterSpacing:2,animation:"fadeUp .5s ease .1s both"}}>{isNewRecord?"NOUVEAU RECORD !":isChain?"TEMPS ÉCOULÉ !":"RÉSULTATS FINAUX"}</div>
@@ -3441,7 +3648,20 @@ export default function LePont() {
   if (waitingForRoom) {
     return (
       <div style={{...shell,alignItems:"center",justifyContent:"center"}} key="waitingRoom">
-        <div style={stripes}/>
+        <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
+        {/* Bandes pelouse */}
+        {[0,1,2,3,4,5,6].map(function(i){return(
+          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"rgba(0,0,0,.08)":"transparent"}}/>
+        );})}
+        {/* Ligne médiane */}
+        <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:"rgba(255,255,255,.15)",transform:"translateY(-50%)"}}/>
+        {/* Cercle central */}
+        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:180,height:180,borderRadius:"50%",border:"2px solid rgba(255,255,255,.15)"}}/>
+        {/* Point central */}
+        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:8,height:8,borderRadius:"50%",background:"rgba(255,255,255,.2)"}}/>
+        {/* Overlay sombre pour lisibilité */}
+        <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.55)"}}/>
+      </div>
         <div style={{textAlign:"center",zIndex:1,padding:"0 32px"}}>
           <div style={{fontSize:48,marginBottom:16,animation:"spin 2s linear infinite",display:"inline-block"}}>⏳</div>
           <div style={{fontFamily:G.heading,fontSize:28,color:G.white,marginBottom:8}}>EN ATTENTE</div>
@@ -3459,7 +3679,20 @@ export default function LePont() {
     const myRank = duelResult.players.findIndex(function(p){return p.id===playerId;}) + 1;
     return (
       <div style={{...shell,animation:"fadeUp .4s ease",overflow:"auto"}} key="roomResult">
-        <div style={stripes}/>
+        <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
+        {/* Bandes pelouse */}
+        {[0,1,2,3,4,5,6].map(function(i){return(
+          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"rgba(0,0,0,.08)":"transparent"}}/>
+        );})}
+        {/* Ligne médiane */}
+        <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:"rgba(255,255,255,.15)",transform:"translateY(-50%)"}}/>
+        {/* Cercle central */}
+        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:180,height:180,borderRadius:"50%",border:"2px solid rgba(255,255,255,.15)"}}/>
+        {/* Point central */}
+        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:8,height:8,borderRadius:"50%",background:"rgba(255,255,255,.2)"}}/>
+        {/* Overlay sombre pour lisibilité */}
+        <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.55)"}}/>
+      </div>
         <div style={{zIndex:1,padding:"32px 20px 16px",textAlign:"center"}}>
           <div style={{fontSize:52,marginBottom:8}}>{myRank<=3?medals[myRank-1]:myRank+"ème"}</div>
           <div style={{fontFamily:G.heading,fontSize:"clamp(30px,8vw,50px)",color:myRank===1?G.gold:G.white,letterSpacing:2}}>
@@ -3489,7 +3722,20 @@ export default function LePont() {
     const labelColor = won ? G.accent : draw ? G.gold : "#FF3D57";
     return (
       <div style={{...shell,animation:"fadeUp .4s ease"}} key="duelResult">
-        <div style={stripes}/>
+        <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
+        {/* Bandes pelouse */}
+        {[0,1,2,3,4,5,6].map(function(i){return(
+          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"rgba(0,0,0,.08)":"transparent"}}/>
+        );})}
+        {/* Ligne médiane */}
+        <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:"rgba(255,255,255,.15)",transform:"translateY(-50%)"}}/>
+        {/* Cercle central */}
+        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:180,height:180,borderRadius:"50%",border:"2px solid rgba(255,255,255,.15)"}}/>
+        {/* Point central */}
+        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:8,height:8,borderRadius:"50%",background:"rgba(255,255,255,.2)"}}/>
+        {/* Overlay sombre pour lisibilité */}
+        <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.55)"}}/>
+      </div>
         <div style={{zIndex:1,padding:"40px 20px 16px",textAlign:"center"}}>
           <div style={{fontSize:72,marginBottom:8,animation:"popIn .6s ease"}}>{emoji}</div>
           <div style={{fontFamily:G.heading,fontSize:"clamp(36px,9vw,56px)",color:labelColor,letterSpacing:2}}>{label}</div>
