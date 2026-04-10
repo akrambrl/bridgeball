@@ -2040,6 +2040,8 @@ export default function LePont() {
       });
       setFriendMsg("✓ Demande envoyée ! En attente d'acceptation.");
       setFriendInput("");
+      // Mise à jour immédiate sans attendre Supabase
+      setSentRequests(function(prev){return [...prev, {id:"tmp-"+Date.now(), from_id:playerId, to_id:clean, status:"pending"}];});
       loadFriendRequests();
     } catch(e) { setFriendMsg("Erreur. Vérifie le code."); }
   }
