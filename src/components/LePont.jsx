@@ -1975,7 +1975,32 @@ export default function LePont() {
   async function loadFriends() {
     try {
       const stored = localStorage.getItem("bb_friends");
-      const ids = stored ? JSON.parse(stored) : [];
+      let ids = stored ? JSON.parse(stored) : [];
+      // Sync depuis Supabase : demandes acceptées envoyées par moi (j'ai envoyé, l'autre a accepté)
+      const accepted = await sbFetch("bb_friend_requests?from_id=eq."+playerId+"&status=eq.accepted&select=to_id,to_name");
+      if (Array.isArray(accepted)) {
+        const names = JSON.parse(localStorage.getItem("bb_friend_names") || "{}");
+        accepted.forEach(function(r) {
+          if (!ids.includes(r.to_id)) {
+            ids.push(r.to_id);
+            if (r.to_name) names[r.to_id] = r.to_name;
+          }
+        });
+        localStorage.setItem("bb_friend_names", JSON.stringify(names));
+      }
+      // Sync depuis Supabase : demandes acceptées reçues par moi (l'autre a envoyé, j'ai accepté)
+      const received = await sbFetch("bb_friend_requests?to_id=eq."+playerId+"&status=eq.accepted&select=from_id,from_name");
+      if (Array.isArray(received)) {
+        const names = JSON.parse(localStorage.getItem("bb_friend_names") || "{}");
+        received.forEach(function(r) {
+          if (!ids.includes(r.from_id)) {
+            ids.push(r.from_id);
+            if (r.from_name) names[r.from_id] = r.from_name;
+          }
+        });
+        localStorage.setItem("bb_friend_names", JSON.stringify(names));
+      }
+      localStorage.setItem("bb_friends", JSON.stringify(ids));
       setFriendsList(ids);
       return ids;
     } catch { return []; }
@@ -3251,7 +3276,7 @@ export default function LePont() {
           <button onClick={()=>{loadLeaderboard(lbMode);setShowLeaderboard(true);}} style={{flex:1,padding:"12px",background:"rgba(0,230,118,.08)",color:G.accent,border:"1px solid rgba(0,230,118,.2)",borderRadius:14,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
             {Icon.trophy(14,G.accent)} Classement
           </button>
-          <button onClick={function(){setShowFriends(true);fetchFriendScores(friendsList);loadDuels();loadFriendRequests();}} style={{flex:1,padding:"12px",background:"rgba(255,255,255,.05)",color:G.white,border:"1px solid rgba(255,255,255,.1)",borderRadius:14,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",gap:6,position:"relative"}}>
+          <button onClick={function(){setShowFriends(true);loadFriends().then(function(ids){fetchFriendScores(ids);});loadDuels();loadFriendRequests();}} style={{flex:1,padding:"12px",background:"rgba(255,255,255,.05)",color:G.white,border:"1px solid rgba(255,255,255,.1)",borderRadius:14,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",gap:6,position:"relative"}}>
             👥 Amis{friendRequests.length>0&&<span style={{position:"absolute",top:-4,right:-4,background:"#FF3D57",color:"#fff",borderRadius:"50%",width:16,height:16,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:900}}>{friendRequests.length}</span>}
           </button>
         </div>
