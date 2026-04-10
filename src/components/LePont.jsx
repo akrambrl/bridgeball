@@ -1384,6 +1384,7 @@ export default function LePont() {
   // Friends
   const [playerId] = useState(() => getPlayerId());
   const [showFriends, setShowFriends] = useState(false);
+  const [selectedFriend, setSelectedFriend] = useState(null); // {id, name}
   const [friendInput, setFriendInput] = useState("");
   const [friendsList, setFriendsList] = useState([]);
   const [friendScores, setFriendScores] = useState([]);
@@ -2533,72 +2534,122 @@ export default function LePont() {
   // ── LEADERBOARD SCREEN ──
   // ── FRIENDS SCREEN ──
   if (showFriends) {
-    const myScores = friendScores.filter(function(s){return s.player_id===playerId;});
-    const grouped = {};
-    friendScores.filter(function(s){return s.player_id!==playerId;}).forEach(function(s){
-      if(!grouped[s.player_id]) grouped[s.player_id]={name:s.player_name,scores:[]};
-      grouped[s.player_id].scores.push(s);
-    });
+    // ── VUE DÉTAIL AMI ──
+    if (selectedFriend) {
+      const friendDuels = duels.filter(function(d){
+        return d.status==="complete" && (d.challenger_id===selectedFriend.id || d.opponent_id===selectedFriend.id);
+      });
+      let wins=0, losses=0, draws=0;
+      friendDuels.forEach(function(d){
+        const myScore = d.challenger_id===playerId ? d.challenger_score : d.opponent_score;
+        const theirScore = d.challenger_id===playerId ? d.opponent_score : d.challenger_score;
+        if(myScore>theirScore) wins++;
+        else if(myScore===theirScore) draws++;
+        else losses++;
+      });
+      return (
+        <div style={{...shell,overflow:"auto"}} key="friendDetail">
+          <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
+            {[0,1,2,3,4,5,6].map(function(i){return(<div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#1E5C2A":"#276B34"}}/>);})}
+            <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:"rgba(255,255,255,.15)",transform:"translateY(-50%)"}}/>
+            <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:180,height:180,borderRadius:"50%",border:"2px solid rgba(255,255,255,.15)"}}/>
+            <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.45)"}}/>
+          </div>
+          <div style={{zIndex:3,padding:"12px 16px 0",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            {backBtn(function(){setSelectedFriend(null);})}
+            <div style={{fontFamily:G.heading,fontSize:22,color:G.white,letterSpacing:2}}>{selectedFriend.name}</div>
+            <button onClick={function(){setShowDuelCreate({id:selectedFriend.id,name:selectedFriend.name});}} style={{padding:"8px 14px",background:G.accent,color:"#000",border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:800}}>⚡ Défier</button>
+          </div>
+          <div style={{...sheet,borderRadius:"28px 28px 0 0",marginTop:16}}>
+            {/* Bilan */}
+            {friendDuels.length > 0 && (
+              <div style={{display:"flex",gap:8,marginBottom:4}}>
+                <div style={{flex:1,background:"rgba(0,230,118,.08)",border:"1px solid rgba(0,230,118,.2)",borderRadius:16,padding:"14px 0",textAlign:"center"}}>
+                  <div style={{fontFamily:G.heading,fontSize:32,color:"#00E676"}}>{wins}</div>
+                  <div style={{fontSize:10,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginTop:2}}>Victoires</div>
+                </div>
+                <div style={{flex:1,background:"rgba(255,214,0,.06)",border:"1px solid rgba(255,214,0,.2)",borderRadius:16,padding:"14px 0",textAlign:"center"}}>
+                  <div style={{fontFamily:G.heading,fontSize:32,color:G.gold}}>{draws}</div>
+                  <div style={{fontSize:10,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginTop:2}}>Nuls</div>
+                </div>
+                <div style={{flex:1,background:"rgba(255,61,87,.06)",border:"1px solid rgba(255,61,87,.2)",borderRadius:16,padding:"14px 0",textAlign:"center"}}>
+                  <div style={{fontFamily:G.heading,fontSize:32,color:"#FF3D57"}}>{losses}</div>
+                  <div style={{fontSize:10,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginTop:2}}>Défaites</div>
+                </div>
+              </div>
+            )}
+            {/* Historique */}
+            <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.3)",marginBottom:8,marginTop:4}}>Historique</div>
+            {friendDuels.length===0 && (
+              <div style={{textAlign:"center",padding:"32px 0",color:"rgba(255,255,255,.3)",fontSize:14}}>Aucun duel encore joué avec {selectedFriend.name} 👀</div>
+            )}
+            {friendDuels.map(function(d,i){
+              const myScore = d.challenger_id===playerId ? d.challenger_score : d.opponent_score;
+              const theirScore = d.challenger_id===playerId ? d.opponent_score : d.challenger_score;
+              const won = myScore>theirScore; const draw = myScore===theirScore;
+              return(
+                <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 14px",background:"rgba(255,255,255,.04)",borderRadius:12,marginBottom:6,border:"1px solid rgba(255,255,255,.06)"}}>
+                  <div>
+                    <div style={{fontSize:13,fontWeight:800,color:won?"#00E676":draw?G.gold:"#FF3D57"}}>{won?"🏆 Victoire":draw?"🤝 Égalité":"😅 Défaite"}</div>
+                    <div style={{fontSize:11,color:"rgba(255,255,255,.4)"}}>{d.mode==="pont"?"Le Pont":"La Chaîne"}{d.diff?" · "+d.diff:""}</div>
+                  </div>
+                  <div style={{textAlign:"right"}}>
+                    <div style={{fontFamily:G.heading,fontSize:22,color:G.white}}>{myScore} <span style={{fontSize:11,color:"rgba(255,255,255,.3)"}}>pts</span></div>
+                    <div style={{fontSize:11,color:"rgba(255,255,255,.35)"}}>{selectedFriend.name}: {theirScore}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      );
+    }
+
+    // ── VUE LISTE AMIS ──
     return (
       <div style={{...shell,overflow:"auto"}} key="friends">
         <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
-        {/* Bandes pelouse */}
-        {[0,1,2,3,4,5,6].map(function(i){return(
-          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#1E5C2A":"#276B34"}}/>
-        );})}
-        {/* Ligne médiane */}
-        <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:"rgba(255,255,255,.15)",transform:"translateY(-50%)"}}/>
-        {/* Cercle central */}
-        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:180,height:180,borderRadius:"50%",border:"2px solid rgba(255,255,255,.15)"}}/>
-        {/* Point central */}
-        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:8,height:8,borderRadius:"50%",background:"rgba(255,255,255,.2)"}}/>
-        {/* Overlay sombre pour lisibilité */}
-        <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.45)"}}/>
-      </div>
-      {/* Duel create modal */}
-      {showDuelCreate && (
-        <div style={{position:"fixed",inset:0,zIndex:300,background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center"}}>
-          <div style={{background:"rgba(15,25,15,.95)",borderRadius:24,padding:"28px 24px",maxWidth:340,width:"calc(100% - 32px)",border:"1px solid rgba(255,255,255,.1)"}}>
-            <div style={{fontFamily:G.heading,fontSize:28,color:G.white,marginBottom:4}}>DÉFIER</div>
-            <div style={{fontSize:14,color:"rgba(255,255,255,.5)",marginBottom:20}}>vs <strong style={{color:G.gold}}>{showDuelCreate.name}</strong></div>
-
-            <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:8}}>Mode</div>
-            <div style={{display:"flex",gap:8,marginBottom:16}}>
-              {["pont","chaine"].map(function(m){return(
-                <button key={m} onClick={function(){setDuelMode(m);}} style={{flex:1,padding:"10px",borderRadius:12,border:"1.5px solid "+(duelMode===m?G.accent:"rgba(255,255,255,.15)"),background:duelMode===m?"rgba(0,230,118,.1)":"transparent",color:duelMode===m?G.accent:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:13}}>
-                  {m==="pont"?"Le Pont":"La Chaîne"}
-                </button>
-              );})}
-            </div>
-
-            <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:8}}>Difficulté</div>
-            <div style={{display:"flex",gap:8,marginBottom:16}}>
-              {["facile","moyen","expert"].map(function(d){return(
-                <button key={d} onClick={function(){setDuelDiff(d);}} style={{flex:1,padding:"8px",borderRadius:10,border:"1.5px solid "+(duelDiff===d?G.gold:"rgba(255,255,255,.15)"),background:duelDiff===d?"rgba(255,214,0,.1)":"transparent",color:duelDiff===d?G.gold:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:12,textTransform:"capitalize"}}>
-                  {d}
-                </button>
-              );})}
-            </div>
-
-            <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:8}}>Manches</div>
-            <div style={{display:"flex",gap:8,marginBottom:20}}>
-              {[1,2,3].map(function(r){return(
-                <button key={r} onClick={function(){setDuelRounds(r);}} style={{flex:1,padding:"10px",borderRadius:12,border:"1.5px solid "+(duelRounds===r?"#fff":"rgba(255,255,255,.15)"),background:duelRounds===r?"rgba(255,255,255,.1)":"transparent",color:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:15}}>
-                  {r}
-                </button>
-              );})}
-            </div>
-
-            <div style={{display:"flex",gap:8}}>
-              <button onClick={function(){setShowDuelCreate(null);}} style={{flex:1,padding:"12px",background:"rgba(255,255,255,.07)",color:"rgba(255,255,255,.5)",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14}}>Annuler</button>
-              <button onClick={function(){createDuel(showDuelCreate);}} style={{flex:2,padding:"12px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>Envoyer le défi ⚡</button>
+          {[0,1,2,3,4,5,6].map(function(i){return(<div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#1E5C2A":"#276B34"}}/>);})}
+          <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:"rgba(255,255,255,.15)",transform:"translateY(-50%)"}}/>
+          <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:180,height:180,borderRadius:"50%",border:"2px solid rgba(255,255,255,.15)"}}/>
+          <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.45)"}}/>
+        </div>
+        {showDuelCreate && (
+          <div style={{position:"fixed",inset:0,zIndex:300,background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+            <div style={{background:"rgba(15,25,15,.95)",borderRadius:24,padding:"28px 24px",maxWidth:340,width:"calc(100% - 32px)",border:"1px solid rgba(255,255,255,.1)"}}>
+              <div style={{fontFamily:G.heading,fontSize:28,color:G.white,marginBottom:4}}>DÉFIER</div>
+              <div style={{fontSize:14,color:"rgba(255,255,255,.5)",marginBottom:20}}>vs <strong style={{color:G.gold}}>{showDuelCreate.name}</strong></div>
+              <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:8}}>Mode</div>
+              <div style={{display:"flex",gap:8,marginBottom:16}}>
+                {["pont","chaine"].map(function(m){return(
+                  <button key={m} onClick={function(){setDuelMode(m);}} style={{flex:1,padding:"10px",borderRadius:12,border:"1.5px solid "+(duelMode===m?G.accent:"rgba(255,255,255,.15)"),background:duelMode===m?"rgba(0,230,118,.1)":"transparent",color:duelMode===m?G.accent:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:13}}>
+                    {m==="pont"?"Le Pont":"La Chaîne"}
+                  </button>
+                );})}
+              </div>
+              <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:8}}>Difficulté</div>
+              <div style={{display:"flex",gap:8,marginBottom:16}}>
+                {["facile","moyen","expert"].map(function(d){return(
+                  <button key={d} onClick={function(){setDuelDiff(d);}} style={{flex:1,padding:"8px",borderRadius:10,border:"1.5px solid "+(duelDiff===d?G.gold:"rgba(255,255,255,.15)"),background:duelDiff===d?"rgba(255,214,0,.1)":"transparent",color:duelDiff===d?G.gold:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:12,textTransform:"capitalize"}}>
+                    {d}
+                  </button>
+                );})}
+              </div>
+              <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:8}}>Manches</div>
+              <div style={{display:"flex",gap:8,marginBottom:20}}>
+                {[1,2,3].map(function(r){return(
+                  <button key={r} onClick={function(){setDuelRounds(r);}} style={{flex:1,padding:"10px",borderRadius:12,border:"1.5px solid "+(duelRounds===r?"#fff":"rgba(255,255,255,.15)"),background:duelRounds===r?"rgba(255,255,255,.1)":"transparent",color:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:15}}>{r}</button>
+                );})}
+              </div>
+              <div style={{display:"flex",gap:8}}>
+                <button onClick={function(){setShowDuelCreate(null);}} style={{flex:1,padding:"12px",background:"rgba(255,255,255,.07)",color:"rgba(255,255,255,.5)",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14}}>Annuler</button>
+                <button onClick={function(){createDuel(showDuelCreate);}} style={{flex:2,padding:"12px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>Envoyer le défi ⚡</button>
+              </div>
             </div>
           </div>
-        </div>
-      )})}
-
+        )}
         <div style={{zIndex:3,padding:"12px 16px 0",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-          {backBtn(function(){setShowFriends(false);setFriendMsg("");})}
+          {backBtn(function(){setShowFriends(false);setFriendMsg("");setSelectedFriend(null);})}
           <div style={{fontFamily:G.heading,fontSize:26,color:G.white,letterSpacing:2}}>AMIS</div>
           <div style={{background:"rgba(255,255,255,.07)",border:"1px solid rgba(255,255,255,.1)",borderRadius:12,padding:"6px 12px",textAlign:"center"}}>
             <div style={{fontSize:9,color:"rgba(255,255,255,.5)",letterSpacing:2,textTransform:"uppercase"}}>Ton code</div>
@@ -2606,8 +2657,7 @@ export default function LePont() {
           </div>
         </div>
         <div style={{...sheet,borderRadius:"28px 28px 0 0",marginTop:16}}>
-
-          {/* Incoming friend requests */}
+          {/* Demandes reçues */}
           {friendRequests.length > 0 && (
             <div style={{background:"rgba(0,230,118,.08)",border:"1px solid rgba(0,230,118,.25)",borderRadius:16,padding:14}}>
               <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:G.accent,marginBottom:10}}>👋 Demandes reçues</div>
@@ -2625,6 +2675,7 @@ export default function LePont() {
               );})}
             </div>
           )}
+          {/* Ajouter un ami */}
           <div style={{background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",borderRadius:16,padding:16}}>
             <div style={{fontSize:12,fontWeight:700,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginBottom:8}}>Ajouter un ami</div>
             <div style={{display:"flex",gap:8}}>
@@ -2632,120 +2683,60 @@ export default function LePont() {
                 placeholder="Code ami (6 lettres)" maxLength={6}
                 style={{flex:1,padding:"10px 14px",borderRadius:12,border:"1.5px solid rgba(255,255,255,.15)",background:"#141414",color:G.white,fontFamily:G.font,fontSize:15,fontWeight:700,letterSpacing:3,textTransform:"uppercase",outline:"none"}}/>
               <button onClick={function(){addFriend(friendInput);}}
-                style={{padding:"10px 16px",background:"#00E676",color:"#000",border:"none",borderRadius:12,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>+</button>
+                style={{padding:"10px 16px",background:G.accent,color:"#000",border:"none",borderRadius:12,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>+</button>
             </div>
-            {friendMsg && <div style={{marginTop:8,fontSize:13,color:friendMsg.startsWith("✓")?"#00E676":"#FF3D57",fontWeight:700}}>{friendMsg}</div>}
-            <div style={{marginTop:8,fontSize:11,color:"rgba(255,255,255,.3)"}}>Partage ton code à tes amis pour comparer vos scores</div>
+            {friendMsg && <div style={{fontSize:12,marginTop:6,color:friendMsg.includes("✓")?"#00E676":"#FF3D57",fontWeight:700}}>{friendMsg}</div>}
+            <div style={{marginTop:8,fontSize:11,color:"rgba(255,255,255,.3)"}}>Partage ton code à tes amis pour se connecter</div>
           </div>
-
-          {/* All friends with Défier */}
-          {/* Sent requests pending */}
+          {/* Demandes envoyées en attente */}
           {sentRequests.filter(function(r){return r.status==="pending";}).length > 0 && (
-            <div style={{marginBottom:8}}>
-              <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.3)",marginBottom:8}}>Demandes envoyées</div>
+            <div style={{background:"rgba(255,214,0,.04)",border:"1px solid rgba(255,214,0,.15)",borderRadius:16,padding:14}}>
+              <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:G.gold,marginBottom:8}}>⏳ Demandes envoyées</div>
               {sentRequests.filter(function(r){return r.status==="pending";}).map(function(r){return(
-                <div key={r.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 14px",background:"rgba(255,255,255,.04)",borderRadius:12,marginBottom:6,border:"1px solid rgba(255,214,0,.2)"}}>
+                <div key={r.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:"1px solid rgba(255,255,255,.05)"}}>
                   <div style={{fontSize:13,fontWeight:700,color:G.white}}>{r.to_id}</div>
-                  <div style={{fontSize:11,color:G.gold,fontWeight:700}}>⏳ En attente</div>
+                  <div style={{fontSize:11,color:G.gold,fontWeight:700}}>En attente</div>
                 </div>
               );})}
             </div>
           )}
-
-          {friendsList.length > 0 && (
-            <div>
-              <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.3)",marginBottom:8}}>Mes amis</div>
-              {friendsList.map(function(fid, i) {
-                const scores = friendScores.filter(function(s){return s.player_id===fid;});
-                let fname = fid;
-                try {
-                  const names = JSON.parse(localStorage.getItem("bb_friend_names") || "{}");
-                  fname = names[fid] || (scores.length > 0 ? scores[0].player_name : fid);
-                } catch { fname = scores.length > 0 ? scores[0].player_name : fid; }
-                return (
-                  <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 14px",background:"rgba(255,255,255,.04)",borderRadius:12,marginBottom:6,border:"1px solid rgba(255,255,255,.06)"}}>
-                    <div>
-                      <div style={{fontSize:14,fontWeight:800,color:G.white}}>{fname}</div>
-                      <div style={{fontSize:11,color:"rgba(255,255,255,.3)"}}>{scores.length > 0 ? scores[0].score+" pts" : "Pas encore joué"}</div>
-                    </div>
-                    <div style={{display:"flex",gap:6}}>
-                      <button onClick={function(){setShowDuelCreate({id:fid,name:fname});}} style={{padding:"7px 12px",background:G.accent,color:"#000",border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800}}>⚡ Défier</button>
-                      <button onClick={function(){removeFriend(fid);}} style={{padding:"7px 10px",background:"transparent",border:"1px solid rgba(255,255,255,.15)",borderRadius:20,cursor:"pointer",color:"rgba(255,255,255,.4)",fontSize:12}}>✕</button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+          {/* Liste des amis */}
           <div>
-            <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.3)",marginBottom:8}}>Mes meilleurs scores</div>
-            {myScores.length===0 && <div style={{fontSize:13,color:"rgba(255,255,255,.3)",textAlign:"center",padding:12}}>Joue une partie pour voir tes scores ici !</div>}
-            {myScores.map(function(s,i){return(
-              <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 14px",background:"rgba(255,255,255,.04)",borderRadius:12,marginBottom:6,border:"1px solid rgba(255,255,255,.06)"}}>
-                <div>
-                  <div style={{fontSize:13,fontWeight:800,color:G.white}}>{s.mode==="pont"?"Le Pont":"La Chaîne"}{s.diff?" · "+s.diff:""}</div>
-                  <div style={{fontSize:11,color:"rgba(255,255,255,.3)"}}>{new Date(s.created_at).toLocaleDateString("fr-FR")}</div>
+            <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.3)",marginBottom:8}}>
+              Mes amis {friendsList.length>0&&<span style={{color:G.accent}}>({friendsList.length})</span>}
+            </div>
+            {friendsList.length===0 && (
+              <div style={{textAlign:"center",padding:"24px 0",color:"rgba(255,255,255,.3)",fontSize:14}}>Aucun ami pour l'instant 👋</div>
+            )}
+            {friendsList.map(function(fid, i) {
+              let fname = fid;
+              try {
+                const names = JSON.parse(localStorage.getItem("bb_friend_names") || "{}");
+                const fscores = friendScores.filter(function(s){return s.player_id===fid;});
+                fname = names[fid] || (fscores.length > 0 ? fscores[0].player_name : fid);
+              } catch { }
+              const friendDuelCount = duels.filter(function(d){return d.status==="complete"&&(d.challenger_id===fid||d.opponent_id===fid);}).length;
+              return (
+                <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 14px",background:"rgba(255,255,255,.04)",borderRadius:14,marginBottom:8,border:"1px solid rgba(255,255,255,.06)",cursor:"pointer"}}
+                  onClick={function(){setSelectedFriend({id:fid,name:fname});loadDuels();}}>
+                  <div>
+                    <div style={{fontSize:15,fontWeight:800,color:G.white}}>{fname}</div>
+                    <div style={{fontSize:11,color:"rgba(255,255,255,.35)"}}>{friendDuelCount>0?friendDuelCount+" duel"+(friendDuelCount>1?"s":"")+" joué"+(friendDuelCount>1?"s":""):"Aucun duel encore"}</div>
+                  </div>
+                  <div style={{display:"flex",gap:8,alignItems:"center"}}>
+                    <button onClick={function(e){e.stopPropagation();setShowDuelCreate({id:fid,name:fname});}} style={{padding:"7px 12px",background:G.accent,color:"#000",border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800}}>⚡ Défier</button>
+                    <button onClick={function(e){e.stopPropagation();removeFriend(fid);}} style={{padding:"7px 10px",background:"transparent",border:"1px solid rgba(255,255,255,.15)",borderRadius:20,cursor:"pointer",color:"rgba(255,255,255,.4)",fontSize:12}}>✕</button>
+                    <span style={{color:"rgba(255,255,255,.3)",fontSize:18}}>›</span>
+                  </div>
                 </div>
-                <div style={{fontFamily:G.heading,fontSize:24,color:G.white}}>{s.score} <span style={{fontSize:12,color:"rgba(255,255,255,.3)"}}>pts</span></div>
-              </div>
-            );})}
+              );
+            })}
           </div>
-          {friendsList.length>0 && (
-            <div>
-              <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.3)",marginBottom:8}}>Scores de tes amis</div>
-              {friendLoading && <div style={{textAlign:"center",color:"rgba(255,255,255,.3)",fontSize:13,padding:12}}>Chargement...</div>}
-              {!friendLoading && Object.values(grouped).map(function(friend,i){return(
-                <div key={i} style={{background:"rgba(255,255,255,.04)",borderRadius:16,padding:12,marginBottom:8,border:"1px solid rgba(255,255,255,.06)"}}>
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-                    <div style={{fontFamily:G.heading,fontSize:17,color:G.white}}>{friend.name}</div>
-                    <button onClick={function(){setShowDuelCreate({id:friend.scores[0].player_id,name:friend.name});}} style={{padding:"6px 12px",background:G.accent,color:"#000",border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800}}>⚡ Défier</button>
-                    <button onClick={function(){removeFriend(friend.scores[0].player_id);}}
-                      style={{background:"transparent",border:"none",color:"rgba(255,255,255,.3)",cursor:"pointer",fontSize:16,padding:"0 4px"}}>✕</button>
-                  </div>
-                  {friend.scores.map(function(s,j){return(
-                    <div key={j} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"6px 0",borderTop:j>0?"1px solid rgba(255,255,255,.07)":"none"}}>
-                      <div style={{fontSize:12,color:"rgba(255,255,255,.5)"}}>{s.mode==="pont"?"Le Pont":"La Chaîne"}{s.diff?" · "+s.diff:""}</div>
-                      <div style={{fontFamily:G.heading,fontSize:18,color:G.white}}>{s.score} <span style={{fontSize:11,color:"rgba(255,255,255,.3)"}}>pts</span></div>
-                    </div>
-                  );})}
-                </div>
-              );})}
-            </div>
-          )}
-
-          {/* Completed duels */}
-          {duels.filter(function(d){return d.status==="complete";}).length > 0 && (
-            <div>
-              <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.3)",marginBottom:8}}>Résultats de duels</div>
-              {duels.filter(function(d){return d.status==="complete";}).slice(0,5).map(function(d){
-                const isChallenger = d.challenger_id === playerId;
-                const myScore = isChallenger ? d.challenger_score : d.opponent_score;
-                const theirScore = isChallenger ? d.opponent_score : d.challenger_score;
-                const oppName = isChallenger ? d.opponent_name : d.challenger_name;
-                const won = myScore > theirScore;
-                const draw = myScore === theirScore;
-                return(
-                  <div key={d.id} style={{background:"rgba(255,255,255,.04)",borderRadius:12,padding:"10px 14px",marginBottom:6,border:"1px solid rgba(255,255,255,.06)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                    <div>
-                      <div style={{fontSize:12,fontWeight:800,color:won?"#00E676":draw?G.gold:"#FF3D57"}}>{won?"🏆 Victoire":draw?"🤝 Égalité":"😅 Défaite"}</div>
-                      <div style={{fontSize:11,color:"rgba(255,255,255,.4)"}}>vs {oppName} · {d.mode==="pont"?"Le Pont":"La Chaîne"}</div>
-                    </div>
-                    <div style={{textAlign:"right"}}>
-                      <div style={{fontFamily:G.heading,fontSize:20,color:G.white}}>{myScore} <span style={{fontSize:11,color:"rgba(255,255,255,.3)"}}>pts</span></div>
-                      <div style={{fontSize:11,color:"rgba(255,255,255,.35)"}}>{oppName}: {theirScore}</div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-          <button onClick={function(){setShowFriends(false);}} style={{background:"rgba(255,255,255,.05)",color:"rgba(255,255,255,.5)",border:"1px solid rgba(255,255,255,.1)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,padding:"10px"}}>↩ Retour</button>
+          <button onClick={function(){setShowFriends(false);setSelectedFriend(null);}} style={{width:"100%",background:"rgba(255,255,255,.05)",color:"rgba(255,255,255,.5)",border:"1px solid rgba(255,255,255,.1)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,padding:"10px",marginTop:4}}>↩ Retour</button>
         </div>
       </div>
     );
   }
-
-
 
   if(showLeaderboard) {
     return (
