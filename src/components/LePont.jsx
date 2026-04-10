@@ -2397,7 +2397,7 @@ export default function LePont() {
     fontFamily:G.font,position:"relative",overflow:"hidden",
   };
   const stripes = {position:"absolute",inset:0,zIndex:0,pointerEvents:"none",background:"radial-gradient(ellipse at 50% 0%,rgba(0,230,118,.06) 0%,transparent 70%)"};
-  const sheet = {background:"rgba(0,0,0,.55)",backdropFilter:"blur(2px)",borderRadius:"32px 32px 0 0",flex:1,padding:"20px 18px 28px",display:"flex",flexDirection:"column",gap:14,zIndex:1,boxShadow:"0 -2px 40px rgba(0,0,0,.4)",border:"1px solid rgba(255,255,255,.08)",borderBottom:"none"};
+  const sheet = {background:"rgba(0,0,0,.55)",backdropFilter:"blur(2px)",borderRadius:"32px 32px 0 0",flex:1,display:"flex",flexDirection:"column",gap:10,padding:"20px 18px 28px",display:"flex",flexDirection:"column",gap:14,zIndex:1,boxShadow:"0 -2px 40px rgba(0,0,0,.4)",border:"1px solid rgba(255,255,255,.08)",borderBottom:"none"};
 
   const backBtn = (onClick) => (
     <button onClick={onClick} style={{background:"rgba(255,255,255,.07)",backdropFilter:"blur(12px)",border:"1px solid rgba(255,255,255,.1)",borderRadius:14,width:40,height:40,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",zIndex:10,color:G.white,fontSize:18,fontWeight:700,flexShrink:0}}>←</button>
@@ -3135,88 +3135,87 @@ export default function LePont() {
 
         {/* ── GAME CARDS (swipe) ── */}
         <div
-          style={{position:"relative",height:215,touchAction:"pan-y",marginBottom:10}}
-          onTouchStart={function(e){window._swipeX=e.touches[0].clientX; window._swiping=true;}}
-          onTouchMove={function(e){
-            if(!window._swiping) return;
-            const dx=e.touches[0].clientX-window._swipeX;
-            setSwipeDelta(dx);
-          }}
-          onTouchEnd={function(e){
-            const dx=e.changedTouches[0].clientX-window._swipeX;
-            window._swiping=false;
-            setSwipeDelta(0);
-            if(Math.abs(dx)>40){setActiveCard(dx<0?"chaine":"pont");}
-          }}
+          style={{flex:1,position:"relative",touchAction:"pan-y"}}
+          onTouchStart={function(e){window._swipeX=e.touches[0].clientX;window._swiping=true;}}
+          onTouchMove={function(e){if(!window._swiping)return;setSwipeDelta(e.touches[0].clientX-window._swipeX);}}
+          onTouchEnd={function(e){const dx=e.changedTouches[0].clientX-window._swipeX;window._swiping=false;setSwipeDelta(0);if(Math.abs(dx)>40)setActiveCard(dx<0?"chaine":"pont");}}
         >
-          {/* LA CHAÎNE */}
+          {/* Carte derrière - toujours en absolu mais juste pour le décalage visuel */}
           <div
-            onClick={function(){setGameConfigModal("chaine");}}
+            onClick={function(){setGameConfigModal(activeCard==="pont"?"chaine":"pont");}}
             style={{
-              position:"absolute",top:0,left:0,right:0,
-              borderRadius:28,cursor:"pointer",overflow:"hidden",minHeight:200,
-              background:"linear-gradient(145deg,rgba(15,42,26,.95),rgba(26,107,60,.95),rgba(12,51,32,.95))",
-              border:"1px solid rgba(255,255,255,.12)",
-              transform:activeCard==="chaine"
-                ? ("rotate(-1.2deg) translateX("+swipeDelta*0.6+"px) rotate("+(swipeDelta*0.02)+"deg)")
-                : ("rotate(1.8deg) translateX("+(6+swipeDelta*0.3)+"px)"),
-              zIndex:activeCard==="chaine"?2:1,
-              boxShadow:activeCard==="chaine"?"0 12px 36px rgba(0,0,0,.5)":"0 4px 16px rgba(0,0,0,.3)",
-              transition:swipeDelta===0?"transform .35s cubic-bezier(.22,1,.36,1), box-shadow .35s ease":"none",
-              opacity:activeCard==="chaine"?1:0.85,
+              position:"absolute",inset:0,
+              borderRadius:28,cursor:"pointer",overflow:"hidden",
+              background:activeCard==="pont"
+                ?"linear-gradient(145deg,#0F2A1A,#1A6B3C,#0C3320)"
+                :"linear-gradient(145deg,#0B1624,#1C3D73,#0B2644)",
+              transform:"rotate(1.8deg) translateX(8px) translateY(10px)",
+              opacity:.7,
+              border:"1px solid rgba(255,255,255,.08)",
             }}
           >
-            <div style={{position:"absolute",top:-30,right:-30,width:130,height:130,borderRadius:"50%",background:"radial-gradient(circle,rgba(0,230,118,.2) 0%,transparent 70%)",pointerEvents:"none"}}/>
-            <div style={{position:"absolute",top:14,right:14,opacity:.1,pointerEvents:"none"}}>{Icon.transfer(60,"#fff")}</div>
-            <div style={{padding:"22px 22px 18px",position:"relative",zIndex:1}}>
-              <div style={{fontSize:10,letterSpacing:4,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:6}}>Mode 2</div>
-              <div style={{fontFamily:G.heading,fontSize:36,color:G.white,letterSpacing:2,lineHeight:1,marginBottom:6}}>LA CHAÎNE</div>
-              <div style={{fontSize:12,color:"rgba(255,255,255,.45)",marginBottom:16}}>joueur → club → joueur...</div>
-              <div style={{display:"flex",alignItems:"center",gap:10}}>
-                <div style={{background:G.accent,borderRadius:50,padding:"8px 20px",color:"#000",fontFamily:G.font,fontWeight:800,fontSize:13}}>▶ Jouer</div>
-                {chainRecord&&<div style={{display:"flex",alignItems:"center",gap:4,background:"rgba(255,255,255,.08)",borderRadius:20,padding:"5px 10px"}}>
-                  <span style={{fontSize:10,color:G.accent}}>⛓</span><span style={{fontFamily:G.heading,fontSize:13,color:G.accent}}>{chainRecord.score}</span>
-                </div>}
+            <div style={{padding:"22px 22px",position:"relative",zIndex:1}}>
+              <div style={{fontSize:10,letterSpacing:4,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:6}}>
+                {activeCard==="pont"?"Mode 2":"Mode 1"}
+              </div>
+              <div style={{fontFamily:G.heading,fontSize:36,color:G.white,letterSpacing:2,lineHeight:1}}>
+                {activeCard==="pont"?"LA CHAÎNE":"LE PONT"}
               </div>
             </div>
           </div>
 
-          {/* LE PONT */}
+          {/* Carte devant - remplit tout l'espace */}
           <div
-            onClick={function(){setGameConfigModal("pont");}}
+            onClick={function(){setGameConfigModal(activeCard);}}
             style={{
-              position:"absolute",top:0,left:0,right:0,
-              borderRadius:28,cursor:"pointer",overflow:"hidden",minHeight:200,
-              background:"linear-gradient(145deg,#0B1624,#1C3D73,#0B2644)",
+              position:"absolute",inset:0,
+              borderRadius:28,cursor:"pointer",overflow:"hidden",
+              background:activeCard==="pont"
+                ?"linear-gradient(145deg,#0B1624 0%,#1C3D73 50%,#0B2644 100%)"
+                :"linear-gradient(145deg,#0F2A1A 0%,#1A6B3C 50%,#0C3320 100%)",
               border:"1px solid rgba(255,255,255,.15)",
-              transform:activeCard==="pont"
-                ? ("rotate(-1.2deg) translateX("+swipeDelta*0.6+"px) rotate("+(swipeDelta*0.02)+"deg)")
-                : ("rotate(1.8deg) translateX("+(6+swipeDelta*0.3)+"px)"),
-              zIndex:activeCard==="pont"?2:1,
-              boxShadow:activeCard==="pont"?"0 12px 36px rgba(0,0,0,.5)":"0 4px 16px rgba(0,0,0,.3)",
-              transition:swipeDelta===0?"transform .35s cubic-bezier(.22,1,.36,1), box-shadow .35s ease":"none",
-              opacity:activeCard==="pont"?1:0.85,
+              boxShadow:"0 12px 40px rgba(0,0,0,.5)",
+              transform:swipeDelta===0?"rotate(-1deg)":"rotate(-1deg) translateX("+(swipeDelta*0.4)+"px)",
+              transition:swipeDelta===0?"transform .35s cubic-bezier(.22,1,.36,1)":"none",
             }}
           >
-            <div style={{position:"absolute",top:-30,right:-30,width:140,height:140,borderRadius:"50%",background:"radial-gradient(circle,rgba(0,150,255,.15) 0%,transparent 70%)",pointerEvents:"none"}}/>
-            <div style={{position:"absolute",top:14,right:14,opacity:.1,pointerEvents:"none"}}>{Icon.pitch(60,"#fff")}</div>
-            <div style={{padding:"22px 22px 18px",position:"relative",zIndex:1}}>
-              <div style={{fontSize:10,letterSpacing:4,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:6}}>Mode 1</div>
-              <div style={{fontFamily:G.heading,fontSize:36,color:G.white,letterSpacing:2,lineHeight:1,marginBottom:6}}>LE PONT</div>
-              <div style={{fontSize:12,color:"rgba(255,255,255,.45)",marginBottom:16}}>2 clubs → trouve le joueur</div>
-              <div style={{display:"flex",alignItems:"center",gap:10}}>
-                <div style={{background:G.accent,borderRadius:50,padding:"8px 20px",color:"#000",fontFamily:G.font,fontWeight:800,fontSize:13}}>▶ Jouer</div>
-                {record&&<div style={{display:"flex",alignItems:"center",gap:4,background:"rgba(255,255,255,.08)",borderRadius:20,padding:"5px 10px"}}>
-                  <span style={{fontSize:10,color:G.gold}}>🏆</span><span style={{fontFamily:G.heading,fontSize:13,color:G.gold}}>{record.score}</span>
+            {/* Déco cercle */}
+            <div style={{position:"absolute",top:-60,right:-60,width:220,height:220,borderRadius:"50%",background:activeCard==="pont"?"radial-gradient(circle,rgba(0,150,255,.12) 0%,transparent 70%)":"radial-gradient(circle,rgba(0,230,118,.15) 0%,transparent 70%)",pointerEvents:"none"}}/>
+            {/* Icône watermark */}
+            <div style={{position:"absolute",bottom:20,right:20,opacity:.08,pointerEvents:"none"}}>
+              {activeCard==="pont"?Icon.pitch(100,"#fff"):Icon.transfer(100,"#fff")}
+            </div>
+            <div style={{padding:"32px 28px",position:"relative",zIndex:1,height:"100%",boxSizing:"border-box",display:"flex",flexDirection:"column"}}>
+              <div style={{fontSize:11,letterSpacing:4,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginBottom:8}}>
+                {activeCard==="pont"?"Mode 1 · Tape pour jouer":"Mode 2 · Tape pour jouer"}
+              </div>
+              <div style={{fontFamily:G.heading,fontSize:"clamp(42px,11vw,64px)",color:G.white,letterSpacing:2,lineHeight:1,marginBottom:10}}>
+                {activeCard==="pont"?"LE PONT":"LA CHAÎNE"}
+              </div>
+              <div style={{fontSize:14,color:"rgba(255,255,255,.5)",lineHeight:1.5,marginBottom:16}}>
+                {activeCard==="pont"?"Trouve le joueur qui relie
+les deux clubs":"Enchaîne joueur → club
+le plus longtemps possible"}
+              </div>
+              <div style={{flex:1}}/>
+              <div style={{display:"flex",alignItems:"center",gap:12}}>
+                <div style={{background:G.accent,borderRadius:50,padding:"12px 28px",color:"#000",fontFamily:G.font,fontWeight:800,fontSize:15}}>▶ Jouer</div>
+                {activeCard==="pont"&&record&&<div style={{display:"flex",alignItems:"center",gap:6,background:"rgba(255,255,255,.1)",borderRadius:20,padding:"8px 14px"}}>
+                  <span style={{fontSize:12,color:G.gold}}>🏆</span>
+                  <span style={{fontFamily:G.heading,fontSize:18,color:G.gold}}>{record.score} pts</span>
+                </div>}
+                {activeCard==="chaine"&&chainRecord&&<div style={{display:"flex",alignItems:"center",gap:6,background:"rgba(255,255,255,.1)",borderRadius:20,padding:"8px 14px"}}>
+                  <span style={{fontSize:12,color:G.accent}}>⛓</span>
+                  <span style={{fontFamily:G.heading,fontSize:18,color:G.accent}}>{chainRecord.score} pts</span>
                 </div>}
               </div>
             </div>
           </div>
 
           {/* Dots */}
-          <div style={{position:"absolute",bottom:8,left:0,right:0,display:"flex",justifyContent:"center",gap:6}}>
-            <div onClick={function(){setActiveCard("pont");}} style={{width:activeCard==="pont"?20:6,height:6,borderRadius:3,background:activeCard==="pont"?"#fff":"rgba(255,255,255,.3)",transition:"all .3s ease",cursor:"pointer"}}/>
-            <div onClick={function(){setActiveCard("chaine");}} style={{width:activeCard==="chaine"?20:6,height:6,borderRadius:3,background:activeCard==="chaine"?"#00E676":"rgba(255,255,255,.3)",transition:"all .3s ease",cursor:"pointer"}}/>
+          <div style={{position:"absolute",bottom:14,left:0,right:0,display:"flex",justifyContent:"center",gap:6,zIndex:10}}>
+            <div onClick={function(){setActiveCard("pont");}} style={{width:activeCard==="pont"?20:6,height:6,borderRadius:3,background:activeCard==="pont"?"#fff":"rgba(255,255,255,.3)",transition:"all .3s",cursor:"pointer"}}/>
+            <div onClick={function(){setActiveCard("chaine");}} style={{width:activeCard==="chaine"?20:6,height:6,borderRadius:3,background:activeCard==="chaine"?G.accent:"rgba(255,255,255,.3)",transition:"all .3s",cursor:"pointer"}}/>
           </div>
         </div>
 
