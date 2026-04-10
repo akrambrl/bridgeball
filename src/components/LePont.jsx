@@ -2855,12 +2855,12 @@ export default function LePont() {
             </div>
             <div style={{display:"flex",gap:8}}>
               <button onClick={function(){setShowRoomCreate(false);}} style={{flex:1,padding:"12px",background:"rgba(255,255,255,.07)",color:"rgba(255,255,255,.5)",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14}}>Annuler</button>
-<button onClick={createRoom} style={{flex:2,padding:"12px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>Créer la salle 🚀</button>
+              <button onClick={createRoom} style={{flex:2,padding:"12px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>Créer la salle 🚀</button>
             </div>
             {roomMsg && <div style={{marginTop:10,fontSize:13,color:roomMsg.startsWith("Création")?"rgba(255,255,255,.5)":"#FF3D57",fontWeight:700,textAlign:"center"}}>{roomMsg}</div>}
           </div>
         </div>
-      )
+      )}
       <div style={stripes}/>
 
       {/* ── HEADER compact ── */}
