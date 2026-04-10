@@ -2093,12 +2093,18 @@ export default function LePont() {
 
   async function loadFriendRequests() {
     try {
-      // Incoming pending requests
       const incoming = await sbFetch("bb_friend_requests?to_id=eq."+playerId+"&status=eq.pending&order=created_at.desc");
       if (Array.isArray(incoming)) setFriendRequests(incoming);
-      // Sent requests
       const sent = await sbFetch("bb_friend_requests?from_id=eq."+playerId+"&order=created_at.desc&limit=20");
-      if (Array.isArray(sent)) setSentRequests(sent);
+      if (Array.isArray(sent)) {
+        // Conserver les entrées optimistes (tmp-) qui ne sont pas encore dans Supabase
+        setSentRequests(function(prev) {
+          const optimistic = prev.filter(function(r) {
+            return String(r.id).startsWith("tmp-") && !sent.find(function(s){return s.to_id===r.to_id;});
+          });
+          return [...optimistic, ...sent];
+        });
+      }
     } catch(e) { console.error(e); }
   }
 
