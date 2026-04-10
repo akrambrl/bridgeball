@@ -1269,7 +1269,7 @@ if(typeof document!=="undefined"&&!document.getElementById("bb-css")){
     @keyframes kickBall{0%{transform:scale(1) rotate(0)}40%{transform:scale(1.15) rotate(-15deg)}100%{transform:scale(1) rotate(10deg)}}
     @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
     @keyframes heartbeat{0%,100%{transform:scale(1)}15%{transform:scale(1.15)}30%{transform:scale(1)}45%{transform:scale(1.1)}60%{transform:scale(1)}}
-    @keyframes urgentPulse{0%,100%{opacity:1}50%{opacity:.6}}
+    @keyframes urgentPulse{0%,100%{opacity:1}50%{opacity:.6}} @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
     html,body,#root{background:#1E5C2A!important;min-height:100vh;}
     #root{background-image:repeating-linear-gradient(90deg,#1E5C2A 0,#1E5C2A 14.28%,#276B34 14.28%,#276B34 28.57%,#1E5C2A 28.57%,#1E5C2A 42.86%,#276B34 42.86%,#276B34 57.14%,#1E5C2A 57.14%,#1E5C2A 71.43%,#276B34 71.43%,#276B34 85.71%,#1E5C2A 85.71%)!important;}
   `;
@@ -1704,16 +1704,9 @@ export default function LePont() {
     const me = [{id:playerId, name:name, score:null, status:"waiting"}];
     setRoomMsg("Création en cours...");
     try {
-      // POST to create room
-      const postRes = await fetch(SB_URL+"/rest/v1/bb_rooms", {
-        method:"POST",
-        headers:{
-          "apikey":SB_KEY,
-          "Authorization":"Bearer "+SB_KEY,
-          "Content-Type":"application/json",
-          "Prefer":"return=representation"
-        },
-        body:JSON.stringify({
+      const created = await sbFetch("bb_rooms", {
+        method: "POST",
+        body: JSON.stringify({
           code: code,
           host_id: playerId,
           host_name: name,
@@ -1722,28 +1715,32 @@ export default function LePont() {
           rounds: duelRounds,
           status: "waiting",
           players: me
-        })
+        }),
+        headers: {"Prefer": "return=representation"}
       });
-      if (!postRes.ok) {
-        const errText = await postRes.text();
-        setRoomMsg("Erreur INSERT: "+errText.slice(0,80));
-        return;
-      }
-      const created = await postRes.json();
-      const roomData = Array.isArray(created) ? created[0] : created;
+      const roomData = Array.isArray(created) ? created[0] : null;
       if (roomData && roomData.id) {
         setRoom(roomData);
         setShowRoomCreate(false);
         setRoomMsg("");
         startRoomPolling(roomData.id);
       } else {
-        setRoomMsg("Salle créée mais non trouvée - réessaie");
+        // Fallback: fetch by code
+        const data = await sbFetch("bb_rooms?code=eq."+code+"&limit=1");
+        if (Array.isArray(data) && data.length > 0) {
+          setRoom(data[0]);
+          setShowRoomCreate(false);
+          setRoomMsg("");
+          startRoomPolling(data[0].id);
+        } else {
+          setRoomMsg("Erreur: impossible de créer la salle");
+        }
       }
-    } catch(e) { 
-      console.error(e); 
+    } catch(e) {
       setRoomMsg("Erreur: "+e.message);
     }
   }
+
 
   async function joinRoom(code) {
     const clean = code.trim().toUpperCase();
@@ -3055,38 +3052,32 @@ export default function LePont() {
         </div>
       )}
       {showRoomCreate && (
-        <div style={{position:"fixed",inset:0,zIndex:300,background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center"}}>
-          <div style={{background:"rgba(15,25,15,.95)",borderRadius:24,padding:"28px 24px",maxWidth:340,width:"calc(100% - 32px)",border:"1px solid rgba(255,255,255,.1)"}}>
-            <div style={{fontFamily:G.heading,fontSize:28,color:G.white,marginBottom:20}}>CRÉER UNE SALLE</div>
-            <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:8}}>Mode</div>
-            <div style={{display:"flex",gap:8,marginBottom:16}}>
-              {["pont","chaine"].map(function(m){return(
-                <button key={m} onClick={function(){setDuelMode(m);}} style={{flex:1,padding:"10px",borderRadius:12,border:"1.5px solid "+(duelMode===m?G.accent:"rgba(255,255,255,.15)"),background:duelMode===m?"rgba(0,230,118,.1)":"transparent",color:duelMode===m?G.accent:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:13}}>
-                  {m==="pont"?"Le Pont":"La Chaîne"}
-                </button>
-              );})}
+        <div
+          style={{position:"fixed",inset:0,zIndex:400,display:"flex",alignItems:"flex-end"}}
+          onClick={function(e){if(e.target===e.currentTarget)setShowRoomCreate(false);}}
+        >
+          <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.6)",backdropFilter:"blur(4px)"}} onClick={function(){setShowRoomCreate(false);}}/>
+          <div style={{position:"relative",zIndex:1,width:"100%",background:"rgba(10,25,10,.96)",backdropFilter:"blur(20px)",borderRadius:"28px 28px 0 0",padding:"16px 20px 48px",border:"1px solid rgba(255,255,255,.1)",borderBottom:"none",animation:"slideUp .35s cubic-bezier(.22,1,.36,1)"}}>
+            <div style={{width:40,height:4,background:"rgba(255,255,255,.2)",borderRadius:2,margin:"0 auto 20px"}}/>
+            <div style={{fontFamily:G.heading,fontSize:28,color:G.white,letterSpacing:2,marginBottom:6}}>CRÉER UNE SALLE</div>
+            {/* Recap config */}
+            <div style={{background:"rgba(255,255,255,.06)",borderRadius:16,padding:"14px 16px",marginBottom:20,border:"1px solid rgba(255,255,255,.08)"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                <div>
+                  <div style={{fontSize:13,fontWeight:800,color:G.white}}>{duelMode==="pont"?"Le Pont":"La Chaîne"}</div>
+                  <div style={{fontSize:12,color:"rgba(255,255,255,.4)"}}>{duelDiff} · {duelRounds} manche{duelRounds>1?"s":""}</div>
+                </div>
+                <div style={{fontFamily:G.heading,fontSize:32,color:G.accent}}>2-8 👥</div>
+              </div>
             </div>
-            <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:8}}>Difficulté</div>
-            <div style={{display:"flex",gap:8,marginBottom:16}}>
-              {["facile","moyen","expert"].map(function(d){return(
-                <button key={d} onClick={function(){setDuelDiff(d);}} style={{flex:1,padding:"8px",borderRadius:10,border:"1.5px solid "+(duelDiff===d?G.gold:"rgba(255,255,255,.15)"),background:duelDiff===d?"rgba(255,214,0,.1)":"transparent",color:duelDiff===d?G.gold:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:12,textTransform:"capitalize"}}>
-                  {d}
-                </button>
-              );})}
+            <div style={{fontSize:12,color:"rgba(255,255,255,.35)",marginBottom:20,textAlign:"center"}}>
+              Un code sera généré pour que tes amis puissent rejoindre
             </div>
-            <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:8}}>Manches</div>
-            <div style={{display:"flex",gap:8,marginBottom:20}}>
-              {[1,2,3].map(function(r){return(
-                <button key={r} onClick={function(){setDuelRounds(r);}} style={{flex:1,padding:"10px",borderRadius:12,border:"1.5px solid "+(duelRounds===r?"#fff":"rgba(255,255,255,.15)"),background:duelRounds===r?"rgba(255,255,255,.1)":"transparent",color:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:15}}>
-                  {r}
-                </button>
-              );})}
+            {roomMsg && <div style={{fontSize:13,color:"#FF3D57",fontWeight:700,marginBottom:12,textAlign:"center"}}>{roomMsg}</div>}
+            <div style={{display:"flex",gap:10}}>
+              <button onClick={function(){setShowRoomCreate(false);}} style={{flex:1,padding:"15px",background:"rgba(255,255,255,.07)",color:"rgba(255,255,255,.5)",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14}}>Annuler</button>
+              <button onClick={createRoom} style={{flex:2,padding:"15px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800}}>Créer la salle 🚀</button>
             </div>
-            <div style={{display:"flex",gap:8}}>
-              <button onClick={function(){setShowRoomCreate(false);}} style={{flex:1,padding:"12px",background:"rgba(255,255,255,.07)",color:"rgba(255,255,255,.5)",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14}}>Annuler</button>
-              <button onClick={createRoom} style={{flex:2,padding:"12px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>Créer la salle 🚀</button>
-            </div>
-            {roomMsg && <div style={{marginTop:10,fontSize:13,color:roomMsg.startsWith("Création")?"rgba(255,255,255,.5)":"#FF3D57",fontWeight:700,textAlign:"center"}}>{roomMsg}</div>}
           </div>
         </div>
       )}
@@ -3231,30 +3222,62 @@ export default function LePont() {
 
         {/* ── CONFIG MODAL ── */}
         {gameConfigModal && (
-          <div style={{position:"fixed",inset:0,zIndex:300,background:"rgba(0,0,0,.85)",backdropFilter:"blur(12px)",display:"flex",alignItems:"flex-end",justifyContent:"center"}} onClick={function(e){if(e.target===e.currentTarget)setGameConfigModal(null);}}>
-            <div style={{background:"rgba(10,20,10,.97)",borderRadius:"28px 28px 0 0",padding:"24px 20px 44px",width:"100%",maxWidth:480,border:"1px solid rgba(255,255,255,.1)",borderBottom:"none"}}>
+          <div
+            style={{position:"fixed",inset:0,zIndex:300,display:"flex",alignItems:"flex-end"}}
+            onClick={function(e){if(e.target===e.currentTarget)setGameConfigModal(null);}}
+          >
+            {/* Backdrop */}
+            <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.5)",backdropFilter:"blur(4px)"}} onClick={function(){setGameConfigModal(null);}}/>
+            {/* Sheet */}
+            <div style={{
+              position:"relative",zIndex:1,
+              width:"100%",
+              background:"rgba(10,25,10,.96)",
+              backdropFilter:"blur(20px)",
+              borderRadius:"28px 28px 0 0",
+              padding:"16px 20px 48px",
+              border:"1px solid rgba(255,255,255,.1)",
+              borderBottom:"none",
+              animation:"slideUp .35s cubic-bezier(.22,1,.36,1)"
+            }}>
+              {/* Handle */}
               <div style={{width:40,height:4,background:"rgba(255,255,255,.2)",borderRadius:2,margin:"0 auto 20px"}}/>
-              <div style={{fontFamily:G.heading,fontSize:34,color:G.white,letterSpacing:2,marginBottom:4}}>{gameConfigModal==="pont"?"LE PONT":"LA CHAÎNE"}</div>
-              <div style={{fontSize:13,color:"rgba(255,255,255,.4)",marginBottom:20}}>{gameConfigModal==="pont"?"2 clubs → trouve le joueur commun":"joueur → club → joueur..."}</div>
-              <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.35)",marginBottom:8}}>Difficulté</div>
-              <div style={{display:"flex",gap:8,marginBottom:18}}>
+              {/* Mode name */}
+              <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:4}}>
+                <div style={{opacity:.8}}>{gameConfigModal==="pont"?Icon.pitch(28,"#fff"):Icon.transfer(28,"#fff")}</div>
+                <div style={{fontFamily:G.heading,fontSize:36,color:G.white,letterSpacing:2}}>
+                  {gameConfigModal==="pont"?"LE PONT":"LA CHAÎNE"}
+                </div>
+              </div>
+              <div style={{fontSize:12,color:"rgba(255,255,255,.4)",marginBottom:20,paddingLeft:40}}>
+                {gameConfigModal==="pont"?"2 clubs → trouve le joueur commun":"joueur → club → joueur..."}
+              </div>
+              {/* Difficulté */}
+              <div style={{fontSize:10,fontWeight:700,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.3)",marginBottom:8}}>Difficulté</div>
+              <div style={{display:"flex",gap:8,marginBottom:20}}>
                 {["facile","moyen","expert"].map(function(d){return(
-                  <button key={d} onClick={function(){setDiff(d);}} style={{flex:1,padding:"11px 4px",borderRadius:12,border:"1.5px solid "+(diff===d?G.accent:"rgba(255,255,255,.12)"),background:diff===d?"rgba(0,230,118,.1)":"transparent",color:diff===d?G.accent:"rgba(255,255,255,.5)",fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:12,textTransform:"capitalize"}}>
+                  <button key={d} onClick={function(){setDiff(d);}} style={{flex:1,padding:"12px 4px",borderRadius:14,border:"1.5px solid "+(diff===d?G.accent:"rgba(255,255,255,.1)"),background:diff===d?"rgba(0,230,118,.12)":"rgba(255,255,255,.04)",color:diff===d?G.accent:"rgba(255,255,255,.5)",fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:13,textTransform:"capitalize",transition:"all .15s"}}>
                     {d}
                   </button>
                 );})}
               </div>
-              <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.35)",marginBottom:8}}>Manches</div>
+              {/* Manches */}
+              <div style={{fontSize:10,fontWeight:700,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.3)",marginBottom:8}}>Manches</div>
               <div style={{display:"flex",gap:8,marginBottom:24}}>
                 {[1,2,3].map(function(n){return(
-                  <button key={n} onClick={function(){setTotalRounds(n);}} style={{flex:1,padding:"11px",borderRadius:12,border:"1.5px solid "+(totalRounds===n?"#fff":"rgba(255,255,255,.12)"),background:totalRounds===n?"rgba(255,255,255,.12)":"transparent",color:totalRounds===n?G.white:"rgba(255,255,255,.4)",fontFamily:G.heading,fontWeight:700,cursor:"pointer",fontSize:20}}>
+                  <button key={n} onClick={function(){setTotalRounds(n);}} style={{flex:1,padding:"12px",borderRadius:14,border:"1.5px solid "+(totalRounds===n?"rgba(255,255,255,.7)":"rgba(255,255,255,.1)"),background:totalRounds===n?"rgba(255,255,255,.1)":"rgba(255,255,255,.04)",color:totalRounds===n?G.white:"rgba(255,255,255,.35)",fontFamily:G.heading,fontWeight:700,cursor:"pointer",fontSize:22,transition:"all .15s"}}>
                     {n}
                   </button>
                 );})}
               </div>
+              {/* Boutons */}
               <div style={{display:"flex",gap:10}}>
-                <button onClick={function(){const m=gameConfigModal;setGameConfigModal(null);setTimeout(function(){tryStart(m);},50);}} style={{flex:2,padding:"15px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800}}>▶ Jouer seul</button>
-                <button onClick={function(){setDuelMode(gameConfigModal);setDuelDiff(diff);setDuelRounds(totalRounds);setGameConfigModal(null);setShowRoomCreate(true);}} style={{flex:1,padding:"15px",background:"rgba(255,255,255,.07)",color:G.white,border:"1px solid rgba(255,255,255,.12)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700}}>👥 Multi</button>
+                <button onClick={function(){const m=gameConfigModal;setGameConfigModal(null);setTimeout(function(){tryStart(m);},50);}} style={{flex:2,padding:"16px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:16,fontWeight:800,letterSpacing:.5}}>
+                  ▶ Jouer seul
+                </button>
+                <button onClick={function(){setDuelMode(gameConfigModal);setDuelDiff(diff);setDuelRounds(totalRounds);setGameConfigModal(null);setTimeout(function(){setShowRoomCreate(true);},100);}} style={{flex:1,padding:"16px",background:"rgba(255,255,255,.07)",color:G.white,border:"1px solid rgba(255,255,255,.12)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700}}>
+                  👥 Multi
+                </button>
               </div>
             </div>
           </div>
