@@ -2372,7 +2372,7 @@ export default function LePont() {
           }
         }catch{}
         submitToLeaderboard(playerName,total,"pont",diff);
-        if(activeDuel&&activeDuel.isRoom){submitRoomScore(total);}else if(activeDuel){submitDuelScore(total); setScreen("final");}else{setScreen("final");}
+        if(activeDuel&&activeDuel.isRoom){setScreen("home");submitRoomScore(total);}else if(activeDuel){submitDuelScore(total); setScreen("final");}else{setScreen("final");}
       }else{setScreen("roundEnd");}
       return next;
     });
@@ -2390,7 +2390,7 @@ export default function LePont() {
       }else{setIsNewRecord(false);}
     }catch{}
     submitToLeaderboard(playerName,sc,"chaine",diff);
-    if(activeDuel&&activeDuel.isRoom){submitRoomScore(sc);}else if(activeDuel){submitDuelScore(sc); setScreen("chainEnd");}else{setScreen("chainEnd");}
+    if(activeDuel&&activeDuel.isRoom){setScreen("home");submitRoomScore(sc);}else if(activeDuel){submitDuelScore(sc); setScreen("chainEnd");}else{setScreen("chainEnd");}
   }
 
   function startRound(round) {
@@ -3244,6 +3244,25 @@ export default function LePont() {
   }
 
 
+  // ── WAITING FOR ROOM RESULTS ──
+  if (waitingForRoom) {
+    return (
+      <div style={{...shell,alignItems:"center",justifyContent:"center"}} key="waitingRoom">
+        <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
+          {[0,1,2,3,4,5,6].map(function(i){return(<div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(i/7*100)+"%",background:i%2===0?"#1E5C2A":"#276B34"}}/>);})}
+          <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:"rgba(255,255,255,.15)",transform:"translateY(-50%)"}}/>
+          <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:180,height:180,borderRadius:"50%",border:"2px solid rgba(255,255,255,.15)"}}/>
+          <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.45)"}}/>
+        </div>
+        <div style={{textAlign:"center",zIndex:1,padding:"0 32px"}}>
+          <div style={{fontSize:48,marginBottom:16,animation:"spin 2s linear infinite",display:"inline-block"}}>⏳</div>
+          <div style={{fontFamily:G.heading,fontSize:28,color:G.white,marginBottom:8}}>EN ATTENTE</div>
+          <div style={{fontSize:14,color:"rgba(255,255,255,.4)"}}>En attente des autres joueurs...</div>
+        </div>
+      </div>
+    );
+  }
+
   // ── HOME ──
   if(screen==="home") return (
     <div style={{...shell,animation:"fadeUp .5s ease",overflow:"auto"}} key="home">
@@ -3906,33 +3925,6 @@ export default function LePont() {
 
 
   // ── WAITING FOR ROOM RESULTS ──
-  if (waitingForRoom) {
-    return (
-      <div style={{...shell,alignItems:"center",justifyContent:"center"}} key="waitingRoom">
-        <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
-        {/* Bandes pelouse */}
-        {[0,1,2,3,4,5,6].map(function(i){return(
-          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#1E5C2A":"#276B34"}}/>
-        );})}
-        {/* Ligne médiane */}
-        <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:"rgba(255,255,255,.15)",transform:"translateY(-50%)"}}/>
-        {/* Cercle central */}
-        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:180,height:180,borderRadius:"50%",border:"2px solid rgba(255,255,255,.15)"}}/>
-        {/* Point central */}
-        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:8,height:8,borderRadius:"50%",background:"rgba(255,255,255,.2)"}}/>
-        {/* Overlay sombre pour lisibilité */}
-        <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.45)"}}/>
-      </div>
-        <div style={{textAlign:"center",zIndex:1,padding:"0 32px"}}>
-          <div style={{fontSize:48,marginBottom:16,animation:"spin 2s linear infinite",display:"inline-block"}}>⏳</div>
-          <div style={{fontFamily:G.heading,fontSize:28,color:G.white,marginBottom:8}}>EN ATTENTE</div>
-          <div style={{fontSize:14,color:"rgba(255,255,255,.4)"}}>En attente des autres joueurs...</div>
-        </div>
-      </div>
-    );
-  }
-
-
   // ── DUEL RESULT SCREEN ──
   if (duelResult && duelResult.isRoom) {
     const medals = ["🥇","🥈","🥉"];
