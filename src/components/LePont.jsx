@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 
 
 
+
 const SB_URL = "https://ialjlsrgcolocoaegzrc.supabase.co";
 const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhbGpsc3JnY29sb2NvYWVnenJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1MDM3NzksImV4cCI6MjA5MTA3OTc3OX0.-SU8anuPhnpoa-PYhIHQqrcuOBsHxdtBJKRZuiGcGwM";
 async function sbFetch(path, options) {
@@ -2587,7 +2588,7 @@ export default function LePont() {
       <div style={{background:G.white,borderRadius:28,padding:"32px 24px",maxWidth:360,width:"calc(100% - 40px)",animation:"popIn .3s ease",textAlign:"center"}}>
         <div style={{marginBottom:12,display:"flex",justifyContent:"center"}}>{showInstructions==="pont"?Icon.pitch(52,G.dark):Icon.transfer(52,G.dark)}</div>
         <div style={{fontFamily:G.heading,fontSize:32,color:G.dark,letterSpacing:2,marginBottom:16}}>
-          {showInstructions==="pont"?"LE PONT":"LA CHAÎNE"}
+          {showInstructions==="pont"?"THE PLUG":"THE MERCATO"}
         </div>
         {showInstructions==="pont"?(
           <div style={{fontSize:14,color:"#555",lineHeight:1.8,marginBottom:20}}>
@@ -2712,7 +2713,7 @@ export default function LePont() {
                 <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 14px",background:"rgba(255,255,255,.04)",borderRadius:12,marginBottom:6,border:"1px solid rgba(255,255,255,.06)"}}>
                   <div>
                     <div style={{fontSize:13,fontWeight:800,color:won?"#00E676":draw?G.gold:"#FF3D57"}}>{won?"🏆 Victoire":draw?"🤝 Égalité":"😅 Défaite"}</div>
-                    <div style={{fontSize:11,color:"rgba(255,255,255,.4)"}}>{d.mode==="pont"?"Le Pont":"La Chaîne"}{d.diff?" · "+d.diff:""}</div>
+                    <div style={{fontSize:11,color:"rgba(255,255,255,.4)"}}>{d.mode==="pont"?"The Plug":"The Mercato"}{d.diff?" · "+d.diff:""}</div>
                   </div>
                   <div style={{textAlign:"right"}}>
                     <div style={{fontFamily:G.heading,fontSize:22,color:G.white}}>{myScore} <span style={{fontSize:11,color:"rgba(255,255,255,.3)"}}>pts</span></div>
@@ -2744,7 +2745,7 @@ export default function LePont() {
               <div style={{display:"flex",gap:8,marginBottom:16}}>
                 {["pont","chaine"].map(function(m){return(
                   <button key={m} onClick={function(){setDuelMode(m);}} style={{flex:1,padding:"10px",borderRadius:12,border:"1.5px solid "+(duelMode===m?G.accent:"rgba(255,255,255,.15)"),background:duelMode===m?"rgba(0,230,118,.1)":"transparent",color:duelMode===m?G.accent:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:13}}>
-                    {m==="pont"?"Le Pont":"La Chaîne"}
+                    {m==="pont"?"The Plug":"The Mercato"}
                   </button>
                 );})}
               </div>
@@ -3004,7 +3005,7 @@ export default function LePont() {
         <div style={{...sheet,borderRadius:"28px 28px 0 0",marginTop:16}}>
           <div style={{background:"rgba(255,255,255,.04)",borderRadius:14,padding:"10px 14px",marginBottom:4}}>
             <div style={{fontSize:11,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginBottom:2}}>Mode</div>
-            <div style={{fontSize:15,fontWeight:800,color:G.white}}>{room.mode==="pont"?"Le Pont":"La Chaîne"}{room.diff?" · "+room.diff:""} · {room.rounds||1} manche{(room.rounds||1)>1?"s":""}</div>
+            <div style={{fontSize:15,fontWeight:800,color:G.white}}>{room.mode==="pont"?"The Plug":"The Mercato"}{room.diff?" · "+room.diff:""} · {room.rounds||1} manche{(room.rounds||1)>1?"s":""}</div>
           </div>
           <div>
             <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.3)",marginBottom:8}}>
@@ -3185,7 +3186,7 @@ export default function LePont() {
           </div>
           <div style={{background:"rgba(255,255,255,.06)",borderRadius:20,padding:"16px 24px",marginBottom:24,border:"1px solid rgba(255,255,255,.08)"}}>
             <div style={{fontSize:11,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>Mode</div>
-            <div style={{fontSize:16,fontWeight:800,color:G.white}}>{waitingDuel.mode==="pont"?"Le Pont":"La Chaîne"}{waitingDuel.diff?" · "+waitingDuel.diff:""}</div>
+            <div style={{fontSize:16,fontWeight:800,color:G.white}}>{waitingDuel.mode==="pont"?"The Plug":"The Mercato"}{waitingDuel.diff?" · "+waitingDuel.diff:""}</div>
           </div>
           {!isReady && (
             <button onClick={cancelWaiting} style={{padding:"12px 28px",background:"rgba(255,61,87,.15)",color:"#FF3D57",border:"1px solid rgba(255,61,87,.3)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>
@@ -3210,7 +3211,7 @@ export default function LePont() {
             <div style={{display:"flex",gap:8,marginBottom:16}}>
               {["pont","chaine"].map(function(m){return(
                 <button key={m} onClick={function(){setDuelMode(m);}} style={{flex:1,padding:"10px",borderRadius:12,border:"1.5px solid "+(duelMode===m?G.accent:"rgba(255,255,255,.15)"),background:duelMode===m?"rgba(0,230,118,.1)":"transparent",color:duelMode===m?G.accent:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:13}}>
-                  {m==="pont"?"Le Pont":"La Chaîne"}
+                  {m==="pont"?"The Plug":"The Mercato"}
                 </button>
               );})}
             </div>
@@ -3246,7 +3247,7 @@ export default function LePont() {
             <div style={{background:"rgba(255,255,255,.06)",borderRadius:16,padding:"14px 16px",marginBottom:20,border:"1px solid rgba(255,255,255,.08)"}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                 <div>
-                  <div style={{fontSize:13,fontWeight:800,color:G.white}}>{duelMode==="pont"?"Le Pont":"La Chaîne"}</div>
+                  <div style={{fontSize:13,fontWeight:800,color:G.white}}>{duelMode==="pont"?"The Plug":"The Mercato"}</div>
                   <div style={{fontSize:12,color:"rgba(255,255,255,.4)"}}>{duelDiff} · {duelRounds} manche{duelRounds>1?"s":""}</div>
                 </div>
                 <div style={{fontFamily:G.heading,fontSize:32,color:G.accent}}>2-8 👥</div>
@@ -3279,16 +3280,22 @@ export default function LePont() {
       </div>
 
       {/* ── HEADER compact ── */}
-      <div style={{zIndex:1,padding:"18px 20px 10px",position:"relative",textAlign:"center"}}>
-        {/* Bouton profil en haut à droite */}
-        <div style={{position:"absolute",top:18,right:20,background:"rgba(255,255,255,.07)",border:"1px solid rgba(255,255,255,.12)",borderRadius:12,padding:"7px 12px",display:"flex",alignItems:"center",gap:6}}>
-          <span style={{fontSize:13}}>👤</span>
-          <span style={{fontSize:12,fontWeight:700,color:playerName?G.white:"rgba(255,255,255,.4)",maxWidth:80,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
-            {playerName||"Pseudo"}
-          </span>
+      <div style={{zIndex:1,padding:"18px 20px 10px"}}>
+        <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between"}}>
+          <div style={{flex:1}}/>
+          <div style={{textAlign:"center",flex:2}}>
+            <div style={{fontSize:9,letterSpacing:5,textTransform:"uppercase",color:"rgba(255,255,255,.35)"}}>T'as le niveau ?</div>
+            <div style={{fontFamily:G.heading,fontSize:"clamp(42px,11vw,68px)",lineHeight:.9,letterSpacing:2,color:G.white}}>GOAT<span style={{color:G.accent}}>FC</span></div>
+          </div>
+          <div style={{flex:1,display:"flex",justifyContent:"flex-end"}}>
+            <div onClick={function(){}} style={{background:"rgba(255,255,255,.07)",border:"1px solid rgba(255,255,255,.12)",borderRadius:12,padding:"7px 12px",display:"flex",alignItems:"center",gap:6}}>
+              <span style={{fontSize:13}}>👤</span>
+              <span style={{fontSize:12,fontWeight:700,color:playerName?G.white:"rgba(255,255,255,.4)",maxWidth:80,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
+                {playerName||"Pseudo"}
+              </span>
+            </div>
+          </div>
         </div>
-        <div style={{fontSize:9,letterSpacing:5,textTransform:"uppercase",color:"rgba(255,255,255,.35)"}}>T'as le niveau ?</div>
-        <div style={{fontFamily:G.heading,fontSize:"clamp(42px,11vw,68px)",lineHeight:.9,letterSpacing:2,color:G.white}}>GOAT<span style={{color:G.accent}}>FC</span></div>
       </div>
 
       <div style={{...sheet,gap:10}}>
@@ -3319,47 +3326,73 @@ export default function LePont() {
 
         {/* ── GAME CARDS (côte à côte) ── */}
         <div style={{flex:1,display:"flex",gap:10,minHeight:0}}>
-          {/* ── Carte LE PONT ── */}
+          {/* ── Carte THE PLUG ── */}
           <div
             onClick={function(){setGameConfigModal("pont");}}
             style={{flex:1,borderRadius:22,cursor:"pointer",overflow:"hidden",position:"relative",
               background:"linear-gradient(145deg,#0B1624 0%,#1C3D73 50%,#0B2644 100%)",
               border:"1px solid rgba(255,255,255,.15)",boxShadow:"0 8px 24px rgba(0,0,0,.5)"}}
           >
-            <div style={{position:"absolute",top:-40,right:-40,width:140,height:140,borderRadius:"50%",background:"radial-gradient(circle,rgba(0,150,255,.15) 0%,transparent 70%)",pointerEvents:"none"}}/>
-            <div style={{position:"absolute",bottom:10,right:6,opacity:.07,pointerEvents:"none"}}>{Icon.pitch(70,"#fff")}</div>
-            <div style={{padding:"20px 14px",position:"relative",zIndex:1,height:"100%",boxSizing:"border-box",display:"flex",flexDirection:"column"}}>
-              <div style={{fontSize:9,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginBottom:6}}>Mode 1</div>
-              <div style={{fontFamily:G.heading,fontSize:"clamp(22px,5.5vw,30px)",color:G.white,letterSpacing:1,lineHeight:1,marginBottom:8}}>LE PONT</div>
-              <div style={{fontSize:11,color:"rgba(255,255,255,.5)",lineHeight:1.5,whiteSpace:"pre-line"}}>{"Trouve le joueur\nqui relie\nles deux clubs"}</div>
+            <div style={{position:"absolute",top:-30,right:-30,width:120,height:120,borderRadius:"50%",background:"radial-gradient(circle,rgba(0,150,255,.2) 0%,transparent 70%)"}}/>
+            <div style={{padding:"16px 12px",position:"relative",zIndex:1,height:"100%",boxSizing:"border-box",display:"flex",flexDirection:"column",gap:0}}>
+              <div style={{fontSize:9,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.5)",marginBottom:4}}>Mode 1</div>
+              <div style={{fontFamily:G.heading,fontSize:"clamp(24px,6vw,32px)",color:G.white,letterSpacing:1,lineHeight:1,marginBottom:14}}>THE PLUG</div>
+              {/* Règle 1 */}
+              <div style={{background:"rgba(255,255,255,.07)",borderRadius:14,padding:"12px 10px",marginBottom:8,display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+                <span style={{fontSize:28}}>🏟️</span>
+                <span style={{fontSize:12,color:"rgba(255,255,255,.9)",fontWeight:800,textAlign:"center",lineHeight:1.3}}>2 clubs donnés</span>
+              </div>
+              {/* Règle 2 */}
+              <div style={{background:"rgba(255,255,255,.07)",borderRadius:14,padding:"12px 10px",marginBottom:8,display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+                <span style={{fontSize:28}}>🔗</span>
+                <span style={{fontSize:12,color:"rgba(255,255,255,.9)",fontWeight:800,textAlign:"center",lineHeight:1.3}}>Trouve le joueur qui les relie</span>
+              </div>
+              {/* Règle 3 */}
+              <div style={{background:"rgba(255,255,255,.07)",borderRadius:14,padding:"12px 10px",marginBottom:10,display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+                <span style={{fontSize:28}}>⚡</span>
+                <span style={{fontSize:12,color:"rgba(255,255,255,.9)",fontWeight:800,textAlign:"center",lineHeight:1.3}}>Vite et bien = max de points</span>
+              </div>
               <div style={{flex:1}}/>
               {record&&<div style={{display:"flex",alignItems:"center",gap:4,marginBottom:8}}>
-                <span style={{fontSize:10,color:G.gold}}>🏆</span>
-                <span style={{fontFamily:G.heading,fontSize:14,color:G.gold}}>{record.score} pts</span>
+                <span style={{fontSize:12,color:G.gold}}>🏆</span>
+                <span style={{fontFamily:G.heading,fontSize:15,color:G.gold}}>{record.score} pts</span>
               </div>}
-              <div style={{background:G.accent,borderRadius:50,padding:"10px 0",color:"#000",fontFamily:G.font,fontWeight:800,fontSize:13,textAlign:"center"}}>▶ Jouer</div>
+              <div style={{background:G.accent,borderRadius:50,padding:"11px 0",color:"#000",fontFamily:G.font,fontWeight:800,fontSize:14,textAlign:"center"}}>▶ Jouer</div>
             </div>
           </div>
 
-          {/* ── Carte LA CHAÎNE ── */}
+          {/* ── Carte THE MERCATO ── */}
           <div
             onClick={function(){setGameConfigModal("chaine");}}
             style={{flex:1,borderRadius:22,cursor:"pointer",overflow:"hidden",position:"relative",
               background:"linear-gradient(145deg,#0F2A1A 0%,#1A6B3C 50%,#0C3320 100%)",
               border:"1px solid rgba(255,255,255,.15)",boxShadow:"0 8px 24px rgba(0,0,0,.5)"}}
           >
-            <div style={{position:"absolute",top:-40,right:-40,width:140,height:140,borderRadius:"50%",background:"radial-gradient(circle,rgba(0,230,118,.15) 0%,transparent 70%)",pointerEvents:"none"}}/>
-            <div style={{position:"absolute",bottom:10,right:6,opacity:.07,pointerEvents:"none"}}>{Icon.transfer(70,"#fff")}</div>
-            <div style={{padding:"20px 14px",position:"relative",zIndex:1,height:"100%",boxSizing:"border-box",display:"flex",flexDirection:"column"}}>
-              <div style={{fontSize:9,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginBottom:6}}>Mode 2</div>
-              <div style={{fontFamily:G.heading,fontSize:"clamp(22px,5.5vw,30px)",color:G.white,letterSpacing:1,lineHeight:1,marginBottom:8}}>LA CHAÎNE</div>
-              <div style={{fontSize:11,color:"rgba(255,255,255,.5)",lineHeight:1.5,whiteSpace:"pre-line"}}>{"Enchaîne joueur\n→ club le plus\nlongtemps possible"}</div>
+            <div style={{position:"absolute",top:-30,right:-30,width:120,height:120,borderRadius:"50%",background:"radial-gradient(circle,rgba(0,230,118,.2) 0%,transparent 70%)"}}/>
+            <div style={{padding:"16px 12px",position:"relative",zIndex:1,height:"100%",boxSizing:"border-box",display:"flex",flexDirection:"column",gap:0}}>
+              <div style={{fontSize:9,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.5)",marginBottom:4}}>Mode 2</div>
+              <div style={{fontFamily:G.heading,fontSize:"clamp(18px,4.2vw,22px)",color:G.white,letterSpacing:1,lineHeight:1,marginBottom:14}}>THE MERCATO</div>
+              {/* Règle 1 */}
+              <div style={{background:"rgba(255,255,255,.07)",borderRadius:14,padding:"12px 10px",marginBottom:8,display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+                <span style={{fontSize:28}}>⛓️</span>
+                <span style={{fontSize:12,color:"rgba(255,255,255,.9)",fontWeight:800,textAlign:"center",lineHeight:1.3}}>Enchaîne joueur → club</span>
+              </div>
+              {/* Règle 2 */}
+              <div style={{background:"rgba(255,255,255,.07)",borderRadius:14,padding:"12px 10px",marginBottom:8,display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+                <span style={{fontSize:28}}>♾️</span>
+                <span style={{fontSize:12,color:"rgba(255,255,255,.9)",fontWeight:800,textAlign:"center",lineHeight:1.3}}>Le plus longtemps possible</span>
+              </div>
+              {/* Règle 3 */}
+              <div style={{background:"rgba(255,255,255,.07)",borderRadius:14,padding:"12px 10px",marginBottom:10,display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+                <span style={{fontSize:28}}>📈</span>
+                <span style={{fontSize:12,color:"rgba(255,255,255,.9)",fontWeight:800,textAlign:"center",lineHeight:1.3}}>+2 pts par bon lien</span>
+              </div>
               <div style={{flex:1}}/>
               {chainRecord&&<div style={{display:"flex",alignItems:"center",gap:4,marginBottom:8}}>
-                <span style={{fontSize:10,color:G.accent}}>⛓</span>
-                <span style={{fontFamily:G.heading,fontSize:14,color:G.accent}}>{chainRecord.score} pts</span>
+                <span style={{fontSize:12,color:G.accent}}>⛓</span>
+                <span style={{fontFamily:G.heading,fontSize:15,color:G.accent}}>{chainRecord.score} pts</span>
               </div>}
-              <div style={{background:G.accent,borderRadius:50,padding:"10px 0",color:"#000",fontFamily:G.font,fontWeight:800,fontSize:13,textAlign:"center"}}>▶ Jouer</div>
+              <div style={{background:G.accent,borderRadius:50,padding:"11px 0",color:"#000",fontFamily:G.font,fontWeight:800,fontSize:14,textAlign:"center"}}>▶ Jouer</div>
             </div>
           </div>
         </div>
@@ -3390,7 +3423,7 @@ export default function LePont() {
               <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:4}}>
                 <div style={{opacity:.8}}>{gameConfigModal==="pont"?Icon.pitch(28,"#fff"):Icon.transfer(28,"#fff")}</div>
                 <div style={{fontFamily:G.heading,fontSize:36,color:G.white,letterSpacing:2}}>
-                  {gameConfigModal==="pont"?"LE PONT":"LA CHAÎNE"}
+                  {gameConfigModal==="pont"?"THE PLUG":"THE MERCATO"}
                 </div>
               </div>
               <div style={{fontSize:12,color:"rgba(255,255,255,.4)",marginBottom:20,paddingLeft:40}}>
@@ -3917,7 +3950,7 @@ export default function LePont() {
         <div style={{zIndex:1,padding:"40px 20px 16px",textAlign:"center"}}>
           <div style={{fontSize:72,marginBottom:8,animation:"popIn .6s ease"}}>{emoji}</div>
           <div style={{fontFamily:G.heading,fontSize:"clamp(36px,9vw,56px)",color:labelColor,letterSpacing:2}}>{label}</div>
-          <div style={{fontSize:14,color:"rgba(255,255,255,.4)",marginTop:4}}>Duel {duelResult.mode==="pont"?"Le Pont":"La Chaîne"}</div>
+          <div style={{fontSize:14,color:"rgba(255,255,255,.4)",marginTop:4}}>Duel {duelResult.mode==="pont"?"The Plug":"The Mercato"}</div>
         </div>
         <div style={{...sheet,borderRadius:"28px 28px 0 0"}}>
           {/* Scores */}
