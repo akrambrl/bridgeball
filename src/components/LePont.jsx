@@ -1920,13 +1920,15 @@ export default function LePont() {
         body:JSON.stringify({players:JSON.stringify(updated), status:allDone?"complete":"playing"}),
         headers:{"Prefer":"return=minimal"}
       });
-      if (!allDone) {
-        startRoomResultPolling(roomId);
-      } else {
+      if (allDone) {
+        // On est le dernier — afficher les résultats directement
         const finalData = await sbFetch("bb_rooms?id=eq."+roomId+"&limit=1");
         if (Array.isArray(finalData) && finalData.length > 0) {
           showRoomResults(finalData[0]);
         }
+      } else {
+        // Attendre les autres via polling
+        startRoomResultPolling(roomId);
       }
     } catch(e) { console.error(e); setWaitingForRoom(false); }
   }
@@ -1939,8 +1941,14 @@ export default function LePont() {
         const r = data[0];
         const players = typeof r.players === "string" ? JSON.parse(r.players) : r.players;
         const allDone = players.every(function(p){return p.status==="done";});
-        if (allDone && r.status === "complete") {
+        if (allDone) {
           clearInterval(poll);
+          // S'assurer que le status est bien complete dans Supabase
+          await sbFetch("bb_rooms?id=eq."+roomId, {
+            method:"PATCH",
+            body:JSON.stringify({status:"complete"}),
+            headers:{"Prefer":"return=minimal"}
+          });
           showRoomResults(r);
         }
       } catch(e) {}
