@@ -1867,6 +1867,7 @@ export default function LePont() {
   }
 
   function launchRoomGame(r) {
+    clearInterval(roomPollRef.current); // stopper le polling lobby
     setRoom(null);
     const roomDuel = {id:r.id, isRoom:true, challenger_id:r.host_id, mode:r.mode, diff:r.diff, rounds:r.rounds};
     setActiveDuel(roomDuel);
@@ -1938,7 +1939,7 @@ export default function LePont() {
         const r = data[0];
         const players = typeof r.players === "string" ? JSON.parse(r.players) : r.players;
         const allDone = players.every(function(p){return p.status==="done";});
-        if (allDone || r.status === "complete") {
+        if (allDone && r.status === "complete") {
           clearInterval(poll);
           showRoomResults(r);
         }
