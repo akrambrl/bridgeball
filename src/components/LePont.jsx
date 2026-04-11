@@ -2379,7 +2379,7 @@ export default function LePont() {
           }
         }catch{}
         submitToLeaderboard(playerName,total,"pont",diff);
-        if(activeDuelRef.current&&activeDuelRef.current.isRoom){setScreen("home");submitRoomScore(total);}else if(activeDuel){submitDuelScore(total); setScreen("final");}else{setScreen("final");}
+        if(activeDuelRef.current&&activeDuelRef.current.isRoom){setScreen("waitingRoom");submitRoomScore(total);}else if(activeDuel){submitDuelScore(total); setScreen("final");}else{setScreen("final");}
       }else{setScreen("roundEnd");}
       return next;
     });
@@ -2397,7 +2397,7 @@ export default function LePont() {
       }else{setIsNewRecord(false);}
     }catch{}
     submitToLeaderboard(playerName,sc,"chaine",diff);
-    if(activeDuelRef.current&&activeDuelRef.current.isRoom){setScreen("home");submitRoomScore(sc);}else if(activeDuel){submitDuelScore(sc); setScreen("chainEnd");}else{setScreen("chainEnd");}
+    if(activeDuelRef.current&&activeDuelRef.current.isRoom){setScreen("waitingRoom");submitRoomScore(sc);}else if(activeDuel){submitDuelScore(sc); setScreen("chainEnd");}else{setScreen("chainEnd");}
   }
 
   function startRound(round) {
@@ -3252,7 +3252,7 @@ export default function LePont() {
 
 
   // ── WAITING FOR ROOM RESULTS ──
-  if (waitingForRoom) {
+  if (waitingForRoom || screen==="waitingRoom") {
     return (
       <div style={{...shell,alignItems:"center",justifyContent:"center"}} key="waitingRoom">
         <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
