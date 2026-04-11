@@ -3266,6 +3266,24 @@ export default function LePont() {
     const medals = ["🥇","🥈","🥉"];
     const myEntry = duelResult.players.find(function(p){return p.id===playerId;});
     const myRank = duelResult.players.findIndex(function(p){return p.id===playerId;}) + 1;
+    const winner = duelResult.players[0];
+    const winMessages = [
+      "Personne te résiste. GOAT 🐐",
+      "T'as mis la misère à tout le monde 👑",
+      "Intouchable. Les autres peuvent rentrer chez eux 🔥",
+      "Le niveau était pas là pour eux 💀",
+      "Aucune compétition. GOAT FC certifié 🏆",
+    ];
+    const loseMessages = [
+      "T'as vraiment cru que t'allais gagner ? 😂",
+      "Retourne t'entraîner sérieusement 💀",
+      "La honte. Viens pas nous parler du foot 🤡",
+      ""+winner.name+" t'a mangé tout cru 🍽️",
+      "On t'a vu venir de loin... et c'était nul 😭",
+    ];
+    const msg = myRank === 1
+      ? winMessages[Math.floor((myEntry?.score||0) * 7) % 5]
+      : loseMessages[Math.floor(myRank * 3) % 5];
     return (
       <div style={{...shell,animation:"fadeUp .4s ease",overflow:"auto"}} key="roomResult2">
         <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
@@ -3274,11 +3292,12 @@ export default function LePont() {
           <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:180,height:180,borderRadius:"50%",border:"2px solid rgba(255,255,255,.15)"}}/>
           <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.45)"}}/>
         </div>
-        <div style={{zIndex:1,padding:"32px 20px 16px",textAlign:"center"}}>
+        <div style={{zIndex:1,padding:"32px 20px 12px",textAlign:"center"}}>
           <div style={{fontSize:52,marginBottom:8}}>{myRank<=3?medals[myRank-1]:myRank+"ème"}</div>
           <div style={{fontFamily:G.heading,fontSize:"clamp(30px,8vw,50px)",color:myRank===1?G.gold:G.white,letterSpacing:2}}>
             {myRank===1?"VICTOIRE !":myRank===2?"2ÈME PLACE":myRank===3?"3ÈME PLACE":"RÉSULTATS"}
           </div>
+          <div style={{fontSize:15,color:"rgba(255,255,255,.85)",marginTop:10,fontWeight:700,padding:"0 16px",lineHeight:1.4}}>{msg}</div>
         </div>
         <div style={{...sheet,borderRadius:"28px 28px 0 0"}}>
           {duelResult.players.map(function(p,i){return(
