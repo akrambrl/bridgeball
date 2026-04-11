@@ -1528,7 +1528,6 @@ export default function LePont() {
         clearInterval(qTimerRef.current);
         if(screen==="chainGame"){
           if(!chainPassedRef.current && capturedChainCount === chainCount){
-            chainPassedRef.current=true;
             handleChainPassRef.current && handleChainPassRef.current();
           }
         } else {
