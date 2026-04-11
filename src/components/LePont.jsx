@@ -1281,8 +1281,9 @@ if(typeof document!=="undefined"&&!document.getElementById("bb-css")){
     @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
     @keyframes heartbeat{0%,100%{transform:scale(1)}15%{transform:scale(1.15)}30%{transform:scale(1)}45%{transform:scale(1.1)}60%{transform:scale(1)}}
     @keyframes urgentPulse{0%,100%{opacity:1}50%{opacity:.6}} @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-    html,body,#root{background:#1E5C2A!important;min-height:100vh;}
-    #root{background-image:repeating-linear-gradient(90deg,#1E5C2A 0,#1E5C2A 14.28%,#276B34 14.28%,#276B34 28.57%,#1E5C2A 28.57%,#1E5C2A 42.86%,#276B34 42.86%,#276B34 57.14%,#1E5C2A 57.14%,#1E5C2A 71.43%,#276B34 71.43%,#276B34 85.71%,#1E5C2A 85.71%)!important;}
+    html,body,#root{background:#1E5C2A!important;min-height:100vh;min-height:100dvh;}
+    html{background:#1E5C2A!important;}
+    #root{background-image:repeating-linear-gradient(90deg,#1E5C2A 0,#1E5C2A 14.28%,#276B34 14.28%,#276B34 28.57%,#1E5C2A 28.57%,#1E5C2A 42.86%,#276B34 42.86%,#276B34 57.14%,#1E5C2A 57.14%,#1E5C2A 71.43%,#276B34 71.43%,#276B34 85.71%,#1E5C2A 85.71%)!important;padding-top:env(safe-area-inset-top);}
   `;
   document.head.appendChild(s);
 }
@@ -1438,6 +1439,8 @@ export default function LePont() {
   const [waitingForRoom, setWaitingForRoom] = useState(false);
   const qTimerRef = useRef(null);
   const chainPassedRef = useRef(false);
+  const handlePassRef = useRef(null);
+  const handleChainPassRef = useRef(null);
   const roundStartTime = useRef(null);
   const seenInstructions = useRef(new Set());
   const timerRef = useRef(null);
@@ -1525,9 +1528,11 @@ export default function LePont() {
         if(screen==="chainGame"){
           if(!chainPassedRef.current && capturedChainCount === chainCount){
             chainPassedRef.current=true;
-            handleChainPass();
+            handleChainPassRef.current && handleChainPassRef.current();
           }
-        } else handlePass();
+        } else {
+          handlePassRef.current && handlePassRef.current();
+        }
       }
     },300);
     return()=>clearInterval(qTimerRef.current);
@@ -2419,6 +2424,7 @@ export default function LePont() {
     setScore(s=>{scoreRef.current=s-.5;return s-.5;});
     nextQ();
   }
+  handlePassRef.current = handlePass;
 
   function handleOptionClick(opt) {
     if(flash) return;
@@ -2477,6 +2483,7 @@ export default function LePont() {
     setTimeout(()=>inputRef.current?.focus(),100);
     setAnimKey(k=>k+1); // relance le timer de question pour le nouveau joueur
   }
+  handleChainPassRef.current = handleChainPass;
 
   function requirePseudo(callback) {
     if (!pseudoConfirmed || !playerName.trim()) {
@@ -3620,8 +3627,8 @@ export default function LePont() {
             </div>
           )}
       {/* Question timer bar */}
-      <div style={{position:"fixed",bottom:0,left:0,right:0,height:5,background:"rgba(255,255,255,.08)",zIndex:100}}>
-        <div key={animKey} style={{height:"100%",background:qTimeLeft>3?"#00E676":qTimeLeft>1?"#FFD600":"#FF3D57",width:(qTimeLeft/QUESTION_DURATION*100)+"%",transition:"width 0.3s linear",borderRadius:"3px 0 0 3px",marginLeft:"auto"}}/>
+      <div style={{position:"fixed",bottom:0,left:0,right:0,height:10,background:"rgba(255,255,255,.08)",zIndex:100}}>
+        <div key={animKey} style={{height:"100%",background:qTimeLeft>3?"#00E676":qTimeLeft>1?"#FFD600":"#FF3D57",width:(qTimeLeft/QUESTION_DURATION*100)+"%",transition:"width 0.3s linear",borderRadius:"4px 0 0 4px",marginLeft:"auto"}}/>
       </div>
     </div>
     </div>
@@ -3742,8 +3749,8 @@ export default function LePont() {
         )}
       </div>
       {/* Chain question timer bar */}
-      <div style={{position:"fixed",bottom:0,left:0,right:0,height:5,background:"rgba(255,255,255,.08)",zIndex:100}}>
-        <div key={chainCount} style={{height:"100%",background:qTimeLeft>8?"#00E676":qTimeLeft>4?"#FFD600":"#FF3D57",width:(qTimeLeft/CHAIN_QUESTION_DURATION*100)+"%",borderRadius:"3px 0 0 3px",marginLeft:"auto"}}/>
+      <div style={{position:"fixed",bottom:0,left:0,right:0,height:10,background:"rgba(255,255,255,.08)",zIndex:100}}>
+        <div key={chainCount} style={{height:"100%",background:qTimeLeft>8?"#00E676":qTimeLeft>4?"#FFD600":"#FF3D57",width:(qTimeLeft/CHAIN_QUESTION_DURATION*100)+"%",borderRadius:"4px 0 0 4px",marginLeft:"auto"}}/>
       </div>
     </div>
     );
