@@ -1957,10 +1957,12 @@ export default function LePont() {
 
   function showRoomResults(r) {
     setWaitingForRoom(false);
+    setScreen("home");
     const players = typeof r.players === "string" ? JSON.parse(r.players) : r.players;
     const sorted = [...players].sort(function(a,b){return (b.score||0)-(a.score||0);});
     setDuelResult({isRoom:true, players:sorted, mode:r.mode});
     setActiveDuel(null);
+    activeDuelRef.current = null;
     setRoom(null);
   }
 
@@ -3258,6 +3260,41 @@ export default function LePont() {
     );
   }
 
+
+  // ── ROOM RESULT (priorité sur l'écran d'attente) ──
+  if (duelResult && duelResult.isRoom) {
+    const medals = ["🥇","🥈","🥉"];
+    const myEntry = duelResult.players.find(function(p){return p.id===playerId;});
+    const myRank = duelResult.players.findIndex(function(p){return p.id===playerId;}) + 1;
+    return (
+      <div style={{...shell,animation:"fadeUp .4s ease",overflow:"auto"}} key="roomResult2">
+        <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
+          {[0,1,2,3,4,5,6].map(function(i){return(<div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#1E5C2A":"#276B34"}}/>);})}
+          <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:"rgba(255,255,255,.15)",transform:"translateY(-50%)"}}/>
+          <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:180,height:180,borderRadius:"50%",border:"2px solid rgba(255,255,255,.15)"}}/>
+          <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.45)"}}/>
+        </div>
+        <div style={{zIndex:1,padding:"32px 20px 16px",textAlign:"center"}}>
+          <div style={{fontSize:52,marginBottom:8}}>{myRank<=3?medals[myRank-1]:myRank+"ème"}</div>
+          <div style={{fontFamily:G.heading,fontSize:"clamp(30px,8vw,50px)",color:myRank===1?G.gold:G.white,letterSpacing:2}}>
+            {myRank===1?"VICTOIRE !":myRank===2?"2ÈME PLACE":myRank===3?"3ÈME PLACE":"RÉSULTATS"}
+          </div>
+        </div>
+        <div style={{...sheet,borderRadius:"28px 28px 0 0"}}>
+          {duelResult.players.map(function(p,i){return(
+            <div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",borderRadius:14,background:p.id===playerId?"rgba(0,230,118,.08)":"rgba(255,255,255,.03)",border:p.id===playerId?"1px solid rgba(0,230,118,.25)":"1px solid rgba(255,255,255,.05)",marginBottom:6}}>
+              <div style={{fontFamily:G.heading,fontSize:22,width:32,textAlign:"center",color:i<3?["#FFD600","#C0C0C0","#CD7F32"][i]:"rgba(255,255,255,.3)"}}>{i<3?medals[i]:i+1}</div>
+              <div style={{flex:1,fontSize:14,fontWeight:800,color:p.id===playerId?G.accent:G.white}}>{p.name}{p.id===playerId?" (toi)":""}</div>
+              <div style={{fontFamily:G.heading,fontSize:26,color:i===0?G.gold:G.white}}>{p.score||0} <span style={{fontSize:12,color:"rgba(255,255,255,.3)"}}>pts</span></div>
+            </div>
+          );})}
+          <button onClick={function(){setDuelResult(null);setScreen("home");}} style={{width:"100%",padding:"16px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800,marginTop:8}}>
+            Retour à l'accueil
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // ── WAITING FOR ROOM RESULTS ──
   if (waitingForRoom || screen==="waitingRoom") {
