@@ -1673,9 +1673,47 @@ export default function LePont() {
       lastAnswerTime.current = Date.now();
       setRoundScores([]); setCurrentRound(1);
       setIsNewRecord(false); setMyLbRank(null);
-      // Use timeout to let diff state update before startRound reads it
       setTimeout(function() { startRound(1); }, 50);
     }
+    // Poll pour détecter si l'adversaire abandonne
+    clearInterval(duelPollRef.current);
+    duelPollRef.current = setInterval(async function() {
+      try {
+        const data = await sbFetch("bb_duels?id=eq."+duel.id+"&select=status,abandoned_by,challenger_score,opponent_score");
+        if (!Array.isArray(data) || data.length === 0) return;
+        const updated = data[0];
+        if (updated.status === "complete" && updated.abandoned_by && updated.abandoned_by !== playerId) {
+          clearInterval(duelPollRef.current);
+          clearInterval(timerRef.current);
+          clearInterval(qTimerRef.current);
+          setActiveDuel(null);
+          // Adversaire a abandonné — on est vainqueur
+          const myScore = isChallenger ? (updated.challenger_score ?? 1) : (updated.opponent_score ?? 1);
+          const theirScore = isChallenger ? (updated.opponent_score ?? 0) : (updated.challenger_score ?? 0);
+          const oppName = isChallenger ? duel.opponent_name : duel.challenger_name;
+          setDuelResult({ myScore, theirScore, oppName, mode: duel.mode, opponentAbandoned: true });
+        }
+      } catch(e) {}
+    }, 3000);
+  }
+
+  async function abandonDuel() {
+    if (!activeDuel) return;
+    const duelId = activeDuel.id;
+    const isChallenger = activeDuel.challenger_id === playerId;
+    // Abandonner = score 0 pour moi, score garanti > 0 pour l'adversaire
+    const update = isChallenger
+      ? { challenger_score: 0, opponent_score: activeDuel.opponent_score ?? 1, status: "complete", abandoned_by: playerId }
+      : { opponent_score: 0, challenger_score: activeDuel.challenger_score ?? 1, status: "complete", abandoned_by: playerId };
+    setActiveDuel(null);
+    try {
+      await sbFetch("bb_duels?id=eq." + duelId, {
+        method: "PATCH",
+        body: JSON.stringify(update),
+        headers: {"Prefer": "return=minimal"}
+      });
+      loadDuels();
+    } catch(e) { console.error("Abandon error:", e); }
   }
 
   async function submitDuelScore(sc) {
@@ -3516,14 +3554,16 @@ export default function LePont() {
           <div style={{background:"rgba(15,25,15,.95)",borderRadius:24,padding:"28px 24px",maxWidth:320,width:"calc(100% - 32px)",border:"1px solid rgba(255,255,255,.1)",textAlign:"center"}}>
             <div style={{fontSize:40,marginBottom:12}}>🏳️</div>
             <div style={{fontFamily:G.heading,fontSize:26,color:G.white,marginBottom:8}}>ABANDONNER ?</div>
-            <div style={{fontSize:14,color:"rgba(255,255,255,.5)",marginBottom:24}}>Ta partie sera perdue et ton score sera de 0.</div>
+            <div style={{fontSize:14,color:"rgba(255,255,255,.5)",marginBottom:24}}>
+              {activeDuel ? "Ton adversaire sera déclaré vainqueur." : "Ta partie sera perdue et ton score sera de 0."}
+            </div>
             <div style={{display:"flex",gap:10}}>
               <button onClick={function(){setShowQuitConfirm(false);}} style={{flex:1,padding:"13px",background:"rgba(255,255,255,.07)",color:G.white,border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>Continuer</button>
               <button onClick={function(){
                 setShowQuitConfirm(false);
                 clearInterval(timerRef.current);
                 clearInterval(qTimerRef.current);
-                if(activeDuel){submitDuelScore(0);}
+                if(activeDuel){ abandonDuel(); } 
                 setScreen("home");
               }} style={{flex:1,padding:"13px",background:"#FF3D57",color:"#fff",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>Abandonner</button>
             </div>
@@ -3670,7 +3710,7 @@ export default function LePont() {
             <div style={{fontSize:14,color:"rgba(255,255,255,.5)",marginBottom:24}}>Ta partie sera perdue et ton score sera de 0.</div>
             <div style={{display:"flex",gap:10}}>
               <button onClick={function(){setShowQuitConfirm(false);}} style={{flex:1,padding:"13px",background:"rgba(255,255,255,.07)",color:G.white,border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>Continuer</button>
-              <button onClick={function(){setShowQuitConfirm(false);clearInterval(timerRef.current);clearInterval(qTimerRef.current);if(activeDuel){submitDuelScore(0);}setChainPlayer("");setScreen("home");}} style={{flex:1,padding:"13px",background:"#FF3D57",color:"#fff",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>Abandonner</button>
+              <button onClick={function(){setShowQuitConfirm(false);clearInterval(timerRef.current);clearInterval(qTimerRef.current);if(activeDuel){abandonDuel();}setChainPlayer("");setScreen("home");}} style={{flex:1,padding:"13px",background:"#FF3D57",color:"#fff",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>Abandonner</button>
             </div>
           </div>
         </div>
@@ -3938,9 +3978,10 @@ export default function LePont() {
   if (duelResult) {
     const won = duelResult.myScore > duelResult.theirScore;
     const draw = duelResult.myScore === duelResult.theirScore;
-    const emoji = won ? "🏆" : draw ? "🤝" : "😅";
-    const label = won ? "VICTOIRE !" : draw ? "ÉGALITÉ !" : "DÉFAITE";
-    const labelColor = won ? G.accent : draw ? G.gold : "#FF3D57";
+    const abandoned = duelResult.opponentAbandoned;
+    const emoji = abandoned ? "🏃" : won ? "🏆" : draw ? "🤝" : "😅";
+    const label = abandoned ? "ABANDON !" : won ? "VICTOIRE !" : draw ? "ÉGALITÉ !" : "DÉFAITE";
+    const labelColor = won || abandoned ? G.accent : draw ? G.gold : "#FF3D57";
     return (
       <div style={{...shell,animation:"fadeUp .4s ease"}} key="duelResult">
         <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
@@ -3960,7 +4001,9 @@ export default function LePont() {
         <div style={{zIndex:1,padding:"40px 20px 16px",textAlign:"center"}}>
           <div style={{fontSize:72,marginBottom:8,animation:"popIn .6s ease"}}>{emoji}</div>
           <div style={{fontFamily:G.heading,fontSize:"clamp(36px,9vw,56px)",color:labelColor,letterSpacing:2}}>{label}</div>
-          <div style={{fontSize:14,color:"rgba(255,255,255,.4)",marginTop:4}}>Duel {duelResult.mode==="pont"?"The Plug":"The Mercato"}</div>
+          <div style={{fontSize:14,color:"rgba(255,255,255,.4)",marginTop:4}}>
+            {abandoned ? duelResult.oppName+" a abandonné 🏃" : "Duel "+(duelResult.mode==="pont"?"The Plug":"The Mercato")}
+          </div>
         </div>
         <div style={{...sheet,borderRadius:"28px 28px 0 0"}}>
           {/* Scores */}
@@ -3977,8 +4020,27 @@ export default function LePont() {
               <div style={{fontSize:11,color:"rgba(255,255,255,.3)",marginTop:4}}>pts</div>
             </div>
           </div>
-          <div style={{fontSize:13,color:"rgba(255,255,255,.3)",textAlign:"center",padding:"8px 0"}}>
-            {won?"Tu as battu "+duelResult.oppName+" 🎉":draw?"Personne ne s'impose !":""+duelResult.oppName+" a gagné cette fois !"}
+          <div style={{fontSize:15,color:"rgba(255,255,255,.85)",textAlign:"center",padding:"10px 0",fontWeight:700,lineHeight:1.4}}>
+            {abandoned
+              ? "T'as même pas eu le courage de finir 😂"
+              : won
+              ? [
+                  "T'as mis la misère à "+duelResult.oppName+" 👑",
+                  "Intouchable. "+duelResult.oppName+" peut rentrer chez lui 🔥",
+                  duelResult.oppName+" vient de prendre une leçon 😤",
+                  "Le niveau était pas là pour "+duelResult.oppName+" 💀",
+                  "Personne te résiste. GOAT 🐐",
+                ][Math.floor(duelResult.myScore * 7) % 5]
+              : draw
+              ? "Match nul, mais on sait qui était le meilleur 👀"
+              : [
+                  duelResult.oppName+" t'a mis dans sa poche 😭",
+                  "Retourne t'entraîner sérieusement 💀",
+                  "T'as vraiment cru que t'allais gagner ? 😂",
+                  duelResult.oppName+" t'a mangé tout cru 🍽️",
+                  "La honte. Viens pas nous parler du foot 🤡",
+                ][Math.floor(duelResult.theirScore * 7) % 5]
+            }
           </div>
           <button onClick={function(){setDuelResult(null);setScreen("home");}} style={{width:"100%",padding:"16px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800,marginTop:8}}>
             Retour à l'accueil
