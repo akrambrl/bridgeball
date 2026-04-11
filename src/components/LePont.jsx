@@ -1414,6 +1414,7 @@ export default function LePont() {
   const [duelDiff, setDuelDiff] = useState("facile");
   const [duelRounds, setDuelRounds] = useState(1);
   const [activeDuel, setActiveDuel] = useState(null); // duel being played
+  const activeDuelRef = useRef(null);
   const [duelResult, setDuelResult] = useState(null); // completed duel for result screen
   const [waitingDuel, setWaitingDuel] = useState(null); // duel in waiting room
   // Room system (multi-player up to 8)
@@ -1660,6 +1661,7 @@ export default function LePont() {
   }
   async function playDuel(duel) {
     setActiveDuel(duel);
+    activeDuelRef.current = duel;
     setTotalRounds(duel.rounds || 1);
     setShowFriends(false);
     const isChallenger = duel.challenger_id === playerId;
@@ -1896,32 +1898,35 @@ export default function LePont() {
   }
 
   async function submitRoomScore(sc) {
-    if (!activeDuel || !activeDuel.isRoom) return;
+    const duel = activeDuelRef.current;
+    if (!duel || !duel.isRoom) return;
+    const roomId = duel.id;
     setWaitingForRoom(true);
+    setActiveDuel(null);
+    activeDuelRef.current = null;
     try {
-      const data = await sbFetch("bb_rooms?id=eq."+activeDuel.id+"&limit=1");
-      if (!Array.isArray(data) || data.length === 0) return;
+      const data = await sbFetch("bb_rooms?id=eq."+roomId+"&limit=1");
+      if (!Array.isArray(data) || data.length === 0) { setWaitingForRoom(false); return; }
       const r = data[0];
       const players = typeof r.players === "string" ? JSON.parse(r.players) : r.players;
       const updated = players.map(function(p){
         return p.id === playerId ? Object.assign({}, p, {score:sc, status:"done"}) : p;
       });
       const allDone = updated.every(function(p){return p.status==="done";});
-      await sbFetch("bb_rooms?id=eq."+activeDuel.id, {
+      await sbFetch("bb_rooms?id=eq."+roomId, {
         method:"PATCH",
         body:JSON.stringify({players:JSON.stringify(updated), status:allDone?"complete":"playing"}),
         headers:{"Prefer":"return=minimal"}
       });
-      // Poll for all results
       if (!allDone) {
-        startRoomResultPolling(activeDuel.id);
+        startRoomResultPolling(roomId);
       } else {
-        const finalData = await sbFetch("bb_rooms?id=eq."+activeDuel.id+"&limit=1");
+        const finalData = await sbFetch("bb_rooms?id=eq."+roomId+"&limit=1");
         if (Array.isArray(finalData) && finalData.length > 0) {
           showRoomResults(finalData[0]);
         }
       }
-    } catch(e) { console.error(e); }
+    } catch(e) { console.error(e); setWaitingForRoom(false); }
   }
 
   function startRoomResultPolling(roomId) {
@@ -2372,7 +2377,7 @@ export default function LePont() {
           }
         }catch{}
         submitToLeaderboard(playerName,total,"pont",diff);
-        if(activeDuel&&activeDuel.isRoom){setScreen("home");submitRoomScore(total);}else if(activeDuel){submitDuelScore(total); setScreen("final");}else{setScreen("final");}
+        if(activeDuelRef.current&&activeDuelRef.current.isRoom){submitRoomScore(total);}else if(activeDuel){submitDuelScore(total); setScreen("final");}else{setScreen("final");}
       }else{setScreen("roundEnd");}
       return next;
     });
@@ -2390,7 +2395,7 @@ export default function LePont() {
       }else{setIsNewRecord(false);}
     }catch{}
     submitToLeaderboard(playerName,sc,"chaine",diff);
-    if(activeDuel&&activeDuel.isRoom){setScreen("home");submitRoomScore(sc);}else if(activeDuel){submitDuelScore(sc); setScreen("chainEnd");}else{setScreen("chainEnd");}
+    if(activeDuelRef.current&&activeDuelRef.current.isRoom){submitRoomScore(sc);}else if(activeDuel){submitDuelScore(sc); setScreen("chainEnd");}else{setScreen("chainEnd");}
   }
 
   function startRound(round) {
