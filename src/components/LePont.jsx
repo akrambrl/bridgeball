@@ -3336,7 +3336,7 @@ export default function LePont() {
             <div style={{position:"absolute",top:-30,right:-30,width:120,height:120,borderRadius:"50%",background:"radial-gradient(circle,rgba(0,150,255,.2) 0%,transparent 70%)"}}/>
             <div style={{padding:"16px 12px",position:"relative",zIndex:1,height:"100%",boxSizing:"border-box",display:"flex",flexDirection:"column",gap:0}}>
               <div style={{fontSize:9,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.5)",marginBottom:4}}>Mode 1</div>
-              <div style={{fontFamily:G.heading,fontSize:"clamp(24px,6vw,32px)",color:G.white,letterSpacing:1,lineHeight:1,marginBottom:14}}>THE PLUG</div>
+              <div style={{fontFamily:G.heading,fontSize:"clamp(18px,4.2vw,22px)",color:G.white,letterSpacing:1,lineHeight:1,marginBottom:14}}>THE PLUG</div>
               {/* Règle 1 */}
               <div style={{background:"rgba(255,255,255,.07)",borderRadius:14,padding:"12px 10px",marginBottom:8,display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
                 <span style={{fontSize:28}}>🏟️</span>
@@ -3371,8 +3371,7 @@ export default function LePont() {
             <div style={{position:"absolute",top:-30,right:-30,width:120,height:120,borderRadius:"50%",background:"radial-gradient(circle,rgba(0,230,118,.2) 0%,transparent 70%)"}}/>
             <div style={{padding:"16px 12px",position:"relative",zIndex:1,height:"100%",boxSizing:"border-box",display:"flex",flexDirection:"column",gap:0}}>
               <div style={{fontSize:9,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.5)",marginBottom:4}}>Mode 2</div>
-              <div style={{fontFamily:G.heading,fontSize:"clamp(18px,4.2vw,22px)",color:G.white,letterSpacing:1,lineHeight:1,marginBottom:14}}>THE MERCATO</div>
-              {/* Règle 1 */}
+              <div style={{fontFamily:G.heading,fontSize:"clamp(18px,4.2vw,22px)",color:G.white,letterSpacing:1,lineHeight:1,marginBottom:14}}>THE MERCATO</div>              {/* Règle 1 */}
               <div style={{background:"rgba(255,255,255,.07)",borderRadius:14,padding:"12px 10px",marginBottom:8,display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
                 <span style={{fontSize:28}}>⛓️</span>
                 <span style={{fontSize:12,color:"rgba(255,255,255,.9)",fontWeight:800,textAlign:"center",lineHeight:1.3}}>Enchaîne joueur → club</span>
@@ -3409,7 +3408,9 @@ export default function LePont() {
             <div style={{
               position:"relative",zIndex:1,
               width:"100%",
-              background:"rgba(10,25,10,.96)",
+              background:gameConfigModal==="pont"
+                ?"linear-gradient(180deg,#0B1624 0%,#1C3D73 100%)"
+                :"linear-gradient(180deg,#0F2A1A 0%,#1A5C34 100%)",
               backdropFilter:"blur(20px)",
               borderRadius:"28px 28px 0 0",
               padding:"16px 20px 48px",
