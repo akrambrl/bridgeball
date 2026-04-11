@@ -3297,7 +3297,7 @@ export default function LePont() {
           <div style={{fontFamily:G.heading,fontSize:"clamp(30px,8vw,50px)",color:myRank===1?G.gold:G.white,letterSpacing:2}}>
             {myRank===1?"VICTOIRE !":myRank===2?"2ÈME PLACE":myRank===3?"3ÈME PLACE":"RÉSULTATS"}
           </div>
-          <div style={{fontSize:15,color:"rgba(255,255,255,.85)",marginTop:10,fontWeight:700,padding:"0 16px",lineHeight:1.4}}>{msg}</div>
+          <div style={{fontSize:18,color:myRank===1?G.gold:"#fff",marginTop:12,fontWeight:800,padding:"0 16px",lineHeight:1.4,textAlign:"center",animation:"popIn .6s cubic-bezier(.22,1,.36,1) .4s both",textShadow:myRank===1?"0 0 20px rgba(255,214,0,.4)":"none"}}>{msg}</div>
         </div>
         <div style={{...sheet,borderRadius:"28px 28px 0 0"}}>
           {duelResult.players.map(function(p,i){return(
