@@ -1868,8 +1868,10 @@ export default function LePont() {
   }
 
   function launchRoomGame(r) {
-    setRoom(null); // Clear room so lobby screen disappears
-    setActiveDuel({id:r.id, isRoom:true, challenger_id:r.host_id, mode:r.mode, diff:r.diff, rounds:r.rounds});
+    setRoom(null);
+    const roomDuel = {id:r.id, isRoom:true, challenger_id:r.host_id, mode:r.mode, diff:r.diff, rounds:r.rounds};
+    setActiveDuel(roomDuel);
+    activeDuelRef.current = roomDuel;
     setTotalRounds(r.rounds || 1);
     if (r.mode === "chaine") {
       if (r.diff) setDiff(r.diff);
