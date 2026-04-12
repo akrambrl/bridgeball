@@ -398,7 +398,7 @@ const PLAYERS = [
   { name:"Mathieu Valbuena", clubs:["Marseille", "Lyon", "Fenerbahce"], diff:"expert" },
   { name:"Hatem Ben Arfa", clubs:["Lyon", "Marseille", "Newcastle", "Nice", "PSG"], diff:"expert" },
   { name:"Frederic Piquionne", clubs:["Monaco", "Lyon"], diff:"expert" },
-  { name:"Mahamadou Diarra", clubs:["Lyon", "Real Madrid", "Atletico Madrid"], diff:"expert" },
+  { name:"Vikash Dhorasoo", clubs:["Lyon", "AC Milan", "PSG"], diff:"expert" },
   { name:"Lassana Diarra", clubs:["Chelsea", "Arsenal", "Portsmouth", "Real Madrid", "Atletico Madrid", "Marseille", "PSG"], diff:"moyen" },
   { name:"Juninho", clubs:["Lyon", "Atletico Madrid"], diff:"expert" },
   { name:"Sidney Govou", clubs:["Lyon"], diff:"expert" },
@@ -631,7 +631,12 @@ const CLUB_COLORS = {
   "Werder Bremen":["#1D8348","#FFFFFF"],"RB Leipzig":["#DD0741","#FFFFFF"],
   "Eintracht Frankfurt":["#E1000F","#000000"],"Wolfsburg":["#65B32E","#FFFFFF"],
   "Sporting CP":["#007848","#FFFFFF"],"Benfica":["#E31B23","#FFFFFF"],"Porto":["#003F87","#FFFFFF"],
-  "Ajax":["#D2122E","#FFFFFF"],"Celtic":["#138a3e","#FFFFFF"],
+  "Ajax":["#D2122E","#FFFFFF"],"PSV":["#E1002A","#FFFFFF"],"Feyenoord":["#C8102E","#FFFFFF"],"AZ Alkmaar":["#E31B23","#FFFFFF"],
+  "Al Nassr":["#F5C518","#0B4EA2"],"Al Hilal":["#0046AD","#FFFFFF"],"Al Ittihad":["#F5C518","#000000"],"Al Ahli":["#007A3D","#FFFFFF"],
+  "LA Galaxy":["#00245D","#FFD700"],"Inter Miami":["#F7B5CD","#000000"],"New York City FC":["#6CACE4","#003087"],"New York Red Bulls":["#ED1E36","#003087"],"Seattle Sounders":["#5D9732","#003DA5"],"Atlanta United":["#80000A","#9DC2B6"],"LAFC":["#000000","#C39E6D"],"Toronto FC":["#B81137","#FFFFFF"],"Portland Timbers":["#004812","#EBE72B"],"Chicago Fire":["#73000A","#6CACE4"],
+  "Spartak Moscow":["#CE1126","#FFFFFF"],"CSKA Moscow":["#C8102E","#003F87"],"Zenit Saint Petersburg":["#003F87","#FFFFFF"],"Lokomotiv Moscow":["#007A3D","#E31B23"],
+  "Fenerbahce":["#003F7F","#FFFF00"],"Besiktas":["#000000","#FFFFFF"],"Trabzonspor":["#A41E34","#004B8D"],
+  "Celtic":["#138a3e","#FFFFFF"],
   "Galatasaray":["#FFA500","#D40000"],"Lens":["#EE1C25","#F5C842"],
 };
 
@@ -643,6 +648,15 @@ const PONT_CLUBS = new Set([
   "Bayern Munich","Borussia Dortmund","RB Leipzig","Bayer Leverkusen","Eintracht Frankfurt",
   "PSG","Marseille","Lyon","Monaco","Lille",
   "Benfica","Porto","Sporting CP",
+  // MLS
+  "LA Galaxy","Inter Miami","New York City FC","New York Red Bulls","Seattle Sounders",
+  "Atlanta United","LAFC","Toronto FC","Portland Timbers","Chicago Fire",
+  // Arabie Saoudite
+  "Al Nassr","Al Hilal","Al Ittihad","Al Ahli",
+  // Pays-Bas
+  "Ajax","PSV","Feyenoord","AZ Alkmaar",
+  // Turquie
+  "Galatasaray","Fenerbahce","Besiktas","Trabzonspor",
 ]);
 
 function buildPontDB() {
@@ -1980,6 +1994,32 @@ export default function LePont() {
     setActiveDuel(null);
     activeDuelRef.current = null;
     setRoom(null);
+    // Sauvegarder V/N/D en local pour le classement
+    const me = players.find(function(p){return p.id===playerId;});
+    if(me){
+      const myScore = me.score||0;
+      const myRank = sorted.findIndex(function(p){return p.id===playerId;});
+      const isWin = myRank === 0;
+      const isDraw = sorted.filter(function(p){return (p.score||0)===myScore;}).length > 1 && myRank === 0;
+      const mode = r.mode || "pont";
+      const d = r.diff || diff;
+      const key = `bb_lb_${mode}_${d}`;
+      try {
+        const data = localStorage.getItem(key);
+        const list = data ? JSON.parse(data) : [];
+        const displayName = (playerName||"").trim()||"Anonyme";
+        const existingIdx = list.findIndex(e => e.name === displayName);
+        const wdlPts = isWin ? 3 : isDraw ? 1 : 0;
+        if(existingIdx >= 0){
+          list[existingIdx].wins = (list[existingIdx].wins||0) + (isWin?1:0);
+          list[existingIdx].draws = (list[existingIdx].draws||0) + (isDraw?1:0);
+          list[existingIdx].losses = (list[existingIdx].losses||0) + (!isWin&&!isDraw?1:0);
+          list[existingIdx].pts = (list[existingIdx].pts||0) + wdlPts;
+          list[existingIdx].played = (list[existingIdx].played||0) + 1;
+        }
+        localStorage.setItem(key, JSON.stringify(list));
+      } catch(e){}
+    }
   }
 
   function leaveRoom() {
@@ -2523,15 +2563,8 @@ export default function LePont() {
   function handleChainSubmit() {
     const g=guess.trim(); if(!g) return;
     const playerClubs=getPlayerClubs(chainPlayer);
-    // En facile/moyen, ne proposer que les clubs qui ont des joueurs de la bonne difficulté
-    const availableAll=playerClubs.filter(c=>!chainUsedClubs.has(c));
-    const available = availableAll.filter(c => {
-      if(diff==="facile") return getPlayersForClub(c).some(p=>{const pd=PLAYERS_CLEAN.find(x=>x.name===p)?.diff;return pd==="facile";});
-      if(diff==="moyen") return getPlayersForClub(c).some(p=>{const pd=PLAYERS_CLEAN.find(x=>x.name===p)?.diff;return pd==="facile"||pd==="moyen";});
-      return true;
-    });
-    const validPool = available.length > 0 ? available : availableAll;
-    const matched=matchClub(g,validPool);
+    const available=playerClubs.filter(c=>!chainUsedClubs.has(c));
+    const matched=matchClub(g,available);
     if(matched){
       const newUsed=new Set(chainUsedClubs); newUsed.add(matched); setChainUsedClubs(newUsed);
       setChainHistory(prev=>[...prev,{player:chainPlayer,club:matched}]);
@@ -2566,14 +2599,8 @@ export default function LePont() {
     clearInterval(qTimerRef.current);
     chainPassedRef.current = true;
     setChainScore(s=>{chainScoreRef.current=s-.5;return s-.5;});
-    const allValidClubs=(PLAYERS_CLEAN.find(p=>p.name===chainPlayer)?.clubs||[]).filter(c=>!chainUsedClubs.has(c));
-    const validClubs = allValidClubs.filter(c => {
-      if(diff==="facile") return getPlayersForClub(c).some(p=>{const pd=PLAYERS_CLEAN.find(x=>x.name===p)?.diff;return pd==="facile";});
-      if(diff==="moyen") return getPlayersForClub(c).some(p=>{const pd=PLAYERS_CLEAN.find(x=>x.name===p)?.diff;return pd==="facile"||pd==="moyen";});
-      return true;
-    });
-    const finalClubs = validClubs.length > 0 ? validClubs : allValidClubs;
-    const chosen=finalClubs.length>0?finalClubs[Math.floor(Math.random()*finalClubs.length)]:null;
+    const validClubs=(PLAYERS_CLEAN.find(p=>p.name===chainPlayer)?.clubs||[]).filter(c=>!chainUsedClubs.has(c));
+    const chosen=validClubs.length>0?validClubs[Math.floor(Math.random()*validClubs.length)]:null;
     if(!chosen){endChain();return;}
     const newUsed=new Set(chainUsedClubs); newUsed.add(chosen);
     const clubPlayers=getPlayersForClub(chosen).filter(p=>!chainUsedPlayers.has(p)&&getPlayerClubs(p).some(c=>!newUsed.has(c)));
