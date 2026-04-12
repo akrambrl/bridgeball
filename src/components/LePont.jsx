@@ -1815,15 +1815,16 @@ export default function LePont() {
 
   function startRoomPolling(roomId) {
     clearInterval(roomPollRef.current);
+    let gameStarted = false;
     roomPollRef.current = setInterval(async function() {
       try {
         const data = await sbFetch("bb_rooms?id=eq."+roomId+"&limit=1");
         if (!Array.isArray(data) || data.length === 0) return;
         const r = data[0];
         setRoom(r);
-        if (r.status === "playing") {
+        if (r.status === "playing" && !gameStarted) {
+          gameStarted = true;
           clearInterval(roomPollRef.current);
-          // Start countdown then play
           setRoom(r);
           startRoomCountdown(r);
         } else if (r.status === "complete") {
@@ -1869,13 +1870,13 @@ export default function LePont() {
 
   async function startRoomGame() {
     if (!room) return;
+    clearInterval(roomPollRef.current); // stopper le polling AVANT le patch
     try {
       await sbFetch("bb_rooms?id=eq."+room.id, {
         method:"PATCH",
         body:JSON.stringify({status:"playing"}),
         headers:{"Prefer":"return=minimal"}
       });
-      clearInterval(roomPollRef.current);
       startRoomCountdown(room);
     } catch(e) { console.error(e); }
   }
