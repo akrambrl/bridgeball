@@ -399,6 +399,7 @@ const PLAYERS = [
   { name:"Hatem Ben Arfa", clubs:["Lyon", "Marseille", "Newcastle", "Nice", "PSG"], diff:"expert" },
   { name:"Frederic Piquionne", clubs:["Monaco", "Lyon"], diff:"expert" },
   { name:"Mahamadou Diarra", clubs:["Lyon", "Real Madrid", "Atletico Madrid"], diff:"expert" },
+  { name:"Lassana Diarra", clubs:["Chelsea", "Arsenal", "Portsmouth", "Real Madrid", "Atletico Madrid", "Marseille", "PSG"], diff:"moyen" },
   { name:"Juninho", clubs:["Lyon", "Atletico Madrid"], diff:"expert" },
   { name:"Sidney Govou", clubs:["Lyon"], diff:"expert" },
   { name:"Gregory Coupet", clubs:["Lyon"], diff:"expert" },
@@ -845,7 +846,7 @@ const CLUB_LOGO_URLS = {
   "Chelsea": "https://crests.football-data.org/61.svg",
   "Arsenal": "https://crests.football-data.org/57.svg",
   "Tottenham": "https://crests.football-data.org/73.svg",
-  "Napoli": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/SSC_Napoli_logo.svg/200px-SSC_Napoli_logo.svg.png",
+  "Napoli": "https://a.espncdn.com/i/teamlogos/soccer/500/3549.png",
   "Roma": "https://a.espncdn.com/i/teamlogos/soccer/500/104.png",
   "Lazio": "https://crests.football-data.org/110.svg",
   "Fiorentina": "https://upload.wikimedia.org/wikipedia/commons/a/a4/ACF_Fiorentina_logo_2022.png",
@@ -4017,9 +4018,9 @@ export default function LePont() {
         {myLastPts!==null&&(
           <div style={{textAlign:"center",padding:"12px 16px",borderRadius:16,background:myLastPts===10?"linear-gradient(135deg,#dcfce7,#bbf7d0)":myLastPts===5?"linear-gradient(135deg,#fef9c3,#fef08a)":"linear-gradient(135deg,#fee2e2,#fecaca)",border:`2px solid ${myLastPts===10?"#86efac":myLastPts===5?"#fbbf24":"#fca5a5"}`}}>
             <div style={{fontFamily:G.heading,fontSize:26,letterSpacing:2,color:myLastPts===10?"#16a34a":myLastPts===5?"#92400e":"#dc2626"}}>
-              <span style={{display:"flex",alignItems:"center",justifyContent:"center",gap:10}}>{myLastPts===10?Icon.trophy(24,"#16a34a"):myLastPts===5?Icon.ball(24,"#92400e"):Icon.whistle(24,"#dc2626")} {myLastPts===3?"VICTOIRE  +3 PTS":myLastPts===1?"MATCH NUL  +1 PT":"DÉFAITE  +0 PT"}</span>
+              <span style={{display:"flex",alignItems:"center",justifyContent:"center",gap:10}}>{myLastPts===10?Icon.trophy(24,"#16a34a"):myLastPts===5?Icon.ball(24,"#92400e"):Icon.whistle(24,"#dc2626")} {myLastPts===10?"NOUVEAU RECORD ! 🏆":myLastPts===5?"BONNE PARTIE ! 👍":"PEUT MIEUX FAIRE 💪"}</span>
             </div>
-            <div style={{fontSize:11,color:"#888",marginTop:2}}>{myLastPts===10?"Tu bats le record actuel !":myLastPts===5?"Proche du record !":"Reviens à la charge !"}</div>
+            <div style={{fontSize:11,color:"#888",marginTop:2}}>{myLastPts===10?"Tu bats ton record perso !":myLastPts===5?"Proche de ton meilleur !":"Continue de t'améliorer !"}</div>
           </div>
         )}
         <button onClick={()=>{setLbMode(mode);setLbDiff(diff);loadLeaderboard(lbMode);setShowLeaderboard(true);}}
