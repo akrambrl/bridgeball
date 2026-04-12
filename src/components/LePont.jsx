@@ -846,7 +846,7 @@ const CLUB_LOGO_URLS = {
   "Chelsea": "https://crests.football-data.org/61.svg",
   "Arsenal": "https://crests.football-data.org/57.svg",
   "Tottenham": "https://crests.football-data.org/73.svg",
-  "Napoli": "https://a.espncdn.com/i/teamlogos/soccer/500/3549.png",
+  "Napoli": "https://crests.football-data.org/113.svg",
   "Roma": "https://a.espncdn.com/i/teamlogos/soccer/500/104.png",
   "Lazio": "https://crests.football-data.org/110.svg",
   "Fiorentina": "https://upload.wikimedia.org/wikipedia/commons/a/a4/ACF_Fiorentina_logo_2022.png",
