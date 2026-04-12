@@ -3473,7 +3473,7 @@ export default function LePont() {
             <div style={{fontFamily:G.heading,fontSize:"clamp(42px,11vw,68px)",lineHeight:.9,letterSpacing:2,color:G.white}}>GOAT<span style={{color:G.accent}}>FC</span></div>
           </div>
           <div style={{flex:1,display:"flex",justifyContent:"flex-end"}}>
-            <div onClick={function(){}} style={{background:"rgba(255,255,255,.07)",border:"1px solid rgba(255,255,255,.12)",borderRadius:12,padding:"7px 12px",display:"flex",alignItems:"center",gap:6}}>
+            <div onClick={function(){setPseudoScreen(true);}} style={{background:"rgba(255,255,255,.07)",border:"1px solid rgba(255,255,255,.12)",borderRadius:12,padding:"7px 12px",display:"flex",alignItems:"center",gap:6,cursor:"pointer"}}>
               <span style={{fontSize:13}}>👤</span>
               <span style={{fontSize:12,fontWeight:700,color:playerName?G.white:"rgba(255,255,255,.4)",maxWidth:80,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
                 {playerName||"Pseudo"}
