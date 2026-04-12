@@ -2445,12 +2445,18 @@ export default function LePont() {
   }
 
   function startChain() {
-    roundStartTime.current = null; // reset so timer reinits on screen change
+    roundStartTime.current = null;
     setIsNewRecord(false); setMyLastPts(null); setCombo(0); setMaxCombo(0); comboRef.current=0; lastAnswerTime.current=Date.now();
-    const eligible=PLAYERS_CLEAN.filter(p=>p.clubs.length>=2);
-    const start=eligible[Math.floor(Math.random()*eligible.length)];
-    const usedP=new Set([start.name]);
-    // Prefetch logos for starting player clubs
+    // Filtrer par difficulté — en facile on commence par des stars connues
+    const eligible = PLAYERS_CLEAN.filter(p => {
+      if (p.clubs.length < 2) return false;
+      if (diff === "facile") return p.diff === "facile";
+      if (diff === "moyen") return p.diff === "facile" || p.diff === "moyen";
+      return true; // expert = tous
+    });
+    const pool = eligible.length > 0 ? eligible : PLAYERS_CLEAN.filter(p => p.clubs.length >= 2);
+    const start = pool[Math.floor(Math.random() * pool.length)];
+    const usedP = new Set([start.name]);
     start.clubs.forEach(club => fetchClubLogo(club).then(url => { if(url) chainLogoRef.current[club]=url; }));
     setChainPlayer(start.name); setChainUsedClubs(new Set()); setChainUsedPlayers(usedP);
     setChainCount(0); setChainScore(0); chainScoreRef.current=0;
@@ -2517,8 +2523,15 @@ export default function LePont() {
   function handleChainSubmit() {
     const g=guess.trim(); if(!g) return;
     const playerClubs=getPlayerClubs(chainPlayer);
-    const available=playerClubs.filter(c=>!chainUsedClubs.has(c));
-    const matched=matchClub(g,available);
+    // En facile/moyen, ne proposer que les clubs qui ont des joueurs de la bonne difficulté
+    const availableAll=playerClubs.filter(c=>!chainUsedClubs.has(c));
+    const available = availableAll.filter(c => {
+      if(diff==="facile") return getPlayersForClub(c).some(p=>{const pd=PLAYERS_CLEAN.find(x=>x.name===p)?.diff;return pd==="facile";});
+      if(diff==="moyen") return getPlayersForClub(c).some(p=>{const pd=PLAYERS_CLEAN.find(x=>x.name===p)?.diff;return pd==="facile"||pd==="moyen";});
+      return true;
+    });
+    const validPool = available.length > 0 ? available : availableAll;
+    const matched=matchClub(g,validPool);
     if(matched){
       const newUsed=new Set(chainUsedClubs); newUsed.add(matched); setChainUsedClubs(newUsed);
       setChainHistory(prev=>[...prev,{player:chainPlayer,club:matched}]);
@@ -2526,7 +2539,15 @@ export default function LePont() {
       setFeedback("ok"); setFlash("ok");
       const clubPlayers=getPlayersForClub(matched).filter(p=>!chainUsedPlayers.has(p)&&getPlayerClubs(p).some(c=>!newUsed.has(c)));
       if(clubPlayers.length===0){setTimeout(()=>{setFeedback(null);setFlash(null);endChain();},800);return;}
-      const next=clubPlayers[Math.floor(Math.random()*clubPlayers.length)];
+      // Favoriser les joueurs de la bonne difficulté
+      const preferred = clubPlayers.filter(p => {
+        const pd = PLAYERS_CLEAN.find(x=>x.name===p)?.diff;
+        if(diff==="facile") return pd==="facile";
+        if(diff==="moyen") return pd==="facile"||pd==="moyen";
+        return true;
+      });
+      const nextPool = preferred.length > 0 ? preferred : clubPlayers;
+      const next=nextPool[Math.floor(Math.random()*nextPool.length)];
       const newUsedP=new Set(chainUsedPlayers); newUsedP.add(next);
       // Prefetch logos for next player
       getPlayerClubs(next).forEach(club => fetchClubLogo(club).then(url => { if(url) chainLogoRef.current[club]=url; }));
@@ -2545,13 +2566,25 @@ export default function LePont() {
     clearInterval(qTimerRef.current);
     chainPassedRef.current = true;
     setChainScore(s=>{chainScoreRef.current=s-.5;return s-.5;});
-    const validClubs=(PLAYERS_CLEAN.find(p=>p.name===chainPlayer)?.clubs||[]).filter(c=>!chainUsedClubs.has(c));
-    const chosen=validClubs.length>0?validClubs[Math.floor(Math.random()*validClubs.length)]:null;
+    const allValidClubs=(PLAYERS_CLEAN.find(p=>p.name===chainPlayer)?.clubs||[]).filter(c=>!chainUsedClubs.has(c));
+    const validClubs = allValidClubs.filter(c => {
+      if(diff==="facile") return getPlayersForClub(c).some(p=>{const pd=PLAYERS_CLEAN.find(x=>x.name===p)?.diff;return pd==="facile";});
+      if(diff==="moyen") return getPlayersForClub(c).some(p=>{const pd=PLAYERS_CLEAN.find(x=>x.name===p)?.diff;return pd==="facile"||pd==="moyen";});
+      return true;
+    });
+    const finalClubs = validClubs.length > 0 ? validClubs : allValidClubs;
+    const chosen=finalClubs.length>0?finalClubs[Math.floor(Math.random()*finalClubs.length)]:null;
     if(!chosen){endChain();return;}
     const newUsed=new Set(chainUsedClubs); newUsed.add(chosen);
     const clubPlayers=getPlayersForClub(chosen).filter(p=>!chainUsedPlayers.has(p)&&getPlayerClubs(p).some(c=>!newUsed.has(c)));
     if(clubPlayers.length===0){endChain();return;}
-    const next=clubPlayers[Math.floor(Math.random()*clubPlayers.length)];
+    const preferred2 = clubPlayers.filter(p => {
+      const pd = PLAYERS_CLEAN.find(x=>x.name===p)?.diff;
+      if(diff==="facile") return pd==="facile";
+      if(diff==="moyen") return pd==="facile"||pd==="moyen";
+      return true;
+    });
+    const next=preferred2.length>0 ? preferred2[Math.floor(Math.random()*preferred2.length)] : clubPlayers[Math.floor(Math.random()*clubPlayers.length)];
     const newUsedP=new Set(chainUsedPlayers); newUsedP.add(next);
     setChainUsedClubs(newUsed); setChainUsedPlayers(newUsedP);
     setChainHistory(prev=>[...prev,{player:chainPlayer,club:chosen,passed:true}]);
