@@ -2603,10 +2603,6 @@ export default function LePont() {
   }
 
   function tryStart(mode) {
-    if (!pseudoConfirmed || !playerName.trim()) {
-      setPseudoScreen(true);
-      return;
-    }
     setGameMode(mode);
     if(!seenInstructions.current.has(mode)){setShowInstructions(mode);return;}
     if(mode==="chaine")startChain();
@@ -3012,7 +3008,7 @@ export default function LePont() {
           <div style={{display:"flex",gap:8}}>
             {["global","pont","chaine"].map(function(m){return(
               <button key={m} onClick={function(){setLbMode(m);loadLeaderboard(m);}} style={{flex:1,padding:"11px",borderRadius:12,border:"1.5px solid "+(lbMode===m?G.accent:"rgba(255,255,255,.12)"),background:lbMode===m?"rgba(0,230,118,.1)":"transparent",color:lbMode===m?G.accent:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:13}}>
-                {m==="global"?"🌍 Global":m==="pont"?"🏟 Pont":"⛓ Chaîne"}
+                {m==="global"?"🌍 Global":m==="pont"?"🏟 The Plug":"⛓ The Mercato"}
               </button>
             );})}
           </div>
@@ -3920,7 +3916,7 @@ export default function LePont() {
         </div>
         {chainHistory.length>0 && (
           <div style={{maxHeight:200,overflowY:"auto",display:"flex",flexDirection:"column",gap:4}}>
-            <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"#ccc",textAlign:"center"}}>Chaîne</div>
+            <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"#ccc",textAlign:"center"}}>The Mercato</div>
             {[...chainHistory].reverse().map((h,i)=>(
               <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"7px 12px",background:G.offWhite,borderRadius:12,animation:`slideIn .3s ease ${i*.04}s both`,opacity:h.passed ? 0.7 : 1}}>
                 <span style={{fontSize:10,color:"#bbb",fontWeight:700,minWidth:18}}>{i+1}.</span>
