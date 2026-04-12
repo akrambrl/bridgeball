@@ -3288,18 +3288,18 @@ export default function LePont() {
     const myRank = duelResult.players.findIndex(function(p){return p.id===playerId;}) + 1;
     const winner = duelResult.players[0];
     const winMessages = [
-      "Personne te résiste. GOAT 🐐",
-      "T'as mis la misère à tout le monde 👑",
-      "Intouchable. Les autres peuvent rentrer chez eux 🔥",
-      "Le niveau était pas là pour eux 💀",
-      "Aucune compétition. GOAT FC certifié 🏆",
+      "T'as les crampons ET le niveau frère 👑",
+      "T'as mis la misère à tout le monde 💀",
+      "T'es chaud comme Mbappé un soir de CL 🔥",
+      "LA COUPE IL RESTE AU MAROOOC, T'ES UN JNOUN OU QUOI?! 🏆",
+      "On joue pas dans la même cour frère 🐐",
     ];
     const loseMessages = [
-      "T'as vraiment cru que t'allais gagner ? 😂",
-      "Retourne t'entraîner sérieusement 💀",
-      "La honte. Viens pas nous parler du foot 🤡",
-      ""+winner.name+" t'a mangé tout cru 🍽️",
-      "On t'a vu venir de loin... et c'était nul 😭",
+      "Même pas un but ! Même pas un but ! 😂",
+      "T'as les crampons mais pas le niveau frère 💀",
+      "Retourne jouer à la Playstation 🎮",
+      "Même en Division 5 tu ferais banc 🤡",
+      "T'as cru quoi, que c'était FIFA ? 😭",
     ];
     const msg = myRank === 1
       ? winMessages[Math.floor((myEntry?.score||0) * 7) % 5]
@@ -4126,20 +4126,20 @@ export default function LePont() {
               ? "T'as même pas eu le courage de finir 😂"
               : won
               ? [
-                  "T'as mis la misère à "+duelResult.oppName+" 👑",
-                  "Intouchable. "+duelResult.oppName+" peut rentrer chez lui 🔥",
+                  "T'as mis la misère à "+duelResult.oppName+" 💀",
+                  "T'es chaud comme Mbappé un soir de CL 🔥",
                   duelResult.oppName+" vient de prendre une leçon 😤",
-                  "Le niveau était pas là pour "+duelResult.oppName+" 💀",
-                  "Personne te résiste. GOAT 🐐",
+                  "LA COUPE IL RESTE AU MAROOOC, T'ES UN JNOUN OU QUOI?! 🏆",
+                  "On joue pas dans la même cour frère 🐐",
                 ][Math.floor(duelResult.myScore * 7) % 5]
               : draw
               ? "Match nul, mais on sait qui était le meilleur 👀"
               : [
+                  "Même pas un but ! Même pas un but ! 😂",
+                  "T'as les crampons mais pas le niveau frère 💀",
+                  "Retourne jouer à la Playstation 🎮",
                   duelResult.oppName+" t'a mis dans sa poche 😭",
-                  "Retourne t'entraîner sérieusement 💀",
-                  "T'as vraiment cru que t'allais gagner ? 😂",
-                  duelResult.oppName+" t'a mangé tout cru 🍽️",
-                  "La honte. Viens pas nous parler du foot 🤡",
+                  "T'as cru quoi, que c'était FIFA ? 🤡",
                 ][Math.floor(duelResult.theirScore * 7) % 5]
             }
           </div>
