@@ -1913,6 +1913,7 @@ export default function LePont() {
   }
 
 
+  async function submitRoomScore(sc) {
     const duel = activeDuelRef.current;
     if (!duel || !duel.isRoom) return;
     const roomId = duel.id;
