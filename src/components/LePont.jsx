@@ -1827,7 +1827,7 @@ export default function LePont() {
           clearInterval(roomPollRef.current);
           setRoom(r);
           startRoomCountdown(r);
-        } else if (r.status === "complete") {
+        } else if (r.status === "complete" || r.status === "scoring") {
           clearInterval(roomPollRef.current);
         }
       } catch(e) {}
@@ -1932,7 +1932,7 @@ export default function LePont() {
       const allDone = updated.every(function(p){return p.status==="done";});
       await sbFetch("bb_rooms?id=eq."+roomId, {
         method:"PATCH",
-        body:JSON.stringify({players:JSON.stringify(updated), status:allDone?"complete":"playing"}),
+        body:JSON.stringify({players:JSON.stringify(updated), status:allDone?"complete":"scoring"}),
         headers:{"Prefer":"return=minimal"}
       });
       if (allDone) {
