@@ -3850,7 +3850,8 @@ export default function LePont() {
                 const val=e.target.value;
                 setGuess(val);
                 const cur=queue[qIdx%Math.max(queue.length,1)];
-                if(val.trim()&&checkGuess(val.trim(),cur.p)){setTimeout(()=>handleSubmit(),0);}
+                const exactMatch=cur.p.find(p=>norm(p)===norm(val.trim()));
+                if(val.trim()&&exactMatch){setTimeout(()=>handleSubmit(),0);}
               }} onKeyDown={e=>e.key==="Enter"&&handleSubmit()}
                 placeholder="Nom du joueur..." autoComplete="off"
                 style={{width:"100%",background:flash==="ko"?"#fee2e2":flash==="ok"?"#dcfce7":G.offWhite,border:("2px solid "+(flash==="ko"?G.red:flash==="ok"?G.accent:"#e5e5e0")+""),borderRadius:18,padding:"15px 18px",fontFamily:G.font,fontSize:18,fontWeight:700,color:G.dark,outline:"none",textAlign:"center",transition:"all .15s",animation:flash==="ko"?"answerKo .4s ease":flash==="ok"?"answerOk .4s ease":"none"}}/>
@@ -3966,7 +3967,8 @@ export default function LePont() {
                 setGuess(val);
                 const playerClubs=getPlayerClubs(chainPlayer);
                 const available=playerClubs.filter(c=>!chainUsedClubs.has(c));
-                if(val.trim()&&matchClub(val.trim(),available)){setTimeout(()=>handleChainSubmit(),0);}
+                const exactMatch=available.find(c=>norm(c)===norm(val.trim()));
+                if(val.trim()&&exactMatch){setTimeout(()=>handleChainSubmit(),0);}
               }} onKeyDown={e=>e.key==="Enter"&&handleChainSubmit()}
           placeholder="Nom du club..." autoComplete="off"
           style={{width:"100%",background:flash==="ko"?"#fee2e2":flash==="ok"?"#dcfce7":G.offWhite,border:("2px solid "+(flash==="ko"?G.red:flash==="ok"?G.accent:"#e5e5e0")+""),borderRadius:18,padding:"16px 18px",fontFamily:G.font,fontSize:18,fontWeight:700,color:G.dark,outline:"none",textAlign:"center",transition:"all .15s"}}/>
