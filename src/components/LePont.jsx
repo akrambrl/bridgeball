@@ -2924,7 +2924,7 @@ export default function LePont() {
         setDailyDone(true);
         setDailyAbandoned(false);
         updateDayStreak();
-      }, 1200);
+      }, 2000);
     } else {
       setDailyFlash("ko");
       setTimeout(function(){ setDailyFlash(null); setDailyGuess(""); }, 800);
@@ -4220,30 +4220,47 @@ export default function LePont() {
                 </div>
               </div>
               {/* Tentatives */}
-              {dailyTries > 0 && <div style={{fontSize:12,color:"rgba(255,255,255,.4)",marginBottom:8,textAlign:"center"}}>Tentative{dailyTries>1?"s":""} : {dailyTries}</div>}
-              {/* Input */}
-              <input
-                value={dailyGuess}
-                onChange={function(e){setDailyGuess(e.target.value);setDailyFlash(null);}}
-                onKeyDown={function(e){if(e.key==="Enter") handleDailySubmit();}}
-                placeholder="Nom du joueur..."
-                autoComplete="off"
-                style={{width:"100%",background:dailyFlash==="ok"?"rgba(0,230,118,.15)":dailyFlash==="ko"?"rgba(255,61,87,.15)":"rgba(255,255,255,.08)",border:"2px solid "+(dailyFlash==="ok"?"#00E676":dailyFlash==="ko"?"#FF3D57":"rgba(255,255,255,.2)"),borderRadius:18,padding:"16px 18px",fontFamily:G.font,fontSize:18,fontWeight:700,color:"#ffffff",outline:"none",textAlign:"center",transition:"all .2s",boxSizing:"border-box"}}
-              />
-              {dailyFlash==="ko" && <div style={{textAlign:"center",fontSize:13,color:"#FF3D57",marginTop:8,fontWeight:700}}>Ce n'est pas ça... réessaie !</div>}
-              <div style={{display:"flex",gap:10,marginTop:12}}>
-                <button onClick={function(){
-                  setShowDailyGame(false);
-                  const today = new Date().toISOString().slice(0,10);
-                  try { localStorage.setItem("bb_daily_result", JSON.stringify({date:today,abandoned:true})); } catch{}
-                  setDailyDone(true); setDailyAbandoned(true); updateDayStreak();
-                }} style={{flex:1,padding:"14px",background:"rgba(255,255,255,.05)",color:"rgba(255,255,255,.5)",border:"1px solid rgba(255,255,255,.1)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>
-                  Abandonner
-                </button>
-                <button onClick={handleDailySubmit} style={{flex:2,padding:"14px",background:"linear-gradient(135deg,#FFD600,#FF6B35)",color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800}}>
-                  Valider ✓
-                </button>
-              </div>
+              {dailyTries > 0 && !dailyFlash && <div style={{fontSize:12,color:"rgba(255,255,255,.4)",marginBottom:8,textAlign:"center"}}>Tentative{dailyTries>1?"s":""} : {dailyTries}</div>}
+
+              {/* Écran bravo */}
+              {dailyFlash==="ok" ? (
+                <div style={{textAlign:"center",padding:"24px 0"}}>
+                  <div style={{fontSize:56,marginBottom:12}}>🎉</div>
+                  <div style={{fontFamily:G.heading,fontSize:36,color:"#00E676",letterSpacing:2,marginBottom:8}}>BRAVO !</div>
+                  <div style={{fontSize:16,color:"rgba(255,255,255,.8)",fontWeight:700,marginBottom:6}}>
+                    C'était <span style={{color:"#00E676"}}>{dailyPlayer.name}</span>
+                  </div>
+                  <div style={{fontSize:13,color:"rgba(255,255,255,.4)",marginTop:4}}>
+                    {dailyTries === 1 ? "Trouvé du premier coup 🐐" : `Trouvé en ${dailyTries} essai${dailyTries>1?"s":""}`}
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {/* Input */}
+                  <input
+                    value={dailyGuess}
+                    onChange={function(e){setDailyGuess(e.target.value);setDailyFlash(null);}}
+                    onKeyDown={function(e){if(e.key==="Enter") handleDailySubmit();}}
+                    placeholder="Nom du joueur..."
+                    autoComplete="off"
+                    style={{width:"100%",background:dailyFlash==="ko"?"rgba(255,61,87,.15)":"rgba(255,255,255,.08)",border:"2px solid "+(dailyFlash==="ko"?"#FF3D57":"rgba(255,255,255,.2)"),borderRadius:18,padding:"16px 18px",fontFamily:G.font,fontSize:18,fontWeight:700,color:"#ffffff",outline:"none",textAlign:"center",transition:"all .2s",boxSizing:"border-box"}}
+                  />
+                  {dailyFlash==="ko" && <div style={{textAlign:"center",fontSize:13,color:"#FF3D57",marginTop:8,fontWeight:700}}>Ce n'est pas ça... réessaie !</div>}
+                  <div style={{display:"flex",gap:10,marginTop:12}}>
+                    <button onClick={function(){
+                      setShowDailyGame(false);
+                      const today = new Date().toISOString().slice(0,10);
+                      try { localStorage.setItem("bb_daily_result", JSON.stringify({date:today,abandoned:true})); } catch{}
+                      setDailyDone(true); setDailyAbandoned(true); updateDayStreak();
+                    }} style={{flex:1,padding:"14px",background:"rgba(255,255,255,.05)",color:"rgba(255,255,255,.5)",border:"1px solid rgba(255,255,255,.1)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>
+                      Abandonner
+                    </button>
+                    <button onClick={handleDailySubmit} style={{flex:2,padding:"14px",background:"linear-gradient(135deg,#FFD600,#FF6B35)",color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800}}>
+                      Valider ✓
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         )}
