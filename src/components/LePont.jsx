@@ -4191,7 +4191,7 @@ export default function LePont() {
 
         {/* Modal défi du jour — Devine le joueur */}
         {showDailyGame && dailyPlayer && (
-          <div style={{position:"fixed",inset:0,zIndex:400,background:"rgba(0,0,0,.92)",backdropFilter:"blur(8px)",display:"flex",alignItems:"flex-end"}}>
+          <div style={{position:"fixed",inset:0,zIndex:400,background:"rgba(0,0,0,.75)",backdropFilter:"blur(12px)",display:"flex",alignItems:"flex-end"}}>
             <div style={{width:"100%",background:"rgba(10,20,10,.98)",borderRadius:"28px 28px 0 0",padding:"24px 20px 48px",border:"1px solid rgba(255,255,255,.1)",borderBottom:"none",maxHeight:"90vh",overflow:"auto"}}>
               {/* Header */}
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
@@ -4208,11 +4208,11 @@ export default function LePont() {
                   {dailyPlayer.clubs.map(function(club,i){
                     const [ca,cb] = getClubColors(club);
                     return (
-                      <div key={i} style={{borderRadius:20,overflow:"hidden",position:"relative",height:36,minWidth:80,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 2px 8px rgba(0,0,0,.4)"}}>
+                      <div key={i} style={{borderRadius:20,overflow:"hidden",position:"relative",height:40,minWidth:90,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 2px 8px rgba(0,0,0,.4)"}}>
                         <div style={{position:"absolute",inset:0,background:ca}}/>
                         <div style={{position:"absolute",top:0,right:0,width:"55%",bottom:0,background:cb,clipPath:"polygon(30% 0%, 100% 0%, 100% 100%, 0% 100%)"}}/>
                         <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.15)"}}/>
-                        <span style={{position:"relative",zIndex:1,fontSize:12,fontWeight:800,color:"#fff",padding:"0 12px",textShadow:"0 1px 3px rgba(0,0,0,.6)"}}>{club}</span>
+                        <span style={{position:"relative",zIndex:1,fontSize:13,fontWeight:800,color:"#fff",padding:"0 14px",textShadow:"0 1px 3px rgba(0,0,0,.6)"}}>{club}</span>
                       </div>
                     );
                   })}
@@ -4227,7 +4227,7 @@ export default function LePont() {
                 onKeyDown={function(e){if(e.key==="Enter") handleDailySubmit();}}
                 placeholder="Nom du joueur..."
                 autoComplete="off"
-                style={{width:"100%",background:dailyFlash==="ok"?"#dcfce7":dailyFlash==="ko"?"#fee2e2":"rgba(255,255,255,.08)",border:"2px solid "+(dailyFlash==="ok"?"#00E676":dailyFlash==="ko"?"#FF3D57":"rgba(255,255,255,.15)"),borderRadius:18,padding:"16px 18px",fontFamily:G.font,fontSize:18,fontWeight:700,color:G.dark,outline:"none",textAlign:"center",transition:"all .2s",boxSizing:"border-box"}}
+                style={{width:"100%",background:dailyFlash==="ok"?"rgba(0,230,118,.15)":dailyFlash==="ko"?"rgba(255,61,87,.15)":"rgba(255,255,255,.08)",border:"2px solid "+(dailyFlash==="ok"?"#00E676":dailyFlash==="ko"?"#FF3D57":"rgba(255,255,255,.2)"),borderRadius:18,padding:"16px 18px",fontFamily:G.font,fontSize:18,fontWeight:700,color:"#ffffff",outline:"none",textAlign:"center",transition:"all .2s",boxSizing:"border-box"}}
               />
               {dailyFlash==="ko" && <div style={{textAlign:"center",fontSize:13,color:"#FF3D57",marginTop:8,fontWeight:700}}>Ce n'est pas ça... réessaie !</div>}
               <div style={{display:"flex",gap:10,marginTop:12}}>
