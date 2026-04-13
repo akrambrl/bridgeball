@@ -5,6 +5,8 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 
 const SB_URL = "https://ialjlsrgcolocoaegzrc.supabase.co";
 const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhbGpsc3JnY29sb2NvYWVnenJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1MDM3NzksImV4cCI6MjA5MTA3OTc3OX0.-SU8anuPhnpoa-PYhIHQqrcuOBsHxdtBJKRZuiGcGwM";
+
+
 async function sbFetch(path, options) {
   const res = await fetch(SB_URL + "/rest/v1/" + path, {
     ...options,
@@ -34,6 +36,21 @@ function getPlayerId() {
 
 // ── CONSTANTS ──
 const ROUND_DURATION = 90;
+const SEASON_START = new Date("2026-04-13T00:00:00Z");
+const SEASON_DURATION_DAYS = 14;
+
+function getCurrentSeason() {
+  const now = new Date();
+  const elapsed = now - SEASON_START;
+  const seasonMs = SEASON_DURATION_DAYS * 24 * 60 * 60 * 1000;
+  const num = Math.floor(elapsed / seasonMs);
+  const start = new Date(SEASON_START.getTime() + num * seasonMs);
+  const end = new Date(start.getTime() + seasonMs);
+  const remaining = end - now;
+  const days = Math.floor(remaining / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((remaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  return { num: num + 1, start, end, days, hours };
+}
 
 const GRADES = [
   { min:500, label:"GOAT",    emoji:"🐐", color:"#FFD700" },
@@ -995,6 +1012,23 @@ function buildPontDB() {
 const PLAYERS_CLEAN = PLAYERS.filter(function(p){return p&&p.name&&p.clubs&&Array.isArray(p.clubs);});
 const DB = buildPontDB();
 
+// ── DAILY CHALLENGE ──
+function getDailyChallenge() {
+  const today = new Date().toISOString().slice(0,10); // YYYY-MM-DD
+  // Hash déterministe de la date
+  let hash = 0;
+  for (let i = 0; i < today.length; i++) {
+    hash = ((hash << 5) - hash) + today.charCodeAt(i);
+    hash |= 0;
+  }
+  hash = Math.abs(hash);
+  // Prendre toutes les paires de tous niveaux
+  const allPairs = [...DB.facile, ...DB.moyen, ...DB.expert];
+  if (allPairs.length === 0) return null;
+  const pair = allPairs[hash % allPairs.length];
+  return { ...pair, date: today, diff: pair.diff || "moyen" };
+}
+
 const CLUB_INDEX = {};
 for (const p of PLAYERS_CLEAN) {
   if(!p||!p.clubs)continue;
@@ -1485,14 +1519,36 @@ export default function LePont() {
   const [chainHistory, setChainHistory] = useState([]);
   const [chainLastClub, setChainLastClub] = useState("");
   const [leaderboard, setLeaderboard] = useState([]);
+  const [hallOfFame, setHallOfFame] = useState([]);
+  const [seasons, setSeasons] = useState([]);
+  const [showHallOfFame, setShowHallOfFame] = useState(false);
   const [myLbRank, setMyLbRank] = useState(null);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
 
   const [myLastPts, setMyLastPts] = useState(null);
+  const [winStreak, setWinStreak] = useState(0);
   const [wasAway, setWasAway] = useState(false);
   const [notifGranted, setNotifGranted] = useState(false);
   const [showNotifPrompt, setShowNotifPrompt] = useState(false);
   const [lbMode, setLbMode] = useState("global");
+  const [dailyChallenge] = useState(() => getDailyChallenge());
+  const [dailyDone, setDailyDone] = useState(() => {
+    try { return localStorage.getItem("bb_daily_done") === new Date().toISOString().slice(0,10); } catch { return false; }
+  });
+  const [dailyScore, setDailyScore] = useState(() => {
+    try { return parseInt(localStorage.getItem("bb_daily_score")||"0")||0; } catch { return 0; }
+  });
+  const [dayStreak, setDayStreak] = useState(() => {
+    try {
+      const s = JSON.parse(localStorage.getItem("bb_day_streak")||"{}");
+      const today = new Date().toISOString().slice(0,10);
+      const yesterday = new Date(Date.now()-86400000).toISOString().slice(0,10);
+      if (s.lastDate === today || s.lastDate === yesterday) return s.count || 0;
+      return 0; // gap → streak perdu
+    } catch { return 0; }
+  });
+  const [showDailyLb, setShowDailyLb] = useState(false);
+  const [dailyLeaderboard, setDailyLeaderboard] = useState([]);
   const [lbDiff, setLbDiff] = useState("facile");
   const [playerName, setPlayerName] = useState("");
   const [showInstructions, setShowInstructions] = useState(null);
@@ -1570,6 +1626,8 @@ export default function LePont() {
     loadFriends().then(function(ids){fetchFriendScores(ids);});
     loadDuels();
     loadFriendRequests();
+    loadSeasons();
+    checkAndCloseSeason();
     // Fermer le splash après 2.5s
     setTimeout(function(){setShowSplash(false);}, 2500);
   }, []);
@@ -1864,6 +1922,26 @@ export default function LePont() {
         const myScore = sc;
         const theirScore = otherScore;
         const oppName = isChallenger ? duelCopy.opponent_name : duelCopy.challenger_name;
+        const won = myScore > theirScore;
+        // Calculer le streak depuis Supabase
+        try {
+          const history = await sbFetch("bb_duels?status=eq.complete&or=(challenger_id.eq."+playerId+",opponent_id.eq."+playerId+")&order=created_at.asc&select=challenger_id,challenger_score,opponent_score");
+          if (Array.isArray(history)) {
+            let streak = 0;
+            const results = history.map(function(d){
+              const ms = d.challenger_id===playerId ? d.challenger_score : d.opponent_score;
+              const ts = d.challenger_id===playerId ? d.opponent_score : d.challenger_score;
+              return ms > ts ? "W" : "L";
+            });
+            // Ajouter le résultat courant
+            results.push(won ? "W" : "L");
+            for (let i = results.length-1; i >= 0; i--) {
+              if (results[i]==="W") streak++;
+              else break;
+            }
+            setWinStreak(streak);
+          }
+        } catch(e){}
         setDuelResult({ myScore, theirScore, oppName, mode: duelCopy.mode });
       }
       loadDuels();
@@ -2479,11 +2557,75 @@ export default function LePont() {
   }
 
 
+  async function loadSeasons() {
+    try {
+      const data = await sbFetch("bb_seasons?order=season_number.desc&limit=20");
+      if (Array.isArray(data)) setSeasons(data);
+    } catch(e) {}
+  }
+
+  async function checkAndCloseSeason() {
+    const { seasonNumber, seasonStartDate, seasonEndDate } = getCurrentSeason();
+    const now = new Date();
+    // Vérifier si la saison précédente a déjà été clôturée
+    try {
+      const prev = await sbFetch("bb_seasons?season_number=eq."+(seasonNumber-1)+"&limit=1");
+      if (Array.isArray(prev) && prev.length > 0) return; // déjà clôturée
+      if (seasonNumber <= 1) return; // pas encore de saison à clôturer
+      // Récupérer le champion de la saison précédente
+      const prevStart = new Date(SEASON_START.getTime() + (seasonNumber - 2) * SEASON_DURATION_DAYS * 86400000);
+      const prevEnd = seasonStartDate;
+      const scores = await sbFetch("bb_scores?order=score.desc&limit=1000&select=player_id,player_name,score,mode&created_at=gte."+prevStart.toISOString()+"&created_at=lt."+prevEnd.toISOString());
+      if (!Array.isArray(scores) || scores.length === 0) return;
+      // Calculer le meilleur score par joueur
+      const stats = {};
+      scores.forEach(function(r) {
+        if (!stats[r.player_id]) stats[r.player_id] = { name: r.player_name, bestPont: 0, bestChaine: 0 };
+        if (r.mode === "pont" && r.score > stats[r.player_id].bestPont) stats[r.player_id].bestPont = r.score;
+        if (r.mode === "chaine" && r.score > stats[r.player_id].bestChaine) stats[r.player_id].bestChaine = r.score;
+      });
+      const ranked = Object.entries(stats).map(function([pid, s]) {
+        return { pid, name: s.name, score: s.bestPont + s.bestChaine };
+      }).sort(function(a, b) { return b.score - a.score; });
+      if (ranked.length === 0) return;
+      const champion = ranked[0];
+      await sbFetch("bb_seasons", {
+        method: "POST",
+        body: JSON.stringify({ season_number: seasonNumber - 1, champion_name: champion.name, champion_score: champion.score, champion_id: champion.pid })
+      });
+      loadSeasons();
+    } catch(e) {}
+  }
+
   async function loadLeaderboard(mode) {
     try {
-      const isGlobal = mode === "global";
-      const filter = (!mode || isGlobal) ? "" : "mode=eq."+mode+"&";
-      const data = await sbFetch("bb_scores?"+filter+"order=score.desc&limit=1000&select=player_id,player_name,score,mode");
+      const isAmis = mode === "amis";
+      const isGlobal = mode === "global" || isAmis;
+      const season = getCurrentSeason();
+
+      // Couronner le champion de la saison précédente si pas encore fait
+      if (season.num > 1) {
+        try {
+          const prevSeason = season.num - 1;
+          const existing = await sbFetch("bb_seasons?season_number=eq."+prevSeason+"&limit=1");
+          if (Array.isArray(existing) && existing.length === 0) {
+            const prevStart = new Date(SEASON_START.getTime() + (prevSeason-1) * SEASON_DURATION_DAYS * 24*60*60*1000);
+            const prevEnd = new Date(prevStart.getTime() + SEASON_DURATION_DAYS * 24*60*60*1000);
+            const prevScores = await sbFetch("bb_scores?order=score.desc&limit=1000&select=player_id,player_name,score&created_at=gte."+prevStart.toISOString()+"&created_at=lt."+prevEnd.toISOString());
+            if (Array.isArray(prevScores) && prevScores.length > 0) {
+              const best = {};
+              prevScores.forEach(function(r){ if(!best[r.player_id]||r.score>best[r.player_id].score) best[r.player_id]=r; });
+              const champ = Object.values(best).sort(function(a,b){return b.score-a.score;})[0];
+              if (champ) await sbFetch("bb_seasons", {method:"POST", body:JSON.stringify({season_number:prevSeason, champion_name:champ.player_name, champion_score:champ.score, champion_id:champ.player_id})});
+            }
+          }
+        } catch(e){}
+      }
+
+      // Filtre par saison sauf pour l'onglet Amis
+      const seasonFilter = !isAmis ? "&created_at=gte."+season.start.toISOString()+"&created_at=lt."+season.end.toISOString() : "";
+      const modeFilter = (!mode || isGlobal) ? "" : "mode=eq."+mode+"&";
+      const data = await sbFetch("bb_scores?"+modeFilter+"order=score.desc&limit=1000&select=player_id,player_name,score,mode"+seasonFilter);
       if (!Array.isArray(data)) { setLeaderboard([]); return; }
       const stats = {};
       data.forEach(function(row) {
@@ -2533,12 +2675,44 @@ export default function LePont() {
           } catch(e){}
         });
       }
+      // Calculer les streaks depuis les duels triés par date
+      const duelsDated = await sbFetch("bb_duels?status=eq.complete&select=challenger_id,opponent_id,challenger_score,opponent_score,created_at&order=created_at.asc&limit=1000");
+      if (Array.isArray(duelsDated)) {
+        // Grouper les résultats par joueur dans l'ordre chronologique
+        const playerResults = {};
+        duelsDated.forEach(function(d) {
+          [d.challenger_id, d.opponent_id].forEach(function(pid) {
+            if (!pid) return;
+            if (!playerResults[pid]) playerResults[pid] = [];
+            const myScore = pid === d.challenger_id ? d.challenger_score : d.opponent_score;
+            const theirScore = pid === d.challenger_id ? d.opponent_score : d.challenger_score;
+            const result = myScore > theirScore ? "W" : myScore === theirScore ? "D" : "L";
+            playerResults[pid].push(result);
+          });
+        });
+        // Calculer le streak actuel (compter depuis la fin)
+        Object.keys(playerResults).forEach(function(pid) {
+          if (!stats[pid]) return;
+          const results = playerResults[pid];
+          let streak = 0;
+          for (let i = results.length - 1; i >= 0; i--) {
+            if (results[i] === "W") streak++;
+            else break;
+          }
+          stats[pid].streak = streak;
+        });
+      }
       const sorted = Object.values(stats)
-        .map(function(r){ return {name:r.name, pid:r.pid||"", score:isGlobal?(r.bestPont+r.bestChaine):r.best, bestPont:r.bestPont, bestChaine:r.bestChaine, played:r.played, wins:r.wins||0, draws:r.draws||0, losses:r.losses||0}; })
+        .map(function(r){ return {name:r.name, pid:r.pid||"", score:isGlobal?(r.bestPont+r.bestChaine):r.best, bestPont:r.bestPont, bestChaine:r.bestChaine, played:r.played, wins:r.wins||0, draws:r.draws||0, losses:r.losses||0, streak:r.streak||0}; })
         .sort(function(a,b){ return b.score - a.score; })
         .slice(0,50)
         .map(function(r,i){ return {...r, rank:i+1}; });
       setLeaderboard(sorted);
+      // Charger le Hall of Fame
+      try {
+        const hof = await sbFetch("bb_seasons?order=season_number.desc&limit=10");
+        if (Array.isArray(hof)) setHallOfFame(hof);
+      } catch(e){}
     } catch(e) { setLeaderboard([]); }
   }
 
@@ -2640,7 +2814,17 @@ export default function LePont() {
           }
         }catch{}
         submitToLeaderboard(playerName,total,"pont",diff);
-        if(activeDuelRef.current&&activeDuelRef.current.isRoom){setScreen("waitingRoom");submitRoomScore(total);}else if(activeDuel){submitDuelScore(total); setScreen("final");}else{setScreen("final");}
+        updateDayStreak();
+        if(screen==="daily"||diff.startsWith?.("daily")){
+          // Fin du défi du jour
+          const today = new Date().toISOString().slice(0,10);
+          try { localStorage.setItem("bb_daily_done", today); localStorage.setItem("bb_daily_score", String(total)); } catch{}
+          setDailyDone(true); setDailyScore(total);
+          submitToLeaderboard(playerName, total, "pont", "daily_"+today);
+          loadDailyLeaderboard();
+          setShowDailyLb(true);
+          setScreen("home");
+        } else if(activeDuelRef.current&&activeDuelRef.current.isRoom){setScreen("waitingRoom");submitRoomScore(total);}else if(activeDuel){submitDuelScore(total); setScreen("final");}else{setScreen("final");}
       } else {
         // Manche intermédiaire — envoyer score partiel et afficher classement
         setRoomRoundSnapshot(null); // reset le temps de fetch
@@ -2663,6 +2847,7 @@ export default function LePont() {
       }else{setIsNewRecord(false);}
     }catch{}
     submitToLeaderboard(playerName,sc,"chaine",diff);
+    updateDayStreak();
     if(activeDuelRef.current&&activeDuelRef.current.isRoom){setScreen("waitingRoom");submitRoomScore(sc);}else if(activeDuel){submitDuelScore(sc); setScreen("chainEnd");}else{setScreen("chainEnd");}
   }
 
@@ -2705,6 +2890,45 @@ export default function LePont() {
     setCombo(0); setMaxCombo(0); comboRef.current=0; lastAnswerTime.current=Date.now();
     setRoundScores([]); setCurrentRound(1); setIsNewRecord(false); setMyLbRank(null); setMyLastPts(null);
     startRound(1);
+  }
+
+  function startDailyChallenge() {
+    if (!dailyChallenge) return;
+    const today = new Date().toISOString().slice(0,10);
+    // Forcer la paire du jour
+    const fixedQueue = [dailyChallenge];
+    setDiff(dailyChallenge.diff||"moyen");
+    setTotalRounds(1);
+    setCombo(0); setMaxCombo(0); comboRef.current=0; lastAnswerTime.current=Date.now();
+    setRoundScores([]); setCurrentRound(1); setIsNewRecord(false); setMyLbRank(null); setMyLastPts(null);
+    roundStartTime.current = null;
+    queueRef.current = fixedQueue;
+    setQueue(fixedQueue); setQIdx(0); setScore(0); scoreRef.current=0;
+    setTimeLeft(ROUND_DURATION); setGuess(""); setFlash(null); setFeedback(null);
+    if(dailyChallenge.diff==="facile") setOptions(generateOptions(dailyChallenge.p, DB["facile"]||[]));
+    setAnimKey(0); setScreen("daily");
+    setTimeout(()=>inputRef.current?.focus(),200);
+  }
+
+  async function loadDailyLeaderboard() {
+    const today = new Date().toISOString().slice(0,10);
+    try {
+      const data = await sbFetch("bb_scores?mode=eq.pont&diff=eq.daily_"+today+"&order=score.desc&limit=50&select=player_name,score");
+      if (Array.isArray(data)) setDailyLeaderboard(data);
+    } catch(e){}
+  }
+
+  function updateDayStreak() {
+    try {
+      const today = new Date().toISOString().slice(0,10);
+      const s = JSON.parse(localStorage.getItem("bb_day_streak")||"{}");
+      if (s.lastDate === today) return; // déjà compté aujourd'hui
+      const yesterday = new Date(Date.now()-86400000).toISOString().slice(0,10);
+      const newCount = s.lastDate === yesterday ? (s.count||0) + 1 : 1;
+      const updated = { count: newCount, lastDate: today };
+      localStorage.setItem("bb_day_streak", JSON.stringify(updated));
+      setDayStreak(newCount);
+    } catch(e){}
   }
 
   function nextQ() {
@@ -3003,6 +3227,8 @@ export default function LePont() {
         else if(myScore===theirScore) draws++;
         else losses++;
       });
+      const isUnbeaten = friendDuels.length >= 1 && losses === 0;
+      const theyDominate = friendDuels.length >= 1 && wins === 0;
       return (
         <div style={{...shell,overflow:"auto"}} key="friendDetail">
           <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
@@ -3013,7 +3239,11 @@ export default function LePont() {
           </div>
           <div style={{zIndex:3,padding:"12px 16px 0",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
             {backBtn(function(){setSelectedFriend(null);})}
-            <div style={{fontFamily:G.heading,fontSize:22,color:G.white,letterSpacing:2}}>{selectedFriend.name}</div>
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+              <div style={{fontFamily:G.heading,fontSize:22,color:G.white,letterSpacing:2}}>{selectedFriend.name}</div>
+              {isUnbeaten && <div style={{fontSize:11,fontWeight:800,color:"#FFD700",background:"rgba(255,215,0,.15)",borderRadius:20,padding:"3px 10px",letterSpacing:.5}}>😤 T'es invaincu contre lui</div>}
+              {theyDominate && <div style={{fontSize:11,fontWeight:800,color:"#FF3D57",background:"rgba(255,61,87,.15)",borderRadius:20,padding:"3px 10px",letterSpacing:.5}}>💀 Il t'a jamais perdu contre toi</div>}
+            </div>
             <button onClick={function(){setShowDuelCreate({id:selectedFriend.id,name:selectedFriend.name});}} style={{padding:"8px 14px",background:G.accent,color:"#000",border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:800}}>⚡ Défier</button>
           </div>
           <div style={{...sheet,borderRadius:"28px 28px 0 0",marginTop:16}}>
@@ -3222,22 +3452,81 @@ export default function LePont() {
           {backBtn(function(){setShowLeaderboard(false);})}
           <div style={{flex:1,textAlign:"center"}}>
             <div style={{fontFamily:G.heading,fontSize:"clamp(28px,7vw,46px)",color:G.white,letterSpacing:3}}>CLASSEMENT</div>
-            <div style={{fontSize:12,color:"rgba(255,255,255,.4)"}}>Top 50 mondial</div>
+            {(()=>{ const s=getCurrentSeason(); return lbMode==="amis"
+              ? <div style={{fontSize:12,color:"rgba(255,255,255,.4)"}}>Classement entre amis · Cumulatif</div>
+              : <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
+                  <div style={{fontSize:13,fontWeight:800,color:G.gold}}>⚽ Saison {s.num}</div>
+                  <div style={{fontSize:11,color:"rgba(255,255,255,.4)"}}>⏳ J-{s.days} {s.hours}h avant reset</div>
+                </div>;
+            })()}
           </div>
           <div style={{width:40}}/>{/* spacer pour centrer le titre */}
         </div>
         <div style={{...sheet,borderRadius:"28px 28px 0 0"}}>
-          <div style={{display:"flex",gap:8}}>
-            {["global","pont","chaine"].map(function(m){return(
-              <button key={m} onClick={function(){setLbMode(m);loadLeaderboard(m);}} style={{flex:1,padding:"11px",borderRadius:12,border:"1.5px solid "+(lbMode===m?G.accent:"rgba(255,255,255,.12)"),background:lbMode===m?"rgba(0,230,118,.1)":"transparent",color:lbMode===m?G.accent:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:13}}>
-                {m==="global"?"🌍 Global":m==="pont"?"🏟 The Plug":"⛓ The Mercato"}
+          {/* Saison info */}
+          {lbMode!=="amis" && (()=>{
+            const {seasonNumber, seasonEndDate} = getCurrentSeason();
+            const msLeft = seasonEndDate - new Date();
+            const daysLeft = Math.floor(msLeft / 86400000);
+            const hoursLeft = Math.floor((msLeft % 86400000) / 3600000);
+            return (
+              <div style={{marginBottom:8,padding:"10px 14px",background:"rgba(255,214,0,.08)",borderRadius:14,border:"1px solid rgba(255,214,0,.2)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                <div>
+                  <div style={{fontSize:11,fontWeight:800,color:G.gold,letterSpacing:1}}>🏆 SAISON {seasonNumber}</div>
+                  <div style={{fontSize:10,color:"rgba(255,255,255,.4)",marginTop:2}}>
+                    {daysLeft > 0 ? `J-${daysLeft} (${hoursLeft}h)` : `Finit dans ${hoursLeft}h`}
+                  </div>
+                </div>
+                <button onClick={function(){setShowHallOfFame(true);}} style={{padding:"6px 12px",background:"rgba(255,214,0,.15)",color:G.gold,border:"1px solid rgba(255,214,0,.3)",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:11,fontWeight:800}}>
+                  🏅 Hall of Fame
+                </button>
+              </div>
+            );
+          })()}
+          {/* Hall of Fame Modal */}
+          {showHallOfFame && (
+            <div style={{position:"fixed",inset:0,zIndex:400,background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)",display:"flex",alignItems:"flex-end"}}
+              onClick={function(e){if(e.target===e.currentTarget)setShowHallOfFame(false);}}>
+              <div style={{width:"100%",background:"rgba(10,20,10,.97)",borderRadius:"28px 28px 0 0",padding:"20px 20px 48px",border:"1px solid rgba(255,255,255,.1)",borderBottom:"none",maxHeight:"80vh",overflowY:"auto"}}>
+                <div style={{fontFamily:G.heading,fontSize:28,color:G.gold,letterSpacing:2,marginBottom:4,textAlign:"center"}}>🏅 HALL OF FAME</div>
+                <div style={{fontSize:12,color:"rgba(255,255,255,.4)",textAlign:"center",marginBottom:16}}>Champions des saisons passées</div>
+                {seasons.length === 0 && <div style={{textAlign:"center",color:"rgba(255,255,255,.3)",padding:"24px 0",fontSize:14}}>Pas encore de champion — la première saison est en cours !</div>}
+                {seasons.map(function(s, i){
+                  const grade = getGrade(s.champion_score||0);
+                  return (
+                    <div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"14px",background:"rgba(255,214,0,.06)",borderRadius:14,border:"1px solid rgba(255,214,0,.15)",marginBottom:8}}>
+                      <div style={{fontSize:32}}>🏆</div>
+                      <div style={{flex:1}}>
+                        <div style={{fontSize:13,color:"rgba(255,255,255,.4)",letterSpacing:1}}>SAISON {s.season_number}</div>
+                        <div style={{fontSize:16,fontWeight:800,color:G.gold}}>{s.champion_name}</div>
+                        <div style={{fontSize:11,color:"rgba(255,255,255,.4)",marginTop:2}}>{grade.emoji} {grade.label}</div>
+                      </div>
+                      <div style={{fontFamily:G.heading,fontSize:28,color:G.gold}}>{s.champion_score} <span style={{fontSize:11,color:"rgba(255,255,255,.3)"}}>pts</span></div>
+                    </div>
+                  );
+                })}
+                <button onClick={function(){setShowHallOfFame(false);}} style={{width:"100%",padding:"14px",background:"rgba(255,255,255,.07)",color:G.white,border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700,marginTop:8}}>Fermer</button>
+              </div>
+            </div>
+          )}
+          <div style={{display:"flex",gap:6,marginBottom:4,flexWrap:"wrap"}}>
+            {["global","pont","chaine","amis"].map(function(m){return(
+              <button key={m} onClick={function(){
+                setLbMode(m);
+                if(m!=="amis") loadLeaderboard(m);
+                else loadLeaderboard("global");
+              }} style={{flex:1,minWidth:60,padding:"10px 6px",borderRadius:12,border:"1.5px solid "+(lbMode===m?G.accent:"rgba(255,255,255,.12)"),background:lbMode===m?"rgba(0,230,118,.1)":"transparent",color:lbMode===m?G.accent:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:12}}>
+                {m==="global"?"🌍 Global":m==="pont"?"🏟 Plug":m==="chaine"?"⛓ Mercato":"👥 Amis"}
               </button>
             );})}
           </div>
           {leaderboard.length === 0 && (
             <div style={{textAlign:"center",padding:"32px 0",color:"rgba(255,255,255,.3)",fontSize:14}}>Aucun score pour le moment</div>
           )}
-          {leaderboard.map(function(entry, i){
+          {(lbMode==="amis"
+            ? leaderboard.filter(function(e){ return e.pid===playerId || friendsList.includes(e.pid); })
+            : leaderboard
+          ).map(function(entry, i){
             const isMe = entry.pid === playerId;
             const medals = ["🥇","🥈","🥉"];
             const grade = getGrade(entry.score);
@@ -3251,6 +3540,7 @@ export default function LePont() {
                     <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3}}>
                       <span style={{fontSize:14,fontWeight:800,color:isMe?G.accent:G.white}}>{entry.name}{isMe?" (toi)":""}</span>
                       <span style={{fontSize:10,fontWeight:800,color:grade.color,background:grade.color+"22",borderRadius:20,padding:"2px 7px",letterSpacing:.5}}>{grade.emoji} {grade.label}</span>
+                      {entry.streak>=3 && <span style={{fontSize:10,fontWeight:800,color:"#FF6B35",background:"rgba(255,107,53,.15)",borderRadius:20,padding:"2px 7px"}}>🔥 {entry.streak}</span>}
                     </div>
                     {lbMode==="global"
                       ? <div style={{fontSize:11,color:"rgba(255,255,255,.35)"}}>🏟 {entry.bestPont} pts &nbsp;·&nbsp; ⛓ {entry.bestChaine} pts</div>
@@ -3276,12 +3566,28 @@ export default function LePont() {
               </div>
             );
           })}
+          {/* Hall of Fame */}
+          {hallOfFame.length > 0 && lbMode !== "amis" && (
+            <div style={{marginTop:16,paddingTop:16,borderTop:"1px solid rgba(255,255,255,.08)"}}>
+              <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.3)",marginBottom:10,textAlign:"center"}}>🏛 Hall of Fame</div>
+              {hallOfFame.map(function(s,i){
+                return (
+                  <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",background:"rgba(255,215,0,.05)",borderRadius:12,marginBottom:6,border:"1px solid rgba(255,215,0,.1)"}}>
+                    <span style={{fontSize:20}}>👑</span>
+                    <div style={{flex:1}}>
+                      <div style={{fontSize:13,fontWeight:800,color:G.gold}}>{s.champion_name}</div>
+                      <div style={{fontSize:11,color:"rgba(255,255,255,.35)"}}>Saison {s.season_number}</div>
+                    </div>
+                    <div style={{fontFamily:G.heading,fontSize:20,color:G.gold}}>{s.champion_score} <span style={{fontSize:11,color:"rgba(255,255,255,.3)"}}>pts</span></div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
     );
   }
-
-  // ── HOME ──
 
   // ── ROOM LOBBY ──
   if (room) {
@@ -3708,7 +4014,13 @@ export default function LePont() {
             <div style={{fontSize:9,letterSpacing:5,textTransform:"uppercase",color:"rgba(255,255,255,.35)"}}>T'as le niveau ?</div>
             <div style={{fontFamily:G.heading,fontSize:"clamp(42px,11vw,68px)",lineHeight:.9,letterSpacing:2,color:G.white}}>GOAT<span style={{color:G.accent}}>FC</span></div>
           </div>
-          <div style={{flex:1,display:"flex",justifyContent:"flex-end"}}>
+          <div style={{flex:1,display:"flex",justifyContent:"flex-end",alignItems:"center",gap:8}}>
+            {dayStreak >= 2 && (
+              <div style={{background:"rgba(255,107,53,.15)",border:"1px solid rgba(255,107,53,.3)",borderRadius:12,padding:"6px 10px",display:"flex",alignItems:"center",gap:4}}>
+                <span style={{fontSize:14}}>🔥</span>
+                <span style={{fontFamily:G.heading,fontSize:16,color:"#FF6B35"}}>{dayStreak}</span>
+              </div>
+            )}
             <div onClick={function(){setPseudoScreen(true);}} style={{background:"rgba(255,255,255,.07)",border:"1px solid rgba(255,255,255,.12)",borderRadius:12,padding:"7px 12px",display:"flex",alignItems:"center",gap:6,cursor:"pointer"}}>
               <span style={{fontSize:13}}>👤</span>
               <span style={{fontSize:12,fontWeight:700,color:playerName?G.white:"rgba(255,255,255,.4)",maxWidth:80,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
@@ -3863,6 +4175,57 @@ export default function LePont() {
           </div>
         )}
 
+        {/* Défi du jour */}
+        {dailyChallenge && (
+          <div style={{borderRadius:18,background:"linear-gradient(135deg,rgba(255,214,0,.12),rgba(255,107,53,.12))",border:"1.5px solid rgba(255,214,0,.3)",padding:"14px 16px",display:"flex",alignItems:"center",gap:12}}>
+            <div style={{fontSize:32}}>⚡</div>
+            <div style={{flex:1}}>
+              <div style={{fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,214,0,.7)",marginBottom:2}}>Défi du jour</div>
+              <div style={{fontSize:14,fontWeight:800,color:G.white}}>
+                {dailyChallenge.c1} <span style={{color:"rgba(255,255,255,.4)"}}>vs</span> {dailyChallenge.c2}
+              </div>
+              <div style={{fontSize:11,color:"rgba(255,255,255,.4)",marginTop:2,textTransform:"capitalize"}}>{dailyChallenge.diff}</div>
+            </div>
+            {dailyDone
+              ? <div style={{textAlign:"center"}}>
+                  <div style={{fontFamily:G.heading,fontSize:22,color:G.gold}}>{dailyScore}</div>
+                  <div style={{fontSize:10,color:"rgba(255,255,255,.4)"}}>pts</div>
+                  <button onClick={function(){loadDailyLeaderboard();setShowDailyLb(true);}} style={{marginTop:4,padding:"5px 10px",background:"rgba(255,214,0,.2)",color:G.gold,border:"1px solid rgba(255,214,0,.3)",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:11,fontWeight:800}}>Voir classement</button>
+                </div>
+              : <button onClick={function(){requirePseudo(function(){startDailyChallenge();});}} style={{padding:"12px 16px",background:"linear-gradient(135deg,#FFD600,#FF6B35)",color:"#000",border:"none",borderRadius:14,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:800,whiteSpace:"nowrap"}}>Jouer ⚡</button>
+            }
+          </div>
+        )}
+
+        {/* Modal classement daily */}
+        {showDailyLb && (
+          <div style={{position:"fixed",inset:0,zIndex:400,background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)",display:"flex",alignItems:"flex-end"}} onClick={function(e){if(e.target===e.currentTarget)setShowDailyLb(false);}}>
+            <div style={{width:"100%",background:"rgba(10,20,10,.97)",borderRadius:"28px 28px 0 0",padding:"20px 20px 40px",border:"1px solid rgba(255,255,255,.1)",borderBottom:"none",maxHeight:"80vh",overflow:"auto"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+                <div>
+                  <div style={{fontFamily:G.heading,fontSize:22,color:G.gold}}>⚡ Défi du jour</div>
+                  <div style={{fontSize:12,color:"rgba(255,255,255,.4)"}}>{dailyChallenge?.c1} vs {dailyChallenge?.c2}</div>
+                </div>
+                <button onClick={function(){setShowDailyLb(false);}} style={{background:"rgba(255,255,255,.1)",border:"none",borderRadius:"50%",width:32,height:32,color:G.white,cursor:"pointer",fontSize:18}}>✕</button>
+              </div>
+              {dailyLeaderboard.length === 0
+                ? <div style={{textAlign:"center",padding:"32px 0",color:"rgba(255,255,255,.3)"}}>Aucun score encore</div>
+                : dailyLeaderboard.map(function(e,i){
+                    const medals = ["🥇","🥈","🥉"];
+                    const isMe = e.player_name === playerName;
+                    return (
+                      <div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",borderRadius:14,background:isMe?"rgba(255,214,0,.08)":"rgba(255,255,255,.03)",border:isMe?"1px solid rgba(255,214,0,.3)":"1px solid rgba(255,255,255,.05)",marginBottom:6}}>
+                        <div style={{fontFamily:G.heading,fontSize:20,width:28,textAlign:"center",color:i<3?["#FFD600","#C0C0C0","#CD7F32"][i]:"rgba(255,255,255,.3)"}}>{i<3?medals[i]:i+1}</div>
+                        <div style={{flex:1,fontSize:14,fontWeight:800,color:isMe?G.gold:G.white}}>{e.player_name}{isMe?" (toi)":""}</div>
+                        <div style={{fontFamily:G.heading,fontSize:24,color:isMe?G.gold:G.white}}>{e.score} <span style={{fontSize:11,color:"rgba(255,255,255,.3)"}}>pts</span></div>
+                      </div>
+                    );
+                  })
+              }
+            </div>
+          </div>
+        )}
+
         {/* Multijoueur - rejoindre */}
         <div style={{display:"flex",gap:8}}>
           <input value={roomInput} onChange={function(e){setRoomInput(e.target.value.toUpperCase());setRoomMsg("");}}
@@ -3886,7 +4249,7 @@ export default function LePont() {
   );
 
 
-  if(screen==="game"&&cur) {
+  if((screen==="game"||screen==="daily")&&cur) {
     const [ca1,cb1]=getClubColors(cur.c1);
     const [ca2,cb2]=getClubColors(cur.c2);
     const tc1=textColor(ca1); const tc2=textColor(ca2);
@@ -4254,6 +4617,7 @@ export default function LePont() {
           <div style={{fontSize:11,color:"#bbb"}}>pts{isChain?` · ${chainCount} lien${chainCount>1?"s":""}`:`  ·  ${totalRounds} manche${totalRounds>1?"s":""}`}</div>
           {maxCombo>=3&&<div style={{fontSize:13,color:"#f59e0b",marginTop:4,fontWeight:700}}>🔥 Meilleur combo : x{maxCombo}</div>}
           {isNewRecord&&<div style={{fontSize:12,color:G.accent,marginTop:6,fontStyle:"italic"}}>Ancien record battu 🎉</div>}
+          {dayStreak>=2&&<div style={{fontSize:12,color:"#FF6B35",marginTop:6,fontWeight:700}}>🔥 {dayStreak} jours de suite !</div>}
         </div>
 
         {!isChain&&roundScores.length>1&&(
@@ -4292,6 +4656,14 @@ export default function LePont() {
           </div>
         )}
         <button onClick={()=>{if(isChain)startChain();else startCompetition();}} style={{width:"100%",padding:"18px",background:G.dark,color:G.white,border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:17,fontWeight:800,letterSpacing:1,display:"flex",alignItems:"center",justifyContent:"center",gap:10}}>{Icon.ball(18,G.white)} Rejouer</button>
+        <button onClick={function(){
+          const grade = getGrade(sc);
+          const txt = `${grade.emoji} J'ai scoré ${sc} pts en mode ${isChain?"The Mercato":"The Plug"} sur GOAT FC !\nGrade : ${grade.label}\nT'as le niveau ? 👇\nhttps://bridgeball.vercel.app`;
+          if(navigator.share){navigator.share({title:"GOAT FC",text:txt});}
+          else{navigator.clipboard.writeText(txt).then(function(){alert("Copié ! Colle-le où tu veux 📋");});}
+        }} style={{width:"100%",padding:"14px",background:"linear-gradient(135deg,#1d4ed8,#7c3aed)",color:"#fff",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+          📤 Partager mon score
+        </button>
         <button onClick={()=>setScreen("home")} style={{width:"100%",padding:"14px",background:"transparent",color:"#bbb",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:700}}>↩ Accueil</button>
       </div>
     </div>
@@ -4334,7 +4706,19 @@ export default function LePont() {
               <div style={{fontFamily:G.heading,fontSize:26,color:i===0?G.gold:G.white}}>{p.score||0} <span style={{fontSize:12,color:"rgba(255,255,255,.3)"}}>pts</span></div>
             </div>
           );})}
-          <button onClick={function(){setDuelResult(null);setScreen("home");}} style={{width:"100%",padding:"16px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800,marginTop:8}}>
+          <button onClick={function(){
+            const myEntry = duelResult.players.find(function(p){return p.id===playerId;});
+            const grade = getGrade(myEntry?.score||0);
+            const rank = duelResult.players.findIndex(function(p){return p.id===playerId;})+1;
+            const txt = rank===1
+              ? `${grade.emoji} J'ai remporté la salle sur GOAT FC avec ${myEntry?.score||0} pts 🏆\nGrade : ${grade.label}\nT'as le niveau ? 👇\nhttps://bridgeball.vercel.app`
+              : `J'ai terminé ${rank}ème sur GOAT FC avec ${myEntry?.score||0} pts\nGrade : ${grade.label}\nhttps://bridgeball.vercel.app`;
+            if(navigator.share){navigator.share({title:"GOAT FC",text:txt});}
+            else{navigator.clipboard.writeText(txt).then(function(){alert("Copié ! 📋");});}
+          }} style={{width:"100%",padding:"13px",background:"linear-gradient(135deg,#1d4ed8,#7c3aed)",color:"#fff",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginTop:8,marginBottom:6}}>
+            📤 Partager le résultat
+          </button>
+          <button onClick={function(){setDuelResult(null);setScreen("home");}} style={{width:"100%",padding:"16px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800,marginTop:0}}>
             Retour à l'accueil
           </button>
         </div>
@@ -4387,6 +4771,46 @@ export default function LePont() {
               <div style={{fontSize:11,color:"rgba(255,255,255,.3)",marginTop:4}}>pts</div>
             </div>
           </div>
+          {/* Streak banner */}
+          {won && winStreak >= 2 && (
+            <div style={{textAlign:"center",marginBottom:8,padding:"10px 16px",background:"linear-gradient(135deg,rgba(255,107,53,.2),rgba(255,214,0,.2))",borderRadius:14,border:"1px solid rgba(255,107,53,.3)"}}>
+              <span style={{fontSize:20}}>🔥</span>
+              <span style={{fontFamily:G.heading,fontSize:18,color:"#FF6B35",marginLeft:8,letterSpacing:1}}>
+                {winStreak} VICTOIRES D'AFFILÉE
+              </span>
+              {winStreak >= 5 && <div style={{fontSize:12,color:"rgba(255,107,53,.8)",marginTop:2}}>
+                {winStreak >= 10 ? "T'es inarrêtable 🐐" : winStreak >= 7 ? "Personne peut t'arrêter 😤" : "T'es en feu frère 🔥"}
+              </div>}
+            </div>
+          )}
+          {/* Badge Invaincu */}
+          {won && duelResult.oppName && (()=>{
+            const h2h = duels.filter(function(d){return d.status==="complete"&&(d.challenger_id===playerId||d.opponent_id===playerId)&&(d.challenger_name===duelResult.oppName||d.opponent_name===duelResult.oppName);});
+            const lost = h2h.some(function(d){const ms=d.challenger_id===playerId?d.challenger_score:d.opponent_score;const ts=d.challenger_id===playerId?d.opponent_score:d.challenger_score;return ms<ts;});
+            return !lost && h2h.length >= 2 ? (
+              <div style={{textAlign:"center",marginBottom:8,padding:"10px 16px",background:"rgba(255,215,0,.1)",borderRadius:14,border:"1px solid rgba(255,215,0,.3)"}}>
+                <span style={{fontFamily:G.heading,fontSize:16,color:"#FFD700",letterSpacing:1}}>😤 INVAINCU CONTRE {duelResult.oppName.toUpperCase()}</span>
+              </div>
+            ) : null;
+          })()}
+          {/* Message auto du vainqueur au perdant */}
+          {!won && !draw && !abandoned && duelResult.oppName && (
+            <div style={{marginBottom:8,padding:"12px 16px",background:"rgba(255,255,255,.05)",borderRadius:14,border:"1px solid rgba(255,255,255,.1)"}}>
+              <div style={{fontSize:10,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginBottom:6}}>💬 Message de {duelResult.oppName}</div>
+              <div style={{fontSize:14,fontWeight:700,color:G.white}}>
+                {[
+                  "Trop facile 😴 Reviens quand t'es prêt",
+                  "T'as vu la différence ? C'est ce qu'on appelle le niveau 🐐",
+                  "Même pas besoin de transpirer frère 😂",
+                  "Merci pour les points 🙏",
+                  "La next fois prépare-toi mieux 💀",
+                  "J'ai joué les yeux fermés et t'as quand même perdu 😤",
+                  "C'est dur hein ? Normal, t'as en face 😏",
+                  "Viens on refait si t'as le courage 👀",
+                ][Math.abs(Math.floor(duelResult.theirScore - duelResult.myScore + duelResult.theirScore)) % 8]}
+              </div>
+            </div>
+          )}
           <div style={{fontSize:15,color:"rgba(255,255,255,.85)",textAlign:"center",padding:"10px 0",fontWeight:700,lineHeight:1.4}}>
             {abandoned
               ? "T'as même pas eu le courage de finir 😂"
@@ -4409,15 +4833,41 @@ export default function LePont() {
                 ][Math.floor(duelResult.theirScore * 7) % 5]
             }
           </div>
-          <button onClick={function(){setDuelResult(null);setScreen("home");}} style={{width:"100%",padding:"16px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800,marginTop:8}}>
+          {won && !abandoned && (
+            <div style={{marginBottom:8,padding:"10px 16px",background:"rgba(0,230,118,.05)",borderRadius:14,border:"1px solid rgba(0,230,118,.1)"}}>
+              <div style={{fontSize:10,color:"rgba(0,230,118,.5)",letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>💬 Message envoyé à {duelResult.oppName}</div>
+              <div style={{fontSize:13,color:"rgba(255,255,255,.5)",fontStyle:"italic"}}>
+                {[
+                  "Trop facile 😴 Reviens quand t'es prêt",
+                  "T'as vu la différence ? C'est ce qu'on appelle le niveau 🐐",
+                  "Même pas besoin de transpirer frère 😂",
+                  "Merci pour les points 🙏",
+                  "La next fois prépare-toi mieux 💀",
+                  "J'ai joué les yeux fermés et t'as quand même perdu 😤",
+                  "C'est dur hein ? Normal, t'as en face 😏",
+                  "Viens on refait si t'as le courage 👀",
+                ][Math.abs(Math.floor(duelResult.myScore * 3 + duelResult.theirScore)) % 8]}
+              </div>
+            </div>
+          )}
+          <button onClick={function(){
+            const grade = getGrade(duelResult.myScore||0);
+            const result = won ? "victoire" : draw ? "nul" : "défaite";
+            const txt = won
+              ? `${grade.emoji} J'ai écrasé ${duelResult.oppName} ${duelResult.myScore}-${duelResult.theirScore} sur GOAT FC 😤\nGrade : ${grade.label}\nT'as le niveau ? 👇\nhttps://bridgeball.vercel.app`
+              : `J'ai perdu ${duelResult.myScore}-${duelResult.theirScore} contre ${duelResult.oppName} sur GOAT FC 😤\nLa revanche arrive...\nhttps://bridgeball.vercel.app`;
+            if(navigator.share){navigator.share({title:"GOAT FC",text:txt});}
+            else{navigator.clipboard.writeText(txt).then(function(){alert("Copié ! 📋");});}
+          }} style={{width:"100%",padding:"13px",background:"linear-gradient(135deg,#1d4ed8,#7c3aed)",color:"#fff",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:6}}>
+            📤 Partager le résultat
+          </button>
+          <button onClick={function(){setDuelResult(null);setScreen("home");}} style={{width:"100%",padding:"16px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800,marginTop:2}}>
             Retour à l'accueil
           </button>
         </div>
       </div>
     );
   }
-
-  if(screen==="chainEnd") return makeResultScreen(chainScore,"chaine",true);
   if(screen==="final") return makeResultScreen(total,"pont",false);
 
   return <div style={{...shell,justifyContent:"center",alignItems:"center"}}><div style={{color:G.white}}>Chargement…</div></div>;
