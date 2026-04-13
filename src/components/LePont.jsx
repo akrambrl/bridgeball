@@ -1674,7 +1674,7 @@ export default function LePont() {
   useEffect(()=>{
     chainPassedRef.current = false;
     clearInterval(qTimerRef.current);
-    if(screen!=="game"&&screen!=="chainGame"){clearInterval(qTimerRef.current);return;}
+    if(screen!=="game"&&screen!=="chainGame"&&screen!=="daily"){clearInterval(qTimerRef.current);return;}
     const duration = screen==="chainGame" ? CHAIN_QUESTION_DURATION : QUESTION_DURATION;
     const qStart = Date.now();
     const capturedChainCount = chainCount;
@@ -4192,7 +4192,7 @@ export default function LePont() {
                   <div style={{fontSize:10,color:"rgba(255,255,255,.4)"}}>pts</div>
                   <button onClick={function(){loadDailyLeaderboard();setShowDailyLb(true);}} style={{marginTop:4,padding:"5px 10px",background:"rgba(255,214,0,.2)",color:G.gold,border:"1px solid rgba(255,214,0,.3)",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:11,fontWeight:800}}>Voir classement</button>
                 </div>
-              : <button onClick={function(){requirePseudo(function(){startDailyChallenge();});}} style={{padding:"12px 16px",background:"linear-gradient(135deg,#FFD600,#FF6B35)",color:"#000",border:"none",borderRadius:14,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:800,whiteSpace:"nowrap"}}>Jouer ⚡</button>
+              : <button onClick={function(){startDailyChallenge();}} style={{padding:"12px 16px",background:"linear-gradient(135deg,#FFD600,#FF6B35)",color:"#000",border:"none",borderRadius:14,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:800,whiteSpace:"nowrap"}}>Jouer ⚡</button>
             }
           </div>
         )}
@@ -4315,7 +4315,7 @@ export default function LePont() {
             {scoreDisplay(score,scoreAnim)}
             <span style={{fontSize:11,color:"rgba(255,255,255,.5)",fontWeight:600}}>pts</span>
           </div>
-          {timerCircle()}
+          {screen!=="daily" && timerCircle()}
           {record?<div style={{background:"rgba(255,255,255,.13)",backdropFilter:"blur(10px)",borderRadius:18,padding:"8px 14px",display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:13}}>🏆</span><span style={{fontFamily:G.heading,fontSize:22,color:G.gold}}>{record.score}</span></div>:<div style={{width:70}}/>}
         </div>
 
@@ -4383,7 +4383,7 @@ export default function LePont() {
                   );
                 })}
               </div>
-              <button onClick={handlePass} disabled={!!flash} style={{padding:"12px",pointerEvents:flash?"none":"auto",background:"transparent",color:"#bbb",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700,opacity:flash ? 0.3 : 1}}>Passer → (−0.5 pt)</button>
+              <button onClick={handlePass} disabled={!!flash} style={{padding:"12px",pointerEvents:flash?"none":"auto",background:"transparent",color:"#bbb",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700,opacity:flash ? 0.3 : 1,display:screen==="daily"?"none":"block"}}>Passer → (−0.5 pt)</button>
             </div>
           ):(
             <div style={{display:"flex",flexDirection:"column",gap:10}}>
@@ -4391,7 +4391,7 @@ export default function LePont() {
                 placeholder="Nom du joueur..." autoComplete="off"
                 style={{width:"100%",background:flash==="ko"?"#fee2e2":flash==="ok"?"#dcfce7":G.offWhite,border:("2px solid "+(flash==="ko"?G.red:flash==="ok"?G.accent:"#e5e5e0")+""),borderRadius:18,padding:"15px 18px",fontFamily:G.font,fontSize:18,fontWeight:700,color:G.dark,outline:"none",textAlign:"center",transition:"all .15s",animation:flash==="ko"?"answerKo .4s ease":flash==="ok"?"answerOk .4s ease":"none"}}/>
               <div style={{display:"flex",gap:10}}>
-                <button onClick={handlePass} disabled={!!flash} style={{flex:1,padding:15,pointerEvents:flash?"none":"auto",background:G.offWhite,color:"#aaa",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700,opacity:flash ? 0.3 : 1}}>Passer →</button>
+                {screen!=="daily" && <button onClick={handlePass} disabled={!!flash} style={{flex:1,padding:15,pointerEvents:flash?"none":"auto",background:G.offWhite,color:"#aaa",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700,opacity:flash ? 0.3 : 1}}>Passer →</button>}
                 <button onClick={handleSubmit} style={{flex:2,padding:"15px",background:G.dark,color:G.white,border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:16,fontWeight:800}}>Valider</button>
               </div>
             </div>
