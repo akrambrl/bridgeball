@@ -1415,7 +1415,12 @@ if(typeof document!=="undefined"&&!document.getElementById("bb-css")){
     @keyframes urgentPulse{0%,100%{opacity:1}50%{opacity:.6}} @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
     html,body,#root{background:#1E5C2A!important;min-height:100vh;min-height:100dvh;}
     html{background:#1E5C2A!important;}
-    #root{background-image:repeating-linear-gradient(90deg,#1E5C2A 0,#1E5C2A 14.28%,#276B34 14.28%,#276B34 28.57%,#1E5C2A 28.57%,#1E5C2A 42.86%,#276B34 42.86%,#276B34 57.14%,#1E5C2A 57.14%,#1E5C2A 71.43%,#276B34 71.43%,#276B34 85.71%,#1E5C2A 85.71%)!important;padding-top:env(safe-area-inset-top);}
+    #root{background-image:repeating-linear-gradient(90deg,#1E5C2A 0,#1E5C2A 14.28%,#276B34 14.28%,#276B34 28.57%,#1E5C2A 28.57%,#1E5C2A 42.86%,#276B34 42.86%,#276B34 57.14%,#1E5C2A 57.14%,#1E5C2A 71.43%,#276B34 71.43%,#276B34 85.71%,#1E5C2A 85.71%)!important;padding-top:env(safe-area-inset-top);display:flex;justify-content:center;}
+    @media(min-width:600px){
+      #root>div{max-width:430px;width:100%;box-shadow:0 0 60px rgba(0,0,0,.6);position:relative;}
+      body{background:#0a1a0a!important;}
+      html{background:#0a1a0a!important;}
+    }
   `;
   document.head.appendChild(s);
 }
@@ -3086,9 +3091,10 @@ export default function LePont() {
     font:"'Inter',system-ui,sans-serif",heading:"'Bebas Neue',cursive,sans-serif",
   };
   const shell = {
-    minHeight:"100vh",display:"flex",flexDirection:"column",
+    minHeight:"100vh",minHeight:"100dvh",display:"flex",flexDirection:"column",
     background:"transparent",
     fontFamily:G.font,position:"relative",overflow:"hidden",
+    width:"100%",
   };
   const stripes = {position:"absolute",inset:0,zIndex:0,pointerEvents:"none",background:"radial-gradient(ellipse at 50% 0%,rgba(0,230,118,.06) 0%,transparent 70%)"};
   const sheet = {background:"rgba(0,0,0,.55)",backdropFilter:"blur(2px)",borderRadius:"32px 32px 0 0",flex:1,display:"flex",flexDirection:"column",gap:10,padding:"20px 18px 28px",display:"flex",flexDirection:"column",gap:14,zIndex:1,boxShadow:"0 -2px 40px rgba(0,0,0,.4)",border:"1px solid rgba(255,255,255,.08)",borderBottom:"none"};
