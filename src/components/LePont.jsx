@@ -2869,7 +2869,7 @@ export default function LePont() {
     setTimeLeft(ROUND_DURATION); setGuess(""); setFlash(null); setFeedback(null);
     if(diff==="facile") setOptions(generateOptions(q[0].p, DB[diff]||[]));
     setCurrentRound(round); setAnimKey(0); setScreen("game");
-    setTimeout(()=>inputRef.current?.focus(),200);
+    setTimeout(()=>{ if(window.innerWidth<600) inputRef.current?.focus(); },200);
   }
 
   function startChain() {
@@ -2891,7 +2891,7 @@ export default function LePont() {
     setChainLastClub(""); setChainHistory([]); setGuess(""); setFlash(null); setFeedback(null);
     setTimeLeft(CHAIN_DURATION); setScore(0); scoreRef.current=0;
     setMyLbRank(null); setScreen("chainGame");
-    setTimeout(()=>inputRef.current?.focus(),200);
+    setTimeout(()=>{ if(window.innerWidth<600) inputRef.current?.focus(); },200);
   }
 
   function startCompetition() {
@@ -2959,7 +2959,7 @@ export default function LePont() {
       return next;
     });
     setGuess(""); setFlash(null); setAnimKey(k=>k+1);
-    if(diff!=="facile") setTimeout(()=>inputRef.current?.focus(),100);
+    if(diff!=="facile") setTimeout(()=>{ if(window.innerWidth<600) inputRef.current?.focus(); },100);
   }
 
   function handleSubmit() {
@@ -3017,7 +3017,7 @@ export default function LePont() {
       const newUsedP=new Set(chainUsedPlayers); newUsedP.add(next);
       // Prefetch logos for next player
       
-      setTimeout(()=>{setChainPlayer(next);setChainUsedPlayers(newUsedP);setChainLastClub(matched);setGuess("");setFeedback(null);setFlash(null);setTimeout(()=>inputRef.current?.focus(),100);},700);
+      setTimeout(()=>{setChainPlayer(next);setChainUsedPlayers(newUsedP);setChainLastClub(matched);setGuess("");setFeedback(null);setFlash(null);setTimeout(()=>{ if(window.innerWidth<600) inputRef.current?.focus(); },100);},700);
     }else if(matchClub(g,playerClubs)){
       setFlash("used"); setFeedback("used"); playSound("ko");
       setTimeout(()=>{setFlash(null);setFeedback(null);setGuess("");inputRef.current?.focus();},1200);
@@ -3049,7 +3049,7 @@ export default function LePont() {
     setChainUsedClubs(newUsed); setChainUsedPlayers(newUsedP);
     setChainHistory(prev=>[...prev,{player:chainPlayer,club:chosen,passed:true}]);
     setChainPlayer(next); setChainLastClub(chosen); setGuess("");
-    setTimeout(()=>inputRef.current?.focus(),100);
+    setTimeout(()=>{ if(window.innerWidth<600) inputRef.current?.focus(); },100);
     setAnimKey(k=>k+1); // relance le timer de question pour le nouveau joueur
   }
   handleChainPassRef.current = handleChainPass;
@@ -4179,7 +4179,7 @@ export default function LePont() {
               </div>
               {/* Boutons */}
               <div style={{display:"flex",gap:10}}>
-                <button onClick={function(){const m=gameConfigModal;setGameConfigModal(null);setTimeout(function(){tryStart(m);},50);}} style={{flex:2,padding:"16px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:16,fontWeight:800,letterSpacing:.5}}>
+                <button onClick={function(){const m=gameConfigModal;setGameConfigModal(null);setTimeout(function(){tryStart(m);},150);}} style={{flex:2,padding:"16px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:16,fontWeight:800,letterSpacing:.5}}>
                   ▶ Jouer seul
                 </button>
                 <button onClick={function(){setDuelMode(gameConfigModal);setDuelDiff(diff);setDuelRounds(totalRounds);setGameConfigModal(null);setTimeout(function(){setShowRoomCreate(true);},100);}} style={{flex:1,padding:"16px",background:"rgba(255,255,255,.07)",color:G.white,border:"1px solid rgba(255,255,255,.12)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700}}>
