@@ -1804,6 +1804,30 @@ export default function LePont() {
     } catch(e) { console.error("Abandon error:", e); }
   }
 
+  async function abandonRoom() {
+    const duel = activeDuelRef.current;
+    if (!duel || !duel.isRoom) return;
+    const roomId = duel.id;
+    try {
+      const data = await sbFetch("bb_rooms?id=eq."+roomId+"&limit=1");
+      if (!Array.isArray(data) || data.length === 0) return;
+      const r = data[0];
+      const players = typeof r.players === "string" ? JSON.parse(r.players) : r.players;
+      const updated = players.map(function(p) {
+        return p.id === playerId ? Object.assign({}, p, {score:0, status:"done", abandoned:true}) : p;
+      });
+      const allDone = updated.every(function(p){return p.status==="done";});
+      await sbFetch("bb_rooms?id=eq."+roomId, {
+        method:"PATCH",
+        body:JSON.stringify({players:JSON.stringify(updated), status:allDone?"complete":"scoring"}),
+        headers:{"Prefer":"return=minimal"}
+      });
+    } catch(e) { console.error("Abandon room error:", e); }
+    activeDuelRef.current = null;
+    setActiveDuel(null);
+    clearInterval(roomPollRef.current);
+  }
+
   async function submitDuelScore(sc) {
     if (!activeDuel) return;
     const duelId = activeDuel.id;
@@ -2061,10 +2085,16 @@ export default function LePont() {
         if (!Array.isArray(data) || data.length === 0) return;
         const r = data[0];
         const players = typeof r.players === "string" ? JSON.parse(r.players) : r.players;
+        // Compter les abandons
+        const abandoned = players.filter(function(p){return p.abandoned;});
         const allDone = players.every(function(p){return p.status==="done";});
+        // Notifier si quelqu'un a abandonné
+        if (abandoned.length > 0) {
+          const names = abandoned.map(function(p){return p.name||"Un joueur";}).join(", ");
+          setRoomMsg(names + (abandoned.length > 1 ? " ont abandonné 🏃" : " a abandonné 🏃"));
+        }
         if (allDone) {
           clearInterval(poll);
-          // S'assurer que le status est bien complete dans Supabase
           await sbFetch("bb_rooms?id=eq."+roomId, {
             method:"PATCH",
             body:JSON.stringify({status:"complete"}),
@@ -3832,11 +3862,12 @@ export default function LePont() {
             </div>
             <div style={{display:"flex",gap:10}}>
               <button onClick={function(){setShowQuitConfirm(false);}} style={{flex:1,padding:"13px",background:"rgba(255,255,255,.07)",color:G.white,border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>Continuer</button>
-              <button onClick={function(){
+              <button onClick={async function(){
                 setShowQuitConfirm(false);
                 clearInterval(timerRef.current);
                 clearInterval(qTimerRef.current);
-                if(activeDuel){ abandonDuel(); } 
+                if(activeDuelRef.current&&activeDuelRef.current.isRoom){ await abandonRoom(); }
+                else if(activeDuel){ abandonDuel(); }
                 setScreen("home");
               }} style={{flex:1,padding:"13px",background:"#FF3D57",color:"#fff",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>Abandonner</button>
             </div>
@@ -3982,7 +4013,7 @@ export default function LePont() {
             <div style={{fontSize:14,color:"rgba(255,255,255,.5)",marginBottom:24}}>Ta partie sera perdue et ton score sera de 0.</div>
             <div style={{display:"flex",gap:10}}>
               <button onClick={function(){setShowQuitConfirm(false);}} style={{flex:1,padding:"13px",background:"rgba(255,255,255,.07)",color:G.white,border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>Continuer</button>
-              <button onClick={function(){setShowQuitConfirm(false);clearInterval(timerRef.current);clearInterval(qTimerRef.current);if(activeDuel){abandonDuel();}setChainPlayer("");setScreen("home");}} style={{flex:1,padding:"13px",background:"#FF3D57",color:"#fff",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>Abandonner</button>
+              <button onClick={async function(){setShowQuitConfirm(false);clearInterval(timerRef.current);clearInterval(qTimerRef.current);if(activeDuelRef.current&&activeDuelRef.current.isRoom){await abandonRoom();}else if(activeDuel){abandonDuel();}setChainPlayer("");setScreen("home");}} style={{flex:1,padding:"13px",background:"#FF3D57",color:"#fff",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>Abandonner</button>
             </div>
           </div>
         </div>
