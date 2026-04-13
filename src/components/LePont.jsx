@@ -2089,13 +2089,15 @@ export default function LePont() {
         }
       } else {
         // Attendre les autres via polling
-        startRoomResultPolling(roomId);
+        startRoomResultPolling(roomId, duel.rounds||1);
       }
     } catch(e) { console.error(e); setWaitingForRoom(false); }
   }
 
-  function startRoomResultPolling(roomId) {
+  function startRoomResultPolling(roomId, rounds) {
     clearInterval(roomPollRef.current);
+    const maxWait = ((rounds||1) * ROUND_DURATION + 120) * 1000; // timeout = durée théorique + 2 min
+    const startedAt = Date.now();
     roomPollRef.current = setInterval(async function() {
       try {
         const data = await sbFetch("bb_rooms?id=eq."+roomId+"&limit=1");
@@ -2108,14 +2110,28 @@ export default function LePont() {
           setRoomMsg(names + (abandoned.length > 1 ? " ont abandonné 🏃" : " a abandonné 🏃"));
         }
         const allDone = players.every(function(p){return p.status==="done";});
-        if (allDone) {
+        const timedOut = Date.now() - startedAt > maxWait;
+        if (allDone || timedOut) {
           clearInterval(roomPollRef.current);
-          await sbFetch("bb_rooms?id=eq."+roomId, {
-            method:"PATCH",
-            body:JSON.stringify({status:"complete"}),
-            headers:{"Prefer":"return=minimal"}
-          });
-          showRoomResults(r);
+          // Marquer les joueurs non-finis comme done avec score 0
+          if (timedOut && !allDone) {
+            const fixed = players.map(function(p){
+              return p.status !== "done" ? Object.assign({}, p, {score:p.score||0, status:"done", abandoned:true}) : p;
+            });
+            await sbFetch("bb_rooms?id=eq."+roomId, {
+              method:"PATCH",
+              body:JSON.stringify({players:JSON.stringify(fixed), status:"complete"}),
+              headers:{"Prefer":"return=minimal"}
+            });
+            showRoomResults(Object.assign({}, r, {players: JSON.stringify(fixed)}));
+          } else {
+            await sbFetch("bb_rooms?id=eq."+roomId, {
+              method:"PATCH",
+              body:JSON.stringify({status:"complete"}),
+              headers:{"Prefer":"return=minimal"}
+            });
+            showRoomResults(r);
+          }
         }
       } catch(e) {}
     }, 2000);
@@ -3570,6 +3586,7 @@ export default function LePont() {
           <div style={{fontSize:16,color:G.accent,fontWeight:800,marginBottom:10}}>Tu as fini ta partie 💪</div>
           <div style={{fontSize:14,color:"rgba(255,255,255,.6)",lineHeight:1.7,marginBottom:8}}>Les autres joueurs sont encore en train de jouer.</div>
           <div style={{fontSize:14,color:"rgba(255,255,255,.9)",fontWeight:700,lineHeight:1.7,marginBottom:24,background:"rgba(255,255,255,.07)",borderRadius:14,padding:"12px 16px"}}>👉 Reste sur cet écran — les résultats apparaîtront automatiquement dès que tout le monde aura terminé.</div>
+          {roomMsg && <div style={{fontSize:13,color:"#FF3D57",fontWeight:800,marginBottom:16,background:"rgba(255,61,87,.15)",borderRadius:12,padding:"10px 14px"}}>{roomMsg}</div>}
           <div style={{display:"flex",justifyContent:"center",gap:6}}>
             {[0,1,2].map(i=>(
               <div key={i} style={{width:8,height:8,borderRadius:"50%",background:G.accent,animation:`pulse 1.2s ease-in-out ${i*.3}s infinite`}}/>
