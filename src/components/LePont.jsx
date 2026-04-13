@@ -1544,6 +1544,7 @@ export default function LePont() {
   const [dailyTries, setDailyTries] = useState(0);
   const [dailyGuess, setDailyGuess] = useState("");
   const [dailyFlash, setDailyFlash] = useState(null);
+  const [dailySuccess, setDailySuccess] = useState(false);
   const [showDailyGame, setShowDailyGame] = useState(false);
   const [dayStreak, setDayStreak] = useState(() => {
     try {
@@ -2904,8 +2905,9 @@ export default function LePont() {
 
   function handleDailySubmit() {
     if (!dailyGuess.trim() || !dailyPlayer) return;
-    const guess = dailyGuess.trim().toLowerCase();
-    const answer = dailyPlayer.name.toLowerCase();
+    const normalize = s => s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
+    const guess = normalize(dailyGuess);
+    const answer = normalize(dailyPlayer.name);
     const newTries = dailyTries + 1;
     setDailyTries(newTries);
     const answerParts = answer.split(" ");
@@ -2913,6 +2915,7 @@ export default function LePont() {
       || answerParts.some(function(p){ return p.length > 3 && guess === p; })
       || (answer.includes(guess) && guess.length > 4);
     if (isCorrect) {
+      setDailySuccess(true);
       setDailyFlash("ok");
       const today = new Date().toISOString().slice(0,10);
       try {
@@ -2923,8 +2926,9 @@ export default function LePont() {
         setShowDailyGame(false);
         setDailyDone(true);
         setDailyAbandoned(false);
+        setDailySuccess(false);
         updateDayStreak();
-      }, 2000);
+      }, 3000);
     } else {
       setDailyFlash("ko");
       setTimeout(function(){ setDailyFlash(null); setDailyGuess(""); }, 800);
@@ -4186,7 +4190,7 @@ export default function LePont() {
               </div>
               {dailyDone && <div style={{fontSize:11,color:"rgba(255,255,255,.3)",marginTop:2}}>{dailyAbandoned ? "Abandonné — "+dailyPlayer.name : "Trouvé en "+localStorage.getItem("bb_daily_tries")+" essai"+(parseInt(localStorage.getItem("bb_daily_tries")||"1")>1?"s":"")+" !"}</div>}
             </div>
-            {!dailyDone && <button onClick={function(){setShowDailyGame(true);setDailyGuess("");setDailyFlash(null);}} style={{padding:"12px 16px",background:"linear-gradient(135deg,#FFD600,#FF6B35)",color:"#000",border:"none",borderRadius:14,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:800,whiteSpace:"nowrap"}}>Jouer ⚡</button>}
+            {!dailyDone && <button onClick={function(){setShowDailyGame(true);setDailyGuess("");setDailyFlash(null);setDailySuccess(false);}} style={{padding:"12px 16px",background:"linear-gradient(135deg,#FFD600,#FF6B35)",color:"#000",border:"none",borderRadius:14,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:800,whiteSpace:"nowrap"}}>Jouer ⚡</button>}
           </div>
         )}
 
@@ -4220,10 +4224,10 @@ export default function LePont() {
                 </div>
               </div>
               {/* Tentatives */}
-              {dailyTries > 0 && !dailyFlash && <div style={{fontSize:12,color:"rgba(255,255,255,.4)",marginBottom:8,textAlign:"center"}}>Tentative{dailyTries>1?"s":""} : {dailyTries}</div>}
+              {dailyTries > 0 && !dailySuccess && <div style={{fontSize:12,color:"rgba(255,255,255,.4)",marginBottom:8,textAlign:"center"}}>Tentative{dailyTries>1?"s":""} : {dailyTries}</div>}
 
               {/* Écran bravo */}
-              {dailyFlash==="ok" ? (
+              {dailySuccess ? (
                 <div style={{textAlign:"center",padding:"24px 0"}}>
                   <div style={{fontSize:56,marginBottom:12}}>🎉</div>
                   <div style={{fontFamily:G.heading,fontSize:36,color:"#00E676",letterSpacing:2,marginBottom:8}}>BRAVO !</div>
