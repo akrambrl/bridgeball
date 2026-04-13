@@ -34,6 +34,20 @@ function getPlayerId() {
 
 // ── CONSTANTS ──
 const ROUND_DURATION = 90;
+
+const GRADES = [
+  { min:500, label:"GOAT",    emoji:"🐐", color:"#FFD700" },
+  { min:300, label:"Légende", emoji:"⭐", color:"#FF6B35" },
+  { min:200, label:"Elite",   emoji:"💎", color:"#00B4D8" },
+  { min:150, label:"Expert",  emoji:"🔥", color:"#E63946" },
+  { min:100, label:"Pro",     emoji:"⚡", color:"#2EC4B6" },
+  { min:50,  label:"Amateur", emoji:"🎯", color:"#A8DADC" },
+  { min:0,   label:"Rookie",  emoji:"👶", color:"#8D99AE" },
+];
+
+function getGrade(score) {
+  return GRADES.find(function(g){ return score >= g.min; }) || GRADES[GRADES.length-1];
+}
 const QUESTION_DURATION = 10;
 const CHAIN_QUESTION_DURATION = 15;
 const CHAIN_DURATION = 90;
@@ -3226,6 +3240,7 @@ export default function LePont() {
           {leaderboard.map(function(entry, i){
             const isMe = entry.pid === playerId;
             const medals = ["🥇","🥈","🥉"];
+            const grade = getGrade(entry.score);
             return(
               <div key={i} style={{borderRadius:14,background:isMe?"rgba(0,230,118,.08)":"rgba(255,255,255,.03)",border:isMe?"1px solid rgba(0,230,118,.25)":"1px solid rgba(255,255,255,.05)",marginBottom:6,overflow:"hidden"}}>
                 <div style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px"}}>
@@ -3233,7 +3248,10 @@ export default function LePont() {
                     {i<3?medals[i]:(i+1)}
                   </div>
                   <div style={{flex:1}}>
-                    <div style={{fontSize:14,fontWeight:800,color:isMe?G.accent:G.white}}>{entry.name}{isMe?" (toi)":""}</div>
+                    <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3}}>
+                      <span style={{fontSize:14,fontWeight:800,color:isMe?G.accent:G.white}}>{entry.name}{isMe?" (toi)":""}</span>
+                      <span style={{fontSize:10,fontWeight:800,color:grade.color,background:grade.color+"22",borderRadius:20,padding:"2px 7px",letterSpacing:.5}}>{grade.emoji} {grade.label}</span>
+                    </div>
                     {lbMode==="global"
                       ? <div style={{fontSize:11,color:"rgba(255,255,255,.35)"}}>🏟 {entry.bestPont} pts &nbsp;·&nbsp; ⛓ {entry.bestChaine} pts</div>
                       : <div style={{fontSize:11,color:"rgba(255,255,255,.35)"}}>{entry.played} partie{entry.played>1?"s":""}</div>
@@ -4349,7 +4367,8 @@ export default function LePont() {
         <div style={{zIndex:1,padding:"40px 20px 16px",textAlign:"center"}}>
           <div style={{fontSize:72,marginBottom:8,animation:"popIn .6s ease"}}>{emoji}</div>
           <div style={{fontFamily:G.heading,fontSize:"clamp(36px,9vw,56px)",color:labelColor,letterSpacing:2}}>{label}</div>
-          <div style={{fontSize:14,color:"rgba(255,255,255,.4)",marginTop:4}}>
+          {(()=>{const grade=getGrade(duelResult.myScore||0); return <div style={{display:"inline-flex",alignItems:"center",gap:6,marginTop:8,background:grade.color+"22",borderRadius:20,padding:"4px 12px"}}><span style={{fontSize:14}}>{grade.emoji}</span><span style={{fontSize:12,fontWeight:800,color:grade.color,letterSpacing:.5}}>{grade.label}</span></div>; })()}
+          <div style={{fontSize:14,color:"rgba(255,255,255,.4)",marginTop:8}}>
             {abandoned ? duelResult.oppName+" a abandonné 🏃" : "Duel "+(duelResult.mode==="pont"?"The Plug":"The Mercato")}
           </div>
         </div>
