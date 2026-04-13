@@ -1363,6 +1363,7 @@ if(typeof document!=="undefined"&&!document.getElementById("bb-css")){
     @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
     @keyframes floatBall{0%{transform:translateY(0) rotate(0deg)}100%{transform:translateY(-18px) rotate(20deg)}}
     @keyframes pulse{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.2)}}
+    @keyframes slideDown{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}
     @keyframes kickBall{0%{transform:scale(1) rotate(0)}40%{transform:scale(1.15) rotate(-15deg)}100%{transform:scale(1) rotate(10deg)}}
     @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
     @keyframes heartbeat{0%,100%{transform:scale(1)}15%{transform:scale(1.15)}30%{transform:scale(1)}45%{transform:scale(1.1)}60%{transform:scale(1)}}
@@ -1508,6 +1509,7 @@ export default function LePont() {
   const [room, setRoom] = useState(null);
   const [roomInput, setRoomInput] = useState("");
   const [roomMsg, setRoomMsg] = useState("");
+  const [abandonNotif, setAbandonNotif] = useState("");
   const [showRoomCreate, setShowRoomCreate] = useState(false);
   const roomPollRef = useRef(null);
   const [duelCountdown, setDuelCountdown] = useState(null); // 3..2..1 before launch
@@ -2008,7 +2010,8 @@ export default function LePont() {
         const abandoned = players.filter(function(p){ return p.abandoned && p.id !== playerId; });
         if (abandoned.length > 0) {
           const names = abandoned.map(function(p){return p.name||"Un joueur";}).join(", ");
-          setRoomMsg(names + (abandoned.length > 1 ? " ont abandonné 🏃" : " a abandonné 🏃"));
+          setAbandonNotif(names + (abandoned.length > 1 ? " ont abandonné 🏃" : " a abandonné 🏃"));
+          setTimeout(function(){setAbandonNotif("");}, 5000);
         }
       } catch(e) {}
     }, 3000);
@@ -2107,7 +2110,8 @@ export default function LePont() {
         const abandoned = players.filter(function(p){return p.abandoned && p.id !== playerId;});
         if (abandoned.length > 0) {
           const names = abandoned.map(function(p){return p.name||"Un joueur";}).join(", ");
-          setRoomMsg(names + (abandoned.length > 1 ? " ont abandonné 🏃" : " a abandonné 🏃"));
+          setAbandonNotif(names + (abandoned.length > 1 ? " ont abandonné 🏃" : " a abandonné 🏃"));
+          setTimeout(function(){setAbandonNotif("");}, 5000);
         }
         const allDone = players.every(function(p){return p.status==="done";});
         const timedOut = Date.now() - startedAt > maxWait;
@@ -3586,7 +3590,7 @@ export default function LePont() {
           <div style={{fontSize:16,color:G.accent,fontWeight:800,marginBottom:10}}>Tu as fini ta partie 💪</div>
           <div style={{fontSize:14,color:"rgba(255,255,255,.6)",lineHeight:1.7,marginBottom:8}}>Les autres joueurs sont encore en train de jouer.</div>
           <div style={{fontSize:14,color:"rgba(255,255,255,.9)",fontWeight:700,lineHeight:1.7,marginBottom:24,background:"rgba(255,255,255,.07)",borderRadius:14,padding:"12px 16px"}}>👉 Reste sur cet écran — les résultats apparaîtront automatiquement dès que tout le monde aura terminé.</div>
-          {roomMsg && <div style={{fontSize:13,color:"#FF3D57",fontWeight:800,marginBottom:16,background:"rgba(255,61,87,.15)",borderRadius:12,padding:"10px 14px"}}>{roomMsg}</div>}
+          {abandonNotif && <div style={{fontSize:13,color:"#000",fontWeight:800,marginBottom:16,background:"rgba(255,214,0,.9)",borderRadius:12,padding:"10px 14px"}}>{abandonNotif}</div>}
           <div style={{display:"flex",justifyContent:"center",gap:6}}>
             {[0,1,2].map(i=>(
               <div key={i} style={{width:8,height:8,borderRadius:"50%",background:G.accent,animation:`pulse 1.2s ease-in-out ${i*.3}s infinite`}}/>
@@ -3912,9 +3916,14 @@ export default function LePont() {
         <div style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:10,animation:feedback==="ok"?"flashOk .6s ease":feedback==="ko"?"flashKo .6s ease":"none"}}/>
 
         {/* Notification abandon en salle */}
-        {roomMsg && activeDuelRef.current?.isRoom && (
-          <div style={{position:"fixed",top:60,left:16,right:16,zIndex:20,background:"rgba(255,61,87,.9)",backdropFilter:"blur(8px)",borderRadius:14,padding:"10px 16px",textAlign:"center",fontSize:13,fontWeight:800,color:"#fff",boxShadow:"0 4px 20px rgba(255,61,87,.4)"}}>
-            {roomMsg}
+        {abandonNotif && (
+          <div style={{position:"fixed",top:60,left:16,right:16,zIndex:20,
+            background:"rgba(255,214,0,.95)",backdropFilter:"blur(8px)",
+            borderRadius:14,padding:"10px 16px",textAlign:"center",
+            fontSize:13,fontWeight:800,color:"#000",
+            boxShadow:"0 4px 20px rgba(255,214,0,.4)",
+            animation:"slideDown .4s cubic-bezier(.22,1,.36,1)"}}>
+            {abandonNotif}
           </div>
         )}
         <div style={{zIndex:3,padding:"12px 16px 0",display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,flexShrink:0}}>
