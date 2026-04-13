@@ -3469,14 +3469,14 @@ export default function LePont() {
         <div style={{...sheet,borderRadius:"28px 28px 0 0"}}>
           {/* Saison info */}
           {lbMode!=="amis" && (()=>{
-            const {seasonNumber, seasonEndDate} = getCurrentSeason();
-            const msLeft = seasonEndDate - new Date();
-            const daysLeft = Math.floor(msLeft / 86400000);
-            const hoursLeft = Math.floor((msLeft % 86400000) / 3600000);
+            const s = getCurrentSeason();
+            const msLeft = s.end - new Date();
+            const daysLeft = Math.max(0, Math.floor(msLeft / 86400000));
+            const hoursLeft = Math.max(0, Math.floor((msLeft % 86400000) / 3600000));
             return (
               <div style={{marginBottom:8,padding:"10px 14px",background:"rgba(255,214,0,.08)",borderRadius:14,border:"1px solid rgba(255,214,0,.2)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                 <div>
-                  <div style={{fontSize:11,fontWeight:800,color:G.gold,letterSpacing:1}}>🏆 SAISON {seasonNumber}</div>
+                  <div style={{fontSize:11,fontWeight:800,color:G.gold,letterSpacing:1}}>🏆 SAISON {s.num}</div>
                   <div style={{fontSize:10,color:"rgba(255,255,255,.4)",marginTop:2}}>
                     {daysLeft > 0 ? `J-${daysLeft} (${hoursLeft}h)` : `Finit dans ${hoursLeft}h`}
                   </div>
