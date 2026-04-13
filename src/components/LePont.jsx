@@ -1996,6 +1996,22 @@ export default function LePont() {
       setIsNewRecord(false); setMyLbRank(null);
       setTimeout(function(){ startRound(1); }, 50);
     }
+    // Polling en cours de partie pour détecter les abandons
+    roomPollRef.current = setInterval(async function() {
+      const duel = activeDuelRef.current;
+      if (!duel || !duel.isRoom) { clearInterval(roomPollRef.current); return; }
+      try {
+        const data = await sbFetch("bb_rooms?id=eq."+r.id+"&limit=1");
+        if (!Array.isArray(data) || data.length === 0) return;
+        const room = data[0];
+        const players = typeof room.players === "string" ? JSON.parse(room.players) : room.players;
+        const abandoned = players.filter(function(p){ return p.abandoned && p.id !== playerId; });
+        if (abandoned.length > 0) {
+          const names = abandoned.map(function(p){return p.name||"Un joueur";}).join(", ");
+          setRoomMsg(names + (abandoned.length > 1 ? " ont abandonné 🏃" : " a abandonné 🏃"));
+        }
+      } catch(e) {}
+    }, 3000);
   }
 
   async function startRoomGame() {
@@ -2079,22 +2095,21 @@ export default function LePont() {
   }
 
   function startRoomResultPolling(roomId) {
-    const poll = setInterval(async function() {
+    clearInterval(roomPollRef.current);
+    roomPollRef.current = setInterval(async function() {
       try {
         const data = await sbFetch("bb_rooms?id=eq."+roomId+"&limit=1");
         if (!Array.isArray(data) || data.length === 0) return;
         const r = data[0];
         const players = typeof r.players === "string" ? JSON.parse(r.players) : r.players;
-        // Compter les abandons
-        const abandoned = players.filter(function(p){return p.abandoned;});
-        const allDone = players.every(function(p){return p.status==="done";});
-        // Notifier si quelqu'un a abandonné
+        const abandoned = players.filter(function(p){return p.abandoned && p.id !== playerId;});
         if (abandoned.length > 0) {
           const names = abandoned.map(function(p){return p.name||"Un joueur";}).join(", ");
           setRoomMsg(names + (abandoned.length > 1 ? " ont abandonné 🏃" : " a abandonné 🏃"));
         }
+        const allDone = players.every(function(p){return p.status==="done";});
         if (allDone) {
-          clearInterval(poll);
+          clearInterval(roomPollRef.current);
           await sbFetch("bb_rooms?id=eq."+roomId, {
             method:"PATCH",
             body:JSON.stringify({status:"complete"}),
@@ -3879,7 +3894,12 @@ export default function LePont() {
         {/* Screen flash */}
         <div style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:10,animation:feedback==="ok"?"flashOk .6s ease":feedback==="ko"?"flashKo .6s ease":"none"}}/>
 
-        {/* Top bar */}
+        {/* Notification abandon en salle */}
+        {roomMsg && activeDuelRef.current?.isRoom && (
+          <div style={{position:"fixed",top:60,left:16,right:16,zIndex:20,background:"rgba(255,61,87,.9)",backdropFilter:"blur(8px)",borderRadius:14,padding:"10px 16px",textAlign:"center",fontSize:13,fontWeight:800,color:"#fff",boxShadow:"0 4px 20px rgba(255,61,87,.4)"}}>
+            {roomMsg}
+          </div>
+        )}
         <div style={{zIndex:3,padding:"12px 16px 0",display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,flexShrink:0}}>
           {backBtn(()=>{setShowQuitConfirm(true);})}
           <div style={{background:"rgba(255,255,255,.13)",backdropFilter:"blur(10px)",borderRadius:18,padding:"8px 18px",display:"flex",alignItems:"center",gap:8,position:"relative"}}>
