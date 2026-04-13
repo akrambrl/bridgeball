@@ -3147,27 +3147,25 @@ export default function LePont() {
                     <div style={{fontSize:14,fontWeight:800,color:isMe?G.accent:G.white}}>{entry.name}{isMe?" (toi)":""}</div>
                     {lbMode==="global"
                       ? <div style={{fontSize:11,color:"rgba(255,255,255,.35)"}}>🏟 {entry.bestPont} pts &nbsp;·&nbsp; ⛓ {entry.bestChaine} pts</div>
-                      : <div style={{fontSize:11,color:"rgba(255,255,255,.35)"}}>{entry.played} partie{entry.played>1?"s":""} · <span style={{fontFamily:G.heading,letterSpacing:2,fontSize:10}}>{entry.pid}</span></div>
+                      : <div style={{fontSize:11,color:"rgba(255,255,255,.35)"}}>{entry.played} partie{entry.played>1?"s":""}</div>
                     }
                   </div>
                   <div style={{fontFamily:G.heading,fontSize:26,color:i===0?G.gold:G.white}}>{entry.score} <span style={{fontSize:12,color:"rgba(255,255,255,.3)"}}>pts</span></div>
                 </div>
-                {(entry.wins>0||entry.draws>0||entry.losses>0) && (
-                  <div style={{display:"flex",borderTop:"1px solid rgba(255,255,255,.06)"}}>
+                <div style={{display:"flex",borderTop:"1px solid rgba(255,255,255,.06)"}}>
                     <div style={{flex:1,padding:"6px 0",textAlign:"center",borderRight:"1px solid rgba(255,255,255,.06)"}}>
-                      <div style={{fontFamily:G.heading,fontSize:18,color:"#00E676"}}>{entry.wins}</div>
+                      <div style={{fontFamily:G.heading,fontSize:18,color:"#00E676"}}>{entry.wins||0}</div>
                       <div style={{fontSize:9,color:"rgba(255,255,255,.35)",letterSpacing:1,textTransform:"uppercase"}}>Victoires</div>
                     </div>
                     <div style={{flex:1,padding:"6px 0",textAlign:"center",borderRight:"1px solid rgba(255,255,255,.06)"}}>
-                      <div style={{fontFamily:G.heading,fontSize:18,color:G.gold}}>{entry.draws}</div>
+                      <div style={{fontFamily:G.heading,fontSize:18,color:G.gold}}>{entry.draws||0}</div>
                       <div style={{fontSize:9,color:"rgba(255,255,255,.35)",letterSpacing:1,textTransform:"uppercase"}}>Nuls</div>
                     </div>
                     <div style={{flex:1,padding:"6px 0",textAlign:"center"}}>
-                      <div style={{fontFamily:G.heading,fontSize:18,color:"#FF3D57"}}>{entry.losses}</div>
+                      <div style={{fontFamily:G.heading,fontSize:18,color:"#FF3D57"}}>{entry.losses||0}</div>
                       <div style={{fontSize:9,color:"rgba(255,255,255,.35)",letterSpacing:1,textTransform:"uppercase"}}>Défaites</div>
                     </div>
                   </div>
-                )}
               </div>
             );
           })}
@@ -3500,8 +3498,9 @@ export default function LePont() {
         <div style={{textAlign:"center",zIndex:1,padding:"0 32px"}}>
           <div style={{fontSize:56,marginBottom:20}}>⏳</div>
           <div style={{fontFamily:G.heading,fontSize:30,color:G.white,marginBottom:12,letterSpacing:1}}>PARTIE TERMINÉE !</div>
-          <div style={{fontSize:16,color:"rgba(255,255,255,.85)",fontWeight:700,marginBottom:10}}>Tu as fini ta partie 💪</div>
-          <div style={{fontSize:14,color:"rgba(255,255,255,.5)",lineHeight:1.6,marginBottom:24}}>Les autres joueurs sont encore en train de jouer.{"\n"}Les résultats s'afficheront automatiquement dès que tout le monde aura terminé.</div>
+          <div style={{fontSize:16,color:G.accent,fontWeight:800,marginBottom:10}}>Tu as fini ta partie 💪</div>
+          <div style={{fontSize:14,color:"rgba(255,255,255,.6)",lineHeight:1.7,marginBottom:8}}>Les autres joueurs sont encore en train de jouer.</div>
+          <div style={{fontSize:14,color:"rgba(255,255,255,.9)",fontWeight:700,lineHeight:1.7,marginBottom:24,background:"rgba(255,255,255,.07)",borderRadius:14,padding:"12px 16px"}}>👉 Reste sur cet écran — les résultats apparaîtront automatiquement dès que tout le monde aura terminé.</div>
           <div style={{display:"flex",justifyContent:"center",gap:6}}>
             {[0,1,2].map(i=>(
               <div key={i} style={{width:8,height:8,borderRadius:"50%",background:G.accent,animation:`pulse 1.2s ease-in-out ${i*.3}s infinite`}}/>
@@ -3847,7 +3846,7 @@ export default function LePont() {
             <div style={{position:"absolute",top:0,right:0,width:"55%",bottom:0,background:cb1,clipPath:"polygon(30% 0%, 100% 0%, 100% 100%, 0% 100%)"}}/>
             <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.18)"}}/>
             <div style={{position:"absolute",width:220,height:220,borderRadius:"50%",border:"3px solid rgba(255,255,255,.1)",top:-40,right:-40,pointerEvents:"none"}}/>
-            <div style={{fontFamily:G.heading,fontSize:"clamp(22px,6vw,40px)",color:"#fff",lineHeight:1.05,textAlign:"center",padding:"0 20px",zIndex:1,textShadow:"0 3px 16px rgba(0,0,0,.6)",letterSpacing:1}}>{cur.c1}</div>
+            <div style={{fontFamily:G.heading,fontSize:"clamp(28px,7.5vw,52px)",color:"#fff",lineHeight:1.05,textAlign:"center",padding:"0 16px",zIndex:1,textShadow:"0 3px 16px rgba(0,0,0,.6)",letterSpacing:1}}>{cur.c1}</div>
           </div>
 
           {/* VS */}
@@ -3862,7 +3861,7 @@ export default function LePont() {
             <div style={{position:"absolute",top:0,right:0,width:"55%",bottom:0,background:cb2,clipPath:"polygon(30% 0%, 100% 0%, 100% 100%, 0% 100%)"}}/>
             <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.18)"}}/>
             <div style={{position:"absolute",width:200,height:200,borderRadius:"50%",border:"3px solid rgba(255,255,255,.1)",bottom:-30,left:-30,pointerEvents:"none"}}/>
-            <div style={{fontFamily:G.heading,fontSize:"clamp(22px,6vw,40px)",color:"#fff",lineHeight:1.05,textAlign:"center",padding:"0 20px",zIndex:1,textShadow:"0 3px 16px rgba(0,0,0,.6)",letterSpacing:1}}>{cur.c2}</div>
+            <div style={{fontFamily:G.heading,fontSize:"clamp(28px,7.5vw,52px)",color:"#fff",lineHeight:1.05,textAlign:"center",padding:"0 16px",zIndex:1,textShadow:"0 3px 16px rgba(0,0,0,.6)",letterSpacing:1}}>{cur.c2}</div>
           </div>
         </div>
 
