@@ -1013,20 +1013,17 @@ const PLAYERS_CLEAN = PLAYERS.filter(function(p){return p&&p.name&&p.clubs&&Arra
 const DB = buildPontDB();
 
 // ── DAILY CHALLENGE ──
-function getDailyChallenge() {
-  const today = new Date().toISOString().slice(0,10); // YYYY-MM-DD
-  // Hash déterministe de la date
+function getDailyPlayer() {
+  const today = new Date().toISOString().slice(0,10);
   let hash = 0;
   for (let i = 0; i < today.length; i++) {
     hash = ((hash << 5) - hash) + today.charCodeAt(i);
     hash |= 0;
   }
   hash = Math.abs(hash);
-  // Prendre toutes les paires de tous niveaux
-  const allPairs = [...DB.facile, ...DB.moyen, ...DB.expert];
-  if (allPairs.length === 0) return null;
-  const pair = allPairs[hash % allPairs.length];
-  return { ...pair, date: today, diff: pair.diff || "moyen" };
+  const pool = PLAYERS_CLEAN.filter(function(p){ return p.clubs && p.clubs.length >= 2; });
+  if (pool.length === 0) return null;
+  return pool[hash % pool.length];
 }
 
 const CLUB_INDEX = {};
@@ -1531,24 +1528,32 @@ export default function LePont() {
   const [notifGranted, setNotifGranted] = useState(false);
   const [showNotifPrompt, setShowNotifPrompt] = useState(false);
   const [lbMode, setLbMode] = useState("global");
-  const [dailyChallenge] = useState(() => getDailyChallenge());
+  const [dailyPlayer] = useState(() => getDailyPlayer());
   const [dailyDone, setDailyDone] = useState(() => {
-    try { return localStorage.getItem("bb_daily_done") === new Date().toISOString().slice(0,10); } catch { return false; }
+    try {
+      const d = JSON.parse(localStorage.getItem("bb_daily_result")||"{}");
+      return d.date === new Date().toISOString().slice(0,10);
+    } catch { return false; }
   });
-  const [dailyScore, setDailyScore] = useState(() => {
-    try { return parseInt(localStorage.getItem("bb_daily_score")||"0")||0; } catch { return 0; }
+  const [dailyAbandoned, setDailyAbandoned] = useState(() => {
+    try {
+      const d = JSON.parse(localStorage.getItem("bb_daily_result")||"{}");
+      return d.date === new Date().toISOString().slice(0,10) && d.abandoned === true;
+    } catch { return false; }
   });
+  const [dailyTries, setDailyTries] = useState(0);
+  const [dailyGuess, setDailyGuess] = useState("");
+  const [dailyFlash, setDailyFlash] = useState(null);
+  const [showDailyGame, setShowDailyGame] = useState(false);
   const [dayStreak, setDayStreak] = useState(() => {
     try {
       const s = JSON.parse(localStorage.getItem("bb_day_streak")||"{}");
       const today = new Date().toISOString().slice(0,10);
       const yesterday = new Date(Date.now()-86400000).toISOString().slice(0,10);
       if (s.lastDate === today || s.lastDate === yesterday) return s.count || 0;
-      return 0; // gap → streak perdu
+      return 0;
     } catch { return 0; }
   });
-  const [showDailyLb, setShowDailyLb] = useState(false);
-  const [dailyLeaderboard, setDailyLeaderboard] = useState([]);
   const [lbDiff, setLbDiff] = useState("facile");
   const [playerName, setPlayerName] = useState("");
   const [showInstructions, setShowInstructions] = useState(null);
@@ -1674,7 +1679,7 @@ export default function LePont() {
   useEffect(()=>{
     chainPassedRef.current = false;
     clearInterval(qTimerRef.current);
-    if(screen!=="game"&&screen!=="chainGame"&&screen!=="daily"){clearInterval(qTimerRef.current);return;}
+    if(screen!=="game"&&screen!=="chainGame"){clearInterval(qTimerRef.current);return;}
     const duration = screen==="chainGame" ? CHAIN_QUESTION_DURATION : QUESTION_DURATION;
     const qStart = Date.now();
     const capturedChainCount = chainCount;
@@ -2815,16 +2820,7 @@ export default function LePont() {
         }catch{}
         submitToLeaderboard(playerName,total,"pont",diff);
         updateDayStreak();
-        if(screen==="daily"||diff.startsWith?.("daily")){
-          // Fin du défi du jour
-          const today = new Date().toISOString().slice(0,10);
-          try { localStorage.setItem("bb_daily_done", today); localStorage.setItem("bb_daily_score", String(total)); } catch{}
-          setDailyDone(true); setDailyScore(total);
-          submitToLeaderboard(playerName, total, "pont", "daily_"+today);
-          loadDailyLeaderboard();
-          setShowDailyLb(true);
-          setScreen("home");
-        } else if(activeDuelRef.current&&activeDuelRef.current.isRoom){setScreen("waitingRoom");submitRoomScore(total);}else if(activeDuel){submitDuelScore(total); setScreen("final");}else{setScreen("final");}
+        if(activeDuelRef.current&&activeDuelRef.current.isRoom){setScreen("waitingRoom");submitRoomScore(total);}else if(activeDuel){submitDuelScore(total); setScreen("final");}else{setScreen("final");}
       } else {
         // Manche intermédiaire — envoyer score partiel et afficher classement
         setRoomRoundSnapshot(null); // reset le temps de fetch
@@ -2892,32 +2888,6 @@ export default function LePont() {
     startRound(1);
   }
 
-  function startDailyChallenge() {
-    if (!dailyChallenge) return;
-    const today = new Date().toISOString().slice(0,10);
-    // Forcer la paire du jour
-    const fixedQueue = [dailyChallenge];
-    setDiff(dailyChallenge.diff||"moyen");
-    setTotalRounds(1);
-    setCombo(0); setMaxCombo(0); comboRef.current=0; lastAnswerTime.current=Date.now();
-    setRoundScores([]); setCurrentRound(1); setIsNewRecord(false); setMyLbRank(null); setMyLastPts(null);
-    roundStartTime.current = null;
-    queueRef.current = fixedQueue;
-    setQueue(fixedQueue); setQIdx(0); setScore(0); scoreRef.current=0;
-    setTimeLeft(ROUND_DURATION); setGuess(""); setFlash(null); setFeedback(null);
-    if(dailyChallenge.diff==="facile") setOptions(generateOptions(dailyChallenge.p, DB["facile"]||[]));
-    setAnimKey(0); setScreen("daily");
-    setTimeout(()=>inputRef.current?.focus(),200);
-  }
-
-  async function loadDailyLeaderboard() {
-    const today = new Date().toISOString().slice(0,10);
-    try {
-      const data = await sbFetch("bb_scores?mode=eq.pont&diff=eq.daily_"+today+"&order=score.desc&limit=50&select=player_name,score");
-      if (Array.isArray(data)) setDailyLeaderboard(data);
-    } catch(e){}
-  }
-
   function updateDayStreak() {
     try {
       const today = new Date().toISOString().slice(0,10);
@@ -2929,6 +2899,35 @@ export default function LePont() {
       localStorage.setItem("bb_day_streak", JSON.stringify(updated));
       setDayStreak(newCount);
     } catch(e){}
+  }
+
+  function handleDailySubmit() {
+    if (!dailyGuess.trim() || !dailyPlayer) return;
+    const guess = dailyGuess.trim().toLowerCase();
+    const answer = dailyPlayer.name.toLowerCase();
+    const newTries = dailyTries + 1;
+    setDailyTries(newTries);
+    const answerParts = answer.split(" ");
+    const isCorrect = guess === answer
+      || answerParts.some(function(p){ return p.length > 3 && guess === p; })
+      || (answer.includes(guess) && guess.length > 4);
+    if (isCorrect) {
+      setDailyFlash("ok");
+      const today = new Date().toISOString().slice(0,10);
+      try {
+        localStorage.setItem("bb_daily_result", JSON.stringify({date:today, abandoned:false, tries:newTries}));
+        localStorage.setItem("bb_daily_tries", String(newTries));
+      } catch{}
+      setTimeout(function(){
+        setShowDailyGame(false);
+        setDailyDone(true);
+        setDailyAbandoned(false);
+        updateDayStreak();
+      }, 1200);
+    } else {
+      setDailyFlash("ko");
+      setTimeout(function(){ setDailyFlash(null); setDailyGuess(""); }, 800);
+    }
   }
 
   function nextQ() {
@@ -4176,52 +4175,74 @@ export default function LePont() {
         )}
 
         {/* Défi du jour */}
-        {dailyChallenge && (
-          <div style={{borderRadius:18,background:"linear-gradient(135deg,rgba(255,214,0,.12),rgba(255,107,53,.12))",border:"1.5px solid rgba(255,214,0,.3)",padding:"14px 16px",display:"flex",alignItems:"center",gap:12}}>
-            <div style={{fontSize:32}}>⚡</div>
+        {dailyPlayer && (
+          <div style={{borderRadius:18,background:dailyDone?"rgba(255,255,255,.04)":"linear-gradient(135deg,rgba(255,214,0,.12),rgba(255,107,53,.12))",border:dailyDone?"1px solid rgba(255,255,255,.1)":"1.5px solid rgba(255,214,0,.3)",padding:"14px 16px",display:"flex",alignItems:"center",gap:12,opacity:dailyDone?.7:1}}>
+            <div style={{fontSize:32}}>{dailyDone?(dailyAbandoned?"🔒":"✅"):"⚡"}</div>
             <div style={{flex:1}}>
-              <div style={{fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,214,0,.7)",marginBottom:2}}>Défi du jour</div>
-              <div style={{fontSize:14,fontWeight:800,color:G.white}}>
-                {dailyChallenge.c1} <span style={{color:"rgba(255,255,255,.4)"}}>vs</span> {dailyChallenge.c2}
+              <div style={{fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:dailyDone?"rgba(255,255,255,.3)":"rgba(255,214,0,.7)",marginBottom:2}}>Défi du jour</div>
+              <div style={{fontSize:14,fontWeight:800,color:dailyDone?"rgba(255,255,255,.4)":G.white}}>
+                {dailyDone ? "Revenez demain 🔒" : "Devine le joueur mystère"}
               </div>
-              <div style={{fontSize:11,color:"rgba(255,255,255,.4)",marginTop:2,textTransform:"capitalize"}}>{dailyChallenge.diff}</div>
+              {dailyDone && <div style={{fontSize:11,color:"rgba(255,255,255,.3)",marginTop:2}}>{dailyAbandoned ? "Abandonné — "+dailyPlayer.name : "Trouvé en "+localStorage.getItem("bb_daily_tries")+" essai"+(parseInt(localStorage.getItem("bb_daily_tries")||"1")>1?"s":"")+" !"}</div>}
             </div>
-            {dailyDone
-              ? <div style={{textAlign:"center"}}>
-                  <div style={{fontFamily:G.heading,fontSize:22,color:G.gold}}>{dailyScore}</div>
-                  <div style={{fontSize:10,color:"rgba(255,255,255,.4)"}}>pts</div>
-                  <button onClick={function(){loadDailyLeaderboard();setShowDailyLb(true);}} style={{marginTop:4,padding:"5px 10px",background:"rgba(255,214,0,.2)",color:G.gold,border:"1px solid rgba(255,214,0,.3)",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:11,fontWeight:800}}>Voir classement</button>
-                </div>
-              : <button onClick={function(){startDailyChallenge();}} style={{padding:"12px 16px",background:"linear-gradient(135deg,#FFD600,#FF6B35)",color:"#000",border:"none",borderRadius:14,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:800,whiteSpace:"nowrap"}}>Jouer ⚡</button>
-            }
+            {!dailyDone && <button onClick={function(){setShowDailyGame(true);setDailyGuess("");setDailyFlash(null);}} style={{padding:"12px 16px",background:"linear-gradient(135deg,#FFD600,#FF6B35)",color:"#000",border:"none",borderRadius:14,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:800,whiteSpace:"nowrap"}}>Jouer ⚡</button>}
           </div>
         )}
 
-        {/* Modal classement daily */}
-        {showDailyLb && (
-          <div style={{position:"fixed",inset:0,zIndex:400,background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)",display:"flex",alignItems:"flex-end"}} onClick={function(e){if(e.target===e.currentTarget)setShowDailyLb(false);}}>
-            <div style={{width:"100%",background:"rgba(10,20,10,.97)",borderRadius:"28px 28px 0 0",padding:"20px 20px 40px",border:"1px solid rgba(255,255,255,.1)",borderBottom:"none",maxHeight:"80vh",overflow:"auto"}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+        {/* Modal défi du jour — Devine le joueur */}
+        {showDailyGame && dailyPlayer && (
+          <div style={{position:"fixed",inset:0,zIndex:400,background:"rgba(0,0,0,.92)",backdropFilter:"blur(8px)",display:"flex",alignItems:"flex-end"}}>
+            <div style={{width:"100%",background:"rgba(10,20,10,.98)",borderRadius:"28px 28px 0 0",padding:"24px 20px 48px",border:"1px solid rgba(255,255,255,.1)",borderBottom:"none",maxHeight:"90vh",overflow:"auto"}}>
+              {/* Header */}
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
                 <div>
-                  <div style={{fontFamily:G.heading,fontSize:22,color:G.gold}}>⚡ Défi du jour</div>
-                  <div style={{fontSize:12,color:"rgba(255,255,255,.4)"}}>{dailyChallenge?.c1} vs {dailyChallenge?.c2}</div>
+                  <div style={{fontFamily:G.heading,fontSize:22,color:G.gold,letterSpacing:1}}>⚡ Défi du jour</div>
+                  <div style={{fontSize:12,color:"rgba(255,255,255,.4)"}}>Devine le joueur mystère</div>
                 </div>
-                <button onClick={function(){setShowDailyLb(false);}} style={{background:"rgba(255,255,255,.1)",border:"none",borderRadius:"50%",width:32,height:32,color:G.white,cursor:"pointer",fontSize:18}}>✕</button>
+                <button onClick={function(){setShowDailyGame(false);}} style={{background:"rgba(255,255,255,.1)",border:"none",borderRadius:"50%",width:32,height:32,color:G.white,cursor:"pointer",fontSize:18}}>✕</button>
               </div>
-              {dailyLeaderboard.length === 0
-                ? <div style={{textAlign:"center",padding:"32px 0",color:"rgba(255,255,255,.3)"}}>Aucun score encore</div>
-                : dailyLeaderboard.map(function(e,i){
-                    const medals = ["🥇","🥈","🥉"];
-                    const isMe = e.player_name === playerName;
+              {/* Clubs du joueur */}
+              <div style={{marginBottom:20}}>
+                <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:10}}>Clubs dans sa carrière :</div>
+                <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
+                  {dailyPlayer.clubs.map(function(club,i){
+                    const [ca,cb] = getClubColors(club);
                     return (
-                      <div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",borderRadius:14,background:isMe?"rgba(255,214,0,.08)":"rgba(255,255,255,.03)",border:isMe?"1px solid rgba(255,214,0,.3)":"1px solid rgba(255,255,255,.05)",marginBottom:6}}>
-                        <div style={{fontFamily:G.heading,fontSize:20,width:28,textAlign:"center",color:i<3?["#FFD600","#C0C0C0","#CD7F32"][i]:"rgba(255,255,255,.3)"}}>{i<3?medals[i]:i+1}</div>
-                        <div style={{flex:1,fontSize:14,fontWeight:800,color:isMe?G.gold:G.white}}>{e.player_name}{isMe?" (toi)":""}</div>
-                        <div style={{fontFamily:G.heading,fontSize:24,color:isMe?G.gold:G.white}}>{e.score} <span style={{fontSize:11,color:"rgba(255,255,255,.3)"}}>pts</span></div>
+                      <div key={i} style={{borderRadius:20,overflow:"hidden",position:"relative",height:36,minWidth:80,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 2px 8px rgba(0,0,0,.4)"}}>
+                        <div style={{position:"absolute",inset:0,background:ca}}/>
+                        <div style={{position:"absolute",top:0,right:0,width:"55%",bottom:0,background:cb,clipPath:"polygon(30% 0%, 100% 0%, 100% 100%, 0% 100%)"}}/>
+                        <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.15)"}}/>
+                        <span style={{position:"relative",zIndex:1,fontSize:12,fontWeight:800,color:"#fff",padding:"0 12px",textShadow:"0 1px 3px rgba(0,0,0,.6)"}}>{club}</span>
                       </div>
                     );
-                  })
-              }
+                  })}
+                </div>
+              </div>
+              {/* Tentatives */}
+              {dailyTries > 0 && <div style={{fontSize:12,color:"rgba(255,255,255,.4)",marginBottom:8,textAlign:"center"}}>Tentative{dailyTries>1?"s":""} : {dailyTries}</div>}
+              {/* Input */}
+              <input
+                value={dailyGuess}
+                onChange={function(e){setDailyGuess(e.target.value);setDailyFlash(null);}}
+                onKeyDown={function(e){if(e.key==="Enter") handleDailySubmit();}}
+                placeholder="Nom du joueur..."
+                autoComplete="off"
+                style={{width:"100%",background:dailyFlash==="ok"?"#dcfce7":dailyFlash==="ko"?"#fee2e2":"rgba(255,255,255,.08)",border:"2px solid "+(dailyFlash==="ok"?"#00E676":dailyFlash==="ko"?"#FF3D57":"rgba(255,255,255,.15)"),borderRadius:18,padding:"16px 18px",fontFamily:G.font,fontSize:18,fontWeight:700,color:G.dark,outline:"none",textAlign:"center",transition:"all .2s",boxSizing:"border-box"}}
+              />
+              {dailyFlash==="ko" && <div style={{textAlign:"center",fontSize:13,color:"#FF3D57",marginTop:8,fontWeight:700}}>Ce n'est pas ça... réessaie !</div>}
+              <div style={{display:"flex",gap:10,marginTop:12}}>
+                <button onClick={function(){
+                  setShowDailyGame(false);
+                  const today = new Date().toISOString().slice(0,10);
+                  try { localStorage.setItem("bb_daily_result", JSON.stringify({date:today,abandoned:true})); } catch{}
+                  setDailyDone(true); setDailyAbandoned(true); updateDayStreak();
+                }} style={{flex:1,padding:"14px",background:"rgba(255,255,255,.05)",color:"rgba(255,255,255,.5)",border:"1px solid rgba(255,255,255,.1)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>
+                  Abandonner
+                </button>
+                <button onClick={handleDailySubmit} style={{flex:2,padding:"14px",background:"linear-gradient(135deg,#FFD600,#FF6B35)",color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800}}>
+                  Valider ✓
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -4249,7 +4270,7 @@ export default function LePont() {
   );
 
 
-  if((screen==="game"||screen==="daily")&&cur) {
+  if(screen==="game"&&cur) {
     const [ca1,cb1]=getClubColors(cur.c1);
     const [ca2,cb2]=getClubColors(cur.c2);
     const tc1=textColor(ca1); const tc2=textColor(ca2);
@@ -4315,7 +4336,7 @@ export default function LePont() {
             {scoreDisplay(score,scoreAnim)}
             <span style={{fontSize:11,color:"rgba(255,255,255,.5)",fontWeight:600}}>pts</span>
           </div>
-          {screen!=="daily" && timerCircle()}
+          {timerCircle()}
           {record?<div style={{background:"rgba(255,255,255,.13)",backdropFilter:"blur(10px)",borderRadius:18,padding:"8px 14px",display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:13}}>🏆</span><span style={{fontFamily:G.heading,fontSize:22,color:G.gold}}>{record.score}</span></div>:<div style={{width:70}}/>}
         </div>
 
@@ -4383,7 +4404,7 @@ export default function LePont() {
                   );
                 })}
               </div>
-              <button onClick={handlePass} disabled={!!flash} style={{padding:"12px",pointerEvents:flash?"none":"auto",background:"transparent",color:"#bbb",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700,opacity:flash ? 0.3 : 1,display:screen==="daily"?"none":"block"}}>Passer → (−0.5 pt)</button>
+              <button onClick={handlePass} disabled={!!flash} style={{padding:"12px",pointerEvents:flash?"none":"auto",background:"transparent",color:"#bbb",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700,opacity:flash ? 0.3 : 1}}>Passer → (−0.5 pt)</button>
             </div>
           ):(
             <div style={{display:"flex",flexDirection:"column",gap:10}}>
@@ -4391,7 +4412,7 @@ export default function LePont() {
                 placeholder="Nom du joueur..." autoComplete="off"
                 style={{width:"100%",background:flash==="ko"?"#fee2e2":flash==="ok"?"#dcfce7":G.offWhite,border:("2px solid "+(flash==="ko"?G.red:flash==="ok"?G.accent:"#e5e5e0")+""),borderRadius:18,padding:"15px 18px",fontFamily:G.font,fontSize:18,fontWeight:700,color:G.dark,outline:"none",textAlign:"center",transition:"all .15s",animation:flash==="ko"?"answerKo .4s ease":flash==="ok"?"answerOk .4s ease":"none"}}/>
               <div style={{display:"flex",gap:10}}>
-                {screen!=="daily" && <button onClick={handlePass} disabled={!!flash} style={{flex:1,padding:15,pointerEvents:flash?"none":"auto",background:G.offWhite,color:"#aaa",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700,opacity:flash ? 0.3 : 1}}>Passer →</button>}
+                <button onClick={handlePass} disabled={!!flash} style={{flex:1,padding:15,pointerEvents:flash?"none":"auto",background:G.offWhite,color:"#aaa",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700,opacity:flash ? 0.3 : 1}}>Passer →</button>
                 <button onClick={handleSubmit} style={{flex:2,padding:"15px",background:G.dark,color:G.white,border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:16,fontWeight:800}}>Valider</button>
               </div>
             </div>
