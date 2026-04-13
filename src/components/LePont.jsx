@@ -2430,6 +2430,30 @@ export default function LePont() {
           });
         });
       }
+      // Inclure aussi les parties en salle
+      const rooms = await sbFetch("bb_rooms?status=eq.complete&select=players,mode&limit=500");
+      if (Array.isArray(rooms)) {
+        rooms.forEach(function(r) {
+          try {
+            const players = typeof r.players === "string" ? JSON.parse(r.players) : r.players;
+            if (!Array.isArray(players) || players.length < 2) return;
+            const sorted = [...players].sort(function(a,b){return (b.score||0)-(a.score||0);});
+            const topScore = sorted[0].score || 0;
+            players.forEach(function(p) {
+              const pid = p.id;
+              if (!pid || !stats[pid]) return;
+              if (!stats[pid].wins) stats[pid].wins = 0;
+              if (!stats[pid].draws) stats[pid].draws = 0;
+              if (!stats[pid].losses) stats[pid].losses = 0;
+              const myScore = p.score || 0;
+              const winners = players.filter(function(x){return (x.score||0)===topScore;});
+              if (myScore === topScore && winners.length === 1) stats[pid].wins++;
+              else if (myScore === topScore && winners.length > 1) stats[pid].draws++;
+              else stats[pid].losses++;
+            });
+          } catch(e){}
+        });
+      }
       const sorted = Object.values(stats)
         .map(function(r){ return {name:r.name, pid:r.pid||"", score:isGlobal?(r.bestPont+r.bestChaine):r.best, bestPont:r.bestPont, bestChaine:r.bestChaine, played:r.played, wins:r.wins||0, draws:r.draws||0, losses:r.losses||0}; })
         .sort(function(a,b){ return b.score - a.score; })
