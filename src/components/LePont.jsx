@@ -2360,40 +2360,45 @@ export default function LePont() {
   // ── FRIEND FUNCTIONS ──
   async function loadFriends() {
     try {
-      const stored = localStorage.getItem("bb_friends");
-      let ids = stored ? JSON.parse(stored) : [];
-      // Blacklist des amis supprimés explicitement
       const removed = JSON.parse(localStorage.getItem("bb_removed_friends") || "[]");
-      // Sync depuis Supabase : demandes acceptées envoyées par moi
-      const accepted = await sbFetch("bb_friend_requests?from_id=eq."+playerId+"&status=eq.accepted&select=to_id,to_name");
+      const names = JSON.parse(localStorage.getItem("bb_friend_names") || "{}");
+      let ids = [];
+
+      // Source principale : Supabase (demandes acceptées dans les deux sens)
+      const [accepted, received] = await Promise.all([
+        sbFetch("bb_friend_requests?from_id=eq."+playerId+"&status=eq.accepted&select=to_id,to_name"),
+        sbFetch("bb_friend_requests?to_id=eq."+playerId+"&status=eq.accepted&select=from_id,from_name")
+      ]);
+
       if (Array.isArray(accepted)) {
-        const names = JSON.parse(localStorage.getItem("bb_friend_names") || "{}");
         accepted.forEach(function(r) {
           if (!ids.includes(r.to_id) && !removed.includes(r.to_id)) {
             ids.push(r.to_id);
             if (r.to_name) names[r.to_id] = r.to_name;
           }
         });
-        localStorage.setItem("bb_friend_names", JSON.stringify(names));
       }
-      // Sync depuis Supabase : demandes acceptées reçues par moi
-      const received = await sbFetch("bb_friend_requests?to_id=eq."+playerId+"&status=eq.accepted&select=from_id,from_name");
       if (Array.isArray(received)) {
-        const names = JSON.parse(localStorage.getItem("bb_friend_names") || "{}");
         received.forEach(function(r) {
           if (!ids.includes(r.from_id) && !removed.includes(r.from_id)) {
             ids.push(r.from_id);
             if (r.from_name) names[r.from_id] = r.from_name;
           }
         });
-        localStorage.setItem("bb_friend_names", JSON.stringify(names));
       }
-      // Filtrer aussi les ids existants qui auraient été supprimés
-      ids = ids.filter(function(id){ return !removed.includes(id); });
+
+      localStorage.setItem("bb_friend_names", JSON.stringify(names));
       localStorage.setItem("bb_friends", JSON.stringify(ids));
       setFriendsList(ids);
       return ids;
-    } catch { return []; }
+    } catch {
+      // Fallback localStorage si Supabase inaccessible
+      try {
+        const stored = JSON.parse(localStorage.getItem("bb_friends") || "[]");
+        setFriendsList(stored);
+        return stored;
+      } catch { return []; }
+    }
   }
 
   async function fetchFriendScores(ids) {
@@ -3494,8 +3499,8 @@ export default function LePont() {
               <div style={{width:"100%",background:"rgba(10,20,10,.97)",borderRadius:"28px 28px 0 0",padding:"20px 20px 48px",border:"1px solid rgba(255,255,255,.1)",borderBottom:"none",maxHeight:"80vh",overflowY:"auto"}}>
                 <div style={{fontFamily:G.heading,fontSize:28,color:G.gold,letterSpacing:2,marginBottom:4,textAlign:"center"}}>🏅 HALL OF FAME</div>
                 <div style={{fontSize:12,color:"rgba(255,255,255,.4)",textAlign:"center",marginBottom:16}}>Champions des saisons passées</div>
-                {seasons.length === 0 && <div style={{textAlign:"center",color:"rgba(255,255,255,.3)",padding:"24px 0",fontSize:14}}>Pas encore de champion — la première saison est en cours !</div>}
-                {seasons.map(function(s, i){
+                {hallOfFame.length === 0 && <div style={{textAlign:"center",color:"rgba(255,255,255,.3)",padding:"24px 0",fontSize:14}}>Pas encore de champion — la première saison est en cours !</div>}
+                {hallOfFame.map(function(s, i){
                   const grade = getGrade(s.champion_score||0);
                   return (
                     <div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"14px",background:"rgba(255,214,0,.06)",borderRadius:14,border:"1px solid rgba(255,214,0,.15)",marginBottom:8}}>
