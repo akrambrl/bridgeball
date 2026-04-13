@@ -993,6 +993,31 @@ function generateCode() {
 }
 
 function getClubColors(name){return CLUB_COLORS[name]||["#1a7a3a","#FFFFFF"];}
+
+function ClubLogo({ club, size = 48 }) {
+  const [ca, cb] = getClubColors(club);
+  const initials = club.split(" ").map(w => w[0]).join("").slice(0, 3).toUpperCase();
+  const fontSize = size < 36 ? size * 0.32 : size * 0.28;
+  return (
+    <div style={{
+      width: size, height: size, borderRadius: "50%",
+      background: `linear-gradient(135deg, ${ca} 0%, ${ca}cc 100%)`,
+      border: `${Math.max(1.5, size * 0.04)}px solid ${cb}44`,
+      display: "flex", alignItems: "center", justifyContent: "center",
+      boxShadow: `0 2px 8px rgba(0,0,0,.4), inset 0 1px 0 ${cb}33`,
+      flexShrink: 0,
+    }}>
+      <span style={{
+        fontSize, fontWeight: 900, color: cb,
+        fontFamily: "Arial Black, Arial, sans-serif",
+        letterSpacing: initials.length > 2 ? -1 : 0,
+        textShadow: `0 1px 2px rgba(0,0,0,.5)`,
+        lineHeight: 1,
+      }}>{initials}</span>
+    </div>
+  );
+}
+
 function textColor(hex){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return(r*299+g*587+b*114)/1000>128?"#111":"#FFF";}
 function generateOptions(correctPlayers,allPairs){
   const correct=correctPlayers[Math.floor(Math.random()*correctPlayers.length)];
@@ -3346,15 +3371,18 @@ export default function LePont() {
           <div
             onClick={function(){setGameConfigModal("pont");}}
             style={{flex:1,borderRadius:22,cursor:"pointer",overflow:"hidden",position:"relative",
+              background:"linear-gradient(160deg,#0d1f3c 0%,#1a3a6b 50%,#0d2040 100%)",
               boxShadow:"0 8px 24px rgba(0,0,0,.5)"}}
           >
-            <img src="/plug.png" alt="" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}/>
-            <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg,rgba(0,0,0,.65) 0%,rgba(0,0,0,.1) 45%,rgba(0,0,0,.72) 100%)"}}/>
             <div style={{padding:"16px 12px",position:"relative",zIndex:1,height:"100%",boxSizing:"border-box",display:"flex",flexDirection:"column"}}>
               <div style={{fontSize:9,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.7)",marginBottom:4}}>Mode 1</div>
               <div style={{fontFamily:G.heading,fontSize:"clamp(18px,4.2vw,22px)",color:G.white,letterSpacing:1,lineHeight:1,marginBottom:6}}>THE PLUG</div>
               <div style={{fontSize:12,color:"rgba(255,255,255,.9)",lineHeight:1.4,fontWeight:700}}>{"Trouve le joueur\nqui relie les\ndeux clubs"}</div>
-              <div style={{flex:1}}/>
+              <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+                <span style={{fontSize:44,lineHeight:1}}>🏟️</span>
+                <span style={{fontSize:30,lineHeight:1}}>❓</span>
+                <span style={{fontSize:44,lineHeight:1}}>🏟️</span>
+              </div>
               {record&&<div style={{display:"flex",alignItems:"center",gap:4,marginBottom:8}}>
                 <span style={{fontSize:12,color:G.gold}}>🏆</span>
                 <span style={{fontFamily:G.heading,fontSize:15,color:G.gold}}>{record.score} pts</span>
@@ -3367,15 +3395,20 @@ export default function LePont() {
           <div
             onClick={function(){setGameConfigModal("chaine");}}
             style={{flex:1,borderRadius:22,cursor:"pointer",overflow:"hidden",position:"relative",
+              background:"linear-gradient(160deg,#0c2218 0%,#1a5c34 50%,#0c2a1a 100%)",
               boxShadow:"0 8px 24px rgba(0,0,0,.5)"}}
           >
-            <img src="/mercato.png" alt="" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}/>
-            <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg,rgba(0,0,0,.65) 0%,rgba(0,0,0,.1) 45%,rgba(0,0,0,.72) 100%)"}}/>
             <div style={{padding:"16px 12px",position:"relative",zIndex:1,height:"100%",boxSizing:"border-box",display:"flex",flexDirection:"column"}}>
               <div style={{fontSize:9,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.7)",marginBottom:4}}>Mode 2</div>
               <div style={{fontFamily:G.heading,fontSize:"clamp(16px,3.8vw,20px)",color:G.white,letterSpacing:1,lineHeight:1,marginBottom:6}}>THE MERCATO</div>
               <div style={{fontSize:12,color:"rgba(255,255,255,.9)",lineHeight:1.4,fontWeight:700}}>{"Enchaîne joueur\n→ club le plus\nlongtemps possible"}</div>
-              <div style={{flex:1}}/>
+              <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:4}}>
+                <span style={{fontSize:38,lineHeight:1}}>⚽</span>
+                <span style={{fontSize:24,lineHeight:1}}>⛓️</span>
+                <span style={{fontSize:38,lineHeight:1}}>⚽</span>
+                <span style={{fontSize:24,lineHeight:1}}>⛓️</span>
+                <span style={{fontSize:38,lineHeight:1}}>⚽</span>
+              </div>
               {chainRecord&&<div style={{display:"flex",alignItems:"center",gap:4,marginBottom:8}}>
                 <span style={{fontSize:12,color:G.accent}}>⛓</span>
                 <span style={{fontFamily:G.heading,fontSize:15,color:G.accent}}>{chainRecord.score} pts</span>
@@ -3535,12 +3568,13 @@ export default function LePont() {
         {/* Club cards — full height */}
         <div key={"clubs-"+animKey} style={{flex:1,display:"flex",flexDirection:"column",gap:0,padding:"10px 0 0",zIndex:1,minHeight:0}}>
           {/* Club 1 */}
-          <div style={{flex:1,margin:"0 14px 0 14px",borderRadius:28,background:"linear-gradient(145deg,"+ca1+" 0%,"+cb1+" 100%)",boxShadow:"0 12px 40px "+ca1+"55",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",position:"relative",overflow:"hidden",animation:"clubSlideLeft .55s cubic-bezier(.22,1,.36,1)",animationFillMode:"both"}}>
-            <div style={{position:"absolute",width:220,height:220,borderRadius:"50%",border:("3px solid rgba(255,255,255,.12)"),top:-40,right:-40}}/>
-            <div style={{position:"absolute",width:120,height:120,borderRadius:"50%",border:("2px solid rgba(255,255,255,.07)"),bottom:20,left:-20}}/>
-
-            <div style={{marginBottom:8,display:"flex",justifyContent:"center",zIndex:1}}><ClubLogo club={cur.c1} size={52}/></div>
-            <div style={{fontFamily:G.heading,fontSize:"clamp(20px,5.5vw,36px)",color:"#ffffff",lineHeight:1.05,textAlign:"center",padding:"0 20px",zIndex:1,textShadow:"0 3px 12px rgba(0,0,0,.4)",letterSpacing:1}}>{cur.c1}</div>
+          <div style={{flex:1,margin:"0 14px 0 14px",borderRadius:28,position:"relative",overflow:"hidden",boxShadow:"0 12px 40px "+ca1+"55",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",animation:"clubSlideLeft .55s cubic-bezier(.22,1,.36,1)",animationFillMode:"both"}}>
+            {/* Fond diagonal club 1 */}
+            <div style={{position:"absolute",inset:0,background:ca1}}/>
+            <div style={{position:"absolute",top:0,right:0,width:"55%",bottom:0,background:cb1,clipPath:"polygon(30% 0%, 100% 0%, 100% 100%, 0% 100%)"}}/>
+            <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.18)"}}/>
+            <div style={{position:"absolute",width:220,height:220,borderRadius:"50%",border:"3px solid rgba(255,255,255,.1)",top:-40,right:-40,pointerEvents:"none"}}/>
+            <div style={{fontFamily:G.heading,fontSize:"clamp(22px,6vw,40px)",color:"#fff",lineHeight:1.05,textAlign:"center",padding:"0 20px",zIndex:1,textShadow:"0 3px 16px rgba(0,0,0,.6)",letterSpacing:1}}>{cur.c1}</div>
           </div>
 
           {/* VS */}
@@ -3549,12 +3583,13 @@ export default function LePont() {
           </div>
 
           {/* Club 2 */}
-          <div style={{flex:1,margin:"0 14px 10px 14px",borderRadius:28,background:"linear-gradient(145deg,"+ca2+" 0%,"+cb2+" 100%)",boxShadow:"0 12px 40px "+ca2+"55",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",position:"relative",overflow:"hidden",animation:"clubSlideRight .55s cubic-bezier(.22,1,.36,1)",animationFillMode:"both"}}>
-            <div style={{position:"absolute",width:200,height:200,borderRadius:"50%",border:("3px solid rgba(255,255,255,.12)"),bottom:-30,left:-30}}/>
-            <div style={{position:"absolute",width:100,height:100,borderRadius:"50%",border:("2px solid rgba(255,255,255,.07)"),top:10,right:-10}}/>
-
-            <div style={{marginBottom:8,display:"flex",justifyContent:"center",zIndex:1}}><ClubLogo club={cur.c2} size={52}/></div>
-            <div style={{fontFamily:G.heading,fontSize:"clamp(20px,5.5vw,36px)",color:"#ffffff",lineHeight:1.05,textAlign:"center",padding:"0 20px",zIndex:1,textShadow:"0 3px 12px rgba(0,0,0,.4)",letterSpacing:1}}>{cur.c2}</div>
+          <div style={{flex:1,margin:"0 14px 10px 14px",borderRadius:28,position:"relative",overflow:"hidden",boxShadow:"0 12px 40px "+ca2+"55",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",animation:"clubSlideRight .55s cubic-bezier(.22,1,.36,1)",animationFillMode:"both"}}>
+            {/* Fond diagonal club 2 */}
+            <div style={{position:"absolute",inset:0,background:ca2}}/>
+            <div style={{position:"absolute",top:0,right:0,width:"55%",bottom:0,background:cb2,clipPath:"polygon(30% 0%, 100% 0%, 100% 100%, 0% 100%)"}}/>
+            <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.18)"}}/>
+            <div style={{position:"absolute",width:200,height:200,borderRadius:"50%",border:"3px solid rgba(255,255,255,.1)",bottom:-30,left:-30,pointerEvents:"none"}}/>
+            <div style={{fontFamily:G.heading,fontSize:"clamp(22px,6vw,40px)",color:"#fff",lineHeight:1.05,textAlign:"center",padding:"0 20px",zIndex:1,textShadow:"0 3px 16px rgba(0,0,0,.6)",letterSpacing:1}}>{cur.c2}</div>
           </div>
         </div>
 
@@ -3579,20 +3614,17 @@ export default function LePont() {
                         padding:"14px 10px", borderRadius:18, cursor:"pointer",
                         fontFamily:G.font, fontSize:"clamp(12px,3vw,16px)", fontWeight:800,
                         lineHeight:1.3, transition:"all .15s", position:"relative", overflow:"hidden",
-                        border: isOk?"2px solid #00E676": isKo?"2px solid #FF3D57":"1.5px solid "+oca+"88",
-                        background: isOk?"#052e16": isKo?"#2d0a0a": ("linear-gradient(145deg,"+oca+"33 0%,"+ocb+"22 100%)"),
+                        border: isOk?"2px solid #00E676": isKo?"2px solid #FF3D57":"none",
+                        background: isOk?"#052e16": isKo?"#2d0a0a": "rgba(255,255,255,.1)",
                         color: isOk?"#00E676": isKo?G.red: G.white,
-                        boxShadow: isOk?"0 0 20px rgba(74,222,128,.4)": isKo?"0 0 20px rgba(239,68,68,.3)": "0 3px 12px "+oca+"22",
+                        boxShadow: isOk?"0 0 20px rgba(74,222,128,.4)": isKo?"0 0 20px rgba(239,68,68,.3)":"none",
                         animation: isOk?"answerOk .4s ease": isKo?"answerKo .4s ease": "optionIn .4s cubic-bezier(.22,1,.36,1) "+(oi*.07)+"s both",
                       }}>
-                      {/* Club color strip */}
-                      {!isOk&&!isKo&&<div style={{position:"absolute",top:0,left:0,right:0,height:3,background:"linear-gradient(90deg,"+oca+","+ocb+")",borderRadius:"18px 18px 0 0"}}/>}
-                      <div style={{display:"flex",alignItems:"center",gap:8,justifyContent:"center"}}>
-                      {!isOk&&!isKo&&<PlayerAvatarMini name={opt} size={30}/>}
-                      {isOk&&<span style={{fontSize:16}}>✓</span>}
-                      {isKo&&<span style={{fontSize:16}}>✗</span>}
-                      <span style={{fontSize:"clamp(12px,3vw,16px)",fontWeight:800,color:isOk?"#00E676":isKo?G.red:G.white}}>{opt}</span>
-                    </div>
+                      <div style={{display:"flex",alignItems:"center",gap:8,justifyContent:"center",position:"relative",zIndex:1}}>
+                        {isOk&&<span style={{fontSize:16}}>✓</span>}
+                        {isKo&&<span style={{fontSize:16}}>✗</span>}
+                        <span style={{fontSize:"clamp(12px,3vw,16px)",fontWeight:800}}>{opt}</span>
+                      </div>
                     </button>
                   );
                 })}
@@ -3679,10 +3711,13 @@ export default function LePont() {
       </div>
 
       {chainLastClub && (
-        <div style={{zIndex:1,textAlign:"center",padding:"4px 0",animation:"clubTagPop .4s cubic-bezier(.22,1,.36,1)"}}>
-          <span style={{background:`linear-gradient(135deg,${cla},${clb})`,borderRadius:30,padding:"5px 16px",fontSize:12,color:clTagColor==="#FFF"?"#fff":"#111",fontWeight:700,boxShadow:`0 3px 12px ${cla}55`,display:"inline-flex",alignItems:"center",gap:5}}>
-            <ClubLogo club={chainLastClub} size={20}/> {chainLastClub}
-          </span>
+        <div style={{zIndex:1,padding:"4px 16px",animation:"clubTagPop .4s cubic-bezier(.22,1,.36,1)"}}>
+          <div style={{borderRadius:14,overflow:"hidden",position:"relative",height:36,boxShadow:`0 4px 16px ${cla}55`,display:"flex",alignItems:"center",justifyContent:"center"}}>
+            <div style={{position:"absolute",inset:0,background:cla}}/>
+            <div style={{position:"absolute",top:0,right:0,width:"55%",bottom:0,background:clb,clipPath:"polygon(30% 0%, 100% 0%, 100% 100%, 0% 100%)"}}/>
+            <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.18)"}}/>
+            <span style={{position:"relative",zIndex:1,fontSize:14,color:"#fff",fontWeight:800,textShadow:"0 1px 4px rgba(0,0,0,.5)",letterSpacing:.5}}>{chainLastClub}</span>
+          </div>
         </div>
       )}
 
@@ -3700,10 +3735,9 @@ export default function LePont() {
           {Icon.ball(12,ptc==="#FFF"?"rgba(255,255,255,.6)":"rgba(0,0,0,.35)")} Donne un club de
         </div>
         <div style={{display:"flex",alignItems:"center",gap:14,zIndex:1,position:"relative",justifyContent:"center",flexWrap:"wrap"}}>
-          <div style={{animation:"playerDrop .4s cubic-bezier(.22,1,.36,1)"}}><PlayerAvatar name={chainPlayer} size={58}/></div>
-          <div style={{textAlign:"left"}}>
+          <div style={{textAlign:"center"}}>
             <div style={{fontFamily:G.heading,fontSize:"clamp(18px,5vw,34px)",color:ptc==="#FFF"?"#fff":"#111",lineHeight:1.05,textShadow:ptc==="#FFF"?"0 2px 10px rgba(0,0,0,.25)":"none",letterSpacing:1}}>{chainPlayer}</div>
-            {chainUsedClubs.size>0 && <div style={{fontSize:10,color:ptc==="#FFF"?"rgba(255,255,255,.55)":"rgba(0,0,0,.35)",marginTop:3,fontWeight:600}}>{chainAvailableClubs.length} club{chainAvailableClubs.length!==1?"s":""} restant{chainAvailableClubs.length!==1?"s":""}</div>}
+            {chainUsedClubs.size>0 && <div style={{fontSize:10,color:ptc==="#FFF"?"rgba(255,255,255,.55)":"rgba(0,0,0,.35)",marginTop:3,fontWeight:600}}>{chainAvailableClubs.length} club{chainAvailableClubs.length!==1?"s":""} disponible{chainAvailableClubs.length!==1?"s":""}</div>}
           </div>
         </div>
         {combo>=3 && <div style={{marginTop:6,fontSize:12,fontWeight:800,color:ptc==="#FFF"?"#fff":"#111",animation:"comboFire .5s ease",zIndex:1,position:"relative"}}>{getComboLabel(combo)} x{combo}</div>}
@@ -3724,7 +3758,6 @@ export default function LePont() {
             {[...chainHistory].reverse().map((h,i)=>(
               <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"7px 12px",background:G.offWhite,borderRadius:12,animation:`slideIn .3s ease ${i*.04}s both`,opacity:h.passed ? 0.7 : 1}}>
                 <span style={{fontSize:10,color:"#bbb",fontWeight:700,minWidth:18}}>{i+1}.</span>
-                <PlayerAvatarMini name={h.player} size={26}/>
                 <span style={{fontSize:12,color:G.dark,fontWeight:700,flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{h.player}</span>
                 <span style={{display:"flex",alignItems:"center",flexShrink:0}}>{Icon.transfer(11,"#ccc")}</span>
                 <span style={{display:"flex",alignItems:"center",gap:4,flexShrink:0}}><ClubLogo club={h.club} size={18}/><span style={{fontSize:12,color:h.passed?"#aaa":G.bg,fontWeight:700}}>{h.club}</span></span>
