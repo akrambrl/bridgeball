@@ -2628,7 +2628,8 @@ export default function LePont() {
       }
 
       // Filtre par saison sauf pour l'onglet Amis
-      const seasonFilter = !isAmis ? "&created_at=gte."+season.start.toISOString()+"&created_at=lt."+season.end.toISOString() : "";
+      // Saison 1 = pas de filtre date (tous les scores historiques) — filtre actif dès saison 2
+      const seasonFilter = (!isAmis && season.num > 1) ? "&created_at=gte."+season.start.toISOString()+"&created_at=lt."+season.end.toISOString() : "";
       const modeFilter = (!mode || isGlobal) ? "" : "mode=eq."+mode+"&";
       const data = await sbFetch("bb_scores?"+modeFilter+"order=score.desc&limit=1000&select=player_id,player_name,score,mode"+seasonFilter);
       if (!Array.isArray(data)) { setLeaderboard([]); return; }
