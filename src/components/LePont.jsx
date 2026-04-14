@@ -495,7 +495,7 @@ const PLAYERS = [
   { name:"Blaise Matuidi", clubs:["PSG", "Juventus"], diff:"moyen" },
   { name:"Roberto Firmino", clubs:["Hoffenheim", "Liverpool", "Al Ahli"], diff:"moyen" },
   { name:"Jamie Vardy", clubs:["Leicester City"], diff:"moyen" },
-  { name:"Divock Origi", clubs:["Liverpool", "AC Milan"], diff:"expert" },
+  { name:"Divock Origi", clubs:["Lille", "Liverpool", "Wolfsburg", "AC Milan", "Nottingham Forest"], diff:"moyen" },
   { name:"Thomas Lemar", clubs:["Monaco", "Atletico Madrid"], diff:"expert" },
   { name:"Kingsley Coman", clubs:["PSG", "Juventus", "Bayern Munich"], diff:"moyen" },
   { name:"Ciro Immobile", clubs:["Juventus", "Torino", "Borussia Dortmund", "Lazio"], diff:"moyen" },
@@ -613,7 +613,7 @@ const PLAYERS = [
   { name:"Samir Nasri", clubs:["Marseille", "Arsenal", "Manchester City", "Sevilla"], diff:"moyen" },
   { name:"Bacary Sagna", clubs:["Arsenal", "Manchester City"], diff:"moyen" },
   { name:"Nicolas Anelka", clubs:["Arsenal", "Real Madrid", "PSG", "Manchester City", "Chelsea", "Fenerbahce"], diff:"moyen" },
-  { name:"Sylvain Wiltord", clubs:["Bordeaux", "Arsenal"], diff:"moyen" },
+  { name:"Sylvain Wiltord", clubs:["Bordeaux", "Arsenal", "Lyon", "Marseille", "Rennes"], diff:"moyen" },
   { name:"Marc Overmars", clubs:["Ajax Amsterdam", "Arsenal", "Barcelona"], diff:"moyen" },
   { name:"Robert Pires", clubs:["Arsenal", "Marseille", "Villarreal"], diff:"moyen" },
   { name:"Claude Makelele", clubs:["Nantes", "Marseille", "Celta Vigo", "Real Madrid", "Chelsea", "PSG"], diff:"moyen" },
@@ -4150,7 +4150,7 @@ export default function LePont() {
                   ▶ Jouer seul
                 </button>
                 <button onClick={function(){setDuelMode(gameConfigModal);setDuelDiff(diff);setDuelRounds(totalRounds);setGameConfigModal(null);setTimeout(function(){setShowRoomCreate(true);},100);}} style={{flex:1,padding:"16px",background:"rgba(255,255,255,.07)",color:G.white,border:"1px solid rgba(255,255,255,.12)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700}}>
-                  👥 Multi
+                  👥 Entre potes
                 </button>
               </div>
             </div>
@@ -4279,11 +4279,20 @@ export default function LePont() {
         )}
 
         {/* Multijoueur - rejoindre */}
-        <div style={{display:"flex",gap:8}}>
-          <input value={roomInput} onChange={function(e){setRoomInput(e.target.value.toUpperCase());setRoomMsg("");}}
-            placeholder="Code salle" maxLength={6}
-            style={{flex:1,padding:"10px 12px",borderRadius:12,border:"1.5px solid rgba(255,255,255,.12)",background:"rgba(255,255,255,.05)",color:G.white,fontFamily:G.font,fontSize:14,fontWeight:700,letterSpacing:3,textTransform:"uppercase",outline:"none"}}/>
-          <button onClick={function(){requirePseudo(function(){joinRoom(roomInput);});}} style={{padding:"10px 14px",background:"rgba(255,255,255,.07)",color:G.white,border:"1px solid rgba(255,255,255,.12)",borderRadius:12,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700}}>Rejoindre</button>
+        <div style={{background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.1)",borderRadius:16,padding:"14px 14px 12px"}}>
+          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
+            <span style={{fontSize:18}}>👥</span>
+            <div>
+              <div style={{fontSize:14,fontWeight:800,color:G.white}}>Joue avec tes potes !</div>
+              <div style={{fontSize:11,color:"rgba(255,255,255,.4)"}}>Crée une salle ou rejoins avec un code</div>
+            </div>
+          </div>
+          <div style={{display:"flex",gap:8}}>
+            <input value={roomInput} onChange={function(e){setRoomInput(e.target.value.toUpperCase());setRoomMsg("");}}
+              placeholder="Code salle" maxLength={6}
+              style={{flex:1,padding:"10px 12px",borderRadius:12,border:"1.5px solid rgba(255,255,255,.12)",background:"rgba(255,255,255,.05)",color:G.white,fontFamily:G.font,fontSize:14,fontWeight:700,letterSpacing:3,textTransform:"uppercase",outline:"none"}}/>
+            <button onClick={function(){requirePseudo(function(){joinRoom(roomInput);});}} style={{padding:"10px 14px",background:"rgba(255,255,255,.07)",color:G.white,border:"1px solid rgba(255,255,255,.12)",borderRadius:12,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700}}>Rejoindre</button>
+          </div>
         </div>
         {roomMsg && <div style={{fontSize:12,color:"#FF3D57",fontWeight:700,marginTop:-4}}>{roomMsg}</div>}
         {/* Actions */}
