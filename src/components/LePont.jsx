@@ -1653,6 +1653,18 @@ export default function LePont() {
     loadFriendRequests();
     loadSeasons();
     checkAndCloseSeason();
+    // Auto-join depuis lien ?room=XXXXXX
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const roomCode = params.get("room");
+      if (roomCode) {
+        window.history.replaceState({}, "", window.location.pathname); // nettoie l'URL
+        setTimeout(function(){
+          setRoomInput(roomCode.toUpperCase());
+          requirePseudo(function(){ joinRoom(roomCode.toUpperCase()); });
+        }, 3000); // attendre après le splash
+      }
+    } catch {}
     // Fermer le splash après 2.5s
     setTimeout(function(){setShowSplash(false);}, 2500);
   }, []);
@@ -3676,7 +3688,11 @@ export default function LePont() {
               <div style={{fontSize:9,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase"}}>Code</div>
               <div style={{fontFamily:G.heading,fontSize:20,color:G.gold,letterSpacing:4}}>{room.code}</div>
             </div>
-            <button onClick={function(){navigator.clipboard.writeText(room.code).then(function(){alert("Code copié !");});}} style={{background:"rgba(255,255,255,.1)",border:"1px solid rgba(255,255,255,.15)",borderRadius:8,padding:"6px 10px",color:G.white,cursor:"pointer",fontSize:16,lineHeight:1}}>📋</button>
+            <button onClick={function(){
+              const link = "https://goatfc.fr?room="+room.code;
+              if(navigator.share){navigator.share({title:"GOAT FC — Rejoins ma salle !",text:"Rejoins ma salle sur GOAT FC 🐐",url:link});}
+              else{navigator.clipboard.writeText(link).then(function(){alert("Lien copié ! 📋");});}
+            }} style={{background:"rgba(0,230,118,.15)",border:"1px solid rgba(0,230,118,.3)",borderRadius:8,padding:"6px 10px",color:G.accent,cursor:"pointer",fontSize:13,fontWeight:800,lineHeight:1}}>🔗 Inviter</button>
           </div>
         </div>
         <div style={{...sheet,borderRadius:"28px 28px 0 0",marginTop:16}}>
