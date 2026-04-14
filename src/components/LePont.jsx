@@ -4192,7 +4192,7 @@ export default function LePont() {
               <button onClick={function(){setShowDailyGame(false);}} style={{background:"rgba(255,255,255,.1)",border:"1px solid rgba(255,255,255,.15)",borderRadius:"50%",width:36,height:36,color:G.white,cursor:"pointer",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
             </div>
             {/* Contenu */}
-            <div style={{...sheet,borderRadius:"28px 28px 0 0",marginTop:20,zIndex:1,flex:1,justifyContent:"center"}}>
+            <div style={{...sheet,borderRadius:"28px 28px 0 0",marginTop:20,zIndex:1,flex:1,justifyContent:"center",overflowY:"auto",paddingBottom:40}}>
               {/* Clubs */}
               <div>
                 <div style={{fontSize:80,textAlign:"center",marginBottom:8}}>🤔</div>
