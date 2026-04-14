@@ -270,7 +270,7 @@ const PLAYERS = [
   { name:"Göktan Gürpüz", clubs:["Trabzonspor", "Besiktas"], diff:"expert" },
   { name:"Mohamed Bayo", clubs:["Clermont", "Galatasaray", "Gaziantep"], diff:"expert" },
   { name:"Felipe Augusto", clubs:["Trabzonspor"], diff:"expert" },
-  { name:"Kerem Aktürkoğlu", clubs:["Galatasaray", "Fenerbahce"], diff:"moyen" },
+  { name:"Kerem Aktürkoğlu", clubs:["Galatasaray", "Benfica"], diff:"moyen" },
   { name:"Renato Nhaga", clubs:["Galatasaray"], diff:"expert" },
   { name:"Václav Černý", clubs:["Twente", "Wolfsburg", "Besiktas"], diff:"expert" },
   { name:"Mattéo Guendouzi", clubs:["Arsenal", "Marseille", "Fenerbahce"], diff:"moyen" },
@@ -351,7 +351,7 @@ const PLAYERS = [
   { name:"Mohamed Salah", clubs:["Basel", "Chelsea", "Fiorentina", "Roma", "Liverpool"], diff:"facile" },
   { name:"Kevin De Bruyne", clubs:["Chelsea", "Wolfsburg", "Manchester City"], diff:"facile" },
   { name:"Harry Kane", clubs:["Tottenham", "Bayern Munich"], diff:"facile" },
-  { name:"N'Golo Kante", clubs:["Leicester City", "Chelsea", "Al Ittihad"], diff:"facile" },
+
   { name:"Sergio Ramos", clubs:["Sevilla", "Real Madrid", "PSG"], diff:"facile" },
   { name:"Antoine Griezmann", clubs:["Real Sociedad", "Atletico Madrid", "Barcelona"], diff:"facile" },
   { name:"Eden Hazard", clubs:["Lille", "Chelsea", "Real Madrid"], diff:"facile" },
@@ -366,18 +366,18 @@ const PLAYERS = [
   { name:"Samuel Eto'o", clubs:["Real Madrid", "Mallorca", "Barcelona", "Inter Milan", "Anzhi", "Chelsea", "Everton"], diff:"facile" },
   { name:"Virgil van Dijk", clubs:["Celtic", "Southampton", "Liverpool"], diff:"facile" },
   { name:"David Beckham", clubs:["Manchester United", "Real Madrid", "AC Milan", "PSG", "LA Galaxy"], diff:"facile" },
-  { name:"Sadio Mane", clubs:["Metz", "Salzburg", "Southampton", "Liverpool", "Bayern Munich", "Al Nassr"], diff:"facile" },
+
   { name:"Raheem Sterling", clubs:["Liverpool", "Manchester City", "Chelsea", "Arsenal"], diff:"moyen" },
   { name:"Ousmane Dembele", clubs:["Rennes", "Borussia Dortmund", "Barcelona", "PSG"], diff:"moyen" },
   { name:"Marcus Rashford", clubs:["Manchester United","Barcelona"], diff:"moyen" },
   { name:"Jack Grealish", clubs:["Aston Villa", "Manchester City"], diff:"moyen" },
   { name:"Declan Rice", clubs:["West Ham", "Arsenal"], diff:"moyen" },
   { name:"Bernardo Silva", clubs:["Monaco", "Manchester City"], diff:"moyen" },
-  { name:"Joao Felix", clubs:["Benfica", "Atletico Madrid", "Chelsea", "Barcelona"], diff:"moyen" },
-  { name:"Joao Cancelo", clubs:["Juventus", "Manchester City", "Bayern Munich", "Barcelona"], diff:"moyen" },
-  { name:"Leroy Sane", clubs:["Schalke", "Manchester City", "Bayern Munich"], diff:"moyen" },
+
+
+
   { name:"Kai Havertz", clubs:["Bayer Leverkusen", "Chelsea", "Arsenal"], diff:"moyen" },
-  { name:"Theo Hernandez", clubs:["Atletico Madrid", "Real Madrid", "AC Milan"], diff:"moyen" },
+
   { name:"Aurelien Tchouameni", clubs:["Monaco", "Real Madrid"], diff:"moyen" },
   { name:"Eduardo Camavinga", clubs:["Rennes", "Real Madrid"], diff:"moyen" },
   { name:"William Saliba", clubs:["Saint-Etienne", "Arsenal"], diff:"moyen" },
@@ -422,9 +422,8 @@ const PLAYERS = [
   { name:"Jordan Henderson", clubs:["Sunderland", "Liverpool", "Al Ettifaq", "Ajax Amsterdam"], diff:"moyen" },
   { name:"Harry Maguire", clubs:["Leicester City", "Manchester United", "West Ham"], diff:"moyen" },
   { name:"Kieran Trippier", clubs:["Tottenham", "Atletico Madrid", "Newcastle"], diff:"moyen" },
-  { name:"Nicolas Otamendi", clubs:["Valencia", "Manchester City", "Benfica"], diff:"moyen" },
+
   { name:"Lisandro Martinez", clubs:["Ajax Amsterdam", "Manchester United"], diff:"moyen" },
-  { name:"Richarlison", clubs:["Watford", "Everton", "Tottenham"], diff:"moyen" },
   { name:"Gabriel Jesus", clubs:["Palmeiras", "Manchester City", "Arsenal"], diff:"moyen" },
   { name:"Gabriel Martinelli", clubs:["Ituano", "Arsenal"], diff:"moyen" },
   { name:"Rodrygo", clubs:["Santos", "Real Madrid"], diff:"moyen" },
@@ -435,7 +434,7 @@ const PLAYERS = [
   { name:"Bradley Barcola", clubs:["Lyon", "PSG"], diff:"moyen" },
   { name:"Michael Olise", clubs:["Crystal Palace", "Bayern Munich"], diff:"moyen" },
   { name:"Viktor Gyokeres", clubs:["Coventry City", "Sporting CP", "Arsenal"], diff:"moyen" },
-  { name:"Rasmus Hojlund", clubs:["Atalanta", "Manchester United"], diff:"moyen" },
+  { name:"Rasmus Hojlund", clubs:["Atalanta", "Manchester United", "Napoli"], diff:"moyen" },
   { name:"Memphis Depay", clubs:["PSV Eindhoven", "Manchester United", "Lyon", "Barcelona", "Atletico Madrid"], diff:"moyen" },
   { name:"Jadon Sancho", clubs:["Borussia Dortmund", "Manchester United", "Chelsea"], diff:"moyen" },
   { name:"Mason Mount", clubs:["Chelsea", "Manchester United"], diff:"moyen" },
@@ -456,7 +455,7 @@ const PLAYERS = [
   { name:"Lucas Hernandez", clubs:["Atletico Madrid", "Bayern Munich", "PSG"], diff:"moyen" },
   { name:"Dayot Upamecano", clubs:["RB Leipzig", "Bayern Munich"], diff:"moyen" },
   { name:"Randal Kolo Muani", clubs:["Nantes", "Eintracht Frankfurt", "PSG", "Juventus"], diff:"moyen" },
-  { name:"Matteo Guendouzi", clubs:["Arsenal", "Marseille", "Lazio"], diff:"expert" },
+
   { name:"Wissam Ben Yedder", clubs:["Toulouse", "Sevilla", "Monaco"], diff:"expert" },
   { name:"Jonathan Clauss", clubs:["Marseille", "Nice"], diff:"expert" },
   { name:"Dani Olmo", clubs:["Dinamo Zagreb", "RB Leipzig", "Barcelona"], diff:"moyen" },
@@ -467,7 +466,7 @@ const PLAYERS = [
   { name:"Granit Xhaka", clubs:["Borussia Monchengladbach", "Arsenal", "Bayer Leverkusen"], diff:"moyen" },
   { name:"Marco Reus", clubs:["Borussia Monchengladbach", "Borussia Dortmund"], diff:"moyen" },
   { name:"Mats Hummels", clubs:["Borussia Dortmund", "Bayern Munich", "Roma"], diff:"moyen" },
-  { name:"Mario Gotze", clubs:["Borussia Dortmund", "Bayern Munich", "PSV Eindhoven"], diff:"moyen" },
+
   { name:"Sami Khedira", clubs:["Real Madrid", "Juventus", "Arsenal"], diff:"moyen" },
   { name:"Leon Goretzka", clubs:["Schalke", "Bayern Munich"], diff:"moyen" },
   { name:"Diogo Jota", clubs:["Wolverhampton", "Liverpool"], diff:"moyen" },
@@ -510,9 +509,8 @@ const PLAYERS = [
   { name:"Santi Cazorla", clubs:["Villarreal", "Malaga", "Arsenal"], diff:"moyen" },
   { name:"Iker Casillas", clubs:["Real Madrid", "Porto"], diff:"facile" },
   { name:"Juan Mata", clubs:["Valencia", "Chelsea", "Manchester United"], diff:"moyen" },
-  { name:"Figo", clubs:["Sporting CP", "Barcelona", "Real Madrid", "Inter Milan"], diff:"facile" },
+
   { name:"Ricardo Carvalho", clubs:["Porto", "Chelsea", "Real Madrid", "Monaco"], diff:"expert" },
-  { name:"Pepe", clubs:["Porto", "Real Madrid", "Besiktas"], diff:"moyen" },
   { name:"Ruud van Nistelrooy", clubs:["PSV Eindhoven", "Manchester United", "Real Madrid"], diff:"facile" },
   { name:"Patrick Kluivert", clubs:["Ajax Amsterdam", "Barcelona", "Roma", "Valencia", "Newcastle"], diff:"moyen" },
   { name:"Dirk Kuyt", clubs:["Liverpool", "Fenerbahce"], diff:"expert" },
@@ -544,7 +542,7 @@ const PLAYERS = [
   { name:"Savinho", clubs:["Girona", "Manchester City"], diff:"expert" },
   { name:"Rayan Cherki", clubs:["Lyon", "Manchester City"], diff:"moyen" },
   { name:"Warren Zaire-Emery", clubs:["PSG"], diff:"expert" },
-  { name:"Desire Doue", clubs:["Rennes", "PSG"], diff:"expert" },
+
   { name:"Khephren Thuram", clubs:["Nice", "Juventus"], diff:"expert" },
   { name:"Manu Kone", clubs:["Borussia Monchengladbach", "Roma"], diff:"expert" },
   { name:"Youssouf Fofana", clubs:["Monaco", "AC Milan"], diff:"expert" },
@@ -571,7 +569,7 @@ const PLAYERS = [
   { name:"Andre Schurrle", clubs:["Bayer Leverkusen", "Chelsea", "Borussia Dortmund", "Wolfsburg"], diff:"expert" },
   // ── 2016-2026 ──
   { name:"Ederson", clubs:["Benfica", "Manchester City"], diff:"moyen" },
-  { name:"Alisson Becker", clubs:["Roma", "Liverpool"], diff:"moyen" },
+
   { name:"Marc-Andre ter Stegen", clubs:["Borussia Monchengladbach", "Barcelona"], diff:"moyen" },
   { name:"Kepa Arrizabalaga", clubs:["Athletic Bilbao", "Chelsea", "Real Madrid"], diff:"expert" },
   { name:"Andre Onana", clubs:["Ajax Amsterdam", "Inter Milan", "Manchester United"], diff:"moyen" },
@@ -600,18 +598,17 @@ const PLAYERS = [
   { name:"Nuno Mendes", clubs:["Sporting CP", "PSG"], diff:"expert" },
   { name:"Ivan Toney", clubs:["Brentford", "Al Ahli"], diff:"expert" },
 ,
-  { name:"Vinicius Jr", clubs:["Real Madrid"], diff:"moyen" },
+
   { name:"Bukayo Saka", clubs:["Arsenal"], diff:"facile" },
   { name:"Federico Valverde", clubs:["Real Madrid"], diff:"moyen" },
   { name:"Thibaut Courtois", clubs:["Chelsea", "Real Madrid"], diff:"facile" },
   { name:"Alisson", clubs:["Roma", "Liverpool"], diff:"moyen" },
   { name:"Joshua Kimmich", clubs:["Bayern Munich"], diff:"moyen" },
   { name:"Romelu Lukaku", clubs:["Anderlecht", "Chelsea", "West Brom", "Everton", "Manchester United", "Inter Milan", "Roma", "Napoli"], diff:"facile" },
-  { name:"Son Heung-min", clubs:["Tottenham"], diff:"facile" },
+
   { name:"Carles Puyol", clubs:["Barcelona"], diff:"moyen" },
-  { name:"Radamel Falcao", clubs:["Porto", "Atletico Madrid", "Monaco", "Manchester United", "Chelsea"], diff:"facile" },
+
   { name:"Samir Nasri", clubs:["Marseille", "Arsenal", "Manchester City", "Sevilla"], diff:"moyen" },
-  { name:"Bacary Sagna", clubs:["Arsenal", "Manchester City"], diff:"moyen" },
   { name:"Nicolas Anelka", clubs:["Arsenal", "Real Madrid", "PSG", "Manchester City", "Chelsea", "Fenerbahce"], diff:"moyen" },
   { name:"Sylvain Wiltord", clubs:["Bordeaux", "Arsenal", "Lyon", "Marseille", "Rennes"], diff:"moyen" },
   { name:"Marc Overmars", clubs:["Ajax Amsterdam", "Arsenal", "Barcelona"], diff:"moyen" },
@@ -711,9 +708,8 @@ const PLAYERS = [
   { name:"Carlos Vela", clubs:["Arsenal", "Real Sociedad", "LAFC"], diff:"expert" },
   { name:"Xherdan Shaqiri", clubs:["Bayern Munich", "Inter Milan", "Liverpool", "Chicago Fire"], diff:"moyen" },
   // Turquie supplémentaires
-  { name:"Didier Drogba", clubs:["Le Mans", "Guingamp", "Marseille", "Chelsea", "Galatasaray"], diff:"facile" },
+
   { name:"Juninho", clubs:["Lyon", "Atletico Madrid"], diff:"expert" },
-  { name:"Sidney Govou", clubs:["Lyon"], diff:"expert" },
   { name:"Gregory Coupet", clubs:["Lyon"], diff:"expert" },
   { name:"Remi Garde", clubs:["Lyon", "Arsenal"], diff:"expert" },
   { name:"Claudio Pizarro", clubs:["Werder Bremen", "Bayern Munich", "Chelsea"], diff:"expert" },
@@ -740,14 +736,14 @@ const PLAYERS = [
   { name:"Gabriel Magalhaes", clubs:["Lille", "Arsenal"], diff:"moyen" },
   { name:"David Raya", clubs:["Brentford", "Arsenal"], diff:"facile" },
   { name:"Alexander Isak", clubs:["Borussia Dortmund", "Real Sociedad", "Newcastle"], diff:"moyen" },
-  { name:"Darwin Nunez", clubs:["Benfica", "Liverpool"], diff:"moyen" },
-  { name:"Luis Diaz", clubs:["Porto", "Liverpool"], diff:"moyen" },
+
+
   { name:"Cody Gakpo", clubs:["PSV Eindhoven", "Liverpool"], diff:"facile" },
   { name:"Ryan Gravenberch", clubs:["Ajax Amsterdam", "Bayern Munich", "Liverpool"], diff:"facile" },
   { name:"Antonio Rudiger", clubs:["Stuttgart", "Roma", "Chelsea", "Real Madrid"], diff:"moyen" },
   { name:"Fabian Ruiz", clubs:["Napoli", "PSG"], diff:"facile" },
   { name:"Marco Asensio", clubs:["Real Madrid", "PSG"], diff:"facile" },
-  { name:"Milan Skriniar", clubs:["Inter Milan", "PSG"], diff:"facile" },
+
   { name:"Hakan Calhanoglu", clubs:["AC Milan", "Inter Milan"], diff:"moyen" },
   { name:"Stefan de Vrij", clubs:["Lazio", "Inter Milan"], diff:"facile" },
   { name:"Alessandro Bastoni", clubs:["Inter Milan"], diff:"facile" },
@@ -864,6 +860,300 @@ const PLAYERS = [
   { name:"Patrice Evra", clubs:["Nice","Monaco","Manchester United","Juventus","Marseille","West Ham"], diff:"facile" },
   { name:"Alexandre Lacazette", clubs:["Lyon","Arsenal"], diff:"moyen" },
   { name:"Emre Can", clubs:["Bayern Munich","Bayer Leverkusen","Liverpool","Juventus","Borussia Dortmund"], diff:"moyen" },
+
+  // Équipe nationale Pologne 2026
+  { name:"Piotr Zieliński", clubs:["Napoli", "Inter Milan"], diff:"moyen" },
+  { name:"Arkadiusz Milik", clubs:["Ajax Amsterdam", "Napoli", "Juventus"], diff:"moyen" },
+  { name:"Sebastian Szymański", clubs:["Feyenoord", "Fenerbahçe"], diff:"moyen" },
+  { name:"Matty Cash", clubs:["Nottingham Forest", "Aston Villa"], diff:"moyen" },
+  { name:"Jakub Kamiński", clubs:["Wolfsburg", "FC Cologne"], diff:"moyen" },
+  { name:"Przemysław Frankowski", clubs:["Lens", "Rennes"], diff:"expert" },
+
+  // Équipe nationale Écosse 2026
+  { name:"Scott McTominay", clubs:["Manchester United", "Napoli"], diff:"moyen" },
+  { name:"Billy Gilmour", clubs:["Chelsea", "Brighton", "Napoli"], diff:"moyen" },
+  { name:"Kieran Tierney", clubs:["Celtic", "Arsenal", "Real Sociedad"], diff:"moyen" },
+  { name:"Aaron Hickey", clubs:["Bologna", "Brentford"], diff:"moyen" },
+  { name:"John McGinn", clubs:["Aston Villa"], diff:"expert" },
+  { name:"Lewis Ferguson", clubs:["Bologna"], diff:"expert" },
+  { name:"Che Adams", clubs:["Birmingham City", "Southampton"], diff:"expert" },
+  { name:"Ryan Christie", clubs:["Bournemouth"], diff:"expert" },
+
+  // Équipe nationale Turquie 2026
+  { name:"Kenan Yıldız", clubs:["Juventus"], diff:"expert" },
+  { name:"Ferdi Kadıoğlu", clubs:["Fenerbahçe", "Brighton"], diff:"moyen" },
+  { name:"Altay Bayındır", clubs:["Fenerbahçe", "Manchester United"], diff:"moyen" },
+  { name:"Zeki Çelik", clubs:["Lille", "Roma"], diff:"moyen" },
+  { name:"Çağlar Söyüncü", clubs:["Leicester City", "Atletico Madrid"], diff:"moyen" },
+
+  // Équipe nationale Serbie
+  { name:"Dušan Vlahović", clubs:["Fiorentina", "Juventus"], diff:"moyen" },
+  { name:"Aleksandar Mitrović", clubs:["Fulham", "Al Hilal"], diff:"moyen" },
+  { name:"Dušan Tadić", clubs:["Southampton", "Ajax Amsterdam", "Fenerbahçe"], diff:"moyen" },
+  { name:"Luka Jović", clubs:["Real Madrid", "Fiorentina", "AC Milan"], diff:"moyen" },
+  { name:"Filip Kostić", clubs:["Eintracht Frankfurt", "Juventus"], diff:"moyen" },
+  { name:"Nikola Milenković", clubs:["Fiorentina", "Nottingham Forest"], diff:"moyen" },
+  { name:"Strahinja Pavlović", clubs:["RB Salzburg", "AC Milan"], diff:"moyen" },
+
+  // Équipe nationale Danemark 2026
+  { name:"Mikkel Damsgaard", clubs:["Sampdoria", "Brentford"], diff:"moyen" },
+  { name:"Joachim Andersen", clubs:["Lyon", "Crystal Palace", "Fulham"], diff:"moyen" },
+  { name:"Andreas Christensen", clubs:["Chelsea", "Barcelona"], diff:"moyen" },
+  { name:"Kasper Schmeichel", clubs:["Leicester City", "Nice", "Celtic"], diff:"moyen" },
+  { name:"Christian Nørgaard", clubs:["Brentford", "Arsenal"], diff:"moyen" },
+  { name:"Joakim Mæhle", clubs:["Atalanta", "Wolfsburg"], diff:"expert" },
+  { name:"Gustav Isaksen", clubs:["Midtjylland", "Lazio"], diff:"expert" },
+  { name:"Jesper Lindstrøm", clubs:["Eintracht Frankfurt", "Wolfsburg"], diff:"expert" },
+
+  // Équipe nationale Corée du Sud 2026
+  { name:"Son Heung-min", clubs:["Bayer Leverkusen", "Tottenham", "LAFC"], diff:"facile" },
+  { name:"Lee Kang-in", clubs:["Valencia", "Mallorca", "PSG"], diff:"moyen" },
+  { name:"Hwang Hee-chan", clubs:["RB Leipzig", "Wolverhampton"], diff:"moyen" },
+  { name:"Hwang In-beom", clubs:["Schalke", "Feyenoord"], diff:"moyen" },
+  { name:"Lee Jae-sung", clubs:["Mainz"], diff:"expert" },
+
+  // Équipe nationale Japon 2026
+  { name:"Kaoru Mitoma", clubs:["Union Saint-Gilloise", "Brighton"], diff:"moyen" },
+  { name:"Takefusa Kubo", clubs:["Real Madrid", "Real Sociedad"], diff:"moyen" },
+  { name:"Wataru Endo", clubs:["Stuttgart", "Liverpool"], diff:"moyen" },
+  { name:"Daichi Kamada", clubs:["Eintracht Frankfurt", "Lazio", "Crystal Palace"], diff:"moyen" },
+  { name:"Ao Tanaka", clubs:["Hamburg", "Leeds United"], diff:"moyen" },
+  { name:"Hiroki Ito", clubs:["Stuttgart", "Bayern Munich"], diff:"moyen" },
+  { name:"Koki Machida", clubs:["Union Saint-Gilloise", "Hoffenheim"], diff:"expert" },
+  { name:"Zion Suzuki", clubs:["Sint-Truiden", "Parma"], diff:"expert" },
+
+  // Équipe nationale États-Unis 2026
+  { name:"Christian Pulisic", clubs:["Borussia Dortmund", "Chelsea", "AC Milan"], diff:"moyen" },
+  { name:"Weston McKennie", clubs:["Schalke", "Juventus"], diff:"moyen" },
+  { name:"Tyler Adams", clubs:["RB Leipzig", "Leeds United", "Bournemouth"], diff:"moyen" },
+  { name:"Tim Weah", clubs:["Lille", "Juventus"], diff:"moyen" },
+  { name:"Folarin Balogun", clubs:["Arsenal", "Monaco"], diff:"moyen" },
+  { name:"Brenden Aaronson", clubs:["RB Salzburg", "Leeds United"], diff:"moyen" },
+  { name:"Malik Tillman", clubs:["Bayern Munich", "Bayer Leverkusen"], diff:"moyen" },
+  { name:"Gio Reyna", clubs:["Borussia Dortmund", "Borussia Mönchengladbach"], diff:"moyen" },
+  { name:"Chris Richards", clubs:["Hoffenheim", "Crystal Palace"], diff:"expert" },
+
+  // Équipe nationale Croatie 2026
+  { name:"Mateo Kovačić", clubs:["Inter Milan", "Chelsea", "Manchester City"], diff:"moyen" },
+  { name:"Andrej Kramarić", clubs:["Leicester City", "Hoffenheim"], diff:"moyen" },
+  { name:"Dominik Livaković", clubs:["Dinamo Zagreb", "Fenerbahçe"], diff:"moyen" },
+  { name:"Nikola Vlašić", clubs:["Everton", "CSKA Moscow", "Torino"], diff:"moyen" },
+  { name:"Mario Pašalić", clubs:["Chelsea", "Atalanta"], diff:"expert" },
+  { name:"Duje Ćaleta-Car", clubs:["Marseille", "Southampton"], diff:"expert" },
+
+  // Équipe nationale Uruguay 2026
+  { name:"Manuel Ugarte", clubs:["Sporting CP", "PSG", "Manchester United"], diff:"moyen" },
+  { name:"Rodrigo Bentancur", clubs:["Juventus", "Tottenham"], diff:"moyen" },
+  { name:"Nicolás De La Cruz", clubs:["River Plate", "Liverpool"], diff:"moyen" },
+  { name:"Ronald Araújo", clubs:["Barcelona"], diff:"expert" },
+  { name:"José María Giménez", clubs:["Atletico Madrid"], diff:"expert" },
+
+  // Équipe nationale Colombie 2026
+  { name:"Dávinson Sánchez", clubs:["Ajax Amsterdam", "Tottenham", "Galatasaray"], diff:"moyen" },
+  { name:"Jhon Duran", clubs:["Aston Villa", "Al Qadsiah"], diff:"moyen" },
+  { name:"Yerry Mina", clubs:["Barcelona", "Everton"], diff:"moyen" },
+  { name:"Daniel Muñoz", clubs:["Genk", "Crystal Palace"], diff:"moyen" },
+  { name:"Jefferson Lerma", clubs:["Bournemouth", "Crystal Palace"], diff:"moyen" },
+  { name:"David Ospina", clubs:["Arsenal", "Napoli"], diff:"moyen" },
+  { name:"Jhon Lucumí", clubs:["Genk", "Bologna"], diff:"expert" },
+  { name:"Rafael Borré", clubs:["River Plate", "Eintracht Frankfurt"], diff:"expert" },
+
+  // Équipe nationale Mexique 2026
+  { name:"Santiago Giménez", clubs:["Feyenoord", "AC Milan"], diff:"moyen" },
+  { name:"Hirving Lozano", clubs:["PSV Eindhoven", "Napoli"], diff:"moyen" },
+  { name:"Edson Álvarez", clubs:["Ajax Amsterdam", "West Ham"], diff:"moyen" },
+  { name:"Jorge Sánchez", clubs:["Ajax Amsterdam", "Porto"], diff:"expert" },
+  { name:"César Montes", clubs:["Almería"], diff:"expert" },
+  { name:"Guillermo Ochoa", clubs:["Málaga", "Standard Liège"], diff:"expert" },
+
+  // Équipe nationale Argentine 2026 (compléments)
+  { name:"Emiliano Martínez", clubs:["Arsenal", "Aston Villa"], diff:"moyen" },
+  { name:"Julián Álvarez", clubs:["River Plate", "Manchester City", "Atletico Madrid"], diff:"moyen" },
+  { name:"Rodrigo De Paul", clubs:["Udinese", "Atletico Madrid"], diff:"moyen" },
+  { name:"Cristian Romero", clubs:["Juventus", "Atalanta", "Tottenham"], diff:"moyen" },
+  { name:"Nicolás Tagliafico", clubs:["Ajax Amsterdam", "Lyon"], diff:"moyen" },
+  { name:"Giovani Lo Celso", clubs:["PSG", "Real Betis", "Tottenham"], diff:"moyen" },
+  { name:"Nahuel Molina", clubs:["Udinese", "Atletico Madrid"], diff:"expert" },
+
+  // Équipe nationale Brésil 2026 (compléments)
+  { name:"Raphinha", clubs:["Leeds United", "Barcelona"], diff:"moyen" },
+  { name:"Lucas Paquetá", clubs:["AC Milan", "Lyon", "West Ham"], diff:"moyen" },
+  { name:"Éder Militão", clubs:["Porto", "Real Madrid"], diff:"moyen" },
+  { name:"Alex Sandro", clubs:["Porto", "Juventus"], diff:"moyen" },
+  { name:"Richarlison", clubs:["Everton", "Tottenham"], diff:"moyen" },
+
+  // Équipe nationale Suisse 2026 (compléments)
+  { name:"Manuel Akanji", clubs:["Borussia Dortmund", "Manchester City"], diff:"moyen" },
+  { name:"Yann Sommer", clubs:["Borussia Mönchengladbach", "Bayern Munich", "Inter Milan"], diff:"moyen" },
+  { name:"Breel Embolo", clubs:["Schalke", "Borussia Mönchengladbach", "Monaco"], diff:"moyen" },
+  { name:"Dan Ndoye", clubs:["Bologna", "Nottingham Forest"], diff:"moyen" },
+  { name:"Noah Okafor", clubs:["AC Milan", "Leeds United"], diff:"moyen" },
+  { name:"Remo Freuler", clubs:["Atalanta", "Nottingham Forest"], diff:"expert" },
+  { name:"Zeki Amdouni", clubs:["Burnley", "Benfica"], diff:"expert" },
+
+  // Équipe nationale Pays-Bas 2026 (compléments)
+  { name:"Tijjani Reijnders", clubs:["AZ Alkmaar", "AC Milan", "Manchester City"], diff:"moyen" },
+  { name:"Donyell Malen", clubs:["PSV Eindhoven", "Borussia Dortmund"], diff:"moyen" },
+  { name:"Denzel Dumfries", clubs:["PSV Eindhoven", "Inter Milan"], diff:"moyen" },
+  { name:"Jeremie Frimpong", clubs:["Celtic", "Bayer Leverkusen"], diff:"moyen" },
+  { name:"Joshua Zirkzee", clubs:["Bologna", "Manchester United"], diff:"moyen" },
+  { name:"Nathan Aké", clubs:["Chelsea", "Manchester City"], diff:"moyen" },
+  { name:"Bart Verbruggen", clubs:["Anderlecht", "Brighton"], diff:"expert" },
+
+  // Équipe nationale Italie 2026 (compléments)
+  { name:"Davide Frattesi", clubs:["Sassuolo", "Inter Milan"], diff:"moyen" },
+  { name:"Riccardo Calafiori", clubs:["Bologna", "Arsenal"], diff:"moyen" },
+  { name:"Giovanni Di Lorenzo", clubs:["Empoli", "Napoli"], diff:"moyen" },
+  { name:"Andrea Cambiaso", clubs:["Genoa", "Juventus"], diff:"moyen" },
+  { name:"Destiny Udogie", clubs:["Udinese", "Tottenham"], diff:"moyen" },
+  { name:"Lorenzo Pellegrini", clubs:["Sassuolo", "Roma"], diff:"moyen" },
+
+  // Équipe nationale Belgique 2026
+  { name:"Jérémy Doku", clubs:["Rennes", "Manchester City"], diff:"moyen" },
+  { name:"Leandro Trossard", clubs:["Genk", "Brighton", "Arsenal"], diff:"moyen" },
+  { name:"Charles De Ketelaere", clubs:["Club Brugge", "AC Milan", "Atalanta"], diff:"moyen" },
+  { name:"Youri Tielemans", clubs:["Monaco", "Leicester City", "Aston Villa"], diff:"moyen" },
+  { name:"Amadou Onana", clubs:["Everton", "Aston Villa"], diff:"moyen" },
+  { name:"Lois Openda", clubs:["Lens", "RB Leipzig"], diff:"moyen" },
+  { name:"Alexis Saelemaekers", clubs:["AC Milan", "Bologna", "Roma"], diff:"moyen" },
+  { name:"Wout Faes", clubs:["Reims", "Leicester City"], diff:"expert" },
+
+  // Équipe nationale Angleterre 2026 (compléments)
+  { name:"Jordan Pickford", clubs:["Sunderland", "Everton"], diff:"moyen" },
+  { name:"Ezri Konsa", clubs:["Brentford", "Aston Villa"], diff:"moyen" },
+  { name:"Elliot Anderson", clubs:["Newcastle United", "Nottingham Forest"], diff:"moyen" },
+  { name:"Anthony Gordon", clubs:["Everton", "Newcastle United"], diff:"moyen" },
+
+  // Équipe nationale Allemagne 2026 (compléments)
+  { name:"Niclas Füllkrug", clubs:["Werder Bremen", "Borussia Dortmund", "West Ham"], diff:"moyen" },
+  { name:"Robin Gosens", clubs:["Atalanta", "Inter Milan", "Union Berlin"], diff:"moyen" },
+  { name:"Pascal Groß", clubs:["Brighton", "Borussia Dortmund"], diff:"expert" },
+  { name:"David Raum", clubs:["Hoffenheim", "RB Leipzig"], diff:"expert" },
+
+  // Équipe nationale Espagne 2026 (compléments)
+  { name:"Pau Cubarsí", clubs:["Barcelona"], diff:"moyen" },
+  { name:"Marc Cucurella", clubs:["Brighton", "Chelsea"], diff:"moyen" },
+  { name:"Martín Zubimendi", clubs:["Real Sociedad", "Arsenal"], diff:"moyen" },
+  { name:"Unai Simón", clubs:["Athletic Bilbao"], diff:"expert" },
+  { name:"Fermín López", clubs:["Barcelona"], diff:"expert" },
+
+  // Équipe nationale Portugal 2026 (compléments)
+  { name:"Francisco Conceição", clubs:["Porto", "Juventus"], diff:"moyen" },
+  { name:"João Palhinha", clubs:["Sporting CP", "Fulham", "Bayern Munich"], diff:"moyen" },
+  { name:"Matheus Nunes", clubs:["Wolverhampton", "Manchester City"], diff:"moyen" },
+  { name:"Nelson Semedo", clubs:["Barcelona", "Wolverhampton", "Fenerbahçe"], diff:"moyen" },
+
+  // Équipe nationale Côte d'Ivoire 2026
+  { name:"Evan Ndicka", clubs:["Eintracht Frankfurt", "Roma"], diff:"moyen" },
+  { name:"Simon Adingra", clubs:["Union Saint-Gilloise", "Brighton"], diff:"moyen" },
+  { name:"Ibrahim Sangaré", clubs:["PSV Eindhoven", "Nottingham Forest"], diff:"moyen" },
+  { name:"Nicolas Pépé", clubs:["Lille", "Arsenal", "Nice"], diff:"moyen" },
+  { name:"Hassane Kamara", clubs:["Nice", "Watford"], diff:"moyen" },
+  { name:"Willy Boly", clubs:["Porto", "Wolverhampton", "Nottingham Forest"], diff:"moyen" },
+  { name:"Hamed Traoré", clubs:["Sassuolo", "Bournemouth", "Napoli"], diff:"moyen" },
+  { name:"Maxwel Cornet", clubs:["Lyon", "Burnley", "West Ham"], diff:"moyen" },
+
+  // Équipe nationale Cameroun 2026
+  { name:"André-Franck Zambo Anguissa", clubs:["Fulham", "Villarreal", "Napoli"], diff:"moyen" },
+  { name:"Carlos Baleba", clubs:["Reims", "Brighton"], diff:"moyen" },
+  { name:"Eric Maxim Choupo-Moting", clubs:["Stoke City", "PSG", "Bayern Munich"], diff:"moyen" },
+  { name:"Vincent Aboubakar", clubs:["Porto", "Beşiktaş", "Al Nassr"], diff:"moyen" },
+  { name:"Karl Toko Ekambi", clubs:["Angers", "Villarreal", "Lyon"], diff:"moyen" },
+  { name:"Christopher Wooh", clubs:["Lens", "Rennes"], diff:"expert" },
+  { name:"Nathan Ngoumou", clubs:["Toulouse", "Borussia Mönchengladbach"], diff:"expert" },
+  { name:"Martin Hongla", clubs:["Hellas Verona", "Granada"], diff:"expert" },
+  { name:"Jean Onana", clubs:["Bordeaux", "Genoa"], diff:"expert" },
+
+  // Équipe nationale Afrique du Sud 2026
+  { name:"Lyle Foster", clubs:["Monaco", "Burnley"], diff:"moyen" },
+  { name:"Percy Tau", clubs:["Club Brugge", "Brighton", "Al Ahly"], diff:"moyen" },
+  { name:"Bongani Zungu", clubs:["Amiens", "Rangers", "Kasımpaşa"], diff:"expert" },
+
+  // Équipe nationale Égypte 2026
+  { name:"Mohamed Elneny", clubs:["Basel", "Arsenal", "Beşiktaş"], diff:"moyen" },
+  { name:"Mahmoud Trezeguet", clubs:["Kasımpaşa", "Aston Villa", "Trabzonspor"], diff:"moyen" },
+  { name:"Mostafa Mohamed", clubs:["Nantes", "Galatasaray"], diff:"moyen" },
+  { name:"Ahmed Hegazi", clubs:["Fiorentina", "West Brom", "Al Ittihad"], diff:"expert" },
+
+  // Équipe nationale Nigeria 2026
+  { name:"Ademola Lookman", clubs:["Everton", "RB Leipzig", "Atalanta"], diff:"moyen" },
+  { name:"Alex Iwobi", clubs:["Arsenal", "Everton", "Fulham"], diff:"moyen" },
+  { name:"Wilfred Ndidi", clubs:["Genk", "Leicester City", "Beşiktaş"], diff:"moyen" },
+  { name:"Calvin Bassey", clubs:["Rangers", "Ajax Amsterdam", "Fulham"], diff:"moyen" },
+  { name:"Ola Aina", clubs:["Chelsea", "Torino", "Nottingham Forest"], diff:"moyen" },
+  { name:"Samuel Chukwueze", clubs:["Villarreal", "AC Milan", "Fulham"], diff:"moyen" },
+  { name:"Moses Simon", clubs:["Porto", "Nantes"], diff:"expert" },
+  { name:"Maduka Okoye", clubs:["Watford", "Udinese"], diff:"expert" },
+  { name:"William Troost-Ekong", clubs:["Udinese", "Watford", "Fulham"], diff:"expert" },
+  { name:"Terem Moffi", clubs:["Lorient", "Nice"], diff:"expert" },
+
+  // Équipe nationale RD Congo 2026
+  { name:"Yoane Wissa", clubs:["Lorient", "Brentford", "Newcastle United"], diff:"moyen" },
+  { name:"Aaron Wan-Bissaka", clubs:["Crystal Palace", "Manchester United", "West Ham"], diff:"moyen" },
+  { name:"Cédric Bakambu", clubs:["Sochaux", "Villarreal", "Real Betis"], diff:"moyen" },
+  { name:"Chancel Mbemba", clubs:["Anderlecht", "Newcastle United", "Porto", "Marseille"], diff:"moyen" },
+  { name:"Noah Sadiki", clubs:["Union Saint-Gilloise", "Sunderland"], diff:"expert" },
+  { name:"Grady Diangana", clubs:["West Ham", "West Brom"], diff:"expert" },
+  { name:"Théo Bongonda", clubs:["Genk", "Celta Vigo", "Spartak Moscow"], diff:"expert" },
+  { name:"Arthur Masuaku", clubs:["West Ham", "Beşiktaş", "Crystal Palace"], diff:"expert" },
+
+  // Équipe nationale Tunisie 2026
+  { name:"Ellyes Skhiri", clubs:["Toulouse", "Cologne", "Eintracht Frankfurt"], diff:"moyen" },
+  { name:"Hannibal Mejbri", clubs:["Manchester United", "Sevilla", "Southampton"], diff:"moyen" },
+  { name:"Dylan Bronn", clubs:["Gent", "Villarreal", "Servette"], diff:"moyen" },
+  { name:"Montassar Talbi", clubs:["Caen", "Lorient"], diff:"expert" },
+  { name:"Yan Valery", clubs:["Southampton", "Young Boys"], diff:"expert" },
+  { name:"Ali Abdi", clubs:["Charleroi", "Nice"], diff:"expert" },
+  { name:"Youssef Msakni", clubs:["Espérance de Tunis", "Valenciennes", "Al Duhail"], diff:"expert" },
+  { name:"Aymen Dahmen", clubs:["CS Sfaxien", "Reims"], diff:"expert" },
+
+  // Équipe nationale France 2026 (compléments)
+  { name:"Lucas Digne", clubs:["Lille", "Barcelona", "Everton", "Aston Villa"], diff:"moyen" },
+  { name:"Malo Gusto", clubs:["Lyon", "Chelsea"], diff:"moyen" },
+  { name:"Wesley Fofana", clubs:["Saint-Etienne", "Leicester City", "Chelsea"], diff:"moyen" },
+  { name:"Maghnes Akliouche", clubs:["Monaco"], diff:"expert" },
+
+  // Équipe nationale Sénégal 2026
+  { name:"Pape Matar Sarr", clubs:["Metz", "Tottenham"], diff:"moyen" },
+  { name:"Krépin Diatta", clubs:["Club Brugge", "Monaco"], diff:"moyen" },
+  { name:"Moussa Niakhaté", clubs:["Metz", "Mainz", "Lyon"], diff:"moyen" },
+  { name:"Iliman Ndiaye", clubs:["Sheffield United", "Marseille"], diff:"moyen" },
+  { name:"Pape Gueye", clubs:["Le Havre", "Watford", "Marseille", "Villarreal"], diff:"expert" },
+  { name:"El Hadji Malick Diouf", clubs:["Stoke City", "Southampton"], diff:"expert" },
+  { name:"Ismail Jakobs", clubs:["FC Cologne", "Galatasaray"], diff:"expert" },
+
+  // Équipe nationale Algérie 2026
+  { name:"Ismaël Bennacer", clubs:["Empoli", "AC Milan", "Dinamo Zagreb"], diff:"moyen" },
+  { name:"Ramy Bensebaini", clubs:["Nice", "Borussia Mönchengladbach", "Borussia Dortmund"], diff:"moyen" },
+  { name:"Rayan Aït-Nouri", clubs:["Angers", "Wolverhampton", "Manchester City"], diff:"moyen" },
+  { name:"Youcef Atal", clubs:["Nice", "Al-Sadd"], diff:"moyen" },
+  { name:"Aïssa Mandi", clubs:["Reims", "Real Betis", "Villarreal", "Lille"], diff:"moyen" },
+  { name:"Mohamed Amoura", clubs:["Union Saint-Gilloise", "Wolfsburg"], diff:"moyen" },
+  { name:"Amine Gouiri", clubs:["Lyon", "Nice", "Rennes", "Marseille"], diff:"moyen" },
+  { name:"Hicham Boudaoui", clubs:["Nice"], diff:"expert" },
+  { name:"Baghdad Bounedjah", clubs:["Al Sadd", "Al Shamal"], diff:"expert" },
+
+  // Équipe nationale Maroc 2026
+  { name:"Nayef Aguerd", clubs:["West Ham", "Marseille"], diff:"moyen" },
+  { name:"Noussair Mazraoui", clubs:["Ajax Amsterdam", "Bayern Munich", "Manchester United"], diff:"moyen" },
+  { name:"Romain Saïss", clubs:["Wolverhampton", "Beşiktaş", "Al-Sadd"], diff:"moyen" },
+  { name:"Jawad El Yamiq", clubs:["Real Valladolid", "Real Betis", "Real Zaragoza"], diff:"expert" },
+  { name:"Sofyan Amrabat", clubs:["Feyenoord", "Fiorentina", "Manchester United", "Fenerbahce", "Real Betis"], diff:"moyen" },
+  { name:"Neil El Aynaoui", clubs:["Nice", "Lens", "Roma"], diff:"moyen" },
+  { name:"Bilal El Khannouss", clubs:["Genk", "Leicester City", "Stuttgart"], diff:"moyen" },
+  { name:"Brahim Díaz", clubs:["Manchester City", "Real Madrid", "AC Milan", "PSG"], diff:"moyen" },
+  { name:"Ayoub El Kaabi", clubs:["Wydad Casablanca", "Olympiacos"], diff:"expert" },
+  { name:"Chemsdine Talbi", clubs:["Braga", "RC Strasbourg"], diff:"expert" },
+
+  // Légendes manquantes
+  { name:"Ronaldinho", clubs:["PSG", "Barcelona", "AC Milan", "Flamengo"], diff:"facile" },
+  { name:"Zinedine Zidane", clubs:["Cannes", "Bordeaux", "Juventus", "Real Madrid"], diff:"facile" },
+  { name:"Ronaldo Nazário", clubs:["Cruzeiro", "Barcelona", "Inter Milan", "Real Madrid", "AC Milan"], diff:"facile" },
+  { name:"Kaká", clubs:["AC Milan", "Real Madrid", "Orlando City"], diff:"facile" },
+  { name:"Franck Ribéry", clubs:["Marseille", "Bayern Munich", "Fiorentina"], diff:"facile" },
+  { name:"Fernando Torres", clubs:["Atletico Madrid", "Liverpool", "Chelsea", "AC Milan"], diff:"facile" },
+  { name:"Dani Alves", clubs:["Sevilla", "Barcelona", "Juventus", "Manchester City", "PSG"], diff:"moyen" },
+  { name:"Gonçalo Ramos", clubs:["Benfica", "PSG"], diff:"moyen" },
 ];
 
 
@@ -921,6 +1211,50 @@ const CLUB_ALIASES = {
   "Werder Bremen":["werder","bremen","breme"],
   "Wolfsburg":["vfl wolfsburg"],
   "Eintracht Frankfurt":["frankfurt","eintracht"],
+  "Flamengo":["flamengo","fla","crf"],
+  "Cruzeiro":["cruzeiro","cec"],
+  "Cannes":["as cannes","cannes"],
+  "Orlando City":["orlando","osc"],
+  "Fulham":["fulham fc","the cottagers"],
+  "Brentford":["brentford fc","the bees"],
+  "Sampdoria":["uc sampdoria","samp"],
+  "Midtjylland":["fc midtjylland","fcm"],
+  "Sint-Truiden":["stvv","sint truiden","saint trond"],
+  "Hamburg":["hamburger sv","hsv"],
+  "Al Qadsiah":["al-qadsiah","qadsiah"],
+  "Almería":["ud almeria","almerıa"],
+  "Málaga":["malaga cf","los boquerones"],
+  "Boca Juniors":["boca","los xeneizes","club atletico boca juniors"],
+  "Racing Club":["racing","la academia"],
+  "Santos":["santos fc","peixe"],
+  "Empoli":["empoli fc","gli azzurri"],
+  "Udinese":["udinese calcio","zebrette"],
+  "Hoffenheim":["tsg hoffenheim","tsg 1899","1899 hoffenheim"],
+  "Genoa":["genoa cfc","genova"],
+  "Granada":["granada cf","los nazaríes"],
+  "Amiens":["amiens sc","asc amiens"],
+  "Torino":["torino fc","toro","granata"],
+  "West Brom":["west bromwich","wba","west bromwich albion"],
+  "Sunderland":["sunderland afc","safc","black cats"],
+  "Sochaux":["fc sochaux","fcsm"],
+  "Servette":["servette fc","servette geneve"],
+  "Charleroi":["sporting charleroi","rsc charleroi"],
+  "Espérance de Tunis":["esperance tunis","est","esperance sportive de tunis"],
+  "CS Sfaxien":["sfaxien","csf","club sportif sfaxien"],
+  "Caen":["sm caen","stade malherbe"],
+  "Lorient":["fc lorient","les merlus"],
+  "Valenciennes":["valenciennes fc","vafc"],
+  "Gent":["kaa gent","aa gent"],
+  "Stoke City":["stoke","the potters"],
+  "FC Cologne":["cologne","koln","1. fc köln"],
+  "Mainz":["mainz 05","fsv mainz"],
+  "Reims":["stade de reims","stade reims"],
+  "Angers":["angers sco","sco angers"],
+  "Al Shamal":["al-shamal","shamal"],
+  "Al-Sadd":["al sadd","sadd","al-sadd sc"],
+  "Genk":["racing genk","krc genk"],
+  "Real Valladolid":["valladolid"],
+  "Real Zaragoza":["zaragoza"],
 };
 
 const CLUB_COLORS = {
@@ -952,6 +1286,25 @@ const CLUB_COLORS = {
   "Galatasaray":["#FFA500","#D40000"],"Lens":["#EE1C25","#F5C842"],
   "RC Strasbourg":["#003B8E","#FFFFFF"],"Sparta Rotterdam":["#CC0000","#FFFFFF"],
   "Deportivo Alavés":["#003DA5","#FFFFFF"],"CD Mirandés":["#FF0000","#000000"],
+  "Fulham":["#FFFFFF","#000000"],"Brentford":["#CC0000","#FFFFFF"],
+  "Sampdoria":["#0E4FA3","#FFFFFF"],"Midtjylland":["#CC0000","#FFFFFF"],
+  "Parma":["#FFD700","#003082"],"Sint-Truiden":["#FFD700","#000000"],
+  "Hamburg":["#001F5B","#FFFFFF"],"RB Salzburg":["#CC0000","#FFFFFF"],
+  "Standard Liège":["#CC0000","#FFFFFF"],"Almería":["#CC0000","#FFFFFF"],
+  "Málaga":["#003082","#FFFFFF"],"River Plate":["#FFFFFF","#CC0000"],"Boca Juniors":["#003399","#FFD700"],
+  "Racing Club":["#1565C0","#FFFFFF"],"Palmeiras":["#006B3F","#FFFFFF"],"Santos":["#000000","#FFFFFF"],"Flamengo":["#E82020","#000000"],"Cruzeiro":["#003399","#FFFFFF"],
+  "Cannes":["#E31B23","#FFFFFF"],"Orlando City":["#633492","#F7B024"],
+  "Leeds United":["#FFFFFF","#FFD700"],"Empoli":["#1565C0","#FFFFFF"],"Udinese":["#000000","#FFFFFF"],"Bologna":["#CC0000","#003082"],
+  "Granada":["#CC0000","#FFFFFF"],
+  "Sunderland":["#E31B23","#000000"],"Sochaux":["#FABE00","#003082"],
+  "Charleroi":["#000000","#FFFFFF"],"Espérance de Tunis":["#CC0000","#FFD700"],
+  "CS Sfaxien":["#CC0000","#000000"],"Caen":["#003189","#FFFFFF"],
+  "Lorient":["#F7700A","#000000"],"Valenciennes":["#CC0000","#FFFFFF"],
+  "Gent":["#1B67B2","#FFFFFF"],
+  "FC Cologne":["#ED1C24","#FFFFFF"],"Mainz":["#C8102E","#FFFFFF"],
+  "Angers":["#000000","#FFFFFF"],"Al Shamal":["#006A4E","#FFFFFF"],
+  "Genk":["#1B67B2","#FFFFFF"],"Real Valladolid":["#4B0082","#FFFFFF"],
+  "Real Zaragoza":["#003399","#FFFFFF"],
 };
 
 // ── BUILD DATABASES ──
@@ -4975,6 +5328,7 @@ export default function LePont() {
     );
   }
   if(screen==="final") return makeResultScreen(total,"pont",false);
+  if(screen==="chainEnd") return makeResultScreen(chainScore,"chaine",true);
 
   return <div style={{...shell,justifyContent:"center",alignItems:"center"}}><div style={{color:G.white}}>Chargement…</div></div>;
 }
