@@ -3465,6 +3465,7 @@ export default function LePont() {
 
   if(showLeaderboard) {
     return (
+      <>
       <div style={{...shell,animation:"fadeUp .4s ease",overflow:"auto"}} key="lb">
         <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
         {/* Bandes pelouse */}
@@ -3515,32 +3516,6 @@ export default function LePont() {
               </div>
             );
           })()}
-          {/* Hall of Fame Modal */}
-          {showHallOfFame && (
-            <div style={{position:"fixed",inset:0,zIndex:400,background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)",display:"flex",alignItems:"flex-end"}}
-              onClick={function(e){if(e.target===e.currentTarget)setShowHallOfFame(false);}}>
-              <div style={{width:"100%",background:"rgba(10,20,10,.97)",borderRadius:"28px 28px 0 0",padding:"20px 20px 48px",border:"1px solid rgba(255,255,255,.1)",borderBottom:"none",maxHeight:"80vh",overflowY:"auto"}}>
-                <div style={{fontFamily:G.heading,fontSize:28,color:G.gold,letterSpacing:2,marginBottom:4,textAlign:"center"}}>🏅 HALL OF FAME</div>
-                <div style={{fontSize:12,color:"rgba(255,255,255,.4)",textAlign:"center",marginBottom:16}}>Champions des saisons passées</div>
-                {hallOfFame.length === 0 && <div style={{textAlign:"center",color:"rgba(255,255,255,.3)",padding:"24px 0",fontSize:14}}>Pas encore de champion — la première saison est en cours !</div>}
-                {hallOfFame.map(function(s, i){
-                  const grade = getGrade(s.champion_score||0);
-                  return (
-                    <div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"14px",background:"rgba(255,214,0,.06)",borderRadius:14,border:"1px solid rgba(255,214,0,.15)",marginBottom:8}}>
-                      <div style={{fontSize:32}}>🏆</div>
-                      <div style={{flex:1}}>
-                        <div style={{fontSize:13,color:"rgba(255,255,255,.4)",letterSpacing:1}}>SAISON {s.season_number}</div>
-                        <div style={{fontSize:16,fontWeight:800,color:G.gold}}>{s.champion_name}</div>
-                        <div style={{fontSize:11,color:"rgba(255,255,255,.4)",marginTop:2}}>{grade.emoji} {grade.label}</div>
-                      </div>
-                      <div style={{fontFamily:G.heading,fontSize:28,color:G.gold}}>{s.champion_score} <span style={{fontSize:11,color:"rgba(255,255,255,.3)"}}>pts</span></div>
-                    </div>
-                  );
-                })}
-                <button onClick={function(){setShowHallOfFame(false);}} style={{width:"100%",padding:"14px",background:"rgba(255,255,255,.07)",color:G.white,border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700,marginTop:8}}>Fermer</button>
-              </div>
-            </div>
-          )}
           <div style={{display:"flex",gap:6,marginBottom:4,flexWrap:"wrap"}}>
             {["global","pont","chaine","amis"].map(function(m){return(
               <button key={m} onClick={function(){
@@ -3618,10 +3593,35 @@ export default function LePont() {
           )}
         </div>
       </div>
+      {/* Hall of Fame Modal */}
+      {showHallOfFame && (
+        <div style={{position:"fixed",inset:0,zIndex:400,background:"rgba(0,0,0,.85)",display:"flex",alignItems:"flex-end"}}
+          onClick={function(e){if(e.target===e.currentTarget)setShowHallOfFame(false);}}>
+          <div style={{width:"100%",background:"rgba(10,20,10,.97)",borderRadius:"28px 28px 0 0",padding:"20px 20px 48px",border:"1px solid rgba(255,255,255,.1)",borderBottom:"none",maxHeight:"80vh",overflowY:"auto"}}>
+            <div style={{fontFamily:G.heading,fontSize:28,color:G.gold,letterSpacing:2,marginBottom:4,textAlign:"center"}}>🏅 HALL OF FAME</div>
+            <div style={{fontSize:12,color:"rgba(255,255,255,.4)",textAlign:"center",marginBottom:16}}>Champions des saisons passées</div>
+            {hallOfFame.length === 0 && <div style={{textAlign:"center",color:"rgba(255,255,255,.3)",padding:"24px 0",fontSize:14}}>Pas encore de champion — la première saison est en cours !</div>}
+            {hallOfFame.map(function(s,i){
+              const grade = getGrade(s.champion_score||0);
+              return (
+                <div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"14px",background:"rgba(255,214,0,.06)",borderRadius:14,border:"1px solid rgba(255,214,0,.15)",marginBottom:8}}>
+                  <div style={{fontSize:32}}>🏆</div>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:13,color:"rgba(255,255,255,.4)",letterSpacing:1}}>SAISON {s.season_number}</div>
+                    <div style={{fontSize:16,fontWeight:800,color:G.gold}}>{s.champion_name}</div>
+                    <div style={{fontSize:11,color:"rgba(255,255,255,.4)",marginTop:2}}>{grade.emoji} {grade.label}</div>
+                  </div>
+                  <div style={{fontFamily:G.heading,fontSize:28,color:G.gold}}>{s.champion_score} <span style={{fontSize:11,color:"rgba(255,255,255,.3)"}}>pts</span></div>
+                </div>
+              );
+            })}
+            <button onClick={function(){setShowHallOfFame(false);}} style={{width:"100%",padding:"14px",background:"rgba(255,255,255,.07)",color:G.white,border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700,marginTop:8}}>Fermer</button>
+          </div>
+        </div>
+      )}
+      </>
     );
   }
-
-  // ── ROOM LOBBY ──
   if (room) {
     const players = typeof room.players === "string" ? JSON.parse(room.players) : (room.players || []);
     const isHost = room.host_id === playerId;
@@ -3737,14 +3737,14 @@ export default function LePont() {
     );
   }
 
-  const pseudoModal = pseudoScreen ? (
+  const pseudoModal = (pseudoScreen && !pseudoConfirmed) ? (
     <div style={{position:"fixed",inset:0,zIndex:400,background:"rgba(0,0,0,.92)",backdropFilter:"blur(12px)",display:"flex",alignItems:"center",justifyContent:"center"}}>
       <div style={{width:"calc(100% - 40px)",maxWidth:360,background:"rgba(10,20,10,.97)",borderRadius:28,padding:"32px 24px",border:"1px solid rgba(255,255,255,.1)",position:"relative"}}>
-        {/* Bouton fermer — seulement si pas obligatoire */}
-        {!playerName && <button onClick={function(){setPseudoScreen(false);}} style={{position:"absolute",top:14,right:14,background:"rgba(255,255,255,.1)",border:"none",borderRadius:"50%",width:30,height:30,color:"rgba(255,255,255,.5)",cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>}
+        {/* Bouton fermer — seulement si pas encore de pseudo */}
+        {!pseudoConfirmed && <button onClick={function(){setPseudoScreen(false);}} style={{position:"absolute",top:14,right:14,background:"rgba(255,255,255,.1)",border:"none",borderRadius:"50%",width:30,height:30,color:"rgba(255,255,255,.5)",cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>}
         <div style={{textAlign:"center",marginBottom:24}}>
           <div style={{fontFamily:G.heading,fontSize:52,color:G.white,lineHeight:.9}}>GOAT<span style={{color:G.accent}}>FC</span></div>
-          <div style={{fontSize:12,color:"rgba(255,255,255,.4)",marginTop:8,letterSpacing:2}}>{playerName?"CHANGER TON PSEUDO":"CHOISIS TON PSEUDO"}</div>
+          <div style={{fontSize:12,color:"rgba(255,255,255,.4)",marginTop:8,letterSpacing:2}}>CHOISIS TON PSEUDO</div>
         </div>
         <input
           value={pseudoInput}
@@ -4016,7 +4016,7 @@ export default function LePont() {
                 <span style={{fontFamily:G.heading,fontSize:16,color:"#FF6B35"}}>{dayStreak}</span>
               </div>
             )}
-            <div onClick={function(){setPseudoScreen(true);}} style={{background:"rgba(255,255,255,.07)",border:"1px solid rgba(255,255,255,.12)",borderRadius:12,padding:"7px 12px",display:"flex",alignItems:"center",gap:6,cursor:"pointer"}}>
+            <div onClick={function(){if(!pseudoConfirmed) setPseudoScreen(true);}} style={{background:"rgba(255,255,255,.07)",border:"1px solid rgba(255,255,255,.12)",borderRadius:12,padding:"7px 12px",display:"flex",alignItems:"center",gap:6,cursor:pseudoConfirmed?"default":"pointer"}}>
               <span style={{fontSize:13}}>👤</span>
               <span style={{fontSize:12,fontWeight:700,color:playerName?G.white:"rgba(255,255,255,.4)",maxWidth:80,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
                 {playerName||"Pseudo"}
