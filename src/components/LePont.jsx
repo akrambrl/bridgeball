@@ -1537,7 +1537,6 @@ export default function LePont() {
   const [chainLastClub, setChainLastClub] = useState("");
   const [leaderboard, setLeaderboard] = useState([]);
   const [hallOfFame, setHallOfFame] = useState([]);
-  const [seasons, setSeasons] = useState([]);
   const [showHallOfFame, setShowHallOfFame] = useState(false);
   const [myLbRank, setMyLbRank] = useState(null);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
@@ -2593,7 +2592,7 @@ export default function LePont() {
   async function loadSeasons() {
     try {
       const data = await sbFetch("bb_seasons?order=season_number.desc&limit=20");
-      if (Array.isArray(data)) setSeasons(data);
+      if (Array.isArray(data)) setHallOfFame(data);
     } catch(e) {}
   }
 
