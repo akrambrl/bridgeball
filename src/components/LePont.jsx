@@ -4296,6 +4296,21 @@ export default function LePont() {
           </button>
         </div>
 
+        {/* WhatsApp communauté */}
+        <a href="https://chat.whatsapp.com/GpKyFjaxixCJviQawGHNUp" target="_blank" rel="noopener noreferrer"
+          style={{display:"flex",alignItems:"center",gap:12,padding:"12px 16px",background:"rgba(37,211,102,.1)",border:"1px solid rgba(37,211,102,.3)",borderRadius:14,textDecoration:"none"}}>
+          <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+            <circle cx="16" cy="16" r="16" fill="#25D366"/>
+            <path d="M16 7.5C11.306 7.5 7.5 11.306 7.5 16c0 1.76.504 3.4 1.376 4.785L7.5 24.5l3.837-1.356A8.463 8.463 0 0016 24.5c4.694 0 8.5-3.806 8.5-8.5S20.694 7.5 16 7.5z" fill="white"/>
+            <path d="M20.844 18.68c-.248-.124-1.47-.725-1.698-.808-.228-.082-.394-.124-.56.124-.165.248-.64.808-.785.973-.144.166-.29.186-.537.062-.248-.124-1.047-.386-1.994-1.23-.737-.657-1.235-1.468-1.38-1.716-.144-.248-.015-.382.109-.505.111-.111.248-.29.372-.435.124-.145.165-.248.248-.414.082-.165.041-.31-.021-.434-.062-.124-.56-1.35-.767-1.848-.202-.485-.408-.42-.56-.427l-.477-.008c-.165 0-.434.062-.662.31-.227.248-.868.848-.868 2.068 0 1.22.889 2.398 1.013 2.563.124.165 1.748 2.67 4.236 3.745.592.255 1.054.407 1.414.521.594.189 1.135.162 1.562.098.476-.071 1.47-.6 1.677-1.18.207-.58.207-1.077.145-1.18-.062-.103-.228-.165-.476-.29z" fill="#25D366"/>
+          </svg>
+          <div style={{flex:1}}>
+            <div style={{fontSize:13,fontWeight:800,color:"#25D366"}}>Rejoins la communauté GOAT FC 🐐</div>
+            <div style={{fontSize:11,color:"rgba(255,255,255,.4)",marginTop:1}}>Matchs · Discussions foot · Bugs & Idées</div>
+          </div>
+          <span style={{fontSize:16,color:"rgba(37,211,102,.6)"}}>›</span>
+        </a>
+
       </div>
     </div>
   );
