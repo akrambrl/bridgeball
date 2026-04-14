@@ -4061,7 +4061,7 @@ export default function LePont() {
           >
             {/* Image en fond, rogne le haut pour garder le visuel principal */}
             <div style={{position:"absolute",inset:0,overflow:"hidden",borderRadius:22,background:"#000"}}>
-              <img src={PLUG_CARD_IMG} style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",objectPosition:"top"}}/>
+              <img src={PLUG_CARD_IMG} style={{position:"absolute",width:"100%",top:"50%",transform:"translateY(-50%)"}}/>
               <div style={{position:"absolute",bottom:0,left:0,right:0,height:"30%",background:"linear-gradient(to top, rgba(0,0,0,.95) 0%, transparent 100%)"}}/>
             </div>
             {/* Record */}
@@ -4080,7 +4080,7 @@ export default function LePont() {
               boxShadow:"0 8px 24px rgba(0,0,0,.5)",display:"flex",flexDirection:"column"}}
           >
             <div style={{position:"absolute",inset:0,overflow:"hidden",borderRadius:22,background:"#000"}}>
-              <img src={MERCATO_CARD_IMG} style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",objectPosition:"top"}}/>
+              <img src={MERCATO_CARD_IMG} style={{position:"absolute",width:"100%",top:"50%",transform:"translateY(-50%)"}}/>
               <div style={{position:"absolute",bottom:0,left:0,right:0,height:"30%",background:"linear-gradient(to top, rgba(0,0,0,.95) 0%, transparent 100%)"}}/>
             </div>
             {chainRecord&&<div style={{position:"absolute",top:10,left:12,display:"flex",alignItems:"center",gap:4,zIndex:2}}>
