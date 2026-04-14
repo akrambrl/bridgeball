@@ -3081,7 +3081,9 @@ export default function LePont() {
 
   function tryStart(mode) {
     setGameMode(mode);
-    if(!seenInstructions.current.has(mode)){setShowInstructions(mode);return;}
+    // Marquer les instructions comme vues directement
+    seenInstructions.current.add(mode);
+    try{localStorage.setItem("bb_seen",JSON.stringify([...seenInstructions.current]));}catch{}
     if(mode==="chaine")startChain();
     else{setCombo(0);setMaxCombo(0);comboRef.current=0;lastAnswerTime.current=Date.now();setRoundScores([]);setCurrentRound(1);setIsNewRecord(false);setMyLbRank(null);startRound(1);}
   }
@@ -4061,7 +4063,7 @@ export default function LePont() {
           >
             {/* Image en fond, rogne le haut pour garder le visuel principal */}
             <div style={{position:"absolute",inset:0,overflow:"hidden",borderRadius:22,background:"#000"}}>
-              <img src={PLUG_CARD_IMG} style={{position:"absolute",width:"100%",top:"50%",transform:"translateY(-50%)"}}/>
+              <img src={PLUG_CARD_IMG} style={{position:"absolute",width:"100%",top:"50%",transform:"translateY(-50%)",pointerEvents:"none"}}/>
               <div style={{position:"absolute",bottom:0,left:0,right:0,height:"30%",background:"linear-gradient(to top, rgba(0,0,0,.95) 0%, transparent 100%)"}}/>
             </div>
             {/* Record */}
@@ -4080,7 +4082,7 @@ export default function LePont() {
               boxShadow:"0 8px 24px rgba(0,0,0,.5)",display:"flex",flexDirection:"column"}}
           >
             <div style={{position:"absolute",inset:0,overflow:"hidden",borderRadius:22,background:"#000"}}>
-              <img src={MERCATO_CARD_IMG} style={{position:"absolute",width:"100%",top:"50%",transform:"translateY(-50%)"}}/>
+              <img src={MERCATO_CARD_IMG} style={{position:"absolute",width:"100%",top:"50%",transform:"translateY(-50%)",pointerEvents:"none"}}/>
               <div style={{position:"absolute",bottom:0,left:0,right:0,height:"30%",background:"linear-gradient(to top, rgba(0,0,0,.95) 0%, transparent 100%)"}}/>
             </div>
             {chainRecord&&<div style={{position:"absolute",top:10,left:12,display:"flex",alignItems:"center",gap:4,zIndex:2}}>
