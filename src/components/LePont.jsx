@@ -1603,6 +1603,7 @@ export default function LePont() {
   // Room system (multi-player up to 8)
   const [room, setRoom] = useState(null);
   const [roomInput, setRoomInput] = useState("");
+  const [pendingRoomCode, setPendingRoomCode] = useState(null);
   const [roomMsg, setRoomMsg] = useState("");
   const [abandonNotif, setAbandonNotif] = useState("");
   const [showRoomCreate, setShowRoomCreate] = useState(false);
@@ -1658,11 +1659,9 @@ export default function LePont() {
       const params = new URLSearchParams(window.location.search);
       const roomCode = params.get("room");
       if (roomCode) {
-        window.history.replaceState({}, "", window.location.pathname); // nettoie l'URL
-        setTimeout(function(){
-          setRoomInput(roomCode.toUpperCase());
-          requirePseudo(function(){ joinRoom(roomCode.toUpperCase()); });
-        }, 3000); // attendre après le splash
+        window.history.replaceState({}, "", window.location.pathname);
+        setRoomInput(roomCode.toUpperCase());
+        setPendingRoomCode(roomCode.toUpperCase());
       }
     } catch {}
     // Fermer le splash après 2.5s
@@ -1702,6 +1701,14 @@ export default function LePont() {
   }, []);
 
   useEffect(()=>{scoreRef.current=score;},[score]);
+
+  // Auto-join room une fois le pseudo confirmé
+  useEffect(()=>{
+    if(pseudoConfirmed && pendingRoomCode) {
+      setPendingRoomCode(null);
+      setTimeout(function(){ joinRoom(pendingRoomCode); }, 500);
+    }
+  },[pseudoConfirmed, pendingRoomCode]);
   useEffect(()=>{comboRef.current=combo;},[combo]);
   useEffect(()=>{if(historyEndRef.current)historyEndRef.current.scrollIntoView({behavior:"smooth"});},[chainHistory]);
 
@@ -4044,6 +4051,13 @@ export default function LePont() {
 
       <div style={{...sheet,gap:10}}>
 
+        {/* Bandeau room en attente */}
+        {pendingRoomCode && !pseudoConfirmed && (
+          <div style={{background:"rgba(0,230,118,.1)",border:"1px solid rgba(0,230,118,.3)",borderRadius:12,padding:"10px 14px",textAlign:"center"}}>
+            <div style={{fontSize:13,fontWeight:800,color:G.accent}}>🔗 Salle {pendingRoomCode} en attente</div>
+            <div style={{fontSize:11,color:"rgba(255,255,255,.5)",marginTop:2}}>Crée ton pseudo pour rejoindre automatiquement</div>
+          </div>
+        )}
         {/* Bandeau demandes d'amis */}
         {friendRequests.length > 0 && (
           <div style={{background:"rgba(0,230,118,.08)",border:"1px solid rgba(0,230,118,.25)",borderRadius:12,padding:"10px 14px"}}>
