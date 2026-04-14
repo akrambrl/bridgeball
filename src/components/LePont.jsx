@@ -4436,11 +4436,11 @@ export default function LePont() {
         )}
 
         {/* ── GAME CARDS (côte à côte) ── */}
-        <div style={{display:"flex",gap:10,flexShrink:0}}>
+        <div style={{display:"flex",gap:10,height:"clamp(210px,54vw,270px)",flexShrink:0}}>
           {/* ── Carte THE PLUG ── */}
           <div
             onClick={function(){setGameConfigModal("pont");}}
-            style={{flex:1,aspectRatio:"1",borderRadius:22,cursor:"pointer",overflow:"hidden",position:"relative",
+            style={{flex:1,borderRadius:22,cursor:"pointer",overflow:"hidden",position:"relative",
               boxShadow:"0 8px 24px rgba(0,0,0,.5)",display:"flex",flexDirection:"column"}}
           >
             {/* Image en fond, rogne le haut pour garder le visuel principal */}
@@ -4454,13 +4454,13 @@ export default function LePont() {
               <span style={{fontFamily:G.heading,fontSize:15,color:G.gold}}>{record.score} pts</span>
             </div>}
             {/* Bouton jouer */}
-            <div style={{position:"absolute",bottom:8,left:10,right:10,zIndex:2,background:G.accent,borderRadius:50,padding:"6px 0",color:"#000",fontFamily:G.font,fontWeight:800,fontSize:11,textAlign:"center"}}>▶ Jouer</div>
+            <div style={{position:"absolute",bottom:6,left:8,right:8,zIndex:2,background:G.accent,borderRadius:50,padding:"4px 0",color:"#000",fontFamily:G.font,fontWeight:800,fontSize:10,textAlign:"center"}}>▶ Jouer</div>
           </div>
 
           {/* ── Carte THE MERCATO ── */}
           <div
             onClick={function(){setGameConfigModal("chaine");}}
-            style={{flex:1,aspectRatio:"1",borderRadius:22,cursor:"pointer",overflow:"hidden",position:"relative",
+            style={{flex:1,borderRadius:22,cursor:"pointer",overflow:"hidden",position:"relative",
               boxShadow:"0 8px 24px rgba(0,0,0,.5)",display:"flex",flexDirection:"column"}}
           >
             <div style={{position:"absolute",inset:0,overflow:"hidden",borderRadius:22,background:"#000"}}>
@@ -4471,7 +4471,7 @@ export default function LePont() {
               <span style={{fontSize:12,color:G.accent}}>⛓</span>
               <span style={{fontFamily:G.heading,fontSize:15,color:G.accent}}>{chainRecord.score} pts</span>
             </div>}
-            <div style={{position:"absolute",bottom:8,left:10,right:10,zIndex:2,background:G.accent,borderRadius:50,padding:"6px 0",color:"#000",fontFamily:G.font,fontWeight:800,fontSize:11,textAlign:"center"}}>▶ Jouer</div>
+            <div style={{position:"absolute",bottom:6,left:8,right:8,zIndex:2,background:G.accent,borderRadius:50,padding:"4px 0",color:"#000",fontFamily:G.font,fontWeight:800,fontSize:10,textAlign:"center"}}>▶ Jouer</div>
           </div>
         </div>
 
