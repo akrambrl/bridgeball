@@ -1352,13 +1352,25 @@ function buildPontDB() {
     const [c1,c2] = key.split("|||");
     db[val.diff].push({c1,c2,p:val.players,isCurrent:val.hasCurrent});
   }
-  for (const diff of ["facile","moyen","expert"]) {
-    for (let i = db[diff].length-1; i > 0; i--) {
-      const j = Math.floor(Math.random()*(i+1));
-      [db[diff][i],db[diff][j]] = [db[diff][j],db[diff][i]];
-    }
+for (const diff of ["facile","moyen","expert"]) {
+  const current = db[diff].filter(q => q.isCurrent);
+  const retired = db[diff].filter(q => !q.isCurrent);
+
+  // 80% paires avec joueurs actifs, 20% paires full retraités
+  const retiredTarget = Math.round((current.length / 0.8) * 0.2);
+  const retiredPick = retired
+    .sort(() => Math.random() - 0.5)
+    .slice(0, retiredTarget);
+
+  db[diff] = [...current, ...retiredPick];
+
+  // Shuffle final
+  for (let i = db[diff].length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [db[diff][i], db[diff][j]] = [db[diff][j], db[diff][i]];
   }
-  return db;
+}
+return db;
 }
 const PLAYERS_CLEAN = PLAYERS.filter(function(p){return p&&p.name&&p.clubs&&Array.isArray(p.clubs);});
 
