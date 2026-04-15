@@ -906,7 +906,6 @@ const PLAYERS = [
   { name:"Jesper Lindstrøm", clubs:["Eintracht Frankfurt", "Wolfsburg"], diff:"expert" },
 
   // Équipe nationale Corée du Sud 2026
-  { name:"Son Heung-min", clubs:["Bayer Leverkusen", "Tottenham", "LAFC"], diff:"facile" },
   { name:"Lee Kang-in", clubs:["Valencia", "Mallorca", "PSG"], diff:"moyen" },
   { name:"Hwang Hee-chan", clubs:["RB Leipzig", "Wolverhampton"], diff:"moyen" },
   { name:"Hwang In-beom", clubs:["Schalke", "Feyenoord"], diff:"moyen" },
