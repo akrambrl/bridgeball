@@ -5155,6 +5155,7 @@ export default function LePont() {
   // ── FINAL ──
   const makeResultScreen = (sc, mode, isChain) => (
     <div style={{...shell,animation:"fadeUp .4s ease"}} key={isChain?"chainEnd":"final"}>
+      {pseudoModal}
       {confettiOverlay}<div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
         {/* Bandes pelouse */}
         {[0,1,2,3,4,5,6].map(function(i){return(
