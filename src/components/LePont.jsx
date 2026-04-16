@@ -804,6 +804,7 @@ function scheduleNextNotif() {
 export default function LePont() {
   const [showSplash, setShowSplash] = useState(true);
   const [screen, setScreen] = useState("home");
+  const [resultImg, setResultImg] = useState(null);
   const [gameMode, setGameMode] = useState("pont");
   const [diff, setDiff] = useState("facile");
   const [totalRounds, setTotalRounds] = useState(1);
@@ -4016,7 +4017,7 @@ export default function LePont() {
   );
 
   // ── FINAL ──
-const makeResultScreen = (sc, mode, isChain) => {   const imgs = sc > 0 ? WIN_IMGS : LOSE_IMGS;   const resultImg = imgs[Math.floor(Date.now() % imgs.length)];   return (    <div style={{...shell,animation:"fadeUp .4s ease"}} key={isChain?"chainEnd":"final"}>
+const makeResultScreen = (sc, mode, isChain) => {     return (    <div style={{...shell,animation:"fadeUp .4s ease"}} key={isChain?"chainEnd":"final"}>
       {pseudoModal}
       {confettiOverlay}<div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
         {/* Bandes pelouse */}
