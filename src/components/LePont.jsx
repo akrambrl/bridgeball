@@ -1581,7 +1581,7 @@ export default function LePont() {
     setScreen("home");
     const players = typeof r.players === "string" ? JSON.parse(r.players) : r.players;
     const sorted = [...players].sort(function(a,b){return (b.score||0)-(a.score||0);});
-    setDuelResult({isRoom:true, players:sorted, mode:r.mode});
+    const meInRoom = players.find(function(p){return p.id===playerId;}); const myRankInRoom = sorted.findIndex(function(p){return p.id===playerId;}); const roomImgs = myRankInRoom === 0 ? WIN_IMGS : LOSE_IMGS; setResultImg(roomImgs[Math.floor(Math.random()*roomImgs.length)]); setDuelResult({isRoom:true, players:sorted, mode:r.mode});
     setActiveDuel(null);
     activeDuelRef.current = null;
     setRoom(null);
