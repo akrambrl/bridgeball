@@ -1129,7 +1129,7 @@ export const RETIRED_PLAYERS = new Set([ "Aaron Ramsey","Abedi Pele","Alberto Me
   "Robin van Persie","Rohan Ricketts","Romario","Ronald Koeman","Ronaldinho",\
   "Ronaldo Naz\'e1rio","Roy Keane","Rui Costa","Rui Patricio","Ruud Gullit",\
   "Ruud van Nistelrooy","Ryan Babel","Ryan Bertrand","Salomon Kalou","Samassi Abou",\
-  "Sami Khedira","Samir Nasri","Samuel Eto\\'o","Sanchez Watt","Santi Cazorla",\
+  "Sami Khedira","Samir Nasri","Samuel Eto'o","Sanchez Watt","Santi Cazorla",\
   "Scott Parker","Sean Wright-Phillips","Sebastian Giovinco","Sergio Busquets",\
   "Sergio Ramos","Shaun Wright-Phillips","Simao Sabrosa","Slavisa Jokanovic",\
   "Stathis Tavlaridis","Stefan Effenberg","Stephane Dalmat","Steve Sidwell",\
