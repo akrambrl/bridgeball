@@ -1,0 +1,1148 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2761
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 export const PLAYERS = [\
+  \{ name:"Cristiano Ronaldo", clubs:["Manchester United", "Real Madrid", "Juventus", "Al Nassr"], diff:"facile" \},\
+  \{ name:"Lionel Messi", clubs:["Barcelona", "PSG", "Inter Miami"], diff:"facile" \},\
+  \{ name:"Neymar", clubs:["Santos", "Barcelona", "PSG", "Al Hilal"], diff:"facile" \},\
+  \{ name:"Kylian Mbappe", clubs:["Monaco", "PSG", "Real Madrid"], diff:"facile" \},\
+  \{ name:"Erling Haaland", clubs:["Molde", "Salzburg", "Borussia Dortmund", "Manchester City"], diff:"facile" \},\
+  \{ name:"Jude Bellingham", clubs:["Birmingham City", "Borussia Dortmund", "Real Madrid"], diff:"facile" \},\
+  \{ name:"Vinicius Junior", clubs:["Flamengo", "Real Madrid"], diff:"facile" \},\
+  \{ name:"Lamine Yamal", clubs:["Barcelona"], diff:"facile" \},\
+  \{ name:"Joaqu\'edn Panichelli", clubs:["Deportivo Alav\'e9s", "CD Mirand\'e9s", "RC Strasbourg"], diff:"expert" \},\
+  \{ name:"Micky van de Ven", clubs:["Volendam", "Wolfsburg", "Tottenham"], diff:"moyen" \},\
+  \{ name:"Mike Penders", clubs:["Chelsea"], diff:"expert" \},\
+  \{ name:"Nilson Angulo", clubs:["Sunderland"], diff:"expert" \},\
+  \{ name:"Taiwo Awoniyi", clubs:["Liverpool", "FSV Frankfurt", "NEC Nijmegen", "Royal Excel Mouscron", "Union Berlin", "Nottingham Forest"], diff:"moyen" \},\
+  \{ name:"Omar Marmoush", clubs:["Stuttgart", "Wolfsburg", "Eintracht Frankfurt", "Manchester City"], diff:"moyen" \},\
+  \{ name:"Patrick Dorgu", clubs:["Lecce", "Manchester United"], diff:"moyen" \},\
+  \{ name:"Igor Paix\'e3o", clubs:["Coritiba", "Feyenoord", "Marseille"], diff:"moyen" \},\
+  \{ name:"Danny Welbeck", clubs:["Manchester United", "Sunderland", "Arsenal", "Watford", "Brighton"], diff:"moyen" \},\
+  \{ name:"Senne Lammens", clubs:["Antwerp", "Manchester United"], diff:"expert" \},\
+  \{ name:"Nick Woltemade", clubs:["Werder Bremen", "Stuttgart", "Newcastle"], diff:"expert" \},\
+  \{ name:"Piero Hincapi\'e9", clubs:["Talleres", "Bayer Leverkusen"], diff:"moyen" \},\
+  \{ name:"Ra\'fal Jim\'e9nez", clubs:["Atletico Madrid", "Benfica", "Wolverhampton", "Fulham"], diff:"moyen" \},\
+  \{ name:"Amad Diallo", clubs:["Atalanta", "Manchester United", "Sunderland"], diff:"moyen" \},\
+  \{ name:"Harry Wilson", clubs:["Liverpool", "Bournemouth", "Fulham"], diff:"expert" \},\
+  \{ name:"Est\'eav\'e3o Willian", clubs:["Palmeiras", "Chelsea"], diff:"moyen" \},\
+  \{ name:"Brennan Johnson", clubs:["Nottingham Forest", "Tottenham"], diff:"moyen" \},\
+  \{ name:"Robert S\'e1nchez", clubs:["Brighton", "Chelsea"], diff:"moyen" \},\
+  \{ name:"Marcos Senesi", clubs:["Feyenoord", "Bournemouth"], diff:"expert" \},\
+  \{ name:"Igor Thiago", clubs:["Club Brugge", "Brentford"], diff:"expert" \},\
+  \{ name:"Antoine Semenyo", clubs:["Bristol City", "Bournemouth"], diff:"expert" \},\
+  \{ name:"Benjamin \'8ae\'9ako", clubs:["Salzburg", "RB Leipzig", "Manchester United"], diff:"moyen" \},\
+  \{ name:"Bryan Mbeumo", clubs:["Troyes", "Brentford", "Manchester United"], diff:"moyen" \},\
+  \{ name:"Hugo Ekitik\'e9", clubs:["Reims", "PSG", "Eintracht Frankfurt", "Liverpool"], diff:"moyen" \},\
+  \{ name:"Jo\'e3o Pedro", clubs:["Watford", "Brighton", "Chelsea"], diff:"moyen" \},\
+  \{ name:"Max Dowman", clubs:["Arsenal"], diff:"expert" \},\
+  \{ name:"Marc Gu\'e9hi", clubs:["Chelsea", "Swansea", "Crystal Palace"], diff:"moyen" \},\
+  \{ name:"James Milner", clubs:["Leeds United", "Newcastle", "Aston Villa", "Manchester City", "Liverpool", "Brighton"], diff:"moyen" \},\
+  \{ name:"Matheus Cunha", clubs:["Leipzig", "Hertha Berlin", "Atletico Madrid", "Wolverhampton"], diff:"moyen" \},\
+  \{ name:"Eberechi Eze", clubs:["Crystal Palace", "Arsenal"], diff:"moyen" \},\
+  \{ name:"Diego Moreira", clubs:["RC Strasbourg"], diff:"expert" \},\
+  \{ name:"Sidiki Ch\'e9rif", clubs:["Angers"], diff:"expert" \},\
+  \{ name:"Senny Mayulu", clubs:["PSG"], diff:"expert" \},\
+  \{ name:"Malick Fofana", clubs:["Gent", "Lyon", "PSG"], diff:"moyen" \},\
+  \{ name:"Ibrahim Mbaye", clubs:["PSG"], diff:"expert" \},\
+  \{ name:"Lucas Beraldo", clubs:["Flamengo", "PSG"], diff:"expert" \},\
+  \{ name:"Pierre-Emile H\'f8jbjerg", clubs:["Bayern Munich", "Southampton", "Tottenham", "Marseille"], diff:"moyen" \},\
+  \{ name:"Mason Greenwood", clubs:["Manchester United", "Getafe", "Marseille"], diff:"moyen" \},\
+  \{ name:"D\'e9sir\'e9 Dou\'e9", clubs:["Rennes", "PSG"], diff:"moyen" \},\
+  \{ name:"Luis D\'edaz", clubs:["Porto", "Liverpool", "Bayern Munich"], diff:"moyen" \},\
+  \{ name:"Deniz Undav", clubs:["Brighton", "Stuttgart"], diff:"moyen" \},\
+  \{ name:"Can Uzun", clubs:["Nuremberg", "Eintracht Frankfurt"], diff:"expert" \},\
+  \{ name:"Lennart Karl", clubs:["Bayern Munich"], diff:"expert" \},\
+  \{ name:"Serhou Guirassy", clubs:["Stuttgart", "Borussia Dortmund"], diff:"moyen" \},\
+  \{ name:"Haris Tabakovi\uc0\u263 ", clubs:["Borussia Monchengladbach"], diff:"expert" \},\
+  \{ name:"Nico Schlotterbeck", clubs:["Freiburg", "Borussia Dortmund"], diff:"moyen" \},\
+  \{ name:"Julian Ryerson", clubs:["Union Berlin", "Borussia Dortmund"], diff:"expert" \},\
+  \{ name:"Kevin Diks", clubs:["Fiorentina", "Borussia Monchengladbach"], diff:"expert" \},\
+  \{ name:"Younes Ebnoutalib", clubs:["Eintracht Frankfurt"], diff:"expert" \},\
+  \{ name:"Ozan Kabak", clubs:["Schalke", "Liverpool", "Hoffenheim"], diff:"moyen" \},\
+  \{ name:"Sa\'efd El Mala", clubs:["Cologne"], diff:"expert" \},\
+  \{ name:"Jonathan Burkardt", clubs:["Mainz", "Eintracht Frankfurt"], diff:"moyen" \},\
+  \{ name:"Luka Vu\'9akovi\uc0\u263 ", clubs:["Hamburger SV"], diff:"expert" \},\
+  \{ name:"Nicolas Jackson", clubs:["Chelsea"], diff:"moyen" \},\
+  \{ name:"Julian Brandt", clubs:["Bayer Leverkusen", "Borussia Dortmund"], diff:"moyen" \},\
+  \{ name:"Jonas Urbig", clubs:["Bayern Munich"], diff:"expert" \},\
+  \{ name:"Jobe Bellingham", clubs:["Sunderland", "Borussia Dortmund"], diff:"moyen" \},\
+  \{ name:"F\'e1bio Vieira", clubs:["Porto", "Arsenal", "Hamburger SV"], diff:"expert" \},\
+  \{ name:"Albian Hajdari", clubs:["Lugano", "Hoffenheim"], diff:"expert" \},\
+  \{ name:"Far\'e8s Cha\'efbi", clubs:["Toulouse", "Eintracht Frankfurt"], diff:"expert" \},\
+  \{ name:"Karim Adeyemi", clubs:["Salzburg", "Borussia Dortmund"], diff:"moyen" \},\
+  \{ name:"Mario G\'f6tze", clubs:["Borussia Dortmund", "Bayern Munich", "PSV Eindhoven", "Eintracht Frankfurt"], diff:"moyen" \},\
+  \{ name:"Ritsu Doan", clubs:["PSV Eindhoven", "Freiburg", "Eintracht Frankfurt"], diff:"moyen" \},\
+  \{ name:"Jonathan Tah", clubs:["Bayer Leverkusen", "Bayern Munich"], diff:"moyen" \},\
+  \{ name:"Victor Boniface", clubs:["Bayer Leverkusen", "Werder Bremen"], diff:"moyen" \},\
+  \{ name:"Angelo Stiller", clubs:["Stuttgart"], diff:"expert" \},\
+  \{ name:"Maximilian Beier", clubs:["Hoffenheim", "Borussia Dortmund"], diff:"expert" \},\
+  \{ name:"Konrad Laimer", clubs:["Salzburg", "RB Leipzig", "Bayern Munich"], diff:"moyen" \},\
+  \{ name:"Patrik Schick", clubs:["Roma", "Sampdoria", "RB Leipzig", "Bayer Leverkusen"], diff:"moyen" \},\
+  \{ name:"\'c1lex Grimaldo", clubs:["Barcelona", "Benfica", "Bayer Leverkusen"], diff:"moyen" \},\
+  \{ name:"Marcel Sabitzer", clubs:["RB Leipzig", "Bayern Munich", "Manchester United", "Borussia Dortmund"], diff:"moyen" \},\
+  \{ name:"Niklas S\'fcle", clubs:["Hoffenheim", "Bayern Munich", "Borussia Dortmund"], diff:"moyen" \},\
+  \{ name:"P\'e9ter Gul\'e1csi", clubs:["Liverpool", "RB Leipzig"], diff:"moyen" \},\
+  \{ name:"Rapha\'ebl Guerreiro", clubs:["Lorient", "Borussia Dortmund", "Bayern Munich"], diff:"moyen" \},\
+  \{ name:"Aleksandar Pavlovi\uc0\u263 ", clubs:["Bayern Munich"], diff:"expert" \},\
+  \{ name:"Josip Stani\'9ai\uc0\u263 ", clubs:["Bayern Munich", "Bayer Leverkusen"], diff:"expert" \},\
+  \{ name:"Nadiem Amiri", clubs:["Hoffenheim", "Bayer Leverkusen", "Mainz"], diff:"expert" \},\
+  \{ name:"Alexander N\'fcbel", clubs:["Schalke", "Bayern Munich", "Stuttgart"], diff:"expert" \},\
+  \{ name:"Hiroki It\uc0\u333 ", clubs:["Stuttgart", "Bayern Munich"], diff:"expert" \},\
+  \{ name:"Ayase Ueda", clubs:["Cercle Bruges", "Feyenoord"], diff:"expert" \},\
+  \{ name:"Mika Godts", clubs:["Ajax Amsterdam"], diff:"expert" \},\
+  \{ name:"Troy Parrott", clubs:["Tottenham", "AZ"], diff:"expert" \},\
+  \{ name:"Ismael Saibari", clubs:["PSV Eindhoven"], diff:"expert" \},\
+  \{ name:"Jizz Hornkamp", clubs:["AZ"], diff:"expert" \},\
+  \{ name:"Guus Til", clubs:["Feyenoord", "PSV Eindhoven"], diff:"expert" \},\
+  \{ name:"Justin Hubner", clubs:["PSV Eindhoven", "Fortuna Sittard"], diff:"expert" \},\
+  \{ name:"Maarten Paes", clubs:["Ajax Amsterdam", "FC Dallas"], diff:"expert" \},\
+  \{ name:"Mohamed Ihattaren", clubs:["PSV Eindhoven", "Juventus", "Ajax Amsterdam", "Fortuna Sittard"], diff:"expert" \},\
+  \{ name:"Mees Hilgers", clubs:["Twente"], diff:"expert" \},\
+  \{ name:"Shaqueel van Persie", clubs:["Feyenoord"], diff:"expert" \},\
+  \{ name:"Miliano Jonathans", clubs:["Utrecht"], diff:"expert" \},\
+  \{ name:"Oleksandr Zinchenko", clubs:["Manchester City", "Arsenal", "Ajax Amsterdam"], diff:"moyen" \},\
+  \{ name:"Sem Steijn", clubs:["Twente", "Feyenoord"], diff:"expert" \},\
+  \{ name:"Ricardo Pepi", clubs:["FC Dallas", "Augsburg", "PSV Eindhoven"], diff:"expert" \},\
+  \{ name:"Wout Weghorst", clubs:["Wolfsburg", "Burnley", "Manchester United", "Ajax Amsterdam"], diff:"moyen" \},\
+  \{ name:"Bryan Linssen", clubs:["Feyenoord", "NEC Nijmegen"], diff:"expert" \},\
+  \{ name:"Mats Deijl", clubs:["Feyenoord"], diff:"expert" \},\
+  \{ name:"Dean James", clubs:["Go Ahead Eagles"], diff:"expert" \},\
+  \{ name:"Calvin Verdonk", clubs:["Feyenoord", "NEC Nijmegen", "Lille"], diff:"expert" \},\
+  \{ name:"K\uc0\u333 dai Sano", clubs:["NEC Nijmegen"], diff:"expert" \},\
+  \{ name:"Sean Steur", clubs:["Ajax Amsterdam"], diff:"expert" \},\
+  \{ name:"Remko Pasveer", clubs:["Heracles", "Ajax Amsterdam"], diff:"expert" \},\
+  \{ name:"Ivan Peri\'9ai\uc0\u263 ", clubs:["Borussia Dortmund", "Bayern Munich", "Inter Milan", "Tottenham", "PSV Eindhoven"], diff:"moyen" \},\
+  \{ name:"Stije Resink", clubs:["Groningen"], diff:"expert" \},\
+  \{ name:"Joey Veerman", clubs:["PSV Eindhoven"], diff:"expert" \},\
+  \{ name:"Wouter Goes", clubs:["AZ"], diff:"expert" \},\
+  \{ name:"Luciano Valente", clubs:["Feyenoord"], diff:"expert" \},\
+  \{ name:"Takehiro Tomiyasu", clubs:["Bologna", "Arsenal", "Ajax Amsterdam"], diff:"moyen" \},\
+  \{ name:"Mateo Ch\'e1vez", clubs:["AZ"], diff:"expert" \},\
+  \{ name:"Souffian El Karouani", clubs:["Utrecht"], diff:"expert" \},\
+  \{ name:"Kees Smit", clubs:["AZ"], diff:"expert" \},\
+  \{ name:"Tjaronn Chery", clubs:["NEC Nijmegen"], diff:"expert" \},\
+  \{ name:"Steven Berghuis", clubs:["Feyenoord", "Ajax Amsterdam"], diff:"expert" \},\
+  \{ name:"Lequincio Zeefulk", clubs:["Heracles"], diff:"expert" \},\
+  \{ name:"Anis Hadj Moussa", clubs:["Feyenoord"], diff:"expert" \},\
+  \{ name:"Kay Tejan", clubs:["Telstar"], diff:"expert" \},\
+  \{ name:"Maher Carrizo", clubs:["Ajax Amsterdam"], diff:"expert" \},\
+  \{ name:"Timon Wellenreuther", clubs:["Feyenoord"], diff:"expert" \},\
+  \{ name:"Jasper Cillessen", clubs:["Ajax Amsterdam", "Valencia", "NEC Nijmegen"], diff:"moyen" \},\
+  \{ name:"Rayane Bounida", clubs:["Ajax Amsterdam"], diff:"expert" \},\
+  \{ name:"Niek Schiks", clubs:["PSV Eindhoven"], diff:"expert" \},\
+  \{ name:"Andr\'e9 Ayew", clubs:["Marseille", "Swansea", "West Ham", "Fenerbahce", "NAC Breda"], diff:"moyen" \},\
+  \{ name:"Davy Klaassen", clubs:["Ajax Amsterdam", "Everton", "Werder Bremen", "Inter Milan"], diff:"moyen" \},\
+  \{ name:"Oscar Gloukh", clubs:["Salzburg", "Ajax Amsterdam"], diff:"expert" \},\
+  \{ name:"Sergi\'f1o Dest", clubs:["Ajax Amsterdam", "Barcelona", "AC Milan", "PSV Eindhoven"], diff:"moyen" \},\
+  \{ name:"S\'e9bastien Haller", clubs:["Ajax Amsterdam", "Borussia Dortmund", "Utrecht"], diff:"moyen" \},\
+  \{ name:"Kasper Dolberg", clubs:["Ajax Amsterdam", "Nice", "Sevilla"], diff:"moyen" \},\
+  \{ name:"Ko Itakura", clubs:["Manchester City", "Schalke", "Borussia Monchengladbach", "Ajax Amsterdam"], diff:"expert" \},\
+  \{ name:"Ruben van Bommel", clubs:["PSV Eindhoven"], diff:"expert" \},\
+  \{ name:"Luis Su\'e1rez", clubs:["Sporting CP"], diff:"expert" \},\
+  \{ name:"Vang\'e9lis Pavl\'eddis", clubs:["AZ", "Benfica"], diff:"moyen" \},\
+  \{ name:"Yanis Begraoui", clubs:["Estoril"], diff:"expert" \},\
+  \{ name:"Samu Aghehowa", clubs:["Porto"], diff:"expert" \},\
+  \{ name:"Jes\'fas Andr\'e9s", clubs:["Nacional"], diff:"expert" \},\
+  \{ name:"Francisco Trinc\'e3o", clubs:["Barcelona", "Sporting CP"], diff:"moyen" \},\
+  \{ name:"Rafa Silva", clubs:["Braga", "Benfica"], diff:"expert" \},\
+  \{ name:"Gianluca Prestianni", clubs:["Benfica"], diff:"expert" \},\
+  \{ name:"Ricardo Horta", clubs:["Braga", "Benfica"], diff:"expert" \},\
+  \{ name:"Rodrigo Zalazar", clubs:["Braga"], diff:"expert" \},\
+  \{ name:"Geny Catamo", clubs:["Sporting CP"], diff:"expert" \},\
+  \{ name:"Dinis Pinto", clubs:["Sporting CP", "Moreirense"], diff:"expert" \},\
+  \{ name:"Jo\'e3o Carvalho", clubs:["Benfica", "Nottingham Forest", "Estoril"], diff:"expert" \},\
+  \{ name:"Rodrigo Mora", clubs:["Porto"], diff:"expert" \},\
+  \{ name:"Alisson Santos", clubs:["Sporting CP"], diff:"expert" \},\
+  \{ name:"Bruma", clubs:["Sporting CP", "Galatasaray", "RB Leipzig"], diff:"moyen" \},\
+  \{ name:"Richard R\'edos", clubs:["Palmeiras", "Benfica"], diff:"expert" \},\
+  \{ name:"An\'edsio Cabral", clubs:["Benfica"], diff:"expert" \},\
+  \{ name:"Seko Fofana", clubs:["Lens", "Porto"], diff:"moyen" \},\
+  \{ name:"Deniz G\'fcl", clubs:["Porto"], diff:"expert" \},\
+  \{ name:"Nicol\'e1s Otamendi", clubs:["Valencia", "Manchester City", "Benfica"], diff:"moyen" \},\
+  \{ name:"Pedro Gon\'e7alves", clubs:["Sporting CP"], diff:"expert" \},\
+  \{ name:"Diogo Costa", clubs:["Porto"], diff:"moyen" \},\
+  \{ name:"Morten Hjulmand", clubs:["Lecce", "Sporting CP"], diff:"expert" \},\
+  \{ name:"Anatolii Trubin", clubs:["Shakhtar", "Benfica"], diff:"expert" \},\
+  \{ name:"Ant\'f3nio Silva", clubs:["Benfica"], diff:"moyen" \},\
+  \{ name:"Gon\'e7alo In\'e1cio", clubs:["Sporting CP"], diff:"expert" \},\
+  \{ name:"Orkun K\'f6k\'e7\'fc", clubs:["Feyenoord", "Benfica"], diff:"moyen" \},\
+  \{ name:"Georgiy Sudakov", clubs:["Shakhtar", "Benfica"], diff:"expert" \},\
+  \{ name:"Andreas Schjelderup", clubs:["Nordsjaelland", "Benfica"], diff:"expert" \},\
+  \{ name:"Hidemasa Morita", clubs:["Sporting CP"], diff:"expert" \},\
+  \{ name:"Geovany Quenda", clubs:["Sporting CP"], diff:"expert" \},\
+  \{ name:"Ousmane Diomande", clubs:["Sporting CP"], diff:"expert" \},\
+  \{ name:"Leandro Barreiro", clubs:["Benfica"], diff:"expert" \},\
+  \{ name:"Fredrik Aursnes", clubs:["Molde", "Feyenoord", "Benfica"], diff:"expert" \},\
+  \{ name:"Nuno Santos", clubs:["Sporting CP"], diff:"expert" \},\
+  \{ name:"Jo\'e3o Moutinho", clubs:["Sporting CP", "Porto", "Monaco", "Wolverhampton"], diff:"moyen" \},\
+  \{ name:"Maximiliano Ara\'fajo", clubs:["Sporting CP", "Braga"], diff:"expert" \},\
+  \{ name:"F\'f3tis Ioann\'eddis", clubs:["Sporting CP"], diff:"expert" \},\
+  \{ name:"Dodi Luk\'e9bakio", clubs:["Watford", "Hertha Berlin", "Sevilla", "Benfica"], diff:"moyen" \},\
+  \{ name:"Florentino Lu\'eds", clubs:["Benfica", "Monaco"], diff:"expert" \},\
+  \{ name:"Victor Froholdt", clubs:["Porto"], diff:"expert" \},\
+  \{ name:"Rui Silva", clubs:["Granada", "Real Betis", "Sporting CP"], diff:"expert" \},\
+  \{ name:"Jakub Kiwior", clubs:["Spezia", "Arsenal", "Porto"], diff:"moyen" \},\
+  \{ name:"Tom\'e1s Ara\'fajo", clubs:["Benfica"], diff:"expert" \},\
+  \{ name:"Jan Bednarek", clubs:["Southampton", "Porto"], diff:"moyen" \},\
+  \{ name:"Luuk de Jong", clubs:["Borussia Monchengladbach", "Newcastle", "PSV Eindhoven", "Barcelona", "Sevilla", "Porto"], diff:"moyen" \},\
+  \{ name:"Ricardo Mangas", clubs:["Sporting CP"], diff:"expert" \},\
+  \{ name:"Paul Onuachu", clubs:["Genk", "Southampton", "Trabzonspor"], diff:"expert" \},\
+  \{ name:"Eldor Shomurodov", clubs:["Roma", "\uc0\u304 stanbul Ba\u351 ak\u351 ehir"], diff:"expert" \},\
+  \{ name:"Mauro Icardi", clubs:["Inter Milan", "PSG", "Galatasaray"], diff:"moyen" \},\
+  \{ name:"Talisca", clubs:["Benfica", "Besiktas", "Guangzhou", "Al Nassr", "Fenerbahce"], diff:"moyen" \},\
+  \{ name:"N'Golo Kant\'e9", clubs:["Leicester City", "Chelsea", "Al Ittihad", "Fenerbahce"], diff:"facile" \},\
+  \{ name:"Bar\uc0\u305 \u351  Alper Y\u305 lmaz", clubs:["Galatasaray"], diff:"expert" \},\
+  \{ name:"Noa Lang", clubs:["Ajax Amsterdam", "Club Brugge", "PSV Eindhoven", "Galatasaray"], diff:"moyen" \},\
+  \{ name:"Y\'e1ser Asprilla", clubs:["Watford", "Fenerbahce"], diff:"expert" \},\
+  \{ name:"Ernest Mu\'e7i", clubs:["Besiktas"], diff:"expert" \},\
+  \{ name:"G\'f6ktan G\'fcrp\'fcz", clubs:["Trabzonspor", "Besiktas"], diff:"expert" \},\
+  \{ name:"Mohamed Bayo", clubs:["Clermont", "Galatasaray", "Gaziantep"], diff:"expert" \},\
+  \{ name:"Felipe Augusto", clubs:["Trabzonspor"], diff:"expert" \},\
+  \{ name:"Kerem Akt\'fcrko\uc0\u287 lu", clubs:["Galatasaray", "Benfica"], diff:"moyen" \},\
+  \{ name:"Renato Nhaga", clubs:["Galatasaray"], diff:"expert" \},\
+  \{ name:"V\'e1clav \uc0\u268 ern\'fd", clubs:["Twente", "Wolfsburg", "Besiktas"], diff:"expert" \},\
+  \{ name:"Matt\'e9o Guendouzi", clubs:["Arsenal", "Marseille", "Fenerbahce"], diff:"moyen" \},\
+  \{ name:"Emmanuel Agbadou", clubs:["Reims", "Wolfsburg", "Besiktas"], diff:"expert" \},\
+  \{ name:"Nene Dorgeles", clubs:["Fenerbahce"], diff:"expert" \},\
+  \{ name:"Yunus Akg\'fcn", clubs:["Galatasaray", "Leicester City"], diff:"expert" \},\
+  \{ name:"Leroy San\'e9", clubs:["Manchester City", "Bayern Munich", "Galatasaray"], diff:"facile" \},\
+  \{ name:"Christ Inao Oula\'ef", clubs:["Trabzonspor"], diff:"expert" \},\
+  \{ name:"Milan \'8akriniar", clubs:["Inter Milan", "PSG", "Fenerbahce"], diff:"moyen" \},\
+  \{ name:"U\uc0\u287 urcan \'c7ak\u305 r", clubs:["Trabzonspor", "Galatasaray"], diff:"expert" \},\
+  \{ name:"Lucas Torreira", clubs:["Sampdoria", "Arsenal", "Atletico Madrid", "Galatasaray"], diff:"moyen" \},\
+  \{ name:"Junior Olaitan", clubs:["Besiktas"], diff:"expert" \},\
+  \{ name:"Anthony Musaba", clubs:["Feyenoord", "Fenerbahce"], diff:"expert" \},\
+  \{ name:"\uc0\u304 rfan Can Kahveci", clubs:["Fenerbahce", "Kas\u305 mpa\u351 a"], diff:"expert" \},\
+  \{ name:"Umut Nayir", clubs:["Trabzonspor"], diff:"expert" \},\
+  \{ name:"Alexandru Maxim", clubs:["Stuttgart", "Mainz", "Gaziantep"], diff:"expert" \},\
+  \{ name:"Bartu\uc0\u287  Elmaz", clubs:["Karag\'fcmr\'fck"], diff:"expert" \},\
+  \{ name:"Cenk Tosun", clubs:["Besiktas", "Everton", "Kas\uc0\u305 mpa\u351 a"], diff:"moyen" \},\
+  \{ name:"Yasin \'d6zcan", clubs:["Besiktas"], diff:"expert" \},\
+  \{ name:"Kristjan Asllani", clubs:["Empoli", "Inter Milan", "Club Brugge"], diff:"expert" \},\
+  \{ name:"Wilfried Singo", clubs:["Torino", "Monaco", "Galatasaray"], diff:"moyen" \},\
+  \{ name:"Yi\uc0\u287 it Efe Demir", clubs:["Fenerbahce"], diff:"expert" \},\
+  \{ name:"Oh Hyeon-gyu", clubs:["Celtic", "RC Strasbourg", "Besiktas"], diff:"expert" \},\
+  \{ name:"Armando G\'fcner", clubs:["Galatasaray"], diff:"expert" \},\
+  \{ name:"Semih K\uc0\u305 l\u305 \'e7soy", clubs:["Besiktas"], diff:"expert" \},\
+  \{ name:"Kerem Demirbay", clubs:["Bayer Leverkusen", "Galatasaray", "Kas\uc0\u305 mpa\u351 a"], diff:"moyen" \},\
+  \{ name:"G\'fcven Yal\'e7\uc0\u305 n", clubs:["Alanyaspor"], diff:"expert" \},\
+  \{ name:"El Bilal Tour\'e9", clubs:["Almeria", "Atalanta", "Besiktas"], diff:"moyen" \},\
+  \{ name:"Gabriel Sara", clubs:["Norwich City", "Galatasaray"], diff:"expert" \},\
+  \{ name:"Amir Murillo", clubs:["Anderlecht", "Besiktas"], diff:"expert" \},\
+  \{ name:"Davinson S\'e1nchez", clubs:["Ajax Amsterdam", "Tottenham", "Galatasaray"], diff:"moyen" \},\
+  \{ name:"Juli\'e1n Qui\'f1ones", clubs:["Club Am\'e9rica", "Al Qadsiah"], diff:"expert" \},\
+  \{ name:"Roger Mart\'ednez", clubs:["Club Am\'e9rica", "Al Taawon"], diff:"expert" \},\
+  \{ name:"Jo\'e3o F\'e9lix", clubs:["Atletico Madrid", "Chelsea", "Barcelona", "Al Nassr"], diff:"moyen" \},\
+  \{ name:"Joshua King", clubs:["Manchester United", "Bournemouth", "Everton", "Al Qadsiah"], diff:"moyen" \},\
+  \{ name:"K\'f3stas Forto\'fanis", clubs:["Bayer Leverkusen", "Olympiacos", "Al Qadsiah"], diff:"expert" \},\
+  \{ name:"Mateo Retegui", clubs:["Tigre", "Genoa", "Atalanta", "Al Qadsiah"], diff:"moyen" \},\
+  \{ name:"Sadio Man\'e9", clubs:["Liverpool", "Bayern Munich", "Al Nassr"], diff:"facile" \},\
+  \{ name:"Georginio Wijnaldum", clubs:["PSV Eindhoven", "Newcastle", "Liverpool", "PSG", "Al-Ettifaq"], diff:"moyen" \},\
+  \{ name:"Darwin N\'fa\'f1ez", clubs:["Almeria", "Benfica", "Liverpool", "Al Hilal"], diff:"moyen" \},\
+  \{ name:"Marcos Leonardo", clubs:["Santos", "Al Hilal"], diff:"expert" \},\
+  \{ name:"Merih Demiral", clubs:["Juventus", "Atalanta", "Al Ahli"], diff:"moyen" \},\
+  \{ name:"Angelo Fulgini", clubs:["Angers", "Mainz", "Al Taawon"], diff:"expert" \},\
+  \{ name:"Youssef En-Nesyri", clubs:["Sevilla", "Fenerbahce", "Al Ittihad"], diff:"moyen" \},\
+  \{ name:"Moussa Diaby", clubs:["PSG", "Bayer Leverkusen", "Aston Villa", "Al Ittihad"], diff:"moyen" \},\
+  \{ name:"Yusuf Ak\'e7i\'e7ek", clubs:["Al Hilal"], diff:"expert" \},\
+  \{ name:"Th\'e9o Hernandez", clubs:["Real Madrid", "AC Milan", "Al Hilal"], diff:"moyen" \},\
+  \{ name:"Sa\'efmon Bouabr\'e9", clubs:["Al Hilal"], diff:"expert" \},\
+  \{ name:"\'c2ngelo", clubs:["Santos", "Chelsea", "Al Nassr"], diff:"expert" \},\
+  \{ name:"Pablo Mar\'ed", clubs:["Arsenal", "Monza", "Al Hilal"], diff:"expert" \},\
+  \{ name:"Salem Al-Dawsari", clubs:["Al Hilal"], diff:"expert" \},\
+  \{ name:"Ot\'e1vio Edmilson", clubs:["Porto", "Al Nassr", "Al Qadsiah"], diff:"expert" \},\
+  \{ name:"Jo\'e3o Cancelo", clubs:["Juventus", "Manchester City", "Barcelona", "Bayern Munich", "Al Hilal"], diff:"moyen" \},\
+  \{ name:"R\'faben Neves", clubs:["Porto", "Wolverhampton", "Al Hilal"], diff:"moyen" \},\
+  \{ name:"Abderrazak Hamed Allah", clubs:["Al Shabab"], diff:"expert" \},\
+  \{ name:"Jhon Dur\'e1n", clubs:["Chicago Fire", "Aston Villa", "Al Nassr"], diff:"moyen" \},\
+  \{ name:"Yassine Bounou", clubs:["Girona", "Sevilla", "Al Hilal"], diff:"moyen" \},\
+  \{ name:"Marcelo Brozovi\uc0\u263 ", clubs:["Inter Milan", "Al Nassr"], diff:"moyen" \},\
+  \{ name:"Sergej Milinkovi\uc0\u263 -Savi\u263 ", clubs:["Lazio", "Al Hilal"], diff:"moyen" \},\
+  \{ name:"Malcom", clubs:["Barcelona", "Zenit Saint Petersburg", "Al Hilal"], diff:"moyen" \},\
+  \{ name:"Omar Al Somah", clubs:["Al Ahli", "Al Hazm"], diff:"expert" \},\
+  \{ name:"\'cd\'f1igo Mart\'ednez", clubs:["Athletic Bilbao", "Barcelona", "Al Nassr"], diff:"moyen" \},\
+  \{ name:"Nawaf Al-Aqidi", clubs:["Al Nassr"], diff:"expert" \},\
+  \{ name:"Franck Kessi\'e9", clubs:["Atalanta", "AC Milan", "Barcelona", "Al Ahli"], diff:"moyen" \},\
+  \{ name:"\'c9douard Mendy", clubs:["Chelsea", "Al Ahli"], diff:"moyen" \},\
+  \{ name:"Mohamed Simakan", clubs:["Strasbourg", "RB Leipzig", "Al Nassr"], diff:"moyen" \},\
+  \{ name:"Houssem Aouar", clubs:["Lyon", "Roma", "Al Ittihad"], diff:"moyen" \},\
+  \{ name:"Ali Al-Bulaihi", clubs:["Al Hilal"], diff:"expert" \},\
+  \{ name:"Steven Bergwijn", clubs:["PSV Eindhoven", "Tottenham", "Ajax Amsterdam", "Al Ittihad"], diff:"moyen" \},\
+  \{ name:"Abdulelah Al-Amri", clubs:["Al Nassr"], diff:"expert" \},\
+  \{ name:"Roger Iba\'f1ez", clubs:["Atalanta", "Roma", "Al Ahli"], diff:"moyen" \},\
+  \{ name:"Bento", clubs:["Athletico Paranaense", "Al Nassr"], diff:"expert" \},\
+  \{ name:"Firas Al-Buraikan", clubs:["Al Ahli"], diff:"expert" \},\
+  \{ name:"Abdulrahman Ghareeb", clubs:["Al Nassr"], diff:"expert" \},\
+  \{ name:"Cole Palmer", clubs:["Manchester City", "Chelsea"], diff:"moyen" \},\
+  \{ name:"Robert Lewandowski", clubs:["Borussia Dortmund", "Bayern Munich", "Barcelona"], diff:"facile" \},\
+  \{ name:"Karim Benzema", clubs:["Lyon", "Real Madrid", "Al Ittihad"], diff:"facile" \},\
+  \{ name:"Mohamed Salah", clubs:["Basel", "Chelsea", "Fiorentina", "Roma", "Liverpool"], diff:"facile" \},\
+  \{ name:"Kevin De Bruyne", clubs:["Chelsea", "Wolfsburg", "Manchester City"], diff:"facile" \},\
+  \{ name:"Harry Kane", clubs:["Tottenham", "Bayern Munich"], diff:"facile" \},\
+\
+  \{ name:"Sergio Ramos", clubs:["Sevilla", "Real Madrid", "PSG"], diff:"facile" \},\
+  \{ name:"Antoine Griezmann", clubs:["Real Sociedad", "Atletico Madrid", "Barcelona"], diff:"facile" \},\
+  \{ name:"Eden Hazard", clubs:["Lille", "Chelsea", "Real Madrid"], diff:"facile" \},\
+  \{ name:"Luis Suarez", clubs:["Ajax Amsterdam", "Liverpool", "Barcelona", "Atletico Madrid"], diff:"facile" \},\
+  \{ name:"Zlatan Ibrahimovic", clubs:["Malmo", "Ajax Amsterdam", "Juventus", "Inter Milan", "Barcelona", "AC Milan", "PSG", "Manchester United", "LA Galaxy"], diff:"facile" \},\
+  \{ name:"Gareth Bale", clubs:["Southampton", "Tottenham", "Real Madrid"], diff:"facile" \},\
+  \{ name:"Wayne Rooney", clubs:["Everton", "Manchester United", "DC United"], diff:"facile" \},\
+  \{ name:"Toni Kroos", clubs:["Bayern Munich", "Bayer Leverkusen", "Real Madrid"], diff:"facile" \},\
+  \{ name:"Luka Modric", clubs:["Dinamo Zagreb", "Tottenham", "Real Madrid", "AC Milan"], diff:"facile" \},\
+  \{ name:"Paul Pogba", clubs:["Manchester United", "Juventus", "Monaco"], diff:"facile" \},\
+  \{ name:"Didier Drogba", clubs:["Le Mans", "Guingamp", "Marseille", "Chelsea", "Galatasaray"], diff:"facile" \},\
+  \{ name:"Samuel Eto'o", clubs:["Real Madrid", "Mallorca", "Barcelona", "Inter Milan", "Anzhi", "Chelsea", "Everton"], diff:"facile" \},\
+  \{ name:"Virgil van Dijk", clubs:["Celtic", "Southampton", "Liverpool"], diff:"facile" \},\
+  \{ name:"David Beckham", clubs:["Manchester United", "Real Madrid", "AC Milan", "PSG", "LA Galaxy"], diff:"facile" \},\
+\
+  \{ name:"Raheem Sterling", clubs:["Liverpool", "Manchester City", "Chelsea", "Arsenal"], diff:"moyen" \},\
+  \{ name:"Ousmane Dembele", clubs:["Rennes", "Borussia Dortmund", "Barcelona", "PSG"], diff:"moyen" \},\
+  \{ name:"Marcus Rashford", clubs:["Manchester United","Barcelona"], diff:"moyen" \},\
+  \{ name:"Jack Grealish", clubs:["Aston Villa", "Manchester City"], diff:"moyen" \},\
+  \{ name:"Declan Rice", clubs:["West Ham", "Arsenal"], diff:"moyen" \},\
+  \{ name:"Bernardo Silva", clubs:["Monaco", "Manchester City"], diff:"moyen" \},\
+\
+\
+\
+  \{ name:"Kai Havertz", clubs:["Bayer Leverkusen", "Chelsea", "Arsenal"], diff:"moyen" \},\
+\
+  \{ name:"Aurelien Tchouameni", clubs:["Monaco", "Real Madrid"], diff:"moyen" \},\
+  \{ name:"Eduardo Camavinga", clubs:["Rennes", "Real Madrid"], diff:"moyen" \},\
+  \{ name:"William Saliba", clubs:["Saint-Etienne", "Arsenal"], diff:"moyen" \},\
+  \{ name:"Jules Kounde", clubs:["Bordeaux", "Sevilla", "Barcelona"], diff:"moyen" \},\
+  \{ name:"Federico Chiesa", clubs:["Fiorentina", "Juventus", "Liverpool"], diff:"moyen" \},\
+  \{ name:"Bruno Fernandes", clubs:["Sporting CP", "Manchester United"], diff:"moyen" \},\
+  \{ name:"Martin Odegaard", clubs:["Real Madrid", "Real Sociedad", "Arsenal"], diff:"moyen" \},\
+  \{ name:"Adrien Rabiot", clubs:["PSG", "Juventus", "Marseille", "AC Milan"], diff:"moyen" \},\
+  \{ name:"Sandro Tonali", clubs:["AC Milan", "Newcastle"], diff:"moyen" \},\
+  \{ name:"Florian Wirtz", clubs:["Bayer Leverkusen", "Liverpool"], diff:"moyen" \},\
+  \{ name:"Jamal Musiala", clubs:["Chelsea", "Bayern Munich"], diff:"moyen" \},\
+  \{ name:"Rafael Leao", clubs:["Sporting CP", "Lille", "AC Milan"], diff:"moyen" \},\
+  \{ name:"Pedri", clubs:["Las Palmas", "Barcelona"], diff:"moyen" \},\
+  \{ name:"Gavi", clubs:["Barcelona"], diff:"moyen" \},\
+  \{ name:"Rodri", clubs:["Atletico Madrid", "Manchester City"], diff:"moyen" \},\
+  \{ name:"Thomas Muller", clubs:["Bayern Munich"], diff:"facile" \},\
+  \{ name:"Manuel Neuer", clubs:["Schalke", "Bayern Munich"], diff:"facile" \},\
+  \{ name:"Gianluigi Donnarumma", clubs:["AC Milan", "PSG"], diff:"moyen" \},\
+  \{ name:"Raphael Varane", clubs:["Lens", "Real Madrid", "Manchester United"], diff:"moyen" \},\
+  \{ name:"Marquinhos", clubs:["Roma", "PSG"], diff:"moyen" \},\
+  \{ name:"Ruben Dias", clubs:["Benfica", "Manchester City"], diff:"moyen" \},\
+  \{ name:"Kalidou Koulibaly", clubs:["Napoli", "Chelsea", "Al Hilal"], diff:"moyen" \},\
+  \{ name:"David Alaba", clubs:["Bayern Munich", "Real Madrid"], diff:"moyen" \},\
+  \{ name:"Andrew Robertson", clubs:["Hull City", "Liverpool"], diff:"moyen" \},\
+  \{ name:"Frenkie de Jong", clubs:["Ajax Amsterdam", "Barcelona"], diff:"moyen" \},\
+  \{ name:"Thiago Alcantara", clubs:["Barcelona", "Bayern Munich", "Liverpool"], diff:"moyen" \},\
+  \{ name:"David Silva", clubs:["Valencia", "Manchester City", "Real Sociedad"], diff:"facile" \},\
+  \{ name:"Lautaro Martinez", clubs:["Racing Club", "Inter Milan"], diff:"moyen" \},\
+  \{ name:"Paulo Dybala", clubs:["Palermo", "Juventus", "Roma"], diff:"moyen" \},\
+  \{ name:"Enzo Fernandez", clubs:["River Plate", "Benfica", "Chelsea"], diff:"moyen" \},\
+  \{ name:"Alexis Mac Allister", clubs:["Brighton", "Liverpool"], diff:"moyen" \},\
+  \{ name:"Angel Di Maria", clubs:["Benfica", "Real Madrid", "Manchester United", "PSG", "Juventus"], diff:"facile" \},\
+  \{ name:"Carlos Tevez", clubs:["Boca Juniors", "Corinthians", "West Ham", "Manchester United", "Manchester City", "Juventus"], diff:"facile" \},\
+  \{ name:"Radamel Falcao", clubs:["Porto", "Atletico Madrid", "Monaco", "Manchester United", "Chelsea"], diff:"facile" \},\
+  \{ name:"James Rodriguez", clubs:["Monaco", "Real Madrid", "Bayern Munich", "Everton"], diff:"moyen" \},\
+  \{ name:"Heung-min Son", clubs:["Bayer Leverkusen", "Tottenham"], diff:"facile" \},\
+  \{ name:"Victor Osimhen", clubs:["Lille", "Napoli", "Galatasaray"], diff:"moyen" \},\
+  \{ name:"Riyad Mahrez", clubs:["Le Havre", "Leicester City", "Manchester City", "Al Ahli"], diff:"moyen" \},\
+  \{ name:"Ilkay Gundogan", clubs:["Borussia Dortmund", "Manchester City", "Barcelona", "AC Milan"], diff:"moyen" \},\
+  \{ name:"Thiago Silva", clubs:["AC Milan", "PSG", "Chelsea"], diff:"moyen" \},\
+  \{ name:"Casemiro", clubs:["Real Madrid", "Manchester United"], diff:"moyen" \},\
+  \{ name:"Jordan Henderson", clubs:["Sunderland", "Liverpool", "Al Ettifaq", "Ajax Amsterdam"], diff:"moyen" \},\
+  \{ name:"Harry Maguire", clubs:["Leicester City", "Manchester United", "West Ham"], diff:"moyen" \},\
+  \{ name:"Kieran Trippier", clubs:["Tottenham", "Atletico Madrid", "Newcastle"], diff:"moyen" \},\
+\
+  \{ name:"Lisandro Martinez", clubs:["Ajax Amsterdam", "Manchester United"], diff:"moyen" \},\
+  \{ name:"Gabriel Jesus", clubs:["Palmeiras", "Manchester City", "Arsenal"], diff:"moyen" \},\
+  \{ name:"Gabriel Martinelli", clubs:["Ituano", "Arsenal"], diff:"moyen" \},\
+  \{ name:"Rodrygo", clubs:["Santos", "Real Madrid"], diff:"moyen" \},\
+  \{ name:"Nicolo Barella", clubs:["Cagliari", "Inter Milan"], diff:"moyen" \},\
+  \{ name:"Khvicha Kvaratskhelia", clubs:["Napoli", "PSG"], diff:"moyen" \},\
+  \{ name:"Jonathan David", clubs:["Gent", "Lille", "Inter Milan"], diff:"moyen" \},\
+  \{ name:"Ollie Watkins", clubs:["Brentford", "Aston Villa"], diff:"moyen" \},\
+  \{ name:"Bradley Barcola", clubs:["Lyon", "PSG"], diff:"moyen" \},\
+  \{ name:"Michael Olise", clubs:["Crystal Palace", "Bayern Munich"], diff:"moyen" \},\
+  \{ name:"Viktor Gyokeres", clubs:["Coventry City", "Sporting CP", "Arsenal"], diff:"moyen" \},\
+  \{ name:"Rasmus Hojlund", clubs:["Atalanta", "Manchester United", "Napoli"], diff:"moyen" \},\
+  \{ name:"Memphis Depay", clubs:["PSV Eindhoven", "Manchester United", "Lyon", "Barcelona", "Atletico Madrid"], diff:"moyen" \},\
+  \{ name:"Jadon Sancho", clubs:["Borussia Dortmund", "Manchester United", "Chelsea"], diff:"moyen" \},\
+  \{ name:"Mason Mount", clubs:["Chelsea", "Manchester United"], diff:"moyen" \},\
+  \{ name:"Pierre-Emerick Aubameyang", clubs:["Borussia Dortmund", "Arsenal", "Barcelona", "Chelsea", "Marseille"], diff:"moyen" \},\
+  \{ name:"Olivier Giroud", clubs:["Montpellier", "Arsenal", "Chelsea", "AC Milan", "LAFC", "Lille"], diff:"moyen" \},\
+  \{ name:"Edinson Cavani", clubs:["Napoli", "PSG", "Manchester United"], diff:"moyen" \},\
+  \{ name:"Gonzalo Higuain", clubs:["Real Madrid", "Napoli", "Juventus", "AC Milan", "Chelsea"], diff:"moyen" \},\
+  \{ name:"Alvaro Morata", clubs:["Real Madrid", "Juventus", "Chelsea", "Atletico Madrid", "AC Milan"], diff:"moyen" \},\
+  \{ name:"Cesc Fabregas", clubs:["Arsenal", "Barcelona", "Chelsea", "Monaco"], diff:"facile" \},\
+  \{ name:"Xabi Alonso", clubs:["Real Sociedad", "Liverpool", "Real Madrid", "Bayern Munich"], diff:"facile" \},\
+  \{ name:"Andres Iniesta", clubs:["Barcelona", "Vissel Kobe"], diff:"facile" \},\
+  \{ name:"Frank Lampard", clubs:["West Ham", "Chelsea", "Manchester City", "New York City FC"], diff:"facile" \},\
+  \{ name:"Steven Gerrard", clubs:["Liverpool"], diff:"facile" \},\
+  \{ name:"Rio Ferdinand", clubs:["West Ham", "Leeds United", "Manchester United"], diff:"facile" \},\
+  \{ name:"John Terry", clubs:["Chelsea", "Aston Villa"], diff:"facile" \},\
+  \{ name:"Michael Owen", clubs:["Liverpool", "Real Madrid", "Newcastle", "Manchester United"], diff:"facile" \},\
+  \{ name:"Miroslav Klose", clubs:["Werder Bremen", "Bayern Munich", "Lazio"], diff:"moyen" \},\
+  \{ name:"Lucas Hernandez", clubs:["Atletico Madrid", "Bayern Munich", "PSG"], diff:"moyen" \},\
+  \{ name:"Dayot Upamecano", clubs:["RB Leipzig", "Bayern Munich"], diff:"moyen" \},\
+  \{ name:"Randal Kolo Muani", clubs:["Nantes", "Eintracht Frankfurt", "PSG", "Juventus"], diff:"moyen" \},\
+\
+  \{ name:"Wissam Ben Yedder", clubs:["Toulouse", "Sevilla", "Monaco"], diff:"expert" \},\
+  \{ name:"Jonathan Clauss", clubs:["Marseille", "Nice"], diff:"expert" \},\
+  \{ name:"Dani Olmo", clubs:["Dinamo Zagreb", "RB Leipzig", "Barcelona"], diff:"moyen" \},\
+  \{ name:"Mikel Oyarzabal", clubs:["Real Sociedad"], diff:"expert" \},\
+  \{ name:"Alejandro Grimaldo", clubs:["Benfica", "Bayer Leverkusen"], diff:"expert" \},\
+  \{ name:"Nico Williams", clubs:["Athletic Bilbao"], diff:"moyen" \},\
+  \{ name:"Mikel Merino", clubs:["Borussia Dortmund", "Newcastle", "Real Sociedad", "Arsenal"], diff:"expert" \},\
+  \{ name:"Granit Xhaka", clubs:["Borussia Monchengladbach", "Arsenal", "Bayer Leverkusen"], diff:"moyen" \},\
+  \{ name:"Marco Reus", clubs:["Borussia Monchengladbach", "Borussia Dortmund"], diff:"moyen" \},\
+  \{ name:"Mats Hummels", clubs:["Borussia Dortmund", "Bayern Munich", "Roma"], diff:"moyen" \},\
+\
+  \{ name:"Sami Khedira", clubs:["Real Madrid", "Juventus", "Arsenal"], diff:"moyen" \},\
+  \{ name:"Leon Goretzka", clubs:["Schalke", "Bayern Munich"], diff:"moyen" \},\
+  \{ name:"Diogo Jota", clubs:["Wolverhampton", "Liverpool"], diff:"moyen" \},\
+  \{ name:"Pedro Neto", clubs:["Wolverhampton", "Chelsea"], diff:"moyen" \},\
+  \{ name:"Vitinha", clubs:["Wolverhampton", "Porto", "PSG"], diff:"expert" \},\
+  \{ name:"Marco Verratti", clubs:["PSG", "Al Arabi"], diff:"moyen" \},\
+  \{ name:"Nicolo Zaniolo", clubs:["Roma", "Galatasaray"], diff:"expert" \},\
+  \{ name:"Manuel Locatelli", clubs:["AC Milan", "Sassuolo", "Juventus"], diff:"expert" \},\
+  \{ name:"Giacomo Raspadori", clubs:["Sassuolo", "Napoli"], diff:"expert" \},\
+  \{ name:"Gianluca Scamacca", clubs:["Sassuolo", "West Ham", "Atalanta"], diff:"expert" \},\
+  \{ name:"Xavi", clubs:["Barcelona", "Al-Sadd"], diff:"facile" \},\
+  \{ name:"Sergio Busquets", clubs:["Barcelona", "Inter Miami"], diff:"moyen" \},\
+  \{ name:"Giorgio Chiellini", clubs:["Juventus", "LAFC"], diff:"moyen" \},\
+  \{ name:"Leonardo Bonucci", clubs:["Juventus", "AC Milan", "Union Berlin"], diff:"moyen" \},\
+  \{ name:"Dani Carvajal", clubs:["Real Madrid"], diff:"moyen" \},\
+  \{ name:"Jerome Boateng", clubs:["Manchester City", "Bayern Munich"], diff:"moyen" \},\
+  \{ name:"Jordi Alba", clubs:["Valencia", "Barcelona", "Inter Miami"], diff:"moyen" \},\
+  \{ name:"Luke Shaw", clubs:["Southampton", "Manchester United"], diff:"moyen" \},\
+  \{ name:"Benjamin Pavard", clubs:["Stuttgart", "Bayern Munich", "Inter Milan"], diff:"moyen" \},\
+  \{ name:"Presnel Kimpembe", clubs:["PSG"], diff:"expert" \},\
+  \{ name:"John Stones", clubs:["Everton", "Manchester City"], diff:"moyen" \},\
+  \{ name:"Arturo Vidal", clubs:["Juventus", "Bayern Munich", "Barcelona", "Inter Milan"], diff:"moyen" \},\
+  \{ name:"Nemanja Matic", clubs:["Chelsea", "Manchester United", "Roma"], diff:"expert" \},\
+  \{ name:"Aaron Ramsey", clubs:["Arsenal", "Juventus"], diff:"expert" \},\
+  \{ name:"Blaise Matuidi", clubs:["PSG", "Juventus"], diff:"moyen" \},\
+  \{ name:"Roberto Firmino", clubs:["Hoffenheim", "Liverpool", "Al Ahli"], diff:"moyen" \},\
+  \{ name:"Jamie Vardy", clubs:["Leicester City"], diff:"moyen" \},\
+  \{ name:"Divock Origi", clubs:["Lille", "Liverpool", "Wolfsburg", "AC Milan", "Nottingham Forest"], diff:"moyen" \},\
+  \{ name:"Thomas Lemar", clubs:["Monaco", "Atletico Madrid"], diff:"expert" \},\
+  \{ name:"Kingsley Coman", clubs:["PSG", "Juventus", "Bayern Munich"], diff:"moyen" \},\
+  \{ name:"Ciro Immobile", clubs:["Juventus", "Torino", "Borussia Dortmund", "Lazio"], diff:"moyen" \},\
+  \{ name:"Lorenzo Insigne", clubs:["Napoli", "Toronto FC"], diff:"moyen" \},\
+  \{ name:"Dries Mertens", clubs:["PSV Eindhoven", "Napoli"], diff:"moyen" \},\
+  \{ name:"Hakim Ziyech", clubs:["Ajax Amsterdam", "Chelsea", "Galatasaray"], diff:"moyen" \},\
+  \{ name:"Wilfried Zaha", clubs:["Crystal Palace", "Manchester United"], diff:"expert" \},\
+  \{ name:"Idrissa Gueye", clubs:["Aston Villa", "Everton", "PSG"], diff:"expert" \},\
+  \{ name:"Ashley Cole", clubs:["Arsenal", "Chelsea", "Roma"], diff:"moyen" \},\
+  \{ name:"David de Gea", clubs:["Atletico Madrid", "Manchester United"], diff:"moyen" \},\
+  \{ name:"Fernando Llorente", clubs:["Athletic Bilbao", "Juventus", "Sevilla", "Tottenham"], diff:"expert" \},\
+  \{ name:"Santi Cazorla", clubs:["Villarreal", "Malaga", "Arsenal"], diff:"moyen" \},\
+  \{ name:"Iker Casillas", clubs:["Real Madrid", "Porto"], diff:"facile" \},\
+  \{ name:"Juan Mata", clubs:["Valencia", "Chelsea", "Manchester United"], diff:"moyen" \},\
+\
+  \{ name:"Ricardo Carvalho", clubs:["Porto", "Chelsea", "Real Madrid", "Monaco"], diff:"expert" \},\
+  \{ name:"Ruud van Nistelrooy", clubs:["PSV Eindhoven", "Manchester United", "Real Madrid"], diff:"facile" \},\
+  \{ name:"Patrick Kluivert", clubs:["Ajax Amsterdam", "Barcelona", "Roma", "Valencia", "Newcastle"], diff:"moyen" \},\
+  \{ name:"Dirk Kuyt", clubs:["Liverpool", "Fenerbahce"], diff:"expert" \},\
+  \{ name:"Diego Forlan", clubs:["Manchester United", "Atletico Madrid", "Inter Milan"], diff:"moyen" \},\
+  \{ name:"Hernan Crespo", clubs:["Lazio", "Inter Milan", "Chelsea", "AC Milan"], diff:"moyen" \},\
+  \{ name:"Juan Sebastian Veron", clubs:["Lazio", "Manchester United", "Inter Milan", "Chelsea"], diff:"expert" \},\
+  \{ name:"Clarence Seedorf", clubs:["Ajax Amsterdam", "Sampdoria", "Real Madrid", "Inter Milan", "AC Milan"], diff:"moyen" \},\
+  \{ name:"Patrick Vieira", clubs:["AC Milan", "Arsenal", "Juventus", "Inter Milan", "Manchester City"], diff:"facile" \},\
+  \{ name:"Emmanuel Petit", clubs:["Monaco", "Arsenal", "Barcelona", "Chelsea"], diff:"expert" \},\
+  \{ name:"Peter Crouch", clubs:["Aston Villa", "Southampton", "Liverpool", "Tottenham"], diff:"expert" \},\
+  \{ name:"Gennaro Gattuso", clubs:["AC Milan", "Tottenham"], diff:"expert" \},\
+  \{ name:"Roberto Baggio", clubs:["Fiorentina", "Juventus", "AC Milan", "Inter Milan", "Bologna"], diff:"facile" \},\
+  \{ name:"Christian Vieri", clubs:["Lazio", "Inter Milan", "AC Milan"], diff:"moyen" \},\
+  \{ name:"Filippo Inzaghi", clubs:["Juventus", "AC Milan"], diff:"moyen" \},\
+  \{ name:"Fabio Cannavaro", clubs:["Napoli", "Parma", "Inter Milan", "Juventus", "Real Madrid"], diff:"facile" \},\
+  \{ name:"Luca Toni", clubs:["Fiorentina", "Bayern Munich", "Roma", "Juventus"], diff:"expert" \},\
+  \{ name:"Antonio Cassano", clubs:["Roma", "Real Madrid", "Sampdoria", "Inter Milan", "AC Milan"], diff:"expert" \},\
+  \{ name:"Rui Costa", clubs:["Fiorentina", "AC Milan"], diff:"expert" \},\
+  \{ name:"Deco", clubs:["Porto", "Barcelona", "Chelsea"], diff:"moyen" \},\
+  \{ name:"Nani", clubs:["Sporting CP", "Manchester United", "Valencia"], diff:"moyen" \},\
+  \{ name:"Wesley Sneijder", clubs:["Ajax Amsterdam", "Real Madrid", "Inter Milan", "Galatasaray"], diff:"facile" \},\
+  \{ name:"Arjen Robben", clubs:["PSV Eindhoven", "Chelsea", "Real Madrid", "Bayern Munich"], diff:"facile" \},\
+  \{ name:"Mark van Bommel", clubs:["PSV Eindhoven", "Barcelona", "Bayern Munich", "AC Milan"], diff:"expert" \},\
+  \{ name:"Antony", clubs:["Ajax Amsterdam", "Manchester United"], diff:"moyen" \},\
+  \{ name:"Gleison Bremer", clubs:["Torino", "Juventus"], diff:"expert" \},\
+  \{ name:"Alejandro Garnacho", clubs:["Manchester United"], diff:"moyen" \},\
+  \{ name:"Kobbie Mainoo", clubs:["Manchester United"], diff:"moyen" \},\
+  \{ name:"Dean Huijsen", clubs:["Juventus", "Roma", "Bournemouth", "Real Madrid"], diff:"expert" \},\
+  \{ name:"Savinho", clubs:["Girona", "Manchester City"], diff:"expert" \},\
+  \{ name:"Rayan Cherki", clubs:["Lyon", "Manchester City"], diff:"moyen" \},\
+  \{ name:"Warren Zaire-Emery", clubs:["PSG"], diff:"expert" \},\
+\
+  \{ name:"Khephren Thuram", clubs:["Nice", "Juventus"], diff:"expert" \},\
+  \{ name:"Manu Kone", clubs:["Borussia Monchengladbach", "Roma"], diff:"expert" \},\
+  \{ name:"Youssouf Fofana", clubs:["Monaco", "AC Milan"], diff:"expert" \},\
+  \{ name:"Adam Wharton", clubs:["Crystal Palace"], diff:"expert" \},\
+  \{ name:"Jarrod Bowen", clubs:["West Ham"], diff:"expert" \},\
+  \{ name:"Morgan Gibbs-White", clubs:["Wolverhampton", "Nottingham Forest"], diff:"expert" \},\
+  \{ name:"Marcus Thuram", clubs:["Borussia Monchengladbach", "Inter Milan"], diff:"moyen" \},\
+  \{ name:"Endrick", clubs:["Palmeiras", "Real Madrid"], diff:"expert" \},\
+  \{ name:"Diogo Dalot", clubs:["Porto", "AC Milan", "Manchester United"], diff:"expert" \},\
+  \{ name:"Naby Keita", clubs:["RB Leipzig", "Liverpool", "Werder Bremen"], diff:"expert" \},\
+  \{ name:"Thomas Partey", clubs:["Atletico Madrid", "Arsenal"], diff:"expert" \},\
+  \{ name:"Fabinho", clubs:["Monaco", "Liverpool", "Al Ittihad"], diff:"moyen" \},\
+  \{ name:"Ivan Rakitic", clubs:["Sevilla", "Barcelona"], diff:"moyen" \},\
+  \{ name:"Christian Eriksen", clubs:["Tottenham", "Inter Milan", "Manchester United"], diff:"moyen" \},\
+  \{ name:"Matthijs de Ligt", clubs:["Ajax Amsterdam", "Juventus", "Bayern Munich", "Manchester United"], diff:"moyen" \},\
+  \{ name:"Diego Costa", clubs:["Atletico Madrid", "Chelsea"], diff:"moyen" \},\
+  \{ name:"Sacha Boey", clubs:["Galatasaray", "Bayern Munich"], diff:"expert" \},\
+  \{ name:"Gerard Pique", clubs:["Manchester United", "Barcelona"], diff:"facile" \},\
+  \{ name:"Lukas Podolski", clubs:["Bayern Munich", "Arsenal", "Inter Milan", "Galatasaray"], diff:"moyen" \},\
+  \{ name:"Michael Ballack", clubs:["Bayer Leverkusen", "Bayern Munich", "Chelsea"], diff:"facile" \},\
+  \{ name:"Bastian Schweinsteiger", clubs:["Bayern Munich", "Manchester United", "Chicago Fire"], diff:"facile" \},\
+  \{ name:"Serge Gnabry", clubs:["Arsenal", "Bayern Munich"], diff:"moyen" \},\
+  \{ name:"Timo Werner", clubs:["RB Leipzig", "Chelsea", "Tottenham"], diff:"moyen" \},\
+  \{ name:"Andre Schurrle", clubs:["Bayer Leverkusen", "Chelsea", "Borussia Dortmund", "Wolfsburg"], diff:"expert" \},\
+  // \uc0\u9472 \u9472  2016-2026 \u9472 \u9472 \
+  \{ name:"Ederson", clubs:["Benfica", "Manchester City"], diff:"moyen" \},\
+\
+  \{ name:"Marc-Andre ter Stegen", clubs:["Borussia Monchengladbach", "Barcelona"], diff:"moyen" \},\
+  \{ name:"Kepa Arrizabalaga", clubs:["Athletic Bilbao", "Chelsea", "Real Madrid"], diff:"expert" \},\
+  \{ name:"Andre Onana", clubs:["Ajax Amsterdam", "Inter Milan", "Manchester United"], diff:"moyen" \},\
+  \{ name:"Mike Maignan", clubs:["Lille", "AC Milan"], diff:"moyen" \},\
+  \{ name:"Gregor Kobel", clubs:["Stuttgart", "Borussia Dortmund"], diff:"expert" \},\
+  \{ name:"Trent Alexander-Arnold", clubs:["Liverpool", "Real Madrid"], diff:"moyen" \},\
+  \{ name:"Reece James", clubs:["Chelsea"], diff:"moyen" \},\
+  \{ name:"Achraf Hakimi", clubs:["Real Madrid", "Borussia Dortmund", "Inter Milan", "PSG"], diff:"moyen" \},\
+  \{ name:"Ferland Mendy", clubs:["Lyon", "Real Madrid"], diff:"moyen" \},\
+  \{ name:"Alphonso Davies", clubs:["Vancouver Whitecaps", "Bayern Munich"], diff:"moyen" \},\
+  \{ name:"Josko Gvardiol", clubs:["Dinamo Zagreb", "RB Leipzig", "Manchester City"], diff:"moyen" \},\
+  \{ name:"Ibrahima Konate", clubs:["Lens", "RB Leipzig", "Liverpool"], diff:"moyen" \},\
+  \{ name:"Kim Min-jae", clubs:["Fenerbahce", "Napoli", "Bayern Munich"], diff:"expert" \},\
+  \{ name:"Pau Torres", clubs:["Villarreal", "Aston Villa"], diff:"expert" \},\
+  \{ name:"Jurrien Timber", clubs:["Ajax Amsterdam", "Arsenal"], diff:"expert" \},\
+  \{ name:"Leny Yoro", clubs:["Lille", "Manchester United"], diff:"expert" \},\
+  \{ name:"Dominik Szoboszlai", clubs:["Salzburg", "RB Leipzig", "Liverpool"], diff:"moyen" \},\
+  \{ name:"Phil Foden", clubs:["Manchester City"], diff:"facile" \},\
+  \{ name:"Bruno Guimaraes", clubs:["Athletico Paranaense", "Lyon", "Newcastle"], diff:"expert" \},\
+  \{ name:"Xavi Simons", clubs:["PSG", "PSV Eindhoven", "RB Leipzig"], diff:"moyen" \},\
+  \{ name:"Arda Guler", clubs:["Fenerbahce", "Real Madrid"], diff:"expert" \},\
+  \{ name:"Christopher Nkunku", clubs:["PSG", "RB Leipzig", "Chelsea"], diff:"moyen" \},\
+  \{ name:"Evan Ferguson", clubs:["Brighton"], diff:"expert" \},\
+  \{ name:"Franco Mastantuono", clubs:["River Plate", "Real Madrid"], diff:"expert" \},\
+  \{ name:"Joao Neves", clubs:["Benfica", "PSG"], diff:"expert" \},\
+  \{ name:"Nuno Mendes", clubs:["Sporting CP", "PSG"], diff:"expert" \},\
+  \{ name:"Ivan Toney", clubs:["Brentford", "Al Ahli"], diff:"expert" \},\
+\
+  \{ name:"Bukayo Saka", clubs:["Arsenal"], diff:"facile" \},\
+  \{ name:"Federico Valverde", clubs:["Real Madrid"], diff:"moyen" \},\
+  \{ name:"Thibaut Courtois", clubs:["Chelsea", "Real Madrid"], diff:"facile" \},\
+  \{ name:"Alisson", clubs:["Roma", "Liverpool"], diff:"moyen" \},\
+  \{ name:"Joshua Kimmich", clubs:["Bayern Munich"], diff:"moyen" \},\
+  \{ name:"Romelu Lukaku", clubs:["Anderlecht", "Chelsea", "West Brom", "Everton", "Manchester United", "Inter Milan", "Roma", "Napoli"], diff:"facile" \},\
+\
+  \{ name:"Carles Puyol", clubs:["Barcelona"], diff:"moyen" \},\
+\
+  \{ name:"Samir Nasri", clubs:["Marseille", "Arsenal", "Manchester City", "Sevilla"], diff:"moyen" \},\
+  \{ name:"Nicolas Anelka", clubs:["Arsenal", "Real Madrid", "PSG", "Manchester City", "Chelsea", "Fenerbahce"], diff:"moyen" \},\
+  \{ name:"Sylvain Wiltord", clubs:["Bordeaux", "Arsenal", "Lyon", "Marseille", "Rennes"], diff:"moyen" \},\
+  \{ name:"Marc Overmars", clubs:["Ajax Amsterdam", "Arsenal", "Barcelona"], diff:"moyen" \},\
+  \{ name:"Robert Pires", clubs:["Arsenal", "Marseille", "Villarreal"], diff:"moyen" \},\
+  \{ name:"Claude Makelele", clubs:["Nantes", "Marseille", "Celta Vigo", "Real Madrid", "Chelsea", "PSG"], diff:"moyen" \},\
+  \{ name:"Peter Cech", clubs:["Chelsea", "Arsenal"], diff:"moyen" \},\
+  \{ name:"Didier Deschamps", clubs:["Marseille", "Juventus", "Chelsea", "Monaco"], diff:"moyen" \},\
+  \{ name:"Marcel Desailly", clubs:["Marseille", "AC Milan", "Chelsea"], diff:"moyen" \},\
+  \{ name:"Lilian Thuram", clubs:["Monaco", "Parma", "Juventus", "Barcelona"], diff:"moyen" \},\
+  \{ name:"William Gallas", clubs:["Chelsea", "Arsenal", "Tottenham"], diff:"moyen" \},\
+  \{ name:"Frederic Kanoute", clubs:["West Ham", "Tottenham", "Sevilla"], diff:"moyen" \},\
+  \{ name:"Yaya Toure", clubs:["Monaco", "Barcelona", "Manchester City"], diff:"facile" \},\
+  \{ name:"Kolo Toure", clubs:["Arsenal", "Manchester City", "Liverpool"], diff:"moyen" \},\
+\
+  \{ name:"Oliver Kahn", clubs:["Bayern Munich"], diff:"facile" \},\
+  \{ name:"Karl-Heinz Riedle", clubs:["Borussia Dortmund", "Liverpool"], diff:"moyen" \},\
+  \{ name:"Stefan Effenberg", clubs:["Bayern Munich"], diff:"moyen" \},\
+  \{ name:"Lothar Matthaus", clubs:["Bayern Munich", "Inter Milan"], diff:"facile" \},\
+  \{ name:"J\'fcrgen Klinsmann", clubs:["Bayern Munich", "Tottenham"], diff:"moyen" \},\
+  \{ name:"Alessandro Nesta", clubs:["Lazio", "AC Milan"], diff:"moyen" \},\
+  \{ name:"Paolo Maldini", clubs:["AC Milan"], diff:"facile" \},\
+  \{ name:"Franco Baresi", clubs:["AC Milan"], diff:"facile" \},\
+  \{ name:"Andrea Pirlo", clubs:["Inter Milan", "AC Milan", "Juventus", "New York City FC"], diff:"facile" \},\
+  \{ name:"Dida", clubs:["AC Milan"], diff:"moyen" \},\
+  \{ name:"Rivaldo", clubs:["Deportivo", "Barcelona", "AC Milan"], diff:"facile" \},\
+  \{ name:"Cafu", clubs:["Roma", "AC Milan"], diff:"facile" \},\
+  \{ name:"Roberto Carlos", clubs:["Palmeiras", "Inter Milan", "Real Madrid", "Fenerbahce"], diff:"facile" \},\
+  \{ name:"Lucio", clubs:["Bayer Leverkusen", "Bayern Munich", "Inter Milan"], diff:"moyen" \},\
+  \{ name:"Figo", clubs:["Sporting CP", "Barcelona", "Real Madrid", "Inter Milan"], diff:"facile" \},\
+  \{ name:"Simao Sabrosa", clubs:["Barcelona", "Atletico Madrid", "Besiktas"], diff:"moyen" \},\
+  \{ name:"Raul", clubs:["Real Madrid", "Schalke"], diff:"facile" \},\
+  \{ name:"Fernando Hierro", clubs:["Real Madrid"], diff:"moyen" \},\
+  \{ name:"Emilio Butragueno", clubs:["Real Madrid"], diff:"moyen" \},\
+  \{ name:"Jamie Carragher", clubs:["Liverpool"], diff:"moyen" \},\
+  \{ name:"Robbie Fowler", clubs:["Liverpool", "Manchester City"], diff:"moyen" \},\
+  \{ name:"Kevin Keegan", clubs:["Liverpool", "Newcastle"], diff:"moyen" \},\
+  \{ name:"Peter Schmeichel", clubs:["Manchester United"], diff:"facile" \},\
+  \{ name:"Roy Keane", clubs:["Manchester United", "Celtic"], diff:"facile" \},\
+  \{ name:"Paul Scholes", clubs:["Manchester United"], diff:"facile" \},\
+  \{ name:"Gary Neville", clubs:["Manchester United"], diff:"moyen" \},\
+  \{ name:"Ole Gunnar Solskjaer", clubs:["Manchester United"], diff:"moyen" \},\
+  \{ name:"Teddy Sheringham", clubs:["Manchester United", "Tottenham"], diff:"moyen" \},\
+  \{ name:"Andy Cole", clubs:["Manchester United", "Newcastle", "Blackburn"], diff:"moyen" \},\
+  \{ name:"Dwight Yorke", clubs:["Manchester United", "Aston Villa"], diff:"moyen" \},\
+  \{ name:"Nwankwo Kanu", clubs:["Ajax Amsterdam", "Inter Milan", "Arsenal", "West Brom"], diff:"moyen" \},\
+  \{ name:"Abedi Pele", clubs:["Marseille"], diff:"moyen" \},\
+  \{ name:"George Weah", clubs:["Marseille", "PSG", "AC Milan", "Chelsea"], diff:"moyen" \},\
+  \{ name:"Jay-Jay Okocha", clubs:["PSG", "Bolton"], diff:"moyen" \},\
+  \{ name:"El Hadji Diouf", clubs:["Lens", "Liverpool", "Bolton"], diff:"moyen" \},\
+  \{ name:"Hasan Salihamidzic", clubs:["Bayern Munich"], diff:"moyen" \},\
+  \{ name:"Oliver Neuville", clubs:["Borussia Dortmund", "Bayer Leverkusen"], diff:"moyen" \},\
+  \{ name:"Alessandro Del Piero", clubs:["Juventus"], diff:"facile" \},\
+  \{ name:"Francesco Totti", clubs:["Roma"], diff:"facile" \},\
+  \{ name:"Javier Zanetti", clubs:["Inter Milan"], diff:"moyen" \},\
+  \{ name:"Nicola Ventola", clubs:["Bari", "Inter Milan", "Atalanta"], diff:"moyen" \},\
+  \{ name:"Boudewijn Zenden", clubs:["Barcelona", "Chelsea", "Liverpool", "Marseille"], diff:"moyen" \},\
+  \{ name:"Marc Wilmots", clubs:["Schalke", "Inter Milan"], diff:"moyen" \},\
+  \{ name:"Johan Cruyff", clubs:["Ajax Amsterdam", "Barcelona"], diff:"facile" \},\
+  \{ name:"Marco van Basten", clubs:["Ajax Amsterdam", "AC Milan"], diff:"facile" \},\
+  \{ name:"Ruud Gullit", clubs:["AC Milan", "Chelsea"], diff:"facile" \},\
+  \{ name:"Frank Rijkaard", clubs:["Ajax Amsterdam", "AC Milan"], diff:"moyen" \},\
+  \{ name:"Ronald Koeman", clubs:["Ajax Amsterdam", "Barcelona"], diff:"moyen" \},\
+  \{ name:"Romario", clubs:["Barcelona", "PSV Eindhoven"], diff:"facile" \},\
+  \{ name:"Bebeto", clubs:["Deportivo", "Sevilla"], diff:"moyen" \},\
+  \{ name:"Denilson", clubs:["Real Betis", "Bordeaux"], diff:"moyen" \},\
+  \{ name:"Rui Patricio", clubs:["Sporting CP", "Wolverhampton", "Roma"], diff:"moyen" \},\
+  \{ name:"Pepe Reina", clubs:["Barcelona", "Villarreal", "Liverpool", "Napoli"], diff:"moyen" \},\
+  \{ name:"Kevin Gameiro", clubs:["Lorient", "PSG", "Sevilla", "Atletico Madrid", "Valencia"], diff:"expert" \},\
+  \{ name:"Djibril Cisse", clubs:["Auxerre", "Liverpool", "Marseille"], diff:"expert" \},\
+  \{ name:"Nicolas Mahut", clubs:["Angers"], diff:"expert" \},\
+  \{ name:"Youri Djorkaeff", clubs:["PSG", "Inter Milan", "Bolton"], diff:"expert" \},\
+  \{ name:"Mirandinha", clubs:["Newcastle"], diff:"expert" \},\
+  \{ name:"Jonathan Woodgate", clubs:["Real Madrid", "Newcastle", "Tottenham"], diff:"expert" \},\
+  \{ name:"Sean Wright-Phillips", clubs:["Manchester City", "Chelsea"], diff:"expert" \},\
+  \{ name:"Mikael Silvestre", clubs:["Manchester United", "Arsenal"], diff:"expert" \},\
+  \{ name:"Quinton Fortune", clubs:["Manchester United", "Atletico Madrid"], diff:"expert" \},\
+  \{ name:"Luke Chadwick", clubs:["Manchester United"], diff:"expert" \},\
+  \{ name:"Corentin Tolisso", clubs:["Lyon", "Bayern Munich"], diff:"expert" \},\
+  \{ name:"Mathieu Valbuena", clubs:["Marseille", "Lyon", "Fenerbahce"], diff:"expert" \},\
+  \{ name:"Hatem Ben Arfa", clubs:["Lyon", "Marseille", "Newcastle", "Nice", "PSG"], diff:"expert" \},\
+  \{ name:"Frederic Piquionne", clubs:["Monaco", "Lyon"], diff:"expert" \},\
+  \{ name:"Vikash Dhorasoo", clubs:["Lyon", "AC Milan", "PSG"], diff:"expert" \},\
+  \{ name:"Lassana Diarra", clubs:["Chelsea", "Arsenal", "Portsmouth", "Real Madrid", "Atletico Madrid", "Marseille", "PSG"], diff:"moyen" \},\
+\
+  // Pays-Bas\
+  \{ name:"Robin van Persie", clubs:["Feyenoord", "Arsenal", "Manchester United"], diff:"facile" \},\
+  \{ name:"Dennis Bergkamp", clubs:["Ajax Amsterdam", "Inter Milan", "Arsenal"], diff:"facile" \},\
+  \{ name:"Edgar Davids", clubs:["Ajax Amsterdam", "Juventus", "Barcelona", "Inter Milan"], diff:"moyen" \},\
+  \{ name:"Klaas-Jan Huntelaar", clubs:["Ajax Amsterdam", "Real Madrid", "AC Milan"], diff:"moyen" \},\
+  \{ name:"Ryan Babel", clubs:["Ajax Amsterdam", "Liverpool", "Galatasaray"], diff:"moyen" \},\
+  // Russie\
+  \{ name:"Axel Witsel", clubs:["Benfica", "Zenit Saint Petersburg", "Borussia Dortmund", "Atletico Madrid"], diff:"moyen" \},\
+  \{ name:"Hulk", clubs:["Porto", "Zenit Saint Petersburg"], diff:"moyen" \},\
+  // MLS\
+  \{ name:"Sebastian Giovinco", clubs:["Juventus", "Toronto FC"], diff:"moyen" \},\
+  \{ name:"Javier Hernandez", clubs:["Manchester United", "Real Madrid", "LA Galaxy"], diff:"moyen" \},\
+  \{ name:"Carlos Vela", clubs:["Arsenal", "Real Sociedad", "LAFC"], diff:"expert" \},\
+  \{ name:"Xherdan Shaqiri", clubs:["Bayern Munich", "Inter Milan", "Liverpool", "Chicago Fire"], diff:"moyen" \},\
+  // Turquie suppl\'e9mentaires\
+\
+  \{ name:"Juninho", clubs:["Lyon", "Atletico Madrid"], diff:"expert" \},\
+  \{ name:"Gregory Coupet", clubs:["Lyon"], diff:"expert" \},\
+  \{ name:"Remi Garde", clubs:["Lyon", "Arsenal"], diff:"expert" \},\
+  \{ name:"Claudio Pizarro", clubs:["Werder Bremen", "Bayern Munich", "Chelsea"], diff:"expert" \},\
+  \{ name:"Stephane Dalmat", clubs:["PSG", "Inter Milan", "Tottenham"], diff:"expert" \},\
+  \{ name:"David Rozehnal", clubs:["PSG", "Newcastle"], diff:"expert" \},\
+  \{ name:"Noe Pamarot", clubs:["Tottenham", "Nice"], diff:"expert" \},\
+  \{ name:"Gael Clichy", clubs:["Arsenal", "Manchester City"], diff:"expert" \},\
+  \{ name:"Johan Djourou", clubs:["Arsenal"], diff:"expert" \},\
+  \{ name:"Justin Hoyte", clubs:["Arsenal"], diff:"expert" \},\
+  \{ name:"Jan Kirchhoff", clubs:["Bayern Munich", "Manchester City", "Sunderland"], diff:"expert" \},\
+  \{ name:"Pierre Webo", clubs:["Mallorca", "Atletico Madrid"], diff:"expert" \},\
+  \{ name:"Mutu", clubs:["Parma", "Chelsea", "Fiorentina"], diff:"expert" \},\
+  \{ name:"Bogdan Lobont", clubs:["Ajax Amsterdam", "Roma"], diff:"expert" \},\
+  \{ name:"Bogdan Stancu", clubs:["Galatasaray"], diff:"expert" \},\
+  \{ name:"Chidi Odiah", clubs:["CSKA Moscow"], diff:"expert" \},\
+  \{ name:"Thierry Henry", clubs:["Monaco", "Juventus", "Arsenal", "Barcelona", "New York Red Bulls"], diff:"facile" \},\
+  \{ name:"Emmanuel Adebayor", clubs:["Monaco", "Arsenal", "Manchester City", "Real Madrid", "Tottenham"], diff:"moyen" \},\
+  \{ name:"Nicolas Bendtner", clubs:["Arsenal", "Juventus"], diff:"expert" \},\
+  \{ name:"Sylvain Distin", clubs:["Manchester City", "Everton"], diff:"expert" \},\
+  \{ name:"Abdoulaye Meite", clubs:["Monaco", "Marseille", "Bolton"], diff:"expert" \}\
+,\
+  \{ name:"Gabri Veiga", clubs:["Celta Vigo", "Al Qadsiah"], diff:"facile" \},\
+  \{ name:"Ben White", clubs:["Arsenal"], diff:"moyen" \},\
+  \{ name:"Gabriel Magalhaes", clubs:["Lille", "Arsenal"], diff:"moyen" \},\
+  \{ name:"David Raya", clubs:["Brentford", "Arsenal"], diff:"facile" \},\
+  \{ name:"Alexander Isak", clubs:["Borussia Dortmund", "Real Sociedad", "Newcastle"], diff:"moyen" \},\
+\
+\
+  \{ name:"Cody Gakpo", clubs:["PSV Eindhoven", "Liverpool"], diff:"facile" \},\
+  \{ name:"Ryan Gravenberch", clubs:["Ajax Amsterdam", "Bayern Munich", "Liverpool"], diff:"facile" \},\
+  \{ name:"Antonio Rudiger", clubs:["Stuttgart", "Roma", "Chelsea", "Real Madrid"], diff:"moyen" \},\
+  \{ name:"Fabian Ruiz", clubs:["Napoli", "PSG"], diff:"facile" \},\
+  \{ name:"Marco Asensio", clubs:["Real Madrid", "PSG"], diff:"facile" \},\
+\
+  \{ name:"Hakan Calhanoglu", clubs:["AC Milan", "Inter Milan"], diff:"moyen" \},\
+  \{ name:"Stefan de Vrij", clubs:["Lazio", "Inter Milan"], diff:"facile" \},\
+  \{ name:"Alessandro Bastoni", clubs:["Inter Milan"], diff:"facile" \},\
+  \{ name:"Ansu Fati", clubs:["Barcelona"], diff:"facile" \},\
+  \{ name:"Ferran Torres", clubs:["Valencia", "Manchester City", "Barcelona"], diff:"facile" \},\
+  \{ name:"Alexis Sanchez", clubs:["Udinese","Barcelona","Arsenal","Manchester United","Inter Milan","Marseille","Sevilla"], diff:"facile" \},\
+  \{ name:"Mesut Ozil", clubs:["Werder Bremen", "Real Madrid", "Arsenal", "Fenerbahce"], diff:"facile" \},\
+  \{ name:"Per Mertesacker", clubs:["Werder Bremen", "Arsenal"], diff:"moyen" \},\
+  \{ name:"Lars Bender", clubs:["Bayer Leverkusen"], diff:"moyen" \},\
+  \{ name:"Sven Bender", clubs:["Borussia Dortmund", "Bayer Leverkusen"], diff:"moyen" \},\
+  \{ name:"Sergio Aguero", clubs:["Atletico Madrid", "Manchester City", "Barcelona"], diff:"facile" \},\
+  \{ name:"Javier Mascherano", clubs:["Liverpool", "Barcelona"], diff:"moyen" \},\
+  \{ name:"Goran Pandev", clubs:["Lazio", "Inter Milan", "Napoli", "Genoa"], diff:"moyen" \},\
+  \{ name:"Diego Milito", clubs:["Genoa", "Inter Milan"], diff:"moyen" \},\
+  \{ name:"Esteban Cambiasso", clubs:["Real Madrid", "Inter Milan"], diff:"moyen" \},\
+  \{ name:"Julio Cesar", clubs:["Inter Milan"], diff:"moyen" \},\
+  \{ name:"Maicon", clubs:["Monaco", "Inter Milan"], diff:"moyen" \},\
+\
+  \{ name:"Sulley Muntari", clubs:["Udinese", "Portsmouth", "Inter Milan", "AC Milan"], diff:"moyen" \},\
+  \{ name:"Dejan Stankovic", clubs:["Lazio", "Inter Milan"], diff:"moyen" \},\
+  \{ name:"Ivan Cordoba", clubs:["Inter Milan"], diff:"moyen" \},\
+  \{ name:"Robinho", clubs:["Real Madrid", "Manchester City", "AC Milan", "Santos"], diff:"moyen" \},\
+  \{ name:"Jo", clubs:["CSKA Moscow", "Manchester City", "Everton"], diff:"moyen" \},\
+  \{ name:"Elano", clubs:["Shakhtar", "Manchester City", "Galatasaray"], diff:"moyen" \},\
+  \{ name:"Vedran Corluka", clubs:["Manchester City", "Tottenham"], diff:"moyen" \},\
+  \{ name:"Robbie Keane", clubs:["Tottenham", "Liverpool", "LA Galaxy"], diff:"moyen" \},\
+  \{ name:"Jermain Defoe", clubs:["Tottenham", "Portsmouth"], diff:"moyen" \},\
+  \{ name:"Ledley King", clubs:["Tottenham"], diff:"moyen" \},\
+  \{ name:"Michael Carrick", clubs:["Tottenham", "Manchester United"], diff:"moyen" \},\
+  \{ name:"Darren Bent", clubs:["Tottenham", "Sunderland", "Aston Villa"], diff:"moyen" \},\
+  \{ name:"Pascal Chimbonda", clubs:["Wigan", "Tottenham"], diff:"moyen" \},\
+  \{ name:"Niko Kranjcar", clubs:["Tottenham", "Portsmouth"], diff:"moyen" \},\
+  \{ name:"Dimitar Berbatov", clubs:["Bayer Leverkusen", "Tottenham", "Manchester United"], diff:"moyen" \},\
+  \{ name:"Kyle Walker", clubs:["Tottenham", "Manchester City"], diff:"moyen" \},\
+  \{ name:"Hugo Lloris", clubs:["Lyon", "Tottenham"], diff:"facile" \},\
+  \{ name:"Jan Vertonghen", clubs:["Ajax Amsterdam", "Tottenham", "Benfica"], diff:"moyen" \},\
+  \{ name:"Toby Alderweireld", clubs:["Ajax Amsterdam", "Atletico Madrid", "Tottenham"], diff:"moyen" \},\
+  \{ name:"Mousa Dembele", clubs:["Tottenham", "Fulham"], diff:"moyen" \},\
+  \{ name:"Victor Wanyama", clubs:["Celtic", "Southampton", "Tottenham"], diff:"moyen" \},\
+  \{ name:"Dele Alli", clubs:["Tottenham", "Everton"], diff:"moyen" \},\
+  \{ name:"Eric Dier", clubs:["Sporting CP", "Tottenham", "Bayern Munich"], diff:"moyen" \},\
+  \{ name:"Moussa Sissoko", clubs:["Newcastle", "Tottenham"], diff:"moyen" \},\
+  \{ name:"Rafael van der Vaart", clubs:["Ajax Amsterdam", "Real Madrid", "Tottenham"], diff:"moyen" \},\
+  \{ name:"Wilson Palacios", clubs:["Wigan", "Tottenham", "Stoke"], diff:"moyen" \},\
+  \{ name:"Nabil Fekir", clubs:["Lyon", "Real Betis"], diff:"moyen" \},\
+  \{ name:"Morgan Schneiderlin", clubs:["Southampton", "Manchester United", "Everton"], diff:"moyen" \},\
+  \{ name:"Victor Moses", clubs:["Chelsea", "Fenerbahce", "Spartak Moscow", "Inter Milan"], diff:"moyen" \},\
+  \{ name:"Willian", clubs:["Chelsea", "Arsenal"], diff:"moyen" \},\
+  \{ name:"Oscar", clubs:["Chelsea", "Shanghai SIPG"], diff:"moyen" \},\
+  \{ name:"John Obi Mikel", clubs:["Chelsea", "Trabzonspor"], diff:"moyen" \},\
+  \{ name:"Ramires", clubs:["Benfica", "Chelsea", "Jiangsu Suning"], diff:"moyen" \},\
+  \{ name:"David Luiz", clubs:["Benfica", "Chelsea", "PSG", "Arsenal"], diff:"moyen" \},\
+  \{ name:"Gary Cahill", clubs:["Bolton", "Chelsea", "Crystal Palace"], diff:"moyen" \},\
+  \{ name:"Branislav Ivanovic", clubs:["Chelsea", "West Brom"], diff:"moyen" \},\
+  \{ name:"Ryan Bertrand", clubs:["Chelsea", "Southampton"], diff:"moyen" \},\
+  \{ name:"Michael Essien", clubs:["Bastia", "Lyon", "Chelsea"], diff:"moyen" \},\
+  \{ name:"Shaun Wright-Phillips", clubs:["Manchester City", "Chelsea"], diff:"moyen" \},\
+  \{ name:"Joe Cole", clubs:["West Ham", "Chelsea", "Liverpool"], diff:"moyen" \},\
+  \{ name:"Florent Malouda", clubs:["Guingamp", "Lyon", "Chelsea"], diff:"moyen" \},\
+  \{ name:"Andriy Shevchenko", clubs:["Dynamo Kyiv", "AC Milan", "Chelsea"], diff:"facile" \},\
+  \{ name:"Salomon Kalou", clubs:["Chelsea", "Lille", "Hertha Berlin"], diff:"moyen" \},\
+  \{ name:"Gus Poyet", clubs:["Chelsea", "Tottenham"], diff:"moyen" \},\
+  \{ name:"Robert Huth", clubs:["Chelsea", "Stoke", "Leicester City"], diff:"moyen" \},\
+  \{ name:"Paulo Ferreira", clubs:["Porto", "Chelsea"], diff:"moyen" \},\
+  \{ name:"Steve Sidwell", clubs:["Chelsea", "Aston Villa", "Fulham"], diff:"moyen" \},\
+  \{ name:"Freddy Adu", clubs:["DC United", "Real Sociedad", "Benfica"], diff:"expert" \},\
+  \{ name:"Jaroslaw Bieniuk", clubs:["Legia Warsaw"], diff:"expert" \},\
+  \{ name:"Eidur Gudjohnsen", clubs:["Chelsea", "Barcelona", "Monaco"], diff:"expert" \},\
+  \{ name:"Celestine Babayaro", clubs:["Ajax Amsterdam", "Newcastle"], diff:"expert" \},\
+  \{ name:"Nii Lamptey", clubs:["PSV Eindhoven", "Aston Villa"], diff:"expert" \},\
+  \{ name:"Paul Furlong", clubs:["Chelsea", "Birmingham City"], diff:"expert" \},\
+  \{ name:"Scott Parker", clubs:["Charlton Athletic", "Chelsea", "Newcastle", "West Ham", "Tottenham", "Fulham"], diff:"expert" \},\
+  \{ name:"Glen Johnson", clubs:["Chelsea", "Liverpool"], diff:"expert" \},\
+  \{ name:"Carlton Cole", clubs:["Chelsea", "West Ham"], diff:"expert" \},\
+  \{ name:"Mikael Forssell", clubs:["Chelsea", "Birmingham City"], diff:"expert" \},\
+  \{ name:"Jimmy Floyd Hasselbaink", clubs:["Atletico Madrid", "Chelsea"], diff:"expert" \},\
+  \{ name:"Slavisa Jokanovic", clubs:["Chelsea", "Deportivo"], diff:"expert" \},\
+  \{ name:"Winston Bogarde", clubs:["Ajax Amsterdam", "AC Milan", "Chelsea"], diff:"expert" \},\
+  \{ name:"Mario Melchiot", clubs:["Ajax Amsterdam", "Chelsea"], diff:"expert" \},\
+  \{ name:"Enrique De Lucas", clubs:["Chelsea", "Espanyol"], diff:"expert" \},\
+  \{ name:"Jody Morris", clubs:["Chelsea"], diff:"expert" \},\
+  \{ name:"Samassi Abou", clubs:["West Ham", "Chelsea"], diff:"expert" \},\
+  \{ name:"Muzzy Izzet", clubs:["Chelsea", "Leicester City"], diff:"expert" \},\
+  \{ name:"Neil Clement", clubs:["Chelsea", "West Brom"], diff:"expert" \},\
+  \{ name:"Thor Gudjonsson", clubs:["Leicester City", "Bayer Leverkusen"], diff:"expert" \},\
+  \{ name:"David Grondin", clubs:["Arsenal", "Saint-Etienne"], diff:"expert" \},\
+  \{ name:"Alberto Mendez", clubs:["Arsenal"], diff:"expert" \},\
+  \{ name:"Igors Stepanovs", clubs:["Arsenal"], diff:"expert" \},\
+  \{ name:"Pascal Cygan", clubs:["Lille", "Arsenal"], diff:"expert" \},\
+  \{ name:"Jerome Thomas", clubs:["Arsenal", "West Brom"], diff:"expert" \},\
+  \{ name:"Quincy Owusu-Abeyie", clubs:["Arsenal", "Spartak Moscow"], diff:"expert" \},\
+  \{ name:"Jeremie Aliadiere", clubs:["Arsenal", "Middlesbrough"], diff:"expert" \},\
+  \{ name:"Francis Jeffers", clubs:["Arsenal", "Everton"], diff:"expert" \},\
+  \{ name:"Stathis Tavlaridis", clubs:["Arsenal", "Lille"], diff:"expert" \},\
+  \{ name:"Moritz Volz", clubs:["Arsenal", "Fulham"], diff:"expert" \},\
+  \{ name:"Stuart Taylor", clubs:["Arsenal", "Aston Villa"], diff:"expert" \},\
+  \{ name:"Graham Stack", clubs:["Arsenal"], diff:"expert" \},\
+  \{ name:"Rohan Ricketts", clubs:["Arsenal", "Tottenham"], diff:"expert" \},\
+  \{ name:"Mark Randall", clubs:["Arsenal"], diff:"expert" \},\
+  \{ name:"Craig Eastmond", clubs:["Arsenal", "Southend"], diff:"expert" \},\
+  \{ name:"Nico Yennaris", clubs:["Arsenal"], diff:"expert" \},\
+  \{ name:"Vito Mannone", clubs:["Arsenal", "Sunderland"], diff:"expert" \},\
+  \{ name:"Sanchez Watt", clubs:["Arsenal"], diff:"expert" \},\
+  \{ name:"Henri Lansbury", clubs:["Arsenal", "Nottingham Forest"], diff:"expert" \},\
+  \{ name:"Daniel Boateng", clubs:["Arsenal"], diff:"expert" \},\
+  \{ name:"Kyle Bartley", clubs:["Arsenal", "Swansea"], diff:"expert" \},\
+  \{ name:"Jay Emmanuel-Thomas", clubs:["Arsenal", "Ipswich"], diff:"expert" \},\
+  \{ name:"Nacer Barazite", clubs:["Arsenal", "Twente"], diff:"expert" \},\
+  \{ name:"David Villa", clubs:["Valencia","Barcelona","Atletico Madrid","New York City FC","Vissel Kobe"], diff:"facile" \},\
+  \{ name:"Jordan Veretout", clubs:["Nantes","Aston Villa","Saint-Etienne","Fiorentina","Roma","Marseille","Lyon","Al Arabi"], diff:"moyen" \},\
+  \{ name:"Bafetimbi Gomis", clubs:["Saint-Etienne","Lyon","Swansea","Marseille","Galatasaray","Al Hilal"], diff:"moyen" \},\
+  \{ name:"Benjamin Mendy", clubs:["Le Havre","Marseille","Monaco","Manchester City"], diff:"moyen" \},\
+  \{ name:"Aymen Abdennour", clubs:["Toulouse","Monaco","Valencia","Marseille"], diff:"expert" \},\
+  \{ name:"Patrice Evra", clubs:["Nice","Monaco","Manchester United","Juventus","Marseille","West Ham"], diff:"facile" \},\
+  \{ name:"Alexandre Lacazette", clubs:["Lyon","Arsenal"], diff:"moyen" \},\
+  \{ name:"Emre Can", clubs:["Bayern Munich","Bayer Leverkusen","Liverpool","Juventus","Borussia Dortmund"], diff:"moyen" \},\
+\
+  // \'c9quipe nationale Pologne 2026\
+  \{ name:"Piotr Zieli\uc0\u324 ski", clubs:["Napoli", "Inter Milan"], diff:"moyen" \},\
+  \{ name:"Arkadiusz Milik", clubs:["Ajax Amsterdam", "Napoli", "Juventus"], diff:"moyen" \},\
+  \{ name:"Sebastian Szyma\uc0\u324 ski", clubs:["Feyenoord", "Fenerbah\'e7e"], diff:"moyen" \},\
+  \{ name:"Matty Cash", clubs:["Nottingham Forest", "Aston Villa"], diff:"moyen" \},\
+  \{ name:"Jakub Kami\uc0\u324 ski", clubs:["Wolfsburg", "FC Cologne"], diff:"moyen" \},\
+  \{ name:"Przemys\uc0\u322 aw Frankowski", clubs:["Lens", "Rennes"], diff:"expert" \},\
+\
+  // \'c9quipe nationale \'c9cosse 2026\
+  \{ name:"Scott McTominay", clubs:["Manchester United", "Napoli"], diff:"moyen" \},\
+  \{ name:"Billy Gilmour", clubs:["Chelsea", "Brighton", "Napoli"], diff:"moyen" \},\
+  \{ name:"Kieran Tierney", clubs:["Celtic", "Arsenal", "Real Sociedad"], diff:"moyen" \},\
+  \{ name:"Aaron Hickey", clubs:["Bologna", "Brentford"], diff:"moyen" \},\
+  \{ name:"John McGinn", clubs:["Aston Villa"], diff:"expert" \},\
+  \{ name:"Lewis Ferguson", clubs:["Bologna"], diff:"expert" \},\
+  \{ name:"Che Adams", clubs:["Birmingham City", "Southampton"], diff:"expert" \},\
+  \{ name:"Ryan Christie", clubs:["Bournemouth"], diff:"expert" \},\
+\
+  // \'c9quipe nationale Turquie 2026\
+  \{ name:"Kenan Y\uc0\u305 ld\u305 z", clubs:["Juventus"], diff:"expert" \},\
+  \{ name:"Ferdi Kad\uc0\u305 o\u287 lu", clubs:["Fenerbah\'e7e", "Brighton"], diff:"moyen" \},\
+  \{ name:"Altay Bay\uc0\u305 nd\u305 r", clubs:["Fenerbah\'e7e", "Manchester United"], diff:"moyen" \},\
+  \{ name:"Zeki \'c7elik", clubs:["Lille", "Roma"], diff:"moyen" \},\
+  \{ name:"\'c7a\uc0\u287 lar S\'f6y\'fcnc\'fc", clubs:["Leicester City", "Atletico Madrid"], diff:"moyen" \},\
+\
+  // \'c9quipe nationale Serbie\
+  \{ name:"Du\'9aan Vlahovi\uc0\u263 ", clubs:["Fiorentina", "Juventus"], diff:"moyen" \},\
+  \{ name:"Aleksandar Mitrovi\uc0\u263 ", clubs:["Fulham", "Al Hilal"], diff:"moyen" \},\
+  \{ name:"Du\'9aan Tadi\uc0\u263 ", clubs:["Southampton", "Ajax Amsterdam", "Fenerbah\'e7e"], diff:"moyen" \},\
+  \{ name:"Luka Jovi\uc0\u263 ", clubs:["Real Madrid", "Fiorentina", "AC Milan"], diff:"moyen" \},\
+  \{ name:"Filip Kosti\uc0\u263 ", clubs:["Eintracht Frankfurt", "Juventus"], diff:"moyen" \},\
+  \{ name:"Nikola Milenkovi\uc0\u263 ", clubs:["Fiorentina", "Nottingham Forest"], diff:"moyen" \},\
+  \{ name:"Strahinja Pavlovi\uc0\u263 ", clubs:["RB Salzburg", "AC Milan"], diff:"moyen" \},\
+\
+  // \'c9quipe nationale Danemark 2026\
+  \{ name:"Mikkel Damsgaard", clubs:["Sampdoria", "Brentford"], diff:"moyen" \},\
+  \{ name:"Joachim Andersen", clubs:["Lyon", "Crystal Palace", "Fulham"], diff:"moyen" \},\
+  \{ name:"Andreas Christensen", clubs:["Chelsea", "Barcelona"], diff:"moyen" \},\
+  \{ name:"Kasper Schmeichel", clubs:["Leicester City", "Nice", "Celtic"], diff:"moyen" \},\
+  \{ name:"Christian N\'f8rgaard", clubs:["Brentford", "Arsenal"], diff:"moyen" \},\
+  \{ name:"Joakim M\'e6hle", clubs:["Atalanta", "Wolfsburg"], diff:"expert" \},\
+  \{ name:"Gustav Isaksen", clubs:["Midtjylland", "Lazio"], diff:"expert" \},\
+  \{ name:"Jesper Lindstr\'f8m", clubs:["Eintracht Frankfurt", "Wolfsburg"], diff:"expert" \},\
+\
+  // \'c9quipe nationale Cor\'e9e du Sud 2026\
+  \{ name:"Lee Kang-in", clubs:["Valencia", "Mallorca", "PSG"], diff:"moyen" \},\
+  \{ name:"Hwang Hee-chan", clubs:["RB Leipzig", "Wolverhampton"], diff:"moyen" \},\
+  \{ name:"Hwang In-beom", clubs:["Schalke", "Feyenoord"], diff:"moyen" \},\
+  \{ name:"Lee Jae-sung", clubs:["Mainz"], diff:"expert" \},\
+\
+  // \'c9quipe nationale Japon 2026\
+  \{ name:"Kaoru Mitoma", clubs:["Union Saint-Gilloise", "Brighton"], diff:"moyen" \},\
+  \{ name:"Takefusa Kubo", clubs:["Real Madrid", "Real Sociedad"], diff:"moyen" \},\
+  \{ name:"Wataru Endo", clubs:["Stuttgart", "Liverpool"], diff:"moyen" \},\
+  \{ name:"Daichi Kamada", clubs:["Eintracht Frankfurt", "Lazio", "Crystal Palace"], diff:"moyen" \},\
+  \{ name:"Ao Tanaka", clubs:["Hamburg", "Leeds United"], diff:"moyen" \},\
+  \{ name:"Hiroki Ito", clubs:["Stuttgart", "Bayern Munich"], diff:"moyen" \},\
+  \{ name:"Koki Machida", clubs:["Union Saint-Gilloise", "Hoffenheim"], diff:"expert" \},\
+  \{ name:"Zion Suzuki", clubs:["Sint-Truiden", "Parma"], diff:"expert" \},\
+\
+  // \'c9quipe nationale \'c9tats-Unis 2026\
+  \{ name:"Christian Pulisic", clubs:["Borussia Dortmund", "Chelsea", "AC Milan"], diff:"moyen" \},\
+  \{ name:"Weston McKennie", clubs:["Schalke", "Juventus"], diff:"moyen" \},\
+  \{ name:"Tyler Adams", clubs:["RB Leipzig", "Leeds United", "Bournemouth"], diff:"moyen" \},\
+  \{ name:"Tim Weah", clubs:["Lille", "Juventus"], diff:"moyen" \},\
+  \{ name:"Folarin Balogun", clubs:["Arsenal", "Monaco"], diff:"moyen" \},\
+  \{ name:"Brenden Aaronson", clubs:["RB Salzburg", "Leeds United"], diff:"moyen" \},\
+  \{ name:"Malik Tillman", clubs:["Bayern Munich", "Bayer Leverkusen"], diff:"moyen" \},\
+  \{ name:"Gio Reyna", clubs:["Borussia Dortmund", "Borussia M\'f6nchengladbach"], diff:"moyen" \},\
+  \{ name:"Chris Richards", clubs:["Hoffenheim", "Crystal Palace"], diff:"expert" \},\
+\
+  // \'c9quipe nationale Croatie 2026\
+  \{ name:"Mateo Kova\uc0\u269 i\u263 ", clubs:["Inter Milan", "Chelsea", "Manchester City"], diff:"moyen" \},\
+  \{ name:"Andrej Kramari\uc0\u263 ", clubs:["Leicester City", "Hoffenheim"], diff:"moyen" \},\
+  \{ name:"Dominik Livakovi\uc0\u263 ", clubs:["Dinamo Zagreb", "Fenerbah\'e7e"], diff:"moyen" \},\
+  \{ name:"Nikola Vla\'9ai\uc0\u263 ", clubs:["Everton", "CSKA Moscow", "Torino"], diff:"moyen" \},\
+  \{ name:"Mario Pa\'9aali\uc0\u263 ", clubs:["Chelsea", "Atalanta"], diff:"expert" \},\
+  \{ name:"Duje \uc0\u262 aleta-Car", clubs:["Marseille", "Southampton"], diff:"expert" \},\
+\
+  // \'c9quipe nationale Uruguay 2026\
+  \{ name:"Manuel Ugarte", clubs:["Sporting CP", "PSG", "Manchester United"], diff:"moyen" \},\
+  \{ name:"Rodrigo Bentancur", clubs:["Juventus", "Tottenham"], diff:"moyen" \},\
+  \{ name:"Nicol\'e1s De La Cruz", clubs:["River Plate", "Liverpool"], diff:"moyen" \},\
+  \{ name:"Ronald Ara\'fajo", clubs:["Barcelona"], diff:"expert" \},\
+  \{ name:"Jos\'e9 Mar\'eda Gim\'e9nez", clubs:["Atletico Madrid"], diff:"expert" \},\
+\
+  // \'c9quipe nationale Colombie 2026\
+  \{ name:"D\'e1vinson S\'e1nchez", clubs:["Ajax Amsterdam", "Tottenham", "Galatasaray"], diff:"moyen" \},\
+  \{ name:"Jhon Duran", clubs:["Aston Villa", "Al Qadsiah"], diff:"moyen" \},\
+  \{ name:"Yerry Mina", clubs:["Barcelona", "Everton"], diff:"moyen" \},\
+  \{ name:"Daniel Mu\'f1oz", clubs:["Genk", "Crystal Palace"], diff:"moyen" \},\
+  \{ name:"Jefferson Lerma", clubs:["Bournemouth", "Crystal Palace"], diff:"moyen" \},\
+  \{ name:"David Ospina", clubs:["Arsenal", "Napoli"], diff:"moyen" \},\
+  \{ name:"Jhon Lucum\'ed", clubs:["Genk", "Bologna"], diff:"expert" \},\
+  \{ name:"Rafael Borr\'e9", clubs:["River Plate", "Eintracht Frankfurt"], diff:"expert" \},\
+\
+  // \'c9quipe nationale Mexique 2026\
+  \{ name:"Santiago Gim\'e9nez", clubs:["Feyenoord", "AC Milan"], diff:"moyen" \},\
+  \{ name:"Hirving Lozano", clubs:["PSV Eindhoven", "Napoli"], diff:"moyen" \},\
+  \{ name:"Edson \'c1lvarez", clubs:["Ajax Amsterdam", "West Ham"], diff:"moyen" \},\
+  \{ name:"Jorge S\'e1nchez", clubs:["Ajax Amsterdam", "Porto"], diff:"expert" \},\
+  \{ name:"C\'e9sar Montes", clubs:["Almer\'eda"], diff:"expert" \},\
+  \{ name:"Guillermo Ochoa", clubs:["M\'e1laga", "Standard Li\'e8ge"], diff:"expert" \},\
+\
+  // \'c9quipe nationale Argentine 2026 (compl\'e9ments)\
+  \{ name:"Emiliano Mart\'ednez", clubs:["Arsenal", "Aston Villa"], diff:"moyen" \},\
+  \{ name:"Juli\'e1n \'c1lvarez", clubs:["River Plate", "Manchester City", "Atletico Madrid"], diff:"moyen" \},\
+  \{ name:"Rodrigo De Paul", clubs:["Udinese", "Atletico Madrid"], diff:"moyen" \},\
+  \{ name:"Cristian Romero", clubs:["Juventus", "Atalanta", "Tottenham"], diff:"moyen" \},\
+  \{ name:"Nicol\'e1s Tagliafico", clubs:["Ajax Amsterdam", "Lyon"], diff:"moyen" \},\
+  \{ name:"Giovani Lo Celso", clubs:["PSG", "Real Betis", "Tottenham"], diff:"moyen" \},\
+  \{ name:"Nahuel Molina", clubs:["Udinese", "Atletico Madrid"], diff:"expert" \},\
+\
+  // \'c9quipe nationale Br\'e9sil 2026 (compl\'e9ments)\
+  \{ name:"Raphinha", clubs:["Leeds United", "Barcelona"], diff:"moyen" \},\
+  \{ name:"Lucas Paquet\'e1", clubs:["AC Milan", "Lyon", "West Ham"], diff:"moyen" \},\
+  \{ name:"\'c9der Milit\'e3o", clubs:["Porto", "Real Madrid"], diff:"moyen" \},\
+  \{ name:"Alex Sandro", clubs:["Porto", "Juventus"], diff:"moyen" \},\
+  \{ name:"Richarlison", clubs:["Everton", "Tottenham"], diff:"moyen" \},\
+\
+  // \'c9quipe nationale Suisse 2026 (compl\'e9ments)\
+  \{ name:"Manuel Akanji", clubs:["Borussia Dortmund", "Manchester City"], diff:"moyen" \},\
+  \{ name:"Yann Sommer", clubs:["Borussia M\'f6nchengladbach", "Bayern Munich", "Inter Milan"], diff:"moyen" \},\
+  \{ name:"Breel Embolo", clubs:["Schalke", "Borussia M\'f6nchengladbach", "Monaco"], diff:"moyen" \},\
+  \{ name:"Dan Ndoye", clubs:["Bologna", "Nottingham Forest"], diff:"moyen" \},\
+  \{ name:"Noah Okafor", clubs:["AC Milan", "Leeds United"], diff:"moyen" \},\
+  \{ name:"Remo Freuler", clubs:["Atalanta", "Nottingham Forest"], diff:"expert" \},\
+  \{ name:"Zeki Amdouni", clubs:["Burnley", "Benfica"], diff:"expert" \},\
+\
+  // \'c9quipe nationale Pays-Bas 2026 (compl\'e9ments)\
+  \{ name:"Tijjani Reijnders", clubs:["AZ Alkmaar", "AC Milan", "Manchester City"], diff:"moyen" \},\
+  \{ name:"Donyell Malen", clubs:["PSV Eindhoven", "Borussia Dortmund"], diff:"moyen" \},\
+  \{ name:"Denzel Dumfries", clubs:["PSV Eindhoven", "Inter Milan"], diff:"moyen" \},\
+  \{ name:"Jeremie Frimpong", clubs:["Celtic", "Bayer Leverkusen"], diff:"moyen" \},\
+  \{ name:"Joshua Zirkzee", clubs:["Bologna", "Manchester United"], diff:"moyen" \},\
+  \{ name:"Nathan Ak\'e9", clubs:["Chelsea", "Manchester City"], diff:"moyen" \},\
+  \{ name:"Bart Verbruggen", clubs:["Anderlecht", "Brighton"], diff:"expert" \},\
+\
+  // \'c9quipe nationale Italie 2026 (compl\'e9ments)\
+  \{ name:"Davide Frattesi", clubs:["Sassuolo", "Inter Milan"], diff:"moyen" \},\
+  \{ name:"Riccardo Calafiori", clubs:["Bologna", "Arsenal"], diff:"moyen" \},\
+  \{ name:"Giovanni Di Lorenzo", clubs:["Empoli", "Napoli"], diff:"moyen" \},\
+  \{ name:"Andrea Cambiaso", clubs:["Genoa", "Juventus"], diff:"moyen" \},\
+  \{ name:"Destiny Udogie", clubs:["Udinese", "Tottenham"], diff:"moyen" \},\
+  \{ name:"Lorenzo Pellegrini", clubs:["Sassuolo", "Roma"], diff:"moyen" \},\
+\
+  // \'c9quipe nationale Belgique 2026\
+  \{ name:"J\'e9r\'e9my Doku", clubs:["Rennes", "Manchester City"], diff:"moyen" \},\
+  \{ name:"Leandro Trossard", clubs:["Genk", "Brighton", "Arsenal"], diff:"moyen" \},\
+  \{ name:"Charles De Ketelaere", clubs:["Club Brugge", "AC Milan", "Atalanta"], diff:"moyen" \},\
+  \{ name:"Youri Tielemans", clubs:["Monaco", "Leicester City", "Aston Villa"], diff:"moyen" \},\
+  \{ name:"Amadou Onana", clubs:["Everton", "Aston Villa"], diff:"moyen" \},\
+  \{ name:"Lois Openda", clubs:["Lens", "RB Leipzig"], diff:"moyen" \},\
+  \{ name:"Alexis Saelemaekers", clubs:["AC Milan", "Bologna", "Roma"], diff:"moyen" \},\
+  \{ name:"Wout Faes", clubs:["Reims", "Leicester City"], diff:"expert" \},\
+\
+  // \'c9quipe nationale Angleterre 2026 (compl\'e9ments)\
+  \{ name:"Jordan Pickford", clubs:["Sunderland", "Everton"], diff:"moyen" \},\
+  \{ name:"Ezri Konsa", clubs:["Brentford", "Aston Villa"], diff:"moyen" \},\
+  \{ name:"Elliot Anderson", clubs:["Newcastle United", "Nottingham Forest"], diff:"moyen" \},\
+  \{ name:"Anthony Gordon", clubs:["Everton", "Newcastle United"], diff:"moyen" \},\
+\
+  // \'c9quipe nationale Allemagne 2026 (compl\'e9ments)\
+  \{ name:"Niclas F\'fcllkrug", clubs:["Werder Bremen", "Borussia Dortmund", "West Ham"], diff:"moyen" \},\
+  \{ name:"Robin Gosens", clubs:["Atalanta", "Inter Milan", "Union Berlin"], diff:"moyen" \},\
+  \{ name:"Pascal Gro\'df", clubs:["Brighton", "Borussia Dortmund"], diff:"expert" \},\
+  \{ name:"David Raum", clubs:["Hoffenheim", "RB Leipzig"], diff:"expert" \},\
+\
+  // \'c9quipe nationale Espagne 2026 (compl\'e9ments)\
+  \{ name:"Pau Cubars\'ed", clubs:["Barcelona"], diff:"moyen" \},\
+  \{ name:"Marc Cucurella", clubs:["Brighton", "Chelsea"], diff:"moyen" \},\
+  \{ name:"Mart\'edn Zubimendi", clubs:["Real Sociedad", "Arsenal"], diff:"moyen" \},\
+  \{ name:"Unai Sim\'f3n", clubs:["Athletic Bilbao"], diff:"expert" \},\
+  \{ name:"Ferm\'edn L\'f3pez", clubs:["Barcelona"], diff:"expert" \},\
+\
+  // \'c9quipe nationale Portugal 2026 (compl\'e9ments)\
+  \{ name:"Francisco Concei\'e7\'e3o", clubs:["Porto", "Juventus"], diff:"moyen" \},\
+  \{ name:"Jo\'e3o Palhinha", clubs:["Sporting CP", "Fulham", "Bayern Munich"], diff:"moyen" \},\
+  \{ name:"Matheus Nunes", clubs:["Wolverhampton", "Manchester City"], diff:"moyen" \},\
+  \{ name:"Nelson Semedo", clubs:["Barcelona", "Wolverhampton", "Fenerbah\'e7e"], diff:"moyen" \},\
+\
+  // \'c9quipe nationale C\'f4te d'Ivoire 2026\
+  \{ name:"Evan Ndicka", clubs:["Eintracht Frankfurt", "Roma"], diff:"moyen" \},\
+  \{ name:"Simon Adingra", clubs:["Union Saint-Gilloise", "Brighton"], diff:"moyen" \},\
+  \{ name:"Ibrahim Sangar\'e9", clubs:["PSV Eindhoven", "Nottingham Forest"], diff:"moyen" \},\
+  \{ name:"Nicolas P\'e9p\'e9", clubs:["Lille", "Arsenal", "Nice"], diff:"moyen" \},\
+  \{ name:"Hassane Kamara", clubs:["Nice", "Watford"], diff:"moyen" \},\
+  \{ name:"Willy Boly", clubs:["Porto", "Wolverhampton", "Nottingham Forest"], diff:"moyen" \},\
+  \{ name:"Hamed Traor\'e9", clubs:["Sassuolo", "Bournemouth", "Napoli"], diff:"moyen" \},\
+  \{ name:"Maxwel Cornet", clubs:["Lyon", "Burnley", "West Ham"], diff:"moyen" \},\
+\
+  // \'c9quipe nationale Cameroun 2026\
+  \{ name:"Andr\'e9-Franck Zambo Anguissa", clubs:["Fulham", "Villarreal", "Napoli"], diff:"moyen" \},\
+  \{ name:"Carlos Baleba", clubs:["Reims", "Brighton"], diff:"moyen" \},\
+  \{ name:"Eric Maxim Choupo-Moting", clubs:["Stoke City", "PSG", "Bayern Munich"], diff:"moyen" \},\
+  \{ name:"Vincent Aboubakar", clubs:["Porto", "Be\uc0\u351 ikta\u351 ", "Al Nassr"], diff:"moyen" \},\
+  \{ name:"Karl Toko Ekambi", clubs:["Angers", "Villarreal", "Lyon"], diff:"moyen" \},\
+  \{ name:"Christopher Wooh", clubs:["Lens", "Rennes"], diff:"expert" \},\
+  \{ name:"Nathan Ngoumou", clubs:["Toulouse", "Borussia M\'f6nchengladbach"], diff:"expert" \},\
+  \{ name:"Martin Hongla", clubs:["Hellas Verona", "Granada"], diff:"expert" \},\
+  \{ name:"Jean Onana", clubs:["Bordeaux", "Genoa"], diff:"expert" \},\
+\
+  // \'c9quipe nationale Afrique du Sud 2026\
+  \{ name:"Lyle Foster", clubs:["Monaco", "Burnley"], diff:"moyen" \},\
+  \{ name:"Percy Tau", clubs:["Club Brugge", "Brighton", "Al Ahly"], diff:"moyen" \},\
+  \{ name:"Bongani Zungu", clubs:["Amiens", "Rangers", "Kas\uc0\u305 mpa\u351 a"], diff:"expert" \},\
+\
+  // \'c9quipe nationale \'c9gypte 2026\
+  \{ name:"Mohamed Elneny", clubs:["Basel", "Arsenal", "Be\uc0\u351 ikta\u351 "], diff:"moyen" \},\
+  \{ name:"Mahmoud Trezeguet", clubs:["Kas\uc0\u305 mpa\u351 a", "Aston Villa", "Trabzonspor"], diff:"moyen" \},\
+  \{ name:"Mostafa Mohamed", clubs:["Nantes", "Galatasaray"], diff:"moyen" \},\
+  \{ name:"Ahmed Hegazi", clubs:["Fiorentina", "West Brom", "Al Ittihad"], diff:"expert" \},\
+\
+  // \'c9quipe nationale Nigeria 2026\
+  \{ name:"Ademola Lookman", clubs:["Everton", "RB Leipzig", "Atalanta"], diff:"moyen" \},\
+  \{ name:"Alex Iwobi", clubs:["Arsenal", "Everton", "Fulham"], diff:"moyen" \},\
+  \{ name:"Wilfred Ndidi", clubs:["Genk", "Leicester City", "Be\uc0\u351 ikta\u351 "], diff:"moyen" \},\
+  \{ name:"Calvin Bassey", clubs:["Rangers", "Ajax Amsterdam", "Fulham"], diff:"moyen" \},\
+  \{ name:"Ola Aina", clubs:["Chelsea", "Torino", "Nottingham Forest"], diff:"moyen" \},\
+  \{ name:"Samuel Chukwueze", clubs:["Villarreal", "AC Milan", "Fulham"], diff:"moyen" \},\
+  \{ name:"Moses Simon", clubs:["Porto", "Nantes"], diff:"expert" \},\
+  \{ name:"Maduka Okoye", clubs:["Watford", "Udinese"], diff:"expert" \},\
+  \{ name:"William Troost-Ekong", clubs:["Udinese", "Watford", "Fulham"], diff:"expert" \},\
+  \{ name:"Terem Moffi", clubs:["Lorient", "Nice"], diff:"expert" \},\
+\
+  // \'c9quipe nationale RD Congo 2026\
+  \{ name:"Yoane Wissa", clubs:["Lorient", "Brentford", "Newcastle United"], diff:"moyen" \},\
+  \{ name:"Aaron Wan-Bissaka", clubs:["Crystal Palace", "Manchester United", "West Ham"], diff:"moyen" \},\
+  \{ name:"C\'e9dric Bakambu", clubs:["Sochaux", "Villarreal", "Real Betis"], diff:"moyen" \},\
+  \{ name:"Chancel Mbemba", clubs:["Anderlecht", "Newcastle United", "Porto", "Marseille"], diff:"moyen" \},\
+  \{ name:"Noah Sadiki", clubs:["Union Saint-Gilloise", "Sunderland"], diff:"expert" \},\
+  \{ name:"Grady Diangana", clubs:["West Ham", "West Brom"], diff:"expert" \},\
+  \{ name:"Th\'e9o Bongonda", clubs:["Genk", "Celta Vigo", "Spartak Moscow"], diff:"expert" \},\
+  \{ name:"Arthur Masuaku", clubs:["West Ham", "Be\uc0\u351 ikta\u351 ", "Crystal Palace"], diff:"expert" \},\
+\
+  // \'c9quipe nationale Tunisie 2026\
+  \{ name:"Ellyes Skhiri", clubs:["Toulouse", "Cologne", "Eintracht Frankfurt"], diff:"moyen" \},\
+  \{ name:"Hannibal Mejbri", clubs:["Manchester United", "Sevilla", "Southampton"], diff:"moyen" \},\
+  \{ name:"Dylan Bronn", clubs:["Gent", "Villarreal", "Servette"], diff:"moyen" \},\
+  \{ name:"Montassar Talbi", clubs:["Caen", "Lorient"], diff:"expert" \},\
+  \{ name:"Yan Valery", clubs:["Southampton", "Young Boys"], diff:"expert" \},\
+  \{ name:"Ali Abdi", clubs:["Charleroi", "Nice"], diff:"expert" \},\
+  \{ name:"Youssef Msakni", clubs:["Esp\'e9rance de Tunis", "Valenciennes", "Al Duhail"], diff:"expert" \},\
+  \{ name:"Aymen Dahmen", clubs:["CS Sfaxien", "Reims"], diff:"expert" \},\
+\
+  // \'c9quipe nationale France 2026 (compl\'e9ments)\
+  \{ name:"Lucas Digne", clubs:["Lille", "Barcelona", "Everton", "Aston Villa"], diff:"moyen" \},\
+  \{ name:"Malo Gusto", clubs:["Lyon", "Chelsea"], diff:"moyen" \},\
+  \{ name:"Wesley Fofana", clubs:["Saint-Etienne", "Leicester City", "Chelsea"], diff:"moyen" \},\
+  \{ name:"Maghnes Akliouche", clubs:["Monaco"], diff:"expert" \},\
+\
+  // \'c9quipe nationale S\'e9n\'e9gal 2026\
+  \{ name:"Pape Matar Sarr", clubs:["Metz", "Tottenham"], diff:"moyen" \},\
+  \{ name:"Kr\'e9pin Diatta", clubs:["Club Brugge", "Monaco"], diff:"moyen" \},\
+  \{ name:"Moussa Niakhat\'e9", clubs:["Metz", "Mainz", "Lyon"], diff:"moyen" \},\
+  \{ name:"Iliman Ndiaye", clubs:["Sheffield United", "Marseille"], diff:"moyen" \},\
+  \{ name:"Pape Gueye", clubs:["Le Havre", "Watford", "Marseille", "Villarreal"], diff:"expert" \},\
+  \{ name:"El Hadji Malick Diouf", clubs:["Stoke City", "Southampton"], diff:"expert" \},\
+  \{ name:"Ismail Jakobs", clubs:["FC Cologne", "Galatasaray"], diff:"expert" \},\
+\
+  // \'c9quipe nationale Alg\'e9rie 2026\
+  \{ name:"Isma\'ebl Bennacer", clubs:["Empoli", "AC Milan", "Dinamo Zagreb"], diff:"moyen" \},\
+  \{ name:"Ramy Bensebaini", clubs:["Nice", "Borussia M\'f6nchengladbach", "Borussia Dortmund"], diff:"moyen" \},\
+  \{ name:"Rayan A\'eft-Nouri", clubs:["Angers", "Wolverhampton", "Manchester City"], diff:"moyen" \},\
+  \{ name:"Youcef Atal", clubs:["Nice", "Al-Sadd"], diff:"moyen" \},\
+  \{ name:"A\'efssa Mandi", clubs:["Reims", "Real Betis", "Villarreal", "Lille"], diff:"moyen" \},\
+  \{ name:"Mohamed Amoura", clubs:["Union Saint-Gilloise", "Wolfsburg"], diff:"moyen" \},\
+  \{ name:"Amine Gouiri", clubs:["Lyon", "Nice", "Rennes", "Marseille"], diff:"moyen" \},\
+  \{ name:"Hicham Boudaoui", clubs:["Nice"], diff:"expert" \},\
+  \{ name:"Baghdad Bounedjah", clubs:["Al Sadd", "Al Shamal"], diff:"expert" \},\
+\
+  // \'c9quipe nationale Maroc 2026\
+  \{ name:"Nayef Aguerd", clubs:["West Ham", "Marseille"], diff:"moyen" \},\
+  \{ name:"Noussair Mazraoui", clubs:["Ajax Amsterdam", "Bayern Munich", "Manchester United"], diff:"moyen" \},\
+  \{ name:"Romain Sa\'efss", clubs:["Wolverhampton", "Be\uc0\u351 ikta\u351 ", "Al-Sadd"], diff:"moyen" \},\
+  \{ name:"Jawad El Yamiq", clubs:["Real Valladolid", "Real Betis", "Real Zaragoza"], diff:"expert" \},\
+  \{ name:"Sofyan Amrabat", clubs:["Feyenoord", "Fiorentina", "Manchester United", "Fenerbahce", "Real Betis"], diff:"moyen" \},\
+  \{ name:"Neil El Aynaoui", clubs:["Nice", "Lens", "Roma"], diff:"moyen" \},\
+  \{ name:"Bilal El Khannouss", clubs:["Genk", "Leicester City", "Stuttgart"], diff:"moyen" \},\
+  \{ name:"Brahim D\'edaz", clubs:["Manchester City", "Real Madrid", "AC Milan", "PSG"], diff:"moyen" \},\
+  \{ name:"Ayoub El Kaabi", clubs:["Wydad Casablanca", "Olympiacos"], diff:"expert" \},\
+  \{ name:"Chemsdine Talbi", clubs:["Braga", "RC Strasbourg"], diff:"expert" \},\
+\
+  // L\'e9gendes manquantes\
+  \{ name:"Ronaldinho", clubs:["PSG", "Barcelona", "AC Milan", "Flamengo"], diff:"facile" \},\
+  \{ name:"Zinedine Zidane", clubs:["Cannes", "Bordeaux", "Juventus", "Real Madrid"], diff:"facile" \},\
+  \{ name:"Ronaldo Naz\'e1rio", clubs:["Cruzeiro", "Barcelona", "Inter Milan", "Real Madrid", "AC Milan"], diff:"facile" \},\
+  \{ name:"Kak\'e1", clubs:["AC Milan", "Real Madrid", "Orlando City"], diff:"facile" \},\
+  \{ name:"Franck Rib\'e9ry", clubs:["Marseille", "Bayern Munich", "Fiorentina"], diff:"facile" \},\
+  \{ name:"Fernando Torres", clubs:["Atletico Madrid", "Liverpool", "Chelsea", "AC Milan"], diff:"facile" \},\
+  \{ name:"Dani Alves", clubs:["Sevilla", "Barcelona", "Juventus", "Manchester City", "PSG"], diff:"moyen" \},\
+  \{ name:"Gon\'e7alo Ramos", clubs:["Benfica", "PSG"], diff:"moyen" \},\
+];\
+\
+export const RETIRED_PLAYERS = new Set([ "Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",\
+  "Alexandru Maxim","Andre Schurrle","Andrea Pirlo","Andres Iniesta","Andriy Shevchenko",\
+  "Andr\'e9 Ayew","Andy Cole","Angel Di Maria","Antonio Cassano","Arjen Robben",\
+  "Arturo Vidal","Ashley Cole","Axel Witsel","Aymen Abdennour","Bafetimbi Gomis",\
+  "Bastian Schweinsteiger","Bebeto","Benjamin Mendy","Blaise Matuidi","Bogdan Lobont",\
+  "Bogdan Stancu","Boudewijn Zenden","Branislav Ivanovic","Bryan Linssen","Cafu",\
+  "Carles Puyol","Carlos Tevez","Carlos Vela","Carlton Cole","Celestine Babayaro",\
+  "Cenk Tosun","Cesc Fabregas","Chidi Odiah","Christian Vieri","Clarence Seedorf",\
+  "Claude Makelele","Claudio Pizarro","Corentin Tolisso","Craig Eastmond","Dani Alves",\
+  "Daniel Boateng","David Beckham","David Grondin","David Rozehnal","David Silva",\
+  "David Villa","David de Gea","Davy Klaassen","Deco","Denilson","Dennis Bergkamp",\
+  "Dida","Didier Deschamps","Didier Drogba","Diego Costa","Diego Forlan","Dirk Kuyt",\
+  "Divock Origi","Djibril Cisse","Dries Mertens","Dwight Yorke","Eden Hazard",\
+  "Edgar Davids","Edinson Cavani","Eidur Gudjohnsen","El Hadji Diouf","Emilio Butragueno",\
+  "Emmanuel Adebayor","Emmanuel Petit","Enrique De Lucas","Fabio Cannavaro",\
+  "Fernando Hierro","Fernando Llorente","Fernando Torres","Figo","Filippo Inzaghi",\
+  "Florent Malouda","Francesco Totti","Francis Jeffers","Franck Rib\'e9ry","Franco Baresi",\
+  "Frank Lampard","Frank Rijkaard","Freddy Adu","Frederic Kanoute","Frederic Piquionne",\
+  "Gael Clichy","Gareth Bale","Gary Neville","Gennaro Gattuso","George Weah",\
+  "Georginio Wijnaldum","Gerard Pique","Giorgio Chiellini","Glen Johnson","Gonzalo Higuain",\
+  "Graham Stack","Gregory Coupet","Gus Poyet","Hasan Salihamidzic","Hatem Ben Arfa",\
+  "Henri Lansbury","Hernan Crespo","Hulk","Idrissa Gueye","Igors Stepanovs",\
+  "Iker Casillas","Ivan Peri\'9ai\uc0\u263 ","Ivan Rakitic","James Milner","Jamie Carragher",\
+  "Jamie Vardy","Jan Kirchhoff","Jaroslaw Bieniuk","Jasper Cillessen","Javier Hernandez",\
+  "Javier Zanetti","Jay Emmanuel-Thomas","Jay-Jay Okocha","Jeremie Aliadiere",\
+  "Jerome Boateng","Jerome Thomas","Jimmy Floyd Hasselbaink","Jody Morris","Joe Cole",\
+  "Johan Cruyff","Johan Djourou","John Terry","Jonathan Woodgate","Jordan Veretout",\
+  "Jordi Alba","Jo\'e3o Moutinho","Juan Mata","Juan Sebastian Veron","Juninho",\
+  "Justin Hoyte","J\'fcrgen Klinsmann","Kak\'e1","Karl-Heinz Riedle","Kevin Gameiro",\
+  "Kevin Keegan","Klaas-Jan Huntelaar","Kolo Toure","Kyle Bartley","Lassana Diarra",\
+  "Leonardo Bonucci","Lilian Thuram","Lorenzo Insigne","Lothar Matthaus","Luca Toni",\
+  "Lukas Podolski","Luke Chadwick","Luuk de Jong","Manuel Neuer","Marc Overmars",\
+  "Marc Wilmots","Marcel Desailly","Marco Reus","Marco Verratti","Marco van Basten",\
+  "Mario Melchiot","Mark Randall","Mark van Bommel","Mathieu Valbuena","Mats Hummels",\
+  "Mauro Icardi","Michael Ballack","Michael Essien","Michael Owen","Mikael Forssell",\
+  "Mikael Silvestre","Mirandinha","Miroslav Klose","Mohamed Ihattaren","Moritz Volz",\
+  "Mutu","Muzzy Izzet","Naby Keita","Nacer Barazite","Nani","Neil Clement",\
+  "Nemanja Matic","Nico Yennaris","Nicola Ventola","Nicolas Anelka","Nicolas Bendtner",\
+  "Nicolas Mahut","Nicol\'e1s Otamendi","Nii Lamptey","Noe Pamarot","Nwankwo Kanu",\
+  "Ole Gunnar Solskjaer","Oliver Kahn","Oliver Neuville","Olivier Giroud","Paolo Maldini",\
+  "Pascal Cygan","Patrice Evra","Patrick Kluivert","Patrick Vieira","Paul Furlong",\
+  "Paul Pogba","Paul Scholes","Paulo Ferreira","Pepe Reina","Peter Cech","Peter Crouch",\
+  "Peter Schmeichel","Pierre Webo","Presnel Kimpembe","Quincy Owusu-Abeyie",\
+  "Quinton Fortune","Radamel Falcao","Raphael Varane","Raul","Remi Garde",\
+  "Remko Pasveer","Ricardo Carvalho","Rio Ferdinand","Rivaldo","Robbie Fowler",\
+  "Robert Huth","Robert Pires","Roberto Baggio","Roberto Carlos","Roberto Firmino",\
+  "Robin van Persie","Rohan Ricketts","Romario","Ronald Koeman","Ronaldinho",\
+  "Ronaldo Naz\'e1rio","Roy Keane","Rui Costa","Rui Patricio","Ruud Gullit",\
+  "Ruud van Nistelrooy","Ryan Babel","Ryan Bertrand","Salomon Kalou","Samassi Abou",\
+  "Sami Khedira","Samir Nasri","Samuel Eto\\'o","Sanchez Watt","Santi Cazorla",\
+  "Scott Parker","Sean Wright-Phillips","Sebastian Giovinco","Sergio Busquets",\
+  "Sergio Ramos","Shaun Wright-Phillips","Simao Sabrosa","Slavisa Jokanovic",\
+  "Stathis Tavlaridis","Stefan Effenberg","Stephane Dalmat","Steve Sidwell",\
+  "Steven Berghuis","Steven Gerrard","Stuart Taylor","Sylvain Wiltord","Teddy Sheringham",\
+  "Thiago Alcantara","Thierry Henry","Thomas Muller","Thor Gudjonsson","Toni Kroos",\
+  "Vikash Dhorasoo","Vito Mannone","Wayne Rooney","Wesley Sneijder","Wilfried Zaha",\
+  "William Gallas","Winston Bogarde","Wissam Ben Yedder","Xabi Alonso","Xavi",\
+  "Xherdan Shaqiri","Yaya Toure","Youri Djorkaeff","Zinedine Zidane","Zlatan Ibrahimovic",\
+  "Heung-min Son"]);}
