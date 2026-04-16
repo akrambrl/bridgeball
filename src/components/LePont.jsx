@@ -4130,7 +4130,7 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
         <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.45)"}}/>
       </div>
         <div style={{zIndex:1,padding:"32px 20px 16px",textAlign:"center"}}>
-          <div style={{fontSize:52,marginBottom:8}}>{myRank<=3?medals[myRank-1]:myRank+"ème"}</div>
+          <div style={{fontSize:52,marginBottom:8}}>{myRank<=3?medals[myRank-1]:myRank+"ème"}</div> {(myRank===1?WIN_IMGS:LOSE_IMGS)[Math.floor(Date.now()%(myRank===1?WIN_IMGS:LOSE_IMGS).length)] && (   <img src={(myRank===1?WIN_IMGS:LOSE_IMGS)[Math.floor(Date.now()%(myRank===1?WIN_IMGS:LOSE_IMGS).length)]} style={{width:"60%",maxWidth:220,margin:"8px auto",display:"block",objectFit:"contain"}} /> )}
           <div style={{fontFamily:G.heading,fontSize:"clamp(30px,8vw,50px)",color:myRank===1?G.gold:G.white,letterSpacing:2}}>
             {myRank===1?"VICTOIRE !":myRank===2?"2ÈME PLACE":myRank===3?"3ÈME PLACE":"RÉSULTATS"}
           </div>
