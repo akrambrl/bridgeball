@@ -4016,7 +4016,7 @@ export default function LePont() {
   );
 
   // ── FINAL ──
-  const makeResultScreen = (sc, mode, isChain) => {   const imgs = sc > 0 ? WIN_IMGS : LOSE_IMGS;   const resultImg = imgs[Math.floor((sc + totalRounds) % imgs.length)];   return (
+  const makeResultScreen = (sc, mode, isChain) => {   const imgs = sc > 0 ? WIN_IMGS : LOSE_IMGS;   const resultImg = imgs[Math.floor((sc + totalRounds) % imgs.length)];   return (   const imgs = sc > 0 ? WIN_IMGS : LOSE_IMGS;   const resultImg = imgs[Math.floor((sc + totalRounds) % imgs.length)];   return (
     <div style={{...shell,animation:"fadeUp .4s ease"}} key={isChain?"chainEnd":"final"}>
       {pseudoModal}
       {confettiOverlay}<div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
