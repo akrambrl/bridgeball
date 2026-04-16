@@ -3407,7 +3407,7 @@ export default function LePont() {
         )}
 
         {/* ── GAME CARDS (côte à côte) ── */}
-        <div style={{display:"flex",gap:10,height:"clamp(210px,54vw,270px)",flexShrink:0}}>
+        <div style={{display:"flex",gap:10,height:"clamp(260px,65vw,340px)",flexShrink:0}}>
           {/* ── Carte THE PLUG ── */}
           <div
             onClick={function(){setGameConfigModal("pont");}}
