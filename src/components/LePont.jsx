@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { PLAYERS, RETIRED_PLAYERS } from "../players.js";
+import { PLAYERS, RETIRED_PLAYERS } from "../players.jsx";
 
 
 
