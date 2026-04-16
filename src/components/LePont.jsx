@@ -4048,7 +4048,7 @@ export default function LePont() {
         ][Math.abs(Math.floor(sc * 3 + totalRounds)) % 8]}</div>
       </div>
       <div style={sheet}>
-        <div style={{background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.08)",borderRadius:20,padding:"20px",textAlign:"center",border:"1.5px solid #eee"}}>
+        <div style={{background:"rgba(255,255,255,.06)",borderRadius:20,padding:"20px",textAlign:"center",border:"1.5px solid #eee"}}>
           <div style={{fontSize:11,letterSpacing:3,textTransform:"uppercase",color:"#bbb"}}>Score{isChain?"":" total"}</div>
           <div style={{fontFamily:G.heading,fontSize:"clamp(54px,13vw,80px)",color:G.white,lineHeight:1}}>{sc}</div>
           <div style={{fontSize:11,color:"#bbb"}}>pts{isChain?` · ${chainCount} lien${chainCount>1?"s":""}`:`  ·  ${totalRounds} manche${totalRounds>1?"s":""}`}</div>
