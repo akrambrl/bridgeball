@@ -3357,12 +3357,7 @@ export default function LePont() {
             </div>
           </div>
           <div style={{flex:1,display:"flex",justifyContent:"flex-end",alignItems:"center",gap:8}}>
-            {dayStreak >= 2 && (
-              <div style={{background:"rgba(255,107,53,.15)",border:"1px solid rgba(255,107,53,.3)",borderRadius:12,padding:"6px 10px",display:"flex",alignItems:"center",gap:4}}>
-                <span style={{fontSize:14}}>🔥</span>
-                <span style={{fontFamily:G.heading,fontSize:16,color:"#FF6B35"}}>{dayStreak}</span>
-              </div>
-            )}
+  
             <div onClick={function(){if(!pseudoConfirmed) setPseudoScreen(true);}} style={{background:"rgba(255,255,255,.07)",border:"1px solid rgba(255,255,255,.12)",borderRadius:12,padding:"7px 12px",display:"flex",alignItems:"center",gap:6,cursor:pseudoConfirmed?"default":"pointer"}}>
               <span style={{fontSize:13}}>👤</span>
               <span style={{fontSize:12,fontWeight:700,color:playerName?G.white:"rgba(255,255,255,.4)",maxWidth:80,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
