@@ -3360,11 +3360,7 @@ export default function LePont() {
   
 <div onClick={function(){if(!pseudoConfirmed) setPseudoScreen(true); else alert(playerName);}} style={{background:"rgba(255,255,255,.07)",border:"1px solid rgba(255,255,255,.12)",borderRadius:"50%",width:36,height:36,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer"}}>
   <span style={{fontSize:16}}>👤</span>
-</div>              <span style={{fontSize:13}}>👤</span>
-              <span style={{fontSize:12,fontWeight:700,color:playerName?G.white:"rgba(255,255,255,.4)",maxWidth:80,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
-                {playerName||"Pseudo"}
-              </span>
-            </div>
+</div>              
           </div>
         </div>
       </div>
