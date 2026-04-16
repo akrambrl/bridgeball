@@ -3219,6 +3219,7 @@ export default function LePont() {
             {myRank===1?"VICTOIRE !":myRank===2?"2ÈME PLACE":myRank===3?"3ÈME PLACE":"RÉSULTATS"}
           </div>
           <div style={{fontSize:18,color:myRank===1?G.gold:"#fff",marginTop:12,fontWeight:800,padding:"0 16px",lineHeight:1.4,textAlign:"center",animation:"popIn .6s cubic-bezier(.22,1,.36,1) .4s both",textShadow:myRank===1?"0 0 20px rgba(255,214,0,.4)":"none"}}>{msg}</div>
+          {resultImg && <img src={resultImg} style={{width:"60%",maxWidth:220,margin:"8px auto",display:"block",objectFit:"contain"}} />}
         </div>
         <div style={{...sheet,borderRadius:"28px 28px 0 0"}}>
           {duelResult.players.map(function(p,i){return(
