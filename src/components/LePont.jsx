@@ -4037,7 +4037,7 @@ export default function LePont() {
         <img src={(sc > 0 ? WIN_IMGS : LOSE_IMGS)[Math.abs(Math.floor(sc * 3 + totalRounds)) % (sc > 0 ? WIN_IMGS : LOSE_IMGS).length]} style={{height:"clamp(204px,51vw,289px)",objectFit:"contain",objectPosition:"center bottom",animation:"slideInRight .5s ease both",filter:"drop-shadow(0 4px 20px rgba(0,230,118,.3))",display:"block",margin:"0 auto"}} alt=""/>
         <div style={{fontFamily:G.heading,fontSize:"clamp(20px,5.5vw,32px)",color:isNewRecord?G.gold:G.white,letterSpacing:2,animation:"fadeUp .4s ease .15s both",marginTop:4}}>{isNewRecord?"NOUVEAU RECORD !":isChain?"TEMPS ÉCOULÉ !":""}</div>
         <div style={{fontSize:"clamp(16px,4.5vw,22px)",color:G.white,fontWeight:800,marginTop:isNewRecord||isChain?6:16,animation:"fadeUp .4s ease .25s both",textTransform:"uppercase",letterSpacing:1,textShadow:"0 2px 10px rgba(0,0,0,.4)"}}>{[
-          "T'AS DU NIVEAU OU PAS ? 👀",
+          "T'AS PAS LE NIVEAU.. 👀",
           "C'EST TOUT CE QUE T'AS ? 💀",
           "LE GOAT C'EST TOI OU PAS ? 🐐",
           "ON JOUE PAS, ON DOMINE 😤",
