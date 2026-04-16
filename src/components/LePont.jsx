@@ -2446,7 +2446,7 @@ export default function LePont() {
   const G = {
     bg:"#1E5C2A",bgPanel:"rgba(0,0,0,.5)",bgCard:"#141414",dark:"#0a0a0a",white:"#ffffff",
     offWhite:"#F5F5F5",accent:"#00E676",gold:"#FFD600",red:"#FF3D57",
-    font:"'Bebas Neue',cursive,sans-serif",,heading:"'Bebas Neue',cursive,sans-serif",
+    font:"'Bebas Neue',cursive,sans-serif",heading:"'Bebas Neue',cursive,sans-serif",
   };
   const shell = {
     minHeight:"100vh",display:"flex",flexDirection:"column",
