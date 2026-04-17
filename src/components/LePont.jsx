@@ -3768,7 +3768,7 @@ export default function LePont() {
         </div>
 
         {/* Bottom sheet */}
-        <div style={{...sheet,borderRadius:"28px 28px 0 0",animation:"sheetUp .45s cubic-bezier(.22,1,.36,1) .15s both",flexShrink:0,paddingTop:14,gap:10}}>
+        <div style={{...sheet,borderRadius:"28px 28px 0 0",animation:"sheetUp .45s cubic-bezier(.22,1,.36,1) .15s both",flexShrink:0,paddingTop:10,paddingBottom:10,gap:6}}>
           {combo>=3&&<div style={{textAlign:"center",animation:"comboFire .5s ease"}}><span style={{background:"linear-gradient(135deg,#f59e0b,#ef4444)",color:G.white,borderRadius:20,padding:"4px 14px",fontSize:12,fontWeight:800,letterSpacing:1}}>{getComboLabel(combo)} x{combo}</span></div>}
           {feedbackBar(feedback)}
 
@@ -3817,7 +3817,7 @@ export default function LePont() {
                       <button key={k} onClick={()=>{
                         if(k==="⌫") setGuess(g=>g.slice(0,-1));
                         else setGuess(g=>g+k);
-                      }} disabled={!!flash} style={{flex:k==="⌫"?1.5:1,padding:"14px 2px",borderRadius:10,border:"none",background:k==="⌫"?"rgba(255,255,255,.2)":"rgba(255,255,255,.12)",color:G.white,fontFamily:G.font,fontSize:15,fontWeight:800,cursor:"pointer",opacity:flash?0.4:1}}>{k}</button>
+                      }} disabled={!!flash} style={{flex:k==="⌫"?1.5:1,padding:"16px 2px",borderRadius:10,border:"none",background:k==="⌫"?"rgba(255,255,255,.2)":"rgba(255,255,255,.12)",color:G.white,fontFamily:G.font,fontSize:15,fontWeight:800,cursor:"pointer",opacity:flash?0.4:1}}>{k}</button>
                     ))}
                   </div>
                 ))}
@@ -3927,7 +3927,7 @@ export default function LePont() {
         {combo>=3 && <div style={{marginTop:6,fontSize:12,fontWeight:800,color:ptc==="#FFF"?"#fff":"#111",animation:"comboFire .5s ease",zIndex:1,position:"relative"}}>{getComboLabel(combo)} x{combo}</div>}
       </div>
 
-      <div style={{...sheet,marginTop:0,borderRadius:"28px 28px 0 0"}}>
+      <div style={{...sheet,marginTop:0,borderRadius:"28px 28px 0 0",paddingTop:10,paddingBottom:10,gap:6}}>
         {feedbackBar(feedback)}
         <div style={{width:"100%",background:flash==="ko"?"#fee2e2":flash==="ok"?"#dcfce7":G.offWhite,border:"2px solid "+(flash==="ko"?G.red:flash==="ok"?G.accent:"#e5e5e0"),borderRadius:18,padding:"15px 18px",fontFamily:G.font,fontSize:18,fontWeight:700,color:G.dark,textAlign:"center",transition:"all .15s",minHeight:56,animation:flash==="ko"?"answerKo .4s ease":flash==="ok"?"answerOk .4s ease":"none"}}>
           {guess||<span style={{color:"#aaa",fontWeight:400}}>Nom du club...</span>}
@@ -3939,7 +3939,7 @@ export default function LePont() {
                 <button key={k} onClick={()=>{
                   if(k==="⌫") setGuess(g=>g.slice(0,-1));
                   else setGuess(g=>g+k);
-                }} disabled={!!flash} style={{flex:k==="⌫"?1.5:1,padding:"14px 2px",borderRadius:10,border:"none",background:k==="⌫"?"rgba(255,255,255,.2)":"rgba(255,255,255,.12)",color:G.white,fontFamily:G.font,fontSize:15,fontWeight:800,cursor:"pointer",opacity:flash?0.4:1}}>{k}</button>
+                }} disabled={!!flash} style={{flex:k==="⌫"?1.5:1,padding:"16px 2px",borderRadius:10,border:"none",background:k==="⌫"?"rgba(255,255,255,.2)":"rgba(255,255,255,.12)",color:G.white,fontFamily:G.font,fontSize:15,fontWeight:800,cursor:"pointer",opacity:flash?0.4:1}}>{k}</button>
               ))}
             </div>
           ))}
