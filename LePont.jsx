@@ -1460,6 +1460,38 @@ export default function LePont() {
     </div>
   );
 
+  // ── TUTORIAL (shown over everything) ──
+  if(showTutorial) return (
+    <div style={{...shell}}>
+      <div style={{position:"fixed",inset:0,zIndex:9998,background:"rgba(0,0,0,.92)",backdropFilter:"blur(10px)",display:"flex",alignItems:"center",justifyContent:"center",padding:"0 20px"}}>
+        <div style={{width:"100%",maxWidth:380,background:TUTORIAL_SLIDES[tutorialStep].color,borderRadius:28,padding:"36px 24px 28px",border:"1px solid rgba(255,255,255,.1)",textAlign:"center"}}>
+          <div style={{display:"flex",justifyContent:"center",gap:8,marginBottom:28}}>
+            {TUTORIAL_SLIDES.map((_,i)=>(
+              <div key={i} style={{width:i===tutorialStep?24:8,height:8,borderRadius:4,background:i===tutorialStep?TUTORIAL_SLIDES[tutorialStep].accent:"rgba(255,255,255,.2)",transition:"all .3s"}}/>
+            ))}
+          </div>
+          <div style={{fontSize:56,marginBottom:16}}>{TUTORIAL_SLIDES[tutorialStep].icon}</div>
+          <div style={{fontFamily:G.heading,fontSize:32,color:"#fff",letterSpacing:2,marginBottom:6}}>{TUTORIAL_SLIDES[tutorialStep].title}</div>
+          <div style={{fontSize:13,color:TUTORIAL_SLIDES[tutorialStep].accent,fontWeight:700,letterSpacing:1,marginBottom:16,textTransform:"uppercase"}}>{TUTORIAL_SLIDES[tutorialStep].subtitle}</div>
+          <div style={{fontSize:15,color:"rgba(255,255,255,.7)",lineHeight:1.6,marginBottom:32}}>{TUTORIAL_SLIDES[tutorialStep].desc}</div>
+          <div style={{display:"flex",gap:10}}>
+            {tutorialStep > 0 && (
+              <button onClick={()=>setTutorialStep(s=>s-1)} style={{flex:1,padding:"14px",background:"rgba(255,255,255,.07)",color:"rgba(255,255,255,.5)",border:"1px solid rgba(255,255,255,.1)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>← Retour</button>
+            )}
+            {tutorialStep < TUTORIAL_SLIDES.length - 1 ? (
+              <button onClick={()=>setTutorialStep(s=>s+1)} style={{flex:2,padding:"14px",background:TUTORIAL_SLIDES[tutorialStep].accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800}}>Suivant →</button>
+            ) : (
+              <button onClick={()=>{setShowTutorial(false);try{localStorage.setItem("bb_tutorial_done","1");}catch{};}} style={{flex:2,padding:"14px",background:TUTORIAL_SLIDES[tutorialStep].accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800}}>C'est parti 🚀</button>
+            )}
+          </div>
+          {tutorialStep < TUTORIAL_SLIDES.length - 1 && (
+            <button onClick={()=>{setShowTutorial(false);try{localStorage.setItem("bb_tutorial_done","1");}catch{};}} style={{marginTop:16,background:"none",border:"none",color:"rgba(255,255,255,.3)",cursor:"pointer",fontFamily:G.font,fontSize:13}}>Passer</button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
   // ── LEADERBOARD SCREEN ──
   if(showLeaderboard) return (
     <div style={{...shell,animation:"fadeUp .4s ease"}} key="lb">
