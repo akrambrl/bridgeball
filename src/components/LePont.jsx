@@ -968,16 +968,6 @@ export default function LePont() {
     setTimeout(function(){setShowSplash(false);}, 2500);
   }, []);
 
-  useEffect(() => {
-    if (!window.visualViewport) return;
-    const handler = () => {
-      const kh = Math.max(0, window.innerHeight - window.visualViewport.height);
-      setKeyboardHeight(kh);
-    };
-    window.visualViewport.addEventListener('resize', handler);
-    return () => window.visualViewport.removeEventListener('resize', handler);
-  }, []);
-
 
   // Load pseudo silently on mount
   useEffect(() => {
