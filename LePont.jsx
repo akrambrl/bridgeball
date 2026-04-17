@@ -2240,7 +2240,7 @@ export default function LePont() {
       <div style={{...sheet,marginTop:0,borderRadius:"28px 28px 0 0"}}>
         {feedbackBar(feedback)}
         <input ref={inputRef} value={guess} onChange={e=>setGuess(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleChainSubmit()}
-          placeholder="Nom du club..." autoComplete="off"
+          placeholder="Nom du club..." autoComplete="new-password" autoCorrect="off" autoCapitalize="off" spellCheck="false"
           style={{width:"100%",background:flash==="ko"?"#fee2e2":flash==="ok"?"#dcfce7":G.offWhite,border:`2px solid ${flash==="ko"?G.red:flash==="ok"?G.accent:"#e5e5e0"}`,borderRadius:18,padding:"16px 18px",fontFamily:G.font,fontSize:18,fontWeight:700,color:G.dark,outline:"none",textAlign:"center",transition:"all .15s"}}/>
         <div style={{display:"flex",gap:10}}>
           <button onClick={handleChainSubmit} style={{flex:2,padding:"16px",background:G.dark,color:G.white,border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:16,fontWeight:800}}>Valider</button>
