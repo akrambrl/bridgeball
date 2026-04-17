@@ -3929,13 +3929,23 @@ export default function LePont() {
 
       <div style={{...sheet,marginTop:0,borderRadius:"28px 28px 0 0"}}>
         {feedbackBar(feedback)}
-        <input ref={inputRef} value={guess} onChange={e=>setGuess(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleChainSubmit()}
-          placeholder="Nom du club..." autoComplete="off"
-          style={{width:"100%",background:flash==="ko"?"#fee2e2":flash==="ok"?"#dcfce7":G.offWhite,border:("2px solid "+(flash==="ko"?G.red:flash==="ok"?G.accent:"#e5e5e0")+""),borderRadius:18,padding:"16px 18px",fontFamily:G.font,fontSize:18,fontWeight:700,color:G.dark,outline:"none",textAlign:"center",transition:"all .15s"}}/>
-        <div style={{display:"flex",gap:10}}>
-          <button onClick={handleChainPass} disabled={!!flash} style={{flex:1,padding:16,background:G.offWhite,color:"#aaa",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700,opacity:flash ? 0.3 : 1}}>Passer →</button>
-          <button onClick={handleChainSubmit} style={{flex:2,padding:"16px",background:G.dark,color:G.white,border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:16,fontWeight:800}}>Valider</button>
+        <div style={{width:"100%",background:flash==="ko"?"#fee2e2":flash==="ok"?"#dcfce7":G.offWhite,border:"2px solid "+(flash==="ko"?G.red:flash==="ok"?G.accent:"#e5e5e0"),borderRadius:18,padding:"15px 18px",fontFamily:G.font,fontSize:18,fontWeight:700,color:G.dark,textAlign:"center",transition:"all .15s",minHeight:56,animation:flash==="ko"?"answerKo .4s ease":flash==="ok"?"answerOk .4s ease":"none"}}>
+          {guess||<span style={{color:"#aaa",fontWeight:400}}>Nom du club...</span>}
         </div>
+        <div style={{display:"flex",flexDirection:"column",gap:6}}>
+          {[["A","Z","E","R","T","Y","U","I","O","P"],["Q","S","D","F","G","H","J","K","L","M"],["⌫","W","X","C","V","B","N"]].map((row,ri)=>(
+            <div key={ri} style={{display:"flex",gap:5,justifyContent:"center"}}>
+              {row.map(k=>(
+                <button key={k} onClick={()=>{
+                  if(k==="⌫") setGuess(g=>g.slice(0,-1));
+                  else setGuess(g=>g+k);
+                }} disabled={!!flash} style={{flex:k==="⌫"?1.5:1,padding:"14px 2px",borderRadius:10,border:"none",background:k==="⌫"?"rgba(255,255,255,.2)":"rgba(255,255,255,.12)",color:G.white,fontFamily:G.font,fontSize:15,fontWeight:800,cursor:"pointer",opacity:flash?0.4:1}}>{k}</button>
+              ))}
+            </div>
+          ))}
+        </div>
+        <button onClick={handleChainSubmit} disabled={!!flash} style={{padding:"14px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800,opacity:flash?0.4:1}}>✓ Valider</button>
+        <button onClick={handleChainPass} disabled={!!flash} style={{padding:"14px",pointerEvents:flash?"none":"auto",background:"transparent",color:"#bbb",border:"2px solid rgba(255,255,255,.2)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700,opacity:flash?0.3:1}}>Passer →</button>
         {chainHistory.length>0 && (
           <div style={{maxHeight:200,overflowY:"auto",display:"flex",flexDirection:"column",gap:4}}>
             <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"#ccc",textAlign:"center"}}>The Mercato</div>
