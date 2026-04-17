@@ -3806,14 +3806,24 @@ export default function LePont() {
               <button onClick={handlePass} disabled={!!flash} style={{padding:"12px",pointerEvents:flash?"none":"auto",background:"transparent",color:"#bbb",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700,opacity:flash ? 0.3 : 1}}>Passer → (−0.5 pt)</button>
             </div>
           ):(
-            <div style={{display:"flex",flexDirection:"column",gap:10}}>               {/* Affichage de la saisie */}               <div style={{                 width:"100%",                 background:flash==="ko"?"#fee2e2":flash==="ok"?"#dcfce7":G.offWhite,                 border:"2px solid "+(flash==="ko"?G.red:flash==="ok"?G.accent:"#e5e5e0"),                 borderRadius:18
-              <input ref={inputRef} value={guess} onChange={e=>setGuess(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleSubmit()}
-                placeholder="Nom du joueur..." autoComplete="off"
-                style={{width:"100%",background:flash==="ko"?"#fee2e2":flash==="ok"?"#dcfce7":G.offWhite,border:("2px solid "+(flash==="ko"?G.red:flash==="ok"?G.accent:"#e5e5e0")+""),borderRadius:18,padding:"15px 18px",fontFamily:G.font,fontSize:18,fontWeight:700,color:G.dark,outline:"none",textAlign:"center",transition:"all .15s",animation:flash==="ko"?"answerKo .4s ease":flash==="ok"?"answerOk .4s ease":"none"}}/>
-              <div style={{display:"flex",gap:10}}>
-                <button onClick={handlePass} disabled={!!flash} style={{flex:1,padding:15,pointerEvents:flash?"none":"auto",background:G.offWhite,color:"#aaa",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700,opacity:flash ? 0.3 : 1}}>Passer →</button>
-                <button onClick={handleSubmit} style={{flex:2,padding:"15px",background:G.dark,color:G.white,border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:16,fontWeight:800}}>Valider</button>
+            <div style={{display:"flex",flexDirection:"column",gap:8}}>
+              <div style={{width:"100%",background:flash==="ko"?"#fee2e2":flash==="ok"?"#dcfce7":G.offWhite,border:"2px solid "+(flash==="ko"?G.red:flash==="ok"?G.accent:"#e5e5e0"),borderRadius:18,padding:"15px 18px",fontFamily:G.font,fontSize:18,fontWeight:700,color:G.dark,textAlign:"center",transition:"all .15s",minHeight:56,animation:flash==="ko"?"answerKo .4s ease":flash==="ok"?"answerOk .4s ease":"none"}}>
+                {guess||<span style={{color:"#aaa",fontWeight:400}}>Nom du joueur...</span>}
               </div>
+              <div style={{display:"flex",flexDirection:"column",gap:5}}>
+                {[["A","Z","E","R","T","Y","U","I","O","P"],["Q","S","D","F","G","H","J","K","L","M"],["⌫","W","X","C","V","B","N","✓"]].map((row,ri)=>(
+                  <div key={ri} style={{display:"flex",gap:4,justifyContent:"center"}}>
+                    {row.map(k=>(
+                      <button key={k} onClick={()=>{
+                        if(k==="⌫") setGuess(g=>g.slice(0,-1));
+                        else if(k==="✓") handleSubmit();
+                        else setGuess(g=>g+k);
+                      }} disabled={!!flash} style={{flex:k==="⌫"||k==="✓"?1.5:1,padding:"11px 2px",borderRadius:8,border:"none",background:k==="✓"?G.accent:k==="⌫"?"rgba(255,255,255,.2)":"rgba(255,255,255,.12)",color:k==="✓"?"#000":G.white,fontFamily:G.font,fontSize:14,fontWeight:800,cursor:"pointer",opacity:flash?0.4:1}}>{k}</button>
+                    ))}
+                  </div>
+                ))}
+              </div>
+              <button onClick={handlePass} disabled={!!flash} style={{padding:"11px",pointerEvents:flash?"none":"auto",background:"transparent",color:"#bbb",border:"2px solid rgba(255,255,255,.2)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700,opacity:flash?0.3:1}}>Passer →</button>
             </div>
           )}
       {/* Question timer bar */}
