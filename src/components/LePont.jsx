@@ -3674,7 +3674,7 @@ export default function LePont() {
     const [ca2,cb2]=getClubColors(cur.c2);
     const tc1=textColor(ca1); const tc2=textColor(ca2);
     return (
-      <div style={{...shell,animation:"fadeIn .2s ease",overflow:"auto"}} key={"game-"+currentRound}>
+      <div style={{...shell,animation:"fadeIn .2s ease",overflow:"hidden",height:"100vh",position:"fixed",width:"100%"}} key={"game-"+currentRound}>
         <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
         {/* Bandes pelouse */}
         {[0,1,2,3,4,5,6].map(function(i){return(
