@@ -1460,6 +1460,41 @@ export default function LePont() {
     </div>
   );
 
+  const TUTORIAL_SLIDES = [
+    {
+      icon: "⚽",
+      title: "THE PLUG",
+      subtitle: "Trouve le joueur qui relie 2 clubs",
+      desc: "On te montre 2 clubs. Trouve le joueur qui a joué dans les deux !",
+      color: "#1a4a2e",
+      accent: "#00E676",
+    },
+    {
+      icon: "⛓",
+      title: "THE MERCATO",
+      subtitle: "Enchaîne joueur → club → joueur",
+      desc: "Un joueur est affiché. Tape un club où il a joué, puis un autre joueur de ce club… et ainsi de suite !",
+      color: "#1a2a4a",
+      accent: "#60a5fa",
+    },
+    {
+      icon: "⚡",
+      title: "DÉFI DU JOUR",
+      subtitle: "Un joueur mystère chaque jour",
+      desc: "Chaque jour, un nouveau joueur mystère à deviner. Reviens tous les jours pour ne pas perdre ta série !",
+      color: "#3a2a00",
+      accent: "#FFD600",
+    },
+    {
+      icon: "👥",
+      title: "MULTIJOUEUR",
+      subtitle: "Joue avec tes potes",
+      desc: "Crée une salle, partage le code, et affrontez-vous en temps réel jusqu'à 8 joueurs !",
+      color: "#2a1a3a",
+      accent: "#c084fc",
+    },
+  ];
+
   // ── TUTORIAL (shown over everything) ──
   if(showTutorial) return (
     <div style={{...shell}}>
@@ -1912,43 +1947,8 @@ export default function LePont() {
     );
   }
 
-  // ── HOME ──
 
-  // ── TUTORIAL ──
-  const TUTORIAL_SLIDES = [
-    {
-      icon: "⚽",
-      title: "THE PLUG",
-      subtitle: "Trouve le joueur qui relie 2 clubs",
-      desc: "On te montre 2 clubs. Trouve le joueur qui a joué dans les deux !",
-      color: "#1a4a2e",
-      accent: "#00E676",
-    },
-    {
-      icon: "⛓",
-      title: "THE MERCATO",
-      subtitle: "Enchaîne joueur → club → joueur",
-      desc: "Un joueur est affiché. Tape un club où il a joué, puis un autre joueur de ce club… et ainsi de suite !",
-      color: "#1a2a4a",
-      accent: "#60a5fa",
-    },
-    {
-      icon: "⚡",
-      title: "DÉFI DU JOUR",
-      subtitle: "Un joueur mystère chaque jour",
-      desc: "Chaque jour, un nouveau joueur mystère à deviner. Reviens tous les jours pour ne pas perdre ta série !",
-      color: "#3a2a00",
-      accent: "#FFD600",
-    },
-    {
-      icon: "👥",
-      title: "MULTIJOUEUR",
-      subtitle: "Joue avec tes potes",
-      desc: "Crée une salle, partage le code, et affrontez-vous en temps réel jusqu'à 8 joueurs !",
-      color: "#2a1a3a",
-      accent: "#c084fc",
-    },
-  ];
+  // ── HOME ──
   const tutorialSlide = TUTORIAL_SLIDES[tutorialStep];
   const tutorialModal = showTutorial ? (
     <div style={{position:"fixed",inset:0,zIndex:9998,background:"rgba(0,0,0,.92)",backdropFilter:"blur(10px)",display:"flex",alignItems:"center",justifyContent:"center",padding:"0 20px"}}>
