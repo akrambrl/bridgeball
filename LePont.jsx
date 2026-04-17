@@ -905,6 +905,8 @@ export default function LePont() {
   const [lbDiff, setLbDiff] = useState("facile");
   const [playerName, setPlayerName] = useState("");
   const [showInstructions, setShowInstructions] = useState(null);
+  const [showTutorial, setShowTutorial] = useState(false);
+  const [tutorialStep, setTutorialStep] = useState(0);
   const seenInstructions = useRef(new Set());
   const timerRef = useRef(null);
   const inputRef = useRef(null);
@@ -942,6 +944,10 @@ export default function LePont() {
       const seen = localStorage.getItem("bb_seen"); if(seen) JSON.parse(seen).forEach(s=>seenInstructions.current.add(s));
     } catch {}
     loadLeaderboard("pont","facile");
+    // Show tutorial on first visit
+    try {
+      if (!localStorage.getItem("bb_tutorial_done")) setShowTutorial(true);
+    } catch {}
   }, []);
 
   useEffect(()=>{scoreRef.current=score;},[score]);
@@ -1875,8 +1881,81 @@ export default function LePont() {
   }
 
   // ── HOME ──
+
+  // ── TUTORIAL ──
+  const TUTORIAL_SLIDES = [
+    {
+      icon: "⚽",
+      title: "THE PLUG",
+      subtitle: "Trouve le joueur qui relie 2 clubs",
+      desc: "On te montre 2 clubs. Trouve le joueur qui a joué dans les deux !",
+      color: "#1a4a2e",
+      accent: "#00E676",
+    },
+    {
+      icon: "⛓",
+      title: "THE MERCATO",
+      subtitle: "Enchaîne joueur → club → joueur",
+      desc: "Un joueur est affiché. Tape un club où il a joué, puis un autre joueur de ce club… et ainsi de suite !",
+      color: "#1a2a4a",
+      accent: "#60a5fa",
+    },
+    {
+      icon: "⚡",
+      title: "DÉFI DU JOUR",
+      subtitle: "Un joueur mystère chaque jour",
+      desc: "Chaque jour, un nouveau joueur mystère à deviner. Reviens tous les jours pour ne pas perdre ta série !",
+      color: "#3a2a00",
+      accent: "#FFD600",
+    },
+    {
+      icon: "👥",
+      title: "MULTIJOUEUR",
+      subtitle: "Joue avec tes potes",
+      desc: "Crée une salle, partage le code, et affrontez-vous en temps réel jusqu'à 8 joueurs !",
+      color: "#2a1a3a",
+      accent: "#c084fc",
+    },
+  ];
+  const tutorialSlide = TUTORIAL_SLIDES[tutorialStep];
+  const tutorialModal = showTutorial ? (
+    <div style={{position:"fixed",inset:0,zIndex:9998,background:"rgba(0,0,0,.92)",backdropFilter:"blur(10px)",display:"flex",alignItems:"center",justifyContent:"center",padding:"0 20px"}}>
+      <div style={{width:"100%",maxWidth:380,background:tutorialSlide.color,borderRadius:28,padding:"36px 24px 28px",border:"1px solid rgba(255,255,255,.1)",position:"relative",textAlign:"center"}}>
+        {/* Step dots */}
+        <div style={{display:"flex",justifyContent:"center",gap:8,marginBottom:28}}>
+          {TUTORIAL_SLIDES.map((_,i)=>(
+            <div key={i} style={{width:i===tutorialStep?24:8,height:8,borderRadius:4,background:i===tutorialStep?tutorialSlide.accent:"rgba(255,255,255,.2)",transition:"all .3s"}}/>
+          ))}
+        </div>
+        {/* Icon */}
+        <div style={{fontSize:56,marginBottom:16}}>{tutorialSlide.icon}</div>
+        {/* Title */}
+        <div style={{fontFamily:G.heading,fontSize:32,color:"#fff",letterSpacing:2,marginBottom:6}}>{tutorialSlide.title}</div>
+        <div style={{fontSize:13,color:tutorialSlide.accent,fontWeight:700,letterSpacing:1,marginBottom:16,textTransform:"uppercase"}}>{tutorialSlide.subtitle}</div>
+        {/* Description */}
+        <div style={{fontSize:15,color:"rgba(255,255,255,.7)",lineHeight:1.6,marginBottom:32}}>{tutorialSlide.desc}</div>
+        {/* Buttons */}
+        <div style={{display:"flex",gap:10}}>
+          {tutorialStep > 0 && (
+            <button onClick={()=>setTutorialStep(s=>s-1)} style={{flex:1,padding:"14px",background:"rgba(255,255,255,.07)",color:"rgba(255,255,255,.5)",border:"1px solid rgba(255,255,255,.1)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>← Retour</button>
+          )}
+          {tutorialStep < TUTORIAL_SLIDES.length - 1 ? (
+            <button onClick={()=>setTutorialStep(s=>s+1)} style={{flex:2,padding:"14px",background:tutorialSlide.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800}}>Suivant →</button>
+          ) : (
+            <button onClick={()=>{setShowTutorial(false);try{localStorage.setItem("bb_tutorial_done","1");}catch{};}} style={{flex:2,padding:"14px",background:tutorialSlide.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800}}>C'est parti 🚀</button>
+          )}
+        </div>
+        {/* Skip */}
+        {tutorialStep < TUTORIAL_SLIDES.length - 1 && (
+          <button onClick={()=>{setShowTutorial(false);try{localStorage.setItem("bb_tutorial_done","1");}catch{};}} style={{marginTop:16,background:"none",border:"none",color:"rgba(255,255,255,.3)",cursor:"pointer",fontFamily:G.font,fontSize:13}}>Passer</button>
+        )}
+      </div>
+    </div>
+  ) : null;
+
   if(screen==="home") return (
     <div style={{...shell,animation:"fadeUp .5s ease"}} key="home">
+      {tutorialModal}
       <div style={stripes}/>
       <BouncingBall/>
       {confettiOverlay}
