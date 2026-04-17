@@ -3807,9 +3807,25 @@ export default function LePont() {
             </div>
           ):(
             <div style={{display:"flex",flexDirection:"column",gap:10}}>
-              <input ref={inputRef} value={guess} onChange={e=>setGuess(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleSubmit()}
-                placeholder="Nom du joueur..." autoComplete="off"
-                style={{width:"100%",background:flash==="ko"?"#fee2e2":flash==="ok"?"#dcfce7":G.offWhite,border:("2px solid "+(flash==="ko"?G.red:flash==="ok"?G.accent:"#e5e5e0")+""),borderRadius:18,padding:"15px 18px",fontFamily:G.font,fontSize:18,fontWeight:700,color:G.dark,outline:"none",textAlign:"center",transition:"all .15s",animation:flash==="ko"?"answerKo .4s ease":flash==="ok"?"answerOk .4s ease":"none"}}/>
+              <div style={{position:"relative"}}>
+                <input ref={inputRef} value={guess} onChange={e=>setGuess(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleSubmit()}
+                  placeholder="Nom du joueur..." autoComplete="off"
+                  style={{width:"100%",background:flash==="ko"?"#fee2e2":flash==="ok"?"#dcfce7":G.offWhite,border:("2px solid "+(flash==="ko"?G.red:flash==="ok"?G.accent:"#e5e5e0")+""),borderRadius:18,padding:"15px 18px",fontFamily:G.font,fontSize:18,fontWeight:700,color:G.dark,outline:"none",textAlign:"center",transition:"all .15s",animation:flash==="ko"?"answerKo .4s ease":flash==="ok"?"answerOk .4s ease":"none",boxSizing:"border-box"}}/>
+                {guess.length>=3&&!flash&&(()=>{
+                  const sugg=PLAYERS_CLEAN.filter(p=>p&&p.name&&p.name.toLowerCase().includes(guess.toLowerCase())).slice(0,5);
+                  if(!sugg.length) return null;
+                  return (
+                    <div style={{position:"absolute",top:"100%",left:0,right:0,background:G.offWhite,borderRadius:14,boxShadow:"0 8px 24px rgba(0,0,0,.2)",zIndex:100,overflow:"hidden",marginTop:4}}>
+                      {sugg.map(p=>(
+                        <div key={p.name} onClick={()=>{setGuess(p.name);setTimeout(()=>handleSubmit(),50);}}
+                          style={{padding:"12px 18px",fontFamily:G.font,fontSize:15,fontWeight:700,color:G.dark,cursor:"pointer",borderBottom:"1px solid rgba(0,0,0,.06)",textAlign:"left"}}>
+                          {p.name}
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+              </div>
               <div style={{display:"flex",gap:10}}>
                 <button onClick={handlePass} disabled={!!flash} style={{flex:1,padding:15,pointerEvents:flash?"none":"auto",background:G.offWhite,color:"#aaa",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700,opacity:flash ? 0.3 : 1}}>Passer →</button>
                 <button onClick={handleSubmit} style={{flex:2,padding:"15px",background:G.dark,color:G.white,border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:16,fontWeight:800}}>Valider</button>
@@ -3919,9 +3935,25 @@ export default function LePont() {
 
       <div style={{...sheet,marginTop:0,borderRadius:"28px 28px 0 0"}}>
         {feedbackBar(feedback)}
-        <input ref={inputRef} value={guess} onChange={e=>setGuess(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleChainSubmit()}
-          placeholder="Nom du club..." autoComplete="off"
-          style={{width:"100%",background:flash==="ko"?"#fee2e2":flash==="ok"?"#dcfce7":G.offWhite,border:("2px solid "+(flash==="ko"?G.red:flash==="ok"?G.accent:"#e5e5e0")+""),borderRadius:18,padding:"16px 18px",fontFamily:G.font,fontSize:18,fontWeight:700,color:G.dark,outline:"none",textAlign:"center",transition:"all .15s"}}/>
+        <div style={{position:"relative"}}>
+          <input ref={inputRef} value={guess} onChange={e=>setGuess(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleChainSubmit()}
+            placeholder="Nom du joueur..." autoComplete="off"
+            style={{width:"100%",background:flash==="ko"?"#fee2e2":flash==="ok"?"#dcfce7":G.offWhite,border:("2px solid "+(flash==="ko"?G.red:flash==="ok"?G.accent:"#e5e5e0")+""),borderRadius:18,padding:"16px 18px",fontFamily:G.font,fontSize:18,fontWeight:700,color:G.dark,outline:"none",textAlign:"center",transition:"all .15s",boxSizing:"border-box"}}/>
+          {guess.length>=3&&!flash&&(()=>{
+            const sugg=PLAYERS_CLEAN.filter(p=>p&&p.name&&p.name.toLowerCase().includes(guess.toLowerCase())).slice(0,5);
+            if(!sugg.length) return null;
+            return (
+              <div style={{position:"absolute",top:"100%",left:0,right:0,background:G.offWhite,borderRadius:14,boxShadow:"0 8px 24px rgba(0,0,0,.2)",zIndex:100,overflow:"hidden",marginTop:4}}>
+                {sugg.map(p=>(
+                  <div key={p.name} onClick={()=>{setGuess(p.name);setTimeout(()=>handleChainSubmit(),50);}}
+                    style={{padding:"12px 18px",fontFamily:G.font,fontSize:15,fontWeight:700,color:G.dark,cursor:"pointer",borderBottom:"1px solid rgba(0,0,0,.06)",textAlign:"left"}}>
+                    {p.name}
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
+        </div>
         <div style={{display:"flex",gap:10}}>
           <button onClick={handleChainPass} disabled={!!flash} style={{flex:1,padding:16,background:G.offWhite,color:"#aaa",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700,opacity:flash ? 0.3 : 1}}>Passer →</button>
           <button onClick={handleChainSubmit} style={{flex:2,padding:"16px",background:G.dark,color:G.white,border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:16,fontWeight:800}}>Valider</button>
