@@ -172,6 +172,7 @@ export const PLAYERS = [
   { name:"Leandro Barreiro", clubs:["Benfica"], diff:"expert" },
   { name:"Fredrik Aursnes", clubs:["Molde", "Feyenoord", "Benfica"], diff:"expert" },
   { name:"Nuno Santos", clubs:["Sporting CP"], diff:"expert" },
+  { name:"Robinio Vaz", clubs:["FC Sochaux-Montbéliard", "Olympique de Marseille", "AS Roma"], diff:"expert" },
   { name:"João Moutinho", clubs:["Sporting CP", "Porto", "Monaco", "Wolverhampton"], diff:"moyen" },
   { name:"Maximiliano Araújo", clubs:["Sporting CP", "Braga"], diff:"expert" },
   { name:"Fótis Ioannídis", clubs:["Sporting CP"], diff:"expert" },
