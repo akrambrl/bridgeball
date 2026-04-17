@@ -968,6 +968,15 @@ export default function LePont() {
     setTimeout(function(){setShowSplash(false);}, 2500);
   }, []);
 
+  useEffect(() => {
+    if (!window.visualViewport) return;
+    const handler = () => {
+      const kh = Math.max(0, window.innerHeight - window.visualViewport.height);
+      setKeyboardHeight(kh);
+    };
+    window.visualViewport.addEventListener('resize', handler);
+    return () => window.visualViewport.removeEventListener('resize', handler);
+  }, []);
 
 
   // Load pseudo silently on mount
@@ -3742,7 +3751,7 @@ export default function LePont() {
         </div>
 
         {/* Club cards — full height */}
-        <div key={"clubs-"+animKey} style={{flex:1,display:"flex",flexDirection:"column",gap:0,padding:"10px 0 0",zIndex:1,minHeight:0,position:"sticky",top:0}}>
+        <div key={"clubs-"+animKey} style={{flex: keyboardHeight > 0 ? "0 0 160px" : 1,display:"flex",flexDirection:"column",gap:0,padding:"10px 0 0",zIndex:1,minHeight:0,position:"sticky",top:0}}>
           {/* Club 1 */}
           <div style={{flex:1,margin:"0 14px 0 14px",borderRadius:28,position:"relative",overflow:"hidden",boxShadow:"0 12px 40px "+ca1+"55",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",animation:"clubSlideLeft .55s cubic-bezier(.22,1,.36,1)",animationFillMode:"both"}}>
             {/* Fond diagonal club 1 */}
