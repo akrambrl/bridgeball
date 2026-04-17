@@ -3773,7 +3773,7 @@ export default function LePont() {
           {feedbackBar(feedback)}
 
           {diff==="facile"?(
-            <div style={{display:"flex",flexDirection:"column",gap:10,position:"fixed",bottom:0,left:0,right:0,padding:"10px 14px 24px",background:"rgba(0,0,0,0.85)",backdropFilter:"blur(10px)",zIndex:50}}>
+            <div style={{display:"flex",flexDirection:"column",gap:10}}>
               <div key={"opts-"+animKey} style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
                 {options.map((opt,oi)=>{
                   const isOk=flash==="ok"&&checkGuess(opt,cur.p);
