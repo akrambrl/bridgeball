@@ -918,7 +918,6 @@ export default function LePont() {
   const [pseudoMsg, setPseudoMsg] = useState("");
   const [pseudoConfirmed, setPseudoConfirmed] = useState(() => { try { const n = localStorage.getItem("bb_name"); return !!(n && n.trim().length >= 2); } catch { return false; } });
   const [showQuitConfirm, setShowQuitConfirm] = useState(false);
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [gameConfigModal, setGameConfigModal] = useState(null);
   const [activeCard, setActiveCard] = useState("pont");
   const [swipeDelta, setSwipeDelta] = useState(0); // "pont" | "chaine" | "room-pont" | "room-chaine"
