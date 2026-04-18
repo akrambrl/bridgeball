@@ -1693,8 +1693,8 @@ export default function LePont() {
     setPseudoChecking(true);
     setPseudoMsg("Vérification...");
     try {
-      // Check if pseudo already taken
-      const existing = await sbFetch("bb_pseudos?pseudo=eq."+encodeURIComponent(clean)+"&limit=1");
+      // Check if pseudo already taken (case-insensitive)
+      const existing = await sbFetch("bb_pseudos?pseudo=ilike."+encodeURIComponent(clean)+"&limit=1");
       if (Array.isArray(existing) && existing.length > 0) {
         if (existing[0].player_id === playerId) {
           // It's mine - confirm it
@@ -2940,7 +2940,7 @@ export default function LePont() {
         {/* Overlay sombre pour lisibilité */}
         <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.45)"}}/>
       </div>
-        <div style={{zIndex:1,padding:"12px 20px 12px",display:"flex",alignItems:"center",gap:12}}>
+        <div style={{zIndex:2,padding:"12px 20px 12px",display:"flex",alignItems:"center",gap:12,position:"sticky",top:0,background:"rgba(0,15,0,.85)",backdropFilter:"blur(10px)"}}>
           {backBtn(function(){setShowLeaderboard(false);})}
           <div style={{flex:1,textAlign:"center"}}>
             <div style={{fontFamily:G.heading,fontSize:"clamp(28px,7vw,46px)",color:G.white,letterSpacing:3}}>CLASSEMENT</div>
