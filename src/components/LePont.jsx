@@ -1092,51 +1092,40 @@ export default function LePont() {
     setViewedProfile({ id, name });
     setViewedProfileData(null);
     setScreen("userProfile");
-    try {
-      // Fetch leaderboard entry
-      const lbData = leaderboard.find(e => e.pid === id);
-      // Fetch avatar URL (try direct)
-      const avatarUrl = SB_URL + "/storage/v1/object/public/avatars/" + id + ".jpg?t=" + Date.now();
-      let hasAvatar = false;
-      try {
-        const headRes = await fetch(avatarUrl, { method: "HEAD" });
-        hasAvatar = headRes.ok;
-      } catch {}
-      // Fetch duels between us and them
-      const duelsWith = duels.filter(d =>
-        d.status === "complete" &&
-        ((d.challenger_id === playerId && d.opponent_id === id) ||
-         (d.opponent_id === playerId && d.challenger_id === id))
-      );
-      // Calculate wins/losses/draws in our duels
-      let myWins = 0, myLosses = 0, draws = 0;
-      duelsWith.forEach(d => {
-        const isChal = d.challenger_id === playerId;
-        const myScore = isChal ? d.challenger_score : d.opponent_score;
-        const oppScore = isChal ? d.opponent_score : d.challenger_score;
-        if (myScore > oppScore) myWins++;
-        else if (myScore < oppScore) myLosses++;
-        else draws++;
-      });
-      setViewedProfileData({
-        avatar: hasAvatar ? avatarUrl : null,
-        score: lbData ? lbData.score : 0,
-        rank: lbData ? leaderboard.findIndex(e => e.pid === id) + 1 : null,
-        played: lbData ? lbData.played : 0,
-        bestPont: lbData ? lbData.bestPont : 0,
-        bestChaine: lbData ? lbData.bestChaine : 0,
-        wins: lbData ? lbData.wins : 0,
-        draws: lbData ? lbData.draws : 0,
-        losses: lbData ? lbData.losses : 0,
-        duelsWith,
-        myWins,
-        myLosses,
-        duelsDraws: draws,
-        isFriend: friendsList.includes(id),
-      });
-    } catch(e) {
-      console.error(e);
-    }
+    // Compute sync data first
+    const lbData = leaderboard.find(e => e.pid === id);
+    const duelsWith = duels.filter(d =>
+      d.status === "complete" &&
+      ((d.challenger_id === playerId && d.opponent_id === id) ||
+       (d.opponent_id === playerId && d.challenger_id === id))
+    );
+    let myWins = 0, myLosses = 0, draws = 0;
+    duelsWith.forEach(d => {
+      const isChal = d.challenger_id === playerId;
+      const myScore = isChal ? d.challenger_score : d.opponent_score;
+      const oppScore = isChal ? d.opponent_score : d.challenger_score;
+      if (myScore > oppScore) myWins++;
+      else if (myScore < oppScore) myLosses++;
+      else draws++;
+    });
+    const avatarUrl = SB_URL + "/storage/v1/object/public/avatars/" + id + ".jpg";
+    // Set data immediately — avatar will just 404 if no photo, <img> onError handles it
+    setViewedProfileData({
+      avatar: avatarUrl,
+      score: lbData ? lbData.score : 0,
+      rank: lbData ? leaderboard.findIndex(e => e.pid === id) + 1 : null,
+      played: lbData ? lbData.played : 0,
+      bestPont: lbData ? lbData.bestPont : 0,
+      bestChaine: lbData ? lbData.bestChaine : 0,
+      wins: lbData ? lbData.wins : 0,
+      draws: lbData ? lbData.draws : 0,
+      losses: lbData ? lbData.losses : 0,
+      duelsWith,
+      myWins,
+      myLosses,
+      duelsDraws: draws,
+      isFriend: friendsList.includes(id),
+    });
   }
 
   async function loadDuels() {
@@ -3431,6 +3420,131 @@ export default function LePont() {
   }
 
   // ── HOME ──
+  // ── USER PROFILE SCREEN (other player) ──
+  if(screen==="userProfile" && viewedProfile) {
+    const d = viewedProfileData;
+    const grade = d ? getGrade(d.score) : null;
+    return (
+      <div style={{...shell,overflow:"auto"}} key="userProfile">
+        <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
+          {[0,1,2,3,4,5,6].map(function(i){return(
+            <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#1E5C2A":"#276B34"}}/>
+          );})}
+          <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.7)"}}/>
+        </div>
+        <div style={{zIndex:2,padding:"16px 16px 8px",display:"flex",alignItems:"center",gap:12,position:"sticky",top:0,background:"rgba(0,15,0,.85)",backdropFilter:"blur(10px)"}}>
+          <button onClick={()=>{setViewedProfile(null);setScreen("home");}} style={{background:"rgba(255,255,255,.1)",border:"none",borderRadius:"50%",width:38,height:38,cursor:"pointer",color:G.white,fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>←</button>
+          <div style={{fontFamily:G.heading,fontSize:22,color:G.white,letterSpacing:2,flex:1}}>PROFIL</div>
+        </div>
+        {!d ? (
+          <div style={{zIndex:1,padding:"60px 20px",textAlign:"center",color:"rgba(255,255,255,.5)"}}>Chargement...</div>
+        ) : (
+          <>
+            <div style={{zIndex:1,padding:"16px 20px 8px",textAlign:"center"}}>
+              <div style={{width:100,height:100,borderRadius:"50%",margin:"0 auto 14px",background:"linear-gradient(135deg,#00E676,#00A855)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:44,color:"#fff",boxShadow:"0 8px 30px rgba(0,230,118,.35)",overflow:"hidden"}}>
+                {d.avatar ? <img src={d.avatar} alt="avatar" onError={(e)=>{e.currentTarget.style.display="none";}} style={{width:"100%",height:"100%",objectFit:"cover"}}/> : (viewedProfile.name||"?")[0].toUpperCase()}
+              </div>
+              <div style={{fontFamily:G.heading,fontSize:28,color:G.white,letterSpacing:1}}>@{viewedProfile.name}</div>
+              {grade && (
+                <div style={{marginTop:6,display:"inline-block",fontSize:11,fontWeight:800,color:grade.color,background:grade.color+"22",borderRadius:20,padding:"3px 12px",letterSpacing:1}}>{grade.emoji} {grade.label}</div>
+              )}
+              {d.rank && (
+                <div style={{marginTop:8,fontSize:13,color:"rgba(255,255,255,.6)"}}>Classement: #{d.rank}</div>
+              )}
+            </div>
+            <div style={{zIndex:1,padding:"8px 16px",display:"flex",gap:10}}>
+              {!d.isFriend ? (
+                <button onClick={()=>{addFriend(viewedProfile.name);}} style={{flex:1,padding:"13px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>+ Ajouter en ami</button>
+              ) : (
+                <button onClick={()=>{setConfirmRemove({id:viewedProfile.id,name:viewedProfile.name});}} style={{flex:1,padding:"13px",background:"rgba(255,255,255,.07)",color:"rgba(255,255,255,.7)",border:"1px solid rgba(255,255,255,.15)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>✓ Ami · Retirer</button>
+              )}
+              <button onClick={()=>setShowDuelCreate({id:viewedProfile.id,name:viewedProfile.name})} style={{flex:1,padding:"13px",background:"linear-gradient(135deg,#FFD600,#FF6B35)",color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>⚡ Défier</button>
+            </div>
+            <div style={{zIndex:1,padding:"16px 16px 8px",display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+              <div style={{background:"linear-gradient(135deg, rgba(255,214,0,.18), rgba(0,0,0,.55))",border:"1px solid rgba(255,214,0,.35)",borderRadius:16,padding:"14px 10px",textAlign:"center"}}>
+                <div style={{fontSize:22,marginBottom:4}}>🏆</div>
+                <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,214,0,.95)",marginBottom:4}}>Record Plug</div>
+                <div style={{fontFamily:G.heading,fontSize:26,color:G.gold}}>{d.bestPont||0}</div>
+              </div>
+              <div style={{background:"linear-gradient(135deg, rgba(96,165,250,.18), rgba(0,0,0,.55))",border:"1px solid rgba(96,165,250,.35)",borderRadius:16,padding:"14px 10px",textAlign:"center"}}>
+                <div style={{fontSize:22,marginBottom:4}}>⛓</div>
+                <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(96,165,250,.95)",marginBottom:4}}>Record Mercato</div>
+                <div style={{fontFamily:G.heading,fontSize:26,color:"#60a5fa"}}>{d.bestChaine||0}</div>
+              </div>
+              <div style={{background:"linear-gradient(135deg, rgba(0,230,118,.18), rgba(0,0,0,.55))",border:"1px solid rgba(0,230,118,.35)",borderRadius:16,padding:"14px 10px",textAlign:"center"}}>
+                <div style={{fontSize:22,marginBottom:4}}>🎮</div>
+                <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(0,230,118,.95)",marginBottom:4}}>Parties</div>
+                <div style={{fontFamily:G.heading,fontSize:26,color:G.accent}}>{d.played||0}</div>
+              </div>
+              <div style={{background:"linear-gradient(135deg, rgba(192,132,252,.18), rgba(0,0,0,.55))",border:"1px solid rgba(192,132,252,.35)",borderRadius:16,padding:"14px 10px",textAlign:"center"}}>
+                <div style={{fontSize:22,marginBottom:4}}>⭐</div>
+                <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(192,132,252,.95)",marginBottom:4}}>Score Total</div>
+                <div style={{fontFamily:G.heading,fontSize:26,color:"#c084fc"}}>{d.score||0}</div>
+              </div>
+            </div>
+            <div style={{zIndex:1,padding:"8px 16px"}}>
+              <div style={{background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",borderRadius:14,padding:"10px",display:"flex"}}>
+                <div style={{flex:1,textAlign:"center",borderRight:"1px solid rgba(255,255,255,.06)"}}>
+                  <div style={{fontFamily:G.heading,fontSize:20,color:"#00E676"}}>{d.wins||0}</div>
+                  <div style={{fontSize:9,color:"rgba(255,255,255,.4)",letterSpacing:1,textTransform:"uppercase"}}>Victoires</div>
+                </div>
+                <div style={{flex:1,textAlign:"center",borderRight:"1px solid rgba(255,255,255,.06)"}}>
+                  <div style={{fontFamily:G.heading,fontSize:20,color:G.gold}}>{d.draws||0}</div>
+                  <div style={{fontSize:9,color:"rgba(255,255,255,.4)",letterSpacing:1,textTransform:"uppercase"}}>Nuls</div>
+                </div>
+                <div style={{flex:1,textAlign:"center"}}>
+                  <div style={{fontFamily:G.heading,fontSize:20,color:"#FF3D57"}}>{d.losses||0}</div>
+                  <div style={{fontSize:9,color:"rgba(255,255,255,.4)",letterSpacing:1,textTransform:"uppercase"}}>Défaites</div>
+                </div>
+              </div>
+            </div>
+            {d.duelsWith.length > 0 ? (
+              <div style={{zIndex:1,padding:"16px 16px 8px"}}>
+                <div style={{fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.5)",marginBottom:10}}>Vos duels ({d.duelsWith.length})</div>
+                <div style={{background:"rgba(255,255,255,.03)",borderRadius:14,padding:"10px",marginBottom:8,display:"flex",justifyContent:"space-around",border:"1px solid rgba(255,255,255,.06)"}}>
+                  <div style={{textAlign:"center"}}>
+                    <div style={{fontFamily:G.heading,fontSize:18,color:"#00E676"}}>{d.myWins}</div>
+                    <div style={{fontSize:9,color:"rgba(255,255,255,.4)",letterSpacing:1,textTransform:"uppercase"}}>Tes victoires</div>
+                  </div>
+                  <div style={{textAlign:"center"}}>
+                    <div style={{fontFamily:G.heading,fontSize:18,color:G.gold}}>{d.duelsDraws}</div>
+                    <div style={{fontSize:9,color:"rgba(255,255,255,.4)",letterSpacing:1,textTransform:"uppercase"}}>Nuls</div>
+                  </div>
+                  <div style={{textAlign:"center"}}>
+                    <div style={{fontFamily:G.heading,fontSize:18,color:"#FF3D57"}}>{d.myLosses}</div>
+                    <div style={{fontSize:9,color:"rgba(255,255,255,.4)",letterSpacing:1,textTransform:"uppercase"}}>Ses victoires</div>
+                  </div>
+                </div>
+                <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                  {d.duelsWith.slice(0,10).map((duel, i) => {
+                    const isChal = duel.challenger_id === playerId;
+                    const myScore = isChal ? duel.challenger_score : duel.opponent_score;
+                    const oppScore = isChal ? duel.opponent_score : duel.challenger_score;
+                    const won = myScore > oppScore;
+                    const draw = myScore === oppScore;
+                    return (
+                      <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",background:"rgba(255,255,255,.03)",borderRadius:12,border:"1px solid rgba(255,255,255,.05)"}}>
+                        <div style={{width:4,height:28,borderRadius:2,background:draw?"#FFD600":won?"#00E676":"#FF3D57"}}/>
+                        <div style={{flex:1}}>
+                          <div style={{fontSize:12,fontWeight:700,color:G.white}}>{draw?"Match nul":won?"Victoire":"Défaite"}</div>
+                          <div style={{fontSize:10,color:"rgba(255,255,255,.4)"}}>{duel.mode==="pont"?"The Plug":"The Mercato"} · {duel.diff}</div>
+                        </div>
+                        <div style={{fontFamily:G.heading,fontSize:16,color:G.white}}>{myScore}–{oppScore}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <div style={{zIndex:1,padding:"20px 16px",textAlign:"center",color:"rgba(255,255,255,.4)",fontSize:13}}>Aucun duel encore joué contre ce joueur</div>
+            )}
+            <div style={{zIndex:1,padding:"20px 16px 40px"}}/>
+          </>
+        )}
+      </div>
+    );
+  }
+
   // ── PROFILE SCREEN ──
   if(screen==="profile") return (
     <div style={{...shell,overflow:"auto"}} key="profile">
