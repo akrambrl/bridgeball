@@ -3823,7 +3823,7 @@ export default function LePont() {
           </div>
           <div style={{textAlign:"center",flex:2}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"center"}}>
-              <img src={GOAT_LOGO_NEW} style={{height:"clamp(78px,19.5vw,120px)",maxWidth:"100%",objectFit:"contain"}} alt="GOAT FC"/>
+              <img src={GOAT_LOGO_NEW} style={{height:"clamp(110px,27vw,170px)",maxWidth:"100%",objectFit:"contain"}} alt="GOAT FC"/>
             </div>
           </div>
           <div style={{flex:1,display:"flex",justifyContent:"flex-end",alignItems:"center",gap:8}}>
