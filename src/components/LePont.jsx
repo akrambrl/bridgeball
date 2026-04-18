@@ -18,6 +18,27 @@ async function sbFetch(path, options) {
   if (res.status === 201 || res.headers.get("content-length") === "0") return [];
   try { return await res.json(); } catch { return []; }
 }
+function countryToFlag(code) {
+  if (!code || code.length !== 2) return "";
+  const codePoints = code.toUpperCase().split("").map(c => 127397 + c.charCodeAt(0));
+  return String.fromCodePoint(...codePoints);
+}
+
+async function detectCountry() {
+  try {
+    const cached = localStorage.getItem("bb_country");
+    if (cached) return cached;
+    const res = await fetch("https://ipapi.co/json/");
+    const data = await res.json();
+    const code = (data.country_code || "").toUpperCase();
+    if (code) {
+      try { localStorage.setItem("bb_country", code); } catch {}
+      return code;
+    }
+  } catch(e) {}
+  return null;
+}
+
 function getPlayerId() {
   try {
     let id = localStorage.getItem("bb_player_id");
@@ -1711,18 +1732,21 @@ export default function LePont() {
       }
       // Check if I already have a pseudo
       const mine = await sbFetch("bb_pseudos?player_id=eq."+playerId+"&limit=1");
+      const country = await detectCountry();
       if (Array.isArray(mine) && mine.length > 0) {
         // Update existing pseudo
+        const payload = country ? {pseudo: clean, country} : {pseudo: clean};
         await sbFetch("bb_pseudos?player_id=eq."+playerId, {
           method: "PATCH",
-          body: JSON.stringify({pseudo: clean}),
+          body: JSON.stringify(payload),
           headers: {"Prefer": "return=minimal"}
         });
       } else {
         // Create new pseudo
+        const payload = country ? {player_id: playerId, pseudo: clean, country} : {player_id: playerId, pseudo: clean};
         await sbFetch("bb_pseudos", {
           method: "POST",
-          body: JSON.stringify({player_id: playerId, pseudo: clean})
+          body: JSON.stringify(payload)
         });
       }
       setPlayerName(clean);
@@ -2118,6 +2142,15 @@ export default function LePont() {
         .sort(function(a,b){ return b.score - a.score; })
         .slice(0,50)
         .map(function(r,i){ return {...r, rank:i+1}; });
+      // Fetch countries from bb_pseudos
+      try {
+        const pseudos = await sbFetch("bb_pseudos?select=player_id,country");
+        if (Array.isArray(pseudos)) {
+          const countryMap = {};
+          pseudos.forEach(p => { if (p.country) countryMap[p.player_id] = p.country; });
+          sorted.forEach(row => { row.country = countryMap[row.pid] || null; });
+        }
+      } catch(e){}
       setLeaderboard(sorted);
       // Charger le Hall of Fame
       try {
@@ -3005,7 +3038,7 @@ export default function LePont() {
                   </div>
                   <div style={{flex:1}}>
                     <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3}}>
-                      <span style={{fontSize:14,fontWeight:800,color:isMe?G.accent:G.white}}>{entry.name}{isMe?" (toi)":""}</span>
+                      <span style={{fontSize:14,fontWeight:800,color:isMe?G.accent:G.white}}>{entry.country && <span style={{marginRight:5,fontSize:15}}>{countryToFlag(entry.country)}</span>}{entry.name}{isMe?" (toi)":""}</span>
                       <span style={{fontSize:10,fontWeight:800,color:grade.color,background:grade.color+"22",borderRadius:20,padding:"2px 7px",letterSpacing:.5}}>{grade.emoji} {grade.label}</span>
                       {entry.streak>=3 && <span style={{fontSize:10,fontWeight:800,color:"#FF6B35",background:"rgba(255,107,53,.15)",borderRadius:20,padding:"2px 7px"}}>🔥 {entry.streak}</span>}
                     </div>
