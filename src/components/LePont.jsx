@@ -3132,7 +3132,7 @@ export default function LePont() {
         </div>
         <input
           value={pseudoInput}
-          onChange={function(e){setPseudoInput(e.target.value.replace(/\s/g,""));setPseudoMsg("");}}
+          onChange={function(e){setPseudoInput(e.target.value.toLowerCase().replace(/[^a-z0-9_.]/g,""));setPseudoMsg("");}}
           onKeyDown={function(e){if(e.key==="Enter")checkAndSavePseudo(pseudoInput);}}
           placeholder="Ton pseudo unique..."
           maxLength={16}
@@ -3140,7 +3140,7 @@ export default function LePont() {
           style={{width:"100%",background:"rgba(255,255,255,.06)",border:"1.5px solid rgba(255,255,255,.15)",borderRadius:14,padding:"14px 16px",fontFamily:G.font,fontSize:17,color:G.white,outline:"none",boxSizing:"border-box",marginBottom:8,textAlign:"center"}}
         />
         {pseudoMsg && <div style={{fontSize:13,fontWeight:700,color:pseudoMsg.startsWith("❌")?"#FF3D57":"#00E676",marginBottom:8,textAlign:"center"}}>{pseudoMsg}</div>}
-        <div style={{fontSize:11,color:"rgba(255,255,255,.2)",marginBottom:16,textAlign:"center"}}>3–16 caractères · lettres, chiffres, _ et - · pas d'espaces</div>
+        <div style={{fontSize:11,color:"rgba(255,255,255,.2)",marginBottom:16,textAlign:"center"}}>3–16 caractères · lettres, chiffres, _ et . · pas d'espaces</div>
         <button
           onClick={function(){checkAndSavePseudo(pseudoInput);}}
           disabled={pseudoChecking||pseudoInput.trim().length<3}
@@ -3305,6 +3305,92 @@ export default function LePont() {
   }
 
   // ── HOME ──
+  // ── PROFILE SCREEN ──
+  if(screen==="profile") return (
+    <div style={{...shell,overflow:"auto"}} key="profile">
+      <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
+        {[0,1,2,3,4,5,6].map(function(i){return(
+          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#1E5C2A":"#276B34"}}/>
+        );})}
+        <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.7)"}}/>
+      </div>
+
+      {/* Header */}
+      <div style={{zIndex:2,padding:"16px 16px 8px",display:"flex",alignItems:"center",gap:12,position:"sticky",top:0,background:"rgba(0,15,0,.85)",backdropFilter:"blur(10px)"}}>
+        <button onClick={()=>setScreen("home")} style={{background:"rgba(255,255,255,.1)",border:"none",borderRadius:"50%",width:38,height:38,cursor:"pointer",color:G.white,fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>←</button>
+        <div style={{fontFamily:G.heading,fontSize:22,color:G.white,letterSpacing:2,flex:1}}>MON PROFIL</div>
+      </div>
+
+      {/* Avatar + Pseudo */}
+      <div style={{zIndex:1,padding:"16px 20px 8px",textAlign:"center"}}>
+        <div style={{width:100,height:100,borderRadius:"50%",background:"linear-gradient(135deg,#00E676,#00A855)",margin:"0 auto 14px",display:"flex",alignItems:"center",justifyContent:"center",fontSize:44,boxShadow:"0 8px 30px rgba(0,230,118,.35)"}}>{(playerName||"?")[0].toUpperCase()}</div>
+        <div style={{fontFamily:G.heading,fontSize:28,color:G.white,letterSpacing:1}}>@{playerName||"anonyme"}</div>
+        <button onClick={()=>{setPseudoInput(playerName||"");setPseudoScreen(true);}} style={{marginTop:10,padding:"7px 16px",background:"rgba(255,255,255,.08)",color:"rgba(255,255,255,.7)",border:"1px solid rgba(255,255,255,.15)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:700}}>✏️ Modifier</button>
+      </div>
+
+      {/* Stats cards */}
+      <div style={{zIndex:1,padding:"16px 16px 8px",display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+        <div style={{background:"rgba(255,214,0,.1)",border:"1px solid rgba(255,214,0,.3)",borderRadius:16,padding:"14px 10px",textAlign:"center"}}>
+          <div style={{fontSize:22,marginBottom:4}}>🏆</div>
+          <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,214,0,.7)",marginBottom:4}}>Record Plug</div>
+          <div style={{fontFamily:G.heading,fontSize:26,color:G.gold}}>{record?record.score:0}</div>
+        </div>
+        <div style={{background:"rgba(96,165,250,.1)",border:"1px solid rgba(96,165,250,.3)",borderRadius:16,padding:"14px 10px",textAlign:"center"}}>
+          <div style={{fontSize:22,marginBottom:4}}>⛓</div>
+          <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(96,165,250,.7)",marginBottom:4}}>Record Mercato</div>
+          <div style={{fontFamily:G.heading,fontSize:26,color:"#60a5fa"}}>{chainRecord?chainRecord.score:0}</div>
+        </div>
+        <div style={{background:"rgba(0,230,118,.08)",border:"1px solid rgba(0,230,118,.25)",borderRadius:16,padding:"14px 10px",textAlign:"center"}}>
+          <div style={{fontSize:22,marginBottom:4}}>👥</div>
+          <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(0,230,118,.7)",marginBottom:4}}>Amis</div>
+          <div style={{fontFamily:G.heading,fontSize:26,color:G.accent}}>{friendsList.length}</div>
+        </div>
+        <div style={{background:"rgba(192,132,252,.08)",border:"1px solid rgba(192,132,252,.25)",borderRadius:16,padding:"14px 10px",textAlign:"center"}}>
+          <div style={{fontSize:22,marginBottom:4}}>🎮</div>
+          <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(192,132,252,.7)",marginBottom:4}}>Parties</div>
+          <div style={{fontFamily:G.heading,fontSize:26,color:"#c084fc"}}>{(record?1:0)+(chainRecord?1:0)}</div>
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div style={{zIndex:1,padding:"8px 16px",display:"flex",flexDirection:"column",gap:10}}>
+        <button onClick={()=>{setShowFriends(true);setScreen("home");}} style={{padding:"16px",background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.12)",borderRadius:16,cursor:"pointer",color:G.white,fontFamily:G.font,fontSize:15,fontWeight:700,display:"flex",alignItems:"center",gap:12,textAlign:"left"}}>
+          <span style={{fontSize:22}}>👥</span>
+          <div style={{flex:1}}>
+            <div>Mes amis</div>
+            <div style={{fontSize:11,color:"rgba(255,255,255,.4)",fontWeight:400,marginTop:2}}>{friendsList.length} ami{friendsList.length>1?"s":""}</div>
+          </div>
+          <span style={{fontSize:18,color:"rgba(255,255,255,.3)"}}>→</span>
+        </button>
+
+        <button onClick={()=>{setLbMode("pont");setLbDiff("facile");loadLeaderboard("pont");setShowLeaderboard(true);setScreen("home");}} style={{padding:"16px",background:"rgba(255,214,0,.06)",border:"1px solid rgba(255,214,0,.2)",borderRadius:16,cursor:"pointer",color:G.white,fontFamily:G.font,fontSize:15,fontWeight:700,display:"flex",alignItems:"center",gap:12,textAlign:"left"}}>
+          <span style={{fontSize:22}}>🏆</span>
+          <div style={{flex:1}}>
+            <div>Classement</div>
+            <div style={{fontSize:11,color:"rgba(255,255,255,.4)",fontWeight:400,marginTop:2}}>Vois ton rang mondial</div>
+          </div>
+          <span style={{fontSize:18,color:"rgba(255,255,255,.3)"}}>→</span>
+        </button>
+
+        <button onClick={()=>{setShowTutorial(true);setTutorialStep(0);}} style={{padding:"16px",background:"rgba(96,165,250,.06)",border:"1px solid rgba(96,165,250,.2)",borderRadius:16,cursor:"pointer",color:G.white,fontFamily:G.font,fontSize:15,fontWeight:700,display:"flex",alignItems:"center",gap:12,textAlign:"left"}}>
+          <span style={{fontSize:22}}>❓</span>
+          <div style={{flex:1}}>
+            <div>Comment jouer ?</div>
+            <div style={{fontSize:11,color:"rgba(255,255,255,.4)",fontWeight:400,marginTop:2}}>Revoir le tutoriel</div>
+          </div>
+          <span style={{fontSize:18,color:"rgba(255,255,255,.3)"}}>→</span>
+        </button>
+      </div>
+
+      {/* Footer */}
+      <div style={{zIndex:1,padding:"20px 16px 40px",textAlign:"center"}}>
+        <div style={{fontSize:10,color:"rgba(255,255,255,.2)",letterSpacing:2,textTransform:"uppercase"}}>GOAT FC · v1</div>
+      </div>
+
+      {pseudoModal}
+    </div>
+  );
+
   if(screen==="home") return (
     <div style={{...shell,animation:"fadeUp .5s ease",overflow:"auto"}} key="home">
       {pseudoModal}
