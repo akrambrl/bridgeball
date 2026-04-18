@@ -1718,13 +1718,13 @@ export default function LePont() {
   // ── PSEUDO FUNCTIONS ──
   async function checkAndSavePseudo(pseudo) {
     const clean = pseudo.trim();
-    if (clean.length < 3) { setPseudoMsg("❌ Minimum 3 caractères"); return; }
-    if (clean.length > 16) { setPseudoMsg("❌ Maximum 16 caractères"); return; }
-    if (/\s/.test(clean)) { setPseudoMsg("❌ Pas d'espaces"); return; }
-    if (!/^[a-zA-Z0-9_\-]+$/.test(clean)) { setPseudoMsg("❌ Lettres, chiffres, _ et - uniquement"); return; }
-    if (/^[_\-]/.test(clean) || /[_\-]$/.test(clean)) { setPseudoMsg("❌ Ne peut pas commencer ou finir par _ ou -"); return; }
+    if (clean.length < 3) { setPseudoMsg(lang==="en"?"❌ Minimum 3 characters":"❌ Minimum 3 caractères"); return; }
+    if (clean.length > 16) { setPseudoMsg(lang==="en"?"❌ Maximum 16 characters":"❌ Maximum 16 caractères"); return; }
+    if (/\s/.test(clean)) { setPseudoMsg(lang==="en"?"❌ No spaces":"❌ Pas d'espaces"); return; }
+    if (!/^[a-zA-Z0-9_\-]+$/.test(clean)) { setPseudoMsg(lang==="en"?"❌ Letters, digits, _ and - only":"❌ Lettres, chiffres, _ et - uniquement"); return; }
+    if (/^[_\-]/.test(clean) || /[_\-]$/.test(clean)) { setPseudoMsg(lang==="en"?"❌ Cannot start or end with _ or -":"❌ Ne peut pas commencer ou finir par _ ou -"); return; }
     setPseudoChecking(true);
-    setPseudoMsg("Vérification...");
+    setPseudoMsg(lang==="en"?"Checking...":"Vérification...");
     try {
       // Check if pseudo already taken (case-insensitive)
       const existing = await sbFetch("bb_pseudos?pseudo=ilike."+encodeURIComponent(clean)+"&limit=1");
@@ -1737,7 +1737,7 @@ export default function LePont() {
           try { localStorage.setItem("bb_name", clean); } catch {}
           setPseudoMsg("");
         } else {
-          setPseudoMsg("❌ Ce pseudo est déjà pris !");
+          setPseudoMsg(lang==="en"?"❌ This username is already taken!":"❌ Ce pseudo est déjà pris !");
         }
         setPseudoChecking(false);
         return;
@@ -1765,7 +1765,7 @@ export default function LePont() {
       try { localStorage.setItem("bb_name", clean); } catch {}
       setPseudoConfirmed(true);
       setPseudoScreen(false);
-      setPseudoMsg("✓ Pseudo réservé !");
+      setPseudoMsg(lang==="en"?"✓ Username reserved!":"✓ Pseudo réservé !");
     } catch(e) {
       setPseudoMsg("Erreur: "+e.message);
     }
@@ -3306,25 +3306,25 @@ export default function LePont() {
         {<button onClick={function(){setPseudoScreen(false);}} style={{position:"absolute",top:14,right:14,background:"rgba(255,255,255,.1)",border:"none",borderRadius:"50%",width:30,height:30,color:"rgba(255,255,255,.5)",cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>}
         <div style={{textAlign:"center",marginBottom:24}}>
           <div style={{fontFamily:G.heading,fontSize:52,color:G.white,lineHeight:.9}}>GOAT<span style={{color:G.accent}}>FC</span></div>
-          <div style={{fontSize:12,color:"rgba(255,255,255,.4)",marginTop:8,letterSpacing:2}}>CHOISIS TON PSEUDO</div>
+          <div style={{fontSize:12,color:"rgba(255,255,255,.4)",marginTop:8,letterSpacing:2}}>{lang==="en"?"CHOOSE YOUR USERNAME":"CHOISIS TON PSEUDO"}</div>
         </div>
         <input
           value={pseudoInput}
           onChange={function(e){setPseudoInput(e.target.value.toLowerCase().replace(/[^a-z0-9_.]/g,""));setPseudoMsg("");}}
           onKeyDown={function(e){if(e.key==="Enter")checkAndSavePseudo(pseudoInput);}}
-          placeholder="Ton pseudo unique..."
+          placeholder={lang==="en"?"Your unique username...":"Ton pseudo unique..."}
           maxLength={16}
           autoFocus
           style={{width:"100%",background:"rgba(255,255,255,.06)",border:"1.5px solid rgba(255,255,255,.15)",borderRadius:14,padding:"14px 16px",fontFamily:G.font,fontSize:17,color:G.white,outline:"none",boxSizing:"border-box",marginBottom:8,textAlign:"center"}}
         />
         {pseudoMsg && <div style={{fontSize:13,fontWeight:700,color:pseudoMsg.startsWith("❌")?"#FF3D57":"#00E676",marginBottom:8,textAlign:"center"}}>{pseudoMsg}</div>}
-        <div style={{fontSize:11,color:"rgba(255,255,255,.2)",marginBottom:16,textAlign:"center"}}>3–16 caractères · lettres, chiffres, _ et . · pas d'espaces</div>
+        <div style={{fontSize:11,color:"rgba(255,255,255,.2)",marginBottom:16,textAlign:"center"}}>{lang==="en"?"3–16 characters · letters, digits, _ and . · no spaces":"3–16 caractères · lettres, chiffres, _ et . · pas d'espaces"}</div>
         <button
           onClick={function(){checkAndSavePseudo(pseudoInput);}}
           disabled={pseudoChecking||pseudoInput.trim().length<3}
           style={{width:"100%",padding:"15px",background:pseudoInput.trim().length>=3?G.accent:"rgba(255,255,255,.08)",color:pseudoInput.trim().length>=3?"#000":"rgba(255,255,255,.3)",border:"none",borderRadius:50,cursor:pseudoInput.trim().length>=3?"pointer":"not-allowed",fontFamily:G.font,fontSize:15,fontWeight:800}}
         >
-          {pseudoChecking?"Vérification...":"Confirmer →"}
+          {pseudoChecking?(lang==="en"?"Checking...":"Vérification..."):(lang==="en"?"Confirm →":"Confirmer →")}
         </button>
       </div>
     </div>
@@ -3527,17 +3527,17 @@ export default function LePont() {
             <div style={{zIndex:1,padding:"16px 16px 8px",display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
               <div style={{background:"#123a1e",border:"1px solid rgba(255,214,0,.5)",borderRadius:16,padding:"14px 10px",textAlign:"center"}}>
                 <div style={{fontSize:22,marginBottom:4}}>🏆</div>
-                <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,214,0,.95)",marginBottom:4}}>Record Plug</div>
+                <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,214,0,.95)",marginBottom:4}}>{lang==="en"?"Plug record":"Record Plug"}</div>
                 <div style={{fontFamily:G.heading,fontSize:26,color:G.gold}}>{d.bestPont||0}</div>
               </div>
               <div style={{background:"#123a1e",border:"1px solid rgba(96,165,250,.5)",borderRadius:16,padding:"14px 10px",textAlign:"center"}}>
                 <div style={{fontSize:22,marginBottom:4}}>⛓</div>
-                <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(96,165,250,.95)",marginBottom:4}}>Record Mercato</div>
+                <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(96,165,250,.95)",marginBottom:4}}>{lang==="en"?"Mercato record":"Record Mercato"}</div>
                 <div style={{fontFamily:G.heading,fontSize:26,color:"#60a5fa"}}>{d.bestChaine||0}</div>
               </div>
               <div style={{background:"#123a1e",border:"1px solid rgba(0,230,118,.5)",borderRadius:16,padding:"14px 10px",textAlign:"center"}}>
                 <div style={{fontSize:22,marginBottom:4}}>🎮</div>
-                <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(0,230,118,.95)",marginBottom:4}}>Parties</div>
+                <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(0,230,118,.95)",marginBottom:4}}>{lang==="en"?"Games":"Parties"}</div>
                 <div style={{fontFamily:G.heading,fontSize:26,color:G.accent}}>{d.played||0}</div>
               </div>
               <div style={{background:"#123a1e",border:"1px solid rgba(192,132,252,.5)",borderRadius:16,padding:"14px 10px",textAlign:"center"}}>
@@ -3622,7 +3622,7 @@ export default function LePont() {
       {/* Header */}
       <div style={{zIndex:2,padding:"16px 16px 8px",display:"flex",alignItems:"center",gap:12,position:"sticky",top:0,background:"rgba(0,15,0,.85)",backdropFilter:"blur(10px)"}}>
         <button onClick={()=>setScreen("home")} style={{background:"rgba(255,255,255,.1)",border:"none",borderRadius:"50%",width:38,height:38,cursor:"pointer",color:G.white,fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>←</button>
-        <div style={{fontFamily:G.heading,fontSize:22,color:G.white,letterSpacing:2,flex:1}}>MON PROFIL</div>
+        <div style={{fontFamily:G.heading,fontSize:22,color:G.white,letterSpacing:2,flex:1}}>{lang==="en"?"MY PROFILE":"MON PROFIL"}</div>
       </div>
 
       {/* Avatar + Pseudo */}
@@ -3683,30 +3683,30 @@ export default function LePont() {
           setAvatarUploading(false);
           e.target.value = "";
         }}/>
-        <div style={{fontFamily:G.heading,fontSize:28,color:G.white,letterSpacing:1}}>@{playerName||"anonyme"}</div>
-        <button onClick={()=>{setPseudoInput(playerName||"");setPseudoScreen(true);}} style={{marginTop:10,padding:"7px 16px",background:"rgba(255,255,255,.08)",color:"rgba(255,255,255,.7)",border:"1px solid rgba(255,255,255,.15)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:700}}>✏️ Modifier</button>
+        <div style={{fontFamily:G.heading,fontSize:28,color:G.white,letterSpacing:1}}>@{playerName||(lang==="en"?"anonymous":"anonyme")}</div>
+        <button onClick={()=>{setPseudoInput(playerName||"");setPseudoScreen(true);}} style={{marginTop:10,padding:"7px 16px",background:"rgba(255,255,255,.08)",color:"rgba(255,255,255,.7)",border:"1px solid rgba(255,255,255,.15)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:700}}>{lang==="en"?"✏️ Edit":"✏️ Modifier"}</button>
       </div>
 
       {/* Stats cards */}
       <div style={{zIndex:1,padding:"16px 16px 8px",display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
         <div style={{background:"#123a1e",border:"1px solid rgba(255,214,0,.5)",borderRadius:16,padding:"14px 10px",textAlign:"center"}}>
           <div style={{fontSize:22,marginBottom:4}}>🏆</div>
-          <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,214,0,.95)",marginBottom:4}}>Record Plug</div>
+          <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,214,0,.95)",marginBottom:4}}>{lang==="en"?"Plug record":"Record Plug"}</div>
           <div style={{fontFamily:G.heading,fontSize:26,color:G.gold}}>{record?record.score:0}</div>
         </div>
         <div style={{background:"#123a1e",border:"1px solid rgba(96,165,250,.5)",borderRadius:16,padding:"14px 10px",textAlign:"center"}}>
           <div style={{fontSize:22,marginBottom:4}}>⛓</div>
-          <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(96,165,250,.95)",marginBottom:4}}>Record Mercato</div>
+          <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(96,165,250,.95)",marginBottom:4}}>{lang==="en"?"Mercato record":"Record Mercato"}</div>
           <div style={{fontFamily:G.heading,fontSize:26,color:"#60a5fa"}}>{chainRecord?chainRecord.score:0}</div>
         </div>
         <div style={{background:"#123a1e",border:"1px solid rgba(0,230,118,.5)",borderRadius:16,padding:"14px 10px",textAlign:"center"}}>
           <div style={{fontSize:22,marginBottom:4}}>👥</div>
-          <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(0,230,118,.95)",marginBottom:4}}>Amis</div>
+          <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(0,230,118,.95)",marginBottom:4}}>{lang==="en"?"Friends":"Amis"}</div>
           <div style={{fontFamily:G.heading,fontSize:26,color:G.accent}}>{friendsList.length}</div>
         </div>
         <div style={{background:"#123a1e",border:"1px solid rgba(192,132,252,.5)",borderRadius:16,padding:"14px 10px",textAlign:"center"}}>
           <div style={{fontSize:22,marginBottom:4}}>🎮</div>
-          <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(192,132,252,.95)",marginBottom:4}}>Parties</div>
+          <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(192,132,252,.95)",marginBottom:4}}>{lang==="en"?"Games":"Parties"}</div>
           <div style={{fontFamily:G.heading,fontSize:26,color:"#c084fc"}}>{(record?1:0)+(chainRecord?1:0)}</div>
         </div>
       </div>
@@ -3716,8 +3716,8 @@ export default function LePont() {
         <button onClick={()=>{setShowFriends(true);setScreen("home");}} style={{padding:"16px",background:"#123a1e",border:"1px solid rgba(0,230,118,.5)",borderRadius:16,cursor:"pointer",color:G.white,fontFamily:G.font,fontSize:15,fontWeight:700,display:"flex",alignItems:"center",gap:12,textAlign:"left"}}>
           <span style={{fontSize:22}}>👥</span>
           <div style={{flex:1}}>
-            <div>Mes amis</div>
-            <div style={{fontSize:11,color:"rgba(255,255,255,.75)",fontWeight:500,marginTop:2}}>{friendsList.length} ami{friendsList.length>1?"s":""}</div>
+            <div>{lang==="en"?"My friends":"Mes amis"}</div>
+            <div style={{fontSize:11,color:"rgba(255,255,255,.75)",fontWeight:500,marginTop:2}}>{friendsList.length} {lang==="en"?(friendsList.length>1?"friends":"friend"):(friendsList.length>1?"amis":"ami")}</div>
           </div>
           <span style={{fontSize:18,color:"rgba(255,255,255,.3)"}}>→</span>
         </button>
@@ -3725,8 +3725,8 @@ export default function LePont() {
         <button onClick={()=>{setLbMode("pont");setLbDiff("facile");loadLeaderboard("pont");setShowLeaderboard(true);setScreen("home");}} style={{padding:"16px",background:"#123a1e",border:"1px solid rgba(255,214,0,.5)",borderRadius:16,cursor:"pointer",color:G.white,fontFamily:G.font,fontSize:15,fontWeight:700,display:"flex",alignItems:"center",gap:12,textAlign:"left"}}>
           <span style={{fontSize:22}}>🏆</span>
           <div style={{flex:1}}>
-            <div>Classement</div>
-            <div style={{fontSize:11,color:"rgba(255,255,255,.75)",fontWeight:500,marginTop:2}}>Vois ton rang mondial</div>
+            <div>{lang==="en"?"Leaderboard":"Classement"}</div>
+            <div style={{fontSize:11,color:"rgba(255,255,255,.75)",fontWeight:500,marginTop:2}}>{lang==="en"?"See your world rank":"Vois ton rang mondial"}</div>
           </div>
           <span style={{fontSize:18,color:"rgba(255,255,255,.3)"}}>→</span>
         </button>
