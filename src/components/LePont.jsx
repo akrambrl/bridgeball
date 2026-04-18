@@ -3007,8 +3007,8 @@ export default function LePont() {
             {(()=>{ const s=getCurrentSeason(); return lbMode==="amis"
               ? <div style={{fontSize:12,color:"rgba(255,255,255,.4)"}}>{lang==="en"?"Friends leaderboard · Cumulative":"Classement entre amis · Cumulatif"}</div>
               : <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
-                  <div style={{fontSize:13,fontWeight:800,color:G.gold}}>⚽ Saison {s.num}</div>
-                  <div style={{fontSize:11,color:"rgba(255,255,255,.4)"}}>⏳ J-{s.days} {s.hours}h avant reset</div>
+                  <div style={{fontSize:13,fontWeight:800,color:G.gold}}>{lang==="en"?"⚽ Season ":"⚽ Saison "}{s.num}</div>
+                  <div style={{fontSize:11,color:"rgba(255,255,255,.4)"}}>{lang==="en"?`⏳ ${s.days}d ${s.hours}h before reset`:`⏳ J-${s.days} ${s.hours}h avant reset`}</div>
                 </div>;
             })()}
           </div>
@@ -3026,7 +3026,7 @@ export default function LePont() {
                 <div>
                   <div style={{fontSize:11,fontWeight:800,color:G.gold,letterSpacing:1}}>{lang==="en"?"🏆 SEASON ":"🏆 SAISON "}{s.num}</div>
                   <div style={{fontSize:10,color:"rgba(255,255,255,.4)",marginTop:2}}>
-                    {daysLeft > 0 ? `J-${daysLeft} (${hoursLeft}h)` : `Finit dans ${hoursLeft}h`}
+                    {lang==="en" ? (daysLeft > 0 ? `${daysLeft}d (${hoursLeft}h) left` : `Ends in ${hoursLeft}h`) : (daysLeft > 0 ? `J-${daysLeft} (${hoursLeft}h)` : `Finit dans ${hoursLeft}h`)}
                   </div>
                 </div>
                 <button onClick={function(){setShowHallOfFame(true);}} style={{padding:"6px 12px",background:"rgba(255,214,0,.15)",color:G.gold,border:"1px solid rgba(255,214,0,.3)",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:11,fontWeight:800}}>
