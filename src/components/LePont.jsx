@@ -3778,7 +3778,9 @@ export default function LePont() {
               {[0,1,2,3,4,5,6].map(function(i){return(<div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#1E5C2A":"#276B34"}}/>);})}
               <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:"rgba(255,255,255,.15)",transform:"translateY(-50%)"}}/>
               <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:180,height:180,borderRadius:"50%",border:"2px solid rgba(255,255,255,.15)"}}/>
-              <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.82)"}}/>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, rgba(255,214,0,.15) 0%, rgba(255,107,53,.15) 40%, rgba(0,15,0,.85) 100%)"}}/>
+              <div style={{position:"absolute",top:-80,left:-80,width:300,height:300,borderRadius:"50%",background:"radial-gradient(circle, rgba(255,214,0,.25) 0%, transparent 70%)",filter:"blur(40px)"}}/>
+              <div style={{position:"absolute",top:-60,right:-60,width:250,height:250,borderRadius:"50%",background:"radial-gradient(circle, rgba(255,107,53,.2) 0%, transparent 70%)",filter:"blur(40px)"}}/>
             </div>
             {/* Header */}
             <div style={{zIndex:1,padding:"20px 20px 0",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
@@ -3789,7 +3791,7 @@ export default function LePont() {
               <button onClick={function(){setShowDailyGame(false);}} style={{background:"rgba(255,255,255,.1)",border:"1px solid rgba(255,255,255,.15)",borderRadius:"50%",width:36,height:36,color:G.white,cursor:"pointer",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
             </div>
             {/* Contenu */}
-            <div style={{...sheet,borderRadius:"28px 28px 0 0",marginTop:20,zIndex:1,flex:1,justifyContent:"flex-start",overflowY:"auto",paddingTop:20,paddingBottom:40}}>
+            <div style={{...sheet,borderRadius:"28px 28px 0 0",marginTop:20,zIndex:1,flex:1,justifyContent:"flex-start",overflowY:"auto",paddingTop:20,paddingBottom:40,background:"linear-gradient(180deg, rgba(255,214,0,.08) 0%, rgba(10,20,10,.92) 60%)",backdropFilter:"blur(10px)"}}>
               {/* Clubs */}
               <div>
                 <div style={{textAlign:"center",marginBottom:8}}>
