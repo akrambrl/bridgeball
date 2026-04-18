@@ -554,6 +554,34 @@ function shuffle(arr) {
   for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
   return a;
 }
+// Seeded shuffle for multiplayer (same questions for everyone in a room)
+function seededRandom(seed) {
+  let s = seed >>> 0;
+  return function() {
+    s = (s + 0x6D2B79F5) >>> 0;
+    let t = s;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function hashStringToSeed(str) {
+  let h = 2166136261;
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+function seededShuffle(arr, seed) {
+  const rand = seededRandom(seed);
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
 function norm(s){return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9 ]/g,"").trim();}
 function checkGuess(g,players){const gn=norm(g);return players.some(p=>{const pn=norm(p);return gn===pn||pn.split(" ").some(part=>part.length>2&&gn.includes(part));});}
 function matchClub(input,playerClubs){
@@ -1737,7 +1765,7 @@ export default function LePont() {
   async function checkAndSavePseudo(pseudo) {
     const clean = pseudo.trim();
     if (clean.length < 3) { setPseudoMsg(lang==="en"?"❌ Minimum 3 characters":"❌ Minimum 3 caractères"); return; }
-    if (clean.length > 16) { setPseudoMsg(lang==="en"?"❌ Maximum 16 characters":"❌ Maximum 16 caractères"); return; }
+    if (clean.length > 12) { setPseudoMsg(lang==="en"?"❌ Maximum 12 characters":"❌ Maximum 12 caractères"); return; }
     if (/\s/.test(clean)) { setPseudoMsg(lang==="en"?"❌ No spaces":"❌ Pas d'espaces"); return; }
     if (!/^[a-zA-Z0-9_\-]+$/.test(clean)) { setPseudoMsg(lang==="en"?"❌ Letters, digits, _ and - only":"❌ Lettres, chiffres, _ et - uniquement"); return; }
     if (/^[_\-]/.test(clean) || /[_\-]$/.test(clean)) { setPseudoMsg(lang==="en"?"❌ Cannot start or end with _ or -":"❌ Ne peut pas commencer ou finir par _ ou -"); return; }
@@ -2324,16 +2352,20 @@ export default function LePont() {
     roundStartTime.current = null; // timer will set on next tick
     const dbPool = DB[diff] || DB["facile"] || [];
     if (dbPool.length === 0) { console.error("DB empty for diff:", diff); return; }
+    // Seeded shuffle in multiplayer room for fair questions across all players
+    const isInRoom = activeDuelRef.current && activeDuelRef.current.isRoom;
+    const roomSeed = isInRoom ? hashStringToSeed(String(activeDuelRef.current.id) + "_r" + round) : null;
+    const doShuffle = isInRoom ? (arr) => seededShuffle(arr, roomSeed) : shuffle;
     // 80% current players, 20% retired/legends
     const currentQ = dbPool.filter(q => q.isCurrent);
     const retiredQ = dbPool.filter(q => !q.isCurrent);
     const targetCurrent = Math.round(dbPool.length * 0.8);
     const targetRetired = dbPool.length - targetCurrent;
     const picked = [
-      ...shuffle([...currentQ]).slice(0, Math.max(targetCurrent, currentQ.length)),
-      ...shuffle([...retiredQ]).slice(0, Math.min(targetRetired, retiredQ.length)),
+      ...doShuffle([...currentQ]).slice(0, Math.max(targetCurrent, currentQ.length)),
+      ...doShuffle([...retiredQ]).slice(0, Math.min(targetRetired, retiredQ.length)),
     ];
-    const q = shuffle(picked.length > 0 ? picked : [...dbPool]);
+    const q = doShuffle(picked.length > 0 ? picked : [...dbPool]);
     queueRef.current = q;
     setQueue(q); setQIdx(0); setScore(0); scoreRef.current=0;
     setTimeLeft(ROUND_DURATION); setGuess(""); setFlash(null); setFeedback(null);
@@ -2345,6 +2377,10 @@ export default function LePont() {
   function startChain() {
     roundStartTime.current = null;
     setIsNewRecord(false); setMyLastPts(null); setCombo(0); setMaxCombo(0); comboRef.current=0; lastAnswerTime.current=Date.now();
+    // Seeded random in multiplayer room for fair starting player across all players
+    const isInRoom = activeDuelRef.current && activeDuelRef.current.isRoom;
+    const roomSeed = isInRoom ? hashStringToSeed(String(activeDuelRef.current.id) + "_chain") : null;
+    const rand = isInRoom ? seededRandom(roomSeed) : Math.random;
     // Filtrer par difficulté — en facile on commence par des stars connues
     const eligible = PLAYERS_CLEAN.filter(p => {
       if (p.clubs.length < 2) return false;
@@ -2356,9 +2392,9 @@ export default function LePont() {
     // 80% chance to start with a current player
     const currentPool = pool.filter(p => !isRetiredPlayer(p.name));
     const retiredPool = pool.filter(p => isRetiredPlayer(p.name));
-    const useCurrentStart = Math.random() < 0.8 && currentPool.length > 0;
+    const useCurrentStart = rand() < 0.8 && currentPool.length > 0;
     const startPool = useCurrentStart ? currentPool : (retiredPool.length > 0 ? retiredPool : pool);
-    const start = startPool[Math.floor(Math.random() * startPool.length)];
+    const start = startPool[Math.floor(rand() * startPool.length)];
     const usedP = new Set([start.name]);
     
     setChainPlayer(start.name); setChainUsedClubs(new Set()); setChainUsedPlayers(usedP);
@@ -3069,8 +3105,8 @@ export default function LePont() {
                     {i<3?medals[i]:(i+1)}
                   </div>
                   <div style={{flex:1}}>
-                    <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3}}>
-                      <span style={{fontSize:22,fontFamily:G.heading,letterSpacing:1,color:i<3?"#1a0d00":isMe?G.accent:G.white}}>{entry.country && <span style={{marginRight:5,fontSize:18}}>{countryToFlag(entry.country)}</span>}{entry.name}{isMe?" (toi)":""}</span>
+                    <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3,flexWrap:"wrap"}}>
+                      <span style={{fontSize:19,fontFamily:G.heading,letterSpacing:1,color:i<3?"#1a0d00":isMe?G.accent:G.white,whiteSpace:"nowrap"}}>{entry.country && <span style={{marginRight:5,fontSize:16}}>{countryToFlag(entry.country)}</span>}{entry.name}{isMe?" (toi)":""}</span>
                       <span style={{fontSize:12,fontWeight:800,color:grade.color,background:grade.color+"22",borderRadius:20,padding:"3px 9px",letterSpacing:.5}}>{grade.emoji} {grade.label}</span>
                       {entry.streak>=3 && <span style={{fontSize:12,fontWeight:800,color:"#FF6B35",background:"rgba(255,107,53,.15)",borderRadius:20,padding:"3px 9px"}}>🔥 {entry.streak}</span>}
                     </div>
@@ -3331,12 +3367,12 @@ export default function LePont() {
           onChange={function(e){setPseudoInput(e.target.value.toLowerCase().replace(/[^a-z0-9_.]/g,""));setPseudoMsg("");}}
           onKeyDown={function(e){if(e.key==="Enter")checkAndSavePseudo(pseudoInput);}}
           placeholder={lang==="en"?"Your unique username...":"Ton pseudo unique..."}
-          maxLength={16}
+          maxLength={12}
           autoFocus
           style={{width:"100%",background:"rgba(255,255,255,.06)",border:"1.5px solid rgba(255,255,255,.15)",borderRadius:14,padding:"14px 16px",fontFamily:G.font,fontSize:17,color:G.white,outline:"none",boxSizing:"border-box",marginBottom:8,textAlign:"center"}}
         />
         {pseudoMsg && <div style={{fontSize:13,fontWeight:700,color:pseudoMsg.startsWith("❌")?"#FF3D57":"#00E676",marginBottom:8,textAlign:"center"}}>{pseudoMsg}</div>}
-        <div style={{fontSize:11,color:"rgba(255,255,255,.2)",marginBottom:16,textAlign:"center"}}>{lang==="en"?"3–16 characters · letters, digits, _ and . · no spaces":"3–16 caractères · lettres, chiffres, _ et . · pas d'espaces"}</div>
+        <div style={{fontSize:11,color:"rgba(255,255,255,.2)",marginBottom:16,textAlign:"center"}}>{lang==="en"?"3–12 characters · letters, digits, _ and . · no spaces":"3–12 caractères · lettres, chiffres, _ et . · pas d'espaces"}</div>
         <button
           onClick={function(){checkAndSavePseudo(pseudoInput);}}
           disabled={pseudoChecking||pseudoInput.trim().length<3}
