@@ -2723,8 +2723,8 @@ export default function LePont() {
         <div style={{display:"flex",alignItems:"center",gap:12}}>
           <div style={{fontSize:28}}>🔔</div>
           <div>
-            <div style={{fontSize:14,fontWeight:800,color:G.white}}>Reçois des rappels !</div>
-            <div style={{fontSize:12,color:"rgba(255,255,255,.6)",marginTop:2}}>On te pinguera si t'as pas joué depuis 24h</div>
+            <div style={{fontSize:14,fontWeight:800,color:G.white}}>{lang==="en"?"Get reminders!":"Reçois des rappels !"}</div>
+            <div style={{fontSize:12,color:"rgba(255,255,255,.6)",marginTop:2}}>{lang==="en"?"We'll ping you if you haven't played for 24h":"On te pinguera si t'as pas joué depuis 24h"}</div>
           </div>
         </div>
         <div style={{display:"flex",gap:8}}>
@@ -2734,10 +2734,10 @@ export default function LePont() {
             setShowNotifPrompt(false);
             if(ok) scheduleNextNotif();
           }} style={{flex:2,padding:"11px",background:"#16a34a",color:G.white,border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:800}}>
-            ✓ Oui, active !
+            {lang==="en"?"✓ Yes, enable!":"✓ Oui, active !"}
           </button>
           <button onClick={()=>setShowNotifPrompt(false)} style={{flex:1,padding:"11px",background:"rgba(255,255,255,.06)",color:"rgba(255,255,255,.6)",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:600}}>
-            Plus tard
+            {lang==="en"?"Later":"Plus tard"}
           </button>
         </div>
       </div>
@@ -2750,8 +2750,8 @@ export default function LePont() {
       <div style={{background:"linear-gradient(135deg,#f59e0b,#ef4444)",borderRadius:16,padding:"12px 16px",boxShadow:"0 6px 24px rgba(245,158,11,.4)",display:"flex",alignItems:"center",gap:12}}>
         {Icon.ball(22,G.white)}
         <div style={{flex:1}}>
-          <div style={{fontSize:13,fontWeight:800,color:G.white}}>Content de te revoir ! 🙌</div>
-          <div style={{fontSize:11,color:"rgba(255,255,255,.8)",marginTop:1}}>Ça fait +24h — ton record t'attend !</div>
+          <div style={{fontSize:13,fontWeight:800,color:G.white}}>{lang==="en"?"Welcome back! 🙌":"Content de te revoir ! 🙌"}</div>
+          <div style={{fontSize:11,color:"rgba(255,255,255,.8)",marginTop:1}}>{lang==="en"?"It's been 24h+ — your record awaits!":"Ça fait +24h — ton record t'attend !"}</div>
         </div>
         <button onClick={()=>setWasAway(false)} style={{background:"rgba(255,255,255,.2)",border:"none",borderRadius:20,width:26,height:26,cursor:"pointer",color:G.white,fontSize:14,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
       </div>
@@ -2972,7 +2972,7 @@ export default function LePont() {
               );
             })}
           </div>
-          <button onClick={function(){setShowFriends(false);setSelectedFriend(null);}} style={{width:"100%",background:"rgba(255,255,255,.05)",color:"rgba(255,255,255,.5)",border:"1px solid rgba(255,255,255,.1)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,padding:"10px",marginTop:4}}>↩ Retour</button>
+          <button onClick={function(){setShowFriends(false);setSelectedFriend(null);}} style={{width:"100%",background:"rgba(255,255,255,.05)",color:"rgba(255,255,255,.5)",border:"1px solid rgba(255,255,255,.1)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,padding:"10px",marginTop:4}}>{lang==="en"?"↩ Back":"↩ Retour"}</button>
         </div>
       </div>
     );
@@ -3044,7 +3044,7 @@ export default function LePont() {
             );})}
           </div>
           {leaderboard.length === 0 && (
-            <div style={{textAlign:"center",padding:"32px 0",color:"rgba(255,255,255,.3)",fontSize:14}}>Aucun score pour le moment</div>
+            <div style={{textAlign:"center",padding:"32px 0",color:"rgba(255,255,255,.3)",fontSize:14}}>{lang==="en"?"No scores yet":"Aucun score pour le moment"}</div>
           )}
           {(lbMode==="amis"
             ? leaderboard.filter(function(e){ return e.pid===playerId || friendsList.includes(e.pid); })
@@ -3832,7 +3832,7 @@ export default function LePont() {
             {roomMsg && <div style={{fontSize:13,color:"#FF3D57",fontWeight:700,marginBottom:12,textAlign:"center"}}>{roomMsg}</div>}
             <div style={{display:"flex",gap:10}}>
               <button onClick={function(){setShowRoomCreate(false);}} style={{flex:1,padding:"15px",background:"rgba(255,255,255,.07)",color:"rgba(255,255,255,.5)",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14}}>{lang==="en"?"Cancel":"Annuler"}</button>
-              <button onClick={createRoom} style={{flex:2,padding:"15px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800}}>Créer la salle 🚀</button>
+              <button onClick={createRoom} style={{flex:2,padding:"15px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800}}>{lang==="en"?"Create room 🚀":"Créer la salle 🚀"}</button>
             </div>
           </div>
         </div>
@@ -4196,8 +4196,8 @@ export default function LePont() {
             <path d="M20.844 18.68c-.248-.124-1.47-.725-1.698-.808-.228-.082-.394-.124-.56.124-.165.248-.64.808-.785.973-.144.166-.29.186-.537.062-.248-.124-1.047-.386-1.994-1.23-.737-.657-1.235-1.468-1.38-1.716-.144-.248-.015-.382.109-.505.111-.111.248-.29.372-.435.124-.145.165-.248.248-.414.082-.165.041-.31-.021-.434-.062-.124-.56-1.35-.767-1.848-.202-.485-.408-.42-.56-.427l-.477-.008c-.165 0-.434.062-.662.31-.227.248-.868.848-.868 2.068 0 1.22.889 2.398 1.013 2.563.124.165 1.748 2.67 4.236 3.745.592.255 1.054.407 1.414.521.594.189 1.135.162 1.562.098.476-.071 1.47-.6 1.677-1.18.207-.58.207-1.077.145-1.18-.062-.103-.228-.165-.476-.29z" fill="#25D366"/>
           </svg>
           <div style={{flex:1}}>
-            <div style={{fontSize:13,fontWeight:800,color:"#25D366"}}>Rejoins la communauté GOAT FC 🐐</div>
-            <div style={{fontSize:11,color:"rgba(255,255,255,.4)",marginTop:1}}>Matchs · Discussions foot · Bugs & Idées</div>
+            <div style={{fontSize:13,fontWeight:800,color:"#25D366"}}>{lang==="en"?"Join the GOAT FC community 🐐":"Rejoins la communauté GOAT FC 🐐"}</div>
+            <div style={{fontSize:11,color:"rgba(255,255,255,.4)",marginTop:1}}>{lang==="en"?"Matches · Football talk · Bugs & Ideas":"Matchs · Discussions foot · Bugs & Idées"}</div>
           </div>
           <span style={{fontSize:16,color:"rgba(37,211,102,.6)"}}>›</span>
         </a>
@@ -4522,7 +4522,7 @@ export default function LePont() {
         <div style={{fontFamily:G.heading,fontSize:"clamp(36px,9vw,56px)",color:totalRounds===2&&currentRound===1?G.gold:G.white,letterSpacing:2,marginTop:6}}>
           {totalRounds===2&&currentRound===1?(lang==="en"?"⚽ HALF-TIME!":"⚽ MI-TEMPS !"):(lang==="en"?"ROUND "+currentRound+" DONE":"MANCHE "+currentRound+" TERMINÉE")}
         </div>
-        {totalRounds===2&&currentRound===1&&<div style={{fontSize:14,color:"rgba(255,255,255,.6)",marginTop:8,letterSpacing:2}}>Retour sur le terrain dans 3... 2... 1...</div>}
+        {totalRounds===2&&currentRound===1&&<div style={{fontSize:14,color:"rgba(255,255,255,.6)",marginTop:8,letterSpacing:2}}>{lang==="en"?"Back on the pitch in 3... 2... 1...":"Retour sur le terrain dans 3... 2... 1..."}</div>}
       </div>
       <div style={sheet}>
         {roundScores.map((s,i)=>(
@@ -4538,7 +4538,7 @@ export default function LePont() {
         {/* Classement multi intermédiaire */}
         {activeDuelRef.current&&activeDuelRef.current.isRoom&&(
           <div style={{marginTop:16}}>
-            <div style={{fontSize:11,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:10,textAlign:"center"}}>Classement en cours</div>
+            <div style={{fontSize:11,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:10,textAlign:"center"}}>{lang==="en"?"Live leaderboard":"Classement en cours"}</div>
             {roomRoundSnapshot ? roomRoundSnapshot.map(function(p,i){
               const medals=["🥇","🥈","🥉"];
               return(
@@ -4595,7 +4595,7 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
           <div style={{fontFamily:G.heading,fontSize:"clamp(54px,13vw,80px)",color:G.white,lineHeight:1}}>{sc}</div>
           <div style={{fontSize:11,color:"#bbb"}}>pts{isChain?` · ${chainCount} lien${chainCount>1?"s":""}`:`  ·  ${totalRounds} manche${totalRounds>1?"s":""}`}</div>
           {maxCombo>=3&&<div style={{fontSize:13,color:"#f59e0b",marginTop:4,fontWeight:700}}>🔥 Meilleur combo : x{maxCombo}</div>}
-          {isNewRecord&&<div style={{fontSize:12,color:G.accent,marginTop:6,fontStyle:"italic"}}>Ancien record battu 🎉</div>}
+          {isNewRecord&&<div style={{fontSize:12,color:G.accent,marginTop:6,fontStyle:"italic"}}>{lang==="en"?"Previous record beaten 🎉":"Ancien record battu 🎉"}</div>}
           {dayStreak>=2&&<div style={{fontSize:12,color:"#FF6B35",marginTop:6,fontWeight:700}}>🔥 {dayStreak} jours de suite !</div>}
         </div>
 
