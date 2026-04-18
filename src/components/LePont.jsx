@@ -3338,9 +3338,11 @@ export default function LePont() {
 
       {/* Avatar + Pseudo */}
       <div style={{zIndex:1,padding:"16px 20px 8px",textAlign:"center"}}>
-        <label htmlFor="avatar-upload" style={{display:"block",width:100,height:100,borderRadius:"50%",background:playerAvatar?"#000":"linear-gradient(135deg,#00E676,#00A855)",margin:"0 auto 14px",display:"flex",alignItems:"center",justifyContent:"center",fontSize:44,boxShadow:"0 8px 30px rgba(0,230,118,.35)",cursor:"pointer",overflow:"hidden",position:"relative"}}>
-          {playerAvatar ? <img src={playerAvatar} alt="avatar" style={{width:"100%",height:"100%",objectFit:"cover"}}/> : (playerName||"?")[0].toUpperCase()}
-          <div style={{position:"absolute",bottom:-2,right:-2,width:34,height:34,borderRadius:"50%",background:G.accent,border:"3px solid #0d1f0d",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15}}>{avatarUploading?"⏳":"📷"}</div>
+        <label htmlFor="avatar-upload" style={{display:"inline-block",width:100,height:100,margin:"0 auto 14px",position:"relative",cursor:"pointer"}}>
+          <div style={{width:100,height:100,borderRadius:"50%",background:playerAvatar?"#000":"linear-gradient(135deg,#00E676,#00A855)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:44,color:"#fff",boxShadow:"0 8px 30px rgba(0,230,118,.35)",overflow:"hidden"}}>
+            {playerAvatar ? <img src={playerAvatar} alt="avatar" style={{width:"100%",height:"100%",objectFit:"cover"}}/> : (playerName||"?")[0].toUpperCase()}
+          </div>
+          <div style={{position:"absolute",bottom:-2,right:-2,width:34,height:34,borderRadius:"50%",background:G.accent,border:"3px solid #0d1f0d",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,zIndex:2}}>{avatarUploading?"⏳":"📷"}</div>
         </label>
         <input id="avatar-upload" type="file" accept="image/*" style={{display:"none"}} onChange={async (e)=>{
           const file = e.target.files?.[0];
