@@ -4296,7 +4296,9 @@ export default function LePont() {
                   placeholder="Nom du joueur..." autoComplete="off"
                   style={{width:"100%",background:flash==="ko"?"#fee2e2":flash==="ok"?"#dcfce7":G.offWhite,border:("2px solid "+(flash==="ko"?G.red:flash==="ok"?G.accent:"#e5e5e0")+""),borderRadius:18,padding:"15px 18px",fontFamily:G.font,fontSize:18,fontWeight:700,color:G.dark,outline:"none",textAlign:"center",transition:"all .15s",animation:flash==="ko"?"answerKo .4s ease":flash==="ok"?"answerOk .4s ease":"none",boxSizing:"border-box"}}/>
                 {guess.length>=3&&!flash&&(()=>{
-                  const sugg=PLAYERS_CLEAN.filter(p=>p&&p.name&&p.name.toLowerCase().includes(guess.toLowerCase())).slice(0,5);
+                  const norm=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+                  const q=norm(guess);
+                  const sugg=PLAYERS_CLEAN.filter(p=>p&&p.name&&norm(p.name).includes(q)).slice(0,5);
                   if(!sugg.length) return null;
                   return (<div style={{position:"absolute",top:"100%",left:0,right:0,background:G.offWhite,borderRadius:14,boxShadow:"0 8px 24px rgba(0,0,0,.2)",zIndex:100,overflow:"hidden",marginTop:4}}>
                     {sugg.map(p=>(<div key={p.name} onClick={()=>{setGuess(p.name);setTimeout(()=>handleSubmit(),50);}} style={{padding:"12px 18px",fontFamily:G.font,fontSize:15,fontWeight:700,color:G.dark,cursor:"pointer",borderBottom:"1px solid rgba(0,0,0,.06)",textAlign:"left"}}>{p.name}</div>))}
