@@ -3937,8 +3937,13 @@ export default function LePont() {
             </div>}
             {/* Bouton jouer */}
             {/* Mots-clés PLUG */}
-            <div style={{position:"absolute",bottom:76,left:8,right:8,zIndex:2,textAlign:"center",fontFamily:G.font,fontSize:12,fontWeight:800,color:"#fff",letterSpacing:1.5,textShadow:"0 2px 8px rgba(0,0,0,.9)"}}>
-              {lang==="en"?"2 CLUBS · 1 PLAYER":"2 CLUBS · 1 JOUEUR"}
+            <div style={{position:"absolute",bottom:76,left:8,right:8,zIndex:2,textAlign:"center",textShadow:"0 2px 8px rgba(0,0,0,.9)"}}>
+              <div style={{fontFamily:G.heading,fontSize:14,fontWeight:800,color:"#fff",letterSpacing:1,lineHeight:1.1}}>
+                {lang==="en"?"FIND THE PLAYER":"TROUVE LE JOUEUR"}
+              </div>
+              <div style={{fontFamily:G.font,fontSize:10,fontWeight:700,color:"rgba(255,255,255,.75)",letterSpacing:1.2,marginTop:3}}>
+                {lang==="en"?"WHO LINKED THE 2 CLUBS":"QUI RELIE LES 2 CLUBS"}
+              </div>
             </div>
             <div style={{position:"absolute",bottom:6,left:8,right:8,zIndex:2,background:G.accent,borderRadius:50,padding:"20px 0",color:"#000",fontFamily:G.font,fontWeight:800,fontSize:16,textAlign:"center",boxShadow:"0 6px 20px rgba(0,0,0,.4)"}}>{lang==="en"?"▶ Play":"▶ Jouer"}</div>
           </div>
@@ -3958,8 +3963,13 @@ export default function LePont() {
               <span style={{fontFamily:G.heading,fontSize:15,color:G.accent}}>{chainRecord.score} pts</span>
             </div>}
             {/* Mots-clés MERCATO */}
-            <div style={{position:"absolute",bottom:76,left:8,right:8,zIndex:2,textAlign:"center",fontFamily:G.font,fontSize:12,fontWeight:800,color:"#fff",letterSpacing:1.5,textShadow:"0 2px 8px rgba(0,0,0,.9)"}}>
-              {lang==="en"?"PLAYER · CLUB · PLAYER":"JOUEUR · CLUB · JOUEUR"}
+            <div style={{position:"absolute",bottom:76,left:8,right:8,zIndex:2,textAlign:"center",textShadow:"0 2px 8px rgba(0,0,0,.9)"}}>
+              <div style={{fontFamily:G.heading,fontSize:14,fontWeight:800,color:"#fff",letterSpacing:1,lineHeight:1.1}}>
+                {lang==="en"?"CHAIN":"ENCHAÎNE"}
+              </div>
+              <div style={{fontFamily:G.font,fontSize:10,fontWeight:700,color:"rgba(255,255,255,.75)",letterSpacing:1.2,marginTop:3}}>
+                {lang==="en"?"PLAYER → CLUB → PLAYER":"JOUEUR → CLUB → JOUEUR"}
+              </div>
             </div>
             <div style={{position:"absolute",bottom:6,left:8,right:8,zIndex:2,background:G.accent,borderRadius:50,padding:"20px 0",color:"#000",fontFamily:G.font,fontWeight:800,fontSize:16,textAlign:"center",boxShadow:"0 6px 20px rgba(0,0,0,.4)"}}>{lang==="en"?"▶ Play":"▶ Jouer"}</div>
           </div>
