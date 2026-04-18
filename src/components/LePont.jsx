@@ -898,6 +898,18 @@ export default function LePont() {
   const [lbDiff, setLbDiff] = useState("facile");
   const [playerName, setPlayerName] = useState("");
   const [showInstructions, setShowInstructions] = useState(null);
+  const [lang, setLang] = useState(() => {
+    try {
+      const saved = localStorage.getItem("bb_lang");
+      if (saved === "fr" || saved === "en") return saved;
+      const nav = (navigator.language || "fr").toLowerCase();
+      return nav.startsWith("fr") ? "fr" : "en";
+    } catch { return "fr"; }
+  });
+  const setLanguage = (l) => {
+    setLang(l);
+    try { localStorage.setItem("bb_lang", l); } catch {}
+  };
   const [showTutorial, setShowTutorial] = useState(false);
   const [tutorialStep, setTutorialStep] = useState(0);
   // Friends
@@ -3221,7 +3233,12 @@ export default function LePont() {
 
 
   // ── TUTORIAL ──
-  const TUTORIAL_SLIDES = [
+  const TUTORIAL_SLIDES = lang === "en" ? [
+    { icon:"⚽", title:"THE PLUG", subtitle:"Find the player linking 2 clubs", desc:"We show you 2 clubs. Find the player who played for both!", color:"#1a4a2e", accent:"#00E676" },
+    { icon:"⛓", title:"THE MERCATO", subtitle:"Chain player → club → player", desc:"A player is shown. Type a club they played for, then another player from that club… and so on!", color:"#1a2a4a", accent:"#60a5fa" },
+    { icon:"⚡", title:"DAILY CHALLENGE", subtitle:"A mystery player every day", desc:"Every day, a new mystery player to guess. Come back daily to keep your streak alive!", color:"#3a2a00", accent:"#FFD600" },
+    { icon:"👥", title:"MULTIPLAYER", subtitle:"Play with your friends", desc:"Create a room, share the code, and battle in real time with up to 8 players!", color:"#2a1a3a", accent:"#c084fc" },
+  ] : [
     { icon:"⚽", title:"THE PLUG", subtitle:"Trouve le joueur qui relie 2 clubs", desc:"On te montre 2 clubs. Trouve le joueur qui a joué dans les deux !", color:"#1a4a2e", accent:"#00E676" },
     { icon:"⛓", title:"THE MERCATO", subtitle:"Enchaîne joueur → club → joueur", desc:"Un joueur est affiché. Tape un club où il a joué, puis un autre joueur de ce club… et ainsi de suite !", color:"#1a2a4a", accent:"#60a5fa" },
     { icon:"⚡", title:"DÉFI DU JOUR", subtitle:"Un joueur mystère chaque jour", desc:"Chaque jour, un nouveau joueur mystère à deviner. Reviens tous les jours pour ne pas perdre ta série !", color:"#3a2a00", accent:"#FFD600" },
@@ -3252,13 +3269,13 @@ export default function LePont() {
             <div style={{fontSize:13,color:sl.accent,fontWeight:700,letterSpacing:1,marginBottom:16,textTransform:"uppercase"}}>{sl.subtitle}</div>
             <div style={{fontSize:15,color:"rgba(255,255,255,.7)",lineHeight:1.6,marginBottom:32}}>{sl.desc}</div>
             <div style={{display:"flex",gap:10}}>
-              {tutorialStep > 0 && <button onClick={()=>setTutorialStep(s=>s-1)} style={{flex:1,padding:"14px",background:"rgba(255,255,255,.07)",color:"rgba(255,255,255,.5)",border:"1px solid rgba(255,255,255,.1)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>← Retour</button>}
+              {tutorialStep > 0 && <button onClick={()=>setTutorialStep(s=>s-1)} style={{flex:1,padding:"14px",background:"rgba(255,255,255,.07)",color:"rgba(255,255,255,.5)",border:"1px solid rgba(255,255,255,.1)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>{lang==="en"?"← Back":"← Retour"}</button>}
               {tutorialStep < TUTORIAL_SLIDES.length-1
-                ? <button onClick={()=>setTutorialStep(s=>s+1)} style={{flex:2,padding:"14px",background:sl.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800}}>Suivant →</button>
-                : <button onClick={closeTutorial} style={{flex:2,padding:"14px",background:sl.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800}}>C'est parti 🚀</button>
+                ? <button onClick={()=>setTutorialStep(s=>s+1)} style={{flex:2,padding:"14px",background:sl.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800}}>{lang==="en"?"Next →":"Suivant →"}</button>
+                : <button onClick={closeTutorial} style={{flex:2,padding:"14px",background:sl.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800}}>{lang==="en"?"Let's go 🚀":"C'est parti 🚀"}</button>
               }
             </div>
-            {tutorialStep < TUTORIAL_SLIDES.length-1 && <button onClick={closeTutorial} style={{marginTop:16,background:"none",border:"none",color:"rgba(255,255,255,.3)",cursor:"pointer",fontFamily:G.font,fontSize:13}}>Passer</button>}
+            {tutorialStep < TUTORIAL_SLIDES.length-1 && <button onClick={closeTutorial} style={{marginTop:16,background:"none",border:"none",color:"rgba(255,255,255,.3)",cursor:"pointer",fontFamily:G.font,fontSize:13}}>{lang==="en"?"Skip":"Passer"}</button>}
           </div>
         </div>
       </div>
@@ -3717,11 +3734,24 @@ export default function LePont() {
         <button onClick={()=>{setShowTutorial(true);setTutorialStep(0);}} style={{padding:"16px",background:"#123a1e",border:"1px solid rgba(96,165,250,.5)",borderRadius:16,cursor:"pointer",color:G.white,fontFamily:G.font,fontSize:15,fontWeight:700,display:"flex",alignItems:"center",gap:12,textAlign:"left"}}>
           <span style={{fontSize:22}}>❓</span>
           <div style={{flex:1}}>
-            <div>Comment jouer ?</div>
-            <div style={{fontSize:11,color:"rgba(255,255,255,.75)",fontWeight:500,marginTop:2}}>Revoir le tutoriel</div>
+            <div>{lang==="en"?"How to play?":"Comment jouer ?"}</div>
+            <div style={{fontSize:11,color:"rgba(255,255,255,.75)",fontWeight:500,marginTop:2}}>{lang==="en"?"See the tutorial again":"Revoir le tutoriel"}</div>
           </div>
           <span style={{fontSize:18,color:"rgba(255,255,255,.3)"}}>→</span>
         </button>
+
+        {/* Language switcher */}
+        <div style={{padding:"16px",background:"#123a1e",border:"1px solid rgba(255,214,0,.5)",borderRadius:16,color:G.white,fontFamily:G.font,fontSize:15,fontWeight:700,display:"flex",alignItems:"center",gap:12}}>
+          <span style={{fontSize:22}}>🌐</span>
+          <div style={{flex:1}}>
+            <div>{lang==="en"?"Language":"Langue"}</div>
+            <div style={{fontSize:11,color:"rgba(255,255,255,.75)",fontWeight:500,marginTop:2}}>{lang==="en"?"Choose your language":"Choisis ta langue"}</div>
+          </div>
+          <div style={{display:"flex",gap:6}}>
+            <button onClick={()=>setLanguage("fr")} style={{padding:"6px 12px",background:lang==="fr"?G.accent:"rgba(255,255,255,.08)",color:lang==="fr"?"#000":"rgba(255,255,255,.7)",border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800}}>🇫🇷 FR</button>
+            <button onClick={()=>setLanguage("en")} style={{padding:"6px 12px",background:lang==="en"?G.accent:"rgba(255,255,255,.08)",color:lang==="en"?"#000":"rgba(255,255,255,.7)",border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800}}>🇬🇧 EN</button>
+          </div>
+        </div>
       </div>
 
       {/* Footer */}
