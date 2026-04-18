@@ -3500,7 +3500,7 @@ export default function LePont() {
           <div style={{fontFamily:G.heading,fontSize:22,color:G.white,letterSpacing:2,flex:1}}>PROFIL</div>
         </div>
         {!d ? (
-          <div style={{zIndex:1,padding:"60px 20px",textAlign:"center",color:"rgba(255,255,255,.5)"}}>Chargement...</div>
+          <div style={{zIndex:1,padding:"60px 20px",textAlign:"center",color:"rgba(255,255,255,.5)"}}>{lang==="en"?"Loading...":"Chargement..."}</div>
         ) : (
           <>
             <div style={{zIndex:1,padding:"16px 20px 8px",textAlign:"center"}}>
@@ -4034,8 +4034,8 @@ export default function LePont() {
             {/* Header */}
             <div style={{zIndex:1,padding:"20px 20px 0",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
               <div>
-                <div style={{fontFamily:G.heading,fontSize:26,color:G.gold,letterSpacing:2}}>⚡ DÉFI DU JOUR</div>
-                <div style={{fontSize:12,color:"rgba(255,255,255,.5)",marginTop:2}}>Devine le joueur mystère</div>
+                <div style={{fontFamily:G.heading,fontSize:26,color:G.gold,letterSpacing:2}}>⚡ {lang==="en"?"DAILY CHALLENGE":"DÉFI DU JOUR"}</div>
+                <div style={{fontSize:12,color:"rgba(255,255,255,.5)",marginTop:2}}>{lang==="en"?"Guess the mystery player":"Devine le joueur mystère"}</div>
               </div>
               <button onClick={function(){setShowDailyGame(false);}} style={{background:"rgba(255,255,255,.1)",border:"1px solid rgba(255,255,255,.15)",borderRadius:"50%",width:36,height:36,color:G.white,cursor:"pointer",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
             </div>
@@ -4050,10 +4050,10 @@ export default function LePont() {
                     background: dailyPlayer.diff==="facile"?"rgba(0,230,118,.15)":dailyPlayer.diff==="moyen"?"rgba(255,214,0,.15)":"rgba(255,61,87,.15)",
                     border: `1px solid ${dailyPlayer.diff==="facile"?"rgba(0,230,118,.3)":dailyPlayer.diff==="moyen"?"rgba(255,214,0,.3)":"rgba(255,61,87,.3)"}`
                   }}>
-                    {dailyPlayer.diff==="facile"?"⭐ Facile":dailyPlayer.diff==="moyen"?"⭐⭐ Moyen":"⭐⭐⭐ Expert"}
+                    {dailyPlayer.diff==="facile"?(lang==="en"?"⭐ Easy":"⭐ Facile"):dailyPlayer.diff==="moyen"?(lang==="en"?"⭐⭐ Medium":"⭐⭐ Moyen"):(lang==="en"?"⭐⭐⭐ Expert":"⭐⭐⭐ Expert")}
                   </span>
                 </div>
-                <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:G.accent,marginBottom:8,textAlign:"center"}}>Clubs dans sa carrière</div>
+                <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:G.accent,marginBottom:8,textAlign:"center"}}>{lang==="en"?"Clubs in career":"Clubs dans sa carrière"}</div>
                 <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:0,marginBottom:12}}>
                   {dailyPlayer.clubs.map(function(club,i){
                     const [ca,cb] = getClubColors(club);
@@ -4080,7 +4080,7 @@ export default function LePont() {
               {/* Tentatives */}
               {dailyTries > 0 && !dailySuccess && (
                 <div style={{textAlign:"center",marginBottom:12}}>
-                  <span style={{fontSize:13,color:"rgba(255,255,255,.4)",fontWeight:700}}>Tentative{dailyTries>1?"s":""} : {dailyTries}</span>
+                  <span style={{fontSize:13,color:"rgba(255,255,255,.4)",fontWeight:700}}>{lang==="en"?(dailyTries>1?"Attempts":"Attempt"):(dailyTries>1?"Tentatives":"Tentative")} : {dailyTries}</span>
                 </div>
               )}
 
@@ -4093,7 +4093,7 @@ export default function LePont() {
                     C'était <span style={{color:"#00E676"}}>{dailyPlayer.name}</span>
                   </div>
                   <div style={{fontSize:14,color:"rgba(255,255,255,.4)",marginTop:4}}>
-                    {dailyTries === 1 ? "Trouvé du premier coup 🐐" : `Trouvé en ${dailyTries} essai${dailyTries>1?"s":""}`}
+                    {dailyTries === 1 ? (lang==="en"?"Got it first try 🐐":"Trouvé du premier coup 🐐") : (lang==="en"?`Found in ${dailyTries} attempts`:`Trouvé en ${dailyTries} essai${dailyTries>1?"s":""}`)}
                   </div>
                 </div>
               ) : (
@@ -4106,7 +4106,7 @@ export default function LePont() {
                     autoComplete="off"
                     style={{width:"100%",background:dailyFlash==="ko"?"rgba(255,61,87,.15)":"rgba(255,255,255,.08)",border:"2px solid "+(dailyFlash==="ko"?"#FF3D57":"rgba(255,255,255,.2)"),borderRadius:18,padding:"18px",fontFamily:G.font,fontSize:19,fontWeight:700,color:"#ffffff",outline:"none",textAlign:"center",transition:"all .2s",boxSizing:"border-box",marginBottom:8}}
                   />
-                  {dailyFlash==="ko" && <div style={{textAlign:"center",fontSize:13,color:"#FF3D57",marginBottom:8,fontWeight:700}}>Ce n'est pas ça... réessaie !</div>}
+                  {dailyFlash==="ko" && <div style={{textAlign:"center",fontSize:13,color:"#FF3D57",marginBottom:8,fontWeight:700}}>{lang==="en"?"That's not it... try again!":"Ce n'est pas ça... réessaie !"}</div>}
 
                   {/* Hints display */}
                   {dailyHintLevel >= 1 && (
@@ -4116,11 +4116,11 @@ export default function LePont() {
                         <span style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"#60a5fa"}}>Indice {dailyHintLevel}/2</span>
                       </div>
                       <div style={{fontSize:13,color:"#fff",lineHeight:1.5}}>
-                        <strong>Poste :</strong> {dailyHintData.position || "..."}
+                        <strong>{lang==="en"?"Position: ":"Poste : "}</strong> {dailyHintData.position || "..."}
                       </div>
                       {dailyHintLevel >= 2 && (
                         <div style={{fontSize:13,color:"#fff",lineHeight:1.5}}>
-                          <strong>Nationalité :</strong> {dailyHintData.nationality || "..."}
+                          <strong>{lang==="en"?"Nationality: ":"Nationalité : "}</strong> {dailyHintData.nationality || "..."}
                         </div>
                       )}
                     </div>
@@ -4129,7 +4129,7 @@ export default function LePont() {
                   {/* Hint button */}
                   {dailyHintLevel < 2 && (
                     <button onClick={fetchHint} disabled={dailyHintData.loading} style={{width:"100%",padding:"12px",background:"rgba(96,165,250,.08)",color:"#60a5fa",border:"1px solid rgba(96,165,250,.3)",borderRadius:50,cursor:dailyHintData.loading?"not-allowed":"pointer",fontFamily:G.font,fontSize:13,fontWeight:700,marginBottom:10,opacity:dailyHintData.loading?0.5:1}}>
-                      {dailyHintData.loading ? "Chargement..." : (dailyHintLevel === 0 ? "💡 Voir le poste (−40 pts)" : "💡 Voir la nationalité")}
+                      {dailyHintData.loading ? (lang==="en"?"Loading...":"Chargement...") : (dailyHintLevel === 0 ? (lang==="en"?"💡 Show position (−40 pts)":"💡 Voir le poste (−40 pts)") : (lang==="en"?"💡 Show nationality":"💡 Voir la nationalité"))}
                     </button>
                   )}
                   <div style={{display:"flex",gap:10,marginTop:8}}>
@@ -4139,10 +4139,10 @@ export default function LePont() {
                       try { localStorage.setItem("bb_daily_result", JSON.stringify({date:today,abandoned:true})); } catch{}
                       setDailyDone(true); setDailyAbandoned(true); updateDayStreak();
                     }} style={{flex:1,padding:"16px",background:"rgba(255,255,255,.05)",color:"rgba(255,255,255,.5)",border:"1px solid rgba(255,255,255,.1)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>
-                      Abandonner
+                      {lang==="en"?"Quit":"Abandonner"}
                     </button>
                     <button onClick={handleDailySubmit} style={{flex:2,padding:"16px",background:"linear-gradient(135deg,#FFD600,#FF6B35)",color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:16,fontWeight:800}}>
-                      Valider ✓
+                      {lang==="en"?"Submit ✓":"Valider ✓"}
                     </button>
                   </div>
                 </>
@@ -4540,7 +4540,7 @@ export default function LePont() {
                 </div>
               );
             }) : (
-              <div style={{textAlign:"center",padding:"16px",color:"rgba(255,255,255,.35)",fontSize:13}}>⏳ Chargement des scores...</div>
+              <div style={{textAlign:"center",padding:"16px",color:"rgba(255,255,255,.35)",fontSize:13}}>⏳ {lang==="en"?"Loading scores...":"Chargement des scores..."}</div>
             )}
           </div>
         )}
@@ -4849,5 +4849,5 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
   if(screen==="final") return makeResultScreen(total,"pont",false);
   if(screen==="chainEnd") return makeResultScreen(chainScore,"chaine",true);
 
-  return <div style={{...shell,justifyContent:"center",alignItems:"center"}}><div style={{color:G.white}}>Chargement…</div></div>;
+  return <div style={{...shell,justifyContent:"center",alignItems:"center"}}><div style={{color:G.white}}>{lang==="en"?"Loading…":"Chargement…"}</div></div>;
 }
