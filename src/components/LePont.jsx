@@ -53,12 +53,9 @@ function getCurrentSeason() {
 }
 
 const GRADES = [
-  { min:500, label:"GOAT",    emoji:"🐐", color:"#FFD700" },
-  { min:300, label:"Légende", emoji:"🦅", color:"#FF6B35" },
-  { min:200, label:"Elite",   emoji:"🦁", color:"#00B4D8" },
-  { min:150, label:"Expert",  emoji:"🐺", color:"#E63946" },
-  { min:100, label:"Pro",     emoji:"🦊", color:"#2EC4B6" },
-  { min:50,  label:"Amateur", emoji:"🐢", color:"#A8DADC" },
+  { min:500, label:"Expert",  emoji:"🐐", color:"#FFD700" },
+  { min:200, label:"Pro",     emoji:"🦁", color:"#00B4D8" },
+  { min:100, label:"Amateur", emoji:"🦊", color:"#2EC4B6" },
   { min:0,   label:"Rookie",  emoji:"🐣", color:"#8D99AE" },
 ];
 
@@ -862,6 +859,9 @@ export default function LePont() {
   const [dailyTries, setDailyTries] = useState(0);
   const [dailyGuess, setDailyGuess] = useState("");
   const [dailyFlash, setDailyFlash] = useState(null);
+  const [dailyHintLevel, setDailyHintLevel] = useState(0); // 0 = no hint, 1 = position, 2 = position + nationality
+  const [dailyHintData, setDailyHintData] = useState({ position: null, nationality: null, loading: false });
+  const [dailyUsedHint, setDailyUsedHint] = useState(false);
   const [dailySuccess, setDailySuccess] = useState(false);
   const [showDailyGame, setShowDailyGame] = useState(false);
   const [dayStreak, setDayStreak] = useState(() => {
@@ -2142,7 +2142,9 @@ export default function LePont() {
     const speedBonus = elapsed <= COMBO_THRESHOLD ? 1 : 0;
     const newCombo = comboRef.current + 1;
     const comboBonus = newCombo>=10?3:newCombo>=5?2:newCombo>=3?1:0;
-    const total = base + speedBonus + comboBonus;
+    // Difficulty-based base points: 20 facile / 35 moyen / 50 expert (halved for chain)
+    const diffBase = isChain ? (diff==="expert"?25:diff==="moyen"?18:10) : (diff==="expert"?50:diff==="moyen"?35:20);
+    const total = diffBase + speedBonus + comboBonus;
     setCombo(newCombo); if(newCombo>maxCombo) setMaxCombo(newCombo);
     if(comboBonus>0||speedBonus>0){
       const parts=[];
@@ -2292,21 +2294,76 @@ export default function LePont() {
     if (isCorrect) {
       setDailySuccess(true);
       setDailyFlash("ok");
+      // Calculate points: 50 expert / 35 moyen / 20 facile direct, 10 with hint
+      const pd = dailyPlayer.diff || "moyen";
+      const earnedPoints = dailyUsedHint ? 10 : (pd==="expert"?50:pd==="moyen"?35:20);
       const today = (()=>{ const d=new Date(); const paris=new Date(d.toLocaleString('en-US',{timeZone:'Europe/Paris'})); return paris.getFullYear()+'-'+String(paris.getMonth()+1).padStart(2,'0')+'-'+String(paris.getDate()).padStart(2,'0'); })();
       try {
-        localStorage.setItem("bb_daily_result", JSON.stringify({date:today, abandoned:false, tries:newTries}));
+        localStorage.setItem("bb_daily_result", JSON.stringify({date:today, abandoned:false, tries:newTries, points:earnedPoints}));
         localStorage.setItem("bb_daily_tries", String(newTries));
+        localStorage.setItem("bb_daily_points", String(earnedPoints));
       } catch{}
       setTimeout(function(){
         setShowDailyGame(false);
         setDailyDone(true);
         setDailyAbandoned(false);
         setDailySuccess(false);
+        setDailyHintLevel(0);
+        setDailyUsedHint(false);
+        setDailyHintData({ position: null, nationality: null, loading: false });
         updateDayStreak();
       }, 3000);
     } else {
       setDailyFlash("ko");
       setTimeout(function(){ setDailyFlash(null); setDailyGuess(""); }, 800);
+    }
+  }
+
+  async function fetchHint() {
+    if (!dailyPlayer) return;
+    if (dailyHintLevel === 0) {
+      // First hint: position
+      setDailyHintData(d => ({ ...d, loading: true }));
+      setDailyUsedHint(true);
+      try {
+        const url = "https://en.wikipedia.org/api/rest_v1/page/summary/" + encodeURIComponent(dailyPlayer.name.replace(/ /g, "_"));
+        const res = await fetch(url);
+        const data = await res.json();
+        const extract = data.extract || "";
+        // Try to extract position from first paragraph
+        let position = null;
+        const positionMatches = extract.match(/\b(goalkeeper|defender|midfielder|forward|striker|winger|centre-back|full-back|left-back|right-back|attacking midfielder|defensive midfielder|centre forward|central midfielder)\b/i);
+        if (positionMatches) {
+          const posMap = { "goalkeeper":"Gardien", "defender":"Défenseur", "midfielder":"Milieu", "forward":"Attaquant", "striker":"Attaquant", "winger":"Ailier", "centre-back":"Défenseur central", "full-back":"Arrière latéral", "left-back":"Arrière gauche", "right-back":"Arrière droit", "attacking midfielder":"Milieu offensif", "defensive midfielder":"Milieu défensif", "centre forward":"Avant-centre", "central midfielder":"Milieu central" };
+          position = posMap[positionMatches[1].toLowerCase()] || positionMatches[1];
+        }
+        setDailyHintData({ position: position || "Information indisponible", nationality: null, loading: false });
+        setDailyHintLevel(1);
+      } catch(e) {
+        setDailyHintData({ position: "Information indisponible", nationality: null, loading: false });
+        setDailyHintLevel(1);
+      }
+    } else if (dailyHintLevel === 1) {
+      // Second hint: nationality
+      setDailyHintData(d => ({ ...d, loading: true }));
+      try {
+        const url = "https://en.wikipedia.org/api/rest_v1/page/summary/" + encodeURIComponent(dailyPlayer.name.replace(/ /g, "_"));
+        const res = await fetch(url);
+        const data = await res.json();
+        const extract = data.extract || "";
+        // Try to extract nationality
+        const natMatch = extract.match(/\b(?:is|was)\s+(?:a|an)\s+([A-Z][a-z]+(?:-[A-Z][a-z]+)?)\s+(?:former\s+)?(?:professional\s+)?(?:footballer|soccer player|footballeur)/i);
+        let nationality = natMatch ? natMatch[1] : null;
+        if (!nationality) {
+          const altMatch = extract.match(/\b([A-Z][a-z]+)\s+footballer/i);
+          nationality = altMatch ? altMatch[1] : "Information indisponible";
+        }
+        setDailyHintData(d => ({ ...d, nationality, loading: false }));
+        setDailyHintLevel(2);
+      } catch(e) {
+        setDailyHintData(d => ({ ...d, nationality: "Information indisponible", loading: false }));
+        setDailyHintLevel(2);
+      }
     }
   }
 
@@ -3798,6 +3855,31 @@ export default function LePont() {
                     style={{width:"100%",background:dailyFlash==="ko"?"rgba(255,61,87,.15)":"rgba(255,255,255,.08)",border:"2px solid "+(dailyFlash==="ko"?"#FF3D57":"rgba(255,255,255,.2)"),borderRadius:18,padding:"18px",fontFamily:G.font,fontSize:19,fontWeight:700,color:"#ffffff",outline:"none",textAlign:"center",transition:"all .2s",boxSizing:"border-box",marginBottom:8}}
                   />
                   {dailyFlash==="ko" && <div style={{textAlign:"center",fontSize:13,color:"#FF3D57",marginBottom:8,fontWeight:700}}>Ce n'est pas ça... réessaie !</div>}
+
+                  {/* Hints display */}
+                  {dailyHintLevel >= 1 && (
+                    <div style={{background:"rgba(96,165,250,.1)",border:"1px solid rgba(96,165,250,.3)",borderRadius:14,padding:"12px 14px",marginBottom:8,display:"flex",flexDirection:"column",gap:6}}>
+                      <div style={{display:"flex",alignItems:"center",gap:8}}>
+                        <span style={{fontSize:16}}>💡</span>
+                        <span style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"#60a5fa"}}>Indice {dailyHintLevel}/2</span>
+                      </div>
+                      <div style={{fontSize:13,color:"#fff",lineHeight:1.5}}>
+                        <strong>Poste :</strong> {dailyHintData.position || "..."}
+                      </div>
+                      {dailyHintLevel >= 2 && (
+                        <div style={{fontSize:13,color:"#fff",lineHeight:1.5}}>
+                          <strong>Nationalité :</strong> {dailyHintData.nationality || "..."}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Hint button */}
+                  {dailyHintLevel < 2 && (
+                    <button onClick={fetchHint} disabled={dailyHintData.loading} style={{width:"100%",padding:"12px",background:"rgba(96,165,250,.08)",color:"#60a5fa",border:"1px solid rgba(96,165,250,.3)",borderRadius:50,cursor:dailyHintData.loading?"not-allowed":"pointer",fontFamily:G.font,fontSize:13,fontWeight:700,marginBottom:10,opacity:dailyHintData.loading?0.5:1}}>
+                      {dailyHintData.loading ? "Chargement..." : (dailyHintLevel === 0 ? "💡 Voir le poste (−40 pts)" : "💡 Voir la nationalité")}
+                    </button>
+                  )}
                   <div style={{display:"flex",gap:10,marginTop:8}}>
                     <button onClick={function(){
                       setShowDailyGame(false);
