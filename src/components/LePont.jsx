@@ -2847,7 +2847,7 @@ export default function LePont() {
         <div style={{...sheet,borderRadius:"28px 28px 0 0",marginTop:16}}>
           {/* Demandes reçues */}
           {friendRequests.length > 0 && (
-            <div style={{background:"#0a0f0a",border:"1px solid rgba(0,230,118,.5)",borderRadius:16,padding:14}}>
+            <div style={{background:"#123a1e",border:"1px solid rgba(0,230,118,.5)",borderRadius:16,padding:14}}>
               <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:G.accent,marginBottom:10}}>👋 Demandes reçues</div>
               {friendRequests.map(function(req){return(
                 <div key={req.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
@@ -2997,7 +2997,7 @@ export default function LePont() {
             const medals = ["🥇","🥈","🥉"];
             const grade = getGrade(entry.score);
             return(
-              <div key={i} onClick={()=>{ if(!isMe) { setShowLeaderboard(false); openUserProfile(entry.pid, entry.name); } }} style={{borderRadius:14,background:isMe?"rgba(0,230,118,.08)":"rgba(255,255,255,.03)",border:isMe?"1px solid rgba(0,230,118,.25)":"1px solid rgba(255,255,255,.05)",marginBottom:6,overflow:"hidden",cursor:isMe?"default":"pointer"}}>
+              <div key={i} onClick={()=>{ if(!isMe) { setShowLeaderboard(false); openUserProfile(entry.pid, entry.name); } }} style={{borderRadius:14,background:isMe?"rgba(0,230,118,.18)":"#123a1e",border:isMe?"1px solid rgba(0,230,118,.5)":"1px solid rgba(255,255,255,.1)",marginBottom:6,overflow:"hidden",cursor:isMe?"default":"pointer"}}>
                 <div style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px"}}>
                   <div style={{fontFamily:G.heading,fontSize:22,width:32,textAlign:"center",color:i<3?["#FFD600","#C0C0C0","#CD7F32"][i]:"rgba(255,255,255,.3)"}}>
                     {i<3?medals[i]:(i+1)}
@@ -3462,22 +3462,22 @@ export default function LePont() {
               <button onClick={()=>setShowDuelCreate({id:viewedProfile.id,name:viewedProfile.name})} style={{flex:1,padding:"13px",background:"linear-gradient(135deg,#FFD600,#FF6B35)",color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>⚡ Défier</button>
             </div>
             <div style={{zIndex:1,padding:"16px 16px 8px",display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-              <div style={{background:"#0a0f0a",border:"1px solid rgba(255,214,0,.5)",borderRadius:16,padding:"14px 10px",textAlign:"center"}}>
+              <div style={{background:"#123a1e",border:"1px solid rgba(255,214,0,.5)",borderRadius:16,padding:"14px 10px",textAlign:"center"}}>
                 <div style={{fontSize:22,marginBottom:4}}>🏆</div>
                 <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,214,0,.95)",marginBottom:4}}>Record Plug</div>
                 <div style={{fontFamily:G.heading,fontSize:26,color:G.gold}}>{d.bestPont||0}</div>
               </div>
-              <div style={{background:"#0a0f0a",border:"1px solid rgba(96,165,250,.5)",borderRadius:16,padding:"14px 10px",textAlign:"center"}}>
+              <div style={{background:"#123a1e",border:"1px solid rgba(96,165,250,.5)",borderRadius:16,padding:"14px 10px",textAlign:"center"}}>
                 <div style={{fontSize:22,marginBottom:4}}>⛓</div>
                 <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(96,165,250,.95)",marginBottom:4}}>Record Mercato</div>
                 <div style={{fontFamily:G.heading,fontSize:26,color:"#60a5fa"}}>{d.bestChaine||0}</div>
               </div>
-              <div style={{background:"#0a0f0a",border:"1px solid rgba(0,230,118,.5)",borderRadius:16,padding:"14px 10px",textAlign:"center"}}>
+              <div style={{background:"#123a1e",border:"1px solid rgba(0,230,118,.5)",borderRadius:16,padding:"14px 10px",textAlign:"center"}}>
                 <div style={{fontSize:22,marginBottom:4}}>🎮</div>
                 <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(0,230,118,.95)",marginBottom:4}}>Parties</div>
                 <div style={{fontFamily:G.heading,fontSize:26,color:G.accent}}>{d.played||0}</div>
               </div>
-              <div style={{background:"#0a0f0a",border:"1px solid rgba(192,132,252,.5)",borderRadius:16,padding:"14px 10px",textAlign:"center"}}>
+              <div style={{background:"#123a1e",border:"1px solid rgba(192,132,252,.5)",borderRadius:16,padding:"14px 10px",textAlign:"center"}}>
                 <div style={{fontSize:22,marginBottom:4}}>⭐</div>
                 <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(192,132,252,.95)",marginBottom:4}}>Score Total</div>
                 <div style={{fontFamily:G.heading,fontSize:26,color:"#c084fc"}}>{d.score||0}</div>
@@ -3626,22 +3626,22 @@ export default function LePont() {
 
       {/* Stats cards */}
       <div style={{zIndex:1,padding:"16px 16px 8px",display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-        <div style={{background:"#0a0f0a",border:"1px solid rgba(255,214,0,.5)",borderRadius:16,padding:"14px 10px",textAlign:"center"}}>
+        <div style={{background:"#123a1e",border:"1px solid rgba(255,214,0,.5)",borderRadius:16,padding:"14px 10px",textAlign:"center"}}>
           <div style={{fontSize:22,marginBottom:4}}>🏆</div>
           <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,214,0,.95)",marginBottom:4}}>Record Plug</div>
           <div style={{fontFamily:G.heading,fontSize:26,color:G.gold}}>{record?record.score:0}</div>
         </div>
-        <div style={{background:"#0a0f0a",border:"1px solid rgba(96,165,250,.5)",borderRadius:16,padding:"14px 10px",textAlign:"center"}}>
+        <div style={{background:"#123a1e",border:"1px solid rgba(96,165,250,.5)",borderRadius:16,padding:"14px 10px",textAlign:"center"}}>
           <div style={{fontSize:22,marginBottom:4}}>⛓</div>
           <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(96,165,250,.95)",marginBottom:4}}>Record Mercato</div>
           <div style={{fontFamily:G.heading,fontSize:26,color:"#60a5fa"}}>{chainRecord?chainRecord.score:0}</div>
         </div>
-        <div style={{background:"#0a0f0a",border:"1px solid rgba(0,230,118,.5)",borderRadius:16,padding:"14px 10px",textAlign:"center"}}>
+        <div style={{background:"#123a1e",border:"1px solid rgba(0,230,118,.5)",borderRadius:16,padding:"14px 10px",textAlign:"center"}}>
           <div style={{fontSize:22,marginBottom:4}}>👥</div>
           <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(0,230,118,.95)",marginBottom:4}}>Amis</div>
           <div style={{fontFamily:G.heading,fontSize:26,color:G.accent}}>{friendsList.length}</div>
         </div>
-        <div style={{background:"#0a0f0a",border:"1px solid rgba(192,132,252,.5)",borderRadius:16,padding:"14px 10px",textAlign:"center"}}>
+        <div style={{background:"#123a1e",border:"1px solid rgba(192,132,252,.5)",borderRadius:16,padding:"14px 10px",textAlign:"center"}}>
           <div style={{fontSize:22,marginBottom:4}}>🎮</div>
           <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(192,132,252,.95)",marginBottom:4}}>Parties</div>
           <div style={{fontFamily:G.heading,fontSize:26,color:"#c084fc"}}>{(record?1:0)+(chainRecord?1:0)}</div>
@@ -3650,7 +3650,7 @@ export default function LePont() {
 
       {/* Actions */}
       <div style={{zIndex:1,padding:"8px 16px",display:"flex",flexDirection:"column",gap:10}}>
-        <button onClick={()=>{setShowFriends(true);setScreen("home");}} style={{padding:"16px",background:"#0a0f0a",border:"1px solid rgba(0,230,118,.5)",borderRadius:16,cursor:"pointer",color:G.white,fontFamily:G.font,fontSize:15,fontWeight:700,display:"flex",alignItems:"center",gap:12,textAlign:"left"}}>
+        <button onClick={()=>{setShowFriends(true);setScreen("home");}} style={{padding:"16px",background:"#123a1e",border:"1px solid rgba(0,230,118,.5)",borderRadius:16,cursor:"pointer",color:G.white,fontFamily:G.font,fontSize:15,fontWeight:700,display:"flex",alignItems:"center",gap:12,textAlign:"left"}}>
           <span style={{fontSize:22}}>👥</span>
           <div style={{flex:1}}>
             <div>Mes amis</div>
@@ -3659,7 +3659,7 @@ export default function LePont() {
           <span style={{fontSize:18,color:"rgba(255,255,255,.3)"}}>→</span>
         </button>
 
-        <button onClick={()=>{setLbMode("pont");setLbDiff("facile");loadLeaderboard("pont");setShowLeaderboard(true);setScreen("home");}} style={{padding:"16px",background:"#0a0f0a",border:"1px solid rgba(255,214,0,.5)",borderRadius:16,cursor:"pointer",color:G.white,fontFamily:G.font,fontSize:15,fontWeight:700,display:"flex",alignItems:"center",gap:12,textAlign:"left"}}>
+        <button onClick={()=>{setLbMode("pont");setLbDiff("facile");loadLeaderboard("pont");setShowLeaderboard(true);setScreen("home");}} style={{padding:"16px",background:"#123a1e",border:"1px solid rgba(255,214,0,.5)",borderRadius:16,cursor:"pointer",color:G.white,fontFamily:G.font,fontSize:15,fontWeight:700,display:"flex",alignItems:"center",gap:12,textAlign:"left"}}>
           <span style={{fontSize:22}}>🏆</span>
           <div style={{flex:1}}>
             <div>Classement</div>
@@ -3668,7 +3668,7 @@ export default function LePont() {
           <span style={{fontSize:18,color:"rgba(255,255,255,.3)"}}>→</span>
         </button>
 
-        <button onClick={()=>{setShowTutorial(true);setTutorialStep(0);}} style={{padding:"16px",background:"#0a0f0a",border:"1px solid rgba(96,165,250,.5)",borderRadius:16,cursor:"pointer",color:G.white,fontFamily:G.font,fontSize:15,fontWeight:700,display:"flex",alignItems:"center",gap:12,textAlign:"left"}}>
+        <button onClick={()=>{setShowTutorial(true);setTutorialStep(0);}} style={{padding:"16px",background:"#123a1e",border:"1px solid rgba(96,165,250,.5)",borderRadius:16,cursor:"pointer",color:G.white,fontFamily:G.font,fontSize:15,fontWeight:700,display:"flex",alignItems:"center",gap:12,textAlign:"left"}}>
           <span style={{fontSize:22}}>❓</span>
           <div style={{flex:1}}>
             <div>Comment jouer ?</div>
@@ -3796,7 +3796,7 @@ export default function LePont() {
         )}
         {/* Bandeau demandes d'amis */}
         {friendRequests.length > 0 && (
-          <div style={{background:"#0a0f0a",border:"1px solid rgba(0,230,118,.5)",borderRadius:12,padding:"10px 14px"}}>
+          <div style={{background:"#123a1e",border:"1px solid rgba(0,230,118,.5)",borderRadius:12,padding:"10px 14px"}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
               <div style={{fontSize:12,fontWeight:700,color:G.accent}}>👋 {friendRequests.length} demande{friendRequests.length>1?"s":""} d'ami</div>
               <button onClick={function(){setShowFriends(true);loadFriendRequests();}} style={{padding:"5px 12px",background:G.accent,color:"#000",border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800}}>Voir</button>
@@ -4029,7 +4029,7 @@ export default function LePont() {
 
                   {/* Hints display */}
                   {dailyHintLevel >= 1 && (
-                    <div style={{background:"#0a0f0a",border:"1px solid rgba(96,165,250,.5)",borderRadius:14,padding:"12px 14px",marginBottom:8,display:"flex",flexDirection:"column",gap:6}}>
+                    <div style={{background:"#123a1e",border:"1px solid rgba(96,165,250,.5)",borderRadius:14,padding:"12px 14px",marginBottom:8,display:"flex",flexDirection:"column",gap:6}}>
                       <div style={{display:"flex",alignItems:"center",gap:8}}>
                         <span style={{fontSize:16}}>💡</span>
                         <span style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"#60a5fa"}}>Indice {dailyHintLevel}/2</span>
