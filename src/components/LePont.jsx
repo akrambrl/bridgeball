@@ -3806,7 +3806,11 @@ export default function LePont() {
       {/* ── HEADER compact ── */}
       <div style={{zIndex:1,padding:"6px 20px 2px"}}>
         <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between"}}>
-          <div style={{flex:1}}/>
+          <div style={{flex:1,display:"flex",alignItems:"center"}}>
+            <div onClick={function(){setTutorialStep(0);setShowTutorial(true);}} style={{background:"rgba(96,165,250,.15)",border:"1px solid rgba(96,165,250,.4)",borderRadius:12,width:38,height:38,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",boxShadow:"0 4px 14px rgba(96,165,250,.2)"}}>
+              <span style={{fontSize:18,color:"#60a5fa",fontWeight:800}}>?</span>
+            </div>
+          </div>
           <div style={{textAlign:"center",flex:2}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"center"}}>
               <img src={GOAT_LOGO_NEW} style={{height:"clamp(78px,19.5vw,120px)",maxWidth:"100%",objectFit:"contain"}} alt="GOAT FC"/>
