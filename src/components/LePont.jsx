@@ -2805,7 +2805,7 @@ export default function LePont() {
         <div style={{...sheet,borderRadius:"28px 28px 0 0",marginTop:16}}>
           {/* Demandes reçues */}
           {friendRequests.length > 0 && (
-            <div style={{background:"rgba(0,230,118,.08)",border:"1px solid rgba(0,230,118,.25)",borderRadius:16,padding:14}}>
+            <div style={{background:"linear-gradient(135deg, rgba(0,230,118,.18), rgba(0,0,0,.55))",border:"1px solid rgba(0,230,118,.35)",borderRadius:16,padding:14}}>
               <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:G.accent,marginBottom:10}}>👋 Demandes reçues</div>
               {friendRequests.map(function(req){return(
                 <div key={req.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
@@ -3458,24 +3458,24 @@ export default function LePont() {
 
       {/* Stats cards */}
       <div style={{zIndex:1,padding:"16px 16px 8px",display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-        <div style={{background:"rgba(255,214,0,.1)",border:"1px solid rgba(255,214,0,.3)",borderRadius:16,padding:"14px 10px",textAlign:"center"}}>
+        <div style={{background:"linear-gradient(135deg, rgba(255,214,0,.18), rgba(0,0,0,.55))",border:"1px solid rgba(255,214,0,.35)",borderRadius:16,padding:"14px 10px",textAlign:"center"}}>
           <div style={{fontSize:22,marginBottom:4}}>🏆</div>
-          <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,214,0,.7)",marginBottom:4}}>Record Plug</div>
+          <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,214,0,.95)",marginBottom:4}}>Record Plug</div>
           <div style={{fontFamily:G.heading,fontSize:26,color:G.gold}}>{record?record.score:0}</div>
         </div>
-        <div style={{background:"rgba(96,165,250,.1)",border:"1px solid rgba(96,165,250,.3)",borderRadius:16,padding:"14px 10px",textAlign:"center"}}>
+        <div style={{background:"linear-gradient(135deg, rgba(96,165,250,.18), rgba(0,0,0,.55))",border:"1px solid rgba(96,165,250,.35)",borderRadius:16,padding:"14px 10px",textAlign:"center"}}>
           <div style={{fontSize:22,marginBottom:4}}>⛓</div>
-          <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(96,165,250,.7)",marginBottom:4}}>Record Mercato</div>
+          <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(96,165,250,.95)",marginBottom:4}}>Record Mercato</div>
           <div style={{fontFamily:G.heading,fontSize:26,color:"#60a5fa"}}>{chainRecord?chainRecord.score:0}</div>
         </div>
-        <div style={{background:"rgba(0,230,118,.08)",border:"1px solid rgba(0,230,118,.25)",borderRadius:16,padding:"14px 10px",textAlign:"center"}}>
+        <div style={{background:"linear-gradient(135deg, rgba(0,230,118,.18), rgba(0,0,0,.55))",border:"1px solid rgba(0,230,118,.35)",borderRadius:16,padding:"14px 10px",textAlign:"center"}}>
           <div style={{fontSize:22,marginBottom:4}}>👥</div>
-          <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(0,230,118,.7)",marginBottom:4}}>Amis</div>
+          <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(0,230,118,.95)",marginBottom:4}}>Amis</div>
           <div style={{fontFamily:G.heading,fontSize:26,color:G.accent}}>{friendsList.length}</div>
         </div>
-        <div style={{background:"rgba(192,132,252,.08)",border:"1px solid rgba(192,132,252,.25)",borderRadius:16,padding:"14px 10px",textAlign:"center"}}>
+        <div style={{background:"linear-gradient(135deg, rgba(192,132,252,.18), rgba(0,0,0,.55))",border:"1px solid rgba(192,132,252,.35)",borderRadius:16,padding:"14px 10px",textAlign:"center"}}>
           <div style={{fontSize:22,marginBottom:4}}>🎮</div>
-          <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(192,132,252,.7)",marginBottom:4}}>Parties</div>
+          <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(192,132,252,.95)",marginBottom:4}}>Parties</div>
           <div style={{fontFamily:G.heading,fontSize:26,color:"#c084fc"}}>{(record?1:0)+(chainRecord?1:0)}</div>
         </div>
       </div>
@@ -3628,7 +3628,7 @@ export default function LePont() {
         )}
         {/* Bandeau demandes d'amis */}
         {friendRequests.length > 0 && (
-          <div style={{background:"rgba(0,230,118,.08)",border:"1px solid rgba(0,230,118,.25)",borderRadius:12,padding:"10px 14px"}}>
+          <div style={{background:"linear-gradient(135deg, rgba(0,230,118,.18), rgba(0,0,0,.55))",border:"1px solid rgba(0,230,118,.35)",borderRadius:12,padding:"10px 14px"}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
               <div style={{fontSize:12,fontWeight:700,color:G.accent}}>👋 {friendRequests.length} demande{friendRequests.length>1?"s":""} d'ami</div>
               <button onClick={function(){setShowFriends(true);loadFriendRequests();}} style={{padding:"5px 12px",background:G.accent,color:"#000",border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800}}>Voir</button>
@@ -3861,7 +3861,7 @@ export default function LePont() {
 
                   {/* Hints display */}
                   {dailyHintLevel >= 1 && (
-                    <div style={{background:"rgba(96,165,250,.1)",border:"1px solid rgba(96,165,250,.3)",borderRadius:14,padding:"12px 14px",marginBottom:8,display:"flex",flexDirection:"column",gap:6}}>
+                    <div style={{background:"linear-gradient(135deg, rgba(96,165,250,.18), rgba(0,0,0,.55))",border:"1px solid rgba(96,165,250,.35)",borderRadius:14,padding:"12px 14px",marginBottom:8,display:"flex",flexDirection:"column",gap:6}}>
                       <div style={{display:"flex",alignItems:"center",gap:8}}>
                         <span style={{fontSize:16}}>💡</span>
                         <span style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"#60a5fa"}}>Indice {dailyHintLevel}/2</span>
