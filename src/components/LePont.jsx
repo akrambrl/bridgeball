@@ -910,6 +910,12 @@ export default function LePont() {
   const [lbDiff, setLbDiff] = useState("facile");
   const [playerName, setPlayerName] = useState("");
   const [showInstructions, setShowInstructions] = useState(null);
+  const [isDesktop, setIsDesktop] = useState(()=>typeof window!=="undefined" && window.innerWidth >= 768);
+  useEffect(()=>{
+    const handler = () => setIsDesktop(window.innerWidth >= 768);
+    window.addEventListener("resize", handler);
+    return () => window.removeEventListener("resize", handler);
+  }, []);
   const [lang, setLang] = useState(() => {
     try {
       const saved = localStorage.getItem("bb_lang");
@@ -2628,8 +2634,8 @@ export default function LePont() {
     minHeight:"100vh",display:"flex",flexDirection:"column",
     background:"transparent",
     fontFamily:G.font,position:"relative",overflow:"hidden",
-    maxWidth:430,marginLeft:"auto",marginRight:"auto",
-    boxShadow:"0 0 60px rgba(0,0,0,.5)",
+    maxWidth:isDesktop?"100%":430,marginLeft:"auto",marginRight:"auto",
+    boxShadow:isDesktop?"none":"0 0 60px rgba(0,0,0,.5)",
   };
   const stripes = {position:"absolute",inset:0,zIndex:0,pointerEvents:"none",background:"radial-gradient(ellipse at 50% 0%,rgba(0,230,118,.06) 0%,transparent 70%)"};
   const sheet = {background:"rgba(0,0,0,.55)",backdropFilter:"blur(2px)",borderRadius:"32px 32px 0 0",flex:1,display:"flex",flexDirection:"column",gap:14,padding:"20px 18px 28px",zIndex:1,boxShadow:"0 -2px 40px rgba(0,0,0,.4)",border:"1px solid rgba(255,255,255,.08)",borderBottom:"none"};
