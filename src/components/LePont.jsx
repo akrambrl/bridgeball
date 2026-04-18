@@ -3040,7 +3040,7 @@ export default function LePont() {
                   </div>
                   <div style={{flex:1}}>
                     <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3}}>
-                      <span style={{fontSize:14,fontWeight:800,color:i===0?"#1a0d00":isMe?G.accent:G.white}}>{entry.country && <span style={{marginRight:5,fontSize:15}}>{countryToFlag(entry.country)}</span>}{entry.name}{isMe?" (toi)":""}</span>
+                      <span style={{fontSize:22,fontFamily:G.heading,letterSpacing:1,color:i===0?"#1a0d00":isMe?G.accent:G.white}}>{entry.country && <span style={{marginRight:5,fontSize:18}}>{countryToFlag(entry.country)}</span>}{entry.name}{isMe?" (toi)":""}</span>
                       <span style={{fontSize:10,fontWeight:800,color:grade.color,background:grade.color+"22",borderRadius:20,padding:"2px 7px",letterSpacing:.5}}>{grade.emoji} {grade.label}</span>
                       {entry.streak>=3 && <span style={{fontSize:10,fontWeight:800,color:"#FF6B35",background:"rgba(255,107,53,.15)",borderRadius:20,padding:"2px 7px"}}>🔥 {entry.streak}</span>}
                     </div>
