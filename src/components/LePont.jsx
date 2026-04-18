@@ -2851,7 +2851,7 @@ export default function LePont() {
                   </button>
                 );})}
               </div>
-              <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:8}}>Difficulté</div>
+              <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:8}}>{lang==="en"?"Difficulty":"Difficulté"}</div>
               <div style={{display:"flex",gap:8,marginBottom:16}}>
                 {["facile","moyen","expert"].map(function(d){return(
                   <button key={d} onClick={function(){setDuelDiff(d);}} style={{flex:1,padding:"8px",borderRadius:10,border:"1.5px solid "+(duelDiff===d?G.gold:"rgba(255,255,255,.15)"),background:duelDiff===d?"rgba(255,214,0,.1)":"transparent",color:duelDiff===d?G.gold:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:12,textTransform:"capitalize"}}>
@@ -3781,7 +3781,7 @@ export default function LePont() {
             </div>
             {duelMode==="pont" && (
               <div style={{marginBottom:16}}>
-                <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:8}}>Difficulté</div>
+                <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:8}}>{lang==="en"?"Difficulty":"Difficulté"}</div>
                 <div style={{display:"flex",gap:8}}>
                   {["facile","moyen","expert"].map(function(d){return(
                     <button key={d} onClick={function(){setDuelDiff(d);}} style={{flex:1,padding:"8px",borderRadius:10,border:"1.5px solid "+(duelDiff===d?G.gold:"rgba(255,255,255,.15)"),background:duelDiff===d?"rgba(255,214,0,.1)":"transparent",color:duelDiff===d?G.gold:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:12,textTransform:"capitalize"}}>
@@ -3971,14 +3971,14 @@ export default function LePont() {
                 </div>
               </div>
               <div style={{fontSize:12,color:"rgba(255,255,255,.4)",marginBottom:20,paddingLeft:40}}>
-                {gameConfigModal==="pont"?"2 clubs → trouve le joueur commun":"joueur → club → joueur..."}
+                {gameConfigModal==="pont"?(lang==="en"?"2 clubs → find the common player":"2 clubs → trouve le joueur commun"):(lang==="en"?"player → club → player...":"joueur → club → joueur...")}
               </div>
               {/* Difficulté */}
-              <div style={{fontSize:10,fontWeight:700,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.3)",marginBottom:8}}>Difficulté</div>
+              <div style={{fontSize:10,fontWeight:700,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.3)",marginBottom:8}}>{lang==="en"?"Difficulty":"Difficulté"}</div>
               <div style={{display:"flex",gap:8,marginBottom:20}}>
-                {["facile","moyen","expert"].map(function(d){return(
+                {["facile","moyen","expert"].map(function(d){const dLabel=lang==="en"?(d==="facile"?"easy":d==="moyen"?"medium":"expert"):d;return(
                   <button key={d} onClick={function(){setDiff(d);}} style={{flex:1,padding:"12px 4px",borderRadius:14,border:"1.5px solid "+(diff===d?G.accent:"rgba(255,255,255,.1)"),background:diff===d?"rgba(0,230,118,.12)":"rgba(255,255,255,.04)",color:diff===d?G.accent:"rgba(255,255,255,.5)",fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:13,textTransform:"capitalize",transition:"all .15s"}}>
-                    {d}
+                    {dLabel}
                   </button>
                 );})}
               </div>
