@@ -883,6 +883,8 @@ export default function LePont() {
   const [playerId] = useState(() => getPlayerId());
   const [showFriends, setShowFriends] = useState(false);
   const [selectedFriend, setSelectedFriend] = useState(null); // {id, name}
+  const [viewedProfile, setViewedProfile] = useState(null); // {id, name} - profile being viewed
+  const [viewedProfileData, setViewedProfileData] = useState(null); // fetched stats
   const [confirmRemove, setConfirmRemove] = useState(null); // {id, name}
   const [friendInput, setFriendInput] = useState("");
   const [friendsList, setFriendsList] = useState([]);
@@ -1086,6 +1088,57 @@ export default function LePont() {
 
   // Leaderboard (localStorage)
   // ── DUEL FUNCTIONS ──
+  async function openUserProfile(id, name) {
+    setViewedProfile({ id, name });
+    setViewedProfileData(null);
+    setScreen("userProfile");
+    try {
+      // Fetch leaderboard entry
+      const lbData = leaderboard.find(e => e.pid === id);
+      // Fetch avatar URL (try direct)
+      const avatarUrl = SB_URL + "/storage/v1/object/public/avatars/" + id + ".jpg?t=" + Date.now();
+      let hasAvatar = false;
+      try {
+        const headRes = await fetch(avatarUrl, { method: "HEAD" });
+        hasAvatar = headRes.ok;
+      } catch {}
+      // Fetch duels between us and them
+      const duelsWith = duels.filter(d =>
+        d.status === "complete" &&
+        ((d.challenger_id === playerId && d.opponent_id === id) ||
+         (d.opponent_id === playerId && d.challenger_id === id))
+      );
+      // Calculate wins/losses/draws in our duels
+      let myWins = 0, myLosses = 0, draws = 0;
+      duelsWith.forEach(d => {
+        const isChal = d.challenger_id === playerId;
+        const myScore = isChal ? d.challenger_score : d.opponent_score;
+        const oppScore = isChal ? d.opponent_score : d.challenger_score;
+        if (myScore > oppScore) myWins++;
+        else if (myScore < oppScore) myLosses++;
+        else draws++;
+      });
+      setViewedProfileData({
+        avatar: hasAvatar ? avatarUrl : null,
+        score: lbData ? lbData.score : 0,
+        rank: lbData ? leaderboard.findIndex(e => e.pid === id) + 1 : null,
+        played: lbData ? lbData.played : 0,
+        bestPont: lbData ? lbData.bestPont : 0,
+        bestChaine: lbData ? lbData.bestChaine : 0,
+        wins: lbData ? lbData.wins : 0,
+        draws: lbData ? lbData.draws : 0,
+        losses: lbData ? lbData.losses : 0,
+        duelsWith,
+        myWins,
+        myLosses,
+        duelsDraws: draws,
+        isFriend: friendsList.includes(id),
+      });
+    } catch(e) {
+      console.error(e);
+    }
+  }
+
   async function loadDuels() {
     try {
       const data = await sbFetch("bb_duels?or=(challenger_id.eq." + playerId + ",opponent_id.eq." + playerId + ")&order=created_at.desc&limit=20");
@@ -2860,7 +2913,7 @@ export default function LePont() {
               const friendDuelCount = duels.filter(function(d){return d.status==="complete"&&(d.challenger_id===fid||d.opponent_id===fid);}).length;
               return (
                 <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 14px",background:"rgba(255,255,255,.04)",borderRadius:14,marginBottom:8,border:"1px solid rgba(255,255,255,.06)",cursor:"pointer"}}
-                  onClick={function(){setSelectedFriend({id:fid,name:fname});loadDuels();}}>
+                  onClick={function(){setShowFriends(false);openUserProfile(fid,fname);}}>
                   <div>
                     <div style={{fontSize:15,fontWeight:800,color:G.white}}>{fname}</div>
                     <div style={{fontSize:11,color:"rgba(255,255,255,.35)"}}>{friendDuelCount>0?friendDuelCount+" duel"+(friendDuelCount>1?"s":"")+" joué"+(friendDuelCount>1?"s":""):"Aucun duel encore"}</div>
@@ -2955,7 +3008,7 @@ export default function LePont() {
             const medals = ["🥇","🥈","🥉"];
             const grade = getGrade(entry.score);
             return(
-              <div key={i} style={{borderRadius:14,background:isMe?"rgba(0,230,118,.08)":"rgba(255,255,255,.03)",border:isMe?"1px solid rgba(0,230,118,.25)":"1px solid rgba(255,255,255,.05)",marginBottom:6,overflow:"hidden"}}>
+              <div key={i} onClick={()=>{ if(!isMe) { setShowLeaderboard(false); openUserProfile(entry.pid, entry.name); } }} style={{borderRadius:14,background:isMe?"rgba(0,230,118,.08)":"rgba(255,255,255,.03)",border:isMe?"1px solid rgba(0,230,118,.25)":"1px solid rgba(255,255,255,.05)",marginBottom:6,overflow:"hidden",cursor:isMe?"default":"pointer"}}>
                 <div style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px"}}>
                   <div style={{fontFamily:G.heading,fontSize:22,width:32,textAlign:"center",color:i<3?["#FFD600","#C0C0C0","#CD7F32"][i]:"rgba(255,255,255,.3)"}}>
                     {i<3?medals[i]:(i+1)}
