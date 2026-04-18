@@ -3035,34 +3035,34 @@ export default function LePont() {
             return(
               <div key={i} onClick={()=>{ if(!isMe) { setShowLeaderboard(false); openUserProfile(entry.pid, entry.name); } }} style={{borderRadius:14,background:i===0?"linear-gradient(135deg,#FFD600,#FF6B35)":"rgba(0,230,118,.18)",border:i===0?"1px solid rgba(255,214,0,.6)":isMe?"1px solid rgba(0,230,118,.6)":"1px solid rgba(0,230,118,.35)",marginBottom:6,overflow:"hidden",cursor:isMe?"default":"pointer",boxShadow:i===0?"0 4px 18px rgba(255,107,53,.35)":"none"}}>
                 <div style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px"}}>
-                  <div style={{fontFamily:G.heading,fontSize:22,width:32,textAlign:"center",color:i<3?["#FFD600","#C0C0C0","#CD7F32"][i]:"rgba(255,255,255,.3)"}}>
+                  <div style={{fontFamily:G.heading,fontSize:30,width:40,textAlign:"center",color:i<3?["#FFD600","#C0C0C0","#CD7F32"][i]:"rgba(255,255,255,.3)"}}>
                     {i<3?medals[i]:(i+1)}
                   </div>
                   <div style={{flex:1}}>
                     <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3}}>
                       <span style={{fontSize:22,fontFamily:G.heading,letterSpacing:1,color:i===0?"#1a0d00":isMe?G.accent:G.white}}>{entry.country && <span style={{marginRight:5,fontSize:18}}>{countryToFlag(entry.country)}</span>}{entry.name}{isMe?" (toi)":""}</span>
-                      <span style={{fontSize:10,fontWeight:800,color:grade.color,background:grade.color+"22",borderRadius:20,padding:"2px 7px",letterSpacing:.5}}>{grade.emoji} {grade.label}</span>
-                      {entry.streak>=3 && <span style={{fontSize:10,fontWeight:800,color:"#FF6B35",background:"rgba(255,107,53,.15)",borderRadius:20,padding:"2px 7px"}}>🔥 {entry.streak}</span>}
+                      <span style={{fontSize:12,fontWeight:800,color:grade.color,background:grade.color+"22",borderRadius:20,padding:"3px 9px",letterSpacing:.5}}>{grade.emoji} {grade.label}</span>
+                      {entry.streak>=3 && <span style={{fontSize:12,fontWeight:800,color:"#FF6B35",background:"rgba(255,107,53,.15)",borderRadius:20,padding:"3px 9px"}}>🔥 {entry.streak}</span>}
                     </div>
                     {lbMode==="global"
-                      ? <div style={{fontSize:11,color:i===0?"rgba(26,13,0,.65)":"rgba(255,255,255,.35)"}}>🏟 {entry.bestPont} pts &nbsp;·&nbsp; ⛓ {entry.bestChaine} pts</div>
-                      : <div style={{fontSize:11,color:i===0?"rgba(26,13,0,.65)":"rgba(255,255,255,.35)"}}>{entry.played} partie{entry.played>1?"s":""}</div>
+                      ? <div style={{fontSize:13,color:i===0?"rgba(26,13,0,.7)":"rgba(255,255,255,.5)",marginTop:4}}>🏟 {entry.bestPont} pts &nbsp;·&nbsp; ⛓ {entry.bestChaine} pts</div>
+                      : <div style={{fontSize:13,color:i===0?"rgba(26,13,0,.7)":"rgba(255,255,255,.5)",marginTop:4}}>{entry.played} partie{entry.played>1?"s":""}</div>
                     }
                   </div>
-                  <div style={{fontFamily:G.heading,fontSize:26,color:i===0?"#1a0d00":G.white}}>{entry.score} <span style={{fontSize:12,color:i===0?"rgba(26,13,0,.5)":"rgba(255,255,255,.3)"}}>pts</span></div>
+                  <div style={{fontFamily:G.heading,fontSize:32,color:i===0?"#1a0d00":G.white}}>{entry.score} <span style={{fontSize:14,color:i===0?"rgba(26,13,0,.5)":"rgba(255,255,255,.3)"}}>pts</span></div>
                 </div>
                 <div style={{display:"flex",borderTop:i===0?"1px solid rgba(0,0,0,.15)":"1px solid rgba(255,255,255,.06)"}}>
-                    <div style={{flex:1,padding:"6px 0",textAlign:"center",borderRight:"1px solid rgba(255,255,255,.06)"}}>
-                      <div style={{fontFamily:G.heading,fontSize:18,color:"#00E676"}}>{entry.wins||0}</div>
-                      <div style={{fontSize:9,color:"rgba(255,255,255,.35)",letterSpacing:1,textTransform:"uppercase"}}>Victoires</div>
+                    <div style={{flex:1,padding:"10px 0",textAlign:"center",borderRight:"1px solid rgba(255,255,255,.06)"}}>
+                      <div style={{fontFamily:G.heading,fontSize:22,color:"#00E676"}}>{entry.wins||0}</div>
+                      <div style={{fontSize:11,color:"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase"}}>Victoires</div>
                     </div>
-                    <div style={{flex:1,padding:"6px 0",textAlign:"center",borderRight:"1px solid rgba(255,255,255,.06)"}}>
-                      <div style={{fontFamily:G.heading,fontSize:18,color:G.gold}}>{entry.draws||0}</div>
-                      <div style={{fontSize:9,color:"rgba(255,255,255,.35)",letterSpacing:1,textTransform:"uppercase"}}>Nuls</div>
+                    <div style={{flex:1,padding:"10px 0",textAlign:"center",borderRight:"1px solid rgba(255,255,255,.06)"}}>
+                      <div style={{fontFamily:G.heading,fontSize:22,color:G.gold}}>{entry.draws||0}</div>
+                      <div style={{fontSize:11,color:"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase"}}>Nuls</div>
                     </div>
-                    <div style={{flex:1,padding:"6px 0",textAlign:"center"}}>
-                      <div style={{fontFamily:G.heading,fontSize:18,color:"#FF3D57"}}>{entry.losses||0}</div>
-                      <div style={{fontSize:9,color:"rgba(255,255,255,.35)",letterSpacing:1,textTransform:"uppercase"}}>Défaites</div>
+                    <div style={{flex:1,padding:"10px 0",textAlign:"center"}}>
+                      <div style={{fontFamily:G.heading,fontSize:22,color:"#FF3D57"}}>{entry.losses||0}</div>
+                      <div style={{fontSize:11,color:"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase"}}>Défaites</div>
                     </div>
                   </div>
               </div>
@@ -3425,7 +3425,7 @@ export default function LePont() {
         <div style={{...sheet,borderRadius:"28px 28px 0 0"}}>
           {duelResult.players.map(function(p,i){return(
             <div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",borderRadius:14,background:p.id===playerId?"rgba(0,230,118,.08)":"rgba(255,255,255,.03)",border:p.id===playerId?"1px solid rgba(0,230,118,.25)":"1px solid rgba(255,255,255,.05)",marginBottom:6}}>
-              <div style={{fontFamily:G.heading,fontSize:22,width:32,textAlign:"center",color:i<3?["#FFD600","#C0C0C0","#CD7F32"][i]:"rgba(255,255,255,.3)"}}>{i<3?medals[i]:i+1}</div>
+              <div style={{fontFamily:G.heading,fontSize:30,width:40,textAlign:"center",color:i<3?["#FFD600","#C0C0C0","#CD7F32"][i]:"rgba(255,255,255,.3)"}}>{i<3?medals[i]:i+1}</div>
               <div style={{flex:1,fontSize:14,fontWeight:800,color:p.id===playerId?G.accent:G.white}}>{p.name}{p.id===playerId?" (toi)":""}</div>
               <div style={{fontFamily:G.heading,fontSize:26,color:i===0?G.gold:G.white}}>{p.score||0} <span style={{fontSize:12,color:"rgba(255,255,255,.3)"}}>pts</span></div>
             </div>
@@ -4631,7 +4631,7 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
         <div style={{...sheet,borderRadius:"28px 28px 0 0"}}>
           {duelResult.players.map(function(p,i){return(
             <div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",borderRadius:14,background:p.id===playerId?"rgba(0,230,118,.08)":"rgba(255,255,255,.03)",border:p.id===playerId?"1px solid rgba(0,230,118,.25)":"1px solid rgba(255,255,255,.05)",marginBottom:6}}>
-              <div style={{fontFamily:G.heading,fontSize:22,width:32,textAlign:"center",color:i<3?["#FFD600","#C0C0C0","#CD7F32"][i]:"rgba(255,255,255,.3)"}}>{i<3?medals[i]:i+1}</div>
+              <div style={{fontFamily:G.heading,fontSize:30,width:40,textAlign:"center",color:i<3?["#FFD600","#C0C0C0","#CD7F32"][i]:"rgba(255,255,255,.3)"}}>{i<3?medals[i]:i+1}</div>
               <div style={{flex:1,fontSize:14,fontWeight:800,color:p.id===playerId?G.accent:G.white}}>{p.name}{p.id===playerId?" (toi)":""}</div>
               <div style={{fontFamily:G.heading,fontSize:26,color:i===0?G.gold:G.white}}>{p.score||0} <span style={{fontSize:12,color:"rgba(255,255,255,.3)"}}>pts</span></div>
             </div>
