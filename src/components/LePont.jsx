@@ -918,7 +918,8 @@ export default function LePont() {
   const [pseudoInput, setPseudoInput] = useState("");
   const [pseudoChecking, setPseudoChecking] = useState(false);
   const [pseudoMsg, setPseudoMsg] = useState("");
-  const [playerAvatar, setPlayerAvatar] = useState(() => { try { return localStorage.getItem("bb_avatar") || null; } catch { return null; } });
+  const [playerAvatar, setPlayerAvatar] = useState(null);
+  const [avatarUploading, setAvatarUploading] = useState(false);
   const [pseudoConfirmed, setPseudoConfirmed] = useState(() => { try { const n = localStorage.getItem("bb_name"); return !!(n && n.trim().length >= 2); } catch { return false; } });
   const [showQuitConfirm, setShowQuitConfirm] = useState(false);
   const [gameConfigModal, setGameConfigModal] = useState(null);
@@ -945,6 +946,19 @@ export default function LePont() {
 
   useEffect(() => {
     try {
+      const cachedAvatar = localStorage.getItem("bb_avatar_url");
+      if (cachedAvatar) setPlayerAvatar(cachedAvatar);
+      else {
+        // Try fetching from Supabase
+        const url = SB_URL + "/storage/v1/object/public/avatars/" + playerId + ".jpg";
+        fetch(url, { method: "HEAD" }).then(r => {
+          if (r.ok) {
+            const withBust = url + "?t=" + Date.now();
+            setPlayerAvatar(withBust);
+            try { localStorage.setItem("bb_avatar_url", withBust); } catch {}
+          }
+        }).catch(()=>{});
+      }
       const r = localStorage.getItem("bb_record"); if(r) setRecord(JSON.parse(r));
       const cr = localStorage.getItem("bb_chain_record"); if(cr) setChainRecord(JSON.parse(cr));
       const n = localStorage.getItem("bb_name"); if(n) setPlayerName(n);
@@ -3326,31 +3340,57 @@ export default function LePont() {
       <div style={{zIndex:1,padding:"16px 20px 8px",textAlign:"center"}}>
         <label htmlFor="avatar-upload" style={{display:"block",width:100,height:100,borderRadius:"50%",background:playerAvatar?"#000":"linear-gradient(135deg,#00E676,#00A855)",margin:"0 auto 14px",display:"flex",alignItems:"center",justifyContent:"center",fontSize:44,boxShadow:"0 8px 30px rgba(0,230,118,.35)",cursor:"pointer",overflow:"hidden",position:"relative"}}>
           {playerAvatar ? <img src={playerAvatar} alt="avatar" style={{width:"100%",height:"100%",objectFit:"cover"}}/> : (playerName||"?")[0].toUpperCase()}
-          <div style={{position:"absolute",bottom:0,right:0,width:32,height:32,borderRadius:"50%",background:"#000",border:"2px solid #fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14}}>📷</div>
+          <div style={{position:"absolute",bottom:0,right:0,width:32,height:32,borderRadius:"50%",background:"#000",border:"2px solid #fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14}}>{avatarUploading?"⏳":"📷"}</div>
         </label>
-        <input id="avatar-upload" type="file" accept="image/*" style={{display:"none"}} onChange={(e)=>{
+        <input id="avatar-upload" type="file" accept="image/*" style={{display:"none"}} onChange={async (e)=>{
           const file = e.target.files?.[0];
           if (!file) return;
           if (file.size > 5*1024*1024) { alert("Image trop grande (max 5 Mo)"); return; }
-          const reader = new FileReader();
-          reader.onload = (ev) => {
-            const img = new Image();
-            img.onload = () => {
-              const canvas = document.createElement("canvas");
-              const size = 300;
-              canvas.width = size; canvas.height = size;
-              const ctx = canvas.getContext("2d");
-              const minDim = Math.min(img.width, img.height);
-              const sx = (img.width-minDim)/2;
-              const sy = (img.height-minDim)/2;
-              ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, size, size);
-              const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
-              setPlayerAvatar(dataUrl);
-              try { localStorage.setItem("bb_avatar", dataUrl); } catch {}
-            };
-            img.src = ev.target.result;
-          };
-          reader.readAsDataURL(file);
+          setAvatarUploading(true);
+          try {
+            // Resize image to 300x300 square
+            const blob = await new Promise((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onload = (ev) => {
+                const img = new Image();
+                img.onload = () => {
+                  const canvas = document.createElement("canvas");
+                  const size = 300;
+                  canvas.width = size; canvas.height = size;
+                  const ctx = canvas.getContext("2d");
+                  const minDim = Math.min(img.width, img.height);
+                  const sx = (img.width-minDim)/2;
+                  const sy = (img.height-minDim)/2;
+                  ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, size, size);
+                  canvas.toBlob(resolve, "image/jpeg", 0.85);
+                };
+                img.onerror = reject;
+                img.src = ev.target.result;
+              };
+              reader.onerror = reject;
+              reader.readAsDataURL(file);
+            });
+            // Upload to Supabase Storage
+            const fileName = playerId + ".jpg";
+            const uploadRes = await fetch(SB_URL + "/storage/v1/object/avatars/" + fileName, {
+              method: "POST",
+              headers: {
+                "apikey": SB_KEY,
+                "Authorization": "Bearer " + SB_KEY,
+                "Content-Type": "image/jpeg",
+                "x-upsert": "true"
+              },
+              body: blob
+            });
+            if (!uploadRes.ok) throw new Error("Upload failed: " + uploadRes.status);
+            const publicUrl = SB_URL + "/storage/v1/object/public/avatars/" + fileName + "?t=" + Date.now();
+            setPlayerAvatar(publicUrl);
+            try { localStorage.setItem("bb_avatar_url", publicUrl); } catch {}
+          } catch(err) {
+            alert("Erreur upload: " + err.message);
+          }
+          setAvatarUploading(false);
+          e.target.value = "";
         }}/>
         <div style={{fontFamily:G.heading,fontSize:28,color:G.white,letterSpacing:1}}>@{playerName||"anonyme"}</div>
         <button onClick={()=>{setPseudoInput(playerName||"");setPseudoScreen(true);}} style={{marginTop:10,padding:"7px 16px",background:"rgba(255,255,255,.08)",color:"rgba(255,255,255,.7)",border:"1px solid rgba(255,255,255,.15)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:700}}>✏️ Modifier</button>
