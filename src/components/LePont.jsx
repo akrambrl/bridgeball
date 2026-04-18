@@ -4156,13 +4156,13 @@ export default function LePont() {
           <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
             <span style={{fontSize:18}}>👥</span>
             <div>
-              <div style={{fontSize:14,fontWeight:800,color:G.white}}>Joue avec tes potes !</div>
-              <div style={{fontSize:11,color:"rgba(255,255,255,.4)"}}>Crée une salle ou rejoins avec un code</div>
+              <div style={{fontSize:14,fontWeight:800,color:G.white}}>{lang==="en"?"Play with friends!":"Joue avec tes potes !"}</div>
+              <div style={{fontSize:11,color:"rgba(255,255,255,.4)"}}>{lang==="en"?"Create a room or join with a code":"Crée une salle ou rejoins avec un code"}</div>
             </div>
           </div>
           <div style={{display:"flex",gap:8}}>
             <input value={roomInput} onChange={function(e){setRoomInput(e.target.value.toUpperCase());setRoomMsg("");}}
-              placeholder="Code salle" maxLength={6}
+              placeholder={lang==="en"?"Room code":"Code salle"} maxLength={6}
               style={{flex:1,padding:"10px 12px",borderRadius:12,border:"1.5px solid rgba(255,255,255,.12)",background:"rgba(255,255,255,.05)",color:G.white,fontFamily:G.font,fontSize:14,fontWeight:700,letterSpacing:3,textTransform:"uppercase",outline:"none"}}/>
             <button onClick={function(){requirePseudo(function(){joinRoom(roomInput);});}} style={{padding:"10px 14px",background:"rgba(255,255,255,.07)",color:G.white,border:"1px solid rgba(255,255,255,.12)",borderRadius:12,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700}}>{lang==="en"?"Join":"Rejoindre"}</button>
           </div>
