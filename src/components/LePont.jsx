@@ -2790,15 +2790,15 @@ export default function LePont() {
               <div style={{display:"flex",gap:8,marginBottom:4}}>
                 <div style={{flex:1,background:"rgba(0,230,118,.08)",border:"1px solid rgba(0,230,118,.2)",borderRadius:16,padding:"14px 0",textAlign:"center"}}>
                   <div style={{fontFamily:G.heading,fontSize:32,color:"#00E676"}}>{wins}</div>
-                  <div style={{fontSize:10,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginTop:2}}>Victoires</div>
+                  <div style={{fontSize:10,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginTop:2}}>{lang==="en"?"Wins":"Victoires"}</div>
                 </div>
                 <div style={{flex:1,background:"rgba(255,214,0,.06)",border:"1px solid rgba(255,214,0,.2)",borderRadius:16,padding:"14px 0",textAlign:"center"}}>
                   <div style={{fontFamily:G.heading,fontSize:32,color:G.gold}}>{draws}</div>
-                  <div style={{fontSize:10,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginTop:2}}>Nuls</div>
+                  <div style={{fontSize:10,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginTop:2}}>{lang==="en"?"Draws":"Nuls"}</div>
                 </div>
                 <div style={{flex:1,background:"rgba(255,61,87,.06)",border:"1px solid rgba(255,61,87,.2)",borderRadius:16,padding:"14px 0",textAlign:"center"}}>
                   <div style={{fontFamily:G.heading,fontSize:32,color:"#FF3D57"}}>{losses}</div>
-                  <div style={{fontSize:10,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginTop:2}}>Défaites</div>
+                  <div style={{fontSize:10,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginTop:2}}>{lang==="en"?"Losses":"Défaites"}</div>
                 </div>
               </div>
             )}
@@ -2859,7 +2859,7 @@ export default function LePont() {
                   </button>
                 );})}
               </div>
-              <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:8}}>Manches</div>
+              <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:8}}>{lang==="en"?"Rounds":"Manches"}</div>
               <div style={{display:"flex",gap:8,marginBottom:20}}>
                 {[1,2,3].map(function(r){return(
                   <button key={r} onClick={function(){setDuelRounds(r);}} style={{flex:1,padding:"10px",borderRadius:12,border:"1.5px solid "+(duelRounds===r?"#fff":"rgba(255,255,255,.15)"),background:duelRounds===r?"rgba(255,255,255,.1)":"transparent",color:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:15}}>{r}</button>
@@ -2991,9 +2991,9 @@ export default function LePont() {
         <button onClick={function(){setShowLeaderboard(false);}} style={{position:"fixed",top:14,left:14,zIndex:100,background:"rgba(0,15,0,.85)",border:"1px solid rgba(255,255,255,.15)",borderRadius:"50%",width:42,height:42,cursor:"pointer",color:G.white,fontSize:20,display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(10px)",boxShadow:"0 4px 14px rgba(0,0,0,.4)"}}>←</button>
         <div style={{zIndex:1,padding:"12px 20px 12px 70px",display:"flex",alignItems:"center",gap:12}}>
           <div style={{flex:1,textAlign:"center"}}>
-            <div style={{fontFamily:G.heading,fontSize:"clamp(28px,7vw,46px)",color:G.white,letterSpacing:3}}>CLASSEMENT</div>
+            <div style={{fontFamily:G.heading,fontSize:"clamp(28px,7vw,46px)",color:G.white,letterSpacing:3}}>{lang==="en"?"LEADERBOARD":"CLASSEMENT"}</div>
             {(()=>{ const s=getCurrentSeason(); return lbMode==="amis"
-              ? <div style={{fontSize:12,color:"rgba(255,255,255,.4)"}}>Classement entre amis · Cumulatif</div>
+              ? <div style={{fontSize:12,color:"rgba(255,255,255,.4)"}}>{lang==="en"?"Friends leaderboard · Cumulative":"Classement entre amis · Cumulatif"}</div>
               : <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
                   <div style={{fontSize:13,fontWeight:800,color:G.gold}}>⚽ Saison {s.num}</div>
                   <div style={{fontSize:11,color:"rgba(255,255,255,.4)"}}>⏳ J-{s.days} {s.hours}h avant reset</div>
@@ -3012,7 +3012,7 @@ export default function LePont() {
             return (
               <div style={{marginBottom:8,padding:"10px 14px",background:"rgba(255,214,0,.08)",borderRadius:14,border:"1px solid rgba(255,214,0,.2)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                 <div>
-                  <div style={{fontSize:11,fontWeight:800,color:G.gold,letterSpacing:1}}>🏆 SAISON {s.num}</div>
+                  <div style={{fontSize:11,fontWeight:800,color:G.gold,letterSpacing:1}}>{lang==="en"?"🏆 SEASON ":"🏆 SAISON "}{s.num}</div>
                   <div style={{fontSize:10,color:"rgba(255,255,255,.4)",marginTop:2}}>
                     {daysLeft > 0 ? `J-${daysLeft} (${hoursLeft}h)` : `Finit dans ${hoursLeft}h`}
                   </div>
@@ -3030,7 +3030,7 @@ export default function LePont() {
                 if(m!=="amis") loadLeaderboard(m);
                 else loadLeaderboard("global");
               }} style={{flex:1,minWidth:60,padding:"10px 6px",borderRadius:12,border:"1.5px solid "+(lbMode===m?G.accent:"rgba(255,255,255,.12)"),background:lbMode===m?"rgba(0,230,118,.1)":"transparent",color:lbMode===m?G.accent:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:12}}>
-                {m==="global"?"🌍 Global":"👥 Amis"}
+                {m==="global"?(lang==="en"?"🌍 Global":"🌍 Global"):(lang==="en"?"👥 Friends":"👥 Amis")}
               </button>
             );})}
           </div>
@@ -3058,7 +3058,7 @@ export default function LePont() {
                     </div>
                     {lbMode==="global"
                       ? <div style={{fontSize:13,color:i<3?"rgba(26,13,0,.7)":"rgba(255,255,255,.5)",marginTop:4}}>🏟 {entry.bestPont} pts &nbsp;·&nbsp; ⛓ {entry.bestChaine} pts</div>
-                      : <div style={{fontSize:13,color:i<3?"rgba(26,13,0,.7)":"rgba(255,255,255,.5)",marginTop:4}}>{entry.played} partie{entry.played>1?"s":""}</div>
+                      : <div style={{fontSize:13,color:i<3?"rgba(26,13,0,.7)":"rgba(255,255,255,.5)",marginTop:4}}>{entry.played} {lang==="en"?(entry.played>1?"games":"game"):(entry.played>1?"parties":"partie")}</div>
                     }
                   </div>
                   <div style={{fontFamily:G.heading,fontSize:32,color:i<3?"#1a0d00":G.white}}>{entry.score} <span style={{fontSize:14,color:i<3?"rgba(26,13,0,.5)":"rgba(255,255,255,.3)"}}>pts</span></div>
@@ -3066,15 +3066,15 @@ export default function LePont() {
                 <div style={{display:"flex",borderTop:i<3?"1px solid rgba(0,0,0,.15)":"1px solid rgba(255,255,255,.06)"}}>
                     <div style={{flex:1,padding:"10px 0",textAlign:"center",borderRight:"1px solid rgba(255,255,255,.06)"}}>
                       <div style={{fontFamily:G.heading,fontSize:22,color:"#00E676"}}>{entry.wins||0}</div>
-                      <div style={{fontSize:11,color:"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase"}}>Victoires</div>
+                      <div style={{fontSize:11,color:"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase"}}>{lang==="en"?"Wins":"Victoires"}</div>
                     </div>
                     <div style={{flex:1,padding:"10px 0",textAlign:"center",borderRight:"1px solid rgba(255,255,255,.06)"}}>
                       <div style={{fontFamily:G.heading,fontSize:22,color:G.gold}}>{entry.draws||0}</div>
-                      <div style={{fontSize:11,color:"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase"}}>Nuls</div>
+                      <div style={{fontSize:11,color:"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase"}}>{lang==="en"?"Draws":"Nuls"}</div>
                     </div>
                     <div style={{flex:1,padding:"10px 0",textAlign:"center"}}>
                       <div style={{fontFamily:G.heading,fontSize:22,color:"#FF3D57"}}>{entry.losses||0}</div>
-                      <div style={{fontSize:11,color:"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase"}}>Défaites</div>
+                      <div style={{fontSize:11,color:"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase"}}>{lang==="en"?"Losses":"Défaites"}</div>
                     </div>
                   </div>
               </div>
@@ -3083,7 +3083,7 @@ export default function LePont() {
           {/* Hall of Fame */}
           {hallOfFame.length > 0 && lbMode !== "amis" && (
             <div style={{marginTop:16,paddingTop:16,borderTop:"1px solid rgba(255,255,255,.08)"}}>
-              <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.3)",marginBottom:10,textAlign:"center"}}>🏛 Hall of Fame</div>
+              <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.3)",marginBottom:10,textAlign:"center"}}>{lang==="en"?"🏛 Hall of Fame":"🏛 Hall of Fame"}</div>
               {hallOfFame.map(function(s,i){
                 return (
                   <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",background:"rgba(255,215,0,.05)",borderRadius:12,marginBottom:6,border:"1px solid rgba(255,215,0,.1)"}}>
@@ -3550,15 +3550,15 @@ export default function LePont() {
               <div style={{background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",borderRadius:14,padding:"10px",display:"flex"}}>
                 <div style={{flex:1,textAlign:"center",borderRight:"1px solid rgba(255,255,255,.06)"}}>
                   <div style={{fontFamily:G.heading,fontSize:20,color:"#00E676"}}>{d.wins||0}</div>
-                  <div style={{fontSize:9,color:"rgba(255,255,255,.4)",letterSpacing:1,textTransform:"uppercase"}}>Victoires</div>
+                  <div style={{fontSize:9,color:"rgba(255,255,255,.4)",letterSpacing:1,textTransform:"uppercase"}}>{lang==="en"?"Wins":"Victoires"}</div>
                 </div>
                 <div style={{flex:1,textAlign:"center",borderRight:"1px solid rgba(255,255,255,.06)"}}>
                   <div style={{fontFamily:G.heading,fontSize:20,color:G.gold}}>{d.draws||0}</div>
-                  <div style={{fontSize:9,color:"rgba(255,255,255,.4)",letterSpacing:1,textTransform:"uppercase"}}>Nuls</div>
+                  <div style={{fontSize:9,color:"rgba(255,255,255,.4)",letterSpacing:1,textTransform:"uppercase"}}>{lang==="en"?"Draws":"Nuls"}</div>
                 </div>
                 <div style={{flex:1,textAlign:"center"}}>
                   <div style={{fontFamily:G.heading,fontSize:20,color:"#FF3D57"}}>{d.losses||0}</div>
-                  <div style={{fontSize:9,color:"rgba(255,255,255,.4)",letterSpacing:1,textTransform:"uppercase"}}>Défaites</div>
+                  <div style={{fontSize:9,color:"rgba(255,255,255,.4)",letterSpacing:1,textTransform:"uppercase"}}>{lang==="en"?"Losses":"Défaites"}</div>
                 </div>
               </div>
             </div>
@@ -3572,7 +3572,7 @@ export default function LePont() {
                   </div>
                   <div style={{textAlign:"center"}}>
                     <div style={{fontFamily:G.heading,fontSize:18,color:G.gold}}>{d.duelsDraws}</div>
-                    <div style={{fontSize:9,color:"rgba(255,255,255,.4)",letterSpacing:1,textTransform:"uppercase"}}>Nuls</div>
+                    <div style={{fontSize:9,color:"rgba(255,255,255,.4)",letterSpacing:1,textTransform:"uppercase"}}>{lang==="en"?"Draws":"Nuls"}</div>
                   </div>
                   <div style={{textAlign:"center"}}>
                     <div style={{fontFamily:G.heading,fontSize:18,color:"#FF3D57"}}>{d.myLosses}</div>
@@ -3871,16 +3871,16 @@ export default function LePont() {
         {/* Bandeau room en attente */}
         {pendingRoomCode && !pseudoConfirmed && (
           <div style={{background:"rgba(0,230,118,.1)",border:"1px solid rgba(0,230,118,.3)",borderRadius:12,padding:"10px 14px",textAlign:"center"}}>
-            <div style={{fontSize:13,fontWeight:800,color:G.accent}}>🔗 Salle {pendingRoomCode} en attente</div>
-            <div style={{fontSize:11,color:"rgba(255,255,255,.5)",marginTop:2}}>Crée ton pseudo pour rejoindre automatiquement</div>
+            <div style={{fontSize:13,fontWeight:800,color:G.accent}}>🔗 {lang==="en"?"Room ":"Salle "}{pendingRoomCode}{lang==="en"?" pending":" en attente"}</div>
+            <div style={{fontSize:11,color:"rgba(255,255,255,.5)",marginTop:2}}>{lang==="en"?"Create your username to join automatically":"Crée ton pseudo pour rejoindre automatiquement"}</div>
           </div>
         )}
         {/* Bandeau demandes d'amis */}
         {friendRequests.length > 0 && (
           <div style={{background:"#123a1e",border:"1px solid rgba(0,230,118,.5)",borderRadius:12,padding:"10px 14px"}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-              <div style={{fontSize:12,fontWeight:700,color:G.accent}}>👋 {friendRequests.length} demande{friendRequests.length>1?"s":""} d'ami</div>
-              <button onClick={function(){setShowFriends(true);loadFriendRequests();}} style={{padding:"5px 12px",background:G.accent,color:"#000",border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800}}>Voir</button>
+              <div style={{fontSize:12,fontWeight:700,color:G.accent}}>👋 {friendRequests.length} {lang==="en"?(friendRequests.length>1?"friend requests":"friend request"):(friendRequests.length>1?"demandes d'ami":"demande d'ami")}</div>
+              <button onClick={function(){setShowFriends(true);loadFriendRequests();}} style={{padding:"5px 12px",background:G.accent,color:"#000",border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800}}>{lang==="en"?"View":"Voir"}</button>
             </div>
           </div>
         )}
@@ -3892,8 +3892,8 @@ export default function LePont() {
               const oppName = d.challenger_id===playerId?d.opponent_name:d.challenger_name;
               return(
                 <div key={d.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                  <div style={{fontSize:12,fontWeight:700,color:G.gold}}>⚡ Défi de {oppName}</div>
-                  <button onClick={function(){joinDuel(d);}} style={{padding:"5px 12px",background:G.gold,color:"#000",border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800}}>Rejoindre</button>
+                  <div style={{fontSize:12,fontWeight:700,color:G.gold}}>⚡ {lang==="en"?"Challenge from ":"Défi de "}{oppName}</div>
+                  <button onClick={function(){joinDuel(d);}} style={{padding:"5px 12px",background:G.gold,color:"#000",border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800}}>{lang==="en"?"Join":"Rejoindre"}</button>
                 </div>
               );})}
           </div>
@@ -3918,7 +3918,7 @@ export default function LePont() {
               <span style={{fontFamily:G.heading,fontSize:15,color:G.gold}}>{record.score} pts</span>
             </div>}
             {/* Bouton jouer */}
-            <div style={{position:"absolute",bottom:6,left:8,right:8,zIndex:2,background:G.accent,borderRadius:50,padding:"4px 0",color:"#000",fontFamily:G.font,fontWeight:800,fontSize:10,textAlign:"center"}}>▶ Jouer</div>
+            <div style={{position:"absolute",bottom:6,left:8,right:8,zIndex:2,background:G.accent,borderRadius:50,padding:"4px 0",color:"#000",fontFamily:G.font,fontWeight:800,fontSize:10,textAlign:"center"}}>{lang==="en"?"▶ Play":"▶ Jouer"}</div>
           </div>
 
           {/* ── Carte THE MERCATO ── */}
@@ -3935,7 +3935,7 @@ export default function LePont() {
               <span style={{fontSize:12,color:G.accent}}>⛓</span>
               <span style={{fontFamily:G.heading,fontSize:15,color:G.accent}}>{chainRecord.score} pts</span>
             </div>}
-            <div style={{position:"absolute",bottom:6,left:8,right:8,zIndex:2,background:G.accent,borderRadius:50,padding:"4px 0",color:"#000",fontFamily:G.font,fontWeight:800,fontSize:10,textAlign:"center"}}>▶ Jouer</div>
+            <div style={{position:"absolute",bottom:6,left:8,right:8,zIndex:2,background:G.accent,borderRadius:50,padding:"4px 0",color:"#000",fontFamily:G.font,fontWeight:800,fontSize:10,textAlign:"center"}}>{lang==="en"?"▶ Play":"▶ Jouer"}</div>
           </div>
         </div>
 
@@ -3983,7 +3983,7 @@ export default function LePont() {
                 );})}
               </div>
               {/* Manches */}
-              <div style={{fontSize:10,fontWeight:700,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.3)",marginBottom:8}}>Manches</div>
+              <div style={{fontSize:10,fontWeight:700,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.3)",marginBottom:8}}>{lang==="en"?"Rounds":"Manches"}</div>
               <div style={{display:"flex",gap:8,marginBottom:24}}>
                 {[1,2,3].map(function(n){return(
                   <button key={n} onClick={function(){setTotalRounds(n);}} style={{flex:1,padding:"12px",borderRadius:14,border:"1.5px solid "+(totalRounds===n?"rgba(255,255,255,.7)":"rgba(255,255,255,.1)"),background:totalRounds===n?"rgba(255,255,255,.1)":"rgba(255,255,255,.04)",color:totalRounds===n?G.white:"rgba(255,255,255,.35)",fontFamily:G.heading,fontWeight:700,cursor:"pointer",fontSize:22,transition:"all .15s"}}>
@@ -3994,10 +3994,10 @@ export default function LePont() {
               {/* Boutons */}
               <div style={{display:"flex",gap:10}}>
                 <button onClick={function(){const m=gameConfigModal;setGameConfigModal(null);setTimeout(function(){tryStart(m);},50);}} style={{flex:2,padding:"16px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:16,fontWeight:800,letterSpacing:.5}}>
-                  ▶ Jouer seul
+                  {lang==="en"?"▶ Play solo":"▶ Jouer seul"}
                 </button>
                 <button onClick={function(){setDuelMode(gameConfigModal);setDuelDiff(diff);setDuelRounds(totalRounds);setGameConfigModal(null);setTimeout(function(){setShowRoomCreate(true);},100);}} style={{flex:1,padding:"16px",background:"rgba(255,255,255,.07)",color:G.white,border:"1px solid rgba(255,255,255,.12)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700}}>
-                  👥 Entre potes
+                  {lang==="en"?"👥 With friends":"👥 Entre potes"}
                 </button>
               </div>
             </div>
@@ -4009,13 +4009,13 @@ export default function LePont() {
           <div style={{borderRadius:14,background:dailyDone?"rgba(255,255,255,.04)":"linear-gradient(135deg,rgba(255,214,0,.12),rgba(255,107,53,.12))",border:dailyDone?"1px solid rgba(255,255,255,.1)":"1.5px solid rgba(255,214,0,.3)",padding:"10px 12px",display:"flex",alignItems:"center",gap:10,opacity:dailyDone?.7:1}}>
             <div style={{fontSize:22}}>{dailyDone?(dailyAbandoned?"🔒":"✅"):"⚡"}</div>
             <div style={{flex:1}}>
-              <div style={{fontSize:10,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase",color:dailyDone?"rgba(255,255,255,.3)":"rgba(255,214,0,.7)",marginBottom:1}}>Défi du jour</div>
+              <div style={{fontSize:10,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase",color:dailyDone?"rgba(255,255,255,.3)":"rgba(255,214,0,.7)",marginBottom:1}}>{lang==="en"?"Daily challenge":"Défi du jour"}</div>
               <div style={{fontSize:13,fontWeight:800,color:dailyDone?"rgba(255,255,255,.4)":G.white}}>
-                {dailyDone ? "Revenez demain 🔒" : "Devine le joueur mystère"}
+                {dailyDone ? (lang==="en"?"Come back tomorrow 🔒":"Revenez demain 🔒") : (lang==="en"?"Guess the mystery player":"Devine le joueur mystère")}
               </div>
-              {dailyDone && <div style={{fontSize:10,color:"rgba(255,255,255,.3)",marginTop:1}}>{dailyAbandoned ? "Abandonné — "+dailyPlayer.name : "Trouvé en "+localStorage.getItem("bb_daily_tries")+" essai"+(parseInt(localStorage.getItem("bb_daily_tries")||"1")>1?"s":"")+" !"}</div>}
+              {dailyDone && <div style={{fontSize:10,color:"rgba(255,255,255,.3)",marginTop:1}}>{dailyAbandoned ? (lang==="en"?"Abandoned — ":"Abandonné — ")+dailyPlayer.name : (lang==="en"?"Found in "+localStorage.getItem("bb_daily_tries")+" attempt"+(parseInt(localStorage.getItem("bb_daily_tries")||"1")>1?"s":"")+"!":"Trouvé en "+localStorage.getItem("bb_daily_tries")+" essai"+(parseInt(localStorage.getItem("bb_daily_tries")||"1")>1?"s":"")+" !")}</div>}
             </div>
-            {!dailyDone && <button onClick={function(){setShowDailyGame(true);setDailyGuess("");setDailyFlash(null);setDailySuccess(false);}} style={{padding:"9px 13px",background:"linear-gradient(135deg,#FFD600,#FF6B35)",color:"#000",border:"none",borderRadius:12,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800,whiteSpace:"nowrap"}}>Jouer ⚡</button>}
+            {!dailyDone && <button onClick={function(){setShowDailyGame(true);setDailyGuess("");setDailyFlash(null);setDailySuccess(false);}} style={{padding:"9px 13px",background:"linear-gradient(135deg,#FFD600,#FF6B35)",color:"#000",border:"none",borderRadius:12,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800,whiteSpace:"nowrap"}}>{lang==="en"?"Play ⚡":"Jouer ⚡"}</button>}
           </div>
         )}
 
@@ -4164,17 +4164,17 @@ export default function LePont() {
             <input value={roomInput} onChange={function(e){setRoomInput(e.target.value.toUpperCase());setRoomMsg("");}}
               placeholder="Code salle" maxLength={6}
               style={{flex:1,padding:"10px 12px",borderRadius:12,border:"1.5px solid rgba(255,255,255,.12)",background:"rgba(255,255,255,.05)",color:G.white,fontFamily:G.font,fontSize:14,fontWeight:700,letterSpacing:3,textTransform:"uppercase",outline:"none"}}/>
-            <button onClick={function(){requirePseudo(function(){joinRoom(roomInput);});}} style={{padding:"10px 14px",background:"rgba(255,255,255,.07)",color:G.white,border:"1px solid rgba(255,255,255,.12)",borderRadius:12,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700}}>Rejoindre</button>
+            <button onClick={function(){requirePseudo(function(){joinRoom(roomInput);});}} style={{padding:"10px 14px",background:"rgba(255,255,255,.07)",color:G.white,border:"1px solid rgba(255,255,255,.12)",borderRadius:12,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700}}>{lang==="en"?"Join":"Rejoindre"}</button>
           </div>
         </div>
         {roomMsg && <div style={{fontSize:12,color:"#FF3D57",fontWeight:700,marginTop:-4}}>{roomMsg}</div>}
         {/* Actions */}
         <div style={{display:"flex",gap:8}}>
           <button onClick={function(){requirePseudo(function(){loadLeaderboard(lbMode);setShowLeaderboard(true);});}} style={{flex:1,padding:"12px",background:"rgba(0,230,118,.08)",color:G.accent,border:"1px solid rgba(0,230,118,.2)",borderRadius:14,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
-            {Icon.trophy(14,G.accent)} Classement
+            {Icon.trophy(14,G.accent)} {lang==="en"?"Leaderboard":"Classement"}
           </button>
           <button onClick={function(){requirePseudo(function(){setShowFriends(true);loadFriends().then(function(ids){fetchFriendScores(ids);});loadDuels();loadFriendRequests();});}} style={{flex:1,padding:"12px",background:"rgba(255,255,255,.05)",color:G.white,border:"1px solid rgba(255,255,255,.1)",borderRadius:14,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",gap:6,position:"relative"}}>
-            👥 Amis{friendRequests.length>0&&<span style={{position:"absolute",top:-4,right:-4,background:"#FF3D57",color:"#fff",borderRadius:"50%",width:16,height:16,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:900}}>{friendRequests.length}</span>}
+            {lang==="en"?"👥 Friends":"👥 Amis"}{friendRequests.length>0&&<span style={{position:"absolute",top:-4,right:-4,background:"#FF3D57",color:"#fff",borderRadius:"50%",width:16,height:16,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:900}}>{friendRequests.length}</span>}
           </button>
         </div>
 
