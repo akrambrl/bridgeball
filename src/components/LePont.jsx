@@ -2066,7 +2066,7 @@ export default function LePont() {
       data.forEach(function(row) {
         if (!stats[row.player_id]) stats[row.player_id] = { name:row.player_name, pid:row.player_id, best:row.score, played:0, bestPont:0, bestChaine:0 };
         if (row.score > stats[row.player_id].best) stats[row.player_id].best = row.score;
-        stats[row.player_id].played += 1;
+        // played is now counted only from duels and rooms (below), not from solo scores
         if (row.mode === "pont" && row.score > stats[row.player_id].bestPont) stats[row.player_id].bestPont = row.score;
         if (row.mode === "chaine" && row.score > stats[row.player_id].bestChaine) stats[row.player_id].bestChaine = row.score;
       });
@@ -2080,6 +2080,7 @@ export default function LePont() {
             if (!stats[pid].losses) stats[pid].losses = 0;
             const myScore = pid === d.challenger_id ? d.challenger_score : d.opponent_score;
             const theirScore = pid === d.challenger_id ? d.opponent_score : d.challenger_score;
+            stats[pid].played = (stats[pid].played||0) + 1;
             if (myScore > theirScore) stats[pid].wins++;
             else if (myScore === theirScore) stats[pid].draws++;
             else stats[pid].losses++;
@@ -2103,6 +2104,7 @@ export default function LePont() {
               if (!stats[pid].losses) stats[pid].losses = 0;
               const myScore = p.score || 0;
               const winners = players.filter(function(x){return (x.score||0)===topScore;});
+              stats[pid].played = (stats[pid].played||0) + 1;
               if (myScore === topScore && winners.length === 1) stats[pid].wins++;
               else if (myScore === topScore && winners.length > 1) stats[pid].draws++;
               else stats[pid].losses++;
