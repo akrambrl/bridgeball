@@ -918,6 +918,7 @@ export default function LePont() {
   const [pseudoInput, setPseudoInput] = useState("");
   const [pseudoChecking, setPseudoChecking] = useState(false);
   const [pseudoMsg, setPseudoMsg] = useState("");
+  const [playerAvatar, setPlayerAvatar] = useState(() => { try { return localStorage.getItem("bb_avatar") || null; } catch { return null; } });
   const [pseudoConfirmed, setPseudoConfirmed] = useState(() => { try { const n = localStorage.getItem("bb_name"); return !!(n && n.trim().length >= 2); } catch { return false; } });
   const [showQuitConfirm, setShowQuitConfirm] = useState(false);
   const [gameConfigModal, setGameConfigModal] = useState(null);
@@ -3323,7 +3324,34 @@ export default function LePont() {
 
       {/* Avatar + Pseudo */}
       <div style={{zIndex:1,padding:"16px 20px 8px",textAlign:"center"}}>
-        <div style={{width:100,height:100,borderRadius:"50%",background:"linear-gradient(135deg,#00E676,#00A855)",margin:"0 auto 14px",display:"flex",alignItems:"center",justifyContent:"center",fontSize:44,boxShadow:"0 8px 30px rgba(0,230,118,.35)"}}>{(playerName||"?")[0].toUpperCase()}</div>
+        <label htmlFor="avatar-upload" style={{display:"block",width:100,height:100,borderRadius:"50%",background:playerAvatar?"#000":"linear-gradient(135deg,#00E676,#00A855)",margin:"0 auto 14px",display:"flex",alignItems:"center",justifyContent:"center",fontSize:44,boxShadow:"0 8px 30px rgba(0,230,118,.35)",cursor:"pointer",overflow:"hidden",position:"relative"}}>
+          {playerAvatar ? <img src={playerAvatar} alt="avatar" style={{width:"100%",height:"100%",objectFit:"cover"}}/> : (playerName||"?")[0].toUpperCase()}
+          <div style={{position:"absolute",bottom:0,right:0,width:32,height:32,borderRadius:"50%",background:"#000",border:"2px solid #fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14}}>📷</div>
+        </label>
+        <input id="avatar-upload" type="file" accept="image/*" style={{display:"none"}} onChange={(e)=>{
+          const file = e.target.files?.[0];
+          if (!file) return;
+          if (file.size > 5*1024*1024) { alert("Image trop grande (max 5 Mo)"); return; }
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+            const img = new Image();
+            img.onload = () => {
+              const canvas = document.createElement("canvas");
+              const size = 300;
+              canvas.width = size; canvas.height = size;
+              const ctx = canvas.getContext("2d");
+              const minDim = Math.min(img.width, img.height);
+              const sx = (img.width-minDim)/2;
+              const sy = (img.height-minDim)/2;
+              ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, size, size);
+              const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
+              setPlayerAvatar(dataUrl);
+              try { localStorage.setItem("bb_avatar", dataUrl); } catch {}
+            };
+            img.src = ev.target.result;
+          };
+          reader.readAsDataURL(file);
+        }}/>
         <div style={{fontFamily:G.heading,fontSize:28,color:G.white,letterSpacing:1}}>@{playerName||"anonyme"}</div>
         <button onClick={()=>{setPseudoInput(playerName||"");setPseudoScreen(true);}} style={{marginTop:10,padding:"7px 16px",background:"rgba(255,255,255,.08)",color:"rgba(255,255,255,.7)",border:"1px solid rgba(255,255,255,.15)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:700}}>✏️ Modifier</button>
       </div>
