@@ -3936,7 +3936,7 @@ export default function LePont() {
               <span style={{fontFamily:G.heading,fontSize:15,color:G.gold}}>{record.score} pts</span>
             </div>}
             {/* Bouton jouer */}
-            <div style={{position:"absolute",bottom:6,left:8,right:8,zIndex:2,background:G.accent,borderRadius:50,padding:"4px 0",color:"#000",fontFamily:G.font,fontWeight:800,fontSize:10,textAlign:"center"}}>{lang==="en"?"▶ Play":"▶ Jouer"}</div>
+            <div style={{position:"absolute",bottom:6,left:8,right:8,zIndex:2,background:G.accent,borderRadius:50,padding:"10px 0",color:"#000",fontFamily:G.font,fontWeight:800,fontSize:12,textAlign:"center"}}>{lang==="en"?"▶ Play":"▶ Jouer"}</div>
           </div>
 
           {/* ── Carte THE MERCATO ── */}
@@ -3953,7 +3953,7 @@ export default function LePont() {
               <span style={{fontSize:12,color:G.accent}}>⛓</span>
               <span style={{fontFamily:G.heading,fontSize:15,color:G.accent}}>{chainRecord.score} pts</span>
             </div>}
-            <div style={{position:"absolute",bottom:6,left:8,right:8,zIndex:2,background:G.accent,borderRadius:50,padding:"4px 0",color:"#000",fontFamily:G.font,fontWeight:800,fontSize:10,textAlign:"center"}}>{lang==="en"?"▶ Play":"▶ Jouer"}</div>
+            <div style={{position:"absolute",bottom:6,left:8,right:8,zIndex:2,background:G.accent,borderRadius:50,padding:"10px 0",color:"#000",fontFamily:G.font,fontWeight:800,fontSize:12,textAlign:"center"}}>{lang==="en"?"▶ Play":"▶ Jouer"}</div>
           </div>
         </div>
 
