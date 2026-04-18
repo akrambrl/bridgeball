@@ -3033,25 +3033,25 @@ export default function LePont() {
             const medals = ["🥇","🥈","🥉"];
             const grade = getGrade(entry.score);
             return(
-              <div key={i} onClick={()=>{ if(!isMe) { setShowLeaderboard(false); openUserProfile(entry.pid, entry.name); } }} style={{borderRadius:14,background:i===0?"linear-gradient(135deg,#FFD600,#FF6B35)":"rgba(0,230,118,.18)",border:i===0?"1px solid rgba(255,214,0,.6)":isMe?"1px solid rgba(0,230,118,.6)":"1px solid rgba(0,230,118,.35)",marginBottom:6,overflow:"hidden",cursor:isMe?"default":"pointer",boxShadow:i===0?"0 4px 18px rgba(255,107,53,.35)":"none"}}>
+              <div key={i} onClick={()=>{ if(!isMe) { setShowLeaderboard(false); openUserProfile(entry.pid, entry.name); } }} style={{borderRadius:14,background:i===0?"linear-gradient(135deg,#FFD600,#FF6B35)":i===1?"linear-gradient(135deg,#E8E8E8,#A8A8B0)":i===2?"linear-gradient(135deg,#E3A869,#8B5A2B)":"rgba(0,230,118,.18)",border:i===0?"1px solid rgba(255,214,0,.6)":i===1?"1px solid rgba(200,200,210,.6)":i===2?"1px solid rgba(205,127,50,.6)":isMe?"1px solid rgba(0,230,118,.6)":"1px solid rgba(0,230,118,.35)",marginBottom:6,overflow:"hidden",cursor:isMe?"default":"pointer",boxShadow:i===0?"0 4px 18px rgba(255,107,53,.35)":i===1?"0 4px 18px rgba(200,200,210,.25)":i===2?"0 4px 18px rgba(205,127,50,.3)":"none"}}>
                 <div style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px"}}>
                   <div style={{fontFamily:G.heading,fontSize:30,width:40,textAlign:"center",color:i<3?["#FFD600","#C0C0C0","#CD7F32"][i]:"rgba(255,255,255,.3)"}}>
                     {i<3?medals[i]:(i+1)}
                   </div>
                   <div style={{flex:1}}>
                     <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3}}>
-                      <span style={{fontSize:22,fontFamily:G.heading,letterSpacing:1,color:i===0?"#1a0d00":isMe?G.accent:G.white}}>{entry.country && <span style={{marginRight:5,fontSize:18}}>{countryToFlag(entry.country)}</span>}{entry.name}{isMe?" (toi)":""}</span>
+                      <span style={{fontSize:22,fontFamily:G.heading,letterSpacing:1,color:i<3?"#1a0d00":isMe?G.accent:G.white}}>{entry.country && <span style={{marginRight:5,fontSize:18}}>{countryToFlag(entry.country)}</span>}{entry.name}{isMe?" (toi)":""}</span>
                       <span style={{fontSize:12,fontWeight:800,color:grade.color,background:grade.color+"22",borderRadius:20,padding:"3px 9px",letterSpacing:.5}}>{grade.emoji} {grade.label}</span>
                       {entry.streak>=3 && <span style={{fontSize:12,fontWeight:800,color:"#FF6B35",background:"rgba(255,107,53,.15)",borderRadius:20,padding:"3px 9px"}}>🔥 {entry.streak}</span>}
                     </div>
                     {lbMode==="global"
-                      ? <div style={{fontSize:13,color:i===0?"rgba(26,13,0,.7)":"rgba(255,255,255,.5)",marginTop:4}}>🏟 {entry.bestPont} pts &nbsp;·&nbsp; ⛓ {entry.bestChaine} pts</div>
-                      : <div style={{fontSize:13,color:i===0?"rgba(26,13,0,.7)":"rgba(255,255,255,.5)",marginTop:4}}>{entry.played} partie{entry.played>1?"s":""}</div>
+                      ? <div style={{fontSize:13,color:i<3?"rgba(26,13,0,.7)":"rgba(255,255,255,.5)",marginTop:4}}>🏟 {entry.bestPont} pts &nbsp;·&nbsp; ⛓ {entry.bestChaine} pts</div>
+                      : <div style={{fontSize:13,color:i<3?"rgba(26,13,0,.7)":"rgba(255,255,255,.5)",marginTop:4}}>{entry.played} partie{entry.played>1?"s":""}</div>
                     }
                   </div>
-                  <div style={{fontFamily:G.heading,fontSize:32,color:i===0?"#1a0d00":G.white}}>{entry.score} <span style={{fontSize:14,color:i===0?"rgba(26,13,0,.5)":"rgba(255,255,255,.3)"}}>pts</span></div>
+                  <div style={{fontFamily:G.heading,fontSize:32,color:i<3?"#1a0d00":G.white}}>{entry.score} <span style={{fontSize:14,color:i<3?"rgba(26,13,0,.5)":"rgba(255,255,255,.3)"}}>pts</span></div>
                 </div>
-                <div style={{display:"flex",borderTop:i===0?"1px solid rgba(0,0,0,.15)":"1px solid rgba(255,255,255,.06)"}}>
+                <div style={{display:"flex",borderTop:i<3?"1px solid rgba(0,0,0,.15)":"1px solid rgba(255,255,255,.06)"}}>
                     <div style={{flex:1,padding:"10px 0",textAlign:"center",borderRight:"1px solid rgba(255,255,255,.06)"}}>
                       <div style={{fontFamily:G.heading,fontSize:22,color:"#00E676"}}>{entry.wins||0}</div>
                       <div style={{fontSize:11,color:"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase"}}>Victoires</div>
