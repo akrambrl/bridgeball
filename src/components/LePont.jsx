@@ -3012,13 +3012,13 @@ export default function LePont() {
             );
           })()}
           <div style={{display:"flex",gap:6,marginBottom:4,flexWrap:"wrap"}}>
-            {["global","pont","chaine","amis"].map(function(m){return(
+            {["global","amis"].map(function(m){return(
               <button key={m} onClick={function(){
                 setLbMode(m);
                 if(m!=="amis") loadLeaderboard(m);
                 else loadLeaderboard("global");
               }} style={{flex:1,minWidth:60,padding:"10px 6px",borderRadius:12,border:"1.5px solid "+(lbMode===m?G.accent:"rgba(255,255,255,.12)"),background:lbMode===m?"rgba(0,230,118,.1)":"transparent",color:lbMode===m?G.accent:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:12}}>
-                {m==="global"?"🌍 Global":m==="pont"?"🏟 Plug":m==="chaine"?"⛓ Mercato":"👥 Amis"}
+                {m==="global"?"🌍 Global":"👥 Amis"}
               </button>
             );})}
           </div>
