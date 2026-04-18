@@ -74,14 +74,17 @@ function getCurrentSeason() {
 }
 
 const GRADES = [
-  { min:500, label:"Expert",  emoji:"🐐", color:"#FFD700" },
-  { min:200, label:"Pro",     emoji:"🦁", color:"#00B4D8" },
-  { min:100, label:"Amateur", emoji:"🦊", color:"#2EC4B6" },
-  { min:0,   label:"Rookie",  emoji:"🐣", color:"#8D99AE" },
+  { min:500, label:"Expert",  labelEn:"Expert",  emoji:"🐐", color:"#FFD700" },
+  { min:200, label:"Pro",     labelEn:"Pro",     emoji:"🦁", color:"#00B4D8" },
+  { min:100, label:"Amateur", labelEn:"Casual",  emoji:"🦊", color:"#2EC4B6" },
+  { min:0,   label:"Rookie",  labelEn:"Rookie",  emoji:"🐣", color:"#8D99AE" },
 ];
 
 function getGrade(score) {
-  return GRADES.find(function(g){ return score >= g.min; }) || GRADES[GRADES.length-1];
+  const g = GRADES.find(function(g){ return score >= g.min; }) || GRADES[GRADES.length-1];
+  let lang = "fr";
+  try { lang = localStorage.getItem("bb_lang") === "en" ? "en" : "fr"; } catch {}
+  return { ...g, label: lang === "en" ? (g.labelEn || g.label) : g.label };
 }
 const QUESTION_DURATION = 10;
 const CHAIN_QUESTION_DURATION = 15;
