@@ -3441,8 +3441,9 @@ export default function LePont() {
         ) : (
           <>
             <div style={{zIndex:1,padding:"16px 20px 8px",textAlign:"center"}}>
-              <div style={{width:100,height:100,borderRadius:"50%",margin:"0 auto 14px",background:"linear-gradient(135deg,#00E676,#00A855)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:44,color:"#fff",boxShadow:"0 8px 30px rgba(0,230,118,.35)",overflow:"hidden"}}>
-                {d.avatar ? <img src={d.avatar} alt="avatar" onError={(e)=>{e.currentTarget.style.display="none";}} style={{width:"100%",height:"100%",objectFit:"cover"}}/> : (viewedProfile.name||"?")[0].toUpperCase()}
+              <div style={{width:100,height:100,borderRadius:"50%",margin:"0 auto 14px",background:"linear-gradient(135deg,#00E676,#00A855)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:44,color:"#fff",boxShadow:"0 8px 30px rgba(0,230,118,.35)",overflow:"hidden",position:"relative"}}>
+                <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",fontSize:56}}>{grade?grade.emoji:"🐣"}</div>
+                {d.avatar && <img src={d.avatar} alt="avatar" onError={(e)=>{e.currentTarget.style.display="none";}} style={{width:"100%",height:"100%",objectFit:"cover",position:"relative",zIndex:1}}/>}
               </div>
               <div style={{fontFamily:G.heading,fontSize:28,color:G.white,letterSpacing:1}}>@{viewedProfile.name}</div>
               {grade && (
@@ -3564,8 +3565,8 @@ export default function LePont() {
       {/* Avatar + Pseudo */}
       <div style={{zIndex:1,padding:"16px 20px 8px",textAlign:"center"}}>
         <label htmlFor="avatar-upload" style={{display:"inline-block",width:100,height:100,margin:"0 auto 14px",position:"relative",cursor:"pointer"}}>
-          <div style={{width:100,height:100,borderRadius:"50%",background:playerAvatar?"#000":"linear-gradient(135deg,#00E676,#00A855)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:44,color:"#fff",boxShadow:"0 8px 30px rgba(0,230,118,.35)",overflow:"hidden"}}>
-            {playerAvatar ? <img src={playerAvatar} alt="avatar" style={{width:"100%",height:"100%",objectFit:"cover"}}/> : (playerName||"?")[0].toUpperCase()}
+          <div style={{width:100,height:100,borderRadius:"50%",background:playerAvatar?"#000":"linear-gradient(135deg,#00E676,#00A855)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:56,color:"#fff",boxShadow:"0 8px 30px rgba(0,230,118,.35)",overflow:"hidden"}}>
+            {playerAvatar ? <img src={playerAvatar} alt="avatar" style={{width:"100%",height:"100%",objectFit:"cover"}}/> : getGrade(Math.max(record?record.score:0, chainRecord?chainRecord.score:0)).emoji}
           </div>
           <div style={{position:"absolute",bottom:-2,right:-2,width:34,height:34,borderRadius:"50%",background:G.accent,border:"3px solid #0d1f0d",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,zIndex:2}}>{avatarUploading?"⏳":"📷"}</div>
         </label>
@@ -3649,29 +3650,29 @@ export default function LePont() {
 
       {/* Actions */}
       <div style={{zIndex:1,padding:"8px 16px",display:"flex",flexDirection:"column",gap:10}}>
-        <button onClick={()=>{setShowFriends(true);setScreen("home");}} style={{padding:"16px",background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.12)",borderRadius:16,cursor:"pointer",color:G.white,fontFamily:G.font,fontSize:15,fontWeight:700,display:"flex",alignItems:"center",gap:12,textAlign:"left"}}>
+        <button onClick={()=>{setShowFriends(true);setScreen("home");}} style={{padding:"16px",background:"linear-gradient(135deg, rgba(0,230,118,.18), rgba(0,0,0,.6))",border:"1px solid rgba(0,230,118,.35)",borderRadius:16,cursor:"pointer",color:G.white,fontFamily:G.font,fontSize:15,fontWeight:700,display:"flex",alignItems:"center",gap:12,textAlign:"left"}}>
           <span style={{fontSize:22}}>👥</span>
           <div style={{flex:1}}>
             <div>Mes amis</div>
-            <div style={{fontSize:11,color:"rgba(255,255,255,.4)",fontWeight:400,marginTop:2}}>{friendsList.length} ami{friendsList.length>1?"s":""}</div>
+            <div style={{fontSize:11,color:"rgba(255,255,255,.75)",fontWeight:500,marginTop:2}}>{friendsList.length} ami{friendsList.length>1?"s":""}</div>
           </div>
           <span style={{fontSize:18,color:"rgba(255,255,255,.3)"}}>→</span>
         </button>
 
-        <button onClick={()=>{setLbMode("pont");setLbDiff("facile");loadLeaderboard("pont");setShowLeaderboard(true);setScreen("home");}} style={{padding:"16px",background:"rgba(255,214,0,.06)",border:"1px solid rgba(255,214,0,.2)",borderRadius:16,cursor:"pointer",color:G.white,fontFamily:G.font,fontSize:15,fontWeight:700,display:"flex",alignItems:"center",gap:12,textAlign:"left"}}>
+        <button onClick={()=>{setLbMode("pont");setLbDiff("facile");loadLeaderboard("pont");setShowLeaderboard(true);setScreen("home");}} style={{padding:"16px",background:"linear-gradient(135deg, rgba(255,214,0,.18), rgba(0,0,0,.6))",border:"1px solid rgba(255,214,0,.35)",borderRadius:16,cursor:"pointer",color:G.white,fontFamily:G.font,fontSize:15,fontWeight:700,display:"flex",alignItems:"center",gap:12,textAlign:"left"}}>
           <span style={{fontSize:22}}>🏆</span>
           <div style={{flex:1}}>
             <div>Classement</div>
-            <div style={{fontSize:11,color:"rgba(255,255,255,.4)",fontWeight:400,marginTop:2}}>Vois ton rang mondial</div>
+            <div style={{fontSize:11,color:"rgba(255,255,255,.75)",fontWeight:500,marginTop:2}}>Vois ton rang mondial</div>
           </div>
           <span style={{fontSize:18,color:"rgba(255,255,255,.3)"}}>→</span>
         </button>
 
-        <button onClick={()=>{setShowTutorial(true);setTutorialStep(0);}} style={{padding:"16px",background:"rgba(96,165,250,.06)",border:"1px solid rgba(96,165,250,.2)",borderRadius:16,cursor:"pointer",color:G.white,fontFamily:G.font,fontSize:15,fontWeight:700,display:"flex",alignItems:"center",gap:12,textAlign:"left"}}>
+        <button onClick={()=>{setShowTutorial(true);setTutorialStep(0);}} style={{padding:"16px",background:"linear-gradient(135deg, rgba(96,165,250,.18), rgba(0,0,0,.6))",border:"1px solid rgba(96,165,250,.35)",borderRadius:16,cursor:"pointer",color:G.white,fontFamily:G.font,fontSize:15,fontWeight:700,display:"flex",alignItems:"center",gap:12,textAlign:"left"}}>
           <span style={{fontSize:22}}>❓</span>
           <div style={{flex:1}}>
             <div>Comment jouer ?</div>
-            <div style={{fontSize:11,color:"rgba(255,255,255,.4)",fontWeight:400,marginTop:2}}>Revoir le tutoriel</div>
+            <div style={{fontSize:11,color:"rgba(255,255,255,.75)",fontWeight:500,marginTop:2}}>Revoir le tutoriel</div>
           </div>
           <span style={{fontSize:18,color:"rgba(255,255,255,.3)"}}>→</span>
         </button>
