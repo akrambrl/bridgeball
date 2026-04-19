@@ -1595,9 +1595,18 @@ export default function LePont() {
     const duel = activeDuelRef.current;
     if (!duel || !duel.isRoom) return;
     const roomId = duel.id;
+    const roomRounds = duel.rounds || 1;
+    setWaitingForRoom(true);
     try {
       const data = await sbFetch("bb_rooms?id=eq."+roomId+"&limit=1");
-      if (!Array.isArray(data) || data.length === 0) return;
+      if (!Array.isArray(data) || data.length === 0) {
+        setWaitingForRoom(false);
+        activeDuelRef.current = null;
+        setActiveDuel(null);
+        clearInterval(roomPollRef.current);
+        setScreen("home");
+        return;
+      }
       const r = data[0];
       const players = typeof r.players === "string" ? JSON.parse(r.players) : r.players;
       const updated = players.map(function(p) {
@@ -1609,10 +1618,30 @@ export default function LePont() {
         body:JSON.stringify({players:JSON.stringify(updated), status:allDone?"complete":"scoring"}),
         headers:{"Prefer":"return=minimal"}
       });
-    } catch(e) { console.error("Abandon room error:", e); }
-    activeDuelRef.current = null;
-    setActiveDuel(null);
-    clearInterval(roomPollRef.current);
+      activeDuelRef.current = null;
+      setActiveDuel(null);
+      clearInterval(roomPollRef.current);
+      if (allDone) {
+        // Tous ont fini — afficher les résultats directement
+        const finalData = await sbFetch("bb_rooms?id=eq."+roomId+"&limit=1");
+        if (Array.isArray(finalData) && finalData.length > 0) {
+          showRoomResults(finalData[0]);
+        } else {
+          setWaitingForRoom(false);
+          setScreen("home");
+        }
+      } else {
+        // Les autres sont encore en train de jouer — attendre via polling
+        startRoomResultPolling(roomId, roomRounds);
+      }
+    } catch(e) {
+      console.error("Abandon room error:", e);
+      setWaitingForRoom(false);
+      activeDuelRef.current = null;
+      setActiveDuel(null);
+      clearInterval(roomPollRef.current);
+      setScreen("home");
+    }
   }
 
   async function submitDuelScore(sc) {
@@ -1950,8 +1979,13 @@ export default function LePont() {
     setWaitingForRoom(false);
     setScreen("home");
     const players = typeof r.players === "string" ? JSON.parse(r.players) : r.players;
-    const sorted = [...players].sort(function(a,b){return (b.score||0)-(a.score||0);});
-    const meInRoom = players.find(function(p){return p.id===playerId;}); const myRankInRoom = sorted.findIndex(function(p){return p.id===playerId;}); const roomImgs = myRankInRoom === 0 ? WIN_IMGS : LOSE_IMGS; setResultImg(roomImgs[Math.floor(Math.random()*roomImgs.length)]); setDuelResult({isRoom:true, players:sorted, mode:r.mode});
+    const sorted = [...players].sort(function(a,b){
+      // Les joueurs qui ont abandonné sont TOUJOURS derniers, peu importe leur score
+      if (a.abandoned && !b.abandoned) return 1;
+      if (!a.abandoned && b.abandoned) return -1;
+      return (b.score||0)-(a.score||0);
+    });
+    const meInRoom = players.find(function(p){return p.id===playerId;}); const myRankInRoom = sorted.findIndex(function(p){return p.id===playerId;}); const roomImgs = myRankInRoom === 0 ? WIN_IMGS : LOSE_IMGS; setResultImg(roomImgs[Math.floor(Math.random()*roomImgs.length)]); setDuelResult({isRoom:true, players:sorted, mode:r.mode, myAbandoned: meInRoom && meInRoom.abandoned === true});
     setActiveDuel(null);
     activeDuelRef.current = null;
     setRoom(null);
@@ -2383,7 +2417,11 @@ export default function LePont() {
           try {
             const players = typeof r.players === "string" ? JSON.parse(r.players) : r.players;
             if (!Array.isArray(players) || players.length < 2) return;
-            const sorted = [...players].sort(function(a,b){return (b.score||0)-(a.score||0);});
+            const sorted = [...players].sort(function(a,b){
+              if (a.abandoned && !b.abandoned) return 1;
+              if (!a.abandoned && b.abandoned) return -1;
+              return (b.score||0)-(a.score||0);
+            });
             const topScore = sorted[0].score || 0;
             players.forEach(function(p) {
               const pid = p.id;
@@ -2392,10 +2430,10 @@ export default function LePont() {
               if (!stats[pid].draws) stats[pid].draws = 0;
               if (!stats[pid].losses) stats[pid].losses = 0;
               const myScore = p.score || 0;
-              const winners = players.filter(function(x){return (x.score||0)===topScore;});
+              const winners = players.filter(function(x){return !x.abandoned && (x.score||0)===topScore;});
               stats[pid].played = (stats[pid].played||0) + 1;
-              if (myScore === topScore && winners.length === 1) stats[pid].wins++;
-              else if (myScore === topScore && winners.length > 1) stats[pid].draws++;
+              if (!p.abandoned && myScore === topScore && winners.length === 1) stats[pid].wins++;
+              else if (!p.abandoned && myScore === topScore && winners.length > 1) stats[pid].draws++;
               else stats[pid].losses++;
             });
           } catch(e){}
@@ -3719,8 +3757,12 @@ export default function LePont() {
     const winner = duelResult.players[0];
     const L_msg = RESULT_MESSAGES[lang==="en"?"en":"fr"];
     const oppNameRoom = (winner && winner.id !== playerId) ? winner.name : "";
+    const iAbandoned = duelResult.myAbandoned === true;
     let msg;
-    if (myRank === 1) {
+    if (iAbandoned) {
+      // J'ai abandonné → message spécifique
+      msg = lang==="en" ? "You didn't even finish the match 😂" : "T'as même pas eu le courage d'aller au bout 😂";
+    } else if (myRank === 1) {
       // Je gagne → message de victoire (on passe le nom du 2e pour oppName si besoin)
       const runnerUp = duelResult.players[1];
       const opp = runnerUp ? runnerUp.name : "";
@@ -3740,18 +3782,18 @@ export default function LePont() {
           <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.45)"}}/>
         </div>
         <div style={{zIndex:1,padding:"32px 20px 12px",textAlign:"center"}}>
-          <div style={{fontSize:52,marginBottom:8}}>{myRank<=3?medals[myRank-1]:myRank+"ème"}</div>
-          <div style={{fontFamily:G.heading,fontSize:"clamp(30px,8vw,50px)",color:myRank===1?G.gold:G.white,letterSpacing:2}}>
-            {myRank===1?(lang==="en"?"VICTORY!":"VICTOIRE !"):myRank===2?(lang==="en"?"2ND PLACE":"2ÈME PLACE"):myRank===3?(lang==="en"?"3RD PLACE":"3ÈME PLACE"):(lang==="en"?"RESULTS":"RÉSULTATS")}
+          <div style={{fontSize:52,marginBottom:8}}>{iAbandoned?"🏳️":(myRank<=3?medals[myRank-1]:myRank+"ème")}</div>
+          <div style={{fontFamily:G.heading,fontSize:"clamp(30px,8vw,50px)",color:iAbandoned?"#FF3D57":(myRank===1?G.gold:G.white),letterSpacing:2}}>
+            {iAbandoned?(lang==="en"?"FORFEIT":"ABANDON"):(myRank===1?(lang==="en"?"VICTORY!":"VICTOIRE !"):myRank===2?(lang==="en"?"2ND PLACE":"2ÈME PLACE"):myRank===3?(lang==="en"?"3RD PLACE":"3ÈME PLACE"):(lang==="en"?"RESULTS":"RÉSULTATS"))}
           </div>
-          <div style={{fontSize:18,color:myRank===1?G.gold:"#fff",marginTop:12,fontWeight:800,padding:"0 16px",lineHeight:1.4,textAlign:"center",animation:"popIn .6s cubic-bezier(.22,1,.36,1) .4s both",textShadow:myRank===1?"0 0 20px rgba(255,214,0,.4)":"none"}}>{msg}</div>
-          {resultImg && <img src={resultImg} style={{width:"60%",maxWidth:220,margin:"8px auto",display:"block",objectFit:"contain"}} />}
+          <div style={{fontSize:18,color:iAbandoned?"#fff":(myRank===1?G.gold:"#fff"),marginTop:12,fontWeight:800,padding:"0 16px",lineHeight:1.4,textAlign:"center",animation:"popIn .6s cubic-bezier(.22,1,.36,1) .4s both",textShadow:myRank===1&&!iAbandoned?"0 0 20px rgba(255,214,0,.4)":"none"}}>{msg}</div>
+          {!iAbandoned && resultImg && <img src={resultImg} style={{width:"60%",maxWidth:220,margin:"8px auto",display:"block",objectFit:"contain"}} />}
         </div>
         <div style={{...sheet,borderRadius:"28px 28px 0 0"}}>
           {duelResult.players.map(function(p,i){return(
             <div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",borderRadius:14,background:p.id===playerId?"rgba(0,230,118,.08)":"rgba(255,255,255,.03)",border:p.id===playerId?"1px solid rgba(0,230,118,.25)":"1px solid rgba(255,255,255,.05)",marginBottom:6}}>
               <div style={{fontFamily:G.heading,fontSize:30,width:40,textAlign:"center",color:i<3?["#FFD600","#C0C0C0","#CD7F32"][i]:"rgba(255,255,255,.3)"}}>{i<3?medals[i]:i+1}</div>
-              <div style={{flex:1,fontSize:14,fontWeight:800,color:p.id===playerId?G.accent:G.white}}>{p.name}{p.id===playerId?" (toi)":""}</div>
+              <div style={{flex:1,fontSize:14,fontWeight:800,color:p.id===playerId?G.accent:G.white}}>{p.name}{p.id===playerId?" (toi)":""}{p.abandoned?" 🏳️":""}</div>
               <div style={{fontFamily:G.heading,fontSize:26,color:i===0?G.gold:G.white}}>{p.score||0} <span style={{fontSize:12,color:"rgba(255,255,255,.3)"}}>pts</span></div>
             </div>
           );})}
@@ -4558,9 +4600,9 @@ export default function LePont() {
                 setShowQuitConfirm(false);
                 clearInterval(timerRef.current);
                 clearInterval(qTimerRef.current);
-                if(activeDuelRef.current&&activeDuelRef.current.isRoom){ await abandonRoom(); }
-                else if(activeDuel){ abandonDuel(); }
-                setScreen("home");
+                if(activeDuelRef.current&&activeDuelRef.current.isRoom){ await abandonRoom(); /* navigation gérée par abandonRoom → showRoomResults ou polling */ }
+                else if(activeDuel){ abandonDuel(); setScreen("home"); }
+                else { setScreen("home"); }
               }} style={{flex:1,padding:"13px",background:"#FF3D57",color:"#fff",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>{lang==="en"?"Quit":"Abandonner"}</button>
             </div>
           </div>
@@ -4726,7 +4768,7 @@ export default function LePont() {
             <div style={{fontSize:14,color:"rgba(255,255,255,.5)",marginBottom:24}}>{lang==="en"?"Your game will be lost and your score will be 0.":"Ta partie sera perdue et ton score sera de 0."}</div>
             <div style={{display:"flex",gap:10}}>
               <button onClick={function(){setShowQuitConfirm(false);}} style={{flex:1,padding:"13px",background:"rgba(255,255,255,.07)",color:G.white,border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>{lang==="en"?"Continue":"Continuer"}</button>
-              <button onClick={async function(){setShowQuitConfirm(false);clearInterval(timerRef.current);clearInterval(qTimerRef.current);if(activeDuelRef.current&&activeDuelRef.current.isRoom){await abandonRoom();}else if(activeDuel){abandonDuel();}setChainPlayer("");setScreen("home");}} style={{flex:1,padding:"13px",background:"#FF3D57",color:"#fff",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>{lang==="en"?"Quit":"Abandonner"}</button>
+              <button onClick={async function(){setShowQuitConfirm(false);clearInterval(timerRef.current);clearInterval(qTimerRef.current);if(activeDuelRef.current&&activeDuelRef.current.isRoom){await abandonRoom();/* navigation gérée par abandonRoom */}else if(activeDuel){abandonDuel();setChainPlayer("");setScreen("home");}else{setChainPlayer("");setScreen("home");}}} style={{flex:1,padding:"13px",background:"#FF3D57",color:"#fff",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>{lang==="en"?"Quit":"Abandonner"}</button>
             </div>
           </div>
         </div>
@@ -4872,7 +4914,7 @@ export default function LePont() {
               return(
                 <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderRadius:12,background:p.id===playerId?"rgba(0,230,118,.1)":"rgba(255,255,255,.04)",border:p.id===playerId?"1px solid rgba(0,230,118,.3)":"1px solid rgba(255,255,255,.06)",marginBottom:6}}>
                   <span style={{fontSize:18,width:28}}>{i<3?medals[i]:i+1}</span>
-                  <span style={{flex:1,fontSize:13,fontWeight:800,color:p.id===playerId?G.accent:G.white}}>{p.name}{p.id===playerId?" (toi)":""}</span>
+                  <span style={{flex:1,fontSize:13,fontWeight:800,color:p.id===playerId?G.accent:G.white}}>{p.name}{p.id===playerId?" (toi)":""}{p.abandoned?" 🏳️":""}</span>
                   <span style={{fontFamily:G.heading,fontSize:22,color:G.white}}>{p.partial_score||0} <span style={{fontSize:11,color:"rgba(255,255,255,.3)"}}>pts</span></span>
                 </div>
               );
@@ -4974,6 +5016,7 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
     const medals = ["🥇","🥈","🥉"];
     const myEntry = duelResult.players.find(function(p){return p.id===playerId;});
     const myRank = duelResult.players.findIndex(function(p){return p.id===playerId;}) + 1;
+    const iAbandoned = duelResult.myAbandoned === true;
     return (
       <div style={{...shell,animation:"fadeUp .4s ease",overflow:"auto"}} key="roomResult">
         <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
@@ -4991,16 +5034,17 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
         <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.45)"}}/>
       </div>
         <div style={{zIndex:1,padding:"32px 20px 16px",textAlign:"center"}}>
-          <div style={{fontSize:52,marginBottom:8}}>{myRank<=3?medals[myRank-1]:myRank+"ème"}</div> {(myRank===1?WIN_IMGS:LOSE_IMGS)[Math.floor(Date.now()%(myRank===1?WIN_IMGS:LOSE_IMGS).length)] && (   <img src={(myRank===1?WIN_IMGS:LOSE_IMGS)[Math.floor(Date.now()%(myRank===1?WIN_IMGS:LOSE_IMGS).length)]} style={{width:"60%",maxWidth:220,margin:"8px auto",display:"block",objectFit:"contain"}} /> )}
-          <div style={{fontFamily:G.heading,fontSize:"clamp(30px,8vw,50px)",color:myRank===1?G.gold:G.white,letterSpacing:2}}>
-            {myRank===1?(lang==="en"?"VICTORY!":"VICTOIRE !"):myRank===2?(lang==="en"?"2ND PLACE":"2ÈME PLACE"):myRank===3?(lang==="en"?"3RD PLACE":"3ÈME PLACE"):(lang==="en"?"RESULTS":"RÉSULTATS")}
+          <div style={{fontSize:52,marginBottom:8}}>{iAbandoned?"🏳️":(myRank<=3?medals[myRank-1]:myRank+"ème")}</div> {!iAbandoned && (myRank===1?WIN_IMGS:LOSE_IMGS)[Math.floor(Date.now()%(myRank===1?WIN_IMGS:LOSE_IMGS).length)] && (   <img src={(myRank===1?WIN_IMGS:LOSE_IMGS)[Math.floor(Date.now()%(myRank===1?WIN_IMGS:LOSE_IMGS).length)]} style={{width:"60%",maxWidth:220,margin:"8px auto",display:"block",objectFit:"contain"}} /> )}
+          <div style={{fontFamily:G.heading,fontSize:"clamp(30px,8vw,50px)",color:iAbandoned?"#FF3D57":(myRank===1?G.gold:G.white),letterSpacing:2}}>
+            {iAbandoned?(lang==="en"?"FORFEIT":"ABANDON"):(myRank===1?(lang==="en"?"VICTORY!":"VICTOIRE !"):myRank===2?(lang==="en"?"2ND PLACE":"2ÈME PLACE"):myRank===3?(lang==="en"?"3RD PLACE":"3ÈME PLACE"):(lang==="en"?"RESULTS":"RÉSULTATS"))}
           </div>
+          {iAbandoned && <div style={{fontSize:15,color:"#fff",marginTop:10,fontWeight:700,padding:"0 16px",lineHeight:1.4}}>{lang==="en"?"You didn't even finish 😂":"T'as même pas eu le courage d'aller au bout 😂"}</div>}
         </div>
         <div style={{...sheet,borderRadius:"28px 28px 0 0"}}>
           {duelResult.players.map(function(p,i){return(
             <div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",borderRadius:14,background:p.id===playerId?"rgba(0,230,118,.08)":"rgba(255,255,255,.03)",border:p.id===playerId?"1px solid rgba(0,230,118,.25)":"1px solid rgba(255,255,255,.05)",marginBottom:6}}>
               <div style={{fontFamily:G.heading,fontSize:30,width:40,textAlign:"center",color:i<3?["#FFD600","#C0C0C0","#CD7F32"][i]:"rgba(255,255,255,.3)"}}>{i<3?medals[i]:i+1}</div>
-              <div style={{flex:1,fontSize:14,fontWeight:800,color:p.id===playerId?G.accent:G.white}}>{p.name}{p.id===playerId?" (toi)":""}</div>
+              <div style={{flex:1,fontSize:14,fontWeight:800,color:p.id===playerId?G.accent:G.white}}>{p.name}{p.id===playerId?" (toi)":""}{p.abandoned?" 🏳️":""}</div>
               <div style={{fontFamily:G.heading,fontSize:26,color:i===0?G.gold:G.white}}>{p.score||0} <span style={{fontSize:12,color:"rgba(255,255,255,.3)"}}>pts</span></div>
             </div>
           );})}
