@@ -329,7 +329,7 @@ export const PLAYERS = [
   { name:"Rodri", clubs:["Atletico Madrid", "Manchester City"], diff:"moyen" },
   { name:"Thomas Muller", clubs:["Bayern Munich"], diff:"facile" },
   { name:"Manuel Neuer", clubs:["Schalke", "Bayern Munich"], diff:"facile" },
-  { name:"Gianluigi Donnarumma", clubs:["AC Milan", "PSG"], diff:"moyen" },
+  { name:"Gianluigi Donnarumma", clubs:["AC Milan", "PSG", "Manchester City"], diff:"moyen" },
   { name:"Raphael Varane", clubs:["Lens", "Real Madrid", "Manchester United"], diff:"moyen" },
   { name:"Marquinhos", clubs:["Roma", "PSG"], diff:"moyen" },
   { name:"Ruben Dias", clubs:["Benfica", "Manchester City"], diff:"moyen" },
