@@ -4733,6 +4733,17 @@ export default function LePont() {
       )}
 
       {floatingPoints}
+      {/* Notification abandon en salle (Mercato) */}
+      {abandonNotif && (
+        <div style={{position:"fixed",top:60,left:16,right:16,zIndex:20,
+          background:"rgba(255,214,0,.95)",backdropFilter:"blur(8px)",
+          borderRadius:14,padding:"10px 16px",textAlign:"center",
+          fontSize:13,fontWeight:800,color:"#000",
+          boxShadow:"0 4px 20px rgba(255,214,0,.4)",
+          animation:"slideDown .4s cubic-bezier(.22,1,.36,1)"}}>
+          {abandonNotif}
+        </div>
+      )}
       <div style={{zIndex:2,padding:"12px 16px 8px",display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,position:"sticky",top:0}}>
         {backBtn(()=>{setShowQuitConfirm(true);})}
         <div style={{background:"rgba(255,255,255,.12)",backdropFilter:"blur(8px)",borderRadius:18,padding:"8px 14px",display:"flex",alignItems:"center",gap:8,position:"relative"}}>
