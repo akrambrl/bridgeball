@@ -2581,10 +2581,12 @@ export default function LePont() {
 
   function startRound(round) {
     roundStartTime.current = null; // timer will set on next tick
-    const dbPool = DB[diff] || DB["facile"] || [];
-    if (dbPool.length === 0) { console.error("DB empty for diff:", diff); return; }
-    // Seeded shuffle in multiplayer room for fair questions across all players
+    // FIX multi : lire diff depuis activeDuelRef si en room (évite le stale state React)
     const isInRoom = activeDuelRef.current && activeDuelRef.current.isRoom;
+    const effectiveDiff = isInRoom && activeDuelRef.current.diff ? activeDuelRef.current.diff : diff;
+    const dbPool = DB[effectiveDiff] || DB["facile"] || [];
+    if (dbPool.length === 0) { console.error("DB empty for diff:", effectiveDiff); return; }
+    // Seeded shuffle in multiplayer room for fair questions across all players
     const roomSeed = isInRoom ? hashStringToSeed(String(activeDuelRef.current.id) + "_r" + round) : null;
     const doShuffle = isInRoom ? (arr) => seededShuffle(arr, roomSeed) : shuffle;
     // 80% current players, 20% retired/legends
@@ -2600,9 +2602,9 @@ export default function LePont() {
     queueRef.current = q;
     setQueue(q); setQIdx(0); setScore(0); scoreRef.current=0;
     setTimeLeft(ROUND_DURATION); setGuess(""); setFlash(null); setFeedback(null);
-    if(diff==="facile") {
+    if(effectiveDiff==="facile") {
       const optSeed = isInRoom ? hashStringToSeed(String(activeDuelRef.current.id) + "_opt_" + (q[0].p.join("|"))) : null;
-      setOptions(generateOptions(q[0].p, DB[diff]||[], optSeed));
+      setOptions(generateOptions(q[0].p, DB[effectiveDiff]||[], optSeed));
     }
     setCurrentRound(round); setAnimKey(0); setScreen("game");
     setTimeout(()=>inputRef.current?.focus(),200);
@@ -2613,13 +2615,14 @@ export default function LePont() {
     setIsNewRecord(false); setMyLastPts(null); setCombo(0); setMaxCombo(0); comboRef.current=0; lastAnswerTime.current=Date.now();
     // Seeded random in multiplayer room for fair starting player across all players
     const isInRoom = activeDuelRef.current && activeDuelRef.current.isRoom;
+    const effectiveDiff = isInRoom && activeDuelRef.current.diff ? activeDuelRef.current.diff : diff;
     const roomSeed = isInRoom ? hashStringToSeed(String(activeDuelRef.current.id) + "_chain") : null;
     const rand = isInRoom ? seededRandom(roomSeed) : Math.random;
     // Filtrer par difficulté — en facile on commence par des stars connues
     const eligible = PLAYERS_CLEAN.filter(p => {
       if (p.clubs.length < 2) return false;
-      if (diff === "facile") return p.diff === "facile";
-      if (diff === "moyen") return p.diff === "facile" || p.diff === "moyen";
+      if (effectiveDiff === "facile") return p.diff === "facile";
+      if (effectiveDiff === "moyen") return p.diff === "facile" || p.diff === "moyen";
       return true; // expert = tous
     });
     const pool = eligible.length > 0 ? eligible : PLAYERS_CLEAN.filter(p => p.clubs.length >= 2);
@@ -2749,25 +2752,28 @@ export default function LePont() {
     setQIdx(i=>{
       const next = i+1;
       const isInRoom = activeDuelRef.current && activeDuelRef.current.isRoom;
+      const effectiveDiff = isInRoom && activeDuelRef.current.diff ? activeDuelRef.current.diff : diff;
       // If we've gone through the whole queue, rebuild with fresh shuffle (seeded in room)
       if (next >= queue.length) {
         const reshuffleSeed = isInRoom ? hashStringToSeed(String(activeDuelRef.current.id) + "_r" + currentRound + "_reshuffle") : null;
-        const fresh = reshuffleSeed !== null ? seededShuffle(DB[diff], reshuffleSeed) : shuffle(DB[diff]);
+        const fresh = reshuffleSeed !== null ? seededShuffle(DB[effectiveDiff], reshuffleSeed) : shuffle(DB[effectiveDiff]);
         setQueue(fresh);
-        if(diff==="facile") {
+        if(effectiveDiff==="facile") {
           const optSeed = isInRoom ? hashStringToSeed(String(activeDuelRef.current.id) + "_opt_" + (fresh[0].p.join("|"))) : null;
-          setOptions(generateOptions(fresh[0].p, DB[diff], optSeed));
+          setOptions(generateOptions(fresh[0].p, DB[effectiveDiff], optSeed));
         }
         return 0;
       }
-      if(diff==="facile") {
+      if(effectiveDiff==="facile") {
         const optSeed = isInRoom ? hashStringToSeed(String(activeDuelRef.current.id) + "_opt_" + (queue[next].p.join("|"))) : null;
-        setOptions(generateOptions(queue[next].p, DB[diff], optSeed));
+        setOptions(generateOptions(queue[next].p, DB[effectiveDiff], optSeed));
       }
       return next;
     });
     setGuess(""); setFlash(null); setAnimKey(k=>k+1);
-    if(diff!=="facile") setTimeout(()=>inputRef.current?.focus(),100);
+    const isInRoom2 = activeDuelRef.current && activeDuelRef.current.isRoom;
+    const effectiveDiff2 = isInRoom2 && activeDuelRef.current.diff ? activeDuelRef.current.diff : diff;
+    if(effectiveDiff2!=="facile") setTimeout(()=>inputRef.current?.focus(),100);
   }
 
   function handleSubmit() {
@@ -2814,18 +2820,22 @@ export default function LePont() {
       const clubPlayers=getPlayersForClub(matched).filter(p=>!chainUsedPlayers.has(p)&&getPlayerClubs(p).some(c=>!newUsed.has(c)));
       if(clubPlayers.length===0){setTimeout(()=>{setFeedback(null);setFlash(null);endChain();},800);return;}
       // Favoriser les joueurs de la bonne difficulté ET les joueurs actuels (80/20)
+      const isInRoomCS = activeDuelRef.current && activeDuelRef.current.isRoom;
+      const effectiveDiffCS = isInRoomCS && activeDuelRef.current.diff ? activeDuelRef.current.diff : diff;
       const preferred = clubPlayers.filter(p => {
         const pd = PLAYERS_CLEAN.find(x=>x.name===p)?.diff;
-        if(diff==="facile") return pd==="facile";
-        if(diff==="moyen") return pd==="facile"||pd==="moyen";
+        if(effectiveDiffCS==="facile") return pd==="facile";
+        if(effectiveDiffCS==="moyen") return pd==="facile"||pd==="moyen";
         return true;
       });
       const diffPool = preferred.length > 0 ? preferred : clubPlayers;
-      // 80% current players
+      // 80% current players — seeded en multi pour cohérence entre joueurs qui donnent le même club
+      const submitSeed = isInRoomCS ? hashStringToSeed(String(activeDuelRef.current.id) + "_next_" + chainPlayer + "_" + matched) : null;
+      const randCS = submitSeed !== null ? seededRandom(submitSeed) : Math.random;
       const currentNext = diffPool.filter(p => !isRetiredPlayer(p));
-      const useCurrent = Math.random() < 0.8 && currentNext.length > 0;
+      const useCurrent = randCS() < 0.8 && currentNext.length > 0;
       const nextPool = useCurrent ? currentNext : diffPool;
-      const next=nextPool[Math.floor(Math.random()*nextPool.length)];
+      const next=nextPool[Math.floor(randCS()*nextPool.length)];
       const newUsedP=new Set(chainUsedPlayers); newUsedP.add(next);
       // Prefetch logos for next player
       
@@ -2844,23 +2854,28 @@ export default function LePont() {
     clearInterval(qTimerRef.current);
     chainPassedRef.current = true;
     setChainScore(s=>{chainScoreRef.current=s-.5;return s-.5;});
+    // FIX multi : en room, tous les joueurs qui passent sur le même chainPlayer doivent obtenir le même prochain joueur
+    const isInRoomCP = activeDuelRef.current && activeDuelRef.current.isRoom;
+    const effectiveDiffCP = isInRoomCP && activeDuelRef.current.diff ? activeDuelRef.current.diff : diff;
+    const passSeed = isInRoomCP ? hashStringToSeed(String(activeDuelRef.current.id) + "_pass_" + chainPlayer) : null;
+    const randCP = passSeed !== null ? seededRandom(passSeed) : Math.random;
     const validClubs=(PLAYERS_CLEAN.find(p=>p.name===chainPlayer)?.clubs||[]).filter(c=>!chainUsedClubs.has(c));
-    const chosen=validClubs.length>0?validClubs[Math.floor(Math.random()*validClubs.length)]:null;
+    const chosen=validClubs.length>0?validClubs[Math.floor(randCP()*validClubs.length)]:null;
     if(!chosen){endChain();return;}
     const newUsed=new Set(chainUsedClubs); newUsed.add(chosen);
     const clubPlayers=getPlayersForClub(chosen).filter(p=>!chainUsedPlayers.has(p)&&getPlayerClubs(p).some(c=>!newUsed.has(c)));
     if(clubPlayers.length===0){endChain();return;}
     const preferred2 = clubPlayers.filter(p => {
       const pd = PLAYERS_CLEAN.find(x=>x.name===p)?.diff;
-      if(diff==="facile") return pd==="facile";
-      if(diff==="moyen") return pd==="facile"||pd==="moyen";
+      if(effectiveDiffCP==="facile") return pd==="facile";
+      if(effectiveDiffCP==="moyen") return pd==="facile"||pd==="moyen";
       return true;
     });
     const diffPool2 = preferred2.length > 0 ? preferred2 : clubPlayers;
     const currentNext2 = diffPool2.filter(p => !isRetiredPlayer(p));
-    const useCurrent2 = Math.random() < 0.8 && currentNext2.length > 0;
+    const useCurrent2 = randCP() < 0.8 && currentNext2.length > 0;
     const nextPool2 = useCurrent2 ? currentNext2 : diffPool2;
-    const next=nextPool2[Math.floor(Math.random()*nextPool2.length)];
+    const next=nextPool2[Math.floor(randCP()*nextPool2.length)];
     const newUsedP=new Set(chainUsedPlayers); newUsedP.add(next);
     setChainUsedClubs(newUsed); setChainUsedPlayers(newUsedP);
     setChainHistory(prev=>[...prev,{player:chainPlayer,club:chosen,passed:true}]);
