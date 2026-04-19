@@ -3513,24 +3513,27 @@ export default function LePont() {
           <div style={{fontFamily:G.heading,fontSize:24,color:G.white,letterSpacing:2}}>{lang==="en"?"ROOM":"SALLE"}</div>
           <div style={{background:"rgba(255,255,255,.07)",border:"1px solid rgba(255,255,255,.1)",borderRadius:12,padding:"6px 14px",textAlign:"center",display:"flex",alignItems:"center",gap:8}}>
             <div>
-              <div style={{fontSize:9,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase"}}>Code</div>
+              <div style={{fontSize:9,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase"}}>{lang==="en"?"Code":"Code"}</div>
               <div style={{fontFamily:G.heading,fontSize:20,color:G.gold,letterSpacing:4}}>{room.code}</div>
             </div>
             <button onClick={function(){
               const link = "https://goatfc.fr?room="+room.code;
-              if(navigator.share){navigator.share({title:"GOAT FC — Rejoins ma salle !",text:"Rejoins ma salle sur GOAT FC 🐐",url:link});}
-              else{navigator.clipboard.writeText(link).then(function(){alert("Lien copié ! 📋");});}
-            }} style={{background:"rgba(0,230,118,.15)",border:"1px solid rgba(0,230,118,.3)",borderRadius:8,padding:"6px 10px",color:G.accent,cursor:"pointer",fontSize:13,fontWeight:800,lineHeight:1}}>🔗 Inviter</button>
+              const shareTitle = lang==="en" ? "GOAT FC — Join my room!" : "GOAT FC — Rejoins ma salle !";
+              const shareText = lang==="en" ? "Join my room on GOAT FC 🐐" : "Rejoins ma salle sur GOAT FC 🐐";
+              const copiedMsg = lang==="en" ? "Link copied! 📋" : "Lien copié ! 📋";
+              if(navigator.share){navigator.share({title:shareTitle,text:shareText,url:link});}
+              else{navigator.clipboard.writeText(link).then(function(){alert(copiedMsg);});}
+            }} style={{background:"rgba(0,230,118,.15)",border:"1px solid rgba(0,230,118,.3)",borderRadius:8,padding:"6px 10px",color:G.accent,cursor:"pointer",fontSize:13,fontWeight:800,lineHeight:1}}>🔗 {lang==="en"?"Invite":"Inviter"}</button>
           </div>
         </div>
         <div style={{...sheet,borderRadius:"28px 28px 0 0",marginTop:16}}>
           <div style={{background:"rgba(255,255,255,.04)",borderRadius:14,padding:"10px 14px",marginBottom:4}}>
-            <div style={{fontSize:11,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginBottom:2}}>Mode</div>
-            <div style={{fontSize:15,fontWeight:800,color:G.white}}>{room.mode==="pont"?"The Plug":"The Mercato"}{room.diff?" · "+room.diff:""} · {room.rounds||1} manche{(room.rounds||1)>1?"s":""}</div>
+            <div style={{fontSize:11,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginBottom:2}}>{lang==="en"?"Mode":"Mode"}</div>
+            <div style={{fontSize:15,fontWeight:800,color:G.white}}>{room.mode==="pont"?"The Plug":"The Mercato"}{room.diff?" · "+room.diff:""} · {room.rounds||1} {lang==="en"?("round"+((room.rounds||1)>1?"s":"")):("manche"+((room.rounds||1)>1?"s":""))}</div>
           </div>
           <div>
             <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.3)",marginBottom:8}}>
-              Joueurs ({players.length}/8)
+              {lang==="en"?"Players":"Joueurs"} ({players.length}/8)
             </div>
             {players.map(function(p, i){return(
               <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",background:"rgba(255,255,255,.04)",borderRadius:12,marginBottom:6,border:p.id===playerId?"1px solid rgba(0,230,118,.3)":"1px solid rgba(255,255,255,.05)"}}>
@@ -3538,15 +3541,15 @@ export default function LePont() {
                   {p.name.charAt(0).toUpperCase()}
                 </div>
                 <div style={{flex:1}}>
-                  <div style={{fontSize:14,fontWeight:800,color:p.id===playerId?G.accent:G.white}}>{p.name}{p.id===room.host_id?" 👑":""}{p.id===playerId?" (toi)":""}</div>
+                  <div style={{fontSize:14,fontWeight:800,color:p.id===playerId?G.accent:G.white}}>{p.name}{p.id===room.host_id?" 👑":""}{p.id===playerId?(lang==="en"?" (you)":" (toi)"):""}</div>
                 </div>
-                <div style={{fontSize:11,color:"rgba(255,255,255,.4)"}}>✓ Prêt</div>
+                <div style={{fontSize:11,color:"rgba(255,255,255,.4)"}}>✓ {lang==="en"?"Ready":"Prêt"}</div>
               </div>
             );})}
           </div>
           {players.length < 2 && (
             <div style={{textAlign:"center",padding:"8px 0",fontSize:13,color:"rgba(255,255,255,.3)"}}>
-              Partage le code <strong style={{color:G.gold}}>{room.code}</strong> à tes amis
+              {lang==="en"?<>Share code <strong style={{color:G.gold}}>{room.code}</strong> with your friends</>:<>Partage le code <strong style={{color:G.gold}}>{room.code}</strong> à tes amis</>}
             </div>
           )}
           {isHost ? (
