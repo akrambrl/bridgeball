@@ -293,17 +293,17 @@ for (const diff of ["facile","moyen","expert"]) {
 
   // 80% paires avec joueurs actifs, 20% paires full retraités
   const retiredTarget = Math.round((current.length / 0.8) * 0.2);
+  // FIX multi : tri déterministe (alphabétique par c1+c2) au lieu de Math.random
+  // pour que tous les clients construisent le même DB au chargement
   const retiredPick = retired
-    .sort(() => Math.random() - 0.5)
+    .sort((a, b) => (a.c1 + a.c2).localeCompare(b.c1 + b.c2))
     .slice(0, retiredTarget);
 
   db[diff] = [...current, ...retiredPick];
 
-  // Shuffle final
-  for (let i = db[diff].length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [db[diff][i], db[diff][j]] = [db[diff][j], db[diff][i]];
-  }
+  // Tri final déterministe (pas de shuffle) — le shuffle par room est fait
+  // dans startRound avec un seed partagé entre tous les joueurs
+  db[diff].sort((a, b) => (a.c1 + a.c2).localeCompare(b.c1 + b.c2));
 }
 return db;
 }
@@ -1239,6 +1239,8 @@ export default function LePont() {
   const [activeCard, setActiveCard] = useState("pont");
   const [swipeDelta, setSwipeDelta] = useState(0); // "pont" | "chaine" | "room-pont" | "room-chaine"
   const [waitingForRoom, setWaitingForRoom] = useState(false);
+  const [waitingAfterAbandon, setWaitingAfterAbandon] = useState(false);
+  const [abandonedAfterOppLeft, setAbandonedAfterOppLeft] = useState(false);
   const qTimerRef = useRef(null);
   const chainPassedRef = useRef(false);
   const handlePassRef = useRef(null);
@@ -1595,53 +1597,34 @@ export default function LePont() {
     const duel = activeDuelRef.current;
     if (!duel || !duel.isRoom) return;
     const roomId = duel.id;
-    const roomRounds = duel.rounds || 1;
     setWaitingForRoom(true);
+    setWaitingAfterAbandon(true);
     try {
       const data = await sbFetch("bb_rooms?id=eq."+roomId+"&limit=1");
-      if (!Array.isArray(data) || data.length === 0) {
-        setWaitingForRoom(false);
-        activeDuelRef.current = null;
-        setActiveDuel(null);
-        clearInterval(roomPollRef.current);
-        setScreen("home");
-        return;
-      }
-      const r = data[0];
-      const players = typeof r.players === "string" ? JSON.parse(r.players) : r.players;
-      const updated = players.map(function(p) {
-        return p.id === playerId ? Object.assign({}, p, {score:0, status:"done", abandoned:true}) : p;
-      });
-      const allDone = updated.every(function(p){return p.status==="done";});
-      await sbFetch("bb_rooms?id=eq."+roomId, {
-        method:"PATCH",
-        body:JSON.stringify({players:JSON.stringify(updated), status:allDone?"complete":"scoring"}),
-        headers:{"Prefer":"return=minimal"}
-      });
-      activeDuelRef.current = null;
-      setActiveDuel(null);
-      clearInterval(roomPollRef.current);
-      if (allDone) {
-        // Tous ont fini — afficher les résultats directement
-        const finalData = await sbFetch("bb_rooms?id=eq."+roomId+"&limit=1");
-        if (Array.isArray(finalData) && finalData.length > 0) {
-          showRoomResults(finalData[0]);
-        } else {
-          setWaitingForRoom(false);
-          setScreen("home");
-        }
-      } else {
-        // Les autres sont encore en train de jouer — attendre via polling
-        startRoomResultPolling(roomId, roomRounds);
+      if (Array.isArray(data) && data.length > 0) {
+        const r = data[0];
+        const players = typeof r.players === "string" ? JSON.parse(r.players) : r.players;
+        // Est-ce qu'un autre joueur a déjà abandonné AVANT moi ?
+        const someoneAlreadyAbandoned = players.some(function(p){ return p.id !== playerId && p.abandoned === true; });
+        setAbandonedAfterOppLeft(someoneAlreadyAbandoned);
+        const updated = players.map(function(p) {
+          return p.id === playerId ? Object.assign({}, p, {score:0, status:"done", abandoned:true}) : p;
+        });
+        const allDone = updated.every(function(p){return p.status==="done";});
+        await sbFetch("bb_rooms?id=eq."+roomId, {
+          method:"PATCH",
+          body:JSON.stringify({players:JSON.stringify(updated), status:allDone?"complete":"scoring"}),
+          headers:{"Prefer":"return=minimal"}
+        });
       }
     } catch(e) {
       console.error("Abandon room error:", e);
-      setWaitingForRoom(false);
-      activeDuelRef.current = null;
-      setActiveDuel(null);
-      clearInterval(roomPollRef.current);
-      setScreen("home");
     }
+    activeDuelRef.current = null;
+    setActiveDuel(null);
+    clearInterval(roomPollRef.current);
+    // Pas de polling ni fetch de résultat : le user a abandonné, il verra juste l'écran abandon.
+    // Ses stats seront mises à jour automatiquement la prochaine fois qu'il ouvre le classement (lecture bb_rooms status=complete).
   }
 
   async function submitDuelScore(sc) {
@@ -1977,6 +1960,7 @@ export default function LePont() {
 
   function showRoomResults(r) {
     setWaitingForRoom(false);
+    setWaitingAfterAbandon(false);
     setScreen("home");
     const players = typeof r.players === "string" ? JSON.parse(r.players) : r.players;
     const sorted = [...players].sort(function(a,b){
@@ -3816,17 +3800,39 @@ export default function LePont() {
           <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.45)"}}/>
         </div>
         <div style={{textAlign:"center",zIndex:1,padding:"0 32px"}}>
-          <div style={{fontSize:56,marginBottom:20}}>⏳</div>
-          <div style={{fontFamily:G.heading,fontSize:30,color:G.white,marginBottom:12,letterSpacing:1}}>PARTIE TERMINÉE !</div>
-          <div style={{fontSize:16,color:G.accent,fontWeight:800,marginBottom:10}}>Tu as fini ta partie 💪</div>
-          <div style={{fontSize:14,color:"rgba(255,255,255,.6)",lineHeight:1.7,marginBottom:8}}>Les autres joueurs sont encore en train de jouer.</div>
-          <div style={{fontSize:14,color:"rgba(255,255,255,.9)",fontWeight:700,lineHeight:1.7,marginBottom:24,background:"rgba(255,255,255,.07)",borderRadius:14,padding:"12px 16px"}}>👉 Reste sur cet écran — les résultats apparaîtront automatiquement dès que tout le monde aura terminé.</div>
-          {abandonNotif && <div style={{fontSize:13,color:"#000",fontWeight:800,marginBottom:16,background:"rgba(255,214,0,.9)",borderRadius:12,padding:"10px 14px"}}>{abandonNotif}</div>}
-          <div style={{display:"flex",justifyContent:"center",gap:6}}>
-            {[0,1,2].map(i=>(
-              <div key={i} style={{width:8,height:8,borderRadius:"50%",background:G.accent,animation:`pulse 1.2s ease-in-out ${i*.3}s infinite`}}/>
-            ))}
-          </div>
+          {waitingAfterAbandon ? (
+            <>
+              <div style={{fontSize:64,marginBottom:20}}>🏳️</div>
+              <div style={{fontFamily:G.heading,fontSize:36,color:"#FF3D57",marginBottom:16,letterSpacing:2}}>{lang==="en"?"FORFEIT":"ABANDON"}</div>
+              <div style={{fontSize:17,color:G.white,fontWeight:800,marginBottom:28,lineHeight:1.4,padding:"0 8px"}}>{
+                abandonedAfterOppLeft
+                  ? (lang==="en" ? "No match, no drama. Come back anytime 🤝" : "Pas de match, pas de drame. Reviens quand tu veux 🤝")
+                  : (lang==="en" ? "You didn't even finish 😂" : "T'as même pas eu le courage d'aller au bout 😂")
+              }</div>
+              <button onClick={function(){
+                clearInterval(roomPollRef.current);
+                setWaitingForRoom(false);
+                setWaitingAfterAbandon(false);
+                setAbandonedAfterOppLeft(false);
+                setDuelResult(null);
+                setScreen("home");
+              }} style={{width:"100%",maxWidth:280,padding:"16px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800}}>{lang==="en"?"Back home":"Retour à l'accueil"}</button>
+            </>
+          ) : (
+            <>
+              <div style={{fontSize:56,marginBottom:20}}>⏳</div>
+              <div style={{fontFamily:G.heading,fontSize:30,color:G.white,marginBottom:12,letterSpacing:1}}>{lang==="en"?"GAME OVER!":"PARTIE TERMINÉE !"}</div>
+              <div style={{fontSize:16,color:G.accent,fontWeight:800,marginBottom:10}}>{lang==="en"?"You finished your game 💪":"Tu as fini ta partie 💪"}</div>
+              <div style={{fontSize:14,color:"rgba(255,255,255,.6)",lineHeight:1.7,marginBottom:8}}>{lang==="en"?"The other players are still playing.":"Les autres joueurs sont encore en train de jouer."}</div>
+              <div style={{fontSize:14,color:"rgba(255,255,255,.9)",fontWeight:700,lineHeight:1.7,marginBottom:24,background:"rgba(255,255,255,.07)",borderRadius:14,padding:"12px 16px"}}>{lang==="en"?"👉 Stay on this screen — results will appear automatically as soon as everyone is done.":"👉 Reste sur cet écran — les résultats apparaîtront automatiquement dès que tout le monde aura terminé."}</div>
+              {abandonNotif && <div style={{fontSize:13,color:"#000",fontWeight:800,marginBottom:16,background:"rgba(255,214,0,.9)",borderRadius:12,padding:"10px 14px"}}>{abandonNotif}</div>}
+              <div style={{display:"flex",justifyContent:"center",gap:6}}>
+                {[0,1,2].map(i=>(
+                  <div key={i} style={{width:8,height:8,borderRadius:"50%",background:G.accent,animation:`pulse 1.2s ease-in-out ${i*.3}s infinite`}}/>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </div>
     );
