@@ -1295,6 +1295,8 @@ export default function LePont() {
   const [pseudoMsg, setPseudoMsg] = useState("");
   const [playerAvatar, setPlayerAvatar] = useState(null);
   const [avatarUploading, setAvatarUploading] = useState(false);
+  const [viewingAvatar, setViewingAvatar] = useState(null); // URL de la photo à visualiser en plein écran
+  const [cropState, setCropState] = useState(null); // {url, scale, x, y, naturalW, naturalH} — état du cropper
   const [pseudoConfirmed, setPseudoConfirmed] = useState(() => { try { const n = localStorage.getItem("bb_name"); return !!(n && n.trim().length >= 2); } catch { return false; } });
   const [showQuitConfirm, setShowQuitConfirm] = useState(false);
   const [gameConfigModal, setGameConfigModal] = useState(null);
@@ -3144,6 +3146,177 @@ export default function LePont() {
     </div>
   );
 
+  // ── AVATAR VIEWER MODAL (visualisation photo de profil en plein écran) ──
+  const avatarViewer = viewingAvatar && (
+    <div key="avatar-viewer" onClick={()=>setViewingAvatar(null)} style={{position:"fixed",inset:0,zIndex:9999,background:"rgba(0,0,0,.92)",display:"flex",alignItems:"center",justifyContent:"center",padding:"40px 20px",animation:"fadeIn .2s ease",cursor:"pointer",backdropFilter:"blur(10px)"}}>
+      <button onClick={(e)=>{e.stopPropagation();setViewingAvatar(null);}} style={{position:"absolute",top:20,right:20,width:44,height:44,borderRadius:"50%",background:"rgba(255,255,255,.15)",border:"1px solid rgba(255,255,255,.2)",color:G.white,fontSize:22,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(10px)"}}>✕</button>
+      <img src={viewingAvatar} alt="avatar" onClick={(e)=>e.stopPropagation()} style={{maxWidth:"100%",maxHeight:"100%",borderRadius:20,objectFit:"contain",boxShadow:"0 20px 60px rgba(0,0,0,.8)",cursor:"default"}}/>
+    </div>
+  );
+
+  // ── AVATAR CROPPER MODAL ──
+  // Refs pour gestures (pas de re-render nécessaire pendant le drag/pinch)
+  const cropperGestureRef = useRef({mode:null,startX:0,startY:0,startOffsetX:0,startOffsetY:0,startDist:0,startScale:0});
+
+  // Clamp offsets pour empêcher l'image de sortir du cadre (elle doit toujours "cover")
+  function clampCrop(state) {
+    const displayedW = state.naturalW * state.scale;
+    const displayedH = state.naturalH * state.scale;
+    const cs = state.cropSize;
+    let x = state.x, y = state.y;
+    // L'image doit couvrir le cadre : x ≤ 0 et x ≥ cs - displayedW
+    if (displayedW >= cs) { x = Math.min(0, Math.max(cs - displayedW, x)); } else { x = (cs - displayedW) / 2; }
+    if (displayedH >= cs) { y = Math.min(0, Math.max(cs - displayedH, y)); } else { y = (cs - displayedH) / 2; }
+    return {...state, x, y};
+  }
+
+  function onCropperStart(e) {
+    if (!cropState) return;
+    // Touch
+    if (e.touches) {
+      if (e.touches.length === 2) {
+        // Pinch
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        cropperGestureRef.current = {mode:"pinch", startDist:Math.hypot(dx,dy), startScale:cropState.scale, startOffsetX:cropState.x, startOffsetY:cropState.y};
+      } else if (e.touches.length === 1) {
+        cropperGestureRef.current = {mode:"drag", startX:e.touches[0].clientX, startY:e.touches[0].clientY, startOffsetX:cropState.x, startOffsetY:cropState.y};
+      }
+    } else {
+      // Mouse
+      cropperGestureRef.current = {mode:"drag", startX:e.clientX, startY:e.clientY, startOffsetX:cropState.x, startOffsetY:cropState.y};
+    }
+  }
+
+  function onCropperMove(e) {
+    const g = cropperGestureRef.current;
+    if (!g.mode || !cropState) return;
+    e.preventDefault();
+    if (g.mode === "drag") {
+      const point = e.touches ? e.touches[0] : e;
+      if (!point) return;
+      const nx = g.startOffsetX + (point.clientX - g.startX);
+      const ny = g.startOffsetY + (point.clientY - g.startY);
+      setCropState(clampCrop({...cropState, x:nx, y:ny}));
+    } else if (g.mode === "pinch" && e.touches && e.touches.length === 2) {
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      const dist = Math.hypot(dx, dy);
+      const ratio = dist / g.startDist;
+      const newScale = Math.max(cropState.minScale, Math.min(cropState.minScale * 5, g.startScale * ratio));
+      // Zoom vers le centre du cadre
+      const cs = cropState.cropSize;
+      const centerX = cs / 2, centerY = cs / 2;
+      const scaleRatio = newScale / g.startScale;
+      const nx = centerX - (centerX - g.startOffsetX) * scaleRatio;
+      const ny = centerY - (centerY - g.startOffsetY) * scaleRatio;
+      setCropState(clampCrop({...cropState, scale:newScale, x:nx, y:ny}));
+    }
+  }
+
+  function onCropperEnd() {
+    cropperGestureRef.current = {mode:null,startX:0,startY:0,startOffsetX:0,startOffsetY:0,startDist:0,startScale:0};
+  }
+
+  async function validateCrop() {
+    if (!cropState) return;
+    setAvatarUploading(true);
+    try {
+      const img = new Image();
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = () => reject(new Error("Image load failed"));
+        img.src = cropState.url;
+      });
+      // Canvas de sortie : 300x300 final
+      const OUT_SIZE = 300;
+      const canvas = document.createElement("canvas");
+      canvas.width = OUT_SIZE;
+      canvas.height = OUT_SIZE;
+      const ctx = canvas.getContext("2d");
+      // La zone visible dans le cadre correspond à :
+      // en coords display : (-x, -y) à (-x+cropSize, -y+cropSize)
+      // en coords natives de l'image : diviser par scale
+      const srcX = -cropState.x / cropState.scale;
+      const srcY = -cropState.y / cropState.scale;
+      const srcSize = cropState.cropSize / cropState.scale;
+      ctx.drawImage(img, srcX, srcY, srcSize, srcSize, 0, 0, OUT_SIZE, OUT_SIZE);
+      const blob = await new Promise(r => canvas.toBlob(r, "image/jpeg", 0.85));
+      if (!blob) throw new Error("Crop failed");
+      // Upload Supabase
+      const fileName = playerId + ".jpg";
+      const uploadRes = await fetch(SB_URL + "/storage/v1/object/avatars/" + fileName, {
+        method: "POST",
+        headers: {"apikey": SB_KEY, "Authorization": "Bearer " + SB_KEY, "Content-Type": "image/jpeg", "x-upsert": "true"},
+        body: blob
+      });
+      if (!uploadRes.ok) throw new Error("Upload failed: " + uploadRes.status);
+      const publicUrl = SB_URL + "/storage/v1/object/public/avatars/" + fileName + "?t=" + Date.now();
+      setPlayerAvatar(publicUrl);
+      try { localStorage.setItem("bb_avatar_url", publicUrl); } catch {}
+      setCropState(null);
+    } catch(err) {
+      alert((lang==="en"?"Upload error: ":"Erreur upload : ") + err.message);
+    }
+    setAvatarUploading(false);
+  }
+
+  const cropperModal = cropState && (
+    <div key="cropper" style={{position:"fixed",inset:0,zIndex:9998,background:"rgba(0,0,0,.96)",display:"flex",flexDirection:"column",animation:"fadeIn .2s ease",backdropFilter:"blur(10px)"}}>
+      {/* Header */}
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 20px",borderBottom:"1px solid rgba(255,255,255,.08)"}}>
+        <button onClick={()=>setCropState(null)} disabled={avatarUploading} style={{background:"none",border:"none",color:"rgba(255,255,255,.7)",fontSize:14,fontFamily:G.font,fontWeight:600,cursor:avatarUploading?"default":"pointer",padding:"8px 4px",opacity:avatarUploading?.4:1}}>{lang==="en"?"Cancel":"Annuler"}</button>
+        <div style={{fontFamily:G.heading,fontSize:16,color:G.white,letterSpacing:1}}>{lang==="en"?"ADJUST PHOTO":"AJUSTER LA PHOTO"}</div>
+        <button onClick={validateCrop} disabled={avatarUploading} style={{background:"none",border:"none",color:avatarUploading?"rgba(0,230,118,.4)":G.accent,fontSize:14,fontFamily:G.font,fontWeight:800,cursor:avatarUploading?"default":"pointer",padding:"8px 4px"}}>{avatarUploading?(lang==="en"?"Saving...":"Sauvegarde..."):(lang==="en"?"Confirm":"Valider")}</button>
+      </div>
+      {/* Crop zone — centrée */}
+      <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",padding:"20px",touchAction:"none"}}>
+        <div
+          onTouchStart={onCropperStart}
+          onTouchMove={onCropperMove}
+          onTouchEnd={onCropperEnd}
+          onMouseDown={onCropperStart}
+          onMouseMove={onCropperMove}
+          onMouseUp={onCropperEnd}
+          onMouseLeave={onCropperEnd}
+          style={{position:"relative",width:cropState.cropSize,height:cropState.cropSize,maxWidth:"90vw",maxHeight:"90vw",overflow:"hidden",borderRadius:28,boxShadow:"0 0 0 2px rgba(255,255,255,.15), 0 0 0 9999px rgba(0,0,0,.5)",cursor:cropperGestureRef.current.mode==="drag"?"grabbing":"grab",touchAction:"none",userSelect:"none"}}
+        >
+          <img
+            src={cropState.url}
+            alt="crop"
+            draggable={false}
+            style={{position:"absolute",left:cropState.x,top:cropState.y,width:cropState.naturalW*cropState.scale,height:cropState.naturalH*cropState.scale,maxWidth:"none",maxHeight:"none",pointerEvents:"none",userSelect:"none"}}
+          />
+        </div>
+      </div>
+      {/* Zoom slider */}
+      <div style={{padding:"0 24px 24px",display:"flex",alignItems:"center",gap:12}}>
+        <span style={{fontSize:18,color:"rgba(255,255,255,.4)"}}>−</span>
+        <input
+          type="range"
+          min={cropState.minScale}
+          max={cropState.minScale * 5}
+          step={cropState.minScale / 100}
+          value={cropState.scale}
+          onChange={(e)=>{
+            const newScale = parseFloat(e.target.value);
+            // Zoom vers le centre du cadre
+            const cs = cropState.cropSize;
+            const centerX = cs / 2, centerY = cs / 2;
+            const scaleRatio = newScale / cropState.scale;
+            const nx = centerX - (centerX - cropState.x) * scaleRatio;
+            const ny = centerY - (centerY - cropState.y) * scaleRatio;
+            setCropState(clampCrop({...cropState, scale:newScale, x:nx, y:ny}));
+          }}
+          style={{flex:1,accentColor:G.accent,height:4}}
+        />
+        <span style={{fontSize:22,color:"rgba(255,255,255,.4)"}}>+</span>
+      </div>
+      {/* Hint */}
+      <div style={{textAlign:"center",padding:"0 20px 20px",fontSize:11,color:"rgba(255,255,255,.35)"}}>{lang==="en"?"Drag to move · pinch or slider to zoom":"Glisse pour bouger · pince ou curseur pour zoomer"}</div>
+    </div>
+  );
+
   // ── LEADERBOARD SCREEN ──
   // ── FRIENDS SCREEN ──
   if (showFriends) {
@@ -3927,7 +4100,7 @@ export default function LePont() {
             <div style={{zIndex:1,padding:"16px 20px 8px",textAlign:"center"}}>
               <div style={{width:100,height:100,borderRadius:"50%",margin:"0 auto 14px",background:"linear-gradient(135deg,#00E676,#00A855)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:44,color:"#fff",boxShadow:"0 8px 30px rgba(0,230,118,.35)",overflow:"hidden",position:"relative"}}>
                 <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",fontSize:56}}>{grade?grade.emoji:"🐣"}</div>
-                {d.avatar && <img src={d.avatar} alt="avatar" onError={(e)=>{e.currentTarget.style.display="none";}} style={{width:"100%",height:"100%",objectFit:"cover",position:"relative",zIndex:1}}/>}
+                {d.avatar && <img src={d.avatar} alt="avatar" onClick={()=>setViewingAvatar(d.avatar)} onError={(e)=>{e.currentTarget.style.display="none";}} style={{width:"100%",height:"100%",objectFit:"cover",position:"relative",zIndex:1,cursor:"pointer"}}/>}
               </div>
               <div style={{fontFamily:G.heading,fontSize:28,color:G.white,letterSpacing:1}}>@{viewedProfile.name}</div>
               {grade && (
@@ -4026,6 +4199,7 @@ export default function LePont() {
             <div style={{zIndex:1,padding:"20px 16px 40px"}}/>
           </>
         )}
+        {avatarViewer}
       </div>
     );
   }
@@ -4048,60 +4222,40 @@ export default function LePont() {
 
       {/* Avatar + Pseudo */}
       <div style={{zIndex:1,padding:"16px 20px 8px",textAlign:"center"}}>
-        <label htmlFor="avatar-upload" style={{display:"inline-block",width:100,height:100,margin:"0 auto 14px",position:"relative",cursor:"pointer"}}>
-          <div style={{width:100,height:100,borderRadius:"50%",background:playerAvatar?"#000":"linear-gradient(135deg,#00E676,#00A855)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:56,color:"#fff",boxShadow:"0 8px 30px rgba(0,230,118,.35)",overflow:"hidden"}}>
+        <div style={{display:"inline-block",width:100,height:100,margin:"0 auto 14px",position:"relative"}}>
+          <div onClick={playerAvatar ? ()=>setViewingAvatar(playerAvatar) : ()=>{const el=document.getElementById("avatar-upload");if(el)el.click();}} style={{width:100,height:100,borderRadius:"50%",background:playerAvatar?"#000":"linear-gradient(135deg,#00E676,#00A855)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:56,color:"#fff",boxShadow:"0 8px 30px rgba(0,230,118,.35)",overflow:"hidden",cursor:"pointer"}}>
             {playerAvatar ? <img src={playerAvatar} alt="avatar" style={{width:"100%",height:"100%",objectFit:"cover"}}/> : getGrade(Math.max(record?record.score:0, chainRecord?chainRecord.score:0)).emoji}
           </div>
-          <div style={{position:"absolute",bottom:-2,right:-2,width:34,height:34,borderRadius:"50%",background:G.accent,border:"3px solid #0d1f0d",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,zIndex:2}}>{avatarUploading?"⏳":"📷"}</div>
-        </label>
-        <input id="avatar-upload" type="file" accept="image/*" style={{display:"none"}} onChange={async (e)=>{
+          <label htmlFor="avatar-upload" style={{position:"absolute",bottom:-2,right:-2,width:34,height:34,borderRadius:"50%",background:G.accent,border:"3px solid #0d1f0d",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,zIndex:2,cursor:"pointer"}}>{avatarUploading?"⏳":"📷"}</label>
+        </div>
+        <input id="avatar-upload" type="file" accept="image/*" style={{display:"none"}} onChange={(e)=>{
           const file = e.target.files?.[0];
           if (!file) return;
-          if (file.size > 5*1024*1024) { alert("Image trop grande (max 5 Mo)"); return; }
-          setAvatarUploading(true);
-          try {
-            // Resize image to 300x300 square
-            const blob = await new Promise((resolve, reject) => {
-              const reader = new FileReader();
-              reader.onload = (ev) => {
-                const img = new Image();
-                img.onload = () => {
-                  const canvas = document.createElement("canvas");
-                  const size = 300;
-                  canvas.width = size; canvas.height = size;
-                  const ctx = canvas.getContext("2d");
-                  const minDim = Math.min(img.width, img.height);
-                  const sx = (img.width-minDim)/2;
-                  const sy = (img.height-minDim)/2;
-                  ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, size, size);
-                  canvas.toBlob(resolve, "image/jpeg", 0.85);
-                };
-                img.onerror = reject;
-                img.src = ev.target.result;
-              };
-              reader.onerror = reject;
-              reader.readAsDataURL(file);
-            });
-            // Upload to Supabase Storage
-            const fileName = playerId + ".jpg";
-            const uploadRes = await fetch(SB_URL + "/storage/v1/object/avatars/" + fileName, {
-              method: "POST",
-              headers: {
-                "apikey": SB_KEY,
-                "Authorization": "Bearer " + SB_KEY,
-                "Content-Type": "image/jpeg",
-                "x-upsert": "true"
-              },
-              body: blob
-            });
-            if (!uploadRes.ok) throw new Error("Upload failed: " + uploadRes.status);
-            const publicUrl = SB_URL + "/storage/v1/object/public/avatars/" + fileName + "?t=" + Date.now();
-            setPlayerAvatar(publicUrl);
-            try { localStorage.setItem("bb_avatar_url", publicUrl); } catch {}
-          } catch(err) {
-            alert("Erreur upload: " + err.message);
-          }
-          setAvatarUploading(false);
+          if (file.size > 10*1024*1024) { alert(lang==="en"?"Image too large (max 10 MB)":"Image trop grande (max 10 Mo)"); e.target.value=""; return; }
+          // Charge l'image en dataURL pour ouvrir le cropper
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+            const img = new Image();
+            img.onload = () => {
+              // Initial scale: l'image "cover" le cadre (remplit complètement)
+              const CROP_SIZE = 300; // taille virtuelle de référence, ajustée au display
+              const initialScale = CROP_SIZE / Math.min(img.width, img.height);
+              const displayedW = img.width * initialScale;
+              const displayedH = img.height * initialScale;
+              setCropState({
+                url: ev.target.result,
+                scale: initialScale,
+                minScale: initialScale, // ne peut pas zoomer en-dessous (sinon fond vide)
+                x: (CROP_SIZE - displayedW) / 2,
+                y: (CROP_SIZE - displayedH) / 2,
+                naturalW: img.width,
+                naturalH: img.height,
+                cropSize: CROP_SIZE
+              });
+            };
+            img.src = ev.target.result;
+          };
+          reader.readAsDataURL(file);
           e.target.value = "";
         }}/>
         <div style={{fontFamily:G.heading,fontSize:28,color:G.white,letterSpacing:1}}>@{playerName||(lang==="en"?"anonymous":"anonyme")}</div>
@@ -4181,6 +4335,8 @@ export default function LePont() {
       </div>
 
       {pseudoModal}
+      {avatarViewer}
+      {cropperModal}
     </div>
   );
 
