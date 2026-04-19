@@ -3347,6 +3347,8 @@ export default function LePont() {
   if(showLeaderboard) {
     return (
       <>
+      {/* Floating back button — OUTSIDE animated container so it doesn't move during fadeUp */}
+      <button onClick={function(){setShowLeaderboard(false);}} style={{position:"fixed",top:"calc(14px + env(safe-area-inset-top))",left:14,zIndex:100,background:"rgba(0,15,0,.85)",border:"1px solid rgba(255,255,255,.15)",borderRadius:"50%",width:42,height:42,cursor:"pointer",color:G.white,fontSize:20,display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(10px)",boxShadow:"0 4px 14px rgba(0,0,0,.4)"}}>←</button>
       <div style={{...shell,animation:"fadeUp .4s ease",overflow:"auto"}} key="lb">
         <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
         {/* Bandes pelouse */}
@@ -3362,8 +3364,6 @@ export default function LePont() {
         {/* Overlay sombre pour lisibilité */}
         <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.45)"}}/>
       </div>
-        {/* Floating back button — always visible */}
-        <button onClick={function(){setShowLeaderboard(false);}} style={{position:"fixed",top:"calc(14px + env(safe-area-inset-top))",left:14,zIndex:100,background:"rgba(0,15,0,.85)",border:"1px solid rgba(255,255,255,.15)",borderRadius:"50%",width:42,height:42,cursor:"pointer",color:G.white,fontSize:20,display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(10px)",boxShadow:"0 4px 14px rgba(0,0,0,.4)"}}>←</button>
         <div style={{zIndex:1,padding:"12px 20px 12px 70px",display:"flex",alignItems:"center",gap:12}}>
           <div style={{flex:1,textAlign:"center"}}>
             <div style={{fontFamily:G.heading,fontSize:"clamp(28px,7vw,46px)",color:G.white,letterSpacing:3}}>{lang==="en"?"LEADERBOARD":"CLASSEMENT"}</div>
