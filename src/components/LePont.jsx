@@ -998,7 +998,7 @@ if(typeof document!=="undefined"&&!document.getElementById("bb-css")){
     @keyframes urgentPulse{0%,100%{opacity:1}50%{opacity:.6}} @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
     html,body,#root{background:#1E5C2A!important;min-height:100vh;min-height:100dvh;}
     html{background:#1E5C2A!important;}
-    #root{background-image:repeating-linear-gradient(90deg,#1E5C2A 0,#1E5C2A 14.28%,#276B34 14.28%,#276B34 28.57%,#1E5C2A 28.57%,#1E5C2A 42.86%,#276B34 42.86%,#276B34 57.14%,#1E5C2A 57.14%,#1E5C2A 71.43%,#276B34 71.43%,#276B34 85.71%,#1E5C2A 85.71%)!important;padding-top:env(safe-area-inset-top);}
+    #root{background-image:repeating-linear-gradient(90deg,#1E5C2A 0,#1E5C2A 14.28%,#276B34 14.28%,#276B34 28.57%,#1E5C2A 28.57%,#1E5C2A 42.86%,#276B34 42.86%,#276B34 57.14%,#1E5C2A 57.14%,#1E5C2A 71.43%,#276B34 71.43%,#276B34 85.71%,#1E5C2A 85.71%)!important;padding-top:calc(env(safe-area-inset-top) + 8px);}
   `;
   // Favicon dynamique
 const favLink = document.querySelector("link[rel*='icon']") || document.createElement('link');
@@ -3112,7 +3112,7 @@ export default function LePont() {
 
   // ── WELCOME BACK BANNER ──
   const welcomeBack = wasAway && (
-    <div key="welcome-back" style={{position:"fixed",top:12,left:16,right:16,zIndex:400,animation:"fadeUp .5s ease .3s both"}}>
+    <div key="welcome-back" style={{position:"fixed",top:"calc(12px + env(safe-area-inset-top))",left:16,right:16,zIndex:400,animation:"fadeUp .5s ease .3s both"}}>
       <div style={{background:"linear-gradient(135deg,#f59e0b,#ef4444)",borderRadius:16,padding:"12px 16px",boxShadow:"0 6px 24px rgba(245,158,11,.4)",display:"flex",alignItems:"center",gap:12}}>
         {Icon.ball(22,G.white)}
         <div style={{flex:1}}>
@@ -3363,7 +3363,7 @@ export default function LePont() {
         <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.45)"}}/>
       </div>
         {/* Floating back button — always visible */}
-        <button onClick={function(){setShowLeaderboard(false);}} style={{position:"fixed",top:14,left:14,zIndex:100,background:"rgba(0,15,0,.85)",border:"1px solid rgba(255,255,255,.15)",borderRadius:"50%",width:42,height:42,cursor:"pointer",color:G.white,fontSize:20,display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(10px)",boxShadow:"0 4px 14px rgba(0,0,0,.4)"}}>←</button>
+        <button onClick={function(){setShowLeaderboard(false);}} style={{position:"fixed",top:"calc(14px + env(safe-area-inset-top))",left:14,zIndex:100,background:"rgba(0,15,0,.85)",border:"1px solid rgba(255,255,255,.15)",borderRadius:"50%",width:42,height:42,cursor:"pointer",color:G.white,fontSize:20,display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(10px)",boxShadow:"0 4px 14px rgba(0,0,0,.4)"}}>←</button>
         <div style={{zIndex:1,padding:"12px 20px 12px 70px",display:"flex",alignItems:"center",gap:12}}>
           <div style={{flex:1,textAlign:"center"}}>
             <div style={{fontFamily:G.heading,fontSize:"clamp(28px,7vw,46px)",color:G.white,letterSpacing:3}}>{lang==="en"?"LEADERBOARD":"CLASSEMENT"}</div>
