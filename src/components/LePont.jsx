@@ -2801,13 +2801,15 @@ export default function LePont() {
         let position = null;
         const positionMatches = extract.match(/\b(goalkeeper|defender|midfielder|forward|striker|winger|centre-back|full-back|left-back|right-back|attacking midfielder|defensive midfielder|centre forward|central midfielder)\b/i);
         if (positionMatches) {
-          const posMap = { "goalkeeper":"Gardien", "defender":"Défenseur", "midfielder":"Milieu", "forward":"Attaquant", "striker":"Attaquant", "winger":"Ailier", "centre-back":"Défenseur central", "full-back":"Arrière latéral", "left-back":"Arrière gauche", "right-back":"Arrière droit", "attacking midfielder":"Milieu offensif", "defensive midfielder":"Milieu défensif", "centre forward":"Avant-centre", "central midfielder":"Milieu central" };
+          const posMapFR = { "goalkeeper":"Gardien", "defender":"Défenseur", "midfielder":"Milieu", "forward":"Attaquant", "striker":"Attaquant", "winger":"Ailier", "centre-back":"Défenseur central", "full-back":"Arrière latéral", "left-back":"Arrière gauche", "right-back":"Arrière droit", "attacking midfielder":"Milieu offensif", "defensive midfielder":"Milieu défensif", "centre forward":"Avant-centre", "central midfielder":"Milieu central" };
+          const posMapEN = { "goalkeeper":"Goalkeeper", "defender":"Defender", "midfielder":"Midfielder", "forward":"Forward", "striker":"Striker", "winger":"Winger", "centre-back":"Centre-back", "full-back":"Full-back", "left-back":"Left-back", "right-back":"Right-back", "attacking midfielder":"Attacking midfielder", "defensive midfielder":"Defensive midfielder", "centre forward":"Centre forward", "central midfielder":"Central midfielder" };
+          const posMap = lang==="en" ? posMapEN : posMapFR;
           position = posMap[positionMatches[1].toLowerCase()] || positionMatches[1];
         }
-        setDailyHintData({ position: position || "Information indisponible", nationality: null, loading: false });
+        setDailyHintData({ position: position || (lang==="en"?"Information unavailable":"Information indisponible"), nationality: null, loading: false });
         setDailyHintLevel(1);
       } catch(e) {
-        setDailyHintData({ position: "Information indisponible", nationality: null, loading: false });
+        setDailyHintData({ position: (lang==="en"?"Information unavailable":"Information indisponible"), nationality: null, loading: false });
         setDailyHintLevel(1);
       }
     } else if (dailyHintLevel === 1) {
@@ -2823,12 +2825,42 @@ export default function LePont() {
         let nationality = natMatch ? natMatch[1] : null;
         if (!nationality) {
           const altMatch = extract.match(/\b([A-Z][a-z]+)\s+footballer/i);
-          nationality = altMatch ? altMatch[1] : "Information indisponible";
+          nationality = altMatch ? altMatch[1] : null;
+        }
+        // Traduction EN→FR des nationalités si lang=fr
+        if (nationality && lang === "fr") {
+          const natMapFR = {
+            "french":"Français","english":"Anglais","british":"Britannique","german":"Allemand","italian":"Italien",
+            "spanish":"Espagnol","portuguese":"Portugais","brazilian":"Brésilien","argentine":"Argentin","argentinian":"Argentin",
+            "belgian":"Belge","dutch":"Néerlandais","swiss":"Suisse","austrian":"Autrichien","polish":"Polonais",
+            "russian":"Russe","ukrainian":"Ukrainien","czech":"Tchèque","slovak":"Slovaque","croatian":"Croate",
+            "serbian":"Serbe","bosnian":"Bosniaque","slovenian":"Slovène","hungarian":"Hongrois","romanian":"Roumain",
+            "bulgarian":"Bulgare","greek":"Grec","turkish":"Turc","danish":"Danois","swedish":"Suédois",
+            "norwegian":"Norvégien","finnish":"Finlandais","icelandic":"Islandais","irish":"Irlandais","scottish":"Écossais",
+            "welsh":"Gallois","american":"Américain","canadian":"Canadien","mexican":"Mexicain","colombian":"Colombien",
+            "uruguayan":"Uruguayen","chilean":"Chilien","peruvian":"Péruvien","venezuelan":"Vénézuélien","ecuadorian":"Équatorien",
+            "paraguayan":"Paraguayen","bolivian":"Bolivien","japanese":"Japonais","korean":"Coréen","chinese":"Chinois",
+            "australian":"Australien","egyptian":"Égyptien","moroccan":"Marocain","algerian":"Algérien","tunisian":"Tunisien",
+            "senegalese":"Sénégalais","ivorian":"Ivoirien","nigerian":"Nigérian","ghanaian":"Ghanéen","cameroonian":"Camerounais",
+            "malian":"Malien","guinean":"Guinéen","gabonese":"Gabonais","liberian":"Libérien","kenyan":"Kényan",
+            "ethiopian":"Éthiopien","angolan":"Angolais","mozambican":"Mozambicain","israeli":"Israélien","iranian":"Iranien",
+            "iraqi":"Irakien","saudi":"Saoudien","qatari":"Qatari","emirati":"Émirati","lebanese":"Libanais",
+            "palestinian":"Palestinien","syrian":"Syrien","jordanian":"Jordanien","pakistani":"Pakistanais","indian":"Indien",
+            "indonesian":"Indonésien","thai":"Thaïlandais","vietnamese":"Vietnamien","filipino":"Philippin","malaysian":"Malaisien",
+            "albanian":"Albanais","montenegrin":"Monténégrin","macedonian":"Macédonien","kosovar":"Kosovar","armenian":"Arménien",
+            "georgian":"Géorgien","azerbaijani":"Azerbaïdjanais","uzbek":"Ouzbek","kazakh":"Kazakh","jamaican":"Jamaïcain",
+            "cypriot":"Chypriote","maltese":"Maltais","luxembourgish":"Luxembourgeois"
+          };
+          // Gère les nationalités à trait d'union (ex: "French-Moroccan")
+          nationality = nationality.split("-").map(n => natMapFR[n.toLowerCase()] || n).join("-");
+        }
+        if (!nationality) {
+          nationality = (lang==="en"?"Information unavailable":"Information indisponible");
         }
         setDailyHintData(d => ({ ...d, nationality, loading: false }));
         setDailyHintLevel(2);
       } catch(e) {
-        setDailyHintData(d => ({ ...d, nationality: "Information indisponible", loading: false }));
+        setDailyHintData(d => ({ ...d, nationality: (lang==="en"?"Information unavailable":"Information indisponible"), loading: false }));
         setDailyHintLevel(2);
       }
     }
@@ -4697,7 +4729,7 @@ export default function LePont() {
                     value={dailyGuess}
                     onChange={function(e){setDailyGuess(e.target.value);setDailyFlash(null);}}
                     onKeyDown={function(e){if(e.key==="Enter") handleDailySubmit();}}
-                    placeholder="Nom du joueur..."
+                    placeholder={lang==="en"?"Player name...":"Nom du joueur..."}
                     autoComplete="off"
                     style={{width:"100%",background:dailyFlash==="ko"?"rgba(255,61,87,.15)":"rgba(255,255,255,.08)",border:"2px solid "+(dailyFlash==="ko"?"#FF3D57":"rgba(255,255,255,.2)"),borderRadius:18,padding:"18px",fontFamily:G.font,fontSize:19,fontWeight:700,color:"#ffffff",outline:"none",textAlign:"center",transition:"all .2s",boxSizing:"border-box",marginBottom:8}}
                   />
@@ -4708,7 +4740,7 @@ export default function LePont() {
                     <div style={{background:"#123a1e",border:"1px solid rgba(96,165,250,.5)",borderRadius:14,padding:"12px 14px",marginBottom:8,display:"flex",flexDirection:"column",gap:6}}>
                       <div style={{display:"flex",alignItems:"center",gap:8}}>
                         <span style={{fontSize:16}}>💡</span>
-                        <span style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"#60a5fa"}}>Indice {dailyHintLevel}/2</span>
+                        <span style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"#60a5fa"}}>{lang==="en"?"Hint":"Indice"} {dailyHintLevel}/2</span>
                       </div>
                       <div style={{fontSize:13,color:"#fff",lineHeight:1.5}}>
                         <strong>{lang==="en"?"Position: ":"Poste : "}</strong> {dailyHintData.position || "..."}
