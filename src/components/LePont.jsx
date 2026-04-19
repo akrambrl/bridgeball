@@ -3005,9 +3005,9 @@ export default function LePont() {
         border:`2px solid ${fb==="ok"?G.accent:fb==="ko"?G.red:"#fbbf24"}`,
         animation:fb==="ok"?"answerOk .5s ease":fb==="ko"?"answerKo .4s ease":"popIn .3s ease",
       }}>
-        {fb==="ok"&&<><div style={{display:"flex",alignItems:"center",gap:8,fontSize:17,fontWeight:800,color:"#16a34a"}}>{Icon.ball(18,"#16a34a")} BONNE RÉPONSE !</div><div style={{fontSize:12,fontWeight:600,color:"#16a34a",opacity:.7}}>+2 pts</div></>}
-        {fb==="ko"&&<><div style={{display:"flex",alignItems:"center",gap:8,fontSize:17,fontWeight:800,color:G.red}}>{Icon.whistle(18,G.red)} MAUVAISE RÉPONSE</div><div style={{fontSize:12,fontWeight:600,color:G.red,opacity:.7}}>−1 pt</div></>}
-        {fb==="used"&&<div style={{display:"flex",alignItems:"center",gap:8,fontSize:15,fontWeight:800,color:"#d97706"}}>{Icon.flag(16,"#d97706")} CLUB DÉJÀ UTILISÉ</div>}
+        {fb==="ok"&&<><div style={{display:"flex",alignItems:"center",gap:8,fontSize:17,fontWeight:800,color:"#16a34a"}}>{Icon.ball(18,"#16a34a")} {lang==="en"?"RIGHT ANSWER !":"BONNE RÉPONSE !"}</div><div style={{fontSize:12,fontWeight:600,color:"#16a34a",opacity:.7}}>+2 pts</div></>}
+        {fb==="ko"&&<><div style={{display:"flex",alignItems:"center",gap:8,fontSize:17,fontWeight:800,color:G.red}}>{Icon.whistle(18,G.red)} {lang==="en"?"WRONG ANSWER":"MAUVAISE RÉPONSE"}</div><div style={{fontSize:12,fontWeight:600,color:G.red,opacity:.7}}>−1 pt</div></>}
+        {fb==="used"&&<div style={{display:"flex",alignItems:"center",gap:8,fontSize:15,fontWeight:800,color:"#d97706"}}>{Icon.flag(16,"#d97706")} {lang==="en"?"CLUB ALREADY USED":"CLUB DÉJÀ UTILISÉ"}</div>}
       </div>
     );
   };
@@ -3529,7 +3529,7 @@ export default function LePont() {
         <div style={{...sheet,borderRadius:"28px 28px 0 0",marginTop:16}}>
           <div style={{background:"rgba(255,255,255,.04)",borderRadius:14,padding:"10px 14px",marginBottom:4}}>
             <div style={{fontSize:11,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginBottom:2}}>{lang==="en"?"Mode":"Mode"}</div>
-            <div style={{fontSize:15,fontWeight:800,color:G.white}}>{room.mode==="pont"?"The Plug":"The Mercato"}{room.diff?" · "+room.diff:""} · {room.rounds||1} {lang==="en"?("round"+((room.rounds||1)>1?"s":"")):("manche"+((room.rounds||1)>1?"s":""))}</div>
+            <div style={{fontSize:15,fontWeight:800,color:G.white}}>{room.mode==="pont"?"The Plug":"The Mercato"}{room.diff?" · "+(lang==="en"?(room.diff==="facile"?"easy":room.diff==="moyen"?"medium":"expert"):room.diff):""} · {room.rounds||1} {lang==="en"?("round"+((room.rounds||1)>1?"s":"")):("manche"+((room.rounds||1)>1?"s":""))}</div>
           </div>
           <div>
             <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.3)",marginBottom:8}}>
@@ -4171,7 +4171,7 @@ export default function LePont() {
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                 <div>
                   <div style={{fontSize:13,fontWeight:800,color:G.white}}>{duelMode==="pont"?"The Plug":"The Mercato"}</div>
-                  <div style={{fontSize:12,color:"rgba(255,255,255,.4)"}}>{duelDiff} · {duelRounds} {lang==="en"?("round"+(duelRounds>1?"s":"")):("manche"+(duelRounds>1?"s":""))}</div>
+                  <div style={{fontSize:12,color:"rgba(255,255,255,.4)"}}>{lang==="en"?(duelDiff==="facile"?"easy":duelDiff==="moyen"?"medium":"expert"):duelDiff} · {duelRounds} {lang==="en"?("round"+(duelRounds>1?"s":"")):("manche"+(duelRounds>1?"s":""))}</div>
                 </div>
                 <div style={{fontFamily:G.heading,fontSize:32,color:G.accent}}>2-8 👥</div>
               </div>
@@ -4834,12 +4834,12 @@ export default function LePont() {
         <div style={{position:"absolute",width:180,height:180,borderRadius:"50%",border:`2px solid ${ptc==="#FFF"?"rgba(255,255,255,.1)":"rgba(0,0,0,.06)"}`,top:-50,right:-30,pointerEvents:"none"}}/>
         <div style={{position:"absolute",width:90,height:90,borderRadius:"50%",border:`2px solid ${ptc==="#FFF"?"rgba(255,255,255,.07)":"rgba(0,0,0,.04)"}`,bottom:-20,left:10,pointerEvents:"none"}}/>
         <div style={{fontSize:10,letterSpacing:4,textTransform:"uppercase",color:ptc==="#FFF"?"rgba(255,255,255,.6)":"rgba(0,0,0,.35)",marginBottom:10,fontWeight:700,zIndex:1,position:"relative",display:"flex",alignItems:"center",justifyContent:"center",gap:5}}>
-          {Icon.ball(12,ptc==="#FFF"?"rgba(255,255,255,.6)":"rgba(0,0,0,.35)")} Donne un club de
+          {Icon.ball(12,ptc==="#FFF"?"rgba(255,255,255,.6)":"rgba(0,0,0,.35)")} {lang==="en"?"Name a club of":"Donne un club de"}
         </div>
         <div style={{display:"flex",alignItems:"center",gap:14,zIndex:1,position:"relative",justifyContent:"center",flexWrap:"wrap"}}>
           <div style={{textAlign:"center"}}>
             <div style={{fontFamily:G.heading,fontSize:"clamp(18px,5vw,34px)",color:ptc==="#FFF"?"#fff":"#111",lineHeight:1.05,textShadow:ptc==="#FFF"?"0 2px 10px rgba(0,0,0,.25)":"none",letterSpacing:1}}>{chainPlayer}</div>
-            {chainUsedClubs.size>0 && <div style={{fontSize:10,color:ptc==="#FFF"?"rgba(255,255,255,.55)":"rgba(0,0,0,.35)",marginTop:3,fontWeight:600}}>{chainAvailableClubs.length} club{chainAvailableClubs.length!==1?"s":""} disponible{chainAvailableClubs.length!==1?"s":""}</div>}
+            {chainUsedClubs.size>0 && <div style={{fontSize:10,color:ptc==="#FFF"?"rgba(255,255,255,.55)":"rgba(0,0,0,.35)",marginTop:3,fontWeight:600}}>{chainAvailableClubs.length} {lang==="en"?("club"+(chainAvailableClubs.length!==1?"s":"")+" available"):("club"+(chainAvailableClubs.length!==1?"s":"")+" disponible"+(chainAvailableClubs.length!==1?"s":""))}</div>}
           </div>
         </div>
         {combo>=3 && <div style={{marginTop:6,fontSize:12,fontWeight:800,color:ptc==="#FFF"?"#fff":"#111",animation:"comboFire .5s ease",zIndex:1,position:"relative"}}>{getComboLabel(combo)} x{combo}</div>}
@@ -4848,7 +4848,7 @@ export default function LePont() {
       <div style={{...sheet,marginTop:0,borderRadius:"28px 28px 0 0"}}>
         {feedbackBar(feedback)}
         <input ref={inputRef} value={guess} onChange={e=>setGuess(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleChainSubmit()}
-          placeholder="Nom du club..." autoComplete="off"
+          placeholder={lang==="en"?"Club name...":"Nom du club..."} autoComplete="off"
           style={{width:"100%",background:flash==="ko"?"#fee2e2":flash==="ok"?"#dcfce7":G.offWhite,border:("2px solid "+(flash==="ko"?G.red:flash==="ok"?G.accent:"#e5e5e0")+""),borderRadius:18,padding:"16px 18px",fontFamily:G.font,fontSize:18,fontWeight:700,color:G.dark,outline:"none",textAlign:"center",transition:"all .15s"}}/>
         <div style={{display:"flex",gap:10}}>
           <button onClick={handleChainPass} disabled={!!flash} style={{flex:1,padding:16,background:G.offWhite,color:"#aaa",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700,opacity:flash ? 0.3 : 1}}>{lang==="en"?"Skip →":"Passer →"}</button>
