@@ -807,10 +807,25 @@ function norm(s){return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f
 function checkGuess(g,players){const gn=norm(g);return players.some(p=>{const pn=norm(p);return gn===pn||pn.split(" ").some(part=>part.length>2&&gn.includes(part));});}
 function matchClub(input,playerClubs){
   const n=norm(input);
+  // 1. Exact match
   for(const c of playerClubs){if(norm(c)===n)return c;}
+  // 2. User tape un alias d'un club canonique présent dans playerClubs
   for(const c of playerClubs){const aliases=CLUB_ALIASES[c];if(aliases&&aliases.some(a=>norm(a)===n))return c;}
+  // 3. Bidirectionnel : user tape un nom canonique OU un alias,
+  //    et playerClubs contient un alias OU le nom canonique correspondant
+  for(const canonical in CLUB_ALIASES){
+    const aliases=CLUB_ALIASES[canonical];
+    const inputMatchesThisGroup=norm(canonical)===n||aliases.some(a=>norm(a)===n);
+    if(!inputMatchesThisGroup)continue;
+    for(const c of playerClubs){
+      if(norm(c)===norm(canonical))return c;
+      if(aliases.some(a=>norm(a)===norm(c)))return c;
+    }
+  }
   if(n.length>=3){
+    // 4. Substring match sur le club du joueur
     for(const c of playerClubs){if(norm(c).includes(n)||n.includes(norm(c)))return c;}
+    // 5. Substring match sur les alias du club du joueur
     for(const c of playerClubs){const aliases=CLUB_ALIASES[c];if(aliases&&aliases.some(a=>norm(a).includes(n)||n.includes(norm(a))))return c;}
   }
   return null;
