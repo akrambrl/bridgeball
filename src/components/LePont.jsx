@@ -1175,6 +1175,50 @@ export default function LePont() {
     window.addEventListener("resize", handler);
     return () => window.removeEventListener("resize", handler);
   }, []);
+
+  // Lock viewport : empêche zoom utilisateur, scroll horizontal, overscroll
+  // pour que l'app se comporte comme une app native en PWA sur téléphone
+  useEffect(()=>{
+    // Viewport meta — écrase/complète celui de index.html
+    let meta = document.querySelector('meta[name="viewport"]');
+    if (!meta) { meta = document.createElement('meta'); meta.name = 'viewport'; document.head.appendChild(meta); }
+    meta.setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover');
+
+    // iOS : mode web-app plein écran (fallback, iOS ignore manifest display)
+    let appleCap = document.querySelector('meta[name="apple-mobile-web-app-capable"]');
+    if (!appleCap) { appleCap = document.createElement('meta'); appleCap.name = 'apple-mobile-web-app-capable'; appleCap.content = 'yes'; document.head.appendChild(appleCap); }
+    let appleStatus = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+    if (!appleStatus) { appleStatus = document.createElement('meta'); appleStatus.name = 'apple-mobile-web-app-status-bar-style'; appleStatus.content = 'black-translucent'; document.head.appendChild(appleStatus); }
+
+    // Styles globaux pour bloquer scroll horizontal et overscroll rebound
+    const styleId = 'bb-lock-viewport';
+    if (!document.getElementById(styleId)) {
+      const style = document.createElement('style');
+      style.id = styleId;
+      style.textContent = `
+        html, body, #root {
+          overflow-x: hidden;
+          overscroll-behavior: none;
+          touch-action: manipulation;
+          -webkit-tap-highlight-color: transparent;
+        }
+        html, body { max-width: 100vw; position: relative; }
+        * { -webkit-touch-callout: none; }
+      `;
+      document.head.appendChild(style);
+    }
+
+    // Bloque le pinch-zoom iOS (où user-scalable=no est parfois ignoré par Safari)
+    const preventZoom = (e) => { if (e.touches && e.touches.length > 1) e.preventDefault(); };
+    const preventDblTap = (e) => e.preventDefault();
+    document.addEventListener('gesturestart', preventDblTap);
+    document.addEventListener('touchmove', preventZoom, { passive: false });
+    return () => {
+      document.removeEventListener('gesturestart', preventDblTap);
+      document.removeEventListener('touchmove', preventZoom);
+    };
+  }, []);
+
   const [lang, setLang] = useState(() => {
     try {
       const saved = localStorage.getItem("bb_lang");
@@ -2805,14 +2849,14 @@ export default function LePont() {
       setFlash("ok"); setFeedback("ok"); handleCorrectAnswer(2);
       setTimeout(()=>{setFlash(null);setFeedback(null);nextQ();},900);
     }else{
-      setFlash("ko"); setFeedback("ko"); handleWrongAnswer(1);
+      setFlash("ko"); setFeedback("ko"); handleWrongAnswer(5);
       setTimeout(()=>{setFlash(null);setFeedback(null);setGuess("");inputRef.current?.focus();},900);
     }
   }
 
   function handlePass() {
     clearInterval(qTimerRef.current);
-    setScore(s=>{scoreRef.current=s-.5;return s-.5;});
+    setScore(s=>{scoreRef.current=s-10;return s-10;});
     nextQ();
   }
   handlePassRef.current = handlePass;
@@ -2824,7 +2868,7 @@ export default function LePont() {
       setFlash("ok"); setFeedback("ok"); handleCorrectAnswer(2);
       setTimeout(()=>{setFlash(null);setFeedback(null);nextQ();},900);
     }else{
-      setFlash(opt); setFeedback("ko"); handleWrongAnswer(1);
+      setFlash(opt); setFeedback("ko"); handleWrongAnswer(5);
       setTimeout(()=>{setFlash(null);setFeedback(null);},900);
     }
   }
@@ -2866,7 +2910,7 @@ export default function LePont() {
       setFlash("used"); setFeedback("used"); playSound("ko");
       setTimeout(()=>{setFlash(null);setFeedback(null);setGuess("");inputRef.current?.focus();},1200);
     }else{
-      handleWrongAnswer(1,true); setFeedback("ko"); setFlash("ko");
+      handleWrongAnswer(5,true); setFeedback("ko"); setFlash("ko");
       setTimeout(()=>{setFlash(null);setFeedback(null);setGuess("");inputRef.current?.focus();},900);
     }
   }
@@ -2875,7 +2919,7 @@ export default function LePont() {
     if(chainPassedRef.current) return; // already passed this question
     clearInterval(qTimerRef.current);
     chainPassedRef.current = true;
-    setChainScore(s=>{chainScoreRef.current=s-.5;return s-.5;});
+    setChainScore(s=>{chainScoreRef.current=s-10;return s-10;});
     // FIX multi : en room, tous les joueurs qui passent sur le même chainPlayer doivent obtenir le même prochain joueur
     const isInRoomCP = activeDuelRef.current && activeDuelRef.current.isRoom;
     const effectiveDiffCP = isInRoomCP && activeDuelRef.current.diff ? activeDuelRef.current.diff : diff;
@@ -3006,7 +3050,7 @@ export default function LePont() {
         animation:fb==="ok"?"answerOk .5s ease":fb==="ko"?"answerKo .4s ease":"popIn .3s ease",
       }}>
         {fb==="ok"&&<><div style={{display:"flex",alignItems:"center",gap:8,fontSize:17,fontWeight:800,color:"#16a34a"}}>{Icon.ball(18,"#16a34a")} {lang==="en"?"RIGHT ANSWER !":"BONNE RÉPONSE !"}</div><div style={{fontSize:12,fontWeight:600,color:"#16a34a",opacity:.7}}>+2 pts</div></>}
-        {fb==="ko"&&<><div style={{display:"flex",alignItems:"center",gap:8,fontSize:17,fontWeight:800,color:G.red}}>{Icon.whistle(18,G.red)} {lang==="en"?"WRONG ANSWER":"MAUVAISE RÉPONSE"}</div><div style={{fontSize:12,fontWeight:600,color:G.red,opacity:.7}}>−1 pt</div></>}
+        {fb==="ko"&&<><div style={{display:"flex",alignItems:"center",gap:8,fontSize:17,fontWeight:800,color:G.red}}>{Icon.whistle(18,G.red)} {lang==="en"?"WRONG ANSWER":"MAUVAISE RÉPONSE"}</div><div style={{fontSize:12,fontWeight:600,color:G.red,opacity:.7}}>−5 pts</div></>}
         {fb==="used"&&<div style={{display:"flex",alignItems:"center",gap:8,fontSize:15,fontWeight:800,color:"#d97706"}}>{Icon.flag(16,"#d97706")} {lang==="en"?"CLUB ALREADY USED":"CLUB DÉJÀ UTILISÉ"}</div>}
       </div>
     );
@@ -4510,15 +4554,7 @@ export default function LePont() {
                     </button>
                   )}
                   <div style={{display:"flex",gap:10,marginTop:8}}>
-                    <button onClick={function(){
-                      setShowDailyGame(false);
-                      const today = (()=>{ const d=new Date(); const paris=new Date(d.toLocaleString('en-US',{timeZone:'Europe/Paris'})); return paris.getFullYear()+'-'+String(paris.getMonth()+1).padStart(2,'0')+'-'+String(paris.getDate()).padStart(2,'0'); })();
-                      try { localStorage.setItem("bb_daily_result", JSON.stringify({date:today,abandoned:true})); } catch{}
-                      setDailyDone(true); setDailyAbandoned(true); updateDayStreak();
-                    }} style={{flex:1,padding:"16px",background:"rgba(255,255,255,.05)",color:"rgba(255,255,255,.5)",border:"1px solid rgba(255,255,255,.1)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>
-                      {lang==="en"?"Quit":"Abandonner"}
-                    </button>
-                    <button onClick={handleDailySubmit} style={{flex:2,padding:"16px",background:"linear-gradient(135deg,#FFD600,#FF6B35)",color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:16,fontWeight:800}}>
+                    <button onClick={handleDailySubmit} style={{flex:1,padding:"16px",background:"linear-gradient(135deg,#FFD600,#FF6B35)",color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:16,fontWeight:800}}>
                       {lang==="en"?"Submit ✓":"Valider ✓"}
                     </button>
                   </div>
@@ -4709,7 +4745,7 @@ export default function LePont() {
                   );
                 })}
               </div>
-              <button onClick={handlePass} disabled={!!flash} style={{padding:"12px",pointerEvents:flash?"none":"auto",background:"transparent",color:"#bbb",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700,opacity:flash ? 0.3 : 1}}>{lang==="en"?"Skip → (−0.5 pt)":"Passer → (−0.5 pt)"}</button>
+              <button onClick={handlePass} disabled={!!flash} style={{padding:"12px",pointerEvents:flash?"none":"auto",background:"transparent",color:"#bbb",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700,opacity:flash ? 0.3 : 1}}>{lang==="en"?"Skip → (−10 pts)":"Passer → (−10 pts)"}</button>
             </div>
           ):(
             <div style={{display:"flex",flexDirection:"column",gap:10}}>
@@ -4728,7 +4764,7 @@ export default function LePont() {
                 })()}
               </div>
               <div style={{display:"flex",gap:10}}>
-                <button onClick={handlePass} disabled={!!flash} style={{flex:1,padding:15,pointerEvents:flash?"none":"auto",background:G.offWhite,color:"#aaa",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700,opacity:flash ? 0.3 : 1}}>{lang==="en"?"Skip →":"Passer →"}</button>
+                <button onClick={handlePass} disabled={!!flash} style={{flex:1,padding:15,pointerEvents:flash?"none":"auto",background:G.offWhite,color:"#aaa",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700,opacity:flash ? 0.3 : 1}}>{lang==="en"?"Skip → (−10 pts)":"Passer → (−10 pts)"}</button>
                 <button onClick={handleSubmit} style={{flex:2,padding:"15px",background:G.dark,color:G.white,border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:16,fontWeight:800}}>{lang==="en"?"Submit":"Valider"}</button>
               </div>
             </div>
@@ -4851,7 +4887,7 @@ export default function LePont() {
           placeholder={lang==="en"?"Club name...":"Nom du club..."} autoComplete="off"
           style={{width:"100%",background:flash==="ko"?"#fee2e2":flash==="ok"?"#dcfce7":G.offWhite,border:("2px solid "+(flash==="ko"?G.red:flash==="ok"?G.accent:"#e5e5e0")+""),borderRadius:18,padding:"16px 18px",fontFamily:G.font,fontSize:18,fontWeight:700,color:G.dark,outline:"none",textAlign:"center",transition:"all .15s"}}/>
         <div style={{display:"flex",gap:10}}>
-          <button onClick={handleChainPass} disabled={!!flash} style={{flex:1,padding:16,background:G.offWhite,color:"#aaa",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700,opacity:flash ? 0.3 : 1}}>{lang==="en"?"Skip →":"Passer →"}</button>
+          <button onClick={handleChainPass} disabled={!!flash} style={{flex:1,padding:16,background:G.offWhite,color:"#aaa",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700,opacity:flash ? 0.3 : 1}}>{lang==="en"?"Skip → (−10 pts)":"Passer → (−10 pts)"}</button>
           <button onClick={handleChainSubmit} style={{flex:2,padding:"16px",background:G.dark,color:G.white,border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:16,fontWeight:800}}>{lang==="en"?"Submit":"Valider"}</button>
         </div>
         {chainHistory.length>0 && (
