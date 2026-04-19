@@ -189,6 +189,9 @@ const CLUB_ALIASES = {
   "Genk":["racing genk","krc genk"],
   "Real Valladolid":["valladolid"],
   "Real Zaragoza":["zaragoza"],
+  "AZ":["az alkmaar","alkmaar"],
+  "LAFC":["los angeles fc","los angeles football club"],
+  "QPR":["queens park rangers","queens park","q.p.r."],
 };
 
 const CLUB_COLORS = {
