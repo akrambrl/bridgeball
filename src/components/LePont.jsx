@@ -957,6 +957,45 @@ function playSound(type){
   }catch(e){}
 }
 
+// Vibration haptique mobile — ne fait rien si non supporté (desktop/iOS Safari)
+function vibrate(pattern){
+  try{ if(navigator.vibrate) navigator.vibrate(pattern); }catch(e){}
+}
+
+// Phrases flatteuses aléatoires selon le combo — affichées sur bonne réponse
+const POSITIVE_FEEDBACK = {
+  fr: {
+    // Combo 0-2 : réponses normales, positif mais chill
+    base: ["Nickel ✓","Joli 🎯","Ça passe ⚽","Propre 👌","Bien vu 👀","Solide 💪","Facile 😎","Tranquille 🚶"],
+    // Combo 3-4 : on chauffe
+    warm: ["🔥 EN FEU !","💥 ENCHAÎNEMENT !","⚡ ÇA CARBURE !","🎯 DANS LE MILLE !","🚀 TU DÉCOLLES !"],
+    // Combo 5-6 : imparable
+    hot:  ["⚡ IMPARABLE !","🎯 TU ES DANS LA ZONE !","🔥 ON T'ARRÊTE PLUS !","💨 VITESSE GRAND V !","🎪 SPECTACLE !"],
+    // Combo 7-9 : phénoménal
+    fire: ["💫 PHÉNOMÉNAL !","🌟 MACHINE !","👑 CLASSE MONDIALE !","🏟️ LE PUBLIC EST DEBOUT !","🎭 ARTISTE !"],
+    // Combo 10+ : légendaire
+    god:  ["🏆 LÉGENDAIRE !!!","👑 BALLON D'OR !","🐐 LE GOAT !","🌌 HORS NORMES !","🎖️ RECORD EN VUE !"]
+  },
+  en: {
+    base: ["Clean ✓","Nice 🎯","Easy ⚽","Solid 👌","Good eye 👀","Strong 💪","Too easy 😎","Chill 🚶"],
+    warm: ["🔥 ON FIRE !","💥 CHAIN REACTION !","⚡ CRUISING !","🎯 BULLSEYE !","🚀 TAKING OFF !"],
+    hot:  ["⚡ UNSTOPPABLE !","🎯 IN THE ZONE !","🔥 CAN'T STOP YOU !","💨 FULL SPEED !","🎪 WHAT A SHOW !"],
+    fire: ["💫 PHENOMENAL !","🌟 MACHINE !","👑 WORLD CLASS !","🏟️ CROWD'S ON THEIR FEET !","🎭 ARTIST !"],
+    god:  ["🏆 LEGENDARY !!!","👑 BALLON D'OR !","🐐 THE GOAT !","🌌 OUT OF THIS WORLD !","🎖️ RECORD INCOMING !"]
+  }
+};
+
+function getPositiveFeedback(combo, lang){
+  const pool = POSITIVE_FEEDBACK[lang==="en"?"en":"fr"];
+  let tier;
+  if(combo>=10) tier=pool.god;
+  else if(combo>=7) tier=pool.fire;
+  else if(combo>=5) tier=pool.hot;
+  else if(combo>=3) tier=pool.warm;
+  else tier=pool.base;
+  return tier[Math.floor(Math.random()*tier.length)];
+}
+
 // ── CSS ──
 if(typeof document!=="undefined"&&!document.getElementById("bb-css")){
   const s=document.createElement("style");s.id="bb-css";
@@ -1133,6 +1172,7 @@ export default function LePont() {
   const [combo, setCombo] = useState(0);
   const [maxCombo, setMaxCombo] = useState(0);
   const [comboFloat, setComboFloat] = useState(null);
+  const [feedbackPhrase, setFeedbackPhrase] = useState(""); // phrase aléatoire affichée sur bonne réponse
   const [chainPlayer, setChainPlayer] = useState("");
   const [chainUsedClubs, setChainUsedClubs] = useState(new Set());
   const [chainUsedPlayers, setChainUsedPlayers] = useState(new Set());
@@ -2599,14 +2639,22 @@ export default function LePont() {
     const diffBase = isChain ? (diff==="expert"?25:diff==="moyen"?18:10) : (diff==="expert"?50:diff==="moyen"?35:20);
     const total = diffBase + speedBonus + comboBonus;
     setCombo(newCombo); if(newCombo>maxCombo) setMaxCombo(newCombo);
+    // Phrase flatteuse aléatoire selon le niveau de combo
+    setFeedbackPhrase(getPositiveFeedback(newCombo, lang));
     if(comboBonus>0||speedBonus>0){
       const parts=[];
       if(speedBonus)parts.push("⚡ SPEED");
       if(comboBonus)parts.push(`x${newCombo} COMBO +${comboBonus}`);
       setComboFloat(parts.join(" · "));
       playSound("combo");
+      // Vibration combo : pattern double buzz pour marquer le coup
+      vibrate([40,30,60]);
       setTimeout(()=>setComboFloat(null),1200);
-    }else{playSound("ok");}
+    }else{
+      playSound("ok");
+      // Vibration bonne réponse : buzz court et net
+      vibrate(30);
+    }
     if(isChain){setChainScore(s=>{chainScoreRef.current=s+total;return s+total;});}
     else{setScore(s=>{scoreRef.current=s+total;return s+total;});}
     setScoreAnim("up"); setTimeout(()=>setScoreAnim(null),600);
@@ -2615,6 +2663,8 @@ export default function LePont() {
 
   function handleWrongAnswer(penalty, isChain=false) {
     setCombo(0); comboRef.current=0; playSound("ko");
+    // Vibration mauvaise réponse : buzz plus long et sec
+    vibrate(150);
     if(isChain){setChainScore(s=>{chainScoreRef.current=s-penalty;return s-penalty;});}
     else{setScore(s=>{scoreRef.current=s-penalty;return s-penalty;});}
     setScoreAnim("down"); setTimeout(()=>setScoreAnim(null),600);
@@ -3101,7 +3151,7 @@ export default function LePont() {
         border:`2px solid ${fb==="ok"?G.accent:fb==="ko"?G.red:"#fbbf24"}`,
         animation:fb==="ok"?"answerOk .5s ease":fb==="ko"?"answerKo .4s ease":"popIn .3s ease",
       }}>
-        {fb==="ok"&&<><div style={{display:"flex",alignItems:"center",gap:8,fontSize:17,fontWeight:800,color:"#16a34a"}}>{Icon.ball(18,"#16a34a")} {lang==="en"?"RIGHT ANSWER !":"BONNE RÉPONSE !"}</div><div style={{fontSize:12,fontWeight:600,color:"#16a34a",opacity:.7}}>+2 pts</div></>}
+        {fb==="ok"&&<><div style={{display:"flex",alignItems:"center",gap:8,fontSize:17,fontWeight:800,color:"#16a34a"}}>{Icon.ball(18,"#16a34a")} {feedbackPhrase || (lang==="en"?"RIGHT ANSWER !":"BONNE RÉPONSE !")}</div><div style={{fontSize:12,fontWeight:600,color:"#16a34a",opacity:.7}}>+2 pts</div></>}
         {fb==="ko"&&<><div style={{display:"flex",alignItems:"center",gap:8,fontSize:17,fontWeight:800,color:G.red}}>{Icon.whistle(18,G.red)} {lang==="en"?"WRONG ANSWER":"MAUVAISE RÉPONSE"}</div><div style={{fontSize:12,fontWeight:600,color:G.red,opacity:.7}}>−5 pts</div></>}
         {fb==="used"&&<div style={{display:"flex",alignItems:"center",gap:8,fontSize:15,fontWeight:800,color:"#d97706"}}>{Icon.flag(16,"#d97706")} {lang==="en"?"CLUB ALREADY USED":"CLUB DÉJÀ UTILISÉ"}</div>}
       </div>
