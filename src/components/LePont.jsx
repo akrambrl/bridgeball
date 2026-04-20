@@ -1491,6 +1491,7 @@ export default function LePont() {
   const [dailyHintData, setDailyHintData] = useState({ position: null, nationality: null, loading: false });
   const [dailyUsedHint, setDailyUsedHint] = useState(false);
   const [dailySuccess, setDailySuccess] = useState(false);
+  const [dailyShared, setDailyShared] = useState(false); // Feedback après partage du défi du jour
   const [showDailyGame, setShowDailyGame] = useState(false);
   const [dayStreak, setDayStreak] = useState(() => {
     try {
@@ -3250,6 +3251,52 @@ export default function LePont() {
         } catch(e) { /* silencieux */ }
       }
     } catch(e){}
+  }
+
+  // Construit un message de partage style Wordle pour le défi du jour
+  function buildDailyShare() {
+    if (!dailyPlayer) return { text:"", url:"https://goatfc.online" };
+    const theme = getTodayTheme();
+    // Jour court en FR/EN
+    const dayShortFr = ["Dim","Lun","Mar","Mer","Jeu","Ven","Sam"];
+    const dayShortEn = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+    const d = new Date();
+    const paris = new Date(d.toLocaleString('en-US',{timeZone:'Europe/Paris'}));
+    const dayShort = (lang==="en"?dayShortEn:dayShortFr)[paris.getDay()];
+    // Label ligue compact
+    const themeLabel = theme.id==="L1"?"L1":theme.id==="PL"?"PL":theme.id==="LIGA"?"LIGA":theme.id==="SERIEA"?"Serie A":theme.id==="BUNDESLIGA"?"Buli":theme.id==="LEGEND"?(lang==="en"?"Legend":"Légende"):"Joker";
+
+    // Tentatives façon Wordle : ⬛ pour tentatives ratées, 🟩 pour la bonne
+    const tries = dailyTries;
+    const maxTries = 5;
+    const squares = [];
+    for (let i=0; i<tries-1; i++) squares.push("⬛");
+    squares.push("🟩");
+    while (squares.length < Math.min(tries, maxTries)) squares.push("⬛");
+
+    // Points gagnés
+    const pd = dailyPlayer.diff || "moyen";
+    const earnedPoints = tries === 1 ? (pd==="expert"?50:pd==="moyen"?35:20) : (pd==="expert"?30:pd==="moyen"?20:10);
+
+    // Emojis "mystère" pour les clubs (sans les révéler) - cases colorées random par club
+    const clubEmojis = ["🔴","🔵","🟡","🟢","🟣","🟠","⚫","⚪","🟤"];
+    const clubsDisplay = dailyPlayer.clubs.slice(0,3).map((c, i) => {
+      // Choix déterministe basé sur le hash du nom du club
+      let h = 0;
+      for (let j=0; j<c.length; j++) h = ((h<<5)-h) + c.charCodeAt(j);
+      return clubEmojis[Math.abs(h) % clubEmojis.length].repeat(3);
+    }).join(" × ");
+
+    const title = `🐐 GOAT FC · ${dayShort} ${theme.flag} ${themeLabel}`;
+    const scoreLine = lang==="en"
+      ? `⚡ ${tries}/${maxTries} tries · +${earnedPoints} XP`
+      : `⚡ ${tries}/${maxTries} essais · +${earnedPoints} XP`;
+    const cta = lang==="en"
+      ? "Can you do better? 👇"
+      : "Peux-tu faire mieux ? 👇";
+    const url = "https://goatfc.online";
+    const text = `${title}\n${scoreLine}\n\n${clubsDisplay}\n\n${squares.join("")}\n\n${cta}\n${url}`;
+    return { text, url, title };
   }
 
   function handleDailySubmit() {
@@ -5753,8 +5800,42 @@ export default function LePont() {
                   <div style={{fontSize:16,color:"rgba(255,255,255,.7)",fontWeight:700,letterSpacing:1,textTransform:"uppercase",marginBottom:6}}>
                     {pickResultMessage(RESULT_MESSAGES[lang==="en"?"en":"fr"].soloWin, dailyTries * 7 + (dailyPlayer?.name?.length||0))}
                   </div>
-                  <div style={{fontSize:14,color:"rgba(255,255,255,.4)",marginTop:4}}>
+                  <div style={{fontSize:14,color:"rgba(255,255,255,.4)",marginTop:4,marginBottom:24}}>
                     {dailyTries === 1 ? (lang==="en"?"Got it first try 🐐":"Trouvé du premier coup 🐐") : (lang==="en"?`Found in ${dailyTries} attempts`:`Trouvé en ${dailyTries} essai${dailyTries>1?"s":""}`)}
+                  </div>
+
+                  {/* Bouton de partage style Wordle */}
+                  <button onClick={async function(){
+                    const share = buildDailyShare();
+                    try {
+                      if (navigator.share) {
+                        await navigator.share({ title: share.title || "GOAT FC", text: share.text });
+                        setDailyShared(true);
+                        setTimeout(() => setDailyShared(false), 2500);
+                      } else {
+                        await navigator.clipboard.writeText(share.text);
+                        setDailyShared(true);
+                        setTimeout(() => setDailyShared(false), 2500);
+                      }
+                    } catch(e) {
+                      // Utilisateur a annulé le partage natif — on ne fait rien
+                    }
+                  }} style={{
+                    width:"100%",maxWidth:320,
+                    padding:"16px",
+                    background: dailyShared ? "linear-gradient(135deg,#00E676,#00A855)" : "linear-gradient(135deg,#FFD600,#FF6B35)",
+                    color:"#000",border:"none",borderRadius:50,cursor:"pointer",
+                    fontFamily:G.font,fontSize:16,fontWeight:800,letterSpacing:1,
+                    boxShadow: dailyShared ? "0 6px 20px rgba(0,230,118,.45)" : "0 6px 20px rgba(255,107,53,.45)",
+                    display:"flex",alignItems:"center",justifyContent:"center",gap:8,
+                    transition:"all .25s"
+                  }}>
+                    {dailyShared
+                      ? (lang==="en"?"✓ COPIED!":"✓ COPIÉ !")
+                      : (lang==="en"?"📤 SHARE MY RESULT":"📤 PARTAGER MON RÉSULTAT")}
+                  </button>
+                  <div style={{fontSize:11,color:"rgba(255,255,255,.35)",marginTop:10,textAlign:"center",padding:"0 20px"}}>
+                    {lang==="en"?"Challenge your friends on WhatsApp, Insta, X...":"Challenge tes amis sur WhatsApp, Insta, X..."}
                   </div>
                 </div>
               ) : (
