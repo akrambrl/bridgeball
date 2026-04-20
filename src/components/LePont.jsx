@@ -1895,6 +1895,27 @@ export default function LePont() {
     } catch {}
   }, [pseudoConfirmed, dayStreak, deferredInstall, record, chainRecord]);
 
+  // Détermine si on doit proposer d'activer les notifications push
+  // Conditions : app déjà installée OU streak >= 2, et permission pas encore accordée/refusée
+  useEffect(() => {
+    if (!pseudoConfirmed) return;
+    if (typeof Notification === "undefined") return; // Pas de support
+    if (Notification.permission !== "default") return; // Déjà accordé/refusé, on ne redemande pas
+    try {
+      const dismissed = localStorage.getItem("bb_notif_dismissed");
+      if (dismissed) {
+        const elapsed = Date.now() - parseInt(dismissed, 10);
+        if (elapsed < 3 * 24 * 60 * 60 * 1000) return; // Re-demander après 3 jours
+      }
+      // Montrer si l'app est installée OU si le user a une streak >= 2
+      const hasRecord = (record && record.score > 0) || (chainRecord && chainRecord.score > 0);
+      if (isStandalone() || dayStreak >= 2 || hasRecord) {
+        const t = setTimeout(() => setShowNotifPrompt(true), 2500);
+        return () => clearTimeout(t);
+      }
+    } catch {}
+  }, [pseudoConfirmed, dayStreak, record, chainRecord]);
+
   // Poll for friend requests and duels every 15s
   useEffect(() => {
     const poll = setInterval(function() {
@@ -4069,7 +4090,7 @@ export default function LePont() {
           }} style={{flex:2,padding:"11px",background:"#16a34a",color:G.white,border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:800}}>
             {lang==="en"?"✓ Yes, enable!":"✓ Oui, active !"}
           </button>
-          <button onClick={()=>setShowNotifPrompt(false)} style={{flex:1,padding:"11px",background:"rgba(255,255,255,.06)",color:"rgba(255,255,255,.6)",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:600}}>
+          <button onClick={()=>{ setShowNotifPrompt(false); try{localStorage.setItem("bb_notif_dismissed", String(Date.now()));}catch{} }} style={{flex:1,padding:"11px",background:"rgba(255,255,255,.06)",color:"rgba(255,255,255,.6)",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:600}}>
             {lang==="en"?"Later":"Plus tard"}
           </button>
         </div>
@@ -5625,6 +5646,7 @@ export default function LePont() {
       {pseudoModal}
       {streakModal}
       {installPrompt}
+      {notifPrompt}
       {showDuelCreate && (
         <div style={{position:"fixed",inset:0,zIndex:300,background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center"}}>
           <div style={{background:"rgba(15,25,15,.95)",borderRadius:24,padding:"28px 24px",maxWidth:340,width:"calc(100% - 32px)",border:"1px solid rgba(255,255,255,.1)"}}>
