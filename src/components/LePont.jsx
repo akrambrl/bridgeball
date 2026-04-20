@@ -1391,6 +1391,74 @@ async function requestNotifPermission() {
   return result === "granted";
 }
 
+// Détection : est-ce qu'on est sur iOS (iPhone/iPad) ?
+function isIOS() {
+  if (typeof window === "undefined") return false;
+  const ua = window.navigator.userAgent.toLowerCase();
+  return /iphone|ipad|ipod/.test(ua) || (/macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+}
+
+// Détection : est-ce que l'app est installée sur l'écran d'accueil (standalone) ?
+function isStandalone() {
+  if (typeof window === "undefined") return false;
+  return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+}
+
+// Est-ce qu'on est sur Android ?
+function isAndroid() {
+  if (typeof window === "undefined") return false;
+  return /android/i.test(window.navigator.userAgent);
+}
+
+// VAPID public key pour signer les subscriptions push
+// Clé publique générée via vapidkeys.com — la private key correspondante doit être stockée
+// dans Supabase Secrets pour l'Edge Function qui enverra les notifs
+const VAPID_PUBLIC_KEY = "BOwSf9_eF4dgLAp1KD3e1dfX1qurhcaMvAOnJpYL7hwuXhfgX0cJnswXuhe5VPAEWjrLjVJD61b6crJXzG0HVMg";
+
+// Convertit une base64 URL-safe en Uint8Array (nécessaire pour l'API PushManager)
+function urlBase64ToUint8Array(base64String) {
+  const padding = "=".repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const rawData = atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
+  return outputArray;
+}
+
+// S'abonne aux push notifications et sauvegarde le token dans Supabase
+async function subscribeToPush(playerId, sbFetch) {
+  try {
+    if (!("serviceWorker" in navigator) || !("PushManager" in window)) return false;
+    if (Notification.permission !== "granted") return false;
+    const reg = await navigator.serviceWorker.ready;
+    // Vérifier s'il y a déjà une subscription active
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub) {
+      sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+      });
+    }
+    // Envoyer la subscription à Supabase
+    const subJson = sub.toJSON();
+    await sbFetch("bb_push_subscriptions", {
+      method: "POST",
+      headers: { "Content-Type":"application/json", "Prefer":"resolution=merge-duplicates,return=minimal" },
+      body: JSON.stringify({
+        player_id: playerId,
+        endpoint: subJson.endpoint,
+        p256dh: subJson.keys.p256dh,
+        auth: subJson.keys.auth,
+        platform: isIOS() ? "ios" : isAndroid() ? "android" : "desktop",
+        standalone: isStandalone()
+      })
+    });
+    return true;
+  } catch(e) {
+    return false;
+  }
+}
+
 function sendNotif(title, body) {
   if (!("Notification" in window) || Notification.permission !== "granted") return;
   try {
@@ -1484,6 +1552,10 @@ export default function LePont() {
   const [winStreak, setWinStreak] = useState(0);
   const [wasAway, setWasAway] = useState(false);
   const [notifGranted, setNotifGranted] = useState(false);
+  // États pour l'installation de l'app
+  const [showInstallPrompt, setShowInstallPrompt] = useState(false);
+  const [deferredInstall, setDeferredInstall] = useState(null); // Pour Android: l'event beforeinstallprompt
+  const [pushSubscribed, setPushSubscribed] = useState(false);
   const [showNotifPrompt, setShowNotifPrompt] = useState(false);
   const [lbMode, setLbMode] = useState("global");
   const [dailyPlayer] = useState(() => getDailyPlayer());
@@ -1791,6 +1863,37 @@ export default function LePont() {
       } catch {}
     })();
   }, []);
+
+  // Capture l'event beforeinstallprompt (Android) pour pouvoir déclencher l'installation à notre timing
+  useEffect(() => {
+    function onBeforeInstall(e) {
+      e.preventDefault();
+      setDeferredInstall(e);
+    }
+    window.addEventListener("beforeinstallprompt", onBeforeInstall);
+    return () => window.removeEventListener("beforeinstallprompt", onBeforeInstall);
+  }, []);
+
+  // Détermine si on doit proposer l'installation : non installé, a joué 3+ jours de suite, n'a pas refusé récemment
+  useEffect(() => {
+    if (isStandalone()) return; // Déjà installée
+    if (!pseudoConfirmed) return; // Attendre que le pseudo soit validé
+    try {
+      const dismissed = localStorage.getItem("bb_install_dismissed");
+      if (dismissed) {
+        const elapsed = Date.now() - parseInt(dismissed, 10);
+        // On représente après 7 jours
+        if (elapsed < 7 * 24 * 60 * 60 * 1000) return;
+      }
+      // Montrer si streak >= 3 (le user est accroché) ou s'il a joué au moins 3 parties
+      const hasRecord = (record && record.score > 0) || (chainRecord && chainRecord.score > 0);
+      if (dayStreak >= 3 || (hasRecord && (deferredInstall || isIOS()))) {
+        // Petit délai pour ne pas bousculer l'user
+        const t = setTimeout(() => setShowInstallPrompt(true), 1500);
+        return () => clearTimeout(t);
+      }
+    } catch {}
+  }, [pseudoConfirmed, dayStreak, deferredInstall, record, chainRecord]);
 
   // Poll for friend requests and duels every 15s
   useEffect(() => {
@@ -3840,6 +3943,105 @@ export default function LePont() {
   })();
 
 
+  // ── INSTALL APP PROMPT ──
+  const installPrompt = showInstallPrompt && !isStandalone() && (() => {
+    const ios = isIOS();
+    return (
+      <div onClick={() => { setShowInstallPrompt(false); try{localStorage.setItem("bb_install_dismissed", String(Date.now()));}catch{} }} style={{position:"fixed",inset:0,zIndex:500,background:"rgba(0,0,0,.85)",display:"flex",alignItems:"center",justifyContent:"center",padding:"20px",backdropFilter:"blur(12px)",animation:"fadeIn .25s ease",cursor:"pointer"}}>
+        <div onClick={(e)=>e.stopPropagation()} style={{position:"relative",borderRadius:28,maxWidth:380,width:"100%",overflow:"hidden",animation:"popIn .4s cubic-bezier(.34,1.56,.64,1)",cursor:"default",boxShadow:"0 30px 80px rgba(0,0,0,.6), 0 0 0 1px rgba(0,230,118,.3), 0 0 60px rgba(0,230,118,.2)"}}>
+          {/* Fond pelouse */}
+          <div style={{position:"absolute",inset:0,zIndex:0,overflow:"hidden"}}>
+            {[0,1,2,3,4,5,6].map(i => (
+              <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#1E5C2A":"#276B34"}}/>
+            ))}
+            <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, rgba(0,230,118,.22) 0%, rgba(10,20,10,.90) 50%, rgba(10,20,10,.95) 100%)"}}/>
+            <div style={{position:"absolute",top:-60,left:-60,width:240,height:240,borderRadius:"50%",background:"radial-gradient(circle, rgba(0,230,118,.45) 0%, transparent 70%)",filter:"blur(40px)"}}/>
+            <div style={{position:"absolute",top:-40,right:-40,width:200,height:200,borderRadius:"50%",background:"radial-gradient(circle, rgba(255,214,0,.35) 0%, transparent 70%)",filter:"blur(40px)"}}/>
+          </div>
+          <button onClick={()=>{ setShowInstallPrompt(false); try{localStorage.setItem("bb_install_dismissed", String(Date.now()));}catch{} }} style={{position:"absolute",top:14,right:14,zIndex:2,width:32,height:32,borderRadius:"50%",background:"rgba(255,255,255,.1)",border:"1px solid rgba(255,255,255,.15)",color:G.white,fontSize:16,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(10px)"}}>✕</button>
+
+          <div style={{position:"relative",zIndex:1,padding:"32px 26px 26px"}}>
+            {/* Icon */}
+            <div style={{display:"flex",justifyContent:"center",marginBottom:14}}>
+              <div style={{width:84,height:84,borderRadius:20,background:"linear-gradient(135deg,#00E676,#00A855)",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 8px 24px rgba(0,230,118,.5)",fontSize:44}}>
+                📲
+              </div>
+            </div>
+            <div style={{fontFamily:G.heading,fontSize:28,color:G.white,letterSpacing:2,textAlign:"center",marginBottom:4,textShadow:"0 2px 12px rgba(0,230,118,.5)"}}>
+              {lang==="en"?"INSTALL GOAT FC":"INSTALLER GOAT FC"}
+            </div>
+            <div style={{fontSize:11,letterSpacing:3,color:"#00E676",textTransform:"uppercase",fontWeight:800,textAlign:"center",marginBottom:22}}>
+              {lang==="en"?"Get daily reminders 🔥":"Reçois les rappels quotidiens 🔥"}
+            </div>
+
+            {/* Benefits */}
+            <div style={{background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.1)",borderRadius:16,padding:"14px 16px",marginBottom:14}}>
+              <div style={{display:"flex",alignItems:"flex-start",gap:10,marginBottom:10}}>
+                <span style={{fontSize:18}}>🔥</span>
+                <div style={{flex:1,fontSize:13,color:"rgba(255,255,255,.9)",lineHeight:1.4}}>
+                  {lang==="en"?<>Never break your <strong style={{color:"#FFD600"}}>streak</strong> — get pinged before midnight</>:<>Ne casse plus ta <strong style={{color:"#FFD600"}}>série</strong> — rappel avant minuit</>}
+                </div>
+              </div>
+              <div style={{display:"flex",alignItems:"flex-start",gap:10,marginBottom:10}}>
+                <span style={{fontSize:18}}>⚡</span>
+                <div style={{flex:1,fontSize:13,color:"rgba(255,255,255,.9)",lineHeight:1.4}}>
+                  {lang==="en"?<>Faster access — <strong>one tap</strong> from your home screen</>:<>Accès rapide — <strong>un tap</strong> depuis l'écran d'accueil</>}
+                </div>
+              </div>
+              <div style={{display:"flex",alignItems:"flex-start",gap:10}}>
+                <span style={{fontSize:18}}>🎯</span>
+                <div style={{flex:1,fontSize:13,color:"rgba(255,255,255,.9)",lineHeight:1.4}}>
+                  {lang==="en"?<>Full-screen experience, no browser bar</>:<>Expérience plein écran, pas de barre navigateur</>}
+                </div>
+              </div>
+            </div>
+
+            {/* Instructions spécifiques plateforme */}
+            {ios ? (
+              <div style={{background:"linear-gradient(135deg, rgba(0,230,118,.12), rgba(255,214,0,.08))",border:"1px solid rgba(0,230,118,.3)",borderRadius:16,padding:"14px 16px",marginBottom:20}}>
+                <div style={{fontSize:11,fontWeight:800,letterSpacing:2,color:"#00E676",textTransform:"uppercase",marginBottom:10,textAlign:"center"}}>
+                  {lang==="en"?"📱 iPhone / iPad":"📱 iPhone / iPad"}
+                </div>
+                <div style={{fontSize:13,color:"rgba(255,255,255,.85)",lineHeight:1.6}}>
+                  <div style={{marginBottom:6}}><strong style={{color:G.white}}>1.</strong> {lang==="en"?<>Tap the <strong style={{color:"#60a5fa"}}>Share button</strong> ⬆️ at the bottom of Safari</>:<>Tape le <strong style={{color:"#60a5fa"}}>bouton Partager</strong> ⬆️ en bas de Safari</>}</div>
+                  <div style={{marginBottom:6}}><strong style={{color:G.white}}>2.</strong> {lang==="en"?<>Scroll down and tap <strong style={{color:"#FFD600"}}>"Add to Home Screen"</strong></>:<>Descend et tape <strong style={{color:"#FFD600"}}>"Sur l'écran d'accueil"</strong></>}</div>
+                  <div><strong style={{color:G.white}}>3.</strong> {lang==="en"?<>Confirm by tapping <strong style={{color:"#00E676"}}>"Add"</strong></>:<>Confirme en tapant <strong style={{color:"#00E676"}}>"Ajouter"</strong></>}</div>
+                </div>
+              </div>
+            ) : deferredInstall ? (
+              <button onClick={async function(){
+                try {
+                  deferredInstall.prompt();
+                  const choice = await deferredInstall.userChoice;
+                  if (choice.outcome === "accepted") {
+                    setShowInstallPrompt(false);
+                    setDeferredInstall(null);
+                  }
+                } catch(e) {}
+              }} style={{width:"100%",padding:"16px",background:"linear-gradient(135deg,#00E676,#00A855)",color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:16,fontWeight:800,letterSpacing:1,boxShadow:"0 8px 24px rgba(0,230,118,.5)",display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:10}}>
+                ⬇ {lang==="en"?"INSTALL NOW":"INSTALLER MAINTENANT"}
+              </button>
+            ) : (
+              <div style={{background:"linear-gradient(135deg, rgba(0,230,118,.12), rgba(255,214,0,.08))",border:"1px solid rgba(0,230,118,.3)",borderRadius:16,padding:"14px 16px",marginBottom:20}}>
+                <div style={{fontSize:11,fontWeight:800,letterSpacing:2,color:"#00E676",textTransform:"uppercase",marginBottom:10,textAlign:"center"}}>
+                  {lang==="en"?"📱 On your device":"📱 Sur ton appareil"}
+                </div>
+                <div style={{fontSize:13,color:"rgba(255,255,255,.85)",lineHeight:1.6}}>
+                  {lang==="en"?"Look for the menu (⋮) in your browser, then tap \"Install app\" or \"Add to Home Screen\"":"Ouvre le menu (⋮) de ton navigateur, puis tape \"Installer l'application\" ou \"Ajouter à l'écran d'accueil\""}
+                </div>
+              </div>
+            )}
+
+            {/* Dismiss */}
+            <button onClick={()=>{ setShowInstallPrompt(false); try{localStorage.setItem("bb_install_dismissed", String(Date.now()));}catch{} }} style={{width:"100%",padding:"12px",background:"transparent",color:"rgba(255,255,255,.5)",border:"1px solid rgba(255,255,255,.15)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:600}}>
+              {lang==="en"?"Maybe later":"Plus tard"}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  })();
+
   // ── NOTIFICATION PROMPT ──
   const notifPrompt = showNotifPrompt && !notifGranted && (
     <div style={{position:"fixed",bottom:20,left:16,right:16,zIndex:500,animation:"fadeUp .4s ease"}}>
@@ -3856,7 +4058,14 @@ export default function LePont() {
             const ok = await requestNotifPermission();
             setNotifGranted(ok);
             setShowNotifPrompt(false);
-            if(ok) scheduleNextNotif();
+            if (ok) {
+              scheduleNextNotif();
+              // S'abonner aux vraies push notifications (visible même app fermée)
+              if (playerId && pseudoConfirmed) {
+                const subscribed = await subscribeToPush(playerId, sbFetch);
+                setPushSubscribed(subscribed);
+              }
+            }
           }} style={{flex:2,padding:"11px",background:"#16a34a",color:G.white,border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:800}}>
             {lang==="en"?"✓ Yes, enable!":"✓ Oui, active !"}
           </button>
@@ -5415,6 +5624,7 @@ export default function LePont() {
     <div style={{...shell,animation:"fadeUp .5s ease",overflow:"auto"}} key="home">
       {pseudoModal}
       {streakModal}
+      {installPrompt}
       {showDuelCreate && (
         <div style={{position:"fixed",inset:0,zIndex:300,background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center"}}>
           <div style={{background:"rgba(15,25,15,.95)",borderRadius:24,padding:"28px 24px",maxWidth:340,width:"calc(100% - 32px)",border:"1px solid rgba(255,255,255,.1)"}}>
