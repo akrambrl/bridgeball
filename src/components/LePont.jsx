@@ -760,6 +760,48 @@ function pickResultMessage(arr, seed) {
 const DB = buildPontDB();
 
 // ── DAILY CHALLENGE ──
+// Clubs de chaque grande ligue pour le défi du jour thématique
+const LEAGUE_CLUBS = {
+  L1: ["PSG", "Marseille", "Lyon", "Monaco", "Lille", "Rennes", "Nice", "Nantes", "Toulouse",
+       "Montpellier", "Reims", "Strasbourg", "Brest", "Metz", "Saint-Etienne", "Bordeaux",
+       "Le Havre", "Troyes", "Clermont", "Angers", "Auxerre", "Lens", "Nîmes", "Nancy", "Sochaux",
+       "Lorient", "Amiens", "Paris FC", "Bastia", "Guingamp", "Valenciennes", "Ajaccio", "Stade Brestois"],
+  PL: ["Manchester United", "Manchester City", "Liverpool", "Chelsea", "Arsenal", "Tottenham",
+       "Newcastle", "Everton", "Aston Villa", "West Ham", "Leicester City", "Brighton", "Brentford",
+       "Crystal Palace", "Fulham", "Nottingham Forest", "Bournemouth", "Wolverhampton", "Southampton",
+       "Leeds United", "Burnley", "Watford", "Norwich City", "Sheffield United", "Stoke", "Swansea",
+       "Sunderland", "West Brom"],
+  LIGA: ["Real Madrid", "Barcelona", "Atletico Madrid", "Sevilla", "Valencia", "Villarreal",
+         "Real Betis", "Real Sociedad", "Athletic Bilbao", "Celta Vigo", "Getafe", "Osasuna",
+         "Espanyol", "Girona", "Mallorca", "Las Palmas", "Cadiz", "Almeria", "Alavés", "Elche",
+         "Malaga", "Deportivo", "Real Zaragoza", "Real Mallorca", "Levante", "Granada"],
+  SERIEA: ["Juventus", "AC Milan", "Inter Milan", "Napoli", "Roma", "Lazio", "Atalanta", "Fiorentina",
+           "Torino", "Bologna", "Sassuolo", "Udinese", "Genoa", "Sampdoria", "Hellas Verona", "Cagliari",
+           "Lecce", "Monza", "Spezia", "Parma", "Palermo", "Empoli", "Salernitana", "Chievo",
+           "Brescia", "Benevento", "Bari", "Pisa"],
+  BUNDESLIGA: ["Bayern Munich", "Borussia Dortmund", "Bayer Leverkusen", "RB Leipzig", "Stuttgart",
+               "Eintracht Frankfurt", "Wolfsburg", "Borussia Monchengladbach", "Hoffenheim", "Mainz",
+               "Schalke 04", "Hamburg", "Hertha Berlin", "Union Berlin", "Freiburg", "Augsburg",
+               "FC Cologne", "Werder Bremen", "Nuremberg"],
+};
+
+// Thèmes par jour de la semaine (0=dim, 1=lun, ... 6=sam)
+const DAILY_THEMES = {
+  1: { id:"L1",         flag:"🇫🇷", labelFr:"LUNDI LIGUE 1",       labelEn:"MONDAY LIGUE 1",       color:"#1B2C5C", filter:"L1" },
+  2: { id:"PL",         flag:"🏴󠁧󠁢󠁥󠁮󠁧󠁿", labelFr:"MARDI PREMIER LEAGUE", labelEn:"TUESDAY PREMIER LEAGUE", color:"#3D195B", filter:"PL" },
+  3: { id:"LIGA",       flag:"🇪🇸", labelFr:"MERCREDI LA LIGA",     labelEn:"WEDNESDAY LA LIGA",     color:"#C8102E", filter:"LIGA" },
+  4: { id:"SERIEA",     flag:"🇮🇹", labelFr:"JEUDI SERIE A",        labelEn:"THURSDAY SERIE A",      color:"#008C45", filter:"SERIEA" },
+  5: { id:"BUNDESLIGA", flag:"🇩🇪", labelFr:"VENDREDI BUNDESLIGA",  labelEn:"FRIDAY BUNDESLIGA",     color:"#D4AF37", filter:"BUNDESLIGA" },
+  6: { id:"LEGEND",     flag:"🐐", labelFr:"SAMEDI LÉGENDE",        labelEn:"SATURDAY LEGEND",        color:"#FFD700", filter:"LEGEND" },
+  0: { id:"JOKER",      flag:"🎲", labelFr:"DIMANCHE JOKER",        labelEn:"SUNDAY JOKER",           color:"#00E676", filter:"JOKER" },
+};
+
+function getTodayTheme() {
+  const d = new Date();
+  const paris = new Date(d.toLocaleString('en-US',{timeZone:'Europe/Paris'}));
+  return DAILY_THEMES[paris.getDay()];
+}
+
 function getDailyPlayer() {
   const today = (()=>{ const d=new Date(); const paris=new Date(d.toLocaleString('en-US',{timeZone:'Europe/Paris'})); return paris.getFullYear()+'-'+String(paris.getMonth()+1).padStart(2,'0')+'-'+String(paris.getDate()).padStart(2,'0'); })();
   let hash = 0;
@@ -768,7 +810,27 @@ function getDailyPlayer() {
     hash |= 0;
   }
   hash = Math.abs(hash);
-  const pool = PLAYERS_CLEAN.filter(function(p){ return p.clubs && p.clubs.length >= 2; });
+
+  // Filtrer selon le thème du jour
+  const theme = getTodayTheme();
+  const basePool = PLAYERS_CLEAN.filter(function(p){ return p.clubs && p.clubs.length >= 2; });
+  let pool = basePool;
+
+  if (theme.filter === "LEGEND") {
+    // Samedi : uniquement joueurs retirés (légendes)
+    pool = basePool.filter(p => isRetiredPlayer(p.name));
+  } else if (theme.filter === "JOKER") {
+    // Dimanche : tout le pool
+    pool = basePool;
+  } else {
+    // Ligue spécifique : joueurs qui ont joué dans au moins un club de cette ligue
+    const leagueClubs = new Set(LEAGUE_CLUBS[theme.filter] || []);
+    pool = basePool.filter(p => p.clubs.some(c => leagueClubs.has(c)));
+  }
+
+  // Fallback si la ligue est trop petite (ne devrait pas arriver avec 200+ joueurs/ligue)
+  if (pool.length < 10) pool = basePool;
+
   if (pool.length === 0) return null;
   return pool[hash % pool.length];
 }
@@ -5219,6 +5281,18 @@ export default function LePont() {
             </div>
             {/* Contenu */}
             <div style={{...sheet,borderRadius:"28px 28px 0 0",marginTop:20,zIndex:1,flex:1,justifyContent:"flex-start",overflowY:"auto",paddingTop:20,paddingBottom:40,background:"linear-gradient(180deg, rgba(255,214,0,.08) 0%, rgba(10,20,10,.92) 60%)",backdropFilter:"blur(10px)"}}>
+              {/* Theme banner (jour de la semaine) */}
+              {(() => {
+                const theme = getTodayTheme();
+                return (
+                  <div style={{textAlign:"center",marginBottom:12,padding:"8px 16px",background:`linear-gradient(135deg, ${theme.color}33, ${theme.color}11)`,border:`1px solid ${theme.color}66`,borderRadius:14,display:"inline-block",alignSelf:"center",margin:"0 auto 12px"}}>
+                    <div style={{fontSize:22,marginBottom:2}}>{theme.flag}</div>
+                    <div style={{fontSize:11,fontWeight:800,letterSpacing:2,color:G.white,textTransform:"uppercase"}}>
+                      {lang==="en"?theme.labelEn:theme.labelFr}
+                    </div>
+                  </div>
+                );
+              })()}
               {/* Clubs */}
               <div>
                 <div style={{textAlign:"center",marginBottom:8}}>
