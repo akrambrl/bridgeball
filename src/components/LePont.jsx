@@ -788,7 +788,7 @@ const LEAGUE_CLUBS = {
 // Thèmes par jour de la semaine (0=dim, 1=lun, ... 6=sam)
 const DAILY_THEMES = {
   1: { id:"L1",         flag:"🇫🇷", labelFr:"LUNDI LIGUE 1",       labelEn:"MONDAY LIGUE 1",       color:"#1B2C5C", filter:"L1" },
-  2: { id:"PL",         flag:"🏴󠁧󠁢󠁥󠁮󠁧󠁿", labelFr:"MARDI PREMIER LEAGUE", labelEn:"TUESDAY PREMIER LEAGUE", color:"#3D195B", filter:"PL" },
+  2: { id:"PL",         flag:"🇬🇧", labelFr:"MARDI PREMIER LEAGUE", labelEn:"TUESDAY PREMIER LEAGUE", color:"#3D195B", filter:"PL" },
   3: { id:"LIGA",       flag:"🇪🇸", labelFr:"MERCREDI LA LIGA",     labelEn:"WEDNESDAY LA LIGA",     color:"#C8102E", filter:"LIGA" },
   4: { id:"SERIEA",     flag:"🇮🇹", labelFr:"JEUDI SERIE A",        labelEn:"THURSDAY SERIE A",      color:"#008C45", filter:"SERIEA" },
   5: { id:"BUNDESLIGA", flag:"🇩🇪", labelFr:"VENDREDI BUNDESLIGA",  labelEn:"FRIDAY BUNDESLIGA",     color:"#D4AF37", filter:"BUNDESLIGA" },
