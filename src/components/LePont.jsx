@@ -3489,32 +3489,128 @@ export default function LePont() {
     );
   };
 
-  const instructionsPopup = showInstructions&&(
-    <div style={{position:"fixed",inset:0,zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,.6)",backdropFilter:"blur(6px)",animation:"fadeIn .2s ease"}}>
-      <div style={{background:G.white,borderRadius:28,padding:"32px 24px",maxWidth:360,width:"calc(100% - 40px)",animation:"popIn .3s ease",textAlign:"center"}}>
-        <div style={{marginBottom:12,display:"flex",justifyContent:"center"}}>{showInstructions==="pont"?Icon.pitch(52,G.dark):Icon.transfer(52,G.dark)}</div>
-        <div style={{fontFamily:G.heading,fontSize:32,color:G.dark,letterSpacing:2,marginBottom:16}}>
-          {showInstructions==="pont"?"THE PLUG":"THE MERCATO"}
+  const instructionsPopup = showInstructions&&(() => {
+    const isPont = showInstructions==="pont";
+    const accentColor = isPont ? "#FFD600" : "#60a5fa";
+    const accentSecondary = isPont ? "#FF6B35" : "#3b82f6";
+    return (
+      <div onClick={dismissInstructions} style={{position:"fixed",inset:0,zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:"20px",background:"rgba(0,0,0,.75)",backdropFilter:"blur(12px)",animation:"fadeIn .25s ease",cursor:"pointer"}}>
+        <div onClick={(e)=>e.stopPropagation()} style={{position:"relative",borderRadius:28,maxWidth:380,width:"100%",overflow:"hidden",animation:"popIn .4s cubic-bezier(.34,1.56,.64,1)",cursor:"default",boxShadow:`0 30px 80px rgba(0,0,0,.6), 0 0 0 1px ${accentColor}33, 0 0 60px ${accentColor}22`}}>
+          {/* Fond pelouse */}
+          <div style={{position:"absolute",inset:0,zIndex:0,overflow:"hidden"}}>
+            {[0,1,2,3,4,5,6].map(i => (
+              <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#1E5C2A":"#276B34"}}/>
+            ))}
+            <div style={{position:"absolute",inset:0,background:`linear-gradient(180deg, ${accentColor}25 0%, rgba(10,20,10,.88) 50%, rgba(10,20,10,.95) 100%)`}}/>
+            <div style={{position:"absolute",top:-60,left:-60,width:240,height:240,borderRadius:"50%",background:`radial-gradient(circle, ${accentColor}40 0%, transparent 70%)`,filter:"blur(30px)"}}/>
+            <div style={{position:"absolute",top:-40,right:-40,width:200,height:200,borderRadius:"50%",background:`radial-gradient(circle, ${accentSecondary}30 0%, transparent 70%)`,filter:"blur(30px)"}}/>
+          </div>
+
+          {/* Close button */}
+          <button onClick={dismissInstructions} style={{position:"absolute",top:14,right:14,zIndex:2,width:32,height:32,borderRadius:"50%",background:"rgba(255,255,255,.1)",border:"1px solid rgba(255,255,255,.15)",color:G.white,fontSize:16,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(10px)"}}>✕</button>
+
+          {/* Content */}
+          <div style={{position:"relative",zIndex:1,padding:"32px 26px 26px"}}>
+            {/* Icon */}
+            <div style={{display:"flex",justifyContent:"center",marginBottom:14}}>
+              <div style={{width:72,height:72,borderRadius:"50%",background:`linear-gradient(135deg, ${accentColor}, ${accentSecondary})`,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:`0 8px 24px ${accentColor}66`}}>
+                {isPont ? Icon.pitch(36,"#000") : Icon.transfer(36,"#000")}
+              </div>
+            </div>
+
+            {/* Title */}
+            <div style={{fontFamily:G.heading,fontSize:34,color:G.white,letterSpacing:3,textAlign:"center",marginBottom:4,textShadow:`0 2px 12px ${accentColor}66`}}>
+              {isPont?"THE PLUG":"THE MERCATO"}
+            </div>
+            <div style={{fontSize:11,letterSpacing:3,color:accentColor,textTransform:"uppercase",fontWeight:800,textAlign:"center",marginBottom:22}}>
+              {isPont ? (lang==="en"?"Connect the clubs":"Relie les clubs") : (lang==="en"?"Endless chain":"Chaîne infinie")}
+            </div>
+
+            {/* Rules cards */}
+            {isPont ? (
+              <>
+                <div style={{background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.1)",borderRadius:16,padding:"14px 16px",marginBottom:12,backdropFilter:"blur(10px)"}}>
+                  <div style={{display:"flex",alignItems:"flex-start",gap:12}}>
+                    <div style={{fontSize:22}}>🎯</div>
+                    <div style={{flex:1,fontSize:14,color:"rgba(255,255,255,.9)",lineHeight:1.5}}>
+                      {lang==="en"?<>Two clubs appear. Name <strong style={{color:accentColor}}>a player</strong> who played for both!</>:<>Deux clubs s'affichent. Nomme <strong style={{color:accentColor}}>un joueur</strong> qui a joué dans les deux !</>}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Points card */}
+                <div style={{background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.1)",borderRadius:16,padding:"14px 16px",marginBottom:12,backdropFilter:"blur(10px)"}}>
+                  <div style={{fontSize:10,fontWeight:800,letterSpacing:2,color:"rgba(255,255,255,.4)",textTransform:"uppercase",marginBottom:10,textAlign:"center"}}>{lang==="en"?"POINTS":"POINTS"}</div>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
+                    <div style={{textAlign:"center",padding:"8px 6px",background:"rgba(0,230,118,.1)",borderRadius:10,border:"1px solid rgba(0,230,118,.25)"}}>
+                      <div style={{fontSize:20,marginBottom:2}}>✓</div>
+                      <div style={{fontSize:13,fontWeight:800,color:"#00E676"}}>+10/20/30</div>
+                      <div style={{fontSize:9,color:"rgba(255,255,255,.5)",marginTop:2}}>{lang==="en"?"correct":"bonne"}</div>
+                    </div>
+                    <div style={{textAlign:"center",padding:"8px 6px",background:"rgba(255,61,87,.1)",borderRadius:10,border:"1px solid rgba(255,61,87,.25)"}}>
+                      <div style={{fontSize:20,marginBottom:2}}>✗</div>
+                      <div style={{fontSize:13,fontWeight:800,color:"#FF3D57"}}>−5</div>
+                      <div style={{fontSize:9,color:"rgba(255,255,255,.5)",marginTop:2}}>{lang==="en"?"wrong":"mauvaise"}</div>
+                    </div>
+                    <div style={{textAlign:"center",padding:"8px 6px",background:"rgba(251,226,22,.08)",borderRadius:10,border:"1px solid rgba(251,226,22,.2)"}}>
+                      <div style={{fontSize:20,marginBottom:2}}>→</div>
+                      <div style={{fontSize:13,fontWeight:800,color:"#FBE216"}}>−10</div>
+                      <div style={{fontSize:9,color:"rgba(255,255,255,.5)",marginTop:2}}>{lang==="en"?"skip":"passer"}</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Combo card */}
+                <div style={{background:`linear-gradient(135deg, ${accentColor}14, ${accentSecondary}10)`,border:`1px solid ${accentColor}33`,borderRadius:16,padding:"12px 16px",marginBottom:20}}>
+                  <div style={{display:"flex",alignItems:"center",gap:10}}>
+                    <div style={{fontSize:22}}>🔥</div>
+                    <div style={{flex:1,fontSize:13,color:"rgba(255,255,255,.85)",lineHeight:1.4}}>
+                      <strong style={{color:accentColor}}>{lang==="en"?"Combo bonus":"Bonus combo"} :</strong> {lang==="en"?"+10 (×3), +20 (×5), +30 (×10)":"+10 (×3), +20 (×5), +30 (×10)"}<br/>
+                      <span style={{fontSize:11,color:"rgba(255,255,255,.5)"}}>{lang==="en"?"Answer fast to chain!":"Réponds vite pour enchaîner !"}</span>
+                    </div>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div style={{background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.1)",borderRadius:16,padding:"14px 16px",marginBottom:12,backdropFilter:"blur(10px)"}}>
+                  <div style={{display:"flex",alignItems:"flex-start",gap:12}}>
+                    <div style={{fontSize:22}}>⛓️</div>
+                    <div style={{flex:1,fontSize:14,color:"rgba(255,255,255,.9)",lineHeight:1.5}}>
+                      {lang==="en"?<>A player appears → name <strong style={{color:accentColor}}>a club</strong> they played for → a new player from that club → and so on!</>:<>Un joueur apparaît → nomme <strong style={{color:accentColor}}>un club</strong> où il a joué → un nouveau joueur de ce club → et ainsi de suite !</>}
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.1)",borderRadius:16,padding:"14px 16px",marginBottom:12,backdropFilter:"blur(10px)"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:12}}>
+                    <div style={{fontSize:20}}>⚠️</div>
+                    <div style={{flex:1,fontSize:13,color:"rgba(255,255,255,.85)",lineHeight:1.4}}>
+                      <strong style={{color:accentColor}}>{lang==="en"?"One rule":"Une règle"} :</strong> {lang==="en"?"each club can only be named once.":"un club ne peut être cité qu'une seule fois."}
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{background:`linear-gradient(135deg, ${accentColor}14, ${accentSecondary}10)`,border:`1px solid ${accentColor}33`,borderRadius:16,padding:"12px 16px",marginBottom:20}}>
+                  <div style={{display:"flex",alignItems:"center",gap:10}}>
+                    <div style={{fontSize:20}}>💡</div>
+                    <div style={{flex:1,fontSize:12,color:"rgba(255,255,255,.75)",lineHeight:1.4}}>
+                      {lang==="en"?"Abbreviations accepted: PSG, Barça, Juve...":"Abréviations acceptées : PSG, Barça, Juve..."}
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* CTA Button */}
+            <button onClick={dismissInstructions} style={{width:"100%",padding:"16px",background:`linear-gradient(135deg, ${accentColor}, ${accentSecondary})`,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:16,fontWeight:800,letterSpacing:1,boxShadow:`0 8px 24px ${accentColor}55`,display:"flex",alignItems:"center",justifyContent:"center",gap:8,transition:"transform .15s"}} onMouseDown={(e)=>e.currentTarget.style.transform="scale(.97)"} onMouseUp={(e)=>e.currentTarget.style.transform="scale(1)"} onMouseLeave={(e)=>e.currentTarget.style.transform="scale(1)"}>
+              {lang==="en"?"LET'S GO":"C'EST PARTI"} →
+            </button>
+          </div>
         </div>
-        {showInstructions==="pont"?(
-          <div style={{fontSize:14,color:"#555",lineHeight:1.8,marginBottom:20}}>
-            {lang==="en"?<>Two clubs appear. Find <strong>a player</strong> who played for both!<br/><br/></>:<>Deux clubs s'affichent. Trouve <strong>un joueur</strong> qui a joué dans les deux !<br/><br/></>}
-            <span style={{color:"#16a34a",fontWeight:800}}>✓ +10 à +30</span> {lang==="en"?"correct":"bonne réponse"} &nbsp;·&nbsp; <span style={{color:G.red,fontWeight:800}}>✗ −5</span> {lang==="en"?"wrong":"mauvaise"} &nbsp;·&nbsp; <span style={{color:"#aaa",fontWeight:800}}>→ −10</span> {lang==="en"?"skip":"passer"}<br/><br/>
-            <span style={{fontSize:12,color:"#999"}}>🔥 {lang==="en"?"Answer fast to trigger combos!":"Réponds vite pour activer les combos !"}</span>
-          </div>
-        ):(
-          <div style={{fontSize:14,color:"#555",lineHeight:1.8,marginBottom:20}}>
-            {lang==="en"?<>A player appears → give a <strong>club</strong> they played for → a new player from that club → and so on!<br/><br/></>:<>Un joueur apparaît → donne un <strong>club</strong> où il a joué → un nouveau joueur de ce club → et ainsi de suite !<br/><br/></>}
-            <strong>{lang==="en"?"Each club can only be named once.":"Un club ne peut être cité qu'une seule fois."}</strong><br/>
-            <span style={{fontSize:12,color:"#999"}}>{lang==="en"?"Abbreviations accepted (PSG, Barça, Juve...)":"Abréviations acceptées (PSG, Barça, Juve...)"}</span>
-          </div>
-        )}
-        <button onClick={dismissInstructions} style={{width:"100%",padding:"16px",background:G.dark,color:G.white,border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:16,fontWeight:800,letterSpacing:1}}>
-          C'est parti ! →
-        </button>
       </div>
-    </div>
-  );
+    );
+  })();
 
 
   // ── NOTIFICATION PROMPT ──
