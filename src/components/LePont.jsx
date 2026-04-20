@@ -1303,6 +1303,9 @@ if(typeof document!=="undefined"&&!document.getElementById("bb-css")){
     @keyframes slideInRight{from{opacity:0;transform:translateX(80px) translateY(20px)}to{opacity:1;transform:translateX(0) translateY(0)}}
     @keyframes confettiFall{0%{transform:translateY(-100vh) rotate(0deg);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
     @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+    @keyframes pulseStreak{0%,100%{transform:scale(1)}50%{transform:scale(1.18);filter:brightness(1.3)}}
+    @keyframes dangerPulse{0%,100%{transform:scale(1);box-shadow:0 4px 14px rgba(255,61,87,.55)}50%{transform:scale(1.08);box-shadow:0 6px 20px rgba(255,61,87,.85)}}
+    @keyframes flameGlow{0%,100%{filter:drop-shadow(0 0 4px #FF6B3588)}50%{filter:drop-shadow(0 0 16px #FFD600DD) drop-shadow(0 0 8px #FF6B35)}}
     @keyframes clubSlideLeft{0%{opacity:0;transform:translateX(-110%) scale(.88)}65%{transform:translateX(4%) scale(1.02)}100%{opacity:1;transform:translateX(0) scale(1)}}
     @keyframes clubSlideRight{0%{opacity:0;transform:translateX(110%) scale(.88)}65%{transform:translateX(-4%) scale(1.02)}100%{opacity:1;transform:translateX(0) scale(1)}}
     @keyframes vsAppear{0%{opacity:0;transform:scale(0) rotate(-15deg)}65%{transform:scale(1.25) rotate(4deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
@@ -1492,12 +1495,40 @@ export default function LePont() {
   const [dayStreak, setDayStreak] = useState(() => {
     try {
       const s = JSON.parse(localStorage.getItem("bb_day_streak")||"{}");
-      const today = (()=>{ const d=new Date(); const paris=new Date(d.toLocaleString('en-US',{timeZone:'Europe/Paris'})); return paris.getFullYear()+'-'+String(paris.getMonth()+1).padStart(2,'0')+'-'+String(paris.getDate()).padStart(2,'0'); })();
-      const yesterday = new Date(Date.now()-86400000).toISOString().slice(0,10);
+      if (!s.lastDate) return 0;
+      // On affiche la streak si lastDate == aujourd'hui OU hier (pas encore perdue)
+      const d = new Date();
+      const paris = new Date(d.toLocaleString('en-US',{timeZone:'Europe/Paris'}));
+      const today = paris.getFullYear()+'-'+String(paris.getMonth()+1).padStart(2,'0')+'-'+String(paris.getDate()).padStart(2,'0');
+      paris.setDate(paris.getDate()-1);
+      const yesterday = paris.getFullYear()+'-'+String(paris.getMonth()+1).padStart(2,'0')+'-'+String(paris.getDate()).padStart(2,'0');
       if (s.lastDate === today || s.lastDate === yesterday) return s.count || 0;
       return 0;
     } catch { return 0; }
   });
+  const [streakBest, setStreakBest] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("bb_day_streak")||"{}").best || 0; } catch { return 0; }
+  });
+  const [streakFreezes, setStreakFreezes] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("bb_day_streak")||"{}").freezes || 0; } catch { return 0; }
+  });
+  const [streakJustIncreased, setStreakJustIncreased] = useState(false);
+
+  // Détection : la streak est-elle en danger (doit jouer aujourd'hui avant minuit) ?
+  // Elle est en danger si : streak > 0, pas joué aujourd'hui, il est plus de 18h à Paris
+  const streakInDanger = (() => {
+    if (dayStreak === 0) return false;
+    try {
+      const s = JSON.parse(localStorage.getItem("bb_day_streak")||"{}");
+      const today = todayParis();
+      if (s.lastDate === today) return false; // déjà joué aujourd'hui
+      const now = new Date();
+      const paris = new Date(now.toLocaleString('en-US',{timeZone:'Europe/Paris'}));
+      return paris.getHours() >= 18;
+    } catch { return false; }
+  })();
+  const [streakUsedFreeze, setStreakUsedFreeze] = useState(false);
+  const [showStreakDetail, setShowStreakDetail] = useState(false);
   const [lbDiff, setLbDiff] = useState("facile");
   const [playerName, setPlayerName] = useState("");
   const [showInstructions, setShowInstructions] = useState(null);
@@ -1693,6 +1724,30 @@ export default function LePont() {
           setPseudoConfirmed(true);
           // Charger XP cumulé depuis Supabase (0 si colonne vide ou pas encore créée)
           if (typeof mine[0].xp === "number") setPlayerXp(mine[0].xp);
+          // Charger streak Supabase et réconcilier avec localStorage (le plus élevé gagne)
+          try {
+            const localS = JSON.parse(localStorage.getItem("bb_day_streak")||"{}");
+            const remote = {
+              count: mine[0].streak_count || 0,
+              lastDate: mine[0].streak_last_date || null,
+              best: mine[0].streak_best || 0,
+              freezes: mine[0].streak_freezes || 0
+            };
+            // Prendre la source qui a la date la plus récente
+            let winner;
+            if (!localS.lastDate && !remote.lastDate) winner = null;
+            else if (!localS.lastDate) winner = remote;
+            else if (!remote.lastDate) winner = localS;
+            else winner = (remote.lastDate >= localS.lastDate) ? remote : localS;
+            if (winner) {
+              // Le "best" est toujours le max des deux
+              winner.best = Math.max(localS.best||0, remote.best||0, winner.count||0);
+              localStorage.setItem("bb_day_streak", JSON.stringify(winner));
+              setDayStreak(winner.count||0);
+              setStreakBest(winner.best||0);
+              setStreakFreezes(winner.freezes||0);
+            }
+          } catch(e){}
         } else {
           const saved = localStorage.getItem("bb_name");
           if (saved && saved.trim().length >= 2) setPlayerName(saved);
@@ -3103,16 +3158,97 @@ export default function LePont() {
     startRound(1);
   }
 
-  function updateDayStreak() {
+  // Helper : date au format YYYY-MM-DD en timezone Europe/Paris
+  function todayParis() {
+    const d = new Date();
+    const paris = new Date(d.toLocaleString('en-US',{timeZone:'Europe/Paris'}));
+    return paris.getFullYear()+'-'+String(paris.getMonth()+1).padStart(2,'0')+'-'+String(paris.getDate()).padStart(2,'0');
+  }
+  // Helper : hier en timezone Europe/Paris (fix du bug UTC)
+  function yesterdayParis() {
+    const d = new Date();
+    const paris = new Date(d.toLocaleString('en-US',{timeZone:'Europe/Paris'}));
+    paris.setDate(paris.getDate() - 1);
+    return paris.getFullYear()+'-'+String(paris.getMonth()+1).padStart(2,'0')+'-'+String(paris.getDate()).padStart(2,'0');
+  }
+  // Helper : nombre de jours entre 2 dates YYYY-MM-DD
+  function daysBetween(d1, d2) {
+    const a = new Date(d1+'T00:00:00');
+    const b = new Date(d2+'T00:00:00');
+    return Math.round((b - a) / 86400000);
+  }
+
+  async function updateDayStreak() {
     try {
-      const today = (()=>{ const d=new Date(); const paris=new Date(d.toLocaleString('en-US',{timeZone:'Europe/Paris'})); return paris.getFullYear()+'-'+String(paris.getMonth()+1).padStart(2,'0')+'-'+String(paris.getDate()).padStart(2,'0'); })();
+      const today = todayParis();
+      const yesterday = yesterdayParis();
       const s = JSON.parse(localStorage.getItem("bb_day_streak")||"{}");
-      if (s.lastDate === today) return; // déjà compté aujourd'hui
-      const yesterday = new Date(Date.now()-86400000).toISOString().slice(0,10);
-      const newCount = s.lastDate === yesterday ? (s.count||0) + 1 : 1;
-      const updated = { count: newCount, lastDate: today };
+
+      // Déjà compté aujourd'hui : on ne fait rien mais on met à jour l'UI au cas où
+      if (s.lastDate === today) {
+        setDayStreak(s.count||0);
+        setStreakBest(s.best||s.count||0);
+        setStreakFreezes(s.freezes||0);
+        return;
+      }
+
+      let newCount, newFreezes = s.freezes || 0, usedFreeze = false;
+
+      if (!s.lastDate) {
+        // Premier jour de streak
+        newCount = 1;
+      } else if (s.lastDate === yesterday) {
+        // Continuité normale : +1 jour
+        newCount = (s.count || 0) + 1;
+      } else {
+        // Un ou plusieurs jours sautés. On vérifie les freezes.
+        const gap = daysBetween(s.lastDate, today);
+        if (gap === 2 && newFreezes > 0) {
+          // 1 jour raté, on utilise 1 freeze, streak continue
+          newCount = (s.count || 0) + 1;
+          newFreezes -= 1;
+          usedFreeze = true;
+        } else {
+          // Trop de jours ratés ou pas de freeze → reset
+          newCount = 1;
+        }
+      }
+
+      // Un freeze gagné tous les 7 jours de streak (max 3 en stock)
+      if (newCount > 0 && newCount % 7 === 0 && newFreezes < 3) {
+        newFreezes += 1;
+      }
+
+      const newBest = Math.max(s.best || 0, newCount);
+      const updated = { count: newCount, lastDate: today, best: newBest, freezes: newFreezes };
       localStorage.setItem("bb_day_streak", JSON.stringify(updated));
+
+      // Détecter si c'est une augmentation pour déclencher l'animation
+      const wasIncrement = newCount > (s.count || 0);
       setDayStreak(newCount);
+      setStreakBest(newBest);
+      setStreakFreezes(newFreezes);
+      if (wasIncrement && newCount > 1) {
+        setStreakJustIncreased(true);
+        if (usedFreeze) setStreakUsedFreeze(true);
+        setTimeout(() => { setStreakJustIncreased(false); setStreakUsedFreeze(false); }, 4000);
+      }
+
+      // Sync Supabase (fire-and-forget, ne bloque pas)
+      if (playerId && pseudoConfirmed) {
+        try {
+          await sbFetch("bb_pseudos?player_id=eq." + playerId, {
+            method: "PATCH",
+            headers: { "Content-Type":"application/json", "Prefer":"return=minimal" },
+            body: JSON.stringify({
+              streak_count: newCount,
+              streak_last_date: today,
+              streak_best: newBest,
+              streak_freezes: newFreezes
+            })
+          });
+        } catch(e) { /* silencieux */ }
+      }
     } catch(e){}
   }
 
@@ -3651,6 +3787,61 @@ export default function LePont() {
           <div style={{fontSize:11,color:"rgba(255,255,255,.8)",marginTop:1}}>{lang==="en"?"It's been 24h+ — your record awaits!":"Ça fait +24h — ton record t'attend !"}</div>
         </div>
         <button onClick={()=>setWasAway(false)} style={{background:"rgba(255,255,255,.2)",border:"none",borderRadius:20,width:26,height:26,cursor:"pointer",color:G.white,fontSize:14,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+      </div>
+    </div>
+  );
+
+  // ── STREAK DETAIL MODAL ──
+  const streakModal = showStreakDetail && (
+    <div key="streak-modal" onClick={()=>setShowStreakDetail(false)} style={{position:"fixed",inset:0,zIndex:9999,background:"rgba(0,0,0,.85)",display:"flex",alignItems:"center",justifyContent:"center",padding:"20px",animation:"fadeIn .2s ease",backdropFilter:"blur(12px)"}}>
+      <div onClick={(e)=>e.stopPropagation()} style={{position:"relative",borderRadius:28,maxWidth:380,width:"100%",overflow:"hidden",animation:"popIn .4s cubic-bezier(.34,1.56,.64,1)",boxShadow:"0 30px 80px rgba(0,0,0,.6), 0 0 0 1px rgba(255,107,53,.3), 0 0 60px rgba(255,107,53,.22)"}}>
+        {/* Fond dégradé feu */}
+        <div style={{position:"absolute",inset:0,zIndex:0,overflow:"hidden"}}>
+          <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, #1a0f06 0%, #0d1f0d 70%)"}}/>
+          <div style={{position:"absolute",top:-80,left:-60,width:280,height:280,borderRadius:"50%",background:"radial-gradient(circle, rgba(255,214,0,.35) 0%, transparent 70%)",filter:"blur(40px)"}}/>
+          <div style={{position:"absolute",top:-60,right:-40,width:240,height:240,borderRadius:"50%",background:"radial-gradient(circle, rgba(255,107,53,.4) 0%, transparent 70%)",filter:"blur(40px)"}}/>
+        </div>
+        {/* Close button */}
+        <button onClick={()=>setShowStreakDetail(false)} style={{position:"absolute",top:14,right:14,zIndex:2,width:32,height:32,borderRadius:"50%",background:"rgba(255,255,255,.1)",border:"1px solid rgba(255,255,255,.15)",color:G.white,fontSize:16,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(10px)"}}>✕</button>
+        <div style={{position:"relative",zIndex:1,padding:"32px 26px 28px",textAlign:"center"}}>
+          {/* Flame emoji with glow */}
+          <div style={{fontSize:82,animation:dayStreak>=7?"flameGlow 2s ease-in-out infinite":"none",marginBottom:4}}>🔥</div>
+          {/* Streak count - big */}
+          <div style={{fontFamily:G.heading,fontSize:"clamp(56px,16vw,72px)",color:dayStreak>=7?"#FFD600":"#FF6B35",letterSpacing:1,lineHeight:1,textShadow:dayStreak>=7?"0 0 24px rgba(255,214,0,.6)":"0 0 16px rgba(255,107,53,.5)"}}>{dayStreak}</div>
+          <div style={{fontSize:13,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.6)",fontWeight:800,marginTop:8,marginBottom:22}}>
+            {dayStreak<=1?(lang==="en"?"Day streak":"Jour de suite"):(lang==="en"?"Days in a row":"Jours de suite")}
+          </div>
+          {/* Stats */}
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:20}}>
+            <div style={{background:"rgba(255,214,0,.08)",border:"1px solid rgba(255,214,0,.25)",borderRadius:14,padding:"12px 10px"}}>
+              <div style={{fontSize:22,marginBottom:2}}>🏆</div>
+              <div style={{fontFamily:G.heading,fontSize:26,color:G.gold,lineHeight:1}}>{streakBest}</div>
+              <div style={{fontSize:10,letterSpacing:1.5,textTransform:"uppercase",color:"rgba(255,255,255,.5)",fontWeight:700,marginTop:4}}>{lang==="en"?"Best ever":"Record"}</div>
+            </div>
+            <div style={{background:"rgba(96,165,250,.08)",border:"1px solid rgba(96,165,250,.25)",borderRadius:14,padding:"12px 10px"}}>
+              <div style={{fontSize:22,marginBottom:2}}>❄️</div>
+              <div style={{fontFamily:G.heading,fontSize:26,color:"#60a5fa",lineHeight:1}}>{streakFreezes}</div>
+              <div style={{fontSize:10,letterSpacing:1.5,textTransform:"uppercase",color:"rgba(255,255,255,.5)",fontWeight:700,marginTop:4}}>{lang==="en"?"Freezes":"Rattrapages"}</div>
+            </div>
+          </div>
+          {/* Info text */}
+          <div style={{background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",borderRadius:14,padding:"14px 16px",textAlign:"left",marginBottom:8}}>
+            <div style={{fontSize:12,color:"rgba(255,255,255,.85)",lineHeight:1.6}}>
+              <strong style={{color:"#FFD600"}}>{lang==="en"?"🎯 How it works":"🎯 Comment ça marche"} :</strong><br/>
+              {lang==="en" ? <>
+                • Play at least 1 game each day to keep your streak 🔥<br/>
+                • Every 7 days, earn a <strong>❄️ Freeze</strong> (max 3)<br/>
+                • Miss a day? A freeze saves your streak!<br/>
+                • Day resets at midnight (Paris time)
+              </> : <>
+                • Joue au moins 1 partie chaque jour pour garder ta série 🔥<br/>
+                • Tous les 7 jours, gagne un <strong>❄️ Rattrapage</strong> (max 3)<br/>
+                • Raté un jour ? Un rattrapage sauve ta série !<br/>
+                • Le jour reset à minuit (heure de Paris)
+              </>}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -5091,6 +5282,7 @@ export default function LePont() {
   if(screen==="home") return (
     <div style={{...shell,animation:"fadeUp .5s ease",overflow:"auto"}} key="home">
       {pseudoModal}
+      {streakModal}
       {showDuelCreate && (
         <div style={{position:"fixed",inset:0,zIndex:300,background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center"}}>
           <div style={{background:"rgba(15,25,15,.95)",borderRadius:24,padding:"28px 24px",maxWidth:340,width:"calc(100% - 32px)",border:"1px solid rgba(255,255,255,.1)"}}>
@@ -5183,7 +5375,33 @@ export default function LePont() {
             </div>
           </div>
           <div style={{flex:1,display:"flex",justifyContent:"flex-end",alignItems:"center",gap:8}}>
-  
+  {dayStreak > 0 && (() => {
+    // Paliers visuels de streak
+    const tier = dayStreak >= 100 ? "platine" : dayStreak >= 30 ? "mythic" : dayStreak >= 7 ? "gold" : dayStreak >= 3 ? "bronze" : "base";
+    const tierStyles = {
+      base:    { bg:"linear-gradient(135deg,rgba(255,107,53,.25),rgba(255,214,0,.15))", border:"rgba(255,107,53,.5)", color:"#FFD600", shadow:"0 2px 8px rgba(255,107,53,.2)", textColor:"#FFD600", emoji:"🔥" },
+      bronze:  { bg:"linear-gradient(135deg,#D97706,#FBA94F)", border:"#FBA94F", color:"#000", shadow:"0 4px 14px rgba(217,119,6,.45)", textColor:"#000", emoji:"🔥" },
+      gold:    { bg:"linear-gradient(135deg,#FF6B35,#FFD600)", border:"#FFD600", color:"#000", shadow:"0 4px 14px rgba(255,107,53,.45)", textColor:"#000", emoji:"🔥" },
+      mythic:  { bg:"linear-gradient(135deg,#C084FC,#FFD600)", border:"#FFD600", color:"#000", shadow:"0 6px 18px rgba(192,132,252,.55)", textColor:"#000", emoji:"⚡" },
+      platine: { bg:"linear-gradient(135deg,#E5E4E2,#B6B6B6,#FFFFFF)", border:"#FFFFFF", color:"#000", shadow:"0 6px 20px rgba(255,255,255,.55)", textColor:"#000", emoji:"💎" }
+    };
+    const t = streakInDanger ? { bg:"linear-gradient(135deg,#FF3D57,#FF6B35)", border:"#FF3D57", shadow:"0 4px 14px rgba(255,61,87,.55)", textColor:"#fff", emoji:"⚠️" } : tierStyles[tier];
+    return (
+      <div onClick={()=>setShowStreakDetail(true)} style={{
+        display:"flex",alignItems:"center",gap:5,
+        background:t.bg,
+        border:`1.5px solid ${t.border}`,
+        borderRadius:12,
+        padding:"7px 11px",
+        cursor:"pointer",
+        boxShadow:t.shadow,
+        animation: streakInDanger ? "dangerPulse 1.2s ease-in-out infinite" : streakJustIncreased ? "pulseStreak .6s ease-in-out 3" : (tier==="platine" || tier==="mythic" ? "flameGlow 2.5s ease-in-out infinite" : "none")
+      }}>
+        <span style={{fontSize:18,filter: tier==="gold" || tier==="mythic" ? "drop-shadow(0 0 6px #FFD60099)" : tier==="platine" ? "drop-shadow(0 0 6px #FFFFFFAA)" : "none"}}>{t.emoji}</span>
+        <span style={{fontFamily:G.heading,fontSize:17,color:t.textColor,fontWeight:800,letterSpacing:.5}}>{dayStreak}</span>
+      </div>
+    );
+  })()}
 <div onClick={function(){if(!pseudoConfirmed) setPseudoScreen(true); else setScreen("profile");}} style={{background:"linear-gradient(135deg,#00E676,#00A855)",border:"1px solid rgba(0,230,118,.4)",borderRadius:12,width:38,height:38,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",boxShadow:"0 4px 14px rgba(0,230,118,.25)",overflow:"hidden"}}>
   {playerAvatar ? <img src={playerAvatar} alt="avatar" style={{width:"100%",height:"100%",objectFit:"cover"}}/> : <span style={{fontSize:16,color:"#000",fontWeight:800}}>{(playerName||"?")[0].toUpperCase()}</span>}
 </div>              
@@ -5192,6 +5410,29 @@ export default function LePont() {
       </div>
 
       <div style={{...sheet,gap:10}}>
+
+        {/* Alerte streak en danger — visible le soir si on n'a pas joué aujourd'hui */}
+        {streakInDanger && (
+          <div onClick={()=>setShowStreakDetail(true)} style={{
+            background:"linear-gradient(135deg, rgba(255,61,87,.18), rgba(255,107,53,.12))",
+            border:"1.5px solid rgba(255,61,87,.55)",
+            borderRadius:14,padding:"14px 16px",
+            display:"flex",alignItems:"center",gap:12,cursor:"pointer",
+            boxShadow:"0 4px 16px rgba(255,61,87,.2)",
+            animation:"dangerPulse 2s ease-in-out infinite"
+          }}>
+            <div style={{fontSize:28}}>⚠️</div>
+            <div style={{flex:1}}>
+              <div style={{fontSize:14,fontWeight:800,color:"#FF3D57",letterSpacing:.5}}>
+                {lang==="en" ? `STREAK IN DANGER 🔥 ${dayStreak}` : `SÉRIE EN DANGER 🔥 ${dayStreak}`}
+              </div>
+              <div style={{fontSize:12,color:"rgba(255,255,255,.75)",marginTop:3,lineHeight:1.4}}>
+                {lang==="en" ? "Play at least 1 game before midnight to keep your streak!" : "Joue au moins 1 partie avant minuit pour garder ta série !"}
+              </div>
+            </div>
+            <div style={{fontSize:18,color:"#FF3D57"}}>→</div>
+          </div>
+        )}
 
         {/* Bandeau room en attente */}
         {pendingRoomCode && !pseudoConfirmed && (
