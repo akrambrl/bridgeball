@@ -1373,6 +1373,8 @@ export default function LePont() {
   const [chainCount, setChainCount] = useState(0);
   const [chainScore, setChainScore] = useState(0);
   const [chainHistory, setChainHistory] = useState([]);
+  const [roundAnswers, setRoundAnswers] = useState([]); // Historique questions mode Plug: [{c1, c2, validPlayers, given, status, isSkip}]
+  const [showHistory, setShowHistory] = useState(false); // Modal affichage historique
   const [chainLastClub, setChainLastClub] = useState("");
   const [leaderboard, setLeaderboard] = useState([]);
   const [hallOfFame, setHallOfFame] = useState([]);
@@ -2973,7 +2975,7 @@ export default function LePont() {
     ];
     const q = doShuffle(picked.length > 0 ? picked : [...dbPool]);
     queueRef.current = q;
-    setQueue(q); setQIdx(0); setScore(0); scoreRef.current=0;
+    setQueue(q); setQIdx(0); setScore(0); scoreRef.current=0; setRoundAnswers([]);
     setTimeLeft(ROUND_DURATION); setGuess(""); setFlash(null); setFeedback(null);
     if(effectiveDiff==="facile") {
       const optSeed = isInRoom ? hashStringToSeed(String(activeDuelRef.current.id) + "_opt_" + (q[0].p.join("|"))) : null;
@@ -3108,11 +3110,17 @@ export default function LePont() {
         const data = await res.json();
         const extract = data.extract || "";
         // Try to extract nationality
-        const natMatch = extract.match(/\b(?:is|was)\s+(?:a|an)\s+([A-Z][a-z]+(?:-[A-Z][a-z]+)?)\s+(?:former\s+)?(?:professional\s+)?(?:footballer|soccer player|footballeur)/i);
+        // Regex principal : capture la nationalité avant "footballer/soccer player"
+        // On accepte un ou plusieurs mots-clés intermédiaires (former, retired, professional, youth...)
+        const natMatch = extract.match(/\b(?:is|was)\s+(?:a|an)\s+([A-Z][a-z]+(?:-[A-Z][a-z]+)?)\s+(?:(?:former|retired|professional|youth|international|semi-professional|promising|young|talented|veteran|experienced)\s+)*(?:footballer|soccer player|footballeur)/i);
         let nationality = natMatch ? natMatch[1] : null;
+        // Mots à ne JAMAIS considérer comme une nationalité (faux positifs courants)
+        const NAT_BLACKLIST = ["professional","former","retired","youth","young","promising","talented","veteran","experienced","international","semi","the","football","soccer","club","team","national"];
+        if (nationality && NAT_BLACKLIST.includes(nationality.toLowerCase())) nationality = null;
         if (!nationality) {
           const altMatch = extract.match(/\b([A-Z][a-z]+)\s+footballer/i);
           nationality = altMatch ? altMatch[1] : null;
+          if (nationality && NAT_BLACKLIST.includes(nationality.toLowerCase())) nationality = null;
         }
         // Traduction EN→FR des nationalités si lang=fr
         if (nationality && lang === "fr") {
@@ -3185,9 +3193,11 @@ export default function LePont() {
     const g=guess.trim(); if(!g) return;
     const cur=queue[qIdx%Math.max(queue.length,1)];
     if(checkGuess(g,cur.p)){
+      setRoundAnswers(a=>[...a,{c1:cur.c1, c2:cur.c2, validPlayers:cur.p, given:g, status:"ok"}]);
       setFlash("ok"); setFeedback("ok"); handleCorrectAnswer(2);
       setTimeout(()=>{setFlash(null);setFeedback(null);nextQ();},900);
     }else{
+      setRoundAnswers(a=>[...a,{c1:cur.c1, c2:cur.c2, validPlayers:cur.p, given:g, status:"ko"}]);
       setFlash("ko"); setFeedback("ko"); handleWrongAnswer(5);
       setTimeout(()=>{setFlash(null);setFeedback(null);setGuess("");inputRef.current?.focus();},900);
     }
@@ -3195,6 +3205,8 @@ export default function LePont() {
 
   function handlePass() {
     clearInterval(qTimerRef.current);
+    const cur=queue[qIdx%Math.max(queue.length,1)];
+    if(cur) setRoundAnswers(a=>[...a,{c1:cur.c1, c2:cur.c2, validPlayers:cur.p, given:null, status:"skip"}]);
     setScore(s=>{scoreRef.current=s-10;return s-10;});
     nextQ();
   }
@@ -3204,9 +3216,11 @@ export default function LePont() {
     if(flash) return;
     const cur=queue[qIdx%Math.max(queue.length,1)];
     if(checkGuess(opt,cur.p)){
+      setRoundAnswers(a=>[...a,{c1:cur.c1, c2:cur.c2, validPlayers:cur.p, given:opt, status:"ok"}]);
       setFlash("ok"); setFeedback("ok"); handleCorrectAnswer(2);
       setTimeout(()=>{setFlash(null);setFeedback(null);nextQ();},900);
     }else{
+      setRoundAnswers(a=>[...a,{c1:cur.c1, c2:cur.c2, validPlayers:cur.p, given:opt, status:"ko"}]);
       setFlash(opt); setFeedback("ko"); handleWrongAnswer(5);
       setTimeout(()=>{setFlash(null);setFeedback(null);},900);
     }
@@ -3470,6 +3484,107 @@ export default function LePont() {
     <div key="avatar-viewer" onClick={()=>setViewingAvatar(null)} style={{position:"fixed",inset:0,zIndex:9999,background:"rgba(0,0,0,.92)",display:"flex",alignItems:"center",justifyContent:"center",padding:"40px 20px",animation:"fadeIn .2s ease",cursor:"pointer",backdropFilter:"blur(10px)"}}>
       <button onClick={(e)=>{e.stopPropagation();setViewingAvatar(null);}} style={{position:"absolute",top:20,right:20,width:44,height:44,borderRadius:"50%",background:"rgba(255,255,255,.15)",border:"1px solid rgba(255,255,255,.2)",color:G.white,fontSize:22,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(10px)"}}>✕</button>
       <img src={viewingAvatar} alt="avatar" onClick={(e)=>e.stopPropagation()} style={{maxWidth:"100%",maxHeight:"100%",borderRadius:20,objectFit:"contain",boxShadow:"0 20px 60px rgba(0,0,0,.8)",cursor:"default"}}/>
+    </div>
+  );
+
+  // ── HISTORY MODAL (historique des questions de la partie qui vient de finir) ──
+  const historyModal = showHistory && (
+    <div key="history-modal" onClick={()=>setShowHistory(false)} style={{position:"fixed",inset:0,zIndex:9999,background:"rgba(0,0,0,.85)",display:"flex",alignItems:"flex-end",justifyContent:"center",animation:"fadeIn .2s ease",backdropFilter:"blur(8px)"}}>
+      <div onClick={(e)=>e.stopPropagation()} style={{background:"linear-gradient(180deg,#0d1f0d 0%,#0a1510 100%)",borderRadius:"24px 24px 0 0",width:"100%",maxWidth:500,maxHeight:"88vh",display:"flex",flexDirection:"column",animation:"slideUp .3s ease",border:"1px solid rgba(255,255,255,.08)"}}>
+        {roundAnswers.length > 0 ? (
+          <>
+            <div style={{padding:"18px 20px",borderBottom:"1px solid rgba(255,255,255,.08)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+              <div>
+                <div style={{fontFamily:G.heading,fontSize:22,color:G.white,letterSpacing:2}}>
+                  {lang==="en"?"QUESTIONS RECAP":"RÉCAP DES QUESTIONS"}
+                </div>
+                <div style={{fontSize:12,color:"rgba(255,255,255,.4)",marginTop:2}}>
+                  {roundAnswers.length} {lang==="en"?(roundAnswers.length>1?"questions":"question"):(roundAnswers.length>1?"questions":"question")} · {roundAnswers.filter(a=>a.status==="ok").length} ✓ · {roundAnswers.filter(a=>a.status==="ko").length} ✗ · {roundAnswers.filter(a=>a.status==="skip").length} →
+                </div>
+              </div>
+              <button onClick={()=>setShowHistory(false)} style={{width:36,height:36,borderRadius:"50%",background:"rgba(255,255,255,.1)",border:"none",color:G.white,fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+            </div>
+            <div style={{flex:1,overflowY:"auto",padding:"14px 16px"}}>
+              {roundAnswers.map((a,i)=>{
+                const [ca1,cb1]=getClubColors(a.c1);
+                const [ca2,cb2]=getClubColors(a.c2);
+                const statusColor = a.status==="ok"?"#00E676":a.status==="ko"?"#FF3D57":"#FBE216";
+                const statusEmoji = a.status==="ok"?"✓":a.status==="ko"?"✗":"→";
+                return (
+                  <div key={i} style={{background:"rgba(255,255,255,.04)",borderRadius:14,padding:"12px 14px",marginBottom:8,border:`1px solid ${statusColor}33`}}>
+                    <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
+                      <span style={{fontSize:10,fontWeight:800,color:"rgba(255,255,255,.3)",minWidth:22}}>#{i+1}</span>
+                      <span style={{fontSize:16,color:statusColor,fontWeight:800}}>{statusEmoji}</span>
+                      <div style={{flex:1,display:"flex",gap:6,alignItems:"center",flexWrap:"wrap"}}>
+                        <span style={{fontSize:11,fontWeight:800,color:G.white,background:`linear-gradient(90deg,${ca1} 50%,${cb1} 50%)`,borderRadius:12,padding:"3px 8px",textShadow:"0 1px 3px rgba(0,0,0,.6)"}}>{a.c1}</span>
+                        <span style={{fontSize:11,color:"rgba(255,255,255,.3)"}}>×</span>
+                        <span style={{fontSize:11,fontWeight:800,color:G.white,background:`linear-gradient(90deg,${ca2} 50%,${cb2} 50%)`,borderRadius:12,padding:"3px 8px",textShadow:"0 1px 3px rgba(0,0,0,.6)"}}>{a.c2}</span>
+                      </div>
+                    </div>
+                    {a.status==="ok" ? (
+                      <div style={{fontSize:13,color:"rgba(255,255,255,.85)"}}>
+                        <span style={{color:"rgba(255,255,255,.4)"}}>{lang==="en"?"Your answer: ":"Ta réponse : "}</span>
+                        <strong style={{color:"#00E676"}}>{a.given}</strong>
+                      </div>
+                    ) : (
+                      <>
+                        {a.given && (
+                          <div style={{fontSize:12,color:"rgba(255,255,255,.5)",marginBottom:4}}>
+                            <span style={{color:"rgba(255,255,255,.35)"}}>{lang==="en"?"Your answer: ":"Ta réponse : "}</span>
+                            <span style={{textDecoration:"line-through",color:"#FF3D57"}}>{a.given}</span>
+                          </div>
+                        )}
+                        <div style={{fontSize:12,color:"rgba(255,255,255,.75)",lineHeight:1.5}}>
+                          <span style={{color:"rgba(255,255,255,.4)"}}>{lang==="en"?"Possible answers: ":"Réponses possibles : "}</span>
+                          <span style={{color:"#FBE216"}}>{(a.validPlayers||[]).slice(0,4).join(", ")}</span>
+                          {a.validPlayers && a.validPlayers.length>4 && <span style={{color:"rgba(255,255,255,.3)"}}> +{a.validPlayers.length-4}</span>}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        ) : chainHistory.length > 0 ? (
+          <>
+            <div style={{padding:"18px 20px",borderBottom:"1px solid rgba(255,255,255,.08)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+              <div>
+                <div style={{fontFamily:G.heading,fontSize:22,color:G.white,letterSpacing:2}}>
+                  {lang==="en"?"YOUR CHAIN":"TA CHAÎNE"}
+                </div>
+                <div style={{fontSize:12,color:"rgba(255,255,255,.4)",marginTop:2}}>
+                  {chainHistory.length} {lang==="en"?(chainHistory.length>1?"links":"link"):(chainHistory.length>1?"liens":"lien")}
+                </div>
+              </div>
+              <button onClick={()=>setShowHistory(false)} style={{width:36,height:36,borderRadius:"50%",background:"rgba(255,255,255,.1)",border:"none",color:G.white,fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+            </div>
+            <div style={{flex:1,overflowY:"auto",padding:"14px 16px"}}>
+              {chainHistory.map((h,i)=>{
+                const [ca,cb]=getClubColors(h.club);
+                return (
+                  <div key={i} style={{background:"rgba(255,255,255,.04)",borderRadius:14,padding:"12px 14px",marginBottom:8,border:"1px solid rgba(255,255,255,.06)",display:"flex",alignItems:"center",gap:10}}>
+                    <span style={{fontSize:10,fontWeight:800,color:"rgba(255,255,255,.3)",minWidth:22}}>#{i+1}</span>
+                    <div style={{flex:1}}>
+                      <div style={{fontSize:14,fontWeight:700,color:G.white}}>{h.player}</div>
+                      <div style={{fontSize:11,color:"rgba(255,255,255,.4)",marginTop:2}}>{lang==="en"?"played at":"a joué à"}</div>
+                    </div>
+                    <span style={{fontSize:11,fontWeight:800,color:G.white,background:`linear-gradient(90deg,${ca} 50%,${cb} 50%)`,borderRadius:12,padding:"4px 10px",textShadow:"0 1px 3px rgba(0,0,0,.6)"}}>{h.club}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        ) : (
+          <div style={{padding:"40px 20px",textAlign:"center",color:"rgba(255,255,255,.3)",fontSize:14}}>
+            <div style={{padding:"18px 20px",borderBottom:"1px solid rgba(255,255,255,.08)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+              <div style={{fontFamily:G.heading,fontSize:22,color:G.white,letterSpacing:2}}>{lang==="en"?"HISTORY":"HISTORIQUE"}</div>
+              <button onClick={()=>setShowHistory(false)} style={{width:36,height:36,borderRadius:"50%",background:"rgba(255,255,255,.1)",border:"none",color:G.white,fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+            </div>
+            <div style={{padding:"40px 20px"}}>{lang==="en"?"No data":"Aucune donnée"}</div>
+          </div>
+        )}
+      </div>
     </div>
   );
 
@@ -4343,10 +4458,16 @@ export default function LePont() {
               <div style={{fontFamily:G.heading,fontSize:26,color:i===0?G.gold:G.white}}>{p.score||0} <span style={{fontSize:12,color:"rgba(255,255,255,.3)"}}>pts</span></div>
             </div>
           );})}
+          {((!duelResult.isChain && roundAnswers.length>0) || (duelResult.isChain && chainHistory.length>0)) && (
+            <button onClick={()=>setShowHistory(true)} style={{width:"100%",padding:"13px",background:"rgba(251,226,22,.12)",color:"#FBE216",border:"1.5px solid rgba(251,226,22,.5)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginTop:8}}>
+              📋 {duelResult.isChain?(lang==="en"?"See my chain":"Voir ma chaîne"):(lang==="en"?"Questions recap":"Récap des questions")}
+            </button>
+          )}
           <button onClick={function(){setDuelResult(null);setScreen("home");}} style={{width:"100%",padding:"16px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800,marginTop:8}}>
             {lang==="en"?"Back home":"Retour à l'accueil"}
           </button>
         </div>
+        {historyModal}
       </div>
     );
   }
@@ -5052,9 +5173,14 @@ export default function LePont() {
               {dailySuccess ? (
                 <div style={{textAlign:"center",padding:"16px 0",flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
                   <div style={{fontSize:72,marginBottom:12}}>🎉</div>
-                  <div style={{fontFamily:G.heading,fontSize:42,color:"#00E676",letterSpacing:2,marginBottom:8}}>{pickResultMessage(RESULT_MESSAGES[lang==="en"?"en":"fr"].soloWin, dailyTries * 7 + (dailyPlayer?.name?.length||0))}</div>
-                  <div style={{fontSize:17,color:"rgba(255,255,255,.85)",fontWeight:700,marginBottom:6}}>
-                    {lang==="en"?"It was":"C'était"} <span style={{color:"#00E676"}}>{dailyPlayer.name}</span>
+                  <div style={{fontSize:13,color:"rgba(255,255,255,.5)",fontWeight:600,letterSpacing:2,textTransform:"uppercase",marginBottom:8}}>
+                    {lang==="en"?"The answer was":"La réponse était"}
+                  </div>
+                  <div style={{fontFamily:G.heading,fontSize:"clamp(32px,9vw,54px)",color:"#00E676",letterSpacing:1,marginBottom:14,lineHeight:1.1,padding:"0 10px"}}>
+                    {dailyPlayer.name}
+                  </div>
+                  <div style={{fontSize:16,color:"rgba(255,255,255,.7)",fontWeight:700,letterSpacing:1,textTransform:"uppercase",marginBottom:6}}>
+                    {pickResultMessage(RESULT_MESSAGES[lang==="en"?"en":"fr"].soloWin, dailyTries * 7 + (dailyPlayer?.name?.length||0))}
                   </div>
                   <div style={{fontSize:14,color:"rgba(255,255,255,.4)",marginTop:4}}>
                     {dailyTries === 1 ? (lang==="en"?"Got it first try 🐐":"Trouvé du premier coup 🐐") : (lang==="en"?`Found in ${dailyTries} attempts`:`Trouvé en ${dailyTries} essai${dailyTries>1?"s":""}`)}
@@ -5592,6 +5718,11 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
           </div>
         )}
         <button onClick={()=>{if(isChain)startChain();else startCompetition();}} style={{width:"100%",padding:"18px",background:G.dark,color:G.white,border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:17,fontWeight:800,letterSpacing:1,display:"flex",alignItems:"center",justifyContent:"center",gap:10}}>{Icon.ball(18,G.white)} {lang==="en"?"Play again":"Rejouer"}</button>
+        {((!isChain && roundAnswers.length>0) || (isChain && chainHistory.length>0)) && (
+          <button onClick={()=>setShowHistory(true)} style={{width:"100%",padding:"14px",background:"rgba(251,226,22,.12)",color:"#FBE216",border:"1.5px solid rgba(251,226,22,.5)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+            📋 {isChain?(lang==="en"?"See my chain":"Voir ma chaîne"):(lang==="en"?"Questions recap":"Récap des questions")}
+          </button>
+        )}
         <button onClick={function(){
           const grade = getGrade(playerXp);
           const txt = `${grade.emoji} J'ai scoré ${sc} pts en mode ${isChain?"The Mercato":"The Plug"} sur GOAT FC !\nGrade : ${grade.label}\nT'as le niveau ? 👇\nhttps://bridgeball.vercel.app`;
@@ -5602,6 +5733,7 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
         </button>
         <button onClick={()=>setScreen("home")} style={{width:"100%",padding:"14px",background:"transparent",color:"#bbb",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:700}}>{lang==="en"?"↩ Home":"↩ Accueil"}</button>
       </div>
+      {historyModal}
     </div>
   );
 }
@@ -5793,10 +5925,16 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
           }} style={{width:"100%",padding:"13px",background:"linear-gradient(135deg,#1d4ed8,#7c3aed)",color:"#fff",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:6}}>
             {lang==="en"?"📤 Share the result":"📤 Partager le résultat"}
           </button>
+          {((!duelResult.isChain && roundAnswers.length>0) || (duelResult.isChain && chainHistory.length>0)) && (
+            <button onClick={()=>setShowHistory(true)} style={{width:"100%",padding:"13px",background:"rgba(251,226,22,.12)",color:"#FBE216",border:"1.5px solid rgba(251,226,22,.5)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:6}}>
+              📋 {duelResult.isChain?(lang==="en"?"See my chain":"Voir ma chaîne"):(lang==="en"?"Questions recap":"Récap des questions")}
+            </button>
+          )}
           <button onClick={function(){setDuelResult(null);setScreen("home");}} style={{width:"100%",padding:"16px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800,marginTop:2}}>
             {lang==="en"?"Back home":"Retour à l'accueil"}
           </button>
         </div>
+        {historyModal}
       </div>
     );
   }
