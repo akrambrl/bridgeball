@@ -74,10 +74,11 @@ function getCurrentSeason() {
 }
 
 const GRADES = [
-  { min:500, label:"Expert",  labelEn:"Expert",  emoji:"🐐", color:"#FFD700" },
-  { min:200, label:"Pro",     labelEn:"Pro",     emoji:"🦁", color:"#00B4D8" },
-  { min:100, label:"Amateur", labelEn:"Casual",  emoji:"🦊", color:"#2EC4B6" },
-  { min:0,   label:"Rookie",  labelEn:"Rookie",  emoji:"🐣", color:"#8D99AE" },
+  { min:10000, label:"GOAT",                            labelEn:"GOAT",            emoji:"🐐", color:"#FFD700" },
+  { min:5000,  label:"LÉGENDE",                         labelEn:"LEGEND",          emoji:"☄️", color:"#FF6B35" },
+  { min:2000,  label:"Titulaire",                       labelEn:"First Team",      emoji:"🐺", color:"#00B4D8" },
+  { min:500,   label:"Espoir du centre de formation",   labelEn:"Academy Talent",  emoji:"👦🏻", color:"#2EC4B6" },
+  { min:0,     label:"Joueur du dimanche",              labelEn:"Sunday Player",   emoji:"🍻", color:"#8D99AE" },
 ];
 
 function getGrade(score) {
@@ -1527,6 +1528,7 @@ export default function LePont() {
   const [pseudoChecking, setPseudoChecking] = useState(false);
   const [pseudoMsg, setPseudoMsg] = useState("");
   const [playerAvatar, setPlayerAvatar] = useState(null);
+  const [playerXp, setPlayerXp] = useState(0); // XP cumulé, chargé depuis Supabase au démarrage et incrémenté après chaque partie
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [viewingAvatar, setViewingAvatar] = useState(null); // URL de la photo à visualiser en plein écran
   const [cropState, setCropState] = useState(null); // {url, scale, x, y, naturalW, naturalH} — état du cropper
@@ -1607,6 +1609,8 @@ export default function LePont() {
           setPlayerName(mine[0].pseudo);
           try { localStorage.setItem("bb_name", mine[0].pseudo); } catch {}
           setPseudoConfirmed(true);
+          // Charger XP cumulé depuis Supabase (0 si colonne vide ou pas encore créée)
+          if (typeof mine[0].xp === "number") setPlayerXp(mine[0].xp);
         } else {
           const saved = localStorage.getItem("bb_name");
           if (saved && saved.trim().length >= 2) setPlayerName(saved);
@@ -2637,6 +2641,24 @@ export default function LePont() {
 
   async function loadLeaderboard(mode) {
     try {
+      // Mode Saison : classement par XP cumulé (table bb_pseudos)
+      if (mode === "saison") {
+        const rows = await sbFetch("bb_pseudos?select=player_id,pseudo,xp,country&order=xp.desc&limit=50");
+        if (!Array.isArray(rows)) { setLeaderboard([]); return; }
+        const sorted = rows
+          .filter(r => (r.xp || 0) > 0)
+          .map(function(r, i) { return {
+            name: r.pseudo || "?",
+            pid: r.player_id,
+            score: r.xp || 0,
+            xp: r.xp || 0,
+            country: r.country || null,
+            rank: i + 1,
+            played: 0, wins:0, draws:0, losses:0, streak:0
+          }; });
+        setLeaderboard(sorted);
+        return;
+      }
       const isAmis = mode === "amis";
       const isGlobal = mode === "global" || isAmis;
       const season = getCurrentSeason();
@@ -2780,6 +2802,24 @@ export default function LePont() {
     return 0;                           // Loin = défaite
   }
 
+  // Incrémente l'XP du joueur en local et dans Supabase
+  // Appelé à la fin de chaque partie avec le score gagné
+  async function addXp(scoreGained) {
+    if (!playerId || !pseudoConfirmed) return;
+    const xpGained = Math.max(0, scoreGained); // pas d'XP négatif si score <0
+    if (xpGained === 0) return;
+    const newXp = playerXp + xpGained;
+    setPlayerXp(newXp); // update immédiat UI
+    try {
+      // Update atomique côté serveur (plus safe que set direct car évite les races)
+      await sbFetch("bb_pseudos?player_id=eq." + playerId, {
+        method: "PATCH",
+        headers: { "Content-Type":"application/json", "Prefer":"return=minimal" },
+        body: JSON.stringify({ xp: newXp })
+      });
+    } catch(e) { /* silent - XP reste updaté en local */ }
+  }
+
   function submitToLeaderboard(name, sc, mode, d) {
     if (!pseudoConfirmed || !playerName.trim()) return; // pas de pseudo = pas de classement
     submitScore(name, sc, mode, d);
@@ -2825,18 +2865,20 @@ export default function LePont() {
     const now = Date.now();
     const elapsed = (now - lastAnswerTime.current) / 1000;
     lastAnswerTime.current = now;
-    const speedBonus = elapsed <= COMBO_THRESHOLD ? 1 : 0;
+    // Speed bonus : +5 pts si réponse rapide
+    const speedBonus = elapsed <= COMBO_THRESHOLD ? 5 : 0;
     const newCombo = comboRef.current + 1;
-    const comboBonus = newCombo>=10?3:newCombo>=5?2:newCombo>=3?1:0;
-    // Difficulty-based base points: 20 facile / 35 moyen / 50 expert (halved for chain)
-    const diffBase = isChain ? (diff==="expert"?25:diff==="moyen"?18:10) : (diff==="expert"?50:diff==="moyen"?35:20);
+    // Combo bonus : x3 → +10, x5 → +20, x10+ → +30
+    const comboBonus = newCombo>=10?30:newCombo>=5?20:newCombo>=3?10:0;
+    // Difficulty-based base points: 10 facile / 20 moyen / 30 expert (Mercato garde la même valeur)
+    const diffBase = diff==="expert"?30:diff==="moyen"?20:10;
     const total = diffBase + speedBonus + comboBonus;
     setCombo(newCombo); if(newCombo>maxCombo) setMaxCombo(newCombo);
     // Phrase flatteuse aléatoire selon le niveau de combo
     setFeedbackPhrase(getPositiveFeedback(newCombo, lang));
     if(comboBonus>0||speedBonus>0){
       const parts=[];
-      if(speedBonus)parts.push("⚡ SPEED");
+      if(speedBonus)parts.push(`⚡ SPEED +${speedBonus}`);
       if(comboBonus)parts.push(`x${newCombo} COMBO +${comboBonus}`);
       setComboFloat(parts.join(" · "));
       playSound("combo");
@@ -2880,6 +2922,7 @@ export default function LePont() {
           }
         }catch{}
         submitToLeaderboard(playerName,total,"pont",diff);
+        addXp(total); // XP cumulé +score de la partie
         updateDayStreak();
         if(activeDuelRef.current&&activeDuelRef.current.isRoom){setScreen("waitingRoom");submitRoomScore(total);}else if(activeDuel){submitDuelScore(total); setScreen("final");}else{setScreen("final");}
       } else {
@@ -2904,6 +2947,7 @@ export default function LePont() {
       }else{setIsNewRecord(false);}
     }catch{}
     submitToLeaderboard(playerName,sc,"chaine",diff);
+    addXp(sc); // XP cumulé +score de la partie mercato
     updateDayStreak();
     if(activeDuelRef.current&&activeDuelRef.current.isRoom){setScreen("waitingRoom");submitRoomScore(sc);}else if(activeDuel){submitDuelScore(sc); setScreen("chainEnd");}else{setScreen("chainEnd");}
   }
@@ -3344,7 +3388,7 @@ export default function LePont() {
         border:`2px solid ${fb==="ok"?G.accent:fb==="ko"?G.red:"#fbbf24"}`,
         animation:fb==="ok"?"answerOk .5s ease":fb==="ko"?"answerKo .4s ease":"popIn .3s ease",
       }}>
-        {fb==="ok"&&<><div style={{display:"flex",alignItems:"center",gap:8,fontSize:17,fontWeight:800,color:"#16a34a"}}>{Icon.ball(18,"#16a34a")} {feedbackPhrase || (lang==="en"?"RIGHT ANSWER !":"BONNE RÉPONSE !")}</div><div style={{fontSize:12,fontWeight:600,color:"#16a34a",opacity:.7}}>+2 pts</div></>}
+        {fb==="ok"&&<><div style={{display:"flex",alignItems:"center",gap:8,fontSize:17,fontWeight:800,color:"#16a34a"}}>{Icon.ball(18,"#16a34a")} {feedbackPhrase || (lang==="en"?"RIGHT ANSWER !":"BONNE RÉPONSE !")}</div><div style={{fontSize:12,fontWeight:600,color:"#16a34a",opacity:.7}}>+{diff==="expert"?30:diff==="moyen"?20:10} pts</div></>}
         {fb==="ko"&&<><div style={{display:"flex",alignItems:"center",gap:8,fontSize:17,fontWeight:800,color:G.red}}>{Icon.whistle(18,G.red)} {lang==="en"?"WRONG ANSWER":"MAUVAISE RÉPONSE"}</div><div style={{fontSize:12,fontWeight:600,color:G.red,opacity:.7}}>−5 pts</div></>}
         {fb==="used"&&<div style={{display:"flex",alignItems:"center",gap:8,fontSize:15,fontWeight:800,color:"#d97706"}}>{Icon.flag(16,"#d97706")} {lang==="en"?"CLUB ALREADY USED":"CLUB DÉJÀ UTILISÉ"}</div>}
       </div>
@@ -3361,7 +3405,7 @@ export default function LePont() {
         {showInstructions==="pont"?(
           <div style={{fontSize:14,color:"#555",lineHeight:1.8,marginBottom:20}}>
             {lang==="en"?<>Two clubs appear. Find <strong>a player</strong> who played for both!<br/><br/></>:<>Deux clubs s'affichent. Trouve <strong>un joueur</strong> qui a joué dans les deux !<br/><br/></>}
-            <span style={{color:"#16a34a",fontWeight:800}}>✓ +2</span> {lang==="en"?"correct":"bonne réponse"} &nbsp;·&nbsp; <span style={{color:G.red,fontWeight:800}}>✗ −1</span> {lang==="en"?"wrong":"mauvaise"} &nbsp;·&nbsp; <span style={{color:"#aaa",fontWeight:800}}>→ −0.5</span> {lang==="en"?"skip":"passer"}<br/><br/>
+            <span style={{color:"#16a34a",fontWeight:800}}>✓ +10 à +30</span> {lang==="en"?"correct":"bonne réponse"} &nbsp;·&nbsp; <span style={{color:G.red,fontWeight:800}}>✗ −5</span> {lang==="en"?"wrong":"mauvaise"} &nbsp;·&nbsp; <span style={{color:"#aaa",fontWeight:800}}>→ −10</span> {lang==="en"?"skip":"passer"}<br/><br/>
             <span style={{fontSize:12,color:"#999"}}>🔥 {lang==="en"?"Answer fast to trigger combos!":"Réponds vite pour activer les combos !"}</span>
           </div>
         ):(
@@ -3867,13 +3911,14 @@ export default function LePont() {
             );
           })()}
           <div style={{display:"flex",gap:6,marginBottom:4,flexWrap:"wrap"}}>
-            {["global","amis"].map(function(m){return(
+            {["saison","global","amis"].map(function(m){return(
               <button key={m} onClick={function(){
                 setLbMode(m);
-                if(m!=="amis") loadLeaderboard(m);
+                if(m==="saison") loadLeaderboard("saison");
+                else if(m!=="amis") loadLeaderboard(m);
                 else loadLeaderboard("global");
               }} style={{flex:1,minWidth:60,padding:"10px 6px",borderRadius:12,border:"1.5px solid "+(lbMode===m?G.accent:"rgba(255,255,255,.12)"),background:lbMode===m?"rgba(0,230,118,.1)":"transparent",color:lbMode===m?G.accent:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:12}}>
-                {m==="global"?(lang==="en"?"🌍 Global":"🌍 Global"):(lang==="en"?"👥 Friends":"👥 Amis")}
+                {m==="saison"?(lang==="en"?"⭐ Season":"⭐ Saison"):m==="global"?(lang==="en"?"🌍 Global":"🌍 Global"):(lang==="en"?"👥 Friends":"👥 Amis")}
               </button>
             );})}
           </div>
@@ -3886,7 +3931,7 @@ export default function LePont() {
           ).map(function(entry, i){
             const isMe = entry.pid === playerId;
             const medals = ["🥇","🥈","🥉"];
-            const grade = getGrade(entry.score);
+            const grade = getGrade(lbMode==="saison" ? (entry.xp||entry.score) : entry.score);
             return(
               <div key={i} onClick={()=>{ if(!isMe) { setShowLeaderboard(false); openUserProfile(entry.pid, entry.name); } }} style={{borderRadius:14,background:i===0?"linear-gradient(135deg,#FFD600,#FF6B35)":i===1?"linear-gradient(135deg,#E8E8E8,#A8A8B0)":i===2?"linear-gradient(135deg,#E3A869,#8B5A2B)":"rgba(0,230,118,.18)",border:i===0?"1px solid rgba(255,214,0,.6)":i===1?"1px solid rgba(200,200,210,.6)":i===2?"1px solid rgba(205,127,50,.6)":isMe?"1px solid rgba(0,230,118,.6)":"1px solid rgba(0,230,118,.35)",marginBottom:6,overflow:"hidden",cursor:isMe?"default":"pointer",boxShadow:i===0?"0 4px 18px rgba(255,107,53,.35)":i===1?"0 4px 18px rgba(200,200,210,.25)":i===2?"0 4px 18px rgba(205,127,50,.3)":"none"}}>
                 <div style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px"}}>
@@ -3899,13 +3944,16 @@ export default function LePont() {
                       <span style={{fontSize:12,fontWeight:800,color:grade.color,background:grade.color+"22",borderRadius:20,padding:"3px 9px",letterSpacing:.5}}>{grade.emoji} {grade.label}</span>
                       {entry.streak>=3 && <span style={{fontSize:12,fontWeight:800,color:"#FF6B35",background:"rgba(255,107,53,.15)",borderRadius:20,padding:"3px 9px"}}>🔥 {entry.streak}</span>}
                     </div>
-                    {lbMode==="global"
+                    {lbMode==="saison"
+                      ? <div style={{fontSize:13,color:i<3?"rgba(26,13,0,.7)":"rgba(255,255,255,.5)",marginTop:4}}>⭐ {lang==="en"?"Cumulative XP":"XP cumulés"}</div>
+                      : lbMode==="global"
                       ? <div style={{fontSize:13,color:i<3?"rgba(26,13,0,.7)":"rgba(255,255,255,.5)",marginTop:4}}>🏟 {entry.bestPont} pts &nbsp;·&nbsp; ⛓ {entry.bestChaine} pts</div>
                       : <div style={{fontSize:13,color:i<3?"rgba(26,13,0,.7)":"rgba(255,255,255,.5)",marginTop:4}}>{entry.played} {lang==="en"?(entry.played>1?"games":"game"):(entry.played>1?"parties":"partie")}</div>
                     }
                   </div>
-                  <div style={{fontFamily:G.heading,fontSize:32,color:i<3?"#1a0d00":G.white}}>{entry.score} <span style={{fontSize:14,color:i<3?"rgba(26,13,0,.5)":"rgba(255,255,255,.3)"}}>pts</span></div>
+                  <div style={{fontFamily:G.heading,fontSize:32,color:i<3?"#1a0d00":G.white}}>{entry.score} <span style={{fontSize:14,color:i<3?"rgba(26,13,0,.5)":"rgba(255,255,255,.3)"}}>{lbMode==="saison"?"XP":"pts"}</span></div>
                 </div>
+                {lbMode!=="saison" && (
                 <div style={{display:"flex",borderTop:i<3?"1px solid rgba(0,0,0,.15)":"1px solid rgba(255,255,255,.06)"}}>
                     <div style={{flex:1,padding:"10px 0",textAlign:"center",borderRight:"1px solid rgba(255,255,255,.06)"}}>
                       <div style={{fontFamily:G.heading,fontSize:22,color:"#00E676"}}>{entry.wins||0}</div>
@@ -3920,6 +3968,7 @@ export default function LePont() {
                       <div style={{fontSize:11,color:"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase"}}>{lang==="en"?"Losses":"Défaites"}</div>
                     </div>
                   </div>
+                )}
               </div>
             );
           })}
@@ -4499,7 +4548,7 @@ export default function LePont() {
       <div style={{zIndex:1,padding:"16px 20px 8px",textAlign:"center"}}>
         <div style={{display:"inline-block",width:100,height:100,margin:"0 auto 14px",position:"relative"}}>
           <div onClick={playerAvatar ? ()=>setViewingAvatar(playerAvatar) : ()=>{const el=document.getElementById("avatar-upload");if(el)el.click();}} style={{width:100,height:100,borderRadius:"50%",background:playerAvatar?"#000":"linear-gradient(135deg,#00E676,#00A855)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:56,color:"#fff",boxShadow:"0 8px 30px rgba(0,230,118,.35)",overflow:"hidden",cursor:"pointer"}}>
-            {playerAvatar ? <img src={playerAvatar} alt="avatar" style={{width:"100%",height:"100%",objectFit:"cover"}}/> : getGrade(Math.max(record?record.score:0, chainRecord?chainRecord.score:0)).emoji}
+            {playerAvatar ? <img src={playerAvatar} alt="avatar" style={{width:"100%",height:"100%",objectFit:"cover"}}/> : getGrade(playerXp).emoji}
           </div>
           <label htmlFor="avatar-upload" style={{position:"absolute",bottom:-2,right:-2,width:34,height:34,borderRadius:"50%",background:G.accent,border:"3px solid #0d1f0d",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,zIndex:2,cursor:"pointer"}}>{avatarUploading?"⏳":"📷"}</label>
         </div>
@@ -4535,6 +4584,51 @@ export default function LePont() {
         }}/>
         <div style={{fontFamily:G.heading,fontSize:28,color:G.white,letterSpacing:1}}>@{playerName||(lang==="en"?"anonymous":"anonyme")}</div>
         <button onClick={()=>{setPseudoInput(playerName||"");setPseudoScreen(true);}} style={{marginTop:10,padding:"7px 16px",background:"rgba(255,255,255,.08)",color:"rgba(255,255,255,.7)",border:"1px solid rgba(255,255,255,.15)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:700}}>{lang==="en"?"✏️ Edit":"✏️ Modifier"}</button>
+      </div>
+
+      {/* Niveau + XP progression */}
+      <div style={{zIndex:1,padding:"0 16px 12px"}}>
+        {(() => {
+          const grade = getGrade(playerXp);
+          // Trouver le prochain palier
+          const sorted = [...GRADES].sort((a,b)=>a.min-b.min);
+          const currentIdx = sorted.findIndex(g => g.min === grade.min);
+          const nextGrade = currentIdx < sorted.length-1 ? sorted[currentIdx+1] : null;
+          const progressPct = nextGrade
+            ? Math.min(100, ((playerXp - grade.min) / (nextGrade.min - grade.min)) * 100)
+            : 100;
+          return (
+            <div style={{background:"#123a1e",border:"1.5px solid "+grade.color+"55",borderRadius:16,padding:"14px 16px"}}>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+                <div style={{display:"flex",alignItems:"center",gap:10}}>
+                  <span style={{fontSize:28}}>{grade.emoji}</span>
+                  <div>
+                    <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.5)"}}>{lang==="en"?"Level":"Niveau"}</div>
+                    <div style={{fontSize:14,fontWeight:800,color:grade.color}}>{grade.label}</div>
+                  </div>
+                </div>
+                <div style={{textAlign:"right"}}>
+                  <div style={{fontFamily:G.heading,fontSize:22,color:G.white,lineHeight:1}}>{playerXp.toLocaleString()}</div>
+                  <div style={{fontSize:10,color:"rgba(255,255,255,.4)",fontWeight:700,letterSpacing:1}}>XP</div>
+                </div>
+              </div>
+              {nextGrade ? (
+                <>
+                  <div style={{height:8,background:"rgba(255,255,255,.08)",borderRadius:4,overflow:"hidden",marginBottom:6}}>
+                    <div style={{height:"100%",width:progressPct+"%",background:`linear-gradient(90deg, ${grade.color}, ${nextGrade.color})`,borderRadius:4,transition:"width .5s ease"}}/>
+                  </div>
+                  <div style={{fontSize:11,color:"rgba(255,255,255,.5)",textAlign:"center"}}>
+                    {lang==="en"
+                      ? `${(nextGrade.min - playerXp).toLocaleString()} XP to ${nextGrade.labelEn} ${nextGrade.emoji}`
+                      : `${(nextGrade.min - playerXp).toLocaleString()} XP avant ${nextGrade.label} ${nextGrade.emoji}`}
+                  </div>
+                </>
+              ) : (
+                <div style={{fontSize:11,color:grade.color,textAlign:"center",fontWeight:800,letterSpacing:1,textTransform:"uppercase"}}>🏆 {lang==="en"?"Max level reached":"Niveau max atteint"}</div>
+              )}
+            </div>
+          );
+        })()}
       </div>
 
       {/* Stats cards */}
@@ -5442,7 +5536,16 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
       <div style={{zIndex:1,padding:"16px 20px 0",textAlign:"center"}}>
         <img src={img} style={{height:"clamp(204px,51vw,289px)",objectFit:"contain",objectPosition:"center bottom",animation:"slideInRight .5s ease both",filter:"drop-shadow(0 4px 20px rgba(0,230,118,.3))",display:"block",margin:"0 auto"}} alt=""/>
         <div style={{fontFamily:G.heading,fontSize:"clamp(20px,5.5vw,32px)",color:isNewRecord?G.gold:G.white,letterSpacing:2,animation:"fadeUp .4s ease .15s both",marginTop:4}}>{isNewRecord?"NOUVEAU RECORD !":isChain?"TEMPS ÉCOULÉ !":""}</div>
-        <div style={{fontSize:"clamp(16px,4.5vw,22px)",color:G.white,fontWeight:800,marginTop:isNewRecord||isChain?6:16,animation:"fadeUp .4s ease .25s both",textTransform:"uppercase",letterSpacing:1,textShadow:"0 2px 10px rgba(0,0,0,.4)"}}>{[
+        <div style={{fontSize:"clamp(16px,4.5vw,22px)",color:G.white,fontWeight:800,marginTop:isNewRecord||isChain?6:16,animation:"fadeUp .4s ease .25s both",textTransform:"uppercase",letterSpacing:1,textShadow:"0 2px 10px rgba(0,0,0,.4)"}}>{(isNewRecord?[
+          "BALLON D'OR MÉRITÉ 🏆",
+          "T'AS PLIÉ LE MATCH 🎩",
+          "CLASSE INTERNATIONALE 🌍",
+          "PRESTATION 5 ÉTOILES ⭐",
+          "T'ES DANS LE ONZE TYPE 🏟️",
+          "MAN OF THE MATCH 🥇",
+          "DE LA MAGIE PURE 🪄",
+          "RECORD BATTU 📈",
+        ]:[
           "T'AS PAS LE NIVEAU.. 👀",
           "C'EST TOUT CE QUE T'AS ? 💀",
           "LE GOAT C'EST TOI OU PAS ? 🐐",
@@ -5451,7 +5554,7 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
           "PROUVE QUE T'ES PAS UN RANDOM 🔥",
           "LE FOOT C'EST DANS LA TÊTE FRÈRE 🧠",
           "T'AURAIS PAS DÛ RATER LES AUTRES 😏",
-        ][Math.abs(Math.floor(sc * 3 + totalRounds)) % 8]}</div>
+        ])[Math.abs(Math.floor(sc * 3 + totalRounds)) % 8]}</div>
       </div>
       <div style={sheet}>
         <div style={{background:"rgba(255,255,255,.06)",borderRadius:20,padding:"20px",textAlign:"center",border:"1.5px solid #eee"}}>
@@ -5490,7 +5593,7 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
         )}
         <button onClick={()=>{if(isChain)startChain();else startCompetition();}} style={{width:"100%",padding:"18px",background:G.dark,color:G.white,border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:17,fontWeight:800,letterSpacing:1,display:"flex",alignItems:"center",justifyContent:"center",gap:10}}>{Icon.ball(18,G.white)} {lang==="en"?"Play again":"Rejouer"}</button>
         <button onClick={function(){
-          const grade = getGrade(sc);
+          const grade = getGrade(playerXp);
           const txt = `${grade.emoji} J'ai scoré ${sc} pts en mode ${isChain?"The Mercato":"The Plug"} sur GOAT FC !\nGrade : ${grade.label}\nT'as le niveau ? 👇\nhttps://bridgeball.vercel.app`;
           if(navigator.share){navigator.share({title:"GOAT FC",text:txt});}
           else{navigator.clipboard.writeText(txt).then(function(){alert(lang==="en"?"Copied! Paste it anywhere 📋":"Copié ! Colle-le où tu veux 📋");});}
@@ -5544,7 +5647,7 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
           );})}
           <button onClick={function(){
             const myEntry = duelResult.players.find(function(p){return p.id===playerId;});
-            const grade = getGrade(myEntry?.score||0);
+            const grade = getGrade(playerXp);
             const rank = duelResult.players.findIndex(function(p){return p.id===playerId;})+1;
             const txt = rank===1
               ? `${grade.emoji} J'ai remporté la salle sur GOAT FC avec ${myEntry?.score||0} pts 🏆\nGrade : ${grade.label}\nT'as le niveau ? 👇\nhttps://bridgeball.vercel.app`
@@ -5601,7 +5704,7 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
               ? pickResultMessage(RESULT_MESSAGES[lang==="en"?"en":"fr"].drawLabels, duelResult.myScore)
               : pickResultMessage(RESULT_MESSAGES[lang==="en"?"en":"fr"].loseLabels, duelResult.theirScore)
           }</div>
-          {(()=>{const grade=getGrade(duelResult.myScore||0); return <div style={{display:"inline-flex",alignItems:"center",gap:8,marginTop:8,background:grade.color+"22",borderRadius:20,padding:"6px 14px"}}><span style={{fontSize:13,fontWeight:800,color:grade.color,letterSpacing:.5}}>{grade.label}</span></div>; })()}
+          {(()=>{const grade=getGrade(playerXp); return <div style={{display:"inline-flex",alignItems:"center",gap:8,marginTop:8,background:grade.color+"22",borderRadius:20,padding:"6px 14px"}}><span style={{fontSize:13,fontWeight:800,color:grade.color,letterSpacing:.5}}>{grade.label}</span></div>; })()}
           <div style={{fontSize:14,color:"rgba(255,255,255,.4)",marginTop:8}}>
             {abandoned ? duelResult.oppName+(lang==="en"?" forfeited 🏃":" a abandonné 🏃") : (lang==="en"?"Duel ":"Duel ")+(duelResult.mode==="pont"?"The Plug":"The Mercato")}
           </div>
@@ -5680,7 +5783,7 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
             </div>
           )}
           <button onClick={function(){
-            const grade = getGrade(duelResult.myScore||0);
+            const grade = getGrade(playerXp);
             const result = won ? "victoire" : draw ? "nul" : "défaite";
             const txt = won
               ? `${grade.emoji} J'ai écrasé ${duelResult.oppName} ${duelResult.myScore}-${duelResult.theirScore} sur GOAT FC 😤\nGrade : ${grade.label}\nT'as le niveau ? 👇\nhttps://bridgeball.vercel.app`
