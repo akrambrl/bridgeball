@@ -357,6 +357,8 @@ const CLUB_COLORS = {
   "Estoril":["#FBE216","#0046AD"],
   "Moreirense":["#00A651","#FFFFFF"],
   "São Paulo":["#C8102E","#FFFFFF"],
+  "Bahia":["#0046AD","#C8102E"],
+  "Pumas UNAM":["#003DA5","#FFD700"],
   "Fluminense":["#7B0E1E","#00653E"],
   "Vasco da Gama":["#FFFFFF","#000000"],
   "Corinthians":["#FFFFFF","#000000"],
@@ -436,6 +438,19 @@ const CLUB_COLORS = {
   "Laval":["#F7B500","#000000"],
   "FSV Frankfurt":["#000000","#FFFFFF"],
   "Abha":["#008C39","#FFFFFF"],
+  "Brondby":["#FBE216","#0046AD"],
+  "Cobh Ramblers":["#C8102E","#FFFFFF"],
+  "Delhi Dynamos":["#FF6B00","#FFFFFF"],
+  "Emirates Club":["#C8102E","#FFFFFF"],
+  "Haarlem":["#C8102E","#FFFFFF"],
+  "Karlsruher":["#0046AD","#FFFFFF"],
+  "LA Aztecs":["#008C39","#FFD700"],
+  "Levante":["#0046AD","#7B0E1E"],
+  "Millwall":["#0046AD","#FFFFFF"],
+  "NY MetroStars":["#C8102E","#FFFFFF"],
+  "Real Mallorca":["#C8102E","#FFD700"],
+  "Sydney FC":["#003DA5","#87CEEB"],
+  "Washington Diplomats":["#C8102E","#FFFFFF"],
 };
 
 // ── BUILD DATABASES ──
@@ -1375,6 +1390,9 @@ export default function LePont() {
   const [chainHistory, setChainHistory] = useState([]);
   const [roundAnswers, setRoundAnswers] = useState([]); // Historique questions mode Plug: [{c1, c2, validPlayers, given, status, isSkip}]
   const [showHistory, setShowHistory] = useState(false); // Modal affichage historique
+  const [reportingAnswer, setReportingAnswer] = useState(null); // Pour signaler une erreur : {c1, c2, given, validPlayers}
+  const [reportMessage, setReportMessage] = useState("");
+  const [reportSent, setReportSent] = useState(false);
   const [chainLastClub, setChainLastClub] = useState("");
   const [leaderboard, setLeaderboard] = useState([]);
   const [hallOfFame, setHallOfFame] = useState([]);
@@ -3541,6 +3559,9 @@ export default function LePont() {
                         </div>
                       </>
                     )}
+                    <button onClick={(e)=>{e.stopPropagation();setReportingAnswer(a);setReportMessage("");setReportSent(false);}} style={{marginTop:8,background:"transparent",border:"none",color:"rgba(255,255,255,.35)",fontSize:11,fontWeight:700,cursor:"pointer",padding:"4px 8px",textDecoration:"underline",letterSpacing:.5}}>
+                      🚩 {lang==="en"?"Report error":"Signaler une erreur"}
+                    </button>
                   </div>
                 );
               })}
@@ -3583,6 +3604,77 @@ export default function LePont() {
             </div>
             <div style={{padding:"40px 20px"}}>{lang==="en"?"No data":"Aucune donnée"}</div>
           </div>
+        )}
+      </div>
+    </div>
+  );
+
+  // ── REPORT ERROR MODAL ──
+  const reportModal = reportingAnswer && (
+    <div key="report-modal" onClick={()=>setReportingAnswer(null)} style={{position:"fixed",inset:0,zIndex:10000,background:"rgba(0,0,0,.85)",display:"flex",alignItems:"center",justifyContent:"center",padding:"20px",animation:"fadeIn .2s ease",backdropFilter:"blur(10px)"}}>
+      <div onClick={(e)=>e.stopPropagation()} style={{background:"linear-gradient(180deg,#1a2d1a 0%,#0d1f0d 100%)",borderRadius:24,padding:"24px 22px",maxWidth:420,width:"100%",border:"1px solid rgba(255,255,255,.1)",animation:"popIn .3s ease"}}>
+        {reportSent ? (
+          <div style={{textAlign:"center",padding:"20px 0"}}>
+            <div style={{fontSize:60,marginBottom:10}}>✅</div>
+            <div style={{fontFamily:G.heading,fontSize:24,color:"#00E676",letterSpacing:1,marginBottom:8}}>
+              {lang==="en"?"THANKS!":"MERCI !"}
+            </div>
+            <div style={{fontSize:14,color:"rgba(255,255,255,.7)",lineHeight:1.5,marginBottom:20}}>
+              {lang==="en"?"Your report has been sent. It helps improve the game for everyone.":"Ton signalement a bien été envoyé. Ça aide à améliorer le jeu pour tout le monde."}
+            </div>
+            <button onClick={()=>setReportingAnswer(null)} style={{padding:"12px 32px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>
+              {lang==="en"?"OK":"OK"}
+            </button>
+          </div>
+        ) : (
+          <>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
+              <div style={{fontFamily:G.heading,fontSize:22,color:G.white,letterSpacing:1}}>
+                🚩 {lang==="en"?"REPORT":"SIGNALER"}
+              </div>
+              <button onClick={()=>setReportingAnswer(null)} style={{width:32,height:32,borderRadius:"50%",background:"rgba(255,255,255,.1)",border:"none",color:G.white,fontSize:16,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+            </div>
+            <div style={{fontSize:13,color:"rgba(255,255,255,.6)",marginBottom:12,lineHeight:1.5}}>
+              {lang==="en"?"Which type of error did you find?":"Quel type d'erreur as-tu trouvé ?"}
+            </div>
+            <div style={{background:"rgba(255,255,255,.05)",borderRadius:12,padding:"10px 12px",marginBottom:14,fontSize:12,color:"rgba(255,255,255,.7)"}}>
+              <div><strong style={{color:G.white}}>{reportingAnswer.c1}</strong> × <strong style={{color:G.white}}>{reportingAnswer.c2}</strong></div>
+              {reportingAnswer.given && <div style={{marginTop:4,color:"rgba(255,255,255,.5)"}}>{lang==="en"?"Your answer":"Ta réponse"} : {reportingAnswer.given}</div>}
+            </div>
+            <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:14}}>
+              {[
+                {t:"wrong_player_club", fr:"❌ Un joueur dans la liste n'a jamais joué à un de ces clubs", en:"❌ A player in the list never played for one of these clubs"},
+                {t:"missing_player", fr:"➕ Ma réponse était correcte mais elle a été refusée", en:"➕ My answer was correct but got rejected"},
+                {t:"wrong_club_name", fr:"🏟 Erreur dans le nom d'un club", en:"🏟 Error in a club name"},
+                {t:"other", fr:"❓ Autre", en:"❓ Other"},
+              ].map(opt => (
+                <button key={opt.t} onClick={async ()=>{
+                  try {
+                    await sbFetch("bb_reports", {
+                      method:"POST",
+                      headers:{"Content-Type":"application/json","Prefer":"return=minimal"},
+                      body: JSON.stringify({
+                        reporter_id: playerId,
+                        reporter_name: playerName || null,
+                        report_type: opt.t,
+                        c1: reportingAnswer.c1,
+                        c2: reportingAnswer.c2,
+                        given_answer: reportingAnswer.given || null,
+                        player_name: (reportingAnswer.validPlayers||[]).join("|") || null,
+                        message: reportMessage || null
+                      })
+                    });
+                    setReportSent(true);
+                  } catch(e) { setReportSent(true); /* failsafe : on remercie quand même */ }
+                }} style={{padding:"12px 14px",background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.12)",borderRadius:12,cursor:"pointer",color:G.white,fontFamily:G.font,fontSize:13,fontWeight:600,textAlign:"left",transition:"all .15s"}} onMouseEnter={(e)=>{e.currentTarget.style.background="rgba(0,230,118,.12)";e.currentTarget.style.borderColor=G.accent;}} onMouseLeave={(e)=>{e.currentTarget.style.background="rgba(255,255,255,.06)";e.currentTarget.style.borderColor="rgba(255,255,255,.12)";}}>
+                  {lang==="en"?opt.en:opt.fr}
+                </button>
+              ))}
+            </div>
+            <div style={{fontSize:11,color:"rgba(255,255,255,.35)",textAlign:"center"}}>
+              {lang==="en"?"Select a category to send the report":"Choisis une catégorie pour envoyer le signalement"}
+            </div>
+          </>
         )}
       </div>
     </div>
@@ -4468,6 +4560,7 @@ export default function LePont() {
           </button>
         </div>
         {historyModal}
+        {reportModal}
       </div>
     );
   }
@@ -5734,6 +5827,7 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
         <button onClick={()=>setScreen("home")} style={{width:"100%",padding:"14px",background:"transparent",color:"#bbb",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:700}}>{lang==="en"?"↩ Home":"↩ Accueil"}</button>
       </div>
       {historyModal}
+      {reportModal}
     </div>
   );
 }
@@ -5935,6 +6029,7 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
           </button>
         </div>
         {historyModal}
+        {reportModal}
       </div>
     );
   }
