@@ -57,20 +57,35 @@ function getPlayerId() {
 
 // ── CONSTANTS ──
 const ROUND_DURATION = 90;
-const SEASON_START = new Date("2026-04-13T00:00:00Z");
-const SEASON_DURATION_DAYS = 14;
+// Saisons mensuelles : Saison 1 = Avril 2026, Saison 2 = Mai 2026, etc.
+const SEASON_START = new Date("2026-04-01T00:00:00Z"); // 1er avril 2026 = Saison 1
 
 function getCurrentSeason() {
+  // Calcul basé sur les mois calendaires en timezone Paris
   const now = new Date();
-  const elapsed = now - SEASON_START;
-  const seasonMs = SEASON_DURATION_DAYS * 24 * 60 * 60 * 1000;
-  const num = Math.floor(elapsed / seasonMs);
-  const start = new Date(SEASON_START.getTime() + num * seasonMs);
-  const end = new Date(start.getTime() + seasonMs);
-  const remaining = end - now;
+  const paris = new Date(now.toLocaleString('en-US',{timeZone:'Europe/Paris'}));
+  const startParis = new Date(SEASON_START.toLocaleString('en-US',{timeZone:'Europe/Paris'}));
+  // Nombre de mois entiers écoulés depuis SEASON_START
+  const num = (paris.getFullYear() - startParis.getFullYear()) * 12 + (paris.getMonth() - startParis.getMonth());
+  // Début de la saison actuelle : 1er du mois à 00h Paris
+  const start = new Date(paris.getFullYear(), paris.getMonth(), 1, 0, 0, 0);
+  // Fin : 1er du mois suivant
+  const end = new Date(paris.getFullYear(), paris.getMonth() + 1, 1, 0, 0, 0);
+  const remaining = end - paris;
   const days = Math.floor(remaining / (1000 * 60 * 60 * 24));
   const hours = Math.floor((remaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-  return { num: num + 1, start, end, days, hours };
+  // Clé du mois au format "2026-04" pour stockage DB
+  const monthKey = paris.getFullYear() + "-" + String(paris.getMonth()+1).padStart(2,'0');
+  // Noms de mois français/anglais pour affichage
+  const monthNamesFr = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
+  const monthNamesEn = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  return {
+    num: num + 1,
+    start, end, days, hours,
+    monthKey,
+    monthNameFr: monthNamesFr[paris.getMonth()] + " " + paris.getFullYear(),
+    monthNameEn: monthNamesEn[paris.getMonth()] + " " + paris.getFullYear()
+  };
 }
 
 const GRADES = [
@@ -1642,7 +1657,8 @@ export default function LePont() {
   const [pseudoChecking, setPseudoChecking] = useState(false);
   const [pseudoMsg, setPseudoMsg] = useState("");
   const [playerAvatar, setPlayerAvatar] = useState(null);
-  const [playerXp, setPlayerXp] = useState(0); // XP cumulé, chargé depuis Supabase au démarrage et incrémenté après chaque partie
+  const [playerXp, setPlayerXp] = useState(0); // XP cumulé (lifetime), chargé depuis Supabase au démarrage et incrémenté après chaque partie
+  const [playerXpSeason, setPlayerXpSeason] = useState(0); // XP du mois en cours, reset à chaque début de mois
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [viewingAvatar, setViewingAvatar] = useState(null); // URL de la photo à visualiser en plein écran
   const [cropState, setCropState] = useState(null); // {url, scale, x, y, naturalW, naturalH} — état du cropper
@@ -1725,6 +1741,25 @@ export default function LePont() {
           setPseudoConfirmed(true);
           // Charger XP cumulé depuis Supabase (0 si colonne vide ou pas encore créée)
           if (typeof mine[0].xp === "number") setPlayerXp(mine[0].xp);
+          // Charger XP saison : si le mois stocké correspond au mois en cours, on garde. Sinon reset à 0.
+          try {
+            const currentMonth = getCurrentSeason().monthKey;
+            const storedMonth = mine[0].xp_season_month;
+            if (storedMonth === currentMonth && typeof mine[0].xp_season === "number") {
+              setPlayerXpSeason(mine[0].xp_season);
+            } else {
+              // Nouveau mois (ou première fois) : reset à 0 et sync Supabase
+              setPlayerXpSeason(0);
+              if (storedMonth !== currentMonth) {
+                // Reset côté serveur pour que ça soit cohérent pour les autres lectures
+                sbFetch("bb_pseudos?player_id=eq." + playerId, {
+                  method: "PATCH",
+                  headers: { "Content-Type":"application/json", "Prefer":"return=minimal" },
+                  body: JSON.stringify({ xp_season: 0, xp_season_month: currentMonth })
+                }).catch(()=>{});
+              }
+            }
+          } catch(e) {}
           // Charger streak Supabase et réconcilier avec localStorage (le plus élevé gagne)
           try {
             const localS = JSON.parse(localStorage.getItem("bb_day_streak")||"{}");
@@ -2745,51 +2780,66 @@ export default function LePont() {
   }
 
   async function checkAndCloseSeason() {
-    const { seasonNumber, seasonStartDate, seasonEndDate } = getCurrentSeason();
-    const now = new Date();
-    // Vérifier si la saison précédente a déjà été clôturée
+    const season = getCurrentSeason();
+    if (season.num <= 1) return; // pas encore de saison précédente à clôturer
     try {
-      const prev = await sbFetch("bb_seasons?season_number=eq."+(seasonNumber-1)+"&limit=1");
+      // Calculer le monthKey de la saison précédente
+      const now = new Date();
+      const paris = new Date(now.toLocaleString('en-US',{timeZone:'Europe/Paris'}));
+      const prevMonth = new Date(paris.getFullYear(), paris.getMonth() - 1, 1);
+      const prevMonthKey = prevMonth.getFullYear() + "-" + String(prevMonth.getMonth()+1).padStart(2,'0');
+      // Vérifier si la saison précédente a déjà été clôturée
+      const prev = await sbFetch("bb_seasons?season_number=eq."+(season.num-1)+"&limit=1");
       if (Array.isArray(prev) && prev.length > 0) return; // déjà clôturée
-      if (seasonNumber <= 1) return; // pas encore de saison à clôturer
-      // Récupérer le champion de la saison précédente
-      const prevStart = new Date(SEASON_START.getTime() + (seasonNumber - 2) * SEASON_DURATION_DAYS * 86400000);
-      const prevEnd = seasonStartDate;
-      const scores = await sbFetch("bb_scores?order=score.desc&limit=1000&select=player_id,player_name,score,mode&created_at=gte."+prevStart.toISOString()+"&created_at=lt."+prevEnd.toISOString());
-      if (!Array.isArray(scores) || scores.length === 0) return;
-      // Calculer le meilleur score par joueur
-      const stats = {};
-      scores.forEach(function(r) {
-        if (!stats[r.player_id]) stats[r.player_id] = { name: r.player_name, bestPont: 0, bestChaine: 0 };
-        if (r.mode === "pont" && r.score > stats[r.player_id].bestPont) stats[r.player_id].bestPont = r.score;
-        if (r.mode === "chaine" && r.score > stats[r.player_id].bestChaine) stats[r.player_id].bestChaine = r.score;
-      });
-      const ranked = Object.entries(stats).map(function([pid, s]) {
-        return { pid, name: s.name, score: s.bestPont + s.bestChaine };
-      }).sort(function(a, b) { return b.score - a.score; });
-      if (ranked.length === 0) return;
-      const champion = ranked[0];
+
+      // Récupérer les joueurs avec xp_season du mois précédent
+      const rows = await sbFetch("bb_pseudos?select=player_id,pseudo,xp_season&xp_season_month=eq."+prevMonthKey+"&order=xp_season.desc&limit=10");
+      if (!Array.isArray(rows) || rows.length === 0) return;
+      const top = rows.filter(r => (r.xp_season || 0) > 0);
+      if (top.length === 0) return;
+
+      const champion = top[0];
+      const runnerUp = top[1] || null;
+      const third = top[2] || null;
+
+      // Créer l'entrée Hall of Fame
       await sbFetch("bb_seasons", {
         method: "POST",
-        body: JSON.stringify({ season_number: seasonNumber - 1, champion_name: champion.name, champion_score: champion.score, champion_id: champion.pid })
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({
+          season_number: season.num - 1,
+          season_month: prevMonthKey,
+          champion_id: champion.player_id,
+          champion_name: champion.pseudo,
+          champion_score: champion.xp_season,
+          runner_up_id: runnerUp ? runnerUp.player_id : null,
+          runner_up_name: runnerUp ? runnerUp.pseudo : null,
+          runner_up_xp: runnerUp ? runnerUp.xp_season : null,
+          third_id: third ? third.player_id : null,
+          third_name: third ? third.pseudo : null,
+          third_xp: third ? third.xp_season : null
+        })
       });
       loadSeasons();
-    } catch(e) {}
+    } catch(e) { /* silent */ }
   }
 
   async function loadLeaderboard(mode) {
     try {
-      // Mode Saison : classement par XP cumulé (table bb_pseudos)
+      // Mode Saison : classement par XP du mois en cours (table bb_pseudos)
       if (mode === "saison") {
-        const rows = await sbFetch("bb_pseudos?select=player_id,pseudo,xp,country&order=xp.desc&limit=50");
+        const currentMonth = getCurrentSeason().monthKey;
+        // On récupère tous les joueurs dont xp_season_month correspond au mois en cours
+        const rows = await sbFetch("bb_pseudos?select=player_id,pseudo,xp,xp_season,xp_season_month,country&xp_season_month=eq."+currentMonth+"&order=xp_season.desc&limit=50");
         if (!Array.isArray(rows)) { setLeaderboard([]); return; }
         const sorted = rows
-          .filter(r => (r.xp || 0) > 0)
+          .filter(r => (r.xp_season || 0) > 0)
           .map(function(r, i) { return {
             name: r.pseudo || "?",
             pid: r.player_id,
-            score: r.xp || 0,
-            xp: r.xp || 0,
+            score: r.xp_season || 0,
+            xp: r.xp || 0, // XP lifetime pour afficher le grade
+            xpSeason: r.xp_season || 0,
             country: r.country || null,
             rank: i + 1,
             played: 0, wins:0, draws:0, losses:0, streak:0
@@ -2801,23 +2851,9 @@ export default function LePont() {
       const isGlobal = mode === "global" || isAmis;
       const season = getCurrentSeason();
 
-      // Couronner le champion de la saison précédente si pas encore fait
+      // Couronner le champion de la saison précédente si pas encore fait (fire-and-forget)
       if (season.num > 1) {
-        try {
-          const prevSeason = season.num - 1;
-          const existing = await sbFetch("bb_seasons?season_number=eq."+prevSeason+"&limit=1");
-          if (Array.isArray(existing) && existing.length === 0) {
-            const prevStart = new Date(SEASON_START.getTime() + (prevSeason-1) * SEASON_DURATION_DAYS * 24*60*60*1000);
-            const prevEnd = new Date(prevStart.getTime() + SEASON_DURATION_DAYS * 24*60*60*1000);
-            const prevScores = await sbFetch("bb_scores?order=score.desc&limit=1000&select=player_id,player_name,score&created_at=gte."+prevStart.toISOString()+"&created_at=lt."+prevEnd.toISOString());
-            if (Array.isArray(prevScores) && prevScores.length > 0) {
-              const best = {};
-              prevScores.forEach(function(r){ if(!best[r.player_id]||r.score>best[r.player_id].score) best[r.player_id]=r; });
-              const champ = Object.values(best).sort(function(a,b){return b.score-a.score;})[0];
-              if (champ) await sbFetch("bb_seasons", {method:"POST", body:JSON.stringify({season_number:prevSeason, champion_name:champ.player_name, champion_score:champ.score, champion_id:champ.player_id})});
-            }
-          }
-        } catch(e){}
+        checkAndCloseSeason();
       }
 
       // Filtre par saison sauf pour l'onglet Amis
@@ -2940,20 +2976,28 @@ export default function LePont() {
     return 0;                           // Loin = défaite
   }
 
-  // Incrémente l'XP du joueur en local et dans Supabase
+  // Incrémente l'XP du joueur (lifetime ET saisonnier) en local et dans Supabase
   // Appelé à la fin de chaque partie avec le score gagné
   async function addXp(scoreGained) {
     if (!playerId || !pseudoConfirmed) return;
     const xpGained = Math.max(0, scoreGained); // pas d'XP négatif si score <0
     if (xpGained === 0) return;
+    const season = getCurrentSeason();
     const newXp = playerXp + xpGained;
-    setPlayerXp(newXp); // update immédiat UI
+    // Si on est dans un nouveau mois, on reset automatiquement l'XP saison avant d'ajouter
+    // (cas où le joueur n'a pas ouvert l'app au changement de mois)
+    const newXpSeason = playerXpSeason + xpGained; // la logique de reset est dans loadPlayerXp au démarrage
+    setPlayerXp(newXp);
+    setPlayerXpSeason(newXpSeason);
     try {
-      // Update atomique côté serveur (plus safe que set direct car évite les races)
       await sbFetch("bb_pseudos?player_id=eq." + playerId, {
         method: "PATCH",
         headers: { "Content-Type":"application/json", "Prefer":"return=minimal" },
-        body: JSON.stringify({ xp: newXp })
+        body: JSON.stringify({
+          xp: newXp,
+          xp_season: newXpSeason,
+          xp_season_month: season.monthKey
+        })
       });
     } catch(e) { /* silent - XP reste updaté en local */ }
   }
@@ -4485,7 +4529,7 @@ export default function LePont() {
             {(()=>{ const s=getCurrentSeason(); return lbMode==="amis"
               ? <div style={{fontSize:12,color:"rgba(255,255,255,.4)"}}>{lang==="en"?"Friends leaderboard · Cumulative":"Classement entre amis · Cumulatif"}</div>
               : <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
-                  <div style={{fontSize:13,fontWeight:800,color:G.gold}}>{lang==="en"?"⚽ Season ":"⚽ Saison "}{s.num}</div>
+                  <div style={{fontSize:13,fontWeight:800,color:G.gold}}>⚽ {lang==="en"?s.monthNameEn:s.monthNameFr}</div>
                   <div style={{fontSize:11,color:"rgba(255,255,255,.4)"}}>{lang==="en"?`⏳ ${s.days}d ${s.hours}h before reset`:`⏳ J-${s.days} ${s.hours}h avant reset`}</div>
                 </div>;
             })()}
@@ -4502,7 +4546,7 @@ export default function LePont() {
             return (
               <div style={{marginBottom:8,padding:"10px 14px",background:"rgba(255,214,0,.08)",borderRadius:14,border:"1px solid rgba(255,214,0,.2)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                 <div>
-                  <div style={{fontSize:11,fontWeight:800,color:G.gold,letterSpacing:1}}>{lang==="en"?"🏆 SEASON ":"🏆 SAISON "}{s.num}</div>
+                  <div style={{fontSize:11,fontWeight:800,color:G.gold,letterSpacing:1}}>🏆 {(lang==="en"?s.monthNameEn:s.monthNameFr).toUpperCase()}</div>
                   <div style={{fontSize:10,color:"rgba(255,255,255,.4)",marginTop:2}}>
                     {lang==="en" ? (daysLeft > 0 ? `${daysLeft}d (${hoursLeft}h) left` : `Ends in ${hoursLeft}h`) : (daysLeft > 0 ? `J-${daysLeft} (${hoursLeft}h)` : `Finit dans ${hoursLeft}h`)}
                   </div>
@@ -4578,16 +4622,23 @@ export default function LePont() {
           {/* Hall of Fame */}
           {hallOfFame.length > 0 && lbMode !== "amis" && (
             <div style={{marginTop:16,paddingTop:16,borderTop:"1px solid rgba(255,255,255,.08)"}}>
-              <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.3)",marginBottom:10,textAlign:"center"}}>{lang==="en"?"🏛 Hall of Fame":"🏛 Hall of Fame"}</div>
-              {hallOfFame.map(function(s,i){
+              <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.3)",marginBottom:10,textAlign:"center"}}>🏛 Hall of Fame</div>
+              {hallOfFame.slice(0,5).map(function(s,i){
+                const monthNamesFr = ["Jan","Fév","Mars","Avr","Mai","Juin","Juil","Août","Sept","Oct","Nov","Déc"];
+                const monthNamesEn = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+                let monthShort = lang==="en"?("Season "+s.season_number):("Saison "+s.season_number);
+                if (s.season_month) {
+                  const [y, m] = s.season_month.split("-");
+                  monthShort = (lang==="en"?monthNamesEn:monthNamesFr)[parseInt(m,10)-1] + " " + y.slice(2);
+                }
                 return (
                   <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",background:"rgba(255,215,0,.05)",borderRadius:12,marginBottom:6,border:"1px solid rgba(255,215,0,.1)"}}>
                     <span style={{fontSize:20}}>👑</span>
                     <div style={{flex:1}}>
                       <div style={{fontSize:13,fontWeight:800,color:G.gold}}>{s.champion_name}</div>
-                      <div style={{fontSize:11,color:"rgba(255,255,255,.35)"}}>{lang==="en"?"Season ":"Saison "}{s.season_number}</div>
+                      <div style={{fontSize:11,color:"rgba(255,255,255,.35)"}}>{monthShort}</div>
                     </div>
-                    <div style={{fontFamily:G.heading,fontSize:20,color:G.gold}}>{s.champion_score} <span style={{fontSize:11,color:"rgba(255,255,255,.3)"}}>pts</span></div>
+                    <div style={{fontFamily:G.heading,fontSize:20,color:G.gold}}>{s.champion_score} <span style={{fontSize:11,color:"rgba(255,255,255,.3)"}}>XP</span></div>
                   </div>
                 );
               })}
@@ -4600,20 +4651,54 @@ export default function LePont() {
         <div style={{position:"fixed",inset:0,zIndex:400,background:"rgba(0,0,0,.85)",display:"flex",alignItems:"flex-end"}}
           onClick={function(e){if(e.target===e.currentTarget)setShowHallOfFame(false);}}>
           <div style={{width:"100%",background:"rgba(10,20,10,.97)",borderRadius:"28px 28px 0 0",padding:"20px 20px 48px",border:"1px solid rgba(255,255,255,.1)",borderBottom:"none",maxHeight:"80vh",overflowY:"auto"}}>
-            <div style={{fontFamily:G.heading,fontSize:28,color:G.gold,letterSpacing:2,marginBottom:4,textAlign:"center"}}>{lang==="en"?"🏅 HALL OF FAME":"🏅 HALL OF FAME"}</div>
+            <div style={{fontFamily:G.heading,fontSize:28,color:G.gold,letterSpacing:2,marginBottom:4,textAlign:"center"}}>🏅 HALL OF FAME</div>
             <div style={{fontSize:12,color:"rgba(255,255,255,.4)",textAlign:"center",marginBottom:16}}>{lang==="en"?"Past season champions":"Champions des saisons passées"}</div>
             {hallOfFame.length === 0 && <div style={{textAlign:"center",color:"rgba(255,255,255,.3)",padding:"24px 0",fontSize:14}}>{lang==="en"?"No champion yet — the first season is ongoing!":"Pas encore de champion — la première saison est en cours !"}</div>}
             {hallOfFame.map(function(s,i){
-              const grade = getGrade(s.champion_score||0);
+              // Transformer le monthKey "2026-04" en nom lisible
+              const monthNamesFr = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
+              const monthNamesEn = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+              let monthLabel = "";
+              if (s.season_month) {
+                const [y, m] = s.season_month.split("-");
+                const mi = parseInt(m,10) - 1;
+                monthLabel = (lang==="en"?monthNamesEn:monthNamesFr)[mi] + " " + y;
+              }
               return (
-                <div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"14px",background:"rgba(255,214,0,.06)",borderRadius:14,border:"1px solid rgba(255,214,0,.15)",marginBottom:8}}>
-                  <div style={{fontSize:32}}>🏆</div>
-                  <div style={{flex:1}}>
-                    <div style={{fontSize:13,color:"rgba(255,255,255,.4)",letterSpacing:1}}>{lang==="en"?"SEASON ":"SAISON "}{s.season_number}</div>
-                    <div style={{fontSize:16,fontWeight:800,color:G.gold}}>{s.champion_name}</div>
-                    <div style={{fontSize:11,color:"rgba(255,255,255,.4)",marginTop:2}}>{grade.emoji} {grade.label}</div>
+                <div key={i} style={{background:"linear-gradient(135deg, rgba(255,214,0,.1), rgba(255,107,53,.05))",borderRadius:18,border:"1.5px solid rgba(255,214,0,.3)",marginBottom:14,padding:"16px 14px",boxShadow:"0 4px 16px rgba(255,214,0,.08)"}}>
+                  {/* Header saison */}
+                  <div style={{textAlign:"center",marginBottom:12}}>
+                    <div style={{fontSize:11,fontWeight:800,letterSpacing:3,color:"rgba(255,214,0,.7)",textTransform:"uppercase"}}>{lang==="en"?"Season":"Saison"} {s.season_number}</div>
+                    {monthLabel && <div style={{fontFamily:G.heading,fontSize:18,color:G.white,letterSpacing:1,marginTop:2}}>{monthLabel}</div>}
                   </div>
-                  <div style={{fontFamily:G.heading,fontSize:28,color:G.gold}}>{s.champion_score} <span style={{fontSize:11,color:"rgba(255,255,255,.3)"}}>pts</span></div>
+                  {/* Podium */}
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1.3fr 1fr",gap:8,alignItems:"flex-end"}}>
+                    {/* 2nd */}
+                    {s.runner_up_name ? (
+                      <div style={{textAlign:"center",background:"rgba(200,200,210,.12)",border:"1px solid rgba(200,200,210,.3)",borderRadius:12,padding:"12px 6px"}}>
+                        <div style={{fontSize:26,marginBottom:4}}>🥈</div>
+                        <div style={{fontSize:13,fontWeight:800,color:"#E8E8E8",marginBottom:2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{s.runner_up_name}</div>
+                        <div style={{fontFamily:G.heading,fontSize:16,color:"#C0C0C0"}}>{s.runner_up_xp}</div>
+                        <div style={{fontSize:9,color:"rgba(255,255,255,.4)",letterSpacing:1}}>XP</div>
+                      </div>
+                    ) : <div/>}
+                    {/* 1st (champion) */}
+                    <div style={{textAlign:"center",background:"linear-gradient(180deg,rgba(255,214,0,.25),rgba(255,214,0,.1))",border:"1.5px solid #FFD600",borderRadius:14,padding:"14px 6px",boxShadow:"0 4px 14px rgba(255,214,0,.25)",transform:"translateY(-4px)"}}>
+                      <div style={{fontSize:32,marginBottom:4}}>👑</div>
+                      <div style={{fontSize:14,fontWeight:800,color:G.gold,marginBottom:2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",textShadow:"0 1px 6px rgba(255,214,0,.5)"}}>{s.champion_name}</div>
+                      <div style={{fontFamily:G.heading,fontSize:20,color:G.gold}}>{s.champion_score}</div>
+                      <div style={{fontSize:9,color:"rgba(255,214,0,.7)",letterSpacing:1,fontWeight:700}}>XP</div>
+                    </div>
+                    {/* 3rd */}
+                    {s.third_name ? (
+                      <div style={{textAlign:"center",background:"rgba(205,127,50,.12)",border:"1px solid rgba(205,127,50,.3)",borderRadius:12,padding:"12px 6px"}}>
+                        <div style={{fontSize:26,marginBottom:4}}>🥉</div>
+                        <div style={{fontSize:13,fontWeight:800,color:"#E3A869",marginBottom:2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{s.third_name}</div>
+                        <div style={{fontFamily:G.heading,fontSize:16,color:"#CD7F32"}}>{s.third_xp}</div>
+                        <div style={{fontSize:9,color:"rgba(255,255,255,.4)",letterSpacing:1}}>XP</div>
+                      </div>
+                    ) : <div/>}
+                  </div>
                 </div>
               );
             })}
