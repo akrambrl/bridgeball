@@ -4306,31 +4306,31 @@ export default function LePont() {
                   <div style={{flex:1}}>
                     <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3,flexWrap:"wrap"}}>
                       <span style={{fontSize:19,fontFamily:G.heading,letterSpacing:1,color:i<3?"#1a0d00":isMe?G.accent:G.white,whiteSpace:"nowrap"}}>{entry.country && <span style={{marginRight:5,fontSize:16}}>{countryToFlag(entry.country)}</span>}{entry.name}{isMe?" (toi)":""}</span>
-                      <span style={{fontSize:12,fontWeight:800,color:grade.color,background:grade.color+"22",borderRadius:20,padding:"3px 9px",letterSpacing:.5}}>{grade.emoji} {grade.label}</span>
+                      <span style={{fontSize:12,fontWeight:800,color:i<3?"#1a0d00":grade.color,background:i<3?"rgba(26,13,0,.18)":grade.color+"22",borderRadius:20,padding:"3px 9px",letterSpacing:.5,border:i<3?"1px solid rgba(26,13,0,.25)":"none"}}>{grade.emoji} {grade.label}</span>
                       {entry.streak>=3 && <span style={{fontSize:12,fontWeight:800,color:"#FF6B35",background:"rgba(255,107,53,.15)",borderRadius:20,padding:"3px 9px"}}>🔥 {entry.streak}</span>}
                     </div>
                     {lbMode==="saison"
-                      ? <div style={{fontSize:13,color:i<3?"rgba(26,13,0,.7)":"rgba(255,255,255,.5)",marginTop:4}}>⭐ {lang==="en"?"Cumulative XP":"XP cumulés"}</div>
+                      ? <div style={{fontSize:13,color:i<3?"rgba(26,13,0,.85)":"rgba(255,255,255,.5)",marginTop:4,fontWeight:i<3?700:400}}>⭐ {lang==="en"?"Cumulative XP":"XP cumulés"}</div>
                       : lbMode==="global"
-                      ? <div style={{fontSize:13,color:i<3?"rgba(26,13,0,.7)":"rgba(255,255,255,.5)",marginTop:4}}>🏟 {entry.bestPont} pts &nbsp;·&nbsp; ⛓ {entry.bestChaine} pts</div>
-                      : <div style={{fontSize:13,color:i<3?"rgba(26,13,0,.7)":"rgba(255,255,255,.5)",marginTop:4}}>{entry.played} {lang==="en"?(entry.played>1?"games":"game"):(entry.played>1?"parties":"partie")}</div>
+                      ? <div style={{fontSize:13,color:i<3?"rgba(26,13,0,.85)":"rgba(255,255,255,.5)",marginTop:4,fontWeight:i<3?700:400}}>🏟 {entry.bestPont} pts &nbsp;·&nbsp; ⛓ {entry.bestChaine} pts</div>
+                      : <div style={{fontSize:13,color:i<3?"rgba(26,13,0,.85)":"rgba(255,255,255,.5)",marginTop:4,fontWeight:i<3?700:400}}>{entry.played} {lang==="en"?(entry.played>1?"games":"game"):(entry.played>1?"parties":"partie")}</div>
                     }
                   </div>
-                  <div style={{fontFamily:G.heading,fontSize:32,color:i<3?"#1a0d00":G.white}}>{entry.score} <span style={{fontSize:14,color:i<3?"rgba(26,13,0,.5)":"rgba(255,255,255,.3)"}}>{lbMode==="saison"?"XP":"pts"}</span></div>
+                  <div style={{fontFamily:G.heading,fontSize:32,color:i<3?"#1a0d00":G.white}}>{entry.score} <span style={{fontSize:14,color:i<3?"rgba(26,13,0,.7)":"rgba(255,255,255,.3)",fontWeight:i<3?700:400}}>{lbMode==="saison"?"XP":"pts"}</span></div>
                 </div>
                 {lbMode!=="saison" && (
-                <div style={{display:"flex",borderTop:i<3?"1px solid rgba(0,0,0,.15)":"1px solid rgba(255,255,255,.06)"}}>
-                    <div style={{flex:1,padding:"10px 0",textAlign:"center",borderRight:"1px solid rgba(255,255,255,.06)"}}>
-                      <div style={{fontFamily:G.heading,fontSize:22,color:"#00E676"}}>{entry.wins||0}</div>
-                      <div style={{fontSize:11,color:"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase"}}>{lang==="en"?"Wins":"Victoires"}</div>
+                <div style={{display:"flex",borderTop:i<3?"1px solid rgba(0,0,0,.2)":"1px solid rgba(255,255,255,.06)",background:i<3?"rgba(0,0,0,.08)":"transparent"}}>
+                    <div style={{flex:1,padding:"10px 0",textAlign:"center",borderRight:i<3?"1px solid rgba(0,0,0,.15)":"1px solid rgba(255,255,255,.06)"}}>
+                      <div style={{fontFamily:G.heading,fontSize:22,color:i<3?"#0d5c2a":"#00E676"}}>{entry.wins||0}</div>
+                      <div style={{fontSize:11,color:i<3?"rgba(26,13,0,.75)":"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase",fontWeight:i<3?800:400}}>{lang==="en"?"Wins":"Victoires"}</div>
                     </div>
-                    <div style={{flex:1,padding:"10px 0",textAlign:"center",borderRight:"1px solid rgba(255,255,255,.06)"}}>
-                      <div style={{fontFamily:G.heading,fontSize:22,color:G.gold}}>{entry.draws||0}</div>
-                      <div style={{fontSize:11,color:"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase"}}>{lang==="en"?"Draws":"Nuls"}</div>
+                    <div style={{flex:1,padding:"10px 0",textAlign:"center",borderRight:i<3?"1px solid rgba(0,0,0,.15)":"1px solid rgba(255,255,255,.06)"}}>
+                      <div style={{fontFamily:G.heading,fontSize:22,color:i<3?"#7a5c00":G.gold}}>{entry.draws||0}</div>
+                      <div style={{fontSize:11,color:i<3?"rgba(26,13,0,.75)":"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase",fontWeight:i<3?800:400}}>{lang==="en"?"Draws":"Nuls"}</div>
                     </div>
                     <div style={{flex:1,padding:"10px 0",textAlign:"center"}}>
-                      <div style={{fontFamily:G.heading,fontSize:22,color:"#FF3D57"}}>{entry.losses||0}</div>
-                      <div style={{fontSize:11,color:"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase"}}>{lang==="en"?"Losses":"Défaites"}</div>
+                      <div style={{fontFamily:G.heading,fontSize:22,color:i<3?"#8a1a2e":"#FF3D57"}}>{entry.losses||0}</div>
+                      <div style={{fontSize:11,color:i<3?"rgba(26,13,0,.75)":"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase",fontWeight:i<3?800:400}}>{lang==="en"?"Losses":"Défaites"}</div>
                     </div>
                   </div>
                 )}
@@ -5004,68 +5004,75 @@ export default function LePont() {
       </div>
 
       {/* Stats cards */}
-      <div style={{zIndex:1,padding:"16px 16px 8px",display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-        <div style={{background:"#123a1e",border:"1px solid rgba(255,214,0,.5)",borderRadius:16,padding:"14px 10px",textAlign:"center"}}>
-          <div style={{fontSize:22,marginBottom:4}}>🏆</div>
-          <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,214,0,.95)",marginBottom:4}}>{lang==="en"?"Plug record":"Record Plug"}</div>
-          <div style={{fontFamily:G.heading,fontSize:26,color:G.gold}}>{record?record.score:0}</div>
+      <div style={{zIndex:1,padding:"16px 16px 8px",display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+        {/* Record Plug - Or/Orange */}
+        <div style={{background:"linear-gradient(135deg, rgba(255,214,0,.18), rgba(255,107,53,.12))",border:"1.5px solid rgba(255,214,0,.45)",borderRadius:20,padding:"18px 14px",textAlign:"center",boxShadow:"0 4px 16px rgba(255,214,0,.12)"}}>
+          <div style={{fontSize:32,marginBottom:8}}>🏆</div>
+          <div style={{fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,214,0,.95)",marginBottom:8}}>{lang==="en"?"Plug record":"Record Plug"}</div>
+          <div style={{fontFamily:G.heading,fontSize:40,color:G.gold,lineHeight:1,textShadow:"0 2px 12px rgba(255,214,0,.35)"}}>{record?record.score:0}</div>
         </div>
-        <div style={{background:"#123a1e",border:"1px solid rgba(96,165,250,.5)",borderRadius:16,padding:"14px 10px",textAlign:"center"}}>
-          <div style={{fontSize:22,marginBottom:4}}>⛓</div>
-          <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(96,165,250,.95)",marginBottom:4}}>{lang==="en"?"Mercato record":"Record Mercato"}</div>
-          <div style={{fontFamily:G.heading,fontSize:26,color:"#60a5fa"}}>{chainRecord?chainRecord.score:0}</div>
+        {/* Record Mercato - Bleu */}
+        <div style={{background:"linear-gradient(135deg, rgba(96,165,250,.18), rgba(59,130,246,.12))",border:"1.5px solid rgba(96,165,250,.45)",borderRadius:20,padding:"18px 14px",textAlign:"center",boxShadow:"0 4px 16px rgba(96,165,250,.12)"}}>
+          <div style={{fontSize:32,marginBottom:8}}>⛓️</div>
+          <div style={{fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(96,165,250,.95)",marginBottom:8}}>{lang==="en"?"Mercato record":"Record Mercato"}</div>
+          <div style={{fontFamily:G.heading,fontSize:40,color:"#60a5fa",lineHeight:1,textShadow:"0 2px 12px rgba(96,165,250,.35)"}}>{chainRecord?chainRecord.score:0}</div>
         </div>
-        <div style={{background:"#123a1e",border:"1px solid rgba(0,230,118,.5)",borderRadius:16,padding:"14px 10px",textAlign:"center"}}>
-          <div style={{fontSize:22,marginBottom:4}}>👥</div>
-          <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(0,230,118,.95)",marginBottom:4}}>{lang==="en"?"Friends":"Amis"}</div>
-          <div style={{fontFamily:G.heading,fontSize:26,color:G.accent}}>{friendsList.length}</div>
+        {/* Amis - Rose/Rouge */}
+        <div style={{background:"linear-gradient(135deg, rgba(255,61,87,.18), rgba(255,107,53,.12))",border:"1.5px solid rgba(255,61,87,.45)",borderRadius:20,padding:"18px 14px",textAlign:"center",boxShadow:"0 4px 16px rgba(255,61,87,.12)"}}>
+          <div style={{fontSize:32,marginBottom:8}}>👥</div>
+          <div style={{fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,61,87,.95)",marginBottom:8}}>{lang==="en"?"Friends":"Amis"}</div>
+          <div style={{fontFamily:G.heading,fontSize:40,color:"#FF3D57",lineHeight:1,textShadow:"0 2px 12px rgba(255,61,87,.35)"}}>{friendsList.length}</div>
         </div>
-        <div style={{background:"#123a1e",border:"1px solid rgba(192,132,252,.5)",borderRadius:16,padding:"14px 10px",textAlign:"center"}}>
-          <div style={{fontSize:22,marginBottom:4}}>🎮</div>
-          <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(192,132,252,.95)",marginBottom:4}}>{lang==="en"?"Games":"Parties"}</div>
-          <div style={{fontFamily:G.heading,fontSize:26,color:"#c084fc"}}>{(record?1:0)+(chainRecord?1:0)}</div>
+        {/* Parties - Violet */}
+        <div style={{background:"linear-gradient(135deg, rgba(192,132,252,.18), rgba(167,139,250,.12))",border:"1.5px solid rgba(192,132,252,.45)",borderRadius:20,padding:"18px 14px",textAlign:"center",boxShadow:"0 4px 16px rgba(192,132,252,.12)"}}>
+          <div style={{fontSize:32,marginBottom:8}}>🎮</div>
+          <div style={{fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(192,132,252,.95)",marginBottom:8}}>{lang==="en"?"Games":"Parties"}</div>
+          <div style={{fontFamily:G.heading,fontSize:40,color:"#c084fc",lineHeight:1,textShadow:"0 2px 12px rgba(192,132,252,.35)"}}>{(record?1:0)+(chainRecord?1:0)}</div>
         </div>
       </div>
 
       {/* Actions */}
       <div style={{zIndex:1,padding:"8px 16px",display:"flex",flexDirection:"column",gap:10}}>
-        <button onClick={()=>{setShowFriends(true);setScreen("home");}} style={{padding:"16px",background:"#123a1e",border:"1px solid rgba(0,230,118,.5)",borderRadius:16,cursor:"pointer",color:G.white,fontFamily:G.font,fontSize:15,fontWeight:700,display:"flex",alignItems:"center",gap:12,textAlign:"left"}}>
-          <span style={{fontSize:22}}>👥</span>
+        {/* Mes amis - Rose */}
+        <button onClick={()=>{setShowFriends(true);setScreen("home");}} style={{padding:"18px",background:"linear-gradient(135deg, rgba(255,61,87,.15), rgba(255,107,53,.08))",border:"1.5px solid rgba(255,61,87,.45)",borderRadius:18,cursor:"pointer",color:G.white,fontFamily:G.font,fontSize:17,fontWeight:800,display:"flex",alignItems:"center",gap:14,textAlign:"left",boxShadow:"0 3px 12px rgba(255,61,87,.1)"}}>
+          <span style={{fontSize:26}}>👥</span>
           <div style={{flex:1}}>
             <div>{lang==="en"?"My friends":"Mes amis"}</div>
-            <div style={{fontSize:11,color:"rgba(255,255,255,.75)",fontWeight:500,marginTop:2}}>{friendsList.length} {lang==="en"?(friendsList.length>1?"friends":"friend"):(friendsList.length>1?"amis":"ami")}</div>
+            <div style={{fontSize:12,color:"rgba(255,255,255,.65)",fontWeight:600,marginTop:3,letterSpacing:.3}}>{friendsList.length} {lang==="en"?(friendsList.length>1?"friends":"friend"):(friendsList.length>1?"amis":"ami")}</div>
           </div>
-          <span style={{fontSize:18,color:"rgba(255,255,255,.3)"}}>→</span>
+          <span style={{fontSize:22,color:"rgba(255,61,87,.8)"}}>→</span>
         </button>
 
-        <button onClick={()=>{setLbMode("pont");setLbDiff("facile");loadLeaderboard("pont");setShowLeaderboard(true);setScreen("home");}} style={{padding:"16px",background:"#123a1e",border:"1px solid rgba(255,214,0,.5)",borderRadius:16,cursor:"pointer",color:G.white,fontFamily:G.font,fontSize:15,fontWeight:700,display:"flex",alignItems:"center",gap:12,textAlign:"left"}}>
-          <span style={{fontSize:22}}>🏆</span>
+        {/* Classement - Or */}
+        <button onClick={()=>{setLbMode("pont");setLbDiff("facile");loadLeaderboard("pont");setShowLeaderboard(true);setScreen("home");}} style={{padding:"18px",background:"linear-gradient(135deg, rgba(255,214,0,.15), rgba(255,107,53,.08))",border:"1.5px solid rgba(255,214,0,.45)",borderRadius:18,cursor:"pointer",color:G.white,fontFamily:G.font,fontSize:17,fontWeight:800,display:"flex",alignItems:"center",gap:14,textAlign:"left",boxShadow:"0 3px 12px rgba(255,214,0,.1)"}}>
+          <span style={{fontSize:26}}>🏆</span>
           <div style={{flex:1}}>
             <div>{lang==="en"?"Leaderboard":"Classement"}</div>
-            <div style={{fontSize:11,color:"rgba(255,255,255,.75)",fontWeight:500,marginTop:2}}>{lang==="en"?"See your world rank":"Vois ton rang mondial"}</div>
+            <div style={{fontSize:12,color:"rgba(255,255,255,.65)",fontWeight:600,marginTop:3,letterSpacing:.3}}>{lang==="en"?"See your world rank":"Vois ton rang mondial"}</div>
           </div>
-          <span style={{fontSize:18,color:"rgba(255,255,255,.3)"}}>→</span>
+          <span style={{fontSize:22,color:"rgba(255,214,0,.8)"}}>→</span>
         </button>
 
-        <button onClick={()=>{setShowTutorial(true);setTutorialStep(0);}} style={{padding:"16px",background:"#123a1e",border:"1px solid rgba(96,165,250,.5)",borderRadius:16,cursor:"pointer",color:G.white,fontFamily:G.font,fontSize:15,fontWeight:700,display:"flex",alignItems:"center",gap:12,textAlign:"left"}}>
-          <span style={{fontSize:22}}>❓</span>
+        {/* Comment jouer - Bleu */}
+        <button onClick={()=>{setShowTutorial(true);setTutorialStep(0);}} style={{padding:"18px",background:"linear-gradient(135deg, rgba(96,165,250,.15), rgba(59,130,246,.08))",border:"1.5px solid rgba(96,165,250,.45)",borderRadius:18,cursor:"pointer",color:G.white,fontFamily:G.font,fontSize:17,fontWeight:800,display:"flex",alignItems:"center",gap:14,textAlign:"left",boxShadow:"0 3px 12px rgba(96,165,250,.1)"}}>
+          <span style={{fontSize:26}}>❓</span>
           <div style={{flex:1}}>
             <div>{lang==="en"?"How to play?":"Comment jouer ?"}</div>
-            <div style={{fontSize:11,color:"rgba(255,255,255,.75)",fontWeight:500,marginTop:2}}>{lang==="en"?"See the tutorial again":"Revoir le tutoriel"}</div>
+            <div style={{fontSize:12,color:"rgba(255,255,255,.65)",fontWeight:600,marginTop:3,letterSpacing:.3}}>{lang==="en"?"See the tutorial again":"Revoir le tutoriel"}</div>
           </div>
-          <span style={{fontSize:18,color:"rgba(255,255,255,.3)"}}>→</span>
+          <span style={{fontSize:22,color:"rgba(96,165,250,.8)"}}>→</span>
         </button>
 
-        {/* Language switcher */}
-        <div style={{padding:"16px",background:"#123a1e",border:"1px solid rgba(255,214,0,.5)",borderRadius:16,color:G.white,fontFamily:G.font,fontSize:15,fontWeight:700,display:"flex",alignItems:"center",gap:12}}>
-          <span style={{fontSize:22}}>🌐</span>
+        {/* Langue - Violet */}
+        <div style={{padding:"18px",background:"linear-gradient(135deg, rgba(192,132,252,.15), rgba(167,139,250,.08))",border:"1.5px solid rgba(192,132,252,.45)",borderRadius:18,color:G.white,fontFamily:G.font,fontSize:17,fontWeight:800,display:"flex",alignItems:"center",gap:14,boxShadow:"0 3px 12px rgba(192,132,252,.1)"}}>
+          <span style={{fontSize:26}}>🌐</span>
           <div style={{flex:1}}>
             <div>{lang==="en"?"Language":"Langue"}</div>
-            <div style={{fontSize:11,color:"rgba(255,255,255,.75)",fontWeight:500,marginTop:2}}>{lang==="en"?"Choose your language":"Choisis ta langue"}</div>
+            <div style={{fontSize:12,color:"rgba(255,255,255,.65)",fontWeight:600,marginTop:3,letterSpacing:.3}}>{lang==="en"?"Choose your language":"Choisis ta langue"}</div>
           </div>
           <div style={{display:"flex",gap:6}}>
-            <button onClick={()=>setLanguage("fr")} style={{padding:"6px 12px",background:lang==="fr"?G.accent:"rgba(255,255,255,.08)",color:lang==="fr"?"#000":"rgba(255,255,255,.7)",border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800}}>🇫🇷 FR</button>
-            <button onClick={()=>setLanguage("en")} style={{padding:"6px 12px",background:lang==="en"?G.accent:"rgba(255,255,255,.08)",color:lang==="en"?"#000":"rgba(255,255,255,.7)",border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800}}>🇬🇧 EN</button>
+            <button onClick={()=>setLanguage("fr")} style={{padding:"7px 13px",background:lang==="fr"?G.accent:"rgba(255,255,255,.08)",color:lang==="fr"?"#000":"rgba(255,255,255,.7)",border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800}}>🇫🇷 FR</button>
+            <button onClick={()=>setLanguage("en")} style={{padding:"7px 13px",background:lang==="en"?G.accent:"rgba(255,255,255,.08)",color:lang==="en"?"#000":"rgba(255,255,255,.7)",border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800}}>🇬🇧 EN</button>
           </div>
         </div>
       </div>
