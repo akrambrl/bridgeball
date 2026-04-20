@@ -4453,7 +4453,7 @@ export default function LePont() {
         <div style={{...sheet,borderRadius:"28px 28px 0 0",marginTop:16}}>
           <div style={{background:"rgba(255,255,255,.04)",borderRadius:14,padding:"10px 14px",marginBottom:4}}>
             <div style={{fontSize:11,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginBottom:2}}>{lang==="en"?"Mode":"Mode"}</div>
-            <div style={{fontSize:15,fontWeight:800,color:G.white}}>{room.mode==="pont"?"The Plug":"The Mercato"}{room.diff?" · "+(lang==="en"?(room.diff==="facile"?"easy":room.diff==="moyen"?"medium":"expert"):room.diff):""} · {room.rounds||1} {lang==="en"?("round"+((room.rounds||1)>1?"s":"")):("manche"+((room.rounds||1)>1?"s":""))}</div>
+            <div style={{fontSize:15,fontWeight:800,color:G.white}}>{room.mode==="pont"?"The Plug":"The Mercato"}{room.diff?" · "+(room.diff==="facile"?"AMATEUR":room.diff==="moyen"?"PRO":"LEGEND"):""} · {room.rounds||1} {lang==="en"?("round"+((room.rounds||1)>1?"s":"")):("manche"+((room.rounds||1)>1?"s":""))}</div>
           </div>
           <div>
             <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.3)",marginBottom:8}}>
@@ -5130,7 +5130,7 @@ export default function LePont() {
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                 <div>
                   <div style={{fontSize:13,fontWeight:800,color:G.white}}>{duelMode==="pont"?"The Plug":"The Mercato"}</div>
-                  <div style={{fontSize:12,color:"rgba(255,255,255,.4)"}}>{lang==="en"?(duelDiff==="facile"?"easy":duelDiff==="moyen"?"medium":"expert"):duelDiff} · {duelRounds} {lang==="en"?("round"+(duelRounds>1?"s":"")):("manche"+(duelRounds>1?"s":""))}</div>
+                  <div style={{fontSize:12,color:"rgba(255,255,255,.4)"}}>{duelDiff==="facile"?"AMATEUR":duelDiff==="moyen"?"PRO":"LEGEND"} · {duelRounds} {lang==="en"?("round"+(duelRounds>1?"s":"")):("manche"+(duelRounds>1?"s":""))}</div>
                 </div>
                 <div style={{fontFamily:G.heading,fontSize:32,color:G.accent}}>2-8 👥</div>
               </div>
@@ -5282,61 +5282,121 @@ export default function LePont() {
             onClick={function(e){if(e.target===e.currentTarget)setGameConfigModal(null);}}
           >
             {/* Backdrop */}
-            <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.5)",backdropFilter:"blur(4px)"}} onClick={function(){setGameConfigModal(null);}}/>
+            <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.7)",backdropFilter:"blur(10px)"}} onClick={function(){setGameConfigModal(null);}}/>
             {/* Sheet */}
-            <div style={{
-              position:"relative",zIndex:1,
-              width:"100%",
-              background:gameConfigModal==="pont"
-                ?"linear-gradient(180deg,#0B1624 0%,#1C3D73 100%)"
-                :"linear-gradient(180deg,#0F2A1A 0%,#1A5C34 100%)",
-              backdropFilter:"blur(20px)",
-              borderRadius:"28px 28px 0 0",
-              padding:"16px 20px 48px",
-              border:"1px solid rgba(255,255,255,.1)",
-              borderBottom:"none",
-              animation:"slideUp .35s cubic-bezier(.22,1,.36,1)"
-            }}>
-              {/* Handle */}
-              <div style={{width:40,height:4,background:"rgba(255,255,255,.2)",borderRadius:2,margin:"0 auto 20px"}}/>
-              {/* Mode name */}
-              <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:4}}>
-                <div style={{opacity:.8}}>{gameConfigModal==="pont"?Icon.pitch(28,"#fff"):Icon.transfer(28,"#fff")}</div>
-                <div style={{fontFamily:G.heading,fontSize:36,color:G.white,letterSpacing:2}}>
-                  {gameConfigModal==="pont"?"THE PLUG":"THE MERCATO"}
+            {(() => {
+              const isPont = gameConfigModal==="pont";
+              const accentColor = isPont ? "#FFD600" : "#60a5fa";
+              const accentSecondary = isPont ? "#FF6B35" : "#3b82f6";
+              return (
+                <div style={{
+                  position:"relative",zIndex:1,
+                  width:"100%",
+                  overflow:"hidden",
+                  borderRadius:"28px 28px 0 0",
+                  border:`1px solid ${accentColor}33`,
+                  borderBottom:"none",
+                  boxShadow:`0 -20px 60px rgba(0,0,0,.6), 0 0 80px ${accentColor}22`,
+                  animation:"slideUp .4s cubic-bezier(.34,1.56,.64,1)"
+                }}>
+                  {/* Fond pelouse */}
+                  <div style={{position:"absolute",inset:0,zIndex:0,overflow:"hidden"}}>
+                    {[0,1,2,3,4,5,6].map(i => (
+                      <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#1E5C2A":"#276B34"}}/>
+                    ))}
+                    <div style={{position:"absolute",inset:0,background:`linear-gradient(180deg, ${accentColor}1F 0%, rgba(10,20,10,.90) 40%, rgba(10,20,10,.96) 100%)`}}/>
+                    <div style={{position:"absolute",top:-80,left:-60,width:260,height:260,borderRadius:"50%",background:`radial-gradient(circle, ${accentColor}40 0%, transparent 70%)`,filter:"blur(40px)"}}/>
+                    <div style={{position:"absolute",top:-40,right:-40,width:220,height:220,borderRadius:"50%",background:`radial-gradient(circle, ${accentSecondary}30 0%, transparent 70%)`,filter:"blur(40px)"}}/>
+                  </div>
+
+                  <div style={{position:"relative",zIndex:1,padding:"14px 22px 42px"}}>
+                    {/* Handle */}
+                    <div style={{width:44,height:4,background:"rgba(255,255,255,.25)",borderRadius:2,margin:"0 auto 22px"}}/>
+
+                    {/* Header */}
+                    <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:6}}>
+                      <div style={{width:52,height:52,borderRadius:"50%",background:`linear-gradient(135deg, ${accentColor}, ${accentSecondary})`,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:`0 6px 20px ${accentColor}55`,flexShrink:0}}>
+                        {isPont ? Icon.pitch(26,"#000") : Icon.transfer(26,"#000")}
+                      </div>
+                      <div style={{flex:1}}>
+                        <div style={{fontFamily:G.heading,fontSize:30,color:G.white,letterSpacing:2,lineHeight:1,textShadow:`0 2px 10px ${accentColor}66`}}>
+                          {isPont?"THE PLUG":"THE MERCATO"}
+                        </div>
+                        <div style={{fontSize:11,letterSpacing:2,color:accentColor,textTransform:"uppercase",fontWeight:800,marginTop:4}}>
+                          {isPont?(lang==="en"?"2 clubs → find the common player":"2 clubs → trouve le joueur commun"):(lang==="en"?"player → club → player...":"joueur → club → joueur...")}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Difficulté */}
+                    <div style={{fontSize:10,fontWeight:800,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginBottom:10,marginTop:26}}>{lang==="en"?"Difficulty":"Difficulté"}</div>
+                    <div style={{display:"flex",gap:8,marginBottom:20}}>
+                      {["facile","moyen","expert"].map(function(d){
+                        const dLabel = d==="facile"?"AMATEUR":d==="moyen"?"PRO":"LEGEND";
+                        const dColor = d==="facile"?"#00E676":d==="moyen"?"#FFD600":"#FF3D57";
+                        const stars = d==="facile"?1:d==="moyen"?2:3;
+                        return(
+                          <button key={d} onClick={function(){setDiff(d);}} style={{
+                            flex:1,padding:"14px 4px",borderRadius:14,
+                            border:`1.5px solid ${diff===d?dColor:"rgba(255,255,255,.1)"}`,
+                            background:diff===d?`${dColor}15`:"rgba(255,255,255,.03)",
+                            color:diff===d?dColor:"rgba(255,255,255,.5)",
+                            fontFamily:G.font,fontWeight:800,cursor:"pointer",fontSize:13,letterSpacing:1,transition:"all .15s",
+                            display:"flex",flexDirection:"column",alignItems:"center",gap:4,
+                            boxShadow:diff===d?`0 4px 16px ${dColor}33`:"none"
+                          }}>
+                            <div style={{fontSize:12,letterSpacing:1}}>{"⭐".repeat(stars)}</div>
+                            <div>{dLabel}</div>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Manches */}
+                    <div style={{fontSize:10,fontWeight:800,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginBottom:10}}>{lang==="en"?"Rounds":"Manches"}</div>
+                    <div style={{display:"flex",gap:8,marginBottom:28}}>
+                      {[1,2,3].map(function(n){return(
+                        <button key={n} onClick={function(){setTotalRounds(n);}} style={{
+                          flex:1,padding:"14px",borderRadius:14,
+                          border:`1.5px solid ${totalRounds===n?accentColor:"rgba(255,255,255,.1)"}`,
+                          background:totalRounds===n?`${accentColor}15`:"rgba(255,255,255,.03)",
+                          color:totalRounds===n?accentColor:"rgba(255,255,255,.35)",
+                          fontFamily:G.heading,fontWeight:700,cursor:"pointer",fontSize:24,transition:"all .15s",
+                          boxShadow:totalRounds===n?`0 4px 16px ${accentColor}33`:"none"
+                        }}>
+                          {n}
+                        </button>
+                      );})}
+                    </div>
+
+                    {/* Boutons */}
+                    <div style={{display:"flex",gap:10}}>
+                      <button onClick={function(){const m=gameConfigModal;setGameConfigModal(null);setTimeout(function(){tryStart(m);},50);}} style={{
+                        flex:2,padding:"17px",
+                        background:`linear-gradient(135deg, ${accentColor}, ${accentSecondary})`,
+                        color:"#000",border:"none",borderRadius:50,cursor:"pointer",
+                        fontFamily:G.font,fontSize:16,fontWeight:800,letterSpacing:1,
+                        boxShadow:`0 8px 24px ${accentColor}55`,
+                        display:"flex",alignItems:"center",justifyContent:"center",gap:8,
+                        transition:"transform .15s"
+                      }} onMouseDown={(e)=>e.currentTarget.style.transform="scale(.97)"} onMouseUp={(e)=>e.currentTarget.style.transform="scale(1)"} onMouseLeave={(e)=>e.currentTarget.style.transform="scale(1)"}>
+                        ▶ {lang==="en"?"Play solo":"Jouer seul"}
+                      </button>
+                      <button onClick={function(){setDuelMode(gameConfigModal);setDuelDiff(diff);setDuelRounds(totalRounds);setGameConfigModal(null);setTimeout(function(){setShowRoomCreate(true);},100);}} style={{
+                        flex:1,padding:"17px",
+                        background:"rgba(255,255,255,.08)",color:G.white,
+                        border:"1px solid rgba(255,255,255,.15)",
+                        borderRadius:50,cursor:"pointer",
+                        fontFamily:G.font,fontSize:13,fontWeight:700,
+                        backdropFilter:"blur(10px)"
+                      }}>
+                        👥 {lang==="en"?"With friends":"Entre potes"}
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div style={{fontSize:12,color:"rgba(255,255,255,.4)",marginBottom:20,paddingLeft:40}}>
-                {gameConfigModal==="pont"?(lang==="en"?"2 clubs → find the common player":"2 clubs → trouve le joueur commun"):(lang==="en"?"player → club → player...":"joueur → club → joueur...")}
-              </div>
-              {/* Difficulté */}
-              <div style={{fontSize:10,fontWeight:700,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.3)",marginBottom:8}}>{lang==="en"?"Difficulty":"Difficulté"}</div>
-              <div style={{display:"flex",gap:8,marginBottom:20}}>
-                {["facile","moyen","expert"].map(function(d){const dLabel=lang==="en"?(d==="facile"?"easy":d==="moyen"?"medium":"expert"):d;return(
-                  <button key={d} onClick={function(){setDiff(d);}} style={{flex:1,padding:"12px 4px",borderRadius:14,border:"1.5px solid "+(diff===d?G.accent:"rgba(255,255,255,.1)"),background:diff===d?"rgba(0,230,118,.12)":"rgba(255,255,255,.04)",color:diff===d?G.accent:"rgba(255,255,255,.5)",fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:13,textTransform:"capitalize",transition:"all .15s"}}>
-                    {dLabel}
-                  </button>
-                );})}
-              </div>
-              {/* Manches */}
-              <div style={{fontSize:10,fontWeight:700,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.3)",marginBottom:8}}>{lang==="en"?"Rounds":"Manches"}</div>
-              <div style={{display:"flex",gap:8,marginBottom:24}}>
-                {[1,2,3].map(function(n){return(
-                  <button key={n} onClick={function(){setTotalRounds(n);}} style={{flex:1,padding:"12px",borderRadius:14,border:"1.5px solid "+(totalRounds===n?"rgba(255,255,255,.7)":"rgba(255,255,255,.1)"),background:totalRounds===n?"rgba(255,255,255,.1)":"rgba(255,255,255,.04)",color:totalRounds===n?G.white:"rgba(255,255,255,.35)",fontFamily:G.heading,fontWeight:700,cursor:"pointer",fontSize:22,transition:"all .15s"}}>
-                    {n}
-                  </button>
-                );})}
-              </div>
-              {/* Boutons */}
-              <div style={{display:"flex",gap:10}}>
-                <button onClick={function(){const m=gameConfigModal;setGameConfigModal(null);setTimeout(function(){tryStart(m);},50);}} style={{flex:2,padding:"16px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:16,fontWeight:800,letterSpacing:.5}}>
-                  {lang==="en"?"▶ Play solo":"▶ Jouer seul"}
-                </button>
-                <button onClick={function(){setDuelMode(gameConfigModal);setDuelDiff(diff);setDuelRounds(totalRounds);setGameConfigModal(null);setTimeout(function(){setShowRoomCreate(true);},100);}} style={{flex:1,padding:"16px",background:"rgba(255,255,255,.07)",color:G.white,border:"1px solid rgba(255,255,255,.12)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700}}>
-                  {lang==="en"?"👥 With friends":"👥 Entre potes"}
-                </button>
-              </div>
-            </div>
+              );
+            })()}
           </div>
         )}
 
@@ -5398,7 +5458,7 @@ export default function LePont() {
                     background: dailyPlayer.diff==="facile"?"rgba(0,230,118,.15)":dailyPlayer.diff==="moyen"?"rgba(255,214,0,.15)":"rgba(255,61,87,.15)",
                     border: `1px solid ${dailyPlayer.diff==="facile"?"rgba(0,230,118,.3)":dailyPlayer.diff==="moyen"?"rgba(255,214,0,.3)":"rgba(255,61,87,.3)"}`
                   }}>
-                    {dailyPlayer.diff==="facile"?(lang==="en"?"⭐ Easy":"⭐ Facile"):dailyPlayer.diff==="moyen"?(lang==="en"?"⭐⭐ Medium":"⭐⭐ Moyen"):(lang==="en"?"⭐⭐⭐ Expert":"⭐⭐⭐ Expert")}
+                    {dailyPlayer.diff==="facile"?"⭐ AMATEUR":dailyPlayer.diff==="moyen"?"⭐⭐ PRO":"⭐⭐⭐ LEGEND"}
                   </span>
                 </div>
                 <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:G.accent,marginBottom:8,textAlign:"center"}}>{lang==="en"?"Clubs in career":"Clubs dans sa carrière"}</div>
