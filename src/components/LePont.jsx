@@ -1885,9 +1885,13 @@ export default function LePont() {
         // On représente après 7 jours
         if (elapsed < 7 * 24 * 60 * 60 * 1000) return;
       }
-      // Montrer si streak >= 3 (le user est accroché) ou s'il a joué au moins 3 parties
+      // Sur iOS : déclencher dès que pseudo confirmé (incitation forte car les notifs n'existent qu'en mode standalone)
+      // Sur Android / desktop : attendre streak >= 3 OU un record + event d'installation dispo
       const hasRecord = (record && record.score > 0) || (chainRecord && chainRecord.score > 0);
-      if (dayStreak >= 3 || (hasRecord && (deferredInstall || isIOS()))) {
+      const shouldShow = isIOS()
+        ? true // iOS : on pousse l'installation rapidement car c'est la seule façon d'avoir des notifs
+        : (dayStreak >= 3 || (hasRecord && deferredInstall));
+      if (shouldShow) {
         // Petit délai pour ne pas bousculer l'user
         const t = setTimeout(() => setShowInstallPrompt(true), 1500);
         return () => clearTimeout(t);
