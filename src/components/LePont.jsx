@@ -1103,18 +1103,22 @@ function seededShuffle(arr, seed) {
   return a;
 }
 function norm(s){return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9 ]/g,"").trim();}
+// Version sans espaces pour matcher des clubs composés tapés de différentes façons
+// Exemple : "Saint-Etienne", "Saint Etienne", "SaintEtienne" doivent tous matcher
+function normCompact(s){return norm(s).replace(/\s+/g,"");}
 function checkGuess(g,players){const gn=norm(g);return players.some(p=>{const pn=norm(p);return gn===pn||pn.split(" ").some(part=>part.length>2&&gn.includes(part));});}
 function matchClub(input,playerClubs){
   const n=norm(input);
-  // 1. Exact match
-  for(const c of playerClubs){if(norm(c)===n)return c;}
+  const nc=normCompact(input);
+  // 1. Exact match (avec ou sans espaces/tirets)
+  for(const c of playerClubs){if(norm(c)===n||normCompact(c)===nc)return c;}
   // 2. User tape un alias d'un club canonique présent dans playerClubs
-  for(const c of playerClubs){const aliases=CLUB_ALIASES[c];if(aliases&&aliases.some(a=>norm(a)===n))return c;}
+  for(const c of playerClubs){const aliases=CLUB_ALIASES[c];if(aliases&&aliases.some(a=>norm(a)===n||normCompact(a)===nc))return c;}
   // 3. Bidirectionnel : user tape un nom canonique OU un alias,
   //    et playerClubs contient un alias OU le nom canonique correspondant
   for(const canonical in CLUB_ALIASES){
     const aliases=CLUB_ALIASES[canonical];
-    const inputMatchesThisGroup=norm(canonical)===n||aliases.some(a=>norm(a)===n);
+    const inputMatchesThisGroup=norm(canonical)===n||normCompact(canonical)===nc||aliases.some(a=>norm(a)===n||normCompact(a)===nc);
     if(!inputMatchesThisGroup)continue;
     for(const c of playerClubs){
       if(norm(c)===norm(canonical))return c;
@@ -1122,10 +1126,10 @@ function matchClub(input,playerClubs){
     }
   }
   if(n.length>=3){
-    // 4. Substring match sur le club du joueur
-    for(const c of playerClubs){if(norm(c).includes(n)||n.includes(norm(c)))return c;}
+    // 4. Substring match sur le club du joueur (version compacte pour tolérer tirets/espaces)
+    for(const c of playerClubs){if(normCompact(c).includes(nc)||nc.includes(normCompact(c)))return c;}
     // 5. Substring match sur les alias du club du joueur
-    for(const c of playerClubs){const aliases=CLUB_ALIASES[c];if(aliases&&aliases.some(a=>norm(a).includes(n)||n.includes(norm(a))))return c;}
+    for(const c of playerClubs){const aliases=CLUB_ALIASES[c];if(aliases&&aliases.some(a=>normCompact(a).includes(nc)||nc.includes(normCompact(a))))return c;}
   }
   return null;
 }
@@ -3823,10 +3827,25 @@ export default function LePont() {
       setChainCount(c=>c+1); handleCorrectAnswer(2,true);
       setFeedback("ok"); setFlash("ok");
       const clubPlayers=getPlayersForClub(matched).filter(p=>!chainUsedPlayers.has(p)&&getPlayerClubs(p).some(c=>!newUsed.has(c)));
-      if(clubPlayers.length===0){setTimeout(()=>{setFeedback(null);setFlash(null);endChain();},800);return;}
       // Favoriser les joueurs de la bonne difficulté ET les joueurs actuels (80/20)
       const isInRoomCS = activeDuelRef.current && activeDuelRef.current.isRoom;
       const effectiveDiffCS = isInRoomCS && activeDuelRef.current.diff ? activeDuelRef.current.diff : diff;
+      if(clubPlayers.length===0){
+        // Chaîne bloquée après bonne réponse → on pioche un joueur frais au lieu de finir la partie
+        const fallbackPool = PLAYERS_CLEAN.filter(p => {
+          if (p.clubs.length < 2) return false;
+          if (chainUsedPlayers.has(p.name)) return false;
+          if (effectiveDiffCS === "facile") return p.diff === "facile";
+          if (effectiveDiffCS === "moyen") return p.diff === "facile" || p.diff === "moyen";
+          return true;
+        });
+        const pool = fallbackPool.length > 0 ? fallbackPool : PLAYERS_CLEAN.filter(p => p.clubs.length >= 2 && !chainUsedPlayers.has(p.name));
+        if(pool.length === 0){setTimeout(()=>{setFeedback(null);setFlash(null);endChain();},800);return;}
+        const fallback = pool[Math.floor(Math.random()*pool.length)].name;
+        const newUsedP=new Set(chainUsedPlayers); newUsedP.add(fallback);
+        setTimeout(()=>{setChainPlayer(fallback);setChainUsedPlayers(newUsedP);setChainLastClub(matched);setGuess("");setFeedback(null);setFlash(null);setTimeout(()=>inputRef.current?.focus(),100);},700);
+        return;
+      }
       const preferred = clubPlayers.filter(p => {
         const pd = PLAYERS_CLEAN.find(x=>x.name===p)?.diff;
         if(effectiveDiffCS==="facile") return pd==="facile";
@@ -3866,10 +3885,46 @@ export default function LePont() {
     const randCP = passSeed !== null ? seededRandom(passSeed) : Math.random;
     const validClubs=(PLAYERS_CLEAN.find(p=>p.name===chainPlayer)?.clubs||[]).filter(c=>!chainUsedClubs.has(c));
     const chosen=validClubs.length>0?validClubs[Math.floor(randCP()*validClubs.length)]:null;
-    if(!chosen){endChain();return;}
+    // Helper : pioche un nouveau joueur aléatoire de la base (fallback quand la chaîne bloque)
+    // Au lieu de terminer la partie prématurément, on relance avec un joueur tout frais
+    const pickFallbackPlayer = () => {
+      const eligible = PLAYERS_CLEAN.filter(p => {
+        if (p.clubs.length < 2) return false;
+        if (chainUsedPlayers.has(p.name)) return false;
+        if (effectiveDiffCP === "facile") return p.diff === "facile";
+        if (effectiveDiffCP === "moyen") return p.diff === "facile" || p.diff === "moyen";
+        return true;
+      });
+      const pool = eligible.length > 0 ? eligible : PLAYERS_CLEAN.filter(p => p.clubs.length >= 2 && !chainUsedPlayers.has(p.name));
+      if (pool.length === 0) return null;
+      return pool[Math.floor(randCP() * pool.length)].name;
+    };
+    if(!chosen){
+      // Pas de club dispo → pioche nouveau joueur frais
+      const fallback = pickFallbackPlayer();
+      if(!fallback){endChain();return;}
+      const newUsedP=new Set(chainUsedPlayers); newUsedP.add(fallback);
+      setChainUsedPlayers(newUsedP);
+      setChainHistory(prev=>[...prev,{player:chainPlayer,club:"—",passed:true}]);
+      setChainPlayer(fallback); setChainLastClub(""); setGuess("");
+      setTimeout(()=>inputRef.current?.focus(),100);
+      setAnimKey(k=>k+1);
+      return;
+    }
     const newUsed=new Set(chainUsedClubs); newUsed.add(chosen);
     const clubPlayers=getPlayersForClub(chosen).filter(p=>!chainUsedPlayers.has(p)&&getPlayerClubs(p).some(c=>!newUsed.has(c)));
-    if(clubPlayers.length===0){endChain();return;}
+    if(clubPlayers.length===0){
+      // Pas de joueur pour ce club → pioche nouveau joueur frais
+      const fallback = pickFallbackPlayer();
+      if(!fallback){endChain();return;}
+      const newUsedP=new Set(chainUsedPlayers); newUsedP.add(fallback);
+      setChainUsedClubs(newUsed); setChainUsedPlayers(newUsedP);
+      setChainHistory(prev=>[...prev,{player:chainPlayer,club:chosen,passed:true}]);
+      setChainPlayer(fallback); setChainLastClub(chosen); setGuess("");
+      setTimeout(()=>inputRef.current?.focus(),100);
+      setAnimKey(k=>k+1);
+      return;
+    }
     const preferred2 = clubPlayers.filter(p => {
       const pd = PLAYERS_CLEAN.find(x=>x.name===p)?.diff;
       if(effectiveDiffCP==="facile") return pd==="facile";
