@@ -1106,6 +1106,16 @@ function norm(s){return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f
 // Version sans espaces pour matcher des clubs composés tapés de différentes façons
 // Exemple : "Saint-Etienne", "Saint Etienne", "SaintEtienne" doivent tous matcher
 function normCompact(s){return norm(s).replace(/\s+/g,"");}
+// Génère un code de récupération format GOATFC-XXXX-YYYY
+// Utilise uniquement des caractères non ambigus (pas 0/O, 1/I/L, etc.)
+function generateRecoveryCode() {
+  const chars = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+  let code = "GOATFC-";
+  for (let i = 0; i < 4; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  code += "-";
+  for (let i = 0; i < 4; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  return code;
+}
 function checkGuess(g,players){const gn=norm(g);return players.some(p=>{const pn=norm(p);return gn===pn||pn.split(" ").some(part=>part.length>2&&gn.includes(part));});}
 function matchClub(input,playerClubs){
   const n=norm(input);
@@ -1778,6 +1788,15 @@ export default function LePont() {
 
   const [qTimeLeft, setQTimeLeft] = useState(5);
   const [pseudoScreen, setPseudoScreen] = useState(false); // show pseudo creation screen
+  // Code de récupération : stocké en localStorage après création pour retrouver son compte
+  const [recoveryCode, setRecoveryCode] = useState(() => { try { return localStorage.getItem("bb_recovery_code") || ""; } catch { return ""; } });
+  const [showRecoveryCodeModal, setShowRecoveryCodeModal] = useState(null); // {code:"GOATFC-XXXX-YYYY"} pour affichage après création
+  const [showRecoveryInput, setShowRecoveryInput] = useState(false); // modal de récupération (input du code)
+  const [recoveryInput, setRecoveryInput] = useState("");
+  const [recoveryMsg, setRecoveryMsg] = useState("");
+  const [recoveryLoading, setRecoveryLoading] = useState(false);
+  const [showMyRecoveryCode, setShowMyRecoveryCode] = useState(false); // affichage du code depuis le profil
+  const [recoveryConfirmed, setRecoveryConfirmed] = useState(false); // checkbox "j'ai noté mon code"
   const [pseudoInput, setPseudoInput] = useState("");
   const [pseudoChecking, setPseudoChecking] = useState(false);
   const [pseudoMsg, setPseudoMsg] = useState("");
@@ -2721,31 +2740,84 @@ export default function LePont() {
       // Check if I already have a pseudo
       const mine = await sbFetch("bb_pseudos?player_id=eq."+playerId+"&limit=1");
       const country = await detectCountry();
+      let finalRecoveryCode = recoveryCode;
       if (Array.isArray(mine) && mine.length > 0) {
         // Update existing pseudo
         const payload = country ? {pseudo: clean, country} : {pseudo: clean};
+        // Si pas de code existant, en générer un
+        if (!mine[0].recovery_code) {
+          finalRecoveryCode = generateRecoveryCode();
+          payload.recovery_code = finalRecoveryCode;
+        } else {
+          finalRecoveryCode = mine[0].recovery_code;
+        }
         await sbFetch("bb_pseudos?player_id=eq."+playerId, {
           method: "PATCH",
           body: JSON.stringify(payload),
           headers: {"Prefer": "return=minimal"}
         });
       } else {
-        // Create new pseudo
-        const payload = country ? {player_id: playerId, pseudo: clean, country} : {player_id: playerId, pseudo: clean};
+        // Create new pseudo avec code de récupération
+        finalRecoveryCode = generateRecoveryCode();
+        const payload = country 
+          ? {player_id: playerId, pseudo: clean, country, recovery_code: finalRecoveryCode}
+          : {player_id: playerId, pseudo: clean, recovery_code: finalRecoveryCode};
         await sbFetch("bb_pseudos", {
           method: "POST",
           body: JSON.stringify(payload)
         });
       }
       setPlayerName(clean);
-      try { localStorage.setItem("bb_name", clean); } catch {}
+      try { 
+        localStorage.setItem("bb_name", clean);
+        localStorage.setItem("bb_recovery_code", finalRecoveryCode);
+      } catch {}
+      setRecoveryCode(finalRecoveryCode);
       setPseudoConfirmed(true);
       setPseudoScreen(false);
       setPseudoMsg(lang==="en"?"✓ Username reserved!":"✓ Pseudo réservé !");
+      // Afficher le code de récupération seulement si c'est une nouvelle création
+      if (!Array.isArray(mine) || mine.length === 0) {
+        setShowRecoveryCodeModal({code: finalRecoveryCode});
+        setRecoveryConfirmed(false);
+      }
     } catch(e) {
       setPseudoMsg("Erreur: "+e.message);
     }
     setPseudoChecking(false);
+  }
+
+  // Récupération de compte via code
+  async function recoverAccount() {
+    const code = recoveryInput.trim().toUpperCase();
+    if (!code) { setRecoveryMsg(lang==="en"?"❌ Enter your code":"❌ Entre ton code"); return; }
+    if (!/^GOATFC-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(code)) {
+      setRecoveryMsg(lang==="en"?"❌ Invalid format (GOATFC-XXXX-XXXX)":"❌ Format invalide (GOATFC-XXXX-XXXX)");
+      return;
+    }
+    setRecoveryLoading(true);
+    setRecoveryMsg(lang==="en"?"Recovering...":"Récupération...");
+    try {
+      const found = await sbFetch("bb_pseudos?recovery_code=eq."+encodeURIComponent(code)+"&limit=1");
+      if (!Array.isArray(found) || found.length === 0) {
+        setRecoveryMsg(lang==="en"?"❌ Code not found":"❌ Code introuvable");
+        setRecoveryLoading(false);
+        return;
+      }
+      const account = found[0];
+      // Restaurer le compte localement
+      try {
+        localStorage.setItem("bb_player_id", account.player_id);
+        localStorage.setItem("bb_name", account.pseudo);
+        localStorage.setItem("bb_recovery_code", code);
+      } catch {}
+      setRecoveryMsg(lang==="en"?"✓ Account recovered! Reloading...":"✓ Compte récupéré ! Rechargement...");
+      // Recharger la page pour réinitialiser tous les states avec le bon player_id
+      setTimeout(()=>{ window.location.reload(); }, 1200);
+    } catch(e) {
+      setRecoveryMsg("Erreur: "+(e.message||""));
+      setRecoveryLoading(false);
+    }
   }
 
   async function initPseudo() {
@@ -2759,6 +2831,23 @@ export default function LePont() {
           setPlayerName(mine[0].pseudo);
           localStorage.setItem("bb_name", mine[0].pseudo);
           setPseudoConfirmed(true);
+          // Restaurer le code de récupération en localStorage (migration pour les users existants)
+          if (mine[0].recovery_code) {
+            try { localStorage.setItem("bb_recovery_code", mine[0].recovery_code); } catch {}
+            setRecoveryCode(mine[0].recovery_code);
+          } else {
+            // User existant sans code : lui en générer un et le sauver en DB
+            const newCode = generateRecoveryCode();
+            try {
+              await sbFetch("bb_pseudos?player_id=eq."+playerId, {
+                method: "PATCH",
+                body: JSON.stringify({recovery_code: newCode}),
+                headers: {"Prefer": "return=minimal"}
+              });
+              localStorage.setItem("bb_recovery_code", newCode);
+              setRecoveryCode(newCode);
+            } catch {}
+          }
           return;
         }
       } catch {}
@@ -5371,6 +5460,114 @@ export default function LePont() {
         >
           {pseudoChecking?(lang==="en"?"Checking...":"Vérification..."):(lang==="en"?"Confirm →":"Confirmer →")}
         </button>
+        {/* Séparateur + bouton récupération de compte */}
+        <div style={{display:"flex",alignItems:"center",margin:"18px 0 12px",gap:10}}>
+          <div style={{flex:1,height:1,background:"rgba(255,255,255,.1)"}}/>
+          <span style={{fontSize:10,color:"rgba(255,255,255,.3)",letterSpacing:1}}>{lang==="en"?"OR":"OU"}</span>
+          <div style={{flex:1,height:1,background:"rgba(255,255,255,.1)"}}/>
+        </div>
+        <button
+          onClick={function(){setShowRecoveryInput(true);setRecoveryInput("");setRecoveryMsg("");}}
+          style={{width:"100%",padding:"13px",background:"rgba(255,255,255,.06)",color:"rgba(255,255,255,.85)",border:"1.5px solid rgba(255,255,255,.15)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}
+        >
+          🔐 {lang==="en"?"I already have an account":"J'ai déjà un compte"}
+        </button>
+      </div>
+    </div>
+  ) : null;
+
+  // ── MODAL : Affichage du code de récupération après création ──
+  const recoveryCodeAfterCreationModal = showRecoveryCodeModal ? (
+    <div style={{position:"fixed",inset:0,zIndex:500,background:"rgba(0,0,0,.92)",backdropFilter:"blur(12px)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+      <div style={{width:"100%",maxWidth:380,background:"rgba(10,20,10,.97)",borderRadius:28,padding:"32px 24px",border:"1.5px solid rgba(0,230,118,.35)",boxShadow:"0 10px 40px rgba(0,230,118,.15)"}}>
+        <div style={{textAlign:"center",marginBottom:20}}>
+          <div style={{fontSize:44,marginBottom:8}}>🔐</div>
+          <div style={{fontFamily:G.heading,fontSize:24,color:G.white,lineHeight:1.1,marginBottom:6}}>{lang==="en"?"Your recovery code":"Ton code de récupération"}</div>
+          <div style={{fontSize:13,color:"rgba(255,255,255,.55)"}}>{lang==="en"?"Save it to access your account from another device":"Sauvegarde-le pour retrouver ton compte sur un autre appareil"}</div>
+        </div>
+        <div style={{background:G.accent,borderRadius:14,padding:"22px 16px",textAlign:"center",marginBottom:16,boxShadow:"0 4px 20px rgba(0,230,118,.25)"}}>
+          <div style={{fontFamily:"ui-monospace, Menlo, monospace",fontSize:22,fontWeight:800,color:"#000",letterSpacing:2,userSelect:"all"}}>{showRecoveryCodeModal.code}</div>
+        </div>
+        <button
+          onClick={async function(){
+            try { await navigator.clipboard.writeText(showRecoveryCodeModal.code); setPseudoMsg(lang==="en"?"✓ Copied!":"✓ Copié !"); } catch {}
+          }}
+          style={{width:"100%",padding:"11px",background:"rgba(255,255,255,.06)",color:G.white,border:"1px solid rgba(255,255,255,.15)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700,marginBottom:14}}
+        >
+          📋 {lang==="en"?"Copy":"Copier"}
+        </button>
+        <div style={{background:"rgba(255,214,0,.08)",border:"1px solid rgba(255,214,0,.3)",borderRadius:12,padding:"11px 14px",marginBottom:16}}>
+          <div style={{fontSize:12,color:"rgba(255,214,0,.95)",lineHeight:1.5}}>⚠️ {lang==="en"?"Without this code, you won't be able to recover your account if you change phone.":"Sans ce code, tu ne pourras pas récupérer ton compte si tu changes de téléphone."}</div>
+        </div>
+        <label style={{display:"flex",alignItems:"flex-start",gap:10,marginBottom:16,cursor:"pointer"}}>
+          <input type="checkbox" checked={recoveryConfirmed} onChange={function(e){setRecoveryConfirmed(e.target.checked);}} style={{marginTop:2,cursor:"pointer"}}/>
+          <span style={{fontSize:13,color:"rgba(255,255,255,.85)",lineHeight:1.4}}>{lang==="en"?"I've saved my code somewhere safe":"J'ai bien noté mon code en lieu sûr"}</span>
+        </label>
+        <button
+          onClick={function(){setShowRecoveryCodeModal(null);setRecoveryConfirmed(false);}}
+          disabled={!recoveryConfirmed}
+          style={{width:"100%",padding:"15px",background:recoveryConfirmed?G.accent:"rgba(255,255,255,.06)",color:recoveryConfirmed?"#000":"rgba(255,255,255,.3)",border:"none",borderRadius:50,cursor:recoveryConfirmed?"pointer":"not-allowed",fontFamily:G.font,fontSize:15,fontWeight:800}}
+        >
+          {lang==="en"?"OK, I've saved it":"OK, c'est noté"}
+        </button>
+      </div>
+    </div>
+  ) : null;
+
+  // ── MODAL : Saisie du code pour récupérer un compte ──
+  const recoveryInputModal = showRecoveryInput ? (
+    <div style={{position:"fixed",inset:0,zIndex:500,background:"rgba(0,0,0,.92)",backdropFilter:"blur(12px)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+      <div style={{width:"100%",maxWidth:360,background:"rgba(10,20,10,.97)",borderRadius:28,padding:"28px 24px",border:"1px solid rgba(255,255,255,.1)",position:"relative"}}>
+        <button onClick={function(){setShowRecoveryInput(false);}} style={{position:"absolute",top:14,right:14,background:"rgba(255,255,255,.1)",border:"none",borderRadius:"50%",width:30,height:30,color:"rgba(255,255,255,.5)",cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+        <div style={{textAlign:"center",marginBottom:22}}>
+          <div style={{fontSize:40,marginBottom:6}}>🔐</div>
+          <div style={{fontFamily:G.heading,fontSize:22,color:G.white,lineHeight:1.1,marginBottom:6}}>{lang==="en"?"Recover my account":"Récupérer mon compte"}</div>
+          <div style={{fontSize:13,color:"rgba(255,255,255,.55)"}}>{lang==="en"?"Enter the code you saved":"Entre le code que tu as sauvegardé"}</div>
+        </div>
+        <input
+          value={recoveryInput}
+          onChange={function(e){setRecoveryInput(e.target.value.toUpperCase());setRecoveryMsg("");}}
+          onKeyDown={function(e){if(e.key==="Enter")recoverAccount();}}
+          placeholder="GOATFC-XXXX-XXXX"
+          autoFocus
+          maxLength={16}
+          style={{width:"100%",background:"rgba(255,255,255,.06)",border:"1.5px solid rgba(255,255,255,.15)",borderRadius:14,padding:"14px 16px",fontFamily:"ui-monospace, Menlo, monospace",fontSize:17,color:G.white,outline:"none",boxSizing:"border-box",marginBottom:10,textAlign:"center",letterSpacing:1.5}}
+        />
+        {recoveryMsg && <div style={{fontSize:13,fontWeight:700,color:recoveryMsg.startsWith("❌")?"#FF3D57":G.accent,marginBottom:10,textAlign:"center"}}>{recoveryMsg}</div>}
+        <button
+          onClick={recoverAccount}
+          disabled={recoveryLoading||recoveryInput.trim().length<16}
+          style={{width:"100%",padding:"15px",background:recoveryInput.trim().length>=16?G.accent:"rgba(255,255,255,.08)",color:recoveryInput.trim().length>=16?"#000":"rgba(255,255,255,.3)",border:"none",borderRadius:50,cursor:recoveryInput.trim().length>=16?"pointer":"not-allowed",fontFamily:G.font,fontSize:15,fontWeight:800,marginTop:6}}
+        >
+          {recoveryLoading?(lang==="en"?"Recovering...":"Récupération..."):(lang==="en"?"Recover →":"Récupérer →")}
+        </button>
+      </div>
+    </div>
+  ) : null;
+
+  // ── MODAL : Affichage du code depuis le profil (l'user a cliqué "Mon code de récup") ──
+  const myRecoveryCodeModal = showMyRecoveryCode ? (
+    <div style={{position:"fixed",inset:0,zIndex:500,background:"rgba(0,0,0,.92)",backdropFilter:"blur(12px)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+      <div style={{width:"100%",maxWidth:380,background:"rgba(10,20,10,.97)",borderRadius:28,padding:"32px 24px",border:"1.5px solid rgba(0,230,118,.35)",position:"relative"}}>
+        <button onClick={function(){setShowMyRecoveryCode(false);}} style={{position:"absolute",top:14,right:14,background:"rgba(255,255,255,.1)",border:"none",borderRadius:"50%",width:30,height:30,color:"rgba(255,255,255,.5)",cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+        <div style={{textAlign:"center",marginBottom:20}}>
+          <div style={{fontSize:44,marginBottom:8}}>🔐</div>
+          <div style={{fontFamily:G.heading,fontSize:22,color:G.white,lineHeight:1.1,marginBottom:6}}>{lang==="en"?"My recovery code":"Mon code de récupération"}</div>
+          <div style={{fontSize:13,color:"rgba(255,255,255,.55)"}}>{lang==="en"?"Use it to access your account from another device":"Utilise-le pour retrouver ton compte sur un autre appareil"}</div>
+        </div>
+        <div style={{background:G.accent,borderRadius:14,padding:"22px 16px",textAlign:"center",marginBottom:14,boxShadow:"0 4px 20px rgba(0,230,118,.25)"}}>
+          <div style={{fontFamily:"ui-monospace, Menlo, monospace",fontSize:22,fontWeight:800,color:"#000",letterSpacing:2,userSelect:"all"}}>{recoveryCode || "—"}</div>
+        </div>
+        {recoveryCode && (
+          <button
+            onClick={async function(){
+              try { await navigator.clipboard.writeText(recoveryCode); } catch {}
+            }}
+            style={{width:"100%",padding:"12px",background:"rgba(255,255,255,.06)",color:G.white,border:"1px solid rgba(255,255,255,.15)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700}}
+          >
+            📋 {lang==="en"?"Copy":"Copier"}
+          </button>
+        )}
       </div>
     </div>
   ) : null;
@@ -5848,6 +6045,16 @@ export default function LePont() {
           <span style={{fontSize:22,color:"rgba(0,0,0,.7)"}}>→</span>
         </button>
 
+        {/* Code de récupération */}
+        <button onClick={()=>{setShowMyRecoveryCode(true);}} style={{padding:"18px",background:G.accent,border:"none",borderRadius:18,cursor:"pointer",color:"#000",fontFamily:G.font,fontSize:17,fontWeight:800,display:"flex",alignItems:"center",gap:14,textAlign:"left",boxShadow:"0 4px 16px rgba(0,230,118,.35)"}}>
+          <span style={{fontSize:26}}>🔐</span>
+          <div style={{flex:1}}>
+            <div>{lang==="en"?"My recovery code":"Mon code de récupération"}</div>
+            <div style={{fontSize:12,color:"rgba(0,0,0,.65)",fontWeight:700,marginTop:3,letterSpacing:.3}}>{lang==="en"?"To use your account on another device":"Pour retrouver ton compte sur un autre appareil"}</div>
+          </div>
+          <span style={{fontSize:22,color:"rgba(0,0,0,.7)"}}>→</span>
+        </button>
+
         {/* Langue */}
         <div style={{padding:"18px",background:G.accent,border:"none",borderRadius:18,color:"#000",fontFamily:G.font,fontSize:17,fontWeight:800,display:"flex",alignItems:"center",gap:14,boxShadow:"0 4px 16px rgba(0,230,118,.35)"}}>
           <span style={{fontSize:26}}>🌐</span>
@@ -5868,6 +6075,9 @@ export default function LePont() {
       </div>
 
       {pseudoModal}
+      {recoveryCodeAfterCreationModal}
+      {recoveryInputModal}
+      {myRecoveryCodeModal}
       {avatarViewer}
       {cropperModal}
     </div>
@@ -5894,6 +6104,9 @@ export default function LePont() {
   if(screen==="home") return (
     <div style={{...shell,animation:"fadeUp .5s ease",overflow:"auto"}} key="home">
       {pseudoModal}
+      {recoveryCodeAfterCreationModal}
+      {recoveryInputModal}
+      {myRecoveryCodeModal}
       {streakModal}
       {installPrompt}
       {notifPrompt}
@@ -6953,6 +7166,9 @@ export default function LePont() {
   // ── FINAL ──
 const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc > 0 ? WIN_IMGS : LOSE_IMGS)[0];    return (    <div style={{...shell,animation:"fadeUp .4s ease"}} key={isChain?"chainEnd":"final"}>
       {pseudoModal}
+      {recoveryCodeAfterCreationModal}
+      {recoveryInputModal}
+      {myRecoveryCodeModal}
       {confettiOverlay}<div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
         {/* Bandes pelouse */}
         {[0,1,2,3,4,5,6].map(function(i){return(
