@@ -93,7 +93,7 @@ const GRADES = [
   { min:5000,  label:"LÉGENDE",                         labelEn:"LEGEND",          emoji:"☄️", color:"#FF6B35" },
   { min:2000,  label:"Titulaire",                       labelEn:"First Team",      emoji:"🐺", color:"#00B4D8" },
   { min:500,   label:"Espoir du centre de formation",   labelEn:"Academy Talent",  emoji:"👦🏻", color:"#2EC4B6" },
-  { min:0,     label:"Joueur du dimanche",              labelEn:"Sunday Player",   emoji:"🍻", color:"#8D99AE" },
+  { min:0,     label:"Joueur du dimanche",              labelEn:"Sunday Player",   emoji:"🏖️", color:"#8D99AE" },
 ];
 
 function getGrade(score) {
