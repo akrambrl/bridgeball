@@ -1018,7 +1018,7 @@ export const PLAYERS = [
   { name:"Denzel Dumfries", clubs:["PSV Eindhoven", "Inter Milan"], diff:"moyen" },
   { name:"Jeremie Frimpong", clubs:["Celtic", "Bayer Leverkusen"], diff:"moyen" },
   { name:"Joshua Zirkzee", clubs:["Bologna", "Manchester United"], diff:"moyen" },
-  { name:"Nathan Aké", clubs:["Chelsea", "Manchester City"], diff:"moyen" },
+  { name:"Nathan Aké", clubs:["Feyenoord", "Chelsea", "Reading", "Watford", "Bournemouth", "Manchester City"], diff:"moyen" },
   { name:"Bart Verbruggen", clubs:["Anderlecht", "Brighton"], diff:"expert" },
 
   // Équipe nationale Italie 2026 (compléments)
