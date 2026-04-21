@@ -6365,8 +6365,8 @@ export default function LePont() {
           {feedbackBar(feedback)}
 
           {diff==="facile"?(
-            <div style={{display:"flex",flexDirection:"column",gap:10}}>
-              <div key={"opts-"+animKey} style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+            <div style={{display:"flex",flexDirection:"column",gap:12}}>
+              <div key={"opts-"+animKey} style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
                 {options.map((opt,oi)=>{
                   const isOk=flash==="ok"&&checkGuess(opt,cur.p);
                   const isKo=flash===opt;
@@ -6377,9 +6377,10 @@ export default function LePont() {
                   return(
                     <button key={opt} onClick={()=>handleOptionClick(opt)} disabled={!!flash}
                       style={{
-                        padding:"14px 10px", borderRadius:18, cursor:"pointer",
-                        fontFamily:G.font, fontSize:"clamp(12px,3vw,16px)", fontWeight:800,
-                        lineHeight:1.3, transition:"all .15s", position:"relative", overflow:"hidden",
+                        padding:"22px 12px", borderRadius:20, cursor:"pointer",
+                        fontFamily:G.font, fontSize:"clamp(15px,4vw,20px)", fontWeight:800,
+                        lineHeight:1.25, transition:"all .15s", position:"relative", overflow:"hidden",
+                        minHeight:72,
                         border: isOk?"2px solid #00E676": isKo?"2px solid #FF3D57":"none",
                         background: isOk?"#052e16": isKo?"#2d0a0a": "rgba(255,255,255,.1)",
                         color: isOk?"#00E676": isKo?G.red: G.white,
@@ -6387,9 +6388,9 @@ export default function LePont() {
                         animation: isOk?"answerOk .4s ease": isKo?"answerKo .4s ease": "optionIn .4s cubic-bezier(.22,1,.36,1) "+(oi*.07)+"s both",
                       }}>
                       <div style={{display:"flex",alignItems:"center",gap:8,justifyContent:"center",position:"relative",zIndex:1}}>
-                        {isOk&&<span style={{fontSize:16}}>✓</span>}
-                        {isKo&&<span style={{fontSize:16}}>✗</span>}
-                        <span style={{fontSize:"clamp(12px,3vw,16px)",fontWeight:800}}>{opt}</span>
+                        {isOk&&<span style={{fontSize:20}}>✓</span>}
+                        {isKo&&<span style={{fontSize:20}}>✗</span>}
+                        <span style={{fontSize:"clamp(15px,4vw,20px)",fontWeight:800}}>{opt}</span>
                       </div>
                     </button>
                   );
