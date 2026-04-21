@@ -1579,6 +1579,14 @@ export default function LePont() {
       return d.date === (()=>{ const d=new Date(); const paris=new Date(d.toLocaleString('en-US',{timeZone:'Europe/Paris'})); return paris.getFullYear()+'-'+String(paris.getMonth()+1).padStart(2,'0')+'-'+String(paris.getDate()).padStart(2,'0'); })() && d.abandoned === true;
     } catch { return false; }
   });
+  // Révélé = user a cliqué "Voir la réponse" (différent d'abandon : on affiche le nom, 0 point, streak maintenue)
+  const [dailyRevealed, setDailyRevealed] = useState(() => {
+    try {
+      const d = JSON.parse(localStorage.getItem("bb_daily_result")||"{}");
+      return d.date === (()=>{ const d=new Date(); const paris=new Date(d.toLocaleString('en-US',{timeZone:'Europe/Paris'})); return paris.getFullYear()+'-'+String(paris.getMonth()+1).padStart(2,'0')+'-'+String(paris.getDate()).padStart(2,'0'); })() && d.revealed === true;
+    } catch { return false; }
+  });
+  const [showRevealConfirm, setShowRevealConfirm] = useState(false);
   const [dailyTries, setDailyTries] = useState(0);
   const [dailyGuess, setDailyGuess] = useState("");
   const [dailyFlash, setDailyFlash] = useState(null);
@@ -3477,6 +3485,28 @@ export default function LePont() {
     const url = "https://goatfc.online";
     const text = `${title}\n${scoreLine}\n\n${clubsDisplay}\n\n${squares.join("")}\n\n${cta}\n${url}`;
     return { text, url, title };
+  }
+
+  // Révèle la réponse sans pénalité ni récompense. 0 point gagné, pas de streak, pas d'abandon non plus.
+  function handleRevealDaily() {
+    if (!dailyPlayer) return;
+    const today = (()=>{ const d=new Date(); const paris=new Date(d.toLocaleString('en-US',{timeZone:'Europe/Paris'})); return paris.getFullYear()+'-'+String(paris.getMonth()+1).padStart(2,'0')+'-'+String(paris.getDate()).padStart(2,'0'); })();
+    try {
+      localStorage.setItem("bb_daily_result", JSON.stringify({date:today, abandoned:false, revealed:true, tries:dailyTries, points:0}));
+      localStorage.setItem("bb_daily_tries", String(dailyTries));
+      localStorage.setItem("bb_daily_points", "0");
+    } catch{}
+    setDailyDone(true);
+    setDailyRevealed(true);
+    setDailyAbandoned(false);
+    setShowRevealConfirm(false);
+    setShowDailyGame(false);
+    setDailyFlash(null);
+    setDailySuccess(false);
+    setDailyHintLevel(0);
+    setDailyUsedHint(false);
+    setDailyHintData({ position: null, nationality: null, loading: false });
+    // Pas d'updateDayStreak() : révéler la réponse ne maintient pas la streak
   }
 
   function handleDailySubmit() {
@@ -6027,13 +6057,13 @@ export default function LePont() {
         {/* Défi du jour */}
         {dailyPlayer && (
           <div style={{borderRadius:14,background:dailyDone?"rgba(255,255,255,.04)":"linear-gradient(135deg,rgba(255,214,0,.12),rgba(255,107,53,.12))",border:dailyDone?"1px solid rgba(255,255,255,.1)":"1.5px solid rgba(255,214,0,.3)",padding:"10px 12px",display:"flex",alignItems:"center",gap:10,opacity:dailyDone?.7:1}}>
-            <div style={{fontSize:22}}>{dailyDone?(dailyAbandoned?"🔒":"✅"):"⚡"}</div>
+            <div style={{fontSize:22}}>{dailyDone?(dailyRevealed?"👁️":dailyAbandoned?"🔒":"✅"):"⚡"}</div>
             <div style={{flex:1}}>
               <div style={{fontSize:10,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase",color:dailyDone?"rgba(255,255,255,.3)":"rgba(255,214,0,.7)",marginBottom:1}}>{lang==="en"?"Daily challenge":"Défi du jour"}</div>
               <div style={{fontSize:13,fontWeight:800,color:dailyDone?"rgba(255,255,255,.4)":G.white}}>
                 {dailyDone ? (lang==="en"?"Come back tomorrow 🔒":"Revenez demain 🔒") : (lang==="en"?"Guess the mystery player":"Devine le joueur mystère")}
               </div>
-              {dailyDone && <div style={{fontSize:10,color:"rgba(255,255,255,.3)",marginTop:1}}>{dailyAbandoned ? (lang==="en"?"Abandoned — ":"Abandonné — ")+dailyPlayer.name : (lang==="en"?"Found in "+localStorage.getItem("bb_daily_tries")+" attempt"+(parseInt(localStorage.getItem("bb_daily_tries")||"1")>1?"s":"")+"!":"Trouvé en "+localStorage.getItem("bb_daily_tries")+" essai"+(parseInt(localStorage.getItem("bb_daily_tries")||"1")>1?"s":"")+" !")}</div>}
+              {dailyDone && <div style={{fontSize:10,color:"rgba(255,255,255,.3)",marginTop:1}}>{dailyRevealed ? (lang==="en"?"Answer revealed — ":"Réponse révélée — ")+dailyPlayer.name : dailyAbandoned ? (lang==="en"?"Abandoned — ":"Abandonné — ")+dailyPlayer.name : (lang==="en"?"Found in "+localStorage.getItem("bb_daily_tries")+" attempt"+(parseInt(localStorage.getItem("bb_daily_tries")||"1")>1?"s":"")+"!":"Trouvé en "+localStorage.getItem("bb_daily_tries")+" essai"+(parseInt(localStorage.getItem("bb_daily_tries")||"1")>1?"s":"")+" !")}</div>}
             </div>
             {!dailyDone && <button onClick={function(){setShowDailyGame(true);setDailyGuess("");setDailyFlash(null);setDailySuccess(false);}} style={{padding:"9px 13px",background:"linear-gradient(135deg,#FFD600,#FF6B35)",color:"#000",border:"none",borderRadius:12,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800,whiteSpace:"nowrap"}}>{lang==="en"?"Play ⚡":"Jouer ⚡"}</button>}
           </div>
@@ -6208,8 +6238,33 @@ export default function LePont() {
                       {lang==="en"?"Submit ✓":"Valider ✓"}
                     </button>
                   </div>
+                  {/* Voir la réponse (sans pénalité ni récompense) */}
+                  <button onClick={function(){setShowRevealConfirm(true);}} style={{width:"100%",marginTop:10,padding:"11px",background:"transparent",color:"rgba(255,255,255,.5)",border:"1px solid rgba(255,255,255,.15)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:700,letterSpacing:.3}}>
+                    👁️ {lang==="en"?"Reveal answer (0 pts)":"Voir la réponse (0 pt)"}
+                  </button>
                 </>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* Modal confirmation "Voir la réponse" */}
+        {showRevealConfirm && dailyPlayer && (
+          <div onClick={function(){setShowRevealConfirm(false);}} style={{position:"fixed",inset:0,zIndex:500,background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center",padding:20,cursor:"pointer"}}>
+            <div onClick={function(e){e.stopPropagation();}} style={{background:"rgba(15,25,15,.96)",borderRadius:24,padding:"28px 24px",maxWidth:340,width:"100%",border:"1px solid rgba(255,255,255,.1)",textAlign:"center",cursor:"default"}}>
+              <div style={{fontSize:42,marginBottom:12}}>👁️</div>
+              <div style={{fontFamily:G.heading,fontSize:24,color:G.white,letterSpacing:1,marginBottom:8}}>{lang==="en"?"REVEAL ANSWER?":"VOIR LA RÉPONSE ?"}</div>
+              <div style={{fontSize:13,color:"rgba(255,255,255,.55)",marginBottom:22,lineHeight:1.5}}>
+                {lang==="en"?<>You'll see the answer but earn <strong style={{color:G.white}}>0 points</strong> today. Your streak won't be maintained.</>:<>Tu verras la réponse mais tu gagnes <strong style={{color:G.white}}>0 point</strong>. Ta série ne sera pas maintenue.</>}
+              </div>
+              <div style={{display:"flex",gap:10}}>
+                <button onClick={function(){setShowRevealConfirm(false);}} style={{flex:1,padding:"13px",background:"rgba(255,255,255,.07)",color:G.white,border:"1px solid rgba(255,255,255,.1)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>
+                  {lang==="en"?"Cancel":"Annuler"}
+                </button>
+                <button onClick={handleRevealDaily} style={{flex:1,padding:"13px",background:"rgba(96,165,250,.2)",color:"#60a5fa",border:"1px solid rgba(96,165,250,.4)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>
+                  {lang==="en"?"👁️ Reveal":"👁️ Voir"}
+                </button>
+              </div>
             </div>
           </div>
         )}
