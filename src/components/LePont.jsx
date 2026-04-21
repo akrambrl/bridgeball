@@ -817,11 +817,19 @@ function getTodayTheme() {
   return DAILY_THEMES[paris.getDay()];
 }
 
+// Dates pour lesquelles on force un nouveau défi du jour (bypass du cache date)
+// Utilisé quand un joueur du jour avait des données manquantes ou bugguées
+const DAILY_RESETS = {
+  "2026-04-21": "v2", // Nathan Aké incomplet → nouveau joueur
+};
+
 function getDailyPlayer() {
   const today = (()=>{ const d=new Date(); const paris=new Date(d.toLocaleString('en-US',{timeZone:'Europe/Paris'})); return paris.getFullYear()+'-'+String(paris.getMonth()+1).padStart(2,'0')+'-'+String(paris.getDate()).padStart(2,'0'); })();
+  // Permet de forcer un nouveau défi pour une date donnée en concaténant un suffixe au hash
+  const hashKey = today + (DAILY_RESETS[today] || "");
   let hash = 0;
-  for (let i = 0; i < today.length; i++) {
-    hash = ((hash << 5) - hash) + today.charCodeAt(i);
+  for (let i = 0; i < hashKey.length; i++) {
+    hash = ((hash << 5) - hash) + hashKey.charCodeAt(i);
     hash |= 0;
   }
   hash = Math.abs(hash);
