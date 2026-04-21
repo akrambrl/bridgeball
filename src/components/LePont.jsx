@@ -1562,10 +1562,14 @@ export default function LePont() {
   const [notifGranted, setNotifGranted] = useState(false);
   // États pour l'installation de l'app
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
+  // Ref (pas un state) pour tracker le dismiss dans la session : reset à chaque rechargement de l'app
+  // On met un ref pour ne pas retrigger le useEffect à chaque changement
+  const installDismissedThisSession = useRef(false);
   const [deferredInstall, setDeferredInstall] = useState(null); // Pour Android: l'event beforeinstallprompt
   const [pushSubscribed, setPushSubscribed] = useState(false);
   const [showNotifPrompt, setShowNotifPrompt] = useState(false);
   const [lbMode, setLbMode] = useState("global");
+  const [lbSeasonScope, setLbSeasonScope] = useState("monde"); // "monde" ou "amis" pour l'onglet Saison
   const [dailyPlayer] = useState(() => getDailyPlayer());
   const [dailyDone, setDailyDone] = useState(() => {
     try {
@@ -1587,12 +1591,37 @@ export default function LePont() {
     } catch { return false; }
   });
   const [showRevealConfirm, setShowRevealConfirm] = useState(false);
-  const [dailyTries, setDailyTries] = useState(0);
+  const [dailyTries, setDailyTries] = useState(() => {
+    try {
+      const d = JSON.parse(localStorage.getItem("bb_daily_hint")||"{}");
+      const today = (()=>{ const x=new Date(); const p=new Date(x.toLocaleString('en-US',{timeZone:'Europe/Paris'})); return p.getFullYear()+'-'+String(p.getMonth()+1).padStart(2,'0')+'-'+String(p.getDate()).padStart(2,'0'); })();
+      return (d.date === today && typeof d.tries === "number") ? d.tries : 0;
+    } catch { return 0; }
+  });
   const [dailyGuess, setDailyGuess] = useState("");
   const [dailyFlash, setDailyFlash] = useState(null);
-  const [dailyHintLevel, setDailyHintLevel] = useState(0); // 0 = no hint, 1 = position, 2 = position + nationality
-  const [dailyHintData, setDailyHintData] = useState({ position: null, nationality: null, loading: false });
-  const [dailyUsedHint, setDailyUsedHint] = useState(false);
+  const [dailyHintLevel, setDailyHintLevel] = useState(() => {
+    try {
+      const d = JSON.parse(localStorage.getItem("bb_daily_hint")||"{}");
+      const today = (()=>{ const x=new Date(); const p=new Date(x.toLocaleString('en-US',{timeZone:'Europe/Paris'})); return p.getFullYear()+'-'+String(p.getMonth()+1).padStart(2,'0')+'-'+String(p.getDate()).padStart(2,'0'); })();
+      return (d.date === today && typeof d.level === "number") ? d.level : 0;
+    } catch { return 0; }
+  });
+  const [dailyHintData, setDailyHintData] = useState(() => {
+    try {
+      const d = JSON.parse(localStorage.getItem("bb_daily_hint")||"{}");
+      const today = (()=>{ const x=new Date(); const p=new Date(x.toLocaleString('en-US',{timeZone:'Europe/Paris'})); return p.getFullYear()+'-'+String(p.getMonth()+1).padStart(2,'0')+'-'+String(p.getDate()).padStart(2,'0'); })();
+      if (d.date === today && d.data) return { position: d.data.position || null, nationality: d.data.nationality || null, loading: false };
+    } catch {}
+    return { position: null, nationality: null, loading: false };
+  });
+  const [dailyUsedHint, setDailyUsedHint] = useState(() => {
+    try {
+      const d = JSON.parse(localStorage.getItem("bb_daily_hint")||"{}");
+      const today = (()=>{ const x=new Date(); const p=new Date(x.toLocaleString('en-US',{timeZone:'Europe/Paris'})); return p.getFullYear()+'-'+String(p.getMonth()+1).padStart(2,'0')+'-'+String(p.getDate()).padStart(2,'0'); })();
+      return d.date === today && d.used === true;
+    } catch { return false; }
+  });
   const [dailySuccess, setDailySuccess] = useState(false);
   const [dailyShared, setDailyShared] = useState(false); // Feedback après partage du défi du jour
   const [showDailyGame, setShowDailyGame] = useState(false);
@@ -1890,30 +1919,35 @@ export default function LePont() {
     return () => window.removeEventListener("beforeinstallprompt", onBeforeInstall);
   }, []);
 
-  // Détermine si on doit proposer l'installation : non installé, a joué 3+ jours de suite, n'a pas refusé récemment
+  // Détermine si on doit proposer l'installation (gros modal)
+  // Conditions :
+  // - App pas installée, pseudo confirmé
+  // - Pas déjà dismissed dans cette session (ref qui reset au reload de la page)
+  // - Dernière dismiss > 14 jours
+  // - User a joué au moins 1 partie (record ou défi du jour réussi) — pour éviter prompt en tout début
   useEffect(() => {
     if (isStandalone()) return; // Déjà installée
-    if (!pseudoConfirmed) return; // Attendre que le pseudo soit validé
+    if (!pseudoConfirmed) return;
+    if (installDismissedThisSession.current) return; // Déjà fermé pendant cette session
     try {
       const dismissed = localStorage.getItem("bb_install_dismissed");
       if (dismissed) {
         const elapsed = Date.now() - parseInt(dismissed, 10);
-        // On représente après 7 jours
-        if (elapsed < 7 * 24 * 60 * 60 * 1000) return;
+        if (elapsed < 14 * 24 * 60 * 60 * 1000) return; // 14 jours au lieu de 7
       }
-      // Sur iOS : déclencher dès que pseudo confirmé (incitation forte car les notifs n'existent qu'en mode standalone)
-      // Sur Android / desktop : attendre streak >= 3 OU un record + event d'installation dispo
+      // On attend que le user ait joué au moins 1 partie ou complété le défi du jour
       const hasRecord = (record && record.score > 0) || (chainRecord && chainRecord.score > 0);
-      const shouldShow = isIOS()
-        ? true // iOS : on pousse l'installation rapidement car c'est la seule façon d'avoir des notifs
-        : (dayStreak >= 3 || (hasRecord && deferredInstall));
+      const hasPlayedDaily = dailyDone;
+      if (!hasRecord && !hasPlayedDaily) return;
+      // Sur iOS : trigger dès la 1ère partie (incitation forte car notifs = installation obligatoire)
+      // Sur Android / desktop : trigger si streak >= 3 OU event d'installation dispo
+      const shouldShow = isIOS() || (dayStreak >= 3 || deferredInstall);
       if (shouldShow) {
-        // Petit délai pour ne pas bousculer l'user
         const t = setTimeout(() => setShowInstallPrompt(true), 1500);
         return () => clearTimeout(t);
       }
     } catch {}
-  }, [pseudoConfirmed, dayStreak, deferredInstall, record, chainRecord]);
+  }, [pseudoConfirmed, dayStreak, deferredInstall, record, chainRecord, dailyDone]);
 
   // Détermine si on doit proposer d'activer les notifications push
   // Conditions : app déjà installée OU streak >= 2, et permission pas encore accordée/refusée
@@ -3487,6 +3521,25 @@ export default function LePont() {
     return { text, url, title };
   }
 
+  // Helper pour sauvegarder l'état des indices du défi du jour dans localStorage
+  // Permet de retrouver position, nationalité et nombre d'essais quand on ferme et rouvre le défi
+  function saveDailyHintState(level, data, used, tries) {
+    try {
+      const today = (()=>{ const d=new Date(); const paris=new Date(d.toLocaleString('en-US',{timeZone:'Europe/Paris'})); return paris.getFullYear()+'-'+String(paris.getMonth()+1).padStart(2,'0')+'-'+String(paris.getDate()).padStart(2,'0'); })();
+      localStorage.setItem("bb_daily_hint", JSON.stringify({
+        date: today,
+        level: level,
+        data: { position: data.position || null, nationality: data.nationality || null },
+        used: used,
+        tries: tries
+      }));
+    } catch {}
+  }
+  // Efface l'état des indices (appelé quand le défi est fini ou abandonné ou révélé)
+  function clearDailyHintState() {
+    try { localStorage.removeItem("bb_daily_hint"); } catch {}
+  }
+
   // Révèle la réponse sans pénalité ni récompense. 0 point gagné, pas de streak, pas d'abandon non plus.
   function handleRevealDaily() {
     if (!dailyPlayer) return;
@@ -3506,6 +3559,7 @@ export default function LePont() {
     setDailyHintLevel(0);
     setDailyUsedHint(false);
     setDailyHintData({ position: null, nationality: null, loading: false });
+    clearDailyHintState();
     // Pas d'updateDayStreak() : révéler la réponse ne maintient pas la streak
   }
 
@@ -3516,6 +3570,8 @@ export default function LePont() {
     const answer = normalize(dailyPlayer.name);
     const newTries = dailyTries + 1;
     setDailyTries(newTries);
+    // Sauvegarde le compteur d'essais pour persister entre fermeture/ouverture
+    saveDailyHintState(dailyHintLevel, dailyHintData, dailyUsedHint, newTries);
     const answerParts = answer.split(" ");
     const isCorrect = guess === answer
       || answerParts.some(function(p){ return p.length >= 3 && guess === p; })
@@ -3532,16 +3588,13 @@ export default function LePont() {
         localStorage.setItem("bb_daily_tries", String(newTries));
         localStorage.setItem("bb_daily_points", String(earnedPoints));
       } catch{}
-      setTimeout(function(){
-        setShowDailyGame(false);
-        setDailyDone(true);
-        setDailyAbandoned(false);
-        setDailySuccess(false);
-        setDailyHintLevel(0);
-        setDailyUsedHint(false);
-        setDailyHintData({ position: null, nationality: null, loading: false });
-        updateDayStreak();
-      }, 3000);
+      // Le défi est terminé → on peut clear l'état des indices pour aujourd'hui
+      clearDailyHintState();
+      // On marque comme terminé tout de suite pour que la home affiche l'état "Trouvé"
+      // mais on laisse l'écran de victoire ouvert : l'utilisateur le ferme manuellement avec la croix
+      setDailyDone(true);
+      setDailyAbandoned(false);
+      updateDayStreak();
     } else {
       setDailyFlash("ko");
       setTimeout(function(){ setDailyFlash(null); setDailyGuess(""); }, 800);
@@ -3570,9 +3623,11 @@ export default function LePont() {
         }
         setDailyHintData({ position: position || (lang==="en"?"Information unavailable":"Information indisponible"), nationality: null, loading: false });
         setDailyHintLevel(1);
+        saveDailyHintState(1, { position: position || (lang==="en"?"Information unavailable":"Information indisponible"), nationality: null }, true, dailyTries);
       } catch(e) {
         setDailyHintData({ position: (lang==="en"?"Information unavailable":"Information indisponible"), nationality: null, loading: false });
         setDailyHintLevel(1);
+        saveDailyHintState(1, { position: (lang==="en"?"Information unavailable":"Information indisponible"), nationality: null }, true, dailyTries);
       }
     } else if (dailyHintLevel === 1) {
       // Second hint: nationality
@@ -3627,9 +3682,12 @@ export default function LePont() {
         }
         setDailyHintData(d => ({ ...d, nationality, loading: false }));
         setDailyHintLevel(2);
+        saveDailyHintState(2, { position: dailyHintData.position, nationality: nationality }, true, dailyTries);
       } catch(e) {
-        setDailyHintData(d => ({ ...d, nationality: (lang==="en"?"Information unavailable":"Information indisponible"), loading: false }));
+        const unavailable = (lang==="en"?"Information unavailable":"Information indisponible");
+        setDailyHintData(d => ({ ...d, nationality: unavailable, loading: false }));
         setDailyHintLevel(2);
+        saveDailyHintState(2, { position: dailyHintData.position, nationality: unavailable }, true, dailyTries);
       }
     }
   }
@@ -4010,7 +4068,7 @@ export default function LePont() {
   const installPrompt = showInstallPrompt && !isStandalone() && (() => {
     const ios = isIOS();
     return (
-      <div onClick={() => { setShowInstallPrompt(false); try{localStorage.setItem("bb_install_dismissed", String(Date.now()));}catch{} }} style={{position:"fixed",inset:0,zIndex:500,background:"rgba(0,0,0,.85)",display:"flex",alignItems:"center",justifyContent:"center",padding:"20px",backdropFilter:"blur(12px)",animation:"fadeIn .25s ease",cursor:"pointer"}}>
+      <div onClick={() => { setShowInstallPrompt(false); installDismissedThisSession.current = true; try{localStorage.setItem("bb_install_dismissed", String(Date.now()));}catch{} }} style={{position:"fixed",inset:0,zIndex:500,background:"rgba(0,0,0,.85)",display:"flex",alignItems:"center",justifyContent:"center",padding:"20px",backdropFilter:"blur(12px)",animation:"fadeIn .25s ease",cursor:"pointer"}}>
         <div onClick={(e)=>e.stopPropagation()} style={{position:"relative",borderRadius:28,maxWidth:380,width:"100%",overflow:"hidden",animation:"popIn .4s cubic-bezier(.34,1.56,.64,1)",cursor:"default",boxShadow:"0 30px 80px rgba(0,0,0,.6), 0 0 0 1px rgba(0,230,118,.3), 0 0 60px rgba(0,230,118,.2)"}}>
           {/* Fond pelouse */}
           <div style={{position:"absolute",inset:0,zIndex:0,overflow:"hidden"}}>
@@ -4021,7 +4079,7 @@ export default function LePont() {
             <div style={{position:"absolute",top:-60,left:-60,width:240,height:240,borderRadius:"50%",background:"radial-gradient(circle, rgba(0,230,118,.45) 0%, transparent 70%)",filter:"blur(40px)"}}/>
             <div style={{position:"absolute",top:-40,right:-40,width:200,height:200,borderRadius:"50%",background:"radial-gradient(circle, rgba(255,214,0,.35) 0%, transparent 70%)",filter:"blur(40px)"}}/>
           </div>
-          <button onClick={()=>{ setShowInstallPrompt(false); try{localStorage.setItem("bb_install_dismissed", String(Date.now()));}catch{} }} style={{position:"absolute",top:14,right:14,zIndex:2,width:32,height:32,borderRadius:"50%",background:"rgba(255,255,255,.1)",border:"1px solid rgba(255,255,255,.15)",color:G.white,fontSize:16,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(10px)"}}>✕</button>
+          <button onClick={()=>{ setShowInstallPrompt(false); installDismissedThisSession.current = true; try{localStorage.setItem("bb_install_dismissed", String(Date.now()));}catch{} }} style={{position:"absolute",top:14,right:14,zIndex:2,width:32,height:32,borderRadius:"50%",background:"rgba(255,255,255,.1)",border:"1px solid rgba(255,255,255,.15)",color:G.white,fontSize:16,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(10px)"}}>✕</button>
 
           <div style={{position:"relative",zIndex:1,padding:"32px 26px 26px"}}>
             {/* Icon */}
@@ -4096,7 +4154,7 @@ export default function LePont() {
             )}
 
             {/* Dismiss */}
-            <button onClick={()=>{ setShowInstallPrompt(false); try{localStorage.setItem("bb_install_dismissed", String(Date.now()));}catch{} }} style={{width:"100%",padding:"12px",background:"transparent",color:"rgba(255,255,255,.5)",border:"1px solid rgba(255,255,255,.15)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:600}}>
+            <button onClick={()=>{ setShowInstallPrompt(false); installDismissedThisSession.current = true; try{localStorage.setItem("bb_install_dismissed", String(Date.now()));}catch{} }} style={{width:"100%",padding:"12px",background:"transparent",color:"rgba(255,255,255,.5)",border:"1px solid rgba(255,255,255,.15)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:600}}>
               {lang==="en"?"Maybe later":"Plus tard"}
             </button>
           </div>
@@ -4841,13 +4899,30 @@ export default function LePont() {
               </button>
             );})}
           </div>
+          {/* Toggle Monde/Amis pour le classement Saison */}
+          {lbMode==="saison" && (
+            <div style={{display:"flex",gap:4,marginBottom:10,marginTop:6,padding:4,background:"rgba(255,255,255,.04)",borderRadius:10,border:"1px solid rgba(255,255,255,.06)"}}>
+              {[{id:"monde",emoji:"🌍",labelFr:"Monde",labelEn:"World"},{id:"amis",emoji:"👥",labelFr:"Amis",labelEn:"Friends"}].map(function(s){return(
+                <button key={s.id} onClick={function(){setLbSeasonScope(s.id);}} style={{flex:1,padding:"8px 10px",borderRadius:8,border:"none",background:lbSeasonScope===s.id?"rgba(0,230,118,.2)":"transparent",color:lbSeasonScope===s.id?G.accent:"rgba(255,255,255,.55)",fontFamily:G.font,fontSize:12,fontWeight:800,cursor:"pointer",letterSpacing:.5,transition:"all .15s"}}>
+                  {s.emoji} {lang==="en"?s.labelEn:s.labelFr}
+                </button>
+              );})}
+            </div>
+          )}
           {leaderboard.length === 0 && (
             <div style={{textAlign:"center",padding:"32px 0",color:"rgba(255,255,255,.3)",fontSize:14}}>{lang==="en"?"No scores yet":"Aucun score pour le moment"}</div>
           )}
+          {leaderboard.length > 0 && lbMode==="saison" && lbSeasonScope==="amis" && leaderboard.filter(function(e){ return e.pid===playerId || friendsList.includes(e.pid); }).length === 0 && (
+            <div style={{textAlign:"center",padding:"32px 16px",color:"rgba(255,255,255,.3)",fontSize:13,lineHeight:1.5}}>{lang==="en"?"None of your friends have played yet this month":"Aucun de tes amis n'a encore joué ce mois-ci"}</div>
+          )}
           {(lbMode==="amis"
+            ? leaderboard.filter(function(e){ return e.pid===playerId || friendsList.includes(e.pid); })
+            : lbMode==="saison" && lbSeasonScope==="amis"
             ? leaderboard.filter(function(e){ return e.pid===playerId || friendsList.includes(e.pid); })
             : leaderboard
           ).map(function(entry, i){
+            // Recalcule le rang affiché en fonction du filtre (pour que le #1 visible affiche "1" et pas son rang mondial)
+            const displayRank = i + 1;
             const isMe = entry.pid === playerId;
             const medals = ["🥇","🥈","🥉"];
             const grade = getGrade(lbMode==="saison" ? (entry.xp||entry.score) : entry.score);
@@ -5410,25 +5485,25 @@ export default function LePont() {
               <button onClick={()=>setShowDuelCreate({id:viewedProfile.id,name:viewedProfile.name})} style={{flex:1,padding:"13px",background:"linear-gradient(135deg,#FFD600,#FF6B35)",color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>{lang==="en"?"⚡ Challenge":"⚡ Défier"}</button>
             </div>
             <div style={{zIndex:1,padding:"16px 16px 8px",display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-              <div style={{background:"#123a1e",border:"1px solid rgba(255,214,0,.5)",borderRadius:16,padding:"14px 10px",textAlign:"center"}}>
+              <div style={{background:"linear-gradient(135deg, rgba(0,230,118,.18), rgba(0,168,85,.12))",border:"1.5px solid rgba(0,230,118,.45)",borderRadius:16,padding:"14px 10px",textAlign:"center",boxShadow:"0 4px 16px rgba(0,230,118,.12)"}}>
                 <div style={{fontSize:22,marginBottom:4}}>🏆</div>
-                <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,214,0,.95)",marginBottom:4}}>{lang==="en"?"Plug record":"Record Plug"}</div>
-                <div style={{fontFamily:G.heading,fontSize:26,color:G.gold}}>{d.bestPont||0}</div>
+                <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(0,230,118,.95)",marginBottom:4}}>{lang==="en"?"Plug record":"Record Plug"}</div>
+                <div style={{fontFamily:G.heading,fontSize:26,color:G.accent,textShadow:"0 2px 12px rgba(0,230,118,.35)"}}>{d.bestPont||0}</div>
               </div>
-              <div style={{background:"#123a1e",border:"1px solid rgba(96,165,250,.5)",borderRadius:16,padding:"14px 10px",textAlign:"center"}}>
+              <div style={{background:"linear-gradient(135deg, rgba(0,230,118,.18), rgba(0,168,85,.12))",border:"1.5px solid rgba(0,230,118,.45)",borderRadius:16,padding:"14px 10px",textAlign:"center",boxShadow:"0 4px 16px rgba(0,230,118,.12)"}}>
                 <div style={{fontSize:22,marginBottom:4}}>⛓</div>
-                <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(96,165,250,.95)",marginBottom:4}}>{lang==="en"?"Mercato record":"Record Mercato"}</div>
-                <div style={{fontFamily:G.heading,fontSize:26,color:"#60a5fa"}}>{d.bestChaine||0}</div>
+                <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(0,230,118,.95)",marginBottom:4}}>{lang==="en"?"Mercato record":"Record Mercato"}</div>
+                <div style={{fontFamily:G.heading,fontSize:26,color:G.accent,textShadow:"0 2px 12px rgba(0,230,118,.35)"}}>{d.bestChaine||0}</div>
               </div>
-              <div style={{background:"#123a1e",border:"1px solid rgba(0,230,118,.5)",borderRadius:16,padding:"14px 10px",textAlign:"center"}}>
+              <div style={{background:"linear-gradient(135deg, rgba(0,230,118,.18), rgba(0,168,85,.12))",border:"1.5px solid rgba(0,230,118,.45)",borderRadius:16,padding:"14px 10px",textAlign:"center",boxShadow:"0 4px 16px rgba(0,230,118,.12)"}}>
                 <div style={{fontSize:22,marginBottom:4}}>🎮</div>
                 <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(0,230,118,.95)",marginBottom:4}}>{lang==="en"?"Games":"Parties"}</div>
-                <div style={{fontFamily:G.heading,fontSize:26,color:G.accent}}>{d.played||0}</div>
+                <div style={{fontFamily:G.heading,fontSize:26,color:G.accent,textShadow:"0 2px 12px rgba(0,230,118,.35)"}}>{d.played||0}</div>
               </div>
-              <div style={{background:"#123a1e",border:"1px solid rgba(192,132,252,.5)",borderRadius:16,padding:"14px 10px",textAlign:"center"}}>
+              <div style={{background:"linear-gradient(135deg, rgba(0,230,118,.18), rgba(0,168,85,.12))",border:"1.5px solid rgba(0,230,118,.45)",borderRadius:16,padding:"14px 10px",textAlign:"center",boxShadow:"0 4px 16px rgba(0,230,118,.12)"}}>
                 <div style={{fontSize:22,marginBottom:4}}>⭐</div>
-                <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(192,132,252,.95)",marginBottom:4}}>{lang==="en"?"Total Score":"Score Total"}</div>
-                <div style={{fontFamily:G.heading,fontSize:26,color:"#c084fc"}}>{d.score||0}</div>
+                <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(0,230,118,.95)",marginBottom:4}}>{lang==="en"?"Total Score":"Score Total"}</div>
+                <div style={{fontFamily:G.heading,fontSize:26,color:G.accent,textShadow:"0 2px 12px rgba(0,230,118,.35)"}}>{d.score||0}</div>
               </div>
             </div>
             <div style={{zIndex:1,padding:"8px 16px"}}>
@@ -5600,66 +5675,66 @@ export default function LePont() {
 
       {/* Stats cards */}
       <div style={{zIndex:1,padding:"16px 16px 8px",display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
-        {/* Record Plug - Or/Orange */}
-        <div style={{background:"linear-gradient(135deg, rgba(255,214,0,.18), rgba(255,107,53,.12))",border:"1.5px solid rgba(255,214,0,.45)",borderRadius:20,padding:"18px 14px",textAlign:"center",boxShadow:"0 4px 16px rgba(255,214,0,.12)"}}>
+        {/* Record Plug */}
+        <div style={{background:"linear-gradient(135deg, rgba(0,230,118,.18), rgba(0,168,85,.12))",border:"1.5px solid rgba(0,230,118,.45)",borderRadius:20,padding:"18px 14px",textAlign:"center",boxShadow:"0 4px 16px rgba(0,230,118,.12)"}}>
           <div style={{fontSize:32,marginBottom:8}}>🏆</div>
-          <div style={{fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,214,0,.95)",marginBottom:8}}>{lang==="en"?"Plug record":"Record Plug"}</div>
-          <div style={{fontFamily:G.heading,fontSize:40,color:G.gold,lineHeight:1,textShadow:"0 2px 12px rgba(255,214,0,.35)"}}>{record?record.score:0}</div>
+          <div style={{fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(0,230,118,.95)",marginBottom:8}}>{lang==="en"?"Plug record":"Record Plug"}</div>
+          <div style={{fontFamily:G.heading,fontSize:40,color:G.accent,lineHeight:1,textShadow:"0 2px 12px rgba(0,230,118,.35)"}}>{record?record.score:0}</div>
         </div>
-        {/* Record Mercato - Bleu */}
-        <div style={{background:"linear-gradient(135deg, rgba(96,165,250,.18), rgba(59,130,246,.12))",border:"1.5px solid rgba(96,165,250,.45)",borderRadius:20,padding:"18px 14px",textAlign:"center",boxShadow:"0 4px 16px rgba(96,165,250,.12)"}}>
+        {/* Record Mercato */}
+        <div style={{background:"linear-gradient(135deg, rgba(0,230,118,.18), rgba(0,168,85,.12))",border:"1.5px solid rgba(0,230,118,.45)",borderRadius:20,padding:"18px 14px",textAlign:"center",boxShadow:"0 4px 16px rgba(0,230,118,.12)"}}>
           <div style={{fontSize:32,marginBottom:8}}>⛓️</div>
-          <div style={{fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(96,165,250,.95)",marginBottom:8}}>{lang==="en"?"Mercato record":"Record Mercato"}</div>
-          <div style={{fontFamily:G.heading,fontSize:40,color:"#60a5fa",lineHeight:1,textShadow:"0 2px 12px rgba(96,165,250,.35)"}}>{chainRecord?chainRecord.score:0}</div>
+          <div style={{fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(0,230,118,.95)",marginBottom:8}}>{lang==="en"?"Mercato record":"Record Mercato"}</div>
+          <div style={{fontFamily:G.heading,fontSize:40,color:G.accent,lineHeight:1,textShadow:"0 2px 12px rgba(0,230,118,.35)"}}>{chainRecord?chainRecord.score:0}</div>
         </div>
-        {/* Amis - Rose/Rouge */}
-        <div style={{background:"linear-gradient(135deg, rgba(255,61,87,.18), rgba(255,107,53,.12))",border:"1.5px solid rgba(255,61,87,.45)",borderRadius:20,padding:"18px 14px",textAlign:"center",boxShadow:"0 4px 16px rgba(255,61,87,.12)"}}>
+        {/* Amis */}
+        <div style={{background:"linear-gradient(135deg, rgba(0,230,118,.18), rgba(0,168,85,.12))",border:"1.5px solid rgba(0,230,118,.45)",borderRadius:20,padding:"18px 14px",textAlign:"center",boxShadow:"0 4px 16px rgba(0,230,118,.12)"}}>
           <div style={{fontSize:32,marginBottom:8}}>👥</div>
-          <div style={{fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,61,87,.95)",marginBottom:8}}>{lang==="en"?"Friends":"Amis"}</div>
-          <div style={{fontFamily:G.heading,fontSize:40,color:"#FF3D57",lineHeight:1,textShadow:"0 2px 12px rgba(255,61,87,.35)"}}>{friendsList.length}</div>
+          <div style={{fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(0,230,118,.95)",marginBottom:8}}>{lang==="en"?"Friends":"Amis"}</div>
+          <div style={{fontFamily:G.heading,fontSize:40,color:G.accent,lineHeight:1,textShadow:"0 2px 12px rgba(0,230,118,.35)"}}>{friendsList.length}</div>
         </div>
-        {/* Parties - Violet */}
-        <div style={{background:"linear-gradient(135deg, rgba(192,132,252,.18), rgba(167,139,250,.12))",border:"1.5px solid rgba(192,132,252,.45)",borderRadius:20,padding:"18px 14px",textAlign:"center",boxShadow:"0 4px 16px rgba(192,132,252,.12)"}}>
+        {/* Parties */}
+        <div style={{background:"linear-gradient(135deg, rgba(0,230,118,.18), rgba(0,168,85,.12))",border:"1.5px solid rgba(0,230,118,.45)",borderRadius:20,padding:"18px 14px",textAlign:"center",boxShadow:"0 4px 16px rgba(0,230,118,.12)"}}>
           <div style={{fontSize:32,marginBottom:8}}>🎮</div>
-          <div style={{fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(192,132,252,.95)",marginBottom:8}}>{lang==="en"?"Games":"Parties"}</div>
-          <div style={{fontFamily:G.heading,fontSize:40,color:"#c084fc",lineHeight:1,textShadow:"0 2px 12px rgba(192,132,252,.35)"}}>{(record?1:0)+(chainRecord?1:0)}</div>
+          <div style={{fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(0,230,118,.95)",marginBottom:8}}>{lang==="en"?"Games":"Parties"}</div>
+          <div style={{fontFamily:G.heading,fontSize:40,color:G.accent,lineHeight:1,textShadow:"0 2px 12px rgba(0,230,118,.35)"}}>{(record?1:0)+(chainRecord?1:0)}</div>
         </div>
       </div>
 
       {/* Actions */}
       <div style={{zIndex:1,padding:"8px 16px",display:"flex",flexDirection:"column",gap:10}}>
-        {/* Mes amis - Rose */}
-        <button onClick={()=>{setShowFriends(true);setScreen("home");}} style={{padding:"18px",background:"linear-gradient(135deg, rgba(255,61,87,.15), rgba(255,107,53,.08))",border:"1.5px solid rgba(255,61,87,.45)",borderRadius:18,cursor:"pointer",color:G.white,fontFamily:G.font,fontSize:17,fontWeight:800,display:"flex",alignItems:"center",gap:14,textAlign:"left",boxShadow:"0 3px 12px rgba(255,61,87,.1)"}}>
+        {/* Mes amis */}
+        <button onClick={()=>{setShowFriends(true);setScreen("home");}} style={{padding:"18px",background:"linear-gradient(135deg, rgba(0,230,118,.15), rgba(0,168,85,.08))",border:"1.5px solid rgba(0,230,118,.45)",borderRadius:18,cursor:"pointer",color:G.white,fontFamily:G.font,fontSize:17,fontWeight:800,display:"flex",alignItems:"center",gap:14,textAlign:"left",boxShadow:"0 3px 12px rgba(0,230,118,.1)"}}>
           <span style={{fontSize:26}}>👥</span>
           <div style={{flex:1}}>
             <div>{lang==="en"?"My friends":"Mes amis"}</div>
             <div style={{fontSize:12,color:"rgba(255,255,255,.65)",fontWeight:600,marginTop:3,letterSpacing:.3}}>{friendsList.length} {lang==="en"?(friendsList.length>1?"friends":"friend"):(friendsList.length>1?"amis":"ami")}</div>
           </div>
-          <span style={{fontSize:22,color:"rgba(255,61,87,.8)"}}>→</span>
+          <span style={{fontSize:22,color:"rgba(0,230,118,.8)"}}>→</span>
         </button>
 
-        {/* Classement - Or */}
-        <button onClick={()=>{setLbMode("pont");setLbDiff("facile");loadLeaderboard("pont");setShowLeaderboard(true);setScreen("home");}} style={{padding:"18px",background:"linear-gradient(135deg, rgba(255,214,0,.15), rgba(255,107,53,.08))",border:"1.5px solid rgba(255,214,0,.45)",borderRadius:18,cursor:"pointer",color:G.white,fontFamily:G.font,fontSize:17,fontWeight:800,display:"flex",alignItems:"center",gap:14,textAlign:"left",boxShadow:"0 3px 12px rgba(255,214,0,.1)"}}>
+        {/* Classement */}
+        <button onClick={()=>{setLbMode("pont");setLbDiff("facile");loadLeaderboard("pont");setShowLeaderboard(true);setScreen("home");}} style={{padding:"18px",background:"linear-gradient(135deg, rgba(0,230,118,.15), rgba(0,168,85,.08))",border:"1.5px solid rgba(0,230,118,.45)",borderRadius:18,cursor:"pointer",color:G.white,fontFamily:G.font,fontSize:17,fontWeight:800,display:"flex",alignItems:"center",gap:14,textAlign:"left",boxShadow:"0 3px 12px rgba(0,230,118,.1)"}}>
           <span style={{fontSize:26}}>🏆</span>
           <div style={{flex:1}}>
             <div>{lang==="en"?"Leaderboard":"Classement"}</div>
             <div style={{fontSize:12,color:"rgba(255,255,255,.65)",fontWeight:600,marginTop:3,letterSpacing:.3}}>{lang==="en"?"See your world rank":"Vois ton rang mondial"}</div>
           </div>
-          <span style={{fontSize:22,color:"rgba(255,214,0,.8)"}}>→</span>
+          <span style={{fontSize:22,color:"rgba(0,230,118,.8)"}}>→</span>
         </button>
 
-        {/* Comment jouer - Bleu */}
-        <button onClick={()=>{setShowTutorial(true);setTutorialStep(0);}} style={{padding:"18px",background:"linear-gradient(135deg, rgba(96,165,250,.15), rgba(59,130,246,.08))",border:"1.5px solid rgba(96,165,250,.45)",borderRadius:18,cursor:"pointer",color:G.white,fontFamily:G.font,fontSize:17,fontWeight:800,display:"flex",alignItems:"center",gap:14,textAlign:"left",boxShadow:"0 3px 12px rgba(96,165,250,.1)"}}>
+        {/* Comment jouer */}
+        <button onClick={()=>{setShowTutorial(true);setTutorialStep(0);}} style={{padding:"18px",background:"linear-gradient(135deg, rgba(0,230,118,.15), rgba(0,168,85,.08))",border:"1.5px solid rgba(0,230,118,.45)",borderRadius:18,cursor:"pointer",color:G.white,fontFamily:G.font,fontSize:17,fontWeight:800,display:"flex",alignItems:"center",gap:14,textAlign:"left",boxShadow:"0 3px 12px rgba(0,230,118,.1)"}}>
           <span style={{fontSize:26}}>❓</span>
           <div style={{flex:1}}>
             <div>{lang==="en"?"How to play?":"Comment jouer ?"}</div>
             <div style={{fontSize:12,color:"rgba(255,255,255,.65)",fontWeight:600,marginTop:3,letterSpacing:.3}}>{lang==="en"?"See the tutorial again":"Revoir le tutoriel"}</div>
           </div>
-          <span style={{fontSize:22,color:"rgba(96,165,250,.8)"}}>→</span>
+          <span style={{fontSize:22,color:"rgba(0,230,118,.8)"}}>→</span>
         </button>
 
-        {/* Langue - Violet */}
-        <div style={{padding:"18px",background:"linear-gradient(135deg, rgba(192,132,252,.15), rgba(167,139,250,.08))",border:"1.5px solid rgba(192,132,252,.45)",borderRadius:18,color:G.white,fontFamily:G.font,fontSize:17,fontWeight:800,display:"flex",alignItems:"center",gap:14,boxShadow:"0 3px 12px rgba(192,132,252,.1)"}}>
+        {/* Langue */}
+        <div style={{padding:"18px",background:"linear-gradient(135deg, rgba(0,230,118,.15), rgba(0,168,85,.08))",border:"1.5px solid rgba(0,230,118,.45)",borderRadius:18,color:G.white,fontFamily:G.font,fontSize:17,fontWeight:800,display:"flex",alignItems:"center",gap:14,boxShadow:"0 3px 12px rgba(0,230,118,.1)"}}>
           <span style={{fontSize:26}}>🌐</span>
           <div style={{flex:1}}>
             <div>{lang==="en"?"Language":"Langue"}</div>
@@ -5680,6 +5755,24 @@ export default function LePont() {
       {pseudoModal}
       {avatarViewer}
       {cropperModal}
+    </div>
+  );
+
+  // ── BANNIÈRE DISCRÈTE D'INSTALL (iOS Safari / Android Chrome non installé) ──
+  // Reste visible en permanence pour les users qui n'ont pas encore installé
+  // Clic → ouvre le gros modal d'instructions
+  const installBanner = !isStandalone() && pseudoConfirmed && (isIOS() || deferredInstall) && (
+    <div onClick={function(){ installDismissedThisSession.current = false; setShowInstallPrompt(true); }} style={{position:"sticky",top:0,zIndex:40,margin:"0 -16px 12px",padding:"10px 16px",background:"linear-gradient(135deg, rgba(0,230,118,.12), rgba(0,168,85,.08))",borderBottom:"1px solid rgba(0,230,118,.25)",cursor:"pointer",display:"flex",alignItems:"center",gap:10,backdropFilter:"blur(10px)",WebkitBackdropFilter:"blur(10px)"}}>
+      <span style={{fontSize:20,flexShrink:0}}>📲</span>
+      <div style={{flex:1,minWidth:0}}>
+        <div style={{fontSize:12,fontWeight:800,color:G.accent,letterSpacing:.3,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
+          {lang==="en"?"Install GOAT FC":"Installer GOAT FC"}
+        </div>
+        <div style={{fontSize:10,color:"rgba(255,255,255,.55)",marginTop:1,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
+          {lang==="en"?"Get daily reminders & faster access":"Reçois les rappels et accède plus vite"}
+        </div>
+      </div>
+      <span style={{fontSize:18,color:G.accent,flexShrink:0}}>→</span>
     </div>
   );
 
@@ -5847,6 +5940,8 @@ export default function LePont() {
             <div style={{fontSize:11,color:"rgba(255,255,255,.5)",marginTop:2}}>{lang==="en"?"Create your username to join automatically":"Crée ton pseudo pour rejoindre automatiquement"}</div>
           </div>
         )}
+        {/* Bannière installation app (iOS Safari / Android non installé) */}
+        {installBanner}
         {/* Bandeau demandes d'amis */}
         {friendRequests.length > 0 && (
           <div style={{background:"#123a1e",border:"1px solid rgba(0,230,118,.5)",borderRadius:12,padding:"10px 14px"}}>
@@ -6087,7 +6182,7 @@ export default function LePont() {
                 <div style={{fontFamily:G.heading,fontSize:26,color:G.gold,letterSpacing:2}}>⚡ {lang==="en"?"DAILY CHALLENGE":"DÉFI DU JOUR"}</div>
                 <div style={{fontSize:12,color:"rgba(255,255,255,.5)",marginTop:2}}>{lang==="en"?"Guess the mystery player":"Devine le joueur mystère"}</div>
               </div>
-              <button onClick={function(){setShowDailyGame(false);}} style={{background:"rgba(255,255,255,.1)",border:"1px solid rgba(255,255,255,.15)",borderRadius:"50%",width:36,height:36,color:G.white,cursor:"pointer",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+              <button onClick={function(){setShowDailyGame(false);setDailySuccess(false);setDailyHintLevel(0);setDailyUsedHint(false);setDailyHintData({ position: null, nationality: null, loading: false });}} style={{background:"rgba(255,255,255,.1)",border:"1px solid rgba(255,255,255,.15)",borderRadius:"50%",width:36,height:36,color:G.white,cursor:"pointer",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
             </div>
             {/* Contenu */}
             <div style={{...sheet,borderRadius:"28px 28px 0 0",marginTop:20,zIndex:1,flex:1,justifyContent:"flex-start",overflowY:"auto",paddingTop:20,paddingBottom:40,background:"linear-gradient(180deg, rgba(255,214,0,.08) 0%, rgba(10,20,10,.92) 60%)",backdropFilter:"blur(10px)"}}>
@@ -6228,11 +6323,17 @@ export default function LePont() {
                   )}
 
                   {/* Hint button */}
-                  {dailyHintLevel < 2 && (
-                    <button onClick={fetchHint} disabled={dailyHintData.loading} style={{width:"100%",padding:"12px",background:"rgba(96,165,250,.08)",color:"#60a5fa",border:"1px solid rgba(96,165,250,.3)",borderRadius:50,cursor:dailyHintData.loading?"not-allowed":"pointer",fontFamily:G.font,fontSize:13,fontWeight:700,marginBottom:10,opacity:dailyHintData.loading?0.5:1}}>
-                      {dailyHintData.loading ? (lang==="en"?"Loading...":"Chargement...") : (dailyHintLevel === 0 ? (lang==="en"?"💡 Show position (−40 pts)":"💡 Voir le poste (−40 pts)") : (lang==="en"?"💡 Show nationality":"💡 Voir la nationalité"))}
-                    </button>
-                  )}
+                  {dailyHintLevel < 2 && (() => {
+                    // Coût du 1er indice = différence entre points normaux et points avec indice (10)
+                    const pd = dailyPlayer.diff || "moyen";
+                    const basePoints = pd==="expert"?50:pd==="moyen"?35:20;
+                    const firstHintCost = basePoints - 10; // ce que tu perds en prenant le 1er indice
+                    return (
+                      <button onClick={fetchHint} disabled={dailyHintData.loading} style={{width:"100%",padding:"12px",background:"rgba(96,165,250,.08)",color:"#60a5fa",border:"1px solid rgba(96,165,250,.3)",borderRadius:50,cursor:dailyHintData.loading?"not-allowed":"pointer",fontFamily:G.font,fontSize:13,fontWeight:700,marginBottom:10,opacity:dailyHintData.loading?0.5:1}}>
+                        {dailyHintData.loading ? (lang==="en"?"Loading...":"Chargement...") : (dailyHintLevel === 0 ? (lang==="en"?`💡 Show position (−${firstHintCost} pts)`:`💡 Voir le poste (−${firstHintCost} pts)`) : (lang==="en"?"💡 Show nationality (free)":"💡 Voir la nationalité (gratuit)"))}
+                      </button>
+                    );
+                  })()}
                   <div style={{display:"flex",gap:10,marginTop:8}}>
                     <button onClick={handleDailySubmit} style={{flex:1,padding:"16px",background:"linear-gradient(135deg,#FFD600,#FF6B35)",color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:16,fontWeight:800}}>
                       {lang==="en"?"Submit ✓":"Valider ✓"}
