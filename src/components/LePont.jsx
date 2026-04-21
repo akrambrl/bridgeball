@@ -823,7 +823,7 @@ const DAILY_RESETS = {
   "2026-04-21": "v2", // Nathan Aké incomplet → nouveau joueur
 };
 
-function getDailyPlayer() {
+function getDailyPlayer(blacklist) {
   const today = (()=>{ const d=new Date(); const paris=new Date(d.toLocaleString('en-US',{timeZone:'Europe/Paris'})); return paris.getFullYear()+'-'+String(paris.getMonth()+1).padStart(2,'0')+'-'+String(paris.getDate()).padStart(2,'0'); })();
   // Permet de forcer un nouveau défi pour une date donnée en concaténant un suffixe au hash
   const hashKey = today + (DAILY_RESETS[today] || "");
@@ -840,19 +840,21 @@ function getDailyPlayer() {
   let pool = basePool;
 
   if (theme.filter === "LEGEND") {
-    // Samedi : uniquement joueurs retirés (légendes)
     pool = basePool.filter(p => isRetiredPlayer(p.name));
   } else if (theme.filter === "JOKER") {
-    // Dimanche : tout le pool
     pool = basePool;
   } else {
-    // Ligue spécifique : joueurs qui ont joué dans au moins un club de cette ligue
     const leagueClubs = new Set(LEAGUE_CLUBS[theme.filter] || []);
     pool = basePool.filter(p => p.clubs.some(c => leagueClubs.has(c)));
   }
 
-  // Fallback si la ligue est trop petite (ne devrait pas arriver avec 200+ joueurs/ligue)
-  if (pool.length < 10) pool = basePool;
+  // Appliquer la blacklist (joueurs signalés comme buggés par ≥3 users)
+  if (blacklist && blacklist.size > 0) {
+    pool = pool.filter(p => !blacklist.has(p.name));
+  }
+
+  // Fallback si la ligue est trop petite
+  if (pool.length < 10) pool = basePool.filter(p => !(blacklist && blacklist.has(p.name)));
 
   if (pool.length === 0) return null;
   return pool[hash % pool.length];
@@ -1570,7 +1572,7 @@ export default function LePont() {
   const [showNotifPrompt, setShowNotifPrompt] = useState(false);
   const [lbMode, setLbMode] = useState("global");
   const [lbSeasonScope, setLbSeasonScope] = useState("monde"); // "monde" ou "amis" pour l'onglet Saison
-  const [dailyPlayer] = useState(() => getDailyPlayer());
+  const [dailyPlayer, setDailyPlayer] = useState(() => getDailyPlayer(new Set()));
   const [dailyDone, setDailyDone] = useState(() => {
     try {
       const d = JSON.parse(localStorage.getItem("bb_daily_result")||"{}");
@@ -1591,6 +1593,8 @@ export default function LePont() {
     } catch { return false; }
   });
   const [showRevealConfirm, setShowRevealConfirm] = useState(false);
+  const [showDailyReportConfirm, setShowDailyReportConfirm] = useState(false);
+  const [dailyReportSent, setDailyReportSent] = useState(false);
   const [dailyTries, setDailyTries] = useState(() => {
     try {
       const d = JSON.parse(localStorage.getItem("bb_daily_hint")||"{}");
@@ -1831,6 +1835,27 @@ export default function LePont() {
     loadFriendRequests();
     loadSeasons();
     checkAndCloseSeason();
+    // Fetch la blacklist des joueurs signalés buggés pour le défi du jour
+    // Si le joueur du jour est dans la blacklist (≥3 signalements), on le remplace
+    (async function() {
+      try {
+        const reports = await sbFetch("bb_reports?select=player_name&report_type=eq.daily_bug&limit=2000");
+        if (!Array.isArray(reports) || reports.length === 0) return;
+        const counts = {};
+        reports.forEach(function(r) {
+          if (r.player_name) counts[r.player_name] = (counts[r.player_name] || 0) + 1;
+        });
+        const blacklisted = new Set(Object.keys(counts).filter(n => counts[n] >= 3));
+        if (blacklisted.size === 0) return;
+        // Remplacer le joueur du jour s'il est blacklisté
+        setDailyPlayer(prev => {
+          if (prev && blacklisted.has(prev.name)) {
+            return getDailyPlayer(blacklisted);
+          }
+          return prev;
+        });
+      } catch(e) { /* silent, fallback sur pool sans blacklist */ }
+    })();
     // Auto-join depuis lien ?room=XXXXXX
     try {
       const params = new URLSearchParams(window.location.search);
@@ -6343,6 +6368,10 @@ export default function LePont() {
                   <button onClick={function(){setShowRevealConfirm(true);}} style={{width:"100%",marginTop:10,padding:"11px",background:"transparent",color:"rgba(255,255,255,.5)",border:"1px solid rgba(255,255,255,.15)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:700,letterSpacing:.3}}>
                     👁️ {lang==="en"?"Reveal answer (0 pts)":"Voir la réponse (0 pt)"}
                   </button>
+                  {/* Signaler une erreur sur le défi */}
+                  <button onClick={function(){setShowDailyReportConfirm(true);}} style={{width:"100%",marginTop:8,padding:"8px",background:"transparent",color:"rgba(255,255,255,.3)",border:"none",cursor:"pointer",fontFamily:G.font,fontSize:11,fontWeight:600,textDecoration:"underline",letterSpacing:.2}}>
+                    ⚠️ {lang==="en"?"Report an error with this challenge":"Signaler une erreur sur ce défi"}
+                  </button>
                 </>
               )}
             </div>
@@ -6366,6 +6395,57 @@ export default function LePont() {
                   {lang==="en"?"👁️ Reveal":"👁️ Voir"}
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal confirmation "Signaler une erreur" sur le défi du jour */}
+        {showDailyReportConfirm && dailyPlayer && (
+          <div onClick={function(){if(!dailyReportSent)setShowDailyReportConfirm(false);}} style={{position:"fixed",inset:0,zIndex:500,background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center",padding:20,cursor:"pointer"}}>
+            <div onClick={function(e){e.stopPropagation();}} style={{background:"rgba(15,25,15,.96)",borderRadius:24,padding:"28px 24px",maxWidth:340,width:"100%",border:"1px solid rgba(255,255,255,.1)",textAlign:"center",cursor:"default"}}>
+              {dailyReportSent ? (
+                <>
+                  <div style={{fontSize:42,marginBottom:12}}>✅</div>
+                  <div style={{fontFamily:G.heading,fontSize:22,color:G.accent,letterSpacing:1,marginBottom:8}}>{lang==="en"?"THANK YOU!":"MERCI !"}</div>
+                  <div style={{fontSize:13,color:"rgba(255,255,255,.55)",marginBottom:22,lineHeight:1.5}}>
+                    {lang==="en"?"Your report has been sent. We'll fix it as soon as possible.":"Ton signalement a été envoyé. On corrige ça au plus vite."}
+                  </div>
+                  <button onClick={function(){setShowDailyReportConfirm(false);setDailyReportSent(false);}} style={{width:"100%",padding:"13px",background:"rgba(0,230,118,.15)",color:G.accent,border:"1px solid rgba(0,230,118,.3)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>
+                    OK
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div style={{fontSize:42,marginBottom:12}}>⚠️</div>
+                  <div style={{fontFamily:G.heading,fontSize:24,color:G.white,letterSpacing:1,marginBottom:8}}>{lang==="en"?"REPORT AN ERROR?":"SIGNALER UNE ERREUR ?"}</div>
+                  <div style={{fontSize:13,color:"rgba(255,255,255,.55)",marginBottom:22,lineHeight:1.5}}>
+                    {lang==="en"?<>If <strong style={{color:G.white}}>{dailyPlayer.name}</strong> has missing clubs or incorrect information, tap Report. If enough users report, the player will be automatically excluded.</>:<>Si <strong style={{color:G.white}}>{dailyPlayer.name}</strong> a des clubs manquants ou des infos fausses, tape Signaler. Si assez d'users signalent, le joueur sera automatiquement exclu.</>}
+                  </div>
+                  <div style={{display:"flex",gap:10}}>
+                    <button onClick={function(){setShowDailyReportConfirm(false);}} style={{flex:1,padding:"13px",background:"rgba(255,255,255,.07)",color:G.white,border:"1px solid rgba(255,255,255,.1)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>
+                      {lang==="en"?"Cancel":"Annuler"}
+                    </button>
+                    <button onClick={async function(){
+                      try {
+                        await sbFetch("bb_reports", {
+                          method:"POST",
+                          headers:{"Content-Type":"application/json","Prefer":"return=minimal"},
+                          body: JSON.stringify({
+                            reporter_id: playerId,
+                            reporter_name: playerName || null,
+                            report_type: "daily_bug",
+                            player_name: dailyPlayer.name,
+                            message: "Défi du jour signalé — "+(dailyPlayer.clubs||[]).join("|")
+                          })
+                        });
+                      } catch(e) {}
+                      setDailyReportSent(true);
+                    }} style={{flex:1,padding:"13px",background:"rgba(255,61,87,.2)",color:"#FF3D57",border:"1px solid rgba(255,61,87,.4)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>
+                      ⚠️ {lang==="en"?"Report":"Signaler"}
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         )}
