@@ -3480,7 +3480,7 @@ export default function LePont() {
     setDailyTries(newTries);
     const answerParts = answer.split(" ");
     const isCorrect = guess === answer
-      || answerParts.some(function(p){ return p.length > 3 && guess === p; })
+      || answerParts.some(function(p){ return p.length >= 3 && guess === p; })
       || (answer.includes(guess) && guess.length > 4);
     if (isCorrect) {
       setDailySuccess(true);
