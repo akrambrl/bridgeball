@@ -5510,25 +5510,25 @@ export default function LePont() {
               <button onClick={()=>setShowDuelCreate({id:viewedProfile.id,name:viewedProfile.name})} style={{flex:1,padding:"13px",background:"linear-gradient(135deg,#FFD600,#FF6B35)",color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>{lang==="en"?"⚡ Challenge":"⚡ Défier"}</button>
             </div>
             <div style={{zIndex:1,padding:"16px 16px 8px",display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-              <div style={{background:"linear-gradient(135deg, rgba(0,230,118,.18), rgba(0,168,85,.12))",border:"1.5px solid rgba(0,230,118,.45)",borderRadius:16,padding:"14px 10px",textAlign:"center",boxShadow:"0 4px 16px rgba(0,230,118,.12)"}}>
+              <div style={{background:G.accent,borderRadius:16,padding:"14px 10px",textAlign:"center",boxShadow:"0 4px 16px rgba(0,230,118,.35)"}}>
                 <div style={{fontSize:22,marginBottom:4}}>🏆</div>
-                <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(0,230,118,.95)",marginBottom:4}}>{lang==="en"?"Plug record":"Record Plug"}</div>
-                <div style={{fontFamily:G.heading,fontSize:26,color:G.accent,textShadow:"0 2px 12px rgba(0,230,118,.35)"}}>{d.bestPont||0}</div>
+                <div style={{fontSize:10,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(0,0,0,.75)",marginBottom:4}}>{lang==="en"?"Plug record":"Record Plug"}</div>
+                <div style={{fontFamily:G.heading,fontSize:26,color:"#000"}}>{d.bestPont||0}</div>
               </div>
-              <div style={{background:"linear-gradient(135deg, rgba(0,230,118,.18), rgba(0,168,85,.12))",border:"1.5px solid rgba(0,230,118,.45)",borderRadius:16,padding:"14px 10px",textAlign:"center",boxShadow:"0 4px 16px rgba(0,230,118,.12)"}}>
+              <div style={{background:G.accent,borderRadius:16,padding:"14px 10px",textAlign:"center",boxShadow:"0 4px 16px rgba(0,230,118,.35)"}}>
                 <div style={{fontSize:22,marginBottom:4}}>⛓</div>
-                <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(0,230,118,.95)",marginBottom:4}}>{lang==="en"?"Mercato record":"Record Mercato"}</div>
-                <div style={{fontFamily:G.heading,fontSize:26,color:G.accent,textShadow:"0 2px 12px rgba(0,230,118,.35)"}}>{d.bestChaine||0}</div>
+                <div style={{fontSize:10,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(0,0,0,.75)",marginBottom:4}}>{lang==="en"?"Mercato record":"Record Mercato"}</div>
+                <div style={{fontFamily:G.heading,fontSize:26,color:"#000"}}>{d.bestChaine||0}</div>
               </div>
-              <div style={{background:"linear-gradient(135deg, rgba(0,230,118,.18), rgba(0,168,85,.12))",border:"1.5px solid rgba(0,230,118,.45)",borderRadius:16,padding:"14px 10px",textAlign:"center",boxShadow:"0 4px 16px rgba(0,230,118,.12)"}}>
+              <div style={{background:G.accent,borderRadius:16,padding:"14px 10px",textAlign:"center",boxShadow:"0 4px 16px rgba(0,230,118,.35)"}}>
                 <div style={{fontSize:22,marginBottom:4}}>🎮</div>
-                <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(0,230,118,.95)",marginBottom:4}}>{lang==="en"?"Games":"Parties"}</div>
-                <div style={{fontFamily:G.heading,fontSize:26,color:G.accent,textShadow:"0 2px 12px rgba(0,230,118,.35)"}}>{d.played||0}</div>
+                <div style={{fontSize:10,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(0,0,0,.75)",marginBottom:4}}>{lang==="en"?"Games":"Parties"}</div>
+                <div style={{fontFamily:G.heading,fontSize:26,color:"#000"}}>{d.played||0}</div>
               </div>
-              <div style={{background:"linear-gradient(135deg, rgba(0,230,118,.18), rgba(0,168,85,.12))",border:"1.5px solid rgba(0,230,118,.45)",borderRadius:16,padding:"14px 10px",textAlign:"center",boxShadow:"0 4px 16px rgba(0,230,118,.12)"}}>
+              <div style={{background:G.accent,borderRadius:16,padding:"14px 10px",textAlign:"center",boxShadow:"0 4px 16px rgba(0,230,118,.35)"}}>
                 <div style={{fontSize:22,marginBottom:4}}>⭐</div>
-                <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(0,230,118,.95)",marginBottom:4}}>{lang==="en"?"Total Score":"Score Total"}</div>
-                <div style={{fontFamily:G.heading,fontSize:26,color:G.accent,textShadow:"0 2px 12px rgba(0,230,118,.35)"}}>{d.score||0}</div>
+                <div style={{fontSize:10,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(0,0,0,.75)",marginBottom:4}}>{lang==="en"?"Total Score":"Score Total"}</div>
+                <div style={{fontFamily:G.heading,fontSize:26,color:"#000"}}>{d.score||0}</div>
               </div>
             </div>
             <div style={{zIndex:1,padding:"8px 16px"}}>
@@ -5701,73 +5701,73 @@ export default function LePont() {
       {/* Stats cards */}
       <div style={{zIndex:1,padding:"16px 16px 8px",display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
         {/* Record Plug */}
-        <div style={{background:"linear-gradient(135deg, rgba(0,230,118,.18), rgba(0,168,85,.12))",border:"1.5px solid rgba(0,230,118,.45)",borderRadius:20,padding:"18px 14px",textAlign:"center",boxShadow:"0 4px 16px rgba(0,230,118,.12)"}}>
+        <div style={{background:G.accent,borderRadius:20,padding:"18px 14px",textAlign:"center",boxShadow:"0 4px 16px rgba(0,230,118,.35)"}}>
           <div style={{fontSize:32,marginBottom:8}}>🏆</div>
-          <div style={{fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(0,230,118,.95)",marginBottom:8}}>{lang==="en"?"Plug record":"Record Plug"}</div>
-          <div style={{fontFamily:G.heading,fontSize:40,color:G.accent,lineHeight:1,textShadow:"0 2px 12px rgba(0,230,118,.35)"}}>{record?record.score:0}</div>
+          <div style={{fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(0,0,0,.75)",marginBottom:8}}>{lang==="en"?"Plug record":"Record Plug"}</div>
+          <div style={{fontFamily:G.heading,fontSize:40,color:"#000",lineHeight:1}}>{record?record.score:0}</div>
         </div>
         {/* Record Mercato */}
-        <div style={{background:"linear-gradient(135deg, rgba(0,230,118,.18), rgba(0,168,85,.12))",border:"1.5px solid rgba(0,230,118,.45)",borderRadius:20,padding:"18px 14px",textAlign:"center",boxShadow:"0 4px 16px rgba(0,230,118,.12)"}}>
+        <div style={{background:G.accent,borderRadius:20,padding:"18px 14px",textAlign:"center",boxShadow:"0 4px 16px rgba(0,230,118,.35)"}}>
           <div style={{fontSize:32,marginBottom:8}}>⛓️</div>
-          <div style={{fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(0,230,118,.95)",marginBottom:8}}>{lang==="en"?"Mercato record":"Record Mercato"}</div>
-          <div style={{fontFamily:G.heading,fontSize:40,color:G.accent,lineHeight:1,textShadow:"0 2px 12px rgba(0,230,118,.35)"}}>{chainRecord?chainRecord.score:0}</div>
+          <div style={{fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(0,0,0,.75)",marginBottom:8}}>{lang==="en"?"Mercato record":"Record Mercato"}</div>
+          <div style={{fontFamily:G.heading,fontSize:40,color:"#000",lineHeight:1}}>{chainRecord?chainRecord.score:0}</div>
         </div>
         {/* Amis */}
-        <div style={{background:"linear-gradient(135deg, rgba(0,230,118,.18), rgba(0,168,85,.12))",border:"1.5px solid rgba(0,230,118,.45)",borderRadius:20,padding:"18px 14px",textAlign:"center",boxShadow:"0 4px 16px rgba(0,230,118,.12)"}}>
+        <div style={{background:G.accent,borderRadius:20,padding:"18px 14px",textAlign:"center",boxShadow:"0 4px 16px rgba(0,230,118,.35)"}}>
           <div style={{fontSize:32,marginBottom:8}}>👥</div>
-          <div style={{fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(0,230,118,.95)",marginBottom:8}}>{lang==="en"?"Friends":"Amis"}</div>
-          <div style={{fontFamily:G.heading,fontSize:40,color:G.accent,lineHeight:1,textShadow:"0 2px 12px rgba(0,230,118,.35)"}}>{friendsList.length}</div>
+          <div style={{fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(0,0,0,.75)",marginBottom:8}}>{lang==="en"?"Friends":"Amis"}</div>
+          <div style={{fontFamily:G.heading,fontSize:40,color:"#000",lineHeight:1}}>{friendsList.length}</div>
         </div>
         {/* Parties */}
-        <div style={{background:"linear-gradient(135deg, rgba(0,230,118,.18), rgba(0,168,85,.12))",border:"1.5px solid rgba(0,230,118,.45)",borderRadius:20,padding:"18px 14px",textAlign:"center",boxShadow:"0 4px 16px rgba(0,230,118,.12)"}}>
+        <div style={{background:G.accent,borderRadius:20,padding:"18px 14px",textAlign:"center",boxShadow:"0 4px 16px rgba(0,230,118,.35)"}}>
           <div style={{fontSize:32,marginBottom:8}}>🎮</div>
-          <div style={{fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(0,230,118,.95)",marginBottom:8}}>{lang==="en"?"Games":"Parties"}</div>
-          <div style={{fontFamily:G.heading,fontSize:40,color:G.accent,lineHeight:1,textShadow:"0 2px 12px rgba(0,230,118,.35)"}}>{(record?1:0)+(chainRecord?1:0)}</div>
+          <div style={{fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(0,0,0,.75)",marginBottom:8}}>{lang==="en"?"Games":"Parties"}</div>
+          <div style={{fontFamily:G.heading,fontSize:40,color:"#000",lineHeight:1}}>{(record?1:0)+(chainRecord?1:0)}</div>
         </div>
       </div>
 
       {/* Actions */}
       <div style={{zIndex:1,padding:"8px 16px",display:"flex",flexDirection:"column",gap:10}}>
         {/* Mes amis */}
-        <button onClick={()=>{setShowFriends(true);setScreen("home");}} style={{padding:"18px",background:"linear-gradient(135deg, rgba(0,230,118,.15), rgba(0,168,85,.08))",border:"1.5px solid rgba(0,230,118,.45)",borderRadius:18,cursor:"pointer",color:G.white,fontFamily:G.font,fontSize:17,fontWeight:800,display:"flex",alignItems:"center",gap:14,textAlign:"left",boxShadow:"0 3px 12px rgba(0,230,118,.1)"}}>
+        <button onClick={()=>{setShowFriends(true);setScreen("home");}} style={{padding:"18px",background:G.accent,border:"none",borderRadius:18,cursor:"pointer",color:"#000",fontFamily:G.font,fontSize:17,fontWeight:800,display:"flex",alignItems:"center",gap:14,textAlign:"left",boxShadow:"0 4px 16px rgba(0,230,118,.35)"}}>
           <span style={{fontSize:26}}>👥</span>
           <div style={{flex:1}}>
             <div>{lang==="en"?"My friends":"Mes amis"}</div>
-            <div style={{fontSize:12,color:"rgba(255,255,255,.65)",fontWeight:600,marginTop:3,letterSpacing:.3}}>{friendsList.length} {lang==="en"?(friendsList.length>1?"friends":"friend"):(friendsList.length>1?"amis":"ami")}</div>
+            <div style={{fontSize:12,color:"rgba(0,0,0,.65)",fontWeight:700,marginTop:3,letterSpacing:.3}}>{friendsList.length} {lang==="en"?(friendsList.length>1?"friends":"friend"):(friendsList.length>1?"amis":"ami")}</div>
           </div>
-          <span style={{fontSize:22,color:"rgba(0,230,118,.8)"}}>→</span>
+          <span style={{fontSize:22,color:"rgba(0,0,0,.7)"}}>→</span>
         </button>
 
         {/* Classement */}
-        <button onClick={()=>{setLbMode("pont");setLbDiff("facile");loadLeaderboard("pont");setShowLeaderboard(true);setScreen("home");}} style={{padding:"18px",background:"linear-gradient(135deg, rgba(0,230,118,.15), rgba(0,168,85,.08))",border:"1.5px solid rgba(0,230,118,.45)",borderRadius:18,cursor:"pointer",color:G.white,fontFamily:G.font,fontSize:17,fontWeight:800,display:"flex",alignItems:"center",gap:14,textAlign:"left",boxShadow:"0 3px 12px rgba(0,230,118,.1)"}}>
+        <button onClick={()=>{setLbMode("pont");setLbDiff("facile");loadLeaderboard("pont");setShowLeaderboard(true);setScreen("home");}} style={{padding:"18px",background:G.accent,border:"none",borderRadius:18,cursor:"pointer",color:"#000",fontFamily:G.font,fontSize:17,fontWeight:800,display:"flex",alignItems:"center",gap:14,textAlign:"left",boxShadow:"0 4px 16px rgba(0,230,118,.35)"}}>
           <span style={{fontSize:26}}>🏆</span>
           <div style={{flex:1}}>
             <div>{lang==="en"?"Leaderboard":"Classement"}</div>
-            <div style={{fontSize:12,color:"rgba(255,255,255,.65)",fontWeight:600,marginTop:3,letterSpacing:.3}}>{lang==="en"?"See your world rank":"Vois ton rang mondial"}</div>
+            <div style={{fontSize:12,color:"rgba(0,0,0,.65)",fontWeight:700,marginTop:3,letterSpacing:.3}}>{lang==="en"?"See your world rank":"Vois ton rang mondial"}</div>
           </div>
-          <span style={{fontSize:22,color:"rgba(0,230,118,.8)"}}>→</span>
+          <span style={{fontSize:22,color:"rgba(0,0,0,.7)"}}>→</span>
         </button>
 
         {/* Comment jouer */}
-        <button onClick={()=>{setShowTutorial(true);setTutorialStep(0);}} style={{padding:"18px",background:"linear-gradient(135deg, rgba(0,230,118,.15), rgba(0,168,85,.08))",border:"1.5px solid rgba(0,230,118,.45)",borderRadius:18,cursor:"pointer",color:G.white,fontFamily:G.font,fontSize:17,fontWeight:800,display:"flex",alignItems:"center",gap:14,textAlign:"left",boxShadow:"0 3px 12px rgba(0,230,118,.1)"}}>
+        <button onClick={()=>{setShowTutorial(true);setTutorialStep(0);}} style={{padding:"18px",background:G.accent,border:"none",borderRadius:18,cursor:"pointer",color:"#000",fontFamily:G.font,fontSize:17,fontWeight:800,display:"flex",alignItems:"center",gap:14,textAlign:"left",boxShadow:"0 4px 16px rgba(0,230,118,.35)"}}>
           <span style={{fontSize:26}}>❓</span>
           <div style={{flex:1}}>
             <div>{lang==="en"?"How to play?":"Comment jouer ?"}</div>
-            <div style={{fontSize:12,color:"rgba(255,255,255,.65)",fontWeight:600,marginTop:3,letterSpacing:.3}}>{lang==="en"?"See the tutorial again":"Revoir le tutoriel"}</div>
+            <div style={{fontSize:12,color:"rgba(0,0,0,.65)",fontWeight:700,marginTop:3,letterSpacing:.3}}>{lang==="en"?"See the tutorial again":"Revoir le tutoriel"}</div>
           </div>
-          <span style={{fontSize:22,color:"rgba(0,230,118,.8)"}}>→</span>
+          <span style={{fontSize:22,color:"rgba(0,0,0,.7)"}}>→</span>
         </button>
 
         {/* Langue */}
-        <div style={{padding:"18px",background:"linear-gradient(135deg, rgba(0,230,118,.15), rgba(0,168,85,.08))",border:"1.5px solid rgba(0,230,118,.45)",borderRadius:18,color:G.white,fontFamily:G.font,fontSize:17,fontWeight:800,display:"flex",alignItems:"center",gap:14,boxShadow:"0 3px 12px rgba(0,230,118,.1)"}}>
+        <div style={{padding:"18px",background:G.accent,border:"none",borderRadius:18,color:"#000",fontFamily:G.font,fontSize:17,fontWeight:800,display:"flex",alignItems:"center",gap:14,boxShadow:"0 4px 16px rgba(0,230,118,.35)"}}>
           <span style={{fontSize:26}}>🌐</span>
           <div style={{flex:1}}>
             <div>{lang==="en"?"Language":"Langue"}</div>
-            <div style={{fontSize:12,color:"rgba(255,255,255,.65)",fontWeight:600,marginTop:3,letterSpacing:.3}}>{lang==="en"?"Choose your language":"Choisis ta langue"}</div>
+            <div style={{fontSize:12,color:"rgba(0,0,0,.65)",fontWeight:700,marginTop:3,letterSpacing:.3}}>{lang==="en"?"Choose your language":"Choisis ta langue"}</div>
           </div>
           <div style={{display:"flex",gap:6}}>
-            <button onClick={()=>setLanguage("fr")} style={{padding:"7px 13px",background:lang==="fr"?G.accent:"rgba(255,255,255,.08)",color:lang==="fr"?"#000":"rgba(255,255,255,.7)",border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800}}>🇫🇷 FR</button>
-            <button onClick={()=>setLanguage("en")} style={{padding:"7px 13px",background:lang==="en"?G.accent:"rgba(255,255,255,.08)",color:lang==="en"?"#000":"rgba(255,255,255,.7)",border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800}}>🇬🇧 EN</button>
+            <button onClick={()=>setLanguage("fr")} style={{padding:"7px 13px",background:lang==="fr"?"#000":"rgba(0,0,0,.15)",color:lang==="fr"?G.accent:"rgba(0,0,0,.7)",border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800}}>🇫🇷 FR</button>
+            <button onClick={()=>setLanguage("en")} style={{padding:"7px 13px",background:lang==="en"?"#000":"rgba(0,0,0,.15)",color:lang==="en"?G.accent:"rgba(0,0,0,.7)",border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800}}>🇬🇧 EN</button>
           </div>
         </div>
       </div>
