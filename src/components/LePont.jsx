@@ -4953,24 +4953,29 @@ export default function LePont() {
             const grade = getGrade(lbMode==="saison" ? (entry.xp||entry.score) : entry.score);
             return(
               <div key={i} onClick={()=>{ if(!isMe) { setShowLeaderboard(false); openUserProfile(entry.pid, entry.name); } }} style={{borderRadius:14,background:i===0?"linear-gradient(135deg,#FFD600,#FF6B35)":i===1?"linear-gradient(135deg,#E8E8E8,#A8A8B0)":i===2?"linear-gradient(135deg,#E3A869,#8B5A2B)":"rgba(0,230,118,.18)",border:i===0?"1px solid rgba(255,214,0,.6)":i===1?"1px solid rgba(200,200,210,.6)":i===2?"1px solid rgba(205,127,50,.6)":isMe?"1px solid rgba(0,230,118,.6)":"1px solid rgba(0,230,118,.35)",marginBottom:6,overflow:"hidden",cursor:isMe?"default":"pointer",boxShadow:i===0?"0 4px 18px rgba(255,107,53,.35)":i===1?"0 4px 18px rgba(200,200,210,.25)":i===2?"0 4px 18px rgba(205,127,50,.3)":"none"}}>
-                <div style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px"}}>
-                  <div style={{fontFamily:G.heading,fontSize:30,width:40,textAlign:"center",color:i<3?["#FFD600","#C0C0C0","#CD7F32"][i]:"rgba(255,255,255,.3)"}}>
+                <div style={{display:"flex",alignItems:"center",gap:10,padding:"12px 12px"}}>
+                  <div style={{fontFamily:G.heading,fontSize:28,width:34,textAlign:"center",color:i<3?["#FFD600","#C0C0C0","#CD7F32"][i]:"rgba(255,255,255,.3)",flexShrink:0}}>
                     {i<3?medals[i]:(i+1)}
                   </div>
-                  <div style={{flex:1}}>
+                  {/* Avatar rond (photo Supabase Storage ou fallback emoji grade) */}
+                  <div style={{width:42,height:42,borderRadius:"50%",background:"linear-gradient(135deg,#00E676,#00A855)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,color:"#fff",overflow:"hidden",position:"relative",flexShrink:0,border:i<3?"2px solid rgba(0,0,0,.3)":"1.5px solid rgba(255,255,255,.15)"}}>
+                    <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22}}>{grade.emoji}</div>
+                    <img src={SB_URL + "/storage/v1/object/public/avatars/" + entry.pid + ".jpg"} alt="" onError={function(e){e.currentTarget.style.display="none";}} style={{width:"100%",height:"100%",objectFit:"cover",position:"relative",zIndex:1}}/>
+                  </div>
+                  <div style={{flex:1,minWidth:0}}>
                     <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3,flexWrap:"wrap"}}>
-                      <span style={{fontSize:19,fontFamily:G.heading,letterSpacing:1,color:i<3?"#1a0d00":isMe?G.accent:G.white,whiteSpace:"nowrap"}}>{entry.country && <span style={{marginRight:5,fontSize:16}}>{countryToFlag(entry.country)}</span>}{entry.name}{isMe?" (toi)":""}</span>
-                      <span style={{fontSize:12,fontWeight:800,color:i<3?"#1a0d00":grade.color,background:i<3?"rgba(26,13,0,.18)":grade.color+"22",borderRadius:20,padding:"3px 9px",letterSpacing:.5,border:i<3?"1px solid rgba(26,13,0,.25)":"none"}}>{grade.emoji} {grade.label}</span>
-                      {entry.streak>=3 && <span style={{fontSize:12,fontWeight:800,color:"#FF6B35",background:"rgba(255,107,53,.15)",borderRadius:20,padding:"3px 9px"}}>🔥 {entry.streak}</span>}
+                      <span style={{fontSize:18,fontFamily:G.heading,letterSpacing:1,color:i<3?"#1a0d00":isMe?G.accent:G.white,whiteSpace:"nowrap"}}>{entry.country && <span style={{marginRight:5,fontSize:15}}>{countryToFlag(entry.country)}</span>}{entry.name}{isMe?" (toi)":""}</span>
+                      <span style={{fontSize:11,fontWeight:800,color:i<3?"#1a0d00":grade.color,background:i<3?"rgba(26,13,0,.18)":grade.color+"22",borderRadius:20,padding:"2px 8px",letterSpacing:.5,border:i<3?"1px solid rgba(26,13,0,.25)":"none"}}>{grade.emoji} {grade.label}</span>
+                      {entry.streak>=3 && <span style={{fontSize:11,fontWeight:800,color:"#FF6B35",background:"rgba(255,107,53,.15)",borderRadius:20,padding:"2px 8px"}}>🔥 {entry.streak}</span>}
                     </div>
                     {lbMode==="saison"
-                      ? <div style={{fontSize:13,color:i<3?"rgba(26,13,0,.85)":"rgba(255,255,255,.5)",marginTop:4,fontWeight:i<3?700:400}}>⭐ {lang==="en"?"Cumulative XP":"XP cumulés"}</div>
+                      ? <div style={{fontSize:12,color:i<3?"rgba(26,13,0,.85)":"rgba(255,255,255,.5)",marginTop:3,fontWeight:i<3?700:400}}>⭐ {lang==="en"?"Cumulative XP":"XP cumulés"}</div>
                       : lbMode==="global"
-                      ? <div style={{fontSize:13,color:i<3?"rgba(26,13,0,.85)":"rgba(255,255,255,.5)",marginTop:4,fontWeight:i<3?700:400}}>🏟 {entry.bestPont} pts &nbsp;·&nbsp; ⛓ {entry.bestChaine} pts</div>
-                      : <div style={{fontSize:13,color:i<3?"rgba(26,13,0,.85)":"rgba(255,255,255,.5)",marginTop:4,fontWeight:i<3?700:400}}>{entry.played} {lang==="en"?(entry.played>1?"games":"game"):(entry.played>1?"parties":"partie")}</div>
+                      ? <div style={{fontSize:12,color:i<3?"rgba(26,13,0,.85)":"rgba(255,255,255,.5)",marginTop:3,fontWeight:i<3?700:400}}>🏟 {entry.bestPont} pts &nbsp;·&nbsp; ⛓ {entry.bestChaine} pts</div>
+                      : <div style={{fontSize:12,color:i<3?"rgba(26,13,0,.85)":"rgba(255,255,255,.5)",marginTop:3,fontWeight:i<3?700:400}}>{entry.played} {lang==="en"?(entry.played>1?"games":"game"):(entry.played>1?"parties":"partie")}</div>
                     }
                   </div>
-                  <div style={{fontFamily:G.heading,fontSize:32,color:i<3?"#1a0d00":G.white}}>{entry.score} <span style={{fontSize:14,color:i<3?"rgba(26,13,0,.7)":"rgba(255,255,255,.3)",fontWeight:i<3?700:400}}>{lbMode==="saison"?"XP":"pts"}</span></div>
+                  <div style={{fontFamily:G.heading,fontSize:28,color:i<3?"#1a0d00":G.white,flexShrink:0}}>{entry.score} <span style={{fontSize:12,color:i<3?"rgba(26,13,0,.7)":"rgba(255,255,255,.3)",fontWeight:i<3?700:400}}>{lbMode==="saison"?"XP":"pts"}</span></div>
                 </div>
                 {lbMode!=="saison" && (
                 <div style={{display:"flex",borderTop:i<3?"1px solid rgba(0,0,0,.2)":"1px solid rgba(255,255,255,.06)",background:i<3?"rgba(0,0,0,.08)":"transparent"}}>
