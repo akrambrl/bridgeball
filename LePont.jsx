@@ -89,11 +89,11 @@ function getCurrentSeason() {
 }
 
 const GRADES = [
-  { min:10000, label:"GOAT",                            labelEn:"GOAT",            emoji:"🐐", color:"#FFD700" },
-  { min:5000,  label:"LÉGENDE",                         labelEn:"LEGEND",          emoji:"☄️", color:"#FF6B35" },
-  { min:2000,  label:"Titulaire",                       labelEn:"First Team",      emoji:"🐺", color:"#00B4D8" },
-  { min:500,   label:"Espoir du centre de formation",   labelEn:"Academy Talent",  emoji:"👦🏻", color:"#2EC4B6" },
-  { min:0,     label:"Joueur du dimanche",              labelEn:"Sunday Player",   emoji:"🏖️", color:"#8D99AE" },
+  { min:10000, label:"GOAT",      labelEn:"GOAT",    emoji:"🐐", color:"#FFD700" },
+  { min:5000,  label:"Légende",   labelEn:"Legend",  emoji:"☄️", color:"#FF6B35" },
+  { min:2000,  label:"Titulaire", labelEn:"Starter", emoji:"🐺", color:"#00B4D8" },
+  { min:500,   label:"Espoir",    labelEn:"Rookie",  emoji:"👦🏻", color:"#2EC4B6" },
+  { min:0,     label:"Amateur",   labelEn:"Amateur", emoji:"🏖️", color:"#8D99AE" },
 ];
 
 function getGrade(score) {
@@ -2092,33 +2092,12 @@ export default function LePont() {
 
   // Timer
 
-  // Question timer (Le Pont + La Chaîne)
+  // Timer par question supprimé : on garde uniquement le timer global de 90 secondes par manche.
+  // Les users peuvent prendre leur temps pour chaque joueur, tant qu'il reste du temps dans la manche.
+  // Le useEffect reste pour initialiser l'état interne mais ne lance plus de countdown.
   useEffect(()=>{
     chainPassedRef.current = false;
     clearInterval(qTimerRef.current);
-    if(screen!=="game"&&screen!=="chainGame"){clearInterval(qTimerRef.current);return;}
-    const duration = screen==="chainGame" ? CHAIN_QUESTION_DURATION : QUESTION_DURATION;
-    const qStart = Date.now();
-    const capturedChainCount = chainCount;
-    chainPassedRef.current = false;
-    setQTimeLeft(duration);
-    clearInterval(qTimerRef.current);
-    qTimerRef.current=setInterval(()=>{
-      const elapsed = Math.floor((Date.now() - qStart) / 1000);
-      const remaining = Math.max(duration - elapsed, 0);
-      setQTimeLeft(remaining);
-      if(remaining <= 0){
-        clearInterval(qTimerRef.current);
-        if(screen==="chainGame"){
-          if(!chainPassedRef.current && capturedChainCount === chainCount){
-            handleChainPassRef.current && handleChainPassRef.current();
-          }
-        } else {
-          handlePassRef.current && handlePassRef.current();
-        }
-      }
-    },300);
-    return()=>clearInterval(qTimerRef.current);
   },[screen,animKey,chainCount]);
 
   useEffect(()=>{
@@ -7257,11 +7236,7 @@ export default function LePont() {
               </div>
             </div>
           )}
-      {/* Question timer bar */}
-      <div style={{position:"fixed",bottom:0,left:0,right:0,height:25,background:"rgba(255,255,255,.08)",zIndex:100,display:"flex",alignItems:"center",justifyContent:"center"}}>
-        <div key={animKey} style={{position:"absolute",inset:0,background:qTimeLeft>3?"#00E676":qTimeLeft>1?"#FFD600":"#FF3D57",width:(qTimeLeft/QUESTION_DURATION*100)+"%",transition:"width 0.3s linear",borderRadius:"4px 0 0 4px",marginLeft:"auto"}}/>
-        <span style={{position:"relative",zIndex:1,fontFamily:G.heading,fontSize:14,fontWeight:800,color:"rgba(255,255,255,.9)",letterSpacing:1}}>{qTimeLeft}s</span>
-      </div>
+      {/* Timer par question supprimé — seul le timer global de la manche reste */}
     </div>
     </div>
     );
@@ -7392,11 +7367,7 @@ export default function LePont() {
           </div>
         )}
       </div>
-      {/* Chain question timer bar */}
-      <div style={{position:"fixed",bottom:0,left:0,right:0,height:25,background:"rgba(255,255,255,.08)",zIndex:100,display:"flex",alignItems:"center",justifyContent:"center"}}>
-        <div key={chainCount} style={{position:"absolute",inset:0,background:qTimeLeft>8?"#00E676":qTimeLeft>4?"#FFD600":"#FF3D57",width:(qTimeLeft/CHAIN_QUESTION_DURATION*100)+"%",borderRadius:"4px 0 0 4px",marginLeft:"auto"}}/>
-        <span style={{position:"relative",zIndex:1,fontFamily:G.heading,fontSize:14,fontWeight:800,color:"rgba(255,255,255,.9)",letterSpacing:1}}>{qTimeLeft}s</span>
-      </div>
+      {/* Timer par question supprimé — seul le timer global de la manche reste */}
     </div>
     );
   }
