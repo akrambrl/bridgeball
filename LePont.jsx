@@ -5630,43 +5630,34 @@ export default function LePont() {
     { icon:"⚡", title:"DÉFI DU JOUR", subtitle:"Un joueur mystère chaque jour", desc:"Chaque jour, un nouveau joueur mystère à deviner. Reviens tous les jours pour ne pas perdre ta série !", color:"#3a2a00", accent:"#FFD600" },
     { icon:"👥", title:"MULTIJOUEUR", subtitle:"Joue avec tes potes", desc:"Crée une salle, partage le code, et affrontez-vous en temps réel jusqu'à 8 joueurs !", color:"#2a1a3a", accent:"#c084fc" },
   ];
-  if(showTutorial) {
+  // Le tutoriel s'affiche comme un overlay par-dessus l'écran d'accueil
+  // (pas comme un écran qui remplace tout) → l'utilisateur voit le home en arrière-plan
+  // avec son logo, ses modes de jeu, etc. → contexte visuel avant de commencer
+  const tutorialOverlay = showTutorial ? (() => {
     const sl = TUTORIAL_SLIDES[tutorialStep];
     const closeTutorial = () => { setShowTutorial(false); try{localStorage.setItem("bb_tutorial_done","1");}catch{} };
     return (
-      <div style={{...shell}}>
-        <div style={{position:"fixed",inset:0,zIndex:9998,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 20px",overflow:"hidden"}}>
-          {/* Fond pelouse */}
-          <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
-            {[0,1,2,3,4,5,6].map(function(i){return(
-              <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#1E5C2A":"#276B34"}}/>
-            );})}
-            <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:"rgba(255,255,255,.15)",transform:"translateY(-50%)"}}/>
-            <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:180,height:180,borderRadius:"50%",border:"2px solid rgba(255,255,255,.15)"}}/>
-            <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:8,height:8,borderRadius:"50%",background:"rgba(255,255,255,.2)"}}/>
-            <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.6)"}}/>
+      <div style={{position:"fixed",inset:0,zIndex:9998,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 20px",background:"rgba(0,0,0,.75)",backdropFilter:"blur(10px)",animation:"fadeIn .3s ease"}}>
+        <div style={{position:"relative",zIndex:1,width:"100%",maxWidth:380,background:sl.color,borderRadius:28,padding:"36px 24px 28px",border:"1px solid rgba(255,255,255,.1)",textAlign:"center",boxShadow:"0 20px 60px rgba(0,0,0,.5)"}}>
+          <div style={{display:"flex",justifyContent:"center",gap:8,marginBottom:28}}>
+            {TUTORIAL_SLIDES.map((_,i)=>(<div key={i} style={{width:i===tutorialStep?24:8,height:8,borderRadius:4,background:i===tutorialStep?sl.accent:"rgba(255,255,255,.2)",transition:"all .3s"}}/>))}
           </div>
-          <div style={{position:"relative",zIndex:1,width:"100%",maxWidth:380,background:sl.color,borderRadius:28,padding:"36px 24px 28px",border:"1px solid rgba(255,255,255,.1)",textAlign:"center",boxShadow:"0 20px 60px rgba(0,0,0,.5)"}}>
-            <div style={{display:"flex",justifyContent:"center",gap:8,marginBottom:28}}>
-              {TUTORIAL_SLIDES.map((_,i)=>(<div key={i} style={{width:i===tutorialStep?24:8,height:8,borderRadius:4,background:i===tutorialStep?sl.accent:"rgba(255,255,255,.2)",transition:"all .3s"}}/>))}
-            </div>
-            <div style={{fontSize:56,marginBottom:16}}>{sl.icon}</div>
-            <div style={{fontFamily:G.heading,fontSize:32,color:"#fff",letterSpacing:2,marginBottom:6}}>{sl.title}</div>
-            <div style={{fontSize:13,color:sl.accent,fontWeight:700,letterSpacing:1,marginBottom:16,textTransform:"uppercase"}}>{sl.subtitle}</div>
-            <div style={{fontSize:15,color:"rgba(255,255,255,.7)",lineHeight:1.6,marginBottom:32}}>{sl.desc}</div>
-            <div style={{display:"flex",gap:10}}>
-              {tutorialStep > 0 && <button onClick={()=>setTutorialStep(s=>s-1)} style={{flex:1,padding:"14px",background:"rgba(255,255,255,.07)",color:"rgba(255,255,255,.5)",border:"1px solid rgba(255,255,255,.1)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>{lang==="en"?"← Back":"← Retour"}</button>}
-              {tutorialStep < TUTORIAL_SLIDES.length-1
-                ? <button onClick={()=>setTutorialStep(s=>s+1)} style={{flex:2,padding:"14px",background:sl.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800}}>{lang==="en"?"Next →":"Suivant →"}</button>
-                : <button onClick={closeTutorial} style={{flex:2,padding:"14px",background:sl.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800}}>{lang==="en"?"Let's go 🚀":"C'est parti 🚀"}</button>
-              }
-            </div>
-            {tutorialStep < TUTORIAL_SLIDES.length-1 && <button onClick={closeTutorial} style={{marginTop:16,background:"none",border:"none",color:"rgba(255,255,255,.3)",cursor:"pointer",fontFamily:G.font,fontSize:13}}>{lang==="en"?"Skip":"Passer"}</button>}
+          <div style={{fontSize:56,marginBottom:16}}>{sl.icon}</div>
+          <div style={{fontFamily:G.heading,fontSize:32,color:"#fff",letterSpacing:2,marginBottom:6}}>{sl.title}</div>
+          <div style={{fontSize:13,color:sl.accent,fontWeight:700,letterSpacing:1,marginBottom:16,textTransform:"uppercase"}}>{sl.subtitle}</div>
+          <div style={{fontSize:15,color:"rgba(255,255,255,.7)",lineHeight:1.6,marginBottom:32}}>{sl.desc}</div>
+          <div style={{display:"flex",gap:10}}>
+            {tutorialStep > 0 && <button onClick={()=>setTutorialStep(s=>s-1)} style={{flex:1,padding:"14px",background:"rgba(255,255,255,.07)",color:"rgba(255,255,255,.5)",border:"1px solid rgba(255,255,255,.1)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>{lang==="en"?"← Back":"← Retour"}</button>}
+            {tutorialStep < TUTORIAL_SLIDES.length-1
+              ? <button onClick={()=>setTutorialStep(s=>s+1)} style={{flex:2,padding:"14px",background:sl.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800}}>{lang==="en"?"Next →":"Suivant →"}</button>
+              : <button onClick={closeTutorial} style={{flex:2,padding:"14px",background:sl.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800}}>{lang==="en"?"Let's go 🚀":"C'est parti 🚀"}</button>
+            }
           </div>
+          {tutorialStep < TUTORIAL_SLIDES.length-1 && <button onClick={closeTutorial} style={{marginTop:16,background:"none",border:"none",color:"rgba(255,255,255,.3)",cursor:"pointer",fontFamily:G.font,fontSize:13}}>{lang==="en"?"Skip":"Passer"}</button>}
         </div>
       </div>
     );
-  }
+  })() : null;
 
 
   // ── PSEUDO MODAL (first time only) ──
@@ -6389,6 +6380,7 @@ export default function LePont() {
       {streakModal}
       {installPrompt}
       {notifPrompt}
+      {tutorialOverlay}
       {showDuelCreate && (
         <div style={{position:"fixed",inset:0,zIndex:300,background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center"}}>
           <div style={{background:"rgba(15,25,15,.95)",borderRadius:24,padding:"28px 24px",maxWidth:340,width:"calc(100% - 32px)",border:"1px solid rgba(255,255,255,.1)"}}>
