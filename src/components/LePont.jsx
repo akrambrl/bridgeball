@@ -4709,6 +4709,46 @@ export default function LePont() {
     </div>
   );
 
+  // ── DUEL CREATE MODAL (partagé entre écrans userProfile, friends, home, leaderboard) ──
+  const duelCreateModal = showDuelCreate && (
+    <div key="duel-create-modal" style={{position:"fixed",inset:0,zIndex:9998,background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+      <div style={{background:"rgba(15,25,15,.95)",borderRadius:24,padding:"28px 24px",maxWidth:340,width:"calc(100% - 32px)",border:"1px solid rgba(255,255,255,.1)"}}>
+        <div style={{fontFamily:G.heading,fontSize:28,color:G.white,marginBottom:4}}>{lang==="en"?"CHALLENGE":"DÉFIER"}</div>
+        <div style={{fontSize:14,color:"rgba(255,255,255,.5)",marginBottom:20}}>vs <strong style={{color:G.gold}}>{showDuelCreate.name}</strong></div>
+        <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:8}}>Mode</div>
+        <div style={{display:"flex",gap:8,marginBottom:16}}>
+          {["pont","chaine"].map(function(m){return(
+            <button key={m} onClick={function(){setDuelMode(m);}} style={{flex:1,padding:"10px",borderRadius:12,border:"1.5px solid "+(duelMode===m?G.accent:"rgba(255,255,255,.15)"),background:duelMode===m?"rgba(0,230,118,.1)":"transparent",color:duelMode===m?G.accent:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:13}}>
+              {m==="pont"?"The Plug":"The Mercato"}
+            </button>
+          );})}
+        </div>
+        {duelMode==="pont" && (
+          <>
+            <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:8}}>{lang==="en"?"Difficulty":"Difficulté"}</div>
+            <div style={{display:"flex",gap:8,marginBottom:16}}>
+              {["facile","moyen","expert"].map(function(d){return(
+                <button key={d} onClick={function(){setDuelDiff(d);}} style={{flex:1,padding:"8px",borderRadius:10,border:"1.5px solid "+(duelDiff===d?G.gold:"rgba(255,255,255,.15)"),background:duelDiff===d?"rgba(255,214,0,.1)":"transparent",color:duelDiff===d?G.gold:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:12,textTransform:"capitalize"}}>
+                  {d}
+                </button>
+              );})}
+            </div>
+            <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:8}}>{lang==="en"?"Rounds":"Manches"}</div>
+            <div style={{display:"flex",gap:8,marginBottom:20}}>
+              {[1,2,3].map(function(r){return(
+                <button key={r} onClick={function(){setDuelRounds(r);}} style={{flex:1,padding:"10px",borderRadius:12,border:"1.5px solid "+(duelRounds===r?"#fff":"rgba(255,255,255,.15)"),background:duelRounds===r?"rgba(255,255,255,.1)":"transparent",color:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:15}}>{r}</button>
+              );})}
+            </div>
+          </>
+        )}
+        <div style={{display:"flex",gap:8,marginTop:8}}>
+          <button onClick={function(){setShowDuelCreate(null);}} style={{flex:1,padding:"12px",background:"rgba(255,255,255,.07)",color:"rgba(255,255,255,.5)",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14}}>{lang==="en"?"Cancel":"Annuler"}</button>
+          <button onClick={function(){createDuel(showDuelCreate);}} style={{flex:2,padding:"12px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>{lang==="en"?"Send challenge ⚡":"Envoyer le défi ⚡"}</button>
+        </div>
+      </div>
+    </div>
+  );
+
   // ── HISTORY MODAL (historique des questions de la partie qui vient de finir) ──
   const historyModal = showHistory && (
     <div key="history-modal" onClick={()=>setShowHistory(false)} style={{position:"fixed",inset:0,zIndex:9999,background:"rgba(0,0,0,.85)",display:"flex",alignItems:"flex-end",justifyContent:"center",animation:"fadeIn .2s ease",backdropFilter:"blur(8px)"}}>
@@ -5136,40 +5176,7 @@ export default function LePont() {
           <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:180,height:180,borderRadius:"50%",border:"2px solid rgba(255,255,255,.15)"}}/>
           <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.45)"}}/>
         </div>
-        {showDuelCreate && (
-          <div style={{position:"fixed",inset:0,zIndex:300,background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center"}}>
-            <div style={{background:"rgba(15,25,15,.95)",borderRadius:24,padding:"28px 24px",maxWidth:340,width:"calc(100% - 32px)",border:"1px solid rgba(255,255,255,.1)"}}>
-              <div style={{fontFamily:G.heading,fontSize:28,color:G.white,marginBottom:4}}>DÉFIER</div>
-              <div style={{fontSize:14,color:"rgba(255,255,255,.5)",marginBottom:20}}>vs <strong style={{color:G.gold}}>{showDuelCreate.name}</strong></div>
-              <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:8}}>Mode</div>
-              <div style={{display:"flex",gap:8,marginBottom:16}}>
-                {["pont","chaine"].map(function(m){return(
-                  <button key={m} onClick={function(){setDuelMode(m);}} style={{flex:1,padding:"10px",borderRadius:12,border:"1.5px solid "+(duelMode===m?G.accent:"rgba(255,255,255,.15)"),background:duelMode===m?"rgba(0,230,118,.1)":"transparent",color:duelMode===m?G.accent:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:13}}>
-                    {m==="pont"?"The Plug":"The Mercato"}
-                  </button>
-                );})}
-              </div>
-              <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:8}}>{lang==="en"?"Difficulty":"Difficulté"}</div>
-              <div style={{display:"flex",gap:8,marginBottom:16}}>
-                {["facile","moyen","expert"].map(function(d){return(
-                  <button key={d} onClick={function(){setDuelDiff(d);}} style={{flex:1,padding:"8px",borderRadius:10,border:"1.5px solid "+(duelDiff===d?G.gold:"rgba(255,255,255,.15)"),background:duelDiff===d?"rgba(255,214,0,.1)":"transparent",color:duelDiff===d?G.gold:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:12,textTransform:"capitalize"}}>
-                    {d}
-                  </button>
-                );})}
-              </div>
-              <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:8}}>{lang==="en"?"Rounds":"Manches"}</div>
-              <div style={{display:"flex",gap:8,marginBottom:20}}>
-                {[1,2,3].map(function(r){return(
-                  <button key={r} onClick={function(){setDuelRounds(r);}} style={{flex:1,padding:"10px",borderRadius:12,border:"1.5px solid "+(duelRounds===r?"#fff":"rgba(255,255,255,.15)"),background:duelRounds===r?"rgba(255,255,255,.1)":"transparent",color:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:15}}>{r}</button>
-                );})}
-              </div>
-              <div style={{display:"flex",gap:8}}>
-                <button onClick={function(){setShowDuelCreate(null);}} style={{flex:1,padding:"12px",background:"rgba(255,255,255,.07)",color:"rgba(255,255,255,.5)",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14}}>{lang==="en"?"Cancel":"Annuler"}</button>
-                <button onClick={function(){createDuel(showDuelCreate);}} style={{flex:2,padding:"12px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>{lang==="en"?"Send challenge ⚡":"Envoyer le défi ⚡"}</button>
-              </div>
-            </div>
-          </div>
-        )}
+        {duelCreateModal}
         {/* Modal confirmation suppression ami */}
         {confirmRemove && (
           <div style={{position:"fixed",inset:0,zIndex:400,background:"rgba(0,0,0,.75)",backdropFilter:"blur(6px)",display:"flex",alignItems:"center",justifyContent:"center"}}>
@@ -5381,8 +5388,6 @@ export default function LePont() {
                     </div>
                     {lbMode==="saison"
                       ? <div style={{fontSize:12,color:i<3?"rgba(26,13,0,.85)":"rgba(255,255,255,.5)",marginTop:3,fontWeight:i<3?700:400}}>⭐ {lang==="en"?"Cumulative XP":"XP cumulés"}</div>
-                      : lbMode==="global"
-                      ? <div style={{fontSize:12,color:i<3?"rgba(26,13,0,.85)":"rgba(255,255,255,.5)",marginTop:3,fontWeight:i<3?700:400}}>🏟 {lang==="en"?"Best":"Record"} {entry.bestPont} &nbsp;·&nbsp; ⛓ {lang==="en"?"Best":"Record"} {entry.bestChaine}</div>
                       : <div style={{fontSize:12,color:i<3?"rgba(26,13,0,.85)":"rgba(255,255,255,.5)",marginTop:3,fontWeight:i<3?700:400}}>{entry.played} {lang==="en"?(entry.played>1?"games":"game"):(entry.played>1?"parties":"partie")}</div>
                     }
                   </div>
@@ -6112,6 +6117,7 @@ export default function LePont() {
           </>
         )}
         {avatarViewer}
+        {duelCreateModal}
       </div>
     );
   }
@@ -6366,38 +6372,7 @@ export default function LePont() {
       {installPrompt}
       {notifPrompt}
       {tutorialOverlay}
-      {showDuelCreate && (
-        <div style={{position:"fixed",inset:0,zIndex:300,background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center"}}>
-          <div style={{background:"rgba(15,25,15,.95)",borderRadius:24,padding:"28px 24px",maxWidth:340,width:"calc(100% - 32px)",border:"1px solid rgba(255,255,255,.1)"}}>
-            <div style={{fontFamily:G.heading,fontSize:28,color:G.white,marginBottom:4}}>DÉFIER</div>
-            <div style={{fontSize:14,color:"rgba(255,255,255,.5)",marginBottom:20}}>vs <strong style={{color:G.gold}}>{showDuelCreate.name}</strong></div>
-            <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:8}}>Mode</div>
-            <div style={{display:"flex",gap:8,marginBottom:16}}>
-              {["pont","chaine"].map(function(m){return(
-                <button key={m} onClick={function(){setDuelMode(m);}} style={{flex:1,padding:"10px",borderRadius:12,border:"1.5px solid "+(duelMode===m?G.accent:"rgba(255,255,255,.15)"),background:duelMode===m?"rgba(0,230,118,.1)":"transparent",color:duelMode===m?G.accent:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:13}}>
-                  {m==="pont"?"The Plug":"The Mercato"}
-                </button>
-              );})}
-            </div>
-            {duelMode==="pont" && (
-              <div style={{marginBottom:16}}>
-                <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:8}}>{lang==="en"?"Difficulty":"Difficulté"}</div>
-                <div style={{display:"flex",gap:8}}>
-                  {["facile","moyen","expert"].map(function(d){return(
-                    <button key={d} onClick={function(){setDuelDiff(d);}} style={{flex:1,padding:"8px",borderRadius:10,border:"1.5px solid "+(duelDiff===d?G.gold:"rgba(255,255,255,.15)"),background:duelDiff===d?"rgba(255,214,0,.1)":"transparent",color:duelDiff===d?G.gold:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:12,textTransform:"capitalize"}}>
-                      {d}
-                    </button>
-                  );})}
-                </div>
-              </div>
-            )}
-            <div style={{display:"flex",gap:8,marginTop:8}}>
-              <button onClick={function(){setShowDuelCreate(null);}} style={{flex:1,padding:"12px",background:"rgba(255,255,255,.07)",color:"rgba(255,255,255,.5)",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14}}>{lang==="en"?"Cancel":"Annuler"}</button>
-              <button onClick={function(){createDuel(showDuelCreate);}} style={{flex:2,padding:"12px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>{lang==="en"?"Send challenge ⚡":"Envoyer le défi ⚡"}</button>
-            </div>
-          </div>
-        </div>
-      )}
+      {duelCreateModal}
       {showRoomCreate && (
         <div
           style={{position:"fixed",inset:0,zIndex:400,display:"flex",alignItems:"flex-end"}}
