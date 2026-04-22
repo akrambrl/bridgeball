@@ -89,11 +89,11 @@ function getCurrentSeason() {
 }
 
 const GRADES = [
-  { min:10000, label:"GOAT",                            labelEn:"GOAT",            emoji:"🐐", color:"#FFD700" },
-  { min:5000,  label:"LÉGENDE",                         labelEn:"LEGEND",          emoji:"☄️", color:"#FF6B35" },
-  { min:2000,  label:"Titulaire",                       labelEn:"First Team",      emoji:"🐺", color:"#00B4D8" },
-  { min:500,   label:"Espoir du centre de formation",   labelEn:"Academy Talent",  emoji:"👦🏻", color:"#2EC4B6" },
-  { min:0,     label:"Joueur du dimanche",              labelEn:"Sunday Player",   emoji:"🏖️", color:"#8D99AE" },
+  { min:10000, label:"GOAT",      labelEn:"GOAT",    emoji:"🐐", color:"#FFD700" },
+  { min:5000,  label:"Légende",   labelEn:"Legend",  emoji:"☄️", color:"#FF6B35" },
+  { min:2000,  label:"Titulaire", labelEn:"Starter", emoji:"🐺", color:"#00B4D8" },
+  { min:500,   label:"Espoir",    labelEn:"Rookie",  emoji:"👦🏻", color:"#2EC4B6" },
+  { min:0,     label:"Amateur",   labelEn:"Amateur", emoji:"🏖️", color:"#8D99AE" },
 ];
 
 function getGrade(score) {
@@ -1761,13 +1761,24 @@ export default function LePont() {
     }
 
     // Bloque le pinch-zoom iOS (où user-scalable=no est parfois ignoré par Safari)
+    // Ces listeners sont uniquement nécessaires sur mobile/tablette tactile
+    // Sur desktop (Mac/Windows), certains trackpads (Magic Trackpad) génèrent des touch events
+    // qui peuvent interférer avec le scroll de la page — on les désactive
+    const isTouchDevice = typeof window !== "undefined" && (
+      ('ontouchstart' in window) || (navigator.maxTouchPoints > 0)
+    );
+    const isDesktopDevice = typeof window !== "undefined" && window.innerWidth >= 768 && !isTouchDevice;
     const preventZoom = (e) => { if (e.touches && e.touches.length > 1) e.preventDefault(); };
     const preventDblTap = (e) => e.preventDefault();
-    document.addEventListener('gesturestart', preventDblTap);
-    document.addEventListener('touchmove', preventZoom, { passive: false });
+    if (!isDesktopDevice) {
+      document.addEventListener('gesturestart', preventDblTap);
+      document.addEventListener('touchmove', preventZoom, { passive: false });
+    }
     return () => {
-      document.removeEventListener('gesturestart', preventDblTap);
-      document.removeEventListener('touchmove', preventZoom);
+      if (!isDesktopDevice) {
+        document.removeEventListener('gesturestart', preventDblTap);
+        document.removeEventListener('touchmove', preventZoom);
+      }
     };
   }, []);
 
@@ -2081,33 +2092,12 @@ export default function LePont() {
 
   // Timer
 
-  // Question timer (Le Pont + La Chaîne)
+  // Timer par question supprimé : on garde uniquement le timer global de 90 secondes par manche.
+  // Les users peuvent prendre leur temps pour chaque joueur, tant qu'il reste du temps dans la manche.
+  // Le useEffect reste pour initialiser l'état interne mais ne lance plus de countdown.
   useEffect(()=>{
     chainPassedRef.current = false;
     clearInterval(qTimerRef.current);
-    if(screen!=="game"&&screen!=="chainGame"){clearInterval(qTimerRef.current);return;}
-    const duration = screen==="chainGame" ? CHAIN_QUESTION_DURATION : QUESTION_DURATION;
-    const qStart = Date.now();
-    const capturedChainCount = chainCount;
-    chainPassedRef.current = false;
-    setQTimeLeft(duration);
-    clearInterval(qTimerRef.current);
-    qTimerRef.current=setInterval(()=>{
-      const elapsed = Math.floor((Date.now() - qStart) / 1000);
-      const remaining = Math.max(duration - elapsed, 0);
-      setQTimeLeft(remaining);
-      if(remaining <= 0){
-        clearInterval(qTimerRef.current);
-        if(screen==="chainGame"){
-          if(!chainPassedRef.current && capturedChainCount === chainCount){
-            handleChainPassRef.current && handleChainPassRef.current();
-          }
-        } else {
-          handlePassRef.current && handlePassRef.current();
-        }
-      }
-    },300);
-    return()=>clearInterval(qTimerRef.current);
   },[screen,animKey,chainCount]);
 
   useEffect(()=>{
@@ -2151,7 +2141,7 @@ export default function LePont() {
       }
     } catch {}
     return function(){ if(timeoutId) clearTimeout(timeoutId); };
-  },[screen]);
+  },[screen, playerXp]);
 
 
   // Leaderboard (localStorage)
@@ -2195,15 +2185,20 @@ export default function LePont() {
       duelsDraws: draws,
       isFriend: friendsList.includes(id),
     });
-    // Si pas dans leaderboard (user pas dans le top 50), fetch sa vraie XP séparément
-    if (!lbData) {
-      try {
-        const userData = await sbFetch("bb_pseudos?player_id=eq."+id+"&select=xp&limit=1");
-        if (Array.isArray(userData) && userData.length > 0) {
+    // Fetch le pseudo actuel depuis bb_pseudos (source de vérité)
+    // pour afficher le bon nom même si l'user l'a changé après ses parties
+    try {
+      const userData = await sbFetch("bb_pseudos?player_id=eq."+id+"&select=pseudo,xp&limit=1");
+      if (Array.isArray(userData) && userData.length > 0) {
+        const currentPseudo = userData[0].pseudo;
+        if (currentPseudo && currentPseudo !== name) {
+          setViewedProfile({ id, name: currentPseudo });
+        }
+        if (!lbData) {
           setViewedProfileData(function(prev){ return prev ? {...prev, xp: userData[0].xp || 0} : prev; });
         }
-      } catch {}
-    }
+      }
+    } catch {}
   }
 
   async function loadDuels() {
@@ -3329,6 +3324,8 @@ export default function LePont() {
             row.xp = xpMap[row.pid] || 0;
             // Remplacer le score (best perf d'une partie) par l'XP cumulée
             row.score = row.xp;
+            // Utiliser le pseudo actuel de bb_pseudos (source de vérité)
+            if (pseudoMap[row.pid]) row.name = pseudoMap[row.pid];
           });
           // Ajouter les users qui ont de l'XP mais n'ont pas encore joué de partie comptée
           // (cas rare : XP gagnée hors bb_scores, défi du jour, etc.)
@@ -3387,12 +3384,31 @@ export default function LePont() {
     setPlayerXp(newXp);
     setPlayerXpSeason(newXpSeason);
 
-    // Détection de changement de grade : si l'ancien grade est différent du nouveau
-    // Les grades sont triés du plus haut (GOAT = index 0) au plus bas (Joueur du dimanche = index 4)
-    // Donc un user qui monte a un index qui DIMINUE
+    // Détection de changement de grade
+    // On compare le grade actuel au grade "déjà notifié" (stocké en DB dans last_notified_grade)
+    // Ça permet de détecter les grade-ups même si :
+    // - playerXp local est désynchro (race condition au chargement)
+    // - l'user a raté la notif précédente (pas ouvert l'app)
+    // - plusieurs parties d'affilée sans revenir à l'accueil
+    // Les grades sont triés du plus haut (GOAT = 0) au plus bas (Joueur du dimanche = 4)
+    // Un user qui monte a un index qui DIMINUE
     const oldGradeIdx = GRADES.findIndex(function(g){ return oldXp >= g.min; });
     const newGradeIdx = GRADES.findIndex(function(g){ return newXp >= g.min; });
-    const hasLeveledUp = newGradeIdx < oldGradeIdx && newGradeIdx !== -1;
+    let hasLeveledUp = newGradeIdx < oldGradeIdx && newGradeIdx !== -1;
+    
+    // Double-check : si on vient de franchir un palier MAIS aussi si le grade stocké en DB
+    // n'est pas encore à jour (ex: user à 510 XP mais last_notified_grade=4), on force le popup
+    try {
+      const currentData = await sbFetch("bb_pseudos?player_id=eq." + playerId + "&select=last_notified_grade&limit=1");
+      if (Array.isArray(currentData) && currentData.length > 0) {
+        const dbNotifiedGrade = currentData[0].last_notified_grade;
+        // Si le grade actuel (newGradeIdx) est plus haut que le grade notifié en DB (dbNotifiedGrade)
+        // → grade up à afficher
+        if (typeof dbNotifiedGrade === "number" && newGradeIdx < dbNotifiedGrade && newGradeIdx !== -1) {
+          hasLeveledUp = true;
+        }
+      }
+    } catch(e) {}
 
     try {
       await sbFetch("bb_pseudos?player_id=eq." + playerId, {
@@ -3744,7 +3760,7 @@ export default function LePont() {
 
   // Construit un message de partage style Wordle pour le défi du jour
   function buildDailyShare() {
-    if (!dailyPlayer) return { text:"", url:"https://goatfc.online" };
+    if (!dailyPlayer) return { text:"", url:"https://goatfc.fr" };
     const theme = getTodayTheme();
     // Jour court en FR/EN
     const dayShortFr = ["Dim","Lun","Mar","Mer","Jeu","Ven","Sam"];
@@ -3783,7 +3799,7 @@ export default function LePont() {
     const cta = lang==="en"
       ? "Can you do better? 👇"
       : "Peux-tu faire mieux ? 👇";
-    const url = "https://goatfc.online";
+    const url = "https://goatfc.fr";
     const text = `${title}\n${scoreLine}\n\n${clubsDisplay}\n\n${squares.join("")}\n\n${cta}\n${url}`;
     return { text, url, title };
   }
@@ -4105,6 +4121,10 @@ export default function LePont() {
     const randCP = passSeed !== null ? seededRandom(passSeed) : Math.random;
     const validClubs=(PLAYERS_CLEAN.find(p=>p.name===chainPlayer)?.clubs||[]).filter(c=>!chainUsedClubs.has(c));
     const chosen=validClubs.length>0?validClubs[Math.floor(randCP()*validClubs.length)]:null;
+    // Note : le club "chosen" sert juste à trouver le prochain joueur de la chaîne,
+    // mais on NE l'ajoute PAS aux chainUsedClubs car l'utilisateur ne l'a pas réellement validé.
+    // Sinon un user qui passe plusieurs questions se retrouve avec des clubs "brûlés"
+    // qu'il n'a jamais joués, et se fait bloquer ensuite avec des "club déjà utilisé" incompréhensibles.
     // Helper : pioche un nouveau joueur aléatoire de la base (fallback quand la chaîne bloque)
     // Au lieu de terminer la partie prématurément, on relance avec un joueur tout frais
     const pickFallbackPlayer = () => {
@@ -4142,7 +4162,8 @@ export default function LePont() {
       const fallback = pickFallbackPlayer();
       if(!fallback){endChain();return;}
       const newUsedP=new Set(chainUsedPlayers); newUsedP.add(fallback);
-      setChainUsedClubs(newUsed); setChainUsedPlayers(newUsedP);
+      // Ne pas ajouter "chosen" aux clubs utilisés — l'user n'a pas validé ce club
+      setChainUsedPlayers(newUsedP);
       setChainHistory(prev=>[...prev,{player:chainPlayer,club:chosen,passed:true}]);
       setChainPlayer(fallback); setChainLastClub(chosen); setGuess("");
       setTimeout(()=>inputRef.current?.focus(),100);
@@ -4166,7 +4187,8 @@ export default function LePont() {
     const nextPool2 = useCurrent2 ? currentNext2 : finalPool2;
     const next=nextPool2[Math.floor(randCP()*nextPool2.length)];
     const newUsedP=new Set(chainUsedPlayers); newUsedP.add(next);
-    setChainUsedClubs(newUsed); setChainUsedPlayers(newUsedP);
+    // Ne pas ajouter "chosen" aux clubs utilisés — l'user n'a pas validé ce club
+    setChainUsedPlayers(newUsedP);
     setChainHistory(prev=>[...prev,{player:chainPlayer,club:chosen,passed:true}]);
     setChainPlayer(next); setChainLastClub(chosen); setGuess("");
     setTimeout(()=>inputRef.current?.focus(),100);
@@ -4215,7 +4237,10 @@ export default function LePont() {
   const shell = {
     minHeight:"100vh",display:"flex",flexDirection:"column",
     background:"transparent",
-    fontFamily:G.font,position:"relative",overflow:"hidden",
+    // Sur mobile on garde overflow:"hidden" pour que les fonds (pelouse, dégradés) ne débordent pas
+    // Sur desktop on utilise "visible" pour permettre le scroll naturel de la page
+    // (sur desktop le contenu peut dépasser la hauteur de l'écran, il faut pouvoir scroll)
+    fontFamily:G.font,position:"relative",overflow:isDesktop?"visible":"hidden",
     maxWidth:isDesktop?"100%":430,marginLeft:"auto",marginRight:"auto",
     boxShadow:isDesktop?"none":"0 0 60px rgba(0,0,0,.5)",
   };
@@ -5041,7 +5066,7 @@ export default function LePont() {
       const isUnbeaten = friendDuels.length >= 1 && losses === 0;
       const theyDominate = friendDuels.length >= 1 && wins === 0;
       return (
-        <div style={{...shell,overflow:"auto"}} key="friendDetail">
+        <div style={{...shell,overflow:isDesktop?"visible":"auto"}} key="friendDetail">
           <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
             {[0,1,2,3,4,5,6].map(function(i){return(<div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#1E5C2A":"#276B34"}}/>);})}
             <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:"rgba(255,255,255,.15)",transform:"translateY(-50%)"}}/>
@@ -5104,7 +5129,7 @@ export default function LePont() {
 
     // ── VUE LISTE AMIS ──
     return (
-      <div style={{...shell,overflow:"auto"}} key="friends">
+      <div style={{...shell,overflow:isDesktop?"visible":"auto"}} key="friends">
         <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
           {[0,1,2,3,4,5,6].map(function(i){return(<div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#1E5C2A":"#276B34"}}/>);})}
           <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:"rgba(255,255,255,.15)",transform:"translateY(-50%)"}}/>
@@ -5247,7 +5272,7 @@ export default function LePont() {
       <>
       {/* Floating back button — OUTSIDE animated container so it doesn't move during fadeUp */}
       <button onClick={function(){setShowLeaderboard(false);}} style={{position:"fixed",top:14,left:14,zIndex:100,background:"rgba(0,15,0,.85)",border:"1px solid rgba(255,255,255,.15)",borderRadius:"50%",width:42,height:42,cursor:"pointer",color:G.white,fontSize:20,display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(10px)",boxShadow:"0 4px 14px rgba(0,0,0,.4)"}}>←</button>
-      <div style={{...shell,animation:"fadeUp .4s ease",overflow:"auto"}} key="lb">
+      <div style={{...shell,animation:"fadeUp .4s ease",overflow:isDesktop?"visible":"auto"}} key="lb">
         <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
         {/* Bandes pelouse */}
         {[0,1,2,3,4,5,6].map(function(i){return(
@@ -5357,7 +5382,7 @@ export default function LePont() {
                     {lbMode==="saison"
                       ? <div style={{fontSize:12,color:i<3?"rgba(26,13,0,.85)":"rgba(255,255,255,.5)",marginTop:3,fontWeight:i<3?700:400}}>⭐ {lang==="en"?"Cumulative XP":"XP cumulés"}</div>
                       : lbMode==="global"
-                      ? <div style={{fontSize:12,color:i<3?"rgba(26,13,0,.85)":"rgba(255,255,255,.5)",marginTop:3,fontWeight:i<3?700:400}}>🏟 {entry.bestPont} pts &nbsp;·&nbsp; ⛓ {entry.bestChaine} pts</div>
+                      ? <div style={{fontSize:12,color:i<3?"rgba(26,13,0,.85)":"rgba(255,255,255,.5)",marginTop:3,fontWeight:i<3?700:400}}>🏟 {lang==="en"?"Best":"Record"} {entry.bestPont} &nbsp;·&nbsp; ⛓ {lang==="en"?"Best":"Record"} {entry.bestChaine}</div>
                       : <div style={{fontSize:12,color:i<3?"rgba(26,13,0,.85)":"rgba(255,255,255,.5)",marginTop:3,fontWeight:i<3?700:400}}>{entry.played} {lang==="en"?(entry.played>1?"games":"game"):(entry.played>1?"parties":"partie")}</div>
                     }
                   </div>
@@ -5503,7 +5528,7 @@ export default function LePont() {
       );
     }
     return (
-      <div style={{...shell,overflow:"auto"}} key="room">
+      <div style={{...shell,overflow:isDesktop?"visible":"auto"}} key="room">
         <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
         {/* Bandes pelouse */}
         {[0,1,2,3,4,5,6].map(function(i){return(
@@ -5590,43 +5615,34 @@ export default function LePont() {
     { icon:"⚡", title:"DÉFI DU JOUR", subtitle:"Un joueur mystère chaque jour", desc:"Chaque jour, un nouveau joueur mystère à deviner. Reviens tous les jours pour ne pas perdre ta série !", color:"#3a2a00", accent:"#FFD600" },
     { icon:"👥", title:"MULTIJOUEUR", subtitle:"Joue avec tes potes", desc:"Crée une salle, partage le code, et affrontez-vous en temps réel jusqu'à 8 joueurs !", color:"#2a1a3a", accent:"#c084fc" },
   ];
-  if(showTutorial) {
+  // Le tutoriel s'affiche comme un overlay par-dessus l'écran d'accueil
+  // (pas comme un écran qui remplace tout) → l'utilisateur voit le home en arrière-plan
+  // avec son logo, ses modes de jeu, etc. → contexte visuel avant de commencer
+  const tutorialOverlay = showTutorial ? (() => {
     const sl = TUTORIAL_SLIDES[tutorialStep];
     const closeTutorial = () => { setShowTutorial(false); try{localStorage.setItem("bb_tutorial_done","1");}catch{} };
     return (
-      <div style={{...shell}}>
-        <div style={{position:"fixed",inset:0,zIndex:9998,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 20px",overflow:"hidden"}}>
-          {/* Fond pelouse */}
-          <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
-            {[0,1,2,3,4,5,6].map(function(i){return(
-              <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#1E5C2A":"#276B34"}}/>
-            );})}
-            <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:"rgba(255,255,255,.15)",transform:"translateY(-50%)"}}/>
-            <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:180,height:180,borderRadius:"50%",border:"2px solid rgba(255,255,255,.15)"}}/>
-            <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:8,height:8,borderRadius:"50%",background:"rgba(255,255,255,.2)"}}/>
-            <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.6)"}}/>
+      <div style={{position:"fixed",inset:0,zIndex:9998,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 20px",background:"rgba(0,0,0,.75)",backdropFilter:"blur(10px)",animation:"fadeIn .3s ease"}}>
+        <div style={{position:"relative",zIndex:1,width:"100%",maxWidth:380,background:sl.color,borderRadius:28,padding:"36px 24px 28px",border:"1px solid rgba(255,255,255,.1)",textAlign:"center",boxShadow:"0 20px 60px rgba(0,0,0,.5)"}}>
+          <div style={{display:"flex",justifyContent:"center",gap:8,marginBottom:28}}>
+            {TUTORIAL_SLIDES.map((_,i)=>(<div key={i} style={{width:i===tutorialStep?24:8,height:8,borderRadius:4,background:i===tutorialStep?sl.accent:"rgba(255,255,255,.2)",transition:"all .3s"}}/>))}
           </div>
-          <div style={{position:"relative",zIndex:1,width:"100%",maxWidth:380,background:sl.color,borderRadius:28,padding:"36px 24px 28px",border:"1px solid rgba(255,255,255,.1)",textAlign:"center",boxShadow:"0 20px 60px rgba(0,0,0,.5)"}}>
-            <div style={{display:"flex",justifyContent:"center",gap:8,marginBottom:28}}>
-              {TUTORIAL_SLIDES.map((_,i)=>(<div key={i} style={{width:i===tutorialStep?24:8,height:8,borderRadius:4,background:i===tutorialStep?sl.accent:"rgba(255,255,255,.2)",transition:"all .3s"}}/>))}
-            </div>
-            <div style={{fontSize:56,marginBottom:16}}>{sl.icon}</div>
-            <div style={{fontFamily:G.heading,fontSize:32,color:"#fff",letterSpacing:2,marginBottom:6}}>{sl.title}</div>
-            <div style={{fontSize:13,color:sl.accent,fontWeight:700,letterSpacing:1,marginBottom:16,textTransform:"uppercase"}}>{sl.subtitle}</div>
-            <div style={{fontSize:15,color:"rgba(255,255,255,.7)",lineHeight:1.6,marginBottom:32}}>{sl.desc}</div>
-            <div style={{display:"flex",gap:10}}>
-              {tutorialStep > 0 && <button onClick={()=>setTutorialStep(s=>s-1)} style={{flex:1,padding:"14px",background:"rgba(255,255,255,.07)",color:"rgba(255,255,255,.5)",border:"1px solid rgba(255,255,255,.1)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>{lang==="en"?"← Back":"← Retour"}</button>}
-              {tutorialStep < TUTORIAL_SLIDES.length-1
-                ? <button onClick={()=>setTutorialStep(s=>s+1)} style={{flex:2,padding:"14px",background:sl.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800}}>{lang==="en"?"Next →":"Suivant →"}</button>
-                : <button onClick={closeTutorial} style={{flex:2,padding:"14px",background:sl.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800}}>{lang==="en"?"Let's go 🚀":"C'est parti 🚀"}</button>
-              }
-            </div>
-            {tutorialStep < TUTORIAL_SLIDES.length-1 && <button onClick={closeTutorial} style={{marginTop:16,background:"none",border:"none",color:"rgba(255,255,255,.3)",cursor:"pointer",fontFamily:G.font,fontSize:13}}>{lang==="en"?"Skip":"Passer"}</button>}
+          <div style={{fontSize:56,marginBottom:16}}>{sl.icon}</div>
+          <div style={{fontFamily:G.heading,fontSize:32,color:"#fff",letterSpacing:2,marginBottom:6}}>{sl.title}</div>
+          <div style={{fontSize:13,color:sl.accent,fontWeight:700,letterSpacing:1,marginBottom:16,textTransform:"uppercase"}}>{sl.subtitle}</div>
+          <div style={{fontSize:15,color:"rgba(255,255,255,.7)",lineHeight:1.6,marginBottom:32}}>{sl.desc}</div>
+          <div style={{display:"flex",gap:10}}>
+            {tutorialStep > 0 && <button onClick={()=>setTutorialStep(s=>s-1)} style={{flex:1,padding:"14px",background:"rgba(255,255,255,.07)",color:"rgba(255,255,255,.5)",border:"1px solid rgba(255,255,255,.1)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>{lang==="en"?"← Back":"← Retour"}</button>}
+            {tutorialStep < TUTORIAL_SLIDES.length-1
+              ? <button onClick={()=>setTutorialStep(s=>s+1)} style={{flex:2,padding:"14px",background:sl.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800}}>{lang==="en"?"Next →":"Suivant →"}</button>
+              : <button onClick={closeTutorial} style={{flex:2,padding:"14px",background:sl.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800}}>{lang==="en"?"Let's go 🚀":"C'est parti 🚀"}</button>
+            }
           </div>
+          {tutorialStep < TUTORIAL_SLIDES.length-1 && <button onClick={closeTutorial} style={{marginTop:16,background:"none",border:"none",color:"rgba(255,255,255,.3)",cursor:"pointer",fontFamily:G.font,fontSize:13}}>{lang==="en"?"Skip":"Passer"}</button>}
         </div>
       </div>
     );
-  }
+  })() : null;
 
 
   // ── PSEUDO MODAL (first time only) ──
@@ -5885,7 +5901,7 @@ export default function LePont() {
       msg = typeof fn === "function" ? fn(oppNameRoom) : fn;
     }
     return (
-      <div style={{...shell,animation:"fadeUp .4s ease",overflow:"auto"}} key="roomResult2">
+      <div style={{...shell,animation:"fadeUp .4s ease",overflow:isDesktop?"visible":"auto"}} key="roomResult2">
         <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
           {[0,1,2,3,4,5,6].map(function(i){return(<div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#1E5C2A":"#276B34"}}/>);})}
           <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:"rgba(255,255,255,.15)",transform:"translateY(-50%)"}}/>
@@ -5978,7 +5994,7 @@ export default function LePont() {
     const d = viewedProfileData;
     const grade = d ? getGrade(d.xp || 0) : null;
     return (
-      <div style={{...shell,overflow:"auto"}} key="userProfile">
+      <div style={{...shell,overflow:isDesktop?"visible":"auto"}} key="userProfile">
         <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
           {[0,1,2,3,4,5,6].map(function(i){return(
             <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#1E5C2A":"#276B34"}}/>
@@ -6102,7 +6118,7 @@ export default function LePont() {
 
   // ── PROFILE SCREEN ──
   if(screen==="profile") return (
-    <div style={{...shell,overflow:"auto"}} key="profile">
+    <div style={{...shell,overflow:isDesktop?"visible":"auto"}} key="profile">
       <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
         {[0,1,2,3,4,5,6].map(function(i){return(
           <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#1E5C2A":"#276B34"}}/>
@@ -6155,7 +6171,6 @@ export default function LePont() {
           e.target.value = "";
         }}/>
         <div style={{fontFamily:G.heading,fontSize:28,color:G.white,letterSpacing:1}}>@{playerName||(lang==="en"?"anonymous":"anonyme")}</div>
-        <button onClick={()=>{setPseudoInput(playerName||"");setPseudoScreen(true);}} style={{marginTop:10,padding:"7px 16px",background:"rgba(255,255,255,.08)",color:"rgba(255,255,255,.7)",border:"1px solid rgba(255,255,255,.15)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:700}}>{lang==="en"?"✏️ Edit":"✏️ Modifier"}</button>
       </div>
 
       {/* Niveau + XP progression */}
@@ -6342,7 +6357,7 @@ export default function LePont() {
   );
 
   if(screen==="home") return (
-    <div style={{...shell,animation:"fadeUp .5s ease",overflow:"auto"}} key="home">
+    <div style={{...shell,animation:"fadeUp .5s ease",overflow:isDesktop?"visible":"auto"}} key="home">
       {pseudoModal}
       {recoveryCodeAfterCreationModal}
       {recoveryInputModal}
@@ -6350,6 +6365,7 @@ export default function LePont() {
       {streakModal}
       {installPrompt}
       {notifPrompt}
+      {tutorialOverlay}
       {showDuelCreate && (
         <div style={{position:"fixed",inset:0,zIndex:300,background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center"}}>
           <div style={{background:"rgba(15,25,15,.95)",borderRadius:24,padding:"28px 24px",maxWidth:340,width:"calc(100% - 32px)",border:"1px solid rgba(255,255,255,.1)"}}>
@@ -7066,7 +7082,7 @@ export default function LePont() {
     const [ca2,cb2]=getClubColors(cur.c2);
     const tc1=textColor(ca1); const tc2=textColor(ca2);
     return (
-      <div style={{...shell,animation:"fadeIn .2s ease",overflow:"auto"}} key={"game-"+currentRound}>
+      <div style={{...shell,animation:"fadeIn .2s ease",overflow:isDesktop?"visible":"auto"}} key={"game-"+currentRound}>
         <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
         {/* Bandes pelouse */}
         {[0,1,2,3,4,5,6].map(function(i){return(
@@ -7220,11 +7236,7 @@ export default function LePont() {
               </div>
             </div>
           )}
-      {/* Question timer bar */}
-      <div style={{position:"fixed",bottom:0,left:0,right:0,height:25,background:"rgba(255,255,255,.08)",zIndex:100,display:"flex",alignItems:"center",justifyContent:"center"}}>
-        <div key={animKey} style={{position:"absolute",inset:0,background:qTimeLeft>3?"#00E676":qTimeLeft>1?"#FFD600":"#FF3D57",width:(qTimeLeft/QUESTION_DURATION*100)+"%",transition:"width 0.3s linear",borderRadius:"4px 0 0 4px",marginLeft:"auto"}}/>
-        <span style={{position:"relative",zIndex:1,fontFamily:G.heading,fontSize:14,fontWeight:800,color:"rgba(255,255,255,.9)",letterSpacing:1}}>{qTimeLeft}s</span>
-      </div>
+      {/* Timer par question supprimé — seul le timer global de la manche reste */}
     </div>
     </div>
     );
@@ -7241,7 +7253,7 @@ export default function LePont() {
     const [cla, clb] = chainLastClub ? getClubColors(chainLastClub) : ["#1a7a3a","#fff"];
     const clTagColor = chainLastClub ? textColor(cla) : "#fff";
     return (
-    <div style={{...shell,animation:"fadeIn .3s ease",overflow:"auto"}} key={"chain-"+chainCount}>
+    <div style={{...shell,animation:"fadeIn .3s ease",overflow:isDesktop?"visible":"auto"}} key={"chain-"+chainCount}>
       <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
         {/* Bandes pelouse */}
         {[0,1,2,3,4,5,6].map(function(i){return(
@@ -7355,11 +7367,7 @@ export default function LePont() {
           </div>
         )}
       </div>
-      {/* Chain question timer bar */}
-      <div style={{position:"fixed",bottom:0,left:0,right:0,height:25,background:"rgba(255,255,255,.08)",zIndex:100,display:"flex",alignItems:"center",justifyContent:"center"}}>
-        <div key={chainCount} style={{position:"absolute",inset:0,background:qTimeLeft>8?"#00E676":qTimeLeft>4?"#FFD600":"#FF3D57",width:(qTimeLeft/CHAIN_QUESTION_DURATION*100)+"%",borderRadius:"4px 0 0 4px",marginLeft:"auto"}}/>
-        <span style={{position:"relative",zIndex:1,fontFamily:G.heading,fontSize:14,fontWeight:800,color:"rgba(255,255,255,.9)",letterSpacing:1}}>{qTimeLeft}s</span>
-      </div>
+      {/* Timer par question supprimé — seul le timer global de la manche reste */}
     </div>
     );
   }
@@ -7510,7 +7518,7 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
         )}
         <button onClick={function(){
           const grade = getGrade(playerXp);
-          const txt = `${grade.emoji} J'ai scoré ${sc} pts en mode ${isChain?"The Mercato":"The Plug"} sur GOAT FC !\nGrade : ${grade.label}\nT'as le niveau ? 👇\nhttps://bridgeball.vercel.app`;
+          const txt = `${grade.emoji} J'ai scoré ${sc} pts en mode ${isChain?"The Mercato":"The Plug"} sur GOAT FC !\nGrade : ${grade.label}\nT'as le niveau ? 👇\nhttps://goatfc.fr`;
           if(navigator.share){navigator.share({title:"GOAT FC",text:txt});}
           else{navigator.clipboard.writeText(txt).then(function(){alert(lang==="en"?"Copied! Paste it anywhere 📋":"Copié ! Colle-le où tu veux 📋");});}
         }} style={{width:"100%",padding:"14px",background:"linear-gradient(135deg,#1d4ed8,#7c3aed)",color:"#fff",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
@@ -7533,7 +7541,7 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
     const myRank = duelResult.players.findIndex(function(p){return p.id===playerId;}) + 1;
     const iAbandoned = duelResult.myAbandoned === true;
     return (
-      <div style={{...shell,animation:"fadeUp .4s ease",overflow:"auto"}} key="roomResult">
+      <div style={{...shell,animation:"fadeUp .4s ease",overflow:isDesktop?"visible":"auto"}} key="roomResult">
         <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
         {/* Bandes pelouse */}
         {[0,1,2,3,4,5,6].map(function(i){return(
@@ -7568,8 +7576,8 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
             const grade = getGrade(playerXp);
             const rank = duelResult.players.findIndex(function(p){return p.id===playerId;})+1;
             const txt = rank===1
-              ? `${grade.emoji} J'ai remporté la salle sur GOAT FC avec ${myEntry?.score||0} pts 🏆\nGrade : ${grade.label}\nT'as le niveau ? 👇\nhttps://bridgeball.vercel.app`
-              : `J'ai terminé ${rank}ème sur GOAT FC avec ${myEntry?.score||0} pts\nGrade : ${grade.label}\nhttps://bridgeball.vercel.app`;
+              ? `${grade.emoji} J'ai remporté la salle sur GOAT FC avec ${myEntry?.score||0} pts 🏆\nGrade : ${grade.label}\nT'as le niveau ? 👇\nhttps://goatfc.fr`
+              : `J'ai terminé ${rank}ème sur GOAT FC avec ${myEntry?.score||0} pts\nGrade : ${grade.label}\nhttps://goatfc.fr`;
             if(navigator.share){navigator.share({title:"GOAT FC",text:txt});}
             else{navigator.clipboard.writeText(txt).then(function(){alert(lang==="en"?"Copied! 📋":"Copié ! 📋");});}
           }} style={{width:"100%",padding:"13px",background:"linear-gradient(135deg,#1d4ed8,#7c3aed)",color:"#fff",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginTop:8,marginBottom:6}}>
@@ -7704,8 +7712,8 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
             const grade = getGrade(playerXp);
             const result = won ? "victoire" : draw ? "nul" : "défaite";
             const txt = won
-              ? `${grade.emoji} J'ai écrasé ${duelResult.oppName} ${duelResult.myScore}-${duelResult.theirScore} sur GOAT FC 😤\nGrade : ${grade.label}\nT'as le niveau ? 👇\nhttps://bridgeball.vercel.app`
-              : `J'ai perdu ${duelResult.myScore}-${duelResult.theirScore} contre ${duelResult.oppName} sur GOAT FC 😤\nLa revanche arrive...\nhttps://bridgeball.vercel.app`;
+              ? `${grade.emoji} J'ai écrasé ${duelResult.oppName} ${duelResult.myScore}-${duelResult.theirScore} sur GOAT FC 😤\nGrade : ${grade.label}\nT'as le niveau ? 👇\nhttps://goatfc.fr`
+              : `J'ai perdu ${duelResult.myScore}-${duelResult.theirScore} contre ${duelResult.oppName} sur GOAT FC 😤\nLa revanche arrive...\nhttps://goatfc.fr`;
             if(navigator.share){navigator.share({title:"GOAT FC",text:txt});}
             else{navigator.clipboard.writeText(txt).then(function(){alert(lang==="en"?"Copied! 📋":"Copié ! 📋");});}
           }} style={{width:"100%",padding:"13px",background:"linear-gradient(135deg,#1d4ed8,#7c3aed)",color:"#fff",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:6}}>
