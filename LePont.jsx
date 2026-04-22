@@ -1761,13 +1761,24 @@ export default function LePont() {
     }
 
     // Bloque le pinch-zoom iOS (où user-scalable=no est parfois ignoré par Safari)
+    // Ces listeners sont uniquement nécessaires sur mobile/tablette tactile
+    // Sur desktop (Mac/Windows), certains trackpads (Magic Trackpad) génèrent des touch events
+    // qui peuvent interférer avec le scroll de la page — on les désactive
+    const isTouchDevice = typeof window !== "undefined" && (
+      ('ontouchstart' in window) || (navigator.maxTouchPoints > 0)
+    );
+    const isDesktopDevice = typeof window !== "undefined" && window.innerWidth >= 768 && !isTouchDevice;
     const preventZoom = (e) => { if (e.touches && e.touches.length > 1) e.preventDefault(); };
     const preventDblTap = (e) => e.preventDefault();
-    document.addEventListener('gesturestart', preventDblTap);
-    document.addEventListener('touchmove', preventZoom, { passive: false });
+    if (!isDesktopDevice) {
+      document.addEventListener('gesturestart', preventDblTap);
+      document.addEventListener('touchmove', preventZoom, { passive: false });
+    }
     return () => {
-      document.removeEventListener('gesturestart', preventDblTap);
-      document.removeEventListener('touchmove', preventZoom);
+      if (!isDesktopDevice) {
+        document.removeEventListener('gesturestart', preventDblTap);
+        document.removeEventListener('touchmove', preventZoom);
+      }
     };
   }, []);
 
@@ -3337,7 +3348,12 @@ export default function LePont() {
             // Utiliser le pseudo actuel de bb_pseudos (source de vérité)
             // au lieu du player_name stocké dans bb_scores (qui peut être obsolète
             // si l'user a changé son pseudo après avoir fait des parties)
-            if (pseudoMap[row.pid]) row.name = pseudoMap[row.pid];
+            if (pseudoMap[row.pid]) {
+              if (row.name !== pseudoMap[row.pid]) {
+                console.log("[leaderboard] pseudo override:", row.name, "→", pseudoMap[row.pid]);
+              }
+              row.name = pseudoMap[row.pid];
+            }
           });
           // Ajouter les users qui ont de l'XP mais n'ont pas encore joué de partie comptée
           // (cas rare : XP gagnée hors bb_scores, défi du jour, etc.)
