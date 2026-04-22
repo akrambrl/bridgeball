@@ -4142,6 +4142,10 @@ export default function LePont() {
     const randCP = passSeed !== null ? seededRandom(passSeed) : Math.random;
     const validClubs=(PLAYERS_CLEAN.find(p=>p.name===chainPlayer)?.clubs||[]).filter(c=>!chainUsedClubs.has(c));
     const chosen=validClubs.length>0?validClubs[Math.floor(randCP()*validClubs.length)]:null;
+    // Note : le club "chosen" sert juste à trouver le prochain joueur de la chaîne,
+    // mais on NE l'ajoute PAS aux chainUsedClubs car l'utilisateur ne l'a pas réellement validé.
+    // Sinon un user qui passe plusieurs questions se retrouve avec des clubs "brûlés"
+    // qu'il n'a jamais joués, et se fait bloquer ensuite avec des "club déjà utilisé" incompréhensibles.
     // Helper : pioche un nouveau joueur aléatoire de la base (fallback quand la chaîne bloque)
     // Au lieu de terminer la partie prématurément, on relance avec un joueur tout frais
     const pickFallbackPlayer = () => {
@@ -4179,7 +4183,8 @@ export default function LePont() {
       const fallback = pickFallbackPlayer();
       if(!fallback){endChain();return;}
       const newUsedP=new Set(chainUsedPlayers); newUsedP.add(fallback);
-      setChainUsedClubs(newUsed); setChainUsedPlayers(newUsedP);
+      // Ne pas ajouter "chosen" aux clubs utilisés — l'user n'a pas validé ce club
+      setChainUsedPlayers(newUsedP);
       setChainHistory(prev=>[...prev,{player:chainPlayer,club:chosen,passed:true}]);
       setChainPlayer(fallback); setChainLastClub(chosen); setGuess("");
       setTimeout(()=>inputRef.current?.focus(),100);
@@ -4203,7 +4208,8 @@ export default function LePont() {
     const nextPool2 = useCurrent2 ? currentNext2 : finalPool2;
     const next=nextPool2[Math.floor(randCP()*nextPool2.length)];
     const newUsedP=new Set(chainUsedPlayers); newUsedP.add(next);
-    setChainUsedClubs(newUsed); setChainUsedPlayers(newUsedP);
+    // Ne pas ajouter "chosen" aux clubs utilisés — l'user n'a pas validé ce club
+    setChainUsedPlayers(newUsedP);
     setChainHistory(prev=>[...prev,{player:chainPlayer,club:chosen,passed:true}]);
     setChainPlayer(next); setChainLastClub(chosen); setGuess("");
     setTimeout(()=>inputRef.current?.focus(),100);
@@ -5397,7 +5403,7 @@ export default function LePont() {
                     {lbMode==="saison"
                       ? <div style={{fontSize:12,color:i<3?"rgba(26,13,0,.85)":"rgba(255,255,255,.5)",marginTop:3,fontWeight:i<3?700:400}}>⭐ {lang==="en"?"Cumulative XP":"XP cumulés"}</div>
                       : lbMode==="global"
-                      ? <div style={{fontSize:12,color:i<3?"rgba(26,13,0,.85)":"rgba(255,255,255,.5)",marginTop:3,fontWeight:i<3?700:400}}>🏟 {entry.bestPont} pts &nbsp;·&nbsp; ⛓ {entry.bestChaine} pts</div>
+                      ? <div style={{fontSize:12,color:i<3?"rgba(26,13,0,.85)":"rgba(255,255,255,.5)",marginTop:3,fontWeight:i<3?700:400}}>🏟 {lang==="en"?"Best":"Record"} {entry.bestPont} &nbsp;·&nbsp; ⛓ {lang==="en"?"Best":"Record"} {entry.bestChaine}</div>
                       : <div style={{fontSize:12,color:i<3?"rgba(26,13,0,.85)":"rgba(255,255,255,.5)",marginTop:3,fontWeight:i<3?700:400}}>{entry.played} {lang==="en"?(entry.played>1?"games":"game"):(entry.played>1?"parties":"partie")}</div>
                     }
                   </div>
