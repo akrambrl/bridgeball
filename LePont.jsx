@@ -5072,7 +5072,7 @@ export default function LePont() {
       const isUnbeaten = friendDuels.length >= 1 && losses === 0;
       const theyDominate = friendDuels.length >= 1 && wins === 0;
       return (
-        <div style={{...shell,overflow:"auto"}} key="friendDetail">
+        <div style={{...shell,overflow:isDesktop?"visible":"auto"}} key="friendDetail">
           <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
             {[0,1,2,3,4,5,6].map(function(i){return(<div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#1E5C2A":"#276B34"}}/>);})}
             <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:"rgba(255,255,255,.15)",transform:"translateY(-50%)"}}/>
@@ -5135,7 +5135,7 @@ export default function LePont() {
 
     // ── VUE LISTE AMIS ──
     return (
-      <div style={{...shell,overflow:"auto"}} key="friends">
+      <div style={{...shell,overflow:isDesktop?"visible":"auto"}} key="friends">
         <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
           {[0,1,2,3,4,5,6].map(function(i){return(<div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#1E5C2A":"#276B34"}}/>);})}
           <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:"rgba(255,255,255,.15)",transform:"translateY(-50%)"}}/>
@@ -5278,7 +5278,7 @@ export default function LePont() {
       <>
       {/* Floating back button — OUTSIDE animated container so it doesn't move during fadeUp */}
       <button onClick={function(){setShowLeaderboard(false);}} style={{position:"fixed",top:14,left:14,zIndex:100,background:"rgba(0,15,0,.85)",border:"1px solid rgba(255,255,255,.15)",borderRadius:"50%",width:42,height:42,cursor:"pointer",color:G.white,fontSize:20,display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(10px)",boxShadow:"0 4px 14px rgba(0,0,0,.4)"}}>←</button>
-      <div style={{...shell,animation:"fadeUp .4s ease",overflow:"auto"}} key="lb">
+      <div style={{...shell,animation:"fadeUp .4s ease",overflow:isDesktop?"visible":"auto"}} key="lb">
         <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
         {/* Bandes pelouse */}
         {[0,1,2,3,4,5,6].map(function(i){return(
@@ -5534,7 +5534,7 @@ export default function LePont() {
       );
     }
     return (
-      <div style={{...shell,overflow:"auto"}} key="room">
+      <div style={{...shell,overflow:isDesktop?"visible":"auto"}} key="room">
         <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
         {/* Bandes pelouse */}
         {[0,1,2,3,4,5,6].map(function(i){return(
@@ -5916,7 +5916,7 @@ export default function LePont() {
       msg = typeof fn === "function" ? fn(oppNameRoom) : fn;
     }
     return (
-      <div style={{...shell,animation:"fadeUp .4s ease",overflow:"auto"}} key="roomResult2">
+      <div style={{...shell,animation:"fadeUp .4s ease",overflow:isDesktop?"visible":"auto"}} key="roomResult2">
         <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
           {[0,1,2,3,4,5,6].map(function(i){return(<div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#1E5C2A":"#276B34"}}/>);})}
           <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:"rgba(255,255,255,.15)",transform:"translateY(-50%)"}}/>
@@ -6009,7 +6009,7 @@ export default function LePont() {
     const d = viewedProfileData;
     const grade = d ? getGrade(d.xp || 0) : null;
     return (
-      <div style={{...shell,overflow:"auto"}} key="userProfile">
+      <div style={{...shell,overflow:isDesktop?"visible":"auto"}} key="userProfile">
         <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
           {[0,1,2,3,4,5,6].map(function(i){return(
             <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#1E5C2A":"#276B34"}}/>
@@ -6133,7 +6133,7 @@ export default function LePont() {
 
   // ── PROFILE SCREEN ──
   if(screen==="profile") return (
-    <div style={{...shell,overflow:"auto"}} key="profile">
+    <div style={{...shell,overflow:isDesktop?"visible":"auto"}} key="profile">
       <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
         {[0,1,2,3,4,5,6].map(function(i){return(
           <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#1E5C2A":"#276B34"}}/>
@@ -6373,7 +6373,7 @@ export default function LePont() {
   );
 
   if(screen==="home") return (
-    <div style={{...shell,animation:"fadeUp .5s ease",overflow:"auto"}} key="home">
+    <div style={{...shell,animation:"fadeUp .5s ease",overflow:isDesktop?"visible":"auto"}} key="home">
       {pseudoModal}
       {recoveryCodeAfterCreationModal}
       {recoveryInputModal}
@@ -7097,7 +7097,7 @@ export default function LePont() {
     const [ca2,cb2]=getClubColors(cur.c2);
     const tc1=textColor(ca1); const tc2=textColor(ca2);
     return (
-      <div style={{...shell,animation:"fadeIn .2s ease",overflow:"auto"}} key={"game-"+currentRound}>
+      <div style={{...shell,animation:"fadeIn .2s ease",overflow:isDesktop?"visible":"auto"}} key={"game-"+currentRound}>
         <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
         {/* Bandes pelouse */}
         {[0,1,2,3,4,5,6].map(function(i){return(
@@ -7272,7 +7272,7 @@ export default function LePont() {
     const [cla, clb] = chainLastClub ? getClubColors(chainLastClub) : ["#1a7a3a","#fff"];
     const clTagColor = chainLastClub ? textColor(cla) : "#fff";
     return (
-    <div style={{...shell,animation:"fadeIn .3s ease",overflow:"auto"}} key={"chain-"+chainCount}>
+    <div style={{...shell,animation:"fadeIn .3s ease",overflow:isDesktop?"visible":"auto"}} key={"chain-"+chainCount}>
       <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
         {/* Bandes pelouse */}
         {[0,1,2,3,4,5,6].map(function(i){return(
@@ -7564,7 +7564,7 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
     const myRank = duelResult.players.findIndex(function(p){return p.id===playerId;}) + 1;
     const iAbandoned = duelResult.myAbandoned === true;
     return (
-      <div style={{...shell,animation:"fadeUp .4s ease",overflow:"auto"}} key="roomResult">
+      <div style={{...shell,animation:"fadeUp .4s ease",overflow:isDesktop?"visible":"auto"}} key="roomResult">
         <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
         {/* Bandes pelouse */}
         {[0,1,2,3,4,5,6].map(function(i){return(
