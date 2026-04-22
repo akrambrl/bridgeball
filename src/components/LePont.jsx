@@ -864,7 +864,12 @@ function getDailyPlayer(blacklist) {
 
   // Filtrer selon le thème du jour
   const theme = getTodayTheme();
-  const basePool = PLAYERS_CLEAN.filter(function(p){ return p.clubs && p.clubs.length >= 2; });
+  // Base pool : joueurs avec au moins 2 clubs ET difficulté accessible (pas expert)
+  // On exclut les joueurs "expert" (trop obscurs) pour ne pas frustrer les users
+  // sur un défi du jour qu'ils doivent résoudre en quelques essais
+  const basePool = PLAYERS_CLEAN.filter(function(p){ 
+    return p.clubs && p.clubs.length >= 2 && p.diff !== "expert"; 
+  });
   let pool = basePool;
 
   if (theme.filter === "LEGEND") {
@@ -881,7 +886,7 @@ function getDailyPlayer(blacklist) {
     pool = pool.filter(p => !blacklist.has(p.name));
   }
 
-  // Fallback si la ligue est trop petite
+  // Fallback si la ligue est trop petite (après exclusion expert)
   if (pool.length < 10) pool = basePool.filter(p => !(blacklist && blacklist.has(p.name)));
 
   if (pool.length === 0) return null;
