@@ -3346,14 +3346,7 @@ export default function LePont() {
             // Remplacer le score (best perf d'une partie) par l'XP cumulée
             row.score = row.xp;
             // Utiliser le pseudo actuel de bb_pseudos (source de vérité)
-            // au lieu du player_name stocké dans bb_scores (qui peut être obsolète
-            // si l'user a changé son pseudo après avoir fait des parties)
-            if (pseudoMap[row.pid]) {
-              if (row.name !== pseudoMap[row.pid]) {
-                console.log("[leaderboard] pseudo override:", row.name, "→", pseudoMap[row.pid]);
-              }
-              row.name = pseudoMap[row.pid];
-            }
+            if (pseudoMap[row.pid]) row.name = pseudoMap[row.pid];
           });
           // Ajouter les users qui ont de l'XP mais n'ont pas encore joué de partie comptée
           // (cas rare : XP gagnée hors bb_scores, défi du jour, etc.)
@@ -6202,7 +6195,6 @@ export default function LePont() {
           e.target.value = "";
         }}/>
         <div style={{fontFamily:G.heading,fontSize:28,color:G.white,letterSpacing:1}}>@{playerName||(lang==="en"?"anonymous":"anonyme")}</div>
-        <button onClick={()=>{setPseudoInput(playerName||"");setPseudoScreen(true);}} style={{marginTop:10,padding:"7px 16px",background:"rgba(255,255,255,.08)",color:"rgba(255,255,255,.7)",border:"1px solid rgba(255,255,255,.15)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:700}}>{lang==="en"?"✏️ Edit":"✏️ Modifier"}</button>
       </div>
 
       {/* Niveau + XP progression */}
