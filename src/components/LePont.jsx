@@ -800,6 +800,34 @@ const LEAGUE_CLUBS = {
                "FC Cologne", "Werder Bremen", "Nuremberg"],
 };
 
+// Clubs "populaires" pour le mode facile : top clubs des 5 grands championnats
+// + Saudi Pro League (pour les stars partis là-bas) + gros clubs mondiaux connus
+// Quand un joueur arrive sur la sélection en mode facile, il doit avoir AU MOINS
+// un club populaire restant dans sa carrière (sinon on évite de le proposer)
+const FAMOUS_CLUBS = new Set([
+  // PL top clubs
+  "Manchester United", "Manchester City", "Liverpool", "Chelsea", "Arsenal", "Tottenham",
+  "Newcastle", "Everton", "Aston Villa", "West Ham",
+  // Liga top clubs
+  "Real Madrid", "Barcelona", "Atletico Madrid", "Sevilla", "Valencia", "Villarreal",
+  "Real Betis", "Real Sociedad", "Athletic Bilbao",
+  // Serie A top clubs
+  "Juventus", "AC Milan", "Inter Milan", "Napoli", "Roma", "Lazio", "Atalanta", "Fiorentina",
+  // Bundesliga top clubs
+  "Bayern Munich", "Borussia Dortmund", "Bayer Leverkusen", "RB Leipzig",
+  "Eintracht Frankfurt", "Wolfsburg", "Schalke 04",
+  // L1 top clubs
+  "PSG", "Marseille", "Lyon", "Monaco", "Lille", "Rennes", "Nice", "Nantes", "Lens",
+  // Saudi Pro League (stars connues)
+  "Al Nassr", "Al Hilal", "Al Ittihad", "Al Ahli",
+  // Gros clubs Portugal / Pays-Bas / Brésil / Turquie
+  "Porto", "Benfica", "Sporting CP", "Ajax Amsterdam", "PSV Eindhoven",
+  "Flamengo", "Santos", "Palmeiras", "Corinthians", "São Paulo",
+  "Galatasaray", "Fenerbahce", "Besiktas",
+  // Autres connus
+  "Celtic", "Rangers",
+]);
+
 // Thèmes par jour de la semaine (0=dim, 1=lun, ... 6=sam)
 const DAILY_THEMES = {
   1: { id:"L1",         flag:"🇫🇷", labelFr:"LUNDI LIGUE 1",       labelEn:"MONDAY LIGUE 1",       color:"#1B2C5C", filter:"L1" },
@@ -3506,7 +3534,12 @@ export default function LePont() {
       if (effectiveDiff === "moyen") return p.diff === "facile" || p.diff === "moyen";
       return true; // expert = tous
     });
-    const pool = eligible.length > 0 ? eligible : PLAYERS_CLEAN.filter(p => p.clubs.length >= 2);
+    // En mode facile, le joueur de départ doit avoir AU MOINS 2 clubs populaires
+    // (sinon dès qu'un est utilisé la chaîne devient impossible à deviner)
+    const eligibleFacile = effectiveDiff === "facile"
+      ? eligible.filter(p => p.clubs.filter(c => FAMOUS_CLUBS.has(c)).length >= 2)
+      : eligible;
+    const pool = eligibleFacile.length > 0 ? eligibleFacile : (eligible.length > 0 ? eligible : PLAYERS_CLEAN.filter(p => p.clubs.length >= 2));
     // 80% chance to start with a current player
     const currentPool = pool.filter(p => !isRetiredPlayer(p.name));
     const retiredPool = pool.filter(p => isRetiredPlayer(p.name));
@@ -3928,7 +3961,11 @@ export default function LePont() {
           if (effectiveDiffCS === "moyen") return p.diff === "facile" || p.diff === "moyen";
           return true;
         });
-        const pool = fallbackPool.length > 0 ? fallbackPool : PLAYERS_CLEAN.filter(p => p.clubs.length >= 2 && !chainUsedPlayers.has(p.name));
+        // En mode facile : au moins 2 clubs populaires
+        const fallbackFacile = effectiveDiffCS === "facile"
+          ? fallbackPool.filter(p => p.clubs.filter(c => FAMOUS_CLUBS.has(c)).length >= 2)
+          : fallbackPool;
+        const pool = fallbackFacile.length > 0 ? fallbackFacile : (fallbackPool.length > 0 ? fallbackPool : PLAYERS_CLEAN.filter(p => p.clubs.length >= 2 && !chainUsedPlayers.has(p.name)));
         if(pool.length === 0){setTimeout(()=>{setFeedback(null);setFlash(null);endChain();},800);return;}
         const fallback = pool[Math.floor(Math.random()*pool.length)].name;
         const newUsedP=new Set(chainUsedPlayers); newUsedP.add(fallback);
@@ -3942,12 +3979,18 @@ export default function LePont() {
         return true;
       });
       const diffPool = preferred.length > 0 ? preferred : clubPlayers;
+      // En mode facile : s'assurer qu'il reste au moins UN club populaire disponible
+      // pour ce joueur (sinon le joueur tombe sur du "Birmingham" ou autre club peu connu)
+      const popularPool = effectiveDiffCS === "facile"
+        ? diffPool.filter(p => getPlayerClubs(p).some(c => !newUsed.has(c) && FAMOUS_CLUBS.has(c)))
+        : diffPool;
+      const finalPool = popularPool.length > 0 ? popularPool : diffPool;
       // 80% current players — seeded en multi pour cohérence entre joueurs qui donnent le même club
       const submitSeed = isInRoomCS ? hashStringToSeed(String(activeDuelRef.current.id) + "_next_" + chainPlayer + "_" + matched) : null;
       const randCS = submitSeed !== null ? seededRandom(submitSeed) : Math.random;
-      const currentNext = diffPool.filter(p => !isRetiredPlayer(p));
+      const currentNext = finalPool.filter(p => !isRetiredPlayer(p));
       const useCurrent = randCS() < 0.8 && currentNext.length > 0;
-      const nextPool = useCurrent ? currentNext : diffPool;
+      const nextPool = useCurrent ? currentNext : finalPool;
       const next=nextPool[Math.floor(randCS()*nextPool.length)];
       const newUsedP=new Set(chainUsedPlayers); newUsedP.add(next);
       // Prefetch logos for next player
@@ -3984,7 +4027,11 @@ export default function LePont() {
         if (effectiveDiffCP === "moyen") return p.diff === "facile" || p.diff === "moyen";
         return true;
       });
-      const pool = eligible.length > 0 ? eligible : PLAYERS_CLEAN.filter(p => p.clubs.length >= 2 && !chainUsedPlayers.has(p.name));
+      // En mode facile : le fallback doit avoir au moins 2 clubs populaires
+      const eligibleFacile = effectiveDiffCP === "facile"
+        ? eligible.filter(p => p.clubs.filter(c => FAMOUS_CLUBS.has(c)).length >= 2)
+        : eligible;
+      const pool = eligibleFacile.length > 0 ? eligibleFacile : (eligible.length > 0 ? eligible : PLAYERS_CLEAN.filter(p => p.clubs.length >= 2 && !chainUsedPlayers.has(p.name)));
       if (pool.length === 0) return null;
       return pool[Math.floor(randCP() * pool.length)].name;
     };
@@ -4021,9 +4068,14 @@ export default function LePont() {
       return true;
     });
     const diffPool2 = preferred2.length > 0 ? preferred2 : clubPlayers;
-    const currentNext2 = diffPool2.filter(p => !isRetiredPlayer(p));
+    // En mode facile : s'assurer qu'il reste au moins UN club populaire disponible
+    const popularPool2 = effectiveDiffCP === "facile"
+      ? diffPool2.filter(p => getPlayerClubs(p).some(c => !newUsed.has(c) && FAMOUS_CLUBS.has(c)))
+      : diffPool2;
+    const finalPool2 = popularPool2.length > 0 ? popularPool2 : diffPool2;
+    const currentNext2 = finalPool2.filter(p => !isRetiredPlayer(p));
     const useCurrent2 = randCP() < 0.8 && currentNext2.length > 0;
-    const nextPool2 = useCurrent2 ? currentNext2 : diffPool2;
+    const nextPool2 = useCurrent2 ? currentNext2 : finalPool2;
     const next=nextPool2[Math.floor(randCP()*nextPool2.length)];
     const newUsedP=new Set(chainUsedPlayers); newUsedP.add(next);
     setChainUsedClubs(newUsed); setChainUsedPlayers(newUsedP);
