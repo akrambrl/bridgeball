@@ -971,7 +971,7 @@ export const PLAYERS = [
   { name:"Goncalo Guedes", clubs:["Benfica", "PSG", "Valencia", "Wolverhampton", "Villarreal"], diff:"moyen" },
   { name:"Jesé Rodríguez", clubs:["Real Madrid", "PSG", "Stoke", "Las Palmas", "Real Betis", "Sporting CP", "Ankaragücü"], diff:"moyen" },
   { name:"Thilo Kehrer", clubs:["Schalke 04", "PSG", "West Ham", "Monaco"], diff:"moyen" },
-  { name:"Juan Bernat", clubs:["Valencia", "Bayern Munich", "PSG", "Villarreal"], diff:"moyen" },
+  { name:"Juan Bernat", clubs:["Valencia", "Bayern Munich", "PSG", "Benfica", "Villarreal", "Getafe", "Eibar"], diff:"moyen" },
   { name:"Ander Herrera", clubs:["Real Zaragoza", "Athletic Bilbao", "Manchester United", "PSG", "Boca Juniors"], diff:"moyen" },
   { name:"Abdou Diallo", clubs:["Monaco", "Mainz", "Borussia Dortmund", "PSG", "RB Leipzig", "Al Arabi"], diff:"expert" },
   { name:"Mitchel Bakker", clubs:["PSG", "Bayer Leverkusen", "Atalanta", "Lille"], diff:"expert" },
