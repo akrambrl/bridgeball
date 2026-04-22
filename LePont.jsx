@@ -3772,7 +3772,7 @@ export default function LePont() {
 
   // Construit un message de partage style Wordle pour le défi du jour
   function buildDailyShare() {
-    if (!dailyPlayer) return { text:"", url:"https://goatfc.online" };
+    if (!dailyPlayer) return { text:"", url:"https://goatfc.fr" };
     const theme = getTodayTheme();
     // Jour court en FR/EN
     const dayShortFr = ["Dim","Lun","Mar","Mer","Jeu","Ven","Sam"];
@@ -3811,7 +3811,7 @@ export default function LePont() {
     const cta = lang==="en"
       ? "Can you do better? 👇"
       : "Peux-tu faire mieux ? 👇";
-    const url = "https://goatfc.online";
+    const url = "https://goatfc.fr";
     const text = `${title}\n${scoreLine}\n\n${clubsDisplay}\n\n${squares.join("")}\n\n${cta}\n${url}`;
     return { text, url, title };
   }
@@ -4243,7 +4243,10 @@ export default function LePont() {
   const shell = {
     minHeight:"100vh",display:"flex",flexDirection:"column",
     background:"transparent",
-    fontFamily:G.font,position:"relative",overflow:"hidden",
+    // Sur mobile on garde overflow:"hidden" pour que les fonds (pelouse, dégradés) ne débordent pas
+    // Sur desktop on utilise "visible" pour permettre le scroll naturel de la page
+    // (sur desktop le contenu peut dépasser la hauteur de l'écran, il faut pouvoir scroll)
+    fontFamily:G.font,position:"relative",overflow:isDesktop?"visible":"hidden",
     maxWidth:isDesktop?"100%":430,marginLeft:"auto",marginRight:"auto",
     boxShadow:isDesktop?"none":"0 0 60px rgba(0,0,0,.5)",
   };
@@ -7538,7 +7541,7 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
         )}
         <button onClick={function(){
           const grade = getGrade(playerXp);
-          const txt = `${grade.emoji} J'ai scoré ${sc} pts en mode ${isChain?"The Mercato":"The Plug"} sur GOAT FC !\nGrade : ${grade.label}\nT'as le niveau ? 👇\nhttps://bridgeball.vercel.app`;
+          const txt = `${grade.emoji} J'ai scoré ${sc} pts en mode ${isChain?"The Mercato":"The Plug"} sur GOAT FC !\nGrade : ${grade.label}\nT'as le niveau ? 👇\nhttps://goatfc.fr`;
           if(navigator.share){navigator.share({title:"GOAT FC",text:txt});}
           else{navigator.clipboard.writeText(txt).then(function(){alert(lang==="en"?"Copied! Paste it anywhere 📋":"Copié ! Colle-le où tu veux 📋");});}
         }} style={{width:"100%",padding:"14px",background:"linear-gradient(135deg,#1d4ed8,#7c3aed)",color:"#fff",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
@@ -7596,8 +7599,8 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
             const grade = getGrade(playerXp);
             const rank = duelResult.players.findIndex(function(p){return p.id===playerId;})+1;
             const txt = rank===1
-              ? `${grade.emoji} J'ai remporté la salle sur GOAT FC avec ${myEntry?.score||0} pts 🏆\nGrade : ${grade.label}\nT'as le niveau ? 👇\nhttps://bridgeball.vercel.app`
-              : `J'ai terminé ${rank}ème sur GOAT FC avec ${myEntry?.score||0} pts\nGrade : ${grade.label}\nhttps://bridgeball.vercel.app`;
+              ? `${grade.emoji} J'ai remporté la salle sur GOAT FC avec ${myEntry?.score||0} pts 🏆\nGrade : ${grade.label}\nT'as le niveau ? 👇\nhttps://goatfc.fr`
+              : `J'ai terminé ${rank}ème sur GOAT FC avec ${myEntry?.score||0} pts\nGrade : ${grade.label}\nhttps://goatfc.fr`;
             if(navigator.share){navigator.share({title:"GOAT FC",text:txt});}
             else{navigator.clipboard.writeText(txt).then(function(){alert(lang==="en"?"Copied! 📋":"Copié ! 📋");});}
           }} style={{width:"100%",padding:"13px",background:"linear-gradient(135deg,#1d4ed8,#7c3aed)",color:"#fff",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginTop:8,marginBottom:6}}>
@@ -7732,8 +7735,8 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
             const grade = getGrade(playerXp);
             const result = won ? "victoire" : draw ? "nul" : "défaite";
             const txt = won
-              ? `${grade.emoji} J'ai écrasé ${duelResult.oppName} ${duelResult.myScore}-${duelResult.theirScore} sur GOAT FC 😤\nGrade : ${grade.label}\nT'as le niveau ? 👇\nhttps://bridgeball.vercel.app`
-              : `J'ai perdu ${duelResult.myScore}-${duelResult.theirScore} contre ${duelResult.oppName} sur GOAT FC 😤\nLa revanche arrive...\nhttps://bridgeball.vercel.app`;
+              ? `${grade.emoji} J'ai écrasé ${duelResult.oppName} ${duelResult.myScore}-${duelResult.theirScore} sur GOAT FC 😤\nGrade : ${grade.label}\nT'as le niveau ? 👇\nhttps://goatfc.fr`
+              : `J'ai perdu ${duelResult.myScore}-${duelResult.theirScore} contre ${duelResult.oppName} sur GOAT FC 😤\nLa revanche arrive...\nhttps://goatfc.fr`;
             if(navigator.share){navigator.share({title:"GOAT FC",text:txt});}
             else{navigator.clipboard.writeText(txt).then(function(){alert(lang==="en"?"Copied! 📋":"Copié ! 📋");});}
           }} style={{width:"100%",padding:"13px",background:"linear-gradient(135deg,#1d4ed8,#7c3aed)",color:"#fff",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:6}}>
