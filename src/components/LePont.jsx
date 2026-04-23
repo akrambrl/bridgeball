@@ -6890,14 +6890,25 @@ export default function LePont() {
                 </div>
               ) : (
                 <>
-                  <input
-                    value={dailyGuess}
-                    onChange={function(e){setDailyGuess(e.target.value);setDailyFlash(null);}}
-                    onKeyDown={function(e){if(e.key==="Enter") handleDailySubmit();}}
-                    placeholder={lang==="en"?"Player name...":"Nom du joueur..."}
-                    autoComplete="off"
-                    style={{width:"100%",background:dailyFlash==="ko"?"rgba(255,61,87,.15)":"rgba(255,255,255,.08)",border:"2px solid "+(dailyFlash==="ko"?"#FF3D57":"rgba(255,255,255,.2)"),borderRadius:18,padding:"18px",fontFamily:G.font,fontSize:19,fontWeight:700,color:"#ffffff",outline:"none",textAlign:"center",transition:"all .2s",boxSizing:"border-box",marginBottom:8}}
-                  />
+                  <div style={{position:"relative",marginBottom:8}}>
+                    <input
+                      value={dailyGuess}
+                      onChange={function(e){setDailyGuess(e.target.value);setDailyFlash(null);}}
+                      onKeyDown={function(e){if(e.key==="Enter") handleDailySubmit();}}
+                      placeholder={lang==="en"?"Player name...":"Nom du joueur..."}
+                      autoComplete="off"
+                      style={{width:"100%",background:dailyFlash==="ko"?"rgba(255,61,87,.15)":"rgba(255,255,255,.08)",border:"2px solid "+(dailyFlash==="ko"?"#FF3D57":"rgba(255,255,255,.2)"),borderRadius:18,padding:"18px",fontFamily:G.font,fontSize:19,fontWeight:700,color:"#ffffff",outline:"none",textAlign:"center",transition:"all .2s",boxSizing:"border-box"}}
+                    />
+                    {dailyGuess.length>=3&&!dailyFlash&&(()=>{
+                      const norm=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+                      const q=norm(dailyGuess);
+                      const sugg=PLAYERS_CLEAN.filter(p=>p&&p.name&&norm(p.name).includes(q)).slice(0,5);
+                      if(!sugg.length) return null;
+                      return (<div style={{position:"absolute",top:"100%",left:0,right:0,background:"rgba(25,35,25,.98)",border:"1px solid rgba(255,255,255,.15)",borderRadius:14,boxShadow:"0 8px 24px rgba(0,0,0,.5)",zIndex:100,overflow:"hidden",marginTop:4,backdropFilter:"blur(12px)"}}>
+                        {sugg.map(p=>(<div key={p.name} onClick={function(){setDailyGuess(p.name);setTimeout(handleDailySubmit,50);}} style={{padding:"14px 18px",fontFamily:G.font,fontSize:15,fontWeight:700,color:"#fff",cursor:"pointer",borderBottom:"1px solid rgba(255,255,255,.08)",textAlign:"left"}}>{p.name}</div>))}
+                      </div>);
+                    })()}
+                  </div>
                   {dailyFlash==="ko" && <div style={{textAlign:"center",fontSize:13,color:"#FF3D57",marginBottom:8,fontWeight:700}}>{lang==="en"?"That's not it... try again!":"Ce n'est pas ça... réessaie !"}</div>}
 
                   {/* Hints display */}
