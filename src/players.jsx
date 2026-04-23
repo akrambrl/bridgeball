@@ -618,7 +618,7 @@ export const PLAYERS = [
   { name:"Robin van Persie", clubs:["Feyenoord", "Arsenal", "Manchester United"], diff:"facile" },
   { name:"Dennis Bergkamp", clubs:["Ajax Amsterdam", "Inter Milan", "Arsenal"], diff:"facile" },
   { name:"Edgar Davids", clubs:["Ajax Amsterdam", "Juventus", "Barcelona", "Inter Milan"], diff:"moyen" },
-  { name:"Klaas-Jan Huntelaar", clubs:["Ajax Amsterdam", "Real Madrid", "AC Milan"], diff:"moyen" },
+  { name:"Klaas-Jan Huntelaar", clubs:["De Graafschap", "PSV Eindhoven", "AGOVV Apeldoorn", "Heerenveen", "Ajax Amsterdam", "Real Madrid", "AC Milan", "Schalke 04"], diff:"moyen" },
   { name:"Ryan Babel", clubs:["Ajax Amsterdam", "Liverpool", "Galatasaray"], diff:"moyen" },
   // Russie
   { name:"Axel Witsel", clubs:["Benfica", "Zenit Saint Petersburg", "Borussia Dortmund", "Atletico Madrid"], diff:"moyen" },
