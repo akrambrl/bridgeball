@@ -851,8 +851,24 @@ const DAILY_RESETS = {
   "2026-04-21": "v2", // Nathan Aké incomplet → nouveau joueur
 };
 
+// Overrides explicites : force un joueur spécifique pour une date donnée
+// Utilisé quand on veut un joueur précis (correction, thème spécial, etc.)
+// Le nom doit matcher exactement le name dans PLAYERS_CLEAN
+const DAILY_OVERRIDES = {
+  "2026-04-23": "Kalidou Koulibaly", // Jeudi Serie A - override forcé
+};
+
 function getDailyPlayer(blacklist) {
   const today = (()=>{ const d=new Date(); const paris=new Date(d.toLocaleString('en-US',{timeZone:'Europe/Paris'})); return paris.getFullYear()+'-'+String(paris.getMonth()+1).padStart(2,'0')+'-'+String(paris.getDate()).padStart(2,'0'); })();
+  
+  // Override explicite : cherche le joueur par nom dans PLAYERS_CLEAN
+  if (DAILY_OVERRIDES[today]) {
+    const overrideName = DAILY_OVERRIDES[today];
+    const overridePlayer = PLAYERS_CLEAN.find(p => p.name === overrideName);
+    if (overridePlayer) return overridePlayer;
+    // Fallback silencieux si le joueur n'est pas trouvé (safety net)
+  }
+  
   // Permet de forcer un nouveau défi pour une date donnée en concaténant un suffixe au hash
   const hashKey = today + (DAILY_RESETS[today] || "");
   let hash = 0;
