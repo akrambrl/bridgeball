@@ -910,7 +910,9 @@ function getDailyPlayer(blacklist) {
   let pool = basePool;
 
   if (theme.filter === "LEGEND") {
-    pool = basePool.filter(p => isRetiredPlayer(p.name));
+    // Pour le thème Légende : seulement les vraies stars (diff facile) + retraités
+    // Évite de sortir des joueurs trop obscurs comme Alex Meier
+    pool = basePool.filter(p => isRetiredPlayer(p.name) && p.diff === "facile");
   } else if (theme.filter === "JOKER") {
     pool = basePool;
   } else {
