@@ -485,6 +485,26 @@ const PONT_CLUBS = new Set([
   "Ajax Amsterdam","PSV Eindhoven","Feyenoord","AZ Alkmaar",
   // Turquie
   "Galatasaray","Fenerbahce","Besiktas","Trabzonspor",
+  // === Élargissement : clubs mi-populaires pour diversifier les paires ===
+  // Premier League (le championnat le plus testé)
+  "Tottenham","Newcastle","Aston Villa","West Ham","Everton",
+  "Leicester City","Southampton","Crystal Palace","Brighton","Fulham",
+  "Wolverhampton","Nottingham Forest","Bournemouth","Brentford",
+  // Italie
+  "Lazio","Fiorentina","Atalanta","Torino","Bologna","Udinese","Sampdoria",
+  // Espagne
+  "Real Sociedad","Athletic Bilbao","Villarreal","Real Betis","Celta Vigo","Espanyol","Getafe",
+  // Allemagne
+  "VfB Stuttgart","Hoffenheim","Wolfsburg","Borussia Monchengladbach","Werder Bremen","Schalke 04","Hamburger SV","Hertha Berlin",
+  // France
+  "Nice","Rennes","Lens","Saint-Etienne","Bordeaux","Nantes","Montpellier","Strasbourg","Toulouse",
+  // Portugal
+  "Braga","Vitoria Guimaraes",
+  // Écosse
+  "Celtic","Rangers",
+  // Grèce/Autres
+  "Olympiacos","Panathinaikos","CSKA Moscow","Zenit Saint Petersburg","Spartak Moscow","Shakhtar Donetsk","Dynamo Kyiv",
+  "Red Bull Salzburg","Copenhagen","Club Brugge","Anderlecht","Standard Liège",
 ]);
 
 function buildPontDB() {
@@ -856,6 +876,7 @@ const DAILY_RESETS = {
 // Le nom doit matcher exactement le name dans PLAYERS_CLEAN
 const DAILY_OVERRIDES = {
   "2026-04-23": "Kalidou Koulibaly", // Jeudi Serie A - override forcé
+  "2026-04-25": "Ronaldinho", // Samedi Légende - le sorcier brésilien
 };
 
 function getDailyPlayer(blacklist) {
@@ -3563,6 +3584,22 @@ export default function LePont() {
   function endRound() {
     clearInterval(timerRef.current);
     const rs = scoreRef.current;
+    
+    // Anti-répétition : mémoriser les paires vues dans cette manche (solo uniquement)
+    const isInRoom = activeDuelRef.current && activeDuelRef.current.isRoom;
+    if (!isInRoom && queueRef.current && queueRef.current.length > 0) {
+      try {
+        const seenKey = "goatfc_recent_pairs_" + diff;
+        const seen = JSON.parse(localStorage.getItem(seenKey) || "[]");
+        // Les paires vues = toutes celles du début jusqu'à qIdx (qIdxRef peut pas exister, on prend tout ce qui est avant)
+        const seenThisRound = queueRef.current.slice(0, Math.min(queueRef.current.length, 30))
+          .map(item => item.c1 + "|||" + item.c2);
+        // Garder uniquement les ~60 paires récentes (2 parties de 30)
+        const merged = [...seenThisRound, ...seen].slice(0, 60);
+        localStorage.setItem(seenKey, JSON.stringify([...new Set(merged)]));
+      } catch(e) {}
+    }
+    
     setRoundScores(prev=>{
       const next=[...prev,rs];
       if(currentRound>=totalRounds){
@@ -3625,7 +3662,26 @@ export default function LePont() {
       ...doShuffle([...currentQ]).slice(0, Math.max(targetCurrent, currentQ.length)),
       ...doShuffle([...retiredQ]).slice(0, Math.min(targetRetired, retiredQ.length)),
     ];
-    const q = doShuffle(picked.length > 0 ? picked : [...dbPool]);
+    let q = doShuffle(picked.length > 0 ? picked : [...dbPool]);
+    
+    // Anti-répétition en SOLO uniquement : évite de reposer les paires des 2 dernières parties en premier
+    // On lit l'historique depuis localStorage, on met les paires récentes en fin de queue
+    if (!isInRoom) {
+      try {
+        const recent = JSON.parse(localStorage.getItem("goatfc_recent_pairs_" + effectiveDiff) || "[]");
+        const recentSet = new Set(recent);
+        if (recentSet.size > 0) {
+          const fresh = q.filter(item => !recentSet.has(item.c1 + "|||" + item.c2));
+          const stale = q.filter(item => recentSet.has(item.c1 + "|||" + item.c2));
+          // Si on a assez de paires fraîches, on ne met les stales qu'à la fin
+          if (fresh.length >= 30) {
+            q = [...fresh, ...stale];
+          }
+          // Sinon tant pis, on garde l'ordre random (pool trop petit)
+        }
+      } catch(e) {}
+    }
+    
     queueRef.current = q;
     setQueue(q); setQIdx(0); setScore(0); scoreRef.current=0; setRoundAnswers([]);
     setTimeLeft(ROUND_DURATION); setGuess(""); setFlash(null); setFeedback(null);
@@ -3662,8 +3718,35 @@ export default function LePont() {
     const currentPool = pool.filter(p => !isRetiredPlayer(p.name));
     const retiredPool = pool.filter(p => isRetiredPlayer(p.name));
     const useCurrentStart = rand() < 0.8 && currentPool.length > 0;
-    const startPool = useCurrentStart ? currentPool : (retiredPool.length > 0 ? retiredPool : pool);
+    let startPool = useCurrentStart ? currentPool : (retiredPool.length > 0 ? retiredPool : pool);
+    
+    // Anti-répétition solo : exclure les starters des 3 dernières parties si on a assez de pool
+    if (!isInRoom) {
+      try {
+        const recent = JSON.parse(localStorage.getItem("goatfc_recent_mercato_starters_" + effectiveDiff) || "[]");
+        const recentSet = new Set(recent);
+        if (recentSet.size > 0) {
+          const fresh = startPool.filter(p => !recentSet.has(p.name));
+          // Seulement si on a encore assez de joueurs frais (> 20% du pool)
+          if (fresh.length >= Math.max(10, startPool.length * 0.2)) {
+            startPool = fresh;
+          }
+        }
+      } catch(e) {}
+    }
+    
     const start = startPool[Math.floor(rand() * startPool.length)];
+    
+    // Sauvegarder le starter pour anti-répétition (solo uniquement)
+    if (!isInRoom) {
+      try {
+        const key = "goatfc_recent_mercato_starters_" + effectiveDiff;
+        const recent = JSON.parse(localStorage.getItem(key) || "[]");
+        const updated = [start.name, ...recent.filter(n => n !== start.name)].slice(0, 5);
+        localStorage.setItem(key, JSON.stringify(updated));
+      } catch(e) {}
+    }
+    
     const usedP = new Set([start.name]);
     
     setChainPlayer(start.name); setChainUsedClubs(new Set()); setChainUsedPlayers(usedP);
