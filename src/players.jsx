@@ -1275,7 +1275,7 @@ export const PLAYERS = [
   { name:"Chemsdine Talbi", clubs:["Braga", "RC Strasbourg"], diff:"expert" },
 
   // Légendes manquantes
-  { name:"Ronaldinho", clubs:["PSG", "Barcelona", "AC Milan", "Flamengo"], diff:"facile" },
+  { name:"Ronaldinho", clubs:["Grêmio", "PSG", "Barcelona", "AC Milan", "Flamengo", "Atlético Mineiro", "Querétaro", "Fluminense"], diff:"facile" },
   { name:"Zinedine Zidane", clubs:["Cannes", "Bordeaux", "Juventus", "Real Madrid"], diff:"facile" },
   { name:"Ronaldo Nazário", clubs:["Cruzeiro", "PSV Eindhoven", "Barcelona", "Inter Milan", "Real Madrid", "AC Milan", "Corinthians"], diff:"facile" },
   { name:"Franck Ribéry", clubs:["Metz", "Galatasaray", "Marseille", "Bayern Munich", "Fiorentina", "Salernitana"], diff:"facile" },
