@@ -2569,35 +2569,87 @@ export default function LePont() {
       if (!Array.isArray(data) || data.length === 0) { setRoomMsg(lang==="en"?"Room not found":"Salle introuvable"); return; }
       const r = data[0];
       if (r.status !== "waiting") { setRoomMsg(lang==="en"?"Game already started!":"Partie déjà lancée !"); return; }
-      const players = typeof r.players === "string" ? JSON.parse(r.players) : r.players;
-      if (players.length >= 8) { setRoomMsg(lang==="en"?"Room full (8/8)":"Salle pleine (8/8)"); return; }
-      if (players.find(function(p){return p.id===playerId;})) {
-        setRoom(r); startRoomPolling(r.id); return;
+      // Retry loop pour gérer la race condition quand plusieurs joueurs rejoignent en même temps
+      let success = false;
+      let attempt = 0;
+      let finalRoom = null;
+      while (!success && attempt < 5) {
+        attempt++;
+        // Re-lire à chaque tentative pour avoir la dernière version
+        const fresh = attempt === 1 ? data : await sbFetch("bb_rooms?code=eq."+clean+"&limit=1");
+        if (!Array.isArray(fresh) || fresh.length === 0) { setRoomMsg(lang==="en"?"Room not found":"Salle introuvable"); return; }
+        const cr = fresh[0];
+        if (cr.status !== "waiting") { setRoomMsg(lang==="en"?"Game already started!":"Partie déjà lancée !"); return; }
+        const players = typeof cr.players === "string" ? JSON.parse(cr.players) : cr.players;
+        if (players.length >= 8) { setRoomMsg(lang==="en"?"Room full (8/8)":"Salle pleine (8/8)"); return; }
+        // Déjà dans la salle ? cas du retry où mon ajout a réussi sans qu'on le sache
+        if (players.find(function(p){return p.id===playerId;})) {
+          success = true;
+          finalRoom = cr;
+          break;
+        }
+        const newPlayers = [...players, {id:playerId, name:name, score:null, status:"waiting"}];
+        await sbFetch("bb_rooms?id=eq."+cr.id, {
+          method:"PATCH",
+          body:JSON.stringify({players:JSON.stringify(newPlayers)}),
+          headers:{"Prefer":"return=minimal"}
+        });
+        // Vérifier que mon update a bien été persisté (pas écrasé par un autre joueur en parallèle)
+        await new Promise(function(resolve){return setTimeout(resolve, 200 + Math.random() * 300);});
+        const verify = await sbFetch("bb_rooms?id=eq."+cr.id+"&limit=1");
+        if (Array.isArray(verify) && verify.length > 0) {
+          const vr = verify[0];
+          const vp = typeof vr.players === "string" ? JSON.parse(vr.players) : vr.players;
+          if (vp.find(function(p){return p.id===playerId;})) {
+            success = true;
+            finalRoom = vr;
+          }
+          // Sinon : mon ajout a été écrasé, on retry
+        }
+        if (!success && attempt < 5) {
+          await new Promise(function(resolve){return setTimeout(resolve, 300 + attempt * 200 + Math.random() * 200);});
+        }
       }
-      const newPlayers = [...players, {id:playerId, name:name, score:null, status:"waiting"}];
-      await sbFetch("bb_rooms?id=eq."+r.id, {
-        method:"PATCH",
-        body:JSON.stringify({players:JSON.stringify(newPlayers)}),
-        headers:{"Prefer":"return=minimal"}
-      });
-      const updated = await sbFetch("bb_rooms?id=eq."+r.id+"&limit=1");
-      if (Array.isArray(updated) && updated.length > 0) {
-        setRoom(updated[0]);
-        setRoomInput("");
-        setRoomMsg("");
-        startRoomPolling(r.id);
+      if (!success) {
+        setRoomMsg(lang==="en"?"Could not join (try again)":"Connexion impossible (réessaie)");
+        return;
       }
+      setRoom(finalRoom);
+      setRoomInput("");
+      setRoomMsg("");
+      startRoomPolling(finalRoom.id);
     } catch(e) { console.error(e); setRoomMsg("Erreur connexion"); }
   }
 
   function startRoomPolling(roomId) {
     clearInterval(roomPollRef.current);
     let gameStarted = false;
+    let rejoinAttempts = 0;
     roomPollRef.current = setInterval(async function() {
       try {
         const data = await sbFetch("bb_rooms?id=eq."+roomId+"&limit=1");
         if (!Array.isArray(data) || data.length === 0) return;
         const r = data[0];
+        // Auto-rejoin : si je ne suis plus dans la liste (écrasé par une race), je me re-rejoins
+        if (r.status === "waiting") {
+          const players = typeof r.players === "string" ? JSON.parse(r.players) : r.players;
+          const meInRoom = players.find(function(p){return p.id===playerId;});
+          if (!meInRoom && rejoinAttempts < 3 && players.length < 8) {
+            rejoinAttempts++;
+            const name = (playerName||"Anonyme").trim();
+            const newPlayers = [...players, {id:playerId, name:name, score:null, status:"waiting"}];
+            try {
+              await sbFetch("bb_rooms?id=eq."+roomId, {
+                method:"PATCH",
+                body:JSON.stringify({players:JSON.stringify(newPlayers)}),
+                headers:{"Prefer":"return=minimal"}
+              });
+            } catch(e) {}
+            return;
+          } else if (meInRoom) {
+            rejoinAttempts = 0; // reset si je suis bien là
+          }
+        }
         setRoom(r);
         if (r.status === "playing" && !gameStarted) {
           gameStarted = true;
@@ -2715,26 +2767,59 @@ export default function LePont() {
     setWaitingForRoom(true);
     setActiveDuel(null);
     activeDuelRef.current = null;
+    // Retry loop pour gérer les race conditions quand plusieurs joueurs finissent simultanément
+    // (en 8 joueurs, sans retry, certains updates étaient écrasés et le statut "done" était perdu)
+    let success = false;
+    let attempt = 0;
+    let finalRoom = null;
+    while (!success && attempt < 5) {
+      attempt++;
+      try {
+        const data = await sbFetch("bb_rooms?id=eq."+roomId+"&limit=1");
+        if (!Array.isArray(data) || data.length === 0) { setWaitingForRoom(false); return; }
+        const r = data[0];
+        const players = typeof r.players === "string" ? JSON.parse(r.players) : r.players;
+        // Vérifier si mon statut est déjà "done" (cas d'un retry réussi sans le savoir)
+        const me = players.find(function(p){return p.id === playerId;});
+        if (me && me.status === "done" && me.score === sc) {
+          success = true;
+          finalRoom = r;
+          break;
+        }
+        const updated = players.map(function(p){
+          return p.id === playerId ? Object.assign({}, p, {score:sc, status:"done"}) : p;
+        });
+        const allDone = updated.every(function(p){return p.status==="done";});
+        await sbFetch("bb_rooms?id=eq."+roomId, {
+          method:"PATCH",
+          body:JSON.stringify({players:JSON.stringify(updated), status:allDone?"complete":"scoring"}),
+          headers:{"Prefer":"return=minimal"}
+        });
+        // Vérifier que mon update a bien été persisté (pas écrasé par un autre joueur en parallèle)
+        await new Promise(function(resolve){return setTimeout(resolve, 200 + Math.random() * 300);});
+        const verify = await sbFetch("bb_rooms?id=eq."+roomId+"&limit=1");
+        if (Array.isArray(verify) && verify.length > 0) {
+          const vr = verify[0];
+          const vp = typeof vr.players === "string" ? JSON.parse(vr.players) : vr.players;
+          const meAfter = vp.find(function(p){return p.id === playerId;});
+          if (meAfter && meAfter.status === "done" && meAfter.score === sc) {
+            success = true;
+            finalRoom = vr;
+          }
+          // Sinon : mon update a été écrasé, on retry avec un petit délai aléatoire (backoff)
+        }
+      } catch(e) { console.error("submitRoomScore attempt "+attempt+":", e); }
+      if (!success && attempt < 5) {
+        await new Promise(function(resolve){return setTimeout(resolve, 300 + attempt * 200 + Math.random() * 200);});
+      }
+    }
+    if (!success) { setWaitingForRoom(false); return; }
     try {
-      const data = await sbFetch("bb_rooms?id=eq."+roomId+"&limit=1");
-      if (!Array.isArray(data) || data.length === 0) { setWaitingForRoom(false); return; }
-      const r = data[0];
-      const players = typeof r.players === "string" ? JSON.parse(r.players) : r.players;
-      const updated = players.map(function(p){
-        return p.id === playerId ? Object.assign({}, p, {score:sc, status:"done"}) : p;
-      });
-      const allDone = updated.every(function(p){return p.status==="done";});
-      await sbFetch("bb_rooms?id=eq."+roomId, {
-        method:"PATCH",
-        body:JSON.stringify({players:JSON.stringify(updated), status:allDone?"complete":"scoring"}),
-        headers:{"Prefer":"return=minimal"}
-      });
+      const players = typeof finalRoom.players === "string" ? JSON.parse(finalRoom.players) : finalRoom.players;
+      const allDone = players.every(function(p){return p.status==="done";});
       if (allDone) {
         // On est le dernier — afficher les résultats directement
-        const finalData = await sbFetch("bb_rooms?id=eq."+roomId+"&limit=1");
-        if (Array.isArray(finalData) && finalData.length > 0) {
-          showRoomResults(finalData[0]);
-        }
+        showRoomResults(finalRoom);
       } else {
         // Attendre les autres via polling
         startRoomResultPolling(roomId, duel.rounds||1);
@@ -2759,6 +2844,29 @@ export default function LePont() {
           setTimeout(function(){setAbandonNotif("");}, 5000);
         }
         const allDone = players.every(function(p){return p.status==="done";});
+        // Auto-reconciliation : si certains joueurs ont un score > 0 mais sont restés "in_progress"
+        // depuis plus de 30s, c'est probablement une race condition (leur done a été écrasé).
+        // On force leur status à done pour débloquer la salle.
+        const elapsed = Date.now() - startedAt;
+        const stuckPlayers = players.filter(function(p){
+          return p.status !== "done" && (p.score || 0) > 0;
+        });
+        if (!allDone && elapsed > 30000 && stuckPlayers.length > 0) {
+          const fixed = players.map(function(p){
+            return (p.status !== "done" && (p.score || 0) > 0) ? Object.assign({}, p, {status:"done"}) : p;
+          });
+          const nowAllDone = fixed.every(function(p){return p.status==="done";});
+          await sbFetch("bb_rooms?id=eq."+roomId, {
+            method:"PATCH",
+            body:JSON.stringify({players:JSON.stringify(fixed), status:nowAllDone?"complete":"scoring"}),
+            headers:{"Prefer":"return=minimal"}
+          });
+          if (nowAllDone) {
+            clearInterval(roomPollRef.current);
+            showRoomResults(Object.assign({}, r, {players: JSON.stringify(fixed)}));
+            return;
+          }
+        }
         const timedOut = Date.now() - startedAt > maxWait;
         if (allDone || timedOut) {
           clearInterval(roomPollRef.current);
@@ -4250,10 +4358,8 @@ export default function LePont() {
     const randCP = passSeed !== null ? seededRandom(passSeed) : Math.random;
     const validClubs=(PLAYERS_CLEAN.find(p=>p.name===chainPlayer)?.clubs||[]).filter(c=>!chainUsedClubs.has(c));
     const chosen=validClubs.length>0?validClubs[Math.floor(randCP()*validClubs.length)]:null;
-    // Note : le club "chosen" sert juste à trouver le prochain joueur de la chaîne,
-    // mais on NE l'ajoute PAS aux chainUsedClubs car l'utilisateur ne l'a pas réellement validé.
-    // Sinon un user qui passe plusieurs questions se retrouve avec des clubs "brûlés"
-    // qu'il n'a jamais joués, et se fait bloquer ensuite avec des "club déjà utilisé" incompréhensibles.
+    // Le club "chosen" est révélé en bas et BRÛLÉ pour la suite de la partie : sinon c'est de la triche
+    // (l'user passe pour découvrir la réponse, puis la retape au tour suivant).
     // Helper : pioche un nouveau joueur aléatoire de la base (fallback quand la chaîne bloque)
     // Au lieu de terminer la partie prématurément, on relance avec un joueur tout frais
     const pickFallbackPlayer = () => {
@@ -4285,13 +4391,13 @@ export default function LePont() {
       return;
     }
     const newUsed=new Set(chainUsedClubs); newUsed.add(chosen);
+    setChainUsedClubs(newUsed); // brûler le club passé pour empêcher la triche
     const clubPlayers=getPlayersForClub(chosen).filter(p=>!chainUsedPlayers.has(p)&&getPlayerClubs(p).some(c=>!newUsed.has(c)));
     if(clubPlayers.length===0){
       // Pas de joueur pour ce club → pioche nouveau joueur frais
       const fallback = pickFallbackPlayer();
       if(!fallback){endChain();return;}
       const newUsedP=new Set(chainUsedPlayers); newUsedP.add(fallback);
-      // Ne pas ajouter "chosen" aux clubs utilisés — l'user n'a pas validé ce club
       setChainUsedPlayers(newUsedP);
       setChainHistory(prev=>[...prev,{player:chainPlayer,club:chosen,passed:true}]);
       setChainPlayer(fallback); setChainLastClub(chosen); setGuess("");
@@ -4316,7 +4422,6 @@ export default function LePont() {
     const nextPool2 = useCurrent2 ? currentNext2 : finalPool2;
     const next=nextPool2[Math.floor(randCP()*nextPool2.length)];
     const newUsedP=new Set(chainUsedPlayers); newUsedP.add(next);
-    // Ne pas ajouter "chosen" aux clubs utilisés — l'user n'a pas validé ce club
     setChainUsedPlayers(newUsedP);
     setChainHistory(prev=>[...prev,{player:chainPlayer,club:chosen,passed:true}]);
     setChainPlayer(next); setChainLastClub(chosen); setGuess("");
