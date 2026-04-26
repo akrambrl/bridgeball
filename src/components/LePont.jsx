@@ -485,8 +485,7 @@ const PONT_CLUBS = new Set([
   "Ajax Amsterdam","PSV Eindhoven","Feyenoord","AZ Alkmaar",
   // Turquie
   "Galatasaray","Fenerbahce","Besiktas","Trabzonspor",
-  // === Élargissement : clubs mi-populaires pour diversifier les paires ===
-  // Premier League (le championnat le plus testé)
+  // Premier League cadres
   "Tottenham","Newcastle","Aston Villa","West Ham","Everton",
   "Leicester City","Southampton","Crystal Palace","Brighton","Fulham",
   "Wolverhampton","Nottingham Forest","Bournemouth","Brentford",
@@ -494,17 +493,38 @@ const PONT_CLUBS = new Set([
   "Lazio","Fiorentina","Atalanta","Torino","Bologna","Udinese","Sampdoria",
   // Espagne
   "Real Sociedad","Athletic Bilbao","Villarreal","Real Betis","Celta Vigo","Espanyol","Getafe",
-  // Allemagne
-  "VfB Stuttgart","Hoffenheim","Wolfsburg","Borussia Monchengladbach","Werder Bremen","Schalke 04","Hamburger SV","Hertha Berlin",
+  // Allemagne (NORMALISÉS)
+  "Stuttgart","Hoffenheim","Wolfsburg","Borussia Monchengladbach","Werder Bremen","Schalke","Hamburg","Hertha Berlin",
   // France
   "Nice","Rennes","Lens","Saint-Etienne","Bordeaux","Nantes","Montpellier","Strasbourg","Toulouse",
   // Portugal
   "Braga","Vitoria Guimaraes",
   // Écosse
   "Celtic","Rangers",
-  // Grèce/Autres
+  // Grèce/Russie/Ukraine
   "Olympiacos","Panathinaikos","CSKA Moscow","Zenit Saint Petersburg","Spartak Moscow","Shakhtar Donetsk","Dynamo Kyiv",
-  "Red Bull Salzburg","Copenhagen","Club Brugge","Anderlecht","Standard Liège",
+  // Autriche/Belgique/Danemark/Suisse
+  "Salzburg","Copenhagen","Club Brugge","Anderlecht","Standard Liège","Basel",
+  // === EXTENSION : clubs avec 7+ joueurs dans la base ===
+  // Premier League historiques / clubs jojo
+  "Watford","Sunderland","Burnley","West Brom","Leeds United","Middlesbrough",
+  "Stoke","Bolton","Swansea","Sheffield United","Blackburn","Ipswich","Portsmouth",
+  // Italie Serie B/historiques
+  "Genoa","Parma","Sassuolo","Empoli","Cagliari","Hellas Verona",
+  // France
+  "Lorient","Angers","Reims","Metz","Auxerre","Le Havre","Brest",
+  // Allemagne
+  "Mainz",
+  // Brésil
+  "Flamengo","River Plate","Boca Juniors","São Paulo","Palmeiras","Santos","Fluminense","Corinthians",
+  // Espagne
+  "Real Zaragoza","Mallorca","Real Valladolid","Granada",
+  // Belgique/Croatie
+  "Genk","Gent","Dinamo Zagreb",
+  // Italie/Espagne
+  "Girona",
+  // Saudi extension
+  "Al Qadsiah",
 ]);
 
 function buildPontDB() {
@@ -877,6 +897,7 @@ const DAILY_RESETS = {
 const DAILY_OVERRIDES = {
   "2026-04-23": "Kalidou Koulibaly", // Jeudi Serie A - override forcé
   "2026-04-25": "Ronaldinho", // Samedi Légende - le sorcier brésilien
+  "2026-04-26": "Miralem Pjanić", // Dimanche Joker - le maestro bosnien
 };
 
 function getDailyPlayer(blacklist) {
