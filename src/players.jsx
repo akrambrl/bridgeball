@@ -257,7 +257,7 @@ export const PLAYERS = [
   { name:"Édouard Mendy", clubs:["Chelsea", "Al Ahli"], diff:"moyen" },
   { name:"Mohamed Simakan", clubs:["Strasbourg", "RB Leipzig", "Al Nassr"], diff:"moyen" },
   { name:"Houssem Aouar", clubs:["Lyon", "Roma", "Al Ittihad"], diff:"moyen" },
-  { name:"Amine Harit", clubs:["Nantes", "Schalke 04", "Marseille", "Basaksehir"], diff:"moyen" },
+  { name:"Amine Harit", clubs:["Nantes", "Schalke", "Marseille", "Basaksehir"], diff:"moyen" },
   { name:"Maxime Lopez", clubs:["Marseille", "Sassuolo", "Fiorentina", "Paris FC"], diff:"expert" },
   { name:"Valentin Rongier", clubs:["Nantes", "Marseille", "Rennes"], diff:"moyen" },
   { name:"Michy Batshuayi", clubs:["Standard Liège", "Marseille", "Chelsea", "Borussia Dortmund", "Valencia", "Crystal Palace", "Besiktas", "Fenerbahce", "Galatasaray", "Frankfurt"], diff:"moyen" },
@@ -318,7 +318,7 @@ export const PLAYERS = [
   { name:"Gavi", clubs:["Barcelona"], diff:"moyen" },
   { name:"Rodri", clubs:["Villarreal", "Atletico Madrid", "Manchester City"], diff:"moyen" },
   { name:"Thomas Muller", clubs:["Bayern Munich", "Vancouver Whitecaps"], diff:"facile" },
-  { name:"Manuel Neuer", clubs:["Schalke 04", "Bayern Munich"], diff:"facile" },
+  { name:"Manuel Neuer", clubs:["Schalke", "Bayern Munich"], diff:"facile" },
   { name:"Gianluigi Donnarumma", clubs:["AC Milan", "PSG", "Manchester City"], diff:"moyen" },
   { name:"Raphael Varane", clubs:["Lens","Real Madrid","Manchester United","Como"], diff:"facile" },
   { name:"Marquinhos", clubs:["Roma", "PSG"], diff:"moyen" },
@@ -434,7 +434,7 @@ export const PLAYERS = [
   // Tottenham
   { name:"Guglielmo Vicario", clubs:["Udinese", "Venezia", "Perugia", "Cagliari", "Empoli", "Tottenham"], diff:"moyen" },
   { name:"Radu Drăguşin", clubs:["Juventus", "Sampdoria", "Salernitana", "Genoa", "Tottenham"], diff:"expert" },
-  { name:"Djed Spence", clubs:["Middlesbrough", "Nottingham Forest", "Tottenham", "Rennes", "Leeds", "Genoa"], diff:"expert" },
+  { name:"Djed Spence", clubs:["Middlesbrough", "Nottingham Forest", "Tottenham", "Rennes", "Leeds United", "Genoa"], diff:"expert" },
   { name:"Dejan Kulusevski", clubs:["Atalanta", "Parma", "Juventus", "Tottenham"], diff:"moyen" },
   // Newcastle
   { name:"Martin Dúbravka", clubs:["Žilina", "Esbjerg", "Sparta Prague", "Newcastle", "Manchester United"], diff:"expert" },
@@ -461,12 +461,12 @@ export const PLAYERS = [
   { name:"Cheick Doucouré", clubs:["Lens", "Crystal Palace"], diff:"expert" },
   { name:"Ismaïla Sarr", clubs:["Metz", "Rennes", "Watford", "Marseille", "Tottenham", "Crystal Palace"], diff:"moyen" },
   { name:"Jean-Philippe Mateta", clubs:["Châteauroux", "Lyon", "Le Havre", "Mainz", "Crystal Palace"], diff:"moyen" },
-  { name:"Eddie Nketiah", clubs:["Chelsea", "Arsenal", "Leeds", "Crystal Palace"], diff:"moyen" },
+  { name:"Eddie Nketiah", clubs:["Chelsea", "Arsenal", "Leeds United", "Crystal Palace"], diff:"moyen" },
   // Brighton
   { name:"Adam Webster", clubs:["Portsmouth", "Ipswich", "Bristol City", "Brighton"], diff:"expert" },
   { name:"Joel Veltman", clubs:["Ajax Amsterdam", "Brighton"], diff:"moyen" },
   { name:"Tariq Lamptey", clubs:["Chelsea", "Brighton"], diff:"expert" },
-  { name:"Georginio Rutter", clubs:["Rennes", "Hoffenheim", "Leeds", "Brighton"], diff:"expert" },
+  { name:"Georginio Rutter", clubs:["Rennes", "Hoffenheim", "Leeds United", "Brighton"], diff:"expert" },
   { name:"Julio Enciso", clubs:["Libertad", "Brighton", "Ipswich", "Strasbourg"], diff:"expert" },
   // Brentford
   { name:"Mark Flekken", clubs:["Greuther Fürth", "Duisburg", "SC Freiburg", "Brentford", "Bayer Leverkusen"], diff:"expert" },
@@ -741,7 +741,7 @@ export const PLAYERS = [
   { name:"Lucio", clubs:["Bayer Leverkusen", "Bayern Munich", "Inter Milan"], diff:"moyen" },
   { name:"Figo", clubs:["Sporting CP", "Barcelona", "Real Madrid", "Inter Milan"], diff:"facile" },
   { name:"Simao Sabrosa", clubs:["Barcelona", "Atletico Madrid", "Besiktas"], diff:"moyen" },
-  { name:"Raul", clubs:["Real Madrid", "Schalke 04", "Al Sadd", "New York Cosmos"], diff:"facile" },
+  { name:"Raul", clubs:["Real Madrid", "Schalke", "Al Sadd", "New York Cosmos"], diff:"facile" },
   { name:"Fernando Hierro", clubs:["Real Valladolid", "Real Madrid", "Bolton"], diff:"moyen" },
   { name:"Emilio Butragueno", clubs:["Real Madrid", "Atletico Celaya"], diff:"moyen" },
   { name:"Jamie Carragher", clubs:["Liverpool"], diff:"moyen" },
@@ -797,7 +797,7 @@ export const PLAYERS = [
   { name:"Robin van Persie", clubs:["Feyenoord", "Arsenal", "Manchester United", "Fenerbahce"], diff:"facile" },
   { name:"Dennis Bergkamp", clubs:["Ajax Amsterdam", "Inter Milan", "Arsenal"], diff:"facile" },
   { name:"Edgar Davids", clubs:["Ajax Amsterdam", "Juventus", "Barcelona", "Inter Milan"], diff:"moyen" },
-  { name:"Klaas-Jan Huntelaar", clubs:["De Graafschap", "PSV Eindhoven", "AGOVV Apeldoorn", "Heerenveen", "Ajax Amsterdam", "Real Madrid", "AC Milan", "Schalke 04"], diff:"moyen" },
+  { name:"Klaas-Jan Huntelaar", clubs:["De Graafschap", "PSV Eindhoven", "AGOVV Apeldoorn", "Heerenveen", "Ajax Amsterdam", "Real Madrid", "AC Milan", "Schalke"], diff:"moyen" },
   { name:"Ryan Babel", clubs:["Ajax Amsterdam", "Liverpool", "Galatasaray"], diff:"moyen" },
   // Russie
   { name:"Axel Witsel", clubs:["Benfica", "Zenit Saint Petersburg", "Borussia Dortmund", "Atletico Madrid"], diff:"moyen" },
@@ -1048,7 +1048,7 @@ export const PLAYERS = [
 
   // Équipe nationale Corée du Sud 2026
   { name:"Lee Kang-in", clubs:["Valencia", "Mallorca", "PSG"], diff:"moyen" },
-  { name:"Hwang Hee-chan", clubs:["Red Bull Salzburg", "Hamburger SV", "RB Leipzig", "Wolverhampton"], diff:"moyen" },
+  { name:"Hwang Hee-chan", clubs:["Salzburg", "Hamburg", "RB Leipzig", "Wolverhampton"], diff:"moyen" },
   { name:"Hwang In-beom", clubs:["Schalke", "Feyenoord"], diff:"moyen" },
   { name:"Lee Jae-sung", clubs:["Mainz"], diff:"expert" },
 
@@ -1116,7 +1116,7 @@ export const PLAYERS = [
   { name:"Jérémy Ménez", clubs:["Sochaux", "Monaco", "Roma", "PSG", "AC Milan", "Bordeaux", "Antalyaspor", "Club América", "Paris FC", "Reggina"], diff:"moyen" },
   { name:"Thiago Motta", clubs:["Barcelona", "Atletico Madrid", "Genoa", "Inter Milan", "PSG"], diff:"moyen" },
   { name:"Lucas Moura", clubs:["São Paulo", "PSG", "Tottenham"], diff:"moyen" },
-  { name:"Julian Draxler", clubs:["Schalke 04", "Wolfsburg", "PSG", "Benfica", "Al Ahli"], diff:"moyen" },
+  { name:"Julian Draxler", clubs:["Schalke", "Wolfsburg", "PSG", "Benfica", "Al Ahli"], diff:"moyen" },
   { name:"Maxwell", clubs:["Ajax Amsterdam", "Empoli", "Inter Milan", "Barcelona", "PSG"], diff:"expert" },
   { name:"Gregory van der Wiel", clubs:["Ajax Amsterdam", "PSG", "Fenerbahce", "Toronto FC", "Cagliari"], diff:"expert" },
   { name:"Salvatore Sirigu", clubs:["Palermo", "PSG", "Sevilla", "Osasuna", "Torino", "Genoa", "Napoli", "Fiorentina"], diff:"moyen" },
@@ -1131,7 +1131,7 @@ export const PLAYERS = [
   { name:"Yuri Berchiche", clubs:["Real Sociedad", "Real Valladolid", "Auxerre", "Tottenham", "Athletic Bilbao", "PSG"], diff:"expert" },
   { name:"Goncalo Guedes", clubs:["Benfica", "PSG", "Valencia", "Wolverhampton", "Villarreal"], diff:"moyen" },
   { name:"Jesé Rodríguez", clubs:["Real Madrid", "PSG", "Stoke", "Las Palmas", "Real Betis", "Sporting CP", "Ankaragücü"], diff:"moyen" },
-  { name:"Thilo Kehrer", clubs:["Schalke 04", "PSG", "West Ham", "Monaco"], diff:"moyen" },
+  { name:"Thilo Kehrer", clubs:["Schalke", "PSG", "West Ham", "Monaco"], diff:"moyen" },
   { name:"Juan Bernat", clubs:["Valencia", "Bayern Munich", "PSG", "Benfica", "Villarreal", "Getafe", "Eibar"], diff:"moyen" },
   { name:"Ander Herrera", clubs:["Real Zaragoza", "Athletic Bilbao", "Manchester United", "PSG", "Boca Juniors"], diff:"moyen" },
   { name:"Abdou Diallo", clubs:["Monaco", "Mainz", "Borussia Dortmund", "PSG", "RB Leipzig", "Al Arabi"], diff:"expert" },
@@ -1350,7 +1350,7 @@ export const PLAYERS = [
   { name:"Sol Campbell", clubs:["Tottenham", "Arsenal", "Portsmouth", "Newcastle"], diff:"moyen" },
   { name:"Freddie Ljungberg", clubs:["Arsenal", "West Ham"], diff:"moyen" },
   { name:"Gilberto Silva", clubs:["Arsenal", "Panathinaikos"], diff:"moyen" },
-  { name:"Jens Lehmann", clubs:["Schalke 04", "AC Milan", "Borussia Dortmund", "Arsenal", "VfB Stuttgart"], diff:"moyen" },
+  { name:"Jens Lehmann", clubs:["Schalke", "AC Milan", "Borussia Dortmund", "Arsenal", "Stuttgart"], diff:"moyen" },
   { name:"Theo Walcott", clubs:["Southampton", "Arsenal", "Everton"], diff:"moyen" },
   { name:"Laurent Koscielny", clubs:["Lorient", "Arsenal", "Bordeaux"], diff:"moyen" },
   // Chelsea
@@ -1393,7 +1393,7 @@ export const PLAYERS = [
   { name:"Jerzy Dudek", clubs:["Feyenoord", "Liverpool", "Real Madrid"], diff:"moyen" },
   { name:"Luis García", clubs:["Barcelona", "Atletico Madrid", "Liverpool", "Panathinaikos"], diff:"moyen" },
   { name:"Daniel Agger", clubs:["Brondby", "Liverpool"], diff:"moyen" },
-  { name:"Joel Matip", clubs:["Schalke 04", "Liverpool"], diff:"moyen" },
+  { name:"Joel Matip", clubs:["Schalke", "Liverpool"], diff:"moyen" },
   // Manchester United
   { name:"Edwin van der Sar", clubs:["Ajax Amsterdam", "Juventus", "Fulham", "Manchester United"], diff:"facile" },
   { name:"Nicky Butt", clubs:["Manchester United", "Newcastle"], diff:"moyen" },
@@ -1403,7 +1403,7 @@ export const PLAYERS = [
   // Manchester City
   { name:"Gareth Barry", clubs:["Aston Villa", "Manchester City", "Everton", "West Brom"], diff:"moyen" },
   { name:"Micah Richards", clubs:["Manchester City", "Fiorentina", "Aston Villa"], diff:"moyen" },
-  { name:"Edin Dzeko", clubs:["Wolfsburg", "Manchester City", "Roma", "Inter Milan", "Fenerbahce", "Fiorentina", "Schalke 04"], diff:"facile" },
+  { name:"Edin Dzeko", clubs:["Wolfsburg", "Manchester City", "Roma", "Inter Milan", "Fenerbahce", "Fiorentina", "Schalke"], diff:"facile" },
   { name:"Jesus Navas", clubs:["Sevilla", "Manchester City"], diff:"moyen" },
   { name:"Nigel de Jong", clubs:["Ajax Amsterdam", "Hamburg", "Manchester City", "AC Milan", "LA Galaxy", "Galatasaray", "Mainz"], diff:"moyen" },
 
@@ -1421,7 +1421,7 @@ export const PLAYERS = [
   { name:"Mario Mandžukić", clubs:["Dinamo Zagreb", "Wolfsburg", "Bayern Munich", "Atletico Madrid", "Juventus", "AC Milan"], diff:"moyen" },
   { name:"Javi Martínez", clubs:["Osasuna", "Athletic Bilbao", "Bayern Munich"], diff:"moyen" },
   // Bayer Leverkusen
-  { name:"Bernd Leno", clubs:["VfB Stuttgart", "Bayer Leverkusen", "Arsenal", "Fulham", "Hertha Berlin"], diff:"moyen" },
+  { name:"Bernd Leno", clubs:["Stuttgart", "Bayer Leverkusen", "Arsenal", "Fulham", "Hertha Berlin"], diff:"moyen" },
   { name:"Stefan Kießling", clubs:["Nuremberg", "Bayer Leverkusen"], diff:"moyen" },
   { name:"Leon Bailey", clubs:["Genk", "Bayer Leverkusen", "Aston Villa", "Roma"], diff:"moyen" },
   { name:"Kevin Volland", clubs:["Nuremberg", "Hoffenheim", "Bayer Leverkusen", "Monaco", "Union Berlin"], diff:"moyen" },
@@ -1431,7 +1431,7 @@ export const PLAYERS = [
   { name:"Ante Rebić", clubs:["Fiorentina", "Eintracht Frankfurt", "AC Milan", "Besiktas", "Lecce"], diff:"moyen" },
   { name:"André Silva", clubs:["Porto", "AC Milan", "Sevilla", "Eintracht Frankfurt", "RB Leipzig", "Real Sociedad"], diff:"moyen" },
   { name:"Alex Meier", clubs:["Werder Bremen", "Hamburg", "Eintracht Frankfurt"], diff:"moyen" },
-  { name:"Kevin-Prince Boateng", clubs:["Hertha Berlin", "Tottenham", "Borussia Dortmund", "Portsmouth", "AC Milan", "Schalke 04", "Las Palmas", "Eintracht Frankfurt", "Sassuolo", "Barcelona", "Fiorentina", "Besiktas", "Monza"], diff:"moyen" },
+  { name:"Kevin-Prince Boateng", clubs:["Hertha Berlin", "Tottenham", "Borussia Dortmund", "Portsmouth", "AC Milan", "Schalke", "Las Palmas", "Eintracht Frankfurt", "Sassuolo", "Barcelona", "Fiorentina", "Besiktas", "Monza"], diff:"moyen" },
 
   // ── LIGUE 1 : MONACO / PSG / OM / NICE / STRASBOURG / RENNES (+5 par club) ──
   // Monaco
@@ -1456,7 +1456,7 @@ export const PLAYERS = [
   { name:"Dante", clubs:["Lille", "Borussia Monchengladbach", "Bayern Munich", "Wolfsburg", "Nice"], diff:"moyen" },
   { name:"Justin Kluivert", clubs:["Ajax Amsterdam", "Roma", "RB Leipzig", "Nice", "Valencia", "Bournemouth"], diff:"moyen" },
   { name:"Jean-Michaël Seri", clubs:["Auxerre", "Nice", "Fulham", "Galatasaray", "Bordeaux"], diff:"moyen" },
-  { name:"Jean-Clair Todibo", clubs:["Toulouse", "Barcelona", "Schalke 04", "Benfica", "Nice", "West Ham"], diff:"moyen" },
+  { name:"Jean-Clair Todibo", clubs:["Toulouse", "Barcelona", "Schalke", "Benfica", "Nice", "West Ham"], diff:"moyen" },
   { name:"Malang Sarr", clubs:["Nice", "Chelsea", "Porto", "Monaco", "Lens"], diff:"moyen" },
   // Strasbourg
   { name:"Olivier Dacourt", clubs:["Strasbourg", "Everton", "Lens", "Leeds United", "Roma", "Inter Milan", "Fulham"], diff:"moyen" },
@@ -1525,7 +1525,7 @@ export const PLAYERS = [
   // Roma
   { name:"Radja Nainggolan", clubs:["Piacenza", "Cagliari", "Roma", "Inter Milan", "Antwerp"], diff:"moyen" },
   { name:"Aldair", clubs:["Flamengo", "Benfica", "Roma"], diff:"moyen" },
-  { name:"Miralem Pjanić", clubs:["Metz", "Lyon", "Roma", "Juventus", "Barcelona", "Besiktas"], diff:"moyen" },
+  { name:"Miralem Pjanić", clubs:["Metz", "Lyon", "Roma", "Juventus", "Barcelona", "Besiktas", "Sharjah", "CSKA Moscow"], diff:"moyen" },
   { name:"Tammy Abraham", clubs:["Chelsea", "Bristol City", "Swansea", "Aston Villa", "Roma", "AC Milan", "Besiktas"], diff:"moyen" },
   { name:"Stephan El Shaarawy", clubs:["Genoa", "AC Milan", "Monaco", "Roma", "Shanghai Shenhua"], diff:"moyen" },
   // Napoli
@@ -1592,7 +1592,7 @@ export const PLAYERS = [
   // Mercato hiver janvier 2026 - suite
   { name:"Roman Yaremchuk", clubs:["Dynamo Kyiv", "Gent", "Benfica", "Club Brugge", "Valencia", "Olympiacos", "Lyon"], diff:"moyen" },
   { name:"Martín Satriano", clubs:["Nacional", "Inter Milan", "Brest", "Empoli", "Lens", "Lyon", "Getafe"], diff:"expert" },
-  { name:"Amadou Haidara", clubs:["Red Bull Salzburg", "RB Leipzig", "Lens"], diff:"moyen" },
+  { name:"Amadou Haidara", clubs:["Salzburg", "RB Leipzig", "Lens"], diff:"moyen" },
   { name:"Warmed Omari", clubs:["Rennes", "Eintracht Frankfurt", "Hambourg"], diff:"expert" },
   { name:"Jérémy Jacquet", clubs:["Rennes", "Liverpool"], diff:"expert" },
   { name:"Ethan Nwaneri", clubs:["Arsenal", "Marseille"], diff:"moyen" },
@@ -1605,7 +1605,7 @@ export const PLAYERS = [
   { name:"Joan García", clubs:["Espanyol", "Barcelona"], diff:"expert" },
   { name:"Álvaro Carreras", clubs:["Real Madrid", "Manchester United", "Preston", "Granada", "Benfica", "Real Madrid"], diff:"moyen" },
   { name:"Clément Lenglet", clubs:["Nancy", "Sevilla", "Barcelona", "Tottenham", "Aston Villa", "Atletico Madrid"], diff:"moyen" },
-  { name:"Junior Firpo", clubs:["Real Betis", "Barcelona", "Leeds", "Real Betis"], diff:"moyen" },
+  { name:"Junior Firpo", clubs:["Real Betis", "Barcelona", "Leeds United", "Real Betis"], diff:"moyen" },
   { name:"Vitor Roque", clubs:["Athletico Paranaense", "Barcelona", "Real Betis", "Palmeiras"], diff:"moyen" },
   { name:"Azzedine Ounahi", clubs:["Avranches", "Angers", "Marseille", "Leicester", "Panathinaikos", "Girona"], diff:"moyen" },
   { name:"Arnaut Danjuma", clubs:["PSV", "Club Brugge", "Bournemouth", "Villarreal", "Tottenham", "Everton", "Girona", "Valencia"], diff:"moyen" },
@@ -1620,7 +1620,7 @@ export const PLAYERS = [
   { name:"Georges Mikautadze", clubs:["Metz", "Ajaccio", "Seraing", "Lyon", "Villarreal"], diff:"moyen" },
   { name:"Yeremi Pino", clubs:["Villarreal", "Crystal Palace"], diff:"moyen" },
   { name:"Aymeric Laporte", clubs:["Athletic Bilbao", "Manchester City", "Al Nassr"], diff:"moyen" },
-  { name:"Manor Solomon", clubs:["Maccabi Petah Tikva", "Maccabi Tel Aviv", "Shakhtar Donetsk", "Fulham", "Tottenham", "Leeds", "Villarreal", "Fiorentina"], diff:"expert" },
+  { name:"Manor Solomon", clubs:["Maccabi Petah Tikva", "Maccabi Tel Aviv", "Shakhtar Donetsk", "Fulham", "Tottenham", "Leeds United", "Villarreal", "Fiorentina"], diff:"expert" },
   // Mercato Serie A 2025-26 - joueurs manquants
   { name:"Nikola Krstović", clubs:["Podgorica", "Dunajska Streda", "Lecce", "Atalanta"], diff:"expert" },
   { name:"Koni De Winter", clubs:["Juventus", "Sampdoria", "Empoli", "Genoa", "AC Milan"], diff:"expert" },
@@ -1634,9 +1634,9 @@ export const PLAYERS = [
   { name:"Sam Beukema", clubs:["Go Ahead Eagles", "AZ Alkmaar", "Bologna", "Napoli"], diff:"expert" },
   { name:"Dan Ndoye", clubs:["Lausanne", "Nice", "Basel", "Bologna", "Nottingham Forest"], diff:"moyen" },
   { name:"Nicolás González", clubs:["Argentinos Juniors", "Stuttgart", "Fiorentina", "Juventus", "Atletico Madrid"], diff:"moyen" },
-  { name:"Noah Okafor", clubs:["Basel", "Red Bull Salzburg", "AC Milan", "Napoli", "Leeds"], diff:"moyen" },
+  { name:"Noah Okafor", clubs:["Basel", "Salzburg", "AC Milan", "Napoli", "Leeds United"], diff:"moyen" },
   { name:"Theo Hernández", clubs:["Atletico Madrid", "Alaves", "Real Madrid", "Real Sociedad", "AC Milan", "Al Hilal"], diff:"facile" },
-  { name:"Malick Thiaw", clubs:["Schalke 04", "AC Milan", "Newcastle"], diff:"moyen" },
+  { name:"Malick Thiaw", clubs:["Schalke", "AC Milan", "Newcastle"], diff:"moyen" },
   { name:"Yunus Musah", clubs:["Valencia", "AC Milan", "Atalanta"], diff:"moyen" },
   { name:"Samuel Chukwueze", clubs:["Villarreal", "AC Milan", "Fulham"], diff:"moyen" },
   { name:"Fabio Silva", clubs:["Porto", "Wolves", "Anderlecht", "PSV", "Las Palmas", "Borussia Dortmund"], diff:"moyen" },
@@ -1652,7 +1652,7 @@ export const PLAYERS = [
   { name:"Piero Hincapie", clubs:["Independiente del Valle", "Talleres", "Bayer Leverkusen", "Arsenal"], diff:"moyen" },
   { name:"Christian Nørgaard", clubs:["Brondby", "Fiorentina", "Brentford", "Arsenal"], diff:"expert" },
   // Manchester United
-  { name:"Benjamin Sesko", clubs:["Red Bull Salzburg", "RB Leipzig", "Manchester United"], diff:"moyen" },
+  { name:"Benjamin Sesko", clubs:["Salzburg", "RB Leipzig", "Manchester United"], diff:"moyen" },
   { name:"Diego Leon", clubs:["Cerro Porteño", "Manchester United"], diff:"expert" },
   // Chelsea
   { name:"Jorrel Hato", clubs:["Sparta Rotterdam", "Ajax Amsterdam", "Chelsea"], diff:"moyen" },
@@ -1660,7 +1660,7 @@ export const PLAYERS = [
   { name:"Dario Essugo", clubs:["Sporting CP", "Las Palmas", "Chelsea"], diff:"expert" },
   { name:"Mamadou Sarr", clubs:["Lyon", "Strasbourg", "Chelsea"], diff:"expert" },
   { name:"Kendry Paez", clubs:["Independiente del Valle", "Strasbourg", "Chelsea"], diff:"expert" },
-  { name:"Facundo Buonanotte", clubs:["Rosario Central", "Brighton", "Leicester", "Chelsea", "Leeds"], diff:"moyen" },
+  { name:"Facundo Buonanotte", clubs:["Rosario Central", "Brighton", "Leicester", "Chelsea", "Leeds United"], diff:"moyen" },
   { name:"Emanuel Emegha", clubs:["Sparta Rotterdam", "Royal Antwerp", "Strasbourg", "Chelsea"], diff:"moyen" },
   // Manchester City
   { name:"Rayan Ait-Nouri", clubs:["Angers", "Wolverhampton", "Manchester City"], diff:"moyen" },
@@ -1737,14 +1737,14 @@ export const PLAYERS = [
   { name:"Calvin Stengs", clubs:["AZ Alkmaar", "Nice", "Feyenoord", "Royal Antwerp"], diff:"expert" },
   // Süper Lig 2025/26 - nouveaux joueurs
   // Galatasaray
-  { name:"Leroy Sané", clubs:["Schalke 04", "Manchester City", "Bayern Munich", "Galatasaray"], diff:"moyen" },
+  { name:"Leroy Sané", clubs:["Schalke", "Manchester City", "Bayern Munich", "Galatasaray"], diff:"moyen" },
   { name:"Mauro Icardi", clubs:["Sampdoria", "Inter Milan", "PSG", "Galatasaray"], diff:"moyen" },
   // Fenerbahçe
   { name:"Milan Škriniar", clubs:["Sampdoria", "Inter Milan", "PSG", "Fenerbahce"], diff:"moyen" },
   { name:"Edson Álvarez", clubs:["America", "Ajax Amsterdam", "West Ham", "Fenerbahce"], diff:"moyen" },
   { name:"Jhon Durán", clubs:["Chicago Fire", "Aston Villa", "Al Nassr", "Fenerbahce"], diff:"moyen" },
   { name:"Kerem Aktürkoğlu", clubs:["Galatasaray", "Benfica", "Fenerbahce"], diff:"expert" },
-  { name:"Dorgeles Nene", clubs:["Liefering", "Red Bull Salzburg", "Fenerbahce"], diff:"expert" },
+  { name:"Dorgeles Nene", clubs:["Liefering", "Salzburg", "Fenerbahce"], diff:"expert" },
   { name:"Sidiki Cherif", clubs:["Angers", "Fenerbahce"], diff:"expert" },
   // Beşiktaş
   { name:"Orkun Kökçü", clubs:["Feyenoord", "Benfica", "Besiktas"], diff:"moyen" },
@@ -1782,7 +1782,7 @@ export const PLAYERS = [
   { name:"Wessam Abou Ali", clubs:["Al Ahly", "Columbus Crew"], diff:"expert" },
   { name:"Diego Rossi", clubs:["Peñarol", "LAFC", "Fenerbahce", "Columbus Crew"], diff:"moyen" },
   // Nashville SC
-  { name:"Hany Mukhtar", clubs:["Hertha Berlin", "Benfica", "Red Bull Salzburg", "Brondby", "Nashville SC"], diff:"moyen" },
+  { name:"Hany Mukhtar", clubs:["Hertha Berlin", "Benfica", "Salzburg", "Brondby", "Nashville SC"], diff:"moyen" },
   // Philadelphia Union
   { name:"Milan Iloski", clubs:["Nordsjaelland", "San Diego FC", "Philadelphia Union"], diff:"expert" },
   // NYCFC
