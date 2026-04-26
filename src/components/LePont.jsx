@@ -576,6 +576,13 @@ return db;
 }
 const PLAYERS_CLEAN = PLAYERS.filter(function(p){return p&&p.name&&p.clubs&&Array.isArray(p.clubs);});
 
+// Liste de tous les clubs uniques connus dans la base (pour autocomplete Mercato)
+const ALL_CLUBS_LIST = (function(){
+  const set = new Set();
+  for (const p of PLAYERS_CLEAN) for (const c of p.clubs) set.add(c);
+  return Array.from(set).sort();
+})();
+
 
 function isRetiredPlayer(name) {
   return RETIRED_PLAYERS.has(name);
@@ -7454,9 +7461,21 @@ export default function LePont() {
 
       <div style={{...sheet,marginTop:0,borderRadius:"28px 28px 0 0"}}>
         {feedbackBar(feedback)}
-        <input ref={inputRef} value={guess} onChange={e=>setGuess(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleChainSubmit()}
-          placeholder={lang==="en"?"Club name...":"Nom du club..."} autoComplete="off"
-          style={{width:"100%",background:flash==="ko"?"#fee2e2":flash==="ok"?"#dcfce7":G.offWhite,border:("2px solid "+(flash==="ko"?G.red:flash==="ok"?G.accent:"#e5e5e0")+""),borderRadius:18,padding:"16px 18px",fontFamily:G.font,fontSize:18,fontWeight:700,color:G.dark,outline:"none",textAlign:"center",transition:"all .15s"}}/>
+        <div style={{position:"relative"}}>
+          <input ref={inputRef} value={guess} onChange={e=>setGuess(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleChainSubmit()}
+            placeholder={lang==="en"?"Club name...":"Nom du club..."} autoComplete="off"
+            style={{width:"100%",background:flash==="ko"?"#fee2e2":flash==="ok"?"#dcfce7":G.offWhite,border:("2px solid "+(flash==="ko"?G.red:flash==="ok"?G.accent:"#e5e5e0")+""),borderRadius:18,padding:"16px 18px",fontFamily:G.font,fontSize:18,fontWeight:700,color:G.dark,outline:"none",textAlign:"center",transition:"all .15s",boxSizing:"border-box"}}/>
+          {guess.length>=2&&!flash&&(()=>{
+            const norm=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+            const q=norm(guess);
+            // Suggérer parmi TOUS les clubs connus (aide à l'orthographe, pas d'indice sur le bon club)
+            const sugg=ALL_CLUBS_LIST.filter(c=>norm(c).includes(q)).slice(0,5);
+            if(!sugg.length) return null;
+            return (<div style={{position:"absolute",top:"100%",left:0,right:0,background:"#fff",border:"1px solid #e5e5e0",borderRadius:14,boxShadow:"0 8px 24px rgba(0,0,0,.15)",zIndex:100,overflow:"hidden",marginTop:4}}>
+              {sugg.map(c=>(<div key={c} onClick={function(){setGuess(c);setTimeout(handleChainSubmit,50);}} style={{padding:"12px 16px",fontFamily:G.font,fontSize:15,fontWeight:700,color:G.dark,cursor:"pointer",borderBottom:"1px solid #f0f0f0",display:"flex",alignItems:"center",gap:10}}><ClubLogo club={c} size={22}/>{c}</div>))}
+            </div>);
+          })()}
+        </div>
         <div style={{display:"flex",gap:10}}>
           <button onClick={handleChainPass} disabled={!!flash} style={{flex:1,padding:16,background:G.offWhite,color:"#aaa",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700,opacity:flash ? 0.3 : 1}}>{lang==="en"?"Skip → (−10 pts)":"Passer → (−10 pts)"}</button>
           <button onClick={handleChainSubmit} style={{flex:2,padding:"16px",background:G.dark,color:G.white,border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:16,fontWeight:800}}>{lang==="en"?"Submit":"Valider"}</button>
