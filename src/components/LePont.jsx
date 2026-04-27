@@ -945,7 +945,9 @@ function getDailyPlayer(blacklist) {
     pool = basePool;
   } else {
     const leagueClubs = new Set(LEAGUE_CLUBS[theme.filter] || []);
-    pool = basePool.filter(p => p.clubs.some(c => leagueClubs.has(c)));
+    // Filtrer sur le DERNIER club du parcours (= club actuel) uniquement
+    // Évite que Ferland Mendy sorte le lundi L1 alors qu'il joue au Real Madrid
+    pool = basePool.filter(p => leagueClubs.has(p.clubs[p.clubs.length - 1]));
   }
 
   // Appliquer la blacklist (joueurs signalés comme buggés par ≥3 users)
