@@ -4390,8 +4390,7 @@ export default function LePont() {
       setAnimKey(k=>k+1);
       return;
     }
-    const newUsed=new Set(chainUsedClubs); newUsed.add(chosen);
-    setChainUsedClubs(newUsed); // brûler le club passé pour empêcher la triche
+    const newUsed=new Set(chainUsedClubs); // ne PAS ajouter chosen → l'user ne voit pas le club (cadenas), donc on le laisse réutilisable
     const clubPlayers=getPlayersForClub(chosen).filter(p=>!chainUsedPlayers.has(p)&&getPlayerClubs(p).some(c=>!newUsed.has(c)));
     if(clubPlayers.length===0){
       // Pas de joueur pour ce club → pioche nouveau joueur frais
@@ -7593,7 +7592,11 @@ export default function LePont() {
                 <span style={{fontSize:10,color:"#bbb",fontWeight:700,minWidth:18}}>{i+1}.</span>
                 <span style={{fontSize:12,color:G.dark,fontWeight:700,flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{h.player}</span>
                 <span style={{display:"flex",alignItems:"center",flexShrink:0}}>{Icon.transfer(11,"#ccc")}</span>
-                <span style={{display:"flex",alignItems:"center",gap:4,flexShrink:0}}><ClubLogo club={h.club} size={18}/><span style={{fontSize:12,color:h.passed?"#aaa":G.bg,fontWeight:700}}>{h.club}</span></span>
+                {h.passed ? (
+                  <span style={{display:"flex",alignItems:"center",gap:4,flexShrink:0,fontSize:14}}>🔒</span>
+                ) : (
+                  <span style={{display:"flex",alignItems:"center",gap:4,flexShrink:0}}><ClubLogo club={h.club} size={18}/><span style={{fontSize:12,color:G.bg,fontWeight:700}}>{h.club}</span></span>
+                )}
               </div>
             ))}
           </div>
