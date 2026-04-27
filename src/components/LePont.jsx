@@ -7133,7 +7133,7 @@ export default function LePont() {
                     {dailyGuess.length>=3&&!dailyFlash&&(()=>{
                       const norm=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
                       const q=norm(dailyGuess);
-                      const sugg=PLAYERS_CLEAN.filter(p=>p&&p.name&&norm(p.name).includes(q)).slice(0,5);
+                      const matched=PLAYERS_CLEAN.filter(p=>p&&p.name&&norm(p.name).includes(q));const sugg=matched.sort((a,b)=>{const an=norm(a.name),bn=norm(b.name);const aStarts=an.startsWith(q),bStarts=bn.startsWith(q);if(aStarts!==bStarts)return aStarts?-1:1;const aWord=an.split(" ").some(w=>w.startsWith(q)),bWord=bn.split(" ").some(w=>w.startsWith(q));if(aWord!==bWord)return aWord?-1:1;const ord={facile:0,moyen:1,expert:2};if(a.diff!==b.diff)return ord[a.diff]-ord[b.diff];return a.name.localeCompare(b.name);}).slice(0,5);
                       if(!sugg.length) return null;
                       return (<div style={{position:"absolute",top:"100%",left:0,right:0,background:"rgba(25,35,25,.98)",border:"1px solid rgba(255,255,255,.15)",borderRadius:14,boxShadow:"0 8px 24px rgba(0,0,0,.5)",zIndex:100,overflow:"hidden",marginTop:4,backdropFilter:"blur(12px)"}}>
                         {sugg.map(p=>(<div key={p.name} onClick={function(){setDailyGuess(p.name);handleDailySubmit(p.name);}} style={{padding:"14px 18px",fontFamily:G.font,fontSize:15,fontWeight:700,color:"#fff",cursor:"pointer",borderBottom:"1px solid rgba(255,255,255,.08)",textAlign:"left"}}>{p.name}</div>))}
@@ -7456,7 +7456,7 @@ export default function LePont() {
                 {guess.length>=3&&!flash&&(()=>{
                   const norm=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
                   const q=norm(guess);
-                  const sugg=PLAYERS_CLEAN.filter(p=>p&&p.name&&norm(p.name).includes(q)).slice(0,5);
+                  const matched=PLAYERS_CLEAN.filter(p=>p&&p.name&&norm(p.name).includes(q));const sugg=matched.sort((a,b)=>{const an=norm(a.name),bn=norm(b.name);const aStarts=an.startsWith(q),bStarts=bn.startsWith(q);if(aStarts!==bStarts)return aStarts?-1:1;const aWord=an.split(" ").some(w=>w.startsWith(q)),bWord=bn.split(" ").some(w=>w.startsWith(q));if(aWord!==bWord)return aWord?-1:1;const ord={facile:0,moyen:1,expert:2};if(a.diff!==b.diff)return ord[a.diff]-ord[b.diff];return a.name.localeCompare(b.name);}).slice(0,5);
                   if(!sugg.length) return null;
                   return (<div style={{position:"absolute",top:"100%",left:0,right:0,background:G.offWhite,borderRadius:14,boxShadow:"0 8px 24px rgba(0,0,0,.2)",zIndex:100,overflow:"hidden",marginTop:4}}>
                     {sugg.map(p=>(<div key={p.name} onClick={()=>{setGuess(p.name);setTimeout(()=>handleSubmit(),50);}} style={{padding:"12px 18px",fontFamily:G.font,fontSize:15,fontWeight:700,color:G.dark,cursor:"pointer",borderBottom:"1px solid rgba(0,0,0,.06)",textAlign:"left"}}>{p.name}</div>))}
@@ -7587,7 +7587,15 @@ export default function LePont() {
             const norm=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
             const q=norm(guess);
             // Suggérer parmi TOUS les clubs connus (aide à l'orthographe, pas d'indice sur le bon club)
-            const sugg=ALL_CLUBS_LIST.filter(c=>norm(c).includes(q)).slice(0,5);
+            const matched=ALL_CLUBS_LIST.filter(c=>norm(c).includes(q));
+            // Tri intelligent : startsWith d'abord, puis clubs populaires (PONT_CLUBS), puis alphabétique
+            const sugg=matched.sort((a,b)=>{
+              const aStarts=norm(a).startsWith(q), bStarts=norm(b).startsWith(q);
+              if(aStarts!==bStarts) return aStarts?-1:1;
+              const aPop=PONT_CLUBS.has(a), bPop=PONT_CLUBS.has(b);
+              if(aPop!==bPop) return aPop?-1:1;
+              return a.localeCompare(b);
+            }).slice(0,5);
             if(!sugg.length) return null;
             return (<div style={{position:"absolute",top:"100%",left:0,right:0,background:"#fff",border:"1px solid #e5e5e0",borderRadius:14,boxShadow:"0 8px 24px rgba(0,0,0,.15)",zIndex:100,overflow:"hidden",marginTop:4}}>
               {sugg.map(c=>(<div key={c} onClick={function(){setGuess(c);handleChainSubmit(c);}} style={{padding:"12px 16px",fontFamily:G.font,fontSize:15,fontWeight:700,color:G.dark,cursor:"pointer",borderBottom:"1px solid #f0f0f0",display:"flex",alignItems:"center",gap:10}}><ClubLogo club={c} size={22}/>{c}</div>))}
