@@ -121,11 +121,11 @@ const CLUB_ALIASES = {
   "Borussia Monchengladbach":["gladbach","monchengladbach"],
   "RB Leipzig":["leipzig","rb"],
   "Bayer Leverkusen":["leverkusen","bayer"],
-  "Juventus":["juve","juventus turin","la juve"],
-  "Napoli":["naples","ssc napoli","ssc naples"],
-  "Roma":["as roma","as rome","rome"],
-  "Lazio":["ss lazio"],
-  "Fiorentina":["la viola","florence"],
+  "Juventus FC":["juve","juventus","juventus turin","la juve","juventus fc"],
+  "SSC Napoli":["napoli","naples","ssc napoli","ssc naples"],
+  "AS Roma":["roma","as roma","as rome","rome"],
+  "SS Lazio":["lazio","ss lazio"],
+  "ACF Fiorentina":["fiorentina","la viola","florence","acf fiorentina"],
   "Tottenham":["spurs","tottenham hotspur"],
   "Arsenal":["ars","gunners","les gunners"],
   "Chelsea":["the blues","les blues"],
@@ -177,13 +177,13 @@ const CLUB_ALIASES = {
   "Boca Juniors":["boca","los xeneizes","club atletico boca juniors"],
   "Racing Club":["racing","la academia"],
   "Santos":["santos fc","peixe"],
-  "Empoli":["empoli fc","gli azzurri"],
-  "Udinese":["udinese calcio","zebrette"],
+  "Empoli FC":["empoli","empoli fc","gli azzurri"],
+  "Udinese Calcio":["udinese","udinese calcio","zebrette"],
   "Hoffenheim":["tsg hoffenheim","tsg 1899","1899 hoffenheim"],
-  "Genoa":["genoa cfc","genova"],
+  "Genoa CFC":["genoa","genoa cfc","genova","grifone"],
   "Granada":["granada cf","los nazaríes"],
   "Amiens":["amiens sc","asc amiens"],
-  "Torino":["torino fc","toro","granata"],
+  "Torino FC":["torino","torino fc","toro","granata"],
   "West Brom":["west bromwich","wba","west bromwich albion"],
   "Sunderland":["sunderland afc","safc","black cats"],
   "Sochaux":["fc sochaux","fcsm"],
@@ -208,6 +208,10 @@ const CLUB_ALIASES = {
   "AZ":["az alkmaar","alkmaar"],
   "LAFC":["los angeles fc","los angeles football club"],
   "QPR":["queens park rangers","queens park","q.p.r."],
+  "Atalanta BC":["atalanta","atalanta bc","la dea"],
+  "Bologna FC":["bologna","bologna fc","rossoblu bologna"],
+  "Cagliari Calcio":["cagliari","cagliari calcio"],
+  "Parma FC":["parma","parma fc","parma calcio","gialloblu"],
 };
 
 const CLUB_COLORS = {
@@ -219,9 +223,9 @@ const CLUB_COLORS = {
   "Real Madrid":["#FEBE10","#FFFFFF"],"Barcelona":["#A50044","#004D98"],"Atletico Madrid":["#CB3524","#FFFFFF"],
   "Sevilla":["#D71920","#FFFFFF"],"Valencia":["#F47920","#000000"],"Villarreal":["#FCD000","#004C8C"],
   "Athletic Bilbao":["#EE2523","#FFFFFF"],"Real Betis":["#00954C","#FFFFFF"],
-  "Juventus":["#000000","#FFFFFF"],"AC Milan":["#FB090B","#000000"],"Inter Milan":["#0066B2","#000000"],
-  "Napoli":["#12A0C3","#FFFFFF"],"Roma":["#8E1F2F","#F0BC42"],"Lazio":["#87CEEB","#FFFFFF"],
-  "Fiorentina":["#4B0082","#FFFFFF"],"Atalanta":["#1D2951","#E32221"],
+  "Juventus FC":["#000000","#FFFFFF"],"AC Milan":["#FB090B","#000000"],"Inter Milan":["#0066B2","#000000"],
+  "SSC Napoli":["#12A0C3","#FFFFFF"],"AS Roma":["#8E1F2F","#F0BC42"],"SS Lazio":["#87CEEB","#FFFFFF"],
+  "ACF Fiorentina":["#4B0082","#FFFFFF"],"Atalanta BC":["#1D2951","#E32221"],
   "PSG":["#004170","#DA291C"],"Marseille":["#009BCE","#FFFFFF"],"Lyon":["#032CA6","#E4003A"],
   "Monaco":["#D4011D","#FFFFFF"],"Lille":["#E31B23","#1F3764"],"Bordeaux":["#1A1255","#FFFFFF"],"Nice":["#000000","#DF212A"],"Saint-Etienne":["#007744","#FFFFFF"],
   "Bayern Munich":["#DC052D","#0066B2"],"Borussia Dortmund":["#FDE100","#000000"],
@@ -237,12 +241,12 @@ const CLUB_COLORS = {
   "RC Strasbourg":["#003B8E","#FFFFFF"],"Sparta Rotterdam":["#CC0000","#FFFFFF"],
   "Deportivo Alavés":["#003DA5","#FFFFFF"],"CD Mirandés":["#FF0000","#000000"],
   "Fulham":["#FFFFFF","#000000"],"Brentford":["#CC0000","#FFFFFF"],"Midtjylland":["#CC0000","#FFFFFF"],
-  "Parma":["#FFD700","#003082"],"Sint-Truiden":["#FFD700","#000000"],"RB Salzburg":["#CC0000","#FFFFFF"],
+  "Parma FC":["#FFD700","#003082"],"Sint-Truiden":["#FFD700","#000000"],"RB Salzburg":["#CC0000","#FFFFFF"],
   "Standard Liège":["#CC0000","#FFFFFF"],"Almería":["#CC0000","#FFFFFF"],
   "Málaga":["#003082","#FFFFFF"],"River Plate":["#FFFFFF","#CC0000"],"Boca Juniors":["#003399","#FFD700"],
   "Racing Club":["#1565C0","#FFFFFF"],"Palmeiras":["#006B3F","#FFFFFF"],"Santos":["#000000","#FFFFFF"],"Flamengo":["#E82020","#000000"],"Cruzeiro":["#003399","#FFFFFF"],
   "Cannes":["#E31B23","#FFFFFF"],"Orlando City":["#633492","#F7B024"],
-  "Leeds United":["#FFFFFF","#FFD700"],"Empoli":["#1565C0","#FFFFFF"],"Udinese":["#000000","#FFFFFF"],"Bologna":["#CC0000","#003082"],
+  "Leeds United":["#FFFFFF","#FFD700"],"Empoli FC":["#1565C0","#FFFFFF"],"Udinese Calcio":["#000000","#FFFFFF"],"Bologna FC":["#CC0000","#003082"],
   "Granada":["#CC0000","#FFFFFF"],
   "Sunderland":["#E31B23","#000000"],"Sochaux":["#FABE00","#003082"],
   "Charleroi":["#000000","#FFFFFF"],"Espérance de Tunis":["#CC0000","#FFD700"],
@@ -260,10 +264,10 @@ const CLUB_COLORS = {
   "Real Sociedad":["#003DA5","#FFFFFF"],
   "Bournemouth":["#DA291C","#000000"],
   "Hoffenheim":["#1961AC","#FFFFFF"],
-  "Genoa":["#C8102E","#1B3A6F"],
+  "Genoa CFC":["#C8102E","#1B3A6F"],
   "West Brom":["#122F67","#FFFFFF"],
   "Watford":["#FBEE23","#ED2127"],
-  "Torino":["#8B1B2E","#FFFFFF"],
+  "Torino FC":["#8B1B2E","#FFFFFF"],
   "Nantes":["#FBE216","#00AB59"],
   "Toulouse":["#4B1F7F","#FFFFFF"],
   "Sassuolo":["#00A651","#000000"],
@@ -339,7 +343,7 @@ const CLUB_COLORS = {
   "Nuremberg":["#000000","#AD1A20"],
   "Sampdoria":["#002B5C","#FFFFFF"],
   "Hellas Verona":["#FBE216","#0A2240"],
-  "Cagliari":["#8B1B2E","#005CA7"],
+  "Cagliari Calcio":["#8B1B2E","#005CA7"],
   "Lecce":["#FBE216","#C8102E"],
   "Monza":["#C8102E","#FFFFFF"],
   "Spezia":["#FFFFFF","#000000"],
@@ -472,7 +476,7 @@ const CLUB_COLORS = {
 const PONT_CLUBS = new Set([
   "Manchester City","Arsenal","Liverpool","Chelsea","Manchester United",
   "Real Madrid","Barcelona","Atletico Madrid","Sevilla","Valencia",
-  "Juventus","AC Milan","Inter Milan","Napoli","Roma",
+  "Juventus FC","AC Milan","Inter Milan","SSC Napoli","AS Roma",
   "Bayern Munich","Borussia Dortmund","RB Leipzig","Bayer Leverkusen","Eintracht Frankfurt",
   "PSG","Marseille","Lyon","Monaco","Lille",
   "Benfica","Porto","Sporting CP",
@@ -490,7 +494,7 @@ const PONT_CLUBS = new Set([
   "Leicester City","Southampton","Crystal Palace","Brighton","Fulham",
   "Wolverhampton","Nottingham Forest","Bournemouth","Brentford",
   // Italie
-  "Lazio","Fiorentina","Atalanta","Torino","Bologna","Udinese","Sampdoria",
+  "SS Lazio","ACF Fiorentina","Atalanta BC","Torino FC","Bologna FC","Udinese Calcio","Sampdoria",
   // Espagne
   "Real Sociedad","Athletic Bilbao","Villarreal","Real Betis","Celta Vigo","Espanyol","Getafe",
   // Allemagne (NORMALISÉS)
@@ -510,7 +514,7 @@ const PONT_CLUBS = new Set([
   "Watford","Sunderland","Burnley","West Brom","Leeds United","Middlesbrough",
   "Stoke","Bolton","Swansea","Sheffield United","Blackburn","Ipswich","Portsmouth",
   // Italie Serie B/historiques
-  "Genoa","Parma","Sassuolo","Empoli","Cagliari","Hellas Verona",
+  "Genoa CFC","Parma FC","Sassuolo","Empoli FC","Cagliari Calcio","Hellas Verona",
   // France
   "Lorient","Angers","Reims","Metz","Auxerre","Le Havre","Brest",
   // Allemagne
@@ -837,9 +841,9 @@ const LEAGUE_CLUBS = {
          "Real Betis", "Real Sociedad", "Athletic Bilbao", "Celta Vigo", "Getafe", "Osasuna",
          "Espanyol", "Girona", "Mallorca", "Las Palmas", "Cadiz", "Almeria", "Alavés", "Elche",
          "Malaga", "Deportivo", "Real Zaragoza", "Real Mallorca", "Levante", "Granada"],
-  SERIEA: ["Juventus", "AC Milan", "Inter Milan", "Napoli", "Roma", "Lazio", "Atalanta", "Fiorentina",
-           "Torino", "Bologna", "Sassuolo", "Udinese", "Genoa", "Sampdoria", "Hellas Verona", "Cagliari",
-           "Lecce", "Monza", "Spezia", "Parma", "Palermo", "Empoli", "Salernitana", "Chievo",
+  SERIEA: ["Juventus FC", "AC Milan", "Inter Milan", "SSC Napoli", "AS Roma", "SS Lazio", "Atalanta BC", "ACF Fiorentina",
+           "Torino FC", "Bologna FC", "Sassuolo", "Udinese Calcio", "Genoa CFC", "Sampdoria", "Hellas Verona", "Cagliari Calcio",
+           "Lecce", "Monza", "Spezia", "Parma FC", "Palermo", "Empoli FC", "Salernitana", "Chievo",
            "Brescia", "Benevento", "Bari", "Pisa"],
   BUNDESLIGA: ["Bayern Munich", "Borussia Dortmund", "Bayer Leverkusen", "RB Leipzig", "Stuttgart",
                "Eintracht Frankfurt", "Wolfsburg", "Borussia Monchengladbach", "Hoffenheim", "Mainz",
@@ -859,7 +863,7 @@ const FAMOUS_CLUBS = new Set([
   "Real Madrid", "Barcelona", "Atletico Madrid", "Sevilla", "Valencia", "Villarreal",
   "Real Betis", "Real Sociedad", "Athletic Bilbao",
   // Serie A top clubs
-  "Juventus", "AC Milan", "Inter Milan", "Napoli", "Roma", "Lazio", "Atalanta", "Fiorentina",
+  "Juventus FC", "AC Milan", "Inter Milan", "SSC Napoli", "AS Roma", "SS Lazio", "Atalanta BC", "ACF Fiorentina",
   // Bundesliga top clubs
   "Bayern Munich", "Borussia Dortmund", "Bayer Leverkusen", "RB Leipzig",
   "Eintracht Frankfurt", "Wolfsburg", "Schalke 04",
@@ -1300,8 +1304,24 @@ function getClubColors(name){return CLUB_COLORS[name]||["#1a7a3a","#FFFFFF"];}
 
 function ClubLogo({ club, size = 48 }) {
   const [ca, cb] = getClubColors(club);
-  const initials = club.split(" ").map(w => w[0]).join("").slice(0, 3).toUpperCase();
-  const fontSize = size < 36 ? size * 0.32 : size * 0.28;
+  // Surcharges d'initiales pour les clubs italiens renommés (sinon "AR", "JF", "AB"... pas top)
+  const INITIALS_OVERRIDE = {
+    "AS Roma": "ASR",
+    "SS Lazio": "SSL",
+    "Juventus FC": "JUVE",
+    "SSC Napoli": "NAP",
+    "ACF Fiorentina": "FIO",
+    "Atalanta BC": "ATA",
+    "Bologna FC": "BOL",
+    "Torino FC": "TOR",
+    "Genoa CFC": "GEN",
+    "Cagliari Calcio": "CAG",
+    "Udinese Calcio": "UDI",
+    "Empoli FC": "EMP",
+    "Parma FC": "PAR",
+  };
+  const initials = INITIALS_OVERRIDE[club] || club.split(" ").map(w => w[0]).join("").slice(0, 3).toUpperCase();
+  const fontSize = size < 36 ? (initials.length >= 4 ? size * 0.26 : size * 0.32) : (initials.length >= 4 ? size * 0.22 : size * 0.28);
   return (
     <div style={{
       width: size, height: size, borderRadius: "50%",
@@ -3209,6 +3229,14 @@ export default function LePont() {
         }
       } catch {}
       setSentRequests(function(prev){return [...prev, {id:"tmp-"+Date.now(), from_id:playerId, to_id:targetId, to_name:targetName, status:"pending"}];});
+      // Notif push à la cible (best-effort, ignore les erreurs)
+      try {
+        fetch(SB_URL + "/functions/v1/send-friend-notification", {
+          method: "POST",
+          headers: {"Content-Type":"application/json","Authorization":"Bearer "+SB_KEY},
+          body: JSON.stringify({to_id: targetId, from_name: playerName||"Quelqu'un", type:"request"})
+        }).catch(function(){});
+      } catch {}
     } catch(e) { setFriendMsg(lang==="en"?"❌ Network error. Try again.":"❌ Erreur réseau. Réessaie."); }
   }
 
@@ -3234,6 +3262,14 @@ export default function LePont() {
       setFriendsList(newList);
       fetchFriendScores(newList);
       loadFriendRequests();
+      // Notif push à l'expéditeur de la demande pour lui dire qu'on a accepté (best-effort)
+      try {
+        fetch(SB_URL + "/functions/v1/send-friend-notification", {
+          method: "POST",
+          headers: {"Content-Type":"application/json","Authorization":"Bearer "+SB_KEY},
+          body: JSON.stringify({to_id: req.from_id, from_name: playerName||"Quelqu'un", type:"accepted"})
+        }).catch(function(){});
+      } catch {}
     } catch(e) { console.error(e); }
   }
 
