@@ -4085,10 +4085,11 @@ export default function LePont() {
     // Pas d'updateDayStreak() : révéler la réponse ne maintient pas la streak
   }
 
-  function handleDailySubmit() {
-    if (!dailyGuess.trim() || !dailyPlayer) return;
+  function handleDailySubmit(forcedValue) {
+    const rawValue = forcedValue !== undefined ? forcedValue : dailyGuess;
+    if (!rawValue.trim() || !dailyPlayer) return;
     const normalize = s => s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
-    const guess = normalize(dailyGuess);
+    const guess = normalize(rawValue);
     const answer = normalize(dailyPlayer.name);
     const newTries = dailyTries + 1;
     setDailyTries(newTries);
@@ -4279,8 +4280,9 @@ export default function LePont() {
     }
   }
 
-  function handleChainSubmit() {
-    const g=guess.trim(); if(!g) return;
+  function handleChainSubmit(forcedValue) {
+    const rawValue = forcedValue !== undefined ? forcedValue : guess;
+    const g=rawValue.trim(); if(!g) return;
     const playerClubs=getPlayerClubs(chainPlayer);
     const available=playerClubs.filter(c=>!chainUsedClubs.has(c));
     const matched=matchClub(g,available);
@@ -7122,7 +7124,7 @@ export default function LePont() {
                       const sugg=PLAYERS_CLEAN.filter(p=>p&&p.name&&norm(p.name).includes(q)).slice(0,5);
                       if(!sugg.length) return null;
                       return (<div style={{position:"absolute",top:"100%",left:0,right:0,background:"rgba(25,35,25,.98)",border:"1px solid rgba(255,255,255,.15)",borderRadius:14,boxShadow:"0 8px 24px rgba(0,0,0,.5)",zIndex:100,overflow:"hidden",marginTop:4,backdropFilter:"blur(12px)"}}>
-                        {sugg.map(p=>(<div key={p.name} onClick={function(){setDailyGuess(p.name);setTimeout(handleDailySubmit,50);}} style={{padding:"14px 18px",fontFamily:G.font,fontSize:15,fontWeight:700,color:"#fff",cursor:"pointer",borderBottom:"1px solid rgba(255,255,255,.08)",textAlign:"left"}}>{p.name}</div>))}
+                        {sugg.map(p=>(<div key={p.name} onClick={function(){setDailyGuess(p.name);handleDailySubmit(p.name);}} style={{padding:"14px 18px",fontFamily:G.font,fontSize:15,fontWeight:700,color:"#fff",cursor:"pointer",borderBottom:"1px solid rgba(255,255,255,.08)",textAlign:"left"}}>{p.name}</div>))}
                       </div>);
                     })()}
                   </div>
@@ -7576,7 +7578,7 @@ export default function LePont() {
             const sugg=ALL_CLUBS_LIST.filter(c=>norm(c).includes(q)).slice(0,5);
             if(!sugg.length) return null;
             return (<div style={{position:"absolute",top:"100%",left:0,right:0,background:"#fff",border:"1px solid #e5e5e0",borderRadius:14,boxShadow:"0 8px 24px rgba(0,0,0,.15)",zIndex:100,overflow:"hidden",marginTop:4}}>
-              {sugg.map(c=>(<div key={c} onClick={function(){setGuess(c);setTimeout(handleChainSubmit,50);}} style={{padding:"12px 16px",fontFamily:G.font,fontSize:15,fontWeight:700,color:G.dark,cursor:"pointer",borderBottom:"1px solid #f0f0f0",display:"flex",alignItems:"center",gap:10}}><ClubLogo club={c} size={22}/>{c}</div>))}
+              {sugg.map(c=>(<div key={c} onClick={function(){setGuess(c);handleChainSubmit(c);}} style={{padding:"12px 16px",fontFamily:G.font,fontSize:15,fontWeight:700,color:G.dark,cursor:"pointer",borderBottom:"1px solid #f0f0f0",display:"flex",alignItems:"center",gap:10}}><ClubLogo club={c} size={22}/>{c}</div>))}
             </div>);
           })()}
         </div>
