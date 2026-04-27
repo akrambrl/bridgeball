@@ -1517,7 +1517,7 @@ export const PLAYERS = [
   // Nice
   { name:"Dante", clubs:["Lille", "Borussia Monchengladbach", "Bayern Munich", "Wolfsburg", "Nice"], diff:"moyen" },
   { name:"Justin Kluivert", clubs:["Ajax Amsterdam", "Roma", "RB Leipzig", "Nice", "Valencia", "Bournemouth"], diff:"moyen" },
-  { name:"Jean-Michaël Seri", clubs:["Auxerre", "Nice", "Fulham", "Galatasaray", "Bordeaux"], diff:"moyen" },
+  { name:"Jean-Michaël Seri", clubs:["ASEC Mimosas", "Porto", "Paços de Ferreira", "Nice", "Fulham", "Galatasaray", "Bordeaux", "Hull City", "Al Orobah", "NK Maribor"], diff:"moyen" },
   { name:"Jean-Clair Todibo", clubs:["Toulouse", "Barcelona", "Schalke", "Benfica", "Nice", "West Ham"], diff:"moyen" },
   { name:"Malang Sarr", clubs:["Nice", "Chelsea", "Porto", "Monaco", "Lens"], diff:"moyen" },
   // Strasbourg
