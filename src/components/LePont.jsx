@@ -2253,6 +2253,7 @@ export default function LePont() {
       myLosses,
       duelsDraws: draws,
       isFriend: friendsList.includes(id),
+      requestSent: sentRequests.some(function(r){return r.to_id===id && r.status==="pending";}),
     });
     // Fetch le pseudo actuel depuis bb_pseudos (source de vérité)
     // pour afficher le bon nom même si l'user l'a changé après ses parties
@@ -3192,6 +3193,8 @@ export default function LePont() {
       }
       setFriendMsg((lang==="en"?"✓ Request sent to ":"✓ Demande envoyée à ")+targetName+" !");
       setFriendInput("");
+      // Mise à jour du profil consulté : marquer la demande comme envoyée pour feedback visuel
+      setViewedProfileData(function(prev){ return prev ? {...prev, requestSent: true} : prev; });
       // Retirer de la blacklist si besoin
       try {
         const removed = JSON.parse(localStorage.getItem("bb_removed_friends") || "[]");
@@ -6244,7 +6247,7 @@ export default function LePont() {
           <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.7)"}}/>
         </div>
         <div style={{zIndex:50,padding:"max(16px, env(safe-area-inset-top)) 16px 8px",display:"flex",alignItems:"center",gap:12,position:"sticky",top:0,background:"rgba(0,15,0,.92)",backdropFilter:"blur(10px)",WebkitBackdropFilter:"blur(10px)"}}>
-          <button onClick={()=>{setViewedProfile(null);setScreen("home");}} style={{background:"rgba(255,255,255,.1)",border:"1px solid rgba(255,255,255,.15)",borderRadius:"50%",width:40,height:40,cursor:"pointer",color:G.white,fontSize:18,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,boxShadow:"0 4px 14px rgba(0,0,0,.4)"}}>←</button>
+          <button onClick={()=>{setViewedProfile(null);setFriendMsg("");setScreen("home");}} style={{background:"rgba(255,255,255,.1)",border:"1px solid rgba(255,255,255,.15)",borderRadius:"50%",width:40,height:40,cursor:"pointer",color:G.white,fontSize:18,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,boxShadow:"0 4px 14px rgba(0,0,0,.4)"}}>←</button>
           <div style={{fontFamily:G.heading,fontSize:22,color:G.white,letterSpacing:2,flex:1}}>{lang==="en"?"PROFILE":"PROFIL"}</div>
         </div>
         {!d ? (
@@ -6266,12 +6269,19 @@ export default function LePont() {
             </div>
             <div style={{zIndex:1,padding:"8px 16px",display:"flex",gap:10}}>
               {!d.isFriend ? (
-                <button onClick={()=>{addFriend(viewedProfile.name);}} style={{flex:1,padding:"13px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>{lang==="en"?"+ Add friend":"+ Ajouter en ami"}</button>
+                d.requestSent ? (
+                  <button disabled style={{flex:1,padding:"13px",background:"rgba(255,255,255,.07)",color:"rgba(255,255,255,.5)",border:"1px solid rgba(255,255,255,.15)",borderRadius:50,cursor:"default",fontFamily:G.font,fontSize:14,fontWeight:700}}>{lang==="en"?"✓ Request sent":"✓ Demande envoyée"}</button>
+                ) : (
+                  <button onClick={()=>{addFriend(viewedProfile.name);}} style={{flex:1,padding:"13px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>{lang==="en"?"+ Add friend":"+ Ajouter en ami"}</button>
+                )
               ) : (
                 <button onClick={()=>{setConfirmRemove({id:viewedProfile.id,name:viewedProfile.name});}} style={{flex:1,padding:"13px",background:"rgba(255,255,255,.07)",color:"rgba(255,255,255,.7)",border:"1px solid rgba(255,255,255,.15)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>{lang==="en"?"✓ Friend · Remove":"✓ Ami · Retirer"}</button>
               )}
               <button onClick={()=>setShowDuelCreate({id:viewedProfile.id,name:viewedProfile.name})} style={{flex:1,padding:"13px",background:"linear-gradient(135deg,#FFD600,#FF6B35)",color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>{lang==="en"?"⚡ Challenge":"⚡ Défier"}</button>
             </div>
+            {friendMsg && !d.isFriend && (
+              <div style={{zIndex:1,padding:"0 16px 8px",fontSize:12,color:friendMsg.indexOf("✓")>=0?G.accent:friendMsg.indexOf("❌")>=0?G.red:"rgba(255,255,255,.7)",textAlign:"center",fontWeight:700}}>{friendMsg}</div>
+            )}
             <div style={{zIndex:1,padding:"16px 16px 8px",display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
               <div style={{background:G.accent,borderRadius:16,padding:"14px 10px",textAlign:"center",boxShadow:"0 4px 16px rgba(0,230,118,.35)"}}>
                 <div style={{fontSize:22,marginBottom:4}}>🏆</div>
