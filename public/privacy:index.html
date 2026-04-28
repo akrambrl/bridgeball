@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy Policy — GOAT FC</title>
+<style>
+:root { --bg:#0a1410; --fg:#f5f5f0; --accent:#00e676; --muted:rgba(245,245,240,.6); --card:rgba(255,255,255,.05); --border:rgba(255,255,255,.1); }
+* { box-sizing:border-box; }
+body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background:var(--bg); color:var(--fg); margin:0; padding:0; line-height:1.7; }
+.container { max-width:780px; margin:0 auto; padding:40px 24px 80px; }
+header { padding:30px 0 20px; border-bottom:1px solid var(--border); margin-bottom:30px; }
+h1 { font-size:32px; margin:0 0 6px; letter-spacing:.5px; color:var(--accent); }
+.subtitle { color:var(--muted); font-size:14px; }
+.lang-switch { display:inline-flex; gap:8px; margin-top:14px; }
+.lang-switch button { background:var(--card); color:var(--fg); border:1px solid var(--border); border-radius:20px; padding:6px 14px; cursor:pointer; font-weight:600; font-size:13px; }
+.lang-switch button.active { background:var(--accent); color:#000; border-color:var(--accent); }
+h2 { color:var(--accent); font-size:20px; margin-top:36px; margin-bottom:12px; letter-spacing:.3px; }
+h3 { font-size:16px; margin-top:20px; margin-bottom:8px; color:var(--fg); }
+p, li { color:rgba(245,245,240,.85); font-size:15px; }
+ul { padding-left:20px; }
+li { margin-bottom:6px; }
+strong { color:var(--accent); font-weight:700; }
+.box { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px 20px; margin:14px 0; }
+.email { color:var(--accent); font-weight:600; }
+hr { border:none; height:1px; background:var(--border); margin:30px 0; }
+footer { margin-top:60px; padding-top:24px; border-top:1px solid var(--border); color:var(--muted); font-size:13px; text-align:center; }
+.hidden { display:none; }
+a { color:var(--accent); }
+.last-updated { background:rgba(0,230,118,.08); border:1px solid rgba(0,230,118,.2); border-radius:10px; padding:10px 14px; font-size:13px; color:var(--accent); display:inline-block; margin-bottom:20px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+<h1>🔒 Privacy Policy</h1>
+<div class="subtitle">GOAT FC — goatfc.online</div>
+<div class="lang-switch">
+<button id="btn-fr" class="active" onclick="show('fr')">🇫🇷 Français</button>
+<button id="btn-en" onclick="show('en')">🇬🇧 English</button>
+</div>
+</header>
+
+<!-- ─────────── VERSION FRANÇAISE ─────────── -->
+<section id="content-fr">
+<div class="last-updated">Dernière mise à jour : 28 avril 2026</div>
+
+<p>La présente politique de confidentialité décrit comment <strong>GOAT FC</strong> (« nous », « notre application ») collecte, utilise et protège les données personnelles des utilisateurs (« vous ») de l'application web et mobile accessible à l'adresse <strong>goatfc.online</strong>.</p>
+
+<p>Nous nous engageons à respecter le <strong>Règlement Général sur la Protection des Données (RGPD — UE 2016/679)</strong>, le <strong>UK GDPR</strong> ainsi que le <strong>California Consumer Privacy Act (CCPA)</strong>.</p>
+
+<h2>1. Responsable du traitement</h2>
+<div class="box">
+<strong>GOAT FC</strong><br>
+Email : <span class="email">contact@goatfc.online</span><br>
+Site : goatfc.online
+</div>
+
+<h2>2. Âge minimum d'utilisation</h2>
+<p>GOAT FC est destinée aux utilisateurs âgés d'au moins <strong>16 ans</strong>. En utilisant l'application, vous confirmez avoir cet âge minimum. Si nous découvrons qu'un mineur de moins de 16 ans utilise l'application, son compte sera supprimé.</p>
+
+<h2>3. Données collectées</h2>
+
+<h3>3.1 Données fournies par l'utilisateur</h3>
+<ul>
+<li><strong>Pseudo</strong> : nom d'affichage choisi librement (peut ne contenir aucune donnée personnelle réelle)</li>
+<li><strong>Avatar (facultatif)</strong> : image que vous téléchargez volontairement</li>
+<li><strong>Code de récupération</strong> : code généré automatiquement permettant de retrouver son compte sur un autre appareil</li>
+</ul>
+
+<h3>3.2 Données générées par votre activité</h3>
+<ul>
+<li><strong>Scores et XP</strong> : performance dans les modes de jeu</li>
+<li><strong>Historique de parties</strong> : duels, défis, parties multijoueurs</li>
+<li><strong>Liste d'amis</strong> et demandes d'ami envoyées/reçues</li>
+<li><strong>Signalements</strong> que vous effectuez (comportement abusif d'autres utilisateurs)</li>
+</ul>
+
+<h3>3.3 Données techniques</h3>
+<ul>
+<li><strong>Identifiant utilisateur (player_id)</strong> : identifiant aléatoire généré automatiquement, stocké localement</li>
+<li><strong>Abonnement push</strong> : si vous activez les notifications, l'identifiant fourni par Apple Push Service ou Firebase Cloud Messaging</li>
+<li><strong>Adresse IP</strong> : utilisée temporairement par notre hébergeur (Vercel) pour la diffusion de l'app et la sécurité (anti-spam, logs courts)</li>
+<li><strong>Données stockées dans le navigateur</strong> : préférences (langue, paramètres), résultats locaux</li>
+</ul>
+
+<h2>4. Base légale du traitement (RGPD)</h2>
+<ul>
+<li><strong>Exécution du service</strong> : les données nécessaires au fonctionnement du jeu (pseudo, scores, amis)</li>
+<li><strong>Consentement</strong> : pour les notifications push (révocable à tout moment)</li>
+<li><strong>Intérêt légitime</strong> : protection contre les abus, modération, sécurité</li>
+</ul>
+
+<h2>5. Finalités du traitement</h2>
+<ul>
+<li>Permettre la création et le fonctionnement de votre compte</li>
+<li>Afficher votre score dans les classements (mondial, amis, saison)</li>
+<li>Gérer les interactions sociales (amis, duels, parties multijoueurs)</li>
+<li>Vous envoyer le défi du jour (notifications push, opt-in)</li>
+<li>Modérer les comportements abusifs</li>
+<li>Améliorer le jeu (statistiques agrégées et anonymes)</li>
+</ul>
+
+<h2>6. Partage des données</h2>
+<p>Nous <strong>ne vendons jamais</strong> vos données. Nous ne les partageons qu'avec les sous-traitants techniques strictement nécessaires :</p>
+<ul>
+<li><strong>Supabase</strong> (USA) : base de données et authentification — <a href="https://supabase.com/privacy" target="_blank">politique</a></li>
+<li><strong>Vercel</strong> (USA) : hébergement de l'application — <a href="https://vercel.com/legal/privacy-policy" target="_blank">politique</a></li>
+<li><strong>Apple Push Notification Service</strong> : notifications iOS</li>
+<li><strong>Firebase Cloud Messaging</strong> (Google) : notifications Android</li>
+</ul>
+<p>Tous nos sous-traitants respectent les normes de transfert international RGPD (clauses contractuelles types ou décisions d'adéquation).</p>
+
+<h2>7. Durée de conservation</h2>
+<ul>
+<li><strong>Données de compte actives</strong> : tant que votre compte existe</li>
+<li><strong>Compte inactif depuis plus de 24 mois</strong> : suppression automatique sur notification</li>
+<li><strong>Logs techniques</strong> : 30 jours maximum</li>
+<li><strong>Signalements</strong> : conservation pour la modération, anonymisés après 12 mois</li>
+</ul>
+
+<h2>8. Vos droits</h2>
+<p>Conformément au RGPD, UK GDPR et CCPA, vous disposez des droits suivants :</p>
+<ul>
+<li><strong>Droit d'accès</strong> : obtenir une copie de vos données</li>
+<li><strong>Droit de rectification</strong> : corriger vos données</li>
+<li><strong>Droit à l'effacement</strong> (« droit à l'oubli ») : supprimer votre compte directement dans l'app via <em>Mon compte → Supprimer mon compte</em>, ou par email</li>
+<li><strong>Droit à la portabilité</strong> : recevoir vos données dans un format structuré</li>
+<li><strong>Droit d'opposition</strong> : refuser certains traitements (notifications, etc.)</li>
+<li><strong>Droit de limitation</strong> : restreindre temporairement le traitement</li>
+<li><strong>Pour les résidents californiens (CCPA)</strong> : droit de savoir, droit de suppression, droit de non-discrimination</li>
+</ul>
+<p>Pour exercer vos droits, contactez : <span class="email">contact@goatfc.online</span></p>
+
+<h2>9. Sécurité</h2>
+<p>Nous utilisons des protocoles HTTPS/TLS pour toutes les communications, des bases de données chiffrées au repos, et limitons l'accès aux données aux personnes strictement autorisées. Aucun système n'étant infaillible, nous vous invitons à utiliser un pseudo qui ne révèle pas votre identité réelle si la confidentialité est importante pour vous.</p>
+
+<h2>10. Cookies et stockage local</h2>
+<p>L'application utilise le <strong>localStorage</strong> du navigateur pour conserver vos préférences (langue, paramètres) et votre identifiant utilisateur. Aucun cookie de tracking publicitaire n'est utilisé.</p>
+
+<h2>11. Modifications</h2>
+<p>Nous pouvons mettre à jour cette politique de confidentialité. La date de dernière mise à jour est indiquée en haut. Les modifications substantielles vous seront notifiées via l'application.</p>
+
+<h2>12. Réclamation</h2>
+<p>Si vous estimez que vos droits ne sont pas respectés, vous pouvez introduire une réclamation auprès de :</p>
+<ul>
+<li><strong>France</strong> : CNIL (cnil.fr)</li>
+<li><strong>UK</strong> : ICO (ico.org.uk)</li>
+<li><strong>USA</strong> : FTC (ftc.gov)</li>
+</ul>
+
+<h2>13. Contact</h2>
+<div class="box">
+Pour toute question concernant cette politique de confidentialité ou vos données personnelles :<br>
+<span class="email">contact@goatfc.online</span>
+</div>
+</section>
+
+<!-- ─────────── ENGLISH VERSION ─────────── -->
+<section id="content-en" class="hidden">
+<div class="last-updated">Last updated: April 28, 2026</div>
+
+<p>This privacy policy describes how <strong>GOAT FC</strong> ("we", "our app") collects, uses and protects personal data from users ("you") of the web and mobile application accessible at <strong>goatfc.online</strong>.</p>
+
+<p>We are committed to complying with the <strong>General Data Protection Regulation (GDPR — EU 2016/679)</strong>, the <strong>UK GDPR</strong> and the <strong>California Consumer Privacy Act (CCPA)</strong>.</p>
+
+<h2>1. Data Controller</h2>
+<div class="box">
+<strong>GOAT FC</strong><br>
+Email: <span class="email">contact@goatfc.online</span><br>
+Website: goatfc.online
+</div>
+
+<h2>2. Minimum Age</h2>
+<p>GOAT FC is intended for users aged <strong>16 or older</strong>. By using the app, you confirm you meet this minimum age. If we discover a minor under 16 using the app, the account will be deleted.</p>
+
+<h2>3. Data Collected</h2>
+
+<h3>3.1 Data you provide</h3>
+<ul>
+<li><strong>Username</strong>: freely chosen display name (may not contain any real personal information)</li>
+<li><strong>Avatar (optional)</strong>: image you voluntarily upload</li>
+<li><strong>Recovery code</strong>: auto-generated code allowing you to retrieve your account on another device</li>
+</ul>
+
+<h3>3.2 Activity-generated data</h3>
+<ul>
+<li><strong>Scores and XP</strong>: performance in game modes</li>
+<li><strong>Game history</strong>: duels, challenges, multiplayer games</li>
+<li><strong>Friends list</strong> and friend requests sent/received</li>
+<li><strong>Reports</strong> you submit (abusive behavior)</li>
+</ul>
+
+<h3>3.3 Technical data</h3>
+<ul>
+<li><strong>User ID (player_id)</strong>: random auto-generated identifier, stored locally</li>
+<li><strong>Push subscription</strong>: if you enable notifications, the identifier provided by Apple Push Service or Firebase Cloud Messaging</li>
+<li><strong>IP address</strong>: temporarily used by our hosting provider (Vercel) for app delivery and security (anti-spam, short logs)</li>
+<li><strong>Browser-stored data</strong>: preferences (language, settings), local results</li>
+</ul>
+
+<h2>4. Legal basis for processing (GDPR)</h2>
+<ul>
+<li><strong>Service performance</strong>: data necessary for the game to function (username, scores, friends)</li>
+<li><strong>Consent</strong>: for push notifications (revocable at any time)</li>
+<li><strong>Legitimate interest</strong>: abuse protection, moderation, security</li>
+</ul>
+
+<h2>5. Purposes</h2>
+<ul>
+<li>Enable creation and operation of your account</li>
+<li>Display your score in leaderboards (global, friends, season)</li>
+<li>Manage social interactions (friends, duels, multiplayer)</li>
+<li>Send you the daily challenge (push notifications, opt-in)</li>
+<li>Moderate abusive behavior</li>
+<li>Improve the game (aggregated and anonymous statistics)</li>
+</ul>
+
+<h2>6. Data Sharing</h2>
+<p>We <strong>never sell</strong> your data. We only share it with strictly necessary technical sub-processors:</p>
+<ul>
+<li><strong>Supabase</strong> (USA): database and auth — <a href="https://supabase.com/privacy" target="_blank">policy</a></li>
+<li><strong>Vercel</strong> (USA): app hosting — <a href="https://vercel.com/legal/privacy-policy" target="_blank">policy</a></li>
+<li><strong>Apple Push Notification Service</strong>: iOS notifications</li>
+<li><strong>Firebase Cloud Messaging</strong> (Google): Android notifications</li>
+</ul>
+<p>All our sub-processors comply with international transfer requirements under GDPR (Standard Contractual Clauses or adequacy decisions).</p>
+
+<h2>7. Data Retention</h2>
+<ul>
+<li><strong>Active account data</strong>: as long as your account exists</li>
+<li><strong>Inactive account &gt; 24 months</strong>: automatic deletion after notification</li>
+<li><strong>Technical logs</strong>: 30 days maximum</li>
+<li><strong>Reports</strong>: kept for moderation, anonymized after 12 months</li>
+</ul>
+
+<h2>8. Your Rights</h2>
+<p>Under GDPR, UK GDPR and CCPA, you have the following rights:</p>
+<ul>
+<li><strong>Right of access</strong>: get a copy of your data</li>
+<li><strong>Right to rectification</strong>: correct your data</li>
+<li><strong>Right to erasure</strong> ("right to be forgotten"): delete your account directly in-app via <em>My Account → Delete my account</em>, or by email</li>
+<li><strong>Right to portability</strong>: receive your data in a structured format</li>
+<li><strong>Right to object</strong>: refuse certain processing (notifications, etc.)</li>
+<li><strong>Right to restriction</strong>: temporarily restrict processing</li>
+<li><strong>For California residents (CCPA)</strong>: right to know, right to delete, right to non-discrimination</li>
+</ul>
+<p>To exercise your rights, contact: <span class="email">contact@goatfc.online</span></p>
+
+<h2>9. Security</h2>
+<p>We use HTTPS/TLS protocols for all communications, encrypted databases at rest, and limit data access to strictly authorized personnel. As no system is foolproof, we encourage you to use a username that does not reveal your real identity if confidentiality is important to you.</p>
+
+<h2>10. Cookies and Local Storage</h2>
+<p>The app uses browser <strong>localStorage</strong> to store your preferences (language, settings) and user identifier. No advertising tracking cookies are used.</p>
+
+<h2>11. Changes</h2>
+<p>We may update this privacy policy. The last update date is shown at the top. Substantial changes will be notified to you via the app.</p>
+
+<h2>12. Complaints</h2>
+<p>If you believe your rights are not respected, you may file a complaint with:</p>
+<ul>
+<li><strong>France</strong>: CNIL (cnil.fr)</li>
+<li><strong>UK</strong>: ICO (ico.org.uk)</li>
+<li><strong>USA</strong>: FTC (ftc.gov)</li>
+</ul>
+
+<h2>13. Contact</h2>
+<div class="box">
+For any questions regarding this privacy policy or your personal data:<br>
+<span class="email">contact@goatfc.online</span>
+</div>
+</section>
+
+<footer>
+<a href="/" style="color:var(--accent);">← Retour à GOAT FC</a><br><br>
+© 2026 GOAT FC · <a href="/terms">Terms of Service</a>
+</footer>
+
+</div>
+
+<script>
+function show(lang) {
+  document.getElementById('content-fr').classList.toggle('hidden', lang !== 'fr');
+  document.getElementById('content-en').classList.toggle('hidden', lang !== 'en');
+  document.getElementById('btn-fr').classList.toggle('active', lang === 'fr');
+  document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+  document.documentElement.lang = lang;
+}
+// Auto-detect browser language on first load
+if (navigator.language && navigator.language.startsWith('en')) show('en');
+</script>
+
+</body>
+</html>
