@@ -28,9 +28,13 @@ footer { margin-top:60px; padding-top:24px; border-top:1px solid var(--border); 
 .hidden { display:none; }
 a { color:var(--accent); }
 .last-updated { background:rgba(0,230,118,.08); border:1px solid rgba(0,230,118,.2); border-radius:10px; padding:10px 14px; font-size:13px; color:var(--accent); display:inline-block; margin-bottom:20px; }
+.back-fab { position:fixed; top:14px; left:14px; z-index:100; background:rgba(0,15,0,.85); border:1px solid rgba(255,255,255,.15); border-radius:50%; width:42px; height:42px; cursor:pointer; color:var(--fg); font-size:20px; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); box-shadow:0 4px 14px rgba(0,0,0,.4); text-decoration:none; transition:transform .15s; }
+.back-fab:hover, .back-fab:active { transform:scale(1.05); background:rgba(0,230,118,.15); }
+@media (max-width: 600px) { .container { padding-top:24px; } header { padding-top:18px; } }
 </style>
 </head>
 <body>
+<a href="/" class="back-fab" aria-label="Retour à GOAT FC">←</a>
 <div class="container">
 
 <header>
