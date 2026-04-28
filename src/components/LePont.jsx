@@ -1769,6 +1769,7 @@ export default function LePont() {
   const [myLbRank, setMyLbRank] = useState(null);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [showAccount, setShowAccount] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(false); // Bannière de bienvenue RGPD au 1er lancement
   const [confirmDeleteAccount, setConfirmDeleteAccount] = useState(0); // 0=closed, 1=first warning, 2=final confirm
 
   const [myLastPts, setMyLastPts] = useState(null);
@@ -2104,7 +2105,14 @@ export default function LePont() {
     } catch {}
     // Fermer le splash après 2.5s
     setTimeout(function(){setShowSplash(false);}, 2500);
-    try { if (!localStorage.getItem("bb_tutorial_done")) setShowTutorial(true); } catch {}
+    // Bannière de bienvenue RGPD au tout premier lancement (avant le tutoriel)
+    try {
+      if (!localStorage.getItem("bb_welcome_seen")) {
+        setShowWelcome(true);
+      } else if (!localStorage.getItem("bb_tutorial_done")) {
+        setShowTutorial(true);
+      }
+    } catch {}
   }, []);
 
 
@@ -3255,31 +3263,41 @@ export default function LePont() {
   }
 
   // Suppression complète du compte — requis par Apple App Store / RGPD
-  // Efface toutes les données utilisateur dans Supabase + localStorage
+  // Utilise la RPC delete_user_account côté Supabase qui vérifie le recovery_code
+  // et supprime tout en une transaction sécurisée.
   async function deleteAccount() {
     try {
-      // 1. Supprimer du Supabase (best-effort sur chaque table)
-      const tables = [
-        "bb_pseudos?player_id=eq." + playerId,
-        "bb_scores?player_id=eq." + playerId,
-        "bb_push_subscriptions?player_id=eq." + playerId,
-        "bb_friend_requests?or=(from_id.eq." + playerId + ",to_id.eq." + playerId + ")",
-        "bb_duels?or=(challenger_id.eq." + playerId + ",opponent_id.eq." + playerId + ")",
-        "bb_reports?reporter_id=eq." + playerId,
-      ];
-      for (const t of tables) {
-        try {
-          await sbFetch(t, { method: "DELETE", headers: {"Prefer":"return=minimal"} });
-        } catch(e) { console.error("Delete failed for", t, e); }
-      }
-      // 2. Supprimer l'avatar du Storage (best-effort)
+      // 1. Appeler la RPC sécurisée Supabase (vérification recovery_code + DELETE en cascade)
+      let success = false;
+      try {
+        const r = await fetch(SB_URL + "/rest/v1/rpc/delete_user_account", {
+          method: "POST",
+          headers: {
+            "apikey": SB_KEY,
+            "Authorization": "Bearer " + SB_KEY,
+            "Content-Type": "application/json",
+            "Prefer": "return=representation"
+          },
+          body: JSON.stringify({
+            p_player_id: playerId,
+            p_recovery_code: recoveryCode || ""
+          })
+        });
+        if (r.ok) {
+          const result = await r.json();
+          success = result && result.ok === true;
+        }
+      } catch (e) { console.error("RPC delete failed:", e); }
+
+      // 2. Supprimer l'avatar du Storage (best-effort, hors transaction)
       try {
         await fetch(SB_URL + "/storage/v1/object/avatars/" + playerId + ".jpg", {
           method: "DELETE",
           headers: { "Authorization": "Bearer " + SB_KEY, "apikey": SB_KEY }
         });
       } catch(e) {}
-      // 3. Vider le localStorage et reload l'app pour repartir à zéro
+
+      // 3. Vider le localStorage (que la RPC ait réussi ou non — l'user a demandé une suppression locale au minimum)
       try {
         const keysToRemove = [];
         for (let i = 0; i < localStorage.length; i++) {
@@ -3288,6 +3306,7 @@ export default function LePont() {
         }
         keysToRemove.forEach(function(k){ localStorage.removeItem(k); });
       } catch {}
+
       // 4. Reload pour réinitialiser l'app entièrement
       window.location.href = "/";
     } catch(e) { console.error("deleteAccount error:", e); }
@@ -6151,6 +6170,56 @@ export default function LePont() {
     );
   })() : null;
 
+  // Bannière de bienvenue RGPD (1er lancement) — confirme que l'app stocke des données localement
+  // mais sans tracking marketing. Affichée AVANT le tutoriel.
+  const welcomeOverlay = showWelcome ? (() => {
+    const closeWelcome = () => {
+      setShowWelcome(false);
+      try { localStorage.setItem("bb_welcome_seen", "1"); } catch {}
+      // Enchaîner sur le tutoriel après le welcome
+      try { if (!localStorage.getItem("bb_tutorial_done")) setShowTutorial(true); } catch {}
+    };
+    return (
+      <div style={{position:"fixed",inset:0,zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 20px",background:"rgba(0,0,0,.85)",backdropFilter:"blur(10px)",animation:"fadeIn .3s ease"}}>
+        <div style={{position:"relative",zIndex:1,width:"100%",maxWidth:380,background:G.bg,borderRadius:28,padding:"32px 24px 24px",border:"1px solid rgba(0,230,118,.2)",textAlign:"center",boxShadow:"0 20px 60px rgba(0,0,0,.5)"}}>
+          <div style={{fontSize:56,marginBottom:16}}>🐐</div>
+          <div style={{fontFamily:G.heading,fontSize:26,color:G.white,letterSpacing:1.2,marginBottom:14}}>
+            {lang==="en" ? "WELCOME TO GOAT FC" : "BIENVENUE SUR GOAT FC"}
+          </div>
+          <div style={{fontSize:14,color:"rgba(255,255,255,.75)",lineHeight:1.6,marginBottom:20,textAlign:"left"}}>
+            {lang==="en" ? (
+              <>
+                <p style={{margin:"0 0 12px"}}>Quick heads-up about your data:</p>
+                <ul style={{paddingLeft:20,margin:"0 0 12px",color:"rgba(255,255,255,.65)",fontSize:13}}>
+                  <li style={{marginBottom:6}}>We store your <strong style={{color:G.accent}}>username, scores and preferences</strong> locally</li>
+                  <li style={{marginBottom:6}}>No advertising tracking, no data sold to third parties</li>
+                  <li>You can delete your account anytime in settings</li>
+                </ul>
+              </>
+            ) : (
+              <>
+                <p style={{margin:"0 0 12px"}}>Petit point sur tes données :</p>
+                <ul style={{paddingLeft:20,margin:"0 0 12px",color:"rgba(255,255,255,.65)",fontSize:13}}>
+                  <li style={{marginBottom:6}}>On stocke ton <strong style={{color:G.accent}}>pseudo, scores et préférences</strong> localement</li>
+                  <li style={{marginBottom:6}}>Pas de pub trackée, aucune donnée revendue</li>
+                  <li>Tu peux supprimer ton compte à tout moment dans les paramètres</li>
+                </ul>
+              </>
+            )}
+          </div>
+          <div style={{display:"flex",gap:8,fontSize:11,color:"rgba(255,255,255,.4)",marginBottom:18,justifyContent:"center"}}>
+            <a href="/privacy" target="_blank" rel="noopener noreferrer" style={{color:"rgba(255,255,255,.5)",textDecoration:"underline"}}>{lang==="en" ? "Privacy Policy" : "Politique de confidentialité"}</a>
+            <span>·</span>
+            <a href="/terms" target="_blank" rel="noopener noreferrer" style={{color:"rgba(255,255,255,.5)",textDecoration:"underline"}}>{lang==="en" ? "Terms" : "CGU"}</a>
+          </div>
+          <button onClick={closeWelcome} style={{width:"100%",padding:"14px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800}}>
+            {lang==="en" ? "Got it 🐐" : "J'ai compris 🐐"}
+          </button>
+        </div>
+      </div>
+    );
+  })() : null;
+
 
   // ── PSEUDO MODAL (first time only) ──
   if (showSplash) {
@@ -6888,6 +6957,7 @@ export default function LePont() {
       {installPrompt}
       {notifPrompt}
       {tutorialOverlay}
+      {welcomeOverlay}
       {duelCreateModal}
       {showRoomCreate && (
         <div
