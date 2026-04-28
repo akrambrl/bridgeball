@@ -1768,6 +1768,8 @@ export default function LePont() {
   const [showHallOfFame, setShowHallOfFame] = useState(false);
   const [myLbRank, setMyLbRank] = useState(null);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [showAccount, setShowAccount] = useState(false);
+  const [confirmDeleteAccount, setConfirmDeleteAccount] = useState(0); // 0=closed, 1=first warning, 2=final confirm
 
   const [myLastPts, setMyLastPts] = useState(null);
   const [winStreak, setWinStreak] = useState(0);
@@ -3250,6 +3252,45 @@ export default function LePont() {
       setFriendScores(Object.values(best).sort(function(a,b){return b.score-a.score;}));
     } catch(e) { console.error(e); }
     setFriendLoading(false);
+  }
+
+  // Suppression complète du compte — requis par Apple App Store / RGPD
+  // Efface toutes les données utilisateur dans Supabase + localStorage
+  async function deleteAccount() {
+    try {
+      // 1. Supprimer du Supabase (best-effort sur chaque table)
+      const tables = [
+        "bb_pseudos?player_id=eq." + playerId,
+        "bb_scores?player_id=eq." + playerId,
+        "bb_push_subscriptions?player_id=eq." + playerId,
+        "bb_friend_requests?or=(from_id.eq." + playerId + ",to_id.eq." + playerId + ")",
+        "bb_duels?or=(challenger_id.eq." + playerId + ",opponent_id.eq." + playerId + ")",
+        "bb_reports?reporter_id=eq." + playerId,
+      ];
+      for (const t of tables) {
+        try {
+          await sbFetch(t, { method: "DELETE", headers: {"Prefer":"return=minimal"} });
+        } catch(e) { console.error("Delete failed for", t, e); }
+      }
+      // 2. Supprimer l'avatar du Storage (best-effort)
+      try {
+        await fetch(SB_URL + "/storage/v1/object/avatars/" + playerId + ".jpg", {
+          method: "DELETE",
+          headers: { "Authorization": "Bearer " + SB_KEY, "apikey": SB_KEY }
+        });
+      } catch(e) {}
+      // 3. Vider le localStorage et reload l'app pour repartir à zéro
+      try {
+        const keysToRemove = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (k && k.startsWith("bb_")) keysToRemove.push(k);
+        }
+        keysToRemove.forEach(function(k){ localStorage.removeItem(k); });
+      } catch {}
+      // 4. Reload pour réinitialiser l'app entièrement
+      window.location.href = "/";
+    } catch(e) { console.error("deleteAccount error:", e); }
   }
 
   async function addFriend(pseudo) {
@@ -5650,6 +5691,91 @@ export default function LePont() {
     );
   }
 
+  if (showAccount) {
+    return (
+      <>
+      <button onClick={function(){setShowAccount(false);setConfirmDeleteAccount(0);}} style={{position:"fixed",top:14,left:14,zIndex:100,background:"rgba(0,15,0,.85)",border:"1px solid rgba(255,255,255,.15)",borderRadius:"50%",width:42,height:42,cursor:"pointer",color:G.white,fontSize:20,display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(10px)",boxShadow:"0 4px 14px rgba(0,0,0,.4)"}}>←</button>
+      <div style={{...shell,animation:"fadeUp .4s ease",overflow:isDesktop?"visible":"auto"}} key="account">
+        <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
+          <div style={{position:"absolute",top:-100,left:-100,width:300,height:300,background:"radial-gradient(circle, rgba(0,230,118,.15) 0%, transparent 70%)",borderRadius:"50%"}}/>
+        </div>
+        <div style={{zIndex:1,padding:"50px 20px 14px",textAlign:"center"}}>
+          <div style={{fontFamily:G.heading,fontSize:34,color:G.white,letterSpacing:1.4}}>{lang==="en"?"MY ACCOUNT":"MON COMPTE"}</div>
+          <div style={{fontSize:13,color:"rgba(255,255,255,.5)",marginTop:6,fontWeight:600}}>{lang==="en"?"Manage your account settings":"Gère les paramètres de ton compte"}</div>
+        </div>
+
+        <div style={{zIndex:1,padding:"20px 20px",display:"flex",flexDirection:"column",gap:14,maxWidth:560,margin:"0 auto",width:"100%",boxSizing:"border-box"}}>
+
+          {/* Identité */}
+          <div style={{padding:"18px 20px",background:"rgba(255,255,255,.06)",borderRadius:16,border:"1px solid rgba(255,255,255,.1)"}}>
+            <div style={{fontSize:11,color:"rgba(255,255,255,.4)",fontWeight:700,letterSpacing:1.5,textTransform:"uppercase",marginBottom:6}}>{lang==="en"?"Pseudo":"Pseudo"}</div>
+            <div style={{fontSize:20,color:G.white,fontWeight:800}}>{playerName||"—"}</div>
+            <div style={{fontSize:11,color:"rgba(255,255,255,.4)",fontWeight:600,marginTop:6}}>ID: {playerId}</div>
+          </div>
+
+          {/* Liens légaux */}
+          <a href="/privacy" target="_blank" rel="noopener noreferrer" style={{padding:"14px 18px",background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",borderRadius:14,color:"rgba(255,255,255,.7)",fontFamily:G.font,fontSize:14,fontWeight:700,display:"flex",alignItems:"center",gap:12,textAlign:"left",textDecoration:"none"}}>
+            <span style={{fontSize:18}}>🔒</span>
+            <div style={{flex:1}}>{lang==="en"?"Privacy Policy":"Politique de confidentialité"}</div>
+            <span style={{fontSize:14,color:"rgba(255,255,255,.4)"}}>↗</span>
+          </a>
+
+          <a href="/terms" target="_blank" rel="noopener noreferrer" style={{padding:"14px 18px",background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",borderRadius:14,color:"rgba(255,255,255,.7)",fontFamily:G.font,fontSize:14,fontWeight:700,display:"flex",alignItems:"center",gap:12,textAlign:"left",textDecoration:"none"}}>
+            <span style={{fontSize:18}}>📄</span>
+            <div style={{flex:1}}>{lang==="en"?"Terms of Service":"Conditions générales"}</div>
+            <span style={{fontSize:14,color:"rgba(255,255,255,.4)"}}>↗</span>
+          </a>
+
+          {/* Zone danger */}
+          <div style={{marginTop:20,padding:"16px",background:"rgba(239,68,68,.08)",border:"1px solid rgba(239,68,68,.2)",borderRadius:14}}>
+            <div style={{fontSize:11,color:"#ef4444",fontWeight:700,letterSpacing:1.5,textTransform:"uppercase",marginBottom:8}}>{lang==="en"?"Danger zone":"Zone de danger"}</div>
+            <div style={{fontSize:13,color:"rgba(255,255,255,.7)",marginBottom:14,lineHeight:1.5}}>{lang==="en"?"Deleting your account is permanent. All your scores, friends, and data will be erased forever.":"La suppression de ton compte est définitive. Tous tes scores, amis et données seront effacés à jamais."}</div>
+            <button onClick={function(){setConfirmDeleteAccount(1);}} style={{width:"100%",padding:"13px",background:"transparent",color:"#ef4444",border:"1px solid #ef4444",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>
+              {lang==="en"?"🗑 Delete my account":"🗑 Supprimer mon compte"}
+            </button>
+          </div>
+
+          {/* Modal de confirmation suppression compte */}
+          {confirmDeleteAccount > 0 && (
+            <div onClick={function(e){if(e.target===e.currentTarget)setConfirmDeleteAccount(0);}} style={{position:"fixed",inset:0,background:"rgba(0,0,0,.85)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:20,backdropFilter:"blur(8px)"}}>
+              <div style={{background:G.bg,borderRadius:20,padding:"24px 22px",maxWidth:420,width:"100%",border:"1px solid rgba(239,68,68,.4)",boxShadow:"0 12px 40px rgba(0,0,0,.6)"}}>
+                <div style={{fontSize:42,textAlign:"center",marginBottom:8}}>⚠️</div>
+                <div style={{fontFamily:G.heading,fontSize:22,color:"#ef4444",textAlign:"center",letterSpacing:1.2,marginBottom:14}}>
+                  {confirmDeleteAccount === 1 ? (lang==="en"?"ARE YOU SURE?":"ES-TU SÛR ?") : (lang==="en"?"LAST WARNING":"DERNIER AVERTISSEMENT")}
+                </div>
+                <div style={{fontSize:14,color:"rgba(255,255,255,.85)",textAlign:"center",marginBottom:6,lineHeight:1.5}}>
+                  {confirmDeleteAccount === 1
+                    ? (lang==="en"?"This will permanently delete:":"Cela va supprimer définitivement :")
+                    : (lang==="en"?"This cannot be undone. Confirm one last time?":"C'est irréversible. Tu confirmes une dernière fois ?")}
+                </div>
+                {confirmDeleteAccount === 1 && (
+                  <ul style={{fontSize:13,color:"rgba(255,255,255,.7)",margin:"10px 0 18px 0",paddingLeft:24,lineHeight:1.7}}>
+                    <li>{lang==="en"?"Your pseudo and avatar":"Ton pseudo et avatar"}</li>
+                    <li>{lang==="en"?"All your scores and XP":"Tous tes scores et XP"}</li>
+                    <li>{lang==="en"?"Your friends and duels":"Tes amis et duels"}</li>
+                    <li>{lang==="en"?"Your push notifications":"Tes notifications push"}</li>
+                  </ul>
+                )}
+                <div style={{display:"flex",gap:10,marginTop:18}}>
+                  <button onClick={function(){setConfirmDeleteAccount(0);}} style={{flex:1,padding:"13px",background:"rgba(255,255,255,.08)",color:G.white,border:"1px solid rgba(255,255,255,.15)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>
+                    {lang==="en"?"Cancel":"Annuler"}
+                  </button>
+                  <button onClick={function(){
+                    if (confirmDeleteAccount === 1) setConfirmDeleteAccount(2);
+                    else { setConfirmDeleteAccount(0); deleteAccount(); }
+                  }} style={{flex:1,padding:"13px",background:"#ef4444",color:"#fff",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>
+                    {confirmDeleteAccount === 1 ? (lang==="en"?"Continue":"Continuer") : (lang==="en"?"DELETE NOW":"SUPPRIMER")}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+      </>
+    );
+  }
+
   if(showLeaderboard) {
     return (
       <>
@@ -6711,6 +6837,13 @@ export default function LePont() {
             <button onClick={()=>setLanguage("en")} style={{padding:"7px 13px",background:lang==="en"?"#000":"rgba(0,0,0,.15)",color:lang==="en"?G.accent:"rgba(0,0,0,.7)",border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800}}>🇬🇧 EN</button>
           </div>
         </div>
+
+        {/* Mon compte (paramètres + suppression) - subtil */}
+        <button onClick={()=>setShowAccount(true)} style={{padding:"14px 18px",background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.12)",borderRadius:18,cursor:"pointer",color:"rgba(255,255,255,.7)",fontFamily:G.font,fontSize:14,fontWeight:700,display:"flex",alignItems:"center",gap:12,textAlign:"left",marginTop:6}}>
+          <span style={{fontSize:18}}>⚙️</span>
+          <div style={{flex:1}}>{lang==="en"?"My account":"Mon compte"}</div>
+          <span style={{fontSize:18,color:"rgba(255,255,255,.4)"}}>→</span>
+        </button>
       </div>
 
       {/* Footer */}
