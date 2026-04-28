@@ -3436,6 +3436,10 @@ export default function LePont() {
       const paris = new Date(now.toLocaleString('en-US',{timeZone:'Europe/Paris'}));
       const prevMonth = new Date(paris.getFullYear(), paris.getMonth() - 1, 1);
       const prevMonthKey = prevMonth.getFullYear() + "-" + String(prevMonth.getMonth()+1).padStart(2,'0');
+      // Garde supplémentaire : prevMonthKey doit être >= mois de SEASON_START
+      // (sinon on essaierait de clôturer une saison qui n'a jamais existé)
+      const seasonStartKey = "2026-04";
+      if (prevMonthKey < seasonStartKey) return;
       // Vérifier si la saison précédente a déjà été clôturée
       const prev = await sbFetch("bb_seasons?season_number=eq."+(season.num-1)+"&limit=1");
       if (Array.isArray(prev) && prev.length > 0) return; // déjà clôturée
@@ -3444,7 +3448,8 @@ export default function LePont() {
       const rows = await sbFetch("bb_pseudos?select=player_id,pseudo,xp_season&xp_season_month=eq."+prevMonthKey+"&order=xp_season.desc&limit=10");
       if (!Array.isArray(rows) || rows.length === 0) return;
       const top = rows.filter(r => (r.xp_season || 0) > 0);
-      if (top.length === 0) return;
+      // Garde anti-bidon : il faut au moins 3 joueurs ayant participé pour valider la saison
+      if (top.length < 3) return;
 
       const champion = top[0];
       const runnerUp = top[1] || null;
