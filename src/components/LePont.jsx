@@ -909,6 +909,7 @@ const DAILY_OVERRIDES = {
   "2026-04-23": "Kalidou Koulibaly", // Jeudi Serie A - override forcé
   "2026-04-25": "Ronaldinho", // Samedi Légende - le sorcier brésilien
   "2026-04-26": "Miralem Pjanić", // Dimanche Joker - le maestro bosnien
+  "2026-04-28": "James Milner", // Mardi PL - la légende anglaise (6 clubs PL)
 };
 
 function getDailyPlayer(blacklist) {
@@ -1212,6 +1213,60 @@ function norm(s){return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f
 // Version sans espaces pour matcher des clubs composés tapés de différentes façons
 // Exemple : "Saint-Etienne", "Saint Etienne", "SaintEtienne" doivent tous matcher
 function normCompact(s){return norm(s).replace(/\s+/g,"");}
+
+// Normalisation phonétique pour gérer fautes type "Patchao" → "Paixao"
+// Convertit certains digrammes en équivalents phonétiques avant comparaison Levenshtein
+function normPhonetic(s){
+  let n = normCompact(s);
+  // Digrammes courants : tch=ch=x (sons portugais/espagnols), ph=f, ck=k, qu=k, sh=ch
+  n = n.replace(/tch/g, "x").replace(/ch/g, "x").replace(/sh/g, "x");
+  n = n.replace(/ph/g, "f").replace(/ck/g, "k").replace(/qu/g, "k");
+  n = n.replace(/y/g, "i").replace(/z/g, "s").replace(/w/g, "v");
+  // Doubles lettres → simple lettre (pour matcher "Nassr" et "Naser")
+  n = n.replace(/(.)\1+/g, "$1");
+  return n;
+}
+
+// Distance de Levenshtein (nombre min d'éditions pour passer de a à b)
+function levenshtein(a, b){
+  if (a === b) return 0;
+  if (a.length < b.length) { const t = a; a = b; b = t; }
+  if (b.length === 0) return a.length;
+  let prev = [];
+  for (let j = 0; j <= b.length; j++) prev[j] = j;
+  for (let i = 1; i <= a.length; i++){
+    let curr = [i];
+    for (let j = 1; j <= b.length; j++){
+      const cost = a[i-1] === b[j-1] ? 0 : 1;
+      curr[j] = Math.min(prev[j] + 1, curr[j-1] + 1, prev[j-1] + cost);
+    }
+    prev = curr;
+  }
+  return prev[b.length];
+}
+
+// Tolérance progressive selon la longueur du mot cible
+function fuzzyThreshold(targetLen){
+  if (targetLen < 6) return 1;       // mots courts : 1 faute max
+  if (targetLen < 12) return 2;      // moyens : 2 fautes
+  return 3;                          // longs : 3 fautes
+}
+
+// Vérifie si guess matche target avec tolérance aux fautes (Levenshtein + phonétique)
+function fuzzyMatch(guess, target){
+  const g1 = normCompact(guess), t1 = normCompact(target);
+  // Match exact post-normalisation classique : pas besoin de fuzzy
+  if (g1 === t1) return true;
+  // Levenshtein sur la version normCompact
+  const d1 = levenshtein(g1, t1);
+  if (d1 <= fuzzyThreshold(t1.length)) return true;
+  // Levenshtein sur la version phonétique (gère "Patchao" → "Paixao")
+  const g2 = normPhonetic(guess), t2 = normPhonetic(target);
+  if (g2 === t2) return true;
+  const d2 = levenshtein(g2, t2);
+  if (d2 <= fuzzyThreshold(t2.length)) return true;
+  return false;
+}
 // Génère un code de récupération format GOATFC-XXXX-YYYY
 // Utilise uniquement des caractères non ambigus (pas 0/O, 1/I/L, etc.)
 function generateRecoveryCode() {
@@ -1222,7 +1277,18 @@ function generateRecoveryCode() {
   for (let i = 0; i < 4; i++) code += chars[Math.floor(Math.random() * chars.length)];
   return code;
 }
-function checkGuess(g,players){const gn=norm(g);return players.some(p=>{const pn=norm(p);return gn===pn||pn.split(" ").some(part=>part.length>2&&gn.includes(part));});}
+function checkGuess(g,players){
+  const gn=norm(g);
+  return players.some(p=>{
+    const pn=norm(p);
+    if(gn===pn) return true;
+    // Match si guess correspond à une partie du nom (ex: "Pogba" pour "Paul Pogba")
+    if(pn.split(" ").some(part=>part.length>2&&gn.includes(part))) return true;
+    // Fallback fuzzy : tolère 1-3 fautes selon longueur (ex: "Mhuamed Salah" → "Mohamed Salah")
+    if(g.length>=4 && fuzzyMatch(g, p)) return true;
+    return false;
+  });
+}
 function matchClub(input,playerClubs){
   const n=norm(input);
   const nc=normCompact(input);
@@ -1246,6 +1312,12 @@ function matchClub(input,playerClubs){
     for(const c of playerClubs){if(normCompact(c).includes(nc)||nc.includes(normCompact(c)))return c;}
     // 5. Substring match sur les alias du club du joueur
     for(const c of playerClubs){const aliases=CLUB_ALIASES[c];if(aliases&&aliases.some(a=>normCompact(a).includes(nc)||nc.includes(normCompact(a))))return c;}
+    // 6. Fallback fuzzy (Levenshtein + phonétique) pour tolérer fautes type "Alnasser" → "Al Nassr"
+    //    On ne tolère que pour mots de >=4 lettres, sinon trop de faux positifs
+    if(n.length>=4){
+      for(const c of playerClubs){if(fuzzyMatch(input, c))return c;}
+      for(const c of playerClubs){const aliases=CLUB_ALIASES[c];if(aliases&&aliases.some(a=>fuzzyMatch(input, a)))return c;}
+    }
   }
   return null;
 }
@@ -1965,6 +2037,9 @@ export default function LePont() {
   const historyEndRef = useRef(null);
   const hasEndedRef = useRef(false);
   const queueRef = useRef([]);
+  // Mémoire des paires jouées dans les manches précédentes (reset entre parties)
+  // Pour empêcher que la manche 2 reprenne les mêmes questions que la manche 1
+  const playedPairsRef = useRef(new Set());
   const chainLogoRef = useRef({});
 
 
@@ -3824,6 +3899,8 @@ export default function LePont() {
 
   function startRound(round) {
     roundStartTime.current = null; // timer will set on next tick
+    // Si manche 1, on reset le tracker des paires jouées (nouvelle partie)
+    if (round === 1) playedPairsRef.current = new Set();
     // FIX multi : lire diff depuis activeDuelRef si en room (évite le stale state React)
     const isInRoom = activeDuelRef.current && activeDuelRef.current.isRoom;
     const effectiveDiff = isInRoom && activeDuelRef.current.diff ? activeDuelRef.current.diff : diff;
@@ -3842,6 +3919,20 @@ export default function LePont() {
       ...doShuffle([...retiredQ]).slice(0, Math.min(targetRetired, retiredQ.length)),
     ];
     let q = doShuffle(picked.length > 0 ? picked : [...dbPool]);
+
+    // Anti-répétition INTRA-PARTIE : exclure les paires déjà jouées dans les manches précédentes
+    // (sinon en partie de 2 manches on peut retomber sur les mêmes paires)
+    if (round > 1 && playedPairsRef.current.size > 0) {
+      const fresh = q.filter(item => !playedPairsRef.current.has(item.c1 + "|||" + item.c2));
+      const stale = q.filter(item => playedPairsRef.current.has(item.c1 + "|||" + item.c2));
+      // Si on a assez de paires fraîches (>20), on exclut totalement les paires jouées
+      if (fresh.length >= 20) {
+        q = fresh;
+      } else {
+        // Sinon on met les paires jouées en fin de queue (au cas où on en a besoin)
+        q = [...fresh, ...stale];
+      }
+    }
     
     // Anti-répétition en SOLO uniquement : évite de reposer les paires des 2 dernières parties en premier
     // On lit l'historique depuis localStorage, on met les paires récentes en fin de queue
@@ -4139,7 +4230,8 @@ export default function LePont() {
     const answerParts = answer.split(" ");
     const isCorrect = guess === answer
       || answerParts.some(function(p){ return p.length >= 3 && guess === p; })
-      || (answer.includes(guess) && guess.length > 4);
+      || (answer.includes(guess) && guess.length > 4)
+      || (rawValue.trim().length >= 4 && fuzzyMatch(rawValue, dailyPlayer.name));
     if (isCorrect) {
       setDailySuccess(true);
       setDailyFlash("ok");
@@ -4257,6 +4349,9 @@ export default function LePont() {
   }
 
   function nextQ() {
+    // Enregistrer la paire que l'on vient de quitter (pour anti-répétition entre manches)
+    const justPlayed = queue[qIdx % Math.max(queue.length, 1)];
+    if (justPlayed) playedPairsRef.current.add(justPlayed.c1 + "|||" + justPlayed.c2);
     setQIdx(i=>{
       const next = i+1;
       const isInRoom = activeDuelRef.current && activeDuelRef.current.isRoom;
