@@ -121,11 +121,11 @@ const CLUB_ALIASES = {
   "Borussia Monchengladbach":["gladbach","monchengladbach"],
   "RB Leipzig":["leipzig","rb"],
   "Bayer Leverkusen":["leverkusen","bayer"],
-  "Juventus":["juve","juventus turin","la juve"],
-  "Napoli":["naples","ssc napoli","ssc naples"],
-  "Roma":["as roma","as rome","rome"],
-  "Lazio":["ss lazio"],
-  "Fiorentina":["la viola","florence"],
+  "Juventus FC":["juve","juventus","juventus turin","la juve","juventus fc"],
+  "SSC Napoli":["napoli","naples","ssc napoli","ssc naples"],
+  "AS Roma":["roma","as roma","as rome","rome"],
+  "SS Lazio":["lazio","ss lazio"],
+  "ACF Fiorentina":["fiorentina","la viola","florence","acf fiorentina"],
   "Tottenham":["spurs","tottenham hotspur"],
   "Arsenal":["ars","gunners","les gunners"],
   "Chelsea":["the blues","les blues"],
@@ -177,13 +177,13 @@ const CLUB_ALIASES = {
   "Boca Juniors":["boca","los xeneizes","club atletico boca juniors"],
   "Racing Club":["racing","la academia"],
   "Santos":["santos fc","peixe"],
-  "Empoli":["empoli fc","gli azzurri"],
-  "Udinese":["udinese calcio","zebrette"],
+  "Empoli FC":["empoli","empoli fc","gli azzurri"],
+  "Udinese Calcio":["udinese","udinese calcio","zebrette"],
   "Hoffenheim":["tsg hoffenheim","tsg 1899","1899 hoffenheim"],
-  "Genoa":["genoa cfc","genova"],
+  "Genoa CFC":["genoa","genoa cfc","genova","grifone"],
   "Granada":["granada cf","los nazaríes"],
   "Amiens":["amiens sc","asc amiens"],
-  "Torino":["torino fc","toro","granata"],
+  "Torino FC":["torino","torino fc","toro","granata"],
   "West Brom":["west bromwich","wba","west bromwich albion"],
   "Sunderland":["sunderland afc","safc","black cats"],
   "Sochaux":["fc sochaux","fcsm"],
@@ -208,6 +208,10 @@ const CLUB_ALIASES = {
   "AZ":["az alkmaar","alkmaar"],
   "LAFC":["los angeles fc","los angeles football club"],
   "QPR":["queens park rangers","queens park","q.p.r."],
+  "Atalanta BC":["atalanta","atalanta bc","la dea"],
+  "Bologna FC":["bologna","bologna fc","rossoblu bologna"],
+  "Cagliari Calcio":["cagliari","cagliari calcio"],
+  "Parma FC":["parma","parma fc","parma calcio","gialloblu"],
 };
 
 const CLUB_COLORS = {
@@ -219,9 +223,9 @@ const CLUB_COLORS = {
   "Real Madrid":["#FEBE10","#FFFFFF"],"Barcelona":["#A50044","#004D98"],"Atletico Madrid":["#CB3524","#FFFFFF"],
   "Sevilla":["#D71920","#FFFFFF"],"Valencia":["#F47920","#000000"],"Villarreal":["#FCD000","#004C8C"],
   "Athletic Bilbao":["#EE2523","#FFFFFF"],"Real Betis":["#00954C","#FFFFFF"],
-  "Juventus":["#000000","#FFFFFF"],"AC Milan":["#FB090B","#000000"],"Inter Milan":["#0066B2","#000000"],
-  "Napoli":["#12A0C3","#FFFFFF"],"Roma":["#8E1F2F","#F0BC42"],"Lazio":["#87CEEB","#FFFFFF"],
-  "Fiorentina":["#4B0082","#FFFFFF"],"Atalanta":["#1D2951","#E32221"],
+  "Juventus FC":["#000000","#FFFFFF"],"AC Milan":["#FB090B","#000000"],"Inter Milan":["#0066B2","#000000"],
+  "SSC Napoli":["#12A0C3","#FFFFFF"],"AS Roma":["#8E1F2F","#F0BC42"],"SS Lazio":["#87CEEB","#FFFFFF"],
+  "ACF Fiorentina":["#4B0082","#FFFFFF"],"Atalanta BC":["#1D2951","#E32221"],
   "PSG":["#004170","#DA291C"],"Marseille":["#009BCE","#FFFFFF"],"Lyon":["#032CA6","#E4003A"],
   "Monaco":["#D4011D","#FFFFFF"],"Lille":["#E31B23","#1F3764"],"Bordeaux":["#1A1255","#FFFFFF"],"Nice":["#000000","#DF212A"],"Saint-Etienne":["#007744","#FFFFFF"],
   "Bayern Munich":["#DC052D","#0066B2"],"Borussia Dortmund":["#FDE100","#000000"],
@@ -237,12 +241,12 @@ const CLUB_COLORS = {
   "RC Strasbourg":["#003B8E","#FFFFFF"],"Sparta Rotterdam":["#CC0000","#FFFFFF"],
   "Deportivo Alavés":["#003DA5","#FFFFFF"],"CD Mirandés":["#FF0000","#000000"],
   "Fulham":["#FFFFFF","#000000"],"Brentford":["#CC0000","#FFFFFF"],"Midtjylland":["#CC0000","#FFFFFF"],
-  "Parma":["#FFD700","#003082"],"Sint-Truiden":["#FFD700","#000000"],"RB Salzburg":["#CC0000","#FFFFFF"],
+  "Parma FC":["#FFD700","#003082"],"Sint-Truiden":["#FFD700","#000000"],"RB Salzburg":["#CC0000","#FFFFFF"],
   "Standard Liège":["#CC0000","#FFFFFF"],"Almería":["#CC0000","#FFFFFF"],
   "Málaga":["#003082","#FFFFFF"],"River Plate":["#FFFFFF","#CC0000"],"Boca Juniors":["#003399","#FFD700"],
   "Racing Club":["#1565C0","#FFFFFF"],"Palmeiras":["#006B3F","#FFFFFF"],"Santos":["#000000","#FFFFFF"],"Flamengo":["#E82020","#000000"],"Cruzeiro":["#003399","#FFFFFF"],
   "Cannes":["#E31B23","#FFFFFF"],"Orlando City":["#633492","#F7B024"],
-  "Leeds United":["#FFFFFF","#FFD700"],"Empoli":["#1565C0","#FFFFFF"],"Udinese":["#000000","#FFFFFF"],"Bologna":["#CC0000","#003082"],
+  "Leeds United":["#FFFFFF","#FFD700"],"Empoli FC":["#1565C0","#FFFFFF"],"Udinese Calcio":["#000000","#FFFFFF"],"Bologna FC":["#CC0000","#003082"],
   "Granada":["#CC0000","#FFFFFF"],
   "Sunderland":["#E31B23","#000000"],"Sochaux":["#FABE00","#003082"],
   "Charleroi":["#000000","#FFFFFF"],"Espérance de Tunis":["#CC0000","#FFD700"],
@@ -260,10 +264,10 @@ const CLUB_COLORS = {
   "Real Sociedad":["#003DA5","#FFFFFF"],
   "Bournemouth":["#DA291C","#000000"],
   "Hoffenheim":["#1961AC","#FFFFFF"],
-  "Genoa":["#C8102E","#1B3A6F"],
+  "Genoa CFC":["#C8102E","#1B3A6F"],
   "West Brom":["#122F67","#FFFFFF"],
   "Watford":["#FBEE23","#ED2127"],
-  "Torino":["#8B1B2E","#FFFFFF"],
+  "Torino FC":["#8B1B2E","#FFFFFF"],
   "Nantes":["#FBE216","#00AB59"],
   "Toulouse":["#4B1F7F","#FFFFFF"],
   "Sassuolo":["#00A651","#000000"],
@@ -339,7 +343,7 @@ const CLUB_COLORS = {
   "Nuremberg":["#000000","#AD1A20"],
   "Sampdoria":["#002B5C","#FFFFFF"],
   "Hellas Verona":["#FBE216","#0A2240"],
-  "Cagliari":["#8B1B2E","#005CA7"],
+  "Cagliari Calcio":["#8B1B2E","#005CA7"],
   "Lecce":["#FBE216","#C8102E"],
   "Monza":["#C8102E","#FFFFFF"],
   "Spezia":["#FFFFFF","#000000"],
@@ -472,7 +476,7 @@ const CLUB_COLORS = {
 const PONT_CLUBS = new Set([
   "Manchester City","Arsenal","Liverpool","Chelsea","Manchester United",
   "Real Madrid","Barcelona","Atletico Madrid","Sevilla","Valencia",
-  "Juventus","AC Milan","Inter Milan","Napoli","Roma",
+  "Juventus FC","AC Milan","Inter Milan","SSC Napoli","AS Roma",
   "Bayern Munich","Borussia Dortmund","RB Leipzig","Bayer Leverkusen","Eintracht Frankfurt",
   "PSG","Marseille","Lyon","Monaco","Lille",
   "Benfica","Porto","Sporting CP",
@@ -485,6 +489,46 @@ const PONT_CLUBS = new Set([
   "Ajax Amsterdam","PSV Eindhoven","Feyenoord","AZ Alkmaar",
   // Turquie
   "Galatasaray","Fenerbahce","Besiktas","Trabzonspor",
+  // Premier League cadres
+  "Tottenham","Newcastle","Aston Villa","West Ham","Everton",
+  "Leicester City","Southampton","Crystal Palace","Brighton","Fulham",
+  "Wolverhampton","Nottingham Forest","Bournemouth","Brentford",
+  // Italie
+  "SS Lazio","ACF Fiorentina","Atalanta BC","Torino FC","Bologna FC","Udinese Calcio","Sampdoria",
+  // Espagne
+  "Real Sociedad","Athletic Bilbao","Villarreal","Real Betis","Celta Vigo","Espanyol","Getafe",
+  // Allemagne (NORMALISÉS)
+  "Stuttgart","Hoffenheim","Wolfsburg","Borussia Monchengladbach","Werder Bremen","Schalke","Hamburg","Hertha Berlin",
+  // France
+  "Nice","Rennes","Lens","Saint-Etienne","Bordeaux","Nantes","Montpellier","Strasbourg","Toulouse",
+  // Portugal
+  "Braga","Vitoria Guimaraes",
+  // Écosse
+  "Celtic","Rangers",
+  // Grèce/Russie/Ukraine
+  "Olympiacos","Panathinaikos","CSKA Moscow","Zenit Saint Petersburg","Spartak Moscow","Shakhtar Donetsk","Dynamo Kyiv",
+  // Autriche/Belgique/Danemark/Suisse
+  "Salzburg","Copenhagen","Club Brugge","Anderlecht","Standard Liège","Basel",
+  // === EXTENSION : clubs avec 7+ joueurs dans la base ===
+  // Premier League historiques / clubs jojo
+  "Watford","Sunderland","Burnley","West Brom","Leeds United","Middlesbrough",
+  "Stoke","Bolton","Swansea","Sheffield United","Blackburn","Ipswich","Portsmouth",
+  // Italie Serie B/historiques
+  "Genoa CFC","Parma FC","Sassuolo","Empoli FC","Cagliari Calcio","Hellas Verona",
+  // France
+  "Lorient","Angers","Reims","Metz","Auxerre","Le Havre","Brest",
+  // Allemagne
+  "Mainz",
+  // Brésil
+  "Flamengo","River Plate","Boca Juniors","São Paulo","Palmeiras","Santos","Fluminense","Corinthians",
+  // Espagne
+  "Real Zaragoza","Mallorca","Real Valladolid","Granada",
+  // Belgique/Croatie
+  "Genk","Gent","Dinamo Zagreb",
+  // Italie/Espagne
+  "Girona",
+  // Saudi extension
+  "Al Qadsiah",
 ]);
 
 function buildPontDB() {
@@ -535,6 +579,13 @@ for (const diff of ["facile","moyen","expert"]) {
 return db;
 }
 const PLAYERS_CLEAN = PLAYERS.filter(function(p){return p&&p.name&&p.clubs&&Array.isArray(p.clubs);});
+
+// Liste de tous les clubs uniques connus dans la base (pour autocomplete Mercato)
+const ALL_CLUBS_LIST = (function(){
+  const set = new Set();
+  for (const p of PLAYERS_CLEAN) for (const c of p.clubs) set.add(c);
+  return Array.from(set).sort();
+})();
 
 
 function isRetiredPlayer(name) {
@@ -790,9 +841,9 @@ const LEAGUE_CLUBS = {
          "Real Betis", "Real Sociedad", "Athletic Bilbao", "Celta Vigo", "Getafe", "Osasuna",
          "Espanyol", "Girona", "Mallorca", "Las Palmas", "Cadiz", "Almeria", "Alavés", "Elche",
          "Malaga", "Deportivo", "Real Zaragoza", "Real Mallorca", "Levante", "Granada"],
-  SERIEA: ["Juventus", "AC Milan", "Inter Milan", "Napoli", "Roma", "Lazio", "Atalanta", "Fiorentina",
-           "Torino", "Bologna", "Sassuolo", "Udinese", "Genoa", "Sampdoria", "Hellas Verona", "Cagliari",
-           "Lecce", "Monza", "Spezia", "Parma", "Palermo", "Empoli", "Salernitana", "Chievo",
+  SERIEA: ["Juventus FC", "AC Milan", "Inter Milan", "SSC Napoli", "AS Roma", "SS Lazio", "Atalanta BC", "ACF Fiorentina",
+           "Torino FC", "Bologna FC", "Sassuolo", "Udinese Calcio", "Genoa CFC", "Sampdoria", "Hellas Verona", "Cagliari Calcio",
+           "Lecce", "Monza", "Spezia", "Parma FC", "Palermo", "Empoli FC", "Salernitana", "Chievo",
            "Brescia", "Benevento", "Bari", "Pisa"],
   BUNDESLIGA: ["Bayern Munich", "Borussia Dortmund", "Bayer Leverkusen", "RB Leipzig", "Stuttgart",
                "Eintracht Frankfurt", "Wolfsburg", "Borussia Monchengladbach", "Hoffenheim", "Mainz",
@@ -812,7 +863,7 @@ const FAMOUS_CLUBS = new Set([
   "Real Madrid", "Barcelona", "Atletico Madrid", "Sevilla", "Valencia", "Villarreal",
   "Real Betis", "Real Sociedad", "Athletic Bilbao",
   // Serie A top clubs
-  "Juventus", "AC Milan", "Inter Milan", "Napoli", "Roma", "Lazio", "Atalanta", "Fiorentina",
+  "Juventus FC", "AC Milan", "Inter Milan", "SSC Napoli", "AS Roma", "SS Lazio", "Atalanta BC", "ACF Fiorentina",
   // Bundesliga top clubs
   "Bayern Munich", "Borussia Dortmund", "Bayer Leverkusen", "RB Leipzig",
   "Eintracht Frankfurt", "Wolfsburg", "Schalke 04",
@@ -851,8 +902,27 @@ const DAILY_RESETS = {
   "2026-04-21": "v2", // Nathan Aké incomplet → nouveau joueur
 };
 
+// Overrides explicites : force un joueur spécifique pour une date donnée
+// Utilisé quand on veut un joueur précis (correction, thème spécial, etc.)
+// Le nom doit matcher exactement le name dans PLAYERS_CLEAN
+const DAILY_OVERRIDES = {
+  "2026-04-23": "Kalidou Koulibaly", // Jeudi Serie A - override forcé
+  "2026-04-25": "Ronaldinho", // Samedi Légende - le sorcier brésilien
+  "2026-04-26": "Miralem Pjanić", // Dimanche Joker - le maestro bosnien
+  "2026-04-28": "James Milner", // Mardi PL - la légende anglaise (6 clubs PL)
+};
+
 function getDailyPlayer(blacklist) {
   const today = (()=>{ const d=new Date(); const paris=new Date(d.toLocaleString('en-US',{timeZone:'Europe/Paris'})); return paris.getFullYear()+'-'+String(paris.getMonth()+1).padStart(2,'0')+'-'+String(paris.getDate()).padStart(2,'0'); })();
+  
+  // Override explicite : cherche le joueur par nom dans PLAYERS_CLEAN
+  if (DAILY_OVERRIDES[today]) {
+    const overrideName = DAILY_OVERRIDES[today];
+    const overridePlayer = PLAYERS_CLEAN.find(p => p.name === overrideName);
+    if (overridePlayer) return overridePlayer;
+    // Fallback silencieux si le joueur n'est pas trouvé (safety net)
+  }
+  
   // Permet de forcer un nouveau défi pour une date donnée en concaténant un suffixe au hash
   const hashKey = today + (DAILY_RESETS[today] || "");
   let hash = 0;
@@ -873,12 +943,16 @@ function getDailyPlayer(blacklist) {
   let pool = basePool;
 
   if (theme.filter === "LEGEND") {
-    pool = basePool.filter(p => isRetiredPlayer(p.name));
+    // Pour le thème Légende : seulement les vraies stars (diff facile) + retraités
+    // Évite de sortir des joueurs trop obscurs comme Alex Meier
+    pool = basePool.filter(p => isRetiredPlayer(p.name) && p.diff === "facile");
   } else if (theme.filter === "JOKER") {
     pool = basePool;
   } else {
     const leagueClubs = new Set(LEAGUE_CLUBS[theme.filter] || []);
-    pool = basePool.filter(p => p.clubs.some(c => leagueClubs.has(c)));
+    // Filtrer sur le DERNIER club du parcours (= club actuel) uniquement
+    // Évite que Ferland Mendy sorte le lundi L1 alors qu'il joue au Real Madrid
+    pool = basePool.filter(p => leagueClubs.has(p.clubs[p.clubs.length - 1]));
   }
 
   // Appliquer la blacklist (joueurs signalés comme buggés par ≥3 users)
@@ -1139,6 +1213,60 @@ function norm(s){return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f
 // Version sans espaces pour matcher des clubs composés tapés de différentes façons
 // Exemple : "Saint-Etienne", "Saint Etienne", "SaintEtienne" doivent tous matcher
 function normCompact(s){return norm(s).replace(/\s+/g,"");}
+
+// Normalisation phonétique pour gérer fautes type "Patchao" → "Paixao"
+// Convertit certains digrammes en équivalents phonétiques avant comparaison Levenshtein
+function normPhonetic(s){
+  let n = normCompact(s);
+  // Digrammes courants : tch=ch=x (sons portugais/espagnols), ph=f, ck=k, qu=k, sh=ch
+  n = n.replace(/tch/g, "x").replace(/ch/g, "x").replace(/sh/g, "x");
+  n = n.replace(/ph/g, "f").replace(/ck/g, "k").replace(/qu/g, "k");
+  n = n.replace(/y/g, "i").replace(/z/g, "s").replace(/w/g, "v");
+  // Doubles lettres → simple lettre (pour matcher "Nassr" et "Naser")
+  n = n.replace(/(.)\1+/g, "$1");
+  return n;
+}
+
+// Distance de Levenshtein (nombre min d'éditions pour passer de a à b)
+function levenshtein(a, b){
+  if (a === b) return 0;
+  if (a.length < b.length) { const t = a; a = b; b = t; }
+  if (b.length === 0) return a.length;
+  let prev = [];
+  for (let j = 0; j <= b.length; j++) prev[j] = j;
+  for (let i = 1; i <= a.length; i++){
+    let curr = [i];
+    for (let j = 1; j <= b.length; j++){
+      const cost = a[i-1] === b[j-1] ? 0 : 1;
+      curr[j] = Math.min(prev[j] + 1, curr[j-1] + 1, prev[j-1] + cost);
+    }
+    prev = curr;
+  }
+  return prev[b.length];
+}
+
+// Tolérance progressive selon la longueur du mot cible
+function fuzzyThreshold(targetLen){
+  if (targetLen < 6) return 1;       // mots courts : 1 faute max
+  if (targetLen < 12) return 2;      // moyens : 2 fautes
+  return 3;                          // longs : 3 fautes
+}
+
+// Vérifie si guess matche target avec tolérance aux fautes (Levenshtein + phonétique)
+function fuzzyMatch(guess, target){
+  const g1 = normCompact(guess), t1 = normCompact(target);
+  // Match exact post-normalisation classique : pas besoin de fuzzy
+  if (g1 === t1) return true;
+  // Levenshtein sur la version normCompact
+  const d1 = levenshtein(g1, t1);
+  if (d1 <= fuzzyThreshold(t1.length)) return true;
+  // Levenshtein sur la version phonétique (gère "Patchao" → "Paixao")
+  const g2 = normPhonetic(guess), t2 = normPhonetic(target);
+  if (g2 === t2) return true;
+  const d2 = levenshtein(g2, t2);
+  if (d2 <= fuzzyThreshold(t2.length)) return true;
+  return false;
+}
 // Génère un code de récupération format GOATFC-XXXX-YYYY
 // Utilise uniquement des caractères non ambigus (pas 0/O, 1/I/L, etc.)
 function generateRecoveryCode() {
@@ -1149,7 +1277,18 @@ function generateRecoveryCode() {
   for (let i = 0; i < 4; i++) code += chars[Math.floor(Math.random() * chars.length)];
   return code;
 }
-function checkGuess(g,players){const gn=norm(g);return players.some(p=>{const pn=norm(p);return gn===pn||pn.split(" ").some(part=>part.length>2&&gn.includes(part));});}
+function checkGuess(g,players){
+  const gn=norm(g);
+  return players.some(p=>{
+    const pn=norm(p);
+    if(gn===pn) return true;
+    // Match si guess correspond à une partie du nom (ex: "Pogba" pour "Paul Pogba")
+    if(pn.split(" ").some(part=>part.length>2&&gn.includes(part))) return true;
+    // Fallback fuzzy : tolère 1-3 fautes selon longueur (ex: "Mhuamed Salah" → "Mohamed Salah")
+    if(g.length>=4 && fuzzyMatch(g, p)) return true;
+    return false;
+  });
+}
 function matchClub(input,playerClubs){
   const n=norm(input);
   const nc=normCompact(input);
@@ -1173,6 +1312,12 @@ function matchClub(input,playerClubs){
     for(const c of playerClubs){if(normCompact(c).includes(nc)||nc.includes(normCompact(c)))return c;}
     // 5. Substring match sur les alias du club du joueur
     for(const c of playerClubs){const aliases=CLUB_ALIASES[c];if(aliases&&aliases.some(a=>normCompact(a).includes(nc)||nc.includes(normCompact(a))))return c;}
+    // 6. Fallback fuzzy (Levenshtein + phonétique) pour tolérer fautes type "Alnasser" → "Al Nassr"
+    //    On ne tolère que pour mots de >=4 lettres, sinon trop de faux positifs
+    if(n.length>=4){
+      for(const c of playerClubs){if(fuzzyMatch(input, c))return c;}
+      for(const c of playerClubs){const aliases=CLUB_ALIASES[c];if(aliases&&aliases.some(a=>fuzzyMatch(input, a)))return c;}
+    }
   }
   return null;
 }
@@ -1231,8 +1376,24 @@ function getClubColors(name){return CLUB_COLORS[name]||["#1a7a3a","#FFFFFF"];}
 
 function ClubLogo({ club, size = 48 }) {
   const [ca, cb] = getClubColors(club);
-  const initials = club.split(" ").map(w => w[0]).join("").slice(0, 3).toUpperCase();
-  const fontSize = size < 36 ? size * 0.32 : size * 0.28;
+  // Surcharges d'initiales pour les clubs italiens renommés (sinon "AR", "JF", "AB"... pas top)
+  const INITIALS_OVERRIDE = {
+    "AS Roma": "ASR",
+    "SS Lazio": "SSL",
+    "Juventus FC": "JUVE",
+    "SSC Napoli": "NAP",
+    "ACF Fiorentina": "FIO",
+    "Atalanta BC": "ATA",
+    "Bologna FC": "BOL",
+    "Torino FC": "TOR",
+    "Genoa CFC": "GEN",
+    "Cagliari Calcio": "CAG",
+    "Udinese Calcio": "UDI",
+    "Empoli FC": "EMP",
+    "Parma FC": "PAR",
+  };
+  const initials = INITIALS_OVERRIDE[club] || club.split(" ").map(w => w[0]).join("").slice(0, 3).toUpperCase();
+  const fontSize = size < 36 ? (initials.length >= 4 ? size * 0.26 : size * 0.32) : (initials.length >= 4 ? size * 0.22 : size * 0.28);
   return (
     <div style={{
       width: size, height: size, borderRadius: "50%",
@@ -1607,6 +1768,9 @@ export default function LePont() {
   const [showHallOfFame, setShowHallOfFame] = useState(false);
   const [myLbRank, setMyLbRank] = useState(null);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [showAccount, setShowAccount] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(false); // Bannière de bienvenue RGPD au 1er lancement
+  const [confirmDeleteAccount, setConfirmDeleteAccount] = useState(0); // 0=closed, 1=first warning, 2=final confirm
 
   const [myLastPts, setMyLastPts] = useState(null);
   const [winStreak, setWinStreak] = useState(0);
@@ -1876,6 +2040,9 @@ export default function LePont() {
   const historyEndRef = useRef(null);
   const hasEndedRef = useRef(false);
   const queueRef = useRef([]);
+  // Mémoire des paires jouées dans les manches précédentes (reset entre parties)
+  // Pour empêcher que la manche 2 reprenne les mêmes questions que la manche 1
+  const playedPairsRef = useRef(new Set());
   const chainLogoRef = useRef({});
 
 
@@ -1938,7 +2105,14 @@ export default function LePont() {
     } catch {}
     // Fermer le splash après 2.5s
     setTimeout(function(){setShowSplash(false);}, 2500);
-    try { if (!localStorage.getItem("bb_tutorial_done")) setShowTutorial(true); } catch {}
+    // Bannière de bienvenue RGPD au tout premier lancement (avant le tutoriel)
+    try {
+      if (!localStorage.getItem("bb_welcome_seen")) {
+        setShowWelcome(true);
+      } else if (!localStorage.getItem("bb_tutorial_done")) {
+        setShowTutorial(true);
+      }
+    } catch {}
   }, []);
 
 
@@ -2184,6 +2358,7 @@ export default function LePont() {
       myLosses,
       duelsDraws: draws,
       isFriend: friendsList.includes(id),
+      requestSent: sentRequests.some(function(r){return r.to_id===id && r.status==="pending";}),
     });
     // Fetch le pseudo actuel depuis bb_pseudos (source de vérité)
     // pour afficher le bon nom même si l'user l'a changé après ses parties
@@ -2502,35 +2677,87 @@ export default function LePont() {
       if (!Array.isArray(data) || data.length === 0) { setRoomMsg(lang==="en"?"Room not found":"Salle introuvable"); return; }
       const r = data[0];
       if (r.status !== "waiting") { setRoomMsg(lang==="en"?"Game already started!":"Partie déjà lancée !"); return; }
-      const players = typeof r.players === "string" ? JSON.parse(r.players) : r.players;
-      if (players.length >= 8) { setRoomMsg(lang==="en"?"Room full (8/8)":"Salle pleine (8/8)"); return; }
-      if (players.find(function(p){return p.id===playerId;})) {
-        setRoom(r); startRoomPolling(r.id); return;
+      // Retry loop pour gérer la race condition quand plusieurs joueurs rejoignent en même temps
+      let success = false;
+      let attempt = 0;
+      let finalRoom = null;
+      while (!success && attempt < 5) {
+        attempt++;
+        // Re-lire à chaque tentative pour avoir la dernière version
+        const fresh = attempt === 1 ? data : await sbFetch("bb_rooms?code=eq."+clean+"&limit=1");
+        if (!Array.isArray(fresh) || fresh.length === 0) { setRoomMsg(lang==="en"?"Room not found":"Salle introuvable"); return; }
+        const cr = fresh[0];
+        if (cr.status !== "waiting") { setRoomMsg(lang==="en"?"Game already started!":"Partie déjà lancée !"); return; }
+        const players = typeof cr.players === "string" ? JSON.parse(cr.players) : cr.players;
+        if (players.length >= 8) { setRoomMsg(lang==="en"?"Room full (8/8)":"Salle pleine (8/8)"); return; }
+        // Déjà dans la salle ? cas du retry où mon ajout a réussi sans qu'on le sache
+        if (players.find(function(p){return p.id===playerId;})) {
+          success = true;
+          finalRoom = cr;
+          break;
+        }
+        const newPlayers = [...players, {id:playerId, name:name, score:null, status:"waiting"}];
+        await sbFetch("bb_rooms?id=eq."+cr.id, {
+          method:"PATCH",
+          body:JSON.stringify({players:JSON.stringify(newPlayers)}),
+          headers:{"Prefer":"return=minimal"}
+        });
+        // Vérifier que mon update a bien été persisté (pas écrasé par un autre joueur en parallèle)
+        await new Promise(function(resolve){return setTimeout(resolve, 200 + Math.random() * 300);});
+        const verify = await sbFetch("bb_rooms?id=eq."+cr.id+"&limit=1");
+        if (Array.isArray(verify) && verify.length > 0) {
+          const vr = verify[0];
+          const vp = typeof vr.players === "string" ? JSON.parse(vr.players) : vr.players;
+          if (vp.find(function(p){return p.id===playerId;})) {
+            success = true;
+            finalRoom = vr;
+          }
+          // Sinon : mon ajout a été écrasé, on retry
+        }
+        if (!success && attempt < 5) {
+          await new Promise(function(resolve){return setTimeout(resolve, 300 + attempt * 200 + Math.random() * 200);});
+        }
       }
-      const newPlayers = [...players, {id:playerId, name:name, score:null, status:"waiting"}];
-      await sbFetch("bb_rooms?id=eq."+r.id, {
-        method:"PATCH",
-        body:JSON.stringify({players:JSON.stringify(newPlayers)}),
-        headers:{"Prefer":"return=minimal"}
-      });
-      const updated = await sbFetch("bb_rooms?id=eq."+r.id+"&limit=1");
-      if (Array.isArray(updated) && updated.length > 0) {
-        setRoom(updated[0]);
-        setRoomInput("");
-        setRoomMsg("");
-        startRoomPolling(r.id);
+      if (!success) {
+        setRoomMsg(lang==="en"?"Could not join (try again)":"Connexion impossible (réessaie)");
+        return;
       }
+      setRoom(finalRoom);
+      setRoomInput("");
+      setRoomMsg("");
+      startRoomPolling(finalRoom.id);
     } catch(e) { console.error(e); setRoomMsg("Erreur connexion"); }
   }
 
   function startRoomPolling(roomId) {
     clearInterval(roomPollRef.current);
     let gameStarted = false;
+    let rejoinAttempts = 0;
     roomPollRef.current = setInterval(async function() {
       try {
         const data = await sbFetch("bb_rooms?id=eq."+roomId+"&limit=1");
         if (!Array.isArray(data) || data.length === 0) return;
         const r = data[0];
+        // Auto-rejoin : si je ne suis plus dans la liste (écrasé par une race), je me re-rejoins
+        if (r.status === "waiting") {
+          const players = typeof r.players === "string" ? JSON.parse(r.players) : r.players;
+          const meInRoom = players.find(function(p){return p.id===playerId;});
+          if (!meInRoom && rejoinAttempts < 3 && players.length < 8) {
+            rejoinAttempts++;
+            const name = (playerName||"Anonyme").trim();
+            const newPlayers = [...players, {id:playerId, name:name, score:null, status:"waiting"}];
+            try {
+              await sbFetch("bb_rooms?id=eq."+roomId, {
+                method:"PATCH",
+                body:JSON.stringify({players:JSON.stringify(newPlayers)}),
+                headers:{"Prefer":"return=minimal"}
+              });
+            } catch(e) {}
+            return;
+          } else if (meInRoom) {
+            rejoinAttempts = 0; // reset si je suis bien là
+          }
+        }
         setRoom(r);
         if (r.status === "playing" && !gameStarted) {
           gameStarted = true;
@@ -2648,26 +2875,59 @@ export default function LePont() {
     setWaitingForRoom(true);
     setActiveDuel(null);
     activeDuelRef.current = null;
+    // Retry loop pour gérer les race conditions quand plusieurs joueurs finissent simultanément
+    // (en 8 joueurs, sans retry, certains updates étaient écrasés et le statut "done" était perdu)
+    let success = false;
+    let attempt = 0;
+    let finalRoom = null;
+    while (!success && attempt < 5) {
+      attempt++;
+      try {
+        const data = await sbFetch("bb_rooms?id=eq."+roomId+"&limit=1");
+        if (!Array.isArray(data) || data.length === 0) { setWaitingForRoom(false); return; }
+        const r = data[0];
+        const players = typeof r.players === "string" ? JSON.parse(r.players) : r.players;
+        // Vérifier si mon statut est déjà "done" (cas d'un retry réussi sans le savoir)
+        const me = players.find(function(p){return p.id === playerId;});
+        if (me && me.status === "done" && me.score === sc) {
+          success = true;
+          finalRoom = r;
+          break;
+        }
+        const updated = players.map(function(p){
+          return p.id === playerId ? Object.assign({}, p, {score:sc, status:"done"}) : p;
+        });
+        const allDone = updated.every(function(p){return p.status==="done";});
+        await sbFetch("bb_rooms?id=eq."+roomId, {
+          method:"PATCH",
+          body:JSON.stringify({players:JSON.stringify(updated), status:allDone?"complete":"scoring"}),
+          headers:{"Prefer":"return=minimal"}
+        });
+        // Vérifier que mon update a bien été persisté (pas écrasé par un autre joueur en parallèle)
+        await new Promise(function(resolve){return setTimeout(resolve, 200 + Math.random() * 300);});
+        const verify = await sbFetch("bb_rooms?id=eq."+roomId+"&limit=1");
+        if (Array.isArray(verify) && verify.length > 0) {
+          const vr = verify[0];
+          const vp = typeof vr.players === "string" ? JSON.parse(vr.players) : vr.players;
+          const meAfter = vp.find(function(p){return p.id === playerId;});
+          if (meAfter && meAfter.status === "done" && meAfter.score === sc) {
+            success = true;
+            finalRoom = vr;
+          }
+          // Sinon : mon update a été écrasé, on retry avec un petit délai aléatoire (backoff)
+        }
+      } catch(e) { console.error("submitRoomScore attempt "+attempt+":", e); }
+      if (!success && attempt < 5) {
+        await new Promise(function(resolve){return setTimeout(resolve, 300 + attempt * 200 + Math.random() * 200);});
+      }
+    }
+    if (!success) { setWaitingForRoom(false); return; }
     try {
-      const data = await sbFetch("bb_rooms?id=eq."+roomId+"&limit=1");
-      if (!Array.isArray(data) || data.length === 0) { setWaitingForRoom(false); return; }
-      const r = data[0];
-      const players = typeof r.players === "string" ? JSON.parse(r.players) : r.players;
-      const updated = players.map(function(p){
-        return p.id === playerId ? Object.assign({}, p, {score:sc, status:"done"}) : p;
-      });
-      const allDone = updated.every(function(p){return p.status==="done";});
-      await sbFetch("bb_rooms?id=eq."+roomId, {
-        method:"PATCH",
-        body:JSON.stringify({players:JSON.stringify(updated), status:allDone?"complete":"scoring"}),
-        headers:{"Prefer":"return=minimal"}
-      });
+      const players = typeof finalRoom.players === "string" ? JSON.parse(finalRoom.players) : finalRoom.players;
+      const allDone = players.every(function(p){return p.status==="done";});
       if (allDone) {
         // On est le dernier — afficher les résultats directement
-        const finalData = await sbFetch("bb_rooms?id=eq."+roomId+"&limit=1");
-        if (Array.isArray(finalData) && finalData.length > 0) {
-          showRoomResults(finalData[0]);
-        }
+        showRoomResults(finalRoom);
       } else {
         // Attendre les autres via polling
         startRoomResultPolling(roomId, duel.rounds||1);
@@ -2692,6 +2952,29 @@ export default function LePont() {
           setTimeout(function(){setAbandonNotif("");}, 5000);
         }
         const allDone = players.every(function(p){return p.status==="done";});
+        // Auto-reconciliation : si certains joueurs ont un score > 0 mais sont restés "in_progress"
+        // depuis plus de 30s, c'est probablement une race condition (leur done a été écrasé).
+        // On force leur status à done pour débloquer la salle.
+        const elapsed = Date.now() - startedAt;
+        const stuckPlayers = players.filter(function(p){
+          return p.status !== "done" && (p.score || 0) > 0;
+        });
+        if (!allDone && elapsed > 30000 && stuckPlayers.length > 0) {
+          const fixed = players.map(function(p){
+            return (p.status !== "done" && (p.score || 0) > 0) ? Object.assign({}, p, {status:"done"}) : p;
+          });
+          const nowAllDone = fixed.every(function(p){return p.status==="done";});
+          await sbFetch("bb_rooms?id=eq."+roomId, {
+            method:"PATCH",
+            body:JSON.stringify({players:JSON.stringify(fixed), status:nowAllDone?"complete":"scoring"}),
+            headers:{"Prefer":"return=minimal"}
+          });
+          if (nowAllDone) {
+            clearInterval(roomPollRef.current);
+            showRoomResults(Object.assign({}, r, {players: JSON.stringify(fixed)}));
+            return;
+          }
+        }
         const timedOut = Date.now() - startedAt > maxWait;
         if (allDone || timedOut) {
           clearInterval(roomPollRef.current);
@@ -2979,6 +3262,45 @@ export default function LePont() {
     setFriendLoading(false);
   }
 
+  // Suppression complète du compte — requis par Apple App Store / RGPD
+  // Efface toutes les données utilisateur dans Supabase + localStorage
+  async function deleteAccount() {
+    try {
+      // 1. Supprimer du Supabase (best-effort sur chaque table)
+      const tables = [
+        "bb_pseudos?player_id=eq." + playerId,
+        "bb_scores?player_id=eq." + playerId,
+        "bb_push_subscriptions?player_id=eq." + playerId,
+        "bb_friend_requests?or=(from_id.eq." + playerId + ",to_id.eq." + playerId + ")",
+        "bb_duels?or=(challenger_id.eq." + playerId + ",opponent_id.eq." + playerId + ")",
+        "bb_reports?reporter_id=eq." + playerId,
+      ];
+      for (const t of tables) {
+        try {
+          await sbFetch(t, { method: "DELETE", headers: {"Prefer":"return=minimal"} });
+        } catch(e) { console.error("Delete failed for", t, e); }
+      }
+      // 2. Supprimer l'avatar du Storage (best-effort)
+      try {
+        await fetch(SB_URL + "/storage/v1/object/avatars/" + playerId + ".jpg", {
+          method: "DELETE",
+          headers: { "Authorization": "Bearer " + SB_KEY, "apikey": SB_KEY }
+        });
+      } catch(e) {}
+      // 3. Vider le localStorage et reload l'app pour repartir à zéro
+      try {
+        const keysToRemove = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (k && k.startsWith("bb_")) keysToRemove.push(k);
+        }
+        keysToRemove.forEach(function(k){ localStorage.removeItem(k); });
+      } catch {}
+      // 4. Reload pour réinitialiser l'app entièrement
+      window.location.href = "/";
+    } catch(e) { console.error("deleteAccount error:", e); }
+  }
+
   async function addFriend(pseudo) {
     const clean = pseudo.trim();
     if (clean.length < 2) { setFriendMsg(lang==="en"?"Username too short":"Pseudo trop court"); return; }
@@ -3015,6 +3337,8 @@ export default function LePont() {
       }
       setFriendMsg((lang==="en"?"✓ Request sent to ":"✓ Demande envoyée à ")+targetName+" !");
       setFriendInput("");
+      // Mise à jour du profil consulté : marquer la demande comme envoyée pour feedback visuel
+      setViewedProfileData(function(prev){ return prev ? {...prev, requestSent: true} : prev; });
       // Retirer de la blacklist si besoin
       try {
         const removed = JSON.parse(localStorage.getItem("bb_removed_friends") || "[]");
@@ -3029,6 +3353,14 @@ export default function LePont() {
         }
       } catch {}
       setSentRequests(function(prev){return [...prev, {id:"tmp-"+Date.now(), from_id:playerId, to_id:targetId, to_name:targetName, status:"pending"}];});
+      // Notif push à la cible (best-effort, ignore les erreurs)
+      try {
+        fetch(SB_URL + "/functions/v1/send-friend-notification", {
+          method: "POST",
+          headers: {"Content-Type":"application/json","Authorization":"Bearer "+SB_KEY},
+          body: JSON.stringify({to_id: targetId, from_name: playerName||"Quelqu'un", type:"request"})
+        }).catch(function(){});
+      } catch {}
     } catch(e) { setFriendMsg(lang==="en"?"❌ Network error. Try again.":"❌ Erreur réseau. Réessaie."); }
   }
 
@@ -3054,6 +3386,14 @@ export default function LePont() {
       setFriendsList(newList);
       fetchFriendScores(newList);
       loadFriendRequests();
+      // Notif push à l'expéditeur de la demande pour lui dire qu'on a accepté (best-effort)
+      try {
+        fetch(SB_URL + "/functions/v1/send-friend-notification", {
+          method: "POST",
+          headers: {"Content-Type":"application/json","Authorization":"Bearer "+SB_KEY},
+          body: JSON.stringify({to_id: req.from_id, from_name: playerName||"Quelqu'un", type:"accepted"})
+        }).catch(function(){});
+      } catch {}
     } catch(e) { console.error(e); }
   }
 
@@ -3145,6 +3485,10 @@ export default function LePont() {
       const paris = new Date(now.toLocaleString('en-US',{timeZone:'Europe/Paris'}));
       const prevMonth = new Date(paris.getFullYear(), paris.getMonth() - 1, 1);
       const prevMonthKey = prevMonth.getFullYear() + "-" + String(prevMonth.getMonth()+1).padStart(2,'0');
+      // Garde supplémentaire : prevMonthKey doit être >= mois de SEASON_START
+      // (sinon on essaierait de clôturer une saison qui n'a jamais existé)
+      const seasonStartKey = "2026-04";
+      if (prevMonthKey < seasonStartKey) return;
       // Vérifier si la saison précédente a déjà été clôturée
       const prev = await sbFetch("bb_seasons?season_number=eq."+(season.num-1)+"&limit=1");
       if (Array.isArray(prev) && prev.length > 0) return; // déjà clôturée
@@ -3153,7 +3497,8 @@ export default function LePont() {
       const rows = await sbFetch("bb_pseudos?select=player_id,pseudo,xp_season&xp_season_month=eq."+prevMonthKey+"&order=xp_season.desc&limit=10");
       if (!Array.isArray(rows) || rows.length === 0) return;
       const top = rows.filter(r => (r.xp_season || 0) > 0);
-      if (top.length === 0) return;
+      // Garde anti-bidon : il faut au moins 3 joueurs ayant participé pour valider la saison
+      if (top.length < 3) return;
 
       const champion = top[0];
       const runnerUp = top[1] || null;
@@ -3547,6 +3892,22 @@ export default function LePont() {
   function endRound() {
     clearInterval(timerRef.current);
     const rs = scoreRef.current;
+    
+    // Anti-répétition : mémoriser les paires vues dans cette manche (solo uniquement)
+    const isInRoom = activeDuelRef.current && activeDuelRef.current.isRoom;
+    if (!isInRoom && queueRef.current && queueRef.current.length > 0) {
+      try {
+        const seenKey = "goatfc_recent_pairs_" + diff;
+        const seen = JSON.parse(localStorage.getItem(seenKey) || "[]");
+        // Les paires vues = toutes celles du début jusqu'à qIdx (qIdxRef peut pas exister, on prend tout ce qui est avant)
+        const seenThisRound = queueRef.current.slice(0, Math.min(queueRef.current.length, 30))
+          .map(item => item.c1 + "|||" + item.c2);
+        // Garder uniquement les ~60 paires récentes (2 parties de 30)
+        const merged = [...seenThisRound, ...seen].slice(0, 60);
+        localStorage.setItem(seenKey, JSON.stringify([...new Set(merged)]));
+      } catch(e) {}
+    }
+    
     setRoundScores(prev=>{
       const next=[...prev,rs];
       if(currentRound>=totalRounds){
@@ -3592,6 +3953,8 @@ export default function LePont() {
 
   function startRound(round) {
     roundStartTime.current = null; // timer will set on next tick
+    // Si manche 1, on reset le tracker des paires jouées (nouvelle partie)
+    if (round === 1) playedPairsRef.current = new Set();
     // FIX multi : lire diff depuis activeDuelRef si en room (évite le stale state React)
     const isInRoom = activeDuelRef.current && activeDuelRef.current.isRoom;
     const effectiveDiff = isInRoom && activeDuelRef.current.diff ? activeDuelRef.current.diff : diff;
@@ -3609,7 +3972,40 @@ export default function LePont() {
       ...doShuffle([...currentQ]).slice(0, Math.max(targetCurrent, currentQ.length)),
       ...doShuffle([...retiredQ]).slice(0, Math.min(targetRetired, retiredQ.length)),
     ];
-    const q = doShuffle(picked.length > 0 ? picked : [...dbPool]);
+    let q = doShuffle(picked.length > 0 ? picked : [...dbPool]);
+
+    // Anti-répétition INTRA-PARTIE : exclure les paires déjà jouées dans les manches précédentes
+    // (sinon en partie de 2 manches on peut retomber sur les mêmes paires)
+    if (round > 1 && playedPairsRef.current.size > 0) {
+      const fresh = q.filter(item => !playedPairsRef.current.has(item.c1 + "|||" + item.c2));
+      const stale = q.filter(item => playedPairsRef.current.has(item.c1 + "|||" + item.c2));
+      // Si on a assez de paires fraîches (>20), on exclut totalement les paires jouées
+      if (fresh.length >= 20) {
+        q = fresh;
+      } else {
+        // Sinon on met les paires jouées en fin de queue (au cas où on en a besoin)
+        q = [...fresh, ...stale];
+      }
+    }
+    
+    // Anti-répétition en SOLO uniquement : évite de reposer les paires des 2 dernières parties en premier
+    // On lit l'historique depuis localStorage, on met les paires récentes en fin de queue
+    if (!isInRoom) {
+      try {
+        const recent = JSON.parse(localStorage.getItem("goatfc_recent_pairs_" + effectiveDiff) || "[]");
+        const recentSet = new Set(recent);
+        if (recentSet.size > 0) {
+          const fresh = q.filter(item => !recentSet.has(item.c1 + "|||" + item.c2));
+          const stale = q.filter(item => recentSet.has(item.c1 + "|||" + item.c2));
+          // Si on a assez de paires fraîches, on ne met les stales qu'à la fin
+          if (fresh.length >= 30) {
+            q = [...fresh, ...stale];
+          }
+          // Sinon tant pis, on garde l'ordre random (pool trop petit)
+        }
+      } catch(e) {}
+    }
+    
     queueRef.current = q;
     setQueue(q); setQIdx(0); setScore(0); scoreRef.current=0; setRoundAnswers([]);
     setTimeLeft(ROUND_DURATION); setGuess(""); setFlash(null); setFeedback(null);
@@ -3646,8 +4042,35 @@ export default function LePont() {
     const currentPool = pool.filter(p => !isRetiredPlayer(p.name));
     const retiredPool = pool.filter(p => isRetiredPlayer(p.name));
     const useCurrentStart = rand() < 0.8 && currentPool.length > 0;
-    const startPool = useCurrentStart ? currentPool : (retiredPool.length > 0 ? retiredPool : pool);
+    let startPool = useCurrentStart ? currentPool : (retiredPool.length > 0 ? retiredPool : pool);
+    
+    // Anti-répétition solo : exclure les starters des 3 dernières parties si on a assez de pool
+    if (!isInRoom) {
+      try {
+        const recent = JSON.parse(localStorage.getItem("goatfc_recent_mercato_starters_" + effectiveDiff) || "[]");
+        const recentSet = new Set(recent);
+        if (recentSet.size > 0) {
+          const fresh = startPool.filter(p => !recentSet.has(p.name));
+          // Seulement si on a encore assez de joueurs frais (> 20% du pool)
+          if (fresh.length >= Math.max(10, startPool.length * 0.2)) {
+            startPool = fresh;
+          }
+        }
+      } catch(e) {}
+    }
+    
     const start = startPool[Math.floor(rand() * startPool.length)];
+    
+    // Sauvegarder le starter pour anti-répétition (solo uniquement)
+    if (!isInRoom) {
+      try {
+        const key = "goatfc_recent_mercato_starters_" + effectiveDiff;
+        const recent = JSON.parse(localStorage.getItem(key) || "[]");
+        const updated = [start.name, ...recent.filter(n => n !== start.name)].slice(0, 5);
+        localStorage.setItem(key, JSON.stringify(updated));
+      } catch(e) {}
+    }
+    
     const usedP = new Set([start.name]);
     
     setChainPlayer(start.name); setChainUsedClubs(new Set()); setChainUsedPlayers(usedP);
@@ -3848,10 +4271,11 @@ export default function LePont() {
     // Pas d'updateDayStreak() : révéler la réponse ne maintient pas la streak
   }
 
-  function handleDailySubmit() {
-    if (!dailyGuess.trim() || !dailyPlayer) return;
+  function handleDailySubmit(forcedValue) {
+    const rawValue = forcedValue !== undefined ? forcedValue : dailyGuess;
+    if (!rawValue.trim() || !dailyPlayer) return;
     const normalize = s => s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
-    const guess = normalize(dailyGuess);
+    const guess = normalize(rawValue);
     const answer = normalize(dailyPlayer.name);
     const newTries = dailyTries + 1;
     setDailyTries(newTries);
@@ -3860,7 +4284,8 @@ export default function LePont() {
     const answerParts = answer.split(" ");
     const isCorrect = guess === answer
       || answerParts.some(function(p){ return p.length >= 3 && guess === p; })
-      || (answer.includes(guess) && guess.length > 4);
+      || (answer.includes(guess) && guess.length > 4)
+      || (rawValue.trim().length >= 4 && fuzzyMatch(rawValue, dailyPlayer.name));
     if (isCorrect) {
       setDailySuccess(true);
       setDailyFlash("ok");
@@ -3978,6 +4403,9 @@ export default function LePont() {
   }
 
   function nextQ() {
+    // Enregistrer la paire que l'on vient de quitter (pour anti-répétition entre manches)
+    const justPlayed = queue[qIdx % Math.max(queue.length, 1)];
+    if (justPlayed) playedPairsRef.current.add(justPlayed.c1 + "|||" + justPlayed.c2);
     setQIdx(i=>{
       const next = i+1;
       const isInRoom = activeDuelRef.current && activeDuelRef.current.isRoom;
@@ -4042,8 +4470,9 @@ export default function LePont() {
     }
   }
 
-  function handleChainSubmit() {
-    const g=guess.trim(); if(!g) return;
+  function handleChainSubmit(forcedValue) {
+    const rawValue = forcedValue !== undefined ? forcedValue : guess;
+    const g=rawValue.trim(); if(!g) return;
     const playerClubs=getPlayerClubs(chainPlayer);
     const available=playerClubs.filter(c=>!chainUsedClubs.has(c));
     const matched=matchClub(g,available);
@@ -4121,10 +4550,8 @@ export default function LePont() {
     const randCP = passSeed !== null ? seededRandom(passSeed) : Math.random;
     const validClubs=(PLAYERS_CLEAN.find(p=>p.name===chainPlayer)?.clubs||[]).filter(c=>!chainUsedClubs.has(c));
     const chosen=validClubs.length>0?validClubs[Math.floor(randCP()*validClubs.length)]:null;
-    // Note : le club "chosen" sert juste à trouver le prochain joueur de la chaîne,
-    // mais on NE l'ajoute PAS aux chainUsedClubs car l'utilisateur ne l'a pas réellement validé.
-    // Sinon un user qui passe plusieurs questions se retrouve avec des clubs "brûlés"
-    // qu'il n'a jamais joués, et se fait bloquer ensuite avec des "club déjà utilisé" incompréhensibles.
+    // Le club "chosen" est révélé en bas et BRÛLÉ pour la suite de la partie : sinon c'est de la triche
+    // (l'user passe pour découvrir la réponse, puis la retape au tour suivant).
     // Helper : pioche un nouveau joueur aléatoire de la base (fallback quand la chaîne bloque)
     // Au lieu de terminer la partie prématurément, on relance avec un joueur tout frais
     const pickFallbackPlayer = () => {
@@ -4155,14 +4582,13 @@ export default function LePont() {
       setAnimKey(k=>k+1);
       return;
     }
-    const newUsed=new Set(chainUsedClubs); newUsed.add(chosen);
+    const newUsed=new Set(chainUsedClubs); // ne PAS ajouter chosen → l'user ne voit pas le club (cadenas), donc on le laisse réutilisable
     const clubPlayers=getPlayersForClub(chosen).filter(p=>!chainUsedPlayers.has(p)&&getPlayerClubs(p).some(c=>!newUsed.has(c)));
     if(clubPlayers.length===0){
       // Pas de joueur pour ce club → pioche nouveau joueur frais
       const fallback = pickFallbackPlayer();
       if(!fallback){endChain();return;}
       const newUsedP=new Set(chainUsedPlayers); newUsedP.add(fallback);
-      // Ne pas ajouter "chosen" aux clubs utilisés — l'user n'a pas validé ce club
       setChainUsedPlayers(newUsedP);
       setChainHistory(prev=>[...prev,{player:chainPlayer,club:chosen,passed:true}]);
       setChainPlayer(fallback); setChainLastClub(chosen); setGuess("");
@@ -4187,7 +4613,6 @@ export default function LePont() {
     const nextPool2 = useCurrent2 ? currentNext2 : finalPool2;
     const next=nextPool2[Math.floor(randCP()*nextPool2.length)];
     const newUsedP=new Set(chainUsedPlayers); newUsedP.add(next);
-    // Ne pas ajouter "chosen" aux clubs utilisés — l'user n'a pas validé ce club
     setChainUsedPlayers(newUsedP);
     setChainHistory(prev=>[...prev,{player:chainPlayer,club:chosen,passed:true}]);
     setChainPlayer(next); setChainLastClub(chosen); setGuess("");
@@ -4709,6 +5134,46 @@ export default function LePont() {
     </div>
   );
 
+  // ── DUEL CREATE MODAL (partagé entre écrans userProfile, friends, home, leaderboard) ──
+  const duelCreateModal = showDuelCreate && (
+    <div key="duel-create-modal" style={{position:"fixed",inset:0,zIndex:9998,background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+      <div style={{background:"rgba(15,25,15,.95)",borderRadius:24,padding:"28px 24px",maxWidth:340,width:"calc(100% - 32px)",border:"1px solid rgba(255,255,255,.1)"}}>
+        <div style={{fontFamily:G.heading,fontSize:28,color:G.white,marginBottom:4}}>{lang==="en"?"CHALLENGE":"DÉFIER"}</div>
+        <div style={{fontSize:14,color:"rgba(255,255,255,.5)",marginBottom:20}}>vs <strong style={{color:G.gold}}>{showDuelCreate.name}</strong></div>
+        <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:8}}>Mode</div>
+        <div style={{display:"flex",gap:8,marginBottom:16}}>
+          {["pont","chaine"].map(function(m){return(
+            <button key={m} onClick={function(){setDuelMode(m);}} style={{flex:1,padding:"10px",borderRadius:12,border:"1.5px solid "+(duelMode===m?G.accent:"rgba(255,255,255,.15)"),background:duelMode===m?"rgba(0,230,118,.1)":"transparent",color:duelMode===m?G.accent:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:13}}>
+              {m==="pont"?"The Plug":"The Mercato"}
+            </button>
+          );})}
+        </div>
+        {duelMode==="pont" && (
+          <>
+            <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:8}}>{lang==="en"?"Difficulty":"Difficulté"}</div>
+            <div style={{display:"flex",gap:8,marginBottom:16}}>
+              {["facile","moyen","expert"].map(function(d){return(
+                <button key={d} onClick={function(){setDuelDiff(d);}} style={{flex:1,padding:"8px",borderRadius:10,border:"1.5px solid "+(duelDiff===d?G.gold:"rgba(255,255,255,.15)"),background:duelDiff===d?"rgba(255,214,0,.1)":"transparent",color:duelDiff===d?G.gold:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:12,textTransform:"capitalize"}}>
+                  {d}
+                </button>
+              );})}
+            </div>
+            <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:8}}>{lang==="en"?"Rounds":"Manches"}</div>
+            <div style={{display:"flex",gap:8,marginBottom:20}}>
+              {[1,2,3].map(function(r){return(
+                <button key={r} onClick={function(){setDuelRounds(r);}} style={{flex:1,padding:"10px",borderRadius:12,border:"1.5px solid "+(duelRounds===r?"#fff":"rgba(255,255,255,.15)"),background:duelRounds===r?"rgba(255,255,255,.1)":"transparent",color:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:15}}>{r}</button>
+              );})}
+            </div>
+          </>
+        )}
+        <div style={{display:"flex",gap:8,marginTop:8}}>
+          <button onClick={function(){setShowDuelCreate(null);}} style={{flex:1,padding:"12px",background:"rgba(255,255,255,.07)",color:"rgba(255,255,255,.5)",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14}}>{lang==="en"?"Cancel":"Annuler"}</button>
+          <button onClick={function(){createDuel(showDuelCreate);}} style={{flex:2,padding:"12px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>{lang==="en"?"Send challenge ⚡":"Envoyer le défi ⚡"}</button>
+        </div>
+      </div>
+    </div>
+  );
+
   // ── HISTORY MODAL (historique des questions de la partie qui vient de finir) ──
   const historyModal = showHistory && (
     <div key="history-modal" onClick={()=>setShowHistory(false)} style={{position:"fixed",inset:0,zIndex:9999,background:"rgba(0,0,0,.85)",display:"flex",alignItems:"flex-end",justifyContent:"center",animation:"fadeIn .2s ease",backdropFilter:"blur(8px)"}}>
@@ -5136,40 +5601,7 @@ export default function LePont() {
           <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:180,height:180,borderRadius:"50%",border:"2px solid rgba(255,255,255,.15)"}}/>
           <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.45)"}}/>
         </div>
-        {showDuelCreate && (
-          <div style={{position:"fixed",inset:0,zIndex:300,background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center"}}>
-            <div style={{background:"rgba(15,25,15,.95)",borderRadius:24,padding:"28px 24px",maxWidth:340,width:"calc(100% - 32px)",border:"1px solid rgba(255,255,255,.1)"}}>
-              <div style={{fontFamily:G.heading,fontSize:28,color:G.white,marginBottom:4}}>DÉFIER</div>
-              <div style={{fontSize:14,color:"rgba(255,255,255,.5)",marginBottom:20}}>vs <strong style={{color:G.gold}}>{showDuelCreate.name}</strong></div>
-              <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:8}}>Mode</div>
-              <div style={{display:"flex",gap:8,marginBottom:16}}>
-                {["pont","chaine"].map(function(m){return(
-                  <button key={m} onClick={function(){setDuelMode(m);}} style={{flex:1,padding:"10px",borderRadius:12,border:"1.5px solid "+(duelMode===m?G.accent:"rgba(255,255,255,.15)"),background:duelMode===m?"rgba(0,230,118,.1)":"transparent",color:duelMode===m?G.accent:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:13}}>
-                    {m==="pont"?"The Plug":"The Mercato"}
-                  </button>
-                );})}
-              </div>
-              <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:8}}>{lang==="en"?"Difficulty":"Difficulté"}</div>
-              <div style={{display:"flex",gap:8,marginBottom:16}}>
-                {["facile","moyen","expert"].map(function(d){return(
-                  <button key={d} onClick={function(){setDuelDiff(d);}} style={{flex:1,padding:"8px",borderRadius:10,border:"1.5px solid "+(duelDiff===d?G.gold:"rgba(255,255,255,.15)"),background:duelDiff===d?"rgba(255,214,0,.1)":"transparent",color:duelDiff===d?G.gold:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:12,textTransform:"capitalize"}}>
-                    {d}
-                  </button>
-                );})}
-              </div>
-              <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:8}}>{lang==="en"?"Rounds":"Manches"}</div>
-              <div style={{display:"flex",gap:8,marginBottom:20}}>
-                {[1,2,3].map(function(r){return(
-                  <button key={r} onClick={function(){setDuelRounds(r);}} style={{flex:1,padding:"10px",borderRadius:12,border:"1.5px solid "+(duelRounds===r?"#fff":"rgba(255,255,255,.15)"),background:duelRounds===r?"rgba(255,255,255,.1)":"transparent",color:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:15}}>{r}</button>
-                );})}
-              </div>
-              <div style={{display:"flex",gap:8}}>
-                <button onClick={function(){setShowDuelCreate(null);}} style={{flex:1,padding:"12px",background:"rgba(255,255,255,.07)",color:"rgba(255,255,255,.5)",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14}}>{lang==="en"?"Cancel":"Annuler"}</button>
-                <button onClick={function(){createDuel(showDuelCreate);}} style={{flex:2,padding:"12px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>{lang==="en"?"Send challenge ⚡":"Envoyer le défi ⚡"}</button>
-              </div>
-            </div>
-          </div>
-        )}
+        {duelCreateModal}
         {/* Modal confirmation suppression ami */}
         {confirmRemove && (
           <div style={{position:"fixed",inset:0,zIndex:400,background:"rgba(0,0,0,.75)",backdropFilter:"blur(6px)",display:"flex",alignItems:"center",justifyContent:"center"}}>
@@ -5264,6 +5696,91 @@ export default function LePont() {
           <button onClick={function(){setShowFriends(false);setSelectedFriend(null);}} style={{width:"100%",background:"rgba(255,255,255,.05)",color:"rgba(255,255,255,.5)",border:"1px solid rgba(255,255,255,.1)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,padding:"10px",marginTop:4}}>{lang==="en"?"↩ Back":"↩ Retour"}</button>
         </div>
       </div>
+    );
+  }
+
+  if (showAccount) {
+    return (
+      <>
+      <button onClick={function(){setShowAccount(false);setConfirmDeleteAccount(0);}} style={{position:"fixed",top:14,left:14,zIndex:100,background:"rgba(0,15,0,.85)",border:"1px solid rgba(255,255,255,.15)",borderRadius:"50%",width:42,height:42,cursor:"pointer",color:G.white,fontSize:20,display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(10px)",boxShadow:"0 4px 14px rgba(0,0,0,.4)"}}>←</button>
+      <div style={{...shell,animation:"fadeUp .4s ease",overflow:isDesktop?"visible":"auto"}} key="account">
+        <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
+          <div style={{position:"absolute",top:-100,left:-100,width:300,height:300,background:"radial-gradient(circle, rgba(0,230,118,.15) 0%, transparent 70%)",borderRadius:"50%"}}/>
+        </div>
+        <div style={{zIndex:1,padding:"50px 20px 14px",textAlign:"center"}}>
+          <div style={{fontFamily:G.heading,fontSize:34,color:G.white,letterSpacing:1.4}}>{lang==="en"?"MY ACCOUNT":"MON COMPTE"}</div>
+          <div style={{fontSize:13,color:"rgba(255,255,255,.5)",marginTop:6,fontWeight:600}}>{lang==="en"?"Manage your account settings":"Gère les paramètres de ton compte"}</div>
+        </div>
+
+        <div style={{zIndex:1,padding:"20px 20px",display:"flex",flexDirection:"column",gap:14,maxWidth:560,margin:"0 auto",width:"100%",boxSizing:"border-box"}}>
+
+          {/* Identité */}
+          <div style={{padding:"18px 20px",background:"rgba(255,255,255,.06)",borderRadius:16,border:"1px solid rgba(255,255,255,.1)"}}>
+            <div style={{fontSize:11,color:"rgba(255,255,255,.4)",fontWeight:700,letterSpacing:1.5,textTransform:"uppercase",marginBottom:6}}>{lang==="en"?"Pseudo":"Pseudo"}</div>
+            <div style={{fontSize:20,color:G.white,fontWeight:800}}>{playerName||"—"}</div>
+            <div style={{fontSize:11,color:"rgba(255,255,255,.4)",fontWeight:600,marginTop:6}}>ID: {playerId}</div>
+          </div>
+
+          {/* Liens légaux */}
+          <a href="/privacy" target="_blank" rel="noopener noreferrer" style={{padding:"14px 18px",background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",borderRadius:14,color:"rgba(255,255,255,.7)",fontFamily:G.font,fontSize:14,fontWeight:700,display:"flex",alignItems:"center",gap:12,textAlign:"left",textDecoration:"none"}}>
+            <span style={{fontSize:18}}>🔒</span>
+            <div style={{flex:1}}>{lang==="en"?"Privacy Policy":"Politique de confidentialité"}</div>
+            <span style={{fontSize:14,color:"rgba(255,255,255,.4)"}}>↗</span>
+          </a>
+
+          <a href="/terms" target="_blank" rel="noopener noreferrer" style={{padding:"14px 18px",background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",borderRadius:14,color:"rgba(255,255,255,.7)",fontFamily:G.font,fontSize:14,fontWeight:700,display:"flex",alignItems:"center",gap:12,textAlign:"left",textDecoration:"none"}}>
+            <span style={{fontSize:18}}>📄</span>
+            <div style={{flex:1}}>{lang==="en"?"Terms of Service":"Conditions générales"}</div>
+            <span style={{fontSize:14,color:"rgba(255,255,255,.4)"}}>↗</span>
+          </a>
+
+          {/* Zone danger */}
+          <div style={{marginTop:20,padding:"16px",background:"rgba(239,68,68,.08)",border:"1px solid rgba(239,68,68,.2)",borderRadius:14}}>
+            <div style={{fontSize:11,color:"#ef4444",fontWeight:700,letterSpacing:1.5,textTransform:"uppercase",marginBottom:8}}>{lang==="en"?"Danger zone":"Zone de danger"}</div>
+            <div style={{fontSize:13,color:"rgba(255,255,255,.7)",marginBottom:14,lineHeight:1.5}}>{lang==="en"?"Deleting your account is permanent. All your scores, friends, and data will be erased forever.":"La suppression de ton compte est définitive. Tous tes scores, amis et données seront effacés à jamais."}</div>
+            <button onClick={function(){setConfirmDeleteAccount(1);}} style={{width:"100%",padding:"13px",background:"transparent",color:"#ef4444",border:"1px solid #ef4444",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>
+              {lang==="en"?"🗑 Delete my account":"🗑 Supprimer mon compte"}
+            </button>
+          </div>
+
+          {/* Modal de confirmation suppression compte */}
+          {confirmDeleteAccount > 0 && (
+            <div onClick={function(e){if(e.target===e.currentTarget)setConfirmDeleteAccount(0);}} style={{position:"fixed",inset:0,background:"rgba(0,0,0,.85)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:20,backdropFilter:"blur(8px)"}}>
+              <div style={{background:G.bg,borderRadius:20,padding:"24px 22px",maxWidth:420,width:"100%",border:"1px solid rgba(239,68,68,.4)",boxShadow:"0 12px 40px rgba(0,0,0,.6)"}}>
+                <div style={{fontSize:42,textAlign:"center",marginBottom:8}}>⚠️</div>
+                <div style={{fontFamily:G.heading,fontSize:22,color:"#ef4444",textAlign:"center",letterSpacing:1.2,marginBottom:14}}>
+                  {confirmDeleteAccount === 1 ? (lang==="en"?"ARE YOU SURE?":"ES-TU SÛR ?") : (lang==="en"?"LAST WARNING":"DERNIER AVERTISSEMENT")}
+                </div>
+                <div style={{fontSize:14,color:"rgba(255,255,255,.85)",textAlign:"center",marginBottom:6,lineHeight:1.5}}>
+                  {confirmDeleteAccount === 1
+                    ? (lang==="en"?"This will permanently delete:":"Cela va supprimer définitivement :")
+                    : (lang==="en"?"This cannot be undone. Confirm one last time?":"C'est irréversible. Tu confirmes une dernière fois ?")}
+                </div>
+                {confirmDeleteAccount === 1 && (
+                  <ul style={{fontSize:13,color:"rgba(255,255,255,.7)",margin:"10px 0 18px 0",paddingLeft:24,lineHeight:1.7}}>
+                    <li>{lang==="en"?"Your pseudo and avatar":"Ton pseudo et avatar"}</li>
+                    <li>{lang==="en"?"All your scores and XP":"Tous tes scores et XP"}</li>
+                    <li>{lang==="en"?"Your friends and duels":"Tes amis et duels"}</li>
+                    <li>{lang==="en"?"Your push notifications":"Tes notifications push"}</li>
+                  </ul>
+                )}
+                <div style={{display:"flex",gap:10,marginTop:18}}>
+                  <button onClick={function(){setConfirmDeleteAccount(0);}} style={{flex:1,padding:"13px",background:"rgba(255,255,255,.08)",color:G.white,border:"1px solid rgba(255,255,255,.15)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>
+                    {lang==="en"?"Cancel":"Annuler"}
+                  </button>
+                  <button onClick={function(){
+                    if (confirmDeleteAccount === 1) setConfirmDeleteAccount(2);
+                    else { setConfirmDeleteAccount(0); deleteAccount(); }
+                  }} style={{flex:1,padding:"13px",background:"#ef4444",color:"#fff",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>
+                    {confirmDeleteAccount === 1 ? (lang==="en"?"Continue":"Continuer") : (lang==="en"?"DELETE NOW":"SUPPRIMER")}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+      </>
     );
   }
 
@@ -5381,8 +5898,6 @@ export default function LePont() {
                     </div>
                     {lbMode==="saison"
                       ? <div style={{fontSize:12,color:i<3?"rgba(26,13,0,.85)":"rgba(255,255,255,.5)",marginTop:3,fontWeight:i<3?700:400}}>⭐ {lang==="en"?"Cumulative XP":"XP cumulés"}</div>
-                      : lbMode==="global"
-                      ? <div style={{fontSize:12,color:i<3?"rgba(26,13,0,.85)":"rgba(255,255,255,.5)",marginTop:3,fontWeight:i<3?700:400}}>🏟 {lang==="en"?"Best":"Record"} {entry.bestPont} &nbsp;·&nbsp; ⛓ {lang==="en"?"Best":"Record"} {entry.bestChaine}</div>
                       : <div style={{fontSize:12,color:i<3?"rgba(26,13,0,.85)":"rgba(255,255,255,.5)",marginTop:3,fontWeight:i<3?700:400}}>{entry.played} {lang==="en"?(entry.played>1?"games":"game"):(entry.played>1?"parties":"partie")}</div>
                     }
                   </div>
@@ -5639,6 +6154,56 @@ export default function LePont() {
             }
           </div>
           {tutorialStep < TUTORIAL_SLIDES.length-1 && <button onClick={closeTutorial} style={{marginTop:16,background:"none",border:"none",color:"rgba(255,255,255,.3)",cursor:"pointer",fontFamily:G.font,fontSize:13}}>{lang==="en"?"Skip":"Passer"}</button>}
+        </div>
+      </div>
+    );
+  })() : null;
+
+  // Bannière de bienvenue RGPD (1er lancement) — confirme que l'app stocke des données localement
+  // mais sans tracking marketing. Affichée AVANT le tutoriel.
+  const welcomeOverlay = showWelcome ? (() => {
+    const closeWelcome = () => {
+      setShowWelcome(false);
+      try { localStorage.setItem("bb_welcome_seen", "1"); } catch {}
+      // Enchaîner sur le tutoriel après le welcome
+      try { if (!localStorage.getItem("bb_tutorial_done")) setShowTutorial(true); } catch {}
+    };
+    return (
+      <div style={{position:"fixed",inset:0,zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 20px",background:"rgba(0,0,0,.85)",backdropFilter:"blur(10px)",animation:"fadeIn .3s ease"}}>
+        <div style={{position:"relative",zIndex:1,width:"100%",maxWidth:380,background:G.bg,borderRadius:28,padding:"32px 24px 24px",border:"1px solid rgba(0,230,118,.2)",textAlign:"center",boxShadow:"0 20px 60px rgba(0,0,0,.5)"}}>
+          <div style={{fontSize:56,marginBottom:16}}>🐐</div>
+          <div style={{fontFamily:G.heading,fontSize:26,color:G.white,letterSpacing:1.2,marginBottom:14}}>
+            {lang==="en" ? "WELCOME TO GOAT FC" : "BIENVENUE SUR GOAT FC"}
+          </div>
+          <div style={{fontSize:14,color:"rgba(255,255,255,.75)",lineHeight:1.6,marginBottom:20,textAlign:"left"}}>
+            {lang==="en" ? (
+              <>
+                <p style={{margin:"0 0 12px"}}>Quick heads-up about your data:</p>
+                <ul style={{paddingLeft:20,margin:"0 0 12px",color:"rgba(255,255,255,.65)",fontSize:13}}>
+                  <li style={{marginBottom:6}}>We store your <strong style={{color:G.accent}}>username, scores and preferences</strong> locally</li>
+                  <li style={{marginBottom:6}}>No advertising tracking, no data sold to third parties</li>
+                  <li>You can delete your account anytime in settings</li>
+                </ul>
+              </>
+            ) : (
+              <>
+                <p style={{margin:"0 0 12px"}}>Petit point sur tes données :</p>
+                <ul style={{paddingLeft:20,margin:"0 0 12px",color:"rgba(255,255,255,.65)",fontSize:13}}>
+                  <li style={{marginBottom:6}}>On stocke ton <strong style={{color:G.accent}}>pseudo, scores et préférences</strong> localement</li>
+                  <li style={{marginBottom:6}}>Pas de pub trackée, aucune donnée revendue</li>
+                  <li>Tu peux supprimer ton compte à tout moment dans les paramètres</li>
+                </ul>
+              </>
+            )}
+          </div>
+          <div style={{display:"flex",gap:8,fontSize:11,color:"rgba(255,255,255,.4)",marginBottom:18,justifyContent:"center"}}>
+            <a href="/privacy" target="_blank" rel="noopener noreferrer" style={{color:"rgba(255,255,255,.5)",textDecoration:"underline"}}>{lang==="en" ? "Privacy Policy" : "Politique de confidentialité"}</a>
+            <span>·</span>
+            <a href="/terms" target="_blank" rel="noopener noreferrer" style={{color:"rgba(255,255,255,.5)",textDecoration:"underline"}}>{lang==="en" ? "Terms" : "CGU"}</a>
+          </div>
+          <button onClick={closeWelcome} style={{width:"100%",padding:"14px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800}}>
+            {lang==="en" ? "Got it 🐐" : "J'ai compris 🐐"}
+          </button>
         </div>
       </div>
     );
@@ -6002,7 +6567,7 @@ export default function LePont() {
           <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.7)"}}/>
         </div>
         <div style={{zIndex:50,padding:"max(16px, env(safe-area-inset-top)) 16px 8px",display:"flex",alignItems:"center",gap:12,position:"sticky",top:0,background:"rgba(0,15,0,.92)",backdropFilter:"blur(10px)",WebkitBackdropFilter:"blur(10px)"}}>
-          <button onClick={()=>{setViewedProfile(null);setScreen("home");}} style={{background:"rgba(255,255,255,.1)",border:"1px solid rgba(255,255,255,.15)",borderRadius:"50%",width:40,height:40,cursor:"pointer",color:G.white,fontSize:18,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,boxShadow:"0 4px 14px rgba(0,0,0,.4)"}}>←</button>
+          <button onClick={()=>{setViewedProfile(null);setFriendMsg("");setScreen("home");}} style={{background:"rgba(255,255,255,.1)",border:"1px solid rgba(255,255,255,.15)",borderRadius:"50%",width:40,height:40,cursor:"pointer",color:G.white,fontSize:18,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,boxShadow:"0 4px 14px rgba(0,0,0,.4)"}}>←</button>
           <div style={{fontFamily:G.heading,fontSize:22,color:G.white,letterSpacing:2,flex:1}}>{lang==="en"?"PROFILE":"PROFIL"}</div>
         </div>
         {!d ? (
@@ -6024,12 +6589,19 @@ export default function LePont() {
             </div>
             <div style={{zIndex:1,padding:"8px 16px",display:"flex",gap:10}}>
               {!d.isFriend ? (
-                <button onClick={()=>{addFriend(viewedProfile.name);}} style={{flex:1,padding:"13px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>{lang==="en"?"+ Add friend":"+ Ajouter en ami"}</button>
+                d.requestSent ? (
+                  <button disabled style={{flex:1,padding:"13px",background:"rgba(255,255,255,.07)",color:"rgba(255,255,255,.5)",border:"1px solid rgba(255,255,255,.15)",borderRadius:50,cursor:"default",fontFamily:G.font,fontSize:14,fontWeight:700}}>{lang==="en"?"✓ Request sent":"✓ Demande envoyée"}</button>
+                ) : (
+                  <button onClick={()=>{addFriend(viewedProfile.name);}} style={{flex:1,padding:"13px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>{lang==="en"?"+ Add friend":"+ Ajouter en ami"}</button>
+                )
               ) : (
                 <button onClick={()=>{setConfirmRemove({id:viewedProfile.id,name:viewedProfile.name});}} style={{flex:1,padding:"13px",background:"rgba(255,255,255,.07)",color:"rgba(255,255,255,.7)",border:"1px solid rgba(255,255,255,.15)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>{lang==="en"?"✓ Friend · Remove":"✓ Ami · Retirer"}</button>
               )}
               <button onClick={()=>setShowDuelCreate({id:viewedProfile.id,name:viewedProfile.name})} style={{flex:1,padding:"13px",background:"linear-gradient(135deg,#FFD600,#FF6B35)",color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>{lang==="en"?"⚡ Challenge":"⚡ Défier"}</button>
             </div>
+            {friendMsg && !d.isFriend && (
+              <div style={{zIndex:1,padding:"0 16px 8px",fontSize:12,color:friendMsg.indexOf("✓")>=0?G.accent:friendMsg.indexOf("❌")>=0?G.red:"rgba(255,255,255,.7)",textAlign:"center",fontWeight:700}}>{friendMsg}</div>
+            )}
             <div style={{zIndex:1,padding:"16px 16px 8px",display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
               <div style={{background:G.accent,borderRadius:16,padding:"14px 10px",textAlign:"center",boxShadow:"0 4px 16px rgba(0,230,118,.35)"}}>
                 <div style={{fontSize:22,marginBottom:4}}>🏆</div>
@@ -6112,6 +6684,7 @@ export default function LePont() {
           </>
         )}
         {avatarViewer}
+        {duelCreateModal}
       </div>
     );
   }
@@ -6322,6 +6895,13 @@ export default function LePont() {
             <button onClick={()=>setLanguage("en")} style={{padding:"7px 13px",background:lang==="en"?"#000":"rgba(0,0,0,.15)",color:lang==="en"?G.accent:"rgba(0,0,0,.7)",border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800}}>🇬🇧 EN</button>
           </div>
         </div>
+
+        {/* Mon compte (paramètres + suppression) - subtil */}
+        <button onClick={()=>setShowAccount(true)} style={{padding:"14px 18px",background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.12)",borderRadius:18,cursor:"pointer",color:"rgba(255,255,255,.7)",fontFamily:G.font,fontSize:14,fontWeight:700,display:"flex",alignItems:"center",gap:12,textAlign:"left",marginTop:6}}>
+          <span style={{fontSize:18}}>⚙️</span>
+          <div style={{flex:1}}>{lang==="en"?"My account":"Mon compte"}</div>
+          <span style={{fontSize:18,color:"rgba(255,255,255,.4)"}}>→</span>
+        </button>
       </div>
 
       {/* Footer */}
@@ -6366,38 +6946,8 @@ export default function LePont() {
       {installPrompt}
       {notifPrompt}
       {tutorialOverlay}
-      {showDuelCreate && (
-        <div style={{position:"fixed",inset:0,zIndex:300,background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center"}}>
-          <div style={{background:"rgba(15,25,15,.95)",borderRadius:24,padding:"28px 24px",maxWidth:340,width:"calc(100% - 32px)",border:"1px solid rgba(255,255,255,.1)"}}>
-            <div style={{fontFamily:G.heading,fontSize:28,color:G.white,marginBottom:4}}>DÉFIER</div>
-            <div style={{fontSize:14,color:"rgba(255,255,255,.5)",marginBottom:20}}>vs <strong style={{color:G.gold}}>{showDuelCreate.name}</strong></div>
-            <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:8}}>Mode</div>
-            <div style={{display:"flex",gap:8,marginBottom:16}}>
-              {["pont","chaine"].map(function(m){return(
-                <button key={m} onClick={function(){setDuelMode(m);}} style={{flex:1,padding:"10px",borderRadius:12,border:"1.5px solid "+(duelMode===m?G.accent:"rgba(255,255,255,.15)"),background:duelMode===m?"rgba(0,230,118,.1)":"transparent",color:duelMode===m?G.accent:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:13}}>
-                  {m==="pont"?"The Plug":"The Mercato"}
-                </button>
-              );})}
-            </div>
-            {duelMode==="pont" && (
-              <div style={{marginBottom:16}}>
-                <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:8}}>{lang==="en"?"Difficulty":"Difficulté"}</div>
-                <div style={{display:"flex",gap:8}}>
-                  {["facile","moyen","expert"].map(function(d){return(
-                    <button key={d} onClick={function(){setDuelDiff(d);}} style={{flex:1,padding:"8px",borderRadius:10,border:"1.5px solid "+(duelDiff===d?G.gold:"rgba(255,255,255,.15)"),background:duelDiff===d?"rgba(255,214,0,.1)":"transparent",color:duelDiff===d?G.gold:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:12,textTransform:"capitalize"}}>
-                      {d}
-                    </button>
-                  );})}
-                </div>
-              </div>
-            )}
-            <div style={{display:"flex",gap:8,marginTop:8}}>
-              <button onClick={function(){setShowDuelCreate(null);}} style={{flex:1,padding:"12px",background:"rgba(255,255,255,.07)",color:"rgba(255,255,255,.5)",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14}}>{lang==="en"?"Cancel":"Annuler"}</button>
-              <button onClick={function(){createDuel(showDuelCreate);}} style={{flex:2,padding:"12px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>{lang==="en"?"Send challenge ⚡":"Envoyer le défi ⚡"}</button>
-            </div>
-          </div>
-        </div>
-      )}
+      {welcomeOverlay}
+      {duelCreateModal}
       {showRoomCreate && (
         <div
           style={{position:"fixed",inset:0,zIndex:400,display:"flex",alignItems:"flex-end"}}
@@ -6899,14 +7449,25 @@ export default function LePont() {
                 </div>
               ) : (
                 <>
-                  <input
-                    value={dailyGuess}
-                    onChange={function(e){setDailyGuess(e.target.value);setDailyFlash(null);}}
-                    onKeyDown={function(e){if(e.key==="Enter") handleDailySubmit();}}
-                    placeholder={lang==="en"?"Player name...":"Nom du joueur..."}
-                    autoComplete="off"
-                    style={{width:"100%",background:dailyFlash==="ko"?"rgba(255,61,87,.15)":"rgba(255,255,255,.08)",border:"2px solid "+(dailyFlash==="ko"?"#FF3D57":"rgba(255,255,255,.2)"),borderRadius:18,padding:"18px",fontFamily:G.font,fontSize:19,fontWeight:700,color:"#ffffff",outline:"none",textAlign:"center",transition:"all .2s",boxSizing:"border-box",marginBottom:8}}
-                  />
+                  <div style={{position:"relative",marginBottom:8}}>
+                    <input
+                      value={dailyGuess}
+                      onChange={function(e){setDailyGuess(e.target.value);setDailyFlash(null);}}
+                      onKeyDown={function(e){if(e.key==="Enter") handleDailySubmit();}}
+                      placeholder={lang==="en"?"Player name...":"Nom du joueur..."}
+                      autoComplete="off"
+                      style={{width:"100%",background:dailyFlash==="ko"?"rgba(255,61,87,.15)":"rgba(255,255,255,.08)",border:"2px solid "+(dailyFlash==="ko"?"#FF3D57":"rgba(255,255,255,.2)"),borderRadius:18,padding:"18px",fontFamily:G.font,fontSize:19,fontWeight:700,color:"#ffffff",outline:"none",textAlign:"center",transition:"all .2s",boxSizing:"border-box"}}
+                    />
+                    {dailyGuess.length>=3&&!dailyFlash&&(()=>{
+                      const norm=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+                      const q=norm(dailyGuess);
+                      const matched=PLAYERS_CLEAN.filter(p=>p&&p.name&&norm(p.name).includes(q));const sugg=matched.sort((a,b)=>{const an=norm(a.name),bn=norm(b.name);const aStarts=an.startsWith(q),bStarts=bn.startsWith(q);if(aStarts!==bStarts)return aStarts?-1:1;const aWord=an.split(" ").some(w=>w.startsWith(q)),bWord=bn.split(" ").some(w=>w.startsWith(q));if(aWord!==bWord)return aWord?-1:1;const ord={facile:0,moyen:1,expert:2};if(a.diff!==b.diff)return ord[a.diff]-ord[b.diff];return a.name.localeCompare(b.name);}).slice(0,5);
+                      if(!sugg.length) return null;
+                      return (<div style={{position:"absolute",top:"100%",left:0,right:0,background:"rgba(25,35,25,.98)",border:"1px solid rgba(255,255,255,.15)",borderRadius:14,boxShadow:"0 8px 24px rgba(0,0,0,.5)",zIndex:100,overflow:"hidden",marginTop:4,backdropFilter:"blur(12px)"}}>
+                        {sugg.map(p=>(<div key={p.name} onClick={function(){setDailyGuess(p.name);handleDailySubmit(p.name);}} style={{padding:"14px 18px",fontFamily:G.font,fontSize:15,fontWeight:700,color:"#fff",cursor:"pointer",borderBottom:"1px solid rgba(255,255,255,.08)",textAlign:"left"}}>{p.name}</div>))}
+                      </div>);
+                    })()}
+                  </div>
                   {dailyFlash==="ko" && <div style={{textAlign:"center",fontSize:13,color:"#FF3D57",marginBottom:8,fontWeight:700}}>{lang==="en"?"That's not it... try again!":"Ce n'est pas ça... réessaie !"}</div>}
 
                   {/* Hints display */}
@@ -7223,7 +7784,7 @@ export default function LePont() {
                 {guess.length>=3&&!flash&&(()=>{
                   const norm=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
                   const q=norm(guess);
-                  const sugg=PLAYERS_CLEAN.filter(p=>p&&p.name&&norm(p.name).includes(q)).slice(0,5);
+                  const matched=PLAYERS_CLEAN.filter(p=>p&&p.name&&norm(p.name).includes(q));const sugg=matched.sort((a,b)=>{const an=norm(a.name),bn=norm(b.name);const aStarts=an.startsWith(q),bStarts=bn.startsWith(q);if(aStarts!==bStarts)return aStarts?-1:1;const aWord=an.split(" ").some(w=>w.startsWith(q)),bWord=bn.split(" ").some(w=>w.startsWith(q));if(aWord!==bWord)return aWord?-1:1;const ord={facile:0,moyen:1,expert:2};if(a.diff!==b.diff)return ord[a.diff]-ord[b.diff];return a.name.localeCompare(b.name);}).slice(0,5);
                   if(!sugg.length) return null;
                   return (<div style={{position:"absolute",top:"100%",left:0,right:0,background:G.offWhite,borderRadius:14,boxShadow:"0 8px 24px rgba(0,0,0,.2)",zIndex:100,overflow:"hidden",marginTop:4}}>
                     {sugg.map(p=>(<div key={p.name} onClick={()=>{setGuess(p.name);setTimeout(()=>handleSubmit(),50);}} style={{padding:"12px 18px",fontFamily:G.font,fontSize:15,fontWeight:700,color:G.dark,cursor:"pointer",borderBottom:"1px solid rgba(0,0,0,.06)",textAlign:"left"}}>{p.name}</div>))}
@@ -7346,9 +7907,29 @@ export default function LePont() {
 
       <div style={{...sheet,marginTop:0,borderRadius:"28px 28px 0 0"}}>
         {feedbackBar(feedback)}
-        <input ref={inputRef} value={guess} onChange={e=>setGuess(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleChainSubmit()}
-          placeholder={lang==="en"?"Club name...":"Nom du club..."} autoComplete="off"
-          style={{width:"100%",background:flash==="ko"?"#fee2e2":flash==="ok"?"#dcfce7":G.offWhite,border:("2px solid "+(flash==="ko"?G.red:flash==="ok"?G.accent:"#e5e5e0")+""),borderRadius:18,padding:"16px 18px",fontFamily:G.font,fontSize:18,fontWeight:700,color:G.dark,outline:"none",textAlign:"center",transition:"all .15s"}}/>
+        <div style={{position:"relative"}}>
+          <input ref={inputRef} value={guess} onChange={e=>setGuess(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleChainSubmit()}
+            placeholder={lang==="en"?"Club name...":"Nom du club..."} autoComplete="off"
+            style={{width:"100%",background:flash==="ko"?"#fee2e2":flash==="ok"?"#dcfce7":G.offWhite,border:("2px solid "+(flash==="ko"?G.red:flash==="ok"?G.accent:"#e5e5e0")+""),borderRadius:18,padding:"16px 18px",fontFamily:G.font,fontSize:18,fontWeight:700,color:G.dark,outline:"none",textAlign:"center",transition:"all .15s",boxSizing:"border-box"}}/>
+          {guess.length>=2&&!flash&&(()=>{
+            const norm=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+            const q=norm(guess);
+            // Suggérer parmi TOUS les clubs connus (aide à l'orthographe, pas d'indice sur le bon club)
+            const matched=ALL_CLUBS_LIST.filter(c=>norm(c).includes(q));
+            // Tri intelligent : startsWith d'abord, puis clubs populaires (PONT_CLUBS), puis alphabétique
+            const sugg=matched.sort((a,b)=>{
+              const aStarts=norm(a).startsWith(q), bStarts=norm(b).startsWith(q);
+              if(aStarts!==bStarts) return aStarts?-1:1;
+              const aPop=PONT_CLUBS.has(a), bPop=PONT_CLUBS.has(b);
+              if(aPop!==bPop) return aPop?-1:1;
+              return a.localeCompare(b);
+            }).slice(0,5);
+            if(!sugg.length) return null;
+            return (<div style={{position:"absolute",top:"100%",left:0,right:0,background:"#fff",border:"1px solid #e5e5e0",borderRadius:14,boxShadow:"0 8px 24px rgba(0,0,0,.15)",zIndex:100,overflow:"hidden",marginTop:4}}>
+              {sugg.map(c=>(<div key={c} onClick={function(){setGuess(c);handleChainSubmit(c);}} style={{padding:"12px 16px",fontFamily:G.font,fontSize:15,fontWeight:700,color:G.dark,cursor:"pointer",borderBottom:"1px solid #f0f0f0",display:"flex",alignItems:"center",gap:10}}><ClubLogo club={c} size={22}/>{c}</div>))}
+            </div>);
+          })()}
+        </div>
         <div style={{display:"flex",gap:10}}>
           <button onClick={handleChainPass} disabled={!!flash} style={{flex:1,padding:16,background:G.offWhite,color:"#aaa",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700,opacity:flash ? 0.3 : 1}}>{lang==="en"?"Skip → (−10 pts)":"Passer → (−10 pts)"}</button>
           <button onClick={handleChainSubmit} style={{flex:2,padding:"16px",background:G.dark,color:G.white,border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:16,fontWeight:800}}>{lang==="en"?"Submit":"Valider"}</button>
@@ -7361,7 +7942,11 @@ export default function LePont() {
                 <span style={{fontSize:10,color:"#bbb",fontWeight:700,minWidth:18}}>{i+1}.</span>
                 <span style={{fontSize:12,color:G.dark,fontWeight:700,flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{h.player}</span>
                 <span style={{display:"flex",alignItems:"center",flexShrink:0}}>{Icon.transfer(11,"#ccc")}</span>
-                <span style={{display:"flex",alignItems:"center",gap:4,flexShrink:0}}><ClubLogo club={h.club} size={18}/><span style={{fontSize:12,color:h.passed?"#aaa":G.bg,fontWeight:700}}>{h.club}</span></span>
+                {h.passed ? (
+                  <span style={{display:"flex",alignItems:"center",gap:4,flexShrink:0,fontSize:14}}>🔒</span>
+                ) : (
+                  <span style={{display:"flex",alignItems:"center",gap:4,flexShrink:0}}><ClubLogo club={h.club} size={18}/><span style={{fontSize:12,color:G.bg,fontWeight:700}}>{h.club}</span></span>
+                )}
               </div>
             ))}
           </div>
