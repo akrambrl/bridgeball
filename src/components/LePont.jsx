@@ -910,6 +910,7 @@ const DAILY_OVERRIDES = {
   "2026-04-25": "Ronaldinho", // Samedi Légende - le sorcier brésilien
   "2026-04-26": "Miralem Pjanić", // Dimanche Joker - le maestro bosnien
   "2026-04-28": "James Milner", // Mardi PL - la légende anglaise (6 clubs PL)
+  "2026-04-29": "Ademola Lookman", // Mercredi LIGA - parcours riche 7 clubs
 };
 
 function getDailyPlayer(blacklist) {
