@@ -4078,10 +4078,11 @@ export default function LePont() {
     queueRef.current = q;
     setQueue(q); setQIdx(0); setScore(0); scoreRef.current=0; setRoundAnswers([]);
     setTimeLeft(ROUND_DURATION); setGuess(""); setFlash(null); setFeedback(null);
-    if(effectiveDiff==="facile") {
-      const optSeed = isInRoom ? hashStringToSeed(String(activeDuelRef.current.id) + "_opt_" + (q[0].p.join("|"))) : null;
-      setOptions(generateOptions(q[0].p, DB[effectiveDiff]||[], optSeed));
-    }
+    // Toujours générer 4 options (boutons cliquables) pour toutes les difficultés
+    // Pool des distracteurs : mix des 3 difficultés pour garantir des distracteurs variés et pertinents
+    const allPairsForOpts = [...(DB["facile"]||[]), ...(DB["moyen"]||[]), ...(DB["expert"]||[])];
+    const optSeed = isInRoom ? hashStringToSeed(String(activeDuelRef.current.id) + "_opt_" + (q[0].p.join("|"))) : null;
+    setOptions(generateOptions(q[0].p, allPairsForOpts, optSeed));
     setCurrentRound(round); setAnimKey(0); setScreen("game");
     setTimeout(()=>inputRef.current?.focus(),200);
   }
@@ -4483,27 +4484,23 @@ export default function LePont() {
       const next = i+1;
       const isInRoom = activeDuelRef.current && activeDuelRef.current.isRoom;
       const effectiveDiff = isInRoom && activeDuelRef.current.diff ? activeDuelRef.current.diff : diff;
+      // Pool des distracteurs : mix des 3 difficultés pour garantir des distracteurs variés et pertinents
+      const allPairsForOpts = [...(DB["facile"]||[]), ...(DB["moyen"]||[]), ...(DB["expert"]||[])];
       // If we've gone through the whole queue, rebuild with fresh shuffle (seeded in room)
       if (next >= queue.length) {
         const reshuffleSeed = isInRoom ? hashStringToSeed(String(activeDuelRef.current.id) + "_r" + currentRound + "_reshuffle") : null;
         const fresh = reshuffleSeed !== null ? seededShuffle(DB[effectiveDiff], reshuffleSeed) : shuffle(DB[effectiveDiff]);
         setQueue(fresh);
-        if(effectiveDiff==="facile") {
-          const optSeed = isInRoom ? hashStringToSeed(String(activeDuelRef.current.id) + "_opt_" + (fresh[0].p.join("|"))) : null;
-          setOptions(generateOptions(fresh[0].p, DB[effectiveDiff], optSeed));
-        }
+        const optSeed = isInRoom ? hashStringToSeed(String(activeDuelRef.current.id) + "_opt_" + (fresh[0].p.join("|"))) : null;
+        setOptions(generateOptions(fresh[0].p, allPairsForOpts, optSeed));
         return 0;
       }
-      if(effectiveDiff==="facile") {
-        const optSeed = isInRoom ? hashStringToSeed(String(activeDuelRef.current.id) + "_opt_" + (queue[next].p.join("|"))) : null;
-        setOptions(generateOptions(queue[next].p, DB[effectiveDiff], optSeed));
-      }
+      const optSeed = isInRoom ? hashStringToSeed(String(activeDuelRef.current.id) + "_opt_" + (queue[next].p.join("|"))) : null;
+      setOptions(generateOptions(queue[next].p, allPairsForOpts, optSeed));
       return next;
     });
     setGuess(""); setFlash(null); setAnimKey(k=>k+1);
-    const isInRoom2 = activeDuelRef.current && activeDuelRef.current.isRoom;
-    const effectiveDiff2 = isInRoom2 && activeDuelRef.current.diff ? activeDuelRef.current.diff : diff;
-    if(effectiveDiff2!=="facile") setTimeout(()=>inputRef.current?.focus(),100);
+    // Plus besoin de focus l'input car maintenant tous les modes ont des boutons (pas d'input texte)
   }
 
   function handleSubmit() {
@@ -7819,8 +7816,7 @@ export default function LePont() {
           {combo>=3&&<div style={{textAlign:"center",animation:"comboFire .5s ease"}}><span style={{background:"linear-gradient(135deg,#f59e0b,#ef4444)",color:G.white,borderRadius:20,padding:"4px 14px",fontSize:12,fontWeight:800,letterSpacing:1}}>{getComboLabel(combo)} x{combo}</span></div>}
           {feedbackBar(feedback)}
 
-          {diff==="facile"?(
-            <div style={{display:"flex",flexDirection:"column",gap:12}}>
+          <div style={{display:"flex",flexDirection:"column",gap:12}}>
               <div key={"opts-"+animKey} style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
                 {options.map((opt,oi)=>{
                   const isOk=flash==="ok"&&checkGuess(opt,cur.p);
@@ -7853,28 +7849,6 @@ export default function LePont() {
               </div>
               <button onClick={handlePass} disabled={!!flash} style={{padding:"12px",pointerEvents:flash?"none":"auto",background:"transparent",color:"#bbb",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700,opacity:flash ? 0.3 : 1}}>{lang==="en"?"Skip → (−10 pts)":"Passer → (−10 pts)"}</button>
             </div>
-          ):(
-            <div style={{display:"flex",flexDirection:"column",gap:10}}>
-              <div style={{position:"relative"}}>
-                <input ref={inputRef} value={guess} onChange={e=>setGuess(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleSubmit()}
-                  placeholder={lang==="en"?"Player name...":"Nom du joueur..."} autoComplete="off"
-                  style={{width:"100%",background:flash==="ko"?"#fee2e2":flash==="ok"?"#dcfce7":G.offWhite,border:("2px solid "+(flash==="ko"?G.red:flash==="ok"?G.accent:"#e5e5e0")+""),borderRadius:18,padding:"15px 18px",fontFamily:G.font,fontSize:18,fontWeight:700,color:G.dark,outline:"none",textAlign:"center",transition:"all .15s",animation:flash==="ko"?"answerKo .4s ease":flash==="ok"?"answerOk .4s ease":"none",boxSizing:"border-box"}}/>
-                {guess.length>=3&&!flash&&(()=>{
-                  const norm=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
-                  const q=norm(guess);
-                  const matched=PLAYERS_CLEAN.filter(p=>p&&p.name&&norm(p.name).includes(q));const sugg=matched.sort((a,b)=>{const an=norm(a.name),bn=norm(b.name);const aStarts=an.startsWith(q),bStarts=bn.startsWith(q);if(aStarts!==bStarts)return aStarts?-1:1;const aWord=an.split(" ").some(w=>w.startsWith(q)),bWord=bn.split(" ").some(w=>w.startsWith(q));if(aWord!==bWord)return aWord?-1:1;const ord={facile:0,moyen:1,expert:2};if(a.diff!==b.diff)return ord[a.diff]-ord[b.diff];return a.name.localeCompare(b.name);}).slice(0,5);
-                  if(!sugg.length) return null;
-                  return (<div style={{position:"absolute",top:"100%",left:0,right:0,background:G.offWhite,borderRadius:14,boxShadow:"0 8px 24px rgba(0,0,0,.2)",zIndex:100,overflow:"hidden",marginTop:4}}>
-                    {sugg.map(p=>(<div key={p.name} onClick={()=>{setGuess(p.name);setTimeout(()=>handleSubmit(),50);}} style={{padding:"12px 18px",fontFamily:G.font,fontSize:15,fontWeight:700,color:G.dark,cursor:"pointer",borderBottom:"1px solid rgba(0,0,0,.06)",textAlign:"left"}}>{p.name}</div>))}
-                  </div>);
-                })()}
-              </div>
-              <div style={{display:"flex",gap:10}}>
-                <button onClick={handlePass} disabled={!!flash} style={{flex:1,padding:15,pointerEvents:flash?"none":"auto",background:G.offWhite,color:"#aaa",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700,opacity:flash ? 0.3 : 1}}>{lang==="en"?"Skip → (−10 pts)":"Passer → (−10 pts)"}</button>
-                <button onClick={handleSubmit} style={{flex:2,padding:"15px",background:G.dark,color:G.white,border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:16,fontWeight:800}}>{lang==="en"?"Submit":"Valider"}</button>
-              </div>
-            </div>
-          )}
       {/* Timer par question supprimé — seul le timer global de la manche reste */}
     </div>
     </div>
