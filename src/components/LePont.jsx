@@ -7344,7 +7344,8 @@ export default function LePont() {
                   </div>
                 );
               })()}
-              {/* Clubs */}
+              {/* Clubs — masqués quand la partie est finie pour montrer le résultat en haut */}
+              {!dailySuccess && !dailyRevealed && (
               <div>
                 <div style={{textAlign:"center",marginBottom:8}}>
                   <span style={{
@@ -7379,6 +7380,7 @@ export default function LePont() {
                   })}
                 </div>
               </div>
+              )}
 
               {/* Tentatives */}
               {dailyTries > 0 && !dailySuccess && (
