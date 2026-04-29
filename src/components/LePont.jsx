@@ -1325,6 +1325,14 @@ function matchClub(input,playerClubs){
 function getPlayerClubs(name){const p=PLAYERS_CLEAN.find(x=>x.name===name);return p?p.clubs:[];}
 function getPlayersForClub(club){return CLUB_INDEX[club]||[];}
 
+// CRESCENDO HELPER : retourne la difficulté "effective" en mode crescendo selon le nombre de liens accomplis
+// 0-2 liens = facile, 3-6 liens = moyen, 7+ = expert
+function getCrescendoTier(chainCount) {
+  if (chainCount < 3) return "facile";
+  if (chainCount < 7) return "moyen";
+  return "expert";
+}
+
 // ══ MULTIPLAYER ENGINE (BroadcastChannel + localStorage) ══
 // Works between browser tabs. Replace with Supabase for cross-device.
 
@@ -1727,7 +1735,7 @@ export default function LePont() {
   const [resultImg, setResultImg] = useState(null);
   const [gameMode, setGameMode] = useState("pont");
   const [diff, setDiff] = useState("facile");
-  const [totalRounds, setTotalRounds] = useState(1);
+  const [totalRounds, setTotalRounds] = useState(1); // Toujours 1 manche de 90s (pas de multi-manches)
   const [currentRound, setCurrentRound] = useState(1);
   const [roundScores, setRoundScores] = useState([]);
   const [roomRoundSnapshot, setRoomRoundSnapshot] = useState(null); // scores adversaires fin de manche
@@ -3970,21 +3978,69 @@ export default function LePont() {
     // FIX multi : lire diff depuis activeDuelRef si en room (évite le stale state React)
     const isInRoom = activeDuelRef.current && activeDuelRef.current.isRoom;
     const effectiveDiff = isInRoom && activeDuelRef.current.diff ? activeDuelRef.current.diff : diff;
-    const dbPool = DB[effectiveDiff] || DB["facile"] || [];
-    if (dbPool.length === 0) { console.error("DB empty for diff:", effectiveDiff); return; }
+    
+    // CRESCENDO MODE (anciennement "expert") : construire une queue progressive facile→moyen→expert
+    // Sinon (facile/moyen) : pool unique de la difficulté choisie
+    const isCrescendo = effectiveDiff === "expert";
+    let dbPool;
+    if (isCrescendo) {
+      // Mix progressif : 1/3 facile + 1/3 moyen + 1/3 expert
+      const easyPool = DB["facile"] || [];
+      const medPool = DB["moyen"] || [];
+      const hardPool = DB["expert"] || [];
+      if (easyPool.length === 0 || medPool.length === 0 || hardPool.length === 0) {
+        // Fallback si un pool est vide : utiliser tous ceux dispos
+        dbPool = [...easyPool, ...medPool, ...hardPool];
+      } else {
+        dbPool = null; // Marqueur : on construira la queue spécifiquement
+      }
+    } else {
+      dbPool = DB[effectiveDiff] || DB["facile"] || [];
+      if (dbPool.length === 0) { console.error("DB empty for diff:", effectiveDiff); return; }
+    }
+    
     // Seeded shuffle in multiplayer room for fair questions across all players
     const roomSeed = isInRoom ? hashStringToSeed(String(activeDuelRef.current.id) + "_r" + round) : null;
     const doShuffle = isInRoom ? (arr) => seededShuffle(arr, roomSeed) : shuffle;
-    // 80% current players, 20% retired/legends
-    const currentQ = dbPool.filter(q => q.isCurrent);
-    const retiredQ = dbPool.filter(q => !q.isCurrent);
-    const targetCurrent = Math.round(dbPool.length * 0.8);
-    const targetRetired = dbPool.length - targetCurrent;
-    const picked = [
-      ...doShuffle([...currentQ]).slice(0, Math.max(targetCurrent, currentQ.length)),
-      ...doShuffle([...retiredQ]).slice(0, Math.min(targetRetired, retiredQ.length)),
-    ];
-    let q = doShuffle(picked.length > 0 ? picked : [...dbPool]);
+    
+    let q;
+    if (isCrescendo && dbPool === null) {
+      // CRESCENDO : construire la queue palier par palier
+      const easyShuffled = doShuffle([...DB["facile"]]).slice(0, 10);
+      const medShuffled = doShuffle([...DB["moyen"]]).slice(0, 10);
+      const hardShuffled = doShuffle([...DB["expert"]]).slice(0, 10);
+      // Pour chaque palier, prioriser les joueurs current (80/20)
+      const buildPalier = (pool, target) => {
+        const cur = pool.filter(x => x.isCurrent);
+        const ret = pool.filter(x => !x.isCurrent);
+        return [
+          ...doShuffle([...cur]).slice(0, Math.round(target*0.8)),
+          ...doShuffle([...ret]).slice(0, Math.round(target*0.2)),
+        ].slice(0, target);
+      };
+      // On garde l'ordre crescendo : facile d'abord, moyen ensuite, expert à la fin
+      q = [
+        ...buildPalier(DB["facile"]||[], 10),
+        ...buildPalier(DB["moyen"]||[], 10),
+        ...buildPalier(DB["expert"]||[], 10),
+      ];
+      // Si on n'a pas assez (pool trop petit), compléter avec ce qu'on a
+      if (q.length < 30) {
+        const remaining = doShuffle([...(DB["expert"]||DB["moyen"]||DB["facile"])]).filter(x => !q.includes(x));
+        q = [...q, ...remaining].slice(0, 30);
+      }
+    } else {
+      // MODE NORMAL (facile/moyen) : ancien comportement
+      const currentQ = dbPool.filter(qq => qq.isCurrent);
+      const retiredQ = dbPool.filter(qq => !qq.isCurrent);
+      const targetCurrent = Math.round(dbPool.length * 0.8);
+      const targetRetired = dbPool.length - targetCurrent;
+      const picked = [
+        ...doShuffle([...currentQ]).slice(0, Math.max(targetCurrent, currentQ.length)),
+        ...doShuffle([...retiredQ]).slice(0, Math.min(targetRetired, retiredQ.length)),
+      ];
+      q = doShuffle(picked.length > 0 ? picked : [...dbPool]);
+    }
 
     // Anti-répétition INTRA-PARTIE : exclure les paires déjà jouées dans les manches précédentes
     // (sinon en partie de 2 manches on peut retomber sur les mêmes paires)
@@ -4001,8 +4057,8 @@ export default function LePont() {
     }
     
     // Anti-répétition en SOLO uniquement : évite de reposer les paires des 2 dernières parties en premier
-    // On lit l'historique depuis localStorage, on met les paires récentes en fin de queue
-    if (!isInRoom) {
+    // ⚠️ DÉSACTIVÉ EN MODE CRESCENDO car ça casserait l'ordre progressif facile→moyen→expert
+    if (!isInRoom && !isCrescendo) {
       try {
         const recent = JSON.parse(localStorage.getItem("goatfc_recent_pairs_" + effectiveDiff) || "[]");
         const recentSet = new Set(recent);
@@ -4037,16 +4093,20 @@ export default function LePont() {
     const effectiveDiff = isInRoom && activeDuelRef.current.diff ? activeDuelRef.current.diff : diff;
     const roomSeed = isInRoom ? hashStringToSeed(String(activeDuelRef.current.id) + "_chain") : null;
     const rand = isInRoom ? seededRandom(roomSeed) : Math.random;
+    // CRESCENDO MODE : le starter (lien 0) doit toujours être un joueur FACILE pour amorcer la chaîne en douceur
+    // Le pool s'étendra ensuite progressivement avec chainCount (voir handleChainSubmit/handleChainPass)
+    const isCrescendo = effectiveDiff === "expert";
+    const starterDiff = isCrescendo ? "facile" : effectiveDiff;
     // Filtrer par difficulté — en facile on commence par des stars connues
     const eligible = PLAYERS_CLEAN.filter(p => {
       if (p.clubs.length < 2) return false;
-      if (effectiveDiff === "facile") return p.diff === "facile";
-      if (effectiveDiff === "moyen") return p.diff === "facile" || p.diff === "moyen";
-      return true; // expert = tous
+      if (starterDiff === "facile") return p.diff === "facile";
+      if (starterDiff === "moyen") return p.diff === "facile" || p.diff === "moyen";
+      return true; // expert pur (au cas où, mais Crescendo n'arrive jamais ici car starterDiff='facile')
     });
-    // En mode facile, le joueur de départ doit avoir AU MOINS 2 clubs populaires
+    // En mode facile (et Crescendo qui démarre facile), le joueur de départ doit avoir AU MOINS 2 clubs populaires
     // (sinon dès qu'un est utilisé la chaîne devient impossible à deviner)
-    const eligibleFacile = effectiveDiff === "facile"
+    const eligibleFacile = starterDiff === "facile"
       ? eligible.filter(p => p.clubs.filter(c => FAMOUS_CLUBS.has(c)).length >= 2)
       : eligible;
     const pool = eligibleFacile.length > 0 ? eligibleFacile : (eligible.length > 0 ? eligible : PLAYERS_CLEAN.filter(p => p.clubs.length >= 2));
@@ -4496,7 +4556,9 @@ export default function LePont() {
       const clubPlayers=getPlayersForClub(matched).filter(p=>!chainUsedPlayers.has(p)&&getPlayerClubs(p).some(c=>!newUsed.has(c)));
       // Favoriser les joueurs de la bonne difficulté ET les joueurs actuels (80/20)
       const isInRoomCS = activeDuelRef.current && activeDuelRef.current.isRoom;
-      const effectiveDiffCS = isInRoomCS && activeDuelRef.current.diff ? activeDuelRef.current.diff : diff;
+      const rawDiffCS = isInRoomCS && activeDuelRef.current.diff ? activeDuelRef.current.diff : diff;
+      // CRESCENDO : en mode "expert", la diff effective dépend du nombre de liens (chainCount + 1 = on calcule pour LE PROCHAIN joueur)
+      const effectiveDiffCS = rawDiffCS === "expert" ? getCrescendoTier(chainCount + 1) : rawDiffCS;
       if(clubPlayers.length===0){
         // Chaîne bloquée après bonne réponse → on pioche un joueur frais au lieu de finir la partie
         const fallbackPool = PLAYERS_CLEAN.filter(p => {
@@ -4557,7 +4619,9 @@ export default function LePont() {
     setChainScore(s=>{chainScoreRef.current=s-10;return s-10;});
     // FIX multi : en room, tous les joueurs qui passent sur le même chainPlayer doivent obtenir le même prochain joueur
     const isInRoomCP = activeDuelRef.current && activeDuelRef.current.isRoom;
-    const effectiveDiffCP = isInRoomCP && activeDuelRef.current.diff ? activeDuelRef.current.diff : diff;
+    const rawDiffCP = isInRoomCP && activeDuelRef.current.diff ? activeDuelRef.current.diff : diff;
+    // CRESCENDO : en mode "expert", la diff effective dépend du nombre de liens (chainCount + 1 = pour LE PROCHAIN joueur)
+    const effectiveDiffCP = rawDiffCP === "expert" ? getCrescendoTier(chainCount + 1) : rawDiffCP;
     const passSeed = isInRoomCP ? hashStringToSeed(String(activeDuelRef.current.id) + "_pass_" + chainPlayer) : null;
     const randCP = passSeed !== null ? seededRandom(passSeed) : Math.random;
     const validClubs=(PLAYERS_CLEAN.find(p=>p.name===chainPlayer)?.clubs||[]).filter(c=>!chainUsedClubs.has(c));
@@ -5172,12 +5236,7 @@ export default function LePont() {
                 </button>
               );})}
             </div>
-            <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:8}}>{lang==="en"?"Rounds":"Manches"}</div>
-            <div style={{display:"flex",gap:8,marginBottom:20}}>
-              {[1,2,3].map(function(r){return(
-                <button key={r} onClick={function(){setDuelRounds(r);}} style={{flex:1,padding:"10px",borderRadius:12,border:"1.5px solid "+(duelRounds===r?"#fff":"rgba(255,255,255,.15)"),background:duelRounds===r?"rgba(255,255,255,.1)":"transparent",color:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:15}}>{r}</button>
-              );})}
-            </div>
+            {/* Sélecteur de manches supprimé : 1 manche de 90s par défaut */}
           </>
         )}
         <div style={{display:"flex",gap:8,marginTop:8}}>
@@ -6093,7 +6152,7 @@ export default function LePont() {
         <div style={{...sheet,borderRadius:"28px 28px 0 0",marginTop:16}}>
           <div style={{background:"rgba(255,255,255,.04)",borderRadius:14,padding:"10px 14px",marginBottom:4}}>
             <div style={{fontSize:11,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginBottom:2}}>{lang==="en"?"Mode":"Mode"}</div>
-            <div style={{fontSize:15,fontWeight:800,color:G.white}}>{room.mode==="pont"?"The Plug":"The Mercato"}{room.diff?" · "+(room.diff==="facile"?"AMATEUR":room.diff==="moyen"?"PRO":"LEGEND"):""} · {room.rounds||1} {lang==="en"?("round"+((room.rounds||1)>1?"s":"")):("manche"+((room.rounds||1)>1?"s":""))}</div>
+            <div style={{fontSize:15,fontWeight:800,color:G.white}}>{room.mode==="pont"?"The Plug":"The Mercato"}{room.diff?" · "+(room.diff==="facile"?"AMATEUR":room.diff==="moyen"?"PRO":"CRESCENDO"):""} · {room.rounds||1} {lang==="en"?("round"+((room.rounds||1)>1?"s":"")):("manche"+((room.rounds||1)>1?"s":""))}</div>
           </div>
           <div>
             <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.3)",marginBottom:8}}>
@@ -6976,7 +7035,7 @@ export default function LePont() {
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                 <div>
                   <div style={{fontSize:13,fontWeight:800,color:G.white}}>{duelMode==="pont"?"The Plug":"The Mercato"}</div>
-                  <div style={{fontSize:12,color:"rgba(255,255,255,.4)"}}>{duelDiff==="facile"?"AMATEUR":duelDiff==="moyen"?"PRO":"LEGEND"} · {duelRounds} {lang==="en"?("round"+(duelRounds>1?"s":"")):("manche"+(duelRounds>1?"s":""))}</div>
+                  <div style={{fontSize:12,color:"rgba(255,255,255,.4)"}}>{duelDiff==="facile"?"AMATEUR":duelDiff==="moyen"?"PRO":"CRESCENDO"} · {duelRounds} {lang==="en"?("round"+(duelRounds>1?"s":"")):("manche"+(duelRounds>1?"s":""))}</div>
                 </div>
                 <div style={{fontFamily:G.heading,fontSize:32,color:G.accent}}>2-8 👥</div>
               </div>
@@ -7229,7 +7288,7 @@ export default function LePont() {
                     <div style={{fontSize:10,fontWeight:800,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginBottom:10,marginTop:26}}>{lang==="en"?"Difficulty":"Difficulté"}</div>
                     <div style={{display:"flex",gap:8,marginBottom:20}}>
                       {["facile","moyen","expert"].map(function(d){
-                        const dLabel = d==="facile"?"AMATEUR":d==="moyen"?"PRO":"LEGEND";
+                        const dLabel = d==="facile"?"AMATEUR":d==="moyen"?"PRO":"CRESCENDO";
                         const dColor = d==="facile"?"#00E676":d==="moyen"?"#FFD600":"#FF3D57";
                         const stars = d==="facile"?1:d==="moyen"?2:3;
                         return(
@@ -7242,29 +7301,14 @@ export default function LePont() {
                             display:"flex",flexDirection:"column",alignItems:"center",gap:4,
                             boxShadow:diff===d?`0 4px 16px ${dColor}33`:"none"
                           }}>
-                            <div style={{fontSize:12,letterSpacing:1}}>{"⭐".repeat(stars)}</div>
+                            <div style={{fontSize:12,letterSpacing:1}}>{d==="expert"?"📈":"⭐".repeat(stars)}</div>
                             <div>{dLabel}</div>
                           </button>
                         );
                       })}
                     </div>
 
-                    {/* Manches */}
-                    <div style={{fontSize:10,fontWeight:800,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginBottom:10}}>{lang==="en"?"Rounds":"Manches"}</div>
-                    <div style={{display:"flex",gap:8,marginBottom:28}}>
-                      {[1,2,3].map(function(n){return(
-                        <button key={n} onClick={function(){setTotalRounds(n);}} style={{
-                          flex:1,padding:"14px",borderRadius:14,
-                          border:`1.5px solid ${totalRounds===n?accentColor:"rgba(255,255,255,.1)"}`,
-                          background:totalRounds===n?`${accentColor}15`:"rgba(255,255,255,.03)",
-                          color:totalRounds===n?accentColor:"rgba(255,255,255,.35)",
-                          fontFamily:G.heading,fontWeight:700,cursor:"pointer",fontSize:24,transition:"all .15s",
-                          boxShadow:totalRounds===n?`0 4px 16px ${accentColor}33`:"none"
-                        }}>
-                          {n}
-                        </button>
-                      );})}
-                    </div>
+                    {/* Manches sélecteur supprimé : 1 manche de 90s par défaut pour Mercato et Plug */}
 
                     {/* Boutons */}
                     <div style={{display:"flex",gap:10}}>
@@ -7724,6 +7768,23 @@ export default function LePont() {
           {record?<div style={{background:"rgba(255,255,255,.13)",backdropFilter:"blur(10px)",borderRadius:18,padding:"8px 14px",display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:13}}>🏆</span><span style={{fontFamily:G.heading,fontSize:22,color:G.gold}}>{record.score}</span></div>:<div style={{width:70}}/>}
         </div>
 
+        {/* CRESCENDO BADGE — Plug mode */}
+        {(activeDuelRef.current && activeDuelRef.current.isRoom ? activeDuelRef.current.diff : diff) === "expert" && (() => {
+          // Au Plug, on calcule le palier selon qIdx (0-9 facile, 10-19 moyen, 20+ expert)
+          const tier = qIdx < 10 ? "facile" : qIdx < 20 ? "moyen" : "expert";
+          const tierColor = tier === "facile" ? "#00E676" : tier === "moyen" ? "#FFD600" : "#FF3D57";
+          const tierLabel = tier === "facile" ? (lang==="en"?"EASY":"FACILE") : tier === "moyen" ? (lang==="en"?"MEDIUM":"MOYEN") : (lang==="en"?"EXPERT":"EXPERT");
+          const tierEmoji = tier === "facile" ? "🟢" : tier === "moyen" ? "🟡" : "🔴";
+          return (
+            <div style={{zIndex:2,display:"flex",justifyContent:"center",padding:"0 16px 4px"}}>
+              <div style={{background:`${tierColor}22`,border:`1px solid ${tierColor}55`,borderRadius:14,padding:"4px 12px",display:"flex",alignItems:"center",gap:6,backdropFilter:"blur(8px)"}}>
+                <span style={{fontSize:11}}>{tierEmoji}</span>
+                <span style={{fontSize:10,fontWeight:800,letterSpacing:2,color:tierColor}}>📈 CRESCENDO · {tierLabel}</span>
+              </div>
+            </div>
+          );
+        })()}
+
         {/* Club cards — full height */}
         <div key={"clubs-"+animKey} style={{flex:1,display:"flex",flexDirection:"column",gap:0,padding:"10px 0 0",zIndex:1,minHeight:0}}>
           {/* Club 1 */}
@@ -7887,6 +7948,22 @@ export default function LePont() {
           : <div style={{width:50}}/>
         }
       </div>
+
+      {/* CRESCENDO BADGE — affiché uniquement en mode Crescendo (diff="expert") */}
+      {(activeDuelRef.current && activeDuelRef.current.isRoom ? activeDuelRef.current.diff : diff) === "expert" && (() => {
+        const tier = getCrescendoTier(chainCount);
+        const tierColor = tier === "facile" ? "#00E676" : tier === "moyen" ? "#FFD600" : "#FF3D57";
+        const tierLabel = tier === "facile" ? (lang==="en"?"EASY":"FACILE") : tier === "moyen" ? (lang==="en"?"MEDIUM":"MOYEN") : (lang==="en"?"EXPERT":"EXPERT");
+        const tierEmoji = tier === "facile" ? "🟢" : tier === "moyen" ? "🟡" : "🔴";
+        return (
+          <div style={{zIndex:2,display:"flex",justifyContent:"center",padding:"0 16px 4px"}}>
+            <div style={{background:`${tierColor}22`,border:`1px solid ${tierColor}55`,borderRadius:14,padding:"4px 12px",display:"flex",alignItems:"center",gap:6,backdropFilter:"blur(8px)"}}>
+              <span style={{fontSize:11}}>{tierEmoji}</span>
+              <span style={{fontSize:10,fontWeight:800,letterSpacing:2,color:tierColor}}>📈 CRESCENDO · {tierLabel}</span>
+            </div>
+          </div>
+        );
+      })()}
 
       {chainLastClub && (
         <div style={{zIndex:1,padding:"4px 16px",animation:"clubTagPop .4s cubic-bezier(.22,1,.36,1)"}}>
