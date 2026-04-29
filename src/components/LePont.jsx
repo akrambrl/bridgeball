@@ -4595,6 +4595,8 @@ export default function LePont() {
       return;
     }
     const newUsed=new Set(chainUsedClubs); // ne PAS ajouter chosen → l'user ne voit pas le club (cadenas), donc on le laisse réutilisable
+    newUsed.delete(chosen); // FIX défensif : si chosen était dans chainUsedClubs pour une autre raison (cas rare), on le retire pour qu'il soit jouable au tour suivant
+    setChainUsedClubs(newUsed); // Apply le retrait au state
     const clubPlayers=getPlayersForClub(chosen).filter(p=>!chainUsedPlayers.has(p)&&getPlayerClubs(p).some(c=>!newUsed.has(c)));
     if(clubPlayers.length===0){
       // Pas de joueur pour ce club → pioche nouveau joueur frais
