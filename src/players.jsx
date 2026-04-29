@@ -1556,7 +1556,7 @@ export const PLAYERS = [
   // Eintracht Frankfurt
   { name:"Makoto Hasebe", clubs:["Wolfsburg", "Nuremberg", "Eintracht Frankfurt"], diff:"moyen" },
   { name:"Ante Rebić", clubs:["ACF Fiorentina", "Eintracht Frankfurt", "AC Milan", "Besiktas", "Lecce"], diff:"moyen" },
-  { name:"André Silva", clubs:["Porto", "AC Milan", "Sevilla", "Eintracht Frankfurt", "RB Leipzig", "Real Sociedad"], diff:"moyen" },
+  { name:"André Silva", clubs:["Porto", "AC Milan", "Sevilla", "Eintracht Frankfurt", "RB Leipzig", "Werder Bremen", "Elche", "Real Sociedad"], diff:"moyen" },
   { name:"Alex Meier", clubs:["Werder Bremen", "Hamburg", "Eintracht Frankfurt"], diff:"moyen" },
   { name:"Kevin-Prince Boateng", clubs:["Hertha Berlin", "Tottenham", "Borussia Dortmund", "Portsmouth", "AC Milan", "Schalke", "Las Palmas", "Eintracht Frankfurt", "Sassuolo", "Barcelona", "ACF Fiorentina", "Besiktas", "Monza"], diff:"moyen" },
 
