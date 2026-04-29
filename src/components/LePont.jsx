@@ -1772,6 +1772,7 @@ export default function LePont() {
   const [reportMessage, setReportMessage] = useState("");
   const [reportSent, setReportSent] = useState(false);
   const [chainLastClub, setChainLastClub] = useState("");
+  const [chainLastPassed, setChainLastPassed] = useState(false); // true si le club lien a été passé (à cacher avec cadenas)
   const [leaderboard, setLeaderboard] = useState([]);
   const [hallOfFame, setHallOfFame] = useState([]);
   const [showHallOfFame, setShowHallOfFame] = useState(false);
@@ -4147,7 +4148,7 @@ export default function LePont() {
     
     setChainPlayer(start.name); setChainUsedClubs(new Set()); setChainUsedPlayers(usedP);
     setChainCount(0); setChainScore(0); chainScoreRef.current=0;
-    setChainLastClub(""); setChainHistory([]); setGuess(""); setFlash(null); setFeedback(null);
+    setChainLastClub(""); setChainLastPassed(false); setChainHistory([]); setGuess(""); setFlash(null); setFeedback(null);
     setTimeLeft(CHAIN_DURATION); setScore(0); scoreRef.current=0;
     setMyLbRank(null); setScreen("chainGame");
     setTimeout(()=>inputRef.current?.focus(),200);
@@ -4576,7 +4577,7 @@ export default function LePont() {
         if(pool.length === 0){setTimeout(()=>{setFeedback(null);setFlash(null);endChain();},800);return;}
         const fallback = pool[Math.floor(Math.random()*pool.length)].name;
         const newUsedP=new Set(chainUsedPlayers); newUsedP.add(fallback);
-        setTimeout(()=>{setChainPlayer(fallback);setChainUsedPlayers(newUsedP);setChainLastClub(matched);setGuess("");setFeedback(null);setFlash(null);setTimeout(()=>inputRef.current?.focus(),100);},700);
+        setTimeout(()=>{setChainPlayer(fallback);setChainUsedPlayers(newUsedP);setChainLastClub(matched);setChainLastPassed(false);setGuess("");setFeedback(null);setFlash(null);setTimeout(()=>inputRef.current?.focus(),100);},700);
         return;
       }
       const preferred = clubPlayers.filter(p => {
@@ -4602,7 +4603,7 @@ export default function LePont() {
       const newUsedP=new Set(chainUsedPlayers); newUsedP.add(next);
       // Prefetch logos for next player
       
-      setTimeout(()=>{setChainPlayer(next);setChainUsedPlayers(newUsedP);setChainLastClub(matched);setGuess("");setFeedback(null);setFlash(null);setTimeout(()=>inputRef.current?.focus(),100);},700);
+      setTimeout(()=>{setChainPlayer(next);setChainUsedPlayers(newUsedP);setChainLastClub(matched);setChainLastPassed(false);setGuess("");setFeedback(null);setFlash(null);setTimeout(()=>inputRef.current?.focus(),100);},700);
     }else if(matchClub(g,playerClubs)){
       setFlash("used"); setFeedback("used"); playSound("ko");
       setTimeout(()=>{setFlash(null);setFeedback(null);setGuess("");inputRef.current?.focus();},1200);
@@ -4669,7 +4670,7 @@ export default function LePont() {
       const newUsedP=new Set(chainUsedPlayers); newUsedP.add(fallback);
       setChainUsedPlayers(newUsedP);
       setChainHistory(prev=>[...prev,{player:chainPlayer,club:chosen,passed:true}]);
-      setChainPlayer(fallback); setChainLastClub(chosen); setGuess("");
+      setChainPlayer(fallback); setChainLastClub(chosen); setChainLastPassed(true); setGuess("");
       setTimeout(()=>inputRef.current?.focus(),100);
       setAnimKey(k=>k+1);
       return;
@@ -4693,7 +4694,7 @@ export default function LePont() {
     const newUsedP=new Set(chainUsedPlayers); newUsedP.add(next);
     setChainUsedPlayers(newUsedP);
     setChainHistory(prev=>[...prev,{player:chainPlayer,club:chosen,passed:true}]);
-    setChainPlayer(next); setChainLastClub(chosen); setGuess("");
+    setChainPlayer(next); setChainLastClub(chosen); setChainLastPassed(true); setGuess("");
     setTimeout(()=>inputRef.current?.focus(),100);
     setAnimKey(k=>k+1); // relance le timer de question pour le nouveau joueur
   }
@@ -7967,11 +7968,23 @@ export default function LePont() {
 
       {chainLastClub && (
         <div style={{zIndex:1,padding:"4px 16px",animation:"clubTagPop .4s cubic-bezier(.22,1,.36,1)"}}>
-          <div style={{borderRadius:14,overflow:"hidden",position:"relative",height:36,boxShadow:`0 4px 16px ${cla}55`,display:"flex",alignItems:"center",justifyContent:"center"}}>
-            <div style={{position:"absolute",inset:0,background:cla}}/>
-            <div style={{position:"absolute",top:0,right:0,width:"55%",bottom:0,background:clb,clipPath:"polygon(30% 0%, 100% 0%, 100% 100%, 0% 100%)"}}/>
-            <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.18)"}}/>
-            <span style={{position:"relative",zIndex:1,fontSize:14,color:"#fff",fontWeight:800,textShadow:"0 1px 4px rgba(0,0,0,.5)",letterSpacing:.5}}>{chainLastClub}</span>
+          <div style={{borderRadius:14,overflow:"hidden",position:"relative",height:36,boxShadow:`0 4px 16px ${chainLastPassed?"rgba(0,0,0,.4)":cla+"55"}`,display:"flex",alignItems:"center",justifyContent:"center"}}>
+            {chainLastPassed ? (
+              <>
+                <div style={{position:"absolute",inset:0,background:"linear-gradient(135deg,#3a3a3a 0%,#1a1a1a 100%)"}}/>
+                <div style={{position:"relative",zIndex:1,display:"flex",alignItems:"center",gap:6}}>
+                  <span style={{fontSize:18}}>🔒</span>
+                  <span style={{fontSize:13,color:"rgba(255,255,255,.7)",fontWeight:700,letterSpacing:1}}>{lang==="en"?"PASSED":"PASSÉ"}</span>
+                </div>
+              </>
+            ) : (
+              <>
+                <div style={{position:"absolute",inset:0,background:cla}}/>
+                <div style={{position:"absolute",top:0,right:0,width:"55%",bottom:0,background:clb,clipPath:"polygon(30% 0%, 100% 0%, 100% 100%, 0% 100%)"}}/>
+                <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.18)"}}/>
+                <span style={{position:"relative",zIndex:1,fontSize:14,color:"#fff",fontWeight:800,textShadow:"0 1px 4px rgba(0,0,0,.5)",letterSpacing:.5}}>{chainLastClub}</span>
+              </>
+            )}
           </div>
         </div>
       )}
