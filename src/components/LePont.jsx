@@ -2216,7 +2216,130 @@ export default function LePont() {
   useEffect(function(){
     if (showGoatGrid && ggGrid) ggSaveToStorage();
   }, [ggFilledCells, ggLives, ggScore, ggGameOver]);
-
+  
+  // ─── GG : Soumettre une réponse pour la case sélectionnée ──
+  function ggSubmitAnswer(playerName) {
+    if (!ggSelectedCell || !ggGrid || ggGameOver) return;
+    const { row, col } = ggSelectedCell;
+    const cellKey = row + "-" + col;
+    
+    // Récupère la cellule du grid
+    const cell = ggGrid.cells.find(c => c.row === row && c.col === col);
+    if (!cell) return;
+    
+    // Cherche le joueur dans PLAYERS_CLEAN (insensible accents)
+    const norm = s => s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+    const target = norm(playerName.trim());
+    const player = PLAYERS_CLEAN.find(p => norm(p.name) === target);
+    
+    if (!player) {
+      // Joueur introuvable
+      setGgFlash("ko");
+      setGgFlashCell({ row, col });
+      setTimeout(function(){ setGgFlash(null); setGgFlashCell(null); setGgGuess(""); }, 700);
+      return;
+    }
+    
+    // RÈGLE MÉTRODOKU : 1 joueur par grille
+    if (ggUsedPlayers.has(player.name)) {
+      // On signale visuellement mais on ne décrémente pas une vie
+      setGgFlash("ko");
+      setGgFlashCell({ row, col });
+      setTimeout(function(){ 
+        setGgFlash(null); 
+        setGgFlashCell(null); 
+        setGgGuess(""); 
+        alert((lang==="en"?"⚠️ You already placed ":"⚠️ Tu as déjà placé ") + player.name + (lang==="en"?" in this grid! Each player can only be used once.":" dans cette grille ! Chaque joueur ne peut être utilisé qu'une fois."));
+      }, 400);
+      return;
+    }
+    
+    // Vérifier que le joueur matche les 2 critères de la case
+    const matchesRow = ggPlayerMatchesCriterion(player, cell.rowCriterion);
+    const matchesCol = ggPlayerMatchesCriterion(player, cell.colCriterion);
+    
+    if (matchesRow && matchesCol) {
+      // ✅ BONNE RÉPONSE
+      const newFilled = { ...ggFilledCells, [cellKey]: { name: player.name, pts: cell.points, rarity: cell.rarity } };
+      const newUsed = new Set(ggUsedPlayers);
+      newUsed.add(player.name);
+      const newScore = ggScore + cell.points;
+      
+      setGgFilledCells(newFilled);
+      setGgUsedPlayers(newUsed);
+      setGgScore(newScore);
+      setGgFlash("ok");
+      setGgFlashCell({ row, col });
+      
+      // Vérifier si la grille est complète
+      const isComplete = Object.keys(newFilled).length === 9;
+      if (isComplete) {
+        // Bonus sans-faute si lives === 3 (pas d'erreurs)
+        let finalScore = newScore;
+        if (ggLives === 3) {
+          finalScore = newScore + 100;
+          setGgScore(finalScore);
+        }
+        setTimeout(function(){
+          setGgGameOver(true);
+          setGgSelectedCell(null);
+          setGgGuess("");
+          setGgFlash(null);
+          setGgFlashCell(null);
+        }, 700);
+      } else {
+        setTimeout(function(){
+          setGgFlash(null);
+          setGgFlashCell(null);
+          setGgSelectedCell(null);
+          setGgGuess("");
+        }, 700);
+      }
+    } else {
+      // ❌ MAUVAISE RÉPONSE
+      const newLives = ggLives - 1;
+      setGgLives(newLives);
+      setGgFlash("ko");
+      setGgFlashCell({ row, col });
+      
+      if (newLives <= 0) {
+        // Game over
+        setTimeout(function(){
+          setGgGameOver(true);
+          setGgSelectedCell(null);
+          setGgGuess("");
+          setGgFlash(null);
+          setGgFlashCell(null);
+        }, 700);
+      } else {
+        setTimeout(function(){
+          setGgFlash(null);
+          setGgFlashCell(null);
+          setGgGuess("");
+        }, 700);
+      }
+    }
+  }
+  
+  // ─── GG : Suggestions autocomplete (≥3 lettres) ────────────
+  function ggGetSuggestions(input) {
+    if (!input || input.length < 3) return [];
+    const norm = s => s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+    const q = norm(input.trim());
+    const matched = PLAYERS_CLEAN.filter(p => p && p.name && norm(p.name).includes(q));
+    // Tri : commence par > contient
+    matched.sort(function(a, b){
+      const an = norm(a.name), bn = norm(b.name);
+      const aStarts = an.startsWith(q), bStarts = bn.startsWith(q);
+      if (aStarts !== bStarts) return aStarts ? -1 : 1;
+      const aWord = an.split(" ").some(w => w.startsWith(q));
+      const bWord = bn.split(" ").some(w => w.startsWith(q));
+      if (aWord !== bWord) return aWord ? -1 : 1;
+      return a.name.localeCompare(b.name);
+    });
+    return matched.slice(0, 5); // top 5 suggestions
+  }
+  
   const [dayStreak, setDayStreak] = useState(() => {
     try {
       const s = JSON.parse(localStorage.getItem("bb_day_streak")||"{}");
@@ -7869,6 +7992,56 @@ export default function LePont() {
 
                 </>
               )}
+
+              {/* Modal de saisie (clic sur une case vide) */}
+              {ggSelectedCell && !ggGameOver && ggGrid && (() => {
+                const cell = ggGrid.cells.find(c => c.row === ggSelectedCell.row && c.col === ggSelectedCell.col);
+                if (!cell) return null;
+                const rowCrit = cell.rowCriterion;
+                const colCrit = cell.colCriterion;
+                const rowEmoji = ggGetCriterionEmoji(rowCrit);
+                const colEmoji = ggGetCriterionEmoji(colCrit);
+                const suggestions = ggGetSuggestions(ggGuess);
+                return (
+                  <div onClick={function(){if(!ggFlash){setGgSelectedCell(null);setGgGuess("");}}} style={{position:"fixed",inset:0,zIndex:500,background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+                    <div onClick={function(e){e.stopPropagation();}} style={{background:"linear-gradient(135deg, #1a2419, #0f1812)",border:"1px solid rgba(0,230,118,.3)",borderRadius:20,padding:20,maxWidth:360,width:"100%"}}>
+                      <div style={{textAlign:"center",marginBottom:14}}>
+                        <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.5)",fontWeight:700}}>{lang==="en"?"WHO MATCHES THESE 2 CRITERIA?":"QUI MATCHE CES 2 CRITÈRES ?"}</div>
+                      </div>
+                      <div style={{display:"flex",gap:8,marginBottom:16,alignItems:"center"}}>
+                        <div style={{flex:1,background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.1)",borderRadius:12,padding:10,textAlign:"center"}}>
+                          {rowEmoji && <div style={{fontSize:22}}>{rowEmoji}</div>}
+                          <div style={{fontSize:11,fontWeight:800,color:"#fff",marginTop:4,lineHeight:1.2}}>{rowCrit.label.toUpperCase()}</div>
+                        </div>
+                        <div style={{display:"flex",alignItems:"center",fontSize:18,color:"#FFD600",fontWeight:900}}>×</div>
+                        <div style={{flex:1,background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.1)",borderRadius:12,padding:10,textAlign:"center"}}>
+                          {colEmoji && <div style={{fontSize:22}}>{colEmoji}</div>}
+                          <div style={{fontSize:11,fontWeight:800,color:"#fff",marginTop:4,lineHeight:1.2}}>{colCrit.label.toUpperCase()}</div>
+                        </div>
+                      </div>
+                      <input
+                        type="text"
+                        autoFocus
+                        value={ggGuess}
+                        onChange={function(e){setGgGuess(e.target.value);}}
+                        onKeyDown={function(e){if(e.key==="Enter"&&suggestions.length>0){ggSubmitAnswer(suggestions[0].name);}}}
+                        placeholder={lang==="en"?"Type at least 3 letters...":"Tape au moins 3 lettres..."}
+                        style={{width:"100%",background:ggFlash==="ko"?"rgba(239,68,68,.15)":"rgba(255,255,255,.08)",border:"2px solid "+(ggFlash==="ko"?"rgba(239,68,68,.7)":"rgba(255,255,255,.15)"),borderRadius:14,padding:"14px 16px",color:"#fff",fontSize:16,fontWeight:700,outline:"none",textAlign:"center",boxSizing:"border-box",animation:ggFlash==="ko"?"answerKo .4s ease":"none"}}
+                      />
+                      {suggestions.length > 0 && (
+                        <div style={{marginTop:8,background:"rgba(255,255,255,.04)",borderRadius:12,maxHeight:180,overflowY:"auto"}}>
+                          {suggestions.map(function(p){return(
+                            <div key={p.name} onClick={function(){ggSubmitAnswer(p.name);}} style={{padding:"10px 14px",cursor:"pointer",borderBottom:"1px solid rgba(255,255,255,.04)",fontSize:14,fontWeight:700,color:"#fff",transition:"background .1s"}} onMouseEnter={function(e){e.currentTarget.style.background="rgba(0,230,118,.08)";}} onMouseLeave={function(e){e.currentTarget.style.background="transparent";}}>
+                              {p.name}
+                            </div>
+                          );})}
+                        </div>
+                      )}
+                      <button onClick={function(){setGgSelectedCell(null);setGgGuess("");}} style={{marginTop:14,width:"100%",padding:12,borderRadius:50,border:"none",background:"rgba(255,255,255,.08)",color:"#fff",fontWeight:800,fontSize:13,letterSpacing:1,cursor:"pointer"}}>{lang==="en"?"Cancel":"Annuler"}</button>
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Tooltip critère (clic sur ⓘ) */}
               {ggShowTooltip && (
