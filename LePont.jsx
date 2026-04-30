@@ -910,6 +910,7 @@ const DAILY_OVERRIDES = {
   "2026-04-25": "Ronaldinho", // Samedi Légende - le sorcier brésilien
   "2026-04-26": "Miralem Pjanić", // Dimanche Joker - le maestro bosnien
   "2026-04-28": "James Milner", // Mardi PL - la légende anglaise (6 clubs PL)
+  "2026-04-29": "Ademola Lookman", // Mercredi LIGA - parcours riche 7 clubs
 };
 
 function getDailyPlayer(blacklist) {
@@ -1324,6 +1325,334 @@ function matchClub(input,playerClubs){
 function getPlayerClubs(name){const p=PLAYERS_CLEAN.find(x=>x.name===name);return p?p.clubs:[];}
 function getPlayersForClub(club){return CLUB_INDEX[club]||[];}
 
+// CRESCENDO HELPER : retourne la difficulté "effective" en mode crescendo selon le nombre de liens accomplis
+// 0-2 liens = facile, 3-6 liens = moyen, 7+ = expert
+function getCrescendoTier(chainCount) {
+  if (chainCount < 3) return "facile";
+  if (chainCount < 7) return "moyen";
+  return "expert";
+}
+
+// ══════════════════════════════════════════════════════════════
+// 🐐 GOAT GRID — Mode quotidien grille 3x3
+// ══════════════════════════════════════════════════════════════
+// Inspiré de métrodoku : grille 3x3, 6 critères croisés, 3 vies, 1 grille/jour
+// Scoring basé sur la rareté du joueur (nombre de candidats matching)
+
+// ─── Pools de critères ───────────────────────────────────────
+// Noms de clubs alignés sur PLAYERS_CLEAN (extraits de la vraie base)
+// Filtrés : seulement les clubs avec ≥8 joueurs "facile" (sinon génération de grille trop dure)
+const GG_CLUB_POOL = [
+  "Real Madrid","Barcelona","Atletico Madrid",
+  "Manchester United","Manchester City","Liverpool","Chelsea","Arsenal","Tottenham",
+  "Bayern Munich",
+  "Juventus FC","Inter Milan","AC Milan",
+  "PSG","Marseille",
+];
+
+const GG_NATIONALITY_POOL = [
+  "Brésil","Argentine","France","Allemagne","Espagne","Italie","Portugal","Angleterre",
+  "Belgique","Pays-Bas","Croatie","Pologne","Maroc","Sénégal","Algérie","Côte d'Ivoire",
+  "Cameroun","Nigeria","Uruguay","Colombie","Chili","Mexique","États-Unis","Japon",
+];
+
+const GG_POSITION_POOL = ["gardien","defenseur","milieu","attaquant"];
+
+// Mapping : nom du club → ligue (pour critères "A joué en ...")
+const GG_LIGUE_MAP = {
+  "ligue1": ["PSG","Marseille","Lyon","Monaco","Lille","Rennes","Nice","Lens","Nantes","Strasbourg","Saint-Étienne","Bordeaux","Toulouse","Montpellier","Reims","Brest","Le Havre","Auxerre","Angers","Clermont","Metz","Lorient","Troyes","Ajaccio"],
+  "premier_league": ["Manchester United","Manchester City","Liverpool","Chelsea","Arsenal","Tottenham","Newcastle","Aston Villa","West Ham","Brighton","Crystal Palace","Brentford","Fulham","Wolverhampton","Everton","Leeds United","Leicester City","Southampton","Bournemouth","Nottingham Forest"],
+  "liga": ["Real Madrid","Barcelona","Atletico Madrid","Sevilla","Valencia","Real Sociedad","Athletic Bilbao","Villarreal","Real Betis","Celta Vigo","Espanyol","Getafe","Osasuna","Mallorca","Cadiz","Almeria","Girona","Las Palmas","Granada"],
+  "serie_a": ["Juventus FC","Inter Milan","AC Milan","AS Roma","SSC Napoli","Atalanta BC","SS Lazio","ACF Fiorentina","Torino","Bologna","Sassuolo","Udinese","Empoli","Genoa","Cagliari","Hellas Verona","Lecce","Salernitana","Frosinone","Monza"],
+  "bundesliga": ["Bayern Munich","Borussia Dortmund","RB Leipzig","Bayer Leverkusen","Eintracht Frankfurt","Wolfsburg","Werder Bremen","Hoffenheim","Borussia Mönchengladbach","Köln","Union Berlin","Stuttgart","Mainz","Augsburg","Hertha Berlin","Schalke 04","Hamburg"],
+};
+
+// ─── Scoring : pts selon DIFFICULTÉ DU JOUEUR CITÉ + bonus rareté combo ──
+// Option 3 : pondéré par difficulté du joueur cité
+function ggCalculatePointsForPlayer(playerDiff, totalCandidates) {
+  let basePoints = 15; // facile par défaut
+  if (playerDiff === "moyen")  basePoints = 35;
+  if (playerDiff === "expert") basePoints = 70;
+  
+  // Bonus si très peu de candidats matchent les 2 critères (rare combo)
+  let bonus = 0;
+  if (totalCandidates <= 3) bonus = 20;       // très rare combo
+  else if (totalCandidates <= 5) bonus = 10;  // rare combo
+  
+  return basePoints + bonus;
+}
+
+// Rareté visuelle (couleur de la case) selon les pts attribués
+function ggGetRarityClass(pts) {
+  if (pts >= 80)  return "legendary"; // expert + bonus combo
+  if (pts >= 60)  return "epic";       // expert seul ou moyen + gros bonus
+  if (pts >= 40)  return "rare";       // moyen + bonus
+  if (pts >= 25)  return "common";     // moyen ou facile + bonus
+  return "trivial";                     // facile basique
+}
+
+// (Conservé pour compat : pts d'une case en mode "difficulté inconnue")
+function ggCalculatePoints(numCandidates) {
+  if (numCandidates <= 3)  return 100;
+  if (numCandidates <= 5)  return 60;
+  if (numCandidates <= 10) return 40;
+  if (numCandidates <= 20) return 25;
+  return 15;
+}
+
+// ─── Helper : un joueur matche-t-il un critère ? ──────────────
+function ggPlayerMatchesCriterion(player, criterion) {
+  if (!player || !criterion) return false;
+  
+  if (criterion.type === "club") {
+    return Array.isArray(player.clubs) && player.clubs.includes(criterion.value);
+  }
+  
+  if (criterion.type === "nationality") {
+    // Champs ajoutés par les meta Wikidata (peut être absent → false)
+    const nats = player.nationalities || [];
+    return nats.includes(criterion.value);
+  }
+  
+  if (criterion.type === "position") {
+    // 4 catégories : gardien/defenseur/milieu/attaquant
+    const positions = player.positions || [];
+    return positions.includes(criterion.value);
+  }
+  
+  if (criterion.type === "league") {
+    // criterion.value = "ligue1" | "premier_league" | etc.
+    const leagueClubs = GG_LIGUE_MAP[criterion.value] || [];
+    return Array.isArray(player.clubs) && player.clubs.some(c => leagueClubs.includes(c));
+  }
+  
+  return false;
+}
+
+// ─── Helper : trouver tous les joueurs matchant 2 critères ────
+function ggFindMatchingPlayers(crit1, crit2) {
+  return PLAYERS_CLEAN.filter(p => 
+    ggPlayerMatchesCriterion(p, crit1) && ggPlayerMatchesCriterion(p, crit2)
+  );
+}
+
+// ─── Helper : compter combien de "faciles" dans une liste ─────
+function ggCountEasy(players) {
+  return players.filter(p => p.diff === "facile").length;
+}
+
+// ─── Seed du jour ────────────────────────────────────────────
+function ggGetDailySeed() {
+  // Override via URL : ?gg_seed=N pour tester d'autres grilles
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const override = params.get("gg_seed");
+    if (override) {
+      return hashStringToSeed("override-" + override);
+    }
+  } catch {}
+  
+  const now = new Date();
+  const dateStr = now.getUTCFullYear() + "-" +
+                  String(now.getUTCMonth() + 1).padStart(2, "0") + "-" +
+                  String(now.getUTCDate()).padStart(2, "0");
+  return hashStringToSeed(dateStr); // utilise la fn existante du fichier
+}
+
+// ─── Algo principal : génération de grille ────────────────────
+// Retourne null si on ne trouve pas (très rare)
+function ggGenerateGrid(seed) {
+  const MAX_ATTEMPTS = 500;
+  
+  // Mélange tableau avec un seed donné (pour diversification)
+  function shuffleArrWithSeed(arr, attemptSeed) {
+    return seededShuffle([...arr], attemptSeed);
+  }
+  
+  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+    // Variation du seed à chaque tentative pour diversifier
+    const attemptSeed = seed + attempt * 31; // multiplicateur premier pour bonne dispersion
+    
+    // 1. Tirer 3 critères de ligne (clubs uniquement)
+    const rowCriteria = shuffleArrWithSeed(GG_CLUB_POOL, attemptSeed).slice(0, 3).map(c => ({
+      type: "club",
+      value: c,
+      label: c,
+    }));
+    
+    // 2. Tirer 3 critères de colonne (mix natio/poste/ligue, mais variés)
+    // On pioche 3 types parmi ces choix possibles
+    const colCandidates = [];
+    GG_NATIONALITY_POOL.forEach(n => colCandidates.push({ type: "nationality", value: n, label: n }));
+    GG_POSITION_POOL.forEach(p => colCandidates.push({ type: "position", value: p, label: p }));
+    Object.keys(GG_LIGUE_MAP).forEach(l => {
+      const labels = { ligue1: "A joué en L1", premier_league: "A joué en PL", liga: "A joué en Liga", serie_a: "A joué en Serie A", bundesliga: "A joué en Bundesliga" };
+      colCandidates.push({ type: "league", value: l, label: labels[l] });
+    });
+    const colCriteria = shuffleArrWithSeed(colCandidates, attemptSeed + 7).slice(0, 3);
+    
+    // 3. Calculer les candidats pour chaque case
+    const cells = [];
+    let valid = true;
+    let cellsWithEasy = 0;
+    
+    for (let i = 0; i < 3 && valid; i++) {
+      for (let j = 0; j < 3 && valid; j++) {
+        const candidates = ggFindMatchingPlayers(rowCriteria[i], colCriteria[j]);
+        const easyCount = ggCountEasy(candidates);
+        
+        // Règle 1 : ≥ 5 candidats par case
+        if (candidates.length < 5) {
+          valid = false;
+          break;
+        }
+        
+        if (easyCount >= 1) cellsWithEasy++;
+        
+        // Calculer le BEST score possible pour cette cellule (meilleur joueur dispo)
+        // Priorité : expert > moyen > facile
+        const hasExpert = candidates.some(p => p.diff === "expert");
+        const hasMoyen = candidates.some(p => p.diff === "moyen");
+        let bestDiff = "facile";
+        if (hasExpert) bestDiff = "expert";
+        else if (hasMoyen) bestDiff = "moyen";
+        const maxPts = ggCalculatePointsForPlayer(bestDiff, candidates.length);
+        
+        cells.push({
+          row: i,
+          col: j,
+          rowCriterion: rowCriteria[i],
+          colCriterion: colCriteria[j],
+          candidates: candidates.map(p => p.name), // juste les noms
+          totalCount: candidates.length,
+          easyCount,
+          points: ggCalculatePoints(candidates.length),
+          rarity: ggGetRarityClass(ggCalculatePoints(candidates.length)),
+          maxPoints: maxPts, // 🎯 Max théorique pour cette case
+        });
+      }
+    }
+    
+    if (!valid) continue;
+    
+    // Règle 2 : ≥ 5 cases sur 9 doivent avoir un facile (les 4 autres peuvent être hard)
+    if (cellsWithEasy < 5) continue;
+    
+    // ✅ Grille valide !
+    return {
+      rowCriteria,
+      colCriteria,
+      cells,
+      seed,
+    };
+  }
+  
+  // Si on n'a rien trouvé après MAX_ATTEMPTS, on retourne null
+  console.warn("[GOAT GRID] Impossible de générer une grille équilibrée après " + MAX_ATTEMPTS + " tentatives");
+  return null;
+}
+
+// ─── Couleurs des critères (mêmes que le mockup) ──────────────
+function ggGetCriterionColors(criterion) {
+  if (criterion.type === "club") {
+    return getClubColors(criterion.value); // utilise la fonction existante du fichier
+  }
+  
+  if (criterion.type === "nationality") {
+    // Couleurs simples par drapeau (extensible)
+    const flagColors = {
+      "Brésil": ["#009C3B", "#FFDF00"],
+      "Argentine": ["#74ACDF", "#FFFFFF"],
+      "France": ["#0055A4", "#EF4135"],
+      "Allemagne": ["#000000", "#DD0000"],
+      "Espagne": ["#AA151B", "#F1BF00"],
+      "Italie": ["#009246", "#CE2B37"],
+      "Portugal": ["#046A38", "#DA291C"],
+      "Angleterre": ["#FFFFFF", "#CE1124"],
+      "Belgique": ["#000000", "#FAE042"],
+      "Pays-Bas": ["#AE1C28", "#21468B"],
+      "Croatie": ["#FF0000", "#FFFFFF"],
+      "Pologne": ["#FFFFFF", "#DC143C"],
+      "Maroc": ["#C1272D", "#006233"],
+      "Sénégal": ["#00853F", "#FDEF42"],
+      "Algérie": ["#006233", "#FFFFFF"],
+      "Côte d'Ivoire": ["#FF8200", "#009E60"],
+      "Cameroun": ["#007A5E", "#CE1126"],
+      "Nigeria": ["#008751", "#FFFFFF"],
+      "Uruguay": ["#7B95C7", "#FFFFFF"],
+      "Colombie": ["#FCD116", "#003893"],
+      "Chili": ["#FFFFFF", "#D52B1E"],
+      "Mexique": ["#006847", "#CE1126"],
+      "États-Unis": ["#3C3B6E", "#B22234"],
+      "Japon": ["#FFFFFF", "#BC002D"],
+    };
+    return flagColors[criterion.value] || ["#1a7a3a", "#FFFFFF"];
+  }
+  
+  if (criterion.type === "position") {
+    // Couleur du poste (rouge agressif pour attaquant, etc.)
+    const posColors = {
+      "gardien":     ["#1E3A8A", "#F97316"], // bleu nuit / orange (gants)
+      "defenseur":   ["#166534", "#444444"], // vert / gris
+      "milieu":      ["#FFD600", "#1E40AF"], // jaune / bleu
+      "attaquant":   ["#C8102E", "#1a1a1a"], // rouge / noir
+    };
+    return posColors[criterion.value] || ["#1a7a3a", "#FFFFFF"];
+  }
+  
+  if (criterion.type === "league") {
+    const ligueColors = {
+      "ligue1":         ["#0055A4", "#EF4135"], // bleu / rouge France
+      "premier_league": ["#3D195B", "#04F5FF"], // violet / turquoise PL
+      "liga":           ["#AA151B", "#F1BF00"], // rouge / jaune Espagne
+      "serie_a":        ["#009246", "#CE2B37"], // vert / rouge Italie
+      "bundesliga":     ["#000000", "#DD0000"], // noir / rouge Allemagne
+    };
+    return ligueColors[criterion.value] || ["#1a7a3a", "#FFFFFF"];
+  }
+  
+  return ["#1a7a3a", "#FFFFFF"];
+}
+
+// ─── Emoji du critère pour l'UI ──────────────────────────────
+function ggGetCriterionEmoji(criterion) {
+  if (criterion.type === "nationality") {
+    const flags = {
+      "Brésil":"🇧🇷","Argentine":"🇦🇷","France":"🇫🇷","Allemagne":"🇩🇪","Espagne":"🇪🇸","Italie":"🇮🇹",
+      "Portugal":"🇵🇹","Angleterre":"🏴󠁧󠁢󠁥󠁮󠁧󠁿","Belgique":"🇧🇪","Pays-Bas":"🇳🇱","Croatie":"🇭🇷","Pologne":"🇵🇱",
+      "Maroc":"🇲🇦","Sénégal":"🇸🇳","Algérie":"🇩🇿","Côte d'Ivoire":"🇨🇮","Cameroun":"🇨🇲","Nigeria":"🇳🇬",
+      "Uruguay":"🇺🇾","Colombie":"🇨🇴","Chili":"🇨🇱","Mexique":"🇲🇽","États-Unis":"🇺🇸","Japon":"🇯🇵",
+    };
+    return flags[criterion.value] || "🌍";
+  }
+  if (criterion.type === "position") {
+    return { gardien: "🥅", defenseur: "🛡️", milieu: "⚙️", attaquant: "⚔️" }[criterion.value] || "⚽";
+  }
+  if (criterion.type === "league") {
+    return "🏆";
+  }
+  return "";
+}
+
+// ─── Tooltip explication d'un critère ────────────────────────
+function ggGetCriterionTooltip(criterion) {
+  if (criterion.type === "club") {
+    return `Le joueur a évolué au ${criterion.value} (au moins une saison professionnelle).`;
+  }
+  if (criterion.type === "nationality") {
+    return `Le joueur a la nationalité sportive ${criterion.value}.`;
+  }
+  if (criterion.type === "position") {
+    const labels = { gardien: "gardien de but", defenseur: "défenseur", milieu: "milieu de terrain", attaquant: "attaquant" };
+    return `Le joueur évolue principalement au poste de ${labels[criterion.value] || criterion.value}.`;
+  }
+  if (criterion.type === "league") {
+    const ligues = { ligue1: "Ligue 1 française", premier_league: "Premier League anglaise", liga: "Liga espagnole", serie_a: "Serie A italienne", bundesliga: "Bundesliga allemande" };
+    return `Le joueur a évolué dans au moins un club de ${ligues[criterion.value] || criterion.value}.`;
+  }
+  return "";
+}
+
 // ══ MULTIPLAYER ENGINE (BroadcastChannel + localStorage) ══
 // Works between browser tabs. Replace with Supabase for cross-device.
 
@@ -1726,7 +2055,7 @@ export default function LePont() {
   const [resultImg, setResultImg] = useState(null);
   const [gameMode, setGameMode] = useState("pont");
   const [diff, setDiff] = useState("facile");
-  const [totalRounds, setTotalRounds] = useState(1);
+  const [totalRounds, setTotalRounds] = useState(1); // Toujours 1 manche de 90s (pas de multi-manches)
   const [currentRound, setCurrentRound] = useState(1);
   const [roundScores, setRoundScores] = useState([]);
   const [roomRoundSnapshot, setRoomRoundSnapshot] = useState(null); // scores adversaires fin de manche
@@ -1763,6 +2092,7 @@ export default function LePont() {
   const [reportMessage, setReportMessage] = useState("");
   const [reportSent, setReportSent] = useState(false);
   const [chainLastClub, setChainLastClub] = useState("");
+  const [chainLastPassed, setChainLastPassed] = useState(false); // true si le club lien a été passé (à cacher avec cadenas)
   const [leaderboard, setLeaderboard] = useState([]);
   const [hallOfFame, setHallOfFame] = useState([]);
   const [showHallOfFame, setShowHallOfFame] = useState(false);
@@ -1843,6 +2173,214 @@ export default function LePont() {
   const [dailySuccess, setDailySuccess] = useState(false);
   const [dailyShared, setDailyShared] = useState(false); // Feedback après partage du défi du jour
   const [showDailyGame, setShowDailyGame] = useState(false);
+  
+  // ─── GOAT GRID States ───────────────────────────────────────
+  const [showGoatGrid, setShowGoatGrid] = useState(false);
+  const [ggGrid, setGgGrid] = useState(null); // { rowCriteria, colCriteria, cells }
+  const [ggFilledCells, setGgFilledCells] = useState({}); // { "0-0": { name, pts, rarity }, "1-2": ... }
+  const [ggUsedPlayers, setGgUsedPlayers] = useState(new Set()); // joueurs déjà placés
+  const [ggLives, setGgLives] = useState(3);
+  const [ggScore, setGgScore] = useState(0);
+  const [ggGameOver, setGgGameOver] = useState(false); // true quand 0 vies OU grille pleine
+  const [ggSelectedCell, setGgSelectedCell] = useState(null); // { row, col } ou null
+  const [ggGuess, setGgGuess] = useState("");
+  const [ggFlash, setGgFlash] = useState(null); // null | 'ok' | 'ko'
+  const [ggFlashCell, setGgFlashCell] = useState(null); // { row, col } pour animation
+  const [ggShowTooltip, setGgShowTooltip] = useState(null); // { title, text } ou null
+  const [ggShareCopied, setGgShareCopied] = useState(false);
+  const [ggError, setGgError] = useState(false); // true si l'algo n'a pas pu générer
+  const [ggRevealMode, setGgRevealMode] = useState(false); // true = on peut cliquer les cases pour voir les réponses possibles
+  const [ggRevealCell, setGgRevealCell] = useState(null); // cellule dont on regarde les réponses
+  
+  // Restaurer la grille du jour depuis localStorage
+  function ggLoadFromStorage() {
+    try {
+      const todaySeed = ggGetDailySeed();
+      const saved = JSON.parse(localStorage.getItem("goatfc_gg_state") || "{}");
+      if (saved.seed === todaySeed) return saved; // partie d'aujourd'hui en cours
+    } catch {}
+    return null;
+  }
+  
+  // Sauvegarder l'état de la grille du jour
+  function ggSaveToStorage() {
+    try {
+      const state = {
+        seed: ggGetDailySeed(),
+        filledCells: ggFilledCells,
+        usedPlayers: Array.from(ggUsedPlayers),
+        lives: ggLives,
+        score: ggScore,
+        gameOver: ggGameOver,
+      };
+      localStorage.setItem("goatfc_gg_state", JSON.stringify(state));
+    } catch {}
+  }
+  
+  // Démarrer/reprendre une partie GOAT GRID
+  function ggStartGame() {
+    const seed = ggGetDailySeed();
+    const grid = ggGenerateGrid(seed);
+    if (!grid) {
+      setGgError(true);
+      setShowGoatGrid(true);
+      return;
+    }
+    setGgError(false);
+    setGgGrid(grid);
+    
+    // Restaurer la progression du jour si elle existe
+    const saved = ggLoadFromStorage();
+    if (saved) {
+      setGgFilledCells(saved.filledCells || {});
+      setGgUsedPlayers(new Set(saved.usedPlayers || []));
+      setGgLives(typeof saved.lives === "number" ? saved.lives : 3);
+      setGgScore(saved.score || 0);
+      setGgGameOver(saved.gameOver || false);
+    } else {
+      // Nouvelle partie
+      setGgFilledCells({});
+      setGgUsedPlayers(new Set());
+      setGgLives(3);
+      setGgScore(0);
+      setGgGameOver(false);
+    }
+    setGgGuess("");
+    setGgFlash(null);
+    setGgSelectedCell(null);
+    setShowGoatGrid(true);
+  }
+  
+  // Sauvegarder à chaque changement
+  useEffect(function(){
+    if (showGoatGrid && ggGrid) ggSaveToStorage();
+  }, [ggFilledCells, ggLives, ggScore, ggGameOver]);
+  
+  // ─── GG : Soumettre une réponse pour la case sélectionnée ──
+  function ggSubmitAnswer(playerName) {
+    if (!ggSelectedCell || !ggGrid || ggGameOver) return;
+    const { row, col } = ggSelectedCell;
+    const cellKey = row + "-" + col;
+    
+    // Récupère la cellule du grid
+    const cell = ggGrid.cells.find(c => c.row === row && c.col === col);
+    if (!cell) return;
+    
+    // Cherche le joueur dans PLAYERS_CLEAN (insensible accents)
+    const norm = s => s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+    const target = norm(playerName.trim());
+    const player = PLAYERS_CLEAN.find(p => norm(p.name) === target);
+    
+    if (!player) {
+      // Joueur introuvable
+      setGgFlash("ko");
+      setGgFlashCell({ row, col });
+      setTimeout(function(){ setGgFlash(null); setGgFlashCell(null); setGgGuess(""); }, 700);
+      return;
+    }
+    
+    // RÈGLE MÉTRODOKU : 1 joueur par grille
+    if (ggUsedPlayers.has(player.name)) {
+      // On signale visuellement mais on ne décrémente pas une vie
+      setGgFlash("ko");
+      setGgFlashCell({ row, col });
+      setTimeout(function(){ 
+        setGgFlash(null); 
+        setGgFlashCell(null); 
+        setGgGuess(""); 
+        alert((lang==="en"?"⚠️ You already placed ":"⚠️ Tu as déjà placé ") + player.name + (lang==="en"?" in this grid! Each player can only be used once.":" dans cette grille ! Chaque joueur ne peut être utilisé qu'une fois."));
+      }, 400);
+      return;
+    }
+    
+    // Vérifier que le joueur matche les 2 critères de la case
+    const matchesRow = ggPlayerMatchesCriterion(player, cell.rowCriterion);
+    const matchesCol = ggPlayerMatchesCriterion(player, cell.colCriterion);
+    
+    if (matchesRow && matchesCol) {
+      // ✅ BONNE RÉPONSE — pts selon DIFFICULTÉ DU JOUEUR CITÉ
+      const playerPts = ggCalculatePointsForPlayer(player.diff, cell.totalCount);
+      const playerRarity = ggGetRarityClass(playerPts);
+      const newFilled = { ...ggFilledCells, [cellKey]: { name: player.name, pts: playerPts, rarity: playerRarity } };
+      const newUsed = new Set(ggUsedPlayers);
+      newUsed.add(player.name);
+      const newScore = ggScore + playerPts;
+      
+      setGgFilledCells(newFilled);
+      setGgUsedPlayers(newUsed);
+      setGgScore(newScore);
+      setGgFlash("ok");
+      setGgFlashCell({ row, col });
+      
+      // Vérifier si la grille est complète
+      const isComplete = Object.keys(newFilled).length === 9;
+      if (isComplete) {
+        // Bonus sans-faute si lives === 3 (pas d'erreurs)
+        let finalScore = newScore;
+        if (ggLives === 3) {
+          finalScore = newScore + 100;
+          setGgScore(finalScore);
+        }
+        setTimeout(function(){
+          setGgGameOver(true);
+          setGgSelectedCell(null);
+          setGgGuess("");
+          setGgFlash(null);
+          setGgFlashCell(null);
+        }, 700);
+      } else {
+        setTimeout(function(){
+          setGgFlash(null);
+          setGgFlashCell(null);
+          setGgSelectedCell(null);
+          setGgGuess("");
+        }, 700);
+      }
+    } else {
+      // ❌ MAUVAISE RÉPONSE
+      const newLives = ggLives - 1;
+      setGgLives(newLives);
+      setGgFlash("ko");
+      setGgFlashCell({ row, col });
+      
+      if (newLives <= 0) {
+        // Game over
+        setTimeout(function(){
+          setGgGameOver(true);
+          setGgSelectedCell(null);
+          setGgGuess("");
+          setGgFlash(null);
+          setGgFlashCell(null);
+        }, 700);
+      } else {
+        setTimeout(function(){
+          setGgFlash(null);
+          setGgFlashCell(null);
+          setGgGuess("");
+        }, 700);
+      }
+    }
+  }
+  
+  // ─── GG : Suggestions autocomplete (≥3 lettres) ────────────
+  function ggGetSuggestions(input) {
+    if (!input || input.length < 3) return [];
+    const norm = s => s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+    const q = norm(input.trim());
+    const matched = PLAYERS_CLEAN.filter(p => p && p.name && norm(p.name).includes(q));
+    // Tri : commence par > contient
+    matched.sort(function(a, b){
+      const an = norm(a.name), bn = norm(b.name);
+      const aStarts = an.startsWith(q), bStarts = bn.startsWith(q);
+      if (aStarts !== bStarts) return aStarts ? -1 : 1;
+      const aWord = an.split(" ").some(w => w.startsWith(q));
+      const bWord = bn.split(" ").some(w => w.startsWith(q));
+      if (aWord !== bWord) return aWord ? -1 : 1;
+      return a.name.localeCompare(b.name);
+    });
+    return matched.slice(0, 5); // top 5 suggestions
+  }
+  
   const [dayStreak, setDayStreak] = useState(() => {
     try {
       const s = JSON.parse(localStorage.getItem("bb_day_streak")||"{}");
@@ -3263,31 +3801,41 @@ export default function LePont() {
   }
 
   // Suppression complète du compte — requis par Apple App Store / RGPD
-  // Efface toutes les données utilisateur dans Supabase + localStorage
+  // Utilise la RPC delete_user_account côté Supabase qui vérifie le recovery_code
+  // et supprime tout en une transaction sécurisée.
   async function deleteAccount() {
     try {
-      // 1. Supprimer du Supabase (best-effort sur chaque table)
-      const tables = [
-        "bb_pseudos?player_id=eq." + playerId,
-        "bb_scores?player_id=eq." + playerId,
-        "bb_push_subscriptions?player_id=eq." + playerId,
-        "bb_friend_requests?or=(from_id.eq." + playerId + ",to_id.eq." + playerId + ")",
-        "bb_duels?or=(challenger_id.eq." + playerId + ",opponent_id.eq." + playerId + ")",
-        "bb_reports?reporter_id=eq." + playerId,
-      ];
-      for (const t of tables) {
-        try {
-          await sbFetch(t, { method: "DELETE", headers: {"Prefer":"return=minimal"} });
-        } catch(e) { console.error("Delete failed for", t, e); }
-      }
-      // 2. Supprimer l'avatar du Storage (best-effort)
+      // 1. Appeler la RPC sécurisée Supabase (vérification recovery_code + DELETE en cascade)
+      let success = false;
+      try {
+        const r = await fetch(SB_URL + "/rest/v1/rpc/delete_user_account", {
+          method: "POST",
+          headers: {
+            "apikey": SB_KEY,
+            "Authorization": "Bearer " + SB_KEY,
+            "Content-Type": "application/json",
+            "Prefer": "return=representation"
+          },
+          body: JSON.stringify({
+            p_player_id: playerId,
+            p_recovery_code: recoveryCode || ""
+          })
+        });
+        if (r.ok) {
+          const result = await r.json();
+          success = result && result.ok === true;
+        }
+      } catch (e) { console.error("RPC delete failed:", e); }
+
+      // 2. Supprimer l'avatar du Storage (best-effort, hors transaction)
       try {
         await fetch(SB_URL + "/storage/v1/object/avatars/" + playerId + ".jpg", {
           method: "DELETE",
           headers: { "Authorization": "Bearer " + SB_KEY, "apikey": SB_KEY }
         });
       } catch(e) {}
-      // 3. Vider le localStorage et reload l'app pour repartir à zéro
+
+      // 3. Vider le localStorage (que la RPC ait réussi ou non — l'user a demandé une suppression locale au minimum)
       try {
         const keysToRemove = [];
         for (let i = 0; i < localStorage.length; i++) {
@@ -3296,6 +3844,7 @@ export default function LePont() {
         }
         keysToRemove.forEach(function(k){ localStorage.removeItem(k); });
       } catch {}
+
       // 4. Reload pour réinitialiser l'app entièrement
       window.location.href = "/";
     } catch(e) { console.error("deleteAccount error:", e); }
@@ -3958,21 +4507,69 @@ export default function LePont() {
     // FIX multi : lire diff depuis activeDuelRef si en room (évite le stale state React)
     const isInRoom = activeDuelRef.current && activeDuelRef.current.isRoom;
     const effectiveDiff = isInRoom && activeDuelRef.current.diff ? activeDuelRef.current.diff : diff;
-    const dbPool = DB[effectiveDiff] || DB["facile"] || [];
-    if (dbPool.length === 0) { console.error("DB empty for diff:", effectiveDiff); return; }
+    
+    // CRESCENDO MODE (anciennement "expert") : construire une queue progressive facile→moyen→expert
+    // Sinon (facile/moyen) : pool unique de la difficulté choisie
+    const isCrescendo = effectiveDiff === "expert";
+    let dbPool;
+    if (isCrescendo) {
+      // Mix progressif : 1/3 facile + 1/3 moyen + 1/3 expert
+      const easyPool = DB["facile"] || [];
+      const medPool = DB["moyen"] || [];
+      const hardPool = DB["expert"] || [];
+      if (easyPool.length === 0 || medPool.length === 0 || hardPool.length === 0) {
+        // Fallback si un pool est vide : utiliser tous ceux dispos
+        dbPool = [...easyPool, ...medPool, ...hardPool];
+      } else {
+        dbPool = null; // Marqueur : on construira la queue spécifiquement
+      }
+    } else {
+      dbPool = DB[effectiveDiff] || DB["facile"] || [];
+      if (dbPool.length === 0) { console.error("DB empty for diff:", effectiveDiff); return; }
+    }
+    
     // Seeded shuffle in multiplayer room for fair questions across all players
     const roomSeed = isInRoom ? hashStringToSeed(String(activeDuelRef.current.id) + "_r" + round) : null;
     const doShuffle = isInRoom ? (arr) => seededShuffle(arr, roomSeed) : shuffle;
-    // 80% current players, 20% retired/legends
-    const currentQ = dbPool.filter(q => q.isCurrent);
-    const retiredQ = dbPool.filter(q => !q.isCurrent);
-    const targetCurrent = Math.round(dbPool.length * 0.8);
-    const targetRetired = dbPool.length - targetCurrent;
-    const picked = [
-      ...doShuffle([...currentQ]).slice(0, Math.max(targetCurrent, currentQ.length)),
-      ...doShuffle([...retiredQ]).slice(0, Math.min(targetRetired, retiredQ.length)),
-    ];
-    let q = doShuffle(picked.length > 0 ? picked : [...dbPool]);
+    
+    let q;
+    if (isCrescendo && dbPool === null) {
+      // CRESCENDO : construire la queue palier par palier
+      const easyShuffled = doShuffle([...DB["facile"]]).slice(0, 10);
+      const medShuffled = doShuffle([...DB["moyen"]]).slice(0, 10);
+      const hardShuffled = doShuffle([...DB["expert"]]).slice(0, 10);
+      // Pour chaque palier, prioriser les joueurs current (80/20)
+      const buildPalier = (pool, target) => {
+        const cur = pool.filter(x => x.isCurrent);
+        const ret = pool.filter(x => !x.isCurrent);
+        return [
+          ...doShuffle([...cur]).slice(0, Math.round(target*0.8)),
+          ...doShuffle([...ret]).slice(0, Math.round(target*0.2)),
+        ].slice(0, target);
+      };
+      // On garde l'ordre crescendo : facile d'abord, moyen ensuite, expert à la fin
+      q = [
+        ...buildPalier(DB["facile"]||[], 10),
+        ...buildPalier(DB["moyen"]||[], 10),
+        ...buildPalier(DB["expert"]||[], 10),
+      ];
+      // Si on n'a pas assez (pool trop petit), compléter avec ce qu'on a
+      if (q.length < 30) {
+        const remaining = doShuffle([...(DB["expert"]||DB["moyen"]||DB["facile"])]).filter(x => !q.includes(x));
+        q = [...q, ...remaining].slice(0, 30);
+      }
+    } else {
+      // MODE NORMAL (facile/moyen) : ancien comportement
+      const currentQ = dbPool.filter(qq => qq.isCurrent);
+      const retiredQ = dbPool.filter(qq => !qq.isCurrent);
+      const targetCurrent = Math.round(dbPool.length * 0.8);
+      const targetRetired = dbPool.length - targetCurrent;
+      const picked = [
+        ...doShuffle([...currentQ]).slice(0, Math.max(targetCurrent, currentQ.length)),
+        ...doShuffle([...retiredQ]).slice(0, Math.min(targetRetired, retiredQ.length)),
+      ];
+      q = doShuffle(picked.length > 0 ? picked : [...dbPool]);
+    }
 
     // Anti-répétition INTRA-PARTIE : exclure les paires déjà jouées dans les manches précédentes
     // (sinon en partie de 2 manches on peut retomber sur les mêmes paires)
@@ -3989,8 +4586,8 @@ export default function LePont() {
     }
     
     // Anti-répétition en SOLO uniquement : évite de reposer les paires des 2 dernières parties en premier
-    // On lit l'historique depuis localStorage, on met les paires récentes en fin de queue
-    if (!isInRoom) {
+    // ⚠️ DÉSACTIVÉ EN MODE CRESCENDO car ça casserait l'ordre progressif facile→moyen→expert
+    if (!isInRoom && !isCrescendo) {
       try {
         const recent = JSON.parse(localStorage.getItem("goatfc_recent_pairs_" + effectiveDiff) || "[]");
         const recentSet = new Set(recent);
@@ -4009,10 +4606,11 @@ export default function LePont() {
     queueRef.current = q;
     setQueue(q); setQIdx(0); setScore(0); scoreRef.current=0; setRoundAnswers([]);
     setTimeLeft(ROUND_DURATION); setGuess(""); setFlash(null); setFeedback(null);
-    if(effectiveDiff==="facile") {
-      const optSeed = isInRoom ? hashStringToSeed(String(activeDuelRef.current.id) + "_opt_" + (q[0].p.join("|"))) : null;
-      setOptions(generateOptions(q[0].p, DB[effectiveDiff]||[], optSeed));
-    }
+    // Toujours générer 4 options (boutons cliquables) pour toutes les difficultés
+    // Pool des distracteurs : mix des 3 difficultés pour garantir des distracteurs variés et pertinents
+    const allPairsForOpts = [...(DB["facile"]||[]), ...(DB["moyen"]||[]), ...(DB["expert"]||[])];
+    const optSeed = isInRoom ? hashStringToSeed(String(activeDuelRef.current.id) + "_opt_" + (q[0].p.join("|"))) : null;
+    setOptions(generateOptions(q[0].p, allPairsForOpts, optSeed));
     setCurrentRound(round); setAnimKey(0); setScreen("game");
     setTimeout(()=>inputRef.current?.focus(),200);
   }
@@ -4025,16 +4623,20 @@ export default function LePont() {
     const effectiveDiff = isInRoom && activeDuelRef.current.diff ? activeDuelRef.current.diff : diff;
     const roomSeed = isInRoom ? hashStringToSeed(String(activeDuelRef.current.id) + "_chain") : null;
     const rand = isInRoom ? seededRandom(roomSeed) : Math.random;
+    // CRESCENDO MODE : le starter (lien 0) doit toujours être un joueur FACILE pour amorcer la chaîne en douceur
+    // Le pool s'étendra ensuite progressivement avec chainCount (voir handleChainSubmit/handleChainPass)
+    const isCrescendo = effectiveDiff === "expert";
+    const starterDiff = isCrescendo ? "facile" : effectiveDiff;
     // Filtrer par difficulté — en facile on commence par des stars connues
     const eligible = PLAYERS_CLEAN.filter(p => {
       if (p.clubs.length < 2) return false;
-      if (effectiveDiff === "facile") return p.diff === "facile";
-      if (effectiveDiff === "moyen") return p.diff === "facile" || p.diff === "moyen";
-      return true; // expert = tous
+      if (starterDiff === "facile") return p.diff === "facile";
+      if (starterDiff === "moyen") return p.diff === "facile" || p.diff === "moyen";
+      return true; // expert pur (au cas où, mais Crescendo n'arrive jamais ici car starterDiff='facile')
     });
-    // En mode facile, le joueur de départ doit avoir AU MOINS 2 clubs populaires
+    // En mode facile (et Crescendo qui démarre facile), le joueur de départ doit avoir AU MOINS 2 clubs populaires
     // (sinon dès qu'un est utilisé la chaîne devient impossible à deviner)
-    const eligibleFacile = effectiveDiff === "facile"
+    const eligibleFacile = starterDiff === "facile"
       ? eligible.filter(p => p.clubs.filter(c => FAMOUS_CLUBS.has(c)).length >= 2)
       : eligible;
     const pool = eligibleFacile.length > 0 ? eligibleFacile : (eligible.length > 0 ? eligible : PLAYERS_CLEAN.filter(p => p.clubs.length >= 2));
@@ -4075,7 +4677,7 @@ export default function LePont() {
     
     setChainPlayer(start.name); setChainUsedClubs(new Set()); setChainUsedPlayers(usedP);
     setChainCount(0); setChainScore(0); chainScoreRef.current=0;
-    setChainLastClub(""); setChainHistory([]); setGuess(""); setFlash(null); setFeedback(null);
+    setChainLastClub(""); setChainLastPassed(false); setChainHistory([]); setGuess(""); setFlash(null); setFeedback(null);
     setTimeLeft(CHAIN_DURATION); setScore(0); scoreRef.current=0;
     setMyLbRank(null); setScreen("chainGame");
     setTimeout(()=>inputRef.current?.focus(),200);
@@ -4410,27 +5012,23 @@ export default function LePont() {
       const next = i+1;
       const isInRoom = activeDuelRef.current && activeDuelRef.current.isRoom;
       const effectiveDiff = isInRoom && activeDuelRef.current.diff ? activeDuelRef.current.diff : diff;
+      // Pool des distracteurs : mix des 3 difficultés pour garantir des distracteurs variés et pertinents
+      const allPairsForOpts = [...(DB["facile"]||[]), ...(DB["moyen"]||[]), ...(DB["expert"]||[])];
       // If we've gone through the whole queue, rebuild with fresh shuffle (seeded in room)
       if (next >= queue.length) {
         const reshuffleSeed = isInRoom ? hashStringToSeed(String(activeDuelRef.current.id) + "_r" + currentRound + "_reshuffle") : null;
         const fresh = reshuffleSeed !== null ? seededShuffle(DB[effectiveDiff], reshuffleSeed) : shuffle(DB[effectiveDiff]);
         setQueue(fresh);
-        if(effectiveDiff==="facile") {
-          const optSeed = isInRoom ? hashStringToSeed(String(activeDuelRef.current.id) + "_opt_" + (fresh[0].p.join("|"))) : null;
-          setOptions(generateOptions(fresh[0].p, DB[effectiveDiff], optSeed));
-        }
+        const optSeed = isInRoom ? hashStringToSeed(String(activeDuelRef.current.id) + "_opt_" + (fresh[0].p.join("|"))) : null;
+        setOptions(generateOptions(fresh[0].p, allPairsForOpts, optSeed));
         return 0;
       }
-      if(effectiveDiff==="facile") {
-        const optSeed = isInRoom ? hashStringToSeed(String(activeDuelRef.current.id) + "_opt_" + (queue[next].p.join("|"))) : null;
-        setOptions(generateOptions(queue[next].p, DB[effectiveDiff], optSeed));
-      }
+      const optSeed = isInRoom ? hashStringToSeed(String(activeDuelRef.current.id) + "_opt_" + (queue[next].p.join("|"))) : null;
+      setOptions(generateOptions(queue[next].p, allPairsForOpts, optSeed));
       return next;
     });
     setGuess(""); setFlash(null); setAnimKey(k=>k+1);
-    const isInRoom2 = activeDuelRef.current && activeDuelRef.current.isRoom;
-    const effectiveDiff2 = isInRoom2 && activeDuelRef.current.diff ? activeDuelRef.current.diff : diff;
-    if(effectiveDiff2!=="facile") setTimeout(()=>inputRef.current?.focus(),100);
+    // Plus besoin de focus l'input car maintenant tous les modes ont des boutons (pas d'input texte)
   }
 
   function handleSubmit() {
@@ -4484,7 +5082,9 @@ export default function LePont() {
       const clubPlayers=getPlayersForClub(matched).filter(p=>!chainUsedPlayers.has(p)&&getPlayerClubs(p).some(c=>!newUsed.has(c)));
       // Favoriser les joueurs de la bonne difficulté ET les joueurs actuels (80/20)
       const isInRoomCS = activeDuelRef.current && activeDuelRef.current.isRoom;
-      const effectiveDiffCS = isInRoomCS && activeDuelRef.current.diff ? activeDuelRef.current.diff : diff;
+      const rawDiffCS = isInRoomCS && activeDuelRef.current.diff ? activeDuelRef.current.diff : diff;
+      // CRESCENDO : en mode "expert", la diff effective dépend du nombre de liens (chainCount + 1 = on calcule pour LE PROCHAIN joueur)
+      const effectiveDiffCS = rawDiffCS === "expert" ? getCrescendoTier(chainCount + 1) : rawDiffCS;
       if(clubPlayers.length===0){
         // Chaîne bloquée après bonne réponse → on pioche un joueur frais au lieu de finir la partie
         const fallbackPool = PLAYERS_CLEAN.filter(p => {
@@ -4502,7 +5102,7 @@ export default function LePont() {
         if(pool.length === 0){setTimeout(()=>{setFeedback(null);setFlash(null);endChain();},800);return;}
         const fallback = pool[Math.floor(Math.random()*pool.length)].name;
         const newUsedP=new Set(chainUsedPlayers); newUsedP.add(fallback);
-        setTimeout(()=>{setChainPlayer(fallback);setChainUsedPlayers(newUsedP);setChainLastClub(matched);setGuess("");setFeedback(null);setFlash(null);setTimeout(()=>inputRef.current?.focus(),100);},700);
+        setTimeout(()=>{setChainPlayer(fallback);setChainUsedPlayers(newUsedP);setChainLastClub(matched);setChainLastPassed(false);setGuess("");setFeedback(null);setFlash(null);setTimeout(()=>inputRef.current?.focus(),100);},700);
         return;
       }
       const preferred = clubPlayers.filter(p => {
@@ -4528,7 +5128,7 @@ export default function LePont() {
       const newUsedP=new Set(chainUsedPlayers); newUsedP.add(next);
       // Prefetch logos for next player
       
-      setTimeout(()=>{setChainPlayer(next);setChainUsedPlayers(newUsedP);setChainLastClub(matched);setGuess("");setFeedback(null);setFlash(null);setTimeout(()=>inputRef.current?.focus(),100);},700);
+      setTimeout(()=>{setChainPlayer(next);setChainUsedPlayers(newUsedP);setChainLastClub(matched);setChainLastPassed(false);setGuess("");setFeedback(null);setFlash(null);setTimeout(()=>inputRef.current?.focus(),100);},700);
     }else if(matchClub(g,playerClubs)){
       setFlash("used"); setFeedback("used"); playSound("ko");
       setTimeout(()=>{setFlash(null);setFeedback(null);setGuess("");inputRef.current?.focus();},1200);
@@ -4545,7 +5145,9 @@ export default function LePont() {
     setChainScore(s=>{chainScoreRef.current=s-10;return s-10;});
     // FIX multi : en room, tous les joueurs qui passent sur le même chainPlayer doivent obtenir le même prochain joueur
     const isInRoomCP = activeDuelRef.current && activeDuelRef.current.isRoom;
-    const effectiveDiffCP = isInRoomCP && activeDuelRef.current.diff ? activeDuelRef.current.diff : diff;
+    const rawDiffCP = isInRoomCP && activeDuelRef.current.diff ? activeDuelRef.current.diff : diff;
+    // CRESCENDO : en mode "expert", la diff effective dépend du nombre de liens (chainCount + 1 = pour LE PROCHAIN joueur)
+    const effectiveDiffCP = rawDiffCP === "expert" ? getCrescendoTier(chainCount + 1) : rawDiffCP;
     const passSeed = isInRoomCP ? hashStringToSeed(String(activeDuelRef.current.id) + "_pass_" + chainPlayer) : null;
     const randCP = passSeed !== null ? seededRandom(passSeed) : Math.random;
     const validClubs=(PLAYERS_CLEAN.find(p=>p.name===chainPlayer)?.clubs||[]).filter(c=>!chainUsedClubs.has(c));
@@ -4583,6 +5185,8 @@ export default function LePont() {
       return;
     }
     const newUsed=new Set(chainUsedClubs); // ne PAS ajouter chosen → l'user ne voit pas le club (cadenas), donc on le laisse réutilisable
+    newUsed.delete(chosen); // FIX défensif : si chosen était dans chainUsedClubs pour une autre raison (cas rare), on le retire pour qu'il soit jouable au tour suivant
+    setChainUsedClubs(newUsed); // Apply le retrait au state
     const clubPlayers=getPlayersForClub(chosen).filter(p=>!chainUsedPlayers.has(p)&&getPlayerClubs(p).some(c=>!newUsed.has(c)));
     if(clubPlayers.length===0){
       // Pas de joueur pour ce club → pioche nouveau joueur frais
@@ -4591,7 +5195,7 @@ export default function LePont() {
       const newUsedP=new Set(chainUsedPlayers); newUsedP.add(fallback);
       setChainUsedPlayers(newUsedP);
       setChainHistory(prev=>[...prev,{player:chainPlayer,club:chosen,passed:true}]);
-      setChainPlayer(fallback); setChainLastClub(chosen); setGuess("");
+      setChainPlayer(fallback); setChainLastClub(chosen); setChainLastPassed(true); setGuess("");
       setTimeout(()=>inputRef.current?.focus(),100);
       setAnimKey(k=>k+1);
       return;
@@ -4615,7 +5219,7 @@ export default function LePont() {
     const newUsedP=new Set(chainUsedPlayers); newUsedP.add(next);
     setChainUsedPlayers(newUsedP);
     setChainHistory(prev=>[...prev,{player:chainPlayer,club:chosen,passed:true}]);
-    setChainPlayer(next); setChainLastClub(chosen); setGuess("");
+    setChainPlayer(next); setChainLastClub(chosen); setChainLastPassed(true); setGuess("");
     setTimeout(()=>inputRef.current?.focus(),100);
     setAnimKey(k=>k+1); // relance le timer de question pour le nouveau joueur
   }
@@ -5158,12 +5762,7 @@ export default function LePont() {
                 </button>
               );})}
             </div>
-            <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:8}}>{lang==="en"?"Rounds":"Manches"}</div>
-            <div style={{display:"flex",gap:8,marginBottom:20}}>
-              {[1,2,3].map(function(r){return(
-                <button key={r} onClick={function(){setDuelRounds(r);}} style={{flex:1,padding:"10px",borderRadius:12,border:"1.5px solid "+(duelRounds===r?"#fff":"rgba(255,255,255,.15)"),background:duelRounds===r?"rgba(255,255,255,.1)":"transparent",color:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:15}}>{r}</button>
-              );})}
-            </div>
+            {/* Sélecteur de manches supprimé : 1 manche de 90s par défaut */}
           </>
         )}
         <div style={{display:"flex",gap:8,marginTop:8}}>
@@ -5897,7 +6496,7 @@ export default function LePont() {
                       {entry.streak>=3 && <span style={{fontSize:11,fontWeight:800,color:"#FF6B35",background:"rgba(255,107,53,.15)",borderRadius:20,padding:"2px 8px"}}>🔥 {entry.streak}</span>}
                     </div>
                     {lbMode==="saison"
-                      ? <div style={{fontSize:12,color:i<3?"rgba(26,13,0,.85)":"rgba(255,255,255,.5)",marginTop:3,fontWeight:i<3?700:400}}>⭐ {lang==="en"?"Cumulative XP":"XP cumulés"}</div>
+                      ? null
                       : <div style={{fontSize:12,color:i<3?"rgba(26,13,0,.85)":"rgba(255,255,255,.5)",marginTop:3,fontWeight:i<3?700:400}}>{entry.played} {lang==="en"?(entry.played>1?"games":"game"):(entry.played>1?"parties":"partie")}</div>
                     }
                   </div>
@@ -6079,7 +6678,7 @@ export default function LePont() {
         <div style={{...sheet,borderRadius:"28px 28px 0 0",marginTop:16}}>
           <div style={{background:"rgba(255,255,255,.04)",borderRadius:14,padding:"10px 14px",marginBottom:4}}>
             <div style={{fontSize:11,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginBottom:2}}>{lang==="en"?"Mode":"Mode"}</div>
-            <div style={{fontSize:15,fontWeight:800,color:G.white}}>{room.mode==="pont"?"The Plug":"The Mercato"}{room.diff?" · "+(room.diff==="facile"?"AMATEUR":room.diff==="moyen"?"PRO":"LEGEND"):""} · {room.rounds||1} {lang==="en"?("round"+((room.rounds||1)>1?"s":"")):("manche"+((room.rounds||1)>1?"s":""))}</div>
+            <div style={{fontSize:15,fontWeight:800,color:G.white}}>{room.mode==="pont"?"The Plug":"The Mercato"}{room.diff?" · "+(room.diff==="facile"?"AMATEUR":room.diff==="moyen"?"PRO":"CRESCENDO"):""} · {room.rounds||1} {lang==="en"?("round"+((room.rounds||1)>1?"s":"")):("manche"+((room.rounds||1)>1?"s":""))}</div>
           </div>
           <div>
             <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.3)",marginBottom:8}}>
@@ -6962,7 +7561,7 @@ export default function LePont() {
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                 <div>
                   <div style={{fontSize:13,fontWeight:800,color:G.white}}>{duelMode==="pont"?"The Plug":"The Mercato"}</div>
-                  <div style={{fontSize:12,color:"rgba(255,255,255,.4)"}}>{duelDiff==="facile"?"AMATEUR":duelDiff==="moyen"?"PRO":"LEGEND"} · {duelRounds} {lang==="en"?("round"+(duelRounds>1?"s":"")):("manche"+(duelRounds>1?"s":""))}</div>
+                  <div style={{fontSize:12,color:"rgba(255,255,255,.4)"}}>{duelDiff==="facile"?"AMATEUR":duelDiff==="moyen"?"PRO":"CRESCENDO"} · {duelRounds} {lang==="en"?("round"+(duelRounds>1?"s":"")):("manche"+(duelRounds>1?"s":""))}</div>
                 </div>
                 <div style={{fontFamily:G.heading,fontSize:32,color:G.accent}}>2-8 👥</div>
               </div>
@@ -7215,7 +7814,7 @@ export default function LePont() {
                     <div style={{fontSize:10,fontWeight:800,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginBottom:10,marginTop:26}}>{lang==="en"?"Difficulty":"Difficulté"}</div>
                     <div style={{display:"flex",gap:8,marginBottom:20}}>
                       {["facile","moyen","expert"].map(function(d){
-                        const dLabel = d==="facile"?"AMATEUR":d==="moyen"?"PRO":"LEGEND";
+                        const dLabel = d==="facile"?"AMATEUR":d==="moyen"?"PRO":"CRESCENDO";
                         const dColor = d==="facile"?"#00E676":d==="moyen"?"#FFD600":"#FF3D57";
                         const stars = d==="facile"?1:d==="moyen"?2:3;
                         return(
@@ -7228,29 +7827,14 @@ export default function LePont() {
                             display:"flex",flexDirection:"column",alignItems:"center",gap:4,
                             boxShadow:diff===d?`0 4px 16px ${dColor}33`:"none"
                           }}>
-                            <div style={{fontSize:12,letterSpacing:1}}>{"⭐".repeat(stars)}</div>
+                            <div style={{fontSize:12,letterSpacing:1}}>{d==="expert"?"📈":"⭐".repeat(stars)}</div>
                             <div>{dLabel}</div>
                           </button>
                         );
                       })}
                     </div>
 
-                    {/* Manches */}
-                    <div style={{fontSize:10,fontWeight:800,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginBottom:10}}>{lang==="en"?"Rounds":"Manches"}</div>
-                    <div style={{display:"flex",gap:8,marginBottom:28}}>
-                      {[1,2,3].map(function(n){return(
-                        <button key={n} onClick={function(){setTotalRounds(n);}} style={{
-                          flex:1,padding:"14px",borderRadius:14,
-                          border:`1.5px solid ${totalRounds===n?accentColor:"rgba(255,255,255,.1)"}`,
-                          background:totalRounds===n?`${accentColor}15`:"rgba(255,255,255,.03)",
-                          color:totalRounds===n?accentColor:"rgba(255,255,255,.35)",
-                          fontFamily:G.heading,fontWeight:700,cursor:"pointer",fontSize:24,transition:"all .15s",
-                          boxShadow:totalRounds===n?`0 4px 16px ${accentColor}33`:"none"
-                        }}>
-                          {n}
-                        </button>
-                      );})}
-                    </div>
+                    {/* Manches sélecteur supprimé : 1 manche de 90s par défaut pour Mercato et Plug */}
 
                     {/* Boutons */}
                     <div style={{display:"flex",gap:10}}>
@@ -7283,8 +7867,20 @@ export default function LePont() {
           </div>
         )}
 
-        {/* Défi du jour */}
-        {dailyPlayer && (
+        {/* 🐐 GOAT GRID — Encadré accueil */}
+        <div onClick={ggStartGame} style={{borderRadius:14,background:"linear-gradient(135deg,rgba(0,230,118,.15),rgba(255,214,0,.15))",border:"1.5px solid rgba(0,230,118,.4)",padding:"10px 12px",display:"flex",alignItems:"center",gap:10,cursor:"pointer",transition:"all .15s"}}>
+          <div style={{fontSize:22}}>🐐</div>
+          <div style={{flex:1}}>
+            <div style={{fontSize:10,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase",color:"rgba(0,230,118,.8)",marginBottom:1}}>{lang==="en"?"Daily challenge":"Défi du jour"}</div>
+            <div style={{fontSize:13,fontWeight:800,color:G.white}}>
+              GOAT GRID — {lang==="en"?"Fill the 3×3 grid":"Remplis la grille 3×3"}
+            </div>
+          </div>
+          <button onClick={function(e){e.stopPropagation();ggStartGame();}} style={{padding:"9px 13px",background:"linear-gradient(135deg,#00E676,#FFD600)",color:"#000",border:"none",borderRadius:12,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800,whiteSpace:"nowrap"}}>{lang==="en"?"Play 🐐":"Jouer 🐐"}</button>
+        </div>
+
+        {/* Défi du jour — CACHÉ (remplacé par GOAT GRID, plomberie conservée pour push notif + streak) */}
+        {false && dailyPlayer && (
           <div style={{borderRadius:14,background:dailyDone?"rgba(255,255,255,.04)":"linear-gradient(135deg,rgba(255,214,0,.12),rgba(255,107,53,.12))",border:dailyDone?"1px solid rgba(255,255,255,.1)":"1.5px solid rgba(255,214,0,.3)",padding:"10px 12px",display:"flex",alignItems:"center",gap:10,opacity:dailyDone?.7:1}}>
             <div style={{fontSize:22}}>{dailyDone?(dailyRevealed?"👁️":dailyAbandoned?"🔒":"✅"):"⚡"}</div>
             <div style={{flex:1}}>
@@ -7295,6 +7891,366 @@ export default function LePont() {
               {dailyDone && <div style={{fontSize:10,color:"rgba(255,255,255,.3)",marginTop:1}}>{dailyRevealed ? (lang==="en"?"Answer revealed — ":"Réponse révélée — ")+dailyPlayer.name : dailyAbandoned ? (lang==="en"?"Abandoned — ":"Abandonné — ")+dailyPlayer.name : (lang==="en"?"Found in "+localStorage.getItem("bb_daily_tries")+" attempt"+(parseInt(localStorage.getItem("bb_daily_tries")||"1")>1?"s":"")+"!":"Trouvé en "+localStorage.getItem("bb_daily_tries")+" essai"+(parseInt(localStorage.getItem("bb_daily_tries")||"1")>1?"s":"")+" !")}</div>}
             </div>
             {!dailyDone && <button onClick={function(){setShowDailyGame(true);setDailyGuess("");setDailyFlash(null);setDailySuccess(false);}} style={{padding:"9px 13px",background:"linear-gradient(135deg,#FFD600,#FF6B35)",color:"#000",border:"none",borderRadius:12,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800,whiteSpace:"nowrap"}}>{lang==="en"?"Play ⚡":"Jouer ⚡"}</button>}
+          </div>
+        )}
+
+        {/* 🐐 Modal GOAT GRID — Mode quotidien grille 3x3 */}
+        {showGoatGrid && (
+          <div style={{position:"fixed",inset:0,zIndex:400,display:"flex",flexDirection:"column",background:"linear-gradient(180deg, #0a1410 0%, #1E5C2A 100%)"}}>
+            {/* Fond pelouse */}
+            <div style={{position:"absolute",inset:0,zIndex:0,overflow:"hidden",opacity:.4}}>
+              {[0,1,2,3,4,5,6].map(function(i){return(<div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#1E5C2A":"#276B34"}}/>);})}
+            </div>
+            
+            <div style={{position:"relative",zIndex:1,display:"flex",flexDirection:"column",height:"100%",padding:"12px 14px",overflow:"hidden"}}>
+              
+              {/* Header avec bouton fermer */}
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8,flexShrink:0}}>
+                <div style={{flex:1}}/>
+                <div style={{textAlign:"center"}}>
+                  <div style={{display:"inline-block",background:"linear-gradient(135deg,#00E676,#00B85F)",color:"#000",fontSize:9,fontWeight:900,letterSpacing:2,padding:"3px 10px",borderRadius:20,marginBottom:4}}>{lang==="en"?"⚡ DAILY · NEW":"⚡ DÉFI DU JOUR · NOUVEAU"}</div>
+                  <div style={{fontFamily:G.heading,fontSize:26,letterSpacing:2,color:"#FFD600",lineHeight:1}}>GOAT GRID 🐐</div>
+                  <div style={{fontSize:11,color:"rgba(255,255,255,.7)",marginTop:3,letterSpacing:1}}>{new Date().toLocaleDateString(lang==="en"?"en-US":"fr-FR",{weekday:'long',day:'numeric',month:'long'})}</div>
+                </div>
+                <div style={{flex:1,display:"flex",justifyContent:"flex-end"}}>
+                  <button onClick={function(){setShowGoatGrid(false);}} style={{background:"rgba(255,255,255,.1)",border:"1px solid rgba(255,255,255,.15)",borderRadius:"50%",width:36,height:36,color:G.white,cursor:"pointer",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+                </div>
+              </div>
+
+              {ggError && (
+                <div style={{margin:"40px 20px",padding:24,background:"rgba(255,255,255,.05)",borderRadius:14,textAlign:"center"}}>
+                  <div style={{fontSize:48,marginBottom:12}}>⚠️</div>
+                  <div style={{fontSize:14,color:"rgba(255,255,255,.85)",lineHeight:1.5}}>{lang==="en"?"Could not generate today's grid. Data not yet enriched (nationalities/positions missing).":"Impossible de générer la grille du jour. Les données ne sont pas encore enrichies (nationalités/postes manquants)."}</div>
+                </div>
+              )}
+
+              {!ggError && ggGrid && (
+                <>
+                  {/* Info bar : vies + score + remplissage */}
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",margin:"6px 0",padding:"6px 12px",background:"rgba(0,0,0,.3)",backdropFilter:"blur(8px)",borderRadius:12,border:"1px solid rgba(255,255,255,.1)",flexShrink:0,fontSize:13,fontWeight:700}}>
+                    <div style={{display:"flex",alignItems:"center",gap:6}}>
+                      <span style={{fontSize:10,color:"rgba(255,255,255,.5)",fontWeight:600,letterSpacing:1}}>{lang==="en"?"LIVES":"VIES"}</span>
+                      <div style={{display:"flex",gap:3}}>
+                        {[0,1,2].map(function(i){return(<span key={i} style={{fontSize:14,opacity:i<ggLives?1:.25,filter:i<ggLives?"none":"grayscale(1)"}}>{i<ggLives?"❤️":"💔"}</span>);})}
+                      </div>
+                    </div>
+                    <div style={{display:"flex",alignItems:"center",gap:6}}>
+                      <span style={{fontSize:10,color:"rgba(255,255,255,.5)",fontWeight:600,letterSpacing:1}}>{lang==="en"?"SCORE":"SCORE"}</span>
+                      <span style={{color:"#FFD600",fontFamily:G.heading,fontSize:16}}>{ggScore}</span>
+                      <span style={{fontSize:11,color:"rgba(255,255,255,.5)",fontFamily:G.heading}}>/ {ggGrid.cells.reduce(function(s,c){return s+c.maxPoints;},0) + 100}</span>
+                      <span style={{fontSize:10,color:"rgba(255,255,255,.4)"}}>pts</span>
+                    </div>
+                    <div style={{display:"flex",alignItems:"center",gap:6}}>
+                      <span style={{fontSize:10,color:"rgba(255,255,255,.5)",fontWeight:600,letterSpacing:1}}>{lang==="en"?"FILLED":"REMPLI"}</span>
+                      <span style={{color:"#FFD600",fontFamily:G.heading,fontSize:16}}>{Object.keys(ggFilledCells).length}/9</span>
+                    </div>
+                  </div>
+
+                  {/* Mini explainer scoring */}
+                  <div style={{background:"rgba(255,214,0,.08)",border:"1px solid rgba(255,214,0,.2)",borderRadius:10,padding:"6px 10px",marginBottom:6,fontSize:9.5,color:"rgba(255,255,255,.75)",textAlign:"center",lineHeight:1.35,flexShrink:0}}>
+                    <span style={{color:"#FFD600",fontWeight:800}}>💡 {lang==="en"?"⭐ 15 · ⭐⭐ 35 · ⭐⭐⭐ 70 pts · 🐐 No-mistake = +100":"⭐ 15 · ⭐⭐ 35 · ⭐⭐⭐ 70 pts · 🐐 Sans-faute = +100"}</span>
+                  </div>
+
+                  {/* Grille 3x3 */}
+                  <div style={{background:"rgba(0,0,0,.4)",backdropFilter:"blur(12px)",borderRadius:16,padding:6,border:"1px solid rgba(255,255,255,.08)",marginBottom:8,flex:1,display:"flex",minHeight:0}}>
+                    <div style={{display:"grid",gridTemplateColumns:"80px minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)",gridTemplateRows:"60px minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)",gap:4,flex:1,width:"100%"}}>
+                      
+                      {/* Coin haut-gauche vide */}
+                      <div/>
+                      
+                      {/* Critères colonnes */}
+                      {ggGrid.colCriteria.map(function(crit, j){
+                        const [c1, c2] = ggGetCriterionColors(crit);
+                        const emoji = ggGetCriterionEmoji(crit);
+                        return(
+                          <div key={"col-"+j} onClick={function(){setGgShowTooltip({title: crit.label, text: ggGetCriterionTooltip(crit)});}} style={{position:"relative",overflow:"hidden",borderRadius:12,border:"1.5px solid rgba(255,255,255,.2)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:"4px"}}>
+                            <div style={{position:"absolute",top:0,left:0,width:"50%",bottom:0,background:c1}}/>
+                            <div style={{position:"absolute",top:0,right:0,width:"50%",bottom:0,background:c2}}/>
+                            <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.18)"}}/>
+                            <div style={{position:"relative",zIndex:1,color:"#fff",textShadow:"0 1px 4px rgba(0,0,0,.6)",fontWeight:900,fontSize:10,letterSpacing:0.5,lineHeight:1.2,textAlign:"center"}}>
+                              {emoji && <div style={{fontSize:14}}>{emoji}</div>}
+                              <div>{crit.label.toUpperCase()}</div>
+                            </div>
+                            <div style={{position:"absolute",top:3,right:5,fontSize:9,color:"rgba(255,255,255,.7)",zIndex:2}}>ⓘ</div>
+                          </div>
+                        );
+                      })}
+                      
+                      {/* 3 lignes : critère ligne + 3 cases */}
+                      {ggGrid.rowCriteria.map(function(rowCrit, i){
+                        const [c1, c2] = ggGetCriterionColors(rowCrit);
+                        const emoji = ggGetCriterionEmoji(rowCrit);
+                        return(
+                          <React.Fragment key={"row-"+i}>
+                            {/* Critère ligne */}
+                            <div onClick={function(){setGgShowTooltip({title: rowCrit.label, text: ggGetCriterionTooltip(rowCrit)});}} style={{position:"relative",overflow:"hidden",borderRadius:12,border:"1.5px solid rgba(255,255,255,.2)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:"4px"}}>
+                              <div style={{position:"absolute",top:0,left:0,width:"50%",bottom:0,background:c1}}/>
+                              <div style={{position:"absolute",top:0,right:0,width:"50%",bottom:0,background:c2}}/>
+                              <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.18)"}}/>
+                              <div style={{position:"relative",zIndex:1,color:"#fff",textShadow:"0 1px 4px rgba(0,0,0,.6)",fontWeight:900,fontSize:10,letterSpacing:0.5,lineHeight:1.2,textAlign:"center"}}>
+                                {emoji && <div style={{fontSize:14}}>{emoji}</div>}
+                                <div>{rowCrit.label.toUpperCase()}</div>
+                              </div>
+                              <div style={{position:"absolute",top:3,right:5,fontSize:9,color:"rgba(255,255,255,.7)",zIndex:2}}>ⓘ</div>
+                            </div>
+                            
+                            {/* 3 cases de la ligne */}
+                            {[0,1,2].map(function(j){
+                              const cellKey = i+"-"+j;
+                              const filled = ggFilledCells[cellKey];
+                              const isFlashing = ggFlashCell && ggFlashCell.row===i && ggFlashCell.col===j;
+                              
+                              if (filled) {
+                                // Couleurs selon rareté
+                                const rarityStyles = {
+                                  legendary: { bg: "linear-gradient(135deg, rgba(255,214,0,.55), rgba(255,140,0,.4))", border: "rgba(255,214,0,.9)", glow: "0 0 18px rgba(255,214,0,.4)" },
+                                  epic:      { bg: "linear-gradient(135deg, rgba(185,70,240,.55), rgba(120,30,180,.4))", border: "rgba(185,70,240,.9)", glow: "0 0 14px rgba(185,70,240,.35)" },
+                                  rare:      { bg: "linear-gradient(135deg, rgba(74,158,255,.55), rgba(30,90,200,.4))", border: "rgba(74,158,255,.9)", glow: "0 0 12px rgba(74,158,255,.3)" },
+                                  common:    { bg: "linear-gradient(135deg, rgba(0,230,118,.55), rgba(0,140,80,.4))", border: "rgba(0,230,118,.85)", glow: "none" },
+                                  trivial:   { bg: "rgba(180,180,180,.4)", border: "rgba(180,180,180,.7)", glow: "none" },
+                                };
+                                const s = rarityStyles[filled.rarity] || rarityStyles.trivial;
+                                return(
+                                  <div key={cellKey} style={{borderRadius:12,padding:4,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2,background:s.bg,border:"1.5px solid "+s.border,boxShadow:s.glow,animation:"slideUp .4s ease"}}>
+                                    <div style={{fontSize:10,fontWeight:800,color:"#fff",textShadow:"0 1px 3px rgba(0,0,0,.4)",lineHeight:1.1,textAlign:"center"}}>
+                                      {filled.name.toUpperCase().split(" ").map(function(w,wi){return<div key={wi}>{w}</div>;})}
+                                    </div>
+                                    <div style={{fontSize:11,fontWeight:800,fontFamily:G.heading,letterSpacing:.5,color:"#fff",textShadow:"0 1px 3px rgba(0,0,0,.4)"}}>+{filled.pts} pts</div>
+                                  </div>
+                                );
+                              }
+                              
+                              return(
+                                <div key={cellKey} onClick={function(){
+                                  if(ggRevealMode){
+                                    // Mode reveal : afficher les réponses possibles
+                                    const c = ggGrid.cells.find(c => c.row===i && c.col===j);
+                                    if(c) setGgRevealCell(c);
+                                  } else if(!ggGameOver){
+                                    setGgSelectedCell({row:i,col:j});
+                                  }
+                                }} style={{background:isFlashing&&ggFlash==="ko"?"rgba(239,68,68,.3)":ggRevealMode?"rgba(74,158,255,.15)":"rgba(255,255,255,.05)",border:"1px solid "+(isFlashing&&ggFlash==="ko"?"rgba(239,68,68,.7)":ggRevealMode?"rgba(74,158,255,.4)":"rgba(255,255,255,.1)"),cursor:(ggRevealMode||!ggGameOver)?"pointer":"default",transition:"all .15s",padding:4,display:"flex",alignItems:"center",justifyContent:"center",borderRadius:12,animation:isFlashing&&ggFlash==="ko"?"answerKo .4s ease":"none"}}>
+                                  <div style={{fontSize:ggRevealMode?16:28,color:ggRevealMode?"#7AB8FF":"rgba(255,255,255,.3)",fontWeight:ggRevealMode?700:100}}>{ggRevealMode?"?":"+"}</div>
+                                </div>
+                              );
+                            })}
+                          </React.Fragment>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                </>
+              )}
+
+              {/* Modal de saisie (clic sur une case vide) */}
+              {ggSelectedCell && !ggGameOver && ggGrid && (() => {
+                const cell = ggGrid.cells.find(c => c.row === ggSelectedCell.row && c.col === ggSelectedCell.col);
+                if (!cell) return null;
+                const rowCrit = cell.rowCriterion;
+                const colCrit = cell.colCriterion;
+                const rowEmoji = ggGetCriterionEmoji(rowCrit);
+                const colEmoji = ggGetCriterionEmoji(colCrit);
+                const suggestions = ggGetSuggestions(ggGuess);
+                return (
+                  <div onClick={function(){if(!ggFlash){setGgSelectedCell(null);setGgGuess("");}}} style={{position:"fixed",inset:0,zIndex:500,background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+                    <div onClick={function(e){e.stopPropagation();}} style={{background:"linear-gradient(135deg, #1a2419, #0f1812)",border:"1px solid rgba(0,230,118,.3)",borderRadius:20,padding:20,maxWidth:360,width:"100%"}}>
+                      <div style={{textAlign:"center",marginBottom:14}}>
+                        <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.5)",fontWeight:700}}>{lang==="en"?"WHO MATCHES THESE 2 CRITERIA?":"QUI MATCHE CES 2 CRITÈRES ?"}</div>
+                      </div>
+                      <div style={{display:"flex",gap:8,marginBottom:16,alignItems:"center"}}>
+                        <div style={{flex:1,background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.1)",borderRadius:12,padding:10,textAlign:"center"}}>
+                          {rowEmoji && <div style={{fontSize:22}}>{rowEmoji}</div>}
+                          <div style={{fontSize:11,fontWeight:800,color:"#fff",marginTop:4,lineHeight:1.2}}>{rowCrit.label.toUpperCase()}</div>
+                        </div>
+                        <div style={{display:"flex",alignItems:"center",fontSize:18,color:"#FFD600",fontWeight:900}}>×</div>
+                        <div style={{flex:1,background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.1)",borderRadius:12,padding:10,textAlign:"center"}}>
+                          {colEmoji && <div style={{fontSize:22}}>{colEmoji}</div>}
+                          <div style={{fontSize:11,fontWeight:800,color:"#fff",marginTop:4,lineHeight:1.2}}>{colCrit.label.toUpperCase()}</div>
+                        </div>
+                      </div>
+                      <input
+                        type="text"
+                        autoFocus
+                        value={ggGuess}
+                        onChange={function(e){setGgGuess(e.target.value);}}
+                        onKeyDown={function(e){if(e.key==="Enter"){ if(suggestions.length>0){ggSubmitAnswer(suggestions[0].name);} else if(ggGuess.trim().length>=3){ggSubmitAnswer(ggGuess);} }}}
+                        placeholder={lang==="en"?"Type at least 3 letters...":"Tape au moins 3 lettres..."}
+                        style={{width:"100%",background:ggFlash==="ko"?"rgba(239,68,68,.15)":"rgba(255,255,255,.08)",border:"2px solid "+(ggFlash==="ko"?"rgba(239,68,68,.7)":"rgba(255,255,255,.15)"),borderRadius:14,padding:"14px 16px",color:"#fff",fontSize:16,fontWeight:700,outline:"none",textAlign:"center",boxSizing:"border-box",animation:ggFlash==="ko"?"answerKo .4s ease":"none"}}
+                      />
+                      {suggestions.length > 0 && (
+                        <div style={{marginTop:8,background:"rgba(255,255,255,.04)",borderRadius:12,maxHeight:180,overflowY:"auto"}}>
+                          {suggestions.map(function(p){return(
+                            <div key={p.name} onClick={function(){ggSubmitAnswer(p.name);}} style={{padding:"10px 14px",cursor:"pointer",borderBottom:"1px solid rgba(255,255,255,.04)",fontSize:14,fontWeight:700,color:"#fff",transition:"background .1s"}} onMouseEnter={function(e){e.currentTarget.style.background="rgba(0,230,118,.08)";}} onMouseLeave={function(e){e.currentTarget.style.background="transparent";}}>
+                              {p.name}
+                            </div>
+                          );})}
+                        </div>
+                      )}
+                      {/* Boutons Valider + Annuler */}
+                      <div style={{display:"flex",gap:8,marginTop:14}}>
+                        <button onClick={function(){setGgSelectedCell(null);setGgGuess("");}} style={{flex:1,padding:14,borderRadius:50,border:"none",background:"rgba(255,255,255,.08)",color:"#fff",fontWeight:800,fontSize:13,letterSpacing:1,cursor:"pointer"}}>{lang==="en"?"Cancel":"Annuler"}</button>
+                        <button 
+                          onClick={function(){ if(suggestions.length>0){ggSubmitAnswer(suggestions[0].name);} else if(ggGuess.trim().length>=3){ggSubmitAnswer(ggGuess);} }}
+                          disabled={ggGuess.trim().length<3}
+                          style={{flex:2,padding:14,borderRadius:50,border:"none",background:ggGuess.trim().length>=3?"#00E676":"rgba(255,255,255,.05)",color:ggGuess.trim().length>=3?"#000":"rgba(255,255,255,.3)",fontWeight:900,fontSize:14,letterSpacing:1.5,cursor:ggGuess.trim().length>=3?"pointer":"not-allowed"}}
+                        >{lang==="en"?"VALIDATE":"VALIDER"}</button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* 🐐 ÉCRAN FIN DE PARTIE (game over) */}
+              {ggGameOver && !ggRevealMode && (() => {
+                const filledCount = Object.keys(ggFilledCells).length;
+                const isPerfect = filledCount === 9 && ggLives === 3;
+                const isVictory = filledCount === 9;
+                const isDefeat = ggLives <= 0 && !isVictory;
+                
+                // Génère l'emoji grid Wordle-style pour le partage
+                const gridEmojis = [];
+                for (let i = 0; i < 3; i++) {
+                  const row = [];
+                  for (let j = 0; j < 3; j++) {
+                    const filled = ggFilledCells[i+"-"+j];
+                    if (!filled) { row.push("⬜"); continue; }
+                    const e = { legendary:"🟨", epic:"🟪", rare:"🟦", common:"🟩", trivial:"⬛" }[filled.rarity] || "🟩";
+                    row.push(e);
+                  }
+                  gridEmojis.push(row.join(""));
+                }
+                const todayDate = new Date().toLocaleDateString(lang==="en"?"en-US":"fr-FR",{day:'numeric',month:'short'});
+                const shareText = "🐐 GOAT GRID — " + todayDate + "\n\n" + gridEmojis.join("\n") + "\n\n" + ggScore + " pts · " + filledCount + "/9" + (isPerfect ? " · PARFAIT 🐐" : "") + "\n\n" + "Joue sur goatfc.online";
+                
+                return (
+                  <div style={{position:"fixed",inset:0,zIndex:500,background:"rgba(0,0,0,.92)",backdropFilter:"blur(10px)",display:"flex",alignItems:"center",justifyContent:"center",padding:20,overflowY:"auto"}}>
+                    <div style={{background:"linear-gradient(135deg, #1a2419, #0f1812)",border:"1px solid "+(isVictory?"rgba(0,230,118,.5)":"rgba(255,107,53,.5)"),borderRadius:24,padding:24,maxWidth:380,width:"100%",textAlign:"center"}}>
+                      
+                      {/* Titre selon résultat */}
+                      <div style={{fontSize:60,marginBottom:8}}>
+                        {isPerfect ? "🐐" : isVictory ? "🎉" : "😔"}
+                      </div>
+                      <div style={{fontFamily:G.heading,fontSize:30,color:isVictory?"#00E676":"#FF6B35",letterSpacing:1,marginBottom:4}}>
+                        {isPerfect ? (lang==="en"?"PERFECT!":"PARFAIT !") : isVictory ? (lang==="en"?"VICTORY!":"VICTOIRE !") : (lang==="en"?"GAME OVER":"PARTIE TERMINÉE")}
+                      </div>
+                      <div style={{fontSize:13,color:"rgba(255,255,255,.6)",marginBottom:18}}>
+                        {isPerfect ? (lang==="en"?"Grid filled without mistakes!":"Grille parfaite, aucune erreur !") : isVictory ? (lang==="en"?"You filled the whole grid":"Tu as rempli toute la grille") : (lang==="en"?"You used all your lives":"Tu as utilisé toutes tes vies")}
+                      </div>
+                      
+                      {/* Score final */}
+                      <div style={{background:"rgba(255,214,0,.1)",border:"1px solid rgba(255,214,0,.3)",borderRadius:16,padding:"14px 20px",marginBottom:14}}>
+                        <div style={{fontSize:11,color:"rgba(255,214,0,.7)",fontWeight:700,letterSpacing:2,marginBottom:2}}>SCORE</div>
+                        <div style={{fontFamily:G.heading,fontSize:42,color:"#FFD600",lineHeight:1}}>{ggScore} <span style={{fontSize:18,opacity:.7}}>pts</span></div>
+                        <div style={{fontSize:11,color:"rgba(255,255,255,.6)",marginTop:4,fontFamily:G.heading}}>/ {ggGrid.cells.reduce(function(s,c){return s+c.maxPoints;},0) + 100} {lang==="en"?"max":"max"}</div>
+                        {isPerfect && (
+                          <div style={{fontSize:11,color:"#00E676",fontWeight:800,marginTop:4}}>+100 {lang==="en"?"NO-MISTAKE BONUS":"BONUS SANS-FAUTE"}</div>
+                        )}
+                      </div>
+                      
+                      {/* Stats */}
+                      <div style={{display:"flex",gap:8,marginBottom:18}}>
+                        <div style={{flex:1,background:"rgba(255,255,255,.05)",borderRadius:12,padding:10}}>
+                          <div style={{fontSize:10,color:"rgba(255,255,255,.5)",letterSpacing:1,fontWeight:700}}>{lang==="en"?"FILLED":"REMPLI"}</div>
+                          <div style={{fontFamily:G.heading,fontSize:22,color:"#fff"}}>{filledCount}/9</div>
+                        </div>
+                        <div style={{flex:1,background:"rgba(255,255,255,.05)",borderRadius:12,padding:10}}>
+                          <div style={{fontSize:10,color:"rgba(255,255,255,.5)",letterSpacing:1,fontWeight:700}}>{lang==="en"?"LIVES LEFT":"VIES RESTANTES"}</div>
+                          <div style={{fontFamily:G.heading,fontSize:22,color:"#fff"}}>{[0,1,2].map(function(i){return(<span key={i}>{i<ggLives?"❤️":"💔"}</span>);})}</div>
+                        </div>
+                      </div>
+                      
+                      {/* Mini aperçu Wordle-style */}
+                      <div style={{background:"rgba(0,0,0,.3)",borderRadius:14,padding:14,marginBottom:14,fontFamily:"monospace",fontSize:24,letterSpacing:6,lineHeight:1.3}}>
+                        {gridEmojis.map(function(row,i){return(<div key={i}>{row}</div>);})}
+                      </div>
+                      
+                      {/* Boutons d'action */}
+                      <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                        <button onClick={async function(){
+                          try {
+                            if (navigator.share) {
+                              await navigator.share({ text: shareText });
+                            } else {
+                              await navigator.clipboard.writeText(shareText);
+                              setGgShareCopied(true);
+                              setTimeout(function(){setGgShareCopied(false);}, 2000);
+                            }
+                          } catch(e) {}
+                        }} style={{padding:14,borderRadius:50,border:"none",background:"linear-gradient(135deg,#00E676,#FFD600)",color:"#000",fontWeight:900,fontSize:14,letterSpacing:1.5,cursor:"pointer"}}>
+                          {ggShareCopied ? "✅ " + (lang==="en"?"COPIED!":"COPIÉ !") : "📤 " + (lang==="en"?"SHARE MY RESULT":"PARTAGER MON RÉSULTAT")}
+                        </button>
+                        <button onClick={function(){setGgRevealMode(true);}} style={{padding:12,borderRadius:50,border:"1px solid rgba(74,158,255,.4)",background:"rgba(74,158,255,.15)",color:"#7AB8FF",fontWeight:800,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
+                          💡 {lang==="en"?"SEE POSSIBLE ANSWERS":"VOIR LES RÉPONSES POSSIBLES"}
+                        </button>
+                        <button onClick={function(){setShowGoatGrid(false);}} style={{padding:12,borderRadius:50,border:"none",background:"rgba(255,255,255,.05)",color:"rgba(255,255,255,.7)",fontWeight:700,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
+                          {lang==="en"?"Close":"Fermer"}
+                        </button>
+                      </div>
+                      
+                      <div style={{marginTop:14,fontSize:11,color:"rgba(255,255,255,.4)",fontStyle:"italic"}}>
+                        {lang==="en"?"New grid tomorrow at midnight 🐐":"Nouvelle grille demain à minuit 🐐"}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* 🔍 Mode REVEAL : indicateur en haut + bouton retour */}
+              {ggRevealMode && !ggRevealCell && (
+                <div style={{position:"fixed",bottom:20,left:20,right:20,zIndex:450,display:"flex",flexDirection:"column",gap:8}}>
+                  <div style={{background:"rgba(74,158,255,.15)",border:"1px solid rgba(74,158,255,.4)",borderRadius:14,padding:"10px 14px",color:"#7AB8FF",fontSize:13,fontWeight:700,textAlign:"center"}}>
+                    💡 {lang==="en"?"Click any cell to see possible answers":"Clique sur n'importe quelle case pour voir les réponses"}
+                  </div>
+                  <button onClick={function(){setGgRevealMode(false);}} style={{padding:12,borderRadius:50,border:"none",background:"#FFD600",color:"#000",fontWeight:900,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
+                    ← {lang==="en"?"BACK TO RESULT":"RETOUR AU RÉSULTAT"}
+                  </button>
+                </div>
+              )}
+              
+              {/* 📜 Modal liste des réponses possibles d'une case */}
+              {ggRevealCell && (
+                <div onClick={function(){setGgRevealCell(null);}} style={{position:"fixed",inset:0,zIndex:500,background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+                  <div onClick={function(e){e.stopPropagation();}} style={{background:"linear-gradient(135deg, #1a2419, #0f1812)",border:"1px solid rgba(74,158,255,.4)",borderRadius:20,padding:20,maxWidth:380,width:"100%"}}>
+                    <div style={{textAlign:"center",marginBottom:14}}>
+                      <div style={{fontSize:11,letterSpacing:2,color:"rgba(74,158,255,.7)",fontWeight:700,marginBottom:4}}>{lang==="en"?"POSSIBLE ANSWERS":"RÉPONSES POSSIBLES"}</div>
+                      <div style={{fontSize:14,color:"#fff",fontWeight:700}}>{ggRevealCell.rowCriterion.label} × {ggRevealCell.colCriterion.label}</div>
+                      <div style={{fontSize:11,color:"rgba(255,255,255,.5)",marginTop:4}}>{ggRevealCell.totalCount} {lang==="en"?"candidates":"candidats"} · {ggRevealCell.points} pts</div>
+                    </div>
+                    <div style={{maxHeight:280,overflowY:"auto",background:"rgba(255,255,255,.04)",borderRadius:12,padding:8}}>
+                      {ggRevealCell.candidates.slice(0, 30).map(function(name){
+                        const wasUsed = ggUsedPlayers.has(name);
+                        return(
+                          <div key={name} style={{padding:"10px 14px",borderBottom:"1px solid rgba(255,255,255,.04)",fontSize:14,fontWeight:700,color:wasUsed?"#00E676":"#fff",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                            <span>{name}</span>
+                            {wasUsed && <span style={{fontSize:11,color:"#00E676"}}>✓ {lang==="en"?"Found":"Trouvé"}</span>}
+                          </div>
+                        );
+                      })}
+                      {ggRevealCell.candidates.length > 30 && (
+                        <div style={{padding:"10px 14px",fontSize:12,color:"rgba(255,255,255,.5)",textAlign:"center",fontStyle:"italic"}}>
+                          {lang==="en"?"... and ":"... et "}{ggRevealCell.candidates.length - 30} {lang==="en"?"others":"autres"}
+                        </div>
+                      )}
+                    </div>
+                    <button onClick={function(){setGgRevealCell(null);}} style={{marginTop:14,width:"100%",padding:12,borderRadius:50,border:"none",background:"#7AB8FF",color:"#000",fontWeight:800,fontSize:13,letterSpacing:1,cursor:"pointer"}}>{lang==="en"?"Close":"Fermer"}</button>
+                  </div>
+                </div>
+              )}
+
+              {/* Tooltip critère (clic sur ⓘ) */}
+              {ggShowTooltip && (
+                <div onClick={function(){setGgShowTooltip(null);}} style={{position:"fixed",inset:0,zIndex:500,background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+                  <div onClick={function(e){e.stopPropagation();}} style={{background:"linear-gradient(135deg, #1a2419, #0f1812)",border:"1px solid rgba(255,214,0,.3)",borderRadius:20,padding:20,maxWidth:340,width:"100%",textAlign:"center"}}>
+                    <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,214,0,.7)",fontWeight:700,marginBottom:8}}>{lang==="en"?"CRITERION":"CRITÈRE"}</div>
+                    <div style={{fontFamily:G.heading,fontSize:24,color:"#FFD600",letterSpacing:1,marginBottom:14}}>{ggShowTooltip.title.toUpperCase()}</div>
+                    <div style={{fontSize:14,lineHeight:1.5,color:"rgba(255,255,255,.85)",textAlign:"left",background:"rgba(255,255,255,.04)",borderRadius:12,padding:14,marginBottom:14}}>{ggShowTooltip.text}</div>
+                    <button onClick={function(){setGgShowTooltip(null);}} style={{width:"100%",padding:12,borderRadius:50,border:"none",background:"#00E676",color:"#000",fontWeight:800,fontSize:13,letterSpacing:1,cursor:"pointer"}}>{lang==="en"?"GOT IT":"OK"}</button>
+                  </div>
+                </div>
+              )}
+
+            </div>
           </div>
         )}
 
@@ -7332,7 +8288,8 @@ export default function LePont() {
                   </div>
                 );
               })()}
-              {/* Clubs */}
+              {/* Clubs — masqués quand la partie est finie pour montrer le résultat en haut */}
+              {!dailySuccess && !dailyRevealed && (
               <div>
                 <div style={{textAlign:"center",marginBottom:8}}>
                   <span style={{
@@ -7367,6 +8324,7 @@ export default function LePont() {
                   })}
                 </div>
               </div>
+              )}
 
               {/* Tentatives */}
               {dailyTries > 0 && !dailySuccess && (
@@ -7708,6 +8666,23 @@ export default function LePont() {
           {record?<div style={{background:"rgba(255,255,255,.13)",backdropFilter:"blur(10px)",borderRadius:18,padding:"8px 14px",display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:13}}>🏆</span><span style={{fontFamily:G.heading,fontSize:22,color:G.gold}}>{record.score}</span></div>:<div style={{width:70}}/>}
         </div>
 
+        {/* CRESCENDO BADGE — Plug mode */}
+        {(activeDuelRef.current && activeDuelRef.current.isRoom ? activeDuelRef.current.diff : diff) === "expert" && (() => {
+          // Au Plug, on calcule le palier selon qIdx (0-9 facile, 10-19 moyen, 20+ expert)
+          const tier = qIdx < 10 ? "facile" : qIdx < 20 ? "moyen" : "expert";
+          const tierColor = tier === "facile" ? "#00E676" : tier === "moyen" ? "#FFD600" : "#FF3D57";
+          const tierLabel = tier === "facile" ? (lang==="en"?"EASY":"FACILE") : tier === "moyen" ? (lang==="en"?"MEDIUM":"MOYEN") : (lang==="en"?"EXPERT":"EXPERT");
+          const tierEmoji = tier === "facile" ? "🟢" : tier === "moyen" ? "🟡" : "🔴";
+          return (
+            <div style={{zIndex:2,display:"flex",justifyContent:"center",padding:"0 16px 4px"}}>
+              <div style={{background:`${tierColor}22`,border:`1px solid ${tierColor}55`,borderRadius:14,padding:"4px 12px",display:"flex",alignItems:"center",gap:6,backdropFilter:"blur(8px)"}}>
+                <span style={{fontSize:11}}>{tierEmoji}</span>
+                <span style={{fontSize:10,fontWeight:800,letterSpacing:2,color:tierColor}}>📈 CRESCENDO · {tierLabel}</span>
+              </div>
+            </div>
+          );
+        })()}
+
         {/* Club cards — full height */}
         <div key={"clubs-"+animKey} style={{flex:1,display:"flex",flexDirection:"column",gap:0,padding:"10px 0 0",zIndex:1,minHeight:0}}>
           {/* Club 1 */}
@@ -7741,8 +8716,7 @@ export default function LePont() {
           {combo>=3&&<div style={{textAlign:"center",animation:"comboFire .5s ease"}}><span style={{background:"linear-gradient(135deg,#f59e0b,#ef4444)",color:G.white,borderRadius:20,padding:"4px 14px",fontSize:12,fontWeight:800,letterSpacing:1}}>{getComboLabel(combo)} x{combo}</span></div>}
           {feedbackBar(feedback)}
 
-          {diff==="facile"?(
-            <div style={{display:"flex",flexDirection:"column",gap:12}}>
+          <div style={{display:"flex",flexDirection:"column",gap:12}}>
               <div key={"opts-"+animKey} style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
                 {options.map((opt,oi)=>{
                   const isOk=flash==="ok"&&checkGuess(opt,cur.p);
@@ -7775,28 +8749,6 @@ export default function LePont() {
               </div>
               <button onClick={handlePass} disabled={!!flash} style={{padding:"12px",pointerEvents:flash?"none":"auto",background:"transparent",color:"#bbb",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700,opacity:flash ? 0.3 : 1}}>{lang==="en"?"Skip → (−10 pts)":"Passer → (−10 pts)"}</button>
             </div>
-          ):(
-            <div style={{display:"flex",flexDirection:"column",gap:10}}>
-              <div style={{position:"relative"}}>
-                <input ref={inputRef} value={guess} onChange={e=>setGuess(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleSubmit()}
-                  placeholder={lang==="en"?"Player name...":"Nom du joueur..."} autoComplete="off"
-                  style={{width:"100%",background:flash==="ko"?"#fee2e2":flash==="ok"?"#dcfce7":G.offWhite,border:("2px solid "+(flash==="ko"?G.red:flash==="ok"?G.accent:"#e5e5e0")+""),borderRadius:18,padding:"15px 18px",fontFamily:G.font,fontSize:18,fontWeight:700,color:G.dark,outline:"none",textAlign:"center",transition:"all .15s",animation:flash==="ko"?"answerKo .4s ease":flash==="ok"?"answerOk .4s ease":"none",boxSizing:"border-box"}}/>
-                {guess.length>=3&&!flash&&(()=>{
-                  const norm=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
-                  const q=norm(guess);
-                  const matched=PLAYERS_CLEAN.filter(p=>p&&p.name&&norm(p.name).includes(q));const sugg=matched.sort((a,b)=>{const an=norm(a.name),bn=norm(b.name);const aStarts=an.startsWith(q),bStarts=bn.startsWith(q);if(aStarts!==bStarts)return aStarts?-1:1;const aWord=an.split(" ").some(w=>w.startsWith(q)),bWord=bn.split(" ").some(w=>w.startsWith(q));if(aWord!==bWord)return aWord?-1:1;const ord={facile:0,moyen:1,expert:2};if(a.diff!==b.diff)return ord[a.diff]-ord[b.diff];return a.name.localeCompare(b.name);}).slice(0,5);
-                  if(!sugg.length) return null;
-                  return (<div style={{position:"absolute",top:"100%",left:0,right:0,background:G.offWhite,borderRadius:14,boxShadow:"0 8px 24px rgba(0,0,0,.2)",zIndex:100,overflow:"hidden",marginTop:4}}>
-                    {sugg.map(p=>(<div key={p.name} onClick={()=>{setGuess(p.name);setTimeout(()=>handleSubmit(),50);}} style={{padding:"12px 18px",fontFamily:G.font,fontSize:15,fontWeight:700,color:G.dark,cursor:"pointer",borderBottom:"1px solid rgba(0,0,0,.06)",textAlign:"left"}}>{p.name}</div>))}
-                  </div>);
-                })()}
-              </div>
-              <div style={{display:"flex",gap:10}}>
-                <button onClick={handlePass} disabled={!!flash} style={{flex:1,padding:15,pointerEvents:flash?"none":"auto",background:G.offWhite,color:"#aaa",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700,opacity:flash ? 0.3 : 1}}>{lang==="en"?"Skip → (−10 pts)":"Passer → (−10 pts)"}</button>
-                <button onClick={handleSubmit} style={{flex:2,padding:"15px",background:G.dark,color:G.white,border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:16,fontWeight:800}}>{lang==="en"?"Submit":"Valider"}</button>
-              </div>
-            </div>
-          )}
       {/* Timer par question supprimé — seul le timer global de la manche reste */}
     </div>
     </div>
@@ -7872,13 +8824,41 @@ export default function LePont() {
         }
       </div>
 
+      {/* CRESCENDO BADGE — affiché uniquement en mode Crescendo (diff="expert") */}
+      {(activeDuelRef.current && activeDuelRef.current.isRoom ? activeDuelRef.current.diff : diff) === "expert" && (() => {
+        const tier = getCrescendoTier(chainCount);
+        const tierColor = tier === "facile" ? "#00E676" : tier === "moyen" ? "#FFD600" : "#FF3D57";
+        const tierLabel = tier === "facile" ? (lang==="en"?"EASY":"FACILE") : tier === "moyen" ? (lang==="en"?"MEDIUM":"MOYEN") : (lang==="en"?"EXPERT":"EXPERT");
+        const tierEmoji = tier === "facile" ? "🟢" : tier === "moyen" ? "🟡" : "🔴";
+        return (
+          <div style={{zIndex:2,display:"flex",justifyContent:"center",padding:"0 16px 4px"}}>
+            <div style={{background:`${tierColor}22`,border:`1px solid ${tierColor}55`,borderRadius:14,padding:"4px 12px",display:"flex",alignItems:"center",gap:6,backdropFilter:"blur(8px)"}}>
+              <span style={{fontSize:11}}>{tierEmoji}</span>
+              <span style={{fontSize:10,fontWeight:800,letterSpacing:2,color:tierColor}}>📈 CRESCENDO · {tierLabel}</span>
+            </div>
+          </div>
+        );
+      })()}
+
       {chainLastClub && (
         <div style={{zIndex:1,padding:"4px 16px",animation:"clubTagPop .4s cubic-bezier(.22,1,.36,1)"}}>
-          <div style={{borderRadius:14,overflow:"hidden",position:"relative",height:36,boxShadow:`0 4px 16px ${cla}55`,display:"flex",alignItems:"center",justifyContent:"center"}}>
-            <div style={{position:"absolute",inset:0,background:cla}}/>
-            <div style={{position:"absolute",top:0,right:0,width:"55%",bottom:0,background:clb,clipPath:"polygon(30% 0%, 100% 0%, 100% 100%, 0% 100%)"}}/>
-            <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.18)"}}/>
-            <span style={{position:"relative",zIndex:1,fontSize:14,color:"#fff",fontWeight:800,textShadow:"0 1px 4px rgba(0,0,0,.5)",letterSpacing:.5}}>{chainLastClub}</span>
+          <div style={{borderRadius:14,overflow:"hidden",position:"relative",height:36,boxShadow:`0 4px 16px ${chainLastPassed?"rgba(0,0,0,.4)":cla+"55"}`,display:"flex",alignItems:"center",justifyContent:"center"}}>
+            {chainLastPassed ? (
+              <>
+                <div style={{position:"absolute",inset:0,background:"linear-gradient(135deg,#3a3a3a 0%,#1a1a1a 100%)"}}/>
+                <div style={{position:"relative",zIndex:1,display:"flex",alignItems:"center",gap:6}}>
+                  <span style={{fontSize:18}}>🔒</span>
+                  <span style={{fontSize:13,color:"rgba(255,255,255,.7)",fontWeight:700,letterSpacing:1}}>{lang==="en"?"PASSED":"PASSÉ"}</span>
+                </div>
+              </>
+            ) : (
+              <>
+                <div style={{position:"absolute",inset:0,background:cla}}/>
+                <div style={{position:"absolute",top:0,right:0,width:"55%",bottom:0,background:clb,clipPath:"polygon(30% 0%, 100% 0%, 100% 100%, 0% 100%)"}}/>
+                <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.18)"}}/>
+                <span style={{position:"relative",zIndex:1,fontSize:14,color:"#fff",fontWeight:800,textShadow:"0 1px 4px rgba(0,0,0,.5)",letterSpacing:.5}}>{chainLastClub}</span>
+              </>
+            )}
           </div>
         </div>
       )}
