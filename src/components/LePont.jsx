@@ -2190,6 +2190,8 @@ export default function LePont() {
   const [ggShareCopied, setGgShareCopied] = useState(false);
   const [ggError, setGgError] = useState(false); // true si l'algo n'a pas pu générer
   const [ggOverrideSeed, setGgOverrideSeed] = useState(0); // 0 = seed du jour, sinon seed forcé
+  const [ggLastRejected, setGgLastRejected] = useState(null); // { playerName, rowCrit, colCrit } pour signaler
+  const [ggReportSent, setGgReportSent] = useState(false); // confirmation visuelle après envoi
   const [ggRevealMode, setGgRevealMode] = useState(false); // true = on peut cliquer les cases pour voir les réponses possibles
   const [ggRevealCell, setGgRevealCell] = useState(null); // cellule dont on regarde les réponses
   
@@ -2332,6 +2334,8 @@ export default function LePont() {
           setGgGuess("");
           setGgFlash(null);
           setGgFlashCell(null);
+          setGgLastRejected(null);
+          setGgReportSent(false);
         }, 700);
       } else {
         setTimeout(function(){
@@ -2339,6 +2343,8 @@ export default function LePont() {
           setGgFlashCell(null);
           setGgSelectedCell(null);
           setGgGuess("");
+          setGgLastRejected(null);
+          setGgReportSent(false);
         }, 700);
       }
     } else {
@@ -2347,6 +2353,13 @@ export default function LePont() {
       setGgLives(newLives);
       setGgFlash("ko");
       setGgFlashCell({ row, col });
+      // Stocker la dernière réponse rejetée pour permettre le signalement
+      setGgLastRejected({
+        playerName: player.name,
+        rowCrit: cell.rowCriterion,
+        colCrit: cell.colCriterion,
+      });
+      setGgReportSent(false);
       
       if (newLives <= 0) {
         // Game over
@@ -8142,9 +8155,46 @@ export default function LePont() {
                           );})}
                         </div>
                       )}
+                      {/* Bouton "Signaler" : apparaît après une mauvaise réponse */}
+                      {ggLastRejected && (
+                        <div style={{marginTop:10,padding:10,background:"rgba(255,107,53,.1)",border:"1px solid rgba(255,107,53,.3)",borderRadius:12}}>
+                          {ggReportSent ? (
+                            <div style={{textAlign:"center",fontSize:12,color:"#00E676",fontWeight:700,padding:6}}>
+                              ✅ {lang==="en"?"Thanks! We'll check it.":"Merci ! On va vérifier."}
+                            </div>
+                          ) : (
+                            <>
+                              <div style={{fontSize:11,color:"rgba(255,255,255,.7)",marginBottom:6,textAlign:"center"}}>
+                                <strong style={{color:"#FF6B35"}}>{ggLastRejected.playerName}</strong> {lang==="en"?"refused?":"refusé ?"}
+                              </div>
+                              <button onClick={async function(){
+                                try {
+                                  await sbFetch("bb_reports", {
+                                    method:"POST",
+                                    headers:{"Content-Type":"application/json","Prefer":"return=minimal"},
+                                    body: JSON.stringify({
+                                      reporter_id: playerId,
+                                      reporter_name: playerName || null,
+                                      report_type: "gg_missed",
+                                      c1: ggLastRejected.rowCrit.label,
+                                      c2: ggLastRejected.colCrit.label,
+                                      given_answer: ggLastRejected.playerName,
+                                      player_name: ggLastRejected.playerName,
+                                      message: "GOAT GRID: l'utilisateur affirme que cette réponse devrait être valide",
+                                    })
+                                  });
+                                  setGgReportSent(true);
+                                } catch(e) { setGgReportSent(true); }
+                              }} style={{width:"100%",padding:10,borderRadius:50,border:"none",background:"rgba(255,107,53,.25)",color:"#FF8A66",fontWeight:800,fontSize:12,letterSpacing:1,cursor:"pointer"}}>
+                                ⚠️ {lang==="en"?"I'm sure it should pass":"Je suis sûr que ça devrait passer"}
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      )}
                       {/* Boutons Valider + Annuler */}
                       <div style={{display:"flex",gap:8,marginTop:14}}>
-                        <button onClick={function(){setGgSelectedCell(null);setGgGuess("");}} style={{flex:1,padding:14,borderRadius:50,border:"none",background:"rgba(255,255,255,.08)",color:"#fff",fontWeight:800,fontSize:13,letterSpacing:1,cursor:"pointer"}}>{lang==="en"?"Cancel":"Annuler"}</button>
+                        <button onClick={function(){setGgSelectedCell(null);setGgGuess("");setGgLastRejected(null);setGgReportSent(false);}} style={{flex:1,padding:14,borderRadius:50,border:"none",background:"rgba(255,255,255,.08)",color:"#fff",fontWeight:800,fontSize:13,letterSpacing:1,cursor:"pointer"}}>{lang==="en"?"Cancel":"Annuler"}</button>
                         <button 
                           onClick={function(){ if(suggestions.length>0){ggSubmitAnswer(suggestions[0].name);} else if(ggGuess.trim().length>=3){ggSubmitAnswer(ggGuess);} }}
                           disabled={ggGuess.trim().length<3}
