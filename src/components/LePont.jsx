@@ -2136,6 +2136,87 @@ export default function LePont() {
   const [dailySuccess, setDailySuccess] = useState(false);
   const [dailyShared, setDailyShared] = useState(false); // Feedback après partage du défi du jour
   const [showDailyGame, setShowDailyGame] = useState(false);
+  
+  // ─── GOAT GRID States ───────────────────────────────────────
+  const [showGoatGrid, setShowGoatGrid] = useState(false);
+  const [ggGrid, setGgGrid] = useState(null); // { rowCriteria, colCriteria, cells }
+  const [ggFilledCells, setGgFilledCells] = useState({}); // { "0-0": { name, pts, rarity }, "1-2": ... }
+  const [ggUsedPlayers, setGgUsedPlayers] = useState(new Set()); // joueurs déjà placés
+  const [ggLives, setGgLives] = useState(3);
+  const [ggScore, setGgScore] = useState(0);
+  const [ggGameOver, setGgGameOver] = useState(false); // true quand 0 vies OU grille pleine
+  const [ggSelectedCell, setGgSelectedCell] = useState(null); // { row, col } ou null
+  const [ggGuess, setGgGuess] = useState("");
+  const [ggFlash, setGgFlash] = useState(null); // null | 'ok' | 'ko'
+  const [ggFlashCell, setGgFlashCell] = useState(null); // { row, col } pour animation
+  const [ggShowTooltip, setGgShowTooltip] = useState(null); // { title, text } ou null
+  const [ggShareCopied, setGgShareCopied] = useState(false);
+  const [ggError, setGgError] = useState(false); // true si l'algo n'a pas pu générer
+  
+  // Restaurer la grille du jour depuis localStorage
+  function ggLoadFromStorage() {
+    try {
+      const todaySeed = ggGetDailySeed();
+      const saved = JSON.parse(localStorage.getItem("goatfc_gg_state") || "{}");
+      if (saved.seed === todaySeed) return saved; // partie d'aujourd'hui en cours
+    } catch {}
+    return null;
+  }
+  
+  // Sauvegarder l'état de la grille du jour
+  function ggSaveToStorage() {
+    try {
+      const state = {
+        seed: ggGetDailySeed(),
+        filledCells: ggFilledCells,
+        usedPlayers: Array.from(ggUsedPlayers),
+        lives: ggLives,
+        score: ggScore,
+        gameOver: ggGameOver,
+      };
+      localStorage.setItem("goatfc_gg_state", JSON.stringify(state));
+    } catch {}
+  }
+  
+  // Démarrer/reprendre une partie GOAT GRID
+  function ggStartGame() {
+    const seed = ggGetDailySeed();
+    const grid = ggGenerateGrid(seed);
+    if (!grid) {
+      setGgError(true);
+      setShowGoatGrid(true);
+      return;
+    }
+    setGgError(false);
+    setGgGrid(grid);
+    
+    // Restaurer la progression du jour si elle existe
+    const saved = ggLoadFromStorage();
+    if (saved) {
+      setGgFilledCells(saved.filledCells || {});
+      setGgUsedPlayers(new Set(saved.usedPlayers || []));
+      setGgLives(typeof saved.lives === "number" ? saved.lives : 3);
+      setGgScore(saved.score || 0);
+      setGgGameOver(saved.gameOver || false);
+    } else {
+      // Nouvelle partie
+      setGgFilledCells({});
+      setGgUsedPlayers(new Set());
+      setGgLives(3);
+      setGgScore(0);
+      setGgGameOver(false);
+    }
+    setGgGuess("");
+    setGgFlash(null);
+    setGgSelectedCell(null);
+    setShowGoatGrid(true);
+  }
+  
+  // Sauvegarder à chaque changement
+  useEffect(function(){
+    if (showGoatGrid && ggGrid) ggSaveToStorage();
+  }, [ggFilledCells, ggLives, ggScore, ggGameOver]);
+
   const [dayStreak, setDayStreak] = useState(() => {
     try {
       const s = JSON.parse(localStorage.getItem("bb_day_streak")||"{}");
@@ -7622,7 +7703,19 @@ export default function LePont() {
           </div>
         )}
 
-        {/* Défi du jour — CACHÉ (remplacé par GOAT GRID, mais plomberie conservée pour push notif + streak) */}
+        {/* 🐐 GOAT GRID — Encadré accueil */}
+        <div onClick={ggStartGame} style={{borderRadius:14,background:"linear-gradient(135deg,rgba(0,230,118,.15),rgba(255,214,0,.15))",border:"1.5px solid rgba(0,230,118,.4)",padding:"10px 12px",display:"flex",alignItems:"center",gap:10,cursor:"pointer",transition:"all .15s"}}>
+          <div style={{fontSize:22}}>🐐</div>
+          <div style={{flex:1}}>
+            <div style={{fontSize:10,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase",color:"rgba(0,230,118,.8)",marginBottom:1}}>{lang==="en"?"Daily challenge":"Défi du jour"}</div>
+            <div style={{fontSize:13,fontWeight:800,color:G.white}}>
+              GOAT GRID — {lang==="en"?"Fill the 3×3 grid":"Remplis la grille 3×3"}
+            </div>
+          </div>
+          <button onClick={function(e){e.stopPropagation();ggStartGame();}} style={{padding:"9px 13px",background:"linear-gradient(135deg,#00E676,#FFD600)",color:"#000",border:"none",borderRadius:12,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800,whiteSpace:"nowrap"}}>{lang==="en"?"Play 🐐":"Jouer 🐐"}</button>
+        </div>
+
+        {/* Défi du jour — CACHÉ (remplacé par GOAT GRID, plomberie conservée pour push notif + streak) */}
         {false && dailyPlayer && (
           <div style={{borderRadius:14,background:dailyDone?"rgba(255,255,255,.04)":"linear-gradient(135deg,rgba(255,214,0,.12),rgba(255,107,53,.12))",border:dailyDone?"1px solid rgba(255,255,255,.1)":"1.5px solid rgba(255,214,0,.3)",padding:"10px 12px",display:"flex",alignItems:"center",gap:10,opacity:dailyDone?.7:1}}>
             <div style={{fontSize:22}}>{dailyDone?(dailyRevealed?"👁️":dailyAbandoned?"🔒":"✅"):"⚡"}</div>
@@ -7634,6 +7727,162 @@ export default function LePont() {
               {dailyDone && <div style={{fontSize:10,color:"rgba(255,255,255,.3)",marginTop:1}}>{dailyRevealed ? (lang==="en"?"Answer revealed — ":"Réponse révélée — ")+dailyPlayer.name : dailyAbandoned ? (lang==="en"?"Abandoned — ":"Abandonné — ")+dailyPlayer.name : (lang==="en"?"Found in "+localStorage.getItem("bb_daily_tries")+" attempt"+(parseInt(localStorage.getItem("bb_daily_tries")||"1")>1?"s":"")+"!":"Trouvé en "+localStorage.getItem("bb_daily_tries")+" essai"+(parseInt(localStorage.getItem("bb_daily_tries")||"1")>1?"s":"")+" !")}</div>}
             </div>
             {!dailyDone && <button onClick={function(){setShowDailyGame(true);setDailyGuess("");setDailyFlash(null);setDailySuccess(false);}} style={{padding:"9px 13px",background:"linear-gradient(135deg,#FFD600,#FF6B35)",color:"#000",border:"none",borderRadius:12,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800,whiteSpace:"nowrap"}}>{lang==="en"?"Play ⚡":"Jouer ⚡"}</button>}
+          </div>
+        )}
+
+        {/* 🐐 Modal GOAT GRID — Mode quotidien grille 3x3 */}
+        {showGoatGrid && (
+          <div style={{position:"fixed",inset:0,zIndex:400,display:"flex",flexDirection:"column",background:"linear-gradient(180deg, #0a1410 0%, #1E5C2A 100%)"}}>
+            {/* Fond pelouse */}
+            <div style={{position:"absolute",inset:0,zIndex:0,overflow:"hidden",opacity:.4}}>
+              {[0,1,2,3,4,5,6].map(function(i){return(<div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#1E5C2A":"#276B34"}}/>);})}
+            </div>
+            
+            <div style={{position:"relative",zIndex:1,display:"flex",flexDirection:"column",height:"100%",padding:"12px 14px",overflow:"hidden"}}>
+              
+              {/* Header avec bouton fermer */}
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8,flexShrink:0}}>
+                <div style={{flex:1}}/>
+                <div style={{textAlign:"center"}}>
+                  <div style={{display:"inline-block",background:"linear-gradient(135deg,#00E676,#00B85F)",color:"#000",fontSize:9,fontWeight:900,letterSpacing:2,padding:"3px 10px",borderRadius:20,marginBottom:4}}>{lang==="en"?"⚡ DAILY · NEW":"⚡ DÉFI DU JOUR · NOUVEAU"}</div>
+                  <div style={{fontFamily:G.heading,fontSize:26,letterSpacing:2,color:"#FFD600",lineHeight:1}}>GOAT GRID 🐐</div>
+                  <div style={{fontSize:11,color:"rgba(255,255,255,.7)",marginTop:3,letterSpacing:1}}>{new Date().toLocaleDateString(lang==="en"?"en-US":"fr-FR",{weekday:'long',day:'numeric',month:'long'})}</div>
+                </div>
+                <div style={{flex:1,display:"flex",justifyContent:"flex-end"}}>
+                  <button onClick={function(){setShowGoatGrid(false);}} style={{background:"rgba(255,255,255,.1)",border:"1px solid rgba(255,255,255,.15)",borderRadius:"50%",width:36,height:36,color:G.white,cursor:"pointer",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+                </div>
+              </div>
+
+              {ggError && (
+                <div style={{margin:"40px 20px",padding:24,background:"rgba(255,255,255,.05)",borderRadius:14,textAlign:"center"}}>
+                  <div style={{fontSize:48,marginBottom:12}}>⚠️</div>
+                  <div style={{fontSize:14,color:"rgba(255,255,255,.85)",lineHeight:1.5}}>{lang==="en"?"Could not generate today's grid. Data not yet enriched (nationalities/positions missing).":"Impossible de générer la grille du jour. Les données ne sont pas encore enrichies (nationalités/postes manquants)."}</div>
+                </div>
+              )}
+
+              {!ggError && ggGrid && (
+                <>
+                  {/* Info bar : vies + score + remplissage */}
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",margin:"6px 0",padding:"6px 12px",background:"rgba(0,0,0,.3)",backdropFilter:"blur(8px)",borderRadius:12,border:"1px solid rgba(255,255,255,.1)",flexShrink:0,fontSize:13,fontWeight:700}}>
+                    <div style={{display:"flex",alignItems:"center",gap:6}}>
+                      <span style={{fontSize:10,color:"rgba(255,255,255,.5)",fontWeight:600,letterSpacing:1}}>{lang==="en"?"LIVES":"VIES"}</span>
+                      <div style={{display:"flex",gap:3}}>
+                        {[0,1,2].map(function(i){return(<span key={i} style={{fontSize:14,opacity:i<ggLives?1:.25,filter:i<ggLives?"none":"grayscale(1)"}}>{i<ggLives?"❤️":"💔"}</span>);})}
+                      </div>
+                    </div>
+                    <div style={{display:"flex",alignItems:"center",gap:6}}>
+                      <span style={{fontSize:10,color:"rgba(255,255,255,.5)",fontWeight:600,letterSpacing:1}}>{lang==="en"?"SCORE":"SCORE"}</span>
+                      <span style={{color:"#FFD600",fontFamily:G.heading,fontSize:16}}>{ggScore}</span>
+                      <span style={{fontSize:10,color:"rgba(255,255,255,.4)"}}>pts</span>
+                    </div>
+                    <div style={{display:"flex",alignItems:"center",gap:6}}>
+                      <span style={{fontSize:10,color:"rgba(255,255,255,.5)",fontWeight:600,letterSpacing:1}}>{lang==="en"?"FILLED":"REMPLI"}</span>
+                      <span style={{color:"#FFD600",fontFamily:G.heading,fontSize:16}}>{Object.keys(ggFilledCells).length}/9</span>
+                    </div>
+                  </div>
+
+                  {/* Mini explainer scoring */}
+                  <div style={{background:"rgba(255,214,0,.08)",border:"1px solid rgba(255,214,0,.2)",borderRadius:10,padding:"6px 10px",marginBottom:6,fontSize:9.5,color:"rgba(255,255,255,.75)",textAlign:"center",lineHeight:1.35,flexShrink:0}}>
+                    <span style={{color:"#FFD600",fontWeight:800}}>💡 {lang==="en"?"Rarer player = more points · 🐐 No-mistake = +100 pts":"Plus le joueur est rare, plus tu marques · 🐐 Sans-faute = +100 pts"}</span>
+                  </div>
+
+                  {/* Grille 3x3 */}
+                  <div style={{background:"rgba(0,0,0,.4)",backdropFilter:"blur(12px)",borderRadius:16,padding:6,border:"1px solid rgba(255,255,255,.08)",marginBottom:8,flex:1,display:"flex",minHeight:0}}>
+                    <div style={{display:"grid",gridTemplateColumns:"80px minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)",gridTemplateRows:"60px minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)",gap:4,flex:1,width:"100%"}}>
+                      
+                      {/* Coin haut-gauche vide */}
+                      <div/>
+                      
+                      {/* Critères colonnes */}
+                      {ggGrid.colCriteria.map(function(crit, j){
+                        const [c1, c2] = ggGetCriterionColors(crit);
+                        const emoji = ggGetCriterionEmoji(crit);
+                        return(
+                          <div key={"col-"+j} onClick={function(){setGgShowTooltip({title: crit.label, text: ggGetCriterionTooltip(crit)});}} style={{position:"relative",overflow:"hidden",borderRadius:12,border:"1.5px solid rgba(255,255,255,.2)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:"4px"}}>
+                            <div style={{position:"absolute",top:0,left:0,width:"50%",bottom:0,background:c1}}/>
+                            <div style={{position:"absolute",top:0,right:0,width:"50%",bottom:0,background:c2}}/>
+                            <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.18)"}}/>
+                            <div style={{position:"relative",zIndex:1,color:"#fff",textShadow:"0 1px 4px rgba(0,0,0,.6)",fontWeight:900,fontSize:10,letterSpacing:0.5,lineHeight:1.2,textAlign:"center"}}>
+                              {emoji && <div style={{fontSize:14}}>{emoji}</div>}
+                              <div>{crit.label.toUpperCase()}</div>
+                            </div>
+                            <div style={{position:"absolute",top:3,right:5,fontSize:9,color:"rgba(255,255,255,.7)",zIndex:2}}>ⓘ</div>
+                          </div>
+                        );
+                      })}
+                      
+                      {/* 3 lignes : critère ligne + 3 cases */}
+                      {ggGrid.rowCriteria.map(function(rowCrit, i){
+                        const [c1, c2] = ggGetCriterionColors(rowCrit);
+                        const emoji = ggGetCriterionEmoji(rowCrit);
+                        return(
+                          <React.Fragment key={"row-"+i}>
+                            {/* Critère ligne */}
+                            <div onClick={function(){setGgShowTooltip({title: rowCrit.label, text: ggGetCriterionTooltip(rowCrit)});}} style={{position:"relative",overflow:"hidden",borderRadius:12,border:"1.5px solid rgba(255,255,255,.2)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:"4px"}}>
+                              <div style={{position:"absolute",top:0,left:0,width:"50%",bottom:0,background:c1}}/>
+                              <div style={{position:"absolute",top:0,right:0,width:"50%",bottom:0,background:c2}}/>
+                              <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.18)"}}/>
+                              <div style={{position:"relative",zIndex:1,color:"#fff",textShadow:"0 1px 4px rgba(0,0,0,.6)",fontWeight:900,fontSize:10,letterSpacing:0.5,lineHeight:1.2,textAlign:"center"}}>
+                                {emoji && <div style={{fontSize:14}}>{emoji}</div>}
+                                <div>{rowCrit.label.toUpperCase()}</div>
+                              </div>
+                              <div style={{position:"absolute",top:3,right:5,fontSize:9,color:"rgba(255,255,255,.7)",zIndex:2}}>ⓘ</div>
+                            </div>
+                            
+                            {/* 3 cases de la ligne */}
+                            {[0,1,2].map(function(j){
+                              const cellKey = i+"-"+j;
+                              const filled = ggFilledCells[cellKey];
+                              const isFlashing = ggFlashCell && ggFlashCell.row===i && ggFlashCell.col===j;
+                              
+                              if (filled) {
+                                // Couleurs selon rareté
+                                const rarityStyles = {
+                                  legendary: { bg: "linear-gradient(135deg, rgba(255,214,0,.55), rgba(255,140,0,.4))", border: "rgba(255,214,0,.9)", glow: "0 0 18px rgba(255,214,0,.4)" },
+                                  epic:      { bg: "linear-gradient(135deg, rgba(185,70,240,.55), rgba(120,30,180,.4))", border: "rgba(185,70,240,.9)", glow: "0 0 14px rgba(185,70,240,.35)" },
+                                  rare:      { bg: "linear-gradient(135deg, rgba(74,158,255,.55), rgba(30,90,200,.4))", border: "rgba(74,158,255,.9)", glow: "0 0 12px rgba(74,158,255,.3)" },
+                                  common:    { bg: "linear-gradient(135deg, rgba(0,230,118,.55), rgba(0,140,80,.4))", border: "rgba(0,230,118,.85)", glow: "none" },
+                                  trivial:   { bg: "rgba(180,180,180,.4)", border: "rgba(180,180,180,.7)", glow: "none" },
+                                };
+                                const s = rarityStyles[filled.rarity] || rarityStyles.trivial;
+                                return(
+                                  <div key={cellKey} style={{borderRadius:12,padding:4,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2,background:s.bg,border:"1.5px solid "+s.border,boxShadow:s.glow,animation:"slideUp .4s ease"}}>
+                                    <div style={{fontSize:10,fontWeight:800,color:"#fff",textShadow:"0 1px 3px rgba(0,0,0,.4)",lineHeight:1.1,textAlign:"center"}}>
+                                      {filled.name.toUpperCase().split(" ").map(function(w,wi){return<div key={wi}>{w}</div>;})}
+                                    </div>
+                                    <div style={{fontSize:11,fontWeight:800,fontFamily:G.heading,letterSpacing:.5,color:"#fff",textShadow:"0 1px 3px rgba(0,0,0,.4)"}}>+{filled.pts} pts</div>
+                                  </div>
+                                );
+                              }
+                              
+                              return(
+                                <div key={cellKey} onClick={function(){if(!ggGameOver)setGgSelectedCell({row:i,col:j});}} style={{background:isFlashing&&ggFlash==="ko"?"rgba(239,68,68,.3)":"rgba(255,255,255,.05)",border:"1px solid "+(isFlashing&&ggFlash==="ko"?"rgba(239,68,68,.7)":"rgba(255,255,255,.1)"),cursor:ggGameOver?"default":"pointer",transition:"all .15s",padding:4,display:"flex",alignItems:"center",justifyContent:"center",borderRadius:12,animation:isFlashing&&ggFlash==="ko"?"answerKo .4s ease":"none"}}>
+                                  <div style={{fontSize:28,color:"rgba(255,255,255,.3)",fontWeight:100}}>+</div>
+                                </div>
+                              );
+                            })}
+                          </React.Fragment>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                </>
+              )}
+
+              {/* Tooltip critère (clic sur ⓘ) */}
+              {ggShowTooltip && (
+                <div onClick={function(){setGgShowTooltip(null);}} style={{position:"fixed",inset:0,zIndex:500,background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+                  <div onClick={function(e){e.stopPropagation();}} style={{background:"linear-gradient(135deg, #1a2419, #0f1812)",border:"1px solid rgba(255,214,0,.3)",borderRadius:20,padding:20,maxWidth:340,width:"100%",textAlign:"center"}}>
+                    <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,214,0,.7)",fontWeight:700,marginBottom:8}}>{lang==="en"?"CRITERION":"CRITÈRE"}</div>
+                    <div style={{fontFamily:G.heading,fontSize:24,color:"#FFD600",letterSpacing:1,marginBottom:14}}>{ggShowTooltip.title.toUpperCase()}</div>
+                    <div style={{fontSize:14,lineHeight:1.5,color:"rgba(255,255,255,.85)",textAlign:"left",background:"rgba(255,255,255,.04)",borderRadius:12,padding:14,marginBottom:14}}>{ggShowTooltip.text}</div>
+                    <button onClick={function(){setGgShowTooltip(null);}} style={{width:"100%",padding:12,borderRadius:50,border:"none",background:"#00E676",color:"#000",fontWeight:800,fontSize:13,letterSpacing:1,cursor:"pointer"}}>{lang==="en"?"GOT IT":"OK"}</button>
+                  </div>
+                </div>
+              )}
+
+            </div>
           </div>
         )}
 
