@@ -2189,12 +2189,15 @@ export default function LePont() {
   const [ggShowTooltip, setGgShowTooltip] = useState(null); // { title, text } ou null
   const [ggShareCopied, setGgShareCopied] = useState(false);
   const [ggError, setGgError] = useState(false); // true si l'algo n'a pas pu générer
+  const [ggOverrideSeed, setGgOverrideSeed] = useState(0); // 0 = seed du jour, sinon seed forcé
   const [ggRevealMode, setGgRevealMode] = useState(false); // true = on peut cliquer les cases pour voir les réponses possibles
   const [ggRevealCell, setGgRevealCell] = useState(null); // cellule dont on regarde les réponses
   
   // Restaurer la grille du jour depuis localStorage
   function ggLoadFromStorage() {
     try {
+      // Si on est en mode override, on ne charge pas la sauvegarde du jour (partie de test indépendante)
+      if (ggOverrideSeed) return null;
       const todaySeed = ggGetDailySeed();
       const saved = JSON.parse(localStorage.getItem("goatfc_gg_state") || "{}");
       if (saved.seed === todaySeed) return saved; // partie d'aujourd'hui en cours
@@ -2205,6 +2208,8 @@ export default function LePont() {
   // Sauvegarder l'état de la grille du jour
   function ggSaveToStorage() {
     try {
+      // Si on est en mode override, on ne sauvegarde pas (partie de test indépendante)
+      if (ggOverrideSeed) return;
       const state = {
         seed: ggGetDailySeed(),
         filledCells: ggFilledCells,
@@ -2219,7 +2224,7 @@ export default function LePont() {
   
   // Démarrer/reprendre une partie GOAT GRID
   function ggStartGame() {
-    const seed = ggGetDailySeed();
+    const seed = ggOverrideSeed || ggGetDailySeed();
     const grid = ggGenerateGrid(seed);
     if (!grid) {
       setGgError(true);
@@ -7911,8 +7916,35 @@ export default function LePont() {
                   <div style={{display:"inline-block",background:"linear-gradient(135deg,#00E676,#00B85F)",color:"#000",fontSize:9,fontWeight:900,letterSpacing:2,padding:"3px 10px",borderRadius:20,marginBottom:4}}>{lang==="en"?"⚡ DAILY · NEW":"⚡ DÉFI DU JOUR · NOUVEAU"}</div>
                   <div style={{fontFamily:G.heading,fontSize:26,letterSpacing:2,color:"#FFD600",lineHeight:1}}>GOAT GRID 🐐</div>
                   <div style={{fontSize:11,color:"rgba(255,255,255,.7)",marginTop:3,letterSpacing:1}}>{new Date().toLocaleDateString(lang==="en"?"en-US":"fr-FR",{weekday:'long',day:'numeric',month:'long'})}</div>
+                  {ggOverrideSeed > 0 && (
+                    <div style={{fontSize:9,color:"#FFD600",marginTop:2,letterSpacing:1.5,fontWeight:800}}>🔄 GRILLE TEST</div>
+                  )}
                 </div>
-                <div style={{flex:1,display:"flex",justifyContent:"flex-end"}}>
+                <div style={{flex:1,display:"flex",justifyContent:"flex-end",gap:6}}>
+                  <button onClick={function(){
+                    // Génère un seed aléatoire pour avoir une autre grille
+                    const newSeed = Math.floor(Math.random() * 1000000) + 1;
+                    setGgOverrideSeed(newSeed);
+                    // Reset l'état et regénère
+                    setGgFilledCells({});
+                    setGgUsedPlayers(new Set());
+                    setGgLives(3);
+                    setGgScore(0);
+                    setGgGameOver(false);
+                    setGgGuess("");
+                    setGgFlash(null);
+                    setGgSelectedCell(null);
+                    setGgRevealMode(false);
+                    setGgRevealCell(null);
+                    // Génère la nouvelle grille
+                    const newGrid = ggGenerateGrid(newSeed);
+                    if (newGrid) {
+                      setGgGrid(newGrid);
+                      setGgError(false);
+                    } else {
+                      setGgError(true);
+                    }
+                  }} title={lang==="en"?"Try another grid":"Essayer une autre grille"} style={{background:"rgba(255,214,0,.15)",border:"1px solid rgba(255,214,0,.4)",borderRadius:"50%",width:36,height:36,color:"#FFD600",cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>🔄</button>
                   <button onClick={function(){setShowGoatGrid(false);}} style={{background:"rgba(255,255,255,.1)",border:"1px solid rgba(255,255,255,.15)",borderRadius:"50%",width:36,height:36,color:G.white,cursor:"pointer",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
                 </div>
               </div>
