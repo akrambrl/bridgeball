@@ -1367,21 +1367,37 @@ const GG_LIGUE_MAP = {
   "bundesliga": ["Bayern Munich","Borussia Dortmund","RB Leipzig","Bayer Leverkusen","Eintracht Frankfurt","Wolfsburg","Werder Bremen","Hoffenheim","Borussia Mönchengladbach","Köln","Union Berlin","Stuttgart","Mainz","Augsburg","Hertha Berlin","Schalke 04","Hamburg"],
 };
 
-// ─── Scoring : pts selon nombre de candidats valides ──────────
-function ggCalculatePoints(numCandidates) {
-  if (numCandidates <= 3)  return 100; // 🌟 Legendary
-  if (numCandidates <= 5)  return 60;  // 💜 Epic
-  if (numCandidates <= 10) return 40;  // 🔵 Rare
-  if (numCandidates <= 20) return 25;  // 🟢 Common
-  return 15;                            // ⚪ Trivial
+// ─── Scoring : pts selon DIFFICULTÉ DU JOUEUR CITÉ + bonus rareté combo ──
+// Option 3 : pondéré par difficulté du joueur cité
+function ggCalculatePointsForPlayer(playerDiff, totalCandidates) {
+  let basePoints = 15; // facile par défaut
+  if (playerDiff === "moyen")  basePoints = 35;
+  if (playerDiff === "expert") basePoints = 70;
+  
+  // Bonus si très peu de candidats matchent les 2 critères (rare combo)
+  let bonus = 0;
+  if (totalCandidates <= 3) bonus = 20;       // très rare combo
+  else if (totalCandidates <= 5) bonus = 10;  // rare combo
+  
+  return basePoints + bonus;
 }
 
+// Rareté visuelle (couleur de la case) selon les pts attribués
 function ggGetRarityClass(pts) {
-  if (pts === 100) return "legendary";
-  if (pts === 60)  return "epic";
-  if (pts === 40)  return "rare";
-  if (pts === 25)  return "common";
-  return "trivial";
+  if (pts >= 80)  return "legendary"; // expert + bonus combo
+  if (pts >= 60)  return "epic";       // expert seul ou moyen + gros bonus
+  if (pts >= 40)  return "rare";       // moyen + bonus
+  if (pts >= 25)  return "common";     // moyen ou facile + bonus
+  return "trivial";                     // facile basique
+}
+
+// (Conservé pour compat : pts d'une case en mode "difficulté inconnue")
+function ggCalculatePoints(numCandidates) {
+  if (numCandidates <= 3)  return 100;
+  if (numCandidates <= 5)  return 60;
+  if (numCandidates <= 10) return 40;
+  if (numCandidates <= 20) return 25;
+  return 15;
 }
 
 // ─── Helper : un joueur matche-t-il un critère ? ──────────────
@@ -1427,6 +1443,15 @@ function ggCountEasy(players) {
 
 // ─── Seed du jour ────────────────────────────────────────────
 function ggGetDailySeed() {
+  // Override via URL : ?gg_seed=N pour tester d'autres grilles
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const override = params.get("gg_seed");
+    if (override) {
+      return hashStringToSeed("override-" + override);
+    }
+  } catch {}
+  
   const now = new Date();
   const dateStr = now.getUTCFullYear() + "-" +
                   String(now.getUTCMonth() + 1).padStart(2, "0") + "-" +
@@ -1484,6 +1509,15 @@ function ggGenerateGrid(seed) {
         
         if (easyCount >= 1) cellsWithEasy++;
         
+        // Calculer le BEST score possible pour cette cellule (meilleur joueur dispo)
+        // Priorité : expert > moyen > facile
+        const hasExpert = candidates.some(p => p.diff === "expert");
+        const hasMoyen = candidates.some(p => p.diff === "moyen");
+        let bestDiff = "facile";
+        if (hasExpert) bestDiff = "expert";
+        else if (hasMoyen) bestDiff = "moyen";
+        const maxPts = ggCalculatePointsForPlayer(bestDiff, candidates.length);
+        
         cells.push({
           row: i,
           col: j,
@@ -1494,6 +1528,7 @@ function ggGenerateGrid(seed) {
           easyCount,
           points: ggCalculatePoints(candidates.length),
           rarity: ggGetRarityClass(ggCalculatePoints(candidates.length)),
+          maxPoints: maxPts, // 🎯 Max théorique pour cette case
         });
       }
     }
@@ -2154,10 +2189,15 @@ export default function LePont() {
   const [ggShowTooltip, setGgShowTooltip] = useState(null); // { title, text } ou null
   const [ggShareCopied, setGgShareCopied] = useState(false);
   const [ggError, setGgError] = useState(false); // true si l'algo n'a pas pu générer
+  const [ggOverrideSeed, setGgOverrideSeed] = useState(0); // 0 = seed du jour, sinon seed forcé
+  const [ggRevealMode, setGgRevealMode] = useState(false); // true = on peut cliquer les cases pour voir les réponses possibles
+  const [ggRevealCell, setGgRevealCell] = useState(null); // cellule dont on regarde les réponses
   
   // Restaurer la grille du jour depuis localStorage
   function ggLoadFromStorage() {
     try {
+      // Si on est en mode override, on ne charge pas la sauvegarde du jour (partie de test indépendante)
+      if (ggOverrideSeed) return null;
       const todaySeed = ggGetDailySeed();
       const saved = JSON.parse(localStorage.getItem("goatfc_gg_state") || "{}");
       if (saved.seed === todaySeed) return saved; // partie d'aujourd'hui en cours
@@ -2168,6 +2208,8 @@ export default function LePont() {
   // Sauvegarder l'état de la grille du jour
   function ggSaveToStorage() {
     try {
+      // Si on est en mode override, on ne sauvegarde pas (partie de test indépendante)
+      if (ggOverrideSeed) return;
       const state = {
         seed: ggGetDailySeed(),
         filledCells: ggFilledCells,
@@ -2182,7 +2224,7 @@ export default function LePont() {
   
   // Démarrer/reprendre une partie GOAT GRID
   function ggStartGame() {
-    const seed = ggGetDailySeed();
+    const seed = ggOverrideSeed || ggGetDailySeed();
     const grid = ggGenerateGrid(seed);
     if (!grid) {
       setGgError(true);
@@ -2261,11 +2303,13 @@ export default function LePont() {
     const matchesCol = ggPlayerMatchesCriterion(player, cell.colCriterion);
     
     if (matchesRow && matchesCol) {
-      // ✅ BONNE RÉPONSE
-      const newFilled = { ...ggFilledCells, [cellKey]: { name: player.name, pts: cell.points, rarity: cell.rarity } };
+      // ✅ BONNE RÉPONSE — pts selon DIFFICULTÉ DU JOUEUR CITÉ
+      const playerPts = ggCalculatePointsForPlayer(player.diff, cell.totalCount);
+      const playerRarity = ggGetRarityClass(playerPts);
+      const newFilled = { ...ggFilledCells, [cellKey]: { name: player.name, pts: playerPts, rarity: playerRarity } };
       const newUsed = new Set(ggUsedPlayers);
       newUsed.add(player.name);
-      const newScore = ggScore + cell.points;
+      const newScore = ggScore + playerPts;
       
       setGgFilledCells(newFilled);
       setGgUsedPlayers(newUsed);
@@ -7872,8 +7916,35 @@ export default function LePont() {
                   <div style={{display:"inline-block",background:"linear-gradient(135deg,#00E676,#00B85F)",color:"#000",fontSize:9,fontWeight:900,letterSpacing:2,padding:"3px 10px",borderRadius:20,marginBottom:4}}>{lang==="en"?"⚡ DAILY · NEW":"⚡ DÉFI DU JOUR · NOUVEAU"}</div>
                   <div style={{fontFamily:G.heading,fontSize:26,letterSpacing:2,color:"#FFD600",lineHeight:1}}>GOAT GRID 🐐</div>
                   <div style={{fontSize:11,color:"rgba(255,255,255,.7)",marginTop:3,letterSpacing:1}}>{new Date().toLocaleDateString(lang==="en"?"en-US":"fr-FR",{weekday:'long',day:'numeric',month:'long'})}</div>
+                  {ggOverrideSeed > 0 && (
+                    <div style={{fontSize:9,color:"#FFD600",marginTop:2,letterSpacing:1.5,fontWeight:800}}>🔄 GRILLE TEST</div>
+                  )}
                 </div>
-                <div style={{flex:1,display:"flex",justifyContent:"flex-end"}}>
+                <div style={{flex:1,display:"flex",justifyContent:"flex-end",gap:6}}>
+                  <button onClick={function(){
+                    // Génère un seed aléatoire pour avoir une autre grille
+                    const newSeed = Math.floor(Math.random() * 1000000) + 1;
+                    setGgOverrideSeed(newSeed);
+                    // Reset l'état et regénère
+                    setGgFilledCells({});
+                    setGgUsedPlayers(new Set());
+                    setGgLives(3);
+                    setGgScore(0);
+                    setGgGameOver(false);
+                    setGgGuess("");
+                    setGgFlash(null);
+                    setGgSelectedCell(null);
+                    setGgRevealMode(false);
+                    setGgRevealCell(null);
+                    // Génère la nouvelle grille
+                    const newGrid = ggGenerateGrid(newSeed);
+                    if (newGrid) {
+                      setGgGrid(newGrid);
+                      setGgError(false);
+                    } else {
+                      setGgError(true);
+                    }
+                  }} title={lang==="en"?"Try another grid":"Essayer une autre grille"} style={{background:"rgba(255,214,0,.15)",border:"1px solid rgba(255,214,0,.4)",borderRadius:"50%",width:36,height:36,color:"#FFD600",cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>🔄</button>
                   <button onClick={function(){setShowGoatGrid(false);}} style={{background:"rgba(255,255,255,.1)",border:"1px solid rgba(255,255,255,.15)",borderRadius:"50%",width:36,height:36,color:G.white,cursor:"pointer",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
                 </div>
               </div>
@@ -7898,6 +7969,7 @@ export default function LePont() {
                     <div style={{display:"flex",alignItems:"center",gap:6}}>
                       <span style={{fontSize:10,color:"rgba(255,255,255,.5)",fontWeight:600,letterSpacing:1}}>{lang==="en"?"SCORE":"SCORE"}</span>
                       <span style={{color:"#FFD600",fontFamily:G.heading,fontSize:16}}>{ggScore}</span>
+                      <span style={{fontSize:11,color:"rgba(255,255,255,.5)",fontFamily:G.heading}}>/ {ggGrid.cells.reduce(function(s,c){return s+c.maxPoints;},0) + 100}</span>
                       <span style={{fontSize:10,color:"rgba(255,255,255,.4)"}}>pts</span>
                     </div>
                     <div style={{display:"flex",alignItems:"center",gap:6}}>
@@ -7908,7 +7980,7 @@ export default function LePont() {
 
                   {/* Mini explainer scoring */}
                   <div style={{background:"rgba(255,214,0,.08)",border:"1px solid rgba(255,214,0,.2)",borderRadius:10,padding:"6px 10px",marginBottom:6,fontSize:9.5,color:"rgba(255,255,255,.75)",textAlign:"center",lineHeight:1.35,flexShrink:0}}>
-                    <span style={{color:"#FFD600",fontWeight:800}}>💡 {lang==="en"?"Rarer player = more points · 🐐 No-mistake = +100 pts":"Plus le joueur est rare, plus tu marques · 🐐 Sans-faute = +100 pts"}</span>
+                    <span style={{color:"#FFD600",fontWeight:800}}>💡 {lang==="en"?"⭐ 15 · ⭐⭐ 35 · ⭐⭐⭐ 70 pts · 🐐 No-mistake = +100":"⭐ 15 · ⭐⭐ 35 · ⭐⭐⭐ 70 pts · 🐐 Sans-faute = +100"}</span>
                   </div>
 
                   {/* Grille 3x3 */}
@@ -7981,8 +8053,16 @@ export default function LePont() {
                               }
                               
                               return(
-                                <div key={cellKey} onClick={function(){if(!ggGameOver)setGgSelectedCell({row:i,col:j});}} style={{background:isFlashing&&ggFlash==="ko"?"rgba(239,68,68,.3)":"rgba(255,255,255,.05)",border:"1px solid "+(isFlashing&&ggFlash==="ko"?"rgba(239,68,68,.7)":"rgba(255,255,255,.1)"),cursor:ggGameOver?"default":"pointer",transition:"all .15s",padding:4,display:"flex",alignItems:"center",justifyContent:"center",borderRadius:12,animation:isFlashing&&ggFlash==="ko"?"answerKo .4s ease":"none"}}>
-                                  <div style={{fontSize:28,color:"rgba(255,255,255,.3)",fontWeight:100}}>+</div>
+                                <div key={cellKey} onClick={function(){
+                                  if(ggRevealMode){
+                                    // Mode reveal : afficher les réponses possibles
+                                    const c = ggGrid.cells.find(c => c.row===i && c.col===j);
+                                    if(c) setGgRevealCell(c);
+                                  } else if(!ggGameOver){
+                                    setGgSelectedCell({row:i,col:j});
+                                  }
+                                }} style={{background:isFlashing&&ggFlash==="ko"?"rgba(239,68,68,.3)":ggRevealMode?"rgba(74,158,255,.15)":"rgba(255,255,255,.05)",border:"1px solid "+(isFlashing&&ggFlash==="ko"?"rgba(239,68,68,.7)":ggRevealMode?"rgba(74,158,255,.4)":"rgba(255,255,255,.1)"),cursor:(ggRevealMode||!ggGameOver)?"pointer":"default",transition:"all .15s",padding:4,display:"flex",alignItems:"center",justifyContent:"center",borderRadius:12,animation:isFlashing&&ggFlash==="ko"?"answerKo .4s ease":"none"}}>
+                                  <div style={{fontSize:ggRevealMode?16:28,color:ggRevealMode?"#7AB8FF":"rgba(255,255,255,.3)",fontWeight:ggRevealMode?700:100}}>{ggRevealMode?"?":"+"}</div>
                                 </div>
                               );
                             })}
@@ -8026,7 +8106,7 @@ export default function LePont() {
                         autoFocus
                         value={ggGuess}
                         onChange={function(e){setGgGuess(e.target.value);}}
-                        onKeyDown={function(e){if(e.key==="Enter"&&suggestions.length>0){ggSubmitAnswer(suggestions[0].name);}}}
+                        onKeyDown={function(e){if(e.key==="Enter"){ if(suggestions.length>0){ggSubmitAnswer(suggestions[0].name);} else if(ggGuess.trim().length>=3){ggSubmitAnswer(ggGuess);} }}}
                         placeholder={lang==="en"?"Type at least 3 letters...":"Tape au moins 3 lettres..."}
                         style={{width:"100%",background:ggFlash==="ko"?"rgba(239,68,68,.15)":"rgba(255,255,255,.08)",border:"2px solid "+(ggFlash==="ko"?"rgba(239,68,68,.7)":"rgba(255,255,255,.15)"),borderRadius:14,padding:"14px 16px",color:"#fff",fontSize:16,fontWeight:700,outline:"none",textAlign:"center",boxSizing:"border-box",animation:ggFlash==="ko"?"answerKo .4s ease":"none"}}
                       />
@@ -8039,11 +8119,156 @@ export default function LePont() {
                           );})}
                         </div>
                       )}
-                      <button onClick={function(){setGgSelectedCell(null);setGgGuess("");}} style={{marginTop:14,width:"100%",padding:12,borderRadius:50,border:"none",background:"rgba(255,255,255,.08)",color:"#fff",fontWeight:800,fontSize:13,letterSpacing:1,cursor:"pointer"}}>{lang==="en"?"Cancel":"Annuler"}</button>
+                      {/* Boutons Valider + Annuler */}
+                      <div style={{display:"flex",gap:8,marginTop:14}}>
+                        <button onClick={function(){setGgSelectedCell(null);setGgGuess("");}} style={{flex:1,padding:14,borderRadius:50,border:"none",background:"rgba(255,255,255,.08)",color:"#fff",fontWeight:800,fontSize:13,letterSpacing:1,cursor:"pointer"}}>{lang==="en"?"Cancel":"Annuler"}</button>
+                        <button 
+                          onClick={function(){ if(suggestions.length>0){ggSubmitAnswer(suggestions[0].name);} else if(ggGuess.trim().length>=3){ggSubmitAnswer(ggGuess);} }}
+                          disabled={ggGuess.trim().length<3}
+                          style={{flex:2,padding:14,borderRadius:50,border:"none",background:ggGuess.trim().length>=3?"#00E676":"rgba(255,255,255,.05)",color:ggGuess.trim().length>=3?"#000":"rgba(255,255,255,.3)",fontWeight:900,fontSize:14,letterSpacing:1.5,cursor:ggGuess.trim().length>=3?"pointer":"not-allowed"}}
+                        >{lang==="en"?"VALIDATE":"VALIDER"}</button>
+                      </div>
                     </div>
                   </div>
                 );
               })()}
+
+              {/* 🐐 ÉCRAN FIN DE PARTIE (game over) */}
+              {ggGameOver && !ggRevealMode && (() => {
+                const filledCount = Object.keys(ggFilledCells).length;
+                const isPerfect = filledCount === 9 && ggLives === 3;
+                const isVictory = filledCount === 9;
+                const isDefeat = ggLives <= 0 && !isVictory;
+                
+                // Génère l'emoji grid Wordle-style pour le partage
+                const gridEmojis = [];
+                for (let i = 0; i < 3; i++) {
+                  const row = [];
+                  for (let j = 0; j < 3; j++) {
+                    const filled = ggFilledCells[i+"-"+j];
+                    if (!filled) { row.push("⬜"); continue; }
+                    const e = { legendary:"🟨", epic:"🟪", rare:"🟦", common:"🟩", trivial:"⬛" }[filled.rarity] || "🟩";
+                    row.push(e);
+                  }
+                  gridEmojis.push(row.join(""));
+                }
+                const todayDate = new Date().toLocaleDateString(lang==="en"?"en-US":"fr-FR",{day:'numeric',month:'short'});
+                const shareText = "🐐 GOAT GRID — " + todayDate + "\n\n" + gridEmojis.join("\n") + "\n\n" + ggScore + " pts · " + filledCount + "/9" + (isPerfect ? " · PARFAIT 🐐" : "") + "\n\n" + "Joue sur goatfc.online";
+                
+                return (
+                  <div style={{position:"fixed",inset:0,zIndex:500,background:"rgba(0,0,0,.92)",backdropFilter:"blur(10px)",display:"flex",alignItems:"center",justifyContent:"center",padding:20,overflowY:"auto"}}>
+                    <div style={{background:"linear-gradient(135deg, #1a2419, #0f1812)",border:"1px solid "+(isVictory?"rgba(0,230,118,.5)":"rgba(255,107,53,.5)"),borderRadius:24,padding:24,maxWidth:380,width:"100%",textAlign:"center"}}>
+                      
+                      {/* Titre selon résultat */}
+                      <div style={{fontSize:60,marginBottom:8}}>
+                        {isPerfect ? "🐐" : isVictory ? "🎉" : "😔"}
+                      </div>
+                      <div style={{fontFamily:G.heading,fontSize:30,color:isVictory?"#00E676":"#FF6B35",letterSpacing:1,marginBottom:4}}>
+                        {isPerfect ? (lang==="en"?"PERFECT!":"PARFAIT !") : isVictory ? (lang==="en"?"VICTORY!":"VICTOIRE !") : (lang==="en"?"GAME OVER":"PARTIE TERMINÉE")}
+                      </div>
+                      <div style={{fontSize:13,color:"rgba(255,255,255,.6)",marginBottom:18}}>
+                        {isPerfect ? (lang==="en"?"Grid filled without mistakes!":"Grille parfaite, aucune erreur !") : isVictory ? (lang==="en"?"You filled the whole grid":"Tu as rempli toute la grille") : (lang==="en"?"You used all your lives":"Tu as utilisé toutes tes vies")}
+                      </div>
+                      
+                      {/* Score final */}
+                      <div style={{background:"rgba(255,214,0,.1)",border:"1px solid rgba(255,214,0,.3)",borderRadius:16,padding:"14px 20px",marginBottom:14}}>
+                        <div style={{fontSize:11,color:"rgba(255,214,0,.7)",fontWeight:700,letterSpacing:2,marginBottom:2}}>SCORE</div>
+                        <div style={{fontFamily:G.heading,fontSize:42,color:"#FFD600",lineHeight:1}}>{ggScore} <span style={{fontSize:18,opacity:.7}}>pts</span></div>
+                        <div style={{fontSize:11,color:"rgba(255,255,255,.6)",marginTop:4,fontFamily:G.heading}}>/ {ggGrid.cells.reduce(function(s,c){return s+c.maxPoints;},0) + 100} {lang==="en"?"max":"max"}</div>
+                        {isPerfect && (
+                          <div style={{fontSize:11,color:"#00E676",fontWeight:800,marginTop:4}}>+100 {lang==="en"?"NO-MISTAKE BONUS":"BONUS SANS-FAUTE"}</div>
+                        )}
+                      </div>
+                      
+                      {/* Stats */}
+                      <div style={{display:"flex",gap:8,marginBottom:18}}>
+                        <div style={{flex:1,background:"rgba(255,255,255,.05)",borderRadius:12,padding:10}}>
+                          <div style={{fontSize:10,color:"rgba(255,255,255,.5)",letterSpacing:1,fontWeight:700}}>{lang==="en"?"FILLED":"REMPLI"}</div>
+                          <div style={{fontFamily:G.heading,fontSize:22,color:"#fff"}}>{filledCount}/9</div>
+                        </div>
+                        <div style={{flex:1,background:"rgba(255,255,255,.05)",borderRadius:12,padding:10}}>
+                          <div style={{fontSize:10,color:"rgba(255,255,255,.5)",letterSpacing:1,fontWeight:700}}>{lang==="en"?"LIVES LEFT":"VIES RESTANTES"}</div>
+                          <div style={{fontFamily:G.heading,fontSize:22,color:"#fff"}}>{[0,1,2].map(function(i){return(<span key={i}>{i<ggLives?"❤️":"💔"}</span>);})}</div>
+                        </div>
+                      </div>
+                      
+                      {/* Mini aperçu Wordle-style */}
+                      <div style={{background:"rgba(0,0,0,.3)",borderRadius:14,padding:14,marginBottom:14,fontFamily:"monospace",fontSize:24,letterSpacing:6,lineHeight:1.3}}>
+                        {gridEmojis.map(function(row,i){return(<div key={i}>{row}</div>);})}
+                      </div>
+                      
+                      {/* Boutons d'action */}
+                      <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                        <button onClick={async function(){
+                          try {
+                            if (navigator.share) {
+                              await navigator.share({ text: shareText });
+                            } else {
+                              await navigator.clipboard.writeText(shareText);
+                              setGgShareCopied(true);
+                              setTimeout(function(){setGgShareCopied(false);}, 2000);
+                            }
+                          } catch(e) {}
+                        }} style={{padding:14,borderRadius:50,border:"none",background:"linear-gradient(135deg,#00E676,#FFD600)",color:"#000",fontWeight:900,fontSize:14,letterSpacing:1.5,cursor:"pointer"}}>
+                          {ggShareCopied ? "✅ " + (lang==="en"?"COPIED!":"COPIÉ !") : "📤 " + (lang==="en"?"SHARE MY RESULT":"PARTAGER MON RÉSULTAT")}
+                        </button>
+                        <button onClick={function(){setGgRevealMode(true);}} style={{padding:12,borderRadius:50,border:"1px solid rgba(74,158,255,.4)",background:"rgba(74,158,255,.15)",color:"#7AB8FF",fontWeight:800,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
+                          💡 {lang==="en"?"SEE POSSIBLE ANSWERS":"VOIR LES RÉPONSES POSSIBLES"}
+                        </button>
+                        <button onClick={function(){setShowGoatGrid(false);}} style={{padding:12,borderRadius:50,border:"none",background:"rgba(255,255,255,.05)",color:"rgba(255,255,255,.7)",fontWeight:700,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
+                          {lang==="en"?"Close":"Fermer"}
+                        </button>
+                      </div>
+                      
+                      <div style={{marginTop:14,fontSize:11,color:"rgba(255,255,255,.4)",fontStyle:"italic"}}>
+                        {lang==="en"?"New grid tomorrow at midnight 🐐":"Nouvelle grille demain à minuit 🐐"}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* 🔍 Mode REVEAL : indicateur en haut + bouton retour */}
+              {ggRevealMode && !ggRevealCell && (
+                <div style={{position:"fixed",bottom:20,left:20,right:20,zIndex:450,display:"flex",flexDirection:"column",gap:8}}>
+                  <div style={{background:"rgba(74,158,255,.15)",border:"1px solid rgba(74,158,255,.4)",borderRadius:14,padding:"10px 14px",color:"#7AB8FF",fontSize:13,fontWeight:700,textAlign:"center"}}>
+                    💡 {lang==="en"?"Click any cell to see possible answers":"Clique sur n'importe quelle case pour voir les réponses"}
+                  </div>
+                  <button onClick={function(){setGgRevealMode(false);}} style={{padding:12,borderRadius:50,border:"none",background:"#FFD600",color:"#000",fontWeight:900,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
+                    ← {lang==="en"?"BACK TO RESULT":"RETOUR AU RÉSULTAT"}
+                  </button>
+                </div>
+              )}
+              
+              {/* 📜 Modal liste des réponses possibles d'une case */}
+              {ggRevealCell && (
+                <div onClick={function(){setGgRevealCell(null);}} style={{position:"fixed",inset:0,zIndex:500,background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+                  <div onClick={function(e){e.stopPropagation();}} style={{background:"linear-gradient(135deg, #1a2419, #0f1812)",border:"1px solid rgba(74,158,255,.4)",borderRadius:20,padding:20,maxWidth:380,width:"100%"}}>
+                    <div style={{textAlign:"center",marginBottom:14}}>
+                      <div style={{fontSize:11,letterSpacing:2,color:"rgba(74,158,255,.7)",fontWeight:700,marginBottom:4}}>{lang==="en"?"POSSIBLE ANSWERS":"RÉPONSES POSSIBLES"}</div>
+                      <div style={{fontSize:14,color:"#fff",fontWeight:700}}>{ggRevealCell.rowCriterion.label} × {ggRevealCell.colCriterion.label}</div>
+                      <div style={{fontSize:11,color:"rgba(255,255,255,.5)",marginTop:4}}>{ggRevealCell.totalCount} {lang==="en"?"candidates":"candidats"} · {ggRevealCell.points} pts</div>
+                    </div>
+                    <div style={{maxHeight:280,overflowY:"auto",background:"rgba(255,255,255,.04)",borderRadius:12,padding:8}}>
+                      {ggRevealCell.candidates.slice(0, 30).map(function(name){
+                        const wasUsed = ggUsedPlayers.has(name);
+                        return(
+                          <div key={name} style={{padding:"10px 14px",borderBottom:"1px solid rgba(255,255,255,.04)",fontSize:14,fontWeight:700,color:wasUsed?"#00E676":"#fff",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                            <span>{name}</span>
+                            {wasUsed && <span style={{fontSize:11,color:"#00E676"}}>✓ {lang==="en"?"Found":"Trouvé"}</span>}
+                          </div>
+                        );
+                      })}
+                      {ggRevealCell.candidates.length > 30 && (
+                        <div style={{padding:"10px 14px",fontSize:12,color:"rgba(255,255,255,.5)",textAlign:"center",fontStyle:"italic"}}>
+                          {lang==="en"?"... and ":"... et "}{ggRevealCell.candidates.length - 30} {lang==="en"?"others":"autres"}
+                        </div>
+                      )}
+                    </div>
+                    <button onClick={function(){setGgRevealCell(null);}} style={{marginTop:14,width:"100%",padding:12,borderRadius:50,border:"none",background:"#7AB8FF",color:"#000",fontWeight:800,fontSize:13,letterSpacing:1,cursor:"pointer"}}>{lang==="en"?"Close":"Fermer"}</button>
+                  </div>
+                </div>
+              )}
 
               {/* Tooltip critère (clic sur ⓘ) */}
               {ggShowTooltip && (
