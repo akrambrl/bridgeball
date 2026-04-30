@@ -1340,14 +1340,14 @@ function getCrescendoTier(chainCount) {
 // Scoring basé sur la rareté du joueur (nombre de candidats matching)
 
 // ─── Pools de critères ───────────────────────────────────────
-// On utilise les FAMOUS_CLUBS pour la diversité et la reconnaissance
+// Noms de clubs alignés sur PLAYERS_CLEAN (extraits de la vraie base)
+// Filtrés : seulement les clubs avec ≥8 joueurs "facile" (sinon génération de grille trop dure)
 const GG_CLUB_POOL = [
-  "Real Madrid","FC Barcelona","Atlético Madrid","Sevilla","Valencia",
-  "Manchester United","Manchester City","Liverpool","Chelsea","Arsenal","Tottenham","Newcastle",
-  "Bayern Munich","Borussia Dortmund","RB Leipzig","Bayer Leverkusen",
-  "Juventus","Inter Milan","AC Milan","AS Roma","Napoli","Atalanta",
-  "Paris Saint-Germain","Olympique Marseille","Olympique Lyonnais","Monaco",
-  "Ajax","PSV","Feyenoord","Benfica","Porto","Sporting CP",
+  "Real Madrid","Barcelona","Atletico Madrid",
+  "Manchester United","Manchester City","Liverpool","Chelsea","Arsenal","Tottenham",
+  "Bayern Munich",
+  "Juventus FC","Inter Milan","AC Milan",
+  "PSG","Marseille",
 ];
 
 const GG_NATIONALITY_POOL = [
@@ -1360,10 +1360,10 @@ const GG_POSITION_POOL = ["gardien","defenseur","milieu","attaquant"];
 
 // Mapping : nom du club → ligue (pour critères "A joué en ...")
 const GG_LIGUE_MAP = {
-  "ligue1": ["Paris Saint-Germain","Olympique Marseille","Olympique Lyonnais","Monaco","Lille","Rennes","Nice","Lens","Nantes","Strasbourg","Saint-Étienne","Bordeaux","Toulouse","Montpellier","Reims","Brest","Le Havre","Auxerre","Angers"],
-  "premier_league": ["Manchester United","Manchester City","Liverpool","Chelsea","Arsenal","Tottenham","Newcastle","Aston Villa","West Ham","Brighton","Crystal Palace","Brentford","Fulham","Wolves","Everton","Leeds United","Leicester City","Southampton","Bournemouth","Nottingham Forest"],
-  "liga": ["Real Madrid","FC Barcelona","Atlético Madrid","Sevilla","Valencia","Real Sociedad","Athletic Bilbao","Villarreal","Real Betis","Celta Vigo","Espanyol","Getafe","Osasuna","Mallorca","Cadiz","Almeria","Girona","Las Palmas","Granada"],
-  "serie_a": ["Juventus","Inter Milan","AC Milan","AS Roma","Napoli","Atalanta","Lazio","Fiorentina","Torino","Bologna","Sassuolo","Udinese","Empoli","Genoa","Cagliari","Hellas Verona","Lecce","Salernitana","Frosinone","Monza"],
+  "ligue1": ["PSG","Marseille","Lyon","Monaco","Lille","Rennes","Nice","Lens","Nantes","Strasbourg","Saint-Étienne","Bordeaux","Toulouse","Montpellier","Reims","Brest","Le Havre","Auxerre","Angers","Clermont","Metz","Lorient","Troyes","Ajaccio"],
+  "premier_league": ["Manchester United","Manchester City","Liverpool","Chelsea","Arsenal","Tottenham","Newcastle","Aston Villa","West Ham","Brighton","Crystal Palace","Brentford","Fulham","Wolverhampton","Everton","Leeds United","Leicester City","Southampton","Bournemouth","Nottingham Forest"],
+  "liga": ["Real Madrid","Barcelona","Atletico Madrid","Sevilla","Valencia","Real Sociedad","Athletic Bilbao","Villarreal","Real Betis","Celta Vigo","Espanyol","Getafe","Osasuna","Mallorca","Cadiz","Almeria","Girona","Las Palmas","Granada"],
+  "serie_a": ["Juventus FC","Inter Milan","AC Milan","AS Roma","SSC Napoli","Atalanta BC","SS Lazio","ACF Fiorentina","Torino","Bologna","Sassuolo","Udinese","Empoli","Genoa","Cagliari","Hellas Verona","Lecce","Salernitana","Frosinone","Monza"],
   "bundesliga": ["Bayern Munich","Borussia Dortmund","RB Leipzig","Bayer Leverkusen","Eintracht Frankfurt","Wolfsburg","Werder Bremen","Hoffenheim","Borussia Mönchengladbach","Köln","Union Berlin","Stuttgart","Mainz","Augsburg","Hertha Berlin","Schalke 04","Hamburg"],
 };
 
@@ -1437,17 +1437,19 @@ function ggGetDailySeed() {
 // ─── Algo principal : génération de grille ────────────────────
 // Retourne null si on ne trouve pas (très rare)
 function ggGenerateGrid(seed) {
-  const MAX_ATTEMPTS = 200;
-  const rand = seededRandom(seed); // utilise la fn existante
+  const MAX_ATTEMPTS = 500;
   
-  // Mélange tableau avec le seed
-  function shuffleArr(arr) {
-    return seededShuffle([...arr], seed);
+  // Mélange tableau avec un seed donné (pour diversification)
+  function shuffleArrWithSeed(arr, attemptSeed) {
+    return seededShuffle([...arr], attemptSeed);
   }
   
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+    // Variation du seed à chaque tentative pour diversifier
+    const attemptSeed = seed + attempt * 31; // multiplicateur premier pour bonne dispersion
+    
     // 1. Tirer 3 critères de ligne (clubs uniquement)
-    const rowCriteria = shuffleArr(GG_CLUB_POOL).slice(0, 3).map(c => ({
+    const rowCriteria = shuffleArrWithSeed(GG_CLUB_POOL, attemptSeed).slice(0, 3).map(c => ({
       type: "club",
       value: c,
       label: c,
@@ -1462,7 +1464,7 @@ function ggGenerateGrid(seed) {
       const labels = { ligue1: "A joué en L1", premier_league: "A joué en PL", liga: "A joué en Liga", serie_a: "A joué en Serie A", bundesliga: "A joué en Bundesliga" };
       colCandidates.push({ type: "league", value: l, label: labels[l] });
     });
-    const colCriteria = shuffleArr(colCandidates).slice(0, 3);
+    const colCriteria = shuffleArrWithSeed(colCandidates, attemptSeed + 7).slice(0, 3);
     
     // 3. Calculer les candidats pour chaque case
     const cells = [];
@@ -1498,8 +1500,8 @@ function ggGenerateGrid(seed) {
     
     if (!valid) continue;
     
-    // Règle 2 : ≥ 7 cases sur 9 doivent avoir un facile
-    if (cellsWithEasy < 7) continue;
+    // Règle 2 : ≥ 5 cases sur 9 doivent avoir un facile (les 4 autres peuvent être hard)
+    if (cellsWithEasy < 5) continue;
     
     // ✅ Grille valide !
     return {
