@@ -2373,14 +2373,37 @@ export default function LePont() {
     const norm = s => s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
     const q = norm(input.trim());
     const matched = PLAYERS_CLEAN.filter(p => p && p.name && norm(p.name).includes(q));
-    // Tri : commence par > contient
+    
+    const diffRank = { facile: 0, moyen: 1, expert: 2 };
+    
+    // Calcule le rang de match d'un nom :
+    // 0 = un mot APRÈS le premier commence par q (= nom de famille / particule)
+    // 1 = le nom complet commence par q (= prénom)
+    // 2 = un mot quelconque commence par q (cas mixte)
+    // 3 = la query est juste contenue (substring)
+    function matchRank(name) {
+      const nn = norm(name);
+      const words = nn.split(" ");
+      // Mot après le premier (nom de famille / particule)
+      for (let i = 1; i < words.length; i++) {
+        if (words[i].startsWith(q)) return 0;
+      }
+      // Le nom complet commence par q
+      if (nn.startsWith(q)) return 1;
+      // Premier mot uniquement
+      if (words[0].startsWith(q)) return 2;
+      // Sinon substring
+      return 3;
+    }
+    
     matched.sort(function(a, b){
-      const an = norm(a.name), bn = norm(b.name);
-      const aStarts = an.startsWith(q), bStarts = bn.startsWith(q);
-      if (aStarts !== bStarts) return aStarts ? -1 : 1;
-      const aWord = an.split(" ").some(w => w.startsWith(q));
-      const bWord = bn.split(" ").some(w => w.startsWith(q));
-      if (aWord !== bWord) return aWord ? -1 : 1;
+      const ra = matchRank(a.name);
+      const rb = matchRank(b.name);
+      if (ra !== rb) return ra - rb;
+      // À rang égal, priorité aux joueurs connus
+      const aDiff = diffRank[a.diff] !== undefined ? diffRank[a.diff] : 1;
+      const bDiff = diffRank[b.diff] !== undefined ? diffRank[b.diff] : 1;
+      if (aDiff !== bDiff) return aDiff - bDiff;
       return a.name.localeCompare(b.name);
     });
     return matched.slice(0, 5); // top 5 suggestions
@@ -8214,6 +8237,26 @@ export default function LePont() {
                         </button>
                         <button onClick={function(){setGgRevealMode(true);}} style={{padding:12,borderRadius:50,border:"1px solid rgba(74,158,255,.4)",background:"rgba(74,158,255,.15)",color:"#7AB8FF",fontWeight:800,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
                           💡 {lang==="en"?"SEE POSSIBLE ANSWERS":"VOIR LES RÉPONSES POSSIBLES"}
+                        </button>
+                        <button onClick={function(){
+                          // Génère une nouvelle grille aléatoire (mode test)
+                          const newSeed = Math.floor(Math.random() * 1000000) + 1;
+                          setGgOverrideSeed(newSeed);
+                          setGgFilledCells({});
+                          setGgUsedPlayers(new Set());
+                          setGgLives(3);
+                          setGgScore(0);
+                          setGgGameOver(false);
+                          setGgGuess("");
+                          setGgFlash(null);
+                          setGgSelectedCell(null);
+                          setGgRevealMode(false);
+                          setGgRevealCell(null);
+                          const newGrid = ggGenerateGrid(newSeed);
+                          if (newGrid) { setGgGrid(newGrid); setGgError(false); }
+                          else setGgError(true);
+                        }} style={{padding:12,borderRadius:50,border:"1px solid rgba(255,214,0,.4)",background:"rgba(255,214,0,.15)",color:"#FFD600",fontWeight:800,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
+                          🔄 {lang==="en"?"NEW GRID":"NOUVELLE GRILLE"}
                         </button>
                         <button onClick={function(){setShowGoatGrid(false);}} style={{padding:12,borderRadius:50,border:"none",background:"rgba(255,255,255,.05)",color:"rgba(255,255,255,.7)",fontWeight:700,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
                           {lang==="en"?"Close":"Fermer"}
