@@ -1333,6 +1333,289 @@ function getCrescendoTier(chainCount) {
   return "expert";
 }
 
+// ══════════════════════════════════════════════════════════════
+// 🐐 GOAT GRID — Mode quotidien grille 3x3
+// ══════════════════════════════════════════════════════════════
+// Inspiré de métrodoku : grille 3x3, 6 critères croisés, 3 vies, 1 grille/jour
+// Scoring basé sur la rareté du joueur (nombre de candidats matching)
+
+// ─── Pools de critères ───────────────────────────────────────
+// On utilise les FAMOUS_CLUBS pour la diversité et la reconnaissance
+const GG_CLUB_POOL = [
+  "Real Madrid","FC Barcelona","Atlético Madrid","Sevilla","Valencia",
+  "Manchester United","Manchester City","Liverpool","Chelsea","Arsenal","Tottenham","Newcastle",
+  "Bayern Munich","Borussia Dortmund","RB Leipzig","Bayer Leverkusen",
+  "Juventus","Inter Milan","AC Milan","AS Roma","Napoli","Atalanta",
+  "Paris Saint-Germain","Olympique Marseille","Olympique Lyonnais","Monaco",
+  "Ajax","PSV","Feyenoord","Benfica","Porto","Sporting CP",
+];
+
+const GG_NATIONALITY_POOL = [
+  "Brésil","Argentine","France","Allemagne","Espagne","Italie","Portugal","Angleterre",
+  "Belgique","Pays-Bas","Croatie","Pologne","Maroc","Sénégal","Algérie","Côte d'Ivoire",
+  "Cameroun","Nigeria","Uruguay","Colombie","Chili","Mexique","États-Unis","Japon",
+];
+
+const GG_POSITION_POOL = ["gardien","defenseur","milieu","attaquant"];
+
+// Mapping : nom du club → ligue (pour critères "A joué en ...")
+const GG_LIGUE_MAP = {
+  "ligue1": ["Paris Saint-Germain","Olympique Marseille","Olympique Lyonnais","Monaco","Lille","Rennes","Nice","Lens","Nantes","Strasbourg","Saint-Étienne","Bordeaux","Toulouse","Montpellier","Reims","Brest","Le Havre","Auxerre","Angers"],
+  "premier_league": ["Manchester United","Manchester City","Liverpool","Chelsea","Arsenal","Tottenham","Newcastle","Aston Villa","West Ham","Brighton","Crystal Palace","Brentford","Fulham","Wolves","Everton","Leeds United","Leicester City","Southampton","Bournemouth","Nottingham Forest"],
+  "liga": ["Real Madrid","FC Barcelona","Atlético Madrid","Sevilla","Valencia","Real Sociedad","Athletic Bilbao","Villarreal","Real Betis","Celta Vigo","Espanyol","Getafe","Osasuna","Mallorca","Cadiz","Almeria","Girona","Las Palmas","Granada"],
+  "serie_a": ["Juventus","Inter Milan","AC Milan","AS Roma","Napoli","Atalanta","Lazio","Fiorentina","Torino","Bologna","Sassuolo","Udinese","Empoli","Genoa","Cagliari","Hellas Verona","Lecce","Salernitana","Frosinone","Monza"],
+  "bundesliga": ["Bayern Munich","Borussia Dortmund","RB Leipzig","Bayer Leverkusen","Eintracht Frankfurt","Wolfsburg","Werder Bremen","Hoffenheim","Borussia Mönchengladbach","Köln","Union Berlin","Stuttgart","Mainz","Augsburg","Hertha Berlin","Schalke 04","Hamburg"],
+};
+
+// ─── Scoring : pts selon nombre de candidats valides ──────────
+function ggCalculatePoints(numCandidates) {
+  if (numCandidates <= 3)  return 100; // 🌟 Legendary
+  if (numCandidates <= 5)  return 60;  // 💜 Epic
+  if (numCandidates <= 10) return 40;  // 🔵 Rare
+  if (numCandidates <= 20) return 25;  // 🟢 Common
+  return 15;                            // ⚪ Trivial
+}
+
+function ggGetRarityClass(pts) {
+  if (pts === 100) return "legendary";
+  if (pts === 60)  return "epic";
+  if (pts === 40)  return "rare";
+  if (pts === 25)  return "common";
+  return "trivial";
+}
+
+// ─── Helper : un joueur matche-t-il un critère ? ──────────────
+function ggPlayerMatchesCriterion(player, criterion) {
+  if (!player || !criterion) return false;
+  
+  if (criterion.type === "club") {
+    return Array.isArray(player.clubs) && player.clubs.includes(criterion.value);
+  }
+  
+  if (criterion.type === "nationality") {
+    // Champs ajoutés par les meta Wikidata (peut être absent → false)
+    const nats = player.nationalities || [];
+    return nats.includes(criterion.value);
+  }
+  
+  if (criterion.type === "position") {
+    // 4 catégories : gardien/defenseur/milieu/attaquant
+    const positions = player.positions || [];
+    return positions.includes(criterion.value);
+  }
+  
+  if (criterion.type === "league") {
+    // criterion.value = "ligue1" | "premier_league" | etc.
+    const leagueClubs = GG_LIGUE_MAP[criterion.value] || [];
+    return Array.isArray(player.clubs) && player.clubs.some(c => leagueClubs.includes(c));
+  }
+  
+  return false;
+}
+
+// ─── Helper : trouver tous les joueurs matchant 2 critères ────
+function ggFindMatchingPlayers(crit1, crit2) {
+  return PLAYERS_CLEAN.filter(p => 
+    ggPlayerMatchesCriterion(p, crit1) && ggPlayerMatchesCriterion(p, crit2)
+  );
+}
+
+// ─── Helper : compter combien de "faciles" dans une liste ─────
+function ggCountEasy(players) {
+  return players.filter(p => p.diff === "facile").length;
+}
+
+// ─── Seed du jour ────────────────────────────────────────────
+function ggGetDailySeed() {
+  const now = new Date();
+  const dateStr = now.getUTCFullYear() + "-" +
+                  String(now.getUTCMonth() + 1).padStart(2, "0") + "-" +
+                  String(now.getUTCDate()).padStart(2, "0");
+  return hashStringToSeed(dateStr); // utilise la fn existante du fichier
+}
+
+// ─── Algo principal : génération de grille ────────────────────
+// Retourne null si on ne trouve pas (très rare)
+function ggGenerateGrid(seed) {
+  const MAX_ATTEMPTS = 200;
+  const rand = seededRandom(seed); // utilise la fn existante
+  
+  // Mélange tableau avec le seed
+  function shuffleArr(arr) {
+    return seededShuffle([...arr], seed);
+  }
+  
+  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+    // 1. Tirer 3 critères de ligne (clubs uniquement)
+    const rowCriteria = shuffleArr(GG_CLUB_POOL).slice(0, 3).map(c => ({
+      type: "club",
+      value: c,
+      label: c,
+    }));
+    
+    // 2. Tirer 3 critères de colonne (mix natio/poste/ligue, mais variés)
+    // On pioche 3 types parmi ces choix possibles
+    const colCandidates = [];
+    GG_NATIONALITY_POOL.forEach(n => colCandidates.push({ type: "nationality", value: n, label: n }));
+    GG_POSITION_POOL.forEach(p => colCandidates.push({ type: "position", value: p, label: p }));
+    Object.keys(GG_LIGUE_MAP).forEach(l => {
+      const labels = { ligue1: "A joué en L1", premier_league: "A joué en PL", liga: "A joué en Liga", serie_a: "A joué en Serie A", bundesliga: "A joué en Bundesliga" };
+      colCandidates.push({ type: "league", value: l, label: labels[l] });
+    });
+    const colCriteria = shuffleArr(colCandidates).slice(0, 3);
+    
+    // 3. Calculer les candidats pour chaque case
+    const cells = [];
+    let valid = true;
+    let cellsWithEasy = 0;
+    
+    for (let i = 0; i < 3 && valid; i++) {
+      for (let j = 0; j < 3 && valid; j++) {
+        const candidates = ggFindMatchingPlayers(rowCriteria[i], colCriteria[j]);
+        const easyCount = ggCountEasy(candidates);
+        
+        // Règle 1 : ≥ 5 candidats par case
+        if (candidates.length < 5) {
+          valid = false;
+          break;
+        }
+        
+        if (easyCount >= 1) cellsWithEasy++;
+        
+        cells.push({
+          row: i,
+          col: j,
+          rowCriterion: rowCriteria[i],
+          colCriterion: colCriteria[j],
+          candidates: candidates.map(p => p.name), // juste les noms
+          totalCount: candidates.length,
+          easyCount,
+          points: ggCalculatePoints(candidates.length),
+          rarity: ggGetRarityClass(ggCalculatePoints(candidates.length)),
+        });
+      }
+    }
+    
+    if (!valid) continue;
+    
+    // Règle 2 : ≥ 7 cases sur 9 doivent avoir un facile
+    if (cellsWithEasy < 7) continue;
+    
+    // ✅ Grille valide !
+    return {
+      rowCriteria,
+      colCriteria,
+      cells,
+      seed,
+    };
+  }
+  
+  // Si on n'a rien trouvé après MAX_ATTEMPTS, on retourne null
+  console.warn("[GOAT GRID] Impossible de générer une grille équilibrée après " + MAX_ATTEMPTS + " tentatives");
+  return null;
+}
+
+// ─── Couleurs des critères (mêmes que le mockup) ──────────────
+function ggGetCriterionColors(criterion) {
+  if (criterion.type === "club") {
+    return getClubColors(criterion.value); // utilise la fonction existante du fichier
+  }
+  
+  if (criterion.type === "nationality") {
+    // Couleurs simples par drapeau (extensible)
+    const flagColors = {
+      "Brésil": ["#009C3B", "#FFDF00"],
+      "Argentine": ["#74ACDF", "#FFFFFF"],
+      "France": ["#0055A4", "#EF4135"],
+      "Allemagne": ["#000000", "#DD0000"],
+      "Espagne": ["#AA151B", "#F1BF00"],
+      "Italie": ["#009246", "#CE2B37"],
+      "Portugal": ["#046A38", "#DA291C"],
+      "Angleterre": ["#FFFFFF", "#CE1124"],
+      "Belgique": ["#000000", "#FAE042"],
+      "Pays-Bas": ["#AE1C28", "#21468B"],
+      "Croatie": ["#FF0000", "#FFFFFF"],
+      "Pologne": ["#FFFFFF", "#DC143C"],
+      "Maroc": ["#C1272D", "#006233"],
+      "Sénégal": ["#00853F", "#FDEF42"],
+      "Algérie": ["#006233", "#FFFFFF"],
+      "Côte d'Ivoire": ["#FF8200", "#009E60"],
+      "Cameroun": ["#007A5E", "#CE1126"],
+      "Nigeria": ["#008751", "#FFFFFF"],
+      "Uruguay": ["#7B95C7", "#FFFFFF"],
+      "Colombie": ["#FCD116", "#003893"],
+      "Chili": ["#FFFFFF", "#D52B1E"],
+      "Mexique": ["#006847", "#CE1126"],
+      "États-Unis": ["#3C3B6E", "#B22234"],
+      "Japon": ["#FFFFFF", "#BC002D"],
+    };
+    return flagColors[criterion.value] || ["#1a7a3a", "#FFFFFF"];
+  }
+  
+  if (criterion.type === "position") {
+    // Couleur du poste (rouge agressif pour attaquant, etc.)
+    const posColors = {
+      "gardien":     ["#1E3A8A", "#F97316"], // bleu nuit / orange (gants)
+      "defenseur":   ["#166534", "#444444"], // vert / gris
+      "milieu":      ["#FFD600", "#1E40AF"], // jaune / bleu
+      "attaquant":   ["#C8102E", "#1a1a1a"], // rouge / noir
+    };
+    return posColors[criterion.value] || ["#1a7a3a", "#FFFFFF"];
+  }
+  
+  if (criterion.type === "league") {
+    const ligueColors = {
+      "ligue1":         ["#0055A4", "#EF4135"], // bleu / rouge France
+      "premier_league": ["#3D195B", "#04F5FF"], // violet / turquoise PL
+      "liga":           ["#AA151B", "#F1BF00"], // rouge / jaune Espagne
+      "serie_a":        ["#009246", "#CE2B37"], // vert / rouge Italie
+      "bundesliga":     ["#000000", "#DD0000"], // noir / rouge Allemagne
+    };
+    return ligueColors[criterion.value] || ["#1a7a3a", "#FFFFFF"];
+  }
+  
+  return ["#1a7a3a", "#FFFFFF"];
+}
+
+// ─── Emoji du critère pour l'UI ──────────────────────────────
+function ggGetCriterionEmoji(criterion) {
+  if (criterion.type === "nationality") {
+    const flags = {
+      "Brésil":"🇧🇷","Argentine":"🇦🇷","France":"🇫🇷","Allemagne":"🇩🇪","Espagne":"🇪🇸","Italie":"🇮🇹",
+      "Portugal":"🇵🇹","Angleterre":"🏴󠁧󠁢󠁥󠁮󠁧󠁿","Belgique":"🇧🇪","Pays-Bas":"🇳🇱","Croatie":"🇭🇷","Pologne":"🇵🇱",
+      "Maroc":"🇲🇦","Sénégal":"🇸🇳","Algérie":"🇩🇿","Côte d'Ivoire":"🇨🇮","Cameroun":"🇨🇲","Nigeria":"🇳🇬",
+      "Uruguay":"🇺🇾","Colombie":"🇨🇴","Chili":"🇨🇱","Mexique":"🇲🇽","États-Unis":"🇺🇸","Japon":"🇯🇵",
+    };
+    return flags[criterion.value] || "🌍";
+  }
+  if (criterion.type === "position") {
+    return { gardien: "🥅", defenseur: "🛡️", milieu: "⚙️", attaquant: "⚔️" }[criterion.value] || "⚽";
+  }
+  if (criterion.type === "league") {
+    return "🏆";
+  }
+  return "";
+}
+
+// ─── Tooltip explication d'un critère ────────────────────────
+function ggGetCriterionTooltip(criterion) {
+  if (criterion.type === "club") {
+    return `Le joueur a évolué au ${criterion.value} (au moins une saison professionnelle).`;
+  }
+  if (criterion.type === "nationality") {
+    return `Le joueur a la nationalité sportive ${criterion.value}.`;
+  }
+  if (criterion.type === "position") {
+    const labels = { gardien: "gardien de but", defenseur: "défenseur", milieu: "milieu de terrain", attaquant: "attaquant" };
+    return `Le joueur évolue principalement au poste de ${labels[criterion.value] || criterion.value}.`;
+  }
+  if (criterion.type === "league") {
+    const ligues = { ligue1: "Ligue 1 française", premier_league: "Premier League anglaise", liga: "Liga espagnole", serie_a: "Serie A italienne", bundesliga: "Bundesliga allemande" };
+    return `Le joueur a évolué dans au moins un club de ${ligues[criterion.value] || criterion.value}.`;
+  }
+  return "";
+}
+
 // ══ MULTIPLAYER ENGINE (BroadcastChannel + localStorage) ══
 // Works between browser tabs. Replace with Supabase for cross-device.
 
@@ -7339,8 +7622,8 @@ export default function LePont() {
           </div>
         )}
 
-        {/* Défi du jour */}
-        {dailyPlayer && (
+        {/* Défi du jour — CACHÉ (remplacé par GOAT GRID, mais plomberie conservée pour push notif + streak) */}
+        {false && dailyPlayer && (
           <div style={{borderRadius:14,background:dailyDone?"rgba(255,255,255,.04)":"linear-gradient(135deg,rgba(255,214,0,.12),rgba(255,107,53,.12))",border:dailyDone?"1px solid rgba(255,255,255,.1)":"1.5px solid rgba(255,214,0,.3)",padding:"10px 12px",display:"flex",alignItems:"center",gap:10,opacity:dailyDone?.7:1}}>
             <div style={{fontSize:22}}>{dailyDone?(dailyRevealed?"👁️":dailyAbandoned?"🔒":"✅"):"⚡"}</div>
             <div style={{flex:1}}>
