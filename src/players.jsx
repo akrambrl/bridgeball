@@ -307,7 +307,7 @@ export const PLAYERS = [
   { name:"Angelo Fulgini", clubs:["Angers", "Mainz", "Al Taawon"], diff:"expert", nationalities:["France"], positions:["attaquant"] },
   { name:"Youssef En-Nesyri", clubs:["Malaga","Leganes","Sevilla","Fenerbahce"], diff:"moyen", nationalities:["Maroc"], positions:["attaquant"] },
   { name:"Moussa Diaby", clubs:["PSG", "Bayer Leverkusen", "Aston Villa", "Al Ittihad"], diff:"moyen", nationalities:["France"], positions:["milieu"] },
-  { name:"Theo Hernández", clubs:["Atletico Madrid", "Alaves", "Real Madrid", "Real Sociedad", "AC Milan", "Al Hilal"], diff:"facile", nationalities:["France"], positions:[] },
+  { name:"Theo Hernández", clubs:["Atletico Madrid", "Alaves", "Real Madrid", "Real Sociedad", "AC Milan", "Al Hilal"], diff:"facile", nationalities:["France"], positions:["defenseur"] },
   { name:"Saïmon Bouabré", clubs:["Al Hilal"], diff:"expert", nationalities:["France"], positions:["attaquant"] },
   { name:"Ângelo", clubs:["Santos", "Chelsea", "Al Nassr"], diff:"expert", nationalities:["Brésil"], positions:["attaquant"] },
   { name:"Pablo Marí", clubs:["Mallorca", "NAC Breda", "Manchester City", "Deportivo La Coruna", "Flamengo", "Arsenal", "Udinese Calcio", "Monza", "ACF Fiorentina", "Al Hilal"], diff:"moyen", nationalities:["Espagne"], positions:["defenseur"] },
@@ -849,8 +849,8 @@ export const PLAYERS = [
   { name:"Andrea Pirlo", clubs:["Inter Milan", "AC Milan", "Juventus FC", "New York City FC"], diff:"facile", nationalities:["Italie"], positions:["attaquant"] },
   { name:"Dida", clubs:["Cruzeiro", "AC Milan", "Portsmouth"], diff:"moyen", nationalities:["Brésil","Italie"], positions:["gardien"] },
   { name:"Rivaldo", clubs:["Deportivo", "Barcelona", "AC Milan"], diff:"facile", nationalities:["Brésil","Espagne"], positions:["attaquant"] },
-  { name:"Cafu", clubs:["São Paulo", "Real Zaragoza", "Palmeiras", "AS Roma", "AC Milan"], diff:"facile", nationalities:["Brésil"], positions:[] },
-  { name:"Roberto Carlos", clubs:["Palmeiras", "Inter Milan", "Real Madrid", "Fenerbahce"], diff:"facile", nationalities:["Brésil"], positions:[] },
+  { name:"Cafu", clubs:["São Paulo", "Real Zaragoza", "Palmeiras", "AS Roma", "AC Milan"], diff:"facile", nationalities:["Brésil"], positions:["defenseur"] },
+  { name:"Roberto Carlos", clubs:["Palmeiras", "Inter Milan", "Real Madrid", "Fenerbahce"], diff:"facile", nationalities:["Brésil"], positions:["defenseur"] },
   { name:"Lucio", clubs:["Bayer Leverkusen", "Bayern Munich", "Inter Milan"], diff:"moyen", nationalities:["Brésil"], positions:["defenseur"] },
   { name:"Figo", clubs:["Sporting CP", "Barcelona", "Real Madrid", "Inter Milan"], diff:"facile", nationalities:[], positions:["attaquant"] },
   { name:"Simao Sabrosa", clubs:["Barcelona", "Atletico Madrid", "Besiktas"], diff:"moyen", nationalities:["Portugal"], positions:["milieu"] },
@@ -943,7 +943,7 @@ export const PLAYERS = [
   { name:"Sylvain Distin", clubs:["Manchester City", "Everton"], diff:"expert", nationalities:["France"], positions:[] },
   { name:"Abdoulaye Meite", clubs:["Monaco", "Marseille", "Bolton"], diff:"expert", nationalities:["Côte d'Ivoire","France"], positions:["defenseur"] },
 ,
-  { name:"Gabri Veiga", clubs:["Celta Vigo", "Al Ahli", "Al Qadsiah", "Porto"], diff:"facile", nationalities:["Espagne"], positions:[] },
+  { name:"Gabri Veiga", clubs:["Celta Vigo", "Al Ahli", "Al Qadsiah", "Porto"], diff:"facile", nationalities:["Espagne"], positions:["milieu"] },
   { name:"Ben White", clubs:["Brighton", "Leeds United", "Arsenal"], diff:"moyen", nationalities:["Angleterre"], positions:["defenseur"] },
   { name:"Gabriel Magalhaes", clubs:["Avai", "Lille", "Dinamo Zagreb", "Troyes", "Arsenal"], diff:"moyen", nationalities:["Brésil"], positions:["defenseur"] },
   { name:"David Raya", clubs:["Blackburn", "Brentford", "Arsenal"], diff:"facile", nationalities:["Espagne"], positions:["gardien"] },
@@ -962,7 +962,7 @@ export const PLAYERS = [
   { name:"Per Mertesacker", clubs:["Werder Bremen", "Arsenal"], diff:"moyen", nationalities:[], positions:[] },
   { name:"Lars Bender", clubs:["1860 Munich", "Bayer Leverkusen"], diff:"moyen", nationalities:["Allemagne"], positions:["attaquant"] },
   { name:"Sven Bender", clubs:["Borussia Dortmund", "Bayer Leverkusen"], diff:"moyen", nationalities:["Allemagne"], positions:["attaquant"] },
-  { name:"Sergio Aguero", clubs:["Atletico Madrid", "Manchester City", "Barcelona"], diff:"facile", nationalities:["Argentine"], positions:[] },
+  { name:"Sergio Aguero", clubs:["Atletico Madrid", "Manchester City", "Barcelona"], diff:"facile", nationalities:["Argentine"], positions:["attaquant"] },
   { name:"Javier Mascherano", clubs:["Liverpool", "Barcelona"], diff:"moyen", nationalities:["Argentine","Italie"], positions:["attaquant","defenseur"] },
   { name:"Goran Pandev", clubs:["SS Lazio", "Inter Milan", "SSC Napoli", "Genoa CFC"], diff:"moyen", nationalities:["Macédoine du Nord"], positions:["attaquant"] },
   { name:"Diego Milito", clubs:["Genoa CFC", "Inter Milan"], diff:"moyen", nationalities:["Argentine"], positions:["attaquant"] },
@@ -1108,7 +1108,7 @@ export const PLAYERS = [
   { name:"Bafetimbi Gomis", clubs:["Saint-Etienne","Lyon","Swansea","Marseille","Galatasaray","Al Hilal"], diff:"moyen", nationalities:["France","Sénégal"], positions:["attaquant"] },
   { name:"Benjamin Mendy", clubs:["Le Havre","Marseille","Monaco","Manchester City"], diff:"moyen", nationalities:["France"], positions:[] },
   { name:"Aymen Abdennour", clubs:["Espérance Tunis","Werder Bremen","Toulouse","Monaco","Valencia","Marseille","Kayserispor"], diff:"expert", nationalities:["Tunisie"], positions:["defenseur"] },
-  { name:"Patrice Evra", clubs:["Nice","Monaco","Manchester United","Juventus FC","Marseille","West Ham"], diff:"facile", nationalities:["France","Sénégal"], positions:[] },
+  { name:"Patrice Evra", clubs:["Nice","Monaco","Manchester United","Juventus FC","Marseille","West Ham"], diff:"facile", nationalities:["France","Sénégal"], positions:["defenseur"] },
   { name:"Alexandre Lacazette", clubs:["Lyon","Arsenal","Neom FC"], diff:"moyen", nationalities:["France"], positions:[] },
   { name:"Emre Can", clubs:["Bayern Munich","Bayer Leverkusen","Liverpool","Juventus FC","Borussia Dortmund"], diff:"moyen", nationalities:["Turquie","Allemagne"], positions:["attaquant"] },
   // Équipe nationale Pologne 2026
@@ -1483,9 +1483,9 @@ export const PLAYERS = [
   { name:"Łukasz Piszczek", clubs:["Hertha Berlin", "Borussia Dortmund"], diff:"moyen", nationalities:["Pologne"], positions:["defenseur"] },
   { name:"Sokratis Papastathopoulos", clubs:["Genoa CFC", "AC Milan", "Werder Bremen", "Borussia Dortmund", "Arsenal"], diff:"moyen", nationalities:["Grèce"], positions:["defenseur"] },
   // Bayern Munich
-  { name:"Paul Breitner", clubs:["Bayern Munich", "Real Madrid"], diff:"facile", nationalities:["Allemagne"], positions:[] },
+  { name:"Paul Breitner", clubs:["Bayern Munich", "Real Madrid"], diff:"facile", nationalities:["Allemagne"], positions:["milieu"] },
   { name:"Roy Makaay", clubs:["Deportivo La Coruna", "Bayern Munich", "Feyenoord"], diff:"moyen", nationalities:["Pays-Bas"], positions:["attaquant"] },
-  { name:"Bixente Lizarazu", clubs:["Bordeaux", "Athletic Bilbao", "Bayern Munich", "Marseille"], diff:"facile", nationalities:["France"], positions:[] },
+  { name:"Bixente Lizarazu", clubs:["Bordeaux", "Athletic Bilbao", "Bayern Munich", "Marseille"], diff:"facile", nationalities:["France"], positions:["defenseur"] },
   { name:"Mario Mandžukić", clubs:["Dinamo Zagreb", "Wolfsburg", "Bayern Munich", "Atletico Madrid", "Juventus FC", "AC Milan"], diff:"moyen", nationalities:["Croatie"], positions:["attaquant"] },
   { name:"Javi Martínez", clubs:["Osasuna", "Athletic Bilbao", "Bayern Munich"], diff:"moyen", nationalities:["Espagne"], positions:["defenseur","milieu"] },
   // Bayer Leverkusen
@@ -1539,7 +1539,7 @@ export const PLAYERS = [
   { name:"Stéphane Guivarc'h", clubs:["Brest", "Rennes", "Guingamp", "Auxerre", "Newcastle", "Rangers"], diff:"moyen", nationalities:["France"], positions:["attaquant"] },
   // ── LIGA : REAL / BARCA / ATLETICO / SEVILLA / VALENCIA (+5 par club) ──
   // Real Madrid
-  { name:"Marcelo", clubs:["Fluminense", "Real Madrid"], diff:"facile", nationalities:["Brésil","Espagne"], positions:[] },
+  { name:"Marcelo", clubs:["Fluminense", "Real Madrid"], diff:"facile", nationalities:["Brésil","Espagne"], positions:["defenseur"] },
   { name:"Isco", clubs:["Valencia", "Malaga", "Real Madrid", "Sevilla", "Real Betis"], diff:"facile", nationalities:["Espagne"], positions:["attaquant"] },
   { name:"Keylor Navas", clubs:["Levante", "Real Madrid", "PSG", "Nottingham Forest", "Pumas UNAM"], diff:"moyen", nationalities:["Espagne","Costa Rica"], positions:["gardien"] },
   { name:"Pepe", clubs:["Corinthians", "Porto", "Real Madrid", "Besiktas"], diff:"facile", nationalities:["Portugal","Brésil"], positions:["defenseur"] },
@@ -1595,7 +1595,7 @@ export const PLAYERS = [
   { name:"Stephan El Shaarawy", clubs:["Genoa CFC", "AC Milan", "Monaco", "AS Roma", "Shanghai Shenhua"], diff:"moyen", nationalities:["Venezuela","Italie","Égypte"], positions:["attaquant"] },
   // Napoli
   { name:"Marek Hamšík", clubs:["Brescia", "SSC Napoli", "Trabzonspor"], diff:"facile", nationalities:["Slovaquie"], positions:["attaquant"] },
-  { name:"Jorginho", clubs:["Hellas Verona", "SSC Napoli", "Chelsea", "Arsenal", "Flamengo"], diff:"facile", nationalities:["Brésil"], positions:[] },
+  { name:"Jorginho", clubs:["Hellas Verona", "SSC Napoli", "Chelsea", "Arsenal", "Flamengo"], diff:"facile", nationalities:["Brésil"], positions:["milieu"] },
   { name:"Careca", clubs:["São Paulo", "SSC Napoli", "Santos"], diff:"moyen", nationalities:["Brésil"], positions:["attaquant"] },
   { name:"José Callejón", clubs:["Espanyol", "Real Madrid", "SSC Napoli", "ACF Fiorentina", "Granada"], diff:"moyen", nationalities:["Espagne"], positions:["milieu"] },
   { name:"Allan Marques", clubs:["Vasco da Gama", "Udinese Calcio", "SSC Napoli", "Everton"], diff:"moyen", nationalities:["Brésil"], positions:["attaquant"] },
@@ -1640,7 +1640,7 @@ export const PLAYERS = [
   { name:"Allan Saint-Maximin", clubs:["Saint-Etienne", "Monaco", "Bastia", "Hannover 96", "Nice", "Newcastle", "Al Ahli", "Fenerbahce", "Club America", "Lens"], diff:"moyen", nationalities:["France"], positions:["attaquant"] },
   { name:"Neco Williams", clubs:["Liverpool", "Fulham", "Nottingham Forest"], diff:"moyen", nationalities:["Angleterre"], positions:["defenseur"] },
   // Joueurs manquants importants
-  { name:"Antony Martial", clubs:["Lyon", "Monaco", "Manchester United", "Sevilla", "AEK Athens"], diff:"facile", nationalities:[], positions:[] },
+  { name:"Antony Martial", clubs:["Lyon", "Monaco", "Manchester United", "Sevilla", "AEK Athens"], diff:"facile", nationalities:[], positions:["attaquant"] },
   { name:"Édouard Mendy", clubs:["Le Havre", "Cherbourg", "Marseille", "Reims", "Rennes", "Chelsea", "Al Ahli"], diff:"moyen", nationalities:["France","Sénégal"], positions:["gardien"] },
   // Mercato hiver janvier 2026 - arrivées Ligue 1
   { name:"Quinten Timber", clubs:["Ajax Amsterdam", "Utrecht", "Feyenoord", "Marseille"], diff:"moyen", nationalities:["Pays-Bas"], positions:["attaquant"] },
