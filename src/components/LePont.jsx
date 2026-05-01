@@ -1482,10 +1482,20 @@ function ggGenerateGrid(seed) {
     
     // 2. Tirer 3 critères de colonne (mix natio/poste/ligue, mais variés)
     // On pioche 3 types parmi ces choix possibles
+    // RÈGLE : on exclut les ligues qui contiennent l'un des clubs choisis en ligne
+    // (sinon "Juventus × A joué en Serie A" est trivial : tous les joueurs Juve matchent)
+    const excludedLeagues = new Set();
+    Object.keys(GG_LIGUE_MAP).forEach(l => {
+      if (rowCriteria.some(rc => GG_LIGUE_MAP[l].includes(rc.value))) {
+        excludedLeagues.add(l);
+      }
+    });
+    
     const colCandidates = [];
     GG_NATIONALITY_POOL.forEach(n => colCandidates.push({ type: "nationality", value: n, label: n }));
     GG_POSITION_POOL.forEach(p => colCandidates.push({ type: "position", value: p, label: p }));
     Object.keys(GG_LIGUE_MAP).forEach(l => {
+      if (excludedLeagues.has(l)) return; // skip les ligues qui rendraient les cases triviales
       const labels = { ligue1: "A joué en L1", premier_league: "A joué en PL", liga: "A joué en Liga", serie_a: "A joué en Serie A", bundesliga: "A joué en Bundesliga" };
       colCandidates.push({ type: "league", value: l, label: labels[l] });
     });
@@ -2192,6 +2202,7 @@ export default function LePont() {
   const [ggOverrideSeed, setGgOverrideSeed] = useState(0); // 0 = seed du jour, sinon seed forcé
   const [ggLastRejected, setGgLastRejected] = useState(null); // { playerName, rowCrit, colCrit } pour signaler
   const [ggReportSent, setGgReportSent] = useState(false); // confirmation visuelle après envoi
+  const [ggReviewMode, setGgReviewMode] = useState(false); // true = on cache le modal de fin pour revoir la grille
   const [ggRevealMode, setGgRevealMode] = useState(false); // true = on peut cliquer les cases pour voir les réponses possibles
   const [ggRevealCell, setGgRevealCell] = useState(null); // cellule dont on regarde les réponses
   
@@ -8020,7 +8031,7 @@ export default function LePont() {
                   </div>
 
                   {/* Grille 3x3 */}
-                  <div style={{background:"rgba(0,0,0,.4)",backdropFilter:"blur(12px)",borderRadius:16,padding:6,border:"1px solid rgba(255,255,255,.08)",marginBottom:8,flex:1,display:"flex",minHeight:0}}>
+                  <div style={{background:"rgba(0,0,0,.4)",backdropFilter:"blur(12px)",borderRadius:16,padding:6,border:"1px solid rgba(255,255,255,.08)",marginBottom:(ggRevealMode||ggReviewMode)?130:8,flex:1,display:"flex",minHeight:0}}>
                     <div style={{display:"grid",gridTemplateColumns:"80px minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)",gridTemplateRows:"60px minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)",gap:4,flex:1,width:"100%"}}>
                       
                       {/* Coin haut-gauche vide */}
@@ -8088,6 +8099,11 @@ export default function LePont() {
                                 );
                               }
                               
+                              // Couleurs de la ligne et de la colonne pour le dégradé
+                              const [rowC1, rowC2] = ggGetCriterionColors(rowCrit);
+                              const colCrit_ = ggGrid.colCriteria[j];
+                              const [colC1, colC2] = ggGetCriterionColors(colCrit_);
+                              
                               return(
                                 <div key={cellKey} onClick={function(){
                                   if(ggRevealMode){
@@ -8097,8 +8113,16 @@ export default function LePont() {
                                   } else if(!ggGameOver){
                                     setGgSelectedCell({row:i,col:j});
                                   }
-                                }} style={{background:isFlashing&&ggFlash==="ko"?"rgba(239,68,68,.3)":ggRevealMode?"rgba(74,158,255,.15)":"rgba(255,255,255,.05)",border:"1px solid "+(isFlashing&&ggFlash==="ko"?"rgba(239,68,68,.7)":ggRevealMode?"rgba(74,158,255,.4)":"rgba(255,255,255,.1)"),cursor:(ggRevealMode||!ggGameOver)?"pointer":"default",transition:"all .15s",padding:4,display:"flex",alignItems:"center",justifyContent:"center",borderRadius:12,animation:isFlashing&&ggFlash==="ko"?"answerKo .4s ease":"none"}}>
-                                  <div style={{fontSize:ggRevealMode?16:28,color:ggRevealMode?"#7AB8FF":"rgba(255,255,255,.3)",fontWeight:ggRevealMode?700:100}}>{ggRevealMode?"?":"+"}</div>
+                                }} style={{position:"relative",overflow:"hidden",background:isFlashing&&ggFlash==="ko"?"rgba(239,68,68,.3)":ggRevealMode?"rgba(74,158,255,.15)":"transparent",border:"1px solid "+(isFlashing&&ggFlash==="ko"?"rgba(239,68,68,.7)":ggRevealMode?"rgba(74,158,255,.4)":"rgba(255,255,255,.15)"),cursor:(ggRevealMode||!ggGameOver)?"pointer":"default",transition:"all .15s",padding:4,display:"flex",alignItems:"center",justifyContent:"center",borderRadius:12,animation:isFlashing&&ggFlash==="ko"?"answerKo .4s ease":"none"}}>
+                                  {/* Fond dégradé : haut = couleurs ligne, bas = couleurs colonne */}
+                                  {!ggRevealMode && !(isFlashing&&ggFlash==="ko") && (
+                                    <>
+                                      <div style={{position:"absolute",top:0,left:0,right:0,height:"50%",background:"linear-gradient(90deg, "+rowC1+" 0%, "+rowC1+" 50%, "+rowC2+" 50%, "+rowC2+" 100%)",opacity:.18}}/>
+                                      <div style={{position:"absolute",bottom:0,left:0,right:0,height:"50%",background:"linear-gradient(90deg, "+colC1+" 0%, "+colC1+" 50%, "+colC2+" 50%, "+colC2+" 100%)",opacity:.18}}/>
+                                      <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, rgba(0,0,0,.15) 0%, rgba(0,0,0,.4) 100%)"}}/>
+                                    </>
+                                  )}
+                                  <div style={{position:"relative",zIndex:1,fontSize:ggRevealMode?16:28,color:ggRevealMode?"#7AB8FF":"rgba(255,255,255,.45)",fontWeight:ggRevealMode?700:100,textShadow:"0 1px 3px rgba(0,0,0,.6)"}}>{ggRevealMode?"?":"+"}</div>
                                 </div>
                               );
                             })}
@@ -8207,7 +8231,7 @@ export default function LePont() {
               })()}
 
               {/* 🐐 ÉCRAN FIN DE PARTIE (game over) */}
-              {ggGameOver && !ggRevealMode && (() => {
+              {ggGameOver && !ggRevealMode && !ggReviewMode && (() => {
                 const filledCount = Object.keys(ggFilledCells).length;
                 const isPerfect = filledCount === 9 && ggLives === 3;
                 const isVictory = filledCount === 9;
@@ -8285,8 +8309,11 @@ export default function LePont() {
                         }} style={{padding:14,borderRadius:50,border:"none",background:"linear-gradient(135deg,#00E676,#FFD600)",color:"#000",fontWeight:900,fontSize:14,letterSpacing:1.5,cursor:"pointer"}}>
                           {ggShareCopied ? "✅ " + (lang==="en"?"COPIED!":"COPIÉ !") : "📤 " + (lang==="en"?"SHARE MY RESULT":"PARTAGER MON RÉSULTAT")}
                         </button>
-                        <button onClick={function(){setGgRevealMode(true);}} style={{padding:12,borderRadius:50,border:"1px solid rgba(74,158,255,.4)",background:"rgba(74,158,255,.15)",color:"#7AB8FF",fontWeight:800,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
+                        <button onClick={function(){setGgRevealMode(true);setGgReviewMode(false);}} style={{padding:12,borderRadius:50,border:"1px solid rgba(74,158,255,.4)",background:"rgba(74,158,255,.15)",color:"#7AB8FF",fontWeight:800,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
                           💡 {lang==="en"?"SEE POSSIBLE ANSWERS":"VOIR LES RÉPONSES POSSIBLES"}
+                        </button>
+                        <button onClick={function(){setGgReviewMode(true);setGgRevealMode(false);setGgRevealCell(null);}} style={{padding:12,borderRadius:50,border:"1px solid rgba(0,230,118,.4)",background:"rgba(0,230,118,.15)",color:"#00E676",fontWeight:800,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
+                          📋 {lang==="en"?"REVIEW MY GRID":"REVOIR MA GRILLE"}
                         </button>
                         <button onClick={function(){
                           // Génère une nouvelle grille aléatoire (mode test)
@@ -8302,6 +8329,7 @@ export default function LePont() {
                           setGgSelectedCell(null);
                           setGgRevealMode(false);
                           setGgRevealCell(null);
+                          setGgReviewMode(false);
                           const newGrid = ggGenerateGrid(newSeed);
                           if (newGrid) { setGgGrid(newGrid); setGgError(false); }
                           else setGgError(true);
@@ -8328,6 +8356,18 @@ export default function LePont() {
                     💡 {lang==="en"?"Click any cell to see possible answers":"Clique sur n'importe quelle case pour voir les réponses"}
                   </div>
                   <button onClick={function(){setGgRevealMode(false);}} style={{padding:12,borderRadius:50,border:"none",background:"#FFD600",color:"#000",fontWeight:900,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
+                    ← {lang==="en"?"BACK TO RESULT":"RETOUR AU RÉSULTAT"}
+                  </button>
+                </div>
+              )}
+              
+              {/* 📋 Mode REVIEW : bouton retour en bas */}
+              {ggReviewMode && (
+                <div style={{position:"fixed",bottom:20,left:20,right:20,zIndex:450,display:"flex",flexDirection:"column",gap:8}}>
+                  <div style={{background:"rgba(0,230,118,.15)",border:"1px solid rgba(0,230,118,.4)",borderRadius:14,padding:"10px 14px",color:"#00E676",fontSize:13,fontWeight:700,textAlign:"center"}}>
+                    📋 {lang==="en"?"Review your filled grid":"Revue de ta grille remplie"}
+                  </div>
+                  <button onClick={function(){setGgReviewMode(false);}} style={{padding:12,borderRadius:50,border:"none",background:"#FFD600",color:"#000",fontWeight:900,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
                     ← {lang==="en"?"BACK TO RESULT":"RETOUR AU RÉSULTAT"}
                   </button>
                 </div>
