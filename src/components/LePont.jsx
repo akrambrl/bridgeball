@@ -1367,6 +1367,248 @@ const GG_LIGUE_MAP = {
   "bundesliga": ["Bayern Munich","Borussia Dortmund","RB Leipzig","Bayer Leverkusen","Eintracht Frankfurt","Wolfsburg","Werder Bremen","Hoffenheim","Borussia Mönchengladbach","Köln","Union Berlin","Stuttgart","Mainz","Augsburg","Hertha Berlin","Schalke 04","Hamburg"],
 };
 
+// ─── Trophées : gagnants des grandes compétitions ─────────────
+// Liste des joueurs qui ont gagné AU MOINS UNE FOIS la compétition
+// (titulaires + remplaçants impliqués sur le tournoi)
+// Les noms doivent matcher exactement ceux de PLAYERS_CLEAN
+const GG_WC_WINNERS = new Set([
+  // 🇫🇷 France 2018
+  "Hugo Lloris",
+  "Steve Mandanda",
+  "Alphonse Areola",
+  "Raphael Varane",
+  "Samuel Umtiti",
+  "Benjamin Pavard",
+  "Lucas Hernandez",
+  "Djibril Sidibé",
+  "Adil Rami",
+  "Presnel Kimpembe",
+  "N'Golo Kanté",
+  "Paul Pogba",
+  "Blaise Matuidi",
+  "Corentin Tolisso",
+  "Steven Nzonzi",
+  "Kylian Mbappe",
+  "Antoine Griezmann",
+  "Olivier Giroud",
+  "Ousmane Dembele",
+  "Nabil Fekir",
+  "Florian Thauvin",
+  "Thomas Lemar",
+  // 🇦🇷 Argentine 2022
+  "Emiliano Martínez",
+  "Franco Armani",
+  "Gerónimo Rulli",
+  "Cristian Romero",
+  "Nicolás Otamendi",
+  "Lisandro Martinez",
+  "Nahuel Molina",
+  "Marcos Acuña",
+  "Gonzalo Montiel",
+  "Juan Foyth",
+  "Rodrigo De Paul",
+  "Leandro Paredes",
+  "Enzo Fernandez",
+  "Alexis Mac Allister",
+  "Exequiel Palacios",
+  "Guido Rodríguez",
+  "Lionel Messi",
+  "Julián Álvarez",
+  "Lautaro Martinez",
+  "Angel Di Maria",
+  "Ángel Correa",
+  "Paulo Dybala",
+  "Thiago Almada",
+  // 🇩🇪 Allemagne 2014
+  "Manuel Neuer",
+  "Roman Weidenfeller",
+  "Ron-Robert Zieler",
+  "Philipp Lahm",
+  "Mats Hummels",
+  "Per Mertesacker",
+  "Jerome Boateng",
+  "Benedikt Höwedes",
+  "Shkodran Mustafi",
+  "Erik Durm",
+  "Toni Kroos",
+  "Bastian Schweinsteiger",
+  "Sami Khedira",
+  "Mesut Özil",
+  "Mario Götze",
+  "Thomas Muller",
+  "Miroslav Klose",
+  "André Schürrle",
+  "Lukas Podolski",
+  "Julian Draxler",
+  "Christoph Kramer",
+  "Kevin Großkreutz",
+  "Matthias Ginter",
+  // 🇪🇸 Espagne 2010
+  "Iker Casillas",
+  "Pepe Reina",
+  "Víctor Valdés",
+  "Carles Puyol",
+  "Gerard Pique",
+  "Sergio Ramos",
+  "Joan Capdevila",
+  "Raúl Albiol",
+  "Carlos Marchena",
+  "Xavi",
+  "Andres Iniesta",
+  "Xabi Alonso",
+  "Sergio Busquets",
+  "Cesc Fabregas",
+  "David Silva",
+  "Jesús Navas",
+  "Pedro Rodríguez",
+  "David Villa",
+  "Fernando Torres",
+  "Fernando Llorente",
+  "Juan Mata",
+  "Javi Martínez",
+  "Álvaro Arbeloa",
+  // 🇮🇹 Italie 2006
+  "Gianluigi Buffon",
+  "Angelo Peruzzi",
+  "Marco Amelia",
+  "Fabio Cannavaro",
+  "Alessandro Nesta",
+  "Marco Materazzi",
+  "Fabio Grosso",
+  "Gianluca Zambrotta",
+  "Cristian Zaccardo",
+  "Andrea Pirlo",
+  "Gennaro Gattuso",
+  "Daniele De Rossi",
+  "Simone Perrotta",
+  "Mauro Camoranesi",
+  "Francesco Totti",
+  "Alessandro Del Piero",
+  "Luca Toni",
+  "Alberto Gilardino",
+  "Filippo Inzaghi",
+  "Vincenzo Iaquinta",
+  "Massimo Oddo",
+  "Andrea Barzagli",
+  "Vincenzo Montella",
+  // 🇧🇷 Brésil 2002
+  "Marcos",
+  "Dida",
+  "Rogério Ceni",
+  "Cafu",
+  "Roberto Carlos",
+  "Lúcio",
+  "Roque Júnior",
+  "Edmílson",
+  "Júnior",
+  "Dunga",
+  "Gilberto Silva",
+  "Kléberson",
+  "Juninho Paulista",
+  "Rivaldo",
+  "Ronaldinho",
+  "Ronaldo Nazário",
+  "Denílson",
+  "Edílson",
+  "Luizão",
+  "Ricardinho",
+  "Vampeta",
+  "Anderson Polga",
+  "Belletti",
+  // 🇫🇷 France 1998
+  "Fabien Barthez",
+  "Bernard Lama",
+  "Lionel Charbonnier",
+  "Lilian Thuram",
+  "Marcel Desailly",
+  "Laurent Blanc",
+  "Bixente Lizarazu",
+  "Frank Leboeuf",
+  "Vincent Candela",
+  "Zinédine Zidane",
+  "Didier Deschamps",
+  "Emmanuel Petit",
+  "Christian Karembeu",
+  "Youri Djorkaeff",
+  "Alain Boghossian",
+  "Patrick Vieira",
+  "Thierry Henry",
+  "David Trezeguet",
+  "Stéphane Guivarc'h",
+  "Christophe Dugarry",
+  "Bernard Diomède",
+  // 🇧🇷 Brésil 1994
+  "Cláudio Taffarel",
+  "Ricardo Rocha",
+  "Jorginho",
+  "Aldair",
+  "Márcio Santos",
+  "Branco",
+  "Cafu",
+  "Dunga",
+  "Mauro Silva",
+  "Mazinho",
+  "Zinho",
+  "Raí",
+  "Leonardo",
+  "Romário",
+  "Bebeto",
+  "Viola",
+  "Müller",
+  "Paulo Sérgio",
+  "Gilmar",
+  "Zetti",
+  "Ronaldão",
+  "Ricardo Gomes",
+]);
+
+// 🏆 Champions League winners (depuis 2000)
+// Inclut titulaires des finales gagnées
+const GG_CL_WINNERS = new Set([
+  // Real Madrid 2014, 2016, 2017, 2018, 2022, 2024
+  "Cristiano Ronaldo","Sergio Ramos","Karim Benzema","Luka Modrić","Toni Kroos",
+  "Raphaël Varane","Pepe","Marcelo","Dani Carvajal","Casemiro","Isco","Marco Asensio",
+  "Gareth Bale","Iker Casillas","Xabi Alonso","Vinicius Jr","Federico Valverde",
+  "Eduardo Camavinga","Aurélien Tchouaméni","Antonio Rudiger","Ferland Mendy",
+  "Thibaut Courtois","Eden Hazard","Rodrygo","Nacho","Lucas Vázquez","Dani Ceballos",
+  "Jude Bellingham","David Alaba","Brahim Diaz","Joselu","Andriy Lunin","Fran García",
+  "Ángel Di María","Sami Khedira","Mesut Özil",
+  // Bayern Munich 2013, 2020
+  "Manuel Neuer","Robert Lewandowski","Thomas Müller","Joshua Kimmich","Leon Goretzka",
+  "Serge Gnabry","David Alaba","Jérôme Boateng","Niklas Süle","Kingsley Coman",
+  "Alphonso Davies","Thiago Alcantara","Philipp Lahm","Bastian Schweinsteiger","Mario Mandžukić",
+  "Arjen Robben","Franck Ribéry","Mario Götze","Javi Martinez","Dante",
+  // Barcelona 2006, 2009, 2011, 2015
+  "Lionel Messi","Andres Iniesta","Xavi","Carles Puyol","Sergio Busquets","Gerard Pique",
+  "Dani Alves","Pedro","David Villa","Eric Abidal","Samuel Eto'o","Thierry Henry",
+  "Yaya Toure","Seydou Keita","Luis Suarez","Neymar","Ivan Rakitić","Jordi Alba",
+  "Javier Mascherano","Marc-André ter Stegen","Sergio Ramos",
+  "Ronaldinho","Deco","Giovanni van Bronckhorst","Rafa Marquez","Henrik Larsson",
+  // Chelsea 2012, 2021
+  "Petr Čech","John Terry","Frank Lampard","Didier Drogba","Ramires","Juan Mata",
+  "Eden Hazard","Edouard Mendy","Thiago Silva","Antonio Rudiger","Mason Mount",
+  "N'Golo Kanté","Jorginho","Reece James","Ben Chilwell","César Azpilicueta","Marcos Alonso",
+  "Andreas Christensen","Kai Havertz","Timo Werner","Christian Pulisic","Branislav Ivanovic",
+  "Ashley Cole","Salomon Kalou","Florent Malouda","Fernando Torres","Mikel John Obi",
+  // Liverpool 2005, 2019
+  "Steven Gerrard","Xabi Alonso","Jamie Carragher","Pepe Reina","Fernando Torres",
+  "Mohamed Salah","Sadio Mané","Roberto Firmino","Virgil van Dijk","Alisson","Andrew Robertson",
+  "Trent Alexander-Arnold","Jordan Henderson","Fabinho","Georginio Wijnaldum","Joël Matip",
+  "Joe Gomez","Naby Keïta","James Milner","Divock Origi",
+  // Inter Milan 2010
+  "Diego Milito","Wesley Sneijder","Samuel Eto'o","Júlio César","Lúcio","Maicon",
+  "Walter Samuel","Javier Zanetti","Esteban Cambiasso","Goran Pandev","Thiago Motta",
+  "Cristian Chivu","Marco Materazzi",
+  // Man City 2023
+  "Erling Haaland","Kevin De Bruyne","Rodri","Phil Foden","Bernardo Silva","Jack Grealish",
+  "Ruben Dias","John Stones","Kyle Walker","Manuel Akanji","Ederson","İlkay Gündoğan",
+  "Nathan Aké","Riyad Mahrez","Julián Álvarez",
+  // PSG 2025
+  "Marquinhos","Vitinha","Ousmane Dembélé","Achraf Hakimi","Bradley Barcola",
+  "Désiré Doué","Khvicha Kvaratskhelia","João Neves","Lee Kang-in","Fabian Ruiz",
+  "Willian Pacho","Nuno Mendes","Gianluigi Donnarumma","Lucas Hernández",
+]);
+
 // ─── Scoring : pts selon DIFFICULTÉ DU JOUEUR CITÉ + bonus rareté combo ──
 // Option 3 : pondéré par difficulté du joueur cité
 function ggCalculatePointsForPlayer(playerDiff, totalCandidates) {
@@ -1426,6 +1668,13 @@ function ggPlayerMatchesCriterion(player, criterion) {
     return Array.isArray(player.clubs) && player.clubs.some(c => leagueClubs.includes(c));
   }
   
+  if (criterion.type === "trophy") {
+    // criterion.value = "world_cup" | "champions_league"
+    if (criterion.value === "world_cup") return GG_WC_WINNERS.has(player.name);
+    if (criterion.value === "champions_league") return GG_CL_WINNERS.has(player.name);
+    return false;
+  }
+  
   return false;
 }
 
@@ -1457,6 +1706,31 @@ function ggGetDailySeed() {
                   String(now.getUTCMonth() + 1).padStart(2, "0") + "-" +
                   String(now.getUTCDate()).padStart(2, "0");
   return hashStringToSeed(dateStr); // utilise la fn existante du fichier
+}
+
+// Date du jour en format YYYY-MM-DD (pour la sauvegarde leaderboard)
+function ggGetTodayDateStr() {
+  const now = new Date();
+  return now.getUTCFullYear() + "-" +
+         String(now.getUTCMonth() + 1).padStart(2, "0") + "-" +
+         String(now.getUTCDate()).padStart(2, "0");
+}
+
+// Construit le pattern emoji 3×3 (pour leaderboard et partage)
+function ggBuildEmojiPattern(filledCells, grid) {
+  if (!grid) return "";
+  const lines = [];
+  for (let i = 0; i < 3; i++) {
+    let line = "";
+    for (let j = 0; j < 3; j++) {
+      const filled = filledCells[i+"-"+j];
+      if (!filled) { line += "⬜"; continue; }
+      const e = { legendary:"🟨", epic:"🟪", rare:"🟦", common:"🟩", trivial:"⬛" }[filled.rarity] || "🟩";
+      line += e;
+    }
+    lines.push(line);
+  }
+  return lines.join("\n");
 }
 
 // ─── Algo principal : génération de grille ────────────────────
@@ -1499,6 +1773,9 @@ function ggGenerateGrid(seed) {
       const labels = { ligue1: "A joué en L1", premier_league: "A joué en PL", liga: "A joué en Liga", serie_a: "A joué en Serie A", bundesliga: "A joué en Bundesliga" };
       colCandidates.push({ type: "league", value: l, label: labels[l] });
     });
+    // Critères-trophées
+    colCandidates.push({ type: "trophy", value: "world_cup", label: "Vainqueur CDM" });
+    // colCandidates.push({ type: "trophy", value: "champions_league", label: "Vainqueur LDC" }); // désactivé : liste incomplète, à réactiver plus tard
     const colCriteria = shuffleArrWithSeed(colCandidates, attemptSeed + 7).slice(0, 3);
     
     // 3. Calculer les candidats pour chaque case
@@ -1621,6 +1898,15 @@ function ggGetCriterionColors(criterion) {
     return ligueColors[criterion.value] || ["#1a7a3a", "#FFFFFF"];
   }
   
+  if (criterion.type === "trophy") {
+    // Couleurs trophées
+    const trophyColors = {
+      "world_cup":        ["#D4AF37", "#0055A4"], // or / bleu
+      "champions_league": ["#1B1B3A", "#FFFFFF"], // bleu nuit / blanc
+    };
+    return trophyColors[criterion.value] || ["#FFD600", "#FFFFFF"];
+  }
+  
   return ["#1a7a3a", "#FFFFFF"];
 }
 
@@ -1641,6 +1927,11 @@ function ggGetCriterionEmoji(criterion) {
   if (criterion.type === "league") {
     return "🏆";
   }
+  if (criterion.type === "trophy") {
+    if (criterion.value === "world_cup") return "🏆";
+    if (criterion.value === "champions_league") return "⭐";
+    return "🏆";
+  }
   return "";
 }
 
@@ -1659,6 +1950,11 @@ function ggGetCriterionTooltip(criterion) {
   if (criterion.type === "league") {
     const ligues = { ligue1: "Ligue 1 française", premier_league: "Premier League anglaise", liga: "Liga espagnole", serie_a: "Serie A italienne", bundesliga: "Bundesliga allemande" };
     return `Le joueur a évolué dans au moins un club de ${ligues[criterion.value] || criterion.value}.`;
+  }
+  if (criterion.type === "trophy") {
+    if (criterion.value === "world_cup") return "Le joueur a remporté au moins une Coupe du Monde avec sa sélection nationale.";
+    if (criterion.value === "champions_league") return "Le joueur a remporté au moins une UEFA Champions League avec son club.";
+    return "Le joueur a remporté ce trophée.";
   }
   return "";
 }
@@ -2203,6 +2499,11 @@ export default function LePont() {
   const [ggLastRejected, setGgLastRejected] = useState(null); // { playerName, rowCrit, colCrit } pour signaler
   const [ggReportSent, setGgReportSent] = useState(false); // confirmation visuelle après envoi
   const [ggReviewMode, setGgReviewMode] = useState(false); // true = on cache le modal de fin pour revoir la grille
+  // Leaderboard
+  const [ggLeaderboardTab, setGgLeaderboardTab] = useState("global"); // "global" | "friends"
+  const [ggLeaderboardData, setGgLeaderboardData] = useState({ global: [], friends: [] });
+  const [ggLeaderboardLoading, setGgLeaderboardLoading] = useState(false);
+  const [ggScoreSaved, setGgScoreSaved] = useState(false);
   const [ggRevealMode, setGgRevealMode] = useState(false); // true = on peut cliquer les cases pour voir les réponses possibles
   const [ggRevealCell, setGgRevealCell] = useState(null); // cellule dont on regarde les réponses
   
@@ -2233,6 +2534,76 @@ export default function LePont() {
       };
       localStorage.setItem("goatfc_gg_state", JSON.stringify(state));
     } catch {}
+  }
+  
+  // ─── Leaderboard GOAT GRID ────────────────────────────────────
+  // Sauvegarde le score du jour dans Supabase (uniquement si vraie grille du jour)
+  async function ggSaveScore(score, maxScore, livesLeft, cellsFilled, pattern) {
+    if (ggOverrideSeed > 0) return; // pas de save en mode test
+    if (!playerId || !playerName) return;
+    if (ggScoreSaved) return; // déjà sauvegardé
+    
+    try {
+      const today = ggGetTodayDateStr();
+      // Upsert : on remplace l'ancien score si le joueur rejoue (mais devrait pas pouvoir)
+      await sbFetch("bb_gg_scores", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Prefer": "resolution=merge-duplicates,return=minimal",
+        },
+        body: JSON.stringify({
+          player_id: playerId,
+          player_name: playerName,
+          score: score,
+          max_score: maxScore,
+          lives_left: livesLeft,
+          cells_filled: cellsFilled,
+          pattern: pattern,
+          seed_date: today,
+        }),
+      });
+      setGgScoreSaved(true);
+    } catch (e) {
+      console.warn("GG score save failed:", e);
+    }
+  }
+  
+  // Charge le leaderboard du jour (mondial + amis)
+  async function ggLoadLeaderboard() {
+    setGgLeaderboardLoading(true);
+    try {
+      const today = ggGetTodayDateStr();
+      // Mondial : top 50 du jour
+      const globalData = await sbFetch(
+        "bb_gg_scores?seed_date=eq." + today + "&order=score.desc&limit=50"
+      );
+      // Amis : récupérer la liste des amis depuis localStorage puis filtrer
+      const friendsIds = JSON.parse(localStorage.getItem("bb_friends") || "[]");
+      let friendsData = [];
+      if (friendsIds.length > 0) {
+        // Inclure aussi le joueur lui-même
+        const allIds = [playerId, ...friendsIds].filter(Boolean);
+        const idsParam = "(" + allIds.map(id => '"' + id + '"').join(",") + ")";
+        friendsData = await sbFetch(
+          "bb_gg_scores?seed_date=eq." + today + "&player_id=in." + idsParam + "&order=score.desc"
+        );
+      } else if (playerId) {
+        // Sans amis : juste le joueur lui-même
+        friendsData = await sbFetch(
+          "bb_gg_scores?seed_date=eq." + today + "&player_id=eq." + playerId
+        );
+      }
+      setGgLeaderboardData({
+        global: Array.isArray(globalData) ? globalData : [],
+        friends: Array.isArray(friendsData) ? friendsData : [],
+      });
+    } catch (e) {
+      console.warn("GG leaderboard load failed:", e);
+      setGgLeaderboardData({ global: [], friends: [] });
+    } finally {
+      setGgLeaderboardLoading(false);
+    }
   }
   
   // Démarrer/reprendre une partie GOAT GRID
@@ -2347,6 +2718,12 @@ export default function LePont() {
           setGgFlashCell(null);
           setGgLastRejected(null);
           setGgReportSent(false);
+          // 💾 Sauvegarder le score (sauf en mode test)
+          if (ggGrid && ggOverrideSeed === 0) {
+            const maxScore = ggGrid.cells.reduce(function(s,c){return s+(c.maxPoints||0);},0) + 100;
+            const pattern = ggBuildEmojiPattern(newFilled, ggGrid);
+            ggSaveScore(finalScore, maxScore, ggLives, 9, pattern);
+          }
         }, 700);
       } else {
         setTimeout(function(){
@@ -2380,6 +2757,13 @@ export default function LePont() {
           setGgGuess("");
           setGgFlash(null);
           setGgFlashCell(null);
+          // 💾 Sauvegarder le score (sauf en mode test)
+          if (ggGrid && ggOverrideSeed === 0) {
+            const maxScore = ggGrid.cells.reduce(function(s,c){return s+(c.maxPoints||0);},0) + 100;
+            const pattern = ggBuildEmojiPattern(ggFilledCells, ggGrid);
+            const cellsCount = Object.keys(ggFilledCells).length;
+            ggSaveScore(ggScore, maxScore, 0, cellsCount, pattern);
+          }
         }, 700);
       } else {
         setTimeout(function(){
@@ -8039,12 +8423,11 @@ export default function LePont() {
                       
                       {/* Critères colonnes */}
                       {ggGrid.colCriteria.map(function(crit, j){
-                        const [c1, c2] = ggGetCriterionColors(crit);
+                        const [cMain] = ggGetCriterionColors(crit);
                         const emoji = ggGetCriterionEmoji(crit);
                         return(
                           <div key={"col-"+j} onClick={function(){setGgShowTooltip({title: crit.label, text: ggGetCriterionTooltip(crit)});}} style={{position:"relative",overflow:"hidden",borderRadius:12,border:"1.5px solid rgba(255,255,255,.2)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:"4px"}}>
-                            <div style={{position:"absolute",top:0,left:0,width:"50%",bottom:0,background:c1}}/>
-                            <div style={{position:"absolute",top:0,right:0,width:"50%",bottom:0,background:c2}}/>
+                            <div style={{position:"absolute",inset:0,background:cMain}}/>
                             <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.18)"}}/>
                             <div style={{position:"relative",zIndex:1,color:"#fff",textShadow:"0 1px 4px rgba(0,0,0,.6)",fontWeight:900,fontSize:10,letterSpacing:0.5,lineHeight:1.2,textAlign:"center"}}>
                               {emoji && <div style={{fontSize:14}}>{emoji}</div>}
@@ -8057,14 +8440,13 @@ export default function LePont() {
                       
                       {/* 3 lignes : critère ligne + 3 cases */}
                       {ggGrid.rowCriteria.map(function(rowCrit, i){
-                        const [c1, c2] = ggGetCriterionColors(rowCrit);
+                        const [rcMain] = ggGetCriterionColors(rowCrit);
                         const emoji = ggGetCriterionEmoji(rowCrit);
                         return(
                           <React.Fragment key={"row-"+i}>
                             {/* Critère ligne */}
                             <div onClick={function(){setGgShowTooltip({title: rowCrit.label, text: ggGetCriterionTooltip(rowCrit)});}} style={{position:"relative",overflow:"hidden",borderRadius:12,border:"1.5px solid rgba(255,255,255,.2)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:"4px"}}>
-                              <div style={{position:"absolute",top:0,left:0,width:"50%",bottom:0,background:c1}}/>
-                              <div style={{position:"absolute",top:0,right:0,width:"50%",bottom:0,background:c2}}/>
+                              <div style={{position:"absolute",inset:0,background:rcMain}}/>
                               <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.18)"}}/>
                               <div style={{position:"relative",zIndex:1,color:"#fff",textShadow:"0 1px 4px rgba(0,0,0,.6)",fontWeight:900,fontSize:10,letterSpacing:0.5,lineHeight:1.2,textAlign:"center"}}>
                                 {emoji && <div style={{fontSize:14}}>{emoji}</div>}
@@ -8312,6 +8694,11 @@ export default function LePont() {
                         <button onClick={function(){setGgReviewMode(true);setGgRevealMode(false);setGgRevealCell(null);}} style={{padding:12,borderRadius:50,border:"1px solid rgba(0,230,118,.4)",background:"rgba(0,230,118,.15)",color:"#00E676",fontWeight:800,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
                           📋 {lang==="en"?"REVIEW MY GRID":"REVOIR MA GRILLE"}
                         </button>
+                        {ggOverrideSeed === 0 && (
+                          <button onClick={function(){ggLoadLeaderboard();setGgLeaderboardTab("global");}} style={{padding:12,borderRadius:50,border:"1px solid rgba(255,214,0,.4)",background:"rgba(255,214,0,.15)",color:"#FFD600",fontWeight:800,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
+                            🏆 {lang==="en"?"LEADERBOARD":"CLASSEMENT"}
+                          </button>
+                        )}
                         <button onClick={function(){
                           // Génère une nouvelle grille aléatoire (mode test)
                           const newSeed = Math.floor(Math.random() * 1000000) + 1;
@@ -8327,6 +8714,7 @@ export default function LePont() {
                           setGgRevealMode(false);
                           setGgRevealCell(null);
                           setGgReviewMode(false);
+                          setGgScoreSaved(false);
                           const newGrid = ggGenerateGrid(newSeed);
                           if (newGrid) { setGgGrid(newGrid); setGgError(false); }
                           else setGgError(true);
@@ -8367,6 +8755,60 @@ export default function LePont() {
                   <button onClick={function(){setGgReviewMode(false);}} style={{padding:12,borderRadius:50,border:"none",background:"#FFD600",color:"#000",fontWeight:900,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
                     ← {lang==="en"?"BACK TO RESULT":"RETOUR AU RÉSULTAT"}
                   </button>
+                </div>
+              )}
+              
+              {/* 🏆 Modal Leaderboard */}
+              {ggLeaderboardData && (ggLeaderboardData.global.length > 0 || ggLeaderboardData.friends.length > 0 || ggLeaderboardLoading) && !ggReviewMode && !ggRevealMode && (
+                <div onClick={function(){setGgLeaderboardData({global:[],friends:[]});}} style={{position:"fixed",inset:0,zIndex:600,background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+                  <div onClick={function(e){e.stopPropagation();}} style={{background:"linear-gradient(135deg, #1a2419, #0f1812)",border:"1px solid rgba(255,214,0,.4)",borderRadius:20,padding:20,maxWidth:420,width:"100%",maxHeight:"85vh",display:"flex",flexDirection:"column"}}>
+                    <div style={{textAlign:"center",marginBottom:14}}>
+                      <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,214,0,.7)",fontWeight:700,marginBottom:4}}>🏆 {lang==="en"?"LEADERBOARD":"CLASSEMENT"}</div>
+                      <div style={{fontSize:13,color:"rgba(255,255,255,.6)"}}>{new Date().toLocaleDateString(lang==="en"?"en-US":"fr-FR",{day:'numeric',month:'long'})}</div>
+                    </div>
+                    {/* Tabs */}
+                    <div style={{display:"flex",gap:6,marginBottom:12,background:"rgba(0,0,0,.3)",padding:4,borderRadius:50}}>
+                      <button onClick={function(){setGgLeaderboardTab("global");}} style={{flex:1,padding:8,borderRadius:50,border:"none",background:ggLeaderboardTab==="global"?"#FFD600":"transparent",color:ggLeaderboardTab==="global"?"#000":"rgba(255,255,255,.6)",fontWeight:800,fontSize:12,letterSpacing:1,cursor:"pointer"}}>
+                        🌍 {lang==="en"?"GLOBAL":"MONDIAL"}
+                      </button>
+                      <button onClick={function(){setGgLeaderboardTab("friends");}} style={{flex:1,padding:8,borderRadius:50,border:"none",background:ggLeaderboardTab==="friends"?"#00E676":"transparent",color:ggLeaderboardTab==="friends"?"#000":"rgba(255,255,255,.6)",fontWeight:800,fontSize:12,letterSpacing:1,cursor:"pointer"}}>
+                        👥 {lang==="en"?"FRIENDS":"AMIS"}
+                      </button>
+                    </div>
+                    {/* Liste */}
+                    <div style={{flex:1,overflowY:"auto",background:"rgba(255,255,255,.04)",borderRadius:12,padding:6}}>
+                      {ggLeaderboardLoading ? (
+                        <div style={{textAlign:"center",padding:20,color:"rgba(255,255,255,.5)"}}>{lang==="en"?"Loading...":"Chargement..."}</div>
+                      ) : (() => {
+                        const list = ggLeaderboardTab === "global" ? ggLeaderboardData.global : ggLeaderboardData.friends;
+                        if (list.length === 0) {
+                          return <div style={{textAlign:"center",padding:20,color:"rgba(255,255,255,.5)",fontSize:13}}>
+                            {ggLeaderboardTab === "friends" ? (lang==="en"?"None of your friends played yet today.":"Aucun de tes amis n'a encore joué aujourd'hui.") : (lang==="en"?"No scores yet today.":"Aucun score aujourd'hui pour l'instant.")}
+                          </div>;
+                        }
+                        return list.map(function(entry, idx){
+                          const isMe = entry.player_id === playerId;
+                          const medal = idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : (idx+1)+".";
+                          return(
+                            <div key={entry.player_id+"-"+idx} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 10px",background:isMe?"rgba(255,214,0,.15)":"transparent",borderRadius:10,marginBottom:3,border:isMe?"1px solid rgba(255,214,0,.3)":"none"}}>
+                              <div style={{minWidth:30,fontSize:idx<3?16:13,fontWeight:800,color:idx<3?"#FFD600":"rgba(255,255,255,.6)",textAlign:"center"}}>{medal}</div>
+                              <div style={{flex:1}}>
+                                <div style={{fontSize:13,fontWeight:isMe?900:700,color:isMe?"#FFD600":"#fff"}}>{entry.player_name}{isMe?" (toi)":""}</div>
+                                <div style={{fontSize:10,color:"rgba(255,255,255,.4)",fontFamily:"monospace"}}>{entry.cells_filled}/9 · {"❤️".repeat(entry.lives_left)}{"💔".repeat(3-entry.lives_left)}</div>
+                              </div>
+                              <div style={{textAlign:"right"}}>
+                                <div style={{fontSize:15,fontWeight:900,color:"#FFD600",fontFamily:G.heading}}>{entry.score}</div>
+                                <div style={{fontSize:9,color:"rgba(255,255,255,.4)"}}>/ {entry.max_score}</div>
+                              </div>
+                            </div>
+                          );
+                        });
+                      })()}
+                    </div>
+                    <button onClick={function(){setGgLeaderboardData({global:[],friends:[]});}} style={{marginTop:12,padding:12,borderRadius:50,border:"none",background:"rgba(255,255,255,.08)",color:"#fff",fontWeight:800,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
+                      {lang==="en"?"Close":"Fermer"}
+                    </button>
+                  </div>
                 </div>
               )}
               
