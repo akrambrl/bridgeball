@@ -2767,12 +2767,6 @@ export default function LePont() {
   
   // Démarrer/reprendre une partie GOAT GRID
   function ggStartGame() {
-    // Si la grille du jour a déjà été terminée → afficher le leaderboard au lieu
-    if (ggTodayResult && !ggIsTestMode()) {
-      ggLoadLeaderboard();
-      setGgLeaderboardTab("global");
-      return;
-    }
     const seed = ggOverrideSeed || ggGetDailySeed();
     const grid = ggGenerateGrid(seed);
     if (!grid) {
@@ -2810,24 +2804,6 @@ export default function LePont() {
     if (showGoatGrid && ggGrid) ggSaveToStorage();
   }, [ggFilledCells, ggLives, ggScore, ggGameOver]);
   
-  // Charger le score du jour de l'utilisateur (pour l'accueil)
-  useEffect(function(){
-    try {
-      if (!playerId) return;
-      const today = ggGetTodayDateStr();
-      sbFetch("bb_gg_scores?player_id=eq." + playerId + "&seed_date=eq." + today + "&limit=1")
-        .then(function(rows){
-          if (Array.isArray(rows) && rows.length > 0) {
-            setGgTodayResult(rows[0]);
-          } else {
-            setGgTodayResult(null);
-          }
-        })
-        .catch(function(){ setGgTodayResult(null); });
-    } catch (e) {
-      console.warn("ggTodayResult load failed:", e);
-    }
-  }, [playerId, ggGameOver]);
   
   // ─── GG : Soumettre une réponse pour la case sélectionnée ──
   function ggSubmitAnswer(playerName) {
@@ -8482,35 +8458,16 @@ export default function LePont() {
         )}
 
         {/* 🐐 GOAT GRID — Encadré accueil */}
-        {ggTodayResult && !ggIsTestMode() ? (
-          <div style={{borderRadius:14,background:"linear-gradient(135deg,rgba(255,214,0,.18),rgba(0,230,118,.12))",border:"1.5px solid rgba(255,214,0,.5)",padding:"10px 12px",display:"flex",alignItems:"center",gap:10}}>
-            <div style={{fontSize:22}}>🐐</div>
-            <div style={{flex:1,minWidth:0}}>
-              <div style={{fontSize:10,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase",color:"rgba(255,214,0,.9)",marginBottom:1}}>
-                {lang==="en"?`✓ Grid #${ggGetGridNumber()} done`:`✓ Grille #${ggGetGridNumber()} jouée`}
-              </div>
-              <div style={{fontSize:13,fontWeight:800,color:G.white}}>
-                {lang==="en"?`Your score: `:`Ton score : `}
-                <span style={{color:"#FFD600"}}>{ggTodayResult.score} pts</span>
-                <span style={{color:"rgba(255,255,255,.5)",fontWeight:600,fontSize:11}}> / {ggTodayResult.max_score} · {ggTodayResult.cells_filled}/9</span>
-              </div>
+        <div onClick={ggStartGame} style={{borderRadius:14,background:"linear-gradient(135deg,rgba(0,230,118,.15),rgba(255,214,0,.15))",border:"1.5px solid rgba(0,230,118,.4)",padding:"10px 12px",display:"flex",alignItems:"center",gap:10,cursor:"pointer",transition:"all .15s"}}>
+          <div style={{fontSize:22}}>🐐</div>
+          <div style={{flex:1}}>
+            <div style={{fontSize:10,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase",color:"rgba(0,230,118,.8)",marginBottom:1}}>{lang==="en"?"Daily challenge":"Défi du jour"}</div>
+            <div style={{fontSize:13,fontWeight:800,color:G.white}}>
+              GOAT GRID — {lang==="en"?"Fill the 3×3 grid":"Remplis la grille 3×3"}
             </div>
-            <button onClick={function(e){e.stopPropagation();ggLoadLeaderboard();setGgLeaderboardTab("global");}} style={{padding:"9px 13px",background:"rgba(255,214,0,.25)",color:"#FFD600",border:"1px solid rgba(255,214,0,.5)",borderRadius:12,cursor:"pointer",fontFamily:G.font,fontSize:11,fontWeight:800,whiteSpace:"nowrap"}}>
-              🏆 {lang==="en"?"Ranking":"Classement"}
-            </button>
           </div>
-        ) : (
-          <div onClick={ggStartGame} style={{borderRadius:14,background:"linear-gradient(135deg,rgba(0,230,118,.15),rgba(255,214,0,.15))",border:"1.5px solid rgba(0,230,118,.4)",padding:"10px 12px",display:"flex",alignItems:"center",gap:10,cursor:"pointer",transition:"all .15s"}}>
-            <div style={{fontSize:22}}>🐐</div>
-            <div style={{flex:1}}>
-              <div style={{fontSize:10,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase",color:"rgba(0,230,118,.8)",marginBottom:1}}>{lang==="en"?`Daily challenge · #${ggGetGridNumber()}`:`Défi du jour · #${ggGetGridNumber()}`}</div>
-              <div style={{fontSize:13,fontWeight:800,color:G.white}}>
-                GOAT GRID — {lang==="en"?"Fill the 3×3 grid":"Remplis la grille 3×3"}
-              </div>
-            </div>
-            <button onClick={function(e){e.stopPropagation();ggStartGame();}} style={{padding:"9px 13px",background:"linear-gradient(135deg,#00E676,#FFD600)",color:"#000",border:"none",borderRadius:12,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800,whiteSpace:"nowrap"}}>{lang==="en"?"Play 🐐":"Jouer 🐐"}</button>
-          </div>
-        )}
+          <button onClick={function(e){e.stopPropagation();ggStartGame();}} style={{padding:"9px 13px",background:"linear-gradient(135deg,#00E676,#FFD600)",color:"#000",border:"none",borderRadius:12,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800,whiteSpace:"nowrap"}}>{lang==="en"?"Play 🐐":"Jouer 🐐"}</button>
+        </div>
 
         {/* Défi du jour — CACHÉ (remplacé par GOAT GRID, plomberie conservée pour push notif + streak) */}
         {false && dailyPlayer && (
@@ -8542,39 +8499,35 @@ export default function LePont() {
                 <div style={{flex:1}}/>
                 <div style={{textAlign:"center"}}>
                   <div style={{display:"inline-block",background:"linear-gradient(135deg,#00E676,#00B85F)",color:"#000",fontSize:9,fontWeight:900,letterSpacing:2,padding:"3px 10px",borderRadius:20,marginBottom:4}}>{lang==="en"?"⚡ DAILY · NEW":"⚡ DÉFI DU JOUR · NOUVEAU"}</div>
-                  <div style={{fontFamily:G.heading,fontSize:26,letterSpacing:2,color:"#FFD600",lineHeight:1}}>GOAT GRID #{ggGetGridNumber()} 🐐</div>
+                  <div style={{fontFamily:G.heading,fontSize:26,letterSpacing:2,color:"#FFD600",lineHeight:1}}>GOAT GRID 🐐</div>
                   <div style={{fontSize:11,color:"rgba(255,255,255,.7)",marginTop:3,letterSpacing:1}}>{new Date().toLocaleDateString(lang==="en"?"en-US":"fr-FR",{weekday:'long',day:'numeric',month:'long'})}</div>
                   {ggOverrideSeed > 0 && (
                     <div style={{fontSize:9,color:"#FFD600",marginTop:2,letterSpacing:1.5,fontWeight:800}}>🔄 GRILLE TEST</div>
                   )}
                 </div>
                 <div style={{flex:1,display:"flex",justifyContent:"flex-end",gap:6}}>
-                  {ggIsTestMode() && (
-                    <button onClick={function(){
-                      // Génère un seed aléatoire pour avoir une autre grille (mode test)
-                      const newSeed = Math.floor(Math.random() * 1000000) + 1;
-                      setGgOverrideSeed(newSeed);
-                      // Reset l'état et regénère
-                      setGgFilledCells({});
-                      setGgUsedPlayers(new Set());
-                      setGgLives(3);
-                      setGgScore(0);
-                      setGgGameOver(false);
-                      setGgGuess("");
-                      setGgFlash(null);
-                      setGgSelectedCell(null);
-                      setGgRevealMode(false);
-                      setGgRevealCell(null);
-                      // Génère la nouvelle grille
-                      const newGrid = ggGenerateGrid(newSeed);
-                      if (newGrid) {
-                        setGgGrid(newGrid);
-                        setGgError(false);
-                      } else {
-                        setGgError(true);
-                      }
-                    }} title={lang==="en"?"Try another grid":"Essayer une autre grille"} style={{background:"rgba(255,214,0,.15)",border:"1px solid rgba(255,214,0,.4)",borderRadius:"50%",width:36,height:36,color:"#FFD600",cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>🔄</button>
-                  )}
+                  <button onClick={function(){
+                    // Génère un seed aléatoire pour avoir une autre grille (mode test)
+                    const newSeed = Math.floor(Math.random() * 1000000) + 1;
+                    setGgOverrideSeed(newSeed);
+                    setGgFilledCells({});
+                    setGgUsedPlayers(new Set());
+                    setGgLives(3);
+                    setGgScore(0);
+                    setGgGameOver(false);
+                    setGgGuess("");
+                    setGgFlash(null);
+                    setGgSelectedCell(null);
+                    setGgRevealMode(false);
+                    setGgRevealCell(null);
+                    const newGrid = ggGenerateGrid(newSeed);
+                    if (newGrid) {
+                      setGgGrid(newGrid);
+                      setGgError(false);
+                    } else {
+                      setGgError(true);
+                    }
+                  }} title={lang==="en"?"Try another grid":"Essayer une autre grille"} style={{background:"rgba(255,214,0,.15)",border:"1px solid rgba(255,214,0,.4)",borderRadius:"50%",width:36,height:36,color:"#FFD600",cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>🔄</button>
                   <button onClick={function(){setShowGoatGrid(false);}} style={{background:"rgba(255,255,255,.1)",border:"1px solid rgba(255,255,255,.15)",borderRadius:"50%",width:36,height:36,color:G.white,cursor:"pointer",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
                 </div>
               </div>
@@ -8905,7 +8858,6 @@ export default function LePont() {
                         )}
                         {ggIsTestMode() && (
                           <button onClick={function(){
-                            // Génère une nouvelle grille aléatoire (mode test)
                             const newSeed = Math.floor(Math.random() * 1000000) + 1;
                             setGgOverrideSeed(newSeed);
                             setGgFilledCells({});
