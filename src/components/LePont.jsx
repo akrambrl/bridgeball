@@ -2812,17 +2812,21 @@ export default function LePont() {
   
   // Charger le score du jour de l'utilisateur (pour l'accueil)
   useEffect(function(){
-    if (!playerId) return;
-    const today = ggGetTodayDateStr();
-    sbFetch("bb_gg_scores?player_id=eq." + playerId + "&seed_date=eq." + today + "&limit=1")
-      .then(function(rows){
-        if (Array.isArray(rows) && rows.length > 0) {
-          setGgTodayResult(rows[0]);
-        } else {
-          setGgTodayResult(null);
-        }
-      })
-      .catch(function(){ setGgTodayResult(null); });
+    try {
+      if (!playerId) return;
+      const today = ggGetTodayDateStr();
+      sbFetch("bb_gg_scores?player_id=eq." + playerId + "&seed_date=eq." + today + "&limit=1")
+        .then(function(rows){
+          if (Array.isArray(rows) && rows.length > 0) {
+            setGgTodayResult(rows[0]);
+          } else {
+            setGgTodayResult(null);
+          }
+        })
+        .catch(function(){ setGgTodayResult(null); });
+    } catch (e) {
+      console.warn("ggTodayResult load failed:", e);
+    }
   }, [playerId, ggGameOver]);
   
   // ─── GG : Soumettre une réponse pour la case sélectionnée ──
