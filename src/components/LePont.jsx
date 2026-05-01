@@ -1936,27 +1936,71 @@ function ggGetCriterionEmoji(criterion) {
 }
 
 // ─── Tooltip explication d'un critère ────────────────────────
-function ggGetCriterionTooltip(criterion) {
+function ggGetCriterionTooltip(criterion, lang) {
+  const isEn = lang === "en";
   if (criterion.type === "club") {
-    return `Le joueur a évolué au ${criterion.value} (au moins une saison professionnelle).`;
+    return isEn ? `The player played at ${criterion.value} (at least one professional season).` : `Le joueur a évolué au ${criterion.value} (au moins une saison professionnelle).`;
   }
   if (criterion.type === "nationality") {
-    return `Le joueur a la nationalité sportive ${criterion.value}.`;
+    return isEn ? `The player has the sporting nationality of ${criterion.value}.` : `Le joueur a la nationalité sportive ${criterion.value}.`;
   }
   if (criterion.type === "position") {
+    if (isEn) {
+      const en = { gardien: "goalkeeper", defenseur: "defender", milieu: "midfielder", attaquant: "forward" };
+      return `The player primarily plays as a ${en[criterion.value] || criterion.value}.`;
+    }
     const labels = { gardien: "gardien de but", defenseur: "défenseur", milieu: "milieu de terrain", attaquant: "attaquant" };
     return `Le joueur évolue principalement au poste de ${labels[criterion.value] || criterion.value}.`;
   }
   if (criterion.type === "league") {
+    if (isEn) {
+      const en = { ligue1: "French Ligue 1", premier_league: "English Premier League", liga: "Spanish La Liga", serie_a: "Italian Serie A", bundesliga: "German Bundesliga" };
+      return `The player has played in at least one club of the ${en[criterion.value] || criterion.value}.`;
+    }
     const ligues = { ligue1: "Ligue 1 française", premier_league: "Premier League anglaise", liga: "Liga espagnole", serie_a: "Serie A italienne", bundesliga: "Bundesliga allemande" };
     return `Le joueur a évolué dans au moins un club de ${ligues[criterion.value] || criterion.value}.`;
   }
   if (criterion.type === "trophy") {
-    if (criterion.value === "world_cup") return "Le joueur a remporté au moins une Coupe du Monde avec sa sélection nationale.";
-    if (criterion.value === "champions_league") return "Le joueur a remporté au moins une UEFA Champions League avec son club.";
-    return "Le joueur a remporté ce trophée.";
+    if (criterion.value === "world_cup") return isEn ? "The player has won at least one World Cup with their national team." : "Le joueur a remporté au moins une Coupe du Monde avec sa sélection nationale.";
+    if (criterion.value === "champions_league") return isEn ? "The player has won at least one UEFA Champions League with their club." : "Le joueur a remporté au moins une UEFA Champions League avec son club.";
+    return isEn ? "The player has won this trophy." : "Le joueur a remporté ce trophée.";
   }
   return "";
+}
+
+// Retourne le label affiché du critère selon la langue (FR/EN)
+function ggGetCriterionDisplayLabel(criterion, lang) {
+  if (lang === "en") {
+    if (criterion.type === "position") {
+      const en = { gardien: "GOALKEEPER", defenseur: "DEFENDER", milieu: "MIDFIELDER", attaquant: "FORWARD" };
+      return en[criterion.value] || criterion.label;
+    }
+    if (criterion.type === "league") {
+      const en = { ligue1: "Played in L1", premier_league: "Played in PL", liga: "Played in Liga", serie_a: "Played in Serie A", bundesliga: "Played in Bundesliga" };
+      return en[criterion.value] || criterion.label;
+    }
+    if (criterion.type === "trophy") {
+      if (criterion.value === "world_cup") return "WC Winner";
+      if (criterion.value === "champions_league") return "UCL Winner";
+    }
+    if (criterion.type === "nationality") {
+      // Traduire les nationalités courantes
+      const en = {
+        "France":"France","Espagne":"Spain","Italie":"Italy","Allemagne":"Germany","Angleterre":"England",
+        "Portugal":"Portugal","Pays-Bas":"Netherlands","Belgique":"Belgium","Croatie":"Croatia",
+        "Brésil":"Brazil","Argentine":"Argentina","Uruguay":"Uruguay","Colombie":"Colombia","Chili":"Chile",
+        "Mexique":"Mexico","États-Unis":"USA",
+        "Maroc":"Morocco","Sénégal":"Senegal","Algérie":"Algeria","Côte d'Ivoire":"Ivory Coast",
+        "Cameroun":"Cameroon","Nigeria":"Nigeria","Tunisie":"Tunisia","Ghana":"Ghana","Égypte":"Egypt",
+        "Pologne":"Poland","Tchéquie":"Czechia","Serbie":"Serbia","Russie":"Russia","Ukraine":"Ukraine",
+        "Suède":"Sweden","Norvège":"Norway","Danemark":"Denmark","Suisse":"Switzerland","Autriche":"Austria",
+        "Turquie":"Turkey","Grèce":"Greece","Irlande":"Ireland","Écosse":"Scotland","Pays de Galles":"Wales",
+        "Japon":"Japan","Corée du Sud":"South Korea","Australie":"Australia",
+      };
+      return en[criterion.value] || criterion.label;
+    }
+  }
+  return criterion.label;
 }
 
 // ══ MULTIPLAYER ENGINE (BroadcastChannel + localStorage) ══
@@ -8426,12 +8470,12 @@ export default function LePont() {
                         const [cMain] = ggGetCriterionColors(crit);
                         const emoji = ggGetCriterionEmoji(crit);
                         return(
-                          <div key={"col-"+j} onClick={function(){setGgShowTooltip({title: crit.label, text: ggGetCriterionTooltip(crit)});}} style={{position:"relative",overflow:"hidden",borderRadius:12,border:"1.5px solid rgba(255,255,255,.2)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:"4px"}}>
+                          <div key={"col-"+j} onClick={function(){setGgShowTooltip({title: ggGetCriterionDisplayLabel(crit, lang), text: ggGetCriterionTooltip(crit, lang)});}} style={{position:"relative",overflow:"hidden",borderRadius:12,border:"1.5px solid rgba(255,255,255,.2)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:"4px"}}>
                             <div style={{position:"absolute",inset:0,background:cMain}}/>
                             <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.18)"}}/>
                             <div style={{position:"relative",zIndex:1,color:"#fff",textShadow:"0 1px 4px rgba(0,0,0,.6)",fontWeight:900,fontSize:13,letterSpacing:0.3,lineHeight:1.15,textAlign:"center"}}>
                               {emoji && <div style={{fontSize:20,marginBottom:2}}>{emoji}</div>}
-                              <div>{crit.label.toUpperCase()}</div>
+                              <div>{ggGetCriterionDisplayLabel(crit, lang).toUpperCase()}</div>
                             </div>
                             <div style={{position:"absolute",top:3,right:5,fontSize:9,color:"rgba(255,255,255,.7)",zIndex:2}}>ⓘ</div>
                           </div>
@@ -8445,12 +8489,12 @@ export default function LePont() {
                         return(
                           <React.Fragment key={"row-"+i}>
                             {/* Critère ligne */}
-                            <div onClick={function(){setGgShowTooltip({title: rowCrit.label, text: ggGetCriterionTooltip(rowCrit)});}} style={{position:"relative",overflow:"hidden",borderRadius:12,border:"1.5px solid rgba(255,255,255,.2)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:"4px"}}>
+                            <div onClick={function(){setGgShowTooltip({title: ggGetCriterionDisplayLabel(rowCrit, lang), text: ggGetCriterionTooltip(rowCrit, lang)});}} style={{position:"relative",overflow:"hidden",borderRadius:12,border:"1.5px solid rgba(255,255,255,.2)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:"4px"}}>
                               <div style={{position:"absolute",inset:0,background:rcMain}}/>
                               <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.18)"}}/>
                               <div style={{position:"relative",zIndex:1,color:"#fff",textShadow:"0 1px 4px rgba(0,0,0,.6)",fontWeight:900,fontSize:13,letterSpacing:0.3,lineHeight:1.15,textAlign:"center"}}>
                                 {emoji && <div style={{fontSize:20,marginBottom:2}}>{emoji}</div>}
-                                <div>{rowCrit.label.toUpperCase()}</div>
+                                <div>{ggGetCriterionDisplayLabel(rowCrit, lang).toUpperCase()}</div>
                               </div>
                               <div style={{position:"absolute",top:3,right:5,fontSize:9,color:"rgba(255,255,255,.7)",zIndex:2}}>ⓘ</div>
                             </div>
@@ -8472,7 +8516,12 @@ export default function LePont() {
                                 };
                                 const s = rarityStyles[filled.rarity] || rarityStyles.trivial;
                                 return(
-                                  <div key={cellKey} style={{borderRadius:12,padding:4,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:3,background:s.bg,border:"1.5px solid "+s.border,boxShadow:s.glow,animation:"slideUp .4s ease"}}>
+                                  <div key={cellKey} onClick={function(){
+                                    if(ggRevealMode){
+                                      const c = ggGrid.cells.find(c => c.row===i && c.col===j);
+                                      if(c) setGgRevealCell(c);
+                                    }
+                                  }} style={{borderRadius:12,padding:4,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:3,background:s.bg,border:"1.5px solid "+s.border,boxShadow:s.glow,animation:"slideUp .4s ease",cursor:ggRevealMode?"pointer":"default"}}>
                                     <div style={{fontSize:12,fontWeight:900,color:"#fff",textShadow:"0 1px 3px rgba(0,0,0,.5)",lineHeight:1.1,textAlign:"center"}}>
                                       {filled.name.toUpperCase().split(" ").map(function(w,wi){return<div key={wi}>{w}</div>;})}
                                     </div>
@@ -8532,12 +8581,12 @@ export default function LePont() {
                       <div style={{display:"flex",gap:8,marginBottom:16,alignItems:"center"}}>
                         <div style={{flex:1,background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.1)",borderRadius:12,padding:10,textAlign:"center"}}>
                           {rowEmoji && <div style={{fontSize:22}}>{rowEmoji}</div>}
-                          <div style={{fontSize:11,fontWeight:800,color:"#fff",marginTop:4,lineHeight:1.2}}>{rowCrit.label.toUpperCase()}</div>
+                          <div style={{fontSize:11,fontWeight:800,color:"#fff",marginTop:4,lineHeight:1.2}}>{ggGetCriterionDisplayLabel(rowCrit, lang).toUpperCase()}</div>
                         </div>
                         <div style={{display:"flex",alignItems:"center",fontSize:18,color:"#FFD600",fontWeight:900}}>×</div>
                         <div style={{flex:1,background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.1)",borderRadius:12,padding:10,textAlign:"center"}}>
                           {colEmoji && <div style={{fontSize:22}}>{colEmoji}</div>}
-                          <div style={{fontSize:11,fontWeight:800,color:"#fff",marginTop:4,lineHeight:1.2}}>{colCrit.label.toUpperCase()}</div>
+                          <div style={{fontSize:11,fontWeight:800,color:"#fff",marginTop:4,lineHeight:1.2}}>{ggGetCriterionDisplayLabel(colCrit, lang).toUpperCase()}</div>
                         </div>
                       </div>
                       <input
@@ -8818,7 +8867,7 @@ export default function LePont() {
                   <div onClick={function(e){e.stopPropagation();}} style={{background:"linear-gradient(135deg, #1a2419, #0f1812)",border:"1px solid rgba(74,158,255,.4)",borderRadius:20,padding:20,maxWidth:380,width:"100%"}}>
                     <div style={{textAlign:"center",marginBottom:14}}>
                       <div style={{fontSize:11,letterSpacing:2,color:"rgba(74,158,255,.7)",fontWeight:700,marginBottom:4}}>{lang==="en"?"POSSIBLE ANSWERS":"RÉPONSES POSSIBLES"}</div>
-                      <div style={{fontSize:14,color:"#fff",fontWeight:700}}>{ggRevealCell.rowCriterion.label} × {ggRevealCell.colCriterion.label}</div>
+                      <div style={{fontSize:14,color:"#fff",fontWeight:700}}>{ggGetCriterionDisplayLabel(ggRevealCell.rowCriterion, lang)} × {ggGetCriterionDisplayLabel(ggRevealCell.colCriterion, lang)}</div>
                       <div style={{fontSize:11,color:"rgba(255,255,255,.5)",marginTop:4}}>{ggRevealCell.totalCount} {lang==="en"?"candidates":"candidats"} · {ggRevealCell.points} pts</div>
                     </div>
                     <div style={{maxHeight:280,overflowY:"auto",background:"rgba(255,255,255,.04)",borderRadius:12,padding:8}}>
