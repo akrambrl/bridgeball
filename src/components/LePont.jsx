@@ -1371,8 +1371,8 @@ const GG_LIGUE_MAP = {
 // Option 3 : pondéré par difficulté du joueur cité
 function ggCalculatePointsForPlayer(playerDiff, totalCandidates) {
   let basePoints = 15; // facile par défaut
-  if (playerDiff === "moyen")  basePoints = 35;
-  if (playerDiff === "expert") basePoints = 70;
+  if (playerDiff === "moyen")  basePoints = 50;
+  if (playerDiff === "expert") basePoints = 50; // même valeur que moyen (système simplifié)
   
   // Bonus si très peu de candidats matchent les 2 critères (rare combo)
   let bonus = 0;
@@ -8027,7 +8027,7 @@ export default function LePont() {
 
                   {/* Mini explainer scoring */}
                   <div style={{background:"rgba(255,214,0,.08)",border:"1px solid rgba(255,214,0,.2)",borderRadius:10,padding:"6px 10px",marginBottom:6,fontSize:9.5,color:"rgba(255,255,255,.75)",textAlign:"center",lineHeight:1.35,flexShrink:0}}>
-                    <span style={{color:"#FFD600",fontWeight:800}}>💡 {lang==="en"?"⭐ 15 · ⭐⭐ 35 · ⭐⭐⭐ 70 pts · 🐐 No-mistake = +100":"⭐ 15 · ⭐⭐ 35 · ⭐⭐⭐ 70 pts · 🐐 Sans-faute = +100"}</span>
+                    <span style={{color:"#FFD600",fontWeight:800}}>💡 {lang==="en"?"⭐ 15 · ⭐⭐ / ⭐⭐⭐ 50 pts · 🐐 No-mistake = +100":"⭐ 15 · ⭐⭐ / ⭐⭐⭐ 50 pts · 🐐 Sans-faute = +100"}</span>
                   </div>
 
                   {/* Grille 3x3 */}
@@ -8099,10 +8099,8 @@ export default function LePont() {
                                 );
                               }
                               
-                              // Couleurs de la ligne et de la colonne pour le dégradé
-                              const [rowC1, rowC2] = ggGetCriterionColors(rowCrit);
-                              const colCrit_ = ggGrid.colCriteria[j];
-                              const [colC1, colC2] = ggGetCriterionColors(colCrit_);
+                              // Couleur unique de la ligne (club) : première couleur du club
+                              const [rowMain] = ggGetCriterionColors(rowCrit);
                               
                               return(
                                 <div key={cellKey} onClick={function(){
@@ -8114,15 +8112,14 @@ export default function LePont() {
                                     setGgSelectedCell({row:i,col:j});
                                   }
                                 }} style={{position:"relative",overflow:"hidden",background:isFlashing&&ggFlash==="ko"?"rgba(239,68,68,.3)":ggRevealMode?"rgba(74,158,255,.15)":"transparent",border:"1px solid "+(isFlashing&&ggFlash==="ko"?"rgba(239,68,68,.7)":ggRevealMode?"rgba(74,158,255,.4)":"rgba(255,255,255,.15)"),cursor:(ggRevealMode||!ggGameOver)?"pointer":"default",transition:"all .15s",padding:4,display:"flex",alignItems:"center",justifyContent:"center",borderRadius:12,animation:isFlashing&&ggFlash==="ko"?"answerKo .4s ease":"none"}}>
-                                  {/* Fond dégradé : haut = couleurs ligne, bas = couleurs colonne */}
+                                  {/* Fond unique : couleur dominante du club (ligne) */}
                                   {!ggRevealMode && !(isFlashing&&ggFlash==="ko") && (
                                     <>
-                                      <div style={{position:"absolute",top:0,left:0,right:0,height:"50%",background:"linear-gradient(90deg, "+rowC1+" 0%, "+rowC1+" 50%, "+rowC2+" 50%, "+rowC2+" 100%)",opacity:.18}}/>
-                                      <div style={{position:"absolute",bottom:0,left:0,right:0,height:"50%",background:"linear-gradient(90deg, "+colC1+" 0%, "+colC1+" 50%, "+colC2+" 50%, "+colC2+" 100%)",opacity:.18}}/>
-                                      <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, rgba(0,0,0,.15) 0%, rgba(0,0,0,.4) 100%)"}}/>
+                                      <div style={{position:"absolute",inset:0,background:rowMain,opacity:.22}}/>
+                                      <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, rgba(0,0,0,.1) 0%, rgba(0,0,0,.45) 100%)"}}/>
                                     </>
                                   )}
-                                  <div style={{position:"relative",zIndex:1,fontSize:ggRevealMode?16:28,color:ggRevealMode?"#7AB8FF":"rgba(255,255,255,.45)",fontWeight:ggRevealMode?700:100,textShadow:"0 1px 3px rgba(0,0,0,.6)"}}>{ggRevealMode?"?":"+"}</div>
+                                  <div style={{position:"relative",zIndex:1,fontSize:ggRevealMode?16:28,color:ggRevealMode?"#7AB8FF":"rgba(255,255,255,.55)",fontWeight:ggRevealMode?700:100,textShadow:"0 1px 3px rgba(0,0,0,.6)"}}>{ggRevealMode?"?":"+"}</div>
                                 </div>
                               );
                             })}
