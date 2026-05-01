@@ -8429,8 +8429,8 @@ export default function LePont() {
                           <div key={"col-"+j} onClick={function(){setGgShowTooltip({title: crit.label, text: ggGetCriterionTooltip(crit)});}} style={{position:"relative",overflow:"hidden",borderRadius:12,border:"1.5px solid rgba(255,255,255,.2)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:"4px"}}>
                             <div style={{position:"absolute",inset:0,background:cMain}}/>
                             <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.18)"}}/>
-                            <div style={{position:"relative",zIndex:1,color:"#fff",textShadow:"0 1px 4px rgba(0,0,0,.6)",fontWeight:900,fontSize:10,letterSpacing:0.5,lineHeight:1.2,textAlign:"center"}}>
-                              {emoji && <div style={{fontSize:14}}>{emoji}</div>}
+                            <div style={{position:"relative",zIndex:1,color:"#fff",textShadow:"0 1px 4px rgba(0,0,0,.6)",fontWeight:900,fontSize:13,letterSpacing:0.3,lineHeight:1.15,textAlign:"center"}}>
+                              {emoji && <div style={{fontSize:20,marginBottom:2}}>{emoji}</div>}
                               <div>{crit.label.toUpperCase()}</div>
                             </div>
                             <div style={{position:"absolute",top:3,right:5,fontSize:9,color:"rgba(255,255,255,.7)",zIndex:2}}>ⓘ</div>
@@ -8448,8 +8448,8 @@ export default function LePont() {
                             <div onClick={function(){setGgShowTooltip({title: rowCrit.label, text: ggGetCriterionTooltip(rowCrit)});}} style={{position:"relative",overflow:"hidden",borderRadius:12,border:"1.5px solid rgba(255,255,255,.2)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:"4px"}}>
                               <div style={{position:"absolute",inset:0,background:rcMain}}/>
                               <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.18)"}}/>
-                              <div style={{position:"relative",zIndex:1,color:"#fff",textShadow:"0 1px 4px rgba(0,0,0,.6)",fontWeight:900,fontSize:10,letterSpacing:0.5,lineHeight:1.2,textAlign:"center"}}>
-                                {emoji && <div style={{fontSize:14}}>{emoji}</div>}
+                              <div style={{position:"relative",zIndex:1,color:"#fff",textShadow:"0 1px 4px rgba(0,0,0,.6)",fontWeight:900,fontSize:13,letterSpacing:0.3,lineHeight:1.15,textAlign:"center"}}>
+                                {emoji && <div style={{fontSize:20,marginBottom:2}}>{emoji}</div>}
                                 <div>{rowCrit.label.toUpperCase()}</div>
                               </div>
                               <div style={{position:"absolute",top:3,right:5,fontSize:9,color:"rgba(255,255,255,.7)",zIndex:2}}>ⓘ</div>
@@ -8472,11 +8472,11 @@ export default function LePont() {
                                 };
                                 const s = rarityStyles[filled.rarity] || rarityStyles.trivial;
                                 return(
-                                  <div key={cellKey} style={{borderRadius:12,padding:4,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2,background:s.bg,border:"1.5px solid "+s.border,boxShadow:s.glow,animation:"slideUp .4s ease"}}>
-                                    <div style={{fontSize:10,fontWeight:800,color:"#fff",textShadow:"0 1px 3px rgba(0,0,0,.4)",lineHeight:1.1,textAlign:"center"}}>
+                                  <div key={cellKey} style={{borderRadius:12,padding:4,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:3,background:s.bg,border:"1.5px solid "+s.border,boxShadow:s.glow,animation:"slideUp .4s ease"}}>
+                                    <div style={{fontSize:12,fontWeight:900,color:"#fff",textShadow:"0 1px 3px rgba(0,0,0,.5)",lineHeight:1.1,textAlign:"center"}}>
                                       {filled.name.toUpperCase().split(" ").map(function(w,wi){return<div key={wi}>{w}</div>;})}
                                     </div>
-                                    <div style={{fontSize:11,fontWeight:800,fontFamily:G.heading,letterSpacing:.5,color:"#fff",textShadow:"0 1px 3px rgba(0,0,0,.4)"}}>+{filled.pts} pts</div>
+                                    <div style={{fontSize:13,fontWeight:900,fontFamily:G.heading,letterSpacing:.5,color:"#fff",textShadow:"0 1px 3px rgba(0,0,0,.5)"}}>+{filled.pts} pts</div>
                                   </div>
                                 );
                               }
