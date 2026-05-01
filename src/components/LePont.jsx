@@ -8479,7 +8479,6 @@ export default function LePont() {
 
         {/* 🐐 GOAT GRID — Encadré accueil */}
         {ggTodayResult && !ggIsTestMode() ? (
-          // Grille du jour DÉJÀ jouée → afficher le score et bouton "Voir classement"
           <div style={{borderRadius:14,background:"linear-gradient(135deg,rgba(255,214,0,.18),rgba(0,230,118,.12))",border:"1.5px solid rgba(255,214,0,.5)",padding:"10px 12px",display:"flex",alignItems:"center",gap:10}}>
             <div style={{fontSize:22}}>🐐</div>
             <div style={{flex:1,minWidth:0}}>
@@ -8497,7 +8496,6 @@ export default function LePont() {
             </button>
           </div>
         ) : (
-          // Grille du jour PAS encore jouée → bouton "Jouer"
           <div onClick={ggStartGame} style={{borderRadius:14,background:"linear-gradient(135deg,rgba(0,230,118,.15),rgba(255,214,0,.15))",border:"1.5px solid rgba(0,230,118,.4)",padding:"10px 12px",display:"flex",alignItems:"center",gap:10,cursor:"pointer",transition:"all .15s"}}>
             <div style={{fontSize:22}}>🐐</div>
             <div style={{flex:1}}>
