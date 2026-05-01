@@ -2507,6 +2507,12 @@ function scheduleNextNotif() {
 
 
 export default function LePont() {
+  // Design system (déplacé en haut pour éviter Temporal Dead Zone)
+  const G = {
+    bg:"#1E5C2A",bgPanel:"rgba(0,0,0,.5)",bgCard:"#141414",dark:"#0a0a0a",white:"#ffffff",
+    offWhite:"#F5F5F5",accent:"#00E676",gold:"#FFD600",red:"#FF3D57",
+    font:"'Bebas Neue',cursive,sans-serif",heading:"'Bebas Neue',cursive,sans-serif",
+  };
   const [showSplash, setShowSplash] = useState(true);
   const [screen, setScreen] = useState("home");
   const [resultImg, setResultImg] = useState(null);
@@ -5867,12 +5873,6 @@ export default function LePont() {
   const duration = gameMode === "chaine" ? CHAIN_DURATION : ROUND_DURATION;
   const tPct = timeLeft / duration;
   const urgent = timeLeft <= 10 && timeLeft > 0;
-  // Design system
-  const G = {
-    bg:"#1E5C2A",bgPanel:"rgba(0,0,0,.5)",bgCard:"#141414",dark:"#0a0a0a",white:"#ffffff",
-    offWhite:"#F5F5F5",accent:"#00E676",gold:"#FFD600",red:"#FF3D57",
-    font:"'Bebas Neue',cursive,sans-serif",heading:"'Bebas Neue',cursive,sans-serif",
-  };
   const shell = {
     minHeight:"100vh",display:"flex",flexDirection:"column",
     background:"transparent",
