@@ -531,6 +531,81 @@ const PONT_CLUBS = new Set([
   "Al Qadsiah",
 ]);
 
+// Top clubs mondiaux (priorité maximale dans l'autocomplete)
+// Ces clubs apparaîtront TOUJOURS en haut des suggestions s'ils matchent
+const ELITE_CLUBS_RANK = {
+  // Niveau 1 : top mondial absolu (rang 1-15)
+  "Real Madrid": 1,
+  "Barcelona": 2,
+  "Manchester United": 3,
+  "Manchester City": 4,
+  "Bayern Munich": 5,
+  "Liverpool": 6,
+  "PSG": 7,
+  "Juventus FC": 8,
+  "AC Milan": 9,
+  "Inter Milan": 10,
+  "Chelsea": 11,
+  "Arsenal": 12,
+  "Atletico Madrid": 13,
+  "Tottenham": 14,
+  "Borussia Dortmund": 15,
+  // Niveau 2 : très grands clubs (rang 16-35)
+  "Marseille": 16,
+  "Ajax Amsterdam": 17,
+  "Porto": 18,
+  "Benfica": 19,
+  "AS Roma": 20,
+  "SSC Napoli": 21,
+  "Sevilla": 22,
+  "Lyon": 23,
+  "Monaco": 24,
+  "Sporting CP": 25,
+  "Bayer Leverkusen": 26,
+  "RB Leipzig": 27,
+  "Newcastle": 28,
+  "Valencia": 29,
+  "Lille": 30,
+  "Galatasaray": 31,
+  "Fenerbahce": 32,
+  "Celtic": 33,
+  "Rangers": 34,
+  "Inter Miami": 35,
+  // Niveau 3 : clubs connus (rang 36-60)
+  "Al Nassr": 36,
+  "Al Hilal": 37,
+  "Al Ittihad": 38,
+  "Al Ahli": 39,
+  "PSV Eindhoven": 40,
+  "Feyenoord": 41,
+  "Atalanta BC": 42,
+  "ACF Fiorentina": 43,
+  "SS Lazio": 44,
+  "Villarreal": 45,
+  "Real Sociedad": 46,
+  "Athletic Bilbao": 47,
+  "Real Betis": 48,
+  "Eintracht Frankfurt": 49,
+  "Wolfsburg": 50,
+  "West Ham": 51,
+  "Aston Villa": 52,
+  "Everton": 53,
+  "Brighton": 54,
+  "Crystal Palace": 55,
+  "Besiktas": 56,
+  "Flamengo": 57,
+  "River Plate": 58,
+  "Boca Juniors": 59,
+  "Shakhtar Donetsk": 60,
+};
+
+// Renvoie le rang de popularité d'un club (plus c'est petit, plus c'est populaire)
+function getClubRank(club) {
+  if (ELITE_CLUBS_RANK[club] !== undefined) return ELITE_CLUBS_RANK[club];
+  if (PONT_CLUBS.has(club)) return 999;
+  return 1000;
+}
+
 function buildPontDB() {
   const pairMap = {};
 
@@ -1716,6 +1791,38 @@ function ggGetTodayDateStr() {
          String(now.getUTCDate()).padStart(2, "0");
 }
 
+// Jour 1 de GOAT GRID = 1er mai 2026 (grille #1)
+const GG_DAY_ONE = "2026-05-01";
+
+// Renvoie le numéro de la grille pour une date donnée (YYYY-MM-DD)
+// Grille #1 = 2026-05-01, #2 = 2026-05-02, etc.
+function ggGetGridNumber(dateStr) {
+  if (!dateStr) dateStr = ggGetTodayDateStr();
+  const d1 = new Date(GG_DAY_ONE + "T00:00:00Z");
+  const d2 = new Date(dateStr + "T00:00:00Z");
+  const diffDays = Math.floor((d2 - d1) / (1000 * 60 * 60 * 24));
+  return Math.max(1, diffDays + 1);
+}
+
+// Renvoie la date YYYY-MM-DD pour un numéro de grille donné
+function ggGridNumberToDate(num) {
+  const d1 = new Date(GG_DAY_ONE + "T00:00:00Z");
+  d1.setUTCDate(d1.getUTCDate() + (num - 1));
+  return d1.getUTCFullYear() + "-" +
+         String(d1.getUTCMonth() + 1).padStart(2, "0") + "-" +
+         String(d1.getUTCDate()).padStart(2, "0");
+}
+
+// Vérifie si le mode test est actif (URL ?test=1 ou ?gg_test=1)
+function ggIsTestMode() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("test") === "1" || params.get("gg_test") === "1";
+  } catch {
+    return false;
+  }
+}
+
 // Construit le pattern emoji 3×3 (pour leaderboard et partage)
 function ggBuildEmojiPattern(filledCells, grid) {
   if (!grid) return "";
@@ -2548,6 +2655,8 @@ export default function LePont() {
   const [ggLeaderboardData, setGgLeaderboardData] = useState({ global: [], friends: [] });
   const [ggLeaderboardLoading, setGgLeaderboardLoading] = useState(false);
   const [ggScoreSaved, setGgScoreSaved] = useState(false);
+  // Statut de la grille du jour (pour l'accueil)
+  const [ggTodayResult, setGgTodayResult] = useState(null); // { score, max_score, cells_filled } si déjà jouée
   const [ggRevealMode, setGgRevealMode] = useState(false); // true = on peut cliquer les cases pour voir les réponses possibles
   const [ggRevealCell, setGgRevealCell] = useState(null); // cellule dont on regarde les réponses
   
@@ -2652,6 +2761,12 @@ export default function LePont() {
   
   // Démarrer/reprendre une partie GOAT GRID
   function ggStartGame() {
+    // Si la grille du jour a déjà été terminée → afficher le leaderboard au lieu
+    if (ggTodayResult && !ggIsTestMode()) {
+      ggLoadLeaderboard();
+      setGgLeaderboardTab("global");
+      return;
+    }
     const seed = ggOverrideSeed || ggGetDailySeed();
     const grid = ggGenerateGrid(seed);
     if (!grid) {
@@ -2688,6 +2803,21 @@ export default function LePont() {
   useEffect(function(){
     if (showGoatGrid && ggGrid) ggSaveToStorage();
   }, [ggFilledCells, ggLives, ggScore, ggGameOver]);
+  
+  // Charger le score du jour de l'utilisateur (pour l'accueil)
+  useEffect(function(){
+    if (!playerId) return;
+    const today = ggGetTodayDateStr();
+    sbFetch("bb_gg_scores?player_id=eq." + playerId + "&seed_date=eq." + today + "&limit=1")
+      .then(function(rows){
+        if (Array.isArray(rows) && rows.length > 0) {
+          setGgTodayResult(rows[0]);
+        } else {
+          setGgTodayResult(null);
+        }
+      })
+      .catch(function(){ setGgTodayResult(null); });
+  }, [playerId, ggGameOver]);
   
   // ─── GG : Soumettre une réponse pour la case sélectionnée ──
   function ggSubmitAnswer(playerName) {
@@ -8348,16 +8478,37 @@ export default function LePont() {
         )}
 
         {/* 🐐 GOAT GRID — Encadré accueil */}
-        <div onClick={ggStartGame} style={{borderRadius:14,background:"linear-gradient(135deg,rgba(0,230,118,.15),rgba(255,214,0,.15))",border:"1.5px solid rgba(0,230,118,.4)",padding:"10px 12px",display:"flex",alignItems:"center",gap:10,cursor:"pointer",transition:"all .15s"}}>
-          <div style={{fontSize:22}}>🐐</div>
-          <div style={{flex:1}}>
-            <div style={{fontSize:10,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase",color:"rgba(0,230,118,.8)",marginBottom:1}}>{lang==="en"?"Daily challenge":"Défi du jour"}</div>
-            <div style={{fontSize:13,fontWeight:800,color:G.white}}>
-              GOAT GRID — {lang==="en"?"Fill the 3×3 grid":"Remplis la grille 3×3"}
+        {ggTodayResult && !ggIsTestMode() ? (
+          // Grille du jour DÉJÀ jouée → afficher le score et bouton "Voir classement"
+          <div style={{borderRadius:14,background:"linear-gradient(135deg,rgba(255,214,0,.18),rgba(0,230,118,.12))",border:"1.5px solid rgba(255,214,0,.5)",padding:"10px 12px",display:"flex",alignItems:"center",gap:10}}>
+            <div style={{fontSize:22}}>🐐</div>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontSize:10,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase",color:"rgba(255,214,0,.9)",marginBottom:1}}>
+                {lang==="en"?`✓ Grid #${ggGetGridNumber()} done`:`✓ Grille #${ggGetGridNumber()} jouée`}
+              </div>
+              <div style={{fontSize:13,fontWeight:800,color:G.white}}>
+                {lang==="en"?`Your score: `:`Ton score : `}
+                <span style={{color:"#FFD600"}}>{ggTodayResult.score} pts</span>
+                <span style={{color:"rgba(255,255,255,.5)",fontWeight:600,fontSize:11}}> / {ggTodayResult.max_score} · {ggTodayResult.cells_filled}/9</span>
+              </div>
             </div>
+            <button onClick={function(e){e.stopPropagation();ggLoadLeaderboard();setGgLeaderboardTab("global");}} style={{padding:"9px 13px",background:"rgba(255,214,0,.25)",color:"#FFD600",border:"1px solid rgba(255,214,0,.5)",borderRadius:12,cursor:"pointer",fontFamily:G.font,fontSize:11,fontWeight:800,whiteSpace:"nowrap"}}>
+              🏆 {lang==="en"?"Ranking":"Classement"}
+            </button>
           </div>
-          <button onClick={function(e){e.stopPropagation();ggStartGame();}} style={{padding:"9px 13px",background:"linear-gradient(135deg,#00E676,#FFD600)",color:"#000",border:"none",borderRadius:12,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800,whiteSpace:"nowrap"}}>{lang==="en"?"Play 🐐":"Jouer 🐐"}</button>
-        </div>
+        ) : (
+          // Grille du jour PAS encore jouée → bouton "Jouer"
+          <div onClick={ggStartGame} style={{borderRadius:14,background:"linear-gradient(135deg,rgba(0,230,118,.15),rgba(255,214,0,.15))",border:"1.5px solid rgba(0,230,118,.4)",padding:"10px 12px",display:"flex",alignItems:"center",gap:10,cursor:"pointer",transition:"all .15s"}}>
+            <div style={{fontSize:22}}>🐐</div>
+            <div style={{flex:1}}>
+              <div style={{fontSize:10,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase",color:"rgba(0,230,118,.8)",marginBottom:1}}>{lang==="en"?`Daily challenge · #${ggGetGridNumber()}`:`Défi du jour · #${ggGetGridNumber()}`}</div>
+              <div style={{fontSize:13,fontWeight:800,color:G.white}}>
+                GOAT GRID — {lang==="en"?"Fill the 3×3 grid":"Remplis la grille 3×3"}
+              </div>
+            </div>
+            <button onClick={function(e){e.stopPropagation();ggStartGame();}} style={{padding:"9px 13px",background:"linear-gradient(135deg,#00E676,#FFD600)",color:"#000",border:"none",borderRadius:12,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800,whiteSpace:"nowrap"}}>{lang==="en"?"Play 🐐":"Jouer 🐐"}</button>
+          </div>
+        )}
 
         {/* Défi du jour — CACHÉ (remplacé par GOAT GRID, plomberie conservée pour push notif + streak) */}
         {false && dailyPlayer && (
@@ -8389,37 +8540,39 @@ export default function LePont() {
                 <div style={{flex:1}}/>
                 <div style={{textAlign:"center"}}>
                   <div style={{display:"inline-block",background:"linear-gradient(135deg,#00E676,#00B85F)",color:"#000",fontSize:9,fontWeight:900,letterSpacing:2,padding:"3px 10px",borderRadius:20,marginBottom:4}}>{lang==="en"?"⚡ DAILY · NEW":"⚡ DÉFI DU JOUR · NOUVEAU"}</div>
-                  <div style={{fontFamily:G.heading,fontSize:26,letterSpacing:2,color:"#FFD600",lineHeight:1}}>GOAT GRID 🐐</div>
+                  <div style={{fontFamily:G.heading,fontSize:26,letterSpacing:2,color:"#FFD600",lineHeight:1}}>GOAT GRID #{ggGetGridNumber()} 🐐</div>
                   <div style={{fontSize:11,color:"rgba(255,255,255,.7)",marginTop:3,letterSpacing:1}}>{new Date().toLocaleDateString(lang==="en"?"en-US":"fr-FR",{weekday:'long',day:'numeric',month:'long'})}</div>
                   {ggOverrideSeed > 0 && (
                     <div style={{fontSize:9,color:"#FFD600",marginTop:2,letterSpacing:1.5,fontWeight:800}}>🔄 GRILLE TEST</div>
                   )}
                 </div>
                 <div style={{flex:1,display:"flex",justifyContent:"flex-end",gap:6}}>
-                  <button onClick={function(){
-                    // Génère un seed aléatoire pour avoir une autre grille
-                    const newSeed = Math.floor(Math.random() * 1000000) + 1;
-                    setGgOverrideSeed(newSeed);
-                    // Reset l'état et regénère
-                    setGgFilledCells({});
-                    setGgUsedPlayers(new Set());
-                    setGgLives(3);
-                    setGgScore(0);
-                    setGgGameOver(false);
-                    setGgGuess("");
-                    setGgFlash(null);
-                    setGgSelectedCell(null);
-                    setGgRevealMode(false);
-                    setGgRevealCell(null);
-                    // Génère la nouvelle grille
-                    const newGrid = ggGenerateGrid(newSeed);
-                    if (newGrid) {
-                      setGgGrid(newGrid);
-                      setGgError(false);
-                    } else {
-                      setGgError(true);
-                    }
-                  }} title={lang==="en"?"Try another grid":"Essayer une autre grille"} style={{background:"rgba(255,214,0,.15)",border:"1px solid rgba(255,214,0,.4)",borderRadius:"50%",width:36,height:36,color:"#FFD600",cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>🔄</button>
+                  {ggIsTestMode() && (
+                    <button onClick={function(){
+                      // Génère un seed aléatoire pour avoir une autre grille (mode test)
+                      const newSeed = Math.floor(Math.random() * 1000000) + 1;
+                      setGgOverrideSeed(newSeed);
+                      // Reset l'état et regénère
+                      setGgFilledCells({});
+                      setGgUsedPlayers(new Set());
+                      setGgLives(3);
+                      setGgScore(0);
+                      setGgGameOver(false);
+                      setGgGuess("");
+                      setGgFlash(null);
+                      setGgSelectedCell(null);
+                      setGgRevealMode(false);
+                      setGgRevealCell(null);
+                      // Génère la nouvelle grille
+                      const newGrid = ggGenerateGrid(newSeed);
+                      if (newGrid) {
+                        setGgGrid(newGrid);
+                        setGgError(false);
+                      } else {
+                        setGgError(true);
+                      }
+                    }} title={lang==="en"?"Try another grid":"Essayer une autre grille"} style={{background:"rgba(255,214,0,.15)",border:"1px solid rgba(255,214,0,.4)",borderRadius:"50%",width:36,height:36,color:"#FFD600",cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>🔄</button>
+                  )}
                   <button onClick={function(){setShowGoatGrid(false);}} style={{background:"rgba(255,255,255,.1)",border:"1px solid rgba(255,255,255,.15)",borderRadius:"50%",width:36,height:36,color:G.white,cursor:"pointer",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
                 </div>
               </div>
@@ -8748,28 +8901,30 @@ export default function LePont() {
                             🏆 {lang==="en"?"LEADERBOARD":"CLASSEMENT"}
                           </button>
                         )}
-                        <button onClick={function(){
-                          // Génère une nouvelle grille aléatoire (mode test)
-                          const newSeed = Math.floor(Math.random() * 1000000) + 1;
-                          setGgOverrideSeed(newSeed);
-                          setGgFilledCells({});
-                          setGgUsedPlayers(new Set());
-                          setGgLives(3);
-                          setGgScore(0);
-                          setGgGameOver(false);
-                          setGgGuess("");
-                          setGgFlash(null);
-                          setGgSelectedCell(null);
-                          setGgRevealMode(false);
-                          setGgRevealCell(null);
-                          setGgReviewMode(false);
-                          setGgScoreSaved(false);
-                          const newGrid = ggGenerateGrid(newSeed);
-                          if (newGrid) { setGgGrid(newGrid); setGgError(false); }
-                          else setGgError(true);
-                        }} style={{padding:12,borderRadius:50,border:"1px solid rgba(255,214,0,.4)",background:"rgba(255,214,0,.15)",color:"#FFD600",fontWeight:800,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
-                          🔄 {lang==="en"?"NEW GRID":"NOUVELLE GRILLE"}
-                        </button>
+                        {ggIsTestMode() && (
+                          <button onClick={function(){
+                            // Génère une nouvelle grille aléatoire (mode test)
+                            const newSeed = Math.floor(Math.random() * 1000000) + 1;
+                            setGgOverrideSeed(newSeed);
+                            setGgFilledCells({});
+                            setGgUsedPlayers(new Set());
+                            setGgLives(3);
+                            setGgScore(0);
+                            setGgGameOver(false);
+                            setGgGuess("");
+                            setGgFlash(null);
+                            setGgSelectedCell(null);
+                            setGgRevealMode(false);
+                            setGgRevealCell(null);
+                            setGgReviewMode(false);
+                            setGgScoreSaved(false);
+                            const newGrid = ggGenerateGrid(newSeed);
+                            if (newGrid) { setGgGrid(newGrid); setGgError(false); }
+                            else setGgError(true);
+                          }} style={{padding:12,borderRadius:50,border:"1px solid rgba(255,214,0,.4)",background:"rgba(255,214,0,.15)",color:"#FFD600",fontWeight:800,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
+                            🔄 {lang==="en"?"NEW GRID":"NOUVELLE GRILLE"}
+                          </button>
+                        )}
                         <button onClick={function(){setShowGoatGrid(false);}} style={{padding:12,borderRadius:50,border:"none",background:"rgba(255,255,255,.05)",color:"rgba(255,255,255,.7)",fontWeight:700,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
                           {lang==="en"?"Close":"Fermer"}
                         </button>
@@ -9549,12 +9704,15 @@ export default function LePont() {
             const q=norm(guess);
             // Suggérer parmi TOUS les clubs connus (aide à l'orthographe, pas d'indice sur le bon club)
             const matched=ALL_CLUBS_LIST.filter(c=>norm(c).includes(q));
-            // Tri intelligent : startsWith d'abord, puis clubs populaires (PONT_CLUBS), puis alphabétique
+            // Tri intelligent :
+            // 1. startsWith d'abord (le club commence par la requête)
+            // 2. puis par rang de popularité (Real Madrid avant Real Betis)
+            // 3. puis alphabétique
             const sugg=matched.sort((a,b)=>{
               const aStarts=norm(a).startsWith(q), bStarts=norm(b).startsWith(q);
               if(aStarts!==bStarts) return aStarts?-1:1;
-              const aPop=PONT_CLUBS.has(a), bPop=PONT_CLUBS.has(b);
-              if(aPop!==bPop) return aPop?-1:1;
+              const rankA=getClubRank(a), rankB=getClubRank(b);
+              if(rankA!==rankB) return rankA-rankB;
               return a.localeCompare(b);
             }).slice(0,5);
             if(!sugg.length) return null;
