@@ -1638,50 +1638,117 @@ const GG_WC_WINNERS = new Set([
 ]);
 
 // 🏆 Champions League winners (depuis 2000)
-// Inclut titulaires des finales gagnées
+// Liste exhaustive des 26 finales LDC depuis 2000
+// Noms exacts de la base players.jsx
 const GG_CL_WINNERS = new Set([
-  // Real Madrid 2014, 2016, 2017, 2018, 2022, 2024
-  "Cristiano Ronaldo","Sergio Ramos","Karim Benzema","Luka Modrić","Toni Kroos",
-  "Raphaël Varane","Pepe","Marcelo","Dani Carvajal","Casemiro","Isco","Marco Asensio",
-  "Gareth Bale","Iker Casillas","Xabi Alonso","Vinicius Jr","Federico Valverde",
-  "Eduardo Camavinga","Aurélien Tchouaméni","Antonio Rudiger","Ferland Mendy",
-  "Thibaut Courtois","Eden Hazard","Rodrygo","Nacho","Lucas Vázquez","Dani Ceballos",
-  "Jude Bellingham","David Alaba","Brahim Diaz","Joselu","Andriy Lunin","Fran García",
-  "Ángel Di María","Sami Khedira","Mesut Özil",
-  // Bayern Munich 2013, 2020
-  "Manuel Neuer","Robert Lewandowski","Thomas Müller","Joshua Kimmich","Leon Goretzka",
-  "Serge Gnabry","David Alaba","Jérôme Boateng","Niklas Süle","Kingsley Coman",
-  "Alphonso Davies","Thiago Alcantara","Philipp Lahm","Bastian Schweinsteiger","Mario Mandžukić",
-  "Arjen Robben","Franck Ribéry","Mario Götze","Javi Martinez","Dante",
-  // Barcelona 2006, 2009, 2011, 2015
-  "Lionel Messi","Andres Iniesta","Xavi","Carles Puyol","Sergio Busquets","Gerard Pique",
-  "Dani Alves","Pedro","David Villa","Eric Abidal","Samuel Eto'o","Thierry Henry",
-  "Yaya Toure","Seydou Keita","Luis Suarez","Neymar","Ivan Rakitić","Jordi Alba",
-  "Javier Mascherano","Marc-André ter Stegen","Sergio Ramos",
-  "Ronaldinho","Deco","Giovanni van Bronckhorst","Rafa Marquez","Henrik Larsson",
-  // Chelsea 2012, 2021
-  "Petr Čech","John Terry","Frank Lampard","Didier Drogba","Ramires","Juan Mata",
-  "Eden Hazard","Edouard Mendy","Thiago Silva","Antonio Rudiger","Mason Mount",
-  "N'Golo Kanté","Jorginho","Reece James","Ben Chilwell","César Azpilicueta","Marcos Alonso",
-  "Andreas Christensen","Kai Havertz","Timo Werner","Christian Pulisic","Branislav Ivanovic",
-  "Ashley Cole","Salomon Kalou","Florent Malouda","Fernando Torres","Mikel John Obi",
-  // Liverpool 2005, 2019
-  "Steven Gerrard","Xabi Alonso","Jamie Carragher","Pepe Reina","Fernando Torres",
-  "Mohamed Salah","Sadio Mané","Roberto Firmino","Virgil van Dijk","Alisson","Andrew Robertson",
-  "Trent Alexander-Arnold","Jordan Henderson","Fabinho","Georginio Wijnaldum","Joël Matip",
-  "Joe Gomez","Naby Keïta","James Milner","Divock Origi",
-  // Inter Milan 2010
-  "Diego Milito","Wesley Sneijder","Samuel Eto'o","Júlio César","Lúcio","Maicon",
-  "Walter Samuel","Javier Zanetti","Esteban Cambiasso","Goran Pandev","Thiago Motta",
-  "Cristian Chivu","Marco Materazzi",
-  // Man City 2023
-  "Erling Haaland","Kevin De Bruyne","Rodri","Phil Foden","Bernardo Silva","Jack Grealish",
-  "Ruben Dias","John Stones","Kyle Walker","Manuel Akanji","Ederson","İlkay Gündoğan",
-  "Nathan Aké","Riyad Mahrez","Julián Álvarez",
-  // PSG 2025
-  "Marquinhos","Vitinha","Ousmane Dembélé","Achraf Hakimi","Bradley Barcola",
-  "Désiré Doué","Khvicha Kvaratskhelia","João Neves","Lee Kang-in","Fabian Ruiz",
-  "Willian Pacho","Nuno Mendes","Gianluigi Donnarumma","Lucas Hernández",
+  // 🇪🇸 Real Madrid 2000
+  "Iker Casillas","Bodo Illgner","Iván Campo","Fernando Hierro","Manuel Sanchís",
+  "Roberto Carlos","Míchel Salgado","Aitor Karanka","Claude Makelele","Fernando Redondo",
+  "Steve McManaman","Raul","Nicolas Anelka","Fernando Morientes","Guti","Sávio","Geremi",
+  "Flávio Conceição","Christian Karembeu","Albano Bizzarri",
+  // 🇩🇪 Bayern Munich 2001
+  "Oliver Kahn","Bernd Dreher","Hans-Jörg Butt","Bixente Lizarazu","Willy Sagnol",
+  "Samuel Kuffour","Patrik Andersson","Thomas Linke","Robert Kovac","Stefan Effenberg",
+  "Jens Jeremies","Mehmet Scholl","Owen Hargreaves","Hasan Salihamidžić","Paulo Sérgio",
+  "Giovane Élber","Carsten Jancker","Claudio Pizarro","Roque Santa Cruz",
+  // 🇪🇸 Real Madrid 2002
+  "César Sánchez","Santiago Cañizares","Iván Helguera","Raúl Bravo","Zinédine Zidane",
+  "Luis Figo","Santiago Solari","Ronaldo Nazário","Pedro Munitis",
+  // 🇮🇹 AC Milan 2003
+  "Dida","Christian Abbiati","Faryd Mondragón","Paolo Maldini","Alessandro Nesta",
+  "Jaap Stam","Alessandro Costacurta","Cafu","Kakha Kaladze","Andrea Pirlo",
+  "Gennaro Gattuso","Clarence Seedorf","Massimo Ambrosini","Rui Costa","Serginho",
+  "Andriy Shevchenko","Filippo Inzaghi","Jon Dahl Tomasson","Marco Borriello",
+  // 🇵🇹 FC Porto 2004
+  "Vítor Baía","Nuno Espírito Santo","Paulo Ferreira","Ricardo Carvalho","Jorge Costa",
+  "Nuno Valente","Pedro Emanuel","Costinha","Maniche","Deco","Dmitri Alenichev",
+  "Carlos Alberto","Derlei","Benny McCarthy","Hélder Postiga","Edgaras Jankauskas",
+  "Marco Ferreira","Ricardo Costa",
+  // 🏴 Liverpool 2005
+  "Jerzy Dudek","Scott Carson","Chris Kirkland","Jamie Carragher","Sami Hyypiä",
+  "Steve Finnan","Djimi Traoré","John Arne Riise","Stéphane Henchoz","Xabi Alonso",
+  "Steven Gerrard","Dietmar Hamann","Vladimir Smicer","Luis García","Harry Kewell",
+  "Milan Baroš","Djibril Cissé","Florent Sinama Pongolle","Anthony Le Tallec",
+  // 🇪🇸 Barcelona 2006
+  "Víctor Valdés","Albert Jorquera","Oleguer","Carles Puyol","Rafael Márquez",
+  "Giovanni van Bronckhorst","Juliano Belletti","Sylvinho","Andres Iniesta","Xavi",
+  "Edmílson","Mark van Bommel","Thiago Motta","Ronaldinho","Samuel Eto'o","Henrik Larsson",
+  "Ludovic Giuly","Maxi López",
+  // 🇮🇹 AC Milan 2007
+  "Zeljko Kalac","Marco Storari","Massimo Oddo","Marek Jankulovski","Daniele Bonera",
+  "Kaká","Alberto Gilardino",
+  // 🏴 Manchester United 2008
+  "Edwin van der Sar","Tomasz Kuszczak","Ben Foster","Rio Ferdinand","Nemanja Vidić",
+  "Patrice Evra","Wes Brown","Gary Neville","Mikael Silvestre","John O'Shea",
+  "Cristiano Ronaldo","Wayne Rooney","Carlos Tevez","Ryan Giggs","Paul Scholes",
+  "Michael Carrick","Anderson","Darren Fletcher","Nani",
+  // 🇪🇸 Barcelona 2009
+  "José Manuel Pinto","Gerard Pique","Dani Alves","Éric Abidal","Seydou Keita",
+  "Sergio Busquets","Yaya Touré","Aliaksandr Hleb","Lionel Messi","Thierry Henry",
+  "Pedro Rodríguez","Bojan Krkić",
+  // 🇮🇹 Inter Milan 2010
+  "Júlio César","Francesco Toldo","Luca Castellazzi","Javier Zanetti","Lúcio",
+  "Walter Samuel","Maicon","Cristian Chivu","Marco Materazzi","Esteban Cambiasso",
+  "Wesley Sneijder","Dejan Stanković","Sulley Muntari","Goran Pandev","Diego Milito",
+  "Mario Balotelli","David Suazo","Ricardo Quaresma",
+  // 🇪🇸 Barcelona 2011
+  "Jordi Alba","Adriano Correia","Javier Mascherano","David Villa","Jeffrén Suárez",
+  "Ibrahim Afellay","Sergi Roberto",
+  // 🏴 Chelsea 2012
+  "Petr Čech","Hilário","Ross Turnbull","John Terry","David Luiz","Gary Cahill",
+  "Ashley Cole","José Bosingwa","Branislav Ivanović","Frank Lampard","Michael Essien",
+  "John Obi Mikel","Raúl Meireles","Ramires","Juan Mata","Didier Drogba","Fernando Torres",
+  "Daniel Sturridge","Salomon Kalou",
+  // 🇩🇪 Bayern Munich 2013
+  "Manuel Neuer","Tom Starke","Philipp Lahm","Jerome Boateng","Dante","Holger Badstuber",
+  "David Alaba","Rafinha Bayern","Bastian Schweinsteiger","Javi Martínez","Toni Kroos",
+  "Franck Ribéry","Arjen Robben","Thomas Muller","Mario Mandžukić","Xherdan Shaqiri",
+  "Luiz Gustavo","Daniel van Buyten",
+  // 🇪🇸 Real Madrid 2014
+  "Diego López","Jesús Fernández","Sergio Ramos","Pepe","Raphael Varane","Marcelo",
+  "Dani Carvajal","Fábio Coentrão","Luka Modrić","Angel Di Maria","Isco",
+  "Asier Illarramendi","Karim Benzema","Gareth Bale","Álvaro Morata","Jesé Rodríguez",
+  "Casemiro",
+  // 🇪🇸 Barcelona 2015
+  "Marc-Andre ter Stegen","Claudio Bravo","Jordi Masip","Jérémy Mathieu","Ivan Rakitić",
+  "Rafinha","Luis Suárez","Neymar","Munir El Haddadi","Sandro Ramírez",
+  // 🇪🇸 Real Madrid 2016
+  "Keylor Navas","Kiko Casilla","Rubén Yáñez","Nacho Fernández","James Rodríguez",
+  "Lucas Vázquez","Mateo Kovačić",
+  // 🇪🇸 Real Madrid 2017
+  "Marco Asensio",
+  // 🇪🇸 Real Madrid 2018
+  "Luca Zidane","Jesús Vallejo","Borja Mayoral",
+  // 🏴 Liverpool 2019
+  "Alisson Becker","Simon Mignolet","Caoimhin Kelleher","Virgil van Dijk","Joel Matip",
+  "Joe Gomez","Andrew Robertson","Trent Alexander-Arnold","Dejan Lovren","Jordan Henderson",
+  "Fabinho","Georginio Wijnaldum","James Milner","Naby Keïta","Adam Lallana",
+  "Mohamed Salah","Sadio Mané","Roberto Firmino","Divock Origi","Xherdan Shaqiri",
+  // 🇩🇪 Bayern Munich 2020
+  "Sven Ulreich","Christian Früchtl","Joshua Kimmich","Alphonso Davies","Lucas Hernandez",
+  "Niklas Süle","Thiago Alcântara","Leon Goretzka","Serge Gnabry","Kingsley Coman",
+  "Robert Lewandowski","Ivan Perišić","Philippe Coutinho","Corentin Tolisso","Mickaël Cuisance",
+  // 🏴 Chelsea 2021
+  "Édouard Mendy","Kepa Arrizabalaga","Willy Caballero","César Azpilicueta","Thiago Silva",
+  "Antonio Rüdiger","Andreas Christensen","Ben Chilwell","Reece James","N'Golo Kanté",
+  "Jorginho","Mason Mount","Kai Havertz","Timo Werner","Christian Pulisic","Hakim Ziyech",
+  "Callum Hudson-Odoi","Olivier Giroud","Tammy Abraham",
+  // 🇪🇸 Real Madrid 2022
+  "Thibaut Courtois","Andriy Lunin","Toni Fuidias","Éder Militão","Ferland Mendy",
+  "Federico Valverde","Eduardo Camavinga","Vinícius Júnior","Rodrygo","Eden Hazard",
+  "Mariano Díaz",
+  // 🏴 Manchester City 2023
+  "Ederson","Stefan Ortega","Ruben Dias","Manuel Akanji","Nathan Aké","Kyle Walker",
+  "João Cancelo","Rodri","Kevin De Bruyne","Bernardo Silva","İlkay Gündoğan",
+  "Kalvin Phillips","Jack Grealish","Erling Haaland","Phil Foden","Riyad Mahrez",
+  "Julián Álvarez","Cole Palmer",
+  // 🇪🇸 Real Madrid 2024
+  "Fran García","Aurélien Tchouaméni","Jude Bellingham","Joselu","Brahim Díaz","Arda Güler",
+  // 🇫🇷 PSG 2025
+  "Gianluigi Donnarumma","Matvey Safonov","Arnau Tenas","Achraf Hakimi","Marquinhos",
+  "Willian Pacho","Nuno Mendes","Presnel Kimpembe","Lucas Beraldo","Vitinha","João Neves",
+  "Fabian Ruiz","Warren Zaïre-Emery","Lee Kang-in","Senny Mayulu","Ousmane Dembele",
+  "Khvicha Kvaratskhelia","Désiré Doué","Gonçalo Ramos","Bradley Barcola",
 ]);
 
 // ─── Scoring : pts selon DIFFICULTÉ DU JOUEUR CITÉ + bonus rareté combo ──
@@ -1882,7 +1949,7 @@ function ggGenerateGrid(seed) {
     });
     // Critères-trophées
     colCandidates.push({ type: "trophy", value: "world_cup", label: "Vainqueur CDM" });
-    // colCandidates.push({ type: "trophy", value: "champions_league", label: "Vainqueur LDC" }); // désactivé : liste incomplète, à réactiver plus tard
+    colCandidates.push({ type: "trophy", value: "champions_league", label: "Vainqueur LDC" });
     const colCriteria = shuffleArrWithSeed(colCandidates, attemptSeed + 7).slice(0, 3);
     
     // 3. Calculer les candidats pour chaque case
@@ -8506,7 +8573,6 @@ export default function LePont() {
                   )}
                 </div>
                 <div style={{flex:1,display:"flex",justifyContent:"flex-end",gap:6}}>
-                  {ggIsTestMode() && (
                   <button onClick={function(){
                     // Génère un seed aléatoire pour avoir une autre grille (mode test)
                     const newSeed = Math.floor(Math.random() * 1000000) + 1;
@@ -8529,7 +8595,6 @@ export default function LePont() {
                       setGgError(true);
                     }
                   }} title={lang==="en"?"Try another grid":"Essayer une autre grille"} style={{background:"rgba(255,214,0,.15)",border:"1px solid rgba(255,214,0,.4)",borderRadius:"50%",width:36,height:36,color:"#FFD600",cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>🔄</button>
-                  )}
                   <button onClick={function(){setShowGoatGrid(false);}} style={{background:"rgba(255,255,255,.1)",border:"1px solid rgba(255,255,255,.15)",borderRadius:"50%",width:36,height:36,color:G.white,cursor:"pointer",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
                 </div>
               </div>
