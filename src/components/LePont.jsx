@@ -8856,7 +8856,7 @@ export default function LePont() {
                 const shareText = "🐐 GOAT GRID — " + todayDate + "\n\n" + gridEmojis.join("\n") + "\n\n" + ggScore + " pts · " + filledCount + "/9" + (isPerfect ? " · PARFAIT 🐐" : "") + "\n\n" + "Joue sur goatfc.online";
                 
                 return (
-                  <div style={{position:"fixed",inset:0,zIndex:500,background:"rgba(0,0,0,.92)",backdropFilter:"blur(10px)",display:"flex",alignItems:"center",justifyContent:"center",padding:20,overflowY:"auto"}}>
+                  <div style={{position:"fixed",inset:0,zIndex:500,background:"rgba(0,0,0,.92)",backdropFilter:"blur(10px)",display:"flex",alignItems:"flex-start",justifyContent:"center",padding:"80px 20px 40px",overflowY:"auto"}}>
                     <div style={{background:"linear-gradient(135deg, #1a2419, #0f1812)",border:"1px solid "+(isVictory?"rgba(0,230,118,.5)":"rgba(255,107,53,.5)"),borderRadius:24,padding:24,maxWidth:380,width:"100%",textAlign:"center"}}>
                       
                       {/* Titre selon résultat */}
@@ -8923,29 +8923,27 @@ export default function LePont() {
                             🏆 {lang==="en"?"LEADERBOARD":"CLASSEMENT"}
                           </button>
                         )}
-                        {ggIsTestMode() && (
-                          <button onClick={function(){
-                            const newSeed = Math.floor(Math.random() * 1000000) + 1;
-                            setGgOverrideSeed(newSeed);
-                            setGgFilledCells({});
-                            setGgUsedPlayers(new Set());
-                            setGgLives(3);
-                            setGgScore(0);
-                            setGgGameOver(false);
-                            setGgGuess("");
-                            setGgFlash(null);
-                            setGgSelectedCell(null);
-                            setGgRevealMode(false);
-                            setGgRevealCell(null);
-                            setGgReviewMode(false);
-                            setGgScoreSaved(false);
-                            const newGrid = ggGenerateGrid(newSeed);
-                            if (newGrid) { setGgGrid(newGrid); setGgError(false); }
-                            else setGgError(true);
-                          }} style={{padding:12,borderRadius:50,border:"1px solid rgba(255,214,0,.4)",background:"rgba(255,214,0,.15)",color:"#FFD600",fontWeight:800,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
-                            🔄 {lang==="en"?"NEW GRID":"NOUVELLE GRILLE"}
-                          </button>
-                        )}
+                        <button onClick={function(){
+                          const newSeed = Math.floor(Math.random() * 1000000) + 1;
+                          setGgOverrideSeed(newSeed);
+                          setGgFilledCells({});
+                          setGgUsedPlayers(new Set());
+                          setGgLives(3);
+                          setGgScore(0);
+                          setGgGameOver(false);
+                          setGgGuess("");
+                          setGgFlash(null);
+                          setGgSelectedCell(null);
+                          setGgRevealMode(false);
+                          setGgRevealCell(null);
+                          setGgReviewMode(false);
+                          setGgScoreSaved(false);
+                          const newGrid = ggGenerateGrid(newSeed);
+                          if (newGrid) { setGgGrid(newGrid); setGgError(false); }
+                          else setGgError(true);
+                        }} style={{padding:12,borderRadius:50,border:"1px solid rgba(255,214,0,.4)",background:"rgba(255,214,0,.15)",color:"#FFD600",fontWeight:800,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
+                          🔄 {lang==="en"?"NEW GRID":"NOUVELLE GRILLE"}
+                        </button>
                         <button onClick={function(){setShowGoatGrid(false);}} style={{padding:12,borderRadius:50,border:"none",background:"rgba(255,255,255,.05)",color:"rgba(255,255,255,.7)",fontWeight:700,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
                           {lang==="en"?"Close":"Fermer"}
                         </button>
@@ -8985,7 +8983,7 @@ export default function LePont() {
               
               {/* 🏆 Modal Leaderboard */}
               {ggLeaderboardData && (ggLeaderboardData.global.length > 0 || ggLeaderboardData.friends.length > 0 || ggLeaderboardLoading) && !ggReviewMode && !ggRevealMode && (
-                <div onClick={function(){setGgLeaderboardData({global:[],friends:[]});}} style={{position:"fixed",inset:0,zIndex:600,background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+                <div onClick={function(){setGgLeaderboardData({global:[],friends:[]});}} style={{position:"fixed",inset:0,zIndex:600,background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)",display:"flex",alignItems:"flex-start",justifyContent:"center",padding:"80px 20px 40px",overflowY:"auto"}}>
                   <div onClick={function(e){e.stopPropagation();}} style={{background:"linear-gradient(135deg, #1a2419, #0f1812)",border:"1px solid rgba(255,214,0,.4)",borderRadius:20,padding:20,maxWidth:420,width:"100%",maxHeight:"85vh",display:"flex",flexDirection:"column"}}>
                     <div style={{textAlign:"center",marginBottom:14}}>
                       <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,214,0,.7)",fontWeight:700,marginBottom:4}}>🏆 {lang==="en"?"LEADERBOARD":"CLASSEMENT"}</div>
@@ -9039,7 +9037,7 @@ export default function LePont() {
               
               {/* 📜 Modal liste des réponses possibles d'une case */}
               {ggRevealCell && (
-                <div onClick={function(){setGgRevealCell(null);}} style={{position:"fixed",inset:0,zIndex:500,background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+                <div onClick={function(){setGgRevealCell(null);}} style={{position:"fixed",inset:0,zIndex:500,background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)",display:"flex",alignItems:"flex-start",justifyContent:"center",padding:"80px 20px 40px",overflowY:"auto"}}>
                   <div onClick={function(e){e.stopPropagation();}} style={{background:"linear-gradient(135deg, #1a2419, #0f1812)",border:"1px solid rgba(74,158,255,.4)",borderRadius:20,padding:20,maxWidth:380,width:"100%"}}>
                     <div style={{textAlign:"center",marginBottom:14}}>
                       <div style={{fontSize:11,letterSpacing:2,color:"rgba(74,158,255,.7)",fontWeight:700,marginBottom:4}}>{lang==="en"?"POSSIBLE ANSWERS":"RÉPONSES POSSIBLES"}</div>
