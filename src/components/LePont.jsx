@@ -9058,7 +9058,7 @@ export default function LePont() {
               {[0,1,2,3,4,5,6].map(function(i){return(<div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#1E5C2A":"#276B34"}}/>);})}
             </div>
             
-            <div style={{position:"relative",zIndex:1,display:"flex",flexDirection:"column",height:"100%",padding:"12px 14px",overflow:"hidden"}}>
+            <div style={{position:"relative",zIndex:1,display:"flex",flexDirection:"column",minHeight:"100%",padding:"12px 14px",overflowY:"auto"}}>
               
               {/* Header avec bouton fermer */}
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8,flexShrink:0}}>
@@ -9066,10 +9066,11 @@ export default function LePont() {
                 <div style={{textAlign:"center"}}>
                   {ggBattleScreen === "playing" ? (
                     <>
-                      <div style={{display:"inline-block",background:"linear-gradient(135deg,#FF6B35,#FF4444)",color:"#fff",fontSize:9,fontWeight:900,letterSpacing:2,padding:"3px 10px",borderRadius:20,marginBottom:4}}>⚔️ {lang==="en"?"BATTLE MODE":"MODE BATTLE"}</div>
-                      <div style={{fontFamily:G.heading,fontSize:26,letterSpacing:2,color:"#FF6B35",lineHeight:1}}>GOAT BATTLE ⚔️</div>
-                      <div style={{fontSize:18,color:ggBattleTimer<=30?"#FF4444":"#FFD600",marginTop:3,letterSpacing:1,fontWeight:900,fontFamily:"monospace"}}>
-                        {Math.floor(ggBattleTimer/60)}:{String(ggBattleTimer%60).padStart(2,"0")}
+                      <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:10,marginBottom:0}}>
+                        <div style={{fontFamily:G.heading,fontSize:22,letterSpacing:1.5,color:"#FF6B35",lineHeight:1}}>GOAT BATTLE ⚔️</div>
+                        <div style={{fontSize:18,color:ggBattleTimer<=30?"#FF4444":"#FFD600",letterSpacing:1,fontWeight:900,fontFamily:"monospace",padding:"3px 10px",background:"rgba(0,0,0,.3)",borderRadius:8,border:"1px solid "+(ggBattleTimer<=30?"rgba(255,68,68,.5)":"rgba(255,214,0,.4)")}}>
+                          {Math.floor(ggBattleTimer/60)}:{String(ggBattleTimer%60).padStart(2,"0")}
+                        </div>
                       </div>
                     </>
                   ) : (
@@ -9084,29 +9085,33 @@ export default function LePont() {
                   )}
                 </div>
                 <div style={{flex:1,display:"flex",justifyContent:"flex-end",gap:6}}>
-                  <button onClick={function(){
-                    // Génère un seed aléatoire pour avoir une autre grille (mode test)
-                    const newSeed = Math.floor(Math.random() * 1000000) + 1;
-                    setGgOverrideSeed(newSeed);
-                    setGgFilledCells({});
-                    setGgUsedPlayers(new Set());
-                    setGgLives(3);
-                    setGgScore(0);
-                    setGgGameOver(false);
-                    setGgGuess("");
-                    setGgFlash(null);
-                    setGgSelectedCell(null);
-                    setGgRevealMode(false);
-                    setGgRevealCell(null);
-                    const newGrid = ggGenerateGrid(newSeed);
-                    if (newGrid) {
-                      setGgGrid(newGrid);
-                      setGgError(false);
-                    } else {
-                      setGgError(true);
-                    }
-                  }} title={lang==="en"?"Try another grid":"Essayer une autre grille"} style={{background:"rgba(255,214,0,.15)",border:"1px solid rgba(255,214,0,.4)",borderRadius:"50%",width:36,height:36,color:"#FFD600",cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>🔄</button>
-                  <button onClick={function(){setShowGoatGrid(false);}} style={{background:"rgba(255,255,255,.1)",border:"1px solid rgba(255,255,255,.15)",borderRadius:"50%",width:36,height:36,color:G.white,cursor:"pointer",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+                  {ggBattleScreen !== "playing" && (
+                    <>
+                      <button onClick={function(){
+                        // Génère un seed aléatoire pour avoir une autre grille (mode test)
+                        const newSeed = Math.floor(Math.random() * 1000000) + 1;
+                        setGgOverrideSeed(newSeed);
+                        setGgFilledCells({});
+                        setGgUsedPlayers(new Set());
+                        setGgLives(3);
+                        setGgScore(0);
+                        setGgGameOver(false);
+                        setGgGuess("");
+                        setGgFlash(null);
+                        setGgSelectedCell(null);
+                        setGgRevealMode(false);
+                        setGgRevealCell(null);
+                        const newGrid = ggGenerateGrid(newSeed);
+                        if (newGrid) {
+                          setGgGrid(newGrid);
+                          setGgError(false);
+                        } else {
+                          setGgError(true);
+                        }
+                      }} title={lang==="en"?"Try another grid":"Essayer une autre grille"} style={{background:"rgba(255,214,0,.15)",border:"1px solid rgba(255,214,0,.4)",borderRadius:"50%",width:36,height:36,color:"#FFD600",cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>🔄</button>
+                      <button onClick={function(){setShowGoatGrid(false);}} style={{background:"rgba(255,255,255,.1)",border:"1px solid rgba(255,255,255,.15)",borderRadius:"50%",width:36,height:36,color:G.white,cursor:"pointer",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+                    </>
+                  )}
                 </div>
               </div>
 
