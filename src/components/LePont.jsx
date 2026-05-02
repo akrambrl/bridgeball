@@ -2732,6 +2732,13 @@ export default function LePont() {
   const [ggTodayResult, setGgTodayResult] = useState(null); // { score, max_score, cells_filled } si déjà jouée
   const [ggRevealMode, setGgRevealMode] = useState(false); // true = on peut cliquer les cases pour voir les réponses possibles
   const [ggRevealCell, setGgRevealCell] = useState(null); // cellule dont on regarde les réponses
+  // ─── GOAT BATTLE (multijoueur) ───────────────────────────────
+  const [ggBattleScreen, setGgBattleScreen] = useState(null); // null | "menu" | "lobby" | "playing" | "finished"
+  const [ggBattleRoom, setGgBattleRoom] = useState(null); // { id, code, host_id, state, seed, players, started_at, winner_id, winner_name }
+  const [ggBattleCode, setGgBattleCode] = useState(""); // code saisi pour rejoindre
+  const [ggBattleError, setGgBattleError] = useState("");
+  const [ggBattleTimer, setGgBattleTimer] = useState(180); // 3 min en secondes
+  const [ggBattleLoading, setGgBattleLoading] = useState(false);
   
   // Restaurer la grille du jour depuis localStorage
   function ggLoadFromStorage() {
@@ -2831,6 +2838,309 @@ export default function LePont() {
       setGgLeaderboardLoading(false);
     }
   }
+  
+  // ─── GOAT BATTLE (multijoueur) ────────────────────────────────
+  
+  // Génère un code de room unique (6 chars)
+  function ggBattleGenCode() {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // sans 0/O/I/1
+    let code = "";
+    for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+    return code;
+  }
+  
+  // Crée une nouvelle room
+  async function ggBattleCreateRoom() {
+    if (!playerId || !playerName) {
+      setGgBattleError(lang==="en"?"Please log in first":"Connecte-toi d'abord");
+      return;
+    }
+    setGgBattleLoading(true);
+    setGgBattleError("");
+    try {
+      // Tenter jusqu'à 5 fois pour éviter collision de code
+      for (let attempt = 0; attempt < 5; attempt++) {
+        const code = ggBattleGenCode();
+        const seed = Math.floor(Math.random() * 1000000) + 1;
+        const players = [{
+          id: playerId,
+          name: playerName,
+          joined_at: new Date().toISOString(),
+          cells_filled: 0,
+          score: 0,
+          lives_left: 3,
+          finished_at: null,
+          finished_score: null,
+        }];
+        try {
+          const created = await sbFetch("bb_gg_rooms", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Prefer": "return=representation" },
+            body: JSON.stringify({
+              code, host_id: playerId, state: "lobby", seed, players,
+            }),
+          });
+          if (Array.isArray(created) && created[0]) {
+            setGgBattleRoom(created[0]);
+            setGgBattleScreen("lobby");
+            return;
+          }
+        } catch (e) {
+          // Code déjà pris, on retry
+          continue;
+        }
+      }
+      setGgBattleError(lang==="en"?"Could not create room, try again":"Impossible de créer la room, réessaye");
+    } catch (e) {
+      setGgBattleError(lang==="en"?"Error creating room":"Erreur de création");
+    } finally {
+      setGgBattleLoading(false);
+    }
+  }
+  
+  // Rejoindre une room avec un code
+  async function ggBattleJoinRoom(rawCode) {
+    if (!playerId || !playerName) {
+      setGgBattleError(lang==="en"?"Please log in first":"Connecte-toi d'abord");
+      return;
+    }
+    const code = (rawCode || "").trim().toUpperCase();
+    if (code.length !== 6) {
+      setGgBattleError(lang==="en"?"Code must be 6 characters":"Le code doit faire 6 caractères");
+      return;
+    }
+    setGgBattleLoading(true);
+    setGgBattleError("");
+    try {
+      const data = await sbFetch("bb_gg_rooms?code=eq."+code+"&limit=1");
+      if (!Array.isArray(data) || data.length === 0) {
+        setGgBattleError(lang==="en"?"Room not found":"Room introuvable");
+        return;
+      }
+      const room = data[0];
+      if (room.state !== "lobby") {
+        setGgBattleError(lang==="en"?"Game already started":"Partie déjà en cours");
+        return;
+      }
+      const players = Array.isArray(room.players) ? room.players : [];
+      // Si déjà dans la room, on rejoint juste
+      if (players.find(p => p.id === playerId)) {
+        setGgBattleRoom(room);
+        setGgBattleScreen("lobby");
+        return;
+      }
+      if (players.length >= 8) {
+        setGgBattleError(lang==="en"?"Room is full (8 max)":"Room pleine (8 max)");
+        return;
+      }
+      players.push({
+        id: playerId,
+        name: playerName,
+        joined_at: new Date().toISOString(),
+        cells_filled: 0,
+        score: 0,
+        lives_left: 3,
+        finished_at: null,
+        finished_score: null,
+      });
+      await sbFetch("bb_gg_rooms?id=eq."+room.id, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", "Prefer": "return=minimal" },
+        body: JSON.stringify({ players }),
+      });
+      setGgBattleRoom({ ...room, players });
+      setGgBattleScreen("lobby");
+    } catch (e) {
+      setGgBattleError(lang==="en"?"Error joining room":"Erreur de connexion");
+    } finally {
+      setGgBattleLoading(false);
+    }
+  }
+  
+  // Quitter une room (depuis le lobby)
+  async function ggBattleLeaveRoom() {
+    if (!ggBattleRoom) {
+      setGgBattleScreen(null);
+      return;
+    }
+    try {
+      const players = (ggBattleRoom.players || []).filter(p => p.id !== playerId);
+      if (players.length === 0) {
+        // Plus personne, on supprime la room
+        await sbFetch("bb_gg_rooms?id=eq."+ggBattleRoom.id, { method: "DELETE", headers: { "Prefer": "return=minimal" } });
+      } else {
+        // Si l'host part, on transfère à un autre joueur
+        const newHostId = ggBattleRoom.host_id === playerId ? players[0].id : ggBattleRoom.host_id;
+        await sbFetch("bb_gg_rooms?id=eq."+ggBattleRoom.id, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json", "Prefer": "return=minimal" },
+          body: JSON.stringify({ players, host_id: newHostId }),
+        });
+      }
+    } catch (e) { /* ignore */ }
+    setGgBattleRoom(null);
+    setGgBattleScreen(null);
+    setGgBattleCode("");
+  }
+  
+  // Démarrer la partie (host uniquement)
+  async function ggBattleStartGame() {
+    if (!ggBattleRoom || ggBattleRoom.host_id !== playerId) return;
+    setGgBattleLoading(true);
+    try {
+      const startTime = new Date().toISOString();
+      await sbFetch("bb_gg_rooms?id=eq."+ggBattleRoom.id, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", "Prefer": "return=minimal" },
+        body: JSON.stringify({ state: "playing", started_at: startTime }),
+      });
+    } catch (e) {
+      setGgBattleError(lang==="en"?"Error starting game":"Erreur au démarrage");
+    } finally {
+      setGgBattleLoading(false);
+    }
+  }
+  
+  // Soumettre son score final à la room
+  async function ggBattleSubmitFinal(finalScore, cellsFilled, livesLeft) {
+    if (!ggBattleRoom) return;
+    try {
+      // Récupérer la version la plus récente pour ne pas écraser les autres joueurs
+      const data = await sbFetch("bb_gg_rooms?id=eq."+ggBattleRoom.id+"&limit=1");
+      if (!Array.isArray(data) || data.length === 0) return;
+      const fresh = data[0];
+      const players = (fresh.players || []).map(p => {
+        if (p.id !== playerId) return p;
+        return {
+          ...p,
+          cells_filled: cellsFilled,
+          score: finalScore,
+          lives_left: livesLeft,
+          finished_at: new Date().toISOString(),
+          finished_score: finalScore,
+        };
+      });
+      
+      // Vérifier si tout le monde a fini ou si quelqu'un a fait 9/9
+      const allFinished = players.every(p => p.finished_at);
+      const someoneCompleted = players.some(p => p.cells_filled === 9);
+      const updates = { players };
+      
+      if (allFinished || someoneCompleted) {
+        // Calculer le gagnant : 9/9 d'abord (le plus rapide), sinon meilleur score
+        const completed = players.filter(p => p.cells_filled === 9);
+        let winner;
+        if (completed.length > 0) {
+          // Premier au 9/9 = celui avec le finished_at le plus tôt
+          winner = completed.sort((a,b) => new Date(a.finished_at) - new Date(b.finished_at))[0];
+        } else {
+          // Sinon meilleur score
+          winner = [...players].sort((a,b) => (b.score||0) - (a.score||0))[0];
+        }
+        updates.state = "finished";
+        updates.winner_id = winner.id;
+        updates.winner_name = winner.name;
+      }
+      
+      await sbFetch("bb_gg_rooms?id=eq."+fresh.id, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", "Prefer": "return=minimal" },
+        body: JSON.stringify(updates),
+      });
+    } catch (e) {
+      console.warn("ggBattleSubmitFinal failed:", e);
+    }
+  }
+  
+  // ─── GOAT BATTLE — Polling de la room (lobby + playing) ───
+  React.useEffect(function() {
+    if (!ggBattleRoom || !ggBattleRoom.id) return;
+    if (ggBattleScreen !== "lobby" && ggBattleScreen !== "playing") return;
+    
+    let stopped = false;
+    async function poll() {
+      try {
+        const r = await fetch(SB_URL + "/rest/v1/bb_gg_rooms?id=eq." + ggBattleRoom.id + "&select=*", {
+          headers: { apikey: SB_KEY, Authorization: "Bearer " + SB_KEY }
+        });
+        if (!r.ok) return;
+        const data = await r.json();
+        if (stopped || !data || !data[0]) return;
+        const updated = data[0];
+        setGgBattleRoom(updated);
+        
+        // Si state passe à "playing" (host a démarré) → générer la grille
+        if (updated.state === "playing" && ggBattleScreen === "lobby") {
+          const grid = ggGenerateGrid(updated.seed);
+          if (grid) {
+            setGgGrid(grid);
+            setGgFilledCells({});
+            setGgUsedPlayers(new Set());
+            setGgLives(3);
+            setGgScore(0);
+            setGgGameOver(false);
+            setGgGuess("");
+            setGgFlash(null);
+            setGgSelectedCell(null);
+            setGgBattleTimer(180); // reset 3 min
+            setGgBattleScreen("playing");
+          }
+        }
+        
+        // Si state passe à "finished" (un joueur a fait 9/9 ou timer écoulé) → écran final
+        if (updated.state === "finished" && ggBattleScreen === "playing") {
+          setGgBattleScreen("finished");
+        }
+      } catch (e) {
+        console.warn("battle poll failed:", e);
+      }
+    }
+    
+    poll();
+    const intervalId = setInterval(poll, 1500); // toutes les 1.5s
+    return function() { stopped = true; clearInterval(intervalId); };
+  }, [ggBattleRoom && ggBattleRoom.id, ggBattleScreen]);
+  
+  // ─── GOAT BATTLE — Timer côté client ───
+  React.useEffect(function() {
+    if (ggBattleScreen !== "playing") return;
+    if (ggBattleTimer <= 0) return;
+    if (ggGameOver) return;
+    
+    const intervalId = setInterval(function() {
+      setGgBattleTimer(function(prev) {
+        if (prev <= 1) {
+          clearInterval(intervalId);
+          // Timer écoulé → soumettre le score final
+          const filledCount = Object.keys(ggFilledCells).length;
+          ggBattleSubmitFinal(ggScore, filledCount, ggLives);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    
+    return function() { clearInterval(intervalId); };
+  }, [ggBattleScreen, ggGameOver]);
+  
+  // ─── GOAT BATTLE — Détection 9/9 ou perte de toutes les vies ───
+  React.useEffect(function() {
+    if (ggBattleScreen !== "playing") return;
+    if (!ggBattleRoom) return;
+    
+    const filledCount = Object.keys(ggFilledCells).length;
+    
+    // Cas 1 : Grille parfaite (9/9)
+    if (filledCount === 9 && !ggGameOver) {
+      ggBattleSubmitFinal(ggScore, 9, ggLives);
+      return;
+    }
+    
+    // Cas 2 : 0 vies → soumettre quand même et continuer en spectateur
+    if (ggLives <= 0 && !ggGameOver) {
+      ggBattleSubmitFinal(ggScore, filledCount, 0);
+    }
+  }, [ggFilledCells, ggLives, ggBattleScreen]);
   
   // Démarrer/reprendre une partie GOAT GRID
   function ggStartGame() {
@@ -8536,6 +8846,18 @@ export default function LePont() {
           <button onClick={function(e){e.stopPropagation();ggStartGame();}} style={{padding:"9px 13px",background:"linear-gradient(135deg,#00E676,#FFD600)",color:"#000",border:"none",borderRadius:12,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800,whiteSpace:"nowrap"}}>{lang==="en"?"Play 🐐":"Jouer 🐐"}</button>
         </div>
 
+        {/* ⚔️ GOAT BATTLE — Multijoueur GOAT GRID */}
+        <div onClick={function(){setGgBattleScreen("menu");setGgBattleError("");setGgBattleCode("");}} style={{borderRadius:14,background:"linear-gradient(135deg,rgba(255,107,53,.15),rgba(255,68,68,.15))",border:"1.5px solid rgba(255,107,53,.4)",padding:"10px 12px",display:"flex",alignItems:"center",gap:10,cursor:"pointer",transition:"all .15s"}}>
+          <div style={{fontSize:22}}>⚔️</div>
+          <div style={{flex:1}}>
+            <div style={{fontSize:10,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase",color:"rgba(255,107,53,.9)",marginBottom:1}}>{lang==="en"?"Multiplayer · 3 min":"Multijoueur · 3 min"}</div>
+            <div style={{fontSize:13,fontWeight:800,color:G.white}}>
+              GOAT BATTLE — {lang==="en"?"Race against friends":"Défie tes potes"}
+            </div>
+          </div>
+          <button onClick={function(e){e.stopPropagation();setGgBattleScreen("menu");setGgBattleError("");setGgBattleCode("");}} style={{padding:"9px 13px",background:"linear-gradient(135deg,#FF6B35,#FF4444)",color:"#fff",border:"none",borderRadius:12,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800,whiteSpace:"nowrap"}}>{lang==="en"?"Battle ⚔️":"Battle ⚔️"}</button>
+        </div>
+
         {/* Défi du jour — CACHÉ (remplacé par GOAT GRID, plomberie conservée pour push notif + streak) */}
         {false && dailyPlayer && (
           <div style={{borderRadius:14,background:dailyDone?"rgba(255,255,255,.04)":"linear-gradient(135deg,rgba(255,214,0,.12),rgba(255,107,53,.12))",border:dailyDone?"1px solid rgba(255,255,255,.1)":"1.5px solid rgba(255,214,0,.3)",padding:"10px 12px",display:"flex",alignItems:"center",gap:10,opacity:dailyDone?.7:1}}>
@@ -8551,8 +8873,164 @@ export default function LePont() {
           </div>
         )}
 
-        {/* 🐐 Modal GOAT GRID — Mode quotidien grille 3x3 */}
-        {showGoatGrid && (
+        {/* ⚔️ Modal GOAT BATTLE — Multijoueur Menu */}
+        {ggBattleScreen === "menu" && (
+          <div style={{position:"fixed",inset:0,zIndex:450,display:"flex",alignItems:"flex-start",justifyContent:"center",padding:"80px 20px 40px",background:"rgba(0,0,0,.92)",backdropFilter:"blur(10px)",overflowY:"auto"}}>
+            <div style={{background:"linear-gradient(135deg, #1a1410, #100a08)",border:"1.5px solid rgba(255,107,53,.4)",borderRadius:24,padding:24,maxWidth:380,width:"100%"}}>
+              <div style={{textAlign:"center",marginBottom:20}}>
+                <div style={{fontSize:50,marginBottom:6}}>⚔️</div>
+                <div style={{fontFamily:G.heading,fontSize:28,letterSpacing:2,color:"#FF6B35",lineHeight:1}}>GOAT BATTLE</div>
+                <div style={{fontSize:11,color:"rgba(255,255,255,.6)",marginTop:6}}>{lang==="en"?"3 minutes · 2-8 players · Same grid":"3 minutes · 2-8 joueurs · Même grille"}</div>
+              </div>
+              
+              {ggBattleError && (
+                <div style={{padding:10,background:"rgba(255,68,68,.15)",border:"1px solid rgba(255,68,68,.4)",borderRadius:10,color:"#FF6B6B",fontSize:12,marginBottom:14,textAlign:"center"}}>{ggBattleError}</div>
+              )}
+              
+              {/* Créer une room */}
+              <button onClick={ggBattleCreateRoom} disabled={ggBattleLoading} style={{width:"100%",padding:"14px",borderRadius:14,border:"none",background:"linear-gradient(135deg,#FF6B35,#FF4444)",color:"#fff",fontWeight:800,fontSize:14,letterSpacing:1,cursor:ggBattleLoading?"not-allowed":"pointer",marginBottom:12,opacity:ggBattleLoading?.5:1}}>
+                {ggBattleLoading ? "..." : (lang==="en"?"⚔️ CREATE ROOM":"⚔️ CRÉER UNE ROOM")}
+              </button>
+              
+              {/* Rejoindre via code */}
+              <div style={{display:"flex",gap:8,marginBottom:14}}>
+                <input
+                  type="text"
+                  value={ggBattleCode}
+                  onChange={function(e){setGgBattleCode(e.target.value.toUpperCase().slice(0,6));}}
+                  placeholder={lang==="en"?"CODE":"CODE"}
+                  maxLength={6}
+                  style={{flex:1,padding:"12px",background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.15)",borderRadius:12,color:G.white,fontSize:16,fontWeight:800,letterSpacing:3,textAlign:"center",fontFamily:"monospace"}}
+                />
+                <button onClick={function(){ggBattleJoinRoom(ggBattleCode);}} disabled={ggBattleLoading || ggBattleCode.length < 4} style={{padding:"12px 18px",borderRadius:12,border:"1px solid rgba(255,107,53,.4)",background:"rgba(255,107,53,.15)",color:"#FF6B35",fontWeight:800,fontSize:13,cursor:(ggBattleLoading||ggBattleCode.length<4)?"not-allowed":"pointer",opacity:(ggBattleLoading||ggBattleCode.length<4)?.5:1}}>
+                  {lang==="en"?"JOIN":"REJOINDRE"}
+                </button>
+              </div>
+              
+              <button onClick={function(){setGgBattleScreen(null);setGgBattleError("");setGgBattleCode("");}} style={{width:"100%",padding:12,borderRadius:50,border:"none",background:"rgba(255,255,255,.05)",color:"rgba(255,255,255,.7)",fontWeight:700,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
+                {lang==="en"?"Close":"Fermer"}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ⚔️ Modal GOAT BATTLE — Lobby */}
+        {ggBattleScreen === "lobby" && ggBattleRoom && (
+          <div style={{position:"fixed",inset:0,zIndex:450,display:"flex",alignItems:"flex-start",justifyContent:"center",padding:"80px 20px 40px",background:"rgba(0,0,0,.92)",backdropFilter:"blur(10px)",overflowY:"auto"}}>
+            <div style={{background:"linear-gradient(135deg, #1a1410, #100a08)",border:"1.5px solid rgba(255,107,53,.4)",borderRadius:24,padding:24,maxWidth:380,width:"100%"}}>
+              <div style={{textAlign:"center",marginBottom:20}}>
+                <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,107,53,.7)",fontWeight:700,marginBottom:6}}>⚔️ GOAT BATTLE · LOBBY</div>
+                <div style={{fontSize:11,color:"rgba(255,255,255,.5)",marginBottom:8}}>{lang==="en"?"Share this code":"Partage ce code"}</div>
+                <div style={{display:"inline-block",padding:"10px 20px",background:"rgba(255,107,53,.15)",border:"2px solid rgba(255,107,53,.5)",borderRadius:14,fontFamily:"monospace",fontSize:28,fontWeight:900,letterSpacing:6,color:"#FF6B35"}}>
+                  {ggBattleRoom.code}
+                </div>
+              </div>
+              
+              {/* Liste des joueurs */}
+              <div style={{marginBottom:18}}>
+                <div style={{fontSize:11,color:"rgba(255,255,255,.5)",marginBottom:8,letterSpacing:1}}>
+                  {(ggBattleRoom.players || []).length} / 8 {lang==="en"?"PLAYERS":"JOUEURS"}
+                </div>
+                <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                  {(ggBattleRoom.players || []).map(function(p, idx){
+                    const isHost = p.id === ggBattleRoom.host_id;
+                    const isMe = p.id === playerId;
+                    return (
+                      <div key={p.id} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 12px",background:isMe?"rgba(255,107,53,.1)":"rgba(255,255,255,.04)",border:"1px solid "+(isMe?"rgba(255,107,53,.3)":"rgba(255,255,255,.08)"),borderRadius:10}}>
+                        <div style={{fontSize:18}}>{isHost?"👑":"⚔️"}</div>
+                        <div style={{flex:1,fontSize:13,fontWeight:700,color:G.white}}>
+                          {p.name} {isMe && <span style={{fontSize:10,color:"rgba(255,107,53,.7)"}}>({lang==="en"?"you":"toi"})</span>}
+                        </div>
+                        {isHost && <div style={{fontSize:9,color:"#FFD600",letterSpacing:1,fontWeight:800}}>HOST</div>}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+              
+              {ggBattleError && (
+                <div style={{padding:10,background:"rgba(255,68,68,.15)",border:"1px solid rgba(255,68,68,.4)",borderRadius:10,color:"#FF6B6B",fontSize:12,marginBottom:12,textAlign:"center"}}>{ggBattleError}</div>
+              )}
+              
+              {/* Boutons */}
+              {ggBattleRoom.host_id === playerId ? (
+                <button onClick={ggBattleStartGame} disabled={ggBattleLoading || (ggBattleRoom.players || []).length < 2} style={{width:"100%",padding:14,borderRadius:14,border:"none",background:((ggBattleRoom.players || []).length < 2 || ggBattleLoading)?"rgba(255,255,255,.1)":"linear-gradient(135deg,#FF6B35,#FF4444)",color:((ggBattleRoom.players || []).length < 2 || ggBattleLoading)?"rgba(255,255,255,.3)":"#fff",fontWeight:900,fontSize:14,letterSpacing:1,cursor:((ggBattleRoom.players || []).length < 2 || ggBattleLoading)?"not-allowed":"pointer",marginBottom:10}}>
+                  {(ggBattleRoom.players || []).length < 2 ? (lang==="en"?"WAITING FOR PLAYERS...":"EN ATTENTE DE JOUEURS...") : (lang==="en"?"⚔️ START BATTLE":"⚔️ LANCER LA BATTLE")}
+                </button>
+              ) : (
+                <div style={{padding:14,textAlign:"center",fontSize:13,color:"rgba(255,255,255,.6)",fontStyle:"italic",marginBottom:10}}>
+                  {lang==="en"?"Waiting for the host to start...":"En attente du host..."}
+                </div>
+              )}
+              
+              <button onClick={ggBattleLeaveRoom} style={{width:"100%",padding:12,borderRadius:50,border:"none",background:"rgba(255,255,255,.05)",color:"rgba(255,255,255,.7)",fontWeight:700,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
+                {lang==="en"?"Leave room":"Quitter la room"}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ⚔️ Modal GOAT BATTLE — Finished (résultats) */}
+        {ggBattleScreen === "finished" && ggBattleRoom && (() => {
+          const sortedPlayers = [...(ggBattleRoom.players || [])].sort(function(a, b){
+            // Priorité : (1) cells_filled DESC, (2) finished_at ASC (plus rapide), (3) score DESC
+            if ((b.cells_filled || 0) !== (a.cells_filled || 0)) return (b.cells_filled || 0) - (a.cells_filled || 0);
+            if (a.finished_at && b.finished_at) {
+              const diff = new Date(a.finished_at).getTime() - new Date(b.finished_at).getTime();
+              if (diff !== 0) return diff;
+            }
+            return (b.score || 0) - (a.score || 0);
+          });
+          const winner = sortedPlayers[0];
+          const isWinner = winner && winner.id === playerId;
+          
+          return (
+            <div style={{position:"fixed",inset:0,zIndex:450,display:"flex",alignItems:"flex-start",justifyContent:"center",padding:"80px 20px 40px",background:"rgba(0,0,0,.92)",backdropFilter:"blur(10px)",overflowY:"auto"}}>
+              <div style={{background:"linear-gradient(135deg, #1a1410, #100a08)",border:"1.5px solid "+(isWinner?"rgba(255,214,0,.6)":"rgba(255,107,53,.4)"),borderRadius:24,padding:24,maxWidth:380,width:"100%",textAlign:"center"}}>
+                <div style={{fontSize:60,marginBottom:8}}>{isWinner?"👑":"⚔️"}</div>
+                <div style={{fontFamily:G.heading,fontSize:26,letterSpacing:2,color:isWinner?"#FFD600":"#FF6B35",lineHeight:1,marginBottom:6}}>
+                  {isWinner ? (lang==="en"?"VICTORY!":"VICTOIRE !") : (lang==="en"?"BATTLE OVER":"BATTLE TERMINÉE")}
+                </div>
+                <div style={{fontSize:13,color:"rgba(255,255,255,.7)",marginBottom:18}}>
+                  {winner ? ((lang==="en"?"Winner: ":"Gagnant : ") + winner.name) : ""}
+                </div>
+                
+                {/* Classement */}
+                <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:18,textAlign:"left"}}>
+                  {sortedPlayers.map(function(p, idx){
+                    const isMe = p.id === playerId;
+                    const medal = idx===0?"🥇":idx===1?"🥈":idx===2?"🥉":"  ";
+                    return (
+                      <div key={p.id} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",background:isMe?"rgba(255,107,53,.12)":"rgba(255,255,255,.04)",border:"1px solid "+(isMe?"rgba(255,107,53,.3)":"rgba(255,255,255,.08)"),borderRadius:10}}>
+                        <div style={{fontSize:18,minWidth:24}}>{medal}</div>
+                        <div style={{flex:1,fontSize:13,fontWeight:700,color:G.white}}>
+                          {p.name} {isMe && <span style={{fontSize:10,color:"rgba(255,107,53,.7)"}}>({lang==="en"?"you":"toi"})</span>}
+                        </div>
+                        <div style={{textAlign:"right"}}>
+                          <div style={{fontSize:14,fontWeight:900,color:idx===0?"#FFD600":G.white}}>{p.cells_filled || 0}/9</div>
+                          <div style={{fontSize:10,color:"rgba(255,255,255,.5)"}}>{p.score || 0} pts</div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                
+                <button onClick={function(){
+                  setGgBattleScreen(null);
+                  setGgBattleRoom(null);
+                  setGgBattleCode("");
+                  setGgBattleError("");
+                  setGgGameOver(false);
+                }} style={{width:"100%",padding:14,borderRadius:50,border:"none",background:"linear-gradient(135deg,#FF6B35,#FF4444)",color:"#fff",fontWeight:800,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
+                  {lang==="en"?"BACK TO HOME":"RETOUR"}
+                </button>
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* 🐐 Modal GOAT GRID — Mode quotidien grille 3x3 (ou battle playing) */}
+        {(showGoatGrid || ggBattleScreen === "playing") && (
           <div style={{position:"fixed",inset:0,zIndex:400,display:"flex",flexDirection:"column",background:"linear-gradient(180deg, #0a1410 0%, #1E5C2A 100%)"}}>
             {/* Fond pelouse */}
             <div style={{position:"absolute",inset:0,zIndex:0,overflow:"hidden",opacity:.4}}>
@@ -8565,11 +9043,23 @@ export default function LePont() {
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8,flexShrink:0}}>
                 <div style={{flex:1}}/>
                 <div style={{textAlign:"center"}}>
-                  <div style={{display:"inline-block",background:"linear-gradient(135deg,#00E676,#00B85F)",color:"#000",fontSize:9,fontWeight:900,letterSpacing:2,padding:"3px 10px",borderRadius:20,marginBottom:4}}>{lang==="en"?"⚡ DAILY · NEW":"⚡ DÉFI DU JOUR · NOUVEAU"}</div>
-                  <div style={{fontFamily:G.heading,fontSize:26,letterSpacing:2,color:"#FFD600",lineHeight:1}}>GOAT GRID 🐐</div>
-                  <div style={{fontSize:11,color:"rgba(255,255,255,.7)",marginTop:3,letterSpacing:1}}>{new Date().toLocaleDateString(lang==="en"?"en-US":"fr-FR",{weekday:'long',day:'numeric',month:'long'})}</div>
-                  {ggOverrideSeed > 0 && (
-                    <div style={{fontSize:9,color:"#FFD600",marginTop:2,letterSpacing:1.5,fontWeight:800}}>🔄 GRILLE TEST</div>
+                  {ggBattleScreen === "playing" ? (
+                    <>
+                      <div style={{display:"inline-block",background:"linear-gradient(135deg,#FF6B35,#FF4444)",color:"#fff",fontSize:9,fontWeight:900,letterSpacing:2,padding:"3px 10px",borderRadius:20,marginBottom:4}}>⚔️ {lang==="en"?"BATTLE MODE":"MODE BATTLE"}</div>
+                      <div style={{fontFamily:G.heading,fontSize:26,letterSpacing:2,color:"#FF6B35",lineHeight:1}}>GOAT BATTLE ⚔️</div>
+                      <div style={{fontSize:18,color:ggBattleTimer<=30?"#FF4444":"#FFD600",marginTop:3,letterSpacing:1,fontWeight:900,fontFamily:"monospace"}}>
+                        {Math.floor(ggBattleTimer/60)}:{String(ggBattleTimer%60).padStart(2,"0")}
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div style={{display:"inline-block",background:"linear-gradient(135deg,#00E676,#00B85F)",color:"#000",fontSize:9,fontWeight:900,letterSpacing:2,padding:"3px 10px",borderRadius:20,marginBottom:4}}>{lang==="en"?"⚡ DAILY · NEW":"⚡ DÉFI DU JOUR · NOUVEAU"}</div>
+                      <div style={{fontFamily:G.heading,fontSize:26,letterSpacing:2,color:"#FFD600",lineHeight:1}}>GOAT GRID 🐐</div>
+                      <div style={{fontSize:11,color:"rgba(255,255,255,.7)",marginTop:3,letterSpacing:1}}>{new Date().toLocaleDateString(lang==="en"?"en-US":"fr-FR",{weekday:'long',day:'numeric',month:'long'})}</div>
+                      {ggOverrideSeed > 0 && (
+                        <div style={{fontSize:9,color:"#FFD600",marginTop:2,letterSpacing:1.5,fontWeight:800}}>🔄 GRILLE TEST</div>
+                      )}
+                    </>
                   )}
                 </div>
                 <div style={{flex:1,display:"flex",justifyContent:"flex-end",gap:6}}>
