@@ -2859,6 +2859,7 @@ export default function LePont() {
     setGgBattleError("");
     try {
       // Tenter jusqu'à 5 fois pour éviter collision de code
+      let lastError = null;
       for (let attempt = 0; attempt < 5; attempt++) {
         const code = ggBattleGenCode();
         const seed = Math.floor(Math.random() * 1000000) + 1;
@@ -2873,25 +2874,45 @@ export default function LePont() {
           finished_score: null,
         }];
         try {
-          const created = await sbFetch("bb_gg_rooms", {
+          const res = await fetch(SB_URL + "/rest/v1/bb_gg_rooms", {
             method: "POST",
-            headers: { "Content-Type": "application/json", "Prefer": "return=representation" },
+            headers: {
+              "apikey": SB_KEY,
+              "Authorization": "Bearer " + SB_KEY,
+              "Content-Type": "application/json",
+              "Prefer": "return=representation"
+            },
             body: JSON.stringify({
-              code, host_id: playerId, state: "lobby", seed, players,
+              code: code,
+              host_id: playerId,
+              state: "lobby",
+              seed: seed,
+              players: players,
             }),
           });
-          if (Array.isArray(created) && created[0]) {
-            setGgBattleRoom(created[0]);
+          if (!res.ok) {
+            const errText = await res.text();
+            console.warn("[GOAT BATTLE] Create room failed:", res.status, errText);
+            lastError = "HTTP " + res.status + ": " + errText;
+            // Si c'est une collision de code (409 conflict), retry. Sinon stop.
+            if (res.status === 409) continue;
+            break;
+          }
+          const data = await res.json();
+          if (Array.isArray(data) && data[0]) {
+            setGgBattleRoom(data[0]);
             setGgBattleScreen("lobby");
             return;
           }
+          lastError = "No data returned";
         } catch (e) {
-          // Code déjà pris, on retry
-          continue;
+          console.warn("[GOAT BATTLE] Create room exception:", e);
+          lastError = e.message || String(e);
         }
       }
-      setGgBattleError(lang==="en"?"Could not create room, try again":"Impossible de créer la room, réessaye");
+      setGgBattleError((lang==="en"?"Could not create room: ":"Erreur création : ") + (lastError || "unknown"));
     } catch (e) {
+      console.warn("[GOAT BATTLE] Outer error:", e);
       setGgBattleError(lang==="en"?"Error creating room":"Erreur de création");
     } finally {
       setGgBattleLoading(false);
