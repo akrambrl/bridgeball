@@ -3056,21 +3056,38 @@ export default function LePont() {
         };
       });
       
-      // Vérifier si tout le monde a fini ou si quelqu'un a fait 9/9
+      // Vérifier si tout le monde a fini, si quelqu'un a fait 9/9, OU si le timer est écoulé
       const allFinished = players.every(p => p.finished_at);
       const someoneCompleted = players.some(p => p.cells_filled === 9);
+      // Calcul du temps écoulé depuis started_at (fiable, basé sur le serveur)
+      const startMs = fresh.started_at ? new Date(fresh.started_at).getTime() : 0;
+      const elapsedSec = startMs ? (Date.now() - startMs) / 1000 : 0;
+      const timerExpired = elapsedSec >= 180; // 3 min écoulées
       const updates = { players };
       
-      if (allFinished || someoneCompleted) {
+      if (allFinished || someoneCompleted || timerExpired) {
+        // Si timer écoulé, on auto-submit les joueurs absents avec leurs valeurs actuelles (cells_filled, score, lives_left)
+        if (timerExpired) {
+          updates.players = players.map(function(p){
+            if (p.finished_at) return p; // déjà fini
+            // Joueur n'a pas submit (probablement écran en background) → on le finalise avec ses valeurs actuelles
+            return {
+              ...p,
+              finished_at: new Date().toISOString(),
+              finished_score: p.score || 0,
+            };
+          });
+        }
+        const finalPlayers = updates.players;
         // Calculer le gagnant : 9/9 d'abord (le plus rapide), sinon meilleur score
-        const completed = players.filter(p => p.cells_filled === 9);
+        const completed = finalPlayers.filter(p => p.cells_filled === 9);
         let winner;
         if (completed.length > 0) {
           // Premier au 9/9 = celui avec le finished_at le plus tôt
           winner = completed.sort((a,b) => new Date(a.finished_at) - new Date(b.finished_at))[0];
         } else {
           // Sinon meilleur score
-          winner = [...players].sort((a,b) => (b.score||0) - (a.score||0))[0];
+          winner = [...finalPlayers].sort((a,b) => (b.score||0) - (a.score||0))[0];
         }
         updates.state = "finished";
         updates.winner_id = winner.id;
