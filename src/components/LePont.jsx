@@ -2741,6 +2741,7 @@ export default function LePont() {
   const [ggBattleTimer, setGgBattleTimer] = useState(180); // 3 min en secondes
   const [ggBattleCountdown, setGgBattleCountdown] = useState(0); // 5..1 avant départ, 0 = en jeu
   const [ggBattleViewGrid, setGgBattleViewGrid] = useState(null); // {player, room} pour voir la grille d'un joueur
+  const [ggModeChoice, setGgModeChoice] = useState(false); // modal de choix solo/multi pour GOAT GRID
   const [ggBattleLoading, setGgBattleLoading] = useState(false);
   
   // Restaurer la grille du jour depuis localStorage
@@ -3137,7 +3138,7 @@ export default function LePont() {
             setGgGrid(grid);
             setGgFilledCells({});
             setGgUsedPlayers(new Set());
-            setGgLives(3);
+            setGgLives(999); // mode battle : pas de limite de vies
             setGgScore(0);
             setGgGameOver(false);
             setGgGuess("");
@@ -3229,7 +3230,7 @@ export default function LePont() {
     };
   }, [ggBattleScreen, ggBattleRoom && ggBattleRoom.started_at]);
   
-  // ─── GOAT BATTLE — Détection 9/9 ou perte de toutes les vies ───
+  // ─── GOAT BATTLE — Détection 9/9 (pas de limite de vies en mode battle) ───
   React.useEffect(function() {
     if (ggBattleScreen !== "playing") return;
     if (!ggBattleRoom) return;
@@ -3237,19 +3238,12 @@ export default function LePont() {
     
     const filledCount = Object.keys(ggFilledCells).length;
     
-    // Cas 1 : Grille parfaite (9/9)
+    // Cas unique : Grille parfaite (9/9) → fin immédiate
     if (filledCount === 9) {
       ggBattleStateRef.current.submitted = true;
       ggBattleSubmitFinal(ggScore, 9, ggLives);
-      return;
     }
-    
-    // Cas 2 : 0 vies → soumettre quand même et continuer en spectateur
-    if (ggLives <= 0) {
-      ggBattleStateRef.current.submitted = true;
-      ggBattleSubmitFinal(ggScore, filledCount, 0);
-    }
-  }, [ggFilledCells, ggLives, ggBattleScreen]);
+  }, [ggFilledCells, ggBattleScreen]);
   
   // Démarrer/reprendre une partie GOAT GRID
   function ggStartGame() {
@@ -3383,8 +3377,10 @@ export default function LePont() {
       }
     } else {
       // ❌ MAUVAISE RÉPONSE
-      const newLives = ggLives - 1;
-      setGgLives(newLives);
+      // En mode battle : pas de décrément de vies (vies illimitées)
+      const isBattle = ggBattleScreen === "playing";
+      const newLives = isBattle ? ggLives : ggLives - 1;
+      if (!isBattle) setGgLives(newLives);
       setGgFlash("ko");
       setGgFlashCell({ row, col });
       // Stocker la dernière réponse rejetée pour permettre le signalement
@@ -8943,28 +8939,16 @@ export default function LePont() {
           </div>
         )}
 
-        {/* 🐐 GOAT GRID — Encadré accueil */}
-        <div onClick={ggStartGame} style={{borderRadius:14,background:"linear-gradient(135deg,rgba(0,230,118,.15),rgba(255,214,0,.15))",border:"1.5px solid rgba(0,230,118,.4)",padding:"10px 12px",display:"flex",alignItems:"center",gap:10,cursor:"pointer",transition:"all .15s"}}>
+        {/* 🐐 GOAT GRID — Encadré accueil (solo + multi) */}
+        <div onClick={function(){setGgModeChoice(true);}} style={{borderRadius:14,background:"linear-gradient(135deg,rgba(0,230,118,.15),rgba(255,214,0,.15))",border:"1.5px solid rgba(0,230,118,.4)",padding:"10px 12px",display:"flex",alignItems:"center",gap:10,cursor:"pointer",transition:"all .15s"}}>
           <div style={{fontSize:22}}>🐐</div>
           <div style={{flex:1}}>
-            <div style={{fontSize:10,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase",color:"rgba(0,230,118,.8)",marginBottom:1}}>{lang==="en"?"Daily challenge":"Défi du jour"}</div>
+            <div style={{fontSize:10,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase",color:"rgba(0,230,118,.8)",marginBottom:1}}>{lang==="en"?"Solo · Multiplayer":"Solo · Multijoueur"}</div>
             <div style={{fontSize:13,fontWeight:800,color:G.white}}>
               GOAT GRID — {lang==="en"?"Fill the 3×3 grid":"Remplis la grille 3×3"}
             </div>
           </div>
-          <button onClick={function(e){e.stopPropagation();ggStartGame();}} style={{padding:"9px 13px",background:"linear-gradient(135deg,#00E676,#FFD600)",color:"#000",border:"none",borderRadius:12,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800,whiteSpace:"nowrap"}}>{lang==="en"?"Play 🐐":"Jouer 🐐"}</button>
-        </div>
-
-        {/* ⚔️ GOAT BATTLE — Multijoueur GOAT GRID */}
-        <div onClick={function(){setGgBattleScreen("menu");setGgBattleError("");setGgBattleCode("");}} style={{borderRadius:14,background:"linear-gradient(135deg,rgba(255,107,53,.15),rgba(255,68,68,.15))",border:"1.5px solid rgba(255,107,53,.4)",padding:"10px 12px",display:"flex",alignItems:"center",gap:10,cursor:"pointer",transition:"all .15s"}}>
-          <div style={{fontSize:22}}>⚔️</div>
-          <div style={{flex:1}}>
-            <div style={{fontSize:10,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase",color:"rgba(255,107,53,.9)",marginBottom:1}}>{lang==="en"?"Multiplayer · 3 min":"Multijoueur · 3 min"}</div>
-            <div style={{fontSize:13,fontWeight:800,color:G.white}}>
-              GOAT BATTLE — {lang==="en"?"Race against friends":"Défie tes potes"}
-            </div>
-          </div>
-          <button onClick={function(e){e.stopPropagation();setGgBattleScreen("menu");setGgBattleError("");setGgBattleCode("");}} style={{padding:"9px 13px",background:"linear-gradient(135deg,#FF6B35,#FF4444)",color:"#fff",border:"none",borderRadius:12,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800,whiteSpace:"nowrap"}}>{lang==="en"?"Battle ⚔️":"Battle ⚔️"}</button>
+          <button onClick={function(e){e.stopPropagation();setGgModeChoice(true);}} style={{padding:"9px 13px",background:"linear-gradient(135deg,#00E676,#FFD600)",color:"#000",border:"none",borderRadius:12,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800,whiteSpace:"nowrap"}}>{lang==="en"?"Play 🐐":"Jouer 🐐"}</button>
         </div>
 
         {/* Défi du jour — CACHÉ (remplacé par GOAT GRID, plomberie conservée pour push notif + streak) */}
@@ -8979,6 +8963,43 @@ export default function LePont() {
               {dailyDone && <div style={{fontSize:10,color:"rgba(255,255,255,.3)",marginTop:1}}>{dailyRevealed ? (lang==="en"?"Answer revealed — ":"Réponse révélée — ")+dailyPlayer.name : dailyAbandoned ? (lang==="en"?"Abandoned — ":"Abandonné — ")+dailyPlayer.name : (lang==="en"?"Found in "+localStorage.getItem("bb_daily_tries")+" attempt"+(parseInt(localStorage.getItem("bb_daily_tries")||"1")>1?"s":"")+"!":"Trouvé en "+localStorage.getItem("bb_daily_tries")+" essai"+(parseInt(localStorage.getItem("bb_daily_tries")||"1")>1?"s":"")+" !")}</div>}
             </div>
             {!dailyDone && <button onClick={function(){setShowDailyGame(true);setDailyGuess("");setDailyFlash(null);setDailySuccess(false);}} style={{padding:"9px 13px",background:"linear-gradient(135deg,#FFD600,#FF6B35)",color:"#000",border:"none",borderRadius:12,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800,whiteSpace:"nowrap"}}>{lang==="en"?"Play ⚡":"Jouer ⚡"}</button>}
+          </div>
+        )}
+
+        {/* 🐐 Modal de choix Solo / Multi pour GOAT GRID */}
+        {ggModeChoice && (
+          <div onClick={function(){setGgModeChoice(false);}} style={{position:"fixed",inset:0,zIndex:450,display:"flex",alignItems:"flex-start",justifyContent:"center",padding:"80px 20px 40px",background:"rgba(0,0,0,.92)",backdropFilter:"blur(10px)",overflowY:"auto"}}>
+            <div onClick={function(e){e.stopPropagation();}} style={{background:"linear-gradient(135deg, #0a1410, #102018)",border:"1.5px solid rgba(0,230,118,.4)",borderRadius:24,padding:24,maxWidth:380,width:"100%"}}>
+              <div style={{textAlign:"center",marginBottom:20}}>
+                <div style={{fontSize:50,marginBottom:6}}>🐐</div>
+                <div style={{fontFamily:G.heading,fontSize:28,letterSpacing:2,color:"#FFD600",lineHeight:1}}>GOAT GRID</div>
+                <div style={{fontSize:11,color:"rgba(255,255,255,.6)",marginTop:6}}>{lang==="en"?"Choose your mode":"Choisis ton mode"}</div>
+              </div>
+              
+              {/* Bouton Solo */}
+              <button onClick={function(){setGgModeChoice(false);ggStartGame();}} style={{width:"100%",padding:"16px",borderRadius:14,border:"1.5px solid rgba(0,230,118,.4)",background:"linear-gradient(135deg,rgba(0,230,118,.15),rgba(255,214,0,.1))",color:"#fff",fontWeight:800,fontSize:14,letterSpacing:.5,cursor:"pointer",marginBottom:10,textAlign:"left",display:"flex",alignItems:"center",gap:12}}>
+                <div style={{fontSize:32}}>🐐</div>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:14,fontWeight:900,color:"#00E676",letterSpacing:1.5,marginBottom:2}}>{lang==="en"?"SOLO":"SOLO"}</div>
+                  <div style={{fontSize:12,fontWeight:600,color:"rgba(255,255,255,.85)"}}>{lang==="en"?"Daily grid · 3 lives · Leaderboard":"Grille du jour · 3 vies · Classement"}</div>
+                </div>
+                <div style={{fontSize:18,color:"rgba(0,230,118,.7)"}}>›</div>
+              </button>
+              
+              {/* Bouton Multi */}
+              <button onClick={function(){setGgModeChoice(false);setGgBattleScreen("menu");setGgBattleError("");setGgBattleCode("");}} style={{width:"100%",padding:"16px",borderRadius:14,border:"1.5px solid rgba(255,107,53,.4)",background:"linear-gradient(135deg,rgba(255,107,53,.15),rgba(255,68,68,.1))",color:"#fff",fontWeight:800,fontSize:14,letterSpacing:.5,cursor:"pointer",marginBottom:14,textAlign:"left",display:"flex",alignItems:"center",gap:12}}>
+                <div style={{fontSize:32}}>⚔️</div>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:14,fontWeight:900,color:"#FF6B35",letterSpacing:1.5,marginBottom:2}}>{lang==="en"?"MULTIPLAYER":"MULTIJOUEUR"}</div>
+                  <div style={{fontSize:12,fontWeight:600,color:"rgba(255,255,255,.85)"}}>{lang==="en"?"3 min · 2-8 players · Same grid":"3 min · 2-8 joueurs · Même grille"}</div>
+                </div>
+                <div style={{fontSize:18,color:"rgba(255,107,53,.7)"}}>›</div>
+              </button>
+              
+              <button onClick={function(){setGgModeChoice(false);}} style={{width:"100%",padding:12,borderRadius:50,border:"none",background:"rgba(255,255,255,.05)",color:"rgba(255,255,255,.7)",fontWeight:700,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
+                {lang==="en"?"Close":"Fermer"}
+              </button>
+            </div>
           </div>
         )}
 
@@ -9235,7 +9256,7 @@ export default function LePont() {
               </div>
             )}
             
-            <div style={{position:"relative",zIndex:1,display:"flex",flexDirection:"column",height:"100%",padding:"12px 14px",overflowY:"auto",WebkitOverflowScrolling:"touch"}}>
+            <div style={{position:"relative",zIndex:1,display:"flex",flexDirection:"column",height:"100%",padding:"12px 14px",overflowY: ggBattleScreen==="playing" ? "hidden" : "auto",WebkitOverflowScrolling:"touch"}}>
               
               {/* Header avec bouton fermer */}
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8,flexShrink:0}}>
@@ -9303,12 +9324,18 @@ export default function LePont() {
                 <>
                   {/* Info bar : vies + score + remplissage */}
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",margin:"6px 0",padding:"6px 12px",background:"rgba(0,0,0,.3)",backdropFilter:"blur(8px)",borderRadius:12,border:"1px solid rgba(255,255,255,.1)",flexShrink:0,fontSize:13,fontWeight:700}}>
-                    <div style={{display:"flex",alignItems:"center",gap:6}}>
-                      <span style={{fontSize:10,color:"rgba(255,255,255,.5)",fontWeight:600,letterSpacing:1}}>{lang==="en"?"LIVES":"VIES"}</span>
-                      <div style={{display:"flex",gap:3}}>
-                        {[0,1,2].map(function(i){return(<span key={i} style={{fontSize:14,opacity:i<ggLives?1:.25,filter:i<ggLives?"none":"grayscale(1)"}}>{i<ggLives?"❤️":"💔"}</span>);})}
+                    {ggBattleScreen !== "playing" ? (
+                      <div style={{display:"flex",alignItems:"center",gap:6}}>
+                        <span style={{fontSize:10,color:"rgba(255,255,255,.5)",fontWeight:600,letterSpacing:1}}>{lang==="en"?"LIVES":"VIES"}</span>
+                        <div style={{display:"flex",gap:3}}>
+                          {[0,1,2].map(function(i){return(<span key={i} style={{fontSize:14,opacity:i<ggLives?1:.25,filter:i<ggLives?"none":"grayscale(1)"}}>{i<ggLives?"❤️":"💔"}</span>);})}
+                        </div>
                       </div>
-                    </div>
+                    ) : (
+                      <div style={{display:"flex",alignItems:"center",gap:6}}>
+                        <span style={{fontSize:10,color:"rgba(255,107,53,.7)",fontWeight:700,letterSpacing:1}}>♾️ {lang==="en"?"NO LIMIT":"ILLIMITÉ"}</span>
+                      </div>
+                    )}
                     <div style={{display:"flex",alignItems:"center",gap:6}}>
                       <span style={{fontSize:10,color:"rgba(255,255,255,.5)",fontWeight:600,letterSpacing:1}}>{lang==="en"?"SCORE":"SCORE"}</span>
                       <span style={{color:"#FFD600",fontFamily:G.heading,fontSize:16}}>{ggScore}</span>
@@ -9321,14 +9348,16 @@ export default function LePont() {
                     </div>
                   </div>
 
-                  {/* Mini explainer scoring */}
-                  <div style={{background:"rgba(255,214,0,.08)",border:"1px solid rgba(255,214,0,.2)",borderRadius:10,padding:"4px 10px",marginBottom:6,fontSize:9,color:"rgba(255,255,255,.75)",textAlign:"center",lineHeight:1.3,flexShrink:0}}>
-                    <span style={{color:"#FFD600",fontWeight:800}}>💡 {lang==="en"?"⭐ 15 · ⭐⭐ / ⭐⭐⭐ 50 pts · 🐐 No-mistake = +100":"⭐ 15 · ⭐⭐ / ⭐⭐⭐ 50 pts · 🐐 Sans-faute = +100"}</span>
-                  </div>
+                  {/* Mini explainer scoring (masqué en mode battle pour gagner de la place) */}
+                  {ggBattleScreen !== "playing" && (
+                    <div style={{background:"rgba(255,214,0,.08)",border:"1px solid rgba(255,214,0,.2)",borderRadius:10,padding:"4px 10px",marginBottom:6,fontSize:9,color:"rgba(255,255,255,.75)",textAlign:"center",lineHeight:1.3,flexShrink:0}}>
+                      <span style={{color:"#FFD600",fontWeight:800}}>💡 {lang==="en"?"⭐ 15 · ⭐⭐ / ⭐⭐⭐ 50 pts · 🐐 No-mistake = +100":"⭐ 15 · ⭐⭐ / ⭐⭐⭐ 50 pts · 🐐 Sans-faute = +100"}</span>
+                    </div>
+                  )}
 
                   {/* Grille 3x3 */}
-                  <div style={{background:"rgba(0,0,0,.4)",backdropFilter:"blur(12px)",borderRadius:16,padding:6,border:"1px solid rgba(255,255,255,.08)",marginBottom:(ggRevealMode||ggReviewMode)?130:8,display:"flex"}}>
-                    <div style={{display:"grid",gridTemplateColumns:"80px minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)",gridTemplateRows:"60px 110px 110px 110px",gap:4,flex:1,width:"100%"}}>
+                  <div style={{background:"rgba(0,0,0,.4)",backdropFilter:"blur(12px)",borderRadius:16,padding:6,border:"1px solid rgba(255,255,255,.08)",marginBottom:(ggRevealMode||ggReviewMode)?130:8,display:"flex",flex:1,minHeight:0}}>
+                    <div style={{display:"grid",gridTemplateColumns:"80px minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)",gridTemplateRows:"60px minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)",gap:4,flex:1,width:"100%"}}>
                       
                       {/* Coin haut-gauche vide */}
                       <div/>
