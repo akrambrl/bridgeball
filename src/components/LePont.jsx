@@ -3122,43 +3122,78 @@ export default function LePont() {
     return function() { stopped = true; clearInterval(intervalId); };
   }, [ggBattleRoom && ggBattleRoom.id, ggBattleScreen]);
   
-  // ─── GOAT BATTLE — Timer côté client ───
+  // ─── GOAT BATTLE — Timer basé sur started_at (résiste au lock screen) ───
+  // Refs pour avoir les valeurs LIVE (pas figées dans la closure)
+  const ggBattleStateRef = React.useRef({ filledCells: {}, score: 0, lives: 3, submitted: false });
+  React.useEffect(function() {
+    ggBattleStateRef.current.filledCells = ggFilledCells;
+    ggBattleStateRef.current.score = ggScore;
+    ggBattleStateRef.current.lives = ggLives;
+  }, [ggFilledCells, ggScore, ggLives]);
+  
   React.useEffect(function() {
     if (ggBattleScreen !== "playing") return;
-    if (ggBattleTimer <= 0) return;
-    if (ggGameOver) return;
+    if (!ggBattleRoom || !ggBattleRoom.started_at) return;
     
-    const intervalId = setInterval(function() {
-      setGgBattleTimer(function(prev) {
-        if (prev <= 1) {
-          clearInterval(intervalId);
-          // Timer écoulé → soumettre le score final
-          const filledCount = Object.keys(ggFilledCells).length;
-          ggBattleSubmitFinal(ggScore, filledCount, ggLives);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+    // Reset le flag de submit au démarrage
+    ggBattleStateRef.current.submitted = false;
     
-    return function() { clearInterval(intervalId); };
-  }, [ggBattleScreen, ggGameOver]);
+    const startMs = new Date(ggBattleRoom.started_at).getTime();
+    const DURATION_SEC = 180; // 3 minutes
+    
+    function tick() {
+      const elapsedSec = Math.floor((Date.now() - startMs) / 1000);
+      const remaining = Math.max(0, DURATION_SEC - elapsedSec);
+      setGgBattleTimer(remaining);
+      
+      if (remaining === 0 && !ggBattleStateRef.current.submitted) {
+        // Timer écoulé → soumettre le score final UNE SEULE FOIS
+        ggBattleStateRef.current.submitted = true;
+        const filledCount = Object.keys(ggBattleStateRef.current.filledCells).length;
+        ggBattleSubmitFinal(
+          ggBattleStateRef.current.score,
+          filledCount,
+          ggBattleStateRef.current.lives
+        );
+      }
+    }
+    
+    // Tick immédiat puis toutes les secondes
+    tick();
+    const intervalId = setInterval(tick, 1000);
+    
+    // Aussi : tick au retour de focus (au cas où setInterval s'est gelé)
+    function onVisibilityChange() {
+      if (!document.hidden) tick();
+    }
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    window.addEventListener("focus", tick);
+    
+    return function() {
+      clearInterval(intervalId);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      window.removeEventListener("focus", tick);
+    };
+  }, [ggBattleScreen, ggBattleRoom && ggBattleRoom.started_at]);
   
   // ─── GOAT BATTLE — Détection 9/9 ou perte de toutes les vies ───
   React.useEffect(function() {
     if (ggBattleScreen !== "playing") return;
     if (!ggBattleRoom) return;
+    if (ggBattleStateRef.current.submitted) return; // déjà soumis
     
     const filledCount = Object.keys(ggFilledCells).length;
     
     // Cas 1 : Grille parfaite (9/9)
-    if (filledCount === 9 && !ggGameOver) {
+    if (filledCount === 9) {
+      ggBattleStateRef.current.submitted = true;
       ggBattleSubmitFinal(ggScore, 9, ggLives);
       return;
     }
     
     // Cas 2 : 0 vies → soumettre quand même et continuer en spectateur
-    if (ggLives <= 0 && !ggGameOver) {
+    if (ggLives <= 0) {
+      ggBattleStateRef.current.submitted = true;
       ggBattleSubmitFinal(ggScore, filledCount, 0);
     }
   }, [ggFilledCells, ggLives, ggBattleScreen]);
@@ -9058,7 +9093,7 @@ export default function LePont() {
               {[0,1,2,3,4,5,6].map(function(i){return(<div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#1E5C2A":"#276B34"}}/>);})}
             </div>
             
-            <div style={{position:"relative",zIndex:1,display:"flex",flexDirection:"column",minHeight:"100%",padding:"12px 14px",overflowY:"auto"}}>
+            <div style={{position:"relative",zIndex:1,display:"flex",flexDirection:"column",height:"100%",padding:"12px 14px",overflowY:"auto",WebkitOverflowScrolling:"touch"}}>
               
               {/* Header avec bouton fermer */}
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8,flexShrink:0}}>
@@ -9145,13 +9180,13 @@ export default function LePont() {
                   </div>
 
                   {/* Mini explainer scoring */}
-                  <div style={{background:"rgba(255,214,0,.08)",border:"1px solid rgba(255,214,0,.2)",borderRadius:10,padding:"6px 10px",marginBottom:6,fontSize:9.5,color:"rgba(255,255,255,.75)",textAlign:"center",lineHeight:1.35,flexShrink:0}}>
+                  <div style={{background:"rgba(255,214,0,.08)",border:"1px solid rgba(255,214,0,.2)",borderRadius:10,padding:"4px 10px",marginBottom:6,fontSize:9,color:"rgba(255,255,255,.75)",textAlign:"center",lineHeight:1.3,flexShrink:0}}>
                     <span style={{color:"#FFD600",fontWeight:800}}>💡 {lang==="en"?"⭐ 15 · ⭐⭐ / ⭐⭐⭐ 50 pts · 🐐 No-mistake = +100":"⭐ 15 · ⭐⭐ / ⭐⭐⭐ 50 pts · 🐐 Sans-faute = +100"}</span>
                   </div>
 
                   {/* Grille 3x3 */}
-                  <div style={{background:"rgba(0,0,0,.4)",backdropFilter:"blur(12px)",borderRadius:16,padding:6,border:"1px solid rgba(255,255,255,.08)",marginBottom:(ggRevealMode||ggReviewMode)?130:8,flex:1,display:"flex",minHeight:0}}>
-                    <div style={{display:"grid",gridTemplateColumns:"80px minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)",gridTemplateRows:"60px minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)",gap:4,flex:1,width:"100%"}}>
+                  <div style={{background:"rgba(0,0,0,.4)",backdropFilter:"blur(12px)",borderRadius:16,padding:6,border:"1px solid rgba(255,255,255,.08)",marginBottom:(ggRevealMode||ggReviewMode)?130:8,display:"flex"}}>
+                    <div style={{display:"grid",gridTemplateColumns:"80px minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)",gridTemplateRows:"60px 110px 110px 110px",gap:4,flex:1,width:"100%"}}>
                       
                       {/* Coin haut-gauche vide */}
                       <div/>
