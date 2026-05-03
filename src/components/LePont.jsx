@@ -3027,91 +3027,117 @@ export default function LePont() {
     }
   }
   
-  // Soumettre son score final à la room
+  // Soumettre son score final à la room (avec optimistic locking pour éviter les conflits)
   async function ggBattleSubmitFinal(finalScore, cellsFilled, livesLeft) {
     if (!ggBattleRoom) return;
-    try {
-      // Récupérer la version la plus récente pour ne pas écraser les autres joueurs
-      const data = await sbFetch("bb_gg_rooms?id=eq."+ggBattleRoom.id+"&limit=1");
-      if (!Array.isArray(data) || data.length === 0) return;
-      const fresh = data[0];
-      // Snapshot des cases remplies par le joueur actuel : {cellKey: playerName}
-      const filledGrid = {};
-      Object.keys(ggFilledCells || {}).forEach(function(k){
-        const v = ggFilledCells[k];
-        // Stocker juste le nom du joueur cité (string)
-        if (typeof v === "string") filledGrid[k] = v;
-        else if (v && v.name) filledGrid[k] = v.name;
-        else filledGrid[k] = String(v);
-      });
-      const players = (fresh.players || []).map(p => {
-        if (p.id !== playerId) return p;
-        return {
-          ...p,
-          cells_filled: cellsFilled,
-          score: finalScore,
-          lives_left: livesLeft,
-          finished_at: new Date().toISOString(),
-          finished_score: finalScore,
-          filled_grid: filledGrid,
-        };
-      });
-      
-      // Vérifier si tout le monde a fini, si quelqu'un a fait 9/9, OU si le timer est écoulé
-      const allFinished = players.every(p => p.finished_at);
-      const someoneCompleted = players.some(p => p.cells_filled === 9);
-      // Calcul du temps écoulé depuis started_at (fiable, basé sur le serveur)
-      const startMs = fresh.started_at ? new Date(fresh.started_at).getTime() : 0;
-      const elapsedSec = startMs ? (Date.now() - startMs) / 1000 : 0;
-      const timerExpired = elapsedSec >= 180; // 3 min écoulées
-      const updates = { players };
-      
-      if (allFinished || someoneCompleted || timerExpired) {
-        // Si timer écoulé, on auto-submit les joueurs absents avec leurs valeurs actuelles (cells_filled, score, lives_left)
-        if (timerExpired) {
-          updates.players = players.map(function(p){
-            if (p.finished_at) return p; // déjà fini
-            // Joueur n'a pas submit (probablement écran en background) → on le finalise avec ses valeurs actuelles
-            return {
-              ...p,
-              finished_at: new Date().toISOString(),
-              finished_score: p.score || 0,
-            };
-          });
+    
+    // Snapshot des cases remplies par le joueur actuel : {cellKey: playerName}
+    const filledGrid = {};
+    Object.keys(ggFilledCells || {}).forEach(function(k){
+      const v = ggFilledCells[k];
+      if (typeof v === "string") filledGrid[k] = v;
+      else if (v && v.name) filledGrid[k] = v.name;
+      else filledGrid[k] = String(v);
+    });
+    
+    // Boucle de retry : on lit la version la plus récente, on update, on PATCH avec WHERE updated_at
+    // Si quelqu'un d'autre a modifié entre temps, le PATCH n'affecte 0 ligne → on retry
+    const MAX_RETRIES = 5;
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+      try {
+        // 1. Read fresh
+        const data = await sbFetch("bb_gg_rooms?id=eq."+ggBattleRoom.id+"&limit=1");
+        if (!Array.isArray(data) || data.length === 0) return;
+        const fresh = data[0];
+        const lastUpdate = fresh.updated_at; // pour optimistic lock
+        
+        // Si déjà finished par quelqu'un d'autre, on s'aligne juste localement et on sort
+        if (fresh.state === "finished") {
+          setGgBattleRoom(fresh);
+          setGgBattleScreen("finished");
+          return;
         }
-        const finalPlayers = updates.players;
-        // Calculer le gagnant : 9/9 d'abord (le plus rapide), sinon meilleur score
-        const completed = finalPlayers.filter(p => p.cells_filled === 9);
-        let winner;
-        if (completed.length > 0) {
-          // Premier au 9/9 = celui avec le finished_at le plus tôt
-          winner = completed.sort((a,b) => new Date(a.finished_at) - new Date(b.finished_at))[0];
-        } else {
-          // Sinon meilleur score
-          winner = [...finalPlayers].sort((a,b) => (b.score||0) - (a.score||0))[0];
+        
+        // 2. Compute mes updates
+        const players = (fresh.players || []).map(p => {
+          if (p.id !== playerId) return p;
+          return {
+            ...p,
+            cells_filled: cellsFilled,
+            score: finalScore,
+            lives_left: livesLeft,
+            finished_at: p.finished_at || new Date().toISOString(),
+            finished_score: finalScore,
+            filled_grid: filledGrid,
+          };
+        });
+        
+        // 3. Vérifier si tout le monde a fini, si quelqu'un a fait 9/9, OU si le timer est écoulé
+        const allFinished = players.every(p => p.finished_at);
+        const someoneCompleted = players.some(p => p.cells_filled === 9);
+        const startMs = fresh.started_at ? new Date(fresh.started_at).getTime() : 0;
+        const elapsedSec = startMs ? (Date.now() - startMs) / 1000 : 0;
+        const timerExpired = elapsedSec >= 180;
+        const updates = { players };
+        
+        if (allFinished || someoneCompleted || timerExpired) {
+          if (timerExpired) {
+            updates.players = players.map(function(p){
+              if (p.finished_at) return p;
+              return {
+                ...p,
+                finished_at: new Date().toISOString(),
+                finished_score: p.score || 0,
+              };
+            });
+          }
+          const finalPlayers = updates.players;
+          const completed = finalPlayers.filter(p => p.cells_filled === 9);
+          let winner;
+          if (completed.length > 0) {
+            winner = completed.sort((a,b) => new Date(a.finished_at) - new Date(b.finished_at))[0];
+          } else {
+            winner = [...finalPlayers].sort((a,b) => (b.score||0) - (a.score||0))[0];
+          }
+          updates.state = "finished";
+          updates.winner_id = winner.id;
+          updates.winner_name = winner.name;
         }
-        updates.state = "finished";
-        updates.winner_id = winner.id;
-        updates.winner_name = winner.name;
+        
+        // 4. PATCH avec optimistic lock : seulement si updated_at n'a pas changé
+        // On utilise Prefer: return=representation pour récupérer la version après update
+        const patchUrl = "bb_gg_rooms?id=eq."+fresh.id+"&updated_at=eq."+encodeURIComponent(lastUpdate);
+        const patchResult = await sbFetch(patchUrl, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json", "Prefer": "return=representation" },
+          body: JSON.stringify(updates),
+        });
+        
+        // Si patchResult est un tableau vide → aucune ligne affectée → conflit, retry
+        if (!Array.isArray(patchResult) || patchResult.length === 0) {
+          // Conflit : un autre joueur a écrit pendant qu'on calculait
+          console.warn("[GG BATTLE] Conflit détecté, retry " + (attempt + 1) + "/" + MAX_RETRIES);
+          // Petit délai aléatoire pour éviter que les 2 joueurs retry au même moment
+          await new Promise(r => setTimeout(r, 100 + Math.random() * 200));
+          continue;
+        }
+        
+        // ✅ Succès : on a la version finale fraîche (incluant les autres joueurs)
+        const updatedRoom = patchResult[0];
+        setGgBattleRoom(updatedRoom);
+        if (updatedRoom.state === "finished") {
+          setGgBattleScreen("finished");
+        }
+        return;
+      } catch (e) {
+        console.warn("ggBattleSubmitFinal attempt " + (attempt + 1) + " failed:", e);
+        if (attempt < MAX_RETRIES - 1) {
+          await new Promise(r => setTimeout(r, 200));
+        }
       }
-      
-      await sbFetch("bb_gg_rooms?id=eq."+fresh.id, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json", "Prefer": "return=minimal" },
-        body: JSON.stringify(updates),
-      });
-      
-      // Mise à jour locale immédiate de la room + passage à l'écran finished
-      // (sans attendre le polling, qui peut prendre jusqu'à 1.5s)
-      const updatedRoom = { ...fresh, ...updates };
-      setGgBattleRoom(updatedRoom);
-      // On passe à finished seulement si la partie est vraiment terminée (pas si on attend les autres)
-      if (updates.state === "finished") {
-        setGgBattleScreen("finished");
-      }
-    } catch (e) {
-      console.warn("ggBattleSubmitFinal failed:", e);
     }
+    
+    console.warn("[GG BATTLE] ggBattleSubmitFinal: échec après " + MAX_RETRIES + " tentatives");
   }
   
   // ─── GOAT BATTLE — Polling de la room (lobby + playing) ───
