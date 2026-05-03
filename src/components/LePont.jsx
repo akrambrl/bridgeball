@@ -2359,6 +2359,7 @@ if(typeof document!=="undefined"&&!document.getElementById("bb-css")){
   s.textContent=`
     @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700;800&display=swap');
     @keyframes splashRoll{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+    @keyframes countdownPulse{0%{transform:scale(0.5);opacity:0;}50%{transform:scale(1.2);opacity:1;}100%{transform:scale(1);opacity:1;}}
     @keyframes dropIn{from{opacity:0;transform:translateY(-70px) scale(1.3)}to{opacity:1;transform:translateY(0) scale(1)}}
     @keyframes goatCrash{
       0%{transform:translateY(-900px) scale(2.5) rotate(-15deg);opacity:0;}
@@ -2738,6 +2739,8 @@ export default function LePont() {
   const [ggBattleCode, setGgBattleCode] = useState(""); // code saisi pour rejoindre
   const [ggBattleError, setGgBattleError] = useState("");
   const [ggBattleTimer, setGgBattleTimer] = useState(180); // 3 min en secondes
+  const [ggBattleCountdown, setGgBattleCountdown] = useState(0); // 5..1 avant départ, 0 = en jeu
+  const [ggBattleViewGrid, setGgBattleViewGrid] = useState(null); // {player, room} pour voir la grille d'un joueur
   const [ggBattleLoading, setGgBattleLoading] = useState(false);
   
   // Restaurer la grille du jour depuis localStorage
@@ -3009,7 +3012,8 @@ export default function LePont() {
     if (!ggBattleRoom || ggBattleRoom.host_id !== playerId) return;
     setGgBattleLoading(true);
     try {
-      const startTime = new Date().toISOString();
+      // Started_at = maintenant + 5 secondes (compte à rebours pour tous les joueurs)
+      const startTime = new Date(Date.now() + 5000).toISOString();
       await sbFetch("bb_gg_rooms?id=eq."+ggBattleRoom.id, {
         method: "PATCH",
         headers: { "Content-Type": "application/json", "Prefer": "return=minimal" },
@@ -3030,6 +3034,15 @@ export default function LePont() {
       const data = await sbFetch("bb_gg_rooms?id=eq."+ggBattleRoom.id+"&limit=1");
       if (!Array.isArray(data) || data.length === 0) return;
       const fresh = data[0];
+      // Snapshot des cases remplies par le joueur actuel : {cellKey: playerName}
+      const filledGrid = {};
+      Object.keys(ggFilledCells || {}).forEach(function(k){
+        const v = ggFilledCells[k];
+        // Stocker juste le nom du joueur cité (string)
+        if (typeof v === "string") filledGrid[k] = v;
+        else if (v && v.name) filledGrid[k] = v.name;
+        else filledGrid[k] = String(v);
+      });
       const players = (fresh.players || []).map(p => {
         if (p.id !== playerId) return p;
         return {
@@ -3039,6 +3052,7 @@ export default function LePont() {
           lives_left: livesLeft,
           finished_at: new Date().toISOString(),
           finished_score: finalScore,
+          filled_grid: filledGrid,
         };
       });
       
@@ -3068,6 +3082,15 @@ export default function LePont() {
         headers: { "Content-Type": "application/json", "Prefer": "return=minimal" },
         body: JSON.stringify(updates),
       });
+      
+      // Mise à jour locale immédiate de la room + passage à l'écran finished
+      // (sans attendre le polling, qui peut prendre jusqu'à 1.5s)
+      const updatedRoom = { ...fresh, ...updates };
+      setGgBattleRoom(updatedRoom);
+      // On passe à finished seulement si la partie est vraiment terminée (pas si on attend les autres)
+      if (updates.state === "finished") {
+        setGgBattleScreen("finished");
+      }
     } catch (e) {
       console.warn("ggBattleSubmitFinal failed:", e);
     }
@@ -3142,7 +3165,20 @@ export default function LePont() {
     const DURATION_SEC = 180; // 3 minutes
     
     function tick() {
-      const elapsedSec = Math.floor((Date.now() - startMs) / 1000);
+      const nowMs = Date.now();
+      const elapsedMs = nowMs - startMs;
+      
+      // Phase 1 : Compte à rebours (avant le start)
+      if (elapsedMs < 0) {
+        const cd = Math.ceil(-elapsedMs / 1000); // 5, 4, 3, 2, 1
+        setGgBattleCountdown(cd);
+        setGgBattleTimer(DURATION_SEC); // reste à 180 affiché
+        return;
+      }
+      
+      // Phase 2 : Partie en cours
+      setGgBattleCountdown(0);
+      const elapsedSec = Math.floor(elapsedMs / 1000);
       const remaining = Math.max(0, DURATION_SEC - elapsedSec);
       setGgBattleTimer(remaining);
       
@@ -9056,8 +9092,9 @@ export default function LePont() {
                   {sortedPlayers.map(function(p, idx){
                     const isMe = p.id === playerId;
                     const medal = idx===0?"🥇":idx===1?"🥈":idx===2?"🥉":"  ";
+                    const hasGrid = p.filled_grid && Object.keys(p.filled_grid).length > 0;
                     return (
-                      <div key={p.id} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",background:isMe?"rgba(255,107,53,.12)":"rgba(255,255,255,.04)",border:"1px solid "+(isMe?"rgba(255,107,53,.3)":"rgba(255,255,255,.08)"),borderRadius:10}}>
+                      <div key={p.id} onClick={hasGrid ? function(){setGgBattleViewGrid({player:p, room:ggBattleRoom});} : null} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",background:isMe?"rgba(255,107,53,.12)":"rgba(255,255,255,.04)",border:"1px solid "+(isMe?"rgba(255,107,53,.3)":"rgba(255,255,255,.08)"),borderRadius:10,cursor:hasGrid?"pointer":"default"}}>
                         <div style={{fontSize:18,minWidth:24}}>{medal}</div>
                         <div style={{flex:1,fontSize:13,fontWeight:700,color:G.white}}>
                           {p.name} {isMe && <span style={{fontSize:10,color:"rgba(255,107,53,.7)"}}>({lang==="en"?"you":"toi"})</span>}
@@ -9066,10 +9103,16 @@ export default function LePont() {
                           <div style={{fontSize:14,fontWeight:900,color:idx===0?"#FFD600":G.white}}>{p.cells_filled || 0}/9</div>
                           <div style={{fontSize:10,color:"rgba(255,255,255,.5)"}}>{p.score || 0} pts</div>
                         </div>
+                        {hasGrid && <div style={{fontSize:14,color:"rgba(255,107,53,.7)",marginLeft:4}}>👁️</div>}
                       </div>
                     );
                   })}
                 </div>
+                {sortedPlayers.some(function(p){return p.filled_grid && Object.keys(p.filled_grid).length > 0;}) && (
+                  <div style={{fontSize:10,color:"rgba(255,255,255,.4)",marginBottom:14,textAlign:"center",fontStyle:"italic"}}>
+                    👁️ {lang==="en"?"Tap a player to see their grid":"Tape sur un joueur pour voir sa grille"}
+                  </div>
+                )}
                 
                 <button onClick={function(){
                   setGgBattleScreen(null);
@@ -9084,6 +9127,77 @@ export default function LePont() {
             </div>
           );
         })()}
+        
+        {/* ⚔️ Modal GOAT BATTLE — Visualiser la grille d'un joueur */}
+        {ggBattleViewGrid && ggBattleViewGrid.player && ggBattleViewGrid.room && (() => {
+          const p = ggBattleViewGrid.player;
+          const room = ggBattleViewGrid.room;
+          const isMe = p.id === playerId;
+          // Régénérer la grille à partir du seed pour avoir les critères
+          const grid = ggGenerateGrid(room.seed);
+          if (!grid) return null;
+          const filled = p.filled_grid || {};
+          
+          return (
+            <div onClick={function(){setGgBattleViewGrid(null);}} style={{position:"fixed",inset:0,zIndex:500,background:"rgba(0,0,0,.92)",backdropFilter:"blur(10px)",display:"flex",alignItems:"flex-start",justifyContent:"center",padding:"60px 14px 30px",overflowY:"auto"}}>
+              <div onClick={function(e){e.stopPropagation();}} style={{background:"linear-gradient(135deg, #1a1410, #100a08)",border:"1.5px solid rgba(255,107,53,.4)",borderRadius:24,padding:18,maxWidth:420,width:"100%"}}>
+                {/* Header */}
+                <div style={{textAlign:"center",marginBottom:14}}>
+                  <div style={{fontSize:11,color:"rgba(255,107,53,.8)",letterSpacing:2,fontWeight:700,marginBottom:4}}>👁️ {lang==="en"?"GRID OF":"GRILLE DE"}</div>
+                  <div style={{fontSize:20,fontWeight:900,color:G.white,marginBottom:6}}>
+                    {p.name} {isMe && <span style={{fontSize:11,color:"rgba(255,107,53,.7)"}}>({lang==="en"?"you":"toi"})</span>}
+                  </div>
+                  <div style={{fontSize:12,color:"rgba(255,255,255,.7)"}}>
+                    {p.cells_filled || 0}/9 · {p.score || 0} pts
+                  </div>
+                </div>
+                
+                {/* Grille 3x3 — version compacte */}
+                <div style={{display:"grid",gridTemplateColumns:"60px 1fr 1fr 1fr",gridTemplateRows:"50px 80px 80px 80px",gap:3,marginBottom:14}}>
+                  {/* Coin vide */}
+                  <div></div>
+                  {/* Critères de colonnes */}
+                  {grid.colCriteria.map(function(col, idx){
+                    const icon = col.type==="trophy"?(col.value==="world_cup"?"🏆":"⭐"):col.type==="nationality"?"🌍":col.type==="league"?"🏟️":col.type==="position"?"⚽":"🏆";
+                    return (
+                      <div key={"col-"+idx} style={{background:"rgba(0,0,0,.3)",borderRadius:6,padding:"4px 3px",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",fontSize:8.5,fontWeight:800,color:G.white,textAlign:"center",lineHeight:1.1}}>
+                        <div style={{fontSize:14,marginBottom:1}}>{icon}</div>
+                        <div style={{textTransform:"uppercase",fontSize:8}}>{col.label}</div>
+                      </div>
+                    );
+                  })}
+                  
+                  {/* Lignes */}
+                  {grid.rowCriteria.map(function(row, rIdx){
+                    const rIcon = row.type==="club"?"🛡️":row.type==="nationality"?"🌍":row.type==="position"?"⚽":"🏆";
+                    return [
+                      // Critère de la ligne
+                      <div key={"row-"+rIdx} style={{background:"rgba(0,0,0,.3)",borderRadius:6,padding:"4px 3px",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",fontSize:8.5,fontWeight:800,color:G.white,textAlign:"center",lineHeight:1.1}}>
+                        <div style={{fontSize:13,marginBottom:1}}>{rIcon}</div>
+                        <div style={{textTransform:"uppercase",fontSize:7.5}}>{row.label}</div>
+                      </div>,
+                      // 3 cases pour cette ligne
+                      ...grid.colCriteria.map(function(col, cIdx){
+                        const key = rIdx + "-" + cIdx;
+                        const playerName = filled[key];
+                        const isFilled = !!playerName;
+                        return (
+                          <div key={key} style={{background:isFilled?"linear-gradient(135deg,rgba(0,230,118,.25),rgba(0,184,95,.2))":"rgba(255,255,255,.04)",border:"1px solid "+(isFilled?"rgba(0,230,118,.5)":"rgba(255,255,255,.08)"),borderRadius:6,padding:"4px 3px",display:"flex",alignItems:"center",justifyContent:"center",textAlign:"center",fontSize:9.5,fontWeight:700,color:isFilled?"#fff":"rgba(255,255,255,.3)",lineHeight:1.15}}>
+                            {isFilled ? playerName : "—"}
+                          </div>
+                        );
+                      })
+                    ];
+                  })}
+                </div>
+                
+                <button onClick={function(){setGgBattleViewGrid(null);}} style={{width:"100%",padding:12,borderRadius:50,border:"none",background:"rgba(255,255,255,.08)",color:G.white,fontWeight:700,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
+                  {lang==="en"?"Close":"Fermer"}
+                </button>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* 🐐 Modal GOAT GRID — Mode quotidien grille 3x3 (ou battle playing) */}
         {(showGoatGrid || ggBattleScreen === "playing") && (
@@ -9092,6 +9206,17 @@ export default function LePont() {
             <div style={{position:"absolute",inset:0,zIndex:0,overflow:"hidden",opacity:.4}}>
               {[0,1,2,3,4,5,6].map(function(i){return(<div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#1E5C2A":"#276B34"}}/>);})}
             </div>
+            
+            {/* Compte à rebours pré-jeu (mode battle uniquement) */}
+            {ggBattleScreen === "playing" && ggBattleCountdown > 0 && (
+              <div style={{position:"absolute",inset:0,zIndex:50,background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:20}}>
+                <div style={{fontFamily:G.heading,fontSize:32,letterSpacing:3,color:"#FF6B35",textAlign:"center"}}>⚔️ GOAT BATTLE</div>
+                <div style={{fontSize:14,color:"rgba(255,255,255,.7)",textAlign:"center",letterSpacing:1}}>{lang==="en"?"GET READY...":"PRÊT ?"}</div>
+                <div key={ggBattleCountdown} style={{fontSize:140,fontWeight:900,color:"#FFD600",lineHeight:1,textShadow:"0 4px 30px rgba(255,214,0,.4)",animation:"countdownPulse .9s ease-out"}}>
+                  {ggBattleCountdown}
+                </div>
+              </div>
+            )}
             
             <div style={{position:"relative",zIndex:1,display:"flex",flexDirection:"column",height:"100%",padding:"12px 14px",overflowY:"auto",WebkitOverflowScrolling:"touch"}}>
               
@@ -9940,7 +10065,28 @@ export default function LePont() {
             <input value={roomInput} onChange={function(e){setRoomInput(e.target.value.toUpperCase());setRoomMsg("");}}
               placeholder={lang==="en"?"Room code":"Code salle"} maxLength={6}
               style={{flex:1,padding:"10px 12px",borderRadius:12,border:"1.5px solid rgba(255,255,255,.12)",background:"rgba(255,255,255,.05)",color:G.white,fontFamily:G.font,fontSize:14,fontWeight:700,letterSpacing:3,textTransform:"uppercase",outline:"none"}}/>
-            <button onClick={function(){requirePseudo(function(){joinRoom(roomInput);});}} style={{padding:"10px 14px",background:"rgba(255,255,255,.07)",color:G.white,border:"1px solid rgba(255,255,255,.12)",borderRadius:12,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700}}>{lang==="en"?"Join":"Rejoindre"}</button>
+            <button onClick={function(){requirePseudo(async function(){
+              const code = (roomInput||"").trim().toUpperCase();
+              if (code.length !== 6) { setRoomMsg(lang==="en"?"Invalid code":"Code invalide"); return; }
+              setRoomMsg("");
+              // Étape 1 : essayer en priorité une room GOAT BATTLE
+              try {
+                const ggRoom = await sbFetch("bb_gg_rooms?code=eq."+code+"&limit=1");
+                if (Array.isArray(ggRoom) && ggRoom.length > 0) {
+                  // C'est une room Battle → ouvrir le menu battle puis rejoindre
+                  setGgBattleCode(code);
+                  setGgBattleScreen("menu");
+                  setRoomInput("");
+                  // Petit délai pour que le state du menu se monte avant de join
+                  setTimeout(function(){ ggBattleJoinRoom(code); }, 100);
+                  return;
+                }
+              } catch (e) {
+                // Si erreur, on tombe sur le fallback Plug/Mercato
+              }
+              // Étape 2 : fallback Plug/Mercato
+              joinRoom(code);
+            });}} style={{padding:"10px 14px",background:"rgba(255,255,255,.07)",color:G.white,border:"1px solid rgba(255,255,255,.12)",borderRadius:12,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700}}>{lang==="en"?"Join":"Rejoindre"}</button>
           </div>
         </div>
         {roomMsg && <div style={{fontSize:12,color:"#FF3D57",fontWeight:700,marginTop:-4}}>{roomMsg}</div>}
