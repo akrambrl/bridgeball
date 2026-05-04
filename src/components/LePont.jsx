@@ -2744,6 +2744,8 @@ export default function LePont() {
   const [reviewRoundsModal, setReviewRoundsModal] = useState(null); // {mode:"pont"|"chaine", playerName, rounds:[...]} ou null
   const [ggModeChoice, setGgModeChoice] = useState(false); // modal de choix solo/multi pour GOAT GRID
   const [ggBattleLoading, setGgBattleLoading] = useState(false);
+  // Ref pour avoir les valeurs LIVE du joueur (utilisé par le timer qui capture des closures)
+  const ggBattleStateRef = React.useRef({ filledCells: {}, score: 0, lives: 3, submitted: false });
   
   // Restaurer la grille du jour depuis localStorage
   function ggLoadFromStorage() {
@@ -3124,14 +3126,27 @@ export default function LePont() {
   async function ggBattleSubmitFinal(finalScore, cellsFilled, livesLeft) {
     if (!ggBattleRoom) return;
     
+    // IMPORTANT : utiliser la ref pour avoir les valeurs LIVE (pas la closure périmée)
+    // Le tick du timer est un setInterval qui capture la closure du premier render
+    const liveFilledCells = (ggBattleStateRef && ggBattleStateRef.current && ggBattleStateRef.current.filledCells) || ggFilledCells || {};
+    
     // Snapshot des cases remplies par le joueur actuel : {cellKey: playerName}
     const filledGrid = {};
-    Object.keys(ggFilledCells || {}).forEach(function(k){
-      const v = ggFilledCells[k];
+    Object.keys(liveFilledCells).forEach(function(k){
+      const v = liveFilledCells[k];
       if (typeof v === "string") filledGrid[k] = v;
       else if (v && v.name) filledGrid[k] = v.name;
       else filledGrid[k] = String(v);
     });
+    
+    // Sécurité : si cellsFilled passé est 0 mais qu'on a des cellules locales, prendre le compte réel
+    if (cellsFilled === 0 && Object.keys(liveFilledCells).length > 0) {
+      cellsFilled = Object.keys(liveFilledCells).length;
+    }
+    // Sécurité : si finalScore est 0 mais qu'on a un score live plus haut, prendre le live
+    if ((!finalScore || finalScore === 0) && ggBattleStateRef && ggBattleStateRef.current && ggBattleStateRef.current.score > 0) {
+      finalScore = ggBattleStateRef.current.score;
+    }
     
     // Boucle de retry : on lit la version la plus récente, on update, on PATCH avec WHERE updated_at
     // Si quelqu'un d'autre a modifié entre temps, le PATCH n'affecte 0 ligne → on retry
@@ -3346,8 +3361,7 @@ export default function LePont() {
   }, [ggBattleRoom && ggBattleRoom.id, ggBattleScreen]);
   
   // ─── GOAT BATTLE — Timer basé sur started_at (résiste au lock screen) ───
-  // Refs pour avoir les valeurs LIVE (pas figées dans la closure)
-  const ggBattleStateRef = React.useRef({ filledCells: {}, score: 0, lives: 3, submitted: false });
+  // Mise à jour de la ref avec les valeurs LIVE
   React.useEffect(function() {
     ggBattleStateRef.current.filledCells = ggFilledCells;
     ggBattleStateRef.current.score = ggScore;
