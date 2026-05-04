@@ -8491,6 +8491,10 @@ export default function LePont() {
           <button onClick={function(){setDuelResult(null);setScreen("home");}} style={{width:"100%",padding:"16px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800,marginTop:8}}>
             {lang==="en"?"Back home":"Retour à l'accueil"}
           </button>
+        </div>
+        {historyModal}
+        {reportModal}
+      </div>
     );
   }
 
