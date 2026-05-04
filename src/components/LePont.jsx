@@ -3327,43 +3327,6 @@ export default function LePont() {
     return function() { stopped = true; clearInterval(intervalId); };
   }, [ggBattleRoom && ggBattleRoom.id, ggBattleScreen]);
   
-  // ─── PLUG / MERCATO MULTI — Polling pour détecter une revanche du host ───
-  React.useEffect(function() {
-    if (!duelResult || !duelResult.isRoom || !duelResult.roomId) return;
-    if (duelResult.hostId === playerId) return; // le host gère lui-même son restart
-    
-    let stopped = false;
-    async function poll() {
-      try {
-        const data = await sbFetch("bb_rooms?id=eq."+duelResult.roomId+"&limit=1");
-        if (stopped || !Array.isArray(data) || data.length === 0) return;
-        const r = data[0];
-        // Si le host a relancé (status passé à "lobby")
-        if (r.status === "lobby" || r.status === "waiting") {
-          const players = typeof r.players === "string" ? JSON.parse(r.players) : r.players;
-          const meInRoom = (players || []).find(function(p){ return p.id === playerId; });
-          if (meInRoom) {
-            // Rejoindre le lobby de la nouvelle partie
-            const roomDuel = {id:r.id, isRoom:true, challenger_id:r.host_id, mode:r.mode, diff:r.diff, rounds:r.rounds};
-            activeDuelRef.current = roomDuel;
-            setActiveDuel(roomDuel);
-            setRoom(r);
-            setDuelResult(null);
-            setRoundAnswers([]);
-            setChainHistory([]);
-            startRoomPolling(r.id);
-            setScreen("lobby");
-          }
-        }
-      } catch (e) {
-        // Échec silencieux
-      }
-    }
-    
-    const intervalId = setInterval(poll, 2000); // toutes 2s
-    return function() { stopped = true; clearInterval(intervalId); };
-  }, [duelResult && duelResult.roomId]);
-  
   // ─── GOAT BATTLE — Timer basé sur started_at (résiste au lock screen) ───
   // Refs pour avoir les valeurs LIVE (pas figées dans la closure)
   const ggBattleStateRef = React.useRef({ filledCells: {}, score: 0, lives: 3, submitted: false });
@@ -3824,8 +3787,7 @@ export default function LePont() {
   const [room, setRoom] = useState(null);
   const [roomInput, setRoomInput] = useState("");
   const [pendingRoomCode, setPendingRoomCode] = useState(null);
-  const [roomMsg, setRoomMsg] = useState("");
-  const [abandonNotif, setAbandonNotif] = useState("");
+  const [roomMsg, setRoomMsg] = useState("");const [abandonNotif, setAbandonNotif] = useState("");
   const [showRoomCreate, setShowRoomCreate] = useState(false);
   const roomPollRef = useRef(null);
   const [duelCountdown, setDuelCountdown] = useState(null); // 3..2..1 before launch
@@ -4777,6 +4739,43 @@ export default function LePont() {
       }, 2000);
     } catch(e) {}
   }
+
+  // ─── PLUG / MERCATO MULTI — Polling pour détecter une revanche du host ───
+  React.useEffect(function() {
+    if (!duelResult || !duelResult.isRoom || !duelResult.roomId) return;
+    if (duelResult.hostId === playerId) return; // le host gère lui-même son restart
+    
+    let stopped = false;
+    async function poll() {
+      try {
+        const data = await sbFetch("bb_rooms?id=eq."+duelResult.roomId+"&limit=1");
+        if (stopped || !Array.isArray(data) || data.length === 0) return;
+        const r = data[0];
+        // Si le host a relancé (status passé à "lobby")
+        if (r.status === "lobby" || r.status === "waiting") {
+          const players = typeof r.players === "string" ? JSON.parse(r.players) : r.players;
+          const meInRoom = (players || []).find(function(p){ return p.id === playerId; });
+          if (meInRoom) {
+            // Rejoindre le lobby de la nouvelle partie
+            const roomDuel = {id:r.id, isRoom:true, challenger_id:r.host_id, mode:r.mode, diff:r.diff, rounds:r.rounds};
+            activeDuelRef.current = roomDuel;
+            setActiveDuel(roomDuel);
+            setRoom(r);
+            setDuelResult(null);
+            setRoundAnswers([]);
+            setChainHistory([]);
+            startRoomPolling(r.id);
+            setScreen("lobby");
+          }
+        }
+      } catch (e) {
+        // Échec silencieux
+      }
+    }
+    
+    const intervalId = setInterval(poll, 2000); // toutes 2s
+    return function() { stopped = true; clearInterval(intervalId); };
+  }, [duelResult && duelResult.roomId]);
 
 
   async function submitRoomScore(sc) {
