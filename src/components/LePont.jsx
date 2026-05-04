@@ -2738,7 +2738,7 @@ export default function LePont() {
   const [ggBattleRoom, setGgBattleRoom] = useState(null); // { id, code, host_id, state, seed, players, started_at, winner_id, winner_name }
   const [ggBattleCode, setGgBattleCode] = useState(""); // code saisi pour rejoindre
   const [ggBattleError, setGgBattleError] = useState("");
-  const [ggBattleTimer, setGgBattleTimer] = useState(180); // 3 min en secondes
+  const [ggBattleTimer, setGgBattleTimer] = useState(120); // 2 min en secondes
   const [ggBattleCountdown, setGgBattleCountdown] = useState(0); // 5..1 avant départ, 0 = en jeu
   const [ggBattleViewGrid, setGgBattleViewGrid] = useState(null); // {player, room} pour voir la grille d'un joueur
   const [reviewRoundsModal, setReviewRoundsModal] = useState(null); // {mode:"pont"|"chaine", playerName, rounds:[...]} ou null
@@ -3158,7 +3158,7 @@ export default function LePont() {
         const someoneCompleted = players.some(p => p.cells_filled === 9);
         const startMs = fresh.started_at ? new Date(fresh.started_at).getTime() : 0;
         const elapsedSec = startMs ? (Date.now() - startMs) / 1000 : 0;
-        const timerExpired = elapsedSec >= 180;
+        const timerExpired = elapsedSec >= 120;
         const updates = { players };
         
         if (allFinished || someoneCompleted || timerExpired) {
@@ -3253,7 +3253,7 @@ export default function LePont() {
             setGgGuess("");
             setGgFlash(null);
             setGgSelectedCell(null);
-            setGgBattleTimer(180); // reset 3 min
+            setGgBattleTimer(120); // reset 2 min
             setGgBattleScreen("playing");
           }
         }
@@ -3344,7 +3344,7 @@ export default function LePont() {
     ggBattleStateRef.current.submitted = false;
     
     const startMs = new Date(ggBattleRoom.started_at).getTime();
-    const DURATION_SEC = 180; // 3 minutes
+    const DURATION_SEC = 120; // 2 minutes
     
     function tick() {
       const nowMs = Date.now();
@@ -3354,7 +3354,7 @@ export default function LePont() {
       if (elapsedMs < 0) {
         const cd = Math.ceil(-elapsedMs / 1000); // 5, 4, 3, 2, 1
         setGgBattleCountdown(cd);
-        setGgBattleTimer(DURATION_SEC); // reste à 180 affiché
+        setGgBattleTimer(DURATION_SEC); // reste à 120 affiché
         return;
       }
       
@@ -9353,7 +9353,7 @@ export default function LePont() {
                 <div style={{display:"flex",gap:12,marginTop:14,position:"relative",zIndex:1}}>
                   <div style={{flex:1,background:"rgba(0,0,0,.35)",borderRadius:8,padding:"6px 8px",border:"1px solid rgba(255,107,53,.2)"}}>
                     <div style={{fontSize:9,color:"rgba(255,255,255,.5)",letterSpacing:1,fontWeight:700}}>{lang==="en"?"TIMER":"DURÉE"}</div>
-                    <div style={{fontSize:11,color:"#fff",fontWeight:800,marginTop:1}}>3 min ⏱️</div>
+                    <div style={{fontSize:11,color:"#fff",fontWeight:800,marginTop:1}}>2 min ⏱️</div>
                   </div>
                   <div style={{flex:1,background:"rgba(0,0,0,.35)",borderRadius:8,padding:"6px 8px",border:"1px solid rgba(255,107,53,.2)"}}>
                     <div style={{fontSize:9,color:"rgba(255,255,255,.5)",letterSpacing:1,fontWeight:700}}>{lang==="en"?"PLAYERS":"JOUEURS"}</div>
@@ -9381,7 +9381,7 @@ export default function LePont() {
               <div style={{textAlign:"center",marginBottom:20}}>
                 <div style={{fontSize:50,marginBottom:6}}>⚔️</div>
                 <div style={{fontFamily:G.heading,fontSize:28,letterSpacing:2,color:"#FF6B35",lineHeight:1}}>GOAT BATTLE</div>
-                <div style={{fontSize:11,color:"rgba(255,255,255,.6)",marginTop:6}}>{lang==="en"?"3 minutes · 2-8 players · Same grid":"3 minutes · 2-8 joueurs · Même grille"}</div>
+                <div style={{fontSize:11,color:"rgba(255,255,255,.6)",marginTop:6}}>{lang==="en"?"2 minutes · 2-8 players · Same grid":"2 minutes · 2-8 joueurs · Même grille"}</div>
               </div>
               
               {ggBattleError && (
