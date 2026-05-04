@@ -1681,7 +1681,7 @@ const GG_CL_WINNERS = new Set([
   "Edwin van der Sar","Tomasz Kuszczak","Ben Foster","Rio Ferdinand","Nemanja Vidić",
   "Patrice Evra","Wes Brown","Gary Neville","Mikael Silvestre","John O'Shea",
   "Cristiano Ronaldo","Wayne Rooney","Carlos Tevez","Ryan Giggs","Paul Scholes",
-  "Michael Carrick","Anderson","Darren Fletcher","Nani",
+  "Michael Carrick","Anderson","Darren Fletcher","Nani","Park Ji-sung","Owen Hargreaves",
   // 🇪🇸 Barcelona 2009
   "José Manuel Pinto","Gerard Pique","Dani Alves","Éric Abidal","Seydou Keita",
   "Sergio Busquets","Yaya Touré","Aliaksandr Hleb","Lionel Messi","Thierry Henry",
@@ -2741,6 +2741,7 @@ export default function LePont() {
   const [ggBattleTimer, setGgBattleTimer] = useState(180); // 3 min en secondes
   const [ggBattleCountdown, setGgBattleCountdown] = useState(0); // 5..1 avant départ, 0 = en jeu
   const [ggBattleViewGrid, setGgBattleViewGrid] = useState(null); // {player, room} pour voir la grille d'un joueur
+  const [reviewRoundsModal, setReviewRoundsModal] = useState(null); // {mode:"pont"|"chaine", playerName, rounds:[...]} ou null
   const [ggModeChoice, setGgModeChoice] = useState(false); // modal de choix solo/multi pour GOAT GRID
   const [ggBattleLoading, setGgBattleLoading] = useState(false);
   
@@ -3027,6 +3028,86 @@ export default function LePont() {
     }
   }
   
+  // Relancer la partie (host uniquement) → reset la room avec une nouvelle grille
+  async function ggBattleRestartGame() {
+    if (!ggBattleRoom || ggBattleRoom.host_id !== playerId) return;
+    setGgBattleLoading(true);
+    try {
+      // Reset complet : nouveau seed, players reset, état lobby
+      const newSeed = Math.floor(Math.random() * 1000000) + 1;
+      const resetPlayers = (ggBattleRoom.players || []).map(function(p){
+        return {
+          id: p.id,
+          name: p.name,
+          joined_at: p.joined_at || new Date().toISOString(),
+          cells_filled: 0,
+          score: 0,
+          lives_left: 3,
+          finished_at: null,
+          finished_score: null,
+          filled_grid: {},
+        };
+      });
+      await sbFetch("bb_gg_rooms?id=eq."+ggBattleRoom.id, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", "Prefer": "return=minimal" },
+        body: JSON.stringify({
+          state: "lobby",
+          seed: newSeed,
+          players: resetPlayers,
+          started_at: null,
+          winner_id: null,
+          winner_name: null,
+        }),
+      });
+      // Reset le flag de submit local pour pouvoir rejouer
+      ggBattleStateRef.current.submitted = false;
+      // Le polling fera revenir tout le monde au lobby
+      setGgBattleScreen("lobby");
+    } catch (e) {
+      console.warn("[GG BATTLE] restart failed:", e);
+      setGgBattleError(lang==="en"?"Error restarting":"Erreur au relancement");
+    } finally {
+      setGgBattleLoading(false);
+    }
+  }
+  
+  // Synchroniser la progression du joueur dans la room (appelé après chaque case validée)
+  // Permet de garder Supabase à jour même si le joueur passe en background ensuite
+  async function ggBattleSyncProgress(currentScore, currentCellsFilled, currentLives) {
+    if (!ggBattleRoom || !ggBattleRoom.id) return;
+    if (ggBattleScreen !== "playing") return;
+    
+    try {
+      const data = await sbFetch("bb_gg_rooms?id=eq."+ggBattleRoom.id+"&limit=1");
+      if (!Array.isArray(data) || data.length === 0) return;
+      const fresh = data[0];
+      // Si la partie est déjà finished, ne rien faire
+      if (fresh.state === "finished") return;
+      
+      const players = (fresh.players || []).map(function(p){
+        if (p.id !== playerId) return p;
+        // On garde finished_at s'il est déjà set (cas où le joueur a déjà submit)
+        return {
+          ...p,
+          score: currentScore,
+          cells_filled: currentCellsFilled,
+          lives_left: currentLives,
+        };
+      });
+      
+      // PATCH simple, sans optimistic lock (les conflits sur ce champ sont OK : c'est juste live progress)
+      await sbFetch("bb_gg_rooms?id=eq."+fresh.id, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", "Prefer": "return=minimal" },
+        body: JSON.stringify({ players: players }),
+      });
+    } catch (e) {
+      // Échec silencieux : c'est juste une synchro en background, on retentera à la prochaine case
+      console.warn("[GG BATTLE] sync progress failed:", e);
+    }
+  }
+  
   // Soumettre son score final à la room (avec optimistic locking pour éviter les conflits)
   async function ggBattleSubmitFinal(finalScore, cellsFilled, livesLeft) {
     if (!ggBattleRoom) return;
@@ -3081,9 +3162,11 @@ export default function LePont() {
         const updates = { players };
         
         if (allFinished || someoneCompleted || timerExpired) {
-          if (timerExpired) {
+          // Si timer écoulé OU quelqu'un a fait 9/9 → finaliser tous les joueurs qui n'ont pas encore submit
+          // (avec leurs dernières valeurs synchronisées via sync live)
+          if (timerExpired || someoneCompleted) {
             updates.players = players.map(function(p){
-              if (p.finished_at) return p;
+              if (p.finished_at) return p; // déjà fini
               return {
                 ...p,
                 finished_at: new Date().toISOString(),
@@ -3177,7 +3260,62 @@ export default function LePont() {
         
         // Si state passe à "finished" (un joueur a fait 9/9 ou timer écoulé) → écran final
         if (updated.state === "finished" && ggBattleScreen === "playing") {
+          // Vérifier si MES données dans la room ont bien mes dernières valeurs locales
+          // Si elles sont obsolètes (la sync live n'a pas eu le temps), les pousser maintenant
+          const me = (updated.players || []).find(function(p){ return p.id === playerId; });
+          const myLocalCells = Object.keys(ggFilledCells || {}).length;
+          if (me && (me.cells_filled !== myLocalCells || me.score !== ggScore)) {
+            // Mes données sont obsolètes → forcer une mise à jour avant de passer à l'écran final
+            try {
+              const filledGrid = {};
+              Object.keys(ggFilledCells || {}).forEach(function(k){
+                const v = ggFilledCells[k];
+                if (typeof v === "string") filledGrid[k] = v;
+                else if (v && v.name) filledGrid[k] = v.name;
+                else filledGrid[k] = String(v);
+              });
+              const updatedPlayers = (updated.players || []).map(function(p){
+                if (p.id !== playerId) return p;
+                return {
+                  ...p,
+                  score: ggScore,
+                  cells_filled: myLocalCells,
+                  lives_left: ggLives,
+                  finished_at: p.finished_at || new Date().toISOString(),
+                  finished_score: ggScore,
+                  filled_grid: filledGrid,
+                };
+              });
+              await sbFetch("bb_gg_rooms?id=eq."+updated.id, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json", "Prefer": "return=representation" },
+                body: JSON.stringify({ players: updatedPlayers }),
+              });
+              // Recharger pour avoir les valeurs réelles à afficher
+              const refreshData = await sbFetch("bb_gg_rooms?id=eq."+updated.id+"&limit=1");
+              if (Array.isArray(refreshData) && refreshData[0]) {
+                setGgBattleRoom(refreshData[0]);
+              }
+            } catch (e) {
+              console.warn("[GG BATTLE] late sync failed:", e);
+            }
+          }
           setGgBattleScreen("finished");
+        }
+        
+        // Si le host a relancé une partie : state passe de "finished" à "lobby" → revenir au lobby
+        if (updated.state === "lobby" && ggBattleScreen === "finished") {
+          // Reset l'état local du jeu pour pouvoir rejouer
+          setGgFilledCells({});
+          setGgUsedPlayers(new Set());
+          setGgLives(3);
+          setGgScore(0);
+          setGgGameOver(false);
+          setGgGuess("");
+          setGgFlash(null);
+          setGgSelectedCell(null);
+          ggBattleStateRef.current.submitted = false;
+          setGgBattleScreen("lobby");
         }
       } catch (e) {
         console.warn("battle poll failed:", e);
@@ -3188,6 +3326,43 @@ export default function LePont() {
     const intervalId = setInterval(poll, 1500); // toutes les 1.5s
     return function() { stopped = true; clearInterval(intervalId); };
   }, [ggBattleRoom && ggBattleRoom.id, ggBattleScreen]);
+  
+  // ─── PLUG / MERCATO MULTI — Polling pour détecter une revanche du host ───
+  React.useEffect(function() {
+    if (!duelResult || !duelResult.isRoom || !duelResult.roomId) return;
+    if (duelResult.hostId === playerId) return; // le host gère lui-même son restart
+    
+    let stopped = false;
+    async function poll() {
+      try {
+        const data = await sbFetch("bb_rooms?id=eq."+duelResult.roomId+"&limit=1");
+        if (stopped || !Array.isArray(data) || data.length === 0) return;
+        const r = data[0];
+        // Si le host a relancé (status passé à "lobby")
+        if (r.status === "lobby" || r.status === "waiting") {
+          const players = typeof r.players === "string" ? JSON.parse(r.players) : r.players;
+          const meInRoom = (players || []).find(function(p){ return p.id === playerId; });
+          if (meInRoom) {
+            // Rejoindre le lobby de la nouvelle partie
+            const roomDuel = {id:r.id, isRoom:true, challenger_id:r.host_id, mode:r.mode, diff:r.diff, rounds:r.rounds};
+            activeDuelRef.current = roomDuel;
+            setActiveDuel(roomDuel);
+            setRoom(r);
+            setDuelResult(null);
+            setRoundAnswers([]);
+            setChainHistory([]);
+            startRoomPolling(r.id);
+            setScreen("lobby");
+          }
+        }
+      } catch (e) {
+        // Échec silencieux
+      }
+    }
+    
+    const intervalId = setInterval(poll, 2000); // toutes 2s
+    return function() { stopped = true; clearInterval(intervalId); };
+  }, [duelResult && duelResult.roomId]);
   
   // ─── GOAT BATTLE — Timer basé sur started_at (résiste au lock screen) ───
   // Refs pour avoir les valeurs LIVE (pas figées dans la closure)
@@ -3270,6 +3445,24 @@ export default function LePont() {
       ggBattleSubmitFinal(ggScore, 9, ggLives);
     }
   }, [ggFilledCells, ggBattleScreen]);
+  
+  // ─── GOAT BATTLE — Sync progression en temps réel ───
+  // Push score/cells/lives à Supabase à chaque changement, pour que le serveur
+  // ait toujours les valeurs à jour même si le joueur passe son écran en background ensuite
+  React.useEffect(function() {
+    if (ggBattleScreen !== "playing") return;
+    if (!ggBattleRoom) return;
+    if (ggBattleStateRef.current.submitted) return; // si déjà soumis, on ne sync plus
+    
+    const filledCount = Object.keys(ggFilledCells).length;
+    if (filledCount === 0) return; // rien à sync au début
+    
+    // Délai pour debounce (au cas où plusieurs changements rapides) - court pour push rapidement
+    const t = setTimeout(function() {
+      ggBattleSyncProgress(ggScore, filledCount, ggLives);
+    }, 150);
+    return function() { clearTimeout(t); };
+  }, [ggFilledCells, ggScore, ggBattleScreen]);
   
   // Démarrer/reprendre une partie GOAT GRID
   function ggStartGame() {
@@ -4171,6 +4364,55 @@ export default function LePont() {
     } catch(e) { console.error("Abandon error:", e); }
   }
 
+  // Relancer une room Plug/Mercato (host uniquement)
+  async function restartRoom() {
+    if (!duelResult || !duelResult.isRoom || !duelResult.roomId) return;
+    if (duelResult.hostId !== playerId) return;
+    try {
+      // Récupérer la room actuelle
+      const data = await sbFetch("bb_rooms?id=eq."+duelResult.roomId+"&limit=1");
+      if (!Array.isArray(data) || data.length === 0) return;
+      const r = data[0];
+      const players = typeof r.players === "string" ? JSON.parse(r.players) : r.players;
+      // Reset les scores et rounds des joueurs (mais on les garde dans la room)
+      const resetPlayers = (players || []).filter(function(p){ return !p.abandoned; }).map(function(p){
+        return {
+          id: p.id,
+          name: p.name,
+          score: 0,
+          partial_score: 0,
+          rounds: [],
+          status: "playing",
+          abandoned: false,
+        };
+      });
+      await sbFetch("bb_rooms?id=eq."+duelResult.roomId, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", "Prefer": "return=minimal" },
+        body: JSON.stringify({
+          players: JSON.stringify(resetPlayers),
+          status: "lobby",
+          // On ne change pas le code ni le mode/diff/rounds : même room
+        }),
+      });
+      // Le host rejoint le lobby de la nouvelle partie
+      const roomDuel = {id:r.id, isRoom:true, challenger_id:r.host_id, mode:r.mode, diff:r.diff, rounds:r.rounds};
+      activeDuelRef.current = roomDuel;
+      setActiveDuel(roomDuel);
+      setRoom(Object.assign({}, r, {players: resetPlayers, status: "lobby"}));
+      setDuelResult(null);
+      setRoundAnswers([]);
+      setChainHistory([]);
+      // Démarrer le polling pour que tous les joueurs reviennent au lobby
+      if (typeof startRoomPolling === "function") {
+        startRoomPolling(r.id);
+      }
+      setScreen("lobby");
+    } catch(e) {
+      console.warn("restartRoom failed:", e);
+    }
+  }
+  
   async function abandonRoom() {
     const duel = activeDuelRef.current;
     if (!duel || !duel.isRoom) return;
@@ -4212,7 +4454,11 @@ export default function LePont() {
     const isChallenger = activeDuel.challenger_id === playerId;
     const otherScore = isChallenger ? activeDuel.opponent_score : activeDuel.challenger_score;
     const newStatus = (otherScore !== null && otherScore !== undefined) ? "complete" : (isChallenger ? "challenger_played" : "opponent_played");
-    const update = isChallenger ? { challenger_score: sc, status: newStatus } : { opponent_score: sc, status: newStatus };
+    // Snapshot des manches jouées (Plug ou Mercato)
+    const myRounds = (activeDuel.mode === "chaine") ? chainHistory : roundAnswers;
+    const update = isChallenger
+      ? { challenger_score: sc, status: newStatus, challenger_rounds: myRounds }
+      : { opponent_score: sc, status: newStatus, opponent_rounds: myRounds };
     setActiveDuel(null);
     try {
       await sbFetch("bb_duels?id=eq." + duelId, {
@@ -4245,7 +4491,28 @@ export default function LePont() {
             setWinStreak(streak);
           }
         } catch(e){}
-        setDuelResult({ myScore, theirScore, oppName, mode: duelCopy.mode });
+        // Récupérer les rounds (mes rounds + adversaire) depuis bb_duels
+        let myRoundsFinal = myRounds;
+        let theirRoundsFinal = [];
+        try {
+          const fresh = await sbFetch("bb_duels?id=eq."+duelId+"&select=challenger_rounds,opponent_rounds&limit=1");
+          if (Array.isArray(fresh) && fresh[0]) {
+            const cRounds = fresh[0].challenger_rounds;
+            const oRounds = fresh[0].opponent_rounds;
+            const parseRounds = function(r){
+              if (!r) return [];
+              if (typeof r === "string") { try { return JSON.parse(r); } catch(e) { return []; } }
+              return Array.isArray(r) ? r : [];
+            };
+            myRoundsFinal = parseRounds(isChallenger ? cRounds : oRounds);
+            theirRoundsFinal = parseRounds(isChallenger ? oRounds : cRounds);
+          }
+        } catch(e) {}
+        setDuelResult({
+          myScore, theirScore, oppName, mode: duelCopy.mode,
+          myRounds: myRoundsFinal,
+          theirRounds: theirRoundsFinal,
+        });
       }
       loadDuels();
     } catch(e) { console.error("Duel score submit error:", e); }
@@ -4485,9 +4752,11 @@ export default function LePont() {
       if (!Array.isArray(data) || data.length === 0) return;
       const r = data[0];
       const players = typeof r.players === "string" ? JSON.parse(r.players) : r.players;
+      // Snapshot des manches jouées par le joueur courant (Plug ou Mercato)
+      const myRounds = (duel.mode === "chaine") ? chainHistory : roundAnswers;
       const updated = players.map(function(p) {
         return p.id === playerId
-          ? Object.assign({}, p, {partial_score: scoreRef.current})
+          ? Object.assign({}, p, {partial_score: scoreRef.current, rounds: myRounds})
           : p;
       });
       await sbFetch("bb_rooms?id=eq."+duel.id, {
@@ -4536,8 +4805,10 @@ export default function LePont() {
           finalRoom = r;
           break;
         }
+        // Snapshot des manches jouées (Plug ou Mercato)
+        const myRounds = (duel.mode === "chaine") ? chainHistory : roundAnswers;
         const updated = players.map(function(p){
-          return p.id === playerId ? Object.assign({}, p, {score:sc, status:"done"}) : p;
+          return p.id === playerId ? Object.assign({}, p, {score:sc, status:"done", rounds: myRounds}) : p;
         });
         const allDone = updated.every(function(p){return p.status==="done";});
         await sbFetch("bb_rooms?id=eq."+roomId, {
@@ -4655,7 +4926,7 @@ export default function LePont() {
       if (!a.abandoned && b.abandoned) return -1;
       return (b.score||0)-(a.score||0);
     });
-    const meInRoom = players.find(function(p){return p.id===playerId;}); const myRankInRoom = sorted.findIndex(function(p){return p.id===playerId;}); const roomImgs = myRankInRoom === 0 ? WIN_IMGS : LOSE_IMGS; setResultImg(roomImgs[Math.floor(Math.random()*roomImgs.length)]); setDuelResult({isRoom:true, players:sorted, mode:r.mode, myAbandoned: meInRoom && meInRoom.abandoned === true});
+    const meInRoom = players.find(function(p){return p.id===playerId;}); const myRankInRoom = sorted.findIndex(function(p){return p.id===playerId;}); const roomImgs = myRankInRoom === 0 ? WIN_IMGS : LOSE_IMGS; setResultImg(roomImgs[Math.floor(Math.random()*roomImgs.length)]); setDuelResult({isRoom:true, roomId:r.id, hostId:r.host_id, code:r.code, diff:r.diff, rounds:r.rounds, players:sorted, mode:r.mode, myAbandoned: meInRoom && meInRoom.abandoned === true});
     setActiveDuel(null);
     activeDuelRef.current = null;
     setRoom(null);
@@ -8179,25 +8450,47 @@ export default function LePont() {
           {!iAbandoned && resultImg && <img src={resultImg} style={{width:"60%",maxWidth:220,margin:"8px auto",display:"block",objectFit:"contain"}} />}
         </div>
         <div style={{...sheet,borderRadius:"28px 28px 0 0"}}>
-          {duelResult.players.map(function(p,i){return(
-            <div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",borderRadius:14,background:p.id===playerId?"rgba(0,230,118,.08)":"rgba(255,255,255,.03)",border:p.id===playerId?"1px solid rgba(0,230,118,.25)":"1px solid rgba(255,255,255,.05)",marginBottom:6}}>
+          {duelResult.players.map(function(p,i){
+            const hasRounds = Array.isArray(p.rounds) && p.rounds.length > 0;
+            const onClickHandler = hasRounds ? function(){
+              setReviewRoundsModal({
+                mode: duelResult.mode || "pont",
+                playerName: p.name + (p.id===playerId ? (lang==="en"?" (you)":" (toi)") : ""),
+                rounds: p.rounds,
+              });
+            } : null;
+            return (
+            <div key={i} onClick={onClickHandler} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",borderRadius:14,background:p.id===playerId?"rgba(0,230,118,.08)":"rgba(255,255,255,.03)",border:p.id===playerId?"1px solid rgba(0,230,118,.25)":"1px solid rgba(255,255,255,.05)",marginBottom:6,cursor:hasRounds?"pointer":"default"}}>
               <div style={{fontFamily:G.heading,fontSize:30,width:40,textAlign:"center",color:i<3?["#FFD600","#C0C0C0","#CD7F32"][i]:"rgba(255,255,255,.3)"}}>{i<3?medals[i]:i+1}</div>
               <div style={{flex:1,fontSize:14,fontWeight:800,color:p.id===playerId?G.accent:G.white}}>{p.name}{p.id===playerId?" (toi)":""}{p.abandoned?" 🏳️":""}</div>
               <div style={{fontFamily:G.heading,fontSize:26,color:i===0?G.gold:G.white}}>{p.score||0} <span style={{fontSize:12,color:"rgba(255,255,255,.3)"}}>pts</span></div>
+              {hasRounds && <div style={{fontSize:14,color:"rgba(255,214,0,.7)",marginLeft:4}}>👁️</div>}
             </div>
           );})}
+          {duelResult.players.some(function(p){return Array.isArray(p.rounds) && p.rounds.length > 0;}) && (
+            <div style={{fontSize:10,color:"rgba(255,255,255,.4)",textAlign:"center",marginTop:6,marginBottom:6,fontStyle:"italic"}}>
+              👁️ {lang==="en"?"Tap a player to see their answers":"Tape sur un joueur pour voir ses réponses"}
+            </div>
+          )}
           {((!duelResult.isChain && roundAnswers.length>0) || (duelResult.isChain && chainHistory.length>0)) && (
             <button onClick={()=>setShowHistory(true)} style={{width:"100%",padding:"13px",background:"rgba(251,226,22,.12)",color:"#FBE216",border:"1.5px solid rgba(251,226,22,.5)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginTop:8}}>
               📋 {duelResult.isChain?(lang==="en"?"See my chain":"Voir ma chaîne"):(lang==="en"?"Questions recap":"Récap des questions")}
             </button>
           )}
+          {/* Bouton Relancer (host uniquement) */}
+          {duelResult.hostId && duelResult.hostId === playerId && (
+            <button onClick={restartRoom} style={{width:"100%",padding:"14px",background:"linear-gradient(135deg,#00E676,#00B85F)",color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:900,marginTop:8,letterSpacing:1}}>
+              🔄 {lang==="en"?"REMATCH":"RELANCER"}
+            </button>
+          )}
+          {duelResult.hostId && duelResult.hostId !== playerId && duelResult.isRoom && (
+            <div style={{textAlign:"center",fontSize:11,color:"rgba(255,255,255,.5)",marginTop:8,fontStyle:"italic"}}>
+              {lang==="en"?"Waiting for the host to rematch...":"En attente d'une revanche..."}
+            </div>
+          )}
           <button onClick={function(){setDuelResult(null);setScreen("home");}} style={{width:"100%",padding:"16px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800,marginTop:8}}>
             {lang==="en"?"Back home":"Retour à l'accueil"}
           </button>
-        </div>
-        {historyModal}
-        {reportModal}
-      </div>
     );
   }
 
@@ -9178,6 +9471,18 @@ export default function LePont() {
                   </div>
                 )}
                 
+                {/* Bouton Relancer (host uniquement) */}
+                {ggBattleRoom.host_id === playerId && (
+                  <button onClick={ggBattleRestartGame} disabled={ggBattleLoading} style={{width:"100%",padding:14,borderRadius:50,border:"none",background:"linear-gradient(135deg,#00E676,#00B85F)",color:"#000",fontWeight:900,fontSize:14,letterSpacing:1,cursor:ggBattleLoading?"not-allowed":"pointer",marginBottom:8,opacity:ggBattleLoading?.5:1}}>
+                    {ggBattleLoading ? "..." : "🔄 " + (lang==="en"?"REMATCH":"RELANCER")}
+                  </button>
+                )}
+                {ggBattleRoom.host_id !== playerId && (
+                  <div style={{textAlign:"center",fontSize:11,color:"rgba(255,255,255,.5)",marginBottom:8,fontStyle:"italic"}}>
+                    {lang==="en"?"Waiting for the host to rematch...":"En attente d'une revanche..."}
+                  </div>
+                )}
+                
                 <button onClick={function(){
                   setGgBattleScreen(null);
                   setGgBattleRoom(null);
@@ -9262,6 +9567,71 @@ export default function LePont() {
             </div>
           );
         })()}
+
+        {/* 📋 Modal de revue des manches (Plug / Mercato Multi+Duel) */}
+        {reviewRoundsModal && (
+          <div onClick={function(){setReviewRoundsModal(null);}} style={{position:"fixed",inset:0,zIndex:9999,background:"rgba(0,0,0,.92)",backdropFilter:"blur(10px)",display:"flex",alignItems:"flex-start",justifyContent:"center",padding:"60px 14px 30px",overflowY:"auto"}}>
+            <div onClick={function(e){e.stopPropagation();}} style={{background:"linear-gradient(135deg, #0a1410, #102018)",border:"1.5px solid rgba(251,226,22,.4)",borderRadius:24,padding:18,maxWidth:480,width:"100%"}}>
+              {/* Header */}
+              <div style={{textAlign:"center",marginBottom:14}}>
+                <div style={{fontSize:11,color:"rgba(251,226,22,.8)",letterSpacing:2,fontWeight:700,marginBottom:4}}>📋 {lang==="en"?"ANSWERS OF":"RÉPONSES DE"}</div>
+                <div style={{fontSize:20,fontWeight:900,color:G.white,marginBottom:4}}>{reviewRoundsModal.playerName}</div>
+                <div style={{fontSize:11,color:"rgba(255,255,255,.5)"}}>
+                  {reviewRoundsModal.rounds.length} {lang==="en"?"rounds":"manches"} · {reviewRoundsModal.mode === "chaine" ? "The Mercato" : "The Plug"}
+                </div>
+              </div>
+              
+              {/* Liste des manches */}
+              <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:14}}>
+                {reviewRoundsModal.rounds.map(function(r, idx){
+                  // Plug : status "ok"/"ko"/"skip" ; Mercato : pas de status, "passed:true" = wrong
+                  const isPlug = (reviewRoundsModal.mode !== "chaine");
+                  const isOk = isPlug ? (r.status === "ok") : (r.club !== "—" && !r.passed);
+                  const isSkip = isPlug ? (r.status === "skip") : false;
+                  const isKo = isPlug ? (r.status === "ko") : (r.passed === true);
+                  const validList = Array.isArray(r.validPlayers) ? r.validPlayers.slice(0,3).join(", ") : "";
+                  return (
+                    <div key={idx} style={{padding:"10px 12px",background:isOk?"rgba(0,230,118,.08)":(isSkip?"rgba(255,214,0,.06)":"rgba(255,68,68,.08)"),border:"1px solid "+(isOk?"rgba(0,230,118,.3)":(isSkip?"rgba(255,214,0,.3)":"rgba(255,68,68,.3)")),borderRadius:10}}>
+                      {/* Header de la manche */}
+                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+                        <div style={{fontSize:10,fontWeight:800,letterSpacing:1.5,color:"rgba(255,255,255,.5)"}}>{lang==="en"?"ROUND":"MANCHE"} #{idx+1}</div>
+                        <div style={{fontSize:14}}>{isOk?"✅":isSkip?"⏭️":"❌"}</div>
+                      </div>
+                      {/* Plug : c1 → c2 */}
+                      {isPlug && r.c1 && r.c2 ? (
+                        <div style={{fontSize:12,fontWeight:700,color:"rgba(255,255,255,.85)",marginBottom:4}}>
+                          {r.c1} → {r.c2}
+                        </div>
+                      ) : null}
+                      {/* Mercato : afficher player + club */}
+                      {!isPlug && r.player ? (
+                        <div style={{fontSize:12,fontWeight:700,color:"rgba(255,255,255,.85)",marginBottom:4}}>
+                          🐐 {r.player} {r.club && r.club !== "—" ? "→ " + r.club : ""}
+                        </div>
+                      ) : null}
+                      {/* Plug : Réponse donnée */}
+                      {isPlug && (
+                        <div style={{fontSize:13,fontWeight:600,color:isOk?"#00E676":(isSkip?"#FFD600":"#FF6B6B")}}>
+                          {isSkip ? (lang==="en"?"Skipped":"Passé") : (r.given || "—")}
+                        </div>
+                      )}
+                      {/* Réponses correctes possibles si pas OK (Plug uniquement) */}
+                      {isPlug && !isOk && validList && (
+                        <div style={{fontSize:10,color:"rgba(255,255,255,.5)",marginTop:4,fontStyle:"italic"}}>
+                          {lang==="en"?"Valid: ":"Valides : "}{validList}{r.validPlayers.length > 3 ? "..." : ""}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              
+              <button onClick={function(){setReviewRoundsModal(null);}} style={{width:"100%",padding:12,borderRadius:50,border:"none",background:"rgba(255,255,255,.08)",color:G.white,fontWeight:700,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
+                {lang==="en"?"Close":"Fermer"}
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* 🐐 Modal GOAT GRID — Mode quotidien grille 3x3 (ou battle playing) */}
         {(showGoatGrid || ggBattleScreen === "playing") && (
@@ -10728,13 +11098,28 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
           {iAbandoned && <div style={{fontSize:15,color:"#fff",marginTop:10,fontWeight:700,padding:"0 16px",lineHeight:1.4}}>{lang==="en"?"You didn't even finish 😂":"T'as même pas eu le courage d'aller au bout 😂"}</div>}
         </div>
         <div style={{...sheet,borderRadius:"28px 28px 0 0"}}>
-          {duelResult.players.map(function(p,i){return(
-            <div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",borderRadius:14,background:p.id===playerId?"rgba(0,230,118,.08)":"rgba(255,255,255,.03)",border:p.id===playerId?"1px solid rgba(0,230,118,.25)":"1px solid rgba(255,255,255,.05)",marginBottom:6}}>
+          {duelResult.players.map(function(p,i){
+            const hasRounds = Array.isArray(p.rounds) && p.rounds.length > 0;
+            const onClickHandler = hasRounds ? function(){
+              setReviewRoundsModal({
+                mode: duelResult.mode || "pont",
+                playerName: p.name + (p.id===playerId ? (lang==="en"?" (you)":" (toi)") : ""),
+                rounds: p.rounds,
+              });
+            } : null;
+            return (
+            <div key={i} onClick={onClickHandler} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",borderRadius:14,background:p.id===playerId?"rgba(0,230,118,.08)":"rgba(255,255,255,.03)",border:p.id===playerId?"1px solid rgba(0,230,118,.25)":"1px solid rgba(255,255,255,.05)",marginBottom:6,cursor:hasRounds?"pointer":"default"}}>
               <div style={{fontFamily:G.heading,fontSize:30,width:40,textAlign:"center",color:i<3?["#FFD600","#C0C0C0","#CD7F32"][i]:"rgba(255,255,255,.3)"}}>{i<3?medals[i]:i+1}</div>
               <div style={{flex:1,fontSize:14,fontWeight:800,color:p.id===playerId?G.accent:G.white}}>{p.name}{p.id===playerId?" (toi)":""}{p.abandoned?" 🏳️":""}</div>
               <div style={{fontFamily:G.heading,fontSize:26,color:i===0?G.gold:G.white}}>{p.score||0} <span style={{fontSize:12,color:"rgba(255,255,255,.3)"}}>pts</span></div>
+              {hasRounds && <div style={{fontSize:14,color:"rgba(255,214,0,.7)",marginLeft:4}}>👁️</div>}
             </div>
           );})}
+          {duelResult.players.some(function(p){return Array.isArray(p.rounds) && p.rounds.length > 0;}) && (
+            <div style={{fontSize:10,color:"rgba(255,255,255,.4)",textAlign:"center",marginTop:6,marginBottom:6,fontStyle:"italic"}}>
+              👁️ {lang==="en"?"Tap a player to see their answers":"Tape sur un joueur pour voir ses réponses"}
+            </div>
+          )}
           <button onClick={function(){
             const myEntry = duelResult.players.find(function(p){return p.id===playerId;});
             const grade = getGrade(playerXp);
@@ -10802,18 +11187,29 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
         <div style={{...sheet,borderRadius:"28px 28px 0 0"}}>
           {/* Scores */}
           <div style={{display:"flex",gap:12,marginBottom:8}}>
-            <div style={{flex:1,background:"rgba(0,230,118,.08)",border:"2px solid "+(won?"#00E676":"rgba(255,255,255,.08)"),borderRadius:20,padding:"20px 12px",textAlign:"center"}}>
+            <div onClick={Array.isArray(duelResult.myRounds) && duelResult.myRounds.length > 0 ? function(){setReviewRoundsModal({mode:duelResult.mode||"pont",playerName:(lang==="en"?"You":"Toi"),rounds:duelResult.myRounds});} : null} style={{flex:1,background:"rgba(0,230,118,.08)",border:"2px solid "+(won?"#00E676":"rgba(255,255,255,.08)"),borderRadius:20,padding:"20px 12px",textAlign:"center",cursor:Array.isArray(duelResult.myRounds)&&duelResult.myRounds.length>0?"pointer":"default",position:"relative"}}>
               <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:6}}>{lang==="en"?"You":"Toi"}</div>
               <div style={{fontFamily:G.heading,fontSize:52,color:won?G.accent:G.white,lineHeight:1}}>{duelResult.myScore}</div>
               <div style={{fontSize:11,color:"rgba(255,255,255,.3)",marginTop:4}}>pts</div>
+              {Array.isArray(duelResult.myRounds) && duelResult.myRounds.length > 0 && (
+                <div style={{position:"absolute",top:6,right:8,fontSize:14,color:"rgba(255,214,0,.7)"}}>👁️</div>
+              )}
             </div>
             <div style={{display:"flex",alignItems:"center",fontFamily:G.heading,fontSize:24,color:"rgba(255,255,255,.3)"}}>VS</div>
-            <div style={{flex:1,background:"rgba(255,255,255,.04)",border:"2px solid "+(!won&&!draw?"#FF3D57":"rgba(255,255,255,.08)"),borderRadius:20,padding:"20px 12px",textAlign:"center"}}>
+            <div onClick={Array.isArray(duelResult.theirRounds) && duelResult.theirRounds.length > 0 ? function(){setReviewRoundsModal({mode:duelResult.mode||"pont",playerName:duelResult.oppName,rounds:duelResult.theirRounds});} : null} style={{flex:1,background:"rgba(255,255,255,.04)",border:"2px solid "+(!won&&!draw?"#FF3D57":"rgba(255,255,255,.08)"),borderRadius:20,padding:"20px 12px",textAlign:"center",cursor:Array.isArray(duelResult.theirRounds)&&duelResult.theirRounds.length>0?"pointer":"default",position:"relative"}}>
               <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:6}}>{duelResult.oppName}</div>
               <div style={{fontFamily:G.heading,fontSize:52,color:(!won&&!draw)?"#FF3D57":G.white,lineHeight:1}}>{duelResult.theirScore}</div>
               <div style={{fontSize:11,color:"rgba(255,255,255,.3)",marginTop:4}}>pts</div>
+              {Array.isArray(duelResult.theirRounds) && duelResult.theirRounds.length > 0 && (
+                <div style={{position:"absolute",top:6,right:8,fontSize:14,color:"rgba(255,214,0,.7)"}}>👁️</div>
+              )}
             </div>
           </div>
+          {Array.isArray(duelResult.myRounds) && duelResult.myRounds.length > 0 && (
+            <div style={{fontSize:10,color:"rgba(255,255,255,.4)",textAlign:"center",marginTop:-2,marginBottom:8,fontStyle:"italic"}}>
+              👁️ {lang==="en"?"Tap a score box to see the answers":"Tape sur un score pour voir les réponses"}
+            </div>
+          )}
           {/* Streak banner */}
           {won && winStreak >= 2 && (
             <div style={{textAlign:"center",marginBottom:8,padding:"10px 16px",background:"linear-gradient(135deg,rgba(255,107,53,.2),rgba(255,214,0,.2))",borderRadius:14,border:"1px solid rgba(255,107,53,.3)"}}>
