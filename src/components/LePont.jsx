@@ -3082,8 +3082,15 @@ export default function LePont() {
       const data = await sbFetch("bb_gg_rooms?id=eq."+ggBattleRoom.id+"&limit=1");
       if (!Array.isArray(data) || data.length === 0) return;
       const fresh = data[0];
-      // Si la partie est déjà finished, ne rien faire
-      if (fresh.state === "finished") return;
+      
+      // Snapshot des cases pour la grille (pour la review post-match)
+      const filledGrid = {};
+      Object.keys(ggFilledCells || {}).forEach(function(k){
+        const v = ggFilledCells[k];
+        if (typeof v === "string") filledGrid[k] = v;
+        else if (v && v.name) filledGrid[k] = v.name;
+        else filledGrid[k] = String(v);
+      });
       
       const players = (fresh.players || []).map(function(p){
         if (p.id !== playerId) return p;
@@ -3093,10 +3100,15 @@ export default function LePont() {
           score: currentScore,
           cells_filled: currentCellsFilled,
           lives_left: currentLives,
+          filled_grid: filledGrid,
+          // Si la partie est déjà finished et qu'on n'a pas encore submit, finaliser nos infos
+          finished_at: (fresh.state === "finished" && !p.finished_at) ? new Date().toISOString() : p.finished_at,
+          finished_score: (fresh.state === "finished") ? currentScore : p.finished_score,
         };
       });
       
       // PATCH simple, sans optimistic lock (les conflits sur ce champ sont OK : c'est juste live progress)
+      // On push TOUJOURS pour ne pas perdre nos données, même si state=finished
       await sbFetch("bb_gg_rooms?id=eq."+fresh.id, {
         method: "PATCH",
         headers: { "Content-Type": "application/json", "Prefer": "return=minimal" },
@@ -3260,45 +3272,51 @@ export default function LePont() {
         
         // Si state passe à "finished" (un joueur a fait 9/9 ou timer écoulé) → écran final
         if (updated.state === "finished" && ggBattleScreen === "playing") {
-          // Vérifier si MES données dans la room ont bien mes dernières valeurs locales
-          // Si elles sont obsolètes (la sync live n'a pas eu le temps), les pousser maintenant
-          const me = (updated.players || []).find(function(p){ return p.id === playerId; });
+          // TOUJOURS forcer une mise à jour avec nos dernières valeurs locales avant d'afficher l'écran final
+          // (la sync live a pu être trop tardive ou échouer)
           const myLocalCells = Object.keys(ggFilledCells || {}).length;
-          if (me && (me.cells_filled !== myLocalCells || me.score !== ggScore)) {
-            // Mes données sont obsolètes → forcer une mise à jour avant de passer à l'écran final
-            try {
-              const filledGrid = {};
-              Object.keys(ggFilledCells || {}).forEach(function(k){
-                const v = ggFilledCells[k];
-                if (typeof v === "string") filledGrid[k] = v;
-                else if (v && v.name) filledGrid[k] = v.name;
-                else filledGrid[k] = String(v);
-              });
-              const updatedPlayers = (updated.players || []).map(function(p){
-                if (p.id !== playerId) return p;
-                return {
-                  ...p,
-                  score: ggScore,
-                  cells_filled: myLocalCells,
-                  lives_left: ggLives,
-                  finished_at: p.finished_at || new Date().toISOString(),
-                  finished_score: ggScore,
-                  filled_grid: filledGrid,
-                };
-              });
-              await sbFetch("bb_gg_rooms?id=eq."+updated.id, {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json", "Prefer": "return=representation" },
-                body: JSON.stringify({ players: updatedPlayers }),
-              });
-              // Recharger pour avoir les valeurs réelles à afficher
-              const refreshData = await sbFetch("bb_gg_rooms?id=eq."+updated.id+"&limit=1");
-              if (Array.isArray(refreshData) && refreshData[0]) {
-                setGgBattleRoom(refreshData[0]);
-              }
-            } catch (e) {
-              console.warn("[GG BATTLE] late sync failed:", e);
+          try {
+            const filledGrid = {};
+            Object.keys(ggFilledCells || {}).forEach(function(k){
+              const v = ggFilledCells[k];
+              if (typeof v === "string") filledGrid[k] = v;
+              else if (v && v.name) filledGrid[k] = v.name;
+              else filledGrid[k] = String(v);
+            });
+            // Refetch frais pour ne pas écraser d'autres updates récentes
+            const fresh = await sbFetch("bb_gg_rooms?id=eq."+updated.id+"&limit=1");
+            const freshRoom = (Array.isArray(fresh) && fresh[0]) ? fresh[0] : updated;
+            const updatedPlayers = (freshRoom.players || []).map(function(p){
+              if (p.id !== playerId) return p;
+              // On prend toujours le MAX entre la valeur en base et la valeur locale
+              // (au cas où la sync live a déjà push une valeur correcte plus tard)
+              const finalCells = Math.max(myLocalCells, p.cells_filled || 0);
+              const finalScore = Math.max(ggScore, p.score || 0);
+              return {
+                ...p,
+                score: finalScore,
+                cells_filled: finalCells,
+                lives_left: ggLives,
+                finished_at: p.finished_at || new Date().toISOString(),
+                finished_score: finalScore,
+                filled_grid: (p.filled_grid && Object.keys(p.filled_grid).length >= myLocalCells) ? p.filled_grid : filledGrid,
+              };
+            });
+            await sbFetch("bb_gg_rooms?id=eq."+updated.id, {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json", "Prefer": "return=representation" },
+              body: JSON.stringify({ players: updatedPlayers }),
+            });
+            // Recharger pour avoir les valeurs réelles à afficher
+            const refreshData = await sbFetch("bb_gg_rooms?id=eq."+updated.id+"&limit=1");
+            if (Array.isArray(refreshData) && refreshData[0]) {
+              setGgBattleRoom(refreshData[0]);
+            } else {
+              setGgBattleRoom(freshRoom);
             }
+          } catch (e) {
+            console.warn("[GG BATTLE] late sync failed:", e);
+            setGgBattleRoom(updated);
           }
           setGgBattleScreen("finished");
         }
