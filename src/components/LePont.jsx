@@ -2441,6 +2441,7 @@ if(typeof document!=="undefined"&&!document.getElementById("bb-css")){
     @keyframes sheetUp{0%{transform:translateY(100%);opacity:0}100%{transform:translateY(0);opacity:1}}
     @keyframes answerOk{0%{transform:scale(1)}30%{transform:scale(1.06)}60%{transform:scale(.97)}100%{transform:scale(1)}}
     @keyframes answerKo{0%,100%{transform:translateX(0)}15%{transform:translateX(-12px)}30%{transform:translateX(10px)}45%{transform:translateX(-8px)}60%{transform:translateX(6px)}75%{transform:translateX(-3px)}}
+    @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
     @keyframes flashOk{0%{background:rgba(74,222,128,0)}40%{background:rgba(74,222,128,.18)}100%{background:rgba(74,222,128,0)}}
     @keyframes flashKo{0%{background:rgba(239,68,68,0)}40%{background:rgba(239,68,68,.15)}100%{background:rgba(239,68,68,0)}}
     @keyframes chainPop{0%{transform:scale(.8);opacity:0}100%{transform:scale(1);opacity:1}}
@@ -9653,30 +9654,30 @@ export default function LePont() {
           const filled = p.filled_grid || {};
           
           return (
-            <div onClick={function(){setGgBattleViewGrid(null);}} style={{position:"fixed",inset:0,zIndex:500,background:"rgba(0,0,0,.92)",backdropFilter:"blur(10px)",display:"flex",alignItems:"flex-start",justifyContent:"center",padding:"60px 14px 30px",overflowY:"auto"}}>
-              <div onClick={function(e){e.stopPropagation();}} style={{background:"linear-gradient(135deg, #1a1410, #100a08)",border:"1.5px solid rgba(255,107,53,.4)",borderRadius:24,padding:18,maxWidth:420,width:"100%"}}>
+            <div onClick={function(){setGgBattleViewGrid(null);}} style={{position:"fixed",inset:0,zIndex:500,background:"rgba(0,0,0,.92)",backdropFilter:"blur(10px)",display:"flex",alignItems:"flex-start",justifyContent:"center",padding:"30px 8px 20px",overflowY:"auto"}}>
+              <div onClick={function(e){e.stopPropagation();}} style={{background:"linear-gradient(135deg, #1a1410, #100a08)",border:"1.5px solid rgba(255,107,53,.4)",borderRadius:20,padding:14,maxWidth:480,width:"100%"}}>
                 {/* Header */}
                 <div style={{textAlign:"center",marginBottom:14}}>
                   <div style={{fontSize:11,color:"rgba(255,107,53,.8)",letterSpacing:2,fontWeight:700,marginBottom:4}}>👁️ {lang==="en"?"GRID OF":"GRILLE DE"}</div>
-                  <div style={{fontSize:20,fontWeight:900,color:G.white,marginBottom:6}}>
-                    {p.name} {isMe && <span style={{fontSize:11,color:"rgba(255,107,53,.7)"}}>({lang==="en"?"you":"toi"})</span>}
+                  <div style={{fontSize:22,fontWeight:900,color:G.white,marginBottom:6}}>
+                    {p.name} {isMe && <span style={{fontSize:12,color:"rgba(255,107,53,.7)"}}>({lang==="en"?"you":"toi"})</span>}
                   </div>
-                  <div style={{fontSize:12,color:"rgba(255,255,255,.7)"}}>
+                  <div style={{fontSize:13,color:"rgba(255,255,255,.7)"}}>
                     {p.cells_filled || 0}/9 · {p.score || 0} pts
                   </div>
                 </div>
                 
-                {/* Grille 3x3 — version compacte */}
-                <div style={{display:"grid",gridTemplateColumns:"60px 1fr 1fr 1fr",gridTemplateRows:"50px 80px 80px 80px",gap:3,marginBottom:14}}>
+                {/* Grille 3x3 — version GRANDE */}
+                <div style={{display:"grid",gridTemplateColumns:"72px 1fr 1fr 1fr",gridTemplateRows:"64px 105px 105px 105px",gap:5,marginBottom:14}}>
                   {/* Coin vide */}
                   <div></div>
                   {/* Critères de colonnes */}
                   {grid.colCriteria.map(function(col, idx){
                     const icon = col.type==="trophy"?(col.value==="world_cup"?"🏆":"⭐"):col.type==="nationality"?"🌍":col.type==="league"?"🏟️":col.type==="position"?"⚽":"🏆";
                     return (
-                      <div key={"col-"+idx} style={{background:"rgba(0,0,0,.3)",borderRadius:6,padding:"4px 3px",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",fontSize:8.5,fontWeight:800,color:G.white,textAlign:"center",lineHeight:1.1}}>
-                        <div style={{fontSize:14,marginBottom:1}}>{icon}</div>
-                        <div style={{textTransform:"uppercase",fontSize:8}}>{col.label}</div>
+                      <div key={"col-"+idx} style={{background:"rgba(0,0,0,.3)",borderRadius:8,padding:"6px 4px",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:800,color:G.white,textAlign:"center",lineHeight:1.15}}>
+                        <div style={{fontSize:20,marginBottom:2}}>{icon}</div>
+                        <div style={{textTransform:"uppercase",fontSize:10}}>{col.label}</div>
                       </div>
                     );
                   })}
@@ -9686,9 +9687,9 @@ export default function LePont() {
                     const rIcon = row.type==="club"?"🛡️":row.type==="nationality"?"🌍":row.type==="position"?"⚽":"🏆";
                     return [
                       // Critère de la ligne
-                      <div key={"row-"+rIdx} style={{background:"rgba(0,0,0,.3)",borderRadius:6,padding:"4px 3px",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",fontSize:8.5,fontWeight:800,color:G.white,textAlign:"center",lineHeight:1.1}}>
-                        <div style={{fontSize:13,marginBottom:1}}>{rIcon}</div>
-                        <div style={{textTransform:"uppercase",fontSize:7.5}}>{row.label}</div>
+                      <div key={"row-"+rIdx} style={{background:"rgba(0,0,0,.3)",borderRadius:8,padding:"6px 4px",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:800,color:G.white,textAlign:"center",lineHeight:1.15}}>
+                        <div style={{fontSize:18,marginBottom:2}}>{rIcon}</div>
+                        <div style={{textTransform:"uppercase",fontSize:9.5}}>{row.label}</div>
                       </div>,
                       // 3 cases pour cette ligne
                       ...grid.colCriteria.map(function(col, cIdx){
@@ -9696,7 +9697,7 @@ export default function LePont() {
                         const playerName = filled[key];
                         const isFilled = !!playerName;
                         return (
-                          <div key={key} style={{background:isFilled?"linear-gradient(135deg,rgba(0,230,118,.25),rgba(0,184,95,.2))":"rgba(255,255,255,.04)",border:"1px solid "+(isFilled?"rgba(0,230,118,.5)":"rgba(255,255,255,.08)"),borderRadius:6,padding:"4px 3px",display:"flex",alignItems:"center",justifyContent:"center",textAlign:"center",fontSize:9.5,fontWeight:700,color:isFilled?"#fff":"rgba(255,255,255,.3)",lineHeight:1.15}}>
+                          <div key={key} style={{background:isFilled?"linear-gradient(135deg,rgba(0,230,118,.25),rgba(0,184,95,.2))":"rgba(255,255,255,.04)",border:"1px solid "+(isFilled?"rgba(0,230,118,.5)":"rgba(255,255,255,.08)"),borderRadius:8,padding:"6px 5px",display:"flex",alignItems:"center",justifyContent:"center",textAlign:"center",fontSize:12,fontWeight:700,color:isFilled?"#fff":"rgba(255,255,255,.3)",lineHeight:1.2,wordBreak:"break-word"}}>
                             {isFilled ? playerName : "—"}
                           </div>
                         );
@@ -10011,20 +10012,23 @@ export default function LePont() {
                 const colEmoji = ggGetCriterionEmoji(colCrit);
                 const suggestions = ggGetSuggestions(ggGuess);
                 return (
-                  <div onClick={function(){if(!ggFlash){setGgSelectedCell(null);setGgGuess("");}}} style={{position:"fixed",inset:0,zIndex:500,background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
-                    <div onClick={function(e){e.stopPropagation();}} style={{background:"linear-gradient(135deg, #1a2419, #0f1812)",border:"1px solid rgba(0,230,118,.3)",borderRadius:20,padding:20,maxWidth:360,width:"100%"}}>
-                      <div style={{textAlign:"center",marginBottom:14}}>
-                        <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.5)",fontWeight:700}}>{lang==="en"?"WHO MATCHES THESE 2 CRITERIA?":"QUI MATCHE CES 2 CRITÈRES ?"}</div>
+                  <div onClick={function(){if(!ggFlash){setGgSelectedCell(null);setGgGuess("");}}} style={{position:"fixed",inset:0,zIndex:500,background:"rgba(0,0,0,.35)",display:"flex",alignItems:"flex-end",justifyContent:"center"}}>
+                    <div onClick={function(e){e.stopPropagation();}} style={{background:"linear-gradient(135deg, #1a2419, #0f1812)",border:"1px solid rgba(0,230,118,.3)",borderTopLeftRadius:24,borderTopRightRadius:24,borderBottomLeftRadius:0,borderBottomRightRadius:0,padding:"14px 18px 24px",maxWidth:480,width:"100%",boxShadow:"0 -8px 32px rgba(0,0,0,.5)",animation:"slideUp .25s ease-out"}}>
+                      {/* Petite barre de drag (indicateur visuel) */}
+                      <div style={{width:36,height:4,background:"rgba(255,255,255,.2)",borderRadius:2,margin:"0 auto 12px"}}></div>
+                      
+                      <div style={{textAlign:"center",marginBottom:10}}>
+                        <div style={{fontSize:10,letterSpacing:2,color:"rgba(255,255,255,.5)",fontWeight:700}}>{lang==="en"?"WHO MATCHES THESE 2 CRITERIA?":"QUI MATCHE CES 2 CRITÈRES ?"}</div>
                       </div>
-                      <div style={{display:"flex",gap:8,marginBottom:16,alignItems:"center"}}>
-                        <div style={{flex:1,background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.1)",borderRadius:12,padding:10,textAlign:"center"}}>
-                          {rowEmoji && <div style={{fontSize:22}}>{rowEmoji}</div>}
-                          <div style={{fontSize:11,fontWeight:800,color:"#fff",marginTop:4,lineHeight:1.2}}>{ggGetCriterionDisplayLabel(rowCrit, lang).toUpperCase()}</div>
+                      <div style={{display:"flex",gap:8,marginBottom:12,alignItems:"center"}}>
+                        <div style={{flex:1,background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.1)",borderRadius:10,padding:"6px 8px",textAlign:"center"}}>
+                          {rowEmoji && <div style={{fontSize:18}}>{rowEmoji}</div>}
+                          <div style={{fontSize:10,fontWeight:800,color:"#fff",marginTop:2,lineHeight:1.2}}>{ggGetCriterionDisplayLabel(rowCrit, lang).toUpperCase()}</div>
                         </div>
-                        <div style={{display:"flex",alignItems:"center",fontSize:18,color:"#FFD600",fontWeight:900}}>×</div>
-                        <div style={{flex:1,background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.1)",borderRadius:12,padding:10,textAlign:"center"}}>
-                          {colEmoji && <div style={{fontSize:22}}>{colEmoji}</div>}
-                          <div style={{fontSize:11,fontWeight:800,color:"#fff",marginTop:4,lineHeight:1.2}}>{ggGetCriterionDisplayLabel(colCrit, lang).toUpperCase()}</div>
+                        <div style={{display:"flex",alignItems:"center",fontSize:16,color:"#FFD600",fontWeight:900}}>×</div>
+                        <div style={{flex:1,background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.1)",borderRadius:10,padding:"6px 8px",textAlign:"center"}}>
+                          {colEmoji && <div style={{fontSize:18}}>{colEmoji}</div>}
+                          <div style={{fontSize:10,fontWeight:800,color:"#fff",marginTop:2,lineHeight:1.2}}>{ggGetCriterionDisplayLabel(colCrit, lang).toUpperCase()}</div>
                         </div>
                       </div>
                       <input
