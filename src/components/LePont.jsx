@@ -3292,10 +3292,10 @@ export default function LePont() {
     console.warn("[GG BATTLE] ggBattleSubmitFinal: échec après " + MAX_RETRIES + " tentatives");
   }
   
-  // ─── GOAT BATTLE — Polling de la room (lobby + playing) ───
+  // ─── GOAT BATTLE — Polling de la room (lobby + playing + finished) ───
   React.useEffect(function() {
     if (!ggBattleRoom || !ggBattleRoom.id) return;
-    if (ggBattleScreen !== "lobby" && ggBattleScreen !== "playing") return;
+    if (ggBattleScreen !== "lobby" && ggBattleScreen !== "playing" && ggBattleScreen !== "finished") return;
     
     let stopped = false;
     async function poll() {
