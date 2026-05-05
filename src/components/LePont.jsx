@@ -10014,34 +10014,22 @@ export default function LePont() {
                 const colEmoji = ggGetCriterionEmoji(colCrit);
                 const suggestions = ggGetSuggestions(ggGuess);
                 return (
-                  <div onClick={function(){if(!ggFlash){setGgSelectedCell(null);setGgGuess("");}}} style={{position:"fixed",inset:0,zIndex:500,background:"rgba(0,0,0,.35)",display:"flex",alignItems:"flex-end",justifyContent:"center"}}>
-                    <div onClick={function(e){e.stopPropagation();}} style={{background:"linear-gradient(135deg, #1a2419, #0f1812)",border:"1px solid rgba(0,230,118,.3)",borderTopLeftRadius:24,borderTopRightRadius:24,borderBottomLeftRadius:0,borderBottomRightRadius:0,padding:"14px 18px 24px",maxWidth:480,width:"100%",boxShadow:"0 -8px 32px rgba(0,0,0,.5)",animation:"slideUp .25s ease-out"}}>
-                      {/* Petite barre de drag (indicateur visuel) */}
-                      <div style={{width:36,height:4,background:"rgba(255,255,255,.2)",borderRadius:2,margin:"0 auto 12px"}}></div>
-                      
-                      <div style={{textAlign:"center",marginBottom:10}}>
-                        <div style={{fontSize:10,letterSpacing:2,color:"rgba(255,255,255,.5)",fontWeight:700}}>{lang==="en"?"WHO MATCHES THESE 2 CRITERIA?":"QUI MATCHE CES 2 CRITÈRES ?"}</div>
+                  <div onClick={function(){if(!ggFlash){setGgSelectedCell(null);setGgGuess("");}}} style={{position:"fixed",inset:0,zIndex:500,background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+                    <div onClick={function(e){e.stopPropagation();}} style={{background:"linear-gradient(135deg, #1a2419, #0f1812)",border:"1px solid rgba(0,230,118,.3)",borderRadius:20,padding:20,maxWidth:360,width:"100%"}}>
+                      <div style={{textAlign:"center",marginBottom:14}}>
+                        <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.5)",fontWeight:700}}>{lang==="en"?"WHO MATCHES THESE 2 CRITERIA?":"QUI MATCHE CES 2 CRITÈRES ?"}</div>
                       </div>
-                      <div style={{display:"flex",gap:8,marginBottom:12,alignItems:"center"}}>
-                        <div style={{flex:1,background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.1)",borderRadius:10,padding:"6px 8px",textAlign:"center"}}>
-                          {rowEmoji && <div style={{fontSize:18}}>{rowEmoji}</div>}
-                          <div style={{fontSize:10,fontWeight:800,color:"#fff",marginTop:2,lineHeight:1.2}}>{ggGetCriterionDisplayLabel(rowCrit, lang).toUpperCase()}</div>
+                      <div style={{display:"flex",gap:8,marginBottom:16,alignItems:"center"}}>
+                        <div style={{flex:1,background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.1)",borderRadius:12,padding:10,textAlign:"center"}}>
+                          {rowEmoji && <div style={{fontSize:22}}>{rowEmoji}</div>}
+                          <div style={{fontSize:11,fontWeight:800,color:"#fff",marginTop:4,lineHeight:1.2}}>{ggGetCriterionDisplayLabel(rowCrit, lang).toUpperCase()}</div>
                         </div>
-                        <div style={{display:"flex",alignItems:"center",fontSize:16,color:"#FFD600",fontWeight:900}}>×</div>
-                        <div style={{flex:1,background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.1)",borderRadius:10,padding:"6px 8px",textAlign:"center"}}>
-                          {colEmoji && <div style={{fontSize:18}}>{colEmoji}</div>}
-                          <div style={{fontSize:10,fontWeight:800,color:"#fff",marginTop:2,lineHeight:1.2}}>{ggGetCriterionDisplayLabel(colCrit, lang).toUpperCase()}</div>
+                        <div style={{display:"flex",alignItems:"center",fontSize:18,color:"#FFD600",fontWeight:900}}>×</div>
+                        <div style={{flex:1,background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.1)",borderRadius:12,padding:10,textAlign:"center"}}>
+                          {colEmoji && <div style={{fontSize:22}}>{colEmoji}</div>}
+                          <div style={{fontSize:11,fontWeight:800,color:"#fff",marginTop:4,lineHeight:1.2}}>{ggGetCriterionDisplayLabel(colCrit, lang).toUpperCase()}</div>
                         </div>
                       </div>
-                      {suggestions.length > 0 && (
-                        <div style={{marginBottom:8,background:"rgba(255,255,255,.04)",borderRadius:12,maxHeight:180,overflowY:"auto"}}>
-                          {suggestions.map(function(p){return(
-                            <div key={p.name} onClick={function(){ggSubmitAnswer(p.name);}} style={{padding:"10px 14px",cursor:"pointer",borderBottom:"1px solid rgba(255,255,255,.04)",fontSize:14,fontWeight:700,color:"#fff",transition:"background .1s"}} onMouseEnter={function(e){e.currentTarget.style.background="rgba(0,230,118,.08)";}} onMouseLeave={function(e){e.currentTarget.style.background="transparent";}}>
-                              {p.name}
-                            </div>
-                          );})}
-                        </div>
-                      )}
                       <input
                         type="text"
                         autoFocus
@@ -10051,6 +10039,15 @@ export default function LePont() {
                         placeholder={lang==="en"?"Type at least 3 letters...":"Tape au moins 3 lettres..."}
                         style={{width:"100%",background:ggFlash==="ko"?"rgba(239,68,68,.15)":"rgba(255,255,255,.08)",border:"2px solid "+(ggFlash==="ko"?"rgba(239,68,68,.7)":"rgba(255,255,255,.15)"),borderRadius:14,padding:"14px 16px",color:"#fff",fontSize:16,fontWeight:700,outline:"none",textAlign:"center",boxSizing:"border-box",animation:ggFlash==="ko"?"answerKo .4s ease":"none"}}
                       />
+                      {suggestions.length > 0 && (
+                        <div style={{marginTop:8,background:"rgba(255,255,255,.04)",borderRadius:12,maxHeight:180,overflowY:"auto"}}>
+                          {suggestions.map(function(p){return(
+                            <div key={p.name} onClick={function(){ggSubmitAnswer(p.name);}} style={{padding:"10px 14px",cursor:"pointer",borderBottom:"1px solid rgba(255,255,255,.04)",fontSize:14,fontWeight:700,color:"#fff",transition:"background .1s"}} onMouseEnter={function(e){e.currentTarget.style.background="rgba(0,230,118,.08)";}} onMouseLeave={function(e){e.currentTarget.style.background="transparent";}}>
+                              {p.name}
+                            </div>
+                          );})}
+                        </div>
+                      )}
                       {/* Bouton "Signaler" : apparaît après une mauvaise réponse */}
                       {ggLastRejected && (
                         <div style={{marginTop:10,padding:10,background:"rgba(255,107,53,.1)",border:"1px solid rgba(255,107,53,.3)",borderRadius:12}}>
