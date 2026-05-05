@@ -9281,7 +9281,7 @@ export default function LePont() {
                     <div style={{position:"absolute",top:-40,right:-40,width:220,height:220,borderRadius:"50%",background:`radial-gradient(circle, ${accentSecondary}30 0%, transparent 70%)`,filter:"blur(40px)"}}/>
                   </div>
 
-                  <div style={{position:"relative",zIndex:1,padding:"14px 22px 42px"}}>
+                  <div style={{position:"relative",zIndex:1,padding:"14px 22px calc(42px + env(safe-area-inset-bottom))"}}>
                     {/* Handle */}
                     <div style={{width:44,height:4,background:"rgba(255,255,255,.25)",borderRadius:2,margin:"0 auto 22px"}}/>
 
@@ -9386,7 +9386,7 @@ export default function LePont() {
 
         {/* 🐐 Modal de choix Solo / Multi pour GOAT GRID */}
         {ggModeChoice && (
-          <div onClick={function(){setGgModeChoice(false);}} style={{position:"fixed",inset:0,zIndex:450,display:"flex",alignItems:"flex-start",justifyContent:"center",padding:"60px 16px 30px",background:"rgba(0,0,0,.94)",backdropFilter:"blur(12px)",overflowY:"auto"}}>
+          <div onClick={function(){setGgModeChoice(false);}} style={{position:"fixed",inset:0,zIndex:450,display:"flex",alignItems:"flex-start",justifyContent:"center",padding:"60px 16px calc(30px + env(safe-area-inset-bottom))",background:"rgba(0,0,0,.94)",backdropFilter:"blur(12px)",overflowY:"auto"}}>
             <div onClick={function(e){e.stopPropagation();}} style={{maxWidth:420,width:"100%"}}>
               
               {/* Header */}
