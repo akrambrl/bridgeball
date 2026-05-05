@@ -3787,11 +3787,14 @@ export default function LePont() {
       style.textContent = `
         html, body, #root {
           overflow-x: hidden;
-          overscroll-behavior: none;
           touch-action: manipulation;
           -webkit-tap-highlight-color: transparent;
         }
         html, body { max-width: 100vw; position: relative; }
+        /* overscroll-behavior:none uniquement sur mobile pour éviter le pull-to-refresh */
+        @media (hover: none) and (pointer: coarse) {
+          html, body, #root { overscroll-behavior: none; }
+        }
         * { -webkit-touch-callout: none; }
       `;
       document.head.appendChild(style);
@@ -6709,10 +6712,9 @@ export default function LePont() {
   const shell = {
     minHeight:"100vh",display:"flex",flexDirection:"column",
     background:"transparent",
-    // Sur mobile on garde overflow:"hidden" pour que les fonds (pelouse, dégradés) ne débordent pas
-    // Sur desktop on utilise "visible" pour permettre le scroll naturel de la page
-    // (sur desktop le contenu peut dépasser la hauteur de l'écran, il faut pouvoir scroll)
-    fontFamily:G.font,position:"relative",overflow:isDesktop?"visible":"hidden",
+    // Sur mobile : overflow hidden pour les fonds + scroll géré au cas par cas
+    // Sur desktop : overflow auto pour permettre le scroll quand le contenu dépasse
+    fontFamily:G.font,position:"relative",overflow:isDesktop?"auto":"hidden",
     maxWidth:isDesktop?"100%":430,marginLeft:"auto",marginRight:"auto",
     boxShadow:isDesktop?"none":"0 0 60px rgba(0,0,0,.5)",
   };
@@ -10031,6 +10033,15 @@ export default function LePont() {
                           <div style={{fontSize:10,fontWeight:800,color:"#fff",marginTop:2,lineHeight:1.2}}>{ggGetCriterionDisplayLabel(colCrit, lang).toUpperCase()}</div>
                         </div>
                       </div>
+                      {suggestions.length > 0 && (
+                        <div style={{marginBottom:8,background:"rgba(255,255,255,.04)",borderRadius:12,maxHeight:180,overflowY:"auto"}}>
+                          {suggestions.map(function(p){return(
+                            <div key={p.name} onClick={function(){ggSubmitAnswer(p.name);}} style={{padding:"10px 14px",cursor:"pointer",borderBottom:"1px solid rgba(255,255,255,.04)",fontSize:14,fontWeight:700,color:"#fff",transition:"background .1s"}} onMouseEnter={function(e){e.currentTarget.style.background="rgba(0,230,118,.08)";}} onMouseLeave={function(e){e.currentTarget.style.background="transparent";}}>
+                              {p.name}
+                            </div>
+                          );})}
+                        </div>
+                      )}
                       <input
                         type="text"
                         autoFocus
@@ -10040,15 +10051,6 @@ export default function LePont() {
                         placeholder={lang==="en"?"Type at least 3 letters...":"Tape au moins 3 lettres..."}
                         style={{width:"100%",background:ggFlash==="ko"?"rgba(239,68,68,.15)":"rgba(255,255,255,.08)",border:"2px solid "+(ggFlash==="ko"?"rgba(239,68,68,.7)":"rgba(255,255,255,.15)"),borderRadius:14,padding:"14px 16px",color:"#fff",fontSize:16,fontWeight:700,outline:"none",textAlign:"center",boxSizing:"border-box",animation:ggFlash==="ko"?"answerKo .4s ease":"none"}}
                       />
-                      {suggestions.length > 0 && (
-                        <div style={{marginTop:8,background:"rgba(255,255,255,.04)",borderRadius:12,maxHeight:180,overflowY:"auto"}}>
-                          {suggestions.map(function(p){return(
-                            <div key={p.name} onClick={function(){ggSubmitAnswer(p.name);}} style={{padding:"10px 14px",cursor:"pointer",borderBottom:"1px solid rgba(255,255,255,.04)",fontSize:14,fontWeight:700,color:"#fff",transition:"background .1s"}} onMouseEnter={function(e){e.currentTarget.style.background="rgba(0,230,118,.08)";}} onMouseLeave={function(e){e.currentTarget.style.background="transparent";}}>
-                              {p.name}
-                            </div>
-                          );})}
-                        </div>
-                      )}
                       {/* Bouton "Signaler" : apparaît après une mauvaise réponse */}
                       {ggLastRejected && (
                         <div style={{marginTop:10,padding:10,background:"rgba(255,107,53,.1)",border:"1px solid rgba(255,107,53,.3)",borderRadius:12}}>
