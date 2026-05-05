@@ -8963,6 +8963,25 @@ export default function LePont() {
           </div>
         </div>
 
+        {/* Suggérer un joueur - subtil */}
+        <button onClick={function(){
+          const subject = encodeURIComponent(lang==="en" ? "[GOAT FC] Player suggestion" : "[GOAT FC] Suggestion de joueur");
+          const body = encodeURIComponent(
+            (lang==="en" 
+              ? "Hi GOAT FC team,\n\nI'd like to suggest the following player(s) to be added to the database:\n\n"
+              : "Salut l'équipe GOAT FC,\n\nJe souhaite suggérer le(s) joueur(s) suivant(s) à ajouter à la base :\n\n"
+            ) + (lang==="en" ? "Player name(s): \n\nThanks!" : "Nom du/des joueur(s) : \n\nMerci !")
+          );
+          window.location.href = "mailto:contact@goatfc.online?subject="+subject+"&body="+body;
+        }} style={{padding:"14px 18px",background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.12)",borderRadius:18,cursor:"pointer",color:"rgba(255,255,255,.7)",fontFamily:G.font,fontSize:14,fontWeight:700,display:"flex",alignItems:"center",gap:12,textAlign:"left",marginTop:6}}>
+          <span style={{fontSize:18}}>💡</span>
+          <div style={{flex:1}}>
+            <div>{lang==="en"?"Suggest a player":"Suggérer un joueur"}</div>
+            <div style={{fontSize:11,color:"rgba(255,255,255,.45)",fontWeight:600,marginTop:2}}>{lang==="en"?"A missing player? Tell us!":"Un joueur manque ? Dis-le nous !"}</div>
+          </div>
+          <span style={{fontSize:18,color:"rgba(255,255,255,.4)"}}>→</span>
+        </button>
+
         {/* Mon compte (paramètres + suppression) - subtil */}
         <button onClick={()=>setShowAccount(true)} style={{padding:"14px 18px",background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.12)",borderRadius:18,cursor:"pointer",color:"rgba(255,255,255,.7)",fontFamily:G.font,fontSize:14,fontWeight:700,display:"flex",alignItems:"center",gap:12,textAlign:"left",marginTop:6}}>
           <span style={{fontSize:18}}>⚙️</span>
