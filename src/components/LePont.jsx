@@ -675,6 +675,7 @@ const LOSE_IMGS = ["/lose1.png", "/lose2.png", "/lose3.png", "/lose4.png"];
 const randomImg = (arr) => arr[Math.floor(Math.random()*arr.length)];
 const PLUG_CARD_IMG = "/plug-card.png";
 const MERCATO_CARD_IMG = "/mercato-card.png";
+const GRID_CARD_IMG = "/grid-card.png";
 
 // ── MESSAGES DE RÉSULTAT UNIFIÉS (Plug, Mercato, solo, duel, multi) ──
 const RESULT_MESSAGES = {
@@ -994,7 +995,10 @@ function getDailyPlayer(blacklist) {
   // Override explicite : cherche le joueur par nom dans PLAYERS_CLEAN
   if (DAILY_OVERRIDES[today]) {
     const overrideName = DAILY_OVERRIDES[today];
-    const overridePlayer = PLAYERS_CLEAN.find(p => p.name === overrideName);
+    // Normalise pour tolérer les différences d'accents entre l'override et la BDD
+    const normTarget = overrideName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim();
+    const overridePlayer = PLAYERS_CLEAN.find(p => p.name === overrideName)
+      || PLAYERS_CLEAN.find(p => p.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim() === normTarget);
     if (overridePlayer) return overridePlayer;
     // Fallback silencieux si le joueur n'est pas trouvé (safety net)
   }
@@ -1144,7 +1148,12 @@ function PlayerAvatar({ name, size = 56 }) {
     ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
     : name.slice(0, 2).toUpperCase();
 
-  const playerEntry = PLAYERS_CLEAN.find(p => p.name === name);
+  // Lookup tolérant aux différences d'accents (ex: "Luis Suarez" vs "Luis Suárez")
+  let playerEntry = PLAYERS_CLEAN.find(p => p.name === name);
+  if (!playerEntry) {
+    const normName = name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim();
+    playerEntry = PLAYERS_CLEAN.find(p => p.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim() === normName);
+  }
   const mainClub = (playerEntry&&playerEntry.clubs&&playerEntry.clubs[0]) || "";
   const [ca, cb] = getClubColors(mainClub);
   const tc = textColor(ca);
@@ -2628,6 +2637,12 @@ export default function LePont() {
   const [screen, setScreen] = useState("home");
   const [resultImg, setResultImg] = useState(null);
   const [gameMode, setGameMode] = useState("pont");
+  // ─── Home Carousel State (0=GRID, 1=MERCATO, 2=PLUG) ──
+  const [homeCardIndex, setHomeCardIndex] = useState(() => {
+    const saved = parseInt(localStorage.getItem("bb_home_card") || "0", 10);
+    return isNaN(saved) || saved < 0 || saved > 2 ? 0 : saved;
+  });
+  const homeSwipeStartRef = useRef(null);
   const [diff, setDiff] = useState("facile");
   const [totalRounds, setTotalRounds] = useState(1); // Toujours 1 manche de 90s (pas de multi-manches)
   const [currentRound, setCurrentRound] = useState(1);
@@ -6879,7 +6894,7 @@ export default function LePont() {
 
             {/* Title */}
             <div style={{fontFamily:G.heading,fontSize:34,color:G.white,letterSpacing:3,textAlign:"center",marginBottom:4,textShadow:`0 2px 12px ${accentColor}66`}}>
-              {isPont?"THE PLUG":"THE MERCATO"}
+              {isPont?"GOAT PLUG":"GOAT MERCATO"}
             </div>
             <div style={{fontSize:11,letterSpacing:3,color:accentColor,textTransform:"uppercase",fontWeight:800,textAlign:"center",marginBottom:22}}>
               {isPont ? (lang==="en"?"Connect the clubs":"Relie les clubs") : (lang==="en"?"Endless chain":"Chaîne infinie")}
@@ -8164,13 +8179,13 @@ export default function LePont() {
 
   // ── TUTORIAL ──
   const TUTORIAL_SLIDES = lang === "en" ? [
-    { icon:"⚽", title:"THE PLUG", subtitle:"Find the player linking 2 clubs", desc:"We show you 2 clubs. Find the player who played for both!", color:"#1a4a2e", accent:"#00E676" },
-    { icon:"⛓", title:"THE MERCATO", subtitle:"Chain player → club → player", desc:"A player is shown. Type a club they played for, then another player from that club… and so on!", color:"#1a2a4a", accent:"#60a5fa" },
+    { icon:"⚽", title:"GOAT PLUG", subtitle:"Find the player linking 2 clubs", desc:"We show you 2 clubs. Find the player who played for both!", color:"#1a4a2e", accent:"#00E676" },
+    { icon:"⛓", title:"GOAT MERCATO", subtitle:"Chain player → club → player", desc:"A player is shown. Type a club they played for, then another player from that club… and so on!", color:"#1a2a4a", accent:"#60a5fa" },
     { icon:"⚡", title:"DAILY CHALLENGE", subtitle:"A mystery player every day", desc:"Every day, a new mystery player to guess. Come back daily to keep your streak alive!", color:"#3a2a00", accent:"#FFD600" },
     { icon:"👥", title:"MULTIPLAYER", subtitle:"Play with your friends", desc:"Create a room, share the code, and battle in real time with up to 8 players!", color:"#2a1a3a", accent:"#c084fc" },
   ] : [
-    { icon:"⚽", title:"THE PLUG", subtitle:"Trouve le joueur qui relie 2 clubs", desc:"On te montre 2 clubs. Trouve le joueur qui a joué dans les deux !", color:"#1a4a2e", accent:"#00E676" },
-    { icon:"⛓", title:"THE MERCATO", subtitle:"Enchaîne joueur → club → joueur", desc:"Un joueur est affiché. Tape un club où il a joué, puis un autre joueur de ce club… et ainsi de suite !", color:"#1a2a4a", accent:"#60a5fa" },
+    { icon:"⚽", title:"GOAT PLUG", subtitle:"Trouve le joueur qui relie 2 clubs", desc:"On te montre 2 clubs. Trouve le joueur qui a joué dans les deux !", color:"#1a4a2e", accent:"#00E676" },
+    { icon:"⛓", title:"GOAT MERCATO", subtitle:"Enchaîne joueur → club → joueur", desc:"Un joueur est affiché. Tape un club où il a joué, puis un autre joueur de ce club… et ainsi de suite !", color:"#1a2a4a", accent:"#60a5fa" },
     { icon:"⚡", title:"DÉFI DU JOUR", subtitle:"Un joueur mystère chaque jour", desc:"Chaque jour, un nouveau joueur mystère à deviner. Reviens tous les jours pour ne pas perdre ta série !", color:"#3a2a00", accent:"#FFD600" },
     { icon:"👥", title:"MULTIJOUEUR", subtitle:"Joue avec tes potes", desc:"Crée une salle, partage le code, et affrontez-vous en temps réel jusqu'à 8 joueurs !", color:"#2a1a3a", accent:"#c084fc" },
   ];
@@ -9189,61 +9204,114 @@ export default function LePont() {
           </div>
         )}
 
-        {/* ── GAME CARDS (côte à côte) ── */}
-        <div style={{display:"flex",gap:10,height:"clamp(320px,80vw,420px)",flexShrink:0}}>
-          {/* ── Carte THE PLUG ── */}
+        {/* ── HOME CAROUSEL — 3 modes (GRID, MERCATO, PLUG) ── */}
+        <div style={{flexShrink:0}}>
           <div
-            onClick={function(){setGameConfigModal("pont");}}
-            style={{flex:1,borderRadius:22,cursor:"pointer",overflow:"hidden",position:"relative",
-              boxShadow:"0 8px 24px rgba(0,0,0,.5)",display:"flex",flexDirection:"column"}}
+            style={{
+              position:"relative",
+              width:"min(280px, 75vw)",
+              height:"clamp(380px, 95vw, 460px)",
+              margin:"0 auto",
+            }}
+            onTouchStart={function(e){homeSwipeStartRef.current = e.touches[0].clientX;}}
+            onTouchEnd={function(e){
+              const startX = homeSwipeStartRef.current;
+              if(startX==null) return;
+              const endX = e.changedTouches[0].clientX;
+              const delta = endX - startX;
+              homeSwipeStartRef.current = null;
+              if(Math.abs(delta) > 50){
+                const newIdx = (homeCardIndex + (delta < 0 ? 1 : -1) + 3) % 3;
+                setHomeCardIndex(newIdx);
+                localStorage.setItem("bb_home_card", String(newIdx));
+              }
+            }}
+            onMouseDown={function(e){homeSwipeStartRef.current = e.clientX;}}
+            onMouseUp={function(e){
+              const startX = homeSwipeStartRef.current;
+              if(startX==null) return;
+              const delta = e.clientX - startX;
+              homeSwipeStartRef.current = null;
+              if(Math.abs(delta) > 50){
+                const newIdx = (homeCardIndex + (delta < 0 ? 1 : -1) + 3) % 3;
+                setHomeCardIndex(newIdx);
+                localStorage.setItem("bb_home_card", String(newIdx));
+              }
+            }}
           >
-            {/* Image en fond, rogne le haut pour garder le visuel principal */}
-            <div style={{position:"absolute",inset:0,overflow:"hidden",borderRadius:22,background:"#000"}}>
-              <img src={PLUG_CARD_IMG} style={{position:"absolute",width:"100%",height:"100%",top:0,objectFit:"contain",objectPosition:"top",pointerEvents:"none"}}/>
-              <div style={{position:"absolute",bottom:0,left:0,right:0,height:"30%",background:"linear-gradient(to top, rgba(0,0,0,.95) 0%, transparent 100%)"}}/>
-            </div>
-            {/* Record */}
-            {record && <div style={{position:"absolute",top:10,left:12,display:"flex",alignItems:"center",gap:4,zIndex:2}}>
-              <span style={{fontSize:12,color:G.gold}}>🏆</span>
-              <span style={{fontFamily:G.heading,fontSize:15,color:G.gold}}>{record.score} pts</span>
-            </div>}
-            {/* Bouton jouer */}
-            {/* Mots-clés PLUG */}
-            <div style={{position:"absolute",bottom:90,left:8,right:8,zIndex:2,textAlign:"center",textShadow:"0 2px 8px rgba(0,0,0,.9)"}}>
-              <div style={{fontFamily:G.heading,fontSize:28,fontWeight:800,color:"#fff",letterSpacing:1.5,lineHeight:1.05}}>
-                {lang==="en"?"FIND THE PLAYER":"TROUVE LE JOUEUR"}
-              </div>
-              <div style={{fontFamily:G.font,fontSize:16,fontWeight:700,color:"rgba(255,255,255,.85)",letterSpacing:1.5,marginTop:6}}>
-                {lang==="en"?"WHO LINKED THE 2 CLUBS":"QUI RELIE LES 2 CLUBS"}
-              </div>
-            </div>
-            <div style={{position:"absolute",bottom:6,left:8,right:8,zIndex:2,background:G.accent,borderRadius:50,padding:"20px 0",color:"#000",fontFamily:G.font,fontWeight:800,fontSize:16,textAlign:"center",boxShadow:"0 6px 20px rgba(0,0,0,.4)"}}>{lang==="en"?"Play":"Jouer"}</div>
+            {[
+              {key:"grid",    img:GRID_CARD_IMG,    onClick: function(){setGgModeChoice(true);},        record: chainRecord ? null : null, recordIcon:null, recordColor:"#00E676"},
+              {key:"mercato", img:MERCATO_CARD_IMG, onClick: function(){setGameConfigModal("chaine");}, record: chainRecord, recordIcon:"⛓",  recordColor:"#60a5fa"},
+              {key:"plug",    img:PLUG_CARD_IMG,    onClick: function(){setGameConfigModal("pont");},   record: record,      recordIcon:"🏆", recordColor:"#FFD600"},
+            ].map(function(card, i){
+              const offset = (i - homeCardIndex + 3) % 3;
+              const isActive = offset === 0;
+              let translateX, scale, opacity, zIndex;
+              if(offset === 0){ translateX = 0;  scale = 1;    opacity = 1;    zIndex = 30; }
+              else if(offset === 1){ translateX = 28; scale = 0.92; opacity = 0.65; zIndex = 20; }
+              else { translateX = 52; scale = 0.84; opacity = 0.35; zIndex = 10; }
+              return (
+                <div
+                  key={card.key}
+                  onClick={function(e){
+                    e.stopPropagation();
+                    if(homeSwipeStartRef.current!=null) return; // ignore si en cours de swipe
+                    if(isActive){
+                      card.onClick();
+                    } else {
+                      setHomeCardIndex(i);
+                      localStorage.setItem("bb_home_card", String(i));
+                    }
+                  }}
+                  style={{
+                    position:"absolute", top:0, left:0, right:0, bottom:0,
+                    borderRadius:22, cursor:"pointer", overflow:"hidden",
+                    background:"#000",
+                    transform:"translateX("+translateX+"px) scale("+scale+")",
+                    opacity:opacity, zIndex:zIndex,
+                    transition:"transform 0.35s cubic-bezier(.2,.7,.3,1), opacity 0.35s, box-shadow 0.35s",
+                    boxShadow: isActive ? "0 12px 36px rgba(0,0,0,.6)" : "0 4px 12px rgba(0,0,0,.3)",
+                    willChange:"transform",
+                  }}
+                >
+                  <img src={card.img} alt="" style={{width:"100%",height:"100%",objectFit:"cover",pointerEvents:"none",userSelect:"none"}} draggable={false}/>
+                  {/* Record badge */}
+                  {isActive && card.record && (
+                    <div style={{position:"absolute",top:12,left:12,display:"flex",alignItems:"center",gap:5,background:"rgba(0,0,0,.65)",padding:"5px 10px",borderRadius:14,backdropFilter:"blur(6px)",zIndex:2}}>
+                      <span style={{fontSize:13,color:card.recordColor}}>{card.recordIcon}</span>
+                      <span style={{fontFamily:G.heading,fontSize:14,color:card.recordColor,fontWeight:700}}>{card.record.score} pts</span>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
 
-          {/* ── Carte THE MERCATO ── */}
-          <div
-            onClick={function(){setGameConfigModal("chaine");}}
-            style={{flex:1,borderRadius:22,cursor:"pointer",overflow:"hidden",position:"relative",
-              boxShadow:"0 8px 24px rgba(0,0,0,.5)",display:"flex",flexDirection:"column"}}
-          >
-            <div style={{position:"absolute",inset:0,overflow:"hidden",borderRadius:22,background:"#000"}}>
-              <img src={MERCATO_CARD_IMG} style={{position:"absolute",width:"100%",height:"100%",top:0,objectFit:"contain",objectPosition:"top",pointerEvents:"none"}}/>
-              <div style={{position:"absolute",bottom:0,left:0,right:0,height:"30%",background:"linear-gradient(to top, rgba(0,0,0,.95) 0%, transparent 100%)"}}/>
-            </div>
-            {chainRecord&&<div style={{position:"absolute",top:10,left:12,display:"flex",alignItems:"center",gap:4,zIndex:2}}>
-              <span style={{fontSize:12,color:G.accent}}>⛓</span>
-              <span style={{fontFamily:G.heading,fontSize:15,color:G.accent}}>{chainRecord.score} pts</span>
-            </div>}
-            {/* Mots-clés MERCATO */}
-            <div style={{position:"absolute",bottom:90,left:8,right:8,zIndex:2,textAlign:"center",textShadow:"0 2px 8px rgba(0,0,0,.9)"}}>
-              <div style={{fontFamily:G.heading,fontSize:28,fontWeight:800,color:"#fff",letterSpacing:1.5,lineHeight:1.05}}>
-                {lang==="en"?"CHAIN":"ENCHAÎNE"}
-              </div>
-              <div style={{fontFamily:G.font,fontSize:16,fontWeight:700,color:"rgba(255,255,255,.85)",letterSpacing:1.5,marginTop:6}}>
-                {lang==="en"?"PLAYER → CLUB → PLAYER":"JOUEUR → CLUB → JOUEUR"}
-              </div>
-            </div>
-            <div style={{position:"absolute",bottom:6,left:8,right:8,zIndex:2,background:G.accent,borderRadius:50,padding:"20px 0",color:"#000",fontFamily:G.font,fontWeight:800,fontSize:16,textAlign:"center",boxShadow:"0 6px 20px rgba(0,0,0,.4)"}}>{lang==="en"?"Play":"Jouer"}</div>
+          {/* Dots indicator */}
+          <div style={{display:"flex",justifyContent:"center",gap:8,marginTop:14}}>
+            {[0,1,2].map(function(i){
+              const colors = ["#00E676","#60a5fa","#FFD600"];
+              const isActive = homeCardIndex === i;
+              return (
+                <div
+                  key={i}
+                  onClick={function(){setHomeCardIndex(i);localStorage.setItem("bb_home_card", String(i));}}
+                  style={{
+                    width: isActive ? 28 : 8,
+                    height: 8,
+                    borderRadius: 4,
+                    background: isActive ? colors[i] : "rgba(255,255,255,.25)",
+                    transition:"all 0.3s",
+                    cursor:"pointer",
+                  }}
+                />
+              );
+            })}
+          </div>
+
+          {/* Hint */}
+          <div style={{textAlign:"center",fontSize:10,color:"rgba(255,255,255,.4)",marginTop:8,letterSpacing:1.5,textTransform:"uppercase"}}>
+            {lang==="en" ? "← Swipe • Tap to play →" : "← Glisse • Tape pour jouer →"}
           </div>
         </div>
 
@@ -9292,7 +9360,7 @@ export default function LePont() {
                       </div>
                       <div style={{flex:1}}>
                         <div style={{fontFamily:G.heading,fontSize:30,color:G.white,letterSpacing:2,lineHeight:1,textShadow:`0 2px 10px ${accentColor}66`}}>
-                          {isPont?"THE PLUG":"THE MERCATO"}
+                          {isPont?"GOAT PLUG":"GOAT MERCATO"}
                         </div>
                         <div style={{fontSize:11,letterSpacing:2,color:accentColor,textTransform:"uppercase",fontWeight:800,marginTop:4}}>
                           {isPont?(lang==="en"?"2 clubs → find the common player":"2 clubs → trouve le joueur commun"):(lang==="en"?"player → club → player...":"joueur → club → joueur...")}
@@ -9357,17 +9425,7 @@ export default function LePont() {
           </div>
         )}
 
-        {/* 🐐 GOAT GRID — Encadré accueil (solo + multi) */}
-        <div onClick={function(){setGgModeChoice(true);}} style={{borderRadius:14,background:"linear-gradient(135deg,rgba(0,230,118,.15),rgba(255,214,0,.15))",border:"1.5px solid rgba(0,230,118,.4)",padding:"10px 12px",display:"flex",alignItems:"center",gap:10,cursor:"pointer",transition:"all .15s"}}>
-          <div style={{fontSize:22}}>🐐</div>
-          <div style={{flex:1}}>
-            <div style={{fontSize:10,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase",color:"rgba(0,230,118,.8)",marginBottom:1}}>{lang==="en"?"Solo · Multiplayer":"Solo · Multijoueur"}</div>
-            <div style={{fontSize:13,fontWeight:800,color:G.white}}>
-              GOAT GRID — {lang==="en"?"Fill the 3×3 grid":"Remplis la grille 3×3"}
-            </div>
-          </div>
-          <button onClick={function(e){e.stopPropagation();setGgModeChoice(true);}} style={{padding:"9px 13px",background:"linear-gradient(135deg,#00E676,#FFD600)",color:"#000",border:"none",borderRadius:12,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800,whiteSpace:"nowrap"}}>{lang==="en"?"Play 🐐":"Jouer 🐐"}</button>
-        </div>
+        {/* 🐐 GOAT GRID — Désormais dans le carousel des 3 modes ci-dessus */}
 
         {/* Défi du jour — CACHÉ (remplacé par GOAT GRID, plomberie conservée pour push notif + streak) */}
         {false && dailyPlayer && (
