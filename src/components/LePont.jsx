@@ -9210,7 +9210,7 @@ export default function LePont() {
             style={{
               position:"relative",
               width:"min(280px, 75vw)",
-              height:"clamp(380px, 95vw, 460px)",
+              height:"clamp(340px, 82vw, 400px)",
               margin:"0 auto",
             }}
             onTouchStart={function(e){homeSwipeStartRef.current = e.touches[0].clientX;}}
@@ -9288,7 +9288,7 @@ export default function LePont() {
           </div>
 
           {/* Dots indicator */}
-          <div style={{display:"flex",justifyContent:"center",gap:8,marginTop:14}}>
+          <div style={{display:"flex",justifyContent:"center",gap:8,marginTop:10}}>
             {[0,1,2].map(function(i){
               const colors = ["#00E676","#60a5fa","#FFD600"];
               const isActive = homeCardIndex === i;
@@ -9310,7 +9310,7 @@ export default function LePont() {
           </div>
 
           {/* Hint */}
-          <div style={{textAlign:"center",fontSize:10,color:"rgba(255,255,255,.4)",marginTop:8,letterSpacing:1.5,textTransform:"uppercase"}}>
+          <div style={{textAlign:"center",fontSize:9,color:"rgba(255,255,255,.35)",marginTop:6,letterSpacing:1.5,textTransform:"uppercase"}}>
             {lang==="en" ? "← Swipe • Tap to play →" : "← Glisse • Tape pour jouer →"}
           </div>
         </div>
