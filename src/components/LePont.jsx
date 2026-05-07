@@ -214,6 +214,76 @@ const CLUB_ALIASES = {
   "Parma FC":["parma","parma fc","parma calcio","gialloblu"],
 };
 
+// ─── CLUB_DISPLAY_NAMES ─────────────────────────────────────────────
+// Mapping nom court (BDD) → nom officiel à afficher dans l'UI.
+// La BDD reste inchangée, le matching utilise toujours les noms courts + CLUB_ALIASES.
+// Cette couche ne sert qu'à l'affichage : si pas de mapping, le nom court est affiché tel quel.
+const CLUB_DISPLAY_NAMES = {
+  // Ligue 1 (FR)
+  "PSG": "Paris Saint-Germain",
+  "Marseille": "Olympique de Marseille",
+  "Lyon": "Olympique Lyonnais",
+  "Saint-Etienne": "AS Saint-Étienne",
+  "Monaco": "AS Monaco",
+  "Lille": "LOSC Lille",
+  "Lens": "RC Lens",
+  "Nice": "OGC Nice",
+  "Rennes": "Stade Rennais",
+  "Reims": "Stade de Reims",
+  "Bordeaux": "Girondins de Bordeaux",
+  "Strasbourg": "RC Strasbourg",
+  "Caen": "SM Caen",
+  "Lorient": "FC Lorient",
+  "Brest": "Stade Brestois",
+  "Auxerre": "AJ Auxerre",
+  "Le Havre": "Le Havre AC",
+  "Angers": "Angers SCO",
+  "Cannes": "AS Cannes",
+  "Nantes": "FC Nantes",
+  "Sochaux": "FC Sochaux",
+  "Amiens": "Amiens SC",
+  "Valenciennes": "Valenciennes FC",
+  "Toulouse": "Toulouse FC",
+  "Montpellier": "Montpellier HSC",
+  // Premier League (EN)
+  "Bournemouth": "AFC Bournemouth",
+  "Brighton": "Brighton & Hove Albion",
+  "Wolverhampton": "Wolverhampton Wanderers",
+  "Tottenham": "Tottenham Hotspur",
+  "Newcastle": "Newcastle United",
+  "West Ham": "West Ham United",
+  "West Brom": "West Bromwich Albion",
+  // La Liga (ES)
+  "Atletico Madrid": "Atlético de Madrid",
+  "Athletic Bilbao": "Athletic Club Bilbao",
+  "Real Betis": "Real Betis Balompié",
+  "Almería": "UD Almería",
+  "Málaga": "Málaga CF",
+  // Bundesliga (DE)
+  "Bayern Munich": "FC Bayern Munich",
+  "Bayer Leverkusen": "Bayer 04 Leverkusen",
+  "Borussia Monchengladbach": "Borussia Mönchengladbach",
+  "Hoffenheim": "TSG 1899 Hoffenheim",
+  "Hamburg": "Hamburger SV",
+  "Schalke": "FC Schalke 04",
+  "Wolfsburg": "VfL Wolfsburg",
+  "Werder Bremen": "SV Werder Bremen",
+  "FC Cologne": "1. FC Köln",
+  "Mainz": "Mainz 05",
+  // Liga NOS (PT)
+  "Porto": "FC Porto",
+  "Benfica": "SL Benfica",
+  // Eredivisie (NL)
+  "AZ": "AZ Alkmaar",
+  // Brésil
+  "Flamengo": "CR Flamengo",
+};
+
+function getClubDisplayName(club){
+  if(!club) return club;
+  return CLUB_DISPLAY_NAMES[club] || club;
+}
+
 const CLUB_COLORS = {
   "Arsenal":["#EF0107","#063672"],"Chelsea":["#034694","#DBA111"],"Liverpool":["#C8102E","#FFFFFF"],
   "Manchester United":["#DA291C","#FFFFFF"],"Manchester City":["#6CABDD","#1C2C5B"],"Tottenham":["#132257","#FFFFFF"],
@@ -2643,6 +2713,7 @@ export default function LePont() {
     return isNaN(saved) || saved < 0 || saved > 2 ? 0 : saved;
   });
   const homeSwipeStartRef = useRef(null);
+  const [homeRulesModal, setHomeRulesModal] = useState(null); // null | "grid" | "mercato" | "plug"
   const [diff, setDiff] = useState("facile");
   const [totalRounds, setTotalRounds] = useState(1); // Toujours 1 manche de 90s (pas de multi-manches)
   const [currentRound, setCurrentRound] = useState(1);
@@ -7262,9 +7333,9 @@ export default function LePont() {
                       <span style={{fontSize:10,fontWeight:800,color:"rgba(255,255,255,.3)",minWidth:22}}>#{i+1}</span>
                       <span style={{fontSize:16,color:statusColor,fontWeight:800}}>{statusEmoji}</span>
                       <div style={{flex:1,display:"flex",gap:6,alignItems:"center",flexWrap:"wrap"}}>
-                        <span style={{fontSize:11,fontWeight:800,color:G.white,background:`linear-gradient(90deg,${ca1} 50%,${cb1} 50%)`,borderRadius:12,padding:"3px 8px",textShadow:"0 1px 3px rgba(0,0,0,.6)"}}>{a.c1}</span>
+                        <span style={{fontSize:11,fontWeight:800,color:G.white,background:`linear-gradient(90deg,${ca1} 50%,${cb1} 50%)`,borderRadius:12,padding:"3px 8px",textShadow:"0 1px 3px rgba(0,0,0,.6)"}}>{getClubDisplayName(a.c1)}</span>
                         <span style={{fontSize:11,color:"rgba(255,255,255,.3)"}}>×</span>
-                        <span style={{fontSize:11,fontWeight:800,color:G.white,background:`linear-gradient(90deg,${ca2} 50%,${cb2} 50%)`,borderRadius:12,padding:"3px 8px",textShadow:"0 1px 3px rgba(0,0,0,.6)"}}>{a.c2}</span>
+                        <span style={{fontSize:11,fontWeight:800,color:G.white,background:`linear-gradient(90deg,${ca2} 50%,${cb2} 50%)`,borderRadius:12,padding:"3px 8px",textShadow:"0 1px 3px rgba(0,0,0,.6)"}}>{getClubDisplayName(a.c2)}</span>
                       </div>
                     </div>
                     {a.status==="ok" ? (
@@ -7318,7 +7389,7 @@ export default function LePont() {
                       <div style={{fontSize:14,fontWeight:700,color:G.white}}>{h.player}</div>
                       <div style={{fontSize:11,color:"rgba(255,255,255,.4)",marginTop:2}}>{lang==="en"?"played at":"a joué à"}</div>
                     </div>
-                    <span style={{fontSize:11,fontWeight:800,color:G.white,background:`linear-gradient(90deg,${ca} 50%,${cb} 50%)`,borderRadius:12,padding:"4px 10px",textShadow:"0 1px 3px rgba(0,0,0,.6)"}}>{h.club}</span>
+                    <span style={{fontSize:11,fontWeight:800,color:G.white,background:`linear-gradient(90deg,${ca} 50%,${cb} 50%)`,borderRadius:12,padding:"4px 10px",textShadow:"0 1px 3px rgba(0,0,0,.6)"}}>{getClubDisplayName(h.club)}</span>
                   </div>
                 );
               })}
@@ -9275,6 +9346,25 @@ export default function LePont() {
                   }}
                 >
                   <img src={card.img} alt="" style={{width:"100%",height:"100%",objectFit:"cover",pointerEvents:"none",userSelect:"none"}} draggable={false}/>
+                  {/* Bouton info (i) en haut à droite — toujours visible */}
+                  {isActive && (
+                    <button
+                      onClick={function(e){e.stopPropagation();setHomeRulesModal(card.key);}}
+                      onMouseDown={function(e){e.stopPropagation();}}
+                      onTouchStart={function(e){e.stopPropagation();}}
+                      aria-label={lang==="en"?"Game rules":"Règles du jeu"}
+                      style={{
+                        position:"absolute", top:12, right:12, zIndex:3,
+                        width:30, height:30, borderRadius:"50%",
+                        background:"rgba(0,0,0,.6)", color:"#fff",
+                        border:"1.5px solid rgba(255,255,255,.35)",
+                        fontFamily:"Georgia, serif", fontSize:17, fontWeight:700, fontStyle:"italic",
+                        cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center",
+                        backdropFilter:"blur(6px)", padding:0, lineHeight:1,
+                        boxShadow:"0 2px 8px rgba(0,0,0,.4)",
+                      }}
+                    >i</button>
+                  )}
                   {/* Record badge */}
                   {isActive && card.record && (
                     <div style={{position:"absolute",top:12,left:12,display:"flex",alignItems:"center",gap:5,background:"rgba(0,0,0,.65)",padding:"5px 10px",borderRadius:14,backdropFilter:"blur(6px)",zIndex:2}}>
@@ -9314,6 +9404,60 @@ export default function LePont() {
             {lang==="en" ? "← Swipe • Tap to play →" : "← Glisse • Tape pour jouer →"}
           </div>
         </div>
+
+        {/* ── HOME RULES MODAL ── */}
+        {homeRulesModal && (() => {
+          const RULES_DATA = {
+            grid:    { title: "GOAT GRID",    emoji: "🐐", accent: "#00E676", bg: "linear-gradient(135deg,rgba(0,230,118,.18),rgba(255,214,0,.12))",
+              rules_fr: ["Une grille 3×3 quotidienne avec 9 défis","Pour chaque case : un joueur qui valide la ligne ET la colonne","Un seul essai par case — choisis bien !","Plus le joueur est rare, plus tu marques de points","Mode solo ou duel multijoueur"],
+              rules_en: ["A daily 3×3 grid with 9 challenges","For each cell: a player matching both row AND column","Only one try per cell — choose wisely!","The rarer the player, the more points you score","Solo or multiplayer duel mode"]
+            },
+            mercato: { title: "GOAT MERCATO", emoji: "⛓",  accent: "#60a5fa", bg: "linear-gradient(135deg,rgba(96,165,250,.18),rgba(59,130,246,.12))",
+              rules_fr: ["Démarre avec un joueur, enchaîne sans t'arrêter","Tape un club où il a joué","Puis un autre joueur qui a joué dans ce club","Et ainsi de suite jusqu'à la fin du chrono","Plus la chaîne est longue, plus tu scores"],
+              rules_en: ["Start with a player, chain without stopping","Type a club they played for","Then another player who played at that club","And so on until time runs out","The longer the chain, the bigger the score"]
+            },
+            plug:    { title: "GOAT PLUG",    emoji: "⚽", accent: "#FFD600", bg: "linear-gradient(135deg,rgba(255,214,0,.18),rgba(255,107,53,.12))",
+              rules_fr: ["On te montre 2 clubs","Trouve un joueur qui a joué dans les deux","Tu as 60 secondes par manche","+2 points par bonne réponse, −10 par pass","Difficulté progressive : facile → moyen → expert"],
+              rules_en: ["We show you 2 clubs","Find a player who played for both","You have 60 seconds per round","+2 points per correct answer, −10 per skip","Progressive difficulty: easy → medium → expert"]
+            },
+          };
+          const data = RULES_DATA[homeRulesModal];
+          const rules = lang === "en" ? data.rules_en : data.rules_fr;
+          return (
+            <div
+              style={{position:"fixed",inset:0,zIndex:400,display:"flex",alignItems:"flex-end"}}
+              onClick={function(e){if(e.target===e.currentTarget)setHomeRulesModal(null);}}
+            >
+              <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.75)",backdropFilter:"blur(10px)"}} onClick={function(){setHomeRulesModal(null);}}/>
+              <div style={{position:"relative",width:"100%",background:"#0d1f1a",borderTopLeftRadius:24,borderTopRightRadius:24,padding:"22px 22px 28px",zIndex:1,maxHeight:"80vh",overflowY:"auto",boxShadow:"0 -8px 32px rgba(0,0,0,.6)"}}>
+                {/* Bandeau accent + handle */}
+                <div style={{width:48,height:4,background:"rgba(255,255,255,.2)",borderRadius:2,margin:"0 auto 16px"}}/>
+                {/* Titre + emoji */}
+                <div style={{textAlign:"center",marginBottom:18}}>
+                  <div style={{fontSize:48,marginBottom:8,filter:"drop-shadow(0 4px 16px "+data.accent+"55)"}}>{data.emoji}</div>
+                  <div style={{fontFamily:G.heading,fontSize:26,letterSpacing:2,color:data.accent,lineHeight:1,marginBottom:6,textShadow:"0 4px 24px "+data.accent+"33"}}>{data.title}</div>
+                  <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.5)",textTransform:"uppercase",fontWeight:700}}>{lang==="en"?"How to play":"Règles du jeu"}</div>
+                </div>
+                {/* Liste des règles */}
+                <div style={{background:data.bg,border:"1.5px solid "+data.accent+"40",borderRadius:16,padding:"16px 18px",marginBottom:18}}>
+                  {rules.map(function(r, i){
+                    return (
+                      <div key={i} style={{display:"flex",alignItems:"flex-start",gap:12,padding:"8px 0",borderBottom:i<rules.length-1?"1px solid rgba(255,255,255,.08)":"none"}}>
+                        <div style={{minWidth:22,height:22,borderRadius:"50%",background:data.accent,color:"#000",fontSize:11,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",marginTop:1}}>{i+1}</div>
+                        <div style={{flex:1,fontSize:14,color:G.white,lineHeight:1.4,fontWeight:500}}>{r}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+                {/* Bouton fermer */}
+                <button
+                  onClick={function(){setHomeRulesModal(null);}}
+                  style={{width:"100%",padding:"15px",background:data.accent,color:"#000",border:"none",borderRadius:14,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800,letterSpacing:1}}
+                >{lang==="en"?"GOT IT":"COMPRIS"}</button>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* ── CONFIG MODAL ── */}
         {gameConfigModal && (
@@ -10462,7 +10606,7 @@ export default function LePont() {
                           <div style={{position:"absolute",inset:0,background:ca}}/>
                           <div style={{position:"absolute",top:0,right:0,width:"55%",bottom:0,background:cb,clipPath:"polygon(30% 0%, 100% 0%, 100% 100%, 0% 100%)"}}/>
                           <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.1)"}}/>
-                          <span style={{position:"relative",zIndex:1,fontSize:12,fontWeight:800,color:"#fff",padding:"0 16px",textShadow:"0 1px 4px rgba(0,0,0,.7)"}}>{club}</span>
+                          <span style={{position:"relative",zIndex:1,fontSize:12,fontWeight:800,color:"#fff",padding:"0 16px",textShadow:"0 1px 4px rgba(0,0,0,.7)"}}>{getClubDisplayName(club)}</span>
                         </div>
                         {i < dailyPlayer.clubs.length - 1 && (
                           <div style={{display:"flex",flexDirection:"column",alignItems:"center",margin:"1px 0"}}>
@@ -10864,7 +11008,7 @@ export default function LePont() {
             <div style={{position:"absolute",top:0,right:0,width:"55%",bottom:0,background:cb1,clipPath:"polygon(30% 0%, 100% 0%, 100% 100%, 0% 100%)"}}/>
             <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.18)"}}/>
             <div style={{position:"absolute",width:220,height:220,borderRadius:"50%",border:"3px solid rgba(255,255,255,.1)",top:-40,right:-40,pointerEvents:"none"}}/>
-            <div style={{fontFamily:G.heading,fontSize:"clamp(28px,7.5vw,52px)",color:"#fff",lineHeight:1.05,textAlign:"center",padding:"0 16px",zIndex:1,textShadow:"0 3px 16px rgba(0,0,0,.6)",letterSpacing:1}}>{cur.c1}</div>
+            <div style={{fontFamily:G.heading,fontSize:"clamp(28px,7.5vw,52px)",color:"#fff",lineHeight:1.05,textAlign:"center",padding:"0 16px",zIndex:1,textShadow:"0 3px 16px rgba(0,0,0,.6)",letterSpacing:1}}>{getClubDisplayName(cur.c1)}</div>
           </div>
 
           {/* VS */}
@@ -10879,7 +11023,7 @@ export default function LePont() {
             <div style={{position:"absolute",top:0,right:0,width:"55%",bottom:0,background:cb2,clipPath:"polygon(30% 0%, 100% 0%, 100% 100%, 0% 100%)"}}/>
             <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.18)"}}/>
             <div style={{position:"absolute",width:200,height:200,borderRadius:"50%",border:"3px solid rgba(255,255,255,.1)",bottom:-30,left:-30,pointerEvents:"none"}}/>
-            <div style={{fontFamily:G.heading,fontSize:"clamp(28px,7.5vw,52px)",color:"#fff",lineHeight:1.05,textAlign:"center",padding:"0 16px",zIndex:1,textShadow:"0 3px 16px rgba(0,0,0,.6)",letterSpacing:1}}>{cur.c2}</div>
+            <div style={{fontFamily:G.heading,fontSize:"clamp(28px,7.5vw,52px)",color:"#fff",lineHeight:1.05,textAlign:"center",padding:"0 16px",zIndex:1,textShadow:"0 3px 16px rgba(0,0,0,.6)",letterSpacing:1}}>{getClubDisplayName(cur.c2)}</div>
           </div>
         </div>
 
@@ -11081,7 +11225,7 @@ export default function LePont() {
             }).slice(0,5);
             if(!sugg.length) return null;
             return (<div style={{position:"absolute",top:"100%",left:0,right:0,background:"#fff",border:"1px solid #e5e5e0",borderRadius:14,boxShadow:"0 8px 24px rgba(0,0,0,.15)",zIndex:100,overflow:"hidden",marginTop:4}}>
-              {sugg.map(c=>(<div key={c} onClick={function(){setGuess(c);handleChainSubmit(c);}} style={{padding:"12px 16px",fontFamily:G.font,fontSize:15,fontWeight:700,color:G.dark,cursor:"pointer",borderBottom:"1px solid #f0f0f0",display:"flex",alignItems:"center",gap:10}}><ClubLogo club={c} size={22}/>{c}</div>))}
+              {sugg.map(c=>(<div key={c} onClick={function(){setGuess(c);handleChainSubmit(c);}} style={{padding:"12px 16px",fontFamily:G.font,fontSize:15,fontWeight:700,color:G.dark,cursor:"pointer",borderBottom:"1px solid #f0f0f0",display:"flex",alignItems:"center",gap:10}}><ClubLogo club={c} size={22}/>{getClubDisplayName(c)}</div>))}
             </div>);
           })()}
         </div>
@@ -11100,7 +11244,7 @@ export default function LePont() {
                 {h.passed ? (
                   <span style={{display:"flex",alignItems:"center",gap:4,flexShrink:0,fontSize:14}}>🔒</span>
                 ) : (
-                  <span style={{display:"flex",alignItems:"center",gap:4,flexShrink:0}}><ClubLogo club={h.club} size={18}/><span style={{fontSize:12,color:G.bg,fontWeight:700}}>{h.club}</span></span>
+                  <span style={{display:"flex",alignItems:"center",gap:4,flexShrink:0}}><ClubLogo club={h.club} size={18}/><span style={{fontSize:12,color:G.bg,fontWeight:700}}>{getClubDisplayName(h.club)}</span></span>
                 )}
               </div>
             ))}
