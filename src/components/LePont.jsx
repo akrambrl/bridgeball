@@ -9495,21 +9495,21 @@ export default function LePont() {
                     boxShadow:"0 4px 16px rgba(0,0,0,.5)"
                   }}>×</button>
 
-                  {/* ── HERO IMAGE — visuel ENTIER pleine largeur (PLUG_CARD_IMG / MERCATO_CARD_IMG) ── */}
-                  <div style={{position:"relative",width:"100%",aspectRatio:"3/4",overflow:"hidden",background:"#000",flexShrink:0}}>
+                  {/* ── HERO IMAGE — visuel ENTIER (pas de crop), hauteur limitée pour laisser place au contenu ── */}
+                  <div style={{position:"relative",width:"100%",height:"50vh",maxHeight:"540px",minHeight:"300px",overflow:"hidden",background:"#000",flexShrink:0}}>
                     <img
                       src={isPont ? PLUG_CARD_IMG : MERCATO_CARD_IMG}
                       alt=""
-                      style={{width:"100%",height:"100%",objectFit:"cover",pointerEvents:"none",userSelect:"none"}}
+                      style={{width:"100%",height:"100%",objectFit:"contain",pointerEvents:"none",userSelect:"none"}}
                       draggable={false}
                     />
                     {/* Gradient bottom pour transition douce vers le contenu */}
-                    <div style={{position:"absolute",bottom:0,left:0,right:0,height:80,background:"linear-gradient(to top, #0a0a0a 0%, transparent 100%)",pointerEvents:"none"}}/>
+                    <div style={{position:"absolute",bottom:0,left:0,right:0,height:50,background:"linear-gradient(to top, #0a0a0a 0%, transparent 100%)",pointerEvents:"none"}}/>
                   </div>
 
-                  <div style={{position:"relative",zIndex:1,padding:"18px 22px calc(32px + env(safe-area-inset-bottom))",flex:1}}>
+                  <div style={{position:"relative",zIndex:1,padding:"14px 22px calc(20px + env(safe-area-inset-bottom))",flex:1,display:"flex",flexDirection:"column",justifyContent:"flex-start"}}>
                     {/* Badge format de jeu (🔗 2 CLUBS → 👤 1 JOUEUR) */}
-                    <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:14,padding:"14px 16px",background:`${accentColor}10`,border:`1.5px solid ${accentColor}40`,borderRadius:14,marginBottom:24,backdropFilter:"blur(10px)"}}>
+                    <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:14,padding:"10px 16px",background:`${accentColor}10`,border:`1.5px solid ${accentColor}40`,borderRadius:12,marginBottom:18,backdropFilter:"blur(10px)"}}>
                       {isPont ? (
                         <>
                           <span style={{display:"flex",alignItems:"center",gap:6,color:accentColor,fontSize:14,fontWeight:800,letterSpacing:1}}>🔗 <span style={{color:G.white}}>2 {lang==="en"?"CLUBS":"CLUBS"}</span></span>
@@ -9528,23 +9528,23 @@ export default function LePont() {
                     </div>
 
                     {/* Difficulté */}
-                    <div style={{fontSize:10,fontWeight:800,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginBottom:10}}>{lang==="en"?"Difficulty":"Difficulté"}</div>
-                    <div style={{display:"flex",gap:8,marginBottom:20}}>
+                    <div style={{fontSize:10,fontWeight:800,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginBottom:8}}>{lang==="en"?"Difficulty":"Difficulté"}</div>
+                    <div style={{display:"flex",gap:8,marginBottom:16}}>
                       {["facile","moyen","expert"].map(function(d){
                         const dLabel = d==="facile"?"AMATEUR":d==="moyen"?"PRO":"CRESCENDO";
                         const dColor = d==="facile"?"#00E676":d==="moyen"?"#FFD600":"#FF3D57";
                         const stars = d==="facile"?1:d==="moyen"?2:3;
                         return(
                           <button key={d} onClick={function(){setDiff(d);}} style={{
-                            flex:1,padding:"14px 4px",borderRadius:14,
+                            flex:1,padding:"11px 4px",borderRadius:12,
                             border:`1.5px solid ${diff===d?dColor:"rgba(255,255,255,.1)"}`,
                             background:diff===d?`${dColor}15`:"rgba(255,255,255,.03)",
                             color:diff===d?dColor:"rgba(255,255,255,.5)",
-                            fontFamily:G.font,fontWeight:800,cursor:"pointer",fontSize:13,letterSpacing:1,transition:"all .15s",
-                            display:"flex",flexDirection:"column",alignItems:"center",gap:4,
+                            fontFamily:G.font,fontWeight:800,cursor:"pointer",fontSize:12,letterSpacing:1,transition:"all .15s",
+                            display:"flex",flexDirection:"column",alignItems:"center",gap:3,
                             boxShadow:diff===d?`0 4px 16px ${dColor}33`:"none"
                           }}>
-                            <div style={{fontSize:12,letterSpacing:1}}>{d==="expert"?"📈":"⭐".repeat(stars)}</div>
+                            <div style={{fontSize:11,letterSpacing:1}}>{d==="expert"?"📈":"⭐".repeat(stars)}</div>
                             <div>{dLabel}</div>
                           </button>
                         );
@@ -9556,10 +9556,10 @@ export default function LePont() {
                     {/* Boutons */}
                     <div style={{display:"flex",gap:10}}>
                       <button onClick={function(){const m=gameConfigModal;setGameConfigModal(null);setTimeout(function(){tryStart(m);},50);}} style={{
-                        flex:2,padding:"17px",
+                        flex:2,padding:"14px",
                         background:`linear-gradient(135deg, ${accentColor}, ${accentSecondary})`,
                         color:"#000",border:"none",borderRadius:50,cursor:"pointer",
-                        fontFamily:G.font,fontSize:16,fontWeight:800,letterSpacing:1,
+                        fontFamily:G.font,fontSize:15,fontWeight:800,letterSpacing:1,
                         boxShadow:`0 8px 24px ${accentColor}55`,
                         display:"flex",alignItems:"center",justifyContent:"center",gap:8,
                         transition:"transform .15s"
@@ -9567,11 +9567,11 @@ export default function LePont() {
                         ▶ {lang==="en"?"Play solo":"Jouer seul"}
                       </button>
                       <button onClick={function(){setDuelMode(gameConfigModal);setDuelDiff(diff);setDuelRounds(totalRounds);setGameConfigModal(null);setTimeout(function(){setShowRoomCreate(true);},100);}} style={{
-                        flex:1,padding:"17px",
+                        flex:1,padding:"14px",
                         background:"rgba(255,255,255,.08)",color:G.white,
                         border:"1px solid rgba(255,255,255,.15)",
                         borderRadius:50,cursor:"pointer",
-                        fontFamily:G.font,fontSize:13,fontWeight:700,
+                        fontFamily:G.font,fontSize:12,fontWeight:700,
                         backdropFilter:"blur(10px)"
                       }}>
                         👥 {lang==="en"?"With friends":"Entre potes"}
