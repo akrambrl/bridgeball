@@ -9468,58 +9468,61 @@ export default function LePont() {
         {/* ── CONFIG MODAL ── */}
         {gameConfigModal && (
           <div
-            style={{position:"fixed",inset:0,zIndex:300,display:"flex",alignItems:"flex-end"}}
-            onClick={function(e){if(e.target===e.currentTarget)setGameConfigModal(null);}}
+            style={{position:"fixed",inset:0,zIndex:300,background:"#0a0a0a",overflowY:"auto",WebkitOverflowScrolling:"touch"}}
           >
-            {/* Backdrop */}
-            <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.7)",backdropFilter:"blur(10px)"}} onClick={function(){setGameConfigModal(null);}}/>
-            {/* Sheet */}
             {(() => {
               const isPont = gameConfigModal==="pont";
               const accentColor = isPont ? "#FFD600" : "#60a5fa";
               const accentSecondary = isPont ? "#FF6B35" : "#3b82f6";
               return (
                 <div style={{
-                  position:"relative",zIndex:1,
+                  position:"relative",
                   width:"100%",
-                  overflow:"hidden",
-                  borderRadius:"28px 28px 0 0",
-                  border:`1px solid ${accentColor}33`,
-                  borderBottom:"none",
-                  background:"#0a0a0a",
-                  boxShadow:`0 -20px 60px rgba(0,0,0,.6), 0 0 80px ${accentColor}22`,
-                  animation:"slideUp .4s cubic-bezier(.34,1.56,.64,1)"
+                  minHeight:"100vh",
+                  display:"flex",
+                  flexDirection:"column",
+                  animation:"fadeIn .3s ease-out",
                 }}>
-                  {/* ── HERO IMAGE — visuel net pleine largeur (PLUG_CARD_IMG / MERCATO_CARD_IMG) ── */}
-                  <div style={{position:"relative",width:"100%",height:"clamp(260px, 58vw, 340px)",overflow:"hidden",background:"#000"}}>
+                  {/* ── BOUTON FERMER (X en haut à droite) ── */}
+                  <button onClick={function(){setGameConfigModal(null);}} style={{
+                    position:"fixed",top:"calc(14px + env(safe-area-inset-top))",right:14,zIndex:10,
+                    width:38,height:38,borderRadius:"50%",
+                    background:"rgba(0,0,0,.65)",color:"#fff",
+                    border:"1px solid rgba(255,255,255,.25)",
+                    fontSize:22,fontWeight:300,lineHeight:1,
+                    cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
+                    backdropFilter:"blur(10px)",
+                    boxShadow:"0 4px 16px rgba(0,0,0,.5)"
+                  }}>×</button>
+
+                  {/* ── HERO IMAGE — visuel ENTIER pleine largeur (PLUG_CARD_IMG / MERCATO_CARD_IMG) ── */}
+                  <div style={{position:"relative",width:"100%",aspectRatio:"3/4",overflow:"hidden",background:"#000",flexShrink:0}}>
                     <img
                       src={isPont ? PLUG_CARD_IMG : MERCATO_CARD_IMG}
                       alt=""
-                      style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center",pointerEvents:"none",userSelect:"none"}}
+                      style={{width:"100%",height:"100%",objectFit:"cover",pointerEvents:"none",userSelect:"none"}}
                       draggable={false}
                     />
                     {/* Gradient bottom pour transition douce vers le contenu */}
-                    <div style={{position:"absolute",bottom:0,left:0,right:0,height:60,background:"linear-gradient(to top, #0a0a0a 0%, transparent 100%)",pointerEvents:"none"}}/>
-                    {/* Handle de drag par-dessus l'image */}
-                    <div style={{position:"absolute",top:12,left:"50%",transform:"translateX(-50%)",width:44,height:4,background:"rgba(255,255,255,.5)",borderRadius:2,boxShadow:"0 1px 4px rgba(0,0,0,.5)"}}/>
+                    <div style={{position:"absolute",bottom:0,left:0,right:0,height:80,background:"linear-gradient(to top, #0a0a0a 0%, transparent 100%)",pointerEvents:"none"}}/>
                   </div>
 
-                  <div style={{position:"relative",zIndex:1,padding:"10px 22px calc(28px + env(safe-area-inset-bottom))"}}>
+                  <div style={{position:"relative",zIndex:1,padding:"18px 22px calc(32px + env(safe-area-inset-bottom))",flex:1}}>
                     {/* Badge format de jeu (🔗 2 CLUBS → 👤 1 JOUEUR) */}
-                    <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:14,padding:"12px 16px",background:`${accentColor}10`,border:`1px solid ${accentColor}40`,borderRadius:14,marginBottom:18,backdropFilter:"blur(10px)"}}>
+                    <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:14,padding:"14px 16px",background:`${accentColor}10`,border:`1.5px solid ${accentColor}40`,borderRadius:14,marginBottom:24,backdropFilter:"blur(10px)"}}>
                       {isPont ? (
                         <>
-                          <span style={{display:"flex",alignItems:"center",gap:6,color:accentColor,fontSize:13,fontWeight:800,letterSpacing:1}}>🔗 <span style={{color:G.white}}>2 {lang==="en"?"CLUBS":"CLUBS"}</span></span>
-                          <span style={{color:accentColor,fontSize:14,fontWeight:800}}>→</span>
-                          <span style={{display:"flex",alignItems:"center",gap:6,color:accentColor,fontSize:13,fontWeight:800,letterSpacing:1}}>👤 <span style={{color:G.white}}>1 {lang==="en"?"PLAYER":"JOUEUR"}</span></span>
+                          <span style={{display:"flex",alignItems:"center",gap:6,color:accentColor,fontSize:14,fontWeight:800,letterSpacing:1}}>🔗 <span style={{color:G.white}}>2 {lang==="en"?"CLUBS":"CLUBS"}</span></span>
+                          <span style={{color:accentColor,fontSize:15,fontWeight:800}}>→</span>
+                          <span style={{display:"flex",alignItems:"center",gap:6,color:accentColor,fontSize:14,fontWeight:800,letterSpacing:1}}>👤 <span style={{color:G.white}}>1 {lang==="en"?"PLAYER":"JOUEUR"}</span></span>
                         </>
                       ) : (
                         <>
-                          <span style={{display:"flex",alignItems:"center",gap:6,color:accentColor,fontSize:13,fontWeight:800,letterSpacing:1}}>👤 <span style={{color:G.white}}>{lang==="en"?"PLAYER":"JOUEUR"}</span></span>
-                          <span style={{color:accentColor,fontSize:14,fontWeight:800}}>→</span>
-                          <span style={{display:"flex",alignItems:"center",gap:6,color:accentColor,fontSize:13,fontWeight:800,letterSpacing:1}}>🛡 <span style={{color:G.white}}>{lang==="en"?"CLUB":"CLUB"}</span></span>
-                          <span style={{color:accentColor,fontSize:14,fontWeight:800}}>→</span>
-                          <span style={{color:accentColor,fontSize:13,fontWeight:800,letterSpacing:1}}>👤<span style={{color:G.white,marginLeft:6}}>...</span></span>
+                          <span style={{display:"flex",alignItems:"center",gap:6,color:accentColor,fontSize:14,fontWeight:800,letterSpacing:1}}>👤 <span style={{color:G.white}}>{lang==="en"?"PLAYER":"JOUEUR"}</span></span>
+                          <span style={{color:accentColor,fontSize:15,fontWeight:800}}>→</span>
+                          <span style={{display:"flex",alignItems:"center",gap:6,color:accentColor,fontSize:14,fontWeight:800,letterSpacing:1}}>🛡 <span style={{color:G.white}}>{lang==="en"?"CLUB":"CLUB"}</span></span>
+                          <span style={{color:accentColor,fontSize:15,fontWeight:800}}>→</span>
+                          <span style={{color:accentColor,fontSize:14,fontWeight:800,letterSpacing:1}}>👤<span style={{color:G.white,marginLeft:6}}>...</span></span>
                         </>
                       )}
                     </div>
