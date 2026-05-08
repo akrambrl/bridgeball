@@ -6649,6 +6649,20 @@ export default function LePont() {
         if(effectiveDiffCS==="moyen") return pd==="facile"||pd==="moyen";
         return true;
       });
+      // En mode FACILE : si le club n'a aucun joueur "facile" dispo, fallback global vers un joueur facile
+      // au lieu d'élargir au pool complet du club (sinon on tombe sur des joueurs comme Mathew Ryan)
+      if (preferred.length === 0 && effectiveDiffCS === "facile") {
+        const globalFallback = PLAYERS_CLEAN.filter(p =>
+          p.clubs.length >= 2 && !chainUsedPlayers.has(p.name) &&
+          p.diff === "facile" &&
+          p.clubs.filter(c => FAMOUS_CLUBS.has(c)).length >= 2
+        );
+        if (globalFallback.length === 0) { setTimeout(()=>{setFeedback(null);setFlash(null);endChain();},800); return; }
+        const fallback = globalFallback[Math.floor(Math.random()*globalFallback.length)].name;
+        const newUsedP = new Set(chainUsedPlayers); newUsedP.add(fallback);
+        setTimeout(()=>{setChainPlayer(fallback);setChainUsedPlayers(newUsedP);setChainLastClub(matched);setChainLastPassed(false);setGuess("");setFeedback(null);setFlash(null);setTimeout(()=>inputRef.current?.focus(),100);},700);
+        return;
+      }
       const diffPool = preferred.length > 0 ? preferred : clubPlayers;
       // En mode facile : s'assurer qu'il reste au moins UN club populaire disponible
       // pour ce joueur (sinon le joueur tombe sur du "Birmingham" ou autre club peu connu)
@@ -6744,6 +6758,18 @@ export default function LePont() {
       if(effectiveDiffCP==="moyen") return pd==="facile"||pd==="moyen";
       return true;
     });
+    // En mode FACILE : si le club n'a aucun joueur "facile" dispo, fallback global au lieu d'élargir
+    if (preferred2.length === 0 && effectiveDiffCP === "facile") {
+      const fallback = pickFallbackPlayer();
+      if(!fallback){endChain();return;}
+      const newUsedP=new Set(chainUsedPlayers); newUsedP.add(fallback);
+      setChainUsedPlayers(newUsedP);
+      setChainHistory(prev=>[...prev,{player:chainPlayer,club:chosen,passed:true}]);
+      setChainPlayer(fallback); setChainLastClub(chosen); setChainLastPassed(true); setGuess("");
+      setTimeout(()=>inputRef.current?.focus(),100);
+      setAnimKey(k=>k+1);
+      return;
+    }
     const diffPool2 = preferred2.length > 0 ? preferred2 : clubPlayers;
     // En mode facile : s'assurer qu'il reste au moins UN club populaire disponible
     const popularPool2 = effectiveDiffCP === "facile"
@@ -9219,28 +9245,8 @@ export default function LePont() {
 
       <div style={{...sheet,gap:10}}>
 
-        {/* Alerte streak en danger — visible le soir si on n'a pas joué aujourd'hui */}
-        {streakInDanger && (
-          <div onClick={()=>setShowStreakDetail(true)} style={{
-            background:"linear-gradient(135deg, rgba(255,61,87,.18), rgba(255,107,53,.12))",
-            border:"1.5px solid rgba(255,61,87,.55)",
-            borderRadius:14,padding:"14px 16px",
-            display:"flex",alignItems:"center",gap:12,cursor:"pointer",
-            boxShadow:"0 4px 16px rgba(255,61,87,.2)",
-            animation:"dangerPulse 2s ease-in-out infinite"
-          }}>
-            <div style={{fontSize:28}}>⚠️</div>
-            <div style={{flex:1}}>
-              <div style={{fontSize:14,fontWeight:800,color:"#FF3D57",letterSpacing:.5}}>
-                {lang==="en" ? `STREAK IN DANGER 🔥 ${dayStreak}` : `SÉRIE EN DANGER 🔥 ${dayStreak}`}
-              </div>
-              <div style={{fontSize:12,color:"rgba(255,255,255,.75)",marginTop:3,lineHeight:1.4}}>
-                {lang==="en" ? "Play at least 1 game before midnight to keep your streak!" : "Joue au moins 1 partie avant minuit pour garder ta série !"}
-              </div>
-            </div>
-            <div style={{fontSize:18,color:"#FF3D57"}}>→</div>
-          </div>
-        )}
+        {/* Alerte streak en danger — bande supprimée pour gagner de la place verticale.
+            L'info reste visible via le badge alerte rouge dans le header (cliquable pour le détail). */}
 
         {/* Bandeau room en attente */}
         {pendingRoomCode && !pseudoConfirmed && (
@@ -9480,40 +9486,46 @@ export default function LePont() {
                   borderRadius:"28px 28px 0 0",
                   border:`1px solid ${accentColor}33`,
                   borderBottom:"none",
+                  background:"#0a0a0a",
                   boxShadow:`0 -20px 60px rgba(0,0,0,.6), 0 0 80px ${accentColor}22`,
                   animation:"slideUp .4s cubic-bezier(.34,1.56,.64,1)"
                 }}>
-                  {/* Fond pelouse */}
-                  <div style={{position:"absolute",inset:0,zIndex:0,overflow:"hidden"}}>
-                    {[0,1,2,3,4,5,6].map(i => (
-                      <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#1E5C2A":"#276B34"}}/>
-                    ))}
-                    <div style={{position:"absolute",inset:0,background:`linear-gradient(180deg, ${accentColor}1F 0%, rgba(10,20,10,.90) 40%, rgba(10,20,10,.96) 100%)`}}/>
-                    <div style={{position:"absolute",top:-80,left:-60,width:260,height:260,borderRadius:"50%",background:`radial-gradient(circle, ${accentColor}40 0%, transparent 70%)`,filter:"blur(40px)"}}/>
-                    <div style={{position:"absolute",top:-40,right:-40,width:220,height:220,borderRadius:"50%",background:`radial-gradient(circle, ${accentSecondary}30 0%, transparent 70%)`,filter:"blur(40px)"}}/>
+                  {/* ── HERO IMAGE — visuel net pleine largeur (PLUG_CARD_IMG / MERCATO_CARD_IMG) ── */}
+                  <div style={{position:"relative",width:"100%",height:"clamp(260px, 58vw, 340px)",overflow:"hidden",background:"#000"}}>
+                    <img
+                      src={isPont ? PLUG_CARD_IMG : MERCATO_CARD_IMG}
+                      alt=""
+                      style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center",pointerEvents:"none",userSelect:"none"}}
+                      draggable={false}
+                    />
+                    {/* Gradient bottom pour transition douce vers le contenu */}
+                    <div style={{position:"absolute",bottom:0,left:0,right:0,height:60,background:"linear-gradient(to top, #0a0a0a 0%, transparent 100%)",pointerEvents:"none"}}/>
+                    {/* Handle de drag par-dessus l'image */}
+                    <div style={{position:"absolute",top:12,left:"50%",transform:"translateX(-50%)",width:44,height:4,background:"rgba(255,255,255,.5)",borderRadius:2,boxShadow:"0 1px 4px rgba(0,0,0,.5)"}}/>
                   </div>
 
-                  <div style={{position:"relative",zIndex:1,padding:"14px 22px calc(42px + env(safe-area-inset-bottom))"}}>
-                    {/* Handle */}
-                    <div style={{width:44,height:4,background:"rgba(255,255,255,.25)",borderRadius:2,margin:"0 auto 22px"}}/>
-
-                    {/* Header */}
-                    <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:6}}>
-                      <div style={{width:52,height:52,borderRadius:"50%",background:`linear-gradient(135deg, ${accentColor}, ${accentSecondary})`,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:`0 6px 20px ${accentColor}55`,flexShrink:0}}>
-                        {isPont ? Icon.pitch(26,"#000") : Icon.transfer(26,"#000")}
-                      </div>
-                      <div style={{flex:1}}>
-                        <div style={{fontFamily:G.heading,fontSize:30,color:G.white,letterSpacing:2,lineHeight:1,textShadow:`0 2px 10px ${accentColor}66`}}>
-                          {isPont?"GOAT PLUG":"GOAT MERCATO"}
-                        </div>
-                        <div style={{fontSize:11,letterSpacing:2,color:accentColor,textTransform:"uppercase",fontWeight:800,marginTop:4}}>
-                          {isPont?(lang==="en"?"2 clubs → find the common player":"2 clubs → trouve le joueur commun"):(lang==="en"?"player → club → player...":"joueur → club → joueur...")}
-                        </div>
-                      </div>
+                  <div style={{position:"relative",zIndex:1,padding:"10px 22px calc(28px + env(safe-area-inset-bottom))"}}>
+                    {/* Badge format de jeu (🔗 2 CLUBS → 👤 1 JOUEUR) */}
+                    <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:14,padding:"12px 16px",background:`${accentColor}10`,border:`1px solid ${accentColor}40`,borderRadius:14,marginBottom:18,backdropFilter:"blur(10px)"}}>
+                      {isPont ? (
+                        <>
+                          <span style={{display:"flex",alignItems:"center",gap:6,color:accentColor,fontSize:13,fontWeight:800,letterSpacing:1}}>🔗 <span style={{color:G.white}}>2 {lang==="en"?"CLUBS":"CLUBS"}</span></span>
+                          <span style={{color:accentColor,fontSize:14,fontWeight:800}}>→</span>
+                          <span style={{display:"flex",alignItems:"center",gap:6,color:accentColor,fontSize:13,fontWeight:800,letterSpacing:1}}>👤 <span style={{color:G.white}}>1 {lang==="en"?"PLAYER":"JOUEUR"}</span></span>
+                        </>
+                      ) : (
+                        <>
+                          <span style={{display:"flex",alignItems:"center",gap:6,color:accentColor,fontSize:13,fontWeight:800,letterSpacing:1}}>👤 <span style={{color:G.white}}>{lang==="en"?"PLAYER":"JOUEUR"}</span></span>
+                          <span style={{color:accentColor,fontSize:14,fontWeight:800}}>→</span>
+                          <span style={{display:"flex",alignItems:"center",gap:6,color:accentColor,fontSize:13,fontWeight:800,letterSpacing:1}}>🛡 <span style={{color:G.white}}>{lang==="en"?"CLUB":"CLUB"}</span></span>
+                          <span style={{color:accentColor,fontSize:14,fontWeight:800}}>→</span>
+                          <span style={{color:accentColor,fontSize:13,fontWeight:800,letterSpacing:1}}>👤<span style={{color:G.white,marginLeft:6}}>...</span></span>
+                        </>
+                      )}
                     </div>
 
                     {/* Difficulté */}
-                    <div style={{fontSize:10,fontWeight:800,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginBottom:10,marginTop:26}}>{lang==="en"?"Difficulty":"Difficulté"}</div>
+                    <div style={{fontSize:10,fontWeight:800,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginBottom:10}}>{lang==="en"?"Difficulty":"Difficulté"}</div>
                     <div style={{display:"flex",gap:8,marginBottom:20}}>
                       {["facile","moyen","expert"].map(function(d){
                         const dLabel = d==="facile"?"AMATEUR":d==="moyen"?"PRO":"CRESCENDO";
