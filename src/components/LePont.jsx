@@ -2714,6 +2714,11 @@ export default function LePont() {
   });
   const homeSwipeStartRef = useRef(null);
   const [homeRulesModal, setHomeRulesModal] = useState(null); // null | "grid" | "mercato" | "plug"
+  // ─── Android Back Button Handler ──
+  // Intercepte la touche retour Android pendant une partie pour éviter de quitter par accident.
+  // Pattern double-tap : 1er appui = warning toast, 2e appui (dans 2s) = quitte la partie.
+  const backPressRef = useRef({pressed: false, timeoutId: null});
+  const [showBackHint, setShowBackHint] = useState(false);
   const [diff, setDiff] = useState("facile");
   const [totalRounds, setTotalRounds] = useState(1); // Toujours 1 manche de 90s (pas de multi-manches)
   const [currentRound, setCurrentRound] = useState(1);
@@ -3555,6 +3560,50 @@ export default function LePont() {
     };
   }, [ggBattleScreen, ggBattleRoom && ggBattleRoom.started_at]);
   
+  // ─── ANDROID BACK BUTTON HANDLER ───
+  // Empêche la perte de partie quand l'utilisateur appuie sur la touche retour Android.
+  // 1er appui : affiche un toast "Re-appuie pour quitter" pendant 2s.
+  // 2e appui dans les 2s : quitte la partie proprement (retour home).
+  React.useEffect(function() {
+    // Détecter si on est dans un état "interceptable"
+    const inGame = screen === "game" || showGoatGrid || (ggBattleScreen && ggBattleScreen === "playing");
+    if (!inGame) return;
+
+    // Push un state factice dans l'historique pour pouvoir intercepter le back
+    try { window.history.pushState({gameActive: true}, ""); } catch (e) {}
+
+    function handlePopState() {
+      const ref = backPressRef.current;
+      if (ref.pressed) {
+        // 2e appui : on quitte la partie
+        if (ref.timeoutId) clearTimeout(ref.timeoutId);
+        ref.pressed = false;
+        setShowBackHint(false);
+        if (screen === "game") setScreen("home");
+        else if (showGoatGrid) setShowGoatGrid(false);
+        else if (ggBattleScreen) setGgBattleScreen(null);
+      } else {
+        // 1er appui : warning toast
+        ref.pressed = true;
+        setShowBackHint(true);
+        ref.timeoutId = setTimeout(function() {
+          ref.pressed = false;
+          setShowBackHint(false);
+        }, 2000);
+        // Re-push pour pouvoir ré-intercepter
+        try { window.history.pushState({gameActive: true}, ""); } catch (e) {}
+      }
+    }
+
+    window.addEventListener("popstate", handlePopState);
+    return function() {
+      window.removeEventListener("popstate", handlePopState);
+      if (backPressRef.current.timeoutId) clearTimeout(backPressRef.current.timeoutId);
+      backPressRef.current.pressed = false;
+      setShowBackHint(false);
+    };
+  }, [screen, showGoatGrid, ggBattleScreen]);
+
   // ─── GOAT BATTLE — Détection 9/9 (pas de limite de vies en mode battle) ───
   React.useEffect(function() {
     if (ggBattleScreen !== "playing") return;
@@ -9464,6 +9513,32 @@ export default function LePont() {
             </div>
           );
         })()}
+
+        {/* ── BACK BUTTON HINT (Android double-tap) ── */}
+        {showBackHint && (
+          <div style={{
+            position:"fixed",
+            bottom:"calc(40px + env(safe-area-inset-bottom))",
+            left:"50%",
+            transform:"translateX(-50%)",
+            background:"rgba(0,0,0,.88)",
+            color:"#fff",
+            padding:"13px 22px",
+            borderRadius:30,
+            fontSize:13,
+            fontWeight:700,
+            letterSpacing:.5,
+            zIndex:10000,
+            backdropFilter:"blur(10px)",
+            border:"1px solid rgba(255,255,255,.18)",
+            animation:"fadeIn .2s ease-out",
+            pointerEvents:"none",
+            boxShadow:"0 8px 32px rgba(0,0,0,.5)",
+            whiteSpace:"nowrap"
+          }}>
+            ⚠️ {lang==="en" ? "Tap back again to quit" : "Re-appuie sur retour pour quitter"}
+          </div>
+        )}
 
         {/* ── CONFIG MODAL ── */}
         {gameConfigModal && (
