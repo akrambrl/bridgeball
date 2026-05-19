@@ -3958,10 +3958,21 @@ export default function LePont() {
         ? reqDiffRaw
         : null;
     if (reqDiff) setDiff(reqDiff);
+    // Mode multi demandé depuis la landing (?multi=create) — on ouvre la création de salon
+    const reqMulti = params.get("multi");
     try {
       window.history.replaceState({}, "", window.location.pathname);
     } catch (e) {}
     try {
+      if (reqMulti === "create" && (play === "pont" || play === "chaine" || play === "plug" || play === "mercato")) {
+        const mode = (play === "chaine" || play === "mercato") ? "chaine" : "pont";
+        setGameMode(mode);
+        setDuelMode(mode);
+        if (reqDiff) setDuelDiff(reqDiff);
+        setDuelRounds(3);
+        setShowRoomCreate(true);
+        return;
+      }
       if (play === "pont" || play === "plug") {
         setGameMode("pont");
         startRound(1, reqDiff);

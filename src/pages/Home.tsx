@@ -7,6 +7,7 @@ import { LeaderboardView } from "@/components/landing/LeaderboardView";
 import { FaqView } from "@/components/landing/FaqView";
 import { AboutView } from "@/components/landing/AboutView";
 import { DifficultyModal, type Difficulty } from "@/components/landing/DifficultyModal";
+import { ModeChoiceModal, type PlayMode } from "@/components/landing/ModeChoiceModal";
 import { CountdownOverlay } from "@/components/landing/CountdownOverlay";
 
 export type GameMode = "pont" | "chaine" | "grid";
@@ -14,9 +15,13 @@ export type GameMode = "pont" | "chaine" | "grid";
 const Home = () => {
   const [playing, setPlaying] = useState(false);
   const [tab, setTab] = useState<TabKey>("play");
-  // Sélecteur de difficulté avant de lancer le jeu (pont/chaine)
-  const [pendingGame, setPendingGame] = useState<"pont" | "chaine" | null>(null);
-  // Countdown 5..0 avant lancement effectif
+  // 1) Choix Solo/Multi (pont/chaine seulement)
+  const [pendingMode, setPendingMode] = useState<"pont" | "chaine" | null>(null);
+  // 2) Choix difficulté — on conserve le mode déjà choisi
+  const [pendingDiff, setPendingDiff] = useState<
+    { game: "pont" | "chaine"; mode: PlayMode } | null
+  >(null);
+  // 3) Countdown 3..0 avant lancement effectif (solo uniquement)
   const [countdown, setCountdown] = useState<
     { game: GameMode; diff?: Difficulty } | null
   >(null);
@@ -86,34 +91,51 @@ const Home = () => {
     );
   }
 
-  // Demande la difficulté pour pont/chaine, lance direct pour grid (pas chronométré)
+  // Clic JOUER sur une card : grid = direct ; pont/chaine = choix solo/multi
   const onPlay = (game?: GameMode) => {
     if (game === "grid") {
       launchGame("grid");
       return;
     }
     if (game === "pont" || game === "chaine") {
-      setPendingGame(game);
+      setPendingMode(game);
       return;
     }
-    // Fallback : ouvrir LePont sans param
     setPlaying(true);
   };
 
-  // Après la modal diff : on déclenche le countdown
+  // Après le choix Solo/Multi : on passe au choix de difficulté
+  const onModePicked = (mode: PlayMode) => {
+    if (!pendingMode) return;
+    const game = pendingMode;
+    setPendingMode(null);
+    setPendingDiff({ game, mode });
+  };
+
+  // Après le choix de difficulté : countdown (solo) OU multi (création de room dans LePont)
   const onDiffPicked = (diff: Difficulty) => {
-    if (!pendingGame) return;
-    const game = pendingGame;
-    setPendingGame(null);
+    if (!pendingDiff) return;
+    const { game, mode } = pendingDiff;
+    setPendingDiff(null);
+    if (mode === "multi") {
+      // Pas de countdown : on saute direct dans la création de salon LePont
+      launchGame(game, diff, "create");
+      return;
+    }
     setCountdown({ game, diff });
   };
 
-  // Fin du countdown : on injecte les params URL et on ouvre LePont
-  const launchGame = (game: GameMode, diff?: Difficulty) => {
+  // Fin du countdown OU clic multi : ouvre LePont avec les bons params URL
+  const launchGame = (
+    game: GameMode,
+    diff?: Difficulty,
+    multi?: "create"
+  ) => {
     try {
       const url = new URL(window.location.href);
       url.searchParams.set("play", game);
       if (diff) url.searchParams.set("diff", diff);
+      if (multi) url.searchParams.set("multi", multi);
       window.history.replaceState({}, "", url.toString());
     } catch {}
     setCountdown(null);
@@ -155,12 +177,21 @@ const Home = () => {
       {/* Ticker scrolling — actions récentes (mock) */}
       <ScoreTicker />
 
-      {/* Sélecteur de difficulté */}
-      {pendingGame && (
+      {/* 1) Choix Solo / Multi */}
+      {pendingMode && (
+        <ModeChoiceModal
+          game={pendingMode}
+          onPick={onModePicked}
+          onClose={() => setPendingMode(null)}
+        />
+      )}
+
+      {/* 2) Choix de difficulté */}
+      {pendingDiff && (
         <DifficultyModal
-          game={pendingGame}
+          game={pendingDiff.game}
           onPick={onDiffPicked}
-          onClose={() => setPendingGame(null)}
+          onClose={() => setPendingDiff(null)}
         />
       )}
 
