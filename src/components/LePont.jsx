@@ -3977,11 +3977,12 @@ export default function LePont() {
         ? reqDiffRaw
         : null;
     if (reqDiff) setDiff(reqDiff);
-    // Bot adversaire depuis la landing (?bot=Pseudo&flag=🇫🇷) — mode EN LIGNE
+    // Bot adversaire depuis la landing (?bot=Pseudo&flag=🇫🇷&avatar=/win1.png) — mode EN LIGNE
     const botPseudo = params.get("bot");
     const botFlag = params.get("flag");
+    const botAvatar = params.get("avatar");
     if (botPseudo && botFlag) {
-      botOpponentRef.current = { pseudo: botPseudo, country: botFlag };
+      botOpponentRef.current = { pseudo: botPseudo, country: botFlag, avatar: botAvatar };
     }
     // Mode multi demandé depuis la landing (?multi=create) — on ouvre la création de salon
     const reqMulti = params.get("multi");
@@ -11657,8 +11658,11 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
               <div style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",alignItems:"center",gap:10}}>
                 {/* Toi */}
                 <div style={{textAlign:"center"}}>
-                  <div style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:48,height:48,borderRadius:"50%",background:"linear-gradient(135deg,#00E676,#1E5C2A)",fontFamily:G.heading,fontSize:22,color:G.white,marginBottom:6}}>
-                    {(playerName||"?")[0].toUpperCase()}
+                  <div style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:64,height:64,borderRadius:"50%",overflow:"hidden",background:"linear-gradient(135deg,#00E676,#1E5C2A)",border:"2px solid #00E676",marginBottom:8,marginInline:"auto"}}>
+                    {playerAvatar
+                      ? <img src={playerAvatar} alt="" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top"}}/>
+                      : <span style={{fontFamily:G.heading,fontSize:28,color:G.white}}>{(playerName||"?")[0].toUpperCase()}</span>
+                    }
                   </div>
                   <div style={{fontSize:11,color:"#bbb",letterSpacing:1,textTransform:"uppercase"}}>{playerName||"Toi"}</div>
                   <div style={{fontFamily:G.heading,fontSize:32,color:win?verdictColor:G.white,lineHeight:1,marginTop:2}}>{myScore}</div>
@@ -11667,8 +11671,11 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
                 <div style={{fontFamily:G.heading,fontSize:18,color:"#888",letterSpacing:2}}>VS</div>
                 {/* Bot */}
                 <div style={{textAlign:"center"}}>
-                  <div style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:48,height:48,borderRadius:"50%",background:"linear-gradient(135deg,#3DA5FF,#1E5C2A)",fontFamily:G.heading,fontSize:22,color:G.white,marginBottom:6}}>
-                    {botOpponentRef.current.pseudo[0].toUpperCase()}
+                  <div style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:64,height:64,borderRadius:"50%",overflow:"hidden",background:"linear-gradient(135deg,#3DA5FF,#1E5C2A)",border:"2px solid #3DA5FF",marginBottom:8,marginInline:"auto"}}>
+                    {botOpponentRef.current.avatar
+                      ? <img src={botOpponentRef.current.avatar} alt="" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top"}}/>
+                      : <span style={{fontFamily:G.heading,fontSize:28,color:G.white}}>{botOpponentRef.current.pseudo[0].toUpperCase()}</span>
+                    }
                   </div>
                   <div style={{fontSize:11,color:"#bbb",letterSpacing:1,textTransform:"uppercase",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
                     {botOpponentRef.current.pseudo} <span style={{fontSize:13}}>{botOpponentRef.current.country}</span>

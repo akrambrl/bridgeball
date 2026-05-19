@@ -3,7 +3,11 @@ import type { GameMode } from "@/pages/Home";
 
 type Props = {
   game: Extract<GameMode, "pont" | "chaine">;
-  onFound: (opponent: { pseudo: string; country: string }) => void;
+  onFound: (opponent: {
+    pseudo: string;
+    country: string;
+    avatar: string;
+  }) => void;
   onCancel: () => void;
 };
 
@@ -41,8 +45,27 @@ const POOL: { pseudo: string; country: string }[] = [
   { pseudo: "Modric_LM10", country: "🇭🇷" },
 ];
 
-function pickOpponent(): { pseudo: string; country: string } {
-  return POOL[Math.floor(Math.random() * POOL.length)];
+// Avatars (réutilise tes visuels GOAT FC existants — joueurs en maillot)
+const AVATARS = [
+  "/win1.png",
+  "/win2.png",
+  "/win3.png",
+  "/win4.png",
+  "/win5.png",
+];
+
+// Hash stable pseudo → index avatar (le même pseudo a toujours le même avatar)
+export function avatarFor(pseudo: string): string {
+  let h = 0;
+  for (let i = 0; i < pseudo.length; i++) {
+    h = (h * 31 + pseudo.charCodeAt(i)) | 0;
+  }
+  return AVATARS[Math.abs(h) % AVATARS.length];
+}
+
+function pickOpponent() {
+  const base = POOL[Math.floor(Math.random() * POOL.length)];
+  return { ...base, avatar: avatarFor(base.pseudo) };
 }
 
 function getStoredPseudo(): string {
@@ -58,36 +81,48 @@ function getStoredPseudo(): string {
   }
 }
 
-// Carte joueur : avatar + pseudo (avec option "révélation")
 const PlayerCard = ({
   pseudo,
   country,
-  color,
+  ringColor,
+  avatar,
   revealed = true,
-  side,
 }: {
   pseudo: string;
   country?: string;
-  color: string;
+  ringColor: string;
+  avatar?: string;
   revealed?: boolean;
-  side: "left" | "right";
 }) => {
-  const initial = revealed ? pseudo.charAt(0).toUpperCase() : "?";
   return (
-    <div className={"flex flex-col items-center " + (side === "left" ? "" : "")}>
+    <div className="flex flex-col items-center">
       <div className="relative">
         <div
           className="absolute inset-0 rounded-full blur-3xl opacity-50"
-          style={{ backgroundColor: color }}
+          style={{ backgroundColor: ringColor }}
         />
         <div
-          className="relative h-28 w-28 lg:h-32 lg:w-32 rounded-full flex items-center justify-center font-display text-5xl lg:text-6xl text-white shadow-2xl"
+          className="relative h-28 w-28 lg:h-32 lg:w-32 rounded-full overflow-hidden flex items-center justify-center shadow-2xl"
           style={{
-            background: `linear-gradient(135deg, ${color}, ${color}80)`,
-            boxShadow: `0 0 40px ${color}40`,
+            background: `linear-gradient(135deg, ${ringColor}, #0F2017)`,
+            boxShadow: `0 0 40px ${ringColor}55`,
+            border: `3px solid ${ringColor}`,
           }}
         >
-          {initial}
+          {revealed && avatar ? (
+            <img
+              src={avatar}
+              alt=""
+              className="w-full h-full object-cover object-top"
+            />
+          ) : (
+            <span
+              className="font-display text-5xl"
+              style={{ color: revealed ? "#fff" : "rgba(255,255,255,0.5)" }}
+            >
+              {revealed ? pseudo.charAt(0).toUpperCase() : "?"}
+            </span>
+          )}
         </div>
       </div>
       <div
@@ -98,20 +133,17 @@ const PlayerCard = ({
       >
         {revealed ? pseudo : "?????"}
       </div>
-      {revealed && country && (
-        <div className="text-2xl mt-1">{country}</div>
-      )}
+      {revealed && country && <div className="text-2xl mt-1">{country}</div>}
     </div>
   );
 };
-
-const START_FROM = 5;
 
 export const MatchmakingOverlay = ({ game, onFound, onCancel }: Props) => {
   const [phase, setPhase] = useState<"searching" | "found">("searching");
   const [dots, setDots] = useState(1);
   const opponentRef = useRef(pickOpponent());
-  const myPseudo = useRef(getStoredPseudo()).current;
+  const myPseudoRef = useRef(getStoredPseudo());
+  const myAvatarRef = useRef(avatarFor(myPseudoRef.current));
 
   useEffect(() => {
     if (phase !== "searching") return;
@@ -165,12 +197,11 @@ export const MatchmakingOverlay = ({ game, onFound, onCancel }: Props) => {
         </div>
       </div>
 
-      {/* Duel TOI vs ADVERSAIRE */}
       <div className="relative flex items-center gap-6 lg:gap-16 mb-10">
         <PlayerCard
-          pseudo={myPseudo}
-          color="#00E676"
-          side="left"
+          pseudo={myPseudoRef.current}
+          ringColor="#00E676"
+          avatar={myAvatarRef.current}
         />
 
         <div className="flex flex-col items-center">
@@ -192,13 +223,12 @@ export const MatchmakingOverlay = ({ game, onFound, onCancel }: Props) => {
         <PlayerCard
           pseudo={opp.pseudo}
           country={opp.country}
-          color="#3DA5FF"
+          ringColor="#3DA5FF"
+          avatar={opp.avatar}
           revealed={phase === "found"}
-          side="right"
         />
       </div>
 
-      {/* Status sous le duel */}
       <div className="relative text-center min-h-[80px]">
         {phase === "searching" ? (
           <div>

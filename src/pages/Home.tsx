@@ -31,18 +31,18 @@ const Home = () => {
     {
       game: GameMode;
       diff?: Difficulty;
-      bot?: { pseudo: string; country: string };
+      bot?: { pseudo: string; country: string; avatar?: string };
     } | null
   >(null);
   // Pop-up de confirmation avant de quitter une partie
   const [showQuitConfirm, setShowQuitConfirm] = useState(false);
   // Adversaire actif si on est en mode EN LIGNE (sert pour quit = forfait)
   const [onlineOpponent, setOnlineOpponent] = useState<
-    { pseudo: string; country: string } | null
+    { pseudo: string; country: string; avatar?: string } | null
   >(null);
   // Overlay "DÉFAITE PAR ABANDON" affiché après un quit en mode online
   const [forfeitNotice, setForfeitNotice] = useState<
-    { pseudo: string; country: string } | null
+    { pseudo: string; country: string; avatar?: string } | null
   >(null);
 
   // LePont émet cet event quand l'utilisateur quitte la partie autolaunchée
@@ -177,7 +177,7 @@ const Home = () => {
     game: GameMode,
     diff?: Difficulty,
     multi?: "create",
-    bot?: { pseudo: string; country: string }
+    bot?: { pseudo: string; country: string; avatar?: string }
   ) => {
     try {
       const url = new URL(window.location.href);
@@ -187,6 +187,7 @@ const Home = () => {
       if (bot) {
         url.searchParams.set("bot", bot.pseudo);
         url.searchParams.set("flag", bot.country);
+        if (bot.avatar) url.searchParams.set("avatar", bot.avatar);
       }
       window.history.replaceState({}, "", url.toString());
     } catch {}
@@ -307,7 +308,7 @@ const ForfeitOverlay = ({
   opponent,
   onDone,
 }: {
-  opponent: { pseudo: string; country: string };
+  opponent: { pseudo: string; country: string; avatar?: string };
   onDone: () => void;
 }) => {
   useEffect(() => {
@@ -339,8 +340,25 @@ const ForfeitOverlay = ({
         <div className="text-white/80 text-lg">
           Tu as concédé le duel contre
         </div>
-        <div className="font-display text-3xl tracking-wider text-white mt-2">
-          {opponent.pseudo} <span className="text-2xl">{opponent.country}</span>
+        <div className="mt-4 flex flex-col items-center gap-2">
+          {opponent.avatar && (
+            <div
+              className="h-20 w-20 rounded-full overflow-hidden border-2 border-[#FF3D6E]"
+              style={{
+                boxShadow: "0 0 30px rgba(255,61,110,0.5)",
+              }}
+            >
+              <img
+                src={opponent.avatar}
+                alt=""
+                className="w-full h-full object-cover object-top"
+              />
+            </div>
+          )}
+          <div className="font-display text-3xl tracking-wider text-white">
+            {opponent.pseudo}{" "}
+            <span className="text-2xl">{opponent.country}</span>
+          </div>
         </div>
         <div className="text-xs text-white/40 mt-6 tracking-widest font-display">
           RETOUR AU LOBBY...
