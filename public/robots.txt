@@ -1,0 +1,21 @@
+# GOAT FC — robots.txt
+# https://goatfc.fr
+
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /privacy/
+Disallow: /terms/
+
+# Bloque les bots inutiles / agressifs
+User-agent: AhrefsBot
+Crawl-delay: 10
+
+User-agent: SemrushBot
+Crawl-delay: 10
+
+User-agent: GPTBot
+Allow: /
+
+# Sitemap
+Sitemap: https://goatfc.fr/sitemap.xml
