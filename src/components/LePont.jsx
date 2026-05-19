@@ -3898,6 +3898,36 @@ export default function LePont() {
     return () => window.removeEventListener("resize", handler);
   }, []);
 
+  // Auto-start d'un jeu depuis l'URL (?play=pont|chaine|grid)
+  // Utilisé par la landing desktop pour entrer directement dans un mode
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const play = params.get("play");
+    if (!play) return;
+    // Nettoie l'URL pour éviter le re-trigger au refresh / nav back
+    try {
+      window.history.replaceState({}, "", window.location.pathname);
+    } catch (e) {}
+    // Laisser le temps aux states/DB de se setup avant de lancer
+    const t = setTimeout(() => {
+      try {
+        if (play === "pont" || play === "plug") {
+          setGameMode("pont");
+          startRound(1);
+        } else if (play === "chaine" || play === "mercato") {
+          setGameMode("chaine");
+          startChain();
+        } else if (play === "grid" || play === "goatgrid") {
+          setShowGoatGrid(true);
+        }
+      } catch (e) {
+        console.warn("autostart failed:", e);
+      }
+    }, 400);
+    return () => clearTimeout(t);
+  }, []);
+
   // Lock viewport : empêche zoom utilisateur, scroll horizontal, overscroll
   // pour que l'app se comporte comme une app native en PWA sur téléphone
   useEffect(()=>{

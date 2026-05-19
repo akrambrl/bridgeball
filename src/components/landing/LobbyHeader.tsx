@@ -1,9 +1,11 @@
+import type { GameMode } from "@/pages/Home";
+
 export type TabKey = "play" | "tutos" | "leaderboard" | "faq" | "about";
 
 type Props = {
   active: TabKey;
   onChange: (t: TabKey) => void;
-  onPlay: () => void;
+  onPlay: (game?: GameMode) => void;
 };
 
 const TABS: { key: TabKey; label: string }[] = [
@@ -93,9 +95,9 @@ export const LobbyHeader = ({ active, onChange, onPlay }: Props) => {
           </div>
         </div>
 
-        {/* CTA JOUER */}
+        {/* CTA JOUER — défaut : The Plug */}
         <button
-          onClick={onPlay}
+          onClick={() => onPlay("pont")}
           className="goat-pulse px-5 py-2.5 rounded-full font-display text-lg tracking-widest bg-gradient-to-r from-[#FF8A2A] to-[#FFC93C] text-[#1A0F00] hover:scale-[1.03] transition-transform"
         >
           ▶ JOUER

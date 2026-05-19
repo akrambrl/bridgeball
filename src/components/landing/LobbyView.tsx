@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
+import type { GameMode } from "@/pages/Home";
 
-type Props = { onPlay: () => void };
+type Props = { onPlay: (game?: GameMode) => void };
 
 type GameKey = "plug" | "mercato" | "grid";
 
 const GAMES: {
   key: GameKey;
+  mode: GameMode;
   name: string;
   tagline: string;
   img: string;
@@ -16,6 +18,7 @@ const GAMES: {
 }[] = [
   {
     key: "plug",
+    mode: "pont",
     name: "The Plug",
     tagline: "Le pont entre deux clubs",
     img: "/plug-card.png",
@@ -27,6 +30,7 @@ const GAMES: {
   },
   {
     key: "mercato",
+    mode: "chaine",
     name: "The Mercato",
     tagline: "La chaîne sans fin",
     img: "/mercato-card.png",
@@ -38,6 +42,7 @@ const GAMES: {
   },
   {
     key: "grid",
+    mode: "grid",
     name: "GOAT Grid",
     tagline: "La grille des légendes",
     img: "/grid-card.png",
@@ -198,7 +203,7 @@ export const LobbyView = ({ onPlay }: Props) => {
 
               {/* Gros bouton PLAY */}
               <button
-                onClick={onPlay}
+                onClick={() => onPlay(game.mode)}
                 className="goat-pulse group relative inline-flex items-center gap-3 px-12 py-5 rounded-2xl bg-gradient-to-r from-[#FF8A2A] to-[#FFC93C] text-[#1A0F00] font-display text-4xl tracking-widest hover:scale-[1.03] active:scale-[0.98] transition-transform"
               >
                 <span className="text-3xl">▶</span> JOUER

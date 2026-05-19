@@ -7,6 +7,8 @@ import { LeaderboardView } from "@/components/landing/LeaderboardView";
 import { FaqView } from "@/components/landing/FaqView";
 import { AboutView } from "@/components/landing/AboutView";
 
+export type GameMode = "pont" | "chaine" | "grid";
+
 const Home = () => {
   const [playing, setPlaying] = useState(false);
   const [tab, setTab] = useState<TabKey>("play");
@@ -26,7 +28,18 @@ const Home = () => {
     );
   }
 
-  const onPlay = () => setPlaying(true);
+  // Lance LePont. Si un mode est donné, on injecte ?play=<mode> dans l'URL
+  // pour que LePont auto-démarre directement dans ce jeu.
+  const onPlay = (game?: GameMode) => {
+    if (game) {
+      try {
+        const url = new URL(window.location.href);
+        url.searchParams.set("play", game);
+        window.history.replaceState({}, "", url.toString());
+      } catch {}
+    }
+    setPlaying(true);
+  };
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#0A1410] text-white flex flex-col">
