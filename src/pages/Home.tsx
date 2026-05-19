@@ -28,7 +28,11 @@ const Home = () => {
   >(null);
   // 3b) Countdown 3..0 avant lancement effectif (solo / après matchmaking)
   const [countdown, setCountdown] = useState<
-    { game: GameMode; diff?: Difficulty } | null
+    {
+      game: GameMode;
+      diff?: Difficulty;
+      bot?: { pseudo: string; country: string };
+    } | null
   >(null);
   // Pop-up de confirmation avant de quitter une partie
   const [showQuitConfirm, setShowQuitConfirm] = useState(false);
@@ -140,13 +144,18 @@ const Home = () => {
   const launchGame = (
     game: GameMode,
     diff?: Difficulty,
-    multi?: "create"
+    multi?: "create",
+    bot?: { pseudo: string; country: string }
   ) => {
     try {
       const url = new URL(window.location.href);
       url.searchParams.set("play", game);
       if (diff) url.searchParams.set("diff", diff);
       if (multi) url.searchParams.set("multi", multi);
+      if (bot) {
+        url.searchParams.set("bot", bot.pseudo);
+        url.searchParams.set("flag", bot.country);
+      }
       window.history.replaceState({}, "", url.toString());
     } catch {}
     setCountdown(null);
@@ -221,10 +230,10 @@ const Home = () => {
       {matchmaking && (
         <MatchmakingOverlay
           game={matchmaking.game}
-          onFound={() => {
+          onFound={(opponent) => {
             const { game, diff } = matchmaking;
             setMatchmaking(null);
-            setCountdown({ game, diff });
+            setCountdown({ game, diff, bot: opponent });
           }}
           onCancel={() => setMatchmaking(null)}
         />
@@ -234,7 +243,7 @@ const Home = () => {
       {countdown && (
         <CountdownOverlay
           game={countdown.game}
-          onDone={() => launchGame(countdown.game, countdown.diff)}
+          onDone={() => launchGame(countdown.game, countdown.diff, undefined, countdown.bot)}
           onCancel={() => setCountdown(null)}
         />
       )}

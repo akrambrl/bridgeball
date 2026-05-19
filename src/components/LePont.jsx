@@ -1005,6 +1005,16 @@ function pickResultMessage(arr, seed) {
 
 const DB = buildPontDB();
 
+// Score "crédible" pour le bot adversaire en mode EN LIGNE (faux multi).
+// 50/50 win ou lose, variance proportionnelle au score utilisateur.
+function generateBotScore(userScore) {
+  const willWin = Math.random() < 0.5;
+  const base = Math.max(0, Math.floor(userScore || 0));
+  const variance = Math.max(25, Math.floor(base * 0.35));
+  const delta = Math.floor(Math.random() * variance) + 8;
+  return Math.max(0, base + (willWin ? delta : -delta));
+}
+
 // ── DAILY CHALLENGE ──
 // Clubs de chaque grande ligue pour le défi du jour thématique
 const LEAGUE_CLUBS = {
@@ -3936,6 +3946,9 @@ export default function LePont() {
   // Utilisé par la landing desktop pour entrer directement dans un mode.
   // useLayoutEffect : tourne avant le paint donc le home ne flashe pas.
   const launchedFromLandingRef = useRef(false);
+  // Bot adversaire (mode EN LIGNE depuis la landing) : pseudo + flag + score généré
+  const botOpponentRef = useRef(null);
+  const botScoreRef = useRef(null);
   useLayoutEffect(() => {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
@@ -3964,6 +3977,12 @@ export default function LePont() {
         ? reqDiffRaw
         : null;
     if (reqDiff) setDiff(reqDiff);
+    // Bot adversaire depuis la landing (?bot=Pseudo&flag=🇫🇷) — mode EN LIGNE
+    const botPseudo = params.get("bot");
+    const botFlag = params.get("flag");
+    if (botPseudo && botFlag) {
+      botOpponentRef.current = { pseudo: botPseudo, country: botFlag };
+    }
     // Mode multi demandé depuis la landing (?multi=create) — on ouvre la création de salon
     const reqMulti = params.get("multi");
     try {
@@ -6177,6 +6196,10 @@ export default function LePont() {
         submitToLeaderboard(playerName,total,"pont",diff);
         addXp(total); // XP cumulé +score de la partie
         updateDayStreak();
+        // Bot online : on génère son score juste avant l'écran final
+        if (botOpponentRef.current && botScoreRef.current === null) {
+          botScoreRef.current = generateBotScore(total);
+        }
         if(activeDuelRef.current&&activeDuelRef.current.isRoom){setScreen("waitingRoom");submitRoomScore(total);}else if(activeDuel){submitDuelScore(total); setScreen("final");}else{setScreen("final");}
       } else {
         // Manche intermédiaire — envoyer score partiel et afficher classement
@@ -6202,13 +6225,20 @@ export default function LePont() {
     submitToLeaderboard(playerName,sc,"chaine",diff);
     addXp(sc); // XP cumulé +score de la partie mercato
     updateDayStreak();
+    // Bot online : on génère son score juste avant l'écran final
+    if (botOpponentRef.current && botScoreRef.current === null) {
+      botScoreRef.current = generateBotScore(sc);
+    }
     if(activeDuelRef.current&&activeDuelRef.current.isRoom){setScreen("waitingRoom");submitRoomScore(sc);}else if(activeDuel){submitDuelScore(sc); setScreen("chainEnd");}else{setScreen("chainEnd");}
   }
 
   function startRound(round, diffOverride) {
     roundStartTime.current = null; // timer will set on next tick
     // Si manche 1, on reset le tracker des paires jouées (nouvelle partie)
-    if (round === 1) playedPairsRef.current = new Set();
+    if (round === 1) {
+      playedPairsRef.current = new Set();
+      botScoreRef.current = null; // nouveau bot score à recalculer en fin de partie
+    }
     // FIX multi : lire diff depuis activeDuelRef si en room (évite le stale state React)
     // Si la landing passe une diff via URL (autostart), elle override le state
     // closure (qui est encore "facile" au premier render).
@@ -6326,6 +6356,7 @@ export default function LePont() {
 
   function startChain(diffOverride) {
     roundStartTime.current = null;
+    botScoreRef.current = null;
     setIsNewRecord(false); setMyLastPts(null); setCombo(0); setMaxCombo(0); comboRef.current=0; lastAnswerTime.current=Date.now();
     // Seeded random in multiplayer room for fair starting player across all players
     // diffOverride permet à la landing autostart d'utiliser sa diff sans race React.
@@ -11608,6 +11639,46 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
           {isNewRecord&&<div style={{fontSize:12,color:G.accent,marginTop:6,fontStyle:"italic"}}>{lang==="en"?"Previous record beaten 🎉":"Ancien record battu 🎉"}</div>}
           {dayStreak>=2&&<div style={{fontSize:12,color:"#FF6B35",marginTop:6,fontWeight:700}}>🔥 {dayStreak} jours de suite !</div>}
         </div>
+
+        {/* Duel bot (mode EN LIGNE depuis la landing) */}
+        {botOpponentRef.current && botScoreRef.current !== null && (() => {
+          const myScore = sc;
+          const botScore = botScoreRef.current;
+          const win = myScore > botScore;
+          const draw = myScore === botScore;
+          const verdictColor = draw ? "#FFC93C" : win ? "#00E676" : "#FF3D6E";
+          const verdictText = draw ? "ÉGALITÉ" : win ? "VICTOIRE !" : "DÉFAITE";
+          const verdictBg = draw ? "rgba(255,201,60,.12)" : win ? "rgba(0,230,118,.12)" : "rgba(255,61,110,.12)";
+          return (
+            <div style={{borderRadius:20,padding:"18px",border:`2px solid ${verdictColor}55`,background:verdictBg,animation:"fadeUp .4s ease .15s both"}}>
+              <div style={{textAlign:"center",fontFamily:G.heading,fontSize:24,letterSpacing:3,color:verdictColor,marginBottom:14}}>
+                {verdictText}
+              </div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",alignItems:"center",gap:10}}>
+                {/* Toi */}
+                <div style={{textAlign:"center"}}>
+                  <div style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:48,height:48,borderRadius:"50%",background:"linear-gradient(135deg,#00E676,#1E5C2A)",fontFamily:G.heading,fontSize:22,color:G.white,marginBottom:6}}>
+                    {(playerName||"?")[0].toUpperCase()}
+                  </div>
+                  <div style={{fontSize:11,color:"#bbb",letterSpacing:1,textTransform:"uppercase"}}>{playerName||"Toi"}</div>
+                  <div style={{fontFamily:G.heading,fontSize:32,color:win?verdictColor:G.white,lineHeight:1,marginTop:2}}>{myScore}</div>
+                </div>
+                {/* VS */}
+                <div style={{fontFamily:G.heading,fontSize:18,color:"#888",letterSpacing:2}}>VS</div>
+                {/* Bot */}
+                <div style={{textAlign:"center"}}>
+                  <div style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:48,height:48,borderRadius:"50%",background:"linear-gradient(135deg,#3DA5FF,#1E5C2A)",fontFamily:G.heading,fontSize:22,color:G.white,marginBottom:6}}>
+                    {botOpponentRef.current.pseudo[0].toUpperCase()}
+                  </div>
+                  <div style={{fontSize:11,color:"#bbb",letterSpacing:1,textTransform:"uppercase",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
+                    {botOpponentRef.current.pseudo} <span style={{fontSize:13}}>{botOpponentRef.current.country}</span>
+                  </div>
+                  <div style={{fontFamily:G.heading,fontSize:32,color:(!win&&!draw)?verdictColor:G.white,lineHeight:1,marginTop:2}}>{botScore}</div>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         {!isChain&&roundScores.length>1&&(
           <div style={{display:"flex",flexDirection:"column",gap:6}}>
