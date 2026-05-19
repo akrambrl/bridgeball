@@ -36,11 +36,22 @@ const Home = () => {
   >(null);
   // Pop-up de confirmation avant de quitter une partie
   const [showQuitConfirm, setShowQuitConfirm] = useState(false);
+  // Adversaire actif si on est en mode EN LIGNE (sert pour quit = forfait)
+  const [onlineOpponent, setOnlineOpponent] = useState<
+    { pseudo: string; country: string } | null
+  >(null);
+  // Overlay "DÉFAITE PAR ABANDON" affiché après un quit en mode online
+  const [forfeitNotice, setForfeitNotice] = useState<
+    { pseudo: string; country: string } | null
+  >(null);
 
   // LePont émet cet event quand l'utilisateur quitte la partie autolaunchée
   // (← interne, fin de partie). On ferme l'overlay pour revenir à la landing.
   useEffect(() => {
-    const onBack = () => setPlaying(false);
+    const onBack = () => {
+      setPlaying(false);
+      setOnlineOpponent(null);
+    };
     window.addEventListener("goatfc:back-to-landing", onBack);
     return () => window.removeEventListener("goatfc:back-to-landing", onBack);
   }, []);
@@ -69,12 +80,21 @@ const Home = () => {
               className="w-full max-w-sm rounded-3xl bg-[#0F2017] border-2 border-white/10 p-6 lg:p-8 shadow-2xl text-center"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="text-5xl mb-3">⚠️</div>
+              <div className="text-5xl mb-3">{onlineOpponent ? "🏳️" : "⚠️"}</div>
               <h3 className="font-display text-3xl tracking-wide text-white mb-2">
-                QUITTER LA PARTIE ?
+                {onlineOpponent ? "ABANDONNER LE DUEL ?" : "QUITTER LA PARTIE ?"}
               </h3>
               <p className="text-sm text-white/60 mb-7">
-                Ta progression en cours sera perdue.
+                {onlineOpponent ? (
+                  <>
+                    Tu perds automatiquement contre{" "}
+                    <span className="text-white font-bold">
+                      {onlineOpponent.pseudo} {onlineOpponent.country}
+                    </span>
+                  </>
+                ) : (
+                  "Ta progression en cours sera perdue."
+                )}
               </p>
               <div className="flex flex-col gap-3">
                 <button
@@ -86,11 +106,15 @@ const Home = () => {
                 <button
                   onClick={() => {
                     setShowQuitConfirm(false);
+                    if (onlineOpponent) {
+                      setForfeitNotice(onlineOpponent);
+                      setOnlineOpponent(null);
+                    }
                     setPlaying(false);
                   }}
                   className="w-full py-3 rounded-xl border-2 border-white/10 bg-white/[0.02] hover:bg-white/[0.06] text-white/80 font-display text-base tracking-widest transition-colors"
                 >
-                  Quitter quand même
+                  {onlineOpponent ? "Concéder le duel" : "Quitter quand même"}
                 </button>
               </div>
             </div>
@@ -241,9 +265,18 @@ const Home = () => {
           onFound={(opponent) => {
             const { game, diff } = matchmaking;
             setMatchmaking(null);
+            setOnlineOpponent(opponent);
             setCountdown({ game, diff, bot: opponent });
           }}
           onCancel={() => setMatchmaking(null)}
+        />
+      )}
+
+      {/* Overlay défaite par abandon (quit en mode EN LIGNE) */}
+      {forfeitNotice && (
+        <ForfeitOverlay
+          opponent={forfeitNotice}
+          onDone={() => setForfeitNotice(null)}
         />
       )}
 
@@ -269,6 +302,53 @@ const TICKER_ITEMS = [
   { who: "RonaldoSiu", what: "atteint le palier LÉGENDE 🏆" },
   { who: "LeMercatoGuy", what: "trouve un pont rare : Bordeaux × Newcastle 🤯" },
 ];
+
+const ForfeitOverlay = ({
+  opponent,
+  onDone,
+}: {
+  opponent: { pseudo: string; country: string };
+  onDone: () => void;
+}) => {
+  useEffect(() => {
+    const t = setTimeout(onDone, 3500);
+    return () => clearTimeout(t);
+  }, [onDone]);
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      className="fixed inset-0 z-[90] flex flex-col items-center justify-center bg-black/95 backdrop-blur-md"
+    >
+      <div
+        className="absolute inset-0 pointer-events-none opacity-50"
+        style={{
+          background:
+            "radial-gradient(circle at center, #FF3D6E40 0%, transparent 55%)",
+        }}
+        aria-hidden
+      />
+      <div className="relative text-center">
+        <div className="text-7xl mb-4 animate-in zoom-in duration-300">🏳️</div>
+        <div className="font-display text-sm tracking-[0.4em] text-[#FF3D6E] mb-3">
+          ABANDON
+        </div>
+        <div className="font-display text-6xl lg:text-7xl tracking-wider text-[#FF3D6E] leading-none mb-5">
+          DÉFAITE
+        </div>
+        <div className="text-white/80 text-lg">
+          Tu as concédé le duel contre
+        </div>
+        <div className="font-display text-3xl tracking-wider text-white mt-2">
+          {opponent.pseudo} <span className="text-2xl">{opponent.country}</span>
+        </div>
+        <div className="text-xs text-white/40 mt-6 tracking-widest font-display">
+          RETOUR AU LOBBY...
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const ScoreTicker = () => (
   <div className="relative z-10 border-t border-white/5 bg-black/30 backdrop-blur-sm overflow-hidden">
