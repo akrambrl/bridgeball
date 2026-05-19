@@ -3917,16 +3917,23 @@ export default function LePont() {
       localStorage.setItem("bb_welcome_seen", "1");
       localStorage.setItem("bb_tutorial_done", "1");
     } catch (e) {}
+    // Difficulté choisie côté landing (?diff=facile|moyen|expert)
+    const reqDiffRaw = params.get("diff");
+    const reqDiff =
+      reqDiffRaw === "facile" || reqDiffRaw === "moyen" || reqDiffRaw === "expert"
+        ? reqDiffRaw
+        : null;
+    if (reqDiff) setDiff(reqDiff);
     try {
       window.history.replaceState({}, "", window.location.pathname);
     } catch (e) {}
     try {
       if (play === "pont" || play === "plug") {
         setGameMode("pont");
-        startRound(1);
+        startRound(1, reqDiff);
       } else if (play === "chaine" || play === "mercato") {
         setGameMode("chaine");
-        startChain();
+        startChain(reqDiff);
       } else if (play === "grid" || play === "goatgrid") {
         ggStartGame();
       }
@@ -6147,13 +6154,17 @@ export default function LePont() {
     if(activeDuelRef.current&&activeDuelRef.current.isRoom){setScreen("waitingRoom");submitRoomScore(sc);}else if(activeDuel){submitDuelScore(sc); setScreen("chainEnd");}else{setScreen("chainEnd");}
   }
 
-  function startRound(round) {
+  function startRound(round, diffOverride) {
     roundStartTime.current = null; // timer will set on next tick
     // Si manche 1, on reset le tracker des paires jouées (nouvelle partie)
     if (round === 1) playedPairsRef.current = new Set();
     // FIX multi : lire diff depuis activeDuelRef si en room (évite le stale state React)
+    // Si la landing passe une diff via URL (autostart), elle override le state
+    // closure (qui est encore "facile" au premier render).
     const isInRoom = activeDuelRef.current && activeDuelRef.current.isRoom;
-    const effectiveDiff = isInRoom && activeDuelRef.current.diff ? activeDuelRef.current.diff : diff;
+    const effectiveDiff = isInRoom && activeDuelRef.current.diff
+      ? activeDuelRef.current.diff
+      : (diffOverride || diff);
     
     // CRESCENDO MODE (anciennement "expert") : construire une queue progressive facile→moyen→expert
     // Sinon (facile/moyen) : pool unique de la difficulté choisie
@@ -6262,12 +6273,15 @@ export default function LePont() {
     setTimeout(()=>inputRef.current?.focus(),200);
   }
 
-  function startChain() {
+  function startChain(diffOverride) {
     roundStartTime.current = null;
     setIsNewRecord(false); setMyLastPts(null); setCombo(0); setMaxCombo(0); comboRef.current=0; lastAnswerTime.current=Date.now();
     // Seeded random in multiplayer room for fair starting player across all players
+    // diffOverride permet à la landing autostart d'utiliser sa diff sans race React.
     const isInRoom = activeDuelRef.current && activeDuelRef.current.isRoom;
-    const effectiveDiff = isInRoom && activeDuelRef.current.diff ? activeDuelRef.current.diff : diff;
+    const effectiveDiff = isInRoom && activeDuelRef.current.diff
+      ? activeDuelRef.current.diff
+      : (diffOverride || diff);
     const roomSeed = isInRoom ? hashStringToSeed(String(activeDuelRef.current.id) + "_chain") : null;
     const rand = isInRoom ? seededRandom(roomSeed) : Math.random;
     // CRESCENDO MODE : le starter (lien 0) doit toujours être un joueur FACILE pour amorcer la chaîne en douceur

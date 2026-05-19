@@ -6,12 +6,15 @@ import { TutosView } from "@/components/landing/TutosView";
 import { LeaderboardView } from "@/components/landing/LeaderboardView";
 import { FaqView } from "@/components/landing/FaqView";
 import { AboutView } from "@/components/landing/AboutView";
+import { DifficultyModal, type Difficulty } from "@/components/landing/DifficultyModal";
 
 export type GameMode = "pont" | "chaine" | "grid";
 
 const Home = () => {
   const [playing, setPlaying] = useState(false);
   const [tab, setTab] = useState<TabKey>("play");
+  // Si non null, on affiche le sélecteur de difficulté avant de lancer le jeu
+  const [pendingGame, setPendingGame] = useState<"pont" | "chaine" | null>(null);
 
   // LePont émet cet event quand l'utilisateur quitte la partie autolaunchée
   // (← interne, fin de partie). On ferme l'overlay pour revenir à la landing.
@@ -37,16 +40,29 @@ const Home = () => {
     );
   }
 
-  // Lance LePont. Si un mode est donné, on injecte ?play=<mode> dans l'URL
-  // pour que LePont auto-démarre directement dans ce jeu.
+  // Demande la difficulté pour pont/chaine, ou lance direct pour grid (pas de diff)
   const onPlay = (game?: GameMode) => {
-    if (game) {
-      try {
-        const url = new URL(window.location.href);
-        url.searchParams.set("play", game);
-        window.history.replaceState({}, "", url.toString());
-      } catch {}
+    if (game === "grid") {
+      launchGame("grid");
+      return;
     }
+    if (game === "pont" || game === "chaine") {
+      setPendingGame(game);
+      return;
+    }
+    // Fallback : ouvrir LePont sans param
+    setPlaying(true);
+  };
+
+  // Lance vraiment le jeu : ajoute ?play=<mode>&diff=<diff> et ouvre l'overlay
+  const launchGame = (game: GameMode, diff?: Difficulty) => {
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set("play", game);
+      if (diff) url.searchParams.set("diff", diff);
+      window.history.replaceState({}, "", url.toString());
+    } catch {}
+    setPendingGame(null);
     setPlaying(true);
   };
 
@@ -84,6 +100,15 @@ const Home = () => {
 
       {/* Ticker scrolling — actions récentes (mock) */}
       <ScoreTicker />
+
+      {/* Sélecteur de difficulté */}
+      {pendingGame && (
+        <DifficultyModal
+          game={pendingGame}
+          onPick={(diff) => launchGame(pendingGame, diff)}
+          onClose={() => setPendingGame(null)}
+        />
+      )}
     </div>
   );
 };
