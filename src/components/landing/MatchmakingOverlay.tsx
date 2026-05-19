@@ -12,7 +12,6 @@ const GAME_LABEL: Record<Props["game"], string> = {
   chaine: "THE MERCATO",
 };
 
-// Pseudos crédibles + drapeau pays (mock du matchmaking en ligne)
 const POOL: { pseudo: string; country: string }[] = [
   { pseudo: "EagleEye_92", country: "🇫🇷" },
   { pseudo: "TransferKing", country: "🇪🇸" },
@@ -46,19 +45,80 @@ function pickOpponent(): { pseudo: string; country: string } {
   return POOL[Math.floor(Math.random() * POOL.length)];
 }
 
+function getStoredPseudo(): string {
+  if (typeof window === "undefined") return "Toi";
+  try {
+    return (
+      localStorage.getItem("bb_pseudo") ||
+      localStorage.getItem("bb_name") ||
+      "Toi"
+    );
+  } catch {
+    return "Toi";
+  }
+}
+
+// Carte joueur : avatar + pseudo (avec option "révélation")
+const PlayerCard = ({
+  pseudo,
+  country,
+  color,
+  revealed = true,
+  side,
+}: {
+  pseudo: string;
+  country?: string;
+  color: string;
+  revealed?: boolean;
+  side: "left" | "right";
+}) => {
+  const initial = revealed ? pseudo.charAt(0).toUpperCase() : "?";
+  return (
+    <div className={"flex flex-col items-center " + (side === "left" ? "" : "")}>
+      <div className="relative">
+        <div
+          className="absolute inset-0 rounded-full blur-3xl opacity-50"
+          style={{ backgroundColor: color }}
+        />
+        <div
+          className="relative h-28 w-28 lg:h-32 lg:w-32 rounded-full flex items-center justify-center font-display text-5xl lg:text-6xl text-white shadow-2xl"
+          style={{
+            background: `linear-gradient(135deg, ${color}, ${color}80)`,
+            boxShadow: `0 0 40px ${color}40`,
+          }}
+        >
+          {initial}
+        </div>
+      </div>
+      <div
+        className={
+          "mt-4 font-display text-2xl lg:text-3xl tracking-wider text-center min-h-[2.5rem] transition-opacity " +
+          (revealed ? "opacity-100 text-white" : "opacity-40 text-white/40")
+        }
+      >
+        {revealed ? pseudo : "?????"}
+      </div>
+      {revealed && country && (
+        <div className="text-2xl mt-1">{country}</div>
+      )}
+    </div>
+  );
+};
+
+const START_FROM = 5;
+
 export const MatchmakingOverlay = ({ game, onFound, onCancel }: Props) => {
   const [phase, setPhase] = useState<"searching" | "found">("searching");
   const [dots, setDots] = useState(1);
   const opponentRef = useRef(pickOpponent());
+  const myPseudo = useRef(getStoredPseudo()).current;
 
-  // Animation des points "..."
   useEffect(() => {
     if (phase !== "searching") return;
     const id = setInterval(() => setDots((d) => (d % 3) + 1), 400);
     return () => clearInterval(id);
   }, [phase]);
 
-  // Phase searching : durée aléatoire entre 2.5s et 4.5s
   useEffect(() => {
     if (phase !== "searching") return;
     const dur = 2500 + Math.floor(Math.random() * 2000);
@@ -66,10 +126,9 @@ export const MatchmakingOverlay = ({ game, onFound, onCancel }: Props) => {
     return () => clearTimeout(t);
   }, [phase]);
 
-  // Phase found : 1.6s puis on lance la partie
   useEffect(() => {
     if (phase !== "found") return;
-    const t = setTimeout(() => onFound(opponentRef.current), 1800);
+    const t = setTimeout(() => onFound(opponentRef.current), 2200);
     return () => clearTimeout(t);
   }, [phase, onFound]);
 
@@ -97,18 +156,53 @@ export const MatchmakingOverlay = ({ game, onFound, onCancel }: Props) => {
         ANNULER
       </button>
 
-      <div className="relative text-center">
+      <div className="relative text-center mb-8">
         <div className="font-display text-xs lg:text-sm tracking-[0.4em] text-[#3DA5FF] mb-2">
           MODE EN LIGNE
         </div>
-        <div className="font-display text-3xl lg:text-5xl tracking-wider text-white mb-10">
+        <div className="font-display text-3xl lg:text-5xl tracking-wider text-white">
           {GAME_LABEL[game]}
         </div>
+      </div>
 
+      {/* Duel TOI vs ADVERSAIRE */}
+      <div className="relative flex items-center gap-6 lg:gap-16 mb-10">
+        <PlayerCard
+          pseudo={myPseudo}
+          color="#00E676"
+          side="left"
+        />
+
+        <div className="flex flex-col items-center">
+          <div
+            className={
+              "font-display text-3xl lg:text-5xl tracking-[0.25em] transition-colors " +
+              (phase === "found" ? "text-[#FFC93C]" : "text-white/30")
+            }
+          >
+            VS
+          </div>
+          {phase === "found" && (
+            <div className="font-display text-[10px] tracking-[0.3em] text-[#00E676] mt-2 animate-in fade-in duration-300">
+              ✓ TROUVÉ
+            </div>
+          )}
+        </div>
+
+        <PlayerCard
+          pseudo={opp.pseudo}
+          country={opp.country}
+          color="#3DA5FF"
+          revealed={phase === "found"}
+          side="right"
+        />
+      </div>
+
+      {/* Status sous le duel */}
+      <div className="relative text-center min-h-[80px]">
         {phase === "searching" ? (
           <div>
-            {/* Loader animé */}
-            <div className="flex items-center justify-center gap-3 mb-8">
+            <div className="flex items-center justify-center gap-3 mb-3">
               <div className="h-3 w-3 rounded-full bg-[#3DA5FF] goat-blink" />
               <div
                 className="h-3 w-3 rounded-full bg-[#3DA5FF] goat-blink"
@@ -119,44 +213,27 @@ export const MatchmakingOverlay = ({ game, onFound, onCancel }: Props) => {
                 style={{ animationDelay: "0.6s" }}
               />
             </div>
-            <div className="font-display text-3xl lg:text-4xl tracking-widest text-white">
+            <div className="font-display text-2xl lg:text-3xl tracking-widest text-white">
               RECHERCHE D'UN ADVERSAIRE
               <span className="inline-block w-12 text-left">
                 {".".repeat(dots)}
               </span>
             </div>
-            <div className="text-sm text-white/40 mt-4">
+            <div className="text-sm text-white/40 mt-3">
               Tri par niveau et région...
             </div>
           </div>
         ) : (
-          <div className="animate-in fade-in zoom-in duration-300">
-            <div className="font-display text-base tracking-[0.3em] text-[#00E676] mb-6">
-              ✓ ADVERSAIRE TROUVÉ
+          <div className="animate-in fade-in duration-300">
+            <div className="font-display text-2xl lg:text-3xl tracking-widest text-[#00E676]">
+              MATCH PRÊT
             </div>
-            <div className="relative inline-block">
-              <div
-                className="absolute inset-0 rounded-full blur-3xl"
-                style={{ background: "#3DA5FF60" }}
-              />
-              <div className="relative h-24 w-24 mx-auto rounded-full bg-gradient-to-br from-[#3DA5FF] to-[#1E5C2A] flex items-center justify-center font-display text-4xl text-white shadow-2xl mb-4">
-                {opp.pseudo.charAt(0).toUpperCase()}
-              </div>
+            <div className="text-sm text-white/50 mt-2">
+              La partie va commencer...
             </div>
-            <div className="font-display text-4xl lg:text-5xl tracking-wider text-white">
-              {opp.pseudo}
-            </div>
-            <div className="text-2xl mt-2">{opp.country}</div>
           </div>
         )}
       </div>
-
-      <style>{`
-        @keyframes goat-blink {
-          0%, 100% { opacity: 0.3; transform: scale(0.85); }
-          50% { opacity: 1; transform: scale(1.2); }
-        }
-      `}</style>
     </div>
   );
 };
