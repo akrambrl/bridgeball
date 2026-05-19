@@ -9366,7 +9366,7 @@ export default function LePont() {
             </div>
           </div>
           <div style={{flex:1,display:"flex",justifyContent:"flex-end",alignItems:"center",gap:8}}>
-  {dayStreak > 0 && (() => {
+  {!launchedFromLandingRef.current && dayStreak > 0 && (() => {
     // Paliers visuels de streak
     const tier = dayStreak >= 100 ? "platine" : dayStreak >= 30 ? "mythic" : dayStreak >= 7 ? "gold" : dayStreak >= 3 ? "bronze" : "base";
     const tierStyles = {
@@ -9393,9 +9393,11 @@ export default function LePont() {
       </div>
     );
   })()}
+{!launchedFromLandingRef.current && (
 <div onClick={function(){if(!pseudoConfirmed) setPseudoScreen(true); else setScreen("profile");}} style={{background:"linear-gradient(135deg,#00E676,#00A855)",border:"1px solid rgba(0,230,118,.4)",borderRadius:12,width:38,height:38,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",boxShadow:"0 4px 14px rgba(0,230,118,.25)",overflow:"hidden"}}>
   {playerAvatar ? <img src={playerAvatar} alt="avatar" style={{width:"100%",height:"100%",objectFit:"cover"}}/> : <span style={{fontSize:16,color:"#000",fontWeight:800}}>{(playerName||"?")[0].toUpperCase()}</span>}
-</div>              
+</div>
+)}
           </div>
         </div>
       </div>
