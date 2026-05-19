@@ -28,7 +28,7 @@ const GAME_INFO: Record<
   },
 };
 
-const START_FROM = 5;
+const START_FROM = 3;
 
 export const CountdownOverlay = ({ game, onDone, onCancel }: Props) => {
   const [n, setN] = useState(START_FROM);
