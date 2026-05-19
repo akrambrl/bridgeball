@@ -3921,7 +3921,7 @@ export default function LePont() {
         setGameMode("chaine");
         startChain();
       } else if (play === "grid" || play === "goatgrid") {
-        setShowGoatGrid(true);
+        ggStartGame();
       }
     } catch (e) {
       console.warn("autostart failed:", e);
