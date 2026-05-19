@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import type { GameMode } from "@/pages/Home";
 
-type Props = { onPlay: (game?: GameMode) => void };
+type Props = {
+  onPlay: (game?: GameMode) => void;
+  onJoinRoom: (code: string) => void;
+};
 
 type GameKey = "plug" | "mercato" | "grid";
 
@@ -100,11 +103,19 @@ const TOP5 = [
   { rank: 5, name: "FootGuru", score: 8990 },
 ];
 
-export const LobbyView = ({ onPlay }: Props) => {
+export const LobbyView = ({ onPlay, onJoinRoom }: Props) => {
   const [selected, setSelected] = useState<GameKey>("plug");
   const game = GAMES.find((g) => g.key === selected)!;
   const cd = useDailyCountdown();
   const online = useLiveOnline();
+  const [roomCode, setRoomCode] = useState("");
+
+  const submitRoom = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const code = roomCode.trim().toUpperCase();
+    if (code.length < 4) return;
+    onJoinRoom(code);
+  };
 
   return (
     <div className="container max-w-7xl mx-auto px-6 lg:px-10 py-6 lg:py-8 grid lg:grid-cols-[280px_1fr_320px] gap-6 items-start">
@@ -263,22 +274,43 @@ export const LobbyView = ({ onPlay }: Props) => {
           </button>
         </div>
 
-        {/* Versus a friend */}
-        <div className="rounded-2xl border border-white/10 bg-white/[0.02] hover:bg-white/[0.04] p-4 cursor-pointer transition-colors">
-          <div className="flex items-center gap-3">
-            <div className="flex -space-x-2">
-              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[#00E676] to-[#1E5C2A] ring-2 ring-[#0A1410]" />
-              <div className="h-8 w-8 rounded-full bg-white/10 ring-2 ring-[#0A1410] flex items-center justify-center text-white/40 text-xs font-bold">
-                ?
-              </div>
-            </div>
-            <div className="flex-1">
-              <div className="font-display text-lg tracking-widest">CHALLENGE A FRIEND</div>
-              <div className="text-xs text-white/50">Crée un salon multi</div>
-            </div>
-            <span className="text-white/40 text-lg leading-none">›</span>
+        {/* Rejoindre une partie via un code */}
+        <form
+          onSubmit={submitRoom}
+          className="rounded-2xl border-2 border-[#C084FC]/30 bg-gradient-to-br from-[#C084FC]/10 to-transparent p-4"
+        >
+          <div className="font-display text-base tracking-[0.2em] text-[#C084FC] mb-3">
+            🔑 REJOINDRE UNE PARTIE
           </div>
-        </div>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={roomCode}
+              onChange={(e) =>
+                setRoomCode(
+                  e.target.value
+                    .toUpperCase()
+                    .replace(/[^A-Z0-9]/g, "")
+                    .slice(0, 8)
+                )
+              }
+              placeholder="CODE"
+              autoComplete="off"
+              maxLength={8}
+              className="flex-1 min-w-0 px-3 py-2.5 rounded-xl bg-black/40 border border-white/10 focus:border-[#C084FC] focus:outline-none font-display text-lg tracking-[0.3em] text-center text-white placeholder-white/30"
+            />
+            <button
+              type="submit"
+              disabled={roomCode.trim().length < 4}
+              className="px-4 py-2.5 rounded-xl font-display text-sm tracking-widest bg-[#C084FC] hover:bg-[#B070EE] disabled:bg-white/10 disabled:text-white/30 disabled:cursor-not-allowed text-[#0A1410] transition-colors"
+            >
+              GO
+            </button>
+          </div>
+          <div className="text-xs text-white/40 mt-2">
+            Tu as un code d'un ami ? Colle-le ici.
+          </div>
+        </form>
 
         {/* Leaderboard preview */}
         <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-4">

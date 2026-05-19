@@ -142,6 +142,17 @@ const Home = () => {
     setPlaying(true);
   };
 
+  // Rejoindre une room avec un code : on injecte ?room=CODE et LePont
+  // lit le code dans son propre useEffect pour appeler joinRoom().
+  const onJoinRoom = (code: string) => {
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set("room", code);
+      window.history.replaceState({}, "", url.toString());
+    } catch {}
+    setPlaying(true);
+  };
+
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#0A1410] text-white flex flex-col">
       {/* Background : filigrane GOAT FC géant + grille de terrain */}
@@ -167,7 +178,7 @@ const Home = () => {
       <LobbyHeader active={tab} onChange={setTab} />
 
       <main className="relative flex-1 z-10">
-        {tab === "play" && <LobbyView onPlay={onPlay} />}
+        {tab === "play" && <LobbyView onPlay={onPlay} onJoinRoom={onJoinRoom} />}
         {tab === "tutos" && <TutosView />}
         {tab === "leaderboard" && <LeaderboardView onPlay={onPlay} />}
         {tab === "faq" && <FaqView />}

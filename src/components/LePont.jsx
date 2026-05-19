@@ -3940,7 +3940,8 @@ export default function LePont() {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
     const play = params.get("play");
-    if (!play) return;
+    const reqRoom = params.get("room");
+    if (!play && !reqRoom) return;
     launchedFromLandingRef.current = true;
     // Skip le splash 2.5s : on rentre direct dans le jeu
     setShowSplash(false);
@@ -3951,6 +3952,11 @@ export default function LePont() {
       localStorage.setItem("bb_welcome_seen", "1");
       localStorage.setItem("bb_tutorial_done", "1");
     } catch (e) {}
+    // ?room=CODE : on laisse l'autre useEffect (ligne ~4220) lire le code
+    // et lancer joinRoom — pas besoin d'autre logique ici.
+    if (reqRoom && !play) {
+      return;
+    }
     // Difficulté choisie côté landing (?diff=facile|moyen|expert)
     const reqDiffRaw = params.get("diff");
     const reqDiff =
