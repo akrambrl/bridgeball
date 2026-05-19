@@ -7,14 +7,19 @@ import { LeaderboardView } from "@/components/landing/LeaderboardView";
 import { FaqView } from "@/components/landing/FaqView";
 import { AboutView } from "@/components/landing/AboutView";
 import { DifficultyModal, type Difficulty } from "@/components/landing/DifficultyModal";
+import { CountdownOverlay } from "@/components/landing/CountdownOverlay";
 
 export type GameMode = "pont" | "chaine" | "grid";
 
 const Home = () => {
   const [playing, setPlaying] = useState(false);
   const [tab, setTab] = useState<TabKey>("play");
-  // Si non null, on affiche le sélecteur de difficulté avant de lancer le jeu
+  // Sélecteur de difficulté avant de lancer le jeu (pont/chaine)
   const [pendingGame, setPendingGame] = useState<"pont" | "chaine" | null>(null);
+  // Countdown 5..0 avant lancement effectif
+  const [countdown, setCountdown] = useState<
+    { game: GameMode; diff?: Difficulty } | null
+  >(null);
 
   // LePont émet cet event quand l'utilisateur quitte la partie autolaunchée
   // (← interne, fin de partie). On ferme l'overlay pour revenir à la landing.
@@ -40,10 +45,10 @@ const Home = () => {
     );
   }
 
-  // Demande la difficulté pour pont/chaine, ou lance direct pour grid (pas de diff)
+  // Demande la difficulté pour pont/chaine, ou direct countdown pour grid
   const onPlay = (game?: GameMode) => {
     if (game === "grid") {
-      launchGame("grid");
+      setCountdown({ game: "grid" });
       return;
     }
     if (game === "pont" || game === "chaine") {
@@ -54,7 +59,15 @@ const Home = () => {
     setPlaying(true);
   };
 
-  // Lance vraiment le jeu : ajoute ?play=<mode>&diff=<diff> et ouvre l'overlay
+  // Après la modal diff : on déclenche le countdown
+  const onDiffPicked = (diff: Difficulty) => {
+    if (!pendingGame) return;
+    const game = pendingGame;
+    setPendingGame(null);
+    setCountdown({ game, diff });
+  };
+
+  // Fin du countdown : on injecte les params URL et on ouvre LePont
   const launchGame = (game: GameMode, diff?: Difficulty) => {
     try {
       const url = new URL(window.location.href);
@@ -62,7 +75,7 @@ const Home = () => {
       if (diff) url.searchParams.set("diff", diff);
       window.history.replaceState({}, "", url.toString());
     } catch {}
-    setPendingGame(null);
+    setCountdown(null);
     setPlaying(true);
   };
 
@@ -105,8 +118,17 @@ const Home = () => {
       {pendingGame && (
         <DifficultyModal
           game={pendingGame}
-          onPick={(diff) => launchGame(pendingGame, diff)}
+          onPick={onDiffPicked}
           onClose={() => setPendingGame(null)}
+        />
+      )}
+
+      {/* Countdown 5..0 avant d'ouvrir LePont */}
+      {countdown && (
+        <CountdownOverlay
+          game={countdown.game}
+          onDone={() => launchGame(countdown.game, countdown.diff)}
+          onCancel={() => setCountdown(null)}
         />
       )}
     </div>
