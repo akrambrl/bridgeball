@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import LePont from "@/components/LePont.jsx";
 import { LobbyHeader, type TabKey } from "@/components/landing/LobbyHeader";
 import { LobbyView } from "@/components/landing/LobbyView";
@@ -13,15 +13,24 @@ const Home = () => {
   const [playing, setPlaying] = useState(false);
   const [tab, setTab] = useState<TabKey>("play");
 
+  // LePont émet cet event quand l'utilisateur quitte la partie autolaunchée
+  // (← interne, fin de partie). On ferme l'overlay pour revenir à la landing.
+  useEffect(() => {
+    const onBack = () => setPlaying(false);
+    window.addEventListener("goatfc:back-to-landing", onBack);
+    return () => window.removeEventListener("goatfc:back-to-landing", onBack);
+  }, []);
+
   if (playing) {
     return (
       <div className="fixed inset-0 z-50 bg-background overflow-auto">
         <button
           onClick={() => setPlaying(false)}
-          className="fixed top-4 right-4 z-[60] h-10 w-10 rounded-full bg-black/70 text-white text-xl font-light hover:bg-black flex items-center justify-center shadow-lg"
-          aria-label="Fermer le jeu"
+          className="fixed top-3 right-3 z-[60] flex items-center gap-2 px-4 py-2 rounded-full bg-[#FF8A2A] hover:bg-[#FF7A1A] text-[#1A0F00] font-display text-base tracking-widest shadow-[0_8px_24px_rgba(0,0,0,0.5)] hover:scale-[1.03] active:scale-[0.98] transition-all"
+          aria-label="Quitter et revenir à la landing GOAT FC"
+          title="Quitter et revenir à la landing"
         >
-          ✕
+          ← QUITTER
         </button>
         <LePont />
       </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
 import { PLAYERS, RETIRED_PLAYERS } from "../players.jsx";
 
 
@@ -3899,34 +3899,57 @@ export default function LePont() {
   }, []);
 
   // Auto-start d'un jeu depuis l'URL (?play=pont|chaine|grid)
-  // Utilisé par la landing desktop pour entrer directement dans un mode
-  useEffect(() => {
+  // Utilisé par la landing desktop pour entrer directement dans un mode.
+  // useLayoutEffect : tourne avant le paint donc le home ne flashe pas.
+  const launchedFromLandingRef = useRef(false);
+  useLayoutEffect(() => {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
     const play = params.get("play");
     if (!play) return;
-    // Nettoie l'URL pour éviter le re-trigger au refresh / nav back
+    launchedFromLandingRef.current = true;
+    // Skip le splash 2.5s : on rentre direct dans le jeu
+    setShowSplash(false);
     try {
       window.history.replaceState({}, "", window.location.pathname);
     } catch (e) {}
-    // Laisser le temps aux states/DB de se setup avant de lancer
-    const t = setTimeout(() => {
-      try {
-        if (play === "pont" || play === "plug") {
-          setGameMode("pont");
-          startRound(1);
-        } else if (play === "chaine" || play === "mercato") {
-          setGameMode("chaine");
-          startChain();
-        } else if (play === "grid" || play === "goatgrid") {
-          setShowGoatGrid(true);
-        }
-      } catch (e) {
-        console.warn("autostart failed:", e);
+    try {
+      if (play === "pont" || play === "plug") {
+        setGameMode("pont");
+        startRound(1);
+      } else if (play === "chaine" || play === "mercato") {
+        setGameMode("chaine");
+        startChain();
+      } else if (play === "grid" || play === "goatgrid") {
+        setShowGoatGrid(true);
       }
-    }, 400);
-    return () => clearTimeout(t);
+    } catch (e) {
+      console.warn("autostart failed:", e);
+    }
   }, []);
+
+  // Si on a auto-started depuis la landing et que l'utilisateur revient au home
+  // de LePont (← interne, fin de partie, etc.), on émet un event pour que
+  // la landing ferme l'overlay et reprenne le contrôle.
+  const wasInGameRef = useRef(false);
+  useEffect(() => {
+    if (!launchedFromLandingRef.current) return;
+    const inGame =
+      screen === "game" ||
+      screen === "lobby" ||
+      screen === "final" ||
+      showGoatGrid ||
+      (ggBattleScreen && ggBattleScreen === "playing");
+    if (inGame) {
+      wasInGameRef.current = true;
+      return;
+    }
+    if (wasInGameRef.current && screen === "home" && !showGoatGrid) {
+      window.dispatchEvent(new CustomEvent("goatfc:back-to-landing"));
+      launchedFromLandingRef.current = false;
+      wasInGameRef.current = false;
+    }
+  }, [screen, showGoatGrid, ggBattleScreen]);
 
   // Lock viewport : empêche zoom utilisateur, scroll horizontal, overscroll
   // pour que l'app se comporte comme une app native en PWA sur téléphone
