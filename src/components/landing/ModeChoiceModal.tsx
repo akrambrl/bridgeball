@@ -1,6 +1,6 @@
 import type { GameMode } from "@/pages/Home";
 
-export type PlayMode = "solo" | "multi";
+export type PlayMode = "solo" | "online" | "multi";
 
 type Props = {
   game: Extract<GameMode, "pont" | "chaine">;
@@ -59,6 +59,24 @@ export const ModeChoiceModal = ({ game, onPick, onClose }: Props) => {
               </div>
             </div>
             <span className="text-2xl text-[#FFC93C] transition-transform group-hover:translate-x-1">
+              ▶
+            </span>
+          </button>
+
+          <button
+            onClick={() => onPick("online")}
+            className="group w-full flex items-center gap-4 px-5 py-4 rounded-2xl border-2 border-[#3DA5FF]/40 bg-[#3DA5FF]/5 hover:bg-[#3DA5FF]/10 hover:border-[#3DA5FF] transition-all"
+          >
+            <span className="text-4xl">🌐</span>
+            <div className="text-left flex-1">
+              <div className="font-display text-2xl tracking-widest text-[#3DA5FF]">
+                EN LIGNE
+              </div>
+              <div className="text-xs text-white/60 mt-0.5">
+                Affronte un joueur au hasard sur le web
+              </div>
+            </div>
+            <span className="text-2xl text-[#3DA5FF] transition-transform group-hover:translate-x-1">
               ▶
             </span>
           </button>

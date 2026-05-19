@@ -8,6 +8,7 @@ import { FaqView } from "@/components/landing/FaqView";
 import { AboutView } from "@/components/landing/AboutView";
 import { DifficultyModal, type Difficulty } from "@/components/landing/DifficultyModal";
 import { ModeChoiceModal, type PlayMode } from "@/components/landing/ModeChoiceModal";
+import { MatchmakingOverlay } from "@/components/landing/MatchmakingOverlay";
 import { CountdownOverlay } from "@/components/landing/CountdownOverlay";
 
 export type GameMode = "pont" | "chaine" | "grid";
@@ -21,7 +22,11 @@ const Home = () => {
   const [pendingDiff, setPendingDiff] = useState<
     { game: "pont" | "chaine"; mode: PlayMode } | null
   >(null);
-  // 3) Countdown 3..0 avant lancement effectif (solo uniquement)
+  // 3a) Matchmaking en ligne (recherche d'un faux adversaire)
+  const [matchmaking, setMatchmaking] = useState<
+    { game: "pont" | "chaine"; diff: Difficulty } | null
+  >(null);
+  // 3b) Countdown 3..0 avant lancement effectif (solo / après matchmaking)
   const [countdown, setCountdown] = useState<
     { game: GameMode; diff?: Difficulty } | null
   >(null);
@@ -112,14 +117,20 @@ const Home = () => {
     setPendingDiff({ game, mode });
   };
 
-  // Après le choix de difficulté : countdown (solo) OU multi (création de room dans LePont)
+  // Après le choix de difficulté :
+  // - multi  → ouvre direct la création de salon LePont
+  // - online → matchmaking (faux adversaire) puis countdown
+  // - solo   → countdown direct
   const onDiffPicked = (diff: Difficulty) => {
     if (!pendingDiff) return;
     const { game, mode } = pendingDiff;
     setPendingDiff(null);
     if (mode === "multi") {
-      // Pas de countdown : on saute direct dans la création de salon LePont
       launchGame(game, diff, "create");
+      return;
+    }
+    if (mode === "online") {
+      setMatchmaking({ game, diff });
       return;
     }
     setCountdown({ game, diff });
@@ -203,6 +214,19 @@ const Home = () => {
           game={pendingDiff.game}
           onPick={onDiffPicked}
           onClose={() => setPendingDiff(null)}
+        />
+      )}
+
+      {/* 3a) Matchmaking (mode EN LIGNE — faux adversaire) */}
+      {matchmaking && (
+        <MatchmakingOverlay
+          game={matchmaking.game}
+          onFound={() => {
+            const { game, diff } = matchmaking;
+            setMatchmaking(null);
+            setCountdown({ game, diff });
+          }}
+          onCancel={() => setMatchmaking(null)}
         />
       )}
 
