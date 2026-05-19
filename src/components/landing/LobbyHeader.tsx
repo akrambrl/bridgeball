@@ -20,12 +20,12 @@ export const LobbyHeader = ({ active, onChange, onPlay }: Props) => {
       {/* Logo */}
       <button
         onClick={() => onChange("play")}
-        className="flex items-center gap-2 group"
+        className="flex items-baseline gap-2 group"
       >
-        <span className="text-2xl font-black tracking-tight text-white">
+        <span className="font-display text-3xl tracking-wider text-white leading-none">
           GOAT
         </span>
-        <span className="text-2xl font-black tracking-tight text-[#FFC93C]">
+        <span className="font-display text-3xl tracking-wider text-[#FFC93C] leading-none">
           FC
         </span>
       </button>
@@ -39,7 +39,7 @@ export const LobbyHeader = ({ active, onChange, onPlay }: Props) => {
               key={t.key}
               onClick={() => onChange(t.key)}
               className={
-                "px-4 lg:px-6 py-2.5 rounded-full text-sm font-bold tracking-wide border-2 transition-all " +
+                "px-4 lg:px-6 py-2.5 rounded-full font-display text-base tracking-widest border-2 transition-all " +
                 (isActive
                   ? "border-[#FFC93C] text-[#FFC93C] bg-[#FFC93C]/5"
                   : "border-white/15 text-white/70 hover:text-white hover:border-white/30")
@@ -54,7 +54,7 @@ export const LobbyHeader = ({ active, onChange, onPlay }: Props) => {
       {/* Right side : CTA Play rapide */}
       <button
         onClick={onPlay}
-        className="px-5 py-2.5 rounded-full font-bold text-sm bg-gradient-to-r from-[#FF8A2A] to-[#FFC93C] text-[#1A0F00] shadow-lg shadow-[#FFC93C]/20 hover:shadow-[#FFC93C]/40 hover:scale-[1.02] transition-all"
+        className="px-5 py-2.5 rounded-full font-display text-lg tracking-widest bg-gradient-to-r from-[#FF8A2A] to-[#FFC93C] text-[#1A0F00] shadow-lg shadow-[#FFC93C]/20 hover:shadow-[#FFC93C]/40 hover:scale-[1.02] transition-all"
       >
         ▶ JOUER
       </button>

@@ -84,7 +84,7 @@ export const LobbyView = ({ onPlay }: Props) => {
     <div className="container max-w-7xl mx-auto px-6 lg:px-10 py-6 lg:py-10 grid lg:grid-cols-[280px_1fr_320px] gap-6 items-start">
       {/* COLONNE GAUCHE — choix du jeu */}
       <div className="space-y-3">
-        <div className="text-xs font-bold tracking-widest text-white/40 px-1 mb-2">
+        <div className="font-display text-sm tracking-[0.25em] text-white/40 px-1 mb-2">
           NOS JEUX
         </div>
         {GAMES.map((g) => {
@@ -107,7 +107,7 @@ export const LobbyView = ({ onPlay }: Props) => {
                 )}
               </div>
               <div className="min-w-0">
-                <div className="font-bold text-sm truncate">{g.name}</div>
+                <div className="font-display text-xl tracking-wider truncate">{g.name}</div>
                 <div className="text-xs text-white/50 truncate">{g.tagline}</div>
               </div>
             </button>
@@ -129,7 +129,7 @@ export const LobbyView = ({ onPlay }: Props) => {
 
           <div className="relative p-8 lg:p-10 flex flex-col items-center text-center">
             <span
-              className="px-3 py-1 rounded-full text-[10px] font-black tracking-widest mb-5"
+              className="px-3 py-1 rounded-full font-display text-xs tracking-[0.25em] mb-5"
               style={{
                 backgroundColor: `${game.accent}20`,
                 color: game.accent,
@@ -139,11 +139,11 @@ export const LobbyView = ({ onPlay }: Props) => {
               {game.badge}
             </span>
 
-            <h2 className="text-5xl lg:text-6xl font-black tracking-tight mb-2">
+            <h2 className="font-display text-7xl lg:text-8xl tracking-wide mb-2 leading-none">
               {game.name}
             </h2>
             <p
-              className="text-lg lg:text-xl font-bold mb-6"
+              className="font-display text-2xl lg:text-3xl tracking-widest mb-6"
               style={{ color: game.accent }}
             >
               {game.tagline}
@@ -167,7 +167,7 @@ export const LobbyView = ({ onPlay }: Props) => {
             {/* Gros bouton PLAY */}
             <button
               onClick={onPlay}
-              className="group relative inline-flex items-center gap-3 px-10 py-5 rounded-2xl bg-gradient-to-r from-[#FF8A2A] to-[#FFC93C] text-[#1A0F00] font-black text-2xl tracking-wide shadow-[0_10px_40px_-5px_rgba(255,201,60,0.5)] hover:shadow-[0_15px_50px_-5px_rgba(255,201,60,0.7)] hover:scale-[1.03] active:scale-[0.98] transition-all"
+              className="group relative inline-flex items-center gap-3 px-12 py-5 rounded-2xl bg-gradient-to-r from-[#FF8A2A] to-[#FFC93C] text-[#1A0F00] font-display text-4xl tracking-widest shadow-[0_10px_40px_-5px_rgba(255,201,60,0.5)] hover:shadow-[0_15px_50px_-5px_rgba(255,201,60,0.7)] hover:scale-[1.03] active:scale-[0.98] transition-all"
             >
               <span className="text-3xl">▶</span> JOUER
               <span className="absolute inset-0 rounded-2xl bg-white/0 group-hover:bg-white/10 transition-colors pointer-events-none" />
@@ -189,7 +189,7 @@ export const LobbyView = ({ onPlay }: Props) => {
           </div>
           <div className="flex items-start justify-between gap-3 mt-1">
             <div>
-              <div className="text-[11px] font-bold text-[#FF8A2A] tracking-wider">
+              <div className="font-display text-base text-[#FF8A2A] tracking-[0.2em]">
                 🔥 DAILY CHALLENGE
               </div>
               <div className="text-xs text-white/50 mt-1">
@@ -210,7 +210,7 @@ export const LobbyView = ({ onPlay }: Props) => {
               </div>
             </div>
             <div className="flex-1">
-              <div className="text-sm font-bold">CHALLENGE A FRIEND</div>
+              <div className="font-display text-lg tracking-widest">CHALLENGE A FRIEND</div>
               <div className="text-xs text-white/50">Crée un salon multi</div>
             </div>
             <span className="text-white/40 text-lg leading-none">›</span>
@@ -220,10 +220,10 @@ export const LobbyView = ({ onPlay }: Props) => {
         {/* Leaderboard preview */}
         <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-4">
           <div className="flex items-center justify-between mb-3">
-            <div className="text-[11px] font-bold tracking-wider text-white/60">
+            <div className="font-display text-base tracking-[0.2em] text-white/70">
               🏆 HALL OF FAME
             </div>
-            <span className="text-[10px] text-white/40">CE MOIS-CI</span>
+            <span className="font-display text-xs tracking-widest text-white/40">CE MOIS-CI</span>
           </div>
           <ul className="space-y-2">
             {TOP5.map((p) => (

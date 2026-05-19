@@ -2,11 +2,11 @@ export const AboutView = () => {
   return (
     <div className="container max-w-3xl mx-auto px-6 lg:px-10 py-10">
       <div className="text-center mb-8">
-        <span className="inline-block px-3 py-1 rounded-full bg-[#FFC93C]/10 text-[#FFC93C] text-[10px] font-black tracking-widest mb-3">
+        <span className="inline-block px-3 py-1 rounded-full bg-[#FFC93C]/10 text-[#FFC93C] font-display text-xs tracking-[0.3em] mb-3">
           ABOUT
         </span>
-        <h2 className="text-4xl md:text-5xl font-black tracking-tight">
-          L'histoire derrière GOAT FC
+        <h2 className="font-display text-6xl md:text-7xl tracking-wide leading-none">
+          L'HISTOIRE DERRIÈRE GOAT FC
         </h2>
       </div>
 
@@ -24,15 +24,15 @@ export const AboutView = () => {
 
       <div className="mt-10 grid md:grid-cols-3 gap-4">
         <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
-          <div className="text-4xl font-black text-[#FFC93C]">4 100+</div>
+          <div className="font-display text-5xl text-[#FFC93C] tracking-wider">4 100+</div>
           <div className="text-sm text-white/60 mt-1">joueurs dans la base</div>
         </div>
         <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
-          <div className="text-4xl font-black text-[#FFC93C]">3</div>
+          <div className="font-display text-5xl text-[#FFC93C] tracking-wider">3</div>
           <div className="text-sm text-white/60 mt-1">jeux différents</div>
         </div>
         <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
-          <div className="text-4xl font-black text-[#FFC93C]">∞</div>
+          <div className="font-display text-5xl text-[#FFC93C] tracking-wider">∞</div>
           <div className="text-sm text-white/60 mt-1">combinaisons possibles</div>
         </div>
       </div>

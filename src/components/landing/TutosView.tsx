@@ -87,13 +87,13 @@ export const TutosView = () => {
   return (
     <div className="container max-w-3xl mx-auto px-6 lg:px-10 py-10">
       <div className="text-center mb-8">
-        <span className="inline-block px-3 py-1 rounded-full bg-[#FFC93C]/10 text-[#FFC93C] text-[10px] font-black tracking-widest mb-3">
+        <span className="inline-block px-3 py-1 rounded-full bg-[#FFC93C]/10 text-[#FFC93C] font-display text-xs tracking-[0.3em] mb-3">
           TUTORIELS
         </span>
-        <h2 className="text-4xl md:text-5xl font-black tracking-tight">
-          Comment jouer
+        <h2 className="font-display text-6xl md:text-7xl tracking-wide leading-none">
+          COMMENT JOUER
         </h2>
-        <p className="mt-3 text-white/60">
+        <p className="mt-4 text-white/60">
           3 minutes pour comprendre. Une vie pour devenir bon.
         </p>
       </div>
@@ -108,7 +108,7 @@ export const TutosView = () => {
             <AccordionTrigger className="hover:no-underline py-5">
               <div className="flex items-center gap-3 text-left">
                 <span
-                  className="px-2 py-0.5 rounded-md text-[10px] font-black tracking-widest"
+                  className="px-2 py-0.5 rounded-md font-display text-xs tracking-[0.25em]"
                   style={{
                     backgroundColor: `${t.accent}25`,
                     color: t.accent,
@@ -116,7 +116,7 @@ export const TutosView = () => {
                 >
                   {t.badge}
                 </span>
-                <span className="text-lg font-bold text-white">{t.title}</span>
+                <span className="font-display text-2xl tracking-wider text-white">{t.title}</span>
               </div>
             </AccordionTrigger>
             <AccordionContent>{t.content}</AccordionContent>

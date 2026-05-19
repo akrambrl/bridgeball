@@ -17,11 +17,11 @@ export const LeaderboardView = ({ onPlay }: Props) => {
   return (
     <div className="container max-w-3xl mx-auto px-6 lg:px-10 py-10">
       <div className="text-center mb-8">
-        <span className="inline-block px-3 py-1 rounded-full bg-[#FFC93C]/10 text-[#FFC93C] text-[10px] font-black tracking-widest mb-3">
+        <span className="inline-block px-3 py-1 rounded-full bg-[#FFC93C]/10 text-[#FFC93C] font-display text-xs tracking-[0.3em] mb-3">
           HALL OF FAME
         </span>
-        <h2 className="text-4xl md:text-5xl font-black tracking-tight">
-          Les GOAT du mois
+        <h2 className="font-display text-6xl md:text-7xl tracking-wide leading-none">
+          LES GOAT DU MOIS
         </h2>
         <p className="mt-3 text-white/60">
           Le classement se réinitialise chaque mois. Nouvelle saison, nouvelle
@@ -51,14 +51,14 @@ export const LeaderboardView = ({ onPlay }: Props) => {
                 {p.rank}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-bold truncate">{p.name}</p>
+                <p className="font-display text-xl tracking-wider truncate">{p.name}</p>
                 <p className="text-xs text-white/50">{p.badge}</p>
               </div>
               <div className="text-right">
-                <p className="text-lg font-black tabular-nums text-[#FFC93C]">
+                <p className="font-display text-2xl tabular-nums text-[#FFC93C] tracking-wider">
                   {p.score.toLocaleString("fr-FR")}
                 </p>
-                <p className="text-[10px] text-white/40 font-bold tracking-wider">
+                <p className="font-display text-xs text-white/40 tracking-widest">
                   PTS
                 </p>
               </div>
@@ -73,9 +73,9 @@ export const LeaderboardView = ({ onPlay }: Props) => {
       <div className="mt-8 text-center">
         <button
           onClick={onPlay}
-          className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-gradient-to-r from-[#FF8A2A] to-[#FFC93C] text-[#1A0F00] font-black text-lg shadow-[0_10px_40px_-5px_rgba(255,201,60,0.5)] hover:scale-[1.03] transition-transform"
+          className="inline-flex items-center gap-2 px-10 py-4 rounded-2xl bg-gradient-to-r from-[#FF8A2A] to-[#FFC93C] text-[#1A0F00] font-display text-2xl tracking-widest shadow-[0_10px_40px_-5px_rgba(255,201,60,0.5)] hover:scale-[1.03] transition-transform"
         >
-          ▶ Tenter ma place
+          ▶ TENTER MA PLACE
         </button>
       </div>
     </div>

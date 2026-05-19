@@ -44,11 +44,11 @@ export const FaqView = () => {
   return (
     <div className="container max-w-3xl mx-auto px-6 lg:px-10 py-10">
       <div className="text-center mb-8">
-        <span className="inline-block px-3 py-1 rounded-full bg-[#FFC93C]/10 text-[#FFC93C] text-[10px] font-black tracking-widest mb-3">
+        <span className="inline-block px-3 py-1 rounded-full bg-[#FFC93C]/10 text-[#FFC93C] font-display text-xs tracking-[0.3em] mb-3">
           FAQ
         </span>
-        <h2 className="text-4xl md:text-5xl font-black tracking-tight">
-          Questions fréquentes
+        <h2 className="font-display text-6xl md:text-7xl tracking-wide leading-none">
+          QUESTIONS FRÉQUENTES
         </h2>
       </div>
 
@@ -59,7 +59,7 @@ export const FaqView = () => {
             value={`q${i}`}
             className="border-b border-white/10"
           >
-            <AccordionTrigger className="text-left text-base md:text-lg font-bold hover:no-underline text-white">
+            <AccordionTrigger className="text-left font-display text-xl md:text-2xl tracking-wide hover:no-underline text-white">
               {it.q}
             </AccordionTrigger>
             <AccordionContent className="text-white/70 leading-relaxed">
