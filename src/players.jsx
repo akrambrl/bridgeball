@@ -4258,6 +4258,21 @@ export const PLAYERS = [
   { name:"Walker Zimmerman", clubs:["FC Dallas", "LAFC", "Nashville SC"], diff:"expert", nationalities:["États-Unis"], positions:["defenseur"] },
   { name:"Lawrence Vigouroux", clubs:["Brackley Town", "Liverpool", "Sheffield Wednesday", "Swindon Town", "Crawley Town", "Waterford", "Leyton Orient", "Swansea"], diff:"expert", nationalities:["Chili"], positions:["gardien"] },
   { name:"Kasper Junker", clubs:["FC Roskilde", "AGF", "Horsens", "Stabæk", "Bodø/Glimt", "Urawa Red Diamonds", "Norwich", "AaB", "Buriram"], diff:"expert", nationalities:["Danemark"], positions:["attaquant"] },
+  { name:"Mickaël Landreau", clubs:["Nantes", "PSG", "Lille", "Bastia"], diff:"expert", nationalities:["France"], positions:["gardien"] },
+  { name:"Patrick Mboma", clubs:["PSG", "Châteauroux", "Metz", "Gamba Osaka", "Cagliari", "Parma", "Sunderland", "Al-Ittihad", "Vissel Kobe"], diff:"expert", nationalities:["Cameroun"], positions:["attaquant"] },
+  { name:"Juninho Pernambucano", clubs:["Vasco da Gama", "Lyon", "Al-Gharafa"], diff:"moyen", nationalities:["Brésil"], positions:["milieu"] },
+  { name:"Sidney Govou", clubs:["Lyon", "Panathinaikos"], diff:"expert", nationalities:["France"], positions:["attaquant"] },
+  { name:"Sonny Anderson", clubs:["Servette", "Monaco", "Marseille", "Barcelona", "Lyon", "Villarreal", "Al-Gharafa"], diff:"moyen", nationalities:["Brésil"], positions:["attaquant"] },
+  { name:"John Carew", clubs:["Vålerenga", "Rosenborg", "Valencia", "Roma", "Beşiktaş", "Lyon", "Aston Villa", "Stoke City", "West Ham"], diff:"expert", nationalities:["Norvège"], positions:["attaquant"] },
+  { name:"Tiago Mendes", clubs:["Benfica", "Chelsea", "Lyon", "Juventus FC", "Atletico Madrid"], diff:"expert", nationalities:["Portugal"], positions:["milieu"] },
+  { name:"Mahamadou Diarra", clubs:["Vitesse", "Lyon", "Real Madrid", "Monaco", "Fulham"], diff:"expert", nationalities:["Mali"], positions:["milieu"] },
+  { name:"Ali Benarbia", clubs:["Monaco", "Bordeaux", "PSG", "Manchester City"], diff:"expert", nationalities:["Algérie","France"], positions:["milieu"] },
+  { name:"Habib Beye", clubs:["Strasbourg", "Marseille", "Newcastle", "Aston Villa"], diff:"expert", nationalities:["Sénégal","France"], positions:["defenseur"] },
+  { name:"Bruno Cheyrou", clubs:["Lille", "Liverpool", "Marseille", "Bordeaux", "Rennes"], diff:"expert", nationalities:["France"], positions:["milieu"] },
+  { name:"Steve Marlet", clubs:["Auxerre", "Lyon", "Fulham", "Marseille", "Wolfsburg"], diff:"expert", nationalities:["France"], positions:["attaquant"] },
+  { name:"Péguy Luyindula", clubs:["Marseille", "Auxerre", "Saint-Etienne", "PSG", "New York Red Bulls"], diff:"expert", nationalities:["France"], positions:["attaquant"] },
+  { name:"Éric Carrière", clubs:["Nantes", "Lyon", "Lens", "Dijon"], diff:"expert", nationalities:["France"], positions:["milieu"] },
+  { name:"Hugo Ekitike", clubs:["Reims", "PSG", "Eintracht Frankfurt", "Liverpool"], diff:"moyen", nationalities:["France"], positions:["attaquant"] },
 ];
 
 export const RETIRED_PLAYERS = new Set([ "Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
@@ -4343,4 +4358,7 @@ export const RETIRED_PLAYERS = new Set([ "Aaron Ramsey","Abedi Pele","Alberto Me
   "Roberto Donadoni","Zvonimir Boban","Massimo Ambrosini","Demetrio Albertini",
   "Gianluca Zambrotta","Marco Materazzi","Adriano","Walter Samuel","Iván Zamorano",
   "Álvaro Recoba","Gianluca Vialli","Andrea Barzagli","Ciro Ferrara","Claudio Marchisio",
-  "Mauro Camoranesi","Aldair","Careca","Jérôme Rothen","Mathieu Bodmer","Christophe Jallet"]);
+  "Mauro Camoranesi","Aldair","Careca","Jérôme Rothen","Mathieu Bodmer","Christophe Jallet",
+  "Mickaël Landreau","Patrick Mboma","Juninho Pernambucano","Sidney Govou","Sonny Anderson",
+  "John Carew","Tiago Mendes","Mahamadou Diarra","Ali Benarbia","Habib Beye",
+  "Bruno Cheyrou","Steve Marlet","Péguy Luyindula","Éric Carrière"]);
