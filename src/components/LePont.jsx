@@ -543,6 +543,33 @@ const CLUB_COLORS = {
 };
 
 // ── BUILD DATABASES ──
+// Clubs vraiment connus du grand public — utilisés pour FILTRER le mode "facile"
+// du Plug : une paire ne peut rester en "facile" QUE si les 2 clubs en font
+// partie. Les paires impliquant d'autres clubs de PONT_CLUBS sont rétrogradées
+// en "moyen" pour ne pas exposer le débutant à Valence, Fluminense, etc.
+const POPULAR_CLUBS_FACILE = new Set([
+  // Premier League majeurs
+  "Manchester United","Manchester City","Liverpool","Chelsea","Arsenal","Tottenham","Newcastle",
+  // La Liga top 3
+  "Real Madrid","Barcelona","Atletico Madrid",
+  // Serie A majeurs
+  "Juventus FC","AC Milan","Inter Milan","SSC Napoli","AS Roma",
+  // Bundesliga top 2
+  "Bayern Munich","Borussia Dortmund",
+  // Ligue 1 majeurs
+  "PSG","Marseille","Lyon","Monaco",
+  // Portugal big 3
+  "Benfica","Porto","Sporting CP",
+  // Eredivisie phare
+  "Ajax Amsterdam",
+  // Saoudien (effet stars récentes)
+  "Al Nassr","Al Hilal","Al Ittihad",
+  // MLS (Messi/Beckham effect)
+  "Inter Miami","LA Galaxy",
+  // Turquie majeurs
+  "Galatasaray","Fenerbahce",
+]);
+
 const PONT_CLUBS = new Set([
   "Manchester City","Arsenal","Liverpool","Chelsea","Manchester United",
   "Real Madrid","Barcelona","Atletico Madrid","Sevilla","Valencia",
@@ -701,7 +728,14 @@ function buildPontDB() {
   const db = {facile:[],moyen:[],expert:[]};
   for (const [key,val] of Object.entries(pairMap)) {
     const [c1,c2] = key.split("|||");
-    db[val.diff].push({c1,c2,p:val.players,isCurrent:val.hasCurrent});
+    // Filtre "facile" : on n'accepte une paire en facile que si les deux clubs
+    // sont dans POPULAR_CLUBS_FACILE. Sinon on rétrograde en "moyen" pour
+    // ne pas exposer le débutant à des clubs trop obscurs (Valence, Fluminense...).
+    let targetDiff = val.diff;
+    if (targetDiff === "facile" && !(POPULAR_CLUBS_FACILE.has(c1) && POPULAR_CLUBS_FACILE.has(c2))) {
+      targetDiff = "moyen";
+    }
+    db[targetDiff].push({c1,c2,p:val.players,isCurrent:val.hasCurrent});
   }
 for (const diff of ["facile","moyen","expert"]) {
   const current = db[diff].filter(q => q.isCurrent);
