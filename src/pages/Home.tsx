@@ -20,6 +20,8 @@ const Home = () => {
   const [countdown, setCountdown] = useState<
     { game: GameMode; diff?: Difficulty } | null
   >(null);
+  // Pop-up de confirmation avant de quitter une partie
+  const [showQuitConfirm, setShowQuitConfirm] = useState(false);
 
   // LePont émet cet event quand l'utilisateur quitte la partie autolaunchée
   // (← interne, fin de partie). On ferme l'overlay pour revenir à la landing.
@@ -33,7 +35,7 @@ const Home = () => {
     return (
       <div className="fixed inset-0 z-50 bg-background overflow-auto">
         <button
-          onClick={() => setPlaying(false)}
+          onClick={() => setShowQuitConfirm(true)}
           className="fixed top-3 right-3 z-[60] flex items-center gap-2 px-4 py-2 rounded-full bg-[#FF8A2A] hover:bg-[#FF7A1A] text-[#1A0F00] font-display text-base tracking-widest shadow-[0_8px_24px_rgba(0,0,0,0.5)] hover:scale-[1.03] active:scale-[0.98] transition-all"
           aria-label="Quitter et revenir à la landing GOAT FC"
           title="Quitter et revenir à la landing"
@@ -41,6 +43,45 @@ const Home = () => {
           ← QUITTER
         </button>
         <LePont />
+
+        {showQuitConfirm && (
+          <div
+            role="dialog"
+            aria-modal="true"
+            className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm"
+            onClick={() => setShowQuitConfirm(false)}
+          >
+            <div
+              className="w-full max-w-sm rounded-3xl bg-[#0F2017] border-2 border-white/10 p-6 lg:p-8 shadow-2xl text-center"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="text-5xl mb-3">⚠️</div>
+              <h3 className="font-display text-3xl tracking-wide text-white mb-2">
+                QUITTER LA PARTIE ?
+              </h3>
+              <p className="text-sm text-white/60 mb-7">
+                Ta progression en cours sera perdue.
+              </p>
+              <div className="flex flex-col gap-3">
+                <button
+                  onClick={() => setShowQuitConfirm(false)}
+                  className="w-full py-3 rounded-xl bg-gradient-to-r from-[#FF8A2A] to-[#FFC93C] text-[#1A0F00] font-display text-lg tracking-widest hover:scale-[1.02] transition-transform"
+                >
+                  ▶ CONTINUER
+                </button>
+                <button
+                  onClick={() => {
+                    setShowQuitConfirm(false);
+                    setPlaying(false);
+                  }}
+                  className="w-full py-3 rounded-xl border-2 border-white/10 bg-white/[0.02] hover:bg-white/[0.06] text-white/80 font-display text-base tracking-widest transition-colors"
+                >
+                  Quitter quand même
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
