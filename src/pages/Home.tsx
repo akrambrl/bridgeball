@@ -59,8 +59,45 @@ const Home = () => {
         {tab === "faq" && <FaqView />}
         {tab === "about" && <AboutView />}
       </main>
+
+      {/* Ticker scrolling — actions récentes (mock) */}
+      <ScoreTicker />
     </div>
   );
 };
+
+const TICKER_ITEMS = [
+  { who: "EagleEye", what: "vient de scorer 12 850 pts sur The Plug 🔥" },
+  { who: "TransferKing", what: "a explosé son record · +1 420 pts" },
+  { who: "MercatoMaster", what: "enchaîne 18 transferts sans erreur 💪" },
+  { who: "ZidaneFan10", what: "rejoint le Top 10 du mois 🚀" },
+  { who: "FootGuru", what: "complète la GOAT Grid en 4'12 ⚡" },
+  { who: "Cantona7", what: "défie BridgeBuilder en multi 🆚" },
+  { who: "RonaldoSiu", what: "atteint le palier LÉGENDE 🏆" },
+  { who: "LeMercatoGuy", what: "trouve un pont rare : Bordeaux × Newcastle 🤯" },
+];
+
+const ScoreTicker = () => (
+  <div className="relative z-10 border-t border-white/5 bg-black/30 backdrop-blur-sm overflow-hidden">
+    <div className="flex items-center gap-3 px-4 py-2.5">
+      <span className="goat-blink shrink-0 px-2 py-0.5 rounded-md bg-[#FF8A2A] text-[#1A0F00] font-display text-xs tracking-widest">
+        LIVE
+      </span>
+      <div className="flex-1 overflow-hidden">
+        <div className="goat-marquee flex gap-12 whitespace-nowrap">
+          {[...TICKER_ITEMS, ...TICKER_ITEMS].map((it, i) => (
+            <span key={i} className="text-sm text-white/70 flex items-center gap-2">
+              <span className="font-display text-base tracking-wider text-white">
+                {it.who}
+              </span>
+              <span>{it.what}</span>
+              <span className="text-white/20 ml-8">•</span>
+            </span>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+);
 
 export default Home;

@@ -103,3 +103,43 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 }
+
+/* Animations landing GOAT FC */
+@keyframes goat-pulse-glow {
+  0%, 100% {
+    box-shadow: 0 10px 40px -5px rgba(255, 201, 60, 0.5),
+                0 0 0 0 rgba(255, 201, 60, 0.4);
+  }
+  50% {
+    box-shadow: 0 15px 50px -5px rgba(255, 201, 60, 0.7),
+                0 0 0 14px rgba(255, 201, 60, 0);
+  }
+}
+.goat-pulse {
+  animation: goat-pulse-glow 2.2s ease-in-out infinite;
+}
+
+@keyframes goat-float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-12px); }
+}
+.goat-float {
+  animation: goat-float 4s ease-in-out infinite;
+}
+
+@keyframes goat-marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.goat-marquee {
+  animation: goat-marquee 40s linear infinite;
+}
+
+@keyframes goat-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+.goat-blink {
+  animation: goat-blink 1.4s ease-in-out infinite;
+}
+
