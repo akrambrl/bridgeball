@@ -3910,6 +3910,13 @@ export default function LePont() {
     launchedFromLandingRef.current = true;
     // Skip le splash 2.5s : on rentre direct dans le jeu
     setShowSplash(false);
+    // Skip aussi le welcome RGPD et le tutorial : l'utilisateur arrive
+    // depuis la landing desktop qui a déjà ses propres tutos/about.
+    // Il peut toujours rouvrir le tuto depuis le menu interne du jeu.
+    try {
+      localStorage.setItem("bb_welcome_seen", "1");
+      localStorage.setItem("bb_tutorial_done", "1");
+    } catch (e) {}
     try {
       window.history.replaceState({}, "", window.location.pathname);
     } catch (e) {}
