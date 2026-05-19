@@ -113,11 +113,19 @@ const Home = () => {
     setPlaying(true);
   };
 
-  // Après le choix Solo/Multi : on passe au choix de difficulté
+  // Après le choix Solo/Multi/Online :
+  // - online : pas de demande de diff (random, comme un vrai matchmaking)
+  // - solo/multi : on passe au choix de difficulté
   const onModePicked = (mode: PlayMode) => {
     if (!pendingMode) return;
     const game = pendingMode;
     setPendingMode(null);
+    if (mode === "online") {
+      const diffs: Difficulty[] = ["facile", "moyen", "expert"];
+      const randomDiff = diffs[Math.floor(Math.random() * diffs.length)];
+      setMatchmaking({ game, diff: randomDiff });
+      return;
+    }
     setPendingDiff({ game, mode });
   };
 
