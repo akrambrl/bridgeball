@@ -86,10 +86,10 @@ const Home = () => {
     );
   }
 
-  // Demande la difficulté pour pont/chaine, ou direct countdown pour grid
+  // Demande la difficulté pour pont/chaine, lance direct pour grid (pas chronométré)
   const onPlay = (game?: GameMode) => {
     if (game === "grid") {
-      setCountdown({ game: "grid" });
+      launchGame("grid");
       return;
     }
     if (game === "pont" || game === "chaine") {
