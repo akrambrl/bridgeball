@@ -1,11 +1,8 @@
-import type { GameMode } from "@/pages/Home";
-
 export type TabKey = "play" | "tutos" | "leaderboard" | "faq" | "about";
 
 type Props = {
   active: TabKey;
   onChange: (t: TabKey) => void;
-  onPlay: (game?: GameMode) => void;
 };
 
 const TABS: { key: TabKey; label: string }[] = [
@@ -30,7 +27,7 @@ function getStoredPseudo(): string {
   }
 }
 
-export const LobbyHeader = ({ active, onChange, onPlay }: Props) => {
+export const LobbyHeader = ({ active, onChange }: Props) => {
   const pseudo = getStoredPseudo();
   const initial = pseudo.charAt(0).toUpperCase();
 
@@ -70,7 +67,7 @@ export const LobbyHeader = ({ active, onChange, onPlay }: Props) => {
         })}
       </nav>
 
-      {/* Right side : Coins + profil + CTA Play */}
+      {/* Right side : Coins + profil */}
       <div className="flex items-center gap-3">
         {/* Coins (mock) */}
         <div className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-full bg-white/5 border border-white/10">
@@ -94,14 +91,6 @@ export const LobbyHeader = ({ active, onChange, onPlay }: Props) => {
             </span>
           </div>
         </div>
-
-        {/* CTA JOUER — défaut : The Plug */}
-        <button
-          onClick={() => onPlay("pont")}
-          className="goat-pulse px-5 py-2.5 rounded-full font-display text-lg tracking-widest bg-gradient-to-r from-[#FF8A2A] to-[#FFC93C] text-[#1A0F00] hover:scale-[1.03] transition-transform"
-        >
-          ▶ JOUER
-        </button>
       </div>
     </header>
   );

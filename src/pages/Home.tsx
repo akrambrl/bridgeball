@@ -142,7 +142,7 @@ const Home = () => {
       {/* Halo vert subtil */}
       <div className="pointer-events-none absolute top-1/3 left-1/2 -translate-x-1/2 h-[600px] w-[900px] rounded-full bg-[#1E5C2A]/15 blur-[120px]" />
 
-      <LobbyHeader active={tab} onChange={setTab} onPlay={onPlay} />
+      <LobbyHeader active={tab} onChange={setTab} />
 
       <main className="relative flex-1 z-10">
         {tab === "play" && <LobbyView onPlay={onPlay} />}
