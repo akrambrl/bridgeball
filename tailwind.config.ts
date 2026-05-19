@@ -15,7 +15,7 @@ export default {
     extend: {
       fontFamily: {
         sans: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"],
-        display: ["'Bebas Neue'", "Impact", "sans-serif"],
+        display: ["'Russo One'", "'Bebas Neue'", "Impact", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
