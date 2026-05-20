@@ -132,13 +132,34 @@
     </div>
     <script type="module" src="/src/main.tsx"></script>
 
-    <!-- Service Worker registration (pour les push notifications) -->
+    <!-- Service Worker registration : push notifs + auto-update PWA -->
     <script>
       if ("serviceWorker" in navigator) {
-        window.addEventListener("load", function() {
+        // Quand le SW actif change (= nouvelle version vient de prendre le
+        // contrôle), on recharge la page une seule fois pour récupérer
+        // l'index.html + assets à jour. Sans ça, les utilisateurs en mode
+        // PWA installée restent bloqués sur l'ancienne version.
+        var reloaded = false;
+        navigator.serviceWorker.addEventListener("controllerchange", function () {
+          if (reloaded) return;
+          reloaded = true;
+          window.location.reload();
+        });
+
+        window.addEventListener("load", function () {
           navigator.serviceWorker.register("/sw.js").then(
-            function(reg) { /* OK */ },
-            function(err) { console.error("SW failed:", err); }
+            function (reg) {
+              // Force la vérif d'une nouvelle version à chaque ouverture
+              // (utile sur PWA mobile qui ne re-check pas spontanément).
+              try { reg.update(); } catch (e) {}
+              // Re-vérifie aussi quand l'app revient au premier plan
+              document.addEventListener("visibilitychange", function () {
+                if (document.visibilityState === "visible") {
+                  try { reg.update(); } catch (e) {}
+                }
+              });
+            },
+            function (err) { console.error("SW failed:", err); }
           );
         });
       }

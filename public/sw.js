@@ -1,15 +1,34 @@
-// GOAT FC — Service Worker pour push notifications
+// GOAT FC — Service Worker pour push notifications + auto-update
 // À placer dans public/sw.js (ou racine du site)
+//
+// IMPORTANT : bumper CACHE_NAME à chaque deploy pour forcer le navigateur
+// à détecter un nouveau SW (les changements de fichier suffisent en théorie
+// mais ça garantit un install propre côté PWA mobile installée).
+const CACHE_NAME = "goatfc-v2-2026-05-20";
 
-const CACHE_NAME = "goatfc-v1";
-
-// Install & activation : passer tout de suite en mode actif
+// Install : on prend la main tout de suite sans attendre la fermeture des onglets
 self.addEventListener("install", (event) => {
   self.skipWaiting();
 });
 
+// Activate : on revendique tous les clients existants ET on purge les
+// anciens caches éventuels (utile si une version précédente faisait du cache).
 self.addEventListener("activate", (event) => {
-  event.waitUntil(self.clients.claim());
+  event.waitUntil(
+    (async () => {
+      const keys = await caches.keys();
+      await Promise.all(
+        keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))
+      );
+      await self.clients.claim();
+    })()
+  );
+});
+
+// Permettre à la page de demander un skipWaiting depuis le client
+// (utile si on veut un bouton "rafraîchir" plus tard).
+self.addEventListener("message", (event) => {
+  if (event.data === "SKIP_WAITING") self.skipWaiting();
 });
 
 // Réception d'une push notification depuis le serveur
