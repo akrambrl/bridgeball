@@ -74,15 +74,13 @@ export const LobbyHeader = ({ active, onChange }: Props) => {
           href="https://ko-fi.com/goatfc"
           target="_blank"
           rel="noopener noreferrer"
-          title="Offre-nous un café sur Ko-fi"
-          className="group flex items-center gap-1.5 px-3 py-2 rounded-full bg-[#FF5E5B]/10 hover:bg-[#FF5E5B]/20 border border-[#FF5E5B]/30 hover:border-[#FF5E5B]/60 transition-colors"
+          title="Soutenez GOAT FC sur Ko-fi"
+          className="group flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-[#FF5E5B] to-[#FF8A2A] hover:from-[#FF7270] hover:to-[#FF9F4D] font-display text-sm tracking-widest text-white shadow-[0_4px_14px_rgba(255,94,91,0.35)] hover:scale-[1.03] transition-all"
         >
           <span className="text-base leading-none transition-transform group-hover:scale-110">
             ☕
           </span>
-          <span className="hidden lg:inline font-display text-sm tracking-wider text-[#FF5E5B]">
-            CAFÉ ?
-          </span>
+          <span className="hidden sm:inline">SOUTENEZ-NOUS</span>
         </a>
 
         {/* Profil compact */}
