@@ -68,6 +68,10 @@ function pickOpponent() {
   return { ...base, avatar: avatarFor(base.pseudo) };
 }
 
+// Exporté pour le mode VS BOT (skip matchmaking, on a juste besoin d'un
+// adversaire crédible du même pool).
+export { pickOpponent };
+
 function getStoredPseudo(): string {
   if (typeof window === "undefined") return "Toi";
   try {
