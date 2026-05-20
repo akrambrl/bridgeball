@@ -67,16 +67,8 @@ export const LobbyHeader = ({ active, onChange }: Props) => {
         })}
       </nav>
 
-      {/* Right side : Coins + profil */}
+      {/* Right side : profil */}
       <div className="flex items-center gap-3">
-        {/* Coins (mock) */}
-        <div className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-full bg-white/5 border border-white/10">
-          <span className="text-base leading-none">🪙</span>
-          <span className="font-display text-base tracking-wider text-[#FFC93C]">
-            0
-          </span>
-        </div>
-
         {/* Profil compact */}
         <div className="hidden md:flex items-center gap-2.5 pl-1.5 pr-3 py-1.5 rounded-full bg-white/5 border border-white/10">
           <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[#00E676] to-[#1E5C2A] flex items-center justify-center font-display text-lg text-[#0A1410]">

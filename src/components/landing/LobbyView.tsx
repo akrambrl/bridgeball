@@ -222,15 +222,6 @@ export const LobbyView = ({ onPlay, onJoinRoom }: Props) => {
 
       {/* COLONNE DROITE — widgets gamifiés */}
       <div className="space-y-4">
-        {/* Pièces du jour */}
-        <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-4">
-          <div className="font-display text-base tracking-[0.2em] text-white/70 mb-2">
-            💰 PIÈCES DU JOUR
-          </div>
-          <button className="w-full mt-1 py-2.5 rounded-xl border-2 border-[#FFC93C]/60 bg-[#FFC93C]/10 hover:bg-[#FFC93C]/15 hover:border-[#FFC93C] font-display text-lg tracking-wider text-[#FFC93C] transition-colors">
-            🪙 RÉCUPÉRER 10 PIÈCES
-          </button>
-        </div>
 
         {/* Rejoindre une partie via un code */}
         <form
