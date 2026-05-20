@@ -10,15 +10,32 @@ export const AboutView = () => {
         </h2>
       </div>
 
-      <div className="space-y-4 text-white/80 leading-relaxed text-lg">
+      <div className="space-y-5 text-white/80 leading-relaxed text-lg">
         <p>
-          <em className="text-white/50">
-            [Section à remplir par toi — donne-moi 5-10 lignes sur le projet]
-          </em>
+          GOAT FC est né d'une <span className="text-white font-semibold">bande de potes
+          passionnés de foot et de quizz</span>. À force d'enchaîner les débats au
+          comptoir — « lui il a joué où déjà ? », « non mais regarde, ces deux clubs
+          ont un joueur en commun, t'arrives à trouver lequel ? » — on a fini par se
+          dire qu'il manquait un jeu vraiment fait pour ça.
         </p>
         <p>
-          Quelques pistes : ta passion foot, le moment où l'idée a germé, ce
-          qui rend GOAT FC différent des autres quiz, ta vision pour la suite.
+          Alors on s'est lancés <span className="text-white font-semibold">ensemble</span>.
+          Chacun avec ses obsessions : la Ligue 1 des années 2000, les transferts oubliés
+          de Premier League, les chaînes de mercato les plus tordues, les légendes
+          sud-américaines passées en Europe… On a tout mis dans la même base.
+        </p>
+        <p>
+          Trois jeux ont émergé : <span className="text-[#00E676] font-semibold">The Plug</span> pour
+          trouver le maillon entre deux clubs,{" "}
+          <span className="text-[#FF8A2A] font-semibold">The Mercato</span> pour enchaîner
+          les transferts à l'infini, et{" "}
+          <span className="text-[#3DA5FF] font-semibold">GOAT Grid</span> pour la grille
+          du jour stratégique.
+        </p>
+        <p>
+          GOAT FC, c'est un projet entre amis, fait avec le cœur. Pas de pub, pas de
+          paywall, pas de gimmicks. Juste un jeu de foot fait par et pour des fans de
+          foot. Bienvenue dans le club. 🐐
         </p>
       </div>
 
