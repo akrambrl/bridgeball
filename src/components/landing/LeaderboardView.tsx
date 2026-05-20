@@ -1,4 +1,6 @@
-type Props = { onPlay: () => void };
+import type { GameMode } from "@/pages/Home";
+
+type Props = { onPlay: (game?: GameMode) => void };
 
 const MOCK = [
   { rank: 1, name: "EagleEye", score: 12850, badge: "GOAT" },
@@ -18,7 +20,7 @@ export const LeaderboardView = ({ onPlay }: Props) => {
     <div className="container max-w-3xl mx-auto px-6 lg:px-10 py-10">
       <div className="text-center mb-8">
         <span className="inline-block px-3 py-1 rounded-full bg-[#FFC93C]/10 text-[#FFC93C] font-display text-xs tracking-[0.3em] mb-3">
-          HALL OF FAME
+          PALMARÈS
         </span>
         <h2 className="font-display text-6xl md:text-7xl tracking-wide leading-none">
           LES GOAT DU MOIS
@@ -72,7 +74,7 @@ export const LeaderboardView = ({ onPlay }: Props) => {
 
       <div className="mt-8 text-center">
         <button
-          onClick={onPlay}
+          onClick={() => onPlay("pont")}
           className="inline-flex items-center gap-2 px-10 py-4 rounded-2xl bg-gradient-to-r from-[#FF8A2A] to-[#FFC93C] text-[#1A0F00] font-display text-2xl tracking-widest shadow-[0_10px_40px_-5px_rgba(255,201,60,0.5)] hover:scale-[1.03] transition-transform"
         >
           ▶ TENTER MA PLACE

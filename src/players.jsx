@@ -835,7 +835,7 @@ export const PLAYERS = [
   { name:"Philippe Mexès", clubs:["Auxerre", "AS Roma", "AC Milan"], diff:"moyen", nationalities:["France"], positions:["defenseur"] },
   { name:"Emmanuel Petit", clubs:["Monaco", "Arsenal", "Barcelona", "Chelsea"], diff:"expert", nationalities:["France"], positions:["milieu"] },
   { name:"Peter Crouch", clubs:["Aston Villa", "Southampton", "Liverpool", "Tottenham"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"] },
-  { name:"Gennaro Gattuso", clubs:["AC Milan", "Tottenham"], diff:"expert", nationalities:["Italie"], positions:["milieu"] },
+  { name:"Gennaro Gattuso", clubs:["Perugia", "Rangers", "Salernitana", "AC Milan", "Sion"], diff:"expert", nationalities:["Italie"], positions:["milieu"] },
   { name:"Roberto Baggio", clubs:["ACF Fiorentina", "Juventus FC", "AC Milan", "Inter Milan", "Bologna FC"], diff:"facile", nationalities:["Italie"], positions:["attaquant"] },
   { name:"Christian Vieri", clubs:["SS Lazio", "Inter Milan", "AC Milan"], diff:"moyen", nationalities:["Italie"], positions:["attaquant"] },
   { name:"Filippo Inzaghi", clubs:["Piacenza", "Parma FC", "Atalanta BC", "Juventus FC", "AC Milan"], diff:"moyen", nationalities:["Italie"], positions:["attaquant"] },

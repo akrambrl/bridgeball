@@ -3,15 +3,14 @@ export type TabKey = "play" | "tutos" | "leaderboard" | "faq" | "about";
 type Props = {
   active: TabKey;
   onChange: (t: TabKey) => void;
-  onPlay: () => void;
 };
 
 const TABS: { key: TabKey; label: string }[] = [
-  { key: "play", label: "PLAY" },
+  { key: "play", label: "JOUER" },
   { key: "tutos", label: "TUTOS" },
-  { key: "leaderboard", label: "LEADERBOARD" },
+  { key: "leaderboard", label: "CLASSEMENT" },
   { key: "faq", label: "FAQ" },
-  { key: "about", label: "ABOUT" },
+  { key: "about", label: "À PROPOS" },
 ];
 
 // Lit le pseudo stocké par LePont (sinon "Invité")
@@ -28,7 +27,7 @@ function getStoredPseudo(): string {
   }
 }
 
-export const LobbyHeader = ({ active, onChange, onPlay }: Props) => {
+export const LobbyHeader = ({ active, onChange }: Props) => {
   const pseudo = getStoredPseudo();
   const initial = pseudo.charAt(0).toUpperCase();
 
@@ -68,15 +67,21 @@ export const LobbyHeader = ({ active, onChange, onPlay }: Props) => {
         })}
       </nav>
 
-      {/* Right side : Coins + profil + CTA Play */}
+      {/* Right side : Ko-fi + profil */}
       <div className="flex items-center gap-3">
-        {/* Coins (mock) */}
-        <div className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-full bg-white/5 border border-white/10">
-          <span className="text-base leading-none">🪙</span>
-          <span className="font-display text-base tracking-wider text-[#FFC93C]">
-            0
+        {/* Bouton Ko-fi — soutien volontaire */}
+        <a
+          href="https://ko-fi.com/goatfc"
+          target="_blank"
+          rel="noopener noreferrer"
+          title="Soutenez GOAT FC sur Ko-fi"
+          className="group flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-[#FF5E5B] to-[#FF8A2A] hover:from-[#FF7270] hover:to-[#FF9F4D] font-display text-sm tracking-widest text-white shadow-[0_4px_14px_rgba(255,94,91,0.35)] hover:scale-[1.03] transition-all"
+        >
+          <span className="text-base leading-none transition-transform group-hover:scale-110">
+            ☕
           </span>
-        </div>
+          <span className="hidden sm:inline">SOUTENEZ-NOUS</span>
+        </a>
 
         {/* Profil compact */}
         <div className="hidden md:flex items-center gap-2.5 pl-1.5 pr-3 py-1.5 rounded-full bg-white/5 border border-white/10">
@@ -92,14 +97,6 @@ export const LobbyHeader = ({ active, onChange, onPlay }: Props) => {
             </span>
           </div>
         </div>
-
-        {/* CTA JOUER */}
-        <button
-          onClick={onPlay}
-          className="goat-pulse px-5 py-2.5 rounded-full font-display text-lg tracking-widest bg-gradient-to-r from-[#FF8A2A] to-[#FFC93C] text-[#1A0F00] hover:scale-[1.03] transition-transform"
-        >
-          ▶ JOUER
-        </button>
       </div>
     </header>
   );

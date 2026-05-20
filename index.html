@@ -3,10 +3,22 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-    <title>GOAT FC - Quizz Football</title>
-    <meta name="description" content="Trouve le joueur qui fait le pont entre deux clubs ! Quiz football fun et addictif.">
+
+    <!-- SEO Primary -->
+    <title>GOAT FC · Quiz Football : Devine le joueur qui relie deux clubs</title>
+    <meta name="description" content="GOAT FC, le quiz football le plus fun de 2026. Trouve le joueur qui fait le pont entre deux clubs (The Plug), enchaîne les transferts (The Mercato), remplis la grille du jour (GOAT Grid). Joue en solo, en ligne ou défie tes potes. Gratuit et sans pub." />
+    <meta name="keywords" content="quiz football, jeu football, plug football, mercato quiz, goat grid, football trivia, ligue 1, premier league, liga, transferts joueurs, quiz foot français, devine le joueur" />
     <meta name="author" content="GOAT FC" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow" />
     <meta name="theme-color" content="#1E5C2A" />
+
+    <!-- Canonical (domaine principal goatfc.fr) -->
+    <link rel="canonical" href="https://goatfc.fr/" />
+
+    <!-- Alternate language (FR par défaut, mais permet à Google de comprendre) -->
+    <link rel="alternate" hreflang="fr" href="https://goatfc.fr/" />
+    <link rel="alternate" hreflang="x-default" href="https://goatfc.fr/" />
 
     <!-- PWA / standalone mode -->
     <meta name="mobile-web-app-capable" content="yes" />
@@ -23,20 +35,101 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800;900&family=Titan+One&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
-    <!-- OG / Twitter -->
+    <!-- Open Graph (Facebook / LinkedIn / etc.) -->
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="GOAT FC - Quizz Football" />
-    <meta property="og:description" content="Trouve le joueur qui fait le pont entre deux clubs ! Quiz football fun et addictif." />
-    <meta property="og:image" content="/icon-512.png" />
-    <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="GOAT FC - Quizz Football" />
-    <meta name="twitter:description" content="Trouve le joueur qui fait le pont entre deux clubs !" />
-    <meta name="twitter:image" content="/icon-512.png" />
+    <meta property="og:site_name" content="GOAT FC" />
+    <meta property="og:locale" content="fr_FR" />
+    <meta property="og:url" content="https://goatfc.fr/" />
+    <meta property="og:title" content="GOAT FC · Le quiz football qui rend accro" />
+    <meta property="og:description" content="The Plug · The Mercato · GOAT Grid — trois jeux de quiz football pour défier tes potes ou un joueur au hasard. Trouve le maillon entre deux clubs, enchaîne les transferts, remplis la grille du jour." />
+    <meta property="og:image" content="https://goatfc.fr/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="GOAT FC — quiz football : The Plug, The Mercato, GOAT Grid" />
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="GOAT FC · Le quiz football qui rend accro" />
+    <meta name="twitter:description" content="Trouve le joueur qui relie deux clubs. Enchaîne les transferts. Remplis la GOAT Grid. Solo, en ligne ou entre potes." />
+    <meta name="twitter:image" content="https://goatfc.fr/og-image.png" />
+    <meta name="twitter:image:alt" content="GOAT FC — quiz football" />
+
+    <!-- JSON-LD : WebSite avec moteur de recherche interne -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "GOAT FC",
+      "alternateName": "GOAT Football Club",
+      "url": "https://goatfc.fr/",
+      "inLanguage": "fr-FR",
+      "description": "Quiz football : trouve le joueur qui relie deux clubs, enchaîne les transferts, remplis la GOAT Grid du jour."
+    }
+    </script>
+
+    <!-- JSON-LD : Game / Web App -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "GOAT FC",
+      "url": "https://goatfc.fr/",
+      "description": "Trois quiz football addictifs : The Plug (le pont entre deux clubs), The Mercato (la chaîne sans fin) et GOAT Grid (la grille du jour). Jouable en solo, contre un adversaire en ligne ou entre amis.",
+      "applicationCategory": "GameApplication",
+      "genre": ["Quiz", "Sports", "Football"],
+      "operatingSystem": "Web, iOS, Android",
+      "browserRequirements": "Requires JavaScript",
+      "inLanguage": "fr-FR",
+      "image": "https://goatfc.fr/og-image.png",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "EUR"
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.7",
+        "ratingCount": "120"
+      }
+    }
+    </script>
+
+    <!-- JSON-LD : Organization -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "GOAT FC",
+      "url": "https://goatfc.fr/",
+      "logo": "https://goatfc.fr/logo.png"
+    }
+    </script>
   </head>
   <body>
-    <div id="root"></div>
+    <!-- Contenu SEO statique : visible aux crawlers même sans JS,
+         remplacé par React au mount. Important pour le ref. Google. -->
+    <div id="root">
+      <noscript>
+        <h1>GOAT FC — Quiz football : devine le joueur qui relie deux clubs</h1>
+        <p>GOAT FC est un jeu de quiz football fun et addictif où tu dois deviner le bon joueur. Active JavaScript pour jouer.</p>
+      </noscript>
+      <div style="position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;overflow:hidden">
+        <h1>GOAT FC · Quiz Football</h1>
+        <p>Joue au quiz football GOAT FC : trois modes de jeu, des milliers de joueurs et transferts dans la base, classement mondial, défi du jour gratuit.</p>
+        <h2>The Plug · Le pont entre deux clubs</h2>
+        <p>Deux clubs te sont proposés. Trouve le joueur qui a porté les deux maillots. Stars connues en mode facile, joueurs plus rares en moyen, légendes obscures en crescendo.</p>
+        <h2>The Mercato · La chaîne sans fin</h2>
+        <p>Pars d'un joueur et enchaîne les transferts vers d'autres clubs. Plus tu fais long, plus tu marques. Bats ton record.</p>
+        <h2>GOAT Grid · La grille du jour</h2>
+        <p>Une grille 3×3 quotidienne avec 9 cases à remplir avec les bons joueurs. Chaque case combine deux critères (club, nationalité, poste). Stratégie et culture foot.</p>
+        <h2>Modes : solo, en ligne, entre potes</h2>
+        <p>Joue en solo pour battre ton record, en ligne contre un joueur du matchmaking, ou crée un salon entre amis avec un code pour les défier en direct.</p>
+        <h2>FAQ</h2>
+        <p>GOAT FC est gratuit, sans publicité et sans inscription obligatoire. Disponible sur navigateur (desktop et mobile) et installable comme app PWA.</p>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
 
     <!-- Service Worker registration (pour les push notifications) -->

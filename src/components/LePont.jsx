@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
 import { PLAYERS, RETIRED_PLAYERS } from "../players.jsx";
 
 
@@ -543,6 +543,33 @@ const CLUB_COLORS = {
 };
 
 // ── BUILD DATABASES ──
+// Clubs vraiment connus du grand public — utilisés pour FILTRER le mode "facile"
+// du Plug : une paire ne peut rester en "facile" QUE si les 2 clubs en font
+// partie. Les paires impliquant d'autres clubs de PONT_CLUBS sont rétrogradées
+// en "moyen" pour ne pas exposer le débutant à Valence, Fluminense, etc.
+const POPULAR_CLUBS_FACILE = new Set([
+  // Premier League majeurs
+  "Manchester United","Manchester City","Liverpool","Chelsea","Arsenal","Tottenham","Newcastle",
+  // La Liga top 3
+  "Real Madrid","Barcelona","Atletico Madrid",
+  // Serie A majeurs
+  "Juventus FC","AC Milan","Inter Milan","SSC Napoli","AS Roma",
+  // Bundesliga top 2
+  "Bayern Munich","Borussia Dortmund",
+  // Ligue 1 majeurs
+  "PSG","Marseille","Lyon","Monaco",
+  // Portugal big 3
+  "Benfica","Porto","Sporting CP",
+  // Eredivisie phare
+  "Ajax Amsterdam",
+  // Saoudien (effet stars récentes)
+  "Al Nassr","Al Hilal","Al Ittihad",
+  // MLS (Messi/Beckham effect)
+  "Inter Miami","LA Galaxy",
+  // Turquie majeurs
+  "Galatasaray","Fenerbahce",
+]);
+
 const PONT_CLUBS = new Set([
   "Manchester City","Arsenal","Liverpool","Chelsea","Manchester United",
   "Real Madrid","Barcelona","Atletico Madrid","Sevilla","Valencia",
@@ -701,7 +728,14 @@ function buildPontDB() {
   const db = {facile:[],moyen:[],expert:[]};
   for (const [key,val] of Object.entries(pairMap)) {
     const [c1,c2] = key.split("|||");
-    db[val.diff].push({c1,c2,p:val.players,isCurrent:val.hasCurrent});
+    // Filtre "facile" : on n'accepte une paire en facile que si les deux clubs
+    // sont dans POPULAR_CLUBS_FACILE. Sinon on rétrograde en "moyen" pour
+    // ne pas exposer le débutant à des clubs trop obscurs (Valence, Fluminense...).
+    let targetDiff = val.diff;
+    if (targetDiff === "facile" && !(POPULAR_CLUBS_FACILE.has(c1) && POPULAR_CLUBS_FACILE.has(c2))) {
+      targetDiff = "moyen";
+    }
+    db[targetDiff].push({c1,c2,p:val.players,isCurrent:val.hasCurrent});
   }
 for (const diff of ["facile","moyen","expert"]) {
   const current = db[diff].filter(q => q.isCurrent);
@@ -970,6 +1004,16 @@ function pickResultMessage(arr, seed) {
 }
 
 const DB = buildPontDB();
+
+// Score "crédible" pour le bot adversaire en mode EN LIGNE (faux multi).
+// 50/50 win ou lose, variance proportionnelle au score utilisateur.
+function generateBotScore(userScore) {
+  const willWin = Math.random() < 0.5;
+  const base = Math.max(0, Math.floor(userScore || 0));
+  const variance = Math.max(25, Math.floor(base * 0.35));
+  const delta = Math.floor(Math.random() * variance) + 8;
+  return Math.max(0, base + (willWin ? delta : -delta));
+}
 
 // ── DAILY CHALLENGE ──
 // Clubs de chaque grande ligue pour le défi du jour thématique
@@ -3898,6 +3942,100 @@ export default function LePont() {
     return () => window.removeEventListener("resize", handler);
   }, []);
 
+  // Auto-start d'un jeu depuis l'URL (?play=pont|chaine|grid)
+  // Utilisé par la landing desktop pour entrer directement dans un mode.
+  // useLayoutEffect : tourne avant le paint donc le home ne flashe pas.
+  const launchedFromLandingRef = useRef(false);
+  // Bot adversaire (mode EN LIGNE depuis la landing) : pseudo + flag + score généré
+  const botOpponentRef = useRef(null);
+  const botScoreRef = useRef(null);
+  useLayoutEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const play = params.get("play");
+    const reqRoom = params.get("room");
+    if (!play && !reqRoom) return;
+    launchedFromLandingRef.current = true;
+    // Skip le splash 2.5s : on rentre direct dans le jeu
+    setShowSplash(false);
+    // Skip aussi le welcome RGPD et le tutorial : l'utilisateur arrive
+    // depuis la landing desktop qui a déjà ses propres tutos/about.
+    // Il peut toujours rouvrir le tuto depuis le menu interne du jeu.
+    try {
+      localStorage.setItem("bb_welcome_seen", "1");
+      localStorage.setItem("bb_tutorial_done", "1");
+    } catch (e) {}
+    // ?room=CODE : on laisse l'autre useEffect (ligne ~4220) lire le code
+    // et lancer joinRoom — pas besoin d'autre logique ici.
+    if (reqRoom && !play) {
+      return;
+    }
+    // Difficulté choisie côté landing (?diff=facile|moyen|expert)
+    const reqDiffRaw = params.get("diff");
+    const reqDiff =
+      reqDiffRaw === "facile" || reqDiffRaw === "moyen" || reqDiffRaw === "expert"
+        ? reqDiffRaw
+        : null;
+    if (reqDiff) setDiff(reqDiff);
+    // Bot adversaire depuis la landing (?bot=Pseudo&flag=🇫🇷&avatar=/win1.png) — mode EN LIGNE
+    const botPseudo = params.get("bot");
+    const botFlag = params.get("flag");
+    const botAvatar = params.get("avatar");
+    if (botPseudo && botFlag) {
+      botOpponentRef.current = { pseudo: botPseudo, country: botFlag, avatar: botAvatar };
+    }
+    // Mode multi demandé depuis la landing (?multi=create) — on ouvre la création de salon
+    const reqMulti = params.get("multi");
+    try {
+      window.history.replaceState({}, "", window.location.pathname);
+    } catch (e) {}
+    try {
+      if (reqMulti === "create" && (play === "pont" || play === "chaine" || play === "plug" || play === "mercato")) {
+        const mode = (play === "chaine" || play === "mercato") ? "chaine" : "pont";
+        setGameMode(mode);
+        setDuelMode(mode);
+        if (reqDiff) setDuelDiff(reqDiff);
+        setDuelRounds(3);
+        setShowRoomCreate(true);
+        return;
+      }
+      if (play === "pont" || play === "plug") {
+        setGameMode("pont");
+        startRound(1, reqDiff);
+      } else if (play === "chaine" || play === "mercato") {
+        setGameMode("chaine");
+        startChain(reqDiff);
+      } else if (play === "grid" || play === "goatgrid") {
+        ggStartGame();
+      }
+    } catch (e) {
+      console.warn("autostart failed:", e);
+    }
+  }, []);
+
+  // Si on a auto-started depuis la landing et que l'utilisateur revient au home
+  // de LePont (← interne, fin de partie, etc.), on émet un event pour que
+  // la landing ferme l'overlay et reprenne le contrôle.
+  const wasInGameRef = useRef(false);
+  useEffect(() => {
+    if (!launchedFromLandingRef.current) return;
+    const inGame =
+      screen === "game" ||
+      screen === "lobby" ||
+      screen === "final" ||
+      showGoatGrid ||
+      (ggBattleScreen && ggBattleScreen === "playing");
+    if (inGame) {
+      wasInGameRef.current = true;
+      return;
+    }
+    if (wasInGameRef.current && screen === "home" && !showGoatGrid) {
+      window.dispatchEvent(new CustomEvent("goatfc:back-to-landing"));
+      launchedFromLandingRef.current = false;
+      wasInGameRef.current = false;
+    }
+  }, [screen, showGoatGrid, ggBattleScreen]);
+
   // Lock viewport : empêche zoom utilisateur, scroll horizontal, overscroll
   // pour que l'app se comporte comme une app native en PWA sur téléphone
   useEffect(()=>{
@@ -6059,6 +6197,10 @@ export default function LePont() {
         submitToLeaderboard(playerName,total,"pont",diff);
         addXp(total); // XP cumulé +score de la partie
         updateDayStreak();
+        // Bot online : on génère son score juste avant l'écran final
+        if (botOpponentRef.current && botScoreRef.current === null) {
+          botScoreRef.current = generateBotScore(total);
+        }
         if(activeDuelRef.current&&activeDuelRef.current.isRoom){setScreen("waitingRoom");submitRoomScore(total);}else if(activeDuel){submitDuelScore(total); setScreen("final");}else{setScreen("final");}
       } else {
         // Manche intermédiaire — envoyer score partiel et afficher classement
@@ -6084,16 +6226,27 @@ export default function LePont() {
     submitToLeaderboard(playerName,sc,"chaine",diff);
     addXp(sc); // XP cumulé +score de la partie mercato
     updateDayStreak();
+    // Bot online : on génère son score juste avant l'écran final
+    if (botOpponentRef.current && botScoreRef.current === null) {
+      botScoreRef.current = generateBotScore(sc);
+    }
     if(activeDuelRef.current&&activeDuelRef.current.isRoom){setScreen("waitingRoom");submitRoomScore(sc);}else if(activeDuel){submitDuelScore(sc); setScreen("chainEnd");}else{setScreen("chainEnd");}
   }
 
-  function startRound(round) {
+  function startRound(round, diffOverride) {
     roundStartTime.current = null; // timer will set on next tick
     // Si manche 1, on reset le tracker des paires jouées (nouvelle partie)
-    if (round === 1) playedPairsRef.current = new Set();
+    if (round === 1) {
+      playedPairsRef.current = new Set();
+      botScoreRef.current = null; // nouveau bot score à recalculer en fin de partie
+    }
     // FIX multi : lire diff depuis activeDuelRef si en room (évite le stale state React)
+    // Si la landing passe une diff via URL (autostart), elle override le state
+    // closure (qui est encore "facile" au premier render).
     const isInRoom = activeDuelRef.current && activeDuelRef.current.isRoom;
-    const effectiveDiff = isInRoom && activeDuelRef.current.diff ? activeDuelRef.current.diff : diff;
+    const effectiveDiff = isInRoom && activeDuelRef.current.diff
+      ? activeDuelRef.current.diff
+      : (diffOverride || diff);
     
     // CRESCENDO MODE (anciennement "expert") : construire une queue progressive facile→moyen→expert
     // Sinon (facile/moyen) : pool unique de la difficulté choisie
@@ -6202,12 +6355,16 @@ export default function LePont() {
     setTimeout(()=>inputRef.current?.focus(),200);
   }
 
-  function startChain() {
+  function startChain(diffOverride) {
     roundStartTime.current = null;
+    botScoreRef.current = null;
     setIsNewRecord(false); setMyLastPts(null); setCombo(0); setMaxCombo(0); comboRef.current=0; lastAnswerTime.current=Date.now();
     // Seeded random in multiplayer room for fair starting player across all players
+    // diffOverride permet à la landing autostart d'utiliser sa diff sans race React.
     const isInRoom = activeDuelRef.current && activeDuelRef.current.isRoom;
-    const effectiveDiff = isInRoom && activeDuelRef.current.diff ? activeDuelRef.current.diff : diff;
+    const effectiveDiff = isInRoom && activeDuelRef.current.diff
+      ? activeDuelRef.current.diff
+      : (diffOverride || diff);
     const roomSeed = isInRoom ? hashStringToSeed(String(activeDuelRef.current.id) + "_chain") : null;
     const rand = isInRoom ? seededRandom(roomSeed) : Math.random;
     // CRESCENDO MODE : le starter (lien 0) doit toujours être un joueur FACILE pour amorcer la chaîne en douceur
@@ -9258,7 +9415,7 @@ export default function LePont() {
             </div>
           </div>
           <div style={{flex:1,display:"flex",justifyContent:"flex-end",alignItems:"center",gap:8}}>
-  {dayStreak > 0 && (() => {
+  {!launchedFromLandingRef.current && dayStreak > 0 && (() => {
     // Paliers visuels de streak
     const tier = dayStreak >= 100 ? "platine" : dayStreak >= 30 ? "mythic" : dayStreak >= 7 ? "gold" : dayStreak >= 3 ? "bronze" : "base";
     const tierStyles = {
@@ -9285,9 +9442,11 @@ export default function LePont() {
       </div>
     );
   })()}
+{!launchedFromLandingRef.current && (
 <div onClick={function(){if(!pseudoConfirmed) setPseudoScreen(true); else setScreen("profile");}} style={{background:"linear-gradient(135deg,#00E676,#00A855)",border:"1px solid rgba(0,230,118,.4)",borderRadius:12,width:38,height:38,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",boxShadow:"0 4px 14px rgba(0,230,118,.25)",overflow:"hidden"}}>
   {playerAvatar ? <img src={playerAvatar} alt="avatar" style={{width:"100%",height:"100%",objectFit:"cover"}}/> : <span style={{fontSize:16,color:"#000",fontWeight:800}}>{(playerName||"?")[0].toUpperCase()}</span>}
-</div>              
+</div>
+)}
           </div>
         </div>
       </div>
@@ -10142,7 +10301,7 @@ export default function LePont() {
                   )}
                 </div>
                 <div style={{flex:1,display:"flex",justifyContent:"flex-end",gap:6}}>
-                  {ggBattleScreen !== "playing" && (
+                  {ggBattleScreen !== "playing" && !launchedFromLandingRef.current && (
                     <>
                       <button onClick={function(){
                         // Génère un seed aléatoire pour avoir une autre grille (mode test)
@@ -11481,6 +11640,52 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
           {isNewRecord&&<div style={{fontSize:12,color:G.accent,marginTop:6,fontStyle:"italic"}}>{lang==="en"?"Previous record beaten 🎉":"Ancien record battu 🎉"}</div>}
           {dayStreak>=2&&<div style={{fontSize:12,color:"#FF6B35",marginTop:6,fontWeight:700}}>🔥 {dayStreak} jours de suite !</div>}
         </div>
+
+        {/* Duel bot (mode EN LIGNE depuis la landing) */}
+        {botOpponentRef.current && botScoreRef.current !== null && (() => {
+          const myScore = sc;
+          const botScore = botScoreRef.current;
+          const win = myScore > botScore;
+          const draw = myScore === botScore;
+          const verdictColor = draw ? "#FFC93C" : win ? "#00E676" : "#FF3D6E";
+          const verdictText = draw ? "ÉGALITÉ" : win ? "VICTOIRE !" : "DÉFAITE";
+          const verdictBg = draw ? "rgba(255,201,60,.12)" : win ? "rgba(0,230,118,.12)" : "rgba(255,61,110,.12)";
+          return (
+            <div style={{borderRadius:20,padding:"18px",border:`2px solid ${verdictColor}55`,background:verdictBg,animation:"fadeUp .4s ease .15s both"}}>
+              <div style={{textAlign:"center",fontFamily:G.heading,fontSize:24,letterSpacing:3,color:verdictColor,marginBottom:14}}>
+                {verdictText}
+              </div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",alignItems:"center",gap:10}}>
+                {/* Toi */}
+                <div style={{textAlign:"center"}}>
+                  <div style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:64,height:64,borderRadius:"50%",overflow:"hidden",background:"linear-gradient(135deg,#00E676,#1E5C2A)",border:"2px solid #00E676",marginBottom:8,marginInline:"auto"}}>
+                    {playerAvatar
+                      ? <img src={playerAvatar} alt="" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top"}}/>
+                      : <span style={{fontFamily:G.heading,fontSize:28,color:G.white}}>{(playerName||"?")[0].toUpperCase()}</span>
+                    }
+                  </div>
+                  <div style={{fontSize:11,color:"#bbb",letterSpacing:1,textTransform:"uppercase"}}>{playerName||"Toi"}</div>
+                  <div style={{fontFamily:G.heading,fontSize:32,color:win?verdictColor:G.white,lineHeight:1,marginTop:2}}>{myScore}</div>
+                </div>
+                {/* VS */}
+                <div style={{fontFamily:G.heading,fontSize:18,color:"#888",letterSpacing:2}}>VS</div>
+                {/* Bot */}
+                <div style={{textAlign:"center"}}>
+                  <div style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:64,height:64,borderRadius:"50%",overflow:"hidden",background:"linear-gradient(135deg,#3DA5FF,#1E5C2A)",border:"2px solid #3DA5FF",marginBottom:8,marginInline:"auto"}}>
+                    {botOpponentRef.current.avatar
+                      ? <img src={botOpponentRef.current.avatar} alt="" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top"}}/>
+                      : <span style={{fontFamily:G.heading,fontSize:28,color:G.white}}>{botOpponentRef.current.pseudo[0].toUpperCase()}</span>
+                    }
+                  </div>
+                  <div style={{fontSize:11,color:"#bbb",letterSpacing:1,textTransform:"uppercase",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
+                    {botOpponentRef.current.pseudo} <span style={{fontSize:13}}>{botOpponentRef.current.country}</span>
+                  </div>
+                  <div style={{fontFamily:G.heading,fontSize:32,color:(!win&&!draw)?verdictColor:G.white,lineHeight:1,marginTop:2}}>{botScore}</div>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         {!isChain&&roundScores.length>1&&(
           <div style={{display:"flex",flexDirection:"column",gap:6}}>
