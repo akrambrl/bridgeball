@@ -6,11 +6,11 @@ type Props = {
 };
 
 const TABS: { key: TabKey; label: string }[] = [
-  { key: "play", label: "PLAY" },
+  { key: "play", label: "JOUER" },
   { key: "tutos", label: "TUTOS" },
-  { key: "leaderboard", label: "LEADERBOARD" },
+  { key: "leaderboard", label: "CLASSEMENT" },
   { key: "faq", label: "FAQ" },
-  { key: "about", label: "ABOUT" },
+  { key: "about", label: "À PROPOS" },
 ];
 
 // Lit le pseudo stocké par LePont (sinon "Invité")

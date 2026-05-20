@@ -57,28 +57,6 @@ const GAMES: {
   },
 ];
 
-// Daily countdown
-function useDailyCountdown() {
-  const [s, setS] = useState(() => secondsUntilMidnight());
-  useEffect(() => {
-    const id = setInterval(() => setS(secondsUntilMidnight()), 1000);
-    return () => clearInterval(id);
-  }, []);
-  return s;
-}
-function secondsUntilMidnight() {
-  const now = new Date();
-  const midnight = new Date(now);
-  midnight.setHours(24, 0, 0, 0);
-  return Math.floor((midnight.getTime() - now.getTime()) / 1000);
-}
-function formatCountdown(s: number) {
-  const h = Math.floor(s / 3600).toString().padStart(2, "0");
-  const m = Math.floor((s % 3600) / 60).toString().padStart(2, "0");
-  const sec = (s % 60).toString().padStart(2, "0");
-  return `${h}:${m}:${sec}`;
-}
-
 // Compteur "live" qui fluctue entre 80 et 320 joueurs (mock)
 function useLiveOnline() {
   const [n, setN] = useState(() => 120 + Math.floor(Math.random() * 80));
@@ -106,7 +84,6 @@ const TOP5 = [
 export const LobbyView = ({ onPlay, onJoinRoom }: Props) => {
   const [selected, setSelected] = useState<GameKey>("plug");
   const game = GAMES.find((g) => g.key === selected)!;
-  const cd = useDailyCountdown();
   const online = useLiveOnline();
   const [roomCode, setRoomCode] = useState("");
 
@@ -245,32 +222,13 @@ export const LobbyView = ({ onPlay, onJoinRoom }: Props) => {
 
       {/* COLONNE DROITE — widgets gamifiés */}
       <div className="space-y-4">
-        {/* Daily challenge */}
-        <div className="relative rounded-2xl border-2 border-[#FF8A2A]/40 bg-gradient-to-br from-[#FF8A2A]/15 to-transparent p-4 cursor-pointer hover:from-[#FF8A2A]/25 transition-colors">
-          <div className="absolute -top-2 left-3 px-2 py-0.5 rounded-md bg-[#FF8A2A] text-[#1A0F00] font-display text-xs tracking-widest">
-            NEW
-          </div>
-          <div className="flex items-start justify-between gap-3 mt-1">
-            <div>
-              <div className="font-display text-base text-[#FF8A2A] tracking-[0.2em]">
-                🔥 DAILY CHALLENGE
-              </div>
-              <div className="text-xs text-white/50 mt-1">
-                Ends in{" "}
-                <span className="font-mono font-bold text-white">{formatCountdown(cd)}</span>
-              </div>
-            </div>
-            <span className="text-white/40 text-lg leading-none">›</span>
-          </div>
-        </div>
-
-        {/* Daily Coins */}
+        {/* Pièces du jour */}
         <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-4">
           <div className="font-display text-base tracking-[0.2em] text-white/70 mb-2">
-            💰 DAILY COINS
+            💰 PIÈCES DU JOUR
           </div>
           <button className="w-full mt-1 py-2.5 rounded-xl border-2 border-[#FFC93C]/60 bg-[#FFC93C]/10 hover:bg-[#FFC93C]/15 hover:border-[#FFC93C] font-display text-lg tracking-wider text-[#FFC93C] transition-colors">
-            🪙 CLAIM 10 COINS
+            🪙 RÉCUPÉRER 10 PIÈCES
           </button>
         </div>
 
@@ -316,7 +274,7 @@ export const LobbyView = ({ onPlay, onJoinRoom }: Props) => {
         <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-4">
           <div className="flex items-center justify-between mb-3">
             <div className="font-display text-base tracking-[0.2em] text-white/70">
-              🏆 HALL OF FAME
+              🏆 TOP JOUEURS
             </div>
             <span className="font-display text-xs tracking-widest text-white/40">CE MOIS-CI</span>
           </div>

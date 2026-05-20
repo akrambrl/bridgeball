@@ -372,7 +372,7 @@ const ScoreTicker = () => (
   <div className="relative z-10 border-t border-white/5 bg-black/30 backdrop-blur-sm overflow-hidden">
     <div className="flex items-center gap-3 px-4 py-2.5">
       <span className="goat-blink shrink-0 px-2 py-0.5 rounded-md bg-[#FF8A2A] text-[#1A0F00] font-display text-xs tracking-widest">
-        LIVE
+        EN DIRECT
       </span>
       <div className="flex-1 overflow-hidden">
         <div className="goat-marquee flex gap-12 whitespace-nowrap">

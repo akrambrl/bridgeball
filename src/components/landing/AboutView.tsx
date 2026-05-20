@@ -3,7 +3,7 @@ export const AboutView = () => {
     <div className="container max-w-3xl mx-auto px-6 lg:px-10 py-10">
       <div className="text-center mb-8">
         <span className="inline-block px-3 py-1 rounded-full bg-[#FFC93C]/10 text-[#FFC93C] font-display text-xs tracking-[0.3em] mb-3">
-          ABOUT
+          À PROPOS
         </span>
         <h2 className="font-display text-6xl md:text-7xl tracking-wide leading-none">
           L'HISTOIRE DERRIÈRE GOAT FC

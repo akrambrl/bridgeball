@@ -70,7 +70,7 @@ export const CountdownOverlay = ({ game, onDone, onCancel }: Props) => {
           className="font-display text-xs lg:text-sm tracking-[0.4em] mb-2"
           style={{ color: info.accent }}
         >
-          GET READY
+          PRÊT ?
         </div>
         <div className="font-display text-3xl lg:text-5xl tracking-wider text-white mb-1">
           {info.name}
