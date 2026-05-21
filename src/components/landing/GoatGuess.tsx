@@ -15,7 +15,8 @@ type Question = {
   predicate: (p: Player) => boolean;
 };
 
-const MAX_QUESTIONS = 20;
+const MAX_QUESTIONS = 25;
+const MAX_GUESSES = 5;
 
 const POS_GARDIEN = "gardien";
 const POS_ATT = "attaquant";
@@ -280,7 +281,54 @@ const QUESTIONS: Question[] = [
   { id: "lg-l1", label: "A-t-il joué en Ligue 1 française ?", predicate: (p) => playedForAny(p, LIGUE_1) },
   { id: "lg-bl", label: "A-t-il joué en Bundesliga allemande ?", predicate: (p) => playedForAny(p, BUNDESLIGA) },
 
-  // Statut / divers
+  // Clubs additionnels (deuxième couche, ~30-100 joueurs chacun)
+  { id: "club-leverkusen", label: "A-t-il joué au Bayer Leverkusen ?", predicate: (p) => playedFor(p, "Bayer Leverkusen") },
+  { id: "club-leipzig", label: "A-t-il joué au RB Leipzig ?", predicate: (p) => playedFor(p, "RB Leipzig") },
+  { id: "club-schalke", label: "A-t-il joué à Schalke 04 ?", predicate: (p) => playedFor(p, "Schalke 04") },
+  { id: "club-wolfsburg", label: "A-t-il joué à Wolfsburg ?", predicate: (p) => playedFor(p, "Wolfsburg") },
+  { id: "club-frankfurt", label: "A-t-il joué à l'Eintracht Frankfurt ?", predicate: (p) => playedFor(p, "Eintracht Frankfurt") },
+  { id: "club-stuttgart", label: "A-t-il joué à Stuttgart ?", predicate: (p) => playedFor(p, "Stuttgart") },
+  { id: "club-lazio", label: "A-t-il joué à la Lazio ?", predicate: (p) => playedFor(p, "Lazio") },
+  { id: "club-atalanta", label: "A-t-il joué à l'Atalanta ?", predicate: (p) => playedFor(p, "Atalanta BC") },
+  { id: "club-fiorentina", label: "A-t-il joué à la Fiorentina ?", predicate: (p) => playedFor(p, "Fiorentina") },
+  { id: "club-villarreal", label: "A-t-il joué à Villarreal ?", predicate: (p) => playedFor(p, "Villarreal") },
+  { id: "club-valencia", label: "A-t-il joué à Valence ?", predicate: (p) => playedFor(p, "Valencia") },
+  { id: "club-sociedad", label: "A-t-il joué à la Real Sociedad ?", predicate: (p) => playedFor(p, "Real Sociedad") },
+  { id: "club-betis", label: "A-t-il joué au Real Betis ?", predicate: (p) => playedFor(p, "Real Betis") },
+  { id: "club-westham", label: "A-t-il joué à West Ham ?", predicate: (p) => playedFor(p, "West Ham") },
+  { id: "club-everton", label: "A-t-il joué à Everton ?", predicate: (p) => playedFor(p, "Everton") },
+  { id: "club-aston", label: "A-t-il joué à Aston Villa ?", predicate: (p) => playedFor(p, "Aston Villa") },
+  { id: "club-fulham", label: "A-t-il joué à Fulham ?", predicate: (p) => playedFor(p, "Fulham") },
+  { id: "club-nice", label: "A-t-il joué à l'OGC Nice ?", predicate: (p) => playedFor(p, "Nice") },
+  { id: "club-rennes", label: "A-t-il joué au Stade Rennais ?", predicate: (p) => playedFor(p, "Rennes") },
+  { id: "club-bordeaux", label: "A-t-il joué aux Girondins de Bordeaux ?", predicate: (p) => playedFor(p, "Bordeaux") },
+  { id: "club-saintet", label: "A-t-il joué à l'AS Saint-Étienne ?", predicate: (p) => playedForAny(p, ["Saint-Étienne", "Saint-Etienne"]) },
+  { id: "club-nantes", label: "A-t-il joué au FC Nantes ?", predicate: (p) => playedFor(p, "Nantes") },
+  { id: "club-lens", label: "A-t-il joué au RC Lens ?", predicate: (p) => playedFor(p, "Lens") },
+  { id: "club-feyenoord", label: "A-t-il joué à Feyenoord ?", predicate: (p) => playedFor(p, "Feyenoord") },
+  { id: "club-psv", label: "A-t-il joué au PSV Eindhoven ?", predicate: (p) => playedFor(p, "PSV Eindhoven") },
+  { id: "club-galata", label: "A-t-il joué à Galatasaray ?", predicate: (p) => playedFor(p, "Galatasaray") },
+  { id: "club-fener", label: "A-t-il joué à Fenerbahçe ?", predicate: (p) => playedFor(p, "Fenerbahce") },
+  { id: "club-celtic", label: "A-t-il joué au Celtic Glasgow ?", predicate: (p) => playedFor(p, "Celtic") },
+  { id: "club-boca", label: "A-t-il joué à Boca Juniors ?", predicate: (p) => playedFor(p, "Boca Juniors") },
+  { id: "club-river", label: "A-t-il joué à River Plate ?", predicate: (p) => playedFor(p, "River Plate") },
+
+  // Nationalités additionnelles
+  { id: "nat-dk", label: "Est-il danois ?", predicate: (p) => hasNat(p, "Danemark") },
+  { id: "nat-se", label: "Est-il suédois ?", predicate: (p) => hasNat(p, "Suède") },
+  { id: "nat-no", label: "Est-il norvégien ?", predicate: (p) => hasNat(p, "Norvège") },
+  { id: "nat-ch", label: "Est-il suisse ?", predicate: (p) => hasNat(p, "Suisse") },
+  { id: "nat-pl", label: "Est-il polonais ?", predicate: (p) => hasNat(p, "Pologne") },
+  { id: "nat-cz", label: "Est-il tchèque ?", predicate: (p) => hasNat(p, "Tchéquie") },
+  { id: "nat-rs", label: "Est-il serbe ?", predicate: (p) => hasNat(p, "Serbie") },
+  { id: "nat-tr", label: "Est-il turc ?", predicate: (p) => hasNat(p, "Turquie") },
+  { id: "nat-gr", label: "Est-il grec ?", predicate: (p) => hasNat(p, "Grèce") },
+  { id: "nat-mx", label: "Est-il mexicain ?", predicate: (p) => hasNat(p, "Mexique") },
+  { id: "nat-jp", label: "Est-il japonais ?", predicate: (p) => hasNat(p, "Japon") },
+  { id: "nat-us", label: "Est-il américain (USA) ?", predicate: (p) => hasNat(p, "États-Unis") },
+  { id: "nat-ml", label: "Est-il malien ?", predicate: (p) => hasNat(p, "Mali") },
+
+  // Statut / profil
   {
     id: "retired",
     label: "Est-il retraité (n'a plus joué récemment) ?",
@@ -290,6 +338,11 @@ const QUESTIONS: Question[] = [
     id: "nomad",
     label: "A-t-il joué dans au moins 5 clubs différents ?",
     predicate: (p) => p.clubs.length >= 5,
+  },
+  {
+    id: "very-nomad",
+    label: "A-t-il joué dans au moins 7 clubs différents ?",
+    predicate: (p) => p.clubs.length >= 7,
   },
   {
     id: "loyal",
@@ -335,12 +388,11 @@ type Props = {
 };
 
 export const GoatGuess = ({ onClose }: Props) => {
-  // Pool initial filtré : joueurs reconnaissables (facile + moyen)
+  // Pool initial : tous les joueurs de la base (le pickGuess privilégie
+  // ensuite les joueurs facile > moyen > expert, donc l'app devine en
+  // priorité les stars en cas d'ambiguïté).
   const initialPool = useMemo<Player[]>(
-    () =>
-      (PLAYERS as Player[]).filter(
-        (p) => p.diff === "facile" || p.diff === "moyen"
-      ),
+    () => (PLAYERS as Player[]).filter((p) => p),
     []
   );
 
@@ -348,6 +400,7 @@ export const GoatGuess = ({ onClose }: Props) => {
   const [candidates, setCandidates] = useState<Player[]>(initialPool);
   const [asked, setAsked] = useState<Set<string>>(new Set());
   const [questionCount, setQuestionCount] = useState(0);
+  const [guessCount, setGuessCount] = useState(0);
   const [rejectedGuesses, setRejectedGuesses] = useState<Set<string>>(new Set());
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [currentGuess, setCurrentGuess] = useState<Player | null>(null);
@@ -357,6 +410,7 @@ export const GoatGuess = ({ onClose }: Props) => {
     setCandidates(initialPool);
     setAsked(new Set());
     setQuestionCount(0);
+    setGuessCount(0);
     setRejectedGuesses(new Set());
     const q = pickQuestion(initialPool, new Set());
     setCurrentQuestion(q);
@@ -442,26 +496,30 @@ export const GoatGuess = ({ onClose }: Props) => {
     const nextRejected = new Set(rejectedGuesses);
     nextRejected.add(currentGuess.name);
     const remaining = candidates.filter((p) => !nextRejected.has(p.name));
+    const nextGuessCount = guessCount + 1;
     setRejectedGuesses(nextRejected);
+    setGuessCount(nextGuessCount);
+    setCandidates(remaining);
 
-    // Si on a encore des candidats et des questions, on retente
-    if (remaining.length === 0 || questionCount >= MAX_QUESTIONS) {
-      setCandidates(remaining);
+    // Plus aucun candidat ou quota de devinettes atteint → on abandonne
+    if (remaining.length === 0 || nextGuessCount >= MAX_GUESSES) {
       setPhase("lost");
       return;
     }
-    if (remaining.length === 1) {
-      // Plus qu'un candidat → on devine direct
-      setCandidates(remaining);
-      setCurrentGuess(remaining[0]);
+
+    // Si peu de candidats restants OU plus de questions disponibles : on
+    // enchaîne directement la devinette suivante (top-N successif).
+    if (remaining.length <= 3 || questionCount >= MAX_QUESTIONS) {
+      setCurrentGuess(pickGuess(remaining));
       setPhase("guessing");
       return;
     }
-    // Sinon, retour aux questions
-    setCandidates(remaining);
+
+    // Sinon, on repose une question pour mieux discriminer le set restant.
     const nextQ = pickQuestion(remaining, asked);
     if (!nextQ) {
-      goToGuess(remaining);
+      setCurrentGuess(pickGuess(remaining));
+      setPhase("guessing");
     } else {
       setCurrentQuestion(nextQ);
       setPhase("asking");
@@ -527,7 +585,12 @@ export const GoatGuess = ({ onClose }: Props) => {
           <WonView guess={currentGuess} onRestart={startGame} onClose={handleClose} />
         )}
         {phase === "lost" && (
-          <LostView onRestart={startGame} onClose={handleClose} />
+          <LostView
+            onRestart={startGame}
+            onClose={handleClose}
+            shortlist={candidates.filter((p) => !rejectedGuesses.has(p.name)).slice(0, 8)}
+            tried={Array.from(rejectedGuesses)}
+          />
         )}
       </div>
     </div>
@@ -555,7 +618,7 @@ const IntroView = ({ onStart }: { onStart: () => void }) => (
     </button>
 
     <p className="mt-4 text-xs text-white/40">
-      Astuce : pense à un joueur reconnu — l'app marche mieux avec les stars.
+      Astuce : plus tu réponds précisément (évite les "sais pas"), mieux je devine.
     </p>
   </div>
 );
@@ -723,7 +786,17 @@ const WonView = ({
   </div>
 );
 
-const LostView = ({ onRestart, onClose }: { onRestart: () => void; onClose: () => void }) => (
+const LostView = ({
+  onRestart,
+  onClose,
+  shortlist,
+  tried,
+}: {
+  onRestart: () => void;
+  onClose: () => void;
+  shortlist: Player[];
+  tried: string[];
+}) => (
   <div className="text-center">
     <div className="text-7xl mb-4">🙏</div>
     <div className="font-display text-4xl lg:text-5xl tracking-wider text-white mb-2">
@@ -732,6 +805,37 @@ const LostView = ({ onRestart, onClose }: { onRestart: () => void; onClose: () =
     <p className="text-white/70 text-base mb-6">
       Tu m'as eu — je n'ai pas trouvé ton joueur cette fois.
     </p>
+
+    {tried.length > 0 && (
+      <div className="mb-4 text-xs text-white/40">
+        J'ai essayé : {tried.slice(0, 3).join(", ")}
+        {tried.length > 3 ? "…" : ""}
+      </div>
+    )}
+
+    {shortlist.length > 0 && (
+      <div className="mb-6 text-left">
+        <div className="font-display text-xs tracking-[0.25em] text-white/50 mb-2">
+          C'ÉTAIT PEUT-ÊTRE...
+        </div>
+        <div className="flex flex-wrap gap-2 justify-center">
+          {shortlist.map((p) => (
+            <span
+              key={p.name}
+              className="px-3 py-1 rounded-full bg-white/[0.05] border border-white/10 text-white/80 text-sm"
+            >
+              {p.name}
+            </span>
+          ))}
+        </div>
+      </div>
+    )}
+
+    <p className="text-xs text-white/40 mb-5">
+      Si ton joueur n'apparaît nulle part, il n'est peut-être pas encore dans
+      ma base.
+    </p>
+
     <div className="grid grid-cols-2 gap-3">
       <button
         onClick={onRestart}
