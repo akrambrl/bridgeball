@@ -9,7 +9,7 @@ type Player = {
   diff: "facile" | "moyen" | "expert";
 };
 
-type QCategory = "pos" | "nat" | "club" | "league" | "profile";
+type QCategory = "cont" | "nat" | "league" | "club" | "pos" | "profile";
 
 type Question = {
   id: string;
@@ -228,17 +228,17 @@ const QUESTIONS: Question[] = [
 
   // Continents
   {
-    id: "cont-eu", category: "nat",
+    id: "cont-eu", category: "cont",
     label: "Vient-il d'un pays européen ?",
     predicate: (p) => p.nationalities.some((n) => EUROPE.has(n)),
   },
   {
-    id: "cont-sa", category: "nat",
+    id: "cont-sa", category: "cont",
     label: "Vient-il d'un pays sud-américain ?",
     predicate: (p) => p.nationalities.some((n) => SOUTH_AMERICA.has(n)),
   },
   {
-    id: "cont-af", category: "nat",
+    id: "cont-af", category: "cont",
     label: "Vient-il d'un pays africain ?",
     predicate: (p) => p.nationalities.some((n) => AFRICA.has(n)),
   },
@@ -366,7 +366,7 @@ const entropy = (yes: number, total: number) => {
 // étape, il choisit la question qui maximise l'entropie (= split 50/50
 // optimal). Quand plus aucune question de l'étape courante n'a d'info
 // (entropie = 0 partout), on passe à l'étape suivante.
-const STAGE_ORDER: QCategory[] = ["nat", "league", "club", "pos", "profile"];
+const STAGE_ORDER: QCategory[] = ["cont", "nat", "league", "club", "pos", "profile"];
 
 const pickQuestion = (
   candidates: Player[],
@@ -1287,6 +1287,7 @@ const ReverseConfig = ({
 // Ordre des étapes (funnel) : on doit valider une catégorie (avoir un OUI
 // dedans) avant de débloquer la suivante.
 const REVERSE_STAGE_ORDER: QCategory[] = [
+  "cont",
   "nat",
   "league",
   "club",
@@ -1295,7 +1296,8 @@ const REVERSE_STAGE_ORDER: QCategory[] = [
 ];
 
 const REVERSE_CATEGORIES: { key: QCategory; label: string; icon: string }[] = [
-  { key: "nat", label: "NATIONS", icon: "🌍" },
+  { key: "cont", label: "CONTINENT", icon: "🌎" },
+  { key: "nat", label: "NATION", icon: "🌍" },
   { key: "league", label: "LIGUES", icon: "🏆" },
   { key: "club", label: "CLUBS", icon: "🏟️" },
   { key: "pos", label: "POSTES", icon: "⚽" },
