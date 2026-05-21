@@ -18,26 +18,19 @@ const Index = () => {
     return () => mql.removeEventListener("change", onChange);
   }, []);
 
+  // LePont émet cet event quand l'utilisateur clique sur la card GOAT Guess
+  // du carrousel mobile. On ouvre l'overlay du composant GoatGuess par-dessus.
+  useEffect(() => {
+    const onOpen = () => setGoatGuessOpen(true);
+    window.addEventListener("goatfc:open-guess", onOpen);
+    return () => window.removeEventListener("goatfc:open-guess", onOpen);
+  }, []);
+
   if (!isMobile) return <Home />;
 
   return (
     <>
       <LePont />
-
-      {/* Bouton flottant GOAT Guess (mobile uniquement). LePont est massif
-          et a sa propre nav interne — on superpose ce point d'entrée sans
-          modifier LePont. L'overlay GoatGuess passe au-dessus grâce à
-          son z-index plus élevé. */}
-      {!goatGuessOpen && (
-        <button
-          onClick={() => setGoatGuessOpen(true)}
-          aria-label="Ouvrir GOAT Guess"
-          className="fixed bottom-24 right-4 z-[700] flex items-center gap-2 px-4 py-3 rounded-full bg-gradient-to-r from-[#C084FC] to-[#FF8A2A] text-[#1A0F00] font-display text-sm tracking-widest shadow-[0_8px_24px_rgba(192,132,252,0.5)] ring-2 ring-white/20 hover:scale-[1.03] active:scale-[0.97] transition-transform animate-pulse"
-        >
-          🔮 GOAT GUESS
-        </button>
-      )}
-
       {goatGuessOpen && <GoatGuess onClose={() => setGoatGuessOpen(false)} />}
     </>
   );

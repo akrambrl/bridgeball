@@ -780,6 +780,7 @@ const randomImg = (arr) => arr[Math.floor(Math.random()*arr.length)];
 const PLUG_CARD_IMG = "/plug-card.png";
 const MERCATO_CARD_IMG = "/mercato-card.png";
 const GRID_CARD_IMG = "/grid-card.png";
+const GUESS_CARD_IMG = "/guess-card.png";
 
 // ── MESSAGES DE RÉSULTAT UNIFIÉS (Plug, Mercato, solo, duel, multi) ──
 const RESULT_MESSAGES = {
@@ -9518,7 +9519,7 @@ export default function LePont() {
               const delta = e.clientX - startX;
               homeSwipeStartRef.current = null;
               if(Math.abs(delta) > 50){
-                const newIdx = (homeCardIndex + (delta < 0 ? 1 : -1) + 3) % 3;
+                const newIdx = (homeCardIndex + (delta < 0 ? 1 : -1) + 4) % 4;
                 setHomeCardIndex(newIdx);
                 localStorage.setItem("bb_home_card", String(newIdx));
               }
@@ -9528,13 +9529,15 @@ export default function LePont() {
               {key:"grid",    img:GRID_CARD_IMG,    onClick: function(){setGgModeChoice(true);},        record: chainRecord ? null : null, recordIcon:null, recordColor:"#00E676"},
               {key:"mercato", img:MERCATO_CARD_IMG, onClick: function(){setGameConfigModal("chaine");}, record: chainRecord, recordIcon:"⛓",  recordColor:"#60a5fa"},
               {key:"plug",    img:PLUG_CARD_IMG,    onClick: function(){setGameConfigModal("pont");},   record: record,      recordIcon:"🏆", recordColor:"#FFD600"},
+              {key:"guess",   img:GUESS_CARD_IMG,   onClick: function(){window.dispatchEvent(new CustomEvent("goatfc:open-guess"));}, record: null, recordIcon:null, recordColor:"#C084FC"},
             ].map(function(card, i){
-              const offset = (i - homeCardIndex + 3) % 3;
+              const offset = (i - homeCardIndex + 4) % 4;
               const isActive = offset === 0;
               let translateX, scale, opacity, zIndex;
-              if(offset === 0){ translateX = 0;  scale = 1;    opacity = 1;    zIndex = 30; }
-              else if(offset === 1){ translateX = 28; scale = 0.92; opacity = 0.65; zIndex = 20; }
-              else { translateX = 52; scale = 0.84; opacity = 0.35; zIndex = 10; }
+              if(offset === 0){ translateX = 0;  scale = 1;    opacity = 1;    zIndex = 40; }
+              else if(offset === 1){ translateX = 24; scale = 0.92; opacity = 0.65; zIndex = 30; }
+              else if(offset === 2){ translateX = 44; scale = 0.84; opacity = 0.35; zIndex = 20; }
+              else { translateX = 60; scale = 0.76; opacity = 0.15; zIndex = 10; }
               return (
                 <div
                   key={card.key}
@@ -9593,8 +9596,8 @@ export default function LePont() {
 
           {/* Dots indicator */}
           <div style={{display:"flex",justifyContent:"center",gap:8,marginTop:10}}>
-            {[0,1,2].map(function(i){
-              const colors = ["#00E676","#60a5fa","#FFD600"];
+            {[0,1,2,3].map(function(i){
+              const colors = ["#00E676","#60a5fa","#FFD600","#C084FC"];
               const isActive = homeCardIndex === i;
               return (
                 <div
@@ -9633,6 +9636,10 @@ export default function LePont() {
             plug:    { title: "GOAT PLUG",    emoji: "⚽", accent: "#FFD600", bg: "linear-gradient(135deg,rgba(255,214,0,.18),rgba(255,107,53,.12))",
               rules_fr: ["On te montre 2 clubs","Trouve un joueur qui a joué dans les deux","Tu as 60 secondes par manche","+2 points par bonne réponse, −10 par pass","Difficulté progressive : facile → moyen → expert"],
               rules_en: ["We show you 2 clubs","Find a player who played for both","You have 60 seconds per round","+2 points per correct answer, −10 per skip","Progressive difficulty: easy → medium → expert"]
+            },
+            guess:   { title: "GOAT GUESS",   emoji: "🔮", accent: "#C084FC", bg: "linear-gradient(135deg,rgba(192,132,252,.18),rgba(255,138,42,.12))",
+              rules_fr: ["Deux modes au choix au démarrage","Mode 1 : pense à un joueur, l'app le devine en 25 questions","Mode 2 : l'app pioche un joueur, tu le devines en 20 questions","Réponses par catégories : Continent → Nation → Ligue → Club → Poste","Score basé sur les questions restantes + difficulté"],
+              rules_en: ["Two modes to choose from on start","Mode 1: think of a player, the app guesses in 25 questions","Mode 2: the app picks a player, you guess in 20 questions","Answers by category: Continent → Nation → League → Club → Position","Score based on remaining questions + difficulty"]
             },
           };
           const data = RULES_DATA[homeRulesModal];
