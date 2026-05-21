@@ -242,11 +242,6 @@ const QUESTIONS: Question[] = [
     label: "Vient-il d'un pays africain ?",
     predicate: (p) => p.nationalities.some((n) => AFRICA.has(n)),
   },
-  {
-    id: "multi-nat", category: "nat",
-    label: "A-t-il plusieurs nationalités ?",
-    predicate: (p) => p.nationalities.length >= 2,
-  },
 
   // Clubs majeurs
   { id: "club-real", category: "club", label: "A-t-il joué au Real Madrid ?", predicate: (p) => playedFor(p, "Real Madrid") },
