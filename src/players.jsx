@@ -1889,7 +1889,7 @@ export const PLAYERS = [
   { name:"Vitor Roque", clubs:["Athletico Paranaense", "Barcelona", "Real Betis", "Palmeiras"], diff:"moyen", nationalities:["Brésil"], positions:["attaquant"] },
   { name:"Azzedine Ounahi", clubs:["Avranches", "Angers", "Marseille", "Leicester", "Panathinaikos", "Girona"], diff:"moyen", nationalities:["Maroc"], positions:["attaquant"] },
   { name:"Arnaut Danjuma", clubs:["PSV", "Club Brugge", "Bournemouth", "Villarreal", "Tottenham", "Everton", "Girona", "Valencia"], diff:"moyen", nationalities:["Pays-Bas"], positions:["attaquant"] },
-  { name:"Neal Maupay", clubs:["Nice", "Saint-Etienne", "Brentford", "Brighton", "Everton", "Marseille", "Sevilla"], diff:"moyen", nationalities:["France"], positions:["milieu"] },
+  { name:"Neal Maupay", clubs:["Nice", "Saint-Etienne", "Brentford", "Brighton", "Everton", "Marseille", "Sevilla"], diff:"moyen", nationalities:["France"], positions:["attaquant"] },
   { name:"Rodrigo Riquelme", clubs:["Atletico Madrid", "Bournemouth", "Mirandes", "Girona", "Real Betis"], diff:"expert", nationalities:["Espagne"], positions:["milieu"] },
   { name:"Johnny Cardoso", clubs:["Internacional", "Real Betis", "Atletico Madrid"], diff:"expert", nationalities:["États-Unis"], positions:["attaquant"] },
   { name:"Thiago Almada", clubs:["Vélez Sarsfield", "Atlanta United", "Botafogo", "Lyon", "Atletico Madrid"], diff:"moyen", nationalities:["Argentine"], positions:["milieu"] },
