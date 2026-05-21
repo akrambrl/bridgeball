@@ -1006,7 +1006,7 @@ const ReverseMode = ({ onBack }: { onBack: () => void }) => {
   };
 
   const askQ = (q: Question) => {
-    if (!secret || askedIds.has(q.id)) return;
+    if (!secret || askedIds.has(q.id) || questionsLeft <= 0) return;
     const answer = q.predicate(secret);
     const nextAsked = new Set(askedIds);
     nextAsked.add(q.id);
@@ -1014,7 +1014,8 @@ const ReverseMode = ({ onBack }: { onBack: () => void }) => {
     setAskedIds(nextAsked);
     setRevealed((prev) => [...prev, { q, answer }]);
     setQuestionsLeft(nextLeft);
-    if (nextLeft === 0) setPhase("lost");
+    // Note : pas de setPhase("lost") ici. À 0 question, l'UI bascule en
+    // "dernière chance" et force la devinette finale.
   };
 
   const submitGuess = (player: Player) => {
@@ -1025,9 +1026,13 @@ const ReverseMode = ({ onBack }: { onBack: () => void }) => {
       return;
     }
     setWrongGuesses((prev) => [...prev, player.name]);
-    const nextLeft = questionsLeft - 1;
-    setQuestionsLeft(nextLeft);
-    if (nextLeft <= 0) setPhase("lost");
+    // Si plus aucune question restante = devinette finale ratée = perdu
+    if (questionsLeft <= 0) {
+      setPhase("lost");
+      return;
+    }
+    // Sinon, pénalité d'1 question pour avoir spammé
+    setQuestionsLeft((n) => n - 1);
   };
 
   const restart = () => setPhase("config");
@@ -1275,12 +1280,19 @@ const ReversePlaying = ({
 
       {/* Liste de questions */}
       <div className="max-h-[40vh] overflow-y-auto rounded-xl border border-white/5 bg-black/20 p-2 mb-4 space-y-1">
-        {filteredQuestions.length === 0 && (
+        {questionsLeft === 0 && (
+          <div className="text-center text-xs text-[#FFC93C] py-6 px-2">
+            🚨 Plus de questions disponibles.
+            <br />
+            Clique sur <span className="font-bold">DERNIÈRE CHANCE</span> pour ta devinette finale.
+          </div>
+        )}
+        {questionsLeft > 0 && filteredQuestions.length === 0 && (
           <div className="text-center text-xs text-white/40 py-6">
             Aucune question dans cette catégorie.
           </div>
         )}
-        {filteredQuestions.map((q) => {
+        {questionsLeft > 0 && filteredQuestions.map((q) => {
           const asked = askedIds.has(q.id);
           return (
             <button
@@ -1300,15 +1312,22 @@ const ReversePlaying = ({
         })}
       </div>
 
-      {/* Bouton deviner */}
+      {/* Bouton deviner — devient "dernière chance" quand questions épuisées */}
       <button
         onClick={onOpenGuess}
-        className="w-full goat-pulse py-4 rounded-2xl bg-gradient-to-r from-[#FFC93C] to-[#FF8A2A] text-[#1A0F00] font-display text-xl tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-transform"
+        className={
+          "w-full goat-pulse py-4 rounded-2xl text-[#1A0F00] font-display text-xl tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-transform " +
+          (questionsLeft === 0
+            ? "bg-gradient-to-r from-[#FF3D6E] to-[#FFC93C] ring-2 ring-[#FFC93C] ring-offset-2 ring-offset-[#0F2017]"
+            : "bg-gradient-to-r from-[#FFC93C] to-[#FF8A2A]")
+        }
       >
-        💭 JE DEVINE
+        {questionsLeft === 0 ? "📝 DERNIÈRE CHANCE" : "💭 JE DEVINE"}
       </button>
       <p className="text-center text-[10px] text-white/30 mt-2 tracking-wider">
-        Mauvaise devinette = -1 question
+        {questionsLeft === 0
+          ? "Une seule tentative. Bonne ou mauvaise réponse = fin du jeu."
+          : "Mauvaise devinette = -1 question"}
       </p>
     </div>
   );
