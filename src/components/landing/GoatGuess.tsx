@@ -415,6 +415,102 @@ type Props = {
 };
 
 export const GoatGuess = ({ onClose }: Props) => {
+  const [mode, setMode] = useState<null | "akinator" | "reverse">(null);
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      className="fixed inset-0 z-[9000] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md"
+    >
+      {/* Halo violet/cyan magique */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-40"
+        style={{
+          background:
+            "radial-gradient(circle at 30% 20%, #C084FC40 0%, transparent 50%), radial-gradient(circle at 70% 80%, #00E67630 0%, transparent 55%)",
+        }}
+        aria-hidden
+      />
+
+      <button
+        onClick={onClose}
+        className="fixed top-3 right-3 z-[9001] flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white font-display text-sm tracking-widest transition-colors"
+        aria-label="Fermer GOAT Guess"
+      >
+        ✕ FERMER
+      </button>
+
+      <div className="relative w-full max-w-2xl max-h-[95vh] overflow-y-auto rounded-3xl bg-[#0F2017] border-2 border-white/10 p-6 lg:p-10 shadow-2xl">
+        {mode === null && <ModeMenu onPick={setMode} />}
+        {mode === "akinator" && <AkinatorMode onBack={() => setMode(null)} />}
+        {mode === "reverse" && <ReverseMode onBack={() => setMode(null)} />}
+      </div>
+    </div>
+  );
+};
+
+const ModeMenu = ({
+  onPick,
+}: {
+  onPick: (mode: "akinator" | "reverse") => void;
+}) => (
+  <div className="text-center">
+    <div className="font-display text-xs tracking-[0.4em] text-[#C084FC] mb-2">
+      🔮 GOAT GUESS
+    </div>
+    <div className="font-display text-3xl lg:text-4xl tracking-wider text-white mb-2">
+      CHOISIS TON MODE
+    </div>
+    <p className="text-white/50 text-sm mb-8">
+      Deux façons de jouer — qui devine qui ?
+    </p>
+
+    <div className="grid gap-4">
+      <button
+        onClick={() => onPick("akinator")}
+        className="group text-left rounded-2xl border-2 border-[#C084FC]/30 bg-gradient-to-br from-[#C084FC]/10 to-transparent p-5 hover:border-[#C084FC] hover:bg-[#C084FC]/15 transition-all"
+      >
+        <div className="flex items-center gap-4">
+          <div className="text-4xl">🧠</div>
+          <div className="flex-1">
+            <div className="font-display text-xl tracking-wider text-white mb-1">
+              JE DEVINE TON JOUEUR
+            </div>
+            <div className="text-xs text-white/60">
+              Pense à un footballeur. Je te pose des questions pour le trouver.
+            </div>
+          </div>
+          <div className="text-[#C084FC] text-2xl group-hover:translate-x-1 transition-transform">
+            →
+          </div>
+        </div>
+      </button>
+
+      <button
+        onClick={() => onPick("reverse")}
+        className="group text-left rounded-2xl border-2 border-[#FFC93C]/30 bg-gradient-to-br from-[#FFC93C]/10 to-transparent p-5 hover:border-[#FFC93C] hover:bg-[#FFC93C]/15 transition-all"
+      >
+        <div className="flex items-center gap-4">
+          <div className="text-4xl">🎯</div>
+          <div className="flex-1">
+            <div className="font-display text-xl tracking-wider text-white mb-1">
+              DEVINE MON JOUEUR
+            </div>
+            <div className="text-xs text-white/60">
+              Je choisis un footballeur. Pose-moi 20 questions pour le trouver.
+            </div>
+          </div>
+          <div className="text-[#FFC93C] text-2xl group-hover:translate-x-1 transition-transform">
+            →
+          </div>
+        </div>
+      </button>
+    </div>
+  </div>
+);
+
+const AkinatorMode = ({ onBack }: { onBack: () => void }) => {
   // Pool initial : tous les joueurs de la base (le pickGuess privilégie
   // ensuite les joueurs facile > moyen > expert, donc l'app devine en
   // priorité les stars en cas d'ambiguïté).
@@ -558,73 +654,52 @@ export const GoatGuess = ({ onClose }: Props) => {
     }
   };
 
-  const handleClose = () => {
-    onClose();
-  };
-
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      className="fixed inset-0 z-[9000] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md"
-    >
-      {/* Halo violet/cyan magique */}
-      <div
-        className="pointer-events-none absolute inset-0 opacity-40"
-        style={{
-          background:
-            "radial-gradient(circle at 30% 20%, #C084FC40 0%, transparent 50%), radial-gradient(circle at 70% 80%, #00E67630 0%, transparent 55%)",
-        }}
-        aria-hidden
-      />
-
+    <div>
       <button
-        onClick={handleClose}
-        className="fixed top-3 right-3 z-[9001] flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white font-display text-sm tracking-widest transition-colors"
-        aria-label="Fermer GOAT Guess"
+        onClick={onBack}
+        className="mb-4 text-xs text-white/40 hover:text-white/80 tracking-widest transition-colors"
       >
-        ✕ FERMER
+        ← MODES
       </button>
 
-      <div className="relative w-full max-w-2xl rounded-3xl bg-[#0F2017] border-2 border-white/10 p-6 lg:p-10 shadow-2xl">
-        <div className="text-center mb-6">
-          <div className="font-display text-xs tracking-[0.4em] text-[#C084FC] mb-2">
-            🔮 GOAT GUESS
-          </div>
-          <div className="font-display text-3xl lg:text-4xl tracking-wider text-white">
-            JE DEVINE TON JOUEUR
-          </div>
+      <div className="text-center mb-6">
+        <div className="font-display text-xs tracking-[0.4em] text-[#C084FC] mb-2">
+          🧠 AKINATOR
         </div>
-
-        {phase === "intro" && <IntroView onStart={startGame} />}
-        {phase === "asking" && currentQuestion && (
-          <AskingView
-            question={currentQuestion}
-            count={questionCount + 1}
-            max={MAX_QUESTIONS}
-            remaining={candidates.length}
-            onAnswer={answerQuestion}
-          />
-        )}
-        {phase === "guessing" && currentGuess && (
-          <GuessingView
-            guess={currentGuess}
-            onCorrect={onGuessCorrect}
-            onWrong={onGuessWrong}
-          />
-        )}
-        {phase === "won" && currentGuess && (
-          <WonView guess={currentGuess} onRestart={startGame} onClose={handleClose} />
-        )}
-        {phase === "lost" && (
-          <LostView
-            onRestart={startGame}
-            onClose={handleClose}
-            shortlist={candidates.filter((p) => !rejectedGuesses.has(p.name)).slice(0, 8)}
-            tried={Array.from(rejectedGuesses)}
-          />
-        )}
+        <div className="font-display text-3xl lg:text-4xl tracking-wider text-white">
+          JE DEVINE TON JOUEUR
+        </div>
       </div>
+
+      {phase === "intro" && <IntroView onStart={startGame} />}
+      {phase === "asking" && currentQuestion && (
+        <AskingView
+          question={currentQuestion}
+          count={questionCount + 1}
+          max={MAX_QUESTIONS}
+          remaining={candidates.length}
+          onAnswer={answerQuestion}
+        />
+      )}
+      {phase === "guessing" && currentGuess && (
+        <GuessingView
+          guess={currentGuess}
+          onCorrect={onGuessCorrect}
+          onWrong={onGuessWrong}
+        />
+      )}
+      {phase === "won" && currentGuess && (
+        <WonView guess={currentGuess} onRestart={startGame} onClose={onBack} />
+      )}
+      {phase === "lost" && (
+        <LostView
+          onRestart={startGame}
+          onClose={onBack}
+          shortlist={candidates.filter((p) => !rejectedGuesses.has(p.name)).slice(0, 8)}
+          tried={Array.from(rejectedGuesses)}
+        />
+      )}
     </div>
   );
 };
@@ -880,6 +955,543 @@ const LostView = ({
         className="py-4 rounded-2xl border-2 border-white/10 bg-white/[0.03] hover:bg-white/[0.06] text-white/80 font-display text-base tracking-widest transition-colors"
       >
         QUITTER
+      </button>
+    </div>
+  </div>
+);
+
+// ===================== REVERSE MODE =====================
+// L'app pense à un joueur, l'utilisateur pose 20 questions pour le deviner.
+
+const REVERSE_MAX_QUESTIONS = 20;
+
+type ReverseDifficulty = "facile" | "moyen" | "expert" | "all";
+type ReversePhase = "config" | "playing" | "won" | "lost";
+
+const ReverseMode = ({ onBack }: { onBack: () => void }) => {
+  const [phase, setPhase] = useState<ReversePhase>("config");
+  const [difficulty, setDifficulty] = useState<ReverseDifficulty>("facile");
+  const [secret, setSecret] = useState<Player | null>(null);
+  const [askedIds, setAskedIds] = useState<Set<string>>(new Set());
+  const [revealed, setRevealed] = useState<
+    Array<{ q: Question; answer: boolean }>
+  >([]);
+  const [questionsLeft, setQuestionsLeft] = useState(REVERSE_MAX_QUESTIONS);
+  const [wrongGuesses, setWrongGuesses] = useState<string[]>([]);
+  const [showGuessModal, setShowGuessModal] = useState(false);
+  const [activeCategory, setActiveCategory] = useState<QCategory>("nat");
+  const [search, setSearch] = useState("");
+
+  const allPlayers = useMemo<Player[]>(
+    () => (PLAYERS as Player[]).filter((p) => p),
+    []
+  );
+
+  const startGame = (diff: ReverseDifficulty) => {
+    const pool =
+      diff === "all"
+        ? allPlayers
+        : allPlayers.filter((p) => p.diff === diff);
+    if (pool.length === 0) return;
+    const pick = pool[Math.floor(Math.random() * pool.length)];
+    setSecret(pick);
+    setDifficulty(diff);
+    setAskedIds(new Set());
+    setRevealed([]);
+    setQuestionsLeft(REVERSE_MAX_QUESTIONS);
+    setWrongGuesses([]);
+    setSearch("");
+    setActiveCategory("nat");
+    setPhase("playing");
+  };
+
+  const askQ = (q: Question) => {
+    if (!secret || askedIds.has(q.id)) return;
+    const answer = q.predicate(secret);
+    const nextAsked = new Set(askedIds);
+    nextAsked.add(q.id);
+    const nextLeft = questionsLeft - 1;
+    setAskedIds(nextAsked);
+    setRevealed((prev) => [...prev, { q, answer }]);
+    setQuestionsLeft(nextLeft);
+    if (nextLeft === 0) setPhase("lost");
+  };
+
+  const submitGuess = (player: Player) => {
+    if (!secret) return;
+    setShowGuessModal(false);
+    if (player.name === secret.name) {
+      setPhase("won");
+      return;
+    }
+    setWrongGuesses((prev) => [...prev, player.name]);
+    const nextLeft = questionsLeft - 1;
+    setQuestionsLeft(nextLeft);
+    if (nextLeft <= 0) setPhase("lost");
+  };
+
+  const restart = () => setPhase("config");
+
+  return (
+    <div>
+      <button
+        onClick={onBack}
+        className="mb-4 text-xs text-white/40 hover:text-white/80 tracking-widest transition-colors"
+      >
+        ← MODES
+      </button>
+
+      <div className="text-center mb-6">
+        <div className="font-display text-xs tracking-[0.4em] text-[#FFC93C] mb-2">
+          🎯 DEVINE
+        </div>
+        <div className="font-display text-3xl lg:text-4xl tracking-wider text-white">
+          {phase === "config"
+            ? "CHOISIS TA DIFFICULTÉ"
+            : phase === "won"
+            ? "BRAVO !"
+            : phase === "lost"
+            ? "DOMMAGE"
+            : "DEVINE MON JOUEUR"}
+        </div>
+      </div>
+
+      {phase === "config" && <ReverseConfig onStart={startGame} />}
+
+      {phase === "playing" && secret && (
+        <ReversePlaying
+          questionsLeft={questionsLeft}
+          maxQuestions={REVERSE_MAX_QUESTIONS}
+          revealed={revealed}
+          askedIds={askedIds}
+          activeCategory={activeCategory}
+          setActiveCategory={setActiveCategory}
+          search={search}
+          setSearch={setSearch}
+          onAsk={askQ}
+          onOpenGuess={() => setShowGuessModal(true)}
+          wrongGuesses={wrongGuesses}
+        />
+      )}
+
+      {phase === "won" && secret && (
+        <ReverseWon
+          secret={secret}
+          questionsUsed={REVERSE_MAX_QUESTIONS - questionsLeft}
+          difficulty={difficulty}
+          onRestart={restart}
+          onBack={onBack}
+        />
+      )}
+
+      {phase === "lost" && secret && (
+        <ReverseLost
+          secret={secret}
+          onRestart={restart}
+          onBack={onBack}
+        />
+      )}
+
+      {showGuessModal && (
+        <GuessModal
+          allPlayers={allPlayers}
+          onPick={submitGuess}
+          onClose={() => setShowGuessModal(false)}
+        />
+      )}
+    </div>
+  );
+};
+
+const ReverseConfig = ({
+  onStart,
+}: {
+  onStart: (diff: ReverseDifficulty) => void;
+}) => {
+  const options: { diff: ReverseDifficulty; label: string; desc: string; color: string }[] = [
+    { diff: "facile", label: "FACILE", desc: "Stars connues (148 joueurs)", color: "#00E676" },
+    { diff: "moyen", label: "MOYEN", desc: "Bons internationaux (1370 joueurs)", color: "#FFC93C" },
+    { diff: "expert", label: "EXPERT", desc: "Joueurs pointus (2626 joueurs)", color: "#FF3D6E" },
+    { diff: "all", label: "RANDOM", desc: "N'importe qui (4145 joueurs)", color: "#C084FC" },
+  ];
+  return (
+    <div>
+      <p className="text-center text-white/60 text-sm mb-6">
+        Je vais choisir un joueur au hasard. Tu auras{" "}
+        <span className="text-white font-bold">{REVERSE_MAX_QUESTIONS} questions</span>{" "}
+        pour le trouver.
+      </p>
+      <div className="grid gap-3">
+        {options.map((o) => (
+          <button
+            key={o.diff}
+            onClick={() => onStart(o.diff)}
+            className="text-left rounded-2xl border-2 p-4 transition-all hover:scale-[1.02] active:scale-[0.98]"
+            style={{
+              borderColor: `${o.color}50`,
+              background: `linear-gradient(to right, ${o.color}10, transparent)`,
+            }}
+          >
+            <div className="flex items-center gap-3">
+              <div
+                className="font-display text-lg tracking-widest"
+                style={{ color: o.color }}
+              >
+                {o.label}
+              </div>
+              <div className="text-xs text-white/60 flex-1">{o.desc}</div>
+              <div className="text-white/30">→</div>
+            </div>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const REVERSE_CATEGORIES: { key: QCategory; label: string; icon: string }[] = [
+  { key: "nat", label: "NATIONS", icon: "🌍" },
+  { key: "pos", label: "POSTES", icon: "⚽" },
+  { key: "club", label: "CLUBS", icon: "🏟️" },
+  { key: "league", label: "LIGUES", icon: "🏆" },
+  { key: "profile", label: "PROFIL", icon: "📋" },
+];
+
+const ReversePlaying = ({
+  questionsLeft,
+  maxQuestions,
+  revealed,
+  askedIds,
+  activeCategory,
+  setActiveCategory,
+  search,
+  setSearch,
+  onAsk,
+  onOpenGuess,
+  wrongGuesses,
+}: {
+  questionsLeft: number;
+  maxQuestions: number;
+  revealed: Array<{ q: Question; answer: boolean }>;
+  askedIds: Set<string>;
+  activeCategory: QCategory;
+  setActiveCategory: (c: QCategory) => void;
+  search: string;
+  setSearch: (s: string) => void;
+  onAsk: (q: Question) => void;
+  onOpenGuess: () => void;
+  wrongGuesses: string[];
+}) => {
+  const progress = (questionsLeft / maxQuestions) * 100;
+
+  // Questions filtrées : par catégorie + par recherche
+  const filteredQuestions = useMemo(() => {
+    const lower = search.trim().toLowerCase();
+    return QUESTIONS.filter((q) => {
+      if (q.category !== activeCategory) return false;
+      if (!lower) return true;
+      return q.label.toLowerCase().includes(lower);
+    });
+  }, [activeCategory, search]);
+
+  return (
+    <div>
+      {/* Compteur */}
+      <div className="mb-5">
+        <div className="flex items-center justify-between text-xs mb-2">
+          <span className="font-display tracking-widest text-white/50">
+            QUESTIONS RESTANTES
+          </span>
+          <span className="font-display text-lg tabular-nums text-white">
+            {questionsLeft} / {maxQuestions}
+          </span>
+        </div>
+        <div className="h-1.5 w-full rounded-full bg-white/10 overflow-hidden">
+          <div
+            className="h-full bg-gradient-to-r from-[#FFC93C] to-[#FF8A2A] transition-all duration-500"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      </div>
+
+      {/* Faits connus */}
+      {revealed.length > 0 && (
+        <div className="mb-5 rounded-2xl border border-white/10 bg-white/[0.03] p-3">
+          <div className="font-display text-xs tracking-[0.25em] text-white/50 mb-2">
+            CE QUE TU SAIS
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {revealed.map((r, i) => (
+              <span
+                key={i}
+                className={
+                  "px-2.5 py-1 rounded-full text-xs " +
+                  (r.answer
+                    ? "bg-[#00E676]/15 text-[#00E676] border border-[#00E676]/30"
+                    : "bg-[#FF3D6E]/15 text-[#FF3D6E] border border-[#FF3D6E]/30")
+                }
+                title={r.q.label}
+              >
+                {r.answer ? "✅" : "❌"} {r.q.label.replace(/^(Est-ce un |Est-il |A-t-il |Joue-t-il |Vient-il |Peut-il |Est-ce )/, "")}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Mauvaises devinettes */}
+      {wrongGuesses.length > 0 && (
+        <div className="mb-4 text-xs text-white/40 text-center">
+          ❌ Pas {wrongGuesses.join(", ")}
+        </div>
+      )}
+
+      {/* Tabs catégories */}
+      <div className="mb-3 flex gap-1 overflow-x-auto pb-1">
+        {REVERSE_CATEGORIES.map((c) => (
+          <button
+            key={c.key}
+            onClick={() => setActiveCategory(c.key)}
+            className={
+              "shrink-0 px-3 py-1.5 rounded-lg font-display text-xs tracking-widest transition-colors " +
+              (activeCategory === c.key
+                ? "bg-[#FFC93C] text-[#1A0F00]"
+                : "bg-white/[0.05] text-white/60 hover:bg-white/[0.1]")
+            }
+          >
+            {c.icon} {c.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Search */}
+      <input
+        type="text"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="Filtrer les questions…"
+        className="w-full mb-3 px-3 py-2 rounded-lg bg-black/30 border border-white/10 focus:border-[#FFC93C] focus:outline-none text-sm text-white placeholder-white/30"
+      />
+
+      {/* Liste de questions */}
+      <div className="max-h-[40vh] overflow-y-auto rounded-xl border border-white/5 bg-black/20 p-2 mb-4 space-y-1">
+        {filteredQuestions.length === 0 && (
+          <div className="text-center text-xs text-white/40 py-6">
+            Aucune question dans cette catégorie.
+          </div>
+        )}
+        {filteredQuestions.map((q) => {
+          const asked = askedIds.has(q.id);
+          return (
+            <button
+              key={q.id}
+              onClick={() => !asked && onAsk(q)}
+              disabled={asked}
+              className={
+                "w-full text-left px-3 py-2 rounded-lg text-sm transition-colors " +
+                (asked
+                  ? "bg-white/[0.02] text-white/20 cursor-not-allowed line-through"
+                  : "bg-white/[0.04] hover:bg-white/[0.08] text-white/85")
+              }
+            >
+              {q.label}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Bouton deviner */}
+      <button
+        onClick={onOpenGuess}
+        className="w-full goat-pulse py-4 rounded-2xl bg-gradient-to-r from-[#FFC93C] to-[#FF8A2A] text-[#1A0F00] font-display text-xl tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-transform"
+      >
+        💭 JE DEVINE
+      </button>
+      <p className="text-center text-[10px] text-white/30 mt-2 tracking-wider">
+        Mauvaise devinette = -1 question
+      </p>
+    </div>
+  );
+};
+
+const GuessModal = ({
+  allPlayers,
+  onPick,
+  onClose,
+}: {
+  allPlayers: Player[];
+  onPick: (p: Player) => void;
+  onClose: () => void;
+}) => {
+  const [query, setQuery] = useState("");
+  const suggestions = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (q.length < 2) return [];
+    return allPlayers
+      .filter((p) => p.name.toLowerCase().includes(q))
+      .slice(0, 8);
+  }, [query, allPlayers]);
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      className="fixed inset-0 z-[9100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-md rounded-3xl bg-[#0F2017] border-2 border-[#FFC93C]/40 p-6 shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="font-display text-xs tracking-[0.3em] text-[#FFC93C] mb-2 text-center">
+          💭 TA RÉPONSE FINALE
+        </div>
+        <div className="font-display text-2xl tracking-wide text-white mb-4 text-center">
+          QUEL JOUEUR ?
+        </div>
+
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Tape un nom de joueur…"
+          autoFocus
+          className="w-full px-4 py-3 rounded-xl bg-black/40 border-2 border-white/10 focus:border-[#FFC93C] focus:outline-none text-white text-base mb-3"
+        />
+
+        {suggestions.length > 0 && (
+          <div className="space-y-1 mb-4 max-h-[40vh] overflow-y-auto">
+            {suggestions.map((p) => (
+              <button
+                key={p.name}
+                onClick={() => onPick(p)}
+                className="w-full text-left px-3 py-2.5 rounded-xl bg-white/[0.04] hover:bg-[#FFC93C]/15 text-white transition-colors flex items-center gap-2"
+              >
+                <span className="text-sm">⚽</span>
+                <span className="text-sm">{p.name}</span>
+                <span className="ml-auto text-xs text-white/40">
+                  {p.nationalities[0]}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {query.trim().length >= 2 && suggestions.length === 0 && (
+          <div className="text-center text-xs text-white/40 py-4 mb-3">
+            Aucun joueur trouvé pour "{query}".
+          </div>
+        )}
+
+        <button
+          onClick={onClose}
+          className="w-full py-3 rounded-xl border-2 border-white/10 bg-white/[0.02] hover:bg-white/[0.06] text-white/70 font-display text-sm tracking-widest transition-colors"
+        >
+          ANNULER
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const ReverseWon = ({
+  secret,
+  questionsUsed,
+  difficulty,
+  onRestart,
+  onBack,
+}: {
+  secret: Player;
+  questionsUsed: number;
+  difficulty: ReverseDifficulty;
+  onRestart: () => void;
+  onBack: () => void;
+}) => {
+  const remaining = REVERSE_MAX_QUESTIONS - questionsUsed;
+  const bonus =
+    difficulty === "expert" ? 50 : difficulty === "moyen" ? 20 : difficulty === "all" ? 30 : 0;
+  const score = remaining * 5 + bonus;
+  return (
+    <div className="text-center">
+      <div className="text-7xl mb-4 animate-in zoom-in duration-300">🎉</div>
+      <div className="font-display text-4xl lg:text-5xl tracking-wider text-[#FFC93C] mb-2">
+        BIEN JOUÉ !
+      </div>
+      <p className="text-white/70 text-base mb-2">
+        Tu as trouvé <span className="text-white font-bold">{secret.name}</span> en{" "}
+        <span className="text-[#FFC93C] font-bold">{questionsUsed}</span> questions.
+      </p>
+      <div className="my-5 inline-block px-6 py-3 rounded-2xl border-2 border-[#FFC93C]/40 bg-[#FFC93C]/10">
+        <div className="text-xs text-white/50 mb-1 tracking-widest">SCORE</div>
+        <div className="font-display text-4xl tracking-wider text-[#FFC93C] tabular-nums">
+          {score}
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-3 mt-2">
+        <button
+          onClick={onRestart}
+          className="py-4 rounded-2xl bg-gradient-to-r from-[#FF8A2A] to-[#FFC93C] text-[#1A0F00] font-display text-lg tracking-widest hover:scale-[1.02] transition-transform"
+        >
+          ▶ REJOUER
+        </button>
+        <button
+          onClick={onBack}
+          className="py-4 rounded-2xl border-2 border-white/10 bg-white/[0.03] hover:bg-white/[0.06] text-white/80 font-display text-base tracking-widest transition-colors"
+        >
+          MODES
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const ReverseLost = ({
+  secret,
+  onRestart,
+  onBack,
+}: {
+  secret: Player;
+  onRestart: () => void;
+  onBack: () => void;
+}) => (
+  <div className="text-center">
+    <div className="text-7xl mb-4">😔</div>
+    <div className="font-display text-4xl lg:text-5xl tracking-wider text-white mb-2">
+      DOMMAGE
+    </div>
+    <p className="text-white/70 text-base mb-1">
+      Le joueur était...
+    </p>
+    <div className="my-5 inline-block px-6 py-3 rounded-2xl border-2 border-[#FFC93C]/40 bg-gradient-to-br from-[#1A2A20] to-[#0A1410]">
+      <div className="font-display text-3xl tracking-wider text-white mb-2">
+        {secret.name}
+      </div>
+      <div className="flex flex-wrap justify-center gap-1.5 text-xs">
+        <span className="px-2 py-0.5 rounded-full bg-white/10 text-white/70">
+          {secret.nationalities[0]}
+        </span>
+        {secret.positions.slice(0, 2).map((p) => (
+          <span key={p} className="px-2 py-0.5 rounded-full bg-[#C084FC]/20 text-[#C084FC]">
+            {p}
+          </span>
+        ))}
+        <span className="px-2 py-0.5 rounded-full bg-white/10 text-white/60">
+          {secret.clubs.length} clubs
+        </span>
+      </div>
+    </div>
+    <div className="grid grid-cols-2 gap-3">
+      <button
+        onClick={onRestart}
+        className="py-4 rounded-2xl bg-gradient-to-r from-[#C084FC] to-[#FF8A2A] text-[#1A0F00] font-display text-lg tracking-widest hover:scale-[1.02] transition-transform"
+      >
+        ▶ REVANCHE
+      </button>
+      <button
+        onClick={onBack}
+        className="py-4 rounded-2xl border-2 border-white/10 bg-white/[0.03] hover:bg-white/[0.06] text-white/80 font-display text-base tracking-widest transition-colors"
+      >
+        MODES
       </button>
     </div>
   </div>
