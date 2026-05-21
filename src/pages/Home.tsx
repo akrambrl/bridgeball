@@ -10,8 +10,9 @@ import { DifficultyModal, type Difficulty } from "@/components/landing/Difficult
 import { ModeChoiceModal, type PlayMode } from "@/components/landing/ModeChoiceModal";
 import { MatchmakingOverlay, pickOpponent } from "@/components/landing/MatchmakingOverlay";
 import { CountdownOverlay } from "@/components/landing/CountdownOverlay";
+import { GoatGuess } from "@/components/landing/GoatGuess";
 
-export type GameMode = "pont" | "chaine" | "grid";
+export type GameMode = "pont" | "chaine" | "grid" | "guess";
 
 const Home = () => {
   const [playing, setPlaying] = useState(false);
@@ -29,7 +30,7 @@ const Home = () => {
   // 3b) Countdown 3..0 avant lancement effectif (solo / après matchmaking)
   const [countdown, setCountdown] = useState<
     {
-      game: GameMode;
+      game: Exclude<GameMode, "guess">;
       diff?: Difficulty;
       bot?: { pseudo: string; country: string; avatar?: string };
     } | null
@@ -44,6 +45,8 @@ const Home = () => {
   const [forfeitNotice, setForfeitNotice] = useState<
     { pseudo: string; country: string; avatar?: string } | null
   >(null);
+  // Overlay GOAT Guess (Akinator foot)
+  const [goatGuessOpen, setGoatGuessOpen] = useState(false);
 
   // LePont émet cet event quand l'utilisateur quitte la partie autolaunchée
   // (← interne, fin de partie). On ferme l'overlay pour revenir à la landing.
@@ -124,8 +127,13 @@ const Home = () => {
     );
   }
 
-  // Clic JOUER sur une card : grid = direct ; pont/chaine = choix solo/multi
+  // Clic JOUER sur une card : grid = direct ; pont/chaine = choix solo/multi ;
+  // guess = ouvre l'overlay Akinator dédié.
   const onPlay = (game?: GameMode) => {
+    if (game === "guess") {
+      setGoatGuessOpen(true);
+      return;
+    }
     if (game === "grid") {
       launchGame("grid");
       return;
@@ -298,6 +306,9 @@ const Home = () => {
           onCancel={() => setCountdown(null)}
         />
       )}
+
+      {/* GOAT Guess — Akinator foot (overlay plein écran, indépendant de LePont) */}
+      {goatGuessOpen && <GoatGuess onClose={() => setGoatGuessOpen(false)} />}
     </div>
   );
 };

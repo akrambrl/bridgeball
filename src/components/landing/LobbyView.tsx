@@ -6,7 +6,7 @@ type Props = {
   onJoinRoom: (code: string) => void;
 };
 
-type GameKey = "plug" | "mercato" | "grid";
+type GameKey = "plug" | "mercato" | "grid" | "guess";
 
 const GAMES: {
   key: GameKey;
@@ -54,6 +54,18 @@ const GAMES: {
       "Une grille 3×3, 9 cases à remplir avec les bons joueurs. Stratégie.",
     accent: "#3DA5FF",
     badge: "STRATÉGIE",
+  },
+  {
+    key: "guess",
+    mode: "guess",
+    name: "GOAT Guess",
+    tagline: "Je devine ton joueur",
+    img: "/grid-card.png",
+    mascot: "/win1.png",
+    description:
+      "Pense à un footballeur. En 20 questions max, je devine de qui il s'agit. 🔮",
+    accent: "#C084FC",
+    badge: "MAGIE",
   },
 ];
 
