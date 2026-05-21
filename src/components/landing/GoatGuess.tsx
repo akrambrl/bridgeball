@@ -339,17 +339,17 @@ const QUESTIONS: Question[] = [
   },
   {
     id: "nomad", category: "profile",
-    label: "A-t-il joué dans au moins 5 clubs différents ?",
+    label: "A-t-il joué dans 5 clubs différents ou plus ?",
     predicate: (p) => p.clubs.length >= 5,
   },
   {
     id: "very-nomad", category: "profile",
-    label: "A-t-il joué dans au moins 7 clubs différents ?",
+    label: "A-t-il eu une carrière de globe-trotter (7 clubs ou plus) ?",
     predicate: (p) => p.clubs.length >= 7,
   },
   {
     id: "loyal", category: "profile",
-    label: "A-t-il joué dans au plus 2 clubs (un joueur fidèle) ?",
+    label: "Est-ce un joueur fidèle (1 ou 2 clubs dans toute sa carrière) ?",
     predicate: (p) => p.clubs.length <= 2,
   },
 ];
