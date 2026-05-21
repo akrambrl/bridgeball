@@ -60,10 +60,10 @@ const GAMES: {
     mode: "guess",
     name: "GOAT Guess",
     tagline: "Je devine ton joueur",
-    img: "/grid-card.png",
+    img: "/guess-card.png",
     mascot: "/win1.png",
     description:
-      "Pense à un footballeur. En 20 questions max, je devine de qui il s'agit. 🔮",
+      "Pense à un footballeur. En 25 questions max, je devine de qui il s'agit. 🔮",
     accent: "#C084FC",
     badge: "MAGIE",
   },
