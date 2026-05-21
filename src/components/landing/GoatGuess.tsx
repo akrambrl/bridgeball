@@ -456,53 +456,79 @@ const ModeMenu = ({
   onPick: (mode: "akinator" | "reverse") => void;
 }) => (
   <div className="text-center">
-    <div className="font-display text-xs tracking-[0.4em] text-[#C084FC] mb-2">
-      🔮 GOAT GUESS
+    <div className="inline-block px-3 py-1 rounded-full bg-gradient-to-r from-[#C084FC]/20 to-[#FFC93C]/20 border border-white/10 mb-3">
+      <span className="font-display text-[10px] tracking-[0.4em] text-white/80">
+        🔮 GOAT GUESS
+      </span>
     </div>
-    <div className="font-display text-3xl lg:text-4xl tracking-wider text-white mb-2">
-      CHOISIS TON MODE
-    </div>
-    <p className="text-white/50 text-sm mb-8">
-      Deux façons de jouer — qui devine qui ?
+    <h2 className="font-display text-4xl lg:text-5xl tracking-wider text-white mb-2 leading-none">
+      QUI DEVINE
+      <br />
+      <span className="bg-gradient-to-r from-[#C084FC] to-[#FFC93C] bg-clip-text text-transparent">
+        QUI ?
+      </span>
+    </h2>
+    <p className="text-white/50 text-sm mb-8 max-w-sm mx-auto">
+      Deux façons de jouer. Choisis ton camp.
     </p>
 
-    <div className="grid gap-4">
+    <div className="grid md:grid-cols-2 gap-4">
+      {/* Card AKINATOR */}
       <button
         onClick={() => onPick("akinator")}
-        className="group text-left rounded-2xl border-2 border-[#C084FC]/30 bg-gradient-to-br from-[#C084FC]/10 to-transparent p-5 hover:border-[#C084FC] hover:bg-[#C084FC]/15 transition-all"
+        className="goat-mode-card group relative overflow-hidden text-left rounded-3xl border-2 border-[#C084FC]/30 bg-gradient-to-br from-[#1A1530] via-[#0F2017] to-[#0A1410] p-5 hover:border-[#C084FC] transition-all hover:-translate-y-1"
       >
-        <div className="flex items-center gap-4">
-          <div className="text-4xl">🧠</div>
-          <div className="flex-1">
-            <div className="font-display text-xl tracking-wider text-white mb-1">
-              JE DEVINE TON JOUEUR
-            </div>
-            <div className="text-xs text-white/60">
-              Pense à un footballeur. Je te pose des questions pour le trouver.
-            </div>
+        <div
+          className="absolute -top-10 -right-10 h-40 w-40 rounded-full blur-3xl opacity-40 group-hover:opacity-70 transition-opacity"
+          style={{ background: "#C084FC" }}
+        />
+        <div className="relative">
+          <div className="text-6xl mb-3 group-hover:scale-110 transition-transform inline-block">
+            🧠
           </div>
-          <div className="text-[#C084FC] text-2xl group-hover:translate-x-1 transition-transform">
-            →
+          <div className="font-display text-xs tracking-[0.3em] text-[#C084FC] mb-1.5">
+            MODE AKINATOR
+          </div>
+          <div className="font-display text-2xl lg:text-3xl tracking-wide text-white mb-3 leading-tight">
+            JE DEVINE
+            <br />
+            TON JOUEUR
+          </div>
+          <div className="text-xs text-white/60 mb-4 leading-relaxed">
+            Pense à un footballeur, je te pose des questions pour le trouver.
+          </div>
+          <div className="flex items-center gap-2 font-display text-sm tracking-widest text-[#C084FC] group-hover:gap-3 transition-all">
+            JOUER <span className="text-lg">→</span>
           </div>
         </div>
       </button>
 
+      {/* Card DEVINE */}
       <button
         onClick={() => onPick("reverse")}
-        className="group text-left rounded-2xl border-2 border-[#FFC93C]/30 bg-gradient-to-br from-[#FFC93C]/10 to-transparent p-5 hover:border-[#FFC93C] hover:bg-[#FFC93C]/15 transition-all"
+        className="goat-mode-card group relative overflow-hidden text-left rounded-3xl border-2 border-[#FFC93C]/30 bg-gradient-to-br from-[#2A1F0A] via-[#0F2017] to-[#0A1410] p-5 hover:border-[#FFC93C] transition-all hover:-translate-y-1"
       >
-        <div className="flex items-center gap-4">
-          <div className="text-4xl">🎯</div>
-          <div className="flex-1">
-            <div className="font-display text-xl tracking-wider text-white mb-1">
-              DEVINE MON JOUEUR
-            </div>
-            <div className="text-xs text-white/60">
-              Je choisis un footballeur. Pose-moi 20 questions pour le trouver.
-            </div>
+        <div
+          className="absolute -top-10 -right-10 h-40 w-40 rounded-full blur-3xl opacity-40 group-hover:opacity-70 transition-opacity"
+          style={{ background: "#FFC93C" }}
+        />
+        <div className="relative">
+          <div className="text-6xl mb-3 group-hover:scale-110 transition-transform inline-block">
+            🎯
           </div>
-          <div className="text-[#FFC93C] text-2xl group-hover:translate-x-1 transition-transform">
-            →
+          <div className="font-display text-xs tracking-[0.3em] text-[#FFC93C] mb-1.5">
+            MODE DEVINE
+          </div>
+          <div className="font-display text-2xl lg:text-3xl tracking-wide text-white mb-3 leading-tight">
+            DEVINE
+            <br />
+            MON JOUEUR
+          </div>
+          <div className="text-xs text-white/60 mb-4 leading-relaxed">
+            Je choisis un footballeur. 20 questions pour me battre.
+          </div>
+          <div className="flex items-center gap-2 font-display text-sm tracking-widest text-[#FFC93C] group-hover:gap-3 transition-all">
+            JOUER <span className="text-lg">→</span>
           </div>
         </div>
       </button>
@@ -813,45 +839,31 @@ const GuessingView = ({
   onWrong: () => void;
 }) => (
   <div className="text-center">
-    <div className="font-display text-xs tracking-[0.3em] text-[#FFC93C] mb-4">
+    <div className="inline-block px-3 py-1 rounded-full bg-[#FFC93C]/15 border border-[#FFC93C]/30 mb-3">
+      <span className="font-display text-[10px] tracking-[0.35em] text-[#FFC93C]">
+        🔮 MA DEVINETTE
+      </span>
+    </div>
+    <div className="font-display text-2xl lg:text-3xl tracking-wider text-white mb-5 leading-tight">
       JE PARIE QUE C'EST...
     </div>
 
-    {/* Carte joueur */}
-    <div className="relative inline-block mb-6">
-      <div className="absolute inset-0 blur-2xl opacity-40 rounded-3xl bg-gradient-to-br from-[#C084FC] to-[#FFC93C]" />
-      <div className="relative rounded-3xl bg-gradient-to-br from-[#1A2A20] to-[#0A1410] border-2 border-[#FFC93C]/40 p-6 lg:p-8 min-w-[300px]">
-        <div className="text-5xl mb-3">⚽</div>
-        <div className="font-display text-3xl lg:text-4xl tracking-wider text-white mb-3 leading-tight">
-          {guess.name}
-        </div>
-        <div className="flex flex-wrap justify-center gap-1.5 text-xs">
-          {guess.nationalities.slice(0, 2).map((n) => (
-            <span key={n} className="px-2 py-0.5 rounded-full bg-white/10 text-white/70">
-              {n}
-            </span>
-          ))}
-          {guess.positions.slice(0, 2).map((p) => (
-            <span key={p} className="px-2 py-0.5 rounded-full bg-[#C084FC]/20 text-[#C084FC]">
-              {p}
-            </span>
-          ))}
-        </div>
-      </div>
-    </div>
+    <PlayerRevealCard player={guess} accent="#C084FC" />
 
-    <p className="text-white/70 text-base mb-6">C'est bien lui ?</p>
+    <p className="text-white/60 text-sm mt-5 mb-4 tracking-wide">
+      Alors, j'ai bon ?
+    </p>
 
     <div className="grid grid-cols-2 gap-3">
       <button
         onClick={onCorrect}
-        className="py-4 rounded-2xl bg-[#00E676] hover:bg-[#00C966] text-[#0A1410] font-display text-xl tracking-widest hover:scale-[1.03] active:scale-[0.97] transition-transform"
+        className="py-4 rounded-2xl bg-gradient-to-r from-[#00C966] to-[#00E676] text-[#0A1410] font-display text-xl tracking-widest hover:scale-[1.03] active:scale-[0.97] transition-transform shadow-[0_8px_24px_rgba(0,230,118,0.35)]"
       >
         ✓ OUI !
       </button>
       <button
         onClick={onWrong}
-        className="py-4 rounded-2xl bg-[#FF3D6E] hover:bg-[#E62E5E] text-white font-display text-xl tracking-widest hover:scale-[1.03] active:scale-[0.97] transition-transform"
+        className="py-4 rounded-2xl bg-gradient-to-r from-[#FF3D6E] to-[#E62E5E] text-white font-display text-xl tracking-widest hover:scale-[1.03] active:scale-[0.97] transition-transform shadow-[0_8px_24px_rgba(255,61,110,0.35)]"
       >
         ✗ NON
       </button>
@@ -868,26 +880,45 @@ const WonView = ({
   onRestart: () => void;
   onClose: () => void;
 }) => (
-  <div className="text-center">
-    <div className="text-7xl mb-4 animate-in zoom-in duration-300">🎉</div>
-    <div className="font-display text-4xl lg:text-5xl tracking-wider text-[#FFC93C] mb-2">
+  <div className="text-center relative">
+    {/* Confettis CSS */}
+    <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
+      {Array.from({ length: 16 }).map((_, i) => (
+        <span
+          key={i}
+          className="absolute block w-1.5 h-1.5 rounded-sm opacity-80"
+          style={{
+            left: `${(i * 6.5 + 5) % 100}%`,
+            top: `-10px`,
+            background: ["#C084FC", "#FFC93C", "#00E676", "#FF8A2A"][i % 4],
+            animation: `goat-confetti ${2 + (i % 4) * 0.4}s linear ${(i % 5) * 0.15}s forwards`,
+          }}
+        />
+      ))}
+    </div>
+
+    <div className="text-7xl mb-3 animate-in zoom-in duration-300">🎉</div>
+    <div className="font-display text-5xl lg:text-6xl tracking-wider mb-1 leading-none bg-gradient-to-r from-[#C084FC] via-[#FFC93C] to-[#C084FC] bg-clip-text text-transparent">
       JE T'AI EU !
     </div>
-    <p className="text-white/70 text-base mb-6">
-      Tu pensais bien à <span className="text-white font-bold">{guess.name}</span>.
+    <p className="text-white/60 text-sm mb-5 tracking-wide">
+      Tu pensais bien à...
     </p>
-    <div className="grid grid-cols-2 gap-3">
+
+    <PlayerRevealCard player={guess} accent="#C084FC" />
+
+    <div className="grid grid-cols-2 gap-3 mt-6">
       <button
         onClick={onRestart}
-        className="py-4 rounded-2xl bg-gradient-to-r from-[#FF8A2A] to-[#FFC93C] text-[#1A0F00] font-display text-lg tracking-widest hover:scale-[1.02] transition-transform"
+        className="py-4 rounded-2xl bg-gradient-to-r from-[#FF8A2A] to-[#FFC93C] text-[#1A0F00] font-display text-lg tracking-widest hover:scale-[1.02] active:scale-[0.97] transition-transform shadow-[0_8px_24px_rgba(255,201,60,0.4)]"
       >
         ▶ REJOUER
       </button>
       <button
         onClick={onClose}
-        className="py-4 rounded-2xl border-2 border-white/10 bg-white/[0.03] hover:bg-white/[0.06] text-white/80 font-display text-base tracking-widest transition-colors"
+        className="py-4 rounded-2xl border-2 border-white/10 bg-white/[0.03] hover:bg-white/[0.08] text-white/80 font-display text-base tracking-widest transition-colors"
       >
-        QUITTER
+        ← MODES
       </button>
     </div>
   </div>
@@ -905,31 +936,36 @@ const LostView = ({
   tried: string[];
 }) => (
   <div className="text-center">
-    <div className="text-7xl mb-4">🙏</div>
-    <div className="font-display text-4xl lg:text-5xl tracking-wider text-white mb-2">
+    <div className="text-7xl mb-3">🙏</div>
+    <div className="font-display text-5xl lg:text-6xl tracking-wider mb-1 leading-none bg-gradient-to-r from-[#C084FC] via-[#FFC93C] to-[#C084FC] bg-clip-text text-transparent">
       BIEN JOUÉ
     </div>
-    <p className="text-white/70 text-base mb-6">
-      Tu m'as eu — je n'ai pas trouvé ton joueur cette fois.
+    <p className="text-white/60 text-sm mb-5 tracking-wide">
+      Tu m'as eu — je n'ai pas trouvé ton joueur.
     </p>
 
     {tried.length > 0 && (
-      <div className="mb-4 text-xs text-white/40">
-        J'ai essayé : {tried.slice(0, 3).join(", ")}
-        {tried.length > 3 ? "…" : ""}
+      <div className="mb-4 inline-block px-4 py-2 rounded-xl bg-[#FF3D6E]/10 border border-[#FF3D6E]/30">
+        <div className="text-[10px] tracking-[0.3em] text-[#FF3D6E] mb-1">
+          MES DEVINETTES RATÉES
+        </div>
+        <div className="text-xs text-white/70">
+          {tried.slice(0, 3).join(" · ")}
+          {tried.length > 3 ? " · …" : ""}
+        </div>
       </div>
     )}
 
     {shortlist.length > 0 && (
-      <div className="mb-6 text-left">
-        <div className="font-display text-xs tracking-[0.25em] text-white/50 mb-2">
-          C'ÉTAIT PEUT-ÊTRE...
+      <div className="mb-5 rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.03] to-transparent p-4">
+        <div className="font-display text-[10px] tracking-[0.3em] text-[#C084FC] mb-3">
+          🤔 PEUT-ÊTRE UN DE CES JOUEURS ?
         </div>
         <div className="flex flex-wrap gap-2 justify-center">
           {shortlist.map((p) => (
             <span
               key={p.name}
-              className="px-3 py-1 rounded-full bg-white/[0.05] border border-white/10 text-white/80 text-sm"
+              className="px-3 py-1.5 rounded-full bg-white/[0.05] border border-white/10 text-white/85 text-sm hover:bg-[#C084FC]/15 hover:border-[#C084FC]/40 transition-colors"
             >
               {p.name}
             </span>
@@ -938,23 +974,22 @@ const LostView = ({
       </div>
     )}
 
-    <p className="text-xs text-white/40 mb-5">
-      Si ton joueur n'apparaît nulle part, il n'est peut-être pas encore dans
-      ma base.
+    <p className="text-[11px] text-white/35 mb-5 max-w-sm mx-auto leading-relaxed">
+      Si ton joueur n'apparaît nulle part, il n'est peut-être pas dans ma base.
     </p>
 
     <div className="grid grid-cols-2 gap-3">
       <button
         onClick={onRestart}
-        className="py-4 rounded-2xl bg-gradient-to-r from-[#C084FC] to-[#FF8A2A] text-[#1A0F00] font-display text-lg tracking-widest hover:scale-[1.02] transition-transform"
+        className="py-4 rounded-2xl bg-gradient-to-r from-[#C084FC] to-[#FF8A2A] text-[#1A0F00] font-display text-lg tracking-widest hover:scale-[1.02] active:scale-[0.97] transition-transform shadow-[0_8px_24px_rgba(192,132,252,0.4)]"
       >
         ▶ REVANCHE
       </button>
       <button
         onClick={onClose}
-        className="py-4 rounded-2xl border-2 border-white/10 bg-white/[0.03] hover:bg-white/[0.06] text-white/80 font-display text-base tracking-widest transition-colors"
+        className="py-4 rounded-2xl border-2 border-white/10 bg-white/[0.03] hover:bg-white/[0.08] text-white/80 font-display text-base tracking-widest transition-colors"
       >
-        QUITTER
+        ← MODES
       </button>
     </div>
   </div>
@@ -1199,45 +1234,89 @@ const ReversePlaying = ({
     });
   }, [activeCategory, search]);
 
+  // Couleur du compteur évolue : vert >12, jaune 6-12, rouge <6
+  const counterColor =
+    questionsLeft > 12 ? "#00E676" : questionsLeft > 5 ? "#FFC93C" : "#FF3D6E";
+  const counterGlow =
+    questionsLeft > 12
+      ? "rgba(0,230,118,0.35)"
+      : questionsLeft > 5
+      ? "rgba(255,201,60,0.35)"
+      : "rgba(255,61,110,0.4)";
+
   return (
     <div>
-      {/* Compteur */}
-      <div className="mb-5">
-        <div className="flex items-center justify-between text-xs mb-2">
-          <span className="font-display tracking-widest text-white/50">
-            QUESTIONS RESTANTES
-          </span>
-          <span className="font-display text-lg tabular-nums text-white">
-            {questionsLeft} / {maxQuestions}
-          </span>
-        </div>
-        <div className="h-1.5 w-full rounded-full bg-white/10 overflow-hidden">
-          <div
-            className="h-full bg-gradient-to-r from-[#FFC93C] to-[#FF8A2A] transition-all duration-500"
-            style={{ width: `${progress}%` }}
-          />
+      {/* Compteur — gros chiffre central avec halo */}
+      <div className="relative mb-5 rounded-2xl bg-gradient-to-br from-black/40 to-white/[0.02] border border-white/10 px-4 py-3 overflow-hidden">
+        <div
+          className="absolute -top-10 left-1/2 -translate-x-1/2 h-32 w-48 rounded-full blur-3xl opacity-50 transition-colors"
+          style={{ background: counterGlow }}
+        />
+        <div className="relative flex items-center justify-between gap-3">
+          <div>
+            <div className="font-display text-[10px] tracking-[0.35em] text-white/40 mb-0.5">
+              QUESTIONS RESTANTES
+            </div>
+            <div className="flex items-baseline gap-2">
+              <span
+                className="font-display text-5xl tabular-nums leading-none transition-colors"
+                style={{ color: counterColor }}
+              >
+                {questionsLeft}
+              </span>
+              <span className="font-display text-base text-white/30">
+                / {maxQuestions}
+              </span>
+            </div>
+          </div>
+          <div className="flex-1 max-w-[140px]">
+            <div className="h-2.5 w-full rounded-full bg-white/10 overflow-hidden">
+              <div
+                className="h-full rounded-full transition-all duration-500"
+                style={{
+                  width: `${progress}%`,
+                  background: `linear-gradient(to right, ${counterColor}, ${counterColor}80)`,
+                  boxShadow: `0 0 12px ${counterColor}80`,
+                }}
+              />
+            </div>
+            <div className="text-[10px] text-white/30 mt-1 text-right tracking-wider">
+              {revealed.length} info{revealed.length > 1 ? "s" : ""} collectée
+              {revealed.length > 1 ? "s" : ""}
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Faits connus */}
+      {/* Faits connus — pills colorées plus marquées */}
       {revealed.length > 0 && (
-        <div className="mb-5 rounded-2xl border border-white/10 bg-white/[0.03] p-3">
-          <div className="font-display text-xs tracking-[0.25em] text-white/50 mb-2">
-            CE QUE TU SAIS
+        <div className="mb-4 rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.04] to-transparent p-3">
+          <div className="flex items-center justify-between mb-2">
+            <span className="font-display text-[10px] tracking-[0.3em] text-white/50">
+              📋 CE QUE TU SAIS
+            </span>
+            <span className="text-[10px] text-white/30 tabular-nums">
+              {revealed.filter((r) => r.answer).length} ✓ ·{" "}
+              {revealed.filter((r) => !r.answer).length} ✗
+            </span>
           </div>
           <div className="flex flex-wrap gap-1.5">
             {revealed.map((r, i) => (
               <span
                 key={i}
                 className={
-                  "px-2.5 py-1 rounded-full text-xs " +
+                  "px-2.5 py-1 rounded-lg text-xs font-medium animate-in fade-in slide-in-from-bottom-1 duration-300 " +
                   (r.answer
-                    ? "bg-[#00E676]/15 text-[#00E676] border border-[#00E676]/30"
-                    : "bg-[#FF3D6E]/15 text-[#FF3D6E] border border-[#FF3D6E]/30")
+                    ? "bg-[#00E676]/15 text-[#00E676] border border-[#00E676]/40 shadow-[0_0_8px_rgba(0,230,118,0.2)]"
+                    : "bg-[#FF3D6E]/15 text-[#FF3D6E] border border-[#FF3D6E]/40 shadow-[0_0_8px_rgba(255,61,110,0.2)]")
                 }
                 title={r.q.label}
               >
-                {r.answer ? "✅" : "❌"} {r.q.label.replace(/^(Est-ce un |Est-il |A-t-il |Joue-t-il |Vient-il |Peut-il |Est-ce )/, "")}
+                {r.answer ? "✓" : "✗"}{" "}
+                {r.q.label.replace(
+                  /^(Est-ce un |Est-il |A-t-il |Joue-t-il |Vient-il |Peut-il |Est-ce )/,
+                  ""
+                )}
               </span>
             ))}
           </div>
@@ -1246,88 +1325,102 @@ const ReversePlaying = ({
 
       {/* Mauvaises devinettes */}
       {wrongGuesses.length > 0 && (
-        <div className="mb-4 text-xs text-white/40 text-center">
-          ❌ Pas {wrongGuesses.join(", ")}
+        <div className="mb-3 px-3 py-2 rounded-xl bg-[#FF3D6E]/10 border border-[#FF3D6E]/30 text-xs text-[#FF3D6E] text-center">
+          ✗ Déjà testé : {wrongGuesses.join(", ")}
         </div>
       )}
 
-      {/* Tabs catégories */}
-      <div className="mb-3 flex gap-1 overflow-x-auto pb-1">
-        {REVERSE_CATEGORIES.map((c) => (
-          <button
-            key={c.key}
-            onClick={() => setActiveCategory(c.key)}
-            className={
-              "shrink-0 px-3 py-1.5 rounded-lg font-display text-xs tracking-widest transition-colors " +
-              (activeCategory === c.key
-                ? "bg-[#FFC93C] text-[#1A0F00]"
-                : "bg-white/[0.05] text-white/60 hover:bg-white/[0.1]")
-            }
-          >
-            {c.icon} {c.label}
-          </button>
-        ))}
+      {/* Tabs catégories + Search dans le même bloc */}
+      <div className="rounded-2xl bg-black/30 border border-white/5 p-3 mb-3">
+        <div className="flex gap-1.5 overflow-x-auto pb-2 mb-2 -mx-1 px-1">
+          {REVERSE_CATEGORIES.map((c) => {
+            const isActive = activeCategory === c.key;
+            return (
+              <button
+                key={c.key}
+                onClick={() => setActiveCategory(c.key)}
+                className={
+                  "shrink-0 px-3 py-2 rounded-xl font-display text-[11px] tracking-[0.2em] transition-all " +
+                  (isActive
+                    ? "bg-gradient-to-r from-[#FFC93C] to-[#FF8A2A] text-[#1A0F00] shadow-[0_4px_14px_rgba(255,201,60,0.4)] scale-[1.03]"
+                    : "bg-white/[0.05] text-white/60 hover:bg-white/[0.1] hover:text-white/90")
+                }
+              >
+                <span className="mr-1">{c.icon}</span>
+                {c.label}
+              </button>
+            );
+          })}
+        </div>
+
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="🔍 Filtrer les questions…"
+          className="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 focus:border-[#FFC93C] focus:outline-none text-sm text-white placeholder-white/30"
+        />
       </div>
 
-      {/* Search */}
-      <input
-        type="text"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder="Filtrer les questions…"
-        className="w-full mb-3 px-3 py-2 rounded-lg bg-black/30 border border-white/10 focus:border-[#FFC93C] focus:outline-none text-sm text-white placeholder-white/30"
-      />
-
-      {/* Liste de questions */}
-      <div className="max-h-[40vh] overflow-y-auto rounded-xl border border-white/5 bg-black/20 p-2 mb-4 space-y-1">
+      {/* Liste de questions — grille 2 cols sur md+ */}
+      <div className="max-h-[42vh] overflow-y-auto rounded-2xl border border-white/5 bg-black/20 p-2 mb-4">
         {questionsLeft === 0 && (
-          <div className="text-center text-xs text-[#FFC93C] py-6 px-2">
-            🚨 Plus de questions disponibles.
-            <br />
-            Clique sur <span className="font-bold">DERNIÈRE CHANCE</span> pour ta devinette finale.
+          <div className="text-center py-8 px-3">
+            <div className="text-4xl mb-2 animate-bounce">🚨</div>
+            <div className="font-display text-sm tracking-wider text-[#FFC93C] mb-1">
+              PLUS DE QUESTIONS
+            </div>
+            <div className="text-xs text-white/50">
+              C'est l'heure de la{" "}
+              <span className="text-[#FFC93C] font-bold">DERNIÈRE CHANCE</span>.
+            </div>
           </div>
         )}
         {questionsLeft > 0 && filteredQuestions.length === 0 && (
           <div className="text-center text-xs text-white/40 py-6">
-            Aucune question dans cette catégorie.
+            Aucune question ne correspond. Change de catégorie ou efface le filtre.
           </div>
         )}
-        {questionsLeft > 0 && filteredQuestions.map((q) => {
-          const asked = askedIds.has(q.id);
-          return (
-            <button
-              key={q.id}
-              onClick={() => !asked && onAsk(q)}
-              disabled={asked}
-              className={
-                "w-full text-left px-3 py-2 rounded-lg text-sm transition-colors " +
-                (asked
-                  ? "bg-white/[0.02] text-white/20 cursor-not-allowed line-through"
-                  : "bg-white/[0.04] hover:bg-white/[0.08] text-white/85")
-              }
-            >
-              {q.label}
-            </button>
-          );
-        })}
+        {questionsLeft > 0 && (
+          <div className="grid sm:grid-cols-2 gap-1.5">
+            {filteredQuestions.map((q) => {
+              const asked = askedIds.has(q.id);
+              return (
+                <button
+                  key={q.id}
+                  onClick={() => !asked && onAsk(q)}
+                  disabled={asked}
+                  className={
+                    "text-left px-3 py-2.5 rounded-xl text-sm transition-all " +
+                    (asked
+                      ? "bg-white/[0.02] text-white/20 cursor-not-allowed line-through"
+                      : "bg-white/[0.04] hover:bg-[#FFC93C]/15 hover:border-[#FFC93C]/40 text-white/85 border border-white/5 active:scale-[0.98]")
+                  }
+                >
+                  {q.label}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
-      {/* Bouton deviner — devient "dernière chance" quand questions épuisées */}
+      {/* Bouton deviner — sticky bottom feel */}
       <button
         onClick={onOpenGuess}
         className={
-          "w-full goat-pulse py-4 rounded-2xl text-[#1A0F00] font-display text-xl tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-transform " +
+          "w-full goat-pulse py-5 rounded-2xl text-[#1A0F00] font-display text-2xl tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-transform " +
           (questionsLeft === 0
-            ? "bg-gradient-to-r from-[#FF3D6E] to-[#FFC93C] ring-2 ring-[#FFC93C] ring-offset-2 ring-offset-[#0F2017]"
+            ? "bg-gradient-to-r from-[#FF3D6E] via-[#FF8A2A] to-[#FFC93C] ring-4 ring-[#FFC93C]/50"
             : "bg-gradient-to-r from-[#FFC93C] to-[#FF8A2A]")
         }
       >
         {questionsLeft === 0 ? "📝 DERNIÈRE CHANCE" : "💭 JE DEVINE"}
       </button>
-      <p className="text-center text-[10px] text-white/30 mt-2 tracking-wider">
+      <p className="text-center text-[11px] text-white/40 mt-2 tracking-wider">
         {questionsLeft === 0
-          ? "Une seule tentative. Bonne ou mauvaise réponse = fin du jeu."
-          : "Mauvaise devinette = -1 question"}
+          ? "Une seule tentative — fin du jeu après ta réponse."
+          : "Mauvaise devinette = −1 question"}
       </p>
     </div>
   );
@@ -1355,63 +1448,192 @@ const GuessModal = ({
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-[9100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md"
+      className="fixed inset-0 z-[9100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-in fade-in duration-200"
       onClick={onClose}
     >
+      {/* Halo dramatique derrière le modal */}
       <div
-        className="w-full max-w-md rounded-3xl bg-[#0F2017] border-2 border-[#FFC93C]/40 p-6 shadow-2xl"
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(circle at 50% 50%, rgba(255,201,60,0.18) 0%, transparent 50%)",
+        }}
+        aria-hidden
+      />
+      <div
+        className="relative w-full max-w-md rounded-3xl bg-gradient-to-br from-[#1A2A20] via-[#0F2017] to-[#0A1410] border-2 border-[#FFC93C]/40 shadow-[0_20px_60px_rgba(255,201,60,0.25)] overflow-hidden animate-in zoom-in-95 duration-300"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="font-display text-xs tracking-[0.3em] text-[#FFC93C] mb-2 text-center">
-          💭 TA RÉPONSE FINALE
-        </div>
-        <div className="font-display text-2xl tracking-wide text-white mb-4 text-center">
-          QUEL JOUEUR ?
-        </div>
-
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Tape un nom de joueur…"
-          autoFocus
-          className="w-full px-4 py-3 rounded-xl bg-black/40 border-2 border-white/10 focus:border-[#FFC93C] focus:outline-none text-white text-base mb-3"
+        {/* Halo doré en haut */}
+        <div
+          className="absolute -top-20 left-1/2 -translate-x-1/2 h-40 w-64 rounded-full blur-3xl opacity-50"
+          style={{ background: "#FFC93C" }}
+          aria-hidden
         />
 
-        {suggestions.length > 0 && (
-          <div className="space-y-1 mb-4 max-h-[40vh] overflow-y-auto">
-            {suggestions.map((p) => (
-              <button
-                key={p.name}
-                onClick={() => onPick(p)}
-                className="w-full text-left px-3 py-2.5 rounded-xl bg-white/[0.04] hover:bg-[#FFC93C]/15 text-white transition-colors flex items-center gap-2"
-              >
-                <span className="text-sm">⚽</span>
-                <span className="text-sm">{p.name}</span>
-                <span className="ml-auto text-xs text-white/40">
-                  {p.nationalities[0]}
-                </span>
-              </button>
-            ))}
+        <div className="relative p-6">
+          <div className="text-center mb-5">
+            <div className="text-5xl mb-2">💭</div>
+            <div className="font-display text-[10px] tracking-[0.4em] text-[#FFC93C] mb-1">
+              TA RÉPONSE FINALE
+            </div>
+            <div className="font-display text-3xl tracking-wider text-white leading-none">
+              QUEL JOUEUR ?
+            </div>
           </div>
-        )}
 
-        {query.trim().length >= 2 && suggestions.length === 0 && (
-          <div className="text-center text-xs text-white/40 py-4 mb-3">
-            Aucun joueur trouvé pour "{query}".
-          </div>
-        )}
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Tape un nom…"
+            autoFocus
+            className="w-full px-4 py-3.5 rounded-2xl bg-black/50 border-2 border-white/10 focus:border-[#FFC93C] focus:outline-none focus:shadow-[0_0_20px_rgba(255,201,60,0.25)] text-white text-lg mb-3 transition-all"
+          />
 
-        <button
-          onClick={onClose}
-          className="w-full py-3 rounded-xl border-2 border-white/10 bg-white/[0.02] hover:bg-white/[0.06] text-white/70 font-display text-sm tracking-widest transition-colors"
-        >
-          ANNULER
-        </button>
+          {suggestions.length > 0 && (
+            <div className="space-y-1.5 mb-4 max-h-[40vh] overflow-y-auto rounded-2xl bg-black/30 p-2 border border-white/5">
+              {suggestions.map((p) => (
+                <button
+                  key={p.name}
+                  onClick={() => onPick(p)}
+                  className="group w-full text-left px-3 py-2.5 rounded-xl bg-white/[0.04] hover:bg-[#FFC93C]/15 hover:scale-[1.01] active:scale-[0.98] text-white transition-all flex items-center gap-3 border border-transparent hover:border-[#FFC93C]/30"
+                >
+                  <div className="h-9 w-9 rounded-full bg-gradient-to-br from-[#C084FC]/30 to-[#FFC93C]/30 flex items-center justify-center text-sm shrink-0">
+                    ⚽
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium truncate">{p.name}</div>
+                    <div className="text-[10px] text-white/40 truncate">
+                      {p.nationalities[0]} ·{" "}
+                      {p.positions[0] || "—"} · {p.clubs.length} clubs
+                    </div>
+                  </div>
+                  <div className="text-[#FFC93C] opacity-0 group-hover:opacity-100 transition-opacity">
+                    →
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {query.trim().length >= 2 && suggestions.length === 0 && (
+            <div className="text-center text-xs text-white/40 py-6 mb-3 rounded-2xl bg-black/20">
+              😅 Aucun joueur trouvé pour « {query} »
+            </div>
+          )}
+
+          {query.trim().length < 2 && (
+            <div className="text-center text-[11px] text-white/30 py-6 mb-3 tracking-wide">
+              Tape au moins 2 lettres pour voir les suggestions
+            </div>
+          )}
+
+          <button
+            onClick={onClose}
+            className="w-full py-3 rounded-2xl border-2 border-white/10 bg-white/[0.02] hover:bg-white/[0.06] text-white/70 font-display text-sm tracking-widest transition-colors"
+          >
+            ← RETOUR AU JEU
+          </button>
+        </div>
       </div>
     </div>
   );
 };
+
+// Carte joueur révélée style "FUT" — réutilisée sur les écrans de fin
+const PlayerRevealCard = ({
+  player,
+  accent = "#FFC93C",
+}: {
+  player: Player;
+  accent?: string;
+}) => (
+  <div className="relative inline-block my-2 animate-in zoom-in-95 duration-500">
+    <div
+      className="absolute inset-0 blur-3xl opacity-50 rounded-3xl"
+      style={{ background: accent }}
+      aria-hidden
+    />
+    <div
+      className="relative rounded-3xl p-5 lg:p-6 min-w-[260px] max-w-[340px] border-2 shadow-2xl"
+      style={{
+        background:
+          "linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(0,0,0,0.4) 100%), linear-gradient(135deg, #1A2A20 0%, #0A1410 100%)",
+        borderColor: `${accent}80`,
+        boxShadow: `0 20px 50px -10px ${accent}40, inset 0 1px 0 rgba(255,255,255,0.1)`,
+      }}
+    >
+      {/* Coin "GOAT" stylisé */}
+      <div
+        className="absolute top-3 right-3 px-2 py-0.5 rounded-md font-display text-[9px] tracking-[0.3em]"
+        style={{ background: accent, color: "#1A0F00" }}
+      >
+        GOAT
+      </div>
+
+      {/* Avatar / ballon */}
+      <div className="text-5xl mb-3">⚽</div>
+
+      {/* Nom du joueur */}
+      <div className="font-display text-2xl lg:text-3xl tracking-wider text-white mb-3 leading-tight break-words">
+        {player.name}
+      </div>
+
+      {/* Drapeau + nationalité */}
+      <div className="mb-3">
+        <div className="text-[9px] tracking-[0.3em] text-white/40 mb-1">
+          NATION
+        </div>
+        <div
+          className="font-display text-sm tracking-wide"
+          style={{ color: accent }}
+        >
+          {player.nationalities[0] || "—"}
+        </div>
+      </div>
+
+      {/* Postes */}
+      <div className="mb-3">
+        <div className="text-[9px] tracking-[0.3em] text-white/40 mb-1">
+          POSTE{player.positions.length > 1 ? "S" : ""}
+        </div>
+        <div className="flex flex-wrap gap-1">
+          {player.positions.map((p) => (
+            <span
+              key={p}
+              className="px-2 py-0.5 rounded-md text-[11px] bg-white/10 text-white/90 uppercase"
+            >
+              {p}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* Clubs (max 6) */}
+      <div>
+        <div className="text-[9px] tracking-[0.3em] text-white/40 mb-1">
+          CARRIÈRE
+        </div>
+        <div className="flex flex-wrap gap-1">
+          {player.clubs.slice(0, 6).map((c) => (
+            <span
+              key={c}
+              className="px-2 py-0.5 rounded-md text-[10px] bg-black/40 border border-white/10 text-white/80"
+            >
+              {c}
+            </span>
+          ))}
+          {player.clubs.length > 6 && (
+            <span className="px-2 py-0.5 rounded-md text-[10px] text-white/40">
+              +{player.clubs.length - 6}
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
+  </div>
+);
 
 const ReverseWon = ({
   secret,
@@ -1428,36 +1650,73 @@ const ReverseWon = ({
 }) => {
   const remaining = REVERSE_MAX_QUESTIONS - questionsUsed;
   const bonus =
-    difficulty === "expert" ? 50 : difficulty === "moyen" ? 20 : difficulty === "all" ? 30 : 0;
+    difficulty === "expert"
+      ? 50
+      : difficulty === "moyen"
+      ? 20
+      : difficulty === "all"
+      ? 30
+      : 0;
   const score = remaining * 5 + bonus;
+  const grade =
+    score >= 110 ? "🏆 LÉGENDAIRE" : score >= 70 ? "⭐ PRO" : score >= 40 ? "👍 SOLIDE" : "✓ TOUCHÉ";
   return (
-    <div className="text-center">
-      <div className="text-7xl mb-4 animate-in zoom-in duration-300">🎉</div>
-      <div className="font-display text-4xl lg:text-5xl tracking-wider text-[#FFC93C] mb-2">
+    <div className="text-center relative">
+      {/* Confettis CSS */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
+        {Array.from({ length: 16 }).map((_, i) => (
+          <span
+            key={i}
+            className="absolute block w-1.5 h-1.5 rounded-sm opacity-80"
+            style={{
+              left: `${(i * 6.5 + 5) % 100}%`,
+              top: `-10px`,
+              background: ["#FFC93C", "#FF8A2A", "#00E676", "#C084FC"][i % 4],
+              animation: `goat-confetti ${2 + (i % 4) * 0.4}s linear ${(i % 5) * 0.15}s forwards`,
+            }}
+          />
+        ))}
+      </div>
+
+      <div className="text-7xl mb-3 animate-in zoom-in duration-300">🎉</div>
+      <div className="font-display text-5xl lg:text-6xl tracking-wider mb-1 leading-none bg-gradient-to-r from-[#FFC93C] via-[#FF8A2A] to-[#FFC93C] bg-clip-text text-transparent">
         BIEN JOUÉ !
       </div>
-      <p className="text-white/70 text-base mb-2">
-        Tu as trouvé <span className="text-white font-bold">{secret.name}</span> en{" "}
-        <span className="text-[#FFC93C] font-bold">{questionsUsed}</span> questions.
+      <p className="text-white/60 text-sm mb-5 tracking-wide">
+        Trouvé en{" "}
+        <span className="text-[#FFC93C] font-bold">{questionsUsed}</span>{" "}
+        question{questionsUsed > 1 ? "s" : ""}
       </p>
-      <div className="my-5 inline-block px-6 py-3 rounded-2xl border-2 border-[#FFC93C]/40 bg-[#FFC93C]/10">
-        <div className="text-xs text-white/50 mb-1 tracking-widest">SCORE</div>
-        <div className="font-display text-4xl tracking-wider text-[#FFC93C] tabular-nums">
+
+      <PlayerRevealCard player={secret} accent="#FFC93C" />
+
+      <div className="mt-5 inline-flex flex-col items-center px-8 py-3 rounded-2xl border-2 border-[#FFC93C]/40 bg-gradient-to-br from-[#FFC93C]/15 to-transparent">
+        <div className="text-[10px] tracking-[0.4em] text-white/40 mb-0.5">
+          SCORE
+        </div>
+        <div className="font-display text-5xl tracking-wider text-[#FFC93C] tabular-nums leading-none">
           {score}
         </div>
+        <div
+          className="mt-1.5 text-[11px] tracking-[0.3em] font-display"
+          style={{ color: "#FFC93C" }}
+        >
+          {grade}
+        </div>
       </div>
-      <div className="grid grid-cols-2 gap-3 mt-2">
+
+      <div className="grid grid-cols-2 gap-3 mt-6">
         <button
           onClick={onRestart}
-          className="py-4 rounded-2xl bg-gradient-to-r from-[#FF8A2A] to-[#FFC93C] text-[#1A0F00] font-display text-lg tracking-widest hover:scale-[1.02] transition-transform"
+          className="py-4 rounded-2xl bg-gradient-to-r from-[#FF8A2A] to-[#FFC93C] text-[#1A0F00] font-display text-lg tracking-widest hover:scale-[1.02] active:scale-[0.97] transition-transform shadow-[0_8px_24px_rgba(255,201,60,0.4)]"
         >
           ▶ REJOUER
         </button>
         <button
           onClick={onBack}
-          className="py-4 rounded-2xl border-2 border-white/10 bg-white/[0.03] hover:bg-white/[0.06] text-white/80 font-display text-base tracking-widest transition-colors"
+          className="py-4 rounded-2xl border-2 border-white/10 bg-white/[0.03] hover:bg-white/[0.08] text-white/80 font-display text-base tracking-widest transition-colors"
         >
-          MODES
+          ← MODES
         </button>
       </div>
     </div>
@@ -1474,43 +1733,28 @@ const ReverseLost = ({
   onBack: () => void;
 }) => (
   <div className="text-center">
-    <div className="text-7xl mb-4">😔</div>
-    <div className="font-display text-4xl lg:text-5xl tracking-wider text-white mb-2">
-      DOMMAGE
+    <div className="text-7xl mb-3">😔</div>
+    <div className="font-display text-5xl lg:text-6xl tracking-wider mb-1 leading-none bg-gradient-to-r from-[#FF3D6E] via-[#C084FC] to-[#FF3D6E] bg-clip-text text-transparent">
+      DOMMAGE !
     </div>
-    <p className="text-white/70 text-base mb-1">
-      Le joueur était...
+    <p className="text-white/60 text-sm mb-5 tracking-wide">
+      Le joueur secret était...
     </p>
-    <div className="my-5 inline-block px-6 py-3 rounded-2xl border-2 border-[#FFC93C]/40 bg-gradient-to-br from-[#1A2A20] to-[#0A1410]">
-      <div className="font-display text-3xl tracking-wider text-white mb-2">
-        {secret.name}
-      </div>
-      <div className="flex flex-wrap justify-center gap-1.5 text-xs">
-        <span className="px-2 py-0.5 rounded-full bg-white/10 text-white/70">
-          {secret.nationalities[0]}
-        </span>
-        {secret.positions.slice(0, 2).map((p) => (
-          <span key={p} className="px-2 py-0.5 rounded-full bg-[#C084FC]/20 text-[#C084FC]">
-            {p}
-          </span>
-        ))}
-        <span className="px-2 py-0.5 rounded-full bg-white/10 text-white/60">
-          {secret.clubs.length} clubs
-        </span>
-      </div>
-    </div>
-    <div className="grid grid-cols-2 gap-3">
+
+    <PlayerRevealCard player={secret} accent="#C084FC" />
+
+    <div className="grid grid-cols-2 gap-3 mt-6">
       <button
         onClick={onRestart}
-        className="py-4 rounded-2xl bg-gradient-to-r from-[#C084FC] to-[#FF8A2A] text-[#1A0F00] font-display text-lg tracking-widest hover:scale-[1.02] transition-transform"
+        className="py-4 rounded-2xl bg-gradient-to-r from-[#C084FC] to-[#FF8A2A] text-[#1A0F00] font-display text-lg tracking-widest hover:scale-[1.02] active:scale-[0.97] transition-transform shadow-[0_8px_24px_rgba(192,132,252,0.4)]"
       >
         ▶ REVANCHE
       </button>
       <button
         onClick={onBack}
-        className="py-4 rounded-2xl border-2 border-white/10 bg-white/[0.03] hover:bg-white/[0.06] text-white/80 font-display text-base tracking-widest transition-colors"
+        className="py-4 rounded-2xl border-2 border-white/10 bg-white/[0.03] hover:bg-white/[0.08] text-white/80 font-display text-base tracking-widest transition-colors"
       >
-        MODES
+        ← MODES
       </button>
     </div>
   </div>
