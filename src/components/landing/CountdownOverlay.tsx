@@ -1,14 +1,16 @@
 import { useEffect, useState } from "react";
 import type { GameMode } from "@/pages/Home";
 
+type CountdownGame = Exclude<GameMode, "guess">;
+
 type Props = {
-  game: GameMode;
+  game: CountdownGame;
   onDone: () => void;
   onCancel: () => void;
 };
 
 const GAME_INFO: Record<
-  GameMode,
+  CountdownGame,
   { name: string; tagline: string; accent: string }
 > = {
   pont: {
