@@ -1105,6 +1105,30 @@ const ReverseMode = ({ onBack }: { onBack: () => void }) => {
 
   // Inférences automatiques (nationalité unique, postes mono, continents disjoints)
   const autoAnswers = useMemo(() => inferAutoAnswers(revealed), [revealed]);
+  // Étapes débloquées (funnel : une étape se débloque dès qu'on a un OUI
+  // dans la précédente).
+  const unlockedStages = useMemo(
+    () => computeUnlockedStages(revealed),
+    [revealed]
+  );
+
+  // Quand une nouvelle étape se débloque, on bascule l'utilisateur dessus
+  // automatiquement pour qu'il sache où aller.
+  useEffect(() => {
+    if (phase !== "playing") return;
+    const lastUnlocked = REVERSE_STAGE_ORDER.filter((s) =>
+      unlockedStages.has(s)
+    ).pop();
+    if (lastUnlocked && lastUnlocked !== activeCategory) {
+      // Si l'étape courante n'est plus la plus avancée débloquée, on suit
+      // automatiquement. (Évite que l'user reste coincé sur "nat" après
+      // avoir validé "league".)
+      const currentIdx = REVERSE_STAGE_ORDER.indexOf(activeCategory);
+      const lastIdx = REVERSE_STAGE_ORDER.indexOf(lastUnlocked);
+      if (lastIdx > currentIdx) setActiveCategory(lastUnlocked);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [unlockedStages, phase]);
 
   const askQ = (q: Question) => {
     if (!secret || askedIds.has(q.id) || questionsLeft <= 0) return;
@@ -1174,6 +1198,7 @@ const ReverseMode = ({ onBack }: { onBack: () => void }) => {
           revealed={revealed}
           askedIds={askedIds}
           autoAnswers={autoAnswers}
+          unlockedStages={unlockedStages}
           activeCategory={activeCategory}
           setActiveCategory={setActiveCategory}
           search={search}
@@ -1259,13 +1284,41 @@ const ReverseConfig = ({
   );
 };
 
+// Ordre des étapes (funnel) : on doit valider une catégorie (avoir un OUI
+// dedans) avant de débloquer la suivante.
+const REVERSE_STAGE_ORDER: QCategory[] = [
+  "nat",
+  "league",
+  "club",
+  "pos",
+  "profile",
+];
+
 const REVERSE_CATEGORIES: { key: QCategory; label: string; icon: string }[] = [
   { key: "nat", label: "NATIONS", icon: "🌍" },
-  { key: "pos", label: "POSTES", icon: "⚽" },
-  { key: "club", label: "CLUBS", icon: "🏟️" },
   { key: "league", label: "LIGUES", icon: "🏆" },
+  { key: "club", label: "CLUBS", icon: "🏟️" },
+  { key: "pos", label: "POSTES", icon: "⚽" },
   { key: "profile", label: "PROFIL", icon: "📋" },
 ];
+
+// À partir des réponses déjà obtenues, détermine quelles étapes sont
+// débloquées. Règle : nat est toujours débloquée ; chaque étape suivante
+// se débloque dès qu'on a au moins un OUI dans l'étape précédente.
+const computeUnlockedStages = (
+  revealed: Array<{ q: Question; answer: boolean }>
+): Set<QCategory> => {
+  const unlocked = new Set<QCategory>(["nat"]);
+  for (let i = 0; i < REVERSE_STAGE_ORDER.length - 1; i++) {
+    const current = REVERSE_STAGE_ORDER[i];
+    const hasYes = revealed.some(
+      (r) => r.q.category === current && r.answer
+    );
+    if (hasYes) unlocked.add(REVERSE_STAGE_ORDER[i + 1]);
+    else break;
+  }
+  return unlocked;
+};
 
 const ReversePlaying = ({
   questionsLeft,
@@ -1273,6 +1326,7 @@ const ReversePlaying = ({
   revealed,
   askedIds,
   autoAnswers,
+  unlockedStages,
   activeCategory,
   setActiveCategory,
   search,
@@ -1286,6 +1340,7 @@ const ReversePlaying = ({
   revealed: Array<{ q: Question; answer: boolean }>;
   askedIds: Set<string>;
   autoAnswers: Map<string, boolean>;
+  unlockedStages: Set<QCategory>;
   activeCategory: QCategory;
   setActiveCategory: (c: QCategory) => void;
   search: string;
@@ -1405,24 +1460,51 @@ const ReversePlaying = ({
       {/* Tabs catégories + Search dans le même bloc */}
       <div className="rounded-2xl bg-black/30 border border-white/5 p-3 mb-3">
         <div className="flex gap-1.5 overflow-x-auto pb-2 mb-2 -mx-1 px-1">
-          {REVERSE_CATEGORIES.map((c) => {
+          {REVERSE_CATEGORIES.map((c, i) => {
             const isActive = activeCategory === c.key;
+            const isUnlocked = unlockedStages.has(c.key);
+            const stageNumber = i + 1;
             return (
               <button
                 key={c.key}
-                onClick={() => setActiveCategory(c.key)}
+                onClick={() => isUnlocked && setActiveCategory(c.key)}
+                disabled={!isUnlocked}
+                title={
+                  !isUnlocked
+                    ? "Trouve d'abord une réponse OUI dans l'étape précédente"
+                    : undefined
+                }
                 className={
-                  "shrink-0 px-3 py-2 rounded-xl font-display text-[11px] tracking-[0.2em] transition-all " +
-                  (isActive
+                  "shrink-0 px-3 py-2 rounded-xl font-display text-[11px] tracking-[0.2em] transition-all flex items-center gap-1.5 " +
+                  (!isUnlocked
+                    ? "bg-white/[0.02] text-white/25 cursor-not-allowed"
+                    : isActive
                     ? "bg-gradient-to-r from-[#FFC93C] to-[#FF8A2A] text-[#1A0F00] shadow-[0_4px_14px_rgba(255,201,60,0.4)] scale-[1.03]"
                     : "bg-white/[0.05] text-white/60 hover:bg-white/[0.1] hover:text-white/90")
                 }
               >
-                <span className="mr-1">{c.icon}</span>
-                {c.label}
+                <span
+                  className={
+                    "text-[9px] tabular-nums " +
+                    (!isUnlocked
+                      ? "opacity-50"
+                      : isActive
+                      ? "opacity-70"
+                      : "opacity-40")
+                  }
+                >
+                  {stageNumber}.
+                </span>
+                <span>{!isUnlocked ? "🔒" : c.icon}</span>
+                <span>{c.label}</span>
               </button>
             );
           })}
+        </div>
+        <div className="text-[10px] text-white/35 px-1 mb-1 tracking-wide leading-relaxed">
+          {unlockedStages.size < REVERSE_CATEGORIES.length
+            ? `Étape ${unlockedStages.size} / ${REVERSE_CATEGORIES.length} — débloque la suivante avec un OUI`
+            : "Toutes les étapes sont débloquées 🎉"}
         </div>
 
         <input
