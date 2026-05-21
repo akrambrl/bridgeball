@@ -356,37 +356,29 @@ const entropy = (yes: number, total: number) => {
   return -p * Math.log2(p) - (1 - p) * Math.log2(1 - p);
 };
 
-// Choisit la prochaine question en maximisant l'entropie, mais avec une
-// pénalité contre la répétition de catégorie : si on vient d'en poser 2
-// d'affilée dans la même catégorie, on bloque cette catégorie pour ce tour.
-// Si la précédente est de la même catégorie, on applique une pénalité ×0.55.
-// Ça force l'algo à alterner postes / nation / club / ligue / profil au lieu
-// de balayer mécaniquement tous les clubs d'une même ligue.
+// Ordre des étapes pour le mode Akinator (l'app devine) :
+//   1. Origine (continent puis nation précise)
+//   2. Championnat dans lequel le joueur a joué
+//   3. Club spécifique
+//   4. Poste
+//   5. Profil (carrière, retraite, etc.)
+// L'algo épuise une étape avant de passer à la suivante. Au sein d'une
+// étape, il choisit la question qui maximise l'entropie (= split 50/50
+// optimal). Quand plus aucune question de l'étape courante n'a d'info
+// (entropie = 0 partout), on passe à l'étape suivante.
+const STAGE_ORDER: QCategory[] = ["nat", "league", "club", "pos", "profile"];
+
 const pickQuestion = (
   candidates: Player[],
   askedIds: Set<string>,
-  lastCategories: QCategory[]
+  _lastCategories: QCategory[]
 ) => {
-  const last = lastCategories[lastCategories.length - 1];
-  const last2 = lastCategories[lastCategories.length - 2];
-  const blocked = last && last === last2 ? last : null;
-
-  let best: { q: Question; score: number } | null = null;
-  for (const q of QUESTIONS) {
-    if (askedIds.has(q.id)) continue;
-    if (blocked && q.category === blocked) continue;
-    let yes = 0;
-    for (const p of candidates) if (q.predicate(p)) yes++;
-    const ent = entropy(yes, candidates.length);
-    if (ent <= 0) continue;
-    const penalty = q.category === last ? 0.55 : 1;
-    const score = ent * penalty;
-    if (!best || score > best.score) best = { q, score };
-  }
-  // Fallback : si la pénalité a bloqué toutes les questions valides
-  // (très rare), on relâche la contrainte de catégorie.
-  if (!best && blocked) {
+  // Pour chaque étape dans l'ordre, on cherche la meilleure question
+  // discriminante. Dès qu'on en trouve une, on la retourne.
+  for (const stage of STAGE_ORDER) {
+    let best: { q: Question; score: number } | null = null;
     for (const q of QUESTIONS) {
+      if (q.category !== stage) continue;
       if (askedIds.has(q.id)) continue;
       let yes = 0;
       for (const p of candidates) if (q.predicate(p)) yes++;
@@ -394,8 +386,9 @@ const pickQuestion = (
       if (ent <= 0) continue;
       if (!best || ent > best.score) best = { q, score: ent };
     }
+    if (best) return best.q;
   }
-  return best?.q ?? null;
+  return null;
 };
 
 const pickGuess = (candidates: Player[]): Player => {
