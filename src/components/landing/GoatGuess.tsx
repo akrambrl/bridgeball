@@ -621,19 +621,20 @@ const AkinatorMode = ({ onBack }: { onBack: () => void }) => {
     setQuestionCount(nextCount);
     setLastCategories(nextLastCats);
 
-    // Devinette si peu de candidats restants ou max questions atteint
     if (nextCandidates.length === 0) {
       setCandidates(nextCandidates);
       setPhase("lost");
       return;
     }
-    if (nextCandidates.length <= 2 || nextCount >= MAX_QUESTIONS) {
+    // On devine si : un seul candidat, OU on a atteint la limite de questions
+    if (nextCandidates.length === 1 || nextCount >= MAX_QUESTIONS) {
       setCandidates(nextCandidates);
       goToGuess(nextCandidates);
       return;
     }
 
-    // Choisir la question suivante
+    // Sinon, on cherche une question qui peut encore discriminer le set.
+    // Si plus aucune question utile (entropie = 0 partout), on devine.
     const nextQ = pickQuestion(nextCandidates, nextAsked, nextLastCats);
     setCandidates(nextCandidates);
     if (!nextQ) {
