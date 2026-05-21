@@ -571,7 +571,7 @@ export const GoatGuess = ({ onClose }: Props) => {
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md"
+      className="fixed inset-0 z-[9000] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md"
     >
       {/* Halo violet/cyan magique */}
       <div
@@ -585,7 +585,7 @@ export const GoatGuess = ({ onClose }: Props) => {
 
       <button
         onClick={handleClose}
-        className="fixed top-3 right-3 z-[90] flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white font-display text-sm tracking-widest transition-colors"
+        className="fixed top-3 right-3 z-[9001] flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white font-display text-sm tracking-widest transition-colors"
         aria-label="Fermer GOAT Guess"
       >
         ✕ FERMER
