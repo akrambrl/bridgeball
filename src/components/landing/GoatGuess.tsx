@@ -1003,6 +1003,75 @@ const REVERSE_MAX_QUESTIONS = 20;
 type ReverseDifficulty = "facile" | "moyen" | "expert" | "all";
 type ReversePhase = "config" | "playing" | "won" | "lost";
 
+// Calcule les questions dont la réponse peut être déduite des réponses
+// déjà obtenues — pour les griser et révéler leur réponse automatiquement.
+//   - Nationalité (nat-*) : exclusives. OUI sur une → NON sur toutes les autres.
+//   - Continent (cont-*) : exclusifs.
+//   - Poste de base (is-gk/def/mid/att) : on assume mono-poste pour la majorité.
+const inferAutoAnswers = (
+  revealed: Array<{ q: Question; answer: boolean }>
+): Map<string, boolean> => {
+  const auto = new Map<string, boolean>();
+  const directlyAsked = new Set(revealed.map((r) => r.q.id));
+
+  // Nationalités spécifiques : un joueur n'a qu'une seule sélection
+  const yesNat = revealed.find(
+    (r) => r.answer && r.q.id.startsWith("nat-")
+  );
+  if (yesNat) {
+    QUESTIONS.filter(
+      (q) =>
+        q.id.startsWith("nat-") &&
+        q.id !== yesNat.q.id &&
+        !directlyAsked.has(q.id)
+    ).forEach((q) => auto.set(q.id, false));
+  }
+
+  // Continents : disjoints
+  const yesCont = revealed.find(
+    (r) => r.answer && r.q.id.startsWith("cont-")
+  );
+  if (yesCont) {
+    QUESTIONS.filter(
+      (q) =>
+        q.id.startsWith("cont-") &&
+        q.id !== yesCont.q.id &&
+        !directlyAsked.has(q.id)
+    ).forEach((q) => auto.set(q.id, false));
+  }
+
+  // Postes de base : 99% des joueurs ont un seul poste, on infère mono-poste
+  const baseRoles = ["is-gk", "is-def", "is-mid", "is-att"];
+  const yesRole = revealed.find(
+    (r) => r.answer && baseRoles.includes(r.q.id)
+  );
+  if (yesRole) {
+    baseRoles
+      .filter((id) => id !== yesRole.q.id && !directlyAsked.has(id))
+      .forEach((id) => auto.set(id, false));
+    // Si gardien → poste défensif OUI, offensif NON, versatile probablement NON
+    if (yesRole.q.id === "is-gk") {
+      if (!directlyAsked.has("is-defensive")) auto.set("is-defensive", true);
+      if (!directlyAsked.has("is-offensive")) auto.set("is-offensive", false);
+    }
+    // Si défenseur → défensif OUI
+    if (yesRole.q.id === "is-def" && !directlyAsked.has("is-defensive")) {
+      auto.set("is-defensive", true);
+    }
+    // Si attaquant → offensif OUI, défensif NON
+    if (yesRole.q.id === "is-att") {
+      if (!directlyAsked.has("is-offensive")) auto.set("is-offensive", true);
+      if (!directlyAsked.has("is-defensive")) auto.set("is-defensive", false);
+    }
+    // Si milieu → offensif OUI (les milieux sont catégorisés "offensif" dans nos questions)
+    if (yesRole.q.id === "is-mid" && !directlyAsked.has("is-offensive")) {
+      auto.set("is-offensive", true);
+    }
+  }
+
+  return auto;
+};
+
 const ReverseMode = ({ onBack }: { onBack: () => void }) => {
   const [phase, setPhase] = useState<ReversePhase>("config");
   const [difficulty, setDifficulty] = useState<ReverseDifficulty>("facile");
@@ -1040,8 +1109,14 @@ const ReverseMode = ({ onBack }: { onBack: () => void }) => {
     setPhase("playing");
   };
 
+  // Inférences automatiques (nationalité unique, postes mono, continents disjoints)
+  const autoAnswers = useMemo(() => inferAutoAnswers(revealed), [revealed]);
+
   const askQ = (q: Question) => {
     if (!secret || askedIds.has(q.id) || questionsLeft <= 0) return;
+    // Si la réponse est déjà déductible des questions posées, on n'en consomme pas
+    // une autre — l'UI doit normalement avoir déjà grisé cette question.
+    if (autoAnswers.has(q.id)) return;
     const answer = q.predicate(secret);
     const nextAsked = new Set(askedIds);
     nextAsked.add(q.id);
@@ -1104,6 +1179,7 @@ const ReverseMode = ({ onBack }: { onBack: () => void }) => {
           maxQuestions={REVERSE_MAX_QUESTIONS}
           revealed={revealed}
           askedIds={askedIds}
+          autoAnswers={autoAnswers}
           activeCategory={activeCategory}
           setActiveCategory={setActiveCategory}
           search={search}
@@ -1202,6 +1278,7 @@ const ReversePlaying = ({
   maxQuestions,
   revealed,
   askedIds,
+  autoAnswers,
   activeCategory,
   setActiveCategory,
   search,
@@ -1214,6 +1291,7 @@ const ReversePlaying = ({
   maxQuestions: number;
   revealed: Array<{ q: Question; answer: boolean }>;
   askedIds: Set<string>;
+  autoAnswers: Map<string, boolean>;
   activeCategory: QCategory;
   setActiveCategory: (c: QCategory) => void;
   search: string;
@@ -1385,19 +1463,36 @@ const ReversePlaying = ({
           <div className="grid sm:grid-cols-2 gap-1.5">
             {filteredQuestions.map((q) => {
               const asked = askedIds.has(q.id);
+              const auto = autoAnswers.get(q.id);
+              const isAuto = auto !== undefined;
+              const disabled = asked || isAuto;
               return (
                 <button
                   key={q.id}
-                  onClick={() => !asked && onAsk(q)}
-                  disabled={asked}
+                  onClick={() => !disabled && onAsk(q)}
+                  disabled={disabled}
+                  title={
+                    isAuto
+                      ? `Réponse déjà déduite : ${auto ? "OUI" : "NON"}`
+                      : undefined
+                  }
                   className={
-                    "text-left px-3 py-2.5 rounded-xl text-sm transition-all " +
+                    "text-left px-3 py-2.5 rounded-xl text-sm transition-all flex items-center gap-2 " +
                     (asked
                       ? "bg-white/[0.02] text-white/20 cursor-not-allowed line-through"
+                      : isAuto
+                      ? auto
+                        ? "bg-[#00E676]/[0.06] text-[#00E676]/60 cursor-not-allowed border border-[#00E676]/20"
+                        : "bg-[#FF3D6E]/[0.06] text-[#FF3D6E]/60 cursor-not-allowed border border-[#FF3D6E]/20"
                       : "bg-white/[0.04] hover:bg-[#FFC93C]/15 hover:border-[#FFC93C]/40 text-white/85 border border-white/5 active:scale-[0.98]")
                   }
                 >
-                  {q.label}
+                  <span className="flex-1">{q.label}</span>
+                  {isAuto && (
+                    <span className="text-[10px] font-display tracking-widest shrink-0">
+                      {auto ? "✓ DÉDUIT" : "✗ DÉDUIT"}
+                    </span>
+                  )}
                 </button>
               );
             })}
