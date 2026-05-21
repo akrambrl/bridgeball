@@ -9,9 +9,12 @@ type Player = {
   diff: "facile" | "moyen" | "expert";
 };
 
+type QCategory = "pos" | "nat" | "club" | "league" | "profile";
+
 type Question = {
   id: string;
   label: string;
+  category: QCategory;
   predicate: (p: Player) => boolean;
 };
 
@@ -181,171 +184,171 @@ const AFRICA = new Set([
 
 const QUESTIONS: Question[] = [
   // Postes
-  { id: "is-gk", label: "Est-ce un gardien de but ?", predicate: (p) => hasPos(p, POS_GARDIEN) },
-  { id: "is-def", label: "Est-ce un défenseur ?", predicate: isDefender },
-  { id: "is-mid", label: "Est-ce un milieu de terrain ?", predicate: (p) => hasPos(p, POS_MIL) },
-  { id: "is-att", label: "Est-ce un attaquant ?", predicate: (p) => hasPos(p, POS_ATT) },
+  { id: "is-gk", category: "pos", label: "Est-ce un gardien de but ?", predicate: (p) => hasPos(p, POS_GARDIEN) },
+  { id: "is-def", category: "pos", label: "Est-ce un défenseur ?", predicate: isDefender },
+  { id: "is-mid", category: "pos", label: "Est-ce un milieu de terrain ?", predicate: (p) => hasPos(p, POS_MIL) },
+  { id: "is-att", category: "pos", label: "Est-ce un attaquant ?", predicate: (p) => hasPos(p, POS_ATT) },
   {
-    id: "is-offensive",
+    id: "is-offensive", category: "pos",
     label: "Joue-t-il à un poste offensif (milieu ou attaquant) ?",
     predicate: (p) => hasPos(p, POS_MIL) || hasPos(p, POS_ATT),
   },
   {
-    id: "is-defensive",
+    id: "is-defensive", category: "pos",
     label: "Joue-t-il à un poste défensif (gardien ou défenseur) ?",
     predicate: (p) => hasPos(p, POS_GARDIEN) || isDefender(p),
   },
   {
-    id: "is-versatile",
+    id: "is-versatile", category: "pos",
     label: "Peut-il jouer à plusieurs postes différents ?",
     predicate: (p) => p.positions.length >= 2,
   },
 
   // Nationalités majeures
-  { id: "nat-fr", label: "Est-il français ?", predicate: (p) => hasNat(p, "France") },
-  { id: "nat-es", label: "Est-il espagnol ?", predicate: (p) => hasNat(p, "Espagne") },
-  { id: "nat-en", label: "Est-il anglais ?", predicate: (p) => hasNat(p, "Angleterre") },
-  { id: "nat-de", label: "Est-il allemand ?", predicate: (p) => hasNat(p, "Allemagne") },
-  { id: "nat-it", label: "Est-il italien ?", predicate: (p) => hasNat(p, "Italie") },
-  { id: "nat-pt", label: "Est-il portugais ?", predicate: (p) => hasNat(p, "Portugal") },
-  { id: "nat-nl", label: "Est-il néerlandais ?", predicate: (p) => hasNat(p, "Pays-Bas") },
-  { id: "nat-be", label: "Est-il belge ?", predicate: (p) => hasNat(p, "Belgique") },
-  { id: "nat-hr", label: "Est-il croate ?", predicate: (p) => hasNat(p, "Croatie") },
-  { id: "nat-ar", label: "Est-il argentin ?", predicate: (p) => hasNat(p, "Argentine") },
-  { id: "nat-br", label: "Est-il brésilien ?", predicate: (p) => hasNat(p, "Brésil") },
-  { id: "nat-uy", label: "Est-il uruguayen ?", predicate: (p) => hasNat(p, "Uruguay") },
-  { id: "nat-co", label: "Est-il colombien ?", predicate: (p) => hasNat(p, "Colombie") },
-  { id: "nat-ma", label: "Est-il marocain ?", predicate: (p) => hasNat(p, "Maroc") },
-  { id: "nat-dz", label: "Est-il algérien ?", predicate: (p) => hasNat(p, "Algérie") },
-  { id: "nat-sn", label: "Est-il sénégalais ?", predicate: (p) => hasNat(p, "Sénégal") },
-  { id: "nat-ci", label: "Est-il ivoirien ?", predicate: (p) => hasNat(p, "Côte d'Ivoire") },
-  { id: "nat-cm", label: "Est-il camerounais ?", predicate: (p) => hasNat(p, "Cameroun") },
-  { id: "nat-ng", label: "Est-il nigérian ?", predicate: (p) => hasNat(p, "Nigeria") },
-  { id: "nat-gh", label: "Est-il ghanéen ?", predicate: (p) => hasNat(p, "Ghana") },
+  { id: "nat-fr", category: "nat", label: "Est-il français ?", predicate: (p) => hasNat(p, "France") },
+  { id: "nat-es", category: "nat", label: "Est-il espagnol ?", predicate: (p) => hasNat(p, "Espagne") },
+  { id: "nat-en", category: "nat", label: "Est-il anglais ?", predicate: (p) => hasNat(p, "Angleterre") },
+  { id: "nat-de", category: "nat", label: "Est-il allemand ?", predicate: (p) => hasNat(p, "Allemagne") },
+  { id: "nat-it", category: "nat", label: "Est-il italien ?", predicate: (p) => hasNat(p, "Italie") },
+  { id: "nat-pt", category: "nat", label: "Est-il portugais ?", predicate: (p) => hasNat(p, "Portugal") },
+  { id: "nat-nl", category: "nat", label: "Est-il néerlandais ?", predicate: (p) => hasNat(p, "Pays-Bas") },
+  { id: "nat-be", category: "nat", label: "Est-il belge ?", predicate: (p) => hasNat(p, "Belgique") },
+  { id: "nat-hr", category: "nat", label: "Est-il croate ?", predicate: (p) => hasNat(p, "Croatie") },
+  { id: "nat-ar", category: "nat", label: "Est-il argentin ?", predicate: (p) => hasNat(p, "Argentine") },
+  { id: "nat-br", category: "nat", label: "Est-il brésilien ?", predicate: (p) => hasNat(p, "Brésil") },
+  { id: "nat-uy", category: "nat", label: "Est-il uruguayen ?", predicate: (p) => hasNat(p, "Uruguay") },
+  { id: "nat-co", category: "nat", label: "Est-il colombien ?", predicate: (p) => hasNat(p, "Colombie") },
+  { id: "nat-ma", category: "nat", label: "Est-il marocain ?", predicate: (p) => hasNat(p, "Maroc") },
+  { id: "nat-dz", category: "nat", label: "Est-il algérien ?", predicate: (p) => hasNat(p, "Algérie") },
+  { id: "nat-sn", category: "nat", label: "Est-il sénégalais ?", predicate: (p) => hasNat(p, "Sénégal") },
+  { id: "nat-ci", category: "nat", label: "Est-il ivoirien ?", predicate: (p) => hasNat(p, "Côte d'Ivoire") },
+  { id: "nat-cm", category: "nat", label: "Est-il camerounais ?", predicate: (p) => hasNat(p, "Cameroun") },
+  { id: "nat-ng", category: "nat", label: "Est-il nigérian ?", predicate: (p) => hasNat(p, "Nigeria") },
+  { id: "nat-gh", category: "nat", label: "Est-il ghanéen ?", predicate: (p) => hasNat(p, "Ghana") },
 
   // Continents
   {
-    id: "cont-eu",
+    id: "cont-eu", category: "nat",
     label: "Vient-il d'un pays européen ?",
     predicate: (p) => p.nationalities.some((n) => EUROPE.has(n)),
   },
   {
-    id: "cont-sa",
+    id: "cont-sa", category: "nat",
     label: "Vient-il d'un pays sud-américain ?",
     predicate: (p) => p.nationalities.some((n) => SOUTH_AMERICA.has(n)),
   },
   {
-    id: "cont-af",
+    id: "cont-af", category: "nat",
     label: "Vient-il d'un pays africain ?",
     predicate: (p) => p.nationalities.some((n) => AFRICA.has(n)),
   },
   {
-    id: "multi-nat",
+    id: "multi-nat", category: "nat",
     label: "A-t-il plusieurs nationalités ?",
     predicate: (p) => p.nationalities.length >= 2,
   },
 
   // Clubs majeurs
-  { id: "club-real", label: "A-t-il joué au Real Madrid ?", predicate: (p) => playedFor(p, "Real Madrid") },
-  { id: "club-barca", label: "A-t-il joué au FC Barcelone ?", predicate: (p) => playedFor(p, "Barcelona") },
-  { id: "club-atm", label: "A-t-il joué à l'Atlético Madrid ?", predicate: (p) => playedFor(p, "Atletico Madrid") },
-  { id: "club-sevilla", label: "A-t-il joué au FC Séville ?", predicate: (p) => playedFor(p, "Sevilla") },
-  { id: "club-mu", label: "A-t-il joué à Manchester United ?", predicate: (p) => playedFor(p, "Manchester United") },
-  { id: "club-mc", label: "A-t-il joué à Manchester City ?", predicate: (p) => playedFor(p, "Manchester City") },
-  { id: "club-liv", label: "A-t-il joué à Liverpool ?", predicate: (p) => playedFor(p, "Liverpool") },
-  { id: "club-che", label: "A-t-il joué à Chelsea ?", predicate: (p) => playedFor(p, "Chelsea") },
-  { id: "club-ars", label: "A-t-il joué à Arsenal ?", predicate: (p) => playedFor(p, "Arsenal") },
-  { id: "club-tot", label: "A-t-il joué à Tottenham ?", predicate: (p) => playedFor(p, "Tottenham") },
-  { id: "club-juv", label: "A-t-il joué à la Juventus ?", predicate: (p) => playedFor(p, "Juventus FC") },
-  { id: "club-milan", label: "A-t-il joué à l'AC Milan ?", predicate: (p) => playedFor(p, "AC Milan") },
-  { id: "club-inter", label: "A-t-il joué à l'Inter Milan ?", predicate: (p) => playedFor(p, "Inter Milan") },
-  { id: "club-roma", label: "A-t-il joué à l'AS Roma ?", predicate: (p) => playedFor(p, "AS Roma") },
-  { id: "club-napoli", label: "A-t-il joué à Naples ?", predicate: (p) => playedFor(p, "Napoli") },
-  { id: "club-bayern", label: "A-t-il joué au Bayern Munich ?", predicate: (p) => playedFor(p, "Bayern Munich") },
-  { id: "club-bvb", label: "A-t-il joué au Borussia Dortmund ?", predicate: (p) => playedFor(p, "Borussia Dortmund") },
-  { id: "club-psg", label: "A-t-il joué au PSG ?", predicate: (p) => playedFor(p, "PSG") },
-  { id: "club-om", label: "A-t-il joué à l'Olympique de Marseille ?", predicate: (p) => playedFor(p, "Marseille") },
-  { id: "club-ol", label: "A-t-il joué à l'Olympique Lyonnais ?", predicate: (p) => playedFor(p, "Lyon") },
-  { id: "club-monaco", label: "A-t-il joué à l'AS Monaco ?", predicate: (p) => playedFor(p, "Monaco") },
-  { id: "club-lille", label: "A-t-il joué au LOSC Lille ?", predicate: (p) => playedFor(p, "Lille") },
-  { id: "club-ajax", label: "A-t-il joué à l'Ajax Amsterdam ?", predicate: (p) => playedFor(p, "Ajax Amsterdam") },
-  { id: "club-porto", label: "A-t-il joué au FC Porto ?", predicate: (p) => playedFor(p, "Porto") },
-  { id: "club-benfica", label: "A-t-il joué au Benfica ?", predicate: (p) => playedFor(p, "Benfica") },
-  { id: "club-sporting", label: "A-t-il joué au Sporting CP ?", predicate: (p) => playedFor(p, "Sporting CP") },
-  { id: "club-newcastle", label: "A-t-il joué à Newcastle ?", predicate: (p) => playedFor(p, "Newcastle") },
+  { id: "club-real", category: "club", label: "A-t-il joué au Real Madrid ?", predicate: (p) => playedFor(p, "Real Madrid") },
+  { id: "club-barca", category: "club", label: "A-t-il joué au FC Barcelone ?", predicate: (p) => playedFor(p, "Barcelona") },
+  { id: "club-atm", category: "club", label: "A-t-il joué à l'Atlético Madrid ?", predicate: (p) => playedFor(p, "Atletico Madrid") },
+  { id: "club-sevilla", category: "club", label: "A-t-il joué au FC Séville ?", predicate: (p) => playedFor(p, "Sevilla") },
+  { id: "club-mu", category: "club", label: "A-t-il joué à Manchester United ?", predicate: (p) => playedFor(p, "Manchester United") },
+  { id: "club-mc", category: "club", label: "A-t-il joué à Manchester City ?", predicate: (p) => playedFor(p, "Manchester City") },
+  { id: "club-liv", category: "club", label: "A-t-il joué à Liverpool ?", predicate: (p) => playedFor(p, "Liverpool") },
+  { id: "club-che", category: "club", label: "A-t-il joué à Chelsea ?", predicate: (p) => playedFor(p, "Chelsea") },
+  { id: "club-ars", category: "club", label: "A-t-il joué à Arsenal ?", predicate: (p) => playedFor(p, "Arsenal") },
+  { id: "club-tot", category: "club", label: "A-t-il joué à Tottenham ?", predicate: (p) => playedFor(p, "Tottenham") },
+  { id: "club-juv", category: "club", label: "A-t-il joué à la Juventus ?", predicate: (p) => playedFor(p, "Juventus FC") },
+  { id: "club-milan", category: "club", label: "A-t-il joué à l'AC Milan ?", predicate: (p) => playedFor(p, "AC Milan") },
+  { id: "club-inter", category: "club", label: "A-t-il joué à l'Inter Milan ?", predicate: (p) => playedFor(p, "Inter Milan") },
+  { id: "club-roma", category: "club", label: "A-t-il joué à l'AS Roma ?", predicate: (p) => playedFor(p, "AS Roma") },
+  { id: "club-napoli", category: "club", label: "A-t-il joué à Naples ?", predicate: (p) => playedFor(p, "Napoli") },
+  { id: "club-bayern", category: "club", label: "A-t-il joué au Bayern Munich ?", predicate: (p) => playedFor(p, "Bayern Munich") },
+  { id: "club-bvb", category: "club", label: "A-t-il joué au Borussia Dortmund ?", predicate: (p) => playedFor(p, "Borussia Dortmund") },
+  { id: "club-psg", category: "club", label: "A-t-il joué au PSG ?", predicate: (p) => playedFor(p, "PSG") },
+  { id: "club-om", category: "club", label: "A-t-il joué à l'Olympique de Marseille ?", predicate: (p) => playedFor(p, "Marseille") },
+  { id: "club-ol", category: "club", label: "A-t-il joué à l'Olympique Lyonnais ?", predicate: (p) => playedFor(p, "Lyon") },
+  { id: "club-monaco", category: "club", label: "A-t-il joué à l'AS Monaco ?", predicate: (p) => playedFor(p, "Monaco") },
+  { id: "club-lille", category: "club", label: "A-t-il joué au LOSC Lille ?", predicate: (p) => playedFor(p, "Lille") },
+  { id: "club-ajax", category: "club", label: "A-t-il joué à l'Ajax Amsterdam ?", predicate: (p) => playedFor(p, "Ajax Amsterdam") },
+  { id: "club-porto", category: "club", label: "A-t-il joué au FC Porto ?", predicate: (p) => playedFor(p, "Porto") },
+  { id: "club-benfica", category: "club", label: "A-t-il joué au Benfica ?", predicate: (p) => playedFor(p, "Benfica") },
+  { id: "club-sporting", category: "club", label: "A-t-il joué au Sporting CP ?", predicate: (p) => playedFor(p, "Sporting CP") },
+  { id: "club-newcastle", category: "club", label: "A-t-il joué à Newcastle ?", predicate: (p) => playedFor(p, "Newcastle") },
 
   // Ligues
-  { id: "lg-pl", label: "A-t-il joué en Premier League anglaise ?", predicate: (p) => playedForAny(p, PREMIER_LEAGUE) },
-  { id: "lg-liga", label: "A-t-il joué en Liga espagnole ?", predicate: (p) => playedForAny(p, LIGA) },
-  { id: "lg-seriea", label: "A-t-il joué en Serie A italienne ?", predicate: (p) => playedForAny(p, SERIE_A) },
-  { id: "lg-l1", label: "A-t-il joué en Ligue 1 française ?", predicate: (p) => playedForAny(p, LIGUE_1) },
-  { id: "lg-bl", label: "A-t-il joué en Bundesliga allemande ?", predicate: (p) => playedForAny(p, BUNDESLIGA) },
+  { id: "lg-pl", category: "league", label: "A-t-il joué en Premier League anglaise ?", predicate: (p) => playedForAny(p, PREMIER_LEAGUE) },
+  { id: "lg-liga", category: "league", label: "A-t-il joué en Liga espagnole ?", predicate: (p) => playedForAny(p, LIGA) },
+  { id: "lg-seriea", category: "league", label: "A-t-il joué en Serie A italienne ?", predicate: (p) => playedForAny(p, SERIE_A) },
+  { id: "lg-l1", category: "league", label: "A-t-il joué en Ligue 1 française ?", predicate: (p) => playedForAny(p, LIGUE_1) },
+  { id: "lg-bl", category: "league", label: "A-t-il joué en Bundesliga allemande ?", predicate: (p) => playedForAny(p, BUNDESLIGA) },
 
   // Clubs additionnels (deuxième couche, ~30-100 joueurs chacun)
-  { id: "club-leverkusen", label: "A-t-il joué au Bayer Leverkusen ?", predicate: (p) => playedFor(p, "Bayer Leverkusen") },
-  { id: "club-leipzig", label: "A-t-il joué au RB Leipzig ?", predicate: (p) => playedFor(p, "RB Leipzig") },
-  { id: "club-schalke", label: "A-t-il joué à Schalke 04 ?", predicate: (p) => playedFor(p, "Schalke 04") },
-  { id: "club-wolfsburg", label: "A-t-il joué à Wolfsburg ?", predicate: (p) => playedFor(p, "Wolfsburg") },
-  { id: "club-frankfurt", label: "A-t-il joué à l'Eintracht Frankfurt ?", predicate: (p) => playedFor(p, "Eintracht Frankfurt") },
-  { id: "club-stuttgart", label: "A-t-il joué à Stuttgart ?", predicate: (p) => playedFor(p, "Stuttgart") },
-  { id: "club-lazio", label: "A-t-il joué à la Lazio ?", predicate: (p) => playedFor(p, "Lazio") },
-  { id: "club-atalanta", label: "A-t-il joué à l'Atalanta ?", predicate: (p) => playedFor(p, "Atalanta BC") },
-  { id: "club-fiorentina", label: "A-t-il joué à la Fiorentina ?", predicate: (p) => playedFor(p, "Fiorentina") },
-  { id: "club-villarreal", label: "A-t-il joué à Villarreal ?", predicate: (p) => playedFor(p, "Villarreal") },
-  { id: "club-valencia", label: "A-t-il joué à Valence ?", predicate: (p) => playedFor(p, "Valencia") },
-  { id: "club-sociedad", label: "A-t-il joué à la Real Sociedad ?", predicate: (p) => playedFor(p, "Real Sociedad") },
-  { id: "club-betis", label: "A-t-il joué au Real Betis ?", predicate: (p) => playedFor(p, "Real Betis") },
-  { id: "club-westham", label: "A-t-il joué à West Ham ?", predicate: (p) => playedFor(p, "West Ham") },
-  { id: "club-everton", label: "A-t-il joué à Everton ?", predicate: (p) => playedFor(p, "Everton") },
-  { id: "club-aston", label: "A-t-il joué à Aston Villa ?", predicate: (p) => playedFor(p, "Aston Villa") },
-  { id: "club-fulham", label: "A-t-il joué à Fulham ?", predicate: (p) => playedFor(p, "Fulham") },
-  { id: "club-nice", label: "A-t-il joué à l'OGC Nice ?", predicate: (p) => playedFor(p, "Nice") },
-  { id: "club-rennes", label: "A-t-il joué au Stade Rennais ?", predicate: (p) => playedFor(p, "Rennes") },
-  { id: "club-bordeaux", label: "A-t-il joué aux Girondins de Bordeaux ?", predicate: (p) => playedFor(p, "Bordeaux") },
-  { id: "club-saintet", label: "A-t-il joué à l'AS Saint-Étienne ?", predicate: (p) => playedForAny(p, ["Saint-Étienne", "Saint-Etienne"]) },
-  { id: "club-nantes", label: "A-t-il joué au FC Nantes ?", predicate: (p) => playedFor(p, "Nantes") },
-  { id: "club-lens", label: "A-t-il joué au RC Lens ?", predicate: (p) => playedFor(p, "Lens") },
-  { id: "club-feyenoord", label: "A-t-il joué à Feyenoord ?", predicate: (p) => playedFor(p, "Feyenoord") },
-  { id: "club-psv", label: "A-t-il joué au PSV Eindhoven ?", predicate: (p) => playedFor(p, "PSV Eindhoven") },
-  { id: "club-galata", label: "A-t-il joué à Galatasaray ?", predicate: (p) => playedFor(p, "Galatasaray") },
-  { id: "club-fener", label: "A-t-il joué à Fenerbahçe ?", predicate: (p) => playedFor(p, "Fenerbahce") },
-  { id: "club-celtic", label: "A-t-il joué au Celtic Glasgow ?", predicate: (p) => playedFor(p, "Celtic") },
-  { id: "club-boca", label: "A-t-il joué à Boca Juniors ?", predicate: (p) => playedFor(p, "Boca Juniors") },
-  { id: "club-river", label: "A-t-il joué à River Plate ?", predicate: (p) => playedFor(p, "River Plate") },
+  { id: "club-leverkusen", category: "club", label: "A-t-il joué au Bayer Leverkusen ?", predicate: (p) => playedFor(p, "Bayer Leverkusen") },
+  { id: "club-leipzig", category: "club", label: "A-t-il joué au RB Leipzig ?", predicate: (p) => playedFor(p, "RB Leipzig") },
+  { id: "club-schalke", category: "club", label: "A-t-il joué à Schalke 04 ?", predicate: (p) => playedFor(p, "Schalke 04") },
+  { id: "club-wolfsburg", category: "club", label: "A-t-il joué à Wolfsburg ?", predicate: (p) => playedFor(p, "Wolfsburg") },
+  { id: "club-frankfurt", category: "club", label: "A-t-il joué à l'Eintracht Frankfurt ?", predicate: (p) => playedFor(p, "Eintracht Frankfurt") },
+  { id: "club-stuttgart", category: "club", label: "A-t-il joué à Stuttgart ?", predicate: (p) => playedFor(p, "Stuttgart") },
+  { id: "club-lazio", category: "club", label: "A-t-il joué à la Lazio ?", predicate: (p) => playedFor(p, "Lazio") },
+  { id: "club-atalanta", category: "club", label: "A-t-il joué à l'Atalanta ?", predicate: (p) => playedFor(p, "Atalanta BC") },
+  { id: "club-fiorentina", category: "club", label: "A-t-il joué à la Fiorentina ?", predicate: (p) => playedFor(p, "Fiorentina") },
+  { id: "club-villarreal", category: "club", label: "A-t-il joué à Villarreal ?", predicate: (p) => playedFor(p, "Villarreal") },
+  { id: "club-valencia", category: "club", label: "A-t-il joué à Valence ?", predicate: (p) => playedFor(p, "Valencia") },
+  { id: "club-sociedad", category: "club", label: "A-t-il joué à la Real Sociedad ?", predicate: (p) => playedFor(p, "Real Sociedad") },
+  { id: "club-betis", category: "club", label: "A-t-il joué au Real Betis ?", predicate: (p) => playedFor(p, "Real Betis") },
+  { id: "club-westham", category: "club", label: "A-t-il joué à West Ham ?", predicate: (p) => playedFor(p, "West Ham") },
+  { id: "club-everton", category: "club", label: "A-t-il joué à Everton ?", predicate: (p) => playedFor(p, "Everton") },
+  { id: "club-aston", category: "club", label: "A-t-il joué à Aston Villa ?", predicate: (p) => playedFor(p, "Aston Villa") },
+  { id: "club-fulham", category: "club", label: "A-t-il joué à Fulham ?", predicate: (p) => playedFor(p, "Fulham") },
+  { id: "club-nice", category: "club", label: "A-t-il joué à l'OGC Nice ?", predicate: (p) => playedFor(p, "Nice") },
+  { id: "club-rennes", category: "club", label: "A-t-il joué au Stade Rennais ?", predicate: (p) => playedFor(p, "Rennes") },
+  { id: "club-bordeaux", category: "club", label: "A-t-il joué aux Girondins de Bordeaux ?", predicate: (p) => playedFor(p, "Bordeaux") },
+  { id: "club-saintet", category: "club", label: "A-t-il joué à l'AS Saint-Étienne ?", predicate: (p) => playedForAny(p, ["Saint-Étienne", "Saint-Etienne"]) },
+  { id: "club-nantes", category: "club", label: "A-t-il joué au FC Nantes ?", predicate: (p) => playedFor(p, "Nantes") },
+  { id: "club-lens", category: "club", label: "A-t-il joué au RC Lens ?", predicate: (p) => playedFor(p, "Lens") },
+  { id: "club-feyenoord", category: "club", label: "A-t-il joué à Feyenoord ?", predicate: (p) => playedFor(p, "Feyenoord") },
+  { id: "club-psv", category: "club", label: "A-t-il joué au PSV Eindhoven ?", predicate: (p) => playedFor(p, "PSV Eindhoven") },
+  { id: "club-galata", category: "club", label: "A-t-il joué à Galatasaray ?", predicate: (p) => playedFor(p, "Galatasaray") },
+  { id: "club-fener", category: "club", label: "A-t-il joué à Fenerbahçe ?", predicate: (p) => playedFor(p, "Fenerbahce") },
+  { id: "club-celtic", category: "club", label: "A-t-il joué au Celtic Glasgow ?", predicate: (p) => playedFor(p, "Celtic") },
+  { id: "club-boca", category: "club", label: "A-t-il joué à Boca Juniors ?", predicate: (p) => playedFor(p, "Boca Juniors") },
+  { id: "club-river", category: "club", label: "A-t-il joué à River Plate ?", predicate: (p) => playedFor(p, "River Plate") },
 
   // Nationalités additionnelles
-  { id: "nat-dk", label: "Est-il danois ?", predicate: (p) => hasNat(p, "Danemark") },
-  { id: "nat-se", label: "Est-il suédois ?", predicate: (p) => hasNat(p, "Suède") },
-  { id: "nat-no", label: "Est-il norvégien ?", predicate: (p) => hasNat(p, "Norvège") },
-  { id: "nat-ch", label: "Est-il suisse ?", predicate: (p) => hasNat(p, "Suisse") },
-  { id: "nat-pl", label: "Est-il polonais ?", predicate: (p) => hasNat(p, "Pologne") },
-  { id: "nat-cz", label: "Est-il tchèque ?", predicate: (p) => hasNat(p, "Tchéquie") },
-  { id: "nat-rs", label: "Est-il serbe ?", predicate: (p) => hasNat(p, "Serbie") },
-  { id: "nat-tr", label: "Est-il turc ?", predicate: (p) => hasNat(p, "Turquie") },
-  { id: "nat-gr", label: "Est-il grec ?", predicate: (p) => hasNat(p, "Grèce") },
-  { id: "nat-mx", label: "Est-il mexicain ?", predicate: (p) => hasNat(p, "Mexique") },
-  { id: "nat-jp", label: "Est-il japonais ?", predicate: (p) => hasNat(p, "Japon") },
-  { id: "nat-us", label: "Est-il américain (USA) ?", predicate: (p) => hasNat(p, "États-Unis") },
-  { id: "nat-ml", label: "Est-il malien ?", predicate: (p) => hasNat(p, "Mali") },
+  { id: "nat-dk", category: "nat", label: "Est-il danois ?", predicate: (p) => hasNat(p, "Danemark") },
+  { id: "nat-se", category: "nat", label: "Est-il suédois ?", predicate: (p) => hasNat(p, "Suède") },
+  { id: "nat-no", category: "nat", label: "Est-il norvégien ?", predicate: (p) => hasNat(p, "Norvège") },
+  { id: "nat-ch", category: "nat", label: "Est-il suisse ?", predicate: (p) => hasNat(p, "Suisse") },
+  { id: "nat-pl", category: "nat", label: "Est-il polonais ?", predicate: (p) => hasNat(p, "Pologne") },
+  { id: "nat-cz", category: "nat", label: "Est-il tchèque ?", predicate: (p) => hasNat(p, "Tchéquie") },
+  { id: "nat-rs", category: "nat", label: "Est-il serbe ?", predicate: (p) => hasNat(p, "Serbie") },
+  { id: "nat-tr", category: "nat", label: "Est-il turc ?", predicate: (p) => hasNat(p, "Turquie") },
+  { id: "nat-gr", category: "nat", label: "Est-il grec ?", predicate: (p) => hasNat(p, "Grèce") },
+  { id: "nat-mx", category: "nat", label: "Est-il mexicain ?", predicate: (p) => hasNat(p, "Mexique") },
+  { id: "nat-jp", category: "nat", label: "Est-il japonais ?", predicate: (p) => hasNat(p, "Japon") },
+  { id: "nat-us", category: "nat", label: "Est-il américain (USA) ?", predicate: (p) => hasNat(p, "États-Unis") },
+  { id: "nat-ml", category: "nat", label: "Est-il malien ?", predicate: (p) => hasNat(p, "Mali") },
 
   // Statut / profil
   {
-    id: "retired",
+    id: "retired", category: "profile",
     label: "Est-il retraité (n'a plus joué récemment) ?",
     predicate: (p) => RETIRED_PLAYERS.has(p.name),
   },
   {
-    id: "nomad",
+    id: "nomad", category: "profile",
     label: "A-t-il joué dans au moins 5 clubs différents ?",
     predicate: (p) => p.clubs.length >= 5,
   },
   {
-    id: "very-nomad",
+    id: "very-nomad", category: "profile",
     label: "A-t-il joué dans au moins 7 clubs différents ?",
     predicate: (p) => p.clubs.length >= 7,
   },
   {
-    id: "loyal",
+    id: "loyal", category: "profile",
     label: "A-t-il joué dans au plus 2 clubs (un joueur fidèle) ?",
     predicate: (p) => p.clubs.length <= 2,
   },
@@ -358,15 +361,44 @@ const entropy = (yes: number, total: number) => {
   return -p * Math.log2(p) - (1 - p) * Math.log2(1 - p);
 };
 
-const pickQuestion = (candidates: Player[], askedIds: Set<string>) => {
+// Choisit la prochaine question en maximisant l'entropie, mais avec une
+// pénalité contre la répétition de catégorie : si on vient d'en poser 2
+// d'affilée dans la même catégorie, on bloque cette catégorie pour ce tour.
+// Si la précédente est de la même catégorie, on applique une pénalité ×0.55.
+// Ça force l'algo à alterner postes / nation / club / ligue / profil au lieu
+// de balayer mécaniquement tous les clubs d'une même ligue.
+const pickQuestion = (
+  candidates: Player[],
+  askedIds: Set<string>,
+  lastCategories: QCategory[]
+) => {
+  const last = lastCategories[lastCategories.length - 1];
+  const last2 = lastCategories[lastCategories.length - 2];
+  const blocked = last && last === last2 ? last : null;
+
   let best: { q: Question; score: number } | null = null;
   for (const q of QUESTIONS) {
     if (askedIds.has(q.id)) continue;
+    if (blocked && q.category === blocked) continue;
     let yes = 0;
     for (const p of candidates) if (q.predicate(p)) yes++;
-    const score = entropy(yes, candidates.length);
-    if (score <= 0) continue;
+    const ent = entropy(yes, candidates.length);
+    if (ent <= 0) continue;
+    const penalty = q.category === last ? 0.55 : 1;
+    const score = ent * penalty;
     if (!best || score > best.score) best = { q, score };
+  }
+  // Fallback : si la pénalité a bloqué toutes les questions valides
+  // (très rare), on relâche la contrainte de catégorie.
+  if (!best && blocked) {
+    for (const q of QUESTIONS) {
+      if (askedIds.has(q.id)) continue;
+      let yes = 0;
+      for (const p of candidates) if (q.predicate(p)) yes++;
+      const ent = entropy(yes, candidates.length);
+      if (ent <= 0) continue;
+      if (!best || ent > best.score) best = { q, score: ent };
+    }
   }
   return best?.q ?? null;
 };
@@ -401,6 +433,8 @@ export const GoatGuess = ({ onClose }: Props) => {
   const [asked, setAsked] = useState<Set<string>>(new Set());
   const [questionCount, setQuestionCount] = useState(0);
   const [guessCount, setGuessCount] = useState(0);
+  // Trace les 2 dernières catégories pour pénaliser/bloquer la répétition.
+  const [lastCategories, setLastCategories] = useState<QCategory[]>([]);
   const [rejectedGuesses, setRejectedGuesses] = useState<Set<string>>(new Set());
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [currentGuess, setCurrentGuess] = useState<Player | null>(null);
@@ -412,7 +446,8 @@ export const GoatGuess = ({ onClose }: Props) => {
     setQuestionCount(0);
     setGuessCount(0);
     setRejectedGuesses(new Set());
-    const q = pickQuestion(initialPool, new Set());
+    setLastCategories([]);
+    const q = pickQuestion(initialPool, new Set(), []);
     setCurrentQuestion(q);
   };
 
@@ -431,7 +466,7 @@ export const GoatGuess = ({ onClose }: Props) => {
   // reste aucune de discriminante.
   useEffect(() => {
     if (phase !== "asking" || currentQuestion) return;
-    const q = pickQuestion(candidates, asked);
+    const q = pickQuestion(candidates, asked, lastCategories);
     if (q) {
       setCurrentQuestion(q);
     } else {
@@ -443,7 +478,7 @@ export const GoatGuess = ({ onClose }: Props) => {
         setPhase("guessing");
       }
     }
-  }, [phase, currentQuestion, candidates, asked, rejectedGuesses]);
+  }, [phase, currentQuestion, candidates, asked, rejectedGuesses, lastCategories]);
 
   const answerQuestion = (ans: Answer) => {
     if (!currentQuestion) return;
@@ -464,8 +499,10 @@ export const GoatGuess = ({ onClose }: Props) => {
     );
 
     const nextCount = questionCount + 1;
+    const nextLastCats = [...lastCategories, currentQuestion.category].slice(-2);
     setAsked(nextAsked);
     setQuestionCount(nextCount);
+    setLastCategories(nextLastCats);
 
     // Devinette si peu de candidats restants ou max questions atteint
     if (nextCandidates.length === 0) {
@@ -480,7 +517,7 @@ export const GoatGuess = ({ onClose }: Props) => {
     }
 
     // Choisir la question suivante
-    const nextQ = pickQuestion(nextCandidates, nextAsked);
+    const nextQ = pickQuestion(nextCandidates, nextAsked, nextLastCats);
     setCandidates(nextCandidates);
     if (!nextQ) {
       goToGuess(nextCandidates);
@@ -516,7 +553,7 @@ export const GoatGuess = ({ onClose }: Props) => {
     }
 
     // Sinon, on repose une question pour mieux discriminer le set restant.
-    const nextQ = pickQuestion(remaining, asked);
+    const nextQ = pickQuestion(remaining, asked, lastCategories);
     if (!nextQ) {
       setCurrentGuess(pickGuess(remaining));
       setPhase("guessing");
