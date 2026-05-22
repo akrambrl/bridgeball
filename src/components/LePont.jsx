@@ -9507,7 +9507,7 @@ export default function LePont() {
               const delta = endX - startX;
               homeSwipeStartRef.current = null;
               if(Math.abs(delta) > 50){
-                const newIdx = (homeCardIndex + (delta < 0 ? 1 : -1) + 3) % 3;
+                const newIdx = (homeCardIndex + (delta < 0 ? 1 : -1) + 4) % 4;
                 setHomeCardIndex(newIdx);
                 localStorage.setItem("bb_home_card", String(newIdx));
               }
