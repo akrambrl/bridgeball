@@ -349,7 +349,7 @@ export const PLAYERS = [
   { name:"Mohamed Simakan", clubs:["Strasbourg", "RB Leipzig", "Al Nassr"], diff:"moyen", nationalities:["France"], positions:["defenseur"], birthYear:2000 },
   { name:"Houssem Aouar", clubs:["Lyon", "AS Roma", "Al Ittihad"], diff:"moyen", nationalities:["Algérie"], positions:["attaquant"], birthYear:1998 },
   { name:"Amine Harit", clubs:["Nantes", "Schalke", "Marseille", "Basaksehir"], diff:"moyen", nationalities:["Maroc"], positions:["attaquant"], birthYear:1997 },
-  { name:"Maxime Lopez", clubs:["Marseille", "Sassuolo", "ACF Fiorentina", "Paris FC"], diff:"expert", nationalities:["Algérie"], positions:["attaquant"] },
+  { name:"Maxime Lopez", clubs:["Marseille", "Sassuolo", "ACF Fiorentina", "Paris FC"], diff:"moyen", nationalities:["France"], positions:["milieu"], birthYear:1997 },
   { name:"Valentin Rongier", clubs:["Nantes", "Marseille", "Rennes"], diff:"moyen", nationalities:["France"], positions:["milieu"] },
   { name:"Michy Batshuayi", clubs:["Standard Liège", "Marseille", "Chelsea", "Borussia Dortmund", "Valencia", "Crystal Palace", "Besiktas", "Fenerbahce", "Galatasaray", "Eintracht Frankfurt"], diff:"moyen", nationalities:["Belgique"], positions:["attaquant"], birthYear:1993 },
   { name:"Hiroki Sakai", clubs:["Kashiwa Reysol", "Hannover 96", "Marseille", "Urawa Red Diamonds"], diff:"expert", nationalities:["Japon"], positions:["attaquant"] },
@@ -894,7 +894,7 @@ export const PLAYERS = [
   { name:"Trent Alexander-Arnold", clubs:["Liverpool", "Real Madrid"], diff:"moyen", nationalities:["Angleterre"], positions:["defenseur"] },
   { name:"Reece James", clubs:["Wigan Athletic", "Chelsea"], diff:"moyen", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1999 },
   { name:"Achraf Hakimi", clubs:["Real Madrid", "Borussia Dortmund", "Inter Milan", "PSG"], diff:"moyen", nationalities:["Maroc"], positions:["defenseur"], birthYear:1998 },
-  { name:"Mehdi Benatia", clubs:["Marseille", "Udinese", "AS Roma", "Bayern Munich", "Juventus FC"], diff:"moyen", nationalities:["Maroc"], positions:["defenseur"], birthYear:1987 },
+  { name:"Mehdi Benatia", clubs:["Marseille", "Tours", "Lorient", "Clermont", "Udinese", "AS Roma", "Bayern Munich", "Juventus FC", "Al-Duhail", "Fatih Karagümrük"], diff:"moyen", nationalities:["Maroc"], positions:["defenseur"], birthYear:1987 },
   { name:"Ferland Mendy", clubs:["Le Havre", "Lyon", "Real Madrid"], diff:"moyen", nationalities:["France"], positions:["defenseur"], birthYear:1995 },
   { name:"Alphonso Davies", clubs:["Vancouver Whitecaps", "Bayern Munich"], diff:"moyen", nationalities:["Canada"], positions:["defenseur","milieu"], birthYear:2000 },
   { name:"Josko Gvardiol", clubs:["Dinamo Zagreb", "RB Leipzig", "Manchester City"], diff:"moyen", nationalities:["Croatie"], positions:["defenseur"], birthYear:2002 },
@@ -4355,7 +4355,7 @@ export const PLAYERS = [
   { name:"Yuri Zhirkov", clubs:["CSKA Moscow", "Chelsea", "Anzhi", "Dynamo Moscow", "Zenit"], diff:"expert", nationalities:["Russie"], positions:["defenseur","milieu"] },
 ];
 
-export const RETIRED_PLAYERS = new Set([ "Elano","Diego Milito","Dietmar Hamann","Dimitar Berbatov","Djibril Cissé","Dunga","Darren Bent","Daniele De Rossi","Christian Karembeu","Christophe Dugarry","Cristian Chivu","Bacary Sagna","Ben Foster","Bobby Charlton","Bobby Moore","Branislav Ivanović","Andrés Guardado","Antonio Valencia","Alfredo Di Stéfano","André Schürrle","Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
+export const RETIRED_PLAYERS = new Set([ "Mehdi Benatia","Elano","Diego Milito","Dietmar Hamann","Dimitar Berbatov","Djibril Cissé","Dunga","Darren Bent","Daniele De Rossi","Christian Karembeu","Christophe Dugarry","Cristian Chivu","Bacary Sagna","Ben Foster","Bobby Charlton","Bobby Moore","Branislav Ivanović","Andrés Guardado","Antonio Valencia","Alfredo Di Stéfano","André Schürrle","Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
   "Alexandru Maxim","Andre Schurrle","Andrea Pirlo","Andres Iniesta","Andriy Shevchenko",
   "André Ayew","Andy Cole","Angel Di Maria","Antonio Cassano","Arjen Robben",
   "Arturo Vidal","Ashley Cole","Axel Witsel","Aymen Abdennour","Bafetimbi Gomis",
