@@ -4355,7 +4355,7 @@ export const PLAYERS = [
   { name:"Yuri Zhirkov", clubs:["CSKA Moscow", "Chelsea", "Anzhi", "Dynamo Moscow", "Zenit"], diff:"expert", nationalities:["Russie"], positions:["defenseur","milieu"] },
 ];
 
-export const RETIRED_PLAYERS = new Set([ "Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
+export const RETIRED_PLAYERS = new Set([ "Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
   "Alexandru Maxim","Andre Schurrle","Andrea Pirlo","Andres Iniesta","Andriy Shevchenko",
   "André Ayew","Andy Cole","Angel Di Maria","Antonio Cassano","Arjen Robben",
   "Arturo Vidal","Ashley Cole","Axel Witsel","Aymen Abdennour","Bafetimbi Gomis",
