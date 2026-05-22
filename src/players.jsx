@@ -753,7 +753,7 @@ export const PLAYERS = [
   { name:"Pedro Neto", clubs:["Braga", "SS Lazio", "Wolverhampton", "Chelsea"], diff:"moyen", nationalities:["Portugal"], positions:["milieu"], birthYear:2000 },
   { name:"Vitinha", clubs:["Wolverhampton", "Porto", "PSG"], diff:"expert", nationalities:["Portugal"], positions:["milieu"] },
   { name:"Warren Zaïre-Emery", clubs:["PSG"], diff:"moyen", nationalities:["France"], positions:["milieu"] },
-  { name:"Marco Verratti", clubs:["PSG", "Al Arabi"], diff:"moyen", nationalities:["Italie"], positions:["attaquant"], birthYear:1992 },
+  { name:"Marco Verratti", clubs:["Pescara", "PSG", "Al Arabi"], diff:"moyen", nationalities:["Italie"], positions:["milieu"], birthYear:1992 },
   { name:"Nicolo Zaniolo", clubs:["AS Roma", "Galatasaray"], diff:"expert", nationalities:["Italie"], positions:["attaquant"] },
   { name:"Manuel Locatelli", clubs:["AC Milan", "Sassuolo", "Juventus FC"], diff:"expert", nationalities:["Italie"], positions:["attaquant"] },
   { name:"Gianluca Scamacca", clubs:["Sassuolo", "West Ham", "Atalanta BC"], diff:"expert", nationalities:["Italie"], positions:["attaquant"] },
