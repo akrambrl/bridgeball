@@ -1681,7 +1681,7 @@ export const PLAYERS = [
   { name:"Nicky Butt", clubs:["Manchester United", "Newcastle"], diff:"moyen", nationalities:["Angleterre"], positions:["milieu"], birthYear:1975 },
   { name:"Phil Neville", clubs:["Manchester United", "Everton"], diff:"moyen", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1977 },
   { name:"Shinji Kagawa", clubs:["Borussia Dortmund", "Manchester United", "Besiktas", "Real Zaragoza"], diff:"moyen", nationalities:["Japon"], positions:["attaquant"], birthYear:1989 },
-  { name:"Ashley Young", clubs:["Watford", "Aston Villa", "Manchester United", "Inter Milan", "Everton"], diff:"moyen", nationalities:["Angleterre"], positions:["milieu"], birthYear:1985 },
+  { name:"Ashley Young", clubs:["Watford", "Aston Villa", "Manchester United", "Inter Milan", "Everton", "Ipswich Town"], diff:"moyen", nationalities:["Angleterre"], positions:["milieu"], birthYear:1985 },
   // Manchester City
   { name:"Gareth Barry", clubs:["Aston Villa", "Manchester City", "Everton", "West Brom"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1981 },
   { name:"Micah Richards", clubs:["Manchester City", "ACF Fiorentina", "Aston Villa"], diff:"moyen", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1988 },
@@ -4331,7 +4331,7 @@ export const PLAYERS = [
   { name:"Dejan Savićević", clubs:["Buducnost", "Crvena Zvezda", "AC Milan", "Rapid Vienna"], diff:"expert", nationalities:["Monténégro"], positions:["milieu","attaquant"] },
   { name:"Siniša Mihajlović", clubs:["Vojvodina", "Crvena Zvezda", "Roma", "Sampdoria", "Lazio", "Inter Milan"], diff:"expert", nationalities:["Serbie"], positions:["defenseur"] },
   { name:"Dragan Stojković", clubs:["Crvena Zvezda", "Marseille", "Hellas Verona", "Nagoya Grampus"], diff:"expert", nationalities:["Serbie"], positions:["milieu"] },
-  { name:"Andrés Guardado", clubs:["Atlas", "Deportivo La Coruña", "Valencia", "Bayer Leverkusen", "PSV", "Real Betis"], diff:"moyen", nationalities:["Mexique"], positions:["milieu","defenseur"], birthYear:1986 },
+  { name:"Andrés Guardado", clubs:["Atlas", "Deportivo La Coruña", "Valencia", "Bayer Leverkusen", "PSV", "Real Betis", "León"], diff:"moyen", nationalities:["Mexique"], positions:["milieu","defenseur"], birthYear:1986 },
   { name:"Giovani dos Santos", clubs:["Barcelona", "Tottenham", "Ipswich", "Galatasaray", "Racing Santander", "Mallorca", "Villarreal", "LA Galaxy"], diff:"moyen", nationalities:["Mexique"], positions:["attaquant","milieu"], birthYear:1989 },
   { name:"Nuno Gomes", clubs:["Boavista", "Benfica", "Fiorentina", "Braga", "Blackburn"], diff:"expert", nationalities:["Portugal"], positions:["attaquant"] },
   { name:"Fernando Couto", clubs:["Porto", "Parma", "Lazio", "Barcelona"], diff:"expert", nationalities:["Portugal"], positions:["defenseur"] },
@@ -4355,7 +4355,7 @@ export const PLAYERS = [
   { name:"Yuri Zhirkov", clubs:["CSKA Moscow", "Chelsea", "Anzhi", "Dynamo Moscow", "Zenit"], diff:"expert", nationalities:["Russie"], positions:["defenseur","milieu"] },
 ];
 
-export const RETIRED_PLAYERS = new Set([ "Alfredo Di Stéfano","André Schürrle","Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
+export const RETIRED_PLAYERS = new Set([ "Andrés Guardado","Antonio Valencia","Alfredo Di Stéfano","André Schürrle","Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
   "Alexandru Maxim","Andre Schurrle","Andrea Pirlo","Andres Iniesta","Andriy Shevchenko",
   "André Ayew","Andy Cole","Angel Di Maria","Antonio Cassano","Arjen Robben",
   "Arturo Vidal","Ashley Cole","Axel Witsel","Aymen Abdennour","Bafetimbi Gomis",
