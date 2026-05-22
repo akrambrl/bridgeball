@@ -545,6 +545,10 @@ const GoatGuessGame = ({ onClose }: { onClose: () => void }) => {
   const [rejectedGuesses, setRejectedGuesses] = useState<Set<string>>(new Set());
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [currentGuess, setCurrentGuess] = useState<Player | null>(null);
+  // Historique des Q+R pour le récap de fin de partie (debug / apprentissage)
+  const [qaHistory, setQaHistory] = useState<
+    Array<{ q: Question; answer: Answer }>
+  >([]);
 
   const startGame = () => {
     setPhase("asking");
@@ -554,6 +558,7 @@ const GoatGuessGame = ({ onClose }: { onClose: () => void }) => {
     setGuessCount(0);
     setRejectedGuesses(new Set());
     setLastCategories([]);
+    setQaHistory([]);
     const q = pickQuestion(initialPool, new Set(), []);
     setCurrentQuestion(q);
   };
@@ -591,6 +596,7 @@ const GoatGuessGame = ({ onClose }: { onClose: () => void }) => {
     if (!currentQuestion) return;
     const nextAsked = new Set(asked);
     nextAsked.add(currentQuestion.id);
+    setQaHistory((h) => [...h, { q: currentQuestion, answer: ans }]);
 
     let nextCandidates = candidates;
     if (ans === "yes") {
@@ -709,12 +715,18 @@ const GoatGuessGame = ({ onClose }: { onClose: () => void }) => {
         />
       )}
       {phase === "won" && currentGuess && (
-        <WonView guess={currentGuess} onRestart={startGame} onClose={onClose} />
+        <WonView
+          guess={currentGuess}
+          onRestart={startGame}
+          onClose={onClose}
+          qaHistory={qaHistory}
+        />
       )}
       {phase === "lost" && (
         <LostView
           onRestart={startGame}
           onClose={onClose}
+          qaHistory={qaHistory}
           shortlist={candidates.filter((p) => !rejectedGuesses.has(p.name)).slice(0, 8)}
           tried={Array.from(rejectedGuesses)}
         />
@@ -868,10 +880,12 @@ const WonView = ({
   guess,
   onRestart,
   onClose,
+  qaHistory,
 }: {
   guess: Player;
   onRestart: () => void;
   onClose: () => void;
+  qaHistory: Array<{ q: Question; answer: Answer }>;
 }) => (
   <div className="text-center relative">
     {/* Confettis CSS */}
@@ -900,6 +914,8 @@ const WonView = ({
 
     <PlayerRevealCard player={guess} accent="#C084FC" />
 
+    <QaRecap history={qaHistory} accent="#C084FC" />
+
     <div className="grid grid-cols-2 gap-3 mt-6">
       <button
         onClick={onRestart}
@@ -917,16 +933,76 @@ const WonView = ({
   </div>
 );
 
+// Récap des questions posées + réponses utilisateur. Utile pour comprendre
+// où l'on s'est trompé (notamment sur l'écran défaite). Repliable.
+const QaRecap = ({
+  history,
+  accent,
+}: {
+  history: Array<{ q: Question; answer: Answer }>;
+  accent: string;
+}) => {
+  const [open, setOpen] = useState(false);
+  if (history.length === 0) return null;
+  const ansLabel = (a: Answer) =>
+    a === "yes" ? "✓ Oui" : a === "no" ? "✗ Non" : "? Sais pas";
+  const ansColor = (a: Answer) =>
+    a === "yes" ? "#00E676" : a === "no" ? "#FF3D6E" : "rgba(255,255,255,0.5)";
+  return (
+    <div className="mt-5 text-left">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-white/80 transition-colors"
+      >
+        <span className="font-display text-xs tracking-[0.25em]">
+          📋 RÉCAP DES {history.length} QUESTION{history.length > 1 ? "S" : ""}
+        </span>
+        <span className="text-white/40 text-sm">{open ? "▲" : "▼"}</span>
+      </button>
+      {open && (
+        <ol className="mt-2 space-y-1 max-h-[40vh] overflow-y-auto rounded-xl bg-black/30 p-2 border border-white/5">
+          {history.map((r, i) => (
+            <li
+              key={i}
+              className="flex items-start gap-2 px-2 py-1.5 rounded-lg hover:bg-white/[0.03]"
+            >
+              <span className="text-[10px] text-white/30 tabular-nums shrink-0 mt-0.5">
+                {(i + 1).toString().padStart(2, "0")}
+              </span>
+              <span className="flex-1 text-[13px] text-white/80 leading-snug">
+                {r.q.label}
+              </span>
+              <span
+                className="text-[11px] font-display tracking-widest shrink-0"
+                style={{ color: ansColor(r.answer) }}
+              >
+                {ansLabel(r.answer)}
+              </span>
+            </li>
+          ))}
+        </ol>
+      )}
+      {open && (
+        <p className="text-[10px] text-white/30 mt-2 text-center" style={{ color: `${accent}80` }}>
+          💡 Si tu pensais à un autre joueur, regarde où ta réponse a éliminé le bon
+        </p>
+      )}
+    </div>
+  );
+};
+
 const LostView = ({
   onRestart,
   onClose,
   shortlist,
   tried,
+  qaHistory,
 }: {
   onRestart: () => void;
   onClose: () => void;
   shortlist: Player[];
   tried: string[];
+  qaHistory: Array<{ q: Question; answer: Answer }>;
 }) => (
   <div className="text-center">
     <div className="text-7xl mb-3">🙏</div>
@@ -971,7 +1047,9 @@ const LostView = ({
       Si ton joueur n'apparaît nulle part, il n'est peut-être pas dans ma base.
     </p>
 
-    <div className="grid grid-cols-2 gap-3">
+    <QaRecap history={qaHistory} accent="#C084FC" />
+
+    <div className="grid grid-cols-2 gap-3 mt-6">
       <button
         onClick={onRestart}
         className="py-4 rounded-2xl bg-gradient-to-r from-[#C084FC] to-[#FF8A2A] text-[#1A0F00] font-display text-lg tracking-widest hover:scale-[1.02] active:scale-[0.97] transition-transform shadow-[0_8px_24px_rgba(192,132,252,0.4)]"
