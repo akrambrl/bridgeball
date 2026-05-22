@@ -2160,7 +2160,7 @@ export const PLAYERS = [
   { name:"Matteo Gabbia", clubs:["AC Milan"], diff:"moyen", nationalities:["Italie"], positions:["defenseur"], birthYear:1999 },
   { name:"Omar Alderete", clubs:["Sunderland"], diff:"moyen", nationalities:["Paraguay"], positions:["defenseur"], birthYear:1996 },
   { name:"Mauro Júnior", clubs:["PSV"], diff:"expert", nationalities:["Brésil"], positions:["defenseur"] },
-  { name:"Leonardo Balerdi", clubs:["Marseille"], diff:"expert", nationalities:["Argentine"], positions:["defenseur"] },
+  { name:"Leonardo Balerdi", clubs:["Boca Juniors","Borussia Dortmund","Marseille"], diff:"expert", nationalities:["Argentine"], positions:["defenseur"], birthYear:1999 },
   { name:"Armand Laurienté", clubs:["Sassuolo"], diff:"expert", nationalities:["France"], positions:["attaquant"] },
   { name:"James Garner", clubs:["Everton"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"] },
   { name:"Lee Kang In", clubs:["PSG"], diff:"moyen", nationalities:["Corée du Sud"], positions:["attaquant"], birthYear:2001 },
