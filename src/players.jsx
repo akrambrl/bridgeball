@@ -1460,7 +1460,7 @@ export const PLAYERS = [
   { name:"Raphinha", clubs:["Avaí", "Vitória Guimarães", "Sporting CP", "Rennes", "Leeds United", "Barcelona"], diff:"moyen", nationalities:["Brésil"], positions:["attaquant"], birthYear:1996 },
   { name:"Lucas Paquetá", clubs:["Flamengo", "AC Milan", "Lyon", "West Ham"], diff:"moyen", nationalities:["Brésil"], positions:["attaquant"], birthYear:1997 },
   { name:"Éder Militão", clubs:["Porto", "Real Madrid"], diff:"moyen", nationalities:["Brésil"], positions:["defenseur"], birthYear:1998 },
-  { name:"Alex Sandro", clubs:["Porto", "Juventus FC"], diff:"moyen", nationalities:["Brésil"], positions:["defenseur"], birthYear:1991 },
+  { name:"Alex Sandro", clubs:["Porto", "Juventus FC", "Flamengo"], diff:"moyen", nationalities:["Brésil"], positions:["defenseur"], birthYear:1991 },
   { name:"Richarlison", clubs:["America Mineiro", "Fluminense", "Watford", "Everton", "Tottenham"], diff:"moyen", nationalities:["Brésil"], positions:["attaquant"], birthYear:1997 },
   // Équipe nationale Suisse 2026 (compléments)
   { name:"Manuel Akanji", clubs:["Winterthur", "Basel", "Borussia Dortmund", "Manchester City", "Inter Milan"], diff:"moyen", nationalities:["Suisse"], positions:["defenseur"], birthYear:1995 },
@@ -4355,7 +4355,7 @@ export const PLAYERS = [
   { name:"Yuri Zhirkov", clubs:["CSKA Moscow", "Chelsea", "Anzhi", "Dynamo Moscow", "Zenit"], diff:"expert", nationalities:["Russie"], positions:["defenseur","milieu"] },
 ];
 
-export const RETIRED_PLAYERS = new Set([ "Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
+export const RETIRED_PLAYERS = new Set([ "Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
   "Alexandru Maxim","Andre Schurrle","Andrea Pirlo","Andres Iniesta","Andriy Shevchenko",
   "André Ayew","Andy Cole","Angel Di Maria","Antonio Cassano","Arjen Robben",
   "Arturo Vidal","Ashley Cole","Axel Witsel","Aymen Abdennour","Bafetimbi Gomis",
