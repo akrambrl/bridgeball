@@ -542,6 +542,7 @@ export const GoatGuess = ({ onClose }: Props) => {
       backgroundImage:
         "repeating-linear-gradient(90deg,#1E5C2A 0,#1E5C2A 14.28%,#276B34 14.28%,#276B34 28.57%,#1E5C2A 28.57%,#1E5C2A 42.86%,#276B34 42.86%,#276B34 57.14%,#1E5C2A 57.14%,#1E5C2A 71.43%,#276B34 71.43%,#276B34 85.71%,#1E5C2A 85.71%)",
       paddingTop: "env(safe-area-inset-top)",
+      paddingBottom: "env(safe-area-inset-bottom)",
     }}
   >
     {/* Halo radial vert clair en haut, comme dans LePont */}
@@ -562,35 +563,35 @@ export const GoatGuess = ({ onClose }: Props) => {
       ← QUITTER
     </button>
 
-    <div className="relative min-h-screen container max-w-5xl mx-auto px-3 lg:px-6 py-6 lg:py-10">
+    <div className="relative min-h-screen lg:min-h-screen container max-w-5xl mx-auto px-3 lg:px-6 py-2 lg:py-10">
       {/* Header branding */}
-      <div className="text-center mb-6 lg:mb-8">
-        <div className="inline-block px-3 py-1 rounded-full bg-black/40 border border-white/15 backdrop-blur-sm mb-3">
+      <div className="text-center mb-2 lg:mb-8">
+        <div className="inline-block px-3 py-1 rounded-full bg-black/40 border border-white/15 backdrop-blur-sm mb-2 lg:mb-3">
           <span className="font-display text-[10px] tracking-[0.4em] text-[#C084FC]">
             🔮 GOAT GUESS
           </span>
         </div>
-        <h1 className="font-display text-4xl lg:text-6xl tracking-wider text-white leading-none drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
+        <h1 className="hidden lg:block font-display text-4xl lg:text-6xl tracking-wider text-white leading-none drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
           JE DEVINE TON JOUEUR
         </h1>
       </div>
 
       {/* Layout 2 colonnes desktop, stacked mobile — pas d'encadré global */}
-      <div className="grid lg:grid-cols-[1fr_280px] gap-6 lg:gap-10 items-start">
+      <div className="grid lg:grid-cols-[1fr_280px] gap-2 lg:gap-10 items-start">
         {/* Mascotte mobile (au-dessus du contenu) */}
-        <div className="lg:hidden flex justify-center -mb-3">
+        <div className="lg:hidden flex justify-center mb-1">
           <div className="relative">
             <div
               className="absolute inset-0 blur-2xl opacity-70 rounded-full"
               style={{ background: "#C084FC" }}
             />
             <div
-              className="relative h-24 w-24 rounded-full overflow-hidden flex items-center justify-center text-6xl"
+              className="relative h-16 w-16 rounded-full overflow-hidden flex items-center justify-center text-4xl"
               style={{
                 background:
                   "radial-gradient(circle at 30% 30%, rgba(192,132,252,0.5), rgba(0,0,0,0.7))",
-                border: "3px solid rgba(192,132,252,0.6)",
-                boxShadow: "0 10px 40px rgba(192,132,252,0.5)",
+                border: "2px solid rgba(192,132,252,0.6)",
+                boxShadow: "0 6px 24px rgba(192,132,252,0.5)",
               }}
             >
               <DevinAvatar
@@ -907,11 +908,11 @@ const GoatGuessGame = ({
 
 const IntroView = ({ onStart }: { onStart: () => void }) => (
   <div className="text-center">
-    <div className="text-6xl mb-5">🔮</div>
-    <p className="text-white/80 text-base lg:text-lg mb-3">
+    <div className="text-4xl lg:text-6xl mb-3 lg:mb-5">🔮</div>
+    <p className="text-white/80 text-sm lg:text-lg mb-2 lg:mb-3">
       Pense à un footballeur connu (actuel ou retraité).
     </p>
-    <p className="text-white/60 text-sm mb-8">
+    <p className="text-white/60 text-xs lg:text-sm mb-4 lg:mb-8">
       Je vais te poser jusqu'à <span className="text-white font-bold">20 questions</span>{" "}
       pour le deviner. Réponds <span className="text-[#00E676] font-bold">oui</span>,{" "}
       <span className="text-[#FF3D6E] font-bold">non</span> ou{" "}
@@ -920,7 +921,7 @@ const IntroView = ({ onStart }: { onStart: () => void }) => (
 
     <button
       onClick={onStart}
-      className="goat-pulse inline-flex items-center gap-3 px-10 py-4 rounded-2xl bg-gradient-to-r from-[#C084FC] to-[#FF8A2A] text-[#1A0F00] font-display text-2xl tracking-widest hover:scale-[1.03] active:scale-[0.98] transition-transform"
+      className="goat-pulse inline-flex items-center gap-3 px-8 lg:px-10 py-3 lg:py-4 rounded-2xl bg-gradient-to-r from-[#C084FC] to-[#FF8A2A] text-[#1A0F00] font-display text-xl lg:text-2xl tracking-widest hover:scale-[1.03] active:scale-[0.98] transition-transform"
     >
       <span className="text-xl">▶</span> COMMENCER
     </button>
@@ -954,8 +955,8 @@ const AskingView = ({
   return (
     <div>
       {/* Compteur + barre de progression */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between text-xs mb-2">
+      <div className="mb-3 lg:mb-6">
+        <div className="flex items-center justify-between text-[10px] lg:text-xs mb-1 lg:mb-2">
           <span className="font-display tracking-widest text-white/50">
             QUESTION {count} / {max}
           </span>
@@ -972,39 +973,39 @@ const AskingView = ({
       </div>
 
       {/* Question — encadré pelouse semi-transparent pour mieux lire */}
-      <div className="min-h-[160px] lg:min-h-[200px] flex items-center justify-center mb-6 px-4 py-6 rounded-3xl bg-black/30 border border-white/10 backdrop-blur-sm shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-        <h3 className="font-display text-2xl lg:text-4xl tracking-wide text-white text-center leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
+      <div className="min-h-[80px] lg:min-h-[200px] flex items-center justify-center mb-3 lg:mb-6 px-3 lg:px-4 py-3 lg:py-6 rounded-2xl lg:rounded-3xl bg-black/30 border border-white/10 backdrop-blur-sm shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
+        <h3 className="font-display text-lg lg:text-4xl tracking-wide text-white text-center leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
           {question.label}
         </h3>
       </div>
 
       {/* Boutons réponse — plus hauts pour meilleur tap-target */}
-      <div className="grid grid-cols-3 gap-3 mb-3">
+      <div className="grid grid-cols-3 gap-2 lg:gap-3 mb-2 lg:mb-3">
         <button
           onClick={() => onAnswer("yes")}
-          className="py-5 lg:py-6 rounded-2xl bg-[#00E676] hover:bg-[#00C966] text-[#0A1410] font-display text-xl lg:text-2xl tracking-widest hover:scale-[1.03] active:scale-[0.97] transition-transform shadow-[0_8px_24px_rgba(0,230,118,0.35)]"
+          className="py-3 lg:py-6 rounded-2xl bg-[#00E676] hover:bg-[#00C966] text-[#0A1410] font-display text-base lg:text-2xl tracking-widest hover:scale-[1.03] active:scale-[0.97] transition-transform shadow-[0_8px_24px_rgba(0,230,118,0.35)]"
         >
           ✓ OUI
         </button>
         <button
           onClick={() => onAnswer("dunno")}
-          className="py-5 lg:py-6 rounded-2xl border-2 border-white/10 bg-white/[0.05] hover:bg-white/[0.10] text-white/80 font-display text-base lg:text-lg tracking-widest transition-colors"
+          className="py-3 lg:py-6 rounded-2xl border-2 border-white/10 bg-white/[0.05] hover:bg-white/[0.10] text-white/80 font-display text-xs lg:text-lg tracking-widest transition-colors"
         >
           ? SAIS PAS
         </button>
         <button
           onClick={() => onAnswer("no")}
-          className="py-5 lg:py-6 rounded-2xl bg-[#FF3D6E] hover:bg-[#E62E5E] text-white font-display text-xl lg:text-2xl tracking-widest hover:scale-[1.03] active:scale-[0.97] transition-transform shadow-[0_8px_24px_rgba(255,61,110,0.35)]"
+          className="py-3 lg:py-6 rounded-2xl bg-[#FF3D6E] hover:bg-[#E62E5E] text-white font-display text-base lg:text-2xl tracking-widest hover:scale-[1.03] active:scale-[0.97] transition-transform shadow-[0_8px_24px_rgba(255,61,110,0.35)]"
         >
           ✗ NON
         </button>
       </div>
 
-      <div className="flex items-center justify-between mt-2 px-1 mb-4">
+      <div className="flex items-center justify-between mt-1 lg:mt-2 px-1 mb-2 lg:mb-4">
         {canGoBack ? (
           <button
             onClick={onBack}
-            className="text-xs text-white/60 hover:text-white tracking-widest transition-colors"
+            className="text-[10px] lg:text-xs text-white/60 hover:text-white tracking-widest transition-colors"
           >
             ← précédent
           </button>
@@ -1013,14 +1014,16 @@ const AskingView = ({
         )}
         <button
           onClick={() => onAnswer("dunno")}
-          className="text-xs text-white/40 hover:text-white/70 tracking-widest transition-colors"
+          className="text-[10px] lg:text-xs text-white/40 hover:text-white/70 tracking-widest transition-colors"
         >
           passer cette question →
         </button>
       </div>
 
-      {/* Récap des déductions en cours — remplit l'espace sous les boutons */}
-      <LiveDeductions history={qaHistory} />
+      {/* Récap des déductions en cours — caché sur mobile pour tenir sur 1 écran */}
+      <div className="hidden lg:block">
+        <LiveDeductions history={qaHistory} />
+      </div>
     </div>
   );
 };
