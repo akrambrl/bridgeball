@@ -1523,7 +1523,7 @@ export const PLAYERS = [
   // Équipe nationale Cameroun 2026
   { name:"André-Franck Zambo Anguissa", clubs:["Fulham", "Villarreal", "SSC Napoli"], diff:"moyen", nationalities:[], positions:["defenseur"], birthYear:1995 },
   { name:"Carlos Baleba", clubs:["Reims", "Brighton"], diff:"moyen", nationalities:["Cameroun"], positions:["attaquant"], birthYear:2004 },
-  { name:"Eric Maxim Choupo-Moting", clubs:["Stoke", "PSG", "Bayern Munich"], diff:"moyen", nationalities:["Cameroun"], positions:["attaquant"], birthYear:1989 },
+  { name:"Eric Maxim Choupo-Moting", clubs:["Stoke", "PSG", "Bayern Munich", "New York Red Bulls"], diff:"moyen", nationalities:["Cameroun"], positions:["attaquant"], birthYear:1989 },
   { name:"Vincent Aboubakar", clubs:["Porto", "Besiktas", "Al Nassr"], diff:"moyen", nationalities:["Cameroun"], positions:["attaquant"] },
   { name:"Karl Toko Ekambi", clubs:["Angers", "Villarreal", "Lyon"], diff:"moyen", nationalities:["Cameroun"], positions:["attaquant"], birthYear:1992 },
   { name:"Christopher Wooh", clubs:["Lens", "Rennes"], diff:"expert", nationalities:["France"], positions:["defenseur"] },
@@ -1933,7 +1933,7 @@ export const PLAYERS = [
   { name:"Mamadou Sarr", clubs:["Lyon", "Strasbourg", "Chelsea"], diff:"expert", nationalities:["France"], positions:["defenseur"] },
   { name:"Kendry Paez", clubs:["Independiente del Valle", "Strasbourg", "Chelsea"], diff:"expert", nationalities:["Équateur"], positions:["milieu"] },
   { name:"Facundo Buonanotte", clubs:["Rosario Central", "Brighton", "Leicester", "Chelsea", "Leeds United"], diff:"moyen", nationalities:["Argentine"], positions:["attaquant"], birthYear:2004 },
-  { name:"Emanuel Emegha", clubs:["Sparta Rotterdam", "Royal Antwerp", "Strasbourg", "Chelsea"], diff:"moyen", nationalities:["Pays-Bas"], positions:["attaquant"], birthYear:2003 },
+  { name:"Emanuel Emegha", clubs:["Sparta Rotterdam", "Royal Antwerp", "Strasbourg"], diff:"moyen", nationalities:["Pays-Bas"], positions:["attaquant"], birthYear:2003 },
   // Manchester City
   // Newcastle
   { name:"Anthony Elanga", clubs:["Manchester United", "Nottingham Forest", "Newcastle"], diff:"moyen", nationalities:["Suède"], positions:["attaquant"], birthYear:2002 },
@@ -2294,7 +2294,7 @@ export const PLAYERS = [
   { name:"Marvin Schwäbe", clubs:["Werder Bremen", "Dynamo Dresden", "Brondby", "Cologne"], diff:"expert", nationalities:["Allemagne"], positions:["gardien"] },
   { name:"Lewis Cook", clubs:["Leeds United", "Bournemouth"], diff:"moyen", nationalities:["Angleterre"], positions:["milieu"], birthYear:1997 },
   { name:"Olivier Boscagli", clubs:["Nice", "PSV Eindhoven", "Brighton"], diff:"expert", nationalities:["France"], positions:["defenseur"] },
-  { name:"Emiliano Buendía", clubs:["Getafe", "Cultural Leonesa", "Norwich", "Aston Villa", "Bayer Leverkusen"], diff:"moyen", nationalities:["Argentine"], positions:["milieu"], birthYear:1996 },
+  { name:"Emiliano Buendía", clubs:["Getafe", "Cultural Leonesa", "Norwich", "Bayer Leverkusen", "Aston Villa"], diff:"moyen", nationalities:["Argentine"], positions:["milieu"], birthYear:1996 },
   { name:"Takumi Minamino", clubs:["Cerezo Osaka", "Salzburg", "Liverpool", "Southampton", "Monaco"], diff:"moyen", nationalities:["Japon"], positions:["milieu"] },
   { name:"Gelson Martins", clubs:["Sporting CP", "Atletico Madrid", "Monaco", "Olympiacos"], diff:"moyen", nationalities:["Portugal"], positions:["attaquant"], birthYear:1995 },
   { name:"Lukáš Haraslín", clubs:["Slovan Bratislava", "Lechia Gdańsk", "Parma", "Sassuolo", "Sparta Prague"], diff:"expert", nationalities:["Slovaquie"], positions:["attaquant"] },
@@ -4355,7 +4355,7 @@ export const PLAYERS = [
   { name:"Yuri Zhirkov", clubs:["CSKA Moscow", "Chelsea", "Anzhi", "Dynamo Moscow", "Zenit"], diff:"expert", nationalities:["Russie"], positions:["defenseur","milieu"] },
 ];
 
-export const RETIRED_PLAYERS = new Set([ "Diego Milito","Dietmar Hamann","Dimitar Berbatov","Djibril Cissé","Dunga","Darren Bent","Daniele De Rossi","Christian Karembeu","Christophe Dugarry","Cristian Chivu","Bacary Sagna","Ben Foster","Bobby Charlton","Bobby Moore","Branislav Ivanović","Andrés Guardado","Antonio Valencia","Alfredo Di Stéfano","André Schürrle","Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
+export const RETIRED_PLAYERS = new Set([ "Elano","Diego Milito","Dietmar Hamann","Dimitar Berbatov","Djibril Cissé","Dunga","Darren Bent","Daniele De Rossi","Christian Karembeu","Christophe Dugarry","Cristian Chivu","Bacary Sagna","Ben Foster","Bobby Charlton","Bobby Moore","Branislav Ivanović","Andrés Guardado","Antonio Valencia","Alfredo Di Stéfano","André Schürrle","Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
   "Alexandru Maxim","Andre Schurrle","Andrea Pirlo","Andres Iniesta","Andriy Shevchenko",
   "André Ayew","Andy Cole","Angel Di Maria","Antonio Cassano","Arjen Robben",
   "Arturo Vidal","Ashley Cole","Axel Witsel","Aymen Abdennour","Bafetimbi Gomis",
