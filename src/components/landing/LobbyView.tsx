@@ -94,7 +94,7 @@ const TOP5 = [
 ];
 
 export const LobbyView = ({ onPlay, onJoinRoom }: Props) => {
-  const [selected, setSelected] = useState<GameKey>("plug");
+  const [selected, setSelected] = useState<GameKey>("guess");
   const game = GAMES.find((g) => g.key === selected)!;
   const online = useLiveOnline();
   const [roomCode, setRoomCode] = useState("");

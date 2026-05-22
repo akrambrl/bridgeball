@@ -2408,8 +2408,9 @@ export default function LePont() {
   const [gameMode, setGameMode] = useState("pont");
   // ─── Home Carousel State (0=GRID, 1=MERCATO, 2=PLUG) ──
   const [homeCardIndex, setHomeCardIndex] = useState(() => {
-    const saved = parseInt(localStorage.getItem("bb_home_card") || "0", 10);
-    return isNaN(saved) || saved < 0 || saved > 2 ? 0 : saved;
+    // Card 3 = GOAT Guess par défaut au premier lancement
+    const saved = parseInt(localStorage.getItem("bb_home_card") || "3", 10);
+    return isNaN(saved) || saved < 0 || saved > 3 ? 3 : saved;
   });
   const homeSwipeStartRef = useRef(null);
   const [homeRulesModal, setHomeRulesModal] = useState(null); // null | "grid" | "mercato" | "plug"
