@@ -806,6 +806,7 @@ const GoatGuessGame = ({ onClose }: { onClose: () => void }) => {
           onAnswer={answerQuestion}
           onBack={goBack}
           canGoBack={qaHistory.length > 0}
+          qaHistory={qaHistory}
         />
       )}
       {phase === "guessing" && currentGuess && (
@@ -872,6 +873,7 @@ const AskingView = ({
   onAnswer,
   onBack,
   canGoBack,
+  qaHistory,
 }: {
   question: Question;
   count: number;
@@ -880,6 +882,7 @@ const AskingView = ({
   onAnswer: (a: Answer) => void;
   onBack: () => void;
   canGoBack: boolean;
+  qaHistory: Array<{ q: Question; answer: Answer }>;
 }) => {
   const progress = (count / max) * 100;
   return (
@@ -902,40 +905,40 @@ const AskingView = ({
         </div>
       </div>
 
-      {/* Question */}
-      <div className="min-h-[120px] flex items-center justify-center mb-8 px-2">
-        <h3 className="font-display text-2xl lg:text-3xl tracking-wide text-white text-center leading-tight">
+      {/* Question — encadré pelouse semi-transparent pour mieux lire */}
+      <div className="min-h-[160px] lg:min-h-[200px] flex items-center justify-center mb-6 px-4 py-6 rounded-3xl bg-black/30 border border-white/10 backdrop-blur-sm shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
+        <h3 className="font-display text-2xl lg:text-4xl tracking-wide text-white text-center leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
           {question.label}
         </h3>
       </div>
 
-      {/* Boutons réponse */}
-      <div className="grid grid-cols-3 gap-3 mb-4">
+      {/* Boutons réponse — plus hauts pour meilleur tap-target */}
+      <div className="grid grid-cols-3 gap-3 mb-3">
         <button
           onClick={() => onAnswer("yes")}
-          className="py-4 rounded-2xl bg-[#00E676] hover:bg-[#00C966] text-[#0A1410] font-display text-xl tracking-widest hover:scale-[1.03] active:scale-[0.97] transition-transform"
+          className="py-5 lg:py-6 rounded-2xl bg-[#00E676] hover:bg-[#00C966] text-[#0A1410] font-display text-xl lg:text-2xl tracking-widest hover:scale-[1.03] active:scale-[0.97] transition-transform shadow-[0_8px_24px_rgba(0,230,118,0.35)]"
         >
           ✓ OUI
         </button>
         <button
           onClick={() => onAnswer("dunno")}
-          className="py-4 rounded-2xl border-2 border-white/10 bg-white/[0.03] hover:bg-white/[0.07] text-white/80 font-display text-base tracking-widest transition-colors"
+          className="py-5 lg:py-6 rounded-2xl border-2 border-white/10 bg-white/[0.05] hover:bg-white/[0.10] text-white/80 font-display text-base lg:text-lg tracking-widest transition-colors"
         >
           ? SAIS PAS
         </button>
         <button
           onClick={() => onAnswer("no")}
-          className="py-4 rounded-2xl bg-[#FF3D6E] hover:bg-[#E62E5E] text-white font-display text-xl tracking-widest hover:scale-[1.03] active:scale-[0.97] transition-transform"
+          className="py-5 lg:py-6 rounded-2xl bg-[#FF3D6E] hover:bg-[#E62E5E] text-white font-display text-xl lg:text-2xl tracking-widest hover:scale-[1.03] active:scale-[0.97] transition-transform shadow-[0_8px_24px_rgba(255,61,110,0.35)]"
         >
           ✗ NON
         </button>
       </div>
 
-      <div className="flex items-center justify-between mt-2 px-1">
+      <div className="flex items-center justify-between mt-2 px-1 mb-4">
         {canGoBack ? (
           <button
             onClick={onBack}
-            className="text-xs text-white/50 hover:text-white tracking-widest transition-colors"
+            className="text-xs text-white/60 hover:text-white tracking-widest transition-colors"
           >
             ← précédent
           </button>
@@ -949,6 +952,67 @@ const AskingView = ({
           passer cette question →
         </button>
       </div>
+
+      {/* Récap des déductions en cours — remplit l'espace sous les boutons */}
+      <LiveDeductions history={qaHistory} />
+    </div>
+  );
+};
+
+const LiveDeductions = ({
+  history,
+}: {
+  history: Array<{ q: Question; answer: Answer }>;
+}) => {
+  if (history.length === 0) {
+    return (
+      <div className="mt-6 rounded-2xl bg-black/20 border border-white/5 px-5 py-6 text-center backdrop-blur-sm">
+        <div className="text-3xl mb-2 opacity-70">🔮</div>
+        <p className="text-[12px] text-white/50 italic max-w-xs mx-auto leading-relaxed">
+          Le devin attend tes premières réponses pour cerner ton joueur…
+        </p>
+      </div>
+    );
+  }
+  const ansIcon = (a: Answer) =>
+    a === "yes" ? "✓" : a === "no" ? "✗" : "?";
+  const ansColor = (a: Answer) =>
+    a === "yes" ? "#00E676" : a === "no" ? "#FF3D6E" : "rgba(255,255,255,0.45)";
+  // On affiche en priorité les 6 dernières (les plus récentes en haut)
+  const recent = [...history].reverse().slice(0, 6);
+  return (
+    <div className="mt-6 rounded-2xl bg-black/30 border border-white/10 backdrop-blur-sm overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-2 border-b border-white/5 bg-white/[0.03]">
+        <span className="font-display text-[10px] tracking-[0.3em] text-[#C084FC]">
+          🧠 CE QUE JE DÉDUIS
+        </span>
+        <span className="text-[10px] text-white/40 tabular-nums">
+          {history.length} indice{history.length > 1 ? "s" : ""}
+        </span>
+      </div>
+      <ol className="divide-y divide-white/[0.04]">
+        {recent.map((r, i) => (
+          <li
+            key={history.length - 1 - i}
+            className="flex items-start gap-3 px-4 py-2.5"
+          >
+            <span
+              className="font-display text-base shrink-0 leading-none mt-0.5"
+              style={{ color: ansColor(r.answer) }}
+            >
+              {ansIcon(r.answer)}
+            </span>
+            <span className="flex-1 text-[12.5px] text-white/80 leading-snug">
+              {r.q.label}
+            </span>
+          </li>
+        ))}
+      </ol>
+      {history.length > 6 && (
+        <div className="px-4 py-2 text-center text-[10px] text-white/30 border-t border-white/5">
+          + {history.length - 6} autre{history.length - 6 > 1 ? "s" : ""} plus haut
+        </div>
+      )}
     </div>
   );
 };
