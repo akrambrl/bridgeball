@@ -1817,7 +1817,7 @@ export const PLAYERS = [
   { name:"Jorginho", clubs:["Hellas Verona", "SSC Napoli", "Chelsea", "Arsenal", "Flamengo"], diff:"facile", nationalities:["Brésil"], positions:["milieu"], birthYear:1991 },
   { name:"Careca", clubs:["São Paulo", "SSC Napoli", "Santos"], diff:"moyen", nationalities:["Brésil"], positions:["attaquant"], birthYear:1960 },
   { name:"José Callejón", clubs:["Espanyol", "Real Madrid", "SSC Napoli", "ACF Fiorentina", "Granada"], diff:"moyen", nationalities:["Espagne"], positions:["milieu"], birthYear:1987 },
-  { name:"Allan Marques", clubs:["Vasco da Gama", "Udinese Calcio", "SSC Napoli", "Everton"], diff:"moyen", nationalities:["Brésil"], positions:["attaquant"], birthYear:1991 },
+  { name:"Allan Marques", clubs:["Vasco da Gama", "Udinese Calcio", "SSC Napoli", "Everton", "Al-Wahda", "Botafogo"], diff:"moyen", nationalities:["Brésil"], positions:["milieu"], birthYear:1991 },
   // ── JOUEURS ACTUELS 2024-2026 (manques côté actuels) ──
   // Chelsea / Arsenal récents
   { name:"Moisés Caicedo", clubs:["Independiente del Valle", "Brighton", "Beerschot", "Chelsea"], diff:"moyen", nationalities:["Équateur"], positions:["attaquant"], birthYear:2001 },
@@ -4355,7 +4355,7 @@ export const PLAYERS = [
   { name:"Yuri Zhirkov", clubs:["CSKA Moscow", "Chelsea", "Anzhi", "Dynamo Moscow", "Zenit"], diff:"expert", nationalities:["Russie"], positions:["defenseur","milieu"] },
 ];
 
-export const RETIRED_PLAYERS = new Set([ "Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
+export const RETIRED_PLAYERS = new Set([ "Alfredo Di Stéfano","André Schürrle","Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
   "Alexandru Maxim","Andre Schurrle","Andrea Pirlo","Andres Iniesta","Andriy Shevchenko",
   "André Ayew","Andy Cole","Angel Di Maria","Antonio Cassano","Arjen Robben",
   "Arturo Vidal","Ashley Cole","Axel Witsel","Aymen Abdennour","Bafetimbi Gomis",
