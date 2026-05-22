@@ -2571,7 +2571,7 @@ export const PLAYERS = [
   { name:"Guillermo Maripán", clubs:["Universidad Católica", "Alaves", "Monaco", "Torino"], diff:"moyen", nationalities:["Chili"], positions:["defenseur"], birthYear:1994 },
   { name:"Conan Ledesma", clubs:["Defensa y Justicia", "Cádiz", "Rosario Central"], diff:"expert", nationalities:["Argentine"], positions:["gardien"] },
   { name:"Rodrigo Battaglia", clubs:["Huracán", "Rosario Central", "Braga", "Sporting CP", "Alaves", "Mallorca", "Boca Juniors"], diff:"expert", nationalities:["Argentine"], positions:["milieu"] },
-  { name:"Samuel Gigot", clubs:["Arles-Avignon", "Kortrijk", "Spartak Moscow", "Marseille", "Lazio"], diff:"moyen", nationalities:["France"], positions:["defenseur"], birthYear:1993 },
+  { name:"Samuel Gigot", clubs:["Arles-Avignon", "Kortrijk", "Gent", "Spartak Moscow", "Marseille", "Lazio"], diff:"moyen", nationalities:["France"], positions:["defenseur"], birthYear:1993 },
   { name:"Matías Vecino", clubs:["Central Español", "Nacional", "Fiorentina", "Empoli FC", "Cagliari", "Inter Milan", "Lazio", "Celta Vigo"], diff:"moyen", nationalities:["Uruguay"], positions:["milieu"], birthYear:1991 },
   { name:"David Brooks", clubs:["Sheffield United", "Bournemouth", "Southampton"], diff:"moyen", nationalities:["Pays de Galles"], positions:["milieu"], birthYear:1997 },
   { name:"Diego Rico", clubs:["Leganés", "Bournemouth", "Real Sociedad", "Getafe"], diff:"expert", nationalities:["Espagne"], positions:["defenseur"] },
