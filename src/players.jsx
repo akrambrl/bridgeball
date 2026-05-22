@@ -553,7 +553,7 @@ export const PLAYERS = [
   { name:"Sander Berge", clubs:["Vålerenga", "Genk", "Sheffield United", "Burnley", "Fulham"], diff:"moyen", nationalities:["Norvège"], positions:["attaquant"], birthYear:1998 },
   { name:"Lucas Bergvall", clubs:["Brommapojkarna", "Djurgården", "Tottenham"], diff:"expert", nationalities:["Suède"], positions:["milieu"] },
   { name:"Tom Watson", clubs:["Sunderland", "Brighton"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"] },
-  { name:"Conor Bradley", clubs:["Liverpool", "Bolton"], diff:"moyen", nationalities:["Angleterre"], positions:["defenseur"], birthYear:2003 },
+  { name:"Conor Bradley", clubs:["Bolton", "Liverpool"], diff:"moyen", nationalities:["Angleterre"], positions:["defenseur"], birthYear:2003 },
   // Bundesliga été 2025 - manquants
   { name:"Lucas Vázquez", clubs:["Real Madrid Castilla", "Espanyol", "Real Madrid", "Bayer Leverkusen"], diff:"moyen", nationalities:["Espagne"], positions:["attaquant"], birthYear:1991 },
   { name:"David Odogu", clubs:["Wolfsburg", "AC Milan"], diff:"expert", nationalities:["Allemagne"], positions:["defenseur"] },
@@ -1613,7 +1613,7 @@ export const PLAYERS = [
   { name:"Park Ji-sung", clubs:["PSV Eindhoven", "Manchester United", "Queens Park Rangers"], diff:"moyen", nationalities:["Corée du Sud"], positions:["milieu"], birthYear:1981 },
   { name:"Marouane Fellaini", clubs:["Everton", "Manchester United"], diff:"moyen", nationalities:["Belgique"], positions:["attaquant"], birthYear:1987 },
   { name:"Phil Jones", clubs:["Blackburn", "Manchester United"], diff:"moyen", nationalities:["Angleterre"], positions:["defenseur","milieu"], birthYear:1992 },
-  { name:"Chris Smalling", clubs:["Fulham", "Manchester United", "AS Roma"], diff:"moyen", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1989 },
+  { name:"Chris Smalling", clubs:["Fulham", "Manchester United", "AS Roma", "Al-Fayha"], diff:"moyen", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1989 },
   // Liverpool
   { name:"Philippe Coutinho", clubs:["Vasco da Gama","Inter Milan","Espanyol","Liverpool","Barcelona","Bayern Munich","Aston Villa","Al-Duhail"], diff:"facile", nationalities:["Brésil"], positions:["attaquant","milieu"], birthYear:1992 },
   { name:"Daniel Sturridge", clubs:["Manchester City", "Bolton", "Chelsea", "Liverpool", "West Brom", "Trabzonspor"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1989 },
@@ -2237,7 +2237,7 @@ export const PLAYERS = [
   { name:"Nico O'Reilly", clubs:["Manchester City"], diff:"expert", nationalities:["Angleterre"], positions:["défenseur"] },
   { name:"Christian Burgess", clubs:["Middlesbrough", "Hartlepool United", "Peterborough United", "Portsmouth", "Union Saint-Gilloise"], diff:"expert", nationalities:["Angleterre"], positions:["défenseur"] },
   { name:"Alex Scott", clubs:["Bristol City", "Bournemouth"], diff:"moyen", nationalities:["Angleterre"], positions:["milieu"], birthYear:2003 },
-  { name:"Callum McGregor", clubs:["Celtic", "Notts County"], diff:"moyen", nationalities:["Écosse"], positions:["milieu"], birthYear:1993 },
+  { name:"Callum McGregor", clubs:["Notts County", "Celtic"], diff:"moyen", nationalities:["Écosse"], positions:["milieu"], birthYear:1993 },
   { name:"Cameron Carter-Vickers", clubs:["Tottenham", "Sheffield United", "Ipswich Town", "Swansea", "Stoke City", "Luton Town", "Bournemouth", "Celtic"], diff:"moyen", nationalities:["États-Unis"], positions:["défenseur"], birthYear:1997 },
   { name:"Yankuba Minteh", clubs:["Odense", "Newcastle", "Feyenoord", "Brighton"], diff:"expert", nationalities:["Gambie"], positions:["attaquant"] },
   { name:"Abdukodir Khusanov", clubs:["Energetik-BGU", "Lens", "Manchester City"], diff:"moyen", nationalities:["Ouzbékistan"], positions:["défenseur"], birthYear:2004 },
@@ -4355,7 +4355,7 @@ export const PLAYERS = [
   { name:"Yuri Zhirkov", clubs:["CSKA Moscow", "Chelsea", "Anzhi", "Dynamo Moscow", "Zenit"], diff:"expert", nationalities:["Russie"], positions:["defenseur","milieu"] },
 ];
 
-export const RETIRED_PLAYERS = new Set([ "Bacary Sagna","Ben Foster","Bobby Charlton","Bobby Moore","Branislav Ivanović","Andrés Guardado","Antonio Valencia","Alfredo Di Stéfano","André Schürrle","Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
+export const RETIRED_PLAYERS = new Set([ "Christian Karembeu","Christophe Dugarry","Cristian Chivu","Bacary Sagna","Ben Foster","Bobby Charlton","Bobby Moore","Branislav Ivanović","Andrés Guardado","Antonio Valencia","Alfredo Di Stéfano","André Schürrle","Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
   "Alexandru Maxim","Andre Schurrle","Andrea Pirlo","Andres Iniesta","Andriy Shevchenko",
   "André Ayew","Andy Cole","Angel Di Maria","Antonio Cassano","Arjen Robben",
   "Arturo Vidal","Ashley Cole","Axel Witsel","Aymen Abdennour","Bafetimbi Gomis",
