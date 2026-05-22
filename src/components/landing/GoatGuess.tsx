@@ -7,15 +7,18 @@ type Player = {
   nationalities: string[];
   positions: string[];
   diff: "facile" | "moyen" | "expert";
+  birthYear?: number;
 };
 
-type QCategory = "cont" | "nat" | "league" | "club" | "pos" | "profile";
+type QCategory = "cont" | "nat" | "league" | "club" | "pos" | "era" | "profile";
 
 type Question = {
   id: string;
   label: string;
   category: QCategory;
-  predicate: (p: Player) => boolean;
+  // null = on ne sait pas (info absente de la base) → le joueur n'est pas
+  // filtré quelle que soit la réponse de l'utilisateur.
+  predicate: (p: Player) => boolean | null;
 };
 
 const MAX_QUESTIONS = 25;
@@ -347,6 +350,44 @@ const QUESTIONS: Question[] = [
     label: "Est-ce un joueur fidèle (1 ou 2 clubs dans toute sa carrière) ?",
     predicate: (p) => p.clubs.length <= 2,
   },
+
+  // Année de naissance (predicate retourne null si info absente)
+  {
+    id: "era-90s", category: "era",
+    label: "Est-il né dans les années 90 (entre 1990 et 1999) ?",
+    predicate: (p) =>
+      p.birthYear === undefined
+        ? null
+        : p.birthYear >= 1990 && p.birthYear <= 1999,
+  },
+  {
+    id: "era-2000s", category: "era",
+    label: "Est-il né dans les années 2000 (entre 2000 et 2009) ?",
+    predicate: (p) =>
+      p.birthYear === undefined
+        ? null
+        : p.birthYear >= 2000 && p.birthYear <= 2009,
+  },
+  {
+    id: "era-80s", category: "era",
+    label: "Est-il né dans les années 80 (entre 1980 et 1989) ?",
+    predicate: (p) =>
+      p.birthYear === undefined
+        ? null
+        : p.birthYear >= 1980 && p.birthYear <= 1989,
+  },
+  {
+    id: "era-old", category: "era",
+    label: "Est-il né avant 1980 (légende plus ancienne) ?",
+    predicate: (p) =>
+      p.birthYear === undefined ? null : p.birthYear < 1980,
+  },
+  {
+    id: "era-gen-z", category: "era",
+    label: "A-t-il moins de 25 ans aujourd'hui (né après 2001) ?",
+    predicate: (p) =>
+      p.birthYear === undefined ? null : p.birthYear >= 2001,
+  },
 ];
 
 // Entropie binaire — plus c'est élevé (max=1), mieux la question discrimine.
@@ -369,6 +410,7 @@ const STAGE_ORDER: QCategory[] = [
   "league",
   "club",
   "pos",
+  "era",
   "profile",
 ];
 
@@ -381,33 +423,42 @@ const pickQuestion = (
   const last2 = lastCategories[lastCategories.length - 2];
   const blocked = last && last === last2 ? last : null;
 
+  // Calcule yes/total en ignorant les "null" (= info inconnue). Si trop
+  // de candidats ont la réponse inconnue, on saute la question — elle
+  // serait trop peu informative.
+  const scoreQuestion = (q: Question) => {
+    let yes = 0, known = 0;
+    for (const p of candidates) {
+      const a = q.predicate(p);
+      if (a === null) continue;
+      known++;
+      if (a) yes++;
+    }
+    if (known < Math.max(3, candidates.length * 0.3)) return 0; // pas assez d'info
+    return entropy(yes, known);
+  };
+
   for (const stage of STAGE_ORDER) {
-    if (blocked === stage) continue; // skip cette étape pour ce tour
+    if (blocked === stage) continue;
     let best: { q: Question; score: number } | null = null;
     for (const q of QUESTIONS) {
       if (q.category !== stage) continue;
       if (askedIds.has(q.id)) continue;
-      let yes = 0;
-      for (const p of candidates) if (q.predicate(p)) yes++;
-      const ent = entropy(yes, candidates.length);
+      const ent = scoreQuestion(q);
       if (ent <= 0) continue;
-      // Pénalité si on enchaîne 2 questions de la même catégorie
       const score = ent * (q.category === last ? 0.55 : 1);
       if (!best || score > best.score) best = { q, score };
     }
     if (best) return best.q;
   }
 
-  // Fallback : si le blocage a écarté tout, on relâche la rotation.
   if (blocked) {
     for (const stage of STAGE_ORDER) {
       let best: { q: Question; score: number } | null = null;
       for (const q of QUESTIONS) {
         if (q.category !== stage) continue;
         if (askedIds.has(q.id)) continue;
-        let yes = 0;
-        for (const p of candidates) if (q.predicate(p)) yes++;
-        const ent = entropy(yes, candidates.length);
+        const ent = scoreQuestion(q);
         if (ent <= 0) continue;
         if (!best || ent > best.score) best = { q, score: ent };
       }
@@ -530,9 +581,16 @@ const GoatGuessGame = ({ onClose }: { onClose: () => void }) => {
 
     let nextCandidates = candidates;
     if (ans === "yes") {
-      nextCandidates = candidates.filter((p) => currentQuestion.predicate(p));
+      nextCandidates = candidates.filter((p) => {
+        const a = currentQuestion.predicate(p);
+        // null = info inconnue → on garde quel que soit la réponse
+        return a === null || a === true;
+      });
     } else if (ans === "no") {
-      nextCandidates = candidates.filter((p) => !currentQuestion.predicate(p));
+      nextCandidates = candidates.filter((p) => {
+        const a = currentQuestion.predicate(p);
+        return a === null || a === false;
+      });
     }
     // "dunno" → on ne filtre pas
 
