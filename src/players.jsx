@@ -1597,7 +1597,7 @@ export const PLAYERS = [
   { name:"Sofyan Amrabat", clubs:["Feyenoord", "ACF Fiorentina", "Manchester United", "Fenerbahce", "Real Betis"], diff:"moyen", nationalities:["Maroc"], positions:["attaquant"], birthYear:1996 },
   { name:"Neil El Aynaoui", clubs:["Nice", "Lens", "AS Roma"], diff:"moyen", nationalities:["Maroc"], positions:[], birthYear:2001 },
   { name:"Bilal El Khannouss", clubs:["Genk", "Leicester City", "Stuttgart"], diff:"moyen", nationalities:["Maroc"], positions:["milieu"], birthYear:2004 },
-  { name:"Brahim Díaz", clubs:["Manchester City", "Real Madrid", "AC Milan", "PSG"], diff:"moyen", nationalities:["Maroc"], positions:["attaquant"], birthYear:1999 },
+  { name:"Brahim Díaz", clubs:["Manchester City", "Real Madrid", "AC Milan"], diff:"moyen", nationalities:["Maroc"], positions:["attaquant"], birthYear:1999 },
   { name:"Ayoub El Kaabi", clubs:["Raja Casablanca", "Wydad Casablanca", "Hebei China Fortune", "Hatayspor", "Olympiacos"], diff:"expert", nationalities:["Maroc"], positions:["attaquant"] },
   { name:"Chemsdine Talbi", clubs:["Braga", "RC Strasbourg"], diff:"expert", nationalities:["Belgique"], positions:[] },
   // Légendes manquantes
@@ -1701,7 +1701,7 @@ export const PLAYERS = [
   { name:"Mario Mandžukić", clubs:["Dinamo Zagreb", "Wolfsburg", "Bayern Munich", "Atletico Madrid", "Juventus FC", "AC Milan"], diff:"moyen", nationalities:["Croatie"], positions:["attaquant"], birthYear:1986 },
   { name:"Javi Martínez", clubs:["Osasuna", "Athletic Bilbao", "Bayern Munich"], diff:"moyen", nationalities:["Espagne"], positions:["defenseur","milieu"], birthYear:1988 },
   // Bayer Leverkusen
-  { name:"Bernd Leno", clubs:["Stuttgart", "Bayer Leverkusen", "Arsenal", "Fulham", "Hertha Berlin"], diff:"moyen", nationalities:["Allemagne"], positions:["gardien"], birthYear:1992 },
+  { name:"Bernd Leno", clubs:["Stuttgart", "Bayer Leverkusen", "Arsenal", "Fulham"], diff:"moyen", nationalities:["Allemagne"], positions:["gardien"], birthYear:1992 },
   { name:"Stefan Kießling", clubs:["Nuremberg", "Bayer Leverkusen"], diff:"moyen", nationalities:["Allemagne"], positions:["attaquant"], birthYear:1984 },
   { name:"Leon Bailey", clubs:["Genk", "Bayer Leverkusen", "Aston Villa", "AS Roma"], diff:"moyen", nationalities:["Jamaïque"], positions:["milieu"], birthYear:1997 },
   { name:"Kevin Volland", clubs:["Nuremberg", "Hoffenheim", "Bayer Leverkusen", "Monaco", "Union Berlin"], diff:"moyen", nationalities:["Allemagne"], positions:["milieu"], birthYear:1992 },
@@ -1863,7 +1863,7 @@ export const PLAYERS = [
   { name:"Willy Caballero", clubs:["Boca Juniors", "Elche", "Malaga", "Manchester City", "Chelsea", "Southampton"], diff:"expert", nationalities:["Argentine"], positions:["gardien"] },
   { name:"César Azpilicueta", clubs:["Osasuna", "Marseille", "Chelsea", "Atletico Madrid", "Sevilla"], diff:"moyen", nationalities:["Espagne"], positions:["defenseur"], birthYear:1989 },
   { name:"Antonio Rüdiger", clubs:["Stuttgart", "AS Roma", "Chelsea", "Real Madrid"], diff:"moyen", nationalities:["Allemagne"], positions:["defenseur"], birthYear:1993 },
-  { name:"Ben Chilwell", clubs:["Leicester", "Chelsea", "Crystal Palace"], diff:"moyen", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1996 },
+  { name:"Ben Chilwell", clubs:["Leicester", "Chelsea", "Crystal Palace", "RC Strasbourg"], diff:"moyen", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1996 },
   // Mercato hiver janvier 2026 - arrivées Ligue 1
   { name:"Quinten Timber", clubs:["Ajax Amsterdam", "Utrecht", "Feyenoord", "Marseille"], diff:"moyen", nationalities:["Pays-Bas"], positions:["attaquant"], birthYear:2001 },
   { name:"Elye Wahi", clubs:["Montpellier", "Lens", "Marseille", "Eintracht Frankfurt", "Nice"], diff:"moyen", nationalities:["Côte d'Ivoire"], positions:["attaquant"], birthYear:2003 },
@@ -3237,7 +3237,7 @@ export const PLAYERS = [
   { name:"Jeffrey de Lange", clubs:["AZ Alkmaar", "Telstar", "Cambuur", "Almere City", "Go Ahead Eagles", "Marseille"], diff:"expert", nationalities:["Pays-Bas"], positions:["gardien"] },
   { name:"Nicolò Casale", clubs:["Hellas Verona", "Empoli FC", "Lazio", "Bologna FC"], diff:"expert", nationalities:["Italie"], positions:["defenseur"] },
   { name:"Jakub Moder", clubs:["Lech Poznań", "Brighton", "Feyenoord"], diff:"expert", nationalities:["Pologne"], positions:["milieu"] },
-  { name:"Boubakary Soumaré", clubs:["Lille", "Leicester City", "Sevilla"], diff:"moyen", nationalities:["France"], positions:["milieu"], birthYear:1999 },
+  { name:"Boubakary Soumaré", clubs:["Lille", "Leicester City", "Sevilla", "Al-Duhail"], diff:"moyen", nationalities:["France"], positions:["milieu"], birthYear:1999 },
   { name:"Myron Boadu", clubs:["AZ Alkmaar", "Monaco", "Bochum", "PSV Eindhoven"], diff:"expert", nationalities:["Pays-Bas"], positions:["attaquant"] },
   { name:"Carlo Holse", clubs:["Copenhagen", "Hellas Verona", "Rosenborg", "Samsunspor"], diff:"expert", nationalities:["Danemark"], positions:["milieu"] },
   { name:"Tommaso Augello", clubs:["Brescia", "Spezia", "Sampdoria", "Cagliari", "Palermo"], diff:"expert", nationalities:["Italie"], positions:["defenseur"] },
@@ -4355,7 +4355,7 @@ export const PLAYERS = [
   { name:"Yuri Zhirkov", clubs:["CSKA Moscow", "Chelsea", "Anzhi", "Dynamo Moscow", "Zenit"], diff:"expert", nationalities:["Russie"], positions:["defenseur","milieu"] },
 ];
 
-export const RETIRED_PLAYERS = new Set([ "Andrés Guardado","Antonio Valencia","Alfredo Di Stéfano","André Schürrle","Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
+export const RETIRED_PLAYERS = new Set([ "Bacary Sagna","Ben Foster","Bobby Charlton","Bobby Moore","Branislav Ivanović","Andrés Guardado","Antonio Valencia","Alfredo Di Stéfano","André Schürrle","Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
   "Alexandru Maxim","Andre Schurrle","Andrea Pirlo","Andres Iniesta","Andriy Shevchenko",
   "André Ayew","Andy Cole","Angel Di Maria","Antonio Cassano","Arjen Robben",
   "Arturo Vidal","Ashley Cole","Axel Witsel","Aymen Abdennour","Bafetimbi Gomis",
