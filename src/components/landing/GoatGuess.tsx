@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { PLAYERS, RETIRED_PLAYERS } from "../../players.jsx";
+import { PLAYERS, RETIRED_PLAYERS, GG_WC_WINNERS, GG_CL_WINNERS } from "../../players.jsx";
 
 type Player = {
   name: string;
@@ -349,6 +349,18 @@ const QUESTIONS: Question[] = [
     id: "loyal", category: "profile",
     label: "Est-ce un joueur fidèle (1 ou 2 clubs dans toute sa carrière) ?",
     predicate: (p) => p.clubs.length <= 2,
+  },
+
+  // Palmarès — basés sur les sets GG_WC_WINNERS et GG_CL_WINNERS
+  {
+    id: "won-ucl", category: "profile",
+    label: "A-t-il déjà gagné la Ligue des Champions avec son club ?",
+    predicate: (p) => GG_CL_WINNERS.has(p.name),
+  },
+  {
+    id: "won-wc", category: "profile",
+    label: "A-t-il déjà gagné la Coupe du Monde avec sa sélection ?",
+    predicate: (p) => GG_WC_WINNERS.has(p.name),
   },
 
   // Année de naissance (predicate retourne null si info absente)
