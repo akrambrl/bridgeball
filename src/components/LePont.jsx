@@ -9638,8 +9638,8 @@ export default function LePont() {
               rules_en: ["We show you 2 clubs","Find a player who played for both","You have 60 seconds per round","+2 points per correct answer, −10 per skip","Progressive difficulty: easy → medium → expert"]
             },
             guess:   { title: "GOAT GUESS",   emoji: "🔮", accent: "#C084FC", bg: "linear-gradient(135deg,rgba(192,132,252,.18),rgba(255,138,42,.12))",
-              rules_fr: ["Deux modes au choix au démarrage","Mode 1 : pense à un joueur, l'app le devine en 25 questions","Mode 2 : l'app pioche un joueur, tu le devines en 20 questions","Réponses par catégories : Continent → Nation → Ligue → Club → Poste","Score basé sur les questions restantes + difficulté"],
-              rules_en: ["Two modes to choose from on start","Mode 1: think of a player, the app guesses in 25 questions","Mode 2: the app picks a player, you guess in 20 questions","Answers by category: Continent → Nation → League → Club → Position","Score based on remaining questions + difficulty"]
+              rules_fr: ["Pense à un footballeur connu (actuel ou retraité)","Je te pose jusqu'à 25 questions oui / non / sais pas","Tu réponds honnêtement, je restreins mes candidats","Je devine ton joueur — si je rate, je retente jusqu'à 5 fois","Questions par étapes : Continent → Nation → Ligue → Club → Poste"],
+              rules_en: ["Think of a famous footballer (active or retired)","I'll ask up to 25 yes / no / don't know questions","Answer honestly — I narrow down my candidates","I guess your player — if I'm wrong, I try up to 5 times","Questions by stage: Continent → Nation → League → Club → Position"]
             },
           };
           const data = RULES_DATA[homeRulesModal];
