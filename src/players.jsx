@@ -540,7 +540,7 @@ export const PLAYERS = [
   { name:"Gianluigi Donnarumma", clubs:["AC Milan", "PSG", "Manchester City"], diff:"moyen", nationalities:["Italie"], positions:["gardien"], birthYear:1999 },
   { name:"Raphael Varane", clubs:["Lens","Real Madrid","Manchester United","Como"], diff:"facile", nationalities:["France"], positions:["defenseur"], birthYear:1993 },
   { name:"Marquinhos", clubs:["AS Roma", "PSG"], diff:"moyen", nationalities:["Brésil"], positions:["defenseur"], birthYear:1994 },
-  { name:"Ruben Dias", clubs:["Benfica", "Manchester City"], diff:"moyen", nationalities:["Portugal"], positions:["defenseur"], birthYear:1997 },
+  { name:"Rúben Dias", clubs:["Benfica", "Manchester City"], diff:"moyen", nationalities:["Portugal"], positions:["defenseur"], birthYear:1997 },
   { name:"Kalidou Koulibaly", clubs:["Metz", "Genk", "SSC Napoli", "Chelsea", "Al Hilal"], diff:"moyen", nationalities:["Sénégal"], positions:["defenseur"], birthYear:1991 },
   { name:"David Alaba", clubs:["Austria Vienna", "Bayern Munich", "Hoffenheim", "Real Madrid"], diff:"moyen", nationalities:["Autriche"], positions:["defenseur"], birthYear:1992 },
   { name:"Andrew Robertson", clubs:["Queen's Park", "Dundee United", "Hull City", "Liverpool"], diff:"moyen", nationalities:["Écosse"], positions:["defenseur"], birthYear:1994 },
@@ -690,7 +690,7 @@ export const PLAYERS = [
   { name:"Daniel Peretz", clubs:["Maccabi Tel Aviv", "Bayern Munich", "Hamburg"], diff:"expert", nationalities:["Israël"], positions:["gardien"] },
   { name:"Michael Gregoritsch", clubs:["Hamburg", "Hoffenheim", "Augsburg", "SC Freiburg", "Brøndby", "Hoffenheim"], diff:"expert", nationalities:["Autriche"], positions:["attaquant"] },
   { name:"Yannik Keitel", clubs:["SC Freiburg", "Stuttgart", "Augsburg"], diff:"expert", nationalities:["Allemagne"], positions:["attaquant"] },
-  { name:"Claudio Echeverri", clubs:["River Plate", "Manchester City", "Bayer Leverkusen"], diff:"expert", nationalities:["Argentine"], positions:["attaquant"] },
+  { name:"Claudio Echeverri", clubs:["River Plate", "Manchester City", "Bayer Leverkusen"], diff:"expert", nationalities:["Argentine"], positions:["attaquant"], birthYear:2006 },
   { name:"Matěj Kovář", clubs:["Manchester United", "Swansea", "PSV Eindhoven", "Bayer Leverkusen"], diff:"expert", nationalities:["Tchéquie"], positions:["gardien"] },
   { name:"Tomáš Čvančara", clubs:["Sparta Prague", "Mlada Boleslav", "Borussia Mönchengladbach", "Celtic"], diff:"expert", nationalities:["Tchéquie"], positions:["attaquant"] },
   { name:"Jonas Omlin", clubs:["Basel", "Montpellier", "Borussia Mönchengladbach", "Bayer Leverkusen"], diff:"expert", nationalities:["Suisse"], positions:["gardien"] },
@@ -703,9 +703,9 @@ export const PLAYERS = [
   // Arsenal
   { name:"Martin Ødegaard", clubs:["Strømsgodset", "Real Madrid", "Heerenveen", "Vitesse", "Real Sociedad", "Arsenal"], diff:"facile", nationalities:["Norvège"], positions:["attaquant"], birthYear:1998 },
   // Man City
-  { name:"Stefan Ortega", clubs:["Arminia Bielefeld", "Manchester City"], diff:"expert", nationalities:["Allemagne"], positions:["gardien"] },
-  { name:"Rico Lewis", clubs:["Manchester City"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"] },
-  { name:"Oscar Bobb", clubs:["Manchester City", "Fulham"], diff:"expert", nationalities:["Norvège"], positions:["attaquant"] },
+  { name:"Stefan Ortega", clubs:["Arminia Bielefeld", "Manchester City"], diff:"expert", nationalities:["Allemagne"], positions:["gardien"], birthYear:1992 },
+  { name:"Rico Lewis", clubs:["Manchester City"], diff:"moyen", nationalities:["Angleterre"], positions:["defenseur"], birthYear:2004 },
+  { name:"Oscar Bobb", clubs:["Manchester City"], diff:"expert", nationalities:["Norvège"], positions:["attaquant"], birthYear:2003 },
   // Man United
   // Chelsea
   { name:"Filip Jörgensen", clubs:["Villarreal", "Chelsea"], diff:"expert", nationalities:["Suède"], positions:["gardien"] },
@@ -956,7 +956,7 @@ export const PLAYERS = [
   { name:"Alejandro Garnacho", clubs:["Atletico Madrid", "Manchester United", "Chelsea"], diff:"moyen", nationalities:["Argentine"], positions:["milieu"], birthYear:2004 },
   { name:"Kobbie Mainoo", clubs:["Manchester United"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:2005 },
   { name:"Dean Huijsen", clubs:["Juventus FC", "AS Roma", "Bournemouth", "Real Madrid"], diff:"moyen", nationalities:["Espagne"], positions:["defenseur"], birthYear:2005 },
-  { name:"Savinho", clubs:["Atletico Mineiro", "Troyes", "PSV Eindhoven", "Girona", "Manchester City"], diff:"expert", nationalities:["Brésil"], positions:["attaquant"] },
+  { name:"Savinho", clubs:["Atlético Mineiro", "Troyes", "PSV Eindhoven", "Girona", "Manchester City"], diff:"moyen", nationalities:["Brésil"], positions:["attaquant"], birthYear:2004 },
   { name:"Rayan Cherki", clubs:["Lyon", "Manchester City"], diff:"moyen", nationalities:["France"], positions:["milieu"], birthYear:2003 },
   { name:"Khephren Thuram", clubs:["Nice", "Juventus FC"], diff:"expert", nationalities:["France"], positions:["attaquant"] },
   { name:"Manu Koné", clubs:["Borussia Monchengladbach", "AS Roma"], diff:"expert", nationalities:["France"], positions:["milieu"] },
@@ -988,7 +988,7 @@ export const PLAYERS = [
   { name:"Serge Gnabry", clubs:["Arsenal","West Brom","Werder Bremen","Hoffenheim","Bayern Munich"], diff:"moyen", nationalities:["Allemagne"], positions:["attaquant"], birthYear:1995 },
   { name:"Timo Werner", clubs:["Stuttgart","RB Leipzig","Chelsea","RB Leipzig","Tottenham"], diff:"moyen", nationalities:["Allemagne"], positions:["attaquant"] },
   // ── 2016-2026 ──
-  { name:"Ederson", clubs:["Benfica", "Manchester City", "Galatasaray"], diff:"moyen", nationalities:["Brésil"], positions:["gardien"], birthYear:1993 },
+  { name:"Ederson", clubs:["São Paulo", "Ribeirão", "Rio Ave", "Benfica", "Manchester City", "Galatasaray"], diff:"facile", nationalities:["Brésil"], positions:["gardien"], birthYear:1993 },
   { name:"Marc-Andre ter Stegen", clubs:["Borussia Monchengladbach", "Barcelona", "Girona"], diff:"moyen", nationalities:["Allemagne"], positions:["gardien"], birthYear:1992 },
   { name:"Kepa Arrizabalaga", clubs:["Athletic Bilbao", "Chelsea", "Real Madrid", "Bournemouth", "Arsenal"], diff:"expert", nationalities:["Espagne"], positions:["gardien"] },
   { name:"Andre Onana", clubs:["Ajax Amsterdam", "Inter Milan", "Manchester United"], diff:"moyen", nationalities:["Cameroun"], positions:["gardien"], birthYear:1996 },
@@ -1000,7 +1000,7 @@ export const PLAYERS = [
   { name:"Mehdi Benatia", clubs:["Marseille", "Tours", "Lorient", "Clermont", "Udinese", "AS Roma", "Bayern Munich", "Juventus FC", "Al-Duhail", "Fatih Karagümrük"], diff:"moyen", nationalities:["Maroc"], positions:["defenseur"], birthYear:1987 },
   { name:"Ferland Mendy", clubs:["Le Havre", "Lyon", "Real Madrid"], diff:"moyen", nationalities:["France"], positions:["defenseur"], birthYear:1995 },
   { name:"Alphonso Davies", clubs:["Vancouver Whitecaps", "Bayern Munich"], diff:"moyen", nationalities:["Canada"], positions:["defenseur"], birthYear:2000 },
-  { name:"Josko Gvardiol", clubs:["Dinamo Zagreb", "RB Leipzig", "Manchester City"], diff:"moyen", nationalities:["Croatie"], positions:["defenseur"], birthYear:2002 },
+  { name:"Joško Gvardiol", clubs:["Dinamo Zagreb", "RB Leipzig", "Manchester City"], diff:"moyen", nationalities:["Croatie"], positions:["defenseur"], birthYear:2002 },
   { name:"Ibrahima Konate", clubs:["Lens", "RB Leipzig", "Liverpool"], diff:"moyen", nationalities:["France"], positions:["defenseur"], birthYear:1999 },
   { name:"Kim Min-jae", clubs:["Fenerbahce", "SSC Napoli", "Bayern Munich"], diff:"expert", nationalities:["Corée du Sud"], positions:["defenseur"] },
   { name:"Pau Torres", clubs:["Villarreal", "Aston Villa"], diff:"expert", nationalities:["Espagne"], positions:["defenseur"] },
@@ -1338,7 +1338,7 @@ export const PLAYERS = [
   { name:"Pascal Chimbonda", clubs:["Le Havre", "Bastia", "Wigan", "Tottenham", "Sunderland", "Blackburn", "QPR", "Doncaster", "Carlisle United"], diff:"moyen", nationalities:["France"], positions:["defenseur"], birthYear:1979 },
   { name:"Niko Kranjcar", clubs:["Dinamo Zagreb", "Hajduk Split", "Portsmouth", "Tottenham", "Dynamo Kyiv", "QPR", "New York Cosmos", "Rangers"], diff:"moyen", nationalities:["Croatie"], positions:["milieu"], birthYear:1984 },
   { name:"Dimitar Berbatov", clubs:["CSKA Sofia", "Bayer Leverkusen", "Tottenham", "Manchester United", "Fulham", "Monaco", "PAOK", "Kerala Blasters"], diff:"moyen", nationalities:["Bulgarie"], positions:["attaquant"], birthYear:1981 },
-  { name:"Kyle Walker", clubs:["Sheffield United", "Tottenham", "Aston Villa", "QPR", "Manchester City", "AC Milan"], diff:"moyen", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1990 },
+  { name:"Kyle Walker", clubs:["Sheffield United", "Tottenham", "Aston Villa", "QPR", "Manchester City", "AC Milan", "Burnley"], diff:"moyen", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1990 },
   { name:"Hugo Lloris", clubs:["Nice", "Lyon", "Tottenham", "LAFC"], diff:"facile", nationalities:["France"], positions:["gardien"], birthYear:1986 },
   { name:"Samuel Umtiti", clubs:["Lyon", "Barcelona", "Lecce", "Lille"], diff:"moyen", nationalities:["France"], positions:["defenseur"], birthYear:1993 },
   { name:"Adil Rami", clubs:["Lille", "Valencia", "AC Milan", "Sevilla", "Marseille", "Fenerbahce", "Sochi", "Boavista", "Troyes"], diff:"moyen", nationalities:["France"], positions:["defenseur"], birthYear:1985 },
@@ -2047,7 +2047,7 @@ export const PLAYERS = [
   // Tottenham
   { name:"Kevin Danso", clubs:["Augsburg", "Southampton", "Lens", "Tottenham"], diff:"moyen", nationalities:["Autriche"], positions:["defenseur"], birthYear:1998 },
   // Nottingham Forest
-  { name:"James McAtee", clubs:["Manchester City", "Sheffield United", "Nottingham Forest"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"] },
+  { name:"James McAtee", clubs:["Manchester City", "Sheffield United", "Nottingham Forest"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:2002 },
   // Bournemouth
   { name:"Djordje Petrovic", clubs:["Cukaricki", "New England Revolution", "Chelsea", "Strasbourg", "Bournemouth"], diff:"expert", nationalities:["Serbie"], positions:["gardien"] },
   { name:"Ben Gannon-Doak", clubs:["Celtic", "Liverpool", "Middlesbrough", "Bournemouth"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"] },
@@ -2059,8 +2059,8 @@ export const PLAYERS = [
   // Everton
   { name:"Kiernan Dewsbury-Hall", clubs:["Leicester", "Chelsea", "Everton"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1998 },
   // Manchester City
-  { name:"James Trafford", clubs:["Manchester City", "Bolton", "Burnley", "Manchester City"], diff:"expert", nationalities:["Angleterre"], positions:["gardien"] },
-  { name:"Marcus Bettinelli", clubs:["Fulham", "Middlesbrough", "Chelsea", "Manchester City"], diff:"expert", nationalities:["Angleterre"], positions:["gardien"] },
+  { name:"James Trafford", clubs:["Manchester City", "Bolton", "Burnley", "Manchester City"], diff:"moyen", nationalities:["Angleterre"], positions:["gardien"], birthYear:2002 },
+  { name:"Marcus Bettinelli", clubs:["Fulham", "Middlesbrough", "Chelsea", "Manchester City"], diff:"expert", nationalities:["Angleterre"], positions:["gardien"], birthYear:1992 },
   // Liverpool departs été 2025
   { name:"Jarell Quansah", clubs:["Liverpool", "Bristol City", "Bayer Leverkusen"], diff:"moyen", nationalities:["Angleterre"], positions:["defenseur"], birthYear:2003 },
   // PSG
@@ -2852,7 +2852,7 @@ export const PLAYERS = [
   { name:"Marc Bernal", clubs:["Barcelona"], diff:"expert", nationalities:["Espagne"], positions:["milieu"] },
   { name:"Ousseynou Niang", clubs:["Union Saint-Gilloise"], diff:"expert", nationalities:["Sénégal"], positions:["attaquant"] },
   { name:"Amar Memić", clubs:["Sarajevo", "Slovan Bratislava", "Plzeň"], diff:"expert", nationalities:["Bosnie-Herzégovine"], positions:["milieu"] },
-  { name:"Vitor Reis", clubs:["Palmeiras", "Manchester City", "Girona"], diff:"expert", nationalities:["Brésil"], positions:["defenseur"] },
+  { name:"Vitor Reis", clubs:["Palmeiras", "Manchester City", "Girona"], diff:"expert", nationalities:["Brésil"], positions:["defenseur"], birthYear:2006 },
   { name:"William Gomes", clubs:["São Paulo", "Porto"], diff:"expert", nationalities:["Brésil"], positions:["attaquant"] },
   { name:"Jan Virgili", clubs:["Mallorca"], diff:"expert", nationalities:["Espagne"], positions:["attaquant"] },
   { name:"Benjamin Asare", clubs:["Hearts of Oak", "Mamelodi Sundowns"], diff:"expert", nationalities:["Ghana"], positions:["gardien"] },
@@ -4892,8 +4892,8 @@ export const GG_CL_WINNERS = new Set([
   "Mariano Díaz",
   // 🏴 Manchester City 2023
   "Ederson",
-  "Ruben Dias","John Stones","İlkay Gündoğan","Aymeric Laporte","Julián Álvarez",
-"Stefan Ortega","Ruben Dias","Manuel Akanji","Nathan Aké","Kyle Walker",
+  "Rúben Dias","John Stones","İlkay Gündoğan","Aymeric Laporte","Julián Álvarez",
+"Stefan Ortega","Rúben Dias","Manuel Akanji","Nathan Aké","Kyle Walker",
   "João Cancelo","Rodri","Kevin De Bruyne","Bernardo Silva","İlkay Gündoğan",
   "Kalvin Phillips","Jack Grealish","Erling Haaland","Phil Foden","Riyad Mahrez",
   "Julián Álvarez","Cole Palmer",
