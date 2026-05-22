@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { PLAYERS, RETIRED_PLAYERS, GG_WC_WINNERS, GG_CL_WINNERS } from "../../players.jsx";
 
 type Player = {
@@ -484,7 +484,54 @@ type Props = {
   onClose: () => void;
 };
 
-export const GoatGuess = ({ onClose }: Props) => (
+const DEVIN_IMAGES = [
+  "/devin-1.png",
+  "/devin-2.png",
+  "/devin-3.png",
+  "/devin-4.png",
+];
+
+const DevinAvatar = ({
+  src,
+  imgClass,
+  emojiClass,
+}: {
+  src: string;
+  imgClass: string;
+  emojiClass: string;
+}) => {
+  const [failed, setFailed] = useState<Record<string, boolean>>({});
+  if (failed[src]) {
+    return <span className={emojiClass}>🧙</span>;
+  }
+  return (
+    <img
+      key={src}
+      src={src}
+      alt="Le devin"
+      onError={() => setFailed((f) => ({ ...f, [src]: true }))}
+      className={imgClass}
+      draggable={false}
+    />
+  );
+};
+
+export const GoatGuess = ({ onClose }: Props) => {
+  const [devinIdx, setDevinIdx] = useState(() =>
+    Math.floor(Math.random() * DEVIN_IMAGES.length)
+  );
+  const advanceDevin = useCallback(() => {
+    setDevinIdx((prev) => {
+      if (DEVIN_IMAGES.length <= 1) return prev;
+      let next = prev;
+      while (next === prev) {
+        next = Math.floor(Math.random() * DEVIN_IMAGES.length);
+      }
+      return next;
+    });
+  }, []);
+  const devinSrc = DEVIN_IMAGES[devinIdx];
+  return (
   <div
     role="dialog"
     aria-modal="true"
@@ -538,7 +585,7 @@ export const GoatGuess = ({ onClose }: Props) => (
               style={{ background: "#C084FC" }}
             />
             <div
-              className="relative h-24 w-24 rounded-full flex items-center justify-center text-6xl"
+              className="relative h-24 w-24 rounded-full overflow-hidden flex items-center justify-center text-6xl"
               style={{
                 background:
                   "radial-gradient(circle at 30% 30%, rgba(192,132,252,0.5), rgba(0,0,0,0.7))",
@@ -546,14 +593,18 @@ export const GoatGuess = ({ onClose }: Props) => (
                 boxShadow: "0 10px 40px rgba(192,132,252,0.5)",
               }}
             >
-              <span className="goat-float inline-block">🧙</span>
+              <DevinAvatar
+                src={devinSrc}
+                imgClass="goat-float h-full w-full object-cover"
+                emojiClass="goat-float inline-block"
+              />
             </div>
           </div>
         </div>
 
         {/* Contenu principal du jeu — sans encadré sombre, directement sur la pelouse */}
         <div className="relative w-full">
-          <GoatGuessGame onClose={onClose} />
+          <GoatGuessGame onClose={onClose} onAdvanceDevin={advanceDevin} />
         </div>
 
         {/* Mascotte desktop — colonne droite */}
@@ -564,7 +615,7 @@ export const GoatGuess = ({ onClose }: Props) => (
               style={{ background: "#C084FC" }}
             />
             <div
-              className="relative h-[280px] w-[240px] rounded-3xl flex items-center justify-center text-[170px] leading-none"
+              className="relative h-[280px] w-[240px] rounded-3xl overflow-hidden flex items-center justify-center text-[170px] leading-none"
               style={{
                 background:
                   "radial-gradient(circle at 30% 25%, rgba(192,132,252,0.4), rgba(0,0,0,0.8))",
@@ -573,7 +624,11 @@ export const GoatGuess = ({ onClose }: Props) => (
                   "0 30px 80px -10px rgba(192,132,252,0.5), inset 0 1px 0 rgba(255,255,255,0.1)",
               }}
             >
-              <div className="goat-float">🧙</div>
+              <DevinAvatar
+                src={devinSrc}
+                imgClass="goat-float h-full w-full object-cover"
+                emojiClass="goat-float"
+              />
             </div>
           </div>
           <div className="mt-5 text-center">
@@ -588,9 +643,16 @@ export const GoatGuess = ({ onClose }: Props) => (
       </div>
     </div>
   </div>
-);
+  );
+};
 
-const GoatGuessGame = ({ onClose }: { onClose: () => void }) => {
+const GoatGuessGame = ({
+  onClose,
+  onAdvanceDevin,
+}: {
+  onClose: () => void;
+  onAdvanceDevin: () => void;
+}) => {
   // Pool initial : tous les joueurs de la base (le pickGuess privilégie
   // ensuite les joueurs facile > moyen > expert, donc l'app devine en
   // priorité les stars en cas d'ambiguïté).
@@ -625,6 +687,7 @@ const GoatGuessGame = ({ onClose }: { onClose: () => void }) => {
     setQaHistory([]);
     const q = pickQuestion(initialPool, new Set(), []);
     setCurrentQuestion(q);
+    onAdvanceDevin();
   };
 
   const goToGuess = (pool: Player[]) => {
@@ -708,6 +771,7 @@ const GoatGuessGame = ({ onClose }: { onClose: () => void }) => {
       goToGuess(nextCandidates);
     } else {
       setCurrentQuestion(nextQ);
+      onAdvanceDevin();
     }
   };
 
@@ -755,6 +819,7 @@ const GoatGuessGame = ({ onClose }: { onClose: () => void }) => {
     setCurrentQuestion(removedQA.q);
     setCurrentGuess(null);
     setPhase("asking");
+    onAdvanceDevin();
   };
 
   const onGuessCorrect = () => setPhase("won");
@@ -791,6 +856,7 @@ const GoatGuessGame = ({ onClose }: { onClose: () => void }) => {
     } else {
       setCurrentQuestion(nextQ);
       setPhase("asking");
+      onAdvanceDevin();
     }
   };
 
