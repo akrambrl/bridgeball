@@ -1617,7 +1617,7 @@ export const PLAYERS = [
   // Liverpool
   { name:"Philippe Coutinho", clubs:["Vasco da Gama","Inter Milan","Espanyol","Liverpool","Barcelona","Bayern Munich","Aston Villa","Al-Duhail"], diff:"facile", nationalities:["Brésil"], positions:["attaquant","milieu"], birthYear:1992 },
   { name:"Daniel Sturridge", clubs:["Manchester City", "Bolton", "Chelsea", "Liverpool", "West Brom", "Trabzonspor"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1989 },
-  { name:"Dejan Lovren", clubs:["Lyon", "Southampton", "Liverpool"], diff:"moyen", nationalities:["Croatie"], positions:["defenseur"], birthYear:1989 },
+  { name:"Dejan Lovren", clubs:["Lyon", "Southampton", "Liverpool", "Zenit", "PAOK"], diff:"moyen", nationalities:["Croatie"], positions:["defenseur"], birthYear:1989 },
   { name:"Martin Skrtel", clubs:["Liverpool", "Fenerbahce", "Atalanta BC"], diff:"moyen", nationalities:["Slovaquie"], positions:["defenseur"], birthYear:1984 },
   { name:"Lucas Leiva", clubs:["Liverpool", "SS Lazio"], diff:"moyen", nationalities:["Brésil"], positions:["attaquant"], birthYear:1987 },
   // Arsenal
@@ -1854,7 +1854,7 @@ export const PLAYERS = [
   // Stars en Arabie Saoudite + transferts récents
   { name:"Sadio Mané", clubs:["Metz", "Salzburg", "Southampton", "Liverpool", "Bayern Munich", "Al Nassr"], diff:"facile", nationalities:["Sénégal"], positions:["attaquant"], birthYear:1992 },
   { name:"Marcelo Brozovic", clubs:["Lokomotiva", "Dinamo Zagreb", "Inter Milan", "Al Nassr"], diff:"moyen", nationalities:["Croatie"], positions:["attaquant"], birthYear:1992 },
-  { name:"Douglas Luiz", clubs:["Vasco da Gama", "Manchester City", "Girona", "Aston Villa", "Juventus FC", "Nottingham Forest"], diff:"moyen", nationalities:["Brésil"], positions:["attaquant"], birthYear:1998 },
+  { name:"Douglas Luiz", clubs:["Vasco da Gama", "Manchester City", "Girona", "Aston Villa", "Juventus FC", "Nottingham Forest"], diff:"moyen", nationalities:["Brésil"], positions:["milieu"], birthYear:1998 },
   // Gros noms actifs manquants
   { name:"Allan Saint-Maximin", clubs:["Saint-Etienne", "Monaco", "Bastia", "Hannover 96", "Nice", "Newcastle", "Al Ahli", "Fenerbahce", "Club America", "Lens"], diff:"moyen", nationalities:["France"], positions:["attaquant"], birthYear:1997 },
   { name:"Neco Williams", clubs:["Liverpool", "Fulham", "Nottingham Forest"], diff:"moyen", nationalities:["Angleterre"], positions:["defenseur"], birthYear:2001 },
@@ -4355,7 +4355,7 @@ export const PLAYERS = [
   { name:"Yuri Zhirkov", clubs:["CSKA Moscow", "Chelsea", "Anzhi", "Dynamo Moscow", "Zenit"], diff:"expert", nationalities:["Russie"], positions:["defenseur","milieu"] },
 ];
 
-export const RETIRED_PLAYERS = new Set([ "Darren Bent","Daniele De Rossi","Christian Karembeu","Christophe Dugarry","Cristian Chivu","Bacary Sagna","Ben Foster","Bobby Charlton","Bobby Moore","Branislav Ivanović","Andrés Guardado","Antonio Valencia","Alfredo Di Stéfano","André Schürrle","Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
+export const RETIRED_PLAYERS = new Set([ "Diego Milito","Dietmar Hamann","Dimitar Berbatov","Djibril Cissé","Dunga","Darren Bent","Daniele De Rossi","Christian Karembeu","Christophe Dugarry","Cristian Chivu","Bacary Sagna","Ben Foster","Bobby Charlton","Bobby Moore","Branislav Ivanović","Andrés Guardado","Antonio Valencia","Alfredo Di Stéfano","André Schürrle","Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
   "Alexandru Maxim","Andre Schurrle","Andrea Pirlo","Andres Iniesta","Andriy Shevchenko",
   "André Ayew","Andy Cole","Angel Di Maria","Antonio Cassano","Arjen Robben",
   "Arturo Vidal","Ashley Cole","Axel Witsel","Aymen Abdennour","Bafetimbi Gomis",
