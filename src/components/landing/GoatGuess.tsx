@@ -423,9 +423,10 @@ const pickQuestion = (
   const last2 = lastCategories[lastCategories.length - 2];
   const blocked = last && last === last2 ? last : null;
 
-  // Calcule yes/total en ignorant les "null" (= info inconnue). Si trop
-  // de candidats ont la réponse inconnue, on saute la question — elle
-  // serait trop peu informative.
+  // Calcule yes/total en ignorant les "null" (= info inconnue).
+  // Une question reste valide tant qu'au moins 2 candidats ont la réponse
+  // connue ET que ces 2 candidats se partagent (entropy > 0). C'est ce qui
+  // permet de distinguer des candidats indiscernables sur les autres axes.
   const scoreQuestion = (q: Question) => {
     let yes = 0, known = 0;
     for (const p of candidates) {
@@ -434,7 +435,7 @@ const pickQuestion = (
       known++;
       if (a) yes++;
     }
-    if (known < Math.max(3, candidates.length * 0.3)) return 0; // pas assez d'info
+    if (known < 2) return 0; // 0 ou 1 candidat avec info → pas discriminant
     return entropy(yes, known);
   };
 
