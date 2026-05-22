@@ -485,10 +485,10 @@ type Props = {
 };
 
 const DEVIN_IMAGES = [
-  "/devin/devin-1.png",
-  "/devin/devin-2.png",
-  "/devin/devin-3.png",
-  "/devin/devin-4.png",
+  "/devin-1.png",
+  "/devin-2.png",
+  "/devin-3.png",
+  "/devin-4.png",
 ];
 
 const DevinAvatar = ({
