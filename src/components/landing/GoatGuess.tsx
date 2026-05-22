@@ -451,32 +451,40 @@ const pickQuestion = (
     return entropy(yes, known);
   };
 
-  for (const stage of STAGE_ORDER) {
+  // On évalue TOUTES les étapes en parallèle (pas de funnel rigide), avec un
+  // léger bonus pour les étapes en début (cont → nat → league → club → pos → era → profile).
+  // Ça permet de "sauter" à l'étape suivante quand le gain marginal d'une
+  // question dans l'étape courante est faible vs une question d'une étape
+  // ultérieure (ex: continuer à poser des clubs alors que "défenseur ?"
+  // discriminerait mieux).
+  let best: { q: Question; score: number } | null = null;
+  for (let s = 0; s < STAGE_ORDER.length; s++) {
+    const stage = STAGE_ORDER[s];
     if (blocked === stage) continue;
-    let best: { q: Question; score: number } | null = null;
+    // Bonus dégressif : étape 0 → 1.0, étape 1 → 0.92, ..., étape 6 → 0.52
+    const stageBonus = 1 - s * 0.08;
     for (const q of QUESTIONS) {
       if (q.category !== stage) continue;
       if (askedIds.has(q.id)) continue;
       const ent = scoreQuestion(q);
       if (ent <= 0) continue;
-      const score = ent * (q.category === last ? 0.55 : 1);
+      // Pénalité si la dernière question était de la même catégorie
+      const rotationPenalty = q.category === last ? 0.55 : 1;
+      const score = ent * stageBonus * rotationPenalty;
       if (!best || score > best.score) best = { q, score };
     }
-    if (best) return best.q;
   }
+  if (best) return best.q;
 
+  // Fallback : si on est bloqué par la rotation et rien trouvé, relâche
   if (blocked) {
-    for (const stage of STAGE_ORDER) {
-      let best: { q: Question; score: number } | null = null;
-      for (const q of QUESTIONS) {
-        if (q.category !== stage) continue;
-        if (askedIds.has(q.id)) continue;
-        const ent = scoreQuestion(q);
-        if (ent <= 0) continue;
-        if (!best || ent > best.score) best = { q, score: ent };
-      }
-      if (best) return best.q;
+    for (const q of QUESTIONS) {
+      if (askedIds.has(q.id)) continue;
+      const ent = scoreQuestion(q);
+      if (ent <= 0) continue;
+      if (!best || ent > best.score) best = { q, score: ent };
     }
+    if (best) return best.q;
   }
   return null;
 };
