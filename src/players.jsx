@@ -2281,6 +2281,7 @@ export const PLAYERS = [
   { name:"Danilo Cataldi", clubs:["Lazio", "Crotone", "Genoa", "Benevento", "Empoli FC", "Fiorentina"], diff:"expert", nationalities:["Italie"], positions:["milieu"] },
   { name:"Odysseas Vlachodimos", clubs:["Stuttgart", "Panathinaikos", "Benfica", "Nottingham Forest", "Sevilla"], diff:"moyen", nationalities:["Grèce"], positions:["gardien"], birthYear:1994 },
   { name:"Brandon Mechele", clubs:["Club Brugge"], diff:"expert", nationalities:["Belgique"], positions:["defenseur"] },
+  { name:"Brandão", clubs:["Atlético Paranaense", "Shakhtar Donetsk", "CSKA Moscou", "Marseille", "Saint-Etienne", "Bastia"], diff:"moyen", nationalities:["Brésil"], positions:["attaquant"], birthYear:1980 },
   { name:"Tyrone Mings", clubs:["Ipswich", "Bournemouth", "Aston Villa"], diff:"moyen", nationalities:["Angleterre"], positions:["defenseur"] },
   { name:"Aleksey Miranchuk", clubs:["Lokomotiv Moscow", "Atalanta BC", "Torino", "Atlanta United"], diff:"moyen", nationalities:["Russie"], positions:["milieu"], birthYear:1995 },
   { name:"Walter Benítez", clubs:["Quilmes", "Nice", "PSV Eindhoven", "Crystal Palace"], diff:"expert", nationalities:["Argentine"], positions:["gardien"] },
