@@ -488,27 +488,89 @@ export const GoatGuess = ({ onClose }: Props) => (
   <div
     role="dialog"
     aria-modal="true"
-    className="fixed inset-0 z-[9000] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md"
+    className="fixed inset-0 z-[9000] overflow-y-auto bg-gradient-to-br from-[#0A1410] via-[#0F1A1F] to-[#1A0F2A]"
   >
+    {/* Halos d'ambiance */}
     <div
-      className="pointer-events-none absolute inset-0 opacity-40"
+      className="pointer-events-none fixed inset-0 opacity-40"
       style={{
         background:
-          "radial-gradient(circle at 30% 20%, #C084FC40 0%, transparent 50%), radial-gradient(circle at 70% 80%, #00E67630 0%, transparent 55%)",
+          "radial-gradient(circle at 20% 15%, #C084FC50 0%, transparent 45%), radial-gradient(circle at 80% 85%, #FF8A2A40 0%, transparent 50%), radial-gradient(circle at 50% 50%, #00E67620 0%, transparent 70%)",
+      }}
+      aria-hidden
+    />
+    {/* Filigrane terrain de foot */}
+    <div
+      className="pointer-events-none fixed inset-0 opacity-[0.03]"
+      style={{
+        backgroundImage:
+          "repeating-linear-gradient(90deg, #ffffff 0 1px, transparent 1px 80px)",
       }}
       aria-hidden
     />
 
     <button
       onClick={onClose}
-      className="fixed top-3 right-3 z-[9001] flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white font-display text-sm tracking-widest transition-colors"
-      aria-label="Fermer GOAT Guess"
+      className="fixed top-3 right-3 z-[9001] flex items-center gap-2 px-4 py-2 rounded-full bg-[#FF8A2A] hover:bg-[#FF7A1A] text-[#1A0F00] font-display text-sm tracking-widest shadow-[0_8px_24px_rgba(0,0,0,0.5)] hover:scale-[1.03] active:scale-[0.98] transition-all"
+      aria-label="Quitter GOAT Guess"
     >
-      ✕ FERMER
+      ← QUITTER
     </button>
 
-    <div className="relative w-full max-w-2xl max-h-[95vh] overflow-y-auto rounded-3xl bg-[#0F2017] border-2 border-white/10 p-6 lg:p-10 shadow-2xl">
-      <GoatGuessGame onClose={onClose} />
+    <div className="relative min-h-screen container max-w-6xl mx-auto px-4 lg:px-8 py-8 lg:py-12 grid lg:grid-cols-[1fr_280px] gap-8 items-start">
+      {/* Mini-mascotte mobile (flottante au-dessus du contenu) */}
+      <div className="lg:hidden flex justify-center -mb-2">
+        <div className="relative">
+          <div
+            className="absolute inset-0 blur-2xl opacity-50 rounded-full"
+            style={{ background: "#C084FC" }}
+          />
+          <div
+            className="relative h-20 w-20 rounded-2xl flex items-center justify-center text-5xl"
+            style={{
+              background:
+                "linear-gradient(180deg, rgba(192,132,252,0.2), rgba(0,0,0,0.5))",
+              border: "2px solid rgba(192,132,252,0.4)",
+            }}
+          >
+            <span className="goat-float inline-block">🧙</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Contenu principal du jeu — carte sombre pour le détacher du fond */}
+      <div className="relative w-full lg:max-w-2xl mx-auto lg:mx-0 rounded-3xl bg-[#0F2017]/80 backdrop-blur-sm border border-white/10 p-5 lg:p-8 shadow-[0_20px_60px_-10px_rgba(0,0,0,0.6)]">
+        <GoatGuessGame onClose={onClose} />
+      </div>
+
+      {/* Mascotte "devin" — desktop uniquement, à droite */}
+      <div className="hidden lg:flex sticky top-20 flex-col items-center pointer-events-none">
+        <div className="relative">
+          <div
+            className="absolute inset-0 blur-3xl opacity-50 rounded-full"
+            style={{ background: "#C084FC" }}
+          />
+          <div
+            className="relative h-[300px] w-[260px] rounded-3xl overflow-hidden flex items-center justify-center text-[180px] leading-none"
+            style={{
+              background:
+                "linear-gradient(180deg, rgba(192,132,252,0.15), rgba(0,0,0,0.6))",
+              border: "2px solid rgba(192,132,252,0.4)",
+              boxShadow: "0 20px 60px -10px rgba(192,132,252,0.4)",
+            }}
+          >
+            <div className="goat-float">🧙</div>
+          </div>
+        </div>
+        <div className="mt-5 text-center">
+          <div className="font-display text-xs tracking-[0.4em] text-[#C084FC] mb-1">
+            LE DEVIN
+          </div>
+          <div className="text-[11px] text-white/40 max-w-[200px] leading-snug">
+            « Pense à ton joueur. Je vais le lire dans ton esprit. »
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 );
