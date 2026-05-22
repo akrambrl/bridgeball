@@ -4,7 +4,7 @@
 // IMPORTANT : bumper CACHE_NAME à chaque deploy pour forcer le navigateur
 // à détecter un nouveau SW (les changements de fichier suffisent en théorie
 // mais ça garantit un install propre côté PWA mobile installée).
-const CACHE_NAME = "goatfc-v16-2026-05-22";
+const CACHE_NAME = "goatfc-v17-2026-05-22";
 
 // Install : on prend la main tout de suite sans attendre la fermeture des onglets
 self.addEventListener("install", (event) => {
