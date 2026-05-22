@@ -711,6 +711,52 @@ const GoatGuessGame = ({ onClose }: { onClose: () => void }) => {
     }
   };
 
+  // Annule la dernière Q+R (ou la phase de devinette courante) et restaure
+  // l'état précédent : utile si l'utilisateur s'est trompé / a répondu trop vite.
+  const goBack = () => {
+    // Cas 1 : on est en phase "guessing" → on revient simplement à la dernière
+    // question posée sans toucher à l'historique (la Q a déjà filtré candidates).
+    if (phase === "guessing" && qaHistory.length > 0) {
+      const lastQa = qaHistory[qaHistory.length - 1];
+      setCurrentGuess(null);
+      setCurrentQuestion(lastQa.q);
+      setPhase("asking");
+      return;
+    }
+    if (qaHistory.length === 0) return;
+    const newHistory = qaHistory.slice(0, -1);
+    const removedQA = qaHistory[qaHistory.length - 1];
+
+    // On rejoue tout l'historique restant sur le pool initial.
+    let newCandidates = initialPool.filter((p) => !rejectedGuesses.has(p.name));
+    for (const r of newHistory) {
+      if (r.answer === "yes") {
+        newCandidates = newCandidates.filter((p) => {
+          const a = r.q.predicate(p);
+          return a === null || a === true;
+        });
+      } else if (r.answer === "no") {
+        newCandidates = newCandidates.filter((p) => {
+          const a = r.q.predicate(p);
+          return a === null || a === false;
+        });
+      }
+    }
+
+    const newAsked = new Set(asked);
+    newAsked.delete(removedQA.q.id);
+    const newLastCategories = newHistory.slice(-2).map((r) => r.q.category);
+
+    setQaHistory(newHistory);
+    setCandidates(newCandidates);
+    setAsked(newAsked);
+    setQuestionCount(Math.max(0, questionCount - 1));
+    setLastCategories(newLastCategories);
+    setCurrentQuestion(removedQA.q);
+    setCurrentGuess(null);
+    setPhase("asking");
+  };
+
   const onGuessCorrect = () => setPhase("won");
 
   const onGuessWrong = () => {
@@ -758,6 +804,8 @@ const GoatGuessGame = ({ onClose }: { onClose: () => void }) => {
           max={MAX_QUESTIONS}
           remaining={candidates.length}
           onAnswer={answerQuestion}
+          onBack={goBack}
+          canGoBack={qaHistory.length > 0}
         />
       )}
       {phase === "guessing" && currentGuess && (
@@ -765,6 +813,8 @@ const GoatGuessGame = ({ onClose }: { onClose: () => void }) => {
           guess={currentGuess}
           onCorrect={onGuessCorrect}
           onWrong={onGuessWrong}
+          onBack={goBack}
+          canGoBack={qaHistory.length > 0}
         />
       )}
       {phase === "won" && currentGuess && (
@@ -820,12 +870,16 @@ const AskingView = ({
   max,
   remaining,
   onAnswer,
+  onBack,
+  canGoBack,
 }: {
   question: Question;
   count: number;
   max: number;
   remaining: number;
   onAnswer: (a: Answer) => void;
+  onBack: () => void;
+  canGoBack: boolean;
 }) => {
   const progress = (count / max) * 100;
   return (
@@ -877,12 +931,24 @@ const AskingView = ({
         </button>
       </div>
 
-      <button
-        onClick={() => onAnswer("dunno")}
-        className="block mx-auto mt-2 text-xs text-white/40 hover:text-white/70 tracking-widest transition-colors"
-      >
-        passer cette question →
-      </button>
+      <div className="flex items-center justify-between mt-2 px-1">
+        {canGoBack ? (
+          <button
+            onClick={onBack}
+            className="text-xs text-white/50 hover:text-white tracking-widest transition-colors"
+          >
+            ← précédent
+          </button>
+        ) : (
+          <span />
+        )}
+        <button
+          onClick={() => onAnswer("dunno")}
+          className="text-xs text-white/40 hover:text-white/70 tracking-widest transition-colors"
+        >
+          passer cette question →
+        </button>
+      </div>
     </div>
   );
 };
@@ -891,10 +957,14 @@ const GuessingView = ({
   guess,
   onCorrect,
   onWrong,
+  onBack,
+  canGoBack,
 }: {
   guess: Player;
   onCorrect: () => void;
   onWrong: () => void;
+  onBack: () => void;
+  canGoBack: boolean;
 }) => (
   <div className="text-center">
     <div className="inline-block px-3 py-1 rounded-full bg-[#FFC93C]/15 border border-[#FFC93C]/30 mb-3">
@@ -926,6 +996,15 @@ const GuessingView = ({
         ✗ NON
       </button>
     </div>
+
+    {canGoBack && (
+      <button
+        onClick={onBack}
+        className="mt-4 text-xs text-white/50 hover:text-white tracking-widest transition-colors"
+      >
+        ← revenir à la question précédente
+      </button>
+    )}
   </div>
 );
 
