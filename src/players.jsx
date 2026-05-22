@@ -17,6 +17,7 @@ export const PLAYERS = [
   { name:"Mike Penders", clubs:["Genk", "Chelsea", "RC Strasbourg"], diff:"expert", nationalities:["Belgique"], positions:["gardien"] },
   { name:"Nilson Angulo", clubs:["Sunderland"], diff:"expert", nationalities:["Équateur"], positions:["attaquant"] },
   { name:"Taiwo Awoniyi", clubs:["Liverpool", "FSV Frankfurt", "NEC Nijmegen", "Mouscron", "Union Berlin", "Nottingham Forest"], diff:"moyen", nationalities:["Nigeria"], positions:["attaquant"] },
+  { name:"Taye Taiwo", clubs:["Lobi Stars", "Marseille", "AC Milan", "QPR", "Bursaspor", "Dynamo Kyiv", "Eskişehirspor", "Lausanne-Sport", "Hapoel Tel Aviv", "HJK Helsinki", "RoPS", "KuPS", "AC Oulu"], diff:"moyen", nationalities:["Nigeria"], positions:["defenseur"], birthYear:1985 },
   { name:"Omar Marmoush", clubs:["Stuttgart", "Wolfsburg", "Eintracht Frankfurt", "Manchester City"], diff:"moyen", nationalities:["Égypte"], positions:["attaquant"], birthYear:1999 },
   { name:"Patrick Dorgu", clubs:["Lecce", "Manchester United"], diff:"moyen", nationalities:["Danemark"], positions:["defenseur"], birthYear:2004 },
   { name:"Danny Welbeck", clubs:["Manchester United", "Sunderland", "Arsenal", "Watford", "Brighton"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1990 },
