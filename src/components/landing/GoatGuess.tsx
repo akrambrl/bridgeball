@@ -30,6 +30,21 @@ const POS_MIL = "milieu";
 const isDefender = (p: Player) =>
   p.positions.some((x) => x === "défenseur" || x === "defenseur");
 const hasPos = (p: Player, pos: string) => p.positions.includes(pos);
+
+// Pour les questions "Est-ce un X ?" (poste unique), on retourne null
+// (info ambiguë) quand le joueur a plusieurs positions, car CR7 par
+// exemple est tagué ["attaquant","milieu"] : il EST attaquant ET milieu
+// selon les saisons. Donc on ne filtre pas dans ce cas.
+const isUniquelyPos = (p: Player, pos: string): boolean | null => {
+  if (!hasPos(p, pos)) return false;
+  if (p.positions.length === 1) return true;
+  return null; // polyvalent → ambigu → on garde
+};
+const isUniquelyDefender = (p: Player): boolean | null => {
+  if (!isDefender(p)) return false;
+  if (p.positions.length === 1) return true;
+  return null;
+};
 const hasNat = (p: Player, nat: string) => p.nationalities.includes(nat);
 const playedFor = (p: Player, club: string) => p.clubs.includes(club);
 const playedForAny = (p: Player, clubs: string[]) =>
@@ -165,10 +180,10 @@ const AFRICA = new Set([
 
 const QUESTIONS: Question[] = [
   // Postes
-  { id: "is-gk", category: "pos", label: "Est-ce un gardien de but ?", predicate: (p) => hasPos(p, POS_GARDIEN) },
-  { id: "is-def", category: "pos", label: "Est-ce un défenseur ?", predicate: isDefender },
-  { id: "is-mid", category: "pos", label: "Est-ce un milieu de terrain ?", predicate: (p) => hasPos(p, POS_MIL) },
-  { id: "is-att", category: "pos", label: "Est-ce un attaquant ?", predicate: (p) => hasPos(p, POS_ATT) },
+  { id: "is-gk", category: "pos", label: "Est-ce un gardien de but ?", predicate: (p) => isUniquelyPos(p, POS_GARDIEN) },
+  { id: "is-def", category: "pos", label: "Est-ce un défenseur ?", predicate: isUniquelyDefender },
+  { id: "is-mid", category: "pos", label: "Est-ce un milieu de terrain ?", predicate: (p) => isUniquelyPos(p, POS_MIL) },
+  { id: "is-att", category: "pos", label: "Est-ce un attaquant ?", predicate: (p) => isUniquelyPos(p, POS_ATT) },
   {
     id: "is-offensive", category: "pos",
     label: "Joue-t-il à un poste offensif (milieu ou attaquant) ?",

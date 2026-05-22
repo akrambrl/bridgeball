@@ -1,5 +1,5 @@
 export const PLAYERS = [
-  { name:"Cristiano Ronaldo", clubs:["Sporting CP","Manchester United","Real Madrid","Juventus FC","Al Nassr"], diff:"facile", nationalities:["Portugal"], positions:["attaquant","milieu"], birthYear:1985 },
+  { name:"Cristiano Ronaldo", clubs:["Sporting CP","Manchester United","Real Madrid","Juventus FC","Al Nassr"], diff:"facile", nationalities:["Portugal"], positions:["attaquant"], birthYear:1985 },
   { name:"Lionel Messi", clubs:["Barcelona", "PSG", "Inter Miami"], diff:"facile", nationalities:["Argentine"], positions:["attaquant"], birthYear:1987 },
   { name:"Franco Armani", clubs:["Atletico Nacional", "River Plate"], diff:"expert", nationalities:["Argentine"], positions:["gardien"] },
   { name:"Marcos Acuña", clubs:["Sporting CP", "Sevilla", "River Plate", "Racing Club"], diff:"moyen", nationalities:["Argentine"], positions:["defenseur"], birthYear:1991 },
