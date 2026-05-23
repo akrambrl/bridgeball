@@ -66,7 +66,7 @@ const PREMIER_LEAGUE = [
   "Luton", "Luton Town", "Coventry",
 ];
 const LIGA = [
-  "Real Madrid", "Barcelona", "Atletico Madrid", "Atlético Madrid",
+  "Real Madrid", "Barcelona", "Atletico Madrid",
   "Sevilla", "Valencia", "Villarreal", "Real Sociedad", "Athletic Bilbao",
   "Real Betis", "Celta Vigo", "Getafe", "Espanyol", "Mallorca", "Girona",
   "Cadiz", "Alaves", "Granada", "Osasuna", "Las Palmas", "Levante",
