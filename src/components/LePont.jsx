@@ -118,7 +118,7 @@ const CLUB_ALIASES = {
   "Inter Milan":["inter","internazionale","inter milano"],
   "Bayern Munich":["bayern","fc bayern","les bavarois"],
   "Borussia Dortmund":["dortmund","bvb"],
-  "Borussia Monchengladbach":["gladbach","monchengladbach"],
+  "Borussia Mönchengladbach":["gladbach","monchengladbach","borussia monchengladbach","bmg","fohlen"],
   "RB Leipzig":["leipzig","rb"],
   "Bayer Leverkusen":["leverkusen","bayer"],
   "Juventus FC":["juve","juventus","juventus turin","la juve","juventus fc"],
@@ -196,7 +196,7 @@ const CLUB_ALIASES = {
   "Valenciennes":["valenciennes fc","vafc"],
   "Gent":["kaa gent","aa gent"],
   "Stoke City":["stoke","the potters"],
-  "FC Cologne":["cologne","koln","1. fc köln"],
+  "Köln":["cologne","koln","fc cologne","fc köln","1. fc köln","1.fc köln","effzeh"],
   "Mainz":["mainz 05","fsv mainz"],
   "Reims":["stade de reims","stade reims"],
   "Angers":["angers sco","sco angers"],
@@ -262,13 +262,13 @@ const CLUB_DISPLAY_NAMES = {
   // Bundesliga (DE)
   "Bayern Munich": "FC Bayern Munich",
   "Bayer Leverkusen": "Bayer 04 Leverkusen",
-  "Borussia Monchengladbach": "Borussia Mönchengladbach",
+  "Borussia Mönchengladbach": "Borussia Mönchengladbach",
   "Hoffenheim": "TSG 1899 Hoffenheim",
   "Hamburg": "Hamburger SV",
   "Schalke": "FC Schalke 04",
   "Wolfsburg": "VfL Wolfsburg",
   "Werder Bremen": "SV Werder Bremen",
-  "FC Cologne": "1. FC Köln",
+  "Köln": "1. FC Köln",
   "Mainz": "Mainz 05",
   // Liga NOS (PT)
   "Porto": "FC Porto",
@@ -322,7 +322,7 @@ const CLUB_COLORS = {
   "Charleroi":["#000000","#FFFFFF"],"Espérance de Tunis":["#CC0000","#FFD700"],
   "CS Sfaxien":["#CC0000","#000000"],"Caen":["#003189","#FFFFFF"],"Valenciennes":["#CC0000","#FFFFFF"],
   "Gent":["#1B67B2","#FFFFFF"],
-  "FC Cologne":["#ED1C24","#FFFFFF"],"Mainz":["#C8102E","#FFFFFF"],
+  "Köln":["#ED1C24","#FFFFFF"],"Mainz":["#C8102E","#FFFFFF"],
   "Angers":["#000000","#FFFFFF"],"Al Shamal":["#006A4E","#FFFFFF"],
   "Genk":["#1B67B2","#FFFFFF"],"Real Valladolid":["#4B0082","#FFFFFF"],
   "Real Zaragoza":["#003399","#FFFFFF"],
@@ -330,7 +330,7 @@ const CLUB_COLORS = {
   "Crystal Palace":["#1B458F","#C4122E"],
   "Nottingham Forest":["#DD0000","#FFFFFF"],
   "Stuttgart":["#E32219","#FFFFFF"],
-  "Borussia Monchengladbach":["#000000","#00B04F"],
+  "Borussia Mönchengladbach":["#000000","#00B04F"],
   "Real Sociedad":["#003DA5","#FFFFFF"],
   "Bournemouth":["#DA291C","#000000"],
   "Hoffenheim":["#1961AC","#FFFFFF"],
@@ -595,7 +595,7 @@ const PONT_CLUBS = new Set([
   // Espagne
   "Real Sociedad","Athletic Bilbao","Villarreal","Real Betis","Celta Vigo","Espanyol","Getafe",
   // Allemagne (NORMALISÉS)
-  "Stuttgart","Hoffenheim","Wolfsburg","Borussia Monchengladbach","Werder Bremen","Schalke","Hamburg","Hertha Berlin",
+  "Stuttgart","Hoffenheim","Wolfsburg","Borussia Mönchengladbach","Werder Bremen","Schalke","Hamburg","Hertha Berlin",
   // France
   "Nice","Rennes","Lens","Saint-Etienne","Bordeaux","Nantes","Montpellier","Strasbourg","Toulouse",
   // Portugal
@@ -1037,9 +1037,9 @@ const LEAGUE_CLUBS = {
            "Lecce", "Monza", "Spezia", "Parma FC", "Palermo", "Empoli FC", "Salernitana", "Chievo",
            "Brescia", "Benevento", "Bari", "Pisa"],
   BUNDESLIGA: ["Bayern Munich", "Borussia Dortmund", "Bayer Leverkusen", "RB Leipzig", "Stuttgart",
-               "Eintracht Frankfurt", "Wolfsburg", "Borussia Monchengladbach", "Hoffenheim", "Mainz",
+               "Eintracht Frankfurt", "Wolfsburg", "Borussia Mönchengladbach", "Hoffenheim", "Mainz",
                "Schalke 04", "Hamburg", "Hertha Berlin", "Union Berlin", "Freiburg", "Augsburg",
-               "FC Cologne", "Werder Bremen", "Nuremberg"],
+               "Köln", "Werder Bremen", "Nuremberg"],
 };
 
 // Clubs "populaires" pour le mode facile : top clubs des 5 grands championnats
