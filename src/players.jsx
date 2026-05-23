@@ -505,7 +505,7 @@ export const PLAYERS = [
   { name:"Jules Kounde", clubs:["Bordeaux", "Sevilla", "Barcelona"], diff:"moyen", nationalities:["France"], positions:["defenseur"], birthYear:1998 },
   { name:"Federico Chiesa", clubs:["ACF Fiorentina", "Juventus FC", "Liverpool"], diff:"moyen", nationalities:["Italie"], positions:["attaquant"], birthYear:1997 },
   { name:"Bruno Fernandes", clubs:["Novara", "Udinese Calcio", "Sampdoria", "Sporting CP", "Manchester United"], diff:"moyen", nationalities:["Portugal"], positions:["attaquant"], birthYear:1994 },
-  { name:"Adrien Rabiot", clubs:["PSG", "Juventus FC", "Marseille", "AC Milan"], diff:"moyen", nationalities:["France"], positions:["attaquant"], birthYear:1995 },
+  { name:"Adrien Rabiot", clubs:["PSG", "Juventus FC", "Marseille", "AC Milan"], diff:"moyen", nationalities:["France"], positions:["milieu"], birthYear:1995 },
   { name:"Sandro Tonali", clubs:["Brescia", "AC Milan", "Newcastle"], diff:"moyen", nationalities:["Italie"], positions:["attaquant"], birthYear:2000 },
   { name:"Florian Wirtz", clubs:["Köln", "Bayer Leverkusen", "Liverpool"], diff:"moyen", nationalities:["Allemagne"], positions:["milieu"], birthYear:2003 },
   { name:"Jamal Musiala", clubs:["Chelsea", "Bayern Munich"], diff:"moyen", nationalities:["Allemagne"], positions:["milieu"], birthYear:2003 },
