@@ -10,7 +10,7 @@ type Player = {
   birthYear?: number;
 };
 
-type QCategory = "cont" | "nat" | "league" | "club" | "pos" | "era" | "profile";
+type QCategory = "cont" | "nat" | "league" | "club" | "pos" | "era" | "profile" | "anecdote";
 
 type Question = {
   id: string;
@@ -176,6 +176,34 @@ const AFRICA = new Set([
   "Guinée",
   "Togo",
   "Cap-Vert",
+]);
+
+// ─── Anecdotes / faits atypiques (départage de fin de partie) ───
+// Listes curées de faits publics et bien documentés. Un joueur n'est taggé
+// que s'il est déjà présent dans la base. Comme ces faits ne concernent que
+// quelques joueurs, l'entropie ne les fait remonter qu'en fin de partie,
+// quand il reste peu de candidats — exactement le bon moment pour départager.
+const ANEC_BAGARRE_COEQUIPIER = new Set([
+  "Adrien Rabiot", "Jonathan Rowe", // bagarre dans le vestiaire de l'OM, août 2025
+]);
+const ANEC_MORSURE = new Set([
+  "Luis Suárez", // Bakkal 2010, Ivanović 2013, Chiellini (CdM 2014)
+]);
+const ANEC_RED_FINALE_CDM = new Set([
+  "Zinédine Zidane", // coup de boule sur Materazzi, finale 2006
+  "Marcel Desailly",  // 2e carton jaune, finale 1998
+]);
+const ANEC_BUT_DE_LA_MAIN = new Set([
+  "Diego Maradona", // « Main de Dieu », CdM 1986
+  "Thierry Henry",  // main décisive vs Irlande, barrage CdM 2009
+  "Luis Suárez",    // main sur sa ligne vs Ghana, CdM 2010
+]);
+const ANEC_TRANSFERT_RIVAUX = new Set([
+  "Luis Figo",       // Barcelone → Real Madrid, 2000
+  "Sol Campbell",    // Tottenham → Arsenal, 2001
+  "Carlos Tevez",    // Man United → Man City, 2009
+  "Gonzalo Higuain", // Naples → Juventus, 2016
+  "Ashley Cole",     // Arsenal → Chelsea, 2006
 ]);
 
 const QUESTIONS: Question[] = [
@@ -394,6 +422,33 @@ const QUESTIONS: Question[] = [
     predicate: (p) =>
       p.birthYear === undefined ? null : p.birthYear >= 2001,
   },
+
+  // Anecdotes / faits atypiques (départage de fin de partie)
+  {
+    id: "anec-bagarre", category: "anecdote",
+    label: "A-t-il créé une polémique après une bagarre avec un coéquipier ?",
+    predicate: (p) => ANEC_BAGARRE_COEQUIPIER.has(p.name),
+  },
+  {
+    id: "anec-morsure", category: "anecdote",
+    label: "A-t-il déjà mordu un adversaire sur le terrain ?",
+    predicate: (p) => ANEC_MORSURE.has(p.name),
+  },
+  {
+    id: "anec-red-finale", category: "anecdote",
+    label: "A-t-il été expulsé lors d'une finale de Coupe du Monde ?",
+    predicate: (p) => ANEC_RED_FINALE_CDM.has(p.name),
+  },
+  {
+    id: "anec-main", category: "anecdote",
+    label: "A-t-il marqué ou sauvé un but de la main de façon célèbre ?",
+    predicate: (p) => ANEC_BUT_DE_LA_MAIN.has(p.name),
+  },
+  {
+    id: "anec-transfert-rival", category: "anecdote",
+    label: "A-t-il fait un transfert très controversé vers un grand rival ?",
+    predicate: (p) => ANEC_TRANSFERT_RIVAUX.has(p.name),
+  },
 ];
 
 // Entropie binaire — plus c'est élevé (max=1), mieux la question discrimine.
@@ -418,6 +473,7 @@ const STAGE_ORDER: QCategory[] = [
   "pos",
   "era",
   "profile",
+  "anecdote",
 ];
 
 const pickQuestion = (
