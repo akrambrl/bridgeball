@@ -249,6 +249,13 @@ const ANEC_PENALTY_FINALE = new Set([
   "David Trezeguet", // tir au but raté, finale CdM 2006
   "John Terry",      // penalty décisif manqué, finale LdC 2008
 ]);
+const ANEC_PRISON = new Set([
+  // A déjà été incarcéré (faits de notoriété publique)
+  "Souleymane Diawara", // détention provisoire, affaire d'extorsion (2017)
+  "Joey Barton",        // peine de prison pour agression (2008)
+  "Robinho",            // condamnation purgée au Brésil (2024)
+  "Ronaldinho",         // détention au Paraguay, faux passeport (2020)
+]);
 
 const QUESTIONS: Question[] = [
   // Postes
@@ -517,6 +524,11 @@ const QUESTIONS: Question[] = [
     id: "anec-penalty-finale", category: "anecdote",
     label: "A-t-il raté un penalty resté célèbre lors d'une grande finale ?",
     predicate: (p) => ANEC_PENALTY_FINALE.has(p.name),
+  },
+  {
+    id: "anec-prison", category: "anecdote",
+    label: "A-t-il déjà fait de la prison ?",
+    predicate: (p) => ANEC_PRISON.has(p.name),
   },
 ];
 
