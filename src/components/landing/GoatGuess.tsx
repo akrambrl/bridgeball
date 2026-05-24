@@ -381,6 +381,15 @@ const ANEC_ENTRAINEUR = new Set([
   "Gary Neville", "Laurent Blanc", "Raúl González", "Xabi Alonso",
   "Cesc Fabregas", "Nuno Espírito Santo", "Vincenzo Montella", "Hristo Stoichkov",
 ]);
+const ANEC_JOUE_40 = new Set([
+  // A joué (en professionnel) jusqu'à 40 ans ou plus
+  "Gianluigi Buffon", "Paolo Maldini", "Francesco Totti", "Zlatan Ibrahimovic",
+  "Cristiano Ronaldo", "Luka Modrić", "Pepe", "Edwin van der Sar",
+  "Ryan Giggs", "Roger Milla", "Javier Zanetti", "Teddy Sheringham",
+  "Alessandro Del Piero", "Didier Drogba", "Shunsuke Nakamura", "Rivaldo",
+  "Roberto Carlos", "Andres Iniesta", "Sergio Ramos", "Thiago Silva",
+  "Alessandro Costacurta", "Pepe Reina", "Gianluca Pagliuca",
+]);
 
 const QUESTIONS: Question[] = [
   // Postes
@@ -694,6 +703,11 @@ const QUESTIONS: Question[] = [
     id: "anec-entraineur", category: "anecdote",
     label: "Est-il devenu entraîneur après sa carrière de joueur ?",
     predicate: (p) => ANEC_ENTRAINEUR.has(p.name),
+  },
+  {
+    id: "anec-joue-40", category: "anecdote",
+    label: "A-t-il joué jusqu'à 40 ans ou plus ?",
+    predicate: (p) => ANEC_JOUE_40.has(p.name),
   },
 ];
 
