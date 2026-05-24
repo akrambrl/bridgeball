@@ -205,6 +205,50 @@ const ANEC_TRANSFERT_RIVAUX = new Set([
   "Gonzalo Higuain", // Naples → Juventus, 2016
   "Ashley Cole",     // Arsenal → Chelsea, 2006
 ]);
+const ANEC_FRATRIE = new Set([
+  // Fait partie d'une fratrie de footballeurs professionnels
+  "Frank de Boer", "Ronald de Boer", "Yaya Touré", "Kolo Toure",
+  "Eden Hazard", "Thorgan Hazard", "Jerome Boateng", "Kevin-Prince Boateng",
+  "Granit Xhaka", "Filippo Inzaghi", "Gary Neville", "Phil Neville",
+  "Romelu Lukaku", "Rio Ferdinand", "Paul Pogba",
+]);
+const ANEC_CHANGE_SELECTION = new Set([
+  // A changé de sélection nationale au cours de sa carrière
+  "Diego Costa",        // Brésil → Espagne
+  "Wilfried Zaha",      // Angleterre → Côte d'Ivoire
+  "Aymeric Laporte",    // France (jeunes) → Espagne
+  "Thiago Motta",       // Brésil (jeunes) → Italie
+  "Munir El Haddadi",   // Espagne → Maroc
+  "Declan Rice",        // Irlande → Angleterre
+  "Jack Grealish",      // Irlande (jeunes) → Angleterre
+  "Sheraldo Becker",    // Pays-Bas (jeunes) → Suriname
+  "Maarten Paes",       // Pays-Bas (jeunes) → Indonésie
+  "Pablo Rosario",      // Pays-Bas → République dominicaine
+  "Carney Chukwuemeka", // Angleterre (jeunes) → Autriche
+  "Rayane Bounida",     // Belgique (jeunes) → Maroc
+]);
+const ANEC_BUT_FINALE_CDM = new Set([
+  // A marqué lors d'une finale de Coupe du Monde
+  "Zinédine Zidane", "Kylian Mbappé", "Lionel Messi", "Paul Pogba",
+  "Antoine Griezmann", "Mario Götze", "Marco Materazzi", "Pelé",
+  "Gerd Müller", "Andres Iniesta", "Ronaldo Nazário",
+]);
+const ANEC_BALLON_DOR = new Set([
+  // A remporté le Ballon d'Or
+  "Lionel Messi", "Cristiano Ronaldo", "Luka Modrić", "Karim Benzema", "Rodri",
+  "Fabio Cannavaro", "Ronaldinho", "Kaká", "Luis Figo", "Zinédine Zidane",
+  "Rivaldo", "Michael Owen", "Andriy Shevchenko", "Pavel Nedvěd", "George Weah",
+  "Hristo Stoichkov", "Marco van Basten", "Ruud Gullit", "Jean-Pierre Papin",
+  "Roberto Baggio", "Michel Platini", "Franz Beckenbauer", "Johan Cruyff",
+  "Ronaldo Nazário", "Lothar Matthaus",
+]);
+const ANEC_PENALTY_FINALE = new Set([
+  // A raté un penalty resté célèbre lors d'une grande finale
+  "Roberto Baggio",  // tir au but raté, finale CdM 1994
+  "Franco Baresi",   // tir au but raté, finale CdM 1994
+  "David Trezeguet", // tir au but raté, finale CdM 2006
+  "John Terry",      // penalty décisif manqué, finale LdC 2008
+]);
 
 const QUESTIONS: Question[] = [
   // Postes
@@ -448,6 +492,31 @@ const QUESTIONS: Question[] = [
     id: "anec-transfert-rival", category: "anecdote",
     label: "A-t-il fait un transfert très controversé vers un grand rival ?",
     predicate: (p) => ANEC_TRANSFERT_RIVAUX.has(p.name),
+  },
+  {
+    id: "anec-fratrie", category: "anecdote",
+    label: "Fait-il partie d'une fratrie de footballeurs professionnels ?",
+    predicate: (p) => ANEC_FRATRIE.has(p.name),
+  },
+  {
+    id: "anec-change-selection", category: "anecdote",
+    label: "A-t-il changé de sélection nationale au cours de sa carrière ?",
+    predicate: (p) => ANEC_CHANGE_SELECTION.has(p.name),
+  },
+  {
+    id: "anec-but-finale-cdm", category: "anecdote",
+    label: "A-t-il marqué lors d'une finale de Coupe du Monde ?",
+    predicate: (p) => ANEC_BUT_FINALE_CDM.has(p.name),
+  },
+  {
+    id: "anec-ballon-dor", category: "anecdote",
+    label: "A-t-il remporté le Ballon d'Or ?",
+    predicate: (p) => ANEC_BALLON_DOR.has(p.name),
+  },
+  {
+    id: "anec-penalty-finale", category: "anecdote",
+    label: "A-t-il raté un penalty resté célèbre lors d'une grande finale ?",
+    predicate: (p) => ANEC_PENALTY_FINALE.has(p.name),
   },
 ];
 
