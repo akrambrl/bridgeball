@@ -321,6 +321,22 @@ const ANEC_DOPAGE = new Set([
   "Andre Onana",     // furosémide, 9 mois (2021)
   "Bernard Lama",    // cannabis (1997)
 ]);
+const ANEC_CELEBRITE = new Set([
+  // Marié ou en couple (avéré) avec une célébrité
+  "Gerard Pique",            // Shakira (chanteuse)
+  "David Beckham",           // Victoria Beckham (Spice Girls)
+  "Adil Rami",               // Pamela Anderson (actrice)
+  "Bastian Schweinsteiger",  // Ana Ivanović (n°1 mondiale de tennis)
+  "Cristiano Ronaldo",       // Irina Shayk puis Georgina Rodríguez (mannequins)
+  "Carles Puyol",            // Vanesa Lorenzo (mannequin)
+  "Thierry Henry",           // Claire Merry (mannequin)
+  "Mauro Icardi",            // Wanda Nara (personnalité TV)
+  "Sergio Ramos",            // Pilar Rubio (animatrice TV)
+  "Iker Casillas",           // Sara Carbonero (journaliste)
+  "Wayne Rooney",            // Coleen Rooney (personnalité médiatique)
+  "Jamie Vardy",             // Rebekah Vardy (personnalité médiatique)
+  "Kylian Mbappé",           // Ester Expósito (actrice) — relation publiquement constatée
+]);
 
 const QUESTIONS: Question[] = [
   // Postes
@@ -614,6 +630,11 @@ const QUESTIONS: Question[] = [
     id: "anec-dopage", category: "anecdote",
     label: "A-t-il été suspendu pour une affaire de dopage ?",
     predicate: (p) => ANEC_DOPAGE.has(p.name),
+  },
+  {
+    id: "anec-celebrite", category: "anecdote",
+    label: "A-t-il été marié ou en couple avec une célébrité ?",
+    predicate: (p) => ANEC_CELEBRITE.has(p.name),
   },
 ];
 
