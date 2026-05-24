@@ -126,8 +126,27 @@
     background: radial-gradient(circle, var(--accent) 0%, transparent 62%);
     opacity: .22; filter: blur(8px);
   }
-  .cover-main { position: relative; z-index: 2; margin-top: 8mm; }
-  .cover h1 { font-size: 78px; margin: 10px 0 6px; }
+  .cover-main { position: relative; z-index: 2; margin-top: 7mm; }
+  .cover h1 { font-size: 62px; margin: 8px 0 6px; }
+
+  /* photo du collectif (cover) */
+  .hero-photo {
+    position: relative; z-index: 2; width: 100%; height: 104mm;
+    border-radius: 16px; overflow: hidden; margin-top: 6mm;
+    background: linear-gradient(135deg, #1a1a1f, #2a2a2e);
+    border: 1px solid rgba(255,255,255,.12);
+  }
+  .hero-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .hero-photo .ph-hint {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    text-align: center; color: rgba(255,255,255,.55); font-size: 12px; padding: 24px; line-height: 1.5;
+  }
+  .hero-photo .ph-grad { position: absolute; inset: 0; background: linear-gradient(180deg, transparent 50%, rgba(14,14,16,.55) 100%); }
+  .hero-photo .ph-tag {
+    position: absolute; left: 16px; bottom: 14px; z-index: 3;
+    font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; font-weight: 700;
+    color: #fff; background: rgba(0,0,0,.35); padding: 6px 12px; border-radius: 999px; backdrop-filter: blur(4px);
+  }
   .cover h1 .accent { color: var(--accent); }
   .cover-sub { font-size: 16px; color: rgba(255,255,255,.78); max-width: 150mm; margin-top: 8px; }
   .cover-brand { font-weight: 800; color: var(--accent); }
@@ -242,8 +261,9 @@
 
 <!-- bandeau d'aide (écran uniquement) -->
 <div class="hint screen-only">
-  <b>Mode d'emploi :</b> remplace le texte entre crochets [ … ] (zones surlignées),
-  règle les couleurs d'Awal dans le bloc <code>:root</code> en haut du fichier, puis
+  <b>Mode d'emploi :</b> (1) dépose la photo du collectif dans <code>presentation/assets/collectif.jpg</code> ;
+  (2) remplace le texte entre crochets [ … ] (zones surlignées) ;
+  (3) règle les couleurs d'Awal dans le bloc <code>:root</code> en haut du fichier ; puis
   <b>Cmd/Ctrl + P → Enregistrer en PDF</b> (A4, marges « Aucune », cocher « Graphiques d'arrière-plan »).
 </div>
 
@@ -258,6 +278,13 @@
       <div class="logo-text">AWAL</div>
     </div>
     <div class="eyebrow">Dossier de partenariat · <span class="edit">2026</span></div>
+  </div>
+
+  <div class="hero-photo">
+    <div class="ph-hint screen-only">📷 Déposez la photo du collectif ici&nbsp;:<br><code>presentation/assets/collectif.jpg</code><br>(elle s'affichera automatiquement à cet emplacement)</div>
+    <img src="assets/collectif.jpg" alt="Le collectif de créateurs" onerror="this.style.display='none'" />
+    <div class="ph-grad"></div>
+    <div class="ph-tag">Le collectif</div>
   </div>
 
   <div class="cover-main">
