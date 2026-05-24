@@ -307,6 +307,20 @@ const ANEC_PARIS = new Set([
   "Kieran Trippier",  // 10 semaines, info de transfert transmise à des parieurs (FA, 2020)
   "Joey Barton",      // suspension pour paris sur des matchs (FA, 2017)
 ]);
+const ANEC_DOPAGE = new Set([
+  // Suspendu dans une affaire de dopage (sanctions effectivement purgées)
+  "Paul Pogba",      // testostérone, 2023 (4 ans → 18 mois en appel)
+  "Adrian Mutu",     // cocaïne 2004, puis sibutramine 2010
+  "Diego Maradona",  // cocaïne 1991, éphédrine (CdM 1994)
+  "Rio Ferdinand",   // 8 mois, test antidopage manqué (2004)
+  "Kolo Toure",      // 6 mois, substance interdite (2011)
+  "Edgar Davids",    // nandrolone (2001)
+  "Jaap Stam",       // nandrolone (2001)
+  "Fernando Couto",  // nandrolone (2001)
+  "Frank de Boer",   // nandrolone (2001)
+  "Andre Onana",     // furosémide, 9 mois (2021)
+  "Bernard Lama",    // cannabis (1997)
+]);
 
 const QUESTIONS: Question[] = [
   // Postes
@@ -595,6 +609,11 @@ const QUESTIONS: Question[] = [
     id: "anec-paris", category: "anecdote",
     label: "A-t-il été suspendu pour des infractions liées aux paris sportifs ?",
     predicate: (p) => ANEC_PARIS.has(p.name),
+  },
+  {
+    id: "anec-dopage", category: "anecdote",
+    label: "A-t-il été suspendu pour une affaire de dopage ?",
+    predicate: (p) => ANEC_DOPAGE.has(p.name),
   },
 ];
 
