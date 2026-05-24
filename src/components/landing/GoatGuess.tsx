@@ -819,6 +819,46 @@ const pickGuess = (candidates: Player[]): Player => {
 
 type Answer = "yes" | "no" | "dunno";
 
+type QA = { q: Question; answer: Answer };
+
+// Tolérance légère : un joueur peut contredire au plus 1 réponse et rester
+// « repêchable » au moment de deviner. Évite qu'une seule erreur de
+// l'utilisateur sur un fait obscur (ex: la saison de Mandanda à Crystal
+// Palace) n'élimine définitivement le bon joueur.
+const MAX_MISMATCH = 1;
+const DIFF_ORDER = { facile: 0, moyen: 1, expert: 2 } as const;
+
+// Nombre de réponses contradictoires (sur les infos connues) entre un joueur
+// et l'historique des questions. "dunno" et info absente (null) ne comptent pas.
+const countMismatch = (p: Player, history: QA[]): number => {
+  let s = 0;
+  for (const { q, answer } of history) {
+    if (answer === "dunno") continue;
+    const a = q.predicate(p);
+    if (a === null) continue;
+    if (answer === "yes" ? a === false : a === true) {
+      s++;
+      if (s > MAX_MISMATCH) break; // inutile de compter plus loin
+    }
+  }
+  return s;
+};
+
+// Joueurs « repêchés » quand le set strict (0 erreur) est épuisé : ceux qui ne
+// contredisent qu'au plus MAX_MISMATCH réponse, triés par nb d'erreurs croissant
+// puis par notoriété (facile > moyen > expert).
+const forgivenPool = (
+  pool: Player[],
+  history: QA[],
+  rejected: Set<string>
+): Player[] =>
+  pool
+    .filter((p) => !rejected.has(p.name))
+    .map((p) => ({ p, m: countMismatch(p, history) }))
+    .filter((x) => x.m >= 1 && x.m <= MAX_MISMATCH)
+    .sort((a, b) => a.m - b.m || DIFF_ORDER[a.p.diff] - DIFF_ORDER[b.p.diff])
+    .map((x) => x.p);
+
 type Phase = "intro" | "asking" | "guessing" | "won" | "lost";
 
 type Props = {
@@ -1031,13 +1071,26 @@ const GoatGuessGame = ({
     onAdvanceDevin();
   };
 
-  const goToGuess = (pool: Player[]) => {
-    const available = pool.filter((p) => !rejectedGuesses.has(p.name));
-    if (available.length === 0) {
+  // Choisit la prochaine proposition : d'abord les candidats stricts (0 erreur)
+  // encore vivants, puis — s'ils sont épuisés — les joueurs « repêchés » qui ne
+  // contredisent qu'une seule réponse (tolérance légère).
+  const nextGuessCandidate = (
+    strictPool: Player[],
+    history: QA[],
+    rejected: Set<string>
+  ): Player | null => {
+    const strict = strictPool.filter((p) => !rejected.has(p.name));
+    if (strict.length > 0) return pickGuess(strict);
+    return forgivenPool(initialPool, history, rejected)[0] ?? null;
+  };
+
+  const goToGuess = (pool: Player[], history: QA[] = qaHistory) => {
+    const guess = nextGuessCandidate(pool, history, rejectedGuesses);
+    if (!guess) {
       setPhase("lost");
       return;
     }
-    setCurrentGuess(pickGuess(available));
+    setCurrentGuess(guess);
     setPhase("guessing");
   };
 
@@ -1050,11 +1103,11 @@ const GoatGuessGame = ({
     if (q) {
       setCurrentQuestion(q);
     } else {
-      const available = candidates.filter((p) => !rejectedGuesses.has(p.name));
-      if (available.length === 0) {
+      const guess = nextGuessCandidate(candidates, qaHistory, rejectedGuesses);
+      if (!guess) {
         setPhase("lost");
       } else {
-        setCurrentGuess(pickGuess(available));
+        setCurrentGuess(guess);
         setPhase("guessing");
       }
     }
@@ -1064,7 +1117,8 @@ const GoatGuessGame = ({
     if (!currentQuestion) return;
     const nextAsked = new Set(asked);
     nextAsked.add(currentQuestion.id);
-    setQaHistory((h) => [...h, { q: currentQuestion, answer: ans }]);
+    const nextHistory: QA[] = [...qaHistory, { q: currentQuestion, answer: ans }];
+    setQaHistory(nextHistory);
 
     let nextCandidates = candidates;
     if (ans === "yes") {
@@ -1092,15 +1146,17 @@ const GoatGuessGame = ({
     setQuestionCount(nextCount);
     setLastCategories(nextLastCats);
 
+    // Set strict épuisé : on tente le repêchage (tolérance légère) plutôt que
+    // d'abandonner immédiatement.
     if (nextCandidates.length === 0) {
       setCandidates(nextCandidates);
-      setPhase("lost");
+      goToGuess(nextCandidates, nextHistory);
       return;
     }
     // On devine si : un seul candidat, OU on a atteint la limite de questions
     if (nextCandidates.length === 1 || nextCount >= MAX_QUESTIONS) {
       setCandidates(nextCandidates);
-      goToGuess(nextCandidates);
+      goToGuess(nextCandidates, nextHistory);
       return;
     }
 
@@ -1109,7 +1165,7 @@ const GoatGuessGame = ({
     const nextQ = pickQuestion(nextCandidates, nextAsked, nextLastCats);
     setCandidates(nextCandidates);
     if (!nextQ) {
-      goToGuess(nextCandidates);
+      goToGuess(nextCandidates, nextHistory);
     } else {
       setCurrentQuestion(nextQ);
       onAdvanceDevin();
@@ -1175,9 +1231,21 @@ const GoatGuessGame = ({
     setGuessCount(nextGuessCount);
     setCandidates(remaining);
 
-    // Plus aucun candidat ou quota de devinettes atteint → on abandonne
-    if (remaining.length === 0 || nextGuessCount >= MAX_GUESSES) {
+    // Quota de devinettes atteint → on abandonne
+    if (nextGuessCount >= MAX_GUESSES) {
       setPhase("lost");
+      return;
+    }
+
+    // Set strict épuisé → repêchage (tolérance légère) avant d'abandonner.
+    if (remaining.length === 0) {
+      const forgiven = forgivenPool(initialPool, qaHistory, nextRejected);
+      if (forgiven.length === 0) {
+        setPhase("lost");
+      } else {
+        setCurrentGuess(forgiven[0]);
+        setPhase("guessing");
+      }
       return;
     }
 
