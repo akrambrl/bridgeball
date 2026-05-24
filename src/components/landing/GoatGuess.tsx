@@ -709,6 +709,16 @@ const QUESTIONS: Question[] = [
     label: "A-t-il joué jusqu'à 40 ans ou plus ?",
     predicate: (p) => ANEC_JOUE_40.has(p.name),
   },
+  {
+    id: "anec-real-barca", category: "anecdote",
+    label: "A-t-il joué à la fois au Real Madrid et au FC Barcelone ?",
+    predicate: (p) => playedFor(p, "Real Madrid") && playedFor(p, "Barcelona"),
+  },
+  {
+    id: "anec-psg-om", category: "anecdote",
+    label: "A-t-il joué à la fois au PSG et à l'Olympique de Marseille ?",
+    predicate: (p) => playedFor(p, "PSG") && playedFor(p, "Marseille"),
+  },
 ];
 
 // Entropie binaire — plus c'est élevé (max=1), mieux la question discrimine.
