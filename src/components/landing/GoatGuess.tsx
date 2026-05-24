@@ -947,8 +947,8 @@ export const GoatGuess = ({ onClose }: Props) => {
             <div className="font-display text-[10px] tracking-[0.4em] text-[#FFC93C] mb-1 drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]">
               LE DEVIN
             </div>
-            <div className="text-[11px] text-white/70 max-w-[240px] leading-snug italic">
-              « Pense à ton joueur. Je le lis dans ton esprit. »
+            <div className="text-[11px] text-white/70 max-w-[260px] leading-snug italic text-balance">
+              «&nbsp;Pense à ton joueur. Je le lis dans ton esprit.&nbsp;»
             </div>
           </div>
         </div>
@@ -976,8 +976,8 @@ export const GoatGuess = ({ onClose }: Props) => {
             <div className="font-display text-xs tracking-[0.4em] text-[#FFC93C] mb-1 drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]">
               LE DEVIN
             </div>
-            <div className="text-[11px] text-white/70 max-w-[200px] leading-snug italic">
-              « Pense à ton joueur. Je le lis dans ton esprit. »
+            <div className="text-[11px] text-white/70 max-w-[210px] leading-snug italic text-balance">
+              «&nbsp;Pense à ton joueur. Je le lis dans ton esprit.&nbsp;»
             </div>
           </div>
         </div>
