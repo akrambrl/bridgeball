@@ -294,6 +294,11 @@ const ANEC_EXTORSION_FRERE = new Set([
   // Victime d'une tentative d'extorsion orchestrée par son propre frère
   "Paul Pogba", // séquestration/extorsion par Mathias Pogba + amis (2022), condamnés en 2024
 ]);
+const ANEC_EXTORSION = new Set([
+  // Victime d'une tentative d'extorsion (au sens large)
+  "Paul Pogba",   // séquestration/extorsion par son frère + amis (2022)
+  "N'Golo Kanté", // menacé/extorqué (commissions d'agent) par un proche de son entourage (2017)
+]);
 
 const QUESTIONS: Question[] = [
   // Postes
@@ -572,6 +577,11 @@ const QUESTIONS: Question[] = [
     id: "anec-extorsion-frere", category: "anecdote",
     label: "A-t-il été victime d'une tentative d'extorsion orchestrée par son frère ?",
     predicate: (p) => ANEC_EXTORSION_FRERE.has(p.name),
+  },
+  {
+    id: "anec-extorsion", category: "anecdote",
+    label: "A-t-il été victime d'une tentative d'extorsion ?",
+    predicate: (p) => ANEC_EXTORSION.has(p.name),
   },
 ];
 
