@@ -206,8 +206,8 @@ const ANEC_TRANSFERT_RIVAUX = new Set([
   "Ashley Cole",     // Arsenal → Chelsea, 2006
 ]);
 const ANEC_FRATRIE = new Set([
-  // A (au moins) un frère footballeur professionnel.
-  // Paires/fratries dont les deux membres sont présents en base :
+  // A (au moins) un frère footballeur.
+  // Paires dont les deux frères sont présents en base :
   "Frank de Boer", "Ronald de Boer",
   "Eden Hazard", "Thorgan Hazard",
   "Jerome Boateng", "Kevin-Prince Boateng",
@@ -536,7 +536,7 @@ const QUESTIONS: Question[] = [
   },
   {
     id: "anec-fratrie", category: "anecdote",
-    label: "A-t-il un frère footballeur professionnel ?",
+    label: "A-t-il un frère footballeur ?",
     predicate: (p) => ANEC_FRATRIE.has(p.name),
   },
   {
