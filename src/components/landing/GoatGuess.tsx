@@ -206,11 +206,45 @@ const ANEC_TRANSFERT_RIVAUX = new Set([
   "Ashley Cole",     // Arsenal → Chelsea, 2006
 ]);
 const ANEC_FRATRIE = new Set([
-  // Fait partie d'une fratrie de footballeurs professionnels
-  "Frank de Boer", "Ronald de Boer", "Yaya Touré", "Kolo Toure",
-  "Eden Hazard", "Thorgan Hazard", "Jerome Boateng", "Kevin-Prince Boateng",
-  "Granit Xhaka", "Filippo Inzaghi", "Gary Neville", "Phil Neville",
-  "Romelu Lukaku", "Rio Ferdinand", "Paul Pogba",
+  // A (au moins) un frère footballeur professionnel.
+  // Paires/fratries dont les deux membres sont présents en base :
+  "Frank de Boer", "Ronald de Boer",
+  "Eden Hazard", "Thorgan Hazard",
+  "Jerome Boateng", "Kevin-Prince Boateng",
+  "Gary Neville", "Phil Neville",
+  "Sven Bender", "Lars Bender",
+  "Theo Hernández", "Lucas Hernandez",
+  "Marcus Thuram", "Khephren Thuram",
+  "Giovanni Simeone", "Giuliano Simeone",
+  "Sami Khedira", "Rani Khedira",
+  "Jude Bellingham", "Jobe Bellingham",
+  "Thiago Alcântara", "Rafinha",
+  "Kylian Mbappé", "Ethan Mbappé",
+  // Frère pro absent de la base (mais le fait reste vrai pour ce joueur) :
+  "Yaya Touré", "Kolo Toure",   // + Ibrahim
+  "Granit Xhaka",               // Taulant
+  "Filippo Inzaghi",            // Simone
+  "Romelu Lukaku",              // Jordan
+  "Rio Ferdinand",              // Anton
+  "Paul Pogba",                 // Florentin, Mathias
+  "Rafael",                     // Fabio da Silva (son jumeau)
+  "Toni Kroos",                 // Felix
+  "Mario Götze",                // Felix
+  "André Ayew", "Jordan Ayew",  // + Ibrahim (fils d'Abedi Pelé)
+  "Shaun Wright-Phillips",      // Bradley
+  "Steve Mandanda",             // Parfait, Riffi, Over
+  "Bobby Charlton",             // Jack
+  "Daniel Maldini",             // Christian
+  "Pierre-Emerick Aubameyang",  // Willy, Catilina
+  "Gonzalo Higuain",            // Federico, Nicolás
+  "Diego Milito",               // Gabriel
+  "Robert Kovac",               // Niko
+  "Kaká",                       // Digão
+  "Luca Zidane",                // Enzo, Theo, Elyaz
+  "Edinson Cavani",             // Walter Guglielmone (attaquant)
+  "Xabi Alonso",                // Mikel
+  "Saúl Ñíguez",                // Jonathan, Aaron
+  "Ronaldinho",                 // Roberto Assis
 ]);
 const ANEC_CHANGE_SELECTION = new Set([
   // A changé de sélection nationale au cours de sa carrière
@@ -502,7 +536,7 @@ const QUESTIONS: Question[] = [
   },
   {
     id: "anec-fratrie", category: "anecdote",
-    label: "Fait-il partie d'une fratrie de footballeurs professionnels ?",
+    label: "A-t-il un frère footballeur professionnel ?",
     predicate: (p) => ANEC_FRATRIE.has(p.name),
   },
   {
