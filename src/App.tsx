@@ -13,6 +13,8 @@ import Drivers from "./fleet/pages/Drivers";
 import Fines from "./fleet/pages/Fines";
 import MaintenancePage from "./fleet/pages/Maintenance";
 import Trips from "./fleet/pages/Trips";
+import Employee from "./fleet/pages/Employee";
+import Privacy from "./fleet/pages/Privacy";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +35,8 @@ const App = () => (
               <Route path="/entretien" element={<MaintenancePage />} />
               <Route path="/trajets" element={<Trips />} />
             </Route>
+            <Route path="/salarie" element={<Employee />} />
+            <Route path="/confidentialite" element={<Privacy />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </FleetProvider>

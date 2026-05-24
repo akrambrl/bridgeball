@@ -7,9 +7,11 @@ import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useFleet, driverName } from "../store";
 import { km, dateFr, duration } from "../format";
 import { PageHeader } from "../components/PageHeader";
+import TripsMap from "../components/TripsMap";
 
 function AddTripDialog() {
   const { addTrip, vehicles } = useFleet();
@@ -101,42 +103,55 @@ export default function Trips() {
         </span>
       </div>
 
-      <Card>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Véhicule</TableHead>
-                <TableHead>Conducteur</TableHead>
-                <TableHead>Trajet</TableHead>
-                <TableHead className="text-right">Distance</TableHead>
-                <TableHead className="text-right">Durée</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {sorted.map((t) => {
-                const v = vehicles.find((x) => x.id === t.vehicleId);
-                return (
-                  <TableRow key={t.id}>
-                    <TableCell>{dateFr(t.date)}</TableCell>
-                    <TableCell className="font-medium">{v ? `${v.brand} ${v.model}` : "—"}</TableCell>
-                    <TableCell>{driverName(drivers, t.driverId)}</TableCell>
-                    <TableCell>{t.from} → {t.to}</TableCell>
-                    <TableCell className="text-right">{km(t.distanceKm)}</TableCell>
-                    <TableCell className="text-right">{duration(t.durationMin)}</TableCell>
+      <Tabs defaultValue="list">
+        <TabsList className="mb-4">
+          <TabsTrigger value="list">Liste</TabsTrigger>
+          <TabsTrigger value="map">Carte</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="list">
+          <Card>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Véhicule</TableHead>
+                    <TableHead>Conducteur</TableHead>
+                    <TableHead>Trajet</TableHead>
+                    <TableHead className="text-right">Distance</TableHead>
+                    <TableHead className="text-right">Durée</TableHead>
                   </TableRow>
-                );
-              })}
-              {sorted.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={6} className="py-8 text-center text-muted-foreground">Aucun trajet.</TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+                </TableHeader>
+                <TableBody>
+                  {sorted.map((t) => {
+                    const v = vehicles.find((x) => x.id === t.vehicleId);
+                    return (
+                      <TableRow key={t.id}>
+                        <TableCell>{dateFr(t.date)}</TableCell>
+                        <TableCell className="font-medium">{v ? `${v.brand} ${v.model}` : "—"}</TableCell>
+                        <TableCell>{driverName(drivers, t.driverId)}</TableCell>
+                        <TableCell>{t.from} → {t.to}</TableCell>
+                        <TableCell className="text-right">{km(t.distanceKm)}</TableCell>
+                        <TableCell className="text-right">{duration(t.durationMin)}</TableCell>
+                      </TableRow>
+                    );
+                  })}
+                  {sorted.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={6} className="py-8 text-center text-muted-foreground">Aucun trajet.</TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="map">
+          <TripsMap trips={sorted} vehicles={vehicles} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

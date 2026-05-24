@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
-import { Car, LayoutDashboard, Users, ReceiptText, Wrench, Route as RouteIcon, Menu, X } from "lucide-react";
+import { Car, LayoutDashboard, Users, ReceiptText, Wrench, Route as RouteIcon, Menu, X, Smartphone } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const nav = [
@@ -48,6 +48,16 @@ export default function FleetLayout() {
               </NavLink>
             ))}
           </nav>
+          <div className="absolute inset-x-0 bottom-0 border-t p-3">
+            <NavLink
+              to="/salarie"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+            >
+              <Smartphone className="h-4 w-4" />
+              Espace salarié
+            </NavLink>
+          </div>
         </aside>
 
         {open && <div className="fixed inset-0 z-30 bg-black/40 md:hidden" onClick={() => setOpen(false)} />}

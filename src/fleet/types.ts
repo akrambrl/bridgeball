@@ -66,6 +66,9 @@ export interface Trip {
   to: string;
   distanceKm: number;
   durationMin: number;
+  source?: "manual" | "gps";
+  /** Tracé GPS [lat, lng] quand le trajet provient du tracker smartphone. */
+  path?: [number, number][];
 }
 
 export interface FleetData {
