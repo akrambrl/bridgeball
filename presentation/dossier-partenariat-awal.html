@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dossier de partenariat — Awal × [Nom de la marque]</title>
+
+<!--
+  ════════════════════════════════════════════════════════════════════════
+  COMMENT UTILISER CE DOCUMENT
+  ────────────────────────────────────────────────────────────────────────
+  1. Ouvre ce fichier dans un navigateur (Chrome de préférence).
+  2. Remplace tout le texte entre crochets [ ... ] par tes infos.
+     Les zones à compléter sont surlignées en pointillé à l'écran
+     (elles deviennent normales à l'impression).
+  3. Pour exporter en PDF : Cmd/Ctrl + P → Destination « Enregistrer en PDF »
+     → Format A4 → Marges « Aucune » → coche « Graphiques d'arrière-plan ».
+  4. Les couleurs d'Awal se règlent en UN SEUL endroit ci-dessous
+     (bloc :root → --accent, --accent-2, --ink, etc.).
+  ════════════════════════════════════════════════════════════════════════
+-->
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+<style>
+  /* ═══════════════ IDENTITÉ AWAL — À RÉGLER ICI ═══════════════ */
+  :root {
+    --accent:    #C8A24B;   /* couleur principale Awal (ex : doré) */
+    --accent-2:  #E7C77A;   /* variante claire / dégradé           */
+    --ink:       #0E0E10;   /* fond sombre                         */
+    --ink-soft:  #17171B;   /* cartes sombres                      */
+    --paper:     #FBFAF7;   /* fond clair des pages intérieures    */
+    --paper-2:   #F1EEE7;   /* surfaces claires                    */
+    --text:      #1B1B1F;   /* texte sur fond clair                */
+    --text-dim:  #6B6B73;   /* texte secondaire                    */
+    --line:      #E2DDD2;   /* filets / bordures                   */
+    --brand-name: "[NOM DE LA MARQUE]";
+  }
+  /* ════════════════════════════════════════════════════════════ */
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+  body {
+    font-family: 'Inter', -apple-system, system-ui, sans-serif;
+    color: var(--text);
+    background: #2a2a2e;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---- Page A4 ---- */
+  .page {
+    position: relative;
+    width: 210mm;
+    min-height: 297mm;
+    margin: 10mm auto;
+    background: var(--paper);
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,.45);
+    padding: 22mm 20mm;
+    display: flex;
+    flex-direction: column;
+  }
+  .page.dark { background: var(--ink); color: #fff; }
+
+  @page { size: A4; margin: 0; }
+  @media print {
+    body { background: #fff; }
+    .page { margin: 0; box-shadow: none; page-break-after: always; min-height: 297mm; }
+    .page:last-child { page-break-after: auto; }
+    .screen-only { display: none !important; }
+  }
+
+  /* ---- Typo ---- */
+  .eyebrow {
+    font-size: 10.5px; letter-spacing: .32em; text-transform: uppercase;
+    font-weight: 700; color: var(--accent);
+  }
+  .display {
+    font-family: 'Anton', Impact, sans-serif; font-weight: 400;
+    line-height: .95; letter-spacing: .01em; text-transform: uppercase;
+  }
+  h1.display { font-size: 64px; }
+  h2.display { font-size: 38px; }
+  h3 { font-size: 17px; font-weight: 800; letter-spacing: -.01em; }
+  p { font-size: 13px; color: var(--text); }
+  .dim { color: var(--text-dim); }
+  .accent { color: var(--accent); }
+
+  /* zones éditables : visibles à l'écran, neutres à l'impression */
+  .edit { background: rgba(200,162,75,.16); border-bottom: 1px dashed var(--accent); border-radius: 2px; padding: 0 2px; }
+  @media print { .edit { background: transparent; border-bottom: none; padding: 0; } }
+
+  /* ---- En-tête / pied de page ---- */
+  .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14mm; }
+  .logo { display: flex; align-items: center; gap: 9px; }
+  .logo-mark {
+    width: 30px; height: 30px; border-radius: 8px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Anton'; font-size: 18px; color: var(--ink);
+  }
+  .logo-text { font-family: 'Anton'; font-size: 19px; letter-spacing: .06em; }
+  .page.dark .logo-text { color: #fff; }
+  .footer {
+    margin-top: auto; padding-top: 8mm;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 9.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--text-dim);
+    border-top: 1px solid var(--line);
+  }
+  .page.dark .footer { border-color: rgba(255,255,255,.12); color: rgba(255,255,255,.5); }
+
+  /* ───────────── COUVERTURE ───────────── */
+  .cover { justify-content: space-between; padding: 22mm 20mm; }
+  .cover-pitch-lines {
+    position: absolute; inset: 0; opacity: .05;
+    background: repeating-linear-gradient(90deg, var(--accent) 0 1px, transparent 1px 80px);
+    pointer-events: none;
+  }
+  .cover-glow {
+    position: absolute; width: 520px; height: 520px; right: -160px; top: -120px;
+    background: radial-gradient(circle, var(--accent) 0%, transparent 62%);
+    opacity: .22; filter: blur(8px);
+  }
+  .cover-main { position: relative; z-index: 2; margin-top: 8mm; }
+  .cover h1 { font-size: 78px; margin: 10px 0 6px; }
+  .cover h1 .accent { color: var(--accent); }
+  .cover-sub { font-size: 16px; color: rgba(255,255,255,.78); max-width: 150mm; margin-top: 8px; }
+  .cover-brand { font-weight: 800; color: var(--accent); }
+
+  .stat-strip { position: relative; z-index: 2; display: flex; gap: 0; margin-top: 14mm; border-top: 1px solid rgba(255,255,255,.14); }
+  .stat-strip .cell { flex: 1; padding: 16px 4px 0; border-right: 1px solid rgba(255,255,255,.10); }
+  .stat-strip .cell:last-child { border-right: 0; }
+  .stat-num { font-family: 'Anton'; font-size: 40px; color: #fff; line-height: 1; }
+  .stat-num .accent { color: var(--accent); }
+  .stat-lbl { font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: rgba(255,255,255,.6); margin-top: 6px; }
+
+  /* ───────────── SECTIONS ───────────── */
+  .section-head { margin-bottom: 9mm; }
+  .section-head .eyebrow { display: block; margin-bottom: 6px; }
+  .lead { font-size: 15px; line-height: 1.6; color: var(--text); max-width: 165mm; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6mm; }
+  .chip {
+    font-size: 11.5px; font-weight: 600; padding: 7px 13px; border-radius: 999px;
+    background: var(--paper-2); border: 1px solid var(--line); color: var(--text);
+  }
+  .chip.solid { background: var(--ink); color: #fff; border-color: var(--ink); }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 7mm; margin-top: 8mm; }
+  .info-card { background: var(--paper-2); border: 1px solid var(--line); border-radius: 14px; padding: 18px 18px; }
+  .info-card h3 { margin-bottom: 6px; }
+  .info-card .num { font-family: 'Anton'; font-size: 30px; color: var(--accent); line-height: 1; }
+  .info-card p { font-size: 12px; color: var(--text-dim); }
+
+  /* grille de stats cumulées */
+  .kpi-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6mm; margin-top: 8mm; }
+  .kpi {
+    border: 1px solid var(--line); border-radius: 16px; padding: 22px 20px;
+    background: linear-gradient(180deg, #fff, var(--paper-2));
+  }
+  .kpi .k-num { font-family: 'Anton'; font-size: 52px; line-height: .9; color: var(--text); }
+  .kpi .k-num .accent { color: var(--accent); }
+  .kpi .k-lbl { font-size: 12px; font-weight: 700; margin-top: 8px; }
+  .kpi .k-desc { font-size: 11.5px; color: var(--text-dim); margin-top: 3px; }
+
+  /* ───────────── FICHES CRÉATEURS ───────────── */
+  .creator {
+    display: grid; grid-template-columns: 64mm 1fr; gap: 8mm;
+    border: 1px solid var(--line); border-radius: 18px; overflow: hidden;
+    margin-bottom: 7mm; background: #fff;
+  }
+  .creator-visual {
+    background: var(--ink); color: #fff; padding: 18px 18px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    position: relative;
+  }
+  .creator-visual::after {
+    content: ""; position: absolute; left: 0; bottom: 0; width: 100%; height: 4px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  }
+  .creator-handle { font-family: 'Anton'; font-size: 25px; letter-spacing: .02em; }
+  .creator-real { font-size: 11.5px; color: rgba(255,255,255,.6); margin-top: 2px; }
+  .creator-bio { font-size: 11px; color: rgba(255,255,255,.78); margin-top: 12px; font-style: italic; }
+  .creator-hero-num { margin-top: 14px; }
+  .creator-hero-num .n { font-family: 'Anton'; font-size: 42px; color: var(--accent); line-height: 1; }
+  .creator-hero-num .l { font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: rgba(255,255,255,.6); }
+
+  .creator-body { padding: 18px 20px 16px; }
+  .creator-body h3 { font-size: 13px; letter-spacing: .04em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 10px; }
+  .metric-row { display: flex; flex-wrap: wrap; gap: 14px 26px; margin-bottom: 12px; }
+  .metric .m-num { font-family: 'Anton'; font-size: 22px; color: var(--text); line-height: 1; }
+  .metric .m-lbl { font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-dim); margin-top: 3px; }
+  .platform-row { display: flex; flex-wrap: wrap; gap: 7px; }
+  .pf { font-size: 10.5px; font-weight: 600; padding: 5px 11px; border-radius: 999px; background: var(--paper-2); border: 1px solid var(--line); }
+  .pf b { color: var(--accent); }
+  .tag-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  .tag { font-size: 10px; font-weight: 600; color: var(--text-dim); padding: 3px 9px; border: 1px solid var(--line); border-radius: 6px; }
+
+  /* ───────────── OFFRE ───────────── */
+  .offer-table { width: 100%; border-collapse: collapse; margin-top: 6mm; font-size: 12px; }
+  .offer-table th { text-align: left; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--text-dim); padding: 10px 12px; border-bottom: 2px solid var(--ink); }
+  .offer-table td { padding: 12px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .offer-table tr:last-child td { border-bottom: 0; }
+  .offer-table .pack { font-weight: 800; font-family: 'Anton'; font-size: 16px; }
+  .deliver-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; margin-top: 8mm; }
+  .deliver {
+    border-left: 3px solid var(--accent); background: var(--paper-2);
+    padding: 14px 16px; border-radius: 0 12px 12px 0;
+  }
+  .deliver h3 { font-size: 13px; margin-bottom: 4px; }
+  .deliver p { font-size: 11.5px; color: var(--text-dim); }
+
+  /* ───────────── CONTACT ───────────── */
+  .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7mm; margin-top: 8mm; }
+  .contact-card { border: 1px solid rgba(255,255,255,.14); border-radius: 16px; padding: 20px; }
+  .contact-card .role { font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: var(--accent); }
+  .contact-card .name { font-family: 'Anton'; font-size: 22px; margin: 6px 0 4px; }
+  .contact-card .line { font-size: 12px; color: rgba(255,255,255,.78); }
+  .cta-band {
+    margin-top: 10mm; text-align: center; padding: 26px;
+    border-radius: 18px; background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: var(--ink);
+  }
+  .cta-band .big { font-family: 'Anton'; font-size: 26px; }
+
+  .num-list { counter-reset: n; margin-top: 6mm; }
+  .num-list .item { display: flex; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+  .num-list .item:last-child { border-bottom: 0; }
+  .num-list .item .idx { counter-increment: n; font-family: 'Anton'; font-size: 22px; color: var(--accent); min-width: 34px; }
+  .num-list .item .idx::before { content: "0" counter(n); }
+  .num-list .item h3 { font-size: 14px; margin-bottom: 2px; }
+  .num-list .item p { font-size: 12px; color: var(--text-dim); }
+
+  .hint { background:#fff5d6; border:1px solid #e8d27a; border-radius:10px; padding:10px 14px; font-size:12px; color:#6b5a14; max-width:780px; margin:14px auto; }
+</style>
+</head>
+<body>
+
+<!-- bandeau d'aide (écran uniquement) -->
+<div class="hint screen-only">
+  <b>Mode d'emploi :</b> remplace le texte entre crochets [ … ] (zones surlignées),
+  règle les couleurs d'Awal dans le bloc <code>:root</code> en haut du fichier, puis
+  <b>Cmd/Ctrl + P → Enregistrer en PDF</b> (A4, marges « Aucune », cocher « Graphiques d'arrière-plan »).
+</div>
+
+<!-- ═══════════════════ PAGE 1 — COUVERTURE ═══════════════════ -->
+<section class="page dark cover">
+  <div class="cover-pitch-lines"></div>
+  <div class="cover-glow"></div>
+
+  <div class="topbar" style="position:relative;z-index:2;">
+    <div class="logo">
+      <div class="logo-mark">A</div>
+      <div class="logo-text">AWAL</div>
+    </div>
+    <div class="eyebrow">Dossier de partenariat · <span class="edit">2026</span></div>
+  </div>
+
+  <div class="cover-main">
+    <div class="eyebrow">Proposition de collaboration</div>
+    <h1 class="display">Sponsoring<br><span class="accent">Créateurs × Mode</span></h1>
+    <p class="cover-sub">
+      Un collectif de <strong>3 créateurs football &amp; lifestyle</strong> francophones,
+      produit par <strong>Awal</strong>, à la recherche d'un partenariat avec
+      <span class="cover-brand">[NOM DE LA MARQUE]</span> pour une série de vidéos.
+    </p>
+  </div>
+
+  <div class="stat-strip">
+    <div class="cell">
+      <div class="stat-num"><span class="accent">257</span>K</div>
+      <div class="stat-lbl">Abonnés cumulés</div>
+    </div>
+    <div class="cell">
+      <div class="stat-num">3</div>
+      <div class="stat-lbl">Créateurs</div>
+    </div>
+    <div class="cell">
+      <div class="stat-num">3</div>
+      <div class="stat-lbl">Plateformes</div>
+    </div>
+    <div class="cell">
+      <div class="stat-num">100<span class="accent">%</span></div>
+      <div class="stat-lbl">Audience FR / foot</div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>Produit par Awal</span>
+    <span>Confidentiel — réservé à [Nom de la marque]</span>
+  </div>
+</section>
+
+<!-- ═══════════════════ PAGE 2 — LE COLLECTIF ═══════════════════ -->
+<section class="page">
+  <div class="topbar">
+    <div class="logo"><div class="logo-mark">A</div><div class="logo-text" style="color:var(--text)">AWAL</div></div>
+    <div class="eyebrow accent">01 — Le collectif</div>
+  </div>
+
+  <div class="section-head">
+    <span class="eyebrow">Qui sommes-nous</span>
+    <h2 class="display">Trois voix, une même <span class="accent">communauté</span></h2>
+  </div>
+
+  <p class="lead">
+    Nous sommes un collectif de créateurs de contenu autour du <strong>football, du lifestyle et du voyage</strong>,
+    accompagné en production par <strong>Awal</strong>. Nos contenus mêlent réactions football, vlogs,
+    déplacements à l'étranger et moments de vie — un univers où le <strong>style vestimentaire est central</strong>
+    et constamment mis en avant à l'écran. Notre audience est jeune, majoritairement masculine, francophone,
+    et très engagée autour de la culture foot et streetwear.
+  </p>
+
+  <div class="chips">
+    <span class="chip solid">Football</span>
+    <span class="chip">Lifestyle</span>
+    <span class="chip">Voyage</span>
+    <span class="chip">Streetwear / Mode</span>
+    <span class="chip">Gaming &amp; Twitch</span>
+    <span class="chip">Vlog</span>
+  </div>
+
+  <div class="two-col">
+    <div class="info-card">
+      <div class="num">≈ 257 K</div>
+      <h3>Une force de frappe combinée</h3>
+      <p>L'addition des communautés des trois créateurs sur Instagram, complétée par Twitch et TikTok.</p>
+    </div>
+    <div class="info-card">
+      <div class="num">FR · 16–30</div>
+      <h3>Une audience cible nette</h3>
+      <p>Public francophone, majoritairement masculin, jeune adulte — au cœur de la cible d'une marque de vêtements.</p>
+    </div>
+    <div class="info-card">
+      <div class="num">Multi-format</div>
+      <h3>Reels, vlogs &amp; lives</h3>
+      <p>Du format court viral (Reels / TikTok) au format long (vlogs, lives Twitch) : plusieurs points de contact.</p>
+    </div>
+    <div class="info-card">
+      <div class="num">Le style</div>
+      <h3>La mode au centre</h3>
+      <p>Tenues, drip et looks font partie intégrante du contenu : un contexte idéal pour mettre en avant une marque.</p>
+    </div>
+  </div>
+
+  <div class="footer"><span>Produit par Awal</span><span>01 — Le collectif</span></div>
+</section>
+
+<!-- ═══════════════════ PAGE 3 — CHIFFRES CLÉS ═══════════════════ -->
+<section class="page">
+  <div class="topbar">
+    <div class="logo"><div class="logo-mark">A</div><div class="logo-text" style="color:var(--text)">AWAL</div></div>
+    <div class="eyebrow accent">02 — Chiffres clés</div>
+  </div>
+
+  <div class="section-head">
+    <span class="eyebrow">Audience cumulée</span>
+    <h2 class="display">Les <span class="accent">chiffres</span> qui comptent</h2>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi">
+      <div class="k-num"><span class="accent">257</span>K</div>
+      <div class="k-lbl">Abonnés Instagram cumulés</div>
+      <div class="k-desc">194K + 35,8K + 27K sur les trois comptes</div>
+    </div>
+    <div class="kpi">
+      <div class="k-num">3</div>
+      <div class="k-lbl">Créateurs complémentaires</div>
+      <div class="k-desc">Des univers proches qui se renforcent (cross-promo intégrée)</div>
+    </div>
+    <div class="kpi">
+      <div class="k-num">3</div>
+      <div class="k-lbl">Plateformes activables</div>
+      <div class="k-desc">Instagram · TikTok · Twitch</div>
+    </div>
+    <div class="kpi">
+      <div class="k-num"><span class="edit">[X]</span>%</div>
+      <div class="k-lbl">Taux d'engagement moyen</div>
+      <div class="k-desc">À compléter avec vos statistiques Insights</div>
+    </div>
+  </div>
+
+  <div class="info-card" style="margin-top:8mm;">
+    <h3>À compléter avec vos données Insights (recommandé)</h3>
+    <p style="margin-top:6px;">
+      Pour un dossier encore plus convaincant, ajoute ici : vues moyennes par Reel,
+      portée (reach) sur 30 jours, répartition homme/femme, top pays/villes et tranche d'âge dominante.
+      Ces chiffres se trouvent dans <em>Instagram → Statistiques professionnelles</em>.
+    </p>
+  </div>
+
+  <div class="footer"><span>Produit par Awal</span><span>02 — Chiffres clés</span></div>
+</section>
+
+<!-- ═══════════════════ PAGE 4 — FICHES CRÉATEURS ═══════════════════ -->
+<section class="page">
+  <div class="topbar">
+    <div class="logo"><div class="logo-mark">A</div><div class="logo-text" style="color:var(--text)">AWAL</div></div>
+    <div class="eyebrow accent">03 — Les créateurs</div>
+  </div>
+
+  <div class="section-head">
+    <span class="eyebrow">Le collectif en détail</span>
+    <h2 class="display">Les <span class="accent">créateurs</span></h2>
+  </div>
+
+  <!-- You -->
+  <div class="creator">
+    <div class="creator-visual">
+      <div>
+        <div class="creator-handle">@youladecadd</div>
+        <div class="creator-real">You · Artiste</div>
+        <div class="creator-bio">« Abonnez-vous je rend 🙏 »</div>
+      </div>
+      <div class="creator-hero-num">
+        <div class="n">194K</div>
+        <div class="l">Abonnés Instagram</div>
+      </div>
+    </div>
+    <div class="creator-body">
+      <h3>Le visage principal du collectif</h3>
+      <div class="metric-row">
+        <div class="metric"><div class="m-num">194K</div><div class="m-lbl">Followers IG</div></div>
+        <div class="metric"><div class="m-num">14</div><div class="m-lbl">Publications</div></div>
+        <div class="metric"><div class="m-num edit">[X]</div><div class="m-lbl">Vues moy. / Reel</div></div>
+        <div class="metric"><div class="m-num edit">[X]%</div><div class="m-lbl">Engagement</div></div>
+      </div>
+      <div class="platform-row">
+        <span class="pf">Instagram <b>194K</b></span>
+        <span class="pf">Linktree</span>
+        <span class="pf">Contact pro ✓</span>
+      </div>
+      <div class="tag-list">
+        <span class="tag">Football</span><span class="tag">Lifestyle</span>
+        <span class="tag">Voyage</span><span class="tag">Musique</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hamza -->
+  <div class="creator">
+    <div class="creator-visual">
+      <div>
+        <div class="creator-handle">@hamzakerdali</div>
+        <div class="creator-real">Hamza · Création digitale</div>
+        <div class="creator-bio">« Le dernier des Mohicans »</div>
+      </div>
+      <div class="creator-hero-num">
+        <div class="n">35,8K</div>
+        <div class="l">Abonnés Instagram</div>
+      </div>
+    </div>
+    <div class="creator-body">
+      <h3>Création digitale &amp; football</h3>
+      <div class="metric-row">
+        <div class="metric"><div class="m-num">35,8K</div><div class="m-lbl">Followers IG</div></div>
+        <div class="metric"><div class="m-num">32</div><div class="m-lbl">Publications</div></div>
+        <div class="metric"><div class="m-num edit">[X]</div><div class="m-lbl">Vues moy. / Reel</div></div>
+        <div class="metric"><div class="m-num edit">[X]%</div><div class="m-lbl">Engagement</div></div>
+      </div>
+      <div class="platform-row">
+        <span class="pf">Instagram <b>35,8K</b></span>
+        <span class="pf">Twitch <b>twitch.tv/hamzakerdaloco</b></span>
+      </div>
+      <div class="tag-list">
+        <span class="tag">Football (PSG)</span><span class="tag">Lifestyle</span>
+        <span class="tag">Moto</span><span class="tag">Streaming</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lawisse -->
+  <div class="creator">
+    <div class="creator-visual">
+      <div>
+        <div class="creator-handle">@lawisse__</div>
+        <div class="creator-real">Lawisse · « Maire de la Ville »</div>
+        <div class="creator-bio">« Ils se demandent c'est qui Lawisse »</div>
+      </div>
+      <div class="creator-hero-num">
+        <div class="n">27K</div>
+        <div class="l">Abonnés Instagram</div>
+      </div>
+    </div>
+    <div class="creator-body">
+      <h3>Football, voyage &amp; lifestyle</h3>
+      <div class="metric-row">
+        <div class="metric"><div class="m-num">27K</div><div class="m-lbl">Followers IG</div></div>
+        <div class="metric"><div class="m-num">39</div><div class="m-lbl">Publications</div></div>
+        <div class="metric"><div class="m-num edit">[X]</div><div class="m-lbl">Vues moy. / Reel</div></div>
+        <div class="metric"><div class="m-num edit">[X]%</div><div class="m-lbl">Engagement</div></div>
+      </div>
+      <div class="platform-row">
+        <span class="pf">Instagram <b>27K</b></span>
+        <span class="pf">Twitch</span>
+        <span class="pf">TikTok <b>Lawisse_</b></span>
+      </div>
+      <div class="tag-list">
+        <span class="tag">Football</span><span class="tag">Voyage</span>
+        <span class="tag">Voitures</span><span class="tag">Lifestyle</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer"><span>Produit par Awal</span><span>03 — Les créateurs</span></div>
+</section>
+
+<!-- ═══════════════════ PAGE 5 — POURQUOI CE PARTENARIAT ═══════════════════ -->
+<section class="page">
+  <div class="topbar">
+    <div class="logo"><div class="logo-mark">A</div><div class="logo-text" style="color:var(--text)">AWAL</div></div>
+    <div class="eyebrow accent">04 — La synergie</div>
+  </div>
+
+  <div class="section-head">
+    <span class="eyebrow">Pourquoi <span class="edit">[Nom de la marque]</span> × Awal</span>
+    <h2 class="display">Pourquoi ça <span class="accent">matche</span></h2>
+  </div>
+
+  <p class="lead">
+    Notre audience et l'univers de <span class="edit">[Nom de la marque]</span> partagent le même ADN :
+    une cible jeune, urbaine, sensible au style et à la culture football. Mettre vos vêtements dans nos
+    contenus, c'est les montrer portés, en situation, devant une communauté qui fait déjà confiance aux créateurs.
+  </p>
+
+  <div class="num-list">
+    <div class="item">
+      <div class="idx"></div>
+      <div>
+        <h3>Une audience pile dans votre cible</h3>
+        <p>Jeunes adultes francophones, majoritairement masculins, fans de foot et de streetwear — le cœur de cible d'une marque de vêtements.</p>
+      </div>
+    </div>
+    <div class="item">
+      <div class="idx"></div>
+      <div>
+        <h3>Le produit montré en contexte réel</h3>
+        <p>Vos pièces apparaissent portées dans des vlogs, des déplacements et du contenu lifestyle : bien plus impactant qu'une simple photo produit.</p>
+      </div>
+    </div>
+    <div class="item">
+      <div class="idx"></div>
+      <div>
+        <h3>Trois créateurs = trois fois la portée</h3>
+        <p>Une seule campagne activée simultanément sur 3 comptes complémentaires, avec cross-promotion intégrée entre les créateurs.</p>
+      </div>
+    </div>
+    <div class="item">
+      <div class="idx"></div>
+      <div>
+        <h3>Une production gérée par Awal</h3>
+        <p>Tournage, montage et calendrier de publication pilotés par Awal : un contenu soigné, livré dans les délais, sans charge pour la marque.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer"><span>Produit par Awal</span><span>04 — La synergie</span></div>
+</section>
+
+<!-- ═══════════════════ PAGE 6 — OFFRE ═══════════════════ -->
+<section class="page">
+  <div class="topbar">
+    <div class="logo"><div class="logo-mark">A</div><div class="logo-text" style="color:var(--text)">AWAL</div></div>
+    <div class="eyebrow accent">05 — La proposition</div>
+  </div>
+
+  <div class="section-head">
+    <span class="eyebrow">Ce que nous proposons</span>
+    <h2 class="display">L'offre de <span class="accent">partenariat</span></h2>
+  </div>
+
+  <div class="deliver-grid">
+    <div class="deliver"><h3>Reels &amp; TikTok dédiés</h3><p><span class="edit">[X]</span> vidéos courtes intégrant la marque, publiées sur les comptes des créateurs.</p></div>
+    <div class="deliver"><h3>Intégrations en vlog</h3><p>Vos vêtements portés et cités dans nos vlogs football &amp; lifestyle.</p></div>
+    <div class="deliver"><h3>Stories &amp; lien</h3><p><span class="edit">[X]</span> stories avec swipe-up / lien et code promo dédié.</p></div>
+    <div class="deliver"><h3>Code promo &amp; affiliation</h3><p>Code unique par créateur pour suivre les ventes générées (modèle à définir ensemble).</p></div>
+  </div>
+
+  <h3 style="margin-top:10mm;">Formules indicatives <span class="dim" style="font-weight:500;font-size:12px;">(à ajuster ensemble)</span></h3>
+  <table class="offer-table">
+    <thead>
+      <tr><th>Formule</th><th>Contenu</th><th>Plateformes</th><th>Contrepartie</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="pack">Découverte</td>
+        <td>1 créateur · <span class="edit">[X]</span> Reel + <span class="edit">[X]</span> stories</td>
+        <td>Instagram</td>
+        <td class="edit">[Produits offerts / à définir]</td>
+      </tr>
+      <tr>
+        <td class="pack">Collectif</td>
+        <td>3 créateurs · 1 vidéo chacun + stories</td>
+        <td>Instagram · TikTok</td>
+        <td class="edit">[Montant / produits / affiliation]</td>
+      </tr>
+      <tr>
+        <td class="pack">Signature</td>
+        <td>Campagne complète · vidéos + vlog + lives + code promo</td>
+        <td>IG · TikTok · Twitch</td>
+        <td class="edit">[Montant à définir]</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="info-card" style="margin-top:8mm;">
+    <h3>Modèle de partenariat ouvert</h3>
+    <p style="margin-top:5px;">Produits offerts, rémunération fixe, code promo avec commission à l'affiliation, ou combinaison des trois — nous nous adaptons au format qui convient le mieux à <span class="edit">[Nom de la marque]</span>.</p>
+  </div>
+
+  <div class="footer"><span>Produit par Awal</span><span>05 — La proposition</span></div>
+</section>
+
+<!-- ═══════════════════ PAGE 7 — CONTACT ═══════════════════ -->
+<section class="page dark">
+  <div class="topbar">
+    <div class="logo"><div class="logo-mark">A</div><div class="logo-text">AWAL</div></div>
+    <div class="eyebrow accent">06 — Contact</div>
+  </div>
+
+  <div class="section-head">
+    <span class="eyebrow">Travaillons ensemble</span>
+    <h2 class="display" style="color:#fff;">Parlons-<span class="accent">en</span></h2>
+  </div>
+
+  <p class="lead" style="color:rgba(255,255,255,.8); max-width:160mm;">
+    Merci d'avoir pris le temps de découvrir notre collectif. Nous serions ravis de construire
+    une collaboration sur-mesure avec <span class="edit">[Nom de la marque]</span>.
+  </p>
+
+  <div class="contact-grid">
+    <div class="contact-card">
+      <div class="role">Production · Contact principal</div>
+      <div class="name">Awal</div>
+      <div class="line"><span class="edit">[Nom du responsable]</span></div>
+      <div class="line"><span class="edit">[email@awal.xx]</span></div>
+      <div class="line"><span class="edit">[+33 ...]</span> · <span class="edit">[@awal sur Instagram]</span></div>
+    </div>
+    <div class="contact-card">
+      <div class="role">Créateurs</div>
+      <div class="name" style="font-size:18px;">Le collectif</div>
+      <div class="line">@youladecadd — Youladecad.contact@gmail.com</div>
+      <div class="line">@lawisse__ — contact.lawisse@gmail.com</div>
+      <div class="line">@hamzakerdali — twitch.tv/hamzakerdaloco</div>
+    </div>
+  </div>
+
+  <div class="cta-band">
+    <div class="big">Prêts à habiller nos vidéos ?</div>
+    <div style="font-size:13px;margin-top:6px;font-weight:600;">Réponse souhaitée à <span class="edit">[email / contact]</span></div>
+  </div>
+
+  <div class="footer"><span>Produit par Awal</span><span>Dossier confidentiel — 2026</span></div>
+</section>
+
+</body>
+</html>
