@@ -919,37 +919,45 @@ export const GoatGuess = ({ onClose }: Props) => {
 
       {/* Layout 2 colonnes desktop, stacked mobile — pas d'encadré global */}
       <div className="grid lg:grid-cols-[1fr_280px] gap-2 lg:gap-10 items-start">
-        {/* Mascotte mobile (au-dessus du contenu) */}
-        <div className="lg:hidden flex justify-center mb-1">
-          <div className="relative">
-            <div
-              className="absolute inset-0 blur-2xl opacity-70 rounded-full"
-              style={{ background: "#C084FC" }}
-            />
-            <div
-              className="relative h-16 w-16 rounded-full overflow-hidden flex items-center justify-center text-4xl"
-              style={{
-                background:
-                  "radial-gradient(circle at 30% 30%, rgba(192,132,252,0.5), rgba(0,0,0,0.7))",
-                border: "2px solid rgba(192,132,252,0.6)",
-                boxShadow: "0 6px 24px rgba(192,132,252,0.5)",
-              }}
-            >
-              <DevinAvatar
-                src={devinSrc}
-                imgClass="goat-float h-full w-full object-cover"
-                emojiClass="goat-float inline-block"
-              />
-            </div>
-          </div>
-        </div>
-
         {/* Contenu principal du jeu — sans encadré sombre, directement sur la pelouse */}
         <div className="relative w-full">
           <GoatGuessGame onClose={onClose} onAdvanceDevin={advanceDevin} />
         </div>
 
-        {/* Mascotte desktop — colonne droite */}
+        {/* Mascotte mobile — placée SOUS la question, agrandie pour remplir l'espace vide */}
+        <div className="lg:hidden flex flex-col items-center mt-4 mb-3">
+          <div className="relative">
+            <div
+              className="absolute inset-0 blur-3xl opacity-70 rounded-full"
+              style={{ background: "#C084FC" }}
+            />
+            <div
+              className="relative h-60 w-60 rounded-[2rem] overflow-hidden flex items-center justify-center text-[160px] leading-none"
+              style={{
+                background:
+                  "radial-gradient(circle at 30% 25%, rgba(192,132,252,0.45), rgba(0,0,0,0.8))",
+                border: "3px solid rgba(192,132,252,0.55)",
+                boxShadow: "0 20px 60px -10px rgba(192,132,252,0.5)",
+              }}
+            >
+              <DevinAvatar
+                src={devinSrc}
+                imgClass="goat-float h-full w-full object-cover"
+                emojiClass="goat-float"
+              />
+            </div>
+          </div>
+          <div className="mt-3 text-center">
+            <div className="font-display text-[10px] tracking-[0.4em] text-[#FFC93C] mb-1 drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]">
+              LE DEVIN
+            </div>
+            <div className="text-[11px] text-white/70 max-w-[240px] leading-snug italic">
+              « Pense à ton joueur. Je le lis dans ton esprit. »
+            </div>
+          </div>
+        </div>
+
+        {/* Mascotte desktop — colonne droite, agrandie pour remplir l'espace */}
         <div className="hidden lg:flex sticky top-24 flex-col items-center pointer-events-none">
           <div className="relative">
             <div
@@ -957,7 +965,7 @@ export const GoatGuess = ({ onClose }: Props) => {
               style={{ background: "#C084FC" }}
             />
             <div
-              className="relative h-[280px] w-[240px] rounded-3xl overflow-hidden flex items-center justify-center text-[170px] leading-none"
+              className="relative h-[440px] w-[270px] rounded-3xl overflow-hidden flex items-center justify-center text-[250px] leading-none"
               style={{
                 background:
                   "radial-gradient(circle at 30% 25%, rgba(192,132,252,0.4), rgba(0,0,0,0.8))",
