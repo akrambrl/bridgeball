@@ -322,19 +322,16 @@ const ANEC_DOPAGE = new Set([
   "Bernard Lama",    // cannabis (1997)
 ]);
 const ANEC_CELEBRITE = new Set([
-  // Marié ou en couple (avéré) avec une célébrité
+  // Marié ou en couple (avéré) avec une célébrité indépendamment célèbre
   "Gerard Pique",            // Shakira (chanteuse)
   "David Beckham",           // Victoria Beckham (Spice Girls)
   "Adil Rami",               // Pamela Anderson (actrice)
   "Bastian Schweinsteiger",  // Ana Ivanović (n°1 mondiale de tennis)
   "Cristiano Ronaldo",       // Irina Shayk puis Georgina Rodríguez (mannequins)
   "Carles Puyol",            // Vanesa Lorenzo (mannequin)
-  "Thierry Henry",           // Claire Merry (mannequin)
-  "Mauro Icardi",            // Wanda Nara (personnalité TV)
-  "Sergio Ramos",            // Pilar Rubio (animatrice TV)
-  "Iker Casillas",           // Sara Carbonero (journaliste)
-  "Wayne Rooney",            // Coleen Rooney (personnalité médiatique)
-  "Jamie Vardy",             // Rebekah Vardy (personnalité médiatique)
+  "Mauro Icardi",            // Wanda Nara (animatrice TV, MasterChef Argentina)
+  "Sergio Ramos",            // Pilar Rubio (animatrice TV, célèbre avant la relation)
+  "Iker Casillas",           // Sara Carbonero (journaliste sportive)
   "Kylian Mbappé",           // Ester Expósito (actrice) — relation publiquement constatée
 ]);
 
