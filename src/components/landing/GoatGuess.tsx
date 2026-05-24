@@ -890,6 +890,11 @@ export const GoatGuess = ({ onClose }: Props) => {
     });
   }, []);
   const devinSrc = DEVIN_IMAGES[devinIdx];
+  const [gamePhase, setGamePhase] = useState<Phase>("intro");
+  // Écrans à contenu dense (carte joueur) : on réduit la mascotte mobile pour
+  // que tout tienne sans scroller.
+  const compactMobileDevin =
+    gamePhase === "guessing" || gamePhase === "won" || gamePhase === "lost";
   return (
   <div
     role="dialog"
@@ -939,12 +944,28 @@ export const GoatGuess = ({ onClose }: Props) => {
       <div className="grid lg:grid-cols-[1fr_280px] gap-2 lg:gap-10 items-start">
         {/* Contenu principal du jeu — sans encadré sombre, directement sur la pelouse */}
         <div className="relative w-full">
-          <GoatGuessGame onClose={onClose} onAdvanceDevin={advanceDevin} />
+          <GoatGuessGame
+            onClose={onClose}
+            onAdvanceDevin={advanceDevin}
+            onPhaseChange={setGamePhase}
+          />
         </div>
 
-        {/* Mascotte mobile — sous la question, sans cadre, brouillard magique animé */}
-        <div className="lg:hidden flex flex-col items-center mt-4 mb-3">
-          <div className="relative flex items-center justify-center h-60 w-60 text-[150px] leading-none">
+        {/* Mascotte mobile — sous le contenu, sans cadre, brouillard magique animé.
+            Grande sur intro/questions, réduite sur les écrans à carte (devinette/
+            gagné/perdu) pour tenir sans scroller. */}
+        <div
+          className={`lg:hidden flex flex-col items-center ${
+            compactMobileDevin ? "mt-2 mb-1" : "mt-4 mb-3"
+          }`}
+        >
+          <div
+            className={`relative flex items-center justify-center ${
+              compactMobileDevin
+                ? "h-28 w-28 text-[68px]"
+                : "h-60 w-60 text-[150px]"
+            } leading-none`}
+          >
             <div
               className="goat-fog-a pointer-events-none absolute inset-[-22%] rounded-full blur-3xl"
               style={{ background: "radial-gradient(circle at 50% 45%, rgba(192,132,252,0.6), transparent 65%)" }}
@@ -961,14 +982,16 @@ export const GoatGuess = ({ onClose }: Props) => {
               emojiClass="goat-float relative drop-shadow-[0_12px_30px_rgba(0,0,0,0.55)]"
             />
           </div>
-          <div className="mt-3 text-center">
-            <div className="font-display text-[10px] tracking-[0.4em] text-[#FFC93C] mb-1 drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]">
-              LE DEVIN
+          {!compactMobileDevin && (
+            <div className="mt-3 text-center">
+              <div className="font-display text-[10px] tracking-[0.4em] text-[#FFC93C] mb-1 drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]">
+                LE DEVIN
+              </div>
+              <div className="text-[11px] text-white/70 max-w-[260px] leading-snug italic text-balance">
+                «&nbsp;Pense à ton joueur. Je le lis dans ton esprit.&nbsp;»
+              </div>
             </div>
-            <div className="text-[11px] text-white/70 max-w-[260px] leading-snug italic text-balance">
-              «&nbsp;Pense à ton joueur. Je le lis dans ton esprit.&nbsp;»
-            </div>
-          </div>
+          )}
         </div>
 
         {/* Mascotte desktop — colonne droite, sans cadre, brouillard magique animé */}
@@ -1008,9 +1031,11 @@ export const GoatGuess = ({ onClose }: Props) => {
 const GoatGuessGame = ({
   onClose,
   onAdvanceDevin,
+  onPhaseChange,
 }: {
   onClose: () => void;
   onAdvanceDevin: () => void;
+  onPhaseChange?: (phase: Phase) => void;
 }) => {
   // Pool initial : tous les joueurs de la base (le classement des propositions
   // privilégie ensuite moins d'erreurs puis facile > moyen > expert, donc l'app
@@ -1034,6 +1059,13 @@ const GoatGuessGame = ({
   const [qaHistory, setQaHistory] = useState<
     Array<{ q: Question; answer: Answer }>
   >([]);
+
+  // Remonte la phase au parent (pour adapter la mascotte mobile : grande sur
+  // intro/questions, réduite sur les écrans devinette/gagné/perdu afin que tout
+  // tienne sans scroller).
+  useEffect(() => {
+    onPhaseChange?.(phase);
+  }, [phase, onPhaseChange]);
 
   const startGame = () => {
     setPhase("asking");
@@ -1425,31 +1457,31 @@ const GuessingView = ({
   canGoBack: boolean;
 }) => (
   <div className="text-center">
-    <div className="inline-block px-3 py-1 rounded-full bg-[#FFC93C]/15 border border-[#FFC93C]/30 mb-3">
+    <div className="inline-block px-3 py-1 rounded-full bg-[#FFC93C]/15 border border-[#FFC93C]/30 mb-2 lg:mb-3">
       <span className="font-display text-[10px] tracking-[0.35em] text-[#FFC93C]">
         🔮 MA DEVINETTE
       </span>
     </div>
-    <div className="font-display text-2xl lg:text-3xl tracking-wider text-white mb-5 leading-tight">
+    <div className="font-display text-xl lg:text-3xl tracking-wider text-white mb-2 lg:mb-5 leading-tight">
       JE PARIE QUE C'EST...
     </div>
 
     <PlayerRevealCard player={guess} accent="#C084FC" />
 
-    <p className="text-white/60 text-sm mt-5 mb-4 tracking-wide">
+    <p className="text-white/60 text-sm mt-3 mb-3 lg:mt-5 lg:mb-4 tracking-wide">
       Alors, j'ai bon ?
     </p>
 
     <div className="grid grid-cols-2 gap-3">
       <button
         onClick={onCorrect}
-        className="py-4 rounded-2xl bg-gradient-to-r from-[#00C966] to-[#00E676] text-[#0A1410] font-display text-xl tracking-widest hover:scale-[1.03] active:scale-[0.97] transition-transform shadow-[0_8px_24px_rgba(0,230,118,0.35)]"
+        className="py-3 lg:py-4 rounded-2xl bg-gradient-to-r from-[#00C966] to-[#00E676] text-[#0A1410] font-display text-lg lg:text-xl tracking-widest hover:scale-[1.03] active:scale-[0.97] transition-transform shadow-[0_8px_24px_rgba(0,230,118,0.35)]"
       >
         ✓ OUI !
       </button>
       <button
         onClick={onWrong}
-        className="py-4 rounded-2xl bg-gradient-to-r from-[#FF3D6E] to-[#E62E5E] text-white font-display text-xl tracking-widest hover:scale-[1.03] active:scale-[0.97] transition-transform shadow-[0_8px_24px_rgba(255,61,110,0.35)]"
+        className="py-3 lg:py-4 rounded-2xl bg-gradient-to-r from-[#FF3D6E] to-[#E62E5E] text-white font-display text-lg lg:text-xl tracking-widest hover:scale-[1.03] active:scale-[0.97] transition-transform shadow-[0_8px_24px_rgba(255,61,110,0.35)]"
       >
         ✗ NON
       </button>
@@ -1458,7 +1490,7 @@ const GuessingView = ({
     {canGoBack && (
       <button
         onClick={onBack}
-        className="mt-4 text-xs text-white/50 hover:text-white tracking-widest transition-colors"
+        className="mt-3 text-xs text-white/50 hover:text-white tracking-widest transition-colors"
       >
         ← revenir à la question précédente
       </button>
@@ -1663,14 +1695,14 @@ const PlayerRevealCard = ({
   player: Player;
   accent?: string;
 }) => (
-  <div className="relative inline-block my-2 animate-in zoom-in-95 duration-500">
+  <div className="relative inline-block my-1 lg:my-2 animate-in zoom-in-95 duration-500">
     <div
       className="absolute inset-0 blur-3xl opacity-50 rounded-3xl"
       style={{ background: accent }}
       aria-hidden
     />
     <div
-      className="relative rounded-3xl p-5 lg:p-6 min-w-[260px] max-w-[340px] border-2 shadow-2xl"
+      className="relative rounded-3xl p-4 lg:p-6 min-w-[260px] max-w-[340px] border-2 shadow-2xl"
       style={{
         background:
           "linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(0,0,0,0.4) 100%), linear-gradient(135deg, #1A2A20 0%, #0A1410 100%)",
@@ -1687,16 +1719,16 @@ const PlayerRevealCard = ({
       </div>
 
       {/* Avatar / ballon */}
-      <div className="text-5xl mb-3">⚽</div>
+      <div className="text-4xl lg:text-5xl mb-2 lg:mb-3">⚽</div>
 
       {/* Nom du joueur */}
-      <div className="font-display text-2xl lg:text-3xl tracking-wider text-white mb-3 leading-tight break-words">
+      <div className="font-display text-2xl lg:text-3xl tracking-wider text-white mb-2 lg:mb-3 leading-tight break-words">
         {player.name}
       </div>
 
       {/* Drapeau + nationalité */}
-      <div className="mb-3">
-        <div className="text-[9px] tracking-[0.3em] text-white/40 mb-1">
+      <div className="mb-2 lg:mb-3">
+        <div className="text-[9px] tracking-[0.3em] text-white/40 mb-0.5 lg:mb-1">
           NATION
         </div>
         <div
@@ -1708,7 +1740,7 @@ const PlayerRevealCard = ({
       </div>
 
       {/* Postes */}
-      <div className="mb-3">
+      <div className="mb-2 lg:mb-3">
         <div className="text-[9px] tracking-[0.3em] text-white/40 mb-1">
           POSTE{player.positions.length > 1 ? "S" : ""}
         </div>
