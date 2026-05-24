@@ -17,12 +17,22 @@ html = html.replace(/<link[^>]*rel="stylesheet"[^>]*href="([^"]+)"[^>]*>/g, (_m,
   return `<style>${css}</style>`;
 });
 
-// Inline le JS (on neutralise tout </script> littéral présent dans le bundle).
-html = html.replace(/<script([^>]*)\ssrc="([^"]+)"([^>]*)><\/script>/g, (_m, pre, src, post) => {
-  const js = readFileSync(resolve(src), "utf8").replace(/<\/script>/gi, "<\\/script>");
-  const type = /type="module"/.test(pre + post) ? ' type="module"' : "";
-  return `<script${type}>${js}</script>`;
+// Inline le JS en script CLASSIQUE (pas type="module") : type="module" est
+// refusé depuis file:// par Safari, et un module externe l'est par Chrome.
+// Le bundle minifié contient des séquences (`<script`, `<!--`, `</script`) qui
+// cassent l'analyseur HTML si on l'écrit en clair dans un <script>. On l'encode
+// donc en base64 (aucun `<`) et un mini-loader le décode (UTF-8) puis l'exécute.
+// Placé en fin de <body> pour que #root existe au moment de l'exécution.
+let loader = "";
+html = html.replace(/<script[^>]*\ssrc="([^"]+)"[^>]*><\/script>/g, (_m, src) => {
+  const b64 = readFileSync(resolve(src)).toString("base64");
+  loader =
+    "<script>(function(){var b=atob(\"" + b64 + "\");" +
+    "var a=new Uint8Array(b.length);for(var i=0;i<b.length;i++)a[i]=b.charCodeAt(i);" +
+    "(0,eval)(new TextDecoder(\"utf-8\").decode(a));})();<\/script>";
+  return "";
 });
+html = html.replace(/<\/body>/, `${loader}</body>`);
 
 writeFileSync("bridgeball-flotte.html", html);
 console.log(`bridgeball-flotte.html écrit (${(html.length / 1024).toFixed(0)} Ko)`);

@@ -19,6 +19,8 @@ export default defineConfig({
     rollupOptions: {
       input: path.resolve(__dirname, "standalone.html"),
       output: {
+        format: "iife",
+        name: "FleetApp",
         inlineDynamicImports: true,
         entryFileNames: "app.js",
         assetFileNames: "app.[ext]",
