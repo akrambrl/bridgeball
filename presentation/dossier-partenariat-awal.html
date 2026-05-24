@@ -27,15 +27,15 @@
 <style>
   /* ═══════════════ IDENTITÉ AWAL — À RÉGLER ICI ═══════════════ */
   :root {
-    --accent:    #C8A24B;   /* couleur principale Awal (ex : doré) */
+    --accent:    #C8A24B;   /* couleur principale Awal (doré)      */
     --accent-2:  #E7C77A;   /* variante claire / dégradé           */
-    --ink:       #0E0E10;   /* fond sombre                         */
-    --ink-soft:  #17171B;   /* cartes sombres                      */
-    --paper:     #FBFAF7;   /* fond clair des pages intérieures    */
-    --paper-2:   #F1EEE7;   /* surfaces claires                    */
-    --text:      #1B1B1F;   /* texte sur fond clair                */
-    --text-dim:  #6B6B73;   /* texte secondaire                    */
-    --line:      #E2DDD2;   /* filets / bordures                   */
+    --ink:       #0B0B0D;   /* fond sombre des pages               */
+    --ink-soft:  #141418;   /* cartes sombres                      */
+    --paper:     #0E0E10;   /* fond des pages (sombre, identité Awal) */
+    --paper-2:   #17171C;   /* surfaces / cartes                   */
+    --text:      #F4F1EA;   /* texte clair                         */
+    --text-dim:  #9A968D;   /* texte secondaire                    */
+    --line:      rgba(255,255,255,.12); /* filets / bordures       */
     --brand-name: "Project X Paris";
   }
   /* ════════════════════════════════════════════════════════════ */
@@ -168,7 +168,7 @@
     font-size: 11.5px; font-weight: 600; padding: 7px 13px; border-radius: 999px;
     background: var(--paper-2); border: 1px solid var(--line); color: var(--text);
   }
-  .chip.solid { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .chip.solid { background: var(--accent); color: var(--ink); border-color: var(--accent); }
 
   .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 7mm; margin-top: 8mm; }
   .info-card { background: var(--paper-2); border: 1px solid var(--line); border-radius: 14px; padding: 18px 18px; }
@@ -180,7 +180,7 @@
   .kpi-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6mm; margin-top: 8mm; }
   .kpi {
     border: 1px solid var(--line); border-radius: 16px; padding: 22px 20px;
-    background: linear-gradient(180deg, #fff, var(--paper-2));
+    background: linear-gradient(180deg, #1d1d23, var(--paper-2));
   }
   .kpi .k-num { font-family: 'Anton'; font-size: 52px; line-height: .9; color: var(--text); }
   .kpi .k-num .accent { color: var(--accent); }
@@ -191,7 +191,7 @@
   .creator {
     display: grid; grid-template-columns: 64mm 1fr; gap: 8mm;
     border: 1px solid var(--line); border-radius: 18px; overflow: hidden;
-    margin-bottom: 7mm; background: #fff;
+    margin-bottom: 7mm; background: var(--ink-soft);
   }
   .creator-visual {
     background: var(--ink); color: #fff; padding: 18px 18px;
@@ -222,7 +222,7 @@
 
   /* ───────────── OFFRE ───────────── */
   .offer-table { width: 100%; border-collapse: collapse; margin-top: 6mm; font-size: 12px; }
-  .offer-table th { text-align: left; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--text-dim); padding: 10px 12px; border-bottom: 2px solid var(--ink); }
+  .offer-table th { text-align: left; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--text-dim); padding: 10px 12px; border-bottom: 2px solid var(--accent); }
   .offer-table td { padding: 12px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
   .offer-table tr:last-child td { border-bottom: 0; }
   .offer-table .pack { font-weight: 800; font-family: 'Anton'; font-size: 16px; }
