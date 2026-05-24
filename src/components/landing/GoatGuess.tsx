@@ -924,28 +924,24 @@ export const GoatGuess = ({ onClose }: Props) => {
           <GoatGuessGame onClose={onClose} onAdvanceDevin={advanceDevin} />
         </div>
 
-        {/* Mascotte mobile — placée SOUS la question, agrandie pour remplir l'espace vide */}
+        {/* Mascotte mobile — sous la question, sans cadre, brouillard magique animé */}
         <div className="lg:hidden flex flex-col items-center mt-4 mb-3">
-          <div className="relative">
+          <div className="relative flex items-center justify-center h-60 w-60 text-[150px] leading-none">
             <div
-              className="absolute inset-0 blur-3xl opacity-70 rounded-full"
-              style={{ background: "#C084FC" }}
+              className="goat-fog-a pointer-events-none absolute inset-[-22%] rounded-full blur-3xl"
+              style={{ background: "radial-gradient(circle at 50% 45%, rgba(192,132,252,0.6), transparent 65%)" }}
+              aria-hidden
             />
             <div
-              className="relative h-60 w-60 rounded-[2rem] overflow-hidden flex items-center justify-center text-[160px] leading-none"
-              style={{
-                background:
-                  "radial-gradient(circle at 30% 25%, rgba(192,132,252,0.45), rgba(0,0,0,0.8))",
-                border: "3px solid rgba(192,132,252,0.55)",
-                boxShadow: "0 20px 60px -10px rgba(192,132,252,0.5)",
-              }}
-            >
-              <DevinAvatar
-                src={devinSrc}
-                imgClass="goat-float h-full w-full object-cover"
-                emojiClass="goat-float"
-              />
-            </div>
+              className="goat-fog-b pointer-events-none absolute inset-[-12%] rounded-full blur-2xl"
+              style={{ background: "radial-gradient(circle at 40% 60%, rgba(255,255,255,0.22), transparent 60%)" }}
+              aria-hidden
+            />
+            <DevinAvatar
+              src={devinSrc}
+              imgClass="goat-float relative h-full w-full object-contain drop-shadow-[0_12px_30px_rgba(0,0,0,0.55)]"
+              emojiClass="goat-float relative drop-shadow-[0_12px_30px_rgba(0,0,0,0.55)]"
+            />
           </div>
           <div className="mt-3 text-center">
             <div className="font-display text-[10px] tracking-[0.4em] text-[#FFC93C] mb-1 drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]">
@@ -957,29 +953,24 @@ export const GoatGuess = ({ onClose }: Props) => {
           </div>
         </div>
 
-        {/* Mascotte desktop — colonne droite, agrandie pour remplir l'espace */}
+        {/* Mascotte desktop — colonne droite, sans cadre, brouillard magique animé */}
         <div className="hidden lg:flex sticky top-24 flex-col items-center pointer-events-none">
-          <div className="relative">
+          <div className="relative flex items-center justify-center h-[440px] w-[270px] text-[250px] leading-none">
             <div
-              className="absolute inset-0 blur-3xl opacity-70 rounded-full"
-              style={{ background: "#C084FC" }}
+              className="goat-fog-a pointer-events-none absolute inset-[-18%] rounded-full blur-3xl"
+              style={{ background: "radial-gradient(circle at 50% 45%, rgba(192,132,252,0.55), transparent 65%)" }}
+              aria-hidden
             />
             <div
-              className="relative h-[440px] w-[270px] rounded-3xl overflow-hidden flex items-center justify-center text-[250px] leading-none"
-              style={{
-                background:
-                  "radial-gradient(circle at 30% 25%, rgba(192,132,252,0.4), rgba(0,0,0,0.8))",
-                border: "3px solid rgba(192,132,252,0.5)",
-                boxShadow:
-                  "0 30px 80px -10px rgba(192,132,252,0.5), inset 0 1px 0 rgba(255,255,255,0.1)",
-              }}
-            >
-              <DevinAvatar
-                src={devinSrc}
-                imgClass="goat-float h-full w-full object-cover"
-                emojiClass="goat-float"
-              />
-            </div>
+              className="goat-fog-b pointer-events-none absolute inset-[-8%] rounded-full blur-2xl"
+              style={{ background: "radial-gradient(circle at 40% 60%, rgba(255,255,255,0.2), transparent 60%)" }}
+              aria-hidden
+            />
+            <DevinAvatar
+              src={devinSrc}
+              imgClass="goat-float relative h-full w-full object-contain drop-shadow-[0_18px_40px_rgba(0,0,0,0.55)]"
+              emojiClass="goat-float relative drop-shadow-[0_18px_40px_rgba(0,0,0,0.55)]"
+            />
           </div>
           <div className="mt-5 text-center">
             <div className="font-display text-xs tracking-[0.4em] text-[#FFC93C] mb-1 drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]">
