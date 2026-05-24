@@ -351,6 +351,36 @@ const ANEC_TRANSFERT_RECORD = new Set([
   "Jean-Pierre Papin", // Marseille → Milan, 1992
   "Diego Maradona",    // Boca → Barça (1982), Barça → Naples (1984)
 ]);
+const ANEC_FILS_PRO = new Set([
+  // Est le fils d'un footballeur professionnel
+  "Federico Chiesa",        // Enrico Chiesa
+  "Giovanni Simeone", "Giuliano Simeone", // Diego Simeone
+  "Marcus Thuram", "Khephren Thuram",     // Lilian Thuram
+  "Daniel Maldini",         // Paolo Maldini
+  "Paolo Maldini",          // Cesare Maldini
+  "Timothy Weah",           // George Weah
+  "Justin Kluivert",        // Patrick Kluivert
+  "Luca Zidane",            // Zinédine Zidane
+  "Shaun Wright-Phillips",  // Ian Wright (père adoptif)
+  "Marcos Llorente",        // Paco Llorente
+  "Erling Haaland",         // Alf-Inge Håland
+  "Kasper Schmeichel",      // Peter Schmeichel
+  "Thiago Alcântara", "Rafinha", // Mazinho (champion du monde 1994)
+  "Xabi Alonso",            // Periko Alonso
+  "Frank Lampard",          // Frank Lampard Sr.
+  "Sergio Busquets",        // Carles Busquets
+  "Gio Reyna",              // Claudio Reyna
+]);
+const ANEC_ENTRAINEUR = new Set([
+  // Devenu entraîneur après sa carrière de joueur
+  "Zinédine Zidane", "Pep Guardiola", "Thierry Henry", "Andrea Pirlo",
+  "Gennaro Gattuso", "Frank Lampard", "Steven Gerrard", "Xavi",
+  "Mikel Arteta", "Filippo Inzaghi", "Didier Deschamps", "Diego Simeone",
+  "Wayne Rooney", "Vincent Kompany", "Patrick Vieira", "Roberto Mancini",
+  "Frank de Boer", "Ronald Koeman", "Clarence Seedorf", "Edgar Davids",
+  "Gary Neville", "Laurent Blanc", "Raúl González", "Xabi Alonso",
+  "Cesc Fabregas", "Nuno Espírito Santo", "Vincenzo Montella", "Hristo Stoichkov",
+]);
 
 const QUESTIONS: Question[] = [
   // Postes
@@ -654,6 +684,16 @@ const QUESTIONS: Question[] = [
     id: "anec-transfert-record", category: "anecdote",
     label: "A-t-il été, à son époque, le joueur le plus cher du monde ?",
     predicate: (p) => ANEC_TRANSFERT_RECORD.has(p.name),
+  },
+  {
+    id: "anec-fils-pro", category: "anecdote",
+    label: "Est-il le fils d'un footballeur professionnel ?",
+    predicate: (p) => ANEC_FILS_PRO.has(p.name),
+  },
+  {
+    id: "anec-entraineur", category: "anecdote",
+    label: "Est-il devenu entraîneur après sa carrière de joueur ?",
+    predicate: (p) => ANEC_ENTRAINEUR.has(p.name),
   },
 ];
 
