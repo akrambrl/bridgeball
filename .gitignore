@@ -3,7 +3,9 @@ node_modules/
 
 # Build output
 dist/
+dist-standalone/
 build/
+bridgeball-flotte.html
 
 # Logs
 *.log
