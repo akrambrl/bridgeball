@@ -809,22 +809,15 @@ const pickQuestion = (
   return null;
 };
 
-const pickGuess = (candidates: Player[]): Player => {
-  // On choisit le candidat le plus "connu" (facile > moyen > expert)
-  const order = { facile: 0, moyen: 1, expert: 2 } as const;
-  return [...candidates].sort(
-    (a, b) => order[a.diff] - order[b.diff]
-  )[0];
-};
-
 type Answer = "yes" | "no" | "dunno";
 
 type QA = { q: Question; answer: Answer };
 
-// Tolérance légère : un joueur peut contredire au plus 1 réponse et rester
-// « repêchable » au moment de deviner. Évite qu'une seule erreur de
-// l'utilisateur sur un fait obscur (ex: la saison de Mandanda à Crystal
-// Palace) n'élimine définitivement le bon joueur.
+// Tolérance légère : un joueur peut contredire AU PLUS MAX_MISMATCH réponse et
+// rester en lice. Évite qu'une seule erreur de l'utilisateur sur un fait obscur
+// (ex: la saison de Mandanda à Crystal Palace, ou son année de naissance)
+// n'élimine définitivement le bon joueur. Le questionnement continue sur cet
+// ensemble tolérant jusqu'à isoler un seul candidat.
 const MAX_MISMATCH = 1;
 const DIFF_ORDER = { facile: 0, moyen: 1, expert: 2 } as const;
 
@@ -843,21 +836,6 @@ const countMismatch = (p: Player, history: QA[]): number => {
   }
   return s;
 };
-
-// Joueurs « repêchés » quand le set strict (0 erreur) est épuisé : ceux qui ne
-// contredisent qu'au plus MAX_MISMATCH réponse, triés par nb d'erreurs croissant
-// puis par notoriété (facile > moyen > expert).
-const forgivenPool = (
-  pool: Player[],
-  history: QA[],
-  rejected: Set<string>
-): Player[] =>
-  pool
-    .filter((p) => !rejected.has(p.name))
-    .map((p) => ({ p, m: countMismatch(p, history) }))
-    .filter((x) => x.m >= 1 && x.m <= MAX_MISMATCH)
-    .sort((a, b) => a.m - b.m || DIFF_ORDER[a.p.diff] - DIFF_ORDER[b.p.diff])
-    .map((x) => x.p);
 
 type Phase = "intro" | "asking" | "guessing" | "won" | "lost";
 
@@ -1034,9 +1012,9 @@ const GoatGuessGame = ({
   onClose: () => void;
   onAdvanceDevin: () => void;
 }) => {
-  // Pool initial : tous les joueurs de la base (le pickGuess privilégie
-  // ensuite les joueurs facile > moyen > expert, donc l'app devine en
-  // priorité les stars en cas d'ambiguïté).
+  // Pool initial : tous les joueurs de la base (le classement des propositions
+  // privilégie ensuite moins d'erreurs puis facile > moyen > expert, donc l'app
+  // devine en priorité les stars en cas d'ambiguïté).
   const initialPool = useMemo<Player[]>(
     () => (PLAYERS as Player[]).filter((p) => p),
     []
@@ -1071,27 +1049,53 @@ const GoatGuessGame = ({
     onAdvanceDevin();
   };
 
-  // Choisit la prochaine proposition : d'abord les candidats stricts (0 erreur)
-  // encore vivants, puis — s'ils sont épuisés — les joueurs « repêchés » qui ne
-  // contredisent qu'une seule réponse (tolérance légère).
-  const nextGuessCandidate = (
-    strictPool: Player[],
-    history: QA[],
-    rejected: Set<string>
-  ): Player | null => {
-    const strict = strictPool.filter((p) => !rejected.has(p.name));
-    if (strict.length > 0) return pickGuess(strict);
-    return forgivenPool(initialPool, history, rejected)[0] ?? null;
-  };
+  // Ensemble « vivant » tolérant : joueurs contredisant AU PLUS MAX_MISMATCH
+  // réponse et non encore rejetés. C'est sur cet ensemble qu'on continue à
+  // poser des questions, afin de départager jusqu'au dernier joueur (plutôt
+  // que d'enchaîner plusieurs devinettes).
+  const computeLive = (history: QA[], rejected: Set<string>): Player[] =>
+    initialPool.filter(
+      (p) => !rejected.has(p.name) && countMismatch(p, history) <= MAX_MISMATCH
+    );
 
-  const goToGuess = (pool: Player[], history: QA[] = qaHistory) => {
-    const guess = nextGuessCandidate(pool, history, rejectedGuesses);
-    if (!guess) {
+  // Classement des propositions : le mieux collant d'abord (moins d'erreurs),
+  // puis le plus connu (facile > moyen > expert).
+  const rankGuesses = (pool: Player[], history: QA[]): Player[] =>
+    [...pool].sort(
+      (a, b) =>
+        countMismatch(a, history) - countMismatch(b, history) ||
+        DIFF_ORDER[a.diff] - DIFF_ORDER[b.diff]
+    );
+
+  // Étape suivante : tant qu'il reste > 1 candidat vivant ET qu'une question
+  // discrimine encore, on repose une question. Sinon (un seul candidat, plus
+  // de question utile, ou quota de questions atteint) on propose le meilleur.
+  const advance = (
+    live: Player[],
+    history: QA[],
+    askedSet: Set<string>,
+    lastCats: QCategory[],
+    qCount: number
+  ) => {
+    const ranked = rankGuesses(live, history);
+    if (ranked.length === 0) {
       setPhase("lost");
       return;
     }
-    setCurrentGuess(guess);
-    setPhase("guessing");
+    if (ranked.length === 1 || qCount >= MAX_QUESTIONS) {
+      setCurrentGuess(ranked[0]);
+      setPhase("guessing");
+      return;
+    }
+    const nextQ = pickQuestion(live, askedSet, lastCats);
+    if (!nextQ) {
+      setCurrentGuess(ranked[0]);
+      setPhase("guessing");
+    } else {
+      setCurrentQuestion(nextQ);
+      setPhase("asking");
+      onAdvanceDevin();
+    }
   };
 
   // Backstop : si on entre en phase "asking" sans question courante (ne devrait
@@ -1099,77 +1103,28 @@ const GoatGuessGame = ({
   // reste aucune de discriminante.
   useEffect(() => {
     if (phase !== "asking" || currentQuestion) return;
-    const q = pickQuestion(candidates, asked, lastCategories);
-    if (q) {
-      setCurrentQuestion(q);
-    } else {
-      const guess = nextGuessCandidate(candidates, qaHistory, rejectedGuesses);
-      if (!guess) {
-        setPhase("lost");
-      } else {
-        setCurrentGuess(guess);
-        setPhase("guessing");
-      }
-    }
-  }, [phase, currentQuestion, candidates, asked, rejectedGuesses, lastCategories]);
+    advance(candidates, qaHistory, asked, lastCategories, questionCount);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, currentQuestion, candidates, asked, rejectedGuesses, lastCategories, questionCount]);
 
   const answerQuestion = (ans: Answer) => {
     if (!currentQuestion) return;
     const nextAsked = new Set(asked);
     nextAsked.add(currentQuestion.id);
     const nextHistory: QA[] = [...qaHistory, { q: currentQuestion, answer: ans }];
-    setQaHistory(nextHistory);
-
-    let nextCandidates = candidates;
-    if (ans === "yes") {
-      nextCandidates = candidates.filter((p) => {
-        const a = currentQuestion.predicate(p);
-        // null = info inconnue → on garde quel que soit la réponse
-        return a === null || a === true;
-      });
-    } else if (ans === "no") {
-      nextCandidates = candidates.filter((p) => {
-        const a = currentQuestion.predicate(p);
-        return a === null || a === false;
-      });
-    }
-    // "dunno" → on ne filtre pas
-
-    // Filtre les déjà-rejetés
-    nextCandidates = nextCandidates.filter(
-      (p) => !rejectedGuesses.has(p.name)
-    );
-
     const nextCount = questionCount + 1;
     const nextLastCats = [...lastCategories, currentQuestion.category].slice(-2);
+
+    // Ensemble tolérant recalculé depuis tout l'historique (≤ 1 erreur).
+    const live = computeLive(nextHistory, rejectedGuesses);
+
+    setQaHistory(nextHistory);
     setAsked(nextAsked);
     setQuestionCount(nextCount);
     setLastCategories(nextLastCats);
-
-    // Set strict épuisé : on tente le repêchage (tolérance légère) plutôt que
-    // d'abandonner immédiatement.
-    if (nextCandidates.length === 0) {
-      setCandidates(nextCandidates);
-      goToGuess(nextCandidates, nextHistory);
-      return;
-    }
-    // On devine si : un seul candidat, OU on a atteint la limite de questions
-    if (nextCandidates.length === 1 || nextCount >= MAX_QUESTIONS) {
-      setCandidates(nextCandidates);
-      goToGuess(nextCandidates, nextHistory);
-      return;
-    }
-
-    // Sinon, on cherche une question qui peut encore discriminer le set.
-    // Si plus aucune question utile (entropie = 0 partout), on devine.
-    const nextQ = pickQuestion(nextCandidates, nextAsked, nextLastCats);
-    setCandidates(nextCandidates);
-    if (!nextQ) {
-      goToGuess(nextCandidates, nextHistory);
-    } else {
-      setCurrentQuestion(nextQ);
-      onAdvanceDevin();
-    }
+    setCandidates(live);
+    setCurrentQuestion(null);
+    advance(live, nextHistory, nextAsked, nextLastCats, nextCount);
   };
 
   // Annule la dernière Q+R (ou la phase de devinette courante) et restaure
@@ -1188,21 +1143,8 @@ const GoatGuessGame = ({
     const newHistory = qaHistory.slice(0, -1);
     const removedQA = qaHistory[qaHistory.length - 1];
 
-    // On rejoue tout l'historique restant sur le pool initial.
-    let newCandidates = initialPool.filter((p) => !rejectedGuesses.has(p.name));
-    for (const r of newHistory) {
-      if (r.answer === "yes") {
-        newCandidates = newCandidates.filter((p) => {
-          const a = r.q.predicate(p);
-          return a === null || a === true;
-        });
-      } else if (r.answer === "no") {
-        newCandidates = newCandidates.filter((p) => {
-          const a = r.q.predicate(p);
-          return a === null || a === false;
-        });
-      }
-    }
+    // On recalcule l'ensemble tolérant à partir de l'historique restant.
+    const newCandidates = computeLive(newHistory, rejectedGuesses);
 
     const newAsked = new Set(asked);
     newAsked.delete(removedQA.q.id);
@@ -1225,11 +1167,12 @@ const GoatGuessGame = ({
     if (!currentGuess) return;
     const nextRejected = new Set(rejectedGuesses);
     nextRejected.add(currentGuess.name);
-    const remaining = candidates.filter((p) => !nextRejected.has(p.name));
     const nextGuessCount = guessCount + 1;
+    // Recalcule l'ensemble tolérant sans le joueur rejeté.
+    const live = computeLive(qaHistory, nextRejected);
     setRejectedGuesses(nextRejected);
     setGuessCount(nextGuessCount);
-    setCandidates(remaining);
+    setCandidates(live);
 
     // Quota de devinettes atteint → on abandonne
     if (nextGuessCount >= MAX_GUESSES) {
@@ -1237,36 +1180,10 @@ const GoatGuessGame = ({
       return;
     }
 
-    // Set strict épuisé → repêchage (tolérance légère) avant d'abandonner.
-    if (remaining.length === 0) {
-      const forgiven = forgivenPool(initialPool, qaHistory, nextRejected);
-      if (forgiven.length === 0) {
-        setPhase("lost");
-      } else {
-        setCurrentGuess(forgiven[0]);
-        setPhase("guessing");
-      }
-      return;
-    }
-
-    // Si peu de candidats restants OU plus de questions disponibles : on
-    // enchaîne directement la devinette suivante (top-N successif).
-    if (remaining.length <= 3 || questionCount >= MAX_QUESTIONS) {
-      setCurrentGuess(pickGuess(remaining));
-      setPhase("guessing");
-      return;
-    }
-
-    // Sinon, on repose une question pour mieux discriminer le set restant.
-    const nextQ = pickQuestion(remaining, asked, lastCategories);
-    if (!nextQ) {
-      setCurrentGuess(pickGuess(remaining));
-      setPhase("guessing");
-    } else {
-      setCurrentQuestion(nextQ);
-      setPhase("asking");
-      onAdvanceDevin();
-    }
+    // On repose une question discriminante si possible ; sinon on propose le
+    // meilleur candidat restant.
+    setCurrentQuestion(null);
+    advance(live, qaHistory, asked, lastCategories, questionCount);
   };
 
   return (
