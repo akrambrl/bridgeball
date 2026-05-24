@@ -299,6 +299,14 @@ const ANEC_EXTORSION = new Set([
   "Paul Pogba",   // séquestration/extorsion par son frère + amis (2022)
   "N'Golo Kanté", // menacé/extorqué (commissions d'agent) par un proche de son entourage (2017)
 ]);
+const ANEC_PARIS = new Set([
+  // Suspendu pour des infractions liées aux paris sportifs (sanctions effectives)
+  "Sandro Tonali",    // 10 mois, paris illégaux (Italie, 2023)
+  "Nicolò Fagioli",   // 7 mois, paris illégaux (Italie, 2023)
+  "Ivan Toney",       // 8 mois, 232 manquements aux règles (FA, 2023)
+  "Kieran Trippier",  // 10 semaines, info de transfert transmise à des parieurs (FA, 2020)
+  "Joey Barton",      // suspension pour paris sur des matchs (FA, 2017)
+]);
 
 const QUESTIONS: Question[] = [
   // Postes
@@ -582,6 +590,11 @@ const QUESTIONS: Question[] = [
     id: "anec-extorsion", category: "anecdote",
     label: "A-t-il été victime d'une tentative d'extorsion ?",
     predicate: (p) => ANEC_EXTORSION.has(p.name),
+  },
+  {
+    id: "anec-paris", category: "anecdote",
+    label: "A-t-il été suspendu pour des infractions liées aux paris sportifs ?",
+    predicate: (p) => ANEC_PARIS.has(p.name),
   },
 ];
 
