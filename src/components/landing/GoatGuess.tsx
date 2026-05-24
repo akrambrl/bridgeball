@@ -334,6 +334,23 @@ const ANEC_CELEBRITE = new Set([
   "Iker Casillas",           // Sara Carbonero (journaliste sportive)
   "Kylian Mbappé",           // Ester Expósito (actrice) — relation publiquement constatée
 ]);
+const ANEC_TRANSFERT_RECORD = new Set([
+  // A détenu le record du transfert le plus cher du monde, à son époque
+  "Neymar",            // Barcelone → PSG, 2017 (222 M€, record actuel)
+  "Paul Pogba",        // Juventus → Man United, 2016
+  "Gareth Bale",       // Tottenham → Real Madrid, 2013
+  "Cristiano Ronaldo", // Man United → Real Madrid, 2009
+  "Kaká",              // Milan → Real Madrid, 2009 (record quelques semaines)
+  "Zinédine Zidane",   // Juventus → Real Madrid, 2001
+  "Luis Figo",         // Barcelone → Real Madrid, 2000
+  "Hernán Crespo",     // Parma → Lazio, 2000
+  "Christian Vieri",   // Lazio → Inter, 1999
+  "Denílson",          // São Paulo → Real Betis, 1998
+  "Ronaldo Nazário",   // PSV → Barça (1996), Barça → Inter (1997)
+  "Alan Shearer",      // Blackburn → Newcastle, 1996
+  "Jean-Pierre Papin", // Marseille → Milan, 1992
+  "Diego Maradona",    // Boca → Barça (1982), Barça → Naples (1984)
+]);
 
 const QUESTIONS: Question[] = [
   // Postes
@@ -632,6 +649,11 @@ const QUESTIONS: Question[] = [
     id: "anec-celebrite", category: "anecdote",
     label: "A-t-il été marié ou en couple avec une célébrité ?",
     predicate: (p) => ANEC_CELEBRITE.has(p.name),
+  },
+  {
+    id: "anec-transfert-record", category: "anecdote",
+    label: "A-t-il été, à son époque, le joueur le plus cher du monde ?",
+    predicate: (p) => ANEC_TRANSFERT_RECORD.has(p.name),
   },
 ];
 
