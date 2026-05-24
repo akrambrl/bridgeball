@@ -290,6 +290,10 @@ const ANEC_PRISON = new Set([
   "Robinho",            // condamnation purgée au Brésil (2024)
   "Ronaldinho",         // détention au Paraguay, faux passeport (2020)
 ]);
+const ANEC_EXTORSION_FRERE = new Set([
+  // Victime d'une tentative d'extorsion orchestrée par son propre frère
+  "Paul Pogba", // séquestration/extorsion par Mathias Pogba + amis (2022), condamnés en 2024
+]);
 
 const QUESTIONS: Question[] = [
   // Postes
@@ -563,6 +567,11 @@ const QUESTIONS: Question[] = [
     id: "anec-prison", category: "anecdote",
     label: "A-t-il déjà fait de la prison ?",
     predicate: (p) => ANEC_PRISON.has(p.name),
+  },
+  {
+    id: "anec-extorsion-frere", category: "anecdote",
+    label: "A-t-il été victime d'une tentative d'extorsion orchestrée par son frère ?",
+    predicate: (p) => ANEC_EXTORSION_FRERE.has(p.name),
   },
 ];
 
