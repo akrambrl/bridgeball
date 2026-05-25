@@ -310,12 +310,13 @@ export const Undercover = ({ onClose }: { onClose: () => void }) => {
     >
       <button
         onClick={onClose}
-        className="fixed top-3 right-3 z-[9001] flex items-center gap-2 px-4 py-2 rounded-full bg-[#FF8A2A] hover:bg-[#FF7A1A] text-[#1A0F00] font-display text-sm tracking-widest shadow-[0_8px_24px_rgba(0,0,0,0.6)] hover:scale-[1.03] active:scale-[0.98] transition-all"
+        style={{ top: "calc(env(safe-area-inset-top, 0px) + 0.5rem)" }}
+        className="fixed right-3 z-[9001] flex items-center gap-2 px-4 py-2 rounded-full bg-[#FF8A2A] hover:bg-[#FF7A1A] text-[#1A0F00] font-display text-sm tracking-widest shadow-[0_8px_24px_rgba(0,0,0,0.6)] hover:scale-[1.03] active:scale-[0.98] transition-all"
       >
         ← QUITTER
       </button>
 
-      <div className="relative min-h-screen container max-w-2xl mx-auto px-4 py-6 flex flex-col">
+      <div className="relative min-h-screen container max-w-2xl mx-auto px-4 pt-16 pb-6 flex flex-col">
         <div className="text-center mb-4">
           <div className="inline-block px-3 py-1 rounded-full bg-black/40 border border-white/15 backdrop-blur-sm">
             <span className="font-display text-[10px] tracking-[0.4em] text-[#FF4D6D]">
