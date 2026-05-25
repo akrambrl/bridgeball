@@ -1,4 +1,10 @@
 export const PLAYERS = [
+  { name:"Gedson Fernandes", clubs:["Benfica", "Tottenham", "Galatasaray", "Besiktas"], diff:"expert", nationalities:["Portugal"], positions:["milieu"], birthYear:1999 },
+  { name:"Sam Lammers", clubs:["PSV Eindhoven", "Atalanta BC", "Eintracht Frankfurt", "Rangers", "Twente"], diff:"expert", nationalities:["Pays-Bas"], positions:["attaquant"], birthYear:1997 },
+  { name:"Owen Wijndal", clubs:["AZ Alkmaar", "Ajax Amsterdam", "Antwerp"], diff:"expert", nationalities:["Pays-Bas"], positions:["defenseur"], birthYear:1999 },
+  { name:"Anton Gaaei", clubs:["Viborg", "Ajax Amsterdam"], diff:"expert", nationalities:["Danemark"], positions:["defenseur"], birthYear:2002 },
+  { name:"Zaidu Sanusi", clubs:["Santa Clara", "Porto"], diff:"expert", nationalities:["Nigeria"], positions:["defenseur"], birthYear:1997 },
+  { name:"Ricardo Esgaio", clubs:["Sporting CP", "Braga"], diff:"expert", nationalities:["Portugal"], positions:["defenseur"], birthYear:1993 },
   { name:"Isi Palazón", clubs:["Murcia", "Rayo Vallecano"], diff:"expert", nationalities:["Espagne"], positions:["attaquant"], birthYear:1994 },
   { name:"Bojan Miovski", clubs:["MTK Budapest", "Aberdeen", "Girona", "Levante"], diff:"expert", nationalities:["Macédoine du Nord"], positions:["attaquant"], birthYear:1999 },
   { name:"Sergi Altimira", clubs:["Real Betis"], diff:"expert", nationalities:["Espagne"], positions:["milieu"], birthYear:2001 },
