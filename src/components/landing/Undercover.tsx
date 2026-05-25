@@ -31,10 +31,47 @@ type Slot = {
 
 type Phase = "setup" | "reveal" | "clues" | "vote" | "mrwhite" | "end";
 
-// On ne garde que les joueurs "facile" : des stars connues de tous, pour que
-// civils comme undercover tombent toujours sur un joueur reconnaissable.
+// Normalisation tolérante (sans accents ni ponctuation) pour comparer les noms.
+const normName = (s: string) =>
+  s
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9 ]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+// Liste blanche de superstars "grand public" : indépendante du tag de la base,
+// elle garantit que civils comme undercover tombent sur un joueur que tout le
+// monde connaît (et non un "facile" trop pointu type Dimarco).
+const SUPERSTARS = [
+  // Attaquants
+  "Pele", "Diego Maradona", "George Weah", "Roberto Baggio", "Gabriel Batistuta",
+  "Ronaldo Nazario", "Thierry Henry", "Didier Drogba", "Ronaldinho", "Fernando Torres",
+  "Cristiano Ronaldo", "Wayne Rooney", "Lionel Messi", "Karim Benzema", "Luis Suarez",
+  "Edinson Cavani", "Robert Lewandowski", "Antoine Griezmann", "Neymar", "Mohamed Salah",
+  "Sadio Mane", "Harry Kane", "Romelu Lukaku", "Lautaro Martinez", "Marcus Rashford",
+  "Kylian Mbappe", "Erling Haaland", "Vinicius Junior", "Phil Foden", "Bukayo Saka",
+  "Zlatan Ibrahimovic", "Samuel Eto'o", "Sergio Aguero", "Rafael Leao", "Heung-min Son",
+  "David Beckham",
+  // Milieux
+  "Zinedine Zidane", "Andres Iniesta", "Xavi", "Frank Lampard", "Steven Gerrard",
+  "Andrea Pirlo", "Kaka", "Luka Modric", "David Silva", "Mesut Ozil", "Toni Kroos",
+  "Kevin De Bruyne", "Paul Pogba", "N'Golo Kante", "Cesc Fabregas", "Bernardo Silva",
+  "Federico Valverde", "Pedri", "Jude Bellingham",
+  // Défenseurs
+  "Paolo Maldini", "Cafu", "Fabio Cannavaro", "Roberto Carlos", "Alessandro Nesta",
+  "Carles Puyol", "John Terry", "Dani Alves", "Philipp Lahm", "Thiago Silva",
+  "Sergio Ramos", "Marcelo", "Virgil van Dijk", "Ruben Dias", "Achraf Hakimi",
+  "Trent Alexander-Arnold", "Gerard Pique",
+  // Gardiens
+  "Oliver Kahn", "Edwin van der Sar", "Gianluigi Buffon", "Iker Casillas", "Petr Cech",
+  "Manuel Neuer", "Thibaut Courtois", "Marc-Andre ter Stegen", "Ederson", "Alisson Becker",
+];
+const SUPERSTAR_SET = new Set(SUPERSTARS.map(normName));
+
 const ALL = (PLAYERS as Player[]).filter(
-  (p) => p && p.birthYear && p.diff === "facile" && p.positions?.length
+  (p) => p && p.birthYear && p.positions?.length && SUPERSTAR_SET.has(normName(p.name))
 );
 
 const primaryPos = (p: Player) => p.positions?.[0] ?? "";
@@ -68,14 +105,6 @@ const shuffle = <T,>(arr: T[]): T[] => {
   }
   return a;
 };
-
-const normalize = (s: string) =>
-  s
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z ]/g, "")
-    .trim();
 
 const RoleLabel: Record<Role, string> = {
   civil: "CIVIL",
@@ -198,8 +227,8 @@ export const Undercover = ({ onClose }: { onClose: () => void }) => {
   };
 
   const submitMrWhiteGuess = () => {
-    const g = normalize(mrWhiteGuess);
-    const target = normalize(pair.civ);
+    const g = normName(mrWhiteGuess);
+    const target = normName(pair.civ);
     const lastName = target.split(" ").slice(-1)[0];
     const ok = g.length > 1 && (g === target || target.includes(g) || g === lastName);
     if (ok) {
