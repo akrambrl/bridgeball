@@ -1,4 +1,9 @@
 export const PLAYERS = [
+  { name:"Isi Palazón", clubs:["Murcia", "Rayo Vallecano"], diff:"expert", nationalities:["Espagne"], positions:["attaquant"], birthYear:1994 },
+  { name:"Bojan Miovski", clubs:["MTK Budapest", "Aberdeen", "Girona", "Levante"], diff:"expert", nationalities:["Macédoine du Nord"], positions:["attaquant"], birthYear:1999 },
+  { name:"Sergi Altimira", clubs:["Real Betis"], diff:"expert", nationalities:["Espagne"], positions:["milieu"], birthYear:2001 },
+  { name:"Álvaro Rodríguez", clubs:["Real Madrid Castilla", "Getafe", "Elche"], diff:"expert", nationalities:["Uruguay"], positions:["attaquant"], birthYear:2004 },
+  { name:"Sergio Carreira", clubs:["Celta Vigo"], diff:"expert", nationalities:["Espagne"], positions:["defenseur"], birthYear:2002 },
   { name:"Pascal Stenzel", clubs:["Borussia Dortmund", "Freiburg", "Stuttgart", "Mainz"], diff:"expert", nationalities:["Allemagne"], positions:["defenseur"], birthYear:1996 },
   { name:"Kevin Behrens", clubs:["Sandhausen", "Union Berlin", "Wolfsburg", "Köln"], diff:"expert", nationalities:["Allemagne"], positions:["attaquant"], birthYear:1991 },
   { name:"Ransford Königsdörffer", clubs:["Dynamo Dresden", "Hamburger SV"], diff:"expert", nationalities:["Allemagne"], positions:["attaquant"], birthYear:2001 },
