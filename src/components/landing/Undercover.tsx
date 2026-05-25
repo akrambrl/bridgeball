@@ -125,8 +125,10 @@ export const Undercover = ({ onClose }: { onClose: () => void }) => {
 
   const [slots, setSlots] = useState<Slot[]>([]);
   const [pair, setPair] = useState<{ civ: string; und: string }>({ civ: "", und: "" });
-  const [revealIdx, setRevealIdx] = useState(0);
-  const [revealStage, setRevealStage] = useState<"name" | "word">("name");
+  const [takerIndex, setTakerIndex] = useState(0);
+  const [claimedIds, setClaimedIds] = useState<number[]>([]);
+  const [pickedId, setPickedId] = useState<number | null>(null);
+  const [revealStage, setRevealStage] = useState<"name" | "pick" | "word">("name");
   const [nameInput, setNameInput] = useState("");
   const [order, setOrder] = useState<number[]>([]);
   const [eliminated, setEliminated] = useState<Slot | null>(null);
@@ -162,7 +164,9 @@ export const Undercover = ({ onClose }: { onClose: () => void }) => {
       alive: true,
     }));
     setSlots(newSlots);
-    setRevealIdx(0);
+    setTakerIndex(0);
+    setClaimedIds([]);
+    setPickedId(null);
     setRevealStage("name");
     setNameInput("");
     setEliminated(null);
@@ -194,20 +198,25 @@ export const Undercover = ({ onClose }: { onClose: () => void }) => {
     setPhase("clues");
   }, []);
 
-  // Le joueur courant valide son prénom → on dévoile son mot.
-  const confirmName = () => {
-    const nm = nameInput.trim();
-    setSlots((prev) =>
-      prev.map((s, i) => (i === revealIdx ? { ...s, name: nm || `Joueur ${i + 1}` } : s))
-    );
+  // Le joueur courant valide son prénom → il choisit ensuite une carte.
+  const confirmName = () => setRevealStage("pick");
+
+  // Il pioche une carte face cachée → on lui attribue ce rôle/mot.
+  const pickCard = (id: number) => {
+    if (claimedIds.includes(id)) return;
+    const nm = nameInput.trim() || `Joueur ${takerIndex + 1}`;
+    setSlots((prev) => prev.map((s) => (s.id === id ? { ...s, name: nm } : s)));
+    setClaimedIds((prev) => [...prev, id]);
+    setPickedId(id);
     setRevealStage("word");
   };
 
   const nextReveal = () => {
-    if (revealIdx + 1 >= slots.length) {
+    if (takerIndex + 1 >= slots.length) {
       startCluesRound(slots);
     } else {
-      setRevealIdx(revealIdx + 1);
+      setTakerIndex(takerIndex + 1);
+      setPickedId(null);
       setRevealStage("name");
       setNameInput("");
     }
@@ -253,7 +262,6 @@ export const Undercover = ({ onClose }: { onClose: () => void }) => {
   };
 
   const aliveSlots = slots.filter((s) => s.alive);
-  const current = slots[revealIdx];
 
   return (
     <div
@@ -300,16 +308,21 @@ export const Undercover = ({ onClose }: { onClose: () => void }) => {
           />
         )}
 
-        {phase === "reveal" && current && (
+        {phase === "reveal" && (
           <RevealView
-            slot={current}
-            index={revealIdx}
+            takerIndex={takerIndex}
             total={slots.length}
+            slots={slots}
+            claimedIds={claimedIds}
             stage={revealStage}
             nameInput={nameInput}
             setNameInput={setNameInput}
             onConfirmName={confirmName}
+            onPick={pickCard}
+            pickedSlot={pickedId != null ? slots.find((s) => s.id === pickedId) ?? null : null}
             onNext={nextReveal}
+            nbUnder={nbUnder}
+            nbWhite={nbWhite}
           />
         )}
 
@@ -488,31 +501,40 @@ const SetupView = ({
 );
 
 const RevealView = ({
-  slot,
-  index,
+  takerIndex,
   total,
+  slots,
+  claimedIds,
   stage,
   nameInput,
   setNameInput,
   onConfirmName,
+  onPick,
+  pickedSlot,
   onNext,
+  nbUnder,
+  nbWhite,
 }: {
-  slot: Slot;
-  index: number;
+  takerIndex: number;
   total: number;
-  stage: "name" | "word";
+  slots: Slot[];
+  claimedIds: number[];
+  stage: "name" | "pick" | "word";
   nameInput: string;
   setNameInput: (s: string) => void;
   onConfirmName: () => void;
+  onPick: (id: number) => void;
+  pickedSlot: Slot | null;
   onNext: () => void;
-}) => (
-  <div className="flex-1 flex flex-col items-center justify-center text-center gap-5">
-    <div className="font-display text-xs tracking-[0.4em] text-white/50">
-      {index + 1} / {total}
-    </div>
-
-    {stage === "name" ? (
-      <>
+  nbUnder: number;
+  nbWhite: number;
+}) => {
+  if (stage === "name") {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center text-center gap-5">
+        <div className="font-display text-xs tracking-[0.4em] text-white/50">
+          JOUEUR {takerIndex + 1} / {total}
+        </div>
         <div className="text-5xl">📱</div>
         <h2 className="font-display text-2xl tracking-wider text-white leading-tight">
           Passe le téléphone au<br />joueur suivant
@@ -535,62 +557,122 @@ const RevealView = ({
             className="w-full rounded-xl bg-black/40 border-2 border-white/15 px-4 py-3 text-center text-white font-display text-xl tracking-wide outline-none focus:border-[#00E676]"
           />
           <div className="text-[13px] text-white/70 mt-3 font-bold">
-            Saisis ton prénom pour dévoiler ton mot secret
+            Saisis ton prénom, puis choisis ta carte
           </div>
         </div>
         <button
           onClick={onConfirmName}
           className="px-10 py-4 rounded-2xl bg-gradient-to-r from-[#00C966] to-[#00E676] text-[#0A1410] font-display text-xl tracking-widest hover:scale-[1.03] active:scale-[0.97] transition-transform"
         >
-          👁 VOIR MON MOT
+          CHOISIR MA CARTE →
         </button>
-      </>
-    ) : (
-      <>
-        <div className="font-display text-sm tracking-[0.35em] text-white/50">
-          {slot.name.toUpperCase()}
+      </div>
+    );
+  }
+
+  if (stage === "pick") {
+    return (
+      <div className="flex-1 flex flex-col">
+        <h2 className="font-display text-2xl tracking-wider text-[#FFC93C] text-center mb-1 break-words">
+          {nameInput.trim() || `JOUEUR ${takerIndex + 1}`}
+        </h2>
+        <p className="text-center text-white/70 text-sm mb-4">Choisis une carte</p>
+        <div className="flex items-center justify-center gap-2 mb-5 flex-wrap">
+          <span
+            className="px-3 py-1 rounded-full font-display text-xs tracking-wider"
+            style={{ background: "#FF8A2A22", color: "#FF8A2A", border: "1.5px solid #FF8A2A66" }}
+          >
+            🕵️ {nbUnder} Undercover
+          </span>
+          {nbWhite > 0 && (
+            <span
+              className="px-3 py-1 rounded-full font-display text-xs tracking-wider"
+              style={{ background: "#C084FC22", color: "#C084FC", border: "1.5px solid #C084FC66" }}
+            >
+              🎩 {nbWhite} Mr. White
+            </span>
+          )}
         </div>
-        {slot.word ? (
-          <div
-            className="rounded-3xl px-8 py-7 border-2 max-w-sm"
-            style={{
-              background: "linear-gradient(180deg, rgba(255,255,255,0.06), rgba(0,0,0,0.4))",
-              borderColor: "rgba(255,201,60,0.5)",
-            }}
-          >
-            <div className="text-5xl mb-2">⚽</div>
-            <div className="font-display text-3xl tracking-wide text-white break-words">
-              {slot.word}
-            </div>
-            <div className="text-[11px] text-white/50 mt-3 italic">
-              Donne un indice à l'oral, sans dire le nom !
-            </div>
-          </div>
-        ) : (
-          <div
-            className="rounded-3xl px-8 py-7 border-2 max-w-sm"
-            style={{
-              background: "linear-gradient(180deg, rgba(192,132,252,0.18), rgba(0,0,0,0.5))",
-              borderColor: "rgba(192,132,252,0.6)",
-            }}
-          >
-            <div className="text-5xl mb-2">🕵️</div>
-            <div className="font-display text-3xl tracking-wide text-[#C084FC]">MR. WHITE</div>
-            <div className="text-[11px] text-white/60 mt-3 italic">
-              Tu n'as aucun mot. Écoute, bluffe, et fais-toi passer pour un civil !
-            </div>
-          </div>
-        )}
-        <button
-          onClick={onNext}
-          className="px-10 py-4 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-display text-lg tracking-widest transition-colors"
+        <div className="grid grid-cols-3 gap-3 sm:gap-4">
+          {slots.map((s) => {
+            const taken = claimedIds.includes(s.id);
+            return (
+              <button
+                key={s.id}
+                onClick={() => onPick(s.id)}
+                disabled={taken}
+                aria-label={taken ? "Carte déjà prise" : "Choisir cette carte"}
+                className={
+                  "aspect-[3/4] rounded-2xl flex items-center justify-center transition-all " +
+                  (taken
+                    ? "bg-black/30 border-2 border-white/10 opacity-50 cursor-not-allowed"
+                    : "bg-gradient-to-br from-[#FFC93C] to-[#FF9D2A] border-2 border-[#FFE08A] shadow-[0_8px_20px_rgba(0,0,0,0.4)] hover:scale-[1.04] active:scale-[0.96]")
+                }
+              >
+                {taken ? (
+                  <span className="text-3xl text-white/40">✓</span>
+                ) : (
+                  <span className="text-5xl text-[#1A0F00]/80 drop-shadow-[0_2px_3px_rgba(0,0,0,0.25)]">
+                    👤
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+        <p className="text-center text-[11px] text-white/40 mt-4 italic">
+          Cartes restantes : {total - claimedIds.length}
+        </p>
+      </div>
+    );
+  }
+
+  // stage === "word"
+  return (
+    <div className="flex-1 flex flex-col items-center justify-center text-center gap-5">
+      <div className="font-display text-sm tracking-[0.35em] text-white/50">
+        {(pickedSlot?.name ?? "").toUpperCase()}
+      </div>
+      {pickedSlot?.word ? (
+        <div
+          className="rounded-3xl px-8 py-7 border-2 max-w-sm"
+          style={{
+            background: "linear-gradient(180deg, rgba(255,255,255,0.06), rgba(0,0,0,0.4))",
+            borderColor: "rgba(255,201,60,0.5)",
+          }}
         >
-          OK, CACHER ET PASSER →
-        </button>
-      </>
-    )}
-  </div>
-);
+          <div className="text-5xl mb-2">⚽</div>
+          <div className="font-display text-3xl tracking-wide text-white break-words">
+            {pickedSlot.word}
+          </div>
+          <div className="text-[11px] text-white/50 mt-3 italic">
+            Donne un indice à l'oral, sans dire le nom !
+          </div>
+        </div>
+      ) : (
+        <div
+          className="rounded-3xl px-8 py-7 border-2 max-w-sm"
+          style={{
+            background: "linear-gradient(180deg, rgba(192,132,252,0.18), rgba(0,0,0,0.5))",
+            borderColor: "rgba(192,132,252,0.6)",
+          }}
+        >
+          <div className="text-5xl mb-2">🕵️</div>
+          <div className="font-display text-3xl tracking-wide text-[#C084FC]">MR. WHITE</div>
+          <div className="text-[11px] text-white/60 mt-3 italic">
+            Tu n'as aucun mot. Écoute, bluffe, et fais-toi passer pour un civil !
+          </div>
+        </div>
+      )}
+      <button
+        onClick={onNext}
+        className="px-10 py-4 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-display text-lg tracking-widest transition-colors"
+      >
+        OK, CACHER ET PASSER →
+      </button>
+    </div>
+  );
+};
 
 const CluesView = ({
   order,
@@ -622,25 +704,30 @@ const CluesView = ({
     <p className="text-center text-white/60 text-sm mb-4">
       Dans cet ordre, chacun donne <b>un mot d'indice</b> sur son joueur (sans le nommer).
     </p>
-    <div className="space-y-2 mb-6">
+    <div className="grid grid-cols-2 gap-3 mb-6">
       {order.map((id, i) => (
         <div
           key={id}
           className={
-            "flex items-center gap-3 rounded-xl border px-4 py-3 " +
-            (i === 0 ? "bg-[#FFC93C]/10 border-[#FFC93C]/50" : "bg-black/30 border-white/10")
+            "relative flex flex-col items-center justify-center gap-2 rounded-2xl border-2 py-5 px-2 " +
+            (i === 0
+              ? "bg-[#FFC93C]/15 border-[#FFC93C]/70 shadow-[0_6px_20px_rgba(255,201,60,0.25)]"
+              : "bg-black/30 border-white/10")
           }
         >
-          <span className="h-7 w-7 rounded-full bg-[#FFC93C] text-[#1A0F00] font-display text-sm flex items-center justify-center">
+          <span
+            className={
+              "h-9 w-9 rounded-full font-display text-base flex items-center justify-center " +
+              (i === 0 ? "bg-[#FFC93C] text-[#1A0F00]" : "bg-white/15 text-white")
+            }
+          >
             {i + 1}
           </span>
-          <span className="font-display text-lg tracking-wide text-white break-words">
+          <span className="font-display text-lg tracking-wide text-white text-center break-words leading-tight">
             {nameOf(id)}
           </span>
           {i === 0 && (
-            <span className="ml-auto text-[10px] font-display tracking-widest text-[#FFC93C]">
-              DÉBUT
-            </span>
+            <span className="text-[10px] font-display tracking-widest text-[#FFC93C]">DÉBUT</span>
           )}
         </div>
       ))}
