@@ -1,4 +1,11 @@
 export const PLAYERS = [
+  { name:"Paolo Rossi", clubs:["Vicenza", "Juventus", "AC Milan", "Hellas Verona"], diff:"moyen", nationalities:["Italie"], positions:["attaquant"], birthYear:1956 },
+  { name:"Dino Zoff", clubs:["Napoli", "Juventus"], diff:"moyen", nationalities:["Italie"], positions:["gardien"], birthYear:1942 },
+  { name:"Marcelo Salas", clubs:["Universidad de Chile", "River Plate", "Lazio", "Juventus"], diff:"moyen", nationalities:["Chili"], positions:["attaquant"], birthYear:1974 },
+  { name:"Sardar Azmoun", clubs:["Rubin Kazan", "Zenit", "Bayer Leverkusen", "AS Roma", "Shabab Al Ahli"], diff:"moyen", nationalities:["Iran"], positions:["attaquant"], birthYear:1995 },
+  { name:"Mohamed Camara", clubs:["Salzburg", "Monaco"], diff:"expert", nationalities:["Mali"], positions:["milieu"], birthYear:2000 },
+  { name:"Federico Redondo", clubs:["Argentinos Juniors", "Inter Miami"], diff:"expert", nationalities:["Argentine"], positions:["milieu"], birthYear:2003 },
+  { name:"Hong Myung-bo", clubs:["Pohang Steelers", "Kashiwa Reysol", "LA Galaxy"], diff:"expert", nationalities:["Corée du Sud"], positions:["defenseur"], birthYear:1969 },
   { name:"Gedson Fernandes", clubs:["Benfica", "Tottenham", "Galatasaray", "Besiktas"], diff:"expert", nationalities:["Portugal"], positions:["milieu"], birthYear:1999 },
   { name:"Sam Lammers", clubs:["PSV Eindhoven", "Atalanta BC", "Eintracht Frankfurt", "Rangers", "Twente"], diff:"expert", nationalities:["Pays-Bas"], positions:["attaquant"], birthYear:1997 },
   { name:"Owen Wijndal", clubs:["AZ Alkmaar", "Ajax Amsterdam", "Antwerp"], diff:"expert", nationalities:["Pays-Bas"], positions:["defenseur"], birthYear:1999 },
