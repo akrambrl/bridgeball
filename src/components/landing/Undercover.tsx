@@ -668,27 +668,65 @@ const VoteView = ({
 }: {
   alive: Slot[];
   onEliminate: (id: number) => void;
-}) => (
-  <div className="flex-1 flex flex-col">
-    <h2 className="font-display text-2xl tracking-wider text-white text-center mb-1">
-      QUI EST ÉLIMINÉ ?
-    </h2>
-    <p className="text-center text-white/60 text-sm mb-4">
-      Débattez, votez à l'oral, puis appuyez sur le joueur éliminé.
-    </p>
-    <div className="grid grid-cols-2 gap-3">
-      {alive.map((s) => (
-        <button
-          key={s.id}
-          onClick={() => onEliminate(s.id)}
-          className="py-5 px-2 rounded-2xl bg-black/30 border-2 border-white/10 hover:border-[#FF4D6D] hover:bg-[#FF4D6D]/10 text-white font-display text-xl tracking-wider transition-all active:scale-[0.97] break-words"
+}) => {
+  const [confirm, setConfirm] = useState<Slot | null>(null);
+
+  if (confirm) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center text-center gap-5">
+        <div className="text-6xl">🗳️</div>
+        <h2 className="font-display text-2xl tracking-wider text-white">Éliminer ce joueur ?</h2>
+        <div
+          className="rounded-2xl px-8 py-5 border-2 max-w-sm"
+          style={{ borderColor: "rgba(255,77,109,0.6)", background: "rgba(255,77,109,0.12)" }}
         >
-          {s.name}
-        </button>
-      ))}
+          <div className="font-display text-3xl tracking-wide text-[#FF4D6D] break-words">
+            {confirm.name}
+          </div>
+          <div className="text-[12px] text-white/60 mt-2 italic">
+            Son rôle sera révélé. Vérifiez votre vote !
+          </div>
+        </div>
+        <div className="flex gap-3 w-full max-w-sm">
+          <button
+            onClick={() => setConfirm(null)}
+            className="flex-1 py-4 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-display text-lg tracking-widest transition-colors"
+          >
+            ANNULER
+          </button>
+          <button
+            onClick={() => onEliminate(confirm.id)}
+            className="flex-1 py-4 rounded-2xl bg-gradient-to-r from-[#FF4D6D] to-[#FF2D55] text-white font-display text-lg tracking-widest hover:scale-[1.03] active:scale-[0.97] transition-transform"
+          >
+            ÉLIMINER
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex-1 flex flex-col">
+      <h2 className="font-display text-2xl tracking-wider text-white text-center mb-1">
+        QUI EST ÉLIMINÉ ?
+      </h2>
+      <p className="text-center text-white/60 text-sm mb-4">
+        Débattez, votez à l'oral, puis appuyez sur le joueur éliminé.
+      </p>
+      <div className="grid grid-cols-2 gap-3">
+        {alive.map((s) => (
+          <button
+            key={s.id}
+            onClick={() => setConfirm(s)}
+            className="py-5 px-2 rounded-2xl bg-black/30 border-2 border-white/10 hover:border-[#FF4D6D] hover:bg-[#FF4D6D]/10 text-white font-display text-xl tracking-wider transition-all active:scale-[0.97] break-words"
+          >
+            {s.name}
+          </button>
+        ))}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const EliminatedView = ({ slot, onContinue }: { slot: Slot; onContinue: () => void }) => (
   <div className="flex-1 flex flex-col items-center justify-center text-center gap-5">
