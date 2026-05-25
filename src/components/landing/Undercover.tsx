@@ -359,6 +359,7 @@ export const Undercover = ({ onClose }: { onClose: () => void }) => {
           <CluesView
             order={order}
             nameOf={(id) => slots.find((s) => s.id === id)?.name ?? ""}
+            wordOf={(id) => slots.find((s) => s.id === id)?.word ?? null}
             onVote={() => setPhase("vote")}
           />
         )}
@@ -682,69 +683,160 @@ const RevealView = ({
 const CluesView = ({
   order,
   nameOf,
+  wordOf,
   onVote,
 }: {
   order: number[];
   nameOf: (id: number) => string;
+  wordOf: (id: number) => string | null;
   onVote: () => void;
-}) => (
-  <div className="flex-1 flex flex-col">
-    <h2 className="font-display text-2xl tracking-wider text-white text-center mb-3">
-      TOUR DE TABLE
-    </h2>
-    {order.length > 0 && (
-      <div
-        className="rounded-2xl px-5 py-4 mb-4 text-center border-2"
-        style={{
-          background: "linear-gradient(135deg, rgba(255,201,60,0.18), rgba(255,138,42,0.12))",
-          borderColor: "rgba(255,201,60,0.6)",
-        }}
-      >
-        <div className="text-3xl mb-1">🎤</div>
-        <div className="font-display text-2xl tracking-wider text-[#FFC93C] break-words">
-          {nameOf(order[0])} commence !
-        </div>
-      </div>
-    )}
-    <p className="text-center text-white/60 text-sm mb-4">
-      Dans cet ordre, chacun donne <b>un mot d'indice</b> sur son joueur (sans le nommer).
-    </p>
-    <div className="grid grid-cols-2 gap-3 mb-6">
-      {order.map((id, i) => (
+}) => {
+  // Re-consultation secrète d'un mot : on ouvre une carte cachée pour le joueur
+  // ciblé ("peek"), qui doit toucher pour révéler puis cacher avant de rendre.
+  const [peek, setPeek] = useState<number | null>(null);
+  const [shown, setShown] = useState(false);
+  const openPeek = (id: number) => {
+    setPeek(id);
+    setShown(false);
+  };
+  const closePeek = () => {
+    setPeek(null);
+    setShown(false);
+  };
+
+  return (
+    <div className="flex-1 flex flex-col">
+      <h2 className="font-display text-2xl tracking-wider text-white text-center mb-3">
+        TOUR DE TABLE
+      </h2>
+      {order.length > 0 && (
         <div
-          key={id}
-          className={
-            "relative flex flex-col items-center justify-center gap-2 rounded-2xl border-2 py-5 px-2 " +
-            (i === 0
-              ? "bg-[#FFC93C]/15 border-[#FFC93C]/70 shadow-[0_6px_20px_rgba(255,201,60,0.25)]"
-              : "bg-black/30 border-white/10")
-          }
+          className="rounded-2xl px-5 py-4 mb-4 text-center border-2"
+          style={{
+            background: "linear-gradient(135deg, rgba(255,201,60,0.18), rgba(255,138,42,0.12))",
+            borderColor: "rgba(255,201,60,0.6)",
+          }}
         >
-          <span
+          <div className="text-3xl mb-1">🎤</div>
+          <div className="font-display text-2xl tracking-wider text-[#FFC93C] break-words">
+            {nameOf(order[0])} commence !
+          </div>
+        </div>
+      )}
+      <p className="text-center text-white/60 text-sm mb-1">
+        Dans cet ordre, chacun donne <b>un mot d'indice</b> sur son joueur (sans le nommer).
+      </p>
+      <p className="text-center text-white/45 text-xs mb-4">
+        👁 Touche ton nom pour revoir ton mot en secret.
+      </p>
+      <div className="grid grid-cols-2 gap-3 mb-6">
+        {order.map((id, i) => (
+          <button
+            key={id}
+            onClick={() => openPeek(id)}
             className={
-              "h-9 w-9 rounded-full font-display text-base flex items-center justify-center " +
-              (i === 0 ? "bg-[#FFC93C] text-[#1A0F00]" : "bg-white/15 text-white")
+              "relative flex flex-col items-center justify-center gap-2 rounded-2xl border-2 py-5 px-2 hover:scale-[1.02] active:scale-[0.97] transition-transform " +
+              (i === 0
+                ? "bg-[#FFC93C]/15 border-[#FFC93C]/70 shadow-[0_6px_20px_rgba(255,201,60,0.25)]"
+                : "bg-black/30 border-white/10")
             }
           >
-            {i + 1}
-          </span>
-          <span className="font-display text-lg tracking-wide text-white text-center break-words leading-tight">
-            {nameOf(id)}
-          </span>
-          {i === 0 && (
-            <span className="text-[10px] font-display tracking-widest text-[#FFC93C]">DÉBUT</span>
+            <span
+              className={
+                "h-9 w-9 rounded-full font-display text-base flex items-center justify-center " +
+                (i === 0 ? "bg-[#FFC93C] text-[#1A0F00]" : "bg-white/15 text-white")
+              }
+            >
+              {i + 1}
+            </span>
+            <span className="font-display text-lg tracking-wide text-white text-center break-words leading-tight">
+              {nameOf(id)}
+            </span>
+            {i === 0 ? (
+              <span className="text-[10px] font-display tracking-widest text-[#FFC93C]">DÉBUT</span>
+            ) : (
+              <span className="text-base opacity-40">👁</span>
+            )}
+          </button>
+        ))}
+      </div>
+      <button
+        onClick={onVote}
+        className="w-full py-4 mt-auto rounded-2xl bg-gradient-to-r from-[#FF4D6D] to-[#FF8A2A] text-white font-display text-xl tracking-widest hover:scale-[1.02] active:scale-[0.97] transition-transform"
+      >
+        🗳 PASSER AU VOTE
+      </button>
+
+      {peek !== null && (
+        <div
+          className="fixed inset-0 z-[9200] flex flex-col items-center justify-center gap-6 px-6 text-center"
+          style={{ background: "rgba(6,24,12,0.97)", paddingTop: "env(safe-area-inset-top)" }}
+        >
+          <div className="font-display text-sm tracking-[0.35em] text-white/55">
+            {nameOf(peek).toUpperCase()}
+          </div>
+          {!shown ? (
+            <>
+              <div className="text-6xl">🙈</div>
+              <h3 className="font-display text-2xl tracking-wider text-white leading-tight">
+                C'est bien toi ?<br />Personne ne regarde ?
+              </h3>
+              <button
+                onClick={() => setShown(true)}
+                className="px-10 py-4 rounded-2xl bg-gradient-to-r from-[#00C966] to-[#00E676] text-[#0A1410] font-display text-xl tracking-widest hover:scale-[1.03] active:scale-[0.97] transition-transform"
+              >
+                👁 REVOIR MON MOT
+              </button>
+              <button
+                onClick={closePeek}
+                className="text-white/50 text-sm font-display tracking-widest"
+              >
+                ← ANNULER
+              </button>
+            </>
+          ) : (
+            <>
+              {wordOf(peek) ? (
+                <div
+                  className="rounded-3xl px-8 py-7 border-2 max-w-sm w-full"
+                  style={{
+                    background: "linear-gradient(180deg, rgba(255,255,255,0.06), rgba(0,0,0,0.4))",
+                    borderColor: "rgba(255,201,60,0.5)",
+                  }}
+                >
+                  <div className="text-5xl mb-2">⚽</div>
+                  <div className="font-display text-3xl tracking-wide text-white break-words">
+                    {wordOf(peek)}
+                  </div>
+                </div>
+              ) : (
+                <div
+                  className="rounded-3xl px-8 py-7 border-2 max-w-sm w-full"
+                  style={{
+                    background: "linear-gradient(180deg, rgba(192,132,252,0.18), rgba(0,0,0,0.5))",
+                    borderColor: "rgba(192,132,252,0.6)",
+                  }}
+                >
+                  <div className="text-5xl mb-2">🕵️</div>
+                  <div className="font-display text-3xl tracking-wide text-[#C084FC]">MR. WHITE</div>
+                  <div className="text-[11px] text-white/60 mt-3 italic">
+                    Tu n'as aucun mot. Bluffe !
+                  </div>
+                </div>
+              )}
+              <button
+                onClick={closePeek}
+                className="px-10 py-4 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-display text-lg tracking-widest transition-colors"
+              >
+                OK, CACHER →
+              </button>
+            </>
           )}
         </div>
-      ))}
+      )}
     </div>
-    <button
-      onClick={onVote}
-      className="w-full py-4 mt-auto rounded-2xl bg-gradient-to-r from-[#FF4D6D] to-[#FF8A2A] text-white font-display text-xl tracking-widest hover:scale-[1.02] active:scale-[0.97] transition-transform"
-    >
-      🗳 PASSER AU VOTE
-    </button>
-  </div>
-);
+  );
+};
 
 const VoteView = ({
   alive,
