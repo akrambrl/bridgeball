@@ -31,8 +31,10 @@ type Slot = {
 
 type Phase = "setup" | "reveal" | "clues" | "vote" | "mrwhite" | "end";
 
+// On ne garde que les joueurs "facile" : des stars connues de tous, pour que
+// civils comme undercover tombent toujours sur un joueur reconnaissable.
 const ALL = (PLAYERS as Player[]).filter(
-  (p) => p && p.birthYear && (p.diff === "facile" || p.diff === "moyen") && p.positions?.length
+  (p) => p && p.birthYear && p.diff === "facile" && p.positions?.length
 );
 
 const primaryPos = (p: Player) => p.positions?.[0] ?? "";
