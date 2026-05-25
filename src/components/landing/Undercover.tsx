@@ -70,30 +70,38 @@ const SUPERSTARS = [
 ];
 const SUPERSTAR_SET = new Set(SUPERSTARS.map(normName));
 
-const ALL = (PLAYERS as Player[]).filter(
-  (p) => p && p.birthYear && p.positions?.length && SUPERSTAR_SET.has(normName(p.name))
-);
+const hasMeta = (p: Player) => !!(p && p.birthYear && p.positions?.length);
+
+// Trois niveaux. "Facile" reste la liste blanche de superstars (grand public
+// garanti, ex. Kahn, Mbappé). "Moyen" et "Expert" puisent dans les tags de
+// difficulté de la base : pools beaucoup plus larges et joueurs plus pointus.
+type Difficulty = "facile" | "moyen" | "expert";
+const POOLS: Record<Difficulty, Player[]> = {
+  facile: (PLAYERS as Player[]).filter((p) => hasMeta(p) && SUPERSTAR_SET.has(normName(p.name))),
+  moyen: (PLAYERS as Player[]).filter((p) => hasMeta(p) && p.diff === "moyen"),
+  expert: (PLAYERS as Player[]).filter((p) => hasMeta(p) && p.diff === "expert"),
+};
 
 const primaryPos = (p: Player) => p.positions?.[0] ?? "";
 const rnd = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
 
 // Construit une paire "civil / undercover" plausible : même poste principal et
 // époque proche (±6 ans) pour que les deux joueurs soient confondables.
-function makePair(): { civ: string; und: string } {
+function makePair(pool: Player[]): { civ: string; und: string } {
   for (let i = 0; i < 300; i++) {
-    const civ = rnd(ALL);
+    const civ = rnd(pool);
     const pos = primaryPos(civ);
-    const pool = ALL.filter(
+    const cand = pool.filter(
       (p) =>
         p.name !== civ.name &&
         primaryPos(p) === pos &&
         Math.abs((p.birthYear || 0) - (civ.birthYear || 0)) <= 6
     );
-    if (pool.length) return { civ: civ.name, und: rnd(pool).name };
+    if (cand.length) return { civ: civ.name, und: rnd(cand).name };
   }
-  const a = rnd(ALL);
-  let b = rnd(ALL);
-  while (b.name === a.name) b = rnd(ALL);
+  const a = rnd(pool);
+  let b = rnd(pool);
+  while (b.name === a.name) b = rnd(pool);
   return { civ: a.name, und: b.name };
 }
 
@@ -122,6 +130,7 @@ export const Undercover = ({ onClose }: { onClose: () => void }) => {
   const [nbPlayers, setNbPlayers] = useState(5);
   const [nbUnder, setNbUnder] = useState(1);
   const [nbWhite, setNbWhite] = useState(1);
+  const [difficulty, setDifficulty] = useState<Difficulty>("facile");
 
   const [slots, setSlots] = useState<Slot[]>([]);
   const [pair, setPair] = useState<{ civ: string; und: string }>({ civ: "", und: "" });
@@ -148,7 +157,7 @@ export const Undercover = ({ onClose }: { onClose: () => void }) => {
   };
 
   const startGame = useCallback(() => {
-    const p = makePair();
+    const p = makePair(POOLS[difficulty]);
     setPair(p);
     const roles: Role[] = [];
     for (let i = 0; i < nbUnder; i++) roles.push("undercover");
@@ -169,7 +178,7 @@ export const Undercover = ({ onClose }: { onClose: () => void }) => {
     setMrWhiteGuess("");
     setWinner(null);
     setPhase("reveal");
-  }, [nbPlayers, nbUnder, nbWhite]);
+  }, [nbPlayers, nbUnder, nbWhite, difficulty]);
 
   const checkWin = useCallback((next: Slot[]): "civils" | "imposteurs" | null => {
     const alive = next.filter((s) => s.alive);
@@ -291,10 +300,12 @@ export const Undercover = ({ onClose }: { onClose: () => void }) => {
             civils={civils}
             maxUnder={maxUnder}
             maxWhite={maxWhite}
+            difficulty={difficulty}
             valid={configValid}
             onPlayers={changePlayers}
             onUnder={(n) => setNbUnder(Math.max(1, Math.min(maxUnder, n)))}
             onWhite={(n) => setNbWhite(Math.max(0, Math.min(maxWhite, n)))}
+            onDifficulty={setDifficulty}
             onStart={startGame}
           />
         )}
@@ -399,10 +410,12 @@ const SetupView = ({
   civils,
   maxUnder,
   maxWhite,
+  difficulty,
   valid,
   onPlayers,
   onUnder,
   onWhite,
+  onDifficulty,
   onStart,
 }: {
   nbPlayers: number;
@@ -411,10 +424,12 @@ const SetupView = ({
   civils: number;
   maxUnder: number;
   maxWhite: number;
+  difficulty: Difficulty;
   valid: boolean;
   onPlayers: (n: number) => void;
   onUnder: (n: number) => void;
   onWhite: (n: number) => void;
+  onDifficulty: (d: Difficulty) => void;
   onStart: () => void;
 }) => (
   <div className="flex-1 flex flex-col">
@@ -442,6 +457,43 @@ const SetupView = ({
       >
         +
       </button>
+    </div>
+
+    {/* Sélecteur difficulté */}
+    <div className="mb-5">
+      <div className="text-center text-white/55 text-xs tracking-[0.3em] font-display mb-2">
+        DIFFICULTÉ
+      </div>
+      <div className="grid grid-cols-3 gap-2">
+        {(
+          [
+            { key: "facile", label: "Facile", desc: "Stars connues", color: "#00E676" },
+            { key: "moyen", label: "Moyen", desc: "Plus pointu", color: "#FFC93C" },
+            { key: "expert", label: "Expert", desc: "Pour experts", color: "#FF4D6D" },
+          ] as const
+        ).map((d) => {
+          const on = difficulty === d.key;
+          return (
+            <button
+              key={d.key}
+              onClick={() => onDifficulty(d.key)}
+              className="rounded-2xl py-3 px-1 border-2 transition-all active:scale-[0.97] flex flex-col items-center gap-0.5"
+              style={
+                on
+                  ? { background: d.color + "22", borderColor: d.color, color: d.color }
+                  : {
+                      background: "rgba(0,0,0,0.3)",
+                      borderColor: "rgba(255,255,255,0.1)",
+                      color: "rgba(255,255,255,0.6)",
+                    }
+              }
+            >
+              <span className="font-display text-base tracking-wider">{d.label}</span>
+              <span className="text-[9px] opacity-80 leading-tight">{d.desc}</span>
+            </button>
+          );
+        })}
+      </div>
     </div>
 
     {/* Carte rôles */}
