@@ -181,8 +181,15 @@ export const Undercover = ({ onClose }: { onClose: () => void }) => {
   }, []);
 
   const startCluesRound = useCallback((src: Slot[]) => {
-    const aliveIds = src.filter((s) => s.alive).map((s) => s.id);
-    setOrder(shuffle(aliveIds));
+    const alive = src.filter((s) => s.alive);
+    const ids = shuffle(alive.map((s) => s.id));
+    const roleOf = (id: number) => alive.find((s) => s.id === id)?.role;
+    // Mr. White n'a pas de mot : il ne doit jamais ouvrir le tour de table.
+    if (roleOf(ids[0]) === "mrwhite") {
+      const j = ids.findIndex((id, i) => i > 0 && roleOf(id) !== "mrwhite");
+      if (j > 0) [ids[0], ids[j]] = [ids[j], ids[0]];
+    }
+    setOrder(ids);
     setEliminated(null);
     setPhase("clues");
   }, []);
@@ -595,9 +602,23 @@ const CluesView = ({
   onVote: () => void;
 }) => (
   <div className="flex-1 flex flex-col">
-    <h2 className="font-display text-2xl tracking-wider text-white text-center mb-1">
+    <h2 className="font-display text-2xl tracking-wider text-white text-center mb-3">
       TOUR DE TABLE
     </h2>
+    {order.length > 0 && (
+      <div
+        className="rounded-2xl px-5 py-4 mb-4 text-center border-2"
+        style={{
+          background: "linear-gradient(135deg, rgba(255,201,60,0.18), rgba(255,138,42,0.12))",
+          borderColor: "rgba(255,201,60,0.6)",
+        }}
+      >
+        <div className="text-3xl mb-1">🎤</div>
+        <div className="font-display text-2xl tracking-wider text-[#FFC93C] break-words">
+          {nameOf(order[0])} commence !
+        </div>
+      </div>
+    )}
     <p className="text-center text-white/60 text-sm mb-4">
       Dans cet ordre, chacun donne <b>un mot d'indice</b> sur son joueur (sans le nommer).
     </p>
@@ -605,7 +626,10 @@ const CluesView = ({
       {order.map((id, i) => (
         <div
           key={id}
-          className="flex items-center gap-3 rounded-xl bg-black/30 border border-white/10 px-4 py-3"
+          className={
+            "flex items-center gap-3 rounded-xl border px-4 py-3 " +
+            (i === 0 ? "bg-[#FFC93C]/10 border-[#FFC93C]/50" : "bg-black/30 border-white/10")
+          }
         >
           <span className="h-7 w-7 rounded-full bg-[#FFC93C] text-[#1A0F00] font-display text-sm flex items-center justify-center">
             {i + 1}
@@ -613,6 +637,11 @@ const CluesView = ({
           <span className="font-display text-lg tracking-wide text-white break-words">
             {nameOf(id)}
           </span>
+          {i === 0 && (
+            <span className="ml-auto text-[10px] font-display tracking-widest text-[#FFC93C]">
+              DÉBUT
+            </span>
+          )}
         </div>
       ))}
     </div>
