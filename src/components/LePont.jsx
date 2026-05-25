@@ -781,6 +781,7 @@ const PLUG_CARD_IMG = "/plug-card.png";
 const MERCATO_CARD_IMG = "/mercato-card.png";
 const GRID_CARD_IMG = "/grid-card.png";
 const GUESS_CARD_IMG = "/guess-card.png";
+const UNDERCOVER_CARD_IMG = "/undercover-card.png";
 
 // ── MESSAGES DE RÉSULTAT UNIFIÉS (Plug, Mercato, solo, duel, multi) ──
 const RESULT_MESSAGES = {
@@ -9162,7 +9163,7 @@ export default function LePont() {
               const delta = endX - startX;
               homeSwipeStartRef.current = null;
               if(Math.abs(delta) > 50){
-                const newIdx = (homeCardIndex + (delta < 0 ? 1 : -1) + 4) % 4;
+                const newIdx = (homeCardIndex + (delta < 0 ? 1 : -1) + 5) % 5;
                 setHomeCardIndex(newIdx);
                 localStorage.setItem("bb_home_card", String(newIdx));
               }
@@ -9174,7 +9175,7 @@ export default function LePont() {
               const delta = e.clientX - startX;
               homeSwipeStartRef.current = null;
               if(Math.abs(delta) > 50){
-                const newIdx = (homeCardIndex + (delta < 0 ? 1 : -1) + 4) % 4;
+                const newIdx = (homeCardIndex + (delta < 0 ? 1 : -1) + 5) % 5;
                 setHomeCardIndex(newIdx);
                 localStorage.setItem("bb_home_card", String(newIdx));
               }
@@ -9185,8 +9186,9 @@ export default function LePont() {
               {key:"mercato", img:MERCATO_CARD_IMG, onClick: function(){setGameConfigModal("chaine");}, record: chainRecord, recordIcon:"⛓",  recordColor:"#60a5fa"},
               {key:"plug",    img:PLUG_CARD_IMG,    onClick: function(){setGameConfigModal("pont");},   record: record,      recordIcon:"🏆", recordColor:"#FFD600"},
               {key:"guess",   img:GUESS_CARD_IMG,   onClick: function(){window.dispatchEvent(new CustomEvent("goatfc:open-guess"));}, record: null, recordIcon:null, recordColor:"#C084FC"},
+              {key:"undercover", img:UNDERCOVER_CARD_IMG, onClick: function(){window.dispatchEvent(new CustomEvent("goatfc:open-undercover"));}, record: null, recordIcon:null, recordColor:"#FF4D6D"},
             ].map(function(card, i){
-              const offset = (i - homeCardIndex + 4) % 4;
+              const offset = (i - homeCardIndex + 5) % 5;
               const isActive = offset === 0;
               let translateX, scale, opacity, zIndex;
               if(offset === 0){ translateX = 0;  scale = 1;    opacity = 1;    zIndex = 40; }
@@ -9251,8 +9253,8 @@ export default function LePont() {
 
           {/* Dots indicator */}
           <div style={{display:"flex",justifyContent:"center",gap:8,marginTop:10}}>
-            {[0,1,2,3].map(function(i){
-              const colors = ["#00E676","#60a5fa","#FFD600","#C084FC"];
+            {[0,1,2,3,4].map(function(i){
+              const colors = ["#00E676","#60a5fa","#FFD600","#C084FC","#FF4D6D"];
               const isActive = homeCardIndex === i;
               return (
                 <div
@@ -9295,6 +9297,10 @@ export default function LePont() {
             guess:   { title: "GOAT GUESS",   emoji: "🔮", accent: "#C084FC", bg: "linear-gradient(135deg,rgba(192,132,252,.18),rgba(255,138,42,.12))",
               rules_fr: ["Pense à un footballeur connu (actuel ou retraité)","Je te pose jusqu'à 25 questions oui / non / sais pas","Tu réponds honnêtement, je restreins mes candidats","Je devine ton joueur — si je rate, je retente jusqu'à 5 fois","Questions par étapes : Continent → Nation → Ligue → Club → Poste"],
               rules_en: ["Think of a famous footballer (active or retired)","I'll ask up to 25 yes / no / don't know questions","Answer honestly — I narrow down my candidates","I guess your player — if I'm wrong, I try up to 5 times","Questions by stage: Continent → Nation → League → Club → Position"]
+            },
+            undercover: { title: "UNDERCOVER", emoji: "🕵️", accent: "#FF4D6D", bg: "linear-gradient(135deg,rgba(255,77,109,.18),rgba(255,138,42,.12))",
+              rules_fr: ["Jeu de soirée à plusieurs sur UN seul téléphone","Chacun reçoit en secret un joueur de foot","Les civils ont le même joueur, les undercover un joueur proche","Le Mr. White n'a aucun mot et doit bluffer","À tour de rôle : un indice, puis on vote pour éliminer un suspect"],
+              rules_en: ["A party game for several players on ONE phone","Everyone secretly gets a footballer","Civilians share the same player, undercovers get a similar one","Mr. White has no word and must bluff","Each round: give one clue, then vote someone out"]
             },
           };
           const data = RULES_DATA[homeRulesModal];

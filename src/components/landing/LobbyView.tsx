@@ -6,7 +6,7 @@ type Props = {
   onJoinRoom: (code: string) => void;
 };
 
-type GameKey = "plug" | "mercato" | "grid" | "guess";
+type GameKey = "plug" | "mercato" | "grid" | "guess" | "undercover";
 
 const GAMES: {
   key: GameKey;
@@ -66,6 +66,18 @@ const GAMES: {
       "Pense à un footballeur. En 25 questions max, je devine de qui il s'agit. 🔮",
     accent: "#C084FC",
     badge: "MAGIE",
+  },
+  {
+    key: "undercover",
+    mode: "undercover",
+    name: "Undercover",
+    tagline: "Qui est l'imposteur ?",
+    img: "/undercover-card.png",
+    mascot: "/win4.png",
+    description:
+      "Jeu de soirée à plusieurs sur un seul téléphone : chacun reçoit un joueur secret, démasque les undercover et le Mr. White. 🕵️",
+    accent: "#FF4D6D",
+    badge: "SOIRÉE",
   },
 ];
 
