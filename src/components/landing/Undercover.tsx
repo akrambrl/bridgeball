@@ -41,43 +41,68 @@ const normName = (s: string) =>
     .replace(/\s+/g, " ")
     .trim();
 
-// Liste blanche de superstars "grand public" : indépendante du tag de la base,
-// elle garantit que civils comme undercover tombent sur un joueur que tout le
-// monde connaît (et non un "facile" trop pointu type Dimarco).
-const SUPERSTARS = [
-  // Attaquants
-  "Pele", "Diego Maradona", "George Weah", "Roberto Baggio", "Gabriel Batistuta",
-  "Ronaldo Nazario", "Thierry Henry", "Didier Drogba", "Ronaldinho", "Fernando Torres",
-  "Cristiano Ronaldo", "Wayne Rooney", "Lionel Messi", "Karim Benzema", "Luis Suarez",
-  "Edinson Cavani", "Robert Lewandowski", "Antoine Griezmann", "Neymar", "Mohamed Salah",
-  "Sadio Mane", "Harry Kane", "Romelu Lukaku", "Lautaro Martinez", "Marcus Rashford",
-  "Kylian Mbappe", "Erling Haaland", "Vinicius Junior", "Phil Foden", "Bukayo Saka",
-  "Zlatan Ibrahimovic", "Samuel Eto'o", "Sergio Aguero", "Rafael Leao", "Heung-min Son",
-  "David Beckham",
-  // Milieux
-  "Zinedine Zidane", "Andres Iniesta", "Xavi", "Frank Lampard", "Steven Gerrard",
-  "Andrea Pirlo", "Kaka", "Luka Modric", "David Silva", "Mesut Ozil", "Toni Kroos",
-  "Kevin De Bruyne", "Paul Pogba", "N'Golo Kante", "Cesc Fabregas", "Bernardo Silva",
-  "Federico Valverde", "Pedri", "Jude Bellingham",
-  // Défenseurs
-  "Paolo Maldini", "Cafu", "Fabio Cannavaro", "Roberto Carlos", "Alessandro Nesta",
-  "Carles Puyol", "John Terry", "Dani Alves", "Philipp Lahm", "Thiago Silva",
-  "Sergio Ramos", "Marcelo", "Virgil van Dijk", "Ruben Dias", "Achraf Hakimi",
-  "Trent Alexander-Arnold", "Gerard Pique",
-  // Gardiens
-  "Oliver Kahn", "Edwin van der Sar", "Gianluigi Buffon", "Iker Casillas", "Petr Cech",
-  "Manuel Neuer", "Thibaut Courtois", "Marc-Andre ter Stegen", "Ederson", "Alisson Becker",
+// Paires curées "civil vs undercover" (niveau Facile), choisies à la main :
+// deux joueurs proches/confondables. À chaque partie on en tire une au hasard,
+// et on choisit aléatoirement lequel des deux est le mot des civils.
+const PAIRS_FACILE: [string, string][] = [
+  ["Lionel Messi", "Cristiano Ronaldo"],
+  ["Neymar", "Ronaldinho"],
+  ["Kylian Mbappé", "Erling Haaland"],
+  ["Mohamed Salah", "Sadio Mané"],
+  ["Kevin De Bruyne", "Luka Modrić"],
+  ["Vinícius Júnior", "Neymar"],
+  ["Jude Bellingham", "Pedri"],
+  ["Harry Kane", "Robert Lewandowski"],
+  ["Karim Benzema", "Luis Suárez"],
+  ["Antoine Griezmann", "Paulo Dybala"],
+  ["Sergio Ramos", "Virgil van Dijk"],
+  ["Zlatan Ibrahimović", "Didier Drogba"],
+  ["David Beckham", "Andrea Pirlo"],
+  ["Thierry Henry", "Samuel Eto'o"],
+  ["Zinedine Zidane", "Andrés Iniesta"],
+  ["Xavi", "Kevin De Bruyne"],
+  ["Wayne Rooney", "Pierre-Emerick Aubameyang"],
+  ["Gareth Bale", "Arjen Robben"],
+  ["Paul Pogba", "Adrien Rabiot"],
+  ["Manuel Neuer", "Gianluigi Buffon"],
+  ["Thomas Müller", "Thomas Rosický"],
+  ["Son Heung-min", "Riyad Mahrez"],
+  ["Achraf Hakimi", "Roberto Carlos"],
+  ["Kaká", "Jamal Musiala"],
+  ["Ronaldo Nazário", "Zlatan Ibrahimović"],
+  ["Francesco Totti", "Jérémy Ménez"],
+  ["Paolo Maldini", "Sergio Ramos"],
+  ["Robin van Persie", "Harry Kane"],
+  ["Raúl", "Karim Benzema"],
+  ["Iker Casillas", "Hugo Lloris"],
+  ["Lamine Yamal", "Rayan Cherki"],
+  ["Sergio Agüero", "Luis Suárez"],
+  ["Eden Hazard", "Neymar"],
+  ["Franck Ribéry", "Arjen Robben"],
+  ["Yaya Touré", "Paul Pogba"],
+  ["Marco Reus", "Thomas Müller"],
+  ["Edinson Cavani", "Pierre-Emerick Aubameyang"],
+  ["Marcelo", "Achraf Hakimi"],
+  ["Franck Kessié", "Adrien Rabiot"],
+  ["Nuno Mendes", "Achraf Hakimi"],
+  ["Olivier Giroud", "Edinson Cavani"],
+  ["Patrice Evra", "Marcelo"],
+  ["Raphinha", "Riyad Mahrez"],
+  ["Michael Olise", "Raphinha"],
+  ["Dayot Upamecano", "Virgil van Dijk"],
+  ["Samir Nasri", "Jérémy Ménez"],
+  ["David Luiz", "Sergio Ramos"],
+  ["Iker Casillas", "Gianluigi Buffon"],
+  ["Gianluigi Donnarumma", "Mike Maignan"],
+  ["Thibaut Courtois", "Manuel Neuer"],
 ];
-const SUPERSTAR_SET = new Set(SUPERSTARS.map(normName));
 
 const hasMeta = (p: Player) => !!(p && p.birthYear && p.positions?.length);
 
-// Trois niveaux. "Facile" reste la liste blanche de superstars (grand public
-// garanti, ex. Kahn, Mbappé). "Moyen" et "Expert" puisent dans les tags de
-// difficulté de la base : pools beaucoup plus larges et joueurs plus pointus.
+// Niveaux Moyen / Expert : appariement algorithmique dans les tags de la base
+// (même poste principal + époque proche), pools beaucoup plus larges et pointus.
 type Difficulty = "facile" | "moyen" | "expert";
-const POOLS: Record<Difficulty, Player[]> = {
-  facile: (PLAYERS as Player[]).filter((p) => hasMeta(p) && SUPERSTAR_SET.has(normName(p.name))),
+const POOLS: Record<"moyen" | "expert", Player[]> = {
   moyen: (PLAYERS as Player[]).filter((p) => hasMeta(p) && p.diff === "moyen"),
   expert: (PLAYERS as Player[]).filter((p) => hasMeta(p) && p.diff === "expert"),
 };
@@ -85,9 +110,14 @@ const POOLS: Record<Difficulty, Player[]> = {
 const primaryPos = (p: Player) => p.positions?.[0] ?? "";
 const rnd = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
 
-// Construit une paire "civil / undercover" plausible : même poste principal et
-// époque proche (±6 ans) pour que les deux joueurs soient confondables.
-function makePair(pool: Player[]): { civ: string; und: string } {
+// Construit une paire "civil / undercover". Facile : tirage dans les paires
+// curées. Moyen/Expert : deux joueurs de même poste et d'époque proche (±6 ans).
+function makePair(difficulty: Difficulty): { civ: string; und: string } {
+  if (difficulty === "facile") {
+    const [a, b] = rnd(PAIRS_FACILE);
+    return Math.random() < 0.5 ? { civ: a, und: b } : { civ: b, und: a };
+  }
+  const pool = POOLS[difficulty];
   for (let i = 0; i < 300; i++) {
     const civ = rnd(pool);
     const pos = primaryPos(civ);
@@ -157,7 +187,7 @@ export const Undercover = ({ onClose }: { onClose: () => void }) => {
   };
 
   const startGame = useCallback(() => {
-    const p = makePair(POOLS[difficulty]);
+    const p = makePair(difficulty);
     setPair(p);
     const roles: Role[] = [];
     for (let i = 0; i < nbUnder; i++) roles.push("undercover");
