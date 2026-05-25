@@ -1542,7 +1542,7 @@ export const PLAYERS = [
   { name:"Cher Ndour", clubs:["Atalanta BC", "Benfica", "PSG", "Besiktas", "ACF Fiorentina"], diff:"expert", nationalities:["Italie"], positions:["milieu"], birthYear:2004 },
   { name:"Matvey Safonov", clubs:["Krasnodar", "PSG"], diff:"expert", nationalities:["Russie"], positions:["gardien"], birthYear:1999 },
   { name:"Willian Pacho", clubs:["Independiente del Valle", "Antwerp", "Eintracht Frankfurt", "PSG"], diff:"moyen", nationalities:["Équateur"], positions:["defenseur"], birthYear:2001 },
-  { name:"Ethan Mbappé", clubs:["PSG", "Lille"], diff:"expert", nationalities:["Cameroun"], positions:["attaquant"] },
+  { name:"Ethan Mbappé", clubs:["PSG", "Lille"], diff:"expert", nationalities:["France"], positions:["milieu","attaquant"], birthYear:2006 },
   { name:"Yoram Zague", clubs:["PSG"], diff:"expert", nationalities:["France"], positions:["defenseur"] },
   { name:"Guillaume Hoarau", clubs:["Le Havre", "PSG", "Bordeaux", "Dalian Aerbin", "Young Boys"], diff:"expert", nationalities:["France"], positions:["attaquant"] },
   { name:"Nenê", clubs:["Palmeiras", "Santos", "Alavés", "Celta Vigo", "Mallorca", "Monaco", "PSG", "Al Gharafa", "Al Nassr", "West Brom", "Vasco da Gama", "Fluminense"], diff:"expert", nationalities:["Brésil"], positions:["milieu"] },
