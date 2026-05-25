@@ -649,7 +649,7 @@ export const PLAYERS = [
   { name:"Mathys Tel", clubs:["Rennes", "Bayern Munich", "Tottenham"], diff:"moyen", nationalities:["France"], positions:["attaquant"], birthYear:2005 },
   { name:"Sander Berge", clubs:["Vålerenga", "Genk", "Sheffield United", "Burnley", "Fulham"], diff:"moyen", nationalities:["Norvège"], positions:["attaquant"], birthYear:1998 },
   { name:"Lucas Bergvall", clubs:["Brommapojkarna", "Djurgården", "Tottenham"], diff:"expert", nationalities:["Suède"], positions:["milieu"] , birthYear:2006 },
-  { name:"Tom Watson", clubs:["Sunderland", "Brighton"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"] },
+  { name:"Tom Watson", clubs:["Sunderland", "Brighton"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"] , birthYear:2006 },
   { name:"Conor Bradley", clubs:["Bolton", "Liverpool"], diff:"moyen", nationalities:["Angleterre"], positions:["defenseur"], birthYear:2003 },
   // Bundesliga été 2025 - manquants
   { name:"Lucas Vázquez", clubs:["Real Madrid Castilla", "Espanyol", "Real Madrid", "Bayer Leverkusen"], diff:"moyen", nationalities:["Espagne"], positions:["attaquant"], birthYear:1991 },
@@ -1265,7 +1265,7 @@ export const PLAYERS = [
 { name:"Isak Hien", clubs:["IFK Göteborg", "Djurgårdens IF", "Hellas Verona", "Atalanta BC"], diff:"expert", nationalities:["Suède"], positions:["defenseur"] , birthYear:1999 },
 { name:"Mattia Zaccagni", clubs:["Hellas Verona", "SS Lazio"], diff:"moyen", nationalities:["Italie"], positions:["attaquant"], birthYear:1995 },
 { name:"Jaden Philogene", clubs:["Aston Villa", "Stoke", "Cardiff City", "Hull City", "Ipswich"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"] , birthYear:2002 },
-{ name:"Sverre Nypan", clubs:["Rosenborg", "Manchester City"], diff:"expert", nationalities:["Norvège"], positions:["attaquant"] },
+{ name:"Sverre Nypan", clubs:["Rosenborg", "Manchester City"], diff:"expert", nationalities:["Norvège"], positions:["attaquant"] , birthYear:2006 },
 { name:"Chido Obi-Martin", clubs:["Arsenal", "Manchester United"], diff:"expert", nationalities:["Danemark"], positions:["attaquant"], birthYear:2007 },
 { name:"Felix Nmecha", clubs:["Manchester City", "Preston North End", "Anderlecht", "Wolfsburg", "Borussia Dortmund"], diff:"expert", nationalities:["Allemagne"], positions:["milieu"], birthYear:2000 },
 { name:"Nicola Zalewski", clubs:["AS Roma", "Inter Milan"], diff:"expert", nationalities:["Pologne"], positions:["milieu"] , birthYear:2002 },
@@ -1383,7 +1383,7 @@ export const PLAYERS = [
   { name:"Neil Clement", clubs:["Chelsea", "West Brom"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1978 },
   { name:"Thor Gudjonsson", clubs:["Leicester City", "Bayer Leverkusen"], diff:"expert", nationalities:["Islande"], positions:["milieu"] },
   { name:"David Grondin", clubs:["Arsenal", "Saint-Etienne"], diff:"expert", nationalities:["France"], positions:["attaquant"] , birthYear:1980 },
-  { name:"Alberto Mendez", clubs:["Arsenal"], diff:"expert", nationalities:["Espagne"], positions:["attaquant"] },
+  { name:"Alberto Mendez", clubs:["Arsenal"], diff:"expert", nationalities:["Espagne"], positions:["attaquant"] , birthYear:1974 },
   { name:"Igors Stepanovs", clubs:["Arsenal"], diff:"expert", nationalities:["Lettonie"], positions:["defenseur"] , birthYear:1976 },
   { name:"Pascal Cygan", clubs:["Lille", "Arsenal"], diff:"expert", nationalities:["France"], positions:["defenseur"] , birthYear:1974 },
   { name:"Jerome Thomas", clubs:["Arsenal", "West Brom"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"] , birthYear:1983 },
@@ -1395,11 +1395,11 @@ export const PLAYERS = [
   { name:"Stuart Taylor", clubs:["Arsenal", "Aston Villa"], diff:"expert", nationalities:["Angleterre"], positions:["gardien"] , birthYear:1980 },
   { name:"Graham Stack", clubs:["Arsenal"], diff:"expert", nationalities:["Angleterre"], positions:["gardien"] , birthYear:1981 },
   { name:"Rohan Ricketts", clubs:["Arsenal", "Tottenham"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"] , birthYear:1982 },
-  { name:"Mark Randall", clubs:["Arsenal"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"] },
-  { name:"Craig Eastmond", clubs:["Arsenal", "Southend"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"] },
+  { name:"Mark Randall", clubs:["Arsenal"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"] , birthYear:1989 },
+  { name:"Craig Eastmond", clubs:["Arsenal", "Southend"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"] , birthYear:1990 },
   { name:"Nico Yennaris", clubs:["Arsenal"], diff:"expert", nationalities:["Chine"], positions:["attaquant"] , birthYear:1993 },
   { name:"Vito Mannone", clubs:["Arsenal", "Sunderland"], diff:"expert", nationalities:["Italie"], positions:["gardien"] , birthYear:1988 },
-  { name:"Sanchez Watt", clubs:["Arsenal"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"] },
+  { name:"Sanchez Watt", clubs:["Arsenal"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"] , birthYear:1991 },
   { name:"Henri Lansbury", clubs:["Arsenal", "Nottingham Forest"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"] , birthYear:1990 },
   { name:"Daniel Boateng", clubs:["Arsenal"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"] },
   { name:"Kyle Bartley", clubs:["Arsenal", "Swansea"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"] , birthYear:1991 },
@@ -1647,7 +1647,7 @@ export const PLAYERS = [
   { name:"Aaron Wan-Bissaka", clubs:["Crystal Palace", "Manchester United", "West Ham"], diff:"moyen", nationalities:["RD Congo"], positions:["defenseur"], birthYear:1997 },
   { name:"Cédric Bakambu", clubs:["Sochaux", "Bursaspor", "Villarreal", "Beijing Guoan", "Marseille", "Olympiacos", "Galatasaray", "Real Betis"], diff:"moyen", nationalities:["RD Congo"], positions:["attaquant"], birthYear:1991 },
   { name:"Chancel Mbemba", clubs:["Anderlecht", "Newcastle", "Porto", "Marseille", "Lille"], diff:"moyen", nationalities:["RD Congo"], positions:["defenseur"], birthYear:1994 },
-  { name:"Noah Sadiki", clubs:["Union Saint-Gilloise", "Sunderland"], diff:"expert", nationalities:["RD Congo"], positions:["milieu"] },
+  { name:"Noah Sadiki", clubs:["Union Saint-Gilloise", "Sunderland"], diff:"expert", nationalities:["RD Congo"], positions:["milieu"] , birthYear:2005 },
   { name:"Grady Diangana", clubs:["West Ham", "West Brom"], diff:"expert", nationalities:["RD Congo"], positions:["attaquant"] , birthYear:1998 },
   { name:"Théo Bongonda", clubs:["Genk", "Celta Vigo", "Spartak Moscow"], diff:"expert", nationalities:["Belgique"], positions:["milieu"] , birthYear:1995 },
   { name:"Arthur Masuaku", clubs:["West Ham", "Besiktas", "Crystal Palace", "Sunderland", "Lens"], diff:"expert", nationalities:["France"], positions:["defenseur"] , birthYear:1993 },
@@ -1671,7 +1671,7 @@ export const PLAYERS = [
   { name:"Moussa Niakhaté", clubs:["Metz", "Mainz", "Nottingham Forest", "Lyon"], diff:"moyen", nationalities:["Sénégal"], positions:["defenseur"], birthYear:1996 },
   { name:"Iliman Ndiaye", clubs:["Sheffield United", "Marseille"], diff:"moyen", nationalities:["France"], positions:["attaquant"], birthYear:2000 },
   { name:"Pape Gueye", clubs:["Le Havre", "Watford", "Marseille", "Villarreal"], diff:"expert", nationalities:["Sénégal"], positions:["milieu"], birthYear:1999 },
-  { name:"El Hadji Malick Diouf", clubs:["Stoke", "Southampton"], diff:"expert", nationalities:["Sénégal"], positions:["defenseur"] },
+  { name:"El Hadji Malick Diouf", clubs:["Stoke", "Southampton"], diff:"expert", nationalities:["Sénégal"], positions:["defenseur"] , birthYear:2004 },
   { name:"Ismail Jakobs", clubs:["Köln", "Monaco", "Galatasaray"], diff:"expert", nationalities:["Sénégal"], positions:["defenseur"] , birthYear:1999 },
   // Équipe nationale Algérie 2026
   { name:"Ismaël Bennacer", clubs:["Arsenal", "Empoli FC", "AC Milan", "Marseille", "Dinamo Zagreb"], diff:"moyen", nationalities:["Algérie"], positions:["milieu"], birthYear:1997 },
@@ -2077,7 +2077,7 @@ export const PLAYERS = [
   { name:"Borja Sainz", clubs:["Athletic Bilbao", "Giresunspor", "Norwich City", "Porto"], diff:"expert", nationalities:["Espagne"], positions:["attaquant"], birthYear:2001 },
   { name:"Yann Karamoh", clubs:["Inter Milan", "Bordeaux", "Parme", "Torino FC", "Montpellier", "Porto"], diff:"moyen", nationalities:["Côte d'Ivoire"], positions:["attaquant"], birthYear:1998 },
   // Sporting CP
-  { name:"Giorgi Kochorashvili", clubs:["Levante", "Sporting CP"], diff:"expert", nationalities:["Géorgie"], positions:["attaquant"] },
+  { name:"Giorgi Kochorashvili", clubs:["Levante", "Sporting CP"], diff:"expert", nationalities:["Géorgie"], positions:["attaquant"] , birthYear:1999 },
   { name:"Francisco Trincão", clubs:["Braga", "Barcelona", "Wolverhampton", "Sporting CP"], diff:"moyen", nationalities:["Portugal"], positions:["attaquant"], birthYear:1999 },
   // Braga
   { name:"Pau Víctor", clubs:["Girona", "Barcelona", "Braga"], diff:"expert", nationalities:["Dominique"], positions:["defenseur"] , birthYear:2001 },
@@ -2108,7 +2108,7 @@ export const PLAYERS = [
   { name:"Edson Álvarez", clubs:["America", "Ajax Amsterdam", "West Ham", "Fenerbahce"], diff:"moyen", nationalities:["Mexique"], positions:["milieu"], birthYear:1997 },
   { name:"Jhon Durán", clubs:["Chicago Fire", "Aston Villa", "Al Nassr", "Fenerbahce"], diff:"moyen", nationalities:["Colombie"], positions:["attaquant"], birthYear:2003 },
   { name:"Kerem Aktürkoğlu", clubs:["Galatasaray", "Benfica", "Fenerbahce"], diff:"expert", nationalities:["Turquie"], positions:["attaquant"], birthYear:1998 },
-  { name:"Dorgeles Nene", clubs:["Liefering", "Salzburg", "Fenerbahce"], diff:"expert", nationalities:["Mali"], positions:["attaquant"] },
+  { name:"Dorgeles Nene", clubs:["Liefering", "Salzburg", "Fenerbahce"], diff:"expert", nationalities:["Mali"], positions:["attaquant"] , birthYear:2003 },
   // Beşiktaş
   { name:"Orkun Kökçü", clubs:["Feyenoord", "Benfica", "Besiktas"], diff:"moyen", nationalities:["Turquie"], positions:["attaquant"], birthYear:2000 },
   { name:"David Jurásek", clubs:["Mlada Boleslav", "Slavia Prague", "Benfica", "Hoffenheim", "Besiktas"], diff:"expert", nationalities:["Tchéquie"], positions:["attaquant"], birthYear:2000 },
@@ -2117,7 +2117,7 @@ export const PLAYERS = [
   // Al Hilal
   { name:"Aleksandar Mitrović", clubs:["Partizan", "Anderlecht", "Newcastle", "Fulham", "Al Hilal", "Al Rayyan"], diff:"moyen", nationalities:["Serbie"], positions:["attaquant"], birthYear:1994 },
   { name:"Sergej Milinković-Savić", clubs:["Vojvodina", "Genk", "SS Lazio", "Al Hilal"], diff:"moyen", nationalities:["Serbie"], positions:["attaquant"], birthYear:1995 },
-  { name:"Yusuf Akçiçek", clubs:["Fenerbahce", "Al Hilal"], diff:"expert", nationalities:["Turquie"], positions:["defenseur"] },
+  { name:"Yusuf Akçiçek", clubs:["Fenerbahce", "Al Hilal"], diff:"expert", nationalities:["Turquie"], positions:["defenseur"] , birthYear:2006 },
   // Al Nassr
   // Al Ittihad
   { name:"Roger Fernandes", clubs:["Sporting CP", "Braga", "Al Ittihad"], diff:"expert", nationalities:["Portugal"], positions:["attaquant"] },
@@ -2133,7 +2133,7 @@ export const PLAYERS = [
   // LAFC
   { name:"Denis Bouanga", clubs:["Lorient", "Nîmes", "Saint-Étienne", "LAFC"], diff:"moyen", nationalities:["Gabon"], positions:["attaquant"], birthYear:1994 },
   // Inter Miami
-  { name:"Germán Berterame", clubs:["San Lorenzo", "Atlético San Luis", "Monterrey", "Inter Miami"], diff:"expert", nationalities:["Mexique"], positions:["attaquant"] },
+  { name:"Germán Berterame", clubs:["San Lorenzo", "Atlético San Luis", "Monterrey", "Inter Miami"], diff:"expert", nationalities:["Mexique"], positions:["attaquant"] , birthYear:1998 },
   { name:"Tadeo Allende", clubs:["Godoy Cruz", "Celta Vigo", "Inter Miami"], diff:"expert", nationalities:["Argentine"], positions:["attaquant"] },
   // Atlanta United
   { name:"Emmanuel Latte Lath", clubs:["Atalanta BC", "Middlesbrough", "Atlanta United"], diff:"expert", nationalities:["Côte d'Ivoire"], positions:["attaquant"] , birthYear:1999 },
@@ -2339,7 +2339,7 @@ export const PLAYERS = [
   { name:"Bryan Heynen", clubs:["Genk"], diff:"expert", nationalities:["Belgique"], positions:["milieu"] , birthYear:1997 },
   { name:"Jens Stage", clubs:["Aarhus GF", "Copenhagen", "Werder Bremen"], diff:"expert", nationalities:["Danemark"], positions:["milieu"] , birthYear:1996 },
   { name:"Rasmus Kristensen", clubs:["Ajax Amsterdam", "RB Salzburg", "Leeds United", "AS Roma", "Eintracht Frankfurt"], diff:"moyen", nationalities:["Danemark"], positions:["defenseur"], birthYear:1997 },
-  { name:"Konstantinos Tzolakis", clubs:["Olympiacos", "Volos NFC"], diff:"expert", nationalities:["Grèce"], positions:["gardien"] },
+  { name:"Konstantinos Tzolakis", clubs:["Olympiacos", "Volos NFC"], diff:"expert", nationalities:["Grèce"], positions:["gardien"] , birthYear:2002 },
   { name:"Lukáš Provod", clubs:["Slovan Liberec", "Slavia Prague", "Lens"], diff:"expert", nationalities:["Tchéquie"], positions:["milieu"] , birthYear:1996 },
   { name:"Yasin Ayari", clubs:["AIK", "Brighton"], diff:"expert", nationalities:["Suède"], positions:["milieu"] , birthYear:2003 },
   { name:"Giannis Konstantelias", clubs:["PAOK"], diff:"expert", nationalities:["Grèce"], positions:["milieu"] },
@@ -2401,7 +2401,7 @@ export const PLAYERS = [
   { name:"Roland Sallai", clubs:["Palermo", "APOEL", "Cagliari", "SC Freiburg", "Galatasaray"], diff:"moyen", nationalities:["Hongrie"], positions:["attaquant"], birthYear:1997 },
   { name:"Panagiotis Retsos", clubs:["Olympiacos", "Bayer Leverkusen", "Sheffield United", "Hertha Berlin"], diff:"expert", nationalities:["Grèce"], positions:["defenseur"] , birthYear:1998 },
   { name:"Pablo Rosario", clubs:["PSV Eindhoven", "Nice", "Porto"], diff:"expert", nationalities:["République dominicaine"], positions:["milieu"], birthYear:1997 },
-  { name:"Marcelino Moreno", clubs:["Lanús", "Talleres", "Atlanta United"], diff:"expert", nationalities:["Argentine"], positions:["milieu"] },
+  { name:"Marcelino Moreno", clubs:["Lanús", "Talleres", "Atlanta United"], diff:"expert", nationalities:["Argentine"], positions:["milieu"] , birthYear:1995 },
   { name:"Aleix Febas", clubs:["Mallorca", "Real Zaragoza", "Levante", "Elche"], diff:"expert", nationalities:["Espagne"], positions:["milieu"] , birthYear:1996 },
   { name:"Ethan Ampadu", clubs:["Exeter City", "Chelsea", "RB Leipzig", "Sheffield United", "Venezia", "Spezia", "Leeds United"], diff:"moyen", nationalities:["Pays de Galles"], positions:["milieu"], birthYear:2000 },
   { name:"Brais Méndez", clubs:["Celta Vigo", "Real Sociedad"], diff:"moyen", nationalities:["Espagne"], positions:["milieu"], birthYear:1997 },
@@ -2435,7 +2435,7 @@ export const PLAYERS = [
   { name:"Kodjo Fo-Doh Laba", clubs:["Tours", "Yeni Malatyaspor", "Adana Demirspor", "Al Ain"], diff:"expert", nationalities:["Togo"], positions:["attaquant"] },
   { name:"Ladislav Krejčí", clubs:["Sparta Prague", "Girona", "Wolverhampton"], diff:"moyen", nationalities:["Tchéquie"], positions:["defenseur"], birthYear:1992 },
   { name:"Jamie Leweling", clubs:["Greuther Fürth", "Union Berlin", "Stuttgart"], diff:"expert", nationalities:["Allemagne"], positions:["milieu"] , birthYear:2001 },
-  { name:"Leonardo Fernández", clubs:["Peñarol", "Tigres UANL", "Toluca"], diff:"expert", nationalities:["Uruguay"], positions:["milieu"] },
+  { name:"Leonardo Fernández", clubs:["Peñarol", "Tigres UANL", "Toluca"], diff:"expert", nationalities:["Uruguay"], positions:["milieu"] , birthYear:1998 },
   { name:"Adrián Martínez", clubs:["Estudiantes", "Racing Club"], diff:"expert", nationalities:["Argentine"], positions:["attaquant"] },
   { name:"Zeno Debast", clubs:["Anderlecht", "Sporting CP"], diff:"moyen", nationalities:["Belgique"], positions:["defenseur"] , birthYear:2003 },
   { name:"Oscar Dorley", clubs:["Slovan Liberec", "Slavia Prague"], diff:"expert", nationalities:["Liberia"], positions:["milieu"] },
