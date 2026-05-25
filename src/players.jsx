@@ -1,4 +1,13 @@
 export const PLAYERS = [
+  { name:"Illan Meslier", clubs:["Lorient", "Leeds United"], diff:"moyen", nationalities:["France"], positions:["gardien"], birthYear:2000 },
+  { name:"Armando Broja", clubs:["Chelsea", "Vitesse", "Southampton", "Fulham", "Everton", "Burnley"], diff:"moyen", nationalities:["Albanie"], positions:["attaquant"], birthYear:2001 },
+  { name:"Reinildo Mandava", clubs:["Benfica", "Lille", "Atletico Madrid", "Sunderland"], diff:"expert", nationalities:["Mozambique"], positions:["defenseur"], birthYear:1994 },
+  { name:"Marc Guiu", clubs:["Barcelona", "Chelsea", "Sunderland"], diff:"expert", nationalities:["Espagne"], positions:["attaquant"], birthYear:2006 },
+  { name:"Borna Sosa", clubs:["Dinamo Zagreb", "Stuttgart", "Ajax Amsterdam", "Torino FC"], diff:"expert", nationalities:["Croatie"], positions:["defenseur"], birthYear:1998 },
+  { name:"Stefanos Tzimas", clubs:["PAOK", "Nuremberg", "Brighton"], diff:"expert", nationalities:["Grèce"], positions:["attaquant"], birthYear:2006 },
+  { name:"Adam Aznou", clubs:["Bayern Munich", "Real Valladolid", "Everton"], diff:"expert", nationalities:["Maroc"], positions:["defenseur"], birthYear:2006 },
+  { name:"Loum Tchaouna", clubs:["Rennes", "Salernitana", "Lazio", "Burnley"], diff:"expert", nationalities:["France"], positions:["attaquant"], birthYear:2003 },
+  { name:"Chris Rigg", clubs:["Sunderland"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:2007 },
   { name:"Marko Arnautović", clubs:["Twente", "Werder Bremen", "Stoke City", "West Ham", "Shanghai SIPG", "Bologna FC", "Inter Milan"], diff:"moyen", nationalities:["Autriche"], positions:["attaquant"], birthYear:1989 },
   { name:"Roberto Soldado", clubs:["Real Madrid", "Getafe", "Valencia", "Tottenham", "Villarreal", "Granada", "Levante"], diff:"moyen", nationalities:["Espagne"], positions:["attaquant"], birthYear:1985 },
   { name:"Aritz Aduriz", clubs:["Athletic Bilbao", "Valencia", "Mallorca"], diff:"moyen", nationalities:["Espagne"], positions:["attaquant"], birthYear:1981 },
