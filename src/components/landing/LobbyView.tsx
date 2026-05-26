@@ -119,7 +119,7 @@ export const LobbyView = ({ onPlay, onJoinRoom }: Props) => {
   };
 
   return (
-    <div className="container max-w-7xl mx-auto px-6 lg:px-10 py-6 lg:py-8 grid lg:grid-cols-[280px_1fr_320px] gap-6 items-start">
+    <div className="container max-w-7xl mx-auto px-6 lg:px-10 py-6 grid lg:grid-cols-[280px_1fr_320px] gap-6 items-start">
       {/* COLONNE GAUCHE — choix du jeu */}
       <div className="space-y-3">
         <div className="font-display text-sm tracking-[0.25em] text-white/40 px-1 mb-2">
@@ -164,21 +164,18 @@ export const LobbyView = ({ onPlay, onJoinRoom }: Props) => {
 
       {/* CENTRE — preview du jeu sélectionné + mascotte + bouton PLAY */}
       <div className="relative">
-        <div
-          className="relative rounded-3xl overflow-hidden border border-white/10 bg-gradient-to-br from-white/[0.04] to-white/[0.01] backdrop-blur"
-          style={{ minHeight: "620px" }}
-        >
+        <div className="relative rounded-3xl overflow-hidden border border-white/10 bg-gradient-to-br from-white/[0.04] to-white/[0.01] backdrop-blur min-h-[460px] lg:h-[calc(100dvh-190px)] lg:min-h-[480px] lg:max-h-[600px]">
           {/* Halo couleur jeu */}
           <div
             className="absolute -top-32 left-1/2 -translate-x-1/2 h-[380px] w-[640px] rounded-full blur-[110px] opacity-30"
             style={{ backgroundColor: game.accent }}
           />
 
-          <div className="relative p-6 lg:p-8 grid md:grid-cols-[1fr_240px] gap-6 items-center">
+          <div className="relative lg:h-full p-6 lg:p-8 grid md:grid-cols-[1fr_240px] gap-6 items-center content-center">
             {/* Texte + CTA */}
             <div className="flex flex-col items-center md:items-start text-center md:text-left">
               <span
-                className="px-3 py-1 rounded-full font-display text-xs tracking-[0.25em] mb-4"
+                className="px-3 py-1 rounded-full font-display text-xs tracking-[0.25em] mb-2"
                 style={{
                   backgroundColor: `${game.accent}20`,
                   color: game.accent,
@@ -188,18 +185,18 @@ export const LobbyView = ({ onPlay, onJoinRoom }: Props) => {
                 {game.badge}
               </span>
 
-              <h2 className="font-display text-6xl lg:text-8xl tracking-wide leading-none mb-2">
+              <h2 className="font-display text-5xl lg:text-7xl tracking-wide leading-none mb-2">
                 {game.name}
               </h2>
               <p
-                className="font-display text-xl lg:text-2xl tracking-widest mb-5"
+                className="font-display text-xl lg:text-2xl tracking-widest mb-3"
                 style={{ color: game.accent }}
               >
                 {game.tagline}
               </p>
 
               {/* Card preview (illu plus petite) */}
-              <div className="relative my-2 mb-6">
+              <div className="relative my-1 mb-4">
                 <div
                   className="absolute inset-0 blur-2xl opacity-50 rounded-2xl"
                   style={{ backgroundColor: game.accent }}
@@ -207,22 +204,22 @@ export const LobbyView = ({ onPlay, onJoinRoom }: Props) => {
                 <img
                   src={game.img}
                   alt={game.name}
-                  className="relative h-32 lg:h-36 w-auto rounded-xl shadow-2xl"
+                  className="relative h-24 lg:h-28 w-auto rounded-xl shadow-2xl"
                 />
               </div>
 
-              <p className="text-white/70 max-w-md mb-6 text-sm lg:text-base">{game.description}</p>
+              <p className="text-white/70 max-w-md mb-4 text-sm lg:text-base">{game.description}</p>
 
               {/* Gros bouton PLAY */}
               <button
                 onClick={() => onPlay(game.mode)}
-                className="goat-pulse group relative inline-flex items-center gap-3 px-12 py-5 rounded-2xl bg-gradient-to-r from-[#FF8A2A] to-[#FFC93C] text-[#1A0F00] font-display text-4xl tracking-widest hover:scale-[1.03] active:scale-[0.98] transition-transform"
+                className="goat-pulse group relative inline-flex items-center gap-3 px-12 py-4 rounded-2xl bg-gradient-to-r from-[#FF8A2A] to-[#FFC93C] text-[#1A0F00] font-display text-4xl tracking-widest hover:scale-[1.03] active:scale-[0.98] transition-transform"
               >
                 <span className="text-3xl">▶</span> JOUER
                 <span className="absolute inset-0 rounded-2xl bg-white/0 group-hover:bg-white/10 transition-colors pointer-events-none" />
               </button>
 
-              <p className="mt-3 text-xs text-white/40">
+              <p className="mt-2 text-xs text-white/40">
                 Gratuit · Sans inscription · 3 minutes
               </p>
             </div>
@@ -237,7 +234,7 @@ export const LobbyView = ({ onPlay, onJoinRoom }: Props) => {
                 key={game.key}
                 src={game.mascot}
                 alt=""
-                className="goat-float relative h-[480px] w-auto object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.7)]"
+                className="goat-float relative h-[clamp(300px,42vh,460px)] w-auto object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.7)]"
               />
             </div>
           </div>
