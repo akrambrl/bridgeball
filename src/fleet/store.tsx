@@ -2,9 +2,8 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { seedData } from "./seed";
 import type { Driver, FleetData, Fine, Maintenance, Trip, Vehicle } from "./types";
 
-// v2 : invalide l'ancien cache de démo (Sophie Martin, Renault Clio…) pour
-// charger les vraies données importées depuis l'Excel.
-const STORAGE_KEY = "fleet-data-v2";
+// v3 : recharge les données (2026 uniquement) en ignorant le cache précédent.
+const STORAGE_KEY = "fleet-data-v3";
 
 function load(): FleetData {
   if (typeof localStorage === "undefined") return seedData;

@@ -1,14 +1,18 @@
 """Génère src/fleet/seed.ts à partir du classeur Excel de la flotte.
 Usage: python3 scripts/seed_from_xlsx.py <fichier.xlsx>
-N'utilise QUE les feuilles « Véhicules » et les feuilles annuelles de
-contraventions (2018..2026). Ignore les feuilles sensibles (permis, salaires,
+N'utilise QUE la feuille « Véhicules » et la feuille de contraventions 2026.
+Ignore les autres années et les feuilles sensibles (permis, salaires,
 assurances) volontairement.
+NB: read_only=False pour ne pas se fier à la dimension stockée (qui peut être
+sous-estimée et tronquer les dernières lignes).
 """
 import sys, json, math, re, datetime
 import openpyxl
 
+FINE_YEARS = {"2026"}
+
 src = sys.argv[1]
-wb = openpyxl.load_workbook(src, read_only=True, data_only=True)
+wb = openpyxl.load_workbook(src, data_only=True)
 
 def s(v):
     if v is None:
@@ -153,7 +157,7 @@ def status_of(cell):
 
 fines = []
 for name in wb.sheetnames:
-    if not re.fullmatch(r"\d{4}", name):
+    if name not in FINE_YEARS:
         continue
     year = int(name)
     wsf = wb[name]
