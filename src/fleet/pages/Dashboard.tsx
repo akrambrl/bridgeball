@@ -6,6 +6,7 @@ import { useFleet, driverName } from "../store";
 import { eur, km, dateFr } from "../format";
 import { PageHeader } from "../components/PageHeader";
 import { FineStatusBadge, vehicleStatusLabel } from "../labels";
+import { suggestions, vehicleAlertLevel } from "../maintenance";
 import type { ReactNode } from "react";
 
 const STATUS_COLORS: Record<string, string> = {
@@ -36,7 +37,13 @@ export default function Dashboard() {
   const pendingFines = fines.filter((f) => f.status === "pending");
   const pendingFinesTotal = pendingFines.reduce((s, f) => s + f.amount, 0);
   const scheduledMaint = maintenance.filter((m) => m.status === "scheduled");
-  const serviceDue = vehicles.filter((v) => v.mileage >= v.nextServiceKm - 2000);
+  const serviceDue = vehicles
+    .map((v) => {
+      const vm = maintenance.filter((m) => m.vehicleId === v.id);
+      return { v, level: vehicleAlertLevel(v, vm), tips: suggestions(v, vm) };
+    })
+    .filter((a) => a.level !== "ok")
+    .sort((a, b) => (a.level === "due" ? -1 : 1) - (b.level === "due" ? -1 : 1));
 
   const statusData = (["active", "maintenance", "inactive"] as const).map((s) => ({
     name: vehicleStatusLabel[s],
@@ -69,15 +76,16 @@ export default function Dashboard() {
             <AlertTriangle className="h-4 w-4 text-amber-600" />
             <CardTitle className="text-sm">Entretien à prévoir</CardTitle>
           </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">
-            {serviceDue.map((v) => (
-              <span key={v.id} className="mr-3 inline-block">
+          <CardContent className="space-y-1.5 text-sm text-muted-foreground">
+            {serviceDue.slice(0, 12).map(({ v, tips }) => (
+              <div key={v.id}>
                 <Link to={`/vehicules/${v.id}`} className="font-medium text-foreground hover:underline">
-                  {v.brand} {v.model}
+                  {v.brand} {v.model} ({v.plate})
                 </Link>{" "}
-                — {km(v.mileage)} / révision à {km(v.nextServiceKm)}
-              </span>
+                — {tips.map((t) => `${t.title} : ${t.detail.toLowerCase()}`).join(" · ")}
+              </div>
             ))}
+            {serviceDue.length > 12 && <div>… et {serviceDue.length - 12} autre(s) véhicule(s).</div>}
           </CardContent>
         </Card>
       )}
