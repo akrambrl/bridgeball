@@ -82,12 +82,23 @@ function AddFineDialog() {
   );
 }
 
+const PAGE_SIZE = 50;
+
 export default function Fines() {
   const { fines, vehicles, drivers, setFineStatus } = useFleet();
   const [filter, setFilter] = useState<"all" | FineStatus>("all");
+  const [page, setPage] = useState(1);
 
   const shown = fines.filter((f) => filter === "all" || f.status === filter);
   const pendingTotal = fines.filter((f) => f.status === "pending").reduce((s, f) => s + f.amount, 0);
+
+  const pageCount = Math.max(1, Math.ceil(shown.length / PAGE_SIZE));
+  const current = Math.min(page, pageCount);
+  const paged = shown.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE);
+  const pick = (k: "all" | FineStatus) => {
+    setFilter(k);
+    setPage(1);
+  };
 
   return (
     <div>
@@ -95,7 +106,7 @@ export default function Fines() {
 
       <div className="mb-4 flex gap-2">
         {(["all", "pending", "paid", "contested"] as const).map((k) => (
-          <Button key={k} variant={filter === k ? "default" : "outline"} size="sm" onClick={() => setFilter(k)}>
+          <Button key={k} variant={filter === k ? "default" : "outline"} size="sm" onClick={() => pick(k)}>
             {k === "all" ? "Toutes" : k === "pending" ? "À payer" : k === "paid" ? "Payées" : "Contestées"}
           </Button>
         ))}
@@ -117,7 +128,7 @@ export default function Fines() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {shown.map((f) => {
+              {paged.map((f) => {
                 const v = vehicles.find((x) => x.id === f.vehicleId);
                 return (
                   <TableRow key={f.id}>
@@ -147,6 +158,22 @@ export default function Fines() {
           </Table>
         </CardContent>
       </Card>
+
+      <div className="mt-4 flex items-center justify-between text-sm text-muted-foreground">
+        <span>
+          {shown.length} amende(s){pageCount > 1 ? ` · page ${current}/${pageCount}` : ""}
+        </span>
+        {pageCount > 1 && (
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" disabled={current <= 1} onClick={() => setPage(current - 1)}>
+              Précédent
+            </Button>
+            <Button variant="outline" size="sm" disabled={current >= pageCount} onClick={() => setPage(current + 1)}>
+              Suivant
+            </Button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
