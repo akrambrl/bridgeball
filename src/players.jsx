@@ -1338,7 +1338,6 @@ export const PLAYERS = [
   { name:"Emmanuel Adebayor", clubs:["Monaco", "Arsenal", "Manchester City", "Real Madrid", "Tottenham"], diff:"moyen", nationalities:["Togo"], positions:["attaquant"], birthYear:1984 },
   { name:"Sylvain Distin", clubs:["Manchester City", "Everton"], diff:"expert", nationalities:["France"], positions:["defenseur"] , birthYear:1977 },
   { name:"Abdoulaye Meite", clubs:["Monaco", "Marseille", "Bolton"], diff:"expert", nationalities:["Côte d'Ivoire"], positions:["defenseur"], birthYear:1980 },
-,
   { name:"Gabri Veiga", clubs:["Celta Vigo", "Al Ahli", "Porto"], diff:"facile", nationalities:["Espagne"], positions:["milieu"], birthYear:2002 },
   { name:"Ben White", clubs:["Brighton", "Leeds United", "Arsenal"], diff:"moyen", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1997 },
   { name:"Gabriel Magalhães", clubs:["Avai", "Lille", "Dinamo Zagreb", "Troyes", "Arsenal"], diff:"moyen", nationalities:["Brésil"], positions:["defenseur"], birthYear:1997 },
