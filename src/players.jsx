@@ -4646,6 +4646,25 @@ export const PLAYERS = [
   { name:"Dan Gosling", clubs:["Plymouth", "Everton", "Newcastle", "Blackpool", "Bournemouth", "Watford"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:1990 },
   { name:"Seamus Coleman", clubs:["Sligo Rovers", "Everton", "Blackpool"], diff:"moyen", nationalities:["Irlande"], positions:["defenseur"], birthYear:1988 },
   { name:"Shane Duffy", clubs:["Everton", "Burnley", "Yeovil", "Scunthorpe", "Blackburn", "Brighton", "Celtic", "Fulham", "Norwich"], diff:"moyen", nationalities:["Irlande"], positions:["defenseur"], birthYear:1992 },
+
+  // ── Enrichissement Birmingham City 2009-10 (9e, McLeish) ──────────────────
+  { name:"Roger Johnson", clubs:["Cardiff City", "Birmingham", "Wolverhampton", "West Ham"], diff:"moyen", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1983 },
+  { name:"Scott Dann", clubs:["Walsall", "Coventry", "Birmingham", "Blackburn", "Crystal Palace", "Reading"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1987 },
+  { name:"Stephen Carr", clubs:["Tottenham", "Newcastle", "Birmingham"], diff:"moyen", nationalities:["Irlande"], positions:["defenseur"], birthYear:1976 },
+  { name:"Liam Ridgewell", clubs:["Aston Villa", "Wycombe", "Birmingham", "West Brom", "Portland Timbers", "Brighton"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1984 },
+  { name:"Franck Queudrue", clubs:["Lens", "Middlesbrough", "Fulham", "Birmingham"], diff:"expert", nationalities:["France"], positions:["defenseur"], birthYear:1978 },
+  { name:"Radhi Jaïdi", clubs:["Espérance Tunis", "Bolton", "Birmingham", "Southampton"], diff:"moyen", nationalities:["Tunisie"], positions:["defenseur"], birthYear:1975 },
+  { name:"Lee Bowyer", clubs:["Charlton", "Leeds United", "West Ham", "Newcastle", "Birmingham", "Ipswich Town"], diff:"moyen", nationalities:["Angleterre"], positions:["milieu"], birthYear:1977 },
+  { name:"Sebastian Larsson", clubs:["Arsenal", "Birmingham", "Sunderland", "Hull City", "AIK"], diff:"moyen", nationalities:["Suède"], positions:["milieu"], birthYear:1985 },
+  { name:"Barry Ferguson", clubs:["Rangers", "Blackburn", "Rangers", "Birmingham", "Blackpool", "Fleetwood", "Clyde"], diff:"moyen", nationalities:["Écosse"], positions:["milieu"], birthYear:1978 },
+  { name:"Keith Fahey", clubs:["St Patrick's Athletic", "Aston Villa", "St Patrick's Athletic", "Birmingham", "St Patrick's Athletic"], diff:"expert", nationalities:["Irlande"], positions:["milieu"], birthYear:1983 },
+  { name:"Cameron Jerome", clubs:["Cardiff City", "Birmingham", "Stoke City", "Crystal Palace", "Norwich", "Derby County", "Göztepe", "MK Dons", "Luton Town", "Coventry", "Bolton"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1986 },
+  { name:"James McFadden", clubs:["Motherwell", "Everton", "Birmingham", "Sunderland", "Motherwell", "St Johnstone"], diff:"moyen", nationalities:["Écosse"], positions:["attaquant"], birthYear:1983 },
+  { name:"Christian Benítez", clubs:["El Nacional", "Santos Laguna", "Birmingham", "América", "Al-Jazira"], diff:"moyen", nationalities:["Équateur"], positions:["attaquant"], birthYear:1986 },
+  { name:"Kevin Phillips", clubs:["Watford", "Sunderland", "Southampton", "Aston Villa", "West Brom", "Birmingham", "Blackpool", "Crystal Palace", "Leicester City"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1973 },
+  { name:"Mido", clubs:["Zamalek", "Ajax Amsterdam", "Celta Vigo", "Marseille", "AS Roma", "Tottenham", "Middlesbrough", "Wigan Athletic", "West Ham", "Ajax Amsterdam"], diff:"moyen", nationalities:["Égypte"], positions:["attaquant"], birthYear:1983 },
+  { name:"Maik Taylor", clubs:["Barnet", "Southampton", "Fulham", "Birmingham", "Millwall"], diff:"expert", nationalities:["Irlande du Nord"], positions:["gardien"], birthYear:1971 },
+  { name:"Garry O'Connor", clubs:["Hibernian", "Lokomotiv Moscow", "Birmingham", "Barnsley", "Hibernian"], diff:"expert", nationalities:["Écosse"], positions:["attaquant"], birthYear:1983 },
 ];
 
 export const RETIRED_PLAYERS = new Set([ "Esteban Cambiasso","Eusébio","Ezequiel Lavezzi","Fabien Barthez","Fabio Grosso","Fernando Redondo","Ferenc Puskás","Mehdi Benatia","Elano","Diego Milito","Dietmar Hamann","Dimitar Berbatov","Djibril Cissé","Dunga","Darren Bent","Daniele De Rossi","Christian Karembeu","Christophe Dugarry","Cristian Chivu","Bacary Sagna","Ben Foster","Bobby Charlton","Bobby Moore","Branislav Ivanović","Andrés Guardado","Antonio Valencia","Alfredo Di Stéfano","André Schürrle","Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe (Portugal)","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
