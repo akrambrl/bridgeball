@@ -23,10 +23,10 @@ type Question = {
 
 // Objectif "normal" affiché à l'utilisateur (la barre de progression vise ça).
 const MAX_QUESTIONS = 25;
-// Garde-fou anti-boucle : on continue de questionner AU-DELÀ de MAX_QUESTIONS
-// tant qu'une question discrimine encore les candidats, afin de converger vers
-// UN seul joueur. Ce plafond dur n'est là que pour éviter une partie infinie.
-const HARD_CAP = 60;
+// Garde-fou : on continue de questionner AU-DELÀ de MAX_QUESTIONS tant qu'une
+// question discrimine encore les candidats, afin de converger vers UN seul
+// joueur — mais au maximum 5 questions bonus (25 + 5 = 30). Au-delà, on devine.
+const HARD_CAP = 30;
 const MAX_GUESSES = 6;
 
 const POS_GARDIEN = "gardien";
