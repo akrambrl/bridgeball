@@ -4814,6 +4814,25 @@ export const PLAYERS = [
   { name:"Steven Fletcher", clubs:["Hibernian", "Burnley", "Wolverhampton", "Sunderland", "Sheffield Wednesday", "Stoke City", "Dundee United"], diff:"moyen", nationalities:["Écosse"], positions:["attaquant"], birthYear:1987 },
   { name:"Martin Paterson", clubs:["Stoke City", "Scunthorpe", "Burnley", "Huddersfield", "Orlando City"], diff:"expert", nationalities:["Irlande du Nord"], positions:["attaquant"], birthYear:1987 },
   { name:"David Nugent", clubs:["Bury", "Preston", "Portsmouth", "Burnley", "Leicester City", "Middlesbrough", "Derby County"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1985 },
+
+  // ── Enrichissement Hull City 2009-10 (19e, P. Brown puis I. Dowie) ───────
+  { name:"Boaz Myhill", clubs:["Aston Villa", "Bradford City", "Stoke City", "Hull City", "West Brom"], diff:"expert", nationalities:["Pays de Galles"], positions:["gardien"], birthYear:1982 },
+  { name:"Andy Dawson", clubs:["Nottingham Forest", "Scunthorpe", "Hull City"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1978 },
+  { name:"Anthony Gardner", clubs:["Port Vale", "Tottenham", "Everton", "Hull City", "Crystal Palace", "Sheffield Wednesday"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1980 },
+  { name:"Kamil Zayatte", clubs:["Saint-Etienne", "Young Boys", "Hull City", "Kayserispor", "Lokomotiv Moscow"], diff:"expert", nationalities:["Guinée"], positions:["defenseur"], birthYear:1985 },
+  { name:"Paul McShane", clubs:["Manchester United", "Brighton", "West Brom", "Sunderland", "Hull City", "Crystal Palace", "Reading"], diff:"expert", nationalities:["Irlande"], positions:["defenseur"], birthYear:1986 },
+  { name:"Bernard Mendy", clubs:["Paris Saint-Germain", "Bolton", "Hull City"], diff:"expert", nationalities:["France"], positions:["defenseur"], birthYear:1981 },
+  { name:"Steven Mouyokolo", clubs:["Boulogne", "Hull City", "Wolverhampton"], diff:"expert", nationalities:["France"], positions:["defenseur"], birthYear:1987 },
+  { name:"Geovanni", clubs:["Cruzeiro", "Barcelona", "Benfica", "Manchester City", "Hull City"], diff:"moyen", nationalities:["Brésil"], positions:["milieu"], birthYear:1980 },
+  { name:"Jimmy Bullard", clubs:["Gillingham", "Wigan Athletic", "Fulham", "Hull City", "Ipswich Town", "Milton Keynes Dons"], diff:"moyen", nationalities:["Angleterre"], positions:["milieu"], birthYear:1978 },
+  { name:"George Boateng", clubs:["Feyenoord", "Coventry", "Aston Villa", "Middlesbrough", "Hull City", "Nottingham Forest"], diff:"moyen", nationalities:["Pays-Bas"], positions:["milieu"], birthYear:1975 },
+  { name:"Nick Barmby", clubs:["Tottenham", "Middlesbrough", "Everton", "Liverpool", "Leeds United", "Nottingham Forest", "Hull City"], diff:"moyen", nationalities:["Angleterre"], positions:["milieu"], birthYear:1974 },
+  { name:"Seyi Olofinjana", clubs:["Brann", "Wolverhampton", "Stoke City", "Hull City", "Cardiff", "Sheffield Wednesday"], diff:"expert", nationalities:["Nigeria"], positions:["milieu"], birthYear:1980 },
+  { name:"Kevin Kilbane", clubs:["Preston", "West Brom", "Sunderland", "Everton", "Wigan Athletic", "Hull City", "Huddersfield", "Coventry"], diff:"moyen", nationalities:["Irlande"], positions:["milieu"], birthYear:1977 },
+  { name:"Jozy Altidore", clubs:["New York Red Bulls", "Villarreal", "Xerez", "Hull City", "Bursaspor", "AZ Alkmaar", "Sunderland", "Toronto", "New England"], diff:"moyen", nationalities:["États-Unis"], positions:["attaquant"], birthYear:1989 },
+  { name:"Craig Fagan", clubs:["Birmingham City", "Colchester", "Hull City", "Derby County", "Bradford City"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1982 },
+  { name:"Caleb Folan", clubs:["Leeds United", "Chesterfield", "Wigan Athletic", "Hull City", "Colorado Rapids"], diff:"expert", nationalities:["Irlande"], positions:["attaquant"], birthYear:1982 },
+  { name:"Amr Zaki", clubs:["Zamalek", "Lokomotiv Moscow", "Wigan Athletic", "Hull City", "Al-Ahli", "Elche"], diff:"expert", nationalities:["Égypte"], positions:["attaquant"], birthYear:1983 },
 ];
 
 export const RETIRED_PLAYERS = new Set([ "Esteban Cambiasso","Eusébio","Ezequiel Lavezzi","Fabien Barthez","Fabio Grosso","Fernando Redondo","Ferenc Puskás","Mehdi Benatia","Elano","Diego Milito","Dietmar Hamann","Dimitar Berbatov","Djibril Cissé","Dunga","Darren Bent","Daniele De Rossi","Christian Karembeu","Christophe Dugarry","Cristian Chivu","Bacary Sagna","Ben Foster","Bobby Charlton","Bobby Moore","Branislav Ivanović","Andrés Guardado","Antonio Valencia","Alfredo Di Stéfano","André Schürrle","Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe (Portugal)","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
