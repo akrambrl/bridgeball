@@ -4867,6 +4867,25 @@ export const PLAYERS = [
   { name:"Guillermo Franco", clubs:["Monterrey", "Villarreal", "West Ham"], diff:"expert", nationalities:["Mexique"], positions:["attaquant"], birthYear:1976 },
   { name:"Zavon Hines", clubs:["West Ham", "Burnley", "Bournemouth", "Bradford City", "Maidenhead"], diff:"expert", nationalities:["Jamaïque"], positions:["attaquant"], birthYear:1988 },
   { name:"Frank Nouble", clubs:["Chelsea", "West Ham", "Coventry", "Ipswich Town", "Plymouth"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1991 },
+
+  // ── Enrichissement Newcastle 2010-11 (12e, C. Hughton puis A. Pardew) ────
+  { name:"Steve Harper", clubs:["Newcastle", "Hartlepool", "Huddersfield", "Brighton", "Hull City", "Sunderland"], diff:"expert", nationalities:["Angleterre"], positions:["gardien"], birthYear:1975 },
+  { name:"Tim Krul", clubs:["Newcastle", "Falkirk", "Carlisle", "AZ Alkmaar", "Brighton", "Norwich", "Luton Town"], diff:"moyen", nationalities:["Pays-Bas"], positions:["gardien"], birthYear:1988 },
+  { name:"Fabricio Coloccini", clubs:["Boca Juniors", "AC Milan", "Deportivo La Coruna", "Newcastle", "San Lorenzo", "Aldosivi"], diff:"moyen", nationalities:["Argentine"], positions:["defenseur"], birthYear:1982 },
+  { name:"Mike Williamson", clubs:["Torquay", "Wycombe", "Watford", "Portsmouth", "Newcastle", "Wolverhampton", "Oxford United", "Gateshead"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1983 },
+  { name:"Steven Taylor", clubs:["Newcastle", "Wycombe", "Portland Timbers", "Ipswich Town", "Peterborough"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1986 },
+  { name:"José Enrique", clubs:["Levante", "Villarreal", "Celta Vigo", "Newcastle", "Liverpool", "Real Zaragoza"], diff:"moyen", nationalities:["Espagne"], positions:["defenseur"], birthYear:1986 },
+  { name:"Danny Simpson", clubs:["Manchester United", "Sunderland", "Ipswich Town", "Blackburn", "Newcastle", "QPR", "Leicester City", "Huddersfield", "Bristol City"], diff:"moyen", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1987 },
+  { name:"James Perch", clubs:["Nottingham Forest", "Newcastle", "Wigan Athletic", "QPR", "Scunthorpe"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1985 },
+  { name:"Kevin Nolan", clubs:["Bolton", "Newcastle", "West Ham", "Leyton Orient", "Notts County"], diff:"moyen", nationalities:["Angleterre"], positions:["milieu"], birthYear:1982 },
+  { name:"Jonás Gutiérrez", clubs:["Vélez Sarsfield", "Real Mallorca", "Newcastle", "Norwich", "Deportivo La Coruna", "Banfield"], diff:"expert", nationalities:["Argentine"], positions:["milieu"], birthYear:1983 },
+  { name:"Danny Guthrie", clubs:["Liverpool", "Bolton", "Newcastle", "Reading", "Fulham", "Blackburn", "Walsall"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:1987 },
+  { name:"Wayne Routledge", clubs:["Crystal Palace", "Tottenham", "Portsmouth", "Fulham", "Aston Villa", "Cardiff", "QPR", "Newcastle", "Swansea"], diff:"moyen", nationalities:["Angleterre"], positions:["milieu"], birthYear:1985 },
+  { name:"Andy Carroll", clubs:["Newcastle", "Preston", "Liverpool", "West Ham", "West Brom", "Reading"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1989 },
+  { name:"Shola Ameobi", clubs:["Newcastle", "Stoke City", "Crystal Palace", "Bolton", "Fleetwood", "Notts County", "Gateshead"], diff:"moyen", nationalities:["Nigeria"], positions:["attaquant"], birthYear:1981 },
+  { name:"Leon Best", clubs:["Southampton", "QPR", "Sheffield Wednesday", "Coventry", "Newcastle", "Blackburn", "Brighton", "Ipswich Town"], diff:"expert", nationalities:["Irlande"], positions:["attaquant"], birthYear:1986 },
+  { name:"Peter Løvenkrands", clubs:["AB Copenhagen", "Rangers", "Schalke", "Newcastle", "Birmingham City", "Hamburger SV"], diff:"expert", nationalities:["Danemark"], positions:["attaquant"], birthYear:1980 },
+  { name:"Nile Ranger", clubs:["Newcastle", "Sheffield Wednesday", "Swindon", "Blackpool", "Southend"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1991 },
 ];
 
 export const RETIRED_PLAYERS = new Set([ "Esteban Cambiasso","Eusébio","Ezequiel Lavezzi","Fabien Barthez","Fabio Grosso","Fernando Redondo","Ferenc Puskás","Mehdi Benatia","Elano","Diego Milito","Dietmar Hamann","Dimitar Berbatov","Djibril Cissé","Dunga","Darren Bent","Daniele De Rossi","Christian Karembeu","Christophe Dugarry","Cristian Chivu","Bacary Sagna","Ben Foster","Bobby Charlton","Bobby Moore","Branislav Ivanović","Andrés Guardado","Antonio Valencia","Alfredo Di Stéfano","André Schürrle","Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe (Portugal)","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
