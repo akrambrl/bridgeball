@@ -398,7 +398,7 @@ const PHYS_PROTECTION = new Set([
   "Petr Čech",      // casque (head guard)
   "Edgar Davids",   // lunettes de protection
 ]);
-const PHYS_CICATRICE = new Set(["Franck Ribéry"]); // cicatrices au visage
+const PHYS_CICATRICE = new Set(["Franck Ribéry", "Carlos Tevez"]); // cicatrices au visage/cou
 const PHYS_AFRO = new Set(["Carlos Valderrama", "Marouane Fellaini", "Marcelo"]);
 const PHYS_MOHAWK = new Set(["Marek Hamšík"]); // crête
 const PHYS_DREADS = new Set(["Ruud Gullit"]); // dreadlocks
