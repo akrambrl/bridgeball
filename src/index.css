@@ -166,3 +166,33 @@ All colors MUST be HSL.
   }
 }
 
+/* Apparition "pop" (reprise de popIn de Mercato/Plug) — bannières & boutons */
+@keyframes goat-pop {
+  0%   { opacity: 0; transform: scale(0.6); }
+  70%  { transform: scale(1.06); }
+  100% { opacity: 1; transform: scale(1); }
+}
+.goat-pop { animation: goat-pop 0.42s cubic-bezier(.22,1,.36,1) both; }
+
+/* Carte joueur qui surgit en biais (reprise de clubSlide/vsAppear) */
+@keyframes goat-card-in {
+  0%   { opacity: 0; transform: translateY(40px) scale(0.88); }
+  65%  { transform: translateY(-4px) scale(1.02); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.goat-card-in { animation: goat-card-in 0.5s cubic-bezier(.22,1,.36,1) both; }
+
+/* Reflet qui balaie les bannières dégradées orange→or */
+@keyframes goat-shine {
+  0%   { transform: translateX(-120%); }
+  100% { transform: translateX(220%); }
+}
+.goat-shine { animation: goat-shine 2.8s ease-in-out infinite; }
+
+/* Halo pulsé doré derrière la carte révélée */
+@keyframes goat-halo {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50%      { opacity: 0.7; transform: scale(1.08); }
+}
+.goat-halo { animation: goat-halo 3s ease-in-out infinite; }
+

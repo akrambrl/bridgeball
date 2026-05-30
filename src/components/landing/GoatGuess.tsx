@@ -1339,9 +1339,27 @@ const AskingView = ({
         </div>
       </div>
 
-      {/* Question — encadré pelouse semi-transparent pour mieux lire */}
-      <div className="min-h-[80px] lg:min-h-[200px] flex items-center justify-center mb-3 lg:mb-6 px-3 lg:px-4 py-3 lg:py-6 rounded-2xl lg:rounded-3xl bg-black/30 border border-white/10 backdrop-blur-sm shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-        <h3 className="font-display text-lg lg:text-4xl tracking-wide text-white text-center leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
+      {/* Question — bannière dégradé orange→or façon THE PLUG/MERCATO */}
+      <div
+        key={question.id}
+        className="goat-pop relative overflow-hidden min-h-[88px] lg:min-h-[200px] flex flex-col items-center justify-center text-center mb-3 lg:mb-6 px-4 lg:px-8 py-5 lg:py-8 rounded-[22px] lg:rounded-[30px] shadow-[0_16px_44px_-8px_rgba(255,107,53,0.6)]"
+        style={{ background: "linear-gradient(135deg,#FF6B35 0%,#FF8A2A 45%,#FFD600 100%)" }}
+      >
+        {/* reflet animé qui balaie la bannière */}
+        <div
+          className="goat-shine pointer-events-none absolute inset-y-0 -left-1/3 w-1/3 skew-x-[-18deg] bg-white/25 blur-md"
+          aria-hidden
+        />
+        {/* moitié diagonale plus claire (forme signature) */}
+        <div
+          className="pointer-events-none absolute top-0 right-0 bottom-0 w-[55%]"
+          style={{ background: "rgba(255,255,255,0.10)", clipPath: "polygon(34% 0%, 100% 0%, 100% 100%, 0% 100%)" }}
+          aria-hidden
+        />
+        <div className="relative font-display text-[10px] lg:text-xs tracking-[0.45em] text-[#3A1500]/80 mb-1.5 lg:mb-3 flex items-center gap-1.5">
+          <span>🔮</span> QUESTION {count}
+        </div>
+        <h3 className="relative font-display text-xl lg:text-4xl tracking-wide text-[#2A0F00] leading-tight drop-shadow-[0_1px_0_rgba(255,255,255,0.3)]">
           {question.label}
         </h3>
       </div>
@@ -1705,86 +1723,100 @@ const PlayerRevealCard = ({
   player: Player;
   accent?: string;
 }) => (
-  <div className="relative inline-block my-1 lg:my-2 animate-in zoom-in-95 duration-500">
+  <div className="goat-card-in relative inline-block w-full max-w-[360px] my-1 lg:my-2">
+    {/* Halo doré pulsé derrière la carte */}
     <div
-      className="absolute inset-0 blur-3xl opacity-50 rounded-3xl"
-      style={{ background: accent }}
+      className="goat-halo absolute inset-0 blur-3xl rounded-[28px]"
+      style={{ background: `radial-gradient(circle at 50% 38%, ${accent}, transparent 70%)` }}
       aria-hidden
     />
     <div
-      className="relative rounded-3xl p-4 lg:p-6 min-w-[260px] max-w-[340px] border-2 shadow-2xl"
+      className="relative rounded-[24px] overflow-hidden border-2 shadow-2xl"
       style={{
-        background:
-          "linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(0,0,0,0.4) 100%), linear-gradient(135deg, #1A2A20 0%, #0A1410 100%)",
-        borderColor: `${accent}80`,
-        boxShadow: `0 20px 50px -10px ${accent}40, inset 0 1px 0 rgba(255,255,255,0.1)`,
+        borderColor: `${accent}66`,
+        boxShadow: `0 26px 64px -14px ${accent}66, inset 0 1px 0 rgba(255,255,255,0.12)`,
       }}
     >
-      {/* Coin "GOAT" stylisé */}
+      {/* En-tête : nom sur dégradé multicolore + découpe diagonale signature */}
       <div
-        className="absolute top-3 right-3 px-2 py-0.5 rounded-md font-display text-[9px] tracking-[0.3em]"
-        style={{ background: accent, color: "#1A0F00" }}
+        className="relative px-5 py-6 lg:py-8 overflow-hidden"
+        style={{ background: "linear-gradient(135deg,#C084FC 0%,#FF6B35 58%,#FFD600 100%)" }}
       >
-        GOAT
-      </div>
-
-      {/* Avatar / ballon */}
-      <div className="text-4xl lg:text-5xl mb-2 lg:mb-3">⚽</div>
-
-      {/* Nom du joueur */}
-      <div className="font-display text-2xl lg:text-3xl tracking-wider text-white mb-2 lg:mb-3 leading-tight break-words">
-        {player.name}
-      </div>
-
-      {/* Drapeau + nationalité */}
-      <div className="mb-2 lg:mb-3">
-        <div className="text-[9px] tracking-[0.3em] text-white/40 mb-0.5 lg:mb-1">
-          NATION
-        </div>
+        {/* moitié diagonale plus claire à droite (forme Mercato/Plug) */}
         <div
-          className="font-display text-sm tracking-wide"
-          style={{ color: accent }}
+          className="pointer-events-none absolute top-0 right-0 bottom-0 w-[58%]"
+          style={{ background: "rgba(255,255,255,0.16)", clipPath: "polygon(30% 0%, 100% 0%, 100% 100%, 0% 100%)" }}
+          aria-hidden
+        />
+        {/* reflet animé */}
+        <div
+          className="goat-shine pointer-events-none absolute inset-y-0 -left-1/3 w-1/3 skew-x-[-18deg] bg-white/30 blur-md"
+          aria-hidden
+        />
+        {/* badge GOAT */}
+        <div
+          className="absolute top-3 right-3 px-2 py-0.5 rounded-md font-display text-[9px] tracking-[0.3em] shadow-md"
+          style={{ background: "#1A0F00", color: accent }}
         >
-          {player.nationalities[0] || "—"}
+          🐐 GOAT
+        </div>
+        <div className="relative font-display text-[10px] tracking-[0.4em] text-white/90 mb-1 flex items-center gap-1.5 drop-shadow">
+          <span>⚽</span> LE JOUEUR
+        </div>
+        <div className="relative font-display text-2xl lg:text-4xl tracking-wide text-white leading-none break-words drop-shadow-[0_3px_12px_rgba(0,0,0,0.5)]">
+          {player.name}
         </div>
       </div>
 
-      {/* Postes */}
-      <div className="mb-2 lg:mb-3">
-        <div className="text-[9px] tracking-[0.3em] text-white/40 mb-1">
-          POSTE{player.positions.length > 1 ? "S" : ""}
+      {/* Corps : nation / postes / carrière sur fond sombre */}
+      <div
+        className="px-4 py-4 lg:px-5 lg:py-5 text-left"
+        style={{ background: "linear-gradient(180deg,#16241B 0%,#0A1410 100%)" }}
+      >
+        {/* Nationalité */}
+        <div className="mb-3">
+          <div className="text-[9px] tracking-[0.3em] text-white/40 mb-1">NATION</div>
+          <div className="font-display text-sm tracking-wide" style={{ color: accent }}>
+            {player.nationalities[0] || "—"}
+          </div>
         </div>
-        <div className="flex flex-wrap gap-1">
-          {player.positions.map((p) => (
-            <span
-              key={p}
-              className="px-2 py-0.5 rounded-md text-[11px] bg-white/10 text-white/90 uppercase"
-            >
-              {p}
-            </span>
-          ))}
-        </div>
-      </div>
 
-      {/* Clubs (max 6) */}
-      <div>
-        <div className="text-[9px] tracking-[0.3em] text-white/40 mb-1">
-          CARRIÈRE
+        {/* Postes */}
+        <div className="mb-3">
+          <div className="text-[9px] tracking-[0.3em] text-white/40 mb-1">
+            POSTE{player.positions.length > 1 ? "S" : ""}
+          </div>
+          <div className="flex flex-wrap gap-1">
+            {player.positions.map((p) => (
+              <span
+                key={p}
+                className="px-2 py-0.5 rounded-md text-[11px] font-display tracking-wide uppercase"
+                style={{ background: `${accent}22`, color: accent, border: `1px solid ${accent}55` }}
+              >
+                {p}
+              </span>
+            ))}
+          </div>
         </div>
-        <div className="flex flex-wrap gap-1">
-          {player.clubs.slice(0, 6).map((c) => (
-            <span
-              key={c}
-              className="px-2 py-0.5 rounded-md text-[10px] bg-black/40 border border-white/10 text-white/80"
-            >
-              {c}
-            </span>
-          ))}
-          {player.clubs.length > 6 && (
-            <span className="px-2 py-0.5 rounded-md text-[10px] text-white/40">
-              +{player.clubs.length - 6}
-            </span>
-          )}
+
+        {/* Clubs (max 6) */}
+        <div>
+          <div className="text-[9px] tracking-[0.3em] text-white/40 mb-1">CARRIÈRE</div>
+          <div className="flex flex-wrap gap-1">
+            {player.clubs.slice(0, 6).map((c) => (
+              <span
+                key={c}
+                className="px-2 py-0.5 rounded-md text-[10px] bg-black/40 border border-white/10 text-white/80"
+              >
+                {c}
+              </span>
+            ))}
+            {player.clubs.length > 6 && (
+              <span className="px-2 py-0.5 rounded-md text-[10px] text-white/40">
+                +{player.clubs.length - 6}
+              </span>
+            )}
+          </div>
         </div>
       </div>
     </div>
