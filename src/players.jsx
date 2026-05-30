@@ -5116,6 +5116,27 @@ export const PLAYERS = [
   { name:"Stephen Ward", clubs:["Bohemians", "Wolverhampton", "Brighton", "Burnley", "Ipswich Town"], diff:"expert", nationalities:["Irlande"], positions:["defenseur"], birthYear:1985 },
   { name:"Michael Kightly", clubs:["Grays Athletic", "Wolverhampton", "Watford", "Stoke City", "Burnley", "Southend"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:1986 },
   { name:"Marcus Bent", clubs:["Crystal Palace", "Sheffield United", "Blackburn", "Ipswich Town", "Everton", "Charlton", "Wigan Athletic", "Birmingham City", "Wolverhampton", "QPR"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1978 },
+
+  // ── Enrichissement Reading 2012-13 (18e, promu, B. McDermott) ───────────
+  { name:"Adam Federici", clubs:["Reading", "Bournemouth", "Stoke City", "Melbourne City", "Macarthur"], diff:"expert", nationalities:["Australie"], positions:["gardien"], birthYear:1985 },
+  { name:"Alex McCarthy", clubs:["Reading", "Crystal Palace", "Southampton"], diff:"expert", nationalities:["Angleterre"], positions:["gardien"], birthYear:1989 },
+  { name:"Chris Gunter", clubs:["Cardiff", "Tottenham", "Nottingham Forest", "Reading", "Charlton", "AFC Wimbledon"], diff:"expert", nationalities:["Pays de Galles"], positions:["defenseur"], birthYear:1989 },
+  { name:"Alex Pearce", clubs:["Reading", "Norwich", "Derby County", "Millwall", "Exeter"], diff:"expert", nationalities:["Irlande"], positions:["defenseur"], birthYear:1988 },
+  { name:"Sean Morrison", clubs:["Swindon", "Reading", "Cardiff"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1991 },
+  { name:"Adrian Mariappa", clubs:["Watford", "Reading", "Crystal Palace", "Bristol City"], diff:"expert", nationalities:["Jamaïque"], positions:["defenseur"], birthYear:1986 },
+  { name:"Ian Harte", clubs:["Leeds United", "Levante", "Sunderland", "Blackpool", "Carlisle", "Reading", "Bournemouth"], diff:"expert", nationalities:["Irlande"], positions:["defenseur"], birthYear:1977 },
+  { name:"Shaun Cummings", clubs:["Chelsea", "Reading", "Millwall"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1989 },
+  { name:"Daniel Carriço", clubs:["Sporting CP", "Reading", "Sevilla"], diff:"expert", nationalities:["Portugal"], positions:["defenseur"], birthYear:1988 },
+  { name:"Jobi McAnuff", clubs:["Wimbledon", "Cardiff", "Crystal Palace", "Watford", "Reading", "Leyton Orient"], diff:"expert", nationalities:["Jamaïque"], positions:["milieu"], birthYear:1981 },
+  { name:"Jimmy Kébé", clubs:["Lens", "Châteauroux", "Boulogne", "Reading", "Crystal Palace", "Bolton"], diff:"expert", nationalities:["Mali"], positions:["milieu"], birthYear:1984 },
+  { name:"Mikele Leigertwood", clubs:["Wimbledon", "Crystal Palace", "Sheffield United", "QPR", "Reading", "Bolton"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:1982 },
+  { name:"Jem Karacan", clubs:["Reading", "Galatasaray", "Bolton", "Millwall"], diff:"expert", nationalities:["Turquie"], positions:["milieu"], birthYear:1989 },
+  { name:"Hope Akpan", clubs:["Everton", "Crawley Town", "Reading", "Blackburn", "Bradford City", "Burton Albion"], diff:"expert", nationalities:["Nigeria"], positions:["milieu"], birthYear:1991 },
+  { name:"Garath McCleary", clubs:["Bromley", "Nottingham Forest", "Reading", "Wycombe"], diff:"expert", nationalities:["Jamaïque"], positions:["milieu"], birthYear:1987 },
+  { name:"Hal Robson-Kanu", clubs:["Reading", "West Brom"], diff:"expert", nationalities:["Pays de Galles"], positions:["attaquant"], birthYear:1989 },
+  { name:"Adam Le Fondre", clubs:["Stockport", "Rotherham", "Rochdale", "Reading", "Cardiff", "Bolton", "Wigan Athletic", "Sydney FC"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1986 },
+  { name:"Noel Hunt", clubs:["Reading", "Leeds United", "Ipswich Town", "Southend"], diff:"expert", nationalities:["Irlande"], positions:["attaquant"], birthYear:1982 },
+  { name:"Pavel Pogrebnyak", clubs:["Zenit", "Stuttgart", "Fulham", "Reading", "Dynamo Moscow", "Ural"], diff:"moyen", nationalities:["Russie"], positions:["attaquant"], birthYear:1983 },
 ];
 
 export const RETIRED_PLAYERS = new Set([ "Esteban Cambiasso","Eusébio","Ezequiel Lavezzi","Fabien Barthez","Fabio Grosso","Fernando Redondo","Ferenc Puskás","Mehdi Benatia","Elano","Diego Milito","Dietmar Hamann","Dimitar Berbatov","Djibril Cissé","Dunga","Darren Bent","Daniele De Rossi","Christian Karembeu","Christophe Dugarry","Cristian Chivu","Bacary Sagna","Ben Foster","Bobby Charlton","Bobby Moore","Branislav Ivanović","Andrés Guardado","Antonio Valencia","Alfredo Di Stéfano","André Schürrle","Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe (Portugal)","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
