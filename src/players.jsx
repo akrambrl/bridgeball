@@ -4630,6 +4630,22 @@ export const PLAYERS = [
   { name:"Gabriel Agbonlahor", clubs:["Aston Villa"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1986 },
   { name:"Emile Heskey", clubs:["Leicester City", "Liverpool", "Birmingham", "Wigan Athletic", "Aston Villa", "Newcastle Jets", "Bolton"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1978 },
   { name:"Nathan Delfouneso", clubs:["Aston Villa", "Burnley", "Leicester City", "Blackpool", "Bury", "Blackpool"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1991 },
+
+  // ── Enrichissement Everton 2009-10 (8e, Moyes) ────────────────────────────
+  { name:"Phil Jagielka", clubs:["Sheffield United", "Everton", "West Brom", "Sheffield United", "Derby County", "Stoke City"], diff:"moyen", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1982 },
+  { name:"John Heitinga", clubs:["Ajax Amsterdam", "Atletico Madrid", "Everton", "Fulham", "Hertha BSC", "Ajax Amsterdam"], diff:"moyen", nationalities:["Pays-Bas"], positions:["defenseur"], birthYear:1983 },
+  { name:"Tony Hibbert", clubs:["Everton"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1981 },
+  { name:"Leighton Baines", clubs:["Wigan Athletic", "Everton"], diff:"moyen", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1984 },
+  { name:"Diniyar Bilyaletdinov", clubs:["Lokomotiv Moscow", "Everton", "Spartak Moscow", "Anzhi", "Rubin Kazan"], diff:"expert", nationalities:["Russie"], positions:["milieu"], birthYear:1985 },
+  { name:"Jack Rodwell", clubs:["Everton", "Manchester City", "Sunderland", "Blackburn", "Sheffield United", "AS Roma", "Western Sydney Wanderers"], diff:"moyen", nationalities:["Angleterre"], positions:["milieu"], birthYear:1991 },
+  { name:"Leon Osman", clubs:["Everton"], diff:"moyen", nationalities:["Angleterre"], positions:["milieu"], birthYear:1981 },
+  { name:"Victor Anichebe", clubs:["Everton", "West Brom", "Sunderland", "Beijing Enterprises"], diff:"expert", nationalities:["Nigeria"], positions:["attaquant"], birthYear:1988 },
+  { name:"James Vaughan", clubs:["Everton", "Crystal Palace", "Norwich", "Huddersfield", "Birmingham", "Bury", "Sunderland", "Wigan Athletic", "Portsmouth", "Tranmere", "Bradford City"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1988 },
+  { name:"Jan Mucha", clubs:["Slovan Bratislava", "Legia Warsaw", "Everton", "Legia Warsaw", "Slovan Bratislava"], diff:"expert", nationalities:["Slovaquie"], positions:["gardien"], birthYear:1982 },
+  { name:"Lukas Jutkiewicz", clubs:["Everton", "Plymouth", "Coventry", "Middlesbrough", "Bolton", "Burnley", "Birmingham"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1989 },
+  { name:"Dan Gosling", clubs:["Plymouth", "Everton", "Newcastle", "Blackpool", "Bournemouth", "Watford"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:1990 },
+  { name:"Seamus Coleman", clubs:["Sligo Rovers", "Everton", "Blackpool"], diff:"moyen", nationalities:["Irlande"], positions:["defenseur"], birthYear:1988 },
+  { name:"Shane Duffy", clubs:["Everton", "Burnley", "Yeovil", "Scunthorpe", "Blackburn", "Brighton", "Celtic", "Fulham", "Norwich"], diff:"moyen", nationalities:["Irlande"], positions:["defenseur"], birthYear:1992 },
 ];
 
 export const RETIRED_PLAYERS = new Set([ "Esteban Cambiasso","Eusébio","Ezequiel Lavezzi","Fabien Barthez","Fabio Grosso","Fernando Redondo","Ferenc Puskás","Mehdi Benatia","Elano","Diego Milito","Dietmar Hamann","Dimitar Berbatov","Djibril Cissé","Dunga","Darren Bent","Daniele De Rossi","Christian Karembeu","Christophe Dugarry","Cristian Chivu","Bacary Sagna","Ben Foster","Bobby Charlton","Bobby Moore","Branislav Ivanović","Andrés Guardado","Antonio Valencia","Alfredo Di Stéfano","André Schürrle","Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe (Portugal)","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
