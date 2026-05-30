@@ -4970,6 +4970,24 @@ export const PLAYERS = [
   { name:"Rob Hulse", clubs:["Crewe", "West Brom", "Leeds United", "Sheffield United", "Derby County", "QPR", "Charlton"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1979 },
   { name:"Jay Bothroyd", clubs:["Arsenal", "Coventry", "Perugia", "Blackburn", "Cardiff", "QPR", "Sheffield Wednesday", "Muangthong United"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1982 },
   { name:"Samba Diakité", clubs:["Nancy", "QPR", "Watford"], diff:"expert", nationalities:["Mali"], positions:["milieu"], birthYear:1989 },
+
+  // ── Enrichissement Norwich City 2011-12 (12e, promu, P. Lambert) ────────
+  { name:"John Ruddy", clubs:["Cambridge United", "Everton", "Motherwell", "Norwich", "Wolverhampton", "Birmingham City"], diff:"expert", nationalities:["Angleterre"], positions:["gardien"], birthYear:1986 },
+  { name:"Russell Martin", clubs:["Wycombe", "Peterborough", "Norwich", "Rangers", "Walsall"], diff:"expert", nationalities:["Écosse"], positions:["defenseur"], birthYear:1986 },
+  { name:"Leon Barnett", clubs:["Luton Town", "West Brom", "Norwich", "Cardiff", "Wigan Athletic", "Northampton"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1985 },
+  { name:"Zak Whitbread", clubs:["Liverpool", "Millwall", "Norwich", "Leicester City", "Derby County"], diff:"expert", nationalities:["États-Unis"], positions:["defenseur"], birthYear:1984 },
+  { name:"Marc Tierney", clubs:["Oldham", "Shrewsbury", "Colchester", "Norwich", "Bolton"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1985 },
+  { name:"Elliott Bennett", clubs:["Crewe", "Brighton", "Norwich", "Blackburn", "Bristol City"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:1988 },
+  { name:"Andrew Surman", clubs:["Southampton", "Walsall", "Wolverhampton", "Norwich", "Bournemouth"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:1986 },
+  { name:"Wes Hoolahan", clubs:["Shelbourne", "Livingston", "Blackpool", "Norwich", "West Brom", "Cambridge United"], diff:"expert", nationalities:["Irlande"], positions:["milieu"], birthYear:1982 },
+  { name:"Bradley Johnson", clubs:["Cambridge United", "Leeds United", "Norwich", "Derby County", "Blackburn"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:1987 },
+  { name:"David Fox", clubs:["Manchester United", "Blackpool", "Colchester", "Norwich", "Crewe"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:1983 },
+  { name:"Anthony Pilkington", clubs:["Stockport", "Huddersfield", "Norwich", "Cardiff", "Wigan Athletic"], diff:"expert", nationalities:["Irlande"], positions:["milieu"], birthYear:1988 },
+  { name:"Jonny Howson", clubs:["Leeds United", "Norwich", "Middlesbrough", "Sheffield Wednesday"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:1988 },
+  { name:"Grant Holt", clubs:["Rochdale", "Nottingham Forest", "Shrewsbury", "Norwich", "Wigan Athletic", "Wolverhampton"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1981 },
+  { name:"Steve Morison", clubs:["Stevenage", "Millwall", "Norwich", "Leeds United", "Bristol City"], diff:"expert", nationalities:["Pays de Galles"], positions:["attaquant"], birthYear:1983 },
+  { name:"Simeon Jackson", clubs:["Rushden", "Gillingham", "Norwich", "Coventry", "Millwall"], diff:"expert", nationalities:["Canada"], positions:["attaquant"], birthYear:1987 },
+  { name:"Aaron Wilbraham", clubs:["Stockport", "Hull City", "Crystal Palace", "Norwich", "Bristol City", "Milton Keynes Dons"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1979 },
 ];
 
 export const RETIRED_PLAYERS = new Set([ "Esteban Cambiasso","Eusébio","Ezequiel Lavezzi","Fabien Barthez","Fabio Grosso","Fernando Redondo","Ferenc Puskás","Mehdi Benatia","Elano","Diego Milito","Dietmar Hamann","Dimitar Berbatov","Djibril Cissé","Dunga","Darren Bent","Daniele De Rossi","Christian Karembeu","Christophe Dugarry","Cristian Chivu","Bacary Sagna","Ben Foster","Bobby Charlton","Bobby Moore","Branislav Ivanović","Andrés Guardado","Antonio Valencia","Alfredo Di Stéfano","André Schürrle","Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe (Portugal)","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
