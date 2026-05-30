@@ -5060,6 +5060,13 @@ export const PLAYERS = [
   { name:"Mark Bunn", clubs:["Northampton", "Blackburn", "Norwich", "Aston Villa", "Healing Island"], diff:"expert", nationalities:["Angleterre"], positions:["gardien"], birthYear:1984 },
   { name:"Grant Hanley", clubs:["Blackburn", "Newcastle", "Norwich", "Birmingham City"], diff:"expert", nationalities:["Écosse"], positions:["defenseur"], birthYear:1991 },
   { name:"Simon Vukčević", clubs:["Partizan", "Sporting CP", "Blackburn"], diff:"expert", nationalities:["Monténégro"], positions:["milieu"], birthYear:1986 },
+
+  // ── Audit effectifs Bolton 2009-12 : joueurs encore absents ─────────────
+  { name:"Sébastien Puygrenier", clubs:["Nancy", "Zenit", "Bolton", "Saint-Etienne", "Monaco"], diff:"expert", nationalities:["France"], positions:["defenseur"], birthYear:1982 },
+  { name:"Ricardo Gardner", clubs:["Harbour View", "Bolton", "Preston"], diff:"expert", nationalities:["Jamaïque"], positions:["defenseur"], birthYear:1978 },
+  { name:"Joey O'Brien", clubs:["Bolton", "Sheffield Wednesday", "West Ham", "Shamrock Rovers"], diff:"expert", nationalities:["Irlande"], positions:["defenseur"], birthYear:1986 },
+  { name:"Fabrice Muamba", clubs:["Arsenal", "Birmingham City", "Bolton"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:1988 },
+  { name:"David Ngog", clubs:["Paris Saint-Germain", "Liverpool", "Bolton", "Swansea", "Reims", "Panionios"], diff:"expert", nationalities:["France"], positions:["attaquant"], birthYear:1989 },
 ];
 
 export const RETIRED_PLAYERS = new Set([ "Esteban Cambiasso","Eusébio","Ezequiel Lavezzi","Fabien Barthez","Fabio Grosso","Fernando Redondo","Ferenc Puskás","Mehdi Benatia","Elano","Diego Milito","Dietmar Hamann","Dimitar Berbatov","Djibril Cissé","Dunga","Darren Bent","Daniele De Rossi","Christian Karembeu","Christophe Dugarry","Cristian Chivu","Bacary Sagna","Ben Foster","Bobby Charlton","Bobby Moore","Branislav Ivanović","Andrés Guardado","Antonio Valencia","Alfredo Di Stéfano","André Schürrle","Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe (Portugal)","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
