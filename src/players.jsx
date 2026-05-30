@@ -5049,6 +5049,12 @@ export const PLAYERS = [
   { name:"Gary Gardner", clubs:["Aston Villa", "Sheffield Wednesday", "Nottingham Forest", "Birmingham City", "Coventry"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:1992 },
   { name:"Andreas Weimann", clubs:["Aston Villa", "Watford", "Derby County", "Bristol City", "Blackburn"], diff:"expert", nationalities:["Autriche"], positions:["attaquant"], birthYear:1991 },
   { name:"Isaiah Osbourne", clubs:["Aston Villa", "Nottingham Forest", "Middlesbrough", "Blackburn", "Walsall"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:1987 },
+
+  // ── Audit effectifs Birmingham City 2009-11 : joueurs encore absents ────
+  { name:"Gregory Vignal", clubs:["Liverpool", "Rennes", "Bastia", "Espanyol", "Portsmouth", "Lecce", "Birmingham City", "Kilmarnock", "Dundee"], diff:"expert", nationalities:["France"], positions:["defenseur"], birthYear:1981 },
+  { name:"Martin Jiránek", clubs:["Reggina", "Spartak Moscow", "Birmingham City", "Terek Grozny"], diff:"expert", nationalities:["Tchéquie"], positions:["defenseur"], birthYear:1979 },
+  { name:"Stuart Parnaby", clubs:["Middlesbrough", "Birmingham City", "Bristol City"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1982 },
+  { name:"Jordon Mutch", clubs:["Birmingham City", "Cardiff", "QPR", "Crystal Palace", "Vancouver Whitecaps", "Reading"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:1991 },
 ];
 
 export const RETIRED_PLAYERS = new Set([ "Esteban Cambiasso","Eusébio","Ezequiel Lavezzi","Fabien Barthez","Fabio Grosso","Fernando Redondo","Ferenc Puskás","Mehdi Benatia","Elano","Diego Milito","Dietmar Hamann","Dimitar Berbatov","Djibril Cissé","Dunga","Darren Bent","Daniele De Rossi","Christian Karembeu","Christophe Dugarry","Cristian Chivu","Bacary Sagna","Ben Foster","Bobby Charlton","Bobby Moore","Branislav Ivanović","Andrés Guardado","Antonio Valencia","Alfredo Di Stéfano","André Schürrle","Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe (Portugal)","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
