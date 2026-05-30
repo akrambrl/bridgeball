@@ -5067,6 +5067,18 @@ export const PLAYERS = [
   { name:"Joey O'Brien", clubs:["Bolton", "Sheffield Wednesday", "West Ham", "Shamrock Rovers"], diff:"expert", nationalities:["Irlande"], positions:["defenseur"], birthYear:1986 },
   { name:"Fabrice Muamba", clubs:["Arsenal", "Birmingham City", "Bolton"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:1988 },
   { name:"David Ngog", clubs:["Paris Saint-Germain", "Liverpool", "Bolton", "Swansea", "Reims", "Panionios"], diff:"expert", nationalities:["France"], positions:["attaquant"], birthYear:1989 },
+
+  // ── Audit effectifs Chelsea 2009-12 : joueurs encore absents ────────────
+  { name:"Henrique Hilário", clubs:["Estrela Amadora", "Académica", "Nacional", "Porto", "Chelsea"], diff:"expert", nationalities:["Portugal"], positions:["gardien"], birthYear:1975 },
+  { name:"Josh McEachran", clubs:["Chelsea", "Swansea", "Middlesbrough", "Watford", "Wigan Athletic", "Brentford", "Birmingham City"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:1993 },
+
+  // ── Audit effectifs Everton 2009-12 : joueurs encore absents ────────────
+  { name:"Denis Stracqualursi", clubs:["Tigre", "Everton", "River Plate", "Estudiantes", "Cerro Porteño"], diff:"expert", nationalities:["Argentine"], positions:["attaquant"], birthYear:1987 },
+
+  // ── Audit effectifs Fulham 2009-12 : joueurs encore absents ─────────────
+  { name:"Bjørn Helge Riise", clubs:["Lillestrøm", "Standard Liège", "Fulham", "Portsmouth"], diff:"expert", nationalities:["Norvège"], positions:["milieu"], birthYear:1983 },
+  { name:"Kerim Frei", clubs:["Fulham", "Cardiff", "Besiktas", "Bursaspor", "Basaksehir"], diff:"expert", nationalities:["Turquie"], positions:["milieu"], birthYear:1993 },
+  { name:"Diomansy Kamara", clubs:["Red Star", "Modène", "Portsmouth", "West Brom", "Fulham", "Celtic", "Leicester City"], diff:"expert", nationalities:["Sénégal"], positions:["attaquant"], birthYear:1980 },
 ];
 
 export const RETIRED_PLAYERS = new Set([ "Esteban Cambiasso","Eusébio","Ezequiel Lavezzi","Fabien Barthez","Fabio Grosso","Fernando Redondo","Ferenc Puskás","Mehdi Benatia","Elano","Diego Milito","Dietmar Hamann","Dimitar Berbatov","Djibril Cissé","Dunga","Darren Bent","Daniele De Rossi","Christian Karembeu","Christophe Dugarry","Cristian Chivu","Bacary Sagna","Ben Foster","Bobby Charlton","Bobby Moore","Branislav Ivanović","Andrés Guardado","Antonio Valencia","Alfredo Di Stéfano","André Schürrle","Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe (Portugal)","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
