@@ -4615,6 +4615,21 @@ export const PLAYERS = [
   { name:"Craig Bellamy", clubs:["Norwich", "Coventry", "Newcastle", "Celtic", "Blackburn", "Liverpool", "West Ham", "Manchester City", "Cardiff City", "Liverpool", "Cardiff City"], diff:"moyen", nationalities:["Pays de Galles"], positions:["attaquant"], birthYear:1979 },
   { name:"Ben Mee", clubs:["Manchester City", "Leicester City", "Burnley", "Brentford"], diff:"moyen", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1989 },
   { name:"Gunnar Nielsen", clubs:["Blackburn", "Manchester City", "HB Tórshavn", "Tranmere", "Motherwell", "B36 Tórshavn"], diff:"expert", nationalities:["Îles Féroé"], positions:["gardien"], birthYear:1986 },
+
+  // ── Enrichissement Aston Villa 2009-10 (6e, fin O Neill) ──────────────────
+  { name:"Brad Guzan", clubs:["Chivas USA", "Aston Villa", "Hull City", "Middlesbrough", "Atlanta United"], diff:"moyen", nationalities:["États-Unis"], positions:["gardien"], birthYear:1984 },
+  { name:"Carlos Cuéllar", clubs:["Numancia", "Osasuna", "Rangers", "Aston Villa", "Sunderland", "Norwich", "Maccabi Haifa"], diff:"expert", nationalities:["Espagne"], positions:["defenseur"], birthYear:1981 },
+  { name:"Richard Dunne", clubs:["Everton", "Manchester City", "Aston Villa", "QPR"], diff:"moyen", nationalities:["Irlande"], positions:["defenseur"], birthYear:1979 },
+  { name:"James Collins", clubs:["Cardiff City", "West Ham", "Aston Villa", "West Ham", "Ipswich Town"], diff:"expert", nationalities:["Pays de Galles"], positions:["defenseur"], birthYear:1983 },
+  { name:"Curtis Davies", clubs:["Luton Town", "West Brom", "Aston Villa", "Leicester City", "Birmingham", "Hull City", "Derby County", "Cheltenham"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1985 },
+  { name:"Luke Young", clubs:["Tottenham", "Charlton", "Middlesbrough", "Aston Villa", "QPR"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1979 },
+  { name:"Stephen Warnock", clubs:["Liverpool", "Coventry", "Blackburn", "Aston Villa", "Bolton", "Wigan Athletic", "Derby County", "Bradford City"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1981 },
+  { name:"Nigel Reo-Coker", clubs:["Wimbledon", "West Ham", "Aston Villa", "Bolton", "Ipswich Town", "Vancouver Whitecaps", "Chivas USA", "Montreal Impact"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:1984 },
+  { name:"Marc Albrighton", clubs:["Aston Villa", "Wigan Athletic", "Leicester City", "West Brom", "Burnley", "Stoke City"], diff:"moyen", nationalities:["Angleterre"], positions:["milieu"], birthYear:1989 },
+  { name:"Fabian Delph", clubs:["Leeds United", "Aston Villa", "Leicester City", "Manchester City", "Everton"], diff:"moyen", nationalities:["Angleterre"], positions:["milieu"], birthYear:1989 },
+  { name:"Gabriel Agbonlahor", clubs:["Aston Villa"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1986 },
+  { name:"Emile Heskey", clubs:["Leicester City", "Liverpool", "Birmingham", "Wigan Athletic", "Aston Villa", "Newcastle Jets", "Bolton"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1978 },
+  { name:"Nathan Delfouneso", clubs:["Aston Villa", "Burnley", "Leicester City", "Blackpool", "Bury", "Blackpool"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1991 },
 ];
 
 export const RETIRED_PLAYERS = new Set([ "Esteban Cambiasso","Eusébio","Ezequiel Lavezzi","Fabien Barthez","Fabio Grosso","Fernando Redondo","Ferenc Puskás","Mehdi Benatia","Elano","Diego Milito","Dietmar Hamann","Dimitar Berbatov","Djibril Cissé","Dunga","Darren Bent","Daniele De Rossi","Christian Karembeu","Christophe Dugarry","Cristian Chivu","Bacary Sagna","Ben Foster","Bobby Charlton","Bobby Moore","Branislav Ivanović","Andrés Guardado","Antonio Valencia","Alfredo Di Stéfano","André Schürrle","Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe (Portugal)","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
