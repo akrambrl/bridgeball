@@ -4548,6 +4548,13 @@ export const PLAYERS = [
   { name:"Emmanuel Frimpong", clubs:["Arsenal", "Wolverhampton", "Charlton", "Barnsley", "Fulham", "FC Ufa", "AFC Wimbledon"], diff:"expert", nationalities:["Ghana"], positions:["milieu"], birthYear:1992 },
   { name:"Fran Mérida", clubs:["Atletico Madrid", "Arsenal", "Braga", "Hércules", "Atromitos", "Osasuna", "Levante"], diff:"expert", nationalities:["Espagne"], positions:["milieu"], birthYear:1990 },
   { name:"Pedro Botelho", clubs:["Arsenal", "Salamanca", "Celta Vigo", "Rayo Vallecano", "Sporting CP"], diff:"expert", nationalities:["Brésil"], positions:["defenseur"], birthYear:1989 },
+
+  // ── Enrichissement Manchester United 2009-10 ──────────────────────────────
+  { name:"Tom Cleverley", clubs:["Manchester United", "Leicester City", "Watford", "Wigan Athletic", "Manchester United", "Aston Villa", "Everton", "Watford"], diff:"moyen", nationalities:["Angleterre"], positions:["milieu"], birthYear:1989 },
+  { name:"Gabriel Obertan", clubs:["Bordeaux", "Lorient", "Bordeaux", "Manchester United", "Newcastle", "Anzhi", "Wigan Athletic", "Levski Sofia"], diff:"expert", nationalities:["France"], positions:["attaquant"], birthYear:1989 },
+  { name:"Zoran Tošić", clubs:["Banat Zrenjanin", "Partizan", "Manchester United", "1. FC Köln", "CSKA Moscow", "Partizan"], diff:"expert", nationalities:["Serbie"], positions:["attaquant"], birthYear:1987 },
+  { name:"Ritchie de Laet", clubs:["Royal Antwerp", "Manchester United", "Leicester City", "Aston Villa", "Middlesbrough", "Melbourne City", "Royal Antwerp"], diff:"expert", nationalities:["Belgique"], positions:["defenseur"], birthYear:1988 },
+  { name:"Manucho", clubs:["Petro de Luanda", "Manchester United", "Panathinaikos", "Hull City", "Real Valladolid", "Rayo Vallecano"], diff:"expert", nationalities:["Angola"], positions:["attaquant"], birthYear:1983 },
 ];
 
 export const RETIRED_PLAYERS = new Set([ "Esteban Cambiasso","Eusébio","Ezequiel Lavezzi","Fabien Barthez","Fabio Grosso","Fernando Redondo","Ferenc Puskás","Mehdi Benatia","Elano","Diego Milito","Dietmar Hamann","Dimitar Berbatov","Djibril Cissé","Dunga","Darren Bent","Daniele De Rossi","Christian Karembeu","Christophe Dugarry","Cristian Chivu","Bacary Sagna","Ben Foster","Bobby Charlton","Bobby Moore","Branislav Ivanović","Andrés Guardado","Antonio Valencia","Alfredo Di Stéfano","André Schürrle","Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe (Portugal)","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
