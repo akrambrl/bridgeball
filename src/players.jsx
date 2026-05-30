@@ -5086,6 +5086,22 @@ export const PLAYERS = [
 
   // ── Audit effectifs Manchester City 2009-12 : joueurs encore absents ────
   { name:"Dedryck Boyata", clubs:["Manchester City", "Bolton", "Twente", "Celtic", "Hertha Berlin", "Club Brugge"], diff:"expert", nationalities:["Belgique"], positions:["defenseur"], birthYear:1990 },
+
+  // ── Audit effectifs Stoke City 2009-12 : joueurs encore absents ─────────
+  { name:"Andy Wilkinson", clubs:["Stoke City", "Sheffield United", "Walsall", "Crewe"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1984 },
+  { name:"Carl Dickinson", clubs:["Stoke City", "Blackpool", "Watford", "Portsmouth", "Port Vale", "Notts County"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1987 },
+  { name:"Jermaine Pennant", clubs:["Arsenal", "Birmingham City", "Liverpool", "Real Zaragoza", "Stoke City", "Wolverhampton", "Bury"], diff:"moyen", nationalities:["Angleterre"], positions:["milieu"], birthYear:1983 },
+  { name:"Michael Tonge", clubs:["Sheffield United", "Stoke City", "Preston", "Leeds United", "Barnsley", "Millwall"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:1983 },
+  { name:"Danny Pugh", clubs:["Manchester United", "Leeds United", "Preston", "Stoke City", "Bury"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:1982 },
+  { name:"Mamady Sidibe", clubs:["Swansea", "Gillingham", "Stoke City", "Sheffield Wednesday", "Tranmere"], diff:"expert", nationalities:["Mali"], positions:["attaquant"], birthYear:1979 },
+
+  // ── Audit effectifs Sunderland 2009-12 : joueurs encore absents ─────────
+  { name:"Márton Fülöp", clubs:["Tottenham", "Sunderland", "Manchester City", "Ipswich Town", "West Brom"], diff:"expert", nationalities:["Hongrie"], positions:["gardien"], birthYear:1983 },
+  { name:"George McCartney", clubs:["Sunderland", "West Ham", "Leeds United"], diff:"expert", nationalities:["Irlande du Nord"], positions:["defenseur"], birthYear:1981 },
+  { name:"Matthew Kilgallon", clubs:["Leeds United", "Sheffield United", "Sunderland", "Doncaster", "Blackburn", "Bradford City"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1984 },
+
+  // ── Audit effectifs Tottenham 2009-12 : joueurs encore absents ──────────
+  { name:"Jake Livermore", clubs:["Tottenham", "Hull City", "West Brom", "Derby County"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:1989 },
 ];
 
 export const RETIRED_PLAYERS = new Set([ "Esteban Cambiasso","Eusébio","Ezequiel Lavezzi","Fabien Barthez","Fabio Grosso","Fernando Redondo","Ferenc Puskás","Mehdi Benatia","Elano","Diego Milito","Dietmar Hamann","Dimitar Berbatov","Djibril Cissé","Dunga","Darren Bent","Daniele De Rossi","Christian Karembeu","Christophe Dugarry","Cristian Chivu","Bacary Sagna","Ben Foster","Bobby Charlton","Bobby Moore","Branislav Ivanović","Andrés Guardado","Antonio Valencia","Alfredo Di Stéfano","André Schürrle","Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe (Portugal)","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
