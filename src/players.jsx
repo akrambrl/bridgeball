@@ -5137,6 +5137,26 @@ export const PLAYERS = [
   { name:"Adam Le Fondre", clubs:["Stockport", "Rotherham", "Rochdale", "Reading", "Cardiff", "Bolton", "Wigan Athletic", "Sydney FC"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1986 },
   { name:"Noel Hunt", clubs:["Reading", "Leeds United", "Ipswich Town", "Southend"], diff:"expert", nationalities:["Irlande"], positions:["attaquant"], birthYear:1982 },
   { name:"Pavel Pogrebnyak", clubs:["Zenit", "Stuttgart", "Fulham", "Reading", "Dynamo Moscow", "Ural"], diff:"moyen", nationalities:["Russie"], positions:["attaquant"], birthYear:1983 },
+
+  // ── Enrichissement Southampton 2012-13 (14e, promu, Adkins/Pochettino) ──
+  { name:"Kelvin Davis", clubs:["Luton Town", "Wimbledon", "Ipswich Town", "Sunderland", "Southampton"], diff:"expert", nationalities:["Angleterre"], positions:["gardien"], birthYear:1976 },
+  { name:"Artur Boruc", clubs:["Legia Warsaw", "Celtic", "ACF Fiorentina", "Southampton", "Bournemouth"], diff:"moyen", nationalities:["Pologne"], positions:["gardien"], birthYear:1980 },
+  { name:"Nathaniel Clyne", clubs:["Crystal Palace", "Southampton", "Liverpool"], diff:"moyen", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1991 },
+  { name:"José Fonte", clubs:["Sporting CP", "Crystal Palace", "Southampton", "West Ham", "Dalian Yifang", "Lille", "Braga"], diff:"moyen", nationalities:["Portugal"], positions:["defenseur"], birthYear:1983 },
+  { name:"Maya Yoshida", clubs:["Nagoya Grampus", "VVV-Venlo", "Southampton", "Sampdoria", "Schalke", "LA Galaxy"], diff:"moyen", nationalities:["Japon"], positions:["defenseur"], birthYear:1988 },
+  { name:"Jos Hooiveld", clubs:["Inter Turku", "AIK", "Celtic", "Southampton", "Norwich", "Millwall"], diff:"expert", nationalities:["Pays-Bas"], positions:["defenseur"], birthYear:1983 },
+  { name:"Danny Fox", clubs:["Everton", "Walsall", "Coventry", "Celtic", "Burnley", "Southampton", "Nottingham Forest", "Wigan Athletic"], diff:"expert", nationalities:["Écosse"], positions:["defenseur"], birthYear:1986 },
+  { name:"Frazer Richardson", clubs:["Leeds United", "Charlton", "Middlesbrough", "Southampton", "Rotherham"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1982 },
+  { name:"Jack Cork", clubs:["Chelsea", "Watford", "Coventry", "Southampton", "Swansea", "Burnley"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:1989 },
+  { name:"Steven Davis", clubs:["Aston Villa", "Fulham", "Rangers", "Southampton"], diff:"moyen", nationalities:["Irlande du Nord"], positions:["milieu"], birthYear:1985 },
+  { name:"Gastón Ramírez", clubs:["Peñarol", "Bologna FC", "Southampton", "Hull City", "Middlesbrough", "Sampdoria", "Monterrey"], diff:"expert", nationalities:["Uruguay"], positions:["milieu"], birthYear:1990 },
+  { name:"Jason Puncheon", clubs:["Wimbledon", "Plymouth", "Milton Keynes Dons", "Southampton", "Crystal Palace", "Huddersfield"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:1986 },
+  { name:"Guly do Prado", clubs:["Sint-Truiden", "Charleroi", "Cesena", "Southampton", "Al-Wakrah"], diff:"expert", nationalities:["Brésil"], positions:["attaquant"], birthYear:1981 },
+  { name:"Rickie Lambert", clubs:["Bristol Rovers", "Southampton", "Liverpool", "West Brom", "Cardiff"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1982 },
+  { name:"Jay Rodriguez", clubs:["Burnley", "Southampton", "West Brom"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1989 },
+  { name:"Billy Sharp", clubs:["Sheffield United", "Scunthorpe", "Doncaster", "Southampton", "Nottingham Forest", "Leeds United", "Reading"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1986 },
+  { name:"Emmanuel Mayuka", clubs:["Kabwe Warriors", "Young Boys", "Southampton", "Sochaux"], diff:"expert", nationalities:["Zambie"], positions:["attaquant"], birthYear:1990 },
+  { name:"Tadanari Lee", clubs:["Kashiwa Reysol", "Sanfrecce Hiroshima", "Southampton", "Urawa Red Diamonds"], diff:"expert", nationalities:["Japon"], positions:["attaquant"], birthYear:1985 },
 ];
 
 export const RETIRED_PLAYERS = new Set([ "Esteban Cambiasso","Eusébio","Ezequiel Lavezzi","Fabien Barthez","Fabio Grosso","Fernando Redondo","Ferenc Puskás","Mehdi Benatia","Elano","Diego Milito","Dietmar Hamann","Dimitar Berbatov","Djibril Cissé","Dunga","Darren Bent","Daniele De Rossi","Christian Karembeu","Christophe Dugarry","Cristian Chivu","Bacary Sagna","Ben Foster","Bobby Charlton","Bobby Moore","Branislav Ivanović","Andrés Guardado","Antonio Valencia","Alfredo Di Stéfano","André Schürrle","Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe (Portugal)","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
