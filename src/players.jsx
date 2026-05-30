@@ -4535,9 +4535,22 @@ export const PLAYERS = [
   { name:"Andrei Kanchelskis", clubs:["Shakhtar Donetsk", "Manchester United", "Everton", "Fiorentina", "Rangers", "Manchester City", "Southampton"], diff:"expert", nationalities:["Russie"], positions:["milieu"], birthYear:1969 },
   { name:"Igor Akinfeev", clubs:["CSKA Moscow"], diff:"expert", nationalities:["Russie"], positions:["gardien"] , birthYear:1986 },
   { name:"Yuri Zhirkov", clubs:["CSKA Moscow", "Chelsea", "Anzhi", "Dynamo Moscow", "Zenit"], diff:"expert", nationalities:["Russie"], positions:["defenseur"], birthYear:1983 },
+
+  // ── Enrichissement Arsenal 2009-10 ────────────────────────────────────────
+  { name:"Manuel Almunia", clubs:["Osasuna", "Albacete", "Recreativo Huelva", "Arsenal", "Watford", "West Ham"], diff:"moyen", nationalities:["Espagne"], positions:["gardien"], birthYear:1977 },
+  { name:"Thomas Vermaelen", clubs:["Ajax Amsterdam", "Arsenal", "Barcelona", "AS Roma", "Vissel Kobe"], diff:"moyen", nationalities:["Belgique"], positions:["defenseur"], birthYear:1985 },
+  { name:"Abou Diaby", clubs:["Auxerre", "Arsenal", "Marseille"], diff:"moyen", nationalities:["France"], positions:["milieu"], birthYear:1986 },
+  { name:"Eduardo da Silva", clubs:["Bangu", "Dinamo Zagreb", "Arsenal", "Shakhtar Donetsk", "Flamengo", "Atlético Paranaense"], diff:"moyen", nationalities:["Croatie"], positions:["attaquant"], birthYear:1983 },
+  { name:"Jack Wilshere", clubs:["Arsenal", "Bolton", "Bournemouth", "West Ham", "AGF Aarhus"], diff:"facile", nationalities:["Angleterre"], positions:["milieu"], birthYear:1992 },
+  { name:"Kieran Gibbs", clubs:["Arsenal", "West Brom", "Inter Miami"], diff:"moyen", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1989 },
+  { name:"Philippe Senderos", clubs:["Servette", "Arsenal", "AC Milan", "Everton", "Fulham", "Valencia", "Aston Villa", "Rangers", "Houston Dynamo", "Chievo", "Grasshoppers"], diff:"moyen", nationalities:["Suisse"], positions:["defenseur"], birthYear:1985 },
+  { name:"Armand Traoré", clubs:["Monaco", "Arsenal", "QPR", "Juventus FC", "Nottingham Forest"], diff:"expert", nationalities:["Sénégal"], positions:["defenseur"], birthYear:1989 },
+  { name:"Emmanuel Frimpong", clubs:["Arsenal", "Wolverhampton", "Charlton", "Barnsley", "Fulham", "FC Ufa", "AFC Wimbledon"], diff:"expert", nationalities:["Ghana"], positions:["milieu"], birthYear:1992 },
+  { name:"Fran Mérida", clubs:["Atletico Madrid", "Arsenal", "Braga", "Hércules", "Atromitos", "Osasuna", "Levante"], diff:"expert", nationalities:["Espagne"], positions:["milieu"], birthYear:1990 },
+  { name:"Pedro Botelho", clubs:["Arsenal", "Salamanca", "Celta Vigo", "Rayo Vallecano", "Sporting CP"], diff:"expert", nationalities:["Brésil"], positions:["defenseur"], birthYear:1989 },
 ];
 
-export const RETIRED_PLAYERS = new Set([ "Esteban Cambiasso","Eusébio","Ezequiel Lavezzi","Fabien Barthez","Fabio Grosso","Fernando Redondo","Ferenc Puskás","Mehdi Benatia","Elano","Diego Milito","Dietmar Hamann","Dimitar Berbatov","Djibril Cissé","Dunga","Darren Bent","Daniele De Rossi","Christian Karembeu","Christophe Dugarry","Cristian Chivu","Bacary Sagna","Ben Foster","Bobby Charlton","Bobby Moore","Branislav Ivanović","Andrés Guardado","Antonio Valencia","Alfredo Di Stéfano","André Schürrle","Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
+export const RETIRED_PLAYERS = new Set([ "Esteban Cambiasso","Eusébio","Ezequiel Lavezzi","Fabien Barthez","Fabio Grosso","Fernando Redondo","Ferenc Puskás","Mehdi Benatia","Elano","Diego Milito","Dietmar Hamann","Dimitar Berbatov","Djibril Cissé","Dunga","Darren Bent","Daniele De Rossi","Christian Karembeu","Christophe Dugarry","Cristian Chivu","Bacary Sagna","Ben Foster","Bobby Charlton","Bobby Moore","Branislav Ivanović","Andrés Guardado","Antonio Valencia","Alfredo Di Stéfano","André Schürrle","Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe (Portugal)","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
   "Alexandru Maxim","Andre Schurrle","Andrea Pirlo","Andres Iniesta","Andriy Shevchenko",
   "André Ayew","Andy Cole","Angel Di Maria","Antonio Cassano","Arjen Robben",
   "Arturo Vidal","Ashley Cole","Axel Witsel","Aymen Abdennour","Bafetimbi Gomis",
@@ -4920,7 +4933,7 @@ export const GG_CL_WINNERS = new Set([
   // 🇪🇸 Real Madrid 2014
   "Diego López",
   "Sami Khedira","Álvaro Arbeloa","Raúl Albiol",
-"Jesús Fernández","Sergio Ramos","Pepe","Raphael Varane","Marcelo",
+"Jesús Fernández","Sergio Ramos","Pepe (Portugal)","Raphael Varane","Marcelo",
   "Dani Carvajal","Fábio Coentrão","Luka Modrić","Angel Di Maria","Isco",
   "Asier Illarramendi","Karim Benzema","Gareth Bale","Álvaro Morata","Jesé Rodríguez",
   "Casemiro",

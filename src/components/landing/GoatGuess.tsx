@@ -384,7 +384,7 @@ const ANEC_ENTRAINEUR = new Set([
 const ANEC_JOUE_40 = new Set([
   // A joué (en professionnel) jusqu'à 40 ans ou plus
   "Gianluigi Buffon", "Paolo Maldini", "Francesco Totti", "Zlatan Ibrahimovic",
-  "Cristiano Ronaldo", "Luka Modrić", "Pepe", "Edwin van der Sar",
+  "Cristiano Ronaldo", "Luka Modrić", "Pepe (Portugal)", "Edwin van der Sar",
   "Ryan Giggs", "Roger Milla", "Javier Zanetti", "Teddy Sheringham",
   "Alessandro Del Piero", "Didier Drogba", "Shunsuke Nakamura", "Rivaldo",
   "Roberto Carlos", "Andres Iniesta", "Sergio Ramos", "Thiago Silva",
