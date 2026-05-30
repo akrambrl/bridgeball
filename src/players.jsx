@@ -5096,7 +5096,6 @@ export const PLAYERS = [
   { name:"Mamady Sidibe", clubs:["Swansea", "Gillingham", "Stoke City", "Sheffield Wednesday", "Tranmere"], diff:"expert", nationalities:["Mali"], positions:["attaquant"], birthYear:1979 },
 
   // ── Audit effectifs Sunderland 2009-12 : joueurs encore absents ─────────
-  { name:"Márton Fülöp", clubs:["Tottenham", "Sunderland", "Manchester City", "Ipswich Town", "West Brom"], diff:"expert", nationalities:["Hongrie"], positions:["gardien"], birthYear:1983 },
   { name:"George McCartney", clubs:["Sunderland", "West Ham", "Leeds United"], diff:"expert", nationalities:["Irlande du Nord"], positions:["defenseur"], birthYear:1981 },
   { name:"Matthew Kilgallon", clubs:["Leeds United", "Sheffield United", "Sunderland", "Doncaster", "Blackburn", "Bradford City"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1984 },
 
