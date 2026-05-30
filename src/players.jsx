@@ -5039,6 +5039,16 @@ export const PLAYERS = [
   // ── Audit effectifs Arsenal 2009-12 : joueurs encore absents ────────────
   { name:"Ryo Miyaichi", clubs:["Arsenal", "Feyenoord", "Bolton", "Wigan Athletic", "Twente", "St Pauli", "Yokohama F. Marinos"], diff:"expert", nationalities:["Japon"], positions:["attaquant"], birthYear:1992 },
   { name:"Ignasi Miquel", clubs:["Arsenal", "Leicester City", "Norwich", "Girona", "Almería", "Mirandés"], diff:"expert", nationalities:["Espagne"], positions:["defenseur"], birthYear:1992 },
+
+  // ── Audit effectifs Aston Villa 2009-12 : joueurs encore absents ────────
+  { name:"Ciaran Clark", clubs:["Aston Villa", "Newcastle", "Sheffield United", "Sunderland"], diff:"expert", nationalities:["Irlande"], positions:["defenseur"], birthYear:1989 },
+  { name:"Eric Lichaj", clubs:["Aston Villa", "Leeds United", "Nottingham Forest", "Hull City", "Fort Lauderdale"], diff:"expert", nationalities:["États-Unis"], positions:["defenseur"], birthYear:1988 },
+  { name:"Nathan Baker", clubs:["Aston Villa", "Bristol City", "Milton Keynes Dons"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1991 },
+  { name:"Jonathan Hogg", clubs:["Aston Villa", "Watford", "Huddersfield"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:1988 },
+  { name:"Chris Herd", clubs:["Aston Villa", "Bolton", "Wycombe"], diff:"expert", nationalities:["Australie"], positions:["milieu"], birthYear:1989 },
+  { name:"Gary Gardner", clubs:["Aston Villa", "Sheffield Wednesday", "Nottingham Forest", "Birmingham City", "Coventry"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:1992 },
+  { name:"Andreas Weimann", clubs:["Aston Villa", "Watford", "Derby County", "Bristol City", "Blackburn"], diff:"expert", nationalities:["Autriche"], positions:["attaquant"], birthYear:1991 },
+  { name:"Isaiah Osbourne", clubs:["Aston Villa", "Nottingham Forest", "Middlesbrough", "Blackburn", "Walsall"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:1987 },
 ];
 
 export const RETIRED_PLAYERS = new Set([ "Esteban Cambiasso","Eusébio","Ezequiel Lavezzi","Fabien Barthez","Fabio Grosso","Fernando Redondo","Ferenc Puskás","Mehdi Benatia","Elano","Diego Milito","Dietmar Hamann","Dimitar Berbatov","Djibril Cissé","Dunga","Darren Bent","Daniele De Rossi","Christian Karembeu","Christophe Dugarry","Cristian Chivu","Bacary Sagna","Ben Foster","Bobby Charlton","Bobby Moore","Branislav Ivanović","Andrés Guardado","Antonio Valencia","Alfredo Di Stéfano","André Schürrle","Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe (Portugal)","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
