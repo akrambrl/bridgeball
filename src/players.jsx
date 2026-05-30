@@ -5102,6 +5102,21 @@ export const PLAYERS = [
 
   // ── Audit effectifs Tottenham 2009-12 : joueurs encore absents ──────────
   { name:"Jake Livermore", clubs:["Tottenham", "Hull City", "West Brom", "Derby County"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:1989 },
+
+  // ── Audit effectifs West Ham 2009-11 : joueurs encore absents ───────────
+  { name:"Jonathan Spector", clubs:["Manchester United", "Charlton", "West Ham", "Birmingham City", "Orlando City"], diff:"expert", nationalities:["États-Unis"], positions:["defenseur"], birthYear:1986 },
+  { name:"Tal Ben Haim", clubs:["Bolton", "Chelsea", "Manchester City", "West Ham", "Portsmouth", "QPR", "Charlton"], diff:"expert", nationalities:["Israël"], positions:["defenseur"], birthYear:1982 },
+  { name:"Fabio Daprela", clubs:["Grasshopper", "West Ham", "Brescia", "Palermo", "Lugano", "Chiasso"], diff:"expert", nationalities:["Suisse"], positions:["defenseur"], birthYear:1991 },
+  { name:"Kieron Dyer", clubs:["Ipswich Town", "Newcastle", "West Ham", "QPR", "Middlesbrough"], diff:"moyen", nationalities:["Angleterre"], positions:["milieu"], birthYear:1978 },
+
+  // ── Audit effectifs Wigan 2009-12 : joueurs encore absents ──────────────
+  { name:"Albert Crusat", clubs:["Almería", "Wigan Athletic", "Nottingham Forest", "Charlton"], diff:"expert", nationalities:["Espagne"], positions:["milieu"], birthYear:1982 },
+
+  // ── Audit effectifs Wolverhampton 2009-12 : joueurs encore absents ──────
+  { name:"Kevin Foley", clubs:["Luton Town", "Wolverhampton", "Blackpool", "Charlton", "Hibernian"], diff:"expert", nationalities:["Irlande"], positions:["defenseur"], birthYear:1984 },
+  { name:"Stephen Ward", clubs:["Bohemians", "Wolverhampton", "Brighton", "Burnley", "Ipswich Town"], diff:"expert", nationalities:["Irlande"], positions:["defenseur"], birthYear:1985 },
+  { name:"Michael Kightly", clubs:["Grays Athletic", "Wolverhampton", "Watford", "Stoke City", "Burnley", "Southend"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:1986 },
+  { name:"Marcus Bent", clubs:["Crystal Palace", "Sheffield United", "Blackburn", "Ipswich Town", "Everton", "Charlton", "Wigan Athletic", "Birmingham City", "Wolverhampton", "QPR"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1978 },
 ];
 
 export const RETIRED_PLAYERS = new Set([ "Esteban Cambiasso","Eusébio","Ezequiel Lavezzi","Fabien Barthez","Fabio Grosso","Fernando Redondo","Ferenc Puskás","Mehdi Benatia","Elano","Diego Milito","Dietmar Hamann","Dimitar Berbatov","Djibril Cissé","Dunga","Darren Bent","Daniele De Rossi","Christian Karembeu","Christophe Dugarry","Cristian Chivu","Bacary Sagna","Ben Foster","Bobby Charlton","Bobby Moore","Branislav Ivanović","Andrés Guardado","Antonio Valencia","Alfredo Di Stéfano","André Schürrle","Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe (Portugal)","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
