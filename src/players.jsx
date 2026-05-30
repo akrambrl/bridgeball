@@ -4988,6 +4988,26 @@ export const PLAYERS = [
   { name:"Steve Morison", clubs:["Stevenage", "Millwall", "Norwich", "Leeds United", "Bristol City"], diff:"expert", nationalities:["Pays de Galles"], positions:["attaquant"], birthYear:1983 },
   { name:"Simeon Jackson", clubs:["Rushden", "Gillingham", "Norwich", "Coventry", "Millwall"], diff:"expert", nationalities:["Canada"], positions:["attaquant"], birthYear:1987 },
   { name:"Aaron Wilbraham", clubs:["Stockport", "Hull City", "Crystal Palace", "Norwich", "Bristol City", "Milton Keynes Dons"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1979 },
+
+  // ── Enrichissement Swansea City 2011-12 (11e, promu, B. Rodgers) ────────
+  { name:"Michel Vorm", clubs:["Utrecht", "Swansea", "Tottenham"], diff:"moyen", nationalities:["Pays-Bas"], positions:["gardien"], birthYear:1983 },
+  { name:"Ángel Rangel", clubs:["Terrassa", "Swansea", "QPR"], diff:"expert", nationalities:["Espagne"], positions:["defenseur"], birthYear:1982 },
+  { name:"Neil Taylor", clubs:["Wrexham", "Swansea", "Aston Villa", "Middlesbrough"], diff:"expert", nationalities:["Pays de Galles"], positions:["defenseur"], birthYear:1989 },
+  { name:"Ashley Williams", clubs:["Stockport", "Swansea", "Everton", "Bristol City"], diff:"moyen", nationalities:["Pays de Galles"], positions:["defenseur"], birthYear:1984 },
+  { name:"Steven Caulker", clubs:["Tottenham", "Yeovil", "Bristol City", "Swansea", "Cardiff", "QPR", "Liverpool", "Dundee"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1991 },
+  { name:"Garry Monk", clubs:["Torquay", "Southampton", "Swansea"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1979 },
+  { name:"Alan Tate", clubs:["Manchester United", "Swansea"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1982 },
+  { name:"Nathan Dyer", clubs:["Southampton", "Swansea", "Leicester City"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:1987 },
+  { name:"Leon Britton", clubs:["West Ham", "Swansea", "Sheffield United"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:1982 },
+  { name:"Joe Allen", clubs:["Swansea", "Wrexham", "Liverpool", "Stoke City"], diff:"moyen", nationalities:["Pays de Galles"], positions:["milieu"], birthYear:1990 },
+  { name:"Mark Gower", clubs:["Tottenham", "Barnet", "Southend", "Swansea"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:1978 },
+  { name:"Kemy Agustien", clubs:["AZ Alkmaar", "Birmingham City", "Swansea", "Brighton"], diff:"expert", nationalities:["Pays-Bas"], positions:["milieu"], birthYear:1986 },
+  { name:"Scott Sinclair", clubs:["Bristol Rovers", "Chelsea", "Swansea", "Manchester City", "West Brom", "Aston Villa", "Celtic", "Preston"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1989 },
+  { name:"Danny Graham", clubs:["Middlesbrough", "Carlisle", "Watford", "Swansea", "Sunderland", "Blackburn"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1985 },
+  { name:"Luke Moore", clubs:["Aston Villa", "West Brom", "Swansea"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1986 },
+  { name:"Stephen Dobbie", clubs:["Rangers", "Swansea", "Blackpool", "QPR", "Bolton"], diff:"expert", nationalities:["Écosse"], positions:["attaquant"], birthYear:1982 },
+  { name:"Gylfi Sigurðsson", clubs:["Reading", "Hoffenheim", "Swansea", "Tottenham", "Everton"], diff:"moyen", nationalities:["Islande"], positions:["milieu"], birthYear:1989 },
+  { name:"Andrea Orlandi", clubs:["Barcelona", "Alaves", "Swansea", "Brighton", "Blackpool"], diff:"expert", nationalities:["Espagne"], positions:["milieu"], birthYear:1984 },
 ];
 
 export const RETIRED_PLAYERS = new Set([ "Esteban Cambiasso","Eusébio","Ezequiel Lavezzi","Fabien Barthez","Fabio Grosso","Fernando Redondo","Ferenc Puskás","Mehdi Benatia","Elano","Diego Milito","Dietmar Hamann","Dimitar Berbatov","Djibril Cissé","Dunga","Darren Bent","Daniele De Rossi","Christian Karembeu","Christophe Dugarry","Cristian Chivu","Bacary Sagna","Ben Foster","Bobby Charlton","Bobby Moore","Branislav Ivanović","Andrés Guardado","Antonio Valencia","Alfredo Di Stéfano","André Schürrle","Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe (Portugal)","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
