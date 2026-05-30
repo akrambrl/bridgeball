@@ -4952,6 +4952,24 @@ export const PLAYERS = [
   { name:"James McArthur", clubs:["Hamilton Academical", "Wigan Athletic", "Crystal Palace"], diff:"expert", nationalities:["Écosse"], positions:["milieu"], birthYear:1987 },
   { name:"Ronnie Stam", clubs:["RKC Waalwijk", "Twente", "Wigan Athletic", "Anderlecht"], diff:"expert", nationalities:["Pays-Bas"], positions:["defenseur"], birthYear:1984 },
   { name:"Jelle Van Damme", clubs:["Ajax Amsterdam", "Southampton", "Werder Bremen", "Anderlecht", "Wolverhampton", "Standard Liège", "LA Galaxy", "Antwerp"], diff:"expert", nationalities:["Belgique"], positions:["defenseur"], birthYear:1983 },
+
+  // ── Enrichissement QPR 2011-12 (17e, promu, N. Warnock puis M. Hughes) ──
+  { name:"Paddy Kenny", clubs:["Bury", "Sheffield United", "QPR", "Leeds United", "Bolton", "Rotherham"], diff:"expert", nationalities:["Irlande"], positions:["gardien"], birthYear:1978 },
+  { name:"Radek Černý", clubs:["Slavia Prague", "Tottenham", "QPR"], diff:"expert", nationalities:["Tchéquie"], positions:["gardien"], birthYear:1974 },
+  { name:"Clint Hill", clubs:["Tranmere", "Oldham", "Stoke City", "Crystal Palace", "QPR", "Nottingham Forest", "Carlisle"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1978 },
+  { name:"Fitz Hall", clubs:["Oldham", "Southampton", "Crystal Palace", "Wigan Athletic", "Watford", "Newcastle", "QPR"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1980 },
+  { name:"Bradley Orr", clubs:["Newcastle", "Bristol City", "QPR", "Blackburn", "Ipswich Town", "Toronto"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1982 },
+  { name:"Kaspars Gorkšs", clubs:["Ventspils", "Blackpool", "Reading", "QPR", "Wolverhampton"], diff:"expert", nationalities:["Lettonie"], positions:["defenseur"], birthYear:1981 },
+  { name:"Matthew Connolly", clubs:["Arsenal", "Cardiff", "QPR", "Watford"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1987 },
+  { name:"Shaun Derry", clubs:["Notts County", "Sheffield United", "Portsmouth", "Crystal Palace", "Leeds United", "QPR"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:1978 },
+  { name:"Alejandro Faurlín", clubs:["Instituto", "Boca Juniors", "Gimnasia", "QPR"], diff:"expert", nationalities:["Argentine"], positions:["milieu"], birthYear:1986 },
+  { name:"Adel Taarabt", clubs:["Lens", "Tottenham", "QPR", "AC Milan", "Genoa CFC", "Benfica", "Al-Nasr"], diff:"moyen", nationalities:["Maroc"], positions:["milieu"], birthYear:1989 },
+  { name:"Akos Buzsaky", clubs:["Porto", "Plymouth", "QPR"], diff:"expert", nationalities:["Hongrie"], positions:["milieu"], birthYear:1982 },
+  { name:"Jamie Mackie", clubs:["Wimbledon", "Exeter", "Plymouth", "QPR", "Nottingham Forest", "Reading"], diff:"expert", nationalities:["Écosse"], positions:["attaquant"], birthYear:1985 },
+  { name:"Heidar Helguson", clubs:["Lillestrøm", "Watford", "Fulham", "Bolton", "QPR", "Cardiff"], diff:"expert", nationalities:["Islande"], positions:["attaquant"], birthYear:1977 },
+  { name:"Rob Hulse", clubs:["Crewe", "West Brom", "Leeds United", "Sheffield United", "Derby County", "QPR", "Charlton"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1979 },
+  { name:"Jay Bothroyd", clubs:["Arsenal", "Coventry", "Perugia", "Blackburn", "Cardiff", "QPR", "Sheffield Wednesday", "Muangthong United"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1982 },
+  { name:"Samba Diakité", clubs:["Nancy", "QPR", "Watford"], diff:"expert", nationalities:["Mali"], positions:["milieu"], birthYear:1989 },
 ];
 
 export const RETIRED_PLAYERS = new Set([ "Esteban Cambiasso","Eusébio","Ezequiel Lavezzi","Fabien Barthez","Fabio Grosso","Fernando Redondo","Ferenc Puskás","Mehdi Benatia","Elano","Diego Milito","Dietmar Hamann","Dimitar Berbatov","Djibril Cissé","Dunga","Darren Bent","Daniele De Rossi","Christian Karembeu","Christophe Dugarry","Cristian Chivu","Bacary Sagna","Ben Foster","Bobby Charlton","Bobby Moore","Branislav Ivanović","Andrés Guardado","Antonio Valencia","Alfredo Di Stéfano","André Schürrle","Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe (Portugal)","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
