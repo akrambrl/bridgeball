@@ -378,6 +378,7 @@ const ANEC_ENTRAINEUR = new Set([
   "Frank de Boer", "Ronald Koeman", "Clarence Seedorf", "Edgar Davids",
   "Gary Neville", "Laurent Blanc", "Raúl González", "Xabi Alonso",
   "Cesc Fabregas", "Nuno Espírito Santo", "Vincenzo Montella", "Hristo Stoichkov",
+  "Carlo Ancelotti", "Luis Enrique", "Rudi Garcia", "Álvaro Arbeloa",
 ]);
 const ANEC_JOUE_40 = new Set([
   // A joué (en professionnel) jusqu'à 40 ans ou plus

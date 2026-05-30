@@ -5210,6 +5210,10 @@ export const PLAYERS = [
   { name:"Oleg Blokhine", clubs:["Dynamo Kyiv", "Vorwärts Steyr", "Aris"], diff:"expert", nationalities:["Ukraine"], positions:["attaquant"], birthYear:1952 },
   { name:"Allan Simonsen", clubs:["Vejle", "Borussia Mönchengladbach", "Barcelona", "Charlton"], diff:"expert", nationalities:["Danemark"], positions:["attaquant"], birthYear:1952 },
   { name:"Matthias Sammer", clubs:["Dynamo Dresden", "VfB Stuttgart", "Inter Milan", "Borussia Dortmund"], diff:"moyen", nationalities:["Allemagne"], positions:["defenseur"], birthYear:1967 },
+
+  // ── Anciens joueurs surtout connus comme entraîneurs ────────────────────
+  { name:"Carlo Ancelotti", clubs:["Parma FC", "AS Roma", "AC Milan"], diff:"moyen", nationalities:["Italie"], positions:["milieu"], birthYear:1959 },
+  { name:"Rudi Garcia", clubs:["Lille", "Caen", "Martigues"], diff:"expert", nationalities:["France"], positions:["milieu"], birthYear:1964 },
 ];
 
 export const RETIRED_PLAYERS = new Set([ "Esteban Cambiasso","Eusébio","Ezequiel Lavezzi","Fabien Barthez","Fabio Grosso","Fernando Redondo","Ferenc Puskás","Mehdi Benatia","Elano","Diego Milito","Dietmar Hamann","Dimitar Berbatov","Djibril Cissé","Dunga","Darren Bent","Daniele De Rossi","Christian Karembeu","Christophe Dugarry","Cristian Chivu","Bacary Sagna","Ben Foster","Bobby Charlton","Bobby Moore","Branislav Ivanović","Andrés Guardado","Antonio Valencia","Alfredo Di Stéfano","André Schürrle","Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe (Portugal)","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
