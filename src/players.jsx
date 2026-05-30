@@ -4795,6 +4795,25 @@ export const PLAYERS = [
   { name:"Mauro Boselli", clubs:["Boca Juniors", "Estudiantes", "Genoa CFC", "Mallorca", "Wigan Athletic", "Genoa CFC", "Palermo", "Estudiantes", "León", "Corinthians", "Estudiantes"], diff:"expert", nationalities:["Argentine"], positions:["attaquant"], birthYear:1985 },
   { name:"Paul Scharner", clubs:["Admira Wacker", "Brann", "Wigan Athletic", "West Brom", "Hamburger SV", "Wigan Athletic"], diff:"expert", nationalities:["Autriche"], positions:["defenseur"], birthYear:1980 },
   { name:"Ben Watson", clubs:["Crystal Palace", "West Brom", "QPR", "Wigan Athletic", "Watford", "Nottingham Forest"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:1985 },
+
+  // ── Enrichissement Burnley 2009-10 (18e, O. Coyle puis B. Laws) ──────────
+  { name:"Brian Jensen", clubs:["AZ Alkmaar", "West Brom", "Burnley", "Bury", "Crawley Town", "Mansfield"], diff:"expert", nationalities:["Danemark"], positions:["gardien"], birthYear:1975 },
+  { name:"Clarke Carlisle", clubs:["Blackpool", "QPR", "Leeds United", "Watford", "Burnley", "Preston", "Northampton", "York City"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1979 },
+  { name:"Stephen Jordan", clubs:["Manchester City", "Burnley", "Sheffield United", "Tranmere", "Rochdale"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1982 },
+  { name:"Graham Alexander", clubs:["Scunthorpe", "Luton Town", "Preston", "Burnley"], diff:"expert", nationalities:["Écosse"], positions:["defenseur"], birthYear:1971 },
+  { name:"Tyrone Mears", clubs:["Manchester City", "Preston", "West Ham", "Derby County", "Marseille", "Burnley", "Bolton", "Atlanta United", "Seattle Sounders"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1983 },
+  { name:"André Bikey", clubs:["Reading", "Burnley", "Bursaspor", "Charlton", "Panathinaikos"], diff:"expert", nationalities:["Cameroun"], positions:["defenseur"], birthYear:1985 },
+  { name:"Steven Caldwell", clubs:["Newcastle", "Sunderland", "Burnley", "Wigan Athletic", "Toronto"], diff:"expert", nationalities:["Écosse"], positions:["defenseur"], birthYear:1980 },
+  { name:"David Edgar", clubs:["Newcastle", "Burnley", "Birmingham City", "Huddersfield"], diff:"expert", nationalities:["Canada"], positions:["defenseur"], birthYear:1987 },
+  { name:"Brian Easton", clubs:["Hamilton Academical", "Burnley", "Dundee"], diff:"expert", nationalities:["Écosse"], positions:["defenseur"], birthYear:1988 },
+  { name:"Leon Cort", clubs:["Millwall", "Southend", "Hull City", "Crystal Palace", "Stoke City", "Burnley", "Charlton"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1979 },
+  { name:"Chris Eagles", clubs:["Manchester United", "Watford", "Burnley", "Bolton", "Charlton", "Blackpool"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:1985 },
+  { name:"Wade Elliott", clubs:["Bournemouth", "Burnley", "Birmingham City", "Bristol City"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:1978 },
+  { name:"Kevin McDonald", clubs:["Dundee", "Burnley", "Sheffield United", "Wolverhampton", "Fulham"], diff:"expert", nationalities:["Écosse"], positions:["milieu"], birthYear:1988 },
+  { name:"Robbie Blake", clubs:["Darlington", "Bradford City", "Burnley", "Birmingham City", "Bolton"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1976 },
+  { name:"Steven Fletcher", clubs:["Hibernian", "Burnley", "Wolverhampton", "Sunderland", "Sheffield Wednesday", "Stoke City", "Dundee United"], diff:"moyen", nationalities:["Écosse"], positions:["attaquant"], birthYear:1987 },
+  { name:"Martin Paterson", clubs:["Stoke City", "Scunthorpe", "Burnley", "Huddersfield", "Orlando City"], diff:"expert", nationalities:["Irlande du Nord"], positions:["attaquant"], birthYear:1987 },
+  { name:"David Nugent", clubs:["Bury", "Preston", "Portsmouth", "Burnley", "Leicester City", "Middlesbrough", "Derby County"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1985 },
 ];
 
 export const RETIRED_PLAYERS = new Set([ "Esteban Cambiasso","Eusébio","Ezequiel Lavezzi","Fabien Barthez","Fabio Grosso","Fernando Redondo","Ferenc Puskás","Mehdi Benatia","Elano","Diego Milito","Dietmar Hamann","Dimitar Berbatov","Djibril Cissé","Dunga","Darren Bent","Daniele De Rossi","Christian Karembeu","Christophe Dugarry","Cristian Chivu","Bacary Sagna","Ben Foster","Bobby Charlton","Bobby Moore","Branislav Ivanović","Andrés Guardado","Antonio Valencia","Alfredo Di Stéfano","André Schürrle","Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe (Portugal)","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
