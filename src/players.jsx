@@ -4665,6 +4665,24 @@ export const PLAYERS = [
   { name:"Mido", clubs:["Zamalek", "Ajax Amsterdam", "Celta Vigo", "Marseille", "AS Roma", "Tottenham", "Middlesbrough", "Wigan Athletic", "West Ham", "Ajax Amsterdam"], diff:"moyen", nationalities:["Égypte"], positions:["attaquant"], birthYear:1983 },
   { name:"Maik Taylor", clubs:["Barnet", "Southampton", "Fulham", "Birmingham", "Millwall"], diff:"expert", nationalities:["Irlande du Nord"], positions:["gardien"], birthYear:1971 },
   { name:"Garry O'Connor", clubs:["Hibernian", "Lokomotiv Moscow", "Birmingham", "Barnsley", "Hibernian"], diff:"expert", nationalities:["Écosse"], positions:["attaquant"], birthYear:1983 },
+
+  // ── Enrichissement Blackburn Rovers 2009-10 (10e, Allardyce) ──────────────
+  { name:"Paul Robinson", clubs:["Leeds United", "Tottenham", "Blackburn", "Burnley"], diff:"moyen", nationalities:["Angleterre"], positions:["gardien"], birthYear:1979 },
+  { name:"Ryan Nelsen", clubs:["DC United", "Blackburn", "Tottenham", "QPR"], diff:"moyen", nationalities:["Nouvelle-Zélande"], positions:["defenseur"], birthYear:1977 },
+  { name:"Christopher Samba", clubs:["Sedan", "Hertha BSC", "Blackburn", "Anzhi", "QPR", "Anzhi", "Dynamo Moscow", "Panathinaikos", "Aston Villa"], diff:"moyen", nationalities:["République du Congo"], positions:["defenseur"], birthYear:1984 },
+  { name:"Gaël Givet", clubs:["Marseille", "Monaco", "Blackburn", "Évian"], diff:"moyen", nationalities:["France"], positions:["defenseur"], birthYear:1981 },
+  { name:"Martin Olsson", clubs:["Blackburn", "Norwich", "Swansea", "Helsingborg"], diff:"expert", nationalities:["Suède"], positions:["defenseur"], birthYear:1988 },
+  { name:"Brett Emerton", clubs:["Sydney Olympic", "Feyenoord", "Blackburn", "Sydney FC"], diff:"expert", nationalities:["Australie"], positions:["milieu"], birthYear:1979 },
+  { name:"Lars Jacobsen", clubs:["Odense", "Hamburger SV", "Nuremberg", "Copenhagen", "Everton", "Blackburn", "West Ham", "Copenhagen"], diff:"expert", nationalities:["Danemark"], positions:["defenseur"], birthYear:1979 },
+  { name:"Zurab Khizanishvili", clubs:["Lokomotivi Tbilisi", "Dundee", "Rangers", "Blackburn", "Reading", "Newcastle", "Kayserispor"], diff:"expert", nationalities:["Géorgie"], positions:["defenseur"], birthYear:1981 },
+  { name:"David Dunn", clubs:["Blackburn", "Birmingham", "Blackburn"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:1979 },
+  { name:"Steven Reid", clubs:["Millwall", "Blackburn", "West Brom", "Burnley"], diff:"expert", nationalities:["Irlande"], positions:["milieu"], birthYear:1981 },
+  { name:"Vince Grella", clubs:["Empoli FC", "Ternana", "Torino", "Parma FC", "Blackburn"], diff:"expert", nationalities:["Australie"], positions:["milieu"], birthYear:1979 },
+  { name:"Morten Gamst Pedersen", clubs:["Tromsø", "Blackburn", "Karabükspor", "Rosenborg", "Tromsø"], diff:"moyen", nationalities:["Norvège"], positions:["milieu"], birthYear:1981 },
+  { name:"Keith Andrews", clubs:["Wolverhampton", "Blackburn", "Ipswich Town", "Bolton", "MK Dons"], diff:"expert", nationalities:["Irlande"], positions:["milieu"], birthYear:1980 },
+  { name:"Junior Hoilett", clubs:["Blackburn", "Paderborn", "QPR", "Cardiff City", "Reading"], diff:"moyen", nationalities:["Canada"], positions:["attaquant"], birthYear:1990 },
+  { name:"Nikola Kalinić", clubs:["Hajduk Split", "Blackburn", "Dnipro", "ACF Fiorentina", "AC Milan", "Atletico Madrid", "AS Roma", "Hellas Verona", "Hajduk Split"], diff:"moyen", nationalities:["Croatie"], positions:["attaquant"], birthYear:1988 },
+  { name:"Jason Roberts", clubs:["Wolverhampton", "West Brom", "Wigan Athletic", "Blackburn", "Reading"], diff:"expert", nationalities:["Grenade"], positions:["attaquant"], birthYear:1978 },
 ];
 
 export const RETIRED_PLAYERS = new Set([ "Esteban Cambiasso","Eusébio","Ezequiel Lavezzi","Fabien Barthez","Fabio Grosso","Fernando Redondo","Ferenc Puskás","Mehdi Benatia","Elano","Diego Milito","Dietmar Hamann","Dimitar Berbatov","Djibril Cissé","Dunga","Darren Bent","Daniele De Rossi","Christian Karembeu","Christophe Dugarry","Cristian Chivu","Bacary Sagna","Ben Foster","Bobby Charlton","Bobby Moore","Branislav Ivanović","Andrés Guardado","Antonio Valencia","Alfredo Di Stéfano","André Schürrle","Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe (Portugal)","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
