@@ -21,8 +21,13 @@ type Question = {
   predicate: (p: Player) => boolean | null;
 };
 
+// Objectif "normal" affiché à l'utilisateur (la barre de progression vise ça).
 const MAX_QUESTIONS = 25;
-const MAX_GUESSES = 5;
+// Garde-fou anti-boucle : on continue de questionner AU-DELÀ de MAX_QUESTIONS
+// tant qu'une question discrimine encore les candidats, afin de converger vers
+// UN seul joueur. Ce plafond dur n'est là que pour éviter une partie infinie.
+const HARD_CAP = 60;
+const MAX_GUESSES = 6;
 
 const POS_GARDIEN = "gardien";
 const POS_ATT = "attaquant";
@@ -1114,12 +1119,16 @@ const GoatGuessGame = ({
       setPhase("lost");
       return;
     }
-    if (ranked.length === 1 || qCount >= MAX_QUESTIONS) {
+    if (ranked.length === 1) {
       setCurrentGuess(ranked[0]);
       setPhase("guessing");
       return;
     }
-    const nextQ = pickQuestion(live, askedSet, lastCats);
+    // On continue à questionner tant qu'une question discrimine encore les
+    // candidats vivants — MÊME au-delà de MAX_QUESTIONS — pour converger vers
+    // UN seul joueur. On ne devine que s'il ne reste qu'un candidat (ci-dessus),
+    // qu'aucune question ne les sépare plus (nextQ === null), ou au garde-fou.
+    const nextQ = qCount >= HARD_CAP ? null : pickQuestion(live, askedSet, lastCats);
     if (!nextQ) {
       setCurrentGuess(ranked[0]);
       setPhase("guessing");
@@ -1270,8 +1279,8 @@ const IntroView = ({ onStart }: { onStart: () => void }) => (
       Pense à un footballeur connu (actuel ou retraité).
     </p>
     <p className="text-white/60 text-xs lg:text-sm mb-4 lg:mb-8">
-      Je vais te poser jusqu'à <span className="text-white font-bold">20 questions</span>{" "}
-      pour le deviner. Réponds <span className="text-[#00E676] font-bold">oui</span>,{" "}
+      Je te pose <span className="text-white font-bold">autant de questions qu'il faut</span>{" "}
+      pour le deviner (en général une vingtaine). Réponds <span className="text-[#00E676] font-bold">oui</span>,{" "}
       <span className="text-[#FF3D6E] font-bold">non</span> ou{" "}
       <span className="text-white/70 font-bold">je sais pas</span>.
     </p>
@@ -1308,14 +1317,15 @@ const AskingView = ({
   canGoBack: boolean;
   qaHistory: Array<{ q: Question; answer: Answer }>;
 }) => {
-  const progress = (count / max) * 100;
+  const overtime = count > max;
+  const progress = Math.min(100, (count / max) * 100);
   return (
     <div>
       {/* Compteur + barre de progression */}
       <div className="mb-3 lg:mb-6">
         <div className="flex items-center justify-between text-[10px] lg:text-xs mb-1 lg:mb-2">
           <span className="font-display tracking-widest text-white/50">
-            QUESTION {count} / {max}
+            {overtime ? `QUESTION ${count} · PROLONGATIONS 🔥` : `QUESTION ${count} / ${max}`}
           </span>
           <span className="text-white/40 tabular-nums">
             {remaining} candidat{remaining > 1 ? "s" : ""} restant{remaining > 1 ? "s" : ""}
