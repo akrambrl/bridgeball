@@ -4737,6 +4737,24 @@ export const PLAYERS = [
   { name:"Fraizer Campbell", clubs:["Manchester United", "Hull City", "Tottenham", "Sunderland", "Cardiff City", "Crystal Palace", "Hull City", "Huddersfield"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1987 },
   { name:"Nyron Nosworthy", clubs:["Gillingham", "Sunderland", "Sheffield United", "Watford", "Blackpool", "Cardiff City", "Newport County"], diff:"expert", nationalities:["Jamaïque"], positions:["defenseur"], birthYear:1980 },
   { name:"David Meyler", clubs:["Cork City", "Sunderland", "Hull City", "Reading", "Coventry", "Cork City"], diff:"expert", nationalities:["Irlande"], positions:["milieu"], birthYear:1989 },
+
+  // ── Enrichissement Bolton Wanderers 2009-10 (14e) ─────────────────────────
+  { name:"Jussi Jääskeläinen", clubs:["VPS", "Bolton", "West Ham", "Wigan Athletic"], diff:"moyen", nationalities:["Finlande"], positions:["gardien"], birthYear:1975 },
+  { name:"Zat Knight", clubs:["Fulham", "Peterborough", "Aston Villa", "Bolton", "Reading"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1980 },
+  { name:"Jlloyd Samuel", clubs:["Aston Villa", "Gillingham", "Bolton", "Esteghlal"], diff:"expert", nationalities:["Trinité-et-Tobago"], positions:["defenseur"], birthYear:1981 },
+  { name:"Gretar Steinsson", clubs:["ÍA", "Young Boys", "AZ", "Bolton", "Kayserispor", "Fulham"], diff:"expert", nationalities:["Islande"], positions:["defenseur"], birthYear:1982 },
+  { name:"Sam Ricketts", clubs:["Telford United", "Oxford United", "Swansea", "Hull City", "Bolton", "Wolverhampton", "Coventry"], diff:"expert", nationalities:["Pays de Galles"], positions:["defenseur"], birthYear:1981 },
+  { name:"Andy O'Brien", clubs:["Bradford", "Newcastle", "Portsmouth", "Bolton", "Leeds United", "Vancouver Whitecaps"], diff:"expert", nationalities:["Irlande"], positions:["defenseur"], birthYear:1979 },
+  { name:"Kevin Davies", clubs:["Chesterfield", "Southampton", "Blackburn", "Southampton", "Millwall", "Bolton", "Preston"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1977 },
+  { name:"Ivan Klasnić", clubs:["St. Pauli", "Werder Bremen", "FC Nantes", "Bolton", "Mainz 05"], diff:"moyen", nationalities:["Croatie"], positions:["attaquant"], birthYear:1980 },
+  { name:"Stuart Holden", clubs:["Sunderland", "Houston Dynamo", "Bolton"], diff:"expert", nationalities:["États-Unis"], positions:["milieu"], birthYear:1985 },
+  { name:"Lee Chung-yong", clubs:["FC Seoul", "Bolton", "Crystal Palace", "VfL Bochum", "Ulsan Hyundai"], diff:"moyen", nationalities:["Corée du Sud"], positions:["attaquant"], birthYear:1988 },
+  { name:"Matthew Taylor", clubs:["Luton Town", "Portsmouth", "Bolton", "West Ham", "Burnley", "Northampton"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:1981 },
+  { name:"Sean Davis", clubs:["Fulham", "Tottenham", "Portsmouth", "Bolton"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:1979 },
+  { name:"Johan Elmander", clubs:["Örgryte", "Feyenoord", "Brøndby", "Toulouse", "Bolton", "Galatasaray", "Norwich", "Brøndby"], diff:"moyen", nationalities:["Suède"], positions:["attaquant"], birthYear:1981 },
+  { name:"Tamir Cohen", clubs:["Maccabi Netanya", "Maccabi Tel Aviv", "Bnei Sakhnin", "Bolton", "Maccabi Haifa", "Beitar Jérusalem"], diff:"expert", nationalities:["Israël"], positions:["milieu"], birthYear:1984 },
+  { name:"Mark Davies", clubs:["Wolverhampton", "Leicester City", "Bolton", "Sheffield Wednesday", "Bradford"], diff:"expert", nationalities:["Pays de Galles"], positions:["milieu"], birthYear:1988 },
+  { name:"Adam Bogdan", clubs:["Vasas", "Vecsés", "Bolton", "Liverpool", "Wigan Athletic", "Hibernian", "Burton", "Ferencváros"], diff:"expert", nationalities:["Hongrie"], positions:["gardien"], birthYear:1987 },
 ];
 
 export const RETIRED_PLAYERS = new Set([ "Esteban Cambiasso","Eusébio","Ezequiel Lavezzi","Fabien Barthez","Fabio Grosso","Fernando Redondo","Ferenc Puskás","Mehdi Benatia","Elano","Diego Milito","Dietmar Hamann","Dimitar Berbatov","Djibril Cissé","Dunga","Darren Bent","Daniele De Rossi","Christian Karembeu","Christophe Dugarry","Cristian Chivu","Bacary Sagna","Ben Foster","Bobby Charlton","Bobby Moore","Branislav Ivanović","Andrés Guardado","Antonio Valencia","Alfredo Di Stéfano","André Schürrle","Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe (Portugal)","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
