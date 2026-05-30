@@ -5079,6 +5079,13 @@ export const PLAYERS = [
   { name:"Bjørn Helge Riise", clubs:["Lillestrøm", "Standard Liège", "Fulham", "Portsmouth"], diff:"expert", nationalities:["Norvège"], positions:["milieu"], birthYear:1983 },
   { name:"Kerim Frei", clubs:["Fulham", "Cardiff", "Besiktas", "Bursaspor", "Basaksehir"], diff:"expert", nationalities:["Turquie"], positions:["milieu"], birthYear:1993 },
   { name:"Diomansy Kamara", clubs:["Red Star", "Modène", "Portsmouth", "West Brom", "Fulham", "Celtic", "Leicester City"], diff:"expert", nationalities:["Sénégal"], positions:["attaquant"], birthYear:1980 },
+
+  // ── Audit effectifs Liverpool 2009-12 : joueurs encore absents ──────────
+  { name:"Martin Kelly", clubs:["Liverpool", "Crystal Palace", "West Brom"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1990 },
+  { name:"Jon Flanagan", clubs:["Liverpool", "Burnley", "Bolton", "Rangers"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1993 },
+
+  // ── Audit effectifs Manchester City 2009-12 : joueurs encore absents ────
+  { name:"Dedryck Boyata", clubs:["Manchester City", "Bolton", "Twente", "Celtic", "Hertha Berlin", "Club Brugge"], diff:"expert", nationalities:["Belgique"], positions:["defenseur"], birthYear:1990 },
 ];
 
 export const RETIRED_PLAYERS = new Set([ "Esteban Cambiasso","Eusébio","Ezequiel Lavezzi","Fabien Barthez","Fabio Grosso","Fernando Redondo","Ferenc Puskás","Mehdi Benatia","Elano","Diego Milito","Dietmar Hamann","Dimitar Berbatov","Djibril Cissé","Dunga","Darren Bent","Daniele De Rossi","Christian Karembeu","Christophe Dugarry","Cristian Chivu","Bacary Sagna","Ben Foster","Bobby Charlton","Bobby Moore","Branislav Ivanović","Andrés Guardado","Antonio Valencia","Alfredo Di Stéfano","André Schürrle","Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe (Portugal)","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
