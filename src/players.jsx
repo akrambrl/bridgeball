@@ -4848,6 +4848,25 @@ export const PLAYERS = [
   { name:"Frédéric Piquionne", clubs:["Rennes", "Saint-Etienne", "Monaco", "Lyon", "Portsmouth", "West Ham", "Doncaster"], diff:"expert", nationalities:["France"], positions:["attaquant"], birthYear:1978 },
   { name:"John Utaka", clubs:["Al-Sadd", "Lens", "Rennes", "Portsmouth", "Montpellier", "Sivasspor"], diff:"expert", nationalities:["Nigeria"], positions:["attaquant"], birthYear:1982 },
   { name:"Tommy Smith", clubs:["Watford", "Sunderland", "Derby County", "Portsmouth", "QPR"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1980 },
+
+  // ── Enrichissement West Ham 2009-10 (17e, G. Zola) ──────────────────────
+  { name:"Robert Green", clubs:["Norwich", "West Ham", "QPR", "Leeds United", "Huddersfield", "Chelsea"], diff:"moyen", nationalities:["Angleterre"], positions:["gardien"], birthYear:1980 },
+  { name:"Matthew Upson", clubs:["Luton Town", "Arsenal", "Reading", "Birmingham City", "West Ham", "Stoke City", "Brighton", "Milton Keynes Dons"], diff:"moyen", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1979 },
+  { name:"James Tomkins", clubs:["West Ham", "Derby County", "Crystal Palace"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1989 },
+  { name:"Herita Ilunga", clubs:["Saint-Etienne", "Châteauroux", "Toulouse", "Rennes", "West Ham", "Doncaster"], diff:"expert", nationalities:["RD Congo"], positions:["defenseur"], birthYear:1982 },
+  { name:"Julien Faubert", clubs:["Bordeaux", "West Ham", "Real Madrid", "Elche", "Kilmarnock"], diff:"expert", nationalities:["France"], positions:["defenseur"], birthYear:1983 },
+  { name:"Danny Gabbidon", clubs:["West Brom", "Cardiff", "West Ham", "QPR", "Crystal Palace"], diff:"expert", nationalities:["Pays de Galles"], positions:["defenseur"], birthYear:1979 },
+  { name:"Manuel da Costa", clubs:["Nantes", "PSV", "ACF Fiorentina", "Sampdoria", "West Ham", "Sivasspor", "Lokomotiv Moscow", "Basaksehir"], diff:"expert", nationalities:["Maroc"], positions:["defenseur"], birthYear:1986 },
+  { name:"Mark Noble", clubs:["West Ham", "Hull City", "Ipswich Town"], diff:"moyen", nationalities:["Angleterre"], positions:["milieu"], birthYear:1987 },
+  { name:"Valon Behrami", clubs:["Lazio", "West Ham", "ACF Fiorentina", "Napoli", "Hamburger SV", "Watford", "Udinese", "Genoa CFC", "Sion"], diff:"moyen", nationalities:["Suisse"], positions:["milieu"], birthYear:1985 },
+  { name:"Luís Boa Morte", clubs:["Sporting CP", "Arsenal", "Southampton", "Fulham", "West Ham", "Larissa", "Chesterfield"], diff:"moyen", nationalities:["Portugal"], positions:["milieu"], birthYear:1977 },
+  { name:"Radoslav Kovac", clubs:["Sparta Prague", "Spartak Moscow", "West Ham", "Basel"], diff:"expert", nationalities:["Tchéquie"], positions:["milieu"], birthYear:1979 },
+  { name:"Alessandro Diamanti", clubs:["Livorno", "West Ham", "Brescia", "Bologna FC", "Guangzhou Evergrande", "ACF Fiorentina", "Atalanta", "Watford", "Perth Glory"], diff:"moyen", nationalities:["Italie"], positions:["milieu"], birthYear:1983 },
+  { name:"Jack Collison", clubs:["West Ham", "Ipswich Town", "Wigan Athletic", "Peterborough"], diff:"expert", nationalities:["Pays de Galles"], positions:["milieu"], birthYear:1988 },
+  { name:"Junior Stanislas", clubs:["West Ham", "Burnley", "Bournemouth"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:1989 },
+  { name:"Guillermo Franco", clubs:["Monterrey", "Villarreal", "West Ham"], diff:"expert", nationalities:["Mexique"], positions:["attaquant"], birthYear:1976 },
+  { name:"Zavon Hines", clubs:["West Ham", "Burnley", "Bournemouth", "Bradford City", "Maidenhead"], diff:"expert", nationalities:["Jamaïque"], positions:["attaquant"], birthYear:1988 },
+  { name:"Frank Nouble", clubs:["Chelsea", "West Ham", "Coventry", "Ipswich Town", "Plymouth"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1991 },
 ];
 
 export const RETIRED_PLAYERS = new Set([ "Esteban Cambiasso","Eusébio","Ezequiel Lavezzi","Fabien Barthez","Fabio Grosso","Fernando Redondo","Ferenc Puskás","Mehdi Benatia","Elano","Diego Milito","Dietmar Hamann","Dimitar Berbatov","Djibril Cissé","Dunga","Darren Bent","Daniele De Rossi","Christian Karembeu","Christophe Dugarry","Cristian Chivu","Bacary Sagna","Ben Foster","Bobby Charlton","Bobby Moore","Branislav Ivanović","Andrés Guardado","Antonio Valencia","Alfredo Di Stéfano","André Schürrle","Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe (Portugal)","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
