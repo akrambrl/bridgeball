@@ -1262,7 +1262,7 @@ export const PLAYERS = [
   { name:"Teddy Sheringham", clubs:["Manchester United", "Tottenham"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1966 },
   { name:"Andy Cole", clubs:["Manchester United", "Newcastle", "Blackburn"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1971 },
   { name:"Dwight Yorke", clubs:["Manchester United", "Aston Villa"], diff:"moyen", nationalities:["Trinité-et-Tobago"], positions:["attaquant"], birthYear:1971 },
-  { name:"Nwankwo Kanu", clubs:["Ajax Amsterdam", "Inter Milan", "Arsenal", "West Brom"], diff:"moyen", nationalities:["Nigeria"], positions:["attaquant"], birthYear:1976 },
+  { name:"Nwankwo Kanu", clubs:["Ajax Amsterdam", "Inter Milan", "Arsenal", "West Brom", "Portsmouth"], diff:"moyen", nationalities:["Nigeria"], positions:["attaquant"], birthYear:1976 },
   { name:"Abedi Pele", clubs:["Marseille", "Lille", "Lyon", "Torino FC"], diff:"moyen", nationalities:["Ghana"], positions:["attaquant"], birthYear:1964 },
   { name:"George Weah", clubs:["Marseille", "PSG", "AC Milan", "Chelsea"], diff:"moyen", nationalities:["Liberia"], positions:["attaquant"], birthYear:1966 },
   { name:"Jay-Jay Okocha", clubs:["PSG", "Bolton"], diff:"moyen", nationalities:["Nigeria"], positions:["milieu"], birthYear:1973 },
@@ -4833,6 +4833,21 @@ export const PLAYERS = [
   { name:"Craig Fagan", clubs:["Birmingham City", "Colchester", "Hull City", "Derby County", "Bradford City"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1982 },
   { name:"Caleb Folan", clubs:["Leeds United", "Chesterfield", "Wigan Athletic", "Hull City", "Colorado Rapids"], diff:"expert", nationalities:["Irlande"], positions:["attaquant"], birthYear:1982 },
   { name:"Amr Zaki", clubs:["Zamalek", "Lokomotiv Moscow", "Wigan Athletic", "Hull City", "Al-Ahli", "Elche"], diff:"expert", nationalities:["Égypte"], positions:["attaquant"], birthYear:1983 },
+
+  // ── Enrichissement Portsmouth 2009-10 (20e, finaliste FA Cup, A. Grant) ──
+  { name:"David James", clubs:["Watford", "Liverpool", "Aston Villa", "West Ham", "Manchester City", "Portsmouth", "Bristol City", "Bournemouth"], diff:"moyen", nationalities:["Angleterre"], positions:["gardien"], birthYear:1970 },
+  { name:"Marc Wilson", clubs:["Portsmouth", "Bournemouth", "Luton Town", "Stoke City", "Bolton", "Sunderland"], diff:"expert", nationalities:["Irlande"], positions:["defenseur"], birthYear:1987 },
+  { name:"Hermann Hreiðarsson", clubs:["Crystal Palace", "Brentford", "Wimbledon", "Ipswich Town", "Charlton", "Portsmouth", "Coventry"], diff:"expert", nationalities:["Islande"], positions:["defenseur"], birthYear:1974 },
+  { name:"Anthony Vanden Borre", clubs:["Anderlecht", "Genoa CFC", "ACF Fiorentina", "Portsmouth", "Montpellier"], diff:"expert", nationalities:["Belgique"], positions:["defenseur"], birthYear:1987 },
+  { name:"Nadir Belhadj", clubs:["Sochaux", "Lens", "Lyon", "Portsmouth", "Al-Sadd", "Al-Gharafa"], diff:"expert", nationalities:["Algérie"], positions:["defenseur"], birthYear:1982 },
+  { name:"Michael Brown", clubs:["Manchester City", "Sheffield United", "Tottenham", "Fulham", "Wigan Athletic", "Portsmouth", "Leeds United", "Port Vale"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:1977 },
+  { name:"Richard Hughes", clubs:["Arsenal", "Bournemouth", "Portsmouth", "Brighton"], diff:"expert", nationalities:["Écosse"], positions:["milieu"], birthYear:1979 },
+  { name:"Hassan Yebda", clubs:["Lyon", "Saint-Etienne", "Ajaccio", "Benfica", "Portsmouth", "Napoli", "Granada", "Udinese"], diff:"expert", nationalities:["Algérie"], positions:["milieu"], birthYear:1984 },
+  { name:"Angelos Basinas", clubs:["Panathinaikos", "Mallorca", "AEK Athens", "Portsmouth"], diff:"expert", nationalities:["Grèce"], positions:["milieu"], birthYear:1976 },
+  { name:"Aruna Dindane", clubs:["Anderlecht", "Lens", "Portsmouth", "Lekhwiya"], diff:"expert", nationalities:["Côte d'Ivoire"], positions:["attaquant"], birthYear:1980 },
+  { name:"Frédéric Piquionne", clubs:["Rennes", "Saint-Etienne", "Monaco", "Lyon", "Portsmouth", "West Ham", "Doncaster"], diff:"expert", nationalities:["France"], positions:["attaquant"], birthYear:1978 },
+  { name:"John Utaka", clubs:["Al-Sadd", "Lens", "Rennes", "Portsmouth", "Montpellier", "Sivasspor"], diff:"expert", nationalities:["Nigeria"], positions:["attaquant"], birthYear:1982 },
+  { name:"Tommy Smith", clubs:["Watford", "Sunderland", "Derby County", "Portsmouth", "QPR"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1980 },
 ];
 
 export const RETIRED_PLAYERS = new Set([ "Esteban Cambiasso","Eusébio","Ezequiel Lavezzi","Fabien Barthez","Fabio Grosso","Fernando Redondo","Ferenc Puskás","Mehdi Benatia","Elano","Diego Milito","Dietmar Hamann","Dimitar Berbatov","Djibril Cissé","Dunga","Darren Bent","Daniele De Rossi","Christian Karembeu","Christophe Dugarry","Cristian Chivu","Bacary Sagna","Ben Foster","Bobby Charlton","Bobby Moore","Branislav Ivanović","Andrés Guardado","Antonio Valencia","Alfredo Di Stéfano","André Schürrle","Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe (Portugal)","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
