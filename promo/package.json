@@ -1,0 +1,22 @@
+{
+  "name": "bridgeball-promo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Animated promo video (MP4) for the GOAT FC / Bridgeball game, built with Remotion.",
+  "scripts": {
+    "preview": "remotion studio",
+    "render": "remotion render Ad out/goatfc-promo.mp4"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.469",
+    "@sparticuz/chromium": "^149.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "remotion": "4.0.469"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.23",
+    "@types/react-dom": "^18.3.7",
+    "typescript": "^5.8.3"
+  }
+}
