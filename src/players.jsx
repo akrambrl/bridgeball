@@ -4901,6 +4901,27 @@ export const PLAYERS = [
   { name:"Somen Tchoyi", clubs:["MSV Duisburg", "Red Bull Salzburg", "West Brom", "Birmingham City"], diff:"expert", nationalities:["Cameroun"], positions:["attaquant"], birthYear:1983 },
   { name:"Roman Bednar", clubs:["Mladá Boleslav", "Kaiserslautern", "Hearts", "West Brom", "Leicester City", "Blackpool"], diff:"expert", nationalities:["Tchéquie"], positions:["attaquant"], birthYear:1983 },
   { name:"Simon Cox", clubs:["Reading", "Brentford", "Swindon", "West Brom", "Nottingham Forest", "Southend"], diff:"expert", nationalities:["Irlande"], positions:["attaquant"], birthYear:1987 },
+
+  // ── Enrichissement Blackpool 2010-11 (19e, promu, I. Holloway) ──────────
+  { name:"Matt Gilks", clubs:["Rochdale", "Norwich", "Blackpool", "Burnley", "Rangers", "Scunthorpe", "Fleetwood"], diff:"expert", nationalities:["Écosse"], positions:["gardien"], birthYear:1982 },
+  { name:"Richard Kingson", clubs:["Galatasaray", "Birmingham City", "Wigan Athletic", "Blackpool"], diff:"expert", nationalities:["Ghana"], positions:["gardien"], birthYear:1978 },
+  { name:"Stephen Crainey", clubs:["Celtic", "Southampton", "Leeds United", "Blackpool", "Fleetwood"], diff:"expert", nationalities:["Écosse"], positions:["defenseur"], birthYear:1981 },
+  { name:"Ian Evatt", clubs:["Derby County", "Chesterfield", "QPR", "Blackpool"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1981 },
+  { name:"Craig Cathcart", clubs:["Manchester United", "Plymouth", "Blackpool", "Watford"], diff:"moyen", nationalities:["Irlande du Nord"], positions:["defenseur"], birthYear:1989 },
+  { name:"Alex Baptiste", clubs:["Mansfield", "Blackpool", "Bolton", "Middlesbrough", "Preston", "Salford City"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1986 },
+  { name:"Neal Eardley", clubs:["Oldham", "Blackpool", "Birmingham City", "Lincoln"], diff:"expert", nationalities:["Pays de Galles"], positions:["defenseur"], birthYear:1988 },
+  { name:"David Carney", clubs:["Sydney FC", "Halmstad", "Sheffield United", "Blackpool", "Twente", "Bunyodkor", "New York Red Bulls", "Newcastle Jets"], diff:"expert", nationalities:["Australie"], positions:["defenseur"], birthYear:1983 },
+  { name:"Chris Basham", clubs:["Bolton", "Rochdale", "Blackpool", "Sheffield United"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1988 },
+  { name:"Charlie Adam", clubs:["Rangers", "Ross County", "Blackpool", "Liverpool", "Stoke City", "Reading"], diff:"moyen", nationalities:["Écosse"], positions:["milieu"], birthYear:1985 },
+  { name:"David Vaughan", clubs:["Crewe", "Real Sociedad", "Blackpool", "Sunderland", "Nottingham Forest", "Notts County"], diff:"expert", nationalities:["Pays de Galles"], positions:["milieu"], birthYear:1983 },
+  { name:"Keith Southern", clubs:["Everton", "Blackpool", "Huddersfield"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:1981 },
+  { name:"Elliot Grandin", clubs:["Le Havre", "Caen", "CSKA Sofia", "Blackpool", "Cardiff"], diff:"expert", nationalities:["France"], positions:["milieu"], birthYear:1987 },
+  { name:"Ludovic Sylvestre", clubs:["Monaco", "Mladá Boleslav", "Blackpool"], diff:"expert", nationalities:["France"], positions:["milieu"], birthYear:1984 },
+  { name:"Gary Taylor-Fletcher", clubs:["Leyton Orient", "Hull City", "Lincoln", "Huddersfield", "Blackpool", "Leicester City", "Millwall"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1981 },
+  { name:"DJ Campbell", clubs:["Brentford", "Birmingham City", "Leicester City", "Blackpool", "QPR"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1981 },
+  { name:"Brett Ormerod", clubs:["Blackpool", "Southampton", "Preston", "Nottingham Forest", "Wigan Athletic"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1976 },
+  { name:"Luke Varney", clubs:["Crewe", "Charlton", "Derby County", "Blackpool", "Portsmouth", "Leeds United", "Ipswich Town", "Burton Albion"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1982 },
+  { name:"Marlon Harewood", clubs:["Nottingham Forest", "West Ham", "Aston Villa", "Wolverhampton", "Newcastle", "Blackpool", "Barnsley", "Bristol City"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1979 },
 ];
 
 export const RETIRED_PLAYERS = new Set([ "Esteban Cambiasso","Eusébio","Ezequiel Lavezzi","Fabien Barthez","Fabio Grosso","Fernando Redondo","Ferenc Puskás","Mehdi Benatia","Elano","Diego Milito","Dietmar Hamann","Dimitar Berbatov","Djibril Cissé","Dunga","Darren Bent","Daniele De Rossi","Christian Karembeu","Christophe Dugarry","Cristian Chivu","Bacary Sagna","Ben Foster","Bobby Charlton","Bobby Moore","Branislav Ivanović","Andrés Guardado","Antonio Valencia","Alfredo Di Stéfano","André Schürrle","Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe (Portugal)","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
