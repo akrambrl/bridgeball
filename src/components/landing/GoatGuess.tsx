@@ -210,6 +210,14 @@ const ANEC_TRANSFERT_RIVAUX = new Set([
   "Gonzalo Higuain", // Naples → Juventus, 2016
   "Ashley Cole",     // Arsenal → Chelsea, 2006
 ]);
+const ANEC_TRANSFERT_100M = new Set([
+  // A fait l'objet d'au moins un transfert > 100 M€
+  "Neymar", "Kylian Mbappé", "Philippe Coutinho", "Ousmane Dembélé", "João Félix",
+  "Enzo Fernández", "Jack Grealish", "Declan Rice", "Moisés Caicedo",
+  "Jude Bellingham", "Paul Pogba", "Gareth Bale", "Cristiano Ronaldo",
+  "Antoine Griezmann", "Romelu Lukaku", "Eden Hazard", "Florian Wirtz",
+  "Alexander Isak",
+]);
 const ANEC_FRATRIE = new Set([
   // A (au moins) un frère footballeur.
   // Paires dont les deux frères sont présents en base :
@@ -722,6 +730,11 @@ const QUESTIONS: Question[] = [
     id: "anec-transfert-record", category: "anecdote",
     label: "A-t-il été, à son époque, le joueur le plus cher du monde ?",
     predicate: (p) => ANEC_TRANSFERT_RECORD.has(p.name),
+  },
+  {
+    id: "anec-transfert-100m", category: "anecdote",
+    label: "A-t-il fait l'objet d'un transfert à plus de 100 millions d'euros ?",
+    predicate: (p) => ANEC_TRANSFERT_100M.has(p.name),
   },
   {
     id: "anec-fils-pro", category: "anecdote",

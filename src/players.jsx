@@ -5214,6 +5214,8 @@ export const PLAYERS = [
   // ── Anciens joueurs surtout connus comme entraîneurs ────────────────────
   { name:"Carlo Ancelotti", clubs:["Parma FC", "AS Roma", "AC Milan"], diff:"moyen", nationalities:["Italie"], positions:["milieu"], birthYear:1959 },
   { name:"Rudi Garcia", clubs:["Lille", "Caen", "Martigues"], diff:"expert", nationalities:["France"], positions:["milieu"], birthYear:1964 },
+
+  { name:"Enzo Fernández", clubs:["River Plate", "Defensa y Justicia", "Benfica", "Chelsea"], diff:"moyen", nationalities:["Argentine"], positions:["milieu"], birthYear:2001 },
 ];
 
 export const RETIRED_PLAYERS = new Set([ "Esteban Cambiasso","Eusébio","Ezequiel Lavezzi","Fabien Barthez","Fabio Grosso","Fernando Redondo","Ferenc Puskás","Mehdi Benatia","Elano","Diego Milito","Dietmar Hamann","Dimitar Berbatov","Djibril Cissé","Dunga","Darren Bent","Daniele De Rossi","Christian Karembeu","Christophe Dugarry","Cristian Chivu","Bacary Sagna","Ben Foster","Bobby Charlton","Bobby Moore","Branislav Ivanović","Andrés Guardado","Antonio Valencia","Alfredo Di Stéfano","André Schürrle","Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe (Portugal)","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
