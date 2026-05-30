@@ -4886,6 +4886,21 @@ export const PLAYERS = [
   { name:"Leon Best", clubs:["Southampton", "QPR", "Sheffield Wednesday", "Coventry", "Newcastle", "Blackburn", "Brighton", "Ipswich Town"], diff:"expert", nationalities:["Irlande"], positions:["attaquant"], birthYear:1986 },
   { name:"Peter Løvenkrands", clubs:["AB Copenhagen", "Rangers", "Schalke", "Newcastle", "Birmingham City", "Hamburger SV"], diff:"expert", nationalities:["Danemark"], positions:["attaquant"], birthYear:1980 },
   { name:"Nile Ranger", clubs:["Newcastle", "Sheffield Wednesday", "Swindon", "Blackpool", "Southend"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1991 },
+
+  // ── Enrichissement West Brom 2010-11 (11e, R. Di Matteo puis R. Hodgson) ─
+  { name:"Gabriel Tamas", clubs:["Dinamo Bucarest", "Galatasaray", "Spartak Moscow", "Auxerre", "Celta Vigo", "West Brom", "Doncaster", "Cardiff", "Watford"], diff:"expert", nationalities:["Roumanie"], positions:["defenseur"], birthYear:1983 },
+  { name:"Jonas Olsson", clubs:["Västra Frölunda", "NEC Nijmegen", "West Brom", "Djurgården"], diff:"expert", nationalities:["Suède"], positions:["defenseur"], birthYear:1983 },
+  { name:"Nicky Shorey", clubs:["Leyton Orient", "Reading", "Aston Villa", "Nottingham Forest", "Fulham", "West Brom", "Bristol City", "Colchester"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1981 },
+  { name:"Gonzalo Jara", clubs:["Huachipato", "Colo-Colo", "West Brom", "Brighton", "Nottingham Forest", "Mainz", "Universidad de Chile", "Estudiantes", "San Lorenzo"], diff:"expert", nationalities:["Chili"], positions:["defenseur"], birthYear:1985 },
+  { name:"Marek Cech", clubs:["Spartak Trnava", "Hannover", "Porto", "West Brom", "Trabzonspor"], diff:"expert", nationalities:["Slovaquie"], positions:["defenseur"], birthYear:1983 },
+  { name:"Youssouf Mulumbu", clubs:["Paris Saint-Germain", "Amiens", "West Brom", "Norwich", "Kilmarnock", "Celtic"], diff:"expert", nationalities:["RD Congo"], positions:["milieu"], birthYear:1987 },
+  { name:"Chris Brunt", clubs:["Middlesbrough", "Sheffield Wednesday", "West Brom", "Bristol City"], diff:"expert", nationalities:["Irlande du Nord"], positions:["milieu"], birthYear:1984 },
+  { name:"Graham Dorrans", clubs:["Livingston", "West Brom", "Norwich", "Rangers", "Dundee United"], diff:"expert", nationalities:["Écosse"], positions:["milieu"], birthYear:1987 },
+  { name:"James Morrison", clubs:["Middlesbrough", "West Brom"], diff:"moyen", nationalities:["Écosse"], positions:["milieu"], birthYear:1986 },
+  { name:"Marc-Antoine Fortuné", clubs:["Brest", "Nancy", "Utrecht", "Celtic", "West Brom", "Wigan Athletic", "Doncaster", "Coventry"], diff:"expert", nationalities:["France"], positions:["attaquant"], birthYear:1981 },
+  { name:"Somen Tchoyi", clubs:["MSV Duisburg", "Red Bull Salzburg", "West Brom", "Birmingham City"], diff:"expert", nationalities:["Cameroun"], positions:["attaquant"], birthYear:1983 },
+  { name:"Roman Bednar", clubs:["Mladá Boleslav", "Kaiserslautern", "Hearts", "West Brom", "Leicester City", "Blackpool"], diff:"expert", nationalities:["Tchéquie"], positions:["attaquant"], birthYear:1983 },
+  { name:"Simon Cox", clubs:["Reading", "Brentford", "Swindon", "West Brom", "Nottingham Forest", "Southend"], diff:"expert", nationalities:["Irlande"], positions:["attaquant"], birthYear:1987 },
 ];
 
 export const RETIRED_PLAYERS = new Set([ "Esteban Cambiasso","Eusébio","Ezequiel Lavezzi","Fabien Barthez","Fabio Grosso","Fernando Redondo","Ferenc Puskás","Mehdi Benatia","Elano","Diego Milito","Dietmar Hamann","Dimitar Berbatov","Djibril Cissé","Dunga","Darren Bent","Daniele De Rossi","Christian Karembeu","Christophe Dugarry","Cristian Chivu","Bacary Sagna","Ben Foster","Bobby Charlton","Bobby Moore","Branislav Ivanović","Andrés Guardado","Antonio Valencia","Alfredo Di Stéfano","André Schürrle","Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe (Portugal)","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
