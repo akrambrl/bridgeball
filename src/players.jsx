@@ -1266,7 +1266,7 @@ export const PLAYERS = [
   { name:"Abedi Pele", clubs:["Marseille", "Lille", "Lyon", "Torino FC"], diff:"moyen", nationalities:["Ghana"], positions:["attaquant"], birthYear:1964 },
   { name:"George Weah", clubs:["Marseille", "PSG", "AC Milan", "Chelsea"], diff:"moyen", nationalities:["Liberia"], positions:["attaquant"], birthYear:1966 },
   { name:"Jay-Jay Okocha", clubs:["PSG", "Bolton"], diff:"moyen", nationalities:["Nigeria"], positions:["milieu"], birthYear:1973 },
-  { name:"El Hadji Diouf", clubs:["Lens", "Liverpool", "Bolton"], diff:"moyen", nationalities:["Sénégal"], positions:["milieu"], birthYear:1981 },
+  { name:"El Hadji Diouf", clubs:["Lens", "Liverpool", "Bolton", "Sunderland", "Blackburn", "Doncaster", "Leeds United"], diff:"moyen", nationalities:["Sénégal"], positions:["milieu"], birthYear:1981 },
   { name:"Oliver Neuville", clubs:["Borussia Dortmund", "Bayer Leverkusen"], diff:"moyen", nationalities:["Allemagne"], positions:["attaquant"], birthYear:1973 },
   { name:"Alessandro Del Piero", clubs:["Juventus FC", "Sydney FC", "Delhi Dynamos"], diff:"facile", nationalities:["Italie"], positions:["attaquant"], birthYear:1974 },
   { name:"Francesco Totti", clubs:["AS Roma"], diff:"facile", nationalities:["Italie"], positions:["milieu"], birthYear:1976 },
@@ -5055,6 +5055,11 @@ export const PLAYERS = [
   { name:"Martin Jiránek", clubs:["Reggina", "Spartak Moscow", "Birmingham City", "Terek Grozny"], diff:"expert", nationalities:["Tchéquie"], positions:["defenseur"], birthYear:1979 },
   { name:"Stuart Parnaby", clubs:["Middlesbrough", "Birmingham City", "Bristol City"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1982 },
   { name:"Jordon Mutch", clubs:["Birmingham City", "Cardiff", "QPR", "Crystal Palace", "Vancouver Whitecaps", "Reading"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:1991 },
+
+  // ── Audit effectifs Blackburn 2009-12 : joueurs encore absents ──────────
+  { name:"Mark Bunn", clubs:["Northampton", "Blackburn", "Norwich", "Aston Villa", "Healing Island"], diff:"expert", nationalities:["Angleterre"], positions:["gardien"], birthYear:1984 },
+  { name:"Grant Hanley", clubs:["Blackburn", "Newcastle", "Norwich", "Birmingham City"], diff:"expert", nationalities:["Écosse"], positions:["defenseur"], birthYear:1991 },
+  { name:"Simon Vukčević", clubs:["Partizan", "Sporting CP", "Blackburn"], diff:"expert", nationalities:["Monténégro"], positions:["milieu"], birthYear:1986 },
 ];
 
 export const RETIRED_PLAYERS = new Set([ "Esteban Cambiasso","Eusébio","Ezequiel Lavezzi","Fabien Barthez","Fabio Grosso","Fernando Redondo","Ferenc Puskás","Mehdi Benatia","Elano","Diego Milito","Dietmar Hamann","Dimitar Berbatov","Djibril Cissé","Dunga","Darren Bent","Daniele De Rossi","Christian Karembeu","Christophe Dugarry","Cristian Chivu","Bacary Sagna","Ben Foster","Bobby Charlton","Bobby Moore","Branislav Ivanović","Andrés Guardado","Antonio Valencia","Alfredo Di Stéfano","André Schürrle","Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe (Portugal)","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
