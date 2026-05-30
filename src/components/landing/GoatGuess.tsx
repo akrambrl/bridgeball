@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { PLAYERS, RETIRED_PLAYERS, GG_WC_WINNERS, GG_CL_WINNERS } from "../../players.jsx";
+import { PLAYERS, RETIRED_PLAYERS, GG_WC_WINNERS, GG_CL_WINNERS, GG_BALLON_DOR, GG_BALLON_DOR_MULTI } from "../../players.jsx";
 
 type Player = {
   name: string;
@@ -272,15 +272,8 @@ const ANEC_BUT_FINALE_CDM = new Set([
   "Antoine Griezmann", "Mario Götze", "Marco Materazzi", "Pelé",
   "Gerd Müller", "Andres Iniesta", "Ronaldo Nazário",
 ]);
-const ANEC_BALLON_DOR = new Set([
-  // A remporté le Ballon d'Or
-  "Lionel Messi", "Cristiano Ronaldo", "Luka Modrić", "Karim Benzema", "Rodri",
-  "Fabio Cannavaro", "Ronaldinho", "Kaká", "Luis Figo", "Zinédine Zidane",
-  "Rivaldo", "Michael Owen", "Andriy Shevchenko", "Pavel Nedvěd", "George Weah",
-  "Hristo Stoichkov", "Marco van Basten", "Ruud Gullit", "Jean-Pierre Papin",
-  "Roberto Baggio", "Michel Platini", "Franz Beckenbauer", "Johan Cruyff",
-  "Ronaldo Nazário", "Lothar Matthaus",
-]);
+// La liste complète des lauréats du Ballon d'Or (1956→2025) est désormais
+// centralisée dans players.jsx (GG_BALLON_DOR) — voir la question "anec-ballon-dor".
 const ANEC_PENALTY_FINALE = new Set([
   // A raté un penalty resté célèbre lors d'une grande finale
   "Roberto Baggio",  // tir au but raté, finale CdM 1994
@@ -657,7 +650,12 @@ const QUESTIONS: Question[] = [
   {
     id: "anec-ballon-dor", category: "anecdote",
     label: "A-t-il remporté le Ballon d'Or ?",
-    predicate: (p) => ANEC_BALLON_DOR.has(p.name),
+    predicate: (p) => GG_BALLON_DOR.has(p.name),
+  },
+  {
+    id: "anec-ballon-dor-multi", category: "anecdote",
+    label: "A-t-il remporté plusieurs Ballons d'Or ?",
+    predicate: (p) => GG_BALLON_DOR_MULTI.has(p.name),
   },
   {
     id: "anec-penalty-finale", category: "anecdote",

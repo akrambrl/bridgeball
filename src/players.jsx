@@ -5197,6 +5197,19 @@ export const PLAYERS = [
   { name:"Ricardo Vaz Tê", clubs:["Bolton", "Hull City", "Barnsley", "West Ham", "Akhisar", "Charlton"], diff:"expert", nationalities:["Portugal"], positions:["attaquant"], birthYear:1986 },
   { name:"Gary O'Neil", clubs:["Portsmouth", "Middlesbrough", "West Ham", "QPR", "Norwich", "Bristol City", "Bolton"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:1983 },
   { name:"Stephen Henderson", clubs:["Bristol City", "Portsmouth", "West Ham", "Charlton", "Nottingham Forest", "Crystal Palace"], diff:"expert", nationalities:["Irlande"], positions:["gardien"], birthYear:1988 },
+
+  // ── Lauréats du Ballon d'Or absents de la base (légendes 1956-1996) ──────
+  { name:"Stanley Matthews", clubs:["Stoke City", "Blackpool"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1915 },
+  { name:"Raymond Kopa", clubs:["Angers", "Reims", "Real Madrid"], diff:"expert", nationalities:["France"], positions:["attaquant"], birthYear:1931 },
+  { name:"Luis Suárez (Espagne)", clubs:["Deportivo La Coruna", "Barcelona", "Inter Milan", "Sampdoria"], diff:"expert", nationalities:["Espagne"], positions:["milieu"], birthYear:1935 },
+  { name:"Omar Sívori", clubs:["River Plate", "Juventus", "Napoli"], diff:"expert", nationalities:["Argentine"], positions:["attaquant"], birthYear:1935 },
+  { name:"Josef Masopust", clubs:["Dukla Prague", "Crossing Molenbeek"], diff:"expert", nationalities:["Tchéquie"], positions:["milieu"], birthYear:1931 },
+  { name:"Lev Yachine", clubs:["Dynamo Moscow"], diff:"moyen", nationalities:["Russie"], positions:["gardien"], birthYear:1929 },
+  { name:"Denis Law", clubs:["Huddersfield", "Manchester City", "Torino", "Manchester United"], diff:"expert", nationalities:["Écosse"], positions:["attaquant"], birthYear:1940 },
+  { name:"Flórián Albert", clubs:["Ferencváros"], diff:"expert", nationalities:["Hongrie"], positions:["attaquant"], birthYear:1941 },
+  { name:"Oleg Blokhine", clubs:["Dynamo Kyiv", "Vorwärts Steyr", "Aris"], diff:"expert", nationalities:["Ukraine"], positions:["attaquant"], birthYear:1952 },
+  { name:"Allan Simonsen", clubs:["Vejle", "Borussia Mönchengladbach", "Barcelona", "Charlton"], diff:"expert", nationalities:["Danemark"], positions:["attaquant"], birthYear:1952 },
+  { name:"Matthias Sammer", clubs:["Dynamo Dresden", "VfB Stuttgart", "Inter Milan", "Borussia Dortmund"], diff:"moyen", nationalities:["Allemagne"], positions:["defenseur"], birthYear:1967 },
 ];
 
 export const RETIRED_PLAYERS = new Set([ "Esteban Cambiasso","Eusébio","Ezequiel Lavezzi","Fabien Barthez","Fabio Grosso","Fernando Redondo","Ferenc Puskás","Mehdi Benatia","Elano","Diego Milito","Dietmar Hamann","Dimitar Berbatov","Djibril Cissé","Dunga","Darren Bent","Daniele De Rossi","Christian Karembeu","Christophe Dugarry","Cristian Chivu","Bacary Sagna","Ben Foster","Bobby Charlton","Bobby Moore","Branislav Ivanović","Andrés Guardado","Antonio Valencia","Alfredo Di Stéfano","André Schürrle","Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe (Portugal)","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
@@ -5647,4 +5660,31 @@ export const GG_CL_WINNERS = new Set([
   "Willian Pacho","Nuno Mendes","Presnel Kimpembe","Lucas Beraldo","Vitinha","João Neves",
   "Fabián Ruiz","Warren Zaïre-Emery","Lee Kang-in","Senny Mayulu","Ousmane Dembélé",
   "Khvicha Kvaratskhelia","Désiré Doué","Gonçalo Ramos","Bradley Barcola",
+]);
+
+// ─── Vainqueurs du Ballon d'Or masculin (1956 → 2025, pas de Ballon d'Or 2020) ───
+// Noms orthographiés exactement comme dans PLAYERS ci-dessus. Le lauréat 1960
+// est l'Espagnol "Luis Suárez (Espagne)" — à ne pas confondre avec l'Uruguayen
+// Luis Suárez (né en 1987) qui n'a jamais gagné le Ballon d'Or.
+export const GG_BALLON_DOR = new Set([
+  "Stanley Matthews", "Alfredo Di Stéfano", "Raymond Kopa", "Luis Suárez (Espagne)",
+  "Omar Sívori", "Josef Masopust", "Lev Yachine", "Denis Law", "Eusébio",
+  "Bobby Charlton", "Flórián Albert", "George Best", "Gianni Rivera", "Gerd Müller",
+  "Johan Cruyff", "Franz Beckenbauer", "Oleg Blokhine", "Allan Simonsen",
+  "Kevin Keegan", "Karl-Heinz Rummenigge", "Paolo Rossi", "Michel Platini",
+  "Igor Belanov", "Ruud Gullit", "Marco van Basten", "Lothar Matthaus",
+  "Jean-Pierre Papin", "Roberto Baggio", "Hristo Stoichkov", "George Weah",
+  "Matthias Sammer", "Ronaldo Nazário", "Zinédine Zidane", "Rivaldo", "Luis Figo",
+  "Michael Owen", "Pavel Nedvěd", "Andriy Shevchenko", "Ronaldinho",
+  "Fabio Cannavaro", "Kaká", "Cristiano Ronaldo", "Lionel Messi", "Luka Modrić",
+  "Karim Benzema", "Rodri", "Ousmane Dembélé",
+]);
+
+// Lauréats à plusieurs Ballons d'Or (≥ 2) — discriminant des tout meilleurs.
+// Messi (8), C. Ronaldo (5), Platini/Cruyff/van Basten (3), Di Stéfano/
+// Beckenbauer/Keegan/Rummenigge/Ronaldo (2).
+export const GG_BALLON_DOR_MULTI = new Set([
+  "Lionel Messi", "Cristiano Ronaldo", "Michel Platini", "Johan Cruyff",
+  "Marco van Basten", "Alfredo Di Stéfano", "Franz Beckenbauer", "Kevin Keegan",
+  "Karl-Heinz Rummenigge", "Ronaldo Nazário",
 ]);
