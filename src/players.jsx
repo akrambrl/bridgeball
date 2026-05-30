@@ -5035,6 +5035,10 @@ export const PLAYERS = [
   { name:"Ali Al-Habsi", clubs:["Lyn Oslo", "Bolton", "Wigan Athletic", "Reading", "Al-Hilal"], diff:"moyen", nationalities:["Oman"], positions:["gardien"], birthYear:1981 },
   { name:"Shaun Maloney", clubs:["Celtic", "Aston Villa", "Wigan Athletic", "Chicago Fire", "Hull City"], diff:"expert", nationalities:["Écosse"], positions:["milieu"], birthYear:1983 },
   { name:"Conor Sammon", clubs:["UCD", "Kilmarnock", "Wigan Athletic", "Derby County", "Ipswich Town", "Sheffield United", "Hearts", "Partick Thistle"], diff:"expert", nationalities:["Irlande"], positions:["attaquant"], birthYear:1987 },
+
+  // ── Audit effectifs Arsenal 2009-12 : joueurs encore absents ────────────
+  { name:"Ryo Miyaichi", clubs:["Arsenal", "Feyenoord", "Bolton", "Wigan Athletic", "Twente", "St Pauli", "Yokohama F. Marinos"], diff:"expert", nationalities:["Japon"], positions:["attaquant"], birthYear:1992 },
+  { name:"Ignasi Miquel", clubs:["Arsenal", "Leicester City", "Norwich", "Girona", "Almería", "Mirandés"], diff:"expert", nationalities:["Espagne"], positions:["defenseur"], birthYear:1992 },
 ];
 
 export const RETIRED_PLAYERS = new Set([ "Esteban Cambiasso","Eusébio","Ezequiel Lavezzi","Fabien Barthez","Fabio Grosso","Fernando Redondo","Ferenc Puskás","Mehdi Benatia","Elano","Diego Milito","Dietmar Hamann","Dimitar Berbatov","Djibril Cissé","Dunga","Darren Bent","Daniele De Rossi","Christian Karembeu","Christophe Dugarry","Cristian Chivu","Bacary Sagna","Ben Foster","Bobby Charlton","Bobby Moore","Branislav Ivanović","Andrés Guardado","Antonio Valencia","Alfredo Di Stéfano","André Schürrle","Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe (Portugal)","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
