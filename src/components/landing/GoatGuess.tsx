@@ -10,7 +10,7 @@ type Player = {
   birthYear?: number;
 };
 
-type QCategory = "cont" | "nat" | "league" | "club" | "pos" | "era" | "profile" | "anecdote";
+type QCategory = "cont" | "nat" | "league" | "club" | "pos" | "era" | "profile" | "anecdote" | "physique";
 
 type Question = {
   id: string;
@@ -389,6 +389,31 @@ const ANEC_JOUE_40 = new Set([
   "Alessandro Costacurta", "Pepe Reina", "Gianluca Pagliuca",
 ]);
 
+// ─── Apparence physique / signe distinctif visuel ───
+// Faits visuels marquants : ne discriminent qu'en fin de partie (peu de joueurs
+// concernés), exactement quand il faut départager les derniers candidats.
+const PHYS_PROTECTION = new Set([
+  "Victor Osimhen", // masque de protection
+  "Petr Čech",      // casque (head guard)
+  "Edgar Davids",   // lunettes de protection
+]);
+const PHYS_CICATRICE = new Set(["Franck Ribéry"]); // cicatrices au visage
+const PHYS_AFRO = new Set(["Carlos Valderrama", "Marouane Fellaini", "Marcelo"]);
+const PHYS_MOHAWK = new Set(["Marek Hamšík"]); // crête
+const PHYS_DREADS = new Set(["Ruud Gullit"]); // dreadlocks
+const PHYS_CHEVEUX_LONGS = new Set([
+  "David Luiz", "Carles Puyol", "Andrea Pirlo", "Luka Modrić", "René Higuita",
+]);
+const PHYS_QUEUE = new Set(["Roberto Baggio"]); // queue de cheval (codino)
+const PHYS_BARBE = new Set(["Karim Benzema", "Mohamed Salah", "Andrea Pirlo"]);
+const PHYS_TATOUE = new Set(["Sergio Ramos", "David Beckham"]);
+const PHYS_COIFFURE = new Set(["Neymar", "Paul Pogba", "Antoine Griezmann"]);
+const PHYS_SOURIRE = new Set(["Ronaldinho"]);
+const PHYS_CHAUVE = new Set(["Arjen Robben", "Zinédine Zidane", "Jaap Stam"]);
+const PHYS_PETIT = new Set(["N'Golo Kanté", "Lionel Messi"]); // ≤ 1m70
+const PHYS_GRAND = new Set(["Peter Crouch", "Erling Haaland", "Virgil van Dijk"]); // > 1m90
+const PHYS_COUPE_2002 = new Set(["Ronaldo Nazário"]); // coupe culte CdM 2002
+
 const QUESTIONS: Question[] = [
   // Postes
   { id: "is-gk", category: "pos", label: "Est-ce un gardien de but ?", predicate: (p) => isUniquelyPos(p, POS_GARDIEN) },
@@ -722,6 +747,83 @@ const QUESTIONS: Question[] = [
     label: "A-t-il joué à la fois au PSG et à l'Olympique de Marseille ?",
     predicate: (p) => playedFor(p, "PSG") && playedFor(p, "Marseille"),
   },
+
+  // Apparence physique / signe distinctif (départage de fin de partie)
+  {
+    id: "phys-protection", category: "physique",
+    label: "A-t-il joué avec une protection sur le visage ou la tête (masque, casque, lunettes) ?",
+    predicate: (p) => PHYS_PROTECTION.has(p.name),
+  },
+  {
+    id: "phys-cicatrice", category: "physique",
+    label: "A-t-il une cicatrice visible sur le visage ?",
+    predicate: (p) => PHYS_CICATRICE.has(p.name),
+  },
+  {
+    id: "phys-afro", category: "physique",
+    label: "Est-il reconnaissable à sa coupe afro ?",
+    predicate: (p) => PHYS_AFRO.has(p.name),
+  },
+  {
+    id: "phys-mohawk", category: "physique",
+    label: "A-t-il porté une crête (mohawk) ?",
+    predicate: (p) => PHYS_MOHAWK.has(p.name),
+  },
+  {
+    id: "phys-dreads", category: "physique",
+    label: "A-t-il porté de longues dreadlocks ?",
+    predicate: (p) => PHYS_DREADS.has(p.name),
+  },
+  {
+    id: "phys-cheveux-longs", category: "physique",
+    label: "Est-il connu pour ses cheveux longs ?",
+    predicate: (p) => PHYS_CHEVEUX_LONGS.has(p.name),
+  },
+  {
+    id: "phys-queue", category: "physique",
+    label: "A-t-il porté une queue de cheval iconique ?",
+    predicate: (p) => PHYS_QUEUE.has(p.name),
+  },
+  {
+    id: "phys-barbe", category: "physique",
+    label: "A-t-il une barbe très reconnaissable ?",
+    predicate: (p) => PHYS_BARBE.has(p.name),
+  },
+  {
+    id: "phys-tatoue", category: "physique",
+    label: "Est-il connu pour être très tatoué ?",
+    predicate: (p) => PHYS_TATOUE.has(p.name),
+  },
+  {
+    id: "phys-coiffure", category: "physique",
+    label: "Change-t-il souvent de coiffure (coupes originales) ?",
+    predicate: (p) => PHYS_COIFFURE.has(p.name),
+  },
+  {
+    id: "phys-sourire", category: "physique",
+    label: "Est-il célèbre pour son grand sourire ?",
+    predicate: (p) => PHYS_SOURIRE.has(p.name),
+  },
+  {
+    id: "phys-chauve", category: "physique",
+    label: "Est-il chauve ou dégarni ?",
+    predicate: (p) => PHYS_CHAUVE.has(p.name),
+  },
+  {
+    id: "phys-petit", category: "physique",
+    label: "Est-il de petit gabarit (1m70 ou moins) ?",
+    predicate: (p) => PHYS_PETIT.has(p.name),
+  },
+  {
+    id: "phys-grand", category: "physique",
+    label: "Mesure-t-il plus d'1m90 (très grand) ?",
+    predicate: (p) => PHYS_GRAND.has(p.name),
+  },
+  {
+    id: "phys-coupe-2002", category: "physique",
+    label: "A-t-il arboré une coupe de cheveux culte à la Coupe du Monde 2002 ?",
+    predicate: (p) => PHYS_COUPE_2002.has(p.name),
+  },
 ];
 
 // Entropie binaire — plus c'est élevé (max=1), mieux la question discrimine.
@@ -747,6 +849,7 @@ const STAGE_ORDER: QCategory[] = [
   "era",
   "profile",
   "anecdote",
+  "physique",
 ];
 
 const pickQuestion = (
