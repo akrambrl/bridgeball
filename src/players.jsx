@@ -5277,6 +5277,37 @@ export const PLAYERS = [
   { name:"Vlad Chiricheș", clubs:["Steaua Bucarest", "Tottenham", "Napoli", "Sassuolo", "Cremonese"], diff:"expert", nationalities:["Roumanie"], positions:["defenseur"], birthYear:1989 },
   { name:"Luis Alberto", clubs:["Sevilla", "Liverpool", "Deportivo La Coruna", "Lazio", "Al-Duhail"], diff:"moyen", nationalities:["Espagne"], positions:["milieu"], birthYear:1992 },
   { name:"Pablo Osvaldo", clubs:["Bologna FC", "Espanyol", "AS Roma", "Southampton", "Juventus", "Inter Milan", "Boca Juniors", "Porto"], diff:"expert", nationalities:["Italie"], positions:["attaquant"], birthYear:1986 },
+
+  // ── Enrichissement Leicester City 2014-15 (14e, promu, N. Pearson) ──────
+  { name:"Ben Hamer", clubs:["Reading", "Charlton", "Leicester City", "Huddersfield", "Derby County", "Swansea", "Watford"], diff:"expert", nationalities:["Angleterre"], positions:["gardien"], birthYear:1987 },
+  { name:"Wes Morgan", clubs:["Nottingham Forest", "Leicester City"], diff:"moyen", nationalities:["Jamaïque"], positions:["defenseur"], birthYear:1984 },
+  { name:"Liam Moore", clubs:["Leicester City", "Brentford", "Bristol City", "Reading"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1993 },
+  { name:"Marcin Wasilewski", clubs:["Anderlecht", "Leicester City"], diff:"expert", nationalities:["Pologne"], positions:["defenseur"], birthYear:1980 },
+  { name:"Jeffrey Schlupp", clubs:["Leicester City", "Crystal Palace"], diff:"expert", nationalities:["Ghana"], positions:["milieu"], birthYear:1992 },
+  { name:"Daniel Drinkwater", clubs:["Manchester United", "Leicester City", "Chelsea", "Aston Villa", "Reading"], diff:"moyen", nationalities:["Angleterre"], positions:["milieu"], birthYear:1990 },
+  { name:"Andy King", clubs:["Leicester City", "Swansea", "Derby County", "Bristol City", "Huddersfield"], diff:"expert", nationalities:["Pays de Galles"], positions:["milieu"], birthYear:1988 },
+  { name:"Matty James", clubs:["Manchester United", "Preston", "Leicester City", "Barnsley", "Coventry", "Bristol City"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:1991 },
+  { name:"Dean Hammond", clubs:["Brighton", "Colchester", "Southampton", "Leicester City", "Sheffield United"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:1983 },
+  { name:"Anthony Knockaert", clubs:["Guingamp", "Leicester City", "Standard Liège", "Brighton", "Fulham", "Nottingham Forest", "Huddersfield"], diff:"expert", nationalities:["France"], positions:["milieu"], birthYear:1991 },
+  { name:"Leonardo Ulloa", clubs:["Almería", "Brighton", "Leicester City", "Pachuca"], diff:"expert", nationalities:["Argentine"], positions:["attaquant"], birthYear:1986 },
+  { name:"Tom Lawrence", clubs:["Manchester United", "Leicester City", "Cardiff", "Ipswich Town", "Derby County", "Rangers"], diff:"expert", nationalities:["Pays de Galles"], positions:["attaquant"], birthYear:1994 },
+
+  // ── Recrues Burnley 2014-15 (retour en PL) encore absentes ──────────────
+  { name:"Jason Shackell", clubs:["Norwich", "Wolverhampton", "Doncaster", "Derby County", "Burnley", "Millwall", "Lincoln"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1983 },
+  { name:"Scott Arfield", clubs:["Falkirk", "Huddersfield", "Burnley", "Rangers", "Charlotte"], diff:"expert", nationalities:["Canada"], positions:["milieu"], birthYear:1988 },
+  { name:"Dean Marney", clubs:["Tottenham", "Hull City", "Burnley", "Fleetwood"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:1984 },
+  { name:"Danny Ings", clubs:["Bournemouth", "Burnley", "Liverpool", "Southampton", "Aston Villa", "West Ham"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1992 },
+  { name:"Ashley Barnes", clubs:["Plymouth", "Brighton", "Burnley", "Norwich"], diff:"expert", nationalities:["Autriche"], positions:["attaquant"], birthYear:1989 },
+  { name:"Nakhi Wells", clubs:["Carlisle", "Bradford City", "Huddersfield", "Burnley", "QPR", "Bristol City"], diff:"expert", nationalities:["Bermudes"], positions:["attaquant"], birthYear:1990 },
+  { name:"Ross Wallace", clubs:["Celtic", "Sunderland", "Preston", "Burnley", "Sheffield Wednesday", "Fleetwood"], diff:"expert", nationalities:["Écosse"], positions:["milieu"], birthYear:1985 },
+
+  // ── Recrues QPR 2014-15 (retour en PL) encore absentes ──────────────────
+  { name:"Mauricio Isla", clubs:["Udinese", "Juventus", "QPR", "Marseille", "Fenerbahce", "Flamengo", "Universidad Católica"], diff:"moyen", nationalities:["Chili"], positions:["defenseur"], birthYear:1988 },
+  { name:"Yun Suk-young", clubs:["Chunnam Dragons", "QPR", "Charlton", "Kashiwa Reysol"], diff:"expert", nationalities:["Corée du Sud"], positions:["defenseur"], birthYear:1990 },
+  { name:"Leroy Fer", clubs:["Twente", "Norwich", "QPR", "Swansea", "Feyenoord", "Alanyaspor"], diff:"moyen", nationalities:["Pays-Bas"], positions:["milieu"], birthYear:1990 },
+  { name:"Eduardo Vargas", clubs:["Universidad de Chile", "Napoli", "Valencia", "QPR", "Hoffenheim", "Tigres", "Atlético Mineiro"], diff:"moyen", nationalities:["Chili"], positions:["attaquant"], birthYear:1989 },
+  { name:"Charlie Austin", clubs:["Swindon", "Burnley", "QPR", "Southampton", "West Brom", "Brisbane Roar"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1989 },
+  { name:"Matt Phillips", clubs:["Wycombe", "Blackpool", "QPR", "West Brom", "Stoke City"], diff:"expert", nationalities:["Écosse"], positions:["milieu"], birthYear:1991 },
 ];
 
 export const RETIRED_PLAYERS = new Set([ "Esteban Cambiasso","Eusébio","Ezequiel Lavezzi","Fabien Barthez","Fabio Grosso","Fernando Redondo","Ferenc Puskás","Mehdi Benatia","Elano","Diego Milito","Dietmar Hamann","Dimitar Berbatov","Djibril Cissé","Dunga","Darren Bent","Daniele De Rossi","Christian Karembeu","Christophe Dugarry","Cristian Chivu","Bacary Sagna","Ben Foster","Bobby Charlton","Bobby Moore","Branislav Ivanović","Andrés Guardado","Antonio Valencia","Alfredo Di Stéfano","André Schürrle","Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe (Portugal)","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
