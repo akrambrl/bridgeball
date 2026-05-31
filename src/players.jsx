@@ -5216,6 +5216,40 @@ export const PLAYERS = [
   { name:"Rudi Garcia", clubs:["Lille", "Caen", "Martigues"], diff:"expert", nationalities:["France"], positions:["milieu"], birthYear:1964 },
 
   { name:"Enzo Fernández", clubs:["River Plate", "Defensa y Justicia", "Benfica", "Chelsea"], diff:"moyen", nationalities:["Argentine"], positions:["milieu"], birthYear:2001 },
+
+  // ── Enrichissement Cardiff City 2013-14 (20e, promu, Mackay/Solskjær) ────
+  { name:"David Marshall", clubs:["Celtic", "Norwich", "Cardiff", "Hull City", "Wigan Athletic", "QPR"], diff:"expert", nationalities:["Écosse"], positions:["gardien"], birthYear:1985 },
+  { name:"Ben Turner", clubs:["Coventry", "Cardiff", "Burton Albion"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1988 },
+  { name:"Mark Hudson", clubs:["Fulham", "Crystal Palace", "Charlton", "Cardiff", "Huddersfield"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1982 },
+  { name:"Kevin Theophile-Catherine", clubs:["Rennes", "Cardiff", "Saint-Etienne", "Bordeaux"], diff:"expert", nationalities:["France"], positions:["defenseur"], birthYear:1989 },
+  { name:"Andrew Taylor", clubs:["Middlesbrough", "Watford", "Cardiff", "Wigan Athletic", "Bolton"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1986 },
+  { name:"Juan Cala", clubs:["Sevilla", "Cardiff", "Getafe", "Granada"], diff:"expert", nationalities:["Espagne"], positions:["defenseur"], birthYear:1989 },
+  { name:"John Brayford", clubs:["Crewe", "Derby County", "Cardiff", "Sheffield United", "Burton Albion"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1987 },
+  { name:"Declan John", clubs:["Cardiff", "Rangers", "Swansea", "Bolton"], diff:"expert", nationalities:["Pays de Galles"], positions:["defenseur"], birthYear:1995 },
+  { name:"Gary Medel", clubs:["Universidad Católica", "Boca Juniors", "Sevilla", "Cardiff", "Inter Milan", "Besiktas", "Bologna FC", "Vasco da Gama"], diff:"moyen", nationalities:["Chili"], positions:["milieu"], birthYear:1987 },
+  { name:"Aron Gunnarsson", clubs:["AZ Alkmaar", "Coventry", "Cardiff", "Al-Arabi", "Al-Ettifaq"], diff:"moyen", nationalities:["Islande"], positions:["milieu"], birthYear:1989 },
+  { name:"Peter Whittingham", clubs:["Aston Villa", "Cardiff", "Blackburn"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:1984 },
+  { name:"Don Cowie", clubs:["Inverness", "Watford", "Cardiff", "Wigan Athletic", "Hearts"], diff:"expert", nationalities:["Écosse"], positions:["milieu"], birthYear:1983 },
+  { name:"Kim Bo-kyung", clubs:["Cardiff", "Wigan Athletic", "Jeonbuk", "Kashiwa Reysol", "Ulsan"], diff:"expert", nationalities:["Corée du Sud"], positions:["milieu"], birthYear:1989 },
+  { name:"Craig Noone", clubs:["Brighton", "Cardiff", "Bolton"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:1987 },
+  { name:"Nicky Maynard", clubs:["Crewe", "Bristol City", "West Ham", "Cardiff", "Wigan Athletic", "Bury", "Mansfield"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1986 },
+  { name:"Andreas Cornelius", clubs:["Copenhagen", "Cardiff", "Atalanta", "Bordeaux", "Parma FC", "Trabzonspor"], diff:"expert", nationalities:["Danemark"], positions:["attaquant"], birthYear:1993 },
+  { name:"Etien Velikonja", clubs:["Maribor", "Cardiff", "Gaziantep", "Maccabi Tel Aviv"], diff:"expert", nationalities:["Slovénie"], positions:["attaquant"], birthYear:1988 },
+
+  // ── Enrichissement Crystal Palace 2013-14 (11e, Holloway/Pulis) ─────────
+  { name:"Julian Speroni", clubs:["Dundee", "Crystal Palace", "Bolton"], diff:"expert", nationalities:["Argentine"], positions:["gardien"], birthYear:1979 },
+  { name:"Joel Ward", clubs:["Portsmouth", "Crystal Palace"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1989 },
+  { name:"Damien Delaney", clubs:["Leicester City", "Hull City", "QPR", "Ipswich Town", "Crystal Palace", "Cork City"], diff:"expert", nationalities:["Irlande"], positions:["defenseur"], birthYear:1981 },
+  { name:"Dean Moxey", clubs:["Exeter", "Derby County", "Crystal Palace", "Bolton"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1986 },
+  { name:"Jonathan Parr", clubs:["Aalesund", "Crystal Palace", "Ipswich Town"], diff:"expert", nationalities:["Norvège"], positions:["defenseur"], birthYear:1988 },
+  { name:"Mile Jedinak", clubs:["Central Coast Mariners", "Antalyaspor", "Gençlerbirliği", "Crystal Palace", "Aston Villa"], diff:"moyen", nationalities:["Australie"], positions:["milieu"], birthYear:1984 },
+  { name:"Kagisho Dikgacoi", clubs:["Golden Arrows", "QPR", "Crystal Palace", "Cardiff"], diff:"expert", nationalities:["Afrique du Sud"], positions:["milieu"], birthYear:1984 },
+  { name:"Yannick Bolasie", clubs:["Plymouth", "Bristol City", "Crystal Palace", "Everton", "Aston Villa", "Anderlecht", "Sporting CP", "Middlesbrough"], diff:"moyen", nationalities:["RD Congo"], positions:["attaquant"], birthYear:1989 },
+  { name:"Stuart O'Keefe", clubs:["Southend", "Crystal Palace", "Cardiff", "Gillingham"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:1991 },
+  { name:"Tom Ince", clubs:["Liverpool", "Blackpool", "Crystal Palace", "Hull City", "Derby County", "Huddersfield", "Stoke City", "Reading"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1992 },
+  { name:"Glenn Murray", clubs:["Brighton", "Rochdale", "Crystal Palace", "Reading", "Bournemouth", "Watford", "Nottingham Forest"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1983 },
+  { name:"Dwight Gayle", clubs:["Peterborough", "Crystal Palace", "Newcastle", "West Brom", "Stoke City"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1990 },
+  { name:"Joe Ledley", clubs:["Cardiff", "Celtic", "Crystal Palace", "Derby County"], diff:"moyen", nationalities:["Pays de Galles"], positions:["milieu"], birthYear:1987 },
 ];
 
 export const RETIRED_PLAYERS = new Set([ "Esteban Cambiasso","Eusébio","Ezequiel Lavezzi","Fabien Barthez","Fabio Grosso","Fernando Redondo","Ferenc Puskás","Mehdi Benatia","Elano","Diego Milito","Dietmar Hamann","Dimitar Berbatov","Djibril Cissé","Dunga","Darren Bent","Daniele De Rossi","Christian Karembeu","Christophe Dugarry","Cristian Chivu","Bacary Sagna","Ben Foster","Bobby Charlton","Bobby Moore","Branislav Ivanović","Andrés Guardado","Antonio Valencia","Alfredo Di Stéfano","André Schürrle","Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe (Portugal)","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
