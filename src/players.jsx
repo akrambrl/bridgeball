@@ -5250,6 +5250,33 @@ export const PLAYERS = [
   { name:"Glenn Murray", clubs:["Brighton", "Rochdale", "Crystal Palace", "Reading", "Bournemouth", "Watford", "Nottingham Forest"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1983 },
   { name:"Dwight Gayle", clubs:["Peterborough", "Crystal Palace", "Newcastle", "West Brom", "Stoke City"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1990 },
   { name:"Joe Ledley", clubs:["Cardiff", "Celtic", "Crystal Palace", "Derby County"], diff:"moyen", nationalities:["Pays de Galles"], positions:["milieu"], birthYear:1987 },
+
+  // ── Audit Hull City 2013-14 (retour en PL) : recrues encore absentes ────
+  { name:"Allan McGregor", clubs:["Rangers", "Besiktas", "Hull City", "Cardiff"], diff:"expert", nationalities:["Écosse"], positions:["gardien"], birthYear:1982 },
+  { name:"James Chester", clubs:["Manchester United", "Hull City", "West Brom", "Aston Villa", "Stoke City"], diff:"expert", nationalities:["Pays de Galles"], positions:["defenseur"], birthYear:1989 },
+  { name:"Liam Rosenior", clubs:["Fulham", "Reading", "Hull City", "Brighton"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1984 },
+  { name:"Alex Bruce", clubs:["Birmingham City", "Ipswich Town", "Leeds United", "Hull City", "Wigan Athletic"], diff:"expert", nationalities:["Irlande du Nord"], positions:["defenseur"], birthYear:1984 },
+  { name:"Robert Koren", clubs:["West Brom", "Hull City", "Melbourne City"], diff:"expert", nationalities:["Slovénie"], positions:["milieu"], birthYear:1980 },
+  { name:"George Boyd", clubs:["Peterborough", "Hull City", "Burnley", "Sheffield Wednesday"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:1985 },
+  { name:"Robbie Brady", clubs:["Manchester United", "Hull City", "Norwich", "Burnley", "Bournemouth", "Preston"], diff:"expert", nationalities:["Irlande"], positions:["milieu"], birthYear:1992 },
+  { name:"Stephen Quinn", clubs:["Sheffield United", "Hull City", "Reading", "Burton Albion"], diff:"expert", nationalities:["Irlande"], positions:["milieu"], birthYear:1986 },
+  { name:"Sone Aluko", clubs:["Birmingham City", "Aberdeen", "Rangers", "Hull City", "Fulham", "Reading", "Ipswich Town"], diff:"expert", nationalities:["Nigeria"], positions:["attaquant"], birthYear:1989 },
+  { name:"Matty Fryatt", clubs:["Walsall", "Leicester City", "Hull City", "Nottingham Forest"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1986 },
+  { name:"Yannick Sagbo", clubs:["Libourne", "Évian", "Hull City", "Wolverhampton"], diff:"expert", nationalities:["Côte d'Ivoire"], positions:["attaquant"], birthYear:1988 },
+  { name:"Gedo", clubs:["Al Ahly", "Hull City", "Smouha"], diff:"expert", nationalities:["Égypte"], positions:["attaquant"], birthYear:1984 },
+
+  // ── Recrues Premier League 2013-14 (clubs déjà présents) ────────────────
+  { name:"Yaya Sanogo", clubs:["Auxerre", "Arsenal", "Ajax Amsterdam", "Charlton", "Toulouse"], diff:"expert", nationalities:["France"], positions:["attaquant"], birthYear:1993 },
+  { name:"Fernandinho", clubs:["Atlético Paranaense", "Shakhtar Donetsk", "Manchester City"], diff:"moyen", nationalities:["Brésil"], positions:["milieu"], birthYear:1985 },
+  { name:"Stevan Jovetić", clubs:["Partizan", "ACF Fiorentina", "Manchester City", "Inter Milan", "Sevilla", "Monaco", "Hertha Berlin"], diff:"moyen", nationalities:["Monténégro"], positions:["attaquant"], birthYear:1989 },
+  { name:"Martín Demichelis", clubs:["River Plate", "Bayern Munich", "Málaga", "Atletico Madrid", "Manchester City", "Espanyol"], diff:"moyen", nationalities:["Argentine"], positions:["defenseur"], birthYear:1980 },
+  { name:"Erik Lamela", clubs:["River Plate", "AS Roma", "Tottenham", "Sevilla"], diff:"moyen", nationalities:["Argentine"], positions:["attaquant"], birthYear:1992 },
+  { name:"Nacer Chadli", clubs:["Twente", "Tottenham", "West Brom", "Monaco", "Anderlecht", "Basaksehir"], diff:"moyen", nationalities:["Belgique"], positions:["milieu"], birthYear:1989 },
+  { name:"Étienne Capoue", clubs:["Toulouse", "Tottenham", "Watford", "Villarreal"], diff:"moyen", nationalities:["France"], positions:["milieu"], birthYear:1988 },
+  { name:"Paulinho", clubs:["Corinthians", "Tottenham", "Guangzhou Evergrande", "Barcelona", "Al-Ahli"], diff:"moyen", nationalities:["Brésil"], positions:["milieu"], birthYear:1988 },
+  { name:"Vlad Chiricheș", clubs:["Steaua Bucarest", "Tottenham", "Napoli", "Sassuolo", "Cremonese"], diff:"expert", nationalities:["Roumanie"], positions:["defenseur"], birthYear:1989 },
+  { name:"Luis Alberto", clubs:["Sevilla", "Liverpool", "Deportivo La Coruna", "Lazio", "Al-Duhail"], diff:"moyen", nationalities:["Espagne"], positions:["milieu"], birthYear:1992 },
+  { name:"Pablo Osvaldo", clubs:["Bologna FC", "Espanyol", "AS Roma", "Southampton", "Juventus", "Inter Milan", "Boca Juniors", "Porto"], diff:"expert", nationalities:["Italie"], positions:["attaquant"], birthYear:1986 },
 ];
 
 export const RETIRED_PLAYERS = new Set([ "Esteban Cambiasso","Eusébio","Ezequiel Lavezzi","Fabien Barthez","Fabio Grosso","Fernando Redondo","Ferenc Puskás","Mehdi Benatia","Elano","Diego Milito","Dietmar Hamann","Dimitar Berbatov","Djibril Cissé","Dunga","Darren Bent","Daniele De Rossi","Christian Karembeu","Christophe Dugarry","Cristian Chivu","Bacary Sagna","Ben Foster","Bobby Charlton","Bobby Moore","Branislav Ivanović","Andrés Guardado","Antonio Valencia","Alfredo Di Stéfano","André Schürrle","Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe (Portugal)","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
