@@ -5434,24 +5434,47 @@ export default function LePont() {
       const runnerUp = top[1] || null;
       const third = top[2] || null;
 
-      // Créer l'entrée Hall of Fame
-      await sbFetch("bb_seasons", {
+      // Créer l'entrée Hall of Fame.
+      // ⚠️ La table bb_seasons ne contient aujourd'hui que les colonnes du
+      // champion (season_number, champion_*, mode, ended_at) : un insert avec
+      // le podium complet est rejeté par PostgREST (colonnes inconnues) et les
+      // saisons 2+ n'ont jamais été enregistrées. On tente le podium complet
+      // (au cas où les colonnes seraient ajoutées côté DB), puis on retombe
+      // sur le schéma minimal pour ne jamais perdre le titre du champion.
+      const championRow = {
+        season_number: season.num - 1,
+        champion_id: champion.player_id,
+        champion_name: champion.pseudo,
+        champion_score: champion.xp_season,
+        mode: "global",
+        ended_at: new Date().toISOString()
+      };
+      const fullPodiumRow = {
+        ...championRow,
+        season_month: prevMonthKey,
+        runner_up_id: runnerUp ? runnerUp.player_id : null,
+        runner_up_name: runnerUp ? runnerUp.pseudo : null,
+        runner_up_xp: runnerUp ? runnerUp.xp_season : null,
+        third_id: third ? third.player_id : null,
+        third_name: third ? third.pseudo : null,
+        third_xp: third ? third.xp_season : null
+      };
+      let created = await sbFetch("bb_seasons", {
         method: "POST",
         headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({
-          season_number: season.num - 1,
-          season_month: prevMonthKey,
-          champion_id: champion.player_id,
-          champion_name: champion.pseudo,
-          champion_score: champion.xp_season,
-          runner_up_id: runnerUp ? runnerUp.player_id : null,
-          runner_up_name: runnerUp ? runnerUp.pseudo : null,
-          runner_up_xp: runnerUp ? runnerUp.xp_season : null,
-          third_id: third ? third.player_id : null,
-          third_name: third ? third.pseudo : null,
-          third_xp: third ? third.xp_season : null
-        })
+        body: JSON.stringify(fullPodiumRow)
       });
+      if (created === null) {
+        created = await sbFetch("bb_seasons", {
+          method: "POST",
+          headers: {"Content-Type":"application/json"},
+          body: JSON.stringify(championRow)
+        });
+      }
+      if (created === null) {
+        console.warn("bb_seasons : échec de la clôture de la saison", season.num - 1);
+        return;
+      }
       loadSeasons();
     } catch(e) { /* silent */ }
   }
