@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import LePont from "@/components/LePont.jsx";
 import Home from "./Home";
 import { GoatGuess } from "@/components/landing/GoatGuess";
-import { Undercover } from "@/components/landing/Undercover";
 
 const BREAKPOINT = 768;
 
@@ -11,7 +10,6 @@ const Index = () => {
     () => typeof window !== "undefined" && window.innerWidth < BREAKPOINT
   );
   const [goatGuessOpen, setGoatGuessOpen] = useState(false);
-  const [undercoverOpen, setUndercoverOpen] = useState(false);
 
   useEffect(() => {
     const mql = window.matchMedia(`(max-width: ${BREAKPOINT - 1}px)`);
@@ -28,20 +26,12 @@ const Index = () => {
     return () => window.removeEventListener("goatfc:open-guess", onOpen);
   }, []);
 
-  // Carte Undercover du carrousel mobile.
-  useEffect(() => {
-    const onOpen = () => setUndercoverOpen(true);
-    window.addEventListener("goatfc:open-undercover", onOpen);
-    return () => window.removeEventListener("goatfc:open-undercover", onOpen);
-  }, []);
-
   if (!isMobile) return <Home />;
 
   return (
     <>
       <LePont />
       {goatGuessOpen && <GoatGuess onClose={() => setGoatGuessOpen(false)} />}
-      {undercoverOpen && <Undercover onClose={() => setUndercoverOpen(false)} />}
     </>
   );
 };

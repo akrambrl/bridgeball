@@ -11,9 +11,8 @@ import { ModeChoiceModal, type PlayMode } from "@/components/landing/ModeChoiceM
 import { MatchmakingOverlay, pickOpponent } from "@/components/landing/MatchmakingOverlay";
 import { CountdownOverlay } from "@/components/landing/CountdownOverlay";
 import { GoatGuess } from "@/components/landing/GoatGuess";
-import { Undercover } from "@/components/landing/Undercover";
 
-export type GameMode = "pont" | "chaine" | "grid" | "guess" | "undercover";
+export type GameMode = "pont" | "chaine" | "grid" | "guess";
 
 const Home = () => {
   const [playing, setPlaying] = useState(false);
@@ -48,8 +47,6 @@ const Home = () => {
   >(null);
   // Overlay GOAT Guess (Akinator foot)
   const [goatGuessOpen, setGoatGuessOpen] = useState(false);
-  // Overlay Undercover (local pass-and-play)
-  const [undercoverOpen, setUndercoverOpen] = useState(false);
 
   // LePont émet cet event quand l'utilisateur quitte la partie autolaunchée
   // (← interne, fin de partie). On ferme l'overlay pour revenir à la landing.
@@ -135,10 +132,6 @@ const Home = () => {
   const onPlay = (game?: GameMode) => {
     if (game === "guess") {
       setGoatGuessOpen(true);
-      return;
-    }
-    if (game === "undercover") {
-      setUndercoverOpen(true);
       return;
     }
     if (game === "grid") {
@@ -316,9 +309,6 @@ const Home = () => {
 
       {/* GOAT Guess — Akinator foot (overlay plein écran, indépendant de LePont) */}
       {goatGuessOpen && <GoatGuess onClose={() => setGoatGuessOpen(false)} />}
-
-      {/* Undercover — jeu de soirée local (overlay plein écran) */}
-      {undercoverOpen && <Undercover onClose={() => setUndercoverOpen(false)} />}
     </div>
   );
 };
