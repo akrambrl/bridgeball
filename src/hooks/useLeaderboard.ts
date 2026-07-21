@@ -1,6 +1,14 @@
 import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
+// Les RPC "get_leaderboard" / "submit_score" ne figurent pas dans les types
+// Supabase générés (types.ts en retard sur le schéma) : on relâche le typage
+// de supabase.rpc pour ces deux appels, sans changer le comportement runtime.
+const rpc = supabase.rpc.bind(supabase) as unknown as (
+  fn: string,
+  args?: Record<string, unknown>,
+) => PromiseLike<{ data: unknown; error: { message: string } | null }>;
+
 export interface LeaderboardEntry {
   rank: number;
   player_name: string;
@@ -24,7 +32,7 @@ export function useLeaderboard() {
     setLoading(true);
     setError(null);
     try {
-      const { data, error: err } = await supabase.rpc("get_leaderboard", {
+      const { data, error: err } = await rpc("get_leaderboard", {
         p_game_mode: gameMode,
         p_difficulty: difficulty,
       });
@@ -46,7 +54,7 @@ export function useLeaderboard() {
     maxCombo: number;
   }) => {
     try {
-      const { error: err } = await supabase.rpc("submit_score", {
+      const { error: err } = await rpc("submit_score", {
         p_player_name:  params.playerName,
         p_score:        params.score,
         p_game_mode:    params.gameMode,
@@ -56,7 +64,7 @@ export function useLeaderboard() {
       });
       if (err) throw err;
 
-      const { data } = await supabase.rpc("get_leaderboard", {
+      const { data } = await rpc("get_leaderboard", {
         p_game_mode: params.gameMode,
         p_difficulty: params.difficulty,
       });
