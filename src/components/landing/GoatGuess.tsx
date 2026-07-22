@@ -1952,7 +1952,7 @@ const PlayerRevealCard = ({
         }}
       >
         <div
-          className="relative px-4 pt-7 pb-12"
+          className="relative px-8 pt-8 pb-14"
           style={{
             clipPath: CARD_SHAPE,
             background: tier.body,
@@ -1964,30 +1964,28 @@ const PlayerRevealCard = ({
             style={{ background: tier.inner }}
             aria-hidden
           />
-          {/* Bloc haut : note / poste / drapeau + médaillon initiales */}
-          <div className="relative flex items-start">
-            <div className="flex flex-col items-center leading-none pl-3" style={{ color: gold }}>
+          {/* Bloc haut : médaillon centré, note/poste/drapeau en colonne à gauche */}
+          <div className="relative h-28 mt-2">
+            <div className="absolute left-0 top-1/2 -translate-y-1/2 flex flex-col items-center leading-none" style={{ color: gold }}>
               <div className="font-display text-4xl drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">{rating}</div>
               <div className="font-display text-xs tracking-[0.25em] mt-1">{pos}</div>
               <div className="text-2xl mt-1.5 leading-none">{flag}</div>
             </div>
-            <div className="flex-1 flex items-center justify-center pr-6">
-              <div
-                className="w-28 h-28 rounded-full flex items-center justify-center font-display text-4xl text-white/90"
-                style={{
-                  background: "radial-gradient(circle at 35% 30%, rgba(255,255,255,0.10), rgba(0,0,0,0.30) 72%)",
-                  border: `2px solid ${gold}55`,
-                  boxShadow: "inset 0 6px 20px rgba(0,0,0,0.55), 0 8px 24px rgba(0,0,0,0.4)",
-                }}
-              >
-                {initialsOf(player.name)}
-              </div>
+            <div
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-28 h-28 rounded-full flex items-center justify-center font-display text-4xl text-white/90"
+              style={{
+                background: "radial-gradient(circle at 35% 30%, rgba(255,255,255,0.10), rgba(0,0,0,0.30) 72%)",
+                border: `2px solid ${gold}55`,
+                boxShadow: "inset 0 6px 20px rgba(0,0,0,0.55), 0 8px 24px rgba(0,0,0,0.4)",
+              }}
+            >
+              {initialsOf(player.name)}
             </div>
           </div>
           {/* Nom entre filets dorés */}
           <div className="relative mt-4 text-center">
             <div className="mx-auto h-px w-4/5" style={{ background: `linear-gradient(90deg, transparent, ${gold}99, transparent)` }} />
-            <div className="font-display text-2xl lg:text-3xl tracking-wider text-white leading-tight py-1.5 px-6 break-words drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]">
+            <div className="font-display text-2xl lg:text-3xl tracking-wider text-white leading-tight py-1.5 px-2 break-words drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]">
               {player.name}
             </div>
             <div className="mx-auto h-px w-4/5" style={{ background: `linear-gradient(90deg, transparent, ${gold}99, transparent)` }} />
@@ -1997,7 +1995,7 @@ const PlayerRevealCard = ({
             <div className="text-[10px] tracking-[0.3em] text-white/50 mb-2">
               {flag} {(player.nationalities[0] || "—").toUpperCase()}
             </div>
-            <div className="flex flex-wrap gap-1 justify-center px-8">
+            <div className="flex flex-wrap gap-1 justify-center px-1">
               {player.clubs.slice(0, 4).map((c) => (
                 <span key={c} className="px-2 py-0.5 rounded-md text-[10px] bg-white/[0.06] border border-white/10 text-white/80">
                   {c}
@@ -2007,13 +2005,6 @@ const PlayerRevealCard = ({
                 <span className="px-1.5 py-0.5 text-[10px] text-white/40">+{player.clubs.length - 4}</span>
               )}
             </div>
-          </div>
-          {/* Badge GOAT */}
-          <div
-            className="absolute top-4 right-8 px-2 py-0.5 rounded-md font-display text-[9px] tracking-[0.3em]"
-            style={{ background: "rgba(0,0,0,0.55)", color: gold, border: `1px solid ${gold}44` }}
-          >
-            🐐 GOAT
           </div>
         </div>
       </div>
