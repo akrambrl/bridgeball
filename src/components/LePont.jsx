@@ -775,7 +775,7 @@ function isRetiredPlayer(name) {
   return RETIRED_PLAYERS.has(name);
 }
 
-const SPLASH_IMG = "/splash.png";
+const SPLASH_IMG = "/splash.webp"; // WebP : 229 Ko vs 1,76 Mo en PNG
 
 
 const WIN_IMGS = ["/win1.png", "/win2.png", "/win3.png", "/win4.png", "/win5.png"];
@@ -3772,8 +3772,9 @@ export default function LePont() {
     try {
       const saved = localStorage.getItem("bb_lang");
       if (saved === "fr" || saved === "en") return saved;
-      const nav = (navigator.language || "fr").toLowerCase();
-      return nav.startsWith("fr") ? "fr" : "en";
+      // Public cible francophone : français par défaut, quel que soit le
+      // navigateur — le toggle FR/EN reste disponible dans l'en-tête.
+      return "fr";
     } catch { return "fr"; }
   });
   const setLanguage = (l) => {
