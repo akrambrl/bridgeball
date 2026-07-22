@@ -759,6 +759,11 @@ return db;
 }
 const PLAYERS_CLEAN = PLAYERS.filter(function(p){return p&&p.name&&p.clubs&&Array.isArray(p.clubs);});
 
+// Difficulté par joueur — sert à prioriser les joueurs "facile" comme bonne
+// réponse du QCM en mode AMATEUR (voir generateOptions).
+const PLAYER_DIFF = {};
+for (const p of PLAYERS_CLEAN) PLAYER_DIFF[p.name] = p.diff || "moyen";
+
 // Liste de tous les clubs uniques connus dans la base (pour autocomplete Mercato)
 const ALL_CLUBS_LIST = (function(){
   const set = new Set();
@@ -2088,10 +2093,23 @@ function ClubLogo({ club, size = 48 }) {
 }
 
 function textColor(hex){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return(r*299+g*587+b*114)/1000>128?"#111":"#FFF";}
-function generateOptions(correctPlayers,allPairs,seed){
+function generateOptions(correctPlayers,allPairs,seed,targetDiff){
   // seed optionnel : en multi room, permet d'avoir les MÊMES 4 options chez tous les joueurs
   const rand = (seed !== undefined && seed !== null) ? seededRandom(seed) : Math.random;
-  const correct=correctPlayers[Math.floor(rand()*correctPlayers.length)];
+  // Mode AMATEUR : une paire est classée "facile" parce qu'AU MOINS un joueur
+  // facile la relie, mais un tirage uniforme parmi tous les ponts n'a en
+  // moyenne qu'1 chance sur 3 de le montrer (ex : Barcelone-OM → 6 fois sur 7
+  // la bonne réponse était Zenden/Dugarry/Keita au lieu d'Alexis Sanchez).
+  // On restreint donc la bonne réponse affichée aux joueurs "facile" du pont
+  // (repli "moyen" si aucun). Le filtre est déterministe → OK en multi seedé.
+  let candidates = correctPlayers;
+  if (targetDiff === "facile") {
+    for (const d of ["facile", "moyen"]) {
+      const subset = correctPlayers.filter(p => PLAYER_DIFF[p] === d);
+      if (subset.length) { candidates = subset; break; }
+    }
+  }
+  const correct=candidates[Math.floor(rand()*candidates.length)];
   const pool=[];allPairs.forEach(pair=>pair.p.forEach(p=>{if(!correctPlayers.includes(p))pool.push(p);}));
   // Seeded shuffle pour les distracteurs
   const poolCopy=[...new Set(pool)];
@@ -6029,7 +6047,7 @@ export default function LePont() {
     // Pool des distracteurs : mix des 3 difficultés pour garantir des distracteurs variés et pertinents
     const allPairsForOpts = [...(DB["facile"]||[]), ...(DB["moyen"]||[]), ...(DB["expert"]||[])];
     const optSeed = isInRoom ? hashStringToSeed(String(activeDuelRef.current.id) + "_opt_" + (q[0].p.join("|"))) : null;
-    setOptions(generateOptions(q[0].p, allPairsForOpts, optSeed));
+    setOptions(generateOptions(q[0].p, allPairsForOpts, optSeed, effectiveDiff));
     setCurrentRound(round); setAnimKey(0); setScreen("game");
     setTimeout(()=>inputRef.current?.focus(),200);
   }
@@ -6443,11 +6461,11 @@ export default function LePont() {
         const fresh = reshuffleSeed !== null ? seededShuffle(DB[effectiveDiff], reshuffleSeed) : shuffle(DB[effectiveDiff]);
         setQueue(fresh);
         const optSeed = isInRoom ? hashStringToSeed(String(activeDuelRef.current.id) + "_opt_" + (fresh[0].p.join("|"))) : null;
-        setOptions(generateOptions(fresh[0].p, allPairsForOpts, optSeed));
+        setOptions(generateOptions(fresh[0].p, allPairsForOpts, optSeed, effectiveDiff));
         return 0;
       }
       const optSeed = isInRoom ? hashStringToSeed(String(activeDuelRef.current.id) + "_opt_" + (queue[next].p.join("|"))) : null;
-      setOptions(generateOptions(queue[next].p, allPairsForOpts, optSeed));
+      setOptions(generateOptions(queue[next].p, allPairsForOpts, optSeed, effectiveDiff));
       return next;
     });
     setGuess(""); setFlash(null); setAnimKey(k=>k+1);
