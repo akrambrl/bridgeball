@@ -6814,7 +6814,7 @@ export default function LePont() {
             {gradeUpPopup.emoji}
           </div>
           {/* Label du grade */}
-          <div style={{fontFamily:G.heading,fontSize:28,color:color,lineHeight:1.1,marginBottom:8,textShadow:`0 0 20px ${color}88`,letterSpacing:1}}>
+          <div style={{fontFamily:G.heading,fontStyle:"italic",fontSize:28,color:color,lineHeight:1.1,marginBottom:8,textShadow:`0 0 20px ${color}88`,letterSpacing:1}}>
             {label.toUpperCase()}
           </div>
           {/* Min XP */}
@@ -6893,7 +6893,7 @@ export default function LePont() {
             </div>
 
             {/* Title */}
-            <div style={{fontFamily:G.heading,fontSize:34,color:G.white,letterSpacing:3,textAlign:"center",marginBottom:4,textShadow:`0 2px 12px ${accentColor}66`}}>
+            <div style={{fontFamily:G.heading,fontStyle:"italic",fontSize:34,color:G.white,letterSpacing:3,textAlign:"center",marginBottom:4,textShadow:`0 2px 12px ${accentColor}66`}}>
               {isPont?"GOAT PLUG":"GOAT MERCATO"}
             </div>
             <div style={{fontSize:11,letterSpacing:3,color:accentColor,textTransform:"uppercase",fontWeight:800,textAlign:"center",marginBottom:22}}>
@@ -7011,7 +7011,7 @@ export default function LePont() {
                 📲
               </div>
             </div>
-            <div style={{fontFamily:G.heading,fontSize:28,color:G.white,letterSpacing:2,textAlign:"center",marginBottom:4,textShadow:"0 2px 12px rgba(0,230,118,.5)"}}>
+            <div style={{fontFamily:G.heading,fontStyle:"italic",fontSize:28,color:G.white,letterSpacing:2,textAlign:"center",marginBottom:4,textShadow:"0 2px 12px rgba(0,230,118,.5)"}}>
               {lang==="en"?"INSTALL GOAT FC":"INSTALLER GOAT FC"}
             </div>
             <div style={{fontSize:11,letterSpacing:3,color:"#00E676",textTransform:"uppercase",fontWeight:800,textAlign:"center",marginBottom:22}}>
@@ -7202,7 +7202,7 @@ export default function LePont() {
   const duelCreateModal = showDuelCreate && (
     <div key="duel-create-modal" style={{position:"fixed",inset:0,zIndex:9998,background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center"}}>
       <div style={{background:"rgba(15,25,15,.95)",borderRadius:24,padding:"28px 24px",maxWidth:340,width:"calc(100% - 32px)",border:"1px solid rgba(255,255,255,.1)"}}>
-        <div style={{fontFamily:G.heading,fontSize:28,color:G.white,marginBottom:4}}>{lang==="en"?"CHALLENGE":"DÉFIER"}</div>
+        <div style={{fontFamily:G.heading,fontStyle:"italic",fontSize:28,color:G.white,marginBottom:4}}>{lang==="en"?"CHALLENGE":"DÉFIER"}</div>
         <div style={{fontSize:14,color:"rgba(255,255,255,.5)",marginBottom:20}}>vs <strong style={{color:G.gold}}>{showDuelCreate.name}</strong></div>
         <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:8}}>Mode</div>
         <div style={{display:"flex",gap:8,marginBottom:16}}>
@@ -7677,7 +7677,7 @@ export default function LePont() {
         )}
         <div style={{zIndex:3,padding:"12px 16px 0",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
           {backBtn(function(){setShowFriends(false);setFriendMsg("");setSelectedFriend(null);})}
-          <div style={{fontFamily:G.heading,fontSize:26,color:G.white,letterSpacing:2}}>{lang==="en"?"FRIENDS":"AMIS"}</div>
+          <div style={{fontFamily:G.heading,fontStyle:"italic",fontSize:26,color:G.white,letterSpacing:2}}>{lang==="en"?"FRIENDS":"AMIS"}</div>
           <div style={{width:40}}/>
         </div>
         <div style={{...sheet,borderRadius:"28px 28px 0 0",marginTop:16}}>
@@ -7767,7 +7767,7 @@ export default function LePont() {
           <div style={{position:"absolute",top:-100,left:-100,width:300,height:300,background:"radial-gradient(circle, rgba(0,230,118,.15) 0%, transparent 70%)",borderRadius:"50%"}}/>
         </div>
         <div style={{zIndex:1,padding:"50px 20px 14px",textAlign:"center"}}>
-          <div style={{fontFamily:G.heading,fontSize:34,color:G.white,letterSpacing:1.4}}>{lang==="en"?"MY ACCOUNT":"MON COMPTE"}</div>
+          <div style={{fontFamily:G.heading,fontStyle:"italic",fontSize:34,color:G.white,letterSpacing:1.4}}>{lang==="en"?"MY ACCOUNT":"MON COMPTE"}</div>
           <div style={{fontSize:13,color:"rgba(255,255,255,.5)",marginTop:6,fontWeight:600}}>{lang==="en"?"Manage your account settings":"Gère les paramètres de ton compte"}</div>
         </div>
 
@@ -8013,7 +8013,7 @@ export default function LePont() {
         <div style={{position:"fixed",inset:0,zIndex:400,background:"rgba(0,0,0,.85)",display:"flex",alignItems:"flex-end"}}
           onClick={function(e){if(e.target===e.currentTarget)setShowHallOfFame(false);}}>
           <div style={{width:"100%",background:"rgba(10,20,10,.97)",borderRadius:"28px 28px 0 0",padding:"20px 20px 48px",border:"1px solid rgba(255,255,255,.1)",borderBottom:"none",maxHeight:"80vh",overflowY:"auto"}}>
-            <div style={{fontFamily:G.heading,fontSize:28,color:G.gold,letterSpacing:2,marginBottom:4,textAlign:"center"}}>🏅 HALL OF FAME</div>
+            <div style={{fontFamily:G.heading,fontStyle:"italic",fontSize:28,color:G.gold,letterSpacing:2,marginBottom:4,textAlign:"center"}}>🏅 HALL OF FAME</div>
             <div style={{fontSize:12,color:"rgba(255,255,255,.4)",textAlign:"center",marginBottom:16}}>{lang==="en"?"Past season champions":"Champions des saisons passées"}</div>
             {hallOfFame.length === 0 && <div style={{textAlign:"center",color:"rgba(255,255,255,.3)",padding:"24px 0",fontSize:14}}>{lang==="en"?"No champion yet — the first season is ongoing!":"Pas encore de champion — la première saison est en cours !"}</div>}
             {hallOfFame.map(function(s,i){
@@ -8202,7 +8202,7 @@ export default function LePont() {
             {TUTORIAL_SLIDES.map((_,i)=>(<div key={i} style={{width:i===tutorialStep?24:8,height:8,borderRadius:4,background:i===tutorialStep?sl.accent:"rgba(255,255,255,.2)",transition:"all .3s"}}/>))}
           </div>
           <div style={{fontSize:56,marginBottom:16}}>{sl.icon}</div>
-          <div style={{fontFamily:G.heading,fontSize:32,color:"#fff",letterSpacing:2,marginBottom:6}}>{sl.title}</div>
+          <div style={{fontFamily:G.heading,fontStyle:"italic",fontSize:32,color:"#fff",letterSpacing:2,marginBottom:6}}>{sl.title}</div>
           <div style={{fontSize:13,color:sl.accent,fontWeight:700,letterSpacing:1,marginBottom:16,textTransform:"uppercase"}}>{sl.subtitle}</div>
           <div style={{fontSize:15,color:"rgba(255,255,255,.7)",lineHeight:1.6,marginBottom:32}}>{sl.desc}</div>
           <div style={{display:"flex",gap:10}}>
@@ -8231,7 +8231,7 @@ export default function LePont() {
       <div style={{position:"fixed",inset:0,zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 20px",background:"rgba(0,0,0,.85)",backdropFilter:"blur(10px)",animation:"fadeIn .3s ease"}}>
         <div style={{position:"relative",zIndex:1,width:"100%",maxWidth:380,background:G.bg,borderRadius:28,padding:"32px 24px 24px",border:"1px solid rgba(0,230,118,.2)",textAlign:"center",boxShadow:"0 20px 60px rgba(0,0,0,.5)"}}>
           <div style={{fontSize:56,marginBottom:16}}>🐐</div>
-          <div style={{fontFamily:G.heading,fontSize:26,color:G.white,letterSpacing:1.2,marginBottom:14}}>
+          <div style={{fontFamily:G.heading,fontStyle:"italic",fontSize:26,color:G.white,letterSpacing:1.2,marginBottom:14}}>
             {lang==="en" ? "WELCOME TO GOAT FC" : "BIENVENUE SUR GOAT FC"}
           </div>
           <div style={{fontSize:14,color:"rgba(255,255,255,.75)",lineHeight:1.6,marginBottom:20,textAlign:"left"}}>
@@ -8291,7 +8291,7 @@ export default function LePont() {
         {/* Bouton fermer — seulement si pas encore de pseudo */}
         {<button onClick={function(){setPseudoScreen(false);}} style={{position:"absolute",top:14,right:14,background:"rgba(255,255,255,.1)",border:"none",borderRadius:"50%",width:30,height:30,color:"rgba(255,255,255,.5)",cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>}
         <div style={{textAlign:"center",marginBottom:24}}>
-          <div style={{fontFamily:G.heading,fontSize:52,color:G.white,lineHeight:.9}}>GOAT<span style={{color:G.accent}}>FC</span></div>
+          <div style={{fontFamily:G.heading,fontStyle:"italic",fontSize:52,color:G.white,lineHeight:.9}}>GOAT<span style={{color:G.accent}}>FC</span></div>
           <div style={{fontSize:12,color:"rgba(255,255,255,.4)",marginTop:8,letterSpacing:2}}>{lang==="en"?"CHOOSE YOUR USERNAME":"CHOISIS TON PSEUDO"}</div>
         </div>
         <input
@@ -8479,7 +8479,7 @@ export default function LePont() {
       </div>
         <div style={{textAlign:"center",zIndex:1,padding:"0 32px"}}>
           <div style={{fontSize:48,marginBottom:16,animation:"spin 2s linear infinite",display:"inline-block"}}>⚽</div>
-          <div style={{fontFamily:G.heading,fontSize:32,color:G.white,marginBottom:8}}>
+          <div style={{fontFamily:G.heading,fontStyle:"italic",fontSize:32,color:G.white,marginBottom:8}}>
             {isReady ? (lang==="en"?"READY!":"PRÊT !") : (lang==="en"?"WAITING...":"EN ATTENTE...")}
           </div>
           <div style={{fontSize:14,color:"rgba(255,255,255,.5)",marginBottom:32}}>
@@ -8603,7 +8603,7 @@ export default function LePont() {
           {waitingAfterAbandon ? (
             <>
               <div style={{fontSize:64,marginBottom:20}}>🏳️</div>
-              <div style={{fontFamily:G.heading,fontSize:36,color:"#FF3D57",marginBottom:16,letterSpacing:2}}>{lang==="en"?"FORFEIT":"ABANDON"}</div>
+              <div style={{fontFamily:G.heading,fontStyle:"italic",fontSize:36,color:"#FF3D57",marginBottom:16,letterSpacing:2}}>{lang==="en"?"FORFEIT":"ABANDON"}</div>
               <div style={{fontSize:17,color:G.white,fontWeight:800,marginBottom:28,lineHeight:1.4,padding:"0 8px"}}>{
                 abandonedAfterOppLeft
                   ? (lang==="en" ? "No match, no drama. Come back anytime 🤝" : "Pas de match, pas de drame. Reviens quand tu veux 🤝")
@@ -8621,7 +8621,7 @@ export default function LePont() {
           ) : (
             <>
               <div style={{fontSize:56,marginBottom:20}}>⏳</div>
-              <div style={{fontFamily:G.heading,fontSize:30,color:G.white,marginBottom:12,letterSpacing:1}}>{lang==="en"?"GAME OVER!":"PARTIE TERMINÉE !"}</div>
+              <div style={{fontFamily:G.heading,fontStyle:"italic",fontSize:30,color:G.white,marginBottom:12,letterSpacing:1}}>{lang==="en"?"GAME OVER!":"PARTIE TERMINÉE !"}</div>
               <div style={{fontSize:16,color:G.accent,fontWeight:800,marginBottom:10}}>{lang==="en"?"You finished your game 💪":"Tu as fini ta partie 💪"}</div>
               <div style={{fontSize:14,color:"rgba(255,255,255,.6)",lineHeight:1.7,marginBottom:8}}>{lang==="en"?"The other players are still playing.":"Les autres joueurs sont encore en train de jouer."}</div>
               <div style={{fontSize:14,color:"rgba(255,255,255,.9)",fontWeight:700,lineHeight:1.7,marginBottom:24,background:"rgba(255,255,255,.07)",borderRadius:14,padding:"12px 16px"}}>{lang==="en"?"👉 Stay on this screen — results will appear automatically as soon as everyone is done.":"👉 Reste sur cet écran — les résultats apparaîtront automatiquement dès que tout le monde aura terminé."}</div>
@@ -9060,7 +9060,7 @@ export default function LePont() {
           <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.6)",backdropFilter:"blur(4px)"}} onClick={function(){setShowRoomCreate(false);}}/>
           <div style={{position:"relative",zIndex:1,width:"100%",background:"rgba(10,25,10,.96)",backdropFilter:"blur(20px)",borderRadius:"28px 28px 0 0",padding:"16px 20px 48px",border:"1px solid rgba(255,255,255,.1)",borderBottom:"none",animation:"slideUp .35s cubic-bezier(.22,1,.36,1)"}}>
             <div style={{width:40,height:4,background:"rgba(255,255,255,.2)",borderRadius:2,margin:"0 auto 20px"}}/>
-            <div style={{fontFamily:G.heading,fontSize:28,color:G.white,letterSpacing:2,marginBottom:6}}>{lang==="en"?"CREATE A ROOM":"CRÉER UNE SALLE"}</div>
+            <div style={{fontFamily:G.heading,fontStyle:"italic",fontSize:28,color:G.white,letterSpacing:2,marginBottom:6}}>{lang==="en"?"CREATE A ROOM":"CRÉER UNE SALLE"}</div>
             {/* Recap config */}
             <div style={{background:"rgba(255,255,255,.06)",borderRadius:16,padding:"14px 16px",marginBottom:20,border:"1px solid rgba(255,255,255,.08)"}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
@@ -9352,7 +9352,7 @@ export default function LePont() {
                 {/* Titre + emoji */}
                 <div style={{textAlign:"center",marginBottom:18}}>
                   <div style={{fontSize:48,marginBottom:8,filter:"drop-shadow(0 4px 16px "+data.accent+"55)"}}>{data.emoji}</div>
-                  <div style={{fontFamily:G.heading,fontSize:26,letterSpacing:2,color:data.accent,lineHeight:1,marginBottom:6,textShadow:"0 4px 24px "+data.accent+"33"}}>{data.title}</div>
+                  <div style={{fontFamily:G.heading,fontStyle:"italic",fontSize:26,letterSpacing:2,color:data.accent,lineHeight:1,marginBottom:6,textShadow:"0 4px 24px "+data.accent+"33"}}>{data.title}</div>
                   <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.5)",textTransform:"uppercase",fontWeight:700}}>{lang==="en"?"How to play":"Règles du jeu"}</div>
                 </div>
                 {/* Liste des règles */}
@@ -9551,7 +9551,7 @@ export default function LePont() {
                 <img src={GRID_CARD_IMG} alt="" style={{width:"100%",height:"165%",objectFit:"cover",objectPosition:"center 20%",pointerEvents:"none",userSelect:"none"}} draggable={false}/>
                 <div style={{position:"absolute",inset:0,background:"linear-gradient(to top, #0B1310 6%, rgba(11,19,16,.35) 42%, rgba(11,19,16,.10) 100%)",pointerEvents:"none"}}/>
                 <div style={{position:"absolute",bottom:14,left:0,right:0,textAlign:"center",pointerEvents:"none"}}>
-                  <div style={{fontFamily:G.heading,fontSize:34,letterSpacing:3,lineHeight:1,textShadow:"0 4px 24px rgba(0,0,0,.8)"}}>
+                  <div style={{fontFamily:G.heading,fontStyle:"italic",fontSize:34,letterSpacing:3,lineHeight:1,textShadow:"0 4px 24px rgba(0,0,0,.8)"}}>
                     <span style={{color:"#FFFFFF"}}>GOAT </span><span style={{color:"#B9F600"}}>GRID</span>
                   </div>
                 </div>
@@ -9569,7 +9569,7 @@ export default function LePont() {
                   <div style={{width:54,height:54,borderRadius:16,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",fontSize:27,background:"rgba(0,230,118,.14)",border:"1px solid rgba(0,230,118,.4)",boxShadow:"inset 0 2px 10px rgba(0,0,0,.35)"}}>🐐</div>
                   <div style={{flex:1,minWidth:0}}>
                     <div style={{fontSize:10,fontWeight:800,letterSpacing:2.5,color:"#00E676",textTransform:"uppercase"}}>{lang==="en"?"Daily challenge":"Défi du jour"}</div>
-                    <div style={{fontFamily:G.heading,fontSize:26,color:"#fff",letterSpacing:2,lineHeight:1.1,margin:"3px 0 9px"}}>SOLO</div>
+                    <div style={{fontFamily:G.heading,fontStyle:"italic",fontSize:26,color:"#fff",letterSpacing:2,lineHeight:1.1,margin:"3px 0 9px"}}>SOLO</div>
                     <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
                       <span style={{fontSize:10.5,fontWeight:700,color:"rgba(255,255,255,.85)",background:"rgba(0,0,0,.35)",border:"1px solid rgba(255,255,255,.12)",padding:"4px 9px",borderRadius:999,letterSpacing:.3}}>{lang==="en"?"3×3 grid":"Grille 3×3"}</span>
                       <span style={{fontSize:10.5,fontWeight:700,color:"rgba(255,255,255,.85)",background:"rgba(0,0,0,.35)",border:"1px solid rgba(255,255,255,.12)",padding:"4px 9px",borderRadius:999,letterSpacing:.3}}>❤️ {lang==="en"?"3 lives":"3 vies"}</span>
@@ -9584,7 +9584,7 @@ export default function LePont() {
                   <div style={{width:54,height:54,borderRadius:16,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",fontSize:27,background:"rgba(255,107,53,.15)",border:"1px solid rgba(255,107,53,.45)",boxShadow:"inset 0 2px 10px rgba(0,0,0,.35)"}}>⚔️</div>
                   <div style={{flex:1,minWidth:0}}>
                     <div style={{fontSize:10,fontWeight:800,letterSpacing:2.5,color:"#FF8A2A",textTransform:"uppercase"}}>{lang==="en"?"Versus mode":"Mode versus"}</div>
-                    <div style={{fontFamily:G.heading,fontSize:26,color:"#fff",letterSpacing:2,lineHeight:1.1,margin:"3px 0 9px"}}>BATTLE</div>
+                    <div style={{fontFamily:G.heading,fontStyle:"italic",fontSize:26,color:"#fff",letterSpacing:2,lineHeight:1.1,margin:"3px 0 9px"}}>BATTLE</div>
                     <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
                       <span style={{fontSize:10.5,fontWeight:700,color:"rgba(255,255,255,.85)",background:"rgba(0,0,0,.35)",border:"1px solid rgba(255,255,255,.12)",padding:"4px 9px",borderRadius:999,letterSpacing:.3}}>⏱️ 2 min</span>
                       <span style={{fontSize:10.5,fontWeight:700,color:"rgba(255,255,255,.85)",background:"rgba(0,0,0,.35)",border:"1px solid rgba(255,255,255,.12)",padding:"4px 9px",borderRadius:999,letterSpacing:.3}}>👥 {lang==="en"?"2-8 players":"2-8 joueurs"}</span>
@@ -9605,7 +9605,7 @@ export default function LePont() {
             <div style={{background:"linear-gradient(160deg, #14181F 0%, #0B0E12 100%)",border:"1px solid rgba(255,107,53,.35)",borderRadius:24,boxShadow:"0 24px 60px -20px rgba(255,107,53,.25)",padding:24,maxWidth:380,width:"100%"}}>
               <div style={{textAlign:"center",marginBottom:20}}>
                 <div style={{fontSize:50,marginBottom:6}}>⚔️</div>
-                <div style={{fontFamily:G.heading,fontSize:28,letterSpacing:2,color:"#FF6B35",lineHeight:1}}>GOAT BATTLE</div>
+                <div style={{fontFamily:G.heading,fontStyle:"italic",fontSize:28,letterSpacing:2,color:"#FF6B35",lineHeight:1}}>GOAT BATTLE</div>
                 <div style={{fontSize:11,color:"rgba(255,255,255,.6)",marginTop:6}}>{lang==="en"?"2 minutes · 2-8 players · Same grid":"2 minutes · 2-8 joueurs · Même grille"}</div>
               </div>
               
@@ -9714,7 +9714,7 @@ export default function LePont() {
             <div style={{position:"fixed",inset:0,zIndex:450,display:"flex",alignItems:"flex-start",justifyContent:"center",padding:"80px 20px 40px",background:"rgba(0,0,0,.92)",backdropFilter:"blur(10px)",overflowY:"auto"}}>
               <div style={{background:"linear-gradient(160deg, #14181F 0%, #0B0E12 100%)",border:"1.5px solid "+(isWinner?"rgba(255,214,0,.6)":"rgba(255,107,53,.4)"),borderRadius:24,padding:24,maxWidth:380,width:"100%",textAlign:"center"}}>
                 <div style={{fontSize:60,marginBottom:8}}>{isWinner?"👑":"⚔️"}</div>
-                <div style={{fontFamily:G.heading,fontSize:26,letterSpacing:2,color:isWinner?"#FFD600":"#FF6B35",lineHeight:1,marginBottom:6}}>
+                <div style={{fontFamily:G.heading,fontStyle:"italic",fontSize:26,letterSpacing:2,color:isWinner?"#FFD600":"#FF6B35",lineHeight:1,marginBottom:6}}>
                   {isWinner ? (lang==="en"?"VICTORY!":"VICTOIRE !") : (lang==="en"?"BATTLE OVER":"BATTLE TERMINÉE")}
                 </div>
                 <div style={{fontSize:13,color:"rgba(255,255,255,.7)",marginBottom:18}}>
@@ -9921,7 +9921,7 @@ export default function LePont() {
             {/* Compte à rebours pré-jeu (mode battle uniquement) */}
             {ggBattleScreen === "playing" && ggBattleCountdown > 0 && (
               <div style={{position:"absolute",inset:0,zIndex:50,background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:20}}>
-                <div style={{fontFamily:G.heading,fontSize:32,letterSpacing:3,color:"#FF6B35",textAlign:"center"}}>⚔️ GOAT BATTLE</div>
+                <div style={{fontFamily:G.heading,fontStyle:"italic",fontSize:32,letterSpacing:3,color:"#FF6B35",textAlign:"center"}}>⚔️ GOAT BATTLE</div>
                 <div style={{fontSize:14,color:"rgba(255,255,255,.7)",textAlign:"center",letterSpacing:1}}>{lang==="en"?"GET READY...":"PRÊT ?"}</div>
                 <div key={ggBattleCountdown} style={{fontSize:140,fontWeight:900,color:"#FFD600",lineHeight:1,textShadow:"0 4px 30px rgba(255,214,0,.4)",animation:"countdownPulse .9s ease-out"}}>
                   {ggBattleCountdown}
@@ -9947,7 +9947,7 @@ export default function LePont() {
                   ) : (
                     <>
                       <div style={{display:"inline-block",background:"linear-gradient(135deg,#00E676,#00B85F)",color:"#000",fontSize:9,fontWeight:900,letterSpacing:2,padding:"3px 10px",borderRadius:20,marginBottom:4}}>{lang==="en"?"⚡ DAILY · NEW":"⚡ DÉFI DU JOUR · NOUVEAU"}</div>
-                      <div style={{fontFamily:G.heading,fontSize:26,letterSpacing:2,color:"#FFD600",lineHeight:1}}>GOAT GRID 🐐</div>
+                      <div style={{fontFamily:G.heading,fontStyle:"italic",fontSize:26,letterSpacing:2,color:"#FFD600",lineHeight:1}}>GOAT GRID 🐐</div>
                       <div style={{fontSize:11,color:"rgba(255,255,255,.7)",marginTop:3,letterSpacing:1}}>{new Date().toLocaleDateString(lang==="en"?"en-US":"fr-FR",{weekday:'long',day:'numeric',month:'long'})}</div>
                       {ggOverrideSeed > 0 && (
                         <div style={{fontSize:9,color:"#FFD600",marginTop:2,letterSpacing:1.5,fontWeight:800}}>🔄 GRILLE TEST</div>
@@ -10258,7 +10258,7 @@ export default function LePont() {
                       <div style={{fontSize:60,marginBottom:8}}>
                         {isPerfect ? "🐐" : isVictory ? "🎉" : "😔"}
                       </div>
-                      <div style={{fontFamily:G.heading,fontSize:30,color:isVictory?"#00E676":"#FF6B35",letterSpacing:1,marginBottom:4}}>
+                      <div style={{fontFamily:G.heading,fontStyle:"italic",fontSize:30,color:isVictory?"#00E676":"#FF6B35",letterSpacing:1,marginBottom:4}}>
                         {isPerfect ? (lang==="en"?"PERFECT!":"PARFAIT !") : isVictory ? (lang==="en"?"VICTORY!":"VICTOIRE !") : (lang==="en"?"GAME OVER":"PARTIE TERMINÉE")}
                       </div>
                       <div style={{fontSize:13,color:"rgba(255,255,255,.6)",marginBottom:18}}>
@@ -10491,7 +10491,7 @@ export default function LePont() {
             {/* Header */}
             <div style={{zIndex:1,padding:"20px 20px 0",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
               <div>
-                <div style={{fontFamily:G.heading,fontSize:26,color:G.gold,letterSpacing:2}}>⚡ {lang==="en"?"DAILY CHALLENGE":"DÉFI DU JOUR"}</div>
+                <div style={{fontFamily:G.heading,fontStyle:"italic",fontSize:26,color:G.gold,letterSpacing:2}}>⚡ {lang==="en"?"DAILY CHALLENGE":"DÉFI DU JOUR"}</div>
                 <div style={{fontSize:12,color:"rgba(255,255,255,.5)",marginTop:2}}>{lang==="en"?"Guess the mystery player":"Devine le joueur mystère"}</div>
               </div>
               <button onClick={function(){setShowDailyGame(false);setDailySuccess(false);setDailyHintLevel(0);setDailyUsedHint(false);setDailyHintData({ position: null, nationality: null, loading: false });}} style={{background:"rgba(255,255,255,.1)",border:"1px solid rgba(255,255,255,.15)",borderRadius:"50%",width:36,height:36,color:G.white,cursor:"pointer",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
@@ -10864,7 +10864,7 @@ export default function LePont() {
         <div style={{position:"fixed",inset:0,zIndex:300,background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center"}}>
           <div style={{background:"rgba(15,25,15,.95)",borderRadius:24,padding:"28px 24px",maxWidth:320,width:"calc(100% - 32px)",border:"1px solid rgba(255,255,255,.1)",textAlign:"center"}}>
             <div style={{fontSize:40,marginBottom:12}}>🏳️</div>
-            <div style={{fontFamily:G.heading,fontSize:26,color:G.white,marginBottom:8}}>{lang==="en"?"QUIT?":"ABANDONNER ?"}</div>
+            <div style={{fontFamily:G.heading,fontStyle:"italic",fontSize:26,color:G.white,marginBottom:8}}>{lang==="en"?"QUIT?":"ABANDONNER ?"}</div>
             <div style={{fontSize:14,color:"rgba(255,255,255,.5)",marginBottom:24}}>
               {activeDuel ? (lang==="en"?"Your opponent will be declared the winner.":"Ton adversaire sera déclaré vainqueur.") : (lang==="en"?"Your game will be lost and your score will be 0.":"Ta partie sera perdue et ton score sera de 0.")}
             </div>
@@ -11029,7 +11029,7 @@ export default function LePont() {
         <div style={{position:"fixed",inset:0,zIndex:300,background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center"}}>
           <div style={{background:"rgba(15,25,15,.95)",borderRadius:24,padding:"28px 24px",maxWidth:320,width:"calc(100% - 32px)",border:"1px solid rgba(255,255,255,.1)",textAlign:"center"}}>
             <div style={{fontSize:40,marginBottom:12}}>🏳️</div>
-            <div style={{fontFamily:G.heading,fontSize:26,color:G.white,marginBottom:8}}>{lang==="en"?"QUIT?":"ABANDONNER ?"}</div>
+            <div style={{fontFamily:G.heading,fontStyle:"italic",fontSize:26,color:G.white,marginBottom:8}}>{lang==="en"?"QUIT?":"ABANDONNER ?"}</div>
             <div style={{fontSize:14,color:"rgba(255,255,255,.5)",marginBottom:24}}>{lang==="en"?"Your game will be lost and your score will be 0.":"Ta partie sera perdue et ton score sera de 0."}</div>
             <div style={{display:"flex",gap:10}}>
               <button onClick={function(){setShowQuitConfirm(false);}} style={{flex:1,padding:"13px",background:"rgba(255,255,255,.07)",color:G.white,border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>{lang==="en"?"Continue":"Continuer"}</button>
