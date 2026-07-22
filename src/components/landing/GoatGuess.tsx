@@ -1029,20 +1029,21 @@ export const GoatGuess = ({ onClose }: Props) => {
     aria-modal="true"
     className="fixed inset-0 z-[9000] overflow-y-auto"
     style={{
-      // Fond pelouse rayé identique à LePont (7 bandes verticales)
-      backgroundColor: "#1E5C2A",
+      // Fond sombre profond (raccord avec l'accueil de l'app) : plus moderne
+      // que la pelouse vert vif, il fait ressortir la carte et l'accent violet.
+      backgroundColor: "#0B1310",
       backgroundImage:
-        "repeating-linear-gradient(90deg,#1E5C2A 0,#1E5C2A 14.28%,#276B34 14.28%,#276B34 28.57%,#1E5C2A 28.57%,#1E5C2A 42.86%,#276B34 42.86%,#276B34 57.14%,#1E5C2A 57.14%,#1E5C2A 71.43%,#276B34 71.43%,#276B34 85.71%,#1E5C2A 85.71%)",
+        "radial-gradient(ellipse 120% 55% at 50% -5%, rgba(139,92,246,0.16) 0%, transparent 60%), radial-gradient(ellipse 90% 40% at 50% 105%, rgba(0,230,118,0.05) 0%, transparent 60%)",
       paddingTop: "env(safe-area-inset-top)",
       paddingBottom: "env(safe-area-inset-bottom)",
     }}
   >
-    {/* Halo radial vert clair en haut, comme dans LePont */}
+    {/* Halo violet subtil en haut — signature GOAT Guess */}
     <div
       className="pointer-events-none fixed inset-x-0 top-0 h-[60vh]"
       style={{
         background:
-          "radial-gradient(ellipse at 50% 0%, rgba(0,230,118,0.10) 0%, transparent 70%)",
+          "radial-gradient(ellipse at 50% 0%, rgba(192,132,252,0.08) 0%, transparent 70%)",
       }}
       aria-hidden
     />
@@ -1051,7 +1052,7 @@ export const GoatGuess = ({ onClose }: Props) => {
         desktop : libellé complet. */}
     <button
       onClick={onClose}
-      className="fixed top-3 right-3 z-[9001] flex items-center justify-center w-10 h-10 p-0 lg:w-auto lg:h-auto lg:gap-2 lg:px-4 lg:py-2 rounded-full bg-[#FF8A2A] hover:bg-[#FF7A1A] text-[#1A0F00] font-display text-sm tracking-widest shadow-[0_8px_24px_rgba(0,0,0,0.6)] hover:scale-[1.03] active:scale-[0.98] transition-all"
+      className="fixed top-3 right-3 z-[9001] flex items-center justify-center w-10 h-10 p-0 lg:w-auto lg:h-auto lg:gap-2 lg:px-4 lg:py-2 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 text-white backdrop-blur-md font-display text-sm tracking-widest shadow-[0_8px_24px_rgba(0,0,0,0.4)] hover:scale-[1.03] active:scale-[0.98] transition-all"
       aria-label={isEn() ? "Quit GOAT Guess" : "Quitter GOAT Guess"}
     >
       <span className="lg:hidden text-lg leading-none">←</span>
@@ -1420,9 +1421,9 @@ const IntroView = ({ onStart }: { onStart: () => void }) => (
 
     <button
       onClick={onStart}
-      className="goat-pulse inline-flex items-center gap-3 px-8 lg:px-10 py-3 lg:py-4 rounded-2xl bg-gradient-to-r from-[#C084FC] to-[#FF8A2A] text-[#1A0F00] font-display text-xl lg:text-2xl tracking-widest hover:scale-[1.03] active:scale-[0.98] transition-transform"
+      className="goat-pulse inline-flex items-center gap-3 px-8 lg:px-10 py-3 lg:py-4 rounded-2xl bg-gradient-to-r from-[#A855F7] to-[#6D28D9] text-white font-display text-xl lg:text-2xl tracking-widest shadow-[0_12px_32px_-6px_rgba(168,85,247,0.55)] hover:scale-[1.03] active:scale-[0.98] transition-transform"
     >
-      <span className="text-xl">▶</span> {isEn() ? "START" : "COMMENCER"}
+      <span className="text-xl">{"▶︎"}</span> {isEn() ? "START" : "COMMENCER"}
     </button>
 
     <p className="mt-4 text-xs text-white/40">
@@ -1477,8 +1478,8 @@ const AskingView = ({
       {/* Question — bannière dégradé orange→or façon THE PLUG/MERCATO */}
       <div
         key={question.id}
-        className="goat-pop relative overflow-hidden min-h-[88px] lg:min-h-[200px] flex flex-col items-center justify-center text-center mb-3 lg:mb-6 px-4 lg:px-8 py-5 lg:py-8 rounded-[22px] lg:rounded-[30px] shadow-[0_16px_44px_-8px_rgba(255,107,53,0.6)]"
-        style={{ background: "linear-gradient(135deg,#FF6B35 0%,#FF8A2A 45%,#FFD600 100%)" }}
+        className="goat-pop relative overflow-hidden min-h-[88px] lg:min-h-[200px] flex flex-col items-center justify-center text-center mb-3 lg:mb-6 px-4 lg:px-8 py-5 lg:py-8 rounded-[22px] lg:rounded-[30px] shadow-[0_16px_44px_-8px_rgba(139,92,246,0.55)]"
+        style={{ background: "linear-gradient(135deg,#8B5CF6 0%,#7C3AED 45%,#4C1D95 100%)" }}
       >
         {/* reflet animé qui balaie la bannière */}
         <div
@@ -1491,10 +1492,10 @@ const AskingView = ({
           style={{ background: "rgba(255,255,255,0.10)", clipPath: "polygon(34% 0%, 100% 0%, 100% 100%, 0% 100%)" }}
           aria-hidden
         />
-        <div className="relative font-display text-[10px] lg:text-xs tracking-[0.45em] text-[#3A1500]/80 mb-1.5 lg:mb-3 flex items-center gap-1.5">
+        <div className="relative font-display text-[10px] lg:text-xs tracking-[0.45em] text-white/70 mb-1.5 lg:mb-3 flex items-center gap-1.5">
           <span>🔮</span> QUESTION {count}
         </div>
-        <h3 className="relative font-display text-xl lg:text-4xl tracking-wide text-[#2A0F00] leading-tight drop-shadow-[0_1px_0_rgba(255,255,255,0.3)]">
+        <h3 className="relative font-display text-xl lg:text-4xl tracking-wide text-white leading-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.35)]">
           {qLabel(question)}
         </h3>
       </div>
@@ -1620,8 +1621,8 @@ const GuessingView = ({
   canGoBack: boolean;
 }) => (
   <div className="text-center">
-    <div className="inline-block px-3 py-1 rounded-full bg-[#FFC93C]/15 border border-[#FFC93C]/30 mb-2 lg:mb-3">
-      <span className="font-display text-[10px] tracking-[0.35em] text-[#FFC93C]">
+    <div className="inline-block px-3 py-1 rounded-full bg-[#C084FC]/15 border border-[#C084FC]/30 mb-2 lg:mb-3">
+      <span className="font-display text-[10px] tracking-[0.35em] text-[#C084FC]">
         🔮 {isEn() ? "MY GUESS" : "MA DEVINETTE"}
       </span>
     </div>
@@ -1689,8 +1690,8 @@ const WonView = ({
       ))}
     </div>
 
-    <div className="text-7xl mb-3 animate-in zoom-in duration-300">🎉</div>
-    <div className="font-display text-5xl lg:text-6xl tracking-wider mb-1 leading-none bg-gradient-to-r from-[#C084FC] via-[#FFC93C] to-[#C084FC] bg-clip-text text-transparent">
+    <div className="text-4xl mb-2 animate-in zoom-in duration-300">🔮</div>
+    <div className="font-display text-5xl lg:text-6xl tracking-wider mb-1 leading-none text-white drop-shadow-[0_6px_24px_rgba(168,85,247,0.55)]">
       {isEn() ? "GOT YOU!" : "JE T'AI EU !"}
     </div>
     <p className="text-white/60 text-sm mb-5 tracking-wide">
@@ -1704,9 +1705,9 @@ const WonView = ({
     <div className="grid grid-cols-2 gap-3 mt-6">
       <button
         onClick={onRestart}
-        className="py-4 rounded-2xl bg-gradient-to-r from-[#FF8A2A] to-[#FFC93C] text-[#1A0F00] font-display text-lg tracking-widest hover:scale-[1.02] active:scale-[0.97] transition-transform shadow-[0_8px_24px_rgba(255,201,60,0.4)]"
+        className="py-4 rounded-2xl bg-gradient-to-r from-[#A855F7] to-[#6D28D9] text-white font-display text-lg tracking-widest hover:scale-[1.02] active:scale-[0.97] transition-transform shadow-[0_10px_28px_-6px_rgba(168,85,247,0.55)]"
       >
-        ▶ {isEn() ? "PLAY AGAIN" : "REJOUER"}
+        {"▶︎"} {isEn() ? "PLAY AGAIN" : "REJOUER"}
       </button>
       <button
         onClick={onClose}
@@ -1792,8 +1793,8 @@ const LostView = ({
   qaHistory: Array<{ q: Question; answer: Answer }>;
 }) => (
   <div className="text-center">
-    <div className="text-7xl mb-3">🙏</div>
-    <div className="font-display text-5xl lg:text-6xl tracking-wider mb-1 leading-none bg-gradient-to-r from-[#C084FC] via-[#FFC93C] to-[#C084FC] bg-clip-text text-transparent">
+    <div className="text-4xl mb-2">🫡</div>
+    <div className="font-display text-5xl lg:text-6xl tracking-wider mb-1 leading-none text-white drop-shadow-[0_6px_24px_rgba(168,85,247,0.55)]">
       {isEn() ? "WELL PLAYED" : "BIEN JOUÉ"}
     </div>
     <p className="text-white/60 text-sm mb-5 tracking-wide">
@@ -1839,9 +1840,9 @@ const LostView = ({
     <div className="grid grid-cols-2 gap-3 mt-6">
       <button
         onClick={onRestart}
-        className="py-4 rounded-2xl bg-gradient-to-r from-[#C084FC] to-[#FF8A2A] text-[#1A0F00] font-display text-lg tracking-widest hover:scale-[1.02] active:scale-[0.97] transition-transform shadow-[0_8px_24px_rgba(192,132,252,0.4)]"
+        className="py-4 rounded-2xl bg-gradient-to-r from-[#A855F7] to-[#6D28D9] text-white font-display text-lg tracking-widest hover:scale-[1.02] active:scale-[0.97] transition-transform shadow-[0_10px_28px_-6px_rgba(168,85,247,0.55)]"
       >
-        ▶ {isEn() ? "REMATCH" : "REVANCHE"}
+        {"▶︎"} {isEn() ? "REMATCH" : "REVANCHE"}
       </button>
       <button
         onClick={onClose}
@@ -1874,15 +1875,15 @@ const PlayerRevealCard = ({
         boxShadow: `0 26px 64px -14px ${accent}66, inset 0 1px 0 rgba(255,255,255,0.12)`,
       }}
     >
-      {/* En-tête : nom sur dégradé multicolore + découpe diagonale signature */}
+      {/* En-tête : violet profond, sobre et moderne */}
       <div
         className="relative px-5 py-6 lg:py-8 overflow-hidden"
-        style={{ background: "linear-gradient(135deg,#C084FC 0%,#FF6B35 58%,#FFD600 100%)" }}
+        style={{ background: "linear-gradient(135deg,#8B5CF6 0%,#6D28D9 55%,#4C1D95 100%)" }}
       >
-        {/* moitié diagonale plus claire à droite (forme Mercato/Plug) */}
+        {/* moitié diagonale plus claire à droite (forme signature, adoucie) */}
         <div
           className="pointer-events-none absolute top-0 right-0 bottom-0 w-[58%]"
-          style={{ background: "rgba(255,255,255,0.16)", clipPath: "polygon(30% 0%, 100% 0%, 100% 100%, 0% 100%)" }}
+          style={{ background: "rgba(255,255,255,0.07)", clipPath: "polygon(30% 0%, 100% 0%, 100% 100%, 0% 100%)" }}
           aria-hidden
         />
         {/* reflet animé */}
