@@ -1517,7 +1517,7 @@ export const PLAYERS = [
   { name:"Benjamin Mendy", clubs:["Le Havre","Marseille","Monaco","Manchester City"], diff:"moyen", nationalities:["France"], positions:["defenseur"], birthYear:1994 },
   { name:"Aymen Abdennour", clubs:["Espérance Tunis","Werder Bremen","Toulouse","Monaco","Valencia","Marseille","Kayserispor"], diff:"expert", nationalities:["Tunisie"], positions:["defenseur"], birthYear:1989 },
   { name:"Patrice Evra", clubs:["Nice","Monaco","Manchester United","Juventus FC","Marseille","West Ham"], diff:"facile", nationalities:["France"], positions:["defenseur"], birthYear:1981 },
-  { name:"Alexandre Lacazette", clubs:["Lyon","Arsenal","Neom FC"], diff:"moyen", nationalities:["France"], positions:["attaquant"], birthYear:1991 },
+  { name:"Alexandre Lacazette", clubs:["Lyon","Arsenal","NEOM SC"], diff:"moyen", nationalities:["France"], positions:["attaquant"], birthYear:1991 },
   { name:"Emre Can", clubs:["Bayern Munich","Bayer Leverkusen","Liverpool","Juventus FC","Borussia Dortmund"], diff:"moyen", nationalities:["Allemagne"], positions:["milieu"], birthYear:1994 },
   // Équipe nationale Pologne 2026
   { name:"Piotr Zieliński", clubs:["Udinese", "Empoli", "SSC Napoli", "Inter Milan"], diff:"moyen", nationalities:["Pologne"], positions:["milieu"], birthYear:1994 },
@@ -1935,7 +1935,7 @@ export const PLAYERS = [
   { name:"Justin Kluivert", clubs:["Ajax Amsterdam", "AS Roma", "RB Leipzig", "Nice", "Valencia", "Bournemouth"], diff:"moyen", nationalities:["Pays-Bas"], positions:["attaquant"], birthYear:1999 },
   { name:"Jean-Michaël Seri", clubs:["ASEC Mimosas", "Porto", "Paços de Ferreira", "Nice", "Fulham", "Galatasaray", "Bordeaux", "Hull City", "Al Orobah", "NK Maribor"], diff:"moyen", nationalities:["Côte d'Ivoire"], positions:["milieu"], birthYear:1991 },
   { name:"Jean-Clair Todibo", clubs:["Toulouse", "Barcelona", "Schalke", "Benfica", "Nice", "West Ham"], diff:"moyen", nationalities:["France"], positions:["defenseur"], birthYear:1999 },
-  { name:"Malang Sarr", clubs:["Nice", "Chelsea", "Porto", "Monaco", "Lens"], diff:"moyen", nationalities:["France"], positions:["defenseur"], birthYear:1999 },
+  { name:"Malang Sarr", clubs:["Nice", "Chelsea", "Porto", "Monaco", "Lens", "NEOM SC"], diff:"moyen", nationalities:["France"], positions:["defenseur"], birthYear:1999 },
   // Strasbourg
   { name:"Olivier Dacourt", clubs:["Strasbourg", "Everton", "Lens", "Leeds United", "AS Roma", "Inter Milan", "Fulham"], diff:"moyen", nationalities:["France"], positions:["milieu"], birthYear:1974 },
   { name:"Frank Leboeuf", clubs:["Strasbourg", "Chelsea", "Marseille"], diff:"moyen", nationalities:["France"], positions:["defenseur"], birthYear:1968 },
@@ -2234,7 +2234,7 @@ export const PLAYERS = [
   // Al Qadsiah
   { name:"Yasser Al-Shahrani", clubs:["Al Hilal", "Al Qadsiah"], diff:"expert", nationalities:["Arabie saoudite"], positions:["defenseur"] , birthYear:1992 },
   // Neom FC
-  { name:"Abdoulaye Doucouré", clubs:["Rennes", "Granada", "Watford", "Everton", "Neom FC"], diff:"moyen", nationalities:["France"], positions:["attaquant"], birthYear:1993 },
+  { name:"Abdoulaye Doucouré", clubs:["Rennes", "Granada", "Watford", "Everton", "NEOM SC"], diff:"moyen", nationalities:["France"], positions:["attaquant"], birthYear:1993 },
   // MLS 2025/26 - nouveaux joueurs
   // LAFC
   { name:"Denis Bouanga", clubs:["Lorient", "Nîmes", "Saint-Etienne", "LAFC"], diff:"moyen", nationalities:["Gabon"], positions:["attaquant"], birthYear:1994 },
