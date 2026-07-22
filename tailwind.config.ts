@@ -15,7 +15,7 @@ export default {
     extend: {
       fontFamily: {
         sans: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"],
-        display: ["'Anton'", "'Bebas Neue'", "Impact", "sans-serif"],
+        display: ["'Tomorrow'", "Impact", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
