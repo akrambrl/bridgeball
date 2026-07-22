@@ -284,7 +284,7 @@ function getClubDisplayName(club){
   return CLUB_DISPLAY_NAMES[club] || club;
 }
 
-const CLUB_COLORS = {
+export const CLUB_COLORS = {
   "Arsenal":["#EF0107","#063672"],"Chelsea":["#034694","#DBA111"],"Liverpool":["#C8102E","#FFFFFF"],
   "Manchester United":["#DA291C","#FFFFFF"],"Manchester City":["#6CABDD","#1C2C5B"],"Tottenham":["#132257","#FFFFFF"],
   "Newcastle":["#241F20","#FFFFFF"],"Everton":["#003399","#FFFFFF"],"West Ham":["#7A263A","#1BB1E7"],
