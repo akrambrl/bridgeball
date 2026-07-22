@@ -1064,11 +1064,11 @@ export const GoatGuess = ({ onClose }: Props) => {
       {/* Header branding */}
       <div className="text-center mb-2 lg:mb-8">
         <div className="inline-block px-3 py-1 rounded-full bg-black/40 border border-white/15 backdrop-blur-sm mb-2 lg:mb-3">
-          <span className="font-display italic text-[10px] tracking-[0.4em] text-[#C084FC]">
+          <span className="font-display text-[10px] tracking-[0.4em] text-[#C084FC]">
             🔮 GOAT GUESS
           </span>
         </div>
-        <h1 className="hidden lg:block font-display italic text-4xl lg:text-6xl tracking-wider text-white leading-none drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
+        <h1 className="hidden lg:block font-display text-4xl lg:text-6xl tracking-wider text-white leading-none drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
           {isEn() ? "I'LL GUESS YOUR PLAYER" : "JE DEVINE TON JOUEUR"}
         </h1>
       </div>
