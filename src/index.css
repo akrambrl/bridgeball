@@ -196,3 +196,38 @@ All colors MUST be HSL.
 }
 .goat-halo { animation: goat-halo 3s ease-in-out infinite; }
 
+/* ── Révélation magique du Devin : la carte se matérialise dans la fumée ── */
+@keyframes goat-materialize {
+  0%   { opacity: 0; transform: scale(0.7); filter: blur(16px) brightness(2.4); }
+  45%  { opacity: 1; }
+  100% { opacity: 1; transform: scale(1); filter: blur(0) brightness(1); }
+}
+.goat-materialize { animation: goat-materialize 1.15s cubic-bezier(.22,1,.36,1) 0.12s both; }
+
+/* Volutes de fumée violette qui s'élèvent et se dissipent */
+@keyframes goat-smoke {
+  0%   { opacity: 0; transform: translate(0, 30px) scale(0.35); }
+  18%  { opacity: var(--o, 0.8); }
+  100% { opacity: 0; transform: translate(var(--dx, 0px), -140px) scale(2.6); }
+}
+.goat-smoke {
+  position: absolute;
+  border-radius: 9999px;
+  pointer-events: none;
+  filter: blur(10px);
+  background: radial-gradient(circle, rgba(216,180,254,0.9) 0%, rgba(168,85,247,0.5) 45%, transparent 72%);
+  animation: goat-smoke var(--dur, 2.1s) ease-out var(--delay, 0s) both;
+}
+
+/* Étincelles qui montent avec la fumée */
+@keyframes goat-spark {
+  0%   { opacity: 0; transform: translateY(16px) scale(0.3) rotate(0deg); }
+  25%  { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-95px) scale(1.1) rotate(40deg); }
+}
+.goat-spark {
+  position: absolute;
+  pointer-events: none;
+  animation: goat-spark var(--dur, 1.5s) ease-out var(--delay, 0s) both;
+}
+

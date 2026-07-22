@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
 import { PLAYERS, RETIRED_PLAYERS, GG_WC_WINNERS, GG_CL_WINNERS, GG_BALLON_DOR, GG_BALLON_DOR_MULTI } from "../../players.jsx";
 
 type Player = {
@@ -1922,6 +1922,29 @@ const initialsOf = (name: string) =>
 const CARD_SHAPE =
   "polygon(50% 0%, 78% 3%, 94% 10%, 94% 80%, 74% 93%, 50% 100%, 26% 93%, 6% 80%, 6% 10%, 22% 3%)";
 
+// Volutes de fumée et étincelles de la révélation (positions fixes)
+const SMOKE_PUFFS = [
+  { left: "6%", bottom: "8%", size: 110, dx: "-30px", delay: "0s", dur: "1.5s", o: 0.85 },
+  { left: "55%", bottom: "5%", size: 140, dx: "35px", delay: "0.08s", dur: "1.7s", o: 0.8 },
+  { left: "28%", bottom: "16%", size: 120, dx: "-15px", delay: "0.16s", dur: "1.6s", o: 0.75 },
+  { left: "68%", bottom: "22%", size: 100, dx: "45px", delay: "0.22s", dur: "1.8s", o: 0.7 },
+  { left: "12%", bottom: "40%", size: 90, dx: "-40px", delay: "0.3s", dur: "1.7s", o: 0.6 },
+  { left: "60%", bottom: "46%", size: 110, dx: "30px", delay: "0.36s", dur: "1.9s", o: 0.6 },
+  { left: "36%", bottom: "60%", size: 95, dx: "0px", delay: "0.42s", dur: "1.8s", o: 0.5 },
+  { left: "20%", bottom: "72%", size: 80, dx: "-25px", delay: "0.5s", dur: "1.9s", o: 0.5 },
+  { left: "40%", bottom: "30%", size: 150, dx: "10px", delay: "0.04s", dur: "1.9s", o: 0.9 },
+  { left: "18%", bottom: "24%", size: 130, dx: "-35px", delay: "0.12s", dur: "2s", o: 0.85 },
+  { left: "58%", bottom: "34%", size: 135, dx: "40px", delay: "0.2s", dur: "2.1s", o: 0.8 },
+];
+const SPARKS = [
+  { left: "10%", bottom: "18%", delay: "0.1s", dur: "1.4s" },
+  { left: "82%", bottom: "14%", delay: "0.25s", dur: "1.5s" },
+  { left: "45%", bottom: "34%", delay: "0.4s", dur: "1.6s" },
+  { left: "70%", bottom: "56%", delay: "0.55s", dur: "1.5s" },
+  { left: "24%", bottom: "66%", delay: "0.7s", dur: "1.6s" },
+  { left: "55%", bottom: "82%", delay: "0.85s", dur: "1.4s" },
+];
+
 const PlayerRevealCard = ({
   player,
   accent = "#C084FC",
@@ -1935,7 +1958,23 @@ const PlayerRevealCard = ({
   const tier = TIERS[player.diff] || TIERS.expert;
   const gold = tier.ink;
   return (
-    <div className="goat-card-in relative inline-block w-full max-w-[330px] my-1 lg:my-2">
+    <div className="relative inline-block w-full max-w-[330px] my-1 lg:my-2">
+      {/* Fumée magique + étincelles à la révélation */}
+      <div className="pointer-events-none absolute -inset-10 z-20 overflow-visible" aria-hidden>
+        {SMOKE_PUFFS.map((p, i) => (
+          <div
+            key={i}
+            className="goat-smoke"
+            style={{ left: p.left, bottom: p.bottom, width: p.size, height: p.size, "--dx": p.dx, "--delay": p.delay, "--dur": p.dur, "--o": String(p.o) } as CSSProperties}
+          />
+        ))}
+        {SPARKS.map((s, i) => (
+          <span key={`s${i}`} className="goat-spark text-base" style={{ left: s.left, bottom: s.bottom, "--delay": s.delay, "--dur": s.dur } as CSSProperties}>
+            ✨
+          </span>
+        ))}
+      </div>
+      <div className="goat-materialize relative w-full">
       {/* Halo pulsé derrière la carte */}
       <div
         className="goat-halo absolute inset-0 blur-3xl"
@@ -2018,6 +2057,7 @@ const PlayerRevealCard = ({
             </div>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );
