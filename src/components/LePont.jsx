@@ -10877,6 +10877,11 @@ export default function LePont() {
           <span style={{fontSize:16,color:"rgba(255,94,91,.6)"}}>›</span>
         </a>
 
+        {/* Footer discret : version + liens légaux */}
+        <div style={{textAlign:"center",padding:"16px 0 4px",fontSize:10,color:"rgba(255,255,255,.3)",letterSpacing:1.5}}>
+          GOAT FC · <a href="/privacy/" target="_blank" rel="noopener noreferrer" style={{color:"rgba(255,255,255,.45)",textDecoration:"underline"}}>{lang==="en"?"Privacy":"Confidentialité"}</a> · <a href="/terms/" target="_blank" rel="noopener noreferrer" style={{color:"rgba(255,255,255,.45)",textDecoration:"underline"}}>{lang==="en"?"Terms":"Conditions"}</a>
+        </div>
+
       </div>
     </div>
   );
