@@ -9540,106 +9540,58 @@ export default function LePont() {
 
         {/* 🐐 Modal de choix Solo / Multi pour GOAT GRID */}
         {ggModeChoice && (
-          <div style={{position:"fixed",inset:0,zIndex:450,background:"#0a0a0a",overflowY:"auto",WebkitOverflowScrolling:"touch"}}>
+          <div style={{position:"fixed",inset:0,zIndex:450,background:"#0B1310",backgroundImage:"radial-gradient(ellipse 120% 50% at 50% -5%, rgba(0,230,118,0.10) 0%, transparent 60%)",overflowY:"auto",WebkitOverflowScrolling:"touch"}}>
             <div style={{position:"relative",width:"100%",minHeight:"100vh",display:"flex",flexDirection:"column",animation:"fadeIn .3s ease-out"}}>
 
-              {/* ── BOUTON FERMER (X en haut à droite) ── */}
-              <button onClick={function(){setGgModeChoice(false);}} style={{
-                position:"fixed",top:"calc(14px + env(safe-area-inset-top))",right:14,zIndex:10,
-                width:38,height:38,borderRadius:"50%",
-                background:"rgba(0,0,0,.65)",color:"#fff",
-                border:"1px solid rgba(255,255,255,.25)",
-                fontSize:22,fontWeight:300,lineHeight:1,
-                cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
-                backdropFilter:"blur(10px)",
-                boxShadow:"0 4px 16px rgba(0,0,0,.5)"
-              }}>×</button>
+              {/* Fermer */}
+              <button onClick={function(){setGgModeChoice(false);}} style={{position:"fixed",top:"calc(14px + env(safe-area-inset-top))",right:14,zIndex:10,width:40,height:40,borderRadius:"50%",background:"rgba(255,255,255,.08)",color:"#fff",border:"1px solid rgba(255,255,255,.18)",fontSize:22,fontWeight:300,lineHeight:1,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(10px)"}}>×</button>
 
-              {/* ── HERO IMAGE — GRID_CARD_IMG entière ── */}
-              <div style={{position:"relative",width:"100%",height:"35vh",maxHeight:"380px",minHeight:"240px",overflow:"hidden",background:"#000",flexShrink:0}}>
-                <img
-                  src={GRID_CARD_IMG}
-                  alt=""
-                  style={{width:"100%",height:"100%",objectFit:"contain",pointerEvents:"none",userSelect:"none"}}
-                  draggable={false}
-                />
-                {/* Gradient bottom pour transition douce */}
-                <div style={{position:"absolute",bottom:0,left:0,right:0,height:50,background:"linear-gradient(to top, #0a0a0a 0%, transparent 100%)",pointerEvents:"none"}}/>
+              {/* Hero compact : l'affiche en couverture, fondue dans le fond sombre */}
+              <div style={{position:"relative",width:"100%",height:"27vh",maxHeight:310,minHeight:200,overflow:"hidden",flexShrink:0}}>
+                <img src={GRID_CARD_IMG} alt="" style={{width:"100%",height:"165%",objectFit:"cover",objectPosition:"center 20%",pointerEvents:"none",userSelect:"none"}} draggable={false}/>
+                <div style={{position:"absolute",inset:0,background:"linear-gradient(to top, #0B1310 6%, rgba(11,19,16,.35) 42%, rgba(11,19,16,.10) 100%)",pointerEvents:"none"}}/>
+                <div style={{position:"absolute",bottom:14,left:0,right:0,textAlign:"center",pointerEvents:"none"}}>
+                  <div style={{fontFamily:G.heading,fontSize:34,letterSpacing:3,lineHeight:1,textShadow:"0 4px 24px rgba(0,0,0,.8)"}}>
+                    <span style={{color:"#FFFFFF"}}>GOAT </span><span style={{color:"#B9F600"}}>GRID</span>
+                  </div>
+                </div>
               </div>
 
-              {/* ── CONTENU : sous-titre + 2 cartes ── */}
-              <div style={{padding:"4px 16px calc(20px + env(safe-area-inset-bottom))",flex:1}}>
+              {/* Contenu */}
+              <div style={{padding:"16px 16px calc(24px + env(safe-area-inset-bottom))",flex:1,display:"flex",flexDirection:"column",gap:12,maxWidth:520,width:"100%",margin:"0 auto"}}>
 
-                {/* Sous-titre */}
-                <div style={{textAlign:"center",fontSize:11,color:"rgba(255,255,255,.5)",letterSpacing:2.5,fontWeight:700,textTransform:"uppercase",marginBottom:14}}>
-                  {lang==="en"?"Choose your battle":"Choisis ton mode"}
+                <div style={{textAlign:"center",fontSize:11,color:"rgba(255,255,255,.45)",letterSpacing:3,fontWeight:800,textTransform:"uppercase",marginBottom:2}}>
+                  {lang==="en"?"Choose your mode":"Choisis ton mode"}
                 </div>
 
                 {/* Carte SOLO */}
-                <div onClick={function(){setGgModeChoice(false);ggStartGame();}} style={{position:"relative",overflow:"hidden",borderRadius:18,border:"2px solid rgba(0,230,118,.5)",background:"linear-gradient(135deg, #0a3a1a 0%, #0a1410 100%)",padding:"18px 18px",marginBottom:12,cursor:"pointer",display:"flex",flexDirection:"column",justifyContent:"space-between",boxShadow:"0 8px 30px rgba(0,230,118,.15)"}}>
-                  {/* Pattern grille en fond (illustration) */}
-                  <div style={{position:"absolute",top:-10,right:-10,opacity:.18,pointerEvents:"none"}}>
-                    <div style={{display:"grid",gridTemplateColumns:"repeat(3, 34px)",gridTemplateRows:"repeat(3, 34px)",gap:3}}>
-                      {[0,1,2,3,4,5,6,7,8].map(function(i){
-                        const filled = [0,2,4,6,8].indexOf(i) !== -1;
-                        return <div key={i} style={{borderRadius:5,background:filled?"#00E676":"rgba(255,255,255,.1)",border:"1px solid rgba(255,255,255,.15)"}}/>;
-                      })}
+                <div onClick={function(){setGgModeChoice(false);ggStartGame();}} style={{position:"relative",overflow:"hidden",borderRadius:20,border:"1px solid rgba(0,230,118,.38)",background:"linear-gradient(135deg, rgba(0,230,118,.12) 0%, rgba(255,255,255,.03) 45%, rgba(0,0,0,.25) 100%)",padding:"16px 14px 16px 16px",cursor:"pointer",display:"flex",alignItems:"center",gap:14,boxShadow:"0 14px 36px -12px rgba(0,230,118,.3)"}}>
+                  <div style={{width:54,height:54,borderRadius:16,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",fontSize:27,background:"rgba(0,230,118,.14)",border:"1px solid rgba(0,230,118,.4)",boxShadow:"inset 0 2px 10px rgba(0,0,0,.35)"}}>🐐</div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontSize:10,fontWeight:800,letterSpacing:2.5,color:"#00E676",textTransform:"uppercase"}}>{lang==="en"?"Daily challenge":"Défi du jour"}</div>
+                    <div style={{fontFamily:G.heading,fontSize:26,color:"#fff",letterSpacing:2,lineHeight:1.1,margin:"3px 0 9px"}}>SOLO</div>
+                    <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+                      <span style={{fontSize:10.5,fontWeight:700,color:"rgba(255,255,255,.85)",background:"rgba(0,0,0,.35)",border:"1px solid rgba(255,255,255,.12)",padding:"4px 9px",borderRadius:999,letterSpacing:.3}}>{lang==="en"?"3×3 grid":"Grille 3×3"}</span>
+                      <span style={{fontSize:10.5,fontWeight:700,color:"rgba(255,255,255,.85)",background:"rgba(0,0,0,.35)",border:"1px solid rgba(255,255,255,.12)",padding:"4px 9px",borderRadius:999,letterSpacing:.3}}>❤️ {lang==="en"?"3 lives":"3 vies"}</span>
+                      <span style={{fontSize:10.5,fontWeight:700,color:"rgba(255,255,255,.85)",background:"rgba(0,0,0,.35)",border:"1px solid rgba(255,255,255,.12)",padding:"4px 9px",borderRadius:999,letterSpacing:.3}}>🏆 {lang==="en"?"Ranked":"Classé"}</span>
                     </div>
                   </div>
-                  {/* Header de la carte */}
-                  <div style={{display:"flex",alignItems:"center",gap:10,position:"relative",zIndex:1}}>
-                    <div style={{fontSize:32,filter:"drop-shadow(0 2px 8px rgba(0,230,118,.4))"}}>🐐</div>
-                    <div>
-                      <div style={{fontSize:10,fontWeight:800,letterSpacing:2,color:"rgba(0,230,118,.9)",textTransform:"uppercase"}}>{lang==="en"?"Daily challenge":"Défi du jour"}</div>
-                      <div style={{fontFamily:G.heading,fontSize:24,fontWeight:900,color:"#FFFFFF",letterSpacing:2,lineHeight:1,marginTop:2}}>SOLO</div>
-                    </div>
-                  </div>
-                  {/* Détails */}
-                  <div style={{display:"flex",gap:8,marginTop:12,position:"relative",zIndex:1}}>
-                    <div style={{flex:1,background:"rgba(0,0,0,.35)",borderRadius:8,padding:"5px 8px",border:"1px solid rgba(0,230,118,.2)"}}>
-                      <div style={{fontSize:9,color:"rgba(255,255,255,.5)",letterSpacing:1,fontWeight:700}}>{lang==="en"?"GRID":"GRILLE"}</div>
-                      <div style={{fontSize:11,color:"#fff",fontWeight:800,marginTop:1}}>3×3</div>
-                    </div>
-                    <div style={{flex:1,background:"rgba(0,0,0,.35)",borderRadius:8,padding:"5px 8px",border:"1px solid rgba(0,230,118,.2)"}}>
-                      <div style={{fontSize:9,color:"rgba(255,255,255,.5)",letterSpacing:1,fontWeight:700}}>{lang==="en"?"LIVES":"VIES"}</div>
-                      <div style={{fontSize:11,color:"#fff",fontWeight:800,marginTop:1}}>❤️❤️❤️</div>
-                    </div>
-                    <div style={{flex:1,background:"rgba(0,0,0,.35)",borderRadius:8,padding:"5px 8px",border:"1px solid rgba(0,230,118,.2)"}}>
-                      <div style={{fontSize:9,color:"rgba(255,255,255,.5)",letterSpacing:1,fontWeight:700}}>{lang==="en"?"RANKED":"CLASSÉ"}</div>
-                      <div style={{fontSize:11,color:"#fff",fontWeight:800,marginTop:1}}>🏆</div>
-                    </div>
-                  </div>
+                  <div style={{fontSize:28,color:"rgba(0,230,118,.85)",flexShrink:0,fontWeight:300,lineHeight:1}}>›</div>
                 </div>
 
                 {/* Carte BATTLE */}
-                <div onClick={function(){setGgModeChoice(false);setGgBattleScreen("menu");setGgBattleError("");setGgBattleCode("");}} style={{position:"relative",overflow:"hidden",borderRadius:18,border:"2px solid rgba(255,107,53,.5)",background:"linear-gradient(135deg, #4a1810 0%, #1a0a08 100%)",padding:"18px 18px",cursor:"pointer",display:"flex",flexDirection:"column",justifyContent:"space-between",boxShadow:"0 8px 30px rgba(255,107,53,.2)"}}>
-                  {/* Avatars en fond (illustration) */}
-                  <div style={{position:"absolute",top:8,right:-8,opacity:.18,pointerEvents:"none",fontSize:32,letterSpacing:-2,whiteSpace:"nowrap"}}>
-                    ⚔️🛡️⚔️
-                  </div>
-                  {/* Header */}
-                  <div style={{display:"flex",alignItems:"center",gap:10,position:"relative",zIndex:1}}>
-                    <div style={{fontSize:32,filter:"drop-shadow(0 2px 8px rgba(255,107,53,.4))"}}>⚔️</div>
-                    <div>
-                      <div style={{fontSize:10,fontWeight:800,letterSpacing:2,color:"rgba(255,107,53,.95)",textTransform:"uppercase"}}>{lang==="en"?"Versus mode":"Mode versus"}</div>
-                      <div style={{fontFamily:G.heading,fontSize:24,fontWeight:900,color:"#FFFFFF",letterSpacing:2,lineHeight:1,marginTop:2}}>BATTLE</div>
+                <div onClick={function(){setGgModeChoice(false);setGgBattleScreen("menu");setGgBattleError("");setGgBattleCode("");}} style={{position:"relative",overflow:"hidden",borderRadius:20,border:"1px solid rgba(255,107,53,.4)",background:"linear-gradient(135deg, rgba(255,107,53,.13) 0%, rgba(255,255,255,.03) 45%, rgba(0,0,0,.25) 100%)",padding:"16px 14px 16px 16px",cursor:"pointer",display:"flex",alignItems:"center",gap:14,boxShadow:"0 14px 36px -12px rgba(255,107,53,.32)"}}>
+                  <div style={{width:54,height:54,borderRadius:16,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",fontSize:27,background:"rgba(255,107,53,.15)",border:"1px solid rgba(255,107,53,.45)",boxShadow:"inset 0 2px 10px rgba(0,0,0,.35)"}}>⚔️</div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontSize:10,fontWeight:800,letterSpacing:2.5,color:"#FF8A2A",textTransform:"uppercase"}}>{lang==="en"?"Versus mode":"Mode versus"}</div>
+                    <div style={{fontFamily:G.heading,fontSize:26,color:"#fff",letterSpacing:2,lineHeight:1.1,margin:"3px 0 9px"}}>BATTLE</div>
+                    <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+                      <span style={{fontSize:10.5,fontWeight:700,color:"rgba(255,255,255,.85)",background:"rgba(0,0,0,.35)",border:"1px solid rgba(255,255,255,.12)",padding:"4px 9px",borderRadius:999,letterSpacing:.3}}>⏱️ 2 min</span>
+                      <span style={{fontSize:10.5,fontWeight:700,color:"rgba(255,255,255,.85)",background:"rgba(0,0,0,.35)",border:"1px solid rgba(255,255,255,.12)",padding:"4px 9px",borderRadius:999,letterSpacing:.3}}>👥 {lang==="en"?"2-8 players":"2-8 joueurs"}</span>
+                      <span style={{fontSize:10.5,fontWeight:700,color:"rgba(255,255,255,.85)",background:"rgba(0,0,0,.35)",border:"1px solid rgba(255,255,255,.12)",padding:"4px 9px",borderRadius:999,letterSpacing:.3}}>♾️ {lang==="en"?"Lives":"Vies"}</span>
                     </div>
                   </div>
-                  {/* Détails */}
-                  <div style={{display:"flex",gap:8,marginTop:12,position:"relative",zIndex:1}}>
-                    <div style={{flex:1,background:"rgba(0,0,0,.35)",borderRadius:8,padding:"5px 8px",border:"1px solid rgba(255,107,53,.2)"}}>
-                      <div style={{fontSize:9,color:"rgba(255,255,255,.5)",letterSpacing:1,fontWeight:700}}>{lang==="en"?"TIMER":"DURÉE"}</div>
-                      <div style={{fontSize:11,color:"#fff",fontWeight:800,marginTop:1}}>2 min ⏱️</div>
-                    </div>
-                    <div style={{flex:1,background:"rgba(0,0,0,.35)",borderRadius:8,padding:"5px 8px",border:"1px solid rgba(255,107,53,.2)"}}>
-                      <div style={{fontSize:9,color:"rgba(255,255,255,.5)",letterSpacing:1,fontWeight:700}}>{lang==="en"?"PLAYERS":"JOUEURS"}</div>
-                      <div style={{fontSize:11,color:"#fff",fontWeight:800,marginTop:1}}>2-8 👥</div>
-                    </div>
-                    <div style={{flex:1,background:"rgba(0,0,0,.35)",borderRadius:8,padding:"5px 8px",border:"1px solid rgba(255,107,53,.2)"}}>
-                      <div style={{fontSize:9,color:"rgba(255,255,255,.5)",letterSpacing:1,fontWeight:700}}>{lang==="en"?"LIVES":"VIES"}</div>
-                      <div style={{fontSize:11,color:"#fff",fontWeight:800,marginTop:1}}>♾️</div>
-                    </div>
-                  </div>
+                  <div style={{fontSize:28,color:"rgba(255,138,42,.85)",flexShrink:0,fontWeight:300,lineHeight:1}}>›</div>
                 </div>
 
               </div>
