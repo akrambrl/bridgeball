@@ -1890,6 +1890,31 @@ const futRating = (p: Player) => {
   const base = p.diff === "facile" ? 89 : p.diff === "moyen" ? 83 : 77;
   return base + (h % 5);
 };
+// Palette par rareté façon FUT : or (stars), argent (moyens), bronze (experts)
+const TIERS = {
+  facile: {
+    edge: "linear-gradient(160deg,#FFE9A8 0%,#F5D67B 30%,#C9992F 70%,#8A6420 100%)",
+    body: "linear-gradient(180deg,#3A2E14 0%,#241C0C 55%,#140F06 100%)",
+    ink: "#F5D67B",
+    glow: "rgba(245,214,123,0.55)",
+    inner: "radial-gradient(circle at 50% 22%, rgba(245,214,123,0.14), transparent 55%)",
+  },
+  moyen: {
+    edge: "linear-gradient(160deg,#F4F6FA 0%,#C9CFDA 35%,#8E96A6 70%,#5C6470 100%)",
+    body: "linear-gradient(180deg,#2C3038 0%,#1B1E24 55%,#0E1013 100%)",
+    ink: "#D9DEE8",
+    glow: "rgba(217,222,232,0.45)",
+    inner: "radial-gradient(circle at 50% 22%, rgba(217,222,232,0.12), transparent 55%)",
+  },
+  expert: {
+    edge: "linear-gradient(160deg,#E8B584 0%,#C98D50 35%,#96602C 70%,#5E3B1A 100%)",
+    body: "linear-gradient(180deg,#33241A 0%,#201610 55%,#120C08 100%)",
+    ink: "#E2A96F",
+    glow: "rgba(226,169,111,0.5)",
+    inner: "radial-gradient(circle at 50% 22%, rgba(226,169,111,0.12), transparent 55%)",
+  },
+} as const;
+
 const initialsOf = (name: string) =>
   name.split(/[\s-]+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase();
 
@@ -1907,13 +1932,14 @@ const PlayerRevealCard = ({
   const rating = futRating(player);
   const pos = POS_ABBR[player.positions[0]] || "?";
   const flag = flagOf(player.nationalities[0]);
-  const gold = "#F5D67B";
+  const tier = TIERS[player.diff] || TIERS.expert;
+  const gold = tier.ink;
   return (
     <div className="goat-card-in relative inline-block w-full max-w-[330px] my-1 lg:my-2">
       {/* Halo pulsé derrière la carte */}
       <div
         className="goat-halo absolute inset-0 blur-3xl"
-        style={{ background: `radial-gradient(circle at 50% 38%, ${accent}55, transparent 70%)` }}
+        style={{ background: `radial-gradient(circle at 50% 38%, ${tier.glow}, transparent 70%)` }}
         aria-hidden
       />
       {/* Bord dégradé or→violet, forme bouclier */}
@@ -1922,20 +1948,20 @@ const PlayerRevealCard = ({
         style={{
           clipPath: CARD_SHAPE,
           padding: 3,
-          background: `linear-gradient(160deg, ${gold} 0%, #B48A3C 35%, ${accent} 75%, #6D28D9 100%)`,
+          background: tier.edge,
         }}
       >
         <div
           className="relative px-4 pt-7 pb-12"
           style={{
             clipPath: CARD_SHAPE,
-            background: "linear-gradient(180deg, #251B3B 0%, #161026 55%, #0D0918 100%)",
+            background: tier.body,
           }}
         >
           {/* Lueur douce derrière le médaillon */}
           <div
             className="pointer-events-none absolute inset-0"
-            style={{ background: "radial-gradient(circle at 50% 22%, rgba(192,132,252,0.16), transparent 55%)" }}
+            style={{ background: tier.inner }}
             aria-hidden
           />
           {/* Bloc haut : note / poste / drapeau + médaillon initiales */}
@@ -1949,7 +1975,7 @@ const PlayerRevealCard = ({
               <div
                 className="w-28 h-28 rounded-full flex items-center justify-center font-display text-4xl text-white/90"
                 style={{
-                  background: "radial-gradient(circle at 35% 30%, #3D2B62, #1A1330 72%)",
+                  background: "radial-gradient(circle at 35% 30%, rgba(255,255,255,0.10), rgba(0,0,0,0.30) 72%)",
                   border: `2px solid ${gold}55`,
                   boxShadow: "inset 0 6px 20px rgba(0,0,0,0.55), 0 8px 24px rgba(0,0,0,0.4)",
                 }}
