@@ -1854,112 +1854,146 @@ const LostView = ({
   </div>
 );
 
+// ── Carte joueur façon FUT ──────────────────────────────────────────
+// Drapeaux par nationalité (libellés français de players.jsx)
+const FLAGS: Record<string, string> = {
+  "Afrique du Sud":"🇿🇦","Albanie":"🇦🇱","Algérie":"🇩🇿","Allemagne":"🇩🇪","Angleterre":"🏴󠁧󠁢󠁥󠁮󠁧󠁿","Angola":"🇦🇴",
+  "Arabie saoudite":"🇸🇦","Argentine":"🇦🇷","Arménie":"🇦🇲","Australie":"🇦🇺","Autriche":"🇦🇹","Barbade":"🇧🇧",
+  "Belgique":"🇧🇪","Biélorussie":"🇧🇾","Bolivie":"🇧🇴","Bosnie":"🇧🇦","Bosnie-Herzégovine":"🇧🇦","Brésil":"🇧🇷",
+  "Bulgarie":"🇧🇬","Burkina Faso":"🇧🇫","Burundi":"🇧🇮","Bénin":"🇧🇯","Cameroun":"🇨🇲","Canada":"🇨🇦",
+  "Cap-Vert":"🇨🇻","Centrafrique":"🇨🇫","Chili":"🇨🇱","Chine":"🇨🇳","Chypre":"🇨🇾","Colombie":"🇨🇴",
+  "Comores":"🇰🇲","Corée du Sud":"🇰🇷","Costa Rica":"🇨🇷","Croatie":"🇭🇷","Curaçao":"🇨🇼","Côte d'Ivoire":"🇨🇮",
+  "Danemark":"🇩🇰","Dominique":"🇩🇲","Espagne":"🇪🇸","Estonie":"🇪🇪","Finlande":"🇫🇮","France":"🇫🇷",
+  "Gabon":"🇬🇦","Gambie":"🇬🇲","Ghana":"🇬🇭","Grenade":"🇬🇩","Grèce":"🇬🇷","Guinée équatoriale":"🇬🇶",
+  "Guinée":"🇬🇳","Guinée-Bissau":"🇬🇼","Géorgie":"🇬🇪","Haïti":"🇭🇹","Honduras":"🇭🇳","Hongrie":"🇭🇺",
+  "Indonésie":"🇮🇩","Iran":"🇮🇷","Irlande du Nord":"🇬🇧","Irlande":"🇮🇪","Islande":"🇮🇸","Israël":"🇮🇱",
+  "Italie":"🇮🇹","Jamaïque":"🇯🇲","Japon":"🇯🇵","Jordanie":"🇯🇴","Kenya":"🇰🇪","Kosovo":"🇽🇰",
+  "Lettonie":"🇱🇻","Liberia":"🇱🇷","Libye":"🇱🇾","Lituanie":"🇱🇹","Luxembourg":"🇱🇺","Macédoine du Nord":"🇲🇰",
+  "Mali":"🇲🇱","Malte":"🇲🇹","Maroc":"🇲🇦","Mauritanie":"🇲🇷","Mexique":"🇲🇽","Monténégro":"🇲🇪",
+  "Mozambique":"🇲🇿","Nigeria":"🇳🇬","Norvège":"🇳🇴","Nouvelle-Zélande":"🇳🇿","Oman":"🇴🇲","Ouzbékistan":"🇺🇿",
+  "Pakistan":"🇵🇰","Panama":"🇵🇦","Paraguay":"🇵🇾","Pays de Galles":"🏴󠁧󠁢󠁷󠁬󠁳󠁿","Pays-Bas":"🇳🇱","Pologne":"🇵🇱",
+  "Portugal":"🇵🇹","Pérou":"🇵🇪","Qatar":"🇶🇦","RD Congo":"🇨🇩","Roumanie":"🇷🇴","Russie":"🇷🇺",
+  "République Dominicaine":"🇩🇴","République dominicaine":"🇩🇴","République du Congo":"🇨🇬","Serbie":"🇷🇸",
+  "Sierra Leone":"🇸🇱","Slovaquie":"🇸🇰","Slovénie":"🇸🇮","Soudan":"🇸🇩","Suisse":"🇨🇭","Suriname":"🇸🇷",
+  "Suède":"🇸🇪","Syrie":"🇸🇾","Sénégal":"🇸🇳","Taïwan":"🇹🇼","Tchéquie":"🇨🇿","Togo":"🇹🇬",
+  "Trinité-et-Tobago":"🇹🇹","Tunisie":"🇹🇳","Turquie":"🇹🇷","Ukraine":"🇺🇦","Uruguay":"🇺🇾","Venezuela":"🇻🇪",
+  "Zambie":"🇿🇲","Zimbabwe":"🇿🇼","Écosse":"🏴󠁧󠁢󠁳󠁣󠁴󠁿","Égypte":"🇪🇬","Équateur":"🇪🇨","État de Palestine":"🇵🇸",
+  "États-Unis":"🇺🇸","Îles Féroé":"🇫🇴",
+};
+const flagOf = (nat?: string) => (nat && FLAGS[nat]) || "🏳️";
+const POS_ABBR: Record<string, string> = { gardien: "GB", defenseur: "DEF", milieu: "MIL", attaquant: "BU" };
+// Note façon FUT : dérivée de la notoriété (diff) + variation stable par nom.
+// Purement cosmétique — pas une vraie note.
+const futRating = (p: Player) => {
+  let h = 0;
+  for (let i = 0; i < p.name.length; i++) h = (h * 31 + p.name.charCodeAt(i)) >>> 0;
+  const base = p.diff === "facile" ? 89 : p.diff === "moyen" ? 83 : 77;
+  return base + (h % 5);
+};
+const initialsOf = (name: string) =>
+  name.split(/[\s-]+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase();
+
+// Forme bouclier FUT (bord dégradé simulé par double clip-path)
+const CARD_SHAPE =
+  "polygon(50% 0%, 78% 3%, 94% 10%, 94% 80%, 74% 93%, 50% 100%, 26% 93%, 6% 80%, 6% 10%, 22% 3%)";
+
 const PlayerRevealCard = ({
   player,
-  accent = "#FFC93C",
+  accent = "#C084FC",
 }: {
   player: Player;
   accent?: string;
-}) => (
-  <div className="goat-card-in relative inline-block w-full max-w-[360px] my-1 lg:my-2">
-    {/* Halo doré pulsé derrière la carte */}
-    <div
-      className="goat-halo absolute inset-0 blur-3xl rounded-[28px]"
-      style={{ background: `radial-gradient(circle at 50% 38%, ${accent}, transparent 70%)` }}
-      aria-hidden
-    />
-    <div
-      className="relative rounded-[24px] overflow-hidden border-2 shadow-2xl"
-      style={{
-        borderColor: `${accent}66`,
-        boxShadow: `0 26px 64px -14px ${accent}66, inset 0 1px 0 rgba(255,255,255,0.12)`,
-      }}
-    >
-      {/* En-tête : violet profond, sobre et moderne */}
+}) => {
+  const rating = futRating(player);
+  const pos = POS_ABBR[player.positions[0]] || "?";
+  const flag = flagOf(player.nationalities[0]);
+  const gold = "#F5D67B";
+  return (
+    <div className="goat-card-in relative inline-block w-full max-w-[330px] my-1 lg:my-2">
+      {/* Halo pulsé derrière la carte */}
       <div
-        className="relative px-5 py-6 lg:py-8 overflow-hidden"
-        style={{ background: "linear-gradient(135deg,#8B5CF6 0%,#6D28D9 55%,#4C1D95 100%)" }}
+        className="goat-halo absolute inset-0 blur-3xl"
+        style={{ background: `radial-gradient(circle at 50% 38%, ${accent}55, transparent 70%)` }}
+        aria-hidden
+      />
+      {/* Bord dégradé or→violet, forme bouclier */}
+      <div
+        className="relative mx-auto"
+        style={{
+          clipPath: CARD_SHAPE,
+          padding: 3,
+          background: `linear-gradient(160deg, ${gold} 0%, #B48A3C 35%, ${accent} 75%, #6D28D9 100%)`,
+        }}
       >
-        {/* moitié diagonale plus claire à droite (forme signature, adoucie) */}
         <div
-          className="pointer-events-none absolute top-0 right-0 bottom-0 w-[58%]"
-          style={{ background: "rgba(255,255,255,0.07)", clipPath: "polygon(30% 0%, 100% 0%, 100% 100%, 0% 100%)" }}
-          aria-hidden
-        />
-        {/* reflet animé */}
-        <div
-          className="goat-shine pointer-events-none absolute inset-y-0 -left-1/3 w-1/3 skew-x-[-18deg] bg-white/30 blur-md"
-          aria-hidden
-        />
-        {/* badge GOAT */}
-        <div
-          className="absolute top-3 right-3 px-2 py-0.5 rounded-md font-display text-[9px] tracking-[0.3em] shadow-md"
-          style={{ background: "#1A0F00", color: accent }}
+          className="relative px-4 pt-7 pb-12"
+          style={{
+            clipPath: CARD_SHAPE,
+            background: "linear-gradient(180deg, #251B3B 0%, #161026 55%, #0D0918 100%)",
+          }}
         >
-          🐐 GOAT
-        </div>
-        <div className="relative font-display text-[10px] tracking-[0.4em] text-white/90 mb-1 flex items-center gap-1.5 drop-shadow">
-          <span>⚽</span> {isEn() ? "THE PLAYER" : "LE JOUEUR"}
-        </div>
-        <div className="relative font-display text-2xl lg:text-4xl tracking-wide text-white leading-none break-words drop-shadow-[0_3px_12px_rgba(0,0,0,0.5)]">
-          {player.name}
-        </div>
-      </div>
-
-      {/* Corps : nation / postes / carrière sur fond sombre */}
-      <div
-        className="px-4 py-4 lg:px-5 lg:py-5 text-left"
-        style={{ background: "linear-gradient(180deg,#16241B 0%,#0A1410 100%)" }}
-      >
-        {/* Nationalité */}
-        <div className="mb-3">
-          <div className="text-[9px] tracking-[0.3em] text-white/40 mb-1">NATION</div>
-          <div className="font-display text-sm tracking-wide" style={{ color: accent }}>
-            {player.nationalities[0] || "—"}
-          </div>
-        </div>
-
-        {/* Postes */}
-        <div className="mb-3">
-          <div className="text-[9px] tracking-[0.3em] text-white/40 mb-1">
-            {isEn() ? "POSITION" : "POSTE"}{player.positions.length > 1 ? "S" : ""}
-          </div>
-          <div className="flex flex-wrap gap-1">
-            {player.positions.map((p) => (
-              <span
-                key={p}
-                className="px-2 py-0.5 rounded-md text-[11px] font-display tracking-wide uppercase"
-                style={{ background: `${accent}22`, color: accent, border: `1px solid ${accent}55` }}
+          {/* Lueur douce derrière le médaillon */}
+          <div
+            className="pointer-events-none absolute inset-0"
+            style={{ background: "radial-gradient(circle at 50% 22%, rgba(192,132,252,0.16), transparent 55%)" }}
+            aria-hidden
+          />
+          {/* Bloc haut : note / poste / drapeau + médaillon initiales */}
+          <div className="relative flex items-start">
+            <div className="flex flex-col items-center leading-none pl-3" style={{ color: gold }}>
+              <div className="font-display text-4xl drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">{rating}</div>
+              <div className="font-display text-xs tracking-[0.25em] mt-1">{pos}</div>
+              <div className="text-2xl mt-1.5 leading-none">{flag}</div>
+            </div>
+            <div className="flex-1 flex items-center justify-center pr-6">
+              <div
+                className="w-28 h-28 rounded-full flex items-center justify-center font-display text-4xl text-white/90"
+                style={{
+                  background: "radial-gradient(circle at 35% 30%, #3D2B62, #1A1330 72%)",
+                  border: `2px solid ${gold}55`,
+                  boxShadow: "inset 0 6px 20px rgba(0,0,0,0.55), 0 8px 24px rgba(0,0,0,0.4)",
+                }}
               >
-                {p}
-              </span>
-            ))}
+                {initialsOf(player.name)}
+              </div>
+            </div>
           </div>
-        </div>
-
-        {/* Clubs (max 6) */}
-        <div>
-          <div className="text-[9px] tracking-[0.3em] text-white/40 mb-1">{isEn() ? "CAREER" : "CARRIÈRE"}</div>
-          <div className="flex flex-wrap gap-1">
-            {player.clubs.slice(0, 6).map((c) => (
-              <span
-                key={c}
-                className="px-2 py-0.5 rounded-md text-[10px] bg-black/40 border border-white/10 text-white/80"
-              >
-                {c}
-              </span>
-            ))}
-            {player.clubs.length > 6 && (
-              <span className="px-2 py-0.5 rounded-md text-[10px] text-white/40">
-                +{player.clubs.length - 6}
-              </span>
-            )}
+          {/* Nom entre filets dorés */}
+          <div className="relative mt-4 text-center">
+            <div className="mx-auto h-px w-4/5" style={{ background: `linear-gradient(90deg, transparent, ${gold}99, transparent)` }} />
+            <div className="font-display text-2xl lg:text-3xl tracking-wider text-white leading-tight py-1.5 px-6 break-words drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]">
+              {player.name}
+            </div>
+            <div className="mx-auto h-px w-4/5" style={{ background: `linear-gradient(90deg, transparent, ${gold}99, transparent)` }} />
+          </div>
+          {/* Nation + carrière */}
+          <div className="relative mt-2.5 text-center">
+            <div className="text-[10px] tracking-[0.3em] text-white/50 mb-2">
+              {flag} {(player.nationalities[0] || "—").toUpperCase()}
+            </div>
+            <div className="flex flex-wrap gap-1 justify-center px-8">
+              {player.clubs.slice(0, 4).map((c) => (
+                <span key={c} className="px-2 py-0.5 rounded-md text-[10px] bg-white/[0.06] border border-white/10 text-white/80">
+                  {c}
+                </span>
+              ))}
+              {player.clubs.length > 4 && (
+                <span className="px-1.5 py-0.5 text-[10px] text-white/40">+{player.clubs.length - 4}</span>
+              )}
+            </div>
+          </div>
+          {/* Badge GOAT */}
+          <div
+            className="absolute top-4 right-8 px-2 py-0.5 rounded-md font-display text-[9px] tracking-[0.3em]"
+            style={{ background: "rgba(0,0,0,0.55)", color: gold, border: `1px solid ${gold}44` }}
+          >
+            🐐 GOAT
           </div>
         </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 
 export default GoatGuess;
