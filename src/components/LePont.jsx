@@ -2252,9 +2252,9 @@ if(typeof document!=="undefined"&&!document.getElementById("bb-css")){
     @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
     @keyframes heartbeat{0%,100%{transform:scale(1)}15%{transform:scale(1.15)}30%{transform:scale(1)}45%{transform:scale(1.1)}60%{transform:scale(1)}}
     @keyframes urgentPulse{0%,100%{opacity:1}50%{opacity:.6}} @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-    html,body,#root{background:#1E5C2A!important;min-height:100vh;min-height:100dvh;}
-    html{background:#1E5C2A!important;}
-    #root{background-image:repeating-linear-gradient(90deg,#1E5C2A 0,#1E5C2A 14.28%,#276B34 14.28%,#276B34 28.57%,#1E5C2A 28.57%,#1E5C2A 42.86%,#276B34 42.86%,#276B34 57.14%,#1E5C2A 57.14%,#1E5C2A 71.43%,#276B34 71.43%,#276B34 85.71%,#1E5C2A 85.71%)!important;padding-top:env(safe-area-inset-top);}
+    html,body,#root{background:#0E1F14!important;min-height:100vh;min-height:100dvh;}
+    html{background:#0E1F14!important;}
+    #root{background-image:repeating-linear-gradient(90deg,#0E1F14 0,#0E1F14 14.28%,#132819 14.28%,#132819 28.57%,#0E1F14 28.57%,#0E1F14 42.86%,#132819 42.86%,#132819 57.14%,#0E1F14 57.14%,#0E1F14 71.43%,#132819 71.43%,#132819 85.71%,#0E1F14 85.71%)!important;padding-top:env(safe-area-inset-top);}
   `;
   // Favicon dynamique
 const favLink = document.querySelector("link[rel*='icon']") || document.createElement('link');
@@ -2415,7 +2415,7 @@ function scheduleNextNotif() {
 export default function LePont() {
   // Design system (déplacé en haut pour éviter Temporal Dead Zone)
   const G = {
-    bg:"#1E5C2A",bgPanel:"rgba(0,0,0,.5)",bgCard:"#141414",dark:"#0a0a0a",white:"#ffffff",
+    bg:"#0E1F14",bgPanel:"rgba(0,0,0,.5)",bgCard:"#141414",dark:"#0a0a0a",white:"#ffffff",
     offWhite:"#F5F5F5",accent:"#00E676",gold:"#FFD600",red:"#FF3D57",
     font:"'Bebas Neue',cursive,sans-serif",heading:"'Bebas Neue',cursive,sans-serif",
   };
@@ -6873,7 +6873,7 @@ export default function LePont() {
           {/* Fond pelouse */}
           <div style={{position:"absolute",inset:0,zIndex:0,overflow:"hidden"}}>
             {[0,1,2,3,4,5,6].map(i => (
-              <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#1E5C2A":"#276B34"}}/>
+              <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#0E1F14":"#132819"}}/>
             ))}
             <div style={{position:"absolute",inset:0,background:`linear-gradient(180deg, ${accentColor}25 0%, rgba(10,20,10,.88) 50%, rgba(10,20,10,.95) 100%)`}}/>
             <div style={{position:"absolute",top:-60,left:-60,width:240,height:240,borderRadius:"50%",background:`radial-gradient(circle, ${accentColor}40 0%, transparent 70%)`,filter:"blur(30px)"}}/>
@@ -6996,7 +6996,7 @@ export default function LePont() {
           {/* Fond pelouse */}
           <div style={{position:"absolute",inset:0,zIndex:0,overflow:"hidden"}}>
             {[0,1,2,3,4,5,6].map(i => (
-              <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#1E5C2A":"#276B34"}}/>
+              <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#0E1F14":"#132819"}}/>
             ))}
             <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, rgba(0,230,118,.22) 0%, rgba(10,20,10,.90) 50%, rgba(10,20,10,.95) 100%)"}}/>
             <div style={{position:"absolute",top:-60,left:-60,width:240,height:240,borderRadius:"50%",background:"radial-gradient(circle, rgba(0,230,118,.45) 0%, transparent 70%)",filter:"blur(40px)"}}/>
@@ -7592,7 +7592,7 @@ export default function LePont() {
       return (
         <div style={{...shell,overflow:isDesktop?"visible":"auto"}} key="friendDetail">
           <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
-            {[0,1,2,3,4,5,6].map(function(i){return(<div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#1E5C2A":"#276B34"}}/>);})}
+            {[0,1,2,3,4,5,6].map(function(i){return(<div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#0E1F14":"#132819"}}/>);})}
             <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:"rgba(255,255,255,.15)",transform:"translateY(-50%)"}}/>
             <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:180,height:180,borderRadius:"50%",border:"2px solid rgba(255,255,255,.15)"}}/>
             <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.45)"}}/>
@@ -7655,7 +7655,7 @@ export default function LePont() {
     return (
       <div style={{...shell,overflow:isDesktop?"visible":"auto"}} key="friends">
         <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
-          {[0,1,2,3,4,5,6].map(function(i){return(<div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#1E5C2A":"#276B34"}}/>);})}
+          {[0,1,2,3,4,5,6].map(function(i){return(<div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#0E1F14":"#132819"}}/>);})}
           <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:"rgba(255,255,255,.15)",transform:"translateY(-50%)"}}/>
           <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:180,height:180,borderRadius:"50%",border:"2px solid rgba(255,255,255,.15)"}}/>
           <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.45)"}}/>
@@ -7852,7 +7852,7 @@ export default function LePont() {
         <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
         {/* Bandes pelouse */}
         {[0,1,2,3,4,5,6].map(function(i){return(
-          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#1E5C2A":"#276B34"}}/>
+          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#0E1F14":"#132819"}}/>
         );})}
         {/* Ligne médiane */}
         <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:"rgba(255,255,255,.15)",transform:"translateY(-50%)"}}/>
@@ -8082,7 +8082,7 @@ export default function LePont() {
           <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
         {/* Bandes pelouse */}
         {[0,1,2,3,4,5,6].map(function(i){return(
-          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#1E5C2A":"#276B34"}}/>
+          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#0E1F14":"#132819"}}/>
         );})}
         {/* Ligne médiane */}
         <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:"rgba(255,255,255,.15)",transform:"translateY(-50%)"}}/>
@@ -8106,7 +8106,7 @@ export default function LePont() {
         <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
         {/* Bandes pelouse */}
         {[0,1,2,3,4,5,6].map(function(i){return(
-          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#1E5C2A":"#276B34"}}/>
+          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#0E1F14":"#132819"}}/>
         );})}
         {/* Ligne médiane */}
         <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:"rgba(255,255,255,.15)",transform:"translateY(-50%)"}}/>
@@ -8146,7 +8146,7 @@ export default function LePont() {
             </div>
             {players.map(function(p, i){return(
               <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",background:"rgba(255,255,255,.04)",borderRadius:12,marginBottom:6,border:p.id===playerId?"1px solid rgba(0,230,118,.3)":"1px solid rgba(255,255,255,.05)"}}>
-                <div style={{width:32,height:32,borderRadius:"50%",background:"linear-gradient(135deg,#1E5C2A,#00E676)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:800,color:"#fff",flexShrink:0}}>
+                <div style={{width:32,height:32,borderRadius:"50%",background:"linear-gradient(135deg,#0E1F14,#00E676)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:800,color:"#fff",flexShrink:0}}>
                   {p.name.charAt(0).toUpperCase()}
                 </div>
                 <div style={{flex:1}}>
@@ -8442,7 +8442,7 @@ export default function LePont() {
           <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
         {/* Bandes pelouse */}
         {[0,1,2,3,4,5,6].map(function(i){return(
-          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#1E5C2A":"#276B34"}}/>
+          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#0E1F14":"#132819"}}/>
         );})}
         {/* Ligne médiane */}
         <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:"rgba(255,255,255,.15)",transform:"translateY(-50%)"}}/>
@@ -8466,7 +8466,7 @@ export default function LePont() {
         <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
         {/* Bandes pelouse */}
         {[0,1,2,3,4,5,6].map(function(i){return(
-          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#1E5C2A":"#276B34"}}/>
+          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#0E1F14":"#132819"}}/>
         );})}
         {/* Ligne médiane */}
         <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:"rgba(255,255,255,.15)",transform:"translateY(-50%)"}}/>
@@ -8527,7 +8527,7 @@ export default function LePont() {
     return (
       <div style={{...shell,animation:"fadeUp .4s ease",overflow:isDesktop?"visible":"auto"}} key="roomResult2">
         <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
-          {[0,1,2,3,4,5,6].map(function(i){return(<div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#1E5C2A":"#276B34"}}/>);})}
+          {[0,1,2,3,4,5,6].map(function(i){return(<div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#0E1F14":"#132819"}}/>);})}
           <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:"rgba(255,255,255,.15)",transform:"translateY(-50%)"}}/>
           <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:180,height:180,borderRadius:"50%",border:"2px solid rgba(255,255,255,.15)"}}/>
           <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.45)"}}/>
@@ -8594,7 +8594,7 @@ export default function LePont() {
     return (
       <div style={{...shell,alignItems:"center",justifyContent:"center"}} key="waitingRoom">
         <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
-          {[0,1,2,3,4,5,6].map(function(i){return(<div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(i/7*100)+"%",background:i%2===0?"#1E5C2A":"#276B34"}}/>);})}
+          {[0,1,2,3,4,5,6].map(function(i){return(<div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(i/7*100)+"%",background:i%2===0?"#0E1F14":"#132819"}}/>);})}
           <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:"rgba(255,255,255,.15)",transform:"translateY(-50%)"}}/>
           <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:180,height:180,borderRadius:"50%",border:"2px solid rgba(255,255,255,.15)"}}/>
           <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.45)"}}/>
@@ -8647,7 +8647,7 @@ export default function LePont() {
       <div style={{...shell,overflow:isDesktop?"visible":"auto"}} key="userProfile">
         <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
           {[0,1,2,3,4,5,6].map(function(i){return(
-            <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#1E5C2A":"#276B34"}}/>
+            <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#0E1F14":"#132819"}}/>
           );})}
           <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.7)"}}/>
         </div>
@@ -8779,7 +8779,7 @@ export default function LePont() {
     <div style={{...shell,overflow:isDesktop?"visible":"auto"}} key="profile">
       <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
         {[0,1,2,3,4,5,6].map(function(i){return(
-          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#1E5C2A":"#276B34"}}/>
+          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#0E1F14":"#132819"}}/>
         );})}
         <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.7)"}}/>
       </div>
@@ -9085,7 +9085,7 @@ export default function LePont() {
       <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
         {/* Bandes pelouse */}
         {[0,1,2,3,4,5,6].map(function(i){return(
-          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#1E5C2A":"#276B34"}}/>
+          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#0E1F14":"#132819"}}/>
         );})}
         {/* Ligne médiane */}
         <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:"rgba(255,255,255,.15)",transform:"translateY(-50%)"}}/>
@@ -9602,7 +9602,7 @@ export default function LePont() {
         {/* ⚔️ Modal GOAT BATTLE — Multijoueur Menu */}
         {ggBattleScreen === "menu" && (
           <div style={{position:"fixed",inset:0,zIndex:450,display:"flex",alignItems:"flex-start",justifyContent:"center",padding:"80px 20px 40px",background:"rgba(0,0,0,.92)",backdropFilter:"blur(10px)",overflowY:"auto"}}>
-            <div style={{background:"linear-gradient(135deg, #1a1410, #100a08)",border:"1.5px solid rgba(255,107,53,.4)",borderRadius:24,padding:24,maxWidth:380,width:"100%"}}>
+            <div style={{background:"linear-gradient(160deg, #14181F 0%, #0B0E12 100%)",border:"1px solid rgba(255,107,53,.35)",borderRadius:24,boxShadow:"0 24px 60px -20px rgba(255,107,53,.25)",padding:24,maxWidth:380,width:"100%"}}>
               <div style={{textAlign:"center",marginBottom:20}}>
                 <div style={{fontSize:50,marginBottom:6}}>⚔️</div>
                 <div style={{fontFamily:G.heading,fontSize:28,letterSpacing:2,color:"#FF6B35",lineHeight:1}}>GOAT BATTLE</div>
@@ -9626,9 +9626,9 @@ export default function LePont() {
                   onChange={function(e){setGgBattleCode(e.target.value.toUpperCase().slice(0,6));}}
                   placeholder={lang==="en"?"CODE":"CODE"}
                   maxLength={6}
-                  style={{flex:1,padding:"12px",background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.15)",borderRadius:12,color:G.white,fontSize:16,fontWeight:800,letterSpacing:3,textAlign:"center",fontFamily:"monospace"}}
+                  style={{flex:1,minWidth:0,padding:"12px",background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.15)",borderRadius:12,color:G.white,fontSize:16,fontWeight:800,letterSpacing:3,textAlign:"center",fontFamily:"monospace"}}
                 />
-                <button onClick={function(){ggBattleJoinRoom(ggBattleCode);}} disabled={ggBattleLoading || ggBattleCode.length < 4} style={{padding:"12px 18px",borderRadius:12,border:"1px solid rgba(255,107,53,.4)",background:"rgba(255,107,53,.15)",color:"#FF6B35",fontWeight:800,fontSize:13,cursor:(ggBattleLoading||ggBattleCode.length<4)?"not-allowed":"pointer",opacity:(ggBattleLoading||ggBattleCode.length<4)?.5:1}}>
+                <button onClick={function(){ggBattleJoinRoom(ggBattleCode);}} disabled={ggBattleLoading || ggBattleCode.length < 4} style={{flexShrink:0,padding:"12px 16px",borderRadius:12,border:"1px solid rgba(255,107,53,.4)",background:"rgba(255,107,53,.15)",color:"#FF6B35",fontWeight:800,fontSize:13,cursor:(ggBattleLoading||ggBattleCode.length<4)?"not-allowed":"pointer",opacity:(ggBattleLoading||ggBattleCode.length<4)?.5:1}}>
                   {lang==="en"?"JOIN":"REJOINDRE"}
                 </button>
               </div>
@@ -9643,7 +9643,7 @@ export default function LePont() {
         {/* ⚔️ Modal GOAT BATTLE — Lobby */}
         {ggBattleScreen === "lobby" && ggBattleRoom && (
           <div style={{position:"fixed",inset:0,zIndex:450,display:"flex",alignItems:"flex-start",justifyContent:"center",padding:"80px 20px 40px",background:"rgba(0,0,0,.92)",backdropFilter:"blur(10px)",overflowY:"auto"}}>
-            <div style={{background:"linear-gradient(135deg, #1a1410, #100a08)",border:"1.5px solid rgba(255,107,53,.4)",borderRadius:24,padding:24,maxWidth:380,width:"100%"}}>
+            <div style={{background:"linear-gradient(160deg, #14181F 0%, #0B0E12 100%)",border:"1px solid rgba(255,107,53,.35)",borderRadius:24,boxShadow:"0 24px 60px -20px rgba(255,107,53,.25)",padding:24,maxWidth:380,width:"100%"}}>
               <div style={{textAlign:"center",marginBottom:20}}>
                 <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,107,53,.7)",fontWeight:700,marginBottom:6}}>⚔️ GOAT BATTLE · LOBBY</div>
                 <div style={{fontSize:11,color:"rgba(255,255,255,.5)",marginBottom:8}}>{lang==="en"?"Share this code":"Partage ce code"}</div>
@@ -9712,7 +9712,7 @@ export default function LePont() {
           
           return (
             <div style={{position:"fixed",inset:0,zIndex:450,display:"flex",alignItems:"flex-start",justifyContent:"center",padding:"80px 20px 40px",background:"rgba(0,0,0,.92)",backdropFilter:"blur(10px)",overflowY:"auto"}}>
-              <div style={{background:"linear-gradient(135deg, #1a1410, #100a08)",border:"1.5px solid "+(isWinner?"rgba(255,214,0,.6)":"rgba(255,107,53,.4)"),borderRadius:24,padding:24,maxWidth:380,width:"100%",textAlign:"center"}}>
+              <div style={{background:"linear-gradient(160deg, #14181F 0%, #0B0E12 100%)",border:"1.5px solid "+(isWinner?"rgba(255,214,0,.6)":"rgba(255,107,53,.4)"),borderRadius:24,padding:24,maxWidth:380,width:"100%",textAlign:"center"}}>
                 <div style={{fontSize:60,marginBottom:8}}>{isWinner?"👑":"⚔️"}</div>
                 <div style={{fontFamily:G.heading,fontSize:26,letterSpacing:2,color:isWinner?"#FFD600":"#FF6B35",lineHeight:1,marginBottom:6}}>
                   {isWinner ? (lang==="en"?"VICTORY!":"VICTOIRE !") : (lang==="en"?"BATTLE OVER":"BATTLE TERMINÉE")}
@@ -9786,7 +9786,7 @@ export default function LePont() {
           
           return (
             <div onClick={function(){setGgBattleViewGrid(null);}} style={{position:"fixed",inset:0,zIndex:500,background:"rgba(0,0,0,.92)",backdropFilter:"blur(10px)",display:"flex",alignItems:"flex-start",justifyContent:"center",padding:"30px 8px 20px",overflowY:"auto"}}>
-              <div onClick={function(e){e.stopPropagation();}} style={{background:"linear-gradient(135deg, #1a1410, #100a08)",border:"1.5px solid rgba(255,107,53,.4)",borderRadius:20,padding:14,maxWidth:480,width:"100%"}}>
+              <div onClick={function(e){e.stopPropagation();}} style={{background:"linear-gradient(160deg, #14181F 0%, #0B0E12 100%)",border:"1.5px solid rgba(255,107,53,.4)",borderRadius:20,padding:14,maxWidth:480,width:"100%"}}>
                 {/* Header */}
                 <div style={{textAlign:"center",marginBottom:14}}>
                   <div style={{fontSize:11,color:"rgba(255,107,53,.8)",letterSpacing:2,fontWeight:700,marginBottom:4}}>👁️ {lang==="en"?"GRID OF":"GRILLE DE"}</div>
@@ -9912,10 +9912,10 @@ export default function LePont() {
 
         {/* 🐐 Modal GOAT GRID — Mode quotidien grille 3x3 (ou battle playing) */}
         {(showGoatGrid || ggBattleScreen === "playing") && (
-          <div style={{position:"fixed",inset:0,zIndex:400,display:"flex",flexDirection:"column",background:"linear-gradient(180deg, #0a1410 0%, #1E5C2A 100%)"}}>
+          <div style={{position:"fixed",inset:0,zIndex:400,display:"flex",flexDirection:"column",background:"linear-gradient(180deg, #0a1410 0%, #0E1F14 100%)"}}>
             {/* Fond pelouse */}
             <div style={{position:"absolute",inset:0,zIndex:0,overflow:"hidden",opacity:.4}}>
-              {[0,1,2,3,4,5,6].map(function(i){return(<div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#1E5C2A":"#276B34"}}/>);})}
+              {[0,1,2,3,4,5,6].map(function(i){return(<div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#0E1F14":"#132819"}}/>);})}
             </div>
             
             {/* Compte à rebours pré-jeu (mode battle uniquement) */}
@@ -10481,7 +10481,7 @@ export default function LePont() {
           <div style={{position:"fixed",inset:0,zIndex:400,display:"flex",flexDirection:"column"}}>
             {/* Fond pelouse */}
             <div style={{position:"absolute",inset:0,zIndex:0,overflow:"hidden"}}>
-              {[0,1,2,3,4,5,6].map(function(i){return(<div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#1E5C2A":"#276B34"}}/>);})}
+              {[0,1,2,3,4,5,6].map(function(i){return(<div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#0E1F14":"#132819"}}/>);})}
               <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:"rgba(255,255,255,.15)",transform:"translateY(-50%)"}}/>
               <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:180,height:180,borderRadius:"50%",border:"2px solid rgba(255,255,255,.15)"}}/>
               <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, rgba(255,214,0,.15) 0%, rgba(255,107,53,.15) 40%, rgba(0,15,0,.85) 100%)"}}/>
@@ -10849,7 +10849,7 @@ export default function LePont() {
         <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
         {/* Bandes pelouse */}
         {[0,1,2,3,4,5,6].map(function(i){return(
-          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#1E5C2A":"#276B34"}}/>
+          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#0E1F14":"#132819"}}/>
         );})}
         {/* Ligne médiane */}
         <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:"rgba(255,255,255,.15)",transform:"translateY(-50%)"}}/>
@@ -11014,7 +11014,7 @@ export default function LePont() {
       <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
         {/* Bandes pelouse */}
         {[0,1,2,3,4,5,6].map(function(i){return(
-          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#1E5C2A":"#276B34"}}/>
+          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#0E1F14":"#132819"}}/>
         );})}
         {/* Ligne médiane */}
         <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:"rgba(255,255,255,.15)",transform:"translateY(-50%)"}}/>
@@ -11192,7 +11192,7 @@ export default function LePont() {
       <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
         {/* Bandes pelouse */}
         {[0,1,2,3,4,5,6].map(function(i){return(
-          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#1E5C2A":"#276B34"}}/>
+          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#0E1F14":"#132819"}}/>
         );})}
         {/* Ligne médiane */}
         <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:"rgba(255,255,255,.15)",transform:"translateY(-50%)"}}/>
@@ -11253,7 +11253,7 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
       {confettiOverlay}{gradeUpModal}<div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
         {/* Bandes pelouse */}
         {[0,1,2,3,4,5,6].map(function(i){return(
-          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#1E5C2A":"#276B34"}}/>
+          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#0E1F14":"#132819"}}/>
         );})}
         {/* Ligne médiane */}
         <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:"rgba(255,255,255,.15)",transform:"translateY(-50%)"}}/>
@@ -11314,7 +11314,7 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
               <div style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",alignItems:"center",gap:10}}>
                 {/* Toi */}
                 <div style={{textAlign:"center"}}>
-                  <div style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:64,height:64,borderRadius:"50%",overflow:"hidden",background:"linear-gradient(135deg,#00E676,#1E5C2A)",border:"2px solid #00E676",marginBottom:8,marginInline:"auto"}}>
+                  <div style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:64,height:64,borderRadius:"50%",overflow:"hidden",background:"linear-gradient(135deg,#00E676,#0E1F14)",border:"2px solid #00E676",marginBottom:8,marginInline:"auto"}}>
                     {playerAvatar
                       ? <img src={playerAvatar} alt="" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top"}}/>
                       : <span style={{fontFamily:G.heading,fontSize:28,color:G.white}}>{(playerName||"?")[0].toUpperCase()}</span>
@@ -11327,7 +11327,7 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
                 <div style={{fontFamily:G.heading,fontSize:18,color:"#888",letterSpacing:2}}>VS</div>
                 {/* Bot */}
                 <div style={{textAlign:"center"}}>
-                  <div style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:64,height:64,borderRadius:"50%",overflow:"hidden",background:"linear-gradient(135deg,#3DA5FF,#1E5C2A)",border:"2px solid #3DA5FF",marginBottom:8,marginInline:"auto"}}>
+                  <div style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:64,height:64,borderRadius:"50%",overflow:"hidden",background:"linear-gradient(135deg,#3DA5FF,#0E1F14)",border:"2px solid #3DA5FF",marginBottom:8,marginInline:"auto"}}>
                     {botOpponentRef.current.avatar
                       ? <img src={botOpponentRef.current.avatar} alt="" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top"}}/>
                       : <span style={{fontFamily:G.heading,fontSize:28,color:G.white}}>{botOpponentRef.current.pseudo[0].toUpperCase()}</span>
@@ -11403,7 +11403,7 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
         <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
         {/* Bandes pelouse */}
         {[0,1,2,3,4,5,6].map(function(i){return(
-          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#1E5C2A":"#276B34"}}/>
+          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#0E1F14":"#132819"}}/>
         );})}
         {/* Ligne médiane */}
         <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:"rgba(255,255,255,.15)",transform:"translateY(-50%)"}}/>
@@ -11481,7 +11481,7 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
         <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
         {/* Bandes pelouse */}
         {[0,1,2,3,4,5,6].map(function(i){return(
-          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#1E5C2A":"#276B34"}}/>
+          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#0E1F14":"#132819"}}/>
         );})}
         {/* Ligne médiane */}
         <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:"rgba(255,255,255,.15)",transform:"translateY(-50%)"}}/>
