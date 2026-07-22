@@ -1995,14 +1995,25 @@ const PlayerRevealCard = ({
             <div className="text-[10px] tracking-[0.3em] text-white/50 mb-2">
               {flag} {(player.nationalities[0] || "—").toUpperCase()}
             </div>
+            {/* Carrières longues : débuts + clubs récents (les plus parlants),
+                le reste résumé par « +N » au centre. */}
             <div className="flex flex-wrap gap-1 justify-center px-1">
-              {player.clubs.slice(0, 4).map((c) => (
-                <span key={c} className="px-2 py-0.5 rounded-md text-[10px] bg-white/[0.06] border border-white/10 text-white/80">
-                  {c}
-                </span>
-              ))}
-              {player.clubs.length > 4 && (
-                <span className="px-1.5 py-0.5 text-[10px] text-white/40">+{player.clubs.length - 4}</span>
+              {(player.clubs.length <= 4
+                ? player.clubs
+                : [...player.clubs.slice(0, 2), `+${player.clubs.length - 4}`, ...player.clubs.slice(-2)]
+              ).map((c, i) =>
+                c.startsWith("+") ? (
+                  <span key={`more-${i}`} className="px-1.5 py-0.5 rounded-md text-[9px] text-white/45 border border-white/10 bg-black/20 self-center">
+                    {c}
+                  </span>
+                ) : (
+                  <span
+                    key={c}
+                    className={`px-2 py-0.5 rounded-md ${player.clubs.length > 3 ? "text-[9px]" : "text-[10px]"} bg-white/[0.06] border border-white/10 text-white/80`}
+                  >
+                    {c}
+                  </span>
+                )
               )}
             </div>
           </div>
