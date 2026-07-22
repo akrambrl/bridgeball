@@ -189,7 +189,7 @@ const CLUB_ALIASES = {
   "Sochaux":["fc sochaux","fcsm"],
   "Servette":["servette fc","servette geneve"],
   "Charleroi":["sporting charleroi","rsc charleroi"],
-  "Espérance de Tunis":["esperance tunis","est","esperance sportive de tunis"],
+  "Espérance Tunis":["esperance tunis","est","esperance sportive de tunis","esperance de tunis"],
   "CS Sfaxien":["sfaxien","csf","club sportif sfaxien"],
   "Caen":["sm caen","stade malherbe"],
   "Lorient":["fc lorient","les merlus"],
@@ -319,7 +319,7 @@ const CLUB_COLORS = {
   "Leeds United":["#FFFFFF","#FFD700"],"Empoli FC":["#1565C0","#FFFFFF"],"Udinese Calcio":["#000000","#FFFFFF"],"Bologna FC":["#CC0000","#003082"],
   "Granada":["#CC0000","#FFFFFF"],
   "Sunderland":["#E31B23","#000000"],"Sochaux":["#FABE00","#003082"],
-  "Charleroi":["#000000","#FFFFFF"],"Espérance de Tunis":["#CC0000","#FFD700"],
+  "Charleroi":["#000000","#FFFFFF"],"Espérance Tunis":["#CC0000","#FFD700"],
   "CS Sfaxien":["#CC0000","#000000"],"Caen":["#003189","#FFFFFF"],"Valenciennes":["#CC0000","#FFFFFF"],
   "Gent":["#1B67B2","#FFFFFF"],
   "Köln":["#ED1C24","#FFFFFF"],"Mainz":["#C8102E","#FFFFFF"],
@@ -408,7 +408,6 @@ const CLUB_COLORS = {
   "Southend":["#0046AD","#FFFFFF"],
   "SC Freiburg":["#C8102E","#000000"],
   "Augsburg":["#BA3733","#FFFFFF"],
-  "Schalke 04":["#004D9D","#FFFFFF"],
   "Hamburg":["#005CA7","#000000"],
   "Nuremberg":["#000000","#AD1A20"],
   "Sampdoria":["#002B5C","#FFFFFF"],
@@ -1043,7 +1042,7 @@ const LEAGUE_CLUBS = {
            "Brescia", "Benevento", "Bari", "Pisa"],
   BUNDESLIGA: ["Bayern Munich", "Borussia Dortmund", "Bayer Leverkusen", "RB Leipzig", "Stuttgart",
                "Eintracht Frankfurt", "Wolfsburg", "Borussia Mönchengladbach", "Hoffenheim", "Mainz",
-               "Schalke 04", "Hamburg", "Hertha Berlin", "Union Berlin", "SC Freiburg", "Augsburg",
+               "Schalke", "Hamburg", "Hertha Berlin", "Union Berlin", "SC Freiburg", "Augsburg",
                "Köln", "Werder Bremen", "Nuremberg"],
 };
 
@@ -1062,7 +1061,7 @@ const FAMOUS_CLUBS = new Set([
   "Juventus FC", "AC Milan", "Inter Milan", "SSC Napoli", "AS Roma", "SS Lazio", "Atalanta BC", "ACF Fiorentina",
   // Bundesliga top clubs
   "Bayern Munich", "Borussia Dortmund", "Bayer Leverkusen", "RB Leipzig",
-  "Eintracht Frankfurt", "Wolfsburg", "Schalke 04",
+  "Eintracht Frankfurt", "Wolfsburg", "Schalke",
   // L1 top clubs
   "PSG", "Marseille", "Lyon", "Monaco", "Lille", "Rennes", "Nice", "Nantes", "Lens",
   // Saudi Pro League (stars connues)
@@ -1567,8 +1566,8 @@ const GG_LIGUE_MAP = {
   "ligue1": ["PSG","Marseille","Lyon","Monaco","Lille","Rennes","Nice","Lens","Nantes","Strasbourg","Saint-Étienne","Bordeaux","Toulouse","Montpellier","Reims","Brest","Le Havre","Auxerre","Angers","Clermont","Metz","Lorient","Troyes","Ajaccio"],
   "premier_league": ["Manchester United","Manchester City","Liverpool","Chelsea","Arsenal","Tottenham","Newcastle","Aston Villa","West Ham","Brighton","Crystal Palace","Brentford","Fulham","Wolverhampton","Everton","Leeds United","Leicester City","Southampton","Bournemouth","Nottingham Forest"],
   "liga": ["Real Madrid","Barcelona","Atletico Madrid","Sevilla","Valencia","Real Sociedad","Athletic Bilbao","Villarreal","Real Betis","Celta Vigo","Espanyol","Getafe","Osasuna","Mallorca","Cádiz","Almería","Girona","Las Palmas","Granada"],
-  "serie_a": ["Juventus FC","Inter Milan","AC Milan","AS Roma","SSC Napoli","Atalanta BC","SS Lazio","ACF Fiorentina","Torino FC","Bologna FC","Sassuolo","Udinese","Empoli FC","Genoa","Cagliari","Hellas Verona","Lecce","Salernitana","Frosinone","Monza"],
-  "bundesliga": ["Bayern Munich","Borussia Dortmund","RB Leipzig","Bayer Leverkusen","Eintracht Frankfurt","Wolfsburg","Werder Bremen","Hoffenheim","Borussia Mönchengladbach","Köln","Union Berlin","Stuttgart","Mainz","Augsburg","Hertha Berlin","Schalke 04","Hamburg"],
+  "serie_a": ["Juventus FC","Inter Milan","AC Milan","AS Roma","SSC Napoli","Atalanta BC","SS Lazio","ACF Fiorentina","Torino FC","Bologna FC","Sassuolo","Udinese Calcio","Empoli FC","Genoa CFC","Cagliari Calcio","Hellas Verona","Lecce","Salernitana","Frosinone","Monza"],
+  "bundesliga": ["Bayern Munich","Borussia Dortmund","RB Leipzig","Bayer Leverkusen","Eintracht Frankfurt","Wolfsburg","Werder Bremen","Hoffenheim","Borussia Mönchengladbach","Köln","Union Berlin","Stuttgart","Mainz","Augsburg","Hertha Berlin","Schalke","Hamburg"],
 };
 
 // ─── Trophées : gagnants des grandes compétitions ─────────────
