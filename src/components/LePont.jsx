@@ -1300,7 +1300,7 @@ function PlayerAvatar({ name, size = 56 }) {
         fill="rgba(255,255,255,.2)" clipPath={"url(#" + clipId + ")"}/>
       <text x={size/2} y={size/2 + fontSize*0.36}
         textAnchor="middle" fontSize={fontSize} fontWeight="800"
-        fontFamily="'Bebas Neue',cursive,sans-serif" letterSpacing="2"
+        fontFamily="'Tomorrow',sans-serif" letterSpacing="2"
         fill={tc === "#FFF" ? "#ffffff" : "#111111"}>
         {initials}
       </text>
@@ -2194,7 +2194,7 @@ function getPositiveFeedback(combo, lang){
 if(typeof document!=="undefined"&&!document.getElementById("bb-css")){
   const s=document.createElement("style");s.id="bb-css";
   s.textContent=`
-    @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Tomorrow:ital,wght@0,600;0,700;0,800;0,900;1,900&family=Inter:wght@400;600;700;800&display=swap');
     @keyframes splashRoll{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
     @keyframes countdownPulse{0%{transform:scale(0.5);opacity:0;}50%{transform:scale(1.2);opacity:1;}100%{transform:scale(1);opacity:1;}}
     @keyframes dropIn{from{opacity:0;transform:translateY(-70px) scale(1.3)}to{opacity:1;transform:translateY(0) scale(1)}}
@@ -2417,7 +2417,7 @@ export default function LePont() {
   const G = {
     bg:"#0E1F14",bgPanel:"rgba(0,0,0,.5)",bgCard:"#141414",dark:"#0a0a0a",white:"#ffffff",
     offWhite:"#F5F5F5",accent:"#00E676",gold:"#FFD600",red:"#FF3D57",
-    font:"'Bebas Neue',cursive,sans-serif",heading:"'Bebas Neue',cursive,sans-serif",
+    font:"'Tomorrow',sans-serif",heading:"'Tomorrow',sans-serif",
   };
   const [showSplash, setShowSplash] = useState(true);
   const [screen, setScreen] = useState("home");
