@@ -922,7 +922,7 @@ export const PLAYERS = [
   { name:"Memphis Depay", clubs:["PSV Eindhoven","Manchester United","Lyon","Barcelona","Atletico Madrid","Corinthians"], diff:"facile", nationalities:["Pays-Bas"], positions:["attaquant"], birthYear:1994 },
   { name:"Jadon Sancho", clubs:["Manchester City", "Borussia Dortmund", "Manchester United", "Chelsea", "Aston Villa"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:2000 },
   { name:"Mason Mount", clubs:["Chelsea", "Vitesse", "Derby County", "Manchester United"], diff:"moyen", nationalities:["Angleterre"], positions:["milieu"], birthYear:1999 },
-  { name:"Pierre-Emerick Aubameyang", clubs:["Borussia Dortmund", "Arsenal", "Barcelona", "Chelsea", "Marseille"], diff:"moyen", nationalities:["Gabon"], positions:["attaquant"], birthYear:1989 },
+  { name:"Pierre-Emerick Aubameyang", clubs:["Borussia Dortmund", "Arsenal", "Barcelona", "Chelsea", "Marseille", "Deportivo La Coruna"], diff:"moyen", nationalities:["Gabon"], positions:["attaquant"], birthYear:1989 },
   { name:"Olivier Giroud", clubs:["Grenoble", "Istres", "Tours", "Montpellier", "Arsenal", "Chelsea", "AC Milan", "LAFC", "Lille"], diff:"moyen", nationalities:["France"], positions:["attaquant"], birthYear:1986 },
   { name:"Edinson Cavani", clubs:["SSC Napoli", "PSG", "Manchester United"], diff:"moyen", nationalities:["Uruguay"], positions:["attaquant"], birthYear:1987 },
   { name:"Gonzalo Higuain", clubs:["Real Madrid", "SSC Napoli", "Juventus FC", "AC Milan", "Chelsea"], diff:"moyen", nationalities:["Argentine"], positions:["attaquant"], birthYear:1987 },
