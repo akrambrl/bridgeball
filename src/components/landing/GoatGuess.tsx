@@ -1955,6 +1955,65 @@ const SPARKS = [
   { left: "55%", bottom: "82%", delay: "0.85s", dur: "1.4s" },
 ];
 
+// Avatar pictogramme par poste (SVG pur, aucune personne réelle représentée)
+const PositionAvatar = ({ position }: { position?: string }) => {
+  const st = { stroke: "#FFFFFF", strokeWidth: 3.4, strokeLinecap: "round" as const, fill: "none" };
+  const cls = "w-16 h-16 drop-shadow-[0_2px_6px_rgba(0,0,0,0.65)]";
+  switch (position) {
+    case "gardien":
+      // Bras levés vers le ballon
+      return (
+        <svg viewBox="0 0 48 48" className={cls} aria-hidden>
+          <circle cx="24" cy="5.5" r="3.2" fill="#FFFFFF" />
+          <circle cx="24" cy="15" r="4.5" fill="#FFFFFF" />
+          <path d="M24 21 L24 31" {...st} />
+          <path d="M24 22 L11 11" {...st} />
+          <path d="M24 22 L37 11" {...st} />
+          <path d="M24 31 L16 43" {...st} />
+          <path d="M24 31 L32 43" {...st} />
+        </svg>
+      );
+    case "defenseur":
+      // Position d'interception, bras écartés bas, appui large
+      return (
+        <svg viewBox="0 0 48 48" className={cls} aria-hidden>
+          <circle cx="24" cy="9" r="4.5" fill="#FFFFFF" />
+          <path d="M24 15 L24 28" {...st} />
+          <path d="M24 19 L10 26" {...st} />
+          <path d="M24 19 L38 26" {...st} />
+          <path d="M24 28 L13 42" {...st} />
+          <path d="M24 28 L35 42" {...st} />
+        </svg>
+      );
+    case "milieu":
+      // Course balle au pied
+      return (
+        <svg viewBox="0 0 48 48" className={cls} aria-hidden>
+          <circle cx="26" cy="9" r="4.5" fill="#FFFFFF" />
+          <path d="M26 15 L24 28" {...st} />
+          <path d="M25 19 L15 25" {...st} />
+          <path d="M25 19 L35 13" {...st} />
+          <path d="M24 28 L15 40" {...st} />
+          <path d="M24 28 L32 38" {...st} />
+          <circle cx="36" cy="41" r="3.2" fill="#FFFFFF" />
+        </svg>
+      );
+    default:
+      // Attaquant : frappe, jambe tendue vers le ballon
+      return (
+        <svg viewBox="0 0 48 48" className={cls} aria-hidden>
+          <circle cx="20" cy="9" r="4.5" fill="#FFFFFF" />
+          <path d="M20 15 L24 27" {...st} />
+          <path d="M21 19 L10 23" {...st} />
+          <path d="M21 19 L31 12" {...st} />
+          <path d="M24 27 L17 41" {...st} />
+          <path d="M24 27 L38 33" {...st} />
+          <circle cx="43" cy="35" r="3.2" fill="#FFFFFF" />
+        </svg>
+      );
+  }
+};
+
 const PlayerRevealCard = ({
   player,
   accent = "#C084FC",
@@ -2005,7 +2064,9 @@ const PlayerRevealCard = ({
           className="relative px-8 pt-8 pb-14"
           style={{
             clipPath: CARD_SHAPE,
-            background: tier.body,
+            background: kit
+              ? `linear-gradient(rgba(10,8,16,0.58), rgba(10,8,16,0.58)), linear-gradient(165deg, ${kit[0]} 0%, ${kit[0]} 48%, ${kit[1]} 52%, ${kit[1]} 100%)`
+              : tier.body,
           }}
         >
           {/* Lueur douce derrière le médaillon */}
@@ -2022,19 +2083,15 @@ const PlayerRevealCard = ({
               <div className="text-2xl mt-1.5 leading-none">{flag}</div>
             </div>
             <div
-              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-28 h-28 rounded-full flex items-center justify-center font-display text-4xl text-white/90"
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-28 h-28 rounded-full flex items-center justify-center"
               style={{
-                // Maillot du club le plus récent : deux couleurs en biais,
-                // assombries pour garder les initiales lisibles.
-                background: kit
-                  ? `linear-gradient(rgba(10,8,18,0.42), rgba(10,8,18,0.42)), linear-gradient(105deg, ${kit[0]} 0%, ${kit[0]} 49%, ${kit[1]} 51%, ${kit[1]} 100%)`
-                  : "radial-gradient(circle at 35% 30%, rgba(255,255,255,0.10), rgba(0,0,0,0.30) 72%)",
-                border: `2px solid ${gold}55`,
-                boxShadow: "inset 0 6px 20px rgba(0,0,0,0.55), 0 8px 24px rgba(0,0,0,0.4)",
-                textShadow: "0 2px 10px rgba(0,0,0,0.85)",
+                // Disque sombre contrasté sur la carte aux couleurs du club
+                background: "radial-gradient(circle at 35% 30%, rgba(255,255,255,0.08), rgba(5,4,10,0.72) 74%)",
+                border: `2px solid ${gold}66`,
+                boxShadow: "inset 0 6px 20px rgba(0,0,0,0.6), 0 8px 24px rgba(0,0,0,0.45)",
               }}
             >
-              {initialsOf(player.name)}
+              <PositionAvatar position={player.positions[0]} />
             </div>
           </div>
           {/* Nom entre filets dorés */}
@@ -2047,7 +2104,7 @@ const PlayerRevealCard = ({
           </div>
           {/* Nation + carrière */}
           <div className="relative mt-2.5 text-center">
-            <div className="text-[10px] tracking-[0.3em] text-white/50 mb-2">
+            <div className="text-[10px] tracking-[0.3em] text-white/75 mb-2">
               {flag} {(player.nationalities[0] || "—").toUpperCase()}
             </div>
             {/* Carrières longues : débuts + clubs récents (les plus parlants),
@@ -2064,7 +2121,7 @@ const PlayerRevealCard = ({
                 ) : (
                   <span
                     key={c}
-                    className={`px-2 py-0.5 rounded-md ${player.clubs.length > 3 ? "text-[9px]" : "text-[10px]"} bg-white/[0.06] border border-white/10 text-white/80`}
+                    className={`px-2 py-0.5 rounded-md ${player.clubs.length > 3 ? "text-[9px]" : "text-[10px]"} bg-black/35 border border-white/15 text-white/90`}
                   >
                     {c}
                   </span>
