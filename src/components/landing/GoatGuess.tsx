@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
 import { PLAYERS, RETIRED_PLAYERS, GG_WC_WINNERS, GG_CL_WINNERS, GG_BALLON_DOR, GG_BALLON_DOR_MULTI } from "../../players.jsx";
+import { CLUB_COLORS } from "../LePont.jsx";
 
 type Player = {
   name: string;
@@ -1915,6 +1916,15 @@ const TIERS = {
   },
 } as const;
 
+// Couleurs de maillot du club le plus récent connu (on remonte la carrière)
+const kitColorsOf = (p: Player): [string, string] | null => {
+  for (let i = p.clubs.length - 1; i >= 0; i--) {
+    const c = (CLUB_COLORS as Record<string, [string, string]>)[p.clubs[i]];
+    if (c) return c;
+  }
+  return null;
+};
+
 const initialsOf = (name: string) =>
   name.split(/[\s-]+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase();
 
@@ -1957,6 +1967,7 @@ const PlayerRevealCard = ({
   const flag = flagOf(player.nationalities[0]);
   const tier = TIERS[player.diff] || TIERS.expert;
   const gold = tier.ink;
+  const kit = kitColorsOf(player);
   return (
     <div className="relative inline-block w-full max-w-[330px] my-1 lg:my-2">
       {/* Fumée magique + étincelles à la révélation */}
@@ -2013,9 +2024,14 @@ const PlayerRevealCard = ({
             <div
               className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-28 h-28 rounded-full flex items-center justify-center font-display text-4xl text-white/90"
               style={{
-                background: "radial-gradient(circle at 35% 30%, rgba(255,255,255,0.10), rgba(0,0,0,0.30) 72%)",
+                // Maillot du club le plus récent : deux couleurs en biais,
+                // assombries pour garder les initiales lisibles.
+                background: kit
+                  ? `linear-gradient(rgba(10,8,18,0.42), rgba(10,8,18,0.42)), linear-gradient(105deg, ${kit[0]} 0%, ${kit[0]} 49%, ${kit[1]} 51%, ${kit[1]} 100%)`
+                  : "radial-gradient(circle at 35% 30%, rgba(255,255,255,0.10), rgba(0,0,0,0.30) 72%)",
                 border: `2px solid ${gold}55`,
                 boxShadow: "inset 0 6px 20px rgba(0,0,0,0.55), 0 8px 24px rgba(0,0,0,0.4)",
+                textShadow: "0 2px 10px rgba(0,0,0,0.85)",
               }}
             >
               {initialsOf(player.name)}
