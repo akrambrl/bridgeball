@@ -1039,12 +1039,15 @@ export const GoatGuess = ({ onClose }: Props) => {
       aria-hidden
     />
 
+    {/* Mobile : bouton rond compact pour ne pas chevaucher le titre centré ;
+        desktop : libellé complet. */}
     <button
       onClick={onClose}
-      className="fixed top-3 right-3 z-[9001] flex items-center gap-2 px-4 py-2 rounded-full bg-[#FF8A2A] hover:bg-[#FF7A1A] text-[#1A0F00] font-display text-sm tracking-widest shadow-[0_8px_24px_rgba(0,0,0,0.6)] hover:scale-[1.03] active:scale-[0.98] transition-all"
+      className="fixed top-3 right-3 z-[9001] flex items-center justify-center w-10 h-10 p-0 lg:w-auto lg:h-auto lg:gap-2 lg:px-4 lg:py-2 rounded-full bg-[#FF8A2A] hover:bg-[#FF7A1A] text-[#1A0F00] font-display text-sm tracking-widest shadow-[0_8px_24px_rgba(0,0,0,0.6)] hover:scale-[1.03] active:scale-[0.98] transition-all"
       aria-label="Quitter GOAT Guess"
     >
-      ← QUITTER
+      <span className="lg:hidden text-lg leading-none">←</span>
+      <span className="hidden lg:inline">← QUITTER</span>
     </button>
 
     <div className="relative min-h-screen lg:min-h-screen container max-w-5xl mx-auto px-3 lg:px-6 py-2 lg:py-10">
