@@ -15,6 +15,7 @@ type QCategory = "cont" | "nat" | "league" | "club" | "pos" | "era" | "profile" 
 type Question = {
   id: string;
   label: string;
+  labelEn?: string; // traduction affichée quand l'app est en anglais
   category: QCategory;
   // null = on ne sait pas (info absente de la base) → le joueur n'est pas
   // filtré quelle que soit la réponse de l'utilisateur.
@@ -51,6 +52,11 @@ const isUniquelyDefender = (p: Player): boolean | null => {
   return null;
 };
 const hasNat = (p: Player, nat: string) => p.nationalities.includes(nat);
+// Langue de l'app (réglée dans LePont via le toggle FR/EN, stockée en localStorage).
+// Lue à chaque rendu : le composant est monté après un éventuel changement de langue.
+const isEn = () => { try { return localStorage.getItem("bb_lang") === "en"; } catch { return false; } };
+const qLabel = (q: Question) => (isEn() && q.labelEn) || q.label;
+
 const playedFor = (p: Player, club: string) => p.clubs.includes(club);
 const playedForAny = (p: Player, clubs: string[]) =>
   p.clubs.some((c) => clubs.includes(c));
@@ -78,6 +84,7 @@ const LIGA = [
   "Rayo Vallecano", "Elche", "Almeria", "Leganés", "Eibar", "Real Valladolid",
   "Sporting Gijón", "Oviedo", "Real Oviedo", "Málaga", "Malaga", "Numancia",
   "Tenerife", "Deportivo La Coruña", "Cultural Leonesa",
+  "Cádiz", "Alavés", "Almería", "Deportivo La Coruna",
 ];
 const SERIE_A = [
   "Juventus FC", "AC Milan", "Milan", "Inter Milan", "Internazionale", "AS Roma",
@@ -110,6 +117,7 @@ const BUNDESLIGA = [
   "Nuremberg", "Nürnberg", "Kaiserslautern", "Freiburg", "SC Freiburg",
   "Union Berlin", "Bielefeld", "Ingolstadt", "Paderborn", "Greuther Fürth",
   "Darmstadt",
+  "Schalke", "Arminia Bielefeld",
 ];
 
 const EUROPE = new Set([
@@ -425,187 +433,187 @@ const PHYS_COUPE_2002 = new Set(["Ronaldo Nazário"]); // coupe culte CdM 2002
 
 const QUESTIONS: Question[] = [
   // Postes
-  { id: "is-gk", category: "pos", label: "Est-ce un gardien de but ?", predicate: (p) => isUniquelyPos(p, POS_GARDIEN) },
-  { id: "is-def", category: "pos", label: "Est-ce un défenseur ?", predicate: isUniquelyDefender },
-  { id: "is-mid", category: "pos", label: "Est-ce un milieu de terrain ?", predicate: (p) => isUniquelyPos(p, POS_MIL) },
-  { id: "is-att", category: "pos", label: "Est-ce un attaquant ?", predicate: (p) => isUniquelyPos(p, POS_ATT) },
+  { id: "is-gk", category: "pos", label: "Est-ce un gardien de but ?", labelEn: "Is he a goalkeeper?", predicate: (p) => isUniquelyPos(p, POS_GARDIEN) },
+  { id: "is-def", category: "pos", label: "Est-ce un défenseur ?", labelEn: "Is he a defender?", predicate: isUniquelyDefender },
+  { id: "is-mid", category: "pos", label: "Est-ce un milieu de terrain ?", labelEn: "Is he a midfielder?", predicate: (p) => isUniquelyPos(p, POS_MIL) },
+  { id: "is-att", category: "pos", label: "Est-ce un attaquant ?", labelEn: "Is he a forward?", predicate: (p) => isUniquelyPos(p, POS_ATT) },
   {
     id: "is-offensive", category: "pos",
-    label: "Joue-t-il à un poste offensif (milieu ou attaquant) ?",
+    label: "Joue-t-il à un poste offensif (milieu ou attaquant) ?", labelEn: "Does he play in an attacking position (midfield or forward)?",
     predicate: (p) => hasPos(p, POS_MIL) || hasPos(p, POS_ATT),
   },
   {
     id: "is-defensive", category: "pos",
-    label: "Joue-t-il à un poste défensif (gardien ou défenseur) ?",
+    label: "Joue-t-il à un poste défensif (gardien ou défenseur) ?", labelEn: "Does he play in a defensive position (goalkeeper or defender)?",
     predicate: (p) => hasPos(p, POS_GARDIEN) || isDefender(p),
   },
   {
     id: "is-versatile", category: "pos",
-    label: "Peut-il jouer à plusieurs postes différents ?",
+    label: "Peut-il jouer à plusieurs postes différents ?", labelEn: "Can he play in several different positions?",
     predicate: (p) => p.positions.length >= 2,
   },
 
   // Nationalités majeures
-  { id: "nat-fr", category: "nat", label: "Est-il français ?", predicate: (p) => hasNat(p, "France") },
-  { id: "nat-es", category: "nat", label: "Est-il espagnol ?", predicate: (p) => hasNat(p, "Espagne") },
-  { id: "nat-en", category: "nat", label: "Est-il anglais ?", predicate: (p) => hasNat(p, "Angleterre") },
-  { id: "nat-de", category: "nat", label: "Est-il allemand ?", predicate: (p) => hasNat(p, "Allemagne") },
-  { id: "nat-it", category: "nat", label: "Est-il italien ?", predicate: (p) => hasNat(p, "Italie") },
-  { id: "nat-pt", category: "nat", label: "Est-il portugais ?", predicate: (p) => hasNat(p, "Portugal") },
-  { id: "nat-nl", category: "nat", label: "Est-il néerlandais ?", predicate: (p) => hasNat(p, "Pays-Bas") },
-  { id: "nat-be", category: "nat", label: "Est-il belge ?", predicate: (p) => hasNat(p, "Belgique") },
-  { id: "nat-hr", category: "nat", label: "Est-il croate ?", predicate: (p) => hasNat(p, "Croatie") },
-  { id: "nat-ar", category: "nat", label: "Est-il argentin ?", predicate: (p) => hasNat(p, "Argentine") },
-  { id: "nat-br", category: "nat", label: "Est-il brésilien ?", predicate: (p) => hasNat(p, "Brésil") },
-  { id: "nat-uy", category: "nat", label: "Est-il uruguayen ?", predicate: (p) => hasNat(p, "Uruguay") },
-  { id: "nat-co", category: "nat", label: "Est-il colombien ?", predicate: (p) => hasNat(p, "Colombie") },
-  { id: "nat-ma", category: "nat", label: "Est-il marocain ?", predicate: (p) => hasNat(p, "Maroc") },
-  { id: "nat-dz", category: "nat", label: "Est-il algérien ?", predicate: (p) => hasNat(p, "Algérie") },
-  { id: "nat-sn", category: "nat", label: "Est-il sénégalais ?", predicate: (p) => hasNat(p, "Sénégal") },
-  { id: "nat-ci", category: "nat", label: "Est-il ivoirien ?", predicate: (p) => hasNat(p, "Côte d'Ivoire") },
-  { id: "nat-cm", category: "nat", label: "Est-il camerounais ?", predicate: (p) => hasNat(p, "Cameroun") },
-  { id: "nat-ng", category: "nat", label: "Est-il nigérian ?", predicate: (p) => hasNat(p, "Nigeria") },
-  { id: "nat-gh", category: "nat", label: "Est-il ghanéen ?", predicate: (p) => hasNat(p, "Ghana") },
+  { id: "nat-fr", category: "nat", label: "Est-il français ?", labelEn: "Is he French?", predicate: (p) => hasNat(p, "France") },
+  { id: "nat-es", category: "nat", label: "Est-il espagnol ?", labelEn: "Is he Spanish?", predicate: (p) => hasNat(p, "Espagne") },
+  { id: "nat-en", category: "nat", label: "Est-il anglais ?", labelEn: "Is he English?", predicate: (p) => hasNat(p, "Angleterre") },
+  { id: "nat-de", category: "nat", label: "Est-il allemand ?", labelEn: "Is he German?", predicate: (p) => hasNat(p, "Allemagne") },
+  { id: "nat-it", category: "nat", label: "Est-il italien ?", labelEn: "Is he Italian?", predicate: (p) => hasNat(p, "Italie") },
+  { id: "nat-pt", category: "nat", label: "Est-il portugais ?", labelEn: "Is he Portuguese?", predicate: (p) => hasNat(p, "Portugal") },
+  { id: "nat-nl", category: "nat", label: "Est-il néerlandais ?", labelEn: "Is he Dutch?", predicate: (p) => hasNat(p, "Pays-Bas") },
+  { id: "nat-be", category: "nat", label: "Est-il belge ?", labelEn: "Is he Belgian?", predicate: (p) => hasNat(p, "Belgique") },
+  { id: "nat-hr", category: "nat", label: "Est-il croate ?", labelEn: "Is he Croatian?", predicate: (p) => hasNat(p, "Croatie") },
+  { id: "nat-ar", category: "nat", label: "Est-il argentin ?", labelEn: "Is he Argentinian?", predicate: (p) => hasNat(p, "Argentine") },
+  { id: "nat-br", category: "nat", label: "Est-il brésilien ?", labelEn: "Is he Brazilian?", predicate: (p) => hasNat(p, "Brésil") },
+  { id: "nat-uy", category: "nat", label: "Est-il uruguayen ?", labelEn: "Is he Uruguayan?", predicate: (p) => hasNat(p, "Uruguay") },
+  { id: "nat-co", category: "nat", label: "Est-il colombien ?", labelEn: "Is he Colombian?", predicate: (p) => hasNat(p, "Colombie") },
+  { id: "nat-ma", category: "nat", label: "Est-il marocain ?", labelEn: "Is he Moroccan?", predicate: (p) => hasNat(p, "Maroc") },
+  { id: "nat-dz", category: "nat", label: "Est-il algérien ?", labelEn: "Is he Algerian?", predicate: (p) => hasNat(p, "Algérie") },
+  { id: "nat-sn", category: "nat", label: "Est-il sénégalais ?", labelEn: "Is he Senegalese?", predicate: (p) => hasNat(p, "Sénégal") },
+  { id: "nat-ci", category: "nat", label: "Est-il ivoirien ?", labelEn: "Is he Ivorian?", predicate: (p) => hasNat(p, "Côte d'Ivoire") },
+  { id: "nat-cm", category: "nat", label: "Est-il camerounais ?", labelEn: "Is he Cameroonian?", predicate: (p) => hasNat(p, "Cameroun") },
+  { id: "nat-ng", category: "nat", label: "Est-il nigérian ?", labelEn: "Is he Nigerian?", predicate: (p) => hasNat(p, "Nigeria") },
+  { id: "nat-gh", category: "nat", label: "Est-il ghanéen ?", labelEn: "Is he Ghanaian?", predicate: (p) => hasNat(p, "Ghana") },
 
   // Continents
   {
     id: "cont-eu", category: "cont",
-    label: "Vient-il d'un pays européen ?",
+    label: "Vient-il d'un pays européen ?", labelEn: "Is he from a European country?",
     predicate: (p) => p.nationalities.some((n) => EUROPE.has(n)),
   },
   {
     id: "cont-sa", category: "cont",
-    label: "Vient-il d'un pays sud-américain ?",
+    label: "Vient-il d'un pays sud-américain ?", labelEn: "Is he from a South American country?",
     predicate: (p) => p.nationalities.some((n) => SOUTH_AMERICA.has(n)),
   },
   {
     id: "cont-af", category: "cont",
-    label: "Vient-il d'un pays africain ?",
+    label: "Vient-il d'un pays africain ?", labelEn: "Is he from an African country?",
     predicate: (p) => p.nationalities.some((n) => AFRICA.has(n)),
   },
 
   // Clubs majeurs
-  { id: "club-real", category: "club", label: "A-t-il joué au Real Madrid ?", predicate: (p) => playedFor(p, "Real Madrid") },
-  { id: "club-barca", category: "club", label: "A-t-il joué au FC Barcelone ?", predicate: (p) => playedFor(p, "Barcelona") },
-  { id: "club-atm", category: "club", label: "A-t-il joué à l'Atlético Madrid ?", predicate: (p) => playedFor(p, "Atletico Madrid") },
-  { id: "club-sevilla", category: "club", label: "A-t-il joué au FC Séville ?", predicate: (p) => playedFor(p, "Sevilla") },
-  { id: "club-mu", category: "club", label: "A-t-il joué à Manchester United ?", predicate: (p) => playedFor(p, "Manchester United") },
-  { id: "club-mc", category: "club", label: "A-t-il joué à Manchester City ?", predicate: (p) => playedFor(p, "Manchester City") },
-  { id: "club-liv", category: "club", label: "A-t-il joué à Liverpool ?", predicate: (p) => playedFor(p, "Liverpool") },
-  { id: "club-che", category: "club", label: "A-t-il joué à Chelsea ?", predicate: (p) => playedFor(p, "Chelsea") },
-  { id: "club-ars", category: "club", label: "A-t-il joué à Arsenal ?", predicate: (p) => playedFor(p, "Arsenal") },
-  { id: "club-tot", category: "club", label: "A-t-il joué à Tottenham ?", predicate: (p) => playedFor(p, "Tottenham") },
-  { id: "club-juv", category: "club", label: "A-t-il joué à la Juventus ?", predicate: (p) => playedFor(p, "Juventus FC") },
-  { id: "club-milan", category: "club", label: "A-t-il joué à l'AC Milan ?", predicate: (p) => playedFor(p, "AC Milan") },
-  { id: "club-inter", category: "club", label: "A-t-il joué à l'Inter Milan ?", predicate: (p) => playedFor(p, "Inter Milan") },
-  { id: "club-roma", category: "club", label: "A-t-il joué à l'AS Roma ?", predicate: (p) => playedFor(p, "AS Roma") },
-  { id: "club-napoli", category: "club", label: "A-t-il joué à Naples ?", predicate: (p) => playedFor(p, "Napoli") },
-  { id: "club-bayern", category: "club", label: "A-t-il joué au Bayern Munich ?", predicate: (p) => playedFor(p, "Bayern Munich") },
-  { id: "club-bvb", category: "club", label: "A-t-il joué au Borussia Dortmund ?", predicate: (p) => playedFor(p, "Borussia Dortmund") },
-  { id: "club-psg", category: "club", label: "A-t-il joué au PSG ?", predicate: (p) => playedFor(p, "PSG") },
-  { id: "club-om", category: "club", label: "A-t-il joué à l'Olympique de Marseille ?", predicate: (p) => playedFor(p, "Marseille") },
-  { id: "club-ol", category: "club", label: "A-t-il joué à l'Olympique Lyonnais ?", predicate: (p) => playedFor(p, "Lyon") },
-  { id: "club-monaco", category: "club", label: "A-t-il joué à l'AS Monaco ?", predicate: (p) => playedFor(p, "Monaco") },
-  { id: "club-lille", category: "club", label: "A-t-il joué au LOSC Lille ?", predicate: (p) => playedFor(p, "Lille") },
-  { id: "club-ajax", category: "club", label: "A-t-il joué à l'Ajax Amsterdam ?", predicate: (p) => playedFor(p, "Ajax Amsterdam") },
-  { id: "club-porto", category: "club", label: "A-t-il joué au FC Porto ?", predicate: (p) => playedFor(p, "Porto") },
-  { id: "club-benfica", category: "club", label: "A-t-il joué au Benfica ?", predicate: (p) => playedFor(p, "Benfica") },
-  { id: "club-sporting", category: "club", label: "A-t-il joué au Sporting CP ?", predicate: (p) => playedFor(p, "Sporting CP") },
-  { id: "club-newcastle", category: "club", label: "A-t-il joué à Newcastle ?", predicate: (p) => playedFor(p, "Newcastle") },
+  { id: "club-real", category: "club", label: "A-t-il joué au Real Madrid ?", labelEn: "Did he play for Real Madrid?", predicate: (p) => playedFor(p, "Real Madrid") },
+  { id: "club-barca", category: "club", label: "A-t-il joué au FC Barcelone ?", labelEn: "Did he play for Barcelona?", predicate: (p) => playedFor(p, "Barcelona") },
+  { id: "club-atm", category: "club", label: "A-t-il joué à l'Atlético Madrid ?", labelEn: "Did he play for Atletico Madrid?", predicate: (p) => playedFor(p, "Atletico Madrid") },
+  { id: "club-sevilla", category: "club", label: "A-t-il joué au FC Séville ?", labelEn: "Did he play for Sevilla?", predicate: (p) => playedFor(p, "Sevilla") },
+  { id: "club-mu", category: "club", label: "A-t-il joué à Manchester United ?", labelEn: "Did he play for Manchester United?", predicate: (p) => playedFor(p, "Manchester United") },
+  { id: "club-mc", category: "club", label: "A-t-il joué à Manchester City ?", labelEn: "Did he play for Manchester City?", predicate: (p) => playedFor(p, "Manchester City") },
+  { id: "club-liv", category: "club", label: "A-t-il joué à Liverpool ?", labelEn: "Did he play for Liverpool?", predicate: (p) => playedFor(p, "Liverpool") },
+  { id: "club-che", category: "club", label: "A-t-il joué à Chelsea ?", labelEn: "Did he play for Chelsea?", predicate: (p) => playedFor(p, "Chelsea") },
+  { id: "club-ars", category: "club", label: "A-t-il joué à Arsenal ?", labelEn: "Did he play for Arsenal?", predicate: (p) => playedFor(p, "Arsenal") },
+  { id: "club-tot", category: "club", label: "A-t-il joué à Tottenham ?", labelEn: "Did he play for Tottenham?", predicate: (p) => playedFor(p, "Tottenham") },
+  { id: "club-juv", category: "club", label: "A-t-il joué à la Juventus ?", labelEn: "Did he play for Juventus FC?", predicate: (p) => playedFor(p, "Juventus FC") },
+  { id: "club-milan", category: "club", label: "A-t-il joué à l'AC Milan ?", labelEn: "Did he play for AC Milan?", predicate: (p) => playedFor(p, "AC Milan") },
+  { id: "club-inter", category: "club", label: "A-t-il joué à l'Inter Milan ?", labelEn: "Did he play for Inter Milan?", predicate: (p) => playedFor(p, "Inter Milan") },
+  { id: "club-roma", category: "club", label: "A-t-il joué à l'AS Roma ?", labelEn: "Did he play for AS Roma?", predicate: (p) => playedFor(p, "AS Roma") },
+  { id: "club-napoli", category: "club", label: "A-t-il joué à Naples ?", labelEn: "Did he play for SSC Napoli?", predicate: (p) => playedFor(p, "SSC Napoli") },
+  { id: "club-bayern", category: "club", label: "A-t-il joué au Bayern Munich ?", labelEn: "Did he play for Bayern Munich?", predicate: (p) => playedFor(p, "Bayern Munich") },
+  { id: "club-bvb", category: "club", label: "A-t-il joué au Borussia Dortmund ?", labelEn: "Did he play for Borussia Dortmund?", predicate: (p) => playedFor(p, "Borussia Dortmund") },
+  { id: "club-psg", category: "club", label: "A-t-il joué au PSG ?", labelEn: "Did he play for PSG?", predicate: (p) => playedFor(p, "PSG") },
+  { id: "club-om", category: "club", label: "A-t-il joué à l'Olympique de Marseille ?", labelEn: "Did he play for Marseille?", predicate: (p) => playedFor(p, "Marseille") },
+  { id: "club-ol", category: "club", label: "A-t-il joué à l'Olympique Lyonnais ?", labelEn: "Did he play for Lyon?", predicate: (p) => playedFor(p, "Lyon") },
+  { id: "club-monaco", category: "club", label: "A-t-il joué à l'AS Monaco ?", labelEn: "Did he play for Monaco?", predicate: (p) => playedFor(p, "Monaco") },
+  { id: "club-lille", category: "club", label: "A-t-il joué au LOSC Lille ?", labelEn: "Did he play for Lille?", predicate: (p) => playedFor(p, "Lille") },
+  { id: "club-ajax", category: "club", label: "A-t-il joué à l'Ajax Amsterdam ?", labelEn: "Did he play for Ajax Amsterdam?", predicate: (p) => playedFor(p, "Ajax Amsterdam") },
+  { id: "club-porto", category: "club", label: "A-t-il joué au FC Porto ?", labelEn: "Did he play for Porto?", predicate: (p) => playedFor(p, "Porto") },
+  { id: "club-benfica", category: "club", label: "A-t-il joué au Benfica ?", labelEn: "Did he play for Benfica?", predicate: (p) => playedFor(p, "Benfica") },
+  { id: "club-sporting", category: "club", label: "A-t-il joué au Sporting CP ?", labelEn: "Did he play for Sporting CP?", predicate: (p) => playedFor(p, "Sporting CP") },
+  { id: "club-newcastle", category: "club", label: "A-t-il joué à Newcastle ?", labelEn: "Did he play for Newcastle?", predicate: (p) => playedFor(p, "Newcastle") },
 
   // Ligues
-  { id: "lg-pl", category: "league", label: "A-t-il joué en Premier League anglaise ?", predicate: (p) => playedForAny(p, PREMIER_LEAGUE) },
-  { id: "lg-liga", category: "league", label: "A-t-il joué en Liga espagnole ?", predicate: (p) => playedForAny(p, LIGA) },
-  { id: "lg-seriea", category: "league", label: "A-t-il joué en Serie A italienne ?", predicate: (p) => playedForAny(p, SERIE_A) },
-  { id: "lg-l1", category: "league", label: "A-t-il joué en Ligue 1 française ?", predicate: (p) => playedForAny(p, LIGUE_1) },
-  { id: "lg-bl", category: "league", label: "A-t-il joué en Bundesliga allemande ?", predicate: (p) => playedForAny(p, BUNDESLIGA) },
+  { id: "lg-pl", category: "league", label: "A-t-il joué en Premier League anglaise ?", labelEn: "Has he played in the English Premier League?", predicate: (p) => playedForAny(p, PREMIER_LEAGUE) },
+  { id: "lg-liga", category: "league", label: "A-t-il joué en Liga espagnole ?", labelEn: "Has he played in the Spanish La Liga?", predicate: (p) => playedForAny(p, LIGA) },
+  { id: "lg-seriea", category: "league", label: "A-t-il joué en Serie A italienne ?", labelEn: "Has he played in the Italian Serie A?", predicate: (p) => playedForAny(p, SERIE_A) },
+  { id: "lg-l1", category: "league", label: "A-t-il joué en Ligue 1 française ?", labelEn: "Has he played in the French Ligue 1?", predicate: (p) => playedForAny(p, LIGUE_1) },
+  { id: "lg-bl", category: "league", label: "A-t-il joué en Bundesliga allemande ?", labelEn: "Has he played in the German Bundesliga?", predicate: (p) => playedForAny(p, BUNDESLIGA) },
 
   // Clubs additionnels (deuxième couche, ~30-100 joueurs chacun)
-  { id: "club-leverkusen", category: "club", label: "A-t-il joué au Bayer Leverkusen ?", predicate: (p) => playedFor(p, "Bayer Leverkusen") },
-  { id: "club-leipzig", category: "club", label: "A-t-il joué au RB Leipzig ?", predicate: (p) => playedFor(p, "RB Leipzig") },
-  { id: "club-schalke", category: "club", label: "A-t-il joué à Schalke 04 ?", predicate: (p) => playedFor(p, "Schalke 04") },
-  { id: "club-wolfsburg", category: "club", label: "A-t-il joué à Wolfsburg ?", predicate: (p) => playedFor(p, "Wolfsburg") },
-  { id: "club-frankfurt", category: "club", label: "A-t-il joué à l'Eintracht Frankfurt ?", predicate: (p) => playedFor(p, "Eintracht Frankfurt") },
-  { id: "club-stuttgart", category: "club", label: "A-t-il joué à Stuttgart ?", predicate: (p) => playedFor(p, "Stuttgart") },
-  { id: "club-lazio", category: "club", label: "A-t-il joué à la Lazio ?", predicate: (p) => playedFor(p, "Lazio") },
-  { id: "club-atalanta", category: "club", label: "A-t-il joué à l'Atalanta ?", predicate: (p) => playedFor(p, "Atalanta BC") },
-  { id: "club-fiorentina", category: "club", label: "A-t-il joué à la Fiorentina ?", predicate: (p) => playedForAny(p, ["Fiorentina", "ACF Fiorentina"]) },
-  { id: "club-sassuolo", category: "club", label: "A-t-il joué à Sassuolo ?", predicate: (p) => playedFor(p, "Sassuolo") },
-  { id: "club-villarreal", category: "club", label: "A-t-il joué à Villarreal ?", predicate: (p) => playedFor(p, "Villarreal") },
-  { id: "club-valencia", category: "club", label: "A-t-il joué à Valence ?", predicate: (p) => playedFor(p, "Valencia") },
-  { id: "club-sociedad", category: "club", label: "A-t-il joué à la Real Sociedad ?", predicate: (p) => playedFor(p, "Real Sociedad") },
-  { id: "club-betis", category: "club", label: "A-t-il joué au Real Betis ?", predicate: (p) => playedFor(p, "Real Betis") },
-  { id: "club-westham", category: "club", label: "A-t-il joué à West Ham ?", predicate: (p) => playedFor(p, "West Ham") },
-  { id: "club-everton", category: "club", label: "A-t-il joué à Everton ?", predicate: (p) => playedFor(p, "Everton") },
-  { id: "club-aston", category: "club", label: "A-t-il joué à Aston Villa ?", predicate: (p) => playedFor(p, "Aston Villa") },
-  { id: "club-fulham", category: "club", label: "A-t-il joué à Fulham ?", predicate: (p) => playedFor(p, "Fulham") },
-  { id: "club-nice", category: "club", label: "A-t-il joué à l'OGC Nice ?", predicate: (p) => playedFor(p, "Nice") },
-  { id: "club-rennes", category: "club", label: "A-t-il joué au Stade Rennais ?", predicate: (p) => playedFor(p, "Rennes") },
-  { id: "club-bordeaux", category: "club", label: "A-t-il joué aux Girondins de Bordeaux ?", predicate: (p) => playedFor(p, "Bordeaux") },
-  { id: "club-saintet", category: "club", label: "A-t-il joué à l'AS Saint-Étienne ?", predicate: (p) => playedForAny(p, ["Saint-Étienne", "Saint-Etienne"]) },
-  { id: "club-nantes", category: "club", label: "A-t-il joué au FC Nantes ?", predicate: (p) => playedFor(p, "Nantes") },
-  { id: "club-lens", category: "club", label: "A-t-il joué au RC Lens ?", predicate: (p) => playedFor(p, "Lens") },
-  { id: "club-feyenoord", category: "club", label: "A-t-il joué à Feyenoord ?", predicate: (p) => playedFor(p, "Feyenoord") },
-  { id: "club-psv", category: "club", label: "A-t-il joué au PSV Eindhoven ?", predicate: (p) => playedFor(p, "PSV Eindhoven") },
-  { id: "club-galata", category: "club", label: "A-t-il joué à Galatasaray ?", predicate: (p) => playedFor(p, "Galatasaray") },
-  { id: "club-fener", category: "club", label: "A-t-il joué à Fenerbahçe ?", predicate: (p) => playedFor(p, "Fenerbahce") },
-  { id: "club-celtic", category: "club", label: "A-t-il joué au Celtic Glasgow ?", predicate: (p) => playedFor(p, "Celtic") },
-  { id: "club-boca", category: "club", label: "A-t-il joué à Boca Juniors ?", predicate: (p) => playedFor(p, "Boca Juniors") },
-  { id: "club-river", category: "club", label: "A-t-il joué à River Plate ?", predicate: (p) => playedFor(p, "River Plate") },
+  { id: "club-leverkusen", category: "club", label: "A-t-il joué au Bayer Leverkusen ?", labelEn: "Did he play for Bayer Leverkusen?", predicate: (p) => playedFor(p, "Bayer Leverkusen") },
+  { id: "club-leipzig", category: "club", label: "A-t-il joué au RB Leipzig ?", labelEn: "Did he play for RB Leipzig?", predicate: (p) => playedFor(p, "RB Leipzig") },
+  { id: "club-schalke", category: "club", label: "A-t-il joué à Schalke 04 ?", labelEn: "Did he play for Schalke?", predicate: (p) => playedFor(p, "Schalke") },
+  { id: "club-wolfsburg", category: "club", label: "A-t-il joué à Wolfsburg ?", labelEn: "Did he play for Wolfsburg?", predicate: (p) => playedFor(p, "Wolfsburg") },
+  { id: "club-frankfurt", category: "club", label: "A-t-il joué à l'Eintracht Frankfurt ?", labelEn: "Did he play for Eintracht Frankfurt?", predicate: (p) => playedFor(p, "Eintracht Frankfurt") },
+  { id: "club-stuttgart", category: "club", label: "A-t-il joué à Stuttgart ?", labelEn: "Did he play for Stuttgart?", predicate: (p) => playedFor(p, "Stuttgart") },
+  { id: "club-lazio", category: "club", label: "A-t-il joué à la Lazio ?", labelEn: "Did he play for SS Lazio?", predicate: (p) => playedFor(p, "SS Lazio") },
+  { id: "club-atalanta", category: "club", label: "A-t-il joué à l'Atalanta ?", labelEn: "Did he play for Atalanta BC?", predicate: (p) => playedFor(p, "Atalanta BC") },
+  { id: "club-fiorentina", category: "club", label: "A-t-il joué à la Fiorentina ?", labelEn: "Did he play for Fiorentina?", predicate: (p) => playedForAny(p, ["Fiorentina", "ACF Fiorentina"]) },
+  { id: "club-sassuolo", category: "club", label: "A-t-il joué à Sassuolo ?", labelEn: "Did he play for Sassuolo?", predicate: (p) => playedFor(p, "Sassuolo") },
+  { id: "club-villarreal", category: "club", label: "A-t-il joué à Villarreal ?", labelEn: "Did he play for Villarreal?", predicate: (p) => playedFor(p, "Villarreal") },
+  { id: "club-valencia", category: "club", label: "A-t-il joué à Valence ?", labelEn: "Did he play for Valencia?", predicate: (p) => playedFor(p, "Valencia") },
+  { id: "club-sociedad", category: "club", label: "A-t-il joué à la Real Sociedad ?", labelEn: "Did he play for Real Sociedad?", predicate: (p) => playedFor(p, "Real Sociedad") },
+  { id: "club-betis", category: "club", label: "A-t-il joué au Real Betis ?", labelEn: "Did he play for Real Betis?", predicate: (p) => playedFor(p, "Real Betis") },
+  { id: "club-westham", category: "club", label: "A-t-il joué à West Ham ?", labelEn: "Did he play for West Ham?", predicate: (p) => playedFor(p, "West Ham") },
+  { id: "club-everton", category: "club", label: "A-t-il joué à Everton ?", labelEn: "Did he play for Everton?", predicate: (p) => playedFor(p, "Everton") },
+  { id: "club-aston", category: "club", label: "A-t-il joué à Aston Villa ?", labelEn: "Did he play for Aston Villa?", predicate: (p) => playedFor(p, "Aston Villa") },
+  { id: "club-fulham", category: "club", label: "A-t-il joué à Fulham ?", labelEn: "Did he play for Fulham?", predicate: (p) => playedFor(p, "Fulham") },
+  { id: "club-nice", category: "club", label: "A-t-il joué à l'OGC Nice ?", labelEn: "Did he play for Nice?", predicate: (p) => playedFor(p, "Nice") },
+  { id: "club-rennes", category: "club", label: "A-t-il joué au Stade Rennais ?", labelEn: "Did he play for Rennes?", predicate: (p) => playedFor(p, "Rennes") },
+  { id: "club-bordeaux", category: "club", label: "A-t-il joué aux Girondins de Bordeaux ?", labelEn: "Did he play for Bordeaux?", predicate: (p) => playedFor(p, "Bordeaux") },
+  { id: "club-saintet", category: "club", label: "A-t-il joué à l'AS Saint-Étienne ?", labelEn: "Did he play for Saint-Étienne?", predicate: (p) => playedForAny(p, ["Saint-Étienne", "Saint-Etienne"]) },
+  { id: "club-nantes", category: "club", label: "A-t-il joué au FC Nantes ?", labelEn: "Did he play for Nantes?", predicate: (p) => playedFor(p, "Nantes") },
+  { id: "club-lens", category: "club", label: "A-t-il joué au RC Lens ?", labelEn: "Did he play for Lens?", predicate: (p) => playedFor(p, "Lens") },
+  { id: "club-feyenoord", category: "club", label: "A-t-il joué à Feyenoord ?", labelEn: "Did he play for Feyenoord?", predicate: (p) => playedFor(p, "Feyenoord") },
+  { id: "club-psv", category: "club", label: "A-t-il joué au PSV Eindhoven ?", labelEn: "Did he play for PSV Eindhoven?", predicate: (p) => playedFor(p, "PSV Eindhoven") },
+  { id: "club-galata", category: "club", label: "A-t-il joué à Galatasaray ?", labelEn: "Did he play for Galatasaray?", predicate: (p) => playedFor(p, "Galatasaray") },
+  { id: "club-fener", category: "club", label: "A-t-il joué à Fenerbahçe ?", labelEn: "Did he play for Fenerbahce?", predicate: (p) => playedFor(p, "Fenerbahce") },
+  { id: "club-celtic", category: "club", label: "A-t-il joué au Celtic Glasgow ?", labelEn: "Did he play for Celtic?", predicate: (p) => playedFor(p, "Celtic") },
+  { id: "club-boca", category: "club", label: "A-t-il joué à Boca Juniors ?", labelEn: "Did he play for Boca Juniors?", predicate: (p) => playedFor(p, "Boca Juniors") },
+  { id: "club-river", category: "club", label: "A-t-il joué à River Plate ?", labelEn: "Did he play for River Plate?", predicate: (p) => playedFor(p, "River Plate") },
 
   // Nationalités additionnelles
-  { id: "nat-dk", category: "nat", label: "Est-il danois ?", predicate: (p) => hasNat(p, "Danemark") },
-  { id: "nat-se", category: "nat", label: "Est-il suédois ?", predicate: (p) => hasNat(p, "Suède") },
-  { id: "nat-no", category: "nat", label: "Est-il norvégien ?", predicate: (p) => hasNat(p, "Norvège") },
-  { id: "nat-ch", category: "nat", label: "Est-il suisse ?", predicate: (p) => hasNat(p, "Suisse") },
-  { id: "nat-pl", category: "nat", label: "Est-il polonais ?", predicate: (p) => hasNat(p, "Pologne") },
-  { id: "nat-cz", category: "nat", label: "Est-il tchèque ?", predicate: (p) => hasNat(p, "Tchéquie") },
-  { id: "nat-rs", category: "nat", label: "Est-il serbe ?", predicate: (p) => hasNat(p, "Serbie") },
-  { id: "nat-tr", category: "nat", label: "Est-il turc ?", predicate: (p) => hasNat(p, "Turquie") },
-  { id: "nat-gr", category: "nat", label: "Est-il grec ?", predicate: (p) => hasNat(p, "Grèce") },
-  { id: "nat-mx", category: "nat", label: "Est-il mexicain ?", predicate: (p) => hasNat(p, "Mexique") },
-  { id: "nat-jp", category: "nat", label: "Est-il japonais ?", predicate: (p) => hasNat(p, "Japon") },
-  { id: "nat-us", category: "nat", label: "Est-il américain (USA) ?", predicate: (p) => hasNat(p, "États-Unis") },
-  { id: "nat-ml", category: "nat", label: "Est-il malien ?", predicate: (p) => hasNat(p, "Mali") },
+  { id: "nat-dk", category: "nat", label: "Est-il danois ?", labelEn: "Is he Danish?", predicate: (p) => hasNat(p, "Danemark") },
+  { id: "nat-se", category: "nat", label: "Est-il suédois ?", labelEn: "Is he Swedish?", predicate: (p) => hasNat(p, "Suède") },
+  { id: "nat-no", category: "nat", label: "Est-il norvégien ?", labelEn: "Is he Norwegian?", predicate: (p) => hasNat(p, "Norvège") },
+  { id: "nat-ch", category: "nat", label: "Est-il suisse ?", labelEn: "Is he Swiss?", predicate: (p) => hasNat(p, "Suisse") },
+  { id: "nat-pl", category: "nat", label: "Est-il polonais ?", labelEn: "Is he Polish?", predicate: (p) => hasNat(p, "Pologne") },
+  { id: "nat-cz", category: "nat", label: "Est-il tchèque ?", labelEn: "Is he Czech?", predicate: (p) => hasNat(p, "Tchéquie") },
+  { id: "nat-rs", category: "nat", label: "Est-il serbe ?", labelEn: "Is he Serbian?", predicate: (p) => hasNat(p, "Serbie") },
+  { id: "nat-tr", category: "nat", label: "Est-il turc ?", labelEn: "Is he Turkish?", predicate: (p) => hasNat(p, "Turquie") },
+  { id: "nat-gr", category: "nat", label: "Est-il grec ?", labelEn: "Is he Greek?", predicate: (p) => hasNat(p, "Grèce") },
+  { id: "nat-mx", category: "nat", label: "Est-il mexicain ?", labelEn: "Is he Mexican?", predicate: (p) => hasNat(p, "Mexique") },
+  { id: "nat-jp", category: "nat", label: "Est-il japonais ?", labelEn: "Is he Japanese?", predicate: (p) => hasNat(p, "Japon") },
+  { id: "nat-us", category: "nat", label: "Est-il américain (USA) ?", labelEn: "Is he American (USA)?", predicate: (p) => hasNat(p, "États-Unis") },
+  { id: "nat-ml", category: "nat", label: "Est-il malien ?", labelEn: "Is he Malian?", predicate: (p) => hasNat(p, "Mali") },
 
   // Statut / profil
   {
     id: "retired", category: "profile",
-    label: "Est-il retraité (n'a plus joué récemment) ?",
+    label: "Est-il retraité (n'a plus joué récemment) ?", labelEn: "Is he retired (no longer playing)?",
     predicate: (p) => RETIRED_PLAYERS.has(p.name),
   },
   {
     id: "nomad", category: "profile",
-    label: "A-t-il joué dans 5 clubs différents ou plus ?",
+    label: "A-t-il joué dans 5 clubs différents ou plus ?", labelEn: "Has he played for 5 different clubs or more?",
     predicate: (p) => p.clubs.length >= 5,
   },
   {
     id: "very-nomad", category: "profile",
-    label: "A-t-il eu une carrière de globe-trotter (7 clubs ou plus) ?",
+    label: "A-t-il eu une carrière de globe-trotter (7 clubs ou plus) ?", labelEn: "Has he had a globe-trotter career (7 clubs or more)?",
     predicate: (p) => p.clubs.length >= 7,
   },
   {
     id: "loyal", category: "profile",
-    label: "Est-ce un joueur fidèle (1 ou 2 clubs dans toute sa carrière) ?",
+    label: "Est-ce un joueur fidèle (1 ou 2 clubs dans toute sa carrière) ?", labelEn: "Is he a loyal player (1 or 2 clubs in his whole career)?",
     predicate: (p) => p.clubs.length <= 2,
   },
 
   // Palmarès — basés sur les sets GG_WC_WINNERS et GG_CL_WINNERS
   {
     id: "won-ucl", category: "profile",
-    label: "A-t-il déjà gagné la Ligue des Champions avec son club ?",
+    label: "A-t-il déjà gagné la Ligue des Champions avec son club ?", labelEn: "Has he ever won the Champions League with his club?",
     predicate: (p) => GG_CL_WINNERS.has(p.name),
   },
   {
     id: "won-wc", category: "profile",
-    label: "A-t-il déjà gagné la Coupe du Monde avec sa sélection ?",
+    label: "A-t-il déjà gagné la Coupe du Monde avec sa sélection ?", labelEn: "Has he ever won the World Cup with his national team?",
     predicate: (p) => GG_WC_WINNERS.has(p.name),
   },
 
   // Année de naissance (predicate retourne null si info absente)
   {
     id: "era-90s", category: "era",
-    label: "Est-il né dans les années 90 (entre 1990 et 1999) ?",
+    label: "Est-il né dans les années 90 (entre 1990 et 1999) ?", labelEn: "Was he born in the 1990s (between 1990 and 1999)?",
     predicate: (p) =>
       p.birthYear === undefined
         ? null
@@ -613,7 +621,7 @@ const QUESTIONS: Question[] = [
   },
   {
     id: "era-2000s", category: "era",
-    label: "Est-il né dans les années 2000 (entre 2000 et 2009) ?",
+    label: "Est-il né dans les années 2000 (entre 2000 et 2009) ?", labelEn: "Was he born in the 2000s (between 2000 and 2009)?",
     predicate: (p) =>
       p.birthYear === undefined
         ? null
@@ -621,7 +629,7 @@ const QUESTIONS: Question[] = [
   },
   {
     id: "era-80s", category: "era",
-    label: "Est-il né dans les années 80 (entre 1980 et 1989) ?",
+    label: "Est-il né dans les années 80 (entre 1980 et 1989) ?", labelEn: "Was he born in the 1980s (between 1980 and 1989)?",
     predicate: (p) =>
       p.birthYear === undefined
         ? null
@@ -629,13 +637,13 @@ const QUESTIONS: Question[] = [
   },
   {
     id: "era-old", category: "era",
-    label: "Est-il né avant 1980 (légende plus ancienne) ?",
+    label: "Est-il né avant 1980 (légende plus ancienne) ?", labelEn: "Was he born before 1980 (an older legend)?",
     predicate: (p) =>
       p.birthYear === undefined ? null : p.birthYear < 1980,
   },
   {
     id: "era-gen-z", category: "era",
-    label: "A-t-il moins de 25 ans aujourd'hui (né après 2001) ?",
+    label: "A-t-il moins de 25 ans aujourd'hui (né après 2001) ?", labelEn: "Is he under 25 today (born after 2001)?",
     predicate: (p) =>
       p.birthYear === undefined ? null : p.birthYear >= 2001,
   },
@@ -643,199 +651,199 @@ const QUESTIONS: Question[] = [
   // Anecdotes / faits atypiques (départage de fin de partie)
   {
     id: "anec-bagarre", category: "anecdote",
-    label: "A-t-il créé une polémique après une bagarre avec un coéquipier ?",
+    label: "A-t-il créé une polémique après une bagarre avec un coéquipier ?", labelEn: "Did he spark controversy after a fight with a teammate?",
     predicate: (p) => ANEC_BAGARRE_COEQUIPIER.has(p.name),
   },
   {
     id: "anec-morsure", category: "anecdote",
-    label: "A-t-il déjà mordu un adversaire sur le terrain ?",
+    label: "A-t-il déjà mordu un adversaire sur le terrain ?", labelEn: "Has he ever bitten an opponent on the pitch?",
     predicate: (p) => ANEC_MORSURE.has(p.name),
   },
   {
     id: "anec-red-finale", category: "anecdote",
-    label: "A-t-il été expulsé lors d'une finale de Coupe du Monde ?",
+    label: "A-t-il été expulsé lors d'une finale de Coupe du Monde ?", labelEn: "Was he sent off in a World Cup final?",
     predicate: (p) => ANEC_RED_FINALE_CDM.has(p.name),
   },
   {
     id: "anec-main", category: "anecdote",
-    label: "A-t-il marqué ou sauvé un but de la main de façon célèbre ?",
+    label: "A-t-il marqué ou sauvé un but de la main de façon célèbre ?", labelEn: "Did he famously score or stop a goal with his hand?",
     predicate: (p) => ANEC_BUT_DE_LA_MAIN.has(p.name),
   },
   {
     id: "anec-transfert-rival", category: "anecdote",
-    label: "A-t-il fait un transfert très controversé vers un grand rival ?",
+    label: "A-t-il fait un transfert très controversé vers un grand rival ?", labelEn: "Did he make a highly controversial transfer to a big rival?",
     predicate: (p) => ANEC_TRANSFERT_RIVAUX.has(p.name),
   },
   {
     id: "anec-fratrie", category: "anecdote",
-    label: "A-t-il un frère footballeur ?",
+    label: "A-t-il un frère footballeur ?", labelEn: "Does he have a brother who is a footballer?",
     predicate: (p) => ANEC_FRATRIE.has(p.name),
   },
   {
     id: "anec-change-selection", category: "anecdote",
-    label: "A-t-il changé de sélection nationale au cours de sa carrière ?",
+    label: "A-t-il changé de sélection nationale au cours de sa carrière ?", labelEn: "Did he switch national teams during his career?",
     predicate: (p) => ANEC_CHANGE_SELECTION.has(p.name),
   },
   {
     id: "anec-but-finale-cdm", category: "anecdote",
-    label: "A-t-il marqué lors d'une finale de Coupe du Monde ?",
+    label: "A-t-il marqué lors d'une finale de Coupe du Monde ?", labelEn: "Did he score in a World Cup final?",
     predicate: (p) => ANEC_BUT_FINALE_CDM.has(p.name),
   },
   {
     id: "anec-ballon-dor", category: "anecdote",
-    label: "A-t-il remporté le Ballon d'Or ?",
+    label: "A-t-il remporté le Ballon d'Or ?", labelEn: "Has he won the Ballon d'Or?",
     predicate: (p) => GG_BALLON_DOR.has(p.name),
   },
   {
     id: "anec-ballon-dor-multi", category: "anecdote",
-    label: "A-t-il remporté plusieurs Ballons d'Or ?",
+    label: "A-t-il remporté plusieurs Ballons d'Or ?", labelEn: "Has he won several Ballons d'Or?",
     predicate: (p) => GG_BALLON_DOR_MULTI.has(p.name),
   },
   {
     id: "anec-penalty-finale", category: "anecdote",
-    label: "A-t-il raté un penalty resté célèbre lors d'une grande finale ?",
+    label: "A-t-il raté un penalty resté célèbre lors d'une grande finale ?", labelEn: "Did he miss a famous penalty in a major final?",
     predicate: (p) => ANEC_PENALTY_FINALE.has(p.name),
   },
   {
     id: "anec-prison", category: "anecdote",
-    label: "A-t-il déjà fait de la prison ?",
+    label: "A-t-il déjà fait de la prison ?", labelEn: "Has he ever been to prison?",
     predicate: (p) => ANEC_PRISON.has(p.name),
   },
   {
     id: "anec-extorsion-frere", category: "anecdote",
-    label: "A-t-il été victime d'une tentative d'extorsion orchestrée par son frère ?",
+    label: "A-t-il été victime d'une tentative d'extorsion orchestrée par son frère ?", labelEn: "Was he the victim of an extortion attempt orchestrated by his brother?",
     predicate: (p) => ANEC_EXTORSION_FRERE.has(p.name),
   },
   {
     id: "anec-extorsion", category: "anecdote",
-    label: "A-t-il été victime d'une tentative d'extorsion ?",
+    label: "A-t-il été victime d'une tentative d'extorsion ?", labelEn: "Was he the victim of an extortion attempt?",
     predicate: (p) => ANEC_EXTORSION.has(p.name),
   },
   {
     id: "anec-paris", category: "anecdote",
-    label: "A-t-il été suspendu pour des infractions liées aux paris sportifs ?",
+    label: "A-t-il été suspendu pour des infractions liées aux paris sportifs ?", labelEn: "Was he suspended for betting-related offences?",
     predicate: (p) => ANEC_PARIS.has(p.name),
   },
   {
     id: "anec-dopage", category: "anecdote",
-    label: "A-t-il été suspendu pour une affaire de dopage ?",
+    label: "A-t-il été suspendu pour une affaire de dopage ?", labelEn: "Was he suspended over a doping case?",
     predicate: (p) => ANEC_DOPAGE.has(p.name),
   },
   {
     id: "anec-celebrite", category: "anecdote",
-    label: "A-t-il été marié ou en couple avec une célébrité ?",
+    label: "A-t-il été marié ou en couple avec une célébrité ?", labelEn: "Has he been married to or in a relationship with a celebrity?",
     predicate: (p) => ANEC_CELEBRITE.has(p.name),
   },
   {
     id: "anec-transfert-record", category: "anecdote",
-    label: "A-t-il été, à son époque, le joueur le plus cher du monde ?",
+    label: "A-t-il été, à son époque, le joueur le plus cher du monde ?", labelEn: "Was he, in his time, the most expensive player in the world?",
     predicate: (p) => ANEC_TRANSFERT_RECORD.has(p.name),
   },
   {
     id: "anec-transfert-100m", category: "anecdote",
-    label: "A-t-il fait l'objet d'un transfert à plus de 100 millions d'euros ?",
+    label: "A-t-il fait l'objet d'un transfert à plus de 100 millions d'euros ?", labelEn: "Was he involved in a transfer worth more than €100 million?",
     predicate: (p) => ANEC_TRANSFERT_100M.has(p.name),
   },
   {
     id: "anec-fils-pro", category: "anecdote",
-    label: "Est-il le fils d'un footballeur professionnel ?",
+    label: "Est-il le fils d'un footballeur professionnel ?", labelEn: "Is he the son of a professional footballer?",
     predicate: (p) => ANEC_FILS_PRO.has(p.name),
   },
   {
     id: "anec-entraineur", category: "anecdote",
-    label: "Est-il devenu entraîneur après sa carrière de joueur ?",
+    label: "Est-il devenu entraîneur après sa carrière de joueur ?", labelEn: "Did he become a manager after his playing career?",
     predicate: (p) => ANEC_ENTRAINEUR.has(p.name),
   },
   {
     id: "anec-joue-40", category: "anecdote",
-    label: "A-t-il joué jusqu'à 40 ans ou plus ?",
+    label: "A-t-il joué jusqu'à 40 ans ou plus ?", labelEn: "Did he play until age 40 or beyond?",
     predicate: (p) => ANEC_JOUE_40.has(p.name),
   },
   {
     id: "anec-real-barca", category: "anecdote",
-    label: "A-t-il joué à la fois au Real Madrid et au FC Barcelone ?",
+    label: "A-t-il joué à la fois au Real Madrid et au FC Barcelone ?", labelEn: "Has he played for both Real Madrid and FC Barcelona?",
     predicate: (p) => playedFor(p, "Real Madrid") && playedFor(p, "Barcelona"),
   },
   {
     id: "anec-psg-om", category: "anecdote",
-    label: "A-t-il joué à la fois au PSG et à l'Olympique de Marseille ?",
+    label: "A-t-il joué à la fois au PSG et à l'Olympique de Marseille ?", labelEn: "Has he played for both PSG and Olympique de Marseille?",
     predicate: (p) => playedFor(p, "PSG") && playedFor(p, "Marseille"),
   },
 
   // Apparence physique / signe distinctif (départage de fin de partie)
   {
     id: "phys-protection", category: "physique",
-    label: "A-t-il joué avec une protection sur le visage ou la tête (masque, casque, lunettes) ?",
+    label: "A-t-il joué avec une protection sur le visage ou la tête (masque, casque, lunettes) ?", labelEn: "Has he played with face or head protection (mask, helmet, goggles)?",
     predicate: (p) => PHYS_PROTECTION.has(p.name),
   },
   {
     id: "phys-cicatrice", category: "physique",
-    label: "A-t-il une cicatrice visible sur le visage ?",
+    label: "A-t-il une cicatrice visible sur le visage ?", labelEn: "Does he have a visible scar on his face?",
     predicate: (p) => PHYS_CICATRICE.has(p.name),
   },
   {
     id: "phys-afro", category: "physique",
-    label: "Est-il reconnaissable à sa coupe afro ?",
+    label: "Est-il reconnaissable à sa coupe afro ?", labelEn: "Is he recognizable by his afro haircut?",
     predicate: (p) => PHYS_AFRO.has(p.name),
   },
   {
     id: "phys-mohawk", category: "physique",
-    label: "A-t-il porté une crête (mohawk) ?",
+    label: "A-t-il porté une crête (mohawk) ?", labelEn: "Has he worn a mohawk?",
     predicate: (p) => PHYS_MOHAWK.has(p.name),
   },
   {
     id: "phys-dreads", category: "physique",
-    label: "A-t-il porté de longues dreadlocks ?",
+    label: "A-t-il porté de longues dreadlocks ?", labelEn: "Has he worn long dreadlocks?",
     predicate: (p) => PHYS_DREADS.has(p.name),
   },
   {
     id: "phys-cheveux-longs", category: "physique",
-    label: "Est-il connu pour ses cheveux longs ?",
+    label: "Est-il connu pour ses cheveux longs ?", labelEn: "Is he known for his long hair?",
     predicate: (p) => PHYS_CHEVEUX_LONGS.has(p.name),
   },
   {
     id: "phys-queue", category: "physique",
-    label: "A-t-il porté une queue de cheval iconique ?",
+    label: "A-t-il porté une queue de cheval iconique ?", labelEn: "Has he worn an iconic ponytail?",
     predicate: (p) => PHYS_QUEUE.has(p.name),
   },
   {
     id: "phys-barbe", category: "physique",
-    label: "A-t-il une barbe très reconnaissable ?",
+    label: "A-t-il une barbe très reconnaissable ?", labelEn: "Does he have a very recognizable beard?",
     predicate: (p) => PHYS_BARBE.has(p.name),
   },
   {
     id: "phys-tatoue", category: "physique",
-    label: "Est-il connu pour être très tatoué ?",
+    label: "Est-il connu pour être très tatoué ?", labelEn: "Is he known for being heavily tattooed?",
     predicate: (p) => PHYS_TATOUE.has(p.name),
   },
   {
     id: "phys-coiffure", category: "physique",
-    label: "Change-t-il souvent de coiffure (coupes originales) ?",
+    label: "Change-t-il souvent de coiffure (coupes originales) ?", labelEn: "Does he often change haircuts (original styles)?",
     predicate: (p) => PHYS_COIFFURE.has(p.name),
   },
   {
     id: "phys-sourire", category: "physique",
-    label: "Est-il célèbre pour son grand sourire ?",
+    label: "Est-il célèbre pour son grand sourire ?", labelEn: "Is he famous for his big smile?",
     predicate: (p) => PHYS_SOURIRE.has(p.name),
   },
   {
     id: "phys-chauve", category: "physique",
-    label: "Est-il chauve ou dégarni ?",
+    label: "Est-il chauve ou dégarni ?", labelEn: "Is he bald or balding?",
     predicate: (p) => PHYS_CHAUVE.has(p.name),
   },
   {
     id: "phys-petit", category: "physique",
-    label: "Est-il de petit gabarit (1m70 ou moins) ?",
+    label: "Est-il de petit gabarit (1m70 ou moins) ?", labelEn: "Is he short (1.70m or less)?",
     predicate: (p) => PHYS_PETIT.has(p.name),
   },
   {
     id: "phys-grand", category: "physique",
-    label: "Mesure-t-il plus d'1m90 (très grand) ?",
+    label: "Mesure-t-il plus d'1m90 (très grand) ?", labelEn: "Is he taller than 1.90m (very tall)?",
     predicate: (p) => PHYS_GRAND.has(p.name),
   },
   {
     id: "phys-coupe-2002", category: "physique",
-    label: "A-t-il arboré une coupe de cheveux culte à la Coupe du Monde 2002 ?",
+    label: "A-t-il arboré une coupe de cheveux culte à la Coupe du Monde 2002 ?", labelEn: "Did he sport a cult haircut at the 2002 World Cup?",
     predicate: (p) => PHYS_COUPE_2002.has(p.name),
   },
 ];
@@ -1044,10 +1052,10 @@ export const GoatGuess = ({ onClose }: Props) => {
     <button
       onClick={onClose}
       className="fixed top-3 right-3 z-[9001] flex items-center justify-center w-10 h-10 p-0 lg:w-auto lg:h-auto lg:gap-2 lg:px-4 lg:py-2 rounded-full bg-[#FF8A2A] hover:bg-[#FF7A1A] text-[#1A0F00] font-display text-sm tracking-widest shadow-[0_8px_24px_rgba(0,0,0,0.6)] hover:scale-[1.03] active:scale-[0.98] transition-all"
-      aria-label="Quitter GOAT Guess"
+      aria-label={isEn() ? "Quit GOAT Guess" : "Quitter GOAT Guess"}
     >
       <span className="lg:hidden text-lg leading-none">←</span>
-      <span className="hidden lg:inline">← QUITTER</span>
+      <span className="hidden lg:inline">{isEn() ? "← QUIT" : "← QUITTER"}</span>
     </button>
 
     <div className="relative min-h-screen lg:min-h-screen container max-w-5xl mx-auto px-3 lg:px-6 py-2 lg:py-10">
@@ -1059,7 +1067,7 @@ export const GoatGuess = ({ onClose }: Props) => {
           </span>
         </div>
         <h1 className="hidden lg:block font-display text-4xl lg:text-6xl tracking-wider text-white leading-none drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
-          JE DEVINE TON JOUEUR
+          {isEn() ? "I'LL GUESS YOUR PLAYER" : "JE DEVINE TON JOUEUR"}
         </h1>
       </div>
 
@@ -1108,10 +1116,10 @@ export const GoatGuess = ({ onClose }: Props) => {
           {!compactMobileDevin && (
             <div className="mt-3 text-center">
               <div className="font-display text-[10px] tracking-[0.4em] text-[#FFC93C] mb-1 drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]">
-                LE DEVIN
+                {isEn() ? "THE ORACLE" : "LE DEVIN"}
               </div>
               <div className="text-[11px] text-white/70 max-w-[260px] leading-snug italic text-balance">
-                «&nbsp;Pense à ton joueur. Je le lis dans ton esprit.&nbsp;»
+                {isEn() ? "“Think of your player. I read your mind.”" : "«\u00A0Pense à ton joueur. Je le lis dans ton esprit.\u00A0»"}
               </div>
             </div>
           )}
@@ -1138,10 +1146,10 @@ export const GoatGuess = ({ onClose }: Props) => {
           </div>
           <div className="mt-5 text-center">
             <div className="font-display text-xs tracking-[0.4em] text-[#FFC93C] mb-1 drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]">
-              LE DEVIN
+              {isEn() ? "THE ORACLE" : "LE DEVIN"}
             </div>
             <div className="text-[11px] text-white/70 max-w-[210px] leading-snug italic text-balance">
-              «&nbsp;Pense à ton joueur. Je le lis dans ton esprit.&nbsp;»
+              {isEn() ? "“Think of your player. I read your mind.”" : "«\u00A0Pense à ton joueur. Je le lis dans ton esprit.\u00A0»"}
             </div>
           </div>
         </div>
@@ -1394,24 +1402,31 @@ const IntroView = ({ onStart }: { onStart: () => void }) => (
   <div className="text-center">
     <div className="text-4xl lg:text-6xl mb-3 lg:mb-5">🔮</div>
     <p className="text-white/80 text-sm lg:text-lg mb-2 lg:mb-3">
-      Pense à un footballeur connu (actuel ou retraité).
+      {isEn() ? "Think of a famous footballer (current or retired)." : "Pense à un footballeur connu (actuel ou retraité)."}
     </p>
     <p className="text-white/60 text-xs lg:text-sm mb-4 lg:mb-8">
-      Je te pose <span className="text-white font-bold">autant de questions qu'il faut</span>{" "}
-      pour le deviner (en général une vingtaine). Réponds <span className="text-[#00E676] font-bold">oui</span>,{" "}
-      <span className="text-[#FF3D6E] font-bold">non</span> ou{" "}
-      <span className="text-white/70 font-bold">je sais pas</span>.
+      {isEn() ? (
+        <>I'll ask <span className="text-white font-bold">as many questions as needed</span>{" "}
+        to guess them (usually around twenty). Answer <span className="text-[#00E676] font-bold">yes</span>,{" "}
+        <span className="text-[#FF3D6E] font-bold">no</span> or{" "}
+        <span className="text-white/70 font-bold">not sure</span>.</>
+      ) : (
+        <>Je te pose <span className="text-white font-bold">autant de questions qu'il faut</span>{" "}
+        pour le deviner (en général une vingtaine). Réponds <span className="text-[#00E676] font-bold">oui</span>,{" "}
+        <span className="text-[#FF3D6E] font-bold">non</span> ou{" "}
+        <span className="text-white/70 font-bold">je sais pas</span>.</>
+      )}
     </p>
 
     <button
       onClick={onStart}
       className="goat-pulse inline-flex items-center gap-3 px-8 lg:px-10 py-3 lg:py-4 rounded-2xl bg-gradient-to-r from-[#C084FC] to-[#FF8A2A] text-[#1A0F00] font-display text-xl lg:text-2xl tracking-widest hover:scale-[1.03] active:scale-[0.98] transition-transform"
     >
-      <span className="text-xl">▶</span> COMMENCER
+      <span className="text-xl">▶</span> {isEn() ? "START" : "COMMENCER"}
     </button>
 
     <p className="mt-4 text-xs text-white/40">
-      Astuce : plus tu réponds précisément (évite les "sais pas"), mieux je devine.
+      {isEn() ? 'Tip: the more precisely you answer (avoid "not sure"), the better I guess.' : 'Astuce : plus tu réponds précisément (évite les "sais pas"), mieux je devine.'}
     </p>
   </div>
 );
@@ -1443,10 +1458,12 @@ const AskingView = ({
       <div className="mb-3 lg:mb-6">
         <div className="flex items-center justify-between text-[10px] lg:text-xs mb-1 lg:mb-2">
           <span className="font-display tracking-widest text-white/50">
-            {overtime ? `QUESTION ${count} · PROLONGATIONS 🔥` : `QUESTION ${count} / ${max}`}
+            {overtime ? `QUESTION ${count} · ${isEn() ? "EXTRA TIME" : "PROLONGATIONS"} 🔥` : `QUESTION ${count} / ${max}`}
           </span>
           <span className="text-white/40 tabular-nums">
-            {remaining} candidat{remaining > 1 ? "s" : ""} restant{remaining > 1 ? "s" : ""}
+            {isEn()
+              ? `${remaining} candidate${remaining > 1 ? "s" : ""} left`
+              : `${remaining} candidat${remaining > 1 ? "s" : ""} restant${remaining > 1 ? "s" : ""}`}
           </span>
         </div>
         <div className="h-1.5 w-full rounded-full bg-white/10 overflow-hidden">
@@ -1478,7 +1495,7 @@ const AskingView = ({
           <span>🔮</span> QUESTION {count}
         </div>
         <h3 className="relative font-display text-xl lg:text-4xl tracking-wide text-[#2A0F00] leading-tight drop-shadow-[0_1px_0_rgba(255,255,255,0.3)]">
-          {question.label}
+          {qLabel(question)}
         </h3>
       </div>
 
@@ -1488,19 +1505,19 @@ const AskingView = ({
           onClick={() => onAnswer("yes")}
           className="py-3 lg:py-6 rounded-2xl bg-[#00E676] hover:bg-[#00C966] text-[#0A1410] font-display text-base lg:text-2xl tracking-widest hover:scale-[1.03] active:scale-[0.97] transition-transform shadow-[0_8px_24px_rgba(0,230,118,0.35)]"
         >
-          ✓ OUI
+          ✓ {isEn() ? "YES" : "OUI"}
         </button>
         <button
           onClick={() => onAnswer("dunno")}
           className="py-3 lg:py-6 rounded-2xl border-2 border-white/10 bg-white/[0.05] hover:bg-white/[0.10] text-white/80 font-display text-xs lg:text-lg tracking-widest transition-colors"
         >
-          ? SAIS PAS
+          ? {isEn() ? "NOT SURE" : "SAIS PAS"}
         </button>
         <button
           onClick={() => onAnswer("no")}
           className="py-3 lg:py-6 rounded-2xl bg-[#FF3D6E] hover:bg-[#E62E5E] text-white font-display text-base lg:text-2xl tracking-widest hover:scale-[1.03] active:scale-[0.97] transition-transform shadow-[0_8px_24px_rgba(255,61,110,0.35)]"
         >
-          ✗ NON
+          ✗ {isEn() ? "NO" : "NON"}
         </button>
       </div>
 
@@ -1510,7 +1527,7 @@ const AskingView = ({
             onClick={onBack}
             className="text-[10px] lg:text-xs text-white/60 hover:text-white tracking-widest transition-colors"
           >
-            ← précédent
+            {isEn() ? "← back" : "← précédent"}
           </button>
         ) : (
           <span />
@@ -1519,7 +1536,7 @@ const AskingView = ({
           onClick={() => onAnswer("dunno")}
           className="text-[10px] lg:text-xs text-white/40 hover:text-white/70 tracking-widest transition-colors"
         >
-          passer cette question →
+          {isEn() ? "skip this question →" : "passer cette question →"}
         </button>
       </div>
 
@@ -1541,7 +1558,7 @@ const LiveDeductions = ({
       <div className="mt-6 rounded-2xl bg-black/20 border border-white/5 px-5 py-6 text-center backdrop-blur-sm">
         <div className="text-3xl mb-2 opacity-70">🔮</div>
         <p className="text-[12px] text-white/50 italic max-w-xs mx-auto leading-relaxed">
-          Le devin attend tes premières réponses pour cerner ton joueur…
+          {isEn() ? "The oracle awaits your first answers to zero in on your player…" : "Le devin attend tes premières réponses pour cerner ton joueur…"}
         </p>
       </div>
     );
@@ -1556,10 +1573,10 @@ const LiveDeductions = ({
     <div className="mt-6 rounded-2xl bg-black/30 border border-white/10 backdrop-blur-sm overflow-hidden">
       <div className="flex items-center justify-between px-4 py-2 border-b border-white/5 bg-white/[0.03]">
         <span className="font-display text-[10px] tracking-[0.3em] text-[#C084FC]">
-          🧠 CE QUE JE DÉDUIS
+          🧠 {isEn() ? "WHAT I'M DEDUCING" : "CE QUE JE DÉDUIS"}
         </span>
         <span className="text-[10px] text-white/40 tabular-nums">
-          {history.length} indice{history.length > 1 ? "s" : ""}
+          {history.length} {isEn() ? "clue" : "indice"}{history.length > 1 ? "s" : ""}
         </span>
       </div>
       <ol className="divide-y divide-white/[0.04]">
@@ -1575,14 +1592,14 @@ const LiveDeductions = ({
               {ansIcon(r.answer)}
             </span>
             <span className="flex-1 text-[12.5px] text-white/80 leading-snug">
-              {r.q.label}
+              {qLabel(r.q)}
             </span>
           </li>
         ))}
       </ol>
       {history.length > 6 && (
         <div className="px-4 py-2 text-center text-[10px] text-white/30 border-t border-white/5">
-          + {history.length - 6} autre{history.length - 6 > 1 ? "s" : ""} plus haut
+          + {history.length - 6} {isEn() ? "more above" : (history.length - 6 > 1 ? "autres plus haut" : "autre plus haut")}
         </div>
       )}
     </div>
@@ -1605,17 +1622,17 @@ const GuessingView = ({
   <div className="text-center">
     <div className="inline-block px-3 py-1 rounded-full bg-[#FFC93C]/15 border border-[#FFC93C]/30 mb-2 lg:mb-3">
       <span className="font-display text-[10px] tracking-[0.35em] text-[#FFC93C]">
-        🔮 MA DEVINETTE
+        🔮 {isEn() ? "MY GUESS" : "MA DEVINETTE"}
       </span>
     </div>
     <div className="font-display text-xl lg:text-3xl tracking-wider text-white mb-2 lg:mb-5 leading-tight">
-      JE PARIE QUE C'EST...
+      {isEn() ? "I BET IT'S..." : "JE PARIE QUE C'EST..."}
     </div>
 
     <PlayerRevealCard player={guess} accent="#C084FC" />
 
     <p className="text-white/60 text-sm mt-3 mb-3 lg:mt-5 lg:mb-4 tracking-wide">
-      Alors, j'ai bon ?
+      {isEn() ? "So, am I right?" : "Alors, j'ai bon ?"}
     </p>
 
     <div className="grid grid-cols-2 gap-3">
@@ -1623,13 +1640,13 @@ const GuessingView = ({
         onClick={onCorrect}
         className="py-3 lg:py-4 rounded-2xl bg-gradient-to-r from-[#00C966] to-[#00E676] text-[#0A1410] font-display text-lg lg:text-xl tracking-widest hover:scale-[1.03] active:scale-[0.97] transition-transform shadow-[0_8px_24px_rgba(0,230,118,0.35)]"
       >
-        ✓ OUI !
+        ✓ {isEn() ? "YES!" : "OUI !"}
       </button>
       <button
         onClick={onWrong}
         className="py-3 lg:py-4 rounded-2xl bg-gradient-to-r from-[#FF3D6E] to-[#E62E5E] text-white font-display text-lg lg:text-xl tracking-widest hover:scale-[1.03] active:scale-[0.97] transition-transform shadow-[0_8px_24px_rgba(255,61,110,0.35)]"
       >
-        ✗ NON
+        ✗ {isEn() ? "NO" : "NON"}
       </button>
     </div>
 
@@ -1638,7 +1655,7 @@ const GuessingView = ({
         onClick={onBack}
         className="mt-3 text-xs text-white/50 hover:text-white tracking-widest transition-colors"
       >
-        ← revenir à la question précédente
+        {isEn() ? "← back to the previous question" : "← revenir à la question précédente"}
       </button>
     )}
   </div>
@@ -1674,10 +1691,10 @@ const WonView = ({
 
     <div className="text-7xl mb-3 animate-in zoom-in duration-300">🎉</div>
     <div className="font-display text-5xl lg:text-6xl tracking-wider mb-1 leading-none bg-gradient-to-r from-[#C084FC] via-[#FFC93C] to-[#C084FC] bg-clip-text text-transparent">
-      JE T'AI EU !
+      {isEn() ? "GOT YOU!" : "JE T'AI EU !"}
     </div>
     <p className="text-white/60 text-sm mb-5 tracking-wide">
-      Tu pensais bien à...
+      {isEn() ? "You were thinking of..." : "Tu pensais bien à..."}
     </p>
 
     <PlayerRevealCard player={guess} accent="#C084FC" />
@@ -1689,7 +1706,7 @@ const WonView = ({
         onClick={onRestart}
         className="py-4 rounded-2xl bg-gradient-to-r from-[#FF8A2A] to-[#FFC93C] text-[#1A0F00] font-display text-lg tracking-widest hover:scale-[1.02] active:scale-[0.97] transition-transform shadow-[0_8px_24px_rgba(255,201,60,0.4)]"
       >
-        ▶ REJOUER
+        ▶ {isEn() ? "PLAY AGAIN" : "REJOUER"}
       </button>
       <button
         onClick={onClose}
@@ -1713,7 +1730,9 @@ const QaRecap = ({
   const [open, setOpen] = useState(false);
   if (history.length === 0) return null;
   const ansLabel = (a: Answer) =>
-    a === "yes" ? "✓ Oui" : a === "no" ? "✗ Non" : "? Sais pas";
+    isEn()
+      ? (a === "yes" ? "✓ Yes" : a === "no" ? "✗ No" : "? Not sure")
+      : (a === "yes" ? "✓ Oui" : a === "no" ? "✗ Non" : "? Sais pas");
   const ansColor = (a: Answer) =>
     a === "yes" ? "#00E676" : a === "no" ? "#FF3D6E" : "rgba(255,255,255,0.5)";
   return (
@@ -1723,7 +1742,7 @@ const QaRecap = ({
         className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-white/80 transition-colors"
       >
         <span className="font-display text-xs tracking-[0.25em]">
-          📋 RÉCAP DES {history.length} QUESTION{history.length > 1 ? "S" : ""}
+          📋 {isEn() ? `RECAP OF THE ${history.length} QUESTION${history.length > 1 ? "S" : ""}` : `RÉCAP DES ${history.length} QUESTION${history.length > 1 ? "S" : ""}`}
         </span>
         <span className="text-white/40 text-sm">{open ? "▲" : "▼"}</span>
       </button>
@@ -1738,7 +1757,7 @@ const QaRecap = ({
                 {(i + 1).toString().padStart(2, "0")}
               </span>
               <span className="flex-1 text-[13px] text-white/80 leading-snug">
-                {r.q.label}
+                {qLabel(r.q)}
               </span>
               <span
                 className="text-[11px] font-display tracking-widest shrink-0"
@@ -1752,7 +1771,7 @@ const QaRecap = ({
       )}
       {open && (
         <p className="text-[10px] text-white/30 mt-2 text-center" style={{ color: `${accent}80` }}>
-          💡 Si tu pensais à un autre joueur, regarde où ta réponse a éliminé le bon
+          💡 {isEn() ? "If you were thinking of another player, look for where your answer eliminated the right one" : "Si tu pensais à un autre joueur, regarde où ta réponse a éliminé le bon"}
         </p>
       )}
     </div>
@@ -1775,16 +1794,16 @@ const LostView = ({
   <div className="text-center">
     <div className="text-7xl mb-3">🙏</div>
     <div className="font-display text-5xl lg:text-6xl tracking-wider mb-1 leading-none bg-gradient-to-r from-[#C084FC] via-[#FFC93C] to-[#C084FC] bg-clip-text text-transparent">
-      BIEN JOUÉ
+      {isEn() ? "WELL PLAYED" : "BIEN JOUÉ"}
     </div>
     <p className="text-white/60 text-sm mb-5 tracking-wide">
-      Tu m'as eu — je n'ai pas trouvé ton joueur.
+      {isEn() ? "You got me — I couldn't find your player." : "Tu m'as eu — je n'ai pas trouvé ton joueur."}
     </p>
 
     {tried.length > 0 && (
       <div className="mb-4 inline-block px-4 py-2 rounded-xl bg-[#FF3D6E]/10 border border-[#FF3D6E]/30">
         <div className="text-[10px] tracking-[0.3em] text-[#FF3D6E] mb-1">
-          MES DEVINETTES RATÉES
+          {isEn() ? "MY FAILED GUESSES" : "MES DEVINETTES RATÉES"}
         </div>
         <div className="text-xs text-white/70">
           {tried.slice(0, 3).join(" · ")}
@@ -1796,7 +1815,7 @@ const LostView = ({
     {shortlist.length > 0 && (
       <div className="mb-5 rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.03] to-transparent p-4">
         <div className="font-display text-[10px] tracking-[0.3em] text-[#C084FC] mb-3">
-          🤔 PEUT-ÊTRE UN DE CES JOUEURS ?
+          🤔 {isEn() ? "MAYBE ONE OF THESE PLAYERS?" : "PEUT-ÊTRE UN DE CES JOUEURS ?"}
         </div>
         <div className="flex flex-wrap gap-2 justify-center">
           {shortlist.map((p) => (
@@ -1812,7 +1831,7 @@ const LostView = ({
     )}
 
     <p className="text-[11px] text-white/35 mb-5 max-w-sm mx-auto leading-relaxed">
-      Si ton joueur n'apparaît nulle part, il n'est peut-être pas dans ma base.
+      {isEn() ? "If your player doesn't appear anywhere, they may not be in my database." : "Si ton joueur n'apparaît nulle part, il n'est peut-être pas dans ma base."}
     </p>
 
     <QaRecap history={qaHistory} accent="#C084FC" />
@@ -1822,7 +1841,7 @@ const LostView = ({
         onClick={onRestart}
         className="py-4 rounded-2xl bg-gradient-to-r from-[#C084FC] to-[#FF8A2A] text-[#1A0F00] font-display text-lg tracking-widest hover:scale-[1.02] active:scale-[0.97] transition-transform shadow-[0_8px_24px_rgba(192,132,252,0.4)]"
       >
-        ▶ REVANCHE
+        ▶ {isEn() ? "REMATCH" : "REVANCHE"}
       </button>
       <button
         onClick={onClose}
@@ -1879,7 +1898,7 @@ const PlayerRevealCard = ({
           🐐 GOAT
         </div>
         <div className="relative font-display text-[10px] tracking-[0.4em] text-white/90 mb-1 flex items-center gap-1.5 drop-shadow">
-          <span>⚽</span> LE JOUEUR
+          <span>⚽</span> {isEn() ? "THE PLAYER" : "LE JOUEUR"}
         </div>
         <div className="relative font-display text-2xl lg:text-4xl tracking-wide text-white leading-none break-words drop-shadow-[0_3px_12px_rgba(0,0,0,0.5)]">
           {player.name}
@@ -1902,7 +1921,7 @@ const PlayerRevealCard = ({
         {/* Postes */}
         <div className="mb-3">
           <div className="text-[9px] tracking-[0.3em] text-white/40 mb-1">
-            POSTE{player.positions.length > 1 ? "S" : ""}
+            {isEn() ? "POSITION" : "POSTE"}{player.positions.length > 1 ? "S" : ""}
           </div>
           <div className="flex flex-wrap gap-1">
             {player.positions.map((p) => (
@@ -1919,7 +1938,7 @@ const PlayerRevealCard = ({
 
         {/* Clubs (max 6) */}
         <div>
-          <div className="text-[9px] tracking-[0.3em] text-white/40 mb-1">CARRIÈRE</div>
+          <div className="text-[9px] tracking-[0.3em] text-white/40 mb-1">{isEn() ? "CAREER" : "CARRIÈRE"}</div>
           <div className="flex flex-wrap gap-1">
             {player.clubs.slice(0, 6).map((c) => (
               <span
