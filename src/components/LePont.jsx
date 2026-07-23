@@ -2442,29 +2442,36 @@ export default function LePont() {
       const dayKey = function(d){ return d.slice(0,10); };
       // 14 derniers jours de bb_scores (agrégation côté client)
       const since = new Date(Date.now() - 14*24*3600*1000).toISOString();
+      // Parties terminées (bb_scores) — pour le nb de parties/jour
       const scores = await sbFetch("bb_scores?select=player_id,created_at&created_at=gte."+since+"&order=created_at.desc&limit=20000") || [];
-      const byDayPlayers = {}, byDayGames = {};
-      for (const r of scores) {
-        if (!r.created_at) continue;
-        const k = dayKey(r.created_at);
-        (byDayPlayers[k] = byDayPlayers[k] || new Set()).add(r.player_id);
-        byDayGames[k] = (byDayGames[k] || 0) + 1;
-      }
+      const byDayGames = {};
+      for (const r of scores) { if (r.created_at) { const k = dayKey(r.created_at); byDayGames[k] = (byDayGames[k]||0)+1; } }
+      // Présence (bb_events) — inclut les anonymes. Repli sur bb_scores si la table n'existe pas encore.
+      const events = await sbFetch("bb_events?select=player_id,created_at&created_at=gte."+since+"&limit=50000");
+      const hasEvents = Array.isArray(events);
+      const activeRows = hasEvents ? events : scores;
+      const byDayActive = {};
+      for (const r of activeRows) { if (r.created_at) { const k = dayKey(r.created_at); (byDayActive[k] = byDayActive[k] || new Set()).add(r.player_id); } }
+      // Ensemble des joueurs inscrits (pour distinguer anonymes)
+      const pseudos = await sbFetch("bb_pseudos?select=player_id&limit=100000") || [];
+      const regSet = new Set(pseudos.map(function(p){return p.player_id;}));
       const days = [];
       for (let i = 0; i < 7; i++) {
         const d = new Date(Date.now() - i*24*3600*1000).toISOString().slice(0,10);
-        days.push({ day: d, players: byDayPlayers[d] ? byDayPlayers[d].size : 0, games: byDayGames[d] || 0 });
+        const set = byDayActive[d];
+        let anon = 0; if (set && hasEvents) { set.forEach(function(id){ if(!regSet.has(id)) anon++; }); }
+        days.push({ day: d, players: set ? set.size : 0, anon: anon, games: byDayGames[d] || 0 });
       }
-      const weekPlayers = new Set();
-      for (const r of scores) { if (r.created_at && r.created_at >= new Date(Date.now()-7*24*3600*1000).toISOString()) weekPlayers.add(r.player_id); }
-      const pseudos = await sbFetch("bb_pseudos?select=player_id&limit=100000") || [];
+      const weekActive = new Set();
+      const weekSince = new Date(Date.now()-7*24*3600*1000).toISOString();
+      for (const r of activeRows) { if (r.created_at && r.created_at >= weekSince) weekActive.add(r.player_id); }
       const todayIso = new Date().toISOString().slice(0,10);
       const duels = await sbFetch("bb_duels?select=id&created_at=gte."+todayIso+"T00:00:00&limit=5000") || [];
       // Derniers comptes créés — tente avec created_at, se rabat si la colonne n'existe pas
       let recent = await sbFetch("bb_pseudos?select=pseudo,country,created_at&order=created_at.desc&limit=40");
       let recentHasDate = true;
       if (!recent) { recentHasDate = false; recent = await sbFetch("bb_pseudos?select=pseudo,country&limit=40") || []; }
-      setStatsData({ days: days, week: weekPlayers.size, accounts: pseudos.length, duelsToday: duels.length, recent: recent, recentHasDate: recentHasDate });
+      setStatsData({ days: days, week: weekActive.size, accounts: pseudos.length, duelsToday: duels.length, recent: recent, recentHasDate: recentHasDate, hasEvents: hasEvents });
     })();
   }, [statsMode, statsData]);
   // ─── Android Back Button Handler ──
@@ -3821,6 +3828,15 @@ export default function LePont() {
   const [tutorialStep, setTutorialStep] = useState(0);
   // Friends
   const [playerId] = useState(() => getPlayerId());
+  // Ping "présence" (bb_events) — capte AUSSI les joueurs anonymes. 1× par jour/appareil.
+  useEffect(function(){
+    try {
+      const today = new Date().toISOString().slice(0,10);
+      if (localStorage.getItem("bb_ping_day") === today) return;
+      localStorage.setItem("bb_ping_day", today);
+      sbFetch("bb_events", { method:"POST", body: JSON.stringify({ player_id: playerId, type: "open" }) });
+    } catch(e) {}
+  }, []);
   const [showFriends, setShowFriends] = useState(false);
   const [selectedFriend, setSelectedFriend] = useState(null); // {id, name}
   const [viewedProfile, setViewedProfile] = useState(null); // {id, name} - profile being viewed
@@ -9380,7 +9396,7 @@ export default function LePont() {
                   <div style={{background:"linear-gradient(160deg, rgba(0,230,118,.16), rgba(255,255,255,.03) 55%, rgba(0,0,0,.25))",border:"1px solid rgba(0,230,118,.35)",borderRadius:22,padding:"22px 20px",textAlign:"center",boxShadow:"0 16px 44px -16px rgba(0,230,118,.4)",marginBottom:14}}>
                     <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.55)",fontWeight:800,textTransform:"uppercase"}}>Aujourd'hui</div>
                     <div style={{fontFamily:G.heading,fontSize:76,color:"#00E676",lineHeight:1,textShadow:"0 0 26px rgba(0,230,118,.45)"}}>{today.players}</div>
-                    <div style={{fontSize:14,color:"rgba(255,255,255,.7)",fontWeight:700}}>joueurs actifs · {today.games} parties{statsData.duelsToday?` · ${statsData.duelsToday} duels`:""}</div>
+                    <div style={{fontSize:14,color:"rgba(255,255,255,.7)",fontWeight:700}}>{statsData.hasEvents?"actifs":"joueurs actifs"}{statsData.hasEvents?` · dont ${today.anon} anonyme${today.anon>1?"s":""}`:""} · {today.games} parties{statsData.duelsToday?` · ${statsData.duelsToday} duels`:""}</div>
                   </div>
                   {/* Cartes semaine / comptes */}
                   <div style={{display:"flex",gap:12,marginBottom:20}}>
@@ -9432,7 +9448,11 @@ export default function LePont() {
                   ) : null}
 
                   <button onClick={function(){setStatsData(null);}} style={{width:"100%",padding:"14px",borderRadius:16,border:"1px solid rgba(255,255,255,.15)",background:"rgba(255,255,255,.05)",color:"#fff",fontFamily:G.font,fontWeight:800,fontSize:14,cursor:"pointer"}}>↻ Rafraîchir</button>
-                  <div style={{textAlign:"center",fontSize:11,color:"rgba(255,255,255,.3)",marginTop:16,lineHeight:1.5}}>Joueurs actifs = joueurs uniques ayant fini une partie ce jour-là (heure UTC). Pour les visiteurs bruts, vois Vercel Analytics.</div>
+                  {statsData.hasEvents ? (
+                    <div style={{textAlign:"center",fontSize:11,color:"rgba(255,255,255,.3)",marginTop:16,lineHeight:1.5}}>Actifs = joueurs uniques (inscrits + anonymes) ayant ouvert l'app ce jour-là (heure UTC). « Parties » = parties terminées.</div>
+                  ) : (
+                    <div style={{textAlign:"center",fontSize:11,color:"rgba(255,200,0,.7)",marginTop:16,lineHeight:1.5}}>⚠️ Table <code>bb_events</code> absente : les anonymes ne sont pas encore comptés (chiffres basés sur les parties d'inscrits). Crée la table pour les voir.</div>
+                  )}
                 </>
                 );
               })()}
