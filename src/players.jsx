@@ -373,7 +373,7 @@ export const PLAYERS = [
   { name:"Fábio Vieira", clubs:["Porto", "Arsenal", "Hamburg"], diff:"expert", nationalities:["Portugal"], positions:["milieu"], birthYear:2000 },
   { name:"Albian Hajdari", clubs:["Lugano", "Hoffenheim"], diff:"expert", nationalities:["Kosovo"], positions:["defenseur"] , birthYear:2003 },
   { name:"Farès Chaïbi", clubs:["Toulouse", "Eintracht Frankfurt"], diff:"expert", nationalities:["Algérie"], positions:["milieu"] , birthYear:2002 },
-  { name:"Karim Adeyemi", clubs:["Salzburg", "Borussia Dortmund"], diff:"moyen", nationalities:["Allemagne"], positions:["attaquant"], birthYear:2002 },
+  { name:"Karim Adeyemi", clubs:["Salzburg", "Borussia Dortmund", "Barcelona"], diff:"moyen", nationalities:["Allemagne"], positions:["attaquant"], birthYear:2002 },
   { name:"Mario Götze", clubs:["Borussia Dortmund", "Bayern Munich", "PSV Eindhoven", "Eintracht Frankfurt"], diff:"moyen", nationalities:["Allemagne"], positions:["milieu"], birthYear:1992 },
   { name:"Ritsu Doan", clubs:["Kawasaki Frontale", "Gamba Osaka", "Groningen", "PSV Eindhoven", "Arminia Bielefeld", "SC Freiburg", "Eintracht Frankfurt"], diff:"moyen", nationalities:["Japon"], positions:["attaquant"], birthYear:1998 },
   { name:"Jonathan Tah", clubs:["Bayer Leverkusen", "Bayern Munich"], diff:"moyen", nationalities:["Allemagne"], positions:["defenseur"], birthYear:1996 },
