@@ -67,22 +67,8 @@ export const LobbyHeader = ({ active, onChange }: Props) => {
         })}
       </nav>
 
-      {/* Right side : Ko-fi + profil */}
+      {/* Right side : profil */}
       <div className="flex items-center gap-3">
-        {/* Bouton Ko-fi — soutien volontaire */}
-        <a
-          href="https://ko-fi.com/goatfc"
-          target="_blank"
-          rel="noopener noreferrer"
-          title="Soutenez GOAT FC sur Ko-fi"
-          className="group flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-[#FF5E5B] to-[#FF8A2A] hover:from-[#FF7270] hover:to-[#FF9F4D] font-display text-sm tracking-widest text-white shadow-[0_4px_14px_rgba(255,94,91,0.35)] hover:scale-[1.03] transition-all"
-        >
-          <span className="text-base leading-none transition-transform group-hover:scale-110">
-            ☕
-          </span>
-          <span className="hidden sm:inline">SOUTENEZ-NOUS</span>
-        </a>
-
         {/* Profil compact */}
         <div className="hidden md:flex items-center gap-2.5 pl-1.5 pr-3 py-1.5 rounded-full bg-white/5 border border-white/10">
           <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[#00E676] to-[#1E5C2A] flex items-center justify-center font-display text-lg text-[#0A1410]">
