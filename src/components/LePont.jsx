@@ -2460,7 +2460,11 @@ export default function LePont() {
       const pseudos = await sbFetch("bb_pseudos?select=player_id&limit=100000") || [];
       const todayIso = new Date().toISOString().slice(0,10);
       const duels = await sbFetch("bb_duels?select=id&created_at=gte."+todayIso+"T00:00:00&limit=5000") || [];
-      setStatsData({ days: days, week: weekPlayers.size, accounts: pseudos.length, duelsToday: duels.length });
+      // Derniers comptes créés — tente avec created_at, se rabat si la colonne n'existe pas
+      let recent = await sbFetch("bb_pseudos?select=pseudo,country,created_at&order=created_at.desc&limit=40");
+      let recentHasDate = true;
+      if (!recent) { recentHasDate = false; recent = await sbFetch("bb_pseudos?select=pseudo,country&limit=40") || []; }
+      setStatsData({ days: days, week: weekPlayers.size, accounts: pseudos.length, duelsToday: duels.length, recent: recent, recentHasDate: recentHasDate });
     })();
   }, [statsMode, statsData]);
   // ─── Android Back Button Handler ──
@@ -9404,6 +9408,29 @@ export default function LePont() {
                       );
                     })}
                   </div>
+                  {/* Derniers comptes créés */}
+                  <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.4)",fontWeight:800,textTransform:"uppercase",marginBottom:10,paddingLeft:4}}>Derniers comptes créés</div>
+                  {(statsData.recent && statsData.recent.length) ? (
+                    <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:14}}>
+                      {statsData.recent.map(function(u,i){
+                        const dt = statsData.recentHasDate && u.created_at ? new Date(u.created_at) : null;
+                        const when = dt ? dt.toLocaleDateString("fr-FR",{day:"numeric",month:"short"})+" · "+dt.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}) : "";
+                        return (
+                          <div key={i} style={{display:"flex",alignItems:"center",gap:10,background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.07)",borderRadius:12,padding:"10px 14px"}}>
+                            <span style={{fontSize:16,width:22,textAlign:"center",flexShrink:0}}>{u.country?countryToFlag(u.country):"🌍"}</span>
+                            <span style={{flex:1,fontSize:14,fontWeight:800,color:"#fff",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>@{u.pseudo}</span>
+                            <span style={{fontSize:12,color:"rgba(255,255,255,.45)",fontWeight:600,flexShrink:0}}>{when}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div style={{fontSize:12.5,color:"rgba(255,255,255,.45)",background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.07)",borderRadius:12,padding:"14px",marginBottom:14,lineHeight:1.5}}>Aucun compte à afficher.</div>
+                  )}
+                  {statsData.recent && statsData.recent.length && !statsData.recentHasDate ? (
+                    <div style={{fontSize:11,color:"rgba(255,200,0,.7)",marginBottom:14,paddingLeft:4}}>⚠️ La date de création n'est pas enregistrée dans la base (colonne <code>created_at</code> absente de bb_pseudos). Je peux te l'ajouter si tu veux les dates.</div>
+                  ) : null}
+
                   <button onClick={function(){setStatsData(null);}} style={{width:"100%",padding:"14px",borderRadius:16,border:"1px solid rgba(255,255,255,.15)",background:"rgba(255,255,255,.05)",color:"#fff",fontFamily:G.font,fontWeight:800,fontSize:14,cursor:"pointer"}}>↻ Rafraîchir</button>
                   <div style={{textAlign:"center",fontSize:11,color:"rgba(255,255,255,.3)",marginTop:16,lineHeight:1.5}}>Joueurs actifs = joueurs uniques ayant fini une partie ce jour-là (heure UTC). Pour les visiteurs bruts, vois Vercel Analytics.</div>
                 </>
