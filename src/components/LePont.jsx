@@ -758,56 +758,6 @@ return db;
 }
 const PLAYERS_CLEAN = PLAYERS.filter(function(p){return p&&p.name&&p.clubs&&Array.isArray(p.clubs);});
 
-// ═══════════════════ GOAT LETTRES (mini-jeu de lettres quotidien) ═══════════════════
-// Un tirage de 7-9 lettres (identique pour tous via le seed du jour), généré à partir
-// d'un vrai nom de joueur "caché". On forme un max de noms de joueurs avec ces lettres.
-const GL_SCRABBLE = {a:1,b:3,c:3,d:2,e:1,f:4,g:2,h:4,i:1,j:8,k:10,l:1,m:2,n:1,o:1,p:3,q:8,r:1,s:1,t:1,u:1,v:4,w:10,x:10,y:10,z:10};
-function glNorm(s){ return (s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z]/g,""); }
-function glCount(w){ const c={}; for(const ch of w) c[ch]=(c[ch]||0)+1; return c; }
-function glWordScore(norm){ let s=0; for(const c of norm) s += (GL_SCRABBLE[c]||1); return s; }
-function glCanForm(wordCount, rackCount){ for(const ch in wordCount){ if((wordCount[ch]||0) > (rackCount[ch]||0)) return false; } return true; }
-// Lexique : dernier token (nom de famille) de chaque joueur, 3..9 lettres.
-const GL_LEXICON = (function(){
-  const map = {}; const rank = { facile:0, moyen:1, expert:2 };
-  for(const p of PLAYERS_CLEAN){
-    const toks = p.name.trim().split(/\s+/);
-    const last = glNorm(toks[toks.length-1]);
-    if(last.length < 3 || last.length > 9) continue;
-    const cur = map[last];
-    const r = rank[p.diff] !== undefined ? rank[p.diff] : 1;
-    if(!cur || r < cur.r) map[last] = { display:p.name, r:r };
-  }
-  return Object.keys(map).map(function(n){ return { norm:n, count:glCount(n), display:map[n].display }; });
-})();
-// Sources du tirage : noms de famille 7..9 lettres de joueurs connus (facile/moyen),
-// avec assez de lettres distinctes pour être jouables.
-const GL_SOURCES = (function(){
-  const seen = new Set(); const out = [];
-  for(const p of PLAYERS_CLEAN){
-    if(p.diff !== "facile" && p.diff !== "moyen") continue;
-    const toks = p.name.trim().split(/\s+/);
-    const last = glNorm(toks[toks.length-1]);
-    if(last.length < 7 || last.length > 9) continue;
-    if(new Set(last).size < 5) continue;
-    if(seen.has(last)) continue; seen.add(last);
-    out.push({ norm:last, display:p.name });
-  }
-  return out;
-})();
-function glBuildRound(seed){
-  if(!GL_SOURCES.length) return null;
-  const src = GL_SOURCES[ Math.abs(seed) % GL_SOURCES.length ];
-  const rackCount = glCount(src.norm);
-  const letters = src.norm.toUpperCase().split("");
-  // Mélange déterministe (LCG basé sur le seed) — même tirage pour tous
-  let a = Math.abs(seed) || 1;
-  const rnd = function(){ a = (a*1103515245 + 12345) & 0x7fffffff; return a / 0x7fffffff; };
-  for(let i = letters.length - 1; i > 0; i--){ const j = Math.floor(rnd()*(i+1)); const t = letters[i]; letters[i] = letters[j]; letters[j] = t; }
-  const solutions = GL_LEXICON.filter(function(e){ return glCanForm(e.count, rackCount); });
-  const maxScore = solutions.reduce(function(s,e){ return s + glWordScore(e.norm) + (e.norm.length === src.norm.length ? 50 : 0); }, 0);
-  return { letters:letters, rackCount:rackCount, source:src, solutions:solutions, maxScore:maxScore, total:solutions.length };
-}
-
 // Difficulté par joueur — sert à prioriser les joueurs "facile" comme bonne
 // réponse du QCM en mode AMATEUR (voir generateOptions).
 const PLAYER_DIFF = {};
@@ -2477,7 +2427,7 @@ export default function LePont() {
   const [homeCardIndex, setHomeCardIndex] = useState(() => {
     // Card 3 = GOAT Guess par défaut au premier lancement
     const saved = parseInt(localStorage.getItem("bb_home_card") || "3", 10);
-    return isNaN(saved) || saved < 0 || saved > 4 ? 3 : saved;
+    return isNaN(saved) || saved < 0 || saved > 3 ? 3 : saved;
   });
   const homeSwipeStartRef = useRef(null);
   const [homeRulesModal, setHomeRulesModal] = useState(null); // null | "grid" | "mercato" | "plug"
@@ -2608,34 +2558,6 @@ export default function LePont() {
   
   // ─── GOAT GRID States ───────────────────────────────────────
   const [showGoatGrid, setShowGoatGrid] = useState(false);
-  // GOAT LETTRES
-  const [showGoatLettres, setShowGoatLettres] = useState(false);
-  const [glRound, setGlRound] = useState(null);
-  const [glFound, setGlFound] = useState([]);   // [{norm, display, pts, jackpot}]
-  const [glScore, setGlScore] = useState(0);
-  const [glPicked, setGlPicked] = useState([]); // indices des tuiles choisies
-  const [glMsg, setGlMsg] = useState(null);      // {type:"ok"|"ko"|"dup", text}
-  const [glDone, setGlDone] = useState(false);   // écran récap
-  function glOpen(){
-    const seed = ggGetDailySeed();
-    const round = glBuildRound(seed);
-    setGlRound(round);
-    setGlFound([]); setGlScore(0); setGlPicked([]); setGlMsg(null); setGlDone(false);
-    setShowGoatLettres(true);
-  }
-  function glValidate(){
-    if(!glRound || glPicked.length < 3){ setGlMsg({type:"ko",text:lang==="en"?"3 letters min":"3 lettres min"}); return; }
-    const norm = glPicked.map(function(i){ return glRound.letters[i]; }).join("").toLowerCase();
-    if(glFound.some(function(f){ return f.norm === norm; })){ setGlMsg({type:"dup",text:lang==="en"?"Already found":"Déjà trouvé"}); setGlPicked([]); return; }
-    const entry = glRound.solutions.find(function(e){ return e.norm === norm; });
-    if(!entry){ setGlMsg({type:"ko",text:lang==="en"?"Not a known player":"Pas un joueur connu"}); setGlPicked([]); return; }
-    const jackpot = norm.length === glRound.source.norm.length;
-    const pts = glWordScore(norm) + (jackpot ? 50 : 0);
-    setGlFound(function(prev){ return prev.concat([{ norm:norm, display:entry.display, pts:pts, jackpot:jackpot }]); });
-    setGlScore(function(s){ return s + pts; });
-    setGlMsg({ type:"ok", text:(jackpot?"🐐 JACKPOT ! ":"") + entry.display + "  +" + pts });
-    setGlPicked([]);
-  }
   const [ggGrid, setGgGrid] = useState(null); // { rowCriteria, colCriteria, cells }
   const [ggFilledCells, setGgFilledCells] = useState({}); // { "0-0": { name, pts, rarity }, "1-2": ... }
   const [ggUsedPlayers, setGgUsedPlayers] = useState(new Set()); // joueurs déjà placés
@@ -9287,7 +9209,7 @@ export default function LePont() {
               const delta = endX - startX;
               homeSwipeStartRef.current = null;
               if(Math.abs(delta) > 50){
-                const newIdx = (homeCardIndex + (delta < 0 ? 1 : -1) + 5) % 5;
+                const newIdx = (homeCardIndex + (delta < 0 ? 1 : -1) + 4) % 4;
                 setHomeCardIndex(newIdx);
                 localStorage.setItem("bb_home_card", String(newIdx));
               }
@@ -9299,7 +9221,7 @@ export default function LePont() {
               const delta = e.clientX - startX;
               homeSwipeStartRef.current = null;
               if(Math.abs(delta) > 50){
-                const newIdx = (homeCardIndex + (delta < 0 ? 1 : -1) + 5) % 5;
+                const newIdx = (homeCardIndex + (delta < 0 ? 1 : -1) + 4) % 4;
                 setHomeCardIndex(newIdx);
                 localStorage.setItem("bb_home_card", String(newIdx));
               }
@@ -9310,9 +9232,8 @@ export default function LePont() {
               {key:"mercato", img:MERCATO_CARD_IMG, onClick: function(){setGameConfigModal("chaine");}, record: chainRecord, recordIcon:"⛓",  recordColor:"#60a5fa"},
               {key:"plug",    img:PLUG_CARD_IMG,    onClick: function(){setGameConfigModal("pont");},   record: record,      recordIcon:"🏆", recordColor:"#FFD600"},
               {key:"guess",   img:GUESS_CARD_IMG,   onClick: function(){window.dispatchEvent(new CustomEvent("goatfc:open-guess"));}, record: null, recordIcon:null, recordColor:"#C084FC"},
-              {key:"lettres", img:null, custom:"lettres", onClick: function(){glOpen();}, record: null, recordIcon:null, recordColor:"#FF8A3D"},
             ].map(function(card, i){
-              const offset = (i - homeCardIndex + 5) % 5;
+              const offset = (i - homeCardIndex + 4) % 4;
               const isActive = offset === 0;
               let translateX, scale, opacity, zIndex;
               if(offset === 0){ translateX = 0;  scale = 1;    opacity = 1;    zIndex = 40; }
@@ -9343,19 +9264,7 @@ export default function LePont() {
                     willChange:"transform",
                   }}
                 >
-                  {card.custom === "lettres" ? (
-                    <div style={{width:"100%",height:"100%",background:"radial-gradient(ellipse 120% 80% at 50% 0%, #16233a 0%, #0b1016 70%)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16,pointerEvents:"none"}}>
-                      <div style={{display:"flex",gap:7}}>
-                        {["G","O","A","T"].map(function(ch,ci){return(
-                          <div key={ci} style={{width:44,height:52,borderRadius:8,background:"linear-gradient(160deg,#FFE7B0,#E9B457)",color:"#3a2a06",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:G.heading,fontSize:30,fontWeight:900,boxShadow:"0 5px 12px rgba(0,0,0,.5), inset 0 2px 0 rgba(255,255,255,.5)",transform:"rotate("+((ci%2?1:-1)*3)+"deg)",position:"relative"}}>{ch}<span style={{position:"absolute",bottom:3,right:5,fontSize:9,fontWeight:800,opacity:.7}}>{GL_SCRABBLE[ch.toLowerCase()]||1}</span></div>
-                        );})}
-                      </div>
-                      <div style={{fontFamily:G.heading,fontSize:34,letterSpacing:3,color:"#fff",lineHeight:1,textShadow:"0 3px 16px rgba(0,0,0,.7)"}}>LETTRES</div>
-                      <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.55)",textTransform:"uppercase",fontWeight:800}}>{lang==="en"?"Daily word game":"Le mot foot du jour"}</div>
-                    </div>
-                  ) : (
                   <img src={card.img} alt="" style={{width:"100%",height:"100%",objectFit:"cover",pointerEvents:"none",userSelect:"none"}} draggable={false}/>
-                  )}
                   {/* Bouton info (i) en haut à droite — toujours visible */}
                   {isActive && (
                     <button
@@ -9389,8 +9298,8 @@ export default function LePont() {
 
           {/* Dots indicator */}
           <div style={{display:"flex",justifyContent:"center",gap:8,marginTop:10}}>
-            {[0,1,2,3,4].map(function(i){
-              const colors = ["#00E676","#60a5fa","#FFD600","#C084FC","#FF8A3D"];
+            {[0,1,2,3].map(function(i){
+              const colors = ["#00E676","#60a5fa","#FFD600","#C084FC"];
               const isActive = homeCardIndex === i;
               return (
                 <div
@@ -9433,10 +9342,6 @@ export default function LePont() {
             guess:   { title: "GOAT GUESS",   emoji: "🔮", accent: "#C084FC", bg: "linear-gradient(135deg,rgba(192,132,252,.18),rgba(255,138,42,.12))",
               rules_fr: ["Pense à un footballeur connu (actuel ou retraité)","Je te pose jusqu'à 25 questions oui / non / sais pas","Tu réponds honnêtement, je restreins mes candidats","Je devine ton joueur — si je rate, je retente jusqu'à 5 fois","Questions par étapes : Continent → Nation → Ligue → Club → Poste"],
               rules_en: ["Think of a famous footballer (active or retired)","I'll ask up to 25 yes / no / don't know questions","Answer honestly — I narrow down my candidates","I guess your player — if I'm wrong, I try up to 5 times","Questions by stage: Continent → Nation → League → Club → Position"]
-            },
-            lettres: { title: "GOAT LETTRES", emoji: "🔠", accent: "#FF8A3D", bg: "linear-gradient(135deg,rgba(255,138,61,.18),rgba(233,99,30,.12))",
-              rules_fr: ["Un tirage de 7 à 9 lettres, le même pour tous chaque jour","Forme un maximum de noms de joueurs avec ces lettres","Chaque lettre s'utilise autant de fois qu'elle apparaît","Points selon la valeur Scrabble des lettres du nom","Le tirage cache un vrai nom de joueur : trouve-le pour le 🐐 JACKPOT (+50)"],
-              rules_en: ["A rack of 7 to 9 letters, the same for everyone each day","Form as many player names as you can from those letters","Each letter can be used as many times as it appears","Points based on the Scrabble value of the name's letters","The rack hides a real player name: find it for the 🐐 JACKPOT (+50)"]
             },
           };
           const data = RULES_DATA[homeRulesModal];
@@ -10012,107 +9917,6 @@ export default function LePont() {
         )}
 
         {/* 🐐 Modal GOAT GRID — Mode quotidien grille 3x3 (ou battle playing) */}
-        {/* ═══ GOAT LETTRES ═══ */}
-        {showGoatLettres && glRound && (
-          <div style={{position:"fixed",inset:0,zIndex:400,display:"flex",flexDirection:"column",background:"radial-gradient(ellipse 120% 60% at 50% -5%, #16233a 0%, #0a0f16 65%)",overflowY:"auto",WebkitOverflowScrolling:"touch"}}>
-            <div style={{position:"relative",width:"100%",maxWidth:520,margin:"0 auto",padding:"14px 16px calc(28px + env(safe-area-inset-bottom))",display:"flex",flexDirection:"column",minHeight:"100%"}}>
-
-              {/* Header */}
-              <div style={{display:"flex",alignItems:"flex-start",marginBottom:10}}>
-                <div style={{flex:1}}>
-                  <div style={{display:"inline-block",background:"linear-gradient(135deg,#FF8A3D,#E9631E)",color:"#1a0d00",fontSize:9,fontWeight:900,letterSpacing:2,padding:"3px 10px",borderRadius:20,marginBottom:4}}>{lang==="en"?"⚡ DAILY WORD":"⚡ MOT DU JOUR"}</div>
-                  <div style={{fontFamily:G.heading,fontSize:28,letterSpacing:2,color:"#fff",lineHeight:1}}>GOAT <span style={{color:"#FF8A3D"}}>LETTRES</span></div>
-                  <div style={{fontSize:11,color:"rgba(255,255,255,.55)",marginTop:3,letterSpacing:1}}>{new Date().toLocaleDateString(lang==="en"?"en-US":"fr-FR",{weekday:'long',day:'numeric',month:'long'})}</div>
-                </div>
-                <button onClick={function(){setShowGoatLettres(false);}} style={{background:"rgba(255,255,255,.08)",border:"1px solid rgba(255,255,255,.15)",borderRadius:"50%",width:38,height:38,color:"#fff",cursor:"pointer",fontSize:18,flexShrink:0}}>✕</button>
-              </div>
-
-              {/* Barre score / trouvés */}
-              <div style={{display:"flex",gap:10,marginBottom:12}}>
-                <div style={{flex:1,background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.1)",borderRadius:14,padding:"10px 14px"}}>
-                  <div style={{fontSize:9,letterSpacing:1.5,color:"rgba(255,255,255,.45)",fontWeight:800}}>SCORE</div>
-                  <div style={{fontFamily:G.heading,fontSize:24,color:"#FF8A3D",lineHeight:1}}>{glScore}<span style={{fontSize:12,color:"rgba(255,255,255,.4)"}}> / {glRound.maxScore}</span></div>
-                </div>
-                <div style={{flex:1,background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.1)",borderRadius:14,padding:"10px 14px"}}>
-                  <div style={{fontSize:9,letterSpacing:1.5,color:"rgba(255,255,255,.45)",fontWeight:800}}>{lang==="en"?"FOUND":"TROUVÉS"}</div>
-                  <div style={{fontFamily:G.heading,fontSize:24,color:"#fff",lineHeight:1}}>{glFound.length}<span style={{fontSize:12,color:"rgba(255,255,255,.4)"}}> / {glRound.total}</span></div>
-                </div>
-              </div>
-
-              {!glDone ? (
-              <>
-              {/* Mot en cours */}
-              <div style={{minHeight:56,display:"flex",alignItems:"center",justifyContent:"center",gap:6,marginBottom:6}}>
-                {glPicked.length === 0 ? (
-                  <div style={{fontSize:13,color:"rgba(255,255,255,.35)",letterSpacing:1}}>{lang==="en"?"Tap letters to build a name":"Tape les lettres pour former un nom"}</div>
-                ) : glPicked.map(function(idx,k){
-                  const ch = glRound.letters[idx];
-                  return <div key={k} style={{width:34,height:42,borderRadius:7,background:"linear-gradient(160deg,#FFE7B0,#E9B457)",color:"#3a2a06",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:G.heading,fontSize:22,fontWeight:900,boxShadow:"0 3px 8px rgba(0,0,0,.4)"}}>{ch}</div>;
-                })}
-              </div>
-
-              {/* Message */}
-              <div style={{height:22,textAlign:"center",marginBottom:8}}>
-                {glMsg && <span style={{fontSize:13,fontWeight:800,color:glMsg.type==="ok"?"#00E676":glMsg.type==="dup"?"#FFC93C":"#FF6B6B"}}>{glMsg.text}</span>}
-              </div>
-
-              {/* Chevalet */}
-              <div style={{display:"flex",flexWrap:"wrap",gap:8,justifyContent:"center",marginBottom:14}}>
-                {glRound.letters.map(function(ch,i){
-                  const used = glPicked.includes(i);
-                  return (
-                    <div key={i} onClick={function(){ if(used) return; setGlMsg(null); setGlPicked(function(prev){ return prev.concat(i); }); }}
-                      style={{width:52,height:60,borderRadius:10,background:used?"rgba(255,255,255,.06)":"linear-gradient(160deg,#FFE7B0,#E9B457)",color:used?"rgba(255,255,255,.25)":"#3a2a06",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:G.heading,fontSize:30,fontWeight:900,cursor:used?"default":"pointer",boxShadow:used?"none":"0 5px 12px rgba(0,0,0,.45), inset 0 2px 0 rgba(255,255,255,.5)",border:used?"1px dashed rgba(255,255,255,.15)":"none",position:"relative",transition:"all .12s"}}>
-                      {ch}
-                      {!used && <span style={{position:"absolute",bottom:4,right:6,fontSize:10,fontWeight:800,opacity:.65}}>{GL_SCRABBLE[ch.toLowerCase()]||1}</span>}
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Contrôles */}
-              <div style={{display:"flex",gap:8,marginBottom:14}}>
-                <button onClick={function(){setGlPicked([]);setGlMsg(null);}} style={{flex:1,padding:"13px",borderRadius:14,border:"1px solid rgba(255,255,255,.15)",background:"rgba(255,255,255,.05)",color:"#fff",fontFamily:G.font,fontWeight:800,fontSize:14,cursor:"pointer"}}>⌫ {lang==="en"?"Clear":"Effacer"}</button>
-                <button onClick={function(){ if(glPicked.length) return; const L=glRound.letters.slice(); for(let i=L.length-1;i>0;i--){const j=Math.floor((glScore*7+i*13+glFound.length)% (i+1)); const t=L[i];L[i]=L[j];L[j]=t;} setGlRound(Object.assign({},glRound,{letters:L})); }} style={{flexShrink:0,padding:"13px 16px",borderRadius:14,border:"1px solid rgba(255,255,255,.15)",background:"rgba(255,255,255,.05)",color:"#fff",fontFamily:G.font,fontWeight:800,fontSize:14,cursor:glPicked.length?"default":"pointer",opacity:glPicked.length?.4:1}}>⇄</button>
-                <button onClick={glValidate} style={{flex:1.4,padding:"13px",borderRadius:14,border:"none",background:"linear-gradient(135deg,#FF8A3D,#E9631E)",color:"#1a0d00",fontFamily:G.font,fontWeight:900,fontSize:15,letterSpacing:1,cursor:"pointer",boxShadow:"0 10px 26px -10px rgba(255,138,61,.6)"}}>{lang==="en"?"SUBMIT":"VALIDER"}</button>
-              </div>
-
-              {/* Mots trouvés */}
-              {glFound.length > 0 && (
-                <div style={{display:"flex",flexWrap:"wrap",gap:7,marginBottom:16}}>
-                  {glFound.slice().reverse().map(function(f,k){
-                    return <div key={k} style={{display:"flex",alignItems:"center",gap:6,padding:"6px 11px",borderRadius:999,background:f.jackpot?"rgba(255,214,0,.16)":"rgba(0,230,118,.12)",border:"1px solid "+(f.jackpot?"rgba(255,214,0,.5)":"rgba(0,230,118,.3)"),fontSize:12,fontWeight:800,color:"#fff"}}>{f.jackpot?"🐐 ":""}{f.display}<span style={{color:f.jackpot?"#FFD600":"#00E676"}}>+{f.pts}</span></div>;
-                  })}
-                </div>
-              )}
-
-              <button onClick={function(){setGlDone(true);}} style={{marginTop:"auto",padding:"14px",borderRadius:16,border:"1px solid rgba(255,255,255,.16)",background:"transparent",color:"rgba(255,255,255,.7)",fontFamily:G.font,fontWeight:800,fontSize:14,cursor:"pointer"}}>{lang==="en"?"Finish · see solution":"Terminer · voir la solution"}</button>
-              </>
-              ) : (
-              /* Récap */
-              <div style={{display:"flex",flexDirection:"column",gap:14,animation:"fadeUp .4s ease"}}>
-                <div style={{textAlign:"center",background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,138,61,.3)",borderRadius:20,padding:"20px"}}>
-                  <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.5)",textTransform:"uppercase"}}>{lang==="en"?"Your score":"Ton score"}</div>
-                  <div style={{fontFamily:G.heading,fontSize:56,color:"#FF8A3D",lineHeight:1}}>{glScore}</div>
-                  <div style={{fontSize:12,color:"rgba(255,255,255,.5)"}}>{glFound.length} / {glRound.total} {lang==="en"?"names":"noms"} · {Math.round(glScore/Math.max(1,glRound.maxScore)*100)}%</div>
-                </div>
-                <div style={{background:"rgba(255,214,0,.1)",border:"1px solid rgba(255,214,0,.35)",borderRadius:16,padding:"14px 16px",textAlign:"center"}}>
-                  <div style={{fontSize:10,letterSpacing:2,color:"rgba(255,214,0,.8)",fontWeight:800,textTransform:"uppercase",marginBottom:4}}>🐐 {lang==="en"?"The hidden name":"Le nom caché"}</div>
-                  <div style={{fontFamily:G.heading,fontSize:24,color:"#fff"}}>{glRound.source.display}</div>
-                  <div style={{fontSize:12,color:glFound.some(function(f){return f.jackpot;})?"#00E676":"rgba(255,255,255,.45)",marginTop:4,fontWeight:700}}>{glFound.some(function(f){return f.jackpot;})?(lang==="en"?"Found! 🎉":"Trouvé ! 🎉"):(lang==="en"?"Missed this one":"Raté celui-là")}</div>
-                </div>
-                <button onClick={function(){
-                  const txt = (lang==="en"?"I scored ":"J'ai fait ")+glScore+(lang==="en"?" pts on GOAT LETTRES ("+glFound.length+"/"+glRound.total+" names)! ":" pts à GOAT LETTRES ("+glFound.length+"/"+glRound.total+" noms) ! ")+"⚽🔠\nhttps://goatfc.fr";
-                  if(navigator.share){navigator.share({title:"GOAT FC",text:txt});} else {navigator.clipboard.writeText(txt).then(function(){alert(lang==="en"?"Copied!":"Copié !");});}
-                }} style={{padding:"14px",borderRadius:16,border:"none",background:"linear-gradient(135deg,#FF8A3D,#E9631E)",color:"#1a0d00",fontFamily:G.font,fontWeight:900,fontSize:15,cursor:"pointer"}}>{lang==="en"?"📤 Share":"📤 Partager"}</button>
-                <button onClick={function(){setShowGoatLettres(false);}} style={{padding:"13px",borderRadius:16,border:"1px solid rgba(255,255,255,.16)",background:"transparent",color:"rgba(255,255,255,.6)",fontFamily:G.font,fontWeight:700,fontSize:14,cursor:"pointer"}}>{lang==="en"?"↩ Home":"↩ Accueil"}</button>
-              </div>
-              )}
-
-            </div>
-          </div>
-        )}
-
         {(showGoatGrid || ggBattleScreen === "playing") && (
           <div style={{position:"fixed",inset:0,zIndex:400,display:"flex",flexDirection:"column",background:"linear-gradient(180deg, #0a1410 0%, #0E1F14 100%)"}}>
             {/* Fond pelouse */}
