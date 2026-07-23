@@ -5409,6 +5409,32 @@ export const RETIRED_PLAYERS = new Set([ "Esteban Cambiasso","Eusébio","Ezequie
   "Paul Ince","Andrei Arshavin","Andrei Kanchelskis","Yuri Zhirkov"]);
 
 export const GG_WC_WINNERS = new Set([
+  // 🇪🇸 Espagne 2026 (finale 1-0 vs Argentine, Ferran Torres 106')
+  "Unai Simón",
+  "David Raya",
+  "Joan García",
+  "Marc Cucurella",
+  "Álex Grimaldo",
+  "Pau Cubarsí",
+  "Aymeric Laporte",
+  "Marc Pubill",
+  "Eric García",
+  "Marcos Llorente",
+  "Pedro Porro",
+  "Pedri",
+  "Fabián Ruiz",
+  "Martín Zubimendi",
+  "Gavi",
+  "Rodri",
+  "Álex Baena",
+  "Mikel Merino",
+  "Mikel Oyarzabal",
+  "Dani Olmo",
+  "Nico Williams",
+  "Yéremy Pino",
+  "Ferran Torres",
+  "Borja Iglesias",
+  "Lamine Yamal",
   // 🇫🇷 France 2018
   "Hugo Lloris",
   "Steve Mandanda",
