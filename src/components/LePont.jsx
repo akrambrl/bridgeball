@@ -8782,6 +8782,7 @@ export default function LePont() {
           <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#0E1F14":"#132819"}}/>
         );})}
         <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.7)"}}/>
+        <div style={{position:"absolute",top:-60,left:"50%",transform:"translateX(-50%)",width:460,height:360,background:"radial-gradient(ellipse at center, rgba(0,230,118,.20) 0%, transparent 65%)"}}/>
       </div>
 
       {/* Header */}
@@ -8792,7 +8793,7 @@ export default function LePont() {
 
       {/* Avatar + Pseudo */}
       <div style={{zIndex:1,padding:"16px 20px 8px",textAlign:"center"}}>
-        <div style={{display:"inline-block",width:100,height:100,margin:"0 auto 14px",position:"relative"}}>
+        <div style={{display:"inline-block",width:108,height:108,margin:"0 auto 14px",position:"relative",padding:4,borderRadius:"50%",background:"conic-gradient(from 200deg, #00E676, #3DA5FF, #C084FC, #FFC93C, #00E676)",boxShadow:"0 10px 40px rgba(0,230,118,.35)"}}>
           <div onClick={playerAvatar ? ()=>setViewingAvatar(playerAvatar) : ()=>{const el=document.getElementById("avatar-upload");if(el)el.click();}} style={{width:100,height:100,borderRadius:"50%",background:playerAvatar?"#000":"linear-gradient(135deg,#00E676,#00A855)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:56,color:"#fff",boxShadow:"0 8px 30px rgba(0,230,118,.35)",overflow:"hidden",cursor:"pointer"}}>
             {playerAvatar ? <img src={playerAvatar} alt="avatar" style={{width:"100%",height:"100%",objectFit:"cover"}}/> : getGrade(playerXp).emoji}
           </div>
@@ -8829,6 +8830,9 @@ export default function LePont() {
           e.target.value = "";
         }}/>
         <div style={{fontFamily:G.heading,fontSize:28,color:G.white,letterSpacing:1}}>@{playerName||(lang==="en"?"anonymous":"anonyme")}</div>
+        {(() => { const g = getGrade(playerXp); return (
+          <div style={{display:"inline-flex",alignItems:"center",gap:6,marginTop:8,padding:"5px 14px",borderRadius:999,background:g.color+"1f",border:"1px solid "+g.color+"55",color:g.color,fontSize:11,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase"}}>{g.emoji} {g.label}</div>
+        ); })()}
       </div>
 
       {/* Niveau + XP progression */}
@@ -8860,7 +8864,7 @@ export default function LePont() {
               {nextGrade ? (
                 <>
                   <div style={{height:8,background:"rgba(255,255,255,.08)",borderRadius:4,overflow:"hidden",marginBottom:6}}>
-                    <div style={{height:"100%",width:progressPct+"%",background:`linear-gradient(90deg, ${grade.color}, ${nextGrade.color})`,borderRadius:4,transition:"width .5s ease"}}/>
+                    <div style={{height:"100%",width:progressPct+"%",background:`linear-gradient(90deg, ${grade.color}, ${nextGrade.color})`,borderRadius:4,transition:"width .5s ease",boxShadow:`0 0 12px ${grade.color}88`}}/>
                   </div>
                   <div style={{fontSize:11,color:"rgba(255,255,255,.5)",textAlign:"center"}}>
                     {lang==="en"
@@ -8877,35 +8881,37 @@ export default function LePont() {
       </div>
 
       {/* Stats cards */}
-      <div style={{zIndex:1,padding:"16px 16px 8px",display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+      <div style={{zIndex:1,padding:"14px 20px 0",fontSize:10.5,fontWeight:800,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.4)"}}>{lang==="en"?"Stats":"Statistiques"}</div>
+      <div style={{zIndex:1,padding:"10px 16px 8px",display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
         {/* Record Plug */}
-        <div style={{background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.1)",borderRadius:18,padding:"14px 16px"}}>
-          <div style={{width:38,height:38,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,background:"rgba(0,230,118,.12)",border:"1px solid rgba(0,230,118,.28)",marginBottom:10}}>🏆</div>
-          <div style={{fontFamily:G.heading,fontSize:32,color:G.white,lineHeight:1}}>{record?record.score:0}</div>
+        <div style={{background:"linear-gradient(160deg, rgba(0,230,118,.16) 0%, rgba(255,255,255,.03) 50%, rgba(0,0,0,.25) 100%)",border:"1px solid rgba(0,230,118,.35)",borderRadius:20,padding:"14px 16px",boxShadow:"0 14px 34px -14px rgba(0,230,118,.4)"}}>
+          <div style={{width:38,height:38,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,background:"rgba(0,230,118,.16)",border:"1px solid rgba(0,230,118,.35)",marginBottom:10}}>🏆</div>
+          <div style={{fontFamily:G.heading,fontSize:34,color:"#00E676",lineHeight:1,textShadow:"0 0 18px rgba(0,230,118,.45)"}}>{record?record.score:0}</div>
           <div style={{fontSize:10,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginTop:6}}>{lang==="en"?"Plug record":"Record Plug"}</div>
         </div>
         {/* Record Mercato */}
-        <div style={{background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.1)",borderRadius:18,padding:"14px 16px"}}>
-          <div style={{width:38,height:38,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,background:"rgba(61,165,255,.12)",border:"1px solid rgba(61,165,255,.28)",marginBottom:10}}>⛓️</div>
-          <div style={{fontFamily:G.heading,fontSize:32,color:G.white,lineHeight:1}}>{chainRecord?chainRecord.score:0}</div>
+        <div style={{background:"linear-gradient(160deg, rgba(61,165,255,.16) 0%, rgba(255,255,255,.03) 50%, rgba(0,0,0,.25) 100%)",border:"1px solid rgba(61,165,255,.35)",borderRadius:20,padding:"14px 16px",boxShadow:"0 14px 34px -14px rgba(61,165,255,.4)"}}>
+          <div style={{width:38,height:38,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,background:"rgba(61,165,255,.16)",border:"1px solid rgba(61,165,255,.35)",marginBottom:10}}>⛓️</div>
+          <div style={{fontFamily:G.heading,fontSize:34,color:"#3DA5FF",lineHeight:1,textShadow:"0 0 18px rgba(61,165,255,.45)"}}>{chainRecord?chainRecord.score:0}</div>
           <div style={{fontSize:10,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginTop:6}}>{lang==="en"?"Mercato record":"Record Mercato"}</div>
         </div>
         {/* Amis */}
-        <div style={{background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.1)",borderRadius:18,padding:"14px 16px"}}>
-          <div style={{width:38,height:38,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,background:"rgba(255,201,60,.12)",border:"1px solid rgba(255,201,60,.28)",marginBottom:10}}>👥</div>
-          <div style={{fontFamily:G.heading,fontSize:32,color:G.white,lineHeight:1}}>{friendsList.length}</div>
+        <div style={{background:"linear-gradient(160deg, rgba(255,201,60,.16) 0%, rgba(255,255,255,.03) 50%, rgba(0,0,0,.25) 100%)",border:"1px solid rgba(255,201,60,.35)",borderRadius:20,padding:"14px 16px",boxShadow:"0 14px 34px -14px rgba(255,201,60,.4)"}}>
+          <div style={{width:38,height:38,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,background:"rgba(255,201,60,.16)",border:"1px solid rgba(255,201,60,.35)",marginBottom:10}}>👥</div>
+          <div style={{fontFamily:G.heading,fontSize:34,color:"#FFC93C",lineHeight:1,textShadow:"0 0 18px rgba(255,201,60,.45)"}}>{friendsList.length}</div>
           <div style={{fontSize:10,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginTop:6}}>{lang==="en"?"Friends":"Amis"}</div>
         </div>
         {/* Parties */}
-        <div style={{background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.1)",borderRadius:18,padding:"14px 16px"}}>
-          <div style={{width:38,height:38,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,background:"rgba(192,132,252,.12)",border:"1px solid rgba(192,132,252,.28)",marginBottom:10}}>🎮</div>
-          <div style={{fontFamily:G.heading,fontSize:32,color:G.white,lineHeight:1}}>{(record?1:0)+(chainRecord?1:0)}</div>
+        <div style={{background:"linear-gradient(160deg, rgba(192,132,252,.16) 0%, rgba(255,255,255,.03) 50%, rgba(0,0,0,.25) 100%)",border:"1px solid rgba(192,132,252,.35)",borderRadius:20,padding:"14px 16px",boxShadow:"0 14px 34px -14px rgba(192,132,252,.4)"}}>
+          <div style={{width:38,height:38,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,background:"rgba(192,132,252,.16)",border:"1px solid rgba(192,132,252,.35)",marginBottom:10}}>🎮</div>
+          <div style={{fontFamily:G.heading,fontSize:34,color:"#C084FC",lineHeight:1,textShadow:"0 0 18px rgba(192,132,252,.45)"}}>{(record?1:0)+(chainRecord?1:0)}</div>
           <div style={{fontSize:10,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginTop:6}}>{lang==="en"?"Games":"Parties"}</div>
         </div>
       </div>
 
       {/* Actions */}
-      <div style={{zIndex:1,padding:"8px 16px",display:"flex",flexDirection:"column",gap:10}}>
+      <div style={{zIndex:1,padding:"10px 20px 0",fontSize:10.5,fontWeight:800,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.4)"}}>{lang==="en"?"Menu":"Menu"}</div>
+      <div style={{zIndex:1,padding:"10px 16px 8px",display:"flex",flexDirection:"column",gap:10}}>
         {/* Mes amis */}
         <button onClick={()=>{setShowFriends(true);setScreen("home");}} style={{padding:"15px 16px",background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.1)",borderRadius:18,cursor:"pointer",color:G.white,fontFamily:G.font,fontSize:15,fontWeight:800,display:"flex",alignItems:"center",gap:13,textAlign:"left"}}>
           <span style={{width:40,height:40,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:19,background:"rgba(0,230,118,.12)",border:"1px solid rgba(0,230,118,.28)",flexShrink:0}}>👥</span>
