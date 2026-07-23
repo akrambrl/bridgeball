@@ -10914,17 +10914,6 @@ export default function LePont() {
           </button>
         </div>
 
-        {/* Ko-fi — soutien volontaire */}
-        <a href="https://ko-fi.com/goatfc" target="_blank" rel="noopener noreferrer"
-          style={{display:"flex",alignItems:"center",gap:12,padding:"12px 16px",background:"linear-gradient(90deg, rgba(255,94,91,.18), rgba(255,138,42,.12))",border:"1px solid rgba(255,94,91,.4)",borderRadius:14,textDecoration:"none"}}>
-          <div style={{width:28,height:28,borderRadius:"50%",background:"linear-gradient(135deg,#FF5E5B,#FF8A2A)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,boxShadow:"0 2px 8px rgba(255,94,91,.4)"}}>☕</div>
-          <div style={{flex:1}}>
-            <div style={{fontSize:13,fontWeight:800,color:"#FF5E5B"}}>{lang==="en"?"Support GOAT FC ☕":"Soutenez-nous ☕"}</div>
-            <div style={{fontSize:11,color:"rgba(255,255,255,.4)",marginTop:1}}>{lang==="en"?"No ads, no paywall — keep us going":"Sans pub, sans paywall — aide-nous à tenir"}</div>
-          </div>
-          <span style={{fontSize:16,color:"rgba(255,94,91,.6)"}}>›</span>
-        </a>
-
         {/* Footer discret : version + liens légaux */}
         <div style={{textAlign:"center",padding:"16px 0 4px",fontSize:10,color:"rgba(255,255,255,.3)",letterSpacing:1.5}}>
           GOAT FC · <a href="/privacy/" target="_blank" rel="noopener noreferrer" style={{color:"rgba(255,255,255,.45)",textDecoration:"underline"}}>{lang==="en"?"Privacy":"Confidentialité"}</a> · <a href="/terms/" target="_blank" rel="noopener noreferrer" style={{color:"rgba(255,255,255,.45)",textDecoration:"underline"}}>{lang==="en"?"Terms":"Conditions"}</a>
