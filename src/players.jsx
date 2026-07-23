@@ -395,7 +395,7 @@ export const PLAYERS = [
   { name:"Ayase Ueda", clubs:["Cercle Bruges", "Feyenoord"], diff:"expert", nationalities:["Japon"], positions:["attaquant"], birthYear:1998 },
   { name:"Mika Godts", clubs:["Ajax Amsterdam"], diff:"expert", nationalities:["Belgique"], positions:["attaquant"], birthYear:2005 },
   { name:"Troy Parrott", clubs:["Tottenham", "AZ"], diff:"expert", nationalities:["Irlande"], positions:["attaquant"] , birthYear:2002 },
-  { name:"Ismael Saibari", clubs:["Genk", "PSV Eindhoven", "Bayern Munich"], diff:"expert", nationalities:["Maroc"], positions:["milieu"], birthYear:2001 },
+  { name:"Ismael Saibari", clubs:["Genk", "PSV Eindhoven", "Bayern Munich"], diff:"expert", nationalities:["Maroc"], positions:["milieu", "attaquant"], birthYear:2001 },
   { name:"Jizz Hornkamp", clubs:["AZ"], diff:"expert", nationalities:["Pays-Bas"], positions:["attaquant"] },
   { name:"Guus Til", clubs:["Feyenoord", "PSV Eindhoven"], diff:"expert", nationalities:["Pays-Bas"], positions:["milieu"], birthYear:1997 },
   { name:"Justin Hubner", clubs:["PSV Eindhoven", "Fortuna Sittard"], diff:"expert", nationalities:["Indonésie"], positions:["defenseur"], birthYear:2003 },
