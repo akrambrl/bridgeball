@@ -7,6 +7,8 @@ const SB_URL = "https://ialjlsrgcolocoaegzrc.supabase.co";
 const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhbGpsc3JnY29sb2NvYWVnenJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1MDM3NzksImV4cCI6MjA5MTA3OTc3OX0.-SU8anuPhnpoa-PYhIHQqrcuOBsHxdtBJKRZuiGcGwM";
 
 
+// Code secret du tableau de bord privé : goatfc.fr/?stats=<CODE>
+const STATS_CODE = "akram-goat-2610";
 async function sbFetch(path, options) {
   const res = await fetch(SB_URL + "/rest/v1/" + path, {
     ...options,
@@ -2431,6 +2433,36 @@ export default function LePont() {
   });
   const homeSwipeStartRef = useRef(null);
   const [homeRulesModal, setHomeRulesModal] = useState(null); // null | "grid" | "mercato" | "plug"
+  // ─── Tableau de bord privé (?stats=CODE) ──
+  const [statsMode] = useState(function(){ try { return new URLSearchParams(window.location.search).get("stats") === STATS_CODE; } catch(e) { return false; } });
+  const [statsData, setStatsData] = useState(null);
+  useEffect(function(){
+    if (!statsMode || statsData) return;
+    (async function(){
+      const dayKey = function(d){ return d.slice(0,10); };
+      // 14 derniers jours de bb_scores (agrégation côté client)
+      const since = new Date(Date.now() - 14*24*3600*1000).toISOString();
+      const scores = await sbFetch("bb_scores?select=player_id,created_at&created_at=gte."+since+"&order=created_at.desc&limit=20000") || [];
+      const byDayPlayers = {}, byDayGames = {};
+      for (const r of scores) {
+        if (!r.created_at) continue;
+        const k = dayKey(r.created_at);
+        (byDayPlayers[k] = byDayPlayers[k] || new Set()).add(r.player_id);
+        byDayGames[k] = (byDayGames[k] || 0) + 1;
+      }
+      const days = [];
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(Date.now() - i*24*3600*1000).toISOString().slice(0,10);
+        days.push({ day: d, players: byDayPlayers[d] ? byDayPlayers[d].size : 0, games: byDayGames[d] || 0 });
+      }
+      const weekPlayers = new Set();
+      for (const r of scores) { if (r.created_at && r.created_at >= new Date(Date.now()-7*24*3600*1000).toISOString()) weekPlayers.add(r.player_id); }
+      const pseudos = await sbFetch("bb_pseudos?select=player_id&limit=100000") || [];
+      const todayIso = new Date().toISOString().slice(0,10);
+      const duels = await sbFetch("bb_duels?select=id&created_at=gte."+todayIso+"T00:00:00&limit=5000") || [];
+      setStatsData({ days: days, week: weekPlayers.size, accounts: pseudos.length, duelsToday: duels.length });
+    })();
+  }, [statsMode, statsData]);
   // ─── Android Back Button Handler ──
   // Intercepte la touche retour Android pendant une partie pour éviter de quitter par accident.
   // Pattern double-tap : 1er appui = warning toast, 2e appui (dans 2s) = quitte la partie.
@@ -9323,6 +9355,63 @@ export default function LePont() {
             {lang==="en" ? "← Swipe • Tap to play →" : "← Glisse • Tape pour jouer →"}
           </div>
         </div>
+
+        {/* ── TABLEAU DE BORD PRIVÉ (?stats=CODE) ── */}
+        {statsMode && (
+          <div style={{position:"fixed",inset:0,zIndex:9999,background:"radial-gradient(ellipse 120% 60% at 50% 0%, #0f2a1a 0%, #060d09 60%, #030603 100%)",overflowY:"auto",WebkitOverflowScrolling:"touch",padding:"calc(30px + env(safe-area-inset-top)) 20px calc(40px + env(safe-area-inset-bottom))",fontFamily:G.font}}>
+            <div style={{maxWidth:520,margin:"0 auto"}}>
+              <div style={{textAlign:"center",marginBottom:24}}>
+                <div style={{fontSize:11,letterSpacing:3,color:"rgba(255,255,255,.45)",fontWeight:800,textTransform:"uppercase"}}>Tableau de bord · privé</div>
+                <div style={{fontFamily:G.heading,fontSize:34,letterSpacing:2,color:"#fff",marginTop:4}}>GOAT <span style={{color:"#00E676"}}>STATS</span></div>
+              </div>
+              {!statsData ? (
+                <div style={{textAlign:"center",padding:"60px 0",color:"rgba(255,255,255,.5)",fontSize:15}}>⏳ Chargement…</div>
+              ) : (() => {
+                const today = statsData.days[0];
+                const maxP = Math.max(1, ...statsData.days.map(function(d){return d.players;}));
+                const fmtDay = function(iso){ const dt = new Date(iso+"T12:00:00"); return dt.toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"short"}); };
+                return (
+                <>
+                  {/* Aujourd'hui */}
+                  <div style={{background:"linear-gradient(160deg, rgba(0,230,118,.16), rgba(255,255,255,.03) 55%, rgba(0,0,0,.25))",border:"1px solid rgba(0,230,118,.35)",borderRadius:22,padding:"22px 20px",textAlign:"center",boxShadow:"0 16px 44px -16px rgba(0,230,118,.4)",marginBottom:14}}>
+                    <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.55)",fontWeight:800,textTransform:"uppercase"}}>Aujourd'hui</div>
+                    <div style={{fontFamily:G.heading,fontSize:76,color:"#00E676",lineHeight:1,textShadow:"0 0 26px rgba(0,230,118,.45)"}}>{today.players}</div>
+                    <div style={{fontSize:14,color:"rgba(255,255,255,.7)",fontWeight:700}}>joueurs actifs · {today.games} parties{statsData.duelsToday?` · ${statsData.duelsToday} duels`:""}</div>
+                  </div>
+                  {/* Cartes semaine / comptes */}
+                  <div style={{display:"flex",gap:12,marginBottom:20}}>
+                    <div style={{flex:1,background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.1)",borderRadius:18,padding:"16px",textAlign:"center"}}>
+                      <div style={{fontFamily:G.heading,fontSize:34,color:"#60a5fa",lineHeight:1}}>{statsData.week}</div>
+                      <div style={{fontSize:10.5,letterSpacing:1,color:"rgba(255,255,255,.5)",fontWeight:800,textTransform:"uppercase",marginTop:6}}>joueurs / 7 j</div>
+                    </div>
+                    <div style={{flex:1,background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.1)",borderRadius:18,padding:"16px",textAlign:"center"}}>
+                      <div style={{fontFamily:G.heading,fontSize:34,color:"#FFD600",lineHeight:1}}>{statsData.accounts}</div>
+                      <div style={{fontSize:10.5,letterSpacing:1,color:"rgba(255,255,255,.5)",fontWeight:800,textTransform:"uppercase",marginTop:6}}>comptes créés</div>
+                    </div>
+                  </div>
+                  {/* 7 derniers jours */}
+                  <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.4)",fontWeight:800,textTransform:"uppercase",marginBottom:10,paddingLeft:4}}>7 derniers jours</div>
+                  <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:24}}>
+                    {statsData.days.map(function(d,i){
+                      return (
+                        <div key={i} style={{display:"flex",alignItems:"center",gap:12}}>
+                          <div style={{width:104,fontSize:12.5,color:i===0?"#00E676":"rgba(255,255,255,.6)",fontWeight:i===0?800:600,textTransform:"capitalize",flexShrink:0}}>{i===0?"Aujourd'hui":fmtDay(d.day)}</div>
+                          <div style={{flex:1,height:26,background:"rgba(255,255,255,.05)",borderRadius:8,overflow:"hidden",position:"relative"}}>
+                            <div style={{height:"100%",width:Math.round(d.players/maxP*100)+"%",minWidth:d.players?8:0,background:i===0?"linear-gradient(90deg,#00E676,#B9F600)":"rgba(96,165,250,.55)",borderRadius:8,transition:"width .4s"}}/>
+                          </div>
+                          <div style={{width:74,textAlign:"right",fontSize:13,color:"#fff",fontWeight:800,flexShrink:0}}>{d.players}<span style={{color:"rgba(255,255,255,.35)",fontWeight:600,fontSize:11}}> · {d.games}p</span></div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <button onClick={function(){setStatsData(null);}} style={{width:"100%",padding:"14px",borderRadius:16,border:"1px solid rgba(255,255,255,.15)",background:"rgba(255,255,255,.05)",color:"#fff",fontFamily:G.font,fontWeight:800,fontSize:14,cursor:"pointer"}}>↻ Rafraîchir</button>
+                  <div style={{textAlign:"center",fontSize:11,color:"rgba(255,255,255,.3)",marginTop:16,lineHeight:1.5}}>Joueurs actifs = joueurs uniques ayant fini une partie ce jour-là (heure UTC). Pour les visiteurs bruts, vois Vercel Analytics.</div>
+                </>
+                );
+              })()}
+            </div>
+          </div>
+        )}
 
         {/* ── HOME RULES MODAL ── */}
         {homeRulesModal && (() => {
