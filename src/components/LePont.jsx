@@ -11288,10 +11288,10 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
         ])[Math.abs(Math.floor(sc * 3 + totalRounds)) % 8]}</div>
       </div>
       <div style={sheet}>
-        <div style={{background:"rgba(255,255,255,.06)",borderRadius:20,padding:"20px",textAlign:"center",border:"1.5px solid #eee"}}>
-          <div style={{fontSize:11,letterSpacing:3,textTransform:"uppercase",color:"#bbb"}}>Score{isChain?"":" total"}</div>
+        <div style={{background:"rgba(8,14,10,.78)",borderRadius:22,padding:"20px",textAlign:"center",border:"1px solid rgba(0,230,118,.28)",boxShadow:"0 18px 50px -18px rgba(0,230,118,.35)",backdropFilter:"blur(10px)"}}>
+          <div style={{fontSize:11,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.5)"}}>Score{isChain?"":" total"}</div>
           <div style={{fontFamily:G.heading,fontSize:"clamp(54px,13vw,80px)",color:G.white,lineHeight:1}}>{sc}</div>
-          <div style={{fontSize:11,color:"#bbb"}}>pts{isChain?` · ${chainCount} lien${chainCount>1?"s":""}`:`  ·  ${totalRounds} manche${totalRounds>1?"s":""}`}</div>
+          <div style={{fontSize:11,color:"rgba(255,255,255,.5)"}}>pts{isChain?` · ${chainCount} lien${chainCount>1?"s":""}`:`  ·  ${totalRounds} manche${totalRounds>1?"s":""}`}</div>
           {maxCombo>=3&&<div style={{fontSize:13,color:"#f59e0b",marginTop:4,fontWeight:700}}>🔥 Meilleur combo : x{maxCombo}</div>}
           {isNewRecord&&<div style={{fontSize:12,color:G.accent,marginTop:6,fontStyle:"italic"}}>{lang==="en"?"Previous record beaten 🎉":"Ancien record battu 🎉"}</div>}
           {dayStreak>=2&&<div style={{fontSize:12,color:"#FF6B35",marginTop:6,fontWeight:700}}>🔥 {dayStreak} jours de suite !</div>}
@@ -11357,10 +11357,28 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
           </div>
         )}
       
-        <button onClick={()=>{setLbMode(mode);setLbDiff(diff);loadLeaderboard(lbMode);setShowLeaderboard(true);}}
-          style={{width:"100%",padding:"14px",background:"#f0f9f4",color:"#16a34a",border:"2px solid #86efac",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800}}>
-          <span style={{display:"flex",alignItems:"center",gap:8,justifyContent:"center"}}>{Icon.stadium(16,"#16a34a")} {lang==="en"?"See leaderboard":"Voir le classement"}{myLbRank?` · #${myLbRank}`:""}</span>
-        </button>
+        {/* Actions secondaires compactes : classement / chaîne / partage */}
+        <div style={{display:"flex",gap:10}}>
+          <button onClick={()=>{setLbMode(mode);setLbDiff(diff);loadLeaderboard(lbMode);setShowLeaderboard(true);}} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:6,padding:"12px 4px",background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.12)",borderRadius:16,cursor:"pointer",color:"rgba(255,255,255,.85)"}}>
+            <span style={{fontSize:20,lineHeight:1}}>🏆</span>
+            <span style={{fontSize:10,fontWeight:800,letterSpacing:.6,textTransform:"uppercase",whiteSpace:"nowrap"}}>{lang==="en"?"Ranking":"Classement"}{myLbRank?` #${myLbRank}`:""}</span>
+          </button>
+          {((!isChain && roundAnswers.length>0) || (isChain && chainHistory.length>0)) && (
+          <button onClick={()=>setShowHistory(true)} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:6,padding:"12px 4px",background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.12)",borderRadius:16,cursor:"pointer",color:"rgba(255,255,255,.85)"}}>
+            <span style={{fontSize:20,lineHeight:1}}>📋</span>
+            <span style={{fontSize:10,fontWeight:800,letterSpacing:.6,textTransform:"uppercase",whiteSpace:"nowrap"}}>{isChain?(lang==="en"?"My chain":"Ma chaîne"):(lang==="en"?"Recap":"Récap")}</span>
+          </button>
+          )}
+          <button onClick={function(){
+            const grade = getGrade(playerXp);
+            const txt = `${grade.emoji} J'ai scoré ${sc} pts en mode ${isChain?"The Mercato":"The Plug"} sur GOAT FC !\nGrade : ${grade.label}\nT'as le niveau ? 👇\nhttps://goatfc.fr`;
+            if(navigator.share){navigator.share({title:"GOAT FC",text:txt});}
+            else{navigator.clipboard.writeText(txt).then(function(){alert(lang==="en"?"Copied! Paste it anywhere 📋":"Copié ! Colle-le où tu veux 📋");});}
+          }} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:6,padding:"12px 4px",background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.12)",borderRadius:16,cursor:"pointer",color:"rgba(255,255,255,.85)"}}>
+            <span style={{fontSize:20,lineHeight:1}}>📤</span>
+            <span style={{fontSize:10,fontWeight:800,letterSpacing:.6,textTransform:"uppercase",whiteSpace:"nowrap"}}>{lang==="en"?"Share":"Partager"}</span>
+          </button>
+        </div>
         {!pseudoConfirmed && (
           <div style={{background:"rgba(255,200,0,.1)",border:"1px solid rgba(255,200,0,.3)",borderRadius:14,padding:"12px 16px",textAlign:"center"}}>
             <div style={{fontSize:13,color:"#ffd600",fontWeight:700,marginBottom:6}}>⚠️ {lang==="en"?"Score not saved":"Score non enregistré"}</div>
@@ -11368,21 +11386,8 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
             <button onClick={()=>setPseudoScreen(true)} style={{padding:"8px 20px",background:"#ffd600",color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:800}}>{lang==="en"?"Create username":"Créer mon pseudo"}</button>
           </div>
         )}
-        <button onClick={()=>{if(isChain)startChain();else startCompetition();}} style={{width:"100%",padding:"18px",background:G.dark,color:G.white,border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:17,fontWeight:800,letterSpacing:1,display:"flex",alignItems:"center",justifyContent:"center",gap:10}}>{Icon.ball(18,G.white)} {lang==="en"?"Play again":"Rejouer"}</button>
-        {((!isChain && roundAnswers.length>0) || (isChain && chainHistory.length>0)) && (
-          <button onClick={()=>setShowHistory(true)} style={{width:"100%",padding:"14px",background:"rgba(251,226,22,.12)",color:"#FBE216",border:"1.5px solid rgba(251,226,22,.5)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-            📋 {isChain?(lang==="en"?"See my chain":"Voir ma chaîne"):(lang==="en"?"Questions recap":"Récap des questions")}
-          </button>
-        )}
-        <button onClick={function(){
-          const grade = getGrade(playerXp);
-          const txt = `${grade.emoji} J'ai scoré ${sc} pts en mode ${isChain?"The Mercato":"The Plug"} sur GOAT FC !\nGrade : ${grade.label}\nT'as le niveau ? 👇\nhttps://goatfc.fr`;
-          if(navigator.share){navigator.share({title:"GOAT FC",text:txt});}
-          else{navigator.clipboard.writeText(txt).then(function(){alert(lang==="en"?"Copied! Paste it anywhere 📋":"Copié ! Colle-le où tu veux 📋");});}
-        }} style={{width:"100%",padding:"14px",background:"linear-gradient(135deg,#1d4ed8,#7c3aed)",color:"#fff",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-          {lang==="en"?"📤 Share my score":"📤 Partager mon score"}
-        </button>
-        <button onClick={()=>setScreen("home")} style={{width:"100%",padding:"14px",background:"transparent",color:"#bbb",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:700}}>{lang==="en"?"↩ Home":"↩ Accueil"}</button>
+        <button onClick={()=>{if(isChain)startChain();else startCompetition();}} style={{width:"100%",padding:"17px",background:"linear-gradient(135deg,#00E676,#00B85C)",color:"#06130B",border:"none",borderRadius:18,cursor:"pointer",fontFamily:G.font,fontSize:17,fontWeight:900,letterSpacing:1.5,display:"flex",alignItems:"center",justifyContent:"center",gap:10,boxShadow:"0 14px 34px -10px rgba(0,230,118,.5)"}}>{Icon.ball(18,"#06130B")} {lang==="en"?"PLAY AGAIN":"REJOUER"}</button>
+        <button onClick={()=>setScreen("home")} style={{width:"100%",padding:"13px",background:"transparent",color:"rgba(255,255,255,.55)",border:"1px solid rgba(255,255,255,.16)",borderRadius:18,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700,letterSpacing:.5}}>{lang==="en"?"↩ Home":"↩ Accueil"}</button>
       </div>
       {historyModal}
       {reportModal}
