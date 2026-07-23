@@ -10002,7 +10002,7 @@ export default function LePont() {
               {!ggError && ggGrid && (
                 <>
                   {/* Info bar : vies + score + remplissage */}
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",margin:"6px 0",padding:"6px 12px",background:"rgba(0,0,0,.3)",backdropFilter:"blur(8px)",borderRadius:12,border:"1px solid rgba(255,255,255,.1)",flexShrink:0,fontSize:13,fontWeight:700}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",margin:"6px 0",padding:"9px 14px",background:"rgba(255,255,255,.04)",backdropFilter:"blur(10px)",borderRadius:16,border:"1px solid rgba(255,255,255,.08)",flexShrink:0,fontSize:13,fontWeight:700}}>
                     {ggBattleScreen !== "playing" ? (
                       <div style={{display:"flex",alignItems:"center",gap:6}}>
                         <span style={{fontSize:10,color:"rgba(255,255,255,.5)",fontWeight:600,letterSpacing:1}}>{lang==="en"?"LIVES":"VIES"}</span>
@@ -10029,7 +10029,7 @@ export default function LePont() {
 
                   {/* Mini explainer scoring (masqué en mode battle pour gagner de la place) */}
                   {ggBattleScreen !== "playing" && (
-                    <div style={{background:"rgba(255,214,0,.08)",border:"1px solid rgba(255,214,0,.2)",borderRadius:10,padding:"4px 10px",marginBottom:6,fontSize:9,color:"rgba(255,255,255,.75)",textAlign:"center",lineHeight:1.3,flexShrink:0}}>
+                    <div style={{background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",borderRadius:20,padding:"5px 12px",marginBottom:8,fontSize:9.5,color:"rgba(255,255,255,.7)",textAlign:"center",lineHeight:1.3,flexShrink:0}}>
                       <span style={{color:"#FFD600",fontWeight:800}}>💡 {lang==="en"?"⭐ 15 · ⭐⭐ / ⭐⭐⭐ 50 pts · 🐐 No-mistake = +100":"⭐ 15 · ⭐⭐ / ⭐⭐⭐ 50 pts · 🐐 Sans-faute = +100"}</span>
                     </div>
                   )}
@@ -10046,14 +10046,14 @@ export default function LePont() {
                         const [cMain] = ggGetCriterionColors(crit);
                         const emoji = ggGetCriterionEmoji(crit);
                         return(
-                          <div key={"col-"+j} onClick={function(){setGgShowTooltip({title: ggGetCriterionDisplayLabel(crit, lang), text: ggGetCriterionTooltip(crit, lang)});}} style={{position:"relative",overflow:"hidden",borderRadius:12,border:"1.5px solid rgba(255,255,255,.2)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:"4px"}}>
-                            <div style={{position:"absolute",inset:0,background:cMain}}/>
-                            <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.18)"}}/>
+                          <div key={"col-"+j} onClick={function(){setGgShowTooltip({title: ggGetCriterionDisplayLabel(crit, lang), text: ggGetCriterionTooltip(crit, lang)});}} style={{position:"relative",overflow:"hidden",borderRadius:14,border:"1px solid rgba(255,255,255,.14)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:"4px",boxShadow:"0 6px 16px -8px rgba(0,0,0,.75)"}}>
+                            <div style={{position:"absolute",inset:0,background:"linear-gradient(155deg, "+cMain+" 0%, "+cMain+" 52%, rgba(0,0,0,.34) 100%)"}}/>
+                            <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, rgba(255,255,255,.28) 0%, rgba(255,255,255,0) 42%, rgba(0,0,0,.14) 100%)"}}/>
                             <div style={{position:"relative",zIndex:1,color:"#fff",textShadow:"0 1px 4px rgba(0,0,0,.6)",fontWeight:900,fontSize:13,letterSpacing:0.3,lineHeight:1.15,textAlign:"center"}}>
                               {emoji && <div style={{fontSize:20,marginBottom:2}}>{emoji}</div>}
                               <div>{ggGetCriterionDisplayLabel(crit, lang).toUpperCase()}</div>
                             </div>
-                            <div style={{position:"absolute",top:3,right:5,fontSize:9,color:"rgba(255,255,255,.7)",zIndex:2}}>ⓘ</div>
+                            <div style={{position:"absolute",top:4,right:4,width:15,height:15,borderRadius:"50%",background:"rgba(0,0,0,.3)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,color:"rgba(255,255,255,.85)",zIndex:2}}>ⓘ</div>
                           </div>
                         );
                       })}
@@ -10065,14 +10065,14 @@ export default function LePont() {
                         return(
                           <React.Fragment key={"row-"+i}>
                             {/* Critère ligne */}
-                            <div onClick={function(){setGgShowTooltip({title: ggGetCriterionDisplayLabel(rowCrit, lang), text: ggGetCriterionTooltip(rowCrit, lang)});}} style={{position:"relative",overflow:"hidden",borderRadius:12,border:"1.5px solid rgba(255,255,255,.2)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:"4px"}}>
-                              <div style={{position:"absolute",inset:0,background:rcMain}}/>
-                              <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.18)"}}/>
+                            <div onClick={function(){setGgShowTooltip({title: ggGetCriterionDisplayLabel(rowCrit, lang), text: ggGetCriterionTooltip(rowCrit, lang)});}} style={{position:"relative",overflow:"hidden",borderRadius:14,border:"1px solid rgba(255,255,255,.14)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:"4px",boxShadow:"0 6px 16px -8px rgba(0,0,0,.75)"}}>
+                              <div style={{position:"absolute",inset:0,background:"linear-gradient(155deg, "+rcMain+" 0%, "+rcMain+" 52%, rgba(0,0,0,.34) 100%)"}}/>
+                              <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, rgba(255,255,255,.28) 0%, rgba(255,255,255,0) 42%, rgba(0,0,0,.14) 100%)"}}/>
                               <div style={{position:"relative",zIndex:1,color:"#fff",textShadow:"0 1px 4px rgba(0,0,0,.6)",fontWeight:900,fontSize:13,letterSpacing:0.3,lineHeight:1.15,textAlign:"center"}}>
                                 {emoji && <div style={{fontSize:20,marginBottom:2}}>{emoji}</div>}
                                 <div>{ggGetCriterionDisplayLabel(rowCrit, lang).toUpperCase()}</div>
                               </div>
-                              <div style={{position:"absolute",top:3,right:5,fontSize:9,color:"rgba(255,255,255,.7)",zIndex:2}}>ⓘ</div>
+                              <div style={{position:"absolute",top:4,right:4,width:15,height:15,borderRadius:"50%",background:"rgba(0,0,0,.3)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,color:"rgba(255,255,255,.85)",zIndex:2}}>ⓘ</div>
                             </div>
                             
                             {/* 3 cases de la ligne */}
@@ -10122,11 +10122,11 @@ export default function LePont() {
                                   {/* Fond unique : couleur dominante du club (ligne) */}
                                   {!ggRevealMode && !(isFlashing&&ggFlash==="ko") && (
                                     <>
-                                      <div style={{position:"absolute",inset:0,background:rowMain,opacity:.22}}/>
+                                      <div style={{position:"absolute",inset:0,background:rowMain,opacity:.14}}/>
                                       <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, rgba(0,0,0,.1) 0%, rgba(0,0,0,.45) 100%)"}}/>
                                     </>
                                   )}
-                                  <div style={{position:"relative",zIndex:1,fontSize:ggRevealMode?16:28,color:ggRevealMode?"#7AB8FF":"rgba(255,255,255,.55)",fontWeight:ggRevealMode?700:100,textShadow:"0 1px 3px rgba(0,0,0,.6)"}}>{ggRevealMode?"?":"+"}</div>
+                                  <div style={{position:"relative",zIndex:1,width:34,height:34,borderRadius:11,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(255,255,255,.07)",border:"1px solid rgba(255,255,255,.18)",boxShadow:"inset 0 1px 0 rgba(255,255,255,.12)",fontSize:ggRevealMode?15:22,color:ggRevealMode?"#7AB8FF":"rgba(255,255,255,.78)",fontWeight:ggRevealMode?800:300}}>{ggRevealMode?"?":"+"}</div>
                                 </div>
                               );
                             })}
