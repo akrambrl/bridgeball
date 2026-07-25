@@ -438,7 +438,7 @@ export const PLAYERS = [
   { name:"Davy Klaassen", clubs:["Ajax Amsterdam", "Everton", "Werder Bremen", "Inter Milan"], diff:"moyen", nationalities:["Pays-Bas"], positions:["attaquant"], birthYear:1993 },
   { name:"Oscar Gloukh", clubs:["Salzburg", "Ajax Amsterdam"], diff:"expert", nationalities:["Israël"], positions:["milieu"], birthYear:2004 },
   { name:"Sergiño Dest", clubs:["Ajax Amsterdam", "Barcelona", "AC Milan", "PSV Eindhoven"], diff:"moyen", nationalities:["États-Unis"], positions:["defenseur"], birthYear:2000 },
-  { name:"Sébastien Haller", clubs:["Auxerre", "Utrecht", "Eintracht Frankfurt", "West Ham", "Ajax Amsterdam", "Borussia Dortmund", "Leganés"], diff:"moyen", nationalities:["Côte d'Ivoire"], positions:["attaquant"], birthYear:1994 },
+  { name:"Sébastien Haller", clubs:["Auxerre", "Utrecht", "Eintracht Frankfurt", "West Ham", "Ajax Amsterdam", "Borussia Dortmund", "Leganés", "Sanfrecce Hiroshima"], diff:"moyen", nationalities:["Côte d'Ivoire"], positions:["attaquant"], birthYear:1994 },
   { name:"Kasper Dolberg", clubs:["Silkeborg","Ajax Amsterdam","Nice","Sevilla","Hoffenheim","Anderlecht"], diff:"moyen", nationalities:["Danemark"], positions:["attaquant"], birthYear:1997 },
   { name:"Ko Itakura", clubs:["Manchester City", "Schalke", "Borussia Mönchengladbach", "Ajax Amsterdam"], diff:"expert", nationalities:["Japon"], positions:["defenseur"], birthYear:1997 },
   { name:"Luis Javier Suárez", clubs:["Real Zaragoza", "Watford", "Granada", "Almería", "Marseille", "Sporting CP"], diff:"expert", nationalities:["Colombie"], positions:["attaquant"], birthYear:1997 },
