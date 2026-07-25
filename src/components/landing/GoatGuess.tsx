@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
 import { PLAYERS, RETIRED_PLAYERS, GG_WC_WINNERS, GG_CL_WINNERS, GG_BALLON_DOR, GG_BALLON_DOR_MULTI } from "../../players.jsx";
 import { CLUB_COLORS } from "../LePont.jsx";
+import { trackPlay } from "../../lib/track";
 
 type Player = {
   name: string;
@@ -1204,6 +1205,7 @@ const GoatGuessGame = ({
   }, [phase, onPhaseChange]);
 
   const startGame = () => {
+    trackPlay("guess");
     setPhase("asking");
     setCandidates(initialPool);
     setAsked(new Set());

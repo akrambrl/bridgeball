@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
 import { PLAYERS, RETIRED_PLAYERS, GG_WC_WINNERS, GG_CL_WINNERS } from "../players.jsx";
+import { trackPlay } from "../lib/track";
 
 
 
@@ -2447,8 +2448,19 @@ export default function LePont() {
       const byDayGames = {};
       for (const r of scores) { if (r.created_at) { const k = dayKey(r.created_at); byDayGames[k] = (byDayGames[k]||0)+1; } }
       // Présence (bb_events) — inclut les anonymes. Repli sur bb_scores si la table n'existe pas encore.
-      const events = await sbFetch("bb_events?select=player_id,created_at&created_at=gte."+since+"&limit=50000");
+      const events = await sbFetch("bb_events?select=player_id,created_at,type&created_at=gte."+since+"&limit=50000");
       const hasEvents = Array.isArray(events);
+      // Parties lancées par mode de jeu (events type "play_<mode>") sur 14 jours.
+      const playsByMode = { pont: 0, chaine: 0, grid: 0, guess: 0 };
+      if (hasEvents) {
+        for (const r of events) {
+          if (r.type && r.type.indexOf("play_") === 0) {
+            const m = r.type.slice(5);
+            if (playsByMode[m] !== undefined) playsByMode[m]++;
+          }
+        }
+      }
+      const totalPlays = playsByMode.pont + playsByMode.chaine + playsByMode.grid + playsByMode.guess;
       const activeRows = hasEvents ? events : scores;
       const byDayActive = {};
       for (const r of activeRows) { if (r.created_at) { const k = dayKey(r.created_at); (byDayActive[k] = byDayActive[k] || new Set()).add(r.player_id); } }
@@ -2471,7 +2483,7 @@ export default function LePont() {
       let recent = await sbFetch("bb_pseudos?select=pseudo,country,created_at&order=created_at.desc&limit=40");
       let recentHasDate = true;
       if (!recent) { recentHasDate = false; recent = await sbFetch("bb_pseudos?select=pseudo,country&limit=40") || []; }
-      setStatsData({ days: days, week: weekActive.size, accounts: pseudos.length, duelsToday: duels.length, recent: recent, recentHasDate: recentHasDate, hasEvents: hasEvents });
+      setStatsData({ days: days, week: weekActive.size, accounts: pseudos.length, duelsToday: duels.length, recent: recent, recentHasDate: recentHasDate, hasEvents: hasEvents, playsByMode: playsByMode, totalPlays: totalPlays });
     })();
   }, [statsMode, statsData]);
   // ─── Android Back Button Handler ──
@@ -3399,6 +3411,7 @@ export default function LePont() {
   
   // Démarrer/reprendre une partie GOAT GRID
   function ggStartGame() {
+    trackPlay("grid");
     const seed = ggOverrideSeed || ggGetDailySeed();
     const grid = ggGenerateGrid(seed);
     if (!grid) {
@@ -6105,6 +6118,7 @@ export default function LePont() {
   }
 
   function startChain(diffOverride) {
+    trackPlay("chaine");
     roundStartTime.current = null;
     botScoreRef.current = null;
     setIsNewRecord(false); setMyLastPts(null); setCombo(0); setMaxCombo(0); comboRef.current=0; lastAnswerTime.current=Date.now();
@@ -6177,6 +6191,7 @@ export default function LePont() {
   }
 
   function startCompetition() {
+    trackPlay("pont");
     setCombo(0); setMaxCombo(0); comboRef.current=0; lastAnswerTime.current=Date.now();
     setRoundScores([]); setCurrentRound(1); setIsNewRecord(false); setMyLbRank(null); setMyLastPts(null);
     startRound(1);
@@ -9424,6 +9439,45 @@ export default function LePont() {
                       );
                     })}
                   </div>
+                  {/* Modes de jeu les plus joués (14 derniers jours) */}
+                  <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.4)",fontWeight:800,textTransform:"uppercase",marginBottom:10,paddingLeft:4}}>Modes de jeu · 14 j</div>
+                  {(function(){
+                    const pbm = statsData.playsByMode || {pont:0,chaine:0,grid:0,guess:0};
+                    const total = statsData.totalPlays || 0;
+                    const META = [
+                      {key:"pont",   label:"The Plug",   emoji:"🔗", color:"#00E676"},
+                      {key:"chaine", label:"The Mercato", emoji:"🔁", color:"#FF8A2A"},
+                      {key:"grid",   label:"GOAT Grid",   emoji:"▦",  color:"#3DA5FF"},
+                      {key:"guess",  label:"GOAT Guess",  emoji:"🔮", color:"#C084FC"},
+                    ];
+                    const rows = META.map(function(m){return {...m, n: pbm[m.key]||0};}).sort(function(a,b){return b.n-a.n;});
+                    const maxN = Math.max(1, ...rows.map(function(r){return r.n;}));
+                    if (!statsData.hasEvents) {
+                      return <div style={{fontSize:12.5,color:"rgba(255,200,0,.7)",background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.07)",borderRadius:12,padding:"14px",marginBottom:24,lineHeight:1.5}}>⚠️ Table <code>bb_events</code> absente : le suivi par mode arrivera dès qu'elle existe.</div>;
+                    }
+                    if (total === 0) {
+                      return <div style={{fontSize:12.5,color:"rgba(255,255,255,.45)",background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.07)",borderRadius:12,padding:"14px",marginBottom:24,lineHeight:1.5}}>Aucune partie enregistrée pour l'instant. Le suivi démarre avec ce déploiement — reviens dans quelques heures.</div>;
+                    }
+                    return (
+                      <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:24}}>
+                        {rows.map(function(r,i){
+                          const pct = total ? Math.round(r.n/total*100) : 0;
+                          return (
+                            <div key={r.key} style={{display:"flex",alignItems:"center",gap:12}}>
+                              <div style={{width:104,fontSize:12.5,color:i===0?r.color:"rgba(255,255,255,.6)",fontWeight:i===0?800:600,flexShrink:0,display:"flex",alignItems:"center",gap:6}}>
+                                <span>{r.emoji}</span><span style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{r.label}</span>{i===0&&r.n>0?<span style={{fontSize:11}}>👑</span>:null}
+                              </div>
+                              <div style={{flex:1,height:26,background:"rgba(255,255,255,.05)",borderRadius:8,overflow:"hidden",position:"relative"}}>
+                                <div style={{height:"100%",width:Math.round(r.n/maxN*100)+"%",minWidth:r.n?8:0,background:r.color,opacity:i===0?1:.55,borderRadius:8,transition:"width .4s"}}/>
+                              </div>
+                              <div style={{width:74,textAlign:"right",fontSize:13,color:"#fff",fontWeight:800,flexShrink:0}}>{r.n}<span style={{color:"rgba(255,255,255,.35)",fontWeight:600,fontSize:11}}> · {pct}%</span></div>
+                            </div>
+                          );
+                        })}
+                        <div style={{textAlign:"right",fontSize:11,color:"rgba(255,255,255,.35)",fontWeight:600,paddingRight:4}}>{total} parties lancées au total</div>
+                      </div>
+                    );
+                  })()}
                   {/* Derniers comptes créés */}
                   <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.4)",fontWeight:800,textTransform:"uppercase",marginBottom:10,paddingLeft:4}}>Derniers comptes créés</div>
                   {(statsData.recent && statsData.recent.length) ? (
