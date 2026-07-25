@@ -231,3 +231,31 @@ All colors MUST be HSL.
   animation: goat-spark var(--dur, 1.5s) ease-out var(--delay, 0s) both;
 }
 
+/* Barre de progression « fumée de génie » : se remplit à chaque réponse
+   (oui/non). La fumée violette ondule doucement dans le remplissage. */
+@keyframes goat-smokebar-drift {
+  0%   { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+.goat-smokebar-fill {
+  background: linear-gradient(90deg,
+    rgba(124,58,237,0.45) 0%,
+    rgba(168,85,247,0.85) 22%,
+    rgba(216,180,254,0.98) 50%,
+    rgba(168,85,247,0.85) 78%,
+    rgba(124,58,237,0.45) 100%);
+  background-size: 200% 100%;
+  animation: goat-smokebar-drift 3.4s linear infinite;
+  box-shadow: 0 0 16px rgba(192,132,252,0.7), inset 0 0 6px rgba(216,180,254,0.85);
+}
+/* Panache pulsant au bout de la traînée de fumée (la « tête » du génie). */
+@keyframes goat-smokebar-puff {
+  0%, 100% { opacity: 0.5; transform: translate(35%, -50%) scale(1); }
+  50%      { opacity: 1;   transform: translate(35%, -50%) scale(1.35); }
+}
+.goat-smokebar-head {
+  background: radial-gradient(circle, rgba(233,213,255,0.95) 0%, rgba(168,85,247,0.55) 45%, transparent 72%);
+  filter: blur(3px);
+  animation: goat-smokebar-puff 1.8s ease-in-out infinite;
+}
+
