@@ -1188,6 +1188,9 @@ const GoatGuessGame = ({
   const [rejectedGuesses, setRejectedGuesses] = useState<Set<string>>(new Set());
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [currentGuess, setCurrentGuess] = useState<Player | null>(null);
+  // « Fumée de génie » : nombre de réponses tranchées (oui/non). Chaque réponse
+  // fait monter la barre de fumée ; un « je sais pas » ne la remplit pas.
+  const [smokeSteps, setSmokeSteps] = useState(0);
   // Historique des Q+R pour le récap de fin de partie (debug / apprentissage)
   const [qaHistory, setQaHistory] = useState<
     Array<{ q: Question; answer: Answer }>
@@ -1209,6 +1212,7 @@ const GoatGuessGame = ({
     setRejectedGuesses(new Set());
     setLastCategories([]);
     setQaHistory([]);
+    setSmokeSteps(0);
     const q = pickQuestion(initialPool, new Set(), []);
     setCurrentQuestion(q);
     onAdvanceDevin();
@@ -1293,6 +1297,8 @@ const GoatGuessGame = ({
     setLastCategories(nextLastCats);
     setCandidates(live);
     setCurrentQuestion(null);
+    // Une réponse tranchée (oui/non) fait monter la fumée ; « je sais pas » non.
+    if (ans !== "dunno") setSmokeSteps((s) => s + 1);
     advance(live, nextHistory, nextAsked, nextLastCats, nextCount);
   };
 
@@ -1323,6 +1329,7 @@ const GoatGuessGame = ({
     setCandidates(newCandidates);
     setAsked(newAsked);
     setQuestionCount(Math.max(0, questionCount - 1));
+    if (removedQA.answer !== "dunno") setSmokeSteps((s) => Math.max(0, s - 1));
     setLastCategories(newLastCategories);
     setCurrentQuestion(removedQA.q);
     setCurrentGuess(null);
@@ -1368,6 +1375,7 @@ const GoatGuessGame = ({
           onBack={goBack}
           canGoBack={qaHistory.length > 0}
           qaHistory={qaHistory}
+          smokeSteps={smokeSteps}
         />
       )}
       {phase === "guessing" && currentGuess && (
@@ -1442,6 +1450,7 @@ const AskingView = ({
   onBack,
   canGoBack,
   qaHistory,
+  smokeSteps,
 }: {
   question: Question;
   count: number;
@@ -1451,9 +1460,14 @@ const AskingView = ({
   onBack: () => void;
   canGoBack: boolean;
   qaHistory: Array<{ q: Question; answer: Answer }>;
+  smokeSteps: number;
 }) => {
   const overtime = count > max;
   const progress = Math.min(100, (count / max) * 100);
+  // Remplissage de la fumée : ~16 réponses tranchées → barre pleine. On
+  // plafonne à 96 % pour garder un soupçon de suspense jusqu'à la devinette.
+  const SMOKE_TARGET = 16;
+  const smokeFill = Math.min(96, (smokeSteps / SMOKE_TARGET) * 100);
   return (
     <div>
       {/* Compteur + barre de progression */}
@@ -1545,6 +1559,25 @@ const AskingView = ({
       {/* Récap des déductions en cours — caché sur mobile pour tenir sur 1 écran */}
       <div className="hidden lg:block">
         <LiveDeductions history={qaHistory} />
+      </div>
+
+      {/* Barre de « fumée de génie » : chaque réponse tranchée la remplit un peu
+          plus — le devin se rapproche de la réponse. Un « je sais pas » ne la
+          fait pas monter. */}
+      <div className="mt-3 lg:mt-5">
+        <div className="flex items-center justify-between text-[9px] lg:text-[11px] mb-1 tracking-widest font-display text-white/45">
+          <span>🔮 {isEn() ? "THE GENIE CLOSES IN" : "LE GÉNIE SE RAPPROCHE"}</span>
+          <span className="tabular-nums text-[#C084FC]/80">{Math.round(smokeFill)}%</span>
+        </div>
+        <div className="relative h-3 lg:h-4 w-full rounded-full bg-white/[0.06] border border-white/10 overflow-hidden">
+          <div
+            className="goat-smokebar-fill absolute inset-y-0 left-0 rounded-full transition-[width] duration-700 ease-out"
+            style={{ width: `${smokeFill}%` }}
+          >
+            {/* panache de fumée pulsant à la tête de la traînée */}
+            <div className="goat-smokebar-head absolute top-1/2 right-0 h-6 w-6 lg:h-7 lg:w-7 rounded-full" aria-hidden />
+          </div>
+        </div>
       </div>
     </div>
   );
