@@ -1553,7 +1553,7 @@ export const PLAYERS = [
   { name:"Gustav Isaksen", clubs:["Midtjylland", "SS Lazio"], diff:"expert", nationalities:["Danemark"], positions:["attaquant"] , birthYear:2001 },
   { name:"Jesper Lindstrøm", clubs:["Eintracht Frankfurt", "Wolfsburg"], diff:"expert", nationalities:["Danemark"], positions:["attaquant"] , birthYear:2000 },
   // Équipe nationale Corée du Sud 2026
-  { name:"Lee Kang-in", clubs:["Valencia", "Mallorca", "PSG"], diff:"moyen", nationalities:["Corée du Sud"], positions:["milieu"], birthYear:2001 },
+  { name:"Lee Kang-in", clubs:["Valencia", "Mallorca", "PSG", "Atletico Madrid"], diff:"moyen", nationalities:["Corée du Sud"], positions:["milieu"], birthYear:2001 },
   { name:"Hwang Hee-chan", clubs:["Pohang Steelers", "Salzburg", "Hamburg", "RB Leipzig", "Wolverhampton"], diff:"moyen", nationalities:["Corée du Sud"], positions:["attaquant"], birthYear:1996 },
   { name:"Hwang In-beom", clubs:["Daejeon Citizen", "Asan Mugunghwa", "Vancouver Whitecaps", "Rubin Kazan", "Olympiacos", "Red Star Belgrade", "Feyenoord"], diff:"moyen", nationalities:["Corée du Sud"], positions:["milieu"], birthYear:1996 },
   // Équipe nationale Japon 2026
