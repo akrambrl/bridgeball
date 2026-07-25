@@ -1686,7 +1686,7 @@ export const PLAYERS = [
   { name:"Charles De Ketelaere", clubs:["Club Brugge", "AC Milan", "Atalanta BC"], diff:"moyen", nationalities:["Belgique"], positions:["attaquant"], birthYear:2001 },
   { name:"Youri Tielemans", clubs:["Anderlecht", "Monaco", "Leicester City", "Aston Villa", "Manchester United"], diff:"moyen", nationalities:["Belgique"], positions:["milieu"], birthYear:1997 },
   { name:"Amadou Onana", clubs:["Hamburg", "Lille", "Everton", "Aston Villa"], diff:"moyen", nationalities:["Belgique"], positions:["milieu"], birthYear:2001 },
-  { name:"Lois Openda", clubs:["Club Brugge", "Vitesse", "Lens", "RB Leipzig", "Juventus FC"], diff:"moyen", nationalities:["Belgique"], positions:["attaquant"], birthYear:2000 },
+  { name:"Lois Openda", clubs:["Club Brugge", "Vitesse", "Lens", "RB Leipzig", "Juventus FC", "Lyon"], diff:"moyen", nationalities:["Belgique"], positions:["attaquant"], birthYear:2000 },
   { name:"Alexis Saelemaekers", clubs:["Anderlecht", "AC Milan", "Bologna FC", "AS Roma"], diff:"moyen", nationalities:["Belgique"], positions:["milieu"], birthYear:1999 },
   { name:"Wout Faes", clubs:["Anderlecht", "Excelsior Mouscron", "Reims", "Leicester City"], diff:"expert", nationalities:["Belgique"], positions:["defenseur"] , birthYear:1998 },
   // Équipe nationale Angleterre 2026 (compléments)
