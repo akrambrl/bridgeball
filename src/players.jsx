@@ -301,7 +301,7 @@ export const PLAYERS = [
   { name:"Lukas Nmecha", clubs:["Manchester City", "Preston", "Middlesbrough", "Wolfsburg", "Leeds United"], diff:"expert", nationalities:["Allemagne"], positions:["attaquant"] , birthYear:1998 },
   { name:"Wilson Isidor", clubs:["Monaco", "Bastia", "CSKA Moscow", "Lokomotiv Moscow", "Sunderland"], diff:"expert", nationalities:["France"], positions:["attaquant"] , birthYear:2000 },
   { name:"Habib Diarra", clubs:["Strasbourg", "Sunderland"], diff:"moyen", nationalities:["Sénégal"], positions:["attaquant"], birthYear:2004 },
-  { name:"Crysencio Summerville", clubs:["Feyenoord", "Leeds United", "West Ham"], diff:"moyen", nationalities:["Pays-Bas"], positions:["attaquant"], birthYear:2001 },
+  { name:"Crysencio Summerville", clubs:["Feyenoord", "Leeds United", "West Ham", "Al Hilal"], diff:"moyen", nationalities:["Pays-Bas"], positions:["attaquant"], birthYear:2001 },
   { name:"Mateus Fernandes", clubs:["Sporting CP", "Estoril", "Southampton", "West Ham", "Tottenham"], diff:"expert", nationalities:["Portugal"], positions:["milieu"] , birthYear:2004 },
   { name:"João Neves", clubs:["Benfica", "PSG"], diff:"moyen", nationalities:["Portugal"], positions:["milieu"], birthYear:2004 },
   { name:"Folarin Balogun", clubs:["Arsenal", "Middlesbrough", "Reims", "Monaco"], diff:"moyen", nationalities:["États-Unis"], positions:["attaquant"], birthYear:2001 },
