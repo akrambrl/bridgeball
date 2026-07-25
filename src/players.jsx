@@ -580,7 +580,7 @@ export const PLAYERS = [
   { name:"Jesús Navas", clubs:["Sevilla", "Manchester City"], diff:"moyen", nationalities:["Espagne"], positions:["milieu"], birthYear:1985 },
   { name:"Pedro Rodríguez", clubs:["Barcelona", "Chelsea", "AS Roma", "SS Lazio"], diff:"moyen", nationalities:["Espagne"], positions:["attaquant"], birthYear:1987 },
   { name:"Álvaro Arbeloa", clubs:["Real Madrid", "Liverpool", "Deportivo La Coruna", "West Ham"], diff:"expert", nationalities:["Espagne"], positions:["defenseur"] , birthYear:1983 },
-  { name:"Antoine Griezmann", clubs:["Real Sociedad","Atletico Madrid","Barcelona","Atletico Madrid"], diff:"facile", nationalities:["France"], positions:["attaquant"], birthYear:1991 },
+  { name:"Antoine Griezmann", clubs:["Real Sociedad","Atletico Madrid","Barcelona","Orlando City"], diff:"facile", nationalities:["France"], positions:["attaquant"], birthYear:1991 },
   { name:"Koke", clubs:["Atletico Madrid"], diff:"moyen", nationalities:["Espagne"], positions:["milieu"], birthYear:1992 },
   { name:"Eden Hazard", clubs:["Lille", "Chelsea", "Real Madrid"], diff:"facile", nationalities:["Belgique"], positions:["attaquant"], birthYear:1991 },
   { name:"Zlatan Ibrahimovic", clubs:["Malmö", "Ajax Amsterdam", "Juventus FC", "Inter Milan", "Barcelona", "AC Milan", "PSG", "Manchester United", "LA Galaxy"], diff:"facile", nationalities:["Suède"], positions:["attaquant"], birthYear:1981 },
