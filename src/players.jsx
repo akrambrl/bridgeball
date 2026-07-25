@@ -1292,7 +1292,7 @@ export const PLAYERS = [
   { name:"Mathieu Valbuena", clubs:["Marseille", "Lyon", "Fenerbahce"], diff:"expert", nationalities:["France"], positions:["milieu"], birthYear:1984 },
   { name:"Frederic Piquionne", clubs:["Monaco", "Lyon"], diff:"expert", nationalities:["France"], positions:["attaquant"] , birthYear:1978 },
   { name:"Vikash Dhorasoo", clubs:["Lyon", "AC Milan", "PSG"], diff:"expert", nationalities:["France"], positions:["milieu"], birthYear:1973 },
-  { name:"Lassana Diarra", clubs:["Chelsea", "Arsenal", "Portsmouth", "Real Madrid", "Atletico Madrid", "Marseille", "PSG"], diff:"moyen", nationalities:["France"], positions:["attaquant"], birthYear:1985 },
+  { name:"Lassana Diarra", clubs:["Chelsea", "Arsenal", "Portsmouth", "Real Madrid", "Anzhi", "Lokomotiv Moscow", "Marseille", "Al-Jazira", "PSG"], diff:"moyen", nationalities:["France"], positions:["milieu"], birthYear:1985 },
   // Pays-Bas
   { name:"Robin van Persie", clubs:["Feyenoord", "Arsenal", "Manchester United", "Fenerbahce"], diff:"facile", nationalities:["Pays-Bas"], positions:["attaquant"], birthYear:1983 },
   { name:"Dennis Bergkamp", clubs:["Ajax Amsterdam", "Inter Milan", "Arsenal"], diff:"facile", nationalities:["Pays-Bas"], positions:["attaquant"], birthYear:1969 },
