@@ -2480,13 +2480,19 @@ export default function LePont() {
       // Présence (bb_events) — inclut les anonymes. Repli sur bb_scores si la table n'existe pas encore.
       const events = await sbFetch("bb_events?select=player_id,created_at,type&created_at=gte."+since+"&limit=50000");
       const hasEvents = Array.isArray(events);
-      // Parties lancées par mode de jeu (events type "play_<mode>") sur 14 jours.
+      // Parties lancées par mode de jeu (events type "play_<mode>" ou
+      // "play_<mode>_online") sur 14 jours + répartition solo / en ligne.
       const playsByMode = { pont: 0, chaine: 0, grid: 0, guess: 0 };
+      let playsSolo = 0, playsOnline = 0;
       if (hasEvents) {
         for (const r of events) {
           if (r.type && r.type.indexOf("play_") === 0) {
-            const m = r.type.slice(5);
-            if (playsByMode[m] !== undefined) playsByMode[m]++;
+            const online = r.type.slice(-7) === "_online";
+            const m = online ? r.type.slice(5, -7) : r.type.slice(5); // mode sans suffixe
+            if (playsByMode[m] !== undefined) {
+              playsByMode[m]++;
+              if (online) playsOnline++; else playsSolo++;
+            }
           }
         }
       }
@@ -2513,7 +2519,7 @@ export default function LePont() {
       let recent = await sbFetch("bb_pseudos?select=pseudo,country,created_at&order=created_at.desc&limit=40");
       let recentHasDate = true;
       if (!recent) { recentHasDate = false; recent = await sbFetch("bb_pseudos?select=pseudo,country&limit=40") || []; }
-      setStatsData({ days: days, week: weekActive.size, accounts: pseudos.length, duelsToday: duels.length, recent: recent, recentHasDate: recentHasDate, hasEvents: hasEvents, playsByMode: playsByMode, totalPlays: totalPlays });
+      setStatsData({ days: days, week: weekActive.size, accounts: pseudos.length, duelsToday: duels.length, recent: recent, recentHasDate: recentHasDate, hasEvents: hasEvents, playsByMode: playsByMode, totalPlays: totalPlays, playsSolo: playsSolo, playsOnline: playsOnline });
     })();
   }, [statsMode, statsData]);
   // ─── Android Back Button Handler ──
@@ -2950,6 +2956,7 @@ export default function LePont() {
   // Démarrer la partie (host uniquement)
   async function ggBattleStartGame() {
     if (!ggBattleRoom || ggBattleRoom.host_id !== playerId) return;
+    trackPlay("grid", true); // GOAT Grid battle = partie en ligne
     setGgBattleLoading(true);
     try {
       // Started_at = maintenant + 5 secondes (compte à rebours pour tous les joueurs)
@@ -6134,7 +6141,7 @@ export default function LePont() {
   }
 
   function startChain(diffOverride) {
-    trackPlay("chaine");
+    trackPlay("chaine", !!activeDuelRef.current); // en ligne si duel/salon actif
     roundStartTime.current = null;
     botScoreRef.current = null;
     setIsNewRecord(false); setMyLastPts(null); setCombo(0); setMaxCombo(0); comboRef.current=0; lastAnswerTime.current=Date.now();
@@ -6207,7 +6214,7 @@ export default function LePont() {
   }
 
   function startCompetition() {
-    trackPlay("pont");
+    trackPlay("pont", !!activeDuelRef.current); // en ligne si duel/salon actif
     setCombo(0); setMaxCombo(0); comboRef.current=0; lastAnswerTime.current=Date.now();
     setRoundScores([]); setCurrentRound(1); setIsNewRecord(false); setMyLbRank(null); setMyLastPts(null);
     startRound(1);
@@ -9488,6 +9495,24 @@ export default function LePont() {
                       </div>
                     );
                   })()}
+                  {/* Solo vs En ligne (14 j) */}
+                  {statsData.hasEvents && (statsData.playsSolo + statsData.playsOnline) > 0 ? (function(){
+                    const solo = statsData.playsSolo || 0, online = statsData.playsOnline || 0, tot = solo + online;
+                    const pOnline = Math.round(online/tot*100);
+                    return (
+                      <div style={{marginBottom:24}}>
+                        <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.4)",fontWeight:800,textTransform:"uppercase",marginBottom:10,paddingLeft:4}}>Solo vs En ligne · 14 j</div>
+                        <div style={{display:"flex",height:34,borderRadius:10,overflow:"hidden",border:"1px solid rgba(255,255,255,.1)"}}>
+                          <div style={{width:(100-pOnline)+"%",background:"rgba(96,165,250,.55)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:800,color:"#fff",minWidth:solo?40:0}}>{solo?(100-pOnline)+"%":""}</div>
+                          <div style={{width:pOnline+"%",background:"linear-gradient(90deg,#00E676,#B9F600)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:800,color:"#0A1410",minWidth:online?40:0}}>{online?pOnline+"%":""}</div>
+                        </div>
+                        <div style={{display:"flex",justifyContent:"space-between",marginTop:8,fontSize:12,fontWeight:700}}>
+                          <span style={{color:"#8CC0FF"}}>🎮 Solo · {solo}</span>
+                          <span style={{color:"#00E676"}}>🌐 En ligne · {online}</span>
+                        </div>
+                      </div>
+                    );
+                  })() : null}
                   {/* Derniers comptes créés */}
                   <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.4)",fontWeight:800,textTransform:"uppercase",marginBottom:10,paddingLeft:4}}>Derniers comptes créés</div>
                   {(statsData.recent && statsData.recent.length) ? (
