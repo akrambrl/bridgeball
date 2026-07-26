@@ -1,0 +1,35 @@
+{
+  "id": "/",
+  "name": "GOAT FC · Quiz Football",
+  "short_name": "GOAT FC",
+  "description": "Le quiz football le plus fun : trouve le joueur qui relie deux clubs (The Plug), enchaîne les transferts (The Mercato), remplis la grille du jour (GOAT Grid) et affronte Le Devin. Gratuit, sans pub.",
+  "lang": "fr",
+  "dir": "ltr",
+  "start_url": "/?utm_source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0A140A",
+  "theme_color": "#0E1F14",
+  "categories": ["games", "sports", "entertainment"],
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
