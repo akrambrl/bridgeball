@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
 import { PLAYERS, RETIRED_PLAYERS, GG_WC_WINNERS, GG_CL_WINNERS } from "../players.jsx";
 import { trackPlay } from "../lib/track";
+import { hapticSuccess, hapticError } from "../lib/native";
 
 
 
@@ -5881,6 +5882,7 @@ export default function LePont() {
   }
 
   function handleCorrectAnswer(base, isChain=false) {
+    hapticSuccess(); // retour haptique natif (no-op sur web)
     const now = Date.now();
     const elapsed = (now - lastAnswerTime.current) / 1000;
     lastAnswerTime.current = now;
@@ -5916,6 +5918,7 @@ export default function LePont() {
   }
 
   function handleWrongAnswer(penalty, isChain=false) {
+    hapticError(); // retour haptique natif (no-op sur web)
     setCombo(0); comboRef.current=0; playSound("ko");
     // Vibration mauvaise réponse : buzz plus long et sec
     vibrate(150);
