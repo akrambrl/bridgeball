@@ -2127,6 +2127,7 @@ export const PLAYERS = [
   { name:"Sam Beukema", clubs:["Go Ahead Eagles", "AZ Alkmaar", "Bologna FC", "SSC Napoli"], diff:"expert", nationalities:["Pays-Bas"], positions:["defenseur"] , birthYear:1998 },
   { name:"Dan Ndoye", clubs:["Lausanne", "Nice", "Basel", "Bologna FC", "Nottingham Forest"], diff:"moyen", nationalities:["Suisse"], positions:["attaquant"], birthYear:2000 },
   { name:"Nicolás González", clubs:["Argentinos Juniors", "Stuttgart", "ACF Fiorentina", "Juventus FC", "Atletico Madrid"], diff:"moyen", nationalities:["Argentine"], positions:["attaquant"], birthYear:1998 },
+  { name:"Lucho González", clubs:["Huracán", "River Plate", "Porto", "Marseille", "Al-Rayyan", "Atlético Paranaense"], diff:"moyen", nationalities:["Argentine"], positions:["milieu"], birthYear:1981 },
   { name:"Noah Okafor", clubs:["Basel", "Salzburg", "AC Milan", "SSC Napoli", "Leeds United"], diff:"moyen", nationalities:["Suisse"], positions:["attaquant"], birthYear:2000 },
   { name:"Malick Thiaw", clubs:["Schalke", "AC Milan", "Newcastle"], diff:"moyen", nationalities:["Allemagne"], positions:["defenseur"], birthYear:2001 },
   { name:"Yunus Musah", clubs:["Valencia", "AC Milan", "Atalanta BC"], diff:"moyen", nationalities:["États-Unis"], positions:["milieu"], birthYear:2002 },

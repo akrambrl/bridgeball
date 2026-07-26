@@ -10488,28 +10488,18 @@ export default function LePont() {
                         {isPerfect ? (lang==="en"?"Grid filled without mistakes!":"Grille parfaite, aucune erreur !") : isVictory ? (lang==="en"?"You filled the whole grid":"Tu as rempli toute la grille") : (lang==="en"?"You used all your lives":"Tu as utilisé toutes tes vies")}
                       </div>
                       
-                      {/* Score final */}
-                      <div style={{background:"rgba(255,214,0,.1)",border:"1px solid rgba(255,214,0,.3)",borderRadius:16,padding:"14px 20px",marginBottom:14}}>
+                      {/* Score final (consolidé : score + remplissage + vies) */}
+                      <div style={{background:"rgba(255,214,0,.1)",border:"1px solid rgba(255,214,0,.3)",borderRadius:16,padding:"16px 20px",marginBottom:16}}>
                         <div style={{fontSize:11,color:"rgba(255,214,0,.7)",fontWeight:700,letterSpacing:2,marginBottom:2}}>SCORE</div>
-                        <div style={{fontFamily:G.heading,fontSize:42,color:"#FFD600",lineHeight:1}}>{ggScore} <span style={{fontSize:18,opacity:.7}}>pts</span></div>
-                        <div style={{fontSize:11,color:"rgba(255,255,255,.6)",marginTop:4,fontFamily:G.heading}}>/ {ggGrid.cells.reduce(function(s,c){return s+c.maxPoints;},0) + 100} {lang==="en"?"max":"max"}</div>
+                        <div style={{fontFamily:G.heading,fontSize:44,color:"#FFD600",lineHeight:1}}>{ggScore} <span style={{fontSize:18,opacity:.7}}>pts</span></div>
+                        <div style={{fontSize:12,color:"rgba(255,255,255,.6)",marginTop:6,fontWeight:700}}>
+                          {filledCount}/9 {lang==="en"?"filled":"rempli"} · {[0,1,2].map(function(i){return(<span key={i}>{i<ggLives?"❤️":"💔"}</span>);})}
+                        </div>
                         {isPerfect && (
-                          <div style={{fontSize:11,color:"#00E676",fontWeight:800,marginTop:4}}>+100 {lang==="en"?"NO-MISTAKE BONUS":"BONUS SANS-FAUTE"}</div>
+                          <div style={{fontSize:11,color:"#00E676",fontWeight:800,marginTop:6}}>+100 {lang==="en"?"NO-MISTAKE BONUS":"BONUS SANS-FAUTE"}</div>
                         )}
                       </div>
-                      
-                      {/* Stats */}
-                      <div style={{display:"flex",gap:8,marginBottom:18}}>
-                        <div style={{flex:1,background:"rgba(255,255,255,.05)",borderRadius:12,padding:10}}>
-                          <div style={{fontSize:10,color:"rgba(255,255,255,.5)",letterSpacing:1,fontWeight:700}}>{lang==="en"?"FILLED":"REMPLI"}</div>
-                          <div style={{fontFamily:G.heading,fontSize:22,color:"#fff"}}>{filledCount}/9</div>
-                        </div>
-                        <div style={{flex:1,background:"rgba(255,255,255,.05)",borderRadius:12,padding:10}}>
-                          <div style={{fontSize:10,color:"rgba(255,255,255,.5)",letterSpacing:1,fontWeight:700}}>{lang==="en"?"LIVES LEFT":"VIES RESTANTES"}</div>
-                          <div style={{fontFamily:G.heading,fontSize:22,color:"#fff"}}>{[0,1,2].map(function(i){return(<span key={i}>{i<ggLives?"❤️":"💔"}</span>);})}</div>
-                        </div>
-                      </div>
-                      
+
                       {/* Mini aperçu Wordle-style */}
                       <div style={{background:"rgba(0,0,0,.3)",borderRadius:14,padding:14,marginBottom:14,fontFamily:"monospace",fontSize:24,letterSpacing:6,lineHeight:1.3}}>
                         {gridEmojis.map(function(row,i){return(<div key={i}>{row}</div>);})}
