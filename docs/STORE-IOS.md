@@ -44,11 +44,12 @@ npm run ios:open        # ouvre Xcode
 
 ## 2. Icônes & splash
 
-Génère tous les formats iOS depuis une source 1024×1024 :
+Les sources sont **déjà prêtes** dans `assets/` (`icon.png` 1024, `splash.png`
+et `splash-dark.png` 2732×2732). Il suffit de générer tous les formats iOS :
 
 ```bash
 npm i -D @capacitor/assets
-npx capacitor-assets generate --ios   # utilise une image 1024 (ex: public/icon-512 agrandie)
+npx capacitor-assets generate --ios   # lit automatiquement le dossier assets/
 ```
 
 Fournis une icône **1024×1024** propre (sans coins arrondis, sans transparence —
