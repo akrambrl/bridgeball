@@ -29,8 +29,12 @@ function getPlayerId(): string {
 }
 
 // Enregistre un démarrage de partie pour le mode donné. Chaque appel = 1 partie.
-export function trackPlay(mode: PlayMode): void {
+// `online` = true si la partie est jouée en duel / salon multijoueur (sinon solo).
+// Le type devient "play_<mode>" (solo) ou "play_<mode>_online" (en ligne), ce qui
+// permet au dashboard de compter le total par mode ET la répartition solo/en ligne.
+export function trackPlay(mode: PlayMode, online = false): void {
   try {
+    const type = "play_" + mode + (online ? "_online" : "");
     fetch(SB_URL + "/rest/v1/bb_events", {
       method: "POST",
       headers: {
@@ -39,7 +43,7 @@ export function trackPlay(mode: PlayMode): void {
         "Content-Type": "application/json",
         Prefer: "return=minimal",
       },
-      body: JSON.stringify({ player_id: getPlayerId(), type: "play_" + mode }),
+      body: JSON.stringify({ player_id: getPlayerId(), type }),
       keepalive: true,
     }).catch(() => {});
   } catch {
