@@ -161,25 +161,34 @@ end $$;
 -- vérifie le code côté serveur et ne renvoie QUE le player_id/pseudo, puis
 -- retirer le privilège de lecture de la colonne.
 --
--- ⚠️ N'exécute ce bloc QU'APRÈS avoir déployé le changement client
---    (sinon la récupération de compte casse).
+-- ⚠️ N'exécute ce bloc QU'APRÈS avoir déployé le changement client (déjà fait).
 
--- create or replace function public.recover_account(p_code text)
--- returns table (player_id text, pseudo text)
--- language sql
--- security definer
--- set search_path = public
--- as $$
---   select player_id, pseudo
---   from public.bb_pseudos
---   where recovery_code = p_code
---   limit 1;
--- $$;
--- revoke all on function public.recover_account(text) from public;
--- grant execute on function public.recover_account(text) to anon;
---
--- -- Retire la lecture de la colonne secrète pour anon (garde les autres colonnes)
--- revoke select (recovery_code) on public.bb_pseudos from anon;
+-- 1) Fonction serveur : vérifie le code et ne renvoie QUE player_id + pseudo.
+create or replace function public.recover_account(p_code text)
+returns table (player_id text, pseudo text)
+language sql
+security definer
+set search_path = public
+as $$
+  select player_id, pseudo
+  from public.bb_pseudos
+  where recovery_code = p_code
+  limit 1;
+$$;
+revoke all on function public.recover_account(text) from public, anon;
+grant execute on function public.recover_account(text) to anon;
+
+-- 2) Masque UNIQUEMENT la colonne recovery_code au rôle anon.
+--    On retire le SELECT global puis on le redonne sur toutes les AUTRES
+--    colonnes (dont player_id, indispensable aux UPDATE ... WHERE player_id).
+--    La suppression de compte (delete_user_account, SECURITY DEFINER) continue
+--    de lire recovery_code sans problème (le definer ignore ce retrait).
+revoke select on public.bb_pseudos from anon;
+grant select (
+  id, player_id, pseudo, created_at, country, xp,
+  streak_count, streak_last_date, streak_best, streak_freezes,
+  last_notified_grade, xp_season, xp_season_month
+) on public.bb_pseudos to anon;
 
 
 -- ############################################################################

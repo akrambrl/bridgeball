@@ -11,6 +11,11 @@ const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 
 // Code secret du tableau de bord privé : goatfc.fr/?stats=<CODE>
 const STATS_CODE = "akram-goat-2610";
+
+// Colonnes lisibles de bb_pseudos (TOUTES sauf recovery_code, qui est masqué
+// côté public en Phase 2 sécurité). On sélectionne explicitement ces colonnes
+// au lieu de "*", car "*" inclurait recovery_code et serait refusé.
+const PSEUDO_COLS = "id,player_id,pseudo,created_at,country,xp,streak_count,streak_last_date,streak_best,streak_freezes,last_notified_grade,xp_season,xp_season_month";
 async function sbFetch(path, options) {
   const res = await fetch(SB_URL + "/rest/v1/" + path, {
     ...options,
@@ -4032,7 +4037,7 @@ export default function LePont() {
   useEffect(() => {
     (async function() {
       try {
-        const mine = await sbFetch("bb_pseudos?player_id=eq."+playerId+"&limit=1");
+        const mine = await sbFetch("bb_pseudos?player_id=eq."+playerId+"&select="+PSEUDO_COLS+"&limit=1");
         if (Array.isArray(mine) && mine.length > 0) {
           setPlayerName(mine[0].pseudo);
           try { localStorage.setItem("bb_name", mine[0].pseudo); } catch {}
@@ -5093,7 +5098,7 @@ export default function LePont() {
     setPseudoMsg(lang==="en"?"Checking...":"Vérification...");
     try {
       // Check if pseudo already taken (case-insensitive)
-      const existing = await sbFetch("bb_pseudos?pseudo=ilike."+encodeURIComponent(clean)+"&limit=1");
+      const existing = await sbFetch("bb_pseudos?pseudo=ilike."+encodeURIComponent(clean)+"&select=player_id&limit=1");
       if (Array.isArray(existing) && existing.length > 0) {
         if (existing[0].player_id === playerId) {
           // It's mine - confirm it
@@ -5109,19 +5114,13 @@ export default function LePont() {
         return;
       }
       // Check if I already have a pseudo
-      const mine = await sbFetch("bb_pseudos?player_id=eq."+playerId+"&limit=1");
+      const mine = await sbFetch("bb_pseudos?player_id=eq."+playerId+"&select=player_id,pseudo,country&limit=1");
       const country = await detectCountry();
       let finalRecoveryCode = recoveryCode;
       if (Array.isArray(mine) && mine.length > 0) {
-        // Update existing pseudo
+        // Update existing pseudo — on ne touche PAS recovery_code (déjà en base,
+        // et non lisible côté public depuis la Phase 2 sécurité).
         const payload = country ? {pseudo: clean, country} : {pseudo: clean};
-        // Si pas de code existant, en générer un
-        if (!mine[0].recovery_code) {
-          finalRecoveryCode = generateRecoveryCode();
-          payload.recovery_code = finalRecoveryCode;
-        } else {
-          finalRecoveryCode = mine[0].recovery_code;
-        }
         await sbFetch("bb_pseudos?player_id=eq."+playerId, {
           method: "PATCH",
           body: JSON.stringify(payload),
@@ -5139,11 +5138,11 @@ export default function LePont() {
         });
       }
       setPlayerName(clean);
-      try { 
+      try {
         localStorage.setItem("bb_name", clean);
-        localStorage.setItem("bb_recovery_code", finalRecoveryCode);
+        if (finalRecoveryCode) localStorage.setItem("bb_recovery_code", finalRecoveryCode);
       } catch {}
-      setRecoveryCode(finalRecoveryCode);
+      if (finalRecoveryCode) setRecoveryCode(finalRecoveryCode);
       setPseudoConfirmed(true);
       setPseudoScreen(false);
       setPseudoMsg(lang==="en"?"✓ Username reserved!":"✓ Pseudo réservé !");
@@ -5169,7 +5168,12 @@ export default function LePont() {
     setRecoveryLoading(true);
     setRecoveryMsg(lang==="en"?"Recovering...":"Récupération...");
     try {
-      const found = await sbFetch("bb_pseudos?recovery_code=eq."+encodeURIComponent(code)+"&limit=1");
+      // Récupération via fonction serveur sécurisée (le code n'est jamais lu
+      // directement côté client — la colonne recovery_code n'est pas exposée).
+      const found = await sbFetch("rpc/recover_account", {
+        method: "POST",
+        body: JSON.stringify({ p_code: code })
+      });
       if (!Array.isArray(found) || found.length === 0) {
         setRecoveryMsg(lang==="en"?"❌ Code not found":"❌ Code introuvable");
         setRecoveryLoading(false);
@@ -5197,28 +5201,13 @@ export default function LePont() {
     if (saved && saved.trim().length >= 2) {
       // Verify it's still valid in DB
       try {
-        const mine = await sbFetch("bb_pseudos?player_id=eq."+playerId+"&limit=1");
+        const mine = await sbFetch("bb_pseudos?player_id=eq."+playerId+"&select=player_id,pseudo&limit=1");
         if (Array.isArray(mine) && mine.length > 0) {
           setPlayerName(mine[0].pseudo);
           localStorage.setItem("bb_name", mine[0].pseudo);
           setPseudoConfirmed(true);
-          // Restaurer le code de récupération en localStorage (migration pour les users existants)
-          if (mine[0].recovery_code) {
-            try { localStorage.setItem("bb_recovery_code", mine[0].recovery_code); } catch {}
-            setRecoveryCode(mine[0].recovery_code);
-          } else {
-            // User existant sans code : lui en générer un et le sauver en DB
-            const newCode = generateRecoveryCode();
-            try {
-              await sbFetch("bb_pseudos?player_id=eq."+playerId, {
-                method: "PATCH",
-                body: JSON.stringify({recovery_code: newCode}),
-                headers: {"Prefer": "return=minimal"}
-              });
-              localStorage.setItem("bb_recovery_code", newCode);
-              setRecoveryCode(newCode);
-            } catch {}
-          }
+          // Le code de récupération vient du localStorage (plus lu depuis la DB :
+          // la colonne recovery_code n'est plus exposée côté public).
           return;
         }
       } catch {}
@@ -5346,7 +5335,7 @@ export default function LePont() {
     setFriendMsg(lang==="en"?"🔍 Searching...":"🔍 Recherche...");
     try {
       // Chercher le player_id correspondant au pseudo
-      const result = await sbFetch("bb_pseudos?pseudo=ilike."+encodeURIComponent(clean)+"&limit=1");
+      const result = await sbFetch("bb_pseudos?pseudo=ilike."+encodeURIComponent(clean)+"&select=player_id,pseudo&limit=1");
       if (!Array.isArray(result) || result.length === 0) {
         setFriendMsg(lang==="en"?"❌ Username not found. Check the spelling.":"❌ Pseudo introuvable. Vérifie l'orthographe.");
         return;
@@ -9039,24 +9028,18 @@ export default function LePont() {
         {/* Code de récupération */}
         <button onClick={async function(){
           setShowMyRecoveryCode(true);
-          // Si pas de code en state, fetch depuis la DB
+          // Pas de code en local : la colonne recovery_code n'est plus lisible
+          // côté public, donc on en (re)génère un et on l'enregistre en base.
           if (!recoveryCode && playerId) {
             try {
-              const mine = await sbFetch("bb_pseudos?player_id=eq."+playerId+"&select=recovery_code&limit=1");
-              if (Array.isArray(mine) && mine.length > 0 && mine[0].recovery_code) {
-                setRecoveryCode(mine[0].recovery_code);
-                try { localStorage.setItem("bb_recovery_code", mine[0].recovery_code); } catch {}
-              } else {
-                // Pas de code en DB : en générer un et le sauver
-                const newCode = generateRecoveryCode();
-                await sbFetch("bb_pseudos?player_id=eq."+playerId, {
-                  method: "PATCH",
-                  body: JSON.stringify({recovery_code: newCode}),
-                  headers: {"Prefer": "return=minimal"}
-                });
-                setRecoveryCode(newCode);
-                try { localStorage.setItem("bb_recovery_code", newCode); } catch {}
-              }
+              const newCode = generateRecoveryCode();
+              await sbFetch("bb_pseudos?player_id=eq."+playerId, {
+                method: "PATCH",
+                body: JSON.stringify({recovery_code: newCode}),
+                headers: {"Prefer": "return=minimal"}
+              });
+              setRecoveryCode(newCode);
+              try { localStorage.setItem("bb_recovery_code", newCode); } catch {}
             } catch(e) {}
           }
         }} style={{padding:"15px 16px",background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.1)",borderRadius:18,cursor:"pointer",color:G.white,fontFamily:G.font,fontSize:15,fontWeight:800,display:"flex",alignItems:"center",gap:13,textAlign:"left"}}>
