@@ -20,18 +20,6 @@ const GAMES: {
   badge: string;
 }[] = [
   {
-    key: "plug",
-    mode: "pont",
-    name: "The Plug",
-    tagline: "Le pont entre deux clubs",
-    img: "/plug-card.png",
-    mascot: "/win3.png",
-    description:
-      "Deux clubs, un seul joueur. À toi de trouver le maillon qui les relie.",
-    accent: "#00E676",
-    badge: "SIGNATURE",
-  },
-  {
     key: "mercato",
     mode: "chaine",
     name: "The Mercato",
@@ -42,6 +30,18 @@ const GAMES: {
       "Pars d'un joueur et enchaîne les transferts. Bats ton record.",
     accent: "#FF8A2A",
     badge: "MARATHON",
+  },
+  {
+    key: "plug",
+    mode: "pont",
+    name: "The Plug",
+    tagline: "Le pont entre deux clubs",
+    img: "/plug-card.png",
+    mascot: "/win3.png",
+    description:
+      "Deux clubs, un seul joueur. À toi de trouver le maillon qui les relie.",
+    accent: "#00E676",
+    badge: "SIGNATURE",
   },
   {
     key: "grid",
@@ -94,7 +94,7 @@ const TOP5 = [
 ];
 
 export const LobbyView = ({ onPlay, onJoinRoom }: Props) => {
-  const [selected, setSelected] = useState<GameKey>("guess");
+  const [selected, setSelected] = useState<GameKey>("mercato");
   const game = GAMES.find((g) => g.key === selected)!;
   const online = useLiveOnline();
   const [roomCode, setRoomCode] = useState("");
