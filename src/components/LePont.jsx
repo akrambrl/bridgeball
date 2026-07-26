@@ -347,7 +347,7 @@ export const CLUB_COLORS = {
   "Sassuolo":["#00A651","#000000"],
   "Club Brugge":["#004996","#000000"],
   "Reims":["#DA291C","#FFFFFF"],
-  "Stoke":["#E03A3E","#FFFFFF"],
+  "Stoke City":["#E03A3E","#FFFFFF"],
   "Salzburg":["#CE0E2D","#FFFFFF"],
   "NEC Nijmegen":["#C8102E","#000000"],
   "AZ":["#CF142B","#FFFFFF"],
@@ -612,7 +612,7 @@ const PONT_CLUBS = new Set([
   // === EXTENSION : clubs avec 7+ joueurs dans la base ===
   // Premier League historiques / clubs jojo
   "Watford","Sunderland","Burnley","West Brom","Leeds United","Middlesbrough",
-  "Stoke","Bolton","Swansea","Sheffield United","Blackburn","Ipswich Town","Portsmouth",
+  "Stoke City","Bolton","Swansea","Sheffield United","Blackburn","Ipswich Town","Portsmouth",
   // Italie Serie B/historiques
   "Genoa CFC","Parma FC","Sassuolo","Empoli FC","Cagliari Calcio","Hellas Verona",
   // France
@@ -1034,7 +1034,7 @@ const LEAGUE_CLUBS = {
   PL: ["Manchester United", "Manchester City", "Liverpool", "Chelsea", "Arsenal", "Tottenham",
        "Newcastle", "Everton", "Aston Villa", "West Ham", "Leicester City", "Brighton", "Brentford",
        "Crystal Palace", "Fulham", "Nottingham Forest", "Bournemouth", "Wolverhampton", "Southampton",
-       "Leeds United", "Burnley", "Watford", "Norwich City", "Sheffield United", "Stoke", "Swansea",
+       "Leeds United", "Burnley", "Watford", "Norwich City", "Sheffield United", "Stoke City", "Swansea",
        "Sunderland", "West Brom"],
   LIGA: ["Real Madrid", "Barcelona", "Atletico Madrid", "Sevilla", "Valencia", "Villarreal",
          "Real Betis", "Real Sociedad", "Athletic Bilbao", "Celta Vigo", "Getafe", "Osasuna",
