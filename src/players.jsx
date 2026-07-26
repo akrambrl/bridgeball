@@ -1123,7 +1123,7 @@ export const PLAYERS = [
   { name:"Fran González", clubs:["Real Madrid Castilla", "Real Madrid"], diff:"expert", nationalities:["Espagne"], positions:["gardien"], birthYear:2003 },
   { name:"Toni Fuidias", clubs:["Real Madrid"], diff:"expert", nationalities:["Espagne"], positions:["gardien"] },
   { name:"Vinícius Júnior", clubs:["Flamengo", "Real Madrid"], diff:"facile", nationalities:["Brésil"], positions:["attaquant"], birthYear:2000 },
-  { name:"Mariano Díaz", clubs:["Real Madrid", "Lyon", "Sevilla"], diff:"expert", nationalities:["République Dominicaine"], positions:["attaquant"] , birthYear:1993 },
+  { name:"Mariano Díaz", clubs:["Real Madrid", "Lyon", "Sevilla"], diff:"expert", nationalities:["République dominicaine"], positions:["attaquant"] , birthYear:1993 },
   { name:"Joshua Kimmich", clubs:["Stuttgart", "RB Leipzig", "Bayern Munich"], diff:"moyen", nationalities:["Allemagne"], positions:["milieu"], birthYear:1995 },
   { name:"Romelu Lukaku", clubs:["Anderlecht", "Chelsea", "West Brom", "Everton", "Manchester United", "Inter Milan", "AS Roma", "SSC Napoli"], diff:"facile", nationalities:["Belgique"], positions:["attaquant"], birthYear:1993 },
   { name:"Carles Puyol", clubs:["Barcelona"], diff:"moyen", nationalities:["Espagne"], positions:["defenseur"], birthYear:1978 },
