@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "fr.goatfc.app",
+      "sha256_cert_fingerprints": [
+        "11:7B:A3:11:16:EE:2D:ED:E9:DF:BD:24:05:35:A6:27:60:48:76:5F:C7:20:5A:65:9B:C8:18:8E:DB:2D:28:23"
+      ]
+    }
+  }
+]
