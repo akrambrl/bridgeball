@@ -1566,7 +1566,7 @@ export const PLAYERS = [
   { name:"Gio Reyna", clubs:["Borussia Dortmund", "Nottingham Forest", "Borussia Mönchengladbach"], diff:"moyen", nationalities:["États-Unis"], positions:["milieu"], birthYear:2002 },
   { name:"Chris Richards", clubs:["Hoffenheim", "Crystal Palace"], diff:"expert", nationalities:["États-Unis"], positions:["defenseur"] , birthYear:2000 },
   // Équipe nationale Croatie 2026
-  { name:"Mateo Kovačić", clubs:["Inter Milan", "Chelsea", "Manchester City"], diff:"moyen", nationalities:["Croatie"], positions:["milieu"], birthYear:1994 },
+  { name:"Mateo Kovačić", clubs:["Dinamo Zagreb", "Inter Milan", "Real Madrid", "Chelsea", "Manchester City"], diff:"moyen", nationalities:["Croatie"], positions:["milieu"], birthYear:1994 },
   { name:"Andrej Kramarić", clubs:["Leicester City", "Hoffenheim"], diff:"moyen", nationalities:["Croatie"], positions:["attaquant"], birthYear:1991 },
   { name:"Dominik Livaković", clubs:["Dinamo Zagreb", "Fenerbahce"], diff:"moyen", nationalities:["Croatie"], positions:["gardien"], birthYear:1995 },
   { name:"Nikola Vlašić", clubs:["Hajduk Split", "Everton", "CSKA Moscow", "West Ham", "Torino FC"], diff:"moyen", nationalities:["Croatie"], positions:["milieu"], birthYear:1997 },
