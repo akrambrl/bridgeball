@@ -52,6 +52,14 @@ mark), versionné dans le repo.
 (joueur qui a bien joué dans les 2 clubs, réponse réellement invalide, spam).
 Dans ce cas, ne rien modifier — juste avancer le high-water mark.
 
+⚠️ **Toujours vérifier sur Transfermarkt pour l'année EN COURS.** Le jeu vit en
+temps réel (mercatos récents) : ne jamais se fier à une connaissance interne
+potentiellement datée. Un transfert récent (prêt/achat de la dernière saison)
+est réel s'il est sur Transfermarkt. Exemple vécu : Pavard prêté à Marseille en
+sept. 2025 — retiré à tort car « connu » à l'Inter. **Ne corriger QUE le joueur
+explicitement pointé par `given_answer`**, sauf si un autre joueur est confirmé
+faux via Transfermarkt. Dans le doute, ne pas toucher.
+
 ## 3. Format des fiches joueur (`src/players.jsx`)
 
 ```js
