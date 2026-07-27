@@ -963,7 +963,7 @@ export const PLAYERS = [
   { name:"Luke Shaw", clubs:["Southampton", "Manchester United"], diff:"moyen", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1995 },
   { name:"Benjamin Pavard", clubs:["Lille", "Stuttgart", "Bayern Munich", "Inter Milan", "Marseille"], diff:"moyen", nationalities:["France"], positions:["defenseur"], birthYear:1996 },
   { name:"Presnel Kimpembe", clubs:["PSG"], diff:"moyen", nationalities:["France"], positions:["defenseur"], birthYear:1995 },
-  { name:"John Stones", clubs:["Barnsley", "Everton", "Manchester City"], diff:"moyen", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1994 },
+  { name:"John Stones", clubs:["Barnsley", "Everton", "Manchester City", "Inter Milan"], diff:"moyen", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1994 },
   { name:"Arturo Vidal", clubs:["Juventus FC", "Bayern Munich", "Barcelona", "Inter Milan"], diff:"moyen", nationalities:["Chili"], positions:["attaquant"], birthYear:1987 },
   { name:"Nemanja Matic", clubs:["Chelsea", "Manchester United", "AS Roma"], diff:"expert", nationalities:["Serbie"], positions:["milieu"], birthYear:1988 },
   { name:"Aaron Ramsey", clubs:["Arsenal", "Juventus FC"], diff:"expert", nationalities:["Pays de Galles"], positions:["milieu"], birthYear:1990 },
