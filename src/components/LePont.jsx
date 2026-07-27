@@ -4298,6 +4298,21 @@ export default function LePont() {
         }
       }
     } catch {}
+    // Records réels depuis bb_scores (source de vérité) — indépendant du leaderboard
+    // en mémoire (qui, en mode global, remplace le score par l'XP et met les records
+    // à 0 pour les joueurs ajoutés via le fallback XP). Corrige "Record Plug/Mercato 0"
+    // alors que le joueur a bien des scores.
+    try {
+      const scores = await sbFetch("bb_scores?player_id=eq."+id+"&select=score,mode&order=score.desc&limit=1000");
+      if (Array.isArray(scores)) {
+        let bp = 0, bc = 0;
+        scores.forEach(function(s){
+          if (s.mode === "pont" && s.score > bp) bp = s.score;
+          if (s.mode === "chaine" && s.score > bc) bc = s.score;
+        });
+        setViewedProfileData(function(prev){ return prev ? {...prev, bestPont:bp, bestChaine:bc, played:(bp>0?1:0)+(bc>0?1:0)} : prev; });
+      }
+    } catch {}
   }
 
   async function loadDuels() {
