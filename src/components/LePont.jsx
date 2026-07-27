@@ -1526,6 +1526,19 @@ function checkGuess(g,players){
     return false;
   });
 }
+// Ensemble des identifiants de clubs « connus » (en normCompact) : clubs de la
+// base, noms canoniques et alias. Sert à distinguer « club connu mais pas celui
+// du joueur » d'une simple faute de frappe.
+const KNOWN_CLUB_KEYS = (function(){
+  const s = new Set();
+  for(const c in CLUB_INDEX){ s.add(normCompact(c)); }
+  for(const canonical in CLUB_ALIASES){
+    s.add(normCompact(canonical));
+    for(const a of CLUB_ALIASES[canonical]) s.add(normCompact(a));
+  }
+  return s;
+})();
+
 function matchClub(input,playerClubs){
   const n=norm(input);
   const nc=normCompact(input);
@@ -1544,6 +1557,13 @@ function matchClub(input,playerClubs){
       if(aliases.some(a=>norm(a)===norm(c)))return c;
     }
   }
+  // 3bis. Si l'input EST un club connu précis (nom canonique, club de la base ou
+  //   alias exact) mais qu'aucun club du joueur n'a matché aux étapes exactes
+  //   ci-dessus, alors ce n'est tout simplement pas un club de ce joueur. On
+  //   n'autorise PAS le matching approximatif : sinon un club distinct partageant
+  //   un mot produirait un faux positif — ex. « Atletico Madrid » qui matchait
+  //   l'alias « madrid » de « Real Madrid » via un substring.
+  if(KNOWN_CLUB_KEYS.has(nc)) return null;
   if(n.length>=3){
     // 4. Substring match sur le club du joueur (version compacte pour tolérer tirets/espaces)
     for(const c of playerClubs){if(normCompact(c).includes(nc)||nc.includes(normCompact(c)))return c;}
@@ -8805,27 +8825,20 @@ export default function LePont() {
             {friendMsg && !d.isFriend && (
               <div style={{zIndex:1,padding:"0 16px 8px",fontSize:12,color:friendMsg.indexOf("✓")>=0?G.accent:friendMsg.indexOf("❌")>=0?G.red:"rgba(255,255,255,.7)",textAlign:"center",fontWeight:700}}>{friendMsg}</div>
             )}
-            <div style={{zIndex:1,padding:"16px 16px 8px",display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-              <div style={{background:G.accent,borderRadius:16,padding:"14px 10px",textAlign:"center",boxShadow:"0 4px 16px rgba(0,230,118,.35)"}}>
-                <div style={{fontSize:22,marginBottom:4}}>🏆</div>
-                <div style={{fontSize:10,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(0,0,0,.75)",marginBottom:4}}>{lang==="en"?"Plug record":"Record Plug"}</div>
-                <div style={{fontFamily:G.heading,fontSize:26,color:"#000"}}>{d.bestPont||0}</div>
-              </div>
-              <div style={{background:G.accent,borderRadius:16,padding:"14px 10px",textAlign:"center",boxShadow:"0 4px 16px rgba(0,230,118,.35)"}}>
-                <div style={{fontSize:22,marginBottom:4}}>⛓</div>
-                <div style={{fontSize:10,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(0,0,0,.75)",marginBottom:4}}>{lang==="en"?"Mercato record":"Record Mercato"}</div>
-                <div style={{fontFamily:G.heading,fontSize:26,color:"#000"}}>{d.bestChaine||0}</div>
-              </div>
-              <div style={{background:G.accent,borderRadius:16,padding:"14px 10px",textAlign:"center",boxShadow:"0 4px 16px rgba(0,230,118,.35)"}}>
-                <div style={{fontSize:22,marginBottom:4}}>🎮</div>
-                <div style={{fontSize:10,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(0,0,0,.75)",marginBottom:4}}>{lang==="en"?"Games":"Parties"}</div>
-                <div style={{fontFamily:G.heading,fontSize:26,color:"#000"}}>{d.played||0}</div>
-              </div>
-              <div style={{background:G.accent,borderRadius:16,padding:"14px 10px",textAlign:"center",boxShadow:"0 4px 16px rgba(0,230,118,.35)"}}>
-                <div style={{fontSize:22,marginBottom:4}}>⭐</div>
-                <div style={{fontSize:10,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(0,0,0,.75)",marginBottom:4}}>XP</div>
-                <div style={{fontFamily:G.heading,fontSize:26,color:"#000"}}>{d.xp||0}</div>
-              </div>
+            <div style={{zIndex:1,padding:"14px 20px 2px",fontSize:10.5,fontWeight:800,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.4)"}}>{lang==="en"?"Stats":"Statistiques"}</div>
+            <div style={{zIndex:1,padding:"8px 16px 8px",display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+              {[
+                {icon:"🏆", ac:"#00E676", label:lang==="en"?"Plug record":"Record Plug", val:d.bestPont||0},
+                {icon:"⛓️", ac:"#3DA5FF", label:lang==="en"?"Mercato record":"Record Mercato", val:d.bestChaine||0},
+                {icon:"🎮", ac:"#C084FC", label:lang==="en"?"Games":"Parties", val:d.played||0},
+                {icon:"⭐", ac:"#FFC93C", label:"XP", val:d.xp||0},
+              ].map(function(s,i){return(
+                <div key={i} style={{background:`linear-gradient(160deg, ${s.ac}26 0%, rgba(255,255,255,.03) 55%, rgba(0,0,0,.25) 100%)`,border:`1px solid ${s.ac}55`,borderRadius:20,padding:"14px 16px",boxShadow:`0 14px 34px -16px ${s.ac}66`}}>
+                  <div style={{width:38,height:38,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,background:`${s.ac}22`,border:`1px solid ${s.ac}55`,marginBottom:10}}>{s.icon}</div>
+                  <div style={{fontFamily:G.heading,fontSize:34,color:s.ac,lineHeight:1,textShadow:`0 0 18px ${s.ac}55`}}>{s.val}</div>
+                  <div style={{fontSize:10,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginTop:6}}>{s.label}</div>
+                </div>
+              );})}
             </div>
             <div style={{zIndex:1,padding:"8px 16px"}}>
               <div style={{background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",borderRadius:14,padding:"10px",display:"flex"}}>
