@@ -11139,7 +11139,7 @@ export default function LePont() {
         {/* Onomatopée comic quand on passe une question (surgit en gros, repart aussitôt) */}
         {skipOno && (
           <div style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:60,display:"flex",alignItems:"center",justifyContent:"center"}}>
-            <div style={{fontFamily:G.heading,fontSize:"clamp(64px,20vw,150px)",lineHeight:1,color:"#fff",WebkitTextStroke:"3px rgba(0,0,0,.55)",textShadow:"0 6px 0 rgba(0,0,0,.35),0 0 34px rgba(255,255,255,.4)",animation:"onoPop .85s cubic-bezier(.2,.8,.3,1) forwards"}}>{skipOno}</div>
+            <div style={{fontFamily:G.heading,fontSize:"clamp(64px,20vw,150px)",lineHeight:1,color:"#FFD600",WebkitTextStroke:"3px rgba(0,0,0,.55)",textShadow:"0 6px 0 rgba(0,0,0,.35),0 0 34px rgba(255,214,0,.5)",animation:"onoPop .85s cubic-bezier(.2,.8,.3,1) forwards"}}>{skipOno}</div>
           </div>
         )}
 
