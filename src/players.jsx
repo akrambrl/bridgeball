@@ -961,7 +961,7 @@ export const PLAYERS = [
   { name:"Jerome Boateng", clubs:["Manchester City", "Bayern Munich"], diff:"moyen", nationalities:["Allemagne"], positions:["defenseur"], birthYear:1988 },
   { name:"Jordi Alba", clubs:["Valencia", "Barcelona", "Inter Miami"], diff:"moyen", nationalities:["Espagne"], positions:["defenseur"], birthYear:1989 },
   { name:"Luke Shaw", clubs:["Southampton", "Manchester United"], diff:"moyen", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1995 },
-  { name:"Benjamin Pavard", clubs:["Stuttgart", "Bayern Munich", "Inter Milan", "Marseille"], diff:"moyen", nationalities:["France"], positions:["defenseur"], birthYear:1996 },
+  { name:"Benjamin Pavard", clubs:["Lille", "Stuttgart", "Bayern Munich", "Inter Milan"], diff:"moyen", nationalities:["France"], positions:["defenseur"], birthYear:1996 },
   { name:"Presnel Kimpembe", clubs:["PSG"], diff:"moyen", nationalities:["France"], positions:["defenseur"], birthYear:1995 },
   { name:"John Stones", clubs:["Barnsley", "Everton", "Manchester City"], diff:"moyen", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1994 },
   { name:"Arturo Vidal", clubs:["Juventus FC", "Bayern Munich", "Barcelona", "Inter Milan"], diff:"moyen", nationalities:["Chili"], positions:["attaquant"], birthYear:1987 },
@@ -2012,7 +2012,7 @@ export const PLAYERS = [
   { name:"Demetrio Albertini", clubs:["AC Milan", "Atletico Madrid", "SS Lazio", "Atalanta BC", "Barcelona"], diff:"moyen", nationalities:["Italie"], positions:["attaquant"], birthYear:1971 },
   { name:"Gianluca Zambrotta", clubs:["Bari", "Juventus FC", "Barcelona", "AC Milan"], diff:"moyen", nationalities:["Italie"], positions:["defenseur"], birthYear:1977 },
   // Inter Milan
-  { name:"Marco Materazzi", clubs:["Marseille", "Everton", "Inter Milan"], diff:"facile", nationalities:["Italie"], positions:["defenseur"], birthYear:1973 },
+  { name:"Marco Materazzi", clubs:["Perugia", "Everton", "Inter Milan"], diff:"facile", nationalities:["Italie"], positions:["defenseur"], birthYear:1973 },
   { name:"Adriano Imperador", clubs:["Flamengo", "Inter Milan", "Parma FC", "São Paulo", "AS Roma", "Corinthians"], diff:"moyen", nationalities:["Brésil"], positions:["attaquant"], birthYear:1982 },
   { name:"Walter Samuel", clubs:["Boca Juniors", "AS Roma", "Real Madrid", "Inter Milan", "Basel"], diff:"moyen", nationalities:["Argentine"], positions:["defenseur"] , birthYear:1978 },
   { name:"Iván Zamorano", clubs:["Bologna FC", "Real Madrid", "Inter Milan"], diff:"moyen", nationalities:["Chili"], positions:["attaquant"], birthYear:1967 },
@@ -2026,7 +2026,7 @@ export const PLAYERS = [
   // Roma
   { name:"Radja Nainggolan", clubs:["Piacenza", "Cagliari Calcio", "AS Roma", "Inter Milan", "Antwerp"], diff:"moyen", nationalities:["Belgique"], positions:["milieu"], birthYear:1988 },
   { name:"Aldair", clubs:["Flamengo", "Benfica", "AS Roma"], diff:"moyen", nationalities:["Brésil"], positions:["defenseur"], birthYear:1965 },
-  { name:"Miralem Pjanić", clubs:["Metz", "Lyon", "AS Roma", "Juventus FC", "Barcelona", "Besiktas", "Sharjah", "CSKA Moscow"], diff:"moyen", nationalities:["Bosnie"], positions:["attaquant"], birthYear:1990 },
+  { name:"Miralem Pjanić", clubs:["Metz", "Lyon", "AS Roma", "Juventus FC", "Barcelona", "Besiktas", "Sharjah", "CSKA Moscow"], diff:"moyen", nationalities:["Bosnie"], positions:["milieu"], birthYear:1990 },
   { name:"Tammy Abraham", clubs:["Chelsea", "Bristol City", "Swansea", "Aston Villa", "AS Roma", "AC Milan", "Besiktas"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1997 },
   { name:"Stephan El Shaarawy", clubs:["Genoa CFC", "AC Milan", "Monaco", "AS Roma", "Shanghai Shenhua"], diff:"moyen", nationalities:["Italie"], positions:["attaquant"], birthYear:1992 },
   // Napoli

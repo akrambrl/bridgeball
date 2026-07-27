@@ -1,0 +1,4 @@
+{
+  "lastProcessedId": 28,
+  "note": "id du dernier signalement bb_reports traité par l'automatisation de triage. Les runs suivants ne traitent que les signalements d'id supérieur. Ne pas éditer à la main sauf pour re-traiter."
+}
