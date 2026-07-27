@@ -961,7 +961,7 @@ export const PLAYERS = [
   { name:"Jerome Boateng", clubs:["Manchester City", "Bayern Munich"], diff:"moyen", nationalities:["Allemagne"], positions:["defenseur"], birthYear:1988 },
   { name:"Jordi Alba", clubs:["Valencia", "Barcelona", "Inter Miami"], diff:"moyen", nationalities:["Espagne"], positions:["defenseur"], birthYear:1989 },
   { name:"Luke Shaw", clubs:["Southampton", "Manchester United"], diff:"moyen", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1995 },
-  { name:"Benjamin Pavard", clubs:["Lille", "Stuttgart", "Bayern Munich", "Inter Milan"], diff:"moyen", nationalities:["France"], positions:["defenseur"], birthYear:1996 },
+  { name:"Benjamin Pavard", clubs:["Lille", "Stuttgart", "Bayern Munich", "Inter Milan", "Marseille"], diff:"moyen", nationalities:["France"], positions:["defenseur"], birthYear:1996 },
   { name:"Presnel Kimpembe", clubs:["PSG"], diff:"moyen", nationalities:["France"], positions:["defenseur"], birthYear:1995 },
   { name:"John Stones", clubs:["Barnsley", "Everton", "Manchester City"], diff:"moyen", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1994 },
   { name:"Arturo Vidal", clubs:["Juventus FC", "Bayern Munich", "Barcelona", "Inter Milan"], diff:"moyen", nationalities:["Chili"], positions:["attaquant"], birthYear:1987 },
