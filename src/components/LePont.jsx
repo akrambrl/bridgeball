@@ -4293,9 +4293,9 @@ export default function LePont() {
         if (currentPseudo && currentPseudo !== name) {
           setViewedProfile({ id, name: currentPseudo });
         }
-        if (!lbData) {
-          setViewedProfileData(function(prev){ return prev ? {...prev, xp: userData[0].xp || 0} : prev; });
-        }
+        // XP cumulée = source de vérité pour la carte "XP" et le grade,
+        // quel que soit l'onglet du classement chargé.
+        setViewedProfileData(function(prev){ return prev ? {...prev, xp: userData[0].xp || 0} : prev; });
       }
     } catch {}
     // Records réels depuis bb_scores (source de vérité) — indépendant du leaderboard
@@ -8810,8 +8810,8 @@ export default function LePont() {
               </div>
               <div style={{background:G.accent,borderRadius:16,padding:"14px 10px",textAlign:"center",boxShadow:"0 4px 16px rgba(0,230,118,.35)"}}>
                 <div style={{fontSize:22,marginBottom:4}}>⭐</div>
-                <div style={{fontSize:10,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(0,0,0,.75)",marginBottom:4}}>{lang==="en"?"Total Score":"Score Total"}</div>
-                <div style={{fontFamily:G.heading,fontSize:26,color:"#000"}}>{d.score||0}</div>
+                <div style={{fontSize:10,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(0,0,0,.75)",marginBottom:4}}>XP</div>
+                <div style={{fontFamily:G.heading,fontSize:26,color:"#000"}}>{d.xp||0}</div>
               </div>
             </div>
             <div style={{zIndex:1,padding:"8px 16px"}}>
