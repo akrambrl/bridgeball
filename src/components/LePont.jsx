@@ -2272,6 +2272,7 @@ if(typeof document!=="undefined"&&!document.getElementById("bb-css")){
     @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
     @keyframes flashOk{0%{background:rgba(74,222,128,0)}40%{background:rgba(74,222,128,.18)}100%{background:rgba(74,222,128,0)}}
     @keyframes flashKo{0%{background:rgba(239,68,68,0)}40%{background:rgba(239,68,68,.15)}100%{background:rgba(239,68,68,0)}}
+    @keyframes onoPop{0%{opacity:0;transform:scale(.2) rotate(-14deg)}22%{opacity:1;transform:scale(1.3) rotate(7deg)}42%{transform:scale(.96) rotate(-4deg)}62%{opacity:1;transform:scale(1.06) rotate(2deg)}100%{opacity:0;transform:scale(1.5) rotate(5deg)}}
     @keyframes chainPop{0%{transform:scale(.8);opacity:0}100%{transform:scale(1);opacity:1}}
     @keyframes playerDrop{0%{opacity:0;transform:translateY(-80%) scale(.88)}65%{transform:translateY(5%) scale(1.03)}100%{opacity:1;transform:translateY(0) scale(1)}}
     @keyframes clubTagPop{0%{opacity:0;transform:scale(.7) translateX(-10px)}70%{transform:scale(1.08) translateX(2px)}100%{opacity:1;transform:scale(1) translateX(0)}}
@@ -2540,6 +2541,8 @@ export default function LePont() {
   const [timeLeft, setTimeLeft] = useState(ROUND_DURATION);
   const [guess, setGuess] = useState("");
   const [flash, setFlash] = useState(null);
+  const [skipOno, setSkipOno] = useState(null); // onomatopée comic affichée quand on passe une question
+  const skipOnoTimerRef = useRef(null);
   const [feedback, setFeedback] = useState(null);
   const [options, setOptions] = useState([]);
   const [animKey, setAnimKey] = useState(0);
@@ -6591,7 +6594,16 @@ export default function LePont() {
     }
   }
 
+  // Affiche une onomatopée comic qui surgit en gros et repart aussitôt (quand on passe)
+  function triggerSkipOno() {
+    const list = ["PFOU !","BOF…","ZUT !","RATÉ !","PSCHIT !","JE SÈCHE !","OUPS !","SUIVANT !","HÉLAS !","PAF !","BOUM !","AÏE !"];
+    setSkipOno(list[Math.floor(Math.random()*list.length)]);
+    if (skipOnoTimerRef.current) clearTimeout(skipOnoTimerRef.current);
+    skipOnoTimerRef.current = setTimeout(()=>setSkipOno(null), 850);
+  }
+
   function handlePass() {
+    triggerSkipOno();
     clearInterval(qTimerRef.current);
     const cur=queue[qIdx%Math.max(queue.length,1)];
     if(cur) setRoundAnswers(a=>[...a,{c1:cur.c1, c2:cur.c2, validPlayers:cur.p, given:null, status:"skip"}]);
@@ -6700,6 +6712,7 @@ export default function LePont() {
 
   function handleChainPass() {
     if(chainPassedRef.current) return; // already passed this question
+    triggerSkipOno();
     clearInterval(qTimerRef.current);
     chainPassedRef.current = true;
     setChainScore(s=>{chainScoreRef.current=s-10;return s-10;});
@@ -11111,6 +11124,13 @@ export default function LePont() {
         {floatingPoints}
         {/* Screen flash */}
         <div style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:10,animation:feedback==="ok"?"flashOk .6s ease":feedback==="ko"?"flashKo .6s ease":"none"}}/>
+
+        {/* Onomatopée comic quand on passe une question (surgit en gros, repart aussitôt) */}
+        {skipOno && (
+          <div style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:60,display:"flex",alignItems:"center",justifyContent:"center"}}>
+            <div style={{fontFamily:G.heading,fontSize:"clamp(64px,20vw,150px)",lineHeight:1,color:G.accent,WebkitTextStroke:"3px rgba(0,0,0,.55)",textShadow:"0 6px 0 rgba(0,0,0,.35),0 0 34px rgba(0,230,118,.55)",animation:"onoPop .85s cubic-bezier(.2,.8,.3,1) forwards"}}>{skipOno}</div>
+          </div>
+        )}
 
         {/* Notification abandon en salle */}
         {abandonNotif && (
