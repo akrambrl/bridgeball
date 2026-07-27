@@ -4273,20 +4273,18 @@ export default function LePont() {
     setScreen("userProfile");
     // Compute sync data first
     const lbData = leaderboard.find(e => e.pid === id);
-    const duelsWith = duels.filter(d =>
+    // Historique tête-à-tête normalisé {mode, diff, my, opp, when} — duels 1v1
+    // (les parties en salon partagées sont ajoutées plus bas, après fetch).
+    const duelRows = duels.filter(d =>
       d.status === "complete" &&
       ((d.challenger_id === playerId && d.opponent_id === id) ||
        (d.opponent_id === playerId && d.challenger_id === id))
-    );
-    let myWins = 0, myLosses = 0, draws = 0;
-    duelsWith.forEach(d => {
+    ).map(d => {
       const isChal = d.challenger_id === playerId;
-      const myScore = isChal ? d.challenger_score : d.opponent_score;
-      const oppScore = isChal ? d.opponent_score : d.challenger_score;
-      if (myScore > oppScore) myWins++;
-      else if (myScore < oppScore) myLosses++;
-      else draws++;
+      return { mode:d.mode, diff:d.diff, my:isChal?d.challenger_score:d.opponent_score, opp:isChal?d.opponent_score:d.challenger_score, when:d.created_at };
     });
+    let myWins = 0, myLosses = 0, draws = 0;
+    duelRows.forEach(x => { if((x.my||0)>(x.opp||0)) myWins++; else if((x.my||0)<(x.opp||0)) myLosses++; else draws++; });
     const avatarUrl = SB_URL + "/storage/v1/object/public/avatars/" + id + ".jpg";
     // Set data immediately — avatar will just 404 if no photo, <img> onError handles it
     setViewedProfileData({
@@ -4300,7 +4298,7 @@ export default function LePont() {
       wins: lbData ? lbData.wins : 0,
       draws: lbData ? lbData.draws : 0,
       losses: lbData ? lbData.losses : 0,
-      duelsWith,
+      duelsWith: duelRows,
       myWins,
       myLosses,
       duelsDraws: draws,
@@ -4334,6 +4332,32 @@ export default function LePont() {
           if (s.mode === "chaine" && s.score > bc) bc = s.score;
         });
         setViewedProfileData(function(prev){ return prev ? {...prev, bestPont:bp, bestChaine:bc, played:(bp>0?1:0)+(bc>0?1:0)} : prev; });
+      }
+    } catch {}
+    // Parties en salon (multijoueur) partagées avec ce joueur : elles comptent
+    // aussi dans le tête-à-tête. Avant, seuls les duels 1v1 étaient pris en
+    // compte, d'où "aucun duel" alors qu'on a joué ensemble en salon.
+    try {
+      const rooms = await sbFetch("bb_rooms?status=eq.complete&select=mode,diff,players,created_at&order=created_at.desc&limit=150");
+      if (Array.isArray(rooms)) {
+        const roomRows = [];
+        for (const r of rooms) {
+          let pls = r.players;
+          if (typeof pls === "string") { try { pls = JSON.parse(pls); } catch { pls = []; } }
+          if (!Array.isArray(pls)) continue;
+          const me = pls.find(function(p){return p && p.id===playerId;});
+          const them = pls.find(function(p){return p && p.id===id;});
+          if (me && them) roomRows.push({ mode:r.mode, diff:r.diff, my:me.score||0, opp:them.score||0, when:r.created_at });
+        }
+        if (roomRows.length > 0) {
+          setViewedProfileData(function(prev){
+            if (!prev) return prev;
+            const merged = [...(prev.duelsWith||[]), ...roomRows].sort(function(a,b){return (b.when||"").localeCompare(a.when||"");});
+            let w=0,l=0,dr=0;
+            merged.forEach(function(x){ if((x.my||0)>(x.opp||0)) w++; else if((x.my||0)<(x.opp||0)) l++; else dr++; });
+            return {...prev, duelsWith:merged, myWins:w, myLosses:l, duelsDraws:dr};
+          });
+        }
       }
     } catch {}
   }
@@ -8858,7 +8882,7 @@ export default function LePont() {
             </div>
             {d.duelsWith.length > 0 ? (
               <div style={{zIndex:1,padding:"16px 16px 8px"}}>
-                <div style={{fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.5)",marginBottom:10}}>{lang==="en"?"Your duels (":"Vos duels ("}{d.duelsWith.length}{lang==="en"?")":")"}</div>
+                <div style={{fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.5)",marginBottom:10}}>{lang==="en"?"Your games (":"Vos parties ("}{d.duelsWith.length}{lang==="en"?")":")"}</div>
                 <div style={{background:"rgba(255,255,255,.03)",borderRadius:14,padding:"10px",marginBottom:8,display:"flex",justifyContent:"space-around",border:"1px solid rgba(255,255,255,.06)"}}>
                   <div style={{textAlign:"center"}}>
                     <div style={{fontFamily:G.heading,fontSize:18,color:"#00E676"}}>{d.myWins}</div>
@@ -8875,9 +8899,8 @@ export default function LePont() {
                 </div>
                 <div style={{display:"flex",flexDirection:"column",gap:6}}>
                   {d.duelsWith.slice(0,10).map((duel, i) => {
-                    const isChal = duel.challenger_id === playerId;
-                    const myScore = isChal ? duel.challenger_score : duel.opponent_score;
-                    const oppScore = isChal ? duel.opponent_score : duel.challenger_score;
+                    const myScore = duel.my || 0;
+                    const oppScore = duel.opp || 0;
                     const won = myScore > oppScore;
                     const draw = myScore === oppScore;
                     return (
@@ -8894,7 +8917,7 @@ export default function LePont() {
                 </div>
               </div>
             ) : (
-              <div style={{zIndex:1,padding:"20px 16px",textAlign:"center",color:"rgba(255,255,255,.4)",fontSize:13}}>{lang==="en"?"No duels played against this player yet":"Aucun duel encore joué contre ce joueur"}</div>
+              <div style={{zIndex:1,padding:"20px 16px",textAlign:"center",color:"rgba(255,255,255,.4)",fontSize:13}}>{lang==="en"?"No game played against this player yet":"Aucune partie encore jouée contre ce joueur"}</div>
             )}
             <div style={{zIndex:1,padding:"20px 16px 40px"}}/>
           </>
