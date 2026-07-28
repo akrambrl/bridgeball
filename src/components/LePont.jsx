@@ -3833,6 +3833,11 @@ export default function LePont() {
     }
   }, [screen, showGoatGrid, ggBattleScreen]);
 
+  // Charge mes défis ouverts en entrant sur l'accueil (pour la pastille de tentatives non vues)
+  useEffect(function(){
+    if (screen === "home" && pseudoConfirmed) loadMyOpenDuels();
+  }, [screen, pseudoConfirmed]);
+
   // Lock viewport : empêche zoom utilisateur, scroll horizontal, overscroll
   // pour que l'app se comporte comme une app native en PWA sur téléphone
   useEffect(()=>{
@@ -3946,6 +3951,10 @@ export default function LePont() {
   const [openDuels, setOpenDuels] = useState([]);
   const [openDuelChooser, setOpenDuelChooser] = useState(false); // écran de choix mode/diff pour lancer un défi
   const [openNotif, setOpenNotif] = useState(null); // bannière de confirmation "défi posté"
+  const [openTab, setOpenTab] = useState("browse"); // onglet du salon : "browse" | "mine"
+  const [myOpenChallenges, setMyOpenChallenges] = useState([]); // mes défis encore ouverts
+  const [myOpenAttempts, setMyOpenAttempts] = useState([]); // tentatives reçues sur mes défis
+  const [openUnseenCount, setOpenUnseenCount] = useState(0); // tentatives non vues (pastille)
   // Room system (multi-player up to 8)
   const [room, setRoom] = useState(null);
   const [roomInput, setRoomInput] = useState("");
@@ -4400,6 +4409,27 @@ export default function LePont() {
     } catch(e) { setOpenDuels([]); }
   }
 
+  // Charge mes défis ouverts (encore en cours) + les tentatives reçues dessus.
+  async function loadMyOpenDuels() {
+    if (!playerId) return;
+    try {
+      const mine = await sbFetch("bb_duels?challenger_id=eq."+playerId+"&status=eq.open&order=created_at.desc&limit=50&select=id,mode,diff,challenger_score,created_at");
+      setMyOpenChallenges(Array.isArray(mine) ? mine : []);
+    } catch(e) { setMyOpenChallenges([]); }
+    try {
+      const att = await sbFetch("bb_duels?challenger_id=eq."+playerId+"&status=eq.open_done&order=created_at.desc&limit=50&select=id,opponent_name,mode,diff,challenger_score,opponent_score,created_at");
+      const list = Array.isArray(att) ? att : [];
+      setMyOpenAttempts(list);
+      let seen = []; try { seen = JSON.parse(localStorage.getItem("bb_open_seen")||"[]"); } catch(e) {}
+      setOpenUnseenCount(list.filter(function(a){ return seen.indexOf(a.id) === -1; }).length);
+    } catch(e) { setMyOpenAttempts([]); }
+  }
+  // Marque toutes les tentatives reçues comme "vues" (efface la pastille)
+  function markOpenAttemptsSeen() {
+    try { localStorage.setItem("bb_open_seen", JSON.stringify(myOpenAttempts.map(function(a){ return a.id; }))); } catch(e) {}
+    setOpenUnseenCount(0);
+  }
+
   // Lance une partie pour un défi ouvert. role = "create" (je poste) ou "accept" (je relève)
   function playOpenDuel(duel, role) {
     const d = Object.assign({}, duel, { openRole: role, rounds: duel.rounds || 1, isRoom: false });
@@ -4679,7 +4709,7 @@ export default function LePont() {
           opponent_id: playerId, opponent_name: (playerName||"Anonyme").trim(),
           mode: duel.mode, diff: duel.diff, rounds: duel.rounds || 1,
           challenger_score: duel.challenger_score, challenger_rounds: duel.challenger_rounds || null,
-          opponent_score: sc, opponent_rounds: myRounds, status: "complete"
+          opponent_score: sc, opponent_rounds: myRounds, status: "open_done"
         })});
         try { const done = JSON.parse(localStorage.getItem("bb_open_done")||"[]"); if(duel.id && done.indexOf(duel.id)===-1){ done.push(duel.id); localStorage.setItem("bb_open_done", JSON.stringify(done)); } } catch(e) {}
       } catch(e) { console.error("Open duel accept error:", e); }
@@ -7605,7 +7635,50 @@ export default function LePont() {
           <div style={{fontFamily:G.heading,fontSize:24,color:G.white,letterSpacing:1}}>⚔️ {lang==="en"?"OPEN CHALLENGES":"DÉFIS OUVERTS"}</div>
           <button onClick={function(){setShowOpenDuels(false);setOpenDuelChooser(false);}} style={{width:34,height:34,borderRadius:"50%",background:"rgba(255,255,255,.1)",border:"none",color:G.white,fontSize:16,cursor:"pointer",flexShrink:0}}>✕</button>
         </div>
-        {openDuelChooser ? (
+        <div style={{display:"flex",gap:8,marginBottom:14}}>
+          <button onClick={function(){setOpenTab("browse");}} style={{flex:1,padding:"9px",borderRadius:12,border:"none",background:openTab==="browse"?G.accent:"rgba(255,255,255,.06)",color:openTab==="browse"?"#000":G.white,fontFamily:G.font,fontSize:13,fontWeight:800,cursor:"pointer"}}>{lang==="en"?"Browse":"Parcourir"}</button>
+          <button onClick={function(){setOpenTab("mine");markOpenAttemptsSeen();}} style={{position:"relative",flex:1,padding:"9px",borderRadius:12,border:"none",background:openTab==="mine"?G.accent:"rgba(255,255,255,.06)",color:openTab==="mine"?"#000":G.white,fontFamily:G.font,fontSize:13,fontWeight:800,cursor:"pointer"}}>{lang==="en"?"My challenges":"Mes défis"}{openUnseenCount>0&&<span style={{position:"absolute",top:-5,right:-5,background:"#FF3D57",color:"#fff",borderRadius:"50%",minWidth:16,height:16,padding:"0 4px",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:900}}>{openUnseenCount}</span>}</button>
+        </div>
+        {openTab==="mine" ? (
+          <div>
+            <div style={{fontSize:12,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginBottom:8}}>{lang==="en"?"Attempts received":"Tentatives reçues"}</div>
+            {myOpenAttempts.length===0 ? (
+              <div style={{textAlign:"center",padding:"16px",color:"rgba(255,255,255,.4)",fontSize:13}}>{lang==="en"?"No attempt yet.":"Aucune tentative pour l'instant."}</div>
+            ) : (
+              <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:18}}>
+                {myOpenAttempts.map(function(a){ const iWon=(a.challenger_score||0)>=(a.opponent_score||0); return(
+                  <div key={a.id} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",borderRadius:12}}>
+                    <div style={{width:4,height:30,borderRadius:2,background:iWon?"#00E676":"#FF3D57",flexShrink:0}}/>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontSize:13,fontWeight:800,color:G.white,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>@{a.opponent_name||"?"}</div>
+                      <div style={{fontSize:10,color:"rgba(255,255,255,.45)"}}>{a.mode==="pont"?"The Plug":"The Mercato"} · {a.diff==="facile"?(lang==="en"?"Easy":"Facile"):a.diff==="moyen"?(lang==="en"?"Medium":"Moyen"):"Expert"}</div>
+                    </div>
+                    <div style={{textAlign:"right",flexShrink:0}}>
+                      <div style={{fontFamily:G.heading,fontSize:15,color:G.white}}>{a.opponent_score}<span style={{color:"rgba(255,255,255,.35)"}}> / {a.challenger_score}</span></div>
+                      <div style={{fontSize:9,fontWeight:800,letterSpacing:1,textTransform:"uppercase",color:iWon?"#00E676":"#FF3D57"}}>{iWon?(lang==="en"?"You held ✓":"Tu résistes ✓"):(lang==="en"?"Beaten":"Battu")}</div>
+                    </div>
+                  </div>
+                );})}
+              </div>
+            )}
+            <div style={{fontSize:12,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginBottom:8}}>{lang==="en"?"Your open challenges":"Tes défis en cours"}</div>
+            {myOpenChallenges.length===0 ? (
+              <div style={{textAlign:"center",padding:"16px",color:"rgba(255,255,255,.4)",fontSize:13}}>{lang==="en"?"You have no open challenge. Post one!":"Tu n'as aucun défi ouvert. Lance-en un !"}</div>
+            ) : (
+              <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                {myOpenChallenges.map(function(c){ const nb=myOpenAttempts.filter(function(a){return a.mode===c.mode&&a.diff===c.diff&&a.challenger_score===c.challenger_score;}).length; return(
+                  <div key={c.id} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",borderRadius:12}}>
+                    <div style={{flex:1}}>
+                      <div style={{fontSize:13,fontWeight:800,color:G.white}}>{c.mode==="pont"?"The Plug":"The Mercato"} · {c.diff==="facile"?(lang==="en"?"Easy":"Facile"):c.diff==="moyen"?(lang==="en"?"Medium":"Moyen"):"Expert"}</div>
+                      <div style={{fontSize:10,color:"rgba(255,255,255,.45)"}}>{nb} {lang==="en"?("attempt"+(nb!==1?"s":"")):("tentative"+(nb!==1?"s":""))}</div>
+                    </div>
+                    <div style={{textAlign:"right"}}><div style={{fontFamily:G.heading,fontSize:18,color:G.gold}}>{c.challenger_score}</div><div style={{fontSize:9,color:"rgba(255,255,255,.4)",textTransform:"uppercase",letterSpacing:1}}>{lang==="en"?"to beat":"à battre"}</div></div>
+                  </div>
+                );})}
+              </div>
+            )}
+          </div>
+        ) : openDuelChooser ? (
           <div>
             <div style={{fontSize:12,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginBottom:8}}>{lang==="en"?"Game":"Jeu"}</div>
             <div style={{display:"flex",gap:8,marginBottom:16}}>
@@ -11257,13 +11330,14 @@ export default function LePont() {
         </div>
 
         {/* Défis ouverts (salon de duels asynchrones) */}
-        <button onClick={function(){requirePseudo(function(){loadOpenDuels();setOpenDuelChooser(false);setShowOpenDuels(true);});}}
-          style={{display:"flex",alignItems:"center",gap:12,padding:"12px 16px",background:"linear-gradient(90deg, rgba(255,138,42,.18), rgba(255,201,60,.12))",border:"1px solid rgba(255,138,42,.4)",borderRadius:14,cursor:"pointer",width:"100%",textAlign:"left"}}>
+        <button onClick={function(){requirePseudo(function(){setOpenTab("browse");setOpenDuelChooser(false);loadOpenDuels();loadMyOpenDuels();setShowOpenDuels(true);});}}
+          style={{position:"relative",display:"flex",alignItems:"center",gap:12,padding:"12px 16px",background:"linear-gradient(90deg, rgba(255,138,42,.18), rgba(255,201,60,.12))",border:"1px solid rgba(255,138,42,.4)",borderRadius:14,cursor:"pointer",width:"100%",textAlign:"left"}}>
           <div style={{width:28,height:28,borderRadius:"50%",background:"linear-gradient(135deg,#FF8A2A,#FFC93C)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,boxShadow:"0 2px 8px rgba(255,138,42,.4)"}}>⚔️</div>
           <div style={{flex:1}}>
             <div style={{fontSize:13,fontWeight:800,color:"#FF8A2A"}}>{lang==="en"?"Open challenges ⚔️":"Défis ouverts ⚔️"}</div>
-            <div style={{fontSize:11,color:"rgba(255,255,255,.4)",marginTop:1}}>{lang==="en"?"Beat other players' scores — or post yours":"Bats les scores des autres — ou lance le tien"}</div>
+            <div style={{fontSize:11,color:"rgba(255,255,255,.4)",marginTop:1}}>{openUnseenCount>0?(lang==="en"?(openUnseenCount+" new attempt"+(openUnseenCount>1?"s":"")+" on your challenges!"):(openUnseenCount+" tentative"+(openUnseenCount>1?"s":"")+" sur tes défis !")):(lang==="en"?"Beat other players' scores — or post yours":"Bats les scores des autres — ou lance le tien")}</div>
           </div>
+          {openUnseenCount>0 && <span style={{position:"absolute",top:8,right:28,background:"#FF3D57",color:"#fff",borderRadius:"50%",minWidth:18,height:18,padding:"0 5px",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:900}}>{openUnseenCount}</span>}
           <span style={{fontSize:16,color:"rgba(255,138,42,.6)"}}>›</span>
         </button>
 
