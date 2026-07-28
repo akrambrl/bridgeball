@@ -94,11 +94,52 @@ const TOP5 = [
   { rank: 5, name: "FootGuru", score: 8990 },
 ];
 
+const SB_URL = "https://ialjlsrgcolocoaegzrc.supabase.co";
+const SB_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhbGpsc3JnY29sb2NvYWVnenJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1MDM3NzksImV4cCI6MjA5MTA3OTc3OX0.-SU8anuPhnpoa-PYhIHQqrcuOBsHxdtBJKRZuiGcGwM";
+
 export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels }: Props) => {
   const [selected, setSelected] = useState<GameKey>("mercato");
   const game = GAMES.find((g) => g.key === selected)!;
   const online = useLiveOnline();
   const [roomCode, setRoomCode] = useState("");
+  // Indicateurs "Défis ouverts" : nb de défis à relever + tentatives non vues sur mes défis
+  const [openCount, setOpenCount] = useState(0);
+  const [myUnseen, setMyUnseen] = useState(0);
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const myId = localStorage.getItem("bb_player_id") || "";
+        const h = { apikey: SB_KEY, Authorization: "Bearer " + SB_KEY };
+        // Défis ouverts dispo (des autres, pas déjà relevés)
+        const openRes = await fetch(
+          SB_URL + "/rest/v1/bb_duels?status=eq.open&select=id,challenger_id&limit=200",
+          { headers: h }
+        );
+        const open = openRes.ok ? await openRes.json() : [];
+        let done: string[] = [];
+        try { done = JSON.parse(localStorage.getItem("bb_open_done") || "[]"); } catch {}
+        const avail = (Array.isArray(open) ? open : []).filter(
+          (d: any) => d.challenger_id !== myId && done.indexOf(d.id) === -1
+        ).length;
+        // Tentatives sur MES défis, non encore vues
+        let unseen = 0;
+        if (myId) {
+          const attRes = await fetch(
+            SB_URL + "/rest/v1/bb_duels?challenger_id=eq." + myId + "&status=eq.open_done&select=id&limit=200",
+            { headers: h }
+          );
+          const att = attRes.ok ? await attRes.json() : [];
+          let seen: string[] = [];
+          try { seen = JSON.parse(localStorage.getItem("bb_open_seen") || "[]"); } catch {}
+          unseen = (Array.isArray(att) ? att : []).filter((a: any) => seen.indexOf(a.id) === -1).length;
+        }
+        if (alive) { setOpenCount(avail); setMyUnseen(unseen); }
+      } catch {}
+    })();
+    return () => { alive = false; };
+  }, []);
 
   const submitRoom = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -236,15 +277,26 @@ export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels }: Props) => {
         {/* Défis ouverts — salon de duels asynchrones */}
         <button
           onClick={() => onOpenDuels?.()}
-          className="w-full text-left rounded-2xl border-2 border-[#FF8A2A]/40 bg-gradient-to-br from-[#FF8A2A]/15 to-[#FFC93C]/5 p-4 hover:from-[#FF8A2A]/25 transition-colors"
+          className="relative w-full text-left rounded-2xl border-2 border-[#FF8A2A]/40 bg-gradient-to-br from-[#FF8A2A]/15 to-[#FFC93C]/5 p-4 hover:from-[#FF8A2A]/25 transition-colors"
         >
+          {myUnseen > 0 && (
+            <span className="goat-blink absolute -top-2 -right-2 flex h-6 min-w-6 items-center justify-center rounded-full bg-[#FF3D57] px-1.5 text-xs font-black text-white shadow-lg">
+              {myUnseen}
+            </span>
+          )}
           <div className="flex items-center gap-3">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#FF8A2A] to-[#FFC93C] text-2xl shadow-[0_4px_14px_rgba(255,138,42,0.45)]">
               ⚔️
             </div>
             <div className="min-w-0">
               <div className="font-display text-lg tracking-wider text-[#FF8A2A]">DÉFIS OUVERTS</div>
-              <div className="text-xs text-white/50">Bats les scores des autres — ou lance le tien</div>
+              <div className="text-xs text-white/60">
+                {myUnseen > 0
+                  ? `🔥 ${myUnseen} ${myUnseen > 1 ? "joueurs ont" : "joueur a"} relevé ton défi !`
+                  : openCount > 0
+                  ? `${openCount} défi${openCount > 1 ? "s" : ""} à relever`
+                  : "Bats les scores des autres — ou lance le tien"}
+              </div>
             </div>
           </div>
         </button>
