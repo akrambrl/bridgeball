@@ -3941,6 +3941,11 @@ export default function LePont() {
   const activeDuelRef = useRef(null);
   const [duelResult, setDuelResult] = useState(null); // completed duel for result screen
   const [waitingDuel, setWaitingDuel] = useState(null); // duel in waiting room
+  // ─── Défis ouverts (salon de duels asynchrones) ───
+  const [showOpenDuels, setShowOpenDuels] = useState(false);
+  const [openDuels, setOpenDuels] = useState([]);
+  const [openDuelChooser, setOpenDuelChooser] = useState(false); // écran de choix mode/diff pour lancer un défi
+  const [openNotif, setOpenNotif] = useState(null); // bannière de confirmation "défi posté"
   // Room system (multi-player up to 8)
   const [room, setRoom] = useState(null);
   const [roomInput, setRoomInput] = useState("");
@@ -4382,6 +4387,39 @@ export default function LePont() {
     } catch(e) { setDuels([]); }
   }
 
+  // ─── DÉFIS OUVERTS (asynchrones) ───
+  // Un joueur poste un défi (mode + diff + son score) que N'IMPORTE QUI peut relever
+  // plus tard. Réutilise bb_duels : la "carte" ouverte a status="open" (opponent_id null),
+  // et chaque tentative crée une ligne "complete" (le poster reste challenger).
+  async function loadOpenDuels() {
+    try {
+      const data = await sbFetch("bb_duels?status=eq.open&order=created_at.desc&limit=40&select=id,challenger_id,challenger_name,mode,diff,rounds,challenger_score,challenger_rounds,created_at");
+      let done = []; try { done = JSON.parse(localStorage.getItem("bb_open_done")||"[]"); } catch(e) {}
+      const list = (Array.isArray(data) ? data : []).filter(function(d){ return d.challenger_id !== playerId && done.indexOf(d.id) === -1; });
+      setOpenDuels(list);
+    } catch(e) { setOpenDuels([]); }
+  }
+
+  // Lance une partie pour un défi ouvert. role = "create" (je poste) ou "accept" (je relève)
+  function playOpenDuel(duel, role) {
+    const d = Object.assign({}, duel, { openRole: role, rounds: duel.rounds || 1, isRoom: false });
+    setActiveDuel(d); activeDuelRef.current = d;
+    setShowOpenDuels(false); setOpenDuelChooser(false); setShowFriends(false);
+    setTotalRounds(d.rounds || 1);
+    botOpponentRef.current = null; botScoreRef.current = null;
+    if (d.mode === "chaine") {
+      if (d.diff) setDiff(d.diff);
+      startChain();
+    } else {
+      setDiff(d.diff || "facile");
+      setCombo(0); setMaxCombo(0); comboRef.current = 0;
+      lastAnswerTime.current = Date.now();
+      setRoundScores([]); setCurrentRound(1);
+      setIsNewRecord(false); setMyLbRank(null);
+      setTimeout(function(){ startRound(1); }, 50);
+    }
+  }
+
   async function createDuel(friend) {
     const name = (playerName || "Anonyme").trim();
     try {
@@ -4613,6 +4651,41 @@ export default function LePont() {
 
   async function submitDuelScore(sc) {
     if (!activeDuel) return;
+    // ─── Défis ouverts (asynchrones) ───
+    if (activeDuel.openRole === "create") {
+      const duel = activeDuel;
+      const myRounds = (duel.mode === "chaine") ? chainHistory : roundAnswers;
+      setActiveDuel(null); activeDuelRef.current = null;
+      try {
+        await sbFetch("bb_duels", { method:"POST", headers:{"Content-Type":"application/json","Prefer":"return=minimal"}, body: JSON.stringify({
+          challenger_id: playerId, challenger_name: (playerName||"Anonyme").trim(),
+          mode: duel.mode, diff: duel.diff, rounds: duel.rounds || 1,
+          challenger_score: sc, challenger_rounds: myRounds, status: "open"
+        })});
+        setOpenNotif((lang==="en"?"Open challenge posted! Score to beat: ":"Défi posté ! Score à battre : ")+sc+" ⚡");
+        setTimeout(function(){ setOpenNotif(null); }, 5000);
+      } catch(e) { console.error("Open duel post error:", e); }
+      return;
+    }
+    if (activeDuel.openRole === "accept") {
+      const duel = activeDuel;
+      const myRounds = (duel.mode === "chaine") ? chainHistory : roundAnswers;
+      setActiveDuel(null); activeDuelRef.current = null;
+      const parseRounds = function(r){ if(!r) return []; if(typeof r==="string"){try{return JSON.parse(r);}catch(e){return [];}} return Array.isArray(r)?r:[]; };
+      try {
+        await sbFetch("bb_duels", { method:"POST", headers:{"Content-Type":"application/json","Prefer":"return=minimal"}, body: JSON.stringify({
+          challenger_id: duel.challenger_id, challenger_name: duel.challenger_name,
+          opponent_id: playerId, opponent_name: (playerName||"Anonyme").trim(),
+          mode: duel.mode, diff: duel.diff, rounds: duel.rounds || 1,
+          challenger_score: duel.challenger_score, challenger_rounds: duel.challenger_rounds || null,
+          opponent_score: sc, opponent_rounds: myRounds, status: "complete"
+        })});
+        try { const done = JSON.parse(localStorage.getItem("bb_open_done")||"[]"); if(duel.id && done.indexOf(duel.id)===-1){ done.push(duel.id); localStorage.setItem("bb_open_done", JSON.stringify(done)); } } catch(e) {}
+      } catch(e) { console.error("Open duel accept error:", e); }
+      setDuelResult({ myScore: sc, theirScore: duel.challenger_score, oppName: duel.challenger_name, mode: duel.mode, myRounds: myRounds, theirRounds: parseRounds(duel.challenger_rounds) });
+      loadDuels();
+      return;
+    }
     const duelId = activeDuel.id;
     const duelCopy = Object.assign({}, activeDuel);
     const isChallenger = activeDuel.challenger_id === playerId;
@@ -7510,6 +7583,69 @@ export default function LePont() {
               <button onClick={()=>setShowHistory(false)} style={{width:36,height:36,borderRadius:"50%",background:"rgba(255,255,255,.1)",border:"none",color:G.white,fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
             </div>
             <div style={{padding:"40px 20px"}}>{lang==="en"?"No data":"Aucune donnée"}</div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  // ── BANNIÈRE "DÉFI POSTÉ" ──
+  const openNotifBanner = openNotif && (
+    <div key="open-notif" style={{position:"fixed",top:"max(16px, env(safe-area-inset-top))",left:16,right:16,zIndex:12000,background:"linear-gradient(135deg,#FF8A2A,#FFC93C)",color:"#000",borderRadius:14,padding:"12px 16px",textAlign:"center",fontFamily:G.font,fontSize:14,fontWeight:800,boxShadow:"0 8px 24px rgba(255,138,42,.5)",animation:"dropIn .4s ease"}}>
+      {openNotif}
+    </div>
+  );
+
+  // ── SALON DES DÉFIS OUVERTS ──
+  const openDuelsModal = showOpenDuels && (
+    <div key="open-duels" onClick={function(){setShowOpenDuels(false);setOpenDuelChooser(false);}} style={{position:"fixed",inset:0,zIndex:10000,background:"rgba(0,0,0,.85)",backdropFilter:"blur(10px)",display:"flex",alignItems:"flex-end",justifyContent:"center",animation:"fadeIn .2s ease"}}>
+      <div onClick={function(e){e.stopPropagation();}} style={{width:"100%",maxWidth:520,maxHeight:"85vh",overflowY:"auto",background:"linear-gradient(180deg,#132819 0%,#0A160E 100%)",borderRadius:"24px 24px 0 0",border:"1px solid rgba(255,255,255,.1)",padding:"20px 16px calc(24px + env(safe-area-inset-bottom))",animation:"sheetUp .3s ease"}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
+          <div style={{fontFamily:G.heading,fontSize:24,color:G.white,letterSpacing:1}}>⚔️ {lang==="en"?"OPEN CHALLENGES":"DÉFIS OUVERTS"}</div>
+          <button onClick={function(){setShowOpenDuels(false);setOpenDuelChooser(false);}} style={{width:34,height:34,borderRadius:"50%",background:"rgba(255,255,255,.1)",border:"none",color:G.white,fontSize:16,cursor:"pointer",flexShrink:0}}>✕</button>
+        </div>
+        {openDuelChooser ? (
+          <div>
+            <div style={{fontSize:12,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginBottom:8}}>{lang==="en"?"Game":"Jeu"}</div>
+            <div style={{display:"flex",gap:8,marginBottom:16}}>
+              {[{k:"pont",l:"The Plug"},{k:"chaine",l:"The Mercato"}].map(function(m){return(
+                <button key={m.k} onClick={function(){setDuelMode(m.k);}} style={{flex:1,padding:"12px",borderRadius:14,border:"2px solid "+(duelMode===m.k?G.accent:"rgba(255,255,255,.12)"),background:duelMode===m.k?"rgba(0,230,118,.12)":"rgba(255,255,255,.04)",color:G.white,fontFamily:G.font,fontSize:14,fontWeight:800,cursor:"pointer"}}>{m.l}</button>
+              );})}
+            </div>
+            <div style={{fontSize:12,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginBottom:8}}>{lang==="en"?"Difficulty":"Difficulté"}</div>
+            <div style={{display:"flex",gap:8,marginBottom:20}}>
+              {[{k:"facile",l:lang==="en"?"Easy":"Facile"},{k:"moyen",l:lang==="en"?"Medium":"Moyen"},{k:"expert",l:"Expert"}].map(function(dd){return(
+                <button key={dd.k} onClick={function(){setDuelDiff(dd.k);}} style={{flex:1,padding:"12px",borderRadius:14,border:"2px solid "+(duelDiff===dd.k?G.gold:"rgba(255,255,255,.12)"),background:duelDiff===dd.k?"rgba(255,214,0,.12)":"rgba(255,255,255,.04)",color:G.white,fontFamily:G.font,fontSize:13,fontWeight:800,cursor:"pointer"}}>{dd.l}</button>
+              );})}
+            </div>
+            <div style={{display:"flex",gap:10}}>
+              <button onClick={function(){setOpenDuelChooser(false);}} style={{flex:1,padding:14,borderRadius:50,border:"1px solid rgba(255,255,255,.15)",background:"rgba(255,255,255,.06)",color:G.white,fontFamily:G.font,fontSize:14,fontWeight:700,cursor:"pointer"}}>{lang==="en"?"Back":"Retour"}</button>
+              <button onClick={function(){playOpenDuel({mode:duelMode,diff:duelDiff,rounds:duelRounds},"create");}} style={{flex:2,padding:14,borderRadius:50,border:"none",background:"linear-gradient(135deg,#FF8A2A,#FFC93C)",color:"#000",fontFamily:G.font,fontSize:15,fontWeight:900,cursor:"pointer"}}>{lang==="en"?"Play & post ⚡":"Jouer & poster ⚡"}</button>
+            </div>
+            <div style={{fontSize:11,color:"rgba(255,255,255,.35)",textAlign:"center",marginTop:10}}>{lang==="en"?"You play first — your score becomes the challenge to beat.":"Tu joues d'abord — ton score devient le défi à battre."}</div>
+          </div>
+        ) : (
+          <div>
+            <button onClick={function(){setOpenDuelChooser(true);}} style={{width:"100%",padding:14,borderRadius:14,border:"none",background:"linear-gradient(135deg,#FF8A2A,#FFC93C)",color:"#000",fontFamily:G.font,fontSize:15,fontWeight:900,cursor:"pointer",marginBottom:14}}>＋ {lang==="en"?"Post a challenge":"Lancer un défi"}</button>
+            {openDuels.length===0 ? (
+              <div style={{textAlign:"center",padding:"30px 16px",color:"rgba(255,255,255,.4)",fontSize:13}}>{lang==="en"?"No open challenge yet. Be the first! ⚡":"Aucun défi ouvert pour l'instant. Sois le premier ! ⚡"}</div>
+            ) : (
+              <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                {openDuels.map(function(d){return(
+                  <div key={d.id} style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",borderRadius:14}}>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontSize:14,fontWeight:800,color:G.white,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>@{d.challenger_name}</div>
+                      <div style={{fontSize:11,color:"rgba(255,255,255,.5)",marginTop:2}}>{d.mode==="pont"?"The Plug":"The Mercato"} · {d.diff==="facile"?(lang==="en"?"Easy":"Facile"):d.diff==="moyen"?(lang==="en"?"Medium":"Moyen"):"Expert"}</div>
+                    </div>
+                    <div style={{textAlign:"right",marginRight:4}}>
+                      <div style={{fontFamily:G.heading,fontSize:20,color:G.gold,lineHeight:1}}>{d.challenger_score}</div>
+                      <div style={{fontSize:9,color:"rgba(255,255,255,.4)",textTransform:"uppercase",letterSpacing:1}}>{lang==="en"?"to beat":"à battre"}</div>
+                    </div>
+                    <button onClick={function(){playOpenDuel(d,"accept");}} style={{padding:"9px 14px",background:G.accent,color:"#000",border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:800,flexShrink:0}}>{lang==="en"?"Take on":"Relever"}</button>
+                  </div>
+                );})}
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -11119,6 +11255,17 @@ export default function LePont() {
           </button>
         </div>
 
+        {/* Défis ouverts (salon de duels asynchrones) */}
+        <button onClick={function(){requirePseudo(function(){loadOpenDuels();setOpenDuelChooser(false);setShowOpenDuels(true);});}}
+          style={{display:"flex",alignItems:"center",gap:12,padding:"12px 16px",background:"linear-gradient(90deg, rgba(255,138,42,.18), rgba(255,201,60,.12))",border:"1px solid rgba(255,138,42,.4)",borderRadius:14,cursor:"pointer",width:"100%",textAlign:"left"}}>
+          <div style={{width:28,height:28,borderRadius:"50%",background:"linear-gradient(135deg,#FF8A2A,#FFC93C)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,boxShadow:"0 2px 8px rgba(255,138,42,.4)"}}>⚔️</div>
+          <div style={{flex:1}}>
+            <div style={{fontSize:13,fontWeight:800,color:"#FF8A2A"}}>{lang==="en"?"Open challenges ⚔️":"Défis ouverts ⚔️"}</div>
+            <div style={{fontSize:11,color:"rgba(255,255,255,.4)",marginTop:1}}>{lang==="en"?"Beat other players' scores — or post yours":"Bats les scores des autres — ou lance le tien"}</div>
+          </div>
+          <span style={{fontSize:16,color:"rgba(255,138,42,.6)"}}>›</span>
+        </button>
+
         {/* WhatsApp communauté */}
         <a href="https://chat.whatsapp.com/GpKyFjaxixCJviQawGHNUp" target="_blank" rel="noopener noreferrer"
           style={{display:"flex",alignItems:"center",gap:12,padding:"12px 16px",background:"rgba(37,211,102,.1)",border:"1px solid rgba(37,211,102,.3)",borderRadius:14,textDecoration:"none"}}>
@@ -11140,6 +11287,8 @@ export default function LePont() {
         </div>
 
       </div>
+      {openDuelsModal}
+      {openNotifBanner}
     </div>
   );
 
@@ -11590,6 +11739,7 @@ export default function LePont() {
 
   // ── FINAL ──
 const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc > 0 ? WIN_IMGS : LOSE_IMGS)[0];    return (    <div style={{...shell,animation:"fadeUp .4s ease"}} key={isChain?"chainEnd":"final"}>
+      {openNotifBanner}
       {pseudoModal}
       {recoveryCodeAfterCreationModal}
       {recoveryInputModal}
