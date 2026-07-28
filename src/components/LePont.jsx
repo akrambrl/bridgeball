@@ -1634,6 +1634,22 @@ const GG_LIGUE_MAP = {
 // (titulaires + remplaçants impliqués sur le tournoi)
 // Les noms doivent matcher exactement ceux de PLAYERS_CLEAN
 
+// ─── Anciens joueurs devenus entraîneurs ──────────────────────
+// Critère "Devenu entraîneur ?" : joueurs de la base qui ont ensuite
+// eu une carrière d'entraîneur (principal ou reconnu). Les noms DOIVENT
+// matcher exactement ceux de PLAYERS_CLEAN.
+const GG_COACHES = new Set([
+  "Zinédine Zidane","Pep Guardiola","Didier Deschamps","Vincent Kompany","Frank Lampard",
+  "Steven Gerrard","Wayne Rooney","Andrea Pirlo","Filippo Inzaghi","Gennaro Gattuso",
+  "Clarence Seedorf","Thierry Henry","Carlo Ancelotti","Mikel Arteta","Ole Gunnar Solskjaer",
+  "Ruud van Nistelrooy","Michael Carrick","Gianfranco Zola","Ronald Koeman","Jürgen Klinsmann",
+  "Fabio Cannavaro","Ryan Giggs","John Terry","Ruud Gullit","Gianluca Vialli","Edgar Davids",
+  "Xavi","Luis Enrique","Laurent Blanc","Frank de Boer","Sol Campbell","Tony Adams","Roy Keane",
+  "Xabi Alonso","Patrick Vieira","Diego Simeone","Roberto Mancini","Phillip Cocu","Fernando Hierro",
+  "Freddie Ljungberg","Gary Neville","Paul Scholes","Nicky Butt","Andriy Shevchenko",
+  "Alessandro Nesta","Marco van Basten","Michael Laudrup","Hristo Stoichkov",
+]);
+
 // ─── Scoring : pts selon DIFFICULTÉ DU JOUEUR CITÉ + bonus rareté combo ──
 // Option 3 : pondéré par difficulté du joueur cité
 function ggCalculatePointsForPlayer(playerDiff, totalCandidates) {
@@ -1699,7 +1715,12 @@ function ggPlayerMatchesCriterion(player, criterion) {
     if (criterion.value === "champions_league") return GG_CL_WINNERS.has(player.name);
     return false;
   }
-  
+
+  if (criterion.type === "coach") {
+    // "Devenu entraîneur ?" : le joueur a ensuite entraîné
+    return GG_COACHES.has(player.name);
+  }
+
   return false;
 }
 
@@ -1833,6 +1854,8 @@ function ggGenerateGrid(seed) {
     // Critères-trophées
     colCandidates.push({ type: "trophy", value: "world_cup", label: "Vainqueur CDM" });
     colCandidates.push({ type: "trophy", value: "champions_league", label: "Vainqueur LDC" });
+    // Critère "Devenu entraîneur ?" (anciens joueurs passés sur le banc)
+    colCandidates.push({ type: "coach", value: "coach", label: "Devenu entraîneur" });
     const colCriteria = shuffleArrWithSeed(colCandidates, attemptSeed + 7).slice(0, 3);
     
     // 3. Calculer les candidats pour chaque case
@@ -1963,7 +1986,11 @@ function ggGetCriterionColors(criterion) {
     };
     return trophyColors[criterion.value] || ["#FFD600", "#FFFFFF"];
   }
-  
+
+  if (criterion.type === "coach") {
+    return ["#0F172A", "#38BDF8"]; // ardoise nuit / bleu tactique (tableau blanc)
+  }
+
   return ["#1a7a3a", "#FFFFFF"];
 }
 
@@ -1988,6 +2015,9 @@ function ggGetCriterionEmoji(criterion) {
     if (criterion.value === "world_cup") return "🏆";
     if (criterion.value === "champions_league") return "⭐";
     return "🏆";
+  }
+  if (criterion.type === "coach") {
+    return "🧑‍🏫";
   }
   return "";
 }
@@ -2022,6 +2052,9 @@ function ggGetCriterionTooltip(criterion, lang) {
     if (criterion.value === "champions_league") return isEn ? "The player has won at least one UEFA Champions League with their club." : "Le joueur a remporté au moins une UEFA Champions League avec son club.";
     return isEn ? "The player has won this trophy." : "Le joueur a remporté ce trophée.";
   }
+  if (criterion.type === "coach") {
+    return isEn ? "This former player later became a manager/coach." : "Cet ancien joueur est ensuite devenu entraîneur.";
+  }
   return "";
 }
 
@@ -2039,6 +2072,9 @@ function ggGetCriterionDisplayLabel(criterion, lang) {
     if (criterion.type === "trophy") {
       if (criterion.value === "world_cup") return "WC Winner";
       if (criterion.value === "champions_league") return "UCL Winner";
+    }
+    if (criterion.type === "coach") {
+      return "Became coach";
     }
     if (criterion.type === "nationality") {
       // Traduire les nationalités courantes
@@ -10766,23 +10802,30 @@ export default function LePont() {
                 const colCrit = cell.colCriterion;
                 const rowEmoji = ggGetCriterionEmoji(rowCrit);
                 const colEmoji = ggGetCriterionEmoji(colCrit);
+                const [rowMain, rowSecond] = ggGetCriterionColors(rowCrit);
+                const [colMain, colSecond] = ggGetCriterionColors(colCrit);
                 const suggestions = ggGetSuggestions(ggGuess);
+                // Carte critère "design" : dégradé aux couleurs du critère + pastille emoji
+                const critCard = (emoji, main, second, label) => (
+                  <div style={{flex:1,position:"relative",background:"linear-gradient(150deg, "+main+"33, "+second+"1f 70%, rgba(0,0,0,.25))",border:"1.5px solid "+main+"88",borderRadius:16,padding:"14px 8px 12px",textAlign:"center",boxShadow:"0 8px 22px -10px "+main+"aa, inset 0 1px 0 rgba(255,255,255,.06)",overflow:"hidden"}}>
+                    <div style={{position:"absolute",top:-18,left:"50%",transform:"translateX(-50%)",width:60,height:60,borderRadius:"50%",background:main,opacity:.25,filter:"blur(18px)"}}/>
+                    {emoji && <div style={{position:"relative",width:40,height:40,margin:"0 auto 6px",borderRadius:"50%",background:"rgba(0,0,0,.35)",border:"1px solid "+main+"66",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,boxShadow:"0 2px 8px rgba(0,0,0,.4)"}}>{emoji}</div>}
+                    <div style={{position:"relative",fontSize:11.5,fontWeight:900,color:"#fff",lineHeight:1.2,letterSpacing:.3,textShadow:"0 1px 3px rgba(0,0,0,.6)"}}>{label.toUpperCase()}</div>
+                  </div>
+                );
                 return (
-                  <div onClick={function(){if(!ggFlash){setGgSelectedCell(null);setGgGuess("");}}} style={{position:"fixed",inset:0,zIndex:500,background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
-                    <div onClick={function(e){e.stopPropagation();}} style={{background:"linear-gradient(135deg, #1a2419, #0f1812)",border:"1px solid rgba(0,230,118,.3)",borderRadius:20,padding:20,maxWidth:360,width:"100%"}}>
-                      <div style={{textAlign:"center",marginBottom:14}}>
-                        <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.5)",fontWeight:700}}>{lang==="en"?"WHO MATCHES THESE 2 CRITERIA?":"QUI MATCHE CES 2 CRITÈRES ?"}</div>
+                  <div onClick={function(){if(!ggFlash){setGgSelectedCell(null);setGgGuess("");}}} style={{position:"fixed",inset:0,zIndex:500,background:"rgba(0,0,0,.82)",backdropFilter:"blur(10px)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+                    <div onClick={function(e){e.stopPropagation();}} style={{position:"relative",background:"linear-gradient(165deg, #16241c 0%, #0d1712 55%, #0a0f0c 100%)",border:"1px solid rgba(0,230,118,.28)",borderRadius:24,padding:22,maxWidth:370,width:"100%",boxShadow:"0 30px 80px -24px rgba(0,0,0,.85), inset 0 1px 0 rgba(255,255,255,.05)"}}>
+                      {/* Halo d'ambiance en haut de la carte */}
+                      <div style={{position:"absolute",top:0,left:0,right:0,height:120,borderRadius:"24px 24px 0 0",background:"radial-gradient(ellipse 70% 100% at 50% 0%, rgba(0,230,118,.14), transparent 70%)",pointerEvents:"none"}}/>
+                      <div style={{position:"relative",textAlign:"center",marginBottom:16}}>
+                        <div style={{fontSize:13,fontWeight:900,letterSpacing:1,color:"#fff"}}>🎯 {lang==="en"?"WHO FITS?":"QUI MATCHE ?"}</div>
+                        <div style={{fontSize:10,letterSpacing:2,color:"rgba(255,255,255,.4)",fontWeight:700,marginTop:3}}>{lang==="en"?"A PLAYER FOR THESE 2 CRITERIA":"UN JOUEUR POUR CES 2 CRITÈRES"}</div>
                       </div>
-                      <div style={{display:"flex",gap:8,marginBottom:16,alignItems:"center"}}>
-                        <div style={{flex:1,background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.1)",borderRadius:12,padding:10,textAlign:"center"}}>
-                          {rowEmoji && <div style={{fontSize:22}}>{rowEmoji}</div>}
-                          <div style={{fontSize:11,fontWeight:800,color:"#fff",marginTop:4,lineHeight:1.2}}>{ggGetCriterionDisplayLabel(rowCrit, lang).toUpperCase()}</div>
-                        </div>
-                        <div style={{display:"flex",alignItems:"center",fontSize:18,color:"#FFD600",fontWeight:900}}>×</div>
-                        <div style={{flex:1,background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.1)",borderRadius:12,padding:10,textAlign:"center"}}>
-                          {colEmoji && <div style={{fontSize:22}}>{colEmoji}</div>}
-                          <div style={{fontSize:11,fontWeight:800,color:"#fff",marginTop:4,lineHeight:1.2}}>{ggGetCriterionDisplayLabel(colCrit, lang).toUpperCase()}</div>
-                        </div>
+                      <div style={{position:"relative",display:"flex",gap:10,marginBottom:18,alignItems:"stretch"}}>
+                        {critCard(rowEmoji, rowMain, rowSecond, ggGetCriterionDisplayLabel(rowCrit, lang))}
+                        <div style={{alignSelf:"center",flexShrink:0,width:30,height:30,borderRadius:"50%",background:"linear-gradient(135deg,#FFD600,#FF8A2A)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,fontWeight:900,color:"#000",boxShadow:"0 3px 10px rgba(255,138,42,.5)"}}>×</div>
+                        {critCard(colEmoji, colMain, colSecond, ggGetCriterionDisplayLabel(colCrit, lang))}
                       </div>
                       <input
                         type="text"
