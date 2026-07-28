@@ -4422,7 +4422,7 @@ export default function LePont() {
   // et chaque tentative crée une ligne "complete" (le poster reste challenger).
   async function loadOpenDuels() {
     try {
-      const data = await sbFetch("bb_duels?status=eq.open&order=created_at.desc&limit=40&select=id,challenger_id,challenger_name,mode,diff,rounds,challenger_score,challenger_rounds,created_at");
+      const data = await sbFetch("bb_duels?status=eq.open&order=created_at.desc&limit=40&select=id,challenger_id,challenger_name,mode,diff,rounds,challenger_score,created_at");
       let done = []; try { done = JSON.parse(localStorage.getItem("bb_open_done")||"[]"); } catch(e) {}
       const list = (Array.isArray(data) ? data : []).filter(function(d){ return d.challenger_id !== playerId && done.indexOf(d.id) === -1; });
       setOpenDuels(list);
@@ -4711,7 +4711,7 @@ export default function LePont() {
           challenger_id: playerId, challenger_name: (playerName||"Anonyme").trim(),
           opponent_id: "OPEN", opponent_name: "", // sentinelles : colonne opponent_id NOT NULL, pas d'adversaire tant que le défi est ouvert
           mode: duel.mode, diff: duel.diff, rounds: duel.rounds || 1,
-          challenger_score: sc, challenger_rounds: myRounds, status: "open"
+          challenger_score: sc, status: "open"
         })});
         setOpenNotif((lang==="en"?"Open challenge posted! Score to beat: ":"Défi posté ! Score à battre : ")+sc+" ⚡");
         setTimeout(function(){ setOpenNotif(null); }, 5000);
@@ -4728,8 +4728,8 @@ export default function LePont() {
           challenger_id: duel.challenger_id, challenger_name: duel.challenger_name,
           opponent_id: playerId, opponent_name: (playerName||"Anonyme").trim(),
           mode: duel.mode, diff: duel.diff, rounds: duel.rounds || 1,
-          challenger_score: duel.challenger_score, challenger_rounds: duel.challenger_rounds || null,
-          opponent_score: sc, opponent_rounds: myRounds, status: "open_done"
+          challenger_score: duel.challenger_score,
+          opponent_score: sc, status: "open_done"
         })});
         try { const done = JSON.parse(localStorage.getItem("bb_open_done")||"[]"); if(duel.id && done.indexOf(duel.id)===-1){ done.push(duel.id); localStorage.setItem("bb_open_done", JSON.stringify(done)); } } catch(e) {}
       } catch(e) { console.error("Open duel accept error:", e); }
