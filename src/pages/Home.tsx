@@ -224,10 +224,12 @@ const Home = () => {
   };
 
   // Ouvre le salon de défis ouverts (LePont lit ?duels=1 et affiche directement le salon)
-  const onOpenDuels = () => {
+  // tab="mine" -> ouvre directement sur "Mes défis" (détail des tentatives reçues)
+  const onOpenDuels = (tab?: string) => {
     try {
       const url = new URL(window.location.href);
       url.searchParams.set("duels", "1");
+      if (tab) url.searchParams.set("duelstab", tab);
       window.history.replaceState({}, "", url.toString());
     } catch {}
     setPlaying(true);

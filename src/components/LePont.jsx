@@ -3769,9 +3769,11 @@ export default function LePont() {
     if (reqDuels === "1") {
       try { localStorage.setItem("bb_welcome_seen","1"); localStorage.setItem("bb_tutorial_done","1"); } catch(e) {}
       duelsFromLandingRef.current = true;
+      const wantMine = params.get("duelstab") === "mine";
       try { window.history.replaceState({}, "", window.location.pathname); } catch(e) {}
-      setOpenTab("browse"); setOpenDuelChooser(false);
-      loadOpenDuels(); loadMyOpenDuels();
+      setOpenDuelChooser(false);
+      setOpenTab(wantMine ? "mine" : "browse");
+      loadOpenDuels(); loadMyOpenDuels(wantMine); // wantMine -> marque les tentatives comme vues
       setShowOpenDuels(true);
       return;
     }
@@ -4430,7 +4432,9 @@ export default function LePont() {
   }
 
   // Charge mes défis ouverts (encore en cours) + les tentatives reçues dessus.
-  async function loadMyOpenDuels() {
+  // markSeen=true : marque toutes les tentatives comme vues (efface la pastille)
+  // — utilisé quand on ouvre directement sur "Mes défis".
+  async function loadMyOpenDuels(markSeen) {
     if (!playerId) return;
     try {
       const mine = await sbFetch("bb_duels?challenger_id=eq."+playerId+"&status=eq.open&order=created_at.desc&limit=50&select=id,mode,diff,challenger_score,created_at");
@@ -4440,8 +4444,13 @@ export default function LePont() {
       const att = await sbFetch("bb_duels?challenger_id=eq."+playerId+"&status=eq.open_done&order=created_at.desc&limit=50&select=id,opponent_name,mode,diff,challenger_score,opponent_score,created_at");
       const list = Array.isArray(att) ? att : [];
       setMyOpenAttempts(list);
-      let seen = []; try { seen = JSON.parse(localStorage.getItem("bb_open_seen")||"[]"); } catch(e) {}
-      setOpenUnseenCount(list.filter(function(a){ return seen.indexOf(a.id) === -1; }).length);
+      if (markSeen) {
+        try { localStorage.setItem("bb_open_seen", JSON.stringify(list.map(function(a){ return a.id; }))); } catch(e) {}
+        setOpenUnseenCount(0);
+      } else {
+        let seen = []; try { seen = JSON.parse(localStorage.getItem("bb_open_seen")||"[]"); } catch(e) {}
+        setOpenUnseenCount(list.filter(function(a){ return seen.indexOf(a.id) === -1; }).length);
+      }
     } catch(e) { setMyOpenAttempts([]); }
   }
   // Marque toutes les tentatives reçues comme "vues" (efface la pastille)
