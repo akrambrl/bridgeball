@@ -4715,6 +4715,15 @@ export default function LePont() {
         })});
         setOpenNotif((lang==="en"?"Open challenge posted! Score to beat: ":"Défi posté ! Score à battre : ")+sc+" ⚡");
         setTimeout(function(){ setOpenNotif(null); }, 5000);
+        // Notif push : prévenir mes amis qu'un nouveau défi est dispo (best-effort)
+        try {
+          (friendsList||[]).forEach(function(fid){
+            fetch(SB_URL + "/functions/v1/send-friend-notification", {
+              method:"POST", headers:{"Content-Type":"application/json","Authorization":"Bearer "+SB_KEY},
+              body: JSON.stringify({ to_id: fid, from_name: (playerName||"Quelqu'un").trim(), type:"duel_new" })
+            }).catch(function(){});
+          });
+        } catch(e) {}
       } catch(e) { console.error("Open duel post error:", e); }
       return;
     }
@@ -4732,6 +4741,15 @@ export default function LePont() {
           opponent_score: sc, status: "open_done"
         })});
         try { const done = JSON.parse(localStorage.getItem("bb_open_done")||"[]"); if(duel.id && done.indexOf(duel.id)===-1){ done.push(duel.id); localStorage.setItem("bb_open_done", JSON.stringify(done)); } } catch(e) {}
+        // Notif push : prévenir le créateur que son défi a été relevé (best-effort)
+        try {
+          if (duel.challenger_id && duel.challenger_id !== "OPEN") {
+            fetch(SB_URL + "/functions/v1/send-friend-notification", {
+              method:"POST", headers:{"Content-Type":"application/json","Authorization":"Bearer "+SB_KEY},
+              body: JSON.stringify({ to_id: duel.challenger_id, from_name: (playerName||"Quelqu'un").trim(), type:"duel_taken" })
+            }).catch(function(){});
+          }
+        } catch(e) {}
       } catch(e) { console.error("Open duel accept error:", e); }
       setDuelResult({ myScore: sc, theirScore: duel.challenger_score, oppName: duel.challenger_name, mode: duel.mode, myRounds: myRounds, theirRounds: parseRounds(duel.challenger_rounds) });
       loadDuels();
