@@ -26,6 +26,7 @@ mark), versionné dans le repo.
 |---------------------|------|---------------|
 | `wrong_player_club` | Un joueur validé du pont n'a jamais joué dans `c1` ou `c2` | `c1`, `c2` (les 2 clubs), `player_name` (tous les joueurs valides, séparés par `\|`), `given_answer` (le joueur pointé) |
 | `missing_player`    | Réponse correcte refusée (The Plug/Mercato) | `c1`, `c2`, `given_answer` |
+| `chain_missed`      | The Mercato : club refusé alors qu'il serait correct pour ce joueur | `c1` (joueur), `c2`/`given_answer` (club refusé) |
 | `gg_missed`         | Réponse GOAT Grid refusée à tort | `c1` (contrainte 1 : club **ou** pays), `c2` (contrainte 2 : club, pays ou poste), `given_answer` |
 | `wrong_club_name`   | Nom de club erroné | `c1`, `c2`, `message` |
 | `daily_bug`         | Bug du défi du jour | `player_name` |
