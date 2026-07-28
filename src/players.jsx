@@ -346,7 +346,7 @@ export const PLAYERS = [
   { name:"Malick Fofana", clubs:["Gent", "Lyon", "PSG"], diff:"moyen", nationalities:["Belgique"], positions:["attaquant"], birthYear:2005 },
   { name:"Ibrahim Mbaye", clubs:["PSG"], diff:"expert", nationalities:["France"], positions:["attaquant"], birthYear:2007 },
   { name:"Lucas Beraldo", clubs:["São Paulo", "PSG"], diff:"moyen", nationalities:["Brésil"], positions:["defenseur"], birthYear:2003 },
-  { name:"Pierre-Emile Højbjerg", clubs:["Bayern Munich", "Southampton", "Tottenham", "Marseille"], diff:"moyen", nationalities:["Danemark"], positions:["attaquant"], birthYear:1995 },
+  { name:"Pierre-Emile Højbjerg", clubs:["Bayern Munich", "Southampton", "Tottenham", "Marseille"], diff:"moyen", nationalities:["Danemark"], positions:["milieu"], birthYear:1995 },
   { name:"Mason Greenwood", clubs:["Manchester United", "Getafe", "Marseille", "Fenerbahce"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:2001 },
   { name:"Désiré Doué", clubs:["Rennes", "PSG"], diff:"moyen", nationalities:["France"], positions:["attaquant"], birthYear:2005 },
   { name:"Luis Díaz", clubs:["Atlético Junior", "Porto", "Liverpool", "Bayern Munich"], diff:"moyen", nationalities:["Colombie"], positions:["attaquant"], birthYear:1997 },
