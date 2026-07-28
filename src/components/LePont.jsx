@@ -4659,6 +4659,7 @@ export default function LePont() {
       try {
         await sbFetch("bb_duels", { method:"POST", headers:{"Content-Type":"application/json","Prefer":"return=minimal"}, body: JSON.stringify({
           challenger_id: playerId, challenger_name: (playerName||"Anonyme").trim(),
+          opponent_id: "OPEN", opponent_name: "", // sentinelles : colonne opponent_id NOT NULL, pas d'adversaire tant que le défi est ouvert
           mode: duel.mode, diff: duel.diff, rounds: duel.rounds || 1,
           challenger_score: sc, challenger_rounds: myRounds, status: "open"
         })});
