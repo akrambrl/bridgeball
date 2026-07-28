@@ -4,7 +4,7 @@ import type { GameMode } from "@/pages/Home";
 type Props = {
   onPlay: (game?: GameMode) => void;
   onJoinRoom: (code: string) => void;
-  onOpenDuels?: () => void;
+  onOpenDuels?: (tab?: string) => void;
 };
 
 type GameKey = "plug" | "mercato" | "grid" | "guess";
@@ -276,7 +276,7 @@ export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels }: Props) => {
 
         {/* Défis ouverts — salon de duels asynchrones */}
         <button
-          onClick={() => onOpenDuels?.()}
+          onClick={() => onOpenDuels?.(myUnseen > 0 ? "mine" : undefined)}
           className="relative w-full text-left rounded-2xl border-2 border-[#FF8A2A]/40 bg-gradient-to-br from-[#FF8A2A]/15 to-[#FFC93C]/5 p-4 hover:from-[#FF8A2A]/25 transition-colors"
         >
           {myUnseen > 0 && (
