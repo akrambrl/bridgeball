@@ -5834,6 +5834,7 @@ export const PLAYERS = [
   { name:"Azarias Londoño", clubs:["Universidad Católica"], diff:"expert", nationalities:["Panama"], positions:["attaquant"] },
   { name:"Roderick Miller", clubs:["Turan Tovuz"], diff:"expert", nationalities:["Panama"], positions:["defenseur"] },
   { name:"Jorge Gutiérrez", clubs:["Deportivo La Guaira"], diff:"expert", nationalities:["Panama"], positions:["defenseur"] },
+  { name:"Jérémy Jacquet", clubs:["Rennes", "Liverpool"], diff:"expert", nationalities:["France"], positions:["defenseur"], birthYear:2005 },
 ];
 
 export const RETIRED_PLAYERS = new Set([ "Esteban Cambiasso","Eusébio","Ezequiel Lavezzi","Fabien Barthez","Fabio Grosso","Fernando Redondo","Ferenc Puskás","Mehdi Benatia","Elano","Diego Milito","Dietmar Hamann","Dimitar Berbatov","Djibril Cissé","Dunga","Darren Bent","Daniele De Rossi","Christian Karembeu","Christophe Dugarry","Cristian Chivu","Bacary Sagna","Ben Foster","Bobby Charlton","Bobby Moore","Branislav Ivanović","Andrés Guardado","Antonio Valencia","Alfredo Di Stéfano","André Schürrle","Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe (Portugal)","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
