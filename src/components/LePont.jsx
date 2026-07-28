@@ -2591,6 +2591,8 @@ export default function LePont() {
   const [roundAnswers, setRoundAnswers] = useState([]); // Historique questions mode Plug: [{c1, c2, validPlayers, given, status, isSkip}]
   const [showHistory, setShowHistory] = useState(false); // Modal affichage historique
   const [reportingAnswer, setReportingAnswer] = useState(null); // Pour signaler une erreur : {c1, c2, given, validPlayers}
+  const [chainLastRejected, setChainLastRejected] = useState(null); // {player, club} pour signaler dans The Mercato
+  const [chainReportSent, setChainReportSent] = useState(false);
   const [reportMessage, setReportMessage] = useState("");
   const [reportSent, setReportSent] = useState(false);
   const [chainLastClub, setChainLastClub] = useState("");
@@ -6280,7 +6282,7 @@ export default function LePont() {
     
     setChainPlayer(start.name); setChainUsedClubs(new Set()); setChainUsedPlayers(usedP);
     setChainCount(0); setChainScore(0); chainScoreRef.current=0;
-    setChainLastClub(""); setChainLastPassed(false); setChainHistory([]); setGuess(""); setFlash(null); setFeedback(null);
+    setChainLastClub(""); setChainLastPassed(false); setChainHistory([]); setGuess(""); setFlash(null); setFeedback(null); setChainLastRejected(null);
     setTimeLeft(CHAIN_DURATION); setScore(0); scoreRef.current=0;
     setMyLbRank(null); setScreen("chainGame");
     setTimeout(()=>inputRef.current?.focus(),200);
@@ -6688,6 +6690,7 @@ export default function LePont() {
     const available=playerClubs.filter(c=>!chainUsedClubs.has(c));
     const matched=matchClub(g,available);
     if(matched){
+      setChainLastRejected(null);
       const newUsed=new Set(chainUsedClubs); newUsed.add(matched); setChainUsedClubs(newUsed);
       setChainHistory(prev=>[...prev,{player:chainPlayer,club:matched}]);
       setChainCount(c=>c+1); handleCorrectAnswer(2,true);
@@ -6760,6 +6763,8 @@ export default function LePont() {
       setFlash("used"); setFeedback("used"); playSound("ko");
       setTimeout(()=>{setFlash(null);setFeedback(null);setGuess("");inputRef.current?.focus();},1200);
     }else{
+      // Mémorise la tentative refusée pour permettre de la signaler (club correct refusé ?)
+      setChainLastRejected({player:chainPlayer, club:g}); setChainReportSent(false);
       handleWrongAnswer(5,true); setFeedback("ko"); setFlash("ko");
       setTimeout(()=>{setFlash(null);setFeedback(null);setGuess("");inputRef.current?.focus();},900);
     }
@@ -6767,6 +6772,7 @@ export default function LePont() {
 
   function handleChainPass() {
     if(chainPassedRef.current) return; // already passed this question
+    setChainLastRejected(null);
     triggerSkipOno();
     clearInterval(qTimerRef.current);
     chainPassedRef.current = true;
@@ -11451,6 +11457,39 @@ export default function LePont() {
           <button onClick={handleChainPass} disabled={!!flash} style={{flex:1,padding:16,background:G.offWhite,color:"#aaa",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700,opacity:flash ? 0.3 : 1}}>{lang==="en"?"Skip → (−10 pts)":"Passer → (−10 pts)"}</button>
           <button onClick={handleChainSubmit} style={{flex:2,padding:"16px",background:G.dark,color:G.white,border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:16,fontWeight:800}}>{lang==="en"?"Submit":"Valider"}</button>
         </div>
+        {/* Signaler une erreur : apparaît quand un club vient d'être refusé */}
+        {chainLastRejected && (
+          <div style={{marginTop:4,padding:10,background:"rgba(255,107,53,.1)",border:"1px solid rgba(255,107,53,.3)",borderRadius:12}}>
+            {chainReportSent ? (
+              <div style={{textAlign:"center",fontSize:12,color:"#1a9e5c",fontWeight:800,padding:4}}>✅ {lang==="en"?"Thanks! We'll check it.":"Merci ! On va vérifier."}</div>
+            ) : (
+              <>
+                <div style={{fontSize:12,color:"#555",marginBottom:8,textAlign:"center",fontWeight:600}}>
+                  <strong style={{color:"#FF6B35"}}>{getClubDisplayName(chainLastRejected.club)}</strong> {lang==="en"?"refused for":"refusé pour"} <strong style={{color:"#FF6B35"}}>{chainLastRejected.player}</strong> ?
+                </div>
+                <button onClick={async function(){
+                  try {
+                    await sbFetch("bb_reports", {
+                      method:"POST",
+                      headers:{"Content-Type":"application/json","Prefer":"return=minimal"},
+                      body: JSON.stringify({
+                        reporter_id: playerId,
+                        reporter_name: playerName || null,
+                        report_type: "chain_missed",
+                        c1: chainLastRejected.player,
+                        c2: chainLastRejected.club,
+                        given_answer: chainLastRejected.club,
+                        player_name: chainLastRejected.player,
+                        message: "THE MERCATO: le joueur affirme que ce club est correct pour ce joueur"
+                      })
+                    });
+                  } catch(e) {}
+                  setChainReportSent(true);
+                }} style={{width:"100%",padding:"9px",background:"#FF6B35",color:"#fff",border:"none",borderRadius:10,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:800}}>🚩 {lang==="en"?"Report error":"Signaler une erreur"}</button>
+              </>
+            )}
+          </div>
+        )}
         {chainHistory.length>0 && (
           <div style={{maxHeight:200,overflowY:"auto",display:"flex",flexDirection:"column",gap:4}}>
             <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"#ccc",textAlign:"center"}}>The Mercato</div>
