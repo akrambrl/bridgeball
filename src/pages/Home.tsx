@@ -223,6 +223,16 @@ const Home = () => {
     setPlaying(true);
   };
 
+  // Ouvre le salon de défis ouverts (LePont lit ?duels=1 et affiche directement le salon)
+  const onOpenDuels = () => {
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set("duels", "1");
+      window.history.replaceState({}, "", url.toString());
+    } catch {}
+    setPlaying(true);
+  };
+
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#0A1410] text-white flex flex-col">
       {/* Background : filigrane GOAT FC géant + grille de terrain */}
@@ -248,7 +258,7 @@ const Home = () => {
       <LobbyHeader active={tab} onChange={setTab} />
 
       <main className="relative flex-1 z-10">
-        {tab === "play" && <LobbyView onPlay={onPlay} onJoinRoom={onJoinRoom} />}
+        {tab === "play" && <LobbyView onPlay={onPlay} onJoinRoom={onJoinRoom} onOpenDuels={onOpenDuels} />}
         {tab === "tutos" && <TutosView />}
         {tab === "leaderboard" && <LeaderboardView onPlay={onPlay} />}
         {tab === "faq" && <FaqView />}

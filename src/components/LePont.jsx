@@ -3743,6 +3743,15 @@ export default function LePont() {
   // Utilisé par la landing desktop pour entrer directement dans un mode.
   // useLayoutEffect : tourne avant le paint donc le home ne flashe pas.
   const launchedFromLandingRef = useRef(false);
+  const duelsFromLandingRef = useRef(false); // true si le salon de défis a été ouvert depuis la landing
+  // Ferme le salon de défis ; si ouvert depuis la landing, on rend la main à la landing
+  function closeOpenDuels() {
+    setShowOpenDuels(false); setOpenDuelChooser(false);
+    if (duelsFromLandingRef.current) {
+      duelsFromLandingRef.current = false;
+      try { window.dispatchEvent(new CustomEvent("goatfc:back-to-landing")); } catch(e) {}
+    }
+  }
   // Bot adversaire (mode EN LIGNE depuis la landing) : pseudo + flag + score généré
   const botOpponentRef = useRef(null);
   const botScoreRef = useRef(null);
@@ -3751,10 +3760,21 @@ export default function LePont() {
     const params = new URLSearchParams(window.location.search);
     const play = params.get("play");
     const reqRoom = params.get("room");
-    if (!play && !reqRoom) return;
+    const reqDuels = params.get("duels");
+    if (!play && !reqRoom && !reqDuels) return;
     launchedFromLandingRef.current = true;
     // Skip le splash 2.5s : on rentre direct dans le jeu
     setShowSplash(false);
+    // ?duels=1 : ouvrir directement le salon de défis ouverts (pas de partie lancée)
+    if (reqDuels === "1") {
+      try { localStorage.setItem("bb_welcome_seen","1"); localStorage.setItem("bb_tutorial_done","1"); } catch(e) {}
+      duelsFromLandingRef.current = true;
+      try { window.history.replaceState({}, "", window.location.pathname); } catch(e) {}
+      setOpenTab("browse"); setOpenDuelChooser(false);
+      loadOpenDuels(); loadMyOpenDuels();
+      setShowOpenDuels(true);
+      return;
+    }
     // Skip aussi le welcome RGPD et le tutorial : l'utilisateur arrive
     // depuis la landing desktop qui a déjà ses propres tutos/about.
     // Il peut toujours rouvrir le tuto depuis le menu interne du jeu.
@@ -7629,11 +7649,11 @@ export default function LePont() {
 
   // ── SALON DES DÉFIS OUVERTS ──
   const openDuelsModal = showOpenDuels && (
-    <div key="open-duels" onClick={function(){setShowOpenDuels(false);setOpenDuelChooser(false);}} style={{position:"fixed",inset:0,zIndex:10000,background:"rgba(0,0,0,.85)",backdropFilter:"blur(10px)",display:"flex",alignItems:"flex-end",justifyContent:"center",animation:"fadeIn .2s ease"}}>
+    <div key="open-duels" onClick={function(){closeOpenDuels();}} style={{position:"fixed",inset:0,zIndex:10000,background:"rgba(0,0,0,.85)",backdropFilter:"blur(10px)",display:"flex",alignItems:"flex-end",justifyContent:"center",animation:"fadeIn .2s ease"}}>
       <div onClick={function(e){e.stopPropagation();}} style={{width:"100%",maxWidth:520,maxHeight:"85vh",overflowY:"auto",background:"linear-gradient(180deg,#132819 0%,#0A160E 100%)",borderRadius:"24px 24px 0 0",border:"1px solid rgba(255,255,255,.1)",padding:"20px 16px calc(24px + env(safe-area-inset-bottom))",animation:"sheetUp .3s ease"}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
           <div style={{fontFamily:G.heading,fontSize:24,color:G.white,letterSpacing:1}}>⚔️ {lang==="en"?"OPEN CHALLENGES":"DÉFIS OUVERTS"}</div>
-          <button onClick={function(){setShowOpenDuels(false);setOpenDuelChooser(false);}} style={{width:34,height:34,borderRadius:"50%",background:"rgba(255,255,255,.1)",border:"none",color:G.white,fontSize:16,cursor:"pointer",flexShrink:0}}>✕</button>
+          <button onClick={function(){closeOpenDuels();}} style={{width:34,height:34,borderRadius:"50%",background:"rgba(255,255,255,.1)",border:"none",color:G.white,fontSize:16,cursor:"pointer",flexShrink:0}}>✕</button>
         </div>
         <div style={{display:"flex",gap:8,marginBottom:14}}>
           <button onClick={function(){setOpenTab("browse");}} style={{flex:1,padding:"9px",borderRadius:12,border:"none",background:openTab==="browse"?G.accent:"rgba(255,255,255,.06)",color:openTab==="browse"?"#000":G.white,fontFamily:G.font,fontSize:13,fontWeight:800,cursor:"pointer"}}>{lang==="en"?"Browse":"Parcourir"}</button>

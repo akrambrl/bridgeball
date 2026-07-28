@@ -4,6 +4,7 @@ import type { GameMode } from "@/pages/Home";
 type Props = {
   onPlay: (game?: GameMode) => void;
   onJoinRoom: (code: string) => void;
+  onOpenDuels?: () => void;
 };
 
 type GameKey = "plug" | "mercato" | "grid" | "guess";
@@ -93,7 +94,7 @@ const TOP5 = [
   { rank: 5, name: "FootGuru", score: 8990 },
 ];
 
-export const LobbyView = ({ onPlay, onJoinRoom }: Props) => {
+export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels }: Props) => {
   const [selected, setSelected] = useState<GameKey>("mercato");
   const game = GAMES.find((g) => g.key === selected)!;
   const online = useLiveOnline();
@@ -231,6 +232,22 @@ export const LobbyView = ({ onPlay, onJoinRoom }: Props) => {
 
       {/* COLONNE DROITE — widgets gamifiés */}
       <div className="space-y-4">
+
+        {/* Défis ouverts — salon de duels asynchrones */}
+        <button
+          onClick={() => onOpenDuels?.()}
+          className="w-full text-left rounded-2xl border-2 border-[#FF8A2A]/40 bg-gradient-to-br from-[#FF8A2A]/15 to-[#FFC93C]/5 p-4 hover:from-[#FF8A2A]/25 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#FF8A2A] to-[#FFC93C] text-2xl shadow-[0_4px_14px_rgba(255,138,42,0.45)]">
+              ⚔️
+            </div>
+            <div className="min-w-0">
+              <div className="font-display text-lg tracking-wider text-[#FF8A2A]">DÉFIS OUVERTS</div>
+              <div className="text-xs text-white/50">Bats les scores des autres — ou lance le tien</div>
+            </div>
+          </div>
+        </button>
 
         {/* Rejoindre une partie via un code */}
         <form
