@@ -163,7 +163,7 @@ export const PLAYERS = [
   { name:"Hugo Vetlesen", clubs:["Bodø/Glimt", "Club Brugge"], diff:"expert", nationalities:["Norvège"], positions:["milieu"], birthYear:2000 },
   // === Lot légendes 80s-2000s ===
   // Argentins
-  { name:"Claudio Caniggia", clubs:["River Plate", "Hellas Verona", "Atalanta BC", "AS Roma", "Benfica", "Boca Juniors", "Dundee", "Rangers"], diff:"facile", nationalities:["Argentine"], positions:["attaquant"], birthYear:1967 },
+  { name:"Claudio Caniggia", clubs:["River Plate", "Hellas Verona", "Atalanta BC", "AS Roma", "Benfica", "Boca Juniors", "Dundee", "Rangers"], diff:"expert", nationalities:["Argentine"], positions:["attaquant"], birthYear:1967 },
   { name:"Jorge Burruchaga", clubs:["Independiente", "Nantes", "Valenciennes"], diff:"moyen", nationalities:["Argentine"], positions:["milieu"], birthYear:1962 },
   { name:"Jorge Valdano", clubs:["Newell's Old Boys", "Alavés", "Real Zaragoza", "Real Madrid"], diff:"moyen", nationalities:["Argentine"], positions:["attaquant"], birthYear:1955 },
   { name:"Juan Pablo Sorín", clubs:["Argentinos Juniors", "Juventus FC", "River Plate", "Cruzeiro", "SS Lazio", "Barcelona", "PSG", "Villarreal", "Hamburg"], diff:"moyen", nationalities:["Argentine"], positions:["defenseur"], birthYear:1976 },
