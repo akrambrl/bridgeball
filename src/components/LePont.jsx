@@ -1446,7 +1446,10 @@ function seededShuffle(arr, seed) {
   }
   return a;
 }
-function norm(s){return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9 ]/g,"").trim();}
+// Translitt\u00e8re les lettres latines sp\u00e9ciales que NFD ne d\u00e9compose pas (\u00f8, \u00e6, \u00df\u2026)
+// AVANT de retirer les caract\u00e8res non ASCII, sinon elles sont supprim\u00e9es et le
+// nom devient intapable (ex: "H\u00f8jbjerg" -> "hjbjerg" au lieu de "hojbjerg").
+function norm(s){return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/\u00f8/g,"o").replace(/\u00e6/g,"ae").replace(/\u0153/g,"oe").replace(/\u00df/g,"ss").replace(/\u0142/g,"l").replace(/[\u0111\u00f0]/g,"d").replace(/\u00fe/g,"th").replace(/\u0131/g,"i").replace(/[^a-z0-9 ]/g,"").trim();}
 // Version sans espaces pour matcher des clubs composés tapés de différentes façons
 // Exemple : "Saint-Etienne", "Saint Etienne", "SaintEtienne" doivent tous matcher
 function normCompact(s){return norm(s).replace(/\s+/g,"");}
@@ -1523,6 +1526,9 @@ function checkGuess(g,players){
     if(pn.split(" ").some(part=>part.length>2&&gn.includes(part))) return true;
     // Fallback fuzzy : tolère 1-3 fautes selon longueur (ex: "Mhuamed Salah" → "Mohamed Salah")
     if(g.length>=4 && fuzzyMatch(g, p)) return true;
+    // Fuzzy par mot du nom : tolère une faute sur le seul nom de famille tapé
+    // (ex: "Hojberg" → "Højbjerg", "Bentancour" → "Bentancur")
+    if(g.length>=4 && pn.split(" ").some(part=>part.length>=4 && fuzzyMatch(g, part))) return true;
     return false;
   });
 }
