@@ -7701,9 +7701,19 @@ export default function LePont() {
         ) : openDuelChooser ? (
           <div>
             <div style={{fontSize:12,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginBottom:8}}>{lang==="en"?"Game":"Jeu"}</div>
-            <div style={{display:"flex",gap:8,marginBottom:16}}>
-              {[{k:"pont",l:"The Plug"},{k:"chaine",l:"The Mercato"}].map(function(m){return(
-                <button key={m.k} onClick={function(){setDuelMode(m.k);}} style={{flex:1,padding:"12px",borderRadius:14,border:"2px solid "+(duelMode===m.k?G.accent:"rgba(255,255,255,.12)"),background:duelMode===m.k?"rgba(0,230,118,.12)":"rgba(255,255,255,.04)",color:G.white,fontFamily:G.font,fontSize:14,fontWeight:800,cursor:"pointer"}}>{m.l}</button>
+            <div style={{display:"flex",gap:10,marginBottom:16}}>
+              {[{k:"chaine",l:"The Mercato",tag:lang==="en"?"The endless chain":"La chaîne sans fin",img:"/mercato-card.png",ac:"#FF8A2A"},{k:"pont",l:"The Plug",tag:lang==="en"?"The bridge between two clubs":"Le pont entre deux clubs",img:"/plug-card.png",ac:"#00E676"}].map(function(m){var on=duelMode===m.k;return(
+                <button key={m.k} onClick={function(){setDuelMode(m.k);}} style={{flex:1,position:"relative",padding:0,borderRadius:18,overflow:"hidden",border:"2px solid "+(on?m.ac:"rgba(255,255,255,.12)"),background:"rgba(255,255,255,.03)",cursor:"pointer",boxShadow:on?("0 10px 26px -12px "+m.ac):"none",transition:"all .15s"}}>
+                  <div style={{position:"relative",height:92,overflow:"hidden"}}>
+                    <img src={m.img} alt={m.l} style={{width:"100%",height:"100%",objectFit:"cover",display:"block",opacity:on?1:0.55}}/>
+                    <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, rgba(0,0,0,0) 30%, rgba(0,0,0,.65) 100%)"}}/>
+                    {on&&<div style={{position:"absolute",top:6,right:6,width:22,height:22,borderRadius:"50%",background:m.ac,color:"#000",fontSize:13,fontWeight:900,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 2px 8px rgba(0,0,0,.4)"}}>✓</div>}
+                  </div>
+                  <div style={{padding:"8px 8px 10px",textAlign:"left"}}>
+                    <div style={{fontFamily:G.heading,fontSize:17,letterSpacing:1,lineHeight:1,color:on?m.ac:G.white}}>{m.l}</div>
+                    <div style={{fontSize:9.5,color:"rgba(255,255,255,.5)",marginTop:3,fontWeight:600}}>{m.tag}</div>
+                  </div>
+                </button>
               );})}
             </div>
             <div style={{fontSize:12,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginBottom:8}}>{lang==="en"?"Difficulty":"Difficulté"}</div>
