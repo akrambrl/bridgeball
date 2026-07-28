@@ -111,7 +111,7 @@ export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels, onOpenFriends }: Pr
   const [pendingFriends, setPendingFriends] = useState(0);
   useEffect(() => {
     let alive = true;
-    (async () => {
+    const load = async () => {
       try {
         const myId = localStorage.getItem("bb_player_id") || "";
         const h = { apikey: SB_KEY, Authorization: "Bearer " + SB_KEY };
@@ -149,8 +149,18 @@ export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels, onOpenFriends }: Pr
         }
         if (alive) { setOpenCount(avail); setMyUnseen(unseen); }
       } catch {}
-    })();
-    return () => { alive = false; };
+    };
+    load();
+    // Rafraîchit les indicateurs (défis + demandes d'ami) toutes les 30 s
+    const id = setInterval(load, 30000);
+    // …et dès que l'utilisateur revient sur l'onglet/l'app
+    const onVis = () => { if (document.visibilityState === "visible") load(); };
+    document.addEventListener("visibilitychange", onVis);
+    return () => {
+      alive = false;
+      clearInterval(id);
+      document.removeEventListener("visibilitychange", onVis);
+    };
   }, []);
 
   const submitRoom = (e?: React.FormEvent) => {
