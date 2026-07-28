@@ -5,6 +5,7 @@ type Props = {
   onPlay: (game?: GameMode) => void;
   onJoinRoom: (code: string) => void;
   onOpenDuels?: (tab?: string) => void;
+  onOpenFriends?: () => void;
 };
 
 type GameKey = "plug" | "mercato" | "grid" | "guess";
@@ -98,7 +99,7 @@ const SB_URL = "https://ialjlsrgcolocoaegzrc.supabase.co";
 const SB_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhbGpsc3JnY29sb2NvYWVnenJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1MDM3NzksImV4cCI6MjA5MTA3OTc3OX0.-SU8anuPhnpoa-PYhIHQqrcuOBsHxdtBJKRZuiGcGwM";
 
-export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels }: Props) => {
+export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels, onOpenFriends }: Props) => {
   const [selected, setSelected] = useState<GameKey>("mercato");
   const game = GAMES.find((g) => g.key === selected)!;
   const online = useLiveOnline();
@@ -106,12 +107,23 @@ export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels }: Props) => {
   // Indicateurs "Défis ouverts" : nb de défis à relever + tentatives non vues sur mes défis
   const [openCount, setOpenCount] = useState(0);
   const [myUnseen, setMyUnseen] = useState(0);
+  // Demandes d'ami reçues en attente (badge rouge)
+  const [pendingFriends, setPendingFriends] = useState(0);
   useEffect(() => {
     let alive = true;
     (async () => {
       try {
         const myId = localStorage.getItem("bb_player_id") || "";
         const h = { apikey: SB_KEY, Authorization: "Bearer " + SB_KEY };
+        // Demandes d'ami reçues en attente
+        if (myId) {
+          const frRes = await fetch(
+            SB_URL + "/rest/v1/bb_friend_requests?to_id=eq." + myId + "&status=eq.pending&select=id&limit=100",
+            { headers: h }
+          );
+          const fr = frRes.ok ? await frRes.json() : [];
+          if (alive) setPendingFriends(Array.isArray(fr) ? fr.length : 0);
+        }
         // Défis ouverts dispo (des autres, pas déjà relevés)
         const openRes = await fetch(
           SB_URL + "/rest/v1/bb_duels?status=eq.open&select=id,challenger_id&limit=200",
@@ -296,6 +308,31 @@ export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels }: Props) => {
                   : openCount > 0
                   ? `${openCount} défi${openCount > 1 ? "s" : ""} à relever`
                   : "Bats les scores des autres — ou lance le tien"}
+              </div>
+            </div>
+          </div>
+        </button>
+
+        {/* Mes amis — badge rouge si demande(s) reçue(s) */}
+        <button
+          onClick={() => onOpenFriends?.()}
+          className="relative w-full text-left rounded-2xl border-2 border-[#00E676]/40 bg-gradient-to-br from-[#00E676]/12 to-transparent p-4 hover:from-[#00E676]/20 transition-colors"
+        >
+          {pendingFriends > 0 && (
+            <span className="goat-blink absolute -top-2 -right-2 flex h-6 min-w-6 items-center justify-center rounded-full bg-[#FF3D57] px-1.5 text-xs font-black text-white shadow-lg">
+              {pendingFriends}
+            </span>
+          )}
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#00E676] to-[#3DA5FF] text-2xl shadow-[0_4px_14px_rgba(0,230,118,0.4)]">
+              👥
+            </div>
+            <div className="min-w-0">
+              <div className="font-display text-lg tracking-wider text-[#00E676]">MES AMIS</div>
+              <div className="text-xs text-white/60">
+                {pendingFriends > 0
+                  ? `🔴 ${pendingFriends} demande${pendingFriends > 1 ? "s" : ""} d'ami en attente !`
+                  : "Ajoute tes amis et défie-les"}
               </div>
             </div>
           </div>
