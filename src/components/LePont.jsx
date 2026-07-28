@@ -4325,13 +4325,18 @@ export default function LePont() {
     // alors que le joueur a bien des scores.
     try {
       const scores = await sbFetch("bb_scores?player_id=eq."+id+"&select=score,mode&order=score.desc&limit=1000");
+      // Parties GOAT Grid (table séparée) pour compter le total réel de parties
+      let ggCount = 0;
+      try { const gg = await sbFetch("bb_gg_scores?player_id=eq."+id+"&select=id&limit=1000"); if (Array.isArray(gg)) ggCount = gg.length; } catch {}
       if (Array.isArray(scores)) {
         let bp = 0, bc = 0;
         scores.forEach(function(s){
           if (s.mode === "pont" && s.score > bp) bp = s.score;
           if (s.mode === "chaine" && s.score > bc) bc = s.score;
         });
-        setViewedProfileData(function(prev){ return prev ? {...prev, bestPont:bp, bestChaine:bc, played:(bp>0?1:0)+(bc>0?1:0)} : prev; });
+        // "Parties" = nombre réel de parties jouées (Plug + Mercato + Grid), et
+        // non le nombre de modes avec un record.
+        setViewedProfileData(function(prev){ return prev ? {...prev, bestPont:bp, bestChaine:bc, played:scores.length + ggCount} : prev; });
       }
     } catch {}
     // Parties en salon (multijoueur) partagées avec ce joueur : elles comptent
