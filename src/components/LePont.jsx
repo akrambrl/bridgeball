@@ -3833,11 +3833,6 @@ export default function LePont() {
     }
   }, [screen, showGoatGrid, ggBattleScreen]);
 
-  // Charge mes défis ouverts en entrant sur l'accueil (pour la pastille de tentatives non vues)
-  useEffect(function(){
-    if (screen === "home" && pseudoConfirmed) loadMyOpenDuels();
-  }, [screen, pseudoConfirmed]);
-
   // Lock viewport : empêche zoom utilisateur, scroll horizontal, overscroll
   // pour que l'app se comporte comme une app native en PWA sur téléphone
   useEffect(()=>{
@@ -3987,6 +3982,11 @@ export default function LePont() {
   const [viewingAvatar, setViewingAvatar] = useState(null); // URL de la photo à visualiser en plein écran
   const [cropState, setCropState] = useState(null); // {url, scale, x, y, naturalW, naturalH} — état du cropper
   const [pseudoConfirmed, setPseudoConfirmed] = useState(() => { try { const n = localStorage.getItem("bb_name"); return !!(n && n.trim().length >= 2); } catch { return false; } });
+  // Charge mes défis ouverts en entrant sur l'accueil (pour la pastille de tentatives non vues)
+  // NB: placé après la déclaration de pseudoConfirmed pour éviter une TDZ ReferenceError.
+  useEffect(function(){
+    if (screen === "home" && pseudoConfirmed) loadMyOpenDuels();
+  }, [screen, pseudoConfirmed]);
   const [showQuitConfirm, setShowQuitConfirm] = useState(false);
   const [gameConfigModal, setGameConfigModal] = useState(null);
   const [activeCard, setActiveCard] = useState("pont");
