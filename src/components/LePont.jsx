@@ -9522,7 +9522,7 @@ export default function LePont() {
   );
 
   if(screen==="home") return (
-    <div style={{...shell,animation:"fadeUp .5s ease",overflow:isDesktop?"visible":"auto"}} key="home">
+    <div style={{...shell,animation:"fadeUp .5s ease",height:isDesktop?"auto":"100dvh",minHeight:isDesktop?"100vh":0,overflow:isDesktop?"visible":"hidden"}} key="home">
       {pseudoModal}
       {recoveryCodeAfterCreationModal}
       {recoveryInputModal}
@@ -9668,13 +9668,18 @@ export default function LePont() {
         )}
 
         {/* ── HOME CAROUSEL — 3 modes (GRID, MERCATO, PLUG) ── */}
-        <div style={{flexShrink:0}}>
+        {/* Mobile : le carrousel absorbe l'espace restant (flex) pour que toute
+            la page tienne sur l'écran sans scroll (fix 100vh Safari → 100dvh). */}
+        <div style={{display:"flex",flexDirection:"column",alignItems:"center",flex:isDesktop?"none":"1 1 auto",minHeight:0}}>
           <div
             style={{
               position:"relative",
               width:"min(280px, 75vw)",
-              height:"clamp(340px, 82vw, 400px)",
-              margin:"0 auto",
+              height:isDesktop?"clamp(340px, 82vw, 400px)":undefined,
+              flex:isDesktop?undefined:"1 1 auto",
+              minHeight:isDesktop?undefined:150,
+              maxHeight:isDesktop?undefined:400,
+              alignSelf:"center",
             }}
             onTouchStart={function(e){homeSwipeStartRef.current = e.touches[0].clientX;}}
             onTouchEnd={function(e){
@@ -11442,7 +11447,7 @@ export default function LePont() {
         </button>
 
         {/* Footer discret : version + liens légaux */}
-        <div style={{textAlign:"center",padding:"16px 0 4px",fontSize:10,color:"rgba(255,255,255,.3)",letterSpacing:1.5}}>
+        <div style={{textAlign:"center",padding:"8px 0 2px",fontSize:10,color:"rgba(255,255,255,.3)",letterSpacing:1.5,flexShrink:0}}>
           GOAT FC · <a href="/privacy/" target="_blank" rel="noopener noreferrer" style={{color:"rgba(255,255,255,.45)",textDecoration:"underline"}}>{lang==="en"?"Privacy":"Confidentialité"}</a> · <a href="/terms/" target="_blank" rel="noopener noreferrer" style={{color:"rgba(255,255,255,.45)",textDecoration:"underline"}}>{lang==="en"?"Terms":"Conditions"}</a>
         </div>
 
