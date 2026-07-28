@@ -3968,6 +3968,7 @@ export default function LePont() {
   const [selectedFriend, setSelectedFriend] = useState(null); // {id, name}
   const [viewedProfile, setViewedProfile] = useState(null); // {id, name} - profile being viewed
   const [viewedProfileData, setViewedProfileData] = useState(null); // fetched stats
+  const [profileReturn, setProfileReturn] = useState(null); // "leaderboard" | "friends" | null : d'où on a ouvert le profil (pour la flèche retour)
   const [confirmRemove, setConfirmRemove] = useState(null); // {id, name}
   const [friendInput, setFriendInput] = useState("");
   const [friendsList, setFriendsList] = useState([]);
@@ -4335,9 +4336,10 @@ export default function LePont() {
 
   // Leaderboard (localStorage)
   // ── DUEL FUNCTIONS ──
-  async function openUserProfile(id, name) {
+  async function openUserProfile(id, name, from) {
     setViewedProfile({ id, name });
     setViewedProfileData(null);
+    setProfileReturn(from || null); // mémorise l'origine pour la flèche retour
     setScreen("userProfile");
     // Compute sync data first
     const lbData = leaderboard.find(e => e.pid === id);
@@ -8208,7 +8210,7 @@ export default function LePont() {
               const friendDuelCount = duels.filter(function(d){return d.status==="complete"&&(d.challenger_id===fid||d.opponent_id===fid);}).length;
               return (
                 <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 14px",background:"rgba(255,255,255,.04)",borderRadius:14,marginBottom:8,border:"1px solid rgba(255,255,255,.06)",cursor:"pointer"}}
-                  onClick={function(){setShowFriends(false);openUserProfile(fid,fname);}}>
+                  onClick={function(){setShowFriends(false);openUserProfile(fid,fname,"friends");}}>
                   <div>
                     <div style={{fontSize:15,fontWeight:800,color:G.white}}>{fname}</div>
                     <div style={{fontSize:11,color:"rgba(255,255,255,.35)"}}>{friendDuelCount>0?friendDuelCount+(lang==="en"?" duel"+(friendDuelCount>1?"s played":" played"):" duel"+(friendDuelCount>1?"s joués":" joué")):(lang==="en"?"No duels yet":"Aucun duel encore")}</div>
@@ -8409,7 +8411,7 @@ export default function LePont() {
             // — pas le score de la partie (qui peut être trompeur)
             const grade = getGrade(entry.xp || 0);
             return(
-              <div key={i} onClick={()=>{ if(!isMe) { setShowLeaderboard(false); openUserProfile(entry.pid, entry.name); } }} style={{borderRadius:14,background:i===0?"linear-gradient(135deg,#FFD600,#FF6B35)":i===1?"linear-gradient(135deg,#E8E8E8,#A8A8B0)":i===2?"linear-gradient(135deg,#E3A869,#8B5A2B)":"rgba(0,230,118,.18)",border:i===0?"1px solid rgba(255,214,0,.6)":i===1?"1px solid rgba(200,200,210,.6)":i===2?"1px solid rgba(205,127,50,.6)":isMe?"1px solid rgba(0,230,118,.6)":"1px solid rgba(0,230,118,.35)",marginBottom:6,overflow:"hidden",cursor:isMe?"default":"pointer",boxShadow:i===0?"0 4px 18px rgba(255,107,53,.35)":i===1?"0 4px 18px rgba(200,200,210,.25)":i===2?"0 4px 18px rgba(205,127,50,.3)":"none"}}>
+              <div key={i} onClick={()=>{ if(!isMe) { setShowLeaderboard(false); openUserProfile(entry.pid, entry.name, "leaderboard"); } }} style={{borderRadius:14,background:i===0?"linear-gradient(135deg,#FFD600,#FF6B35)":i===1?"linear-gradient(135deg,#E8E8E8,#A8A8B0)":i===2?"linear-gradient(135deg,#E3A869,#8B5A2B)":"rgba(0,230,118,.18)",border:i===0?"1px solid rgba(255,214,0,.6)":i===1?"1px solid rgba(200,200,210,.6)":i===2?"1px solid rgba(205,127,50,.6)":isMe?"1px solid rgba(0,230,118,.6)":"1px solid rgba(0,230,118,.35)",marginBottom:6,overflow:"hidden",cursor:isMe?"default":"pointer",boxShadow:i===0?"0 4px 18px rgba(255,107,53,.35)":i===1?"0 4px 18px rgba(200,200,210,.25)":i===2?"0 4px 18px rgba(205,127,50,.3)":"none"}}>
                 <div style={{display:"flex",alignItems:"center",gap:10,padding:"12px 12px"}}>
                   <div style={{fontFamily:G.heading,fontSize:28,width:34,textAlign:"center",color:i<3?["#FFD600","#C0C0C0","#CD7F32"][i]:"rgba(255,255,255,.3)",flexShrink:0}}>
                     {i<3?medals[i]:(i+1)}
@@ -9122,7 +9124,7 @@ export default function LePont() {
           <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.7)"}}/>
         </div>
         <div style={{zIndex:50,padding:"max(16px, env(safe-area-inset-top)) 16px 8px",display:"flex",alignItems:"center",gap:12,position:"sticky",top:0,background:"rgba(0,15,0,.92)",backdropFilter:"blur(10px)",WebkitBackdropFilter:"blur(10px)"}}>
-          <button onClick={()=>{setViewedProfile(null);setFriendMsg("");setScreen("home");}} style={{background:"rgba(255,255,255,.1)",border:"1px solid rgba(255,255,255,.15)",borderRadius:"50%",width:40,height:40,cursor:"pointer",color:G.white,fontSize:18,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,boxShadow:"0 4px 14px rgba(0,0,0,.4)"}}>←</button>
+          <button onClick={()=>{const ret=profileReturn;setViewedProfile(null);setFriendMsg("");setProfileReturn(null);setScreen("home");if(ret==="leaderboard"){setShowLeaderboard(true);}else if(ret==="friends"){setShowFriends(true);}}} style={{background:"rgba(255,255,255,.1)",border:"1px solid rgba(255,255,255,.15)",borderRadius:"50%",width:40,height:40,cursor:"pointer",color:G.white,fontSize:18,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,boxShadow:"0 4px 14px rgba(0,0,0,.4)"}}>←</button>
           <div style={{fontFamily:G.heading,fontSize:22,color:G.white,letterSpacing:2,flex:1}}>{lang==="en"?"PROFILE":"PROFIL"}</div>
         </div>
         {!d ? (
