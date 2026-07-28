@@ -3744,11 +3744,20 @@ export default function LePont() {
   // useLayoutEffect : tourne avant le paint donc le home ne flashe pas.
   const launchedFromLandingRef = useRef(false);
   const duelsFromLandingRef = useRef(false); // true si le salon de défis a été ouvert depuis la landing
+  const friendsFromLandingRef = useRef(false); // true si le panneau amis a été ouvert depuis la landing
   // Ferme le salon de défis ; si ouvert depuis la landing, on rend la main à la landing
   function closeOpenDuels() {
     setShowOpenDuels(false); setOpenDuelChooser(false);
     if (duelsFromLandingRef.current) {
       duelsFromLandingRef.current = false;
+      try { window.dispatchEvent(new CustomEvent("goatfc:back-to-landing")); } catch(e) {}
+    }
+  }
+  // Ferme le panneau amis ; si ouvert depuis la landing, on rend la main à la landing
+  function closeFriends() {
+    setShowFriends(false); setFriendMsg(""); setSelectedFriend(null);
+    if (friendsFromLandingRef.current) {
+      friendsFromLandingRef.current = false;
       try { window.dispatchEvent(new CustomEvent("goatfc:back-to-landing")); } catch(e) {}
     }
   }
@@ -3761,7 +3770,8 @@ export default function LePont() {
     const play = params.get("play");
     const reqRoom = params.get("room");
     const reqDuels = params.get("duels");
-    if (!play && !reqRoom && !reqDuels) return;
+    const reqFriends = params.get("friends");
+    if (!play && !reqRoom && !reqDuels && !reqFriends) return;
     launchedFromLandingRef.current = true;
     // Skip le splash 2.5s : on rentre direct dans le jeu
     setShowSplash(false);
@@ -3775,6 +3785,20 @@ export default function LePont() {
       setOpenTab(wantMine ? "mine" : "browse");
       loadOpenDuels(); loadMyOpenDuels(wantMine); // wantMine -> marque les tentatives comme vues
       setShowOpenDuels(true);
+      return;
+    }
+    // ?friends=1 : ouvrir directement le panneau amis (demandes reçues visibles)
+    if (reqFriends === "1") {
+      try { localStorage.setItem("bb_welcome_seen","1"); localStorage.setItem("bb_tutorial_done","1"); } catch(e) {}
+      friendsFromLandingRef.current = true;
+      try { window.history.replaceState({}, "", window.location.pathname); } catch(e) {}
+      requirePseudo(function(){
+        setSelectedFriend(null);
+        loadFriends().then(function(ids){fetchFriendScores(ids);});
+        loadDuels();
+        loadFriendRequests();
+        setShowFriends(true);
+      });
       return;
     }
     // Skip aussi le welcome RGPD et le tutorial : l'utilisateur arrive
@@ -8122,7 +8146,7 @@ export default function LePont() {
           </div>
         )}
         <div style={{zIndex:3,padding:"12px 16px 0",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-          {backBtn(function(){setShowFriends(false);setFriendMsg("");setSelectedFriend(null);})}
+          {backBtn(function(){closeFriends();})}
           <div style={{fontFamily:G.heading,fontSize:26,color:G.white,letterSpacing:2}}>{lang==="en"?"FRIENDS":"AMIS"}</div>
           <div style={{width:40}}/>
         </div>
@@ -8198,7 +8222,7 @@ export default function LePont() {
               );
             })}
           </div>
-          <button onClick={function(){setShowFriends(false);setSelectedFriend(null);}} style={{width:"100%",background:"rgba(255,255,255,.05)",color:"rgba(255,255,255,.5)",border:"1px solid rgba(255,255,255,.1)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,padding:"10px",marginTop:4}}>{lang==="en"?"↩ Back":"↩ Retour"}</button>
+          <button onClick={function(){closeFriends();}} style={{width:"100%",background:"rgba(255,255,255,.05)",color:"rgba(255,255,255,.5)",border:"1px solid rgba(255,255,255,.1)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,padding:"10px",marginTop:4}}>{lang==="en"?"↩ Back":"↩ Retour"}</button>
         </div>
       </div>
     );
