@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
 import { PLAYERS, RETIRED_PLAYERS, GG_WC_WINNERS, GG_CL_WINNERS } from "../players.jsx";
-import { trackPlay } from "../lib/track";
+import { trackPlay, pingPresence } from "../lib/track";
 import { hapticSuccess, hapticError } from "../lib/native";
 
 
@@ -4488,15 +4488,10 @@ export default function LePont() {
   const [tutorialStep, setTutorialStep] = useState(0);
   // Friends
   const [playerId] = useState(() => getPlayerId());
-  // Ping "présence" (bb_events) — capte AUSSI les joueurs anonymes. 1× par jour/appareil.
-  useEffect(function(){
-    try {
-      const today = new Date().toISOString().slice(0,10);
-      if (localStorage.getItem("bb_ping_day") === today) return;
-      localStorage.setItem("bb_ping_day", today);
-      sbFetch("bb_events", { method:"POST", body: JSON.stringify({ player_id: playerId, type: "open_" + detectOS() }) });
-    } catch(e) {}
-  }, []);
+  // Ping "présence" (bb_events) — capte AUSSI les joueurs anonymes, 1× par jour/appareil.
+  // Le drapeau anti-doublon n'est posé qu'après un POST réussi (voir pingPresence),
+  // pour ne pas "perdre" un appareil dont le 1er ping de la journée aurait échoué.
+  useEffect(function(){ pingPresence(); }, []);
   const [showFriends, setShowFriends] = useState(false);
   const [selectedFriend, setSelectedFriend] = useState(null); // {id, name}
   const [viewedProfile, setViewedProfile] = useState(null); // {id, name} - profile being viewed

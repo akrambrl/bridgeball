@@ -28,12 +28,62 @@ function getPlayerId(): string {
   }
 }
 
+// Détecte l'OS mobile : "ios" | "android" | "other" (même logique que LePont).
+function detectOS(): "ios" | "android" | "other" {
+  try {
+    const ua = navigator.userAgent || "";
+    if (/iPhone|iPad|iPod/i.test(ua) || (navigator.platform === "MacIntel" && (navigator as any).maxTouchPoints > 1)) return "ios";
+    if (/Android/i.test(ua)) return "android";
+    return "other";
+  } catch {
+    return "other";
+  }
+}
+
+// Ping de présence "open_<os>" — sert au comptage des appareils (iOS / Android).
+// 1× par jour et par appareil. IMPORTANT : le drapeau "déjà pingé aujourd'hui"
+// n'est posé qu'APRÈS un POST réussi — sinon un envoi raté (réseau mobile
+// capricieux, app ouverte hors-ligne, ancien bundle en cache) marquerait
+// l'appareil comme compté et il ne serait JAMAIS enregistré de la journée.
+let pingInFlight = false;
+export function pingPresence(): void {
+  try {
+    const today = new Date().toISOString().slice(0, 10);
+    if (localStorage.getItem("bb_ping_day") === today) return;
+    if (pingInFlight) return;
+    pingInFlight = true;
+    fetch(SB_URL + "/rest/v1/bb_events", {
+      method: "POST",
+      headers: {
+        apikey: SB_KEY,
+        Authorization: "Bearer " + SB_KEY,
+        "Content-Type": "application/json",
+        Prefer: "return=minimal",
+      },
+      body: JSON.stringify({ player_id: getPlayerId(), type: "open_" + detectOS() }),
+      keepalive: true,
+    })
+      .then((res) => {
+        if (res && res.ok) {
+          try { localStorage.setItem("bb_ping_day", today); } catch { /* noop */ }
+        }
+      })
+      .catch(() => { /* on réessaiera à la prochaine ouverture / partie */ })
+      .finally(() => { pingInFlight = false; });
+  } catch {
+    /* jamais bloquant */
+  }
+}
+
 // Enregistre un démarrage de partie pour le mode donné. Chaque appel = 1 partie.
 // `online` = true si la partie est jouée en duel / salon multijoueur (sinon solo).
 // Le type devient "play_<mode>" (solo) ou "play_<mode>_online" (en ligne), ce qui
 // permet au dashboard de compter le total par mode ET la répartition solo/en ligne.
 export function trackPlay(mode: PlayMode, online = false): void {
   try {
+    // Jouer une partie garantit aussi que l'appareil (OS) est compté ce jour-là,
+    // même si le ping d'ouverture avait échoué (réseau, cache…).
+    pingPresence();
     const type = "play_" + mode + (online ? "_online" : "");
     fetch(SB_URL + "/rest/v1/bb_events", {
       method: "POST",
