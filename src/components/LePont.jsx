@@ -830,6 +830,7 @@ const PLUG_CARD_IMG = "/plug-card.png";
 const MERCATO_CARD_IMG = "/mercato-card.png";
 const GRID_CARD_IMG = "/grid-card.png";
 const GUESS_CARD_IMG = "/guess-card.png";
+const DUEL_CARD_IMG = "/duel-card.png";
 
 // ── MESSAGES DE RÉSULTAT UNIFIÉS (Plug, Mercato, solo, duel, multi) ──
 const RESULT_MESSAGES = {
@@ -1618,7 +1619,7 @@ function duelCommonPlayers(c1, c2){
 }
 const DUEL_ROUNDS = 5;
 const DUEL_ANSWER_SECS = 10; // trouver le joueur
-const DUEL_RESULT_SECS = 4;  // écran résultat de manche
+const DUEL_RESULT_SECS = 2.5; // écran résultat de manche (court)
 const DUEL_SPIN_MS = 2200;   // durée du tirage "machine à sous" (clubs aléatoires)
 // Tire une paire de clubs aléatoire GARANTIE jouable (>=1 joueur commun)
 function duelRollPair(){
@@ -2567,9 +2568,9 @@ export default function LePont() {
   const [gameMode, setGameMode] = useState("pont");
   // ─── Home Carousel State (0=GRID, 1=MERCATO, 2=PLUG) ──
   const [homeCardIndex, setHomeCardIndex] = useState(() => {
-    // Card 3 = GOAT Guess par défaut au premier lancement
+    // Card 3 = GOAT Guess par défaut au premier lancement (5 cartes : 0..4)
     const saved = parseInt(localStorage.getItem("bb_home_card") || "3", 10);
-    return isNaN(saved) || saved < 0 || saved > 3 ? 3 : saved;
+    return isNaN(saved) || saved < 0 || saved > 4 ? 3 : saved;
   });
   const homeSwipeStartRef = useRef(null);
   const [homeRulesModal, setHomeRulesModal] = useState(null); // null | "grid" | "mercato" | "plug"
@@ -2820,6 +2821,8 @@ export default function LePont() {
   const [duelReel1, setDuelReel1] = useState(null);      // club défilant (reel du haut) pendant le spin
   const [duelReel2, setDuelReel2] = useState(null);      // club défilant (reel du bas) pendant le spin
   const [duelEndImg, setDuelEndImg] = useState(null);    // visuel joueur (célébration/défaite) à l'écran final
+  const [duelWrong, setDuelWrong] = useState(false);     // flash "mauvaise réponse"
+  const duelWrongToRef = React.useRef(null);
   const duelRoomRef = React.useRef(null);                // room live pour le séquenceur (host)
   const duelAnswerShownAtRef = React.useRef(0);          // Date.now() quand la paire s'est affichée (mesure réaction)
   const duelAnsweredRef = React.useRef(false);           // a déjà répondu correctement cette manche ?
@@ -2939,8 +2942,13 @@ export default function LePont() {
       duelRoomRef.current = Object.assign({}, r, mine); setDuelRoom(duelRoomRef.current);
       duelPatch(r.id, mine);
       setDuelInput("");
+      setDuelWrong(false);
     } else {
-      setDuelInput(""); // mauvaise réponse : on efface, le chrono continue
+      // mauvaise réponse : feedback rouge, on efface, le chrono continue
+      setDuelInput("");
+      setDuelWrong(true);
+      if(duelWrongToRef.current) clearTimeout(duelWrongToRef.current);
+      duelWrongToRef.current = setTimeout(function(){ setDuelWrong(false); }, 1400);
     }
   }
 
@@ -3039,7 +3047,10 @@ export default function LePont() {
     const to = setTimeout(function(){
       const r=duelRoomRef.current;
       if(r && r.id==="LOCAL" && r.phase==="answer" && r.guest_answer_ms==null){
-        duelPatch("LOCAL", { guest_answer_ms: botMs, guest_answer:"🤖" });
+        // le bot "trouve" un vrai joueur commun (affiché sur l'écran résultat)
+        const common = duelCommonPlayers(r.club_c1, r.club_c2);
+        const botAns = common.length ? common[Math.floor(Math.random()*common.length)] : "🤖";
+        duelPatch("LOCAL", { guest_answer_ms: botMs, guest_answer: botAns });
       }
     }, DUEL_SPIN_MS + botMs);
     return function(){ clearTimeout(to); };
@@ -3052,6 +3063,7 @@ export default function LePont() {
     if(!(duelRoom && duelRoom.phase==="answer")) return;
     duelAnsweredRef.current = false;
     setDuelInput("");
+    setDuelWrong(false);
     setDuelSpin(true);
     if(duelSpinIvRef.current){ clearTimeout(duelSpinIvRef.current); duelSpinIvRef.current=null; }
     const rand = function(){ return DUEL_CLUBS[Math.floor(Math.random()*DUEL_CLUBS.length)]; };
@@ -8197,8 +8209,8 @@ export default function LePont() {
             ) : (
               <div style={{width:"100%",maxWidth:420}}>
                 <div style={{display:"flex",gap:8}}>
-                  <input autoFocus value={duelInput} onChange={function(e){setDuelInput(e.target.value);}} onKeyDown={function(e){if(e.key==="Enter"){ if(duelSug.length>0){duelSubmitAnswer(duelSug[0].name);} else {duelSubmitAnswer();} }}} placeholder={lang==="en"?"Player name…":"Nom du joueur…"}
-                    style={{flex:1,minWidth:0,padding:"14px",borderRadius:14,border:"1.5px solid rgba(255,255,255,.15)",background:"rgba(255,255,255,.06)",color:G.white,fontFamily:G.font,fontSize:16,fontWeight:700,outline:"none",textAlign:"center"}}/>
+                  <input autoFocus value={duelInput} onChange={function(e){setDuelInput(e.target.value);if(duelWrong)setDuelWrong(false);}} onKeyDown={function(e){if(e.key==="Enter"){ if(duelSug.length>0){duelSubmitAnswer(duelSug[0].name);} else {duelSubmitAnswer();} }}} placeholder={lang==="en"?"Player name…":"Nom du joueur…"}
+                    style={{flex:1,minWidth:0,padding:"14px",borderRadius:14,border:"1.5px solid "+(duelWrong?"#FF3D57":"rgba(255,255,255,.15)"),background:duelWrong?"rgba(255,61,87,.14)":"rgba(255,255,255,.06)",color:G.white,fontFamily:G.font,fontSize:16,fontWeight:700,outline:"none",textAlign:"center",animation:duelWrong?"answerKo .4s ease":"none"}}/>
                   <button onClick={function(){ if(duelSug.length>0){duelSubmitAnswer(duelSug[0].name);} else {duelSubmitAnswer();} }} disabled={duelInput.trim().length<3} style={{padding:"0 20px",borderRadius:14,border:"none",background:duelInput.trim().length>=3?"#00E676":"rgba(255,255,255,.08)",color:duelInput.trim().length>=3?"#000":"rgba(255,255,255,.3)",fontFamily:G.heading,fontSize:16,cursor:duelInput.trim().length>=3?"pointer":"not-allowed"}}>OK</button>
                 </div>
                 {duelSug.length > 0 && (
@@ -8208,7 +8220,8 @@ export default function LePont() {
                     );})}
                   </div>
                 )}
-                <div style={{textAlign:"center",fontSize:12,color:oppAnsMs!=null?"#FF6B35":"rgba(255,255,255,.4)",marginTop:10,fontWeight:700}}>{oppAnsMs!=null?(lang==="en"?"⚡ Opponent found it!":"⚡ L'adversaire a trouvé !"):(lang==="en"?"Opponent is searching…":"L'adversaire cherche…")}</div>
+                {duelWrong && <div style={{textAlign:"center",fontSize:13,color:"#FF3D57",marginTop:10,fontWeight:800}}>❌ {lang==="en"?"Wrong answer, try again!":"Mauvaise réponse, réessaie !"}</div>}
+                <div style={{textAlign:"center",fontSize:12,color:oppAnsMs!=null?"#FF6B35":"rgba(255,255,255,.4)",marginTop:duelWrong?4:10,fontWeight:700}}>{oppAnsMs!=null?(lang==="en"?"⚡ Opponent found it!":"⚡ L'adversaire a trouvé !"):(lang==="en"?"Opponent is searching…":"L'adversaire cherche…")}</div>
               </div>
             )}
             </>)}
@@ -8220,13 +8233,24 @@ export default function LePont() {
         const draw = rw==="draw" || !rw;
         const common = duelCommonPlayers(room.club_c1, room.club_c2);
         const example = common && common.length ? common[0] : null;
+        const myAns = isHost ? room.host_answer : room.guest_answer;
+        const oppAns = isHost ? room.guest_answer : room.host_answer;
         phaseBody = (
-          <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",alignItems:"center",padding:"20px",gap:12}}>
+          <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",alignItems:"center",padding:"20px",gap:10}}>
             <div style={{fontFamily:G.heading,fontSize:30,letterSpacing:1,color:draw?"#FFD600":iWon?"#00E676":"#FF6B35",textAlign:"center"}}>
               {draw ? (lang==="en"?"DRAW — nobody found":"MANCHE NULLE") : iWon ? (lang==="en"?"🎉 YOU WIN THE ROUND":"🎉 TU GAGNES LA MANCHE") : (lang==="en"?"OPPONENT WINS":"L'ADVERSAIRE GAGNE")}
             </div>
             <div style={{fontSize:14,color:"rgba(255,255,255,.7)",textAlign:"center"}}>{room.club_c1} <span style={{color:"#FFD600"}}>×</span> {room.club_c2}</div>
-            {example && <div style={{fontSize:13,color:"rgba(255,255,255,.6)",textAlign:"center"}}>{lang==="en"?"e.g. ":"ex. "}<strong style={{color:G.white}}>{(isHost?room.host_answer:room.guest_answer)||(!isHost?room.guest_answer:room.host_answer)||example}</strong></div>}
+            {/* Qui a répondu quoi */}
+            {iWon && myAns && (
+              <div style={{fontSize:14,color:"#00E676",textAlign:"center",fontWeight:700}}>✅ {lang==="en"?"You answered ":"Ta réponse : "}<strong style={{color:"#fff"}}>{myAns}</strong></div>
+            )}
+            {!iWon && !draw && oppAns && (
+              <div style={{fontSize:14,color:"#FF8A66",textAlign:"center",fontWeight:700}}>{oppName||(lang==="en"?"Opponent":"Adversaire")} : <strong style={{color:"#fff"}}>{oppAns}</strong></div>
+            )}
+            {draw && example && (
+              <div style={{fontSize:13,color:"rgba(255,255,255,.6)",textAlign:"center"}}>{lang==="en"?"A valid answer: ":"Une réponse valable : "}<strong style={{color:G.white}}>{example}</strong></div>
+            )}
             <div style={{fontFamily:G.heading,fontSize:40,color:G.white,marginTop:4}}>{myScore} <span style={{color:"rgba(255,255,255,.3)"}}>–</span> {oppScore}</div>
             <div style={{fontSize:12,color:"rgba(255,255,255,.4)"}}>{(room.round||1)<DUEL_ROUNDS?(lang==="en"?"Next round…":"Manche suivante…"):(lang==="en"?"Final…":"Fin…")}</div>
           </div>
@@ -10221,9 +10245,16 @@ export default function LePont() {
           </div>
         )}
 
-        {/* ── HOME CAROUSEL — 3 modes (GRID, MERCATO, PLUG) ── */}
+        {/* ── HOME CAROUSEL — les modes de jeu ── */}
         {/* Mobile : le carrousel absorbe l'espace restant (flex) pour que toute
             la page tienne sur l'écran sans scroll (fix 100vh Safari → 100dvh). */}
+        {(() => { const homeCards = [
+              {key:"grid",    img:GRID_CARD_IMG,    onClick: function(){setGgModeChoice(true);},        record: chainRecord ? null : null, recordIcon:null, recordColor:"#00E676"},
+              {key:"mercato", img:MERCATO_CARD_IMG, onClick: function(){setGameConfigModal("chaine");}, record: chainRecord, recordIcon:"⛓",  recordColor:"#60a5fa"},
+              {key:"plug",    img:PLUG_CARD_IMG,    onClick: function(){setGameConfigModal("pont");},   record: record,      recordIcon:"🏆", recordColor:"#FFD600"},
+              {key:"guess",   img:GUESS_CARD_IMG,   onClick: function(){window.dispatchEvent(new CustomEvent("goatfc:open-guess"));}, record: null, recordIcon:null, recordColor:"#C084FC"},
+              {key:"duel",    img:DUEL_CARD_IMG,    onClick: function(){requirePseudo(function(){setDuelError("");setDuelJoinCode("");setDuelScreen("menu");});}, record: null, recordIcon:null, recordColor:"#3DA5FF"},
+            ]; const homeN = homeCards.length; return (
         <div style={{display:"flex",flexDirection:"column",alignItems:"center",flex:isDesktop?"none":"1 1 auto",minHeight:0}}>
           <div
             style={{
@@ -10243,7 +10274,7 @@ export default function LePont() {
               const delta = endX - startX;
               homeSwipeStartRef.current = null;
               if(Math.abs(delta) > 50){
-                const newIdx = (homeCardIndex + (delta < 0 ? 1 : -1) + 4) % 4;
+                const newIdx = (homeCardIndex + (delta < 0 ? 1 : -1) + homeN) % homeN;
                 setHomeCardIndex(newIdx);
                 localStorage.setItem("bb_home_card", String(newIdx));
               }
@@ -10255,19 +10286,14 @@ export default function LePont() {
               const delta = e.clientX - startX;
               homeSwipeStartRef.current = null;
               if(Math.abs(delta) > 50){
-                const newIdx = (homeCardIndex + (delta < 0 ? 1 : -1) + 4) % 4;
+                const newIdx = (homeCardIndex + (delta < 0 ? 1 : -1) + homeN) % homeN;
                 setHomeCardIndex(newIdx);
                 localStorage.setItem("bb_home_card", String(newIdx));
               }
             }}
           >
-            {[
-              {key:"grid",    img:GRID_CARD_IMG,    onClick: function(){setGgModeChoice(true);},        record: chainRecord ? null : null, recordIcon:null, recordColor:"#00E676"},
-              {key:"mercato", img:MERCATO_CARD_IMG, onClick: function(){setGameConfigModal("chaine");}, record: chainRecord, recordIcon:"⛓",  recordColor:"#60a5fa"},
-              {key:"plug",    img:PLUG_CARD_IMG,    onClick: function(){setGameConfigModal("pont");},   record: record,      recordIcon:"🏆", recordColor:"#FFD600"},
-              {key:"guess",   img:GUESS_CARD_IMG,   onClick: function(){window.dispatchEvent(new CustomEvent("goatfc:open-guess"));}, record: null, recordIcon:null, recordColor:"#C084FC"},
-            ].map(function(card, i){
-              const offset = (i - homeCardIndex + 4) % 4;
+            {homeCards.map(function(card, i){
+              const offset = (i - homeCardIndex + homeN) % homeN;
               const isActive = offset === 0;
               let translateX, scale, opacity, zIndex;
               if(offset === 0){ translateX = 0;  scale = 1;    opacity = 1;    zIndex = 40; }
@@ -10332,8 +10358,8 @@ export default function LePont() {
 
           {/* Dots indicator */}
           <div style={{display:"flex",justifyContent:"center",gap:8,marginTop:10}}>
-            {[0,1,2,3].map(function(i){
-              const colors = ["#00E676","#60a5fa","#FFD600","#C084FC"];
+            {homeCards.map(function(_c, i){
+              const colors = ["#00E676","#60a5fa","#FFD600","#C084FC","#3DA5FF"];
               const isActive = homeCardIndex === i;
               return (
                 <div
@@ -10357,6 +10383,7 @@ export default function LePont() {
             {lang==="en" ? "← Swipe • Tap to play →" : "← Glisse • Tape pour jouer →"}
           </div>
         </div>
+        ); })()}
 
         {/* ── TABLEAU DE BORD PRIVÉ (?stats=CODE) ── */}
         {statsMode && (
@@ -12045,17 +12072,7 @@ export default function LePont() {
           <span style={{fontSize:16,color:"rgba(255,138,42,.6)"}}>›</span>
         </button>
 
-        {/* GOAT DUEL — Plug temps réel 1v1 (par code d'ami) */}
-        <button onClick={function(){requirePseudo(function(){setDuelError("");setDuelJoinCode("");setDuelScreen("menu");});}}
-          style={{position:"relative",display:"flex",alignItems:"center",gap:12,padding:"12px 16px",background:"linear-gradient(90deg, rgba(0,230,118,.18), rgba(61,165,255,.12))",border:"1px solid rgba(0,230,118,.4)",borderRadius:14,cursor:"pointer",width:"100%",textAlign:"left"}}>
-          <div style={{width:28,height:28,borderRadius:"50%",background:"linear-gradient(135deg,#00E676,#3DA5FF)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,boxShadow:"0 2px 8px rgba(0,230,118,.4)"}}>⚡</div>
-          <div style={{flex:1}}>
-            <div style={{fontSize:13,fontWeight:800,color:"#00E676"}}>{lang==="en"?"Live duel ⚡":"Duel en direct ⚡"}</div>
-            <div style={{fontSize:11,color:"rgba(255,255,255,.4)",marginTop:1}}>{lang==="en"?"Real-time 1v1 vs a friend — 5 rounds":"1v1 en temps réel contre un ami — 5 manches"}</div>
-          </div>
-          <span style={{fontSize:9,fontWeight:900,letterSpacing:1,color:"#00E676",background:"rgba(0,230,118,.15)",border:"1px solid rgba(0,230,118,.4)",borderRadius:20,padding:"2px 7px"}}>{lang==="en"?"NEW":"NOUVEAU"}</span>
-          <span style={{fontSize:16,color:"rgba(0,230,118,.6)"}}>›</span>
-        </button>
+        {/* Duel en direct : désormais une carte du carrousel (plus de bouton en bas) */}
 
         {/* Footer discret : version + liens légaux */}
         <div style={{textAlign:"center",padding:"8px 0 2px",fontSize:10,color:"rgba(255,255,255,.3)",letterSpacing:1.5,flexShrink:0}}>
