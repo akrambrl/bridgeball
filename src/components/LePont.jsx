@@ -2273,9 +2273,35 @@ function generateOptions(correctPlayers,allPairs,seed,targetDiff){
 function getComboLabel(c){if(c>=10)return"🔥 LEGENDARY";if(c>=7)return"💫 AMAZING";if(c>=5)return"⚡ ON FIRE";if(c>=3)return"🎯 COMBO";return"";}
 
 // ── SOUNDS ──
+// Contexte audio unique (réutilisé) — éviter d'en créer un par son (limite navigateur)
+let _sndCtx=null;
+function sndCtx(){
+  try{
+    if(!_sndCtx){ const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return null; _sndCtx=new AC(); }
+    if(_sndCtx.state==="suspended") _sndCtx.resume();
+    return _sndCtx;
+  }catch(e){ return null; }
+}
 function playSound(type){
   try{
-    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    const ctx=sndCtx(); if(!ctx) return;
+    if(type==="tick"){
+      const osc=ctx.createOscillator(),g=ctx.createGain();
+      osc.connect(g);g.connect(ctx.destination);osc.type="square";osc.frequency.value=1500;
+      g.gain.setValueAtTime(.0001,ctx.currentTime);g.gain.linearRampToValueAtTime(.05,ctx.currentTime+.005);g.gain.exponentialRampToValueAtTime(.0001,ctx.currentTime+.05);
+      osc.start(ctx.currentTime);osc.stop(ctx.currentTime+.06);
+      return;
+    }
+    if(type==="spinstop"){
+      [880,1175,1568].forEach((freq,i)=>{
+        const osc=ctx.createOscillator(),g=ctx.createGain();
+        osc.connect(g);g.connect(ctx.destination);osc.frequency.value=freq;osc.type="triangle";
+        g.gain.setValueAtTime(0,ctx.currentTime+i*.06);g.gain.linearRampToValueAtTime(.22,ctx.currentTime+i*.06+.01);
+        g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+i*.06+.2);
+        osc.start(ctx.currentTime+i*.06);osc.stop(ctx.currentTime+i*.06+.2);
+      });
+      return;
+    }
     if(type==="ok"){
       [523,659,784].forEach((freq,i)=>{
         const osc=ctx.createOscillator(),g=ctx.createGain();
@@ -2926,6 +2952,7 @@ export default function LePont() {
   async function duelHostStart(){
     const r = duelRoomRef.current || duelRoom;
     if(!r || r.host_id!==playerId || !r.guest_id) return;
+    sndCtx(); // débloque l'audio (geste utilisateur)
     const [c1, c2] = duelRollPair(); // le système tire 2 clubs au hasard
     await duelPatch(r.id, { state:"playing", round:1, phase:"answer", phase_at:new Date().toISOString(),
       club_c1:c1, club_c2:c2,
@@ -2935,6 +2962,7 @@ export default function LePont() {
 
   // Démarre une partie SOLO (contre soi-même, système de points) — 100% local
   function duelSoloStart(){
+    sndCtx(); // débloque l'audio (geste utilisateur)
     const [c1, c2] = duelRollPair();
     const room = {
       id:"LOCAL", code:"SOLO", solo:true,
@@ -2957,6 +2985,7 @@ export default function LePont() {
     const common = duelCommonPlayers(r.club_c1, r.club_c2);
     if(checkGuess(g, common)){
       duelAnsweredRef.current = true;
+      playSound("ok"); vibrate(30);
       const ms = Math.max(0, Date.now() - (duelAnswerShownAtRef.current || Date.now()));
       const mine = r.host_id===playerId ? { host_answer:g, host_answer_ms:ms } : { guest_answer:g, guest_answer_ms:ms };
       duelRoomRef.current = Object.assign({}, r, mine); setDuelRoom(duelRoomRef.current);
@@ -2964,12 +2993,22 @@ export default function LePont() {
       setDuelInput("");
       setDuelWrong(false);
     } else {
-      // mauvaise réponse : feedback rouge, on efface, le chrono continue
+      // mauvaise réponse : feedback rouge + son, on efface, le chrono continue
+      playSound("ko"); vibrate([40,40,40]);
       setDuelInput("");
       setDuelWrong(true);
       if(duelWrongToRef.current) clearTimeout(duelWrongToRef.current);
       duelWrongToRef.current = setTimeout(function(){ setDuelWrong(false); }, 1400);
     }
+  }
+
+  // SOLO : passer la manche (0 pt) quand on ne sait pas
+  function duelSkip(){
+    const r = duelRoomRef.current || duelRoom;
+    if(!r || !r.solo || r.phase!=="answer" || duelAnsweredRef.current) return;
+    duelAnsweredRef.current = true;
+    setDuelInput(""); setDuelWrong(false);
+    duelPatch("LOCAL", { phase:"result", phase_at:new Date().toISOString(), round_pts:0, round_skipped:true });
   }
 
   // Séquenceur : SEUL l'hôte fait avancer les phases (évite les conflits d'écriture)
@@ -3011,7 +3050,7 @@ export default function LePont() {
           if((room.round||1) < DUEL_ROUNDS){
             const [c1, c2] = duelRollPair(); // nouvelle paire aléatoire
             await duelPatch(room.id, { round:(room.round||1)+1, phase:"answer", phase_at:new Date().toISOString(),
-              club_c1:c1, club_c2:c2, round_pts:null,
+              club_c1:c1, club_c2:c2, round_pts:null, round_skipped:false,
               host_answer:null, guest_answer:null, host_answer_ms:null, guest_answer_ms:null, round_winner:null });
           } else if(room.solo){
             await duelPatch(room.id, { state:"finished", phase:"done", winner_id:room.host_id });
@@ -3090,9 +3129,11 @@ export default function LePont() {
       if(elapsed >= DUEL_SPIN_MS){
         setDuelSpin(false);
         duelAnswerShownAtRef.current = Date.now(); // réaction mesurée à partir d'ici
+        playSound("spinstop"); vibrate(60); // son d'arrêt de la machine à sous
         return;
       }
       setDuelReel1(rand()); setDuelReel2(rand());
+      playSound("tick"); // clic machine à sous à chaque rotation
       // décélération : les rouleaux ralentissent en approchant de la fin
       const pr = elapsed / DUEL_SPIN_MS; // 0 → 1
       const delay = 80 + pr*pr*300;      // ~80ms au départ → ~380ms à la fin
@@ -8273,6 +8314,9 @@ export default function LePont() {
                 ) : (
                   <div style={{textAlign:"center",fontSize:12,color:oppAnsMs!=null?"#FF6B35":"rgba(255,255,255,.4)",marginTop:duelWrong?4:10,fontWeight:700}}>{oppAnsMs!=null?(lang==="en"?"⚡ Opponent found it!":"⚡ L'adversaire a trouvé !"):(lang==="en"?"Opponent is searching…":"L'adversaire cherche…")}</div>
                 )}
+                {isSolo && (
+                  <button onClick={duelSkip} style={{width:"100%",marginTop:12,padding:"12px",borderRadius:14,border:"1px solid rgba(255,255,255,.15)",background:"rgba(255,255,255,.05)",color:"rgba(255,255,255,.6)",fontFamily:G.font,fontSize:13,fontWeight:700,cursor:"pointer"}}>⏭ {lang==="en"?"Skip (I don't know)":"Passer (je ne sais pas)"}</button>
+                )}
               </div>
             )}
             </>)}
@@ -8290,7 +8334,7 @@ export default function LePont() {
         phaseBody = isSolo ? (
           <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",alignItems:"center",padding:"20px",gap:10}}>
             <div style={{fontFamily:G.heading,fontSize:pts>0?46:30,letterSpacing:1,color:pts>=20?"#FFD600":pts>0?"#00E676":"#FF6B35",textAlign:"center"}}>
-              {pts>=20 ? (lang==="en"?"⚡ +20 PTS":"⚡ +20 PTS") : pts>0 ? "+10 PTS" : (lang==="en"?"MISSED":"RATÉ")}
+              {pts>=20 ? (lang==="en"?"⚡ +20 PTS":"⚡ +20 PTS") : pts>0 ? "+10 PTS" : room.round_skipped ? (lang==="en"?"SKIPPED":"PASSÉ") : (lang==="en"?"MISSED":"RATÉ")}
             </div>
             <div style={{fontSize:14,color:"rgba(255,255,255,.7)",textAlign:"center"}}>{room.club_c1} <span style={{color:"#FFD600"}}>×</span> {room.club_c2}</div>
             {pts>0 && myAns
