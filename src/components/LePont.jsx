@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
 import { PLAYERS, RETIRED_PLAYERS, GG_WC_WINNERS, GG_CL_WINNERS } from "../players.jsx";
-import { trackPlay, pingPresence } from "../lib/track";
+import { trackPlay, pingPresence, pingLive } from "../lib/track";
 import { hapticSuccess, hapticError } from "../lib/native";
 
 
@@ -2406,6 +2406,7 @@ if(typeof document!=="undefined"&&!document.getElementById("bb-css")){
     @keyframes duelFloat{0%{transform:translate(-50%,10px) scale(.8);opacity:0}18%{transform:translate(-50%,0) scale(1.1);opacity:1}70%{transform:translate(-50%,-8px) scale(1);opacity:1}100%{transform:translate(-50%,-46px) scale(.95);opacity:0}}
     @keyframes duelReelBlur{0%{transform:translateY(-7px)}100%{transform:translateY(7px)}}
     @keyframes floatBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+    @keyframes livePulse{0%{transform:scale(1);opacity:.9}100%{transform:scale(2.4);opacity:0}}
     @keyframes fadeIn{from{opacity:0}to{opacity:1}}
     @keyframes popIn{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
     @keyframes slideIn{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:translateX(0)}}
@@ -2635,6 +2636,22 @@ export default function LePont() {
   const [statsMode] = useState(function(){ try { return new URLSearchParams(window.location.search).get("stats") === STATS_CODE; } catch(e) { return false; } });
   const [statsData, setStatsData] = useState(null);
   const [statsRange, setStatsRange] = useState(14); // fenêtre d'analyse : 1 / 5 / 10 / 14 jours
+  const [liveNow, setLiveNow] = useState(null);      // nb de personnes actuellement sur l'app
+  // Compteur "en ce moment" — rafraîchi toutes les 15 s tant que le dashboard est ouvert.
+  useEffect(function(){
+    if (!statsMode) return;
+    let stop = false;
+    async function poll(){
+      // en ligne = vu dans les 80 dernières secondes
+      const since = new Date(Date.now() - 80*1000).toISOString();
+      const rows = await sbFetch("bb_presence?select=player_id&last_seen=gte."+since+"&limit=10000");
+      if (stop) return;
+      setLiveNow(Array.isArray(rows) ? rows.length : null);
+    }
+    poll();
+    const iv = setInterval(poll, 15000);
+    return function(){ stop = true; clearInterval(iv); };
+  }, [statsMode]);
   useEffect(function(){
     if (!statsMode || statsData) return;
     (async function(){
@@ -4493,6 +4510,14 @@ export default function LePont() {
   // Le drapeau anti-doublon n'est posé qu'après un POST réussi (voir pingPresence),
   // pour ne pas "perdre" un appareil dont le 1er ping de la journée aurait échoué.
   useEffect(function(){ pingPresence(); }, []);
+  // Battement "en ligne maintenant" : toutes les 30 s tant que l'app est visible.
+  useEffect(function(){
+    pingLive();
+    const iv = setInterval(function(){ if (document.visibilityState === "visible") pingLive(); }, 30000);
+    const onVis = function(){ if (document.visibilityState === "visible") pingLive(); };
+    document.addEventListener("visibilitychange", onVis);
+    return function(){ clearInterval(iv); document.removeEventListener("visibilitychange", onVis); };
+  }, []);
   const [showFriends, setShowFriends] = useState(false);
   const [selectedFriend, setSelectedFriend] = useState(null); // {id, name}
   const [viewedProfile, setViewedProfile] = useState(null); // {id, name} - profile being viewed
@@ -10775,6 +10800,18 @@ export default function LePont() {
                 const rangeLabel = v.range===1 ? "Aujourd'hui" : ("Sur "+v.range+" jours");
                 return (
                 <>
+                  {/* EN CE MOMENT — nombre de personnes actuellement sur l'app (temps réel) */}
+                  <div style={{position:"relative",background:"linear-gradient(135deg, rgba(0,230,118,.18), rgba(0,0,0,.25))",border:"1px solid rgba(0,230,118,.4)",borderRadius:18,padding:"16px 18px",marginBottom:14,display:"flex",alignItems:"center",gap:14,overflow:"hidden"}}>
+                    <div style={{position:"relative",width:12,height:12,flexShrink:0}}>
+                      <span style={{position:"absolute",inset:0,borderRadius:"50%",background:"#00E676",boxShadow:"0 0 10px #00E676"}}/>
+                      <span style={{position:"absolute",inset:-4,borderRadius:"50%",border:"2px solid #00E676",animation:"livePulse 1.8s ease-out infinite"}}/>
+                    </div>
+                    <div style={{flex:1}}>
+                      <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.6)",fontWeight:800,textTransform:"uppercase"}}>En ce moment</div>
+                      <div style={{fontSize:12,color:"rgba(255,255,255,.45)",fontWeight:600,marginTop:1}}>{liveNow==null?"table bb_presence à créer":(liveNow>1?"personnes sur l'app":"personne sur l'app")}</div>
+                    </div>
+                    <div style={{fontFamily:G.heading,fontSize:44,color:"#00E676",lineHeight:1,textShadow:"0 0 20px rgba(0,230,118,.45)"}}>{liveNow==null?"—":liveNow}</div>
+                  </div>
                   {/* Sélecteur de plage : 1 / 5 / 10 / 14 jours */}
                   <div style={{display:"flex",gap:8,marginBottom:16}}>
                     {[1,5,10,14].map(function(r){
