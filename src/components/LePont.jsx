@@ -2401,6 +2401,7 @@ if(typeof document!=="undefined"&&!document.getElementById("bb-css")){
     @keyframes splashGlow{0%,100%{box-shadow:0 0 40px rgba(0,230,118,.3),0 0 80px rgba(0,230,118,.1)}50%{box-shadow:0 0 60px rgba(0,230,118,.6),0 0 120px rgba(0,230,118,.2)}}
     @keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
     @keyframes duelSettle{0%{transform:translateY(-46px) scale(1.04);opacity:.5}55%{transform:translateY(7px) scale(1)}78%{transform:translateY(-3px)}100%{transform:translateY(0);opacity:1}}
+    @keyframes duelFloat{0%{transform:translate(-50%,10px) scale(.8);opacity:0}18%{transform:translate(-50%,0) scale(1.1);opacity:1}70%{transform:translate(-50%,-8px) scale(1);opacity:1}100%{transform:translate(-50%,-46px) scale(.95);opacity:0}}
     @keyframes duelReelBlur{0%{transform:translateY(-7px)}100%{transform:translateY(7px)}}
     @keyframes fadeIn{from{opacity:0}to{opacity:1}}
     @keyframes popIn{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
@@ -2882,6 +2883,8 @@ export default function LePont() {
   const duelSeqBusyRef = React.useRef(false);            // évite les transitions concurrentes (host)
   const duelSpinIvRef = React.useRef(null);              // interval du reel
   const duelTickRef = React.useRef(0);                   // dernière seconde "tic-tac" jouée
+  const [duelFlash, setDuelFlash] = useState(null);      // solo : "+20 PTS" flottant entre 2 manches
+  const duelFlashToRef = React.useRef(null);
 
   function duelGenCode(){
     const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // sans I/O/0/1
@@ -2953,7 +2956,7 @@ export default function LePont() {
         else { await duelPatch(r.id, { guest_id:null, guest_name:null }); }
       }
     } catch(e){}
-    duelRoomRef.current=null; setDuelRoom(null); setDuelScreen(null); setDuelInput(""); setDuelJoinCode(""); setDuelError("");
+    duelRoomRef.current=null; setDuelRoom(null); setDuelScreen(null); setDuelInput(""); setDuelJoinCode(""); setDuelError(""); setDuelFlash(null);
     duelAnsweredRef.current=false;
   }
 
@@ -3010,13 +3013,28 @@ export default function LePont() {
     }
   }
 
-  // SOLO : passer la manche (0 pt) quand on ne sait pas
+  // SOLO : passer la manche (0 pt) quand on ne sait pas → le séquenceur enchaîne direct
   function duelSkip(){
     const r = duelRoomRef.current || duelRoom;
     if(!r || !r.solo || r.phase!=="answer" || duelAnsweredRef.current) return;
     duelAnsweredRef.current = true;
     setDuelInput(""); setDuelWrong(false);
-    duelPatch("LOCAL", { phase:"result", phase_at:new Date().toISOString(), round_pts:0, round_skipped:true });
+    duelPatch("LOCAL", { host_skip:true });
+  }
+
+  // SOLO : résout la manche (points en flash) et passe DIRECT à la suivante (pas d'écran pause)
+  function duelSoloNext(room, pts, skipped){
+    const newScore = (room.host_score||0) + pts;
+    setDuelFlash({ pts:pts, skipped:!!skipped, id:(room.round||1)+"-"+Date.now() });
+    if(duelFlashToRef.current) clearTimeout(duelFlashToRef.current);
+    duelFlashToRef.current = setTimeout(function(){ setDuelFlash(null); }, 1300);
+    if((room.round||1) < DUEL_ROUNDS){
+      const [c1, c2] = duelRollPair();
+      duelPatch("LOCAL", { round:(room.round||1)+1, phase:"answer", phase_at:new Date().toISOString(),
+        club_c1:c1, club_c2:c2, host_answer:null, host_answer_ms:null, round_pts:null, round_skipped:false, host_skip:false, host_score:newScore });
+    } else {
+      duelPatch("LOCAL", { state:"finished", phase:"done", winner_id:room.host_id, host_score:newScore });
+    }
   }
 
   // Séquenceur : SEUL l'hôte fait avancer les phases (évite les conflits d'écriture)
@@ -3031,12 +3049,14 @@ export default function LePont() {
         // fenêtre de réponse = après le tirage machine à sous + 10s (+ marge)
         const timeUp = el >= (DUEL_SPIN_MS + DUEL_ANSWER_SECS*1000 + (room.solo?800:1200));
         if(room.solo){
-          // SOLO : 10 pts / bonne réponse, 20 pts si < 5 s
+          // SOLO : 10 pts / bonne réponse, 20 pts si < 5 s. Pas d'écran pause :
+          // on affiche les points en flash et on enchaîne direct.
           const hm = room.host_answer_ms;
-          if(hm!=null || timeUp){
+          const skipped = room.host_skip;
+          if(hm!=null || skipped || timeUp){
             duelSeqBusyRef.current=true;
-            const pts = hm!=null ? (hm < 5000 ? 20 : 10) : 0;
-            await duelPatch(room.id, { phase:"result", phase_at:new Date().toISOString(), round_pts:pts, host_score:(room.host_score||0)+pts });
+            const pts = skipped ? 0 : (hm!=null ? (hm < 5000 ? 20 : 10) : 0);
+            duelSoloNext(room, pts, !!skipped);
           }
         } else {
           const hm = room.host_answer_ms, gm = room.guest_answer_ms;
@@ -8296,7 +8316,13 @@ export default function LePont() {
           );
         };
         phaseBody = (
-          <div style={{flex:1,display:"flex",flexDirection:"column",minHeight:0,padding:"6px 20px 16px",alignItems:"center"}}>
+          <div style={{position:"relative",flex:1,display:"flex",flexDirection:"column",minHeight:0,padding:"6px 20px 16px",alignItems:"center"}}>
+            {/* SOLO : points en flash flottant entre 2 manches (pas d'écran pause) */}
+            {isSolo && duelFlash && (
+              <div key={duelFlash.id} style={{position:"absolute",top:"38%",left:"50%",zIndex:20,pointerEvents:"none",fontFamily:G.heading,fontSize:duelFlash.pts>=20?46:36,letterSpacing:1,color:duelFlash.pts>=20?"#FFD600":duelFlash.pts>0?"#00E676":"#FF6B35",textShadow:"0 4px 20px rgba(0,0,0,.7)",animation:"duelFloat 1.3s ease-out forwards"}}>
+                {duelFlash.pts>=20?"⚡ +20":duelFlash.pts>0?"+10":duelFlash.skipped?(lang==="en"?"SKIP":"PASSÉ"):(lang==="en"?"MISS":"RATÉ")}{duelFlash.pts>0?" PTS":""}
+              </div>
+            )}
             <div style={{fontFamily:G.heading,fontSize:44,color:ansLeft<=3?"#FF3D57":"#FFD600",lineHeight:1,marginBottom:10}}>{ansLeft}</div>
             {/* Machine à sous : 2 clubs empilés (on gagne en largeur + gros format) */}
             <div style={{position:"relative",width:"100%",maxWidth:300,marginBottom:12}}>
