@@ -2930,6 +2930,23 @@ export default function LePont() {
   const duelTickRef = React.useRef(0);                   // dernière seconde "tic-tac" jouée
   const [duelFlash, setDuelFlash] = useState(null);      // solo : "+20 PTS" flottant entre 2 manches
   const duelFlashToRef = React.useRef(null);
+  const [duelCodeCopied, setDuelCodeCopied] = useState(false); // lobby : feedback "code copié"
+  // Partage / copie du code de salon (Web Share si dispo, sinon presse-papiers)
+  function duelShareCode(code){
+    const url = (function(){ try { return window.location.origin; } catch { return "https://goatfc.fr"; } })();
+    const txt = (lang==="en"
+      ? "Join my GOAT DUEL! Code: "+code+" — "+url
+      : "Rejoins mon GOAT DUEL ! Code : "+code+" — "+url);
+    try {
+      if (navigator.share) { navigator.share({ title:"GOAT DUEL", text:txt }).catch(function(){}); return; }
+    } catch(e){}
+    try {
+      navigator.clipboard.writeText(code).then(function(){
+        setDuelCodeCopied(true);
+        setTimeout(function(){ setDuelCodeCopied(false); }, 1800);
+      }).catch(function(){});
+    } catch(e){}
+  }
 
   function duelGenCode(){
     const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // sans I/O/0/1
@@ -8356,18 +8373,39 @@ export default function LePont() {
         </div>
       );
     } else if(duelScreen==="lobby"){
+      const joined = !!room.guest_id;
+      const lobbyPuce = [ {t:"8%",l:"10%",s:22,r:-16},{t:"16%",l:"84%",s:15,r:20},{t:"66%",l:"8%",s:26,r:12},{t:"76%",l:"86%",s:17,r:-24},{t:"46%",l:"5%",s:13,r:15} ];
       body = (
-        <div style={{flex:1,overflowY:"auto",padding:"24px 20px",display:"flex",flexDirection:"column",gap:20,maxWidth:480,margin:"0 auto",width:"100%",alignItems:"center"}}>
-          <div style={{fontSize:13,color:"rgba(255,255,255,.6)",textAlign:"center"}}>{isHost?(lang==="en"?"Share this code with a friend:":"Partage ce code à un ami :"):(lang==="en"?"Room code:":"Code du salon :")}</div>
-          <div style={{fontFamily:G.heading,fontSize:52,letterSpacing:10,color:"#FFD600",background:"rgba(255,214,0,.08)",border:"1px solid rgba(255,214,0,.3)",borderRadius:18,padding:"14px 26px"}}>{room.code}</div>
-          <div style={{background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.1)",borderRadius:16,padding:"14px 18px",width:"100%",textAlign:"center"}}>
-            <div style={{fontSize:13,fontWeight:800,color:room.guest_id?"#00E676":"rgba(255,255,255,.55)"}}>
-              {room.guest_id ? "✓ "+(room.guest_name||"Adversaire")+(lang==="en"?" joined!":" a rejoint !") : (lang==="en"?"⏳ Waiting for an opponent…":"⏳ En attente d'un adversaire…")}
+        <div style={{position:"relative",flex:1,minHeight:0,display:"flex",flexDirection:"column",overflowY:"auto",WebkitOverflowScrolling:"touch"}}>
+          {/* Décor de fond */}
+          <div style={{position:"absolute",inset:0,pointerEvents:"none",background:"radial-gradient(circle at 50% 20%, rgba(255,214,0,.15), transparent 52%), radial-gradient(circle at 50% 92%, rgba(0,230,118,.14), transparent 55%)"}}/>
+          {lobbyPuce.map(function(f,i){return <div key={i} style={{position:"absolute",top:f.t,left:f.l,opacity:.12,transform:"rotate("+f.r+"deg)",pointerEvents:"none"}}><div style={{fontSize:f.s,animation:"floatBob 3s ease-in-out infinite",animationDelay:(i*0.5)+"s"}}>⚡</div></div>;})}
+          <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column",justifyContent:"center",alignItems:"center",gap:16,padding:"24px 22px calc(24px + env(safe-area-inset-bottom))",maxWidth:480,margin:"0 auto",width:"100%",boxSizing:"border-box"}}>
+            <div style={{fontSize:11,letterSpacing:2.5,color:"rgba(255,255,255,.5)",fontWeight:800,textTransform:"uppercase"}}>{isHost?(lang==="en"?"Share this code":"Partage ce code"):(lang==="en"?"Room code":"Code du salon")}</div>
+            {/* Ticket code (tap pour partager / copier) */}
+            <button onClick={function(){ duelShareCode(room.code); }} style={{position:"relative",width:"100%",maxWidth:340,background:"linear-gradient(160deg, rgba(255,214,0,.16), rgba(255,214,0,.04))",border:"1.5px solid rgba(255,214,0,.45)",borderRadius:22,padding:"22px 20px 18px",cursor:"pointer",boxShadow:"0 14px 40px -14px rgba(255,214,0,.45)"}}>
+              <div style={{fontFamily:G.heading,fontSize:"clamp(40px,13vw,60px)",letterSpacing:"min(10px,2.5vw)",color:"#FFD600",lineHeight:1,textShadow:"0 0 26px rgba(255,214,0,.4)",whiteSpace:"nowrap"}}>{room.code}</div>
+              <div style={{marginTop:14,display:"inline-flex",alignItems:"center",gap:7,background:"rgba(255,214,0,.16)",border:"1px solid rgba(255,214,0,.35)",borderRadius:50,padding:"8px 16px",color:"#FFD600",fontSize:13,fontWeight:800,letterSpacing:.5}}>
+                {duelCodeCopied ? (lang==="en"?"✓ Copied!":"✓ Copié !") : (navigator.share ? (lang==="en"?"📤 Share":"📤 Partager") : (lang==="en"?"📋 Copy":"📋 Copier"))}
+              </div>
+            </button>
+            {/* État d'attente / adversaire */}
+            <div style={{width:"100%",maxWidth:340,background:joined?"rgba(0,230,118,.12)":"rgba(255,255,255,.05)",border:"1px solid "+(joined?"rgba(0,230,118,.4)":"rgba(255,255,255,.1)"),borderRadius:16,padding:"14px 18px",textAlign:"center",display:"flex",alignItems:"center",justifyContent:"center",gap:10}}>
+              {joined ? (
+                <div style={{fontSize:14,fontWeight:800,color:"#00E676"}}>✓ {(room.guest_name||(lang==="en"?"Opponent":"Adversaire"))}{lang==="en"?" joined!":" a rejoint !"}</div>
+              ) : (<>
+                <div style={{display:"flex",gap:4}}>
+                  {[0,1,2].map(function(i){return <span key={i} style={{width:7,height:7,borderRadius:"50%",background:"#FFD600",animation:"floatBob 1s ease-in-out infinite",animationDelay:(i*0.18)+"s"}}/>;})}
+                </div>
+                <div style={{fontSize:13,fontWeight:700,color:"rgba(255,255,255,.6)"}}>{lang==="en"?"Waiting for an opponent…":"En attente d'un adversaire…"}</div>
+              </>)}
+            </div>
+            <div style={{width:"100%",maxWidth:340,display:"flex",flexDirection:"column",gap:10,marginTop:4}}>
+              {isHost ? bigBtn(lang==="en"?"START":"DÉMARRER", duelHostStart, "linear-gradient(135deg,#00E676,#00A855)", !joined)
+                      : <div style={{fontSize:13,color:"rgba(255,255,255,.5)",textAlign:"center",padding:"6px"}}>{lang==="en"?"Waiting for the host to start…":"En attente que l'hôte lance la partie…"}</div>}
+              <button onClick={duelLeaveRoom} style={{background:"none",border:"1px solid rgba(255,255,255,.15)",borderRadius:50,color:"rgba(255,255,255,.6)",padding:"12px 24px",cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700}}>{lang==="en"?"Leave":"Quitter"}</button>
             </div>
           </div>
-          {isHost ? bigBtn(lang==="en"?"START":"DÉMARRER", duelHostStart, "linear-gradient(135deg,#00E676,#00A855)", !room.guest_id)
-                  : <div style={{fontSize:13,color:"rgba(255,255,255,.5)",textAlign:"center"}}>{lang==="en"?"Waiting for the host to start…":"En attente que l'hôte lance la partie…"}</div>}
-          <button onClick={duelLeaveRoom} style={{marginTop:6,background:"none",border:"1px solid rgba(255,255,255,.15)",borderRadius:50,color:"rgba(255,255,255,.6)",padding:"10px 24px",cursor:"pointer",fontFamily:G.font,fontSize:13}}>{lang==="en"?"Leave":"Quitter"}</button>
         </div>
       );
     } else if(duelScreen==="playing"){
