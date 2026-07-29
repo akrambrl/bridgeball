@@ -27,6 +27,18 @@ async function sbFetch(path, options) {
   if (res.status === 201 || res.headers.get("content-length") === "0") return [];
   try { return await res.json(); } catch { return []; }
 }
+// Compte EXACT de lignes d'une table (tout l'historique) via l'en-tête
+// Content-Range de PostgREST — sans rapatrier les lignes. Renvoie null si KO.
+async function sbCount(table) {
+  try {
+    const res = await fetch(SB_URL + "/rest/v1/" + table + "?select=id", {
+      headers: { "apikey": SB_KEY, "Authorization": "Bearer " + SB_KEY, "Prefer": "count=exact", "Range": "0-0" }
+    });
+    const cr = res.headers.get("content-range") || "";
+    const total = cr.split("/").pop();
+    return total && total !== "*" ? parseInt(total, 10) : null;
+  } catch (e) { return null; }
+}
 function countryToFlag(code) {
   if (!code || code.length !== 2) return "";
   const codePoints = code.toUpperCase().split("").map(c => 127397 + c.charCodeAt(0));
@@ -2582,7 +2594,15 @@ export default function LePont() {
       let recent = await sbFetch("bb_pseudos?select=pseudo,country,created_at&order=created_at.desc&limit=40");
       let recentHasDate = true;
       if (!recent) { recentHasDate = false; recent = await sbFetch("bb_pseudos?select=pseudo,country&limit=40") || []; }
-      setStatsData({ days: days, week: weekActive.size, accounts: pseudos.length, duelsToday: duels.length, recent: recent, recentHasDate: recentHasDate, hasEvents: hasEvents, playsByMode: playsByMode, totalPlays: totalPlays, playsSolo: playsSolo, playsOnline: playsOnline });
+      // ─── Totaux DEPUIS LE DÉBUT (tout l'historique, comptés via l'en-tête) ───
+      const allTime = {
+        games:    await sbCount("bb_scores"),    // parties terminées (solo + classées)
+        duels:    await sbCount("bb_duels"),     // duels 1v1 en ligne
+        rooms:    await sbCount("bb_rooms"),     // salons multijoueurs créés
+        accounts: await sbCount("bb_pseudos"),   // comptes créés
+        grid:     await sbCount("bb_gg_scores"), // parties GOAT GRID enregistrées
+      };
+      setStatsData({ days: days, week: weekActive.size, accounts: pseudos.length, duelsToday: duels.length, recent: recent, recentHasDate: recentHasDate, hasEvents: hasEvents, playsByMode: playsByMode, totalPlays: totalPlays, playsSolo: playsSolo, playsOnline: playsOnline, allTime: allTime });
     })();
   }, [statsMode, statsData]);
   // ─── Android Back Button Handler ──
@@ -9862,6 +9882,32 @@ export default function LePont() {
                     <div style={{fontFamily:G.heading,fontSize:76,color:"#00E676",lineHeight:1,textShadow:"0 0 26px rgba(0,230,118,.45)"}}>{today.players}</div>
                     <div style={{fontSize:14,color:"rgba(255,255,255,.7)",fontWeight:700}}>{statsData.hasEvents?"actifs":"joueurs actifs"}{statsData.hasEvents?` · dont ${today.anon} anonyme${today.anon>1?"s":""}`:""} · {today.games} parties{statsData.duelsToday?` · ${statsData.duelsToday} duels`:""}</div>
                   </div>
+                  {/* ─── DEPUIS LE DÉBUT (tout l'historique) ─── */}
+                  {statsData.allTime && (function(){
+                    const at = statsData.allTime;
+                    const fmt = function(n){ return (n==null) ? "—" : n.toLocaleString("fr-FR"); };
+                    const onlineTot = (at.duels||0) + (at.rooms||0);
+                    const cards = [
+                      { v: at.games,   label: "parties au total",  color: "#00E676", sub: "solo + classées" },
+                      { v: onlineTot,  label: "parties en ligne",  color: "#FF8A2A", sub: `${fmt(at.duels)} duels · ${fmt(at.rooms)} salons` },
+                      { v: at.accounts,label: "comptes créés",     color: "#FFD600", sub: "depuis le lancement" },
+                      { v: at.grid,    label: "parties GOAT GRID",  color: "#C084FC", sub: "défi quotidien" },
+                    ];
+                    return (
+                      <div style={{marginBottom:20}}>
+                        <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.4)",fontWeight:800,textTransform:"uppercase",marginBottom:10,paddingLeft:4}}>📈 Depuis le début</div>
+                        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+                          {cards.map(function(c,i){return(
+                            <div key={i} style={{background:"linear-gradient(150deg, "+c.color+"1f, rgba(255,255,255,.03) 60%, rgba(0,0,0,.2))",border:"1px solid "+c.color+"44",borderRadius:18,padding:"16px 14px",textAlign:"center"}}>
+                              <div style={{fontFamily:G.heading,fontSize:38,color:c.color,lineHeight:1,textShadow:"0 0 20px "+c.color+"40"}}>{fmt(c.v)}</div>
+                              <div style={{fontSize:10.5,letterSpacing:1,color:"rgba(255,255,255,.6)",fontWeight:800,textTransform:"uppercase",marginTop:7}}>{c.label}</div>
+                              <div style={{fontSize:10,color:"rgba(255,255,255,.35)",fontWeight:600,marginTop:3}}>{c.sub}</div>
+                            </div>
+                          );})}
+                        </div>
+                      </div>
+                    );
+                  })()}
                   {/* Cartes semaine / comptes */}
                   <div style={{display:"flex",gap:12,marginBottom:20}}>
                     <div style={{flex:1,background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.1)",borderRadius:18,padding:"16px",textAlign:"center"}}>
