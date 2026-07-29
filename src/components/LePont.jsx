@@ -2613,11 +2613,20 @@ export default function LePont() {
   const [screen, setScreen] = useState("home");
   const [resultImg, setResultImg] = useState(null);
   const [gameMode, setGameMode] = useState("pont");
-  // ─── Home Carousel State (0=GRID, 1=MERCATO, 2=PLUG) ──
+  // ─── Home Carousel State (0=DUEL/GOAT BATTLE, 1=GRID, 2=MERCATO, 3=PLUG, 4=GUESS) ──
   const [homeCardIndex, setHomeCardIndex] = useState(() => {
-    // Card 3 = GOAT Guess par défaut au premier lancement (5 cartes : 0..4)
-    const saved = parseInt(localStorage.getItem("bb_home_card") || "3", 10);
-    return isNaN(saved) || saved < 0 || saved > 4 ? 3 : saved;
+    // Card 0 = GOAT BATTLE (duel) par défaut. Migration unique : on force la carte 0
+    // pour tout le monde une fois (les anciens utilisateurs ont un index sauvegardé
+    // qui pointait vers une autre carte avant le réordonnancement du carrousel).
+    try {
+      if (localStorage.getItem("bb_home_card_v2") !== "1") {
+        localStorage.setItem("bb_home_card", "0");
+        localStorage.setItem("bb_home_card_v2", "1");
+        return 0;
+      }
+    } catch (e) {}
+    const saved = parseInt(localStorage.getItem("bb_home_card") || "0", 10);
+    return isNaN(saved) || saved < 0 || saved > 4 ? 0 : saved;
   });
   const homeSwipeStartRef = useRef(null);
   const [homeRulesModal, setHomeRulesModal] = useState(null); // null | "grid" | "mercato" | "plug"
@@ -10562,11 +10571,11 @@ export default function LePont() {
         {/* Mobile : le carrousel absorbe l'espace restant (flex) pour que toute
             la page tienne sur l'écran sans scroll (fix 100vh Safari → 100dvh). */}
         {(() => { const homeCards = [
+              {key:"duel",    img:DUEL_CARD_IMG,    onClick: function(){requirePseudo(function(){setDuelError("");setDuelJoinCode("");setDuelScreen("menu");});}, record: null, recordIcon:null, recordColor:"#3DA5FF"},
               {key:"grid",    img:GRID_CARD_IMG,    onClick: function(){setGgModeChoice(true);},        record: chainRecord ? null : null, recordIcon:null, recordColor:"#00E676"},
               {key:"mercato", img:MERCATO_CARD_IMG, onClick: function(){setGameConfigModal("chaine");}, record: chainRecord, recordIcon:"⛓",  recordColor:"#60a5fa"},
               {key:"plug",    img:PLUG_CARD_IMG,    onClick: function(){setGameConfigModal("pont");},   record: record,      recordIcon:"🏆", recordColor:"#FFD600"},
               {key:"guess",   img:GUESS_CARD_IMG,   onClick: function(){window.dispatchEvent(new CustomEvent("goatfc:open-guess"));}, record: null, recordIcon:null, recordColor:"#C084FC"},
-              {key:"duel",    img:DUEL_CARD_IMG,    onClick: function(){requirePseudo(function(){setDuelError("");setDuelJoinCode("");setDuelScreen("menu");});}, record: null, recordIcon:null, recordColor:"#3DA5FF"},
             ]; const homeN = homeCards.length; return (
         <div style={{display:"flex",flexDirection:"column",alignItems:"center",flex:isDesktop?"none":"1 1 auto",minHeight:0}}>
           <div
