@@ -2894,10 +2894,10 @@ export default function LePont() {
     duelPatch(r.id, mine);
   }
 
-  function duelSubmitAnswer(){
+  function duelSubmitAnswer(nameOverride){
     const r = duelRoomRef.current || duelRoom;
     if(!r || r.phase!=="answer" || duelAnsweredRef.current) return;
-    const g = (duelInput||"").trim();
+    const g = (nameOverride!=null ? nameOverride : (duelInput||"")).trim();
     if(g.length<3) return;
     const common = duelCommonPlayers(r.club_c1, r.club_c2);
     if(checkGuess(g, common)){
@@ -8097,6 +8097,7 @@ export default function LePont() {
         );
       } else if(room.phase==="answer"){
         const answered = duelAnsweredRef.current || myAnsMs!=null;
+        const duelSug = answered ? [] : ggGetSuggestions(duelInput);
         phaseBody = (
           <div style={{flex:1,display:"flex",flexDirection:"column",minHeight:0,padding:"6px 16px 16px",alignItems:"center"}}>
             <div style={{fontFamily:G.heading,fontSize:44,color:ansLeft<=3?"#FF3D57":"#FFD600",lineHeight:1,marginBottom:8}}>{ansLeft}</div>
@@ -8114,10 +8115,17 @@ export default function LePont() {
             ) : (
               <div style={{width:"100%",maxWidth:420}}>
                 <div style={{display:"flex",gap:8}}>
-                  <input autoFocus value={duelInput} onChange={function(e){setDuelInput(e.target.value);}} onKeyDown={function(e){if(e.key==="Enter")duelSubmitAnswer();}} placeholder={lang==="en"?"Player name…":"Nom du joueur…"}
+                  <input autoFocus value={duelInput} onChange={function(e){setDuelInput(e.target.value);}} onKeyDown={function(e){if(e.key==="Enter"){ if(duelSug.length>0){duelSubmitAnswer(duelSug[0].name);} else {duelSubmitAnswer();} }}} placeholder={lang==="en"?"Player name…":"Nom du joueur…"}
                     style={{flex:1,minWidth:0,padding:"14px",borderRadius:14,border:"1.5px solid rgba(255,255,255,.15)",background:"rgba(255,255,255,.06)",color:G.white,fontFamily:G.font,fontSize:16,fontWeight:700,outline:"none",textAlign:"center"}}/>
-                  <button onClick={duelSubmitAnswer} disabled={duelInput.trim().length<3} style={{padding:"0 20px",borderRadius:14,border:"none",background:duelInput.trim().length>=3?"#00E676":"rgba(255,255,255,.08)",color:duelInput.trim().length>=3?"#000":"rgba(255,255,255,.3)",fontFamily:G.heading,fontSize:16,cursor:duelInput.trim().length>=3?"pointer":"not-allowed"}}>OK</button>
+                  <button onClick={function(){ if(duelSug.length>0){duelSubmitAnswer(duelSug[0].name);} else {duelSubmitAnswer();} }} disabled={duelInput.trim().length<3} style={{padding:"0 20px",borderRadius:14,border:"none",background:duelInput.trim().length>=3?"#00E676":"rgba(255,255,255,.08)",color:duelInput.trim().length>=3?"#000":"rgba(255,255,255,.3)",fontFamily:G.heading,fontSize:16,cursor:duelInput.trim().length>=3?"pointer":"not-allowed"}}>OK</button>
                 </div>
+                {duelSug.length > 0 && (
+                  <div style={{marginTop:8,background:"rgba(0,0,0,.35)",border:"1px solid rgba(255,255,255,.1)",borderRadius:12,overflow:"hidden"}}>
+                    {duelSug.map(function(p){return(
+                      <div key={p.name} onClick={function(){duelSubmitAnswer(p.name);}} style={{padding:"11px 14px",cursor:"pointer",borderBottom:"1px solid rgba(255,255,255,.05)",fontSize:14,fontWeight:700,color:G.white}}>{p.name}</div>
+                    );})}
+                  </div>
+                )}
                 <div style={{textAlign:"center",fontSize:12,color:oppAnsMs!=null?"#FF6B35":"rgba(255,255,255,.4)",marginTop:10,fontWeight:700}}>{oppAnsMs!=null?(lang==="en"?"⚡ Opponent found it!":"⚡ L'adversaire a trouvé !"):(lang==="en"?"Opponent is searching…":"L'adversaire cherche…")}</div>
               </div>
             )}
@@ -8153,8 +8161,7 @@ export default function LePont() {
           </div>
           <div style={{fontFamily:G.heading,fontSize:52,color:G.white}}>{myScore} <span style={{color:"rgba(255,255,255,.3)"}}>–</span> {oppScore}</div>
           <div style={{fontSize:13,color:"rgba(255,255,255,.55)",textAlign:"center"}}>{(myName||"Toi")+" vs "+(oppName||"Adversaire")}</div>
-          {isHost && bigBtn(lang==="en"?"REMATCH":"REVANCHE", duelHostStart, "linear-gradient(135deg,#00E676,#00A855)", false)}
-          <button onClick={duelLeaveRoom} style={{background:"none",border:"1px solid rgba(255,255,255,.15)",borderRadius:50,color:"rgba(255,255,255,.6)",padding:"12px 28px",cursor:"pointer",fontFamily:G.font,fontSize:14}}>{lang==="en"?"Back":"Retour"}</button>
+          {bigBtn(lang==="en"?"BACK TO MENU":"RETOUR À L'ACCUEIL", duelLeaveRoom, "linear-gradient(135deg,#00E676,#00A855)", false)}
         </div>
       );
     }
