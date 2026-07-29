@@ -2405,6 +2405,7 @@ if(typeof document!=="undefined"&&!document.getElementById("bb-css")){
     @keyframes duelSettle{0%{transform:translateY(-46px) scale(1.04);opacity:.5}55%{transform:translateY(7px) scale(1)}78%{transform:translateY(-3px)}100%{transform:translateY(0);opacity:1}}
     @keyframes duelFloat{0%{transform:translate(-50%,10px) scale(.8);opacity:0}18%{transform:translate(-50%,0) scale(1.1);opacity:1}70%{transform:translate(-50%,-8px) scale(1);opacity:1}100%{transform:translate(-50%,-46px) scale(.95);opacity:0}}
     @keyframes duelReelBlur{0%{transform:translateY(-7px)}100%{transform:translateY(7px)}}
+    @keyframes floatBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
     @keyframes fadeIn{from{opacity:0}to{opacity:1}}
     @keyframes popIn{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
     @keyframes slideIn{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:translateX(0)}}
@@ -3011,7 +3012,7 @@ export default function LePont() {
       solo_ends_at:new Date(Date.now()+DUEL_SOLO_SECS*1000).toISOString(), // 60 s au total
       club_c1:c1, club_c2:c2,
       host_answer:null, host_answer_ms:null, round_pts:null,
-      host_score:0,
+      host_score:0, host_correct:0, host_fast:0, host_rounds:0,
     };
     duelRoomRef.current = room; setDuelRoom(room); setDuelEndImg(null);
     setDuelScreen("playing");
@@ -3055,16 +3056,21 @@ export default function LePont() {
   // Manches ILLIMITÉES : on enchaîne tant que le chrono global (60 s) n'est pas écoulé.
   function duelSoloNext(room, pts, skipped){
     const newScore = (room.host_score||0) + pts;
+    // Stats de fin de partie : bonnes réponses, réponses éclair (< 5 s = 20 pts), manches jouées
+    const newCorrect = (room.host_correct||0) + (pts>0 ? 1 : 0);
+    const newFast = (room.host_fast||0) + (pts>=20 ? 1 : 0);
+    const newRounds = (room.host_rounds||0) + 1;
     setDuelFlash({ pts:pts, skipped:!!skipped, id:(room.round||1)+"-"+Date.now() });
     if(duelFlashToRef.current) clearTimeout(duelFlashToRef.current);
     duelFlashToRef.current = setTimeout(function(){ setDuelFlash(null); }, 1300);
     const timeUp = room.solo_ends_at && Date.now() >= new Date(room.solo_ends_at).getTime();
+    const stats = { host_score:newScore, host_correct:newCorrect, host_fast:newFast, host_rounds:newRounds };
     if(timeUp){
-      duelPatch("LOCAL", { state:"finished", phase:"done", winner_id:room.host_id, host_score:newScore });
+      duelPatch("LOCAL", Object.assign({ state:"finished", phase:"done", winner_id:room.host_id }, stats));
     } else {
       const [c1, c2] = duelRollPair();
-      duelPatch("LOCAL", { round:(room.round||1)+1, phase:"answer", phase_at:new Date().toISOString(),
-        club_c1:c1, club_c2:c2, host_answer:null, host_answer_ms:null, round_pts:null, round_skipped:false, host_skip:false, host_score:newScore });
+      duelPatch("LOCAL", Object.assign({ round:(room.round||1)+1, phase:"answer", phase_at:new Date().toISOString(),
+        club_c1:c1, club_c2:c2, host_answer:null, host_answer_ms:null, round_pts:null, round_skipped:false, host_skip:false }, stats));
     }
   }
 
@@ -8469,16 +8475,44 @@ export default function LePont() {
       if(room.solo){
         // SOLO : 60 s, manches illimitées. Score = total de points. Message selon le score.
         const sc = myScore||0;
+        const correct = room.host_correct||0, fast = room.host_fast||0, rounds = room.host_rounds||0;
         const msg = sc>=150 ? (lang==="en"?"LEGEND! 🐐":"LÉGENDE ! 🐐") : sc>=100 ? (lang==="en"?"GREAT!":"BIEN JOUÉ !") : sc>=50 ? (lang==="en"?"NOT BAD":"PAS MAL") : (lang==="en"?"KEEP TRYING":"CONTINUE À T'ENTRAÎNER");
+        const accent = sc>=100 ? "#FFD600" : "#00E676";
+        const tiles = [
+          { v: correct, e:"✅", c:"#00E676", l: lang==="en"?"correct":"bonnes rép." },
+          { v: fast,    e:"⚡", c:"#FFD600", l: lang==="en"?"under 5s":"éclairs" },
+          { v: rounds,  e:"🎯", c:"#3DA5FF", l: lang==="en"?"rounds":"manches" },
+        ];
+        const puce = [ {t:"6%",l:"10%",s:24,r:-18},{t:"14%",l:"84%",s:16,r:22},{t:"64%",l:"8%",s:28,r:12},{t:"74%",l:"86%",s:18,r:-26},{t:"40%",l:"4%",s:14,r:16},{t:"52%",l:"92%",s:20,r:-12} ];
         body = (
-          <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",alignItems:"center",padding:"24px",gap:14,maxWidth:480,margin:"0 auto",width:"100%"}}>
-            <img src={duelEndImg || WIN_IMGS[0]} alt="" style={{height:180,width:"auto",objectFit:"contain",filter:"drop-shadow(0 16px 30px rgba(0,0,0,.6))"}}/>
-            <div style={{fontSize:11,color:"rgba(255,255,255,.5)",fontWeight:800,letterSpacing:2}}>{lang==="en"?"YOUR SCORE":"TON SCORE"}</div>
-            <div style={{fontFamily:G.heading,fontSize:64,color:"#FFD600",lineHeight:1}}>{sc} <span style={{fontSize:24,color:"rgba(255,255,255,.4)"}}>pts</span></div>
-            <div style={{fontFamily:G.heading,fontSize:26,letterSpacing:1,color:"#00E676",textAlign:"center"}}>{msg}</div>
-            <div style={{display:"flex",gap:10,width:"100%",marginTop:6}}>
-              <button onClick={duelSoloStart} style={{flex:1,padding:"15px",borderRadius:16,border:"none",background:"linear-gradient(135deg,#3DA5FF,#00E676)",color:"#000",fontFamily:G.heading,fontSize:16,letterSpacing:1,cursor:"pointer"}}>{lang==="en"?"↻ AGAIN":"↻ REJOUER"}</button>
-              <button onClick={duelLeaveRoom} style={{flex:1,padding:"15px",borderRadius:16,border:"1px solid rgba(255,255,255,.15)",background:"rgba(255,255,255,.05)",color:G.white,fontFamily:G.heading,fontSize:16,letterSpacing:1,cursor:"pointer"}}>{lang==="en"?"MENU":"MENU"}</button>
+          <div style={{position:"relative",flex:1,minHeight:0,display:"flex",flexDirection:"column",overflowY:"auto",WebkitOverflowScrolling:"touch"}}>
+            {/* Décor de fond : halos + éclairs flottants */}
+            <div style={{position:"absolute",inset:0,pointerEvents:"none",background:"radial-gradient(circle at 50% 24%, rgba(255,214,0,.20), transparent 52%), radial-gradient(circle at 50% 90%, rgba(0,230,118,.16), transparent 55%)"}}/>
+            {puce.map(function(f,i){return <div key={i} style={{position:"absolute",top:f.t,left:f.l,opacity:.13,transform:"rotate("+f.r+"deg)",pointerEvents:"none"}}><div style={{fontSize:f.s,animation:"floatBob 3s ease-in-out infinite",animationDelay:(i*0.45)+"s"}}>⚡</div></div>;})}
+            <div style={{position:"relative",zIndex:1,flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"20px 24px calc(20px + env(safe-area-inset-bottom))",gap:12,maxWidth:480,margin:"0 auto",width:"100%",boxSizing:"border-box"}}>
+              {/* Hero + anneau lumineux */}
+              <div style={{position:"relative",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                <div style={{position:"absolute",width:"min(260px,60vw)",height:"min(260px,60vw)",borderRadius:"50%",background:"radial-gradient(circle, "+accent+"33, transparent 66%)",filter:"blur(4px)"}}/>
+                <img src={duelEndImg || WIN_IMGS[0]} alt="" style={{position:"relative",height:"min(240px,32vh)",width:"auto",objectFit:"contain",filter:"drop-shadow(0 18px 34px rgba(0,0,0,.65))"}}/>
+              </div>
+              <div style={{fontSize:11,color:"rgba(255,255,255,.5)",fontWeight:800,letterSpacing:3}}>{lang==="en"?"YOUR SCORE":"TON SCORE"}</div>
+              <div style={{fontFamily:G.heading,fontSize:72,color:"#FFD600",lineHeight:.9,textShadow:"0 0 30px rgba(255,214,0,.4)"}}>{sc}<span style={{fontSize:26,color:"rgba(255,255,255,.4)"}}> pts</span></div>
+              <div style={{fontFamily:G.heading,fontSize:26,letterSpacing:1,color:accent,textAlign:"center"}}>{msg}</div>
+              {/* Tuiles de stats */}
+              <div style={{display:"flex",gap:10,width:"100%",marginTop:4}}>
+                {tiles.map(function(t,i){return(
+                  <div key={i} style={{flex:1,background:"rgba(255,255,255,.05)",border:"1px solid "+t.c+"33",borderRadius:16,padding:"12px 4px",textAlign:"center"}}>
+                    <div style={{fontSize:15}}>{t.e}</div>
+                    <div style={{fontFamily:G.heading,fontSize:26,color:t.c,lineHeight:1.15}}>{t.v}</div>
+                    <div style={{fontSize:9.5,letterSpacing:.5,color:"rgba(255,255,255,.5)",fontWeight:800,textTransform:"uppercase",marginTop:2}}>{t.l}</div>
+                  </div>
+                );})}
+              </div>
+              {/* Boutons */}
+              <div style={{display:"flex",gap:10,width:"100%",marginTop:12}}>
+                <button onClick={duelSoloStart} style={{flex:1,padding:"16px",borderRadius:16,border:"none",background:"linear-gradient(135deg,#3DA5FF,#00E676)",color:"#000",fontFamily:G.heading,fontSize:16,letterSpacing:1,cursor:"pointer",boxShadow:"0 10px 26px -10px rgba(0,230,118,.6)"}}>{lang==="en"?"↻ AGAIN":"↻ REJOUER"}</button>
+                <button onClick={duelLeaveRoom} style={{flex:1,padding:"16px",borderRadius:16,border:"1px solid rgba(255,255,255,.15)",background:"rgba(255,255,255,.05)",color:G.white,fontFamily:G.heading,fontSize:16,letterSpacing:1,cursor:"pointer"}}>{lang==="en"?"MENU":"MENU"}</button>
+              </div>
             </div>
           </div>
         );
