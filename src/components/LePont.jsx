@@ -10386,10 +10386,14 @@ export default function LePont() {
           <div
             style={{
               position:"relative",
-              width:"min(280px, 75vw)",
-              height:isDesktop?"clamp(340px, 82vw, 400px)":undefined,
+              // Mobile : la carte GARDE son ratio portrait (aspectRatio) et sa
+              // largeur suit la hauteur dispo (flex) → jamais écrasée sur écran court.
+              aspectRatio:"1086 / 1448",
               flex:isDesktop?undefined:"1 1 auto",
-              minHeight:isDesktop?undefined:150,
+              width:isDesktop?"min(280px, 75vw)":"auto",
+              maxWidth:"min(280px, 75vw)",
+              height:isDesktop?"clamp(340px, 82vw, 400px)":undefined,
+              minHeight:isDesktop?undefined:0,
               maxHeight:isDesktop?undefined:400,
               alignSelf:"center",
             }}
@@ -12623,7 +12627,7 @@ export default function LePont() {
   // ── CHAIN GAME TIMER BAR (injected via CSS position:fixed, already in game screen) ──
   // ── ROUND END ──
   if(screen==="roundEnd") return (
-    <div style={{...shell,animation:"fadeUp .4s ease"}} key="roundEnd">
+    <div style={{...shell,animation:"fadeUp .4s ease",overflow:isDesktop?"visible":"auto"}} key="roundEnd">
       <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
         {/* Bandes pelouse */}
         {[0,1,2,3,4,5,6].map(function(i){return(
@@ -12680,7 +12684,7 @@ export default function LePont() {
   );
 
   // ── FINAL ──
-const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc > 0 ? WIN_IMGS : LOSE_IMGS)[0];    return (    <div style={{...shell,animation:"fadeUp .4s ease"}} key={isChain?"chainEnd":"final"}>
+const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc > 0 ? WIN_IMGS : LOSE_IMGS)[0];    return (    <div style={{...shell,animation:"fadeUp .4s ease",overflow:isDesktop?"visible":"auto"}} key={isChain?"chainEnd":"final"}>
       {openNotifBanner}
       {pseudoModal}
       {recoveryCodeAfterCreationModal}
@@ -12918,7 +12922,7 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
       : (lang==="en"?"DEFEAT":"DÉFAITE");
     const labelColor = won || abandoned ? G.accent : draw ? G.gold : "#FF3D57";
     return (
-      <div style={{...shell,animation:"fadeUp .4s ease"}} key="duelResult">
+      <div style={{...shell,animation:"fadeUp .4s ease",overflow:isDesktop?"visible":"auto"}} key="duelResult">
         <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
         {/* Bandes pelouse */}
         {[0,1,2,3,4,5,6].map(function(i){return(
