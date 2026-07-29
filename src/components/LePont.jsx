@@ -1599,6 +1599,28 @@ function matchClub(input,playerClubs){
 function getPlayerClubs(name){const p=PLAYERS_CLEAN.find(x=>x.name===name);return p?p.clubs:[];}
 function getPlayersForClub(club){return CLUB_INDEX[club]||[];}
 
+// ─── GOAT DUEL — Plug temps réel 1v1 (5 manches) ──────────────
+// 20 tops clubs européens curés : ~toutes les paires ont un joueur commun
+// dans la base (1 seule paire sur 190 sans lien → manche annulée/rejouée).
+const DUEL_CLUBS = [
+  "Real Madrid","Barcelona","Atletico Madrid","Sevilla","Valencia",
+  "Manchester United","Manchester City","Liverpool","Chelsea","Arsenal","Tottenham",
+  "Bayern Munich","Borussia Dortmund",
+  "Juventus FC","Inter Milan","AC Milan","SSC Napoli","AS Roma",
+  "PSG","Marseille",
+];
+// Joueurs ayant joué dans les DEUX clubs = réponses valides d'une manche
+function duelCommonPlayers(c1, c2){
+  if(!c1 || !c2) return [];
+  if(c1 === c2) return getPlayersForClub(c1); // même club : n'importe quel joueur du club
+  const b = new Set(getPlayersForClub(c2));
+  return getPlayersForClub(c1).filter(n => b.has(n));
+}
+const DUEL_ROUNDS = 5;
+const DUEL_PICK_SECS = 5;    // sélection du club
+const DUEL_ANSWER_SECS = 10; // trouver le joueur
+const DUEL_RESULT_SECS = 4;  // écran résultat de manche
+
 // CRESCENDO HELPER : retourne la difficulté "effective" en mode crescendo selon le nombre de liens accomplis
 // 0-2 liens = facile, 3-6 liens = moyen, 7+ = expert
 function getCrescendoTier(chainCount) {
@@ -2773,6 +2795,225 @@ export default function LePont() {
   const [reviewRoundsModal, setReviewRoundsModal] = useState(null); // {mode:"pont"|"chaine", playerName, rounds:[...]} ou null
   const [ggModeChoice, setGgModeChoice] = useState(false); // modal de choix solo/multi pour GOAT GRID
   const [ggBattleLoading, setGgBattleLoading] = useState(false);
+
+  // ─── GOAT DUEL — Plug temps réel 1v1 (5 manches) ─────────────
+  const [duelScreen, setDuelScreen] = useState(null);   // null | "menu" | "lobby" | "playing" | "finished"
+  const [duelRoom, setDuelRoom] = useState(null);        // ligne bb_duel_rooms
+  const [duelJoinCode, setDuelJoinCode] = useState("");  // code saisi pour rejoindre
+  const [duelError, setDuelError] = useState("");
+  const [duelBusy, setDuelBusy] = useState(false);
+  const [duelInput, setDuelInput] = useState("");        // saisie du joueur (phase réponse)
+  const [duelNow, setDuelNow] = useState(0);             // horloge locale (tick) pour les décomptes
+  const duelRoomRef = React.useRef(null);                // room live pour le séquenceur (host)
+  const duelAnswerShownAtRef = React.useRef(0);          // Date.now() quand la paire s'est affichée (mesure réaction)
+  const duelAnsweredRef = React.useRef(false);           // a déjà répondu correctement cette manche ?
+  const duelSeqBusyRef = React.useRef(false);            // évite les transitions concurrentes (host)
+
+  function duelGenCode(){
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // sans I/O/0/1
+    let c = ""; for(let i=0;i<6;i++) c += chars[Math.floor(Math.random()*chars.length)];
+    return c;
+  }
+  async function duelPatch(id, obj){
+    return sbFetch("bb_duel_rooms?id=eq."+id, {
+      method:"PATCH",
+      headers:{ "Content-Type":"application/json", "Prefer":"return=minimal" },
+      body: JSON.stringify(Object.assign({}, obj, { updated_at:new Date().toISOString() })),
+    });
+  }
+  function duelIsHost(){ const r = duelRoomRef.current || duelRoom; return !!(r && r.host_id === playerId); }
+
+  async function duelCreateRoom(){
+    if(!playerId || !playerName){ setDuelError(lang==="en"?"Log in first":"Connecte-toi d'abord"); return; }
+    setDuelBusy(true); setDuelError("");
+    try{
+      let lastErr=null;
+      for(let att=0; att<5; att++){
+        const code = duelGenCode();
+        try{
+          const res = await fetch(SB_URL + "/rest/v1/bb_duel_rooms", {
+            method:"POST",
+            headers:{ "apikey":SB_KEY, "Authorization":"Bearer "+SB_KEY, "Content-Type":"application/json", "Prefer":"return=representation" },
+            body: JSON.stringify({ code:code, host_id:playerId, host_name:playerName, state:"lobby", phase:"wait", round:0, host_score:0, guest_score:0 }),
+          });
+          if(!res.ok){ lastErr = "HTTP "+res.status+" "+(await res.text()); if(res.status===409) continue; break; }
+          const data = await res.json();
+          if(Array.isArray(data) && data[0]){ duelRoomRef.current=data[0]; setDuelRoom(data[0]); setDuelScreen("lobby"); return; }
+          lastErr="no data";
+        } catch(e){ lastErr = e.message||String(e); }
+      }
+      setDuelError((lang==="en"?"Could not create: ":"Erreur création : ")+(lastErr||"?"));
+    } finally { setDuelBusy(false); }
+  }
+
+  async function duelJoinRoom(rawCode){
+    if(!playerId || !playerName){ setDuelError(lang==="en"?"Log in first":"Connecte-toi d'abord"); return; }
+    const code = (rawCode||"").trim().toUpperCase();
+    if(code.length!==6){ setDuelError(lang==="en"?"6-char code":"Code à 6 caractères"); return; }
+    setDuelBusy(true); setDuelError("");
+    try{
+      const data = await sbFetch("bb_duel_rooms?code=eq."+code+"&limit=1");
+      if(!Array.isArray(data) || data.length===0){ setDuelError(lang==="en"?"Room not found":"Salon introuvable"); return; }
+      const room = data[0];
+      if(room.host_id===playerId){ duelRoomRef.current=room; setDuelRoom(room); setDuelScreen("lobby"); return; }
+      if(room.guest_id && room.guest_id!==playerId){ setDuelError(lang==="en"?"Room is full":"Salon complet"); return; }
+      if(room.state!=="lobby"){ setDuelError(lang==="en"?"Already started":"Partie déjà lancée"); return; }
+      await duelPatch(room.id, { guest_id:playerId, guest_name:playerName });
+      const fresh = Object.assign({}, room, { guest_id:playerId, guest_name:playerName });
+      duelRoomRef.current=fresh; setDuelRoom(fresh); setDuelScreen("lobby");
+    } finally { setDuelBusy(false); }
+  }
+
+  async function duelLeaveRoom(){
+    const r = duelRoomRef.current || duelRoom;
+    try{
+      if(r && r.id){
+        if(r.host_id===playerId){ await sbFetch("bb_duel_rooms?id=eq."+r.id, { method:"DELETE", headers:{ "Prefer":"return=minimal" } }); }
+        else { await duelPatch(r.id, { guest_id:null, guest_name:null }); }
+      }
+    } catch(e){}
+    duelRoomRef.current=null; setDuelRoom(null); setDuelScreen(null); setDuelInput(""); setDuelJoinCode(""); setDuelError("");
+    duelAnsweredRef.current=false;
+  }
+
+  async function duelHostStart(){
+    const r = duelRoomRef.current || duelRoom;
+    if(!r || r.host_id!==playerId || !r.guest_id) return;
+    await duelPatch(r.id, { state:"playing", round:1, phase:"pick", phase_at:new Date().toISOString(),
+      host_pick:null, guest_pick:null, club_c1:null, club_c2:null,
+      host_answer:null, guest_answer:null, host_answer_ms:null, guest_answer_ms:null, round_winner:null,
+      host_score:0, guest_score:0, winner_id:null, winner_name:null });
+  }
+
+  async function duelPickClub(club){
+    const r = duelRoomRef.current || duelRoom;
+    if(!r || r.phase!=="pick") return;
+    const mine = r.host_id===playerId ? { host_pick:club } : { guest_pick:club };
+    // maj optimiste locale pour un retour immédiat
+    duelRoomRef.current = Object.assign({}, r, mine); setDuelRoom(duelRoomRef.current);
+    duelPatch(r.id, mine);
+  }
+
+  function duelSubmitAnswer(){
+    const r = duelRoomRef.current || duelRoom;
+    if(!r || r.phase!=="answer" || duelAnsweredRef.current) return;
+    const g = (duelInput||"").trim();
+    if(g.length<3) return;
+    const common = duelCommonPlayers(r.club_c1, r.club_c2);
+    if(checkGuess(g, common)){
+      duelAnsweredRef.current = true;
+      const ms = Math.max(0, Date.now() - (duelAnswerShownAtRef.current || Date.now()));
+      const mine = r.host_id===playerId ? { host_answer:g, host_answer_ms:ms } : { guest_answer:g, guest_answer_ms:ms };
+      duelRoomRef.current = Object.assign({}, r, mine); setDuelRoom(duelRoomRef.current);
+      duelPatch(r.id, mine);
+      setDuelInput("");
+    } else {
+      setDuelInput(""); // mauvaise réponse : on efface, le chrono continue
+    }
+  }
+
+  // Séquenceur : SEUL l'hôte fait avancer les phases (évite les conflits d'écriture)
+  async function duelHostTick(room){
+    if(!room || room.host_id!==playerId || room.state!=="playing") return;
+    if(duelSeqBusyRef.current) return;
+    const now = Date.now();
+    const phaseAt = room.phase_at ? new Date(room.phase_at).getTime() : 0;
+    const el = now - phaseAt;
+    try{
+      if(room.phase==="pick"){
+        if(el >= DUEL_PICK_SECS*1000){
+          duelSeqBusyRef.current=true;
+          let hp = room.host_pick || DUEL_CLUBS[Math.floor(Math.random()*DUEL_CLUBS.length)];
+          let gp = room.guest_pick || DUEL_CLUBS[Math.floor(Math.random()*DUEL_CLUBS.length)];
+          const common = duelCommonPlayers(hp, gp);
+          if(common.length===0){
+            // paire injouable → manche annulée, on relance la sélection
+            await duelPatch(room.id, { phase:"pick", phase_at:new Date().toISOString(), host_pick:null, guest_pick:null, club_c1:null, club_c2:null });
+          } else {
+            await duelPatch(room.id, { phase:"answer", phase_at:new Date().toISOString(), club_c1:hp, club_c2:gp,
+              host_answer:null, guest_answer:null, host_answer_ms:null, guest_answer_ms:null, round_winner:null });
+          }
+        }
+      } else if(room.phase==="answer"){
+        const hm = room.host_answer_ms, gm = room.guest_answer_ms;
+        const someone = (hm!=null) || (gm!=null);
+        const timeUp = el >= (DUEL_ANSWER_SECS*1000 + 1200);
+        if(someone || timeUp){
+          duelSeqBusyRef.current=true;
+          let winner="draw";
+          if(hm!=null && gm!=null) winner = (hm<=gm)?"host":"guest";
+          else if(hm!=null) winner="host";
+          else if(gm!=null) winner="guest";
+          let hs=room.host_score||0, gs=room.guest_score||0;
+          if(winner==="host") hs++; else if(winner==="guest") gs++;
+          await duelPatch(room.id, { phase:"result", phase_at:new Date().toISOString(), round_winner:winner, host_score:hs, guest_score:gs });
+        }
+      } else if(room.phase==="result"){
+        if(el >= DUEL_RESULT_SECS*1000){
+          duelSeqBusyRef.current=true;
+          if((room.round||1) < DUEL_ROUNDS){
+            await duelPatch(room.id, { round:(room.round||1)+1, phase:"pick", phase_at:new Date().toISOString(),
+              host_pick:null, guest_pick:null, club_c1:null, club_c2:null,
+              host_answer:null, guest_answer:null, host_answer_ms:null, guest_answer_ms:null, round_winner:null });
+          } else {
+            const hs=room.host_score||0, gs=room.guest_score||0;
+            let wid=null, wname=null;
+            if(hs>gs){ wid=room.host_id; wname=room.host_name; }
+            else if(gs>hs){ wid=room.guest_id; wname=room.guest_name; }
+            await duelPatch(room.id, { state:"finished", phase:"done", winner_id:wid, winner_name:wname });
+          }
+        }
+      }
+    } catch(e){ /* ignore, on réessaiera au prochain poll */ }
+    finally { duelSeqBusyRef.current=false; }
+  }
+
+  // Polling du salon (hôte + invité)
+  useEffect(function(){
+    const rid = duelRoom && duelRoom.id;
+    if(!rid) return;
+    if(duelScreen!=="lobby" && duelScreen!=="playing" && duelScreen!=="finished") return;
+    let stop=false;
+    async function poll(){
+      if(stop) return;
+      const data = await sbFetch("bb_duel_rooms?id=eq."+rid+"&limit=1");
+      if(stop) return;
+      if(Array.isArray(data) && data.length===0){
+        // salon supprimé (hôte parti) → l'invité revient au menu
+        if(duelRoomRef.current && duelRoomRef.current.host_id!==playerId){
+          duelRoomRef.current=null; setDuelRoom(null); setDuelScreen(null);
+          setDuelError(lang==="en"?"Host left the room":"L'hôte a quitté le salon");
+        }
+        return;
+      }
+      if(Array.isArray(data) && data[0]){
+        const fresh=data[0];
+        duelRoomRef.current=fresh; setDuelRoom(fresh);
+        if(fresh.state==="playing") setDuelScreen(function(s){ return s==="finished"?s:"playing"; });
+        if(fresh.state==="finished") setDuelScreen("finished");
+        duelHostTick(fresh);
+      }
+    }
+    poll();
+    const iv=setInterval(poll, 800);
+    return function(){ stop=true; clearInterval(iv); };
+  }, [duelRoom && duelRoom.id, duelScreen]);
+
+  // Reset réaction à l'entrée de la phase "réponse"
+  useEffect(function(){
+    if(duelRoom && duelRoom.phase==="answer"){
+      duelAnswerShownAtRef.current = Date.now();
+      duelAnsweredRef.current = false;
+      setDuelInput("");
+    }
+  }, [duelRoom && duelRoom.phase, duelRoom && duelRoom.round]);
+
+  // Horloge locale pour les décomptes (250ms)
+  useEffect(function(){
+    if(duelScreen!=="playing") return;
+    const iv=setInterval(function(){ setDuelNow(Date.now()); }, 250);
+    return function(){ clearInterval(iv); };
+  }, [duelScreen]);
   // Ref pour avoir les valeurs LIVE du joueur (utilisé par le timer qui capture des closures)
   const ggBattleStateRef = React.useRef({ filledCells: {}, score: 0, lives: 3, submitted: false });
   
@@ -7756,6 +7997,170 @@ export default function LePont() {
     </div>
   );
 
+  // ── GOAT DUEL — Plug temps réel 1v1 ──
+  const duelOverlay = duelScreen && (function(){
+    const room = duelRoom;
+    const isHost = room ? room.host_id===playerId : true;
+    const myName = isHost ? (room&&room.host_name) : (room&&room.guest_name);
+    const oppName = isHost ? (room&&room.guest_name) : (room&&room.host_name);
+    const myScore = room ? (isHost ? (room.host_score||0) : (room.guest_score||0)) : 0;
+    const oppScore = room ? (isHost ? (room.guest_score||0) : (room.host_score||0)) : 0;
+    const myPick = room ? (isHost ? room.host_pick : room.guest_pick) : null;
+    const oppPick = room ? (isHost ? room.guest_pick : room.host_pick) : null;
+    const myAnsMs = room ? (isHost ? room.host_answer_ms : room.guest_answer_ms) : null;
+    const oppAnsMs = room ? (isHost ? room.guest_answer_ms : room.host_answer_ms) : null;
+    const now = duelNow || Date.now();
+    const phaseAt = room && room.phase_at ? new Date(room.phase_at).getTime() : now;
+    const elapsed = now - phaseAt;
+    const pickLeft = Math.min(DUEL_PICK_SECS, Math.max(0, Math.ceil(DUEL_PICK_SECS - elapsed/1000)));
+    const ansLeft = Math.min(DUEL_ANSWER_SECS, Math.max(0, Math.ceil(DUEL_ANSWER_SECS - elapsed/1000)));
+    const shell2 = { position:"fixed", inset:0, zIndex:11000, background:"linear-gradient(180deg,#0a1410 0%,#0E1F14 100%)", display:"flex", flexDirection:"column", fontFamily:G.font, color:G.white };
+    const bigBtn = (label, onClick, bg, disabled) => (
+      <button onClick={onClick} disabled={disabled} style={{width:"100%",padding:"16px",borderRadius:16,border:"none",background:disabled?"rgba(255,255,255,.08)":bg,color:disabled?"rgba(255,255,255,.35)":"#000",fontFamily:G.heading,fontSize:20,letterSpacing:1.5,cursor:disabled?"not-allowed":"pointer",boxShadow:disabled?"none":"0 8px 24px -8px rgba(0,230,118,.5)"}}>{label}</button>
+    );
+    const header = (
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"max(14px,env(safe-area-inset-top)) 16px 10px",borderBottom:"1px solid rgba(255,255,255,.08)"}}>
+        <button onClick={duelLeaveRoom} style={{background:"rgba(255,255,255,.1)",border:"1px solid rgba(255,255,255,.15)",borderRadius:"50%",width:38,height:38,color:G.white,cursor:"pointer",fontSize:16}}>✕</button>
+        <div style={{fontFamily:G.heading,fontSize:22,letterSpacing:2,color:"#FFD600"}}>⚡ GOAT DUEL</div>
+        <div style={{width:38}}/>
+      </div>
+    );
+    const scoreBar = room && room.state!=="lobby" && (
+      <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:14,padding:"10px 16px"}}>
+        <div style={{textAlign:"center",flex:1}}>
+          <div style={{fontSize:11,color:"rgba(255,255,255,.55)",fontWeight:700,letterSpacing:.5,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{myName||"Toi"}</div>
+          <div style={{fontFamily:G.heading,fontSize:34,color:"#00E676",lineHeight:1}}>{myScore}</div>
+        </div>
+        <div style={{textAlign:"center"}}>
+          <div style={{fontSize:10,color:"rgba(255,255,255,.4)",fontWeight:800,letterSpacing:1}}>MANCHE</div>
+          <div style={{fontFamily:G.heading,fontSize:20,color:G.white}}>{room.round||1}/{DUEL_ROUNDS}</div>
+        </div>
+        <div style={{textAlign:"center",flex:1}}>
+          <div style={{fontSize:11,color:"rgba(255,255,255,.55)",fontWeight:700,letterSpacing:.5,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{oppName||"Adversaire"}</div>
+          <div style={{fontFamily:G.heading,fontSize:34,color:"#FF6B35",lineHeight:1}}>{oppScore}</div>
+        </div>
+      </div>
+    );
+
+    let body = null;
+    if(duelScreen==="menu" || !room){
+      body = (
+        <div style={{flex:1,overflowY:"auto",padding:"24px 20px",display:"flex",flexDirection:"column",gap:18,maxWidth:480,margin:"0 auto",width:"100%"}}>
+          <div style={{textAlign:"center"}}>
+            <div style={{fontFamily:G.heading,fontSize:30,color:G.white,letterSpacing:1}}>DUEL EN DIRECT</div>
+            <div style={{fontSize:13,color:"rgba(255,255,255,.6)",marginTop:8,lineHeight:1.5}}>{lang==="en"?"5 rounds vs a friend. Each round: pick a club (5s), then race to name a player who played for BOTH clubs (10s). First to find wins the round!":"5 manches contre un ami. Chaque manche : choisis un club (5 s), puis trouve le plus vite possible un joueur ayant joué dans les DEUX clubs (10 s). Le premier à trouver gagne la manche !"}</div>
+          </div>
+          {bigBtn(lang==="en"?"CREATE A ROOM":"CRÉER UN SALON", duelCreateRoom, "linear-gradient(135deg,#00E676,#00A855)", duelBusy)}
+          <div style={{textAlign:"center",fontSize:12,color:"rgba(255,255,255,.35)",fontWeight:700,letterSpacing:2}}>{lang==="en"?"OR":"OU"}</div>
+          <div style={{display:"flex",gap:8}}>
+            <input value={duelJoinCode} onChange={function(e){setDuelJoinCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,6));setDuelError("");}} placeholder={lang==="en"?"ROOM CODE":"CODE DU SALON"} maxLength={6}
+              style={{flex:1,minWidth:0,padding:"14px",borderRadius:14,border:"1.5px solid rgba(255,255,255,.15)",background:"rgba(255,255,255,.05)",color:G.white,fontFamily:G.heading,fontSize:20,letterSpacing:4,textAlign:"center",outline:"none"}}/>
+            <button onClick={function(){duelJoinRoom(duelJoinCode);}} disabled={duelBusy||duelJoinCode.length!==6} style={{padding:"0 18px",borderRadius:14,border:"none",background:duelJoinCode.length===6?"#FFD600":"rgba(255,255,255,.08)",color:duelJoinCode.length===6?"#000":"rgba(255,255,255,.3)",fontFamily:G.heading,fontSize:16,letterSpacing:1,cursor:duelJoinCode.length===6?"pointer":"not-allowed"}}>{lang==="en"?"JOIN":"OK"}</button>
+          </div>
+          {duelError && <div style={{textAlign:"center",fontSize:13,color:"#FF6B6B",fontWeight:700}}>{duelError}</div>}
+        </div>
+      );
+    } else if(duelScreen==="lobby"){
+      body = (
+        <div style={{flex:1,overflowY:"auto",padding:"24px 20px",display:"flex",flexDirection:"column",gap:20,maxWidth:480,margin:"0 auto",width:"100%",alignItems:"center"}}>
+          <div style={{fontSize:13,color:"rgba(255,255,255,.6)",textAlign:"center"}}>{isHost?(lang==="en"?"Share this code with a friend:":"Partage ce code à un ami :"):(lang==="en"?"Room code:":"Code du salon :")}</div>
+          <div style={{fontFamily:G.heading,fontSize:52,letterSpacing:10,color:"#FFD600",background:"rgba(255,214,0,.08)",border:"1px solid rgba(255,214,0,.3)",borderRadius:18,padding:"14px 26px"}}>{room.code}</div>
+          <div style={{background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.1)",borderRadius:16,padding:"14px 18px",width:"100%",textAlign:"center"}}>
+            <div style={{fontSize:13,fontWeight:800,color:room.guest_id?"#00E676":"rgba(255,255,255,.55)"}}>
+              {room.guest_id ? "✓ "+(room.guest_name||"Adversaire")+(lang==="en"?" joined!":" a rejoint !") : (lang==="en"?"⏳ Waiting for an opponent…":"⏳ En attente d'un adversaire…")}
+            </div>
+          </div>
+          {isHost ? bigBtn(lang==="en"?"START":"DÉMARRER", duelHostStart, "linear-gradient(135deg,#00E676,#00A855)", !room.guest_id)
+                  : <div style={{fontSize:13,color:"rgba(255,255,255,.5)",textAlign:"center"}}>{lang==="en"?"Waiting for the host to start…":"En attente que l'hôte lance la partie…"}</div>}
+          <button onClick={duelLeaveRoom} style={{marginTop:6,background:"none",border:"1px solid rgba(255,255,255,.15)",borderRadius:50,color:"rgba(255,255,255,.6)",padding:"10px 24px",cursor:"pointer",fontFamily:G.font,fontSize:13}}>{lang==="en"?"Leave":"Quitter"}</button>
+        </div>
+      );
+    } else if(duelScreen==="playing"){
+      let phaseBody = null;
+      if(room.phase==="pick"){
+        phaseBody = (
+          <div style={{flex:1,display:"flex",flexDirection:"column",minHeight:0,padding:"6px 14px 14px"}}>
+            <div style={{textAlign:"center",marginBottom:8}}>
+              <div style={{fontFamily:G.heading,fontSize:54,color:pickLeft<=2?"#FF3D57":"#FFD600",lineHeight:1}}>{pickLeft}</div>
+              <div style={{fontSize:13,fontWeight:800,color:G.white,letterSpacing:.5}}>{lang==="en"?"Pick a club":"Choisis un club"}</div>
+              <div style={{fontSize:11,color:"rgba(255,255,255,.45)",marginTop:2}}>{oppPick?(lang==="en"?"Opponent has picked ✓":"Adversaire a choisi ✓"):(lang==="en"?"Opponent is picking…":"Adversaire choisit…")}</div>
+            </div>
+            <div style={{flex:1,overflowY:"auto",display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,alignContent:"start"}}>
+              {DUEL_CLUBS.map(function(c){
+                const sel = myPick===c;
+                return (
+                  <button key={c} onClick={function(){duelPickClub(c);}} style={{padding:"12px 8px",borderRadius:12,border:"1.5px solid "+(sel?"#00E676":"rgba(255,255,255,.12)"),background:sel?"rgba(0,230,118,.18)":"rgba(255,255,255,.04)",color:sel?"#00E676":G.white,fontFamily:G.font,fontSize:13,fontWeight:800,cursor:"pointer",textAlign:"center",lineHeight:1.15}}>{c}</button>
+                );
+              })}
+            </div>
+          </div>
+        );
+      } else if(room.phase==="answer"){
+        const answered = duelAnsweredRef.current || myAnsMs!=null;
+        phaseBody = (
+          <div style={{flex:1,display:"flex",flexDirection:"column",minHeight:0,padding:"6px 16px 16px",alignItems:"center"}}>
+            <div style={{fontFamily:G.heading,fontSize:44,color:ansLeft<=3?"#FF3D57":"#FFD600",lineHeight:1,marginBottom:8}}>{ansLeft}</div>
+            <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:6,width:"100%",maxWidth:420}}>
+              <div style={{flex:1,background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.12)",borderRadius:14,padding:"14px 8px",textAlign:"center",fontFamily:G.heading,fontSize:16,letterSpacing:.5}}>{room.club_c1}</div>
+              <div style={{width:30,height:30,borderRadius:"50%",background:"linear-gradient(135deg,#FFD600,#FF8A2A)",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:G.heading,fontWeight:900,color:"#000",flexShrink:0}}>×</div>
+              <div style={{flex:1,background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.12)",borderRadius:14,padding:"14px 8px",textAlign:"center",fontFamily:G.heading,fontSize:16,letterSpacing:.5}}>{room.club_c2}</div>
+            </div>
+            <div style={{fontSize:12,color:"rgba(255,255,255,.5)",marginBottom:12,textAlign:"center"}}>{lang==="en"?"A player who played for BOTH clubs":"Un joueur ayant joué dans les DEUX clubs"}</div>
+            {answered ? (
+              <div style={{textAlign:"center",padding:"18px"}}>
+                <div style={{fontSize:22,fontWeight:900,color:"#00E676"}}>✅ {lang==="en"?"Found!":"Trouvé !"}</div>
+                <div style={{fontSize:13,color:"rgba(255,255,255,.6)",marginTop:6}}>{lang==="en"?"Waiting for the round to end…":"En attente de la fin de la manche…"}</div>
+              </div>
+            ) : (
+              <div style={{width:"100%",maxWidth:420}}>
+                <div style={{display:"flex",gap:8}}>
+                  <input autoFocus value={duelInput} onChange={function(e){setDuelInput(e.target.value);}} onKeyDown={function(e){if(e.key==="Enter")duelSubmitAnswer();}} placeholder={lang==="en"?"Player name…":"Nom du joueur…"}
+                    style={{flex:1,minWidth:0,padding:"14px",borderRadius:14,border:"1.5px solid rgba(255,255,255,.15)",background:"rgba(255,255,255,.06)",color:G.white,fontFamily:G.font,fontSize:16,fontWeight:700,outline:"none",textAlign:"center"}}/>
+                  <button onClick={duelSubmitAnswer} disabled={duelInput.trim().length<3} style={{padding:"0 20px",borderRadius:14,border:"none",background:duelInput.trim().length>=3?"#00E676":"rgba(255,255,255,.08)",color:duelInput.trim().length>=3?"#000":"rgba(255,255,255,.3)",fontFamily:G.heading,fontSize:16,cursor:duelInput.trim().length>=3?"pointer":"not-allowed"}}>OK</button>
+                </div>
+                <div style={{textAlign:"center",fontSize:12,color:oppAnsMs!=null?"#FF6B35":"rgba(255,255,255,.4)",marginTop:10,fontWeight:700}}>{oppAnsMs!=null?(lang==="en"?"⚡ Opponent found it!":"⚡ L'adversaire a trouvé !"):(lang==="en"?"Opponent is searching…":"L'adversaire cherche…")}</div>
+              </div>
+            )}
+          </div>
+        );
+      } else if(room.phase==="result"){
+        const rw = room.round_winner;
+        const iWon = (rw==="host"&&isHost)||(rw==="guest"&&!isHost);
+        const draw = rw==="draw" || !rw;
+        const common = duelCommonPlayers(room.club_c1, room.club_c2);
+        const example = common && common.length ? common[0] : null;
+        phaseBody = (
+          <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",alignItems:"center",padding:"20px",gap:12}}>
+            <div style={{fontFamily:G.heading,fontSize:30,letterSpacing:1,color:draw?"#FFD600":iWon?"#00E676":"#FF6B35",textAlign:"center"}}>
+              {draw ? (lang==="en"?"DRAW — nobody found":"MANCHE NULLE") : iWon ? (lang==="en"?"🎉 YOU WIN THE ROUND":"🎉 TU GAGNES LA MANCHE") : (lang==="en"?"OPPONENT WINS":"L'ADVERSAIRE GAGNE")}
+            </div>
+            <div style={{fontSize:14,color:"rgba(255,255,255,.7)",textAlign:"center"}}>{room.club_c1} <span style={{color:"#FFD600"}}>×</span> {room.club_c2}</div>
+            {example && <div style={{fontSize:13,color:"rgba(255,255,255,.6)",textAlign:"center"}}>{lang==="en"?"e.g. ":"ex. "}<strong style={{color:G.white}}>{(isHost?room.host_answer:room.guest_answer)||(!isHost?room.guest_answer:room.host_answer)||example}</strong></div>}
+            <div style={{fontFamily:G.heading,fontSize:40,color:G.white,marginTop:4}}>{myScore} <span style={{color:"rgba(255,255,255,.3)"}}>–</span> {oppScore}</div>
+            <div style={{fontSize:12,color:"rgba(255,255,255,.4)"}}>{(room.round||1)<DUEL_ROUNDS?(lang==="en"?"Next round…":"Manche suivante…"):(lang==="en"?"Final…":"Fin…")}</div>
+          </div>
+        );
+      }
+      body = (<><div style={{borderBottom:"1px solid rgba(255,255,255,.08)"}}>{scoreBar}</div>{phaseBody}</>);
+    } else if(duelScreen==="finished"){
+      const iWon = room.winner_id && room.winner_id===playerId;
+      const draw = !room.winner_id;
+      body = (
+        <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",alignItems:"center",padding:"24px",gap:16,maxWidth:480,margin:"0 auto",width:"100%"}}>
+          <div style={{fontSize:64}}>{draw?"🤝":iWon?"🏆":"💪"}</div>
+          <div style={{fontFamily:G.heading,fontSize:34,letterSpacing:1,color:draw?"#FFD600":iWon?"#00E676":"#FF6B35",textAlign:"center"}}>
+            {draw?(lang==="en"?"DRAW!":"ÉGALITÉ !"):iWon?(lang==="en"?"VICTORY!":"VICTOIRE !"):(lang==="en"?"DEFEAT":"DÉFAITE")}
+          </div>
+          <div style={{fontFamily:G.heading,fontSize:52,color:G.white}}>{myScore} <span style={{color:"rgba(255,255,255,.3)"}}>–</span> {oppScore}</div>
+          <div style={{fontSize:13,color:"rgba(255,255,255,.55)",textAlign:"center"}}>{(myName||"Toi")+" vs "+(oppName||"Adversaire")}</div>
+          {isHost && bigBtn(lang==="en"?"REMATCH":"REVANCHE", duelHostStart, "linear-gradient(135deg,#00E676,#00A855)", false)}
+          <button onClick={duelLeaveRoom} style={{background:"none",border:"1px solid rgba(255,255,255,.15)",borderRadius:50,color:"rgba(255,255,255,.6)",padding:"12px 28px",cursor:"pointer",fontFamily:G.font,fontSize:14}}>{lang==="en"?"Back":"Retour"}</button>
+        </div>
+      );
+    }
+    return (<div key="duel-overlay" style={shell2}>{header}{body}</div>);
+  })();
+
   // ── SALON DES DÉFIS OUVERTS ──
   const openDuelsModal = showOpenDuels && (
     <div key="open-duels" onClick={function(){closeOpenDuels();}} style={{position:"fixed",inset:0,zIndex:10000,background:"rgba(0,0,0,.85)",backdropFilter:"blur(10px)",display:"flex",alignItems:"flex-end",justifyContent:"center",animation:"fadeIn .2s ease"}}>
@@ -11535,6 +11940,18 @@ export default function LePont() {
           <span style={{fontSize:16,color:"rgba(255,138,42,.6)"}}>›</span>
         </button>
 
+        {/* GOAT DUEL — Plug temps réel 1v1 (par code d'ami) */}
+        <button onClick={function(){requirePseudo(function(){setDuelError("");setDuelJoinCode("");setDuelScreen("menu");});}}
+          style={{position:"relative",display:"flex",alignItems:"center",gap:12,padding:"12px 16px",background:"linear-gradient(90deg, rgba(0,230,118,.18), rgba(61,165,255,.12))",border:"1px solid rgba(0,230,118,.4)",borderRadius:14,cursor:"pointer",width:"100%",textAlign:"left"}}>
+          <div style={{width:28,height:28,borderRadius:"50%",background:"linear-gradient(135deg,#00E676,#3DA5FF)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,boxShadow:"0 2px 8px rgba(0,230,118,.4)"}}>⚡</div>
+          <div style={{flex:1}}>
+            <div style={{fontSize:13,fontWeight:800,color:"#00E676"}}>{lang==="en"?"Live duel ⚡":"Duel en direct ⚡"}</div>
+            <div style={{fontSize:11,color:"rgba(255,255,255,.4)",marginTop:1}}>{lang==="en"?"Real-time 1v1 vs a friend — 5 rounds":"1v1 en temps réel contre un ami — 5 manches"}</div>
+          </div>
+          <span style={{fontSize:9,fontWeight:900,letterSpacing:1,color:"#00E676",background:"rgba(0,230,118,.15)",border:"1px solid rgba(0,230,118,.4)",borderRadius:20,padding:"2px 7px"}}>{lang==="en"?"NEW":"NOUVEAU"}</span>
+          <span style={{fontSize:16,color:"rgba(0,230,118,.6)"}}>›</span>
+        </button>
+
         {/* Footer discret : version + liens légaux */}
         <div style={{textAlign:"center",padding:"8px 0 2px",fontSize:10,color:"rgba(255,255,255,.3)",letterSpacing:1.5,flexShrink:0}}>
           GOAT FC · <a href="/privacy/" target="_blank" rel="noopener noreferrer" style={{color:"rgba(255,255,255,.45)",textDecoration:"underline"}}>{lang==="en"?"Privacy":"Confidentialité"}</a> · <a href="/terms/" target="_blank" rel="noopener noreferrer" style={{color:"rgba(255,255,255,.45)",textDecoration:"underline"}}>{lang==="en"?"Terms":"Conditions"}</a>
@@ -11542,6 +11959,7 @@ export default function LePont() {
 
       </div>
       {openDuelsModal}
+      {duelOverlay}
       {openNotifBanner}
     </div>
   );
