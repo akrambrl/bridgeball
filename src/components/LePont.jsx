@@ -2633,63 +2633,18 @@ export default function LePont() {
   // ─── Tableau de bord privé (?stats=CODE) ──
   const [statsMode] = useState(function(){ try { return new URLSearchParams(window.location.search).get("stats") === STATS_CODE; } catch(e) { return false; } });
   const [statsData, setStatsData] = useState(null);
+  const [statsRange, setStatsRange] = useState(14); // fenêtre d'analyse : 1 / 5 / 10 / 14 jours
   useEffect(function(){
     if (!statsMode || statsData) return;
     (async function(){
-      const dayKey = function(d){ return d.slice(0,10); };
-      // 14 derniers jours de bb_scores (agrégation côté client)
+      // On récupère la fenêtre MAX (14 j) une seule fois ; le filtrage par plage
+      // (1/5/10/14 j) se fait ensuite côté client (voir statsView).
       const since = new Date(Date.now() - 14*24*3600*1000).toISOString();
-      // Parties terminées (bb_scores) — pour le nb de parties/jour
       const scores = await sbFetch("bb_scores?select=player_id,created_at&created_at=gte."+since+"&order=created_at.desc&limit=20000") || [];
-      const byDayGames = {};
-      for (const r of scores) { if (r.created_at) { const k = dayKey(r.created_at); byDayGames[k] = (byDayGames[k]||0)+1; } }
-      // Présence (bb_events) — inclut les anonymes. Repli sur bb_scores si la table n'existe pas encore.
       const events = await sbFetch("bb_events?select=player_id,created_at,type&created_at=gte."+since+"&limit=50000");
       const hasEvents = Array.isArray(events);
-      // Parties lancées par mode de jeu (events type "play_<mode>" ou
-      // "play_<mode>_online") sur 14 jours + répartition solo / en ligne.
-      const playsByMode = { pont: 0, chaine: 0, grid: 0, guess: 0 };
-      let playsSolo = 0, playsOnline = 0;
-      if (hasEvents) {
-        for (const r of events) {
-          if (r.type && r.type.indexOf("play_") === 0) {
-            const online = r.type.slice(-7) === "_online";
-            const m = online ? r.type.slice(5, -7) : r.type.slice(5); // mode sans suffixe
-            if (playsByMode[m] !== undefined) {
-              playsByMode[m]++;
-              if (online) playsOnline++; else playsSolo++;
-            }
-          }
-        }
-      }
-      const totalPlays = playsByMode.pont + playsByMode.chaine + playsByMode.grid + playsByMode.guess;
-      // Répartition par OS mobile (pings "open_<os>") — 1 appareil compté une fois
-      const osByDevice = {}; // player_id -> os
-      if (hasEvents) {
-        for (const r of events) {
-          if (r.type && r.type.indexOf("open_") === 0) osByDevice[r.player_id] = r.type.slice(5);
-        }
-      }
-      const osCount = { ios:0, android:0, other:0 };
-      for (const id in osByDevice) { const o = osByDevice[id]; if (osCount[o] !== undefined) osCount[o]++; else osCount.other++; }
-      const activeRows = hasEvents ? events : scores;
-      const byDayActive = {};
-      for (const r of activeRows) { if (r.created_at) { const k = dayKey(r.created_at); (byDayActive[k] = byDayActive[k] || new Set()).add(r.player_id); } }
-      // Ensemble des joueurs inscrits (pour distinguer anonymes)
       const pseudos = await sbFetch("bb_pseudos?select=player_id&limit=100000") || [];
-      const regSet = new Set(pseudos.map(function(p){return p.player_id;}));
-      const days = [];
-      for (let i = 0; i < 7; i++) {
-        const d = new Date(Date.now() - i*24*3600*1000).toISOString().slice(0,10);
-        const set = byDayActive[d];
-        let anon = 0; if (set && hasEvents) { set.forEach(function(id){ if(!regSet.has(id)) anon++; }); }
-        days.push({ day: d, players: set ? set.size : 0, anon: anon, games: byDayGames[d] || 0 });
-      }
-      const weekActive = new Set();
-      const weekSince = new Date(Date.now()-7*24*3600*1000).toISOString();
-      for (const r of activeRows) { if (r.created_at && r.created_at >= weekSince) weekActive.add(r.player_id); }
-      const todayIso = new Date().toISOString().slice(0,10);
-      const duels = await sbFetch("bb_duels?select=id&created_at=gte."+todayIso+"T00:00:00&limit=5000") || [];
+      const duels = await sbFetch("bb_duels?select=id,created_at&created_at=gte."+since+"&limit=20000") || [];
       // Derniers comptes créés — tente avec created_at, se rabat si la colonne n'existe pas
       let recent = await sbFetch("bb_pseudos?select=pseudo,country,created_at&order=created_at.desc&limit=40");
       let recentHasDate = true;
@@ -2702,9 +2657,69 @@ export default function LePont() {
         accounts: await sbCount("bb_pseudos"),   // comptes créés
         grid:     await sbCount("bb_gg_scores"), // parties GOAT GRID enregistrées
       };
-      setStatsData({ days: days, week: weekActive.size, accounts: pseudos.length, duelsToday: duels.length, recent: recent, recentHasDate: recentHasDate, hasEvents: hasEvents, playsByMode: playsByMode, totalPlays: totalPlays, playsSolo: playsSolo, playsOnline: playsOnline, allTime: allTime, osCount: osCount });
+      setStatsData({
+        rawScores: scores,
+        rawEvents: hasEvents ? events : null,
+        hasEvents: hasEvents,
+        regIds: pseudos.map(function(p){ return p.player_id; }),
+        accounts: pseudos.length,
+        rawDuels: duels.map(function(d){ return d.created_at; }),
+        recent: recent, recentHasDate: recentHasDate, allTime: allTime,
+      });
     })();
   }, [statsMode, statsData]);
+  // Agrégation dépendante de la plage choisie (recalcul instantané au changement de plage)
+  const statsView = React.useMemo(function(){
+    if (!statsData) return null;
+    const range = statsRange;
+    const nowMs = Date.now();
+    const cut = nowMs - range*24*3600*1000;
+    const inRange = function(iso){ return iso && new Date(iso).getTime() >= cut; };
+    const dayKey = function(iso){ return iso.slice(0,10); };
+    const regSet = new Set(statsData.regIds || []);
+    const hasEvents = statsData.hasEvents;
+    const scoresW = (statsData.rawScores || []).filter(function(r){ return inRange(r.created_at); });
+    const eventsW = hasEvents ? (statsData.rawEvents || []).filter(function(r){ return inRange(r.created_at); }) : [];
+    const activeRowsW = hasEvents ? eventsW : scoresW;
+    // Joueurs actifs uniques (+ anonymes) sur la fenêtre
+    const activeSet = new Set(), anonSet = new Set();
+    for (const r of activeRowsW) { if (r.player_id) { activeSet.add(r.player_id); if (hasEvents && !regSet.has(r.player_id)) anonSet.add(r.player_id); } }
+    const gamesW = scoresW.length;
+    const duelsW = (statsData.rawDuels || []).filter(inRange).length;
+    // Parties lancées par mode (+ répartition solo / en ligne) sur la fenêtre
+    const playsByMode = { pont:0, chaine:0, grid:0, guess:0, battle:0 };
+    let playsSolo = 0, playsOnline = 0;
+    if (hasEvents) {
+      for (const r of eventsW) {
+        if (r.type && r.type.indexOf("play_") === 0) {
+          const online = r.type.slice(-7) === "_online";
+          const m = online ? r.type.slice(5, -7) : r.type.slice(5);
+          if (playsByMode[m] !== undefined) { playsByMode[m]++; if (online) playsOnline++; else playsSolo++; }
+        }
+      }
+    }
+    const totalPlays = playsByMode.pont + playsByMode.chaine + playsByMode.grid + playsByMode.guess + playsByMode.battle;
+    // Répartition par OS (pings "open_<os>") sur la fenêtre — 1 appareil compté une fois
+    const osByDevice = {};
+    if (hasEvents) { for (const r of eventsW) { if (r.type && r.type.indexOf("open_") === 0) osByDevice[r.player_id] = r.type.slice(5); } }
+    const osCount = { ios:0, android:0, other:0 };
+    for (const id in osByDevice) { const o = osByDevice[id]; if (osCount[o] !== undefined) osCount[o]++; else osCount.other++; }
+    // Détail jour par jour (jusqu'à `range` jours, plafonné à 14)
+    const nDays = Math.min(range, 14);
+    const byDayActive = {}, byDayGames = {};
+    for (const r of activeRowsW) { if (r.created_at) { const k = dayKey(r.created_at); (byDayActive[k] = byDayActive[k] || new Set()).add(r.player_id); } }
+    for (const r of scoresW) { if (r.created_at) { const k = dayKey(r.created_at); byDayGames[k] = (byDayGames[k]||0)+1; } }
+    const days = [];
+    for (let i = 0; i < nDays; i++) {
+      const d = new Date(nowMs - i*24*3600*1000).toISOString().slice(0,10);
+      const set = byDayActive[d];
+      let anon = 0; if (set && hasEvents) { set.forEach(function(id){ if(!regSet.has(id)) anon++; }); }
+      days.push({ day: d, players: set ? set.size : 0, anon: anon, games: byDayGames[d] || 0 });
+    }
+    return { range: range, days: days, activeWindow: activeSet.size, anonWindow: anonSet.size,
+      gamesWindow: gamesW, duelsWindow: duelsW, playsByMode: playsByMode, totalPlays: totalPlays,
+      playsSolo: playsSolo, playsOnline: playsOnline, osCount: osCount, hasEvents: hasEvents };
+  }, [statsData, statsRange]);
   // ─── Android Back Button Handler ──
   // Intercepte la touche retour Android pendant une partie pour éviter de quitter par accident.
   // Pattern double-tap : 1er appui = warning toast, 2e appui (dans 2s) = quitte la partie.
@@ -2975,6 +2990,7 @@ export default function LePont() {
     const r = duelRoomRef.current || duelRoom;
     if(!r || r.host_id!==playerId || !r.guest_id) return;
     sndCtx(); // débloque l'audio (geste utilisateur)
+    trackPlay("battle", true); // GOAT Battle en ligne (1v1 entre potes)
     const [c1, c2] = duelRollPair(); // le système tire 2 clubs au hasard
     await duelPatch(r.id, { state:"playing", round:1, phase:"answer", phase_at:new Date().toISOString(),
       club_c1:c1, club_c2:c2,
@@ -2985,6 +3001,7 @@ export default function LePont() {
   // Démarre une partie SOLO (contre soi-même, système de points) — 100% local
   function duelSoloStart(){
     sndCtx(); // débloque l'audio (geste utilisateur)
+    trackPlay("battle"); // GOAT Battle solo (contre soi-même)
     const [c1, c2] = duelRollPair();
     const room = {
       id:"LOCAL", code:"SOLO", solo:true,
@@ -10722,16 +10739,24 @@ export default function LePont() {
               {!statsData ? (
                 <div style={{textAlign:"center",padding:"60px 0",color:"rgba(255,255,255,.5)",fontSize:15}}>⏳ Chargement…</div>
               ) : (() => {
-                const today = statsData.days[0];
-                const maxP = Math.max(1, ...statsData.days.map(function(d){return d.players;}));
+                const v = statsView; if (!v) return null;
+                const maxP = Math.max(1, ...v.days.map(function(d){return d.players;}));
                 const fmtDay = function(iso){ const dt = new Date(iso+"T12:00:00"); return dt.toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"short"}); };
+                const rangeLabel = v.range===1 ? "Aujourd'hui" : ("Sur "+v.range+" jours");
                 return (
                 <>
-                  {/* Aujourd'hui */}
+                  {/* Sélecteur de plage : 1 / 5 / 10 / 14 jours */}
+                  <div style={{display:"flex",gap:8,marginBottom:16}}>
+                    {[1,5,10,14].map(function(r){
+                      const active = statsRange===r;
+                      return <button key={r} onClick={function(){setStatsRange(r);}} style={{flex:1,padding:"11px 0",borderRadius:12,border:"1px solid "+(active?"#00E676":"rgba(255,255,255,.14)"),background:active?"rgba(0,230,118,.16)":"rgba(255,255,255,.04)",color:active?"#00E676":"rgba(255,255,255,.6)",fontFamily:G.font,fontWeight:800,fontSize:13.5,cursor:"pointer",transition:"all .15s"}}>{r} j</button>;
+                    })}
+                  </div>
+                  {/* Résumé de la fenêtre sélectionnée */}
                   <div style={{background:"linear-gradient(160deg, rgba(0,230,118,.16), rgba(255,255,255,.03) 55%, rgba(0,0,0,.25))",border:"1px solid rgba(0,230,118,.35)",borderRadius:22,padding:"22px 20px",textAlign:"center",boxShadow:"0 16px 44px -16px rgba(0,230,118,.4)",marginBottom:14}}>
-                    <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.55)",fontWeight:800,textTransform:"uppercase"}}>Aujourd'hui</div>
-                    <div style={{fontFamily:G.heading,fontSize:76,color:"#00E676",lineHeight:1,textShadow:"0 0 26px rgba(0,230,118,.45)"}}>{today.players}</div>
-                    <div style={{fontSize:14,color:"rgba(255,255,255,.7)",fontWeight:700}}>{statsData.hasEvents?"actifs":"joueurs actifs"}{statsData.hasEvents?` · dont ${today.anon} anonyme${today.anon>1?"s":""}`:""} · {today.games} parties{statsData.duelsToday?` · ${statsData.duelsToday} duels`:""}</div>
+                    <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.55)",fontWeight:800,textTransform:"uppercase"}}>{rangeLabel}</div>
+                    <div style={{fontFamily:G.heading,fontSize:76,color:"#00E676",lineHeight:1,textShadow:"0 0 26px rgba(0,230,118,.45)"}}>{v.activeWindow}</div>
+                    <div style={{fontSize:14,color:"rgba(255,255,255,.7)",fontWeight:700}}>{v.range===1?"actifs aujourd'hui":`joueurs actifs · ${v.range} j`}{statsData.hasEvents?` · dont ${v.anonWindow} anonyme${v.anonWindow>1?"s":""}`:""} · {v.gamesWindow} parties{v.duelsWindow?` · ${v.duelsWindow} duels`:""}</div>
                   </div>
                   {/* ─── DEPUIS LE DÉBUT (tout l'historique) ─── */}
                   {statsData.allTime && (function(){
@@ -10759,21 +10784,21 @@ export default function LePont() {
                       </div>
                     );
                   })()}
-                  {/* Cartes semaine / comptes */}
+                  {/* Cartes parties (fenêtre) / comptes (total) */}
                   <div style={{display:"flex",gap:12,marginBottom:20}}>
                     <div style={{flex:1,background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.1)",borderRadius:18,padding:"16px",textAlign:"center"}}>
-                      <div style={{fontFamily:G.heading,fontSize:34,color:"#60a5fa",lineHeight:1}}>{statsData.week}</div>
-                      <div style={{fontSize:10.5,letterSpacing:1,color:"rgba(255,255,255,.5)",fontWeight:800,textTransform:"uppercase",marginTop:6}}>joueurs / 7 j</div>
+                      <div style={{fontFamily:G.heading,fontSize:34,color:"#60a5fa",lineHeight:1}}>{v.gamesWindow}</div>
+                      <div style={{fontSize:10.5,letterSpacing:1,color:"rgba(255,255,255,.5)",fontWeight:800,textTransform:"uppercase",marginTop:6}}>parties / {v.range} j</div>
                     </div>
                     <div style={{flex:1,background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.1)",borderRadius:18,padding:"16px",textAlign:"center"}}>
                       <div style={{fontFamily:G.heading,fontSize:34,color:"#FFD600",lineHeight:1}}>{statsData.accounts}</div>
                       <div style={{fontSize:10.5,letterSpacing:1,color:"rgba(255,255,255,.5)",fontWeight:800,textTransform:"uppercase",marginTop:6}}>comptes créés</div>
                     </div>
                   </div>
-                  {/* 7 derniers jours */}
-                  <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.4)",fontWeight:800,textTransform:"uppercase",marginBottom:10,paddingLeft:4}}>7 derniers jours</div>
+                  {/* Détail jour par jour (sur la fenêtre) */}
+                  <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.4)",fontWeight:800,textTransform:"uppercase",marginBottom:10,paddingLeft:4}}>{v.days.length>1?`${v.days.length} derniers jours`:"Aujourd'hui"}</div>
                   <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:24}}>
-                    {statsData.days.map(function(d,i){
+                    {v.days.map(function(d,i){
                       return (
                         <div key={i} style={{display:"flex",alignItems:"center",gap:12}}>
                           <div style={{width:104,fontSize:12.5,color:i===0?"#00E676":"rgba(255,255,255,.6)",fontWeight:i===0?800:600,textTransform:"capitalize",flexShrink:0}}>{i===0?"Aujourd'hui":fmtDay(d.day)}</div>
@@ -10785,12 +10810,13 @@ export default function LePont() {
                       );
                     })}
                   </div>
-                  {/* Modes de jeu les plus joués (14 derniers jours) */}
-                  <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.4)",fontWeight:800,textTransform:"uppercase",marginBottom:10,paddingLeft:4}}>Modes de jeu · 14 j</div>
+                  {/* Modes de jeu les plus joués (sur la fenêtre) */}
+                  <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.4)",fontWeight:800,textTransform:"uppercase",marginBottom:10,paddingLeft:4}}>Modes de jeu · {v.range} j</div>
                   {(function(){
-                    const pbm = statsData.playsByMode || {pont:0,chaine:0,grid:0,guess:0};
-                    const total = statsData.totalPlays || 0;
+                    const pbm = v.playsByMode || {pont:0,chaine:0,grid:0,guess:0,battle:0};
+                    const total = v.totalPlays || 0;
                     const META = [
+                      {key:"battle", label:"GOAT Battle", emoji:"⚡", color:"#FFC93C"},
                       {key:"pont",   label:"The Plug",   emoji:"🔗", color:"#00E676"},
                       {key:"chaine", label:"The Mercato", emoji:"🔁", color:"#FF8A2A"},
                       {key:"grid",   label:"GOAT Grid",   emoji:"▦",  color:"#3DA5FF"},
@@ -10824,13 +10850,13 @@ export default function LePont() {
                       </div>
                     );
                   })()}
-                  {/* Solo vs En ligne (14 j) */}
-                  {statsData.hasEvents && (statsData.playsSolo + statsData.playsOnline) > 0 ? (function(){
-                    const solo = statsData.playsSolo || 0, online = statsData.playsOnline || 0, tot = solo + online;
+                  {/* Solo vs En ligne (fenêtre) */}
+                  {statsData.hasEvents && (v.playsSolo + v.playsOnline) > 0 ? (function(){
+                    const solo = v.playsSolo || 0, online = v.playsOnline || 0, tot = solo + online;
                     const pOnline = Math.round(online/tot*100);
                     return (
                       <div style={{marginBottom:24}}>
-                        <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.4)",fontWeight:800,textTransform:"uppercase",marginBottom:10,paddingLeft:4}}>Solo vs En ligne · 14 j</div>
+                        <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.4)",fontWeight:800,textTransform:"uppercase",marginBottom:10,paddingLeft:4}}>Solo vs En ligne · {v.range} j</div>
                         <div style={{display:"flex",height:34,borderRadius:10,overflow:"hidden",border:"1px solid rgba(255,255,255,.1)"}}>
                           <div style={{width:(100-pOnline)+"%",background:"rgba(96,165,250,.55)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:800,color:"#fff",minWidth:solo?40:0}}>{solo?(100-pOnline)+"%":""}</div>
                           <div style={{width:pOnline+"%",background:"linear-gradient(90deg,#00E676,#B9F600)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:800,color:"#0A1410",minWidth:online?40:0}}>{online?pOnline+"%":""}</div>
@@ -10843,12 +10869,12 @@ export default function LePont() {
                     );
                   })() : null}
                   {/* Répartition par OS mobile (iOS / Android) */}
-                  {statsData.osCount && (statsData.osCount.ios + statsData.osCount.android + statsData.osCount.other) > 0 ? (function(){
-                    const os = statsData.osCount; const tot = os.ios + os.android + os.other;
+                  {v.osCount && (v.osCount.ios + v.osCount.android + v.osCount.other) > 0 ? (function(){
+                    const os = v.osCount; const tot = os.ios + os.android + os.other;
                     const pct = (n)=> tot ? Math.round(n/tot*100) : 0;
                     return (
                       <div style={{marginBottom:24}}>
-                        <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.4)",fontWeight:800,textTransform:"uppercase",marginBottom:10,paddingLeft:4}}>📱 Appareils · 14 j</div>
+                        <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.4)",fontWeight:800,textTransform:"uppercase",marginBottom:10,paddingLeft:4}}>📱 Appareils · {v.range} j</div>
                         <div style={{display:"flex",height:34,borderRadius:10,overflow:"hidden",border:"1px solid rgba(255,255,255,.1)"}}>
                           {os.ios>0 && <div style={{width:pct(os.ios)+"%",background:"rgba(255,255,255,.75)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:800,color:"#000",minWidth:34}}>{pct(os.ios)}%</div>}
                           {os.android>0 && <div style={{width:pct(os.android)+"%",background:"linear-gradient(90deg,#3DDC84,#00E676)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:800,color:"#0A1410",minWidth:34}}>{pct(os.android)}%</div>}

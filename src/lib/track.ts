@@ -3,13 +3,13 @@
 // "play_<mode>". Fire-and-forget : n'échoue jamais côté UI.
 //
 // Modes suivis : "pont" (The Plug), "chaine" (The Mercato), "grid" (GOAT Grid),
-// "guess" (GOAT Guess / Le Devin).
+// "guess" (GOAT Guess / Le Devin), "battle" (GOAT Battle / GOAT Duel).
 
 const SB_URL = "https://ialjlsrgcolocoaegzrc.supabase.co";
 const SB_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhbGpsc3JnY29sb2NvYWVnenJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1MDM3NzksImV4cCI6MjA5MTA3OTc3OX0.-SU8anuPhnpoa-PYhIHQqrcuOBsHxdtBJKRZuiGcGwM";
 
-export type PlayMode = "pont" | "chaine" | "grid" | "guess";
+export type PlayMode = "pont" | "chaine" | "grid" | "guess" | "battle";
 
 // Récupère (ou crée) l'identifiant anonyme d'appareil — même clé que LePont.
 function getPlayerId(): string {
