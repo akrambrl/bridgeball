@@ -45,6 +45,17 @@ function countryToFlag(code) {
   return String.fromCodePoint(...codePoints);
 }
 
+// Détecte l'OS mobile (pour le tracking) : "ios" | "android" | "other"
+function detectOS() {
+  try {
+    const ua = navigator.userAgent || "";
+    // iPadOS récent se présente comme un Mac tactile
+    if (/iPhone|iPad|iPod/i.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)) return "ios";
+    if (/Android/i.test(ua)) return "android";
+    return "other";
+  } catch (e) { return "other"; }
+}
+
 async function detectCountry() {
   try {
     const cached = localStorage.getItem("bb_country");
@@ -1619,7 +1630,7 @@ function duelCommonPlayers(c1, c2){
 }
 const DUEL_ROUNDS = 5;
 const DUEL_ANSWER_SECS = 10; // trouver le joueur
-const DUEL_RESULT_SECS = 2.5; // écran résultat de manche (court)
+const DUEL_RESULT_SECS = 1.8; // écran résultat de manche (court)
 const DUEL_SPIN_MS = 2200;   // durée du tirage "machine à sous" (clubs aléatoires)
 // Tire une paire de clubs aléatoire GARANTIE jouable (>=1 joueur commun)
 function duelRollPair(){
@@ -2607,6 +2618,15 @@ export default function LePont() {
         }
       }
       const totalPlays = playsByMode.pont + playsByMode.chaine + playsByMode.grid + playsByMode.guess;
+      // Répartition par OS mobile (pings "open_<os>") — 1 appareil compté une fois
+      const osByDevice = {}; // player_id -> os
+      if (hasEvents) {
+        for (const r of events) {
+          if (r.type && r.type.indexOf("open_") === 0) osByDevice[r.player_id] = r.type.slice(5);
+        }
+      }
+      const osCount = { ios:0, android:0, other:0 };
+      for (const id in osByDevice) { const o = osByDevice[id]; if (osCount[o] !== undefined) osCount[o]++; else osCount.other++; }
       const activeRows = hasEvents ? events : scores;
       const byDayActive = {};
       for (const r of activeRows) { if (r.created_at) { const k = dayKey(r.created_at); (byDayActive[k] = byDayActive[k] || new Set()).add(r.player_id); } }
@@ -2637,7 +2657,7 @@ export default function LePont() {
         accounts: await sbCount("bb_pseudos"),   // comptes créés
         grid:     await sbCount("bb_gg_scores"), // parties GOAT GRID enregistrées
       };
-      setStatsData({ days: days, week: weekActive.size, accounts: pseudos.length, duelsToday: duels.length, recent: recent, recentHasDate: recentHasDate, hasEvents: hasEvents, playsByMode: playsByMode, totalPlays: totalPlays, playsSolo: playsSolo, playsOnline: playsOnline, allTime: allTime });
+      setStatsData({ days: days, week: weekActive.size, accounts: pseudos.length, duelsToday: duels.length, recent: recent, recentHasDate: recentHasDate, hasEvents: hasEvents, playsByMode: playsByMode, totalPlays: totalPlays, playsSolo: playsSolo, playsOnline: playsOnline, allTime: allTime, osCount: osCount });
     })();
   }, [statsMode, statsData]);
   // ─── Android Back Button Handler ──
@@ -4345,7 +4365,7 @@ export default function LePont() {
       const today = new Date().toISOString().slice(0,10);
       if (localStorage.getItem("bb_ping_day") === today) return;
       localStorage.setItem("bb_ping_day", today);
-      sbFetch("bb_events", { method:"POST", body: JSON.stringify({ player_id: playerId, type: "open" }) });
+      sbFetch("bb_events", { method:"POST", body: JSON.stringify({ player_id: playerId, type: "open_" + detectOS() }) });
     } catch(e) {}
   }, []);
   const [showFriends, setShowFriends] = useState(false);
@@ -10576,6 +10596,27 @@ export default function LePont() {
                           <span style={{color:"#8CC0FF"}}>🎮 Solo · {solo}</span>
                           <span style={{color:"#00E676"}}>🌐 En ligne · {online}</span>
                         </div>
+                      </div>
+                    );
+                  })() : null}
+                  {/* Répartition par OS mobile (iOS / Android) */}
+                  {statsData.osCount && (statsData.osCount.ios + statsData.osCount.android + statsData.osCount.other) > 0 ? (function(){
+                    const os = statsData.osCount; const tot = os.ios + os.android + os.other;
+                    const pct = (n)=> tot ? Math.round(n/tot*100) : 0;
+                    return (
+                      <div style={{marginBottom:24}}>
+                        <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.4)",fontWeight:800,textTransform:"uppercase",marginBottom:10,paddingLeft:4}}>📱 Appareils · 14 j</div>
+                        <div style={{display:"flex",height:34,borderRadius:10,overflow:"hidden",border:"1px solid rgba(255,255,255,.1)"}}>
+                          {os.ios>0 && <div style={{width:pct(os.ios)+"%",background:"rgba(255,255,255,.75)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:800,color:"#000",minWidth:34}}>{pct(os.ios)}%</div>}
+                          {os.android>0 && <div style={{width:pct(os.android)+"%",background:"linear-gradient(90deg,#3DDC84,#00E676)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:800,color:"#0A1410",minWidth:34}}>{pct(os.android)}%</div>}
+                          {os.other>0 && <div style={{width:pct(os.other)+"%",background:"rgba(255,255,255,.25)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:800,color:"#fff",minWidth:34}}>{pct(os.other)}%</div>}
+                        </div>
+                        <div style={{display:"flex",justifyContent:"space-between",marginTop:8,fontSize:12,fontWeight:700,gap:8}}>
+                          <span style={{color:"#fff"}}>🍎 iOS · {os.ios}</span>
+                          <span style={{color:"#3DDC84"}}>🤖 Android · {os.android}</span>
+                          {os.other>0 && <span style={{color:"rgba(255,255,255,.5)"}}>💻 Autre · {os.other}</span>}
+                        </div>
+                        <div style={{fontSize:10.5,color:"rgba(255,255,255,.3)",marginTop:6,paddingLeft:4}}>Appareils uniques ayant ouvert l'app (depuis l'ajout du suivi OS).</div>
                       </div>
                     );
                   })() : null}
