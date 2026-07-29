@@ -8141,22 +8141,43 @@ export default function LePont() {
 
     let body = null;
     if(duelScreen==="menu" || !room){
+      // ── Lanceur style GOAT Plug : grand visuel + pastille + gros boutons ──
+      const ac = "#FF8A2A", ac2 = "#FFC93C";
       body = (
-        <div style={{flex:1,overflowY:"auto",padding:"24px 20px",display:"flex",flexDirection:"column",gap:18,maxWidth:480,margin:"0 auto",width:"100%"}}>
-          <div style={{textAlign:"center"}}>
-            <div style={{fontFamily:G.heading,fontSize:30,color:G.white,letterSpacing:1}}>DUEL EN DIRECT</div>
-            <div style={{fontSize:13,color:"rgba(255,255,255,.6)",marginTop:8,lineHeight:1.5}}>{lang==="en"?"5 rounds. Each round the system draws 2 clubs at random — name a player who played for BOTH (10s). 10 pts per answer, 20 pts if under 5s!":"5 manches. À chaque manche le système tire 2 clubs au hasard : trouve un joueur ayant joué dans les DEUX (10 s). 10 pts par bonne réponse, 20 pts si tu réponds en moins de 5 s !"}</div>
+        <div style={{position:"relative",width:"100%",minHeight:"100dvh",display:"flex",flexDirection:"column",animation:"fadeIn .3s ease-out"}}>
+          {/* X fermer */}
+          <button onClick={duelLeaveRoom} style={{position:"fixed",top:"calc(14px + env(safe-area-inset-top))",right:14,zIndex:10,width:38,height:38,borderRadius:"50%",background:"rgba(0,0,0,.65)",color:"#fff",border:"1px solid rgba(255,255,255,.25)",fontSize:22,fontWeight:300,lineHeight:1,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(10px)",boxShadow:"0 4px 16px rgba(0,0,0,.5)"}}>×</button>
+          {/* Hero image (visuel entier) */}
+          <div style={{position:"relative",width:"100%",height:"48vh",maxHeight:"520px",minHeight:"280px",overflow:"hidden",background:"#000",flexShrink:0}}>
+            <img src={DUEL_CARD_IMG} alt="" style={{width:"100%",height:"100%",objectFit:"contain",pointerEvents:"none",userSelect:"none"}} draggable={false}/>
+            <div style={{position:"absolute",bottom:0,left:0,right:0,height:50,background:"linear-gradient(to top, #0a0a0a 0%, transparent 100%)",pointerEvents:"none"}}/>
           </div>
-          {bigBtn(lang==="en"?"🎯 SOLO (SCORE)":"🎯 SOLO (SCORE)", duelSoloStart, "linear-gradient(135deg,#3DA5FF,#00E676)", false)}
-          <div style={{textAlign:"center",fontSize:12,color:"rgba(255,255,255,.35)",fontWeight:700,letterSpacing:2}}>{lang==="en"?"— OR PLAY A FRIEND —":"— OU CONTRE UN AMI —"}</div>
-          {bigBtn(lang==="en"?"CREATE A ROOM":"CRÉER UN SALON", duelCreateRoom, "linear-gradient(135deg,#00E676,#00A855)", duelBusy)}
-          <div style={{textAlign:"center",fontSize:12,color:"rgba(255,255,255,.35)",fontWeight:700,letterSpacing:2}}>{lang==="en"?"OR":"OU"}</div>
-          <div style={{display:"flex",gap:8}}>
-            <input value={duelJoinCode} onChange={function(e){setDuelJoinCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,6));setDuelError("");}} placeholder={lang==="en"?"ROOM CODE":"CODE DU SALON"} maxLength={6}
-              style={{flex:1,minWidth:0,padding:"14px",borderRadius:14,border:"1.5px solid rgba(255,255,255,.15)",background:"rgba(255,255,255,.05)",color:G.white,fontFamily:G.heading,fontSize:20,letterSpacing:4,textAlign:"center",outline:"none"}}/>
-            <button onClick={function(){duelJoinRoom(duelJoinCode);}} disabled={duelBusy||duelJoinCode.length!==6} style={{padding:"0 18px",borderRadius:14,border:"none",background:duelJoinCode.length===6?"#FFD600":"rgba(255,255,255,.08)",color:duelJoinCode.length===6?"#000":"rgba(255,255,255,.3)",fontFamily:G.heading,fontSize:16,letterSpacing:1,cursor:duelJoinCode.length===6?"pointer":"not-allowed"}}>{lang==="en"?"JOIN":"OK"}</button>
+          <div style={{position:"relative",zIndex:1,padding:"14px 22px calc(22px + env(safe-area-inset-bottom))",flex:1,display:"flex",flexDirection:"column",maxWidth:480,margin:"0 auto",width:"100%",boxSizing:"border-box"}}>
+            {/* Pastille format */}
+            <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:12,padding:"10px 16px",background:`${ac}12`,border:`1.5px solid ${ac}40`,borderRadius:12,marginBottom:18,backdropFilter:"blur(10px)",flexWrap:"wrap"}}>
+              <span style={{color:ac,fontSize:13,fontWeight:800,letterSpacing:.5}}>⚡ <span style={{color:G.white}}>5 {lang==="en"?"ROUNDS":"MANCHES"}</span></span>
+              <span style={{color:ac,fontSize:14,fontWeight:800}}>·</span>
+              <span style={{color:ac,fontSize:13,fontWeight:800,letterSpacing:.5}}>⏱ <span style={{color:G.white}}>10 S</span></span>
+              <span style={{color:ac,fontSize:14,fontWeight:800}}>·</span>
+              <span style={{color:ac,fontSize:13,fontWeight:800,letterSpacing:.5}}>🎯 <span style={{color:G.white}}>/100</span></span>
+            </div>
+            {/* SOLO */}
+            <div style={{fontSize:10,fontWeight:800,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginBottom:8}}>{lang==="en"?"Solo · score":"Solo · score"}</div>
+            <button onClick={duelSoloStart} style={{width:"100%",padding:"15px",marginBottom:18,background:`linear-gradient(135deg, ${ac}, ${ac2})`,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:16,fontWeight:800,letterSpacing:1,boxShadow:`0 8px 24px ${ac}55`,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+              ▶ {lang==="en"?"PLAY SOLO":"JOUER SOLO"} <span style={{fontSize:12,fontWeight:700,opacity:.8}}>· 10/20 pts</span>
+            </button>
+            {/* Entre potes */}
+            <div style={{fontSize:10,fontWeight:800,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginBottom:8}}>{lang==="en"?"With friends":"Entre potes"}</div>
+            <div style={{display:"flex",gap:8}}>
+              <button onClick={duelCreateRoom} disabled={duelBusy} style={{flex:1,padding:"14px",background:"rgba(0,230,118,.14)",color:"#00E676",border:"1px solid rgba(0,230,118,.4)",borderRadius:14,cursor:duelBusy?"default":"pointer",fontFamily:G.font,fontSize:13,fontWeight:800,letterSpacing:.5,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>👥 {lang==="en"?"Create room":"Créer un salon"}</button>
+            </div>
+            <div style={{display:"flex",gap:8,marginTop:8}}>
+              <input value={duelJoinCode} onChange={function(e){setDuelJoinCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,6));setDuelError("");}} placeholder={lang==="en"?"ROOM CODE":"CODE DU SALON"} maxLength={6}
+                style={{flex:1,minWidth:0,padding:"13px",borderRadius:14,border:"1.5px solid rgba(255,255,255,.15)",background:"rgba(255,255,255,.05)",color:G.white,fontFamily:G.heading,fontSize:18,letterSpacing:4,textAlign:"center",outline:"none"}}/>
+              <button onClick={function(){duelJoinRoom(duelJoinCode);}} disabled={duelBusy||duelJoinCode.length!==6} style={{padding:"0 20px",borderRadius:14,border:"none",background:duelJoinCode.length===6?"#FFD600":"rgba(255,255,255,.08)",color:duelJoinCode.length===6?"#000":"rgba(255,255,255,.3)",fontFamily:G.heading,fontSize:16,letterSpacing:1,cursor:duelJoinCode.length===6?"pointer":"not-allowed"}}>{lang==="en"?"JOIN":"OK"}</button>
+            </div>
+            {duelError && <div style={{textAlign:"center",fontSize:13,color:"#FF6B6B",fontWeight:700,marginTop:12}}>{duelError}</div>}
           </div>
-          {duelError && <div style={{textAlign:"center",fontSize:13,color:"#FF6B6B",fontWeight:700}}>{duelError}</div>}
         </div>
       );
     } else if(duelScreen==="lobby"){
@@ -8317,7 +8338,7 @@ export default function LePont() {
       );
       }
     }
-    return (<div key="duel-overlay" style={shell2}>{header}{body}</div>);
+    return (<div key="duel-overlay" style={{...shell2, overflowY: duelScreen==="menu"?"auto":"visible"}}>{duelScreen!=="menu" && header}{body}</div>);
   })();
 
   // ── SALON DES DÉFIS OUVERTS ──
