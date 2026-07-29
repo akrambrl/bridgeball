@@ -2292,6 +2292,13 @@ function playSound(type){
       osc.start(ctx.currentTime);osc.stop(ctx.currentTime+.06);
       return;
     }
+    if(type==="clocktick"){
+      const osc=ctx.createOscillator(),g=ctx.createGain();
+      osc.connect(g);g.connect(ctx.destination);osc.type="sine";osc.frequency.value=900;
+      g.gain.setValueAtTime(.0001,ctx.currentTime);g.gain.linearRampToValueAtTime(.22,ctx.currentTime+.005);g.gain.exponentialRampToValueAtTime(.0001,ctx.currentTime+.09);
+      osc.start(ctx.currentTime);osc.stop(ctx.currentTime+.1);
+      return;
+    }
     if(type==="spinstop"){
       [880,1175,1568].forEach((freq,i)=>{
         const osc=ctx.createOscillator(),g=ctx.createGain();
@@ -2874,6 +2881,7 @@ export default function LePont() {
   const duelAnsweredRef = React.useRef(false);           // a déjà répondu correctement cette manche ?
   const duelSeqBusyRef = React.useRef(false);            // évite les transitions concurrentes (host)
   const duelSpinIvRef = React.useRef(null);              // interval du reel
+  const duelTickRef = React.useRef(0);                   // dernière seconde "tic-tac" jouée
 
   function duelGenCode(){
     const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // sans I/O/0/1
@@ -3162,6 +3170,18 @@ export default function LePont() {
     const iv=setInterval(function(){ setDuelNow(Date.now()); }, 250);
     return function(){ clearInterval(iv); };
   }, [duelScreen]);
+  // Tic-tac quand le chrono de réponse passe sous 3 s (une fois par seconde)
+  useEffect(function(){
+    const r = duelRoom;
+    if(!r || duelScreen!=="playing" || r.phase!=="answer" || duelSpin || duelAnsweredRef.current){ duelTickRef.current=0; return; }
+    const now = duelNow || Date.now();
+    const left = Math.ceil(DUEL_ANSWER_SECS - (now - (duelAnswerShownAtRef.current || now))/1000);
+    if(left<=3 && left>0){
+      if(left!==duelTickRef.current){ duelTickRef.current=left; playSound("clocktick"); vibrate(20); }
+    } else {
+      duelTickRef.current=0;
+    }
+  }, [duelNow, duelScreen, duelRoom && duelRoom.phase, duelSpin]);
   // Ref pour avoir les valeurs LIVE du joueur (utilisé par le timer qui capture des closures)
   const ggBattleStateRef = React.useRef({ filledCells: {}, score: 0, lives: 3, submitted: false });
   
