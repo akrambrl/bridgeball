@@ -1617,9 +1617,19 @@ function duelCommonPlayers(c1, c2){
   return getPlayersForClub(c1).filter(n => b.has(n));
 }
 const DUEL_ROUNDS = 5;
-const DUEL_PICK_SECS = 5;    // sélection du club
 const DUEL_ANSWER_SECS = 10; // trouver le joueur
 const DUEL_RESULT_SECS = 4;  // écran résultat de manche
+const DUEL_SPIN_MS = 2200;   // durée du tirage "machine à sous" (clubs aléatoires)
+// Tire une paire de clubs aléatoire GARANTIE jouable (>=1 joueur commun)
+function duelRollPair(){
+  for(let i=0;i<80;i++){
+    const c1 = DUEL_CLUBS[Math.floor(Math.random()*DUEL_CLUBS.length)];
+    const c2 = DUEL_CLUBS[Math.floor(Math.random()*DUEL_CLUBS.length)];
+    if(c1===c2) continue;
+    if(duelCommonPlayers(c1, c2).length > 0) return [c1, c2];
+  }
+  return ["Real Madrid", "Barcelona"]; // repli (ont des joueurs communs)
+}
 
 // CRESCENDO HELPER : retourne la difficulté "effective" en mode crescendo selon le nombre de liens accomplis
 // 0-2 liens = facile, 3-6 liens = moyen, 7+ = expert
@@ -2809,6 +2819,7 @@ export default function LePont() {
   const [duelSpin, setDuelSpin] = useState(false);       // animation "machine à sous" en cours
   const [duelReel1, setDuelReel1] = useState(null);      // club défilant (reel du haut) pendant le spin
   const [duelReel2, setDuelReel2] = useState(null);      // club défilant (reel du bas) pendant le spin
+  const [duelEndImg, setDuelEndImg] = useState(null);    // visuel joueur (célébration/défaite) à l'écran final
   const duelRoomRef = React.useRef(null);                // room live pour le séquenceur (host)
   const duelAnswerShownAtRef = React.useRef(0);          // Date.now() quand la paire s'est affichée (mesure réaction)
   const duelAnsweredRef = React.useRef(false);           // a déjà répondu correctement cette manche ?
@@ -2885,19 +2896,11 @@ export default function LePont() {
   async function duelHostStart(){
     const r = duelRoomRef.current || duelRoom;
     if(!r || r.host_id!==playerId || !r.guest_id) return;
-    await duelPatch(r.id, { state:"playing", round:1, phase:"pick", phase_at:new Date().toISOString(),
-      host_pick:null, guest_pick:null, club_c1:null, club_c2:null,
+    const [c1, c2] = duelRollPair(); // le système tire 2 clubs au hasard
+    await duelPatch(r.id, { state:"playing", round:1, phase:"answer", phase_at:new Date().toISOString(),
+      club_c1:c1, club_c2:c2,
       host_answer:null, guest_answer:null, host_answer_ms:null, guest_answer_ms:null, round_winner:null,
       host_score:0, guest_score:0, winner_id:null, winner_name:null });
-  }
-
-  async function duelPickClub(club){
-    const r = duelRoomRef.current || duelRoom;
-    if(!r || r.phase!=="pick") return;
-    const mine = r.host_id===playerId ? { host_pick:club } : { guest_pick:club };
-    // maj optimiste locale pour un retour immédiat
-    duelRoomRef.current = Object.assign({}, r, mine); setDuelRoom(duelRoomRef.current);
-    duelPatch(r.id, mine);
   }
 
   function duelSubmitAnswer(nameOverride){
@@ -2926,24 +2929,11 @@ export default function LePont() {
     const phaseAt = room.phase_at ? new Date(room.phase_at).getTime() : 0;
     const el = now - phaseAt;
     try{
-      if(room.phase==="pick"){
-        if(el >= DUEL_PICK_SECS*1000){
-          duelSeqBusyRef.current=true;
-          let hp = room.host_pick || DUEL_CLUBS[Math.floor(Math.random()*DUEL_CLUBS.length)];
-          let gp = room.guest_pick || DUEL_CLUBS[Math.floor(Math.random()*DUEL_CLUBS.length)];
-          const common = duelCommonPlayers(hp, gp);
-          if(common.length===0){
-            // paire injouable → manche annulée, on relance la sélection
-            await duelPatch(room.id, { phase:"pick", phase_at:new Date().toISOString(), host_pick:null, guest_pick:null, club_c1:null, club_c2:null });
-          } else {
-            await duelPatch(room.id, { phase:"answer", phase_at:new Date().toISOString(), club_c1:hp, club_c2:gp,
-              host_answer:null, guest_answer:null, host_answer_ms:null, guest_answer_ms:null, round_winner:null });
-          }
-        }
-      } else if(room.phase==="answer"){
+      if(room.phase==="answer"){
         const hm = room.host_answer_ms, gm = room.guest_answer_ms;
         const someone = (hm!=null) || (gm!=null);
-        const timeUp = el >= (DUEL_ANSWER_SECS*1000 + 1200);
+        // fenêtre de réponse = après le tirage machine à sous + 10s (+ marge polling)
+        const timeUp = el >= (DUEL_SPIN_MS + DUEL_ANSWER_SECS*1000 + 1200);
         if(someone || timeUp){
           duelSeqBusyRef.current=true;
           let winner="draw";
@@ -2958,8 +2948,9 @@ export default function LePont() {
         if(el >= DUEL_RESULT_SECS*1000){
           duelSeqBusyRef.current=true;
           if((room.round||1) < DUEL_ROUNDS){
-            await duelPatch(room.id, { round:(room.round||1)+1, phase:"pick", phase_at:new Date().toISOString(),
-              host_pick:null, guest_pick:null, club_c1:null, club_c2:null,
+            const [c1, c2] = duelRollPair(); // nouvelle paire aléatoire
+            await duelPatch(room.id, { round:(room.round||1)+1, phase:"answer", phase_at:new Date().toISOString(),
+              club_c1:c1, club_c2:c2,
               host_answer:null, guest_answer:null, host_answer_ms:null, guest_answer_ms:null, round_winner:null });
           } else {
             const hs=room.host_score||0, gs=room.guest_score||0;
@@ -3013,21 +3004,41 @@ export default function LePont() {
     duelAnsweredRef.current = false;
     setDuelInput("");
     setDuelSpin(true);
-    const SPIN_MS = 1100;
-    if(duelSpinIvRef.current) clearInterval(duelSpinIvRef.current);
+    if(duelSpinIvRef.current){ clearTimeout(duelSpinIvRef.current); duelSpinIvRef.current=null; }
     const rand = function(){ return DUEL_CLUBS[Math.floor(Math.random()*DUEL_CLUBS.length)]; };
     setDuelReel1(rand()); setDuelReel2(rand());
-    duelSpinIvRef.current = setInterval(function(){ setDuelReel1(rand()); setDuelReel2(rand()); }, 60);
-    const stop = setTimeout(function(){
-      if(duelSpinIvRef.current){ clearInterval(duelSpinIvRef.current); duelSpinIvRef.current=null; }
-      setDuelSpin(false);
-      duelAnswerShownAtRef.current = Date.now(); // réaction mesurée à partir d'ici
-    }, SPIN_MS);
+    const start = Date.now();
+    let stopped = false;
+    function tick(){
+      if(stopped) return;
+      const elapsed = Date.now() - start;
+      if(elapsed >= DUEL_SPIN_MS){
+        setDuelSpin(false);
+        duelAnswerShownAtRef.current = Date.now(); // réaction mesurée à partir d'ici
+        return;
+      }
+      setDuelReel1(rand()); setDuelReel2(rand());
+      // décélération : les rouleaux ralentissent en approchant de la fin
+      const pr = elapsed / DUEL_SPIN_MS; // 0 → 1
+      const delay = 80 + pr*pr*300;      // ~80ms au départ → ~380ms à la fin
+      duelSpinIvRef.current = setTimeout(tick, delay);
+    }
+    duelSpinIvRef.current = setTimeout(tick, 100);
     return function(){
-      clearTimeout(stop);
-      if(duelSpinIvRef.current){ clearInterval(duelSpinIvRef.current); duelSpinIvRef.current=null; }
+      stopped = true;
+      if(duelSpinIvRef.current){ clearTimeout(duelSpinIvRef.current); duelSpinIvRef.current=null; }
     };
   }, [duelRoom && duelRoom.phase, duelRoom && duelRoom.round]);
+
+  // Visuel de fin (célébration / défaite) — choisi une seule fois à l'arrivée sur l'écran final
+  useEffect(function(){
+    if(duelScreen==="finished" && duelRoom && !duelEndImg){
+      const iWon = duelRoom.winner_id && duelRoom.winner_id===playerId;
+      const draw = !duelRoom.winner_id;
+      setDuelEndImg(randomImg((iWon || draw) ? WIN_IMGS : LOSE_IMGS));
+    }
+    if(duelScreen!=="finished" && duelEndImg) setDuelEndImg(null);
+  }, [duelScreen, duelRoom && duelRoom.winner_id]);
 
   // Horloge locale pour les décomptes (250ms)
   useEffect(function(){
@@ -8026,15 +8037,13 @@ export default function LePont() {
     const oppName = isHost ? (room&&room.guest_name) : (room&&room.host_name);
     const myScore = room ? (isHost ? (room.host_score||0) : (room.guest_score||0)) : 0;
     const oppScore = room ? (isHost ? (room.guest_score||0) : (room.host_score||0)) : 0;
-    const myPick = room ? (isHost ? room.host_pick : room.guest_pick) : null;
-    const oppPick = room ? (isHost ? room.guest_pick : room.host_pick) : null;
     const myAnsMs = room ? (isHost ? room.host_answer_ms : room.guest_answer_ms) : null;
     const oppAnsMs = room ? (isHost ? room.guest_answer_ms : room.host_answer_ms) : null;
     const now = duelNow || Date.now();
-    const phaseAt = room && room.phase_at ? new Date(room.phase_at).getTime() : now;
-    const elapsed = now - phaseAt;
-    const pickLeft = Math.min(DUEL_PICK_SECS, Math.max(0, Math.ceil(DUEL_PICK_SECS - elapsed/1000)));
-    const ansLeft = Math.min(DUEL_ANSWER_SECS, Math.max(0, Math.ceil(DUEL_ANSWER_SECS - elapsed/1000)));
+    // Décompte réponse : gelé à 10 pendant le tirage, puis compte à partir de l'arrêt des rouleaux
+    const ansLeft = duelSpin
+      ? DUEL_ANSWER_SECS
+      : Math.min(DUEL_ANSWER_SECS, Math.max(0, Math.ceil(DUEL_ANSWER_SECS - (now - (duelAnswerShownAtRef.current || now))/1000)));
     const shell2 = { position:"fixed", inset:0, zIndex:11000, background:"linear-gradient(180deg,#0a1410 0%,#0E1F14 100%)", display:"flex", flexDirection:"column", fontFamily:G.font, color:G.white };
     const bigBtn = (label, onClick, bg, disabled) => (
       <button onClick={onClick} disabled={disabled} style={{width:"100%",padding:"16px",borderRadius:16,border:"none",background:disabled?"rgba(255,255,255,.08)":bg,color:disabled?"rgba(255,255,255,.35)":"#000",fontFamily:G.heading,fontSize:20,letterSpacing:1.5,cursor:disabled?"not-allowed":"pointer",boxShadow:disabled?"none":"0 8px 24px -8px rgba(0,230,118,.5)"}}>{label}</button>
@@ -8098,32 +8107,7 @@ export default function LePont() {
       );
     } else if(duelScreen==="playing"){
       let phaseBody = null;
-      if(room.phase==="pick"){
-        phaseBody = (
-          <div style={{flex:1,display:"flex",flexDirection:"column",minHeight:0,padding:"6px 14px 14px"}}>
-            <div style={{textAlign:"center",marginBottom:8}}>
-              <div style={{fontFamily:G.heading,fontSize:54,color:pickLeft<=2?"#FF3D57":"#FFD600",lineHeight:1}}>{pickLeft}</div>
-              <div style={{fontSize:13,fontWeight:800,color:G.white,letterSpacing:.5}}>{lang==="en"?"Pick a club":"Choisis un club"}</div>
-              <div style={{fontSize:11,color:"rgba(255,255,255,.45)",marginTop:2}}>{oppPick?(lang==="en"?"Opponent has picked ✓":"Adversaire a choisi ✓"):(lang==="en"?"Opponent is picking…":"Adversaire choisit…")}</div>
-            </div>
-            <div style={{flex:1,overflowY:"auto",display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,alignContent:"start"}}>
-              {DUEL_CLUBS.map(function(c){
-                const sel = myPick===c;
-                const cc = getClubColors(c);
-                return (
-                  <button key={c} onClick={function(){duelPickClub(c);}} style={{position:"relative",overflow:"hidden",height:50,borderRadius:12,border:sel?"2px solid #00E676":"1px solid rgba(255,255,255,.12)",cursor:"pointer",padding:0,boxShadow:sel?"0 0 0 2px rgba(0,230,118,.3), 0 6px 16px "+cc[0]+"66":"0 3px 10px "+cc[0]+"44"}}>
-                    <div style={{position:"absolute",inset:0,background:cc[0]}}/>
-                    <div style={{position:"absolute",top:0,right:0,width:"55%",bottom:0,background:cc[1],clipPath:"polygon(30% 0%, 100% 0%, 100% 100%, 0% 100%)"}}/>
-                    <div style={{position:"absolute",inset:0,background:sel?"rgba(0,0,0,.05)":"rgba(0,0,0,.22)"}}/>
-                    <span style={{position:"relative",zIndex:1,fontFamily:G.font,fontSize:12.5,color:"#fff",fontWeight:800,textShadow:"0 1px 4px rgba(0,0,0,.6)",letterSpacing:.3,lineHeight:1.1,padding:"0 6px",display:"block"}}>{c}</span>
-                    {sel && <span style={{position:"absolute",top:4,right:6,zIndex:2,fontSize:14,color:"#00E676",textShadow:"0 1px 3px rgba(0,0,0,.7)"}}>✓</span>}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        );
-      } else if(room.phase==="answer"){
+      if(room.phase==="answer"){
         const answered = duelAnsweredRef.current || myAnsMs!=null;
         const duelSug = answered ? [] : ggGetSuggestions(duelInput);
         // Carte club grand format (empilée) — style GOAT Mercato bicolore.
@@ -8203,7 +8187,10 @@ export default function LePont() {
       const draw = !room.winner_id;
       body = (
         <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",alignItems:"center",padding:"24px",gap:16,maxWidth:480,margin:"0 auto",width:"100%"}}>
-          <div style={{fontSize:64}}>{draw?"🤝":iWon?"🏆":"💪"}</div>
+          <div style={{position:"relative",marginBottom:4}}>
+            <img src={duelEndImg || (iWon||draw?WIN_IMGS[0]:LOSE_IMGS[0])} alt="" style={{height:190,width:"auto",objectFit:"contain",filter:"drop-shadow(0 16px 30px rgba(0,0,0,.6))"}}/>
+            <div style={{position:"absolute",bottom:-6,left:"50%",transform:"translateX(-50%)",fontSize:40}}>{draw?"🤝":iWon?"🏆":""}</div>
+          </div>
           <div style={{fontFamily:G.heading,fontSize:34,letterSpacing:1,color:draw?"#FFD600":iWon?"#00E676":"#FF6B35",textAlign:"center"}}>
             {draw?(lang==="en"?"DRAW!":"ÉGALITÉ !"):iWon?(lang==="en"?"VICTORY!":"VICTOIRE !"):(lang==="en"?"DEFEAT":"DÉFAITE")}
           </div>
@@ -11952,6 +11939,18 @@ export default function LePont() {
               const code = (roomInput||"").trim().toUpperCase();
               if (code.length !== 6) { setRoomMsg(lang==="en"?"Invalid code":"Code invalide"); return; }
               setRoomMsg("");
+              // Étape 0 : salon GOAT DUEL (Plug temps réel) ?
+              try {
+                const dRoom = await sbFetch("bb_duel_rooms?code=eq."+code+"&limit=1");
+                if (Array.isArray(dRoom) && dRoom.length > 0) {
+                  setRoomInput(""); setDuelError(""); setDuelJoinCode(code);
+                  setDuelScreen("menu");
+                  duelJoinRoom(code);
+                  return;
+                }
+              } catch (e) {
+                // pas un salon duel → on continue
+              }
               // Étape 1 : essayer en priorité une room GOAT BATTLE
               try {
                 const ggRoom = await sbFetch("bb_gg_rooms?code=eq."+code+"&limit=1");
