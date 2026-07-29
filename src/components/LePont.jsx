@@ -8436,7 +8436,7 @@ export default function LePont() {
         </div>
         <div style={{display:"flex",gap:8,marginBottom:14}}>
           <button onClick={function(){setOpenTab("browse");}} style={{flex:1,padding:"9px",borderRadius:12,border:"none",background:openTab==="browse"?G.accent:"rgba(255,255,255,.06)",color:openTab==="browse"?"#000":G.white,fontFamily:G.font,fontSize:13,fontWeight:800,cursor:"pointer"}}>{lang==="en"?"Browse":"Parcourir"}</button>
-          <button onClick={function(){setOpenTab("mine");markOpenAttemptsSeen();}} style={{position:"relative",flex:1,padding:"9px",borderRadius:12,border:"none",background:openTab==="mine"?G.accent:"rgba(255,255,255,.06)",color:openTab==="mine"?"#000":G.white,fontFamily:G.font,fontSize:13,fontWeight:800,cursor:"pointer"}}>{lang==="en"?"My challenges":"Mes défis"}{openUnseenCount>0&&<span style={{position:"absolute",top:-5,right:-5,background:"#FF3D57",color:"#fff",borderRadius:"50%",minWidth:16,height:16,padding:"0 4px",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:900}}>{openUnseenCount}</span>}</button>
+          <button onClick={function(){setOpenTab("mine");markOpenAttemptsSeen();loadDuels();}} style={{position:"relative",flex:1,padding:"9px",borderRadius:12,border:"none",background:openTab==="mine"?G.accent:"rgba(255,255,255,.06)",color:openTab==="mine"?"#000":G.white,fontFamily:G.font,fontSize:13,fontWeight:800,cursor:"pointer"}}>{lang==="en"?"My challenges":"Mes défis"}{openUnseenCount>0&&<span style={{position:"absolute",top:-5,right:-5,background:"#FF3D57",color:"#fff",borderRadius:"50%",minWidth:16,height:16,padding:"0 4px",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:900}}>{openUnseenCount}</span>}</button>
         </div>
         {openTab==="mine" ? (
           <div>
@@ -8476,6 +8476,51 @@ export default function LePont() {
                 );})}
               </div>
             )}
+            {/* Défis terminés (historique gagné/perdu) */}
+            {(function(){
+              const done = (duels||[]).filter(function(d){ return d.status==="complete" && (d.challenger_id===playerId || d.opponent_id===playerId); });
+              let w=0,l=0,dr=0;
+              const rws = done.map(function(d){
+                const isChal=d.challenger_id===playerId;
+                const my=isChal?(d.challenger_score||0):(d.opponent_score||0);
+                const opp=isChal?(d.opponent_score||0):(d.challenger_score||0);
+                const res=my>opp?"win":my<opp?"loss":"draw";
+                if(res==="win")w++;else if(res==="loss")l++;else dr++;
+                return {id:d.id,oppName:(isChal?d.opponent_name:d.challenger_name)||"?",my:my,opp:opp,res:res,mode:d.mode};
+              });
+              return (
+                <div style={{marginTop:18}}>
+                  <div style={{fontSize:12,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginBottom:8}}>{lang==="en"?"Your finished duels":"Tes défis terminés"}</div>
+                  {rws.length===0 ? (
+                    <div style={{textAlign:"center",padding:"14px",color:"rgba(255,255,255,.4)",fontSize:13}}>{lang==="en"?"No finished duel yet.":"Aucun défi terminé pour l'instant."}</div>
+                  ) : (
+                    <>
+                      <div style={{display:"flex",gap:12,justifyContent:"center",marginBottom:10,fontSize:12,fontWeight:800}}>
+                        <span style={{color:"#00E676"}}>✅ {w}</span>
+                        <span style={{color:"#FFD600"}}>➖ {dr}</span>
+                        <span style={{color:"#FF3D57"}}>❌ {l}</span>
+                      </div>
+                      <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                        {rws.slice(0,20).map(function(r){
+                          const col=r.res==="win"?"#00E676":r.res==="loss"?"#FF3D57":"#FFD600";
+                          const lbl=r.res==="win"?(lang==="en"?"WON":"GAGNÉ"):r.res==="loss"?(lang==="en"?"LOST":"PERDU"):(lang==="en"?"DRAW":"NUL");
+                          return (
+                            <div key={r.id} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 12px",background:"rgba(255,255,255,.04)",borderLeft:"3px solid "+col,borderRadius:10}}>
+                              <div style={{flex:1,minWidth:0}}>
+                                <div style={{fontSize:13,fontWeight:800,color:G.white,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>vs {r.oppName}</div>
+                                <div style={{fontSize:10,color:"rgba(255,255,255,.4)"}}>{r.mode==="pont"?"The Plug":r.mode==="chaine"?"The Mercato":r.mode==="grid"?"GOAT Grid":r.mode}</div>
+                              </div>
+                              <div style={{fontFamily:G.heading,fontSize:16,color:G.white}}>{r.my}<span style={{color:"rgba(255,255,255,.3)",margin:"0 2px"}}>–</span>{r.opp}</div>
+                              <div style={{fontSize:9,fontWeight:900,letterSpacing:1,color:col,background:col+"1a",border:"1px solid "+col+"55",borderRadius:20,padding:"3px 8px",minWidth:48,textAlign:"center"}}>{lbl}</div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </>
+                  )}
+                </div>
+              );
+            })()}
           </div>
         ) : openDuelChooser ? (
           <div>
