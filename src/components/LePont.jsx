@@ -2832,6 +2832,13 @@ export default function LePont() {
     return c;
   }
   async function duelPatch(id, obj){
+    // Mode bot : salon 100% local, pas de base de données
+    if(id==="LOCAL"){
+      const cur = duelRoomRef.current || {};
+      const next = Object.assign({}, cur, obj);
+      duelRoomRef.current = next; setDuelRoom(next);
+      return next;
+    }
     return sbFetch("bb_duel_rooms?id=eq."+id, {
       method:"PATCH",
       headers:{ "Content-Type":"application/json", "Prefer":"return=minimal" },
@@ -2884,7 +2891,7 @@ export default function LePont() {
   async function duelLeaveRoom(){
     const r = duelRoomRef.current || duelRoom;
     try{
-      if(r && r.id){
+      if(r && r.id && r.id!=="LOCAL"){ // le salon bot est purement local
         if(r.host_id===playerId){ await sbFetch("bb_duel_rooms?id=eq."+r.id, { method:"DELETE", headers:{ "Prefer":"return=minimal" } }); }
         else { await duelPatch(r.id, { guest_id:null, guest_name:null }); }
       }
@@ -2901,6 +2908,22 @@ export default function LePont() {
       club_c1:c1, club_c2:c2,
       host_answer:null, guest_answer:null, host_answer_ms:null, guest_answer_ms:null, round_winner:null,
       host_score:0, guest_score:0, winner_id:null, winner_name:null });
+  }
+
+  // Démarre une partie SOLO contre un bot (100% local, sans base)
+  function duelBotStart(){
+    const [c1, c2] = duelRollPair();
+    const room = {
+      id:"LOCAL", code:"BOT", bot:true,
+      host_id:playerId, host_name:playerName||"Toi",
+      guest_id:"BOT", guest_name:(lang==="en"?"BOT 🤖":"BOT 🤖"),
+      state:"playing", round:1, phase:"answer", phase_at:new Date().toISOString(),
+      club_c1:c1, club_c2:c2,
+      host_answer:null, guest_answer:null, host_answer_ms:null, guest_answer_ms:null, round_winner:null,
+      host_score:0, guest_score:0, winner_id:null, winner_name:null,
+    };
+    duelRoomRef.current = room; setDuelRoom(room); setDuelEndImg(null);
+    setDuelScreen("playing");
   }
 
   function duelSubmitAnswer(nameOverride){
@@ -2965,10 +2988,10 @@ export default function LePont() {
     finally { duelSeqBusyRef.current=false; }
   }
 
-  // Polling du salon (hôte + invité)
+  // Polling du salon (hôte + invité) — désactivé en mode bot (local)
   useEffect(function(){
     const rid = duelRoom && duelRoom.id;
-    if(!rid) return;
+    if(!rid || rid==="LOCAL") return;
     if(duelScreen!=="lobby" && duelScreen!=="playing" && duelScreen!=="finished") return;
     let stop=false;
     async function poll(){
@@ -2995,6 +3018,32 @@ export default function LePont() {
     const iv=setInterval(poll, 800);
     return function(){ stop=true; clearInterval(iv); };
   }, [duelRoom && duelRoom.id, duelScreen]);
+
+  // Mode BOT : séquenceur local (remplace le polling) — fait avancer les phases
+  useEffect(function(){
+    if(!(duelRoom && duelRoom.id==="LOCAL" && duelScreen==="playing")) return;
+    const iv=setInterval(function(){
+      const r=duelRoomRef.current;
+      if(r && r.state==="finished"){ setDuelScreen("finished"); return; }
+      duelHostTick(r);
+    }, 200);
+    return function(){ clearInterval(iv); };
+  }, [duelScreen, duelRoom && duelRoom.id]);
+
+  // Mode BOT : à chaque manche, l'adversaire IA "trouve" (ou non) à un moment aléatoire
+  useEffect(function(){
+    if(!(duelRoom && duelRoom.id==="LOCAL" && duelRoom.phase==="answer")) return;
+    const willAnswer = Math.random() < 0.55;             // le bot trouve ~55% des manches
+    if(!willAnswer) return;
+    const botMs = 3800 + Math.floor(Math.random()*5000); // réaction 3,8 → 8,8 s (après le tirage) — laisse une chance au joueur
+    const to = setTimeout(function(){
+      const r=duelRoomRef.current;
+      if(r && r.id==="LOCAL" && r.phase==="answer" && r.guest_answer_ms==null){
+        duelPatch("LOCAL", { guest_answer_ms: botMs, guest_answer:"🤖" });
+      }
+    }, DUEL_SPIN_MS + botMs);
+    return function(){ clearTimeout(to); };
+  }, [duelRoom && duelRoom.id, duelRoom && duelRoom.phase, duelRoom && duelRoom.round]);
 
   // Entrée en phase "réponse" : animation machine à sous puis révélation.
   // Le chrono de réaction démarre APRÈS l'arrêt des rouleaux (quand les
@@ -8078,8 +8127,10 @@ export default function LePont() {
         <div style={{flex:1,overflowY:"auto",padding:"24px 20px",display:"flex",flexDirection:"column",gap:18,maxWidth:480,margin:"0 auto",width:"100%"}}>
           <div style={{textAlign:"center"}}>
             <div style={{fontFamily:G.heading,fontSize:30,color:G.white,letterSpacing:1}}>DUEL EN DIRECT</div>
-            <div style={{fontSize:13,color:"rgba(255,255,255,.6)",marginTop:8,lineHeight:1.5}}>{lang==="en"?"5 rounds vs a friend. Each round: pick a club (5s), then race to name a player who played for BOTH clubs (10s). First to find wins the round!":"5 manches contre un ami. Chaque manche : choisis un club (5 s), puis trouve le plus vite possible un joueur ayant joué dans les DEUX clubs (10 s). Le premier à trouver gagne la manche !"}</div>
+            <div style={{fontSize:13,color:"rgba(255,255,255,.6)",marginTop:8,lineHeight:1.5}}>{lang==="en"?"5 rounds. Each round the system draws 2 clubs at random — race to name a player who played for BOTH (10s). First to find wins the round!":"5 manches. À chaque manche le système tire 2 clubs au hasard : trouve le plus vite possible un joueur ayant joué dans les DEUX (10 s). Le premier à trouver gagne la manche !"}</div>
           </div>
+          {bigBtn(lang==="en"?"🤖 TRAIN VS BOT":"🤖 S'ENTRAÎNER (VS BOT)", duelBotStart, "linear-gradient(135deg,#3DA5FF,#00E676)", false)}
+          <div style={{textAlign:"center",fontSize:12,color:"rgba(255,255,255,.35)",fontWeight:700,letterSpacing:2}}>{lang==="en"?"— OR PLAY A FRIEND —":"— OU CONTRE UN AMI —"}</div>
           {bigBtn(lang==="en"?"CREATE A ROOM":"CRÉER UN SALON", duelCreateRoom, "linear-gradient(135deg,#00E676,#00A855)", duelBusy)}
           <div style={{textAlign:"center",fontSize:12,color:"rgba(255,255,255,.35)",fontWeight:700,letterSpacing:2}}>{lang==="en"?"OR":"OU"}</div>
           <div style={{display:"flex",gap:8}}>
