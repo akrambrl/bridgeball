@@ -8088,8 +8088,15 @@ export default function LePont() {
             <div style={{flex:1,overflowY:"auto",display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,alignContent:"start"}}>
               {DUEL_CLUBS.map(function(c){
                 const sel = myPick===c;
+                const cc = getClubColors(c);
                 return (
-                  <button key={c} onClick={function(){duelPickClub(c);}} style={{padding:"12px 8px",borderRadius:12,border:"1.5px solid "+(sel?"#00E676":"rgba(255,255,255,.12)"),background:sel?"rgba(0,230,118,.18)":"rgba(255,255,255,.04)",color:sel?"#00E676":G.white,fontFamily:G.font,fontSize:13,fontWeight:800,cursor:"pointer",textAlign:"center",lineHeight:1.15}}>{c}</button>
+                  <button key={c} onClick={function(){duelPickClub(c);}} style={{position:"relative",overflow:"hidden",height:50,borderRadius:12,border:sel?"2px solid #00E676":"1px solid rgba(255,255,255,.12)",cursor:"pointer",padding:0,boxShadow:sel?"0 0 0 2px rgba(0,230,118,.3), 0 6px 16px "+cc[0]+"66":"0 3px 10px "+cc[0]+"44"}}>
+                    <div style={{position:"absolute",inset:0,background:cc[0]}}/>
+                    <div style={{position:"absolute",top:0,right:0,width:"55%",bottom:0,background:cc[1],clipPath:"polygon(30% 0%, 100% 0%, 100% 100%, 0% 100%)"}}/>
+                    <div style={{position:"absolute",inset:0,background:sel?"rgba(0,0,0,.05)":"rgba(0,0,0,.22)"}}/>
+                    <span style={{position:"relative",zIndex:1,fontFamily:G.font,fontSize:12.5,color:"#fff",fontWeight:800,textShadow:"0 1px 4px rgba(0,0,0,.6)",letterSpacing:.3,lineHeight:1.1,padding:"0 6px",display:"block"}}>{c}</span>
+                    {sel && <span style={{position:"absolute",top:4,right:6,zIndex:2,fontSize:14,color:"#00E676",textShadow:"0 1px 3px rgba(0,0,0,.7)"}}>✓</span>}
+                  </button>
                 );
               })}
             </div>
@@ -8098,13 +8105,24 @@ export default function LePont() {
       } else if(room.phase==="answer"){
         const answered = duelAnsweredRef.current || myAnsMs!=null;
         const duelSug = answered ? [] : ggGetSuggestions(duelInput);
+        const clubCard = (club) => {
+          const cc = getClubColors(club);
+          return (
+            <div style={{flex:1,position:"relative",overflow:"hidden",height:56,borderRadius:14,boxShadow:"0 6px 18px "+cc[0]+"55",display:"flex",alignItems:"center",justifyContent:"center"}}>
+              <div style={{position:"absolute",inset:0,background:cc[0]}}/>
+              <div style={{position:"absolute",top:0,right:0,width:"55%",bottom:0,background:cc[1],clipPath:"polygon(30% 0%, 100% 0%, 100% 100%, 0% 100%)"}}/>
+              <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.2)"}}/>
+              <span style={{position:"relative",zIndex:1,fontFamily:G.heading,fontSize:15,color:"#fff",fontWeight:800,textShadow:"0 1px 5px rgba(0,0,0,.6)",letterSpacing:.5,padding:"0 8px",textAlign:"center",lineHeight:1.1}}>{club}</span>
+            </div>
+          );
+        };
         phaseBody = (
           <div style={{flex:1,display:"flex",flexDirection:"column",minHeight:0,padding:"6px 16px 16px",alignItems:"center"}}>
             <div style={{fontFamily:G.heading,fontSize:44,color:ansLeft<=3?"#FF3D57":"#FFD600",lineHeight:1,marginBottom:8}}>{ansLeft}</div>
             <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:6,width:"100%",maxWidth:420}}>
-              <div style={{flex:1,background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.12)",borderRadius:14,padding:"14px 8px",textAlign:"center",fontFamily:G.heading,fontSize:16,letterSpacing:.5}}>{room.club_c1}</div>
+              {clubCard(room.club_c1)}
               <div style={{width:30,height:30,borderRadius:"50%",background:"linear-gradient(135deg,#FFD600,#FF8A2A)",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:G.heading,fontWeight:900,color:"#000",flexShrink:0}}>×</div>
-              <div style={{flex:1,background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.12)",borderRadius:14,padding:"14px 8px",textAlign:"center",fontFamily:G.heading,fontSize:16,letterSpacing:.5}}>{room.club_c2}</div>
+              {clubCard(room.club_c2)}
             </div>
             <div style={{fontSize:12,color:"rgba(255,255,255,.5)",marginBottom:12,textAlign:"center"}}>{lang==="en"?"A player who played for BOTH clubs":"Un joueur ayant joué dans les DEUX clubs"}</div>
             {answered ? (
