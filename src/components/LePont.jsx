@@ -4424,6 +4424,7 @@ export default function LePont() {
   const [sentRequests, setSentRequests] = useState(function(){ try { return JSON.parse(localStorage.getItem("bb_pending_sent") || "[]"); } catch { return []; } });     // requests I sent
   // Duels
   const [duels, setDuels] = useState([]);
+  const [showDuelHistory, setShowDuelHistory] = useState(false); // écran historique des défis
   const [duelLoading, setDuelLoading] = useState(false);
   const [showDuelCreate, setShowDuelCreate] = useState(null); // friend object
   const [duelMode, setDuelMode] = useState("pont");
@@ -4884,7 +4885,7 @@ export default function LePont() {
 
   async function loadDuels() {
     try {
-      const data = await sbFetch("bb_duels?or=(challenger_id.eq." + playerId + ",opponent_id.eq." + playerId + ")&order=created_at.desc&limit=20");
+      const data = await sbFetch("bb_duels?or=(challenger_id.eq." + playerId + ",opponent_id.eq." + playerId + ")&order=created_at.desc&limit=100");
       setDuels(Array.isArray(data) ? data : []);
     } catch(e) { setDuels([]); }
   }
@@ -8748,6 +8749,67 @@ export default function LePont() {
     </div>
   );
 
+  // ── HISTORIQUE DES DÉFIS ──
+  if (showDuelHistory) {
+    const modeLabel = function(m){ return m==="pont"?"The Plug":m==="chaine"?"The Mercato":m==="grid"?"GOAT Grid":m||"Duel"; };
+    const mine = (duels||[]).filter(function(d){ return d.status==="complete" && (d.challenger_id===playerId || d.opponent_id===playerId); });
+    let w=0, l=0, dr=0;
+    const rows = mine.map(function(d){
+      const isChal = d.challenger_id===playerId;
+      const my = isChal ? (d.challenger_score||0) : (d.opponent_score||0);
+      const opp = isChal ? (d.opponent_score||0) : (d.challenger_score||0);
+      const oppName = (isChal ? d.opponent_name : d.challenger_name) || "?";
+      const res = my>opp ? "win" : my<opp ? "loss" : "draw";
+      if(res==="win") w++; else if(res==="loss") l++; else dr++;
+      return { id:d.id, oppName:oppName, my:my, opp:opp, res:res, mode:d.mode, diff:d.diff, when:d.created_at };
+    });
+    return (
+      <div style={{...shell,overflow:isDesktop?"visible":"auto"}} key="duelHistory">
+        <div style={{zIndex:3,padding:"12px 16px 0",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          {backBtn(function(){setShowDuelHistory(false);})}
+          <div style={{fontFamily:G.heading,fontSize:26,color:G.white,letterSpacing:2}}>{lang==="en"?"MY DUELS":"MES DÉFIS"}</div>
+          <div style={{width:40}}/>
+        </div>
+        <div style={{...sheet,borderRadius:"28px 28px 0 0",marginTop:16}}>
+          {/* Bilan */}
+          <div style={{display:"flex",gap:8,marginBottom:6}}>
+            <div style={{flex:1,background:"rgba(0,230,118,.08)",border:"1px solid rgba(0,230,118,.2)",borderRadius:16,padding:"14px 0",textAlign:"center"}}>
+              <div style={{fontFamily:G.heading,fontSize:30,color:"#00E676"}}>{w}</div>
+              <div style={{fontSize:10,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginTop:2}}>{lang==="en"?"Wins":"Victoires"}</div>
+            </div>
+            <div style={{flex:1,background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.1)",borderRadius:16,padding:"14px 0",textAlign:"center"}}>
+              <div style={{fontFamily:G.heading,fontSize:30,color:"#FFD600"}}>{dr}</div>
+              <div style={{fontSize:10,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginTop:2}}>{lang==="en"?"Draws":"Nuls"}</div>
+            </div>
+            <div style={{flex:1,background:"rgba(255,61,87,.08)",border:"1px solid rgba(255,61,87,.2)",borderRadius:16,padding:"14px 0",textAlign:"center"}}>
+              <div style={{fontFamily:G.heading,fontSize:30,color:"#FF3D57"}}>{l}</div>
+              <div style={{fontSize:10,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginTop:2}}>{lang==="en"?"Losses":"Défaites"}</div>
+            </div>
+          </div>
+          {/* Liste */}
+          {rows.length===0 ? (
+            <div style={{textAlign:"center",padding:"36px 20px",color:"rgba(255,255,255,.4)",fontSize:14,lineHeight:1.5}}>{lang==="en"?"No completed duel yet. Challenge a friend! ⚔️":"Aucun défi terminé pour l'instant. Défie un ami ! ⚔️"}</div>
+          ) : rows.map(function(r){
+            const col = r.res==="win"?"#00E676":r.res==="loss"?"#FF3D57":"#FFD600";
+            const label = r.res==="win"?(lang==="en"?"WON":"GAGNÉ"):r.res==="loss"?(lang==="en"?"LOST":"PERDU"):(lang==="en"?"DRAW":"NUL");
+            let when=""; try{ if(r.when){ const dt=new Date(r.when); when=dt.toLocaleDateString("fr-FR",{day:"numeric",month:"short"}); } }catch(e){}
+            return (
+              <div key={r.id} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",background:"rgba(255,255,255,.04)",border:"1px solid "+col+"33",borderLeft:"3px solid "+col,borderRadius:14,marginBottom:8}}>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:14,fontWeight:800,color:G.white,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>vs {r.oppName}</div>
+                  <div style={{fontSize:11,color:"rgba(255,255,255,.4)",marginTop:1}}>{modeLabel(r.mode)}{when?" · "+when:""}</div>
+                </div>
+                <div style={{fontFamily:G.heading,fontSize:20,color:G.white,letterSpacing:1}}>{r.my}<span style={{color:"rgba(255,255,255,.3)",margin:"0 3px"}}>–</span>{r.opp}</div>
+                <div style={{fontSize:10,fontWeight:900,letterSpacing:1,color:col,background:col+"1a",border:"1px solid "+col+"55",borderRadius:20,padding:"4px 9px",minWidth:52,textAlign:"center"}}>{label}</div>
+              </div>
+            );
+          })}
+          <button onClick={function(){setShowDuelHistory(false);}} style={{width:"100%",background:"rgba(255,255,255,.05)",color:"rgba(255,255,255,.5)",border:"1px solid rgba(255,255,255,.1)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,padding:"10px",marginTop:4}}>{lang==="en"?"↩ Back":"↩ Retour"}</button>
+        </div>
+      </div>
+    );
+  }
+
   // ── LEADERBOARD SCREEN ──
   // ── FRIENDS SCREEN ──
   if (showFriends) {
@@ -8876,6 +8938,15 @@ export default function LePont() {
               );})}
             </div>
           )}
+          {/* Historique des défis */}
+          <button onClick={function(){loadDuels();setShowDuelHistory(true);}} style={{width:"100%",display:"flex",alignItems:"center",gap:10,padding:"13px 16px",background:"rgba(255,214,0,.08)",border:"1px solid rgba(255,214,0,.3)",borderRadius:14,cursor:"pointer",textAlign:"left"}}>
+            <span style={{fontSize:20}}>📜</span>
+            <div style={{flex:1}}>
+              <div style={{fontSize:14,fontWeight:800,color:G.gold}}>{lang==="en"?"Duel history":"Historique des défis"}</div>
+              <div style={{fontSize:11,color:"rgba(255,255,255,.4)"}}>{lang==="en"?"See what you won and lost":"Vois ce que t'as gagné et perdu"}</div>
+            </div>
+            <span style={{fontSize:16,color:"rgba(255,214,0,.6)"}}>›</span>
+          </button>
           {/* Ajouter un ami */}
           <div style={{background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",borderRadius:16,padding:16}}>
             <div style={{fontSize:12,fontWeight:700,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginBottom:8}}>{lang==="en"?"Add a friend":"Ajouter un ami"}</div>
