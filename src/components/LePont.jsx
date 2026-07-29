@@ -2345,6 +2345,8 @@ if(typeof document!=="undefined"&&!document.getElementById("bb-css")){
     @keyframes splashFadeOut{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.15)}}
     @keyframes splashGlow{0%,100%{box-shadow:0 0 40px rgba(0,230,118,.3),0 0 80px rgba(0,230,118,.1)}50%{box-shadow:0 0 60px rgba(0,230,118,.6),0 0 120px rgba(0,230,118,.2)}}
     @keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes duelSettle{0%{transform:translateY(-46px) scale(1.04);opacity:.5}55%{transform:translateY(7px) scale(1)}78%{transform:translateY(-3px)}100%{transform:translateY(0);opacity:1}}
+    @keyframes duelReelBlur{0%{transform:translateY(-7px)}100%{transform:translateY(7px)}}
     @keyframes fadeIn{from{opacity:0}to{opacity:1}}
     @keyframes popIn{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
     @keyframes slideIn{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:translateX(0)}}
@@ -2804,10 +2806,14 @@ export default function LePont() {
   const [duelBusy, setDuelBusy] = useState(false);
   const [duelInput, setDuelInput] = useState("");        // saisie du joueur (phase réponse)
   const [duelNow, setDuelNow] = useState(0);             // horloge locale (tick) pour les décomptes
+  const [duelSpin, setDuelSpin] = useState(false);       // animation "machine à sous" en cours
+  const [duelReel1, setDuelReel1] = useState(null);      // club défilant (reel du haut) pendant le spin
+  const [duelReel2, setDuelReel2] = useState(null);      // club défilant (reel du bas) pendant le spin
   const duelRoomRef = React.useRef(null);                // room live pour le séquenceur (host)
   const duelAnswerShownAtRef = React.useRef(0);          // Date.now() quand la paire s'est affichée (mesure réaction)
   const duelAnsweredRef = React.useRef(false);           // a déjà répondu correctement cette manche ?
   const duelSeqBusyRef = React.useRef(false);            // évite les transitions concurrentes (host)
+  const duelSpinIvRef = React.useRef(null);              // interval du reel
 
   function duelGenCode(){
     const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // sans I/O/0/1
@@ -2999,13 +3005,28 @@ export default function LePont() {
     return function(){ stop=true; clearInterval(iv); };
   }, [duelRoom && duelRoom.id, duelScreen]);
 
-  // Reset réaction à l'entrée de la phase "réponse"
+  // Entrée en phase "réponse" : animation machine à sous puis révélation.
+  // Le chrono de réaction démarre APRÈS l'arrêt des rouleaux (quand les
+  // clubs sont lisibles), identique pour les 2 joueurs (durée fixe).
   useEffect(function(){
-    if(duelRoom && duelRoom.phase==="answer"){
-      duelAnswerShownAtRef.current = Date.now();
-      duelAnsweredRef.current = false;
-      setDuelInput("");
-    }
+    if(!(duelRoom && duelRoom.phase==="answer")) return;
+    duelAnsweredRef.current = false;
+    setDuelInput("");
+    setDuelSpin(true);
+    const SPIN_MS = 1100;
+    if(duelSpinIvRef.current) clearInterval(duelSpinIvRef.current);
+    const rand = function(){ return DUEL_CLUBS[Math.floor(Math.random()*DUEL_CLUBS.length)]; };
+    setDuelReel1(rand()); setDuelReel2(rand());
+    duelSpinIvRef.current = setInterval(function(){ setDuelReel1(rand()); setDuelReel2(rand()); }, 60);
+    const stop = setTimeout(function(){
+      if(duelSpinIvRef.current){ clearInterval(duelSpinIvRef.current); duelSpinIvRef.current=null; }
+      setDuelSpin(false);
+      duelAnswerShownAtRef.current = Date.now(); // réaction mesurée à partir d'ici
+    }, SPIN_MS);
+    return function(){
+      clearTimeout(stop);
+      if(duelSpinIvRef.current){ clearInterval(duelSpinIvRef.current); duelSpinIvRef.current=null; }
+    };
   }, [duelRoom && duelRoom.phase, duelRoom && duelRoom.round]);
 
   // Horloge locale pour les décomptes (250ms)
@@ -8105,25 +8126,33 @@ export default function LePont() {
       } else if(room.phase==="answer"){
         const answered = duelAnsweredRef.current || myAnsMs!=null;
         const duelSug = answered ? [] : ggGetSuggestions(duelInput);
-        const clubCard = (club) => {
-          const cc = getClubColors(club);
+        // Carte club grand format (empilée) — style GOAT Mercato bicolore.
+        // `spinning` = pendant le tirage machine à sous (contenu qui défile).
+        const clubCard = (club, spinning) => {
+          const cc = getClubColors(club || "");
           return (
-            <div style={{flex:1,position:"relative",overflow:"hidden",height:56,borderRadius:14,boxShadow:"0 6px 18px "+cc[0]+"55",display:"flex",alignItems:"center",justifyContent:"center"}}>
+            <div style={{width:"100%",position:"relative",overflow:"hidden",height:74,borderRadius:16,boxShadow:"0 8px 24px "+cc[0]+"66",display:"flex",alignItems:"center",justifyContent:"center",border:"2px solid rgba(255,255,255,.14)"}}>
               <div style={{position:"absolute",inset:0,background:cc[0]}}/>
               <div style={{position:"absolute",top:0,right:0,width:"55%",bottom:0,background:cc[1],clipPath:"polygon(30% 0%, 100% 0%, 100% 100%, 0% 100%)"}}/>
-              <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.2)"}}/>
-              <span style={{position:"relative",zIndex:1,fontFamily:G.heading,fontSize:15,color:"#fff",fontWeight:800,textShadow:"0 1px 5px rgba(0,0,0,.6)",letterSpacing:.5,padding:"0 8px",textAlign:"center",lineHeight:1.1}}>{club}</span>
+              <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.18)"}}/>
+              <span key={(spinning?"s":"f")+club} style={{position:"relative",zIndex:1,fontFamily:G.heading,fontSize:23,color:"#fff",fontWeight:800,textShadow:"0 2px 7px rgba(0,0,0,.65)",letterSpacing:.5,padding:"0 12px",textAlign:"center",lineHeight:1.05,filter:spinning?"blur(0.7px)":"none",animation:spinning?"duelReelBlur .1s linear infinite alternate":"duelSettle .5s cubic-bezier(.22,1,.36,1)"}}>{club}</span>
             </div>
           );
         };
         phaseBody = (
-          <div style={{flex:1,display:"flex",flexDirection:"column",minHeight:0,padding:"6px 16px 16px",alignItems:"center"}}>
-            <div style={{fontFamily:G.heading,fontSize:44,color:ansLeft<=3?"#FF3D57":"#FFD600",lineHeight:1,marginBottom:8}}>{ansLeft}</div>
-            <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:6,width:"100%",maxWidth:420}}>
-              {clubCard(room.club_c1)}
-              <div style={{width:30,height:30,borderRadius:"50%",background:"linear-gradient(135deg,#FFD600,#FF8A2A)",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:G.heading,fontWeight:900,color:"#000",flexShrink:0}}>×</div>
-              {clubCard(room.club_c2)}
+          <div style={{flex:1,display:"flex",flexDirection:"column",minHeight:0,padding:"6px 20px 16px",alignItems:"center"}}>
+            <div style={{fontFamily:G.heading,fontSize:44,color:ansLeft<=3?"#FF3D57":"#FFD600",lineHeight:1,marginBottom:10}}>{ansLeft}</div>
+            {/* Machine à sous : 2 clubs empilés (on gagne en largeur + gros format) */}
+            <div style={{position:"relative",width:"100%",maxWidth:300,marginBottom:12}}>
+              <div style={{display:"flex",flexDirection:"column",gap:14}}>
+                {clubCard(duelSpin?duelReel1:room.club_c1, duelSpin)}
+                {clubCard(duelSpin?duelReel2:room.club_c2, duelSpin)}
+              </div>
+              <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",zIndex:5,width:40,height:40,borderRadius:"50%",background:"linear-gradient(135deg,#FFD600,#FF8A2A)",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:G.heading,fontSize:20,fontWeight:900,color:"#000",boxShadow:"0 4px 12px rgba(0,0,0,.5)",border:"3px solid #0E1F14"}}>×</div>
             </div>
+            {duelSpin ? (
+              <div style={{textAlign:"center",padding:"10px",fontSize:14,fontWeight:800,color:"#FFD600",letterSpacing:1}}>🎰 {lang==="en"?"Drawing clubs…":"Tirage des clubs…"}</div>
+            ) : (<>
             <div style={{fontSize:12,color:"rgba(255,255,255,.5)",marginBottom:12,textAlign:"center"}}>{lang==="en"?"A player who played for BOTH clubs":"Un joueur ayant joué dans les DEUX clubs"}</div>
             {answered ? (
               <div style={{textAlign:"center",padding:"18px"}}>
@@ -8147,6 +8176,7 @@ export default function LePont() {
                 <div style={{textAlign:"center",fontSize:12,color:oppAnsMs!=null?"#FF6B35":"rgba(255,255,255,.4)",marginTop:10,fontWeight:700}}>{oppAnsMs!=null?(lang==="en"?"⚡ Opponent found it!":"⚡ L'adversaire a trouvé !"):(lang==="en"?"Opponent is searching…":"L'adversaire cherche…")}</div>
               </div>
             )}
+            </>)}
           </div>
         );
       } else if(room.phase==="result"){
