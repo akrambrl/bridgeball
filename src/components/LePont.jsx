@@ -2913,17 +2913,17 @@ export default function LePont() {
       host_score:0, guest_score:0, winner_id:null, winner_name:null });
   }
 
-  // Démarre une partie SOLO contre un bot (100% local, sans base)
-  function duelBotStart(){
+  // Démarre une partie SOLO (contre soi-même, système de points) — 100% local
+  function duelSoloStart(){
     const [c1, c2] = duelRollPair();
     const room = {
-      id:"LOCAL", code:"BOT", bot:true,
+      id:"LOCAL", code:"SOLO", solo:true,
       host_id:playerId, host_name:playerName||"Toi",
-      guest_id:"BOT", guest_name:(lang==="en"?"BOT 🤖":"BOT 🤖"),
+      guest_id:null, guest_name:null,
       state:"playing", round:1, phase:"answer", phase_at:new Date().toISOString(),
       club_c1:c1, club_c2:c2,
-      host_answer:null, guest_answer:null, host_answer_ms:null, guest_answer_ms:null, round_winner:null,
-      host_score:0, guest_score:0, winner_id:null, winner_name:null,
+      host_answer:null, host_answer_ms:null, round_pts:null,
+      host_score:0,
     };
     duelRoomRef.current = room; setDuelRoom(room); setDuelEndImg(null);
     setDuelScreen("playing");
@@ -2961,19 +2961,29 @@ export default function LePont() {
     const el = now - phaseAt;
     try{
       if(room.phase==="answer"){
-        const hm = room.host_answer_ms, gm = room.guest_answer_ms;
-        const someone = (hm!=null) || (gm!=null);
-        // fenêtre de réponse = après le tirage machine à sous + 10s (+ marge polling)
-        const timeUp = el >= (DUEL_SPIN_MS + DUEL_ANSWER_SECS*1000 + 1200);
-        if(someone || timeUp){
-          duelSeqBusyRef.current=true;
-          let winner="draw";
-          if(hm!=null && gm!=null) winner = (hm<=gm)?"host":"guest";
-          else if(hm!=null) winner="host";
-          else if(gm!=null) winner="guest";
-          let hs=room.host_score||0, gs=room.guest_score||0;
-          if(winner==="host") hs++; else if(winner==="guest") gs++;
-          await duelPatch(room.id, { phase:"result", phase_at:new Date().toISOString(), round_winner:winner, host_score:hs, guest_score:gs });
+        // fenêtre de réponse = après le tirage machine à sous + 10s (+ marge)
+        const timeUp = el >= (DUEL_SPIN_MS + DUEL_ANSWER_SECS*1000 + (room.solo?800:1200));
+        if(room.solo){
+          // SOLO : 10 pts / bonne réponse, 20 pts si < 5 s
+          const hm = room.host_answer_ms;
+          if(hm!=null || timeUp){
+            duelSeqBusyRef.current=true;
+            const pts = hm!=null ? (hm < 5000 ? 20 : 10) : 0;
+            await duelPatch(room.id, { phase:"result", phase_at:new Date().toISOString(), round_pts:pts, host_score:(room.host_score||0)+pts });
+          }
+        } else {
+          const hm = room.host_answer_ms, gm = room.guest_answer_ms;
+          const someone = (hm!=null) || (gm!=null);
+          if(someone || timeUp){
+            duelSeqBusyRef.current=true;
+            let winner="draw";
+            if(hm!=null && gm!=null) winner = (hm<=gm)?"host":"guest";
+            else if(hm!=null) winner="host";
+            else if(gm!=null) winner="guest";
+            let hs=room.host_score||0, gs=room.guest_score||0;
+            if(winner==="host") hs++; else if(winner==="guest") gs++;
+            await duelPatch(room.id, { phase:"result", phase_at:new Date().toISOString(), round_winner:winner, host_score:hs, guest_score:gs });
+          }
         }
       } else if(room.phase==="result"){
         if(el >= DUEL_RESULT_SECS*1000){
@@ -2981,8 +2991,10 @@ export default function LePont() {
           if((room.round||1) < DUEL_ROUNDS){
             const [c1, c2] = duelRollPair(); // nouvelle paire aléatoire
             await duelPatch(room.id, { round:(room.round||1)+1, phase:"answer", phase_at:new Date().toISOString(),
-              club_c1:c1, club_c2:c2,
+              club_c1:c1, club_c2:c2, round_pts:null,
               host_answer:null, guest_answer:null, host_answer_ms:null, guest_answer_ms:null, round_winner:null });
+          } else if(room.solo){
+            await duelPatch(room.id, { state:"finished", phase:"done", winner_id:room.host_id });
           } else {
             const hs=room.host_score||0, gs=room.guest_score||0;
             let wid=null, wname=null;
@@ -3027,7 +3039,7 @@ export default function LePont() {
     return function(){ stop=true; clearInterval(iv); };
   }, [duelRoom && duelRoom.id, duelScreen]);
 
-  // Mode BOT : séquenceur local (remplace le polling) — fait avancer les phases
+  // Mode SOLO : séquenceur local (remplace le polling) — fait avancer les phases
   useEffect(function(){
     if(!(duelRoom && duelRoom.id==="LOCAL" && duelScreen==="playing")) return;
     const iv=setInterval(function(){
@@ -3037,24 +3049,6 @@ export default function LePont() {
     }, 200);
     return function(){ clearInterval(iv); };
   }, [duelScreen, duelRoom && duelRoom.id]);
-
-  // Mode BOT : à chaque manche, l'adversaire IA "trouve" (ou non) à un moment aléatoire
-  useEffect(function(){
-    if(!(duelRoom && duelRoom.id==="LOCAL" && duelRoom.phase==="answer")) return;
-    const willAnswer = Math.random() < 0.55;             // le bot trouve ~55% des manches
-    if(!willAnswer) return;
-    const botMs = 3800 + Math.floor(Math.random()*5000); // réaction 3,8 → 8,8 s (après le tirage) — laisse une chance au joueur
-    const to = setTimeout(function(){
-      const r=duelRoomRef.current;
-      if(r && r.id==="LOCAL" && r.phase==="answer" && r.guest_answer_ms==null){
-        // le bot "trouve" un vrai joueur commun (affiché sur l'écran résultat)
-        const common = duelCommonPlayers(r.club_c1, r.club_c2);
-        const botAns = common.length ? common[Math.floor(Math.random()*common.length)] : "🤖";
-        duelPatch("LOCAL", { guest_answer_ms: botMs, guest_answer: botAns });
-      }
-    }, DUEL_SPIN_MS + botMs);
-    return function(){ clearTimeout(to); };
-  }, [duelRoom && duelRoom.id, duelRoom && duelRoom.phase, duelRoom && duelRoom.round]);
 
   // Entrée en phase "réponse" : animation machine à sous puis révélation.
   // Le chrono de réaction démarre APRÈS l'arrêt des rouleaux (quand les
@@ -8116,7 +8110,19 @@ export default function LePont() {
         <div style={{width:38}}/>
       </div>
     );
-    const scoreBar = room && room.state!=="lobby" && (
+    const isSolo = !!(room && room.solo);
+    const scoreBar = room && room.state!=="lobby" && (isSolo ? (
+      <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:24,padding:"10px 16px"}}>
+        <div style={{textAlign:"center"}}>
+          <div style={{fontSize:10,color:"rgba(255,255,255,.5)",fontWeight:800,letterSpacing:1}}>{lang==="en"?"SCORE":"SCORE"}</div>
+          <div style={{fontFamily:G.heading,fontSize:38,color:"#FFD600",lineHeight:1}}>{myScore}</div>
+        </div>
+        <div style={{textAlign:"center"}}>
+          <div style={{fontSize:10,color:"rgba(255,255,255,.4)",fontWeight:800,letterSpacing:1}}>MANCHE</div>
+          <div style={{fontFamily:G.heading,fontSize:24,color:G.white}}>{room.round||1}/{DUEL_ROUNDS}</div>
+        </div>
+      </div>
+    ) : (
       <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:14,padding:"10px 16px"}}>
         <div style={{textAlign:"center",flex:1}}>
           <div style={{fontSize:11,color:"rgba(255,255,255,.55)",fontWeight:700,letterSpacing:.5,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{myName||"Toi"}</div>
@@ -8131,7 +8137,7 @@ export default function LePont() {
           <div style={{fontFamily:G.heading,fontSize:34,color:"#FF6B35",lineHeight:1}}>{oppScore}</div>
         </div>
       </div>
-    );
+    ));
 
     let body = null;
     if(duelScreen==="menu" || !room){
@@ -8139,9 +8145,9 @@ export default function LePont() {
         <div style={{flex:1,overflowY:"auto",padding:"24px 20px",display:"flex",flexDirection:"column",gap:18,maxWidth:480,margin:"0 auto",width:"100%"}}>
           <div style={{textAlign:"center"}}>
             <div style={{fontFamily:G.heading,fontSize:30,color:G.white,letterSpacing:1}}>DUEL EN DIRECT</div>
-            <div style={{fontSize:13,color:"rgba(255,255,255,.6)",marginTop:8,lineHeight:1.5}}>{lang==="en"?"5 rounds. Each round the system draws 2 clubs at random — race to name a player who played for BOTH (10s). First to find wins the round!":"5 manches. À chaque manche le système tire 2 clubs au hasard : trouve le plus vite possible un joueur ayant joué dans les DEUX (10 s). Le premier à trouver gagne la manche !"}</div>
+            <div style={{fontSize:13,color:"rgba(255,255,255,.6)",marginTop:8,lineHeight:1.5}}>{lang==="en"?"5 rounds. Each round the system draws 2 clubs at random — name a player who played for BOTH (10s). 10 pts per answer, 20 pts if under 5s!":"5 manches. À chaque manche le système tire 2 clubs au hasard : trouve un joueur ayant joué dans les DEUX (10 s). 10 pts par bonne réponse, 20 pts si tu réponds en moins de 5 s !"}</div>
           </div>
-          {bigBtn(lang==="en"?"🤖 TRAIN VS BOT":"🤖 S'ENTRAÎNER (VS BOT)", duelBotStart, "linear-gradient(135deg,#3DA5FF,#00E676)", false)}
+          {bigBtn(lang==="en"?"🎯 SOLO (SCORE)":"🎯 SOLO (SCORE)", duelSoloStart, "linear-gradient(135deg,#3DA5FF,#00E676)", false)}
           <div style={{textAlign:"center",fontSize:12,color:"rgba(255,255,255,.35)",fontWeight:700,letterSpacing:2}}>{lang==="en"?"— OR PLAY A FRIEND —":"— OU CONTRE UN AMI —"}</div>
           {bigBtn(lang==="en"?"CREATE A ROOM":"CRÉER UN SALON", duelCreateRoom, "linear-gradient(135deg,#00E676,#00A855)", duelBusy)}
           <div style={{textAlign:"center",fontSize:12,color:"rgba(255,255,255,.35)",fontWeight:700,letterSpacing:2}}>{lang==="en"?"OR":"OU"}</div>
@@ -8221,7 +8227,11 @@ export default function LePont() {
                   </div>
                 )}
                 {duelWrong && <div style={{textAlign:"center",fontSize:13,color:"#FF3D57",marginTop:10,fontWeight:800}}>❌ {lang==="en"?"Wrong answer, try again!":"Mauvaise réponse, réessaie !"}</div>}
-                <div style={{textAlign:"center",fontSize:12,color:oppAnsMs!=null?"#FF6B35":"rgba(255,255,255,.4)",marginTop:duelWrong?4:10,fontWeight:700}}>{oppAnsMs!=null?(lang==="en"?"⚡ Opponent found it!":"⚡ L'adversaire a trouvé !"):(lang==="en"?"Opponent is searching…":"L'adversaire cherche…")}</div>
+                {isSolo ? (
+                  <div style={{textAlign:"center",fontSize:12,color:ansLeft<=5&&ansLeft>0?"#FFD600":"rgba(255,255,255,.4)",marginTop:duelWrong?4:10,fontWeight:700}}>{ansLeft>5?(lang==="en"?"Answer under 5s = 20 pts ⚡":"Réponds en moins de 5 s = 20 pts ⚡"):(lang==="en"?"⚡ Quick! 20 pts":"⚡ Vite ! 20 pts")}</div>
+                ) : (
+                  <div style={{textAlign:"center",fontSize:12,color:oppAnsMs!=null?"#FF6B35":"rgba(255,255,255,.4)",marginTop:duelWrong?4:10,fontWeight:700}}>{oppAnsMs!=null?(lang==="en"?"⚡ Opponent found it!":"⚡ L'adversaire a trouvé !"):(lang==="en"?"Opponent is searching…":"L'adversaire cherche…")}</div>
+                )}
               </div>
             )}
             </>)}
@@ -8235,7 +8245,21 @@ export default function LePont() {
         const example = common && common.length ? common[0] : null;
         const myAns = isHost ? room.host_answer : room.guest_answer;
         const oppAns = isHost ? room.guest_answer : room.host_answer;
-        phaseBody = (
+        const pts = room.round_pts; // solo
+        phaseBody = isSolo ? (
+          <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",alignItems:"center",padding:"20px",gap:10}}>
+            <div style={{fontFamily:G.heading,fontSize:pts>0?46:30,letterSpacing:1,color:pts>=20?"#FFD600":pts>0?"#00E676":"#FF6B35",textAlign:"center"}}>
+              {pts>=20 ? (lang==="en"?"⚡ +20 PTS":"⚡ +20 PTS") : pts>0 ? "+10 PTS" : (lang==="en"?"MISSED":"RATÉ")}
+            </div>
+            <div style={{fontSize:14,color:"rgba(255,255,255,.7)",textAlign:"center"}}>{room.club_c1} <span style={{color:"#FFD600"}}>×</span> {room.club_c2}</div>
+            {pts>0 && myAns
+              ? <div style={{fontSize:14,color:"#00E676",textAlign:"center",fontWeight:700}}>✅ <strong style={{color:"#fff"}}>{myAns}</strong></div>
+              : (example && <div style={{fontSize:13,color:"rgba(255,255,255,.6)",textAlign:"center"}}>{lang==="en"?"A valid answer: ":"Une réponse valable : "}<strong style={{color:G.white}}>{example}</strong></div>)}
+            <div style={{fontSize:11,color:"rgba(255,255,255,.5)",fontWeight:800,letterSpacing:1,marginTop:2}}>{lang==="en"?"TOTAL":"TOTAL"}</div>
+            <div style={{fontFamily:G.heading,fontSize:40,color:"#FFD600",marginTop:-4}}>{myScore} pts</div>
+            <div style={{fontSize:12,color:"rgba(255,255,255,.4)"}}>{(room.round||1)<DUEL_ROUNDS?(lang==="en"?"Next round…":"Manche suivante…"):(lang==="en"?"Final…":"Fin…")}</div>
+          </div>
+        ) : (
           <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",alignItems:"center",padding:"20px",gap:10}}>
             <div style={{fontFamily:G.heading,fontSize:30,letterSpacing:1,color:draw?"#FFD600":iWon?"#00E676":"#FF6B35",textAlign:"center"}}>
               {draw ? (lang==="en"?"DRAW — nobody found":"MANCHE NULLE") : iWon ? (lang==="en"?"🎉 YOU WIN THE ROUND":"🎉 TU GAGNES LA MANCHE") : (lang==="en"?"OPPONENT WINS":"L'ADVERSAIRE GAGNE")}
@@ -8260,6 +8284,23 @@ export default function LePont() {
     } else if(duelScreen==="finished"){
       const iWon = room.winner_id && room.winner_id===playerId;
       const draw = !room.winner_id;
+      if(room.solo){
+        // SOLO : score sur 100 (5 manches × 20 pts max). Message selon le score.
+        const sc = myScore||0;
+        const msg = sc>=80 ? (lang==="en"?"LEGEND! 🐐":"LÉGENDE ! 🐐") : sc>=50 ? (lang==="en"?"GREAT!":"BIEN JOUÉ !") : sc>=20 ? (lang==="en"?"NOT BAD":"PAS MAL") : (lang==="en"?"KEEP TRYING":"CONTINUE À T'ENTRAÎNER");
+        body = (
+          <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",alignItems:"center",padding:"24px",gap:14,maxWidth:480,margin:"0 auto",width:"100%"}}>
+            <img src={duelEndImg || WIN_IMGS[0]} alt="" style={{height:180,width:"auto",objectFit:"contain",filter:"drop-shadow(0 16px 30px rgba(0,0,0,.6))"}}/>
+            <div style={{fontSize:11,color:"rgba(255,255,255,.5)",fontWeight:800,letterSpacing:2}}>{lang==="en"?"YOUR SCORE":"TON SCORE"}</div>
+            <div style={{fontFamily:G.heading,fontSize:64,color:"#FFD600",lineHeight:1}}>{sc} <span style={{fontSize:24,color:"rgba(255,255,255,.4)"}}>/ 100</span></div>
+            <div style={{fontFamily:G.heading,fontSize:26,letterSpacing:1,color:"#00E676",textAlign:"center"}}>{msg}</div>
+            <div style={{display:"flex",gap:10,width:"100%",marginTop:6}}>
+              <button onClick={duelSoloStart} style={{flex:1,padding:"15px",borderRadius:16,border:"none",background:"linear-gradient(135deg,#3DA5FF,#00E676)",color:"#000",fontFamily:G.heading,fontSize:16,letterSpacing:1,cursor:"pointer"}}>{lang==="en"?"↻ AGAIN":"↻ REJOUER"}</button>
+              <button onClick={duelLeaveRoom} style={{flex:1,padding:"15px",borderRadius:16,border:"1px solid rgba(255,255,255,.15)",background:"rgba(255,255,255,.05)",color:G.white,fontFamily:G.heading,fontSize:16,letterSpacing:1,cursor:"pointer"}}>{lang==="en"?"MENU":"MENU"}</button>
+            </div>
+          </div>
+        );
+      } else {
       body = (
         <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",alignItems:"center",padding:"24px",gap:16,maxWidth:480,margin:"0 auto",width:"100%"}}>
           <div style={{position:"relative",marginBottom:4}}>
@@ -8274,6 +8315,7 @@ export default function LePont() {
           {bigBtn(lang==="en"?"BACK TO MENU":"RETOUR À L'ACCUEIL", duelLeaveRoom, "linear-gradient(135deg,#00E676,#00A855)", false)}
         </div>
       );
+      }
     }
     return (<div key="duel-overlay" style={shell2}>{header}{body}</div>);
   })();
