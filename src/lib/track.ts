@@ -40,6 +40,30 @@ function detectOS(): "ios" | "android" | "other" {
   }
 }
 
+// Battement de cœur "en ligne maintenant" — upsert d'UNE ligne par appareil dans
+// bb_presence (player_id = clé primaire). Le dashboard compte les appareils vus
+// dans les ~80 dernières secondes. Pas de gonflement de table (1 ligne / appareil).
+// Nécessite la table bb_presence (voir docs/GOAT-PRESENCE-SETUP.md) ; sinon no-op.
+export function pingLive(): void {
+  try {
+    let name = "";
+    try { name = (localStorage.getItem("bb_name") || "").slice(0, 40); } catch { /* noop */ }
+    fetch(SB_URL + "/rest/v1/bb_presence", {
+      method: "POST",
+      headers: {
+        apikey: SB_KEY,
+        Authorization: "Bearer " + SB_KEY,
+        "Content-Type": "application/json",
+        Prefer: "resolution=merge-duplicates,return=minimal",
+      },
+      body: JSON.stringify({ player_id: getPlayerId(), player_name: name, os: detectOS() }),
+      keepalive: true,
+    }).catch(() => { /* table absente ou hors-ligne : sans effet */ });
+  } catch {
+    /* jamais bloquant */
+  }
+}
+
 // Ping de présence "open_<os>" — sert au comptage des appareils (iOS / Android).
 // 1× par jour et par appareil. IMPORTANT : le drapeau "déjà pingé aujourd'hui"
 // n'est posé qu'APRÈS un POST réussi — sinon un envoi raté (réseau mobile
