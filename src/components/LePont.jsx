@@ -1629,9 +1629,11 @@ function duelCommonPlayers(c1, c2){
   return getPlayersForClub(c1).filter(n => b.has(n));
 }
 const DUEL_ROUNDS = 5;
-const DUEL_ANSWER_SECS = 10; // trouver le joueur
+const DUEL_ANSWER_SECS = 10; // trouver le joueur (multi : limite par manche)
 const DUEL_RESULT_SECS = 1.8; // écran résultat de manche (court)
 const DUEL_SPIN_MS = 2200;   // durée du tirage "machine à sous" (clubs aléatoires)
+const DUEL_SOLO_SECS = 60;   // SOLO : temps TOTAL de la partie (manches illimitées)
+const DUEL_SOLO_SPIN_MS = 1000; // SOLO : tirage plus court (le temps total est limité)
 // Tire une paire de clubs aléatoire GARANTIE jouable (>=1 joueur commun)
 function duelRollPair(){
   for(let i=0;i<80;i++){
@@ -2980,6 +2982,7 @@ export default function LePont() {
       host_id:playerId, host_name:playerName||"Toi",
       guest_id:null, guest_name:null,
       state:"playing", round:1, phase:"answer", phase_at:new Date().toISOString(),
+      solo_ends_at:new Date(Date.now()+DUEL_SOLO_SECS*1000).toISOString(), // 60 s au total
       club_c1:c1, club_c2:c2,
       host_answer:null, host_answer_ms:null, round_pts:null,
       host_score:0,
@@ -3022,18 +3025,20 @@ export default function LePont() {
     duelPatch("LOCAL", { host_skip:true });
   }
 
-  // SOLO : résout la manche (points en flash) et passe DIRECT à la suivante (pas d'écran pause)
+  // SOLO : résout la manche (points en flash) et passe DIRECT à la suivante (pas d'écran pause).
+  // Manches ILLIMITÉES : on enchaîne tant que le chrono global (60 s) n'est pas écoulé.
   function duelSoloNext(room, pts, skipped){
     const newScore = (room.host_score||0) + pts;
     setDuelFlash({ pts:pts, skipped:!!skipped, id:(room.round||1)+"-"+Date.now() });
     if(duelFlashToRef.current) clearTimeout(duelFlashToRef.current);
     duelFlashToRef.current = setTimeout(function(){ setDuelFlash(null); }, 1300);
-    if((room.round||1) < DUEL_ROUNDS){
+    const timeUp = room.solo_ends_at && Date.now() >= new Date(room.solo_ends_at).getTime();
+    if(timeUp){
+      duelPatch("LOCAL", { state:"finished", phase:"done", winner_id:room.host_id, host_score:newScore });
+    } else {
       const [c1, c2] = duelRollPair();
       duelPatch("LOCAL", { round:(room.round||1)+1, phase:"answer", phase_at:new Date().toISOString(),
         club_c1:c1, club_c2:c2, host_answer:null, host_answer_ms:null, round_pts:null, round_skipped:false, host_skip:false, host_score:newScore });
-    } else {
-      duelPatch("LOCAL", { state:"finished", phase:"done", winner_id:room.host_id, host_score:newScore });
     }
   }
 
@@ -3045,15 +3050,21 @@ export default function LePont() {
     const phaseAt = room.phase_at ? new Date(room.phase_at).getTime() : 0;
     const el = now - phaseAt;
     try{
+      // SOLO : fin de partie sur le chrono GLOBAL (60 s), pas de limite par manche.
+      if(room.solo && room.solo_ends_at && now >= new Date(room.solo_ends_at).getTime()){
+        duelSeqBusyRef.current=true;
+        await duelPatch("LOCAL", { state:"finished", phase:"done", winner_id:room.host_id });
+        return;
+      }
       if(room.phase==="answer"){
-        // fenêtre de réponse = après le tirage machine à sous + 10s (+ marge)
-        const timeUp = el >= (DUEL_SPIN_MS + DUEL_ANSWER_SECS*1000 + (room.solo?800:1200));
+        // fenêtre de réponse (multi) = après le tirage machine à sous + 10s (+ marge)
+        const timeUp = el >= (DUEL_SPIN_MS + DUEL_ANSWER_SECS*1000 + 1200);
         if(room.solo){
-          // SOLO : 10 pts / bonne réponse, 20 pts si < 5 s. Pas d'écran pause :
-          // on affiche les points en flash et on enchaîne direct.
+          // SOLO : 10 pts / bonne réponse, 20 pts si < 5 s. Pas de limite de temps par
+          // manche : on résout dès qu'on répond ou qu'on passe, et on enchaîne direct.
           const hm = room.host_answer_ms;
           const skipped = room.host_skip;
-          if(hm!=null || skipped || timeUp){
+          if(hm!=null || skipped){
             duelSeqBusyRef.current=true;
             const pts = skipped ? 0 : (hm!=null ? (hm < 5000 ? 20 : 10) : 0);
             duelSoloNext(room, pts, !!skipped);
@@ -3147,6 +3158,7 @@ export default function LePont() {
     setDuelWrong(false);
     setDuelSpin(true);
     if(duelSpinIvRef.current){ clearTimeout(duelSpinIvRef.current); duelSpinIvRef.current=null; }
+    const spinMs = (duelRoom && duelRoom.solo) ? DUEL_SOLO_SPIN_MS : DUEL_SPIN_MS;
     const rand = function(){ return DUEL_CLUBS[Math.floor(Math.random()*DUEL_CLUBS.length)]; };
     setDuelReel1(rand()); setDuelReel2(rand());
     const start = Date.now();
@@ -3154,7 +3166,7 @@ export default function LePont() {
     function tick(){
       if(stopped) return;
       const elapsed = Date.now() - start;
-      if(elapsed >= DUEL_SPIN_MS){
+      if(elapsed >= spinMs){
         setDuelSpin(false);
         duelAnswerShownAtRef.current = Date.now(); // réaction mesurée à partir d'ici
         playSound("spinstop"); vibrate(60); // son d'arrêt de la machine à sous
@@ -3163,7 +3175,7 @@ export default function LePont() {
       setDuelReel1(rand()); setDuelReel2(rand());
       playSound("tick"); // clic machine à sous à chaque rotation
       // décélération : les rouleaux ralentissent en approchant de la fin
-      const pr = elapsed / DUEL_SPIN_MS; // 0 → 1
+      const pr = elapsed / spinMs; // 0 → 1
       const delay = 80 + pr*pr*300;      // ~80ms au départ → ~380ms à la fin
       duelSpinIvRef.current = setTimeout(tick, delay);
     }
@@ -3193,9 +3205,13 @@ export default function LePont() {
   // Tic-tac quand le chrono de réponse passe sous 3 s (une fois par seconde)
   useEffect(function(){
     const r = duelRoom;
-    if(!r || duelScreen!=="playing" || r.phase!=="answer" || duelSpin || duelAnsweredRef.current){ duelTickRef.current=0; return; }
+    if(!r || duelScreen!=="playing" || r.phase!=="answer" || duelSpin){ duelTickRef.current=0; return; }
+    // SOLO : tic-tac sur le chrono global (fin de partie). Multi : sur le chrono de manche.
+    if(!r.solo && duelAnsweredRef.current){ duelTickRef.current=0; return; }
     const now = duelNow || Date.now();
-    const left = Math.ceil(DUEL_ANSWER_SECS - (now - (duelAnswerShownAtRef.current || now))/1000);
+    const left = r.solo
+      ? (r.solo_ends_at ? Math.ceil((new Date(r.solo_ends_at).getTime() - now)/1000) : 99)
+      : Math.ceil(DUEL_ANSWER_SECS - (now - (duelAnswerShownAtRef.current || now))/1000);
     if(left<=3 && left>0){
       if(left!==duelTickRef.current){ duelTickRef.current=left; playSound("clocktick"); vibrate(20); }
     } else {
@@ -8213,6 +8229,10 @@ export default function LePont() {
       </div>
     );
     const isSolo = !!(room && room.solo);
+    // SOLO : temps restant sur le chrono GLOBAL (60 s), manches illimitées
+    const soloLeft = (isSolo && room && room.solo_ends_at)
+      ? Math.max(0, Math.ceil((new Date(room.solo_ends_at).getTime() - now)/1000))
+      : null;
     const scoreBar = room && room.state!=="lobby" && (isSolo ? (
       <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:24,padding:"10px 16px"}}>
         <div style={{textAlign:"center"}}>
@@ -8220,8 +8240,8 @@ export default function LePont() {
           <div style={{fontFamily:G.heading,fontSize:38,color:"#FFD600",lineHeight:1}}>{myScore}</div>
         </div>
         <div style={{textAlign:"center"}}>
-          <div style={{fontSize:10,color:"rgba(255,255,255,.4)",fontWeight:800,letterSpacing:1}}>MANCHE</div>
-          <div style={{fontFamily:G.heading,fontSize:24,color:G.white}}>{room.round||1}/{DUEL_ROUNDS}</div>
+          <div style={{fontSize:10,color:"rgba(255,255,255,.4)",fontWeight:800,letterSpacing:1}}>{lang==="en"?"TIME":"TEMPS"}</div>
+          <div style={{fontFamily:G.heading,fontSize:24,color:(soloLeft!=null&&soloLeft<=10)?"#FF3D57":G.white}}>{soloLeft!=null?soloLeft+"s":"—"}</div>
         </div>
       </div>
     ) : (
@@ -8257,11 +8277,11 @@ export default function LePont() {
           <div style={{position:"relative",zIndex:1,padding:"14px 22px calc(22px + env(safe-area-inset-bottom))",flex:1,display:"flex",flexDirection:"column",maxWidth:480,margin:"0 auto",width:"100%",boxSizing:"border-box"}}>
             {/* Pastille format */}
             <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:12,padding:"10px 16px",background:`${ac}12`,border:`1.5px solid ${ac}40`,borderRadius:12,marginBottom:18,backdropFilter:"blur(10px)",flexWrap:"wrap"}}>
-              <span style={{color:ac,fontSize:13,fontWeight:800,letterSpacing:.5}}>⚡ <span style={{color:G.white}}>5 {lang==="en"?"ROUNDS":"MANCHES"}</span></span>
+              <span style={{color:ac,fontSize:13,fontWeight:800,letterSpacing:.5}}>⏱ <span style={{color:G.white}}>60 S</span></span>
               <span style={{color:ac,fontSize:14,fontWeight:800}}>·</span>
-              <span style={{color:ac,fontSize:13,fontWeight:800,letterSpacing:.5}}>⏱ <span style={{color:G.white}}>10 S</span></span>
+              <span style={{color:ac,fontSize:13,fontWeight:800,letterSpacing:.5}}>♾ <span style={{color:G.white}}>{lang==="en"?"ROUNDS":"MANCHES"}</span></span>
               <span style={{color:ac,fontSize:14,fontWeight:800}}>·</span>
-              <span style={{color:ac,fontSize:13,fontWeight:800,letterSpacing:.5}}>🎯 <span style={{color:G.white}}>/100</span></span>
+              <span style={{color:ac,fontSize:13,fontWeight:800,letterSpacing:.5}}>🎯 <span style={{color:G.white}}>10/20 PTS</span></span>
             </div>
             {/* SOLO */}
             <div style={{fontSize:10,fontWeight:800,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginBottom:8}}>{lang==="en"?"Solo · score":"Solo · score"}</div>
@@ -8323,7 +8343,11 @@ export default function LePont() {
                 {duelFlash.pts>=20?"⚡ +20":duelFlash.pts>0?"+10":duelFlash.skipped?(lang==="en"?"SKIP":"PASSÉ"):(lang==="en"?"MISS":"RATÉ")}{duelFlash.pts>0?" PTS":""}
               </div>
             )}
-            <div style={{fontFamily:G.heading,fontSize:44,color:ansLeft<=3?"#FF3D57":"#FFD600",lineHeight:1,marginBottom:10}}>{ansLeft}</div>
+            {(function(){
+              const big = isSolo ? (soloLeft!=null?soloLeft:0) : ansLeft;
+              const danger = isSolo ? (soloLeft!=null&&soloLeft<=10) : ansLeft<=3;
+              return <div style={{fontFamily:G.heading,fontSize:44,color:danger?"#FF3D57":"#FFD600",lineHeight:1,marginBottom:10}}>{big}{isSolo?<span style={{fontSize:18,color:"rgba(255,255,255,.4)"}}>s</span>:null}</div>;
+            })()}
             {/* Machine à sous : 2 clubs empilés (on gagne en largeur + gros format) */}
             <div style={{position:"relative",width:"100%",maxWidth:300,marginBottom:12}}>
               <div style={{display:"flex",flexDirection:"column",gap:14}}>
@@ -8417,14 +8441,14 @@ export default function LePont() {
       const iWon = room.winner_id && room.winner_id===playerId;
       const draw = !room.winner_id;
       if(room.solo){
-        // SOLO : score sur 100 (5 manches × 20 pts max). Message selon le score.
+        // SOLO : 60 s, manches illimitées. Score = total de points. Message selon le score.
         const sc = myScore||0;
-        const msg = sc>=80 ? (lang==="en"?"LEGEND! 🐐":"LÉGENDE ! 🐐") : sc>=50 ? (lang==="en"?"GREAT!":"BIEN JOUÉ !") : sc>=20 ? (lang==="en"?"NOT BAD":"PAS MAL") : (lang==="en"?"KEEP TRYING":"CONTINUE À T'ENTRAÎNER");
+        const msg = sc>=150 ? (lang==="en"?"LEGEND! 🐐":"LÉGENDE ! 🐐") : sc>=100 ? (lang==="en"?"GREAT!":"BIEN JOUÉ !") : sc>=50 ? (lang==="en"?"NOT BAD":"PAS MAL") : (lang==="en"?"KEEP TRYING":"CONTINUE À T'ENTRAÎNER");
         body = (
           <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",alignItems:"center",padding:"24px",gap:14,maxWidth:480,margin:"0 auto",width:"100%"}}>
             <img src={duelEndImg || WIN_IMGS[0]} alt="" style={{height:180,width:"auto",objectFit:"contain",filter:"drop-shadow(0 16px 30px rgba(0,0,0,.6))"}}/>
             <div style={{fontSize:11,color:"rgba(255,255,255,.5)",fontWeight:800,letterSpacing:2}}>{lang==="en"?"YOUR SCORE":"TON SCORE"}</div>
-            <div style={{fontFamily:G.heading,fontSize:64,color:"#FFD600",lineHeight:1}}>{sc} <span style={{fontSize:24,color:"rgba(255,255,255,.4)"}}>/ 100</span></div>
+            <div style={{fontFamily:G.heading,fontSize:64,color:"#FFD600",lineHeight:1}}>{sc} <span style={{fontSize:24,color:"rgba(255,255,255,.4)"}}>pts</span></div>
             <div style={{fontFamily:G.heading,fontSize:26,letterSpacing:1,color:"#00E676",textAlign:"center"}}>{msg}</div>
             <div style={{display:"flex",gap:10,width:"100%",marginTop:6}}>
               <button onClick={duelSoloStart} style={{flex:1,padding:"15px",borderRadius:16,border:"none",background:"linear-gradient(135deg,#3DA5FF,#00E676)",color:"#000",fontFamily:G.heading,fontSize:16,letterSpacing:1,cursor:"pointer"}}>{lang==="en"?"↻ AGAIN":"↻ REJOUER"}</button>
