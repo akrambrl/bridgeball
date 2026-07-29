@@ -1629,9 +1629,11 @@ function duelCommonPlayers(c1, c2){
   return getPlayersForClub(c1).filter(n => b.has(n));
 }
 const DUEL_ROUNDS = 5;
-const DUEL_ANSWER_SECS = 10; // trouver le joueur
+const DUEL_ANSWER_SECS = 10; // trouver le joueur (multi : limite par manche)
 const DUEL_RESULT_SECS = 1.8; // écran résultat de manche (court)
 const DUEL_SPIN_MS = 2200;   // durée du tirage "machine à sous" (clubs aléatoires)
+const DUEL_SOLO_SECS = 60;   // SOLO : temps TOTAL de la partie (manches illimitées)
+const DUEL_SOLO_SPIN_MS = 1000; // SOLO : tirage plus court (le temps total est limité)
 // Tire une paire de clubs aléatoire GARANTIE jouable (>=1 joueur commun)
 function duelRollPair(){
   for(let i=0;i<80;i++){
@@ -2611,74 +2613,38 @@ export default function LePont() {
   const [screen, setScreen] = useState("home");
   const [resultImg, setResultImg] = useState(null);
   const [gameMode, setGameMode] = useState("pont");
-  // ─── Home Carousel State (0=GRID, 1=MERCATO, 2=PLUG) ──
+  // ─── Home Carousel State (0=DUEL/GOAT BATTLE, 1=GRID, 2=MERCATO, 3=PLUG, 4=GUESS) ──
   const [homeCardIndex, setHomeCardIndex] = useState(() => {
-    // Card 3 = GOAT Guess par défaut au premier lancement (5 cartes : 0..4)
-    const saved = parseInt(localStorage.getItem("bb_home_card") || "3", 10);
-    return isNaN(saved) || saved < 0 || saved > 4 ? 3 : saved;
+    // Card 0 = GOAT BATTLE (duel) par défaut. Migration unique : on force la carte 0
+    // pour tout le monde une fois (les anciens utilisateurs ont un index sauvegardé
+    // qui pointait vers une autre carte avant le réordonnancement du carrousel).
+    try {
+      if (localStorage.getItem("bb_home_card_v2") !== "1") {
+        localStorage.setItem("bb_home_card", "0");
+        localStorage.setItem("bb_home_card_v2", "1");
+        return 0;
+      }
+    } catch (e) {}
+    const saved = parseInt(localStorage.getItem("bb_home_card") || "0", 10);
+    return isNaN(saved) || saved < 0 || saved > 4 ? 0 : saved;
   });
   const homeSwipeStartRef = useRef(null);
   const [homeRulesModal, setHomeRulesModal] = useState(null); // null | "grid" | "mercato" | "plug"
   // ─── Tableau de bord privé (?stats=CODE) ──
   const [statsMode] = useState(function(){ try { return new URLSearchParams(window.location.search).get("stats") === STATS_CODE; } catch(e) { return false; } });
   const [statsData, setStatsData] = useState(null);
+  const [statsRange, setStatsRange] = useState(14); // fenêtre d'analyse : 1 / 5 / 10 / 14 jours
   useEffect(function(){
     if (!statsMode || statsData) return;
     (async function(){
-      const dayKey = function(d){ return d.slice(0,10); };
-      // 14 derniers jours de bb_scores (agrégation côté client)
+      // On récupère la fenêtre MAX (14 j) une seule fois ; le filtrage par plage
+      // (1/5/10/14 j) se fait ensuite côté client (voir statsView).
       const since = new Date(Date.now() - 14*24*3600*1000).toISOString();
-      // Parties terminées (bb_scores) — pour le nb de parties/jour
       const scores = await sbFetch("bb_scores?select=player_id,created_at&created_at=gte."+since+"&order=created_at.desc&limit=20000") || [];
-      const byDayGames = {};
-      for (const r of scores) { if (r.created_at) { const k = dayKey(r.created_at); byDayGames[k] = (byDayGames[k]||0)+1; } }
-      // Présence (bb_events) — inclut les anonymes. Repli sur bb_scores si la table n'existe pas encore.
       const events = await sbFetch("bb_events?select=player_id,created_at,type&created_at=gte."+since+"&limit=50000");
       const hasEvents = Array.isArray(events);
-      // Parties lancées par mode de jeu (events type "play_<mode>" ou
-      // "play_<mode>_online") sur 14 jours + répartition solo / en ligne.
-      const playsByMode = { pont: 0, chaine: 0, grid: 0, guess: 0 };
-      let playsSolo = 0, playsOnline = 0;
-      if (hasEvents) {
-        for (const r of events) {
-          if (r.type && r.type.indexOf("play_") === 0) {
-            const online = r.type.slice(-7) === "_online";
-            const m = online ? r.type.slice(5, -7) : r.type.slice(5); // mode sans suffixe
-            if (playsByMode[m] !== undefined) {
-              playsByMode[m]++;
-              if (online) playsOnline++; else playsSolo++;
-            }
-          }
-        }
-      }
-      const totalPlays = playsByMode.pont + playsByMode.chaine + playsByMode.grid + playsByMode.guess;
-      // Répartition par OS mobile (pings "open_<os>") — 1 appareil compté une fois
-      const osByDevice = {}; // player_id -> os
-      if (hasEvents) {
-        for (const r of events) {
-          if (r.type && r.type.indexOf("open_") === 0) osByDevice[r.player_id] = r.type.slice(5);
-        }
-      }
-      const osCount = { ios:0, android:0, other:0 };
-      for (const id in osByDevice) { const o = osByDevice[id]; if (osCount[o] !== undefined) osCount[o]++; else osCount.other++; }
-      const activeRows = hasEvents ? events : scores;
-      const byDayActive = {};
-      for (const r of activeRows) { if (r.created_at) { const k = dayKey(r.created_at); (byDayActive[k] = byDayActive[k] || new Set()).add(r.player_id); } }
-      // Ensemble des joueurs inscrits (pour distinguer anonymes)
       const pseudos = await sbFetch("bb_pseudos?select=player_id&limit=100000") || [];
-      const regSet = new Set(pseudos.map(function(p){return p.player_id;}));
-      const days = [];
-      for (let i = 0; i < 7; i++) {
-        const d = new Date(Date.now() - i*24*3600*1000).toISOString().slice(0,10);
-        const set = byDayActive[d];
-        let anon = 0; if (set && hasEvents) { set.forEach(function(id){ if(!regSet.has(id)) anon++; }); }
-        days.push({ day: d, players: set ? set.size : 0, anon: anon, games: byDayGames[d] || 0 });
-      }
-      const weekActive = new Set();
-      const weekSince = new Date(Date.now()-7*24*3600*1000).toISOString();
-      for (const r of activeRows) { if (r.created_at && r.created_at >= weekSince) weekActive.add(r.player_id); }
-      const todayIso = new Date().toISOString().slice(0,10);
-      const duels = await sbFetch("bb_duels?select=id&created_at=gte."+todayIso+"T00:00:00&limit=5000") || [];
+      const duels = await sbFetch("bb_duels?select=id,created_at&created_at=gte."+since+"&limit=20000") || [];
       // Derniers comptes créés — tente avec created_at, se rabat si la colonne n'existe pas
       let recent = await sbFetch("bb_pseudos?select=pseudo,country,created_at&order=created_at.desc&limit=40");
       let recentHasDate = true;
@@ -2691,9 +2657,69 @@ export default function LePont() {
         accounts: await sbCount("bb_pseudos"),   // comptes créés
         grid:     await sbCount("bb_gg_scores"), // parties GOAT GRID enregistrées
       };
-      setStatsData({ days: days, week: weekActive.size, accounts: pseudos.length, duelsToday: duels.length, recent: recent, recentHasDate: recentHasDate, hasEvents: hasEvents, playsByMode: playsByMode, totalPlays: totalPlays, playsSolo: playsSolo, playsOnline: playsOnline, allTime: allTime, osCount: osCount });
+      setStatsData({
+        rawScores: scores,
+        rawEvents: hasEvents ? events : null,
+        hasEvents: hasEvents,
+        regIds: pseudos.map(function(p){ return p.player_id; }),
+        accounts: pseudos.length,
+        rawDuels: duels.map(function(d){ return d.created_at; }),
+        recent: recent, recentHasDate: recentHasDate, allTime: allTime,
+      });
     })();
   }, [statsMode, statsData]);
+  // Agrégation dépendante de la plage choisie (recalcul instantané au changement de plage)
+  const statsView = React.useMemo(function(){
+    if (!statsData) return null;
+    const range = statsRange;
+    const nowMs = Date.now();
+    const cut = nowMs - range*24*3600*1000;
+    const inRange = function(iso){ return iso && new Date(iso).getTime() >= cut; };
+    const dayKey = function(iso){ return iso.slice(0,10); };
+    const regSet = new Set(statsData.regIds || []);
+    const hasEvents = statsData.hasEvents;
+    const scoresW = (statsData.rawScores || []).filter(function(r){ return inRange(r.created_at); });
+    const eventsW = hasEvents ? (statsData.rawEvents || []).filter(function(r){ return inRange(r.created_at); }) : [];
+    const activeRowsW = hasEvents ? eventsW : scoresW;
+    // Joueurs actifs uniques (+ anonymes) sur la fenêtre
+    const activeSet = new Set(), anonSet = new Set();
+    for (const r of activeRowsW) { if (r.player_id) { activeSet.add(r.player_id); if (hasEvents && !regSet.has(r.player_id)) anonSet.add(r.player_id); } }
+    const gamesW = scoresW.length;
+    const duelsW = (statsData.rawDuels || []).filter(inRange).length;
+    // Parties lancées par mode (+ répartition solo / en ligne) sur la fenêtre
+    const playsByMode = { pont:0, chaine:0, grid:0, guess:0, battle:0 };
+    let playsSolo = 0, playsOnline = 0;
+    if (hasEvents) {
+      for (const r of eventsW) {
+        if (r.type && r.type.indexOf("play_") === 0) {
+          const online = r.type.slice(-7) === "_online";
+          const m = online ? r.type.slice(5, -7) : r.type.slice(5);
+          if (playsByMode[m] !== undefined) { playsByMode[m]++; if (online) playsOnline++; else playsSolo++; }
+        }
+      }
+    }
+    const totalPlays = playsByMode.pont + playsByMode.chaine + playsByMode.grid + playsByMode.guess + playsByMode.battle;
+    // Répartition par OS (pings "open_<os>") sur la fenêtre — 1 appareil compté une fois
+    const osByDevice = {};
+    if (hasEvents) { for (const r of eventsW) { if (r.type && r.type.indexOf("open_") === 0) osByDevice[r.player_id] = r.type.slice(5); } }
+    const osCount = { ios:0, android:0, other:0 };
+    for (const id in osByDevice) { const o = osByDevice[id]; if (osCount[o] !== undefined) osCount[o]++; else osCount.other++; }
+    // Détail jour par jour (jusqu'à `range` jours, plafonné à 14)
+    const nDays = Math.min(range, 14);
+    const byDayActive = {}, byDayGames = {};
+    for (const r of activeRowsW) { if (r.created_at) { const k = dayKey(r.created_at); (byDayActive[k] = byDayActive[k] || new Set()).add(r.player_id); } }
+    for (const r of scoresW) { if (r.created_at) { const k = dayKey(r.created_at); byDayGames[k] = (byDayGames[k]||0)+1; } }
+    const days = [];
+    for (let i = 0; i < nDays; i++) {
+      const d = new Date(nowMs - i*24*3600*1000).toISOString().slice(0,10);
+      const set = byDayActive[d];
+      let anon = 0; if (set && hasEvents) { set.forEach(function(id){ if(!regSet.has(id)) anon++; }); }
+      days.push({ day: d, players: set ? set.size : 0, anon: anon, games: byDayGames[d] || 0 });
+    }
+    return { range: range, days: days, activeWindow: activeSet.size, anonWindow: anonSet.size,
+      gamesWindow: gamesW, duelsWindow: duelsW, playsByMode: playsByMode, totalPlays: totalPlays,
+      playsSolo: playsSolo, playsOnline: playsOnline, osCount: osCount, hasEvents: hasEvents };
+  }, [statsData, statsRange]);
   // ─── Android Back Button Handler ──
   // Intercepte la touche retour Android pendant une partie pour éviter de quitter par accident.
   // Pattern double-tap : 1er appui = warning toast, 2e appui (dans 2s) = quitte la partie.
@@ -2964,6 +2990,7 @@ export default function LePont() {
     const r = duelRoomRef.current || duelRoom;
     if(!r || r.host_id!==playerId || !r.guest_id) return;
     sndCtx(); // débloque l'audio (geste utilisateur)
+    trackPlay("battle", true); // GOAT Battle en ligne (1v1 entre potes)
     const [c1, c2] = duelRollPair(); // le système tire 2 clubs au hasard
     await duelPatch(r.id, { state:"playing", round:1, phase:"answer", phase_at:new Date().toISOString(),
       club_c1:c1, club_c2:c2,
@@ -2974,12 +3001,14 @@ export default function LePont() {
   // Démarre une partie SOLO (contre soi-même, système de points) — 100% local
   function duelSoloStart(){
     sndCtx(); // débloque l'audio (geste utilisateur)
+    trackPlay("battle"); // GOAT Battle solo (contre soi-même)
     const [c1, c2] = duelRollPair();
     const room = {
       id:"LOCAL", code:"SOLO", solo:true,
       host_id:playerId, host_name:playerName||"Toi",
       guest_id:null, guest_name:null,
       state:"playing", round:1, phase:"answer", phase_at:new Date().toISOString(),
+      solo_ends_at:new Date(Date.now()+DUEL_SOLO_SECS*1000).toISOString(), // 60 s au total
       club_c1:c1, club_c2:c2,
       host_answer:null, host_answer_ms:null, round_pts:null,
       host_score:0,
@@ -3022,18 +3051,20 @@ export default function LePont() {
     duelPatch("LOCAL", { host_skip:true });
   }
 
-  // SOLO : résout la manche (points en flash) et passe DIRECT à la suivante (pas d'écran pause)
+  // SOLO : résout la manche (points en flash) et passe DIRECT à la suivante (pas d'écran pause).
+  // Manches ILLIMITÉES : on enchaîne tant que le chrono global (60 s) n'est pas écoulé.
   function duelSoloNext(room, pts, skipped){
     const newScore = (room.host_score||0) + pts;
     setDuelFlash({ pts:pts, skipped:!!skipped, id:(room.round||1)+"-"+Date.now() });
     if(duelFlashToRef.current) clearTimeout(duelFlashToRef.current);
     duelFlashToRef.current = setTimeout(function(){ setDuelFlash(null); }, 1300);
-    if((room.round||1) < DUEL_ROUNDS){
+    const timeUp = room.solo_ends_at && Date.now() >= new Date(room.solo_ends_at).getTime();
+    if(timeUp){
+      duelPatch("LOCAL", { state:"finished", phase:"done", winner_id:room.host_id, host_score:newScore });
+    } else {
       const [c1, c2] = duelRollPair();
       duelPatch("LOCAL", { round:(room.round||1)+1, phase:"answer", phase_at:new Date().toISOString(),
         club_c1:c1, club_c2:c2, host_answer:null, host_answer_ms:null, round_pts:null, round_skipped:false, host_skip:false, host_score:newScore });
-    } else {
-      duelPatch("LOCAL", { state:"finished", phase:"done", winner_id:room.host_id, host_score:newScore });
     }
   }
 
@@ -3045,15 +3076,21 @@ export default function LePont() {
     const phaseAt = room.phase_at ? new Date(room.phase_at).getTime() : 0;
     const el = now - phaseAt;
     try{
+      // SOLO : fin de partie sur le chrono GLOBAL (60 s), pas de limite par manche.
+      if(room.solo && room.solo_ends_at && now >= new Date(room.solo_ends_at).getTime()){
+        duelSeqBusyRef.current=true;
+        await duelPatch("LOCAL", { state:"finished", phase:"done", winner_id:room.host_id });
+        return;
+      }
       if(room.phase==="answer"){
-        // fenêtre de réponse = après le tirage machine à sous + 10s (+ marge)
-        const timeUp = el >= (DUEL_SPIN_MS + DUEL_ANSWER_SECS*1000 + (room.solo?800:1200));
+        // fenêtre de réponse (multi) = après le tirage machine à sous + 10s (+ marge)
+        const timeUp = el >= (DUEL_SPIN_MS + DUEL_ANSWER_SECS*1000 + 1200);
         if(room.solo){
-          // SOLO : 10 pts / bonne réponse, 20 pts si < 5 s. Pas d'écran pause :
-          // on affiche les points en flash et on enchaîne direct.
+          // SOLO : 10 pts / bonne réponse, 20 pts si < 5 s. Pas de limite de temps par
+          // manche : on résout dès qu'on répond ou qu'on passe, et on enchaîne direct.
           const hm = room.host_answer_ms;
           const skipped = room.host_skip;
-          if(hm!=null || skipped || timeUp){
+          if(hm!=null || skipped){
             duelSeqBusyRef.current=true;
             const pts = skipped ? 0 : (hm!=null ? (hm < 5000 ? 20 : 10) : 0);
             duelSoloNext(room, pts, !!skipped);
@@ -3147,6 +3184,7 @@ export default function LePont() {
     setDuelWrong(false);
     setDuelSpin(true);
     if(duelSpinIvRef.current){ clearTimeout(duelSpinIvRef.current); duelSpinIvRef.current=null; }
+    const spinMs = (duelRoom && duelRoom.solo) ? DUEL_SOLO_SPIN_MS : DUEL_SPIN_MS;
     const rand = function(){ return DUEL_CLUBS[Math.floor(Math.random()*DUEL_CLUBS.length)]; };
     setDuelReel1(rand()); setDuelReel2(rand());
     const start = Date.now();
@@ -3154,7 +3192,7 @@ export default function LePont() {
     function tick(){
       if(stopped) return;
       const elapsed = Date.now() - start;
-      if(elapsed >= DUEL_SPIN_MS){
+      if(elapsed >= spinMs){
         setDuelSpin(false);
         duelAnswerShownAtRef.current = Date.now(); // réaction mesurée à partir d'ici
         playSound("spinstop"); vibrate(60); // son d'arrêt de la machine à sous
@@ -3163,7 +3201,7 @@ export default function LePont() {
       setDuelReel1(rand()); setDuelReel2(rand());
       playSound("tick"); // clic machine à sous à chaque rotation
       // décélération : les rouleaux ralentissent en approchant de la fin
-      const pr = elapsed / DUEL_SPIN_MS; // 0 → 1
+      const pr = elapsed / spinMs; // 0 → 1
       const delay = 80 + pr*pr*300;      // ~80ms au départ → ~380ms à la fin
       duelSpinIvRef.current = setTimeout(tick, delay);
     }
@@ -3193,9 +3231,13 @@ export default function LePont() {
   // Tic-tac quand le chrono de réponse passe sous 3 s (une fois par seconde)
   useEffect(function(){
     const r = duelRoom;
-    if(!r || duelScreen!=="playing" || r.phase!=="answer" || duelSpin || duelAnsweredRef.current){ duelTickRef.current=0; return; }
+    if(!r || duelScreen!=="playing" || r.phase!=="answer" || duelSpin){ duelTickRef.current=0; return; }
+    // SOLO : tic-tac sur le chrono global (fin de partie). Multi : sur le chrono de manche.
+    if(!r.solo && duelAnsweredRef.current){ duelTickRef.current=0; return; }
     const now = duelNow || Date.now();
-    const left = Math.ceil(DUEL_ANSWER_SECS - (now - (duelAnswerShownAtRef.current || now))/1000);
+    const left = r.solo
+      ? (r.solo_ends_at ? Math.ceil((new Date(r.solo_ends_at).getTime() - now)/1000) : 99)
+      : Math.ceil(DUEL_ANSWER_SECS - (now - (duelAnswerShownAtRef.current || now))/1000);
     if(left<=3 && left>0){
       if(left!==duelTickRef.current){ duelTickRef.current=left; playSound("clocktick"); vibrate(20); }
     } else {
@@ -8213,6 +8255,10 @@ export default function LePont() {
       </div>
     );
     const isSolo = !!(room && room.solo);
+    // SOLO : temps restant sur le chrono GLOBAL (60 s), manches illimitées
+    const soloLeft = (isSolo && room && room.solo_ends_at)
+      ? Math.max(0, Math.ceil((new Date(room.solo_ends_at).getTime() - now)/1000))
+      : null;
     const scoreBar = room && room.state!=="lobby" && (isSolo ? (
       <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:24,padding:"10px 16px"}}>
         <div style={{textAlign:"center"}}>
@@ -8220,8 +8266,8 @@ export default function LePont() {
           <div style={{fontFamily:G.heading,fontSize:38,color:"#FFD600",lineHeight:1}}>{myScore}</div>
         </div>
         <div style={{textAlign:"center"}}>
-          <div style={{fontSize:10,color:"rgba(255,255,255,.4)",fontWeight:800,letterSpacing:1}}>MANCHE</div>
-          <div style={{fontFamily:G.heading,fontSize:24,color:G.white}}>{room.round||1}/{DUEL_ROUNDS}</div>
+          <div style={{fontSize:10,color:"rgba(255,255,255,.4)",fontWeight:800,letterSpacing:1}}>{lang==="en"?"TIME":"TEMPS"}</div>
+          <div style={{fontFamily:G.heading,fontSize:24,color:(soloLeft!=null&&soloLeft<=10)?"#FF3D57":G.white}}>{soloLeft!=null?soloLeft+"s":"—"}</div>
         </div>
       </div>
     ) : (
@@ -8257,11 +8303,11 @@ export default function LePont() {
           <div style={{position:"relative",zIndex:1,padding:"14px 22px calc(22px + env(safe-area-inset-bottom))",flex:1,display:"flex",flexDirection:"column",maxWidth:480,margin:"0 auto",width:"100%",boxSizing:"border-box"}}>
             {/* Pastille format */}
             <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:12,padding:"10px 16px",background:`${ac}12`,border:`1.5px solid ${ac}40`,borderRadius:12,marginBottom:18,backdropFilter:"blur(10px)",flexWrap:"wrap"}}>
-              <span style={{color:ac,fontSize:13,fontWeight:800,letterSpacing:.5}}>⚡ <span style={{color:G.white}}>5 {lang==="en"?"ROUNDS":"MANCHES"}</span></span>
+              <span style={{color:ac,fontSize:13,fontWeight:800,letterSpacing:.5}}>⏱ <span style={{color:G.white}}>60 S</span></span>
               <span style={{color:ac,fontSize:14,fontWeight:800}}>·</span>
-              <span style={{color:ac,fontSize:13,fontWeight:800,letterSpacing:.5}}>⏱ <span style={{color:G.white}}>10 S</span></span>
+              <span style={{color:ac,fontSize:13,fontWeight:800,letterSpacing:.5}}>♾ <span style={{color:G.white}}>{lang==="en"?"ROUNDS":"MANCHES"}</span></span>
               <span style={{color:ac,fontSize:14,fontWeight:800}}>·</span>
-              <span style={{color:ac,fontSize:13,fontWeight:800,letterSpacing:.5}}>🎯 <span style={{color:G.white}}>/100</span></span>
+              <span style={{color:ac,fontSize:13,fontWeight:800,letterSpacing:.5}}>🎯 <span style={{color:G.white}}>10/20 PTS</span></span>
             </div>
             {/* SOLO */}
             <div style={{fontSize:10,fontWeight:800,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginBottom:8}}>{lang==="en"?"Solo · score":"Solo · score"}</div>
@@ -8323,7 +8369,11 @@ export default function LePont() {
                 {duelFlash.pts>=20?"⚡ +20":duelFlash.pts>0?"+10":duelFlash.skipped?(lang==="en"?"SKIP":"PASSÉ"):(lang==="en"?"MISS":"RATÉ")}{duelFlash.pts>0?" PTS":""}
               </div>
             )}
-            <div style={{fontFamily:G.heading,fontSize:44,color:ansLeft<=3?"#FF3D57":"#FFD600",lineHeight:1,marginBottom:10}}>{ansLeft}</div>
+            {(function(){
+              const big = isSolo ? (soloLeft!=null?soloLeft:0) : ansLeft;
+              const danger = isSolo ? (soloLeft!=null&&soloLeft<=10) : ansLeft<=3;
+              return <div style={{fontFamily:G.heading,fontSize:44,color:danger?"#FF3D57":"#FFD600",lineHeight:1,marginBottom:10}}>{big}{isSolo?<span style={{fontSize:18,color:"rgba(255,255,255,.4)"}}>s</span>:null}</div>;
+            })()}
             {/* Machine à sous : 2 clubs empilés (on gagne en largeur + gros format) */}
             <div style={{position:"relative",width:"100%",maxWidth:300,marginBottom:12}}>
               <div style={{display:"flex",flexDirection:"column",gap:14}}>
@@ -8417,14 +8467,14 @@ export default function LePont() {
       const iWon = room.winner_id && room.winner_id===playerId;
       const draw = !room.winner_id;
       if(room.solo){
-        // SOLO : score sur 100 (5 manches × 20 pts max). Message selon le score.
+        // SOLO : 60 s, manches illimitées. Score = total de points. Message selon le score.
         const sc = myScore||0;
-        const msg = sc>=80 ? (lang==="en"?"LEGEND! 🐐":"LÉGENDE ! 🐐") : sc>=50 ? (lang==="en"?"GREAT!":"BIEN JOUÉ !") : sc>=20 ? (lang==="en"?"NOT BAD":"PAS MAL") : (lang==="en"?"KEEP TRYING":"CONTINUE À T'ENTRAÎNER");
+        const msg = sc>=150 ? (lang==="en"?"LEGEND! 🐐":"LÉGENDE ! 🐐") : sc>=100 ? (lang==="en"?"GREAT!":"BIEN JOUÉ !") : sc>=50 ? (lang==="en"?"NOT BAD":"PAS MAL") : (lang==="en"?"KEEP TRYING":"CONTINUE À T'ENTRAÎNER");
         body = (
           <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",alignItems:"center",padding:"24px",gap:14,maxWidth:480,margin:"0 auto",width:"100%"}}>
             <img src={duelEndImg || WIN_IMGS[0]} alt="" style={{height:180,width:"auto",objectFit:"contain",filter:"drop-shadow(0 16px 30px rgba(0,0,0,.6))"}}/>
             <div style={{fontSize:11,color:"rgba(255,255,255,.5)",fontWeight:800,letterSpacing:2}}>{lang==="en"?"YOUR SCORE":"TON SCORE"}</div>
-            <div style={{fontFamily:G.heading,fontSize:64,color:"#FFD600",lineHeight:1}}>{sc} <span style={{fontSize:24,color:"rgba(255,255,255,.4)"}}>/ 100</span></div>
+            <div style={{fontFamily:G.heading,fontSize:64,color:"#FFD600",lineHeight:1}}>{sc} <span style={{fontSize:24,color:"rgba(255,255,255,.4)"}}>pts</span></div>
             <div style={{fontFamily:G.heading,fontSize:26,letterSpacing:1,color:"#00E676",textAlign:"center"}}>{msg}</div>
             <div style={{display:"flex",gap:10,width:"100%",marginTop:6}}>
               <button onClick={duelSoloStart} style={{flex:1,padding:"15px",borderRadius:16,border:"none",background:"linear-gradient(135deg,#3DA5FF,#00E676)",color:"#000",fontFamily:G.heading,fontSize:16,letterSpacing:1,cursor:"pointer"}}>{lang==="en"?"↻ AGAIN":"↻ REJOUER"}</button>
@@ -10538,11 +10588,11 @@ export default function LePont() {
         {/* Mobile : le carrousel absorbe l'espace restant (flex) pour que toute
             la page tienne sur l'écran sans scroll (fix 100vh Safari → 100dvh). */}
         {(() => { const homeCards = [
+              {key:"duel",    img:DUEL_CARD_IMG,    onClick: function(){requirePseudo(function(){setDuelError("");setDuelJoinCode("");setDuelScreen("menu");});}, record: null, recordIcon:null, recordColor:"#3DA5FF"},
               {key:"grid",    img:GRID_CARD_IMG,    onClick: function(){setGgModeChoice(true);},        record: chainRecord ? null : null, recordIcon:null, recordColor:"#00E676"},
               {key:"mercato", img:MERCATO_CARD_IMG, onClick: function(){setGameConfigModal("chaine");}, record: chainRecord, recordIcon:"⛓",  recordColor:"#60a5fa"},
               {key:"plug",    img:PLUG_CARD_IMG,    onClick: function(){setGameConfigModal("pont");},   record: record,      recordIcon:"🏆", recordColor:"#FFD600"},
               {key:"guess",   img:GUESS_CARD_IMG,   onClick: function(){window.dispatchEvent(new CustomEvent("goatfc:open-guess"));}, record: null, recordIcon:null, recordColor:"#C084FC"},
-              {key:"duel",    img:DUEL_CARD_IMG,    onClick: function(){requirePseudo(function(){setDuelError("");setDuelJoinCode("");setDuelScreen("menu");});}, record: null, recordIcon:null, recordColor:"#3DA5FF"},
             ]; const homeN = homeCards.length; return (
         <div style={{display:"flex",flexDirection:"column",alignItems:"center",flex:isDesktop?"none":"1 1 auto",minHeight:0}}>
           <div
@@ -10689,16 +10739,24 @@ export default function LePont() {
               {!statsData ? (
                 <div style={{textAlign:"center",padding:"60px 0",color:"rgba(255,255,255,.5)",fontSize:15}}>⏳ Chargement…</div>
               ) : (() => {
-                const today = statsData.days[0];
-                const maxP = Math.max(1, ...statsData.days.map(function(d){return d.players;}));
+                const v = statsView; if (!v) return null;
+                const maxP = Math.max(1, ...v.days.map(function(d){return d.players;}));
                 const fmtDay = function(iso){ const dt = new Date(iso+"T12:00:00"); return dt.toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"short"}); };
+                const rangeLabel = v.range===1 ? "Aujourd'hui" : ("Sur "+v.range+" jours");
                 return (
                 <>
-                  {/* Aujourd'hui */}
+                  {/* Sélecteur de plage : 1 / 5 / 10 / 14 jours */}
+                  <div style={{display:"flex",gap:8,marginBottom:16}}>
+                    {[1,5,10,14].map(function(r){
+                      const active = statsRange===r;
+                      return <button key={r} onClick={function(){setStatsRange(r);}} style={{flex:1,padding:"11px 0",borderRadius:12,border:"1px solid "+(active?"#00E676":"rgba(255,255,255,.14)"),background:active?"rgba(0,230,118,.16)":"rgba(255,255,255,.04)",color:active?"#00E676":"rgba(255,255,255,.6)",fontFamily:G.font,fontWeight:800,fontSize:13.5,cursor:"pointer",transition:"all .15s"}}>{r} j</button>;
+                    })}
+                  </div>
+                  {/* Résumé de la fenêtre sélectionnée */}
                   <div style={{background:"linear-gradient(160deg, rgba(0,230,118,.16), rgba(255,255,255,.03) 55%, rgba(0,0,0,.25))",border:"1px solid rgba(0,230,118,.35)",borderRadius:22,padding:"22px 20px",textAlign:"center",boxShadow:"0 16px 44px -16px rgba(0,230,118,.4)",marginBottom:14}}>
-                    <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.55)",fontWeight:800,textTransform:"uppercase"}}>Aujourd'hui</div>
-                    <div style={{fontFamily:G.heading,fontSize:76,color:"#00E676",lineHeight:1,textShadow:"0 0 26px rgba(0,230,118,.45)"}}>{today.players}</div>
-                    <div style={{fontSize:14,color:"rgba(255,255,255,.7)",fontWeight:700}}>{statsData.hasEvents?"actifs":"joueurs actifs"}{statsData.hasEvents?` · dont ${today.anon} anonyme${today.anon>1?"s":""}`:""} · {today.games} parties{statsData.duelsToday?` · ${statsData.duelsToday} duels`:""}</div>
+                    <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.55)",fontWeight:800,textTransform:"uppercase"}}>{rangeLabel}</div>
+                    <div style={{fontFamily:G.heading,fontSize:76,color:"#00E676",lineHeight:1,textShadow:"0 0 26px rgba(0,230,118,.45)"}}>{v.activeWindow}</div>
+                    <div style={{fontSize:14,color:"rgba(255,255,255,.7)",fontWeight:700}}>{v.range===1?"actifs aujourd'hui":`joueurs actifs · ${v.range} j`}{statsData.hasEvents?` · dont ${v.anonWindow} anonyme${v.anonWindow>1?"s":""}`:""} · {v.gamesWindow} parties{v.duelsWindow?` · ${v.duelsWindow} duels`:""}</div>
                   </div>
                   {/* ─── DEPUIS LE DÉBUT (tout l'historique) ─── */}
                   {statsData.allTime && (function(){
@@ -10726,21 +10784,21 @@ export default function LePont() {
                       </div>
                     );
                   })()}
-                  {/* Cartes semaine / comptes */}
+                  {/* Cartes parties (fenêtre) / comptes (total) */}
                   <div style={{display:"flex",gap:12,marginBottom:20}}>
                     <div style={{flex:1,background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.1)",borderRadius:18,padding:"16px",textAlign:"center"}}>
-                      <div style={{fontFamily:G.heading,fontSize:34,color:"#60a5fa",lineHeight:1}}>{statsData.week}</div>
-                      <div style={{fontSize:10.5,letterSpacing:1,color:"rgba(255,255,255,.5)",fontWeight:800,textTransform:"uppercase",marginTop:6}}>joueurs / 7 j</div>
+                      <div style={{fontFamily:G.heading,fontSize:34,color:"#60a5fa",lineHeight:1}}>{v.gamesWindow}</div>
+                      <div style={{fontSize:10.5,letterSpacing:1,color:"rgba(255,255,255,.5)",fontWeight:800,textTransform:"uppercase",marginTop:6}}>parties / {v.range} j</div>
                     </div>
                     <div style={{flex:1,background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.1)",borderRadius:18,padding:"16px",textAlign:"center"}}>
                       <div style={{fontFamily:G.heading,fontSize:34,color:"#FFD600",lineHeight:1}}>{statsData.accounts}</div>
                       <div style={{fontSize:10.5,letterSpacing:1,color:"rgba(255,255,255,.5)",fontWeight:800,textTransform:"uppercase",marginTop:6}}>comptes créés</div>
                     </div>
                   </div>
-                  {/* 7 derniers jours */}
-                  <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.4)",fontWeight:800,textTransform:"uppercase",marginBottom:10,paddingLeft:4}}>7 derniers jours</div>
+                  {/* Détail jour par jour (sur la fenêtre) */}
+                  <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.4)",fontWeight:800,textTransform:"uppercase",marginBottom:10,paddingLeft:4}}>{v.days.length>1?`${v.days.length} derniers jours`:"Aujourd'hui"}</div>
                   <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:24}}>
-                    {statsData.days.map(function(d,i){
+                    {v.days.map(function(d,i){
                       return (
                         <div key={i} style={{display:"flex",alignItems:"center",gap:12}}>
                           <div style={{width:104,fontSize:12.5,color:i===0?"#00E676":"rgba(255,255,255,.6)",fontWeight:i===0?800:600,textTransform:"capitalize",flexShrink:0}}>{i===0?"Aujourd'hui":fmtDay(d.day)}</div>
@@ -10752,12 +10810,13 @@ export default function LePont() {
                       );
                     })}
                   </div>
-                  {/* Modes de jeu les plus joués (14 derniers jours) */}
-                  <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.4)",fontWeight:800,textTransform:"uppercase",marginBottom:10,paddingLeft:4}}>Modes de jeu · 14 j</div>
+                  {/* Modes de jeu les plus joués (sur la fenêtre) */}
+                  <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.4)",fontWeight:800,textTransform:"uppercase",marginBottom:10,paddingLeft:4}}>Modes de jeu · {v.range} j</div>
                   {(function(){
-                    const pbm = statsData.playsByMode || {pont:0,chaine:0,grid:0,guess:0};
-                    const total = statsData.totalPlays || 0;
+                    const pbm = v.playsByMode || {pont:0,chaine:0,grid:0,guess:0,battle:0};
+                    const total = v.totalPlays || 0;
                     const META = [
+                      {key:"battle", label:"GOAT Battle", emoji:"⚡", color:"#FFC93C"},
                       {key:"pont",   label:"The Plug",   emoji:"🔗", color:"#00E676"},
                       {key:"chaine", label:"The Mercato", emoji:"🔁", color:"#FF8A2A"},
                       {key:"grid",   label:"GOAT Grid",   emoji:"▦",  color:"#3DA5FF"},
@@ -10791,13 +10850,13 @@ export default function LePont() {
                       </div>
                     );
                   })()}
-                  {/* Solo vs En ligne (14 j) */}
-                  {statsData.hasEvents && (statsData.playsSolo + statsData.playsOnline) > 0 ? (function(){
-                    const solo = statsData.playsSolo || 0, online = statsData.playsOnline || 0, tot = solo + online;
+                  {/* Solo vs En ligne (fenêtre) */}
+                  {statsData.hasEvents && (v.playsSolo + v.playsOnline) > 0 ? (function(){
+                    const solo = v.playsSolo || 0, online = v.playsOnline || 0, tot = solo + online;
                     const pOnline = Math.round(online/tot*100);
                     return (
                       <div style={{marginBottom:24}}>
-                        <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.4)",fontWeight:800,textTransform:"uppercase",marginBottom:10,paddingLeft:4}}>Solo vs En ligne · 14 j</div>
+                        <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.4)",fontWeight:800,textTransform:"uppercase",marginBottom:10,paddingLeft:4}}>Solo vs En ligne · {v.range} j</div>
                         <div style={{display:"flex",height:34,borderRadius:10,overflow:"hidden",border:"1px solid rgba(255,255,255,.1)"}}>
                           <div style={{width:(100-pOnline)+"%",background:"rgba(96,165,250,.55)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:800,color:"#fff",minWidth:solo?40:0}}>{solo?(100-pOnline)+"%":""}</div>
                           <div style={{width:pOnline+"%",background:"linear-gradient(90deg,#00E676,#B9F600)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:800,color:"#0A1410",minWidth:online?40:0}}>{online?pOnline+"%":""}</div>
@@ -10810,12 +10869,12 @@ export default function LePont() {
                     );
                   })() : null}
                   {/* Répartition par OS mobile (iOS / Android) */}
-                  {statsData.osCount && (statsData.osCount.ios + statsData.osCount.android + statsData.osCount.other) > 0 ? (function(){
-                    const os = statsData.osCount; const tot = os.ios + os.android + os.other;
+                  {v.osCount && (v.osCount.ios + v.osCount.android + v.osCount.other) > 0 ? (function(){
+                    const os = v.osCount; const tot = os.ios + os.android + os.other;
                     const pct = (n)=> tot ? Math.round(n/tot*100) : 0;
                     return (
                       <div style={{marginBottom:24}}>
-                        <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.4)",fontWeight:800,textTransform:"uppercase",marginBottom:10,paddingLeft:4}}>📱 Appareils · 14 j</div>
+                        <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.4)",fontWeight:800,textTransform:"uppercase",marginBottom:10,paddingLeft:4}}>📱 Appareils · {v.range} j</div>
                         <div style={{display:"flex",height:34,borderRadius:10,overflow:"hidden",border:"1px solid rgba(255,255,255,.1)"}}>
                           {os.ios>0 && <div style={{width:pct(os.ios)+"%",background:"rgba(255,255,255,.75)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:800,color:"#000",minWidth:34}}>{pct(os.ios)}%</div>}
                           {os.android>0 && <div style={{width:pct(os.android)+"%",background:"linear-gradient(90deg,#3DDC84,#00E676)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:800,color:"#0A1410",minWidth:34}}>{pct(os.android)}%</div>}
