@@ -2705,13 +2705,14 @@ export default function LePont() {
     if (hasEvents) { for (const r of eventsW) { if (r.type && r.type.indexOf("open_") === 0) osByDevice[r.player_id] = r.type.slice(5); } }
     const osCount = { ios:0, android:0, other:0 };
     for (const id in osByDevice) { const o = osByDevice[id]; if (osCount[o] !== undefined) osCount[o]++; else osCount.other++; }
-    // Détail jour par jour (jusqu'à `range` jours, plafonné à 14)
-    const nDays = Math.min(range, 14);
+    // Détail jour par jour — TOUJOURS sur les 14 derniers jours (indépendant de la
+    // plage choisie), pour que la vue « jour par jour » reste visible même en 1 j.
+    const fullActive = hasEvents ? (statsData.rawEvents || []) : (statsData.rawScores || []);
     const byDayActive = {}, byDayGames = {};
-    for (const r of activeRowsW) { if (r.created_at) { const k = dayKey(r.created_at); (byDayActive[k] = byDayActive[k] || new Set()).add(r.player_id); } }
-    for (const r of scoresW) { if (r.created_at) { const k = dayKey(r.created_at); byDayGames[k] = (byDayGames[k]||0)+1; } }
+    for (const r of fullActive) { if (r.created_at) { const k = dayKey(r.created_at); (byDayActive[k] = byDayActive[k] || new Set()).add(r.player_id); } }
+    for (const r of (statsData.rawScores || [])) { if (r.created_at) { const k = dayKey(r.created_at); byDayGames[k] = (byDayGames[k]||0)+1; } }
     const days = [];
-    for (let i = 0; i < nDays; i++) {
+    for (let i = 0; i < 14; i++) {
       const d = new Date(nowMs - i*24*3600*1000).toISOString().slice(0,10);
       const set = byDayActive[d];
       let anon = 0; if (set && hasEvents) { set.forEach(function(id){ if(!regSet.has(id)) anon++; }); }
@@ -10824,8 +10825,8 @@ export default function LePont() {
                       <div style={{fontSize:10.5,letterSpacing:1,color:"rgba(255,255,255,.5)",fontWeight:800,textTransform:"uppercase",marginTop:6}}>comptes créés</div>
                     </div>
                   </div>
-                  {/* Détail jour par jour (sur la fenêtre) */}
-                  <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.4)",fontWeight:800,textTransform:"uppercase",marginBottom:10,paddingLeft:4}}>{v.days.length>1?`${v.days.length} derniers jours`:"Aujourd'hui"}</div>
+                  {/* Détail jour par jour — toujours 14 jours (indépendant de la plage) */}
+                  <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.4)",fontWeight:800,textTransform:"uppercase",marginBottom:10,paddingLeft:4}}>Jour par jour · 14 j</div>
                   <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:24}}>
                     {v.days.map(function(d,i){
                       return (
