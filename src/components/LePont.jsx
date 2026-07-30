@@ -2427,6 +2427,7 @@ if(typeof document!=="undefined"&&!document.getElementById("bb-css")){
     @keyframes duelReelBlur{0%{transform:translateY(-7px)}100%{transform:translateY(7px)}}
     @keyframes floatBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
     @keyframes livePulse{0%{transform:scale(1);opacity:.9}100%{transform:scale(2.4);opacity:0}}
+    @keyframes bigAnswerPop{0%{transform:scale(.7);opacity:0}14%{transform:scale(1.06);opacity:1}72%{transform:scale(1);opacity:1}100%{transform:scale(1);opacity:0}}
     @keyframes fadeIn{from{opacity:0}to{opacity:1}}
     @keyframes popIn{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
     @keyframes slideIn{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:translateX(0)}}
@@ -2951,6 +2952,8 @@ export default function LePont() {
   const [duelFlash, setDuelFlash] = useState(null);      // solo : "+20 PTS" flottant entre 2 manches
   const duelFlashToRef = React.useRef(null);
   const [duelCodeCopied, setDuelCodeCopied] = useState(false); // lobby : feedback "code copié"
+  const [duelBigAnswer, setDuelBigAnswer] = useState(null);    // nom affiché en GROS à chaque bonne réponse (~1,2 s)
+  const duelBigAnswerToRef = React.useRef(null);
   // Mode démo (vidéo) : paires fixes en solo → réponses connues à l'avance.
   const [duelDemo, setDuelDemo] = useState(function(){
     try {
@@ -3138,6 +3141,11 @@ export default function LePont() {
     if(checkGuess(g, common)){
       duelAnsweredRef.current = true;
       playSound("ok"); vibrate(30);
+      // Affiche le NOM du joueur en gros (pour la vidéo) — nom canonique de la base
+      const shown = common.find(function(n){ return checkGuess(g, [n]); }) || g;
+      setDuelBigAnswer(shown);
+      if(duelBigAnswerToRef.current) clearTimeout(duelBigAnswerToRef.current);
+      duelBigAnswerToRef.current = setTimeout(function(){ setDuelBigAnswer(null); }, 1200);
       const ms = Math.max(0, Date.now() - (duelAnswerShownAtRef.current || Date.now()));
       const mine = r.host_id===playerId ? { host_answer:g, host_answer_ms:ms } : { guest_answer:g, guest_answer_ms:ms };
       duelRoomRef.current = Object.assign({}, r, mine); setDuelRoom(duelRoomRef.current);
@@ -8704,7 +8712,19 @@ export default function LePont() {
     const kbFit = duelKbOpen && duelScreen==="playing" && duelVV;
     const overlayStyle = { ...shell2, overflowY: duelScreen==="menu"?"auto":(kbFit?"hidden":"visible") };
     if (kbFit) { overlayStyle.top = duelVV.top; overlayStyle.height = duelVV.height; overlayStyle.bottom = "auto"; }
-    return (<div key="duel-overlay" style={overlayStyle}>{duelScreen!=="menu" && !kbFit && header}{body}</div>);
+    return (<div key="duel-overlay" style={overlayStyle}>
+      {duelScreen!=="menu" && !kbFit && header}
+      {body}
+      {/* Nom du joueur en GROS à chaque bonne réponse (visible pour une vidéo) */}
+      {duelBigAnswer && (
+        <div style={{position:"absolute",inset:0,zIndex:60,display:"flex",alignItems:"center",justifyContent:"center",pointerEvents:"none",background:"radial-gradient(circle at 50% 46%, rgba(0,0,0,.5), transparent 62%)"}}>
+          <div key={duelBigAnswer} style={{textAlign:"center",padding:"0 22px",animation:"bigAnswerPop 1.2s ease-out forwards"}}>
+            <div style={{fontSize:13,fontWeight:900,letterSpacing:3,color:"#00E676"}}>✓ {tr("BONNE RÉPONSE","CORRECT!","RICHTIG!","GIUSTO!","CERTO!")}</div>
+            <div style={{fontFamily:G.heading,fontSize:"clamp(34px,9vw,56px)",color:"#fff",textShadow:"0 4px 24px rgba(0,0,0,.85)",lineHeight:1.05,marginTop:8}}>{duelBigAnswer}</div>
+          </div>
+        </div>
+      )}
+    </div>);
   })();
 
   // ── SALON DES DÉFIS OUVERTS ──
