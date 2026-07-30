@@ -2988,13 +2988,20 @@ export default function LePont() {
   // Détection du clavier (iOS/Android) via visualViewport → passe en layout COMPACT
   // pour que les 2 clubs restent visibles quand le clavier est ouvert.
   const [duelKbOpen, setDuelKbOpen] = useState(false);
+  const [duelVV, setDuelVV] = useState(null); // {height, top} de la zone visible quand clavier ouvert
   useEffect(function(){
-    if (duelScreen !== "playing") { setDuelKbOpen(false); return; }
+    if (duelScreen !== "playing") { setDuelKbOpen(false); setDuelVV(null); return; }
     const vv = window.visualViewport;
     if (!vv) return;
-    const onR = function(){ setDuelKbOpen((window.innerHeight - vv.height) > 120); };
-    vv.addEventListener("resize", onR); onR();
-    return function(){ vv.removeEventListener("resize", onR); };
+    const onR = function(){
+      const open = (window.innerHeight - vv.height) > 120;
+      setDuelKbOpen(open);
+      setDuelVV(open ? { height: Math.round(vv.height), top: Math.round(vv.offsetTop || 0) } : null);
+    };
+    vv.addEventListener("resize", onR);
+    vv.addEventListener("scroll", onR);
+    onR();
+    return function(){ vv.removeEventListener("resize", onR); vv.removeEventListener("scroll", onR); };
   }, [duelScreen]);
   // Partage / copie du code de salon (Web Share si dispo, sinon presse-papiers)
   function duelShareCode(code){
@@ -8370,7 +8377,7 @@ export default function LePont() {
     const ansLeft = duelSpin
       ? DUEL_ANSWER_SECS
       : Math.min(DUEL_ANSWER_SECS, Math.max(0, Math.ceil(DUEL_ANSWER_SECS - (now - (duelAnswerShownAtRef.current || now))/1000)));
-    const shell2 = { position:"fixed", inset:0, zIndex:11000, background:"linear-gradient(180deg,#0a1410 0%,#0E1F14 100%)", display:"flex", flexDirection:"column", fontFamily:G.font, color:G.white };
+    const shell2 = { position:"fixed", top:0, left:0, right:0, bottom:0, zIndex:11000, background:"linear-gradient(180deg,#0a1410 0%,#0E1F14 100%)", display:"flex", flexDirection:"column", fontFamily:G.font, color:G.white };
     const bigBtn = (label, onClick, bg, disabled) => (
       <button onClick={onClick} disabled={disabled} style={{width:"100%",padding:"16px",borderRadius:16,border:"none",background:disabled?"rgba(255,255,255,.08)":bg,color:disabled?"rgba(255,255,255,.35)":"#000",fontFamily:G.heading,fontSize:20,letterSpacing:1.5,cursor:disabled?"not-allowed":"pointer",boxShadow:disabled?"none":"0 8px 24px -8px rgba(0,230,118,.5)"}}>{label}</button>
     );
@@ -8692,7 +8699,12 @@ export default function LePont() {
       );
       }
     }
-    return (<div key="duel-overlay" style={{...shell2, overflowY: duelScreen==="menu"?"auto":"visible"}}>{duelScreen!=="menu" && header}{body}</div>);
+    // Clavier ouvert : on cale l'overlay EXACTEMENT sur la zone visible (au-dessus du
+    // clavier) → plus rien à faire défiler, les 2 clubs restent visibles.
+    const kbFit = duelKbOpen && duelScreen==="playing" && duelVV;
+    const overlayStyle = { ...shell2, overflowY: duelScreen==="menu"?"auto":(kbFit?"hidden":"visible") };
+    if (kbFit) { overlayStyle.top = duelVV.top; overlayStyle.height = duelVV.height; overlayStyle.bottom = "auto"; }
+    return (<div key="duel-overlay" style={overlayStyle}>{duelScreen!=="menu" && !kbFit && header}{body}</div>);
   })();
 
   // ── SALON DES DÉFIS OUVERTS ──
