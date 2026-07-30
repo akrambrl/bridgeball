@@ -2934,9 +2934,11 @@ export default function LePont() {
   // Partage / copie du code de salon (Web Share si dispo, sinon presse-papiers)
   function duelShareCode(code){
     const url = (function(){ try { return window.location.origin; } catch { return "https://goatfc.fr"; } })();
-    const txt = (lang==="en"
-      ? "Join my GOAT DUEL! Code: "+code+" — "+url
-      : "Rejoins mon GOAT DUEL ! Code : "+code+" — "+url);
+    const txt = tr(
+      "Rejoins mon GOAT DUEL ! Code : "+code+" — "+url,
+      "Join my GOAT DUEL! Code: "+code+" — "+url,
+      "Tritt meinem GOAT DUEL bei! Code: "+code+" — "+url,
+      "Unisciti al mio GOAT DUEL! Codice: "+code+" — "+url);
     try {
       if (navigator.share) { navigator.share({ title:"GOAT DUEL", text:txt }).catch(function(){}); return; }
     } catch(e){}
@@ -8322,22 +8324,22 @@ export default function LePont() {
           <div style={{fontFamily:G.heading,fontSize:38,color:"#FFD600",lineHeight:1}}>{myScore}</div>
         </div>
         <div style={{textAlign:"center"}}>
-          <div style={{fontSize:10,color:"rgba(255,255,255,.4)",fontWeight:800,letterSpacing:1}}>{lang==="en"?"TIME":"TEMPS"}</div>
+          <div style={{fontSize:10,color:"rgba(255,255,255,.4)",fontWeight:800,letterSpacing:1}}>{tr("TEMPS","TIME","ZEIT","TEMPO")}</div>
           <div style={{fontFamily:G.heading,fontSize:24,color:(soloLeft!=null&&soloLeft<=10)?"#FF3D57":G.white}}>{soloLeft!=null?soloLeft+"s":"—"}</div>
         </div>
       </div>
     ) : (
       <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:14,padding:"10px 16px"}}>
         <div style={{textAlign:"center",flex:1}}>
-          <div style={{fontSize:11,color:"rgba(255,255,255,.55)",fontWeight:700,letterSpacing:.5,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{myName||"Toi"}</div>
+          <div style={{fontSize:11,color:"rgba(255,255,255,.55)",fontWeight:700,letterSpacing:.5,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{myName||tr("Toi","You","Du","Tu")}</div>
           <div style={{fontFamily:G.heading,fontSize:34,color:"#00E676",lineHeight:1}}>{myScore}</div>
         </div>
         <div style={{textAlign:"center"}}>
-          <div style={{fontSize:10,color:"rgba(255,255,255,.4)",fontWeight:800,letterSpacing:1}}>MANCHE</div>
+          <div style={{fontSize:10,color:"rgba(255,255,255,.4)",fontWeight:800,letterSpacing:1}}>{tr("MANCHE","ROUND","RUNDE","TURNO")}</div>
           <div style={{fontFamily:G.heading,fontSize:20,color:G.white}}>{room.round||1}/{DUEL_ROUNDS}</div>
         </div>
         <div style={{textAlign:"center",flex:1}}>
-          <div style={{fontSize:11,color:"rgba(255,255,255,.55)",fontWeight:700,letterSpacing:.5,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{oppName||"Adversaire"}</div>
+          <div style={{fontSize:11,color:"rgba(255,255,255,.55)",fontWeight:700,letterSpacing:.5,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{oppName||tr("Adversaire","Opponent","Gegner","Avversario")}</div>
           <div style={{fontFamily:G.heading,fontSize:34,color:"#FF6B35",lineHeight:1}}>{oppScore}</div>
         </div>
       </div>
@@ -8443,7 +8445,7 @@ export default function LePont() {
             {/* SOLO : points en flash flottant entre 2 manches (pas d'écran pause) */}
             {isSolo && duelFlash && (
               <div key={duelFlash.id} style={{position:"absolute",top:"38%",left:"50%",zIndex:20,pointerEvents:"none",fontFamily:G.heading,fontSize:duelFlash.pts>=20?46:36,letterSpacing:1,color:duelFlash.pts>=20?"#FFD600":duelFlash.pts>0?"#00E676":"#FF6B35",textShadow:"0 4px 20px rgba(0,0,0,.7)",animation:"duelFloat 1.3s ease-out forwards"}}>
-                {duelFlash.pts>=20?"⚡ +20":duelFlash.pts>0?"+10":duelFlash.skipped?(lang==="en"?"SKIP":"PASSÉ"):(lang==="en"?"MISS":"RATÉ")}{duelFlash.pts>0?" PTS":""}
+                {duelFlash.pts>=20?"⚡ +20":duelFlash.pts>0?"+10":duelFlash.skipped?tr("PASSÉ","SKIP","ÜBERSPR.","SALTA"):tr("RATÉ","MISS","VERPASST","MANCATO")}{duelFlash.pts>0?" PTS":""}
               </div>
             )}
             {(function(){
@@ -8460,18 +8462,18 @@ export default function LePont() {
               <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",zIndex:5,width:40,height:40,borderRadius:"50%",background:"linear-gradient(135deg,#FFD600,#FF8A2A)",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:G.heading,fontSize:20,fontWeight:900,color:"#000",boxShadow:"0 4px 12px rgba(0,0,0,.5)",border:"3px solid #0E1F14"}}>×</div>
             </div>
             {duelSpin ? (
-              <div style={{textAlign:"center",padding:"10px",fontSize:14,fontWeight:800,color:"#FFD600",letterSpacing:1}}>🎰 {lang==="en"?"Drawing clubs…":"Tirage des clubs…"}</div>
+              <div style={{textAlign:"center",padding:"10px",fontSize:14,fontWeight:800,color:"#FFD600",letterSpacing:1}}>🎰 {tr("Tirage des clubs…","Drawing clubs…","Klubs werden gezogen…","Sorteggio dei club…")}</div>
             ) : (<>
-            <div style={{fontSize:12,color:"rgba(255,255,255,.5)",marginBottom:12,textAlign:"center"}}>{lang==="en"?"A player who played for BOTH clubs":"Un joueur ayant joué dans les DEUX clubs"}</div>
+            <div style={{fontSize:12,color:"rgba(255,255,255,.5)",marginBottom:12,textAlign:"center"}}>{tr("Un joueur ayant joué dans les DEUX clubs","A player who played for BOTH clubs","Ein Spieler, der für BEIDE Klubs gespielt hat","Un giocatore che ha giocato in ENTRAMBI i club")}</div>
             {answered ? (
               <div style={{textAlign:"center",padding:"18px"}}>
-                <div style={{fontSize:22,fontWeight:900,color:"#00E676"}}>✅ {lang==="en"?"Found!":"Trouvé !"}</div>
-                <div style={{fontSize:13,color:"rgba(255,255,255,.6)",marginTop:6}}>{lang==="en"?"Waiting for the round to end…":"En attente de la fin de la manche…"}</div>
+                <div style={{fontSize:22,fontWeight:900,color:"#00E676"}}>✅ {tr("Trouvé !","Found!","Gefunden!","Trovato!")}</div>
+                <div style={{fontSize:13,color:"rgba(255,255,255,.6)",marginTop:6}}>{tr("En attente de la fin de la manche…","Waiting for the round to end…","Warte auf das Rundenende…","In attesa della fine del turno…")}</div>
               </div>
             ) : (
               <div style={{width:"100%",maxWidth:420}}>
                 <div style={{display:"flex",gap:8}}>
-                  <input autoFocus value={duelInput} onChange={function(e){setDuelInput(e.target.value);if(duelWrong)setDuelWrong(false);}} onKeyDown={function(e){if(e.key==="Enter"){ if(duelSug.length>0){duelSubmitAnswer(duelSug[0].name);} else {duelSubmitAnswer();} }}} placeholder={lang==="en"?"Player name…":"Nom du joueur…"}
+                  <input autoFocus value={duelInput} onChange={function(e){setDuelInput(e.target.value);if(duelWrong)setDuelWrong(false);}} onKeyDown={function(e){if(e.key==="Enter"){ if(duelSug.length>0){duelSubmitAnswer(duelSug[0].name);} else {duelSubmitAnswer();} }}} placeholder={tr("Nom du joueur…","Player name…","Spielername…","Nome del giocatore…")}
                     style={{flex:1,minWidth:0,padding:"14px",borderRadius:14,border:"1.5px solid "+(duelWrong?"#FF3D57":"rgba(255,255,255,.15)"),background:duelWrong?"rgba(255,61,87,.14)":"rgba(255,255,255,.06)",color:G.white,fontFamily:G.font,fontSize:16,fontWeight:700,outline:"none",textAlign:"center",animation:duelWrong?"answerKo .4s ease":"none"}}/>
                   <button onClick={function(){ if(duelSug.length>0){duelSubmitAnswer(duelSug[0].name);} else {duelSubmitAnswer();} }} disabled={duelInput.trim().length<3} style={{padding:"0 20px",borderRadius:14,border:"none",background:duelInput.trim().length>=3?"#00E676":"rgba(255,255,255,.08)",color:duelInput.trim().length>=3?"#000":"rgba(255,255,255,.3)",fontFamily:G.heading,fontSize:16,cursor:duelInput.trim().length>=3?"pointer":"not-allowed"}}>OK</button>
                 </div>
@@ -8482,14 +8484,14 @@ export default function LePont() {
                     );})}
                   </div>
                 )}
-                {duelWrong && <div style={{textAlign:"center",fontSize:13,color:"#FF3D57",marginTop:10,fontWeight:800}}>❌ {lang==="en"?"Wrong answer, try again!":"Mauvaise réponse, réessaie !"}</div>}
+                {duelWrong && <div style={{textAlign:"center",fontSize:13,color:"#FF3D57",marginTop:10,fontWeight:800}}>❌ {tr("Mauvaise réponse, réessaie !","Wrong answer, try again!","Falsche Antwort, versuch's nochmal!","Risposta sbagliata, riprova!")}</div>}
                 {isSolo ? (
-                  <div style={{textAlign:"center",fontSize:12,color:ansLeft<=5&&ansLeft>0?"#FFD600":"rgba(255,255,255,.4)",marginTop:duelWrong?4:10,fontWeight:700}}>{ansLeft>5?(lang==="en"?"Answer under 5s = 20 pts ⚡":"Réponds en moins de 5 s = 20 pts ⚡"):(lang==="en"?"⚡ Quick! 20 pts":"⚡ Vite ! 20 pts")}</div>
+                  <div style={{textAlign:"center",fontSize:12,color:ansLeft<=5&&ansLeft>0?"#FFD600":"rgba(255,255,255,.4)",marginTop:duelWrong?4:10,fontWeight:700}}>{ansLeft>5?tr("Réponds en moins de 5 s = 20 pts ⚡","Answer under 5s = 20 pts ⚡","Unter 5 Sek. antworten = 20 Pkt ⚡","Rispondi in meno di 5 s = 20 pti ⚡"):tr("⚡ Vite ! 20 pts","⚡ Quick! 20 pts","⚡ Schnell! 20 Pkt","⚡ Veloce! 20 pti")}</div>
                 ) : (
-                  <div style={{textAlign:"center",fontSize:12,color:oppAnsMs!=null?"#FF6B35":"rgba(255,255,255,.4)",marginTop:duelWrong?4:10,fontWeight:700}}>{oppAnsMs!=null?(lang==="en"?"⚡ Opponent found it!":"⚡ L'adversaire a trouvé !"):(lang==="en"?"Opponent is searching…":"L'adversaire cherche…")}</div>
+                  <div style={{textAlign:"center",fontSize:12,color:oppAnsMs!=null?"#FF6B35":"rgba(255,255,255,.4)",marginTop:duelWrong?4:10,fontWeight:700}}>{oppAnsMs!=null?tr("⚡ L'adversaire a trouvé !","⚡ Opponent found it!","⚡ Gegner hat's gefunden!","⚡ L'avversario ha trovato!"):tr("L'adversaire cherche…","Opponent is searching…","Gegner sucht…","L'avversario sta cercando…")}</div>
                 )}
                 {isSolo && (
-                  <button onClick={duelSkip} style={{width:"100%",marginTop:12,padding:"12px",borderRadius:14,border:"1px solid rgba(255,255,255,.15)",background:"rgba(255,255,255,.05)",color:"rgba(255,255,255,.6)",fontFamily:G.font,fontSize:13,fontWeight:700,cursor:"pointer"}}>⏭ {lang==="en"?"Skip (I don't know)":"Passer (je ne sais pas)"}</button>
+                  <button onClick={duelSkip} style={{width:"100%",marginTop:12,padding:"12px",borderRadius:14,border:"1px solid rgba(255,255,255,.15)",background:"rgba(255,255,255,.05)",color:"rgba(255,255,255,.6)",fontFamily:G.font,fontSize:13,fontWeight:700,cursor:"pointer"}}>⏭ {tr("Passer (je ne sais pas)","Skip (I don't know)","Überspringen (weiß nicht)","Salta (non lo so)")}</button>
                 )}
               </div>
             )}
@@ -8521,21 +8523,21 @@ export default function LePont() {
         ) : (
           <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",alignItems:"center",padding:"20px",gap:10}}>
             <div style={{fontFamily:G.heading,fontSize:30,letterSpacing:1,color:draw?"#FFD600":iWon?"#00E676":"#FF6B35",textAlign:"center"}}>
-              {draw ? (lang==="en"?"DRAW — nobody found":"MANCHE NULLE") : iWon ? (lang==="en"?"🎉 YOU WIN THE ROUND":"🎉 TU GAGNES LA MANCHE") : (lang==="en"?"OPPONENT WINS":"L'ADVERSAIRE GAGNE")}
+              {draw ? tr("MANCHE NULLE","DRAW — nobody found","UNENTSCHIEDEN","PAREGGIO") : iWon ? tr("🎉 TU GAGNES LA MANCHE","🎉 YOU WIN THE ROUND","🎉 DU GEWINNST DIE RUNDE","🎉 VINCI IL TURNO") : tr("L'ADVERSAIRE GAGNE","OPPONENT WINS","GEGNER GEWINNT","VINCE L'AVVERSARIO")}
             </div>
             <div style={{fontSize:14,color:"rgba(255,255,255,.7)",textAlign:"center"}}>{room.club_c1} <span style={{color:"#FFD600"}}>×</span> {room.club_c2}</div>
             {/* Qui a répondu quoi */}
             {iWon && myAns && (
-              <div style={{fontSize:14,color:"#00E676",textAlign:"center",fontWeight:700}}>✅ {lang==="en"?"You answered ":"Ta réponse : "}<strong style={{color:"#fff"}}>{myAns}</strong></div>
+              <div style={{fontSize:14,color:"#00E676",textAlign:"center",fontWeight:700}}>✅ {tr("Ta réponse : ","You answered ","Deine Antwort: ","La tua risposta: ")}<strong style={{color:"#fff"}}>{myAns}</strong></div>
             )}
             {!iWon && !draw && oppAns && (
-              <div style={{fontSize:14,color:"#FF8A66",textAlign:"center",fontWeight:700}}>{oppName||(lang==="en"?"Opponent":"Adversaire")} : <strong style={{color:"#fff"}}>{oppAns}</strong></div>
+              <div style={{fontSize:14,color:"#FF8A66",textAlign:"center",fontWeight:700}}>{oppName||tr("Adversaire","Opponent","Gegner","Avversario")} : <strong style={{color:"#fff"}}>{oppAns}</strong></div>
             )}
             {draw && example && (
-              <div style={{fontSize:13,color:"rgba(255,255,255,.6)",textAlign:"center"}}>{lang==="en"?"A valid answer: ":"Une réponse valable : "}<strong style={{color:G.white}}>{example}</strong></div>
+              <div style={{fontSize:13,color:"rgba(255,255,255,.6)",textAlign:"center"}}>{tr("Une réponse valable : ","A valid answer: ","Eine gültige Antwort: ","Una risposta valida: ")}<strong style={{color:G.white}}>{example}</strong></div>
             )}
             <div style={{fontFamily:G.heading,fontSize:40,color:G.white,marginTop:4}}>{myScore} <span style={{color:"rgba(255,255,255,.3)"}}>–</span> {oppScore}</div>
-            <div style={{fontSize:12,color:"rgba(255,255,255,.4)"}}>{(room.round||1)<DUEL_ROUNDS?(lang==="en"?"Next round…":"Manche suivante…"):(lang==="en"?"Final…":"Fin…")}</div>
+            <div style={{fontSize:12,color:"rgba(255,255,255,.4)"}}>{(room.round||1)<DUEL_ROUNDS?tr("Manche suivante…","Next round…","Nächste Runde…","Prossimo turno…"):tr("Fin…","Final…","Ende…","Fine…")}</div>
           </div>
         );
       }
@@ -8547,12 +8549,12 @@ export default function LePont() {
         // SOLO : 60 s, manches illimitées. Score = total de points. Message selon le score.
         const sc = myScore||0;
         const correct = room.host_correct||0, fast = room.host_fast||0, rounds = room.host_rounds||0;
-        const msg = sc>=150 ? (lang==="en"?"LEGEND! 🐐":"LÉGENDE ! 🐐") : sc>=100 ? (lang==="en"?"GREAT!":"BIEN JOUÉ !") : sc>=50 ? (lang==="en"?"NOT BAD":"PAS MAL") : (lang==="en"?"KEEP TRYING":"CONTINUE À T'ENTRAÎNER");
+        const msg = sc>=150 ? tr("LÉGENDE ! 🐐","LEGEND! 🐐","LEGENDE! 🐐","LEGGENDA! 🐐") : sc>=100 ? tr("BIEN JOUÉ !","GREAT!","GUT GEMACHT!","BRAVO!") : sc>=50 ? tr("PAS MAL","NOT BAD","NICHT SCHLECHT","NIENTE MALE") : tr("CONTINUE À T'ENTRAÎNER","KEEP TRYING","WEITER ÜBEN","CONTINUA AD ALLENARTI");
         const accent = sc>=100 ? "#FFD600" : "#00E676";
         const tiles = [
-          { v: correct, e:"✅", c:"#00E676", l: lang==="en"?"correct":"bonnes rép." },
-          { v: fast,    e:"⚡", c:"#FFD600", l: lang==="en"?"under 5s":"éclairs" },
-          { v: rounds,  e:"🎯", c:"#3DA5FF", l: lang==="en"?"rounds":"manches" },
+          { v: correct, e:"✅", c:"#00E676", l: tr("bonnes rép.","correct","richtig","giuste") },
+          { v: fast,    e:"⚡", c:"#FFD600", l: tr("éclairs","under 5s","Blitz","lampi") },
+          { v: rounds,  e:"🎯", c:"#3DA5FF", l: tr("manches","rounds","Runden","turni") },
         ];
         const puce = [ {t:"6%",l:"10%",s:24,r:-18},{t:"14%",l:"84%",s:16,r:22},{t:"64%",l:"8%",s:28,r:12},{t:"74%",l:"86%",s:18,r:-26},{t:"40%",l:"4%",s:14,r:16},{t:"52%",l:"92%",s:20,r:-12} ];
         body = (
@@ -8566,7 +8568,7 @@ export default function LePont() {
                 <div style={{position:"absolute",width:"min(260px,60vw)",height:"min(260px,60vw)",borderRadius:"50%",background:"radial-gradient(circle, "+accent+"33, transparent 66%)",filter:"blur(4px)"}}/>
                 <img src={duelEndImg || WIN_IMGS[0]} alt="" style={{position:"relative",height:"min(240px,32vh)",width:"auto",objectFit:"contain",filter:"drop-shadow(0 18px 34px rgba(0,0,0,.65))"}}/>
               </div>
-              <div style={{fontSize:11,color:"rgba(255,255,255,.5)",fontWeight:800,letterSpacing:3}}>{lang==="en"?"YOUR SCORE":"TON SCORE"}</div>
+              <div style={{fontSize:11,color:"rgba(255,255,255,.5)",fontWeight:800,letterSpacing:3}}>{tr("TON SCORE","YOUR SCORE","DEIN SCORE","IL TUO PUNTEGGIO")}</div>
               <div style={{fontFamily:G.heading,fontSize:72,color:"#FFD600",lineHeight:.9,textShadow:"0 0 30px rgba(255,214,0,.4)"}}>{sc}<span style={{fontSize:26,color:"rgba(255,255,255,.4)"}}> pts</span></div>
               <div style={{fontFamily:G.heading,fontSize:26,letterSpacing:1,color:accent,textAlign:"center"}}>{msg}</div>
               {/* Tuiles de stats */}
@@ -8581,8 +8583,8 @@ export default function LePont() {
               </div>
               {/* Boutons */}
               <div style={{display:"flex",gap:10,width:"100%",marginTop:12}}>
-                <button onClick={duelSoloStart} style={{flex:1,padding:"16px",borderRadius:16,border:"none",background:"linear-gradient(135deg,#3DA5FF,#00E676)",color:"#000",fontFamily:G.heading,fontSize:16,letterSpacing:1,cursor:"pointer",boxShadow:"0 10px 26px -10px rgba(0,230,118,.6)"}}>{lang==="en"?"↻ AGAIN":"↻ REJOUER"}</button>
-                <button onClick={duelLeaveRoom} style={{flex:1,padding:"16px",borderRadius:16,border:"1px solid rgba(255,255,255,.15)",background:"rgba(255,255,255,.05)",color:G.white,fontFamily:G.heading,fontSize:16,letterSpacing:1,cursor:"pointer"}}>{lang==="en"?"MENU":"MENU"}</button>
+                <button onClick={duelSoloStart} style={{flex:1,padding:"16px",borderRadius:16,border:"none",background:"linear-gradient(135deg,#3DA5FF,#00E676)",color:"#000",fontFamily:G.heading,fontSize:16,letterSpacing:1,cursor:"pointer",boxShadow:"0 10px 26px -10px rgba(0,230,118,.6)"}}>{tr("↻ REJOUER","↻ AGAIN","↻ NOCHMAL","↻ RIGIOCA")}</button>
+                <button onClick={duelLeaveRoom} style={{flex:1,padding:"16px",borderRadius:16,border:"1px solid rgba(255,255,255,.15)",background:"rgba(255,255,255,.05)",color:G.white,fontFamily:G.heading,fontSize:16,letterSpacing:1,cursor:"pointer"}}>{tr("MENU","MENU","MENÜ","MENU")}</button>
               </div>
             </div>
           </div>
@@ -8595,11 +8597,11 @@ export default function LePont() {
             <div style={{position:"absolute",bottom:-6,left:"50%",transform:"translateX(-50%)",fontSize:40}}>{draw?"🤝":iWon?"🏆":""}</div>
           </div>
           <div style={{fontFamily:G.heading,fontSize:34,letterSpacing:1,color:draw?"#FFD600":iWon?"#00E676":"#FF6B35",textAlign:"center"}}>
-            {draw?(lang==="en"?"DRAW!":"ÉGALITÉ !"):iWon?(lang==="en"?"VICTORY!":"VICTOIRE !"):(lang==="en"?"DEFEAT":"DÉFAITE")}
+            {draw?tr("ÉGALITÉ !","DRAW!","UNENTSCHIEDEN!","PAREGGIO!"):iWon?tr("VICTOIRE !","VICTORY!","SIEG!","VITTORIA!"):tr("DÉFAITE","DEFEAT","NIEDERLAGE","SCONFITTA")}
           </div>
           <div style={{fontFamily:G.heading,fontSize:52,color:G.white}}>{myScore} <span style={{color:"rgba(255,255,255,.3)"}}>–</span> {oppScore}</div>
-          <div style={{fontSize:13,color:"rgba(255,255,255,.55)",textAlign:"center"}}>{(myName||"Toi")+" vs "+(oppName||"Adversaire")}</div>
-          {bigBtn(lang==="en"?"BACK TO MENU":"RETOUR À L'ACCUEIL", duelLeaveRoom, "linear-gradient(135deg,#00E676,#00A855)", false)}
+          <div style={{fontSize:13,color:"rgba(255,255,255,.55)",textAlign:"center"}}>{(myName||tr("Toi","You","Du","Tu"))+" vs "+(oppName||tr("Adversaire","Opponent","Gegner","Avversario"))}</div>
+          {bigBtn(tr("RETOUR À L'ACCUEIL","BACK TO MENU","ZURÜCK ZUM MENÜ","TORNA AL MENU"), duelLeaveRoom, "linear-gradient(135deg,#00E676,#00A855)", false)}
         </div>
       );
       }
