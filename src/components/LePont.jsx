@@ -1663,6 +1663,10 @@ const DUEL_DEMO_PAIRS = [
   { c1:"Tottenham",       c2:"Real Madrid",        a:"Gareth Bale" },
   { c1:"Inter Milan",     c2:"Manchester United",  a:"Romelu Lukaku" },
   { c1:"Liverpool",       c2:"AS Roma",            a:"Mohamed Salah" },
+  { c1:"Chelsea",         c2:"PSG",                a:"Thiago Silva" },
+  { c1:"Bayern Munich",   c2:"Barcelona",          a:"Robert Lewandowski" },
+  { c1:"Barcelona",       c2:"Liverpool",          a:"Luis Suárez" },
+  { c1:"Inter Milan",     c2:"Barcelona",          a:"Samuel Eto'o" },
 ];
 
 // CRESCENDO HELPER : retourne la difficulté "effective" en mode crescendo selon le nombre de liens accomplis
