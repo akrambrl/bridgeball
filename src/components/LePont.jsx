@@ -2970,6 +2970,17 @@ export default function LePont() {
     }
     return duelRollPair();
   }
+  // Détection du clavier (iOS/Android) via visualViewport → passe en layout COMPACT
+  // pour que les 2 clubs restent visibles quand le clavier est ouvert.
+  const [duelKbOpen, setDuelKbOpen] = useState(false);
+  useEffect(function(){
+    if (duelScreen !== "playing") { setDuelKbOpen(false); return; }
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const onR = function(){ setDuelKbOpen((window.innerHeight - vv.height) > 120); };
+    vv.addEventListener("resize", onR); onR();
+    return function(){ vv.removeEventListener("resize", onR); };
+  }, [duelScreen]);
   // Partage / copie du code de salon (Web Share si dispo, sinon presse-papiers)
   function duelShareCode(code){
     const url = (function(){ try { return window.location.origin; } catch { return "https://goatfc.fr"; } })();
@@ -8488,14 +8499,15 @@ export default function LePont() {
         const duelSug = answered ? [] : ggGetSuggestions(duelInput);
         // Carte club grand format (empilée) — style GOAT Mercato bicolore.
         // `spinning` = pendant le tirage machine à sous (contenu qui défile).
+        const compact = duelKbOpen; // clavier ouvert → cartes plus petites, côte à côte
         const clubCard = (club, spinning) => {
           const cc = getClubColors(club || "");
           return (
-            <div style={{width:"100%",position:"relative",overflow:"hidden",height:74,borderRadius:16,boxShadow:"0 8px 24px "+cc[0]+"66",display:"flex",alignItems:"center",justifyContent:"center",border:"2px solid rgba(255,255,255,.14)"}}>
+            <div style={{width:"100%",position:"relative",overflow:"hidden",height:compact?48:74,borderRadius:compact?12:16,boxShadow:"0 8px 24px "+cc[0]+"66",display:"flex",alignItems:"center",justifyContent:"center",border:"2px solid rgba(255,255,255,.14)"}}>
               <div style={{position:"absolute",inset:0,background:cc[0]}}/>
               <div style={{position:"absolute",top:0,right:0,width:"55%",bottom:0,background:cc[1],clipPath:"polygon(30% 0%, 100% 0%, 100% 100%, 0% 100%)"}}/>
               <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.18)"}}/>
-              <span key={(spinning?"s":"f")+club} style={{position:"relative",zIndex:1,fontFamily:G.heading,fontSize:23,color:"#fff",fontWeight:800,textShadow:"0 2px 7px rgba(0,0,0,.65)",letterSpacing:.5,padding:"0 12px",textAlign:"center",lineHeight:1.05,filter:spinning?"blur(0.7px)":"none",animation:spinning?"duelReelBlur .1s linear infinite alternate":"duelSettle .5s cubic-bezier(.22,1,.36,1)"}}>{club}</span>
+              <span key={(spinning?"s":"f")+club} style={{position:"relative",zIndex:1,fontFamily:G.heading,fontSize:compact?17:23,color:"#fff",fontWeight:800,textShadow:"0 2px 7px rgba(0,0,0,.65)",letterSpacing:.5,padding:"0 10px",textAlign:"center",lineHeight:1.05,filter:spinning?"blur(0.7px)":"none",animation:spinning?"duelReelBlur .1s linear infinite alternate":"duelSettle .5s cubic-bezier(.22,1,.36,1)"}}>{club}</span>
             </div>
           );
         };
@@ -8510,20 +8522,20 @@ export default function LePont() {
             {(function(){
               const big = isSolo ? (soloLeft!=null?soloLeft:0) : ansLeft;
               const danger = isSolo ? (soloLeft!=null&&soloLeft<=10) : ansLeft<=3;
-              return <div style={{fontFamily:G.heading,fontSize:44,color:danger?"#FF3D57":"#FFD600",lineHeight:1,marginBottom:10}}>{big}{isSolo?<span style={{fontSize:18,color:"rgba(255,255,255,.4)"}}>s</span>:null}</div>;
+              return <div style={{fontFamily:G.heading,fontSize:compact?28:44,color:danger?"#FF3D57":"#FFD600",lineHeight:1,marginBottom:compact?6:10}}>{big}{isSolo?<span style={{fontSize:compact?13:18,color:"rgba(255,255,255,.4)"}}>s</span>:null}</div>;
             })()}
-            {/* Machine à sous : 2 clubs empilés (on gagne en largeur + gros format) */}
-            <div style={{position:"relative",width:"100%",maxWidth:300,marginBottom:12}}>
-              <div style={{display:"flex",flexDirection:"column",gap:14}}>
+            {/* Machine à sous : 2 clubs — empilés en grand, ou côte à côte (compact) si clavier ouvert */}
+            <div style={{position:"relative",width:"100%",maxWidth:compact?360:300,marginBottom:compact?8:12}}>
+              <div style={{display:"flex",flexDirection:compact?"row":"column",gap:compact?8:14}}>
                 {clubCard(duelSpin?duelReel1:room.club_c1, duelSpin)}
                 {clubCard(duelSpin?duelReel2:room.club_c2, duelSpin)}
               </div>
-              <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",zIndex:5,width:40,height:40,borderRadius:"50%",background:"linear-gradient(135deg,#FFD600,#FF8A2A)",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:G.heading,fontSize:20,fontWeight:900,color:"#000",boxShadow:"0 4px 12px rgba(0,0,0,.5)",border:"3px solid #0E1F14"}}>×</div>
+              <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",zIndex:5,width:compact?30:40,height:compact?30:40,borderRadius:"50%",background:"linear-gradient(135deg,#FFD600,#FF8A2A)",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:G.heading,fontSize:compact?15:20,fontWeight:900,color:"#000",boxShadow:"0 4px 12px rgba(0,0,0,.5)",border:"3px solid #0E1F14"}}>×</div>
             </div>
             {duelSpin ? (
               <div style={{textAlign:"center",padding:"10px",fontSize:14,fontWeight:800,color:"#FFD600",letterSpacing:1}}>🎰 {tr("Tirage des clubs…","Drawing clubs…","Klubs werden gezogen…","Sorteggio dei club…","Sorteando os clubes…")}</div>
             ) : (<>
-            <div style={{fontSize:12,color:"rgba(255,255,255,.5)",marginBottom:12,textAlign:"center"}}>{tr("Un joueur ayant joué dans les DEUX clubs","A player who played for BOTH clubs","Ein Spieler, der für BEIDE Klubs gespielt hat","Un giocatore che ha giocato in ENTRAMBI i club","Um jogador que jogou nos DOIS clubes")}</div>
+            {!compact && <div style={{fontSize:12,color:"rgba(255,255,255,.5)",marginBottom:12,textAlign:"center"}}>{tr("Un joueur ayant joué dans les DEUX clubs","A player who played for BOTH clubs","Ein Spieler, der für BEIDE Klubs gespielt hat","Un giocatore che ha giocato in ENTRAMBI i club","Um jogador que jogou nos DOIS clubes")}</div>}
             {answered ? (
               <div style={{textAlign:"center",padding:"18px"}}>
                 <div style={{fontSize:22,fontWeight:900,color:"#00E676"}}>✅ {tr("Trouvé !","Found!","Gefunden!","Trovato!","Encontrado!")}</div>
