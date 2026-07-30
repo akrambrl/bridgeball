@@ -3141,12 +3141,13 @@ export default function LePont() {
     if(checkGuess(g, common)){
       duelAnsweredRef.current = true;
       playSound("ok"); vibrate(30);
-      // Affiche le NOM du joueur en gros (pour la vidéo) — nom canonique de la base
+      // Affiche le NOM du joueur en gros (pour la vidéo) — nom canonique de la base,
+      // avec les points gagnés (solo) pour ne pas empiler 2 overlays.
+      const ms = Math.max(0, Date.now() - (duelAnswerShownAtRef.current || Date.now()));
       const shown = common.find(function(n){ return checkGuess(g, [n]); }) || g;
-      setDuelBigAnswer(shown);
+      setDuelBigAnswer({ name: shown, pts: r.solo ? (ms < 5000 ? 20 : 10) : null });
       if(duelBigAnswerToRef.current) clearTimeout(duelBigAnswerToRef.current);
       duelBigAnswerToRef.current = setTimeout(function(){ setDuelBigAnswer(null); }, 1200);
-      const ms = Math.max(0, Date.now() - (duelAnswerShownAtRef.current || Date.now()));
       const mine = r.host_id===playerId ? { host_answer:g, host_answer_ms:ms } : { guest_answer:g, guest_answer_ms:ms };
       duelRoomRef.current = Object.assign({}, r, mine); setDuelRoom(duelRoomRef.current);
       duelPatch(r.id, mine);
@@ -3179,9 +3180,13 @@ export default function LePont() {
     const newCorrect = (room.host_correct||0) + (pts>0 ? 1 : 0);
     const newFast = (room.host_fast||0) + (pts>=20 ? 1 : 0);
     const newRounds = (room.host_rounds||0) + 1;
-    setDuelFlash({ pts:pts, skipped:!!skipped, id:(room.round||1)+"-"+Date.now() });
-    if(duelFlashToRef.current) clearTimeout(duelFlashToRef.current);
-    duelFlashToRef.current = setTimeout(function(){ setDuelFlash(null); }, 1300);
+    // Bonne réponse (pts>0) → l'overlay "nom + points" s'en charge (évite le doublon).
+    // Manche ratée/passée (pts=0) → petit flash RATÉ/PASSÉ.
+    if(pts <= 0){
+      setDuelFlash({ pts:pts, skipped:!!skipped, id:(room.round||1)+"-"+Date.now() });
+      if(duelFlashToRef.current) clearTimeout(duelFlashToRef.current);
+      duelFlashToRef.current = setTimeout(function(){ setDuelFlash(null); }, 1300);
+    }
     const timeUp = room.solo_ends_at && Date.now() >= new Date(room.solo_ends_at).getTime();
     const stats = { host_score:newScore, host_correct:newCorrect, host_fast:newFast, host_rounds:newRounds };
     if(timeUp){
@@ -8717,10 +8722,11 @@ export default function LePont() {
       {body}
       {/* Nom du joueur en GROS à chaque bonne réponse (visible pour une vidéo) */}
       {duelBigAnswer && (
-        <div style={{position:"absolute",inset:0,zIndex:60,display:"flex",alignItems:"center",justifyContent:"center",pointerEvents:"none",background:"radial-gradient(circle at 50% 46%, rgba(0,0,0,.5), transparent 62%)"}}>
-          <div key={duelBigAnswer} style={{textAlign:"center",padding:"0 22px",animation:"bigAnswerPop 1.2s ease-out forwards"}}>
+        <div style={{position:"absolute",inset:0,zIndex:60,display:"flex",alignItems:"center",justifyContent:"center",pointerEvents:"none",background:"radial-gradient(circle at 50% 46%, rgba(0,0,0,.55), transparent 62%)"}}>
+          <div key={duelBigAnswer.name} style={{textAlign:"center",padding:"0 22px",animation:"bigAnswerPop 1.2s ease-out forwards"}}>
             <div style={{fontSize:13,fontWeight:900,letterSpacing:3,color:"#00E676"}}>✓ {tr("BONNE RÉPONSE","CORRECT!","RICHTIG!","GIUSTO!","CERTO!")}</div>
-            <div style={{fontFamily:G.heading,fontSize:"clamp(34px,9vw,56px)",color:"#fff",textShadow:"0 4px 24px rgba(0,0,0,.85)",lineHeight:1.05,marginTop:8}}>{duelBigAnswer}</div>
+            <div style={{fontFamily:G.heading,fontSize:"clamp(34px,9vw,56px)",color:"#fff",textShadow:"0 4px 24px rgba(0,0,0,.85)",lineHeight:1.05,marginTop:8}}>{duelBigAnswer.name}</div>
+            {duelBigAnswer.pts && <div style={{fontFamily:G.heading,fontSize:"clamp(24px,7vw,40px)",color:duelBigAnswer.pts>=20?"#FFD600":"#00E676",textShadow:"0 3px 16px rgba(0,0,0,.8)",marginTop:8}}>{duelBigAnswer.pts>=20?"⚡ ":""}+{duelBigAnswer.pts} PTS</div>}
           </div>
         </div>
       )}
