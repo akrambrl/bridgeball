@@ -9489,12 +9489,12 @@ export default function LePont() {
       </div>
         <div style={{zIndex:1,padding:"12px 20px 12px 70px",display:"flex",alignItems:"center",gap:12}}>
           <div style={{flex:1,textAlign:"center"}}>
-            <div style={{fontFamily:G.heading,fontSize:"clamp(28px,7vw,46px)",color:G.white,letterSpacing:3}}>{lang==="en"?"LEADERBOARD":"CLASSEMENT"}</div>
+            <div style={{fontFamily:G.heading,fontSize:"clamp(28px,7vw,46px)",color:G.white,letterSpacing:3}}>{tr("CLASSEMENT","LEADERBOARD","RANGLISTE","CLASSIFICA","CLASSIFICAÇÃO")}</div>
             {(()=>{ const s=getCurrentSeason(); return lbMode==="amis"
-              ? <div style={{fontSize:12,color:"rgba(255,255,255,.4)"}}>{lang==="en"?"Friends leaderboard · Cumulative":"Classement entre amis · Cumulatif"}</div>
+              ? <div style={{fontSize:12,color:"rgba(255,255,255,.4)"}}>{tr("Classement entre amis · Cumulatif","Friends leaderboard · Cumulative","Freunde-Rangliste · Kumulativ","Classifica tra amici · Cumulativa","Classificação entre amigos · Cumulativa")}</div>
               : <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
-                  <div style={{fontSize:13,fontWeight:800,color:G.gold}}>⚽ {lang==="en"?s.monthNameEn:s.monthNameFr}</div>
-                  <div style={{fontSize:11,color:"rgba(255,255,255,.4)"}}>{lang==="en"?`⏳ ${s.days}d ${s.hours}h before reset`:`⏳ J-${s.days} ${s.hours}h avant reset`}</div>
+                  <div style={{fontSize:13,fontWeight:800,color:G.gold}}>⚽ {lang==="fr"?s.monthNameFr:s.monthNameEn}</div>
+                  <div style={{fontSize:11,color:"rgba(255,255,255,.4)"}}>{tr(`⏳ J-${s.days} ${s.hours}h avant reset`,`⏳ ${s.days}d ${s.hours}h before reset`,`⏳ ${s.days}T ${s.hours}h bis Reset`,`⏳ ${s.days}g ${s.hours}h al reset`,`⏳ ${s.days}d ${s.hours}h até o reset`)}</div>
                 </div>;
             })()}
           </div>
@@ -9510,9 +9510,11 @@ export default function LePont() {
             return (
               <div style={{marginBottom:8,padding:"10px 14px",background:"rgba(255,214,0,.08)",borderRadius:14,border:"1px solid rgba(255,214,0,.2)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                 <div>
-                  <div style={{fontSize:11,fontWeight:800,color:G.gold,letterSpacing:1}}>🏆 {(lang==="en"?s.monthNameEn:s.monthNameFr).toUpperCase()}</div>
+                  <div style={{fontSize:11,fontWeight:800,color:G.gold,letterSpacing:1}}>🏆 {(lang==="fr"?s.monthNameFr:s.monthNameEn).toUpperCase()}</div>
                   <div style={{fontSize:10,color:"rgba(255,255,255,.4)",marginTop:2}}>
-                    {lang==="en" ? (daysLeft > 0 ? `${daysLeft}d (${hoursLeft}h) left` : `Ends in ${hoursLeft}h`) : (daysLeft > 0 ? `J-${daysLeft} (${hoursLeft}h)` : `Finit dans ${hoursLeft}h`)}
+                    {daysLeft > 0
+                      ? tr(`J-${daysLeft} (${hoursLeft}h)`,`${daysLeft}d (${hoursLeft}h) left`,`${daysLeft}T (${hoursLeft}h)`,`${daysLeft}g (${hoursLeft}h)`,`${daysLeft}d (${hoursLeft}h)`)
+                      : tr(`Finit dans ${hoursLeft}h`,`Ends in ${hoursLeft}h`,`Endet in ${hoursLeft}h`,`Finisce tra ${hoursLeft}h`,`Termina em ${hoursLeft}h`)}
                   </div>
                 </div>
                 <button onClick={function(){setShowHallOfFame(true);}} style={{padding:"6px 12px",background:"rgba(255,214,0,.15)",color:G.gold,border:"1px solid rgba(255,214,0,.3)",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:11,fontWeight:800}}>
@@ -9529,25 +9531,25 @@ export default function LePont() {
                 else if(m!=="amis") loadLeaderboard(m);
                 else loadLeaderboard("global");
               }} style={{flex:1,minWidth:60,padding:"10px 6px",borderRadius:12,border:"1.5px solid "+(lbMode===m?G.accent:"rgba(255,255,255,.12)"),background:lbMode===m?"rgba(0,230,118,.1)":"transparent",color:lbMode===m?G.accent:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:12}}>
-                {m==="saison"?(lang==="en"?"⭐ Season":"⭐ Saison"):m==="global"?(lang==="en"?"🌍 Global":"🌍 Global"):(lang==="en"?"👥 Friends":"👥 Amis")}
+                {m==="saison"?tr("⭐ Saison","⭐ Season","⭐ Saison","⭐ Stagione","⭐ Temporada"):m==="global"?"🌍 Global":tr("👥 Amis","👥 Friends","👥 Freunde","👥 Amici","👥 Amigos")}
               </button>
             );})}
           </div>
           {/* Toggle Monde/Amis pour le classement Saison */}
           {lbMode==="saison" && (
             <div style={{display:"flex",gap:4,marginBottom:10,marginTop:6,padding:4,background:"rgba(255,255,255,.04)",borderRadius:10,border:"1px solid rgba(255,255,255,.06)"}}>
-              {[{id:"monde",emoji:"🌍",labelFr:"Monde",labelEn:"World"},{id:"amis",emoji:"👥",labelFr:"Amis",labelEn:"Friends"}].map(function(s){return(
+              {[{id:"monde",emoji:"🌍"},{id:"amis",emoji:"👥"}].map(function(s){return(
                 <button key={s.id} onClick={function(){setLbSeasonScope(s.id);}} style={{flex:1,padding:"8px 10px",borderRadius:8,border:"none",background:lbSeasonScope===s.id?"rgba(0,230,118,.2)":"transparent",color:lbSeasonScope===s.id?G.accent:"rgba(255,255,255,.55)",fontFamily:G.font,fontSize:12,fontWeight:800,cursor:"pointer",letterSpacing:.5,transition:"all .15s"}}>
-                  {s.emoji} {lang==="en"?s.labelEn:s.labelFr}
+                  {s.emoji} {s.id==="monde"?tr("Monde","World","Welt","Mondo","Mundo"):tr("Amis","Friends","Freunde","Amici","Amigos")}
                 </button>
               );})}
             </div>
           )}
           {leaderboard.length === 0 && (
-            <div style={{textAlign:"center",padding:"32px 0",color:"rgba(255,255,255,.3)",fontSize:14}}>{lang==="en"?"No scores yet":"Aucun score pour le moment"}</div>
+            <div style={{textAlign:"center",padding:"32px 0",color:"rgba(255,255,255,.3)",fontSize:14}}>{tr("Aucun score pour le moment","No scores yet","Noch keine Scores","Ancora nessun punteggio","Ainda sem pontuações")}</div>
           )}
           {leaderboard.length > 0 && lbMode==="saison" && lbSeasonScope==="amis" && leaderboard.filter(function(e){ return e.pid===playerId || friendsList.includes(e.pid); }).length === 0 && (
-            <div style={{textAlign:"center",padding:"32px 16px",color:"rgba(255,255,255,.3)",fontSize:13,lineHeight:1.5}}>{lang==="en"?"None of your friends have played yet this month":"Aucun de tes amis n'a encore joué ce mois-ci"}</div>
+            <div style={{textAlign:"center",padding:"32px 16px",color:"rgba(255,255,255,.3)",fontSize:13,lineHeight:1.5}}>{tr("Aucun de tes amis n'a encore joué ce mois-ci","None of your friends have played yet this month","Noch keiner deiner Freunde hat diesen Monat gespielt","Nessuno dei tuoi amici ha ancora giocato questo mese","Nenhum dos seus amigos jogou ainda este mês")}</div>
           )}
           {(lbMode==="amis"
             ? leaderboard.filter(function(e){ return e.pid===playerId || friendsList.includes(e.pid); })
@@ -9575,13 +9577,13 @@ export default function LePont() {
                   </div>
                   <div style={{flex:1,minWidth:0}}>
                     <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3,flexWrap:"wrap"}}>
-                      <span style={{fontSize:18,fontFamily:G.heading,letterSpacing:1,color:i<3?"#1a0d00":isMe?G.accent:G.white,whiteSpace:"nowrap"}}>{entry.country && <span style={{marginRight:5,fontSize:15}}>{countryToFlag(entry.country)}</span>}{entry.name}{isMe?" (toi)":""}</span>
+                      <span style={{fontSize:18,fontFamily:G.heading,letterSpacing:1,color:i<3?"#1a0d00":isMe?G.accent:G.white,whiteSpace:"nowrap"}}>{entry.country && <span style={{marginRight:5,fontSize:15}}>{countryToFlag(entry.country)}</span>}{entry.name}{isMe?tr(" (toi)"," (you)"," (du)"," (tu)"," (você)"):""}</span>
                       <span style={{fontSize:11,fontWeight:800,color:i<3?"#1a0d00":grade.color,background:i<3?"rgba(26,13,0,.18)":grade.color+"22",borderRadius:20,padding:"2px 8px",letterSpacing:.5,border:i<3?"1px solid rgba(26,13,0,.25)":"none"}}>{grade.emoji} {grade.label}</span>
                       {entry.streak>=3 && <span style={{fontSize:11,fontWeight:800,color:"#FF6B35",background:"rgba(255,107,53,.15)",borderRadius:20,padding:"2px 8px"}}>🔥 {entry.streak}</span>}
                     </div>
                     {lbMode==="saison"
                       ? null
-                      : <div style={{fontSize:12,color:i<3?"rgba(26,13,0,.85)":"rgba(255,255,255,.5)",marginTop:3,fontWeight:i<3?700:400}}>{entry.played} {lang==="en"?(entry.played>1?"games":"game"):(entry.played>1?"parties":"partie")}</div>
+                      : <div style={{fontSize:12,color:i<3?"rgba(26,13,0,.85)":"rgba(255,255,255,.5)",marginTop:3,fontWeight:i<3?700:400}}>{entry.played} {entry.played>1?tr("parties","games","Spiele","partite","jogos"):tr("partie","game","Spiel","partita","jogo")}</div>
                     }
                   </div>
                   <div style={{fontFamily:G.heading,fontSize:28,color:i<3?"#1a0d00":G.white,flexShrink:0}}>{entry.score} <span style={{fontSize:12,color:i<3?"rgba(26,13,0,.7)":"rgba(255,255,255,.3)",fontWeight:i<3?700:400}}>pts</span></div>
@@ -9590,15 +9592,15 @@ export default function LePont() {
                 <div style={{display:"flex",borderTop:i<3?"1px solid rgba(0,0,0,.2)":"1px solid rgba(255,255,255,.06)",background:i<3?"rgba(0,0,0,.08)":"transparent"}}>
                     <div style={{flex:1,padding:"10px 0",textAlign:"center",borderRight:i<3?"1px solid rgba(0,0,0,.15)":"1px solid rgba(255,255,255,.06)"}}>
                       <div style={{fontFamily:G.heading,fontSize:22,color:i<3?"#0d5c2a":"#00E676"}}>{entry.wins||0}</div>
-                      <div style={{fontSize:11,color:i<3?"rgba(26,13,0,.75)":"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase",fontWeight:i<3?800:400}}>{lang==="en"?"Wins":"Victoires"}</div>
+                      <div style={{fontSize:11,color:i<3?"rgba(26,13,0,.75)":"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase",fontWeight:i<3?800:400}}>{tr("Victoires","Wins","Siege","Vittorie","Vitórias")}</div>
                     </div>
                     <div style={{flex:1,padding:"10px 0",textAlign:"center",borderRight:i<3?"1px solid rgba(0,0,0,.15)":"1px solid rgba(255,255,255,.06)"}}>
                       <div style={{fontFamily:G.heading,fontSize:22,color:i<3?"#7a5c00":G.gold}}>{entry.draws||0}</div>
-                      <div style={{fontSize:11,color:i<3?"rgba(26,13,0,.75)":"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase",fontWeight:i<3?800:400}}>{lang==="en"?"Draws":"Nuls"}</div>
+                      <div style={{fontSize:11,color:i<3?"rgba(26,13,0,.75)":"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase",fontWeight:i<3?800:400}}>{tr("Nuls","Draws","Remis","Pareggi","Empates")}</div>
                     </div>
                     <div style={{flex:1,padding:"10px 0",textAlign:"center"}}>
                       <div style={{fontFamily:G.heading,fontSize:22,color:i<3?"#8a1a2e":"#FF3D57"}}>{entry.losses||0}</div>
-                      <div style={{fontSize:11,color:i<3?"rgba(26,13,0,.75)":"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase",fontWeight:i<3?800:400}}>{lang==="en"?"Losses":"Défaites"}</div>
+                      <div style={{fontSize:11,color:i<3?"rgba(26,13,0,.75)":"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase",fontWeight:i<3?800:400}}>{tr("Défaites","Losses","Niederlagen","Sconfitte","Derrotas")}</div>
                     </div>
                   </div>
                 )}
@@ -9612,10 +9614,10 @@ export default function LePont() {
               {hallOfFame.slice(0,5).map(function(s,i){
                 const monthNamesFr = ["Jan","Fév","Mars","Avr","Mai","Juin","Juil","Août","Sept","Oct","Nov","Déc"];
                 const monthNamesEn = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-                let monthShort = lang==="en"?("Season "+s.season_number):("Saison "+s.season_number);
+                let monthShort = tr("Saison "+s.season_number,"Season "+s.season_number,"Saison "+s.season_number,"Stagione "+s.season_number,"Temporada "+s.season_number);
                 if (s.season_month) {
                   const [y, m] = s.season_month.split("-");
-                  monthShort = (lang==="en"?monthNamesEn:monthNamesFr)[parseInt(m,10)-1] + " " + y.slice(2);
+                  monthShort = (lang==="fr"?monthNamesFr:monthNamesEn)[parseInt(m,10)-1] + " " + y.slice(2);
                 }
                 return (
                   <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",background:"rgba(255,215,0,.05)",borderRadius:12,marginBottom:6,border:"1px solid rgba(255,215,0,.1)"}}>
@@ -10293,7 +10295,7 @@ export default function LePont() {
                 <div style={{marginTop:6,display:"inline-block",fontSize:11,fontWeight:800,color:grade.color,background:grade.color+"22",borderRadius:20,padding:"3px 12px",letterSpacing:1}}>{grade.emoji} {grade.label}</div>
               )}
               {d.rank && (
-                <div style={{marginTop:8,fontSize:13,color:"rgba(255,255,255,.6)"}}>{lang==="en"?"Rank: #":"Classement: #"}{d.rank}</div>
+                <div style={{marginTop:8,fontSize:13,color:"rgba(255,255,255,.6)"}}>{tr("Classement : #","Rank: #","Rang: #","Posizione: #","Posição: #")}{d.rank}</div>
               )}
             </div>
             <div style={{zIndex:1,padding:"8px 16px",display:"flex",gap:10}}>
