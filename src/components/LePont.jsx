@@ -2952,7 +2952,7 @@ export default function LePont() {
   const duelFlashToRef = React.useRef(null);
   const [duelCodeCopied, setDuelCodeCopied] = useState(false); // lobby : feedback "code copié"
   // Mode démo (vidéo) : paires fixes en solo → réponses connues à l'avance.
-  const [duelDemo] = useState(function(){
+  const [duelDemo, setDuelDemo] = useState(function(){
     try {
       const q = new URLSearchParams(window.location.search).get("demo");
       if (q === "1") { localStorage.setItem("bb_demo", "1"); return true; }
@@ -2961,6 +2961,21 @@ export default function LePont() {
     } catch (e) { return false; }
   });
   const duelDemoIdxRef = React.useRef(0);
+  // Déclencheur caché : appui long (~0,7 s) sur la pastille du lanceur → bascule le mode démo.
+  const demoHoldRef = React.useRef(null);
+  function duelDemoHoldStart(){
+    if (demoHoldRef.current) clearTimeout(demoHoldRef.current);
+    demoHoldRef.current = setTimeout(function(){
+      demoHoldRef.current = null;
+      setDuelDemo(function(v){
+        const nv = !v;
+        try { if (nv) localStorage.setItem("bb_demo","1"); else localStorage.removeItem("bb_demo"); } catch(e){}
+        return nv;
+      });
+      vibrate([30,50,30]);
+    }, 700);
+  }
+  function duelDemoHoldEnd(){ if (demoHoldRef.current){ clearTimeout(demoHoldRef.current); demoHoldRef.current = null; } }
   // Renvoie la prochaine paire de la séquence démo (garantie jouable, repli aléatoire).
   function duelNextDemoPair(){
     for (let k = 0; k < DUEL_DEMO_PAIRS.length; k++) {
@@ -8413,8 +8428,8 @@ export default function LePont() {
             <div style={{position:"absolute",bottom:0,left:0,right:0,height:50,background:"linear-gradient(to top, #0a0a0a 0%, transparent 100%)",pointerEvents:"none"}}/>
           </div>
           <div style={{position:"relative",zIndex:1,padding:"14px 22px calc(22px + env(safe-area-inset-bottom))",flex:1,display:"flex",flexDirection:"column",maxWidth:480,margin:"0 auto",width:"100%",boxSizing:"border-box"}}>
-            {/* Pastille format */}
-            <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:12,padding:"10px 16px",background:`${ac}12`,border:`1.5px solid ${ac}40`,borderRadius:12,marginBottom:18,backdropFilter:"blur(10px)",flexWrap:"wrap"}}>
+            {/* Pastille format — appui long = bascule mode démo (caché) */}
+            <div onTouchStart={duelDemoHoldStart} onTouchEnd={duelDemoHoldEnd} onTouchMove={duelDemoHoldEnd} onMouseDown={duelDemoHoldStart} onMouseUp={duelDemoHoldEnd} onMouseLeave={duelDemoHoldEnd} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:12,padding:"10px 16px",background:duelDemo?"rgba(255,214,0,.14)":`${ac}12`,border:`1.5px solid ${duelDemo?"rgba(255,214,0,.5)":ac+"40"}`,borderRadius:12,marginBottom:18,backdropFilter:"blur(10px)",flexWrap:"wrap",userSelect:"none",WebkitUserSelect:"none",WebkitTouchCallout:"none"}}>
               <span style={{color:ac,fontSize:13,fontWeight:800,letterSpacing:.5}}>⏱ <span style={{color:G.white}}>60 S</span></span>
               <span style={{color:ac,fontSize:14,fontWeight:800}}>·</span>
               <span style={{color:ac,fontSize:13,fontWeight:800,letterSpacing:.5}}>♾ <span style={{color:G.white}}>{tr("MANCHES","ROUNDS","RUNDEN","TURNI","RODADAS")}</span></span>
