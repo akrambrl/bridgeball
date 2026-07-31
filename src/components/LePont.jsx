@@ -9640,8 +9640,8 @@ export default function LePont() {
           onClick={function(e){if(e.target===e.currentTarget)setShowHallOfFame(false);}}>
           <div style={{width:"100%",background:"rgba(10,20,10,.97)",borderRadius:"28px 28px 0 0",padding:"20px 20px 48px",border:"1px solid rgba(255,255,255,.1)",borderBottom:"none",maxHeight:"80vh",overflowY:"auto"}}>
             <div style={{fontFamily:G.heading,fontSize:28,color:G.gold,letterSpacing:2,marginBottom:4,textAlign:"center"}}>🏅 HALL OF FAME</div>
-            <div style={{fontSize:12,color:"rgba(255,255,255,.4)",textAlign:"center",marginBottom:16}}>{lang==="en"?"Past season champions":"Champions des saisons passées"}</div>
-            {hallOfFame.length === 0 && <div style={{textAlign:"center",color:"rgba(255,255,255,.3)",padding:"24px 0",fontSize:14}}>{lang==="en"?"No champion yet — the first season is ongoing!":"Pas encore de champion — la première saison est en cours !"}</div>}
+            <div style={{fontSize:12,color:"rgba(255,255,255,.4)",textAlign:"center",marginBottom:16}}>{tr("Champions des saisons passées","Past season champions","Champions vergangener Saisons","Campioni delle stagioni passate","Campeões das temporadas passadas")}</div>
+            {hallOfFame.length === 0 && <div style={{textAlign:"center",color:"rgba(255,255,255,.3)",padding:"24px 0",fontSize:14}}>{tr("Pas encore de champion — la première saison est en cours !","No champion yet — the first season is ongoing!","Noch kein Champion — die erste Saison läuft!","Ancora nessun campione — la prima stagione è in corso!","Ainda sem campeão — a primeira temporada está em andamento!")}</div>}
             {hallOfFame.map(function(s,i){
               // Transformer le monthKey "2026-04" en nom lisible
               const monthNamesFr = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
@@ -9650,13 +9650,13 @@ export default function LePont() {
               if (s.season_month) {
                 const [y, m] = s.season_month.split("-");
                 const mi = parseInt(m,10) - 1;
-                monthLabel = (lang==="en"?monthNamesEn:monthNamesFr)[mi] + " " + y;
+                monthLabel = (lang==="fr"?monthNamesFr:monthNamesEn)[mi] + " " + y;
               }
               return (
                 <div key={i} style={{background:"linear-gradient(135deg, rgba(255,214,0,.1), rgba(255,107,53,.05))",borderRadius:18,border:"1.5px solid rgba(255,214,0,.3)",marginBottom:14,padding:"16px 14px",boxShadow:"0 4px 16px rgba(255,214,0,.08)"}}>
                   {/* Header saison */}
                   <div style={{textAlign:"center",marginBottom:12}}>
-                    <div style={{fontSize:11,fontWeight:800,letterSpacing:3,color:"rgba(255,214,0,.7)",textTransform:"uppercase"}}>{lang==="en"?"Season":"Saison"} {s.season_number}</div>
+                    <div style={{fontSize:11,fontWeight:800,letterSpacing:3,color:"rgba(255,214,0,.7)",textTransform:"uppercase"}}>{tr("Saison","Season","Saison","Stagione","Temporada")} {s.season_number}</div>
                     {monthLabel && <div style={{fontFamily:G.heading,fontSize:18,color:G.white,letterSpacing:1,marginTop:2}}>{monthLabel}</div>}
                   </div>
                   {/* Podium */}
@@ -9690,7 +9690,7 @@ export default function LePont() {
                 </div>
               );
             })}
-            <button onClick={function(){setShowHallOfFame(false);}} style={{width:"100%",padding:"14px",background:"rgba(255,255,255,.07)",color:G.white,border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700,marginTop:8}}>{lang==="en"?"Close":"Fermer"}</button>
+            <button onClick={function(){setShowHallOfFame(false);}} style={{width:"100%",padding:"14px",background:"rgba(255,255,255,.07)",color:G.white,border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700,marginTop:8}}>{tr("Fermer","Close","Schließen","Chiudi","Fechar")}</button>
           </div>
         </div>
       )}
@@ -9874,36 +9874,29 @@ export default function LePont() {
         <div style={{position:"relative",zIndex:1,width:"100%",maxWidth:380,background:G.bg,borderRadius:28,padding:"32px 24px 24px",border:"1px solid rgba(0,230,118,.2)",textAlign:"center",boxShadow:"0 20px 60px rgba(0,0,0,.5)"}}>
           <div style={{fontSize:56,marginBottom:16}}>🐐</div>
           <div style={{fontFamily:G.heading,fontSize:26,color:G.white,letterSpacing:1.2,marginBottom:14}}>
-            {lang==="en" ? "WELCOME TO GOAT FC" : "BIENVENUE SUR GOAT FC"}
+            {tr("BIENVENUE SUR GOAT FC","WELCOME TO GOAT FC","WILLKOMMEN BEI GOAT FC","BENVENUTO SU GOAT FC","BEM-VINDO AO GOAT FC")}
           </div>
           <div style={{fontSize:14,color:"rgba(255,255,255,.75)",lineHeight:1.6,marginBottom:20,textAlign:"left"}}>
-            {lang==="en" ? (
-              <>
-                <p style={{margin:"0 0 12px"}}>Quick heads-up about your data:</p>
-                <ul style={{paddingLeft:20,margin:"0 0 12px",color:"rgba(255,255,255,.65)",fontSize:13}}>
-                  <li style={{marginBottom:6}}>We store your <strong style={{color:G.accent}}>username, scores and preferences</strong> locally</li>
-                  <li style={{marginBottom:6}}>No advertising tracking, no data sold to third parties</li>
-                  <li>You can delete your account anytime in settings</li>
-                </ul>
-              </>
-            ) : (
-              <>
-                <p style={{margin:"0 0 12px"}}>Petit point sur tes données :</p>
-                <ul style={{paddingLeft:20,margin:"0 0 12px",color:"rgba(255,255,255,.65)",fontSize:13}}>
-                  <li style={{marginBottom:6}}>On stocke ton <strong style={{color:G.accent}}>pseudo, scores et préférences</strong> localement</li>
-                  <li style={{marginBottom:6}}>Pas de pub trackée, aucune donnée revendue</li>
-                  <li>Tu peux supprimer ton compte à tout moment dans les paramètres</li>
-                </ul>
-              </>
-            )}
+            {(function(){
+              const li = {padding:0}, ul = {paddingLeft:20,margin:"0 0 12px",color:"rgba(255,255,255,.65)",fontSize:13};
+              const S = {color:G.accent};
+              const blocks = {
+                fr:<><p style={{margin:"0 0 12px"}}>Petit point sur tes données :</p><ul style={ul}><li style={{marginBottom:6}}>On stocke ton <strong style={S}>pseudo, scores et préférences</strong> localement</li><li style={{marginBottom:6}}>Pas de pub trackée, aucune donnée revendue</li><li>Tu peux supprimer ton compte à tout moment dans les paramètres</li></ul></>,
+                en:<><p style={{margin:"0 0 12px"}}>Quick heads-up about your data:</p><ul style={ul}><li style={{marginBottom:6}}>We store your <strong style={S}>username, scores and preferences</strong> locally</li><li style={{marginBottom:6}}>No advertising tracking, no data sold to third parties</li><li>You can delete your account anytime in settings</li></ul></>,
+                de:<><p style={{margin:"0 0 12px"}}>Kurz zu deinen Daten:</p><ul style={ul}><li style={{marginBottom:6}}>Wir speichern deinen <strong style={S}>Benutzernamen, Scores und Einstellungen</strong> lokal</li><li style={{marginBottom:6}}>Kein Werbe-Tracking, keine Daten an Dritte verkauft</li><li>Du kannst dein Konto jederzeit in den Einstellungen löschen</li></ul></>,
+                it:<><p style={{margin:"0 0 12px"}}>Due parole sui tuoi dati:</p><ul style={ul}><li style={{marginBottom:6}}>Salviamo il tuo <strong style={S}>nome utente, punteggi e preferenze</strong> localmente</li><li style={{marginBottom:6}}>Nessun tracciamento pubblicitario, nessun dato venduto a terzi</li><li>Puoi eliminare il tuo account in qualsiasi momento nelle impostazioni</li></ul></>,
+                pt:<><p style={{margin:"0 0 12px"}}>Um aviso rápido sobre seus dados:</p><ul style={ul}><li style={{marginBottom:6}}>Armazenamos seu <strong style={S}>nome de usuário, pontuações e preferências</strong> localmente</li><li style={{marginBottom:6}}>Sem rastreamento de anúncios, nenhum dado vendido a terceiros</li><li>Você pode excluir sua conta a qualquer momento nas configurações</li></ul></>,
+              };
+              return blocks[lang] || blocks.en;
+            })()}
           </div>
           <div style={{display:"flex",gap:8,fontSize:11,color:"rgba(255,255,255,.4)",marginBottom:18,justifyContent:"center"}}>
-            <a href="/privacy" target="_blank" rel="noopener noreferrer" style={{color:"rgba(255,255,255,.5)",textDecoration:"underline"}}>{lang==="en" ? "Privacy Policy" : "Politique de confidentialité"}</a>
+            <a href="/privacy" target="_blank" rel="noopener noreferrer" style={{color:"rgba(255,255,255,.5)",textDecoration:"underline"}}>{tr("Politique de confidentialité","Privacy Policy","Datenschutz","Privacy","Privacidade")}</a>
             <span>·</span>
-            <a href="/terms" target="_blank" rel="noopener noreferrer" style={{color:"rgba(255,255,255,.5)",textDecoration:"underline"}}>{lang==="en" ? "Terms" : "CGU"}</a>
+            <a href="/terms" target="_blank" rel="noopener noreferrer" style={{color:"rgba(255,255,255,.5)",textDecoration:"underline"}}>{tr("CGU","Terms","AGB","Termini","Termos")}</a>
           </div>
           <button onClick={closeWelcome} style={{width:"100%",padding:"14px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800}}>
-            {lang==="en" ? "Got it 🐐" : "J'ai compris 🐐"}
+            {tr("J'ai compris 🐐","Got it 🐐","Verstanden 🐐","Ho capito 🐐","Entendi 🐐")}
           </button>
         </div>
       </div>
