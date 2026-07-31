@@ -1,3 +1,5 @@
+import { tr } from "@/lib/lang";
+
 export type TabKey = "play" | "tutos" | "leaderboard" | "faq" | "about";
 
 type Props = {
@@ -5,25 +7,30 @@ type Props = {
   onChange: (t: TabKey) => void;
 };
 
-const TABS: { key: TabKey; label: string }[] = [
-  { key: "play", label: "JOUER" },
-  { key: "tutos", label: "TUTOS" },
-  { key: "leaderboard", label: "CLASSEMENT" },
-  { key: "faq", label: "FAQ" },
-  { key: "about", label: "À PROPOS" },
-];
+const TAB_KEYS: TabKey[] = ["play", "tutos", "leaderboard", "faq", "about"];
+
+function tabLabel(key: TabKey): string {
+  switch (key) {
+    case "play": return tr("JOUER", "PLAY", "SPIELEN", "GIOCA", "JOGAR");
+    case "tutos": return tr("TUTOS", "GUIDES", "ANLEITUNG", "GUIDE", "GUIAS");
+    case "leaderboard": return tr("CLASSEMENT", "LEADERBOARD", "RANGLISTE", "CLASSIFICA", "RANKING");
+    case "faq": return "FAQ";
+    case "about": return tr("À PROPOS", "ABOUT", "ÜBER UNS", "CHI SIAMO", "SOBRE");
+  }
+}
 
 // Lit le pseudo stocké par LePont (sinon "Invité")
 function getStoredPseudo(): string {
-  if (typeof window === "undefined") return "Invité";
+  const guest = tr("Invité", "Guest", "Gast", "Ospite", "Convidado");
+  if (typeof window === "undefined") return guest;
   try {
     return (
       localStorage.getItem("bb_pseudo") ||
       localStorage.getItem("bb_name") ||
-      "Invité"
+      guest
     );
   } catch {
-    return "Invité";
+    return guest;
   }
 }
 
@@ -48,12 +55,12 @@ export const LobbyHeader = ({ active, onChange }: Props) => {
 
       {/* Pills nav */}
       <nav className="hidden md:flex items-center gap-2 lg:gap-3">
-        {TABS.map((t) => {
-          const isActive = t.key === active;
+        {TAB_KEYS.map((key) => {
+          const isActive = key === active;
           return (
             <button
-              key={t.key}
-              onClick={() => onChange(t.key)}
+              key={key}
+              onClick={() => onChange(key)}
               className={
                 "px-4 lg:px-6 py-2.5 rounded-full font-display text-base tracking-widest border-2 transition-all " +
                 (isActive
@@ -61,7 +68,7 @@ export const LobbyHeader = ({ active, onChange }: Props) => {
                   : "border-white/15 text-white/70 hover:text-white hover:border-white/30")
               }
             >
-              {t.label}
+              {tabLabel(key)}
             </button>
           );
         })}

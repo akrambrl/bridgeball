@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { GameMode } from "@/pages/Home";
+import { tr } from "@/lib/lang";
 
 type Props = {
   onPlay: (game?: GameMode) => void;
@@ -70,6 +71,32 @@ const GAMES: {
     badge: "MAGIE",
   },
 ];
+
+// Champs traduits des jeux (tagline / description / badge) résolus au rendu
+function gameTagline(k: GameKey): string {
+  switch (k) {
+    case "mercato": return tr("La chaîne sans fin", "The endless chain", "Die endlose Kette", "La catena infinita", "A corrente sem fim");
+    case "plug": return tr("Le pont entre deux clubs", "The bridge between two clubs", "Die Brücke zwischen zwei Klubs", "Il ponte tra due club", "A ponte entre dois clubes");
+    case "grid": return tr("La grille des légendes", "The legends grid", "Das Legenden-Raster", "La griglia delle leggende", "A grade das lendas");
+    case "guess": return tr("Je devine ton joueur", "I guess your player", "Ich errate deinen Spieler", "Indovino il tuo giocatore", "Eu adivinho seu jogador");
+  }
+}
+function gameDescription(k: GameKey): string {
+  switch (k) {
+    case "mercato": return tr("Pars d'un joueur et enchaîne les transferts. Bats ton record.", "Start from a player and chain transfers. Beat your record.", "Starte bei einem Spieler und reihe Transfers aneinander. Schlag deinen Rekord.", "Parti da un giocatore e concatena i trasferimenti. Batti il tuo record.", "Comece por um jogador e encadeie as transferências. Bata seu recorde.");
+    case "plug": return tr("Deux clubs, un seul joueur. À toi de trouver le maillon qui les relie.", "Two clubs, one player. Find the link that connects them.", "Zwei Klubs, ein Spieler. Finde das Bindeglied zwischen ihnen.", "Due club, un solo giocatore. Trova l'anello che li unisce.", "Dois clubes, um jogador. Ache o elo que os liga.");
+    case "grid": return tr("Une grille 3×3, 9 cases à remplir avec les bons joueurs. Stratégie.", "A 3×3 grid, 9 cells to fill with the right players. Strategy.", "Ein 3×3-Raster, 9 Felder mit den richtigen Spielern füllen. Strategie.", "Una griglia 3×3, 9 caselle da riempire con i giocatori giusti. Strategia.", "Uma grade 3×3, 9 células para preencher com os jogadores certos. Estratégia.");
+    case "guess": return tr("Pense à un footballeur. En 25 questions max, je devine de qui il s'agit. 🔮", "Think of a footballer. In 25 questions max, I'll guess who it is. 🔮", "Denk an einen Fußballer. In max. 25 Fragen errate ich, wer es ist. 🔮", "Pensa a un calciatore. In max 25 domande indovino chi è. 🔮", "Pense num jogador. Em no máximo 25 perguntas, eu adivinho quem é. 🔮");
+  }
+}
+function gameBadge(k: GameKey): string {
+  switch (k) {
+    case "mercato": return tr("MARATHON", "MARATHON", "MARATHON", "MARATONA", "MARATONA");
+    case "plug": return "SIGNATURE";
+    case "grid": return tr("STRATÉGIE", "STRATEGY", "STRATEGIE", "STRATEGIA", "ESTRATÉGIA");
+    case "guess": return tr("MAGIE", "MAGIC", "MAGIE", "MAGIA", "MAGIA");
+  }
+}
 
 // Compteur "live" qui fluctue entre 80 et 320 joueurs (mock)
 function useLiveOnline() {
@@ -175,7 +202,7 @@ export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels, onOpenFriends }: Pr
       {/* COLONNE GAUCHE — choix du jeu */}
       <div className="space-y-3">
         <div className="font-display text-sm tracking-[0.25em] text-white/40 px-1 mb-2">
-          NOS JEUX
+          {tr("NOS JEUX", "OUR GAMES", "UNSERE SPIELE", "I NOSTRI GIOCHI", "NOSSOS JOGOS")}
         </div>
         {GAMES.map((g) => {
           const isActive = g.key === selected;
@@ -198,7 +225,7 @@ export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels, onOpenFriends }: Pr
               </div>
               <div className="min-w-0">
                 <div className="font-display text-xl tracking-wider truncate">{g.name}</div>
-                <div className="text-xs text-white/50 truncate">{g.tagline}</div>
+                <div className="text-xs text-white/50 truncate">{gameTagline(g.key)}</div>
               </div>
             </button>
           );
@@ -210,7 +237,7 @@ export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels, onOpenFriends }: Pr
           <span className="font-display text-base tracking-wider text-white tabular-nums">
             {online}
           </span>
-          <span className="text-xs text-white/50">en ligne</span>
+          <span className="text-xs text-white/50">{tr("en ligne", "online", "online", "online", "online")}</span>
         </div>
       </div>
 
@@ -234,7 +261,7 @@ export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels, onOpenFriends }: Pr
                   border: `1px solid ${game.accent}40`,
                 }}
               >
-                {game.badge}
+                {gameBadge(game.key)}
               </span>
 
               <h2 className="font-display text-5xl lg:text-7xl tracking-wide leading-none mb-2">
@@ -244,7 +271,7 @@ export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels, onOpenFriends }: Pr
                 className="font-display text-xl lg:text-2xl tracking-widest mb-3"
                 style={{ color: game.accent }}
               >
-                {game.tagline}
+                {gameTagline(game.key)}
               </p>
 
               {/* Card preview (illu plus petite) */}
@@ -260,19 +287,19 @@ export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels, onOpenFriends }: Pr
                 />
               </div>
 
-              <p className="text-white/70 max-w-md mb-4 text-sm lg:text-base">{game.description}</p>
+              <p className="text-white/70 max-w-md mb-4 text-sm lg:text-base">{gameDescription(game.key)}</p>
 
               {/* Gros bouton PLAY */}
               <button
                 onClick={() => onPlay(game.mode)}
                 className="goat-pulse group relative inline-flex items-center gap-3 px-12 py-4 rounded-2xl bg-gradient-to-r from-[#FF8A2A] to-[#FFC93C] text-[#1A0F00] font-display text-4xl tracking-widest hover:scale-[1.03] active:scale-[0.98] transition-transform"
               >
-                <span className="text-3xl">▶</span> JOUER
+                <span className="text-3xl">▶</span> {tr("JOUER", "PLAY", "SPIELEN", "GIOCA", "JOGAR")}
                 <span className="absolute inset-0 rounded-2xl bg-white/0 group-hover:bg-white/10 transition-colors pointer-events-none" />
               </button>
 
               <p className="mt-2 text-xs text-white/40">
-                Gratuit · Sans inscription · 3 minutes
+                {tr("Gratuit · Sans inscription · 3 minutes", "Free · No sign-up · 3 minutes", "Gratis · Ohne Anmeldung · 3 Minuten", "Gratis · Senza registrazione · 3 minuti", "Grátis · Sem cadastro · 3 minutos")}
               </p>
             </div>
 
@@ -311,13 +338,17 @@ export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels, onOpenFriends }: Pr
               ⚔️
             </div>
             <div className="min-w-0">
-              <div className="font-display text-lg tracking-wider text-[#FF8A2A]">DÉFIS OUVERTS</div>
+              <div className="font-display text-lg tracking-wider text-[#FF8A2A]">{tr("DÉFIS OUVERTS", "OPEN CHALLENGES", "OFFENE HERAUSFORDERUNGEN", "SFIDE APERTE", "DESAFIOS ABERTOS")}</div>
               <div className="text-xs text-white/60">
                 {myUnseen > 0
-                  ? `🔥 ${myUnseen} ${myUnseen > 1 ? "joueurs ont" : "joueur a"} relevé ton défi !`
+                  ? (myUnseen > 1
+                      ? tr(`🔥 ${myUnseen} joueurs ont relevé ton défi !`, `🔥 ${myUnseen} players took your challenge!`, `🔥 ${myUnseen} Spieler haben deine Herausforderung angenommen!`, `🔥 ${myUnseen} giocatori hanno accettato la tua sfida!`, `🔥 ${myUnseen} jogadores aceitaram seu desafio!`)
+                      : tr(`🔥 ${myUnseen} joueur a relevé ton défi !`, `🔥 ${myUnseen} player took your challenge!`, `🔥 ${myUnseen} Spieler hat deine Herausforderung angenommen!`, `🔥 ${myUnseen} giocatore ha accettato la tua sfida!`, `🔥 ${myUnseen} jogador aceitou seu desafio!`))
                   : openCount > 0
-                  ? `${openCount} défi${openCount > 1 ? "s" : ""} à relever`
-                  : "Bats les scores des autres — ou lance le tien"}
+                  ? (openCount > 1
+                      ? tr(`${openCount} défis à relever`, `${openCount} challenges to take`, `${openCount} Herausforderungen`, `${openCount} sfide da affrontare`, `${openCount} desafios para encarar`)
+                      : tr(`${openCount} défi à relever`, `${openCount} challenge to take`, `${openCount} Herausforderung`, `${openCount} sfida da affrontare`, `${openCount} desafio para encarar`))
+                  : tr("Bats les scores des autres — ou lance le tien", "Beat others' scores — or post your own", "Schlag die Scores anderer — oder poste deinen", "Batti i punteggi altrui — o lancia il tuo", "Bata as pontuações dos outros — ou lance o seu")}
               </div>
             </div>
           </div>
@@ -338,11 +369,13 @@ export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels, onOpenFriends }: Pr
               👥
             </div>
             <div className="min-w-0">
-              <div className="font-display text-lg tracking-wider text-[#00E676]">MES AMIS</div>
+              <div className="font-display text-lg tracking-wider text-[#00E676]">{tr("MES AMIS", "MY FRIENDS", "MEINE FREUNDE", "I MIEI AMICI", "MEUS AMIGOS")}</div>
               <div className="text-xs text-white/60">
                 {pendingFriends > 0
-                  ? `🔴 ${pendingFriends} demande${pendingFriends > 1 ? "s" : ""} d'ami en attente !`
-                  : "Ajoute tes amis et défie-les"}
+                  ? (pendingFriends > 1
+                      ? tr(`🔴 ${pendingFriends} demandes d'ami en attente !`, `🔴 ${pendingFriends} pending friend requests!`, `🔴 ${pendingFriends} offene Freundschaftsanfragen!`, `🔴 ${pendingFriends} richieste di amicizia in attesa!`, `🔴 ${pendingFriends} pedidos de amizade pendentes!`)
+                      : tr(`🔴 ${pendingFriends} demande d'ami en attente !`, `🔴 ${pendingFriends} pending friend request!`, `🔴 ${pendingFriends} offene Freundschaftsanfrage!`, `🔴 ${pendingFriends} richiesta di amicizia in attesa!`, `🔴 ${pendingFriends} pedido de amizade pendente!`))
+                  : tr("Ajoute tes amis et défie-les", "Add your friends and challenge them", "Füge Freunde hinzu und fordere sie heraus", "Aggiungi i tuoi amici e sfidali", "Adicione seus amigos e desafie-os")}
               </div>
             </div>
           </div>
@@ -354,7 +387,7 @@ export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels, onOpenFriends }: Pr
           className="rounded-2xl border-2 border-[#C084FC]/30 bg-gradient-to-br from-[#C084FC]/10 to-transparent p-4"
         >
           <div className="font-display text-base tracking-[0.2em] text-[#C084FC] mb-3">
-            🔑 REJOINDRE UNE PARTIE
+            {tr("🔑 REJOINDRE UNE PARTIE", "🔑 JOIN A GAME", "🔑 SPIEL BEITRETEN", "🔑 ENTRA IN UNA PARTITA", "🔑 ENTRAR NUMA PARTIDA")}
           </div>
           <div className="flex gap-2">
             <input
@@ -382,7 +415,7 @@ export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels, onOpenFriends }: Pr
             </button>
           </div>
           <div className="text-xs text-white/40 mt-2">
-            Tu as un code d'un ami ? Colle-le ici.
+            {tr("Tu as un code d'un ami ? Colle-le ici.", "Got a code from a friend? Paste it here.", "Hast du einen Code von einem Freund? Füg ihn hier ein.", "Hai un codice di un amico? Incollalo qui.", "Tem um código de um amigo? Cole aqui.")}
           </div>
         </form>
 
@@ -390,9 +423,9 @@ export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels, onOpenFriends }: Pr
         <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-4">
           <div className="flex items-center justify-between mb-3">
             <div className="font-display text-base tracking-[0.2em] text-white/70">
-              🏆 TOP JOUEURS
+              {tr("🏆 TOP JOUEURS", "🏆 TOP PLAYERS", "🏆 TOP-SPIELER", "🏆 TOP GIOCATORI", "🏆 TOP JOGADORES")}
             </div>
-            <span className="font-display text-xs tracking-widest text-white/40">CE MOIS-CI</span>
+            <span className="font-display text-xs tracking-widest text-white/40">{tr("CE MOIS-CI", "THIS MONTH", "DIESEN MONAT", "QUESTO MESE", "ESTE MÊS")}</span>
           </div>
           <ul className="space-y-2">
             {TOP5.map((p) => (
