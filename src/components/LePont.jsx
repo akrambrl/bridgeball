@@ -4527,7 +4527,7 @@ export default function LePont() {
           // Défi du jour : si déjà joué aujourd'hui → on montre le résultat/classement, sinon on lance
           const done = getMercatoDailyResult();
           if (done) { loadMercatoDailyBoard(); setShowMercatoDailyModal(true); }
-          else { setDiff("moyen"); startChain("moyen", true); }
+          else { setDiff("facile"); startChain("facile", true); }
         } else {
           startChain(reqDiff);
         }
@@ -11467,7 +11467,7 @@ export default function LePont() {
                       return (
                         <button onClick={function(){
                           if(done){ loadMercatoDailyBoard(); setShowMercatoDailyModal(true); setGameConfigModal(null); }
-                          else { setDiff("moyen"); setGameConfigModal(null); setTimeout(function(){ startChain("moyen", true); }, 60); }
+                          else { setDiff("facile"); setGameConfigModal(null); setTimeout(function(){ startChain("facile", true); }, 60); }
                         }} style={{width:"100%",marginBottom:16,padding:"14px 16px",borderRadius:16,border:`1.5px solid ${done?"rgba(255,255,255,.15)":"rgba(96,165,250,.6)"}`,background:done?"rgba(255,255,255,.04)":"linear-gradient(135deg,rgba(59,130,246,.22),rgba(96,165,250,.12))",cursor:"pointer",display:"flex",alignItems:"center",gap:12,textAlign:"left",boxShadow:done?"none":"0 8px 24px -8px rgba(96,165,250,.5)"}}>
                           <div style={{fontSize:26}}>🗓</div>
                           <div style={{flex:1}}>
