@@ -2936,7 +2936,7 @@ export default function LePont() {
   const [ggShareCopied, setGgShareCopied] = useState(false);
   const [ggError, setGgError] = useState(false); // true si l'algo n'a pas pu générer
   const [ggDemo, setGgDemo] = useState(ggIsDemo); // mode démo vidéo : grille fixe + feuille de réponses
-  const ggDemoHoldRef = React.useRef(null); // appui long caché sur le titre → bascule le mode démo
+  const ggTapRef = React.useRef({ count: 0, last: 0 }); // 5 taps rapides sur le titre → bascule le mode démo (fiable sur iOS)
   // 0 = seed du jour, sinon seed forcé. En démo → seed FIXE (grille reproductible, pas de save/submit).
   const [ggOverrideSeed, setGgOverrideSeed] = useState(ggIsDemo() ? GG_DEMO_SEED : 0);
   const [ggLastRejected, setGgLastRejected] = useState(null); // { playerName, rowCrit, colCrit } pour signaler
@@ -4168,12 +4168,14 @@ export default function LePont() {
     setGgGuess(""); setGgFlash(null); setGgSelectedCell(null); setGgRevealMode(false); setGgRevealCell(null);
     vibrate([30, 50, 30]);
   }
-  function ggDemoHoldStart() {
-    if (ggDemoHoldRef.current) clearTimeout(ggDemoHoldRef.current);
-    ggDemoHoldRef.current = setTimeout(function () { ggDemoHoldRef.current = null; ggToggleDemo(); }, 700);
-  }
-  function ggDemoHoldEnd() {
-    if (ggDemoHoldRef.current) { clearTimeout(ggDemoHoldRef.current); ggDemoHoldRef.current = null; }
+  // 5 taps rapides sur le titre (≤1,2 s entre chaque) → bascule le mode démo.
+  // Plus fiable qu'un appui long sur iOS (les taps sont discrets, pas annulés par un micro-mouvement).
+  function ggTitleTap() {
+    const now = Date.now();
+    const r = ggTapRef.current;
+    if (now - r.last > 1200) r.count = 0;
+    r.count += 1; r.last = now;
+    if (r.count >= 5) { r.count = 0; ggToggleDemo(); }
   }
 
   function ggStartGame() {
@@ -11999,7 +12001,7 @@ export default function LePont() {
                     </>
                   ) : (
                     <>
-                      <div onTouchStart={ggDemoHoldStart} onTouchEnd={ggDemoHoldEnd} onTouchMove={ggDemoHoldEnd} onMouseDown={ggDemoHoldStart} onMouseUp={ggDemoHoldEnd} onMouseLeave={ggDemoHoldEnd} style={{fontFamily:G.heading,fontSize:26,letterSpacing:2,color:"#FFD600",lineHeight:1,userSelect:"none",WebkitUserSelect:"none",WebkitTouchCallout:"none",cursor:"pointer"}}>GOAT GRID 🐐</div>
+                      <div onClick={ggTitleTap} style={{fontFamily:G.heading,fontSize:26,letterSpacing:2,color:"#FFD600",lineHeight:1,userSelect:"none",WebkitUserSelect:"none",WebkitTouchCallout:"none",cursor:"pointer"}}>GOAT GRID 🐐</div>
                       {ggOverrideSeed > 0 && (
                         <div style={{fontSize:9,color:ggDemo?"#00E676":"#FFD600",marginTop:2,letterSpacing:1.5,fontWeight:800}}>{ggDemo?"🎬 MODE DÉMO":"🔄 GRILLE TEST"}</div>
                       )}
