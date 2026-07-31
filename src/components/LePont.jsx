@@ -1650,7 +1650,7 @@ const DUEL_ROUNDS = 5;
 const DUEL_ANSWER_SECS = 10; // trouver le joueur (multi : limite par manche)
 const DUEL_RESULT_SECS = 1.8; // écran résultat de manche (court)
 const DUEL_SPIN_MS = 2200;   // durée du tirage "machine à sous" (clubs aléatoires)
-const DUEL_SOLO_SECS = 60;   // SOLO : temps TOTAL de la partie (manches illimitées)
+const DUEL_SOLO_SECS = 90;   // SOLO : temps TOTAL de la partie (manches illimitées)
 const DUEL_SOLO_SPIN_MS = 1000; // SOLO : tirage plus court (le temps total est limité)
 // Tire une paire de clubs aléatoire GARANTIE jouable (>=1 joueur commun)
 function duelRollPair(){
@@ -3122,7 +3122,7 @@ export default function LePont() {
       host_id:playerId, host_name:playerName||"Toi",
       guest_id:null, guest_name:null,
       state:"playing", round:1, phase:"answer", phase_at:new Date().toISOString(),
-      solo_ends_at:new Date(Date.now()+DUEL_SOLO_SECS*1000).toISOString(), // 60 s au total
+      solo_ends_at:new Date(Date.now()+DUEL_SOLO_SECS*1000).toISOString(), // 90 s au total
       club_c1:c1, club_c2:c2,
       host_answer:null, host_answer_ms:null, round_pts:null,
       host_score:0, host_correct:0, host_fast:0, host_rounds:0,
@@ -8622,7 +8622,7 @@ export default function LePont() {
           <div style={{position:"relative",zIndex:1,padding:"14px 22px calc(22px + env(safe-area-inset-bottom))",flex:1,display:"flex",flexDirection:"column",maxWidth:480,margin:"0 auto",width:"100%",boxSizing:"border-box"}}>
             {/* Pastille format */}
             <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:12,padding:"10px 16px",background:`${ac}12`,border:`1.5px solid ${ac}40`,borderRadius:12,marginBottom:18,backdropFilter:"blur(10px)",flexWrap:"wrap"}}>
-              <span style={{color:ac,fontSize:13,fontWeight:800,letterSpacing:.5}}>⏱ <span style={{color:G.white}}>60 S</span></span>
+              <span style={{color:ac,fontSize:13,fontWeight:800,letterSpacing:.5}}>⏱ <span style={{color:G.white}}>90 S</span></span>
               <span style={{color:ac,fontSize:14,fontWeight:800}}>·</span>
               <span style={{color:ac,fontSize:13,fontWeight:800,letterSpacing:.5}}>♾ <span style={{color:G.white}}>{tr("MANCHES","ROUNDS","RUNDEN","TURNI","RODADAS")}</span></span>
               <span style={{color:ac,fontSize:14,fontWeight:800}}>·</span>
