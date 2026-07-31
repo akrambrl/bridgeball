@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { GameMode } from "@/pages/Home";
+import { tr } from "@/lib/lang";
 
 type CountdownGame = Exclude<GameMode, "guess">;
 
@@ -31,6 +32,14 @@ const GAME_INFO: Record<
 };
 
 const START_FROM = 3;
+
+function countdownTagline(game: CountdownGame): string {
+  switch (game) {
+    case "pont": return tr("Le pont entre deux clubs", "The bridge between two clubs", "Die Brücke zwischen zwei Klubs", "Il ponte tra due club", "A ponte entre dois clubes");
+    case "chaine": return tr("La chaîne sans fin", "The endless chain", "Die endlose Kette", "La catena infinita", "A corrente sem fim");
+    case "grid": return tr("La grille des légendes", "The legends grid", "Das Legenden-Raster", "La griglia delle leggende", "A grade das lendas");
+  }
+}
 
 export const CountdownOverlay = ({ game, onDone, onCancel }: Props) => {
   const [n, setN] = useState(START_FROM);
@@ -64,7 +73,7 @@ export const CountdownOverlay = ({ game, onDone, onCancel }: Props) => {
         onClick={onCancel}
         className="absolute top-4 right-4 px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 text-white/60 hover:text-white text-xs font-display tracking-widest border border-white/10"
       >
-        ANNULER
+        {tr("ANNULER", "CANCEL", "ABBRECHEN", "ANNULLA", "CANCELAR")}
       </button>
 
       <div className="relative text-center">
@@ -72,12 +81,12 @@ export const CountdownOverlay = ({ game, onDone, onCancel }: Props) => {
           className="font-display text-xs lg:text-sm tracking-[0.4em] mb-2"
           style={{ color: info.accent }}
         >
-          PRÊT ?
+          {tr("PRÊT ?", "READY?", "BEREIT?", "PRONTO?", "PRONTO?")}
         </div>
         <div className="font-display text-3xl lg:text-5xl tracking-wider text-white mb-1">
           {info.name}
         </div>
-        <div className="text-sm text-white/50 mb-10">{info.tagline}</div>
+        <div className="text-sm text-white/50 mb-10">{countdownTagline(game)}</div>
 
         {/* Le gros chiffre */}
         <div
@@ -90,7 +99,7 @@ export const CountdownOverlay = ({ game, onDone, onCancel }: Props) => {
             animation: "countdownPop 1s ease-out forwards",
           }}
         >
-          {n === 0 ? "GO !" : n}
+          {n === 0 ? tr("GO !", "GO!", "LOS!", "VIA!", "JÁ!") : n}
         </div>
       </div>
 

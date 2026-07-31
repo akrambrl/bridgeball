@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { GameMode } from "@/pages/Home";
+import { tr } from "@/lib/lang";
 
 type Props = {
   game: Extract<GameMode, "pont" | "chaine">;
@@ -73,15 +74,15 @@ function pickOpponent() {
 export { pickOpponent };
 
 function getStoredPseudo(): string {
-  if (typeof window === "undefined") return "Toi";
+  if (typeof window === "undefined") return tr("Toi", "You", "Du", "Tu", "Você");
   try {
     return (
       localStorage.getItem("bb_pseudo") ||
       localStorage.getItem("bb_name") ||
-      "Toi"
+      tr("Toi", "You", "Du", "Tu", "Você")
     );
   } catch {
-    return "Toi";
+    return tr("Toi", "You", "Du", "Tu", "Você");
   }
 }
 
@@ -189,12 +190,12 @@ export const MatchmakingOverlay = ({ game, onFound, onCancel }: Props) => {
         onClick={onCancel}
         className="absolute top-4 right-4 px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 text-white/60 hover:text-white text-xs font-display tracking-widest border border-white/10"
       >
-        ANNULER
+        {tr("ANNULER", "CANCEL", "ABBRECHEN", "ANNULLA", "CANCELAR")}
       </button>
 
       <div className="relative text-center mb-8">
         <div className="font-display text-xs lg:text-sm tracking-[0.4em] text-[#3DA5FF] mb-2">
-          MODE EN LIGNE
+          {tr("MODE EN LIGNE", "ONLINE MODE", "ONLINE-MODUS", "MODALITÀ ONLINE", "MODO ONLINE")}
         </div>
         <div className="font-display text-3xl lg:text-5xl tracking-wider text-white">
           {GAME_LABEL[game]}
@@ -219,7 +220,7 @@ export const MatchmakingOverlay = ({ game, onFound, onCancel }: Props) => {
           </div>
           {phase === "found" && (
             <div className="font-display text-[10px] tracking-[0.3em] text-[#00E676] mt-2 animate-in fade-in duration-300">
-              ✓ TROUVÉ
+              {tr("✓ TROUVÉ", "✓ FOUND", "✓ GEFUNDEN", "✓ TROVATO", "✓ ENCONTRADO")}
             </div>
           )}
         </div>
@@ -248,22 +249,22 @@ export const MatchmakingOverlay = ({ game, onFound, onCancel }: Props) => {
               />
             </div>
             <div className="font-display text-2xl lg:text-3xl tracking-widest text-white">
-              RECHERCHE D'UN ADVERSAIRE
+              {tr("RECHERCHE D'UN ADVERSAIRE", "FINDING AN OPPONENT", "SUCHE NACH GEGNER", "RICERCA AVVERSARIO", "PROCURANDO ADVERSÁRIO")}
               <span className="inline-block w-12 text-left">
                 {".".repeat(dots)}
               </span>
             </div>
             <div className="text-sm text-white/40 mt-3">
-              Tri par niveau et région...
+              {tr("Tri par niveau et région...", "Sorting by level and region...", "Sortierung nach Level und Region...", "Ordinamento per livello e regione...", "Ordenando por nível e região...")}
             </div>
           </div>
         ) : (
           <div className="animate-in fade-in duration-300">
             <div className="font-display text-2xl lg:text-3xl tracking-widest text-[#00E676]">
-              MATCH PRÊT
+              {tr("MATCH PRÊT", "MATCH READY", "MATCH BEREIT", "MATCH PRONTO", "PARTIDA PRONTA")}
             </div>
             <div className="text-sm text-white/50 mt-2">
-              La partie va commencer...
+              {tr("La partie va commencer...", "The game is about to start...", "Das Spiel startet gleich...", "La partita sta per iniziare...", "O jogo vai começar...")}
             </div>
           </div>
         )}

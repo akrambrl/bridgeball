@@ -1,4 +1,5 @@
 import type { GameMode } from "@/pages/Home";
+import { tr } from "@/lib/lang";
 
 export type Difficulty = "facile" | "moyen" | "expert";
 
@@ -10,26 +11,26 @@ type Props = {
 
 const DIFFS: {
   key: Difficulty;
-  label: string;
-  subtitle: string;
+  label: () => string;
+  subtitle: () => string;
   accent: string;
 }[] = [
   {
     key: "facile",
-    label: "FACILE",
-    subtitle: "Stars très connues",
+    label: () => tr("FACILE", "EASY", "LEICHT", "FACILE", "FÁCIL"),
+    subtitle: () => tr("Stars très connues", "Very famous stars", "Sehr bekannte Stars", "Star molto famose", "Estrelas muito famosas"),
     accent: "#00E676",
   },
   {
     key: "moyen",
-    label: "MOYEN",
-    subtitle: "Bons joueurs",
+    label: () => tr("MOYEN", "MEDIUM", "MITTEL", "MEDIO", "MÉDIO"),
+    subtitle: () => tr("Bons joueurs", "Good players", "Gute Spieler", "Buoni giocatori", "Bons jogadores"),
     accent: "#FFC93C",
   },
   {
     key: "expert",
-    label: "CRESCENDO",
-    subtitle: "Facile → Moyen → Expert",
+    label: () => tr("CRESCENDO", "CRESCENDO", "CRESCENDO", "CRESCENDO", "CRESCENDO"),
+    subtitle: () => tr("Facile → Moyen → Expert", "Easy → Medium → Expert", "Leicht → Mittel → Experte", "Facile → Medio → Esperto", "Fácil → Médio → Expert"),
     accent: "#FF3D6E",
   },
 ];
@@ -64,9 +65,7 @@ export const DifficultyModal = ({ game, onPick, onClose }: Props) => {
             {GAME_LABEL[game]}
           </div>
           <h3 className="font-display text-4xl tracking-wide text-white leading-none">
-            CHOISIS TA
-            <br />
-            DIFFICULTÉ
+            {tr("CHOISIS TA DIFFICULTÉ", "CHOOSE YOUR DIFFICULTY", "WÄHLE DEINE SCHWIERIGKEIT", "SCEGLI LA DIFFICOLTÀ", "ESCOLHA A DIFICULDADE")}
           </h3>
         </div>
 
@@ -87,9 +86,9 @@ export const DifficultyModal = ({ game, onPick, onClose }: Props) => {
                   className="font-display text-2xl tracking-widest"
                   style={{ color: d.accent }}
                 >
-                  {d.label}
+                  {d.label()}
                 </div>
-                <div className="text-xs text-white/50 mt-0.5">{d.subtitle}</div>
+                <div className="text-xs text-white/50 mt-0.5">{d.subtitle()}</div>
               </div>
               <span
                 className="text-2xl transition-transform group-hover:translate-x-1"

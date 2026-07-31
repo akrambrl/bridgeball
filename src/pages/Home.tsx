@@ -11,6 +11,7 @@ import { ModeChoiceModal, type PlayMode } from "@/components/landing/ModeChoiceM
 import { MatchmakingOverlay, pickOpponent } from "@/components/landing/MatchmakingOverlay";
 import { CountdownOverlay } from "@/components/landing/CountdownOverlay";
 import { GoatGuess } from "@/components/landing/GoatGuess";
+import { tr } from "@/lib/lang";
 
 export type GameMode = "pont" | "chaine" | "grid" | "guess";
 
@@ -65,10 +66,10 @@ const Home = () => {
         <button
           onClick={() => setShowQuitConfirm(true)}
           className="fixed top-3 right-3 z-[60] flex items-center gap-2 px-4 py-2 rounded-full bg-[#FF8A2A] hover:bg-[#FF7A1A] text-[#1A0F00] font-display text-base tracking-widest shadow-[0_8px_24px_rgba(0,0,0,0.5)] hover:scale-[1.03] active:scale-[0.98] transition-all"
-          aria-label="Quitter et revenir à la landing GOAT FC"
-          title="Quitter et revenir à la landing"
+          aria-label={tr("Quitter et revenir à la landing GOAT FC", "Quit and return to the GOAT FC landing", "Beenden und zur GOAT-FC-Startseite zurück", "Esci e torna alla landing GOAT FC", "Sair e voltar à landing do GOAT FC")}
+          title={tr("Quitter et revenir à la landing", "Quit and return to landing", "Beenden und zur Startseite", "Esci e torna alla landing", "Sair e voltar à landing")}
         >
-          ← QUITTER
+          ← {tr("QUITTER", "QUIT", "BEENDEN", "ESCI", "SAIR")}
         </button>
         <LePont />
 
@@ -85,18 +86,18 @@ const Home = () => {
             >
               <div className="text-5xl mb-3">{onlineOpponent ? "🏳️" : "⚠️"}</div>
               <h3 className="font-display text-3xl tracking-wide text-white mb-2">
-                {onlineOpponent ? "ABANDONNER LE DUEL ?" : "QUITTER LA PARTIE ?"}
+                {onlineOpponent ? tr("ABANDONNER LE DUEL ?", "FORFEIT THE DUEL?", "DUELL AUFGEBEN?", "ABBANDONARE IL DUELLO?", "DESISTIR DO DUELO?") : tr("QUITTER LA PARTIE ?", "QUIT THE GAME?", "SPIEL BEENDEN?", "USCIRE DALLA PARTITA?", "SAIR DO JOGO?")}
               </h3>
               <p className="text-sm text-white/60 mb-7">
                 {onlineOpponent ? (
                   <>
-                    Tu perds automatiquement contre{" "}
+                    {tr("Tu perds automatiquement contre", "You automatically lose against", "Du verlierst automatisch gegen", "Perdi automaticamente contro", "Você perde automaticamente contra")}{" "}
                     <span className="text-white font-bold">
                       {onlineOpponent.pseudo} {onlineOpponent.country}
                     </span>
                   </>
                 ) : (
-                  "Ta progression en cours sera perdue."
+                  tr("Ta progression en cours sera perdue.", "Your current progress will be lost.", "Dein aktueller Fortschritt geht verloren.", "I tuoi progressi attuali andranno persi.", "Seu progresso atual será perdido.")
                 )}
               </p>
               <div className="flex flex-col gap-3">
@@ -104,7 +105,7 @@ const Home = () => {
                   onClick={() => setShowQuitConfirm(false)}
                   className="w-full py-3 rounded-xl bg-gradient-to-r from-[#FF8A2A] to-[#FFC93C] text-[#1A0F00] font-display text-lg tracking-widest hover:scale-[1.02] transition-transform"
                 >
-                  ▶ CONTINUER
+                  ▶ {tr("CONTINUER", "CONTINUE", "WEITER", "CONTINUA", "CONTINUAR")}
                 </button>
                 <button
                   onClick={() => {
@@ -117,7 +118,7 @@ const Home = () => {
                   }}
                   className="w-full py-3 rounded-xl border-2 border-white/10 bg-white/[0.02] hover:bg-white/[0.06] text-white/80 font-display text-base tracking-widest transition-colors"
                 >
-                  {onlineOpponent ? "Concéder le duel" : "Quitter quand même"}
+                  {onlineOpponent ? tr("Concéder le duel", "Concede the duel", "Duell aufgeben", "Cedi il duello", "Ceder o duelo") : tr("Quitter quand même", "Quit anyway", "Trotzdem beenden", "Esci comunque", "Sair mesmo assim")}
                 </button>
               </div>
             </div>
@@ -335,16 +336,18 @@ const Home = () => {
   );
 };
 
-const TICKER_ITEMS = [
-  { who: "EagleEye", what: "vient de scorer 12 850 pts sur The Plug 🔥" },
-  { who: "TransferKing", what: "a explosé son record · +1 420 pts" },
-  { who: "MercatoMaster", what: "enchaîne 18 transferts sans erreur 💪" },
-  { who: "ZidaneFan10", what: "rejoint le Top 10 du mois 🚀" },
-  { who: "FootGuru", what: "complète la GOAT Grid en 4'12 ⚡" },
-  { who: "Cantona7", what: "défie BridgeBuilder en multi 🆚" },
-  { who: "RonaldoSiu", what: "atteint le palier LÉGENDE 🏆" },
-  { who: "LeMercatoGuy", what: "trouve un pont rare : Bordeaux × Newcastle 🤯" },
-];
+function getTickerItems() {
+  return [
+    { who: "EagleEye", what: tr("vient de scorer 12 850 pts sur The Plug 🔥", "just scored 12,850 pts on The Plug 🔥", "hat gerade 12.850 Pkt bei The Plug erzielt 🔥", "ha appena segnato 12.850 pt su The Plug 🔥", "acabou de marcar 12.850 pts no The Plug 🔥") },
+    { who: "TransferKing", what: tr("a explosé son record · +1 420 pts", "smashed their record · +1,420 pts", "hat den Rekord gesprengt · +1.420 Pkt", "ha frantumato il record · +1.420 pt", "detonou o recorde · +1.420 pts") },
+    { who: "MercatoMaster", what: tr("enchaîne 18 transferts sans erreur 💪", "chained 18 transfers without a mistake 💪", "reiht 18 Transfers ohne Fehler aneinander 💪", "concatena 18 trasferimenti senza errori 💪", "encadeou 18 transferências sem erro 💪") },
+    { who: "ZidaneFan10", what: tr("rejoint le Top 10 du mois 🚀", "joins this month's Top 10 🚀", "steigt in die Top 10 des Monats auf 🚀", "entra nella Top 10 del mese 🚀", "entra no Top 10 do mês 🚀") },
+    { who: "FootGuru", what: tr("complète la GOAT Grid en 4'12 ⚡", "completed the GOAT Grid in 4'12 ⚡", "füllt das GOAT Grid in 4'12 ⚡", "completa la GOAT Grid in 4'12 ⚡", "completou a GOAT Grid em 4'12 ⚡") },
+    { who: "Cantona7", what: tr("défie BridgeBuilder en multi 🆚", "challenges BridgeBuilder in multiplayer 🆚", "fordert BridgeBuilder im Mehrspieler heraus 🆚", "sfida BridgeBuilder in multigiocatore 🆚", "desafia BridgeBuilder no multijogador 🆚") },
+    { who: "RonaldoSiu", what: tr("atteint le palier LÉGENDE 🏆", "reached the LEGEND tier 🏆", "erreicht die Stufe LEGENDE 🏆", "raggiunge il grado LEGGENDA 🏆", "alcançou a patente LENDA 🏆") },
+    { who: "LeMercatoGuy", what: tr("trouve un pont rare : Bordeaux × Newcastle 🤯", "found a rare bridge: Bordeaux × Newcastle 🤯", "findet eine seltene Brücke: Bordeaux × Newcastle 🤯", "trova un ponte raro: Bordeaux × Newcastle 🤯", "achou uma ponte rara: Bordeaux × Newcastle 🤯") },
+  ];
+}
 
 const ForfeitOverlay = ({
   opponent,
@@ -374,13 +377,13 @@ const ForfeitOverlay = ({
       <div className="relative text-center">
         <div className="text-7xl mb-4 animate-in zoom-in duration-300">🏳️</div>
         <div className="font-display text-sm tracking-[0.4em] text-[#FF3D6E] mb-3">
-          ABANDON
+          {tr("ABANDON", "FORFEIT", "AUFGABE", "RESA", "DESISTÊNCIA")}
         </div>
         <div className="font-display text-6xl lg:text-7xl tracking-wider text-[#FF3D6E] leading-none mb-5">
-          DÉFAITE
+          {tr("DÉFAITE", "DEFEAT", "NIEDERLAGE", "SCONFITTA", "DERROTA")}
         </div>
         <div className="text-white/80 text-lg">
-          Tu as concédé le duel contre
+          {tr("Tu as concédé le duel contre", "You conceded the duel against", "Du hast das Duell aufgegeben gegen", "Hai ceduto il duello contro", "Você cedeu o duelo contra")}
         </div>
         <div className="mt-4 flex flex-col items-center gap-2">
           {opponent.avatar && (
@@ -403,18 +406,20 @@ const ForfeitOverlay = ({
           </div>
         </div>
         <div className="text-xs text-white/40 mt-6 tracking-widest font-display">
-          RETOUR AU LOBBY...
+          {tr("RETOUR AU LOBBY...", "BACK TO LOBBY...", "ZURÜCK ZUR LOBBY...", "RITORNO ALLA LOBBY...", "VOLTANDO AO LOBBY...")}
         </div>
       </div>
     </div>
   );
 };
 
-const ScoreTicker = () => (
+const ScoreTicker = () => {
+  const TICKER_ITEMS = getTickerItems();
+  return (
   <div className="relative z-10 border-t border-white/5 bg-black/30 backdrop-blur-sm overflow-hidden">
     <div className="flex items-center gap-3 px-4 py-2.5">
       <span className="goat-blink shrink-0 px-2 py-0.5 rounded-md bg-[#FF8A2A] text-[#1A0F00] font-display text-xs tracking-widest">
-        EN DIRECT
+        {tr("EN DIRECT", "LIVE", "LIVE", "IN DIRETTA", "AO VIVO")}
       </span>
       <div className="flex-1 overflow-hidden">
         <div className="goat-marquee flex gap-12 whitespace-nowrap">
@@ -431,6 +436,7 @@ const ScoreTicker = () => (
       </div>
     </div>
   </div>
-);
+  );
+};
 
 export default Home;
