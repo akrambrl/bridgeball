@@ -1645,30 +1645,6 @@ function duelRollPair(){
   return ["Real Madrid", "Barcelona"]; // repli (ont des joueurs communs)
 }
 
-// ─── MODE DÉMO (pour enregistrer une vidéo fluide) ───────────────
-// Activé via ?demo=1 (désactivé via ?demo=0). En solo, les paires ne sont plus
-// aléatoires : on déroule TOUJOURS cette liste, dans cet ordre → on peut réviser
-// les réponses à l'avance et répondre instantanément. `a` = réponse star suggérée
-// (toutes vérifiées comme joueur commun réel dans la base).
-const DUEL_DEMO_PAIRS = [
-  { c1:"Real Madrid",     c2:"Juventus FC",        a:"Cristiano Ronaldo" },
-  { c1:"Barcelona",       c2:"PSG",                a:"Neymar" },
-  { c1:"AC Milan",        c2:"PSG",                a:"Zlatan Ibrahimovic" },
-  { c1:"Real Madrid",     c2:"Chelsea",            a:"Eden Hazard" },
-  { c1:"Real Madrid",     c2:"Manchester United",  a:"David Beckham" },
-  { c1:"Juventus FC",     c2:"Inter Milan",        a:"Patrick Vieira" },
-  { c1:"Arsenal",         c2:"Barcelona",          a:"Cesc Fabregas" },
-  { c1:"Chelsea",         c2:"Atletico Madrid",    a:"Diego Costa" },
-  { c1:"Manchester City", c2:"Barcelona",          a:"İlkay Gündoğan" },
-  { c1:"Tottenham",       c2:"Real Madrid",        a:"Gareth Bale" },
-  { c1:"Inter Milan",     c2:"Manchester United",  a:"Romelu Lukaku" },
-  { c1:"Liverpool",       c2:"AS Roma",            a:"Mohamed Salah" },
-  { c1:"Chelsea",         c2:"PSG",                a:"Thiago Silva" },
-  { c1:"Bayern Munich",   c2:"Barcelona",          a:"Robert Lewandowski" },
-  { c1:"Barcelona",       c2:"Liverpool",          a:"Luis Suárez" },
-  { c1:"Inter Milan",     c2:"Barcelona",          a:"Samuel Eto'o" },
-];
-
 // CRESCENDO HELPER : retourne la difficulté "effective" en mode crescendo selon le nombre de liens accomplis
 // 0-2 liens = facile, 3-6 liens = moyen, 7+ = expert
 function getCrescendoTier(chainCount) {
@@ -2958,40 +2934,6 @@ export default function LePont() {
   const [duelCodeCopied, setDuelCodeCopied] = useState(false); // lobby : feedback "code copié"
   const [duelBigAnswer, setDuelBigAnswer] = useState(null);    // nom affiché en GROS à chaque bonne réponse (~1,2 s)
   const duelBigAnswerToRef = React.useRef(null);
-  // Mode démo (vidéo) : paires fixes en solo → réponses connues à l'avance.
-  const [duelDemo, setDuelDemo] = useState(function(){
-    try {
-      const q = new URLSearchParams(window.location.search).get("demo");
-      if (q === "1") { localStorage.setItem("bb_demo", "1"); return true; }
-      if (q === "0") { localStorage.removeItem("bb_demo"); return false; }
-      return localStorage.getItem("bb_demo") === "1";
-    } catch (e) { return false; }
-  });
-  const duelDemoIdxRef = React.useRef(0);
-  // Déclencheur caché : appui long (~0,7 s) sur la pastille du lanceur → bascule le mode démo.
-  const demoHoldRef = React.useRef(null);
-  function duelDemoHoldStart(){
-    if (demoHoldRef.current) clearTimeout(demoHoldRef.current);
-    demoHoldRef.current = setTimeout(function(){
-      demoHoldRef.current = null;
-      setDuelDemo(function(v){
-        const nv = !v;
-        try { if (nv) localStorage.setItem("bb_demo","1"); else localStorage.removeItem("bb_demo"); } catch(e){}
-        return nv;
-      });
-      vibrate([30,50,30]);
-    }, 700);
-  }
-  function duelDemoHoldEnd(){ if (demoHoldRef.current){ clearTimeout(demoHoldRef.current); demoHoldRef.current = null; } }
-  // Renvoie la prochaine paire de la séquence démo (garantie jouable, repli aléatoire).
-  function duelNextDemoPair(){
-    for (let k = 0; k < DUEL_DEMO_PAIRS.length; k++) {
-      const d = DUEL_DEMO_PAIRS[duelDemoIdxRef.current % DUEL_DEMO_PAIRS.length];
-      duelDemoIdxRef.current++;
-      if (duelCommonPlayers(d.c1, d.c2).length > 0) return [d.c1, d.c2];
-    }
-    return duelRollPair();
-  }
   // Détection du clavier (iOS/Android) via visualViewport → passe en layout COMPACT
   // pour que les 2 clubs restent visibles quand le clavier est ouvert.
   const [duelKbOpen, setDuelKbOpen] = useState(false);
@@ -3120,10 +3062,9 @@ export default function LePont() {
   function duelSoloStart(){
     sndCtx(); // débloque l'audio (geste utilisateur)
     trackPlay("battle"); // GOAT Battle solo (contre soi-même)
-    if (duelDemo) duelDemoIdxRef.current = 0; // recommence la séquence démo au début
-    const [c1, c2] = duelDemo ? duelNextDemoPair() : duelRollPair();
+    const [c1, c2] = duelRollPair();
     const room = {
-      id:"LOCAL", code:"SOLO", solo:true, demo:duelDemo,
+      id:"LOCAL", code:"SOLO", solo:true,
       host_id:playerId, host_name:playerName||"Toi",
       guest_id:null, guest_name:null,
       state:"playing", round:1, phase:"answer", phase_at:new Date().toISOString(),
@@ -3196,7 +3137,7 @@ export default function LePont() {
     if(timeUp){
       duelPatch("LOCAL", Object.assign({ state:"finished", phase:"done", winner_id:room.host_id }, stats));
     } else {
-      const [c1, c2] = room.demo ? duelNextDemoPair() : duelRollPair();
+      const [c1, c2] = duelRollPair();
       duelPatch("LOCAL", Object.assign({ round:(room.round||1)+1, phase:"answer", phase_at:new Date().toISOString(),
         club_c1:c1, club_c2:c2, host_answer:null, host_answer_ms:null, round_pts:null, round_skipped:false, host_skip:false }, stats));
     }
@@ -8471,8 +8412,8 @@ export default function LePont() {
             <div style={{position:"absolute",bottom:0,left:0,right:0,height:50,background:"linear-gradient(to top, #0a0a0a 0%, transparent 100%)",pointerEvents:"none"}}/>
           </div>
           <div style={{position:"relative",zIndex:1,padding:"14px 22px calc(22px + env(safe-area-inset-bottom))",flex:1,display:"flex",flexDirection:"column",maxWidth:480,margin:"0 auto",width:"100%",boxSizing:"border-box"}}>
-            {/* Pastille format — appui long = bascule mode démo (caché) */}
-            <div onTouchStart={duelDemoHoldStart} onTouchEnd={duelDemoHoldEnd} onTouchMove={duelDemoHoldEnd} onMouseDown={duelDemoHoldStart} onMouseUp={duelDemoHoldEnd} onMouseLeave={duelDemoHoldEnd} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:12,padding:"10px 16px",background:duelDemo?"rgba(255,214,0,.14)":`${ac}12`,border:`1.5px solid ${duelDemo?"rgba(255,214,0,.5)":ac+"40"}`,borderRadius:12,marginBottom:18,backdropFilter:"blur(10px)",flexWrap:"wrap",userSelect:"none",WebkitUserSelect:"none",WebkitTouchCallout:"none"}}>
+            {/* Pastille format */}
+            <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:12,padding:"10px 16px",background:`${ac}12`,border:`1.5px solid ${ac}40`,borderRadius:12,marginBottom:18,backdropFilter:"blur(10px)",flexWrap:"wrap"}}>
               <span style={{color:ac,fontSize:13,fontWeight:800,letterSpacing:.5}}>⏱ <span style={{color:G.white}}>60 S</span></span>
               <span style={{color:ac,fontSize:14,fontWeight:800}}>·</span>
               <span style={{color:ac,fontSize:13,fontWeight:800,letterSpacing:.5}}>♾ <span style={{color:G.white}}>{tr("MANCHES","ROUNDS","RUNDEN","TURNI","RODADAS")}</span></span>
@@ -8484,22 +8425,6 @@ export default function LePont() {
             <button onClick={duelSoloStart} style={{width:"100%",padding:"15px",marginBottom:18,background:`linear-gradient(135deg, ${ac}, ${ac2})`,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:16,fontWeight:800,letterSpacing:1,boxShadow:`0 8px 24px ${ac}55`,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
               ▶ {tr("JOUER SOLO","PLAY SOLO","SOLO SPIELEN","GIOCA SOLO","JOGAR SOLO")} <span style={{fontSize:12,fontWeight:700,opacity:.8}}>· 10/20 pts</span>
             </button>
-            {/* 🎬 MODE DÉMO : fiche de réponses (paires fixes, dans l'ordre) — visible seulement en ?demo=1 */}
-            {duelDemo && (
-              <div style={{marginBottom:18,background:"rgba(255,214,0,.06)",border:"1px dashed rgba(255,214,0,.4)",borderRadius:14,padding:"12px 14px"}}>
-                <div style={{fontSize:11,fontWeight:900,letterSpacing:1,color:"#FFD600",marginBottom:8}}>🎬 MODE DÉMO — réponses (dans l'ordre)</div>
-                <div style={{display:"flex",flexDirection:"column",gap:6,maxHeight:200,overflowY:"auto"}}>
-                  {DUEL_DEMO_PAIRS.map(function(d,i){return(
-                    <div key={i} style={{display:"flex",alignItems:"center",gap:8,fontSize:12}}>
-                      <span style={{width:18,color:"rgba(255,255,255,.4)",fontWeight:800,flexShrink:0}}>{i+1}</span>
-                      <span style={{flex:1,color:"rgba(255,255,255,.75)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{d.c1} × {d.c2}</span>
-                      <span style={{color:"#00E676",fontWeight:800,flexShrink:0}}>{d.a}</span>
-                    </div>
-                  );})}
-                </div>
-                <div style={{fontSize:10,color:"rgba(255,255,255,.4)",marginTop:8,lineHeight:1.4}}>Les clubs sortent toujours dans cet ordre. Révise, puis lance en solo. Tape 3 lettres → touche la suggestion. (désactiver : ?demo=0)</div>
-              </div>
-            )}
             {/* Entre potes */}
             <div style={{fontSize:10,fontWeight:800,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginBottom:8}}>{tr("Entre potes","With friends","Mit Freunden","Con gli amici","Com amigos")}</div>
             <div style={{display:"flex",gap:8}}>
