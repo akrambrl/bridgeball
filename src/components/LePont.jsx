@@ -1889,6 +1889,20 @@ function ggBuildEmojiPattern(filledCells, grid) {
 
 // ─── Algo principal : génération de grille ────────────────────
 // Retourne null si on ne trouve pas (très rare)
+// ─── MODE DÉMO GOAT GRID (pour enregistrer une vidéo TikTok fluide) ───
+// Grille FIXE (seed constant) + feuille de réponses affichée en jeu. Activé par
+// ?demo=1 (désactivé ?demo=0), persistant via localStorage bb_gg_demo.
+// Seed choisi car il produit une grille valide et accessible (vérifié).
+const GG_DEMO_SEED = 424242;
+function ggIsDemo() {
+  try {
+    const q = new URLSearchParams(window.location.search).get("demo");
+    if (q === "1") { localStorage.setItem("bb_gg_demo", "1"); return true; }
+    if (q === "0") { localStorage.removeItem("bb_gg_demo"); return false; }
+    return localStorage.getItem("bb_gg_demo") === "1";
+  } catch (e) { return false; }
+}
+
 function ggGenerateGrid(seed) {
   const MAX_ATTEMPTS = 500;
   
@@ -2921,7 +2935,9 @@ export default function LePont() {
   const [ggShowTooltip, setGgShowTooltip] = useState(null); // { title, text } ou null
   const [ggShareCopied, setGgShareCopied] = useState(false);
   const [ggError, setGgError] = useState(false); // true si l'algo n'a pas pu générer
-  const [ggOverrideSeed, setGgOverrideSeed] = useState(0); // 0 = seed du jour, sinon seed forcé
+  const [ggDemo] = useState(ggIsDemo); // mode démo vidéo : grille fixe + feuille de réponses
+  // 0 = seed du jour, sinon seed forcé. En démo → seed FIXE (grille reproductible, pas de save/submit).
+  const [ggOverrideSeed, setGgOverrideSeed] = useState(ggIsDemo() ? GG_DEMO_SEED : 0);
   const [ggLastRejected, setGgLastRejected] = useState(null); // { playerName, rowCrit, colCrit } pour signaler
   const [ggReportSent, setGgReportSent] = useState(false); // confirmation visuelle après envoi
   const [ggReviewMode, setGgReviewMode] = useState(false); // true = on cache le modal de fin pour revoir la grille
@@ -4117,6 +4133,27 @@ export default function LePont() {
   }, [ggFilledCells, ggScore, ggBattleScreen]);
   
   // Démarrer/reprendre une partie GOAT GRID
+  // Démo : une réponse DISTINCTE par case (un joueur ne peut servir qu'une fois dans la grille).
+  // Préfère les joueurs faciles/reconnaissables, en évitant de réutiliser un nom déjà pris.
+  function ggDemoAnswers(cells) {
+    const used = new Set();
+    const ordered = cells.slice().sort(function (a, b) { return (a.row - b.row) || (a.col - b.col); });
+    return ordered.map(function (c) {
+      const cands = c.candidates || [];
+      let best = null, bestRank = 99;
+      for (const n of cands) {
+        if (used.has(n)) continue;
+        const p = PLAYERS_CLEAN.find(x => x.name === n);
+        const d = p ? p.diff : "expert";
+        const rank = d === "facile" ? 0 : d === "moyen" ? 1 : 2;
+        if (rank < bestRank) { bestRank = rank; best = n; if (rank === 0) break; }
+      }
+      if (!best) best = cands.find(n => !used.has(n)) || cands[0] || "";
+      if (best) used.add(best);
+      return { cell: c, answer: best };
+    });
+  }
+
   function ggStartGame() {
     trackPlay("grid");
     const seed = ggOverrideSeed || ggGetDailySeed();
@@ -12121,6 +12158,26 @@ export default function LePont() {
                       })}
                     </div>
                   </div>
+
+                  {/* 🎬 MODE DÉMO : feuille de réponses (grille fixe) — pour enregistrer une vidéo */}
+                  {ggDemo && ggGrid && (
+                    <div style={{margin:"14px 16px",background:"rgba(255,214,0,.06)",border:"1px dashed rgba(255,214,0,.4)",borderRadius:14,padding:"12px 14px"}}>
+                      <div style={{fontSize:11,fontWeight:900,letterSpacing:1,color:"#FFD600",marginBottom:8}}>🎬 MODE DÉMO — réponses (une par case)</div>
+                      <div style={{display:"flex",flexDirection:"column",gap:5}}>
+                        {ggDemoAnswers(ggGrid.cells).map(function(entry,idx){
+                          const c = entry.cell;
+                          return (
+                            <div key={idx} style={{display:"flex",alignItems:"center",gap:8,fontSize:12}}>
+                              <span style={{width:16,color:"rgba(255,255,255,.4)",fontWeight:800,flexShrink:0}}>{idx+1}</span>
+                              <span style={{flex:1,color:"rgba(255,255,255,.7)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.rowCriterion.label} × {c.colCriterion.label}</span>
+                              <span style={{color:"#00E676",fontWeight:800,flexShrink:0}}>{entry.answer}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <div style={{fontSize:10,color:"rgba(255,255,255,.4)",marginTop:8,lineHeight:1.4}}>Grille fixe (identique à chaque fois). Tape le nom → touche la suggestion. Désactiver : ?demo=0</div>
+                    </div>
+                  )}
 
                 </>
               )}
