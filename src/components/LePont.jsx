@@ -7224,9 +7224,7 @@ export default function LePont() {
     }).join(" × ");
 
     const title = `🐐 GOAT FC · ${dayShort} ${theme.flag} ${themeLabel}`;
-    const scoreLine = lang==="en"
-      ? `⚡ ${tries}/${maxTries} tries · +${earnedPoints} pts`
-      : `⚡ ${tries}/${maxTries} essais · +${earnedPoints} pts`;
+    const scoreLine = `⚡ ${tries}/${maxTries} ${tr("essais","tries","Versuche","tentativi","tentativas")} · +${earnedPoints} pts`;
     const cta = tr("Peux-tu faire mieux ? 👇","Can you do better? 👇","Kannst du es besser? 👇","Sai fare meglio? 👇","Consegue fazer melhor? 👇");
     const url = "https://goatfc.fr";
     const text = `${title}\n${scoreLine}\n\n${clubsDisplay}\n\n${squares.join("")}\n\n${cta}\n${url}`;
@@ -12066,7 +12064,7 @@ export default function LePont() {
                   gridEmojis.push(row.join(""));
                 }
                 const todayDate = new Date().toLocaleDateString(tr("fr-FR","en-US","de-DE","it-IT","pt-PT"),{day:'numeric',month:'short'});
-                const shareText = "🐐 GOAT GRID — " + todayDate + "\n\n" + gridEmojis.join("\n") + "\n\n" + ggScore + " pts · " + filledCount + "/9" + (isPerfect ? " · PARFAIT 🐐" : "") + "\n\n" + "Joue sur goatfc.online";
+                const shareText = "🐐 GOAT GRID — " + todayDate + "\n\n" + gridEmojis.join("\n") + "\n\n" + ggScore + " pts · " + filledCount + "/9" + (isPerfect ? " · " + tr("PARFAIT","PERFECT","PERFEKT","PERFETTO","PERFEITO") + " 🐐" : "") + "\n\n" + tr("Joue sur goatfc.online","Play on goatfc.online","Spiel auf goatfc.online","Gioca su goatfc.online","Jogue em goatfc.online");
                 
                 return (
                   <div style={{position:"fixed",inset:0,zIndex:500,background:"rgba(0,0,0,.92)",backdropFilter:"blur(10px)",display:"flex",alignItems:"flex-start",justifyContent:"center",padding:"80px 20px 40px",overflowY:"auto"}}>
@@ -13238,7 +13236,13 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
           )}
           <button onClick={function(){
             const grade = getGrade(playerXp);
-            const txt = `${grade.emoji} J'ai scoré ${sc} pts en mode ${isChain?"The Mercato":"The Plug"} sur GOAT FC !\nGrade : ${grade.label}\nT'as le niveau ? 👇\nhttps://goatfc.fr`;
+            const mode = isChain?"The Mercato":"The Plug";
+            const txt = tr(
+              `${grade.emoji} J'ai scoré ${sc} pts en mode ${mode} sur GOAT FC !\nGrade : ${grade.label}\nT'as le niveau ? 👇\nhttps://goatfc.fr`,
+              `${grade.emoji} I scored ${sc} pts in ${mode} mode on GOAT FC!\nRank: ${grade.label}\nCan you beat me? 👇\nhttps://goatfc.fr`,
+              `${grade.emoji} Ich habe ${sc} Pkt im Modus ${mode} auf GOAT FC erzielt!\nRang: ${grade.label}\nSchaffst du das? 👇\nhttps://goatfc.fr`,
+              `${grade.emoji} Ho fatto ${sc} pt in modalità ${mode} su GOAT FC!\nGrado: ${grade.label}\nCe la fai? 👇\nhttps://goatfc.fr`,
+              `${grade.emoji} Fiz ${sc} pts no modo ${mode} no GOAT FC!\nPatente: ${grade.label}\nVocê tem nível? 👇\nhttps://goatfc.fr`);
             if(navigator.share){navigator.share({title:"GOAT FC",text:txt});}
             else{navigator.clipboard.writeText(txt).then(function(){alert(tr("Copié ! Colle-le où tu veux 📋","Copied! Paste it anywhere 📋","Kopiert! Füg es überall ein 📋","Copiato! Incollalo dove vuoi 📋","Copiado! Cole onde quiser 📋"));});}
           }} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:6,padding:"12px 4px",background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.12)",borderRadius:16,cursor:"pointer",color:"rgba(255,255,255,.85)"}}>
@@ -13320,9 +13324,20 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
             const myEntry = duelResult.players.find(function(p){return p.id===playerId;});
             const grade = getGrade(playerXp);
             const rank = duelResult.players.findIndex(function(p){return p.id===playerId;})+1;
+            const sc = myEntry?.score||0;
             const txt = rank===1
-              ? `${grade.emoji} J'ai remporté la salle sur GOAT FC avec ${myEntry?.score||0} pts 🏆\nGrade : ${grade.label}\nT'as le niveau ? 👇\nhttps://goatfc.fr`
-              : `J'ai terminé ${rank}ème sur GOAT FC avec ${myEntry?.score||0} pts\nGrade : ${grade.label}\nhttps://goatfc.fr`;
+              ? tr(
+                  `${grade.emoji} J'ai remporté la salle sur GOAT FC avec ${sc} pts 🏆\nGrade : ${grade.label}\nT'as le niveau ? 👇\nhttps://goatfc.fr`,
+                  `${grade.emoji} I won the room on GOAT FC with ${sc} pts 🏆\nRank: ${grade.label}\nCan you beat me? 👇\nhttps://goatfc.fr`,
+                  `${grade.emoji} Ich habe den Raum auf GOAT FC mit ${sc} Pkt gewonnen 🏆\nRang: ${grade.label}\nSchaffst du das? 👇\nhttps://goatfc.fr`,
+                  `${grade.emoji} Ho vinto la stanza su GOAT FC con ${sc} pt 🏆\nGrado: ${grade.label}\nCe la fai? 👇\nhttps://goatfc.fr`,
+                  `${grade.emoji} Venci a sala no GOAT FC com ${sc} pts 🏆\nPatente: ${grade.label}\nVocê tem nível? 👇\nhttps://goatfc.fr`)
+              : tr(
+                  `J'ai terminé ${rank}ème sur GOAT FC avec ${sc} pts\nGrade : ${grade.label}\nhttps://goatfc.fr`,
+                  `I finished #${rank} on GOAT FC with ${sc} pts\nRank: ${grade.label}\nhttps://goatfc.fr`,
+                  `Ich wurde ${rank}. auf GOAT FC mit ${sc} Pkt\nRang: ${grade.label}\nhttps://goatfc.fr`,
+                  `Ho chiuso ${rank}° su GOAT FC con ${sc} pt\nGrado: ${grade.label}\nhttps://goatfc.fr`,
+                  `Terminei em ${rank}º no GOAT FC com ${sc} pts\nPatente: ${grade.label}\nhttps://goatfc.fr`);
             if(navigator.share){navigator.share({title:"GOAT FC",text:txt});}
             else{navigator.clipboard.writeText(txt).then(function(){alert(tr("Copié ! 📋","Copied! 📋","Kopiert! 📋","Copiato! 📋","Copiado! 📋"));});}
           }} style={{width:"100%",padding:"13px",background:"linear-gradient(135deg,#1d4ed8,#7c3aed)",color:"#fff",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginTop:8,marginBottom:6}}>
@@ -13466,10 +13481,20 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
           )}
           <button onClick={function(){
             const grade = getGrade(playerXp);
-            const result = won ? "victoire" : draw ? "nul" : "défaite";
+            const opp = duelResult.oppName, my = duelResult.myScore, their = duelResult.theirScore;
             const txt = won
-              ? `${grade.emoji} J'ai écrasé ${duelResult.oppName} ${duelResult.myScore}-${duelResult.theirScore} sur GOAT FC 😤\nGrade : ${grade.label}\nT'as le niveau ? 👇\nhttps://goatfc.fr`
-              : `J'ai perdu ${duelResult.myScore}-${duelResult.theirScore} contre ${duelResult.oppName} sur GOAT FC 😤\nLa revanche arrive...\nhttps://goatfc.fr`;
+              ? tr(
+                  `${grade.emoji} J'ai écrasé ${opp} ${my}-${their} sur GOAT FC 😤\nGrade : ${grade.label}\nT'as le niveau ? 👇\nhttps://goatfc.fr`,
+                  `${grade.emoji} I crushed ${opp} ${my}-${their} on GOAT FC 😤\nRank: ${grade.label}\nCan you beat me? 👇\nhttps://goatfc.fr`,
+                  `${grade.emoji} Ich habe ${opp} ${my}-${their} auf GOAT FC zerlegt 😤\nRang: ${grade.label}\nSchaffst du das? 👇\nhttps://goatfc.fr`,
+                  `${grade.emoji} Ho asfaltato ${opp} ${my}-${their} su GOAT FC 😤\nGrado: ${grade.label}\nCe la fai? 👇\nhttps://goatfc.fr`,
+                  `${grade.emoji} Atropelei ${opp} ${my}-${their} no GOAT FC 😤\nPatente: ${grade.label}\nVocê tem nível? 👇\nhttps://goatfc.fr`)
+              : tr(
+                  `J'ai perdu ${my}-${their} contre ${opp} sur GOAT FC 😤\nLa revanche arrive...\nhttps://goatfc.fr`,
+                  `I lost ${my}-${their} to ${opp} on GOAT FC 😤\nRematch incoming...\nhttps://goatfc.fr`,
+                  `Ich habe ${my}-${their} gegen ${opp} auf GOAT FC verloren 😤\nDie Revanche kommt...\nhttps://goatfc.fr`,
+                  `Ho perso ${my}-${their} contro ${opp} su GOAT FC 😤\nLa rivincita arriva...\nhttps://goatfc.fr`,
+                  `Perdi ${my}-${their} para ${opp} no GOAT FC 😤\nA revanche vem aí...\nhttps://goatfc.fr`);
             if(navigator.share){navigator.share({title:"GOAT FC",text:txt});}
             else{navigator.clipboard.writeText(txt).then(function(){alert(tr("Copié ! 📋","Copied! 📋","Kopiert! 📋","Copiato! 📋","Copiado! 📋"));});}
           }} style={{width:"100%",padding:"13px",background:"linear-gradient(135deg,#1d4ed8,#7c3aed)",color:"#fff",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:6}}>
