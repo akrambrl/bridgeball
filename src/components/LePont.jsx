@@ -12137,10 +12137,10 @@ export default function LePont() {
                         <div style={{fontSize:11,color:"rgba(255,214,0,.7)",fontWeight:700,letterSpacing:2,marginBottom:2}}>SCORE</div>
                         <div style={{fontFamily:G.heading,fontSize:44,color:"#FFD600",lineHeight:1}}>{ggScore} <span style={{fontSize:18,opacity:.7}}>pts</span></div>
                         <div style={{fontSize:12,color:"rgba(255,255,255,.6)",marginTop:6,fontWeight:700}}>
-                          {filledCount}/9 {lang==="en"?"filled":"rempli"} · {[0,1,2].map(function(i){return(<span key={i}>{i<ggLives?"❤️":"💔"}</span>);})}
+                          {filledCount}/9 {tr("rempli","filled","gefüllt","riempito","preenchido")} · {[0,1,2].map(function(i){return(<span key={i}>{i<ggLives?"❤️":"💔"}</span>);})}
                         </div>
                         {isPerfect && (
-                          <div style={{fontSize:11,color:"#00E676",fontWeight:800,marginTop:6}}>+100 {lang==="en"?"NO-MISTAKE BONUS":"BONUS SANS-FAUTE"}</div>
+                          <div style={{fontSize:11,color:"#00E676",fontWeight:800,marginTop:6}}>+100 {tr("BONUS SANS-FAUTE","NO-MISTAKE BONUS","FEHLERFREI-BONUS","BONUS SENZA ERRORI","BÔNUS SEM ERROS")}</div>
                         )}
                       </div>
 
@@ -12162,17 +12162,17 @@ export default function LePont() {
                             }
                           } catch(e) {}
                         }} style={{padding:14,borderRadius:50,border:"none",background:"linear-gradient(135deg,#00E676,#FFD600)",color:"#000",fontWeight:900,fontSize:14,letterSpacing:1.5,cursor:"pointer"}}>
-                          {ggShareCopied ? "✅ " + (lang==="en"?"COPIED!":"COPIÉ !") : "📤 " + (lang==="en"?"SHARE MY RESULT":"PARTAGER MON RÉSULTAT")}
+                          {ggShareCopied ? "✅ " + tr("COPIÉ !","COPIED!","KOPIERT!","COPIATO!","COPIADO!") : "📤 " + tr("PARTAGER MON RÉSULTAT","SHARE MY RESULT","MEIN ERGEBNIS TEILEN","CONDIVIDI IL RISULTATO","COMPARTILHAR RESULTADO")}
                         </button>
                         <button onClick={function(){setGgRevealMode(true);setGgReviewMode(false);}} style={{padding:12,borderRadius:50,border:"1px solid rgba(74,158,255,.4)",background:"rgba(74,158,255,.15)",color:"#7AB8FF",fontWeight:800,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
-                          💡 {lang==="en"?"SEE POSSIBLE ANSWERS":"VOIR LES RÉPONSES POSSIBLES"}
+                          💡 {tr("VOIR LES RÉPONSES POSSIBLES","SEE POSSIBLE ANSWERS","MÖGLICHE ANTWORTEN ANSEHEN","VEDI LE RISPOSTE POSSIBILI","VER RESPOSTAS POSSÍVEIS")}
                         </button>
                         <button onClick={function(){setGgReviewMode(true);setGgRevealMode(false);setGgRevealCell(null);}} style={{padding:12,borderRadius:50,border:"1px solid rgba(0,230,118,.4)",background:"rgba(0,230,118,.15)",color:"#00E676",fontWeight:800,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
-                          📋 {lang==="en"?"REVIEW MY GRID":"REVOIR MA GRILLE"}
+                          📋 {tr("REVOIR MA GRILLE","REVIEW MY GRID","MEIN RASTER ANSEHEN","RIVEDI LA GRIGLIA","REVER MINHA GRADE")}
                         </button>
                         {ggOverrideSeed === 0 && (
                           <button onClick={function(){ggLoadLeaderboard();setGgLeaderboardTab("global");}} style={{padding:12,borderRadius:50,border:"1px solid rgba(255,214,0,.4)",background:"rgba(255,214,0,.15)",color:"#FFD600",fontWeight:800,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
-                            🏆 {lang==="en"?"LEADERBOARD":"CLASSEMENT"}
+                            🏆 {tr("CLASSEMENT","LEADERBOARD","RANGLISTE","CLASSIFICA","CLASSIFICAÇÃO")}
                           </button>
                         )}
                         <button onClick={function(){
@@ -12194,15 +12194,15 @@ export default function LePont() {
                           if (newGrid) { setGgGrid(newGrid); setGgError(false); }
                           else setGgError(true);
                         }} style={{padding:12,borderRadius:50,border:"1px solid rgba(255,214,0,.4)",background:"rgba(255,214,0,.15)",color:"#FFD600",fontWeight:800,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
-                          🔄 {lang==="en"?"NEW GRID":"NOUVELLE GRILLE"}
+                          🔄 {tr("NOUVELLE GRILLE","NEW GRID","NEUES RASTER","NUOVA GRIGLIA","NOVA GRADE")}
                         </button>
                         <button onClick={function(){setShowGoatGrid(false);}} style={{padding:12,borderRadius:50,border:"none",background:"rgba(255,255,255,.05)",color:"rgba(255,255,255,.7)",fontWeight:700,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
-                          {lang==="en"?"Close":"Fermer"}
+                          {tr("Fermer","Close","Schließen","Chiudi","Fechar")}
                         </button>
                       </div>
-                      
+
                       <div style={{marginTop:14,fontSize:11,color:"rgba(255,255,255,.4)",fontStyle:"italic"}}>
-                        {lang==="en"?"New grid tomorrow at midnight 🐐":"Nouvelle grille demain à minuit 🐐"}
+                        {tr("Nouvelle grille demain à minuit 🐐","New grid tomorrow at midnight 🐐","Neues Raster morgen um Mitternacht 🐐","Nuova griglia domani a mezzanotte 🐐","Nova grade amanhã à meia-noite 🐐")}
                       </div>
                     </div>
                   </div>
