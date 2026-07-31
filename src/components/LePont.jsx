@@ -2393,7 +2393,7 @@ const POSITIVE_FEEDBACK = {
 };
 
 function getPositiveFeedback(combo, lang){
-  const pool = POSITIVE_FEEDBACK[tr("fr","en","de","it","pt")];
+  const pool = POSITIVE_FEEDBACK[(lang==="fr"?"fr":"en")];
   let tier;
   if(combo>=10) tier=pool.god;
   else if(combo>=7) tier=pool.fire;
@@ -10232,7 +10232,7 @@ export default function LePont() {
     const myEntry = duelResult.players.find(function(p){return p.id===playerId;});
     const myRank = duelResult.players.findIndex(function(p){return p.id===playerId;}) + 1;
     const winner = duelResult.players[0];
-    const L_msg = RESULT_MESSAGES[tr("fr","en","de","it","pt")];
+    const L_msg = RESULT_MESSAGES[(lang==="fr"?"fr":"en")];
     const oppNameRoom = (winner && winner.id !== playerId) ? winner.name : "";
     const iAbandoned = duelResult.myAbandoned === true;
     let msg;
@@ -12555,7 +12555,7 @@ export default function LePont() {
                     {dailyPlayer.name}
                   </div>
                   <div style={{fontSize:16,color:"rgba(255,255,255,.7)",fontWeight:700,letterSpacing:1,textTransform:"uppercase",marginBottom:6}}>
-                    {pickResultMessage(RESULT_MESSAGES[tr("fr","en","de","it","pt")].soloWin, dailyTries * 7 + (dailyPlayer?.name?.length||0))}
+                    {pickResultMessage(RESULT_MESSAGES[(lang==="fr"?"fr":"en")].soloWin, dailyTries * 7 + (dailyPlayer?.name?.length||0))}
                   </div>
                   <div style={{fontSize:14,color:"rgba(255,255,255,.4)",marginTop:4,marginBottom:24}}>
                     {dailyTries === 1 ? (tr("Trouvé du premier coup 🐐","Got it first try 🐐","Beim ersten Versuch 🐐","Indovinato al primo colpo 🐐","Acertou de primeira 🐐")) : (tr("Trouvé en ","Found in ","Gefunden in ","Trovato in ","Encontrado em ")+dailyTries+" "+(dailyTries>1?tr("essais","attempts","Versuchen","tentativi","tentativas"):tr("essai","attempt","Versuch","tentativo","tentativa")))}
@@ -13641,10 +13641,10 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
           <div style={{fontFamily:G.heading,fontSize:"clamp(30px,8vw,46px)",color:labelColor,letterSpacing:2,marginTop:4}}>{label}</div>
           <div style={{fontSize:"clamp(13px,3.5vw,18px)",color:G.white,fontWeight:800,marginTop:6,animation:"fadeUp .4s ease .25s both",textTransform:"uppercase",letterSpacing:1,textShadow:"0 2px 10px rgba(0,0,0,.4)"}}>{
             won
-              ? pickResultMessage(RESULT_MESSAGES[tr("fr","en","de","it","pt")].winLabels, duelResult.myScore)
+              ? pickResultMessage(RESULT_MESSAGES[(lang==="fr"?"fr":"en")].winLabels, duelResult.myScore)
               : draw
-              ? pickResultMessage(RESULT_MESSAGES[tr("fr","en","de","it","pt")].drawLabels, duelResult.myScore)
-              : pickResultMessage(RESULT_MESSAGES[tr("fr","en","de","it","pt")].loseLabels, duelResult.theirScore)
+              ? pickResultMessage(RESULT_MESSAGES[(lang==="fr"?"fr":"en")].drawLabels, duelResult.myScore)
+              : pickResultMessage(RESULT_MESSAGES[(lang==="fr"?"fr":"en")].loseLabels, duelResult.theirScore)
           }</div>
           {(()=>{const grade=getGrade(playerXp); return <div style={{display:"inline-flex",alignItems:"center",gap:8,marginTop:8,background:grade.color+"22",borderRadius:20,padding:"6px 14px"}}><span style={{fontSize:13,fontWeight:800,color:grade.color,letterSpacing:.5}}>{grade.label}</span></div>; })()}
           <div style={{fontSize:14,color:"rgba(255,255,255,.4)",marginTop:8}}>
@@ -13704,13 +13704,13 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
             <div style={{marginBottom:8,padding:"12px 16px",background:"rgba(255,255,255,.05)",borderRadius:14,border:"1px solid rgba(255,255,255,.1)"}}>
               <div style={{fontSize:10,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginBottom:6}}>💬 {tr("Message de","Message from","Nachricht von","Messaggio da","Mensagem de")} {duelResult.oppName}</div>
               <div style={{fontSize:14,fontWeight:700,color:G.white}}>
-                {pickResultMessage(RESULT_MESSAGES[tr("fr","en","de","it","pt")].winTaunts, duelResult.theirScore - duelResult.myScore + duelResult.theirScore)}
+                {pickResultMessage(RESULT_MESSAGES[(lang==="fr"?"fr":"en")].winTaunts, duelResult.theirScore - duelResult.myScore + duelResult.theirScore)}
               </div>
             </div>
           )}
           <div style={{fontSize:15,color:"rgba(255,255,255,.85)",textAlign:"center",padding:"10px 0",fontWeight:700,lineHeight:1.4}}>
             {(()=>{
-              const L = RESULT_MESSAGES[tr("fr","en","de","it","pt")];
+              const L = RESULT_MESSAGES[(lang==="fr"?"fr":"en")];
               const oppName = duelResult.oppName || "";
               if (abandoned) {
                 const fn = pickResultMessage(L.abandonedCentral, duelResult.myScore);
@@ -13731,7 +13731,7 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
             <div style={{marginBottom:8,padding:"10px 16px",background:"rgba(0,230,118,.05)",borderRadius:14,border:"1px solid rgba(0,230,118,.1)"}}>
               <div style={{fontSize:10,color:"rgba(0,230,118,.5)",letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>💬 {tr("Message envoyé à","Message sent to","Nachricht gesendet an","Messaggio inviato a","Mensagem enviada para")} {duelResult.oppName}</div>
               <div style={{fontSize:13,color:"rgba(255,255,255,.5)",fontStyle:"italic"}}>
-                {pickResultMessage(RESULT_MESSAGES[tr("fr","en","de","it","pt")].winTaunts, duelResult.myScore * 3 + duelResult.theirScore)}
+                {pickResultMessage(RESULT_MESSAGES[(lang==="fr"?"fr":"en")].winTaunts, duelResult.myScore * 3 + duelResult.theirScore)}
               </div>
             </div>
           )}
