@@ -9292,19 +9292,19 @@ export default function LePont() {
         )}
         <div style={{zIndex:3,padding:"12px 16px 0",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
           {backBtn(function(){closeFriends();})}
-          <div style={{fontFamily:G.heading,fontSize:26,color:G.white,letterSpacing:2}}>{lang==="en"?"FRIENDS":"AMIS"}</div>
+          <div style={{fontFamily:G.heading,fontSize:26,color:G.white,letterSpacing:2}}>{tr("AMIS","FRIENDS","FREUNDE","AMICI","AMIGOS")}</div>
           <div style={{width:40}}/>
         </div>
         <div style={{...sheet,borderRadius:"28px 28px 0 0",marginTop:16}}>
           {/* Demandes reçues */}
           {friendRequests.length > 0 && (
             <div style={{background:"#123a1e",border:"1px solid rgba(0,230,118,.5)",borderRadius:16,padding:14}}>
-              <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:G.accent,marginBottom:10}}>👋 {lang==="en"?"Requests received":"Demandes reçues"}</div>
+              <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:G.accent,marginBottom:10}}>👋 {tr("Demandes reçues","Requests received","Erhaltene Anfragen","Richieste ricevute","Pedidos recebidos")}</div>
               {friendRequests.map(function(req){return(
                 <div key={req.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
                   <div>
                     <div style={{fontSize:14,fontWeight:800,color:G.white}}>{req.from_name}</div>
-                    <div style={{fontSize:11,color:"rgba(255,255,255,.4)"}}>{lang==="en"?"wants to be your friend · ":"veut être ton ami · "}{req.from_id}</div>
+                    <div style={{fontSize:11,color:"rgba(255,255,255,.4)"}}>{tr("veut être ton ami · ","wants to be your friend · ","möchte dein Freund sein · ","vuole essere tuo amico · ","quer ser seu amigo · ")}{req.from_id}</div>
                   </div>
                   <div style={{display:"flex",gap:6}}>
                     <button onClick={function(){acceptRequest(req);}} style={{padding:"8px 14px",background:G.accent,color:"#000",border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:800}}>✓</button>
@@ -9318,17 +9318,17 @@ export default function LePont() {
           <button onClick={function(){loadDuels();setShowDuelHistory(true);}} style={{width:"100%",display:"flex",alignItems:"center",gap:10,padding:"13px 16px",background:"rgba(255,214,0,.08)",border:"1px solid rgba(255,214,0,.3)",borderRadius:14,cursor:"pointer",textAlign:"left"}}>
             <span style={{fontSize:20}}>📜</span>
             <div style={{flex:1}}>
-              <div style={{fontSize:14,fontWeight:800,color:G.gold}}>{lang==="en"?"Duel history":"Historique des défis"}</div>
-              <div style={{fontSize:11,color:"rgba(255,255,255,.4)"}}>{lang==="en"?"See what you won and lost":"Vois ce que t'as gagné et perdu"}</div>
+              <div style={{fontSize:14,fontWeight:800,color:G.gold}}>{tr("Historique des défis","Duel history","Duell-Verlauf","Cronologia sfide","Histórico de duelos")}</div>
+              <div style={{fontSize:11,color:"rgba(255,255,255,.4)"}}>{tr("Vois ce que t'as gagné et perdu","See what you won and lost","Sieh, was du gewonnen und verloren hast","Vedi cosa hai vinto e perso","Veja o que você ganhou e perdeu")}</div>
             </div>
             <span style={{fontSize:16,color:"rgba(255,214,0,.6)"}}>›</span>
           </button>
           {/* Ajouter un ami */}
           <div style={{background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",borderRadius:16,padding:16}}>
-            <div style={{fontSize:12,fontWeight:700,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginBottom:8}}>{lang==="en"?"Add a friend":"Ajouter un ami"}</div>
+            <div style={{fontSize:12,fontWeight:700,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginBottom:8}}>{tr("Ajouter un ami","Add a friend","Freund hinzufügen","Aggiungi un amico","Adicionar amigo")}</div>
             <div style={{display:"flex",gap:8}}>
               <input value={friendInput} onChange={function(e){setFriendInput(e.target.value);setFriendMsg("");}}
-                placeholder={lang==="en"?"Your friend's username...":"Pseudo de ton ami..."} maxLength={20}
+                placeholder={tr("Pseudo de ton ami...","Your friend's username...","Nutzername deines Freundes...","Nome utente del tuo amico...","Nome de usuário do seu amigo...")} maxLength={20}
                 style={{flex:1,padding:"10px 14px",borderRadius:12,border:"1.5px solid rgba(255,255,255,.15)",background:"#141414",color:G.white,fontFamily:G.font,fontSize:15,fontWeight:600,outline:"none"}}/>
               <button onClick={function(){addFriend(friendInput);}}
                 style={{padding:"10px 16px",background:G.accent,color:"#000",border:"none",borderRadius:12,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>+</button>
@@ -9338,17 +9338,17 @@ export default function LePont() {
           {/* Liste des amis + demandes en attente */}
           <div>
             <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.3)",marginBottom:8}}>
-              {lang==="en"?"My friends":"Mes amis"} {friendsList.length>0&&<span style={{color:G.accent}}>({friendsList.length})</span>}
+              {tr("Mes amis","My friends","Meine Freunde","I miei amici","Meus amigos")} {friendsList.length>0&&<span style={{color:G.accent}}>({friendsList.length})</span>}
             </div>
             {friendsList.length===0 && sentRequests.filter(function(r){return r.status==="pending";}).length===0 && (
-              <div style={{textAlign:"center",padding:"24px 0",color:"rgba(255,255,255,.3)",fontSize:14}}>{lang==="en"?"No friends yet 👋":"Aucun ami pour l'instant 👋"}</div>
+              <div style={{textAlign:"center",padding:"24px 0",color:"rgba(255,255,255,.3)",fontSize:14}}>{tr("Aucun ami pour l'instant 👋","No friends yet 👋","Noch keine Freunde 👋","Ancora nessun amico 👋","Ainda sem amigos 👋")}</div>
             )}
             {/* Demandes en attente intégrées dans la liste */}
             {sentRequests.filter(function(r){return r.status==="pending";}).map(function(r,i){return(
               <div key={"pending-"+i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 14px",background:"rgba(255,214,0,.04)",borderRadius:14,marginBottom:8,border:"1px dashed rgba(255,214,0,.25)"}}>
                 <div>
                   <div style={{fontSize:15,fontWeight:800,color:"rgba(255,255,255,.5)"}}>{r.to_name || r.to_id}</div>
-                  <div style={{fontSize:11,color:G.gold}}>{lang==="en"?"⏳ Awaiting acceptance":"⏳ En attente d'acceptation"}</div>
+                  <div style={{fontSize:11,color:G.gold}}>{tr("⏳ En attente d'acceptation","⏳ Awaiting acceptance","⏳ Warte auf Annahme","⏳ In attesa di accettazione","⏳ Aguardando aceitação")}</div>
                 </div>
               </div>
             );})}
@@ -9365,10 +9365,10 @@ export default function LePont() {
                   onClick={function(){setShowFriends(false);openUserProfile(fid,fname,"friends");}}>
                   <div>
                     <div style={{fontSize:15,fontWeight:800,color:G.white}}>{fname}</div>
-                    <div style={{fontSize:11,color:"rgba(255,255,255,.35)"}}>{friendDuelCount>0?friendDuelCount+(lang==="en"?" duel"+(friendDuelCount>1?"s played":" played"):" duel"+(friendDuelCount>1?"s joués":" joué")):(lang==="en"?"No duels yet":"Aucun duel encore")}</div>
+                    <div style={{fontSize:11,color:"rgba(255,255,255,.35)"}}>{friendDuelCount>0?friendDuelCount+" "+(friendDuelCount>1?tr("duels joués","duels played","Duelle gespielt","sfide giocate","duelos jogados"):tr("duel joué","duel played","Duell gespielt","sfida giocata","duelo jogado")):tr("Aucun duel encore","No duels yet","Noch keine Duelle","Ancora nessuna sfida","Ainda nenhum duelo")}</div>
                   </div>
                   <div style={{display:"flex",gap:8,alignItems:"center"}}>
-                    <button onClick={function(e){e.stopPropagation();setShowDuelCreate({id:fid,name:fname});}} style={{padding:"7px 12px",background:G.accent,color:"#000",border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800}}>{lang==="en"?"⚡ Challenge":"⚡ Défier"}</button>
+                    <button onClick={function(e){e.stopPropagation();setShowDuelCreate({id:fid,name:fname});}} style={{padding:"7px 12px",background:G.accent,color:"#000",border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800}}>{tr("⚡ Défier","⚡ Challenge","⚡ Herausfordern","⚡ Sfida","⚡ Desafiar")}</button>
                     <button onClick={function(e){e.stopPropagation();setConfirmRemove({id:fid,name:fname});}} style={{padding:"7px 10px",background:"transparent",border:"1px solid rgba(255,255,255,.15)",borderRadius:20,cursor:"pointer",color:"rgba(255,255,255,.4)",fontSize:12}}>✕</button>
                     <span style={{color:"rgba(255,255,255,.3)",fontSize:18}}>›</span>
                   </div>
@@ -9376,7 +9376,7 @@ export default function LePont() {
               );
             })}
           </div>
-          <button onClick={function(){closeFriends();}} style={{width:"100%",background:"rgba(255,255,255,.05)",color:"rgba(255,255,255,.5)",border:"1px solid rgba(255,255,255,.1)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,padding:"10px",marginTop:4}}>{lang==="en"?"↩ Back":"↩ Retour"}</button>
+          <button onClick={function(){closeFriends();}} style={{width:"100%",background:"rgba(255,255,255,.05)",color:"rgba(255,255,255,.5)",border:"1px solid rgba(255,255,255,.1)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,padding:"10px",marginTop:4}}>{tr("↩ Retour","↩ Back","↩ Zurück","↩ Indietro","↩ Voltar")}</button>
         </div>
       </div>
     );
