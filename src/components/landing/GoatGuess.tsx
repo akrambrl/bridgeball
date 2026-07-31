@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "r
 import { PLAYERS, RETIRED_PLAYERS, GG_WC_WINNERS, GG_CL_WINNERS, GG_BALLON_DOR, GG_BALLON_DOR_MULTI } from "../../players.jsx";
 import { CLUB_COLORS } from "../LePont.jsx";
 import { trackPlay } from "../../lib/track";
+import { getLang, tr } from "@/lib/lang";
 
 type Player = {
   name: string;
@@ -56,8 +57,9 @@ const isUniquelyDefender = (p: Player): boolean | null => {
 const hasNat = (p: Player, nat: string) => p.nationalities.includes(nat);
 // Langue de l'app (réglée dans LePont via le toggle FR/EN, stockée en localStorage).
 // Lue à chaque rendu : le composant est monté après un éventuel changement de langue.
-const isEn = () => { try { return localStorage.getItem("bb_lang") === "en"; } catch { return false; } };
-const qLabel = (q: Question) => (isEn() && q.labelEn) || q.label;
+// Les questions n'existent qu'en FR (label) et EN (labelEn). Pour DE/IT/PT on
+// retombe sur l'anglais (mieux que le français). Le FR reste en français.
+const qLabel = (q: Question) => (getLang() === "fr" ? q.label : (q.labelEn || q.label));
 
 const playedFor = (p: Player, club: string) => p.clubs.includes(club);
 const playedForAny = (p: Player, clubs: string[]) =>
@@ -1055,10 +1057,10 @@ export const GoatGuess = ({ onClose }: Props) => {
     <button
       onClick={onClose}
       className="fixed top-3 right-3 z-[9001] flex items-center justify-center w-10 h-10 p-0 lg:w-auto lg:h-auto lg:gap-2 lg:px-4 lg:py-2 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 text-white backdrop-blur-md font-display text-sm tracking-widest shadow-[0_8px_24px_rgba(0,0,0,0.4)] hover:scale-[1.03] active:scale-[0.98] transition-all"
-      aria-label={isEn() ? "Quit GOAT Guess" : "Quitter GOAT Guess"}
+      aria-label={tr("Quitter GOAT Guess","Quit GOAT Guess","GOAT Guess beenden","Esci da GOAT Guess","Sair do GOAT Guess")}
     >
       <span className="lg:hidden text-lg leading-none">←</span>
-      <span className="hidden lg:inline">{isEn() ? "← QUIT" : "← QUITTER"}</span>
+      <span className="hidden lg:inline">{tr("← QUITTER","← QUIT","← BEENDEN","← ESCI","← SAIR")}</span>
     </button>
 
     <div className="relative min-h-screen lg:min-h-screen container max-w-5xl mx-auto px-3 lg:px-6 py-2 lg:py-10">
@@ -1070,7 +1072,7 @@ export const GoatGuess = ({ onClose }: Props) => {
           </span>
         </div>
         <h1 className="hidden lg:block font-display text-4xl lg:text-6xl tracking-wider text-white leading-none drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
-          {isEn() ? "I'LL GUESS YOUR PLAYER" : "JE DEVINE TON JOUEUR"}
+          {tr("JE DEVINE TON JOUEUR","I'LL GUESS YOUR PLAYER","ICH ERRATE DEINEN SPIELER","INDOVINO IL TUO GIOCATORE","EU ADIVINHO SEU JOGADOR")}
         </h1>
       </div>
 
@@ -1119,10 +1121,10 @@ export const GoatGuess = ({ onClose }: Props) => {
           {!compactMobileDevin && (
             <div className="mt-3 text-center">
               <div className="font-display text-[10px] tracking-[0.4em] text-[#FFC93C] mb-1 drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]">
-                {isEn() ? "THE ORACLE" : "LE DEVIN"}
+                {tr("LE DEVIN","THE ORACLE","DAS ORAKEL","L'ORACOLO","O ORÁCULO")}
               </div>
               <div className="text-[11px] text-white/70 max-w-[260px] leading-snug italic text-balance">
-                {isEn() ? "“Think of your player. I read your mind.”" : "«\u00A0Pense à ton joueur. Je le lis dans ton esprit.\u00A0»"}
+                {tr("«\u00A0Pense à ton joueur. Je le lis dans ton esprit.\u00A0»","“Think of your player. I read your mind.”","„Denk an deinen Spieler. Ich lese deine Gedanken.“","«\u00A0Pensa al tuo giocatore. Te lo leggo nella mente.\u00A0»","“Pense no seu jogador. Eu leio sua mente.”")}
               </div>
             </div>
           )}
@@ -1149,10 +1151,10 @@ export const GoatGuess = ({ onClose }: Props) => {
           </div>
           <div className="mt-5 text-center">
             <div className="font-display text-xs tracking-[0.4em] text-[#FFC93C] mb-1 drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]">
-              {isEn() ? "THE ORACLE" : "LE DEVIN"}
+              {tr("LE DEVIN","THE ORACLE","DAS ORAKEL","L'ORACOLO","O ORÁCULO")}
             </div>
             <div className="text-[11px] text-white/70 max-w-[210px] leading-snug italic text-balance">
-              {isEn() ? "“Think of your player. I read your mind.”" : "«\u00A0Pense à ton joueur. Je le lis dans ton esprit.\u00A0»"}
+              {tr("«\u00A0Pense à ton joueur. Je le lis dans ton esprit.\u00A0»","“Think of your player. I read your mind.”","„Denk an deinen Spieler. Ich lese deine Gedanken.“","«\u00A0Pensa al tuo giocatore. Te lo leggo nella mente.\u00A0»","“Pense no seu jogador. Eu leio sua mente.”")}
             </div>
           </div>
         </div>
@@ -1414,31 +1416,27 @@ const IntroView = ({ onStart }: { onStart: () => void }) => (
   <div className="text-center">
     <div className="text-4xl lg:text-6xl mb-3 lg:mb-5">🔮</div>
     <p className="text-white/80 text-sm lg:text-lg mb-2 lg:mb-3">
-      {isEn() ? "Think of a famous footballer (current or retired)." : "Pense à un footballeur connu (actuel ou retraité)."}
+      {tr("Pense à un footballeur connu (actuel ou retraité).","Think of a famous footballer (current or retired).","Denk an einen bekannten Fußballer (aktiv oder ehemalig).","Pensa a un calciatore famoso (attuale o ritirato).","Pense num jogador famoso (atual ou aposentado).")}
     </p>
     <p className="text-white/60 text-xs lg:text-sm mb-4 lg:mb-8">
-      {isEn() ? (
-        <>I'll ask <span className="text-white font-bold">as many questions as needed</span>{" "}
-        to guess them (usually around twenty). Answer <span className="text-[#00E676] font-bold">yes</span>,{" "}
-        <span className="text-[#FF3D6E] font-bold">no</span> or{" "}
-        <span className="text-white/70 font-bold">not sure</span>.</>
-      ) : (
-        <>Je te pose <span className="text-white font-bold">autant de questions qu'il faut</span>{" "}
-        pour le deviner (en général une vingtaine). Réponds <span className="text-[#00E676] font-bold">oui</span>,{" "}
-        <span className="text-[#FF3D6E] font-bold">non</span> ou{" "}
-        <span className="text-white/70 font-bold">je sais pas</span>.</>
-      )}
+      {(() => { const l = getLang();
+        if (l === "de") return <>Ich stelle <span className="text-white font-bold">so viele Fragen wie nötig</span>{" "}um ihn zu erraten (meist etwa zwanzig). Antworte <span className="text-[#00E676] font-bold">ja</span>,{" "}<span className="text-[#FF3D6E] font-bold">nein</span> oder{" "}<span className="text-white/70 font-bold">weiß nicht</span>.</>;
+        if (l === "it") return <>Ti faccio <span className="text-white font-bold">tutte le domande necessarie</span>{" "}per indovinarlo (di solito una ventina). Rispondi <span className="text-[#00E676] font-bold">sì</span>,{" "}<span className="text-[#FF3D6E] font-bold">no</span> o{" "}<span className="text-white/70 font-bold">non so</span>.</>;
+        if (l === "pt") return <>Eu faço <span className="text-white font-bold">quantas perguntas forem precisas</span>{" "}para adivinhar (geralmente umas vinte). Responda <span className="text-[#00E676] font-bold">sim</span>,{" "}<span className="text-[#FF3D6E] font-bold">não</span> ou{" "}<span className="text-white/70 font-bold">não sei</span>.</>;
+        if (l === "en") return <>I'll ask <span className="text-white font-bold">as many questions as needed</span>{" "}to guess them (usually around twenty). Answer <span className="text-[#00E676] font-bold">yes</span>,{" "}<span className="text-[#FF3D6E] font-bold">no</span> or{" "}<span className="text-white/70 font-bold">not sure</span>.</>;
+        return <>Je te pose <span className="text-white font-bold">autant de questions qu'il faut</span>{" "}pour le deviner (en général une vingtaine). Réponds <span className="text-[#00E676] font-bold">oui</span>,{" "}<span className="text-[#FF3D6E] font-bold">non</span> ou{" "}<span className="text-white/70 font-bold">je sais pas</span>.</>;
+      })()}
     </p>
 
     <button
       onClick={onStart}
       className="goat-pulse inline-flex items-center gap-3 px-8 lg:px-10 py-3 lg:py-4 rounded-2xl bg-gradient-to-r from-[#A855F7] to-[#6D28D9] text-white font-display text-xl lg:text-2xl tracking-widest shadow-[0_12px_32px_-6px_rgba(168,85,247,0.55)] hover:scale-[1.03] active:scale-[0.98] transition-transform"
     >
-      <span className="text-xl">{"▶︎"}</span> {isEn() ? "START" : "COMMENCER"}
+      <span className="text-xl">{"▶︎"}</span> {tr("COMMENCER","START","START","INIZIA","COMEÇAR")}
     </button>
 
     <p className="mt-4 text-xs text-white/40">
-      {isEn() ? 'Tip: the more precisely you answer (avoid "not sure"), the better I guess.' : 'Astuce : plus tu réponds précisément (évite les "sais pas"), mieux je devine.'}
+      {tr('Astuce : plus tu réponds précisément (évite les "sais pas"), mieux je devine.', 'Tip: the more precisely you answer (avoid "not sure"), the better I guess.', 'Tipp: Je genauer du antwortest (vermeide „weiß nicht"), desto besser errate ich.', 'Consiglio: più rispondi con precisione (evita i "non so"), meglio indovino.', 'Dica: quanto mais preciso você responde (evite "não sei"), melhor eu adivinho.')}
     </p>
   </div>
 );
@@ -1476,12 +1474,16 @@ const AskingView = ({
       <div className="mb-3 lg:mb-6">
         <div className="flex items-center justify-between text-[10px] lg:text-xs mb-1 lg:mb-2">
           <span className="font-display tracking-widest text-white/50">
-            {overtime ? `QUESTION ${count} · ${isEn() ? "EXTRA TIME" : "PROLONGATIONS"} 🔥` : `QUESTION ${count} / ${max}`}
+            {overtime ? `QUESTION ${count} · ${tr("PROLONGATIONS","EXTRA TIME","VERLÄNGERUNG","SUPPLEMENTARI","PRORROGAÇÃO")} 🔥` : `QUESTION ${count} / ${max}`}
           </span>
           <span className="text-white/40 tabular-nums">
-            {isEn()
-              ? `${remaining} candidate${remaining > 1 ? "s" : ""} left`
-              : `${remaining} candidat${remaining > 1 ? "s" : ""} restant${remaining > 1 ? "s" : ""}`}
+            {(() => { const l = getLang(); const m = remaining > 1;
+              if (l === "de") return `${remaining} Kandidat${m ? "en" : ""} übrig`;
+              if (l === "it") return `${remaining} candidat${m ? "i" : "o"} rimast${m ? "i" : "o"}`;
+              if (l === "pt") return `${remaining} candidato${m ? "s" : ""} restante${m ? "s" : ""}`;
+              if (l === "en") return `${remaining} candidate${m ? "s" : ""} left`;
+              return `${remaining} candidat${m ? "s" : ""} restant${m ? "s" : ""}`;
+            })()}
           </span>
         </div>
         <div className="h-1.5 w-full rounded-full bg-white/10 overflow-hidden">
@@ -1523,19 +1525,19 @@ const AskingView = ({
           onClick={() => onAnswer("yes")}
           className="py-3 lg:py-6 rounded-2xl bg-[#00E676] hover:bg-[#00C966] text-[#0A1410] font-display text-base lg:text-2xl tracking-widest hover:scale-[1.03] active:scale-[0.97] transition-transform shadow-[0_8px_24px_rgba(0,230,118,0.35)]"
         >
-          ✓ {isEn() ? "YES" : "OUI"}
+          ✓ {tr("OUI","YES","JA","SÌ","SIM")}
         </button>
         <button
           onClick={() => onAnswer("dunno")}
           className="py-3 lg:py-6 rounded-2xl border-2 border-white/10 bg-white/[0.05] hover:bg-white/[0.10] text-white/80 font-display text-xs lg:text-lg tracking-widest transition-colors"
         >
-          ? {isEn() ? "NOT SURE" : "SAIS PAS"}
+          ? {tr("SAIS PAS","NOT SURE","WEISS NICHT","NON SO","NÃO SEI")}
         </button>
         <button
           onClick={() => onAnswer("no")}
           className="py-3 lg:py-6 rounded-2xl bg-[#FF3D6E] hover:bg-[#E62E5E] text-white font-display text-base lg:text-2xl tracking-widest hover:scale-[1.03] active:scale-[0.97] transition-transform shadow-[0_8px_24px_rgba(255,61,110,0.35)]"
         >
-          ✗ {isEn() ? "NO" : "NON"}
+          ✗ {tr("NON","NO","NEIN","NO","NÃO")}
         </button>
       </div>
 
@@ -1545,7 +1547,7 @@ const AskingView = ({
             onClick={onBack}
             className="text-[10px] lg:text-xs text-white/60 hover:text-white tracking-widest transition-colors"
           >
-            {isEn() ? "← back" : "← précédent"}
+            {tr("← précédent","← back","← zurück","← indietro","← voltar")}
           </button>
         ) : (
           <span />
@@ -1554,7 +1556,7 @@ const AskingView = ({
           onClick={() => onAnswer("dunno")}
           className="text-[10px] lg:text-xs text-white/40 hover:text-white/70 tracking-widest transition-colors"
         >
-          {isEn() ? "skip this question →" : "passer cette question →"}
+          {tr("passer cette question →","skip this question →","diese Frage überspringen →","salta questa domanda →","pular esta pergunta →")}
         </button>
       </div>
 
@@ -1568,7 +1570,7 @@ const AskingView = ({
           fait pas monter. */}
       <div className="mt-3 lg:mt-5">
         <div className="flex items-center justify-between text-[9px] lg:text-[11px] mb-1 tracking-widest font-display text-white/45">
-          <span>🔮 {isEn() ? "THE GENIE CLOSES IN" : "LE GÉNIE SE RAPPROCHE"}</span>
+          <span>🔮 {tr("LE GÉNIE SE RAPPROCHE","THE GENIE CLOSES IN","DER GENIE KOMMT NÄHER","IL GENIO SI AVVICINA","O GÊNIO SE APROXIMA")}</span>
           <span className="tabular-nums text-[#C084FC]/80">{Math.round(smokeFill)}%</span>
         </div>
         <div className="relative h-3 lg:h-4 w-full rounded-full bg-white/[0.06] border border-white/10 overflow-hidden">
@@ -1595,7 +1597,7 @@ const LiveDeductions = ({
       <div className="mt-6 rounded-2xl bg-black/20 border border-white/5 px-5 py-6 text-center backdrop-blur-sm">
         <div className="text-3xl mb-2 opacity-70">🔮</div>
         <p className="text-[12px] text-white/50 italic max-w-xs mx-auto leading-relaxed">
-          {isEn() ? "The oracle awaits your first answers to zero in on your player…" : "Le devin attend tes premières réponses pour cerner ton joueur…"}
+          {tr("Le devin attend tes premières réponses pour cerner ton joueur…","The oracle awaits your first answers to zero in on your player…","Das Orakel wartet auf deine ersten Antworten, um deinen Spieler einzugrenzen…","L'oracolo aspetta le tue prime risposte per individuare il tuo giocatore…","O oráculo aguarda suas primeiras respostas para cercar seu jogador…")}
         </p>
       </div>
     );
@@ -1610,10 +1612,10 @@ const LiveDeductions = ({
     <div className="mt-6 rounded-2xl bg-black/30 border border-white/10 backdrop-blur-sm overflow-hidden">
       <div className="flex items-center justify-between px-4 py-2 border-b border-white/5 bg-white/[0.03]">
         <span className="font-display text-[10px] tracking-[0.3em] text-[#C084FC]">
-          🧠 {isEn() ? "WHAT I'M DEDUCING" : "CE QUE JE DÉDUIS"}
+          🧠 {tr("CE QUE JE DÉDUIS","WHAT I'M DEDUCING","WAS ICH ABLEITE","COSA STO DEDUCENDO","O QUE ESTOU DEDUZINDO")}
         </span>
         <span className="text-[10px] text-white/40 tabular-nums">
-          {history.length} {isEn() ? "clue" : "indice"}{history.length > 1 ? "s" : ""}
+          {history.length} {history.length > 1 ? tr("indices","clues","Hinweise","indizi","pistas") : tr("indice","clue","Hinweis","indizio","pista")}
         </span>
       </div>
       <ol className="divide-y divide-white/[0.04]">
@@ -1636,7 +1638,7 @@ const LiveDeductions = ({
       </ol>
       {history.length > 6 && (
         <div className="px-4 py-2 text-center text-[10px] text-white/30 border-t border-white/5">
-          + {history.length - 6} {isEn() ? "more above" : (history.length - 6 > 1 ? "autres plus haut" : "autre plus haut")}
+          + {history.length - 6} {history.length - 6 > 1 ? tr("autres plus haut","more above","weitere oben","altri sopra","outros acima") : tr("autre plus haut","more above","weitere oben","altro sopra","outro acima")}
         </div>
       )}
     </div>
@@ -1659,17 +1661,17 @@ const GuessingView = ({
   <div className="text-center">
     <div className="inline-block px-3 py-1 rounded-full bg-[#C084FC]/15 border border-[#C084FC]/30 mb-2 lg:mb-3">
       <span className="font-display text-[10px] tracking-[0.35em] text-[#C084FC]">
-        🔮 {isEn() ? "MY GUESS" : "MA DEVINETTE"}
+        🔮 {tr("MA DEVINETTE","MY GUESS","MEINE VERMUTUNG","LA MIA IPOTESI","MEU PALPITE")}
       </span>
     </div>
     <div className="font-display text-xl lg:text-3xl tracking-wider text-white mb-2 lg:mb-5 leading-tight">
-      {isEn() ? "I BET IT'S..." : "JE PARIE QUE C'EST..."}
+      {tr("JE PARIE QUE C'EST...","I BET IT'S...","ICH WETTE, ES IST...","SCOMMETTO CHE È...","APOSTO QUE É...")}
     </div>
 
     <PlayerRevealCard player={guess} accent="#C084FC" />
 
     <p className="text-white/60 text-sm mt-3 mb-3 lg:mt-5 lg:mb-4 tracking-wide">
-      {isEn() ? "So, am I right?" : "Alors, j'ai bon ?"}
+      {tr("Alors, j'ai bon ?","So, am I right?","Und, hab ich recht?","Allora, ho indovinato?","E aí, acertei?")}
     </p>
 
     <div className="grid grid-cols-2 gap-3">
@@ -1677,13 +1679,13 @@ const GuessingView = ({
         onClick={onCorrect}
         className="py-3 lg:py-4 rounded-2xl bg-gradient-to-r from-[#00C966] to-[#00E676] text-[#0A1410] font-display text-lg lg:text-xl tracking-widest hover:scale-[1.03] active:scale-[0.97] transition-transform shadow-[0_8px_24px_rgba(0,230,118,0.35)]"
       >
-        ✓ {isEn() ? "YES!" : "OUI !"}
+        ✓ {tr("OUI !","YES!","JA!","SÌ!","SIM!")}
       </button>
       <button
         onClick={onWrong}
         className="py-3 lg:py-4 rounded-2xl bg-gradient-to-r from-[#FF3D6E] to-[#E62E5E] text-white font-display text-lg lg:text-xl tracking-widest hover:scale-[1.03] active:scale-[0.97] transition-transform shadow-[0_8px_24px_rgba(255,61,110,0.35)]"
       >
-        ✗ {isEn() ? "NO" : "NON"}
+        ✗ {tr("NON","NO","NEIN","NO","NÃO")}
       </button>
     </div>
 
@@ -1692,7 +1694,7 @@ const GuessingView = ({
         onClick={onBack}
         className="mt-3 text-xs text-white/50 hover:text-white tracking-widest transition-colors"
       >
-        {isEn() ? "← back to the previous question" : "← revenir à la question précédente"}
+        {tr("← revenir à la question précédente","← back to the previous question","← zurück zur vorherigen Frage","← torna alla domanda precedente","← voltar à pergunta anterior")}
       </button>
     )}
   </div>
@@ -1728,10 +1730,10 @@ const WonView = ({
 
     <div className="text-4xl mb-2 animate-in zoom-in duration-300">🔮</div>
     <div className="font-display text-5xl lg:text-6xl tracking-wider mb-1 leading-none text-white drop-shadow-[0_6px_24px_rgba(168,85,247,0.55)]">
-      {isEn() ? "GOT YOU!" : "JE T'AI EU !"}
+      {tr("JE T'AI EU !","GOT YOU!","ERWISCHT!","TI HO BECCATO!","PEGUEI VOCÊ!")}
     </div>
     <p className="text-white/60 text-sm mb-5 tracking-wide">
-      {isEn() ? "You were thinking of..." : "Tu pensais bien à..."}
+      {tr("Tu pensais bien à...","You were thinking of...","Du hast gedacht an...","Stavi pensando a...","Você estava pensando em...")}
     </p>
 
     <PlayerRevealCard player={guess} accent="#C084FC" />
@@ -1743,7 +1745,7 @@ const WonView = ({
         onClick={onRestart}
         className="py-4 rounded-2xl bg-gradient-to-r from-[#A855F7] to-[#6D28D9] text-white font-display text-lg tracking-widest hover:scale-[1.02] active:scale-[0.97] transition-transform shadow-[0_10px_28px_-6px_rgba(168,85,247,0.55)]"
       >
-        {"▶︎"} {isEn() ? "PLAY AGAIN" : "REJOUER"}
+        {"▶︎"} {tr("REJOUER","PLAY AGAIN","NOCHMAL SPIELEN","GIOCA ANCORA","JOGAR DE NOVO")}
       </button>
       <button
         onClick={onClose}
@@ -1767,9 +1769,11 @@ const QaRecap = ({
   const [open, setOpen] = useState(false);
   if (history.length === 0) return null;
   const ansLabel = (a: Answer) =>
-    isEn()
-      ? (a === "yes" ? "✓ Yes" : a === "no" ? "✗ No" : "? Not sure")
-      : (a === "yes" ? "✓ Oui" : a === "no" ? "✗ Non" : "? Sais pas");
+    a === "yes"
+      ? tr("✓ Oui", "✓ Yes", "✓ Ja", "✓ Sì", "✓ Sim")
+      : a === "no"
+      ? tr("✗ Non", "✗ No", "✗ Nein", "✗ No", "✗ Não")
+      : tr("? Sais pas", "? Not sure", "? Weiß nicht", "? Non so", "? Não sei");
   const ansColor = (a: Answer) =>
     a === "yes" ? "#00E676" : a === "no" ? "#FF3D6E" : "rgba(255,255,255,0.5)";
   return (
@@ -1779,7 +1783,13 @@ const QaRecap = ({
         className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-white/80 transition-colors"
       >
         <span className="font-display text-xs tracking-[0.25em]">
-          📋 {isEn() ? `RECAP OF THE ${history.length} QUESTION${history.length > 1 ? "S" : ""}` : `RÉCAP DES ${history.length} QUESTION${history.length > 1 ? "S" : ""}`}
+          📋 {(() => { const l = getLang(); const S = history.length > 1 ? "S" : "";
+            if (l === "de") return `ÜBERSICHT DER ${history.length} FRAGE${history.length > 1 ? "N" : ""}`;
+            if (l === "it") return `RIEPILOGO DELLE ${history.length} DOMANDE`;
+            if (l === "pt") return `RESUMO DAS ${history.length} PERGUNTA${S}`;
+            if (l === "en") return `RECAP OF THE ${history.length} QUESTION${S}`;
+            return `RÉCAP DES ${history.length} QUESTION${S}`;
+          })()}
         </span>
         <span className="text-white/40 text-sm">{open ? "▲" : "▼"}</span>
       </button>
@@ -1808,7 +1818,7 @@ const QaRecap = ({
       )}
       {open && (
         <p className="text-[10px] text-white/30 mt-2 text-center" style={{ color: `${accent}80` }}>
-          💡 {isEn() ? "If you were thinking of another player, look for where your answer eliminated the right one" : "Si tu pensais à un autre joueur, regarde où ta réponse a éliminé le bon"}
+          💡 {tr("Si tu pensais à un autre joueur, regarde où ta réponse a éliminé le bon","If you were thinking of another player, look for where your answer eliminated the right one","Wenn du an einen anderen Spieler gedacht hast, schau, wo deine Antwort den richtigen ausgeschlossen hat","Se stavi pensando a un altro giocatore, guarda dove la tua risposta ha eliminato quello giusto","Se você estava pensando em outro jogador, veja onde sua resposta eliminou o certo")}
         </p>
       )}
     </div>
@@ -1831,16 +1841,16 @@ const LostView = ({
   <div className="text-center">
     <div className="text-4xl mb-2">🫡</div>
     <div className="font-display text-5xl lg:text-6xl tracking-wider mb-1 leading-none text-white drop-shadow-[0_6px_24px_rgba(168,85,247,0.55)]">
-      {isEn() ? "WELL PLAYED" : "BIEN JOUÉ"}
+      {tr("BIEN JOUÉ","WELL PLAYED","GUT GESPIELT","BEN GIOCATO","BEM JOGADO")}
     </div>
     <p className="text-white/60 text-sm mb-5 tracking-wide">
-      {isEn() ? "You got me — I couldn't find your player." : "Tu m'as eu — je n'ai pas trouvé ton joueur."}
+      {tr("Tu m'as eu — je n'ai pas trouvé ton joueur.","You got me — I couldn't find your player.","Du hast mich — ich konnte deinen Spieler nicht finden.","Mi hai battuto — non ho trovato il tuo giocatore.","Você me pegou — não achei seu jogador.")}
     </p>
 
     {tried.length > 0 && (
       <div className="mb-4 inline-block px-4 py-2 rounded-xl bg-[#FF3D6E]/10 border border-[#FF3D6E]/30">
         <div className="text-[10px] tracking-[0.3em] text-[#FF3D6E] mb-1">
-          {isEn() ? "MY FAILED GUESSES" : "MES DEVINETTES RATÉES"}
+          {tr("MES DEVINETTES RATÉES","MY FAILED GUESSES","MEINE FEHLVERSUCHE","I MIEI TENTATIVI FALLITI","MEUS PALPITES ERRADOS")}
         </div>
         <div className="text-xs text-white/70">
           {tried.slice(0, 3).join(" · ")}
@@ -1852,7 +1862,7 @@ const LostView = ({
     {shortlist.length > 0 && (
       <div className="mb-5 rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.03] to-transparent p-4">
         <div className="font-display text-[10px] tracking-[0.3em] text-[#C084FC] mb-3">
-          🤔 {isEn() ? "MAYBE ONE OF THESE PLAYERS?" : "PEUT-ÊTRE UN DE CES JOUEURS ?"}
+          🤔 {tr("PEUT-ÊTRE UN DE CES JOUEURS ?","MAYBE ONE OF THESE PLAYERS?","VIELLEICHT EINER DIESER SPIELER?","FORSE UNO DI QUESTI GIOCATORI?","TALVEZ UM DESTES JOGADORES?")}
         </div>
         <div className="flex flex-wrap gap-2 justify-center">
           {shortlist.map((p) => (
@@ -1868,7 +1878,7 @@ const LostView = ({
     )}
 
     <p className="text-[11px] text-white/35 mb-5 max-w-sm mx-auto leading-relaxed">
-      {isEn() ? "If your player doesn't appear anywhere, they may not be in my database." : "Si ton joueur n'apparaît nulle part, il n'est peut-être pas dans ma base."}
+      {tr("Si ton joueur n'apparaît nulle part, il n'est peut-être pas dans ma base.","If your player doesn't appear anywhere, they may not be in my database.","Wenn dein Spieler nirgends auftaucht, ist er vielleicht nicht in meiner Datenbank.","Se il tuo giocatore non appare da nessuna parte, forse non è nel mio database.","Se seu jogador não aparece em lugar nenhum, talvez não esteja na minha base.")}
     </p>
 
     <QaRecap history={qaHistory} accent="#C084FC" />
@@ -1878,7 +1888,7 @@ const LostView = ({
         onClick={onRestart}
         className="py-4 rounded-2xl bg-gradient-to-r from-[#A855F7] to-[#6D28D9] text-white font-display text-lg tracking-widest hover:scale-[1.02] active:scale-[0.97] transition-transform shadow-[0_10px_28px_-6px_rgba(168,85,247,0.55)]"
       >
-        {"▶︎"} {isEn() ? "REMATCH" : "REVANCHE"}
+        {"▶︎"} {tr("REVANCHE","REMATCH","REVANCHE","RIVINCITA","REVANCHE")}
       </button>
       <button
         onClick={onClose}
