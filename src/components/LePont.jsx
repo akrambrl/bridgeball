@@ -3052,7 +3052,7 @@ export default function LePont() {
   function duelIsHost(){ const r = duelRoomRef.current || duelRoom; return !!(r && r.host_id === playerId); }
 
   async function duelCreateRoom(){
-    if(!playerId || !playerName){ setDuelError(lang==="en"?"Log in first":"Connecte-toi d'abord"); return; }
+    if(!playerId || !playerName){ setDuelError(tr("Connecte-toi d'abord","Log in first","Melde dich zuerst an","Accedi prima","Faça login primeiro")); return; }
     setDuelBusy(true); setDuelError("");
     try{
       let lastErr=null;
@@ -3070,22 +3070,22 @@ export default function LePont() {
           lastErr="no data";
         } catch(e){ lastErr = e.message||String(e); }
       }
-      setDuelError((lang==="en"?"Could not create: ":"Erreur création : ")+(lastErr||"?"));
+      setDuelError((tr("Erreur création : ","Could not create: ","Erstellen fehlgeschlagen: ","Errore di creazione: ","Erro ao criar: "))+(lastErr||"?"));
     } finally { setDuelBusy(false); }
   }
 
   async function duelJoinRoom(rawCode){
-    if(!playerId || !playerName){ setDuelError(lang==="en"?"Log in first":"Connecte-toi d'abord"); return; }
+    if(!playerId || !playerName){ setDuelError(tr("Connecte-toi d'abord","Log in first","Melde dich zuerst an","Accedi prima","Faça login primeiro")); return; }
     const code = (rawCode||"").trim().toUpperCase();
-    if(code.length!==6){ setDuelError(lang==="en"?"6-char code":"Code à 6 caractères"); return; }
+    if(code.length!==6){ setDuelError(tr("Code à 6 caractères","6-char code","6-stelliger Code","Codice di 6 caratteri","Código de 6 caracteres")); return; }
     setDuelBusy(true); setDuelError("");
     try{
       const data = await sbFetch("bb_duel_rooms?code=eq."+code+"&limit=1");
-      if(!Array.isArray(data) || data.length===0){ setDuelError(lang==="en"?"Room not found":"Salon introuvable"); return; }
+      if(!Array.isArray(data) || data.length===0){ setDuelError(tr("Salon introuvable","Room not found","Raum nicht gefunden","Stanza non trovata","Sala não encontrada")); return; }
       const room = data[0];
       if(room.host_id===playerId){ duelRoomRef.current=room; setDuelRoom(room); setDuelScreen("lobby"); return; }
-      if(room.guest_id && room.guest_id!==playerId){ setDuelError(lang==="en"?"Room is full":"Salon complet"); return; }
-      if(room.state!=="lobby"){ setDuelError(lang==="en"?"Already started":"Partie déjà lancée"); return; }
+      if(room.guest_id && room.guest_id!==playerId){ setDuelError(tr("Salon complet","Room is full","Raum ist voll","Stanza piena","Sala cheia")); return; }
+      if(room.state!=="lobby"){ setDuelError(tr("Partie déjà lancée","Already started","Bereits gestartet","Già iniziata","Já começou")); return; }
       await duelPatch(room.id, { guest_id:playerId, guest_name:playerName });
       const fresh = Object.assign({}, room, { guest_id:playerId, guest_name:playerName });
       duelRoomRef.current=fresh; setDuelRoom(fresh); setDuelScreen("lobby");
@@ -3280,7 +3280,7 @@ export default function LePont() {
         // salon supprimé (hôte parti) → l'invité revient au menu
         if(duelRoomRef.current && duelRoomRef.current.host_id!==playerId){
           duelRoomRef.current=null; setDuelRoom(null); setDuelScreen(null);
-          setDuelError(lang==="en"?"Host left the room":"L'hôte a quitté le salon");
+          setDuelError(tr("L'hôte a quitté le salon","Host left the room","Host hat den Raum verlassen","L'host ha lasciato la stanza","O anfitrião saiu da sala"));
         }
         return;
       }
@@ -3493,7 +3493,7 @@ export default function LePont() {
   // Crée une nouvelle room
   async function ggBattleCreateRoom() {
     if (!playerId || !playerName) {
-      setGgBattleError(lang==="en"?"Please log in first":"Connecte-toi d'abord");
+      setGgBattleError(tr("Connecte-toi d'abord","Please log in first","Melde dich zuerst an","Accedi prima","Faça login primeiro"));
       return;
     }
     setGgBattleLoading(true);
@@ -3551,10 +3551,10 @@ export default function LePont() {
           lastError = e.message || String(e);
         }
       }
-      setGgBattleError((lang==="en"?"Could not create room: ":"Erreur création : ") + (lastError || "unknown"));
+      setGgBattleError((tr("Erreur création : ","Could not create room: ","Erstellen fehlgeschlagen: ","Errore di creazione: ","Erro ao criar: ")) + (lastError || "unknown"));
     } catch (e) {
       console.warn("[GOAT BATTLE] Outer error:", e);
-      setGgBattleError(lang==="en"?"Error creating room":"Erreur de création");
+      setGgBattleError(tr("Erreur de création","Error creating room","Fehler beim Erstellen","Errore di creazione","Erro ao criar"));
     } finally {
       setGgBattleLoading(false);
     }
@@ -3563,12 +3563,12 @@ export default function LePont() {
   // Rejoindre une room avec un code
   async function ggBattleJoinRoom(rawCode) {
     if (!playerId || !playerName) {
-      setGgBattleError(lang==="en"?"Please log in first":"Connecte-toi d'abord");
+      setGgBattleError(tr("Connecte-toi d'abord","Please log in first","Melde dich zuerst an","Accedi prima","Faça login primeiro"));
       return;
     }
     const code = (rawCode || "").trim().toUpperCase();
     if (code.length !== 6) {
-      setGgBattleError(lang==="en"?"Code must be 6 characters":"Le code doit faire 6 caractères");
+      setGgBattleError(tr("Le code doit faire 6 caractères","Code must be 6 characters","Code muss 6 Zeichen haben","Il codice deve avere 6 caratteri","O código deve ter 6 caracteres"));
       return;
     }
     setGgBattleLoading(true);
@@ -3576,12 +3576,12 @@ export default function LePont() {
     try {
       const data = await sbFetch("bb_gg_rooms?code=eq."+code+"&limit=1");
       if (!Array.isArray(data) || data.length === 0) {
-        setGgBattleError(lang==="en"?"Room not found":"Room introuvable");
+        setGgBattleError(tr("Room introuvable","Room not found","Raum nicht gefunden","Stanza non trovata","Sala não encontrada"));
         return;
       }
       const room = data[0];
       if (room.state !== "lobby") {
-        setGgBattleError(lang==="en"?"Game already started":"Partie déjà en cours");
+        setGgBattleError(tr("Partie déjà en cours","Game already started","Spiel läuft bereits","Partita già in corso","Jogo já começou"));
         return;
       }
       const players = Array.isArray(room.players) ? room.players : [];
@@ -3592,7 +3592,7 @@ export default function LePont() {
         return;
       }
       if (players.length >= 8) {
-        setGgBattleError(lang==="en"?"Room is full (8 max)":"Room pleine (8 max)");
+        setGgBattleError(tr("Room pleine (8 max)","Room is full (8 max)","Raum ist voll (max. 8)","Stanza piena (max 8)","Sala cheia (8 máx)"));
         return;
       }
       players.push({
@@ -3613,7 +3613,7 @@ export default function LePont() {
       setGgBattleRoom({ ...room, players });
       setGgBattleScreen("lobby");
     } catch (e) {
-      setGgBattleError(lang==="en"?"Error joining room":"Erreur de connexion");
+      setGgBattleError(tr("Erreur de connexion","Error joining room","Fehler beim Beitreten","Errore di accesso","Erro ao entrar"));
     } finally {
       setGgBattleLoading(false);
     }
@@ -3659,7 +3659,7 @@ export default function LePont() {
         body: JSON.stringify({ state: "playing", started_at: startTime }),
       });
     } catch (e) {
-      setGgBattleError(lang==="en"?"Error starting game":"Erreur au démarrage");
+      setGgBattleError(tr("Erreur au démarrage","Error starting game","Fehler beim Start","Errore all'avvio","Erro ao iniciar"));
     } finally {
       setGgBattleLoading(false);
     }
@@ -3703,7 +3703,7 @@ export default function LePont() {
       setGgBattleScreen("lobby");
     } catch (e) {
       console.warn("[GG BATTLE] restart failed:", e);
-      setGgBattleError(lang==="en"?"Error restarting":"Erreur au relancement");
+      setGgBattleError(tr("Erreur au relancement","Error restarting","Fehler beim Neustart","Errore al riavvio","Erro ao reiniciar"));
     } finally {
       setGgBattleLoading(false);
     }
@@ -5603,9 +5603,9 @@ export default function LePont() {
     const name = (playerName||"Anonyme").trim();
     try {
       const data = await sbFetch("bb_rooms?code=eq."+clean+"&limit=1");
-      if (!Array.isArray(data) || data.length === 0) { setRoomMsg(lang==="en"?"Room not found":"Salle introuvable"); return; }
+      if (!Array.isArray(data) || data.length === 0) { setRoomMsg(tr("Salle introuvable","Room not found","Raum nicht gefunden","Stanza non trovata","Sala não encontrada")); return; }
       const r = data[0];
-      if (r.status !== "waiting") { setRoomMsg(lang==="en"?"Game already started!":"Partie déjà lancée !"); return; }
+      if (r.status !== "waiting") { setRoomMsg(tr("Partie déjà lancée !","Game already started!","Spiel bereits gestartet!","Partita già iniziata!","Jogo já começou!")); return; }
       // Retry loop pour gérer la race condition quand plusieurs joueurs rejoignent en même temps
       let success = false;
       let attempt = 0;
@@ -5614,11 +5614,11 @@ export default function LePont() {
         attempt++;
         // Re-lire à chaque tentative pour avoir la dernière version
         const fresh = attempt === 1 ? data : await sbFetch("bb_rooms?code=eq."+clean+"&limit=1");
-        if (!Array.isArray(fresh) || fresh.length === 0) { setRoomMsg(lang==="en"?"Room not found":"Salle introuvable"); return; }
+        if (!Array.isArray(fresh) || fresh.length === 0) { setRoomMsg(tr("Salle introuvable","Room not found","Raum nicht gefunden","Stanza non trovata","Sala não encontrada")); return; }
         const cr = fresh[0];
-        if (cr.status !== "waiting") { setRoomMsg(lang==="en"?"Game already started!":"Partie déjà lancée !"); return; }
+        if (cr.status !== "waiting") { setRoomMsg(tr("Partie déjà lancée !","Game already started!","Spiel bereits gestartet!","Partita già iniziata!","Jogo já começou!")); return; }
         const players = typeof cr.players === "string" ? JSON.parse(cr.players) : cr.players;
-        if (players.length >= 8) { setRoomMsg(lang==="en"?"Room full (8/8)":"Salle pleine (8/8)"); return; }
+        if (players.length >= 8) { setRoomMsg(tr("Salle pleine (8/8)","Room full (8/8)","Raum voll (8/8)","Stanza piena (8/8)","Sala cheia (8/8)")); return; }
         // Déjà dans la salle ? cas du retry où mon ajout a réussi sans qu'on le sache
         if (players.find(function(p){return p.id===playerId;})) {
           success = true;
@@ -5648,7 +5648,7 @@ export default function LePont() {
         }
       }
       if (!success) {
-        setRoomMsg(lang==="en"?"Could not join (try again)":"Connexion impossible (réessaie)");
+        setRoomMsg(tr("Connexion impossible (réessaie)","Could not join (try again)","Beitritt fehlgeschlagen (nochmal)","Accesso non riuscito (riprova)","Não foi possível entrar (tente de novo)"));
         return;
       }
       setRoom(finalRoom);
@@ -6033,7 +6033,7 @@ export default function LePont() {
     if (!/^[a-zA-Z0-9_\-]+$/.test(clean)) { setPseudoMsg(lang==="en"?"❌ Letters, digits, _ and - only":"❌ Lettres, chiffres, _ et - uniquement"); return; }
     if (/^[_\-]/.test(clean) || /[_\-]$/.test(clean)) { setPseudoMsg(lang==="en"?"❌ Cannot start or end with _ or -":"❌ Ne peut pas commencer ou finir par _ ou -"); return; }
     setPseudoChecking(true);
-    setPseudoMsg(lang==="en"?"Checking...":"Vérification...");
+    setPseudoMsg(tr("Vérification...","Checking...","Prüfe...","Verifica...","Verificando..."));
     try {
       // Check if pseudo already taken (case-insensitive)
       const existing = await sbFetch("bb_pseudos?pseudo=ilike."+encodeURIComponent(clean)+"&select=player_id&limit=1");
@@ -7256,7 +7256,7 @@ export default function LePont() {
     const paris = new Date(d.toLocaleString('en-US',{timeZone:'Europe/Paris'}));
     const dayShort = (lang==="en"?dayShortEn:dayShortFr)[paris.getDay()];
     // Label ligue compact
-    const themeLabel = theme.id==="L1"?"L1":theme.id==="PL"?"PL":theme.id==="LIGA"?"LIGA":theme.id==="SERIEA"?"Serie A":theme.id==="BUNDESLIGA"?"Buli":theme.id==="LEGEND"?(lang==="en"?"Legend":"Légende"):"Joker";
+    const themeLabel = theme.id==="L1"?"L1":theme.id==="PL"?"PL":theme.id==="LIGA"?"LIGA":theme.id==="SERIEA"?"Serie A":theme.id==="BUNDESLIGA"?"Buli":theme.id==="LEGEND"?(tr("Légende","Legend","Legende","Leggenda","Lenda")):"Joker";
 
     // Tentatives façon Wordle : ⬛ pour tentatives ratées, 🟩 pour la bonne
     const tries = dailyTries;
@@ -7395,13 +7395,13 @@ export default function LePont() {
           const posMap = lang==="en" ? posMapEN : posMapFR;
           position = posMap[positionMatches[1].toLowerCase()] || positionMatches[1];
         }
-        setDailyHintData({ position: position || (lang==="en"?"Information unavailable":"Information indisponible"), nationality: null, loading: false });
+        setDailyHintData({ position: position || (tr("Information indisponible","Information unavailable","Information nicht verfügbar","Informazione non disponibile","Informação indisponível")), nationality: null, loading: false });
         setDailyHintLevel(1);
-        saveDailyHintState(1, { position: position || (lang==="en"?"Information unavailable":"Information indisponible"), nationality: null }, true, dailyTries);
+        saveDailyHintState(1, { position: position || (tr("Information indisponible","Information unavailable","Information nicht verfügbar","Informazione non disponibile","Informação indisponível")), nationality: null }, true, dailyTries);
       } catch(e) {
-        setDailyHintData({ position: (lang==="en"?"Information unavailable":"Information indisponible"), nationality: null, loading: false });
+        setDailyHintData({ position: (tr("Information indisponible","Information unavailable","Information nicht verfügbar","Informazione non disponibile","Informação indisponível")), nationality: null, loading: false });
         setDailyHintLevel(1);
-        saveDailyHintState(1, { position: (lang==="en"?"Information unavailable":"Information indisponible"), nationality: null }, true, dailyTries);
+        saveDailyHintState(1, { position: (tr("Information indisponible","Information unavailable","Information nicht verfügbar","Informazione non disponibile","Informação indisponível")), nationality: null }, true, dailyTries);
       }
     } else if (dailyHintLevel === 1) {
       // Second hint: nationality
@@ -7452,13 +7452,13 @@ export default function LePont() {
           nationality = nationality.split("-").map(n => natMapFR[n.toLowerCase()] || n).join("-");
         }
         if (!nationality) {
-          nationality = (lang==="en"?"Information unavailable":"Information indisponible");
+          nationality = (tr("Information indisponible","Information unavailable","Information nicht verfügbar","Informazione non disponibile","Informação indisponível"));
         }
         setDailyHintData(d => ({ ...d, nationality, loading: false }));
         setDailyHintLevel(2);
         saveDailyHintState(2, { position: dailyHintData.position, nationality: nationality }, true, dailyTries);
       } catch(e) {
-        const unavailable = (lang==="en"?"Information unavailable":"Information indisponible");
+        const unavailable = (tr("Information indisponible","Information unavailable","Information nicht verfügbar","Informazione non disponibile","Informação indisponível"));
         setDailyHintData(d => ({ ...d, nationality: unavailable, loading: false }));
         setDailyHintLevel(2);
         saveDailyHintState(2, { position: dailyHintData.position, nationality: unavailable }, true, dailyTries);
@@ -7893,7 +7893,7 @@ export default function LePont() {
       }}>
         {fb==="ok"&&<><div style={{display:"flex",alignItems:"center",gap:8,fontSize:17,fontWeight:800,color:"#16a34a"}}>{Icon.ball(18,"#16a34a")} {feedbackPhrase || (lang==="en"?"RIGHT ANSWER !":"BONNE RÉPONSE !")}</div><div style={{fontSize:12,fontWeight:600,color:"#16a34a",opacity:.7}}>+{diff==="expert"?30:diff==="moyen"?20:10} pts</div></>}
         {fb==="ko"&&<><div style={{display:"flex",alignItems:"center",gap:8,fontSize:17,fontWeight:800,color:G.red}}>{Icon.whistle(18,G.red)} {lang==="en"?"WRONG ANSWER":"MAUVAISE RÉPONSE"}</div><div style={{fontSize:12,fontWeight:600,color:G.red,opacity:.7}}>−5 pts</div></>}
-        {fb==="used"&&<div style={{display:"flex",alignItems:"center",gap:8,fontSize:15,fontWeight:800,color:"#d97706"}}>{Icon.flag(16,"#d97706")} {lang==="en"?"CLUB ALREADY USED":"CLUB DÉJÀ UTILISÉ"}</div>}
+        {fb==="used"&&<div style={{display:"flex",alignItems:"center",gap:8,fontSize:15,fontWeight:800,color:"#d97706"}}>{Icon.flag(16,"#d97706")} {tr("CLUB DÉJÀ UTILISÉ","CLUB ALREADY USED","KLUB SCHON BENUTZT","CLUB GIÀ USATO","CLUBE JÁ USADO")}</div>}
       </div>
     );
   };
@@ -7932,7 +7932,7 @@ export default function LePont() {
               {isPont?"GOAT PLUG":"GOAT MERCATO"}
             </div>
             <div style={{fontSize:11,letterSpacing:3,color:accentColor,textTransform:"uppercase",fontWeight:800,textAlign:"center",marginBottom:22}}>
-              {isPont ? (lang==="en"?"Connect the clubs":"Relie les clubs") : (lang==="en"?"Endless chain":"Chaîne infinie")}
+              {isPont ? (tr("Relie les clubs","Connect the clubs","Verbinde die Klubs","Collega i club","Ligue os clubes")) : (tr("Chaîne infinie","Endless chain","Endlose Kette","Catena infinita","Corrente infinita"))}
             </div>
 
             {/* Rules cards */}
@@ -7974,8 +7974,8 @@ export default function LePont() {
                   <div style={{display:"flex",alignItems:"center",gap:10}}>
                     <div style={{fontSize:22}}>🔥</div>
                     <div style={{flex:1,fontSize:13,color:"rgba(255,255,255,.85)",lineHeight:1.4}}>
-                      <strong style={{color:accentColor}}>{lang==="en"?"Combo bonus":"Bonus combo"} :</strong> {lang==="en"?"+10 (×3), +20 (×5), +30 (×10)":"+10 (×3), +20 (×5), +30 (×10)"}<br/>
-                      <span style={{fontSize:11,color:"rgba(255,255,255,.5)"}}>{lang==="en"?"Answer fast to chain!":"Réponds vite pour enchaîner !"}</span>
+                      <strong style={{color:accentColor}}>{tr("Bonus combo","Combo bonus","Combo-Bonus","Bonus combo","Bônus combo")} :</strong> {lang==="en"?"+10 (×3), +20 (×5), +30 (×10)":"+10 (×3), +20 (×5), +30 (×10)"}<br/>
+                      <span style={{fontSize:11,color:"rgba(255,255,255,.5)"}}>{tr("Réponds vite pour enchaîner !","Answer fast to chain!","Antworte schnell für die Kette!","Rispondi in fretta per concatenare!","Responda rápido para encadear!")}</span>
                     </div>
                   </div>
                 </div>
@@ -8004,7 +8004,7 @@ export default function LePont() {
                   <div style={{display:"flex",alignItems:"center",gap:10}}>
                     <div style={{fontSize:20}}>💡</div>
                     <div style={{flex:1,fontSize:12,color:"rgba(255,255,255,.75)",lineHeight:1.4}}>
-                      {lang==="en"?"Abbreviations accepted: PSG, Barça, Juve...":"Abréviations acceptées : PSG, Barça, Juve..."}
+                      {tr("Abréviations acceptées : PSG, Barça, Juve...","Abbreviations accepted: PSG, Barça, Juve...","Abkürzungen erlaubt: PSG, Barça, Juve...","Abbreviazioni accettate: PSG, Barça, Juve...","Abreviações aceitas: PSG, Barça, Juve...")}
                     </div>
                   </div>
                 </div>
@@ -8013,7 +8013,7 @@ export default function LePont() {
 
             {/* CTA Button */}
             <button onClick={dismissInstructions} style={{width:"100%",padding:"16px",background:`linear-gradient(135deg, ${accentColor}, ${accentSecondary})`,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:16,fontWeight:800,letterSpacing:1,boxShadow:`0 8px 24px ${accentColor}55`,display:"flex",alignItems:"center",justifyContent:"center",gap:8,transition:"transform .15s"}} onMouseDown={(e)=>e.currentTarget.style.transform="scale(.97)"} onMouseUp={(e)=>e.currentTarget.style.transform="scale(1)"} onMouseLeave={(e)=>e.currentTarget.style.transform="scale(1)"}>
-              {lang==="en"?"LET'S GO":"C'EST PARTI"} →
+              {tr("C'EST PARTI","LET'S GO","LOS GEHT'S","SI PARTE","VAMOS LÁ")} →
             </button>
           </div>
         </div>
@@ -8047,10 +8047,10 @@ export default function LePont() {
               </div>
             </div>
             <div style={{fontFamily:G.heading,fontSize:28,color:G.white,letterSpacing:2,textAlign:"center",marginBottom:4,textShadow:"0 2px 12px rgba(0,230,118,.5)"}}>
-              {lang==="en"?"INSTALL GOAT FC":"INSTALLER GOAT FC"}
+              {tr("INSTALLER GOAT FC","INSTALL GOAT FC","GOAT FC INSTALLIEREN","INSTALLA GOAT FC","INSTALAR GOAT FC")}
             </div>
             <div style={{fontSize:11,letterSpacing:3,color:"#00E676",textTransform:"uppercase",fontWeight:800,textAlign:"center",marginBottom:22}}>
-              {lang==="en"?"Get daily reminders 🔥":"Reçois les rappels quotidiens 🔥"}
+              {tr("Reçois les rappels quotidiens 🔥","Get daily reminders 🔥","Erhalte tägliche Erinnerungen 🔥","Ricevi promemoria quotidiani 🔥","Receba lembretes diários 🔥")}
             </div>
 
             {/* Benefits */}
@@ -8098,7 +8098,7 @@ export default function LePont() {
                   }
                 } catch(e) {}
               }} style={{width:"100%",padding:"16px",background:"linear-gradient(135deg,#00E676,#00A855)",color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:16,fontWeight:800,letterSpacing:1,boxShadow:"0 8px 24px rgba(0,230,118,.5)",display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:10}}>
-                ⬇ {lang==="en"?"INSTALL NOW":"INSTALLER MAINTENANT"}
+                ⬇ {tr("INSTALLER MAINTENANT","INSTALL NOW","JETZT INSTALLIEREN","INSTALLA ORA","INSTALAR AGORA")}
               </button>
             ) : (
               <div style={{background:"linear-gradient(135deg, rgba(0,230,118,.12), rgba(255,214,0,.08))",border:"1px solid rgba(0,230,118,.3)",borderRadius:16,padding:"14px 16px",marginBottom:20}}>
@@ -8128,7 +8128,7 @@ export default function LePont() {
         <div style={{display:"flex",alignItems:"center",gap:12}}>
           <div style={{fontSize:28}}>🔔</div>
           <div>
-            <div style={{fontSize:14,fontWeight:800,color:G.white}}>{lang==="en"?"Get reminders!":"Reçois des rappels !"}</div>
+            <div style={{fontSize:14,fontWeight:800,color:G.white}}>{tr("Reçois des rappels !","Get reminders!","Erinnerungen erhalten!","Ricevi promemoria!","Receba lembretes!")}</div>
             <div style={{fontSize:12,color:"rgba(255,255,255,.6)",marginTop:2}}>{lang==="en"?"We'll ping you if you haven't played for 24h":"On te pinguera si t'as pas joué depuis 24h"}</div>
           </div>
         </div>
@@ -8149,7 +8149,7 @@ export default function LePont() {
             {lang==="en"?"✓ Yes, enable!":"✓ Oui, active !"}
           </button>
           <button onClick={()=>{ setShowNotifPrompt(false); try{localStorage.setItem("bb_notif_dismissed", String(Date.now()));}catch{} }} style={{flex:1,padding:"11px",background:"rgba(255,255,255,.06)",color:"rgba(255,255,255,.6)",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:600}}>
-            {lang==="en"?"Later":"Plus tard"}
+            {tr("Plus tard","Later","Später","Più tardi","Depois")}
           </button>
         </div>
       </div>
@@ -8163,7 +8163,7 @@ export default function LePont() {
         {Icon.ball(22,G.white)}
         <div style={{flex:1}}>
           <div style={{fontSize:13,fontWeight:800,color:G.white}}>{lang==="en"?"Welcome back! 🙌":"Content de te revoir ! 🙌"}</div>
-          <div style={{fontSize:11,color:"rgba(255,255,255,.8)",marginTop:1}}>{lang==="en"?"It's been 24h+ — your record awaits!":"Ça fait +24h — ton record t'attend !"}</div>
+          <div style={{fontSize:11,color:"rgba(255,255,255,.8)",marginTop:1}}>{tr("Ça fait +24h — ton record t'attend !","It's been 24h+ — your record awaits!","Über 24 Std. — dein Rekord wartet!","Sono passate +24h — il tuo record ti aspetta!","Já faz +24h — seu recorde espera!")}</div>
         </div>
         <button onClick={()=>setWasAway(false)} style={{background:"rgba(255,255,255,.2)",border:"none",borderRadius:20,width:26,height:26,cursor:"pointer",color:G.white,fontSize:14,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
       </div>
@@ -8188,19 +8188,19 @@ export default function LePont() {
           {/* Streak count - big */}
           <div style={{fontFamily:G.heading,fontSize:"clamp(56px,16vw,72px)",color:dayStreak>=7?"#FFD600":"#FF6B35",letterSpacing:1,lineHeight:1,textShadow:dayStreak>=7?"0 0 24px rgba(255,214,0,.6)":"0 0 16px rgba(255,107,53,.5)"}}>{dayStreak}</div>
           <div style={{fontSize:13,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.6)",fontWeight:800,marginTop:8,marginBottom:22}}>
-            {dayStreak<=1?(lang==="en"?"Day streak":"Jour de suite"):(lang==="en"?"Days in a row":"Jours de suite")}
+            {dayStreak<=1?(tr("Jour de suite","Day streak","Tag in Folge","Giorno di fila","Dia seguido")):(tr("Jours de suite","Days in a row","Tage in Folge","Giorni di fila","Dias seguidos"))}
           </div>
           {/* Stats */}
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:20}}>
             <div style={{background:"rgba(255,214,0,.08)",border:"1px solid rgba(255,214,0,.25)",borderRadius:14,padding:"12px 10px"}}>
               <div style={{fontSize:22,marginBottom:2}}>🏆</div>
               <div style={{fontFamily:G.heading,fontSize:26,color:G.gold,lineHeight:1}}>{streakBest}</div>
-              <div style={{fontSize:10,letterSpacing:1.5,textTransform:"uppercase",color:"rgba(255,255,255,.5)",fontWeight:700,marginTop:4}}>{lang==="en"?"Best ever":"Record"}</div>
+              <div style={{fontSize:10,letterSpacing:1.5,textTransform:"uppercase",color:"rgba(255,255,255,.5)",fontWeight:700,marginTop:4}}>{tr("Record","Best ever","Bestwert","Record","Recorde")}</div>
             </div>
             <div style={{background:"rgba(96,165,250,.08)",border:"1px solid rgba(96,165,250,.25)",borderRadius:14,padding:"12px 10px"}}>
               <div style={{fontSize:22,marginBottom:2}}>❄️</div>
               <div style={{fontFamily:G.heading,fontSize:26,color:"#60a5fa",lineHeight:1}}>{streakFreezes}</div>
-              <div style={{fontSize:10,letterSpacing:1.5,textTransform:"uppercase",color:"rgba(255,255,255,.5)",fontWeight:700,marginTop:4}}>{lang==="en"?"Freezes":"Rattrapages"}</div>
+              <div style={{fontSize:10,letterSpacing:1.5,textTransform:"uppercase",color:"rgba(255,255,255,.5)",fontWeight:700,marginTop:4}}>{tr("Rattrapages","Freezes","Freezes","Recuperi","Recuperações")}</div>
             </div>
           </div>
           {/* Info text */}
@@ -8237,7 +8237,7 @@ export default function LePont() {
   const duelCreateModal = showDuelCreate && (
     <div key="duel-create-modal" style={{position:"fixed",inset:0,zIndex:9998,background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center"}}>
       <div style={{background:"rgba(15,25,15,.95)",borderRadius:24,padding:"28px 24px",maxWidth:340,width:"calc(100% - 32px)",border:"1px solid rgba(255,255,255,.1)"}}>
-        <div style={{fontFamily:G.heading,fontSize:28,color:G.white,marginBottom:4}}>{lang==="en"?"CHALLENGE":"DÉFIER"}</div>
+        <div style={{fontFamily:G.heading,fontSize:28,color:G.white,marginBottom:4}}>{tr("DÉFIER","CHALLENGE","HERAUSFORDERN","SFIDA","DESAFIAR")}</div>
         <div style={{fontSize:14,color:"rgba(255,255,255,.5)",marginBottom:20}}>vs <strong style={{color:G.gold}}>{showDuelCreate.name}</strong></div>
         <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:8}}>Mode</div>
         <div style={{display:"flex",gap:8,marginBottom:16}}>
@@ -8249,7 +8249,7 @@ export default function LePont() {
         </div>
         {duelMode==="pont" && (
           <>
-            <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:8}}>{lang==="en"?"Difficulty":"Difficulté"}</div>
+            <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:8}}>{tr("Difficulté","Difficulty","Schwierigkeit","Difficoltà","Dificuldade")}</div>
             <div style={{display:"flex",gap:8,marginBottom:16}}>
               {["facile","moyen","expert"].map(function(d){return(
                 <button key={d} onClick={function(){setDuelDiff(d);}} style={{flex:1,padding:"8px",borderRadius:10,border:"1.5px solid "+(duelDiff===d?G.gold:"rgba(255,255,255,.15)"),background:duelDiff===d?"rgba(255,214,0,.1)":"transparent",color:duelDiff===d?G.gold:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:12,textTransform:"capitalize"}}>
@@ -8261,7 +8261,7 @@ export default function LePont() {
           </>
         )}
         <div style={{display:"flex",gap:8,marginTop:8}}>
-          <button onClick={function(){setShowDuelCreate(null);}} style={{flex:1,padding:"12px",background:"rgba(255,255,255,.07)",color:"rgba(255,255,255,.5)",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14}}>{lang==="en"?"Cancel":"Annuler"}</button>
+          <button onClick={function(){setShowDuelCreate(null);}} style={{flex:1,padding:"12px",background:"rgba(255,255,255,.07)",color:"rgba(255,255,255,.5)",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14}}>{tr("Annuler","Cancel","Abbrechen","Annulla","Cancelar")}</button>
           <button onClick={function(){createDuel(showDuelCreate);}} style={{flex:2,padding:"12px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>{lang==="en"?"Send challenge ⚡":"Envoyer le défi ⚡"}</button>
         </div>
       </div>
@@ -8851,7 +8851,7 @@ export default function LePont() {
                 </button>
               );})}
             </div>
-            <div style={{fontSize:12,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginBottom:8}}>{lang==="en"?"Difficulty":"Difficulté"}</div>
+            <div style={{fontSize:12,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginBottom:8}}>{tr("Difficulté","Difficulty","Schwierigkeit","Difficoltà","Dificuldade")}</div>
             <div style={{display:"flex",gap:8,marginBottom:20}}>
               {[{k:"facile",l:lang==="en"?"Easy":"Facile"},{k:"moyen",l:lang==="en"?"Medium":"Moyen"},{k:"expert",l:"Expert"}].map(function(dd){return(
                 <button key={dd.k} onClick={function(){setDuelDiff(dd.k);}} style={{flex:1,padding:"12px",borderRadius:14,border:"2px solid "+(duelDiff===dd.k?G.gold:"rgba(255,255,255,.12)"),background:duelDiff===dd.k?"rgba(255,214,0,.12)":"rgba(255,255,255,.04)",color:G.white,fontFamily:G.font,fontSize:13,fontWeight:800,cursor:"pointer"}}>{dd.l}</button>
@@ -9073,7 +9073,7 @@ export default function LePont() {
     <div key="cropper" style={{position:"fixed",inset:0,zIndex:9998,background:"rgba(0,0,0,.96)",display:"flex",flexDirection:"column",animation:"fadeIn .2s ease",backdropFilter:"blur(10px)"}}>
       {/* Header */}
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 20px",borderBottom:"1px solid rgba(255,255,255,.08)"}}>
-        <button onClick={()=>setCropState(null)} disabled={avatarUploading} style={{background:"none",border:"none",color:"rgba(255,255,255,.7)",fontSize:14,fontFamily:G.font,fontWeight:600,cursor:avatarUploading?"default":"pointer",padding:"8px 4px",opacity:avatarUploading?.4:1}}>{lang==="en"?"Cancel":"Annuler"}</button>
+        <button onClick={()=>setCropState(null)} disabled={avatarUploading} style={{background:"none",border:"none",color:"rgba(255,255,255,.7)",fontSize:14,fontFamily:G.font,fontWeight:600,cursor:avatarUploading?"default":"pointer",padding:"8px 4px",opacity:avatarUploading?.4:1}}>{tr("Annuler","Cancel","Abbrechen","Annulla","Cancelar")}</button>
         <div style={{fontFamily:G.heading,fontSize:16,color:G.white,letterSpacing:1}}>{lang==="en"?"ADJUST PHOTO":"AJUSTER LA PHOTO"}</div>
         <button onClick={validateCrop} disabled={avatarUploading} style={{background:"none",border:"none",color:avatarUploading?"rgba(0,230,118,.4)":G.accent,fontSize:14,fontFamily:G.font,fontWeight:800,cursor:avatarUploading?"default":"pointer",padding:"8px 4px"}}>{avatarUploading?(lang==="en"?"Saving...":"Sauvegarde..."):(lang==="en"?"Confirm":"Valider")}</button>
       </div>
@@ -9449,7 +9449,7 @@ export default function LePont() {
                 )}
                 <div style={{display:"flex",gap:10,marginTop:18}}>
                   <button onClick={function(){setConfirmDeleteAccount(0);}} style={{flex:1,padding:"13px",background:"rgba(255,255,255,.08)",color:G.white,border:"1px solid rgba(255,255,255,.15)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>
-                    {lang==="en"?"Cancel":"Annuler"}
+                    {tr("Annuler","Cancel","Abbrechen","Annulla","Cancelar")}
                   </button>
                   <button onClick={function(){
                     if (confirmDeleteAccount === 1) setConfirmDeleteAccount(2);
@@ -9945,7 +9945,7 @@ export default function LePont() {
           disabled={pseudoChecking||pseudoInput.trim().length<3}
           style={{width:"100%",padding:"15px",background:pseudoInput.trim().length>=3?G.accent:"rgba(255,255,255,.08)",color:pseudoInput.trim().length>=3?"#000":"rgba(255,255,255,.3)",border:"none",borderRadius:50,cursor:pseudoInput.trim().length>=3?"pointer":"not-allowed",fontFamily:G.font,fontSize:15,fontWeight:800}}
         >
-          {pseudoChecking?(lang==="en"?"Checking...":"Vérification..."):(lang==="en"?"Confirm →":"Confirmer →")}
+          {pseudoChecking?(tr("Vérification...","Checking...","Prüfe...","Verifica...","Verificando...")):(lang==="en"?"Confirm →":"Confirmer →")}
         </button>
         {/* Séparateur + bouton récupération de compte */}
         <div style={{display:"flex",alignItems:"center",margin:"18px 0 12px",gap:10}}>
@@ -10723,7 +10723,7 @@ export default function LePont() {
             </div>
             {roomMsg && <div style={{fontSize:13,color:"#FF3D57",fontWeight:700,marginBottom:12,textAlign:"center"}}>{roomMsg}</div>}
             <div style={{display:"flex",gap:10}}>
-              <button onClick={function(){setShowRoomCreate(false);}} style={{flex:1,padding:"15px",background:"rgba(255,255,255,.07)",color:"rgba(255,255,255,.5)",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14}}>{lang==="en"?"Cancel":"Annuler"}</button>
+              <button onClick={function(){setShowRoomCreate(false);}} style={{flex:1,padding:"15px",background:"rgba(255,255,255,.07)",color:"rgba(255,255,255,.5)",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14}}>{tr("Annuler","Cancel","Abbrechen","Annulla","Cancelar")}</button>
               <button onClick={createRoom} style={{flex:2,padding:"15px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800}}>{lang==="en"?"Create room 🚀":"Créer la salle 🚀"}</button>
             </div>
           </div>
@@ -11336,7 +11336,7 @@ export default function LePont() {
                     </div>
 
                     {/* Difficulté */}
-                    <div style={{fontSize:10,fontWeight:800,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginBottom:8}}>{lang==="en"?"Difficulty":"Difficulté"}</div>
+                    <div style={{fontSize:10,fontWeight:800,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginBottom:8}}>{tr("Difficulté","Difficulty","Schwierigkeit","Difficoltà","Dificuldade")}</div>
                     <div style={{display:"flex",gap:8,marginBottom:16}}>
                       {["facile","moyen","expert"].map(function(d){
                         const dLabel = d==="facile"?"AMATEUR":d==="moyen"?"PRO":"CRESCENDO";
@@ -12092,7 +12092,7 @@ export default function LePont() {
                       )}
                       {/* Boutons Valider + Annuler */}
                       <div style={{display:"flex",gap:8,marginTop:14}}>
-                        <button onClick={function(){setGgSelectedCell(null);setGgGuess("");setGgLastRejected(null);setGgReportSent(false);}} style={{flex:1,padding:14,borderRadius:50,border:"none",background:"rgba(255,255,255,.08)",color:"#fff",fontWeight:800,fontSize:13,letterSpacing:1,cursor:"pointer"}}>{lang==="en"?"Cancel":"Annuler"}</button>
+                        <button onClick={function(){setGgSelectedCell(null);setGgGuess("");setGgLastRejected(null);setGgReportSent(false);}} style={{flex:1,padding:14,borderRadius:50,border:"none",background:"rgba(255,255,255,.08)",color:"#fff",fontWeight:800,fontSize:13,letterSpacing:1,cursor:"pointer"}}>{tr("Annuler","Cancel","Abbrechen","Annulla","Cancelar")}</button>
                         <button 
                           onClick={function(){ if(suggestions.length>0){ggSubmitAnswer(suggestions[0].name);} else if(ggGuess.trim().length>=3){ggSubmitAnswer(ggGuess);} }}
                           disabled={ggGuess.trim().length<3}
@@ -12576,7 +12576,7 @@ export default function LePont() {
               </div>
               <div style={{display:"flex",gap:10}}>
                 <button onClick={function(){setShowRevealConfirm(false);}} style={{flex:1,padding:"13px",background:"rgba(255,255,255,.07)",color:G.white,border:"1px solid rgba(255,255,255,.1)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>
-                  {lang==="en"?"Cancel":"Annuler"}
+                  {tr("Annuler","Cancel","Abbrechen","Annulla","Cancelar")}
                 </button>
                 <button onClick={handleRevealDaily} style={{flex:1,padding:"13px",background:"rgba(96,165,250,.2)",color:"#60a5fa",border:"1px solid rgba(96,165,250,.4)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>
                   {lang==="en"?"👁️ Reveal":"👁️ Voir"}
@@ -12610,7 +12610,7 @@ export default function LePont() {
                   </div>
                   <div style={{display:"flex",gap:10}}>
                     <button onClick={function(){setShowDailyReportConfirm(false);}} style={{flex:1,padding:"13px",background:"rgba(255,255,255,.07)",color:G.white,border:"1px solid rgba(255,255,255,.1)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>
-                      {lang==="en"?"Cancel":"Annuler"}
+                      {tr("Annuler","Cancel","Abbrechen","Annulla","Cancelar")}
                     </button>
                     <button onClick={async function(){
                       try {
