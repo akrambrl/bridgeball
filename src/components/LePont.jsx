@@ -134,6 +134,24 @@ function getGrade(score) {
   try { lang = localStorage.getItem("bb_lang") || "fr"; } catch {}
   return { ...g, label: lang === "fr" ? g.label : (g.labelEn || g.label) };
 }
+// Grade juste au-dessus du score donné (null si déjà GOAT). Sert à la « carotte »
+// de progression : X pts avant le prochain grade.
+function getNextGrade(score) {
+  let next = null;
+  for (let i = GRADES.length - 1; i >= 0; i--) { if (GRADES[i].min > score) { next = GRADES[i]; break; } }
+  if (!next) return null;
+  let lang = "fr";
+  try { lang = localStorage.getItem("bb_lang") || "fr"; } catch {}
+  return { ...next, label: lang === "fr" ? next.label : (next.labelEn || next.label) };
+}
+// Paliers de chaîne (The Mercato) fêtés en grande pompe.
+const CHAIN_MILESTONES = {
+  10: { emoji: "🔥", color: "#FF8A2A" },
+  20: { emoji: "💫", color: "#FFD600" },
+  30: { emoji: "⚡", color: "#3DA5FF" },
+  40: { emoji: "🚀", color: "#C084FC" },
+  50: { emoji: "🐐", color: "#FFD700" },
+};
 const QUESTION_DURATION = 10;
 const CHAIN_QUESTION_DURATION = 15;
 const CHAIN_DURATION = 90;
@@ -2327,6 +2345,15 @@ function playSound(type){
         g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+i*.08+.25);
         osc.start(ctx.currentTime+i*.08);osc.stop(ctx.currentTime+i*.08+.25);
       });
+    }else if(type==="milestone"){
+      // Fanfare triomphale montante (palier de chaîne franchi)
+      [523,659,784,1047,1319].forEach((freq,i)=>{
+        const osc=ctx.createOscillator(),g=ctx.createGain();
+        osc.connect(g);g.connect(ctx.destination);osc.frequency.value=freq;osc.type="triangle";
+        g.gain.setValueAtTime(0,ctx.currentTime+i*.09);g.gain.linearRampToValueAtTime(.4,ctx.currentTime+i*.09+.02);
+        g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+i*.09+.45);
+        osc.start(ctx.currentTime+i*.09);osc.stop(ctx.currentTime+i*.09+.45);
+      });
     }else{
       const osc=ctx.createOscillator(),g=ctx.createGain();
       osc.connect(g);g.connect(ctx.destination);osc.frequency.setValueAtTime(220,ctx.currentTime);
@@ -2441,6 +2468,8 @@ if(typeof document!=="undefined"&&!document.getElementById("bb-css")){
     @keyframes floatBall{0%{transform:translateY(0) rotate(0deg)}100%{transform:translateY(-18px) rotate(20deg)}}
     @keyframes pulse{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.2)}}
     @keyframes slideDown{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes chainMsPop{0%{opacity:0;transform:scale(.4) translateY(20px)}45%{opacity:1;transform:scale(1.12) translateY(0)}70%{transform:scale(.96)}100%{opacity:1;transform:scale(1)}}
+    @keyframes chainMsOut{0%{opacity:1}100%{opacity:0;transform:scale(1.15)}}
     @keyframes kickBall{0%{transform:scale(1) rotate(0)}40%{transform:scale(1.15) rotate(-15deg)}100%{transform:scale(1) rotate(10deg)}}
     @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
     @keyframes heartbeat{0%,100%{transform:scale(1)}15%{transform:scale(1.15)}30%{transform:scale(1)}45%{transform:scale(1.1)}60%{transform:scale(1)}}
@@ -2779,6 +2808,8 @@ export default function LePont() {
   const [chainCount, setChainCount] = useState(0);
   const [chainScore, setChainScore] = useState(0);
   const [chainHistory, setChainHistory] = useState([]);
+  const [chainMilestone, setChainMilestone] = useState(null); // {n, emoji, color} palier fêté (10/20/30…)
+  const chainMsToRef = React.useRef(null);
   const [roundAnswers, setRoundAnswers] = useState([]); // Historique questions mode Plug: [{c1, c2, validPlayers, given, status, isSkip}]
   const [showHistory, setShowHistory] = useState(false); // Modal affichage historique
   const [reportingAnswer, setReportingAnswer] = useState(null); // Pour signaler une erreur : {c1, c2, given, validPlayers}
@@ -7079,6 +7110,7 @@ export default function LePont() {
     
     setChainPlayer(start.name); setChainUsedClubs(new Set()); setChainUsedPlayers(usedP);
     setChainCount(0); setChainScore(0); chainScoreRef.current=0;
+    setChainMilestone(null); if(chainMsToRef.current) clearTimeout(chainMsToRef.current);
     setChainLastClub(""); setChainLastPassed(false); setChainHistory([]); setGuess(""); setFlash(null); setFeedback(null); setChainLastRejected(null);
     setTimeLeft(CHAIN_DURATION); setScore(0); scoreRef.current=0;
     setMyLbRank(null); setScreen("chainGame");
@@ -7492,7 +7524,17 @@ export default function LePont() {
       setChainLastRejected(null);
       const newUsed=new Set(chainUsedClubs); newUsed.add(matched); setChainUsedClubs(newUsed);
       setChainHistory(prev=>[...prev,{player:chainPlayer,club:matched}]);
-      setChainCount(c=>c+1); handleCorrectAnswer(2,true);
+      const newChainCount=chainCount+1;
+      setChainCount(newChainCount);
+      // Palier fêté tous les 10 maillons (10/20/30…)
+      if(newChainCount>=10 && newChainCount%10===0){
+        const meta=CHAIN_MILESTONES[newChainCount]||{emoji:"🐐",color:"#FFD700"};
+        setChainMilestone({n:newChainCount,emoji:meta.emoji,color:meta.color});
+        playSound("milestone"); vibrate([40,60,40,60,90]);
+        if(chainMsToRef.current) clearTimeout(chainMsToRef.current);
+        chainMsToRef.current=setTimeout(function(){setChainMilestone(null);},1600);
+      }
+      handleCorrectAnswer(2,true);
       setFeedback("ok"); setFlash("ok");
       const clubPlayers=getPlayersForClub(matched).filter(p=>!chainUsedPlayers.has(p)&&getPlayerClubs(p).some(c=>!newUsed.has(c)));
       // Favoriser les joueurs de la bonne difficulté ET les joueurs actuels (80/20)
@@ -12871,6 +12913,18 @@ export default function LePont() {
       )}
 
       {floatingPoints}
+      {/* 🔗 PALIER DE CHAÎNE FÊTÉ (10/20/30…) */}
+      {chainMilestone && (
+        <div style={{position:"fixed",inset:0,zIndex:400,display:"flex",alignItems:"center",justifyContent:"center",pointerEvents:"none"}}>
+          <div style={{position:"absolute",inset:0,background:`radial-gradient(circle at center, ${chainMilestone.color}40 0%, transparent 62%)`,animation:"fadeIn .2s ease"}}/>
+          <div style={{position:"relative",textAlign:"center",animation:"chainMsPop .55s cubic-bezier(.22,1.4,.36,1) both"}}>
+            <div style={{fontSize:76,lineHeight:1,filter:`drop-shadow(0 0 26px ${chainMilestone.color})`}}>{chainMilestone.emoji}</div>
+            <div style={{fontFamily:G.heading,fontSize:"clamp(48px,15vw,72px)",color:chainMilestone.color,letterSpacing:2,lineHeight:1,marginTop:4,textShadow:`0 0 34px ${chainMilestone.color}aa`}}>{chainMilestone.n}</div>
+            <div style={{fontFamily:G.heading,fontSize:20,color:G.white,letterSpacing:5,marginTop:2}}>{tr("MAILLONS","LINKS","GLIEDER","ANELLI","ELOS")}</div>
+            <div style={{fontSize:13,fontWeight:800,color:"rgba(255,255,255,.9)",marginTop:12,letterSpacing:.5}}>{tr("En feu ! Continue 🔥","On fire! Keep going 🔥","Du brennst! Weiter so 🔥","Sei in fiamme! Continua 🔥","Pegando fogo! Continue 🔥")}</div>
+          </div>
+        </div>
+      )}
       {/* Notification abandon en salle (Mercato) */}
       {abandonNotif && (
         <div style={{position:"fixed",top:60,left:16,right:16,zIndex:20,
@@ -12898,6 +12952,27 @@ export default function LePont() {
           : <div style={{width:50}}/>
         }
       </div>
+
+      {/* 🥕 CAROTTE DU PROCHAIN GRADE — progression live (playerXp + score en cours) */}
+      {(() => {
+        const live = playerXp + chainScore;
+        const ng = getNextGrade(live);
+        if (!ng) return null;
+        const cur = getGrade(live);
+        const span = ng.min - cur.min;
+        const done = live - cur.min;
+        const pct = Math.max(0, Math.min(100, span > 0 ? (done / span) * 100 : 0));
+        const remain = Math.max(0, ng.min - live);
+        const carrot = tr(`Plus que ${remain} pts avant`, `${remain} pts to`, `Noch ${remain} Pkt bis`, `Ancora ${remain} pt a`, `Faltam ${remain} pts para`);
+        return (
+          <div style={{zIndex:2,padding:"0 16px 6px",maxWidth:420,margin:"0 auto",width:"100%",boxSizing:"border-box"}}>
+            <div style={{fontSize:10,fontWeight:800,letterSpacing:.5,color:"rgba(255,255,255,.55)",marginBottom:3,textAlign:"center"}}>{carrot} <span style={{color:ng.color}}>{ng.emoji} {ng.label}</span></div>
+            <div style={{height:5,borderRadius:3,background:"rgba(255,255,255,.12)",overflow:"hidden"}}>
+              <div style={{height:"100%",width:pct+"%",background:`linear-gradient(90deg, ${ng.color}, #fff)`,borderRadius:3,transition:"width .4s ease"}}/>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* CRESCENDO BADGE — affiché uniquement en mode Crescendo (diff="expert") */}
       {(activeDuelRef.current && activeDuelRef.current.isRoom ? activeDuelRef.current.diff : diff) === "expert" && (() => {
@@ -13161,6 +13236,26 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
           {isNewRecord&&<div style={{fontSize:12,color:G.accent,marginTop:6,fontStyle:"italic"}}>{tr("Ancien record battu 🎉","Previous record beaten 🎉","Alter Rekord geschlagen 🎉","Vecchio record battuto 🎉","Recorde anterior batido 🎉")}</div>}
           {dayStreak>=2&&<div style={{fontSize:12,color:"#FF6B35",marginTop:6,fontWeight:700}}>🔥 {dayStreak} jours de suite !</div>}
         </div>
+
+        {/* 🥕 CAROTTE DU PROCHAIN GRADE — incite à relancer pour l'atteindre */}
+        {(() => {
+          const ng = getNextGrade(playerXp);
+          if (!ng) return null;
+          const cur = getGrade(playerXp);
+          const span = ng.min - cur.min;
+          const done = playerXp - cur.min;
+          const pct = Math.max(0, Math.min(100, span > 0 ? (done / span) * 100 : 0));
+          const remain = Math.max(0, ng.min - playerXp);
+          const carrot = tr(`Plus que ${remain} pts avant`, `${remain} pts to`, `Noch ${remain} Pkt bis`, `Ancora ${remain} pt a`, `Faltam ${remain} pts para`);
+          return (
+            <div style={{marginTop:12,background:"rgba(255,255,255,.04)",border:`1px solid ${ng.color}44`,borderRadius:16,padding:"12px 16px"}}>
+              <div style={{fontSize:12,fontWeight:800,color:"rgba(255,255,255,.85)",marginBottom:7,textAlign:"center"}}>{carrot} <span style={{color:ng.color}}>{ng.emoji} {ng.label}</span></div>
+              <div style={{height:7,borderRadius:4,background:"rgba(255,255,255,.1)",overflow:"hidden"}}>
+                <div style={{height:"100%",width:pct+"%",background:`linear-gradient(90deg, ${ng.color}, #fff)`,borderRadius:4,transition:"width .5s ease"}}/>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Duel bot (mode EN LIGNE depuis la landing) */}
         {botOpponentRef.current && botScoreRef.current !== null && (() => {
