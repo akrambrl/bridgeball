@@ -9143,7 +9143,7 @@ export default function LePont() {
       <div style={{...shell,overflow:isDesktop?"visible":"auto"}} key="duelHistory">
         <div style={{zIndex:3,padding:"12px 16px 0",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
           {backBtn(function(){setShowDuelHistory(false);})}
-          <div style={{fontFamily:G.heading,fontSize:26,color:G.white,letterSpacing:2}}>{lang==="en"?"MY DUELS":"MES DÉFIS"}</div>
+          <div style={{fontFamily:G.heading,fontSize:26,color:G.white,letterSpacing:2}}>{tr("MES DÉFIS","MY DUELS","MEINE DUELLE","LE MIE SFIDE","MEUS DUELOS")}</div>
           <div style={{width:40}}/>
         </div>
         <div style={{...sheet,borderRadius:"28px 28px 0 0",marginTop:16}}>
@@ -9151,24 +9151,24 @@ export default function LePont() {
           <div style={{display:"flex",gap:8,marginBottom:6}}>
             <div style={{flex:1,background:"rgba(0,230,118,.08)",border:"1px solid rgba(0,230,118,.2)",borderRadius:16,padding:"14px 0",textAlign:"center"}}>
               <div style={{fontFamily:G.heading,fontSize:30,color:"#00E676"}}>{w}</div>
-              <div style={{fontSize:10,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginTop:2}}>{lang==="en"?"Wins":"Victoires"}</div>
+              <div style={{fontSize:10,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginTop:2}}>{tr("Victoires","Wins","Siege","Vittorie","Vitórias")}</div>
             </div>
             <div style={{flex:1,background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.1)",borderRadius:16,padding:"14px 0",textAlign:"center"}}>
               <div style={{fontFamily:G.heading,fontSize:30,color:"#FFD600"}}>{dr}</div>
-              <div style={{fontSize:10,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginTop:2}}>{lang==="en"?"Draws":"Nuls"}</div>
+              <div style={{fontSize:10,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginTop:2}}>{tr("Nuls","Draws","Remis","Pareggi","Empates")}</div>
             </div>
             <div style={{flex:1,background:"rgba(255,61,87,.08)",border:"1px solid rgba(255,61,87,.2)",borderRadius:16,padding:"14px 0",textAlign:"center"}}>
               <div style={{fontFamily:G.heading,fontSize:30,color:"#FF3D57"}}>{l}</div>
-              <div style={{fontSize:10,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginTop:2}}>{lang==="en"?"Losses":"Défaites"}</div>
+              <div style={{fontSize:10,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginTop:2}}>{tr("Défaites","Losses","Niederlagen","Sconfitte","Derrotas")}</div>
             </div>
           </div>
           {/* Liste */}
           {rows.length===0 ? (
-            <div style={{textAlign:"center",padding:"36px 20px",color:"rgba(255,255,255,.4)",fontSize:14,lineHeight:1.5}}>{lang==="en"?"No completed duel yet. Challenge a friend! ⚔️":"Aucun défi terminé pour l'instant. Défie un ami ! ⚔️"}</div>
+            <div style={{textAlign:"center",padding:"36px 20px",color:"rgba(255,255,255,.4)",fontSize:14,lineHeight:1.5}}>{tr("Aucun défi terminé pour l'instant. Défie un ami ! ⚔️","No completed duel yet. Challenge a friend! ⚔️","Noch kein beendetes Duell. Fordere einen Freund heraus! ⚔️","Ancora nessuna sfida completata. Sfida un amico! ⚔️","Ainda nenhum duelo concluído. Desafie um amigo! ⚔️")}</div>
           ) : rows.map(function(r){
             const col = r.res==="win"?"#00E676":r.res==="loss"?"#FF3D57":"#FFD600";
-            const label = r.res==="win"?(lang==="en"?"WON":"GAGNÉ"):r.res==="loss"?(lang==="en"?"LOST":"PERDU"):(lang==="en"?"DRAW":"NUL");
-            let when=""; try{ if(r.when){ const dt=new Date(r.when); when=dt.toLocaleDateString("fr-FR",{day:"numeric",month:"short"}); } }catch(e){}
+            const label = r.res==="win"?tr("GAGNÉ","WON","GEWONNEN","VINTO","VENCEU"):r.res==="loss"?tr("PERDU","LOST","VERLOREN","PERSO","PERDEU"):tr("NUL","DRAW","UNENT.","PARI","EMPATE");
+            let when=""; try{ if(r.when){ const dt=new Date(r.when); const loc={fr:"fr-FR",en:"en-GB",de:"de-DE",it:"it-IT",pt:"pt-PT"}[lang]||"en-GB"; when=dt.toLocaleDateString(loc,{day:"numeric",month:"short"}); } }catch(e){}
             return (
               <div key={r.id} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",background:"rgba(255,255,255,.04)",border:"1px solid "+col+"33",borderLeft:"3px solid "+col,borderRadius:14,marginBottom:8}}>
                 <div style={{flex:1,minWidth:0}}>
@@ -9180,7 +9180,7 @@ export default function LePont() {
               </div>
             );
           })}
-          <button onClick={function(){setShowDuelHistory(false);}} style={{width:"100%",background:"rgba(255,255,255,.05)",color:"rgba(255,255,255,.5)",border:"1px solid rgba(255,255,255,.1)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,padding:"10px",marginTop:4}}>{lang==="en"?"↩ Back":"↩ Retour"}</button>
+          <button onClick={function(){setShowDuelHistory(false);}} style={{width:"100%",background:"rgba(255,255,255,.05)",color:"rgba(255,255,255,.5)",border:"1px solid rgba(255,255,255,.1)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,padding:"10px",marginTop:4}}>{tr("↩ Retour","↩ Back","↩ Zurück","↩ Indietro","↩ Voltar")}</button>
         </div>
       </div>
     );
@@ -9216,10 +9216,10 @@ export default function LePont() {
             {backBtn(function(){setSelectedFriend(null);})}
             <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
               <div style={{fontFamily:G.heading,fontSize:22,color:G.white,letterSpacing:2}}>{selectedFriend.name}</div>
-              {isUnbeaten && <div style={{fontSize:11,fontWeight:800,color:"#FFD700",background:"rgba(255,215,0,.15)",borderRadius:20,padding:"3px 10px",letterSpacing:.5}}>{lang==="en"?"😤 You're unbeaten against them":"😤 T'es invaincu contre lui"}</div>}
-              {theyDominate && <div style={{fontSize:11,fontWeight:800,color:"#FF3D57",background:"rgba(255,61,87,.15)",borderRadius:20,padding:"3px 10px",letterSpacing:.5}}>{lang==="en"?"💀 They've never lost to you":"💀 Il t'a jamais perdu contre toi"}</div>}
+              {isUnbeaten && <div style={{fontSize:11,fontWeight:800,color:"#FFD700",background:"rgba(255,215,0,.15)",borderRadius:20,padding:"3px 10px",letterSpacing:.5}}>{tr("😤 T'es invaincu contre lui","😤 You're unbeaten against them","😤 Du bist ungeschlagen gegen ihn","😤 Sei imbattuto contro di lui","😤 Você está invicto contra ele")}</div>}
+              {theyDominate && <div style={{fontSize:11,fontWeight:800,color:"#FF3D57",background:"rgba(255,61,87,.15)",borderRadius:20,padding:"3px 10px",letterSpacing:.5}}>{tr("💀 Il n'a jamais perdu contre toi","💀 They've never lost to you","💀 Er hat nie gegen dich verloren","💀 Non ha mai perso contro di te","💀 Nunca perdeu para você")}</div>}
             </div>
-            <button onClick={function(){setShowDuelCreate({id:selectedFriend.id,name:selectedFriend.name});}} style={{padding:"8px 14px",background:G.accent,color:"#000",border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:800}}>{lang==="en"?"⚡ Challenge":"⚡ Défier"}</button>
+            <button onClick={function(){setShowDuelCreate({id:selectedFriend.id,name:selectedFriend.name});}} style={{padding:"8px 14px",background:G.accent,color:"#000",border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:800}}>{tr("⚡ Défier","⚡ Challenge","⚡ Herausfordern","⚡ Sfida","⚡ Desafiar")}</button>
           </div>
           <div style={{...sheet,borderRadius:"28px 28px 0 0",marginTop:16}}>
             {/* Bilan */}
@@ -9227,22 +9227,22 @@ export default function LePont() {
               <div style={{display:"flex",gap:8,marginBottom:4}}>
                 <div style={{flex:1,background:"rgba(0,230,118,.08)",border:"1px solid rgba(0,230,118,.2)",borderRadius:16,padding:"14px 0",textAlign:"center"}}>
                   <div style={{fontFamily:G.heading,fontSize:32,color:"#00E676"}}>{wins}</div>
-                  <div style={{fontSize:10,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginTop:2}}>{lang==="en"?"Wins":"Victoires"}</div>
+                  <div style={{fontSize:10,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginTop:2}}>{tr("Victoires","Wins","Siege","Vittorie","Vitórias")}</div>
                 </div>
                 <div style={{flex:1,background:"rgba(255,214,0,.06)",border:"1px solid rgba(255,214,0,.2)",borderRadius:16,padding:"14px 0",textAlign:"center"}}>
                   <div style={{fontFamily:G.heading,fontSize:32,color:G.gold}}>{draws}</div>
-                  <div style={{fontSize:10,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginTop:2}}>{lang==="en"?"Draws":"Nuls"}</div>
+                  <div style={{fontSize:10,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginTop:2}}>{tr("Nuls","Draws","Remis","Pareggi","Empates")}</div>
                 </div>
                 <div style={{flex:1,background:"rgba(255,61,87,.06)",border:"1px solid rgba(255,61,87,.2)",borderRadius:16,padding:"14px 0",textAlign:"center"}}>
                   <div style={{fontFamily:G.heading,fontSize:32,color:"#FF3D57"}}>{losses}</div>
-                  <div style={{fontSize:10,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginTop:2}}>{lang==="en"?"Losses":"Défaites"}</div>
+                  <div style={{fontSize:10,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginTop:2}}>{tr("Défaites","Losses","Niederlagen","Sconfitte","Derrotas")}</div>
                 </div>
               </div>
             )}
             {/* Historique */}
-            <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.3)",marginBottom:8,marginTop:4}}>{lang==="en"?"History":"Historique"}</div>
+            <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.3)",marginBottom:8,marginTop:4}}>{tr("Historique","History","Verlauf","Cronologia","Histórico")}</div>
             {friendDuels.length===0 && (
-              <div style={{textAlign:"center",padding:"32px 0",color:"rgba(255,255,255,.3)",fontSize:14}}>{lang==="en"?"No duels played with ":"Aucun duel encore joué avec "}{selectedFriend.name} 👀</div>
+              <div style={{textAlign:"center",padding:"32px 0",color:"rgba(255,255,255,.3)",fontSize:14}}>{tr("Aucun duel encore joué avec ","No duels played with ","Noch keine Duelle mit ","Ancora nessuna sfida con ","Ainda nenhum duelo com ")}{selectedFriend.name} 👀</div>
             )}
             {friendDuels.map(function(d,i){
               const myScore = d.challenger_id===playerId ? d.challenger_score : d.opponent_score;
@@ -9251,7 +9251,7 @@ export default function LePont() {
               return(
                 <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 14px",background:"rgba(255,255,255,.04)",borderRadius:12,marginBottom:6,border:"1px solid rgba(255,255,255,.06)"}}>
                   <div>
-                    <div style={{fontSize:13,fontWeight:800,color:won?"#00E676":draw?G.gold:"#FF3D57"}}>{won?(lang==="en"?"🏆 Win":"🏆 Victoire"):draw?(lang==="en"?"🤝 Draw":"🤝 Égalité"):(lang==="en"?"😅 Loss":"😅 Défaite")}</div>
+                    <div style={{fontSize:13,fontWeight:800,color:won?"#00E676":draw?G.gold:"#FF3D57"}}>{won?tr("🏆 Victoire","🏆 Win","🏆 Sieg","🏆 Vittoria","🏆 Vitória"):draw?tr("🤝 Égalité","🤝 Draw","🤝 Remis","🤝 Pareggio","🤝 Empate"):tr("😅 Défaite","😅 Loss","😅 Niederlage","😅 Sconfitta","😅 Derrota")}</div>
                     <div style={{fontSize:11,color:"rgba(255,255,255,.4)"}}>{d.mode==="pont"?"The Plug":"The Mercato"}{d.diff?" · "+d.diff:""}</div>
                   </div>
                   <div style={{textAlign:"right"}}>
@@ -9281,11 +9281,11 @@ export default function LePont() {
           <div style={{position:"fixed",inset:0,zIndex:400,background:"rgba(0,0,0,.75)",backdropFilter:"blur(6px)",display:"flex",alignItems:"center",justifyContent:"center"}}>
             <div style={{background:"rgba(15,20,15,.97)",borderRadius:24,padding:"28px 24px",maxWidth:320,width:"calc(100% - 40px)",border:"1px solid rgba(255,255,255,.1)",textAlign:"center"}}>
               <div style={{fontSize:32,marginBottom:12}}>👋</div>
-              <div style={{fontFamily:G.heading,fontSize:22,color:G.white,marginBottom:8}}>{lang==="en"?"Remove ":"Supprimer "}{confirmRemove.name}{lang==="en"?"?":" ?"}</div>
-              <div style={{fontSize:13,color:"rgba(255,255,255,.4)",marginBottom:24}}>{lang==="en"?"They'll need to send a new request to be back on your list.":"Il devra renvoyer une demande pour être à nouveau dans ta liste."}</div>
+              <div style={{fontFamily:G.heading,fontSize:22,color:G.white,marginBottom:8}}>{tr("Supprimer ","Remove ","Entfernen ","Rimuovere ","Remover ")}{confirmRemove.name}{tr(" ?","?"," ?","?","?")}</div>
+              <div style={{fontSize:13,color:"rgba(255,255,255,.4)",marginBottom:24}}>{tr("Il devra renvoyer une demande pour être à nouveau dans ta liste.","They'll need to send a new request to be back on your list.","Er muss eine neue Anfrage senden, um wieder in deiner Liste zu sein.","Dovrà inviare una nuova richiesta per tornare nella tua lista.","Ele precisará enviar um novo pedido para voltar à sua lista.")}</div>
               <div style={{display:"flex",gap:10}}>
-                <button onClick={function(){setConfirmRemove(null);}} style={{flex:1,padding:"12px",background:"rgba(255,255,255,.07)",color:"rgba(255,255,255,.6)",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>{lang==="en"?"Cancel":"Annuler"}</button>
-                <button onClick={function(){removeFriend(confirmRemove.id);setConfirmRemove(null);}} style={{flex:1,padding:"12px",background:"#FF3D57",color:"#fff",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>{lang==="en"?"Remove":"Supprimer"}</button>
+                <button onClick={function(){setConfirmRemove(null);}} style={{flex:1,padding:"12px",background:"rgba(255,255,255,.07)",color:"rgba(255,255,255,.6)",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>{tr("Annuler","Cancel","Abbrechen","Annulla","Cancelar")}</button>
+                <button onClick={function(){removeFriend(confirmRemove.id);setConfirmRemove(null);}} style={{flex:1,padding:"12px",background:"#FF3D57",color:"#fff",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>{tr("Supprimer","Remove","Entfernen","Rimuovi","Remover")}</button>
               </div>
             </div>
           </div>
