@@ -2810,6 +2810,12 @@ export default function LePont() {
   const [chainHistory, setChainHistory] = useState([]);
   const [chainMilestone, setChainMilestone] = useState(null); // {n, emoji, color} palier fêté (10/20/30…)
   const chainMsToRef = React.useRef(null);
+  const chainCountRef = React.useRef(0); // miroir de chainCount (fiable en fin de partie / timer)
+  // ── MERCATO DU JOUR (défi quotidien, 1 essai/jour, classement partagé) ──
+  const chainDailyRef = React.useRef(false); // partie en cours = défi du jour ?
+  const [chainWasDaily, setChainWasDaily] = useState(false); // écran de fin en mode défi du jour
+  const [mercatoDailyBoard, setMercatoDailyBoard] = useState(null); // {loading, rows, myRank, total}
+  const [showMercatoDailyModal, setShowMercatoDailyModal] = useState(false); // consultation résultat/classement du jour
   const [roundAnswers, setRoundAnswers] = useState([]); // Historique questions mode Plug: [{c1, c2, validPlayers, given, status, isSkip}]
   const [showHistory, setShowHistory] = useState(false); // Modal affichage historique
   const [reportingAnswer, setReportingAnswer] = useState(null); // Pour signaler une erreur : {c1, c2, given, validPlayers}
@@ -4480,7 +4486,14 @@ export default function LePont() {
         startRound(1, reqDiff);
       } else if (play === "chaine" || play === "mercato") {
         setGameMode("chaine");
-        startChain(reqDiff);
+        if (params.get("daily") === "1") {
+          // Défi du jour : si déjà joué aujourd'hui → on montre le résultat/classement, sinon on lance
+          const done = getMercatoDailyResult();
+          if (done) { loadMercatoDailyBoard(); setShowMercatoDailyModal(true); }
+          else { setDiff("moyen"); startChain("moyen", true); }
+        } else {
+          startChain(reqDiff);
+        }
       } else if (play === "grid" || play === "goatgrid") {
         ggStartGame();
       }
@@ -6903,6 +6916,19 @@ export default function LePont() {
   function endChain() {
     clearInterval(timerRef.current);
     const sc = chainScoreRef.current;
+    // ── MODE DÉFI DU JOUR : classement partagé, 1 essai/jour, pas de record perso ──
+    if (chainDailyRef.current) {
+      setIsNewRecord(false);
+      setChainWasDaily(true);
+      const day = todayParis();
+      try { localStorage.setItem("bb_mercato_daily", JSON.stringify({ date: day, score: sc, count: chainCountRef.current })); } catch (e) {}
+      if (pseudoConfirmed && playerName.trim()) submitScore(playerName, sc, "mercatoday", day);
+      addXp(sc); updateDayStreak();
+      loadMercatoDailyBoard();
+      setScreen("chainEnd");
+      return;
+    }
+    setChainWasDaily(false);
     try{
       const prev=chainRecord;
       if(!prev||sc>prev.score){
@@ -7043,8 +7069,9 @@ export default function LePont() {
     setTimeout(()=>inputRef.current?.focus(),200);
   }
 
-  function startChain(diffOverride) {
+  function startChain(diffOverride, dailyMode) {
     trackPlay("chaine", !!activeDuelRef.current); // en ligne si duel/salon actif
+    chainDailyRef.current = !!dailyMode;
     roundStartTime.current = null;
     botScoreRef.current = null;
     setIsNewRecord(false); setMyLastPts(null); setCombo(0); setMaxCombo(0); comboRef.current=0; lastAnswerTime.current=Date.now();
@@ -7080,7 +7107,7 @@ export default function LePont() {
     let startPool = useCurrentStart ? currentPool : (retiredPool.length > 0 ? retiredPool : pool);
     
     // Anti-répétition solo : exclure les starters des 3 dernières parties si on a assez de pool
-    if (!isInRoom) {
+    if (!isInRoom && !dailyMode) {
       try {
         const recent = JSON.parse(localStorage.getItem("goatfc_recent_mercato_starters_" + effectiveDiff) || "[]");
         const recentSet = new Set(recent);
@@ -7093,11 +7120,12 @@ export default function LePont() {
         }
       } catch(e) {}
     }
-    
-    const start = startPool[Math.floor(rand() * startPool.length)];
-    
-    // Sauvegarder le starter pour anti-répétition (solo uniquement)
-    if (!isInRoom) {
+
+    // Défi du jour : starter déterministe (même pour tous) ; sinon aléatoire
+    const start = dailyMode ? getDailyMercatoStarter() : startPool[Math.floor(rand() * startPool.length)];
+
+    // Sauvegarder le starter pour anti-répétition (solo hors défi du jour)
+    if (!isInRoom && !dailyMode) {
       try {
         const key = "goatfc_recent_mercato_starters_" + effectiveDiff;
         const recent = JSON.parse(localStorage.getItem(key) || "[]");
@@ -7109,7 +7137,7 @@ export default function LePont() {
     const usedP = new Set([start.name]);
     
     setChainPlayer(start.name); setChainUsedClubs(new Set()); setChainUsedPlayers(usedP);
-    setChainCount(0); setChainScore(0); chainScoreRef.current=0;
+    setChainCount(0); chainCountRef.current=0; setChainScore(0); chainScoreRef.current=0;
     setChainMilestone(null); if(chainMsToRef.current) clearTimeout(chainMsToRef.current);
     setChainLastClub(""); setChainLastPassed(false); setChainHistory([]); setGuess(""); setFlash(null); setFeedback(null); setChainLastRejected(null);
     setTimeLeft(CHAIN_DURATION); setScore(0); scoreRef.current=0;
@@ -7129,6 +7157,85 @@ export default function LePont() {
     const d = new Date();
     const paris = new Date(d.toLocaleString('en-US',{timeZone:'Europe/Paris'}));
     return paris.getFullYear()+'-'+String(paris.getMonth()+1).padStart(2,'0')+'-'+String(paris.getDate()).padStart(2,'0');
+  }
+  // ── MERCATO DU JOUR : helpers ──
+  // Joueur de départ déterministe, identique pour tout le monde ce jour-là
+  // (seed = date de Paris). On privilégie une star reconnaissable (≥2 clubs pop).
+  function getDailyMercatoStarter() {
+    const rand = seededRandom(hashStringToSeed("mercatoday-" + todayParis()));
+    let pool = PLAYERS_CLEAN.filter(p => p.diff === "facile" && p.clubs.length >= 2 && p.clubs.filter(c => FAMOUS_CLUBS.has(c)).length >= 2 && !isRetiredPlayer(p.name));
+    if (pool.length === 0) pool = PLAYERS_CLEAN.filter(p => p.clubs.length >= 2 && p.clubs.filter(c => FAMOUS_CLUBS.has(c)).length >= 2);
+    if (pool.length === 0) pool = PLAYERS_CLEAN.filter(p => p.clubs.length >= 2);
+    return pool[Math.floor(rand() * pool.length)];
+  }
+  // Résultat du défi du jour stocké localement (null si pas encore joué aujourd'hui)
+  function getMercatoDailyResult() {
+    try { const d = JSON.parse(localStorage.getItem("bb_mercato_daily") || "{}"); if (d && d.date === todayParis()) return d; } catch (e) {}
+    return null;
+  }
+  // Charge le classement du jour depuis bb_scores (mode=mercatoday, diff=<date>)
+  async function loadMercatoDailyBoard() {
+    const day = todayParis();
+    setMercatoDailyBoard({ loading: true, rows: [], myRank: null, total: 0 });
+    try {
+      const rows = await sbFetch("bb_scores?mode=eq.mercatoday&diff=eq." + day + "&order=score.desc&limit=200&select=player_id,player_name,score");
+      const list = Array.isArray(rows) ? rows : [];
+      const seen = new Set(); const best = [];
+      for (const r of list) { if (seen.has(r.player_id)) continue; seen.add(r.player_id); best.push(r); }
+      const idx = best.findIndex(r => r.player_id === playerId);
+      setMercatoDailyBoard({ loading: false, rows: best.slice(0, 10), myRank: idx >= 0 ? idx + 1 : null, total: best.length });
+    } catch (e) { setMercatoDailyBoard({ loading: false, rows: [], myRank: null, total: 0 }); }
+  }
+  // Partage Wordle-style du défi du jour
+  function shareMercatoDaily(sc, count) {
+    const day = todayParis();
+    const bars = "🔗".repeat(Math.min(count, 10)) + (count > 10 ? "…" : "");
+    const title = "🐐 GOAT FC · " + tr("Mercato du jour", "Daily Mercato", "Mercato des Tages", "Mercato del giorno", "Mercato do dia") + " " + day;
+    const line = tr(`⛓️ ${count} maillons · ${sc} pts`, `⛓️ ${count} links · ${sc} pts`, `⛓️ ${count} Glieder · ${sc} Pkt`, `⛓️ ${count} anelli · ${sc} pt`, `⛓️ ${count} elos · ${sc} pts`);
+    const cta = tr("Tu fais mieux ? 👇", "Can you beat it? 👇", "Schaffst du mehr? 👇", "Fai meglio? 👇", "Consegue superar? 👇");
+    const txt = `${title}\n${line}\n${bars}\n\n${cta}\nhttps://goatfc.fr`;
+    try { if (navigator.share) { navigator.share({ title: "GOAT FC", text: txt }); return; } } catch (e) {}
+    try { navigator.clipboard.writeText(txt).then(function () { alert(tr("Copié ! Colle-le où tu veux 📋", "Copied! Paste it anywhere 📋", "Kopiert! Füg es überall ein 📋", "Copiato! Incollalo dove vuoi 📋", "Copiado! Cole onde quiser 📋")); }); } catch (e) {}
+  }
+  // Panneau réutilisable : score du jour + classement + partage
+  function mercatoDailyPanel(scoreVal, countVal) {
+    const b = mercatoDailyBoard;
+    return (
+      <div style={{marginTop:14,background:"rgba(96,165,250,.08)",border:"1px solid rgba(96,165,250,.35)",borderRadius:18,padding:"16px"}}>
+        <div style={{textAlign:"center",marginBottom:12}}>
+          <div style={{fontSize:11,fontWeight:900,letterSpacing:2,color:"#60a5fa"}}>🗓 {tr("MERCATO DU JOUR","DAILY MERCATO","MERCATO DES TAGES","MERCATO DEL GIORNO","MERCATO DO DIA")}</div>
+          <div style={{fontFamily:G.heading,fontSize:34,color:G.white,lineHeight:1.1,marginTop:4}}>{scoreVal} <span style={{fontSize:14,color:"rgba(255,255,255,.5)"}}>pts</span></div>
+          <div style={{fontSize:12,color:"rgba(255,255,255,.55)"}}>{countVal} {countVal>1?tr("maillons","links","Glieder","anelli","elos"):tr("maillon","link","Glied","anello","elo")}</div>
+        </div>
+        {/* Classement du jour */}
+        <div style={{background:"rgba(0,0,0,.25)",borderRadius:12,padding:"8px 10px"}}>
+          <div style={{fontSize:10,fontWeight:800,letterSpacing:1.5,color:"rgba(255,255,255,.45)",marginBottom:6,textAlign:"center"}}>🏆 {tr("CLASSEMENT DU JOUR","TODAY'S LEADERBOARD","RANGLISTE DES TAGES","CLASSIFICA DI OGGI","RANKING DE HOJE")}</div>
+          {(!b || b.loading) ? (
+            <div style={{fontSize:12,color:"rgba(255,255,255,.4)",textAlign:"center",padding:"6px"}}>{tr("Chargement…","Loading…","Wird geladen…","Caricamento…","Carregando…")}</div>
+          ) : (b.rows.length===0) ? (
+            <div style={{fontSize:12,color:"rgba(255,255,255,.4)",textAlign:"center",padding:"6px"}}>{tr("Sois le premier aujourd'hui !","Be the first today!","Sei heute der Erste!","Sii il primo oggi!","Seja o primeiro hoje!")}</div>
+          ) : (
+            <div style={{display:"flex",flexDirection:"column",gap:3}}>
+              {b.rows.map(function(r,i){
+                const me = r.player_id===playerId;
+                return (
+                  <div key={r.player_id} style={{display:"flex",alignItems:"center",gap:8,padding:"4px 8px",borderRadius:8,background:me?"rgba(96,165,250,.18)":"transparent"}}>
+                    <span style={{width:20,textAlign:"center",fontWeight:900,fontSize:12,color:i===0?"#FFD700":i===1?"#C0C0C0":i===2?"#CD7F32":"rgba(255,255,255,.4)"}}>{i+1}</span>
+                    <span style={{flex:1,fontSize:13,fontWeight:me?800:600,color:me?"#fff":"rgba(255,255,255,.8)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{r.player_name||"Anonyme"}{me?" ("+tr("toi","you","du","tu","você")+")":""}</span>
+                    <span style={{fontFamily:G.heading,fontSize:15,color:"#60a5fa"}}>{r.score}</span>
+                  </div>
+                );
+              })}
+              {b.myRank && b.myRank>10 && (
+                <div style={{fontSize:11,color:"rgba(255,255,255,.5)",textAlign:"center",marginTop:4}}>{tr("Ton rang","Your rank","Dein Rang","Il tuo posto","Sua posição")} : #{b.myRank} / {b.total}</div>
+              )}
+            </div>
+          )}
+        </div>
+        <button onClick={function(){shareMercatoDaily(scoreVal,countVal);}} style={{width:"100%",marginTop:12,padding:"13px",background:"linear-gradient(135deg,#3b82f6,#60a5fa)",color:"#fff",border:"none",borderRadius:14,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>📤 {tr("Partager mon résultat","Share my result","Ergebnis teilen","Condividi il risultato","Compartilhar resultado")}</button>
+        <div style={{fontSize:11,color:"rgba(255,255,255,.4)",textAlign:"center",marginTop:8}}>🔒 {tr("Reviens demain pour un nouveau départ","Come back tomorrow for a new start","Komm morgen für einen neuen Start wieder","Torna domani per una nuova partenza","Volte amanhã para um novo começo")}</div>
+      </div>
+    );
   }
   // Helper : hier en timezone Europe/Paris (fix du bug UTC)
   function yesterdayParis() {
@@ -7525,7 +7632,7 @@ export default function LePont() {
       const newUsed=new Set(chainUsedClubs); newUsed.add(matched); setChainUsedClubs(newUsed);
       setChainHistory(prev=>[...prev,{player:chainPlayer,club:matched}]);
       const newChainCount=chainCount+1;
-      setChainCount(newChainCount);
+      setChainCount(newChainCount); chainCountRef.current=newChainCount;
       // Palier fêté tous les 10 maillons (10/20/30…)
       if(newChainCount>=10 && newChainCount%10===0){
         const meta=CHAIN_MILESTONES[newChainCount]||{emoji:"🐐",color:"#FFD700"};
@@ -11317,6 +11424,27 @@ export default function LePont() {
                       )}
                     </div>
 
+                    {/* 🗓 MERCATO DU JOUR — défi quotidien (Mercato uniquement) */}
+                    {!isPont && (() => {
+                      const done = getMercatoDailyResult();
+                      return (
+                        <button onClick={function(){
+                          if(done){ loadMercatoDailyBoard(); setShowMercatoDailyModal(true); setGameConfigModal(null); }
+                          else { setDiff("moyen"); setGameConfigModal(null); setTimeout(function(){ startChain("moyen", true); }, 60); }
+                        }} style={{width:"100%",marginBottom:16,padding:"14px 16px",borderRadius:16,border:`1.5px solid ${done?"rgba(255,255,255,.15)":"rgba(96,165,250,.6)"}`,background:done?"rgba(255,255,255,.04)":"linear-gradient(135deg,rgba(59,130,246,.22),rgba(96,165,250,.12))",cursor:"pointer",display:"flex",alignItems:"center",gap:12,textAlign:"left",boxShadow:done?"none":"0 8px 24px -8px rgba(96,165,250,.5)"}}>
+                          <div style={{fontSize:26}}>🗓</div>
+                          <div style={{flex:1}}>
+                            <div style={{fontSize:14,fontWeight:900,color:done?"rgba(255,255,255,.7)":"#fff",letterSpacing:.5}}>{tr("MERCATO DU JOUR","DAILY MERCATO","MERCATO DES TAGES","MERCATO DEL GIORNO","MERCATO DO DIA")}</div>
+                            <div style={{fontSize:11,color:"rgba(255,255,255,.55)",marginTop:2}}>
+                              {done ? tr(`✓ Fait · ${done.score} pts — voir le classement`,`✓ Done · ${done.score} pts — see leaderboard`,`✓ Erledigt · ${done.score} Pkt — Rangliste`,`✓ Fatto · ${done.score} pt — classifica`,`✓ Feito · ${done.score} pts — ver ranking`)
+                                   : tr("Même départ pour tous · 1 essai · classé","Same start for everyone · 1 try · ranked","Gleicher Start für alle · 1 Versuch · gewertet","Stessa partenza per tutti · 1 tentativo · classificato","Mesmo início para todos · 1 tentativa · ranqueado")}
+                            </div>
+                          </div>
+                          <div style={{fontSize:18,color:"#60a5fa"}}>{done?"🏆":"▶"}</div>
+                        </button>
+                      );
+                    })()}
+
                     {/* Difficulté */}
                     <div style={{fontSize:10,fontWeight:800,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginBottom:8}}>{tr("Difficulté","Difficulty","Schwierigkeit","Difficoltà","Dificuldade")}</div>
                     <div style={{display:"flex",gap:8,marginBottom:16}}>
@@ -11373,6 +11501,19 @@ export default function LePont() {
             })()}
           </div>
         )}
+
+        {/* 🗓 MERCATO DU JOUR — consultation du résultat/classement (déjà joué aujourd'hui) */}
+        {showMercatoDailyModal && (() => {
+          const res = getMercatoDailyResult() || { score: 0, count: 0 };
+          return (
+            <div onClick={function(){setShowMercatoDailyModal(false);}} style={{position:"fixed",inset:0,zIndex:320,background:"rgba(0,0,0,.9)",backdropFilter:"blur(10px)",display:"flex",alignItems:"flex-start",justifyContent:"center",padding:"70px 18px 30px",overflowY:"auto"}}>
+              <div onClick={function(e){e.stopPropagation();}} style={{width:"100%",maxWidth:400,position:"relative"}}>
+                <button onClick={function(){setShowMercatoDailyModal(false);}} style={{position:"absolute",top:-8,right:0,width:36,height:36,borderRadius:"50%",background:"rgba(255,255,255,.1)",color:"#fff",border:"1px solid rgba(255,255,255,.2)",fontSize:20,cursor:"pointer",zIndex:2}}>×</button>
+                {mercatoDailyPanel(res.score, res.count || 0)}
+              </div>
+            </div>
+          );
+        })()}
 
         {/* 🐐 GOAT GRID — Désormais dans le carousel des 3 modes ci-dessus */}
 
@@ -13239,8 +13380,11 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
           {dayStreak>=2&&<div style={{fontSize:12,color:"#FF6B35",marginTop:6,fontWeight:700}}>🔥 {dayStreak} {tr("jours de suite","days in a row","Tage in Folge","giorni di fila","dias seguidos")} !</div>}
         </div>
 
+        {/* 🗓 MERCATO DU JOUR — score du jour + classement + partage */}
+        {chainWasDaily && isChain && mercatoDailyPanel(sc, chainCountRef.current)}
+
         {/* 🎯 NEAR-MISS — score en dessous du record : « il te manquait X pts » (pousse à relancer) */}
-        {isChain && !isNewRecord && chainRecord && chainRecord.score > sc && (() => {
+        {!chainWasDaily && isChain && !isNewRecord && chainRecord && chainRecord.score > sc && (() => {
           const gap = chainRecord.score - sc;
           const close = gap <= Math.max(20, Math.round(chainRecord.score * 0.12));
           return (
@@ -13369,7 +13513,7 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
             <button onClick={()=>setPseudoScreen(true)} style={{padding:"8px 20px",background:"#ffd600",color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:800}}>{tr("Créer mon pseudo","Create username","Namen erstellen","Crea nome","Criar nome")}</button>
           </div>
         )}
-        <button onClick={()=>{if(isChain)startChain();else startCompetition();}} style={{width:"100%",padding:"17px",background:"linear-gradient(135deg,#00E676,#00B85C)",color:"#06130B",border:"none",borderRadius:18,cursor:"pointer",fontFamily:G.font,fontSize:17,fontWeight:900,letterSpacing:1.5,display:"flex",alignItems:"center",justifyContent:"center",gap:10,boxShadow:"0 14px 34px -10px rgba(0,230,118,.5)"}}>{Icon.ball(18,"#06130B")} {tr("REJOUER","PLAY AGAIN","NOCHMAL SPIELEN","GIOCA ANCORA","JOGAR DE NOVO")}</button>
+        {!(chainWasDaily && isChain) && <button onClick={()=>{if(isChain)startChain();else startCompetition();}} style={{width:"100%",padding:"17px",background:"linear-gradient(135deg,#00E676,#00B85C)",color:"#06130B",border:"none",borderRadius:18,cursor:"pointer",fontFamily:G.font,fontSize:17,fontWeight:900,letterSpacing:1.5,display:"flex",alignItems:"center",justifyContent:"center",gap:10,boxShadow:"0 14px 34px -10px rgba(0,230,118,.5)"}}>{Icon.ball(18,"#06130B")} {tr("REJOUER","PLAY AGAIN","NOCHMAL SPIELEN","GIOCA ANCORA","JOGAR DE NOVO")}</button>}
         <button onClick={()=>setScreen("home")} style={{width:"100%",padding:"13px",background:"transparent",color:"rgba(255,255,255,.55)",border:"1px solid rgba(255,255,255,.16)",borderRadius:18,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700,letterSpacing:.5}}>{tr("↩ Accueil","↩ Home","↩ Start","↩ Home","↩ Início")}</button>
       </div>
       {historyModal}
