@@ -9720,9 +9720,9 @@ export default function LePont() {
         <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.45)"}}/>
       </div>
           <div style={{textAlign:"center",zIndex:1}}>
-            <div style={{fontSize:14,color:"rgba(255,255,255,.5)",letterSpacing:3,textTransform:"uppercase",marginBottom:16}}>{lang==="en"?"Let's go!":"C'est parti !"}</div>
+            <div style={{fontSize:14,color:"rgba(255,255,255,.5)",letterSpacing:3,textTransform:"uppercase",marginBottom:16}}>{tr("C'est parti !","Let's go!","Los geht's!","Si parte!","Vamos lá!")}</div>
             <div style={{fontFamily:G.heading,fontSize:120,color:G.accent,lineHeight:1,animation:"popIn .3s ease"}} key={duelCountdown}>{duelCountdown}</div>
-            <div style={{fontSize:14,color:"rgba(255,255,255,.4)",marginTop:16}}>{players.length} {lang==="en"?"players":"joueurs"}</div>
+            <div style={{fontSize:14,color:"rgba(255,255,255,.4)",marginTop:16}}>{players.length} {tr("joueurs","players","Spieler","giocatori","jogadores")}</div>
           </div>
         </div>
       );
@@ -9745,7 +9745,7 @@ export default function LePont() {
       </div>
         <div style={{zIndex:1,padding:"20px 18px 0",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
           {backBtn(leaveRoom)}
-          <div style={{fontFamily:G.heading,fontSize:24,color:G.white,letterSpacing:2}}>{lang==="en"?"ROOM":"SALLE"}</div>
+          <div style={{fontFamily:G.heading,fontSize:24,color:G.white,letterSpacing:2}}>{tr("SALLE","ROOM","RAUM","STANZA","SALA")}</div>
           <div style={{background:"rgba(255,255,255,.07)",border:"1px solid rgba(255,255,255,.1)",borderRadius:12,padding:"6px 14px",textAlign:"center",display:"flex",alignItems:"center",gap:8}}>
             <div>
               <div style={{fontSize:9,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase"}}>{lang==="en"?"Code":"Code"}</div>
@@ -9753,22 +9753,22 @@ export default function LePont() {
             </div>
             <button onClick={function(){
               const link = "https://goatfc.fr?room="+room.code;
-              const shareTitle = lang==="en" ? "GOAT FC — Join my room!" : "GOAT FC — Rejoins ma salle !";
-              const shareText = lang==="en" ? "Join my room on GOAT FC 🐐" : "Rejoins ma salle sur GOAT FC 🐐";
-              const copiedMsg = lang==="en" ? "Link copied! 📋" : "Lien copié ! 📋";
+              const shareTitle = tr("GOAT FC — Rejoins ma salle !","GOAT FC — Join my room!","GOAT FC — Tritt meinem Raum bei!","GOAT FC — Entra nella mia stanza!","GOAT FC — Entre na minha sala!");
+              const shareText = tr("Rejoins ma salle sur GOAT FC 🐐","Join my room on GOAT FC 🐐","Tritt meinem Raum auf GOAT FC bei 🐐","Entra nella mia stanza su GOAT FC 🐐","Entre na minha sala no GOAT FC 🐐");
+              const copiedMsg = tr("Lien copié ! 📋","Link copied! 📋","Link kopiert! 📋","Link copiato! 📋","Link copiado! 📋");
               if(navigator.share){navigator.share({title:shareTitle,text:shareText,url:link});}
               else{navigator.clipboard.writeText(link).then(function(){alert(copiedMsg);});}
-            }} style={{background:"rgba(0,230,118,.15)",border:"1px solid rgba(0,230,118,.3)",borderRadius:8,padding:"6px 10px",color:G.accent,cursor:"pointer",fontSize:13,fontWeight:800,lineHeight:1}}>🔗 {lang==="en"?"Invite":"Inviter"}</button>
+            }} style={{background:"rgba(0,230,118,.15)",border:"1px solid rgba(0,230,118,.3)",borderRadius:8,padding:"6px 10px",color:G.accent,cursor:"pointer",fontSize:13,fontWeight:800,lineHeight:1}}>🔗 {tr("Inviter","Invite","Einladen","Invita","Convidar")}</button>
           </div>
         </div>
         <div style={{...sheet,borderRadius:"28px 28px 0 0",marginTop:16}}>
           <div style={{background:"rgba(255,255,255,.04)",borderRadius:14,padding:"10px 14px",marginBottom:4}}>
             <div style={{fontSize:11,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginBottom:2}}>{lang==="en"?"Mode":"Mode"}</div>
-            <div style={{fontSize:15,fontWeight:800,color:G.white}}>{room.mode==="pont"?"The Plug":"The Mercato"}{room.diff?" · "+(room.diff==="facile"?"AMATEUR":room.diff==="moyen"?"PRO":"CRESCENDO"):""} · {room.rounds||1} {lang==="en"?("round"+((room.rounds||1)>1?"s":"")):("manche"+((room.rounds||1)>1?"s":""))}</div>
+            <div style={{fontSize:15,fontWeight:800,color:G.white}}>{room.mode==="pont"?"The Plug":"The Mercato"}{room.diff?" · "+(room.diff==="facile"?"AMATEUR":room.diff==="moyen"?"PRO":"CRESCENDO"):""} · {room.rounds||1} {(room.rounds||1)>1?tr("manches","rounds","Runden","turni","rodadas"):tr("manche","round","Runde","turno","rodada")}</div>
           </div>
           <div>
             <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.3)",marginBottom:8}}>
-              {lang==="en"?"Players":"Joueurs"} ({players.length}/8)
+              {tr("Joueurs","Players","Spieler","Giocatori","Jogadores")} ({players.length}/8)
             </div>
             {players.map(function(p, i){return(
               <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",background:"rgba(255,255,255,.04)",borderRadius:12,marginBottom:6,border:p.id===playerId?"1px solid rgba(0,230,118,.3)":"1px solid rgba(255,255,255,.05)"}}>
@@ -9776,25 +9776,25 @@ export default function LePont() {
                   {p.name.charAt(0).toUpperCase()}
                 </div>
                 <div style={{flex:1}}>
-                  <div style={{fontSize:14,fontWeight:800,color:p.id===playerId?G.accent:G.white}}>{p.name}{p.id===room.host_id?" 👑":""}{p.id===playerId?(lang==="en"?" (you)":" (toi)"):""}</div>
+                  <div style={{fontSize:14,fontWeight:800,color:p.id===playerId?G.accent:G.white}}>{p.name}{p.id===room.host_id?" 👑":""}{p.id===playerId?tr(" (toi)"," (you)"," (du)"," (tu)"," (você)"):""}</div>
                 </div>
-                <div style={{fontSize:11,color:"rgba(255,255,255,.4)"}}>✓ {lang==="en"?"Ready":"Prêt"}</div>
+                <div style={{fontSize:11,color:"rgba(255,255,255,.4)"}}>✓ {tr("Prêt","Ready","Bereit","Pronto","Pronto")}</div>
               </div>
             );})}
           </div>
           {players.length < 2 && (
             <div style={{textAlign:"center",padding:"8px 0",fontSize:13,color:"rgba(255,255,255,.3)"}}>
-              {lang==="en"?<>Share code <strong style={{color:G.gold}}>{room.code}</strong> with your friends</>:<>Partage le code <strong style={{color:G.gold}}>{room.code}</strong> à tes amis</>}
+              {tr(<>Partage le code <strong style={{color:G.gold}}>{room.code}</strong> à tes amis</>,<>Share code <strong style={{color:G.gold}}>{room.code}</strong> with your friends</>,<>Teile den Code <strong style={{color:G.gold}}>{room.code}</strong> mit deinen Freunden</>,<>Condividi il codice <strong style={{color:G.gold}}>{room.code}</strong> con i tuoi amici</>,<>Compartilhe o código <strong style={{color:G.gold}}>{room.code}</strong> com seus amigos</>)}
             </div>
           )}
           {isHost ? (
             <button onClick={startRoomGame} disabled={players.length < 2}
               style={{width:"100%",padding:"16px",background:players.length>=2?G.accent:"rgba(255,255,255,.1)",color:players.length>=2?"#000":"rgba(255,255,255,.3)",border:"none",borderRadius:50,cursor:players.length>=2?"pointer":"not-allowed",fontFamily:G.font,fontSize:15,fontWeight:800,marginTop:4}}>
-              {players.length < 2 ? (lang==="en"?"Waiting for players...":"En attente de joueurs...") : (lang==="en"?"🚀 Start game ("+players.length+" players)":"🚀 Lancer la partie ("+players.length+" joueurs)")}
+              {players.length < 2 ? tr("En attente de joueurs...","Waiting for players...","Warte auf Spieler...","In attesa di giocatori...","Aguardando jogadores...") : tr("🚀 Lancer la partie ("+players.length+" joueurs)","🚀 Start game ("+players.length+" players)","🚀 Spiel starten ("+players.length+" Spieler)","🚀 Avvia la partita ("+players.length+" giocatori)","🚀 Iniciar jogo ("+players.length+" jogadores)")}
             </button>
           ) : (
             <div style={{textAlign:"center",padding:"14px",fontSize:13,color:"rgba(255,255,255,.4)",background:"rgba(255,255,255,.04)",borderRadius:16}}>
-              ⏳ {lang==="en"?"Waiting for "+room.host_name+" to start...":"En attente que "+room.host_name+" lance la partie..."}
+              ⏳ {tr("En attente que "+room.host_name+" lance la partie...","Waiting for "+room.host_name+" to start...",room.host_name+" startet gleich...","In attesa che "+room.host_name+" avvii la partita...","Aguardando "+room.host_name+" iniciar...")}
             </div>
           )}
         </div>
