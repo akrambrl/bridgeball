@@ -2935,7 +2935,8 @@ export default function LePont() {
   const [ggShowTooltip, setGgShowTooltip] = useState(null); // { title, text } ou null
   const [ggShareCopied, setGgShareCopied] = useState(false);
   const [ggError, setGgError] = useState(false); // true si l'algo n'a pas pu générer
-  const [ggDemo] = useState(ggIsDemo); // mode démo vidéo : grille fixe + feuille de réponses
+  const [ggDemo, setGgDemo] = useState(ggIsDemo); // mode démo vidéo : grille fixe + feuille de réponses
+  const ggDemoHoldRef = React.useRef(null); // appui long caché sur le titre → bascule le mode démo
   // 0 = seed du jour, sinon seed forcé. En démo → seed FIXE (grille reproductible, pas de save/submit).
   const [ggOverrideSeed, setGgOverrideSeed] = useState(ggIsDemo() ? GG_DEMO_SEED : 0);
   const [ggLastRejected, setGgLastRejected] = useState(null); // { playerName, rowCrit, colCrit } pour signaler
@@ -4152,6 +4153,27 @@ export default function LePont() {
       if (best) used.add(best);
       return { cell: c, answer: best };
     });
+  }
+
+  // Bascule le mode démo directement dans l'app (appui long sur le titre GOAT GRID)
+  function ggToggleDemo() {
+    const nv = !ggDemo;
+    try { if (nv) localStorage.setItem("bb_gg_demo", "1"); else localStorage.removeItem("bb_gg_demo"); } catch (e) {}
+    setGgDemo(nv);
+    const seed = nv ? GG_DEMO_SEED : ggGetDailySeed();
+    setGgOverrideSeed(nv ? GG_DEMO_SEED : 0);
+    const grid = ggGenerateGrid(seed);
+    setGgGrid(grid || null); setGgError(!grid);
+    setGgFilledCells({}); setGgUsedPlayers(new Set()); setGgLives(3); setGgScore(0); setGgGameOver(false);
+    setGgGuess(""); setGgFlash(null); setGgSelectedCell(null); setGgRevealMode(false); setGgRevealCell(null);
+    vibrate([30, 50, 30]);
+  }
+  function ggDemoHoldStart() {
+    if (ggDemoHoldRef.current) clearTimeout(ggDemoHoldRef.current);
+    ggDemoHoldRef.current = setTimeout(function () { ggDemoHoldRef.current = null; ggToggleDemo(); }, 700);
+  }
+  function ggDemoHoldEnd() {
+    if (ggDemoHoldRef.current) { clearTimeout(ggDemoHoldRef.current); ggDemoHoldRef.current = null; }
   }
 
   function ggStartGame() {
@@ -11977,9 +11999,9 @@ export default function LePont() {
                     </>
                   ) : (
                     <>
-                      <div style={{fontFamily:G.heading,fontSize:26,letterSpacing:2,color:"#FFD600",lineHeight:1}}>GOAT GRID 🐐</div>
+                      <div onTouchStart={ggDemoHoldStart} onTouchEnd={ggDemoHoldEnd} onTouchMove={ggDemoHoldEnd} onMouseDown={ggDemoHoldStart} onMouseUp={ggDemoHoldEnd} onMouseLeave={ggDemoHoldEnd} style={{fontFamily:G.heading,fontSize:26,letterSpacing:2,color:"#FFD600",lineHeight:1,userSelect:"none",WebkitUserSelect:"none",WebkitTouchCallout:"none",cursor:"pointer"}}>GOAT GRID 🐐</div>
                       {ggOverrideSeed > 0 && (
-                        <div style={{fontSize:9,color:"#FFD600",marginTop:2,letterSpacing:1.5,fontWeight:800}}>🔄 GRILLE TEST</div>
+                        <div style={{fontSize:9,color:ggDemo?"#00E676":"#FFD600",marginTop:2,letterSpacing:1.5,fontWeight:800}}>{ggDemo?"🎬 MODE DÉMO":"🔄 GRILLE TEST"}</div>
                       )}
                     </>
                   )}
