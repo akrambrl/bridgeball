@@ -1,6 +1,13 @@
 import type { GameMode } from "@/pages/Home";
+import { tr } from "@/lib/lang";
 
 type Props = { onPlay: (game?: GameMode) => void };
+
+function trBadge(b: string): string {
+  if (b === "Légende") return tr("Légende", "Legend", "Legende", "Leggenda", "Lenda");
+  if (b === "Confirmé") return tr("Confirmé", "Advanced", "Fortgeschritten", "Esperto", "Avançado");
+  return b;
+}
 
 const MOCK = [
   { rank: 1, name: "EagleEye", score: 12850, badge: "GOAT" },
@@ -20,14 +27,13 @@ export const LeaderboardView = ({ onPlay }: Props) => {
     <div className="container max-w-3xl mx-auto px-6 lg:px-10 py-10">
       <div className="text-center mb-8">
         <span className="inline-block px-3 py-1 rounded-full bg-[#FFC93C]/10 text-[#FFC93C] font-display text-xs tracking-[0.3em] mb-3">
-          PALMARÈS
+          {tr("PALMARÈS", "HONOURS", "BESTENLISTE", "ALBO D'ORO", "PALMARÉS")}
         </span>
         <h2 className="font-display text-6xl md:text-7xl tracking-wide leading-none">
-          LES GOAT DU MOIS
+          {tr("LES GOAT DU MOIS", "GOATS OF THE MONTH", "GOATS DES MONATS", "I GOAT DEL MESE", "OS GOATS DO MÊS")}
         </h2>
         <p className="mt-3 text-white/60">
-          Le classement se réinitialise chaque mois. Nouvelle saison, nouvelle
-          chance de finir en tête.
+          {tr("Le classement se réinitialise chaque mois. Nouvelle saison, nouvelle chance de finir en tête.", "The leaderboard resets every month. New season, new chance to finish on top.", "Die Rangliste wird jeden Monat zurückgesetzt. Neue Saison, neue Chance auf Platz eins.", "La classifica si azzera ogni mese. Nuova stagione, nuova occasione per finire in testa.", "O ranking reinicia todo mês. Nova temporada, nova chance de terminar no topo.")}
         </p>
       </div>
 
@@ -54,21 +60,21 @@ export const LeaderboardView = ({ onPlay }: Props) => {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-display text-xl tracking-wider truncate">{p.name}</p>
-                <p className="text-xs text-white/50">{p.badge}</p>
+                <p className="text-xs text-white/50">{trBadge(p.badge)}</p>
               </div>
               <div className="text-right">
                 <p className="font-display text-2xl tabular-nums text-[#FFC93C] tracking-wider">
                   {p.score.toLocaleString("fr-FR")}
                 </p>
                 <p className="font-display text-xs text-white/40 tracking-widest">
-                  PTS
+                  {tr("PTS", "PTS", "PKT", "PT", "PTS")}
                 </p>
               </div>
             </li>
           ))}
         </ul>
         <p className="text-center text-[10px] text-white/30 pt-3 pb-1">
-          * Aperçu — sera branché sur Supabase live
+          {tr("* Aperçu — sera branché sur Supabase live", "* Preview — will be connected to live Supabase", "* Vorschau — wird an Live-Supabase angebunden", "* Anteprima — sarà collegata a Supabase live", "* Prévia — será conectada ao Supabase ao vivo")}
         </p>
       </div>
 
@@ -77,7 +83,7 @@ export const LeaderboardView = ({ onPlay }: Props) => {
           onClick={() => onPlay("pont")}
           className="inline-flex items-center gap-2 px-10 py-4 rounded-2xl bg-gradient-to-r from-[#FF8A2A] to-[#FFC93C] text-[#1A0F00] font-display text-2xl tracking-widest shadow-[0_10px_40px_-5px_rgba(255,201,60,0.5)] hover:scale-[1.03] transition-transform"
         >
-          ▶ TENTER MA PLACE
+          ▶ {tr("TENTER MA PLACE", "GO FOR MY SPOT", "UM MEINEN PLATZ KÄMPFEN", "TENTA IL TUO POSTO", "IR ATRÁS DO MEU LUGAR")}
         </button>
       </div>
     </div>

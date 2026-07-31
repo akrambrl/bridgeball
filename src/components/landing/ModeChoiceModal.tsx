@@ -1,4 +1,5 @@
 import type { GameMode } from "@/pages/Home";
+import { tr } from "@/lib/lang";
 
 export type PlayMode = "solo" | "online" | "bot" | "multi";
 
@@ -38,9 +39,7 @@ export const ModeChoiceModal = ({ game, onPick, onClose }: Props) => {
             {GAME_LABEL[game]}
           </div>
           <h3 className="font-display text-4xl tracking-wide text-white leading-none">
-            COMMENT TU
-            <br />
-            JOUES ?
+            {tr("COMMENT TU JOUES ?", "HOW DO YOU PLAY?", "WIE SPIELST DU?", "COME GIOCHI?", "COMO VOCÊ JOGA?")}
           </h3>
         </div>
 
@@ -52,10 +51,10 @@ export const ModeChoiceModal = ({ game, onPick, onClose }: Props) => {
             <span className="text-4xl">🎯</span>
             <div className="text-left flex-1">
               <div className="font-display text-2xl tracking-widest text-[#FFC93C]">
-                SOLO
+                {tr("SOLO", "SOLO", "SOLO", "SOLO", "SOLO")}
               </div>
               <div className="text-xs text-white/60 mt-0.5">
-                Bats ton record, monte au classement
+                {tr("Bats ton record, monte au classement", "Beat your record, climb the leaderboard", "Schlag deinen Rekord, klettere in der Rangliste", "Batti il tuo record, scala la classifica", "Bata seu recorde, suba no ranking")}
               </div>
             </div>
             <span className="text-2xl text-[#FFC93C] transition-transform group-hover:translate-x-1">
@@ -70,10 +69,10 @@ export const ModeChoiceModal = ({ game, onPick, onClose }: Props) => {
             <span className="text-4xl">🌐</span>
             <div className="text-left flex-1">
               <div className="font-display text-2xl tracking-widest text-[#3DA5FF]">
-                EN LIGNE
+                {tr("EN LIGNE", "ONLINE", "ONLINE", "ONLINE", "ONLINE")}
               </div>
               <div className="text-xs text-white/60 mt-0.5">
-                Affronte un joueur au hasard sur le web
+                {tr("Affronte un joueur au hasard sur le web", "Face a random player on the web", "Tritt gegen einen zufälligen Spieler im Netz an", "Sfida un giocatore a caso sul web", "Enfrente um jogador aleatório na web")}
               </div>
             </div>
             <span className="text-2xl text-[#3DA5FF] transition-transform group-hover:translate-x-1">
@@ -88,10 +87,10 @@ export const ModeChoiceModal = ({ game, onPick, onClose }: Props) => {
             <span className="text-4xl">🤖</span>
             <div className="text-left flex-1">
               <div className="font-display text-2xl tracking-widest text-[#FF8A2A]">
-                VS BOT
+                {tr("VS BOT", "VS BOT", "VS BOT", "VS BOT", "VS BOT")}
               </div>
               <div className="text-xs text-white/60 mt-0.5">
-                Duel random instantané, sans attente
+                {tr("Duel random instantané, sans attente", "Instant random duel, no waiting", "Sofortiges Zufallsduell, ohne Warten", "Duello casuale istantaneo, senza attesa", "Duelo aleatório instantâneo, sem espera")}
               </div>
             </div>
             <span className="text-2xl text-[#FF8A2A] transition-transform group-hover:translate-x-1">
@@ -106,10 +105,10 @@ export const ModeChoiceModal = ({ game, onPick, onClose }: Props) => {
             <span className="text-4xl">👥</span>
             <div className="text-left flex-1">
               <div className="font-display text-2xl tracking-widest text-[#C084FC]">
-                ENTRE POTES
+                {tr("ENTRE POTES", "WITH FRIENDS", "MIT FREUNDEN", "CON GLI AMICI", "COM AMIGOS")}
               </div>
               <div className="text-xs text-white/60 mt-0.5">
-                Crée un salon, partage le code, jouez ensemble
+                {tr("Crée un salon, partage le code, jouez ensemble", "Create a room, share the code, play together", "Erstelle einen Raum, teile den Code, spielt zusammen", "Crea una stanza, condividi il codice, giocate insieme", "Crie uma sala, compartilhe o código, joguem juntos")}
               </div>
             </div>
             <span className="text-2xl text-[#C084FC] transition-transform group-hover:translate-x-1">
