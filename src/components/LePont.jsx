@@ -9804,17 +9804,33 @@ export default function LePont() {
 
 
   // ── TUTORIAL ──
-  const TUTORIAL_SLIDES = lang === "en" ? [
-    { icon:"⚽", title:"GOAT PLUG", subtitle:"Find the player linking 2 clubs", desc:"We show you 2 clubs. Find the player who played for both!", color:"#1a4a2e", accent:"#00E676" },
-    { icon:"⛓", title:"GOAT MERCATO", subtitle:"Chain player → club → player", desc:"A player is shown. Type a club they played for, then another player from that club… and so on!", color:"#1a2a4a", accent:"#60a5fa" },
-    { icon:"⚡", title:"DAILY CHALLENGE", subtitle:"A mystery player every day", desc:"Every day, a new mystery player to guess. Come back daily to keep your streak alive!", color:"#3a2a00", accent:"#FFD600" },
-    { icon:"👥", title:"MULTIPLAYER", subtitle:"Play with your friends", desc:"Create a room, share the code, and battle in real time with up to 8 players!", color:"#2a1a3a", accent:"#c084fc" },
-  ] : [
-    { icon:"⚽", title:"GOAT PLUG", subtitle:"Trouve le joueur qui relie 2 clubs", desc:"On te montre 2 clubs. Trouve le joueur qui a joué dans les deux !", color:"#1a4a2e", accent:"#00E676" },
-    { icon:"⛓", title:"GOAT MERCATO", subtitle:"Enchaîne joueur → club → joueur", desc:"Un joueur est affiché. Tape un club où il a joué, puis un autre joueur de ce club… et ainsi de suite !", color:"#1a2a4a", accent:"#60a5fa" },
-    { icon:"⚡", title:"DÉFI DU JOUR", subtitle:"Un joueur mystère chaque jour", desc:"Chaque jour, un nouveau joueur mystère à deviner. Reviens tous les jours pour ne pas perdre ta série !", color:"#3a2a00", accent:"#FFD600" },
-    { icon:"👥", title:"MULTIJOUEUR", subtitle:"Joue avec tes potes", desc:"Crée une salle, partage le code, et affrontez-vous en temps réel jusqu'à 8 joueurs !", color:"#2a1a3a", accent:"#c084fc" },
+  const TUTORIAL_BASE = [
+    { icon:"⚽", color:"#1a4a2e", accent:"#00E676", t:{
+      fr:{title:"GOAT PLUG",subtitle:"Trouve le joueur qui relie 2 clubs",desc:"On te montre 2 clubs. Trouve le joueur qui a joué dans les deux !"},
+      en:{title:"GOAT PLUG",subtitle:"Find the player linking 2 clubs",desc:"We show you 2 clubs. Find the player who played for both!"},
+      de:{title:"GOAT PLUG",subtitle:"Finde den Spieler, der 2 Klubs verbindet",desc:"Wir zeigen dir 2 Klubs. Finde den Spieler, der in beiden gespielt hat!"},
+      it:{title:"GOAT PLUG",subtitle:"Trova il giocatore che collega 2 club",desc:"Ti mostriamo 2 club. Trova il giocatore che ha giocato in entrambi!"},
+      pt:{title:"GOAT PLUG",subtitle:"Encontre o jogador que liga 2 clubes",desc:"Mostramos 2 clubes. Encontre o jogador que jogou nos dois!"} } },
+    { icon:"⛓", color:"#1a2a4a", accent:"#60a5fa", t:{
+      fr:{title:"GOAT MERCATO",subtitle:"Enchaîne joueur → club → joueur",desc:"Un joueur est affiché. Tape un club où il a joué, puis un autre joueur de ce club… et ainsi de suite !"},
+      en:{title:"GOAT MERCATO",subtitle:"Chain player → club → player",desc:"A player is shown. Type a club they played for, then another player from that club… and so on!"},
+      de:{title:"GOAT MERCATO",subtitle:"Verkette Spieler → Klub → Spieler",desc:"Ein Spieler wird angezeigt. Nenne einen seiner Klubs, dann einen anderen Spieler dieses Klubs… und so weiter!"},
+      it:{title:"GOAT MERCATO",subtitle:"Concatena giocatore → club → giocatore",desc:"Viene mostrato un giocatore. Scrivi un club in cui ha giocato, poi un altro giocatore di quel club… e così via!"},
+      pt:{title:"GOAT MERCATO",subtitle:"Encadeie jogador → clube → jogador",desc:"Um jogador é mostrado. Digite um clube dele, depois outro jogador desse clube… e assim por diante!"} } },
+    { icon:"⚡", color:"#3a2a00", accent:"#FFD600", t:{
+      fr:{title:"DÉFI DU JOUR",subtitle:"Un joueur mystère chaque jour",desc:"Chaque jour, un nouveau joueur mystère à deviner. Reviens tous les jours pour ne pas perdre ta série !"},
+      en:{title:"DAILY CHALLENGE",subtitle:"A mystery player every day",desc:"Every day, a new mystery player to guess. Come back daily to keep your streak alive!"},
+      de:{title:"TAGES-CHALLENGE",subtitle:"Jeden Tag ein Rätselspieler",desc:"Jeden Tag ein neuer Rätselspieler zum Erraten. Komm täglich zurück, um deine Serie zu halten!"},
+      it:{title:"SFIDA DEL GIORNO",subtitle:"Un giocatore misterioso ogni giorno",desc:"Ogni giorno un nuovo giocatore misterioso da indovinare. Torna ogni giorno per non perdere la serie!"},
+      pt:{title:"DESAFIO DO DIA",subtitle:"Um jogador misterioso todo dia",desc:"Todo dia, um novo jogador misterioso para adivinhar. Volte diariamente para manter sua sequência!"} } },
+    { icon:"👥", color:"#2a1a3a", accent:"#c084fc", t:{
+      fr:{title:"MULTIJOUEUR",subtitle:"Joue avec tes potes",desc:"Crée une salle, partage le code, et affrontez-vous en temps réel jusqu'à 8 joueurs !"},
+      en:{title:"MULTIPLAYER",subtitle:"Play with your friends",desc:"Create a room, share the code, and battle in real time with up to 8 players!"},
+      de:{title:"MEHRSPIELER",subtitle:"Spiel mit deinen Freunden",desc:"Erstelle einen Raum, teile den Code und tretet in Echtzeit mit bis zu 8 Spielern an!"},
+      it:{title:"MULTIGIOCATORE",subtitle:"Gioca con i tuoi amici",desc:"Crea una stanza, condividi il codice e sfidatevi in tempo reale fino a 8 giocatori!"},
+      pt:{title:"MULTIJOGADOR",subtitle:"Jogue com seus amigos",desc:"Crie uma sala, compartilhe o código e enfrentem-se em tempo real com até 8 jogadores!"} } },
   ];
+  const TUTORIAL_SLIDES = TUTORIAL_BASE.map(function(s){ return Object.assign({ icon:s.icon, color:s.color, accent:s.accent }, s.t[lang] || s.t.en); });
   // Le tutoriel s'affiche comme un overlay par-dessus l'écran d'accueil
   // (pas comme un écran qui remplace tout) → l'utilisateur voit le home en arrière-plan
   // avec son logo, ses modes de jeu, etc. → contexte visuel avant de commencer
@@ -9832,13 +9848,13 @@ export default function LePont() {
           <div style={{fontSize:13,color:sl.accent,fontWeight:700,letterSpacing:1,marginBottom:16,textTransform:"uppercase"}}>{sl.subtitle}</div>
           <div style={{fontSize:15,color:"rgba(255,255,255,.7)",lineHeight:1.6,marginBottom:32}}>{sl.desc}</div>
           <div style={{display:"flex",gap:10}}>
-            {tutorialStep > 0 && <button onClick={()=>setTutorialStep(s=>s-1)} style={{flex:1,padding:"14px",background:"rgba(255,255,255,.07)",color:"rgba(255,255,255,.5)",border:"1px solid rgba(255,255,255,.1)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>{lang==="en"?"← Back":"← Retour"}</button>}
+            {tutorialStep > 0 && <button onClick={()=>setTutorialStep(s=>s-1)} style={{flex:1,padding:"14px",background:"rgba(255,255,255,.07)",color:"rgba(255,255,255,.5)",border:"1px solid rgba(255,255,255,.1)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>{tr("← Retour","← Back","← Zurück","← Indietro","← Voltar")}</button>}
             {tutorialStep < TUTORIAL_SLIDES.length-1
-              ? <button onClick={()=>setTutorialStep(s=>s+1)} style={{flex:2,padding:"14px",background:sl.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800}}>{lang==="en"?"Next →":"Suivant →"}</button>
-              : <button onClick={closeTutorial} style={{flex:2,padding:"14px",background:sl.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800}}>{lang==="en"?"Let's go 🚀":"C'est parti 🚀"}</button>
+              ? <button onClick={()=>setTutorialStep(s=>s+1)} style={{flex:2,padding:"14px",background:sl.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800}}>{tr("Suivant →","Next →","Weiter →","Avanti →","Próximo →")}</button>
+              : <button onClick={closeTutorial} style={{flex:2,padding:"14px",background:sl.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800}}>{tr("C'est parti 🚀","Let's go 🚀","Los geht's 🚀","Si parte 🚀","Vamos lá 🚀")}</button>
             }
           </div>
-          {tutorialStep < TUTORIAL_SLIDES.length-1 && <button onClick={closeTutorial} style={{marginTop:16,background:"none",border:"none",color:"rgba(255,255,255,.3)",cursor:"pointer",fontFamily:G.font,fontSize:13}}>{lang==="en"?"Skip":"Passer"}</button>}
+          {tutorialStep < TUTORIAL_SLIDES.length-1 && <button onClick={closeTutorial} style={{marginTop:16,background:"none",border:"none",color:"rgba(255,255,255,.3)",cursor:"pointer",fontFamily:G.font,fontSize:13}}>{tr("Passer","Skip","Überspringen","Salta","Pular")}</button>}
         </div>
       </div>
     );
