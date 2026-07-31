@@ -13206,36 +13206,53 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
       </div>
       <div style={{zIndex:1,padding:"16px 20px 0",textAlign:"center"}}>
         <img src={img} style={{height:"clamp(204px,51vw,289px)",objectFit:"contain",objectPosition:"center bottom",animation:"slideInRight .5s ease both",filter:"drop-shadow(0 4px 20px rgba(0,230,118,.3))",display:"block",margin:"0 auto"}} alt=""/>
-        <div style={{fontFamily:G.heading,fontSize:"clamp(20px,5.5vw,32px)",color:isNewRecord?G.gold:G.white,letterSpacing:2,animation:"fadeUp .4s ease .15s both",marginTop:4}}>{isNewRecord?"NOUVEAU RECORD !":isChain?"TEMPS ÉCOULÉ !":""}</div>
-        <div style={{fontSize:"clamp(16px,4.5vw,22px)",color:G.white,fontWeight:800,marginTop:isNewRecord||isChain?6:16,animation:"fadeUp .4s ease .25s both",textTransform:"uppercase",letterSpacing:1,textShadow:"0 2px 10px rgba(0,0,0,.4)"}}>{(isNewRecord?[
-          "BALLON D'OR MÉRITÉ 🏆",
-          "T'AS PLIÉ LE MATCH 🎩",
-          "CLASSE INTERNATIONALE 🌍",
-          "PRESTATION 5 ÉTOILES ⭐",
-          "T'ES DANS LE ONZE TYPE 🏟️",
-          "MAN OF THE MATCH 🥇",
-          "DE LA MAGIE PURE 🪄",
-          "RECORD BATTU 📈",
-        ]:[
-          "T'AS PAS LE NIVEAU.. 👀",
-          "C'EST TOUT CE QUE T'AS ? 💀",
-          "LE GOAT C'EST TOI OU PAS ? 🐐",
-          "ON JOUE PAS, ON DOMINE 😤",
-          "T'AS KIFFÉ OU T'AS SOUFFERT ? 😂",
-          "PROUVE QUE T'ES PAS UN RANDOM 🔥",
-          "LE FOOT C'EST DANS LA TÊTE FRÈRE 🧠",
-          "T'AURAIS PAS DÛ RATER LES AUTRES 😏",
-        ])[Math.abs(Math.floor(sc * 3 + totalRounds)) % 8]}</div>
+        <div style={{fontFamily:G.heading,fontSize:"clamp(20px,5.5vw,32px)",color:isNewRecord?G.gold:G.white,letterSpacing:2,animation:"fadeUp .4s ease .15s both",marginTop:4}}>{isNewRecord?tr("NOUVEAU RECORD !","NEW RECORD!","NEUER REKORD!","NUOVO RECORD!","NOVO RECORDE!"):isChain?tr("TEMPS ÉCOULÉ !","TIME'S UP!","ZEIT ABGELAUFEN!","TEMPO SCADUTO!","TEMPO ESGOTADO!"):""}</div>
+        <div style={{fontSize:"clamp(16px,4.5vw,22px)",color:G.white,fontWeight:800,marginTop:isNewRecord||isChain?6:16,animation:"fadeUp .4s ease .25s both",textTransform:"uppercase",letterSpacing:1,textShadow:"0 2px 10px rgba(0,0,0,.4)"}}>{(function(){
+          const TAUNTS={
+            win:{
+              fr:["BALLON D'OR MÉRITÉ 🏆","T'AS PLIÉ LE MATCH 🎩","CLASSE INTERNATIONALE 🌍","PRESTATION 5 ÉTOILES ⭐","T'ES DANS LE ONZE TYPE 🏟️","MAN OF THE MATCH 🥇","DE LA MAGIE PURE 🪄","RECORD BATTU 📈"],
+              en:["DESERVED BALLON D'OR 🏆","YOU OWNED THE GAME 🎩","WORLD CLASS 🌍","5-STAR PERFORMANCE ⭐","TEAM OF THE WEEK 🏟️","MAN OF THE MATCH 🥇","PURE MAGIC 🪄","RECORD BROKEN 📈"],
+              de:["VERDIENTER BALLON D'OR 🏆","DU HAST DAS SPIEL ZERLEGT 🎩","WELTKLASSE 🌍","5-STERNE-LEISTUNG ⭐","ELF DER WOCHE 🏟️","MAN OF THE MATCH 🥇","REINE MAGIE 🪄","REKORD GEBROCHEN 📈"],
+              it:["PALLONE D'ORO MERITATO 🏆","HAI DOMINATO 🎩","CLASSE MONDIALE 🌍","PRESTAZIONE 5 STELLE ⭐","TOP 11 DELLA SETTIMANA 🏟️","MAN OF THE MATCH 🥇","MAGIA PURA 🪄","RECORD BATTUTO 📈"],
+              pt:["BOLA DE OURO MERECIDA 🏆","VOCÊ DOMINOU O JOGO 🎩","CLASSE MUNDIAL 🌍","ATUAÇÃO 5 ESTRELAS ⭐","SELEÇÃO DA SEMANA 🏟️","MAN OF THE MATCH 🥇","MÁGICA PURA 🪄","RECORDE BATIDO 📈"],
+            },
+            lose:{
+              fr:["T'AS PAS LE NIVEAU.. 👀","C'EST TOUT CE QUE T'AS ? 💀","LE GOAT C'EST TOI OU PAS ? 🐐","ON JOUE PAS, ON DOMINE 😤","T'AS KIFFÉ OU T'AS SOUFFERT ? 😂","PROUVE QUE T'ES PAS UN RANDOM 🔥","LE FOOT C'EST DANS LA TÊTE FRÈRE 🧠","T'AURAIS PAS DÛ RATER LES AUTRES 😏"],
+              en:["NOT GOOD ENOUGH.. 👀","IS THAT ALL YOU GOT? 💀","ARE YOU THE GOAT OR NOT? 🐐","WE DON'T PLAY, WE DOMINATE 😤","DID YOU ENJOY OR SUFFER? 😂","PROVE YOU'RE NOT A RANDOM 🔥","FOOTBALL IS IN THE HEAD BRO 🧠","YOU SHOULDN'T HAVE MISSED THE OTHERS 😏"],
+              de:["NICHT GUT GENUG.. 👀","IST DAS ALLES? 💀","BIST DU DER GOAT ODER NICHT? 🐐","WIR SPIELEN NICHT, WIR DOMINIEREN 😤","SPASS GEHABT ODER GELITTEN? 😂","BEWEIS, DASS DU KEIN NIEMAND BIST 🔥","FUSSBALL IST KOPFSACHE BRUDER 🧠","DU HÄTTEST DIE ANDEREN NICHT VERPASSEN SOLLEN 😏"],
+              it:["NON SEI ALL'ALTEZZA.. 👀","TUTTO QUI? 💀","SEI TU IL GOAT O NO? 🐐","NON SI GIOCA, SI DOMINA 😤","TI SEI DIVERTITO O HAI SOFFERTO? 😂","DIMOSTRA DI NON ESSERE UNO A CASO 🔥","IL CALCIO È NELLA TESTA FRA 🧠","NON DOVEVI SBAGLIARE GLI ALTRI 😏"],
+              pt:["SEM NÍVEL.. 👀","SÓ ISSO? 💀","VOCÊ É O GOAT OU NÃO? 🐐","NÃO SE JOGA, SE DOMINA 😤","CURTIU OU SOFREU? 😂","PROVE QUE VOCÊ NÃO É UM QUALQUER 🔥","FUTEBOL É NA CABEÇA IRMÃO 🧠","NÃO DEVIA TER ERRADO OS OUTROS 😏"],
+            },
+          };
+          const set=isNewRecord?TAUNTS.win:TAUNTS.lose;
+          const arr=set[lang]||set.en||set.fr;
+          return arr[Math.abs(Math.floor(sc * 3 + totalRounds)) % 8];
+        })()}</div>
       </div>
       <div style={sheet}>
         <div style={{background:"rgba(8,14,10,.78)",borderRadius:22,padding:"20px",textAlign:"center",border:"1px solid rgba(0,230,118,.28)",boxShadow:"0 18px 50px -18px rgba(0,230,118,.35)",backdropFilter:"blur(10px)"}}>
-          <div style={{fontSize:11,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.5)"}}>Score{isChain?"":" total"}</div>
+          <div style={{fontSize:11,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.5)"}}>{isChain?tr("Score","Score","Score","Punteggio","Pontuação"):tr("Score total","Total score","Gesamtpunktzahl","Punteggio totale","Pontuação total")}</div>
           <div style={{fontFamily:G.heading,fontSize:"clamp(54px,13vw,80px)",color:G.white,lineHeight:1}}>{sc}</div>
-          <div style={{fontSize:11,color:"rgba(255,255,255,.5)"}}>pts{isChain?` · ${chainCount} lien${chainCount>1?"s":""}`:`  ·  ${totalRounds} manche${totalRounds>1?"s":""}`}</div>
-          {maxCombo>=3&&<div style={{fontSize:13,color:"#f59e0b",marginTop:4,fontWeight:700}}>🔥 Meilleur combo : x{maxCombo}</div>}
+          <div style={{fontSize:11,color:"rgba(255,255,255,.5)"}}>pts{isChain?` · ${chainCount} ${chainCount>1?tr("liens","links","Glieder","anelli","elos"):tr("lien","link","Glied","anello","elo")}`:`  ·  ${totalRounds} ${totalRounds>1?tr("manches","rounds","Runden","turni","rodadas"):tr("manche","round","Runde","turno","rodada")}`}</div>
+          {maxCombo>=3&&<div style={{fontSize:13,color:"#f59e0b",marginTop:4,fontWeight:700}}>🔥 {tr("Meilleur combo","Best combo","Bester Combo","Miglior combo","Melhor combo")} : x{maxCombo}</div>}
           {isNewRecord&&<div style={{fontSize:12,color:G.accent,marginTop:6,fontStyle:"italic"}}>{tr("Ancien record battu 🎉","Previous record beaten 🎉","Alter Rekord geschlagen 🎉","Vecchio record battuto 🎉","Recorde anterior batido 🎉")}</div>}
-          {dayStreak>=2&&<div style={{fontSize:12,color:"#FF6B35",marginTop:6,fontWeight:700}}>🔥 {dayStreak} jours de suite !</div>}
+          {dayStreak>=2&&<div style={{fontSize:12,color:"#FF6B35",marginTop:6,fontWeight:700}}>🔥 {dayStreak} {tr("jours de suite","days in a row","Tage in Folge","giorni di fila","dias seguidos")} !</div>}
         </div>
+
+        {/* 🎯 NEAR-MISS — score en dessous du record : « il te manquait X pts » (pousse à relancer) */}
+        {isChain && !isNewRecord && chainRecord && chainRecord.score > sc && (() => {
+          const gap = chainRecord.score - sc;
+          const close = gap <= Math.max(20, Math.round(chainRecord.score * 0.12));
+          return (
+            <div style={{marginTop:12,background:close?"rgba(255,138,42,.13)":"rgba(255,255,255,.04)",border:`1px solid ${close?"rgba(255,138,42,.55)":"rgba(255,255,255,.1)"}`,borderRadius:16,padding:"12px 16px",textAlign:"center"}}>
+              <div style={{fontSize:13.5,fontWeight:900,color:close?"#FF8A2A":"#fff",letterSpacing:.3}}>
+                {close ? tr("SI PROCHE ! 😤 ","SO CLOSE! 😤 ","SO KNAPP! 😤 ","COSÌ VICINO! 😤 ","POR POUCO! 😤 ") : ""}
+                {tr(`Il te manquait ${gap} pts pour ton record`,`${gap} pts short of your record`,`Nur ${gap} Pkt bis zum Rekord`,`Ti mancavano ${gap} pt per il record`,`Faltaram ${gap} pts para o recorde`)}
+              </div>
+              <div style={{fontSize:11,color:"rgba(255,255,255,.5)",marginTop:3}}>🏆 {tr("Record","Record","Rekord","Record","Recorde")} : {chainRecord.score}</div>
+            </div>
+          );
+        })()}
 
         {/* 🥕 CAROTTE DU PROCHAIN GRADE — incite à relancer pour l'atteindre */}
         {(() => {
