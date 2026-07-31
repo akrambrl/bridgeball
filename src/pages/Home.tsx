@@ -168,6 +168,11 @@ const Home = () => {
       setCountdown({ game, diff: randomDiff, bot: opponent });
       return;
     }
+    if (mode === "daily") {
+      // Mercato du jour : départ fixe + difficulté imposée → LePont gère tout via ?daily=1
+      launchGame(game, undefined, undefined, undefined, true);
+      return;
+    }
     setPendingDiff({ game, mode });
   };
 
@@ -195,13 +200,15 @@ const Home = () => {
     game: GameMode,
     diff?: Difficulty,
     multi?: "create",
-    bot?: { pseudo: string; country: string; avatar?: string }
+    bot?: { pseudo: string; country: string; avatar?: string },
+    daily?: boolean
   ) => {
     try {
       const url = new URL(window.location.href);
       url.searchParams.set("play", game);
       if (diff) url.searchParams.set("diff", diff);
       if (multi) url.searchParams.set("multi", multi);
+      if (daily) url.searchParams.set("daily", "1");
       if (bot) {
         url.searchParams.set("bot", bot.pseudo);
         url.searchParams.set("flag", bot.country);

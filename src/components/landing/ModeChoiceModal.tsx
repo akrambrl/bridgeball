@@ -1,7 +1,7 @@
 import type { GameMode } from "@/pages/Home";
 import { tr } from "@/lib/lang";
 
-export type PlayMode = "solo" | "online" | "bot" | "multi";
+export type PlayMode = "solo" | "online" | "bot" | "multi" | "daily";
 
 type Props = {
   game: Extract<GameMode, "pont" | "chaine">;
@@ -44,6 +44,26 @@ export const ModeChoiceModal = ({ game, onPick, onClose }: Props) => {
         </div>
 
         <div className="space-y-3">
+          {game === "chaine" && (
+            <button
+              onClick={() => onPick("daily")}
+              className="group w-full flex items-center gap-4 px-5 py-4 rounded-2xl border-2 border-[#60a5fa]/60 bg-gradient-to-r from-[#3b82f6]/25 to-[#60a5fa]/10 hover:from-[#3b82f6]/35 transition-all shadow-[0_8px_24px_-8px_rgba(96,165,250,0.6)]"
+            >
+              <span className="text-4xl">🗓</span>
+              <div className="text-left flex-1">
+                <div className="font-display text-2xl tracking-widest text-[#60a5fa]">
+                  {tr("MERCATO DU JOUR", "DAILY MERCATO", "MERCATO DES TAGES", "MERCATO DEL GIORNO", "MERCATO DO DIA")}
+                </div>
+                <div className="text-xs text-white/60 mt-0.5">
+                  {tr("Même départ pour tous · 1 essai · classé", "Same start for all · 1 try · ranked", "Gleicher Start für alle · 1 Versuch · gewertet", "Stessa partenza per tutti · 1 tentativo · classificato", "Mesmo início para todos · 1 tentativa · ranqueado")}
+                </div>
+              </div>
+              <span className="text-2xl text-[#60a5fa] transition-transform group-hover:translate-x-1">
+                ▶
+              </span>
+            </button>
+          )}
+
           <button
             onClick={() => onPick("solo")}
             className="group w-full flex items-center gap-4 px-5 py-4 rounded-2xl border-2 border-[#FFC93C]/40 bg-[#FFC93C]/5 hover:bg-[#FFC93C]/10 hover:border-[#FFC93C] transition-all"
