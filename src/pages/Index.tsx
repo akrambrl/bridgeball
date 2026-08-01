@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import LePont from "@/components/LePont.jsx";
 import Home from "./Home";
 import { GoatGuess } from "@/components/landing/GoatGuess";
+import { FindPlayer } from "@/components/landing/FindPlayer";
 
 const BREAKPOINT = 768;
 
@@ -10,6 +11,7 @@ const Index = () => {
     () => typeof window !== "undefined" && window.innerWidth < BREAKPOINT
   );
   const [goatGuessOpen, setGoatGuessOpen] = useState(false);
+  const [findPlayerOpen, setFindPlayerOpen] = useState(false);
 
   useEffect(() => {
     const mql = window.matchMedia(`(max-width: ${BREAKPOINT - 1}px)`);
@@ -18,12 +20,17 @@ const Index = () => {
     return () => mql.removeEventListener("change", onChange);
   }, []);
 
-  // LePont émet cet event quand l'utilisateur clique sur la card GOAT Guess
-  // du carrousel mobile. On ouvre l'overlay du composant GoatGuess par-dessus.
+  // LePont émet ces events quand l'utilisateur clique sur une card du carrousel
+  // mobile (GOAT Guess ou Trouve le joueur). On ouvre l'overlay dédié par-dessus.
   useEffect(() => {
-    const onOpen = () => setGoatGuessOpen(true);
-    window.addEventListener("goatfc:open-guess", onOpen);
-    return () => window.removeEventListener("goatfc:open-guess", onOpen);
+    const onGuess = () => setGoatGuessOpen(true);
+    const onFindPlayer = () => setFindPlayerOpen(true);
+    window.addEventListener("goatfc:open-guess", onGuess);
+    window.addEventListener("goatfc:open-findplayer", onFindPlayer);
+    return () => {
+      window.removeEventListener("goatfc:open-guess", onGuess);
+      window.removeEventListener("goatfc:open-findplayer", onFindPlayer);
+    };
   }, []);
 
   if (!isMobile) return <Home />;
@@ -32,6 +39,7 @@ const Index = () => {
     <>
       <LePont />
       {goatGuessOpen && <GoatGuess onClose={() => setGoatGuessOpen(false)} />}
+      {findPlayerOpen && <FindPlayer onClose={() => setFindPlayerOpen(false)} />}
     </>
   );
 };
