@@ -448,7 +448,13 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
       <div style={{ position: "sticky", top: 0, zIndex: 5, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "calc(12px + env(safe-area-inset-top)) 16px 12px", background: "linear-gradient(180deg,#0A1410,rgba(10,20,16,.85))", backdropFilter: "blur(8px)" }}>
         <button onClick={onClose} style={{ background: "rgba(255,255,255,.08)", border: "1px solid rgba(255,255,255,.15)", borderRadius: 12, color: "#fff", padding: "8px 12px", fontSize: 14, fontWeight: 800, cursor: "pointer" }}>← {tr("QUITTER", "QUIT", "BEENDEN", "ESCI", "SAIR")}</button>
         <div style={{ fontFamily: "Anton, sans-serif", fontSize: 22, letterSpacing: 1, color: "#00E676", textAlign: "center", lineHeight: 1 }}>{tr("TROUVE LE JOUEUR", "GUESS THE PLAYER", "ERRATE DEN SPIELER", "INDOVINA IL GIOCATORE", "ADIVINHE O JOGADOR")}</div>
-        <div style={{ width: 74 }} />
+        {(!over && !revealing) ? (
+          <button onClick={playAgain} aria-label={tr("Changer de joueur (trop dur)", "Change player (too hard)", "Spieler wechseln (zu schwer)", "Cambia giocatore (troppo difficile)", "Trocar de jogador (difícil demais)")} title={tr("Trop dur ? Change de joueur", "Too hard? Change player", "Zu schwer? Spieler wechseln", "Troppo difficile? Cambia", "Difícil? Troca de jogador")} style={{ background: "rgba(255,214,0,.12)", border: "1px solid rgba(255,214,0,.45)", borderRadius: 12, color: "#FFD600", padding: "8px 11px", fontSize: 13, fontWeight: 800, cursor: "pointer", whiteSpace: "nowrap" }}>
+            {tr("PASSER", "SKIP", "SKIP", "SALTA", "PULAR")} ⏭
+          </button>
+        ) : (
+          <div style={{ width: 74 }} />
+        )}
       </div>
 
       <div style={{ maxWidth: 480, margin: "0 auto", padding: "8px 16px 40px" }}>
