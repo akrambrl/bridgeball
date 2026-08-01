@@ -89,6 +89,14 @@ const NAT_FLAG: Record<string, string> = {
   Suède: "🇸🇪", Norvège: "🇳🇴", Suisse: "🇨🇭", Pologne: "🇵🇱", "République tchèque": "🇨🇿", Serbie: "🇷🇸", Turquie: "🇹🇷",
   Grèce: "🇬🇷", Mexique: "🇲🇽", Japon: "🇯🇵", "États-Unis": "🇺🇸", Mali: "🇲🇱", Écosse: "🏴", "Pays de Galles": "🏴",
   Irlande: "🇮🇪", Autriche: "🇦🇹", Ukraine: "🇺🇦", Russie: "🇷🇺", Égypte: "🇪🇬", Gabon: "🇬🇦", Slovénie: "🇸🇮",
+  Tchéquie: "🇨🇿", "Corée du Sud": "🇰🇷", Équateur: "🇪🇨", Albanie: "🇦🇱", "RD Congo": "🇨🇩", Chili: "🇨🇱",
+  Tunisie: "🇹🇳", Slovaquie: "🇸🇰", "Irlande du Nord": "🇬🇧", Guinée: "🇬🇳", Hongrie: "🇭🇺", Roumanie: "🇷🇴",
+  "Bosnie-Herzégovine": "🇧🇦", Bosnie: "🇧🇦", Géorgie: "🇬🇪", Paraguay: "🇵🇾", Australie: "🇦🇺", "Macédoine du Nord": "🇲🇰",
+  Islande: "🇮🇸", Canada: "🇨🇦", Pérou: "🇵🇪", Iran: "🇮🇷", Togo: "🇹🇬", Bulgarie: "🇧🇬", Honduras: "🇭🇳",
+  "Afrique du Sud": "🇿🇦", Jamaïque: "🇯🇲", "Costa Rica": "🇨🇷", "Nouvelle-Zélande": "🇳🇿", "Burkina Faso": "🇧🇫",
+  Kosovo: "🇽🇰", Monténégro: "🇲🇪", Jordanie: "🇯🇴", Centrafrique: "🇨🇫", Kenya: "🇰🇪", Arménie: "🇦🇲", Soudan: "🇸🇩",
+  Ouzbékistan: "🇺🇿", Gambie: "🇬🇲", Angola: "🇦🇴", Qatar: "🇶🇦", Venezuela: "🇻🇪", Israël: "🇮🇱",
+  "République du Congo": "🇨🇬", Finlande: "🇫🇮", Biélorussie: "🇧🇾", Bénin: "🇧🇯", Oman: "🇴🇲",
 };
 function natLabel(nat: string): string { return (NAT_FLAG[nat] ? NAT_FLAG[nat] + " " : "") + nat; }
 
@@ -109,6 +117,9 @@ const NAT_CONT: Record<string, string> = {
   Japon: "AS", "Corée du Sud": "AS", Iran: "AS", "Arabie saoudite": "AS", Chine: "AS", Qatar: "AS",
   Irak: "AS", "Émirats arabes unis": "AS", Ouzbékistan: "AS",
   Australie: "OC", "Nouvelle-Zélande": "OC",
+  Tchéquie: "EU", Kosovo: "EU", Bosnie: "EU", Biélorussie: "EU", Israël: "EU",
+  Jordanie: "AS", Oman: "AS",
+  Centrafrique: "AF", Soudan: "AF", Gambie: "AF", "République du Congo": "AF", Bénin: "AF",
 };
 function continentOf(nat?: string): string { return (nat && NAT_CONT[nat]) || "?"; }
 const NOW_Y = new Date().getFullYear();
