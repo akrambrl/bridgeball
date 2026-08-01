@@ -207,6 +207,9 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
   const [copied, setCopied] = useState(false);
   const [riddleCopied, setRiddleCopied] = useState(false);
   const [showRiddle, setShowRiddle] = useState(false); // aperçu de l'énigme « Qui suis-je ? »
+  const [reportOpen, setReportOpen] = useState(false); // fenêtre « Signaler une erreur »
+  const [reportNote, setReportNote] = useState("");
+  const [reportSent, setReportSent] = useState(false);
   const [showCareer, setShowCareer] = useState(false); // parcours caché par défaut (déduction pure)
   const [animRow, setAnimRow] = useState(-1); // index de la proposition à révéler puce par puce
   const [revealing, setRevealing] = useState(false); // révélation en cours (bloque la saisie sur la manche finale)
@@ -306,6 +309,30 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
     trackPlay("grid");
     setTimeout(() => inputRef.current?.focus(), 60);
   }
+
+  // Signaler une erreur de parcours sur le joueur mystère en cours (table bb_reports).
+  async function sendReport() {
+    const name = (() => { try { return localStorage.getItem("bb_name") || ""; } catch { return ""; } })();
+    try {
+      await fetch(SB_URL + "/rest/v1/bb_reports", {
+        method: "POST",
+        headers: { apikey: SB_KEY, Authorization: "Bearer " + SB_KEY, "Content-Type": "application/json", Prefer: "return=minimal" },
+        body: JSON.stringify({
+          reporter_id: playerId(),
+          reporter_name: name || null,
+          report_type: "reveal_bug",
+          player_name: answer.name,
+          c1: answer.name,
+          c2: answer.clubs.join(" → "),
+          given_answer: reportNote || null,
+          message: "GOAT REVEAL — parcours signalé" + (reportNote ? " : " + reportNote : ""),
+        }),
+        keepalive: true,
+      });
+    } catch { /* noop */ }
+    setReportSent(true);
+  }
+  function openReport() { setReportNote(""); setReportSent(false); setReportOpen(true); }
 
   function shareText(): string {
     const rows = guesses.map(g => computeChips(g, answer).map(c => SQ[c.state]).join("")).join("\n");
@@ -522,11 +549,14 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
           </div>
         )}
 
-        {/* Défier un pote — dispo AUSSI en cours de partie (partage sans avoir trouvé) */}
+        {/* Défier un pote + Signaler — dispo AUSSI en cours de partie */}
         {!over && !revealing && (
-          <div style={{ textAlign: "center", marginBottom: 4 }}>
+          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 8, marginBottom: 4 }}>
             <button onClick={() => setShowRiddle(true)} style={{ padding: "8px 16px", borderRadius: 999, border: "1px solid rgba(255,214,0,.4)", background: "rgba(255,214,0,.08)", color: "#FFD600", fontSize: 12.5, fontWeight: 800, cursor: "pointer" }}>
               🕵️ {tr("Défier un pote (énigme)", "Challenge a friend (riddle)", "Freund fordern (Rätsel)", "Sfida un amico (enigma)", "Desafiar um amigo (enigma)")}
+            </button>
+            <button onClick={openReport} style={{ padding: "8px 16px", borderRadius: 999, border: "1px solid rgba(255,61,87,.4)", background: "rgba(255,61,87,.08)", color: "#FF6B7D", fontSize: 12.5, fontWeight: 800, cursor: "pointer" }}>
+              🚩 {tr("Signaler une erreur", "Report an error", "Fehler melden", "Segnala un errore", "Reportar erro")}
             </button>
           </div>
         )}
@@ -614,6 +644,10 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
                 </div>
               )}
             </div>
+
+            <button onClick={openReport} style={{ marginTop: 12, background: "transparent", border: "none", color: "rgba(255,107,125,.85)", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>
+              🚩 {tr("Signaler une erreur sur ce parcours", "Report an error on this career", "Fehler in diesem Verlauf melden", "Segnala un errore su questa carriera", "Reportar erro nesta carreira")}
+            </button>
           </div>
         )}
       </div>
@@ -636,6 +670,46 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
             <button onClick={() => setShowRiddle(false)} style={{ width: "100%", marginTop: 8, padding: "12px", background: "transparent", color: "rgba(255,255,255,.6)", border: "1px solid rgba(255,255,255,.15)", borderRadius: 14, fontSize: 14, fontWeight: 800, cursor: "pointer" }}>
               {tr("Fermer", "Close", "Schließen", "Chiudi", "Fechar")}
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Signaler une erreur de parcours */}
+      {reportOpen && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 320, background: "rgba(0,0,0,.8)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }} onClick={() => setReportOpen(false)}>
+          <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 400, background: "linear-gradient(160deg,#241014,#150808)", border: "1px solid rgba(255,61,87,.4)", borderRadius: 22, padding: "24px 20px", boxShadow: "0 24px 70px rgba(0,0,0,.65)" }}>
+            {reportSent ? (
+              <div style={{ textAlign: "center", padding: "10px 0" }}>
+                <div style={{ fontSize: 46, marginBottom: 8 }}>✅</div>
+                <div style={{ fontFamily: "Anton, sans-serif", fontSize: 24, color: "#00E676", letterSpacing: 1 }}>{tr("MERCI !", "THANKS!", "DANKE!", "GRAZIE!", "OBRIGADO!")}</div>
+                <div style={{ fontSize: 13, color: "rgba(255,255,255,.7)", marginTop: 6, marginBottom: 18 }}>{tr("Signalement envoyé. On vérifie ce parcours.", "Report sent. We'll check this career.", "Meldung gesendet. Wir prüfen diesen Verlauf.", "Segnalazione inviata. Verificheremo.", "Reporte enviado. Vamos verificar.")}</div>
+                <button onClick={() => setReportOpen(false)} style={{ width: "100%", padding: "13px", background: "#00E676", color: "#06130B", border: "none", borderRadius: 14, fontSize: 14, fontWeight: 900, cursor: "pointer" }}>{tr("Fermer", "Close", "Schließen", "Chiudi", "Fechar")}</button>
+              </div>
+            ) : (
+              <>
+                <div style={{ textAlign: "center", fontFamily: "Anton, sans-serif", fontSize: 26, color: "#FF6B7D", letterSpacing: 1, marginBottom: 6 }}>🚩 {tr("SIGNALER UNE ERREUR", "REPORT AN ERROR", "FEHLER MELDEN", "SEGNALA UN ERRORE", "REPORTAR ERRO")}</div>
+                <div style={{ fontSize: 13, color: "rgba(255,255,255,.7)", textAlign: "center", marginBottom: 14, lineHeight: 1.4 }}>{tr("Le parcours de ce joueur te semble faux ou pas à jour ?", "Does this player's career look wrong or outdated?", "Wirkt der Verlauf falsch oder veraltet?", "La carriera di questo giocatore sembra errata?", "A carreira deste jogador parece errada?")}</div>
+                {(over || showCareer) && (
+                  <div style={{ background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.12)", borderRadius: 12, padding: "10px 12px", marginBottom: 14 }}>
+                    <div style={{ fontSize: 14, fontWeight: 800, color: "#fff", marginBottom: 3 }}>{answer.name}</div>
+                    <div style={{ fontSize: 12, color: "rgba(255,255,255,.6)", lineHeight: 1.4 }}>{answer.clubs.join(" → ")}</div>
+                  </div>
+                )}
+                <textarea
+                  value={reportNote}
+                  onChange={e => setReportNote(e.target.value)}
+                  placeholder={tr("Qu'est-ce qui est faux ? (facultatif)", "What's wrong? (optional)", "Was ist falsch? (optional)", "Cosa c'è di sbagliato? (facoltativo)", "O que está errado? (opcional)")}
+                  rows={3}
+                  style={{ width: "100%", boxSizing: "border-box", padding: "11px 13px", borderRadius: 12, border: "1.5px solid rgba(255,255,255,.15)", background: "rgba(255,255,255,.06)", color: "#fff", fontSize: 14, fontWeight: 500, outline: "none", resize: "none", marginBottom: 14, fontFamily: "inherit" }}
+                />
+                <button onClick={sendReport} style={{ width: "100%", padding: "14px", background: "linear-gradient(135deg,#FF3D57,#FF6B35)", color: "#fff", border: "none", borderRadius: 14, fontSize: 15, fontWeight: 900, cursor: "pointer" }}>
+                  {tr("Envoyer le signalement", "Send report", "Meldung senden", "Invia segnalazione", "Enviar reporte")}
+                </button>
+                <button onClick={() => setReportOpen(false)} style={{ width: "100%", marginTop: 8, padding: "12px", background: "transparent", color: "rgba(255,255,255,.6)", border: "1px solid rgba(255,255,255,.15)", borderRadius: 14, fontSize: 14, fontWeight: 800, cursor: "pointer" }}>
+                  {tr("Annuler", "Cancel", "Abbrechen", "Annulla", "Cancelar")}
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}
