@@ -26,6 +26,11 @@ const SB_KEY =
 const MAX_GUESSES = 6;
 const ALL = PLAYERS as Player[];
 
+// Révélation puce par puce (suspens, façon « Who Are Ya »)
+const CHIP_STAGGER = 0.22; // secondes entre chaque puce
+const CHIP_DUR = 0.42; // durée d'apparition d'une puce
+const REVEAL_MS = Math.round((5 * CHIP_STAGGER + CHIP_DUR) * 1000) + 250; // 6 puces (index 0..5)
+
 // ── Helpers seed / date ──────────────────────────────────────
 function seededRandom(seed: number): () => number {
   let s = seed % 2147483647;
@@ -162,6 +167,8 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
   const [board, setBoard] = useState<{ loading: boolean; rows: any[]; myRank: number | null; total: number } | null>(null);
   const [copied, setCopied] = useState(false);
   const [showCareer, setShowCareer] = useState(false); // parcours caché par défaut (déduction pure)
+  const [animRow, setAnimRow] = useState(-1); // index de la proposition à révéler puce par puce
+  const [revealing, setRevealing] = useState(false); // révélation en cours (bloque la saisie sur la manche finale)
   const submittedRef = useRef(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -239,17 +246,27 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
   }, [input, guesses]);
 
   function submitGuess(p: Player) {
-    if (over) return;
+    if (over || revealing) return;
     const gs = [...guesses, p];
-    setGuesses(gs);
-    setInput("");
     const w = p.name === answer.name;
     const o = w || gs.length >= MAX_GUESSES;
-    if (w) setWon(true);
-    if (o) setOver(true);
+    setGuesses(gs);
+    setInput("");
+    setAnimRow(gs.length - 1); // la nouvelle ligne se révèle puce par puce
     persist(gs, w, o);
-    if (o) submitScore(w, gs);
-    setTimeout(() => inputRef.current?.focus(), 50);
+    if (o) {
+      // Manche finale : on laisse la révélation des puces se jouer (suspens) avant
+      // d'afficher le résultat (victoire/défaite) et le parcours.
+      setRevealing(true);
+      setTimeout(() => {
+        setRevealing(false);
+        if (w) setWon(true);
+        setOver(true);
+        submitScore(w, gs);
+      }, REVEAL_MS);
+    } else {
+      setTimeout(() => inputRef.current?.focus(), 50);
+    }
   }
 
   function shareText(): string {
@@ -313,7 +330,7 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
         </div>
 
         {/* Saisie */}
-        {!over && (
+        {!over && !revealing && (
           <div style={{ position: "relative", marginBottom: 8 }}>
             <input
               ref={inputRef}
@@ -336,23 +353,27 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
           </div>
         )}
 
-        {/* Lignes de propositions (feedback Wordle) */}
+        {/* Révélation puce par puce (suspens) */}
+        <style>{`@keyframes fpChipIn{0%{opacity:0;transform:rotateY(90deg) scale(.5)}55%{opacity:1;transform:rotateY(0deg) scale(1.12)}100%{opacity:1;transform:rotateY(0deg) scale(1)}}`}</style>
+
+        {/* Lignes de propositions — la plus récente en haut */}
         <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 12 }}>
-          {guesses.map((g, gi) => {
+          {guesses.map((g, gi) => ({ g, gi })).reverse().map(({ g, gi }) => {
             const chips = computeChips(g, answer);
             const correct = g.name === answer.name;
+            const anim = gi === animRow; // seule la nouvelle ligne se révèle puce par puce
             return (
               <div key={gi} style={{ background: correct ? "rgba(0,230,118,.16)" : "rgba(255,255,255,.04)", border: "1px solid " + (correct ? "rgba(0,230,118,.5)" : "rgba(255,255,255,.1)"), borderRadius: 14, padding: "10px 10px 12px" }}>
                 <div style={{ fontSize: 14, fontWeight: 800, color: correct ? "#00E676" : "#fff", marginBottom: 9, textAlign: "center" }}>{correct ? "✓ " : ""}{g.name}</div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 3 }}>
-                  {chips.map(c => {
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 3, perspective: 600 }}>
+                  {chips.map((c, ci) => {
                     const arrow = c.arrow ? (c.arrow === "up" ? "↑" : "↓") : null;
                     const bBg = arrow ? (c.state === "close" ? "#FFB020" : "#FF3D57")
                       : c.state === "ok" ? "#00E676" : c.state === "close" ? "#FFB020" : "#FF3D57";
                     const bSym = arrow ? arrow : c.state === "no" ? "✕" : "✓";
                     const ring = c.state === "ok" ? "rgba(0,230,118,.7)" : c.state === "close" ? "rgba(255,176,32,.7)" : "rgba(255,61,87,.55)";
                     return (
-                      <div key={c.key} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+                      <div key={c.key} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, ...(anim ? { animation: `fpChipIn ${CHIP_DUR}s ease both`, animationDelay: (ci * CHIP_STAGGER) + "s" } : {}) }}>
                         <div style={{ width: 40, height: 40, borderRadius: "50%", background: c.bg || "#fff", border: "2px solid " + ring, display: "flex", alignItems: "center", justifyContent: "center", fontSize: c.big ? 20 : c.bg ? 11 : 12, fontWeight: 900, color: c.fg || "#06130B", textShadow: c.bg ? "0 1px 3px rgba(0,0,0,.6)" : "none", boxShadow: "0 3px 8px rgba(0,0,0,.35)", overflow: "hidden" }}>{c.top}</div>
                         <div style={{ width: 18, height: 18, borderRadius: "50%", background: bBg, color: "#fff", fontSize: 11, fontWeight: 900, lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 5px rgba(0,0,0,.4)" }}>{bSym}</div>
                         <span style={{ fontSize: 7.5, fontWeight: 800, letterSpacing: .3, color: "rgba(255,255,255,.4)" }}>{c.label}</span>
