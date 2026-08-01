@@ -11345,8 +11345,8 @@ export default function LePont() {
         {homeRulesModal && (() => {
           const RULES_DATA = {
             grid:    { title: "TROUVE LE JOUEUR", emoji: "🕵️", accent: "#00E676", bg: "linear-gradient(135deg,rgba(0,230,118,.18),rgba(255,214,0,.12))",
-              rules_fr: ["Chaque jour, un joueur mystère — le même pour tous","On te montre son parcours de clubs dans l'ordre + un indice","6 essais pour le trouver","À chaque essai, un feedback façon Wordle (nationalité, poste, âge, clubs)","Moins tu utilises d'essais, plus tu marques — classement quotidien"],
-              rules_en: ["Every day, a mystery player — the same for everyone","We show his club career in order + a hint","6 tries to find him","Each guess gives Wordle-style feedback (nationality, position, age, clubs)","The fewer tries, the more points — daily leaderboard"]
+              rules_fr: ["Un joueur mystère à deviner, en illimité","6 essais : chaque proposition révèle des indices (nationalité, zone, poste, âge, club…)","Feedback façon Wordle : ✓ vert, ✗ rouge, ↑↓ pour l'âge","Le parcours est caché — pure déduction (révélable en indice)","Enchaîne les bonnes réponses pour monter ta SÉRIE 🔥 et grimper au classement"],
+              rules_en: ["A mystery player to guess, unlimited","6 tries: each guess reveals clues (nationality, zone, position, age, club…)","Wordle-style feedback: ✓ green, ✗ red, ↑↓ for age","The career is hidden — pure deduction (revealable as a hint)","Chain correct answers to build your STREAK 🔥 and climb the leaderboard"]
             },
             mercato: { title: "GOAT MERCATO", emoji: "⛓",  accent: "#60a5fa", bg: "linear-gradient(135deg,rgba(96,165,250,.18),rgba(59,130,246,.12))",
               rules_fr: ["Démarre avec un joueur, enchaîne sans t'arrêter","Tape un club où il a joué","Puis un autre joueur qui a joué dans ce club","Et ainsi de suite jusqu'à la fin du chrono","Plus la chaîne est longue, plus tu scores"],
