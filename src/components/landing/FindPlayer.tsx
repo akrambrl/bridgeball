@@ -149,6 +149,40 @@ function PitchIcon({ pos, size = 26 }: { pos: string; size?: number }) {
 }
 const CONT_BG = "radial-gradient(circle at 34% 28%, #3568a0 0%, #123a63 55%, #0a1e35 100%)";
 
+// ── Retour haptique ───────────────────────────────────────────────────────────
+// navigator.vibrate marche sur Android ; iOS Safari ne le supporte pas → on
+// déclenche le haptique via un interrupteur caché (input switch) toggle dans le
+// même geste utilisateur (fonctionne sur iOS 17.4+).
+let _hapEl: HTMLLabelElement | null = null;
+function iosTick() {
+  try {
+    if (typeof document === "undefined") return;
+    if (!_hapEl) {
+      const label = document.createElement("label");
+      label.setAttribute("aria-hidden", "true");
+      label.style.cssText = "position:absolute;left:-9999px;top:0;width:0;height:0;opacity:0;pointer-events:none";
+      const input = document.createElement("input");
+      input.type = "checkbox";
+      input.setAttribute("switch", "");
+      label.appendChild(input);
+      document.body.appendChild(label);
+      _hapEl = label;
+    }
+    _hapEl.click();
+  } catch { /* noop */ }
+}
+function haptic(kind: "hit" | "multi" | "win") {
+  try {
+    const v = (navigator as any).vibrate;
+    if (typeof v === "function") {
+      if (kind === "win") v.call(navigator, [70, 50, 150]);
+      else if (kind === "multi") v.call(navigator, [30, 40, 30, 40, 30]);
+      else v.call(navigator, 45);
+    }
+  } catch { /* noop */ }
+  iosTick();
+}
+
 type State = "ok" | "close" | "no";
 type Chip = { key: string; label: string; top: string; big?: boolean; state: State; arrow?: "up" | "down"; bg?: string; fg?: string };
 
@@ -294,6 +328,14 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
     const gs = [...guesses, p];
     const w = p.name === answer.name;
     const o = w; // essais illimités : la manche ne se termine qu'à la bonne réponse
+    // Retour haptique : vibre quand la proposition dévoile une/des cases (attributs
+    // corrects). Déclenché dans le geste utilisateur pour marcher aussi sur iOS.
+    const prevConf = new Set<string>(hintRevealed);
+    guesses.forEach(gg => computeChips(gg, answer).forEach(c => { if (c.state === "ok") prevConf.add(c.key); }));
+    const newFound = computeChips(p, answer).filter(c => c.state === "ok" && !prevConf.has(c.key)).length;
+    if (w) haptic("win");
+    else if (newFound >= 2) haptic("multi");
+    else if (newFound >= 1) haptic("hit");
     setGuesses(gs);
     setInput("");
     setAnimRow(gs.length - 1); // la nouvelle ligne se révèle puce par puce
