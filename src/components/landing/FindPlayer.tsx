@@ -104,7 +104,15 @@ function posEmoji(pos: string): string {
 }
 
 type State = "ok" | "close" | "no";
-type Chip = { key: string; label: string; top: string; big?: boolean; state: State; arrow?: "up" | "down" };
+type Chip = { key: string; label: string; top: string; big?: boolean; state: State; arrow?: "up" | "down"; bg?: string; fg?: string };
+
+// Code court d'un club pour la puce (ex. "Real Madrid" → "REA", "Inter Milan" → "INT").
+function clubCode(name: string): string {
+  const clean = name.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^A-Za-z ]/g, "").trim();
+  const words = clean.split(/\s+/).filter(w => !/^(fc|cf|ac|as|ss|sc|afc|cd|rc|us|ud|sv|vfb|vfl|bsc|1|de|of|the)$/i.test(w));
+  const base = (words[0] || clean).toUpperCase();
+  return base.slice(0, 3) || "?";
+}
 
 // Feedback façon « Who Are Ya » : chaque attribut de la proposition est comparé
 // au joueur mystère → puce ronde + pastille ✓ (vert) / ✗ (rouge) / ↑↓ (âge).
@@ -126,12 +134,18 @@ function computeChips(guess: Player, answer: Player): Chip[] {
   }
   const clubState: State = shared >= 3 ? "ok" : shared >= 1 ? "close" : "no";
   const flag = guess.nationalities[0] ? (NAT_FLAG[guess.nationalities[0]] || guess.nationalities[0].slice(0, 3).toUpperCase()) : "?";
+  // Dernier club (club « actuel » en fin de carrière) — comme la référence.
+  const gLast = guess.clubs[guess.clubs.length - 1] || "";
+  const aLast = answer.clubs[answer.clubs.length - 1] || "";
+  const lastState: State = gLast && aLast && gLast === aLast ? "ok" : (gLast && answer.clubs.includes(gLast) ? "close" : "no");
+  const [lbg, lfg] = clubColors(gLast);
   return [
     { key: "nat", label: tr("NAT", "NAT", "NAT", "NAZ", "NAC"), top: flag, big: true, state: natMatch ? "ok" : "no" },
     { key: "cont", label: tr("ZONE", "ZONE", "ZONE", "ZONA", "ZONA"), top: gCont, state: contMatch ? "ok" : "no" },
     { key: "pos", label: tr("POSTE", "POS", "POS", "RUOLO", "POS"), top: posEmoji(guess.positions[0] || ""), big: true, state: posMatch ? "ok" : "no" },
     { key: "age", label: tr("ÂGE", "AGE", "ALTER", "ETÀ", "IDADE"), top: gAge ? String(gAge) : "?", state: ageState, arrow: ageArrow },
-    { key: "clubs", label: tr("CLUBS", "CLUBS", "KLUBS", "CLUB", "CLUBES"), top: "🛡" + shared, state: clubState },
+    { key: "lastclub", label: tr("CLUB", "CLUB", "KLUB", "CLUB", "CLUBE"), top: gLast ? clubCode(gLast) : "?", state: lastState, bg: lbg, fg: lfg },
+    { key: "clubs", label: tr("COMMUNS", "SHARED", "GETEILT", "COMUNI", "COMUNS"), top: "🛡" + shared, state: clubState },
   ];
 }
 const SQ: Record<State, string> = { ok: "🟩", close: "🟨", no: "⬛" };
@@ -147,6 +161,7 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
   const [input, setInput] = useState("");
   const [board, setBoard] = useState<{ loading: boolean; rows: any[]; myRank: number | null; total: number } | null>(null);
   const [copied, setCopied] = useState(false);
+  const [showCareer, setShowCareer] = useState(false); // parcours caché par défaut (déduction pure)
   const submittedRef = useRef(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -263,19 +278,32 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
         {/* Bandeau défi du jour */}
         <div style={{ textAlign: "center", fontSize: 11, letterSpacing: 2, fontWeight: 800, color: "rgba(255,255,255,.45)", marginBottom: 10 }}>🗓 {tr("DÉFI DU JOUR", "DAILY CHALLENGE", "TAGES-CHALLENGE", "SFIDA DEL GIORNO", "DESAFIO DO DIA")} · {day}</div>
 
-        {/* Parcours de clubs (indice principal) */}
-        <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.5, color: "rgba(255,255,255,.4)", marginBottom: 6, textAlign: "center" }}>⚽ {tr("SON PARCOURS", "HIS CAREER", "SEINE KARRIERE", "LA SUA CARRIERA", "SUA CARREIRA")}</div>
-        <div style={{ display: "flex", alignItems: "center", gap: 6, overflowX: "auto", paddingBottom: 6, marginBottom: 16, justifyContent: answer.clubs.length <= 4 ? "center" : "flex-start" }}>
-          {answer.clubs.map((c, i) => {
-            const [bg, fg] = clubColors(c);
-            return (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-                {i > 0 && <span style={{ color: "rgba(255,255,255,.35)", fontSize: 14 }}>→</span>}
-                <div style={{ background: bg, color: fg, border: "1px solid rgba(255,255,255,.2)", borderRadius: 10, padding: "8px 12px", fontSize: 12, fontWeight: 800, whiteSpace: "nowrap", boxShadow: "0 3px 10px rgba(0,0,0,.35)" }}>{c}</div>
-              </div>
-            );
-          })}
-        </div>
+        {/* Parcours de clubs — caché par défaut (déduction pure), révélable en indice */}
+        {(showCareer || over) ? (
+          <>
+            <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.5, color: "rgba(255,255,255,.4)", marginBottom: 6, textAlign: "center" }}>⚽ {tr("SON PARCOURS", "HIS CAREER", "SEINE KARRIERE", "LA SUA CARRIERA", "SUA CARREIRA")}</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, overflowX: "auto", paddingBottom: 6, marginBottom: 16, justifyContent: answer.clubs.length <= 4 ? "center" : "flex-start" }}>
+              {answer.clubs.map((c, i) => {
+                const [bg, fg] = clubColors(c);
+                return (
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+                    {i > 0 && <span style={{ color: "rgba(255,255,255,.35)", fontSize: 14 }}>→</span>}
+                    <div style={{ background: bg, color: fg, border: "1px solid rgba(255,255,255,.2)", borderRadius: 10, padding: "8px 12px", fontSize: 12, fontWeight: 800, whiteSpace: "nowrap", boxShadow: "0 3px 10px rgba(0,0,0,.35)" }}>{c}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, marginBottom: 16 }}>
+            <div style={{ fontSize: 12, color: "rgba(255,255,255,.55)", textAlign: "center", lineHeight: 1.4, maxWidth: 300 }}>
+              {tr("Devine le joueur mystère à partir de tes propositions.", "Guess the mystery player from your attempts.", "Errate den Mystery-Spieler anhand deiner Versuche.", "Indovina il giocatore misterioso dai tuoi tentativi.", "Adivinhe o jogador misterioso a partir das suas tentativas.")}
+            </div>
+            <button onClick={() => setShowCareer(true)} style={{ padding: "9px 16px", borderRadius: 999, border: "1px solid rgba(0,230,118,.4)", background: "rgba(0,230,118,.1)", color: "#00E676", fontSize: 12.5, fontWeight: 800, cursor: "pointer" }}>
+              💡 {tr("Voir le parcours (indice)", "Reveal career (hint)", "Karriere zeigen (Tipp)", "Mostra la carriera (indizio)", "Ver a carreira (dica)")}
+            </button>
+          </div>
+        )}
 
         {/* Progression */}
         <div style={{ display: "flex", justifyContent: "center", gap: 6, marginBottom: 14 }}>
@@ -316,7 +344,7 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
             return (
               <div key={gi} style={{ background: correct ? "rgba(0,230,118,.16)" : "rgba(255,255,255,.04)", border: "1px solid " + (correct ? "rgba(0,230,118,.5)" : "rgba(255,255,255,.1)"), borderRadius: 14, padding: "10px 10px 12px" }}>
                 <div style={{ fontSize: 14, fontWeight: 800, color: correct ? "#00E676" : "#fff", marginBottom: 9, textAlign: "center" }}>{correct ? "✓ " : ""}{g.name}</div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 4 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 3 }}>
                   {chips.map(c => {
                     const arrow = c.arrow ? (c.arrow === "up" ? "↑" : "↓") : null;
                     const bBg = arrow ? (c.state === "close" ? "#FFB020" : "#FF3D57")
@@ -325,9 +353,9 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
                     const ring = c.state === "ok" ? "rgba(0,230,118,.7)" : c.state === "close" ? "rgba(255,176,32,.7)" : "rgba(255,61,87,.55)";
                     return (
                       <div key={c.key} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
-                        <div style={{ width: 42, height: 42, borderRadius: "50%", background: "#fff", border: "2px solid " + ring, display: "flex", alignItems: "center", justifyContent: "center", fontSize: c.big ? 21 : 13, fontWeight: 900, color: "#06130B", boxShadow: "0 3px 8px rgba(0,0,0,.35)", overflow: "hidden" }}>{c.top}</div>
-                        <div style={{ width: 19, height: 19, borderRadius: "50%", background: bBg, color: "#fff", fontSize: 12, fontWeight: 900, lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 5px rgba(0,0,0,.4)" }}>{bSym}</div>
-                        <span style={{ fontSize: 8, fontWeight: 800, letterSpacing: .4, color: "rgba(255,255,255,.4)" }}>{c.label}</span>
+                        <div style={{ width: 40, height: 40, borderRadius: "50%", background: c.bg || "#fff", border: "2px solid " + ring, display: "flex", alignItems: "center", justifyContent: "center", fontSize: c.big ? 20 : c.bg ? 11 : 12, fontWeight: 900, color: c.fg || "#06130B", textShadow: c.bg ? "0 1px 3px rgba(0,0,0,.6)" : "none", boxShadow: "0 3px 8px rgba(0,0,0,.35)", overflow: "hidden" }}>{c.top}</div>
+                        <div style={{ width: 18, height: 18, borderRadius: "50%", background: bBg, color: "#fff", fontSize: 11, fontWeight: 900, lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 5px rgba(0,0,0,.4)" }}>{bSym}</div>
+                        <span style={{ fontSize: 7.5, fontWeight: 800, letterSpacing: .3, color: "rgba(255,255,255,.4)" }}>{c.label}</span>
                       </div>
                     );
                   })}
