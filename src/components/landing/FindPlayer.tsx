@@ -27,8 +27,8 @@ const MAX_GUESSES = 6;
 const ALL = PLAYERS as Player[];
 
 // Révélation puce par puce (suspens, façon « Who Are Ya »)
-const CHIP_STAGGER = 0.22; // secondes entre chaque puce
-const CHIP_DUR = 0.42; // durée d'apparition d'une puce
+const CHIP_STAGGER = 0.38; // secondes entre chaque puce (révélation plus lente)
+const CHIP_DUR = 0.6; // durée d'apparition d'une puce
 const REVEAL_MS = Math.round((5 * CHIP_STAGGER + CHIP_DUR) * 1000) + 250; // 6 puces (index 0..5)
 
 // ── Helpers seed / date ──────────────────────────────────────
