@@ -296,6 +296,15 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
     }
   }
 
+  // 🎲 Propose un joueur au hasard (connu) comme tentative.
+  function randomGuess() {
+    if (over || revealing) return;
+    const guessed = new Set(guesses.map(g => g.name));
+    const pool = ALL.filter(p => !guessed.has(p.name) && (p.diff === "facile" || p.diff === "moyen") && p.clubs && p.clubs.length >= 2);
+    if (pool.length === 0) return;
+    submitGuess(pool[Math.floor(Math.random() * pool.length)]);
+  }
+
   // Mode illimité : nouvelle manche avec un joueur au hasard.
   function playAgain() {
     setAnswer(randomPlayer(seenRef.current));
@@ -509,11 +518,11 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
   const allFound = topSlots.every(s => s.confirmed);
 
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 200, background: "#0A1410", overflowY: "auto", WebkitOverflowScrolling: "touch" as any }}>
+    <div style={{ position: "fixed", inset: 0, zIndex: 200, background: "radial-gradient(120% 75% at 50% 0%, #a02ea4 0%, #7c1f80 52%, #4d1253 100%)", overflowY: "auto", WebkitOverflowScrolling: "touch" as any }}>
       {/* Header */}
-      <div style={{ position: "sticky", top: 0, zIndex: 5, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "calc(12px + env(safe-area-inset-top)) 16px 12px", background: "linear-gradient(180deg,#0A1410,rgba(10,20,16,.85))", backdropFilter: "blur(8px)" }}>
-        <button onClick={onClose} style={{ background: "rgba(255,255,255,.08)", border: "1px solid rgba(255,255,255,.15)", borderRadius: 12, color: "#fff", padding: "8px 12px", fontSize: 14, fontWeight: 800, cursor: "pointer" }}>← {tr("QUITTER", "QUIT", "BEENDEN", "ESCI", "SAIR")}</button>
-        <div style={{ fontFamily: "Anton, sans-serif", fontSize: 22, letterSpacing: 1, color: "#00E676", textAlign: "center", lineHeight: 1 }}>{tr("TROUVE LE JOUEUR", "GUESS THE PLAYER", "ERRATE DEN SPIELER", "INDOVINA IL GIOCATORE", "ADIVINHE O JOGADOR")}</div>
+      <div style={{ position: "sticky", top: 0, zIndex: 5, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "calc(12px + env(safe-area-inset-top)) 16px 12px", background: "linear-gradient(180deg,#7c1f80,rgba(124,31,128,.75))", backdropFilter: "blur(8px)" }}>
+        <button onClick={onClose} style={{ background: "rgba(255,255,255,.14)", border: "1px solid rgba(255,255,255,.25)", borderRadius: 12, color: "#fff", padding: "8px 12px", fontSize: 14, fontWeight: 800, cursor: "pointer" }}>← {tr("QUITTER", "QUIT", "BEENDEN", "ESCI", "SAIR")}</button>
+        <div style={{ fontFamily: "Anton, sans-serif", fontSize: 22, letterSpacing: 1, color: "#fff", textAlign: "center", lineHeight: 1, textShadow: "0 2px 10px rgba(0,0,0,.35)" }}>{tr("TROUVE LE JOUEUR", "GUESS THE PLAYER", "ERRATE DEN SPIELER", "INDOVINA IL GIOCATORE", "ADIVINHE O JOGADOR")}</div>
         {(!over && !revealing) ? (
           <button onClick={playAgain} aria-label={tr("Changer de joueur (trop dur)", "Change player (too hard)", "Spieler wechseln (zu schwer)", "Cambia giocatore (troppo difficile)", "Trocar de jogador (difícil demais)")} title={tr("Trop dur ? Change de joueur", "Too hard? Change player", "Zu schwer? Spieler wechseln", "Troppo difficile? Cambia", "Difícil? Troca de jogador")} style={{ background: "rgba(255,214,0,.12)", border: "1px solid rgba(255,214,0,.45)", borderRadius: 12, color: "#FFD600", padding: "8px 11px", fontSize: 13, fontWeight: 800, cursor: "pointer", whiteSpace: "nowrap" }}>
             {tr("PASSER", "SKIP", "SKIP", "SALTA", "PULAR")} ⏭
@@ -542,11 +551,11 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
                 <button key={h.emoji} onClick={h.onClick} disabled={h.disabled} title={h.label} aria-label={h.label} style={{ width: 48, height: 48, borderRadius: "50%", border: "1px solid " + h.color + "66", background: h.disabled ? "rgba(255,255,255,.04)" : h.color + "22", color: "#fff", fontSize: 20, cursor: h.disabled ? "not-allowed" : "pointer", opacity: h.disabled ? 0.4 : 1, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: h.disabled ? "none" : "0 4px 12px " + h.color + "33" }}>{h.emoji}</button>
               ))}
             </div>
-            <div style={{ display: "flex", justifyContent: "center", gap: 5, background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.08)", borderRadius: 16, padding: "10px 6px" }}>
+            <div style={{ display: "flex", justifyContent: "center", gap: 5, background: "linear-gradient(180deg,#F7A828,#E7941A)", border: "2px solid #C97E12", borderRadius: 16, padding: "10px 6px", boxShadow: "0 6px 18px rgba(0,0,0,.3)" }}>
               {topSlots.map(s => (
                 <div key={s.key} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, flex: 1 }}>
-                  <div style={{ width: 40, height: 40, borderRadius: "50%", background: s.confirmed ? (s.bg || "#fff") : "rgba(0,0,0,.35)", border: "2px solid " + (s.confirmed ? "#00E676" : "rgba(255,255,255,.12)"), display: "flex", alignItems: "center", justifyContent: "center", fontSize: s.confirmed ? (s.big ? 20 : (s.bg ? 11 : 13)) : 17, fontWeight: 900, color: s.confirmed ? (s.fg || "#06130B") : "rgba(255,255,255,.28)", textShadow: s.confirmed && s.bg ? "0 1px 3px rgba(0,0,0,.6)" : "none", overflow: "hidden" }}>{s.confirmed ? s.value : "?"}</div>
-                  <span style={{ fontSize: 7.5, fontWeight: 800, letterSpacing: .3, color: s.confirmed ? "rgba(0,230,118,.9)" : "rgba(255,255,255,.32)" }}>{s.label}</span>
+                  <div style={{ width: 40, height: 40, borderRadius: "50%", background: s.confirmed ? (s.bg || "#fff") : "#141414", border: "2px solid " + (s.confirmed ? "#00E676" : "rgba(0,0,0,.35)"), display: "flex", alignItems: "center", justifyContent: "center", fontSize: s.confirmed ? (s.big ? 20 : (s.bg ? 11 : 13)) : 17, fontWeight: 900, color: s.confirmed ? (s.fg || "#06130B") : "rgba(255,255,255,.5)", textShadow: s.confirmed && s.bg ? "0 1px 3px rgba(0,0,0,.6)" : "none", overflow: "hidden" }}>{s.confirmed ? s.value : "?"}</div>
+                  <span style={{ fontSize: 7.5, fontWeight: 900, letterSpacing: .3, color: s.confirmed ? "#0a3d1e" : "rgba(30,10,0,.55)" }}>{s.label}</span>
                 </div>
               ))}
             </div>
@@ -587,8 +596,9 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
               onChange={e => setInput(e.target.value)}
               placeholder={tr("Rechercher un joueur…", "Search a player…", "Spieler suchen…", "Cerca un giocatore…", "Buscar um jogador…")}
               autoComplete="off"
-              style={{ width: "100%", boxSizing: "border-box", padding: "14px 16px", borderRadius: 14, border: "1.5px solid rgba(255,255,255,.15)", background: "rgba(255,255,255,.06)", color: "#fff", fontSize: 15, fontWeight: 600, outline: "none" }}
+              style={{ width: "100%", boxSizing: "border-box", padding: "14px 60px 14px 16px", borderRadius: 14, border: "1.5px solid rgba(255,255,255,.25)", background: "rgba(255,255,255,.12)", color: "#fff", fontSize: 15, fontWeight: 600, outline: "none" }}
             />
+            <button onClick={randomGuess} title={tr("Joueur au hasard", "Random player", "Zufälliger Spieler", "Giocatore casuale", "Jogador aleatório")} aria-label={tr("Joueur au hasard", "Random player", "Zufälliger Spieler", "Giocatore casuale", "Jogador aleatório")} style={{ position: "absolute", right: 6, top: 6, bottom: 6, width: 46, borderRadius: 11, border: "none", background: "linear-gradient(135deg,#3DA5FF,#2E7BE0)", color: "#fff", fontSize: 20, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 3px 10px rgba(46,123,224,.5)" }}>🎲</button>
             {suggestions.length > 0 && (
               <div style={{ position: "absolute", top: "100%", left: 0, right: 0, zIndex: 10, marginTop: 4, background: "#132419", border: "1px solid rgba(255,255,255,.15)", borderRadius: 12, overflow: "hidden", boxShadow: "0 12px 30px rgba(0,0,0,.5)" }}>
                 {suggestions.map(s => (
