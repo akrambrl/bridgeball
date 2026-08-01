@@ -206,6 +206,7 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
   const [board, setBoard] = useState<{ loading: boolean; rows: any[]; myRank: number | null; total: number } | null>(null);
   const [copied, setCopied] = useState(false);
   const [riddleCopied, setRiddleCopied] = useState(false);
+  const [showRiddle, setShowRiddle] = useState(false); // aperçu de l'énigme « Qui suis-je ? »
   const [showCareer, setShowCareer] = useState(false); // parcours caché par défaut (déduction pure)
   const [animRow, setAnimRow] = useState(-1); // index de la proposition à révéler puce par puce
   const [revealing, setRevealing] = useState(false); // révélation en cours (bloque la saisie sur la manche finale)
@@ -571,8 +572,8 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
               {copied ? tr("Copié ! 📋", "Copied! 📋", "Kopiert! 📋", "Copiato! 📋", "Copiado! 📋") : "📤 " + tr("Partager mon résultat", "Share my result", "Ergebnis teilen", "Condividi il risultato", "Compartilhar resultado")}
             </button>
 
-            <button onClick={shareRiddle} style={{ width: "100%", marginTop: 8, padding: "13px", background: "transparent", color: "#FFD600", border: "1.5px solid rgba(255,214,0,.55)", borderRadius: 14, fontSize: 14, fontWeight: 900, cursor: "pointer" }}>
-              {riddleCopied ? tr("Copié ! 📋", "Copied! 📋", "Kopiert! 📋", "Copiato! 📋", "Copiado! 📋") : "🕵️ " + tr("Défier un pote (énigme)", "Challenge a friend (riddle)", "Freund fordern (Rätsel)", "Sfida un amico (enigma)", "Desafiar um amigo (enigma)")}
+            <button onClick={() => setShowRiddle(true)} style={{ width: "100%", marginTop: 8, padding: "13px", background: "transparent", color: "#FFD600", border: "1.5px solid rgba(255,214,0,.55)", borderRadius: 14, fontSize: 14, fontWeight: 900, cursor: "pointer" }}>
+              🕵️ {tr("Défier un pote (énigme)", "Challenge a friend (riddle)", "Freund fordern (Rätsel)", "Sfida un amico (enigma)", "Desafiar um amigo (enigma)")}
             </button>
 
             {/* Classement du jour */}
@@ -601,6 +602,27 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
           </div>
         )}
       </div>
+
+      {/* Aperçu de l'énigme « Qui suis-je ? » — les phrases à partager */}
+      {showRiddle && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(0,0,0,.78)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }} onClick={() => setShowRiddle(false)}>
+          <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 400, background: "linear-gradient(160deg,#0d2417,#08150d)", border: "1px solid rgba(255,214,0,.35)", borderRadius: 22, padding: "24px 20px", boxShadow: "0 24px 70px rgba(0,0,0,.65)" }}>
+            <div style={{ textAlign: "center", fontFamily: "Anton, sans-serif", fontSize: 15, color: "#fff", letterSpacing: 1 }}>🐐 GOAT FC</div>
+            <div style={{ textAlign: "center", fontFamily: "Anton, sans-serif", fontSize: 34, color: "#FFD600", letterSpacing: 1, marginTop: 2, marginBottom: 16 }}>🕵️ {tr("QUI SUIS-JE ?", "WHO AM I?", "WER BIN ICH?", "CHI SONO?", "QUEM SOU EU?")}</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 11, marginBottom: 20 }}>
+              {riddleClues().map((line, i) => (
+                <div key={i} style={{ fontSize: 15, fontWeight: 700, color: "#F2FFF7", lineHeight: 1.35 }}>{line}</div>
+              ))}
+            </div>
+            <button onClick={shareRiddle} style={{ width: "100%", padding: "14px", background: "linear-gradient(135deg,#FFD600,#FF8A2A)", color: "#1A0F00", border: "none", borderRadius: 14, fontSize: 15, fontWeight: 900, cursor: "pointer" }}>
+              {riddleCopied ? tr("Copié ! 📋", "Copied! 📋", "Kopiert! 📋", "Copiato! 📋", "Copiado! 📋") : "📤 " + tr("Partager l'énigme", "Share the riddle", "Rätsel teilen", "Condividi l'enigma", "Compartilhar o enigma")}
+            </button>
+            <button onClick={() => setShowRiddle(false)} style={{ width: "100%", marginTop: 8, padding: "12px", background: "transparent", color: "rgba(255,255,255,.6)", border: "1px solid rgba(255,255,255,.15)", borderRadius: 14, fontSize: 14, fontWeight: 800, cursor: "pointer" }}>
+              {tr("Fermer", "Close", "Schließen", "Chiudi", "Fechar")}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
