@@ -10989,9 +10989,33 @@ export default function LePont() {
         {/* ── HOME CAROUSEL — les modes de jeu ── */}
         {/* Mobile : le carrousel absorbe l'espace restant (flex) pour que toute
             la page tienne sur l'écran sans scroll (fix 100vh Safari → 100dvh). */}
-        {(() => { const homeCards = [
+        {(() => {
+          // Carte "Trouve le joueur du jour" — poster CSS (remplace l'ancien visuel GOAT GRID).
+          const findPlayerCard = (
+            <div style={{position:"absolute",inset:0,borderRadius:22,overflow:"hidden",background:"radial-gradient(125% 78% at 50% 4%, #0f4429 0%, #08170f 52%, #000 100%)"}}>
+              <div style={{position:"absolute",inset:0,background:"radial-gradient(56% 36% at 50% 34%, rgba(0,230,118,.30), transparent 72%)"}}/>
+              <div style={{position:"absolute",inset:0,background:"repeating-linear-gradient(90deg, rgba(255,255,255,.05) 0 1px, transparent 1px 34px)",opacity:.5}}/>
+              {/* Badge défi du jour */}
+              <div style={{position:"absolute",top:"6%",left:0,right:0,textAlign:"center"}}>
+                <span style={{display:"inline-block",padding:"4px 11px",borderRadius:999,background:"rgba(0,230,118,.16)",border:"1px solid rgba(0,230,118,.5)",color:"#00E676",fontFamily:G.font,fontSize:"clamp(8px,2.6vw,11px)",fontWeight:900,letterSpacing:1.5}}>{tr("DÉFI DU JOUR","DAILY CHALLENGE","TAGES-CHALLENGE","SFIDA DEL GIORNO","DESAFIO DO DIA")}</span>
+              </div>
+              {/* Silhouette mystère + ? */}
+              <div style={{position:"absolute",top:"17%",left:0,right:0,bottom:"38%",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                <div style={{position:"relative",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                  <div style={{fontSize:"clamp(96px,34vw,150px)",lineHeight:1,filter:"grayscale(1) brightness(.5) drop-shadow(0 10px 34px rgba(0,230,118,.45))"}}>👤</div>
+                  <div style={{position:"absolute",fontFamily:G.heading,fontSize:"clamp(52px,18vw,86px)",color:"#00E676",textShadow:"0 6px 30px rgba(0,230,118,.7)",lineHeight:1}}>?</div>
+                </div>
+              </div>
+              {/* Titre */}
+              <div style={{position:"absolute",left:0,right:0,bottom:"8%",textAlign:"center",padding:"0 6%"}}>
+                <div style={{fontFamily:G.heading,color:"#fff",fontSize:"clamp(26px,9.5vw,40px)",lineHeight:.92,letterSpacing:1,whiteSpace:"nowrap",textShadow:"0 4px 20px rgba(0,0,0,.6)"}}>{tr("TROUVE","GUESS","ERRATE","INDOVINA","ADIVINHE")}</div>
+                <div style={{fontFamily:G.heading,color:"#00E676",fontSize:"clamp(26px,9.5vw,40px)",lineHeight:.92,letterSpacing:1,whiteSpace:"nowrap",textShadow:"0 6px 26px rgba(0,230,118,.5)"}}>{tr("LE JOUEUR","THE PLAYER","DEN SPIELER","IL GIOCATORE","O JOGADOR")}</div>
+              </div>
+            </div>
+          );
+          const homeCards = [
               {key:"duel",    img:DUEL_CARD_IMG,    onClick: function(){requirePseudo(function(){setDuelError("");setDuelJoinCode("");setDuelScreen("menu");});}, record: null, recordIcon:null, recordColor:"#3DA5FF"},
-              {key:"grid",    img:GRID_CARD_IMG,    onClick: function(){setGgModeChoice(true);},        record: chainRecord ? null : null, recordIcon:null, recordColor:"#00E676"},
+              {key:"grid",    node:findPlayerCard,  onClick: function(){window.dispatchEvent(new CustomEvent("goatfc:open-findplayer"));}, record: null, recordIcon:null, recordColor:"#00E676"},
               {key:"mercato", img:MERCATO_CARD_IMG, onClick: function(){setGameConfigModal("chaine");}, record: chainRecord, recordIcon:"⛓",  recordColor:"#60a5fa"},
               {key:"plug",    img:PLUG_CARD_IMG,    onClick: function(){setGameConfigModal("pont");},   record: record,      recordIcon:"🏆", recordColor:"#FFD600"},
               {key:"guess",   img:GUESS_CARD_IMG,   onClick: function(){window.dispatchEvent(new CustomEvent("goatfc:open-guess"));}, record: null, recordIcon:null, recordColor:"#C084FC"},
@@ -11069,7 +11093,7 @@ export default function LePont() {
                     willChange:"transform",
                   }}
                 >
-                  <img src={card.img} alt="" style={{width:"100%",height:"100%",objectFit:"cover",pointerEvents:"none",userSelect:"none"}} draggable={false}/>
+                  {card.node ? card.node : <img src={card.img} alt="" style={{width:"100%",height:"100%",objectFit:"cover",pointerEvents:"none",userSelect:"none"}} draggable={false}/>}
                   {/* Bouton info (i) en haut à droite — toujours visible */}
                   {isActive && (
                     <button
@@ -11342,9 +11366,9 @@ export default function LePont() {
         {/* ── HOME RULES MODAL ── */}
         {homeRulesModal && (() => {
           const RULES_DATA = {
-            grid:    { title: "GOAT GRID",    emoji: "🐐", accent: "#00E676", bg: "linear-gradient(135deg,rgba(0,230,118,.18),rgba(255,214,0,.12))",
-              rules_fr: ["Une grille 3×3 quotidienne avec 9 défis","Pour chaque case : un joueur qui valide la ligne ET la colonne","Un seul essai par case — choisis bien !","Plus le joueur est rare, plus tu marques de points","Mode solo ou duel multijoueur"],
-              rules_en: ["A daily 3×3 grid with 9 challenges","For each cell: a player matching both row AND column","Only one try per cell — choose wisely!","The rarer the player, the more points you score","Solo or multiplayer duel mode"]
+            grid:    { title: "TROUVE LE JOUEUR", emoji: "🕵️", accent: "#00E676", bg: "linear-gradient(135deg,rgba(0,230,118,.18),rgba(255,214,0,.12))",
+              rules_fr: ["Chaque jour, un joueur mystère — le même pour tous","On te montre son parcours de clubs dans l'ordre + un indice","6 essais pour le trouver","À chaque essai, un feedback façon Wordle (nationalité, poste, âge, clubs)","Moins tu utilises d'essais, plus tu marques — classement quotidien"],
+              rules_en: ["Every day, a mystery player — the same for everyone","We show his club career in order + a hint","6 tries to find him","Each guess gives Wordle-style feedback (nationality, position, age, clubs)","The fewer tries, the more points — daily leaderboard"]
             },
             mercato: { title: "GOAT MERCATO", emoji: "⛓",  accent: "#60a5fa", bg: "linear-gradient(135deg,rgba(96,165,250,.18),rgba(59,130,246,.12))",
               rules_fr: ["Démarre avec un joueur, enchaîne sans t'arrêter","Tape un club où il a joué","Puis un autre joueur qui a joué dans ce club","Et ainsi de suite jusqu'à la fin du chrono","Plus la chaîne est longue, plus tu scores"],
