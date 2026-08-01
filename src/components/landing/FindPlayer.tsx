@@ -67,6 +67,27 @@ const NAT_FLAG: Record<string, string> = {
 };
 function natLabel(nat: string): string { return (NAT_FLAG[nat] ? NAT_FLAG[nat] + " " : "") + nat; }
 
+// Continent (zone) de chaque nationalité foot → code court affiché dans la puce.
+const NAT_CONT: Record<string, string> = {
+  France: "EU", Portugal: "EU", Espagne: "EU", Angleterre: "EU", Allemagne: "EU", Italie: "EU",
+  "Pays-Bas": "EU", Belgique: "EU", Croatie: "EU", Danemark: "EU", Suède: "EU", Norvège: "EU",
+  Suisse: "EU", Pologne: "EU", "République tchèque": "EU", Serbie: "EU", Turquie: "EU", Grèce: "EU",
+  Écosse: "EU", "Pays de Galles": "EU", Irlande: "EU", "Irlande du Nord": "EU", Autriche: "EU", Ukraine: "EU", Russie: "EU",
+  Slovénie: "EU", Hongrie: "EU", Roumanie: "EU", Slovaquie: "EU", "Bosnie-Herzégovine": "EU", Bulgarie: "EU",
+  Islande: "EU", Finlande: "EU", Albanie: "EU", "Macédoine du Nord": "EU", Monténégro: "EU", Géorgie: "EU", Arménie: "EU",
+  Argentine: "AmS", Brésil: "AmS", Uruguay: "AmS", Colombie: "AmS", Chili: "AmS", Pérou: "AmS",
+  Paraguay: "AmS", Équateur: "AmS", Venezuela: "AmS", Bolivie: "AmS",
+  Mexique: "AmN", "États-Unis": "AmN", Canada: "AmN", "Costa Rica": "AmN", Honduras: "AmN", Panama: "AmN", Jamaïque: "AmN",
+  Maroc: "AF", Algérie: "AF", Sénégal: "AF", "Côte d'Ivoire": "AF", Cameroun: "AF", Nigeria: "AF",
+  Ghana: "AF", Mali: "AF", Égypte: "AF", Gabon: "AF", Tunisie: "AF", "Afrique du Sud": "AF",
+  "RD Congo": "AF", Congo: "AF", "Burkina Faso": "AF", Guinée: "AF", Togo: "AF", Angola: "AF", Kenya: "AF", Zambie: "AF", "Cap-Vert": "AF",
+  Japon: "AS", "Corée du Sud": "AS", Iran: "AS", "Arabie saoudite": "AS", Chine: "AS", Qatar: "AS",
+  Irak: "AS", "Émirats arabes unis": "AS", Ouzbékistan: "AS",
+  Australie: "OC", "Nouvelle-Zélande": "OC",
+};
+function continentOf(nat?: string): string { return (nat && NAT_CONT[nat]) || "?"; }
+const NOW_Y = new Date().getFullYear();
+
 function posLabel(pos: string): string {
   const l = pos.toLowerCase();
   if (l.includes("gardien")) return tr("Gardien", "Goalkeeper", "Torwart", "Portiere", "Goleiro");
@@ -82,27 +103,38 @@ function posEmoji(pos: string): string {
   return "⚡";
 }
 
-type State = "green" | "yellow" | "gray";
-type Chip = { key: string; label: string; state: State; arrow?: string };
+type State = "ok" | "close" | "no";
+type Chip = { key: string; label: string; top: string; big?: boolean; state: State; arrow?: "up" | "down" };
 
-// Feedback façon Wordle : compare une proposition au joueur mystère
+// Feedback façon « Who Are Ya » : chaque attribut de la proposition est comparé
+// au joueur mystère → puce ronde + pastille ✓ (vert) / ✗ (rouge) / ↑↓ (âge).
 function computeChips(guess: Player, answer: Player): Chip[] {
   const natMatch = guess.nationalities.some(n => answer.nationalities.includes(n));
+  const gCont = continentOf(guess.nationalities[0]);
+  const aCont = continentOf(answer.nationalities[0]);
+  const contMatch = gCont !== "?" && gCont === aCont;
   const posMatch = guess.positions.some(p => answer.positions.some(a => a.toLowerCase() === p.toLowerCase()));
   const shared = guess.clubs.filter(c => answer.clubs.includes(c)).length;
   const gy = guess.birthYear || 0, ay = answer.birthYear || 0;
-  const diff = ay - gy;
-  const ageState: State = diff === 0 ? "green" : Math.abs(diff) <= 3 ? "yellow" : "gray";
-  const ageArrow = diff === 0 ? "" : diff > 0 ? "▼" : "▲"; // ▼ = mystère plus jeune, ▲ = plus vieux
-  const clubState: State = shared >= 3 ? "green" : shared >= 1 ? "yellow" : "gray";
+  // Âge affiché = celui de la proposition ; flèche = sens vers le mystère.
+  const gAge = gy ? NOW_Y - gy : 0;
+  let ageState: State = "no"; let ageArrow: "up" | "down" | undefined;
+  if (gy && ay) {
+    const dAge = (NOW_Y - ay) - gAge; // >0 → mystère plus vieux
+    if (dAge === 0) ageState = "ok";
+    else { ageArrow = dAge > 0 ? "up" : "down"; ageState = Math.abs(dAge) <= 2 ? "close" : "no"; }
+  }
+  const clubState: State = shared >= 3 ? "ok" : shared >= 1 ? "close" : "no";
+  const flag = guess.nationalities[0] ? (NAT_FLAG[guess.nationalities[0]] || guess.nationalities[0].slice(0, 3).toUpperCase()) : "?";
   return [
-    { key: "nat", label: guess.nationalities[0] ? natLabel(guess.nationalities[0]) : "?", state: natMatch ? "green" : "gray" },
-    { key: "pos", label: posEmoji(guess.positions[0] || "") + " " + posLabel(guess.positions[0] || ""), state: posMatch ? "green" : "gray" },
-    { key: "age", label: "🎂 " + (gy || "?"), state: ageState, arrow: ageArrow },
-    { key: "clubs", label: "🛡 " + shared, state: clubState },
+    { key: "nat", label: tr("NAT", "NAT", "NAT", "NAZ", "NAC"), top: flag, big: true, state: natMatch ? "ok" : "no" },
+    { key: "cont", label: tr("ZONE", "ZONE", "ZONE", "ZONA", "ZONA"), top: gCont, state: contMatch ? "ok" : "no" },
+    { key: "pos", label: tr("POSTE", "POS", "POS", "RUOLO", "POS"), top: posEmoji(guess.positions[0] || ""), big: true, state: posMatch ? "ok" : "no" },
+    { key: "age", label: tr("ÂGE", "AGE", "ALTER", "ETÀ", "IDADE"), top: gAge ? String(gAge) : "?", state: ageState, arrow: ageArrow },
+    { key: "clubs", label: tr("CLUBS", "CLUBS", "KLUBS", "CLUB", "CLUBES"), top: "🛡" + shared, state: clubState },
   ];
 }
-const SQ: Record<State, string> = { green: "🟩", yellow: "🟨", gray: "⬛" };
+const SQ: Record<State, string> = { ok: "🟩", close: "🟨", no: "⬛" };
 
 export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
   const answer = useMemo(() => dailyPlayer(), []);
@@ -218,14 +250,6 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
     try { navigator.clipboard.writeText(txt).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1800); }); } catch { /* noop */ }
   }
 
-  // Indice texte (mix) : nationalité + poste + décennie
-  const decade = answer.birthYear ? Math.floor(answer.birthYear / 10) * 10 : null;
-  const hint = [
-    answer.nationalities[0] ? natLabel(answer.nationalities[0]) : null,
-    posEmoji(answer.positions[0] || "") + " " + posLabel(answer.positions[0] || ""),
-    decade ? "🎂 " + tr("années", "born in the", "Jahrgang", "anni", "anos") + " " + decade + "s" : null,
-  ].filter(Boolean).join("   ·   ");
-
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 200, background: "#0A1410", overflowY: "auto", WebkitOverflowScrolling: "touch" as any }}>
       {/* Header */}
@@ -238,11 +262,6 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
       <div style={{ maxWidth: 480, margin: "0 auto", padding: "8px 16px 40px" }}>
         {/* Bandeau défi du jour */}
         <div style={{ textAlign: "center", fontSize: 11, letterSpacing: 2, fontWeight: 800, color: "rgba(255,255,255,.45)", marginBottom: 10 }}>🗓 {tr("DÉFI DU JOUR", "DAILY CHALLENGE", "TAGES-CHALLENGE", "SFIDA DEL GIORNO", "DESAFIO DO DIA")} · {day}</div>
-
-        {/* Indice texte (mix) */}
-        <div style={{ background: "rgba(0,230,118,.08)", border: "1px solid rgba(0,230,118,.3)", borderRadius: 14, padding: "10px 14px", textAlign: "center", fontSize: 13, fontWeight: 700, color: "#fff", marginBottom: 12 }}>
-          {hint}
-        </div>
 
         {/* Parcours de clubs (indice principal) */}
         <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.5, color: "rgba(255,255,255,.4)", marginBottom: 6, textAlign: "center" }}>⚽ {tr("SON PARCOURS", "HIS CAREER", "SEINE KARRIERE", "LA SUA CARRIERA", "SUA CARREIRA")}</div>
@@ -295,15 +314,20 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
             const chips = computeChips(g, answer);
             const correct = g.name === answer.name;
             return (
-              <div key={gi} style={{ background: correct ? "rgba(0,230,118,.16)" : "rgba(255,255,255,.04)", border: "1px solid " + (correct ? "rgba(0,230,118,.5)" : "rgba(255,255,255,.1)"), borderRadius: 14, padding: "10px 12px" }}>
-                <div style={{ fontSize: 14, fontWeight: 800, color: correct ? "#00E676" : "#fff", marginBottom: 7 }}>{correct ? "✓ " : ""}{g.name}</div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 5 }}>
+              <div key={gi} style={{ background: correct ? "rgba(0,230,118,.16)" : "rgba(255,255,255,.04)", border: "1px solid " + (correct ? "rgba(0,230,118,.5)" : "rgba(255,255,255,.1)"), borderRadius: 14, padding: "10px 10px 12px" }}>
+                <div style={{ fontSize: 14, fontWeight: 800, color: correct ? "#00E676" : "#fff", marginBottom: 9, textAlign: "center" }}>{correct ? "✓ " : ""}{g.name}</div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 4 }}>
                   {chips.map(c => {
-                    const bg = c.state === "green" ? "rgba(0,230,118,.85)" : c.state === "yellow" ? "rgba(255,214,0,.85)" : "rgba(255,255,255,.1)";
-                    const col = c.state === "gray" ? "rgba(255,255,255,.75)" : "#06130B";
+                    const arrow = c.arrow ? (c.arrow === "up" ? "↑" : "↓") : null;
+                    const bBg = arrow ? (c.state === "close" ? "#FFB020" : "#FF3D57")
+                      : c.state === "ok" ? "#00E676" : c.state === "close" ? "#FFB020" : "#FF3D57";
+                    const bSym = arrow ? arrow : c.state === "no" ? "✕" : "✓";
+                    const ring = c.state === "ok" ? "rgba(0,230,118,.7)" : c.state === "close" ? "rgba(255,176,32,.7)" : "rgba(255,61,87,.55)";
                     return (
-                      <div key={c.key} style={{ background: bg, color: col, borderRadius: 8, padding: "6px 4px", textAlign: "center", fontSize: 11, fontWeight: 800, lineHeight: 1.15, minHeight: 32, display: "flex", alignItems: "center", justifyContent: "center", gap: 2 }}>
-                        <span>{c.label}{c.arrow ? " " + c.arrow : ""}</span>
+                      <div key={c.key} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+                        <div style={{ width: 42, height: 42, borderRadius: "50%", background: "#fff", border: "2px solid " + ring, display: "flex", alignItems: "center", justifyContent: "center", fontSize: c.big ? 21 : 13, fontWeight: 900, color: "#06130B", boxShadow: "0 3px 8px rgba(0,0,0,.35)", overflow: "hidden" }}>{c.top}</div>
+                        <div style={{ width: 19, height: 19, borderRadius: "50%", background: bBg, color: "#fff", fontSize: 12, fontWeight: 900, lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 5px rgba(0,0,0,.4)" }}>{bSym}</div>
+                        <span style={{ fontSize: 8, fontWeight: 800, letterSpacing: .4, color: "rgba(255,255,255,.4)" }}>{c.label}</span>
                       </div>
                     );
                   })}
