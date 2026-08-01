@@ -11,6 +11,7 @@ import { ModeChoiceModal, type PlayMode } from "@/components/landing/ModeChoiceM
 import { MatchmakingOverlay, pickOpponent } from "@/components/landing/MatchmakingOverlay";
 import { CountdownOverlay } from "@/components/landing/CountdownOverlay";
 import { GoatGuess } from "@/components/landing/GoatGuess";
+import { FindPlayer } from "@/components/landing/FindPlayer";
 import { tr } from "@/lib/lang";
 
 export type GameMode = "pont" | "chaine" | "grid" | "guess";
@@ -48,6 +49,7 @@ const Home = () => {
   >(null);
   // Overlay GOAT Guess (Akinator foot)
   const [goatGuessOpen, setGoatGuessOpen] = useState(false);
+  const [findPlayerOpen, setFindPlayerOpen] = useState(false);
 
   // LePont émet cet event quand l'utilisateur quitte la partie autolaunchée
   // (← interne, fin de partie). On ferme l'overlay pour revenir à la landing.
@@ -136,7 +138,8 @@ const Home = () => {
       return;
     }
     if (game === "grid") {
-      launchGame("grid");
+      // GOAT Grid remplacé par « Trouve le joueur du jour »
+      setFindPlayerOpen(true);
       return;
     }
     if (game === "pont" || game === "chaine") {
@@ -339,6 +342,7 @@ const Home = () => {
 
       {/* GOAT Guess — Akinator foot (overlay plein écran, indépendant de LePont) */}
       {goatGuessOpen && <GoatGuess onClose={() => setGoatGuessOpen(false)} />}
+      {findPlayerOpen && <FindPlayer onClose={() => setFindPlayerOpen(false)} />}
     </div>
   );
 };
