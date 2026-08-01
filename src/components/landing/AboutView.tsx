@@ -4,7 +4,7 @@ export const AboutView = () => {
   const l = getLang();
   const Plug = <span className="text-[#00E676] font-semibold">The Plug</span>;
   const Mercato = <span className="text-[#FF8A2A] font-semibold">The Mercato</span>;
-  const Grid = <span className="text-[#3DA5FF] font-semibold">GOAT Grid</span>;
+  const Grid = <span className="text-[#00E676] font-semibold">Trouve le joueur</span>;
 
   const prose =
     l === "en" ? (
@@ -22,7 +22,7 @@ export const AboutView = () => {
         </p>
         <p>
           Three games emerged: {Plug} to find the link between two clubs, {Mercato} to chain transfers
-          endlessly, and {Grid} for the strategic daily grid.
+          endlessly, and {Grid}, the daily mystery-player challenge.
         </p>
         <p>
           GOAT FC is a project between friends, made with heart. No ads, no paywall, no gimmicks. Just
@@ -44,7 +44,7 @@ export const AboutView = () => {
         </p>
         <p>
           Drei Spiele entstanden: {Plug} um das Bindeglied zwischen zwei Klubs zu finden, {Mercato} um
-          endlos Transfers aneinanderzureihen, und {Grid} für das strategische Tagesraster.
+          endlos Transfers aneinanderzureihen, und {Grid}, das tägliche Rätsel um den Mystery-Spieler.
         </p>
         <p>
           GOAT FC ist ein Projekt unter Freunden, mit Herzblut gemacht. Keine Werbung, keine Paywall,
@@ -66,7 +66,7 @@ export const AboutView = () => {
         </p>
         <p>
           Sono nati tre giochi: {Plug} per trovare l'anello tra due club, {Mercato} per concatenare i
-          trasferimenti all'infinito, e {Grid} per la griglia strategica del giorno.
+          trasferimenti all'infinito, e {Grid}, il giocatore misterioso del giorno.
         </p>
         <p>
           GOAT FC è un progetto tra amici, fatto col cuore. Niente pubblicità, niente paywall, niente
@@ -88,7 +88,7 @@ export const AboutView = () => {
         </p>
         <p>
           Surgiram três jogos: {Plug} para achar o elo entre dois clubes, {Mercato} para encadear
-          transferências sem fim, e {Grid} para a grade estratégica do dia.
+          transferências sem fim, e {Grid}, o jogador misterioso do dia.
         </p>
         <p>
           O GOAT FC é um projeto entre amigos, feito com o coração. Sem anúncios, sem paywall, sem truques.
@@ -112,8 +112,8 @@ export const AboutView = () => {
         </p>
         <p>
           Trois jeux ont émergé : {Plug} pour trouver le maillon entre deux clubs,{" "}
-          {Mercato} pour enchaîner les transferts à l'infini, et {Grid} pour la grille
-          du jour stratégique.
+          {Mercato} pour enchaîner les transferts à l'infini, et {Grid}, le joueur
+          mystère du jour.
         </p>
         <p>
           GOAT FC, c'est un projet entre amis, fait avec le cœur. Pas de pub, pas de
