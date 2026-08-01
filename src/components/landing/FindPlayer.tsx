@@ -166,6 +166,7 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
   const [input, setInput] = useState("");
   const [board, setBoard] = useState<{ loading: boolean; rows: any[]; myRank: number | null; total: number } | null>(null);
   const [copied, setCopied] = useState(false);
+  const [riddleCopied, setRiddleCopied] = useState(false);
   const [showCareer, setShowCareer] = useState(false); // parcours caché par défaut (déduction pure)
   const [animRow, setAnimRow] = useState(-1); // index de la proposition à révéler puce par puce
   const [revealing, setRevealing] = useState(false); // révélation en cours (bloque la saisie sur la manche finale)
@@ -280,6 +281,36 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
     const txt = shareText();
     try { if ((navigator as any).share) { (navigator as any).share({ title: "GOAT FC", text: txt }); return; } } catch { /* noop */ }
     try { navigator.clipboard.writeText(txt).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1800); }); } catch { /* noop */ }
+  }
+
+  // Énigme « Qui suis-je ? » — générée à partir du joueur mystère (sans son nom),
+  // dans un format instagrammable pour défier ses potes.
+  function dailyRiddle(): string {
+    const clubs = answer.clubs || [];
+    const first = clubs[0];
+    const last = clubs[clubs.length - 1];
+    const mids = clubs.slice(1, -1);
+    const midPick = mids.length > 2 ? [mids[0], mids[mids.length - 1]] : mids;
+    const startYear = answer.birthYear ? answer.birthYear + 19 : 0;
+    const decade = startYear ? Math.floor(startYear / 10) * 10 : null;
+    const flag = answer.nationalities[0] ? (NAT_FLAG[answer.nationalities[0]] || "🏴") : "";
+    const lines: string[] = [];
+    lines.push("🕵️ " + tr("QUI SUIS-JE ?", "WHO AM I?", "WER BIN ICH?", "CHI SONO?", "QUEM SOU EU?"));
+    lines.push("");
+    if (answer.nationalities[0]) lines.push(flag + " " + answer.nationalities[0] + " · " + posEmoji(answer.positions[0] || "") + " " + posLabel(answer.positions[0] || ""));
+    if (decade) lines.push("🕰️ " + tr("J'ai percé dans les années", "I broke through in the", "Durchbruch in den", "Sono esploso negli anni", "Estourei nos anos") + " " + decade + tr("", "s", "ern", "", ""));
+    if (first) lines.push("🎬 " + tr("J'ai débuté à", "I started at", "Mein Debüt bei", "Ho esordito a", "Comecei no") + " " + first);
+    if (midPick.length) lines.push("✈️ " + tr("Je suis passé par", "I played for", "Ich spielte für", "Sono passato per", "Passei por") + " " + midPick.join(", "));
+    if (last && last !== first) lines.push("🏁 " + tr("Dernier maillot :", "Last shirt:", "Letztes Trikot:", "Ultima maglia:", "Última camisa:") + " " + last);
+    lines.push("");
+    lines.push("🐐 " + tr("Le joueur mystère du jour sur GOAT FC", "Today's mystery player on GOAT FC", "Der Mystery-Spieler des Tages auf GOAT FC", "Il giocatore misterioso del giorno su GOAT FC", "O jogador misterioso do dia no GOAT FC"));
+    lines.push("👉 goatfc.fr");
+    return lines.join("\n");
+  }
+  function shareRiddle() {
+    const txt = dailyRiddle();
+    try { if ((navigator as any).share) { (navigator as any).share({ title: "GOAT FC · " + tr("Qui suis-je ?", "Who am I?", "Wer bin ich?", "Chi sono?", "Quem sou eu?"), text: txt }); return; } } catch { /* noop */ }
+    try { navigator.clipboard.writeText(txt).then(() => { setRiddleCopied(true); setTimeout(() => setRiddleCopied(false), 1800); }); } catch { /* noop */ }
   }
 
   return (
@@ -399,6 +430,10 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
 
             <button onClick={doShare} style={{ width: "100%", marginTop: 14, padding: "13px", background: "linear-gradient(135deg,#00E676,#00B85C)", color: "#06130B", border: "none", borderRadius: 14, fontSize: 14, fontWeight: 900, cursor: "pointer" }}>
               {copied ? tr("Copié ! 📋", "Copied! 📋", "Kopiert! 📋", "Copiato! 📋", "Copiado! 📋") : "📤 " + tr("Partager mon résultat", "Share my result", "Ergebnis teilen", "Condividi il risultato", "Compartilhar resultado")}
+            </button>
+
+            <button onClick={shareRiddle} style={{ width: "100%", marginTop: 8, padding: "13px", background: "transparent", color: "#FFD600", border: "1.5px solid rgba(255,214,0,.55)", borderRadius: 14, fontSize: 14, fontWeight: 900, cursor: "pointer" }}>
+              {riddleCopied ? tr("Copié ! 📋", "Copied! 📋", "Kopiert! 📋", "Copiato! 📋", "Copiado! 📋") : "🕵️ " + tr("Défier un pote (énigme)", "Challenge a friend (riddle)", "Freund fordern (Rätsel)", "Sfida un amico (enigma)", "Desafiar um amigo (enigma)")}
             </button>
 
             {/* Classement du jour */}
