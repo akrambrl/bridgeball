@@ -58,12 +58,19 @@ function dailyPlayer(): Player {
 }
 
 // ── Mode illimité : un joueur au hasard, sans répétition proche ────────────────
+// Jamais de joueur "expert" : 70 % facile, 30 % moyen.
 function randomPlayer(seen: Set<string>): Player {
-  let pool = ALL.filter(p => p.diff === "facile" && p.clubs && p.clubs.length >= 3 && p.clubs.length <= 9);
-  if (pool.length === 0) pool = ALL.filter(p => p.clubs && p.clubs.length >= 3);
-  let avail = pool.filter(p => !seen.has(p.name));
-  if (avail.length === 0) { seen.clear(); avail = pool; }
-  const pick = avail[Math.floor(Math.random() * avail.length)];
+  const inRange = (p: Player) => !!p.clubs && p.clubs.length >= 3 && p.clubs.length <= 9;
+  const facile = ALL.filter(p => p.diff === "facile" && inRange(p));
+  const moyen = ALL.filter(p => p.diff === "moyen" && inRange(p));
+  const wantFacile = Math.random() < 0.7; // 70 % facile / 30 % moyen
+  let pool = wantFacile ? facile : moyen;
+  if (pool.length === 0) pool = wantFacile ? moyen : facile; // sécurité si un pool est vide
+  // Anti-répétition PAR POOL : quand un pool est épuisé, on ne recycle QUE ce pool
+  // (sinon le petit pool "facile" se vide et casse la pondération 70/30).
+  let cand = pool.filter(p => !seen.has(p.name));
+  if (cand.length === 0) { pool.forEach(p => seen.delete(p.name)); cand = pool; }
+  const pick = cand[Math.floor(Math.random() * cand.length)];
   seen.add(pick.name);
   return pick;
 }
