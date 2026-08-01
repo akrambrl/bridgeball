@@ -293,13 +293,13 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
     if (over || revealing) return;
     const gs = [...guesses, p];
     const w = p.name === answer.name;
-    const o = w || gs.length >= MAX_GUESSES;
+    const o = w; // essais illimités : la manche ne se termine qu'à la bonne réponse
     setGuesses(gs);
     setInput("");
     setAnimRow(gs.length - 1); // la nouvelle ligne se révèle puce par puce
     if (o) {
-      // Manche finale : on laisse la révélation des puces se jouer (suspens) avant
-      // d'afficher le résultat (victoire/défaite) et le parcours.
+      // Bonne réponse : on laisse la révélation des puces se jouer (suspens) avant
+      // d'afficher le résultat.
       setRevealing(true);
       setTimeout(() => {
         setRevealing(false);
@@ -390,7 +390,7 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
   function shareText(): string {
     const rows = guesses.map(g => computeChips(g, answer).map(c => SQ[c.state]).join("")).join("\n");
     const head = "🐐 GOAT FC · " + tr("Trouve le joueur", "Guess the player", "Errate den Spieler", "Indovina il giocatore", "Adivinhe o jogador");
-    const res = won ? `${guesses.length}/${MAX_GUESSES}` : `X/${MAX_GUESSES}`;
+    const res = won ? `${guesses.length} ${tr("essai", "try", "Versuch", "tentativo", "tentativa")}${guesses.length > 1 ? "s" : ""}` : tr("abandon", "gave up", "aufgegeben", "arreso", "desisti");
     const streakLine = won ? "  ·  🔥 " + tr("Série", "Streak", "Serie", "Serie", "Sequência") + " " + streak : "";
     const cta = tr("Tu fais mieux ? 👇", "Can you beat it? 👇", "Schaffst du mehr? 👇", "Fai meglio? 👇", "Consegue superar? 👇");
     return `${head} — ${res}${streakLine}\n${rows}\n\n${cta}\nhttps://goatfc.fr`;
@@ -568,7 +568,6 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
             <div style={{ display: "flex", justifyContent: "center", gap: 12, marginBottom: 12 }}>
               {[
                 { emoji: "💡", color: "#3DA5FF", onClick: revealOneAttr, disabled: allFound, label: tr("Révéler une info", "Reveal a clue", "Info zeigen", "Rivela un'info", "Revelar info") },
-                { emoji: "👤", color: "#00E676", onClick: () => setShowCareer(true), disabled: showCareer, label: tr("Voir le parcours", "Reveal career", "Karriere zeigen", "Mostra carriera", "Ver carreira") },
                 { emoji: "🏳️", color: "#FF3D57", onClick: giveUp, disabled: false, label: tr("Abandonner", "Give up", "Aufgeben", "Arrenditi", "Desistir") },
               ].map(h => (
                 <button key={h.emoji} onClick={h.onClick} disabled={h.disabled} title={h.label} aria-label={h.label} style={{ width: 48, height: 48, borderRadius: "50%", border: "1px solid " + h.color + "66", background: h.disabled ? "rgba(255,255,255,.04)" : h.color + "22", color: "#fff", fontSize: 20, cursor: h.disabled ? "not-allowed" : "pointer", opacity: h.disabled ? 0.4 : 1, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: h.disabled ? "none" : "0 4px 12px " + h.color + "33" }}>{h.emoji}</button>
@@ -584,31 +583,6 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
             </div>
           </div>
         )}
-
-        {/* Parcours de clubs — révélé (indice 👤) ou en fin de manche */}
-        {(showCareer || over) && (
-          <>
-            <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.5, color: "rgba(255,255,255,.4)", marginBottom: 6, marginTop: over ? 0 : 4, textAlign: "center" }}>⚽ {tr("SON PARCOURS", "HIS CAREER", "SEINE KARRIERE", "LA SUA CARRIERA", "SUA CARREIRA")}</div>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, overflowX: "auto", paddingBottom: 6, marginBottom: 16, justifyContent: answer.clubs.length <= 4 ? "center" : "flex-start" }}>
-              {answer.clubs.map((c, i) => {
-                const [bg, fg] = clubColors(c);
-                return (
-                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-                    {i > 0 && <span style={{ color: "rgba(255,255,255,.35)", fontSize: 14 }}>→</span>}
-                    <div style={{ background: bg, color: fg, border: "1px solid rgba(255,255,255,.2)", borderRadius: 10, padding: "8px 12px", fontSize: 12, fontWeight: 800, whiteSpace: "nowrap", boxShadow: "0 3px 10px rgba(0,0,0,.35)" }}>{c}</div>
-                  </div>
-                );
-              })}
-            </div>
-          </>
-        )}
-
-        {/* Progression */}
-        <div style={{ display: "flex", justifyContent: "center", gap: 6, marginBottom: 14 }}>
-          {Array.from({ length: MAX_GUESSES }).map((_, i) => (
-            <span key={i} style={{ width: 9, height: 9, borderRadius: "50%", background: i < guesses.length ? (won && i === guesses.length - 1 ? "#00E676" : "#FF3D57") : "rgba(255,255,255,.15)" }} />
-          ))}
-        </div>
 
         {/* Saisie */}
         {!over && !revealing && (
@@ -684,7 +658,7 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
               {won ? tr("BIEN JOUÉ ! 🎉", "WELL DONE! 🎉", "GUT GEMACHT! 🎉", "BEN FATTO! 🎉", "MANDOU BEM! 🎉") : tr("RATÉ ! 😅", "MISSED! 😅", "VERPASST! 😅", "MANCATO! 😅", "ERROU! 😅")}
             </div>
             <div style={{ fontSize: 14, color: "#fff", marginTop: 6 }}>
-              {won ? tr("Trouvé en", "Found in", "Gefunden in", "Trovato in", "Encontrado em") + " " + guesses.length + "/" + MAX_GUESSES : tr("C'était", "It was", "Es war", "Era", "Era") + " :"}
+              {won ? tr("Trouvé en", "Found in", "Gefunden in", "Trovato in", "Encontrado em") + " " + guesses.length + " " + tr("essai", "try", "Versuch", "tentativo", "tentativa") + (guesses.length > 1 ? "s" : "") : tr("C'était", "It was", "Es war", "Era", "Era") + " :"}
             </div>
             {!won && <div style={{ fontFamily: "Anton, sans-serif", fontSize: 22, color: "#fff", marginTop: 2 }}>{answer.name}</div>}
             <div style={{ fontSize: 15, fontWeight: 800, color: won ? "#FF8A2A" : "rgba(255,255,255,.6)", marginTop: 8 }}>
