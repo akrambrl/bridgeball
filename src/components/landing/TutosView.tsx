@@ -80,29 +80,29 @@ function getTutos() {
     },
     {
       id: "grid",
-      title: howTo("GOAT Grid"),
-      accent: "#3DA5FF",
-      badge: tr("STRATÉGIE", "STRATEGY", "STRATEGIE", "STRATEGIA", "ESTRATÉGIA"),
+      title: howTo(tr("Trouve le joueur", "Guess the Player", "Errate den Spieler", "Indovina il giocatore", "Adivinhe o jogador")),
+      accent: "#00E676",
+      badge: tr("DÉFI DU JOUR", "DAILY CHALLENGE", "TAGES-CHALLENGE", "SFIDA DEL GIORNO", "DESAFIO DO DIA"),
       content: (
         <div className="space-y-3 text-sm md:text-base leading-relaxed text-white/80">
           <P label={principle} text={tr(
-            "Une grille 3×3. 3 clubs en lignes, 3 clubs en colonnes. Chaque case veut un joueur qui a évolué dans les deux clubs croisés.",
-            "A 3×3 grid. 3 clubs as rows, 3 as columns. Each cell wants a player who played for both crossed clubs.",
-            "Ein 3×3-Raster. 3 Klubs als Zeilen, 3 als Spalten. Jedes Feld will einen Spieler, der für beide gekreuzten Klubs spielte.",
-            "Una griglia 3×3. 3 club sulle righe, 3 sulle colonne. Ogni casella vuole un giocatore che ha giocato in entrambi i club incrociati.",
-            "Uma grade 3×3. 3 clubes nas linhas, 3 nas colunas. Cada célula quer um jogador que atuou nos dois clubes cruzados.")} />
+            "Chaque jour, un joueur mystère (le même pour tous). On te montre son parcours de clubs dans l'ordre, plus un indice (nationalité, poste, décennie).",
+            "Every day, one mystery player (the same for everyone). We show his club career in order, plus a hint (nationality, position, decade).",
+            "Jeden Tag ein Mystery-Spieler (für alle gleich). Wir zeigen seine Klub-Karriere der Reihe nach, plus einen Hinweis (Nationalität, Position, Jahrzehnt).",
+            "Ogni giorno un giocatore misterioso (uguale per tutti). Ti mostriamo la sua carriera nei club in ordine, più un indizio (nazionalità, ruolo, decennio).",
+            "Todo dia, um jogador misterioso (o mesmo para todos). Mostramos a carreira dele nos clubes em ordem, mais uma dica (nacionalidade, posição, década).")} />
           <P label={scoring} text={tr(
-            "Nombre limité d'essais. Trouver un joueur rare rapporte plus qu'une superstar évidente.",
-            "Limited number of tries. Finding a rare player scores more than an obvious superstar.",
-            "Begrenzte Versuche. Ein seltener Spieler bringt mehr Punkte als ein offensichtlicher Superstar.",
-            "Numero limitato di tentativi. Trovare un giocatore raro vale più di una superstar ovvia.",
-            "Número limitado de tentativas. Achar um jogador raro vale mais que uma superestrela óbvia.")} />
+            "Tu as 6 essais. À chaque proposition, un feedback façon Wordle : 🟩 bon, 🟨 proche, ⬛ non — sur la nationalité, le poste, l'âge et les clubs en commun.",
+            "You get 6 tries. Each guess gives Wordle-style feedback: 🟩 right, 🟨 close, ⬛ no — on nationality, position, age and clubs in common.",
+            "Du hast 6 Versuche. Jeder Tipp gibt Wordle-Feedback: 🟩 richtig, 🟨 nah, ⬛ nein — zu Nationalität, Position, Alter und gemeinsamen Klubs.",
+            "Hai 6 tentativi. Ogni proposta dà un feedback stile Wordle: 🟩 giusto, 🟨 vicino, ⬛ no — su nazionalità, ruolo, età e club in comune.",
+            "Você tem 6 tentativas. Cada palpite dá feedback estilo Wordle: 🟩 certo, 🟨 perto, ⬛ não — sobre nacionalidade, posição, idade e clubes em comum.")} />
           <P label={tip} text={tr(
-            "Commence par les croisements les plus durs. Garde tes superstars pour les cases pièges.",
-            "Start with the hardest crossings. Save your superstars for the trap cells.",
-            "Beginne mit den schwersten Kreuzungen. Spar dir deine Superstars für die Fallen-Felder auf.",
-            "Inizia dagli incroci più difficili. Tieni le superstar per le caselle trabocchetto.",
-            "Comece pelos cruzamentos mais difíceis. Guarde suas superestrelas para as células armadilha.")} />
+            "Moins tu utilises d'essais, plus tu marques. Un classement quotidien départage tout le monde — et tu peux partager ta grille.",
+            "The fewer tries you use, the more you score. A daily leaderboard ranks everyone — and you can share your grid.",
+            "Je weniger Versuche, desto mehr Punkte. Eine Tages-Rangliste vergleicht alle — und du kannst dein Raster teilen.",
+            "Meno tentativi usi, più punti fai. Una classifica giornaliera confronta tutti — e puoi condividere la tua griglia.",
+            "Quanto menos tentativas, mais pontos. Um ranking diário compara todos — e você pode compartilhar sua grade.")} />
         </div>
       ),
     },
