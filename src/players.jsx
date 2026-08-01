@@ -114,7 +114,7 @@ export const PLAYERS = [
   { name:"Exequiel Palacios", clubs:["River Plate", "Bayer Leverkusen"], diff:"expert", nationalities:["Argentine"], positions:["milieu"] , birthYear:1998 },
   { name:"Guido Rodríguez", clubs:["River Plate", "America Mexico", "Real Betis", "West Ham"], diff:"expert", nationalities:["Argentine"], positions:["milieu"] , birthYear:1994 },
   { name:"Ángel Correa", clubs:["San Lorenzo", "Atletico Madrid", "Tigres UANL"], diff:"moyen", nationalities:["Argentine"], positions:["attaquant"], birthYear:1995 },
-  { name:"Neymar", clubs:["Santos", "Barcelona", "PSG", "Al Hilal"], diff:"facile", nationalities:["Brésil"], positions:["attaquant"], birthYear:1992 },
+  { name:"Neymar", clubs:["Santos", "Barcelona", "PSG", "Al Hilal", "Santos"], diff:"facile", nationalities:["Brésil"], positions:["attaquant"], birthYear:1992 },
   { name:"Kylian Mbappé", clubs:["Monaco", "PSG", "Real Madrid"], diff:"facile", nationalities:["France"], positions:["attaquant"], birthYear:1998 },
   { name:"Erling Haaland", clubs:["Molde", "Salzburg", "Borussia Dortmund", "Manchester City"], diff:"facile", nationalities:["Norvège"], positions:["attaquant"], birthYear:2000 },
   { name:"Jude Bellingham", clubs:["Birmingham City", "Borussia Dortmund", "Real Madrid"], diff:"facile", nationalities:["Angleterre"], positions:["milieu"], birthYear:2003 },
