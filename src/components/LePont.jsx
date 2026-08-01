@@ -858,6 +858,7 @@ const randomImg = (arr) => arr[Math.floor(Math.random()*arr.length)];
 const PLUG_CARD_IMG = "/plug-card.png";
 const MERCATO_CARD_IMG = "/mercato-card.png";
 const GRID_CARD_IMG = "/grid-card.png";
+const REVEAL_CARD_IMG = "/reveal-card.png";
 const GUESS_CARD_IMG = "/guess-card.png";
 const DUEL_CARD_IMG = "/duel-card.png";
 
@@ -10990,32 +10991,9 @@ export default function LePont() {
         {/* Mobile : le carrousel absorbe l'espace restant (flex) pour que toute
             la page tienne sur l'écran sans scroll (fix 100vh Safari → 100dvh). */}
         {(() => {
-          // Carte "Trouve le joueur du jour" — poster CSS (remplace l'ancien visuel GOAT GRID).
-          const findPlayerCard = (
-            <div style={{position:"absolute",inset:0,borderRadius:22,overflow:"hidden",background:"radial-gradient(125% 78% at 50% 4%, #0f4429 0%, #08170f 52%, #000 100%)"}}>
-              <div style={{position:"absolute",inset:0,background:"radial-gradient(56% 36% at 50% 34%, rgba(0,230,118,.30), transparent 72%)"}}/>
-              <div style={{position:"absolute",inset:0,background:"repeating-linear-gradient(90deg, rgba(255,255,255,.05) 0 1px, transparent 1px 34px)",opacity:.5}}/>
-              {/* Badge défi du jour */}
-              <div style={{position:"absolute",top:"6%",left:0,right:0,textAlign:"center"}}>
-                <span style={{display:"inline-block",padding:"4px 11px",borderRadius:999,background:"rgba(0,230,118,.16)",border:"1px solid rgba(0,230,118,.5)",color:"#00E676",fontFamily:G.font,fontSize:"clamp(8px,2.6vw,11px)",fontWeight:900,letterSpacing:1.5}}>{tr("DÉFI DU JOUR","DAILY CHALLENGE","TAGES-CHALLENGE","SFIDA DEL GIORNO","DESAFIO DO DIA")}</span>
-              </div>
-              {/* Silhouette mystère + ? */}
-              <div style={{position:"absolute",top:"17%",left:0,right:0,bottom:"38%",display:"flex",alignItems:"center",justifyContent:"center"}}>
-                <div style={{position:"relative",display:"flex",alignItems:"center",justifyContent:"center"}}>
-                  <div style={{fontSize:"clamp(96px,34vw,150px)",lineHeight:1,filter:"grayscale(1) brightness(.5) drop-shadow(0 10px 34px rgba(0,230,118,.45))"}}>👤</div>
-                  <div style={{position:"absolute",fontFamily:G.heading,fontSize:"clamp(52px,18vw,86px)",color:"#00E676",textShadow:"0 6px 30px rgba(0,230,118,.7)",lineHeight:1}}>?</div>
-                </div>
-              </div>
-              {/* Titre */}
-              <div style={{position:"absolute",left:0,right:0,bottom:"8%",textAlign:"center",padding:"0 6%"}}>
-                <div style={{fontFamily:G.heading,color:"#fff",fontSize:"clamp(26px,9.5vw,40px)",lineHeight:.92,letterSpacing:1,whiteSpace:"nowrap",textShadow:"0 4px 20px rgba(0,0,0,.6)"}}>{tr("TROUVE","GUESS","ERRATE","INDOVINA","ADIVINHE")}</div>
-                <div style={{fontFamily:G.heading,color:"#00E676",fontSize:"clamp(26px,9.5vw,40px)",lineHeight:.92,letterSpacing:1,whiteSpace:"nowrap",textShadow:"0 6px 26px rgba(0,230,118,.5)"}}>{tr("LE JOUEUR","THE PLAYER","DEN SPIELER","IL GIOCATORE","O JOGADOR")}</div>
-              </div>
-            </div>
-          );
           const homeCards = [
               {key:"duel",    img:DUEL_CARD_IMG,    onClick: function(){requirePseudo(function(){setDuelError("");setDuelJoinCode("");setDuelScreen("menu");});}, record: null, recordIcon:null, recordColor:"#3DA5FF"},
-              {key:"grid",    node:findPlayerCard,  onClick: function(){window.dispatchEvent(new CustomEvent("goatfc:open-findplayer"));}, record: null, recordIcon:null, recordColor:"#00E676"},
+              {key:"grid",    img:REVEAL_CARD_IMG,  onClick: function(){window.dispatchEvent(new CustomEvent("goatfc:open-findplayer"));}, record: null, recordIcon:null, recordColor:"#00E676"},
               {key:"mercato", img:MERCATO_CARD_IMG, onClick: function(){setGameConfigModal("chaine");}, record: chainRecord, recordIcon:"⛓",  recordColor:"#60a5fa"},
               {key:"plug",    img:PLUG_CARD_IMG,    onClick: function(){setGameConfigModal("pont");},   record: record,      recordIcon:"🏆", recordColor:"#FFD600"},
               {key:"guess",   img:GUESS_CARD_IMG,   onClick: function(){window.dispatchEvent(new CustomEvent("goatfc:open-guess"));}, record: null, recordIcon:null, recordColor:"#C084FC"},
