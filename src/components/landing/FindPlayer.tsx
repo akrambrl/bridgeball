@@ -274,8 +274,11 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
   const [streak, setStreak] = useState(0); // série de trouvailles d'affilée (mode illimité)
   const [best, setBest] = useState<number>(() => { try { return parseInt(localStorage.getItem("bb_findstreak_best") || "0", 10) || 0; } catch { return 0; } });
   const inputRef = useRef<HTMLInputElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { trackPlay("grid"); }, []); // réutilise le compteur de l'emplacement (ex-GOAT Grid)
+  // Quand on gagne/abandonne, on remonte en haut pour voir l'écran de fin.
+  useEffect(() => { if (over) { try { scrollRef.current?.scrollTo({ top: 0, behavior: "smooth" }); } catch { /* noop */ } } }, [over]);
 
   function playerId(): string {
     try {
@@ -583,7 +586,7 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
   const allFound = topSlots.every(s => s.confirmed);
 
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 200, background: "radial-gradient(120% 75% at 50% 0%, #a02ea4 0%, #7c1f80 52%, #4d1253 100%)", overflowY: "auto", WebkitOverflowScrolling: "touch" as any }}>
+    <div ref={scrollRef} style={{ position: "fixed", inset: 0, zIndex: 200, background: "radial-gradient(120% 75% at 50% 0%, #a02ea4 0%, #7c1f80 52%, #4d1253 100%)", overflowY: "auto", WebkitOverflowScrolling: "touch" as any }}>
       {/* Header */}
       <div style={{ position: "sticky", top: 0, zIndex: 5, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "calc(12px + env(safe-area-inset-top)) 16px 12px", background: "linear-gradient(180deg,#7c1f80,rgba(124,31,128,.75))", backdropFilter: "blur(8px)" }}>
         <button onClick={onClose} style={{ background: "rgba(255,255,255,.14)", border: "1px solid rgba(255,255,255,.25)", borderRadius: 12, color: "#fff", padding: "8px 12px", fontSize: 14, fontWeight: 800, cursor: "pointer" }}>← {tr("QUITTER", "QUIT", "BEENDEN", "ESCI", "SAIR")}</button>
@@ -597,7 +600,7 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
         )}
       </div>
 
-      <div style={{ maxWidth: 480, margin: "0 auto", padding: "8px 16px 40px" }}>
+      <div style={{ maxWidth: 480, margin: "0 auto", padding: "8px 16px 40px", display: "flex", flexDirection: "column" }}>
         {/* Bandeau série (mode illimité) */}
         <div style={{ display: "flex", justifyContent: "center", gap: 8, marginBottom: 12 }}>
           <span style={{ padding: "5px 12px", borderRadius: 999, background: "rgba(255,138,42,.14)", border: "1px solid rgba(255,138,42,.4)", color: "#FF8A2A", fontSize: 12, fontWeight: 900, letterSpacing: 1 }}>🔥 {tr("SÉRIE", "STREAK", "SERIE", "SERIE", "SÉRIE")} : {streak}</span>
@@ -664,7 +667,7 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
         <style>{`@keyframes fpChipIn{0%{opacity:0;transform:rotateY(90deg) scale(.5)}55%{opacity:1;transform:rotateY(0deg) scale(1.12)}100%{opacity:1;transform:rotateY(0deg) scale(1)}}`}</style>
 
         {/* Lignes de propositions — la plus récente en haut */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 12 }}>
+        <div style={{ order: 3, display: "flex", flexDirection: "column", gap: 8, marginTop: 12 }}>
           {guesses.map((g, gi) => ({ g, gi })).reverse().map(({ g, gi }) => {
             const chips = computeChips(g, answer);
             const correct = g.name === answer.name;
@@ -693,9 +696,9 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
           })}
         </div>
 
-        {/* Écran de fin */}
+        {/* Écran de fin — placé au-dessus des propositions (order 2) pour être vu sans scroller */}
         {over && (
-          <div style={{ marginTop: 16, background: won ? "rgba(0,230,118,.1)" : "rgba(255,61,87,.1)", border: "1px solid " + (won ? "rgba(0,230,118,.4)" : "rgba(255,61,87,.4)"), borderRadius: 18, padding: 18, textAlign: "center" }}>
+          <div style={{ order: 2, marginTop: 12, marginBottom: 4, background: won ? "rgba(0,230,118,.12)" : "rgba(255,61,87,.12)", border: "1px solid " + (won ? "rgba(0,230,118,.4)" : "rgba(255,61,87,.4)"), borderRadius: 18, padding: 18, textAlign: "center" }}>
             <div style={{ fontFamily: "Anton, sans-serif", fontSize: 26, color: won ? "#00E676" : "#FF3D57", letterSpacing: 1 }}>
               {won ? tr("BIEN JOUÉ ! 🎉", "WELL DONE! 🎉", "GUT GEMACHT! 🎉", "BEN FATTO! 🎉", "MANDOU BEM! 🎉") : tr("RATÉ ! 😅", "MISSED! 😅", "VERPASST! 😅", "MANCATO! 😅", "ERROU! 😅")}
             </div>
