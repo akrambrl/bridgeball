@@ -58,9 +58,11 @@ function dailyPlayer(): Player {
 }
 
 // ── Mode illimité : un joueur au hasard, sans répétition proche ────────────────
-// Jamais de joueur "expert" : 70 % facile, 30 % moyen.
+// Jamais de joueur "expert" : 70 % facile, 30 % moyen. Que des joueurs modernes
+// (né en 1975+ → a joué après 2000), pas d'anciens.
+const MODERN_MIN_BY = 1975;
 function randomPlayer(seen: Set<string>): Player {
-  const inRange = (p: Player) => !!p.clubs && p.clubs.length >= 3 && p.clubs.length <= 9;
+  const inRange = (p: Player) => !!p.clubs && p.clubs.length >= 3 && p.clubs.length <= 9 && !!p.birthYear && (p.birthYear as number) >= MODERN_MIN_BY;
   const facile = ALL.filter(p => p.diff === "facile" && inRange(p));
   const moyen = ALL.filter(p => p.diff === "moyen" && inRange(p));
   const wantFacile = Math.random() < 0.7; // 70 % facile / 30 % moyen
@@ -126,6 +128,27 @@ function posEmoji(pos: string): string {
   return "⚡";
 }
 
+// Icône terrain de foot (façon « Mode Infini ») : un point rouge situe le poste
+// (bas = gardien, haut = attaquant).
+function PitchIcon({ pos, size = 26 }: { pos: string; size?: number }) {
+  const l = (pos || "").toLowerCase();
+  let cy = 26; // attaquant (haut)
+  if (l.includes("gardien")) cy = 90;
+  else if (l.includes("défenseur") || l.includes("defenseur")) cy = 74;
+  else if (l.includes("milieu")) cy = 50;
+  return (
+    <svg width={size} height={size} viewBox="0 0 100 100" style={{ display: "block" }}>
+      <rect x="3" y="3" width="94" height="94" rx="8" fill="#2E7D32" stroke="#1b5e20" strokeWidth="3" />
+      <line x1="3" y1="50" x2="97" y2="50" stroke="#fff" strokeWidth="2.5" opacity="0.85" />
+      <circle cx="50" cy="50" r="13" fill="none" stroke="#fff" strokeWidth="2.5" opacity="0.85" />
+      <rect x="36" y="3" width="28" height="10" fill="none" stroke="#fff" strokeWidth="2.5" opacity="0.75" />
+      <rect x="36" y="87" width="28" height="10" fill="none" stroke="#fff" strokeWidth="2.5" opacity="0.75" />
+      <circle cx="50" cy={cy} r="11" fill="#FF3D57" stroke="#fff" strokeWidth="2.5" />
+    </svg>
+  );
+}
+const CONT_BG = "radial-gradient(circle at 34% 28%, #3568a0 0%, #123a63 55%, #0a1e35 100%)";
+
 type State = "ok" | "close" | "no";
 type Chip = { key: string; label: string; top: string; big?: boolean; state: State; arrow?: "up" | "down"; bg?: string; fg?: string };
 
@@ -186,7 +209,7 @@ function computeChips(guess: Player, answer: Player): Chip[] {
   const [lbg, lfg] = clubColors(gLast);
   return [
     { key: "nat", label: tr("NAT", "NAT", "NAT", "NAZ", "NAC"), top: flag, big: true, state: natMatch ? "ok" : "no" },
-    { key: "cont", label: tr("ZONE", "ZONE", "ZONE", "ZONA", "ZONA"), top: gCont, state: contMatch ? "ok" : "no" },
+    { key: "cont", label: tr("ZONE", "ZONE", "ZONE", "ZONA", "ZONA"), top: gCont, state: contMatch ? "ok" : "no", bg: CONT_BG, fg: "#dff0ff" },
     { key: "pos", label: tr("POSTE", "POS", "POS", "RUOLO", "POS"), top: posEmoji(guess.positions[0] || ""), big: true, state: posMatch ? "ok" : "no" },
     { key: "age", label: tr("ÂGE", "AGE", "ALTER", "ETÀ", "IDADE"), top: gAge ? String(gAge) : "?", state: ageState, arrow: ageArrow },
     { key: "lastclub", label: tr("CLUB", "CLUB", "KLUB", "CLUB", "CLUBE"), top: gLast ? clubCode(gLast) : "?", state: lastState, bg: lbg, fg: lfg },
@@ -300,7 +323,7 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
   function randomGuess() {
     if (over || revealing) return;
     const guessed = new Set(guesses.map(g => g.name));
-    const pool = ALL.filter(p => !guessed.has(p.name) && (p.diff === "facile" || p.diff === "moyen") && p.clubs && p.clubs.length >= 2);
+    const pool = ALL.filter(p => !guessed.has(p.name) && (p.diff === "facile" || p.diff === "moyen") && p.clubs && p.clubs.length >= 2 && !!p.birthYear && (p.birthYear as number) >= MODERN_MIN_BY);
     if (pool.length === 0) return;
     submitGuess(pool[Math.floor(Math.random() * pool.length)]);
   }
@@ -510,7 +533,7 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
   const [aLbg, aLfg] = clubColors(aLastClub);
   const topSlots = [
     { key: "nat", label: tr("NAT", "NAT", "NAT", "NAZ", "NAC"), value: aFlag, big: true, confirmed: confirmedKeys.has("nat") },
-    { key: "cont", label: tr("ZONE", "ZONE", "ZONE", "ZONA", "ZONA"), value: aCont, confirmed: confirmedKeys.has("cont") },
+    { key: "cont", label: tr("ZONE", "ZONE", "ZONE", "ZONA", "ZONA"), value: aCont, bg: CONT_BG, fg: "#dff0ff", confirmed: confirmedKeys.has("cont") },
     { key: "pos", label: tr("POSTE", "POS", "POS", "RUOLO", "POS"), value: posEmoji(answer.positions[0] || ""), big: true, confirmed: confirmedKeys.has("pos") },
     { key: "age", label: tr("ÂGE", "AGE", "ALTER", "ETÀ", "IDADE"), value: aAge ? String(aAge) : "?", confirmed: confirmedKeys.has("age") },
     { key: "lastclub", label: tr("CLUB", "CLUB", "KLUB", "CLUB", "CLUBE"), value: aLastClub ? clubCode(aLastClub) : "?", bg: aLbg, fg: aLfg, confirmed: confirmedKeys.has("lastclub") },
@@ -554,7 +577,7 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
             <div style={{ display: "flex", justifyContent: "center", gap: 5, background: "linear-gradient(180deg,#F7A828,#E7941A)", border: "2px solid #C97E12", borderRadius: 16, padding: "10px 6px", boxShadow: "0 6px 18px rgba(0,0,0,.3)" }}>
               {topSlots.map(s => (
                 <div key={s.key} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, flex: 1 }}>
-                  <div style={{ width: 40, height: 40, borderRadius: "50%", background: s.confirmed ? (s.bg || "#fff") : "#141414", border: "2px solid " + (s.confirmed ? "#00E676" : "rgba(0,0,0,.35)"), display: "flex", alignItems: "center", justifyContent: "center", fontSize: s.confirmed ? (s.big ? 20 : (s.bg ? 11 : 13)) : 17, fontWeight: 900, color: s.confirmed ? (s.fg || "#06130B") : "rgba(255,255,255,.5)", textShadow: s.confirmed && s.bg ? "0 1px 3px rgba(0,0,0,.6)" : "none", overflow: "hidden" }}>{s.confirmed ? s.value : "?"}</div>
+                  <div style={{ width: 40, height: 40, borderRadius: "50%", background: s.confirmed ? (s.bg || "#fff") : "#141414", border: "2px solid " + (s.confirmed ? "#00E676" : "rgba(0,0,0,.35)"), display: "flex", alignItems: "center", justifyContent: "center", fontSize: s.confirmed ? (s.big ? 20 : (s.bg ? 11 : 13)) : 17, fontWeight: 900, color: s.confirmed ? (s.fg || "#06130B") : "rgba(255,255,255,.5)", textShadow: s.confirmed && s.bg ? "0 1px 3px rgba(0,0,0,.6)" : "none", overflow: "hidden" }}>{s.confirmed ? (s.key === "pos" ? <PitchIcon pos={answer.positions[0] || ""} size={26} /> : s.value) : "?"}</div>
                   <span style={{ fontSize: 7.5, fontWeight: 900, letterSpacing: .3, color: s.confirmed ? "#0a3d1e" : "rgba(30,10,0,.55)" }}>{s.label}</span>
                 </div>
               ))}
@@ -612,12 +635,9 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
           </div>
         )}
 
-        {/* Défier un pote + Signaler — dispo AUSSI en cours de partie */}
+        {/* Signaler — dispo en cours de partie */}
         {!over && !revealing && (
-          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 8, marginBottom: 4 }}>
-            <button onClick={() => setShowRiddle(true)} style={{ padding: "8px 16px", borderRadius: 999, border: "1px solid rgba(255,214,0,.4)", background: "rgba(255,214,0,.08)", color: "#FFD600", fontSize: 12.5, fontWeight: 800, cursor: "pointer" }}>
-              🕵️ {tr("Défier un pote (énigme)", "Challenge a friend (riddle)", "Freund fordern (Rätsel)", "Sfida un amico (enigma)", "Desafiar um amigo (enigma)")}
-            </button>
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 4 }}>
             <button onClick={openReport} style={{ padding: "8px 16px", borderRadius: 999, border: "1px solid rgba(255,61,87,.4)", background: "rgba(255,61,87,.08)", color: "#FF6B7D", fontSize: 12.5, fontWeight: 800, cursor: "pointer" }}>
               🚩 {tr("Signaler une erreur", "Report an error", "Fehler melden", "Segnala un errore", "Reportar erro")}
             </button>
@@ -645,7 +665,7 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
                     const ring = c.state === "ok" ? "rgba(0,230,118,.7)" : c.state === "close" ? "rgba(255,176,32,.7)" : "rgba(255,61,87,.55)";
                     return (
                       <div key={c.key} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, ...(anim ? { animation: `fpChipIn ${CHIP_DUR}s ease both`, animationDelay: (ci * CHIP_STAGGER) + "s" } : {}) }}>
-                        <div style={{ width: 40, height: 40, borderRadius: "50%", background: c.bg || "#fff", border: "2px solid " + ring, display: "flex", alignItems: "center", justifyContent: "center", fontSize: c.big ? 20 : c.bg ? 11 : 12, fontWeight: 900, color: c.fg || "#06130B", textShadow: c.bg ? "0 1px 3px rgba(0,0,0,.6)" : "none", boxShadow: "0 3px 8px rgba(0,0,0,.35)", overflow: "hidden" }}>{c.top}</div>
+                        <div style={{ width: 40, height: 40, borderRadius: "50%", background: c.bg || "#fff", border: "2px solid " + ring, display: "flex", alignItems: "center", justifyContent: "center", fontSize: c.big ? 20 : c.bg ? 11 : 12, fontWeight: 900, color: c.fg || "#06130B", textShadow: c.bg ? "0 1px 3px rgba(0,0,0,.6)" : "none", boxShadow: "0 3px 8px rgba(0,0,0,.35)", overflow: "hidden" }}>{c.key === "pos" ? <PitchIcon pos={g.positions[0] || ""} size={26} /> : c.top}</div>
                         <div style={{ width: 18, height: 18, borderRadius: "50%", background: bBg, color: "#fff", fontSize: 11, fontWeight: 900, lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 5px rgba(0,0,0,.4)" }}>{bSym}</div>
                         <span style={{ fontSize: 7.5, fontWeight: 800, letterSpacing: .3, color: "rgba(255,255,255,.4)" }}>{c.label}</span>
                       </div>
@@ -678,10 +698,6 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
 
             <button onClick={doShare} style={{ width: "100%", marginTop: 8, padding: "13px", background: "linear-gradient(135deg,#00E676,#00B85C)", color: "#06130B", border: "none", borderRadius: 14, fontSize: 14, fontWeight: 900, cursor: "pointer" }}>
               {copied ? tr("Copié ! 📋", "Copied! 📋", "Kopiert! 📋", "Copiato! 📋", "Copiado! 📋") : "📤 " + tr("Partager mon résultat", "Share my result", "Ergebnis teilen", "Condividi il risultato", "Compartilhar resultado")}
-            </button>
-
-            <button onClick={() => setShowRiddle(true)} style={{ width: "100%", marginTop: 8, padding: "13px", background: "transparent", color: "#FFD600", border: "1.5px solid rgba(255,214,0,.55)", borderRadius: 14, fontSize: 14, fontWeight: 900, cursor: "pointer" }}>
-              🕵️ {tr("Défier un pote (énigme)", "Challenge a friend (riddle)", "Freund fordern (Rätsel)", "Sfida un amico (enigma)", "Desafiar um amigo (enigma)")}
             </button>
 
             {/* Classement du jour */}
