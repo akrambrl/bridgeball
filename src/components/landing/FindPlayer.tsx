@@ -516,6 +516,15 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
           </div>
         )}
 
+        {/* Défier un pote — dispo AUSSI en cours de partie (partage sans avoir trouvé) */}
+        {!over && !revealing && (
+          <div style={{ textAlign: "center", marginBottom: 4 }}>
+            <button onClick={() => setShowRiddle(true)} style={{ padding: "8px 16px", borderRadius: 999, border: "1px solid rgba(255,214,0,.4)", background: "rgba(255,214,0,.08)", color: "#FFD600", fontSize: 12.5, fontWeight: 800, cursor: "pointer" }}>
+              🕵️ {tr("Défier un pote (énigme)", "Challenge a friend (riddle)", "Freund fordern (Rätsel)", "Sfida un amico (enigma)", "Desafiar um amigo (enigma)")}
+            </button>
+          </div>
+        )}
+
         {/* Révélation puce par puce (suspens) */}
         <style>{`@keyframes fpChipIn{0%{opacity:0;transform:rotateY(90deg) scale(.5)}55%{opacity:1;transform:rotateY(0deg) scale(1.12)}100%{opacity:1;transform:rotateY(0deg) scale(1)}}`}</style>
 
@@ -609,6 +618,7 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
           <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 400, background: "linear-gradient(160deg,#0d2417,#08150d)", border: "1px solid rgba(255,214,0,.35)", borderRadius: 22, padding: "24px 20px", boxShadow: "0 24px 70px rgba(0,0,0,.65)" }}>
             <div style={{ textAlign: "center", fontFamily: "Anton, sans-serif", fontSize: 15, color: "#fff", letterSpacing: 1 }}>🐐 GOAT FC</div>
             <div style={{ textAlign: "center", fontFamily: "Anton, sans-serif", fontSize: 34, color: "#FFD600", letterSpacing: 1, marginTop: 2, marginBottom: 16 }}>🕵️ {tr("QUI SUIS-JE ?", "WHO AM I?", "WER BIN ICH?", "CHI SONO?", "QUEM SOU EU?")}</div>
+            {!over && <div style={{ textAlign: "center", fontSize: 11.5, color: "rgba(255,214,0,.8)", marginTop: -8, marginBottom: 14 }}>👀 {tr("Ces indices te sont dévoilés en avance", "These clues are revealed to you early", "Diese Hinweise werden dir vorab gezeigt", "Questi indizi ti sono svelati in anticipo", "Estas dicas são reveladas antes")}</div>}
             <div style={{ display: "flex", flexDirection: "column", gap: 11, marginBottom: 20 }}>
               {riddleClues().map((line, i) => (
                 <div key={i} style={{ fontSize: 15, fontWeight: 700, color: "#F2FFF7", lineHeight: 1.35 }}>{line}</div>
