@@ -111,6 +111,28 @@ function posEmoji(pos: string): string {
 type State = "ok" | "close" | "no";
 type Chip = { key: string; label: string; top: string; big?: boolean; state: State; arrow?: "up" | "down"; bg?: string; fg?: string };
 
+// Coéquipiers probables : mêmes clubs + même génération (±4 ans de naissance →
+// forte chance d'avoir joué ensemble, faute de données d'années par club).
+// Déterministe (même résultat pour tout le monde).
+function findTeammates(answer: Player, n: number): string[] {
+  const ay = answer.birthYear || 0;
+  if (!ay) return [];
+  const cands = ALL.filter(p =>
+    p.name !== answer.name &&
+    p.birthYear && Math.abs((p.birthYear as number) - ay) <= 4 &&
+    p.clubs.some(c => answer.clubs.includes(c))
+  );
+  const rank = (d: string) => (d === "facile" ? 0 : d === "moyen" ? 1 : 2);
+  cands.sort((a, b) => {
+    if (rank(a.diff) !== rank(b.diff)) return rank(a.diff) - rank(b.diff);
+    const sa = a.clubs.filter(c => answer.clubs.includes(c)).length;
+    const sb = b.clubs.filter(c => answer.clubs.includes(c)).length;
+    if (sb !== sa) return sb - sa;
+    return a.name.localeCompare(b.name);
+  });
+  return cands.slice(0, n).map(p => p.name);
+}
+
 // Code court d'un club pour la puce (ex. "Real Madrid" → "REA", "Inter Milan" → "INT").
 function clubCode(name: string): string {
   const clean = name.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^A-Za-z ]/g, "").trim();
@@ -283,9 +305,8 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
     try { navigator.clipboard.writeText(txt).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1800); }); } catch { /* noop */ }
   }
 
-  // Énigme « Qui suis-je ? » — générée à partir du joueur mystère (sans son nom),
-  // dans un format instagrammable pour défier ses potes.
-  function dailyRiddle(): string {
+  // Lignes d'indices de l'énigme (sans le nom) — partagées par le texte et l'image.
+  function riddleClues(): string[] {
     const clubs = answer.clubs || [];
     const first = clubs[0];
     const last = clubs[clubs.length - 1];
@@ -294,22 +315,114 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
     const startYear = answer.birthYear ? answer.birthYear + 19 : 0;
     const decade = startYear ? Math.floor(startYear / 10) * 10 : null;
     const flag = answer.nationalities[0] ? (NAT_FLAG[answer.nationalities[0]] || "🏴") : "";
-    const lines: string[] = [];
-    lines.push("🕵️ " + tr("QUI SUIS-JE ?", "WHO AM I?", "WER BIN ICH?", "CHI SONO?", "QUEM SOU EU?"));
-    lines.push("");
-    if (answer.nationalities[0]) lines.push(flag + " " + answer.nationalities[0] + " · " + posEmoji(answer.positions[0] || "") + " " + posLabel(answer.positions[0] || ""));
-    if (decade) lines.push("🕰️ " + tr("J'ai percé dans les années", "I broke through in the", "Durchbruch in den", "Sono esploso negli anni", "Estourei nos anos") + " " + decade + tr("", "s", "ern", "", ""));
-    if (first) lines.push("🎬 " + tr("J'ai débuté à", "I started at", "Mein Debüt bei", "Ho esordito a", "Comecei no") + " " + first);
-    if (midPick.length) lines.push("✈️ " + tr("Je suis passé par", "I played for", "Ich spielte für", "Sono passato per", "Passei por") + " " + midPick.join(", "));
-    if (last && last !== first) lines.push("🏁 " + tr("Dernier maillot :", "Last shirt:", "Letztes Trikot:", "Ultima maglia:", "Última camisa:") + " " + last);
-    lines.push("");
-    lines.push("🐐 " + tr("Le joueur mystère du jour sur GOAT FC", "Today's mystery player on GOAT FC", "Der Mystery-Spieler des Tages auf GOAT FC", "Il giocatore misterioso del giorno su GOAT FC", "O jogador misterioso do dia no GOAT FC"));
-    lines.push("👉 goatfc.fr");
-    return lines.join("\n");
+    const mates = findTeammates(answer, 2);
+    const out: string[] = [];
+    if (answer.nationalities[0]) out.push(flag + " " + answer.nationalities[0] + " · " + posEmoji(answer.positions[0] || "") + " " + posLabel(answer.positions[0] || ""));
+    if (decade) out.push("🕰️ " + tr("J'ai percé dans les années", "I broke through in the", "Durchbruch in den", "Sono esploso negli anni", "Estourei nos anos") + " " + decade + tr("", "s", "ern", "", ""));
+    if (first) out.push("🎬 " + tr("J'ai débuté à", "I started at", "Mein Debüt bei", "Ho esordito a", "Comecei no") + " " + first);
+    if (midPick.length) out.push("✈️ " + tr("Je suis passé par", "I played for", "Ich spielte für", "Sono passato per", "Passei por") + " " + midPick.join(", "));
+    if (mates.length) out.push("🤝 " + tr("J'ai côtoyé", "I played alongside", "Ich spielte mit", "Ho giocato con", "Joguei ao lado de") + " " + mates.join(", "));
+    if (last && last !== first) out.push("🏁 " + tr("Dernier maillot :", "Last shirt:", "Letztes Trikot:", "Ultima maglia:", "Última camisa:") + " " + last);
+    return out;
   }
-  function shareRiddle() {
+
+  // Énigme « Qui suis-je ? » — texte instagrammable pour défier ses potes.
+  function dailyRiddle(): string {
+    return [
+      "🕵️ " + tr("QUI SUIS-JE ?", "WHO AM I?", "WER BIN ICH?", "CHI SONO?", "QUEM SOU EU?"),
+      "",
+      ...riddleClues(),
+      "",
+      "🐐 " + tr("Le joueur mystère du jour sur GOAT FC", "Today's mystery player on GOAT FC", "Der Mystery-Spieler des Tages auf GOAT FC", "Il giocatore misterioso del giorno su GOAT FC", "O jogador misterioso do dia no GOAT FC"),
+      "👉 goatfc.fr",
+    ].join("\n");
+  }
+
+  // Carte image (PNG) de l'énigme — partageable en story Insta/WhatsApp.
+  async function buildRiddleImage(): Promise<Blob | null> {
+    try {
+      const W = 1080, H = 1350;
+      const cv = document.createElement("canvas");
+      cv.width = W; cv.height = H;
+      const ctx = cv.getContext("2d");
+      if (!ctx) return null;
+      try { await (document as any).fonts?.ready; } catch { /* noop */ }
+      // Fond dégradé sombre
+      const g = ctx.createLinearGradient(0, 0, 0, H);
+      g.addColorStop(0, "#0d2417"); g.addColorStop(0.55, "#08150d"); g.addColorStop(1, "#040a06");
+      ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+      // Coin jaune en diagonale (bas-droite) + silhouette
+      ctx.save();
+      ctx.fillStyle = "#FFD400";
+      ctx.beginPath(); ctx.moveTo(W, H - 430); ctx.lineTo(W, H); ctx.lineTo(W - 470, H); ctx.closePath(); ctx.fill();
+      ctx.font = "260px sans-serif"; ctx.textAlign = "center"; ctx.globalAlpha = 0.9;
+      ctx.fillText("👤", W - 180, H - 70);
+      ctx.restore();
+      // Halo vert
+      const halo = ctx.createRadialGradient(W / 2, 560, 60, W / 2, 560, 620);
+      halo.addColorStop(0, "rgba(0,230,118,.16)"); halo.addColorStop(1, "rgba(0,230,118,0)");
+      ctx.fillStyle = halo; ctx.fillRect(0, 0, W, H);
+      // Filigrane "?"
+      ctx.save(); ctx.textAlign = "center"; ctx.font = "800 620px Anton, sans-serif";
+      ctx.fillStyle = "rgba(255,255,255,.04)"; ctx.fillText("?", W / 2, 900); ctx.restore();
+      // En-tête
+      ctx.textAlign = "center";
+      ctx.fillStyle = "#FFFFFF"; ctx.font = "700 52px Anton, sans-serif";
+      ctx.fillText("🐐 GOAT FC", W / 2, 120);
+      // Titre
+      ctx.fillStyle = "#FFD400"; ctx.font = "700 118px Anton, sans-serif";
+      ctx.fillText(tr("QUI SUIS-JE ?", "WHO AM I?", "WER BIN ICH?", "CHI SONO?", "QUEM SOU EU?"), W / 2, 270);
+      // Indices (gauche)
+      const clues = riddleClues();
+      ctx.textAlign = "left";
+      const x = 90, maxW = W - 180, lh = 96;
+      let y = 430;
+      ctx.font = "600 46px 'Archivo', 'Helvetica Neue', Arial, sans-serif";
+      const wrap = (text: string) => {
+        const words = text.split(" ");
+        let line = "";
+        for (const w of words) {
+          const test = line ? line + " " + w : w;
+          if (ctx.measureText(test).width > maxW && line) { ctx.fillStyle = "#F2FFF7"; ctx.fillText(line, x, y); y += 58; line = w; }
+          else line = test;
+        }
+        if (line) { ctx.fillStyle = "#F2FFF7"; ctx.fillText(line, x, y); }
+        y += lh;
+      };
+      clues.forEach(wrap);
+      // Barre jaune bas
+      ctx.fillStyle = "#FFD400"; ctx.fillRect(0, H - 150, W, 150);
+      ctx.textAlign = "left"; ctx.fillStyle = "#08150d";
+      ctx.font = "700 46px Anton, sans-serif"; ctx.fillText("goatfc.fr", 70, H - 58);
+      ctx.textAlign = "right"; ctx.font = "600 30px 'Archivo', Arial, sans-serif";
+      ctx.fillText(tr("Le joueur mystère du jour", "Today's mystery player", "Der Mystery-Spieler des Tages", "Il misterioso del giorno", "O misterioso do dia"), W - 70, H - 58);
+      return await new Promise<Blob | null>(res => cv.toBlob(b => res(b), "image/png", 0.95));
+    } catch { return null; }
+  }
+
+  async function shareRiddle() {
     const txt = dailyRiddle();
-    try { if ((navigator as any).share) { (navigator as any).share({ title: "GOAT FC · " + tr("Qui suis-je ?", "Who am I?", "Wer bin ich?", "Chi sono?", "Quem sou eu?"), text: txt }); return; } } catch { /* noop */ }
+    const nav: any = navigator;
+    // 1) Image en priorité (story instagrammable)
+    try {
+      const blob = await buildRiddleImage();
+      if (blob) {
+        const file = new File([blob], "goatfc-enigme.png", { type: "image/png" });
+        if (nav.canShare && nav.canShare({ files: [file] })) {
+          await nav.share({ files: [file], text: txt, title: "GOAT FC" });
+          return;
+        }
+        // Repli : téléchargement de l'image + copie du texte
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a"); a.href = url; a.download = "goatfc-enigme.png"; a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 4000);
+        try { await navigator.clipboard.writeText(txt); } catch { /* noop */ }
+        setRiddleCopied(true); setTimeout(() => setRiddleCopied(false), 1800);
+        return;
+      }
+    } catch { /* noop */ }
+    // 2) Repli texte
+    try { if (nav.share) { nav.share({ title: "GOAT FC", text: txt }); return; } } catch { /* noop */ }
     try { navigator.clipboard.writeText(txt).then(() => { setRiddleCopied(true); setTimeout(() => setRiddleCopied(false), 1800); }); } catch { /* noop */ }
   }
 
