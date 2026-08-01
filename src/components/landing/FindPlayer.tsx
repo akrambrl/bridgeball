@@ -57,6 +57,17 @@ function dailyPlayer(): Player {
   return arr[((dayIdx % arr.length) + arr.length) % arr.length];
 }
 
+// ── Mode illimité : un joueur au hasard, sans répétition proche ────────────────
+function randomPlayer(seen: Set<string>): Player {
+  let pool = ALL.filter(p => p.diff === "facile" && p.clubs && p.clubs.length >= 3 && p.clubs.length <= 9);
+  if (pool.length === 0) pool = ALL.filter(p => p.clubs && p.clubs.length >= 3);
+  let avail = pool.filter(p => !seen.has(p.name));
+  if (avail.length === 0) { seen.clear(); avail = pool; }
+  const pick = avail[Math.floor(Math.random() * avail.length)];
+  seen.add(pick.name);
+  return pick;
+}
+
 function clubColors(name: string): [string, string] {
   return ((CLUB_COLORS as Record<string, [string, string]>)[name]) || ["#1a7a3a", "#FFFFFF"];
 }
@@ -178,9 +189,8 @@ function computeChips(guess: Player, answer: Player): Chip[] {
 const SQ: Record<State, string> = { ok: "🟩", close: "🟨", no: "⬛" };
 
 export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
-  const answer = useMemo(() => dailyPlayer(), []);
-  const day = parisDay();
-  const STORE_KEY = "bb_findplayer";
+  const seenRef = useRef<Set<string>>(new Set());
+  const [answer, setAnswer] = useState<Player>(() => randomPlayer(seenRef.current));
 
   const [guesses, setGuesses] = useState<Player[]>([]);
   const [over, setOver] = useState(false);
@@ -192,27 +202,11 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
   const [showCareer, setShowCareer] = useState(false); // parcours caché par défaut (déduction pure)
   const [animRow, setAnimRow] = useState(-1); // index de la proposition à révéler puce par puce
   const [revealing, setRevealing] = useState(false); // révélation en cours (bloque la saisie sur la manche finale)
-  const submittedRef = useRef(false);
+  const [streak, setStreak] = useState(0); // série de trouvailles d'affilée (mode illimité)
+  const [best, setBest] = useState<number>(() => { try { return parseInt(localStorage.getItem("bb_findstreak_best") || "0", 10) || 0; } catch { return 0; } });
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Restaure la partie du jour
-  useEffect(() => {
-    try {
-      const raw = JSON.parse(localStorage.getItem(STORE_KEY) || "{}");
-      if (raw && raw.date === day && Array.isArray(raw.guesses)) {
-        const gs = raw.guesses.map((n: string) => ALL.find(p => p.name === n)).filter(Boolean) as Player[];
-        setGuesses(gs);
-        setWon(!!raw.won);
-        setOver(!!raw.over);
-        if (raw.over) submittedRef.current = true;
-      }
-    } catch { /* noop */ }
-    trackPlay("grid"); // réutilise le compteur de l'emplacement (ex-GOAT Grid)
-  }, [day]);
-
-  function persist(gs: Player[], w: boolean, o: boolean) {
-    try { localStorage.setItem(STORE_KEY, JSON.stringify({ date: day, guesses: gs.map(g => g.name), won: w, over: o })); } catch { /* noop */ }
-  }
+  useEffect(() => { trackPlay("grid"); }, []); // réutilise le compteur de l'emplacement (ex-GOAT Grid)
 
   function playerId(): string {
     try {
@@ -222,21 +216,13 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
     } catch { return "anon"; }
   }
 
-  function scoreFor(guessCount: number, w: boolean): number {
-    if (!w) return 0;
-    return Math.max(100, (MAX_GUESSES - guessCount + 1) * 100); // 1 essai = 600, 6 = 100
-  }
-
-  async function submitScore(w: boolean, gs: Player[]) {
-    if (submittedRef.current) return;
-    submittedRef.current = true;
+  async function submitBest(bestVal: number) {
     const name = (() => { try { return localStorage.getItem("bb_name") || ""; } catch { return ""; } })();
-    const sc = scoreFor(gs.length, w);
     try {
       await fetch(SB_URL + "/rest/v1/bb_scores", {
         method: "POST",
         headers: { apikey: SB_KEY, Authorization: "Bearer " + SB_KEY, "Content-Type": "application/json", Prefer: "return=minimal" },
-        body: JSON.stringify({ player_id: playerId(), player_name: name || "Anonyme", score: sc, mode: "findplayer", diff: day }),
+        body: JSON.stringify({ player_id: playerId(), player_name: name || "Anonyme", score: bestVal, mode: "findstreak", diff: "all" }),
         keepalive: true,
       });
     } catch { /* noop */ }
@@ -246,7 +232,7 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
   async function loadBoard() {
     setBoard({ loading: true, rows: [], myRank: null, total: 0 });
     try {
-      const res = await fetch(SB_URL + "/rest/v1/bb_scores?mode=eq.findplayer&diff=eq." + day + "&order=score.desc&limit=200&select=player_id,player_name,score", {
+      const res = await fetch(SB_URL + "/rest/v1/bb_scores?mode=eq.findstreak&order=score.desc&limit=300&select=player_id,player_name,score", {
         headers: { apikey: SB_KEY, Authorization: "Bearer " + SB_KEY },
       });
       const list = res.ok ? await res.json() : [];
@@ -276,28 +262,50 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
     setGuesses(gs);
     setInput("");
     setAnimRow(gs.length - 1); // la nouvelle ligne se révèle puce par puce
-    persist(gs, w, o);
     if (o) {
       // Manche finale : on laisse la révélation des puces se jouer (suspens) avant
       // d'afficher le résultat (victoire/défaite) et le parcours.
       setRevealing(true);
       setTimeout(() => {
         setRevealing(false);
-        if (w) setWon(true);
+        if (w) {
+          setWon(true);
+          const ns = streak + 1;
+          setStreak(ns);
+          if (ns > best) { setBest(ns); try { localStorage.setItem("bb_findstreak_best", String(ns)); } catch { /* noop */ } submitBest(ns); }
+        } else {
+          setStreak(0);
+        }
         setOver(true);
-        submitScore(w, gs);
+        loadBoard();
       }, REVEAL_MS);
     } else {
       setTimeout(() => inputRef.current?.focus(), 50);
     }
   }
 
+  // Mode illimité : nouvelle manche avec un joueur au hasard.
+  function playAgain() {
+    setAnswer(randomPlayer(seenRef.current));
+    setGuesses([]);
+    setOver(false);
+    setWon(false);
+    setInput("");
+    setAnimRow(-1);
+    setRevealing(false);
+    setShowCareer(false);
+    setBoard(null);
+    trackPlay("grid");
+    setTimeout(() => inputRef.current?.focus(), 60);
+  }
+
   function shareText(): string {
     const rows = guesses.map(g => computeChips(g, answer).map(c => SQ[c.state]).join("")).join("\n");
-    const head = "🐐 GOAT FC · " + tr("Trouve le joueur", "Guess the player", "Errate den Spieler", "Indovina il giocatore", "Adivinhe o jogador") + " " + day;
+    const head = "🐐 GOAT FC · " + tr("Trouve le joueur", "Guess the player", "Errate den Spieler", "Indovina il giocatore", "Adivinhe o jogador");
     const res = won ? `${guesses.length}/${MAX_GUESSES}` : `X/${MAX_GUESSES}`;
+    const streakLine = won ? "  ·  🔥 " + tr("Série", "Streak", "Serie", "Serie", "Sequência") + " " + streak : "";
     const cta = tr("Tu fais mieux ? 👇", "Can you beat it? 👇", "Schaffst du mehr? 👇", "Fai meglio? 👇", "Consegue superar? 👇");
-    return `${head} — ${res}\n${rows}\n\n${cta}\nhttps://goatfc.fr`;
+    return `${head} — ${res}${streakLine}\n${rows}\n\n${cta}\nhttps://goatfc.fr`;
   }
   function doShare() {
     const txt = shareText();
@@ -333,7 +341,7 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
       "",
       ...riddleClues(),
       "",
-      "🐐 " + tr("Le joueur mystère du jour sur GOAT FC", "Today's mystery player on GOAT FC", "Der Mystery-Spieler des Tages auf GOAT FC", "Il giocatore misterioso del giorno su GOAT FC", "O jogador misterioso do dia no GOAT FC"),
+      "🐐 " + tr("Devine le joueur mystère sur GOAT FC", "Guess the mystery player on GOAT FC", "Errate den Mystery-Spieler auf GOAT FC", "Indovina il giocatore misterioso su GOAT FC", "Adivinhe o jogador misterioso no GOAT FC"),
       "👉 goatfc.fr",
     ].join("\n");
   }
@@ -395,7 +403,7 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
       ctx.textAlign = "left"; ctx.fillStyle = "#08150d";
       ctx.font = "700 46px Anton, sans-serif"; ctx.fillText("goatfc.fr", 70, H - 58);
       ctx.textAlign = "right"; ctx.font = "600 30px 'Archivo', Arial, sans-serif";
-      ctx.fillText(tr("Le joueur mystère du jour", "Today's mystery player", "Der Mystery-Spieler des Tages", "Il misterioso del giorno", "O misterioso do dia"), W - 70, H - 58);
+      ctx.fillText(tr("Le joueur mystère", "The mystery player", "Der Mystery-Spieler", "Il giocatore misterioso", "O jogador misterioso"), W - 70, H - 58);
       return await new Promise<Blob | null>(res => cv.toBlob(b => res(b), "image/png", 0.95));
     } catch { return null; }
   }
@@ -436,8 +444,11 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
       </div>
 
       <div style={{ maxWidth: 480, margin: "0 auto", padding: "8px 16px 40px" }}>
-        {/* Bandeau défi du jour */}
-        <div style={{ textAlign: "center", fontSize: 11, letterSpacing: 2, fontWeight: 800, color: "rgba(255,255,255,.45)", marginBottom: 10 }}>🗓 {tr("DÉFI DU JOUR", "DAILY CHALLENGE", "TAGES-CHALLENGE", "SFIDA DEL GIORNO", "DESAFIO DO DIA")} · {day}</div>
+        {/* Bandeau série (mode illimité) */}
+        <div style={{ display: "flex", justifyContent: "center", gap: 8, marginBottom: 12 }}>
+          <span style={{ padding: "5px 12px", borderRadius: 999, background: "rgba(255,138,42,.14)", border: "1px solid rgba(255,138,42,.4)", color: "#FF8A2A", fontSize: 12, fontWeight: 900, letterSpacing: 1 }}>🔥 {tr("SÉRIE", "STREAK", "SERIE", "SERIE", "SÉRIE")} : {streak}</span>
+          <span style={{ padding: "5px 12px", borderRadius: 999, background: "rgba(255,214,0,.12)", border: "1px solid rgba(255,214,0,.4)", color: "#FFD600", fontSize: 12, fontWeight: 900, letterSpacing: 1 }}>🏆 {tr("RECORD", "BEST", "REKORD", "RECORD", "RECORDE")} : {best}</span>
+        </div>
 
         {/* Parcours de clubs — caché par défaut (déduction pure), révélable en indice */}
         {(showCareer || over) ? (
@@ -540,8 +551,16 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
               {won ? tr("Trouvé en", "Found in", "Gefunden in", "Trovato in", "Encontrado em") + " " + guesses.length + "/" + MAX_GUESSES : tr("C'était", "It was", "Es war", "Era", "Era") + " :"}
             </div>
             {!won && <div style={{ fontFamily: "Anton, sans-serif", fontSize: 22, color: "#fff", marginTop: 2 }}>{answer.name}</div>}
+            <div style={{ fontSize: 15, fontWeight: 800, color: won ? "#FF8A2A" : "rgba(255,255,255,.6)", marginTop: 8 }}>
+              {won ? "🔥 " + tr("Série", "Streak", "Serie", "Serie", "Sequência") + " : " + streak + (streak >= best && streak > 0 ? "  · 🏆 " + tr("record !", "best!", "Rekord!", "record!", "recorde!") : "")
+                   : (streak === 0 ? tr("Série remise à zéro", "Streak reset", "Serie zurückgesetzt", "Serie azzerata", "Sequência zerada") : "")}
+            </div>
 
-            <button onClick={doShare} style={{ width: "100%", marginTop: 14, padding: "13px", background: "linear-gradient(135deg,#00E676,#00B85C)", color: "#06130B", border: "none", borderRadius: 14, fontSize: 14, fontWeight: 900, cursor: "pointer" }}>
+            <button onClick={playAgain} style={{ width: "100%", marginTop: 14, padding: "15px", background: "linear-gradient(135deg,#FFD600,#FF8A2A)", color: "#1A0F00", border: "none", borderRadius: 14, fontSize: 16, fontWeight: 900, letterSpacing: .5, cursor: "pointer" }}>
+              🔄 {tr("REJOUER", "PLAY AGAIN", "NOCHMAL", "GIOCA ANCORA", "JOGAR DE NOVO")}
+            </button>
+
+            <button onClick={doShare} style={{ width: "100%", marginTop: 8, padding: "13px", background: "linear-gradient(135deg,#00E676,#00B85C)", color: "#06130B", border: "none", borderRadius: 14, fontSize: 14, fontWeight: 900, cursor: "pointer" }}>
               {copied ? tr("Copié ! 📋", "Copied! 📋", "Kopiert! 📋", "Copiato! 📋", "Copiado! 📋") : "📤 " + tr("Partager mon résultat", "Share my result", "Ergebnis teilen", "Condividi il risultato", "Compartilhar resultado")}
             </button>
 
@@ -551,11 +570,11 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
 
             {/* Classement du jour */}
             <div style={{ marginTop: 14, background: "rgba(0,0,0,.25)", borderRadius: 12, padding: "10px 12px", textAlign: "left" }}>
-              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.5, color: "rgba(255,255,255,.45)", marginBottom: 6, textAlign: "center" }}>🏆 {tr("CLASSEMENT DU JOUR", "TODAY'S LEADERBOARD", "RANGLISTE DES TAGES", "CLASSIFICA DI OGGI", "RANKING DE HOJE")}</div>
+              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.5, color: "rgba(255,255,255,.45)", marginBottom: 6, textAlign: "center" }}>🔥 {tr("MEILLEURES SÉRIES", "BEST STREAKS", "BESTE SERIEN", "MIGLIORI SERIE", "MELHORES SEQUÊNCIAS")}</div>
               {(!board || board.loading) ? (
                 <div style={{ fontSize: 12, color: "rgba(255,255,255,.4)", textAlign: "center", padding: 6 }}>{tr("Chargement…", "Loading…", "Wird geladen…", "Caricamento…", "Carregando…")}</div>
               ) : board.rows.length === 0 ? (
-                <div style={{ fontSize: 12, color: "rgba(255,255,255,.4)", textAlign: "center", padding: 6 }}>{tr("Sois le premier aujourd'hui !", "Be the first today!", "Sei heute der Erste!", "Sii il primo oggi!", "Seja o primeiro hoje!")}</div>
+                <div style={{ fontSize: 12, color: "rgba(255,255,255,.4)", textAlign: "center", padding: 6 }}>{tr("Sois le premier !", "Be the first!", "Sei der Erste!", "Sii il primo!", "Seja o primeiro!")}</div>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
                   {board.rows.map((r, i) => {
@@ -572,8 +591,6 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
                 </div>
               )}
             </div>
-
-            <div style={{ fontSize: 11, color: "rgba(255,255,255,.4)", marginTop: 10 }}>🔒 {tr("Reviens demain pour un nouveau joueur", "Come back tomorrow for a new player", "Komm morgen für einen neuen Spieler", "Torna domani per un nuovo giocatore", "Volte amanhã para um novo jogador")}</div>
           </div>
         )}
       </div>

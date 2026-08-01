@@ -50,13 +50,13 @@ const GAMES: {
     key: "grid",
     mode: "grid",
     name: "Trouve le joueur",
-    tagline: "Le mystère du jour",
-    img: "/grid-card.png",
+    tagline: "Déduction en illimité",
+    img: "/reveal-card.png",
     mascot: "/win2.png",
     description:
-      "Son parcours de clubs s'affiche. Devine le joueur mystère en 6 essais.",
+      "Devine le joueur mystère en 6 essais. Enchaîne les bonnes réponses et monte ta série.",
     accent: "#00E676",
-    badge: "DÉFI DU JOUR",
+    badge: "ILLIMITÉ",
   },
   {
     key: "guess",
@@ -77,7 +77,7 @@ function gameTagline(k: GameKey): string {
   switch (k) {
     case "mercato": return tr("La chaîne sans fin", "The endless chain", "Die endlose Kette", "La catena infinita", "A corrente sem fim");
     case "plug": return tr("Le pont entre deux clubs", "The bridge between two clubs", "Die Brücke zwischen zwei Klubs", "Il ponte tra due club", "A ponte entre dois clubes");
-    case "grid": return tr("Le mystère du jour", "Today's mystery", "Das Rätsel des Tages", "Il mistero del giorno", "O mistério do dia");
+    case "grid": return tr("Déduction en illimité", "Endless deduction", "Endlose Deduktion", "Deduzione illimitata", "Dedução ilimitada");
     case "guess": return tr("Je devine ton joueur", "I guess your player", "Ich errate deinen Spieler", "Indovino il tuo giocatore", "Eu adivinho seu jogador");
   }
 }
@@ -85,7 +85,7 @@ function gameDescription(k: GameKey): string {
   switch (k) {
     case "mercato": return tr("Pars d'un joueur et enchaîne les transferts. Bats ton record.", "Start from a player and chain transfers. Beat your record.", "Starte bei einem Spieler und reihe Transfers aneinander. Schlag deinen Rekord.", "Parti da un giocatore e concatena i trasferimenti. Batti il tuo record.", "Comece por um jogador e encadeie as transferências. Bata seu recorde.");
     case "plug": return tr("Deux clubs, un seul joueur. À toi de trouver le maillon qui les relie.", "Two clubs, one player. Find the link that connects them.", "Zwei Klubs, ein Spieler. Finde das Bindeglied zwischen ihnen.", "Due club, un solo giocatore. Trova l'anello che li unisce.", "Dois clubes, um jogador. Ache o elo que os liga.");
-    case "grid": return tr("Son parcours de clubs s'affiche. Devine le joueur mystère en 6 essais.", "His club career is shown. Guess the mystery player in 6 tries.", "Seine Klub-Karriere wird gezeigt. Errate den Mystery-Spieler in 6 Versuchen.", "Viene mostrata la sua carriera nei club. Indovina il giocatore misterioso in 6 tentativi.", "A carreira dele nos clubes aparece. Adivinhe o jogador misterioso em 6 tentativas.");
+    case "grid": return tr("Devine le joueur mystère en 6 essais, en illimité. Enchaîne les bonnes réponses et monte ta série.", "Guess the mystery player in 6 tries, unlimited. Chain correct answers to build your streak.", "Errate den Mystery-Spieler in 6 Versuchen, unbegrenzt. Reihe richtige Antworten für deine Serie aneinander.", "Indovina il giocatore misterioso in 6 tentativi, illimitato. Concatena le risposte giuste per la tua serie.", "Adivinhe o jogador misterioso em 6 tentativas, ilimitado. Encadeie acertos para subir sua sequência.");
     case "guess": return tr("Pense à un footballeur. En 25 questions max, je devine de qui il s'agit. 🔮", "Think of a footballer. In 25 questions max, I'll guess who it is. 🔮", "Denk an einen Fußballer. In max. 25 Fragen errate ich, wer es ist. 🔮", "Pensa a un calciatore. In max 25 domande indovino chi è. 🔮", "Pense num jogador. Em no máximo 25 perguntas, eu adivinho quem é. 🔮");
   }
 }
@@ -93,7 +93,7 @@ function gameBadge(k: GameKey): string {
   switch (k) {
     case "mercato": return tr("MARATHON", "MARATHON", "MARATHON", "MARATONA", "MARATONA");
     case "plug": return "SIGNATURE";
-    case "grid": return tr("DÉFI DU JOUR", "DAILY CHALLENGE", "TAGES-CHALLENGE", "SFIDA DEL GIORNO", "DESAFIO DO DIA");
+    case "grid": return tr("ILLIMITÉ", "UNLIMITED", "UNBEGRENZT", "ILLIMITATO", "ILIMITADO");
     case "guess": return tr("MAGIE", "MAGIC", "MAGIE", "MAGIA", "MAGIA");
   }
 }

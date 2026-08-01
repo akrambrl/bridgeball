@@ -82,27 +82,27 @@ function getTutos() {
       id: "grid",
       title: howTo(tr("Trouve le joueur", "Guess the Player", "Errate den Spieler", "Indovina il giocatore", "Adivinhe o jogador")),
       accent: "#00E676",
-      badge: tr("DÉFI DU JOUR", "DAILY CHALLENGE", "TAGES-CHALLENGE", "SFIDA DEL GIORNO", "DESAFIO DO DIA"),
+      badge: tr("ILLIMITÉ", "UNLIMITED", "UNBEGRENZT", "ILLIMITATO", "ILIMITADO"),
       content: (
         <div className="space-y-3 text-sm md:text-base leading-relaxed text-white/80">
           <P label={principle} text={tr(
-            "Chaque jour, un joueur mystère (le même pour tous). On te montre son parcours de clubs dans l'ordre, plus un indice (nationalité, poste, décennie).",
-            "Every day, one mystery player (the same for everyone). We show his club career in order, plus a hint (nationality, position, decade).",
-            "Jeden Tag ein Mystery-Spieler (für alle gleich). Wir zeigen seine Klub-Karriere der Reihe nach, plus einen Hinweis (Nationalität, Position, Jahrzehnt).",
-            "Ogni giorno un giocatore misterioso (uguale per tutti). Ti mostriamo la sua carriera nei club in ordine, più un indizio (nazionalità, ruolo, decennio).",
-            "Todo dia, um jogador misterioso (o mesmo para todos). Mostramos a carreira dele nos clubes em ordem, mais uma dica (nacionalidade, posição, década).")} />
+            "Un joueur mystère à deviner, en illimité. Son parcours reste caché : tu déduis uniquement à partir de tes propositions (révélable en indice).",
+            "A mystery player to guess, unlimited. His career stays hidden: you deduce only from your guesses (revealable as a hint).",
+            "Ein Mystery-Spieler zum Erraten, unbegrenzt. Seine Karriere bleibt verborgen: du schließt nur aus deinen Tipps (als Hinweis aufdeckbar).",
+            "Un giocatore misterioso da indovinare, illimitato. La carriera resta nascosta: deduci solo dai tuoi tentativi (svelabile come indizio).",
+            "Um jogador misterioso para adivinhar, ilimitado. A carreira fica escondida: você deduz só pelos seus palpites (revelável como dica).")} />
           <P label={scoring} text={tr(
-            "Tu as 6 essais. À chaque proposition, un feedback façon Wordle : 🟩 bon, 🟨 proche, ⬛ non — sur la nationalité, le poste, l'âge et les clubs en commun.",
-            "You get 6 tries. Each guess gives Wordle-style feedback: 🟩 right, 🟨 close, ⬛ no — on nationality, position, age and clubs in common.",
-            "Du hast 6 Versuche. Jeder Tipp gibt Wordle-Feedback: 🟩 richtig, 🟨 nah, ⬛ nein — zu Nationalität, Position, Alter und gemeinsamen Klubs.",
-            "Hai 6 tentativi. Ogni proposta dà un feedback stile Wordle: 🟩 giusto, 🟨 vicino, ⬛ no — su nazionalità, ruolo, età e club in comune.",
-            "Você tem 6 tentativas. Cada palpite dá feedback estilo Wordle: 🟩 certo, 🟨 perto, ⬛ não — sobre nacionalidade, posição, idade e clubes em comum.")} />
+            "Tu as 6 essais. Chaque proposition affiche des puces : nationalité, zone, poste, âge (↑↓), club et clubs en commun — ✓ vert, 🟨 proche, ✗ rouge.",
+            "You get 6 tries. Each guess shows chips: nationality, zone, position, age (↑↓), club and clubs in common — ✓ green, 🟨 close, ✗ red.",
+            "Du hast 6 Versuche. Jeder Tipp zeigt Chips: Nationalität, Zone, Position, Alter (↑↓), Klub und gemeinsame Klubs — ✓ grün, 🟨 nah, ✗ rot.",
+            "Hai 6 tentativi. Ogni proposta mostra delle pedine: nazionalità, zona, ruolo, età (↑↓), club e club in comune — ✓ verde, 🟨 vicino, ✗ rosso.",
+            "Você tem 6 tentativas. Cada palpite mostra fichas: nacionalidade, zona, posição, idade (↑↓), clube e clubes em comum — ✓ verde, 🟨 perto, ✗ vermelho.")} />
           <P label={tip} text={tr(
-            "Moins tu utilises d'essais, plus tu marques. Un classement quotidien départage tout le monde — et tu peux partager ta grille.",
-            "The fewer tries you use, the more you score. A daily leaderboard ranks everyone — and you can share your grid.",
-            "Je weniger Versuche, desto mehr Punkte. Eine Tages-Rangliste vergleicht alle — und du kannst dein Raster teilen.",
-            "Meno tentativi usi, più punti fai. Una classifica giornaliera confronta tutti — e puoi condividere la tua griglia.",
-            "Quanto menos tentativas, mais pontos. Um ranking diário compara todos — e você pode compartilhar sua grade.")} />
+            "Enchaîne les bonnes réponses pour faire grimper ta SÉRIE 🔥 : le classement récompense les meilleures séries. Défie tes potes avec l'énigme partageable.",
+            "Chain correct answers to build your STREAK 🔥: the leaderboard rewards the best streaks. Challenge your friends with the shareable riddle.",
+            "Reihe richtige Antworten für deine SERIE 🔥 aneinander: die Rangliste belohnt die besten Serien. Fordere Freunde mit dem teilbaren Rätsel heraus.",
+            "Concatena le risposte giuste per la tua SERIE 🔥: la classifica premia le migliori serie. Sfida gli amici con l'enigma condivisibile.",
+            "Encadeie acertos para subir sua SÉRIE 🔥: o ranking premia as melhores sequências. Desafie seus amigos com o enigma compartilhável.")} />
         </div>
       ),
     },
