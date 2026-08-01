@@ -213,6 +213,7 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
   const [showCareer, setShowCareer] = useState(false); // parcours caché par défaut (déduction pure)
   const [animRow, setAnimRow] = useState(-1); // index de la proposition à révéler puce par puce
   const [revealing, setRevealing] = useState(false); // révélation en cours (bloque la saisie sur la manche finale)
+  const [hintRevealed, setHintRevealed] = useState<string[]>([]); // attributs révélés via l'ampoule 💡
   const [streak, setStreak] = useState(0); // série de trouvailles d'affilée (mode illimité)
   const [best, setBest] = useState<number>(() => { try { return parseInt(localStorage.getItem("bb_findstreak_best") || "0", 10) || 0; } catch { return 0; } });
   const inputRef = useRef<HTMLInputElement>(null);
@@ -305,9 +306,29 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
     setAnimRow(-1);
     setRevealing(false);
     setShowCareer(false);
+    setHintRevealed([]);
     setBoard(null);
     trackPlay("grid");
     setTimeout(() => inputRef.current?.focus(), 60);
+  }
+
+  // 💡 Indice : révèle une pastille (un attribut) non encore trouvée.
+  function revealOneAttr() {
+    const conf = new Set<string>(hintRevealed);
+    guesses.forEach(g => computeChips(g, answer).forEach(c => { if (c.state === "ok") conf.add(c.key); }));
+    const remaining = ["nat", "cont", "pos", "age", "lastclub"].filter(k => !conf.has(k));
+    if (remaining.length === 0) return;
+    const pick = remaining[Math.floor(Math.random() * remaining.length)];
+    setHintRevealed(prev => prev.includes(pick) ? prev : [...prev, pick]);
+  }
+
+  // 🏳️ Abandonner : dévoile la réponse (fin de manche, série remise à zéro).
+  function giveUp() {
+    setStreak(0);
+    setWon(false);
+    setShowCareer(true);
+    setOver(true);
+    loadBoard();
   }
 
   // Signaler une erreur de parcours sur le joueur mystère en cours (table bb_reports).
@@ -469,6 +490,24 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
     try { navigator.clipboard.writeText(txt).then(() => { setRiddleCopied(true); setTimeout(() => setRiddleCopied(false), 1800); }); } catch { /* noop */ }
   }
 
+  // Barre de pastilles (« Mode Infini ») : les attributs du mystère se dévoilent
+  // dès qu'une proposition les valide (✓ vert), ou via l'ampoule 💡.
+  const confirmedKeys = new Set<string>(hintRevealed);
+  guesses.forEach(g => computeChips(g, answer).forEach(c => { if (c.state === "ok") confirmedKeys.add(c.key); }));
+  const aCont = continentOf(answer.nationalities[0]);
+  const aFlag = answer.nationalities[0] ? (NAT_FLAG[answer.nationalities[0]] || answer.nationalities[0].slice(0, 3).toUpperCase()) : "?";
+  const aAge = answer.birthYear ? NOW_Y - answer.birthYear : 0;
+  const aLastClub = answer.clubs[answer.clubs.length - 1] || "";
+  const [aLbg, aLfg] = clubColors(aLastClub);
+  const topSlots = [
+    { key: "nat", label: tr("NAT", "NAT", "NAT", "NAZ", "NAC"), value: aFlag, big: true, confirmed: confirmedKeys.has("nat") },
+    { key: "cont", label: tr("ZONE", "ZONE", "ZONE", "ZONA", "ZONA"), value: aCont, confirmed: confirmedKeys.has("cont") },
+    { key: "pos", label: tr("POSTE", "POS", "POS", "RUOLO", "POS"), value: posEmoji(answer.positions[0] || ""), big: true, confirmed: confirmedKeys.has("pos") },
+    { key: "age", label: tr("ÂGE", "AGE", "ALTER", "ETÀ", "IDADE"), value: aAge ? String(aAge) : "?", confirmed: confirmedKeys.has("age") },
+    { key: "lastclub", label: tr("CLUB", "CLUB", "KLUB", "CLUB", "CLUBE"), value: aLastClub ? clubCode(aLastClub) : "?", bg: aLbg, fg: aLfg, confirmed: confirmedKeys.has("lastclub") },
+  ] as { key: string; label: string; value: string; big?: boolean; bg?: string; fg?: string; confirmed: boolean }[];
+  const allFound = topSlots.every(s => s.confirmed);
+
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 200, background: "#0A1410", overflowY: "auto", WebkitOverflowScrolling: "touch" as any }}>
       {/* Header */}
@@ -491,10 +530,33 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
           <span style={{ padding: "5px 12px", borderRadius: 999, background: "rgba(255,214,0,.12)", border: "1px solid rgba(255,214,0,.4)", color: "#FFD600", fontSize: 12, fontWeight: 900, letterSpacing: 1 }}>🏆 {tr("RECORD", "BEST", "REKORD", "RECORD", "RECORDE")} : {best}</span>
         </div>
 
-        {/* Parcours de clubs — caché par défaut (déduction pure), révélable en indice */}
-        {(showCareer || over) ? (
+        {/* Boutons d'indice + barre de pastilles (Mode Infini) */}
+        {!over && (
+          <div style={{ marginBottom: 14 }}>
+            <div style={{ display: "flex", justifyContent: "center", gap: 12, marginBottom: 12 }}>
+              {[
+                { emoji: "💡", color: "#3DA5FF", onClick: revealOneAttr, disabled: allFound, label: tr("Révéler une info", "Reveal a clue", "Info zeigen", "Rivela un'info", "Revelar info") },
+                { emoji: "👤", color: "#00E676", onClick: () => setShowCareer(true), disabled: showCareer, label: tr("Voir le parcours", "Reveal career", "Karriere zeigen", "Mostra carriera", "Ver carreira") },
+                { emoji: "🏳️", color: "#FF3D57", onClick: giveUp, disabled: false, label: tr("Abandonner", "Give up", "Aufgeben", "Arrenditi", "Desistir") },
+              ].map(h => (
+                <button key={h.emoji} onClick={h.onClick} disabled={h.disabled} title={h.label} aria-label={h.label} style={{ width: 48, height: 48, borderRadius: "50%", border: "1px solid " + h.color + "66", background: h.disabled ? "rgba(255,255,255,.04)" : h.color + "22", color: "#fff", fontSize: 20, cursor: h.disabled ? "not-allowed" : "pointer", opacity: h.disabled ? 0.4 : 1, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: h.disabled ? "none" : "0 4px 12px " + h.color + "33" }}>{h.emoji}</button>
+              ))}
+            </div>
+            <div style={{ display: "flex", justifyContent: "center", gap: 5, background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.08)", borderRadius: 16, padding: "10px 6px" }}>
+              {topSlots.map(s => (
+                <div key={s.key} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, flex: 1 }}>
+                  <div style={{ width: 40, height: 40, borderRadius: "50%", background: s.confirmed ? (s.bg || "#fff") : "rgba(0,0,0,.35)", border: "2px solid " + (s.confirmed ? "#00E676" : "rgba(255,255,255,.12)"), display: "flex", alignItems: "center", justifyContent: "center", fontSize: s.confirmed ? (s.big ? 20 : (s.bg ? 11 : 13)) : 17, fontWeight: 900, color: s.confirmed ? (s.fg || "#06130B") : "rgba(255,255,255,.28)", textShadow: s.confirmed && s.bg ? "0 1px 3px rgba(0,0,0,.6)" : "none", overflow: "hidden" }}>{s.confirmed ? s.value : "?"}</div>
+                  <span style={{ fontSize: 7.5, fontWeight: 800, letterSpacing: .3, color: s.confirmed ? "rgba(0,230,118,.9)" : "rgba(255,255,255,.32)" }}>{s.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Parcours de clubs — révélé (indice 👤) ou en fin de manche */}
+        {(showCareer || over) && (
           <>
-            <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.5, color: "rgba(255,255,255,.4)", marginBottom: 6, textAlign: "center" }}>⚽ {tr("SON PARCOURS", "HIS CAREER", "SEINE KARRIERE", "LA SUA CARRIERA", "SUA CARREIRA")}</div>
+            <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.5, color: "rgba(255,255,255,.4)", marginBottom: 6, marginTop: over ? 0 : 4, textAlign: "center" }}>⚽ {tr("SON PARCOURS", "HIS CAREER", "SEINE KARRIERE", "LA SUA CARRIERA", "SUA CARREIRA")}</div>
             <div style={{ display: "flex", alignItems: "center", gap: 6, overflowX: "auto", paddingBottom: 6, marginBottom: 16, justifyContent: answer.clubs.length <= 4 ? "center" : "flex-start" }}>
               {answer.clubs.map((c, i) => {
                 const [bg, fg] = clubColors(c);
@@ -507,15 +569,6 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
               })}
             </div>
           </>
-        ) : (
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, marginBottom: 16 }}>
-            <div style={{ fontSize: 12, color: "rgba(255,255,255,.55)", textAlign: "center", lineHeight: 1.4, maxWidth: 300 }}>
-              {tr("Devine le joueur mystère à partir de tes propositions.", "Guess the mystery player from your attempts.", "Errate den Mystery-Spieler anhand deiner Versuche.", "Indovina il giocatore misterioso dai tuoi tentativi.", "Adivinhe o jogador misterioso a partir das suas tentativas.")}
-            </div>
-            <button onClick={() => setShowCareer(true)} style={{ padding: "9px 16px", borderRadius: 999, border: "1px solid rgba(0,230,118,.4)", background: "rgba(0,230,118,.1)", color: "#00E676", fontSize: 12.5, fontWeight: 800, cursor: "pointer" }}>
-              💡 {tr("Voir le parcours (indice)", "Reveal career (hint)", "Karriere zeigen (Tipp)", "Mostra la carriera (indizio)", "Ver a carreira (dica)")}
-            </button>
-          </div>
         )}
 
         {/* Progression */}
