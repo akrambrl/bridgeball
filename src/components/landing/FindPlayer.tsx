@@ -344,6 +344,25 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
       .slice(0, 6);
   }, [input, guesses]);
 
+  // Phrase de devinette (1re personne) — déterministe pour un joueur donné.
+  // « J'ai joué avec X, mais jamais avec Y » : X = coéquipier probable (même club
+  // + même génération), Y = star qui ne partage AUCUN club (donc jamais coéquipier).
+  const deviClue = useMemo(() => {
+    const mate = findTeammates(answer, 1)[0] || null;
+    const answerClubs = new Set(answer.clubs || []);
+    const famous = ALL.filter(p => p.diff === "facile" && p.name !== answer.name && p.name !== mate
+      && p.clubs && p.clubs.length >= 3 && p.birthYear && (p.birthYear as number) >= MODERN_MIN_BY
+      && !p.clubs.some(c => answerClubs.has(c)));
+    let h = 0; for (let i = 0; i < answer.name.length; i++) h = (h * 31 + answer.name.charCodeAt(i)) >>> 0;
+    const non = famous.length ? famous[h % famous.length].name : null;
+    if (mate && non) return "🕵️ " + tr("J'ai joué avec", "I played with", "Ich spielte mit", "Ho giocato con", "Joguei com") + " " + mate + " " + tr("mais jamais avec", "but never with", "aber nie mit", "ma mai con", "mas nunca com") + " " + non + ".";
+    if (mate) return "🕵️ " + tr("J'ai joué avec", "I played with", "Ich spielte mit", "Ho giocato con", "Joguei com") + " " + mate + ".";
+    const startYear = answer.birthYear ? answer.birthYear + 19 : 0;
+    const dec = startYear ? Math.floor(startYear / 10) * 10 : null;
+    if (dec) return "🕵️ " + tr("J'ai percé dans les années", "I broke through in the", "Durchbruch in den", "Sono esploso negli anni", "Estourei nos anos") + " " + dec + tr("", "s", "ern", "", "") + ".";
+    return null;
+  }, [answer.name]);
+
   function submitGuess(p: Player) {
     if (over || revealing) return;
     const gs = [...guesses, p];
@@ -628,6 +647,13 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
           <span style={{ padding: "5px 12px", borderRadius: 999, background: "rgba(255,138,42,.14)", border: "1px solid rgba(255,138,42,.4)", color: "#FF8A2A", fontSize: 12, fontWeight: 900, letterSpacing: 1 }}>🔥 {tr("SÉRIE", "STREAK", "SERIE", "SERIE", "SÉRIE")} : {streak}</span>
           <span style={{ padding: "5px 12px", borderRadius: 999, background: "rgba(224,184,92,.14)", border: "1px solid rgba(224,184,92,.45)", color: "#F2D680", fontSize: 12, fontWeight: 900, letterSpacing: 1 }}>🏆 {tr("SCORE", "SCORE", "PUNKTE", "PUNTI", "PONTOS")} : {score.toLocaleString("fr-FR")}</span>
         </div>
+
+        {/* Phrase de devinette */}
+        {!over && deviClue && (
+          <div style={{ background: "linear-gradient(180deg, rgba(224,184,92,.14), rgba(224,184,92,.05))", border: "1px solid rgba(224,184,92,.4)", borderRadius: 14, padding: "11px 14px", textAlign: "center", fontSize: 14, fontWeight: 700, fontStyle: "italic", color: "#F4E3B8", marginBottom: 12, lineHeight: 1.4 }}>
+            {deviClue}
+          </div>
+        )}
 
         {/* Boutons d'indice + barre de pastilles (Mode Infini) */}
         {!over && (
