@@ -306,6 +306,90 @@ export const CLUB_SPELLS: Record<string, Spell[]> = {
   "Nico Williams": [{ club: "Athletic Bilbao", from: 2020, to: 2026 }],
   "Mikel Oyarzabal": [{ club: "Real Sociedad", from: 2015, to: 2026 }],
   "Nabil Fekir": [{ club: "Lyon", from: 2013, to: 2019 }, { club: "Real Betis", from: 2019, to: 2026 }],
+
+  // ── Cadres Bundesliga ───────────────────────────────────────
+  // Bayern
+  "Joshua Kimmich": [{ club: "RB Leipzig", from: 2013, to: 2015 }, { club: "Bayern Munich", from: 2015, to: 2026 }],
+  "Leon Goretzka": [{ club: "Schalke", from: 2013, to: 2018 }, { club: "Bayern Munich", from: 2018, to: 2026 }],
+  "Serge Gnabry": [{ club: "Arsenal", from: 2012, to: 2016 }, { club: "Werder Bremen", from: 2016, to: 2017 }, { club: "Bayern Munich", from: 2017, to: 2026 }],
+  "Kingsley Coman": [{ club: "PSG", from: 2013, to: 2014 }, { club: "Juventus FC", from: 2014, to: 2015 }, { club: "Bayern Munich", from: 2015, to: 2026 }],
+  "Jamal Musiala": [{ club: "Bayern Munich", from: 2020, to: 2026 }],
+  "Leroy Sané": [{ club: "Schalke", from: 2014, to: 2016 }, { club: "Manchester City", from: 2016, to: 2020 }, { club: "Bayern Munich", from: 2020, to: 2025 }, { club: "Galatasaray", from: 2025, to: 2026 }],
+  "Dayot Upamecano": [{ club: "RB Leipzig", from: 2017, to: 2021 }, { club: "Bayern Munich", from: 2021, to: 2026 }],
+  "Javi Martínez": [{ club: "Athletic Bilbao", from: 2006, to: 2012 }, { club: "Bayern Munich", from: 2012, to: 2021 }],
+  "Corentin Tolisso": [{ club: "Lyon", from: 2013, to: 2017 }, { club: "Bayern Munich", from: 2017, to: 2022 }, { club: "Lyon", from: 2022, to: 2026 }],
+  "Benjamin Pavard": [{ club: "Lille", from: 2015, to: 2016 }, { club: "Stuttgart", from: 2016, to: 2019 }, { club: "Bayern Munich", from: 2019, to: 2023 }, { club: "Inter Milan", from: 2023, to: 2026 }],
+  "Niklas Süle": [{ club: "Hoffenheim", from: 2009, to: 2017 }, { club: "Bayern Munich", from: 2017, to: 2022 }, { club: "Borussia Dortmund", from: 2022, to: 2026 }],
+  "Philipp Lahm": [{ club: "Stuttgart", from: 2003, to: 2005 }, { club: "Bayern Munich", from: 2005, to: 2017 }],
+  // Dortmund
+  "Marco Reus": [{ club: "Borussia Mönchengladbach", from: 2009, to: 2012 }, { club: "Borussia Dortmund", from: 2012, to: 2024 }, { club: "LA Galaxy", from: 2024, to: 2026 }],
+  "Mats Hummels": [{ club: "Borussia Dortmund", from: 2008, to: 2016 }, { club: "Bayern Munich", from: 2016, to: 2019 }, { club: "Borussia Dortmund", from: 2019, to: 2024 }, { club: "Roma", from: 2024, to: 2025 }],
+  "Mario Götze": [{ club: "Borussia Dortmund", from: 2009, to: 2013 }, { club: "Bayern Munich", from: 2013, to: 2016 }, { club: "Borussia Dortmund", from: 2016, to: 2020 }, { club: "PSV", from: 2020, to: 2022 }, { club: "Eintracht Frankfurt", from: 2022, to: 2026 }],
+  "Nuri Şahin": [{ club: "Borussia Dortmund", from: 2005, to: 2011 }, { club: "Real Madrid", from: 2011, to: 2012 }, { club: "Borussia Dortmund", from: 2013, to: 2018 }, { club: "Werder Bremen", from: 2018, to: 2020 }],
+  "Shinji Kagawa": [{ club: "Borussia Dortmund", from: 2010, to: 2012 }, { club: "Manchester United", from: 2012, to: 2014 }, { club: "Borussia Dortmund", from: 2014, to: 2019 }],
+  "Christian Pulisic": [{ club: "Borussia Dortmund", from: 2016, to: 2019 }, { club: "Chelsea", from: 2019, to: 2023 }, { club: "AC Milan", from: 2023, to: 2026 }],
+  "Jadon Sancho": [{ club: "Borussia Dortmund", from: 2017, to: 2021 }, { club: "Manchester United", from: 2021, to: 2024 }, { club: "Chelsea", from: 2024, to: 2025 }],
+  "Julian Brandt": [{ club: "Bayer Leverkusen", from: 2014, to: 2019 }, { club: "Borussia Dortmund", from: 2019, to: 2026 }],
+  "Emre Can": [{ club: "Bayern Munich", from: 2013, to: 2014 }, { club: "Liverpool", from: 2014, to: 2018 }, { club: "Juventus FC", from: 2018, to: 2020 }, { club: "Borussia Dortmund", from: 2020, to: 2026 }],
+  // Leverkusen
+  "Florian Wirtz": [{ club: "Bayer Leverkusen", from: 2020, to: 2025 }, { club: "Liverpool", from: 2025, to: 2026 }],
+  "Granit Xhaka": [{ club: "Borussia Mönchengladbach", from: 2012, to: 2016 }, { club: "Arsenal", from: 2016, to: 2023 }, { club: "Bayer Leverkusen", from: 2023, to: 2026 }],
+  "Jonathan Tah": [{ club: "Bayer Leverkusen", from: 2015, to: 2025 }, { club: "Bayern Munich", from: 2025, to: 2026 }],
+  "Kai Havertz": [{ club: "Bayer Leverkusen", from: 2016, to: 2020 }, { club: "Chelsea", from: 2020, to: 2023 }, { club: "Arsenal", from: 2023, to: 2026 }],
+  "Stefan Kießling": [{ club: "Bayer Leverkusen", from: 2006, to: 2018 }],
+  // RB Leipzig
+  "Timo Werner": [{ club: "Stuttgart", from: 2013, to: 2016 }, { club: "RB Leipzig", from: 2016, to: 2020 }, { club: "Chelsea", from: 2020, to: 2022 }, { club: "RB Leipzig", from: 2022, to: 2024 }, { club: "Tottenham", from: 2024, to: 2025 }],
+  "Dani Olmo": [{ club: "Dinamo Zagreb", from: 2015, to: 2020 }, { club: "RB Leipzig", from: 2020, to: 2024 }, { club: "Barcelona", from: 2024, to: 2026 }],
+  "Christopher Nkunku": [{ club: "PSG", from: 2015, to: 2019 }, { club: "RB Leipzig", from: 2019, to: 2023 }, { club: "Chelsea", from: 2023, to: 2026 }],
+  "Emil Forsberg": [{ club: "RB Leipzig", from: 2015, to: 2023 }, { club: "New York Red Bulls", from: 2023, to: 2026 }],
+  "Naby Keïta": [{ club: "RB Leipzig", from: 2016, to: 2018 }, { club: "Liverpool", from: 2018, to: 2023 }, { club: "Werder Bremen", from: 2023, to: 2025 }],
+  // Schalke / divers
+  "Klaas-Jan Huntelaar": [{ club: "Ajax", from: 2006, to: 2009 }, { club: "Real Madrid", from: 2009, to: 2010 }, { club: "AC Milan", from: 2010, to: 2011 }, { club: "Schalke", from: 2011, to: 2017 }, { club: "Ajax", from: 2017, to: 2021 }],
+  "Julian Draxler": [{ club: "Schalke", from: 2011, to: 2015 }, { club: "Wolfsburg", from: 2015, to: 2017 }, { club: "PSG", from: 2017, to: 2023 }],
+  "Benedikt Höwedes": [{ club: "Schalke", from: 2007, to: 2017 }, { club: "Juventus FC", from: 2017, to: 2018 }, { club: "Lokomotiv Moscow", from: 2018, to: 2020 }],
+  "Claudio Pizarro": [{ club: "Bayern Munich", from: 2001, to: 2007 }, { club: "Chelsea", from: 2007, to: 2008 }, { club: "Werder Bremen", from: 2008, to: 2012 }, { club: "Bayern Munich", from: 2012, to: 2015 }, { club: "Werder Bremen", from: 2015, to: 2020 }],
+  "Sami Khedira": [{ club: "Stuttgart", from: 2006, to: 2010 }, { club: "Real Madrid", from: 2010, to: 2015 }, { club: "Juventus FC", from: 2015, to: 2021 }],
+  "Sébastien Haller": [{ club: "Eintracht Frankfurt", from: 2017, to: 2019 }, { club: "West Ham", from: 2019, to: 2021 }, { club: "Ajax", from: 2021, to: 2022 }, { club: "Borussia Dortmund", from: 2022, to: 2024 }],
+  "Luka Jović": [{ club: "Eintracht Frankfurt", from: 2017, to: 2019 }, { club: "Real Madrid", from: 2019, to: 2023 }, { club: "AC Milan", from: 2024, to: 2025 }],
+  "Randal Kolo Muani": [{ club: "Nantes", from: 2018, to: 2022 }, { club: "Eintracht Frankfurt", from: 2022, to: 2023 }, { club: "PSG", from: 2023, to: 2026 }],
+
+  // ── Cadres Ligue 1 ──────────────────────────────────────────
+  // PSG
+  "Presnel Kimpembe": [{ club: "PSG", from: 2014, to: 2026 }],
+  "Idrissa Gueye": [{ club: "Lille", from: 2010, to: 2015 }, { club: "Aston Villa", from: 2015, to: 2016 }, { club: "Everton", from: 2016, to: 2019 }, { club: "PSG", from: 2019, to: 2022 }, { club: "Everton", from: 2022, to: 2025 }],
+  "Achraf Hakimi": [{ club: "Real Madrid", from: 2017, to: 2020 }, { club: "Inter Milan", from: 2020, to: 2021 }, { club: "PSG", from: 2021, to: 2026 }],
+  "Vitinha": [{ club: "Porto", from: 2020, to: 2022 }, { club: "PSG", from: 2022, to: 2026 }],
+  "Warren Zaïre-Emery": [{ club: "PSG", from: 2022, to: 2026 }],
+  "Javier Pastore": [{ club: "Palermo", from: 2009, to: 2011 }, { club: "PSG", from: 2011, to: 2018 }, { club: "Roma", from: 2018, to: 2021 }],
+  "Ezequiel Lavezzi": [{ club: "Napoli", from: 2007, to: 2012 }, { club: "PSG", from: 2012, to: 2016 }],
+  "Adrien Rabiot": [{ club: "PSG", from: 2012, to: 2019 }, { club: "Juventus FC", from: 2019, to: 2024 }, { club: "Marseille", from: 2024, to: 2025 }],
+  "Lucas Moura": [{ club: "PSG", from: 2013, to: 2018 }, { club: "Tottenham", from: 2018, to: 2023 }],
+  "Serge Aurier": [{ club: "Toulouse", from: 2012, to: 2014 }, { club: "PSG", from: 2014, to: 2017 }, { club: "Tottenham", from: 2017, to: 2020 }],
+  "Thiago Motta": [{ club: "Barcelona", from: 2001, to: 2007 }, { club: "Genoa", from: 2008, to: 2009 }, { club: "Inter Milan", from: 2009, to: 2012 }, { club: "PSG", from: 2012, to: 2018 }],
+  // Lyon
+  "Alexandre Lacazette": [{ club: "Lyon", from: 2010, to: 2017 }, { club: "Arsenal", from: 2017, to: 2022 }, { club: "Lyon", from: 2022, to: 2025 }],
+  "Memphis Depay": [{ club: "PSV", from: 2011, to: 2015 }, { club: "Manchester United", from: 2015, to: 2017 }, { club: "Lyon", from: 2017, to: 2021 }, { club: "Barcelona", from: 2021, to: 2023 }, { club: "Atletico Madrid", from: 2023, to: 2024 }],
+  "Anthony Lopes": [{ club: "Lyon", from: 2012, to: 2026 }],
+  "Houssem Aouar": [{ club: "Lyon", from: 2016, to: 2023 }, { club: "Roma", from: 2023, to: 2026 }],
+  // Marseille
+  "Dimitri Payet": [{ club: "Saint-Étienne", from: 2007, to: 2011 }, { club: "Lille", from: 2011, to: 2013 }, { club: "Marseille", from: 2013, to: 2015 }, { club: "West Ham", from: 2015, to: 2017 }, { club: "Marseille", from: 2017, to: 2023 }],
+  "Steve Mandanda": [{ club: "Marseille", from: 2007, to: 2016 }, { club: "Crystal Palace", from: 2016, to: 2017 }, { club: "Marseille", from: 2017, to: 2022 }, { club: "Rennes", from: 2022, to: 2026 }],
+  "Florian Thauvin": [{ club: "Marseille", from: 2013, to: 2015 }, { club: "Newcastle", from: 2015, to: 2016 }, { club: "Marseille", from: 2016, to: 2021 }, { club: "Udinese", from: 2023, to: 2025 }],
+  "Mathieu Valbuena": [{ club: "Marseille", from: 2006, to: 2014 }, { club: "Lyon", from: 2015, to: 2017 }, { club: "Fenerbahce", from: 2017, to: 2020 }],
+  "Boubacar Kamara": [{ club: "Marseille", from: 2016, to: 2022 }, { club: "Aston Villa", from: 2022, to: 2026 }],
+  // Monaco
+  "Radamel Falcao": [{ club: "Porto", from: 2009, to: 2011 }, { club: "Atletico Madrid", from: 2011, to: 2013 }, { club: "Monaco", from: 2013, to: 2014 }, { club: "Manchester United", from: 2014, to: 2015 }, { club: "Chelsea", from: 2015, to: 2016 }, { club: "Monaco", from: 2016, to: 2019 }, { club: "Galatasaray", from: 2019, to: 2021 }],
+  "Thomas Lemar": [{ club: "Monaco", from: 2015, to: 2018 }, { club: "Atletico Madrid", from: 2018, to: 2024 }],
+  "Wissam Ben Yedder": [{ club: "Toulouse", from: 2010, to: 2016 }, { club: "Sevilla", from: 2016, to: 2019 }, { club: "Monaco", from: 2019, to: 2024 }],
+  "Aleksandr Golovin": [{ club: "Monaco", from: 2018, to: 2026 }],
+  "Youri Tielemans": [{ club: "Anderlecht", from: 2013, to: 2017 }, { club: "Monaco", from: 2017, to: 2019 }, { club: "Leicester", from: 2019, to: 2023 }, { club: "Aston Villa", from: 2023, to: 2026 }],
+  // Lille / divers
+  "Nicolas Pépé": [{ club: "Angers", from: 2017, to: 2017 }, { club: "Lille", from: 2017, to: 2019 }, { club: "Arsenal", from: 2019, to: 2023 }, { club: "Trabzonspor", from: 2023, to: 2024 }],
+  "Jonathan David": [{ club: "Gent", from: 2018, to: 2020 }, { club: "Lille", from: 2020, to: 2025 }, { club: "Juventus FC", from: 2025, to: 2026 }],
+  "Renato Sanches": [{ club: "Benfica", from: 2015, to: 2016 }, { club: "Bayern Munich", from: 2016, to: 2019 }, { club: "Lille", from: 2019, to: 2022 }, { club: "PSG", from: 2022, to: 2024 }],
+  "Kurt Zouma": [{ club: "Saint-Étienne", from: 2011, to: 2014 }, { club: "Chelsea", from: 2014, to: 2021 }, { club: "West Ham", from: 2021, to: 2024 }],
+  "Mario Balotelli": [{ club: "Inter Milan", from: 2007, to: 2010 }, { club: "Manchester City", from: 2010, to: 2013 }, { club: "AC Milan", from: 2013, to: 2014 }, { club: "Liverpool", from: 2014, to: 2016 }, { club: "Nice", from: 2016, to: 2019 }, { club: "Marseille", from: 2019, to: 2019 }],
+  "Jean-Clair Todibo": [{ club: "Barcelona", from: 2019, to: 2020 }, { club: "Nice", from: 2021, to: 2024 }, { club: "West Ham", from: 2024, to: 2026 }],
 };
 
 // Deux joueurs ont-ils été coéquipiers ? (même club + saisons qui se chevauchent)
