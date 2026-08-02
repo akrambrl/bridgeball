@@ -5940,6 +5940,18 @@ export const RETIRED_PLAYERS = new Set([ "Esteban Cambiasso","Eusébio","Ezequie
   "Karl-Heinz Rummenigge","Rudi Völler","Stuart Pearce","Tony Adams","Glenn Hoddle",
   "Paul Ince","Andrei Arshavin","Andrei Kanchelskis","Yuri Zhirkov"]);
 
+// Joueurs iconiquement associés au numéro 10 (club et/ou sélection). Volontairement
+// restreint aux « vrais » n°10 marquants pour rester fiable (utilisé par GOAT Guess
+// et GOAT reveal).
+export const GG_SHIRT_10 = new Set([
+  "Pelé","Diego Maradona","Zico","Michel Platini","Roberto Baggio","Gheorghe Hagi","Abedi Pele",
+  "Rui Costa","Rivaldo","Ronaldinho","Zinédine Zidane","Juan Román Riquelme","Francesco Totti",
+  "Alessandro Del Piero","Dennis Bergkamp","Wesley Sneijder","Kaká","Lionel Messi","Wayne Rooney",
+  "Zlatan Ibrahimovic","Sergio Aguero","Mesut Özil","Eden Hazard","James Rodríguez","Neymar",
+  "Luka Modrić","Philippe Coutinho","Paulo Dybala","Juan Mata","Memphis Depay","Dimitri Payet",
+  "Bernardo Silva","Alexandre Lacazette","Lorenzo Insigne","Kylian Mbappé","Lautaro Martínez",
+  "Florian Wirtz","Lamine Yamal"]);
+
 export const GG_WC_WINNERS = new Set([
   // 🇪🇸 Espagne 2026 (finale 1-0 vs Argentine, Ferran Torres 106')
   "Unai Simón",
