@@ -3107,7 +3107,9 @@ export default function LePont() {
     sndCtx(); // débloque l'audio (geste utilisateur)
     trackPlay("battle", true); // GOAT Battle en ligne (1v1 entre potes)
     const [c1, c2] = duelRollPair(); // le système tire 2 clubs au hasard
-    await duelPatch(r.id, { state:"playing", round:1, phase:"answer", phase_at:new Date().toISOString(),
+    // On démarre par une phase "countdown" (3..2..1) synchronisée via phase_at,
+    // puis le séquenceur bascule en "answer".
+    await duelPatch(r.id, { state:"playing", round:1, phase:"countdown", phase_at:new Date().toISOString(),
       club_c1:c1, club_c2:c2,
       host_answer:null, guest_answer:null, host_answer_ms:null, guest_answer_ms:null, round_winner:null,
       host_score:0, guest_score:0, winner_id:null, winner_name:null });
@@ -3212,7 +3214,13 @@ export default function LePont() {
         await duelPatch("LOCAL", { state:"finished", phase:"done", winner_id:room.host_id });
         return;
       }
-      if(room.phase==="answer"){
+      if(room.phase==="countdown"){
+        // Compte à rebours de départ (3 s) → on lance la 1re manche (phase "answer").
+        if(el >= 3000){
+          duelSeqBusyRef.current=true;
+          await duelPatch(room.id, { phase:"answer", phase_at:new Date().toISOString() });
+        }
+      } else if(room.phase==="answer"){
         // fenêtre de réponse (multi) = après le tirage machine à sous + 10s (+ marge)
         const timeUp = el >= (DUEL_SPIN_MS + DUEL_ANSWER_SECS*1000 + 1200);
         if(room.solo){
@@ -8700,7 +8708,16 @@ export default function LePont() {
       );
     } else if(duelScreen==="playing"){
       let phaseBody = null;
-      if(room.phase==="answer"){
+      if(room.phase==="countdown"){
+        const cel = (duelNow||Date.now()) - (room.phase_at?new Date(room.phase_at).getTime():0);
+        const cd = Math.max(1, 3 - Math.floor(cel/1000));
+        phaseBody = (
+          <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:14,padding:"20px"}}>
+            <div style={{fontSize:14,color:"rgba(255,255,255,.5)",letterSpacing:3,textTransform:"uppercase"}}>{tr("Préparez-vous…","Get ready…","Macht euch bereit…","Preparatevi…","Preparem-se…")}</div>
+            <div key={cd} style={{fontFamily:G.heading,fontSize:130,color:G.accent,lineHeight:1,animation:"popIn .3s ease"}}>{cd}</div>
+          </div>
+        );
+      } else if(room.phase==="answer"){
         const answered = duelAnsweredRef.current || myAnsMs!=null;
         const duelSug = answered ? [] : ggGetSuggestions(duelInput);
         // Carte club grand format (empilée) — style GOAT Mercato bicolore.
