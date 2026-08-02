@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { PLAYERS, GG_WC_WINNERS, GG_CL_WINNERS, GG_BALLON_DOR } from "../../players.jsx";
+import { PLAYERS, GG_WC_WINNERS, GG_CL_WINNERS, GG_BALLON_DOR, GG_SHIRT_10 } from "../../players.jsx";
 import { CLUB_COLORS } from "../LePont.jsx";
 import { ANEC_ENTRAINEUR } from "./GoatGuess";
 import { tr } from "@/lib/lang";
@@ -497,6 +497,7 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
     if (has(GG_CL_WINNERS)) clues.push(tr("J'ai gagné la Ligue des Champions ⭐", "I won the Champions League ⭐", "Ich gewann die Champions League ⭐", "Ho vinto la Champions League ⭐", "Ganhei a Liga dos Campeões ⭐"));
     if (has(GG_BALLON_DOR)) clues.push(tr("J'ai remporté le Ballon d'Or 🥇", "I won the Ballon d'Or 🥇", "Ich gewann den Ballon d'Or 🥇", "Ho vinto il Pallone d'Oro 🥇", "Ganhei a Bola de Ouro 🥇"));
     if (has(ANEC_ENTRAINEUR)) clues.push(tr("Je suis devenu entraîneur 👔", "I became a manager 👔", "Ich wurde Trainer 👔", "Sono diventato allenatore 👔", "Virei treinador 👔"));
+    if (has(GG_SHIRT_10)) clues.push(tr("J'ai porté le mythique numéro 10 🔟", "I wore the iconic number 10 🔟", "Ich trug die legendäre Nummer 10 🔟", "Ho indossato la mitica maglia numero 10 🔟", "Usei a mítica camisa 10 🔟"));
 
     // 5) Nombre de clubs
     if (clubs.length >= 3) clues.push(tr("J'ai porté les couleurs de", "I wore the colours of", "Ich trug die Farben von", "Ho vestito i colori di", "Vesti as cores de") + " " + clubs.length + " " + tr("clubs différents", "different clubs", "verschiedenen Klubs", "club diversi", "clubes diferentes") + ".");

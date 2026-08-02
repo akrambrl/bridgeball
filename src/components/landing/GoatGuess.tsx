@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
-import { PLAYERS, RETIRED_PLAYERS, GG_WC_WINNERS, GG_CL_WINNERS, GG_BALLON_DOR, GG_BALLON_DOR_MULTI } from "../../players.jsx";
+import { PLAYERS, RETIRED_PLAYERS, GG_WC_WINNERS, GG_CL_WINNERS, GG_BALLON_DOR, GG_BALLON_DOR_MULTI, GG_SHIRT_10 } from "../../players.jsx";
 import { CLUB_COLORS } from "../LePont.jsx";
 import { trackPlay } from "../../lib/track";
 import { getLang, tr } from "@/lib/lang";
@@ -712,6 +712,11 @@ const QUESTIONS: Question[] = [
     id: "anec-ballon-dor-multi", category: "anecdote",
     label: "A-t-il remporté plusieurs Ballons d'Or ?", labelEn: "Has he won several Ballons d'Or?", labelDe: "Hat er mehrere Ballons d'Or gewonnen?", labelIt: "Ha vinto più Palloni d'Oro?", labelPt: "Ganhou várias Bolas de Ouro?",
     predicate: (p) => GG_BALLON_DOR_MULTI.has(p.name),
+  },
+  {
+    id: "anec-shirt-10", category: "anecdote",
+    label: "A-t-il porté le mythique numéro 10 ?", labelEn: "Did he wear the iconic number 10?", labelDe: "Trug er die legendäre Nummer 10?", labelIt: "Ha indossato la mitica maglia numero 10?", labelPt: "Usou a mítica camisa 10?",
+    predicate: (p) => GG_SHIRT_10.has(p.name),
   },
   {
     id: "anec-penalty-finale", category: "anecdote",
