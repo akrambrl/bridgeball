@@ -3244,8 +3244,11 @@ export default function LePont() {
           duelSeqBusyRef.current=true;
           if((room.round||1) < DUEL_ROUNDS){
             const [c1, c2] = duelRollPair(); // nouvelle paire aléatoire
+            // NOTE: round_pts / round_skipped n'existent PAS dans bb_duel_rooms
+            // (champs SOLO uniquement, patchés en LOCAL). Les envoyer ici faisait
+            // échouer le PATCH (400) → la manche suivante ne se lançait jamais en 1v1.
             await duelPatch(room.id, { round:(room.round||1)+1, phase:"answer", phase_at:new Date().toISOString(),
-              club_c1:c1, club_c2:c2, round_pts:null, round_skipped:false,
+              club_c1:c1, club_c2:c2, host_pick:null, guest_pick:null,
               host_answer:null, guest_answer:null, host_answer_ms:null, guest_answer_ms:null, round_winner:null });
           } else if(room.solo){
             await duelPatch(room.id, { state:"finished", phase:"done", winner_id:room.host_id });
