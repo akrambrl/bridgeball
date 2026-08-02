@@ -5950,7 +5950,7 @@ export const GG_SHIRT_10 = new Set([
   "Zlatan Ibrahimovic","Sergio Aguero","Mesut Özil","Eden Hazard","James Rodríguez","Neymar",
   "Luka Modrić","Philippe Coutinho","Paulo Dybala","Juan Mata","Memphis Depay","Dimitri Payet",
   "Bernardo Silva","Alexandre Lacazette","Lorenzo Insigne","Kylian Mbappé","Lautaro Martínez",
-  "Florian Wirtz"]);
+  "Florian Wirtz","Lamine Yamal"]);
 
 export const GG_WC_WINNERS = new Set([
   // 🇪🇸 Espagne 2026 (finale 1-0 vs Argentine, Ferran Torres 106')
