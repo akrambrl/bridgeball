@@ -2750,7 +2750,7 @@ export default function LePont() {
     const gamesW = scoresW.length;
     const duelsW = (statsData.rawDuels || []).filter(inRange).length;
     // Parties lancées par mode (+ répartition solo / en ligne) sur la fenêtre
-    const playsByMode = { pont:0, chaine:0, grid:0, guess:0, battle:0 };
+    const playsByMode = { pont:0, chaine:0, grid:0, guess:0, battle:0, reveal:0 };
     let playsSolo = 0, playsOnline = 0;
     if (hasEvents) {
       for (const r of eventsW) {
@@ -2761,7 +2761,7 @@ export default function LePont() {
         }
       }
     }
-    const totalPlays = playsByMode.pont + playsByMode.chaine + playsByMode.grid + playsByMode.guess + playsByMode.battle;
+    const totalPlays = playsByMode.pont + playsByMode.chaine + playsByMode.grid + playsByMode.guess + playsByMode.battle + playsByMode.reveal;
     // Répartition par OS (pings "open_<os>") sur la fenêtre — 1 appareil compté une fois
     const osByDevice = {};
     if (hasEvents) { for (const r of eventsW) { if (r.type && r.type.indexOf("open_") === 0) osByDevice[r.player_id] = r.type.slice(5); } }
@@ -11240,12 +11240,13 @@ export default function LePont() {
                   {/* Modes de jeu les plus joués (sur la fenêtre) */}
                   <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.4)",fontWeight:800,textTransform:"uppercase",marginBottom:10,paddingLeft:4}}>Modes de jeu · {v.range} j</div>
                   {(function(){
-                    const pbm = v.playsByMode || {pont:0,chaine:0,grid:0,guess:0,battle:0};
+                    const pbm = v.playsByMode || {pont:0,chaine:0,grid:0,guess:0,battle:0,reveal:0};
                     const total = v.totalPlays || 0;
                     const META = [
                       {key:"battle", label:"GOAT Battle", emoji:"⚡", color:"#FFC93C"},
                       {key:"pont",   label:"The Plug",   emoji:"🔗", color:"#00E676"},
                       {key:"chaine", label:"The Mercato", emoji:"🔁", color:"#FF8A2A"},
+                      {key:"reveal", label:"GOAT reveal", emoji:"🕵️", color:"#E0B85C"},
                       {key:"grid",   label:"GOAT Grid",   emoji:"▦",  color:"#3DA5FF"},
                       {key:"guess",  label:"GOAT Guess",  emoji:"🔮", color:"#C084FC"},
                     ];

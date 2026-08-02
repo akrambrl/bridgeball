@@ -356,7 +356,7 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => { trackPlay("grid"); }, []); // réutilise le compteur de l'emplacement (ex-GOAT Grid)
+  useEffect(() => { trackPlay("reveal"); }, []); // suivi dédié « GOAT reveal »
 
   // Sauvegarde la manche en cours à chaque changement → restaurée après un rechargement.
   useEffect(() => {
@@ -558,7 +558,7 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
     setShowCareer(false);
     setHintRevealed([]);
     setBoard(null);
-    trackPlay("grid");
+    trackPlay("reveal");
     setTimeout(() => inputRef.current?.focus(), 60);
   }
 
