@@ -309,13 +309,35 @@ const COUNTRY_INFO: Record<string, { fr: string; en: string; de: string; it: str
 };
 function hashStr(s: string, mult: number): number { let h = 0; for (let i = 0; i < s.length; i++) h = (h * mult + s.charCodeAt(i)) >>> 0; return h; }
 
+// Manche en cours sauvegardée (sessionStorage) : permet de RETROUVER sa partie si
+// l'app est rechargée par iOS quand on la quitte un instant (ex. faire une capture
+// d'écran pour l'envoyer à un pote). On restaure le joueur mystère, les propositions
+// déjà faites et les indices révélés — au lieu de repartir de l'accueil.
+const ROUND_KEY = "bb_findplayer_round";
+type SavedRound = { answer: Player; guesses: Player[]; hintRevealed: string[]; over: boolean; won: boolean };
+function loadSavedRound(): SavedRound | null {
+  try {
+    const raw = sessionStorage.getItem(ROUND_KEY);
+    if (!raw) return null;
+    const s = JSON.parse(raw);
+    const byName = (n: string) => ALL.find(p => p.name === n) || null;
+    const answer = byName(s.answer);
+    if (!answer) return null;
+    const guesses = (s.guesses || []).map(byName).filter(Boolean) as Player[];
+    return { answer, guesses, hintRevealed: Array.isArray(s.hintRevealed) ? s.hintRevealed : [], over: !!s.over, won: !!s.won };
+  } catch { return null; }
+}
+
 export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
   const seenRef = useRef<Set<string>>(new Set());
-  const [answer, setAnswer] = useState<Player>(() => randomPlayer(seenRef.current));
+  const savedRef = useRef<SavedRound | null | undefined>(undefined);
+  if (savedRef.current === undefined) savedRef.current = loadSavedRound();
+  const saved = savedRef.current;
+  const [answer, setAnswer] = useState<Player>(() => saved?.answer || randomPlayer(seenRef.current));
 
-  const [guesses, setGuesses] = useState<Player[]>([]);
-  const [over, setOver] = useState(false);
-  const [won, setWon] = useState(false);
+  const [guesses, setGuesses] = useState<Player[]>(() => saved?.guesses || []);
+  const [over, setOver] = useState(() => saved?.over || false);
+  const [won, setWon] = useState(() => saved?.won || false);
   const [input, setInput] = useState("");
   const [board, setBoard] = useState<{ loading: boolean; rows: any[]; myRank: number | null; total: number } | null>(null);
   const [copied, setCopied] = useState(false);
@@ -327,7 +349,7 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
   const [showCareer, setShowCareer] = useState(false); // parcours caché par défaut (déduction pure)
   const [animRow, setAnimRow] = useState(-1); // index de la proposition à révéler puce par puce
   const [revealing, setRevealing] = useState(false); // révélation en cours (bloque la saisie sur la manche finale)
-  const [hintRevealed, setHintRevealed] = useState<string[]>([]); // attributs révélés via l'ampoule 💡
+  const [hintRevealed, setHintRevealed] = useState<string[]>(() => saved?.hintRevealed || []); // attributs révélés via l'ampoule 💡
   const [streak, setStreak] = useState(0); // série de trouvailles d'affilée (mode illimité)
   const [score, setScore] = useState<number>(() => { try { return parseInt(localStorage.getItem("bb_findplayer_pts") || "0", 10) || 0; } catch { return 0; } });
   const [lastEarned, setLastEarned] = useState(0); // points gagnés à la dernière manche
@@ -335,6 +357,22 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { trackPlay("grid"); }, []); // réutilise le compteur de l'emplacement (ex-GOAT Grid)
+
+  // Sauvegarde la manche en cours à chaque changement → restaurée après un rechargement.
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(ROUND_KEY, JSON.stringify({
+        answer: answer.name, guesses: guesses.map(g => g.name), hintRevealed, over, won,
+      }));
+    } catch { /* noop */ }
+  }, [answer, guesses, hintRevealed, over, won]);
+
+  // Fermeture volontaire (bouton QUITTER) : on oublie la manche → partie fraîche au retour.
+  function close() {
+    try { sessionStorage.removeItem(ROUND_KEY); } catch { /* noop */ }
+    onClose();
+  }
+
   // Quand on gagne/abandonne, on remonte en haut pour voir l'écran de fin.
   useEffect(() => { if (over) { try { scrollRef.current?.scrollTo({ top: 0, behavior: "smooth" }); } catch { /* noop */ } } }, [over]);
 
@@ -722,7 +760,7 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
     <div ref={scrollRef} style={{ position: "fixed", inset: 0, zIndex: 200, background: "repeating-conic-gradient(from 0deg at 50% 34%, rgba(214,175,84,.05) 0deg 3deg, transparent 3deg 11deg), radial-gradient(circle at 50% 34%, rgba(224,184,92,.26) 0%, rgba(214,175,84,.07) 26%, transparent 56%), radial-gradient(ellipse at 50% 122%, rgba(214,175,84,.12), transparent 60%), linear-gradient(180deg, #14110a 0%, #0a0a0a 45%, #040404 100%)", overflowY: "auto", WebkitOverflowScrolling: "touch" as any }}>
       {/* Header */}
       <div style={{ position: "sticky", top: 0, zIndex: 5, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "calc(12px + env(safe-area-inset-top)) 16px 12px", background: "linear-gradient(180deg,#14110a,rgba(8,8,8,.6))", backdropFilter: "blur(8px)" }}>
-        <button onClick={onClose} style={{ background: "rgba(255,255,255,.1)", border: "1px solid rgba(224,184,92,.35)", borderRadius: 12, color: "#fff", padding: "8px 12px", fontSize: 14, fontWeight: 800, cursor: "pointer" }}>← {tr("QUITTER", "QUIT", "BEENDEN", "ESCI", "SAIR")}</button>
+        <button onClick={close} style={{ background: "rgba(255,255,255,.1)", border: "1px solid rgba(224,184,92,.35)", borderRadius: 12, color: "#fff", padding: "8px 12px", fontSize: 14, fontWeight: 800, cursor: "pointer" }}>← {tr("QUITTER", "QUIT", "BEENDEN", "ESCI", "SAIR")}</button>
         <div style={{ fontFamily: "Anton, sans-serif", fontSize: 22, letterSpacing: 1, textAlign: "center", lineHeight: 1, color: "#F2D680", backgroundImage: "linear-gradient(180deg,#FCEBB8 0%,#E7C15A 52%,#C89A32 100%)", WebkitBackgroundClip: "text", backgroundClip: "text", WebkitTextFillColor: "transparent", textShadow: "0 2px 14px rgba(214,175,84,.35)" }}>{tr("TROUVE LE JOUEUR", "GUESS THE PLAYER", "ERRATE DEN SPIELER", "INDOVINA IL GIOCATORE", "ADIVINHE O JOGADOR")}</div>
         {(!over && !revealing) ? (
           <button onClick={playAgain} aria-label={tr("Changer de joueur (trop dur)", "Change player (too hard)", "Spieler wechseln (zu schwer)", "Cambia giocatore (troppo difficile)", "Trocar de jogador (difícil demais)")} title={tr("Trop dur ? Change de joueur", "Too hard? Change player", "Zu schwer? Spieler wechseln", "Troppo difficile? Cambia", "Difícil? Troca de jogador")} style={{ background: "rgba(255,214,0,.12)", border: "1px solid rgba(255,214,0,.45)", borderRadius: 12, color: "#FFD600", padding: "8px 11px", fontSize: 13, fontWeight: 800, cursor: "pointer", whiteSpace: "nowrap" }}>
