@@ -524,6 +524,8 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
           setScore(total);
           try { localStorage.setItem("bb_findplayer_pts", String(total)); } catch { /* noop */ }
           submitScore(total);
+          // Crédite l'XP dans le classement principal (LePont écoute cet event).
+          try { window.dispatchEvent(new CustomEvent("goatfc:award-xp", { detail: { amount: earned } })); } catch { /* noop */ }
         } else {
           setStreak(0);
         }
