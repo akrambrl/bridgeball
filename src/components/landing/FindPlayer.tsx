@@ -397,12 +397,21 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
     const clues: string[] = [];
 
     // 1) Coéquipier : « J'ai joué avec X mais jamais avec Y »
+    // Y n'a de sens que si X et Y ont eux-mêmes joué ensemble (même club, même
+    // époque) : sinon le contraste est arbitraire. On cherche donc Y parmi les
+    // coéquipiers de X qui n'ont jamais partagé de club avec le mystère.
     const mate = findTeammates(answer, 1)[0] || null;
     if (mate) {
       const answerClubs = new Set(clubs);
-      const famous = ALL.filter(p => p.diff === "facile" && p.name !== answer.name && p.name !== mate
+      const mateP = ALL.find(p => p.name === mate);
+      const mateClubs = new Set(mateP?.clubs || []);
+      const mateY = (mateP?.birthYear as number) || 0;
+      const famous = ALL.filter(p => p.name !== answer.name && p.name !== mate
+        && (p.diff === "facile" || p.diff === "moyen")
         && p.clubs && p.clubs.length >= 3 && p.birthYear && (p.birthYear as number) >= MODERN_MIN_BY
-        && !p.clubs.some(c => answerClubs.has(c)));
+        && (!mateY || Math.abs((p.birthYear as number) - mateY) <= 4) // même époque que X
+        && p.clubs.some(c => mateClubs.has(c))   // a bien joué avec X
+        && !p.clubs.some(c => answerClubs.has(c))); // mais jamais avec le mystère
       const non = famous.length ? famous[hashStr(answer.name, 31) % famous.length].name : null;
       clues.push(tr("J'ai joué avec", "I played with", "Ich spielte mit", "Ho giocato con", "Joguei com") + " " + mate
         + (non ? " " + tr("mais jamais avec", "but never with", "aber nie mit", "ma mai con", "mas nunca com") + " " + non : "") + ".");
