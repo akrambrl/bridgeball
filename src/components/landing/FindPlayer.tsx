@@ -4,6 +4,7 @@ import { CLUB_COLORS } from "../LePont.jsx";
 import { ANEC_ENTRAINEUR } from "./GoatGuess";
 import { tr } from "@/lib/lang";
 import { trackPlay } from "../../lib/track";
+import { isNative, hapticLight, hapticHeavy, hapticSuccess } from "@/lib/native";
 
 // ─────────────────────────────────────────────────────────────
 // TROUVE LE JOUEUR DU JOUR — devine le joueur mystère à partir de son
@@ -162,9 +163,11 @@ function PitchIcon({ pos, size = 26 }: { pos: string; size?: number }) {
 const CONT_BG = "radial-gradient(circle at 34% 28%, #3568a0 0%, #123a63 55%, #0a1e35 100%)";
 
 // ── Retour haptique ───────────────────────────────────────────────────────────
-// navigator.vibrate marche sur Android ; iOS Safari ne le supporte pas → on
-// déclenche le haptique via un interrupteur caché (input switch) toggle dans le
-// même geste utilisateur (fonctionne sur iOS 17.4+).
+// 3 chemins selon la plateforme :
+//  • App native (Capacitor iOS/Android) → vraies vibrations via @capacitor/haptics.
+//  • Web Android → navigator.vibrate.
+//  • Web iOS (Safari/PWA) → interrupteur caché (input switch), seul « haptique »
+//    dispo sur iOS Safari 17.4+ (aucune API vibrate).
 let _hapEl: HTMLLabelElement | null = null;
 function iosTick() {
   try {
@@ -172,7 +175,9 @@ function iosTick() {
     if (!_hapEl) {
       const label = document.createElement("label");
       label.setAttribute("aria-hidden", "true");
-      label.style.cssText = "position:absolute;left:-9999px;top:0;width:0;height:0;opacity:0;pointer-events:none";
+      // display:none = implémentation éprouvée (lib ios-haptics) ; l'astuce marche
+      // même caché, tant que l'input « switch » est bien basculé.
+      label.style.display = "none";
       const input = document.createElement("input");
       input.type = "checkbox";
       input.setAttribute("switch", "");
@@ -184,6 +189,16 @@ function iosTick() {
   } catch { /* noop */ }
 }
 function haptic(kind: "hit" | "multi" | "win") {
+  // 1) App native : retour haptique système (le plus fiable).
+  try {
+    if (isNative()) {
+      if (kind === "win") hapticSuccess();
+      else if (kind === "multi") hapticHeavy();
+      else hapticLight();
+      return;
+    }
+  } catch { /* noop */ }
+  // 2) Web : navigator.vibrate (Android) + astuce switch (iOS Safari).
   try {
     const v = (navigator as any).vibrate;
     if (typeof v === "function") {
