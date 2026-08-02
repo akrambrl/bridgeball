@@ -19,6 +19,9 @@ const Index = () => {
   const [findPlayerOpen, setFindPlayerOpen] = useState(() => {
     try { return sessionStorage.getItem("bb_active_overlay") === "findplayer"; } catch { return false; }
   });
+  const [devinetteOpen, setDevinetteOpen] = useState(() => {
+    try { return sessionStorage.getItem("bb_active_overlay") === "devinette"; } catch { return false; }
+  });
 
   useEffect(() => {
     try {
@@ -26,6 +29,13 @@ const Index = () => {
       else if (sessionStorage.getItem("bb_active_overlay") === "findplayer") sessionStorage.removeItem("bb_active_overlay");
     } catch { /* noop */ }
   }, [findPlayerOpen]);
+
+  useEffect(() => {
+    try {
+      if (devinetteOpen) sessionStorage.setItem("bb_active_overlay", "devinette");
+      else if (sessionStorage.getItem("bb_active_overlay") === "devinette") sessionStorage.removeItem("bb_active_overlay");
+    } catch { /* noop */ }
+  }, [devinetteOpen]);
 
   useEffect(() => {
     try {
@@ -46,11 +56,14 @@ const Index = () => {
   useEffect(() => {
     const onGuess = () => setGoatGuessOpen(true);
     const onFindPlayer = () => setFindPlayerOpen(true);
+    const onDevinette = () => setDevinetteOpen(true);
     window.addEventListener("goatfc:open-guess", onGuess);
     window.addEventListener("goatfc:open-findplayer", onFindPlayer);
+    window.addEventListener("goatfc:open-devinette", onDevinette);
     return () => {
       window.removeEventListener("goatfc:open-guess", onGuess);
       window.removeEventListener("goatfc:open-findplayer", onFindPlayer);
+      window.removeEventListener("goatfc:open-devinette", onDevinette);
     };
   }, []);
 
@@ -61,6 +74,7 @@ const Index = () => {
       <LePont />
       {goatGuessOpen && <GoatGuess onClose={() => setGoatGuessOpen(false)} />}
       {findPlayerOpen && <FindPlayer onClose={() => setFindPlayerOpen(false)} />}
+      {devinetteOpen && <FindPlayer daily onClose={() => setDevinetteOpen(false)} />}
     </>
   );
 };

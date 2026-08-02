@@ -332,26 +332,30 @@ function hashStr(s: string, mult: number): number { let h = 0; for (let i = 0; i
 // d'écran pour l'envoyer à un pote). On restaure le joueur mystère, les propositions
 // déjà faites et les indices révélés — au lieu de repartir de l'accueil.
 const ROUND_KEY = "bb_findplayer_round";
-type SavedRound = { answer: Player; guesses: Player[]; hintRevealed: string[]; over: boolean; won: boolean; lastEarned: number; streak: number };
-function loadSavedRound(): SavedRound | null {
+type SavedRound = { answer: Player; guesses: Player[]; hintRevealed: string[]; over: boolean; won: boolean; lastEarned: number; streak: number; cluesShown: number };
+function loadSavedRound(raw: string | null): SavedRound | null {
   try {
-    const raw = sessionStorage.getItem(ROUND_KEY);
     if (!raw) return null;
     const s = JSON.parse(raw);
     const byName = (n: string) => ALL.find(p => p.name === n) || null;
     const answer = byName(s.answer);
     if (!answer) return null;
     const guesses = (s.guesses || []).map(byName).filter(Boolean) as Player[];
-    return { answer, guesses, hintRevealed: Array.isArray(s.hintRevealed) ? s.hintRevealed : [], over: !!s.over, won: !!s.won, lastEarned: Number(s.lastEarned) || 0, streak: Number(s.streak) || 0 };
+    return { answer, guesses, hintRevealed: Array.isArray(s.hintRevealed) ? s.hintRevealed : [], over: !!s.over, won: !!s.won, lastEarned: Number(s.lastEarned) || 0, streak: Number(s.streak) || 0, cluesShown: Number(s.cluesShown) || 1 };
   } catch { return null; }
 }
 
-export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
+export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; daily?: boolean }) => {
   const seenRef = useRef<Set<string>>(new Set());
+  // En mode « Devinette du jour » : 1 joueur/jour partagé, sauvegarde persistante
+  // par jour (localStorage) → on retrouve son résultat même après avoir fermé.
+  // En mode illimité : sauvegarde de session (sessionStorage) qui se réinitialise.
+  const storeKey = daily ? "bb_devinette_" + parisDay() : ROUND_KEY;
+  const store: Storage | null = (() => { try { return daily ? localStorage : sessionStorage; } catch { return null; } })();
   const savedRef = useRef<SavedRound | null | undefined>(undefined);
-  if (savedRef.current === undefined) savedRef.current = loadSavedRound();
+  if (savedRef.current === undefined) savedRef.current = loadSavedRound(store ? store.getItem(storeKey) : null);
   const saved = savedRef.current;
-  const [answer, setAnswer] = useState<Player>(() => saved?.answer || randomPlayer(seenRef.current));
+  const [answer, setAnswer] = useState<Player>(() => saved?.answer || (daily ? dailyPlayer() : randomPlayer(seenRef.current)));
 
   const [guesses, setGuesses] = useState<Player[]>(() => saved?.guesses || []);
   const [over, setOver] = useState(() => saved?.over || false);
@@ -368,27 +372,28 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
   const [animRow, setAnimRow] = useState(-1); // index de la proposition à révéler puce par puce
   const [revealing, setRevealing] = useState(false); // révélation en cours (bloque la saisie sur la manche finale)
   const [hintRevealed, setHintRevealed] = useState<string[]>(() => saved?.hintRevealed || []); // attributs révélés via l'ampoule 💡
-  const [cluesShown, setCluesShown] = useState(1); // nb de phrases « Qui suis-je ? » affichées (1 puis +1 par clic « Indice »)
+  const [cluesShown, setCluesShown] = useState(() => saved?.cluesShown || 1); // nb de phrases « Qui suis-je ? » affichées (1 puis +1 par clic « Indice »)
   const [streak, setStreak] = useState(() => saved?.streak || 0); // série de trouvailles d'affilée (mode illimité)
   const [score, setScore] = useState<number>(() => { try { return parseInt(localStorage.getItem("bb_findplayer_pts") || "0", 10) || 0; } catch { return 0; } });
   const [lastEarned, setLastEarned] = useState(() => saved?.lastEarned || 0); // points gagnés à la dernière manche
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => { trackPlay("reveal"); }, []); // suivi dédié « GOAT reveal »
+  useEffect(() => { trackPlay(daily ? "devinette" : "reveal"); }, []); // suivi dédié
 
   // Sauvegarde la manche en cours à chaque changement → restaurée après un rechargement.
   useEffect(() => {
     try {
-      sessionStorage.setItem(ROUND_KEY, JSON.stringify({
-        answer: answer.name, guesses: guesses.map(g => g.name), hintRevealed, over, won, lastEarned, streak,
+      if (store) store.setItem(storeKey, JSON.stringify({
+        answer: answer.name, guesses: guesses.map(g => g.name), hintRevealed, over, won, lastEarned, streak, cluesShown,
       }));
     } catch { /* noop */ }
-  }, [answer, guesses, hintRevealed, over, won, lastEarned, streak]);
+  }, [answer, guesses, hintRevealed, over, won, lastEarned, streak, cluesShown]);
 
-  // Fermeture volontaire (bouton QUITTER) : on oublie la manche → partie fraîche au retour.
+  // Fermeture volontaire (bouton QUITTER). En illimité : on oublie la manche
+  // (partie fraîche au retour). En « du jour » : on GARDE le résultat de la journée.
   function close() {
-    try { sessionStorage.removeItem(ROUND_KEY); } catch { /* noop */ }
+    try { if (!daily && store) store.removeItem(storeKey); } catch { /* noop */ }
     onClose();
   }
 
@@ -569,8 +574,9 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
     submitGuess(pool[Math.floor(Math.random() * pool.length)]);
   }
 
-  // Mode illimité : nouvelle manche avec un joueur au hasard.
+  // Mode illimité : nouvelle manche avec un joueur au hasard. (Désactivé « du jour ».)
   function playAgain() {
+    if (daily) return;
     setAnswer(randomPlayer(seenRef.current));
     setGuesses([]);
     setOver(false);
@@ -787,8 +793,8 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
       {/* Header */}
       <div style={{ position: "sticky", top: 0, zIndex: 5, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "calc(12px + env(safe-area-inset-top)) 16px 12px", background: "linear-gradient(180deg,#14110a,rgba(8,8,8,.6))", backdropFilter: "blur(8px)" }}>
         <button onClick={close} style={{ background: "rgba(255,255,255,.1)", border: "1px solid rgba(224,184,92,.35)", borderRadius: 12, color: "#fff", padding: "8px 12px", fontSize: 14, fontWeight: 800, cursor: "pointer" }}>← {tr("QUITTER", "QUIT", "BEENDEN", "ESCI", "SAIR")}</button>
-        <div style={{ fontFamily: "Anton, sans-serif", fontSize: 22, letterSpacing: 1, textAlign: "center", lineHeight: 1, color: "#F2D680", backgroundImage: "linear-gradient(180deg,#FCEBB8 0%,#E7C15A 52%,#C89A32 100%)", WebkitBackgroundClip: "text", backgroundClip: "text", WebkitTextFillColor: "transparent", textShadow: "0 2px 14px rgba(214,175,84,.35)" }}>{tr("TROUVE LE JOUEUR", "GUESS THE PLAYER", "ERRATE DEN SPIELER", "INDOVINA IL GIOCATORE", "ADIVINHE O JOGADOR")}</div>
-        {(!over && !revealing) ? (
+        <div style={{ fontFamily: "Anton, sans-serif", fontSize: 22, letterSpacing: 1, textAlign: "center", lineHeight: 1, color: "#F2D680", backgroundImage: "linear-gradient(180deg,#FCEBB8 0%,#E7C15A 52%,#C89A32 100%)", WebkitBackgroundClip: "text", backgroundClip: "text", WebkitTextFillColor: "transparent", textShadow: "0 2px 14px rgba(214,175,84,.35)" }}>{daily ? tr("DEVINETTE DU JOUR", "DAILY RIDDLE", "RÄTSEL DES TAGES", "INDOVINELLO DEL GIORNO", "ADIVINHA DO DIA") : tr("TROUVE LE JOUEUR", "GUESS THE PLAYER", "ERRATE DEN SPIELER", "INDOVINA IL GIOCATORE", "ADIVINHE O JOGADOR")}</div>
+        {(!over && !revealing && !daily) ? (
           <button onClick={playAgain} aria-label={tr("Changer de joueur (trop dur)", "Change player (too hard)", "Spieler wechseln (zu schwer)", "Cambia giocatore (troppo difficile)", "Trocar de jogador (difícil demais)")} title={tr("Trop dur ? Change de joueur", "Too hard? Change player", "Zu schwer? Spieler wechseln", "Troppo difficile? Cambia", "Difícil? Troca de jogador")} style={{ background: "rgba(255,214,0,.12)", border: "1px solid rgba(255,214,0,.45)", borderRadius: 12, color: "#FFD600", padding: "8px 11px", fontSize: 13, fontWeight: 800, cursor: "pointer", whiteSpace: "nowrap" }}>
             {tr("PASSER", "SKIP", "SKIP", "SALTA", "PULAR")} ⏭
           </button>
@@ -804,8 +810,9 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
           <span style={{ padding: "5px 12px", borderRadius: 999, background: "rgba(224,184,92,.14)", border: "1px solid rgba(224,184,92,.45)", color: "#F2D680", fontSize: 12, fontWeight: 900, letterSpacing: 1 }}>🏆 {tr("SCORE", "SCORE", "PUNKTE", "PUNTI", "PONTOS")} : {score.toLocaleString("fr-FR")}</span>
         </div>
 
-        {/* Phrases de devinette : 1 affichée par défaut, « Indice + » en révèle une de plus */}
-        {!over && deviClues.length > 0 && (
+        {/* Phrases de devinette — UNIQUEMENT en « Devinette du jour ». En GOAT reveal
+            (déduction pure), pas d'indices en phrases. */}
+        {daily && !over && deviClues.length > 0 && (
           <div style={{ background: "linear-gradient(180deg, rgba(224,184,92,.14), rgba(224,184,92,.05))", border: "1px solid rgba(224,184,92,.4)", borderRadius: 14, padding: "12px 14px", marginBottom: 12 }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 8 }}>
               <div style={{ fontSize: 11, fontWeight: 900, letterSpacing: 1.5, color: "#E0B85C" }}>🕵️ {tr("QUI SUIS-JE ?", "WHO AM I?", "WER BIN ICH?", "CHI SONO?", "QUEM SOU EU?")}</div>
@@ -936,9 +943,15 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
                    : (streak === 0 ? tr("Série remise à zéro", "Streak reset", "Serie zurückgesetzt", "Serie azzerata", "Sequência zerada") : "")}
             </div>
 
-            <button onClick={playAgain} style={{ width: "100%", marginTop: 14, padding: "15px", background: "linear-gradient(135deg,#FFD600,#FF8A2A)", color: "#1A0F00", border: "none", borderRadius: 14, fontSize: 16, fontWeight: 900, letterSpacing: .5, cursor: "pointer" }}>
-              🔄 {tr("REJOUER", "PLAY AGAIN", "NOCHMAL", "GIOCA ANCORA", "JOGAR DE NOVO")}
-            </button>
+            {daily ? (
+              <div style={{ width: "100%", marginTop: 14, padding: "15px", background: "rgba(224,184,92,.12)", border: "1px solid rgba(224,184,92,.4)", borderRadius: 14, fontSize: 15, fontWeight: 900, letterSpacing: .3, color: "#F2D680", textAlign: "center" }}>
+                🌙 {tr("Reviens demain pour une nouvelle devinette", "Come back tomorrow for a new riddle", "Komm morgen für ein neues Rätsel wieder", "Torna domani per un nuovo indovinello", "Volte amanhã para um novo enigma")}
+              </div>
+            ) : (
+              <button onClick={playAgain} style={{ width: "100%", marginTop: 14, padding: "15px", background: "linear-gradient(135deg,#FFD600,#FF8A2A)", color: "#1A0F00", border: "none", borderRadius: 14, fontSize: 16, fontWeight: 900, letterSpacing: .5, cursor: "pointer" }}>
+                🔄 {tr("REJOUER", "PLAY AGAIN", "NOCHMAL", "GIOCA ANCORA", "JOGAR DE NOVO")}
+              </button>
+            )}
 
             <button onClick={doShare} style={{ width: "100%", marginTop: 8, padding: "13px", background: "linear-gradient(135deg,#00E676,#00B85C)", color: "#06130B", border: "none", borderRadius: 14, fontSize: 14, fontWeight: 900, cursor: "pointer" }}>
               {copied ? tr("Copié ! 📋", "Copied! 📋", "Kopiert! 📋", "Copiato! 📋", "Copiado! 📋") : "📤 " + tr("Partager mon résultat", "Share my result", "Ergebnis teilen", "Condividi il risultato", "Compartilhar resultado")}
