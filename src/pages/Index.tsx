@@ -3,6 +3,7 @@ import LePont from "@/components/LePont.jsx";
 import Home from "./Home";
 import { GoatGuess } from "@/components/landing/GoatGuess";
 import { FindPlayer } from "@/components/landing/FindPlayer";
+import { tr } from "@/lib/lang";
 
 const BREAKPOINT = 768;
 
@@ -22,6 +23,7 @@ const Index = () => {
   const [devinetteOpen, setDevinetteOpen] = useState(() => {
     try { return sessionStorage.getItem("bb_active_overlay") === "devinette"; } catch { return false; }
   });
+  const [devinettePrompt, setDevinettePrompt] = useState(false); // petit pop-up d'invitation sur l'accueil
 
   useEffect(() => {
     try {
@@ -83,7 +85,7 @@ const Index = () => {
       const alreadyOpen = sessionStorage.getItem("bb_active_overlay") === "devinette";
       if (hasName && !playedToday && !shownThisSession && !alreadyOpen) {
         const t = setTimeout(() => {
-          setDevinetteOpen(true);
+          setDevinettePrompt(true); // petit pop-up d'invitation (pas d'ouverture directe)
           try { sessionStorage.setItem("bb_devinette_popup_session", today); } catch { /* noop */ }
         }, 1400);
         return () => clearTimeout(t);
@@ -99,6 +101,17 @@ const Index = () => {
       {goatGuessOpen && <GoatGuess onClose={() => setGoatGuessOpen(false)} />}
       {findPlayerOpen && <FindPlayer onClose={() => setFindPlayerOpen(false)} />}
       {devinetteOpen && <FindPlayer daily onClose={() => setDevinetteOpen(false)} />}
+      {devinettePrompt && !devinetteOpen && (
+        <div onClick={() => setDevinettePrompt(false)} style={{ position: "fixed", inset: 0, zIndex: 400, background: "rgba(0,0,0,.72)", backdropFilter: "blur(3px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+          <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 360, background: "linear-gradient(180deg,#14110a,#0a0a0a)", border: "1px solid rgba(224,184,92,.4)", borderRadius: 22, padding: "26px 22px", textAlign: "center", boxShadow: "0 24px 70px rgba(0,0,0,.65)" }}>
+            <div style={{ fontSize: 42, marginBottom: 4 }}>🕵️</div>
+            <div style={{ fontFamily: "Anton, sans-serif", fontSize: 26, letterSpacing: 1, color: "#F2D680" }}>{tr("DEVINETTE DU JOUR", "DAILY RIDDLE", "RÄTSEL DES TAGES", "INDOVINELLO DEL GIORNO", "ADIVINHA DO DIA")}</div>
+            <div style={{ fontSize: 14, color: "rgba(255,255,255,.6)", margin: "8px 0 20px", lineHeight: 1.45 }}>{tr("Un joueur mystère t'attend. Sauras-tu le deviner grâce aux indices ?", "A mystery player awaits. Can you guess him from the clues?", "Ein Rätselspieler wartet. Errätst du ihn anhand der Hinweise?", "Ti aspetta un giocatore misterioso. Sai indovinarlo con gli indizi?", "Um jogador misterioso te espera. Consegue adivinhar pelas dicas?")}</div>
+            <button onClick={() => { setDevinettePrompt(false); setDevinetteOpen(true); }} style={{ width: "100%", padding: "14px", borderRadius: 14, border: "none", background: "linear-gradient(135deg,#F6D477,#C89A32)", color: "#3a2a05", fontSize: 16, fontWeight: 900, letterSpacing: .5, cursor: "pointer", marginBottom: 10 }}>{tr("JOUER", "PLAY", "SPIELEN", "GIOCA", "JOGAR")} 🎯</button>
+            <button onClick={() => setDevinettePrompt(false)} style={{ width: "100%", padding: "10px", borderRadius: 12, border: "none", background: "transparent", color: "rgba(255,255,255,.5)", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>{tr("Plus tard", "Later", "Später", "Più tardi", "Mais tarde")}</button>
+          </div>
+        </div>
+      )}
     </>
   );
 };
