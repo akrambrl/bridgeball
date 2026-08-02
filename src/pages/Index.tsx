@@ -67,6 +67,27 @@ const Index = () => {
     };
   }, []);
 
+  // Devinette du jour = pop-up automatique au PREMIER lancement de la journée
+  // (pas une carte des modes de jeu). Une fois montrée, plus rien avant demain.
+  useEffect(() => {
+    if (!isMobile) return;
+    try {
+      const d = new Date();
+      const paris = new Date(d.toLocaleString("en-US", { timeZone: "Europe/Paris" }));
+      const today = paris.getFullYear() + "-" + String(paris.getMonth() + 1).padStart(2, "0") + "-" + String(paris.getDate()).padStart(2, "0");
+      const shown = localStorage.getItem("bb_devinette_shown_day");
+      const hasName = (localStorage.getItem("bb_name") || "").trim().length >= 2;
+      const alreadyOpen = sessionStorage.getItem("bb_active_overlay") === "devinette";
+      if (shown !== today && hasName && !alreadyOpen) {
+        const t = setTimeout(() => {
+          setDevinetteOpen(true);
+          try { localStorage.setItem("bb_devinette_shown_day", today); } catch { /* noop */ }
+        }, 1400);
+        return () => clearTimeout(t);
+      }
+    } catch { /* noop */ }
+  }, [isMobile]);
+
   if (!isMobile) return <Home />;
 
   return (
