@@ -5976,6 +5976,7 @@ export const GG_WC_WINNERS = new Set([
   "Benjamin Pavard",
   "Lucas Hernandez",
   "Djibril Sidibé",
+  "Benjamin Mendy",
   "Adil Rami",
   "Presnel Kimpembe",
   "N'Golo Kanté",
