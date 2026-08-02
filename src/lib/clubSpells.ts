@@ -120,6 +120,66 @@ export const CLUB_SPELLS: Record<string, Spell[]> = {
   "Zinédine Zidane": [{ club: "Bordeaux", from: 1992, to: 1996 }, { club: "Juventus FC", from: 1996, to: 2001 }, { club: "Real Madrid", from: 2001, to: 2006 }],
   "Ronaldinho": [{ club: "Grêmio", from: 1998, to: 2001 }, { club: "PSG", from: 2001, to: 2003 }, { club: "Barcelona", from: 2003, to: 2008 }, { club: "AC Milan", from: 2008, to: 2011 }, { club: "Flamengo", from: 2011, to: 2012 }, { club: "Atlético Mineiro", from: 2012, to: 2014 }, { club: "Querétaro", from: 2014, to: 2015 }, { club: "Fluminense", from: 2015, to: 2015 }],
   "David Beckham": [{ club: "Manchester United", from: 1992, to: 2003 }, { club: "Real Madrid", from: 2003, to: 2007 }, { club: "LA Galaxy", from: 2007, to: 2012 }, { club: "AC Milan", from: 2009, to: 2010 }, { club: "PSG", from: 2013, to: 2013 }],
+
+  // ── Cadres Premier League ───────────────────────────────────
+  // Manchester United
+  "Paul Scholes": [{ club: "Manchester United", from: 1994, to: 2013 }],
+  "Gary Neville": [{ club: "Manchester United", from: 1992, to: 2011 }],
+  "Edwin van der Sar": [{ club: "Ajax", from: 1990, to: 1999 }, { club: "Juventus FC", from: 1999, to: 2001 }, { club: "Fulham", from: 2001, to: 2005 }, { club: "Manchester United", from: 2005, to: 2011 }],
+  "David de Gea": [{ club: "Atletico Madrid", from: 2009, to: 2011 }, { club: "Manchester United", from: 2011, to: 2023 }],
+  "Juan Mata": [{ club: "Valencia", from: 2007, to: 2011 }, { club: "Chelsea", from: 2011, to: 2014 }, { club: "Manchester United", from: 2014, to: 2022 }],
+  "Marcus Rashford": [{ club: "Manchester United", from: 2015, to: 2026 }],
+  "Bruno Fernandes": [{ club: "Sporting CP", from: 2017, to: 2020 }, { club: "Manchester United", from: 2020, to: 2026 }],
+  "Antonio Valencia": [{ club: "Wigan", from: 2006, to: 2009 }, { club: "Manchester United", from: 2009, to: 2019 }],
+  "Nemanja Matic": [{ club: "Chelsea", from: 2009, to: 2011 }, { club: "Benfica", from: 2011, to: 2014 }, { club: "Chelsea", from: 2014, to: 2017 }, { club: "Manchester United", from: 2017, to: 2022 }, { club: "Roma", from: 2022, to: 2023 }],
+  // Chelsea
+  "John Terry": [{ club: "Chelsea", from: 1998, to: 2017 }, { club: "Aston Villa", from: 2017, to: 2018 }],
+  "Branislav Ivanović": [{ club: "Chelsea", from: 2008, to: 2017 }],
+  "César Azpilicueta": [{ club: "Marseille", from: 2010, to: 2012 }, { club: "Chelsea", from: 2012, to: 2023 }, { club: "Atletico Madrid", from: 2023, to: 2025 }],
+  "N'Golo Kanté": [{ club: "Leicester", from: 2015, to: 2016 }, { club: "Chelsea", from: 2016, to: 2023 }, { club: "Al Ittihad", from: 2023, to: 2026 }],
+  "Gary Cahill": [{ club: "Chelsea", from: 2012, to: 2019 }],
+  "Diego Costa": [{ club: "Atletico Madrid", from: 2010, to: 2014 }, { club: "Chelsea", from: 2014, to: 2017 }, { club: "Atletico Madrid", from: 2018, to: 2020 }],
+  "Thibaut Courtois": [{ club: "Atletico Madrid", from: 2011, to: 2014 }, { club: "Chelsea", from: 2014, to: 2018 }, { club: "Real Madrid", from: 2018, to: 2026 }],
+  "Mason Mount": [{ club: "Chelsea", from: 2019, to: 2023 }, { club: "Manchester United", from: 2023, to: 2026 }],
+  "Willian": [{ club: "Chelsea", from: 2013, to: 2020 }, { club: "Arsenal", from: 2020, to: 2021 }],
+  // Arsenal
+  "Robert Pires": [{ club: "Marseille", from: 1998, to: 2000 }, { club: "Arsenal", from: 2000, to: 2006 }, { club: "Villarreal", from: 2006, to: 2010 }],
+  "Freddie Ljungberg": [{ club: "Arsenal", from: 1998, to: 2007 }],
+  "Sol Campbell": [{ club: "Tottenham", from: 1995, to: 2001 }, { club: "Arsenal", from: 2001, to: 2006 }],
+  "Gilberto Silva": [{ club: "Arsenal", from: 2002, to: 2008 }],
+  "Laurent Koscielny": [{ club: "Arsenal", from: 2010, to: 2019 }, { club: "Bordeaux", from: 2019, to: 2022 }],
+  "Alexis Sanchez": [{ club: "Barcelona", from: 2011, to: 2014 }, { club: "Arsenal", from: 2014, to: 2018 }, { club: "Manchester United", from: 2018, to: 2020 }, { club: "Inter Milan", from: 2020, to: 2022 }, { club: "Marseille", from: 2022, to: 2023 }],
+  "Pierre-Emerick Aubameyang": [{ club: "Borussia Dortmund", from: 2013, to: 2018 }, { club: "Arsenal", from: 2018, to: 2022 }, { club: "Chelsea", from: 2022, to: 2023 }, { club: "Marseille", from: 2023, to: 2024 }],
+  "Bacary Sagna": [{ club: "Arsenal", from: 2007, to: 2014 }, { club: "Manchester City", from: 2014, to: 2017 }],
+  "Bukayo Saka": [{ club: "Arsenal", from: 2019, to: 2026 }],
+  "Martin Ødegaard": [{ club: "Real Madrid", from: 2015, to: 2021 }, { club: "Arsenal", from: 2021, to: 2026 }],
+  // Liverpool
+  "Jamie Carragher": [{ club: "Liverpool", from: 1996, to: 2013 }],
+  "Xabi Alonso": [{ club: "Real Sociedad", from: 2000, to: 2004 }, { club: "Liverpool", from: 2004, to: 2009 }, { club: "Real Madrid", from: 2009, to: 2014 }, { club: "Bayern Munich", from: 2014, to: 2017 }],
+  "Fernando Torres": [{ club: "Atletico Madrid", from: 2001, to: 2007 }, { club: "Liverpool", from: 2007, to: 2011 }, { club: "Chelsea", from: 2011, to: 2014 }, { club: "AC Milan", from: 2014, to: 2015 }, { club: "Atletico Madrid", from: 2015, to: 2018 }],
+  "Philippe Coutinho": [{ club: "Liverpool", from: 2013, to: 2018 }, { club: "Barcelona", from: 2018, to: 2022 }, { club: "Bayern Munich", from: 2019, to: 2020 }, { club: "Aston Villa", from: 2022, to: 2023 }],
+  "Trent Alexander-Arnold": [{ club: "Liverpool", from: 2016, to: 2025 }, { club: "Real Madrid", from: 2025, to: 2026 }],
+  "Andrew Robertson": [{ club: "Liverpool", from: 2017, to: 2026 }],
+  "Fabinho": [{ club: "Monaco", from: 2015, to: 2018 }, { club: "Liverpool", from: 2018, to: 2023 }, { club: "Al Ittihad", from: 2023, to: 2026 }],
+  // Manchester City
+  "Fernandinho": [{ club: "Manchester City", from: 2013, to: 2022 }],
+  "Bernardo Silva": [{ club: "Monaco", from: 2014, to: 2017 }, { club: "Manchester City", from: 2017, to: 2026 }],
+  "Riyad Mahrez": [{ club: "Leicester", from: 2014, to: 2018 }, { club: "Manchester City", from: 2018, to: 2023 }, { club: "Al Ahli", from: 2023, to: 2026 }],
+  "Kyle Walker": [{ club: "Tottenham", from: 2009, to: 2017 }, { club: "Manchester City", from: 2017, to: 2025 }],
+  "Rúben Dias": [{ club: "Benfica", from: 2017, to: 2020 }, { club: "Manchester City", from: 2020, to: 2026 }],
+  "John Stones": [{ club: "Everton", from: 2013, to: 2016 }, { club: "Manchester City", from: 2016, to: 2026 }],
+  "Jack Grealish": [{ club: "Aston Villa", from: 2014, to: 2021 }, { club: "Manchester City", from: 2021, to: 2026 }],
+  "Pablo Zabaleta": [{ club: "Manchester City", from: 2008, to: 2017 }, { club: "West Ham", from: 2017, to: 2020 }],
+  // Tottenham
+  "Harry Kane": [{ club: "Tottenham", from: 2011, to: 2023 }, { club: "Bayern Munich", from: 2023, to: 2026 }],
+  "Hugo Lloris": [{ club: "Lyon", from: 2008, to: 2012 }, { club: "Tottenham", from: 2012, to: 2023 }],
+  "Dele Alli": [{ club: "Tottenham", from: 2015, to: 2022 }, { club: "Everton", from: 2022, to: 2024 }],
+  "Christian Eriksen": [{ club: "Ajax", from: 2010, to: 2013 }, { club: "Tottenham", from: 2013, to: 2020 }, { club: "Inter Milan", from: 2020, to: 2021 }, { club: "Manchester United", from: 2022, to: 2026 }],
+  "Jan Vertonghen": [{ club: "Ajax", from: 2006, to: 2012 }, { club: "Tottenham", from: 2012, to: 2020 }],
+  // Leicester / Everton
+  "Jamie Vardy": [{ club: "Leicester", from: 2012, to: 2026 }],
+  "Romelu Lukaku": [{ club: "Everton", from: 2014, to: 2017 }, { club: "Manchester United", from: 2017, to: 2019 }, { club: "Inter Milan", from: 2019, to: 2021 }, { club: "Chelsea", from: 2021, to: 2022 }, { club: "Inter Milan", from: 2022, to: 2023 }, { club: "Roma", from: 2023, to: 2024 }, { club: "Napoli", from: 2024, to: 2026 }],
+  "Seamus Coleman": [{ club: "Everton", from: 2009, to: 2026 }],
 };
 
 // Deux joueurs ont-ils été coéquipiers ? (même club + saisons qui se chevauchent)
@@ -133,6 +193,24 @@ export function wereTeammates(aName: string, bName: string): boolean {
   for (const s1 of a) {
     for (const s2 of b) {
       if (s1.club === s2.club && s1.from < s2.to && s2.from < s1.to) return true;
+    }
+  }
+  return false;
+}
+
+// Chevauchement INCLUSIF (années qui se touchent comprises). À granularité
+// « année », une année commune est AMBIGUË : transfert d'été (un part, l'autre
+// arrive) = pas coéquipiers, MAIS transfert d'hiver = ~demi-saison ensemble
+// (ex. Salah arrive à Chelsea en janv. 2014, Torres y est encore).
+// → Pour affirmer « JAMAIS joué avec Y » sans risque, on exige que même ce
+// chevauchement inclusif soit faux (sinon on pourrait nier un vrai duo).
+export function mightHaveBeenTeammates(aName: string, bName: string): boolean {
+  const a = CLUB_SPELLS[aName];
+  const b = CLUB_SPELLS[bName];
+  if (!a || !b) return false;
+  for (const s1 of a) {
+    for (const s2 of b) {
+      if (s1.club === s2.club && s1.from <= s2.to && s2.from <= s1.to) return true;
     }
   }
   return false;

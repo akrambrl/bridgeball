@@ -5,7 +5,7 @@ import { ANEC_ENTRAINEUR } from "./GoatGuess";
 import { tr } from "@/lib/lang";
 import { trackPlay } from "../../lib/track";
 import { isNative, hapticLight, hapticHeavy, hapticSuccess } from "@/lib/native";
-import { CLUB_SPELLS, wereTeammates, hasSpells } from "@/lib/clubSpells";
+import { CLUB_SPELLS, wereTeammates, mightHaveBeenTeammates, hasSpells } from "@/lib/clubSpells";
 
 const SPELL_NAMES = Object.keys(CLUB_SPELLS);
 
@@ -466,7 +466,7 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
       const mates = SPELL_NAMES.filter(n => n !== answer.name && wereTeammates(answer.name, n)).sort();
       if (mates.length) {
         const X = mates[hashStr(answer.name, 23) % mates.length];
-        const ys = SPELL_NAMES.filter(n => n !== answer.name && n !== X && wereTeammates(X, n) && !wereTeammates(answer.name, n)).sort();
+        const ys = SPELL_NAMES.filter(n => n !== answer.name && n !== X && wereTeammates(X, n) && !mightHaveBeenTeammates(answer.name, n)).sort();
         const Y = ys.length ? ys[hashStr(answer.name, 31) % ys.length] : null;
         clue1 = jouéAvec + " " + X + (Y ? " " + maisJamais + " " + Y : "") + ".";
       }
