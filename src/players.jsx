@@ -563,7 +563,7 @@ export const PLAYERS = [
   { name:"Firas Al-Buraikan", clubs:["Al Ahli"], diff:"expert", nationalities:["Arabie saoudite"], positions:["attaquant"] , birthYear:2000 },
   { name:"Abdulrahman Ghareeb", clubs:["Al Nassr"], diff:"expert", nationalities:["Arabie saoudite"], positions:["attaquant"] , birthYear:1997 },
   { name:"Cole Palmer", clubs:["Manchester City", "Chelsea"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:2002 },
-  { name:"Robert Lewandowski", clubs:["Znicz Pruszkow", "Lech Poznań", "Borussia Dortmund", "Bayern Munich", "Barcelona"], diff:"facile", nationalities:["Pologne"], positions:["attaquant"], birthYear:1988 },
+  { name:"Robert Lewandowski", clubs:["Znicz Pruszkow", "Lech Poznań", "Borussia Dortmund", "Bayern Munich", "Barcelona", "Chicago Fire"], diff:"facile", nationalities:["Pologne"], positions:["attaquant"], birthYear:1988 },
   { name:"Karim Benzema", clubs:["Lyon", "Real Madrid", "Al Ittihad", "Al Hilal"], diff:"facile", nationalities:["France"], positions:["attaquant"], birthYear:1987 },
   { name:"Mohamed Salah", clubs:["Basel", "Chelsea", "ACF Fiorentina", "AS Roma", "Liverpool"], diff:"facile", nationalities:["Égypte"], positions:["attaquant"], birthYear:1992 },
   { name:"Kevin De Bruyne", clubs:["Genk", "Chelsea", "Wolfsburg", "Manchester City", "SSC Napoli"], diff:"facile", nationalities:["Belgique"], positions:["milieu"], birthYear:1991 },
