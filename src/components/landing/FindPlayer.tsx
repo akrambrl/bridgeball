@@ -392,7 +392,7 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
 
   // Phrase de devinette (1re personne). On assemble plusieurs indices « déjà
   // dispo » puis on en choisit un de façon déterministe (varié selon le joueur).
-  const deviClue = useMemo(() => {
+  const deviClues = useMemo(() => {
     const clubs = answer.clubs || [];
     const clues: string[] = [];
 
@@ -437,8 +437,13 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
     const dec = startYear ? Math.floor(startYear / 10) * 10 : null;
     if (dec) clues.push(tr("J'ai percé dans les années", "I broke through in the", "Durchbruch in den", "Sono esploso negli anni", "Estourei nos anos") + " " + dec + tr("", "s", "ern", "", "") + ".");
 
-    if (!clues.length) return null;
-    return "🕵️ " + clues[hashStr(answer.name, 7) % clues.length];
+    if (!clues.length) return [];
+    // Mélange déterministe puis on garde 3-4 indices (types tous distincts).
+    const uniq = Array.from(new Set(clues));
+    let s = (hashStr(answer.name, 131) % 2147483647) || 1;
+    const rand = () => { s = (s * 16807) % 2147483647; return s / 2147483647; };
+    for (let i = uniq.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); const t = uniq[i]; uniq[i] = uniq[j]; uniq[j] = t; }
+    return uniq.slice(0, 4);
   }, [answer.name]);
 
   function submitGuess(p: Player) {
@@ -726,10 +731,17 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
           <span style={{ padding: "5px 12px", borderRadius: 999, background: "rgba(224,184,92,.14)", border: "1px solid rgba(224,184,92,.45)", color: "#F2D680", fontSize: 12, fontWeight: 900, letterSpacing: 1 }}>🏆 {tr("SCORE", "SCORE", "PUNKTE", "PUNTI", "PONTOS")} : {score.toLocaleString("fr-FR")}</span>
         </div>
 
-        {/* Phrase de devinette */}
-        {!over && deviClue && (
-          <div style={{ background: "linear-gradient(180deg, rgba(224,184,92,.14), rgba(224,184,92,.05))", border: "1px solid rgba(224,184,92,.4)", borderRadius: 14, padding: "11px 14px", textAlign: "center", fontSize: 14, fontWeight: 700, fontStyle: "italic", color: "#F4E3B8", marginBottom: 12, lineHeight: 1.4 }}>
-            {deviClue}
+        {/* Phrases de devinette (3-4 indices) */}
+        {!over && deviClues.length > 0 && (
+          <div style={{ background: "linear-gradient(180deg, rgba(224,184,92,.14), rgba(224,184,92,.05))", border: "1px solid rgba(224,184,92,.4)", borderRadius: 14, padding: "12px 14px", marginBottom: 12 }}>
+            <div style={{ fontSize: 11, fontWeight: 900, letterSpacing: 1.5, color: "#E0B85C", textAlign: "center", marginBottom: 8 }}>🕵️ {tr("QUI SUIS-JE ?", "WHO AM I?", "WER BIN ICH?", "CHI SONO?", "QUEM SOU EU?")}</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+              {deviClues.map((c, i) => (
+                <div key={i} style={{ fontSize: 13.5, fontWeight: 600, fontStyle: "italic", color: "#F4E3B8", lineHeight: 1.35, display: "flex", gap: 6 }}>
+                  <span style={{ color: "#E0B85C" }}>▪</span><span>{c}</span>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
