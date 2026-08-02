@@ -283,7 +283,8 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
   const [revealing, setRevealing] = useState(false); // révélation en cours (bloque la saisie sur la manche finale)
   const [hintRevealed, setHintRevealed] = useState<string[]>([]); // attributs révélés via l'ampoule 💡
   const [streak, setStreak] = useState(0); // série de trouvailles d'affilée (mode illimité)
-  const [best, setBest] = useState<number>(() => { try { return parseInt(localStorage.getItem("bb_findstreak_best") || "0", 10) || 0; } catch { return 0; } });
+  const [score, setScore] = useState<number>(() => { try { return parseInt(localStorage.getItem("bb_findplayer_pts") || "0", 10) || 0; } catch { return 0; } });
+  const [lastEarned, setLastEarned] = useState(0); // points gagnés à la dernière manche
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -299,13 +300,19 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
     } catch { return "anon"; }
   }
 
-  async function submitBest(bestVal: number) {
+    // Points par manche selon le nombre d'essais.
+  // 1 essai = 1000 · < 5 = 500 · < 10 = 200 · 10+ = 100
+  function roundScore(tries: number): number {
+    return tries <= 1 ? 1000 : tries < 5 ? 500 : tries < 10 ? 200 : 100;
+  }
+
+  async function submitScore(total: number) {
     const name = (() => { try { return localStorage.getItem("bb_name") || ""; } catch { return ""; } })();
     try {
       await fetch(SB_URL + "/rest/v1/bb_scores", {
         method: "POST",
         headers: { apikey: SB_KEY, Authorization: "Bearer " + SB_KEY, "Content-Type": "application/json", Prefer: "return=minimal" },
-        body: JSON.stringify({ player_id: playerId(), player_name: name || "Anonyme", score: bestVal, mode: "findstreak", diff: "all" }),
+        body: JSON.stringify({ player_id: playerId(), player_name: name || "Anonyme", score: total, mode: "findscore", diff: "all" }),
         keepalive: true,
       });
     } catch { /* noop */ }
@@ -315,7 +322,7 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
   async function loadBoard() {
     setBoard({ loading: true, rows: [], myRank: null, total: 0 });
     try {
-      const res = await fetch(SB_URL + "/rest/v1/bb_scores?mode=eq.findstreak&order=score.desc&limit=300&select=player_id,player_name,score", {
+      const res = await fetch(SB_URL + "/rest/v1/bb_scores?mode=eq.findscore&order=score.desc&limit=300&select=player_id,player_name,score", {
         headers: { apikey: SB_KEY, Authorization: "Bearer " + SB_KEY },
       });
       const list = res.ok ? await res.json() : [];
@@ -361,9 +368,13 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
         setRevealing(false);
         if (w) {
           setWon(true);
-          const ns = streak + 1;
-          setStreak(ns);
-          if (ns > best) { setBest(ns); try { localStorage.setItem("bb_findstreak_best", String(ns)); } catch { /* noop */ } submitBest(ns); }
+          setStreak(streak + 1);
+          const earned = roundScore(gs.length);
+          setLastEarned(earned);
+          const total = score + earned;
+          setScore(total);
+          try { localStorage.setItem("bb_findplayer_pts", String(total)); } catch { /* noop */ }
+          submitScore(total);
         } else {
           setStreak(0);
         }
@@ -615,7 +626,7 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
         {/* Bandeau série (mode illimité) */}
         <div style={{ display: "flex", justifyContent: "center", gap: 8, marginBottom: 12 }}>
           <span style={{ padding: "5px 12px", borderRadius: 999, background: "rgba(255,138,42,.14)", border: "1px solid rgba(255,138,42,.4)", color: "#FF8A2A", fontSize: 12, fontWeight: 900, letterSpacing: 1 }}>🔥 {tr("SÉRIE", "STREAK", "SERIE", "SERIE", "SÉRIE")} : {streak}</span>
-          <span style={{ padding: "5px 12px", borderRadius: 999, background: "rgba(255,214,0,.12)", border: "1px solid rgba(255,214,0,.4)", color: "#FFD600", fontSize: 12, fontWeight: 900, letterSpacing: 1 }}>🏆 {tr("RECORD", "BEST", "REKORD", "RECORD", "RECORDE")} : {best}</span>
+          <span style={{ padding: "5px 12px", borderRadius: 999, background: "rgba(224,184,92,.14)", border: "1px solid rgba(224,184,92,.45)", color: "#F2D680", fontSize: 12, fontWeight: 900, letterSpacing: 1 }}>🏆 {tr("SCORE", "SCORE", "PUNKTE", "PUNTI", "PONTOS")} : {score.toLocaleString("fr-FR")}</span>
         </div>
 
         {/* Boutons d'indice + barre de pastilles (Mode Infini) */}
@@ -717,8 +728,11 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
               {won ? tr("Trouvé en", "Found in", "Gefunden in", "Trovato in", "Encontrado em") + " " + guesses.length + " " + tr("essai", "try", "Versuch", "tentativo", "tentativa") + (guesses.length > 1 ? "s" : "") : tr("C'était", "It was", "Es war", "Era", "Era") + " :"}
             </div>
             {!won && <div style={{ fontFamily: "Anton, sans-serif", fontSize: 22, color: "#fff", marginTop: 2 }}>{answer.name}</div>}
-            <div style={{ fontSize: 15, fontWeight: 800, color: won ? "#FF8A2A" : "rgba(255,255,255,.6)", marginTop: 8 }}>
-              {won ? "🔥 " + tr("Série", "Streak", "Serie", "Serie", "Sequência") + " : " + streak + (streak >= best && streak > 0 ? "  · 🏆 " + tr("record !", "best!", "Rekord!", "record!", "recorde!") : "")
+            {won && (
+              <div style={{ fontFamily: "Anton, sans-serif", fontSize: 40, color: "#F2D680", letterSpacing: 1, marginTop: 8, textShadow: "0 2px 16px rgba(224,184,92,.4)" }}>+{lastEarned.toLocaleString("fr-FR")} PTS</div>
+            )}
+            <div style={{ fontSize: 14, fontWeight: 800, color: won ? "#FF8A2A" : "rgba(255,255,255,.6)", marginTop: 6 }}>
+              {won ? "🔥 " + tr("Série", "Streak", "Serie", "Serie", "Sequência") + " : " + streak + "  ·  🏆 " + tr("Total", "Total", "Gesamt", "Totale", "Total") + " : " + score.toLocaleString("fr-FR")
                    : (streak === 0 ? tr("Série remise à zéro", "Streak reset", "Serie zurückgesetzt", "Serie azzerata", "Sequência zerada") : "")}
             </div>
 
@@ -732,7 +746,7 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
 
             {/* Classement du jour */}
             <div style={{ marginTop: 14, background: "rgba(0,0,0,.25)", borderRadius: 12, padding: "10px 12px", textAlign: "left" }}>
-              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.5, color: "rgba(255,255,255,.45)", marginBottom: 6, textAlign: "center" }}>🔥 {tr("MEILLEURES SÉRIES", "BEST STREAKS", "BESTE SERIEN", "MIGLIORI SERIE", "MELHORES SEQUÊNCIAS")}</div>
+              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.5, color: "rgba(255,255,255,.45)", marginBottom: 6, textAlign: "center" }}>🏆 {tr("MEILLEURS SCORES", "TOP SCORES", "BESTE PUNKTE", "MIGLIORI PUNTEGGI", "MELHORES PONTUAÇÕES")}</div>
               {(!board || board.loading) ? (
                 <div style={{ fontSize: 12, color: "rgba(255,255,255,.4)", textAlign: "center", padding: 6 }}>{tr("Chargement…", "Loading…", "Wird geladen…", "Caricamento…", "Carregando…")}</div>
               ) : board.rows.length === 0 ? (
