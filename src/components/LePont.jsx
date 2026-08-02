@@ -861,7 +861,6 @@ const GRID_CARD_IMG = "/grid-card.png";
 const REVEAL_CARD_IMG = "/reveal-card.png";
 const GUESS_CARD_IMG = "/guess-card.png";
 const DUEL_CARD_IMG = "/duel-card.png";
-const DEVINETTE_CARD_IMG = "/devinette-card.png";
 
 // ── MESSAGES DE RÉSULTAT UNIFIÉS (Plug, Mercato, solo, duel, multi) ──
 const RESULT_MESSAGES = {
@@ -11006,7 +11005,6 @@ export default function LePont() {
           const homeCards = [
               {key:"duel",    img:DUEL_CARD_IMG,    onClick: function(){requirePseudo(function(){setDuelError("");setDuelJoinCode("");setDuelScreen("menu");});}, record: null, recordIcon:null, recordColor:"#3DA5FF"},
               {key:"grid",    img:REVEAL_CARD_IMG,  onClick: function(){window.dispatchEvent(new CustomEvent("goatfc:open-findplayer"));}, record: null, recordIcon:null, recordColor:"#00E676"},
-              {key:"devinette", img:DEVINETTE_CARD_IMG, onClick: function(){window.dispatchEvent(new CustomEvent("goatfc:open-devinette"));}, record: null, recordIcon:null, recordColor:"#F2D680"},
               {key:"mercato", img:MERCATO_CARD_IMG, onClick: function(){setGameConfigModal("chaine");}, record: chainRecord, recordIcon:"⛓",  recordColor:"#60a5fa"},
               {key:"plug",    img:PLUG_CARD_IMG,    onClick: function(){setGameConfigModal("pont");},   record: record,      recordIcon:"🏆", recordColor:"#FFD600"},
               {key:"guess",   img:GUESS_CARD_IMG,   onClick: function(){window.dispatchEvent(new CustomEvent("goatfc:open-guess"));}, record: null, recordIcon:null, recordColor:"#C084FC"},
