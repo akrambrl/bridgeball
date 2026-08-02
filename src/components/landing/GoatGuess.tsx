@@ -399,7 +399,7 @@ const ANEC_FILS_PRO = new Set([
   "Sergio Busquets",        // Carles Busquets
   "Gio Reyna",              // Claudio Reyna
 ]);
-const ANEC_ENTRAINEUR = new Set([
+export const ANEC_ENTRAINEUR = new Set([
   // Devenu entraîneur après sa carrière de joueur
   "Zinédine Zidane", "Pep Guardiola", "Thierry Henry", "Andrea Pirlo",
   "Gennaro Gattuso", "Frank Lampard", "Steven Gerrard", "Xavi",
