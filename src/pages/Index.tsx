@@ -67,21 +67,24 @@ const Index = () => {
     };
   }, []);
 
-  // Devinette du jour = pop-up automatique au PREMIER lancement de la journée
-  // (pas une carte des modes de jeu). Une fois montrée, plus rien avant demain.
+  // Devinette du jour = pop-up automatique (pas une carte des modes). On la propose
+  // à chaque lancement TANT QU'ELLE N'A PAS ÉTÉ JOUÉE aujourd'hui (une fois par
+  // session pour ne pas être insistant). Une fois trouvée/terminée → plus de pop-up.
   useEffect(() => {
     if (!isMobile) return;
     try {
       const d = new Date();
       const paris = new Date(d.toLocaleString("en-US", { timeZone: "Europe/Paris" }));
       const today = paris.getFullYear() + "-" + String(paris.getMonth() + 1).padStart(2, "0") + "-" + String(paris.getDate()).padStart(2, "0");
-      const shown = localStorage.getItem("bb_devinette_shown_day");
       const hasName = (localStorage.getItem("bb_name") || "").trim().length >= 2;
+      let playedToday = false;
+      try { const raw = localStorage.getItem("bb_devinette_" + today); if (raw) playedToday = !!JSON.parse(raw).over; } catch { /* noop */ }
+      const shownThisSession = sessionStorage.getItem("bb_devinette_popup_session") === today;
       const alreadyOpen = sessionStorage.getItem("bb_active_overlay") === "devinette";
-      if (shown !== today && hasName && !alreadyOpen) {
+      if (hasName && !playedToday && !shownThisSession && !alreadyOpen) {
         const t = setTimeout(() => {
           setDevinetteOpen(true);
-          try { localStorage.setItem("bb_devinette_shown_day", today); } catch { /* noop */ }
+          try { sessionStorage.setItem("bb_devinette_popup_session", today); } catch { /* noop */ }
         }, 1400);
         return () => clearTimeout(t);
       }
