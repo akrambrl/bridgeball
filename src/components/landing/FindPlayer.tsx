@@ -345,6 +345,9 @@ function loadSavedRound(raw: string | null): SavedRound | null {
   } catch { return null; }
 }
 
+// Fond FUT noir + doré (partagé plein écran / carte « du jour »).
+const REVEAL_BG = "repeating-conic-gradient(from 0deg at 50% 34%, rgba(214,175,84,.05) 0deg 3deg, transparent 3deg 11deg), radial-gradient(circle at 50% 34%, rgba(224,184,92,.26) 0%, rgba(214,175,84,.07) 26%, transparent 56%), radial-gradient(ellipse at 50% 122%, rgba(214,175,84,.12), transparent 60%), linear-gradient(180deg, #14110a 0%, #0a0a0a 45%, #040404 100%)";
+
 export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; daily?: boolean }) => {
   const seenRef = useRef<Set<string>>(new Set());
   // En mode « Devinette du jour » : 1 joueur/jour partagé, sauvegarde persistante
@@ -788,8 +791,17 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
   ] as { key: string; label: string; value: string; big?: boolean; bg?: string; fg?: string; confirmed: boolean }[];
   const allFound = topSlots.every(s => s.confirmed);
 
+  // En « Devinette du jour » : carte centrée bornée (ne prend pas tout l'écran),
+  // avec un fond derrière. En GOAT reveal : plein écran. Pas de transform sur la
+  // carte (sinon les modales position:fixed seraient piégées dedans) → on centre
+  // via left/right + margin auto.
+  const rootStyle: any = daily
+    ? { position: "fixed", top: "5vh", left: 0, right: 0, margin: "0 auto", width: "min(94vw, 440px)", maxHeight: "88vh", zIndex: 200, borderRadius: 22, border: "1px solid rgba(224,184,92,.4)", boxShadow: "0 24px 70px rgba(0,0,0,.72)", background: REVEAL_BG, overflowY: "auto", WebkitOverflowScrolling: "touch" }
+    : { position: "fixed", inset: 0, zIndex: 200, background: REVEAL_BG, overflowY: "auto", WebkitOverflowScrolling: "touch" };
   return (
-    <div ref={scrollRef} style={{ position: "fixed", inset: 0, zIndex: 200, background: "repeating-conic-gradient(from 0deg at 50% 34%, rgba(214,175,84,.05) 0deg 3deg, transparent 3deg 11deg), radial-gradient(circle at 50% 34%, rgba(224,184,92,.26) 0%, rgba(214,175,84,.07) 26%, transparent 56%), radial-gradient(ellipse at 50% 122%, rgba(214,175,84,.12), transparent 60%), linear-gradient(180deg, #14110a 0%, #0a0a0a 45%, #040404 100%)", overflowY: "auto", WebkitOverflowScrolling: "touch" as any }}>
+    <>
+      {daily && <div onClick={close} style={{ position: "fixed", inset: 0, zIndex: 199, background: "rgba(0,0,0,.72)", backdropFilter: "blur(3px)" }} />}
+    <div ref={scrollRef} style={rootStyle}>
       {/* Header */}
       <div style={{ position: "sticky", top: 0, zIndex: 5, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "calc(12px + env(safe-area-inset-top)) 16px 12px", background: "linear-gradient(180deg,#14110a,rgba(8,8,8,.6))", backdropFilter: "blur(8px)" }}>
         <button onClick={close} style={{ background: "rgba(255,255,255,.1)", border: "1px solid rgba(224,184,92,.35)", borderRadius: 12, color: "#fff", padding: "8px 12px", fontSize: 14, fontWeight: 800, cursor: "pointer" }}>← {tr("QUITTER", "QUIT", "BEENDEN", "ESCI", "SAIR")}</button>
@@ -1067,5 +1079,6 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
         </div>
       )}
     </div>
+    </>
   );
 };
