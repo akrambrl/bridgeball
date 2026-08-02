@@ -538,8 +538,8 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
     setInput("");
     setAnimRow(gs.length - 1); // la nouvelle ligne se révèle puce par puce
     if (o) {
-      // Bonne réponse : on laisse la révélation des puces se jouer (suspens) avant
-      // d'afficher le résultat.
+      // Bonne réponse : en déduction on laisse les puces se révéler (suspens) ;
+      // en Devinette du jour (pas de puces) on affiche le résultat quasi direct.
       setRevealing(true);
       setTimeout(() => {
         setRevealing(false);
@@ -559,7 +559,7 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
         }
         setOver(true);
         loadBoard();
-      }, REVEAL_MS);
+      }, daily ? 400 : REVEAL_MS);
     } else {
       setTimeout(() => inputRef.current?.focus(), 50);
     }
@@ -830,8 +830,9 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
           </div>
         )}
 
-        {/* Boutons d'indice + barre de pastilles (Mode Infini) */}
-        {!over && (
+        {/* Boutons d'indice + barre de pastilles (déduction) — PAS en Devinette du jour
+            (là c'est une devinette pure : on lit les indices et on tape des noms). */}
+        {!over && !daily && (
           <div style={{ marginBottom: 14 }}>
             <div style={{ display: "flex", justifyContent: "center", gap: 12, marginBottom: 12 }}>
               {[
@@ -869,7 +870,9 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
               autoComplete="off"
               style={{ width: "100%", boxSizing: "border-box", padding: "14px 60px 14px 16px", borderRadius: 14, border: "1.5px solid rgba(255,255,255,.25)", background: "rgba(255,255,255,.12)", color: "#fff", fontSize: 15, fontWeight: 600, outline: "none", scrollMarginTop: "calc(64px + env(safe-area-inset-top))" }}
             />
+            {!daily && (
             <button onClick={randomGuess} title={tr("Joueur au hasard", "Random player", "Zufälliger Spieler", "Giocatore casuale", "Jogador aleatório")} aria-label={tr("Joueur au hasard", "Random player", "Zufälliger Spieler", "Giocatore casuale", "Jogador aleatório")} style={{ position: "absolute", right: 6, top: 6, bottom: 6, width: 46, borderRadius: 11, border: "none", background: "linear-gradient(135deg,#F6D477,#C89A32)", color: "#3a2a05", fontSize: 20, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 3px 10px rgba(200,154,50,.5)" }}>🎲</button>
+            )}
             {suggestions.length > 0 && (
               <div style={{ position: "absolute", top: "100%", left: 0, right: 0, zIndex: 10, marginTop: 4, background: "#132419", border: "1px solid rgba(255,255,255,.15)", borderRadius: 12, maxHeight: "min(50vh, 320px)", overflowY: "auto", WebkitOverflowScrolling: "touch" as any, boxShadow: "0 12px 30px rgba(0,0,0,.5)" }}>
                 {suggestions.map(s => (
@@ -895,7 +898,20 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
         {/* Révélation puce par puce (suspens) */}
         <style>{`@keyframes fpChipIn{0%{opacity:0;transform:rotateY(90deg) scale(.5)}55%{opacity:1;transform:rotateY(0deg) scale(1.12)}100%{opacity:1;transform:rotateY(0deg) scale(1)}}`}</style>
 
-        {/* Lignes de propositions — la plus récente en haut */}
+        {/* Devinette du jour : simple liste des noms tentés (pas de déduction/pastilles) */}
+        {daily && guesses.length > 0 && (
+          <div style={{ order: 3, display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center", marginTop: 14 }}>
+            {guesses.slice().reverse().map((g, i) => {
+              const correct = g.name === answer.name;
+              return (
+                <div key={i} style={{ padding: "8px 14px", borderRadius: 999, background: correct ? "rgba(0,230,118,.16)" : "rgba(255,61,87,.1)", border: "1px solid " + (correct ? "rgba(0,230,118,.5)" : "rgba(255,61,87,.35)"), color: correct ? "#00E676" : "#FF9BA6", fontSize: 13.5, fontWeight: 800 }}>{correct ? "✓ " : "✕ "}{g.name}</div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Lignes de propositions (déduction) — la plus récente en haut. Pas en Devinette du jour. */}
+        {!daily && (
         <div style={{ order: 3, display: "flex", flexDirection: "column", gap: 8, marginTop: 12 }}>
           {guesses.map((g, gi) => ({ g, gi })).reverse().map(({ g, gi }) => {
             const chips = computeChips(g, answer);
@@ -924,6 +940,7 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
             );
           })}
         </div>
+        )}
 
         {/* Écran de fin — placé au-dessus des propositions (order 2) pour être vu sans scroller */}
         {over && (
