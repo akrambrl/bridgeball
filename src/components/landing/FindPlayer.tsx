@@ -350,6 +350,7 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
   const [animRow, setAnimRow] = useState(-1); // index de la proposition à révéler puce par puce
   const [revealing, setRevealing] = useState(false); // révélation en cours (bloque la saisie sur la manche finale)
   const [hintRevealed, setHintRevealed] = useState<string[]>(() => saved?.hintRevealed || []); // attributs révélés via l'ampoule 💡
+  const [cluesShown, setCluesShown] = useState(1); // nb de phrases « Qui suis-je ? » affichées (1 puis +1 par clic « Indice »)
   const [streak, setStreak] = useState(0); // série de trouvailles d'affilée (mode illimité)
   const [score, setScore] = useState<number>(() => { try { return parseInt(localStorage.getItem("bb_findplayer_pts") || "0", 10) || 0; } catch { return 0; } });
   const [lastEarned, setLastEarned] = useState(0); // points gagnés à la dernière manche
@@ -557,6 +558,7 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
     setRevealing(false);
     setShowCareer(false);
     setHintRevealed([]);
+    setCluesShown(1);
     setBoard(null);
     trackPlay("reveal");
     setTimeout(() => inputRef.current?.focus(), 60);
@@ -780,12 +782,17 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
           <span style={{ padding: "5px 12px", borderRadius: 999, background: "rgba(224,184,92,.14)", border: "1px solid rgba(224,184,92,.45)", color: "#F2D680", fontSize: 12, fontWeight: 900, letterSpacing: 1 }}>🏆 {tr("SCORE", "SCORE", "PUNKTE", "PUNTI", "PONTOS")} : {score.toLocaleString("fr-FR")}</span>
         </div>
 
-        {/* Phrases de devinette (3-4 indices) */}
+        {/* Phrases de devinette : 1 affichée par défaut, « Indice + » en révèle une de plus */}
         {!over && deviClues.length > 0 && (
           <div style={{ background: "linear-gradient(180deg, rgba(224,184,92,.14), rgba(224,184,92,.05))", border: "1px solid rgba(224,184,92,.4)", borderRadius: 14, padding: "12px 14px", marginBottom: 12 }}>
-            <div style={{ fontSize: 11, fontWeight: 900, letterSpacing: 1.5, color: "#E0B85C", textAlign: "center", marginBottom: 8 }}>🕵️ {tr("QUI SUIS-JE ?", "WHO AM I?", "WER BIN ICH?", "CHI SONO?", "QUEM SOU EU?")}</div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 8 }}>
+              <div style={{ fontSize: 11, fontWeight: 900, letterSpacing: 1.5, color: "#E0B85C" }}>🕵️ {tr("QUI SUIS-JE ?", "WHO AM I?", "WER BIN ICH?", "CHI SONO?", "QUEM SOU EU?")}</div>
+              {cluesShown < deviClues.length && (
+                <button onClick={() => setCluesShown(n => Math.min(n + 1, deviClues.length))} style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 4, padding: "5px 11px", borderRadius: 999, border: "1px solid rgba(224,184,92,.55)", background: "rgba(224,184,92,.16)", color: "#F2D680", fontSize: 11.5, fontWeight: 900, letterSpacing: .5, cursor: "pointer" }}>💡 {tr("INDICE", "CLUE", "HINWEIS", "INDIZIO", "DICA")} +</button>
+              )}
+            </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-              {deviClues.map((c, i) => (
+              {deviClues.slice(0, cluesShown).map((c, i) => (
                 <div key={i} style={{ fontSize: 13.5, fontWeight: 600, fontStyle: "italic", color: "#F4E3B8", lineHeight: 1.35, display: "flex", gap: 6 }}>
                   <span style={{ color: "#E0B85C" }}>▪</span><span>{c}</span>
                 </div>
