@@ -329,7 +329,7 @@ function hashStr(s: string, mult: number): number { let h = 0; for (let i = 0; i
 // d'écran pour l'envoyer à un pote). On restaure le joueur mystère, les propositions
 // déjà faites et les indices révélés — au lieu de repartir de l'accueil.
 const ROUND_KEY = "bb_findplayer_round";
-type SavedRound = { answer: Player; guesses: Player[]; hintRevealed: string[]; over: boolean; won: boolean };
+type SavedRound = { answer: Player; guesses: Player[]; hintRevealed: string[]; over: boolean; won: boolean; lastEarned: number; streak: number };
 function loadSavedRound(): SavedRound | null {
   try {
     const raw = sessionStorage.getItem(ROUND_KEY);
@@ -339,7 +339,7 @@ function loadSavedRound(): SavedRound | null {
     const answer = byName(s.answer);
     if (!answer) return null;
     const guesses = (s.guesses || []).map(byName).filter(Boolean) as Player[];
-    return { answer, guesses, hintRevealed: Array.isArray(s.hintRevealed) ? s.hintRevealed : [], over: !!s.over, won: !!s.won };
+    return { answer, guesses, hintRevealed: Array.isArray(s.hintRevealed) ? s.hintRevealed : [], over: !!s.over, won: !!s.won, lastEarned: Number(s.lastEarned) || 0, streak: Number(s.streak) || 0 };
   } catch { return null; }
 }
 
@@ -366,9 +366,9 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
   const [revealing, setRevealing] = useState(false); // révélation en cours (bloque la saisie sur la manche finale)
   const [hintRevealed, setHintRevealed] = useState<string[]>(() => saved?.hintRevealed || []); // attributs révélés via l'ampoule 💡
   const [cluesShown, setCluesShown] = useState(1); // nb de phrases « Qui suis-je ? » affichées (1 puis +1 par clic « Indice »)
-  const [streak, setStreak] = useState(0); // série de trouvailles d'affilée (mode illimité)
+  const [streak, setStreak] = useState(() => saved?.streak || 0); // série de trouvailles d'affilée (mode illimité)
   const [score, setScore] = useState<number>(() => { try { return parseInt(localStorage.getItem("bb_findplayer_pts") || "0", 10) || 0; } catch { return 0; } });
-  const [lastEarned, setLastEarned] = useState(0); // points gagnés à la dernière manche
+  const [lastEarned, setLastEarned] = useState(() => saved?.lastEarned || 0); // points gagnés à la dernière manche
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -378,10 +378,10 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
   useEffect(() => {
     try {
       sessionStorage.setItem(ROUND_KEY, JSON.stringify({
-        answer: answer.name, guesses: guesses.map(g => g.name), hintRevealed, over, won,
+        answer: answer.name, guesses: guesses.map(g => g.name), hintRevealed, over, won, lastEarned, streak,
       }));
     } catch { /* noop */ }
-  }, [answer, guesses, hintRevealed, over, won]);
+  }, [answer, guesses, hintRevealed, over, won, lastEarned, streak]);
 
   // Fermeture volontaire (bouton QUITTER) : on oublie la manche → partie fraîche au retour.
   function close() {
