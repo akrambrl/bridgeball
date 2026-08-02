@@ -796,7 +796,7 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
   // carte (sinon les modales position:fixed seraient piégées dedans) → on centre
   // via left/right + margin auto.
   const rootStyle: any = daily
-    ? { position: "fixed", top: "5vh", left: 0, right: 0, margin: "0 auto", width: "min(94vw, 440px)", maxHeight: "88vh", zIndex: 200, borderRadius: 22, border: "1px solid rgba(224,184,92,.4)", boxShadow: "0 24px 70px rgba(0,0,0,.72)", background: REVEAL_BG, overflowY: "auto", WebkitOverflowScrolling: "touch" }
+    ? { position: "fixed", inset: 0, margin: "auto", width: "min(94vw, 440px)", height: "fit-content", maxHeight: "88vh", zIndex: 200, borderRadius: 22, border: "1px solid rgba(224,184,92,.4)", boxShadow: "0 24px 70px rgba(0,0,0,.72)", background: REVEAL_BG, overflowY: "auto", WebkitOverflowScrolling: "touch" }
     : { position: "fixed", inset: 0, zIndex: 200, background: REVEAL_BG, overflowY: "auto", WebkitOverflowScrolling: "touch" };
   return (
     <>
