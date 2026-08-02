@@ -10,8 +10,29 @@ const Index = () => {
   const [isMobile, setIsMobile] = useState(
     () => typeof window !== "undefined" && window.innerWidth < BREAKPOINT
   );
-  const [goatGuessOpen, setGoatGuessOpen] = useState(false);
-  const [findPlayerOpen, setFindPlayerOpen] = useState(false);
+  // On mémorise quel jeu est ouvert (sessionStorage) : si iOS recharge la PWA
+  // quand on la quitte un instant (ex. faire une capture d'écran à envoyer à un
+  // pote), on rouvre le jeu au lieu de retomber sur l'accueil.
+  const [goatGuessOpen, setGoatGuessOpen] = useState(() => {
+    try { return sessionStorage.getItem("bb_active_overlay") === "guess"; } catch { return false; }
+  });
+  const [findPlayerOpen, setFindPlayerOpen] = useState(() => {
+    try { return sessionStorage.getItem("bb_active_overlay") === "findplayer"; } catch { return false; }
+  });
+
+  useEffect(() => {
+    try {
+      if (findPlayerOpen) sessionStorage.setItem("bb_active_overlay", "findplayer");
+      else if (sessionStorage.getItem("bb_active_overlay") === "findplayer") sessionStorage.removeItem("bb_active_overlay");
+    } catch { /* noop */ }
+  }, [findPlayerOpen]);
+
+  useEffect(() => {
+    try {
+      if (goatGuessOpen) sessionStorage.setItem("bb_active_overlay", "guess");
+      else if (sessionStorage.getItem("bb_active_overlay") === "guess") sessionStorage.removeItem("bb_active_overlay");
+    } catch { /* noop */ }
+  }, [goatGuessOpen]);
 
   useEffect(() => {
     const mql = window.matchMedia(`(max-width: ${BREAKPOINT - 1}px)`);
