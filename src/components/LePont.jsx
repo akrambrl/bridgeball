@@ -6838,6 +6838,17 @@ export default function LePont() {
     }
   }
 
+  // Les overlays « Trouve le joueur » (FindPlayer) tournent par-dessus LePont et
+  // n'ont pas accès à addXp. Ils émettent goatfc:award-xp quand une manche est
+  // gagnée → on crédite l'XP ici pour que ça compte dans le classement (Saison/Global/Amis).
+  const addXpRef = React.useRef(addXp);
+  addXpRef.current = addXp;
+  React.useEffect(function() {
+    function onAward(e) { try { addXpRef.current((e && e.detail && e.detail.amount) || 0); } catch (_) {} }
+    window.addEventListener("goatfc:award-xp", onAward);
+    return function() { window.removeEventListener("goatfc:award-xp", onAward); };
+  }, []);
+
   function submitToLeaderboard(name, sc, mode, d) {
     if (!pseudoConfirmed || !playerName.trim()) return; // pas de pseudo = pas de classement
     submitScore(name, sc, mode, d);
