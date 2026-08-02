@@ -51,3 +51,11 @@ export function hapticLight(): void {
   if (!isNative()) return;
   Haptics.impact({ style: ImpactStyle.Light }).catch(() => {});
 }
+export function hapticMedium(): void {
+  if (!isNative()) return;
+  Haptics.impact({ style: ImpactStyle.Medium }).catch(() => {});
+}
+export function hapticHeavy(): void {
+  if (!isNative()) return;
+  Haptics.impact({ style: ImpactStyle.Heavy }).catch(() => {});
+}
