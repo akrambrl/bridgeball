@@ -5,6 +5,9 @@ import { ANEC_ENTRAINEUR } from "./GoatGuess";
 import { tr } from "@/lib/lang";
 import { trackPlay } from "../../lib/track";
 import { isNative, hapticLight, hapticHeavy, hapticSuccess } from "@/lib/native";
+import { CLUB_SPELLS, wereTeammates, hasSpells } from "@/lib/clubSpells";
+
+const SPELL_NAMES = Object.keys(CLUB_SPELLS);
 
 // ─────────────────────────────────────────────────────────────
 // TROUVE LE JOUEUR DU JOUR — devine le joueur mystère à partir de son
@@ -450,15 +453,29 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
     const clubs = answer.clubs || [];
     const clues: string[] = [];
 
-    // 1) Coéquipier : « J'ai joué avec X ».
-    // Plus de contraste « mais jamais avec Y » : sans dates par club dans la base,
-    // impossible de garantir que X et Y ont VRAIMENT été coéquipiers. Deux joueurs
-    // peuvent partager un club à des époques différentes (ex. Evra & Niang, tous
-    // deux passés à l'OM mais à ~12 ans d'écart) → le contraste affirmait du faux.
-    const mate = findTeammates(answer, 1)[0] || null;
-    if (mate) {
-      clues.push(tr("J'ai joué avec", "I played with", "Ich spielte mit", "Ho giocato con", "Joguei com") + " " + mate + ".");
+    // 1) Coéquipier : « J'ai joué avec X [mais jamais avec Y] ».
+    // Le contraste « mais jamais avec Y » n'est FIABLE que si les périodes par
+    // club se chevauchent vraiment. On l'active uniquement via CLUB_SPELLS (stars
+    // datées) : X = coéquipier vérifié du mystère, Y = coéquipier vérifié de X qui
+    // n'a JAMAIS joué avec le mystère. Sinon, repli sûr : simple « J'ai joué avec X »
+    // (heuristique club + génération, sans contraste).
+    const jouéAvec = tr("J'ai joué avec", "I played with", "Ich spielte mit", "Ho giocato con", "Joguei com");
+    const maisJamais = tr("mais jamais avec", "but never with", "aber nie mit", "ma mai con", "mas nunca com");
+    let clue1: string | null = null;
+    if (hasSpells(answer.name)) {
+      const mates = SPELL_NAMES.filter(n => n !== answer.name && wereTeammates(answer.name, n)).sort();
+      if (mates.length) {
+        const X = mates[hashStr(answer.name, 23) % mates.length];
+        const ys = SPELL_NAMES.filter(n => n !== answer.name && n !== X && wereTeammates(X, n) && !wereTeammates(answer.name, n)).sort();
+        const Y = ys.length ? ys[hashStr(answer.name, 31) % ys.length] : null;
+        clue1 = jouéAvec + " " + X + (Y ? " " + maisJamais + " " + Y : "") + ".";
+      }
     }
+    if (!clue1) {
+      const mate = findTeammates(answer, 1)[0] || null;
+      if (mate) clue1 = jouéAvec + " " + mate + ".";
+    }
+    if (clue1) clues.push(clue1);
 
     // 2) Grand club : « J'ai porté le maillot de … »
     const bigs = clubs.filter(c => BIG_CLUBS.has(c));
