@@ -88,11 +88,11 @@ function clubColors(name: string): [string, string] {
 
 // Drapeaux pour les nations foot courantes (données en français)
 const NAT_FLAG: Record<string, string> = {
-  France: "🇫🇷", Portugal: "🇵🇹", Argentine: "🇦🇷", Brésil: "🇧🇷", Espagne: "🇪🇸", Angleterre: "🏴", Allemagne: "🇩🇪",
+  France: "🇫🇷", Portugal: "🇵🇹", Argentine: "🇦🇷", Brésil: "🇧🇷", Espagne: "🇪🇸", Angleterre: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", Allemagne: "🇩🇪",
   Italie: "🇮🇹", "Pays-Bas": "🇳🇱", Belgique: "🇧🇪", Croatie: "🇭🇷", Uruguay: "🇺🇾", Colombie: "🇨🇴", Maroc: "🇲🇦",
   Algérie: "🇩🇿", Sénégal: "🇸🇳", "Côte d'Ivoire": "🇨🇮", Cameroun: "🇨🇲", Nigeria: "🇳🇬", Ghana: "🇬🇭", Danemark: "🇩🇰",
   Suède: "🇸🇪", Norvège: "🇳🇴", Suisse: "🇨🇭", Pologne: "🇵🇱", "République tchèque": "🇨🇿", Serbie: "🇷🇸", Turquie: "🇹🇷",
-  Grèce: "🇬🇷", Mexique: "🇲🇽", Japon: "🇯🇵", "États-Unis": "🇺🇸", Mali: "🇲🇱", Écosse: "🏴", "Pays de Galles": "🏴",
+  Grèce: "🇬🇷", Mexique: "🇲🇽", Japon: "🇯🇵", "États-Unis": "🇺🇸", Mali: "🇲🇱", Écosse: "🏴󠁧󠁢󠁳󠁣󠁴󠁿", "Pays de Galles": "🏴󠁧󠁢󠁷󠁬󠁳󠁿",
   Irlande: "🇮🇪", Autriche: "🇦🇹", Ukraine: "🇺🇦", Russie: "🇷🇺", Égypte: "🇪🇬", Gabon: "🇬🇦", Slovénie: "🇸🇮",
   Tchéquie: "🇨🇿", "Corée du Sud": "🇰🇷", Équateur: "🇪🇨", Albanie: "🇦🇱", "RD Congo": "🇨🇩", Chili: "🇨🇱",
   Tunisie: "🇹🇳", Slovaquie: "🇸🇰", "Irlande du Nord": "🇬🇧", Guinée: "🇬🇳", Hongrie: "🇭🇺", Roumanie: "🇷🇴",
