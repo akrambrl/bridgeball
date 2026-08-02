@@ -263,6 +263,51 @@ function computeChips(guess: Player, answer: Player): Chip[] {
 }
 const SQ: Record<State, string> = { ok: "🟩", close: "🟨", no: "⬛" };
 
+// ── Données pour les phrases de devinette (indices « déjà dispo ») ────────────
+// Grands clubs reconnaissables (pour « J'ai porté le maillot de … »).
+const BIG_CLUBS = new Set<string>([
+  "Manchester United", "Manchester City", "Liverpool", "Chelsea", "Arsenal", "Tottenham", "Newcastle", "Everton", "Aston Villa", "West Ham",
+  "Real Madrid", "Barcelona", "Atletico Madrid", "Sevilla", "Valencia", "Villarreal", "Real Betis", "Real Sociedad", "Athletic Bilbao",
+  "Juventus FC", "AC Milan", "Inter Milan", "SSC Napoli", "AS Roma", "SS Lazio", "Atalanta BC", "ACF Fiorentina",
+  "Bayern Munich", "Borussia Dortmund", "Bayer Leverkusen", "RB Leipzig", "Eintracht Frankfurt", "Wolfsburg", "Schalke",
+  "PSG", "Marseille", "Lyon", "Monaco", "Lille", "Rennes",
+  "Al Nassr", "Al Hilal", "Al Ittihad", "Al Ahli", "Porto", "Benfica", "Sporting CP", "Ajax Amsterdam", "PSV Eindhoven",
+  "Flamengo", "Santos", "Palmeiras", "Corinthians", "São Paulo", "Galatasaray", "Fenerbahce", "Besiktas", "Celtic", "Rangers", "Inter Miami",
+]);
+// Club → pays (pour « J'ai évolué en … »).
+const CLUB_COUNTRY: Record<string, string> = {};
+((): void => {
+  const add = (country: string, clubs: string[]) => clubs.forEach(c => { CLUB_COUNTRY[c] = country; });
+  add("France", ["PSG", "Marseille", "Lyon", "Monaco", "Lille", "Rennes", "Nice", "Nantes", "Toulouse", "Montpellier", "Reims", "Strasbourg", "Brest", "Metz", "Saint-Etienne", "Bordeaux", "Le Havre", "Lens", "Lorient", "Auxerre", "Angers", "Sochaux", "Bastia", "Guingamp", "Nancy", "Nîmes", "Amiens", "Clermont", "Troyes", "Stade Brestois", "Valenciennes", "Ajaccio", "Paris FC"]);
+  add("Angleterre", ["Manchester United", "Manchester City", "Liverpool", "Chelsea", "Arsenal", "Tottenham", "Newcastle", "Everton", "Aston Villa", "West Ham", "Leicester City", "Brighton", "Brentford", "Crystal Palace", "Fulham", "Nottingham Forest", "Bournemouth", "Wolverhampton", "Southampton", "Leeds United", "Burnley", "Watford", "Norwich City", "Sheffield United", "Stoke City", "Swansea", "Sunderland", "West Brom", "Ipswich Town", "Middlesbrough", "QPR", "Bolton", "Preston", "Reading", "Millwall", "Barnsley", "Hull City", "Blackburn", "Portsmouth", "Sheffield Wednesday", "Bournemouth"]);
+  add("Espagne", ["Real Madrid", "Barcelona", "Atletico Madrid", "Sevilla", "Valencia", "Villarreal", "Real Betis", "Real Sociedad", "Athletic Bilbao", "Celta Vigo", "Getafe", "Osasuna", "Espanyol", "Girona", "Mallorca", "Real Mallorca", "Las Palmas", "Cádiz", "Almería", "Alavés", "Elche", "Málaga", "Deportivo", "Real Zaragoza", "Levante", "Granada", "Eibar"]);
+  add("Italie", ["Juventus FC", "AC Milan", "Inter Milan", "SSC Napoli", "AS Roma", "SS Lazio", "Atalanta BC", "ACF Fiorentina", "Torino FC", "Bologna FC", "Bologna", "Sassuolo", "Udinese Calcio", "Genoa CFC", "Sampdoria", "Hellas Verona", "Cagliari Calcio", "Lecce", "Monza", "Spezia", "Parma FC", "Palermo", "Empoli FC", "Salernitana", "Brescia", "Bari"]);
+  add("Allemagne", ["Bayern Munich", "Borussia Dortmund", "Bayer Leverkusen", "RB Leipzig", "Stuttgart", "Eintracht Frankfurt", "Wolfsburg", "Borussia Mönchengladbach", "Hoffenheim", "Mainz", "Schalke", "Hamburg", "Hertha Berlin", "Union Berlin", "SC Freiburg", "Augsburg", "Köln", "Werder Bremen", "Nuremberg"]);
+  add("Portugal", ["Porto", "Benfica", "Sporting CP", "Braga", "Boavista", "Estoril", "Vitória Guimarães"]);
+  add("Pays-Bas", ["Ajax Amsterdam", "PSV Eindhoven", "Feyenoord", "AZ Alkmaar", "Vitesse", "Heerenveen", "Groningen", "Twente", "Utrecht", "Sparta Rotterdam"]);
+  add("Arabie saoudite", ["Al Nassr", "Al Hilal", "Al Ittihad", "Al Ahli"]);
+  add("Brésil", ["Flamengo", "Santos", "Palmeiras", "Corinthians", "São Paulo", "Vasco da Gama", "Grêmio", "Internacional", "Fluminense", "Athletico Paranaense", "Cruzeiro", "Botafogo"]);
+  add("Turquie", ["Galatasaray", "Fenerbahce", "Besiktas", "Trabzonspor"]);
+  add("États-Unis", ["Inter Miami", "LAFC", "Chicago Fire", "Orlando City", "LA Galaxy", "Colorado Rapids", "Tampa Bay Mutiny", "Miami Fusion"]);
+  add("Écosse", ["Celtic", "Rangers"]);
+})();
+// Pays → phrase locative (FR correct) + nom traduit.
+const COUNTRY_INFO: Record<string, { fr: string; en: string; de: string; it: string; pt: string }> = {
+  France: { fr: "en France", en: "France", de: "Frankreich", it: "Francia", pt: "França" },
+  Angleterre: { fr: "en Angleterre", en: "England", de: "England", it: "Inghilterra", pt: "Inglaterra" },
+  Espagne: { fr: "en Espagne", en: "Spain", de: "Spanien", it: "Spagna", pt: "Espanha" },
+  Italie: { fr: "en Italie", en: "Italy", de: "Italien", it: "Italia", pt: "Itália" },
+  Allemagne: { fr: "en Allemagne", en: "Germany", de: "Deutschland", it: "Germania", pt: "Alemanha" },
+  Portugal: { fr: "au Portugal", en: "Portugal", de: "Portugal", it: "Portogallo", pt: "Portugal" },
+  "Pays-Bas": { fr: "aux Pays-Bas", en: "the Netherlands", de: "den Niederlanden", it: "Olanda", pt: "Holanda" },
+  "Arabie saoudite": { fr: "en Arabie saoudite", en: "Saudi Arabia", de: "Saudi-Arabien", it: "Arabia Saudita", pt: "Arábia Saudita" },
+  Brésil: { fr: "au Brésil", en: "Brazil", de: "Brasilien", it: "Brasile", pt: "Brasil" },
+  Turquie: { fr: "en Turquie", en: "Turkey", de: "der Türkei", it: "Turchia", pt: "Turquia" },
+  "États-Unis": { fr: "aux États-Unis", en: "the USA", de: "den USA", it: "USA", pt: "EUA" },
+  Écosse: { fr: "en Écosse", en: "Scotland", de: "Schottland", it: "Scozia", pt: "Escócia" },
+};
+function hashStr(s: string, mult: number): number { let h = 0; for (let i = 0; i < s.length; i++) h = (h * mult + s.charCodeAt(i)) >>> 0; return h; }
+
 export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
   const seenRef = useRef<Set<string>>(new Set());
   const [answer, setAnswer] = useState<Player>(() => randomPlayer(seenRef.current));
@@ -344,23 +389,48 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
       .slice(0, 6);
   }, [input, guesses]);
 
-  // Phrase de devinette (1re personne) — déterministe pour un joueur donné.
-  // « J'ai joué avec X, mais jamais avec Y » : X = coéquipier probable (même club
-  // + même génération), Y = star qui ne partage AUCUN club (donc jamais coéquipier).
+  // Phrase de devinette (1re personne). On assemble plusieurs indices « déjà
+  // dispo » puis on en choisit un de façon déterministe (varié selon le joueur).
   const deviClue = useMemo(() => {
+    const clubs = answer.clubs || [];
+    const clues: string[] = [];
+
+    // 1) Coéquipier : « J'ai joué avec X mais jamais avec Y »
     const mate = findTeammates(answer, 1)[0] || null;
-    const answerClubs = new Set(answer.clubs || []);
-    const famous = ALL.filter(p => p.diff === "facile" && p.name !== answer.name && p.name !== mate
-      && p.clubs && p.clubs.length >= 3 && p.birthYear && (p.birthYear as number) >= MODERN_MIN_BY
-      && !p.clubs.some(c => answerClubs.has(c)));
-    let h = 0; for (let i = 0; i < answer.name.length; i++) h = (h * 31 + answer.name.charCodeAt(i)) >>> 0;
-    const non = famous.length ? famous[h % famous.length].name : null;
-    if (mate && non) return "🕵️ " + tr("J'ai joué avec", "I played with", "Ich spielte mit", "Ho giocato con", "Joguei com") + " " + mate + " " + tr("mais jamais avec", "but never with", "aber nie mit", "ma mai con", "mas nunca com") + " " + non + ".";
-    if (mate) return "🕵️ " + tr("J'ai joué avec", "I played with", "Ich spielte mit", "Ho giocato con", "Joguei com") + " " + mate + ".";
+    if (mate) {
+      const answerClubs = new Set(clubs);
+      const famous = ALL.filter(p => p.diff === "facile" && p.name !== answer.name && p.name !== mate
+        && p.clubs && p.clubs.length >= 3 && p.birthYear && (p.birthYear as number) >= MODERN_MIN_BY
+        && !p.clubs.some(c => answerClubs.has(c)));
+      const non = famous.length ? famous[hashStr(answer.name, 31) % famous.length].name : null;
+      clues.push(tr("J'ai joué avec", "I played with", "Ich spielte mit", "Ho giocato con", "Joguei com") + " " + mate
+        + (non ? " " + tr("mais jamais avec", "but never with", "aber nie mit", "ma mai con", "mas nunca com") + " " + non : "") + ".");
+    }
+
+    // 2) Grand club : « J'ai porté le maillot de … »
+    const bigs = clubs.filter(c => BIG_CLUBS.has(c));
+    if (bigs.length) {
+      const bc = bigs[hashStr(answer.name, 17) % bigs.length];
+      clues.push(tr("J'ai porté le maillot de", "I wore the shirt of", "Ich trug das Trikot von", "Ho indossato la maglia del", "Vesti a camisa do") + " " + bc + ".");
+    }
+
+    // 3) Pays : « J'ai évolué en … »
+    const countries = Array.from(new Set(clubs.map(c => CLUB_COUNTRY[c]).filter(Boolean)));
+    if (countries.length) {
+      const ci = COUNTRY_INFO[countries[hashStr(answer.name, 13) % countries.length]];
+      if (ci) clues.push(tr("J'ai évolué " + ci.fr, "I played in " + ci.en, "Ich spielte in " + ci.de, "Ho giocato in " + ci.it, "Joguei em " + ci.pt) + ".");
+    }
+
+    // 4) Nombre de clubs
+    if (clubs.length >= 3) clues.push(tr("J'ai porté les couleurs de", "I wore the colours of", "Ich trug die Farben von", "Ho vestito i colori di", "Vesti as cores de") + " " + clubs.length + " " + tr("clubs différents", "different clubs", "verschiedenen Klubs", "club diversi", "clubes diferentes") + ".");
+
+    // 5) Décennie (repli)
     const startYear = answer.birthYear ? answer.birthYear + 19 : 0;
     const dec = startYear ? Math.floor(startYear / 10) * 10 : null;
-    if (dec) return "🕵️ " + tr("J'ai percé dans les années", "I broke through in the", "Durchbruch in den", "Sono esploso negli anni", "Estourei nos anos") + " " + dec + tr("", "s", "ern", "", "") + ".";
-    return null;
+    if (dec) clues.push(tr("J'ai percé dans les années", "I broke through in the", "Durchbruch in den", "Sono esploso negli anni", "Estourei nos anos") + " " + dec + tr("", "s", "ern", "", "") + ".");
+
+    if (!clues.length) return null;
+    return "🕵️ " + clues[hashStr(answer.name, 7) % clues.length];
   }, [answer.name]);
 
   function submitGuess(p: Player) {
