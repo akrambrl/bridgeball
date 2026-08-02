@@ -821,13 +821,19 @@ export const FindPlayer = ({ onClose }: { onClose: () => void }) => {
               ref={inputRef}
               value={input}
               onChange={e => setInput(e.target.value)}
+              onFocus={() => {
+                // Au clavier ouvert, on remonte le champ juste sous l'en-tête pour
+                // qu'il soit bien visible et laisser la place aux suggestions
+                // au-dessus du clavier (sinon on « voit pas en haut »).
+                setTimeout(() => { try { inputRef.current?.scrollIntoView({ block: "start", behavior: "smooth" }); } catch { /* noop */ } }, 280);
+              }}
               placeholder={tr("Rechercher un joueur…", "Search a player…", "Spieler suchen…", "Cerca un giocatore…", "Buscar um jogador…")}
               autoComplete="off"
-              style={{ width: "100%", boxSizing: "border-box", padding: "14px 60px 14px 16px", borderRadius: 14, border: "1.5px solid rgba(255,255,255,.25)", background: "rgba(255,255,255,.12)", color: "#fff", fontSize: 15, fontWeight: 600, outline: "none" }}
+              style={{ width: "100%", boxSizing: "border-box", padding: "14px 60px 14px 16px", borderRadius: 14, border: "1.5px solid rgba(255,255,255,.25)", background: "rgba(255,255,255,.12)", color: "#fff", fontSize: 15, fontWeight: 600, outline: "none", scrollMarginTop: "calc(64px + env(safe-area-inset-top))" }}
             />
             <button onClick={randomGuess} title={tr("Joueur au hasard", "Random player", "Zufälliger Spieler", "Giocatore casuale", "Jogador aleatório")} aria-label={tr("Joueur au hasard", "Random player", "Zufälliger Spieler", "Giocatore casuale", "Jogador aleatório")} style={{ position: "absolute", right: 6, top: 6, bottom: 6, width: 46, borderRadius: 11, border: "none", background: "linear-gradient(135deg,#F6D477,#C89A32)", color: "#3a2a05", fontSize: 20, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 3px 10px rgba(200,154,50,.5)" }}>🎲</button>
             {suggestions.length > 0 && (
-              <div style={{ position: "absolute", top: "100%", left: 0, right: 0, zIndex: 10, marginTop: 4, background: "#132419", border: "1px solid rgba(255,255,255,.15)", borderRadius: 12, overflow: "hidden", boxShadow: "0 12px 30px rgba(0,0,0,.5)" }}>
+              <div style={{ position: "absolute", top: "100%", left: 0, right: 0, zIndex: 10, marginTop: 4, background: "#132419", border: "1px solid rgba(255,255,255,.15)", borderRadius: 12, maxHeight: "min(50vh, 320px)", overflowY: "auto", WebkitOverflowScrolling: "touch" as any, boxShadow: "0 12px 30px rgba(0,0,0,.5)" }}>
                 {suggestions.map(s => (
                   <button key={s.name} onClick={() => submitGuess(s)} style={{ display: "flex", width: "100%", alignItems: "center", justifyContent: "space-between", gap: 8, padding: "11px 14px", background: "transparent", border: "none", borderBottom: "1px solid rgba(255,255,255,.06)", color: "#fff", fontSize: 14, fontWeight: 600, cursor: "pointer", textAlign: "left" }}>
                     <span>{s.name}</span>
