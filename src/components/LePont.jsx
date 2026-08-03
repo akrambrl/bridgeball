@@ -11028,6 +11028,12 @@ export default function LePont() {
               {key:"mercato", img:MERCATO_CARD_IMG, onClick: function(){setGameConfigModal("chaine");}, record: chainRecord, recordIcon:"⛓",  recordColor:"#60a5fa"},
               {key:"plug",    img:PLUG_CARD_IMG,    onClick: function(){setGameConfigModal("pont");},   record: record,      recordIcon:"🏆", recordColor:"#FFD600"},
               {key:"guess",   img:GUESS_CARD_IMG,   onClick: function(){window.dispatchEvent(new CustomEvent("goatfc:open-guess"));}, record: null, recordIcon:null, recordColor:"#C084FC"},
+              {key:"career",  node: React.createElement("div",{style:{width:"100%",height:"100%",background:"linear-gradient(160deg,#0a1a08 0%,#041008 60%,#000 100%)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:10,padding:20}},
+                React.createElement("div",{style:{fontSize:64}},"⚽"),
+                React.createElement("div",{style:{fontFamily:"Anton, sans-serif",fontSize:28,color:"#F2D680",letterSpacing:2,textAlign:"center",lineHeight:1.1}},"MODE\nCARRIÈRE"),
+                React.createElement("div",{style:{fontSize:13,color:"rgba(255,255,255,.5)",textAlign:"center",lineHeight:1.5}},"Gère ton club · Monte les divisions\nMatchs = questions foot ⚽"),
+                React.createElement("div",{style:{marginTop:8,padding:"8px 20px",borderRadius:99,background:"linear-gradient(135deg,#F2D680,#C89A32)",color:"#1a0a00",fontFamily:"Anton, sans-serif",fontSize:14,letterSpacing:1}})
+              ), onClick: function(){window.dispatchEvent(new CustomEvent("goatfc:open-career"));}, record: null, recordIcon:null, recordColor:"#F2D680"},
             ]; const homeN = homeCards.length; return (
         <div style={{display:"flex",flexDirection:"column",alignItems:"center",flex:isDesktop?"none":"1 1 auto",minHeight:0}}>
           <div

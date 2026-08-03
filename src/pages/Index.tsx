@@ -3,6 +3,7 @@ import LePont from "@/components/LePont.jsx";
 import Home from "./Home";
 import { GoatGuess } from "@/components/landing/GoatGuess";
 import { FindPlayer } from "@/components/landing/FindPlayer";
+import CareerMode from "@/components/career/CareerMode";
 import { tr } from "@/lib/lang";
 import { displayStreak } from "@/lib/streak";
 
@@ -23,6 +24,9 @@ const Index = () => {
   });
   const [devinetteOpen, setDevinetteOpen] = useState(() => {
     try { return sessionStorage.getItem("bb_active_overlay") === "devinette"; } catch { return false; }
+  });
+  const [careerOpen, setCareerOpen] = useState(() => {
+    try { return sessionStorage.getItem("bb_active_overlay") === "career"; } catch { return false; }
   });
   const [devinettePrompt, setDevinettePrompt] = useState(false); // petit pop-up d'invitation sur l'accueil
   const [promptStreak, setPromptStreak] = useState(0); // série en cours (loss-aversion dans le pop-up)
@@ -55,19 +59,29 @@ const Index = () => {
     return () => mql.removeEventListener("change", onChange);
   }, []);
 
+  useEffect(() => {
+    try {
+      if (careerOpen) sessionStorage.setItem("bb_active_overlay", "career");
+      else if (sessionStorage.getItem("bb_active_overlay") === "career") sessionStorage.removeItem("bb_active_overlay");
+    } catch { /* noop */ }
+  }, [careerOpen]);
+
   // LePont émet ces events quand l'utilisateur clique sur une card du carrousel
   // mobile (GOAT Guess ou Trouve le joueur). On ouvre l'overlay dédié par-dessus.
   useEffect(() => {
     const onGuess = () => setGoatGuessOpen(true);
     const onFindPlayer = () => setFindPlayerOpen(true);
     const onDevinette = () => setDevinetteOpen(true);
+    const onCareer = () => setCareerOpen(true);
     window.addEventListener("goatfc:open-guess", onGuess);
     window.addEventListener("goatfc:open-findplayer", onFindPlayer);
     window.addEventListener("goatfc:open-devinette", onDevinette);
+    window.addEventListener("goatfc:open-career", onCareer);
     return () => {
       window.removeEventListener("goatfc:open-guess", onGuess);
       window.removeEventListener("goatfc:open-findplayer", onFindPlayer);
       window.removeEventListener("goatfc:open-devinette", onDevinette);
+      window.removeEventListener("goatfc:open-career", onCareer);
     };
   }, []);
 
@@ -104,6 +118,7 @@ const Index = () => {
       {goatGuessOpen && <GoatGuess onClose={() => setGoatGuessOpen(false)} />}
       {findPlayerOpen && <FindPlayer onClose={() => setFindPlayerOpen(false)} />}
       {devinetteOpen && <FindPlayer daily onClose={() => setDevinetteOpen(false)} />}
+      {careerOpen && <CareerMode onClose={() => setCareerOpen(false)} />}
       {devinettePrompt && !devinetteOpen && (
         <div onClick={() => setDevinettePrompt(false)} style={{ position: "fixed", inset: 0, zIndex: 400, background: "rgba(0,0,0,.72)", backdropFilter: "blur(3px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
           <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 360, background: "linear-gradient(180deg,#14110a,#0a0a0a)", border: "1px solid rgba(224,184,92,.4)", borderRadius: 22, padding: "26px 22px", textAlign: "center", boxShadow: "0 24px 70px rgba(0,0,0,.65)" }}>
