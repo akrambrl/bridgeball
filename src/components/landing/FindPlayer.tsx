@@ -375,7 +375,8 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
   const [animRow, setAnimRow] = useState(-1); // index de la proposition à révéler puce par puce
   const [revealing, setRevealing] = useState(false); // révélation en cours (bloque la saisie sur la manche finale)
   const [hintRevealed, setHintRevealed] = useState<string[]>(() => saved?.hintRevealed || []); // attributs révélés via l'ampoule 💡
-  const [cluesShown, setCluesShown] = useState(() => saved?.cluesShown || 1); // nb de phrases « Qui suis-je ? » affichées (1 puis +1 par clic « Indice »)
+  const [cluesShown, setCluesShown] = useState(() => saved?.cluesShown || 1); // (hérité) nb de phrases affichées
+  const [showClues, setShowClues] = useState(false); // Devinette du jour : afficher les phrases-indices (cachées par défaut)
   const [streak, setStreak] = useState(() => saved?.streak || 0); // série de trouvailles d'affilée (mode illimité)
   const [score, setScore] = useState<number>(() => { try { return parseInt(localStorage.getItem("bb_findplayer_pts") || "0", 10) || 0; } catch { return 0; } });
   const [lastEarned, setLastEarned] = useState(() => saved?.lastEarned || 0); // points gagnés à la dernière manche
@@ -822,20 +823,41 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
           <span style={{ padding: "5px 12px", borderRadius: 999, background: "rgba(224,184,92,.14)", border: "1px solid rgba(224,184,92,.45)", color: "#F2D680", fontSize: 12, fontWeight: 900, letterSpacing: 1 }}>🏆 {tr("SCORE", "SCORE", "PUNKTE", "PUNTI", "PONTOS")} : {score.toLocaleString("fr-FR")}</span>
         </div>
 
-        {/* Phrases de devinette — UNIQUEMENT en « Devinette du jour ». En GOAT reveal
-            (déduction pure), pas d'indices en phrases. */}
-        {daily && !over && deviClues.length > 0 && (
-          <div style={{ background: "linear-gradient(180deg, rgba(224,184,92,.14), rgba(224,184,92,.05))", border: "1px solid rgba(224,184,92,.4)", borderRadius: 14, padding: "12px 14px", marginBottom: 12 }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 8 }}>
-              <div style={{ fontSize: 11, fontWeight: 900, letterSpacing: 1.5, color: "#E0B85C" }}>🕵️ {tr("QUI SUIS-JE ?", "WHO AM I?", "WER BIN ICH?", "CHI SONO?", "QUEM SOU EU?")}</div>
+        {/* Devinette du jour = deviner le joueur d'après SES CLUBS. Les phrases
+            (CDM, LDC…) sont des INDICES cachés derrière un bouton. */}
+        {daily && !over && (
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ fontSize: 12, fontWeight: 900, letterSpacing: 1.5, color: "#00E676", textAlign: "center", marginBottom: 10, textTransform: "uppercase" }}>{tr("Clubs dans sa carrière", "Clubs in his career", "Klubs seiner Karriere", "Club della sua carriera", "Clubes na carreira")}</div>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+              {answer.clubs.map((club, i) => {
+                const [c1, c2] = clubColors(club);
+                return (
+                  <div key={i} style={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+                    {i > 0 && <div style={{ color: "#00E676", fontSize: 15, lineHeight: 1 }}>▼</div>}
+                    <div style={{ width: "100%", position: "relative", overflow: "hidden", height: 46, borderRadius: 999, display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid rgba(255,255,255,.14)", boxShadow: "0 4px 14px " + c1 + "55" }}>
+                      <div style={{ position: "absolute", inset: 0, background: c1 }} />
+                      <div style={{ position: "absolute", top: 0, right: 0, width: "55%", bottom: 0, background: c2, clipPath: "polygon(30% 0%, 100% 0%, 100% 100%, 0% 100%)" }} />
+                      <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,.16)" }} />
+                      <span style={{ position: "relative", zIndex: 1, fontFamily: "Anton, sans-serif", fontSize: 15, color: "#fff", fontWeight: 800, textShadow: "0 2px 7px rgba(0,0,0,.7)", letterSpacing: .5, padding: "0 12px", textAlign: "center", lineHeight: 1.05 }}>{club}</span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-              {deviClues.map((c, i) => (
-                <div key={i} style={{ fontSize: 13.5, fontWeight: 600, fontStyle: "italic", color: "#F4E3B8", lineHeight: 1.35, display: "flex", gap: 6 }}>
-                  <span style={{ color: "#E0B85C" }}>▪</span><span>{c}</span>
-                </div>
-              ))}
-            </div>
+            {deviClues.length > 0 && (
+              <div style={{ marginTop: 12 }}>
+                <button onClick={() => setShowClues(s => !s)} style={{ width: "100%", padding: "10px", borderRadius: 12, border: "1px solid rgba(224,184,92,.5)", background: "rgba(224,184,92,.14)", color: "#F2D680", fontSize: 13, fontWeight: 900, letterSpacing: .5, cursor: "pointer" }}>💡 {showClues ? tr("MASQUER LES INDICES", "HIDE CLUES", "HINWEISE VERBERGEN", "NASCONDI INDIZI", "OCULTAR DICAS") : tr("VOIR LES INDICES", "SHOW CLUES", "HINWEISE ANZEIGEN", "MOSTRA INDIZI", "VER DICAS")}</button>
+                {showClues && (
+                  <div style={{ marginTop: 8, background: "linear-gradient(180deg, rgba(224,184,92,.14), rgba(224,184,92,.05))", border: "1px solid rgba(224,184,92,.4)", borderRadius: 14, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 5 }}>
+                    {deviClues.map((c, i) => (
+                      <div key={i} style={{ fontSize: 13.5, fontWeight: 600, fontStyle: "italic", color: "#F4E3B8", lineHeight: 1.35, display: "flex", gap: 6 }}>
+                        <span style={{ color: "#E0B85C" }}>▪</span><span>{c}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
 
