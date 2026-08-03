@@ -1,5 +1,4 @@
 import { CareerState, getNextFixture, sortedTable, formatBudget, avgRating, startMatch, startNewSeason } from "@/lib/careerEngine";
-import { PLAYERS, GG_BALLON_DOR, RETIRED_PLAYERS } from "../../players.jsx";
 
 type Props = {
   state: CareerState;
@@ -33,7 +32,7 @@ export default function CareerHub({ state, onChange, onOpenSquad, onOpenTransfer
 
   function handlePlayNext() {
     if (!next) return;
-    const s = startMatch(state, next.uid, PLAYERS as any, GG_BALLON_DOR as Set<string>, RETIRED_PLAYERS as Set<string>);
+    const s = startMatch(state, next.uid);
     onChange(s);
   }
 
