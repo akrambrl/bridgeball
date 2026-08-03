@@ -20,8 +20,8 @@ export default function CareerMatchResult({ state, onChange }: Props) {
   const drawn = m.myGoals === m.opponentGoals;
   const lost = m.opponentGoals > m.myGoals;
 
-  const correct = m.questions.filter(q => q.correct).length;
-  const accuracy = Math.round((correct / m.questions.length) * 100);
+  const successes = m.situations.filter(s => s.outcome === "success").length;
+  const accuracy = Math.round((successes / m.situations.length) * 100);
 
   const prize = won ? 5_000 : drawn ? 2_000 : 0;
 
@@ -32,11 +32,6 @@ export default function CareerMatchResult({ state, onChange }: Props) {
   const emoji = won ? "🏆" : drawn ? "🤝" : "😔";
   const label = won ? "VICTOIRE !" : drawn ? "MATCH NUL" : "DÉFAITE";
   const color = won ? G.green : drawn ? G.gold : G.red;
-
-  // Stats from questions
-  const natQ = m.questions.filter(q => q.question.includes("nationalité")).length;
-  const posQ = m.questions.filter(q => q.question.includes("poste")).length;
-  const clubQ = m.questions.filter(q => q.question.includes("joué pour") || q.question.includes("A joué")).length;
 
   return (
     <div style={{ position: "fixed", inset: 0, background: G.bg, zIndex: 600, display: "flex", flexDirection: "column", overflowY: "auto" }}>
@@ -74,8 +69,8 @@ export default function CareerMatchResult({ state, onChange }: Props) {
               <div style={{ fontSize: 11, color: G.sub }}>Précision</div>
             </div>
             <div style={{ textAlign: "center" }}>
-              <div style={{ fontFamily: G.font, fontSize: 28, color: G.text }}>{correct}/{m.questions.length}</div>
-              <div style={{ fontSize: 11, color: G.sub }}>Réponses ✅</div>
+              <div style={{ fontFamily: G.font, fontSize: 28, color: G.text }}>{successes}/{m.situations.length}</div>
+              <div style={{ fontSize: 11, color: G.sub }}>Réussites ✅</div>
             </div>
             <div style={{ textAlign: "center" }}>
               <div style={{ fontFamily: G.font, fontSize: 28, color: G.gold }}>+{formatBudget(prize)}</div>
