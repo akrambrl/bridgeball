@@ -54,7 +54,7 @@ const GAMES: {
     img: "/reveal-card.png",
     mascot: "/win2.png",
     description:
-      "Devine le joueur mystère en 6 essais. Enchaîne les bonnes réponses et monte ta série.",
+      "Déduis le joueur mystère grâce à ses indices, en illimité. Enchaîne les bonnes réponses et monte ta série.",
     accent: "#00E676",
     badge: "ILLIMITÉ",
   },
@@ -85,7 +85,7 @@ function gameDescription(k: GameKey): string {
   switch (k) {
     case "mercato": return tr("Pars d'un joueur et enchaîne les transferts. Bats ton record.", "Start from a player and chain transfers. Beat your record.", "Starte bei einem Spieler und reihe Transfers aneinander. Schlag deinen Rekord.", "Parti da un giocatore e concatena i trasferimenti. Batti il tuo record.", "Comece por um jogador e encadeie as transferências. Bata seu recorde.");
     case "plug": return tr("Deux clubs, un seul joueur. À toi de trouver le maillon qui les relie.", "Two clubs, one player. Find the link that connects them.", "Zwei Klubs, ein Spieler. Finde das Bindeglied zwischen ihnen.", "Due club, un solo giocatore. Trova l'anello che li unisce.", "Dois clubes, um jogador. Ache o elo que os liga.");
-    case "grid": return tr("Devine le joueur mystère en 6 essais, en illimité. Enchaîne les bonnes réponses et monte ta série.", "Guess the mystery player in 6 tries, unlimited. Chain correct answers to build your streak.", "Errate den Mystery-Spieler in 6 Versuchen, unbegrenzt. Reihe richtige Antworten für deine Serie aneinander.", "Indovina il giocatore misterioso in 6 tentativi, illimitato. Concatena le risposte giuste per la tua serie.", "Adivinhe o jogador misterioso em 6 tentativas, ilimitado. Encadeie acertos para subir sua sequência.");
+    case "grid": return tr("Déduis le joueur mystère grâce à ses indices, en illimité. Enchaîne les bonnes réponses et monte ta série.", "Deduce the mystery player from his clues, unlimited. Chain correct answers to build your streak.", "Leite den Mystery-Spieler aus seinen Hinweisen ab, unbegrenzt. Reihe richtige Antworten für deine Serie aneinander.", "Deduci il giocatore misterioso dai suoi indizi, illimitato. Concatena le risposte giuste per la tua serie.", "Deduza o jogador misterioso pelas dicas, ilimitado. Encadeie acertos para subir sua sequência.");
     case "guess": return tr("Pense à un footballeur. En 25 questions max, je devine de qui il s'agit. 🔮", "Think of a footballer. In 25 questions max, I'll guess who it is. 🔮", "Denk an einen Fußballer. In max. 25 Fragen errate ich, wer es ist. 🔮", "Pensa a un calciatore. In max 25 domande indovino chi è. 🔮", "Pense num jogador. Em no máximo 25 perguntas, eu adivinho quem é. 🔮");
   }
 }
@@ -243,7 +243,7 @@ export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels, onOpenFriends }: Pr
 
       {/* CENTRE — preview du jeu sélectionné + mascotte + bouton PLAY */}
       <div className="relative">
-        <div className="relative rounded-3xl overflow-hidden border border-white/10 bg-gradient-to-br from-white/[0.04] to-white/[0.01] backdrop-blur min-h-[460px] lg:h-[calc(100dvh-190px)] lg:min-h-[480px] lg:max-h-[600px]">
+        <div className="relative rounded-3xl overflow-hidden border border-white/10 bg-gradient-to-br from-white/[0.04] to-white/[0.01] backdrop-blur min-h-[460px] lg:h-[calc(100dvh-190px)] lg:min-h-[480px] lg:max-h-[640px]">
           {/* Halo couleur jeu */}
           <div
             className="absolute -top-32 left-1/2 -translate-x-1/2 h-[380px] w-[640px] rounded-full blur-[110px] opacity-30"
@@ -264,7 +264,7 @@ export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels, onOpenFriends }: Pr
                 {gameBadge(game.key)}
               </span>
 
-              <h2 className="font-display text-5xl lg:text-7xl tracking-wide leading-none mb-2">
+              <h2 className="font-display text-4xl lg:text-6xl tracking-wide leading-none mb-2">
                 {game.name}
               </h2>
               <p
@@ -283,7 +283,7 @@ export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels, onOpenFriends }: Pr
                 <img
                   src={game.img}
                   alt={game.name}
-                  className="relative h-24 lg:h-28 w-auto rounded-xl shadow-2xl"
+                  className="relative h-20 lg:h-24 w-auto rounded-xl shadow-2xl"
                 />
               </div>
 
@@ -303,8 +303,9 @@ export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels, onOpenFriends }: Pr
               </p>
             </div>
 
-            {/* Mascotte joueur GOAT FC */}
-            <div className="hidden md:flex justify-center relative">
+            {/* Mascotte joueur GOAT FC — contrainte pour ne jamais dépasser la
+                carte (overflow-hidden) : max-h/max-w-full + object-contain */}
+            <div className="hidden md:flex items-center justify-center relative h-full max-h-full overflow-hidden">
               <div
                 className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[80%] w-[80%] rounded-full blur-3xl opacity-30"
                 style={{ backgroundColor: game.accent }}
@@ -313,7 +314,7 @@ export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels, onOpenFriends }: Pr
                 key={game.key}
                 src={game.mascot}
                 alt=""
-                className="goat-float relative h-[clamp(300px,42vh,460px)] w-auto object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.7)]"
+                className="goat-float relative h-[clamp(280px,42vh,440px)] max-h-full w-auto max-w-full object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.7)]"
               />
             </div>
           </div>
