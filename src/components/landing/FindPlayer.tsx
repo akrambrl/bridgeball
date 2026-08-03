@@ -6,6 +6,7 @@ import { tr } from "@/lib/lang";
 import { trackPlay } from "../../lib/track";
 import { isNative, hapticLight, hapticHeavy, hapticSuccess } from "@/lib/native";
 import { CLUB_SPELLS, wereTeammates, mightHaveBeenTeammates, hasSpells } from "@/lib/clubSpells";
+import { recordDailyDone, displayStreak } from "@/lib/streak";
 
 const SPELL_NAMES = Object.keys(CLUB_SPELLS);
 
@@ -379,10 +380,23 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
   const [streak, setStreak] = useState(() => saved?.streak || 0); // série de trouvailles d'affilée (mode illimité)
   const [score, setScore] = useState<number>(() => { try { return parseInt(localStorage.getItem("bb_findplayer_pts") || "0", 10) || 0; } catch { return 0; } });
   const [lastEarned, setLastEarned] = useState(() => saved?.lastEarned || 0); // points gagnés à la dernière manche
+  // Série quotidienne (jours consécutifs) — uniquement en Devinette du jour.
+  const [dailyStreak, setDailyStreak] = useState(() => (daily ? displayStreak(parisDay()).current : 0));
+  const [dailyBest, setDailyBest] = useState(() => (daily ? displayStreak(parisDay()).best : 0));
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { trackPlay(daily ? "devinette" : "reveal"); }, []); // suivi dédié
+
+  // Devinette du jour terminée → on enregistre la journée dans la série
+  // quotidienne (idempotent : rejouer/recharger le même jour ne compte pas
+  // deux fois). C'est ce qui fait revenir les joueurs chaque jour.
+  useEffect(() => {
+    if (!daily || !over) return;
+    const s = recordDailyDone(parisDay());
+    setDailyStreak(s.current);
+    setDailyBest(s.best);
+  }, [daily, over]);
 
   // Sauvegarde la manche en cours à chaque changement → restaurée après un rechargement.
   useEffect(() => {
@@ -640,9 +654,11 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
 
   function shareText(): string {
     const rows = guesses.map(g => computeChips(g, answer).map(c => SQ[c.state]).join("")).join("\n");
-    const head = "🐐 GOAT FC · " + tr("Trouve le joueur", "Guess the player", "Errate den Spieler", "Indovina il giocatore", "Adivinhe o jogador");
+    const head = "🐐 GOAT FC · " + (daily ? tr("Devinette du jour", "Daily riddle", "Rätsel des Tages", "Indovinello del giorno", "Adivinha do dia") : tr("Trouve le joueur", "Guess the player", "Errate den Spieler", "Indovina il giocatore", "Adivinhe o jogador"));
     const res = won ? `${guesses.length} ${tr("essai", "try", "Versuch", "tentativo", "tentativa")}${guesses.length > 1 ? "s" : ""}` : tr("abandon", "gave up", "aufgegeben", "arreso", "desisti");
-    const streakLine = won ? "  ·  🔥 " + tr("Série", "Streak", "Serie", "Serie", "Sequência") + " " + streak : "";
+    const streakLine = daily
+      ? "  ·  🔥 " + dailyStreak + " " + tr(dailyStreak > 1 ? "jours" : "jour", dailyStreak > 1 ? "days" : "day", dailyStreak > 1 ? "Tage" : "Tag", dailyStreak > 1 ? "giorni" : "giorno", dailyStreak > 1 ? "dias" : "dia")
+      : (won ? "  ·  🔥 " + tr("Série", "Streak", "Serie", "Serie", "Sequência") + " " + streak : "");
     const cta = tr("Tu fais mieux ? 👇", "Can you beat it? 👇", "Schaffst du mehr? 👇", "Fai meglio? 👇", "Consegue superar? 👇");
     return `${head} — ${res}${streakLine}\n${rows}\n\n${cta}\nhttps://goatfc.fr`;
   }
@@ -818,8 +834,10 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
       <div style={{ maxWidth: 480, margin: "0 auto", padding: "8px 16px 40px", display: "flex", flexDirection: "column" }}>
         {/* Bandeau série (mode illimité) */}
         <div style={{ display: "flex", justifyContent: "center", gap: 8, marginBottom: 12 }}>
-          <span style={{ padding: "5px 12px", borderRadius: 999, background: "rgba(255,138,42,.14)", border: "1px solid rgba(255,138,42,.4)", color: "#FF8A2A", fontSize: 12, fontWeight: 900, letterSpacing: 1 }}>🔥 {tr("SÉRIE", "STREAK", "SERIE", "SERIE", "SÉRIE")} : {streak}</span>
-          <span style={{ padding: "5px 12px", borderRadius: 999, background: "rgba(224,184,92,.14)", border: "1px solid rgba(224,184,92,.45)", color: "#F2D680", fontSize: 12, fontWeight: 900, letterSpacing: 1 }}>🏆 {tr("SCORE", "SCORE", "PUNKTE", "PUNTI", "PONTOS")} : {score.toLocaleString("fr-FR")}</span>
+          <span style={{ padding: "5px 12px", borderRadius: 999, background: "rgba(255,138,42,.14)", border: "1px solid rgba(255,138,42,.4)", color: "#FF8A2A", fontSize: 12, fontWeight: 900, letterSpacing: 1 }}>🔥 {tr("SÉRIE", "STREAK", "SERIE", "SERIE", "SÉRIE")} : {daily ? dailyStreak : streak}{daily && dailyStreak > 0 ? " " + tr(dailyStreak > 1 ? "JOURS" : "JOUR", dailyStreak > 1 ? "DAYS" : "DAY", dailyStreak > 1 ? "TAGE" : "TAG", dailyStreak > 1 ? "GIORNI" : "GIORNO", dailyStreak > 1 ? "DIAS" : "DIA") : ""}</span>
+          {daily
+            ? <span style={{ padding: "5px 12px", borderRadius: 999, background: "rgba(224,184,92,.14)", border: "1px solid rgba(224,184,92,.45)", color: "#F2D680", fontSize: 12, fontWeight: 900, letterSpacing: 1 }}>🏅 {tr("RECORD", "BEST", "REKORD", "RECORD", "RECORDE")} : {dailyBest}</span>
+            : <span style={{ padding: "5px 12px", borderRadius: 999, background: "rgba(224,184,92,.14)", border: "1px solid rgba(224,184,92,.45)", color: "#F2D680", fontSize: 12, fontWeight: 900, letterSpacing: 1 }}>🏆 {tr("SCORE", "SCORE", "PUNKTE", "PUNTI", "PONTOS")} : {score.toLocaleString("fr-FR")}</span>}
         </div>
 
         {/* Devinette du jour = deviner le joueur d'après SES CLUBS. Les phrases
@@ -988,14 +1006,16 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
             {won && (
               <div style={{ fontFamily: "Anton, sans-serif", fontSize: 40, color: "#F2D680", letterSpacing: 1, marginTop: 8, textShadow: "0 2px 16px rgba(224,184,92,.4)" }}>+{lastEarned.toLocaleString("fr-FR")} PTS</div>
             )}
-            <div style={{ fontSize: 14, fontWeight: 800, color: won ? "#FF8A2A" : "rgba(255,255,255,.6)", marginTop: 6 }}>
-              {won ? "🔥 " + tr("Série", "Streak", "Serie", "Serie", "Sequência") + " : " + streak + "  ·  🏆 " + tr("Total", "Total", "Gesamt", "Totale", "Total") + " : " + score.toLocaleString("fr-FR")
-                   : (streak === 0 ? tr("Série remise à zéro", "Streak reset", "Serie zurückgesetzt", "Serie azzerata", "Sequência zerada") : "")}
+            <div style={{ fontSize: 14, fontWeight: 800, color: "#FF8A2A", marginTop: 6 }}>
+              {daily
+                ? "🔥 " + tr("Série", "Streak", "Serie", "Serie", "Sequência") + " : " + dailyStreak + " " + tr(dailyStreak > 1 ? "jours" : "jour", dailyStreak > 1 ? "days" : "day", dailyStreak > 1 ? "Tage" : "Tag", dailyStreak > 1 ? "giorni" : "giorno", dailyStreak > 1 ? "dias" : "dia") + (dailyStreak > 1 && dailyStreak === dailyBest ? "  ·  🏅 " + tr("Record !", "Best!", "Rekord!", "Record!", "Recorde!") : "  ·  🏅 " + tr("Record", "Best", "Rekord", "Record", "Recorde") + " : " + dailyBest)
+                : (won ? "🔥 " + tr("Série", "Streak", "Serie", "Serie", "Sequência") + " : " + streak + "  ·  🏆 " + tr("Total", "Total", "Gesamt", "Totale", "Total") + " : " + score.toLocaleString("fr-FR")
+                       : (streak === 0 ? tr("Série remise à zéro", "Streak reset", "Serie zurückgesetzt", "Serie azzerata", "Sequência zerada") : ""))}
             </div>
 
             {daily ? (
               <div style={{ width: "100%", marginTop: 14, padding: "15px", background: "rgba(224,184,92,.12)", border: "1px solid rgba(224,184,92,.4)", borderRadius: 14, fontSize: 15, fontWeight: 900, letterSpacing: .3, color: "#F2D680", textAlign: "center" }}>
-                🌙 {tr("Reviens demain pour une nouvelle devinette", "Come back tomorrow for a new riddle", "Komm morgen für ein neues Rätsel wieder", "Torna domani per un nuovo indovinello", "Volte amanhã para um novo enigma")}
+                🌙 {tr("Reviens demain pour porter ta série à " + (dailyStreak + 1) + " 🔥", "Come back tomorrow to reach a " + (dailyStreak + 1) + " streak 🔥", "Komm morgen für Serie " + (dailyStreak + 1) + " zurück 🔥", "Torna domani per arrivare a " + (dailyStreak + 1) + " 🔥", "Volte amanhã para chegar a " + (dailyStreak + 1) + " 🔥")}
               </div>
             ) : (
               <button onClick={playAgain} style={{ width: "100%", marginTop: 14, padding: "15px", background: "linear-gradient(135deg,#FFD600,#FF8A2A)", color: "#1A0F00", border: "none", borderRadius: 14, fontSize: 16, fontWeight: 900, letterSpacing: .5, cursor: "pointer" }}>
