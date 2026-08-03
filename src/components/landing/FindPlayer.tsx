@@ -341,7 +341,7 @@ function loadSavedRound(raw: string | null): SavedRound | null {
     const answer = byName(s.answer);
     if (!answer) return null;
     const guesses = (s.guesses || []).map(byName).filter(Boolean) as Player[];
-    return { answer, guesses, hintRevealed: Array.isArray(s.hintRevealed) ? s.hintRevealed : [], over: !!s.over, won: !!s.won, lastEarned: Number(s.lastEarned) || 0, streak: Number(s.streak) || 0, cluesShown: Number(s.cluesShown) || 1 };
+    return { answer, guesses, hintRevealed: Array.isArray(s.hintRevealed) ? s.hintRevealed : [], over: !!s.over, won: !!s.won, lastEarned: Number(s.lastEarned) || 0, streak: Number(s.streak) || 0, cluesShown: Number.isFinite(s.cluesShown) ? Number(s.cluesShown) : 0 };
   } catch { return null; }
 }
 
@@ -375,8 +375,7 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
   const [animRow, setAnimRow] = useState(-1); // index de la proposition à révéler puce par puce
   const [revealing, setRevealing] = useState(false); // révélation en cours (bloque la saisie sur la manche finale)
   const [hintRevealed, setHintRevealed] = useState<string[]>(() => saved?.hintRevealed || []); // attributs révélés via l'ampoule 💡
-  const [cluesShown, setCluesShown] = useState(() => saved?.cluesShown || 1); // (hérité) nb de phrases affichées
-  const [showClues, setShowClues] = useState(false); // Devinette du jour : afficher les phrases-indices (cachées par défaut)
+  const [cluesShown, setCluesShown] = useState(() => saved?.cluesShown ?? 0); // Devinette du jour : nb d'indices révélés (un par un, 0 = aucun)
   const [streak, setStreak] = useState(() => saved?.streak || 0); // série de trouvailles d'affilée (mode illimité)
   const [score, setScore] = useState<number>(() => { try { return parseInt(localStorage.getItem("bb_findplayer_pts") || "0", 10) || 0; } catch { return 0; } });
   const [lastEarned, setLastEarned] = useState(() => saved?.lastEarned || 0); // points gagnés à la dernière manche
@@ -846,15 +845,18 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
             </div>
             {deviClues.length > 0 && (
               <div style={{ marginTop: 12 }}>
-                <button onClick={() => setShowClues(s => !s)} style={{ width: "100%", padding: "10px", borderRadius: 12, border: "1px solid rgba(224,184,92,.5)", background: "rgba(224,184,92,.14)", color: "#F2D680", fontSize: 13, fontWeight: 900, letterSpacing: .5, cursor: "pointer" }}>💡 {showClues ? tr("MASQUER LES INDICES", "HIDE CLUES", "HINWEISE VERBERGEN", "NASCONDI INDIZI", "OCULTAR DICAS") : tr("VOIR LES INDICES", "SHOW CLUES", "HINWEISE ANZEIGEN", "MOSTRA INDIZI", "VER DICAS")}</button>
-                {showClues && (
-                  <div style={{ marginTop: 8, background: "linear-gradient(180deg, rgba(224,184,92,.14), rgba(224,184,92,.05))", border: "1px solid rgba(224,184,92,.4)", borderRadius: 14, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 5 }}>
-                    {deviClues.map((c, i) => (
+                {/* Indices révélés UN PAR UN (pas tout d'un coup) */}
+                {cluesShown > 0 && (
+                  <div style={{ marginBottom: 8, background: "linear-gradient(180deg, rgba(224,184,92,.14), rgba(224,184,92,.05))", border: "1px solid rgba(224,184,92,.4)", borderRadius: 14, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 5 }}>
+                    {deviClues.slice(0, cluesShown).map((c, i) => (
                       <div key={i} style={{ fontSize: 13.5, fontWeight: 600, fontStyle: "italic", color: "#F4E3B8", lineHeight: 1.35, display: "flex", gap: 6 }}>
                         <span style={{ color: "#E0B85C" }}>▪</span><span>{c}</span>
                       </div>
                     ))}
                   </div>
+                )}
+                {cluesShown < deviClues.length && (
+                  <button onClick={() => setCluesShown(n => Math.min(deviClues.length, n + 1))} style={{ width: "100%", padding: "10px", borderRadius: 12, border: "1px solid rgba(224,184,92,.5)", background: "rgba(224,184,92,.14)", color: "#F2D680", fontSize: 13, fontWeight: 900, letterSpacing: .5, cursor: "pointer" }}>💡 {cluesShown === 0 ? tr("VOIR UN INDICE", "SHOW A CLUE", "EINEN HINWEIS ZEIGEN", "MOSTRA UN INDIZIO", "VER UMA DICA") : tr("INDICE SUIVANT", "NEXT CLUE", "NÄCHSTER HINWEIS", "INDIZIO SUCCESSIVO", "PRÓXIMA DICA")} ({cluesShown}/{deviClues.length})</button>
                 )}
               </div>
             )}
