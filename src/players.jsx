@@ -1377,7 +1377,7 @@ export const PLAYERS = [
 { name:"Gianfranco Zola", clubs:["SSC Napoli", "Parma FC", "Chelsea", "Cagliari Calcio"], diff:"moyen", nationalities:["Italie"], positions:["attaquant"], birthYear:1966 },
 { name:"Gary Lineker", clubs:["Leicester City", "Everton", "Barcelona", "Tottenham", "Nagoya Grampus"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1960 },
 { name:"Ryan Giggs", clubs:["Manchester United"], diff:"facile", nationalities:["Pays de Galles"], positions:["milieu"], birthYear:1973 },
-{ name:"Gianluigi Buffon", clubs:["Parma FC", "Juventus FC", "PSG"], diff:"facile", nationalities:["Italie"], positions:["gardien"], birthYear:1978 },
+{ name:"Gianluigi Buffon", clubs:["Parma FC", "Juventus FC", "PSG", "Juventus FC", "Parma FC"], diff:"facile", nationalities:["Italie"], positions:["gardien"], birthYear:1978 },
   { name:"Angelo Peruzzi", clubs:["AS Roma", "Juventus FC", "Inter Milan", "SS Lazio"], diff:"expert", nationalities:["Italie"], positions:["gardien"], birthYear:1970 },
   { name:"Marco Amelia", clubs:["Livorno", "AC Milan", "Parma FC", "Genoa CFC"], diff:"expert", nationalities:["Italie"], positions:["gardien"], birthYear:1982 },
   { name:"Fabio Grosso", clubs:["Perugia", "Palermo", "Inter Milan", "Lyon", "Juventus FC"], diff:"moyen", nationalities:["Italie"], positions:["defenseur"], birthYear:1977 },
