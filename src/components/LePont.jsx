@@ -9167,9 +9167,32 @@ export default function LePont() {
                 <div style={{position:"absolute",width:"min(260px,60vw)",height:"min(260px,60vw)",borderRadius:"50%",background:"radial-gradient(circle, "+accent+"33, transparent 66%)",filter:"blur(4px)"}}/>
                 <img src={duelEndImg || WIN_IMGS[0]} alt="" style={{position:"relative",height:"min(240px,32vh)",width:"auto",objectFit:"contain",filter:"drop-shadow(0 18px 34px rgba(0,0,0,.65))"}}/>
               </div>
+              {room.bot ? (
+                /* Partie rapide : on affiche le résultat ET les deux scores —
+                   sans ça l'écran de fin ne disait pas qui avait gagné. */
+                <>
+                  <div style={{fontFamily:G.heading,fontSize:30,letterSpacing:1,textAlign:"center",color:draw?"#FFD600":iWon?"#00E676":"#FF6B35"}}>
+                    {draw?tr("ÉGALITÉ !","DRAW!","UNENTSCHIEDEN!","PAREGGIO!","EMPATE!"):iWon?tr("VICTOIRE !","VICTORY!","SIEG!","VITTORIA!","VITÓRIA!"):tr("DÉFAITE","DEFEAT","NIEDERLAGE","SCONFITTA","DERROTA")}
+                  </div>
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:14,width:"100%",marginTop:2}}>
+                    <div style={{textAlign:"center",flex:1,minWidth:0}}>
+                      <div style={{fontSize:11,color:"rgba(255,255,255,.55)",fontWeight:700,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{room.host_name||tr("Toi","You","Du","Tu","Você")}</div>
+                      <div style={{fontFamily:G.heading,fontSize:46,color:"#00E676",lineHeight:1}}>{myScore||0}</div>
+                    </div>
+                    <div style={{fontFamily:G.heading,fontSize:22,color:"rgba(255,255,255,.35)",flexShrink:0}}>VS</div>
+                    <div style={{textAlign:"center",flex:1,minWidth:0}}>
+                      <div style={{fontSize:11,color:"rgba(255,255,255,.55)",fontWeight:700,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{room.guest_name||"—"} {room.guest_country||""}</div>
+                      <div style={{fontFamily:G.heading,fontSize:46,color:"#FF6B35",lineHeight:1}}>{oppScore||0}</div>
+                    </div>
+                  </div>
+                </>
+              ) : (
+              <>
               <div style={{fontSize:11,color:"rgba(255,255,255,.5)",fontWeight:800,letterSpacing:3}}>{tr("TON SCORE","YOUR SCORE","DEIN SCORE","IL TUO PUNTEGGIO","SUA PONTUAÇÃO")}</div>
               <div style={{fontFamily:G.heading,fontSize:72,color:"#FFD600",lineHeight:.9,textShadow:"0 0 30px rgba(255,214,0,.4)"}}>{sc}<span style={{fontSize:26,color:"rgba(255,255,255,.4)"}}> pts</span></div>
               <div style={{fontFamily:G.heading,fontSize:26,letterSpacing:1,color:accent,textAlign:"center"}}>{msg}</div>
+              </>
+              )}
               {/* Tuiles de stats */}
               <div style={{display:"flex",gap:10,width:"100%",marginTop:4}}>
                 {tiles.map(function(t,i){return(
@@ -9182,7 +9205,7 @@ export default function LePont() {
               </div>
               {/* Boutons */}
               <div style={{display:"flex",gap:10,width:"100%",marginTop:12}}>
-                <button onClick={duelSoloStart} style={{flex:1,padding:"16px",borderRadius:16,border:"none",background:"linear-gradient(135deg,#3DA5FF,#00E676)",color:"#000",fontFamily:G.heading,fontSize:16,letterSpacing:1,cursor:"pointer",boxShadow:"0 10px 26px -10px rgba(0,230,118,.6)"}}>{tr("↻ REJOUER","↻ AGAIN","↻ NOCHMAL","↻ RIGIOCA","↻ JOGAR DE NOVO")}</button>
+                <button onClick={function(){ if(room.bot) duelQuickStart({ pseudo:room.guest_name, country:room.guest_country, avatar:room.guest_avatar }); else duelSoloStart(); }} style={{flex:1,padding:"16px",borderRadius:16,border:"none",background:"linear-gradient(135deg,#3DA5FF,#00E676)",color:"#000",fontFamily:G.heading,fontSize:16,letterSpacing:1,cursor:"pointer",boxShadow:"0 10px 26px -10px rgba(0,230,118,.6)"}}>{tr("↻ REJOUER","↻ AGAIN","↻ NOCHMAL","↻ RIGIOCA","↻ JOGAR DE NOVO")}</button>
                 <button onClick={duelLeaveRoom} style={{flex:1,padding:"16px",borderRadius:16,border:"1px solid rgba(255,255,255,.15)",background:"rgba(255,255,255,.05)",color:G.white,fontFamily:G.heading,fontSize:16,letterSpacing:1,cursor:"pointer"}}>{tr("MENU","MENU","MENÜ","MENU","MENU")}</button>
               </div>
             </div>
