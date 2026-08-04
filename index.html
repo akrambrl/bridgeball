@@ -93,11 +93,6 @@
         "@type": "Offer",
         "price": "0",
         "priceCurrency": "EUR"
-      },
-      "aggregateRating": {
-        "@type": "AggregateRating",
-        "ratingValue": "4.7",
-        "ratingCount": "120"
       }
     }
     </script>
@@ -114,27 +109,23 @@
     </script>
   </head>
   <body>
-    <!-- Contenu SEO statique : visible aux crawlers même sans JS,
-         remplacé par React au mount. Important pour le ref. Google. -->
     <div id="root">
+      <!-- Fallback sans JavaScript. Le contenu éditorial indexable vit sur les
+           pages statiques dédiées (/the-plug/, /the-mercato/, …) référencées
+           dans le sitemap — pas en texte masqué, interdit par Google. -->
       <noscript>
         <h1>GOAT FC — Quiz football : devine le joueur qui relie deux clubs</h1>
-        <p>GOAT FC est un jeu de quiz football fun et addictif où tu dois deviner le bon joueur. Active JavaScript pour jouer.</p>
+        <p>
+          GOAT FC est un quiz football gratuit avec quatre modes de jeu.
+          Le jeu nécessite JavaScript, mais tu peux découvrir chaque mode ici :
+        </p>
+        <ul>
+          <li><a href="/the-plug/">The Plug — le pont entre deux clubs</a></li>
+          <li><a href="/the-mercato/">The Mercato — la chaîne sans fin</a></li>
+          <li><a href="/trouve-le-joueur/">Trouve le joueur — déduction en illimité</a></li>
+          <li><a href="/goat-guess/">GOAT Guess — je devine ton joueur</a></li>
+        </ul>
       </noscript>
-      <div style="position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;overflow:hidden">
-        <h1>GOAT FC · Quiz Football</h1>
-        <p>Joue au quiz football GOAT FC : trois modes de jeu, des milliers de joueurs et transferts dans la base, classement mondial, défi du jour gratuit.</p>
-        <h2>The Plug · Le pont entre deux clubs</h2>
-        <p>Deux clubs te sont proposés. Trouve le joueur qui a porté les deux maillots. Stars connues en mode facile, joueurs plus rares en moyen, légendes obscures en crescendo.</p>
-        <h2>The Mercato · La chaîne sans fin</h2>
-        <p>Pars d'un joueur et enchaîne les transferts vers d'autres clubs. Plus tu fais long, plus tu marques. Bats ton record.</p>
-        <h2>GOAT Grid · La grille du jour</h2>
-        <p>Une grille 3×3 quotidienne avec 9 cases à remplir avec les bons joueurs. Chaque case combine deux critères (club, nationalité, poste). Stratégie et culture foot.</p>
-        <h2>Modes : solo, en ligne, entre potes</h2>
-        <p>Joue en solo pour battre ton record, en ligne contre un joueur du matchmaking, ou crée un salon entre amis avec un code pour les défier en direct.</p>
-        <h2>FAQ</h2>
-        <p>GOAT FC est gratuit, sans publicité et sans inscription obligatoire. Disponible sur navigateur (desktop et mobile) et installable comme app PWA.</p>
-      </div>
     </div>
     <script type="module" src="/src/main.tsx"></script>
 
