@@ -2965,6 +2965,11 @@ export default function LePont() {
   const [reviewRoundsModal, setReviewRoundsModal] = useState(null); // {mode:"pont"|"chaine", playerName, rounds:[...]} ou null
   const [ggModeChoice, setGgModeChoice] = useState(false); // modal de choix solo/multi pour GOAT GRID
   const [ggBattleLoading, setGgBattleLoading] = useState(false);
+  // Partie rapide GOAT Battle : adversaire simulé, room locale (id "LOCAL"),
+  // aucun appel Supabase. Le bot remplit réellement sa grille case par case
+  // pendant les 2 minutes — le classement final permet de consulter sa grille,
+  // donc un simple compteur ne suffirait pas.
+  const ggBattleBotRef = React.useRef(null); // { id, plan:[{atSec, cellKey, name, pts, rarity}], next }
 
   // ─── GOAT DUEL — Plug temps réel 1v1 (5 manches) ─────────────
   const [duelScreen, setDuelScreen] = useState(null);   // null | "menu" | "lobby" | "playing" | "finished"
@@ -3655,6 +3660,82 @@ export default function LePont() {
   }
   
   // Démarrer la partie (host uniquement)
+  // ─── GOAT BATTLE — PARTIE RAPIDE (adversaire simulé) ───────────────
+  // Construit le programme de jeu du bot : quelles cases il remplit, quand, et
+  // avec quel joueur. On pioche dans cell.candidates, déjà calculé par
+  // ggGenerateGrid, donc les noms sont forcément valides pour la case.
+  function ggBattleBuildBotPlan(grid) {
+    const cells = (grid && grid.cells) || [];
+    if (!cells.length) return [];
+    // 4 à 8 cases : compétitif mais battable. 9/9 resterait frustrant à répétition.
+    const target = 4 + Math.floor(Math.random() * 5);
+    const order = cells.slice().sort(function(){ return Math.random() - 0.5; });
+    const used = new Set();
+    const plan = [];
+    let t = 6 + Math.random() * 10;   // première réponse entre 6 et 16 s
+    for (let i = 0; i < order.length && plan.length < target; i++) {
+      const cell = order[i];
+      const pool = (cell.candidates || []).filter(function(n){ return !used.has(n); });
+      if (!pool.length) continue;
+      const name = pool[Math.floor(Math.random() * pool.length)];
+      used.add(name);
+      const p = PLAYERS.find(function(x){ return x.name === name; });
+      const pts = ggCalculatePointsForPlayer(p ? p.diff : "facile", cell.totalCount);
+      plan.push({
+        atSec: Math.round(t),
+        cellKey: cell.row + "-" + cell.col,
+        name: name,
+        pts: pts,
+        rarity: ggGetRarityClass(pts),
+      });
+      t += 8 + Math.random() * 16;    // 8 à 24 s entre deux réponses
+      if (t > 115) break;             // rien après la fin des 2 minutes
+    }
+    return plan;
+  }
+
+  function ggBattleStartSimulated(opponent) {
+    // Cherche une grille valide (ggGenerateGrid peut renvoyer null)
+    let grid = null, seed = 0;
+    for (let i = 0; i < 25 && !grid; i++) {
+      seed = Math.floor(Math.random() * 1000000) + 1;
+      grid = ggGenerateGrid(seed);
+    }
+    if (!grid) { setGgBattleError(tr("Grille indisponible, réessaie","Grid unavailable, try again","Raster nicht verfügbar, versuch es erneut","Griglia non disponibile, riprova","Grade indisponível, tente de novo")); return; }
+
+    trackPlay("grid", true);
+    const botId = "BOT-" + Math.random().toString(36).slice(2, 8);
+    ggBattleBotRef.current = { id: botId, plan: ggBattleBuildBotPlan(grid), next: 0 };
+
+    setGgGrid(grid);
+    setGgFilledCells({});
+    setGgUsedPlayers(new Set());
+    setGgLives(999);           // mode battle : pas de limite de vies
+    setGgScore(0);
+    setGgGameOver(false);
+    setGgGuess("");
+    setGgFlash(null);
+    setGgSelectedCell(null);
+    setGgBattleTimer(120);
+    ggBattleBonusRef.current = 0;
+    ggBattleStateRef.current.submitted = false;
+
+    const now = Date.now();
+    setGgBattleRoom({
+      id: "LOCAL",
+      code: null,
+      host_id: playerId,
+      state: "playing",
+      seed: seed,
+      started_at: new Date(now + 3000).toISOString(),   // petit 3-2-1
+      players: [
+        { id: playerId, name: playerName || tr("Toi","You","Du","Tu","Você"), cells_filled: 0, score: 0, lives_left: 3, finished_at: null, finished_score: null, filled_grid: {} },
+        { id: botId, name: opponent.pseudo, country: opponent.country, avatar: opponent.avatar, cells_filled: 0, score: 0, lives_left: 3, finished_at: null, finished_score: null, filled_grid: {} },
+      ],
+    });
+    setGgBattleScreen("playing");
+  }
+
   async function ggBattleStartGame() {
     if (!ggBattleRoom || ggBattleRoom.host_id !== playerId) return;
     trackPlay("grid", true); // GOAT Grid battle = partie en ligne
@@ -3677,6 +3758,13 @@ export default function LePont() {
   // Relancer la partie (host uniquement) → reset la room avec une nouvelle grille
   async function ggBattleRestartGame() {
     if (!ggBattleRoom || ggBattleRoom.host_id !== playerId) return;
+    // Partie rapide : on relance directement une nouvelle simulation contre le
+    // même adversaire (il n'y a pas de lobby serveur où retourner).
+    if (ggBattleRoom.id === "LOCAL") {
+      const bot = (ggBattleRoom.players || []).find(function(p){ return p.id !== playerId; });
+      if (bot) ggBattleStartSimulated({ pseudo: bot.name, country: bot.country, avatar: bot.avatar });
+      return;
+    }
     setGgBattleLoading(true);
     try {
       // Reset complet : nouveau seed, players reset, état lobby
@@ -3723,6 +3811,24 @@ export default function LePont() {
   async function ggBattleSyncProgress(currentScore, currentCellsFilled, currentLives) {
     if (!ggBattleRoom || !ggBattleRoom.id) return;
     if (ggBattleScreen !== "playing") return;
+    // Partie rapide : rien à synchroniser, la room n'existe que côté client.
+    // On tient quand même à jour la ligne du joueur pour le classement final.
+    if (ggBattleRoom.id === "LOCAL") {
+      const snap = {};
+      Object.keys(ggFilledCells || {}).forEach(function(k){
+        const v = ggFilledCells[k];
+        snap[k] = (v && v.name) ? v.name : String(v);
+      });
+      setGgBattleRoom(function(r){
+        if (!r) return r;
+        return Object.assign({}, r, { players: r.players.map(function(p){
+          return p.id === playerId
+            ? Object.assign({}, p, { score: currentScore, cells_filled: currentCellsFilled, lives_left: currentLives, filled_grid: snap })
+            : p;
+        }) });
+      });
+      return;
+    }
     
     try {
       const data = await sbFetch("bb_gg_rooms?id=eq."+ggBattleRoom.id+"&limit=1");
@@ -3769,6 +3875,24 @@ export default function LePont() {
   // Soumettre son score final à la room (avec optimistic locking pour éviter les conflits)
   async function ggBattleSubmitFinal(finalScore, cellsFilled, livesLeft) {
     if (!ggBattleRoom) return;
+
+    // Partie rapide : on clôture localement, sans Supabase.
+    if (ggBattleRoom.id === "LOCAL") {
+      const live = (ggBattleStateRef.current && ggBattleStateRef.current.filledCells) || ggFilledCells || {};
+      const snap = {};
+      Object.keys(live).forEach(function(k){ const v = live[k]; snap[k] = (v && v.name) ? v.name : String(v); });
+      const nowIso = new Date().toISOString();
+      setGgBattleRoom(function(r){
+        if (!r) return r;
+        return Object.assign({}, r, { state:"finished", players: r.players.map(function(p){
+          return p.id === playerId
+            ? Object.assign({}, p, { score: finalScore, cells_filled: Object.keys(live).length || cellsFilled, lives_left: livesLeft, filled_grid: snap, finished_at: nowIso })
+            : Object.assign({}, p, { finished_at: p.finished_at || nowIso });
+        }) });
+      });
+      setGgBattleScreen("finished");
+      return;
+    }
     
     // IMPORTANT : utiliser la ref pour avoir les valeurs LIVE (pas la closure périmée)
     // Le tick du timer est un setInterval qui capture la closure du premier render
@@ -3898,7 +4022,8 @@ export default function LePont() {
   React.useEffect(function() {
     if (!ggBattleRoom || !ggBattleRoom.id) return;
     if (ggBattleScreen !== "lobby" && ggBattleScreen !== "playing" && ggBattleScreen !== "finished") return;
-    
+    if (ggBattleRoom.id === "LOCAL") return;   // partie rapide : pas de room serveur à interroger
+
     let stopped = false;
     async function poll() {
       try {
@@ -4071,6 +4196,41 @@ export default function LePont() {
     };
   }, [ggBattleScreen, ggBattleRoom && ggBattleRoom.started_at]);
   
+  // ─── GOAT BATTLE — le bot joue (partie rapide uniquement) ───
+  // Déroule le programme construit au lancement : à chaque seconde écoulée on
+  // applique les réponses dont l'heure est passée. Le bot remplit de vraies
+  // cases avec de vrais joueurs, donc sa grille est consultable en fin de match
+  // comme celle d'un humain.
+  React.useEffect(function() {
+    if (ggBattleScreen !== "playing") return;
+    if (!ggBattleRoom || ggBattleRoom.id !== "LOCAL" || !ggBattleRoom.started_at) return;
+    const bot = ggBattleBotRef.current;
+    if (!bot) return;
+
+    const startMs = new Date(ggBattleRoom.started_at).getTime();
+    const id = setInterval(function() {
+      const elapsed = (Date.now() - startMs) / 1000;
+      if (elapsed < 0) return;
+      let moved = false;
+      while (bot.next < bot.plan.length && bot.plan[bot.next].atSec <= elapsed) {
+        bot.next++; moved = true;
+      }
+      if (!moved) return;
+      const done = bot.plan.slice(0, bot.next);
+      const grid = {}; let score = 0;
+      done.forEach(function(m){ grid[m.cellKey] = m.name; score += m.pts; });
+      setGgBattleRoom(function(r){
+        if (!r) return r;
+        return Object.assign({}, r, { players: r.players.map(function(p){
+          return p.id === bot.id
+            ? Object.assign({}, p, { cells_filled: done.length, score: score, filled_grid: grid })
+            : p;
+        }) });
+      });
+    }, 1000);
+    return function(){ clearInterval(id); };
+  }, [ggBattleScreen, ggBattleRoom && ggBattleRoom.id, ggBattleRoom && ggBattleRoom.started_at]);
+
   // ─── ANDROID BACK BUTTON HANDLER ───
   // Empêche la perte de partie quand l'utilisateur appuie sur la touche retour Android.
   // 1er appui : affiche un toast "Re-appuie pour quitter" pendant 2s.
@@ -7937,7 +8097,8 @@ export default function LePont() {
     const t = setTimeout(function(){
       const { mode, opponent } = mmSearch;
       setMmSearch(null);
-      tryStart(mode, opponent);
+      if (mode === "battle") ggBattleStartSimulated(opponent);
+      else tryStart(mode, opponent);
     }, 2000);
     return function(){ clearTimeout(t); };
   }, [mmSearch]);
@@ -11547,7 +11708,7 @@ export default function LePont() {
                   {tr("MODE EN LIGNE","ONLINE MODE","ONLINE-MODUS","MODALITÀ ONLINE","MODO ONLINE")}
                 </div>
                 <div style={{fontFamily:G.heading,fontSize:32,letterSpacing:2,color:"#fff"}}>
-                  {mmSearch.mode === "pont" ? "THE PLUG" : "THE MERCATO"}
+                  {mmSearch.mode === "pont" ? "THE PLUG" : mmSearch.mode === "battle" ? "GOAT BATTLE" : "THE MERCATO"}
                 </div>
               </div>
 
@@ -11853,6 +12014,17 @@ export default function LePont() {
                 <div style={{padding:10,background:"rgba(255,68,68,.15)",border:"1px solid rgba(255,68,68,.4)",borderRadius:10,color:"#FF6B6B",fontSize:12,marginBottom:14,textAlign:"center"}}>{ggBattleError}</div>
               )}
               
+              {/* Partie rapide — adversaire trouvé automatiquement */}
+              <button onClick={function(){
+                setGgBattleScreen(null); setGgBattleError(""); setGgBattleCode("");
+                setMmSearch({ mode:"battle", opponent: pickOpponent(), phase:"searching" });
+              }} style={{width:"100%",padding:"14px",borderRadius:14,border:"1.5px solid rgba(61,165,255,.55)",background:"linear-gradient(135deg,rgba(61,165,255,.25),rgba(61,165,255,.08))",color:"#fff",fontWeight:900,fontSize:14,letterSpacing:1,cursor:"pointer",marginBottom:10,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+                🌍 {tr("PARTIE RAPIDE","QUICK MATCH","SCHNELLES SPIEL","PARTITA RAPIDA","PARTIDA RÁPIDA")}
+              </button>
+              <div style={{fontSize:10,color:"rgba(255,255,255,.4)",textAlign:"center",marginBottom:14}}>
+                {tr("Un adversaire, tout de suite · sans code","An opponent, right now · no code","Ein Gegner, sofort · ohne Code","Un avversario, subito · senza codice","Um adversário, já · sem código")}
+              </div>
+
               {/* Créer une room */}
               <button onClick={ggBattleCreateRoom} disabled={ggBattleLoading} style={{width:"100%",padding:"14px",borderRadius:14,border:"none",background:"linear-gradient(135deg,#FF6B35,#FF4444)",color:"#fff",fontWeight:800,fontSize:14,letterSpacing:1,cursor:ggBattleLoading?"not-allowed":"pointer",marginBottom:12,opacity:ggBattleLoading?.5:1}}>
                 {ggBattleLoading ? "..." : (tr("⚔️ CRÉER UNE ROOM","⚔️ CREATE ROOM","⚔️ RAUM ERSTELLEN","⚔️ CREA UNA ROOM","⚔️ CRIAR UMA SALA"))}
@@ -13096,6 +13268,21 @@ export default function LePont() {
           </div>
           {openUnseenCount>0 && <span style={{position:"absolute",top:8,right:28,background:"#FF3D57",color:"#fff",borderRadius:"50%",minWidth:18,height:18,padding:"0 5px",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:900}}>{openUnseenCount}</span>}
           <span style={{fontSize:16,color:"rgba(255,138,42,.6)"}}>›</span>
+        </button>
+
+        {/* GOAT BATTLE — grille 3×3 en multijoueur.
+            Son seul point d'entrée était le modal ggModeChoice, que plus rien
+            n'ouvre depuis que « Trouve le joueur » a remplacé GOAT Grid dans le
+            carrousel : le jeu était devenu inatteignable, y compris « créer une
+            room ». On lui redonne une entrée directe ici. */}
+        <button onClick={function(){requirePseudo(function(){setGgBattleError("");setGgBattleCode("");setGgBattleScreen("menu");});}}
+          style={{display:"flex",alignItems:"center",gap:12,padding:"12px 16px",marginTop:10,background:"linear-gradient(90deg, rgba(255,107,53,.18), rgba(255,68,68,.10))",border:"1px solid rgba(255,107,53,.4)",borderRadius:14,cursor:"pointer",width:"100%",textAlign:"left"}}>
+          <div style={{width:28,height:28,borderRadius:"50%",background:"linear-gradient(135deg,#FF6B35,#FF4444)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,boxShadow:"0 2px 8px rgba(255,107,53,.4)"}}>🔥</div>
+          <div style={{flex:1}}>
+            <div style={{fontSize:13,fontWeight:800,color:"#FF6B35"}}>GOAT BATTLE</div>
+            <div style={{fontSize:11,color:"rgba(255,255,255,.4)",marginTop:1}}>{tr("Même grille, 2 minutes · partie rapide ou entre potes","Same grid, 2 minutes · quick match or with friends","Gleiches Raster, 2 Minuten · Schnellspiel oder mit Freunden","Stessa griglia, 2 minuti · partita rapida o con amici","Mesma grade, 2 minutos · partida rápida ou com amigos")}</div>
+          </div>
+          <span style={{fontSize:16,color:"rgba(255,107,53,.6)"}}>›</span>
         </button>
 
         {/* Duel en direct : désormais une carte du carrousel (plus de bouton en bas) */}
