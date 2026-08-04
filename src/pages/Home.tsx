@@ -62,6 +62,25 @@ const Home = () => {
     return () => window.removeEventListener("goatfc:back-to-landing", onBack);
   }, []);
 
+  // Arrivée depuis une page SEO (/the-plug/, /the-mercato/, …) : le CTA pointe
+  // sur /?play=<mode>, on ouvre directement le bon jeu. Sur mobile c'est LePont
+  // qui lit déjà ce paramètre ; ici on gère le cas desktop.
+  useEffect(() => {
+    let mode: string | null = null;
+    try {
+      mode = new URLSearchParams(window.location.search).get("play");
+    } catch { /* noop */ }
+    if (!mode) return;
+    if (mode === "guess") setGoatGuessOpen(true);
+    else if (mode === "grid") setFindPlayerOpen(true);
+    else if (mode === "pont" || mode === "chaine") setPendingMode(mode);
+    else return;
+    // On nettoie l'URL pour ne pas relancer le jeu à chaque retour à l'accueil
+    try {
+      window.history.replaceState({}, "", window.location.pathname);
+    } catch { /* noop */ }
+  }, []);
+
   if (playing) {
     return (
       <div className="fixed inset-0 z-50 bg-background overflow-auto">
