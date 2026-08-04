@@ -257,7 +257,7 @@ const Home = () => {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#0A1410] text-white flex flex-col">
+    <div className="relative min-h-screen overflow-x-hidden bg-[#0A1410] text-white flex flex-col">
       {/* Background : filigrane GOAT FC géant + grille de terrain */}
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.04] select-none flex items-center justify-center"

@@ -39,7 +39,7 @@ export const LobbyHeader = ({ active, onChange }: Props) => {
   const initial = pseudo.charAt(0).toUpperCase();
 
   return (
-    <header className="relative z-20 px-6 lg:px-10 py-5 flex items-center justify-between gap-6">
+    <header className="relative z-20 px-6 lg:px-10 pt-7 pb-5 flex items-center justify-between gap-6">
       {/* Logo */}
       <button
         onClick={() => onChange("play")}
