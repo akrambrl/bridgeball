@@ -105,7 +105,7 @@ export const PLAYERS = [
   { name:"Esmir Bajraktarević", clubs:["New England Revolution", "PSV Eindhoven"], diff:"expert", nationalities:["États-Unis"], positions:["attaquant"], birthYear:2005 },
   { name:"Daniel Bassi", clubs:["Bodø/Glimt"], diff:"expert", nationalities:["Norvège"], positions:["attaquant"], birthYear:2002 },
   { name:"Andreas Helmersen", clubs:["Bodø/Glimt"], diff:"expert", nationalities:["Norvège"], positions:["attaquant"], birthYear:2004 },
-  { name:"Cristiano Ronaldo", clubs:["Sporting CP", "Manchester United", "Real Madrid", "Juventus FC", "Al Nassr"], diff:"facile", nationalities:["Portugal"], positions:["attaquant"], birthYear:1985 },
+  { name:"Cristiano Ronaldo", clubs:["Sporting CP", "Manchester United", "Real Madrid", "Juventus FC", "Manchester United", "Al Nassr"], diff:"facile", nationalities:["Portugal"], positions:["attaquant"], birthYear:1985 },
   { name:"Lionel Messi", clubs:["Barcelona", "PSG", "Inter Miami"], diff:"facile", nationalities:["Argentine"], positions:["attaquant"], birthYear:1987 },
   { name:"Franco Armani", clubs:["Atlético Nacional", "River Plate"], diff:"expert", nationalities:["Argentine"], positions:["gardien"] , birthYear:1986 },
   { name:"Marcos Acuña", clubs:["Sporting CP", "Sevilla", "River Plate", "Racing Club"], diff:"moyen", nationalities:["Argentine"], positions:["defenseur"], birthYear:1991 },
@@ -175,7 +175,7 @@ export const PLAYERS = [
   { name:"Júnior Baiano", clubs:["Flamengo", "Werder Bremen", "Palmeiras", "Internacional"], diff:"expert", nationalities:["Brésil"], positions:["defenseur"], birthYear:1970 },
   { name:"Marcelinho Carioca", clubs:["Flamengo", "Valencia", "Corinthians", "Santos", "Vasco da Gama"], diff:"expert", nationalities:["Brésil"], positions:["attaquant"], birthYear:1971 },
   // Européens 80s
-  { name:"Bernd Schuster", clubs:["Köln", "Barcelona", "Real Madrid", "Atletico Madrid", "Bayer Leverkusen"], diff:"facile", nationalities:["Allemagne"], positions:["milieu"], birthYear:1959 },
+  { name:"Bernd Schuster", clubs:["Köln", "Barcelona", "Real Madrid", "Atletico Madrid", "Bayer Leverkusen", "Atletico Madrid"], diff:"facile", nationalities:["Allemagne"], positions:["milieu"], birthYear:1959 },
   { name:"Hans-Peter Briegel", clubs:["Kaiserslautern", "Hellas Verona", "Sampdoria"], diff:"expert", nationalities:["Allemagne"], positions:["defenseur"], birthYear:1955 },
   { name:"Zbigniew Boniek", clubs:["Widzew Łódź", "Juventus FC", "AS Roma"], diff:"moyen", nationalities:["Pologne"], positions:["attaquant"], birthYear:1956 },
   { name:"Bruno Conti", clubs:["AS Roma", "Genoa CFC"], diff:"moyen", nationalities:["Italie"], positions:["milieu"], birthYear:1955 },
@@ -193,7 +193,7 @@ export const PLAYERS = [
   { name:"Roberto Mussi", clubs:["AC Milan", "Torino FC", "Parma FC"], diff:"expert", nationalities:["Italie"], positions:["defenseur"], birthYear:1963 },
   { name:"Riccardo Ferri", clubs:["Inter Milan", "Sampdoria"], diff:"expert", nationalities:["Italie"], positions:["defenseur"], birthYear:1963 },
   // Allemands
-  { name:"Andreas Brehme", clubs:["Kaiserslautern", "Bayern Munich", "Inter Milan", "Real Zaragoza"], diff:"facile", nationalities:["Allemagne"], positions:["defenseur"], birthYear:1960 },
+  { name:"Andreas Brehme", clubs:["Kaiserslautern", "Bayern Munich", "Inter Milan", "Real Zaragoza", "Kaiserslautern"], diff:"facile", nationalities:["Allemagne"], positions:["defenseur"], birthYear:1960 },
   { name:"Klaus Augenthaler", clubs:["Bayern Munich"], diff:"moyen", nationalities:["Allemagne"], positions:["defenseur"], birthYear:1957 },
   { name:"Uwe Bein", clubs:["Kaiserslautern", "Köln", "Eintracht Frankfurt", "Urawa Red Diamonds"], diff:"expert", nationalities:["Allemagne"], positions:["milieu"], birthYear:1960 },
   { name:"Andreas Möller", clubs:["Eintracht Frankfurt", "Borussia Dortmund", "Juventus FC", "Schalke"], diff:"moyen", nationalities:["Allemagne"], positions:["milieu"], birthYear:1967 },
@@ -585,7 +585,7 @@ export const PLAYERS = [
   { name:"Wayne Rooney", clubs:["Everton", "Manchester United", "DC United"], diff:"facile", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1985 },
   { name:"Toni Kroos", clubs:["Bayern Munich", "Bayer Leverkusen", "Real Madrid"], diff:"facile", nationalities:["Allemagne"], positions:["milieu"], birthYear:1990 },
   { name:"Luka Modrić", clubs:["Dinamo Zagreb", "Inter Zaprešić", "Tottenham", "Real Madrid", "AC Milan"], diff:"facile", nationalities:["Croatie"], positions:["milieu"], birthYear:1985 },
-  { name:"Paul Pogba", clubs:["Manchester United", "Juventus FC", "Monaco"], diff:"facile", nationalities:["France"], positions:["milieu"], birthYear:1993 },
+  { name:"Paul Pogba", clubs:["Manchester United", "Juventus FC", "Manchester United", "Juventus FC", "Monaco"], diff:"facile", nationalities:["France"], positions:["milieu"], birthYear:1993 },
   { name:"Didier Drogba", clubs:["Le Mans", "Guingamp", "Marseille", "Chelsea", "Galatasaray"], diff:"facile", nationalities:["Côte d'Ivoire"], positions:["attaquant"], birthYear:1978 },
   { name:"Samuel Eto'o", clubs:["Real Madrid", "Mallorca", "Barcelona", "Inter Milan", "Anzhi", "Chelsea", "Everton"], diff:"facile", nationalities:["Cameroun"], positions:["attaquant"], birthYear:1981 },
   { name:"Virgil van Dijk", clubs:["Groningen", "Celtic", "Southampton", "Liverpool"], diff:"facile", nationalities:["Pays-Bas"], positions:["defenseur"], birthYear:1991 },
@@ -653,7 +653,7 @@ export const PLAYERS = [
   { name:"Diego Maradona", clubs:["Argentinos Juniors", "Boca Juniors", "Barcelona", "SSC Napoli", "Sevilla", "Newell's"], diff:"facile", nationalities:["Argentine"], positions:["attaquant"], birthYear:1960 },
   { name:"Zinédine Zidane", clubs:["Cannes", "Bordeaux", "Juventus FC", "Real Madrid"], diff:"facile", nationalities:["France"], positions:["milieu"], birthYear:1972 },
   { name:"Gabriel Batistuta", clubs:["River Plate", "Boca Juniors", "ACF Fiorentina", "AS Roma", "Inter Milan", "Al Arabi"], diff:"moyen", nationalities:["Argentine"], positions:["attaquant"], birthYear:1969 },
-  { name:"Andriy Shevchenko", clubs:["Dynamo Kyiv", "AC Milan", "Chelsea"], diff:"facile", nationalities:["Ukraine"], positions:["attaquant"], birthYear:1976 },
+  { name:"Andriy Shevchenko", clubs:["Dynamo Kyiv", "AC Milan", "Chelsea", "AC Milan", "Dynamo Kyiv"], diff:"facile", nationalities:["Ukraine"], positions:["attaquant"], birthYear:1976 },
   // Stars actives Euro 2024 / CAN 2025 / CDM 2022 - ajouts
   // Euro 2024
   { name:"Robin Le Normand", clubs:["Brest", "Real Sociedad", "Atletico Madrid"], diff:"expert", nationalities:["Espagne"], positions:["defenseur"], birthYear:1996 },
@@ -1034,7 +1034,7 @@ export const PLAYERS = [
   { name:"Roberto Baggio", clubs:["ACF Fiorentina", "Juventus FC", "AC Milan", "Inter Milan", "Bologna FC"], diff:"facile", nationalities:["Italie"], positions:["attaquant"], birthYear:1967 },
   { name:"Christian Vieri", clubs:["SS Lazio", "Inter Milan", "AC Milan"], diff:"moyen", nationalities:["Italie"], positions:["attaquant"], birthYear:1973 },
   { name:"Filippo Inzaghi", clubs:["Piacenza", "Parma FC", "Atalanta BC", "Juventus FC", "AC Milan"], diff:"moyen", nationalities:["Italie"], positions:["attaquant"], birthYear:1973 },
-  { name:"Fabio Cannavaro", clubs:["SSC Napoli", "Parma FC", "Inter Milan", "Juventus FC", "Real Madrid"], diff:"facile", nationalities:["Italie"], positions:["defenseur"], birthYear:1973 },
+  { name:"Fabio Cannavaro", clubs:["SSC Napoli", "Parma FC", "Inter Milan", "Juventus FC", "Real Madrid", "Juventus FC"], diff:"facile", nationalities:["Italie"], positions:["defenseur"], birthYear:1973 },
   { name:"Luca Toni", clubs:["ACF Fiorentina", "Bayern Munich", "AS Roma", "Juventus FC"], diff:"expert", nationalities:["Italie"], positions:["attaquant"], birthYear:1977 },
   { name:"Antonio Cassano", clubs:["AS Roma", "Real Madrid", "Sampdoria", "Inter Milan", "AC Milan"], diff:"expert", nationalities:["Italie"], positions:["attaquant"], birthYear:1982 },
   { name:"Rui Costa", clubs:["ACF Fiorentina", "AC Milan"], diff:"expert", nationalities:["Portugal"], positions:["milieu"], birthYear:1972 },
@@ -1075,7 +1075,7 @@ export const PLAYERS = [
   { name:"Munir El Haddadi", clubs:["Barcelona", "Valencia", "Alavés", "Sevilla", "Getafe"], diff:"expert", nationalities:["Maroc"], positions:["attaquant"] , birthYear:1995 },
   { name:"Sandro Ramírez", clubs:["Barcelona", "Málaga", "Everton", "Sevilla", "Real Sociedad", "Real Valladolid", "Huesca"], diff:"expert", nationalities:["Espagne"], positions:["attaquant"] , birthYear:1995 },
   { name:"Lukas Podolski", clubs:["Bayern Munich", "Arsenal", "Inter Milan", "Galatasaray"], diff:"moyen", nationalities:["Allemagne"], positions:["attaquant"], birthYear:1985 },
-  { name:"Michael Ballack", clubs:["Bayer Leverkusen", "Bayern Munich", "Chelsea"], diff:"facile", nationalities:["Allemagne"], positions:["attaquant"], birthYear:1976 },
+  { name:"Michael Ballack", clubs:["Bayer Leverkusen", "Bayern Munich", "Chelsea", "Bayer Leverkusen"], diff:"facile", nationalities:["Allemagne"], positions:["attaquant"], birthYear:1976 },
   { name:"Bastian Schweinsteiger", clubs:["Bayern Munich", "Manchester United", "Chicago Fire"], diff:"facile", nationalities:["Allemagne"], positions:["milieu"], birthYear:1984 },
   { name:"Serge Gnabry", clubs:["Arsenal", "West Brom", "Werder Bremen", "Hoffenheim", "Bayern Munich"], diff:"moyen", nationalities:["Allemagne"], positions:["attaquant"], birthYear:1995 },
   { name:"Timo Werner", clubs:["Stuttgart", "RB Leipzig", "Chelsea", "Tottenham"], diff:"moyen", nationalities:["Allemagne"], positions:["attaquant"], birthYear:1996 },
@@ -1400,7 +1400,7 @@ export const PLAYERS = [
 { name:"Yaya Touré", clubs:["Beveren", "Metalurh Donetsk", "Olympiacos", "Monaco", "Barcelona", "Manchester City"], diff:"moyen", nationalities:["Côte d'Ivoire"], positions:["milieu"], birthYear:1983 },
 { name:"Mario Balotelli", clubs:["Inter Milan", "Manchester City", "AC Milan", "Liverpool", "Nice", "Marseille", "Brescia", "Monza", "Adana Demirspor", "Sion", "Genoa CFC", "Al-Ittifaq"], diff:"facile", nationalities:["Italie"], positions:["attaquant"], birthYear:1990 },
 { name:"Daniele De Rossi", clubs:["AS Roma", "Boca Juniors"], diff:"moyen", nationalities:["Italie"], positions:["milieu"], birthYear:1983 },
-{ name:"Kaká", clubs:["São Paulo", "AC Milan", "Real Madrid", "Orlando City"], diff:"facile", nationalities:["Brésil"], positions:["milieu"], birthYear:1982 },
+{ name:"Kaká", clubs:["São Paulo", "AC Milan", "Real Madrid", "AC Milan", "Orlando City", "São Paulo"], diff:"facile", nationalities:["Brésil"], positions:["milieu"], birthYear:1982 },
 { name:"Vincent Kompany", clubs:["Anderlecht", "Hamburg", "Manchester City"], diff:"moyen", nationalities:["Belgique"], positions:["defenseur"], birthYear:1986 },
 { name:"Laurent Blanc", clubs:["Montpellier", "SSC Napoli", "Nîmes", "Saint-Etienne", "Auxerre", "Barcelona", "Marseille", "Inter Milan", "Manchester United"], diff:"expert", nationalities:["France"], positions:["defenseur"], birthYear:1965 },
 { name:"Fabien Barthez", clubs:["Toulouse", "Marseille", "Monaco", "Manchester United", "Nantes"], diff:"moyen", nationalities:["France"], positions:["gardien"], birthYear:1971 },
@@ -1793,7 +1793,7 @@ export const PLAYERS = [
   { name:"Ronaldinho", clubs:["Grêmio", "PSG", "Barcelona", "AC Milan", "Flamengo", "Atlético Mineiro", "Querétaro", "Fluminense"], diff:"facile", nationalities:["Brésil"], positions:["attaquant"], birthYear:1980 },
   { name:"Ronaldo Nazário", clubs:["Cruzeiro", "PSV Eindhoven", "Barcelona", "Inter Milan", "Real Madrid", "AC Milan", "Corinthians"], diff:"facile", nationalities:["Brésil"], positions:["attaquant"], birthYear:1976 },
   { name:"Franck Ribéry", clubs:["Metz", "Galatasaray", "Marseille", "Bayern Munich", "ACF Fiorentina", "Salernitana"], diff:"facile", nationalities:["France"], positions:["attaquant"], birthYear:1983 },
-  { name:"Fernando Torres", clubs:["Atletico Madrid", "Liverpool", "Chelsea", "AC Milan"], diff:"facile", nationalities:["Espagne"], positions:["attaquant"], birthYear:1984 },
+  { name:"Fernando Torres", clubs:["Atletico Madrid", "Liverpool", "Chelsea", "AC Milan", "Atletico Madrid"], diff:"facile", nationalities:["Espagne"], positions:["attaquant"], birthYear:1984 },
   { name:"Dani Alves", clubs:["Bahia", "Sevilla", "Barcelona", "Juventus FC", "PSG", "São Paulo", "Pumas UNAM"], diff:"moyen", nationalities:["Brésil"], positions:["defenseur"], birthYear:1983 },
   { name:"Gonçalo Ramos", clubs:["Benfica", "PSG", "AC Milan"], diff:"moyen", nationalities:["Portugal"], positions:["attaquant"], birthYear:2001 },
   // ── LÉGENDES PL AJOUTÉES (Session 14 partie 2) ──
@@ -1883,7 +1883,7 @@ export const PLAYERS = [
   { name:"Łukasz Piszczek", clubs:["Zaglebie Lubin", "Hertha Berlin", "Borussia Dortmund"], diff:"moyen", nationalities:["Pologne"], positions:["defenseur"], birthYear:1985 },
   { name:"Sokratis Papastathopoulos", clubs:["Genoa CFC", "AC Milan", "Werder Bremen", "Borussia Dortmund", "Arsenal", "Olympiacos"], diff:"moyen", nationalities:["Grèce"], positions:["defenseur"], birthYear:1988 },
   // Bayern Munich
-  { name:"Paul Breitner", clubs:["Bayern Munich", "Real Madrid"], diff:"facile", nationalities:["Allemagne"], positions:["milieu"], birthYear:1951 },
+  { name:"Paul Breitner", clubs:["Bayern Munich", "Real Madrid", "Bayern Munich"], diff:"facile", nationalities:["Allemagne"], positions:["milieu"], birthYear:1951 },
   { name:"Roy Makaay", clubs:["Vitesse", "Tenerife", "Deportivo La Coruna", "Bayern Munich", "Feyenoord"], diff:"moyen", nationalities:["Pays-Bas"], positions:["attaquant"], birthYear:1975 },
   { name:"Bixente Lizarazu", clubs:["Bordeaux", "Athletic Bilbao", "Bayern Munich", "Marseille"], diff:"facile", nationalities:["France"], positions:["defenseur"], birthYear:1969 },
   { name:"Mario Mandžukić", clubs:["Marsonia", "NK Zagreb", "Dinamo Zagreb", "Wolfsburg", "Bayern Munich", "Atletico Madrid", "Juventus FC", "AC Milan", "Al-Duhail"], diff:"moyen", nationalities:["Croatie"], positions:["attaquant"], birthYear:1986 },
@@ -1967,7 +1967,7 @@ export const PLAYERS = [
   { name:"Stéphane Guivarc'h", clubs:["Brest", "Rennes", "Guingamp", "Auxerre", "Newcastle", "Rangers"], diff:"moyen", nationalities:["France"], positions:["attaquant"], birthYear:1969 },
   // ── LIGA : REAL / BARCA / ATLETICO / SEVILLA / VALENCIA (+5 par club) ──
   // Real Madrid
-  { name:"Marcelo", clubs:["Fluminense", "Real Madrid"], diff:"facile", nationalities:["Brésil"], positions:["defenseur"], birthYear:1988 },
+  { name:"Marcelo", clubs:["Fluminense", "Real Madrid", "Fluminense"], diff:"facile", nationalities:["Brésil"], positions:["defenseur"], birthYear:1988 },
   { name:"Isco", clubs:["Valencia", "Málaga", "Real Madrid", "Sevilla", "Real Betis"], diff:"facile", nationalities:["Espagne"], positions:["milieu"], birthYear:1992 },
   { name:"Keylor Navas", clubs:["Levante", "Real Madrid", "PSG", "Nottingham Forest", "Pumas UNAM"], diff:"moyen", nationalities:["Costa Rica"], positions:["gardien"], birthYear:1986 },
   { name:"Luca Zidane", clubs:["Real Madrid", "Racing Santander", "Rayo Vallecano", "Eibar", "Granada"], diff:"expert", nationalities:["France"], positions:["gardien"] , birthYear:1998 },
