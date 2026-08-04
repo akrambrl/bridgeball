@@ -782,7 +782,11 @@ function buildPontDB() {
 
   for (const p of PLAYERS_CLEAN) {
     if(!p||!p.clubs)continue;
-    const bigClubs = p.clubs.filter(c => PONT_CLUBS.has(c));
+    // Dédoublonnage indispensable : depuis que les carrières décrivent les
+    // retours en club (Drogba : Chelsea → Galatasaray → Chelsea), un même club
+    // apparaît plusieurs fois. Sans ça, la double boucle ci-dessous produit des
+    // paires "Chelsea vs Chelsea".
+    const bigClubs = [...new Set(p.clubs.filter(c => PONT_CLUBS.has(c)))];
     if (bigClubs.length < 2) continue;
 
     for (let i = 0; i < bigClubs.length; i++) {
@@ -1150,6 +1154,13 @@ const FAMOUS_CLUBS = new Set([
   // Autres connus
   "Celtic", "Rangers",
 ]);
+
+// Nombre de clubs "famous" DISTINCTS. Les carrières décrivent désormais les
+// retours en club (Skorupski : Roma → Empoli → Roma), donc compter les doublons
+// ferait passer un joueur d'un seul grand club pour un joueur de deux.
+function famousClubCount(p) {
+  return new Set((p && p.clubs ? p.clubs : []).filter(c => FAMOUS_CLUBS.has(c))).size;
+}
 
 // Thèmes par jour de la semaine (0=dim, 1=lun, ... 6=sam)
 const DAILY_THEMES = {
@@ -7352,7 +7363,7 @@ export default function LePont() {
     // En mode facile (et Crescendo qui démarre facile), le joueur de départ doit avoir AU MOINS 2 clubs populaires
     // (sinon dès qu'un est utilisé la chaîne devient impossible à deviner)
     const eligibleFacile = starterDiff === "facile"
-      ? eligible.filter(p => p.clubs.filter(c => FAMOUS_CLUBS.has(c)).length >= 2)
+      ? eligible.filter(p => famousClubCount(p) >= 2)
       : eligible;
     const pool = eligibleFacile.length > 0 ? eligibleFacile : (eligible.length > 0 ? eligible : PLAYERS_CLEAN.filter(p => p.clubs.length >= 2));
     // 80% chance to start with a current player
@@ -7418,8 +7429,8 @@ export default function LePont() {
   // (seed = date de Paris). On privilégie une star reconnaissable (≥2 clubs pop).
   function getDailyMercatoStarter() {
     const rand = seededRandom(hashStringToSeed("mercatoday-" + todayParis()));
-    let pool = PLAYERS_CLEAN.filter(p => p.diff === "facile" && p.clubs.length >= 2 && p.clubs.filter(c => FAMOUS_CLUBS.has(c)).length >= 2 && !isRetiredPlayer(p.name));
-    if (pool.length === 0) pool = PLAYERS_CLEAN.filter(p => p.clubs.length >= 2 && p.clubs.filter(c => FAMOUS_CLUBS.has(c)).length >= 2);
+    let pool = PLAYERS_CLEAN.filter(p => p.diff === "facile" && p.clubs.length >= 2 && famousClubCount(p) >= 2 && !isRetiredPlayer(p.name));
+    if (pool.length === 0) pool = PLAYERS_CLEAN.filter(p => p.clubs.length >= 2 && famousClubCount(p) >= 2);
     if (pool.length === 0) pool = PLAYERS_CLEAN.filter(p => p.clubs.length >= 2);
     return pool[Math.floor(rand() * pool.length)];
   }
@@ -7917,7 +7928,7 @@ export default function LePont() {
         });
         // En mode facile : au moins 2 clubs populaires
         const fallbackFacile = effectiveDiffCS === "facile"
-          ? fallbackPool.filter(p => p.clubs.filter(c => FAMOUS_CLUBS.has(c)).length >= 2)
+          ? fallbackPool.filter(p => famousClubCount(p) >= 2)
           : fallbackPool;
         const pool = fallbackFacile.length > 0 ? fallbackFacile : (fallbackPool.length > 0 ? fallbackPool : PLAYERS_CLEAN.filter(p => p.clubs.length >= 2 && !chainUsedPlayers.has(p.name)));
         if(pool.length === 0){setTimeout(()=>{setFeedback(null);setFlash(null);endChain();},800);return;}
@@ -7938,7 +7949,7 @@ export default function LePont() {
         const globalFallback = PLAYERS_CLEAN.filter(p =>
           p.clubs.length >= 2 && !chainUsedPlayers.has(p.name) &&
           p.diff === "facile" &&
-          p.clubs.filter(c => FAMOUS_CLUBS.has(c)).length >= 2
+          famousClubCount(p) >= 2
         );
         if (globalFallback.length === 0) { setTimeout(()=>{setFeedback(null);setFlash(null);endChain();},800); return; }
         const fallback = globalFallback[Math.floor(randCS()*globalFallback.length)].name;
@@ -8003,7 +8014,7 @@ export default function LePont() {
       });
       // En mode facile : le fallback doit avoir au moins 2 clubs populaires
       const eligibleFacile = effectiveDiffCP === "facile"
-        ? eligible.filter(p => p.clubs.filter(c => FAMOUS_CLUBS.has(c)).length >= 2)
+        ? eligible.filter(p => famousClubCount(p) >= 2)
         : eligible;
       const pool = eligibleFacile.length > 0 ? eligibleFacile : (eligible.length > 0 ? eligible : PLAYERS_CLEAN.filter(p => p.clubs.length >= 2 && !chainUsedPlayers.has(p.name)));
       if (pool.length === 0) return null;
