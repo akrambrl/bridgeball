@@ -2674,7 +2674,7 @@ export default function LePont() {
       }
     } catch (e) {}
     const saved = parseInt(localStorage.getItem("bb_home_card") || "0", 10);
-    return isNaN(saved) || saved < 0 || saved > 4 ? 0 : saved;
+    return isNaN(saved) || saved < 0 || saved > 5 ? 0 : saved;
   });
   const homeSwipeStartRef = useRef(null);
   const [homeRulesModal, setHomeRulesModal] = useState(null); // null | "grid" | "mercato" | "plug"
@@ -11226,6 +11226,9 @@ export default function LePont() {
               {key:"mercato", img:MERCATO_CARD_IMG, onClick: function(){setGameConfigModal("chaine");}, record: chainRecord, recordIcon:"⛓",  recordColor:"#60a5fa"},
               {key:"plug",    img:PLUG_CARD_IMG,    onClick: function(){setGameConfigModal("pont");},   record: record,      recordIcon:"🏆", recordColor:"#FFD600"},
               {key:"guess",   img:GUESS_CARD_IMG,   onClick: function(){window.dispatchEvent(new CustomEvent("goatfc:open-guess"));}, record: null, recordIcon:null, recordColor:"#C084FC"},
+              // GOAT GRID (grille 3×3 solo). Ajouté en fin de liste pour ne pas
+              // décaler les index déjà mémorisés dans bb_home_card.
+              {key:"goatgrid",img:GRID_CARD_IMG,    onClick: function(){ggStartGame();}, record: null, recordIcon:null, recordColor:"#FF6B35"},
             ]; const homeN = homeCards.length; return (
         <div style={{display:"flex",flexDirection:"column",alignItems:"center",flex:isDesktop?"none":"1 1 auto",minHeight:0}}>
           <div
@@ -11591,8 +11594,19 @@ export default function LePont() {
               rules_fr: ["Pense à un footballeur connu (actuel ou retraité)","Je te pose jusqu'à 25 questions oui / non / sais pas","Tu réponds honnêtement, je restreins mes candidats","Je devine ton joueur — si je rate, je retente jusqu'à 5 fois","Questions par étapes : Continent → Nation → Ligue → Club → Poste"],
               rules_en: ["Think of a famous footballer (active or retired)","I'll ask up to 25 yes / no / don't know questions","Answer honestly — I narrow down my candidates","I guess your player — if I'm wrong, I try up to 5 times","Questions by stage: Continent → Nation → League → Club → Position"]
             },
+            goatgrid:{ title: "GOAT GRID",    emoji: "🎯", accent: "#FF6B35", bg: "linear-gradient(135deg,rgba(255,107,53,.18),rgba(255,68,68,.12))",
+              rules_fr: ["Une grille 3×3 : 9 cases à remplir","Chaque case croise deux critères (club, nationalité, poste, ligue)","Nomme un joueur qui coche les deux à la fois","Un joueur ne peut servir qu'une seule fois dans la grille","Plus le joueur cité est rare, plus la case rapporte de points"],
+              rules_en: ["A 3×3 grid: 9 cells to fill","Each cell crosses two criteria (club, nationality, position, league)","Name a player who matches both at once","A player can only be used once per grid","The rarer the player you name, the more the cell scores"]
+            },
+            duel:    { title: "GOAT BATTLE",  emoji: "⚔️", accent: "#3DA5FF", bg: "linear-gradient(135deg,rgba(61,165,255,.18),rgba(0,230,118,.12))",
+              rules_fr: ["Duel en direct sur The Plug","Deux clubs s'affichent, trouve le joueur qui relie les deux","Le plus rapide à répondre marque le point","Crée un salon et partage le code, ou rejoins celui d'un pote","Le meilleur score à la fin des manches l'emporte"],
+              rules_en: ["Live head-to-head on The Plug","Two clubs appear — find the player who links them","Fastest correct answer takes the point","Create a room and share the code, or join a friend's","Best score at the end of the rounds wins"]
+            },
           };
           const data = RULES_DATA[homeRulesModal];
+          // Garde : une carte sans règles ne doit pas casser l'app (le bouton ⓘ
+          // de la carte duel plantait, aucune entrée n'existait pour elle).
+          if (!data) return null;
           const rules = lang === "en" ? data.rules_en : data.rules_fr;
           return (
             <div

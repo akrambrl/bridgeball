@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { GameMode } from "@/pages/Home";
 import { tr } from "@/lib/lang";
+import { fetchTopPlayers, type TopPlayer } from "@/lib/leaderboard";
 
 type Props = {
   onPlay: (game?: GameMode) => void;
@@ -124,7 +125,7 @@ export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels, onOpenFriends }: Pr
   const game = GAMES.find((g) => g.key === selected)!;
   const online = useLiveOnline();
   const [roomCode, setRoomCode] = useState("");
-  const [top5, setTop5] = useState<{ rank: number; name: string; score: number }[]>([]);
+  const [top5, setTop5] = useState<TopPlayer[]>([]);
   // Indicateurs "Défis ouverts" : nb de défis à relever + tentatives non vues sur mes défis
   const [openCount, setOpenCount] = useState(0);
   const [myUnseen, setMyUnseen] = useState(0);
@@ -170,26 +171,9 @@ export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels, onOpenFriends }: Pr
         }
         if (alive) { setOpenCount(avail); setMyUnseen(unseen); }
 
-        // Top 5 réel depuis Supabase
-        const lbRes = await fetch(
-          SB_URL + "/rest/v1/bb_scores?order=score.desc&limit=200&select=player_name,score",
-          { headers: h }
-        );
-        if (lbRes.ok) {
-          const rows: { player_name: string; score: number }[] = await lbRes.json();
-          if (alive && Array.isArray(rows)) {
-            const best: Record<string, number> = {};
-            rows.forEach(r => {
-              if (!r.player_name) return;
-              if (!best[r.player_name] || r.score > best[r.player_name]) best[r.player_name] = r.score;
-            });
-            const sorted = Object.entries(best)
-              .sort((a, b) => b[1] - a[1])
-              .slice(0, 5)
-              .map(([name, score], i) => ({ rank: i + 1, name, score }));
-            setTop5(sorted);
-          }
-        }
+        // Top 5 de la saison en cours — même source que le mobile
+        const top = await fetchTopPlayers(5);
+        if (alive) setTop5(top);
       } catch {}
     };
     load();

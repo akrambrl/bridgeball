@@ -1,35 +1,15 @@
 import { useEffect, useState } from "react";
 import type { GameMode } from "@/pages/Home";
 import { tr } from "@/lib/lang";
+import { fetchTopPlayers, type TopPlayer } from "@/lib/leaderboard";
 
 type Props = { onPlay: (game?: GameMode) => void };
 
-const SB_URL = "https://ialjlsrgcolocoaegzrc.supabase.co";
-const SB_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhbGpsc3JnY29sb2NvYWVnenJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1MDM3NzksImV4cCI6MjA5MTA3OTc3OX0.-SU8anuPhnpoa-PYhIHQqrcuOBsHxdtBJKRZuiGcGwM";
-
 export const LeaderboardView = ({ onPlay }: Props) => {
-  const [rows, setRows] = useState<{ rank: number; name: string; score: number }[]>([]);
+  const [rows, setRows] = useState<TopPlayer[]>([]);
 
   useEffect(() => {
-    const h = { apikey: SB_KEY, Authorization: "Bearer " + SB_KEY };
-    fetch(SB_URL + "/rest/v1/bb_scores?order=score.desc&limit=500&select=player_name,score", { headers: h })
-      .then(r => r.ok ? r.json() : [])
-      .then((data: { player_name: string; score: number }[]) => {
-        if (!Array.isArray(data)) return;
-        const best: Record<string, number> = {};
-        data.forEach(r => {
-          if (!r.player_name) return;
-          if (!best[r.player_name] || r.score > best[r.player_name]) best[r.player_name] = r.score;
-        });
-        setRows(
-          Object.entries(best)
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, 10)
-            .map(([name, score], i) => ({ rank: i + 1, name, score }))
-        );
-      })
-      .catch(() => {});
+    fetchTopPlayers(10).then(setRows).catch(() => {});
   }, []);
 
   return (
