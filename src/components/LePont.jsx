@@ -2958,6 +2958,7 @@ export default function LePont() {
   const [ggBattleCode, setGgBattleCode] = useState(""); // code saisi pour rejoindre
   const [ggBattleError, setGgBattleError] = useState("");
   const [ggBattleTimer, setGgBattleTimer] = useState(120); // 2 min en secondes
+  const ggBattleBonusRef = React.useRef(0); // secondes bonus accumulées (+2s par bonne réponse)
   const [ggBattleCountdown, setGgBattleCountdown] = useState(0); // 5..1 avant départ, 0 = en jeu
   const [ggBattleViewGrid, setGgBattleViewGrid] = useState(null); // {player, room} pour voir la grille d'un joueur
   const [reviewRoundsModal, setReviewRoundsModal] = useState(null); // {mode:"pont"|"chaine", playerName, rounds:[...]} ou null
@@ -4014,8 +4015,9 @@ export default function LePont() {
     if (ggBattleScreen !== "playing") return;
     if (!ggBattleRoom || !ggBattleRoom.started_at) return;
     
-    // Reset le flag de submit au démarrage
+    // Reset le flag de submit et le bonus au démarrage
     ggBattleStateRef.current.submitted = false;
+    ggBattleBonusRef.current = 0;
     
     const startMs = new Date(ggBattleRoom.started_at).getTime();
     const DURATION_SEC = 120; // 2 minutes
@@ -4035,7 +4037,7 @@ export default function LePont() {
       // Phase 2 : Partie en cours
       setGgBattleCountdown(0);
       const elapsedSec = Math.floor(elapsedMs / 1000);
-      const remaining = Math.max(0, DURATION_SEC - elapsedSec);
+      const remaining = Math.max(0, DURATION_SEC + ggBattleBonusRef.current - elapsedSec);
       setGgBattleTimer(remaining);
       
       if (remaining === 0 && !ggBattleStateRef.current.submitted) {
@@ -4279,7 +4281,10 @@ export default function LePont() {
       const newUsed = new Set(ggUsedPlayers);
       newUsed.add(player.name);
       const newScore = ggScore + playerPts;
-      
+
+      // En mode GOAT Battle : +2s par bonne réponse
+      if (ggBattleScreen === "playing") ggBattleBonusRef.current += 2;
+
       setGgFilledCells(newFilled);
       setGgUsedPlayers(newUsed);
       setGgScore(newScore);
