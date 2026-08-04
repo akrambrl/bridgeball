@@ -3152,6 +3152,45 @@ export default function LePont() {
     setDuelScreen("playing");
   }
 
+  // ─── GOAT DUEL — PARTIE RAPIDE (adversaire simulé) ───────────────
+  // Réutilise tel quel le moteur solo (room LOCAL, chrono global de 90 s,
+  // manches illimitées) et lui ajoute un adversaire dont le score monte pendant
+  // la partie. L'écran de duel affiche déjà oppScore en direct, donc le bot doit
+  // marquer au fil du temps — un score plaqué à la fin se verrait.
+  const duelBotRef = React.useRef(null); // { plan:[ms], next:0 }
+
+  function duelBuildBotPlan() {
+    // 10 pts par bonne réponse, 20 si < 5 s. Un joueur correct tourne autour de
+    // 60-140 pts sur 90 s : on vise cette fourchette, jamais une machine.
+    const plan = [];
+    let t = 4000 + Math.random() * 6000;         // première réponse : 4-10 s
+    while (t < DUEL_SOLO_SECS * 1000 - 2000) {
+      plan.push({ at: Math.round(t), pts: Math.random() < 0.35 ? 20 : 10 });
+      t += 6000 + Math.random() * 9000;          // 6-15 s entre deux réponses
+    }
+    return plan;
+  }
+
+  function duelQuickStart(opponent) {
+    sndCtx();
+    trackPlay("battle");
+    const [c1, c2] = duelRollPair();
+    duelBotRef.current = { plan: duelBuildBotPlan(), next: 0, startMs: Date.now() };
+    const room = {
+      id:"LOCAL", code:"QUICK", solo:true, bot:true,
+      host_id:playerId, host_name:playerName||tr("Toi","You","Du","Tu","Você"),
+      guest_id:"BOT", guest_name:opponent.pseudo, guest_country:opponent.country, guest_avatar:opponent.avatar,
+      state:"playing", round:1, phase:"answer", phase_at:new Date().toISOString(),
+      solo_ends_at:new Date(Date.now()+DUEL_SOLO_SECS*1000).toISOString(),
+      club_c1:c1, club_c2:c2,
+      host_answer:null, host_answer_ms:null, round_pts:null,
+      host_score:0, host_correct:0, host_fast:0, host_rounds:0,
+      guest_score:0,
+    };
+    duelRoomRef.current = room; setDuelRoom(room); setDuelEndImg(null);
+    setDuelScreen("playing");
+  }
+
   function duelSubmitAnswer(nameOverride){
     const r = duelRoomRef.current || duelRoom;
     if(!r || r.phase!=="answer" || duelAnsweredRef.current) return;
@@ -3229,7 +3268,14 @@ export default function LePont() {
       // SOLO : fin de partie sur le chrono GLOBAL (60 s), pas de limite par manche.
       if(room.solo && room.solo_ends_at && now >= new Date(room.solo_ends_at).getTime()){
         duelSeqBusyRef.current=true;
-        await duelPatch("LOCAL", { state:"finished", phase:"done", winner_id:room.host_id });
+        // Partie rapide : le vainqueur se décide au score. En solo pur il n'y a
+        // pas d'adversaire, donc le joueur reste vainqueur par défaut.
+        let winner = room.host_id;
+        if (room.bot) {
+          const hs = room.host_score||0, gs = room.guest_score||0;
+          winner = hs > gs ? room.host_id : (gs > hs ? room.guest_id : null);
+        }
+        await duelPatch("LOCAL", { state:"finished", phase:"done", winner_id:winner });
         return;
       }
       if(room.phase==="countdown"){
@@ -4207,6 +4253,26 @@ export default function LePont() {
     };
   }, [ggBattleScreen, ggBattleRoom && ggBattleRoom.started_at]);
   
+  // ─── GOAT DUEL — le bot marque (partie rapide uniquement) ───
+  React.useEffect(function() {
+    if (duelScreen !== "playing") return;
+    const r = duelRoomRef.current || duelRoom;
+    if (!r || !r.bot) return;
+    const bot = duelBotRef.current;
+    if (!bot) return;
+    const id = setInterval(function() {
+      const cur = duelRoomRef.current;
+      if (!cur || cur.state === "finished") return;
+      const el = Date.now() - bot.startMs;
+      let gained = 0;
+      while (bot.next < bot.plan.length && bot.plan[bot.next].at <= el) {
+        gained += bot.plan[bot.next].pts; bot.next++;
+      }
+      if (gained) duelPatch("LOCAL", { guest_score: (cur.guest_score||0) + gained });
+    }, 1000);
+    return function(){ clearInterval(id); };
+  }, [duelScreen, duelRoom && duelRoom.bot]);
+
   // ─── GOAT BATTLE — le bot joue (partie rapide uniquement) ───
   // Déroule le programme construit au lancement : à chaque seconde écoulée on
   // applique les réponses dont l'heure est passée. Le bot remplit de vraies
@@ -8109,6 +8175,7 @@ export default function LePont() {
       const { mode, opponent } = mmSearch;
       setMmSearch(null);
       if (mode === "battle") ggBattleStartSimulated(opponent);
+      else if (mode === "duel") duelQuickStart(opponent);
       else tryStart(mode, opponent);
     }, 2000);
     return function(){ clearTimeout(t); };
@@ -8810,7 +8877,24 @@ export default function LePont() {
     const soloLeft = (isSolo && room && room.solo_ends_at)
       ? Math.max(0, Math.ceil((new Date(room.solo_ends_at).getTime() - now)/1000))
       : null;
-    const scoreBar = room && room.state!=="lobby" && (isSolo ? (
+    // Partie rapide : moteur solo (chrono global) mais VRAI face-à-face à
+    // l'écran — score du joueur, temps restant, score de l'adversaire.
+    const scoreBar = room && room.state!=="lobby" && (room && room.bot ? (
+      <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:14,padding:"10px 16px"}}>
+        <div style={{textAlign:"center",flex:1,minWidth:0}}>
+          <div style={{fontSize:11,color:"rgba(255,255,255,.55)",fontWeight:700,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{myName||tr("Toi","You","Du","Tu","Você")}</div>
+          <div style={{fontFamily:G.heading,fontSize:34,color:"#00E676",lineHeight:1}}>{myScore}</div>
+        </div>
+        <div style={{textAlign:"center",flexShrink:0}}>
+          <div style={{fontSize:10,color:"rgba(255,255,255,.4)",fontWeight:800,letterSpacing:1}}>{tr("TEMPS","TIME","ZEIT","TEMPO","TEMPO")}</div>
+          <div style={{fontFamily:G.heading,fontSize:24,color:(soloLeft!=null&&soloLeft<=10)?"#FF3D57":G.white}}>{soloLeft!=null?soloLeft+"s":"—"}</div>
+        </div>
+        <div style={{textAlign:"center",flex:1,minWidth:0}}>
+          <div style={{fontSize:11,color:"rgba(255,255,255,.55)",fontWeight:700,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{oppName||"—"}</div>
+          <div style={{fontFamily:G.heading,fontSize:34,color:"#FF6B35",lineHeight:1}}>{oppScore}</div>
+        </div>
+      </div>
+    ) : isSolo ? (
       <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:24,padding:"10px 16px"}}>
         <div style={{textAlign:"center"}}>
           <div style={{fontSize:10,color:"rgba(255,255,255,.5)",fontWeight:800,letterSpacing:1}}>{tr("SCORE","SCORE","SCORE","PUNTEGGIO","PONTUAÇÃO")}</div>
@@ -8865,6 +8949,13 @@ export default function LePont() {
             <button onClick={duelSoloStart} style={{width:"100%",padding:"15px",marginBottom:18,background:`linear-gradient(135deg, ${ac}, ${ac2})`,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:16,fontWeight:800,letterSpacing:1,boxShadow:`0 8px 24px ${ac}55`,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
               ▶ {tr("JOUER SOLO","PLAY SOLO","SOLO SPIELEN","GIOCA SOLO","JOGAR SOLO")} <span style={{fontSize:12,fontWeight:700,opacity:.8}}>· 10/20 pts</span>
             </button>
+            {/* En ligne — adversaire trouvé automatiquement */}
+            <div style={{fontSize:10,fontWeight:800,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginBottom:8}}>{tr("En ligne","Online","Online","Online","Online")}</div>
+            <button onClick={function(){ setDuelScreen(null); setMmSearch({ mode:"duel", opponent: pickOpponent(), phase:"searching" }); }}
+              style={{width:"100%",padding:"15px",marginBottom:18,background:"linear-gradient(135deg, rgba(61,165,255,.28), rgba(61,165,255,.10))",color:G.white,border:"1.5px solid rgba(61,165,255,.55)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800,letterSpacing:1,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+              🌍 {tr("PARTIE RAPIDE","QUICK MATCH","SCHNELLES SPIEL","PARTITA RAPIDA","PARTIDA RÁPIDA")}
+            </button>
+
             {/* Entre potes */}
             <div style={{fontSize:10,fontWeight:800,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginBottom:8}}>{tr("Entre potes","With friends","Mit Freunden","Con gli amici","Com amigos")}</div>
             <div style={{display:"flex",gap:8}}>
@@ -11733,7 +11824,7 @@ export default function LePont() {
                   {tr("MODE EN LIGNE","ONLINE MODE","ONLINE-MODUS","MODALITÀ ONLINE","MODO ONLINE")}
                 </div>
                 <div style={{fontFamily:G.heading,fontSize:32,letterSpacing:2,color:"#fff"}}>
-                  {mmSearch.mode === "pont" ? "THE PLUG" : mmSearch.mode === "battle" ? "GOAT BATTLE" : "THE MERCATO"}
+                  {mmSearch.mode === "pont" ? "THE PLUG" : mmSearch.mode === "battle" ? "GOAT BATTLE" : mmSearch.mode === "duel" ? "GOAT DUEL" : "THE MERCATO"}
                 </div>
               </div>
 
