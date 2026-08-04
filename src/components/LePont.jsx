@@ -11239,7 +11239,7 @@ export default function LePont() {
               {key:"guess",   img:GUESS_CARD_IMG,   onClick: function(){window.dispatchEvent(new CustomEvent("goatfc:open-guess"));}, record: null, recordIcon:null, recordColor:"#C084FC"},
               // GOAT GRID (grille 3×3 solo). Ajouté en fin de liste pour ne pas
               // décaler les index déjà mémorisés dans bb_home_card.
-              {key:"goatgrid",img:GRID_CARD_IMG,    onClick: function(){ggStartGame();}, record: null, recordIcon:null, recordColor:"#FF6B35"},
+              {key:"goatgrid",img:GRID_CARD_IMG,    onClick: function(){setGgModeChoice(true);}, record: null, recordIcon:null, recordColor:"#FF6B35"},
             ]; const homeN = homeCards.length; return (
         <div style={{display:"flex",flexDirection:"column",alignItems:"center",flex:isDesktop?"none":"1 1 auto",minHeight:0}}>
           <div
@@ -13295,20 +13295,11 @@ export default function LePont() {
           <span style={{fontSize:16,color:"rgba(255,138,42,.6)"}}>›</span>
         </button>
 
-        {/* GOAT BATTLE — grille 3×3 en multijoueur.
-            Son seul point d'entrée était le modal ggModeChoice, que plus rien
-            n'ouvre depuis que « Trouve le joueur » a remplacé GOAT Grid dans le
-            carrousel : le jeu était devenu inatteignable, y compris « créer une
-            room ». On lui redonne une entrée directe ici. */}
-        <button onClick={function(){requirePseudo(function(){setGgBattleError("");setGgBattleCode("");setGgBattleScreen("menu");});}}
-          style={{display:"flex",alignItems:"center",gap:12,padding:"12px 16px",marginTop:10,background:"linear-gradient(90deg, rgba(255,107,53,.18), rgba(255,68,68,.10))",border:"1px solid rgba(255,107,53,.4)",borderRadius:14,cursor:"pointer",width:"100%",textAlign:"left"}}>
-          <div style={{width:28,height:28,borderRadius:"50%",background:"linear-gradient(135deg,#FF6B35,#FF4444)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,boxShadow:"0 2px 8px rgba(255,107,53,.4)"}}>🔥</div>
-          <div style={{flex:1}}>
-            <div style={{fontSize:13,fontWeight:800,color:"#FF6B35"}}>GOAT BATTLE</div>
-            <div style={{fontSize:11,color:"rgba(255,255,255,.4)",marginTop:1}}>{tr("Même grille, 2 minutes · partie rapide ou entre potes","Same grid, 2 minutes · quick match or with friends","Gleiches Raster, 2 Minuten · Schnellspiel oder mit Freunden","Stessa griglia, 2 minuti · partita rapida o con amici","Mesma grade, 2 minutos · partida rápida ou com amigos")}</div>
-          </div>
-          <span style={{fontSize:16,color:"rgba(255,107,53,.6)"}}>›</span>
-        </button>
+        {/* GOAT BATTLE (grille 3×3 multijoueur) n'a pas de bouton dédié ici :
+            il vit sous la carte GOAT GRID du carrousel, via le modal
+            ggModeChoice qui propose Solo ou Battle. Un bouton séparé faisait
+            doublon visuel avec la carte du carrousel, dont le visuel s'appelle
+            aussi « GOAT BATTLE » alors qu'elle ouvre le duel Plug 1v1. */}
 
         {/* Duel en direct : désormais une carte du carrousel (plus de bouton en bas) */}
 
