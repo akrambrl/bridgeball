@@ -213,7 +213,7 @@ export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels, onOpenFriends }: Pr
   };
 
   return (
-    <div className="container max-w-7xl mx-auto px-6 lg:px-10 py-6 grid lg:grid-cols-[280px_1fr_320px] gap-6 items-start">
+    <div className="container max-w-[1440px] mx-auto px-6 lg:px-10 py-6 grid lg:grid-cols-[280px_1fr_320px] gap-6 items-start">
       {/* COLONNE GAUCHE — choix du jeu */}
       <div className="space-y-3">
         <div className="font-display text-sm tracking-[0.25em] text-white/40 px-1 mb-2">
@@ -265,22 +265,22 @@ export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels, onOpenFriends }: Pr
             style={{ backgroundColor: game.accent }}
           />
 
-          {/* Mascotte — remplit toute la droite de la carte */}
-          <div className="hidden md:block absolute inset-y-0 right-0 w-[52%] pointer-events-none">
+          {/* Visuel du mode — grande carte portrait, comme sur mobile */}
+          <div className="hidden md:flex absolute inset-y-0 right-0 w-[50%] items-center justify-center p-6 lg:p-8 pointer-events-none">
             <div
-              className="absolute bottom-0 inset-x-0 h-[70%] blur-3xl opacity-20"
+              className="absolute inset-10 rounded-full blur-[70px] opacity-30"
               style={{ backgroundColor: game.accent }}
             />
             <img
               key={game.key}
-              src={game.mascot}
-              alt=""
-              className="goat-float absolute bottom-0 left-1/2 -translate-x-1/2 h-[98%] w-auto max-w-full object-contain object-bottom drop-shadow-[0_20px_40px_rgba(0,0,0,0.8)]"
+              src={game.img}
+              alt={game.name}
+              className="goat-float relative max-h-full max-w-full w-auto object-contain rounded-2xl ring-1 ring-white/15 shadow-[0_24px_60px_rgba(0,0,0,0.75)]"
             />
           </div>
 
           {/* Texte + CTA */}
-          <div className="relative lg:h-full p-6 lg:p-8 flex flex-col justify-center md:max-w-[55%]">
+          <div className="relative lg:h-full p-6 lg:p-8 flex flex-col justify-center md:max-w-[52%]">
             <div className="flex flex-col items-center md:items-start text-center md:text-left">
               <span
                 className="px-3 py-1 rounded-full font-display text-xs tracking-[0.25em] mb-2"
@@ -303,8 +303,9 @@ export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels, onOpenFriends }: Pr
                 {gameTagline(game.key)}
               </p>
 
-              {/* Card preview (illu plus petite) */}
-              <div className="relative my-1 mb-4">
+              {/* Card preview — seulement en dessous de md (au-dessus, la grande
+                  carte du mode occupe la moitié droite du cadre) */}
+              <div className="relative my-1 mb-4 md:hidden">
                 <div
                   className="absolute inset-0 blur-2xl opacity-50 rounded-2xl"
                   style={{ backgroundColor: game.accent }}
