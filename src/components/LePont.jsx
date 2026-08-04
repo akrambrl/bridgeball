@@ -8949,11 +8949,16 @@ export default function LePont() {
             <button onClick={duelSoloStart} style={{width:"100%",padding:"15px",marginBottom:18,background:`linear-gradient(135deg, ${ac}, ${ac2})`,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:16,fontWeight:800,letterSpacing:1,boxShadow:`0 8px 24px ${ac}55`,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
               ▶ {tr("JOUER SOLO","PLAY SOLO","SOLO SPIELEN","GIOCA SOLO","JOGAR SOLO")} <span style={{fontSize:12,fontWeight:700,opacity:.8}}>· 10/20 pts</span>
             </button>
-            {/* En ligne — adversaire trouvé automatiquement */}
+            {/* EN LIGNE — bouton identique à celui de The Plug / The Mercato */}
             <div style={{fontSize:10,fontWeight:800,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginBottom:8}}>{tr("En ligne","Online","Online","Online","Online")}</div>
             <button onClick={function(){ setDuelScreen(null); setMmSearch({ mode:"duel", opponent: pickOpponent(), phase:"searching" }); }}
-              style={{width:"100%",padding:"15px",marginBottom:18,background:"linear-gradient(135deg, rgba(61,165,255,.28), rgba(61,165,255,.10))",color:G.white,border:"1.5px solid rgba(61,165,255,.55)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800,letterSpacing:1,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-              🌍 {tr("PARTIE RAPIDE","QUICK MATCH","SCHNELLES SPIEL","PARTITA RAPIDA","PARTIDA RÁPIDA")}
+              style={{width:"100%",marginBottom:18,padding:"14px 16px",borderRadius:16,border:"1.5px solid rgba(61,165,255,.6)",background:"linear-gradient(135deg,rgba(61,165,255,.22),rgba(61,165,255,.08))",cursor:"pointer",display:"flex",alignItems:"center",gap:12,textAlign:"left",boxShadow:"0 8px 24px -8px rgba(61,165,255,.5)"}}>
+              <div style={{fontSize:26}}>🌍</div>
+              <div style={{flex:1}}>
+                <div style={{fontSize:14,fontWeight:900,color:"#fff",letterSpacing:.5}}>{tr("EN LIGNE","ONLINE","ONLINE","ONLINE","ONLINE")}</div>
+                <div style={{fontSize:11,color:"rgba(255,255,255,.55)",marginTop:2}}>{tr("Affronte un adversaire · sans code","Face an opponent · no code","Tritt gegen einen Gegner an · ohne Code","Sfida un avversario · senza codice","Enfrente um adversário · sem código")}</div>
+              </div>
+              <div style={{fontSize:18,color:"#3DA5FF"}}>▶</div>
             </button>
 
             {/* Entre potes */}
@@ -12135,10 +12140,10 @@ export default function LePont() {
                 setGgBattleScreen(null); setGgBattleError(""); setGgBattleCode("");
                 setMmSearch({ mode:"battle", opponent: pickOpponent(), phase:"searching" });
               }} style={{width:"100%",padding:"14px",borderRadius:14,border:"1.5px solid rgba(61,165,255,.55)",background:"linear-gradient(135deg,rgba(61,165,255,.25),rgba(61,165,255,.08))",color:"#fff",fontWeight:900,fontSize:14,letterSpacing:1,cursor:"pointer",marginBottom:10,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-                🌍 {tr("PARTIE RAPIDE","QUICK MATCH","SCHNELLES SPIEL","PARTITA RAPIDA","PARTIDA RÁPIDA")}
+                🌍 {tr("EN LIGNE","ONLINE","ONLINE","ONLINE","ONLINE")}
               </button>
               <div style={{fontSize:10,color:"rgba(255,255,255,.4)",textAlign:"center",marginBottom:14}}>
-                {tr("Un adversaire, tout de suite · sans code","An opponent, right now · no code","Ein Gegner, sofort · ohne Code","Un avversario, subito · senza codice","Um adversário, já · sem código")}
+                {tr("Affronte un adversaire · sans code","Face an opponent · no code","Tritt gegen einen Gegner an · ohne Code","Sfida un avversario · senza codice","Enfrente um adversário · sem código")}
               </div>
 
               {/* Créer une room */}
