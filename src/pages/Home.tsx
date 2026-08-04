@@ -347,17 +347,37 @@ const Home = () => {
   );
 };
 
-function getTickerItems() {
-  return [
-    { who: "EagleEye", what: tr("vient de scorer 12 850 pts sur The Plug 🔥", "just scored 12,850 pts on The Plug 🔥", "hat gerade 12.850 Pkt bei The Plug erzielt 🔥", "ha appena segnato 12.850 pt su The Plug 🔥", "acabou de marcar 12.850 pts no The Plug 🔥") },
-    { who: "TransferKing", what: tr("a explosé son record · +1 420 pts", "smashed their record · +1,420 pts", "hat den Rekord gesprengt · +1.420 Pkt", "ha frantumato il record · +1.420 pt", "detonou o recorde · +1.420 pts") },
-    { who: "MercatoMaster", what: tr("enchaîne 18 transferts sans erreur 💪", "chained 18 transfers without a mistake 💪", "reiht 18 Transfers ohne Fehler aneinander 💪", "concatena 18 trasferimenti senza errori 💪", "encadeou 18 transferências sem erro 💪") },
-    { who: "ZidaneFan10", what: tr("rejoint le Top 10 du mois 🚀", "joins this month's Top 10 🚀", "steigt in die Top 10 des Monats auf 🚀", "entra nella Top 10 del mese 🚀", "entra no Top 10 do mês 🚀") },
-    { who: "FootGuru", what: tr("a trouvé le joueur du jour en 2 essais 🎯", "guessed today's player in 2 tries 🎯", "hat den Spieler des Tages in 2 Versuchen erraten 🎯", "ha indovinato il giocatore del giorno in 2 tentativi 🎯", "adivinhou o jogador do dia em 2 tentativas 🎯") },
-    { who: "Cantona7", what: tr("défie BridgeBuilder en multi 🆚", "challenges BridgeBuilder in multiplayer 🆚", "fordert BridgeBuilder im Mehrspieler heraus 🆚", "sfida BridgeBuilder in multigiocatore 🆚", "desafia BridgeBuilder no multijogador 🆚") },
-    { who: "RonaldoSiu", what: tr("atteint le palier LÉGENDE 🏆", "reached the LEGEND tier 🏆", "erreicht die Stufe LEGENDE 🏆", "raggiunge il grado LEGGENDA 🏆", "alcançou a patente LENDA 🏆") },
-    { who: "LeMercatoGuy", what: tr("trouve un pont rare : Bordeaux × Newcastle 🤯", "found a rare bridge: Bordeaux × Newcastle 🤯", "findet eine seltene Brücke: Bordeaux × Newcastle 🤯", "trova un ponte raro: Bordeaux × Newcastle 🤯", "achou uma ponte rara: Bordeaux × Newcastle 🤯") },
-  ];
+const SB_URL_TICKER = "https://ialjlsrgcolocoaegzrc.supabase.co";
+const SB_KEY_TICKER = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhbGpsc3JnY29sb2NvYWVnenJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1MDM3NzksImV4cCI6MjA5MTA3OTc3OX0.-SU8anuPhnpoa-PYhIHQqrcuOBsHxdtBJKRZuiGcGwM";
+
+const MODE_LABEL: Record<string, string> = {
+  pont: "The Plug",
+  chaine: "The Mercato",
+  grid: "GOAT Grid",
+};
+
+function useTickerItems() {
+  const [items, setItems] = useState<{ who: string; what: string }[]>([]);
+  useEffect(() => {
+    const h = { apikey: SB_KEY_TICKER, Authorization: "Bearer " + SB_KEY_TICKER };
+    fetch(SB_URL_TICKER + "/rest/v1/bb_scores?order=created_at.desc&limit=20&select=player_name,score,mode", { headers: h })
+      .then(r => r.ok ? r.json() : [])
+      .then((rows: { player_name: string; score: number; mode: string }[]) => {
+        if (!Array.isArray(rows)) return;
+        const seen = new Set<string>();
+        const built: { who: string; what: string }[] = [];
+        for (const r of rows) {
+          if (!r.player_name || seen.has(r.player_name)) continue;
+          seen.add(r.player_name);
+          const game = MODE_LABEL[r.mode] || r.mode;
+          built.push({ who: r.player_name, what: tr(`vient de scorer ${r.score.toLocaleString("fr-FR")} pts sur ${game} 🔥`, `just scored ${r.score.toLocaleString("en-GB")} pts on ${game} 🔥`, `hat gerade ${r.score.toLocaleString("de-DE")} Pkt bei ${game} erzielt 🔥`, `ha appena segnato ${r.score.toLocaleString("it-IT")} pt su ${game} 🔥`, `acabou de marcar ${r.score.toLocaleString("pt-BR")} pts no ${game} 🔥`) });
+          if (built.length >= 8) break;
+        }
+        if (built.length > 0) setItems(built);
+      })
+      .catch(() => {});
+  }, []);
+  return items;
 }
 
 const ForfeitOverlay = ({
@@ -425,7 +445,8 @@ const ForfeitOverlay = ({
 };
 
 const ScoreTicker = () => {
-  const TICKER_ITEMS = getTickerItems();
+  const items = useTickerItems();
+  if (items.length === 0) return null;
   return (
   <div className="relative z-10 border-t border-white/5 bg-black/30 backdrop-blur-sm overflow-hidden">
     <div className="flex items-center gap-3 px-4 py-2.5">
@@ -434,7 +455,7 @@ const ScoreTicker = () => {
       </span>
       <div className="flex-1 overflow-hidden">
         <div className="goat-marquee flex gap-12 whitespace-nowrap">
-          {[...TICKER_ITEMS, ...TICKER_ITEMS].map((it, i) => (
+          {[...items, ...items].map((it, i) => (
             <span key={i} className="text-sm text-white/70 flex items-center gap-2">
               <span className="font-display text-base tracking-wider text-white">
                 {it.who}
