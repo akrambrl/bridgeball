@@ -832,13 +832,13 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
       </div>
 
       <div style={{ maxWidth: 480, margin: "0 auto", padding: "8px 16px 40px", display: "flex", flexDirection: "column" }}>
-        {/* Bandeau série (mode illimité) */}
-        <div style={{ display: "flex", justifyContent: "center", gap: 8, marginBottom: 12 }}>
-          <span style={{ padding: "5px 12px", borderRadius: 999, background: "rgba(255,138,42,.14)", border: "1px solid rgba(255,138,42,.4)", color: "#FF8A2A", fontSize: 12, fontWeight: 900, letterSpacing: 1 }}>🔥 {tr("SÉRIE", "STREAK", "SERIE", "SERIE", "SÉRIE")} : {daily ? dailyStreak : streak}{daily && dailyStreak > 0 ? " " + tr(dailyStreak > 1 ? "JOURS" : "JOUR", dailyStreak > 1 ? "DAYS" : "DAY", dailyStreak > 1 ? "TAGE" : "TAG", dailyStreak > 1 ? "GIORNI" : "GIORNO", dailyStreak > 1 ? "DIAS" : "DIA") : ""}</span>
-          {daily
-            ? <span style={{ padding: "5px 12px", borderRadius: 999, background: "rgba(224,184,92,.14)", border: "1px solid rgba(224,184,92,.45)", color: "#F2D680", fontSize: 12, fontWeight: 900, letterSpacing: 1 }}>🏅 {tr("RECORD", "BEST", "REKORD", "RECORD", "RECORDE")} : {dailyBest}</span>
-            : <span style={{ padding: "5px 12px", borderRadius: 999, background: "rgba(224,184,92,.14)", border: "1px solid rgba(224,184,92,.45)", color: "#F2D680", fontSize: 12, fontWeight: 900, letterSpacing: 1 }}>🏆 {tr("SCORE", "SCORE", "PUNKTE", "PUNTI", "PONTOS")} : {score.toLocaleString("fr-FR")}</span>}
-        </div>
+        {/* Bandeau série + score, uniquement en mode illimité (pas dans la devinette du jour) */}
+        {!daily && (
+          <div style={{ display: "flex", justifyContent: "center", gap: 8, marginBottom: 12 }}>
+            <span style={{ padding: "5px 12px", borderRadius: 999, background: "rgba(255,138,42,.14)", border: "1px solid rgba(255,138,42,.4)", color: "#FF8A2A", fontSize: 12, fontWeight: 900, letterSpacing: 1 }}>🔥 {tr("SÉRIE", "STREAK", "SERIE", "SERIE", "SÉRIE")} : {streak}</span>
+            <span style={{ padding: "5px 12px", borderRadius: 999, background: "rgba(224,184,92,.14)", border: "1px solid rgba(224,184,92,.45)", color: "#F2D680", fontSize: 12, fontWeight: 900, letterSpacing: 1 }}>🏆 {tr("SCORE", "SCORE", "PUNKTE", "PUNTI", "PONTOS")} : {score.toLocaleString("fr-FR")}</span>
+          </div>
+        )}
 
         {/* Devinette du jour = deviner le joueur d'après SES CLUBS. Les phrases
             (CDM, LDC…) sont des INDICES cachés derrière un bouton. */}

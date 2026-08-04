@@ -83,13 +83,15 @@ const Index = () => {
       const hasName = (localStorage.getItem("bb_name") || "").trim().length >= 2;
       let playedToday = false;
       try { const raw = localStorage.getItem("bb_devinette_" + today); if (raw) playedToday = !!JSON.parse(raw).over; } catch { /* noop */ }
-      const shownThisSession = sessionStorage.getItem("bb_devinette_popup_session") === today;
+      // localStorage (pas sessionStorage) : iOS tue et recrée la sessionStorage à chaque
+      // réouverture de la PWA, ce qui faisait réapparaître le pop-up à chaque lancement.
+      const shownToday = localStorage.getItem("bb_devinette_popup_shown") === today;
       const alreadyOpen = sessionStorage.getItem("bb_active_overlay") === "devinette";
-      if (hasName && !playedToday && !shownThisSession && !alreadyOpen) {
+      if (hasName && !playedToday && !shownToday && !alreadyOpen) {
         const t = setTimeout(() => {
           try { setPromptStreak(displayStreak(today).current); } catch { /* noop */ }
           setDevinettePrompt(true); // petit pop-up d'invitation (pas d'ouverture directe)
-          try { sessionStorage.setItem("bb_devinette_popup_session", today); } catch { /* noop */ }
+          try { localStorage.setItem("bb_devinette_popup_shown", today); } catch { /* noop */ }
         }, 1400);
         return () => clearTimeout(t);
       }

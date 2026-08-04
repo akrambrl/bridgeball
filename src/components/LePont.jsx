@@ -2958,6 +2958,7 @@ export default function LePont() {
   const [ggBattleCode, setGgBattleCode] = useState(""); // code saisi pour rejoindre
   const [ggBattleError, setGgBattleError] = useState("");
   const [ggBattleTimer, setGgBattleTimer] = useState(120); // 2 min en secondes
+  const ggBattleBonusRef = React.useRef(0); // secondes bonus accumulées (+2s par bonne réponse)
   const [ggBattleCountdown, setGgBattleCountdown] = useState(0); // 5..1 avant départ, 0 = en jeu
   const [ggBattleViewGrid, setGgBattleViewGrid] = useState(null); // {player, room} pour voir la grille d'un joueur
   const [reviewRoundsModal, setReviewRoundsModal] = useState(null); // {mode:"pont"|"chaine", playerName, rounds:[...]} ou null
@@ -4014,8 +4015,9 @@ export default function LePont() {
     if (ggBattleScreen !== "playing") return;
     if (!ggBattleRoom || !ggBattleRoom.started_at) return;
     
-    // Reset le flag de submit au démarrage
+    // Reset le flag de submit et le bonus au démarrage
     ggBattleStateRef.current.submitted = false;
+    ggBattleBonusRef.current = 0;
     
     const startMs = new Date(ggBattleRoom.started_at).getTime();
     const DURATION_SEC = 120; // 2 minutes
@@ -4035,7 +4037,7 @@ export default function LePont() {
       // Phase 2 : Partie en cours
       setGgBattleCountdown(0);
       const elapsedSec = Math.floor(elapsedMs / 1000);
-      const remaining = Math.max(0, DURATION_SEC - elapsedSec);
+      const remaining = Math.max(0, DURATION_SEC + ggBattleBonusRef.current - elapsedSec);
       setGgBattleTimer(remaining);
       
       if (remaining === 0 && !ggBattleStateRef.current.submitted) {
@@ -4279,7 +4281,10 @@ export default function LePont() {
       const newUsed = new Set(ggUsedPlayers);
       newUsed.add(player.name);
       const newScore = ggScore + playerPts;
-      
+
+      // En mode GOAT Battle : +2s par bonne réponse
+      if (ggBattleScreen === "playing") ggBattleBonusRef.current += 2;
+
       setGgFilledCells(newFilled);
       setGgUsedPlayers(newUsed);
       setGgScore(newScore);
@@ -4585,6 +4590,8 @@ export default function LePont() {
       screen === "game" ||
       screen === "lobby" ||
       screen === "final" ||
+      screen === "chainGame" ||
+      screen === "chainEnd" ||
       showGoatGrid ||
       (ggBattleScreen && ggBattleScreen === "playing");
     if (inGame) {
@@ -7015,7 +7022,7 @@ export default function LePont() {
     setChainWasDaily(false);
     try{
       const prev=chainRecord;
-      if(!prev||sc>prev.score){
+      if(sc>0&&(!prev||sc>prev.score)){
         const rec={score:sc,date:new Date().toLocaleDateString("fr-FR"),name:playerName};
         localStorage.setItem("bb_chain_record",JSON.stringify(rec));
         setChainRecord(rec); setIsNewRecord(true); setShowConfetti(true); setTimeout(()=>setShowConfetti(false),4000);
@@ -7733,6 +7740,8 @@ export default function LePont() {
       const rawDiffCS = isInRoomCS && activeDuelRef.current.diff ? activeDuelRef.current.diff : diff;
       // CRESCENDO : en mode "expert", la diff effective dépend du nombre de liens (chainCount + 1 = on calcule pour LE PROCHAIN joueur)
       const effectiveDiffCS = rawDiffCS === "expert" ? getCrescendoTier(chainCount + 1) : rawDiffCS;
+      const submitSeed = isInRoomCS ? hashStringToSeed(String(activeDuelRef.current.id) + "_next_" + chainPlayer + "_" + matched) : null;
+      const randCS = submitSeed !== null ? seededRandom(submitSeed) : Math.random;
       if(clubPlayers.length===0){
         // Chaîne bloquée après bonne réponse → on pioche un joueur frais au lieu de finir la partie
         const fallbackPool = PLAYERS_CLEAN.filter(p => {
@@ -7748,7 +7757,7 @@ export default function LePont() {
           : fallbackPool;
         const pool = fallbackFacile.length > 0 ? fallbackFacile : (fallbackPool.length > 0 ? fallbackPool : PLAYERS_CLEAN.filter(p => p.clubs.length >= 2 && !chainUsedPlayers.has(p.name)));
         if(pool.length === 0){setTimeout(()=>{setFeedback(null);setFlash(null);endChain();},800);return;}
-        const fallback = pool[Math.floor(Math.random()*pool.length)].name;
+        const fallback = pool[Math.floor(randCS()*pool.length)].name;
         const newUsedP=new Set(chainUsedPlayers); newUsedP.add(fallback);
         setTimeout(()=>{setChainPlayer(fallback);setChainUsedPlayers(newUsedP);setChainLastClub(matched);setChainLastPassed(false);setGuess("");setFeedback(null);setFlash(null);setTimeout(()=>inputRef.current?.focus(),100);},700);
         return;
@@ -7768,7 +7777,7 @@ export default function LePont() {
           p.clubs.filter(c => FAMOUS_CLUBS.has(c)).length >= 2
         );
         if (globalFallback.length === 0) { setTimeout(()=>{setFeedback(null);setFlash(null);endChain();},800); return; }
-        const fallback = globalFallback[Math.floor(Math.random()*globalFallback.length)].name;
+        const fallback = globalFallback[Math.floor(randCS()*globalFallback.length)].name;
         const newUsedP = new Set(chainUsedPlayers); newUsedP.add(fallback);
         setTimeout(()=>{setChainPlayer(fallback);setChainUsedPlayers(newUsedP);setChainLastClub(matched);setChainLastPassed(false);setGuess("");setFeedback(null);setFlash(null);setTimeout(()=>inputRef.current?.focus(),100);},700);
         return;
@@ -7781,8 +7790,6 @@ export default function LePont() {
         : diffPool;
       const finalPool = popularPool.length > 0 ? popularPool : diffPool;
       // 80% current players — seeded en multi pour cohérence entre joueurs qui donnent le même club
-      const submitSeed = isInRoomCS ? hashStringToSeed(String(activeDuelRef.current.id) + "_next_" + chainPlayer + "_" + matched) : null;
-      const randCS = submitSeed !== null ? seededRandom(submitSeed) : Math.random;
       const currentNext = finalPool.filter(p => !isRetiredPlayer(p));
       const useCurrent = randCS() < 0.8 && currentNext.length > 0;
       const nextPool = useCurrent ? currentNext : finalPool;

@@ -924,7 +924,7 @@ const pickQuestion = (
   // question dans l'étape courante est faible vs une question d'une étape
   // ultérieure (ex: continuer à poser des clubs alors que "défenseur ?"
   // discriminerait mieux).
-  let best: { q: Question; score: number } | null = null;
+  const scored: { q: Question; score: number }[] = [];
   for (let s = 0; s < STAGE_ORDER.length; s++) {
     const stage = STAGE_ORDER[s];
     if (blocked === stage) continue;
@@ -938,20 +938,31 @@ const pickQuestion = (
       // Pénalité si la dernière question était de la même catégorie
       const rotationPenalty = q.category === last ? 0.55 : 1;
       const score = ent * stageBonus * rotationPenalty;
-      if (!best || score > best.score) best = { q, score };
+      scored.push({ q, score });
     }
   }
-  if (best) return best.q;
+  if (scored.length > 0) {
+    const best = scored.reduce((a, b) => b.score > a.score ? b : a);
+    // Variété : tirer au hasard parmi les questions dans les 85 % du meilleur score
+    // → évite que Séville/Valence sortent systématiquement à chaque partie.
+    const pool = scored.filter(c => c.score >= best.score * 0.85);
+    return pool[Math.floor(Math.random() * pool.length)].q;
+  }
 
   // Fallback : si on est bloqué par la rotation et rien trouvé, relâche
   if (blocked) {
+    const fallback: { q: Question; score: number }[] = [];
     for (const q of QUESTIONS) {
       if (askedIds.has(q.id)) continue;
       const ent = scoreQuestion(q);
       if (ent <= 0) continue;
-      if (!best || ent > best.score) best = { q, score: ent };
+      fallback.push({ q, score: ent });
     }
-    if (best) return best.q;
+    if (fallback.length > 0) {
+      const best = fallback.reduce((a, b) => b.score > a.score ? b : a);
+      const pool = fallback.filter(c => c.score >= best.score * 0.85);
+      return pool[Math.floor(Math.random() * pool.length)].q;
+    }
   }
   return null;
 };
@@ -1270,8 +1281,11 @@ const GoatGuessGame = ({
       setPhase("lost");
       return;
     }
+    // Préférer un joueur facile/moyen pour la devinette ; ne tomber sur un expert
+    // qu'en dernier recours (évite de proposer des joueurs inconnus de l'utilisateur).
+    const bestGuess = ranked.find(p => p.diff !== "expert") ?? ranked[0];
     if (ranked.length === 1) {
-      setCurrentGuess(ranked[0]);
+      setCurrentGuess(bestGuess);
       setPhase("guessing");
       return;
     }
@@ -1281,7 +1295,7 @@ const GoatGuessGame = ({
     // qu'aucune question ne les sépare plus (nextQ === null), ou au garde-fou.
     const nextQ = qCount >= HARD_CAP ? null : pickQuestion(live, askedSet, lastCats);
     if (!nextQ) {
-      setCurrentGuess(ranked[0]);
+      setCurrentGuess(bestGuess);
       setPhase("guessing");
     } else {
       setCurrentQuestion(nextQ);
