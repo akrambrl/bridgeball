@@ -11783,7 +11783,12 @@ export default function LePont() {
           const found = mmSearch.phase === "found";
           const opp = mmSearch.opponent;
           const myName = (playerName || "").trim() || tr("Toi","You","Du","Tu","Você");
-          const card = function(name, flag, ring, avatar, revealed){
+          // Photo de profil du joueur si elle existe ; sinon on retombe sur le
+          // visuel GOAT FC dérivé du pseudo.
+          const myAvatar = playerAvatar || avatarFor(myName);
+          // isPhoto : photo de profil de l'utilisateur → cadrage centré et repli
+          // sur le visuel GOAT FC si l'image ne charge pas (photo supprimée).
+          const card = function(name, flag, ring, avatar, revealed, isPhoto){
             return (
               <div style={{display:"flex",flexDirection:"column",alignItems:"center",flex:1,minWidth:0}}>
                 <div style={{
@@ -11794,7 +11799,8 @@ export default function LePont() {
                   transition:"opacity .3s",opacity:revealed?1:.45
                 }}>
                   {revealed && avatar
-                    ? <img src={avatar} alt="" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top"}}/>
+                    ? <img src={avatar} alt="" onError={isPhoto ? function(e){ e.currentTarget.src = avatarFor(name); } : undefined}
+                        style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:isPhoto?"center":"top"}}/>
                     : <span style={{fontFamily:G.heading,fontSize:38,color:"rgba(255,255,255,.55)"}}>{revealed ? name.charAt(0).toUpperCase() : "?"}</span>}
                 </div>
                 <div style={{
@@ -11834,7 +11840,7 @@ export default function LePont() {
               </div>
 
               <div style={{position:"relative",display:"flex",alignItems:"flex-start",gap:8,width:"100%",maxWidth:400,marginBottom:32}}>
-                {card(myName, null, "#00E676", avatarFor(myName), true)}
+                {card(myName, null, "#00E676", myAvatar, true, !!playerAvatar)}
                 <div style={{display:"flex",flexDirection:"column",alignItems:"center",paddingTop:28,flexShrink:0}}>
                   <div style={{fontFamily:G.heading,fontSize:28,letterSpacing:4,color:found?G.gold:"rgba(255,255,255,.3)",transition:"color .3s"}}>VS</div>
                   {found && <div style={{fontFamily:G.font,fontSize:9,letterSpacing:3,color:G.accent,marginTop:4}}>{tr("✓ TROUVÉ","✓ FOUND","✓ GEFUNDEN","✓ TROVATO","✓ ENCONTRADO")}</div>}

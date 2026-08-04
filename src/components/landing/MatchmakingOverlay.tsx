@@ -41,12 +41,15 @@ const PlayerCard = ({
   ringColor,
   avatar,
   revealed = true,
+  isPhoto = false,
 }: {
   pseudo: string;
   country?: string;
   ringColor: string;
   avatar?: string;
   revealed?: boolean;
+  /** Photo de profil de l'utilisateur : cadrage centré et repli si elle ne charge pas. */
+  isPhoto?: boolean;
 }) => {
   return (
     <div className="flex flex-col items-center">
@@ -67,7 +70,8 @@ const PlayerCard = ({
             <img
               src={avatar}
               alt=""
-              className="w-full h-full object-cover object-top"
+              onError={isPhoto ? (e) => { e.currentTarget.src = avatarFor(pseudo); } : undefined}
+              className={"w-full h-full object-cover " + (isPhoto ? "object-center" : "object-top")}
             />
           ) : (
             <span
@@ -97,7 +101,12 @@ export const MatchmakingOverlay = ({ game, onFound, onCancel }: Props) => {
   const [dots, setDots] = useState(1);
   const opponentRef = useRef(pickOpponent());
   const myPseudoRef = useRef(getStoredPseudo());
-  const myAvatarRef = useRef(avatarFor(myPseudoRef.current));
+  // Photo de profil si le joueur en a une (même clé que le mobile), sinon
+  // visuel GOAT FC dérivé du pseudo.
+  const myPhotoRef = useRef<string | null>(
+    typeof window === "undefined" ? null : (() => { try { return localStorage.getItem("bb_avatar_url"); } catch { return null; } })()
+  );
+  const myAvatarRef = useRef(myPhotoRef.current || avatarFor(myPseudoRef.current));
 
   useEffect(() => {
     if (phase !== "searching") return;
@@ -156,6 +165,7 @@ export const MatchmakingOverlay = ({ game, onFound, onCancel }: Props) => {
           pseudo={myPseudoRef.current}
           ringColor="#00E676"
           avatar={myAvatarRef.current}
+          isPhoto={!!myPhotoRef.current}
         />
 
         <div className="flex flex-col items-center">
