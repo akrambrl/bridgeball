@@ -172,6 +172,19 @@ const EUROPE = new Set([
   "Albanie",
   "Monténégro",
   "Macédoine du Nord",
+  // Membres UEFA : le joueur joue en Europe, la question « est-il européen ? »
+  // répondait « non » à tort pour eux.
+  "Géorgie",
+  "Kosovo",
+  "Arménie",
+  "Biélorussie",
+  "Lituanie",
+  "Lettonie",
+  "Estonie",
+  "Luxembourg",
+  "Malte",
+  "Chypre",
+  "Îles Féroé",
 ]);
 const SOUTH_AMERICA = new Set([
   "Argentine",
@@ -184,6 +197,7 @@ const SOUTH_AMERICA = new Set([
   "Paraguay",
   "Venezuela",
   "Bolivie",
+  "Suriname",
 ]);
 const AFRICA = new Set([
   "Maroc",
@@ -203,6 +217,24 @@ const AFRICA = new Set([
   "Guinée",
   "Togo",
   "Cap-Vert",
+  "Angola",
+  "Zambie",
+  "Guinée-Bissau",
+  "Guinée équatoriale",
+  "Liberia",
+  "Gambie",
+  "Mauritanie",
+  "Mozambique",
+  "Bénin",
+  "Kenya",
+  "Comores",
+  "Libye",
+  "Burundi",
+  "Zimbabwe",
+  "Centrafrique",
+  "Soudan",
+  "Sierra Leone",
+  "République du Congo",
 ]);
 
 // ─── Anecdotes / faits atypiques (départage de fin de partie) ───
@@ -1941,7 +1973,7 @@ const FLAGS: Record<string, string> = {
   "Danemark":"🇩🇰","Dominique":"🇩🇲","Espagne":"🇪🇸","Estonie":"🇪🇪","Finlande":"🇫🇮","France":"🇫🇷",
   "Gabon":"🇬🇦","Gambie":"🇬🇲","Ghana":"🇬🇭","Grenade":"🇬🇩","Grèce":"🇬🇷","Guinée équatoriale":"🇬🇶",
   "Guinée":"🇬🇳","Guinée-Bissau":"🇬🇼","Géorgie":"🇬🇪","Haïti":"🇭🇹","Honduras":"🇭🇳","Hongrie":"🇭🇺",
-  "Indonésie":"🇮🇩","Iran":"🇮🇷","Irlande du Nord":"🇬🇧","Irlande":"🇮🇪","Islande":"🇮🇸","Israël":"🇮🇱",
+  "Indonésie":"🇮🇩","Iran":"🇮🇷","Irak":"🇮🇶","Irlande du Nord":"🇬🇧","Irlande":"🇮🇪","Islande":"🇮🇸","Israël":"🇮🇱",
   "Italie":"🇮🇹","Jamaïque":"🇯🇲","Japon":"🇯🇵","Jordanie":"🇯🇴","Kenya":"🇰🇪","Kosovo":"🇽🇰",
   "Lettonie":"🇱🇻","Liberia":"🇱🇷","Libye":"🇱🇾","Lituanie":"🇱🇹","Luxembourg":"🇱🇺","Macédoine du Nord":"🇲🇰",
   "Mali":"🇲🇱","Malte":"🇲🇹","Maroc":"🇲🇦","Mauritanie":"🇲🇷","Mexique":"🇲🇽","Monténégro":"🇲🇪",
