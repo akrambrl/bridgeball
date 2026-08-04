@@ -2,6 +2,7 @@ import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from
 import { PLAYERS, RETIRED_PLAYERS, GG_WC_WINNERS, GG_CL_WINNERS } from "../players.jsx";
 import { trackPlay, pingPresence, pingLive } from "../lib/track";
 import { hapticSuccess, hapticError } from "../lib/native";
+import { pickOpponent, avatarFor } from "../lib/opponents";
 
 
 
@@ -4782,6 +4783,9 @@ export default function LePont() {
   const [gameConfigModal, setGameConfigModal] = useState(null);
   const [activeCard, setActiveCard] = useState("pont");
   const [swipeDelta, setSwipeDelta] = useState(0); // "pont" | "chaine" | "room-pont" | "room-chaine"
+  // Matchmaking du mode EN LIGNE (mobile) : {mode, opponent, phase}
+  // phase = "searching" (recherche animée) → "found" (adversaire révélé) → partie
+  const [mmSearch, setMmSearch] = useState(null);
   const [waitingForRoom, setWaitingForRoom] = useState(false);
   const [waitingAfterAbandon, setWaitingAfterAbandon] = useState(false);
   const [abandonedAfterOppLeft, setAbandonedAfterOppLeft] = useState(false);
@@ -7918,7 +7922,33 @@ export default function LePont() {
     callback();
   }
 
-  function tryStart(mode) {
+  // ── Matchmaking EN LIGNE (mobile) ──
+  // Recherche animée, puis révélation de l'adversaire, puis lancement.
+  useEffect(() => {
+    if (!mmSearch || mmSearch.phase !== "searching") return;
+    const t = setTimeout(function(){
+      setMmSearch(function(prev){ return prev ? Object.assign({}, prev, {phase:"found"}) : prev; });
+    }, 2500 + Math.floor(Math.random() * 2000));
+    return function(){ clearTimeout(t); };
+  }, [mmSearch]);
+
+  useEffect(() => {
+    if (!mmSearch || mmSearch.phase !== "found") return;
+    const t = setTimeout(function(){
+      const { mode, opponent } = mmSearch;
+      setMmSearch(null);
+      tryStart(mode, opponent);
+    }, 2000);
+    return function(){ clearTimeout(t); };
+  }, [mmSearch]);
+
+  // opponent : adversaire du mode EN LIGNE, ou null/undefined pour une partie
+  // solo. On l'assigne ici plutôt qu'au clic car sur mobile LePont reste monté
+  // entre deux parties : sans ce reset, l'adversaire d'une partie en ligne
+  // resterait affiché à la fin des parties solo suivantes.
+  function tryStart(mode, opponent) {
+    botOpponentRef.current = opponent || null;
+    botScoreRef.current = null;
     setGameMode(mode);
     // Marquer les instructions comme vues directement
     seenInstructions.current.add(mode);
@@ -11466,6 +11496,97 @@ export default function LePont() {
         )}
 
         {/* ── CONFIG MODAL ── */}
+        {/* ── MATCHMAKING EN LIGNE (mobile) ── */}
+        {mmSearch && (() => {
+          const found = mmSearch.phase === "found";
+          const opp = mmSearch.opponent;
+          const myName = (playerName || "").trim() || tr("Toi","You","Du","Tu","Você");
+          const card = function(name, flag, ring, avatar, revealed){
+            return (
+              <div style={{display:"flex",flexDirection:"column",alignItems:"center",flex:1,minWidth:0}}>
+                <div style={{
+                  width:96,height:96,borderRadius:"50%",overflow:"hidden",
+                  border:`3px solid ${ring}`,boxShadow:`0 0 34px ${ring}55`,
+                  background:`linear-gradient(135deg, ${ring}, #0F2017)`,
+                  display:"flex",alignItems:"center",justifyContent:"center",
+                  transition:"opacity .3s",opacity:revealed?1:.45
+                }}>
+                  {revealed && avatar
+                    ? <img src={avatar} alt="" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top"}}/>
+                    : <span style={{fontFamily:G.heading,fontSize:38,color:"rgba(255,255,255,.55)"}}>{revealed ? name.charAt(0).toUpperCase() : "?"}</span>}
+                </div>
+                <div style={{
+                  marginTop:12,fontFamily:G.heading,fontSize:20,letterSpacing:1,textAlign:"center",
+                  color:revealed?"#fff":"rgba(255,255,255,.4)",
+                  maxWidth:"100%",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"
+                }}>{revealed ? name : "?????"}</div>
+                {revealed && flag && <div style={{fontSize:20,marginTop:2}}>{flag}</div>}
+              </div>
+            );
+          };
+          return (
+            <div role="dialog" aria-modal="true" style={{
+              position:"fixed",inset:0,zIndex:340,background:"rgba(0,0,0,.96)",
+              backdropFilter:"blur(8px)",display:"flex",flexDirection:"column",
+              alignItems:"center",justifyContent:"center",padding:24
+            }}>
+              <div style={{
+                position:"absolute",inset:0,pointerEvents:"none",opacity:.5,
+                background:"radial-gradient(circle at center, rgba(61,165,255,.25) 0%, transparent 55%)"
+              }}/>
+
+              <button onClick={function(){ setMmSearch(null); }} style={{
+                position:"absolute",top:"calc(14px + env(safe-area-inset-top))",right:14,
+                padding:"8px 16px",borderRadius:999,background:"rgba(255,255,255,.06)",
+                color:"rgba(255,255,255,.6)",border:"1px solid rgba(255,255,255,.15)",
+                fontFamily:G.font,fontSize:12,letterSpacing:2,cursor:"pointer"
+              }}>{tr("ANNULER","CANCEL","ABBRECHEN","ANNULLA","CANCELAR")}</button>
+
+              <div style={{position:"relative",textAlign:"center",marginBottom:28}}>
+                <div style={{fontFamily:G.font,fontSize:11,letterSpacing:5,color:"#3DA5FF",marginBottom:6}}>
+                  {tr("MODE EN LIGNE","ONLINE MODE","ONLINE-MODUS","MODALITÀ ONLINE","MODO ONLINE")}
+                </div>
+                <div style={{fontFamily:G.heading,fontSize:32,letterSpacing:2,color:"#fff"}}>
+                  {mmSearch.mode === "pont" ? "THE PLUG" : "THE MERCATO"}
+                </div>
+              </div>
+
+              <div style={{position:"relative",display:"flex",alignItems:"flex-start",gap:8,width:"100%",maxWidth:400,marginBottom:32}}>
+                {card(myName, null, "#00E676", avatarFor(myName), true)}
+                <div style={{display:"flex",flexDirection:"column",alignItems:"center",paddingTop:28,flexShrink:0}}>
+                  <div style={{fontFamily:G.heading,fontSize:28,letterSpacing:4,color:found?G.gold:"rgba(255,255,255,.3)",transition:"color .3s"}}>VS</div>
+                  {found && <div style={{fontFamily:G.font,fontSize:9,letterSpacing:3,color:G.accent,marginTop:4}}>{tr("✓ TROUVÉ","✓ FOUND","✓ GEFUNDEN","✓ TROVATO","✓ ENCONTRADO")}</div>}
+                </div>
+                {card(opp.pseudo, opp.country, "#3DA5FF", opp.avatar, found)}
+              </div>
+
+              <div style={{position:"relative",textAlign:"center",minHeight:72}}>
+                {found ? (
+                  <>
+                    <div style={{fontFamily:G.heading,fontSize:24,letterSpacing:3,color:G.accent}}>
+                      {tr("MATCH PRÊT","MATCH READY","MATCH BEREIT","MATCH PRONTO","PARTIDA PRONTA")}
+                    </div>
+                    <div style={{fontSize:13,color:"rgba(255,255,255,.5)",marginTop:6}}>
+                      {tr("La partie va commencer…","The game is about to start…","Das Spiel startet gleich…","La partita sta per iniziare…","O jogo vai começar…")}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div style={{display:"flex",justifyContent:"center",gap:10,marginBottom:12}}>
+                      {[0,1,2].map(function(i){return (
+                        <div key={i} className="goat-blink" style={{width:10,height:10,borderRadius:"50%",background:"#3DA5FF",animationDelay:(i*0.3)+"s"}}/>
+                      );})}
+                    </div>
+                    <div style={{fontFamily:G.heading,fontSize:22,letterSpacing:2,color:"#fff"}}>
+                      {tr("RECHERCHE D'UN ADVERSAIRE","FINDING AN OPPONENT","SUCHE NACH GEGNER","RICERCA AVVERSARIO","PROCURANDO ADVERSÁRIO")}
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          );
+        })()}
+
         {gameConfigModal && (
           <div
             style={{position:"fixed",inset:0,zIndex:300,background:"#0a0a0a",overflowY:"auto",WebkitOverflowScrolling:"touch"}}
@@ -11573,6 +11694,28 @@ export default function LePont() {
                     </div>
 
                     {/* Manches sélecteur supprimé : 1 manche de 90s par défaut pour Mercato et Plug */}
+
+                    {/* ── EN LIGNE — matchmaking (même mécanique que sur desktop) ── */}
+                    <button onClick={function(){
+                      const m = gameConfigModal;
+                      setGameConfigModal(null);
+                      setMmSearch({ mode: m, opponent: pickOpponent(), phase: "searching" });
+                    }} style={{
+                      width:"100%",marginBottom:10,padding:"14px 16px",borderRadius:16,
+                      border:"1.5px solid rgba(61,165,255,.6)",
+                      background:"linear-gradient(135deg,rgba(61,165,255,.22),rgba(61,165,255,.08))",
+                      cursor:"pointer",display:"flex",alignItems:"center",gap:12,textAlign:"left",
+                      boxShadow:"0 8px 24px -8px rgba(61,165,255,.5)"
+                    }}>
+                      <div style={{fontSize:26}}>🌍</div>
+                      <div style={{flex:1}}>
+                        <div style={{fontSize:14,fontWeight:900,color:"#fff",letterSpacing:.5}}>{tr("EN LIGNE","ONLINE","ONLINE","ONLINE","ONLINE")}</div>
+                        <div style={{fontSize:11,color:"rgba(255,255,255,.55)",marginTop:2}}>
+                          {tr("Affronte un adversaire · même série de clubs","Face an opponent · same club series","Tritt gegen einen Gegner an · gleiche Klubserie","Sfida un avversario · stessa serie di club","Enfrente um adversário · mesma série de clubes")}
+                        </div>
+                      </div>
+                      <div style={{fontSize:18,color:"#3DA5FF"}}>▶</div>
+                    </button>
 
                     {/* Boutons */}
                     <div style={{display:"flex",gap:10}}>

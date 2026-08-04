@@ -1,6 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import type { GameMode } from "@/pages/Home";
 import { tr } from "@/lib/lang";
+import { avatarFor, pickOpponent } from "@/lib/opponents";
+
+// Ré-exportés pour les consommateurs existants (Home.tsx pour le mode VS BOT,
+// qui saute le matchmaking mais veut un adversaire du même pool).
+export { avatarFor, pickOpponent };
 
 type Props = {
   game: Extract<GameMode, "pont" | "chaine">;
@@ -16,62 +21,6 @@ const GAME_LABEL: Record<Props["game"], string> = {
   pont: "THE PLUG",
   chaine: "THE MERCATO",
 };
-
-const POOL: { pseudo: string; country: string }[] = [
-  { pseudo: "EagleEye_92", country: "🇫🇷" },
-  { pseudo: "TransferKing", country: "🇪🇸" },
-  { pseudo: "MercatoMaster", country: "🇮🇹" },
-  { pseudo: "BridgeBuilder", country: "🇬🇧" },
-  { pseudo: "FootGuru42", country: "🇧🇷" },
-  { pseudo: "ZidaneFan10", country: "🇫🇷" },
-  { pseudo: "RonaldoSiu", country: "🇵🇹" },
-  { pseudo: "PetitPont", country: "🇫🇷" },
-  { pseudo: "Cantona7", country: "🇫🇷" },
-  { pseudo: "LeMercatoGuy", country: "🇫🇷" },
-  { pseudo: "DiegoLover", country: "🇦🇷" },
-  { pseudo: "OldTrafford_99", country: "🇬🇧" },
-  { pseudo: "BernabeuKid", country: "🇪🇸" },
-  { pseudo: "SanSiro_AC", country: "🇮🇹" },
-  { pseudo: "AllianzWolf", country: "🇩🇪" },
-  { pseudo: "ParcDesGOAT", country: "🇫🇷" },
-  { pseudo: "VeloDromeFan", country: "🇫🇷" },
-  { pseudo: "Bombonera_Boca", country: "🇦🇷" },
-  { pseudo: "Maracana10", country: "🇧🇷" },
-  { pseudo: "AnfieldRoad", country: "🇬🇧" },
-  { pseudo: "PlugMaster_X", country: "🇧🇪" },
-  { pseudo: "GoatHunter", country: "🇳🇱" },
-  { pseudo: "ChainBreaker", country: "🇲🇦" },
-  { pseudo: "Iniesta_8", country: "🇪🇸" },
-  { pseudo: "Pirlo_21", country: "🇮🇹" },
-  { pseudo: "Modric_LM10", country: "🇭🇷" },
-];
-
-// Avatars (réutilise tes visuels GOAT FC existants — joueurs en maillot)
-const AVATARS = [
-  "/win1.png",
-  "/win2.png",
-  "/win3.png",
-  "/win4.png",
-  "/win5.png",
-];
-
-// Hash stable pseudo → index avatar (le même pseudo a toujours le même avatar)
-export function avatarFor(pseudo: string): string {
-  let h = 0;
-  for (let i = 0; i < pseudo.length; i++) {
-    h = (h * 31 + pseudo.charCodeAt(i)) | 0;
-  }
-  return AVATARS[Math.abs(h) % AVATARS.length];
-}
-
-function pickOpponent() {
-  const base = POOL[Math.floor(Math.random() * POOL.length)];
-  return { ...base, avatar: avatarFor(base.pseudo) };
-}
-
-// Exporté pour le mode VS BOT (skip matchmaking, on a juste besoin d'un
-// adversaire crédible du même pool).
-export { pickOpponent };
 
 function getStoredPseudo(): string {
   if (typeof window === "undefined") return tr("Toi", "You", "Du", "Tu", "Você");
