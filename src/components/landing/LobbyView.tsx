@@ -265,8 +265,22 @@ export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels, onOpenFriends }: Pr
             style={{ backgroundColor: game.accent }}
           />
 
-          <div className="relative lg:h-full p-6 lg:p-8 grid md:grid-cols-[1fr_240px] gap-6 items-center content-center">
-            {/* Texte + CTA */}
+          {/* Mascotte — remplit toute la droite de la carte */}
+          <div className="hidden md:block absolute inset-y-0 right-0 w-[52%] pointer-events-none">
+            <div
+              className="absolute bottom-0 inset-x-0 h-[70%] blur-3xl opacity-20"
+              style={{ backgroundColor: game.accent }}
+            />
+            <img
+              key={game.key}
+              src={game.mascot}
+              alt=""
+              className="goat-float absolute bottom-0 left-1/2 -translate-x-1/2 h-[98%] w-auto max-w-full object-contain object-bottom drop-shadow-[0_20px_40px_rgba(0,0,0,0.8)]"
+            />
+          </div>
+
+          {/* Texte + CTA */}
+          <div className="relative lg:h-full p-6 lg:p-8 flex flex-col justify-center md:max-w-[55%]">
             <div className="flex flex-col items-center md:items-start text-center md:text-left">
               <span
                 className="px-3 py-1 rounded-full font-display text-xs tracking-[0.25em] mb-2"
@@ -316,21 +330,6 @@ export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels, onOpenFriends }: Pr
               <p className="mt-2 text-xs text-white/40">
                 {tr("Gratuit · Sans inscription · 3 minutes", "Free · No sign-up · 3 minutes", "Gratis · Ohne Anmeldung · 3 Minuten", "Gratis · Senza registrazione · 3 minuti", "Grátis · Sem cadastro · 3 minutos")}
               </p>
-            </div>
-
-            {/* Mascotte joueur GOAT FC — contrainte pour ne jamais dépasser la
-                carte (overflow-hidden) : max-h/max-w-full + object-contain */}
-            <div className="hidden md:flex items-center justify-center relative h-full max-h-full overflow-hidden">
-              <div
-                className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[80%] w-[80%] rounded-full blur-3xl opacity-30"
-                style={{ backgroundColor: game.accent }}
-              />
-              <img
-                key={game.key}
-                src={game.mascot}
-                alt=""
-                className="goat-float relative h-[clamp(280px,42vh,440px)] max-h-full w-auto max-w-full object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.7)]"
-              />
             </div>
           </div>
         </div>
