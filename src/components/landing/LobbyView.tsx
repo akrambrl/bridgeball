@@ -10,7 +10,7 @@ type Props = {
   onOpenFriends?: () => void;
 };
 
-type GameKey = "plug" | "mercato" | "grid" | "guess";
+type GameKey = "plug" | "mercato" | "grid" | "guess" | "goatgrid";
 
 const GAMES: {
   key: GameKey;
@@ -60,6 +60,18 @@ const GAMES: {
     badge: "ILLIMITÉ",
   },
   {
+    key: "goatgrid",
+    mode: "goatgrid",
+    name: "GOAT Grid",
+    tagline: "La grille 3\u00d73",
+    img: "/grid-card.png",
+    mascot: "/win2.png",
+    description:
+      "Neuf cases, neuf crit\u00e8res crois\u00e9s. Trouve un joueur qui coche les deux \u00e0 chaque fois.",
+    accent: "#FF6B35",
+    badge: "GRILLE",
+  },
+  {
     key: "guess",
     mode: "guess",
     name: "GOAT Guess",
@@ -80,6 +92,7 @@ function gameTagline(k: GameKey): string {
     case "plug": return tr("Le pont entre deux clubs", "The bridge between two clubs", "Die Brücke zwischen zwei Klubs", "Il ponte tra due club", "A ponte entre dois clubes");
     case "grid": return tr("Déduction en illimité", "Endless deduction", "Endlose Deduktion", "Deduzione illimitata", "Dedução ilimitada");
     case "guess": return tr("Je devine ton joueur", "I guess your player", "Ich errate deinen Spieler", "Indovino il tuo giocatore", "Eu adivinho seu jogador");
+    case "goatgrid": return tr("La grille 3\u00d73", "The 3\u00d73 grid", "Das 3\u00d73-Raster", "La griglia 3\u00d73", "A grade 3\u00d73");
   }
 }
 function gameDescription(k: GameKey): string {
@@ -88,6 +101,7 @@ function gameDescription(k: GameKey): string {
     case "plug": return tr("Deux clubs, un seul joueur. À toi de trouver le maillon qui les relie.", "Two clubs, one player. Find the link that connects them.", "Zwei Klubs, ein Spieler. Finde das Bindeglied zwischen ihnen.", "Due club, un solo giocatore. Trova l'anello che li unisce.", "Dois clubes, um jogador. Ache o elo que os liga.");
     case "grid": return tr("Déduis le joueur mystère grâce à ses indices, en illimité. Enchaîne les bonnes réponses et monte ta série.", "Deduce the mystery player from his clues, unlimited. Chain correct answers to build your streak.", "Leite den Mystery-Spieler aus seinen Hinweisen ab, unbegrenzt. Reihe richtige Antworten für deine Serie aneinander.", "Deduci il giocatore misterioso dai suoi indizi, illimitato. Concatena le risposte giuste per la tua serie.", "Deduza o jogador misterioso pelas dicas, ilimitado. Encadeie acertos para subir sua sequência.");
     case "guess": return tr("Pense à un footballeur. En 25 questions max, je devine de qui il s'agit. 🔮", "Think of a footballer. In 25 questions max, I'll guess who it is. 🔮", "Denk an einen Fußballer. In max. 25 Fragen errate ich, wer es ist. 🔮", "Pensa a un calciatore. In max 25 domande indovino chi è. 🔮", "Pense num jogador. Em no máximo 25 perguntas, eu adivinho quem é. 🔮");
+    case "goatgrid": return tr("Neuf cases, neuf critères croisés. Trouve un joueur qui coche les deux à chaque fois.", "Nine cells, nine crossed criteria. Find a player who ticks both every time.", "Neun Felder, neun gekreuzte Kriterien. Finde jedes Mal einen Spieler, der beide erfüllt.", "Nove caselle, nove criteri incrociati. Trova ogni volta un giocatore che soddisfa entrambi.", "Nove casas, nove critérios cruzados. Ache um jogador que atenda aos dois em cada uma.");
   }
 }
 function gameBadge(k: GameKey): string {
@@ -96,6 +110,7 @@ function gameBadge(k: GameKey): string {
     case "plug": return "SIGNATURE";
     case "grid": return tr("ILLIMITÉ", "UNLIMITED", "UNBEGRENZT", "ILLIMITATO", "ILIMITADO");
     case "guess": return tr("MAGIE", "MAGIC", "MAGIE", "MAGIA", "MAGIA");
+    case "goatgrid": return tr("GRILLE", "GRID", "RASTER", "GRIGLIA", "GRADE");
   }
 }
 

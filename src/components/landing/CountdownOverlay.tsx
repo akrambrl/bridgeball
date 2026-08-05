@@ -2,7 +2,11 @@ import { useEffect, useState } from "react";
 import type { GameMode } from "@/pages/Home";
 import { tr } from "@/lib/lang";
 
-type CountdownGame = Exclude<GameMode, "guess">;
+// Le décompte ne sert qu'aux parties lancées depuis le choix de mode /
+// difficulté, c'est-à-dire The Plug et The Mercato. Les autres jeux démarrent
+// directement. Le type le dit désormais, au lieu de couvrir tout GameMode et de
+// traîner une entrée "grid" morte.
+type CountdownGame = Extract<GameMode, "pont" | "chaine">;
 
 type Props = {
   game: CountdownGame;
@@ -24,11 +28,6 @@ const GAME_INFO: Record<
     tagline: "La chaîne sans fin",
     accent: "#FF8A2A",
   },
-  grid: {
-    name: "GOAT GRID",
-    tagline: "La grille des légendes",
-    accent: "#3DA5FF",
-  },
 };
 
 const START_FROM = 3;
@@ -37,7 +36,6 @@ function countdownTagline(game: CountdownGame): string {
   switch (game) {
     case "pont": return tr("Le pont entre deux clubs", "The bridge between two clubs", "Die Brücke zwischen zwei Klubs", "Il ponte tra due club", "A ponte entre dois clubes");
     case "chaine": return tr("La chaîne sans fin", "The endless chain", "Die endlose Kette", "La catena infinita", "A corrente sem fim");
-    case "grid": return tr("La grille des légendes", "The legends grid", "Das Legenden-Raster", "La griglia delle leggende", "A grade das lendas");
   }
 }
 
