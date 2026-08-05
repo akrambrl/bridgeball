@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { GameMode } from "@/pages/Home";
 import { tr } from "@/lib/lang";
 import { fetchTopPlayers, type TopPlayer } from "@/lib/leaderboard";
+import { dailyRiddleDone } from "@/lib/streak";
 
 type Props = {
   onPlay: (game?: GameMode) => void;
@@ -161,6 +162,14 @@ export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels, onOpenFriends }: Pr
   const [myUnseen, setMyUnseen] = useState(0);
   // Demandes d'ami reçues en attente (badge rouge)
   const [pendingFriends, setPendingFriends] = useState(0);
+  // Devinette du jour : la barre d'accès disparaît une fois la devinette jouée
+  // (rien à y faire jusqu'au lendemain). Home réémet l'event à la fermeture.
+  const [riddleDone, setRiddleDone] = useState(dailyRiddleDone);
+  useEffect(() => {
+    const refresh = () => setRiddleDone(dailyRiddleDone());
+    window.addEventListener("goatfc:devinette-closed", refresh);
+    return () => window.removeEventListener("goatfc:devinette-closed", refresh);
+  }, []);
   useEffect(() => {
     let alive = true;
     const load = async () => {
@@ -451,7 +460,8 @@ export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels, onOpenFriends }: Pr
 
         {/* Devinette du jour — un joueur mystère par jour, partagé par tous.
             Elle n'était accessible que par le pop-up mobile ; ici c'est un accès
-            permanent, côté desktop comme côté mobile. */}
+            permanent, côté desktop comme côté mobile. Masquée une fois jouée. */}
+        {!riddleDone && (
         <button
           onClick={() => window.dispatchEvent(new CustomEvent("goatfc:open-devinette"))}
           className="w-full flex items-center gap-3 p-4 rounded-2xl border border-[#E0B85C]/40 bg-gradient-to-br from-[#E0B85C]/15 to-[#E0B85C]/5 hover:border-[#E0B85C]/70 transition-colors text-left"
@@ -467,6 +477,7 @@ export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels, onOpenFriends }: Pr
           </span>
           <span className="text-[#F2D680] font-display text-lg">›</span>
         </button>
+        )}
 
         {/* Leaderboard preview */}
         <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-4">
