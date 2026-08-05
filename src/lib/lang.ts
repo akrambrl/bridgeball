@@ -20,6 +20,26 @@ export function getLang(): Lang {
   return "fr";
 }
 
+/** Langues proposées, dans l'ordre d'affichage du sélecteur. */
+export const LANGS: { code: Lang; flag: string; label: string }[] = [
+  { code: "fr", flag: "🇫🇷", label: "FR" },
+  { code: "en", flag: "🇬🇧", label: "EN" },
+  { code: "de", flag: "🇩🇪", label: "DE" },
+  { code: "it", flag: "🇮🇹", label: "IT" },
+  { code: "pt", flag: "🇵🇹", label: "PT" },
+];
+
+/**
+ * Change la langue et recharge la page. Le rechargement est nécessaire : `tr()`
+ * relit localStorage à chaque appel mais n'est branché sur aucun état React, et
+ * LePont initialise sa propre langue au montage — sans reload, une partie de
+ * l'interface resterait dans l'ancienne langue.
+ */
+export function setLang(l: Lang): void {
+  try { localStorage.setItem("bb_lang", l); } catch { /* noop */ }
+  try { window.location.reload(); } catch { /* noop */ }
+}
+
 export function tr(
   fr: string,
   en: string,

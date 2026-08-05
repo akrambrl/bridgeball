@@ -1,4 +1,5 @@
-import { tr } from "@/lib/lang";
+import { useEffect, useRef, useState } from "react";
+import { tr, getLang, setLang, LANGS } from "@/lib/lang";
 
 export type TabKey = "play" | "tutos" | "leaderboard" | "faq" | "about";
 
@@ -33,6 +34,60 @@ function getStoredPseudo(): string {
     return guest;
   }
 }
+
+// Sélecteur de langue — il n'existait que sur mobile (dans LePont), le desktop
+// se contentait de la langue détectée dans le navigateur, sans moyen d'en changer.
+const LangPicker = () => {
+  const [open, setOpen] = useState(false);
+  const current = LANGS.find((l) => l.code === getLang()) ?? LANGS[0];
+  const box = useRef<HTMLDivElement>(null);
+
+  // Fermeture au clic en dehors
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: MouseEvent) => {
+      if (box.current && !box.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, [open]);
+
+  return (
+    <div className="relative" ref={box}>
+      <button
+        onClick={() => setOpen((o) => !o)}
+        aria-label={tr("Changer la langue", "Change language", "Sprache ändern", "Cambia lingua", "Mudar idioma")}
+        aria-expanded={open}
+        className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-white/5 border border-white/10 hover:border-white/30 transition-colors"
+      >
+        <span className="text-base leading-none">{current.flag}</span>
+        <span className="font-display text-sm tracking-widest text-white/80">{current.label}</span>
+        <span className="text-[10px] text-white/40">▾</span>
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-full mt-2 z-50 w-36 rounded-xl border border-white/15 bg-[#0A1410] shadow-[0_16px_50px_rgba(0,0,0,.7)] overflow-hidden">
+          {LANGS.map((l) => (
+            <button
+              key={l.code}
+              onClick={() => setLang(l.code)}
+              className={
+                "w-full flex items-center gap-2.5 px-3.5 py-2.5 text-left transition-colors " +
+                (l.code === current.code
+                  ? "bg-[#00E676]/10 text-[#00E676]"
+                  : "text-white/75 hover:bg-white/5 hover:text-white")
+              }
+            >
+              <span className="text-base leading-none">{l.flag}</span>
+              <span className="font-display text-sm tracking-widest">{l.label}</span>
+              {l.code === current.code && <span className="ml-auto text-xs">✓</span>}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 export const LobbyHeader = ({ active, onChange }: Props) => {
   const pseudo = getStoredPseudo();
@@ -74,8 +129,10 @@ export const LobbyHeader = ({ active, onChange }: Props) => {
         })}
       </nav>
 
-      {/* Right side : profil */}
+      {/* Right side : langue + profil */}
       <div className="flex items-center gap-3">
+        <LangPicker />
+
         {/* Profil compact */}
         <div className="hidden md:flex items-center gap-2.5 pl-1.5 pr-3 py-1.5 rounded-full bg-white/5 border border-white/10">
           <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[#00E676] to-[#1E5C2A] flex items-center justify-center font-display text-lg text-[#0A1410]">
