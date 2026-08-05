@@ -610,6 +610,12 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
   }
 
   // 💡 Indice : révèle une pastille (un attribut) non encore trouvée.
+  //
+  // Quand c'est la DERNIÈRE, la manche se termine d'elle-même et la réponse est
+  // dévoilée : tout est connu, il n'y a plus rien à déduire, et faire taper un
+  // nom qu'on vient d'afficher n'apporte rien. Ça ferme aussi une faille — tout
+  // révéler puis répondre comptait jusqu'ici comme une victoire et conservait la
+  // série intacte.
   function revealOneAttr() {
     const conf = new Set<string>(hintRevealed);
     guesses.forEach(g => computeChips(g, answer).forEach(c => { if (c.state === "ok") conf.add(c.key); }));
@@ -617,6 +623,8 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
     if (remaining.length === 0) return;
     const pick = remaining[Math.floor(Math.random() * remaining.length)];
     setHintRevealed(prev => prev.includes(pick) ? prev : [...prev, pick]);
+    // Court délai : on laisse la dernière pastille se retourner avant l'écran de fin.
+    if (remaining.length === 1) setTimeout(() => { giveUp(); }, 700);
   }
 
   // 🏳️ Abandonner : dévoile la réponse (fin de manche, série remise à zéro).
@@ -806,6 +814,8 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
     { key: "lastclub", label: tr("CLUB", "CLUB", "KLUB", "CLUB", "CLUBE"), value: aLastClub ? clubCode(aLastClub) : "?", bg: aLbg, fg: aLfg, confirmed: confirmedKeys.has("lastclub") },
   ] as { key: string; label: string; value: string; big?: boolean; bg?: string; fg?: string; confirmed: boolean }[];
   const allFound = topSlots.every(s => s.confirmed);
+  // Un seul attribut restant : le prochain indice terminera la manche, autant le dire.
+  const lastClueLeft = topSlots.filter(s => !s.confirmed).length === 1;
 
   // En « Devinette du jour » : carte centrée bornée (ne prend pas tout l'écran),
   // avec un fond derrière. En GOAT reveal : plein écran. Pas de transform sur la
@@ -887,7 +897,9 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
           <div style={{ marginBottom: 14 }}>
             <div style={{ display: "flex", justifyContent: "center", gap: 12, marginBottom: 12 }}>
               {[
-                { emoji: "💡", color: "#3DA5FF", onClick: revealOneAttr, disabled: allFound, label: tr("Révéler une info", "Reveal a clue", "Info zeigen", "Rivela un'info", "Revelar info") },
+                { emoji: "💡", color: "#3DA5FF", onClick: revealOneAttr, disabled: allFound, label: lastClueLeft
+                  ? tr("Dernier indice — dévoile la réponse", "Last clue — reveals the answer", "Letzter Hinweis — zeigt die Lösung", "Ultimo indizio — svela la risposta", "Última dica — revela a resposta")
+                  : tr("Révéler une info", "Reveal a clue", "Info zeigen", "Rivela un'info", "Revelar info") },
                 { emoji: "🏳️", color: "#FF3D57", onClick: giveUp, disabled: false, label: tr("Abandonner", "Give up", "Aufgeben", "Arrenditi", "Desistir") },
               ].map(h => (
                 <button key={h.emoji} onClick={h.onClick} disabled={h.disabled} title={h.label} aria-label={h.label} style={{ width: 48, height: 48, borderRadius: "50%", border: "1px solid " + h.color + "66", background: h.disabled ? "rgba(255,255,255,.04)" : h.color + "22", color: "#fff", fontSize: 20, cursor: h.disabled ? "not-allowed" : "pointer", opacity: h.disabled ? 0.4 : 1, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: h.disabled ? "none" : "0 4px 12px " + h.color + "33" }}>{h.emoji}</button>
