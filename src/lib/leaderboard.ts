@@ -13,14 +13,19 @@
 // requêtes du mobile. Toute modification doit rester alignée sur
 // loadLeaderboard côté mobile.
 
-const SB_URL = "https://ialjlsrgcolocoaegzrc.supabase.co";
+import { getLang } from "./lang";
+
+export const SB_URL = "https://ialjlsrgcolocoaegzrc.supabase.co";
 const SB_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhbGpsc3JnY29sb2NvYWVnenJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1MDM3NzksImV4cCI6MjA5MTA3OTc3OX0.-SU8anuPhnpoa-PYhIHQqrcuOBsHxdtBJKRZuiGcGwM";
 
 // Doit rester identique à SEASON_START dans LePont.jsx
 const SEASON_START = new Date("2026-04-01T00:00:00Z");
 
-export type SeasonInfo = { num: number; start: Date; end: Date; monthKey: string };
+export type SeasonInfo = { num: number; start: Date; end: Date; monthKey: string; monthLabel: string };
+
+const MONTHS_FR = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
+const MONTHS_EN = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
 // Même calcul que getCurrentSeason() dans LePont.jsx — saison = mois calendaire,
 // fuseau Paris. Saison 1 = avril 2026.
@@ -37,19 +42,60 @@ export function getCurrentSeason(): SeasonInfo {
     start: new Date(paris.getFullYear(), paris.getMonth(), 1, 0, 0, 0),
     end: new Date(paris.getFullYear(), paris.getMonth() + 1, 1, 0, 0, 0),
     monthKey: paris.getFullYear() + "-" + String(paris.getMonth() + 1).padStart(2, "0"),
+    monthLabel: (getLang() === "fr" ? MONTHS_FR : MONTHS_EN)[paris.getMonth()] + " " + paris.getFullYear(),
   };
+}
+
+// ─── Grades ───────────────────────────────────────────────────────────────────
+// Partagés avec LePont (mobile), qui en avait sa propre copie : deux définitions
+// du même barème auraient fini par diverger.
+export const GRADES = [
+  { min: 10000, label: "GOAT",      labelEn: "GOAT",    emoji: "🐐",  color: "#FFD700" },
+  { min: 5000,  label: "Légende",   labelEn: "Legend",  emoji: "☄️",  color: "#FF6B35" },
+  { min: 2000,  label: "Titulaire", labelEn: "Starter", emoji: "🐺",  color: "#00B4D8" },
+  { min: 500,   label: "Espoir",    labelEn: "Rookie",  emoji: "👦🏻", color: "#2EC4B6" },
+  { min: 0,     label: "Amateur",   labelEn: "Amateur", emoji: "🏖️", color: "#8D99AE" },
+];
+
+export type Grade = { min: number; label: string; emoji: string; color: string };
+
+/** Grade correspondant à une XP cumulée. */
+export function getGrade(xp: number): Grade {
+  const g = GRADES.find((g) => xp >= g.min) || GRADES[GRADES.length - 1];
+  return { ...g, label: getLang() === "fr" ? g.label : (g.labelEn || g.label) };
+}
+
+/** Code pays ISO 2 lettres → emoji drapeau ("" si code invalide). */
+export function countryToFlag(code: string | null | undefined): string {
+  if (!code || code.length !== 2) return "";
+  const codePoints = code.toUpperCase().split("").map((c) => 127397 + c.charCodeAt(0));
+  return String.fromCodePoint(...codePoints);
+}
+
+/** URL de la photo de profil d'un joueur (404 si aucune : prévoir un repli). */
+export function avatarUrl(playerId: string): string {
+  return SB_URL + "/storage/v1/object/public/avatars/" + playerId + ".jpg";
 }
 
 /** "global" = XP depuis toujours (onglet par défaut du mobile) · "saison" = XP du mois. */
 export type LbMode = "global" | "saison";
 
-export type TopPlayer = { rank: number; name: string; score: number };
+export type TopPlayer = {
+  rank: number;
+  pid: string;
+  name: string;
+  score: number;
+  /** XP cumulée — sert au grade, même en mode saison (comme sur mobile). */
+  xp: number;
+  country: string | null;
+};
 
 type PseudoRow = {
   player_id: string;
   pseudo: string | null;
   xp: number | null;
   xp_season: number | null;
+  country: string | null;
 };
 
 // On demande large puis on trie/filtre côté client : `order=…desc` place les
@@ -66,7 +112,7 @@ export async function fetchTopPlayers(top: number, mode: LbMode = "global"): Pro
     mode === "saison" ? "&xp_season_month=eq." + getCurrentSeason().monthKey : "";
   const url =
     SB_URL +
-    "/rest/v1/bb_pseudos?select=player_id,pseudo,xp,xp_season&limit=" +
+    "/rest/v1/bb_pseudos?select=player_id,pseudo,xp,xp_season,country&limit=" +
     FETCH_WINDOW +
     "&order=" +
     (mode === "saison" ? "xp_season" : "xp") +
@@ -84,5 +130,12 @@ export async function fetchTopPlayers(top: number, mode: LbMode = "global"): Pro
     .filter((r) => r.player_id && valueOf(r) > 0)
     .sort((a, b) => valueOf(b) - valueOf(a))
     .slice(0, top)
-    .map((r, i) => ({ rank: i + 1, name: r.pseudo || "?", score: valueOf(r) }));
+    .map((r, i) => ({
+      rank: i + 1,
+      pid: r.player_id,
+      name: r.pseudo || "?",
+      score: valueOf(r),
+      xp: r.xp || 0,
+      country: r.country || null,
+    }));
 }

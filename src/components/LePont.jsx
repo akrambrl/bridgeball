@@ -4,6 +4,8 @@ import { trackPlay, pingPresence, pingLive, trackTime } from "../lib/track";
 import { hapticSuccess, hapticError } from "../lib/native";
 import { pickOpponent, avatarFor } from "../lib/opponents";
 import { displayStreak } from "../lib/streak";
+// Barème de grades et drapeaux : définis une seule fois, partagés avec le desktop.
+import { GRADES, getGrade, countryToFlag } from "../lib/leaderboard";
 
 
 
@@ -75,11 +77,6 @@ async function sbCount(table, filter) {
     const total = cr.split("/").pop();
     return total && total !== "*" ? parseInt(total, 10) : null;
   } catch (e) { return null; }
-}
-function countryToFlag(code) {
-  if (!code || code.length !== 2) return "";
-  const codePoints = code.toUpperCase().split("").map(c => 127397 + c.charCodeAt(0));
-  return String.fromCodePoint(...codePoints);
 }
 
 // Détecte l'OS mobile (pour le tracking) : "ios" | "android" | "other"
@@ -157,20 +154,6 @@ function getCurrentSeason() {
   };
 }
 
-const GRADES = [
-  { min:10000, label:"GOAT",      labelEn:"GOAT",    emoji:"🐐", color:"#FFD700" },
-  { min:5000,  label:"Légende",   labelEn:"Legend",  emoji:"☄️", color:"#FF6B35" },
-  { min:2000,  label:"Titulaire", labelEn:"Starter", emoji:"🐺", color:"#00B4D8" },
-  { min:500,   label:"Espoir",    labelEn:"Rookie",  emoji:"👦🏻", color:"#2EC4B6" },
-  { min:0,     label:"Amateur",   labelEn:"Amateur", emoji:"🏖️", color:"#8D99AE" },
-];
-
-function getGrade(score) {
-  const g = GRADES.find(function(g){ return score >= g.min; }) || GRADES[GRADES.length-1];
-  let lang = "fr";
-  try { lang = localStorage.getItem("bb_lang") || "fr"; } catch {}
-  return { ...g, label: lang === "fr" ? g.label : (g.labelEn || g.label) };
-}
 // Grade juste au-dessus du score donné (null si déjà GOAT). Sert à la « carotte »
 // de progression : X pts avant le prochain grade.
 function getNextGrade(score) {
