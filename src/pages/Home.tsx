@@ -50,6 +50,14 @@ const Home = () => {
   // Overlay GOAT Guess (Akinator foot)
   const [goatGuessOpen, setGoatGuessOpen] = useState(false);
   const [findPlayerOpen, setFindPlayerOpen] = useState(false);
+  // Devinette du jour : elle n'existait que sur mobile (pop-up dans Index.tsx),
+  // le desktop n'y avait aucun accès. Ouverte depuis le lobby.
+  const [devinetteOpen, setDevinetteOpen] = useState(false);
+  useEffect(() => {
+    const onDevinette = () => setDevinetteOpen(true);
+    window.addEventListener("goatfc:open-devinette", onDevinette);
+    return () => window.removeEventListener("goatfc:open-devinette", onDevinette);
+  }, []);
 
   // LePont émet cet event quand l'utilisateur quitte la partie autolaunchée
   // (← interne, fin de partie). On ferme l'overlay pour revenir à la landing.
@@ -362,6 +370,7 @@ const Home = () => {
       {/* GOAT Guess — Akinator foot (overlay plein écran, indépendant de LePont) */}
       {goatGuessOpen && <GoatGuess onClose={() => setGoatGuessOpen(false)} />}
       {findPlayerOpen && <FindPlayer onClose={() => setFindPlayerOpen(false)} />}
+      {devinetteOpen && <FindPlayer daily onClose={() => setDevinetteOpen(false)} />}
     </div>
   );
 };

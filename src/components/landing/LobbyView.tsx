@@ -419,6 +419,25 @@ export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels, onOpenFriends }: Pr
           </div>
         </form>
 
+        {/* Devinette du jour — un joueur mystère par jour, partagé par tous.
+            Elle n'était accessible que par le pop-up mobile ; ici c'est un accès
+            permanent, côté desktop comme côté mobile. */}
+        <button
+          onClick={() => window.dispatchEvent(new CustomEvent("goatfc:open-devinette"))}
+          className="w-full flex items-center gap-3 p-4 rounded-2xl border border-[#E0B85C]/40 bg-gradient-to-br from-[#E0B85C]/15 to-[#E0B85C]/5 hover:border-[#E0B85C]/70 transition-colors text-left"
+        >
+          <span className="text-2xl leading-none">🕵️</span>
+          <span className="flex-1 min-w-0">
+            <span className="block font-display text-base tracking-[0.15em] text-[#F2D680]">
+              {tr("DEVINETTE DU JOUR", "DAILY RIDDLE", "RÄTSEL DES TAGES", "INDOVINELLO DEL GIORNO", "ADIVINHA DO DIA")}
+            </span>
+            <span className="block text-xs text-white/45 mt-0.5">
+              {tr("Un joueur mystère à deviner", "A mystery player to guess", "Ein Rätselspieler zu erraten", "Un giocatore misterioso da indovinare", "Um jogador misterioso para adivinhar")}
+            </span>
+          </span>
+          <span className="text-[#F2D680] font-display text-lg">›</span>
+        </button>
+
         {/* Leaderboard preview */}
         <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-4">
           <div className="flex items-center justify-between mb-3">
