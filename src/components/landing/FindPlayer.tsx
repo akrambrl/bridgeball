@@ -1019,8 +1019,10 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
             {won && (
               <div style={{ fontFamily: "Anton, sans-serif", fontSize: 40, color: "#F2D680", letterSpacing: 1, marginTop: 8, textShadow: "0 2px 16px rgba(224,184,92,.4)" }}>+{lastEarned.toLocaleString("fr-FR")} PTS</div>
             )}
-            {/* Bandeau « BUT ! » — joueur trouvé : la victoire est ici sans ambiguïté. */}
-            {won && <WinBanner maxWidth={340} marginTop={12} />}
+            {/* Bandeau animé : séquence de but si trouvé, séquence de défaite
+                sinon. C'est le seul mode où gagner et perdre sont tous deux
+                sans ambiguïté. */}
+            <WinBanner maxWidth={340} marginTop={12} lose={!won} />
             <div style={{ fontSize: 14, fontWeight: 800, color: "#FF8A2A", marginTop: 6 }}>
               {daily
                 ? "🔥 " + tr("Série", "Streak", "Serie", "Serie", "Sequência") + " : " + dailyStreak + " " + tr(dailyStreak > 1 ? "jours" : "jour", dailyStreak > 1 ? "days" : "day", dailyStreak > 1 ? "Tage" : "Tag", dailyStreak > 1 ? "giorni" : "giorno", dailyStreak > 1 ? "dias" : "dia") + (dailyStreak > 1 && dailyStreak === dailyBest ? "  ·  🏅 " + tr("Record !", "Best!", "Rekord!", "Record!", "Recorde!") : "  ·  🏅 " + tr("Record", "Best", "Rekord", "Record", "Recorde") + " : " + dailyBest)
