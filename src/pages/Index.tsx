@@ -98,7 +98,15 @@ const Index = () => {
     } catch { /* noop */ }
   }, [isMobile]);
 
-  if (!isMobile) return <Home />;
+  // Le tableau de bord privé (?stats=…) vit dans LePont. Sur desktop on rend
+  // normalement <Home />, donc le paramètre n'était jamais lu et le lien
+  // retombait sur le jeu. On monte LePont dès que le paramètre est présent ;
+  // c'est LePont qui valide le code, comme sur mobile.
+  const wantsStats = (() => {
+    try { return new URLSearchParams(window.location.search).has("stats"); } catch { return false; }
+  })();
+
+  if (!isMobile && !wantsStats) return <Home />;
 
   return (
     <>
