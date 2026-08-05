@@ -125,3 +125,73 @@ export function trackPlay(mode: PlayMode, online = false): void {
     /* jamais bloquant */
   }
 }
+
+// ─── Temps passé dans l'app ───────────────────────────────────────────────────
+// Rien ne le mesurait : bb_presence n'est qu'un upsert d'UNE ligne par appareil
+// (last_seen écrasé, aucun historique), et les événements de partie sont trop
+// espacés pour en déduire une durée.
+//
+// bb_events n'a que (player_id, type, created_at) : on encode donc la durée dans
+// le type, "dur_<secondes>", et on écrit UNE ligne par session — pas de
+// battement de cœur régulier, qui multiplierait les lignes par 20 et finirait
+// par étouffer la fenêtre de lecture du tableau de bord.
+//
+// Le temps compté est le temps réellement VISIBLE : l'onglet en arrière-plan ou
+// l'app minimisée ne comptent pas.
+
+const MIN_SESSION_S = 5;        // en dessous, c'est du bruit (rebond, rechargement)
+const MAX_SESSION_S = 4 * 3600; // garde-fou : onglet oublié ouvert, horloge qui saute
+
+let visibleSince: number | null = null;
+let pendingMs = 0;
+let timeInstalled = false;
+
+function flushDuration(): void {
+  try {
+    if (visibleSince != null) {
+      pendingMs += Date.now() - visibleSince;
+      visibleSince = null;
+    }
+    let s = Math.round(pendingMs / 1000);
+    pendingMs = 0;
+    if (!isFinite(s) || s < MIN_SESSION_S) return;
+    if (s > MAX_SESSION_S) s = MAX_SESSION_S;
+    fetch(SB_URL + "/rest/v1/bb_events", {
+      method: "POST",
+      headers: {
+        apikey: SB_KEY,
+        Authorization: "Bearer " + SB_KEY,
+        "Content-Type": "application/json",
+        Prefer: "return=minimal",
+      },
+      body: JSON.stringify({ player_id: getPlayerId(), type: "dur_" + s }),
+      keepalive: true, // la requête doit survivre à la fermeture de l'onglet
+    }).catch(() => {});
+  } catch {
+    /* jamais bloquant */
+  }
+}
+
+/**
+ * Démarre la mesure du temps passé dans l'app. Idempotent : les appels suivants
+ * ne font rien. À appeler une fois au montage.
+ */
+export function trackTime(): void {
+  try {
+    if (timeInstalled) return;
+    timeInstalled = true;
+    if (document.visibilityState === "visible") visibleSince = Date.now();
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") {
+        if (visibleSince == null) visibleSince = Date.now();
+      } else {
+        flushDuration(); // l'app passe en arrière-plan = fin de session
+      }
+    });
+    // pagehide couvre la fermeture/navigation, y compris le bfcache iOS où
+    // "unload" ne se déclenche pas.
+    window.addEventListener("pagehide", flushDuration);
+  } catch {
+    /* jamais bloquant */
+  }
+}

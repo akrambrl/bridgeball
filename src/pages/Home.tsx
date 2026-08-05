@@ -8,11 +8,12 @@ import { FaqView } from "@/components/landing/FaqView";
 import { AboutView } from "@/components/landing/AboutView";
 import { DifficultyModal, type Difficulty } from "@/components/landing/DifficultyModal";
 import { ModeChoiceModal, type PlayMode } from "@/components/landing/ModeChoiceModal";
-import { MatchmakingOverlay, pickOpponent } from "@/components/landing/MatchmakingOverlay";
+import { MatchmakingOverlay } from "@/components/landing/MatchmakingOverlay";
 import { CountdownOverlay } from "@/components/landing/CountdownOverlay";
 import { GoatGuess } from "@/components/landing/GoatGuess";
 import { FindPlayer } from "@/components/landing/FindPlayer";
 import { tr } from "@/lib/lang";
+import { trackTime } from "@/lib/track";
 
 export type GameMode = "pont" | "chaine" | "grid" | "guess";
 
@@ -50,6 +51,9 @@ const Home = () => {
   // Overlay GOAT Guess (Akinator foot)
   const [goatGuessOpen, setGoatGuessOpen] = useState(false);
   const [findPlayerOpen, setFindPlayerOpen] = useState(false);
+  // Mesure du temps passé sur l'app côté desktop. LePont fait de même côté
+  // mobile ; trackTime est idempotent, les deux appels ne se marchent pas dessus.
+  useEffect(() => { trackTime(); }, []);
   // Devinette du jour : elle n'existait que sur mobile (pop-up dans Index.tsx),
   // le desktop n'y avait aucun accès. Ouverte depuis le lobby.
   const [devinetteOpen, setDevinetteOpen] = useState(false);
@@ -176,9 +180,8 @@ const Home = () => {
     setPlaying(true);
   };
 
-  // Après le choix Solo/Online/Bot/Multi :
-  // - online : matchmaking visuel (faux adversaire random, diff random)
-  // - bot    : skip matchmaking → countdown direct avec bot random
+  // Après le choix Solo/Online/Multi :
+  // - online : matchmaking visuel (adversaire random, diff random)
   // - solo/multi : on passe au choix de difficulté
   const onModePicked = (mode: PlayMode) => {
     if (!pendingMode) return;
@@ -188,14 +191,6 @@ const Home = () => {
       const diffs: Difficulty[] = ["facile", "moyen", "expert"];
       const randomDiff = diffs[Math.floor(Math.random() * diffs.length)];
       setMatchmaking({ game, diff: randomDiff });
-      return;
-    }
-    if (mode === "bot") {
-      const diffs: Difficulty[] = ["facile", "moyen", "expert"];
-      const randomDiff = diffs[Math.floor(Math.random() * diffs.length)];
-      const opponent = pickOpponent();
-      setOnlineOpponent(opponent);
-      setCountdown({ game, diff: randomDiff, bot: opponent });
       return;
     }
     if (mode === "daily") {
