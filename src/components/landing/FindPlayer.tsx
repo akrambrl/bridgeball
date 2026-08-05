@@ -7,6 +7,7 @@ import { trackPlay } from "../../lib/track";
 import { isNative, hapticLight, hapticHeavy, hapticSuccess } from "@/lib/native";
 import { CLUB_SPELLS, wereTeammates, mightHaveBeenTeammates, hasSpells } from "@/lib/clubSpells";
 import { recordDailyDone, displayStreak } from "@/lib/streak";
+import { WinBanner } from "./WinBanner";
 
 const SPELL_NAMES = Object.keys(CLUB_SPELLS);
 
@@ -1018,6 +1019,8 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
             {won && (
               <div style={{ fontFamily: "Anton, sans-serif", fontSize: 40, color: "#F2D680", letterSpacing: 1, marginTop: 8, textShadow: "0 2px 16px rgba(224,184,92,.4)" }}>+{lastEarned.toLocaleString("fr-FR")} PTS</div>
             )}
+            {/* Bandeau « BUT ! » — joueur trouvé : la victoire est ici sans ambiguïté. */}
+            {won && <WinBanner maxWidth={340} marginTop={12} />}
             <div style={{ fontSize: 14, fontWeight: 800, color: "#FF8A2A", marginTop: 6 }}>
               {daily
                 ? "🔥 " + tr("Série", "Streak", "Serie", "Serie", "Sequência") + " : " + dailyStreak + " " + tr(dailyStreak > 1 ? "jours" : "jour", dailyStreak > 1 ? "days" : "day", dailyStreak > 1 ? "Tage" : "Tag", dailyStreak > 1 ? "giorni" : "giorno", dailyStreak > 1 ? "dias" : "dia") + (dailyStreak > 1 && dailyStreak === dailyBest ? "  ·  🏅 " + tr("Record !", "Best!", "Rekord!", "Record!", "Recorde!") : "  ·  🏅 " + tr("Record", "Best", "Rekord", "Record", "Recorde") + " : " + dailyBest)

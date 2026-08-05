@@ -4,6 +4,7 @@ import { trackPlay, pingPresence, pingLive, trackTime } from "../lib/track";
 import { hapticSuccess, hapticError } from "../lib/native";
 import { pickOpponent, avatarFor } from "../lib/opponents";
 import { displayStreak } from "../lib/streak";
+import { WinBanner } from "./landing/WinBanner";
 // Barème de grades et drapeaux : définis une seule fois, partagés avec le desktop.
 import { GRADES, getGrade, countryToFlag } from "../lib/leaderboard";
 
@@ -14142,6 +14143,11 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
       <div style={{zIndex:1,padding:"16px 20px 0",textAlign:"center"}}>
         <img src={img} style={{height:"clamp(204px,51vw,289px)",objectFit:"contain",objectPosition:"center bottom",animation:"slideInRight .5s ease both",filter:"drop-shadow(0 4px 20px rgba(0,230,118,.3))",display:"block",margin:"0 auto"}} alt=""/>
         <div style={{fontFamily:G.heading,fontSize:"clamp(20px,5.5vw,32px)",color:isNewRecord?G.gold:G.white,letterSpacing:2,animation:"fadeUp .4s ease .15s both",marginTop:4}}>{isNewRecord?tr("NOUVEAU RECORD !","NEW RECORD!","NEUER REKORD!","NUOVO RECORD!","NOVO RECORDE!"):isChain?tr("TEMPS ÉCOULÉ !","TIME'S UP!","ZEIT ABGELAUFEN!","TEMPO SCADUTO!","TEMPO ESGOTADO!"):""}</div>
+        {/* Bandeau « BUT ! » — uniquement sur un vrai exploit. En solo, The Plug
+            et The Mercato n'ont pas de victoire : le record personnel battu EST
+            le moment de triomphe. Le déclencher à chaque fin de partie viderait
+            l'effet de sa valeur. */}
+        {isNewRecord && <WinBanner maxWidth={380} marginTop={12} />}
         <div style={{fontSize:"clamp(16px,4.5vw,22px)",color:G.white,fontWeight:800,marginTop:isNewRecord||isChain?6:16,animation:"fadeUp .4s ease .25s both",textTransform:"uppercase",letterSpacing:1,textShadow:"0 2px 10px rgba(0,0,0,.4)"}}>{(function(){
           const TAUNTS={
             win:{
