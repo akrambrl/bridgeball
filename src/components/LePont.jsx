@@ -877,9 +877,6 @@ function isRetiredPlayer(name) {
 const SPLASH_IMG = "/splash.webp"; // WebP : 229 Ko vs 1,76 Mo en PNG
 
 
-const WIN_IMGS = ["/win1.png", "/win2.png", "/win3.png", "/win4.png", "/win5.png"];
-const LOSE_IMGS = ["/lose1.png", "/lose2.png", "/lose3.png", "/lose4.png"];
-const randomImg = (arr) => arr[Math.floor(Math.random()*arr.length)];
 const PLUG_CARD_IMG = "/plug-card.png";
 const MERCATO_CARD_IMG = "/mercato-card.png";
 const GRID_CARD_IMG = "/grid-card.png";
@@ -2714,7 +2711,6 @@ export default function LePont() {
   };
   const [showSplash, setShowSplash] = useState(true);
   const [screen, setScreen] = useState("home");
-  const [resultImg, setResultImg] = useState(null);
   const [gameMode, setGameMode] = useState("pont");
   // ─── Home Carousel State (0=DUEL/GOAT BATTLE, 1=GRID, 2=MERCATO, 3=PLUG, 4=GUESS) ──
   const [homeCardIndex, setHomeCardIndex] = useState(() => {
@@ -3101,7 +3097,6 @@ export default function LePont() {
   const [duelSpin, setDuelSpin] = useState(false);       // animation "machine à sous" en cours
   const [duelReel1, setDuelReel1] = useState(null);      // club défilant (reel du haut) pendant le spin
   const [duelReel2, setDuelReel2] = useState(null);      // club défilant (reel du bas) pendant le spin
-  const [duelEndImg, setDuelEndImg] = useState(null);    // visuel joueur (célébration/défaite) à l'écran final
   const [duelWrong, setDuelWrong] = useState(false);     // flash "mauvaise réponse"
   const duelWrongToRef = React.useRef(null);
   const duelRoomRef = React.useRef(null);                // room live pour le séquenceur (host)
@@ -3256,7 +3251,7 @@ export default function LePont() {
       host_answer:null, host_answer_ms:null, round_pts:null,
       host_score:0, host_correct:0, host_fast:0, host_rounds:0,
     };
-    duelRoomRef.current = room; setDuelRoom(room); setDuelEndImg(null);
+    duelRoomRef.current = room; setDuelRoom(room);
     setDuelScreen("playing");
   }
 
@@ -3295,7 +3290,7 @@ export default function LePont() {
       host_score:0, host_correct:0, host_fast:0, host_rounds:0,
       guest_score:0,
     };
-    duelRoomRef.current = room; setDuelRoom(room); setDuelEndImg(null);
+    duelRoomRef.current = room; setDuelRoom(room);
     setDuelScreen("playing");
   }
 
@@ -3524,16 +3519,6 @@ export default function LePont() {
       if(duelSpinIvRef.current){ clearTimeout(duelSpinIvRef.current); duelSpinIvRef.current=null; }
     };
   }, [duelRoom && duelRoom.phase, duelRoom && duelRoom.round]);
-
-  // Visuel de fin (célébration / défaite) — choisi une seule fois à l'arrivée sur l'écran final
-  useEffect(function(){
-    if(duelScreen==="finished" && duelRoom && !duelEndImg){
-      const iWon = duelRoom.winner_id && duelRoom.winner_id===playerId;
-      const draw = !duelRoom.winner_id;
-      setDuelEndImg(randomImg((iWon || draw) ? WIN_IMGS : LOSE_IMGS));
-    }
-    if(duelScreen!=="finished" && duelEndImg) setDuelEndImg(null);
-  }, [duelScreen, duelRoom && duelRoom.winner_id]);
 
   // Horloge locale pour les décomptes (250ms)
   useEffect(function(){
@@ -6425,7 +6410,7 @@ export default function LePont() {
       if (!a.abandoned && b.abandoned) return -1;
       return (b.score||0)-(a.score||0);
     });
-    const meInRoom = players.find(function(p){return p.id===playerId;}); const myRankInRoom = sorted.findIndex(function(p){return p.id===playerId;}); const roomImgs = myRankInRoom === 0 ? WIN_IMGS : LOSE_IMGS; setResultImg(roomImgs[Math.floor(Math.random()*roomImgs.length)]); setDuelResult({isRoom:true, roomId:r.id, hostId:r.host_id, code:r.code, diff:r.diff, rounds:r.rounds, players:sorted, mode:r.mode, myAbandoned: meInRoom && meInRoom.abandoned === true});
+    const meInRoom = players.find(function(p){return p.id===playerId;}); setDuelResult({isRoom:true, roomId:r.id, hostId:r.host_id, code:r.code, diff:r.diff, rounds:r.rounds, players:sorted, mode:r.mode, myAbandoned: meInRoom && meInRoom.abandoned === true});
     setActiveDuel(null);
     activeDuelRef.current = null;
     setRoom(null);
@@ -9215,7 +9200,7 @@ export default function LePont() {
               {/* Hero + anneau lumineux */}
               <div style={{position:"relative",display:"flex",alignItems:"center",justifyContent:"center"}}>
                 <div style={{position:"absolute",width:"min(260px,60vw)",height:"min(260px,60vw)",borderRadius:"50%",background:"radial-gradient(circle, "+accent+"33, transparent 66%)",filter:"blur(4px)"}}/>
-                <img src={duelEndImg || WIN_IMGS[0]} alt="" style={{position:"relative",height:"min(240px,32vh)",width:"auto",objectFit:"contain",filter:"drop-shadow(0 18px 34px rgba(0,0,0,.65))"}}/>
+                <div style={{position:"relative",width:"100%"}}><WinBanner maxWidth={360} marginTop={0} lose={!(iWon||draw)} /></div>
               </div>
               {room.bot ? (
                 /* Partie rapide : on affiche le résultat ET les deux scores —
@@ -9265,7 +9250,7 @@ export default function LePont() {
       body = (
         <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",alignItems:"center",padding:"24px",gap:16,maxWidth:480,margin:"0 auto",width:"100%"}}>
           <div style={{position:"relative",marginBottom:4}}>
-            <img src={duelEndImg || (iWon||draw?WIN_IMGS[0]:LOSE_IMGS[0])} alt="" style={{height:190,width:"auto",objectFit:"contain",filter:"drop-shadow(0 16px 30px rgba(0,0,0,.6))"}}/>
+            <WinBanner maxWidth={360} marginTop={0} lose={!(iWon||draw)} />
             <div style={{position:"absolute",bottom:-6,left:"50%",transform:"translateX(-50%)",fontSize:40}}>{draw?"🤝":iWon?"🏆":""}</div>
           </div>
           <div style={{fontFamily:G.heading,fontSize:34,letterSpacing:1,color:draw?"#FFD600":iWon?"#00E676":"#FF6B35",textAlign:"center"}}>
@@ -10755,7 +10740,7 @@ export default function LePont() {
             {iAbandoned?(tr("ABANDON","FORFEIT","AUFGABE","RESA","DESISTÊNCIA")):(myRank===1?(tr("VICTOIRE !","VICTORY!","SIEG!","VITTORIA!","VITÓRIA!")):myRank===2?(tr("2ÈME PLACE","2ND PLACE","2. PLATZ","2° POSTO","2º LUGAR")):myRank===3?(tr("3ÈME PLACE","3RD PLACE","3. PLATZ","3° POSTO","3º LUGAR")):(tr("RÉSULTATS","RESULTS","ERGEBNISSE","RISULTATI","RESULTADOS")))}
           </div>
           <div style={{fontSize:18,color:iAbandoned?"#fff":(myRank===1?G.gold:"#fff"),marginTop:12,fontWeight:800,padding:"0 16px",lineHeight:1.4,textAlign:"center",animation:"popIn .6s cubic-bezier(.22,1,.36,1) .4s both",textShadow:myRank===1&&!iAbandoned?"0 0 20px rgba(255,214,0,.4)":"none"}}>{msg}</div>
-          {!iAbandoned && resultImg && <img src={resultImg} style={{width:"60%",maxWidth:220,margin:"8px auto",display:"block",objectFit:"contain"}} />}
+          {!iAbandoned && <WinBanner maxWidth={300} marginTop={10} lose={myRank!==1} />}
         </div>
         <div style={{...sheet,borderRadius:"28px 28px 0 0"}}>
           {duelResult.players.map(function(p,i){
@@ -14123,7 +14108,7 @@ export default function LePont() {
   );
 
   // ── FINAL ──
-const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc > 0 ? WIN_IMGS : LOSE_IMGS)[0];    return (    <div style={{...shell,animation:"fadeUp .4s ease",overflow:isDesktop?"visible":"auto"}} key={isChain?"chainEnd":"final"}>
+const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{...shell,animation:"fadeUp .4s ease",overflow:isDesktop?"visible":"auto"}} key={isChain?"chainEnd":"final"}>
       {openNotifBanner}
       {pseudoModal}
       {recoveryCodeAfterCreationModal}
@@ -14144,13 +14129,8 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
         <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.45)"}}/>
       </div>
       <div style={{zIndex:1,padding:"16px 20px 0",textAlign:"center"}}>
-        <img src={img} style={{height:"clamp(204px,51vw,289px)",objectFit:"contain",objectPosition:"center bottom",animation:"slideInRight .5s ease both",filter:"drop-shadow(0 4px 20px rgba(0,230,118,.3))",display:"block",margin:"0 auto"}} alt=""/>
+        <WinBanner maxWidth={380} marginTop={0} lose={sc <= 0} />
         <div style={{fontFamily:G.heading,fontSize:"clamp(20px,5.5vw,32px)",color:isNewRecord?G.gold:G.white,letterSpacing:2,animation:"fadeUp .4s ease .15s both",marginTop:4}}>{isNewRecord?tr("NOUVEAU RECORD !","NEW RECORD!","NEUER REKORD!","NUOVO RECORD!","NOVO RECORDE!"):isChain?tr("TEMPS ÉCOULÉ !","TIME'S UP!","ZEIT ABGELAUFEN!","TEMPO SCADUTO!","TEMPO ESGOTADO!"):""}</div>
-        {/* Bandeau « BUT ! » — uniquement sur un vrai exploit. En solo, The Plug
-            et The Mercato n'ont pas de victoire : le record personnel battu EST
-            le moment de triomphe. Le déclencher à chaque fin de partie viderait
-            l'effet de sa valeur. */}
-        {isNewRecord && <WinBanner maxWidth={380} marginTop={12} />}
         <div style={{fontSize:"clamp(16px,4.5vw,22px)",color:G.white,fontWeight:800,marginTop:isNewRecord||isChain?6:16,animation:"fadeUp .4s ease .25s both",textTransform:"uppercase",letterSpacing:1,textShadow:"0 2px 10px rgba(0,0,0,.4)"}}>{(function(){
           const TAUNTS={
             win:{
@@ -14349,7 +14329,7 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
         <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.45)"}}/>
       </div>
         <div style={{zIndex:1,padding:"32px 20px 16px",textAlign:"center"}}>
-          <div style={{fontSize:52,marginBottom:8}}>{iAbandoned?"🏳️":(myRank<=3?medals[myRank-1]:myRank+"ème")}</div> {!iAbandoned && (myRank===1?WIN_IMGS:LOSE_IMGS)[Math.floor(Date.now()%(myRank===1?WIN_IMGS:LOSE_IMGS).length)] && (   <img src={(myRank===1?WIN_IMGS:LOSE_IMGS)[Math.floor(Date.now()%(myRank===1?WIN_IMGS:LOSE_IMGS).length)]} style={{width:"60%",maxWidth:220,margin:"8px auto",display:"block",objectFit:"contain"}} /> )}
+          <div style={{fontSize:52,marginBottom:8}}>{iAbandoned?"🏳️":(myRank<=3?medals[myRank-1]:myRank+"ème")}</div> {!iAbandoned && <WinBanner maxWidth={300} marginTop={8} lose={myRank!==1} />}
           <div style={{fontFamily:G.heading,fontSize:"clamp(30px,8vw,50px)",color:iAbandoned?"#FF3D57":(myRank===1?G.gold:G.white),letterSpacing:2}}>
             {iAbandoned?(tr("ABANDON","FORFEIT","AUFGABE","RESA","DESISTÊNCIA")):(myRank===1?(tr("VICTOIRE !","VICTORY!","SIEG!","VITTORIA!","VITÓRIA!")):myRank===2?(tr("2ÈME PLACE","2ND PLACE","2. PLATZ","2° POSTO","2º LUGAR")):myRank===3?(tr("3ÈME PLACE","3RD PLACE","3. PLATZ","3° POSTO","3º LUGAR")):(tr("RÉSULTATS","RESULTS","ERGEBNISSE","RISULTATI","RESULTADOS")))}
           </div>
@@ -14439,7 +14419,7 @@ const makeResultScreen = (sc, mode, isChain) => { const img = resultImg || (sc >
       </div>
       {/* Joueur célébration duel */}
         <div style={{zIndex:1,padding:"16px 20px 0",textAlign:"center"}}>
-          <img src={won?randomImg(WIN_IMGS):randomImg(LOSE_IMGS)} style={{height:"clamp(196px,49vw,272px)",objectFit:"contain",objectPosition:"center bottom",animation:"slideInRight .5s ease both",filter:won?"drop-shadow(0 4px 20px rgba(0,230,118,.35))":"drop-shadow(0 4px 10px rgba(0,0,0,.4))",display:"block",margin:"0 auto"}} alt=""/>
+          <WinBanner maxWidth={380} marginTop={0} lose={!won && !draw} />
           <div style={{fontFamily:G.heading,fontSize:"clamp(30px,8vw,46px)",color:labelColor,letterSpacing:2,marginTop:4}}>{label}</div>
           <div style={{fontSize:"clamp(13px,3.5vw,18px)",color:G.white,fontWeight:800,marginTop:6,animation:"fadeUp .4s ease .25s both",textTransform:"uppercase",letterSpacing:1,textShadow:"0 2px 10px rgba(0,0,0,.4)"}}>{
             won
