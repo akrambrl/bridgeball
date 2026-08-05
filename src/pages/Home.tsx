@@ -13,6 +13,7 @@ import { CountdownOverlay } from "@/components/landing/CountdownOverlay";
 import { GoatGuess } from "@/components/landing/GoatGuess";
 import { FindPlayer } from "@/components/landing/FindPlayer";
 import { tr } from "@/lib/lang";
+import { trackTime } from "@/lib/track";
 
 export type GameMode = "pont" | "chaine" | "grid" | "guess";
 
@@ -50,6 +51,9 @@ const Home = () => {
   // Overlay GOAT Guess (Akinator foot)
   const [goatGuessOpen, setGoatGuessOpen] = useState(false);
   const [findPlayerOpen, setFindPlayerOpen] = useState(false);
+  // Mesure du temps passé sur l'app côté desktop. LePont fait de même côté
+  // mobile ; trackTime est idempotent, les deux appels ne se marchent pas dessus.
+  useEffect(() => { trackTime(); }, []);
   // Devinette du jour : elle n'existait que sur mobile (pop-up dans Index.tsx),
   // le desktop n'y avait aucun accès. Ouverte depuis le lobby.
   const [devinetteOpen, setDevinetteOpen] = useState(false);

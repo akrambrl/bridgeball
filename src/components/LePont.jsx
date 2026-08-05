@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
 import { PLAYERS, RETIRED_PLAYERS, GG_WC_WINNERS, GG_CL_WINNERS } from "../players.jsx";
-import { trackPlay, pingPresence, pingLive } from "../lib/track";
+import { trackPlay, pingPresence, pingLive, trackTime } from "../lib/track";
 import { hapticSuccess, hapticError } from "../lib/native";
 import { pickOpponent, avatarFor } from "../lib/opponents";
 import { displayStreak } from "../lib/streak";
@@ -2754,7 +2754,8 @@ export default function LePont() {
       const scores = await sbFetch("bb_scores?select=player_id,created_at&created_at=gte."+since+"&order=created_at.desc&limit=20000") || [];
       const events = await sbFetch("bb_events?select=player_id,created_at,type&created_at=gte."+since+"&limit=50000");
       const hasEvents = Array.isArray(events);
-      const pseudos = await sbFetch("bb_pseudos?select=player_id&limit=100000") || [];
+      // `pseudo` sert à nommer les joueurs dans la section « qui joue à quoi ».
+      const pseudos = await sbFetch("bb_pseudos?select=player_id,pseudo&limit=100000") || [];
       const duels = await sbFetch("bb_duels?select=id,created_at&created_at=gte."+since+"&limit=20000") || [];
       // Derniers comptes créés — tente avec created_at, se rabat si la colonne n'existe pas
       let recent = await sbFetch("bb_pseudos?select=pseudo,country,created_at&order=created_at.desc&limit=40");
@@ -2794,6 +2795,7 @@ export default function LePont() {
         rawEvents: hasEvents ? events : null,
         hasEvents: hasEvents,
         regIds: pseudos.map(function(p){ return p.player_id; }),
+        pseudoById: pseudos.reduce(function(acc,p){ if (p.pseudo) acc[p.player_id] = p.pseudo; return acc; }, {}),
         accounts: pseudos.length,
         rawDuels: duels.map(function(d){ return d.created_at; }),
         recent: recent, recentHasDate: recentHasDate, allTime: allTime,
@@ -2832,6 +2834,36 @@ export default function LePont() {
       }
     }
     const totalPlays = playsByMode.pont + playsByMode.chaine + playsByMode.grid + playsByMode.guess + playsByMode.battle + playsByMode.reveal + playsByMode.devinette;
+    // Qui joue à quoi — répartition des parties par JOUEUR sur la fenêtre.
+    // Un joueur sans pseudo (jamais inscrit) apparaît sous son identifiant
+    // d'appareil : c'est tout ce qu'on sait de lui.
+    const perPlayer = {};
+    if (hasEvents) {
+      for (const r of eventsW) {
+        if (!r.player_id || !r.type || r.type.indexOf("play_") !== 0) continue;
+        const online = r.type.slice(-7) === "_online";
+        const m = online ? r.type.slice(5, -7) : r.type.slice(5);
+        if (playsByMode[m] === undefined) continue;
+        const p = perPlayer[r.player_id] || (perPlayer[r.player_id] = { pid: r.player_id, n: 0, modes: {} });
+        p.n++; p.modes[m] = (p.modes[m] || 0) + 1;
+      }
+    }
+    const players = Object.keys(perPlayer).map(function(k){ return perPlayer[k]; }).sort(function(a,b){ return b.n - a.n; });
+    // Temps passé dans l'app — événements "dur_<secondes>", 1 par session
+    // (voir trackTime dans lib/track.ts). Aucune donnée avant le déploiement
+    // qui a introduit la mesure : on l'affiche explicitement plutôt que 0.
+    let sessions = 0, timeTotalS = 0;
+    const timeByPlayer = {};
+    if (hasEvents) {
+      for (const r of eventsW) {
+        if (!r.type || r.type.indexOf("dur_") !== 0) continue;
+        const s = parseInt(r.type.slice(4), 10);
+        if (!isFinite(s) || s <= 0) continue;
+        sessions++; timeTotalS += s;
+        timeByPlayer[r.player_id] = (timeByPlayer[r.player_id] || 0) + s;
+      }
+    }
+    const timePlayers = Object.keys(timeByPlayer).length;
     // Répartition par OS (pings "open_<os>") sur la fenêtre — 1 appareil compté une fois
     const osByDevice = {};
     if (hasEvents) { for (const r of eventsW) { if (r.type && r.type.indexOf("open_") === 0) osByDevice[r.player_id] = r.type.slice(5); } }
@@ -2852,7 +2884,8 @@ export default function LePont() {
     }
     return { range: range, days: days, activeWindow: activeSet.size, anonWindow: anonSet.size,
       gamesWindow: gamesW, duelsWindow: duelsW, playsByMode: playsByMode, totalPlays: totalPlays,
-      playsSolo: playsSolo, playsOnline: playsOnline, osCount: osCount, hasEvents: hasEvents };
+      playsSolo: playsSolo, playsOnline: playsOnline, osCount: osCount, hasEvents: hasEvents,
+      players: players, sessions: sessions, timeTotalS: timeTotalS, timePlayers: timePlayers };
   }, [statsData, statsRange]);
   // ─── Android Back Button Handler ──
   // Intercepte la touche retour Android pendant une partie pour éviter de quitter par accident.
@@ -5009,6 +5042,8 @@ export default function LePont() {
   // Le drapeau anti-doublon n'est posé qu'après un POST réussi (voir pingPresence),
   // pour ne pas "perdre" un appareil dont le 1er ping de la journée aurait échoué.
   useEffect(function(){ pingPresence(); }, []);
+  // Mesure du temps réellement passé dans l'app (voir trackTime).
+  useEffect(function(){ trackTime(); }, []);
   // Battement "en ligne maintenant" : toutes les 30 s tant que l'app est visible.
   useEffect(function(){
     pingLive();
@@ -11826,6 +11861,90 @@ export default function LePont() {
                           );
                         })}
                         <div style={{textAlign:"right",fontSize:11,color:"rgba(255,255,255,.35)",fontWeight:600,paddingRight:4}}>{total} parties lancées au total</div>
+                      </div>
+                    );
+                  })()}
+                  {/* ─── QUI JOUE À QUOI (fenêtre) ───
+                      Les sections précédentes disent COMBIEN de parties par mode,
+                      pas QUI les a jouées. Ici : un joueur par ligne, ses parties
+                      et son détail par mode. */}
+                  {statsData.hasEvents && (function(){
+                    const all = v.players || [];
+                    if (!all.length) return null;
+                    const pseudoById = statsData.pseudoById || {};
+                    const shown = all.slice(0, 15);
+                    const named = all.filter(function(p){ return pseudoById[p.pid]; }).length;
+                    const emojiOf = {};
+                    PLAY_MODES_META.forEach(function(m){ emojiOf[m.key] = m; });
+                    return (
+                      <div style={{marginBottom:24}}>
+                        <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.4)",fontWeight:800,textTransform:"uppercase",marginBottom:4,paddingLeft:4}}>👤 Qui joue à quoi · {v.range} j</div>
+                        <div style={{fontSize:11,color:"rgba(255,255,255,.3)",fontWeight:600,marginBottom:10,paddingLeft:4,lineHeight:1.5}}>{all.length} joueurs · {named} inscrits, {all.length - named} sans compte (identifiant d'appareil).</div>
+                        <div style={{display:"flex",flexDirection:"column",gap:10}}>
+                          {shown.map(function(p,i){
+                            const pseudo = pseudoById[p.pid];
+                            const modes = Object.keys(p.modes).map(function(k){ return {k:k, n:p.modes[k], meta:emojiOf[k]}; }).sort(function(a,b){ return b.n - a.n; });
+                            return (
+                              <div key={p.pid} style={{background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",borderRadius:12,padding:"10px 12px"}}>
+                                <div style={{display:"flex",alignItems:"baseline",gap:8}}>
+                                  <span style={{fontSize:11,color:"rgba(255,255,255,.3)",fontWeight:800,minWidth:16}}>{i+1}</span>
+                                  <span style={{fontSize:13,fontWeight:800,color:pseudo?"#fff":"rgba(255,255,255,.5)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{pseudo ? "@"+pseudo : "anonyme · "+p.pid}</span>
+                                  <span style={{flex:1}}/>
+                                  <span style={{fontSize:13,fontWeight:800,color:"#00E676",flexShrink:0}}>{p.n}</span>
+                                </div>
+                                <div style={{display:"flex",flexWrap:"wrap",gap:6,marginTop:7}}>
+                                  {modes.map(function(m){
+                                    const meta = m.meta || {emoji:"•",label:m.k,color:"#888"};
+                                    return <span key={m.k} style={{fontSize:11,fontWeight:700,color:meta.color,background:meta.color+"1a",border:"1px solid "+meta.color+"33",borderRadius:999,padding:"3px 8px",whiteSpace:"nowrap"}}>{meta.emoji} {meta.label} · {m.n}</span>;
+                                  })}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        {all.length > shown.length && (
+                          <div style={{textAlign:"right",fontSize:11,color:"rgba(255,255,255,.35)",fontWeight:600,paddingRight:4,marginTop:8}}>+ {all.length - shown.length} autres joueurs</div>
+                        )}
+                      </div>
+                    );
+                  })()}
+                  {/* ─── TEMPS PASSÉ DANS L'APP (fenêtre) ───
+                      Alimenté par les événements "dur_<s>" (trackTime). Rien
+                      n'était mesuré avant : tant qu'aucune session n'est
+                      remontée, on le dit au lieu d'afficher 0. */}
+                  {statsData.hasEvents && (function(){
+                    const fmtDur = function(sec){
+                      if (sec < 60) return Math.round(sec) + " s";
+                      const m = Math.floor(sec/60), s = Math.round(sec%60);
+                      if (m < 60) return m + " min" + (s ? " " + s + " s" : "");
+                      return Math.floor(m/60) + " h " + String(m%60).padStart(2,"0");
+                    };
+                    const title = <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.4)",fontWeight:800,textTransform:"uppercase",marginBottom:10,paddingLeft:4}}>⏱️ Temps passé dans l'app · {v.range} j</div>;
+                    if (!v.sessions) {
+                      return (
+                        <div style={{marginBottom:24}}>
+                          {title}
+                          <div style={{fontSize:12.5,color:"rgba(255,255,255,.45)",background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.07)",borderRadius:12,padding:"14px",lineHeight:1.5}}>La mesure du temps démarre avec ce déploiement — aucune session enregistrée avant. Reviens dans quelques heures.</div>
+                        </div>
+                      );
+                    }
+                    const cards = [
+                      { v: fmtDur(v.timeTotalS / v.sessions), label:"par session", color:"#00E676" },
+                      { v: fmtDur(v.timeTotalS / Math.max(1, v.timePlayers)), label:"par joueur", color:"#60a5fa" },
+                      { v: fmtDur(v.timeTotalS), label:"temps cumulé", color:"#FFD600" },
+                    ];
+                    return (
+                      <div style={{marginBottom:24}}>
+                        {title}
+                        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10}}>
+                          {cards.map(function(c,i){return(
+                            <div key={i} style={{background:"linear-gradient(150deg, "+c.color+"1f, rgba(255,255,255,.03) 60%, rgba(0,0,0,.2))",border:"1px solid "+c.color+"44",borderRadius:16,padding:"14px 8px",textAlign:"center"}}>
+                              <div style={{fontFamily:G.heading,fontSize:24,color:c.color,lineHeight:1.1}}>{c.v}</div>
+                              <div style={{fontSize:9.5,letterSpacing:1,color:"rgba(255,255,255,.55)",fontWeight:800,textTransform:"uppercase",marginTop:6}}>{c.label}</div>
+                            </div>
+                          );})}
+                        </div>
+                        <div style={{fontSize:11,color:"rgba(255,255,255,.3)",fontWeight:600,lineHeight:1.5,marginTop:8,paddingLeft:4}}>{v.sessions} sessions · {v.timePlayers} joueurs. Seul le temps écran réel compte : app en arrière-plan exclue.</div>
                       </div>
                     );
                   })()}
