@@ -14,6 +14,18 @@ const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 // Code secret du tableau de bord privé : goatfc.fr/?stats=<CODE>
 const STATS_CODE = "akram-goat-2610";
 
+// Modes suivis par trackPlay() — sert au tableau de bord privé (répartition des
+// parties par mode). L'ordre n'a pas d'importance : l'affichage trie par volume.
+const PLAY_MODES_META = [
+  { key:"battle",    label:"GOAT Battle",       emoji:"⚡",  color:"#FFC93C" },
+  { key:"pont",      label:"The Plug",          emoji:"🔗",  color:"#00E676" },
+  { key:"chaine",    label:"The Mercato",       emoji:"🔁",  color:"#FF8A2A" },
+  { key:"reveal",    label:"Trouve le joueur",  emoji:"🕵️", color:"#E0B85C" },
+  { key:"devinette", label:"Devinette du jour", emoji:"🗓️", color:"#F2D680" },
+  { key:"grid",      label:"GOAT Grid",         emoji:"▦",   color:"#3DA5FF" },
+  { key:"guess",     label:"GOAT Guess",        emoji:"🔮",  color:"#C084FC" },
+];
+
 // Jour courant (fuseau Paris) au format "YYYY-MM-DD" — même calcul que dans
 // Index.tsx et FindPlayer, pour retrouver la clé bb_devinette_<jour>.
 function parisDayKey() {
@@ -52,9 +64,11 @@ async function sbFetch(path, options) {
 }
 // Compte EXACT de lignes d'une table (tout l'historique) via l'en-tête
 // Content-Range de PostgREST — sans rapatrier les lignes. Renvoie null si KO.
-async function sbCount(table) {
+// Compte exact des lignes d'une table, sans en transférer aucune (Range 0-0).
+// `filter` = filtres PostgREST supplémentaires, ex. "type=eq.play_pont".
+async function sbCount(table, filter) {
   try {
-    const res = await fetch(SB_URL + "/rest/v1/" + table + "?select=id", {
+    const res = await fetch(SB_URL + "/rest/v1/" + table + "?select=id" + (filter ? "&" + filter : ""), {
       headers: { "apikey": SB_KEY, "Authorization": "Bearer " + SB_KEY, "Prefer": "count=exact", "Range": "0-0" }
     });
     const cr = res.headers.get("content-range") || "";
@@ -2748,12 +2762,33 @@ export default function LePont() {
       if (!recent) { recentHasDate = false; recent = await sbFetch("bb_pseudos?select=pseudo,country&limit=40") || []; }
       // ─── Totaux DEPUIS LE DÉBUT (tout l'historique, comptés via l'en-tête) ───
       const allTime = {
-        games:    await sbCount("bb_scores"),    // parties terminées (solo + classées)
+        games:    await sbCount("bb_scores"),    // scores enregistrés (pas toutes les parties : voir plus bas)
         duels:    await sbCount("bb_duels"),     // duels 1v1 en ligne
         rooms:    await sbCount("bb_rooms"),     // salons multijoueurs créés
         accounts: await sbCount("bb_pseudos"),   // comptes créés
         grid:     await sbCount("bb_gg_scores"), // parties GOAT GRID enregistrées
       };
+      // ─── Parties par mode DEPUIS LE DÉBUT ───
+      // bb_events n'est lu que sur la fenêtre de 14 j (pour le détail jour par
+      // jour) : la répartition par mode y était donc plafonnée à 14 jours et tout
+      // l'historique plus ancien devenait invisible. On demande ici des comptes
+      // EXACTS par type, sans transférer de lignes (Range 0-0), donc ça reste
+      // léger même quand bb_events grossit.
+      let playsAllTime = null, trackingSince = null;
+      if (hasEvents) {
+        playsAllTime = {};
+        await Promise.all(PLAY_MODES_META.map(async function(m){
+          const pair = await Promise.all([
+            sbCount("bb_events", "type=eq.play_" + m.key),
+            sbCount("bb_events", "type=eq.play_" + m.key + "_online"),
+          ]);
+          playsAllTime[m.key] = { solo: pair[0] || 0, online: pair[1] || 0 };
+        }));
+        // Date du 1er événement de partie : avant elle, aucune donnée par mode
+        // n'existe — à afficher pour ne pas laisser croire à un sous-comptage.
+        const first = await sbFetch("bb_events?select=created_at&type=like.play_*&order=created_at.asc&limit=1");
+        if (Array.isArray(first) && first[0]) trackingSince = first[0].created_at;
+      }
       setStatsData({
         rawScores: scores,
         rawEvents: hasEvents ? events : null,
@@ -2762,6 +2797,7 @@ export default function LePont() {
         accounts: pseudos.length,
         rawDuels: duels.map(function(d){ return d.created_at; }),
         recent: recent, recentHasDate: recentHasDate, allTime: allTime,
+        playsAllTime: playsAllTime, trackingSince: trackingSince,
       });
     })();
   }, [statsMode, statsData]);
@@ -11650,11 +11686,18 @@ export default function LePont() {
                     const at = statsData.allTime;
                     const fmt = function(n){ return (n==null) ? "—" : n.toLocaleString("fr-FR"); };
                     const onlineTot = (at.duels||0) + (at.rooms||0);
+                    // Vrai total de parties = somme des événements play_* (tous
+                    // les modes). bb_scores ne reçoit que les modes qui
+                    // enregistrent un score (surtout The Plug / The Mercato) :
+                    // s'en servir de « parties au total » sous-comptait GOAT
+                    // Guess, GOAT Grid, la devinette… d'où deux cartes distinctes.
+                    const pat = statsData.playsAllTime;
+                    const playsTot = pat ? Object.keys(pat).reduce(function(s,k){ return s + pat[k].solo + pat[k].online; }, 0) : null;
                     const cards = [
-                      { v: at.games,   label: "parties au total",  color: "#00E676", sub: "solo + classées" },
-                      { v: onlineTot,  label: "parties en ligne",  color: "#FF8A2A", sub: `${fmt(at.duels)} duels · ${fmt(at.rooms)} salons` },
-                      { v: at.accounts,label: "comptes créés",     color: "#FFD600", sub: "depuis le lancement" },
-                      { v: at.grid,    label: "parties GOAT GRID",  color: "#C084FC", sub: "défi quotidien" },
+                      { v: playsTot,   label: "parties jouées",     color: "#00E676", sub: pat ? "tous modes confondus" : "table bb_events absente" },
+                      { v: at.games,   label: "scores enregistrés", color: "#60a5fa", sub: "modes qui classent un score" },
+                      { v: onlineTot,  label: "parties en ligne",   color: "#FF8A2A", sub: `${fmt(at.duels)} duels · ${fmt(at.rooms)} salons` },
+                      { v: at.accounts,label: "comptes créés",      color: "#FFD600", sub: "depuis le lancement" },
                     ];
                     return (
                       <div style={{marginBottom:20}}>
@@ -11668,6 +11711,59 @@ export default function LePont() {
                             </div>
                           );})}
                         </div>
+                      </div>
+                    );
+                  })()}
+                  {/* ─── PARTIES PAR MODE · DEPUIS LE DÉBUT ───
+                      La section « Modes de jeu · N j » plus bas ne voit que la
+                      fenêtre d'analyse (14 j max). Celle-ci donne l'historique
+                      complet, avec la répartition solo / en ligne. */}
+                  {statsData.playsAllTime && (function(){
+                    const pat = statsData.playsAllTime;
+                    const rows = PLAY_MODES_META
+                      .map(function(m){ const c = pat[m.key] || {solo:0,online:0}; return {...m, solo:c.solo, online:c.online, n:c.solo+c.online}; })
+                      .sort(function(a,b){ return b.n - a.n; });
+                    const total = rows.reduce(function(s,r){ return s + r.n; }, 0);
+                    const maxN = Math.max(1, ...rows.map(function(r){ return r.n; }));
+                    const sinceLabel = statsData.trackingSince
+                      ? new Date(statsData.trackingSince).toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"})
+                      : null;
+                    return (
+                      <div style={{marginBottom:24}}>
+                        <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.4)",fontWeight:800,textTransform:"uppercase",marginBottom:10,paddingLeft:4}}>🎮 Parties par mode · depuis le début</div>
+                        {total === 0 ? (
+                          <div style={{fontSize:12.5,color:"rgba(255,255,255,.45)",background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.07)",borderRadius:12,padding:"14px",lineHeight:1.5}}>Aucune partie enregistrée pour l'instant.</div>
+                        ) : (
+                          <>
+                            <div style={{display:"flex",flexDirection:"column",gap:13}}>
+                              {rows.map(function(r,i){
+                                const pct = total ? Math.round(r.n/total*100) : 0;
+                                return (
+                                  // Nom AU-DESSUS de la barre : en colonne fixe,
+                                  // « Devinette du jour » ou « Trouve le joueur »
+                                  // se faisaient tronquer sur un écran de téléphone.
+                                  <div key={r.key}>
+                                    <div style={{display:"flex",alignItems:"baseline",gap:6,marginBottom:4}}>
+                                      <span style={{fontSize:12.5}}>{r.emoji}</span>
+                                      <span style={{fontSize:12.5,color:i===0?r.color:"rgba(255,255,255,.7)",fontWeight:i===0?800:600}}>{r.label}</span>
+                                      {i===0?<span style={{fontSize:11}}>👑</span>:null}
+                                      <span style={{flex:1}}/>
+                                      <span style={{fontSize:13,color:"#fff",fontWeight:800}}>{r.n}<span style={{color:"rgba(255,255,255,.35)",fontWeight:600,fontSize:11}}> · {pct}%</span></span>
+                                    </div>
+                                    <div style={{height:22,background:"rgba(255,255,255,.05)",borderRadius:8,overflow:"hidden"}}>
+                                      <div style={{height:"100%",width:Math.round(r.n/maxN*100)+"%",minWidth:r.n?8:0,background:r.color,opacity:i===0?1:.55,borderRadius:8,transition:"width .4s"}}/>
+                                    </div>
+                                    <div style={{fontSize:10.5,color:"rgba(255,255,255,.34)",fontWeight:600,marginTop:3}}>{r.solo} solo{r.online?" · "+r.online+" en ligne":""}</div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                            <div style={{textAlign:"right",fontSize:11,color:"rgba(255,255,255,.35)",fontWeight:600,paddingRight:4,marginTop:8}}>{total.toLocaleString("fr-FR")} parties au total</div>
+                            {sinceLabel && (
+                              <div style={{fontSize:11,color:"rgba(255,255,255,.3)",fontWeight:600,lineHeight:1.5,marginTop:6,paddingLeft:4}}>Suivi par mode démarré le {sinceLabel} — les parties jouées avant ne sont pas comptées ici.</div>
+                            )}
+                          </>
+                        )}
                       </div>
                     );
                   })()}
@@ -11702,16 +11798,7 @@ export default function LePont() {
                   {(function(){
                     const pbm = v.playsByMode || {pont:0,chaine:0,grid:0,guess:0,battle:0,reveal:0,devinette:0};
                     const total = v.totalPlays || 0;
-                    const META = [
-                      {key:"battle", label:"GOAT Battle", emoji:"⚡", color:"#FFC93C"},
-                      {key:"pont",   label:"The Plug",   emoji:"🔗", color:"#00E676"},
-                      {key:"chaine", label:"The Mercato", emoji:"🔁", color:"#FF8A2A"},
-                      {key:"reveal", label:"GOAT reveal", emoji:"🕵️", color:"#E0B85C"},
-                      {key:"devinette", label:"Devinette du jour", emoji:"🗓️", color:"#F2D680"},
-                      {key:"grid",   label:"GOAT Grid",   emoji:"▦",  color:"#3DA5FF"},
-                      {key:"guess",  label:"GOAT Guess",  emoji:"🔮", color:"#C084FC"},
-                    ];
-                    const rows = META.map(function(m){return {...m, n: pbm[m.key]||0};}).sort(function(a,b){return b.n-a.n;});
+                    const rows = PLAY_MODES_META.map(function(m){return {...m, n: pbm[m.key]||0};}).sort(function(a,b){return b.n-a.n;});
                     const maxN = Math.max(1, ...rows.map(function(r){return r.n;}));
                     if (!statsData.hasEvents) {
                       return <div style={{fontSize:12.5,color:"rgba(255,200,0,.7)",background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.07)",borderRadius:12,padding:"14px",marginBottom:24,lineHeight:1.5}}>⚠️ Table <code>bb_events</code> absente : le suivi par mode arrivera dès qu'elle existe.</div>;
@@ -11720,18 +11807,21 @@ export default function LePont() {
                       return <div style={{fontSize:12.5,color:"rgba(255,255,255,.45)",background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.07)",borderRadius:12,padding:"14px",marginBottom:24,lineHeight:1.5}}>Aucune partie enregistrée pour l'instant. Le suivi démarre avec ce déploiement — reviens dans quelques heures.</div>;
                     }
                     return (
-                      <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:24}}>
+                      <div style={{display:"flex",flexDirection:"column",gap:12,marginBottom:24}}>
                         {rows.map(function(r,i){
                           const pct = total ? Math.round(r.n/total*100) : 0;
                           return (
-                            <div key={r.key} style={{display:"flex",alignItems:"center",gap:12}}>
-                              <div style={{width:104,fontSize:12.5,color:i===0?r.color:"rgba(255,255,255,.6)",fontWeight:i===0?800:600,flexShrink:0,display:"flex",alignItems:"center",gap:6}}>
-                                <span>{r.emoji}</span><span style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{r.label}</span>{i===0&&r.n>0?<span style={{fontSize:11}}>👑</span>:null}
+                            <div key={r.key}>
+                              <div style={{display:"flex",alignItems:"baseline",gap:6,marginBottom:4}}>
+                                <span style={{fontSize:12.5}}>{r.emoji}</span>
+                                <span style={{fontSize:12.5,color:i===0?r.color:"rgba(255,255,255,.7)",fontWeight:i===0?800:600}}>{r.label}</span>
+                                {i===0&&r.n>0?<span style={{fontSize:11}}>👑</span>:null}
+                                <span style={{flex:1}}/>
+                                <span style={{fontSize:13,color:"#fff",fontWeight:800}}>{r.n}<span style={{color:"rgba(255,255,255,.35)",fontWeight:600,fontSize:11}}> · {pct}%</span></span>
                               </div>
-                              <div style={{flex:1,height:26,background:"rgba(255,255,255,.05)",borderRadius:8,overflow:"hidden",position:"relative"}}>
+                              <div style={{height:22,background:"rgba(255,255,255,.05)",borderRadius:8,overflow:"hidden"}}>
                                 <div style={{height:"100%",width:Math.round(r.n/maxN*100)+"%",minWidth:r.n?8:0,background:r.color,opacity:i===0?1:.55,borderRadius:8,transition:"width .4s"}}/>
                               </div>
-                              <div style={{width:74,textAlign:"right",fontSize:13,color:"#fff",fontWeight:800,flexShrink:0}}>{r.n}<span style={{color:"rgba(255,255,255,.35)",fontWeight:600,fontSize:11}}> · {pct}%</span></div>
                             </div>
                           );
                         })}
