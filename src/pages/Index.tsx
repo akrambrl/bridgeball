@@ -113,7 +113,17 @@ const Index = () => {
       <LePont />
       {goatGuessOpen && <GoatGuess onClose={() => setGoatGuessOpen(false)} />}
       {findPlayerOpen && <FindPlayer onClose={() => setFindPlayerOpen(false)} />}
-      {devinetteOpen && <FindPlayer daily onClose={() => setDevinetteOpen(false)} />}
+      {devinetteOpen && (
+        <FindPlayer
+          daily
+          onClose={() => {
+            setDevinetteOpen(false);
+            // LePont affiche l'état de la devinette (jouée ? série ?) sur
+            // l'accueil : il doit le relire à la fermeture de l'overlay.
+            window.dispatchEvent(new CustomEvent("goatfc:devinette-closed"));
+          }}
+        />
+      )}
       {devinettePrompt && !devinetteOpen && (
         <div onClick={() => setDevinettePrompt(false)} style={{ position: "fixed", inset: 0, zIndex: 400, background: "rgba(0,0,0,.72)", backdropFilter: "blur(3px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
           <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 360, background: "linear-gradient(180deg,#14110a,#0a0a0a)", border: "1px solid rgba(224,184,92,.4)", borderRadius: 22, padding: "26px 22px", textAlign: "center", boxShadow: "0 24px 70px rgba(0,0,0,.65)" }}>

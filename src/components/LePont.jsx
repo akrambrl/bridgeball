@@ -3,6 +3,7 @@ import { PLAYERS, RETIRED_PLAYERS, GG_WC_WINNERS, GG_CL_WINNERS } from "../playe
 import { trackPlay, pingPresence, pingLive } from "../lib/track";
 import { hapticSuccess, hapticError } from "../lib/native";
 import { pickOpponent, avatarFor } from "../lib/opponents";
+import { displayStreak } from "../lib/streak";
 
 
 
@@ -12,6 +13,27 @@ const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 
 // Code secret du tableau de bord privé : goatfc.fr/?stats=<CODE>
 const STATS_CODE = "akram-goat-2610";
+
+// Jour courant (fuseau Paris) au format "YYYY-MM-DD" — même calcul que dans
+// Index.tsx et FindPlayer, pour retrouver la clé bb_devinette_<jour>.
+function parisDayKey() {
+  const paris = new Date(new Date().toLocaleString("en-US", { timeZone: "Europe/Paris" }));
+  return paris.getFullYear() + "-" + String(paris.getMonth() + 1).padStart(2, "0") + "-" + String(paris.getDate()).padStart(2, "0");
+}
+
+// État de la Devinette du jour, lu depuis localStorage (l'overlay lui-même vit
+// dans Index.tsx, hors de LePont).
+function readDailyRiddle() {
+  const day = parisDayKey();
+  let done = false;
+  try {
+    const raw = localStorage.getItem("bb_devinette_" + day);
+    if (raw) done = !!JSON.parse(raw).over;
+  } catch { /* noop */ }
+  let streak = 0;
+  try { streak = displayStreak(day).current; } catch { /* noop */ }
+  return { day, done, streak };
+}
 
 // Colonnes lisibles de bb_pseudos (TOUTES sauf recovery_code, qui est masqué
 // côté public en Phase 2 sécurité). On sélectionne explicitement ces colonnes
@@ -2974,6 +2996,20 @@ export default function LePont() {
   const [ggBattleCountdown, setGgBattleCountdown] = useState(0); // 5..1 avant départ, 0 = en jeu
   const [ggBattleViewGrid, setGgBattleViewGrid] = useState(null); // {player, room} pour voir la grille d'un joueur
   const [reviewRoundsModal, setReviewRoundsModal] = useState(null); // {mode:"pont"|"chaine", playerName, rounds:[...]} ou null
+  // Devinette du jour : l'overlay vit dans Index.tsx, on n'a ici que son état
+  // (jouée aujourd'hui ? série en cours ?). On le rafraîchit à la fermeture de
+  // l'overlay et quand l'app revient au premier plan (changement de jour).
+  const [dailyRiddle, setDailyRiddle] = useState(readDailyRiddle);
+  useEffect(function() {
+    const refresh = function(){ setDailyRiddle(readDailyRiddle()); };
+    window.addEventListener("goatfc:devinette-closed", refresh);
+    document.addEventListener("visibilitychange", refresh);
+    return function() {
+      window.removeEventListener("goatfc:devinette-closed", refresh);
+      document.removeEventListener("visibilitychange", refresh);
+    };
+  }, []);
+
   const [ggModeChoice, setGgModeChoice] = useState(false); // modal de choix solo/multi pour GOAT GRID
   const [ggBattleLoading, setGgBattleLoading] = useState(false);
   // Partie rapide GOAT Battle : adversaire simulé, room locale (id "LOCAL"),
@@ -11391,6 +11427,33 @@ export default function LePont() {
               );})}
           </div>
         )}
+
+        {/* ── DEVINETTE DU JOUR — accès permanent ──
+            Elle a été retirée du carrousel (#369) au profit d'un pop-up
+            automatique une fois par jour. Problème : le pop-up marque le jour
+            comme « vu » dès son affichage, donc répondre « Plus tard » (ou le
+            fermer) rendait la devinette injoignable jusqu'au lendemain. Cette
+            barre est le point d'entrée qui manquait. */}
+        <button
+          onClick={function(){ requirePseudo(function(){ window.dispatchEvent(new CustomEvent("goatfc:open-devinette")); }); }}
+          style={{width:"100%",display:"flex",alignItems:"center",gap:11,padding:"11px 14px",background:dailyRiddle.done?"rgba(255,255,255,.04)":"linear-gradient(135deg,rgba(224,184,92,.16),rgba(224,184,92,.06))",border:"1px solid "+(dailyRiddle.done?"rgba(255,255,255,.1)":"rgba(224,184,92,.42)"),borderRadius:14,cursor:"pointer",fontFamily:G.font,textAlign:"left",color:G.white}}
+        >
+          <span style={{fontSize:20,lineHeight:1}}>🕵️</span>
+          <span style={{flex:1,minWidth:0}}>
+            <span style={{display:"block",fontSize:13,fontWeight:900,letterSpacing:.4,color:dailyRiddle.done?"rgba(255,255,255,.55)":"#F2D680"}}>
+              {tr("DEVINETTE DU JOUR","DAILY RIDDLE","RÄTSEL DES TAGES","INDOVINELLO DEL GIORNO","ADIVINHA DO DIA")}
+            </span>
+            <span style={{display:"block",fontSize:11,fontWeight:700,color:"rgba(255,255,255,.45)",marginTop:1}}>
+              {dailyRiddle.done
+                ? tr("✓ Jouée aujourd'hui — revoir","✓ Played today — review","✓ Heute gespielt — ansehen","✓ Giocata oggi — rivedi","✓ Jogada hoje — rever")
+                : tr("Un joueur mystère à deviner","A mystery player to guess","Ein Rätselspieler zu erraten","Un giocatore misterioso da indovinare","Um jogador misterioso para adivinhar")}
+            </span>
+          </span>
+          {dailyRiddle.streak > 0 && (
+            <span style={{flexShrink:0,padding:"4px 10px",borderRadius:999,background:"rgba(255,138,42,.16)",border:"1px solid rgba(255,138,42,.5)",color:"#FF8A2A",fontSize:12,fontWeight:900}}>🔥 {dailyRiddle.streak}</span>
+          )}
+          {!dailyRiddle.done && <span style={{flexShrink:0,color:"#F2D680",fontSize:16,fontWeight:900}}>›</span>}
+        </button>
 
         {/* ── HOME CAROUSEL — les modes de jeu ── */}
         {/* Mobile : le carrousel absorbe l'espace restant (flex) pour que toute
