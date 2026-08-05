@@ -493,6 +493,8 @@ export const ANEC_ENTRAINEUR = new Set([
   "Alessio Tacchinardi",
   "Luigi Di Biagio",
   "Angelo Di Livio",
+  "Chris Sutton",
+  "Ole Gunnar Solskjær",
 ]);
 const ANEC_JOUE_40 = new Set([
   // A joué (en professionnel) jusqu'à 40 ans ou plus

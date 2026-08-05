@@ -5946,6 +5946,11 @@ export const PLAYERS = [
   { name:"Marco Delvecchio", clubs:["AC Milan", "Venezia", "Udinese Calcio", "AS Roma", "Parma FC", "Brescia", "Ascoli"], diff:"moyen", nationalities:["Italie"], positions:["attaquant"], birthYear:1973 },
   { name:"Angelo Di Livio", clubs:["AS Roma", "Reggiana", "Perugia", "Padova", "Juventus FC", "ACF Fiorentina", "Reggina"], diff:"moyen", nationalities:["Italie"], positions:["milieu"], birthYear:1966 },
   { name:"Fabio Quagliarella", clubs:["Torino FC", "ACF Fiorentina", "Ascoli", "Sampdoria", "Udinese Calcio", "SSC Napoli", "Juventus FC"], diff:"moyen", nationalities:["Italie"], positions:["attaquant"], birthYear:1983 },
+  // ── Ajout : légendes Premier League manquantes ──
+  { name:"Ollie Palmer", clubs:["Woking", "Boreham Wood", "Mansfield", "Leyton Orient", "Grimsby"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1992 },
+  { name:"Matt Le Tissier", clubs:["Southampton", "Eastleigh"], diff:"moyen", nationalities:["Angleterre"], positions:["milieu"], birthYear:1968 },
+  { name:"Chris Sutton", clubs:["Norwich City", "Blackburn", "Chelsea", "Celtic", "Birmingham City", "Aston Villa"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1973 },
+  { name:"Ole Gunnar Solskjær", clubs:["Molde", "Manchester United"], diff:"moyen", nationalities:["Norvège"], positions:["attaquant"], birthYear:1973 },
 ];
 
 export const RETIRED_PLAYERS = new Set([ "Esteban Cambiasso","Eusébio","Ezequiel Lavezzi","Fabien Barthez","Fabio Grosso","Fernando Redondo","Ferenc Puskás","Mehdi Benatia","Elano","Diego Milito","Dietmar Hamann","Dimitar Berbatov","Djibril Cissé","Dunga","Darren Bent","Daniele De Rossi","Christian Karembeu","Christophe Dugarry","Cristian Chivu","Bacary Sagna","Ben Foster","Bobby Charlton","Bobby Moore","Branislav Ivanović","Andrés Guardado","Antonio Valencia","Alfredo Di Stéfano","André Schürrle","Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe (Portugal)","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
