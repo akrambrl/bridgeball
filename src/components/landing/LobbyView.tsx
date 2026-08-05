@@ -171,7 +171,7 @@ export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels, onOpenFriends }: Pr
         }
         if (alive) { setOpenCount(avail); setMyUnseen(unseen); }
 
-        // Top 5 de la saison en cours — même source que le mobile
+        // Top 5 par XP cumulée — même source et même défaut que le mobile
         const top = await fetchTopPlayers(5);
         if (alive) setTop5(top);
       } catch {}
@@ -425,7 +425,8 @@ export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels, onOpenFriends }: Pr
             <div className="font-display text-base tracking-[0.2em] text-white/70">
               {tr("🏆 TOP JOUEURS", "🏆 TOP PLAYERS", "🏆 TOP-SPIELER", "🏆 TOP GIOCATORI", "🏆 TOP JOGADORES")}
             </div>
-            <span className="font-display text-xs tracking-widest text-white/40">{tr("CE MOIS-CI", "THIS MONTH", "DIESEN MONAT", "QUESTO MESE", "ESTE MÊS")}</span>
+            {/* Aperçu = onglet "global" du mobile : XP cumulée, pas le mois. */}
+            <span className="font-display text-xs tracking-widest text-white/40">{tr("XP TOTALE", "TOTAL XP", "GESAMT-XP", "XP TOTALI", "XP TOTAL")}</span>
           </div>
           <ul className="space-y-2">
             {top5.map((p) => (
