@@ -4,7 +4,7 @@ import { tr } from "@/lib/lang";
 // "bot" a disparu du choix : il menait au MÊME adversaire simulé que "online",
 // à l'animation de recherche près. Deux entrées pour une seule partie, dont une
 // qui promettait « un joueur au hasard sur le web ».
-export type PlayMode = "solo" | "online" | "multi" | "daily";
+export type PlayMode = "solo" | "online" | "multi";
 
 type Props = {
   game: Extract<GameMode, "pont" | "chaine">;
@@ -18,7 +18,6 @@ const ORANGE = "#FF8A2A";
 const ORANGE_2 = "#FFC93C";
 const BLUE = "#3DA5FF";
 const GREEN = "#00E676";
-const GOLD = "#FFD600";
 
 const GAMES: Record<Props["game"], { label: string; img: string; pills: () => string[] }> = {
   chaine: {
@@ -105,28 +104,6 @@ export const ModeChoiceModal = ({ game, onPick, onClose }: Props) => {
             </span>
           ))}
         </div>
-
-        {/* Défi du jour — The Mercato uniquement */}
-        {game === "chaine" && (
-          <>
-            <div style={sectionLabel}>{tr("Défi du jour", "Daily challenge", "Tagesduell", "Sfida del giorno", "Desafio do dia")}</div>
-            <button
-              onClick={() => onPick("daily")}
-              style={{ width: "100%", marginBottom: 18, padding: "14px 16px", borderRadius: 16, border: "1.5px solid " + GOLD + "99", background: "linear-gradient(135deg," + GOLD + "38," + GOLD + "14)", cursor: "pointer", display: "flex", alignItems: "center", gap: 12, textAlign: "left", color: "#fff", fontFamily: "inherit", boxShadow: "0 8px 24px -8px " + GOLD + "80" }}
-            >
-              <div style={{ fontSize: 26 }}>🗓</div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 14, fontWeight: 900, letterSpacing: .5 }}>
-                  {tr("MERCATO DU JOUR", "DAILY MERCATO", "MERCATO DES TAGES", "MERCATO DEL GIORNO", "MERCATO DO DIA")}
-                </div>
-                <div style={{ fontSize: 11, color: "rgba(255,255,255,.6)", marginTop: 2 }}>
-                  {tr("Même départ pour tous · 1 essai · classé", "Same start for all · 1 try · ranked", "Gleicher Start für alle · 1 Versuch · gewertet", "Stessa partenza per tutti · 1 tentativo · classificato", "Mesmo início para todos · 1 tentativa · ranqueado")}
-                </div>
-              </div>
-              <div style={{ fontSize: 18, color: GOLD }}>▶</div>
-            </button>
-          </>
-        )}
 
         {/* Solo */}
         <div style={sectionLabel}>{tr("Solo · score", "Solo · score", "Solo · Punkte", "Solo · punti", "Solo · pontos")}</div>
