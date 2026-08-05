@@ -8,7 +8,7 @@ import { FaqView } from "@/components/landing/FaqView";
 import { AboutView } from "@/components/landing/AboutView";
 import { DifficultyModal, type Difficulty } from "@/components/landing/DifficultyModal";
 import { ModeChoiceModal, type PlayMode } from "@/components/landing/ModeChoiceModal";
-import { MatchmakingOverlay, pickOpponent } from "@/components/landing/MatchmakingOverlay";
+import { MatchmakingOverlay } from "@/components/landing/MatchmakingOverlay";
 import { CountdownOverlay } from "@/components/landing/CountdownOverlay";
 import { GoatGuess } from "@/components/landing/GoatGuess";
 import { FindPlayer } from "@/components/landing/FindPlayer";
@@ -180,9 +180,8 @@ const Home = () => {
     setPlaying(true);
   };
 
-  // Après le choix Solo/Online/Bot/Multi :
-  // - online : matchmaking visuel (faux adversaire random, diff random)
-  // - bot    : skip matchmaking → countdown direct avec bot random
+  // Après le choix Solo/Online/Multi :
+  // - online : matchmaking visuel (adversaire random, diff random)
   // - solo/multi : on passe au choix de difficulté
   const onModePicked = (mode: PlayMode) => {
     if (!pendingMode) return;
@@ -192,14 +191,6 @@ const Home = () => {
       const diffs: Difficulty[] = ["facile", "moyen", "expert"];
       const randomDiff = diffs[Math.floor(Math.random() * diffs.length)];
       setMatchmaking({ game, diff: randomDiff });
-      return;
-    }
-    if (mode === "bot") {
-      const diffs: Difficulty[] = ["facile", "moyen", "expert"];
-      const randomDiff = diffs[Math.floor(Math.random() * diffs.length)];
-      const opponent = pickOpponent();
-      setOnlineOpponent(opponent);
-      setCountdown({ game, diff: randomDiff, bot: opponent });
       return;
     }
     if (mode === "daily") {
