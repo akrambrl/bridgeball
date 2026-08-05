@@ -15,27 +15,32 @@ import { useEffect, useRef, useState } from "react";
 // • poster — évite le cadre noir le temps du chargement.
 // • pas de boucle : un extrait qui tourne en fond pendant qu'on lit son score
 //   devient vite pénible.
-// Deux séquences : le coup franc et le corner. On ALTERNE strictement d'une
-// victoire à l'autre au lieu de tirer au sort — un tirage aléatoire répète le
-// même extrait une fois sur deux, ce qui donne l'impression que rien n'a changé.
+// Deux séquences de but (le coup franc et le corner), deux séquences de défaite.
+// On ALTERNE strictement d'une partie à l'autre au lieu de tirer au sort — un
+// tirage aléatoire répète le même extrait une fois sur deux, ce qui donne
+// l'impression que rien n'a changé.
 const WIN_CLIPS = [
   { mp4: "/but-banner.mp4",   webm: "/but-banner.webm",   poster: "/but-poster.webp" },
   { mp4: "/but-banner-2.mp4", webm: "/but-banner-2.webm", poster: "/but-poster-2.webp" },
 ];
-// Une seule séquence de défaite : la répéter n'a pas le même coût qu'en
-// victoire, on ne s'attarde pas dessus.
+// Deux séquences de défaite également, alternées de la même façon.
 const LOSE_CLIPS = [
-  { mp4: "/lose-banner.mp4", webm: "/lose-banner.webm", poster: "/lose-poster.webp" },
+  { mp4: "/lose-banner.mp4",   webm: "/lose-banner.webm",   poster: "/lose-poster.webp" },
+  { mp4: "/lose-banner-2.mp4", webm: "/lose-banner-2.webm", poster: "/lose-poster-2.webp" },
 ];
-const CLIP_KEY = "bb_win_clip";
+// Un compteur PAR LISTE : avec un compteur commun, une victoire ferait avancer
+// l'alternance des défaites (et l'inverse), et on retomberait sur le même
+// extrait plusieurs fois de suite.
+const CLIP_KEYS = { win: "bb_win_clip", lose: "bb_lose_clip" };
 
 function nextClip(lose: boolean) {
   const list = lose ? LOSE_CLIPS : WIN_CLIPS;
   if (list.length === 1) return list[0];
+  const key = lose ? CLIP_KEYS.lose : CLIP_KEYS.win;
   let n = 0;
-  try { n = parseInt(localStorage.getItem(CLIP_KEY) || "0", 10) || 0; } catch { /* noop */ }
+  try { n = parseInt(localStorage.getItem(key) || "0", 10) || 0; } catch { /* noop */ }
   const clip = list[n % list.length];
-  try { localStorage.setItem(CLIP_KEY, String((n + 1) % list.length)); } catch { /* noop */ }
+  try { localStorage.setItem(key, String((n + 1) % list.length)); } catch { /* noop */ }
   return clip;
 }
 
