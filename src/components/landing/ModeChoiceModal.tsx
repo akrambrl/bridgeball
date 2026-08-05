@@ -12,132 +12,160 @@ type Props = {
   onClose: () => void;
 };
 
-const GAME_LABEL: Record<Props["game"], string> = {
-  pont: "THE PLUG",
-  chaine: "THE MERCATO",
+// Palette et structure reprises telles quelles du lanceur GOAT Duel (LePont) :
+// visuel plein cadre, pastille de format, puis une section par façon de jouer.
+const ORANGE = "#FF8A2A";
+const ORANGE_2 = "#FFC93C";
+const BLUE = "#3DA5FF";
+const GREEN = "#00E676";
+const GOLD = "#FFD600";
+
+const GAMES: Record<Props["game"], { label: string; img: string; pills: () => string[] }> = {
+  chaine: {
+    label: "THE MERCATO",
+    img: "/mercato-card.png",
+    pills: () => [
+      "⏱ 90 S",
+      "🔁 " + tr("CHAÎNE SANS FIN", "ENDLESS CHAIN", "ENDLOSE KETTE", "CATENA INFINITA", "CORRENTE SEM FIM"),
+      "🎯 " + tr("3 NIVEAUX", "3 LEVELS", "3 STUFEN", "3 LIVELLI", "3 NÍVEIS"),
+    ],
+  },
+  pont: {
+    label: "THE PLUG",
+    img: "/plug-card.png",
+    pills: () => [
+      "⏱ 90 S",
+      "🔗 " + tr("2 CLUBS", "2 CLUBS", "2 KLUBS", "2 CLUB", "2 CLUBES"),
+      "🎯 " + tr("3 NIVEAUX", "3 LEVELS", "3 STUFEN", "3 LIVELLI", "3 NÍVEIS"),
+    ],
+  },
 };
 
-type Choice = {
-  mode: PlayMode;
-  icon: string;
-  color: string;
-  title: string;
-  desc: string;
-  featured?: boolean;
+const sectionLabel: React.CSSProperties = {
+  fontSize: 10,
+  fontWeight: 800,
+  letterSpacing: 3,
+  textTransform: "uppercase",
+  color: "rgba(255,255,255,.45)",
+  marginBottom: 8,
 };
 
 export const ModeChoiceModal = ({ game, onPick, onClose }: Props) => {
-  const choices: Choice[] = [
-    // Le Mercato du jour est le rendez-vous quotidien : mis en avant, en tête.
-    ...(game === "chaine"
-      ? [{
-          mode: "daily" as PlayMode,
-          icon: "🗓",
-          color: "#60a5fa",
-          featured: true,
-          title: tr("MERCATO DU JOUR", "DAILY MERCATO", "MERCATO DES TAGES", "MERCATO DEL GIORNO", "MERCATO DO DIA"),
-          desc: tr("Même départ pour tous · 1 essai · classé", "Same start for all · 1 try · ranked", "Gleicher Start für alle · 1 Versuch · gewertet", "Stessa partenza per tutti · 1 tentativo · classificato", "Mesmo início para todos · 1 tentativa · ranqueado"),
-        }]
-      : []),
-    {
-      mode: "solo",
-      icon: "🎯",
-      color: "#FFC93C",
-      title: tr("SOLO", "SOLO", "SOLO", "SOLO", "SOLO"),
-      desc: tr("Bats ton record, monte au classement", "Beat your record, climb the leaderboard", "Schlag deinen Rekord, klettere in der Rangliste", "Batti il tuo record, scala la classifica", "Bata seu recorde, suba no ranking"),
-    },
-    {
-      mode: "online",
-      icon: "⚔️",
-      color: "#3DA5FF",
-      title: tr("EN LIGNE", "ONLINE", "ONLINE", "ONLINE", "ONLINE"),
-      desc: tr("Duel instantané contre un adversaire", "Instant duel against an opponent", "Sofortiges Duell gegen einen Gegner", "Duello istantaneo contro un avversario", "Duelo instantâneo contra um adversário"),
-    },
-    {
-      mode: "multi",
-      icon: "👥",
-      color: "#C084FC",
-      title: tr("ENTRE POTES", "WITH FRIENDS", "MIT FREUNDEN", "CON GLI AMICI", "COM AMIGOS"),
-      desc: tr("Crée un salon et partage le code", "Create a room and share the code", "Erstelle einen Raum und teile den Code", "Crea una stanza e condividi il codice", "Crie uma sala e compartilhe o código"),
-    },
-  ];
+  const g = GAMES[game];
 
   return (
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
-      onClick={onClose}
+      aria-label={g.label}
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 11000,
+        background: "linear-gradient(180deg,#0a1410 0%,#0E1F14 100%)",
+        overflowY: "auto",
+        fontFamily: "inherit",
+        color: "#fff",
+        animation: "modeFadeIn .3s ease-out",
+      }}
     >
-      <div
-        className="relative w-full max-w-sm rounded-3xl bg-[#0B1611] border border-white/10 p-6 shadow-[0_30px_80px_-20px_rgba(0,0,0,.9)]"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 h-8 w-8 rounded-full bg-white/5 hover:bg-white/10 text-white/50 hover:text-white flex items-center justify-center text-sm transition-colors"
-          aria-label={tr("Fermer", "Close", "Schließen", "Chiudi", "Fechar")}
-        >
-          ✕
-        </button>
+      <style>{`@keyframes modeFadeIn{from{opacity:0}to{opacity:1}}`}</style>
 
-        <div className="mb-5 pr-10">
-          <div className="font-display text-[10px] tracking-[0.35em] text-white/35">
-            {GAME_LABEL[game]}
-          </div>
-          {/* text-2xl : à 3xl, « COMMENT TU JOUES ? » passait sur deux lignes
-              une fois la place de la croix de fermeture réservée. */}
-          <h3 className="font-display text-2xl tracking-wide text-white leading-tight mt-1">
-            {tr("COMMENT TU JOUES ?", "HOW DO YOU PLAY?", "WIE SPIELST DU?", "COME GIOCHI?", "COMO VOCÊ JOGA?")}
-          </h3>
+      <button
+        onClick={onClose}
+        aria-label={tr("Fermer", "Close", "Schließen", "Chiudi", "Fechar")}
+        style={{
+          position: "fixed", top: 14, right: 14, zIndex: 10, width: 38, height: 38,
+          borderRadius: "50%", background: "rgba(0,0,0,.65)", color: "#fff",
+          border: "1px solid rgba(255,255,255,.25)", fontSize: 22, fontWeight: 300,
+          lineHeight: 1, cursor: "pointer", display: "flex", alignItems: "center",
+          justifyContent: "center", backdropFilter: "blur(10px)",
+          boxShadow: "0 4px 16px rgba(0,0,0,.5)",
+        }}
+      >
+        ×
+      </button>
+
+      {/* Visuel du mode, entier (object-contain) — comme sur le lanceur du duel */}
+      <div style={{ position: "relative", width: "100%", height: "48vh", maxHeight: 520, minHeight: 280, overflow: "hidden", background: "#000" }}>
+        <img src={g.img} alt="" draggable={false} style={{ width: "100%", height: "100%", objectFit: "contain", pointerEvents: "none", userSelect: "none" }} />
+        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 50, background: "linear-gradient(to top,#0a1410 0%,transparent 100%)", pointerEvents: "none" }} />
+      </div>
+
+      <div style={{ position: "relative", zIndex: 1, padding: "14px 22px 40px", maxWidth: 480, margin: "0 auto", width: "100%", boxSizing: "border-box" }}>
+        {/* Pastille de format */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, padding: "10px 16px", background: ORANGE + "12", border: "1.5px solid " + ORANGE + "40", borderRadius: 12, marginBottom: 18, flexWrap: "wrap" }}>
+          {g.pills().map((p, i) => (
+            <span key={p} style={{ display: "contents" }}>
+              {i > 0 && <span style={{ color: ORANGE, fontSize: 14, fontWeight: 800 }}>·</span>}
+              <span style={{ color: ORANGE, fontSize: 13, fontWeight: 800, letterSpacing: .5 }}>
+                {p.slice(0, 2)}
+                <span style={{ color: "#fff" }}>{p.slice(2)}</span>
+              </span>
+            </span>
+          ))}
         </div>
 
-        {/* Une seule couleur d'accent par ligne, portée par la pastille et le
-            titre — les fonds pleins multicolores donnaient un effet arc-en-ciel. */}
-        <div className="flex flex-col gap-2.5">
-          {choices.map((c) => {
-            const base = {
-              border: c.featured ? c.color + "66" : "rgba(255,255,255,.09)",
-              bg: c.featured ? c.color + "14" : "rgba(255,255,255,.03)",
-            };
-            return (
-              <button
-                key={c.mode}
-                onClick={() => onPick(c.mode)}
-                className="group w-full flex items-center gap-3.5 px-3.5 py-3 rounded-2xl border text-left transition-colors"
-                style={{ borderColor: base.border, background: base.bg }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = c.color + "99";
-                  e.currentTarget.style.background = c.color + "1a";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = base.border;
-                  e.currentTarget.style.background = base.bg;
-                }}
-              >
-                <span
-                  className="flex-shrink-0 h-11 w-11 rounded-xl flex items-center justify-center text-xl"
-                  style={{ background: c.color + "1f", border: "1px solid " + c.color + "38" }}
-                >
-                  {c.icon}
-                </span>
-                <span className="flex-1 min-w-0">
-                  <span className="block font-display text-lg tracking-[0.12em] leading-none" style={{ color: c.color }}>
-                    {c.title}
-                  </span>
-                  <span className="block text-[11.5px] text-white/45 mt-1 leading-snug">
-                    {c.desc}
-                  </span>
-                </span>
-                <span
-                  className="flex-shrink-0 text-lg transition-transform group-hover:translate-x-0.5"
-                  style={{ color: c.featured ? c.color : "rgba(255,255,255,.25)" }}
-                >
-                  ›
-                </span>
-              </button>
-            );
-          })}
+        {/* Défi du jour — The Mercato uniquement */}
+        {game === "chaine" && (
+          <>
+            <div style={sectionLabel}>{tr("Défi du jour", "Daily challenge", "Tagesduell", "Sfida del giorno", "Desafio do dia")}</div>
+            <button
+              onClick={() => onPick("daily")}
+              style={{ width: "100%", marginBottom: 18, padding: "14px 16px", borderRadius: 16, border: "1.5px solid " + GOLD + "99", background: "linear-gradient(135deg," + GOLD + "38," + GOLD + "14)", cursor: "pointer", display: "flex", alignItems: "center", gap: 12, textAlign: "left", color: "#fff", fontFamily: "inherit", boxShadow: "0 8px 24px -8px " + GOLD + "80" }}
+            >
+              <div style={{ fontSize: 26 }}>🗓</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 14, fontWeight: 900, letterSpacing: .5 }}>
+                  {tr("MERCATO DU JOUR", "DAILY MERCATO", "MERCATO DES TAGES", "MERCATO DEL GIORNO", "MERCATO DO DIA")}
+                </div>
+                <div style={{ fontSize: 11, color: "rgba(255,255,255,.6)", marginTop: 2 }}>
+                  {tr("Même départ pour tous · 1 essai · classé", "Same start for all · 1 try · ranked", "Gleicher Start für alle · 1 Versuch · gewertet", "Stessa partenza per tutti · 1 tentativo · classificato", "Mesmo início para todos · 1 tentativa · ranqueado")}
+                </div>
+              </div>
+              <div style={{ fontSize: 18, color: GOLD }}>▶</div>
+            </button>
+          </>
+        )}
+
+        {/* Solo */}
+        <div style={sectionLabel}>{tr("Solo · score", "Solo · score", "Solo · Punkte", "Solo · punti", "Solo · pontos")}</div>
+        <button
+          onClick={() => onPick("solo")}
+          style={{ width: "100%", padding: 15, marginBottom: 18, background: "linear-gradient(135deg," + ORANGE + "," + ORANGE_2 + ")", color: "#000", border: "none", borderRadius: 50, cursor: "pointer", fontFamily: "inherit", fontSize: 16, fontWeight: 800, letterSpacing: 1, boxShadow: "0 8px 24px " + ORANGE + "55", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+        >
+          ▶ {tr("JOUER SOLO", "PLAY SOLO", "SOLO SPIELEN", "GIOCA SOLO", "JOGAR SOLO")}
+          <span style={{ fontSize: 12, fontWeight: 700, opacity: .8 }}>
+            · {tr("bats ton record", "beat your record", "schlag deinen Rekord", "batti il tuo record", "bata seu recorde")}
+          </span>
+        </button>
+
+        {/* En ligne */}
+        <div style={sectionLabel}>{tr("En ligne", "Online", "Online", "Online", "Online")}</div>
+        <button
+          onClick={() => onPick("online")}
+          style={{ width: "100%", marginBottom: 18, padding: "14px 16px", borderRadius: 16, border: "1.5px solid rgba(61,165,255,.6)", background: "linear-gradient(135deg,rgba(61,165,255,.22),rgba(61,165,255,.08))", cursor: "pointer", display: "flex", alignItems: "center", gap: 12, textAlign: "left", color: "#fff", fontFamily: "inherit", boxShadow: "0 8px 24px -8px rgba(61,165,255,.5)" }}
+        >
+          <div style={{ fontSize: 26 }}>🌍</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 14, fontWeight: 900, letterSpacing: .5 }}>{tr("EN LIGNE", "ONLINE", "ONLINE", "ONLINE", "ONLINE")}</div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,.55)", marginTop: 2 }}>
+              {tr("Affronte un adversaire · sans code", "Face an opponent · no code", "Tritt gegen einen Gegner an · ohne Code", "Sfida un avversario · senza codice", "Enfrente um adversário · sem código")}
+            </div>
+          </div>
+          <div style={{ fontSize: 18, color: BLUE }}>▶</div>
+        </button>
+
+        {/* Entre potes */}
+        <div style={sectionLabel}>{tr("Entre potes", "With friends", "Mit Freunden", "Con gli amici", "Com amigos")}</div>
+        <button
+          onClick={() => onPick("multi")}
+          style={{ width: "100%", padding: 14, background: "rgba(0,230,118,.14)", color: GREEN, border: "1px solid rgba(0,230,118,.4)", borderRadius: 14, cursor: "pointer", fontFamily: "inherit", fontSize: 13, fontWeight: 800, letterSpacing: .5, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+        >
+          👥 {tr("Créer un salon", "Create room", "Raum erstellen", "Crea una stanza", "Criar sala")}
+        </button>
+        <div style={{ fontSize: 11, color: "rgba(255,255,255,.35)", textAlign: "center", marginTop: 8 }}>
+          {tr("Tu as déjà un code ? Colle-le sur l'accueil.", "Got a code already? Paste it on the home page.", "Schon einen Code? Füg ihn auf der Startseite ein.", "Hai già un codice? Incollalo in home.", "Já tem um código? Cole na página inicial.")}
         </div>
       </div>
     </div>
