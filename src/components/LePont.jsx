@@ -4900,6 +4900,10 @@ export default function LePont() {
         }
       } else if (play === "grid" || play === "goatgrid") {
         ggStartGame();
+      } else if (play === "duel" || play === "goatduel") {
+        // GOAT Duel : on ouvre son menu (solo / en ligne / entre potes),
+        // exactement comme la carte du carrousel mobile.
+        requirePseudo(function(){ setDuelError(""); setDuelJoinCode(""); setDuelScreen("menu"); });
       }
     } catch (e) {
       console.warn("autostart failed:", e);
@@ -4919,17 +4923,20 @@ export default function LePont() {
       screen === "chainGame" ||
       screen === "chainEnd" ||
       showGoatGrid ||
+      // GOAT Duel vit dans son propre overlay : sans lui, fermer le duel laissait
+      // l'utilisateur sur l'accueil de LePont au lieu de rendre la main à la landing.
+      !!duelScreen ||
       (ggBattleScreen && ggBattleScreen === "playing");
     if (inGame) {
       wasInGameRef.current = true;
       return;
     }
-    if (wasInGameRef.current && screen === "home" && !showGoatGrid) {
+    if (wasInGameRef.current && screen === "home" && !showGoatGrid && !duelScreen) {
       window.dispatchEvent(new CustomEvent("goatfc:back-to-landing"));
       launchedFromLandingRef.current = false;
       wasInGameRef.current = false;
     }
-  }, [screen, showGoatGrid, ggBattleScreen]);
+  }, [screen, showGoatGrid, ggBattleScreen, duelScreen]);
 
   // Lock viewport : empêche zoom utilisateur, scroll horizontal, overscroll
   // pour que l'app se comporte comme une app native en PWA sur téléphone
@@ -8268,7 +8275,14 @@ export default function LePont() {
   handleChainPassRef.current = handleChainPass;
 
   function requirePseudo(callback) {
-    if (!pseudoConfirmed || !playerName.trim()) {
+    // playerName n'est hydraté depuis localStorage que dans un useEffect, donc
+    // APRÈS le montage. Un appel très tôt — ouvrir un jeu depuis la landing
+    // desktop, par exemple — voyait un pseudo vide et affichait l'écran de
+    // création à tort, alors que le compte existe. On relit donc la source.
+    let stored = "";
+    try { stored = (localStorage.getItem("bb_name") || "").trim(); } catch { /* noop */ }
+    const name = playerName.trim() || stored;
+    if (name.length < 2) {
       setPseudoScreen(true);
       return;
     }

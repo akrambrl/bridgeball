@@ -10,7 +10,7 @@ type Props = {
   onOpenFriends?: () => void;
 };
 
-type GameKey = "plug" | "mercato" | "grid" | "guess" | "goatgrid";
+type GameKey = "plug" | "mercato" | "grid" | "guess" | "goatgrid" | "duel";
 
 const GAMES: {
   key: GameKey;
@@ -72,6 +72,18 @@ const GAMES: {
     badge: "GRILLE",
   },
   {
+    key: "duel",
+    mode: "duel",
+    name: "GOAT Duel",
+    tagline: "Le 1v1 en 90 secondes",
+    img: "/duel-card.png",
+    mascot: "/win3.png",
+    description:
+      "Quatre-vingt-dix secondes, manches illimit\u00e9es, 10 ou 20 points par bonne r\u00e9ponse. Solo, en ligne ou entre potes.",
+    accent: "#3DA5FF",
+    badge: "1V1",
+  },
+  {
     key: "guess",
     mode: "guess",
     name: "GOAT Guess",
@@ -93,6 +105,7 @@ function gameTagline(k: GameKey): string {
     case "grid": return tr("Déduction en illimité", "Endless deduction", "Endlose Deduktion", "Deduzione illimitata", "Dedução ilimitada");
     case "guess": return tr("Je devine ton joueur", "I guess your player", "Ich errate deinen Spieler", "Indovino il tuo giocatore", "Eu adivinho seu jogador");
     case "goatgrid": return tr("La grille 3\u00d73", "The 3\u00d73 grid", "Das 3\u00d73-Raster", "La griglia 3\u00d73", "A grade 3\u00d73");
+    case "duel": return tr("Le 1v1 en 90 secondes", "The 90-second 1v1", "Das 1-gegen-1 in 90 Sekunden", "L'1contro1 in 90 secondi", "O 1v1 em 90 segundos");
   }
 }
 function gameDescription(k: GameKey): string {
@@ -102,6 +115,7 @@ function gameDescription(k: GameKey): string {
     case "grid": return tr("Déduis le joueur mystère grâce à ses indices, en illimité. Enchaîne les bonnes réponses et monte ta série.", "Deduce the mystery player from his clues, unlimited. Chain correct answers to build your streak.", "Leite den Mystery-Spieler aus seinen Hinweisen ab, unbegrenzt. Reihe richtige Antworten für deine Serie aneinander.", "Deduci il giocatore misterioso dai suoi indizi, illimitato. Concatena le risposte giuste per la tua serie.", "Deduza o jogador misterioso pelas dicas, ilimitado. Encadeie acertos para subir sua sequência.");
     case "guess": return tr("Pense à un footballeur. En 25 questions max, je devine de qui il s'agit. 🔮", "Think of a footballer. In 25 questions max, I'll guess who it is. 🔮", "Denk an einen Fußballer. In max. 25 Fragen errate ich, wer es ist. 🔮", "Pensa a un calciatore. In max 25 domande indovino chi è. 🔮", "Pense num jogador. Em no máximo 25 perguntas, eu adivinho quem é. 🔮");
     case "goatgrid": return tr("Neuf cases, neuf critères croisés. Trouve un joueur qui coche les deux à chaque fois.", "Nine cells, nine crossed criteria. Find a player who ticks both every time.", "Neun Felder, neun gekreuzte Kriterien. Finde jedes Mal einen Spieler, der beide erfüllt.", "Nove caselle, nove criteri incrociati. Trova ogni volta un giocatore che soddisfa entrambi.", "Nove casas, nove critérios cruzados. Ache um jogador que atenda aos dois em cada uma.");
+    case "duel": return tr("Quatre-vingt-dix secondes, manches illimitées, 10 ou 20 points par bonne réponse. Solo, en ligne ou entre potes.", "Ninety seconds, unlimited rounds, 10 or 20 points per correct answer. Solo, online or with friends.", "Neunzig Sekunden, unbegrenzte Runden, 10 oder 20 Punkte pro richtiger Antwort. Solo, online oder mit Freunden.", "Novanta secondi, turni illimitati, 10 o 20 punti per risposta esatta. Solo, online o con gli amici.", "Noventa segundos, rodadas ilimitadas, 10 ou 20 pontos por acerto. Solo, online ou com amigos.");
   }
 }
 function gameBadge(k: GameKey): string {
@@ -111,6 +125,7 @@ function gameBadge(k: GameKey): string {
     case "grid": return tr("ILLIMITÉ", "UNLIMITED", "UNBEGRENZT", "ILLIMITATO", "ILIMITADO");
     case "guess": return tr("MAGIE", "MAGIC", "MAGIE", "MAGIA", "MAGIA");
     case "goatgrid": return tr("GRILLE", "GRID", "RASTER", "GRIGLIA", "GRADE");
+    case "duel": return "1V1";
   }
 }
 

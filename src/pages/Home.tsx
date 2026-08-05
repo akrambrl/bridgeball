@@ -17,7 +17,7 @@ import { trackTime } from "@/lib/track";
 
 // "grid" = « Trouve le joueur » (overlay FindPlayer), "goatgrid" = la
 // grille 3×3 jouée dans LePont. Deux jeux distincts, malgré les noms proches.
-export type GameMode = "pont" | "chaine" | "grid" | "guess" | "goatgrid";
+export type GameMode = "pont" | "chaine" | "grid" | "guess" | "goatgrid" | "duel";
 
 const Home = () => {
   const [playing, setPlaying] = useState(false);
@@ -85,8 +85,8 @@ const Home = () => {
       mode = new URLSearchParams(window.location.search).get("play");
     } catch { /* noop */ }
     if (!mode) return;
-    if (mode === "goatgrid") {
-      // LePont lit ?play=goatgrid puis nettoie l'URL lui-même : surtout ne pas
+    if (mode === "goatgrid" || mode === "duel") {
+      // LePont lit ?play=<mode> puis nettoie l'URL lui-même : surtout ne pas
       // l'effacer ici, il ne verrait plus rien au montage.
       setPlaying(true);
       return;
@@ -181,9 +181,9 @@ const Home = () => {
       setFindPlayerOpen(true);
       return;
     }
-    if (game === "goatgrid") {
-      // La grille 3×3 vit dans LePont, qui la démarre sur ?play=goatgrid.
-      launchGame("goatgrid");
+    if (game === "goatgrid" || game === "duel") {
+      // Ces deux-là vivent dans LePont, qui les démarre sur ?play=<mode>.
+      launchGame(game);
       return;
     }
     if (game === "pont" || game === "chaine") {
