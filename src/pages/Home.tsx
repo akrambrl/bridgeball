@@ -371,7 +371,18 @@ const Home = () => {
       {/* GOAT Guess — Akinator foot (overlay plein écran, indépendant de LePont) */}
       {goatGuessOpen && <GoatGuess onClose={() => setGoatGuessOpen(false)} />}
       {findPlayerOpen && <FindPlayer onClose={() => setFindPlayerOpen(false)} />}
-      {devinetteOpen && <FindPlayer daily onClose={() => setDevinetteOpen(false)} />}
+      {devinetteOpen && (
+        <FindPlayer
+          daily
+          onClose={() => {
+            setDevinetteOpen(false);
+            // Le lobby affiche la barre « Devinette du jour » tant qu'elle n'a
+            // pas été jouée : il doit relire l'état à la fermeture pour la faire
+            // disparaître immédiatement.
+            window.dispatchEvent(new CustomEvent("goatfc:devinette-closed"));
+          }}
+        />
+      )}
     </div>
   );
 };

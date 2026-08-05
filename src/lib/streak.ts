@@ -54,3 +54,21 @@ export function displayStreak(today: string): { current: number; best: number; a
   const alive = playedToday || (s.lastDay !== null && s.lastDay === prevDay(today));
   return { current: alive ? s.current : 0, best: s.best, alive, playedToday };
 }
+
+// Jour courant à Paris ("YYYY-MM-DD") = clé de stockage de la Devinette du jour.
+export function parisDayKey(): string {
+  const p = new Date(new Date().toLocaleString("en-US", { timeZone: "Europe/Paris" }));
+  return p.getFullYear() + "-" + String(p.getMonth() + 1).padStart(2, "0") + "-" + String(p.getDate()).padStart(2, "0");
+}
+
+// La Devinette du jour est-elle déjà terminée aujourd'hui ? On lit la manche
+// sauvegardée (source de vérité, partagée avec FindPlayer) plutôt que la série,
+// qui vaut aussi pour les jours précédents.
+export function dailyRiddleDone(): boolean {
+  try {
+    const raw = localStorage.getItem("bb_devinette_" + parisDayKey());
+    return raw ? !!JSON.parse(raw).over : false;
+  } catch {
+    return false;
+  }
+}
