@@ -1658,7 +1658,31 @@ function matchClub(input,playerClubs){
   }
   return null;
 }
-function getPlayerClubs(name){const p=PLAYERS_CLEAN.find(x=>x.name===name);return p?p.clubs:[];}
+// Index nom → joueur : la sélection de la chaîne interroge des dizaines de noms
+// par coup, et un find() linéaire sur ~4800 entrées à chaque fois coûtait cher.
+const PLAYER_BY_NAME = new Map(PLAYERS_CLEAN.map(function(p){ return [p.name, p]; }));
+function getPlayerClubs(name){const p=PLAYER_BY_NAME.get(name);return p?p.clubs:[];}
+
+// Vivier « facile » d'une liste de joueurs d'un même club, élargi si trop mince.
+//
+// Seuls 145 joueurs sur ~4800 portent diff:"facile", et 25 des 62 clubs connus
+// en comptent 3 ou moins (Lyon : Benzema, Depay, Lloris ; RB Leipzig et
+// Eintracht Frankfurt : aucun). Une fois le joueur courant retiré du vivier, il
+// n'en restait souvent qu'un ou deux : d'où « je réponds Lyon sur Lloris et
+// c'est toujours Benzema ». On complète donc avec les joueurs "moyen" qui ont au
+// moins deux clubs connus — tout aussi reconnaissables. Lyon passe de 3 à 60
+// candidats.
+const CHAIN_EASY_MIN = 6;
+function easyChainPool(names) {
+  const easy = [], known = [];
+  for (const n of names) {
+    const p = PLAYER_BY_NAME.get(n);
+    if (!p) continue;
+    if (p.diff === "facile") easy.push(n);
+    else if (p.diff === "moyen" && famousClubCount(p) >= 2) known.push(n);
+  }
+  return easy.length >= CHAIN_EASY_MIN ? easy : easy.concat(known);
+}
 function getPlayersForClub(club){return CLUB_INDEX[club]||[];}
 
 // ─── GOAT DUEL — Plug temps réel 1v1 (5 manches) ──────────────
@@ -8126,12 +8150,13 @@ export default function LePont() {
         setTimeout(()=>{setChainPlayer(fallback);setChainUsedPlayers(newUsedP);setChainLastClub(matched);setChainLastPassed(false);setGuess("");setFeedback(null);setFlash(null);setTimeout(()=>inputRef.current?.focus(),100);},700);
         return;
       }
-      const preferred = clubPlayers.filter(p => {
-        const pd = PLAYERS_CLEAN.find(x=>x.name===p)?.diff;
-        if(effectiveDiffCS==="facile") return pd==="facile";
-        if(effectiveDiffCS==="moyen") return pd==="facile"||pd==="moyen";
-        return true;
-      });
+      const preferred = effectiveDiffCS === "facile"
+        ? easyChainPool(clubPlayers)
+        : clubPlayers.filter(p => {
+            const pd = PLAYER_BY_NAME.get(p)?.diff;
+            if(effectiveDiffCS==="moyen") return pd==="facile"||pd==="moyen";
+            return true;
+          });
       // En mode FACILE : si le club n'a aucun joueur "facile" dispo, fallback global vers un joueur facile
       // au lieu d'élargir au pool complet du club (sinon on tombe sur des joueurs comme Mathew Ryan)
       if (preferred.length === 0 && effectiveDiffCS === "facile") {
@@ -8237,12 +8262,13 @@ export default function LePont() {
       setAnimKey(k=>k+1);
       return;
     }
-    const preferred2 = clubPlayers.filter(p => {
-      const pd = PLAYERS_CLEAN.find(x=>x.name===p)?.diff;
-      if(effectiveDiffCP==="facile") return pd==="facile";
-      if(effectiveDiffCP==="moyen") return pd==="facile"||pd==="moyen";
-      return true;
-    });
+    const preferred2 = effectiveDiffCP === "facile"
+      ? easyChainPool(clubPlayers)
+      : clubPlayers.filter(p => {
+          const pd = PLAYER_BY_NAME.get(p)?.diff;
+          if(effectiveDiffCP==="moyen") return pd==="facile"||pd==="moyen";
+          return true;
+        });
     // En mode FACILE : si le club n'a aucun joueur "facile" dispo, fallback global au lieu d'élargir
     if (preferred2.length === 0 && effectiveDiffCP === "facile") {
       const fallback = pickFallbackPlayer();
