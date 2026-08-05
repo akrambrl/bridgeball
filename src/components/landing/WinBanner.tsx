@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
-// Bandeau « BUT ! » : court extrait animé (3,2 s) joué UNE SEULE FOIS sur une
-// victoire, à côté du résultat.
+// Bandeau animé joué UNE SEULE FOIS à côté du résultat : séquence de but sur
+// une victoire, séquence de défaite sinon.
 //
 // Choix qui comptent :
 // • muted + playsInline — sans les deux, les navigateurs mobiles refusent
@@ -18,17 +18,24 @@ import { useEffect, useRef, useState } from "react";
 // Deux séquences : le coup franc et le corner. On ALTERNE strictement d'une
 // victoire à l'autre au lieu de tirer au sort — un tirage aléatoire répète le
 // même extrait une fois sur deux, ce qui donne l'impression que rien n'a changé.
-const CLIPS = [
+const WIN_CLIPS = [
   { mp4: "/but-banner.mp4",   webm: "/but-banner.webm",   poster: "/but-poster.webp" },
   { mp4: "/but-banner-2.mp4", webm: "/but-banner-2.webm", poster: "/but-poster-2.webp" },
 ];
+// Une seule séquence de défaite : la répéter n'a pas le même coût qu'en
+// victoire, on ne s'attarde pas dessus.
+const LOSE_CLIPS = [
+  { mp4: "/lose-banner.mp4", webm: "/lose-banner.webm", poster: "/lose-poster.webp" },
+];
 const CLIP_KEY = "bb_win_clip";
 
-function nextClip() {
+function nextClip(lose: boolean) {
+  const list = lose ? LOSE_CLIPS : WIN_CLIPS;
+  if (list.length === 1) return list[0];
   let n = 0;
   try { n = parseInt(localStorage.getItem(CLIP_KEY) || "0", 10) || 0; } catch { /* noop */ }
-  const clip = CLIPS[n % CLIPS.length];
-  try { localStorage.setItem(CLIP_KEY, String((n + 1) % CLIPS.length)); } catch { /* noop */ }
+  const clip = list[n % list.length];
+  try { localStorage.setItem(CLIP_KEY, String((n + 1) % list.length)); } catch { /* noop */ }
   return clip;
 }
 
@@ -37,13 +44,15 @@ type Props = {
   maxWidth?: number;
   /** Marge haute, pour s'insérer dans des écrans aux rythmes différents. */
   marginTop?: number;
+  /** true = séquence de défaite (cadre neutre au lieu du liseré vert). */
+  lose?: boolean;
 };
 
-export const WinBanner = ({ maxWidth = 420, marginTop = 10 }: Props) => {
+export const WinBanner = ({ maxWidth = 420, marginTop = 10, lose = false }: Props) => {
   const ref = useRef<HTMLVideoElement>(null);
   // Initialiseur de useState : le compteur n'avance qu'au MONTAGE, pas à chaque
   // rendu — sinon l'extrait changerait sous les yeux du joueur.
-  const [clip] = useState(nextClip);
+  const [clip] = useState(() => nextClip(lose));
 
   useEffect(() => {
     const v = ref.current;
@@ -62,7 +71,7 @@ export const WinBanner = ({ maxWidth = 420, marginTop = 10 }: Props) => {
         margin: marginTop + "px auto 0",
         borderRadius: 14,
         overflow: "hidden",
-        border: "1px solid rgba(0,230,118,.35)",
+        border: "1px solid " + (lose ? "rgba(255,255,255,.14)" : "rgba(0,230,118,.35)"),
         boxShadow: "0 10px 30px -12px rgba(0,0,0,.8)",
         lineHeight: 0,
         animation: "fadeUp .45s ease .1s both",
