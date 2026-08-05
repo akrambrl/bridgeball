@@ -4738,7 +4738,7 @@ export default function LePont() {
       try { window.history.replaceState({}, "", window.location.pathname); } catch(e) {}
       setOpenDuelChooser(false);
       setOpenTab(wantMine ? "mine" : "browse");
-      loadOpenDuels(); loadMyOpenDuels(wantMine); // wantMine -> marque les tentatives comme vues
+      loadOpenDuels(); loadMyOpenDuels(wantMine); loadReceivedChallenges(); // wantMine -> marque les tentatives comme vues
       setShowOpenDuels(true);
       return;
     }
@@ -4974,6 +4974,10 @@ export default function LePont() {
   const [showOpenDuels, setShowOpenDuels] = useState(false);
   const [openDuels, setOpenDuels] = useState([]);
   const [openDuelChooser, setOpenDuelChooser] = useState(false); // écran de choix mode/diff pour lancer un défi
+  // Défis NOMINATIFS reçus (status "sent", opponent_id = moi) : asynchrones,
+  // contrairement à createDuel() qui ouvre une salle d'attente temps réel.
+  const [receivedChallenges, setReceivedChallenges] = useState([]);
+  const [duelTarget, setDuelTarget] = useState(null); // {id,name} quand on défie quelqu'un en particulier
   const [openNotif, setOpenNotif] = useState(null); // bannière de confirmation "défi posté"
   const [openTab, setOpenTab] = useState("browse"); // onglet du salon : "browse" | "mine"
   const [myOpenChallenges, setMyOpenChallenges] = useState([]); // mes défis encore ouverts
@@ -5014,7 +5018,7 @@ export default function LePont() {
   // Charge mes défis ouverts en entrant sur l'accueil (pour la pastille de tentatives non vues)
   // NB: placé après la déclaration de pseudoConfirmed pour éviter une TDZ ReferenceError.
   useEffect(function(){
-    if (screen === "home" && pseudoConfirmed) loadMyOpenDuels();
+    if (screen === "home" && pseudoConfirmed) { loadMyOpenDuels(); loadReceivedChallenges(); }
   }, [screen, pseudoConfirmed]);
   const [showQuitConfirm, setShowQuitConfirm] = useState(false);
   const [gameConfigModal, setGameConfigModal] = useState(null);
@@ -5464,6 +5468,16 @@ export default function LePont() {
       }
     } catch(e) { setMyOpenAttempts([]); }
   }
+  // Défis nominatifs qui m'attendent
+  async function loadReceivedChallenges() {
+    if (!playerId) { setReceivedChallenges([]); return; }
+    try {
+      const data = await sbFetch("bb_duels?opponent_id=eq."+playerId+"&status=eq.sent&order=created_at.desc&limit=50&select=id,challenger_id,challenger_name,mode,diff,rounds,challenger_score,created_at");
+      let done = []; try { done = JSON.parse(localStorage.getItem("bb_open_done")||"[]"); } catch(e) {}
+      setReceivedChallenges((Array.isArray(data)?data:[]).filter(function(d){ return done.indexOf(d.id) === -1; }));
+    } catch(e) { setReceivedChallenges([]); }
+  }
+
   // Marque toutes les tentatives reçues comme "vues" (efface la pastille)
   function markOpenAttemptsSeen() {
     try { localStorage.setItem("bb_open_seen", JSON.stringify(myOpenAttempts.map(function(a){ return a.id; }))); } catch(e) {}
@@ -5726,21 +5740,33 @@ export default function LePont() {
       const duel = activeDuel;
       const myRounds = (duel.mode === "chaine") ? chainHistory : roundAnswers;
       setActiveDuel(null); activeDuelRef.current = null;
+      // Défi NOMINATIF : même flux asynchrone que le défi ouvert, mais adressé à
+      // un joueur précis (status "sent" au lieu de "open"). Il le retrouve dans
+      // l'onglet "Reçus" et le relève quand il veut.
+      const target = duel.target || null;
       try {
         await sbFetch("bb_duels", { method:"POST", headers:{"Content-Type":"application/json","Prefer":"return=minimal"}, body: JSON.stringify({
           challenger_id: playerId, challenger_name: (playerName||"Anonyme").trim(),
-          opponent_id: "OPEN", opponent_name: "", // sentinelles : colonne opponent_id NOT NULL, pas d'adversaire tant que le défi est ouvert
+          // sentinelles quand le défi est ouvert à tous : la colonne opponent_id est NOT NULL
+          opponent_id: target ? target.id : "OPEN",
+          opponent_name: target ? target.name : "",
           mode: duel.mode, diff: duel.diff, rounds: duel.rounds || 1,
-          challenger_score: sc, status: "open"
+          challenger_score: sc, status: target ? "sent" : "open"
         })});
-        setOpenNotif((tr("Défi posté ! Score à battre : ","Open challenge posted! Score to beat: ","Herausforderung gepostet! Zu schlagen: ","Sfida pubblicata! Punteggio da battere: ","Desafio publicado! Pontuação a bater: "))+sc+" ⚡");
+                setOpenNotif(target
+          ? (tr("Défi envoyé à ","Challenge sent to ","Herausforderung gesendet an ","Sfida inviata a ","Desafio enviado para ") + target.name + " · " + sc + " pts")
+          : (tr("Défi posté ! Score à battre : ","Open challenge posted! Score to beat: ","Herausforderung gepostet! Zu schlagen: ","Sfida pubblicata! Punteggio da battere: ","Desafio publicado! Pontuação a bater: "))+sc+" ⚡");
         setTimeout(function(){ setOpenNotif(null); }, 5000);
         // Notif push : prévenir mes amis qu'un nouveau défi est dispo (best-effort)
         try {
-          (friendsList||[]).forEach(function(fid){
+          // Défi nominatif : une seule notif, au joueur visé. Défi ouvert : on
+          // prévient tous les amis, comme avant.
+          const targets = target ? [target.id] : (friendsList||[]);
+          const kind = target ? "duel_challenge" : "duel_new";
+          targets.forEach(function(fid){
             fetch(SB_URL + "/functions/v1/send-friend-notification", {
               method:"POST", headers:{"Content-Type":"application/json","Authorization":"Bearer "+SB_KEY},
-              body: JSON.stringify({ to_id: fid, from_name: (playerName||"Quelqu'un").trim(), type:"duel_new" })
+              body: JSON.stringify({ to_id: fid, from_name: (playerName||"Quelqu'un").trim(), type:kind, mode: duel.mode })
             }).catch(function(){});
           });
         } catch(e) {}
@@ -8729,7 +8755,7 @@ export default function LePont() {
         )}
         <div style={{display:"flex",gap:8,marginTop:8}}>
           <button onClick={function(){setShowDuelCreate(null);}} style={{flex:1,padding:"12px",background:"rgba(255,255,255,.07)",color:"rgba(255,255,255,.5)",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14}}>{tr("Annuler","Cancel","Abbrechen","Annulla","Cancelar")}</button>
-          <button onClick={function(){createDuel(showDuelCreate);}} style={{flex:2,padding:"12px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>{tr("Envoyer le défi ⚡","Send challenge ⚡","Herausforderung senden ⚡","Invia la sfida ⚡","Enviar desafio ⚡")}</button>
+          <button onClick={function(){ const t = { id:showDuelCreate.id, name:showDuelCreate.name }; setShowDuelCreate(null); setShowFriends(false); playOpenDuel({ mode:duelMode, diff:duelDiff, rounds:duelRounds, target:t }, "create"); }} style={{flex:2,padding:"12px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>{tr("Envoyer le défi ⚡","Send challenge ⚡","Herausforderung senden ⚡","Invia la sfida ⚡","Enviar desafio ⚡")}</button>
         </div>
       </div>
     </div>
@@ -9259,9 +9285,29 @@ export default function LePont() {
         </div>
         <div style={{display:"flex",gap:8,marginBottom:14}}>
           <button onClick={function(){setOpenTab("browse");}} style={{flex:1,padding:"9px",borderRadius:12,border:"none",background:openTab==="browse"?G.accent:"rgba(255,255,255,.06)",color:openTab==="browse"?"#000":G.white,fontFamily:G.font,fontSize:13,fontWeight:800,cursor:"pointer"}}>{tr("Parcourir","Browse","Durchsuchen","Sfoglia","Explorar")}</button>
+          <button onClick={function(){setOpenTab("recus");loadReceivedChallenges();}} style={{position:"relative",flex:1,padding:"9px",borderRadius:12,border:"none",background:openTab==="recus"?G.accent:"rgba(255,255,255,.07)",color:openTab==="recus"?"#000":G.white,fontFamily:G.font,fontSize:12,fontWeight:800,letterSpacing:.5,cursor:"pointer"}}>{tr("Reçus","Received","Erhalten","Ricevute","Recebidos")}{receivedChallenges.length>0&&<span style={{position:"absolute",top:-5,right:-5,background:"#FF3D57",color:"#fff",borderRadius:"50%",minWidth:18,height:18,padding:"0 5px",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:900}}>{receivedChallenges.length}</span>}</button>
           <button onClick={function(){setOpenTab("mine");markOpenAttemptsSeen();loadDuels();}} style={{position:"relative",flex:1,padding:"9px",borderRadius:12,border:"none",background:openTab==="mine"?G.accent:"rgba(255,255,255,.06)",color:openTab==="mine"?"#000":G.white,fontFamily:G.font,fontSize:13,fontWeight:800,cursor:"pointer"}}>{tr("Mes défis","My challenges","Meine Herausforderungen","Le mie sfide","Meus desafios")}{openUnseenCount>0&&<span style={{position:"absolute",top:-5,right:-5,background:"#FF3D57",color:"#fff",borderRadius:"50%",minWidth:16,height:16,padding:"0 4px",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:900}}>{openUnseenCount}</span>}</button>
         </div>
-        {openTab==="mine" ? (
+        {openTab==="recus" ? (
+          <div>
+            <div style={{fontSize:12,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginBottom:8}}>{tr("On t'a défié","You've been challenged","Du wurdest herausgefordert","Ti hanno sfidato","Você foi desafiado")}</div>
+            {receivedChallenges.length===0 ? (
+              <div style={{textAlign:"center",padding:"16px",color:"rgba(255,255,255,.4)",fontSize:13}}>{tr("Aucun défi reçu pour l'instant.","No challenge received yet.","Noch keine Herausforderung erhalten.","Nessuna sfida ricevuta.","Nenhum desafio recebido.")}</div>
+            ) : receivedChallenges.map(function(d){
+              const modeLabel = d.mode === "chaine" ? "The Mercato" : "The Plug";
+              return (
+                <div key={d.id} style={{display:"flex",alignItems:"center",gap:10,padding:"11px 12px",marginBottom:8,background:"rgba(255,138,42,.10)",border:"1px solid rgba(255,138,42,.35)",borderRadius:14}}>
+                  <div style={{fontSize:20}}>⚔️</div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontSize:13,fontWeight:800,color:G.white,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{d.challenger_name}</div>
+                    <div style={{fontSize:11,color:"rgba(255,255,255,.5)",marginTop:1}}>{modeLabel} · {d.diff} · {d.challenger_score} pts {tr("à battre","to beat","zu schlagen","da battere","para bater")}</div>
+                  </div>
+                  <button onClick={function(){playOpenDuel(d,"accept");}} style={{flexShrink:0,padding:"9px 14px",background:"#FF8A2A",color:"#000",border:"none",borderRadius:12,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800}}>{tr("Relever","Take it","Annehmen","Accetta","Aceitar")}</button>
+                </div>
+              );
+            })}
+          </div>
+        ) : openTab==="mine" ? (
           <div>
             <div style={{fontSize:12,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginBottom:8}}>{tr("Tentatives reçues","Attempts received","Erhaltene Versuche","Tentativi ricevuti","Tentativas recebidas")}</div>
             {myOpenAttempts.length===0 ? (
@@ -13409,14 +13455,14 @@ export default function LePont() {
         </div>
 
         {/* Défis ouverts (salon de duels asynchrones) */}
-        <button onClick={function(){requirePseudo(function(){setOpenTab("browse");setOpenDuelChooser(false);loadOpenDuels();loadMyOpenDuels();setShowOpenDuels(true);});}}
+        <button onClick={function(){requirePseudo(function(){setOpenTab("browse");setOpenDuelChooser(false);loadOpenDuels();loadMyOpenDuels();loadReceivedChallenges();setShowOpenDuels(true);});}}
           style={{position:"relative",display:"flex",alignItems:"center",gap:12,padding:"12px 16px",background:"linear-gradient(90deg, rgba(255,138,42,.18), rgba(255,201,60,.12))",border:"1px solid rgba(255,138,42,.4)",borderRadius:14,cursor:"pointer",width:"100%",textAlign:"left"}}>
           <div style={{width:28,height:28,borderRadius:"50%",background:"linear-gradient(135deg,#FF8A2A,#FFC93C)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,boxShadow:"0 2px 8px rgba(255,138,42,.4)"}}>⚔️</div>
           <div style={{flex:1}}>
             <div style={{fontSize:13,fontWeight:800,color:"#FF8A2A"}}>{tr("Défis ouverts ⚔️","Open challenges ⚔️","Offene Duelle ⚔️","Sfide aperte ⚔️","Desafios abertos ⚔️")}</div>
             <div style={{fontSize:11,color:"rgba(255,255,255,.4)",marginTop:1}}>{openUnseenCount>0?tr(openUnseenCount+" tentative"+(openUnseenCount>1?"s":"")+" sur tes défis !", openUnseenCount+" new attempt"+(openUnseenCount>1?"s":"")+" on your challenges!", openUnseenCount+(openUnseenCount>1?" neue Versuche":" neuer Versuch")+" auf deine Duelle!", openUnseenCount+(openUnseenCount>1?" nuovi tentativi":" nuovo tentativo")+" sulle tue sfide!", openUnseenCount+(openUnseenCount>1?" novas tentativas":" nova tentativa")+" nos seus desafios!"):tr("Bats les scores des autres — ou lance le tien","Beat other players' scores — or post yours","Schlag die Scores der anderen — oder poste deinen","Batti i punteggi degli altri — o lancia il tuo","Supere as pontuações dos outros — ou lance a sua")}</div>
           </div>
-          {openUnseenCount>0 && <span style={{position:"absolute",top:8,right:28,background:"#FF3D57",color:"#fff",borderRadius:"50%",minWidth:18,height:18,padding:"0 5px",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:900}}>{openUnseenCount}</span>}
+          {(openUnseenCount+receivedChallenges.length)>0 && <span style={{position:"absolute",top:8,right:28,background:"#FF3D57",color:"#fff",borderRadius:"50%",minWidth:18,height:18,padding:"0 5px",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:900}}>{openUnseenCount+receivedChallenges.length}</span>}
           <span style={{fontSize:16,color:"rgba(255,138,42,.6)"}}>›</span>
         </button>
 
