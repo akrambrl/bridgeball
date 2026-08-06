@@ -13636,7 +13636,7 @@ export default function LePont() {
             {Icon.trophy(14,G.white)} {tr("Classement","Leaderboard","Rangliste","Classifica","Classificação")}
           </button>
           <button onClick={function(){requirePseudo(function(){setShowFriends(true);loadFriends().then(function(ids){fetchFriendScores(ids);});loadDuels();loadFriendRequests();});}} style={{flex:1,...btn("#0B2213",G.white),justifyContent:"center",gap:6,position:"relative"}}>
-            {tr("👥 Amis","👥 Friends","👥 Freunde","👥 Amici","👥 Amigos")}{friendRequests.length>0&&<span style={{position:"absolute",top:-4,right:-4,background:"#FF3D57",color:"#fff",borderRadius:"50%",width:16,height:16,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:900}}>{friendRequests.length}</span>}
+            <span style={{WebkitTextStroke:0,textShadow:"none",fontSize:15,lineHeight:1}}>👥</span> {tr("Amis","Friends","Freunde","Amici","Amigos")}{friendRequests.length>0&&<span style={{position:"absolute",top:-4,right:-4,background:"#FF3D57",color:"#fff",borderRadius:"50%",width:16,height:16,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:900}}>{friendRequests.length}</span>}
           </button>
         </div>
 
