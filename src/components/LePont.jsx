@@ -10274,11 +10274,11 @@ export default function LePont() {
             );
           })}
           <div style={{fontSize:11.5,color:"rgba(255,255,255,.35)",fontWeight:600,lineHeight:1.6,textAlign:"center",padding:"0 6px"}}>
-            {tr("Touche une carte débloquée pour l'afficher à côté de ton pseudo. Retouche-la pour l'enlever.",
-                "Tap an unlocked card to show it next to your name. Tap again to remove it.",
-                "Tippe eine freigeschaltete Karte an, um sie neben deinem Namen zu zeigen.",
-                "Tocca una carta sbloccata per mostrarla accanto al tuo nome.",
-                "Toque numa carta desbloqueada para mostrá-la ao lado do seu nome.")}
+            {tr("Touche une carte débloquée pour en faire ta photo de profil. Retouche-la pour revenir à la carte de ton niveau.",
+                "Tap an unlocked card to use it as your profile picture. Tap again to go back to your level card.",
+                "Tippe eine freigeschaltete Karte an, um sie als Profilbild zu nutzen.",
+                "Tocca una carta sbloccata per usarla come foto profilo.",
+                "Toque numa carta desbloqueada para usá-la como foto de perfil.")}
           </div>
         </div>
       </div>
@@ -11366,43 +11366,13 @@ export default function LePont() {
       {/* Avatar + Pseudo */}
       <div style={{zIndex:1,padding:"16px 20px 8px",textAlign:"center"}}>
         <div style={{display:"inline-block",width:108,height:108,margin:"0 auto 14px",position:"relative",padding:4,borderRadius:"50%",background:"conic-gradient(from 200deg, #00E676, #3DA5FF, #C084FC, #FFC93C, #00E676)",boxShadow:"0 10px 40px rgba(0,230,118,.35)"}}>
-          <div onClick={playerAvatar ? ()=>setViewingAvatar(playerAvatar) : ()=>{const el=document.getElementById("avatar-upload");if(el)el.click();}} style={{width:100,height:100,borderRadius:"50%",background:playerAvatar?"#000":"linear-gradient(135deg,#00E676,#00A855)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:56,color:"#fff",boxShadow:"0 8px 30px rgba(0,230,118,.35)",overflow:"hidden",cursor:"pointer"}}>
+          <div onClick={function(){setShowCollection(true);}} style={{width:100,height:100,borderRadius:"50%",background:playerAvatar?"#000":"linear-gradient(135deg,#00E676,#00A855)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:56,color:"#fff",boxShadow:"0 8px 30px rgba(0,230,118,.35)",overflow:"hidden",cursor:"pointer"}}>
             {/* La carte fait office de photo de profil pour tout le monde : elle
                 remplace la photo uploadée, qui n'est plus affichée. */}
             <img src={avatarCard(playerBadge, playerXp).img} alt="" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top"}}/>}
           </div>
-          <label htmlFor="avatar-upload" style={{position:"absolute",bottom:-2,right:-2,width:34,height:34,borderRadius:"50%",background:G.accent,border:"3px solid #0d1f0d",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,zIndex:2,cursor:"pointer"}}>{avatarUploading?"⏳":"📷"}</label>
+          <button onClick={function(){setShowCollection(true);}} title={tr("Choisir une carte","Choose a card","Karte wählen","Scegli una carta","Escolher uma carta")} style={{position:"absolute",bottom:-2,right:-2,width:34,height:34,borderRadius:"50%",background:G.accent,border:"3px solid #0d1f0d",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,zIndex:2,cursor:"pointer",padding:0}}>🃏</button>
         </div>
-        <input id="avatar-upload" type="file" accept="image/*" style={{display:"none"}} onChange={(e)=>{
-          const file = e.target.files?.[0];
-          if (!file) return;
-          if (file.size > 10*1024*1024) { alert(tr("Image trop grande (max 10 Mo)","Image too large (max 10 MB)","Bild zu groß (max. 10 MB)","Immagine troppo grande (max 10 MB)","Imagem muito grande (máx 10 MB)")); e.target.value=""; return; }
-          // Charge l'image en dataURL pour ouvrir le cropper
-          const reader = new FileReader();
-          reader.onload = (ev) => {
-            const img = new Image();
-            img.onload = () => {
-              // Initial scale: l'image "cover" le cadre (remplit complètement)
-              const CROP_SIZE = 300; // taille virtuelle de référence, ajustée au display
-              const initialScale = CROP_SIZE / Math.min(img.width, img.height);
-              const displayedW = img.width * initialScale;
-              const displayedH = img.height * initialScale;
-              setCropState({
-                url: ev.target.result,
-                scale: initialScale,
-                minScale: initialScale, // ne peut pas zoomer en-dessous (sinon fond vide)
-                x: (CROP_SIZE - displayedW) / 2,
-                y: (CROP_SIZE - displayedH) / 2,
-                naturalW: img.width,
-                naturalH: img.height,
-                cropSize: CROP_SIZE
-              });
-            };
-            img.src = ev.target.result;
-          };
-          reader.readAsDataURL(file);
-          e.target.value = "";
-        }}/>
         <div style={{fontFamily:G.heading,fontSize:28,color:G.white,letterSpacing:1}}>@{playerName||(tr("anonyme","anonymous","anonym","anonimo","anônimo"))}</div>
         {(() => { const g = getGrade(playerXp); return (
           <div style={{display:"inline-flex",alignItems:"center",gap:6,marginTop:8,padding:"5px 14px",borderRadius:999,background:g.color+"1f",border:"1px solid "+g.color+"55",color:g.color,fontSize:11,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase"}}>{g.emoji} {g.label}</div>
