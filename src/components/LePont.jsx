@@ -10325,7 +10325,7 @@ export default function LePont() {
         <div style={{zIndex:1,padding:"20px 20px",display:"flex",flexDirection:"column",gap:14,maxWidth:560,margin:"0 auto",width:"100%",boxSizing:"border-box"}}>
 
           {/* Identité */}
-          <div style={{padding:"18px 20px",background:"rgba(255,255,255,.06)",borderRadius:16,border:"1px solid rgba(255,255,255,.1)"}}>
+          <div style={{padding:"18px 20px",background:G.nuit,borderRadius:G.rayon,border:G.trait,boxShadow:G.ombre}}>
             <div style={{fontSize:11,color:"rgba(255,255,255,.4)",fontWeight:700,letterSpacing:1.5,textTransform:"uppercase",marginBottom:6}}>{tr("Pseudo","Pseudo","Nutzername","Nome utente","Apelido")}</div>
             <div style={{fontSize:20,color:G.white,fontWeight:800}}>{playerName||"—"}</div>
             <div style={{fontSize:11,color:"rgba(255,255,255,.4)",fontWeight:600,marginTop:6}}>ID: {playerId}</div>
