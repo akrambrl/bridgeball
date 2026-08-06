@@ -2547,14 +2547,17 @@ if(typeof document!=="undefined"&&!document.getElementById("bb-css")){
     @media (min-aspect-ratio:3/5){
       .bbSplashImg{object-fit:contain}
       .bbSplashBlur{display:block;position:absolute;inset:0;z-index:0;width:100%;height:100%;object-fit:cover;filter:blur(30px) brightness(.45);transform:scale(1.12)}
-      /* Visuel paysage dédié, s'il existe : il recouvre le repli ci-dessus.
-         Chargé en background CSS (et non en <img>) exprès : si le fichier est
-         absent, le calque reste simplement transparent — pas d'icône d'image
-         cassée — et on retombe sur l'image portrait entière + fond flou.
-         Les deux extensions sont acceptées, .webp d'abord (calque du dessus) :
-         déposer public/splash-desktop.webp OU .png suffit, sans toucher au code. */
-      .bbSplashWide{display:block;position:absolute;inset:0;z-index:2;
-        background:center/cover no-repeat url("/splash-desktop.webp"),center/cover no-repeat url("/splash-desktop.png")}
+    }
+    /* Écran en paysage (ordinateur, tablette couchée) : on passe au visuel
+       dédié 16/9, qui recouvre le repli ci-dessus. Il n'est PAS utilisé sur un
+       écran plus haut que large (tablette debout), où un cadrage "cover"
+       amputerait les joueurs des deux côtés : là, l'artwork vertical d'origine
+       affiché en entier reste le meilleur rendu.
+       Chargé en background CSS et non en <img> exprès : si le fichier vient à
+       manquer, le calque reste transparent — pas d'icône d'image cassée — et on
+       retombe proprement sur l'image portrait entière + fond flou. */
+    @media (min-aspect-ratio:1/1){
+      .bbSplashWide{display:block;position:absolute;inset:0;z-index:2;background:center/cover no-repeat url("/splash-desktop.webp")}
     }
     @keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
     @keyframes duelSettle{0%{transform:translateY(-46px) scale(1.04);opacity:.5}55%{transform:translateY(7px) scale(1)}78%{transform:translateY(-3px)}100%{transform:translateY(0);opacity:1}}
