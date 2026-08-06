@@ -11271,9 +11271,10 @@ export default function LePont() {
     // un fond plus clair que lui. Sur les bandes de pelouse d'origine (#0E1F14),
     // bordures et ombres dures disparaissaient purement et simplement.
     // Le grain de trame est posé en superposition, sans intercepter les clics.
+    // NB : on écrase la clé `background` de `shell` plutôt que d'ajouter
+    // `backgroundImage` — sinon le raccourci `background:transparent` gagne.
     <div style={{...shell,animation:"fadeUp .5s ease",height:isDesktop?"auto":"100dvh",minHeight:isDesktop?"100vh":0,overflow:isDesktop?"visible":"hidden",
-      backgroundImage:"radial-gradient(70% 22% at 14% 2%, rgba(245,194,43,.26), transparent 70%),radial-gradient(70% 22% at 86% 2%, rgba(245,194,43,.26), transparent 70%),linear-gradient(180deg,#081109 0%,#0E2C17 48%,#17572C 100%)",
-      backgroundColor:"#0E2C17"}} key="home">
+      background:"radial-gradient(70% 22% at 14% 2%, rgba(245,194,43,.26), transparent 70%),radial-gradient(70% 22% at 86% 2%, rgba(245,194,43,.26), transparent 70%),linear-gradient(180deg,#081109 0%,#0E2C17 48%,#17572C 100%) #0E2C17"}} key="home">
       <div aria-hidden="true" style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",opacity:.16,
         backgroundImage:"radial-gradient(circle,#000 1px,transparent 1.3px)",backgroundSize:"5px 5px"}}/>
       {pseudoModal}
