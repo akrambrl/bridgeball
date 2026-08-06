@@ -2745,6 +2745,7 @@ export default function LePont() {
     const clair = c === G.white || c === "#fff" || c === "#ffffff";
     return {
       background:bg, color:c, border:G.trait, boxShadow:G.ombre, borderRadius:G.rayon,
+      padding:"10px 16px",
       cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:8,
       ...(clair ? posterText(size||17, c) : posterLight(size||17, c)),
     };
@@ -13631,10 +13632,10 @@ export default function LePont() {
         {roomMsg && <div style={{fontSize:12,color:"#FF3D57",fontWeight:700,marginTop:-4}}>{roomMsg}</div>}
         {/* Actions */}
         <div style={{display:"flex",gap:8}}>
-          <button onClick={function(){loadLeaderboard(lbMode);setShowLeaderboard(true);}} style={{flex:1,padding:"12px",background:G.pelouse,color:G.white,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,cursor:"pointer",fontFamily:G.poster,fontSize:16,letterSpacing:.4,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+          <button onClick={function(){loadLeaderboard(lbMode);setShowLeaderboard(true);}} style={{flex:1,...btn(G.pelouse,G.white)}}>
             {Icon.trophy(14,G.white)} {tr("Classement","Leaderboard","Rangliste","Classifica","Classificação")}
           </button>
-          <button onClick={function(){requirePseudo(function(){setShowFriends(true);loadFriends().then(function(ids){fetchFriendScores(ids);});loadDuels();loadFriendRequests();});}} style={{flex:1,padding:"12px",background:"#0B2213",color:G.white,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,cursor:"pointer",fontFamily:G.poster,fontSize:16,letterSpacing:.4,display:"flex",alignItems:"center",justifyContent:"center",gap:6,position:"relative"}}>
+          <button onClick={function(){requirePseudo(function(){setShowFriends(true);loadFriends().then(function(ids){fetchFriendScores(ids);});loadDuels();loadFriendRequests();});}} style={{flex:1,...btn("#0B2213",G.white),justifyContent:"center",gap:6,position:"relative"}}>
             {tr("👥 Amis","👥 Friends","👥 Freunde","👥 Amici","👥 Amigos")}{friendRequests.length>0&&<span style={{position:"absolute",top:-4,right:-4,background:"#FF3D57",color:"#fff",borderRadius:"50%",width:16,height:16,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:900}}>{friendRequests.length}</span>}
           </button>
         </div>
