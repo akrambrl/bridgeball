@@ -10310,6 +10310,15 @@ export default function LePont() {
   }
 
   if (showAccount) {
+    // Une seule ligne de réglage, déclinée pour les trois entrées de l'écran
+    // (collection, confidentialité, conditions) : aplat de nuit, trait d'encre
+    // et ombre dure. Les définir une fois évite que les trois divergent.
+    const ligneCompte = {
+      padding:"14px 18px", background:G.nuit, border:G.traitFin, borderRadius:G.rayon,
+      boxShadow:G.ombre, color:G.white, fontFamily:G.font, fontSize:14, fontWeight:700,
+      display:"flex", alignItems:"center", gap:12, textAlign:"left", textDecoration:"none",
+      width:"100%", boxSizing:"border-box", cursor:"pointer",
+    };
     return (
       <>
       <button onClick={function(){setShowAccount(false);setConfirmDeleteAccount(0);}} style={{position:"fixed",top:14,left:14,zIndex:100,background:"rgba(0,15,0,.85)",border:"1px solid rgba(255,255,255,.15)",borderRadius:"50%",width:42,height:42,cursor:"pointer",color:G.white,fontSize:20,display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(10px)",boxShadow:"0 4px 14px rgba(0,0,0,.4)"}}>←</button>
@@ -10325,9 +10334,9 @@ export default function LePont() {
         <div style={{zIndex:1,padding:"20px 20px",display:"flex",flexDirection:"column",gap:14,maxWidth:560,margin:"0 auto",width:"100%",boxSizing:"border-box"}}>
 
           {/* Identité */}
-          <div style={{padding:"18px 20px",background:"rgba(255,255,255,.06)",borderRadius:16,border:"1px solid rgba(255,255,255,.1)"}}>
+          <div style={{padding:"18px 20px",background:G.nuit,borderRadius:G.rayon,border:G.trait,boxShadow:G.ombre}}>
             <div style={{fontSize:11,color:"rgba(255,255,255,.4)",fontWeight:700,letterSpacing:1.5,textTransform:"uppercase",marginBottom:6}}>{tr("Pseudo","Pseudo","Nutzername","Nome utente","Apelido")}</div>
-            <div style={{fontSize:20,color:G.white,fontWeight:800}}>{playerName||"—"}</div>
+            <div style={{...posterText(24,G.white),transformOrigin:"left"}}>{playerName||"—"}</div>
             <div style={{fontSize:11,color:"rgba(255,255,255,.4)",fontWeight:600,marginTop:6}}>ID: {playerId}</div>
           </div>
 
@@ -10336,35 +10345,35 @@ export default function LePont() {
             const badge = badgeToShow(playerBadge, playerXp);
             const possedees = unlockedCards(playerXp).length;
             return (
-              <button onClick={function(){setShowAccount(false);setShowCollection(true);}} style={{padding:"14px 18px",background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",borderRadius:14,color:"rgba(255,255,255,.7)",fontFamily:G.font,fontSize:14,fontWeight:700,display:"flex",alignItems:"center",gap:12,textAlign:"left",cursor:"pointer",width:"100%"}}>
+              <button onClick={function(){setShowAccount(false);setShowCollection(true);}} style={ligneCompte}>
                 {badge
                   ? <img src={badge.thumb} alt="" style={{width:22,height:29,borderRadius:5,objectFit:"cover",border:"1.5px solid "+rarityMeta(badge.rarity).color,flexShrink:0}}/>
                   : <span style={{fontSize:18}}>🃏</span>}
                 <span style={{flex:1}}>{tr("Ma collection","My collection","Meine Sammlung","La mia collezione","Minha coleção")}</span>
-                <span style={{fontSize:12.5,fontWeight:800,color:G.accent}}>{possedees}/{CARDS.length}</span>
-                <span style={{color:"rgba(255,255,255,.3)"}}>›</span>
+                <span style={{fontSize:12.5,fontWeight:800,color:G.projecteur}}>{possedees}/{CARDS.length}</span>
+                <span style={{color:"rgba(255,255,255,.45)"}}>›</span>
               </button>
             );
           })()}
 
           {/* Liens légaux */}
-          <a href="/privacy" target="_blank" rel="noopener noreferrer" style={{padding:"14px 18px",background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",borderRadius:14,color:"rgba(255,255,255,.7)",fontFamily:G.font,fontSize:14,fontWeight:700,display:"flex",alignItems:"center",gap:12,textAlign:"left",textDecoration:"none"}}>
+          <a href="/privacy" target="_blank" rel="noopener noreferrer" style={ligneCompte}>
             <span style={{fontSize:18}}>🔒</span>
             <div style={{flex:1}}>{tr("Politique de confidentialité","Privacy Policy","Datenschutzerklärung","Informativa sulla privacy","Política de Privacidade")}</div>
-            <span style={{fontSize:14,color:"rgba(255,255,255,.4)"}}>↗</span>
+            <span style={{fontSize:14,color:"rgba(255,255,255,.45)"}}>↗</span>
           </a>
 
-          <a href="/terms" target="_blank" rel="noopener noreferrer" style={{padding:"14px 18px",background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",borderRadius:14,color:"rgba(255,255,255,.7)",fontFamily:G.font,fontSize:14,fontWeight:700,display:"flex",alignItems:"center",gap:12,textAlign:"left",textDecoration:"none"}}>
+          <a href="/terms" target="_blank" rel="noopener noreferrer" style={ligneCompte}>
             <span style={{fontSize:18}}>📄</span>
             <div style={{flex:1}}>{tr("Conditions générales","Terms of Service","Nutzungsbedingungen","Termini di servizio","Termos de Serviço")}</div>
-            <span style={{fontSize:14,color:"rgba(255,255,255,.4)"}}>↗</span>
+            <span style={{fontSize:14,color:"rgba(255,255,255,.45)"}}>↗</span>
           </a>
 
           {/* Zone danger */}
-          <div style={{marginTop:20,padding:"16px",background:"rgba(239,68,68,.08)",border:"1px solid rgba(239,68,68,.2)",borderRadius:14}}>
-            <div style={{fontSize:11,color:"#ef4444",fontWeight:700,letterSpacing:1.5,textTransform:"uppercase",marginBottom:8}}>{tr("Zone de danger","Danger zone","Gefahrenzone","Zona pericolosa","Zona de perigo")}</div>
+          <div style={{marginTop:20,padding:"16px",background:"rgba(217,58,43,.14)",border:G.trait,borderRadius:G.rayon,boxShadow:G.ombre}}>
+            <div style={{fontSize:11,color:G.maillot,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase",marginBottom:8}}>{tr("Zone de danger","Danger zone","Gefahrenzone","Zona pericolosa","Zona de perigo")}</div>
             <div style={{fontSize:13,color:"rgba(255,255,255,.7)",marginBottom:14,lineHeight:1.5}}>{tr("La suppression de ton compte est définitive. Tous tes scores, amis et données seront effacés à jamais.","Deleting your account is permanent. All your scores, friends, and data will be erased forever.","Das Löschen deines Kontos ist endgültig. Alle Scores, Freunde und Daten werden für immer gelöscht.","L'eliminazione dell'account è definitiva. Tutti i punteggi, amici e dati saranno cancellati per sempre.","Excluir sua conta é permanente. Todas as pontuações, amigos e dados serão apagados para sempre.")}</div>
-            <button onClick={function(){setConfirmDeleteAccount(1);}} style={{width:"100%",padding:"13px",background:"transparent",color:"#ef4444",border:"1px solid #ef4444",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>
+            <button onClick={function(){setConfirmDeleteAccount(1);}} style={{...btn(G.maillot,G.white,16),width:"100%",padding:"13px"}}>
               {tr("🗑 Supprimer mon compte","🗑 Delete my account","🗑 Mein Konto löschen","🗑 Elimina il mio account","🗑 Excluir minha conta")}
             </button>
           </div>
@@ -10372,9 +10381,9 @@ export default function LePont() {
           {/* Modal de confirmation suppression compte */}
           {confirmDeleteAccount > 0 && (
             <div onClick={function(e){if(e.target===e.currentTarget)setConfirmDeleteAccount(0);}} style={{position:"fixed",inset:0,background:"rgba(0,0,0,.85)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:20,backdropFilter:"blur(8px)"}}>
-              <div style={{background:G.bg,borderRadius:20,padding:"24px 22px",maxWidth:420,width:"100%",border:"1px solid rgba(239,68,68,.4)",boxShadow:"0 12px 40px rgba(0,0,0,.6)"}}>
+              <div style={{background:G.nuit,borderRadius:G.rayonL,padding:"24px 22px",maxWidth:420,width:"100%",border:G.trait,boxShadow:G.ombreL}}>
                 <div style={{fontSize:42,textAlign:"center",marginBottom:8}}>⚠️</div>
-                <div style={{fontFamily:G.heading,fontSize:22,color:"#ef4444",textAlign:"center",letterSpacing:1.2,marginBottom:14}}>
+                <div style={{...posterText(26,G.maillot),textAlign:"center",marginBottom:14}}>
                   {confirmDeleteAccount === 1 ? (tr("ES-TU SÛR ?","ARE YOU SURE?","BIST DU SICHER?","SEI SICURO?","TEM CERTEZA?")) : (tr("DERNIER AVERTISSEMENT","LAST WARNING","LETZTE WARNUNG","ULTIMO AVVISO","ÚLTIMO AVISO"))}
                 </div>
                 <div style={{fontSize:14,color:"rgba(255,255,255,.85)",textAlign:"center",marginBottom:6,lineHeight:1.5}}>
@@ -10391,13 +10400,13 @@ export default function LePont() {
                   </ul>
                 )}
                 <div style={{display:"flex",gap:10,marginTop:18}}>
-                  <button onClick={function(){setConfirmDeleteAccount(0);}} style={{flex:1,padding:"13px",background:"rgba(255,255,255,.08)",color:G.white,border:"1px solid rgba(255,255,255,.15)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>
+                  <button onClick={function(){setConfirmDeleteAccount(0);}} style={{...btn("#0B2213",G.white,16),flex:1,padding:"13px"}}>
                     {tr("Annuler","Cancel","Abbrechen","Annulla","Cancelar")}
                   </button>
                   <button onClick={function(){
                     if (confirmDeleteAccount === 1) setConfirmDeleteAccount(2);
                     else { setConfirmDeleteAccount(0); deleteAccount(); }
-                  }} style={{flex:1,padding:"13px",background:"#ef4444",color:"#fff",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>
+                  }} style={{...btn(G.maillot,G.white,16),flex:1,padding:"13px"}}>
                     {confirmDeleteAccount === 1 ? (tr("Continuer","Continue","Weiter","Continua","Continuar")) : (tr("SUPPRIMER","DELETE NOW","JETZT LÖSCHEN","ELIMINA ORA","EXCLUIR AGORA"))}
                   </button>
                 </div>
@@ -10436,7 +10445,7 @@ export default function LePont() {
             {(()=>{ const s=getCurrentSeason(); return lbMode==="amis"
               ? <div style={{fontSize:12,color:"rgba(255,255,255,.4)"}}>{tr("Classement entre amis · Cumulatif","Friends leaderboard · Cumulative","Freunde-Rangliste · Kumulativ","Classifica tra amici · Cumulativa","Classificação entre amigos · Cumulativa")}</div>
               : <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
-                  <div style={{fontSize:13,fontWeight:800,color:G.gold}}>⚽ {lang==="fr"?s.monthNameFr:s.monthNameEn}</div>
+                  <div style={{fontSize:13,fontWeight:800,color:G.projecteur}}>⚽ {lang==="fr"?s.monthNameFr:s.monthNameEn}</div>
                   <div style={{fontSize:11,color:"rgba(255,255,255,.4)"}}>{tr(`⏳ J-${s.days} ${s.hours}h avant reset`,`⏳ ${s.days}d ${s.hours}h before reset`,`⏳ ${s.days}T ${s.hours}h bis Reset`,`⏳ ${s.days}g ${s.hours}h al reset`,`⏳ ${s.days}d ${s.hours}h até o reset`)}</div>
                 </div>;
             })()}
@@ -10451,16 +10460,16 @@ export default function LePont() {
             const daysLeft = Math.max(0, Math.floor(msLeft / 86400000));
             const hoursLeft = Math.max(0, Math.floor((msLeft % 86400000) / 3600000));
             return (
-              <div style={{marginBottom:8,padding:"10px 14px",background:"rgba(255,214,0,.08)",borderRadius:14,border:"1px solid rgba(255,214,0,.2)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+              <div style={{marginBottom:8,padding:"10px 14px",background:G.nuit,borderRadius:G.rayon,border:G.trait,boxShadow:G.ombre,display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
                 <div>
-                  <div style={{fontSize:11,fontWeight:800,color:G.gold,letterSpacing:1}}>🏆 {(lang==="fr"?s.monthNameFr:s.monthNameEn).toUpperCase()}</div>
+                  <div style={{fontSize:11,fontWeight:800,color:G.projecteur,letterSpacing:1}}>🏆 {(lang==="fr"?s.monthNameFr:s.monthNameEn).toUpperCase()}</div>
                   <div style={{fontSize:10,color:"rgba(255,255,255,.4)",marginTop:2}}>
                     {daysLeft > 0
                       ? tr(`J-${daysLeft} (${hoursLeft}h)`,`${daysLeft}d (${hoursLeft}h) left`,`${daysLeft}T (${hoursLeft}h)`,`${daysLeft}g (${hoursLeft}h)`,`${daysLeft}d (${hoursLeft}h)`)
                       : tr(`Finit dans ${hoursLeft}h`,`Ends in ${hoursLeft}h`,`Endet in ${hoursLeft}h`,`Finisce tra ${hoursLeft}h`,`Termina em ${hoursLeft}h`)}
                   </div>
                 </div>
-                <button onClick={function(){setShowHallOfFame(true);}} style={{padding:"6px 12px",background:"rgba(255,214,0,.15)",color:G.gold,border:"1px solid rgba(255,214,0,.3)",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:11,fontWeight:800}}>
+                <button onClick={function(){setShowHallOfFame(true);}} style={{...btn(G.projecteur,null,14),padding:"6px 12px",flexShrink:0}}>
                   🏅 Hall of Fame
                 </button>
               </div>
@@ -10473,16 +10482,25 @@ export default function LePont() {
                 if(m==="saison") loadLeaderboard("saison");
                 else if(m!=="amis") loadLeaderboard(m);
                 else loadLeaderboard("global");
-              }} style={{flex:1,minWidth:60,padding:"10px 6px",borderRadius:12,border:"1.5px solid "+(lbMode===m?G.accent:"rgba(255,255,255,.12)"),background:lbMode===m?"rgba(0,230,118,.1)":"transparent",color:lbMode===m?G.accent:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:12}}>
+              }} style={{
+                /* L'onglet actif prend l'aplat jaune projecteur, les autres
+                   l'aplat de nuit : même encadrement d'encre pour les trois,
+                   c'est la couleur seule qui dit lequel est ouvert. */
+                ...(lbMode===m ? btn(G.projecteur,null,15) : btn("#0B2213",G.white,15)),
+                flex:1, minWidth:60, padding:"10px 6px",
+              }}>
                 {m==="saison"?tr("⭐ Saison","⭐ Season","⭐ Saison","⭐ Stagione","⭐ Temporada"):m==="global"?"🌍 Global":tr("👥 Amis","👥 Friends","👥 Freunde","👥 Amici","👥 Amigos")}
               </button>
             );})}
           </div>
           {/* Toggle Monde/Amis pour le classement Saison */}
+          {/* Segmenté : le cadre d'encre est porté par le conteneur, pas par
+              chaque segment — deux traits collés l'un à l'autre feraient une
+              barre noire au milieu du groupe. */}
           {lbMode==="saison" && (
-            <div style={{display:"flex",gap:4,marginBottom:10,marginTop:6,padding:4,background:"rgba(255,255,255,.04)",borderRadius:10,border:"1px solid rgba(255,255,255,.06)"}}>
+            <div style={{display:"flex",gap:4,marginBottom:10,marginTop:6,padding:4,background:"#0B2213",borderRadius:G.rayonS,border:G.traitFin,boxShadow:G.ombre}}>
               {[{id:"monde",emoji:"🌍"},{id:"amis",emoji:"👥"}].map(function(s){return(
-                <button key={s.id} onClick={function(){setLbSeasonScope(s.id);}} style={{flex:1,padding:"8px 10px",borderRadius:8,border:"none",background:lbSeasonScope===s.id?"rgba(0,230,118,.2)":"transparent",color:lbSeasonScope===s.id?G.accent:"rgba(255,255,255,.55)",fontFamily:G.font,fontSize:12,fontWeight:800,cursor:"pointer",letterSpacing:.5,transition:"all .15s"}}>
+                <button key={s.id} onClick={function(){setLbSeasonScope(s.id);}} style={{flex:1,padding:"8px 10px",borderRadius:8,border:"none",background:lbSeasonScope===s.id?G.projecteur:"transparent",color:lbSeasonScope===s.id?G.encre:"rgba(255,255,255,.55)",fontFamily:G.font,fontSize:12,fontWeight:800,cursor:"pointer",letterSpacing:.5,transition:"all .15s"}}>
                   {s.emoji} {s.id==="monde"?tr("Monde","World","Welt","Mondo","Mundo"):tr("Amis","Friends","Freunde","Amici","Amigos")}
                 </button>
               );})}
@@ -10508,13 +10526,26 @@ export default function LePont() {
             // — pas le score de la partie (qui peut être trompeur)
             const grade = getGrade(entry.xp || 0);
             return(
-              <div key={i} onClick={()=>{ if(!isMe) { setShowLeaderboard(false); openUserProfile(entry.pid, entry.name, "leaderboard"); } }} style={{borderRadius:14,background:i===0?"linear-gradient(135deg,#FFD600,#FF6B35)":i===1?"linear-gradient(135deg,#E8E8E8,#A8A8B0)":i===2?"linear-gradient(135deg,#E3A869,#8B5A2B)":"rgba(0,230,118,.18)",border:i===0?"1px solid rgba(255,214,0,.6)":i===1?"1px solid rgba(200,200,210,.6)":i===2?"1px solid rgba(205,127,50,.6)":isMe?"1px solid rgba(0,230,118,.6)":"1px solid rgba(0,230,118,.35)",marginBottom:6,overflow:"hidden",cursor:isMe?"default":"pointer",boxShadow:i===0?"0 4px 18px rgba(255,107,53,.35)":i===1?"0 4px 18px rgba(200,200,210,.25)":i===2?"0 4px 18px rgba(205,127,50,.3)":"none"}}>
+              <div key={i} onClick={()=>{ if(!isMe) { setShowLeaderboard(false); openUserProfile(entry.pid, entry.name, "leaderboard"); } }} style={{
+                /* Les trois métaux du podium sont conservés : c'est le dégradé
+                   qui dit la place, aucun jeton de la charte ne le remplace.
+                   Le reste du classement passe à l'aplat de nuit, ma propre
+                   ligne à la pelouse. Trait d'encre et ombre dure pour tous :
+                   la hiérarchie vient de la couleur, jamais du cadre.
+                   L'écart entre lignes passe à 10 pour laisser voir l'ombre. */
+                borderRadius:G.rayon,
+                background:i===0?"linear-gradient(135deg,"+G.projecteur+","+G.maillot+")"
+                  :i===1?"linear-gradient(135deg,#E8E8E8,#A8A8B0)"
+                  :i===2?"linear-gradient(135deg,#E3A869,#8B5A2B)"
+                  :isMe?"rgba(42,155,78,.42)":G.nuit,
+                border:G.trait,boxShadow:G.ombre,
+                marginBottom:10,overflow:"hidden",cursor:isMe?"default":"pointer"}}>
                 <div style={{display:"flex",alignItems:"center",gap:10,padding:"12px 12px"}}>
-                  <div style={{fontFamily:G.heading,fontSize:28,width:34,textAlign:"center",color:i<3?["#FFD600","#C0C0C0","#CD7F32"][i]:"rgba(255,255,255,.3)",flexShrink:0}}>
+                  <div style={{...posterText(28,i<3?G.encre:"rgba(255,255,255,.45)"),width:34,textAlign:"center",flexShrink:0}}>
                     {i<3?medals[i]:(i+1)}
                   </div>
                   {/* Avatar rond (photo Supabase Storage ou fallback emoji grade) */}
-                  <div style={{width:36,height:48,borderRadius:7,border:"1.5px solid rgba(255,255,255,.28)",background:"#000",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,color:"#fff",overflow:"hidden",position:"relative",flexShrink:0,border:i<3?"2px solid rgba(0,0,0,.3)":"1.5px solid rgba(255,255,255,.15)"}}>
+                  <div style={{width:36,height:48,borderRadius:7,border:G.traitFin,background:"#000",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,color:"#fff",overflow:"hidden",position:"relative",flexShrink:0}}>
                     {/* Photo de profil par défaut = la carte du joueur (badge choisi, sinon
                         carte de son niveau). La photo uploadée, si elle existe, se
                         superpose par-dessus ; son onError la retire et laisse voir la carte.
@@ -10530,9 +10561,9 @@ export default function LePont() {
                   </div>
                   <div style={{flex:1,minWidth:0}}>
                     <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3,flexWrap:"wrap"}}>
-                      <span style={{fontSize:18,fontFamily:G.heading,letterSpacing:1,color:i<3?"#1a0d00":isMe?G.accent:G.white,whiteSpace:"nowrap"}}>{entry.country && <span style={{marginRight:5,fontSize:15}}>{countryToFlag(entry.country)}</span>}{entry.name}{isMe?tr(" (toi)"," (you)"," (du)"," (tu)"," (você)"):""}</span>
-                      <span style={{fontSize:11,fontWeight:800,color:i<3?"#1a0d00":grade.color,background:i<3?"rgba(26,13,0,.18)":grade.color+"22",borderRadius:20,padding:"2px 8px",letterSpacing:.5,border:i<3?"1px solid rgba(26,13,0,.25)":"none"}}>{grade.emoji} {grade.label}</span>
-                      {entry.streak>=3 && <span style={{fontSize:11,fontWeight:800,color:"#FF6B35",background:"rgba(255,107,53,.15)",borderRadius:20,padding:"2px 8px"}}>🔥 {entry.streak}</span>}
+                      <span style={{...posterText(18,i<3?G.encre:isMe?G.projecteur:G.white),display:"inline-block",whiteSpace:"nowrap"}}>{entry.country && <span style={{marginRight:5,fontSize:15}}>{countryToFlag(entry.country)}</span>}{entry.name}{isMe?tr(" (toi)"," (you)"," (du)"," (tu)"," (você)"):""}</span>
+                      <span style={{fontSize:11,fontWeight:800,color:i<3?G.encre:grade.color,background:i<3?"rgba(8,17,9,.18)":grade.color+"22",borderRadius:20,padding:"2px 8px",letterSpacing:.5,border:i<3?"1px solid "+G.encre+"40":"none"}}>{grade.emoji} {grade.label}</span>
+                      {entry.streak>=3 && <span style={{fontSize:11,fontWeight:800,color:G.maillot,background:"rgba(217,58,43,.18)",borderRadius:20,padding:"2px 8px"}}>🔥 {entry.streak}</span>}
                       {/* Badge de collection — la carte est revalidée contre l'XP
                           du joueur (badgeToShow), pour ne jamais afficher une
                           carte non méritée si la valeur en base est périmée. */}
@@ -10546,24 +10577,27 @@ export default function LePont() {
                     </div>
                     {lbMode==="saison"
                       ? null
-                      : <div style={{fontSize:12,color:i<3?"rgba(26,13,0,.85)":"rgba(255,255,255,.5)",marginTop:3,fontWeight:i<3?700:400}}>{entry.played} {entry.played>1?tr("parties","games","Spiele","partite","jogos"):tr("partie","game","Spiel","partita","jogo")}</div>
+                      : <div style={{fontSize:12,color:i<3?"rgba(8,17,9,.85)":"rgba(255,255,255,.5)",marginTop:3,fontWeight:i<3?700:400}}>{entry.played} {entry.played>1?tr("parties","games","Spiele","partite","jogos"):tr("partie","game","Spiel","partita","jogo")}</div>
                     }
                   </div>
-                  <div style={{fontFamily:G.heading,fontSize:28,color:i<3?"#1a0d00":G.white,flexShrink:0}}>{entry.score} <span style={{fontSize:12,color:i<3?"rgba(26,13,0,.7)":"rgba(255,255,255,.3)",fontWeight:i<3?700:400}}>pts</span></div>
+                  <div style={{...posterText(28,i<3?G.encre:G.white),flexShrink:0}}>{entry.score} <span style={{fontSize:12,color:i<3?"rgba(8,17,9,.7)":"rgba(255,255,255,.35)",fontWeight:i<3?700:400}}>pts</span></div>
                 </div>
                 {lbMode!=="saison" && (
-                <div style={{display:"flex",borderTop:i<3?"1px solid rgba(0,0,0,.2)":"1px solid rgba(255,255,255,.06)",background:i<3?"rgba(0,0,0,.08)":"transparent"}}>
-                    <div style={{flex:1,padding:"10px 0",textAlign:"center",borderRight:i<3?"1px solid rgba(0,0,0,.15)":"1px solid rgba(255,255,255,.06)"}}>
-                      <div style={{fontFamily:G.heading,fontSize:22,color:i<3?"#0d5c2a":"#00E676"}}>{entry.wins||0}</div>
-                      <div style={{fontSize:11,color:i<3?"rgba(26,13,0,.75)":"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase",fontWeight:i<3?800:400}}>{tr("Victoires","Wins","Siege","Vittorie","Vitórias")}</div>
+                /* Le bandeau V/N/D est séparé du corps de la ligne par un trait
+                   d'encre plein — sur le podium comme ailleurs, c'est le même
+                   trait, seule la transparence du fond change. */
+                <div style={{display:"flex",borderTop:G.traitFin,background:i<3?"rgba(8,17,9,.1)":"rgba(0,0,0,.22)"}}>
+                    <div style={{flex:1,padding:"10px 0",textAlign:"center",borderRight:G.traitFin}}>
+                      <div style={{...posterText(22,i<3?"#0d5c2a":G.pelouse)}}>{entry.wins||0}</div>
+                      <div style={{fontSize:11,color:i<3?"rgba(8,17,9,.75)":"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase",fontWeight:i<3?800:400}}>{tr("Victoires","Wins","Siege","Vittorie","Vitórias")}</div>
                     </div>
-                    <div style={{flex:1,padding:"10px 0",textAlign:"center",borderRight:i<3?"1px solid rgba(0,0,0,.15)":"1px solid rgba(255,255,255,.06)"}}>
-                      <div style={{fontFamily:G.heading,fontSize:22,color:i<3?"#7a5c00":G.gold}}>{entry.draws||0}</div>
-                      <div style={{fontSize:11,color:i<3?"rgba(26,13,0,.75)":"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase",fontWeight:i<3?800:400}}>{tr("Nuls","Draws","Remis","Pareggi","Empates")}</div>
+                    <div style={{flex:1,padding:"10px 0",textAlign:"center",borderRight:G.traitFin}}>
+                      <div style={{...posterText(22,i<3?"#7a5c00":G.projecteur)}}>{entry.draws||0}</div>
+                      <div style={{fontSize:11,color:i<3?"rgba(8,17,9,.75)":"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase",fontWeight:i<3?800:400}}>{tr("Nuls","Draws","Remis","Pareggi","Empates")}</div>
                     </div>
                     <div style={{flex:1,padding:"10px 0",textAlign:"center"}}>
-                      <div style={{fontFamily:G.heading,fontSize:22,color:i<3?"#8a1a2e":"#FF3D57"}}>{entry.losses||0}</div>
-                      <div style={{fontSize:11,color:i<3?"rgba(26,13,0,.75)":"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase",fontWeight:i<3?800:400}}>{tr("Défaites","Losses","Niederlagen","Sconfitte","Derrotas")}</div>
+                      <div style={{...posterText(22,i<3?"#8a1a2e":G.maillot)}}>{entry.losses||0}</div>
+                      <div style={{fontSize:11,color:i<3?"rgba(8,17,9,.75)":"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase",fontWeight:i<3?800:400}}>{tr("Défaites","Losses","Niederlagen","Sconfitte","Derrotas")}</div>
                     </div>
                   </div>
                 )}
@@ -10573,7 +10607,7 @@ export default function LePont() {
           {/* Hall of Fame */}
           {hallOfFame.length > 0 && lbMode !== "amis" && (
             <div style={{marginTop:16,paddingTop:16,borderTop:"1px solid rgba(255,255,255,.08)"}}>
-              <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.3)",marginBottom:10,textAlign:"center"}}>🏛 Hall of Fame</div>
+              <div style={{fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:10,textAlign:"center"}}>🏛 Hall of Fame</div>
               {hallOfFame.slice(0,5).map(function(s,i){
                 const monthNamesFr = ["Jan","Fév","Mars","Avr","Mai","Juin","Juil","Août","Sept","Oct","Nov","Déc"];
                 const monthNamesEn = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -10583,13 +10617,13 @@ export default function LePont() {
                   monthShort = (lang==="fr"?monthNamesFr:monthNamesEn)[parseInt(m,10)-1] + " " + y.slice(2);
                 }
                 return (
-                  <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",background:"rgba(255,215,0,.05)",borderRadius:12,marginBottom:6,border:"1px solid rgba(255,215,0,.1)"}}>
+                  <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",background:G.nuit,borderRadius:G.rayonS,marginBottom:10,border:G.traitFin,boxShadow:G.ombre}}>
                     <span style={{fontSize:20}}>👑</span>
                     <div style={{flex:1}}>
-                      <div style={{fontSize:13,fontWeight:800,color:G.gold}}>{s.champion_name}</div>
+                      <div style={{fontSize:13,fontWeight:800,color:G.projecteur}}>{s.champion_name}</div>
                       <div style={{fontSize:11,color:"rgba(255,255,255,.35)"}}>{monthShort}</div>
                     </div>
-                    <div style={{fontFamily:G.heading,fontSize:20,color:G.gold}}>{s.champion_score} <span style={{fontSize:11,color:"rgba(255,255,255,.3)"}}>pts</span></div>
+                    <div style={{...posterText(20,G.projecteur)}}>{s.champion_score} <span style={{fontSize:11,color:"rgba(255,255,255,.35)"}}>pts</span></div>
                   </div>
                 );
               })}
@@ -10601,8 +10635,10 @@ export default function LePont() {
       {showHallOfFame && (
         <div style={{position:"fixed",inset:0,zIndex:400,background:"rgba(0,0,0,.85)",display:"flex",alignItems:"flex-end"}}
           onClick={function(e){if(e.target===e.currentTarget)setShowHallOfFame(false);}}>
-          <div style={{width:"100%",background:"rgba(10,20,10,.97)",borderRadius:"28px 28px 0 0",padding:"20px 20px 48px",border:"1px solid rgba(255,255,255,.1)",borderBottom:"none",maxHeight:"80vh",overflowY:"auto"}}>
-            <div style={{fontFamily:G.heading,fontSize:28,color:G.gold,letterSpacing:2,marginBottom:4,textAlign:"center"}}>🏅 HALL OF FAME</div>
+          <div style={{width:"100%",background:"rgba(10,20,10,.97)",borderRadius:"28px 28px 0 0",padding:"20px 20px 48px",border:G.trait,borderBottom:"none",maxHeight:"80vh",overflowY:"auto"}}>
+            {/* L'emoji sort du contour d'encre : posé sur une image en couleur,
+                le stroke la cerne de noir au lieu de la détourer. */}
+            <div style={{...posterText(34,G.projecteur),marginBottom:6,textAlign:"center"}}><span style={{WebkitTextStroke:0,textShadow:"none"}}>🏅</span> HALL OF FAME</div>
             <div style={{fontSize:12,color:"rgba(255,255,255,.4)",textAlign:"center",marginBottom:16}}>{tr("Champions des saisons passées","Past season champions","Champions vergangener Saisons","Campioni delle stagioni passate","Campeões das temporadas passadas")}</div>
             {hallOfFame.length === 0 && <div style={{textAlign:"center",color:"rgba(255,255,255,.3)",padding:"24px 0",fontSize:14}}>{tr("Pas encore de champion — la première saison est en cours !","No champion yet — the first season is ongoing!","Noch kein Champion — die erste Saison läuft!","Ancora nessun campione — la prima stagione è in corso!","Ainda sem campeão — a primeira temporada está em andamento!")}</div>}
             {hallOfFame.map(function(s,i){
@@ -10616,36 +10652,39 @@ export default function LePont() {
                 monthLabel = (lang==="fr"?monthNamesFr:monthNamesEn)[mi] + " " + y;
               }
               return (
-                <div key={i} style={{background:"linear-gradient(135deg, rgba(255,214,0,.1), rgba(255,107,53,.05))",borderRadius:18,border:"1.5px solid rgba(255,214,0,.3)",marginBottom:14,padding:"16px 14px",boxShadow:"0 4px 16px rgba(255,214,0,.08)"}}>
+                <div key={i} style={{background:G.nuit,borderRadius:G.rayon,border:G.trait,marginBottom:16,padding:"16px 14px",boxShadow:G.ombre}}>
                   {/* Header saison */}
                   <div style={{textAlign:"center",marginBottom:12}}>
-                    <div style={{fontSize:11,fontWeight:800,letterSpacing:3,color:"rgba(255,214,0,.7)",textTransform:"uppercase"}}>{tr("Saison","Season","Saison","Stagione","Temporada")} {s.season_number}</div>
-                    {monthLabel && <div style={{fontFamily:G.heading,fontSize:18,color:G.white,letterSpacing:1,marginTop:2}}>{monthLabel}</div>}
+                    <div style={{fontSize:11,fontWeight:800,letterSpacing:3,color:G.projecteur,textTransform:"uppercase"}}>{tr("Saison","Season","Saison","Stagione","Temporada")} {s.season_number}</div>
+                    {monthLabel && <div style={{...posterText(20,G.white),marginTop:2}}>{monthLabel}</div>}
                   </div>
                   {/* Podium */}
                   <div style={{display:"grid",gridTemplateColumns:"1fr 1.3fr 1fr",gap:8,alignItems:"flex-end"}}>
                     {/* 2nd */}
                     {s.runner_up_name ? (
-                      <div style={{textAlign:"center",background:"rgba(200,200,210,.12)",border:"1px solid rgba(200,200,210,.3)",borderRadius:12,padding:"12px 6px"}}>
+                      <div style={{textAlign:"center",background:"rgba(200,200,210,.14)",border:G.traitFin,borderRadius:G.rayonS,boxShadow:G.ombre,padding:"12px 6px"}}>
                         <div style={{fontSize:26,marginBottom:4}}>🥈</div>
                         <div style={{fontSize:13,fontWeight:800,color:"#E8E8E8",marginBottom:2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{s.runner_up_name}</div>
-                        <div style={{fontFamily:G.heading,fontSize:16,color:"#C0C0C0"}}>{s.runner_up_xp}</div>
+                        <div style={{...posterText(18,"#C0C0C0")}}>{s.runner_up_xp}</div>
                         <div style={{fontSize:9,color:"rgba(255,255,255,.4)",letterSpacing:1}}>pts</div>
                       </div>
                     ) : <div/>}
                     {/* 1st (champion) */}
-                    <div style={{textAlign:"center",background:"linear-gradient(180deg,rgba(255,214,0,.25),rgba(255,214,0,.1))",border:"1.5px solid #FFD600",borderRadius:14,padding:"14px 6px",boxShadow:"0 4px 14px rgba(255,214,0,.25)",transform:"translateY(-4px)"}}>
+                    {/* Le champion est le seul aplat plein du podium : lettrage
+                        nu sur le jaune (posterLight), le contour d'encre
+                        boucherait des lettres posées sur clair. */}
+                    <div style={{textAlign:"center",background:G.projecteur,border:G.trait,borderRadius:G.rayon,padding:"14px 6px",boxShadow:G.ombre,transform:"translateY(-4px)"}}>
                       <div style={{fontSize:32,marginBottom:4}}>👑</div>
-                      <div style={{fontSize:14,fontWeight:800,color:G.gold,marginBottom:2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",textShadow:"0 1px 6px rgba(255,214,0,.5)"}}>{s.champion_name}</div>
-                      <div style={{fontFamily:G.heading,fontSize:20,color:G.gold}}>{s.champion_score}</div>
-                      <div style={{fontSize:9,color:"rgba(255,214,0,.7)",letterSpacing:1,fontWeight:700}}>pts</div>
+                      <div style={{fontSize:14,fontWeight:800,color:G.encre,marginBottom:2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{s.champion_name}</div>
+                      <div style={{...posterLight(22,G.encre)}}>{s.champion_score}</div>
+                      <div style={{fontSize:9,color:"rgba(8,17,9,.75)",letterSpacing:1,fontWeight:800}}>pts</div>
                     </div>
                     {/* 3rd */}
                     {s.third_name ? (
-                      <div style={{textAlign:"center",background:"rgba(205,127,50,.12)",border:"1px solid rgba(205,127,50,.3)",borderRadius:12,padding:"12px 6px"}}>
+                      <div style={{textAlign:"center",background:"rgba(205,127,50,.16)",border:G.traitFin,borderRadius:G.rayonS,boxShadow:G.ombre,padding:"12px 6px"}}>
                         <div style={{fontSize:26,marginBottom:4}}>🥉</div>
                         <div style={{fontSize:13,fontWeight:800,color:"#E3A869",marginBottom:2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{s.third_name}</div>
-                        <div style={{fontFamily:G.heading,fontSize:16,color:"#CD7F32"}}>{s.third_xp}</div>
+                        <div style={{...posterText(18,"#CD7F32")}}>{s.third_xp}</div>
                         <div style={{fontSize:9,color:"rgba(255,255,255,.4)",letterSpacing:1}}>pts</div>
                       </div>
                     ) : <div/>}
@@ -10653,7 +10692,7 @@ export default function LePont() {
                 </div>
               );
             })}
-            <button onClick={function(){setShowHallOfFame(false);}} style={{width:"100%",padding:"14px",background:"rgba(255,255,255,.07)",color:G.white,border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700,marginTop:8}}>{tr("Fermer","Close","Schließen","Chiudi","Fechar")}</button>
+            <button onClick={function(){setShowHallOfFame(false);}} style={{...btn("#0B2213",G.white,17),width:"100%",padding:"14px",marginTop:8}}>{tr("Fermer","Close","Schließen","Chiudi","Fechar")}</button>
           </div>
         </div>
       )}
