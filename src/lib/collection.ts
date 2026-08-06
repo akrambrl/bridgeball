@@ -139,6 +139,25 @@ export function newlyUnlocked(oldXp: number, newXp: number): Card[] {
   return CARDS.filter((c) => c.xp > (oldXp || 0) && c.xp <= newXp);
 }
 
+/**
+ * Carte du NIVEAU : la meilleure carte possédée à cette XP. C'est elle qui sert
+ * de photo de profil par défaut, pour que chaque joueur en ait une sans rien
+ * faire — et qu'elle progresse d'elle-même quand il monte.
+ */
+export function levelCard(xp: number): Card {
+  const owned = unlockedCards(xp);
+  return owned[owned.length - 1] || CARDS[0]; // CARDS[0] est à 0 XP : jamais vide
+}
+
+/**
+ * Carte à afficher comme avatar : le badge choisi s'il est valide, sinon la
+ * carte du niveau. Choisir un badge revient donc à figer sa photo de profil sur
+ * une carte précise, au lieu de suivre automatiquement son niveau.
+ */
+export function avatarCard(badgeId: string | null | undefined, xp: number): Card {
+  return badgeToShow(badgeId, xp) || levelCard(xp);
+}
+
 /** Badge valide seulement si la carte existe ET est débloquée à cette XP. */
 export function badgeToShow(badgeId: string | null | undefined, xp: number): Card | null {
   const card = cardById(badgeId);
