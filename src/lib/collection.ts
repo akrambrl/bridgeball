@@ -12,9 +12,11 @@
 // rien pour presque personne : les 12 premières cartes tiennent donc sous
 // 5 000 XP, et les légendaires servent d'objectif long terme.
 //
-// Les visuels sont de simples fichiers de public/ : ce sont pour l'instant des
-// placeholders repris des visuels existants, à remplacer un par un sans toucher
-// au code (seul le champ `img` change).
+// Visuels : les 12 premières cartes (commune + rare) ont leur illustration
+// définitive dans public/cards/ ; les 9 dernières (épique + légendaire) portent
+// encore un placeholder repris des visuels existants. Pour en livrer une, il
+// suffit de déposer public/cards/<id>.webp (+ <id>-64.webp pour le badge) et de
+// pointer `img`/`thumb` dessus : aucune autre ligne de code à toucher.
 
 export type Rarity = "commune" | "rare" | "epique" | "legendaire";
 
@@ -38,7 +40,11 @@ export type Card = {
   id: string;
   name: string;
   nameEn: string;
+  /** Visuel plein format (3:4), affiché dans la collection et le popup. */
   img: string;
+  /** Vignette ~48×64 pour le badge à côté du pseudo : le classement en charge
+   *  une par joueur, inutile d'y tirer le visuel plein format. */
+  thumb: string;
   xp: number;
   rarity: Rarity;
 };
@@ -47,30 +53,30 @@ export type Card = {
 // d'un joueur pointerait dans le vide), contrairement au nom et au visuel.
 export const CARDS: Card[] = [
   // ── Communes : les toutes premières parties ──
-  { id: "recrue",      name: "La Recrue",        nameEn: "The Rookie",      img: "/plug-card.png",    xp: 0,     rarity: "commune" },
-  { id: "premier-but", name: "Premier But",      nameEn: "First Goal",      img: "/mercato-card.png", xp: 50,    rarity: "commune" },
-  { id: "banc",        name: "Sur le Banc",      nameEn: "On the Bench",    img: "/grid-card.png",    xp: 150,   rarity: "commune" },
-  { id: "entrant",     name: "L'Entrant",        nameEn: "The Sub",         img: "/guess-card.png",   xp: 300,   rarity: "commune" },
-  { id: "premier-onze",name: "Premier Onze",     nameEn: "First Eleven",    img: "/reveal-card.png",  xp: 500,   rarity: "commune" },
-  { id: "regulier",    name: "Le Régulier",      nameEn: "The Regular",     img: "/duel-card.png",    xp: 800,   rarity: "commune" },
+  { id: "recrue",      name: "La Recrue",        nameEn: "The Rookie",      img: "/cards/recrue.webp",    thumb: "/cards/recrue-64.webp", xp: 0,     rarity: "commune" },
+  { id: "premier-but", name: "Premier But",      nameEn: "First Goal",      img: "/cards/premier-but.webp", thumb: "/cards/premier-but-64.webp", xp: 50,    rarity: "commune" },
+  { id: "banc",        name: "Sur le Banc",      nameEn: "On the Bench",    img: "/cards/banc.webp",    thumb: "/cards/banc-64.webp", xp: 150,   rarity: "commune" },
+  { id: "entrant",     name: "L'Entrant",        nameEn: "The Sub",         img: "/cards/entrant.webp",   thumb: "/cards/entrant-64.webp", xp: 300,   rarity: "commune" },
+  { id: "premier-onze",name: "Premier Onze",     nameEn: "First Eleven",    img: "/cards/premier-onze.webp",  thumb: "/cards/premier-onze-64.webp", xp: 500,   rarity: "commune" },
+  { id: "regulier",    name: "Le Régulier",      nameEn: "The Regular",     img: "/cards/regulier.webp",    thumb: "/cards/regulier-64.webp", xp: 800,   rarity: "commune" },
   // ── Rares : joueur installé (p75 → p95) ──
-  { id: "titulaire",   name: "Le Titulaire",     nameEn: "The Starter",     img: "/devin-1.png",      xp: 1200,  rarity: "rare" },
-  { id: "numero-10",   name: "Le Numéro 10",     nameEn: "The Number 10",   img: "/devin-2.png",      xp: 1700,  rarity: "rare" },
-  { id: "brassard",    name: "Le Brassard",      nameEn: "The Armband",     img: "/devin-3.png",      xp: 2300,  rarity: "rare" },
-  { id: "meneur",      name: "Le Meneur",        nameEn: "The Playmaker",   img: "/devin-4.png",      xp: 3000,  rarity: "rare" },
-  { id: "buteur",      name: "Le Buteur",        nameEn: "The Striker",     img: "/lose1.png",        xp: 4000,  rarity: "rare" },
-  { id: "international",name: "L'International", nameEn: "The Cap",         img: "/lose2.png",        xp: 5000,  rarity: "rare" },
+  { id: "titulaire",   name: "Le Titulaire",     nameEn: "The Starter",     img: "/cards/titulaire.webp",      thumb: "/cards/titulaire-64.webp", xp: 1200,  rarity: "rare" },
+  { id: "numero-10",   name: "Le Numéro 10",     nameEn: "The Number 10",   img: "/cards/numero-10.webp",      thumb: "/cards/numero-10-64.webp", xp: 1700,  rarity: "rare" },
+  { id: "brassard",    name: "Le Brassard",      nameEn: "The Armband",     img: "/cards/brassard.webp",      thumb: "/cards/brassard-64.webp", xp: 2300,  rarity: "rare" },
+  { id: "meneur",      name: "Le Meneur",        nameEn: "The Playmaker",   img: "/cards/meneur.webp",      thumb: "/cards/meneur-64.webp", xp: 3000,  rarity: "rare" },
+  { id: "buteur",      name: "Le Buteur",        nameEn: "The Striker",     img: "/cards/buteur.webp",        thumb: "/cards/buteur-64.webp", xp: 4000,  rarity: "rare" },
+  { id: "international",name: "L'International", nameEn: "The Cap",         img: "/cards/international.webp",        thumb: "/cards/international-64.webp", xp: 5000,  rarity: "rare" },
   // ── Épiques : haut du classement ──
-  { id: "maestro",     name: "Le Maestro",       nameEn: "The Maestro",     img: "/lose3.png",        xp: 6500,  rarity: "epique" },
-  { id: "finisseur",   name: "Le Finisseur",     nameEn: "The Finisher",    img: "/lose4.png",        xp: 8000,  rarity: "epique" },
-  { id: "ballon-or",   name: "Ballon d'Or",      nameEn: "Golden Ball",     img: "/win1.png",         xp: 10000, rarity: "epique" },
-  { id: "intouchable", name: "L'Intouchable",    nameEn: "Untouchable",     img: "/win2.png",         xp: 12500, rarity: "epique" },
-  { id: "phenomene",   name: "Le Phénomène",     nameEn: "The Phenomenon",  img: "/win3.png",         xp: 15000, rarity: "epique" },
+  { id: "maestro",     name: "Le Maestro",       nameEn: "The Maestro",     img: "/plug-card.png",        thumb: "/plug-card.png", xp: 6500,  rarity: "epique" },
+  { id: "finisseur",   name: "Le Finisseur",     nameEn: "The Finisher",    img: "/mercato-card.png",        thumb: "/mercato-card.png", xp: 8000,  rarity: "epique" },
+  { id: "ballon-or",   name: "Ballon d'Or",      nameEn: "Golden Ball",     img: "/grid-card.png",         thumb: "/grid-card.png", xp: 10000, rarity: "epique" },
+  { id: "intouchable", name: "L'Intouchable",    nameEn: "Untouchable",     img: "/guess-card.png",         thumb: "/guess-card.png", xp: 12500, rarity: "epique" },
+  { id: "phenomene",   name: "Le Phénomène",     nameEn: "The Phenomenon",  img: "/reveal-card.png",         thumb: "/reveal-card.png", xp: 15000, rarity: "epique" },
   // ── Légendaires : objectif long terme ──
-  { id: "legende",     name: "La Légende",       nameEn: "The Legend",      img: "/win4.png",         xp: 20000, rarity: "legendaire" },
-  { id: "hall-of-fame",name: "Hall of Fame",     nameEn: "Hall of Fame",    img: "/win5.png",         xp: 27000, rarity: "legendaire" },
-  { id: "immortel",    name: "L'Immortel",       nameEn: "The Immortal",    img: "/logo.png",         xp: 35000, rarity: "legendaire" },
-  { id: "goat",        name: "Le GOAT",          nameEn: "The GOAT",        img: "/og-image.png",     xp: 50000, rarity: "legendaire" },
+  { id: "legende",     name: "La Légende",       nameEn: "The Legend",      img: "/duel-card.png",         thumb: "/duel-card.png", xp: 20000, rarity: "legendaire" },
+  { id: "hall-of-fame",name: "Hall of Fame",     nameEn: "Hall of Fame",    img: "/devin-1.png",         thumb: "/devin-1.png", xp: 27000, rarity: "legendaire" },
+  { id: "immortel",    name: "L'Immortel",       nameEn: "The Immortal",    img: "/devin-2.png",         thumb: "/devin-2.png", xp: 35000, rarity: "legendaire" },
+  { id: "goat",        name: "Le GOAT",          nameEn: "The GOAT",        img: "/devin-3.png",     thumb: "/devin-3.png", xp: 50000, rarity: "legendaire" },
 ];
 
 export function rarityMeta(rarity: Rarity): RarityMeta {

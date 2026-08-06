@@ -8501,7 +8501,7 @@ export default function LePont() {
           <div style={{fontSize:11,letterSpacing:3,fontWeight:800,color:"rgba(255,255,255,.5)",marginBottom:14}}>
             {tr("🃏 NOUVELLE CARTE 🃏","🃏 NEW CARD 🃏","🃏 NEUE KARTE 🃏","🃏 NUOVA CARTA 🃏","🃏 NOVA CARTA 🃏")}
           </div>
-          <img src={cardPopup.img} alt="" style={{width:"100%",aspectRatio:"1",objectFit:"cover",borderRadius:16,border:"1.5px solid "+rm.color+"88",display:"block"}}/>
+          <img src={cardPopup.img} alt="" style={{width:"100%",aspectRatio:"3 / 4",objectFit:"cover",borderRadius:16,border:"1.5px solid "+rm.color+"88",display:"block"}}/>
           <div style={{fontFamily:G.heading,fontSize:26,color:G.white,letterSpacing:1,marginTop:14}}>{lang==="fr"?cardPopup.name:cardPopup.nameEn}</div>
           <div style={{fontSize:12,fontWeight:800,letterSpacing:1.5,color:rm.color,textTransform:"uppercase",marginTop:3}}>{lang==="fr"?rm.label:rm.labelEn}</div>
           <div style={{display:"flex",gap:10,marginTop:20}}>
@@ -10227,7 +10227,7 @@ export default function LePont() {
                   <span style={{flex:1,height:1,background:"linear-gradient(90deg,"+rar.color+"55,transparent)"}}/>
                   <span style={{fontSize:11,fontWeight:700,color:"rgba(255,255,255,.4)"}}>{nbPossedees}/{cartes.length}</span>
                 </div>
-                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(96px,1fr))",gap:12}}>
+                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(92px,1fr))",gap:12}}>
                   {cartes.map(function(c){
                     const ouverte = isUnlocked(c, playerXp);
                     const active = playerBadge === c.id;
@@ -10243,7 +10243,7 @@ export default function LePont() {
                           boxShadow:active?"0 0 18px "+rar.glow:"none",transition:"border-color .15s, box-shadow .15s",
                         }}
                       >
-                        <div style={{position:"relative",aspectRatio:"1",overflow:"hidden",background:"#000"}}>
+                        <div style={{position:"relative",aspectRatio:"3 / 4",overflow:"hidden",background:"#000"}}>
                           <img src={c.img} alt="" loading="lazy" style={{width:"100%",height:"100%",objectFit:"cover",
                             filter:ouverte?"none":"grayscale(1) brightness(.32)",transition:"filter .2s"}}/>
                           {!ouverte && (
@@ -10309,7 +10309,7 @@ export default function LePont() {
             return (
               <button onClick={function(){setShowAccount(false);setShowCollection(true);}} style={{padding:"14px 18px",background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",borderRadius:14,color:"rgba(255,255,255,.7)",fontFamily:G.font,fontSize:14,fontWeight:700,display:"flex",alignItems:"center",gap:12,textAlign:"left",cursor:"pointer",width:"100%"}}>
                 {badge
-                  ? <img src={badge.img} alt="" style={{width:26,height:26,borderRadius:7,objectFit:"cover",border:"1.5px solid "+rarityMeta(badge.rarity).color,flexShrink:0}}/>
+                  ? <img src={badge.thumb} alt="" style={{width:22,height:29,borderRadius:5,objectFit:"cover",border:"1.5px solid "+rarityMeta(badge.rarity).color,flexShrink:0}}/>
                   : <span style={{fontSize:18}}>🃏</span>}
                 <span style={{flex:1}}>{tr("Ma collection","My collection","Meine Sammlung","La mia collezione","Minha coleção")}</span>
                 <span style={{fontSize:12.5,fontWeight:800,color:G.accent}}>{possedees}/{CARDS.length}</span>
@@ -10502,7 +10502,7 @@ export default function LePont() {
                         const card = b ? badgeToShow(b.badge, b.xp) : null;
                         if (!card) return null;
                         const rm = rarityMeta(card.rarity);
-                        return <img key="badge" src={card.img} alt="" title={lang==="fr"?card.name:card.nameEn} style={{width:20,height:20,borderRadius:6,objectFit:"cover",border:"1.5px solid "+rm.color,flexShrink:0}}/>;
+                        return <img key="badge" src={card.thumb} alt="" title={lang==="fr"?card.name:card.nameEn} style={{width:16,height:21,borderRadius:4,objectFit:"cover",border:"1.5px solid "+rm.color,flexShrink:0}}/>;
                       })()}
                     </div>
                     {lbMode==="saison"

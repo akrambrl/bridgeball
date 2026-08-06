@@ -40,8 +40,22 @@ describe("catalogue", () => {
     expect(CARDS.filter((c) => c.xp <= 5000).length).toBeGreaterThanOrEqual(12);
   });
 
-  it("expose un visuel commençant par / pour chaque carte", () => {
-    for (const c of CARDS) expect(c.img.startsWith("/")).toBe(true);
+  it("expose un visuel et une vignette commençant par / pour chaque carte", () => {
+    for (const c of CARDS) {
+      expect(c.img.startsWith("/")).toBe(true);
+      expect(c.thumb.startsWith("/")).toBe(true);
+    }
+  });
+
+  it("donne une vignette dédiée aux cartes illustrées (badge léger)", () => {
+    // Les cartes livrées vivent dans /cards/ et ont une vignette distincte du
+    // visuel plein format : le classement en charge une par joueur.
+    const livrees = CARDS.filter((c) => c.img.startsWith("/cards/"));
+    expect(livrees.length).toBeGreaterThanOrEqual(12);
+    for (const c of livrees) {
+      expect(c.thumb).toBe(c.img.replace(".webp", "-64.webp"));
+      expect(c.thumb).not.toBe(c.img);
+    }
   });
 });
 
