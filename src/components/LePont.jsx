@@ -10491,7 +10491,7 @@ export default function LePont() {
                     {i<3?medals[i]:(i+1)}
                   </div>
                   {/* Avatar rond (photo Supabase Storage ou fallback emoji grade) */}
-                  <div style={{width:42,height:42,borderRadius:"50%",background:"linear-gradient(135deg,#00E676,#00A855)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,color:"#fff",overflow:"hidden",position:"relative",flexShrink:0,border:i<3?"2px solid rgba(0,0,0,.3)":"1.5px solid rgba(255,255,255,.15)"}}>
+                  <div style={{width:36,height:48,borderRadius:7,border:"1.5px solid rgba(255,255,255,.28)",background:"#000",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,color:"#fff",overflow:"hidden",position:"relative",flexShrink:0,border:i<3?"2px solid rgba(0,0,0,.3)":"1.5px solid rgba(255,255,255,.15)"}}>
                     {/* Photo de profil par défaut = la carte du joueur (badge choisi, sinon
                         carte de son niveau). La photo uploadée, si elle existe, se
                         superpose par-dessus ; son onError la retire et laisse voir la carte.
@@ -11240,7 +11240,7 @@ export default function LePont() {
         ) : (
           <>
             <div style={{zIndex:1,padding:"16px 20px 8px",textAlign:"center"}}>
-              <div style={{width:100,height:100,borderRadius:"50%",margin:"0 auto 14px",background:"linear-gradient(135deg,#00E676,#00A855)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:44,color:"#fff",boxShadow:"0 8px 30px rgba(0,230,118,.35)",overflow:"hidden",position:"relative"}}>
+              <div style={{width:84,height:112,borderRadius:10,margin:"0 auto 14px",border:"2px solid rgba(255,255,255,.3)",background:"#000",display:"flex",alignItems:"center",justifyContent:"center",fontSize:44,color:"#fff",boxShadow:"0 8px 30px rgba(0,230,118,.35)",overflow:"hidden",position:"relative"}}>
                 <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",fontSize:56}}>{grade?grade.emoji:"🐣"}</div>
                 {d.avatar && <img src={d.avatar} alt="avatar" onClick={()=>setViewingAvatar(d.avatar)} onError={(e)=>{e.currentTarget.style.display="none";}} style={{width:"100%",height:"100%",objectFit:"cover",position:"relative",zIndex:1,cursor:"pointer"}}/>}
               </div>
@@ -11365,8 +11365,8 @@ export default function LePont() {
 
       {/* Avatar + Pseudo */}
       <div style={{zIndex:1,padding:"16px 20px 8px",textAlign:"center"}}>
-        <div style={{display:"inline-block",width:108,height:108,margin:"0 auto 14px",position:"relative",padding:4,borderRadius:"50%",background:"conic-gradient(from 200deg, #00E676, #3DA5FF, #C084FC, #FFC93C, #00E676)",boxShadow:"0 10px 40px rgba(0,230,118,.35)"}}>
-          <div onClick={function(){setShowCollection(true);}} style={{width:100,height:100,borderRadius:"50%",background:playerAvatar?"#000":"linear-gradient(135deg,#00E676,#00A855)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:56,color:"#fff",boxShadow:"0 8px 30px rgba(0,230,118,.35)",overflow:"hidden",cursor:"pointer"}}>
+        <div style={{display:"inline-block",width:116,height:154,margin:"0 auto 14px",position:"relative",padding:4,borderRadius:16,background:"conic-gradient(from 200deg, #00E676, #3DA5FF, #C084FC, #FFC93C, #00E676)",boxShadow:"0 10px 40px rgba(0,230,118,.35)"}}>
+          <div onClick={function(){setShowCollection(true);}} style={{width:108,height:146,borderRadius:12,background:"#000",display:"flex",alignItems:"center",justifyContent:"center",fontSize:56,color:"#fff",boxShadow:"0 8px 30px rgba(0,230,118,.35)",overflow:"hidden",cursor:"pointer"}}>
             {/* La carte fait office de photo de profil pour tout le monde : elle
                 remplace la photo uploadée, qui n'est plus affichée. */}
             <img src={avatarCard(playerBadge, playerXp).img} alt="" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top"}}/>
@@ -11720,6 +11720,11 @@ export default function LePont() {
           <div style={{flex:1,display:"flex",justifyContent:"flex-end",alignItems:"center",gap:8}}>
   {!launchedFromLandingRef.current && dayStreak > 0 && (() => {
     // Paliers visuels de streak
+    // Pastille des jours de suite retirée de l'accueil : l'information vit
+    // dans le profil et dans le détail de série. Le reste de ce bloc est
+    // conservé tel quel pour pouvoir la remettre sans le réécrire.
+    return null;
+    // eslint-disable-next-line no-unreachable
     const tier = dayStreak >= 100 ? "platine" : dayStreak >= 30 ? "mythic" : dayStreak >= 7 ? "gold" : dayStreak >= 3 ? "bronze" : "base";
     const tierStyles = {
       base:    { bg:"linear-gradient(135deg,rgba(255,107,53,.25),rgba(255,214,0,.15))", border:"rgba(255,107,53,.5)", color:"#FFD600", shadow:"0 2px 8px rgba(255,107,53,.2)", textColor:"#FFD600", emoji:"🔥" },
@@ -11749,7 +11754,7 @@ export default function LePont() {
     );
   })()}
 {!launchedFromLandingRef.current && (
-<div onClick={function(){if(!pseudoConfirmed) setPseudoScreen(true); else setScreen("profile");}} style={{background:"linear-gradient(135deg,#00E676,#00A855)",border:"1px solid rgba(0,230,118,.4)",borderRadius:12,width:38,height:38,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",boxShadow:"0 4px 14px rgba(0,230,118,.25)",overflow:"hidden"}}>
+<div onClick={function(){if(!pseudoConfirmed) setPseudoScreen(true); else setScreen("profile");}} style={{background:"linear-gradient(135deg,#00E676,#00A855)",border:"1px solid rgba(0,230,118,.4)",borderRadius:7,width:34,height:45,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",boxShadow:"0 4px 14px rgba(0,230,118,.25)",overflow:"hidden"}}>
   {/* Bouton profil de l'accueil : la carte remplace l'initiale du pseudo. */}
   {/* Bouton profil de l'accueil : la carte, pas la photo uploadée. */}
   <img src={avatarCard(playerBadge, playerXp).img} alt="" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top"}}/>
