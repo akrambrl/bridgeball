@@ -11453,6 +11453,38 @@ export default function LePont() {
         })()}
       </div>
 
+      {/* Ma collection — dans le corps du profil (et plus seulement dans Mon
+          compte) : c'est une récompense à montrer, pas un réglage. Aperçu des
+          dernières cartes obtenues, la plus récente en tête. */}
+      {(function(){
+        const possedees = unlockedCards(playerXp);
+        const apercu = possedees.slice(-5).reverse();
+        const prochaine = progressToNext(playerXp);
+        return (
+          <>
+            <div style={{zIndex:1,padding:"14px 20px 0",fontSize:10.5,fontWeight:800,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.4)"}}>{tr("Ma collection","My collection","Meine Sammlung","La mia collezione","Minha coleção")}</div>
+            <div onClick={function(){setShowCollection(true);}} style={{zIndex:1,margin:"10px 16px 8px",padding:"14px 16px",background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.1)",borderRadius:16,cursor:"pointer"}}>
+              <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
+                <span style={{fontFamily:G.heading,fontSize:26,color:G.accent,lineHeight:1}}>{possedees.length}</span>
+                <span style={{fontSize:12.5,color:"rgba(255,255,255,.55)",fontWeight:700}}>/ {CARDS.length} {tr("cartes","cards","Karten","carte","cartas")}</span>
+                <span style={{flex:1}}/>
+                {prochaine && <span style={{fontSize:11,color:"rgba(255,255,255,.4)",fontWeight:600}}>{tr("encore","next in","noch","ancora","faltam")} {prochaine.missing.toLocaleString("fr-FR")} XP</span>}
+                <span style={{color:"rgba(255,255,255,.3)",fontSize:15}}>›</span>
+              </div>
+              <div style={{display:"flex",gap:8}}>
+                {apercu.map(function(c){
+                  const rm = rarityMeta(c.rarity);
+                  return <img key={c.id} src={c.thumb} alt="" title={lang==="fr"?c.name:c.nameEn} style={{width:42,height:56,borderRadius:8,objectFit:"cover",border:"1.5px solid "+rm.color,flexShrink:0}}/>;
+                })}
+                {prochaine && (
+                  <div style={{width:42,height:56,borderRadius:8,border:"1.5px dashed rgba(255,255,255,.18)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:15,color:"rgba(255,255,255,.35)"}}>🔒</div>
+                )}
+              </div>
+            </div>
+          </>
+        );
+      })()}
+
       {/* Stats cards */}
       <div style={{zIndex:1,padding:"14px 20px 0",fontSize:10.5,fontWeight:800,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.4)"}}>{tr("Statistiques","Stats","Statistiken","Statistiche","Estatísticas")}</div>
       <div style={{zIndex:1,padding:"10px 16px 8px",display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
