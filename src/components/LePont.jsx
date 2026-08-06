@@ -65,6 +65,32 @@ async function sbFetch(path, options) {
   if (res.status === 201 || res.headers.get("content-length") === "0") return [];
   try { return await res.json(); } catch { return []; }
 }
+// Récupère TOUTES les lignes d'une requête, page par page via l'en-tête Range.
+//
+// L'API PostgREST plafonne CHAQUE réponse à 1000 lignes (réglage « max rows »
+// de Supabase) et le paramètre `limit=50000` dans l'URL ne lève PAS ce plafond :
+// la réponse était donc tronquée en silence. Comme les requêtes du tableau de
+// bord n'imposaient aucun tri, la troncature gardait les lignes les PLUS
+// ANCIENNES et faisait disparaître les jours récents — d'où « Aujourd'hui :
+// 0 joueur » alors que des parties du jour étaient bien comptées ailleurs.
+//
+// IMPORTANT : `path` DOIT contenir un `order=` stable, sinon la pagination peut
+// renvoyer deux fois la même ligne ou en sauter.
+const SB_PAGE = 1000; // = plafond « max rows » de l'API
+async function sbFetchAll(path, maxRows) {
+  const cap = maxRows || 50000;
+  const out = [];
+  for (let from = 0; from < cap; from += SB_PAGE) {
+    const to = Math.min(from + SB_PAGE, cap) - 1;
+    const page = await sbFetch(path, { headers: { "Range-Unit": "items", "Range": from + "-" + to } });
+    // Erreur / table absente : on distingue « rien du tout » (null, la table
+    // n'existe pas) d'une page suivante qui échoue (on garde ce qu'on a).
+    if (page == null) return from === 0 ? null : out;
+    for (const row of page) out.push(row);
+    if (page.length < to - from + 1) break; // dernière page atteinte
+  }
+  return out;
+}
 // Compte EXACT de lignes d'une table (tout l'historique) via l'en-tête
 // Content-Range de PostgREST — sans rapatrier les lignes. Renvoie null si KO.
 // Compte exact des lignes d'une table, sans en transférer aucune (Range 0-0).
@@ -2789,7 +2815,7 @@ export default function LePont() {
     async function poll(){
       // en ligne = vu dans les 80 dernières secondes
       const since = new Date(Date.now() - 80*1000).toISOString();
-      const rows = await sbFetch("bb_presence?select=player_id&last_seen=gte."+since+"&limit=10000");
+      const rows = await sbFetchAll("bb_presence?select=player_id&last_seen=gte."+since+"&order=player_id.asc", 10000);
       if (stop) return;
       setLiveNow(Array.isArray(rows) ? rows.length : null);
     }
@@ -2803,12 +2829,14 @@ export default function LePont() {
       // On récupère la fenêtre MAX (14 j) une seule fois ; le filtrage par plage
       // (1/5/10/14 j) se fait ensuite côté client (voir statsView).
       const since = new Date(Date.now() - 14*24*3600*1000).toISOString();
-      const scores = await sbFetch("bb_scores?select=player_id,created_at&created_at=gte."+since+"&order=created_at.desc&limit=20000") || [];
-      const events = await sbFetch("bb_events?select=player_id,created_at,type&created_at=gte."+since+"&limit=50000");
+      // sbFetchAll (et pas sbFetch) : au-delà de 1000 lignes l'API tronque la
+      // réponse, et une fenêtre de 14 j de bb_events dépasse largement ce seuil.
+      const scores = await sbFetchAll("bb_scores?select=player_id,created_at&created_at=gte."+since+"&order=created_at.desc", 20000) || [];
+      const events = await sbFetchAll("bb_events?select=player_id,created_at,type&created_at=gte."+since+"&order=created_at.desc", 50000);
       const hasEvents = Array.isArray(events);
       // `pseudo` sert à nommer les joueurs dans la section « qui joue à quoi ».
-      const pseudos = await sbFetch("bb_pseudos?select=player_id,pseudo&limit=100000") || [];
-      const duels = await sbFetch("bb_duels?select=id,created_at&created_at=gte."+since+"&limit=20000") || [];
+      const pseudos = await sbFetchAll("bb_pseudos?select=player_id,pseudo&order=player_id.asc", 100000) || [];
+      const duels = await sbFetchAll("bb_duels?select=id,created_at&created_at=gte."+since+"&order=created_at.desc", 20000) || [];
       // Derniers comptes créés — tente avec created_at, se rabat si la colonne n'existe pas
       let recent = await sbFetch("bb_pseudos?select=pseudo,country,created_at&order=created_at.desc&limit=40");
       let recentHasDate = true;
@@ -2867,7 +2895,10 @@ export default function LePont() {
     const hasEvents = statsData.hasEvents;
     const scoresW = (statsData.rawScores || []).filter(function(r){ return inRange(r.created_at); });
     const eventsW = hasEvents ? (statsData.rawEvents || []).filter(function(r){ return inRange(r.created_at); }) : [];
-    const activeRowsW = hasEvents ? eventsW : scoresW;
+    // Joueurs actifs = UNION des deux sources. bb_events seul ne suffit pas : un
+    // score enregistré dont le ping d'événement a échoué (réseau, ancien bundle
+    // en cache, RLS) produisait un « 0 joueur · N parties » contradictoire.
+    const activeRowsW = hasEvents ? eventsW.concat(scoresW) : scoresW;
     // Joueurs actifs uniques (+ anonymes) sur la fenêtre
     const activeSet = new Set(), anonSet = new Set();
     for (const r of activeRowsW) { if (r.player_id) { activeSet.add(r.player_id); if (hasEvents && !regSet.has(r.player_id)) anonSet.add(r.player_id); } }
@@ -2923,7 +2954,10 @@ export default function LePont() {
     for (const id in osByDevice) { const o = osByDevice[id]; if (osCount[o] !== undefined) osCount[o]++; else osCount.other++; }
     // Détail jour par jour — TOUJOURS sur les 14 derniers jours (indépendant de la
     // plage choisie), pour que la vue « jour par jour » reste visible même en 1 j.
-    const fullActive = hasEvents ? (statsData.rawEvents || []) : (statsData.rawScores || []);
+    // Même union que ci-dessus : une journée avec des parties a forcément des joueurs.
+    const fullActive = hasEvents
+      ? (statsData.rawEvents || []).concat(statsData.rawScores || [])
+      : (statsData.rawScores || []);
     const byDayActive = {}, byDayGames = {};
     for (const r of fullActive) { if (r.created_at) { const k = dayKey(r.created_at); (byDayActive[k] = byDayActive[k] || new Set()).add(r.player_id); } }
     for (const r of (statsData.rawScores || [])) { if (r.created_at) { const k = dayKey(r.created_at); byDayGames[k] = (byDayGames[k]||0)+1; } }
