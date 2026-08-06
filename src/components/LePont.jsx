@@ -10318,7 +10318,7 @@ export default function LePont() {
           <div style={{position:"absolute",top:-100,left:-100,width:300,height:300,background:"radial-gradient(circle, rgba(0,230,118,.15) 0%, transparent 70%)",borderRadius:"50%"}}/>
         </div>
         <div style={{zIndex:1,padding:"50px 20px 14px",textAlign:"center"}}>
-          <div style={{fontFamily:G.heading,fontSize:34,color:G.white,letterSpacing:1.4}}>{tr("MON COMPTE","MY ACCOUNT","MEIN KONTO","IL MIO ACCOUNT","MINHA CONTA")}</div>
+          <div style={{...posterText(38,G.white)}}>{tr("MON ","MY ","MEIN ","IL MIO ","MINHA ")}<span style={{color:G.projecteur}}>{tr("COMPTE","ACCOUNT","KONTO","ACCOUNT","CONTA")}</span></div>
           <div style={{fontSize:13,color:"rgba(255,255,255,.5)",marginTop:6,fontWeight:600}}>{tr("Gère les paramètres de ton compte","Manage your account settings","Verwalte deine Kontoeinstellungen","Gestisci le impostazioni del tuo account","Gerencie as configurações da sua conta")}</div>
         </div>
 
@@ -10432,7 +10432,7 @@ export default function LePont() {
       </div>
         <div style={{zIndex:1,padding:"12px 20px 12px 70px",display:"flex",alignItems:"center",gap:12}}>
           <div style={{flex:1,textAlign:"center"}}>
-            <div style={{fontFamily:G.heading,fontSize:"clamp(28px,7vw,46px)",color:G.white,letterSpacing:3}}>{tr("CLASSEMENT","LEADERBOARD","RANGLISTE","CLASSIFICA","CLASSIFICAÇÃO")}</div>
+            <div style={{...posterText(40,G.projecteur)}}>{tr("CLASSEMENT","LEADERBOARD","RANGLISTE","CLASSIFICA","CLASSIFICAÇÃO")}</div>
             {(()=>{ const s=getCurrentSeason(); return lbMode==="amis"
               ? <div style={{fontSize:12,color:"rgba(255,255,255,.4)"}}>{tr("Classement entre amis · Cumulatif","Friends leaderboard · Cumulative","Freunde-Rangliste · Kumulativ","Classifica tra amici · Cumulativa","Classificação entre amigos · Cumulativa")}</div>
               : <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
