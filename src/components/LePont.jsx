@@ -11248,7 +11248,7 @@ export default function LePont() {
             <div style={{zIndex:1,padding:"16px 20px 8px",textAlign:"center"}}>
               <div style={{width:84,height:112,borderRadius:10,margin:"0 auto 14px",border:"2px solid rgba(255,255,255,.3)",background:"#000",display:"flex",alignItems:"center",justifyContent:"center",fontSize:44,color:"#fff",boxShadow:"0 8px 30px rgba(0,230,118,.35)",overflow:"hidden",position:"relative"}}>
                 {/* Photo de profil = carte du niveau du joueur consulté. */}
-                <img src={levelCard(d.xp || 0).img || undefined} alt="" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",objectPosition:"top"}}/>
+                <img src={levelCard(d.xp || 0).img || undefined} alt="" onClick={function(){ const c = levelCard(d.xp || 0); if (c.img) setViewingAvatar(c.img); }} style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",objectPosition:"top",cursor:"zoom-in"}}/>
               </div>
               <div style={{fontFamily:G.heading,fontSize:28,color:G.white,letterSpacing:1}}>@{viewedProfile.name}</div>
               {grade && (
@@ -11395,7 +11395,7 @@ export default function LePont() {
       {/* Avatar + Pseudo */}
       <div style={{zIndex:1,padding:"16px 20px 8px",textAlign:"center"}}>
         <div style={{display:"inline-block",width:116,height:154,margin:"0 auto 14px",position:"relative",padding:4,borderRadius:16,background:"conic-gradient(from 200deg, #00E676, #3DA5FF, #C084FC, #FFC93C, #00E676)",boxShadow:"0 10px 40px rgba(0,230,118,.35)"}}>
-          <div onClick={function(){setShowCollection(true);}} style={{width:108,height:146,borderRadius:12,background:"#000",display:"flex",alignItems:"center",justifyContent:"center",fontSize:56,color:"#fff",boxShadow:"0 8px 30px rgba(0,230,118,.35)",overflow:"hidden",cursor:"pointer"}}>
+          <div onClick={function(){ const c = avatarCard(playerBadge, playerXp); if (c.img) setViewingAvatar(c.img); }} style={{width:108,height:146,borderRadius:12,background:"#000",display:"flex",alignItems:"center",justifyContent:"center",fontSize:56,color:"#fff",boxShadow:"0 8px 30px rgba(0,230,118,.35)",overflow:"hidden",cursor:"pointer"}}>
             {/* La carte fait office de photo de profil pour tout le monde : elle
                 remplace la photo uploadée, qui n'est plus affichée. */}
             <img src={avatarCard(playerBadge, playerXp).img} alt="" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top"}}/>
