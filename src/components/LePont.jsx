@@ -6,6 +6,8 @@ import { pickOpponent, avatarFor } from "../lib/opponents";
 import { displayStreak } from "../lib/streak";
 // Jours calendaires « heure de Paris » — découpage temporel du tableau de bord.
 import { parisDayOf, parisLastDays } from "../lib/days";
+// Cartes à collectionner (débloquées par l'XP) et badge affiché à côté du pseudo.
+import { CARDS, RARITIES, badgeToShow, cardById, isUnlocked, newlyUnlocked, progressToNext, rarityMeta, unlockedCards } from "../lib/collection";
 import { WinBanner } from "./landing/WinBanner";
 // Barème de grades et drapeaux : définis une seule fois, partagés avec le desktop.
 import { GRADES, getGrade, countryToFlag } from "../lib/leaderboard";
@@ -55,6 +57,9 @@ function readDailyRiddle() {
 // Colonnes lisibles de bb_pseudos (TOUTES sauf recovery_code, qui est masqué
 // côté public en Phase 2 sécurité). On sélectionne explicitement ces colonnes
 // au lieu de "*", car "*" inclurait recovery_code et serait refusé.
+// `badge` = carte de collection choisie (voir docs/supabase-badges.sql). Si la
+// colonne n'existe pas encore, PostgREST rejette TOUTE la requête : on la
+// demande donc à part (voir loadPlayerBadge) plutôt que de casser ce select.
 const PSEUDO_COLS = "id,player_id,pseudo,created_at,country,xp,streak_count,streak_last_date,streak_best,streak_freezes,last_notified_grade,xp_season,xp_season_month";
 async function sbFetch(path, options) {
   let res;
@@ -2535,6 +2540,30 @@ if(typeof document!=="undefined"&&!document.getElementById("bb-css")){
     @keyframes splashTitle{0%{opacity:0;transform:translateY(30px) scale(0.8)}100%{opacity:1;transform:translateY(0) scale(1)}}
     @keyframes splashFadeOut{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.15)}}
     @keyframes splashGlow{0%,100%{box-shadow:0 0 40px rgba(0,230,118,.3),0 0 80px rgba(0,230,118,.1)}50%{box-shadow:0 0 60px rgba(0,230,118,.6),0 0 120px rgba(0,230,118,.2)}}
+    /* ── Écran de lancement ──
+       splash.webp est calibré pour un téléphone (853 × 1844, soit un format très
+       vertical). En "cover" sur un écran plus large que haut, il est agrandi
+       ~2,3× pour couvrir la largeur et il n'en reste qu'une bande centrale : sur
+       ordinateur, on ne voyait qu'un morceau de maillot. Au-delà d'un format de
+       téléphone, on affiche donc l'image ENTIÈRE ("contain"), avec une copie
+       floutée en fond pour ne pas laisser deux bandes noires sur les côtés. */
+    .bbSplashImg{width:100%;height:100%;object-fit:cover;object-position:center;display:block;position:relative;z-index:1}
+    .bbSplashBlur,.bbSplashWide{display:none}
+    @media (min-aspect-ratio:3/5){
+      .bbSplashImg{object-fit:contain}
+      .bbSplashBlur{display:block;position:absolute;inset:0;z-index:0;width:100%;height:100%;object-fit:cover;filter:blur(30px) brightness(.45);transform:scale(1.12)}
+    }
+    /* Écran en paysage (ordinateur, tablette couchée) : on passe au visuel
+       dédié 16/9, qui recouvre le repli ci-dessus. Il n'est PAS utilisé sur un
+       écran plus haut que large (tablette debout), où un cadrage "cover"
+       amputerait les joueurs des deux côtés : là, l'artwork vertical d'origine
+       affiché en entier reste le meilleur rendu.
+       Chargé en background CSS et non en <img> exprès : si le fichier vient à
+       manquer, le calque reste transparent — pas d'icône d'image cassée — et on
+       retombe proprement sur l'image portrait entière + fond flou. */
+    @media (min-aspect-ratio:1/1){
+      .bbSplashWide{display:block;position:absolute;inset:0;z-index:2;background:center/cover no-repeat url("/splash-desktop.webp")}
+    }
     @keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
     @keyframes duelSettle{0%{transform:translateY(-46px) scale(1.04);opacity:.5}55%{transform:translateY(7px) scale(1)}78%{transform:translateY(-3px)}100%{transform:translateY(0);opacity:1}}
     @keyframes duelFloat{0%{transform:translate(-50%,10px) scale(.8);opacity:0}18%{transform:translate(-50%,0) scale(1.1);opacity:1}70%{transform:translate(-50%,-8px) scale(1);opacity:1}100%{transform:translate(-50%,-46px) scale(.95);opacity:0}}
@@ -5211,6 +5240,43 @@ export default function LePont() {
   const [playerAvatar, setPlayerAvatar] = useState(null);
   const [playerXp, setPlayerXp] = useState(0); // XP cumulé (lifetime), chargé depuis Supabase au démarrage et incrémenté après chaque partie
   const [playerXpSeason, setPlayerXpSeason] = useState(0); // XP du mois en cours, reset à chaque début de mois
+  // ─── Collection de cartes ───────────────────────────────────────────────────
+  // Les cartes possédées se DÉDUISENT de playerXp (voir lib/collection) : seul
+  // le badge choisi est stocké. Repli sur localStorage tant que la colonne
+  // `badge` n'existe pas côté Supabase (docs/supabase-badges.sql).
+  const [playerBadge, setPlayerBadge] = useState(function(){ try { return localStorage.getItem("bb_badge") || null; } catch (e) { return null; } });
+  const [showCollection, setShowCollection] = useState(false);
+  const [cardPopup, setCardPopup] = useState(null);   // carte tout juste débloquée
+  const [badgeByPid, setBadgeByPid] = useState({});   // pid → {badge, xp} pour le classement
+  // Badge du joueur, lu à part du gros select (une colonne absente ferait
+  // échouer toute la requête, cf. PSEUDO_COLS).
+  useEffect(function(){
+    if (!playerId) return;
+    let stop = false;
+    (async function(){
+      const rows = await sbFetch("bb_pseudos?player_id=eq." + playerId + "&select=badge&limit=1");
+      if (stop || !Array.isArray(rows) || !rows.length) return; // colonne absente → on garde le choix local
+      const id = rows[0].badge || null;
+      setPlayerBadge(id);
+      try { id ? localStorage.setItem("bb_badge", id) : localStorage.removeItem("bb_badge"); } catch (e) {}
+    })();
+    return function(){ stop = true; };
+  }, [playerId]);
+  // Badges des autres joueurs, pour les afficher dans le classement. Une seule
+  // requête à l'ouverture, plutôt que de faire circuler le champ dans toute
+  // l'agrégation du classement. `xp` sert à valider le badge (cf. badgeToShow).
+  useEffect(function(){
+    if (!showLeaderboard) return;
+    let stop = false;
+    (async function(){
+      const rows = await sbFetch("bb_pseudos?select=player_id,badge,xp&badge=not.is.null&limit=2000");
+      if (stop || !Array.isArray(rows)) return;
+      const map = {};
+      for (const r of rows) if (r.player_id) map[r.player_id] = { badge: r.badge, xp: r.xp || 0 };
+      setBadgeByPid(map);
+    })();
+    return function(){ stop = true; };
+  }, [showLeaderboard]);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [viewingAvatar, setViewingAvatar] = useState(null); // URL de la photo à visualiser en plein écran
   const [cropState, setCropState] = useState(null); // {url, scale, x, y, naturalW, naturalH} — état du cropper
@@ -7249,6 +7315,25 @@ export default function LePont() {
     setPlayerXp(newXp);
     setPlayerXpSeason(newXpSeason);
 
+    // Cartes de collection franchies par ce gain d'XP. Rien à stocker : la
+    // possession se déduit de l'XP. On mémorise seulement les annonces déjà
+    // faites (localStorage) pour ne pas refêter la même carte à chaque partie
+    // si l'XP locale et la base se désynchronisent.
+    try {
+      const gagnees = newlyUnlocked(oldXp, newXp);
+      if (gagnees.length) {
+        let vues = [];
+        try { vues = JSON.parse(localStorage.getItem("bb_cards_seen") || "[]"); } catch (e) { vues = []; }
+        const nouvelles = gagnees.filter(function(c){ return vues.indexOf(c.id) === -1; });
+        if (nouvelles.length) {
+          // La plus rare des cartes gagnées d'un coup : c'est celle qui mérite l'écran.
+          const fetee = nouvelles[nouvelles.length - 1];
+          try { localStorage.setItem("bb_cards_seen", JSON.stringify(vues.concat(nouvelles.map(function(c){ return c.id; })))); } catch (e) {}
+          setTimeout(function(){ setCardPopup(fetee); }, 900); // après l'écran de fin de partie
+        }
+      }
+    } catch (e) { /* jamais bloquant pour l'XP */ }
+
     // Détection de changement de grade
     // On compare le grade actuel au grade "déjà notifié" (stocké en DB dans last_notified_grade)
     // Ça permet de détecter les grade-ups même si :
@@ -8406,6 +8491,32 @@ export default function LePont() {
   );
 
   // ── MODAL GRADE UP : célébration quand l'user passe un palier ──
+  // ── Popup « nouvelle carte » ── déclenché après une partie qui franchit un
+  // palier (voir newlyUnlocked). Un seul bouton : aller la mettre en badge.
+  const cardUnlockModal = cardPopup ? (() => {
+    const rm = rarityMeta(cardPopup.rarity);
+    return (
+      <div key="cardUnlock" onClick={function(){setCardPopup(null);}} style={{position:"fixed",inset:0,zIndex:9997,background:"rgba(0,0,0,.88)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center",padding:20,animation:"fadeIn .25s ease"}}>
+        <div onClick={function(e){e.stopPropagation();}} style={{width:"100%",maxWidth:330,background:"rgba(10,15,10,.98)",border:"2.5px solid "+rm.color,borderRadius:26,padding:"26px 22px 22px",textAlign:"center",boxShadow:"0 0 60px "+rm.glow,animation:"splashBounceIn .5s ease"}}>
+          <div style={{fontSize:11,letterSpacing:3,fontWeight:800,color:"rgba(255,255,255,.5)",marginBottom:14}}>
+            {tr("🃏 NOUVELLE CARTE 🃏","🃏 NEW CARD 🃏","🃏 NEUE KARTE 🃏","🃏 NUOVA CARTA 🃏","🃏 NOVA CARTA 🃏")}
+          </div>
+          <img src={cardPopup.img} alt="" style={{width:"100%",aspectRatio:"3 / 4",objectFit:"cover",borderRadius:16,border:"1.5px solid "+rm.color+"88",display:"block"}}/>
+          <div style={{fontFamily:G.heading,fontSize:26,color:G.white,letterSpacing:1,marginTop:14}}>{lang==="fr"?cardPopup.name:cardPopup.nameEn}</div>
+          <div style={{fontSize:12,fontWeight:800,letterSpacing:1.5,color:rm.color,textTransform:"uppercase",marginTop:3}}>{lang==="fr"?rm.label:rm.labelEn}</div>
+          <div style={{display:"flex",gap:10,marginTop:20}}>
+            <button onClick={function(){setCardPopup(null);}} style={{flex:1,padding:"13px 0",borderRadius:13,border:"1px solid rgba(255,255,255,.14)",background:"rgba(255,255,255,.05)",color:"rgba(255,255,255,.7)",fontFamily:G.font,fontWeight:800,fontSize:13.5,cursor:"pointer"}}>
+              {tr("Plus tard","Later","Später","Più tardi","Depois")}
+            </button>
+            <button onClick={function(){ chooseBadge(cardPopup.id); setCardPopup(null); setShowCollection(true); }} style={{flex:1.4,padding:"13px 0",borderRadius:13,border:"none",background:rm.color,color:"#0a0f0a",fontFamily:G.font,fontWeight:900,fontSize:13.5,cursor:"pointer"}}>
+              {tr("Mettre en badge","Use as badge","Als Abzeichen","Usa come badge","Usar como selo")}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  })() : null;
+
   const gradeUpModal = gradeUpPopup ? (() => {
     const label = lang === "en" ? (gradeUpPopup.labelEn || gradeUpPopup.label) : gradeUpPopup.label;
     const color = gradeUpPopup.color || G.accent;
@@ -10054,6 +10165,121 @@ export default function LePont() {
     );
   }
 
+  // ── COLLECTION DE CARTES ──
+  // Choisir une carte la met en badge ; recliquer la même l'enlève. Le choix est
+  // optimiste côté UI : la persistance Supabase peut échouer (colonne pas encore
+  // créée) sans rien casser, le badge reste alors visible pour son propriétaire.
+  async function chooseBadge(id) {
+    const next = playerBadge === id ? null : id;
+    setPlayerBadge(next);
+    try { next ? localStorage.setItem("bb_badge", next) : localStorage.removeItem("bb_badge"); } catch (e) {}
+    if (!playerId) return;
+    await sbFetch("bb_pseudos?player_id=eq." + playerId, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", "Prefer": "return=minimal" },
+      body: JSON.stringify({ badge: next }),
+    });
+  }
+
+  if (showCollection) {
+    const possedees = unlockedCards(playerXp);
+    const prochaine = progressToNext(playerXp);
+    return (
+      <>
+      <button onClick={function(){setShowCollection(false);}} style={{position:"fixed",top:14,left:14,zIndex:100,background:"rgba(0,15,0,.85)",border:"1px solid rgba(255,255,255,.15)",borderRadius:"50%",width:42,height:42,cursor:"pointer",color:G.white,fontSize:20,display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(10px)",boxShadow:"0 4px 14px rgba(0,0,0,.4)"}}>←</button>
+      <div style={{...shell,animation:"fadeUp .4s ease",overflow:isDesktop?"visible":"auto"}} key="collection">
+        <div style={{zIndex:1,padding:"50px 20px 10px",textAlign:"center"}}>
+          <div style={{fontFamily:G.heading,fontSize:34,color:G.white,letterSpacing:1.4}}>{tr("MA COLLECTION","MY COLLECTION","MEINE SAMMLUNG","LA MIA COLLEZIONE","MINHA COLEÇÃO")}</div>
+          <div style={{fontSize:13,color:"rgba(255,255,255,.5)",marginTop:6,fontWeight:600}}>
+            {possedees.length}/{CARDS.length} · {playerXp.toLocaleString("fr-FR")} XP
+          </div>
+        </div>
+
+        {/* Progression vers la prochaine carte */}
+        {prochaine && (
+          <div style={{zIndex:1,maxWidth:560,margin:"0 auto",width:"100%",boxSizing:"border-box",padding:"6px 20px 0"}}>
+            <div style={{background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.1)",borderRadius:16,padding:"14px 16px"}}>
+              <div style={{display:"flex",alignItems:"baseline",gap:8,marginBottom:8}}>
+                <span style={{fontSize:11,letterSpacing:1.5,fontWeight:800,color:"rgba(255,255,255,.45)",textTransform:"uppercase"}}>{tr("Prochaine carte","Next card","Nächste Karte","Prossima carta","Próxima carta")}</span>
+                <span style={{flex:1}}/>
+                <span style={{fontSize:12,fontWeight:800,color:rarityMeta(prochaine.card.rarity).color}}>{lang==="fr"?prochaine.card.name:prochaine.card.nameEn}</span>
+              </div>
+              <div style={{height:8,background:"rgba(255,255,255,.08)",borderRadius:6,overflow:"hidden"}}>
+                <div style={{height:"100%",width:Math.round(prochaine.ratio*100)+"%",minWidth:prochaine.ratio>0?6:0,background:"linear-gradient(90deg,#00E676,#B9F600)",borderRadius:6,transition:"width .4s"}}/>
+              </div>
+              <div style={{fontSize:11.5,color:"rgba(255,255,255,.5)",fontWeight:600,marginTop:7}}>
+                {tr("Encore ","","","","")}{prochaine.missing.toLocaleString("fr-FR")} XP
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Cartes groupées par rareté */}
+        <div style={{zIndex:1,padding:"16px 20px 30px",maxWidth:560,margin:"0 auto",width:"100%",boxSizing:"border-box"}}>
+          {RARITIES.map(function(rar){
+            const cartes = CARDS.filter(function(c){ return c.rarity === rar.key; });
+            if (!cartes.length) return null;
+            const nbPossedees = cartes.filter(function(c){ return isUnlocked(c, playerXp); }).length;
+            return (
+              <div key={rar.key} style={{marginBottom:24}}>
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
+                  <span style={{fontSize:11,letterSpacing:2,fontWeight:800,color:rar.color,textTransform:"uppercase"}}>{lang==="fr"?rar.label:rar.labelEn}</span>
+                  <span style={{flex:1,height:1,background:"linear-gradient(90deg,"+rar.color+"55,transparent)"}}/>
+                  <span style={{fontSize:11,fontWeight:700,color:"rgba(255,255,255,.4)"}}>{nbPossedees}/{cartes.length}</span>
+                </div>
+                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(92px,1fr))",gap:12}}>
+                  {cartes.map(function(c){
+                    const ouverte = isUnlocked(c, playerXp);
+                    const active = playerBadge === c.id;
+                    return (
+                      <button
+                        key={c.id}
+                        onClick={ouverte ? function(){ chooseBadge(c.id); } : undefined}
+                        title={ouverte ? (lang==="fr"?c.name:c.nameEn) : (c.xp.toLocaleString("fr-FR") + " XP")}
+                        style={{
+                          padding:0,border:"2px solid "+(active?rar.color:ouverte?rar.color+"55":"rgba(255,255,255,.08)"),
+                          borderRadius:14,overflow:"hidden",background:"rgba(255,255,255,.04)",
+                          cursor:ouverte?"pointer":"default",position:"relative",display:"block",
+                          boxShadow:active?"0 0 18px "+rar.glow:"none",transition:"border-color .15s, box-shadow .15s",
+                        }}
+                      >
+                        <div style={{position:"relative",aspectRatio:"3 / 4",overflow:"hidden",background:"#000"}}>
+                          <img src={c.img} alt="" loading="lazy" style={{width:"100%",height:"100%",objectFit:"cover",
+                            filter:ouverte?"none":"grayscale(1) brightness(.32)",transition:"filter .2s"}}/>
+                          {!ouverte && (
+                            <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2}}>
+                              <span style={{fontSize:18,lineHeight:1}}>🔒</span>
+                              <span style={{fontSize:10.5,fontWeight:800,color:"rgba(255,255,255,.85)"}}>{c.xp.toLocaleString("fr-FR")} XP</span>
+                            </div>
+                          )}
+                          {active && (
+                            <div style={{position:"absolute",top:4,right:4,width:20,height:20,borderRadius:"50%",background:rar.color,color:"#0a0f0a",fontSize:12,fontWeight:900,display:"flex",alignItems:"center",justifyContent:"center"}}>✓</div>
+                          )}
+                        </div>
+                        <div style={{padding:"6px 6px 7px",fontSize:10.5,fontWeight:800,lineHeight:1.25,
+                          color:ouverte?G.white:"rgba(255,255,255,.35)",textAlign:"center",fontFamily:G.font}}>
+                          {lang==="fr"?c.name:c.nameEn}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+          <div style={{fontSize:11.5,color:"rgba(255,255,255,.35)",fontWeight:600,lineHeight:1.6,textAlign:"center",padding:"0 6px"}}>
+            {tr("Touche une carte débloquée pour l'afficher à côté de ton pseudo. Retouche-la pour l'enlever.",
+                "Tap an unlocked card to show it next to your name. Tap again to remove it.",
+                "Tippe eine freigeschaltete Karte an, um sie neben deinem Namen zu zeigen.",
+                "Tocca una carta sbloccata per mostrarla accanto al tuo nome.",
+                "Toque numa carta desbloqueada para mostrá-la ao lado do seu nome.")}
+          </div>
+        </div>
+      </div>
+      </>
+    );
+  }
+
   if (showAccount) {
     return (
       <>
@@ -10075,6 +10301,22 @@ export default function LePont() {
             <div style={{fontSize:20,color:G.white,fontWeight:800}}>{playerName||"—"}</div>
             <div style={{fontSize:11,color:"rgba(255,255,255,.4)",fontWeight:600,marginTop:6}}>ID: {playerId}</div>
           </div>
+
+          {/* Accès à la collection de cartes */}
+          {(function(){
+            const badge = badgeToShow(playerBadge, playerXp);
+            const possedees = unlockedCards(playerXp).length;
+            return (
+              <button onClick={function(){setShowAccount(false);setShowCollection(true);}} style={{padding:"14px 18px",background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",borderRadius:14,color:"rgba(255,255,255,.7)",fontFamily:G.font,fontSize:14,fontWeight:700,display:"flex",alignItems:"center",gap:12,textAlign:"left",cursor:"pointer",width:"100%"}}>
+                {badge
+                  ? <img src={badge.thumb} alt="" style={{width:22,height:29,borderRadius:5,objectFit:"cover",border:"1.5px solid "+rarityMeta(badge.rarity).color,flexShrink:0}}/>
+                  : <span style={{fontSize:18}}>🃏</span>}
+                <span style={{flex:1}}>{tr("Ma collection","My collection","Meine Sammlung","La mia collezione","Minha coleção")}</span>
+                <span style={{fontSize:12.5,fontWeight:800,color:G.accent}}>{possedees}/{CARDS.length}</span>
+                <span style={{color:"rgba(255,255,255,.3)"}}>›</span>
+              </button>
+            );
+          })()}
 
           {/* Liens légaux */}
           <a href="/privacy" target="_blank" rel="noopener noreferrer" style={{padding:"14px 18px",background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",borderRadius:14,color:"rgba(255,255,255,.7)",fontFamily:G.font,fontSize:14,fontWeight:700,display:"flex",alignItems:"center",gap:12,textAlign:"left",textDecoration:"none"}}>
@@ -10252,6 +10494,16 @@ export default function LePont() {
                       <span style={{fontSize:18,fontFamily:G.heading,letterSpacing:1,color:i<3?"#1a0d00":isMe?G.accent:G.white,whiteSpace:"nowrap"}}>{entry.country && <span style={{marginRight:5,fontSize:15}}>{countryToFlag(entry.country)}</span>}{entry.name}{isMe?tr(" (toi)"," (you)"," (du)"," (tu)"," (você)"):""}</span>
                       <span style={{fontSize:11,fontWeight:800,color:i<3?"#1a0d00":grade.color,background:i<3?"rgba(26,13,0,.18)":grade.color+"22",borderRadius:20,padding:"2px 8px",letterSpacing:.5,border:i<3?"1px solid rgba(26,13,0,.25)":"none"}}>{grade.emoji} {grade.label}</span>
                       {entry.streak>=3 && <span style={{fontSize:11,fontWeight:800,color:"#FF6B35",background:"rgba(255,107,53,.15)",borderRadius:20,padding:"2px 8px"}}>🔥 {entry.streak}</span>}
+                      {/* Badge de collection — la carte est revalidée contre l'XP
+                          du joueur (badgeToShow), pour ne jamais afficher une
+                          carte non méritée si la valeur en base est périmée. */}
+                      {(function(){
+                        const b = badgeByPid[entry.pid];
+                        const card = b ? badgeToShow(b.badge, b.xp) : null;
+                        if (!card) return null;
+                        const rm = rarityMeta(card.rarity);
+                        return <img key="badge" src={card.thumb} alt="" title={lang==="fr"?card.name:card.nameEn} style={{width:16,height:21,borderRadius:4,objectFit:"cover",border:"1.5px solid "+rm.color,flexShrink:0}}/>;
+                      })()}
                     </div>
                     {lbMode==="saison"
                       ? null
@@ -10579,11 +10831,16 @@ export default function LePont() {
   // ── PSEUDO MODAL (first time only) ──
   if (showSplash) {
     return (
-      <div style={{position:"fixed",inset:0,zIndex:9999,background:"#000"}} key="splash">
-        {/* Image plein écran */}
-        <img src={SPLASH_IMG} style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center",display:"block"}}/>
+      <div style={{position:"fixed",inset:0,zIndex:9999,background:"#000",overflow:"hidden"}} key="splash">
+        {/* Fond flou — visible seulement sur un écran plus large qu'un téléphone,
+            où l'image est affichée en entier (voir .bbSplashImg dans le CSS). */}
+        <img src={SPLASH_IMG} alt="" aria-hidden="true" className="bbSplashBlur"/>
+        {/* Image de lancement */}
+        <img src={SPLASH_IMG} alt="" className="bbSplashImg"/>
+        {/* Visuel paysage pour les écrans larges (voir .bbSplashWide) */}
+        <div className="bbSplashWide" aria-hidden="true"/>
         {/* Barre de chargement */}
-        <div style={{position:"absolute",bottom:55,left:"50%",transform:"translateX(-50%)",width:120}}>
+        <div style={{position:"absolute",bottom:55,left:"50%",transform:"translateX(-50%)",width:120,zIndex:5}}>
           <div style={{height:3,background:"rgba(255,255,255,.15)",borderRadius:2,overflow:"hidden"}}>
             <div style={{height:"100%",background:"#00E676",borderRadius:2,animation:"splashLoad 2.2s ease forwards"}}/>
           </div>
@@ -14221,7 +14478,7 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
       {recoveryCodeAfterCreationModal}
       {recoveryInputModal}
       {myRecoveryCodeModal}
-      {confettiOverlay}{gradeUpModal}<div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
+      {confettiOverlay}{gradeUpModal}{cardUnlockModal}<div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
         {/* Bandes pelouse */}
         {[0,1,2,3,4,5,6].map(function(i){return(
           <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#0E1F14":"#132819"}}/>
