@@ -22,11 +22,12 @@
 // ⚠️ La possession étant DÉDUITE de l'XP, relever un palier retire la carte à
 // ceux qui l'avaient. Ne recalibrer qu'en connaissance de cause.
 //
-// Visuels : les 12 premières cartes (commune + rare) ont leur illustration
-// définitive dans public/cards/ ; les 9 dernières (épique + légendaire) portent
-// encore un placeholder repris des visuels existants. Pour en livrer une, il
-// suffit de déposer public/cards/<id>.webp (+ <id>-64.webp pour le badge) et de
-// pointer `img`/`thumb` dessus : aucune autre ligne de code à toucher.
+// Visuels : les 12 premières cartes (commune + rare) ont leur illustration dans
+// public/cards/. Les 9 dernières (épique + légendaire) ont img/thumb à null et
+// s'affichent en emplacement « à venir » — surtout PAS une image d'emprunt : les
+// visuels de modes de jeu qui servaient de bouche-trous se lisaient comme de
+// vraies cartes. Pour en livrer une : déposer public/cards/<id>.webp (+
+// <id>-64.webp) et pointer img/thumb dessus, rien d'autre à toucher.
 
 export type Rarity = "commune" | "rare" | "epique" | "legendaire";
 
@@ -50,11 +51,12 @@ export type Card = {
   id: string;
   name: string;
   nameEn: string;
-  /** Visuel plein format (3:4), affiché dans la collection et le popup. */
-  img: string;
-  /** Vignette ~48×64 pour le badge à côté du pseudo : le classement en charge
-   *  une par joueur, inutile d'y tirer le visuel plein format. */
-  thumb: string;
+  /** Visuel plein format (3:4). null = illustration pas encore livrée : la
+   *  carte s'affiche alors en emplacement « à venir », jamais avec une image
+   *  d'emprunt (les visuels de modes de jeu faisaient croire à des cartes). */
+  img: string | null;
+  /** Vignette ~48×64 pour les petits formats. null quand img est null. */
+  thumb: string | null;
   xp: number;
   rarity: Rarity;
 };
@@ -77,16 +79,16 @@ export const CARDS: Card[] = [
   { id: "buteur",      name: "Le Buteur",        nameEn: "The Striker",     img: "/cards/buteur.webp",        thumb: "/cards/buteur-64.webp", xp: 4000,  rarity: "rare" },
   { id: "international",name: "L'International", nameEn: "The Cap",         img: "/cards/international.webp",        thumb: "/cards/international-64.webp", xp: 5000,  rarity: "rare" },
   // ── Épiques : haut du classement ──
-  { id: "maestro",     name: "Le Maestro",       nameEn: "The Maestro",     img: "/plug-card.png",        thumb: "/plug-card.png", xp: 8000,  rarity: "epique" },
-  { id: "finisseur",   name: "Le Finisseur",     nameEn: "The Finisher",    img: "/mercato-card.png",        thumb: "/mercato-card.png", xp: 12000,  rarity: "epique" },
-  { id: "ballon-or",   name: "Ballon d'Or",      nameEn: "Golden Ball",     img: "/grid-card.png",         thumb: "/grid-card.png", xp: 18000, rarity: "epique" },
-  { id: "intouchable", name: "L'Intouchable",    nameEn: "Untouchable",     img: "/guess-card.png",         thumb: "/guess-card.png", xp: 26000, rarity: "epique" },
-  { id: "phenomene",   name: "Le Phénomène",     nameEn: "The Phenomenon",  img: "/reveal-card.png",         thumb: "/reveal-card.png", xp: 38000, rarity: "epique" },
+  { id: "maestro",     name: "Le Maestro",       nameEn: "The Maestro",     img: null,        thumb: null, xp: 8000,  rarity: "epique" },
+  { id: "finisseur",   name: "Le Finisseur",     nameEn: "The Finisher",    img: null,        thumb: null, xp: 12000,  rarity: "epique" },
+  { id: "ballon-or",   name: "Ballon d'Or",      nameEn: "Golden Ball",     img: null,         thumb: null, xp: 18000, rarity: "epique" },
+  { id: "intouchable", name: "L'Intouchable",    nameEn: "Untouchable",     img: null,         thumb: null, xp: 26000, rarity: "epique" },
+  { id: "phenomene",   name: "Le Phénomène",     nameEn: "The Phenomenon",  img: null,         thumb: null, xp: 38000, rarity: "epique" },
   // ── Légendaires : objectif long terme ──
-  { id: "legende",     name: "La Légende",       nameEn: "The Legend",      img: "/duel-card.png",         thumb: "/duel-card.png", xp: 55000, rarity: "legendaire" },
-  { id: "hall-of-fame",name: "Hall of Fame",     nameEn: "Hall of Fame",    img: "/devin-1.png",         thumb: "/devin-1.png", xp: 90000, rarity: "legendaire" },
-  { id: "immortel",    name: "L'Immortel",       nameEn: "The Immortal",    img: "/devin-2.png",         thumb: "/devin-2.png", xp: 150000, rarity: "legendaire" },
-  { id: "goat",        name: "Le GOAT",          nameEn: "The GOAT",        img: "/devin-3.png",     thumb: "/devin-3.png", xp: 250000, rarity: "legendaire" },
+  { id: "legende",     name: "La Légende",       nameEn: "The Legend",      img: null,         thumb: null, xp: 55000, rarity: "legendaire" },
+  { id: "hall-of-fame",name: "Hall of Fame",     nameEn: "Hall of Fame",    img: null,         thumb: null, xp: 90000, rarity: "legendaire" },
+  { id: "immortel",    name: "L'Immortel",       nameEn: "The Immortal",    img: null,         thumb: null, xp: 150000, rarity: "legendaire" },
+  { id: "goat",        name: "Le GOAT",          nameEn: "The GOAT",        img: null,     thumb: null, xp: 250000, rarity: "legendaire" },
 ];
 
 export function rarityMeta(rarity: Rarity): RarityMeta {
@@ -96,6 +98,11 @@ export function rarityMeta(rarity: Rarity): RarityMeta {
 export function cardById(id: string | null | undefined): Card | null {
   if (!id) return null;
   return CARDS.find((c) => c.id === id) || null;
+}
+
+/** Une carte a-t-elle son illustration ? Les autres restent « à venir ». */
+export function hasArt(card: Card): boolean {
+  return !!card.img;
 }
 
 export function isUnlocked(card: Card, xp: number): boolean {
@@ -145,8 +152,10 @@ export function newlyUnlocked(oldXp: number, newXp: number): Card[] {
  * faire — et qu'elle progresse d'elle-même quand il monte.
  */
 export function levelCard(xp: number): Card {
-  const owned = unlockedCards(xp);
-  return owned[owned.length - 1] || CARDS[0]; // CARDS[0] est à 0 XP : jamais vide
+  // Seules les cartes illustrées peuvent servir de photo de profil : sinon un
+  // joueur très avancé se retrouverait avec un cadre vide.
+  const owned = unlockedCards(xp).filter(hasArt);
+  return owned[owned.length - 1] || CARDS[0]; // CARDS[0] est à 0 XP et illustrée
 }
 
 /**
@@ -161,5 +170,5 @@ export function avatarCard(badgeId: string | null | undefined, xp: number): Card
 /** Badge valide seulement si la carte existe ET est débloquée à cette XP. */
 export function badgeToShow(badgeId: string | null | undefined, xp: number): Card | null {
   const card = cardById(badgeId);
-  return card && isUnlocked(card, xp) ? card : null;
+  return card && isUnlocked(card, xp) && hasArt(card) ? card : null;
 }

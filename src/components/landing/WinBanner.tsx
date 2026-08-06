@@ -88,6 +88,9 @@ export const WinBanner = ({ maxWidth = 420, marginTop = 10, lose = false }: Prop
         muted
         playsInline
         autoPlay
+        /* En boucle, comme un GIF : la séquence dure 2 à 3 s et s'arrêtait sur
+           sa dernière image tant que l'écran de fin restait ouvert. */
+        loop
         preload="auto"
         onCanPlay={e => { e.currentTarget.play().catch(() => { /* noop */ }); }}
         style={{ width: "100%", height: "auto", display: "block" }}
