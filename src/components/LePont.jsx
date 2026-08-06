@@ -2715,14 +2715,27 @@ export default function LePont() {
   };
   // Lettrage de titre manga : légère italique, contour d'encre, ombre dure.
   // paintOrder évite que le contour ne ronge l'intérieur des lettres.
+  //
+  // Le contour n'a de sens QUE pour du texte clair sur fond sombre : posé sur
+  // du texte sombre, il se confond avec la lettre, bouche les contre-formes et
+  // rend le mot illisible. Pour un aplat clair (jaune, blanc), utiliser
+  // posterLight, qui ne garde que l'italique.
+  //
+  // L'épaisseur est proportionnelle au corps : un contour fixe de 2 px étouffe
+  // un texte de 15 px alors qu'il se voit à peine sur un titre de 52 px.
   const posterText = function(size, color, stroke){
-    const w = stroke || 2.5;
-    return {
+    const w = stroke != null ? stroke : Math.max(1.2, Math.round(size / 16 * 10) / 10);
+    const base = {
       fontFamily:G.poster, fontSize:size, lineHeight:1, letterSpacing:.5,
-      transform:"skewX(-7deg)", WebkitTextStroke:w+"px "+G.encre, paintOrder:"stroke fill",
-      textShadow:(w+.5)+"px "+(w+.5)+"px 0 "+G.encre, color:color||G.white,
+      transform:"skewX(-7deg)", color:color||G.white,
     };
+    if (!w) return base;
+    return { ...base,
+      WebkitTextStroke:w+"px "+G.encre, paintOrder:"stroke fill",
+      textShadow:(w+.5)+"px "+(w+.5)+"px 0 "+G.encre };
   };
+  // Même lettrage, sans contour ni ombre : pour du texte sombre sur aplat clair.
+  const posterLight = function(size, color){ return posterText(size, color || "#1A1206", 0); };
   const [showSplash, setShowSplash] = useState(true);
   const [screen, setScreen] = useState("home");
   const [gameMode, setGameMode] = useState("pont");
@@ -10507,7 +10520,7 @@ export default function LePont() {
         {/* Bouton fermer — seulement si pas encore de pseudo */}
         {<button onClick={function(){setPseudoScreen(false);}} style={{position:"absolute",top:14,right:14,background:"rgba(255,255,255,.1)",border:"none",borderRadius:"50%",width:30,height:30,color:"rgba(255,255,255,.5)",cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>}
         <div style={{textAlign:"center",marginBottom:24}}>
-          <div style={{...posterText(52,G.white,3),lineHeight:.9}}>GOAT<span style={{color:G.projecteur}}>FC</span></div>
+          <div style={{...posterText(52,G.white),lineHeight:.9}}>GOAT<span style={{color:G.projecteur}}>FC</span></div>
           <div style={{fontSize:12,color:"rgba(255,255,255,.4)",marginTop:8,letterSpacing:2}}>{tr("CHOISIS TON PSEUDO","CHOOSE YOUR USERNAME","WÄHLE DEINEN NAMEN","SCEGLI IL TUO NOME","ESCOLHA SEU NOME")}</div>
         </div>
         <input
@@ -11440,7 +11453,7 @@ export default function LePont() {
         >
           <span style={{fontSize:20,lineHeight:1}}>🕵️</span>
           <span style={{flex:1,minWidth:0}}>
-            <span style={{display:"block",...posterText(15,"#1A1206",2),transformOrigin:"left"}}>
+            <span style={{display:"block",...posterLight(17),transformOrigin:"left"}}>
               {tr("DEVINETTE DU JOUR","DAILY RIDDLE","RÄTSEL DES TAGES","INDOVINELLO DEL GIORNO","ADIVINHA DO DIA")}
             </span>
             <span style={{display:"block",fontSize:11,fontWeight:900,color:"rgba(26,18,6,.72)",marginTop:2}}>
@@ -13566,7 +13579,7 @@ export default function LePont() {
           <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
             <span style={{fontSize:18}}>👥</span>
             <div>
-              <div style={{...posterText(16,G.white,2),transformOrigin:"left"}}>{tr("Joue avec tes potes !","Play with friends!","Spiel mit deinen Freunden!","Gioca con i tuoi amici!","Jogue com seus amigos!")}</div>
+              <div style={{...posterText(16,G.white),transformOrigin:"left"}}>{tr("Joue avec tes potes !","Play with friends!","Spiel mit deinen Freunden!","Gioca con i tuoi amici!","Jogue com seus amigos!")}</div>
               <div style={{fontSize:11,color:"rgba(255,255,255,.55)",fontWeight:700,marginTop:2}}>{tr("Crée une salle ou rejoins avec un code","Create a room or join with a code","Erstelle einen Raum oder tritt per Code bei","Crea una stanza o entra con un codice","Crie uma sala ou entre com um código")}</div>
             </div>
           </div>
@@ -13607,7 +13620,7 @@ export default function LePont() {
               }
               // Étape 2 : fallback Plug/Mercato
               joinRoom(code);
-            });}} style={{padding:"10px 16px",background:G.projecteur,color:"#1A1206",border:G.trait,boxShadow:"3px 3px 0 "+G.encre,borderRadius:G.rayonS,cursor:"pointer",...posterText(16,"#1A1206",0),WebkitTextStroke:"0",textShadow:"none"}}>{tr("Rejoindre","Join","Beitreten","Entra","Entrar")}</button>
+            });}} style={{padding:"10px 16px",background:G.projecteur,color:"#1A1206",border:G.trait,boxShadow:"3px 3px 0 "+G.encre,borderRadius:G.rayonS,cursor:"pointer",...posterLight(17)}}>{tr("Rejoindre","Join","Beitreten","Entra","Entrar")}</button>
           </div>
         </div>
         {roomMsg && <div style={{fontSize:12,color:"#FF3D57",fontWeight:700,marginTop:-4}}>{roomMsg}</div>}
@@ -13626,7 +13639,7 @@ export default function LePont() {
           style={{position:"relative",display:"flex",alignItems:"center",gap:12,padding:"12px 16px",background:G.maillot,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,cursor:"pointer",width:"100%",textAlign:"left"}}>
           <div style={{width:28,height:28,borderRadius:"50%",background:G.projecteur,border:G.traitFin,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15}}>⚔️</div>
           <div style={{flex:1}}>
-            <div style={{...posterText(16,G.white,2),transformOrigin:"left"}}>{tr("Défis ouverts ⚔️","Open challenges ⚔️","Offene Duelle ⚔️","Sfide aperte ⚔️","Desafios abertos ⚔️")}</div>
+            <div style={{...posterText(16,G.white),transformOrigin:"left"}}>{tr("Défis ouverts ⚔️","Open challenges ⚔️","Offene Duelle ⚔️","Sfide aperte ⚔️","Desafios abertos ⚔️")}</div>
             <div style={{fontSize:11,color:"rgba(255,255,255,.82)",fontWeight:800,marginTop:2}}>{openUnseenCount>0?tr(openUnseenCount+" tentative"+(openUnseenCount>1?"s":"")+" sur tes défis !", openUnseenCount+" new attempt"+(openUnseenCount>1?"s":"")+" on your challenges!", openUnseenCount+(openUnseenCount>1?" neue Versuche":" neuer Versuch")+" auf deine Duelle!", openUnseenCount+(openUnseenCount>1?" nuovi tentativi":" nuovo tentativo")+" sulle tue sfide!", openUnseenCount+(openUnseenCount>1?" novas tentativas":" nova tentativa")+" nos seus desafios!"):tr("Bats les scores des autres — ou lance le tien","Beat other players' scores — or post yours","Schlag die Scores der anderen — oder poste deinen","Batti i punteggi degli altri — o lancia il tuo","Supere as pontuações dos outros — ou lance a sua")}</div>
           </div>
           {(openUnseenCount+receivedChallenges.length)>0 && <span style={{position:"absolute",top:8,right:28,background:"#FF3D57",color:"#fff",borderRadius:"50%",minWidth:18,height:18,padding:"0 5px",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:900}}>{openUnseenCount+receivedChallenges.length}</span>}
