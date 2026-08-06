@@ -23,9 +23,20 @@ alter table public.bb_pseudos
   add constraint bb_pseudos_badge_format
   check (badge is null or badge ~ '^[a-z0-9-]{1,40}$');
 
--- Rappel : la colonne est lisible publiquement (le badge s'affiche dans le
--- classement) et modifiable par le joueur via la politique d'UPDATE existante
--- de bb_pseudos. Aucune politique supplémentaire n'est nécessaire.
+-- ⚠️ INDISPENSABLE sur ce projet : le SELECT de bb_pseudos est accordé COLONNE
+-- PAR COLONNE (voir docs/supabase-rls.sql, qui masque recovery_code au rôle
+-- anon). Une colonne neuve n'hérite donc d'AUCUN droit de lecture : sans la
+-- ligne ci-dessous, l'app écrit bien le badge mais ne peut jamais le relire —
+-- ni le sien, ni celui des autres dans le classement. Symptôme : erreur
+-- « 42501 permission denied for table bb_pseudos » sur select=badge.
+grant select (badge) on public.bb_pseudos to anon;
+
+-- L'écriture, elle, ne demande rien : le privilège UPDATE d'anon porte sur la
+-- table entière, il couvre donc les colonnes ajoutées ensuite. Vérifié par un
+-- PATCH ne ciblant aucune ligne → 204.
+--
+-- Rappel : aucune politique RLS supplémentaire n'est nécessaire, la colonne
+-- suit celles déjà en place sur bb_pseudos.
 --
 -- Vérification :
 --   select player_id, pseudo, xp, badge from public.bb_pseudos
