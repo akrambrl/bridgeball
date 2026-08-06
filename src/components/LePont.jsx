@@ -11247,8 +11247,8 @@ export default function LePont() {
           <>
             <div style={{zIndex:1,padding:"16px 20px 8px",textAlign:"center"}}>
               <div style={{width:84,height:112,borderRadius:10,margin:"0 auto 14px",border:"2px solid rgba(255,255,255,.3)",background:"#000",display:"flex",alignItems:"center",justifyContent:"center",fontSize:44,color:"#fff",boxShadow:"0 8px 30px rgba(0,230,118,.35)",overflow:"hidden",position:"relative"}}>
-                <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",fontSize:56}}>{grade?grade.emoji:"🐣"}</div>
-                {d.avatar && <img src={d.avatar} alt="avatar" onClick={()=>setViewingAvatar(d.avatar)} onError={(e)=>{e.currentTarget.style.display="none";}} style={{width:"100%",height:"100%",objectFit:"cover",position:"relative",zIndex:1,cursor:"pointer"}}/>}
+                {/* Photo de profil = carte du niveau du joueur consulté. */}
+                <img src={levelCard(d.xp || 0).img || undefined} alt="" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",objectPosition:"top"}}/>
               </div>
               <div style={{fontFamily:G.heading,fontSize:28,color:G.white,letterSpacing:1}}>@{viewedProfile.name}</div>
               {grade && (
@@ -11270,6 +11270,29 @@ export default function LePont() {
               )}
               <button onClick={()=>requirePseudo(function(){setShowDuelCreate({id:viewedProfile.id,name:viewedProfile.name});})} style={{flex:1,padding:"13px",background:"linear-gradient(135deg,#FFD600,#FF6B35)",color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>{tr("⚡ Défier","⚡ Challenge","⚡ Herausfordern","⚡ Sfida","⚡ Desafiar")}</button>
             </div>
+            {/* Collection du joueur consulté : déduite de son XP, comme pour soi.
+                Seules les cartes illustrées sont montrées. */}
+            {(function(){
+              const ses = unlockedCards(d.xp || 0).filter(hasArt);
+              if (!ses.length) return null;
+              return (
+                <>
+                  <div style={{zIndex:1,padding:"16px 20px 0",fontSize:10.5,fontWeight:800,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.4)"}}>{tr("Sa collection","Their collection","Seine Sammlung","La sua collezione","A coleção dele")}</div>
+                  <div style={{zIndex:1,margin:"10px 16px 0",padding:"14px 16px",background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.1)",borderRadius:16}}>
+                    <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
+                      <span style={{fontFamily:G.heading,fontSize:24,color:G.accent,lineHeight:1}}>{ses.length}</span>
+                      <span style={{fontSize:12.5,color:"rgba(255,255,255,.55)",fontWeight:700}}>/ {CARDS.filter(hasArt).length} {tr("cartes","cards","Karten","carte","cartas")}</span>
+                    </div>
+                    <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                      {ses.map(function(c){
+                        const rm = rarityMeta(c.rarity);
+                        return <img key={c.id} src={c.thumb} alt="" title={lang==="fr"?c.name:c.nameEn} style={{width:38,height:50,borderRadius:7,objectFit:"cover",border:"1.5px solid "+rm.color}}/>;
+                      })}
+                    </div>
+                  </div>
+                </>
+              );
+            })()}
             {friendMsg && !d.isFriend && (
               <div style={{zIndex:1,padding:"0 16px 8px",fontSize:12,color:friendMsg.indexOf("✓")>=0?G.accent:friendMsg.indexOf("❌")>=0?G.red:"rgba(255,255,255,.7)",textAlign:"center",fontWeight:700}}>{friendMsg}</div>
             )}
