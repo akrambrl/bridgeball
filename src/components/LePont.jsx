@@ -2729,10 +2729,14 @@ export default function LePont() {
       fontFamily:G.poster, fontSize:size, lineHeight:1, letterSpacing:.5,
       transform:"skewX(-7deg)", color:color||G.white,
     };
-    if (!w) return base;
-    return { ...base,
-      WebkitTextStroke:w+"px "+G.encre, paintOrder:"stroke fill",
-      textShadow:(w+.5)+"px "+(w+.5)+"px 0 "+G.encre };
+    // L'ombre dure d'encre est portée par TOUS les libellés, contourés ou non :
+    // c'est elle qui donne le relief d'affiche. Son décalage suit le corps.
+    const dec = Math.max(1.5, Math.round(size / 9 * 10) / 10);
+    const ombre = { textShadow:dec+"px "+dec+"px 0 "+G.encre };
+    // Sans contour (texte sombre sur aplat clair) : l'ombre seule, sinon le
+    // contour se confondrait avec la lettre et boucherait les contre-formes.
+    if (!w) return { ...base, ...ombre };
+    return { ...base, WebkitTextStroke:w+"px "+G.encre, paintOrder:"stroke fill", ...ombre };
   };
   // Même lettrage, sans contour ni ombre : pour du texte sombre sur aplat clair.
   const posterLight = function(size, color){ return posterText(size, color || "#1A1206", 0); };
