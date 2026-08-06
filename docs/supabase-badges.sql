@@ -16,7 +16,7 @@ comment on column public.bb_pseudos.badge is
   'Identifiant de la carte affichée en badge (CARDS[].id dans src/lib/collection.ts). NULL = aucun badge.';
 
 -- Garde-fou : un identifiant de carte est court et sans espace. Empêche
--- d''écrire n''importe quoi dans la colonne depuis la clé publique anon.
+-- d'écrire n'importe quoi dans la colonne depuis la clé publique anon.
 alter table public.bb_pseudos
   drop constraint if exists bb_pseudos_badge_format;
 alter table public.bb_pseudos
@@ -24,7 +24,7 @@ alter table public.bb_pseudos
   check (badge is null or badge ~ '^[a-z0-9-]{1,40}$');
 
 -- Rappel : la colonne est lisible publiquement (le badge s'affiche dans le
--- classement) et modifiable par le joueur via la politique d''UPDATE existante
+-- classement) et modifiable par le joueur via la politique d'UPDATE existante
 -- de bb_pseudos. Aucune politique supplémentaire n'est nécessaire.
 --
 -- Vérification :
