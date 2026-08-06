@@ -2535,6 +2535,27 @@ if(typeof document!=="undefined"&&!document.getElementById("bb-css")){
     @keyframes splashTitle{0%{opacity:0;transform:translateY(30px) scale(0.8)}100%{opacity:1;transform:translateY(0) scale(1)}}
     @keyframes splashFadeOut{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.15)}}
     @keyframes splashGlow{0%,100%{box-shadow:0 0 40px rgba(0,230,118,.3),0 0 80px rgba(0,230,118,.1)}50%{box-shadow:0 0 60px rgba(0,230,118,.6),0 0 120px rgba(0,230,118,.2)}}
+    /* ── Écran de lancement ──
+       splash.webp est calibré pour un téléphone (853 × 1844, soit un format très
+       vertical). En "cover" sur un écran plus large que haut, il est agrandi
+       ~2,3× pour couvrir la largeur et il n'en reste qu'une bande centrale : sur
+       ordinateur, on ne voyait qu'un morceau de maillot. Au-delà d'un format de
+       téléphone, on affiche donc l'image ENTIÈRE ("contain"), avec une copie
+       floutée en fond pour ne pas laisser deux bandes noires sur les côtés. */
+    .bbSplashImg{width:100%;height:100%;object-fit:cover;object-position:center;display:block;position:relative;z-index:1}
+    .bbSplashBlur,.bbSplashWide{display:none}
+    @media (min-aspect-ratio:3/5){
+      .bbSplashImg{object-fit:contain}
+      .bbSplashBlur{display:block;position:absolute;inset:0;z-index:0;width:100%;height:100%;object-fit:cover;filter:blur(30px) brightness(.45);transform:scale(1.12)}
+      /* Visuel paysage dédié, s'il existe : il recouvre le repli ci-dessus.
+         Chargé en background CSS (et non en <img>) exprès : si le fichier est
+         absent, le calque reste simplement transparent — pas d'icône d'image
+         cassée — et on retombe sur l'image portrait entière + fond flou.
+         Les deux extensions sont acceptées, .webp d'abord (calque du dessus) :
+         déposer public/splash-desktop.webp OU .png suffit, sans toucher au code. */
+      .bbSplashWide{display:block;position:absolute;inset:0;z-index:2;
+        background:center/cover no-repeat url("/splash-desktop.webp"),center/cover no-repeat url("/splash-desktop.png")}
+    }
     @keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
     @keyframes duelSettle{0%{transform:translateY(-46px) scale(1.04);opacity:.5}55%{transform:translateY(7px) scale(1)}78%{transform:translateY(-3px)}100%{transform:translateY(0);opacity:1}}
     @keyframes duelFloat{0%{transform:translate(-50%,10px) scale(.8);opacity:0}18%{transform:translate(-50%,0) scale(1.1);opacity:1}70%{transform:translate(-50%,-8px) scale(1);opacity:1}100%{transform:translate(-50%,-46px) scale(.95);opacity:0}}
@@ -10579,11 +10600,16 @@ export default function LePont() {
   // ── PSEUDO MODAL (first time only) ──
   if (showSplash) {
     return (
-      <div style={{position:"fixed",inset:0,zIndex:9999,background:"#000"}} key="splash">
-        {/* Image plein écran */}
-        <img src={SPLASH_IMG} style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center",display:"block"}}/>
+      <div style={{position:"fixed",inset:0,zIndex:9999,background:"#000",overflow:"hidden"}} key="splash">
+        {/* Fond flou — visible seulement sur un écran plus large qu'un téléphone,
+            où l'image est affichée en entier (voir .bbSplashImg dans le CSS). */}
+        <img src={SPLASH_IMG} alt="" aria-hidden="true" className="bbSplashBlur"/>
+        {/* Image de lancement */}
+        <img src={SPLASH_IMG} alt="" className="bbSplashImg"/>
+        {/* Visuel paysage pour les écrans larges (voir .bbSplashWide) */}
+        <div className="bbSplashWide" aria-hidden="true"/>
         {/* Barre de chargement */}
-        <div style={{position:"absolute",bottom:55,left:"50%",transform:"translateX(-50%)",width:120}}>
+        <div style={{position:"absolute",bottom:55,left:"50%",transform:"translateX(-50%)",width:120,zIndex:5}}>
           <div style={{height:3,background:"rgba(255,255,255,.15)",borderRadius:2,overflow:"hidden"}}>
             <div style={{height:"100%",background:"#00E676",borderRadius:2,animation:"splashLoad 2.2s ease forwards"}}/>
           </div>
