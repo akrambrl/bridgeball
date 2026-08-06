@@ -2701,7 +2701,7 @@ export default function LePont() {
     // les rayons restent proches de ceux d'avant (arrondi franc). Ces jetons
     // ne sont pour l'instant appliqués QUE sur l'écran d'accueil mobile.
     encre:"#081109",        // le trait — noir à biais vert, jamais noir pur
-    pelouse:"#2A9B4E",      // l'accent principal, remplace le vert LED #00E676
+    pelouse:"#1B6E36",      // l'accent principal, remplace le vert LED #00E676
     projecteur:"#F5C22B",   // actions et réussites, moins fluo que #FFD600
     maillot:"#D93A2B",      // urgence, défaite, compte à rebours
     ciel:"#2A6FBF",         // l'adversaire, le second camp
@@ -11510,11 +11510,11 @@ export default function LePont() {
               // largeur suit la hauteur dispo (flex) → jamais écrasée sur écran court.
               aspectRatio:"1086 / 1448",
               flex:isDesktop?undefined:"1 1 auto",
-              width:isDesktop?"min(280px, 75vw)":"auto",
-              maxWidth:"min(280px, 75vw)",
-              height:isDesktop?"clamp(340px, 82vw, 400px)":undefined,
+              width:isDesktop?"min(300px, 78vw)":"auto",
+              maxWidth:isDesktop?"min(300px, 78vw)":"min(360px, 88vw)",
+              height:isDesktop?"clamp(340px, 82vw, 420px)":undefined,
               minHeight:isDesktop?undefined:0,
-              maxHeight:isDesktop?undefined:400,
+              maxHeight:isDesktop?undefined:480,
               alignSelf:"center",
             }}
             onTouchStart={function(e){homeSwipeStartRef.current = e.touches[0].clientX;}}
@@ -11545,12 +11545,19 @@ export default function LePont() {
           >
             {homeCards.map(function(card, i){
               const offset = (i - homeCardIndex + homeN) % homeN;
+              // Distance SIGNÉE : -1 = carte précédente (à gauche), +1 = suivante.
+              // Avant, toutes les voisines partaient vers la droite — la marge
+              // gauche restait noire. Elles débordent maintenant des deux côtés,
+              // ce qui remplit l'espace ET montre qu'on peut glisser dans les
+              // deux sens.
+              const signed = offset > homeN / 2 ? offset - homeN : offset;
               const isActive = offset === 0;
+              const d = Math.abs(signed), sens = signed < 0 ? -1 : 1;
               let translateX, scale, opacity, zIndex;
-              if(offset === 0){ translateX = 0;  scale = 1;    opacity = 1;    zIndex = 40; }
-              else if(offset === 1){ translateX = 24; scale = 0.92; opacity = 0.65; zIndex = 30; }
-              else if(offset === 2){ translateX = 44; scale = 0.84; opacity = 0.35; zIndex = 20; }
-              else { translateX = 60; scale = 0.76; opacity = 0.15; zIndex = 10; }
+              if(d === 0){ translateX = 0; scale = 1; opacity = 1; zIndex = 40; }
+              else if(d === 1){ translateX = 74 * sens; scale = 0.86; opacity = 0.55; zIndex = 30; }
+              else if(d === 2){ translateX = 96 * sens; scale = 0.78; opacity = 0.22; zIndex = 20; }
+              else { translateX = 110 * sens; scale = 0.72; opacity = 0.10; zIndex = 10; }
               return (
                 <div
                   key={card.key}
@@ -13639,8 +13646,8 @@ export default function LePont() {
         {roomMsg && <div style={{fontSize:12,color:"#FF3D57",fontWeight:700,marginTop:-4}}>{roomMsg}</div>}
         {/* Actions */}
         <div style={{display:"flex",gap:8}}>
-          <button onClick={function(){loadLeaderboard(lbMode);setShowLeaderboard(true);}} style={{flex:1,...btn(G.pelouse,G.encre)}}>
-            {Icon.trophy(14,G.encre)} {tr("Classement","Leaderboard","Rangliste","Classifica","Classificação")}
+          <button onClick={function(){loadLeaderboard(lbMode);setShowLeaderboard(true);}} style={{flex:1,...btn(G.pelouse,G.white)}}>
+            {Icon.trophy(14,G.white)} {tr("Classement","Leaderboard","Rangliste","Classifica","Classificação")}
           </button>
           <button onClick={function(){requirePseudo(function(){setShowFriends(true);loadFriends().then(function(ids){fetchFriendScores(ids);});loadDuels();loadFriendRequests();});}} style={{flex:1,...btn("#0B2213",G.white),justifyContent:"center",gap:6,position:"relative"}}>
             <span style={{WebkitTextStroke:0,textShadow:"none",fontSize:15,lineHeight:1}}>👥</span> {tr("Amis","Friends","Freunde","Amici","Amigos")}{friendRequests.length>0&&<span style={{position:"absolute",top:-4,right:-4,background:"#FF3D57",color:"#fff",borderRadius:"50%",width:16,height:16,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:900}}>{friendRequests.length}</span>}
@@ -13819,26 +13826,28 @@ export default function LePont() {
                   return(
                     <button key={opt} onClick={()=>handleOptionClick(opt)} disabled={!!flash}
                       style={{
-                        padding:"22px 12px", borderRadius:20, cursor:"pointer",
-                        fontFamily:G.font, fontSize:"clamp(15px,4vw,20px)", fontWeight:800,
+                        padding:"22px 12px", borderRadius:G.rayonL, cursor:"pointer",
+                        fontFamily:G.poster, fontSize:"clamp(16px,4.4vw,21px)", letterSpacing:.4,
+                        transform:"skewX(-7deg)",
                         lineHeight:1.25, transition:"all .15s", position:"relative", overflow:"hidden",
                         minHeight:72,
-                        border: isOk?"2px solid #00E676": isKo?"2px solid #FF3D57":"none",
-                        background: isOk?"#052e16": isKo?"#2d0a0a": "rgba(255,255,255,.1)",
-                        color: isOk?"#00E676": isKo?G.red: G.white,
-                        boxShadow: isOk?"0 0 20px rgba(74,222,128,.4)": isKo?"0 0 20px rgba(239,68,68,.3)":"none",
+                        // Bonne réponse = pelouse, erreur = maillot : les mêmes
+                        // aplats que partout ailleurs, avec le trait d'encre.
+                        border: G.trait, boxShadow: G.ombre,
+                        background: isOk?G.pelouse: isKo?G.maillot: "#0B2213",
+                        color: G.white,
                         animation: isOk?"answerOk .4s ease": isKo?"answerKo .4s ease": "optionIn .4s cubic-bezier(.22,1,.36,1) "+(oi*.07)+"s both",
                       }}>
                       <div style={{display:"flex",alignItems:"center",gap:8,justifyContent:"center",position:"relative",zIndex:1}}>
                         {isOk&&<span style={{fontSize:20}}>✓</span>}
                         {isKo&&<span style={{fontSize:20}}>✗</span>}
-                        <span style={{fontSize:"clamp(15px,4vw,20px)",fontWeight:800}}>{opt}</span>
+                        <span style={{fontSize:"clamp(16px,4.4vw,21px)"}}>{opt}</span>
                       </div>
                     </button>
                   );
                 })}
               </div>
-              <button onClick={handlePass} disabled={!!flash} style={{padding:"12px",pointerEvents:flash?"none":"auto",background:"transparent",color:"#bbb",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700,opacity:flash ? 0.3 : 1}}>{tr("Passer → (−10 pts)","Skip → (−10 pts)","Überspringen → (−10 Pkt)","Salta → (−10 pt)","Pular → (−10 pts)")}</button>
+              <button onClick={handlePass} disabled={!!flash} style={{pointerEvents:flash?"none":"auto",...btn("#0B2213",G.white,15),fontWeight:700,opacity:flash ? 0.3 : 1}}>{tr("Passer → (−10 pts)","Skip → (−10 pts)","Überspringen → (−10 Pkt)","Salta → (−10 pt)","Pular → (−10 pts)")}</button>
             </div>
       {/* Timer par question supprimé — seul le timer global de la manche reste */}
     </div>
