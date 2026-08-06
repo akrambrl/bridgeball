@@ -11369,7 +11369,7 @@ export default function LePont() {
           <div onClick={function(){setShowCollection(true);}} style={{width:100,height:100,borderRadius:"50%",background:playerAvatar?"#000":"linear-gradient(135deg,#00E676,#00A855)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:56,color:"#fff",boxShadow:"0 8px 30px rgba(0,230,118,.35)",overflow:"hidden",cursor:"pointer"}}>
             {/* La carte fait office de photo de profil pour tout le monde : elle
                 remplace la photo uploadée, qui n'est plus affichée. */}
-            <img src={avatarCard(playerBadge, playerXp).img} alt="" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top"}}/>}
+            <img src={avatarCard(playerBadge, playerXp).img} alt="" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top"}}/>
           </div>
           <button onClick={function(){setShowCollection(true);}} title={tr("Choisir une carte","Choose a card","Karte wählen","Scegli una carta","Escolher uma carta")} style={{position:"absolute",bottom:-2,right:-2,width:34,height:34,borderRadius:"50%",background:G.accent,border:"3px solid #0d1f0d",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,zIndex:2,cursor:"pointer",padding:0}}>🃏</button>
         </div>
@@ -11752,7 +11752,7 @@ export default function LePont() {
 <div onClick={function(){if(!pseudoConfirmed) setPseudoScreen(true); else setScreen("profile");}} style={{background:"linear-gradient(135deg,#00E676,#00A855)",border:"1px solid rgba(0,230,118,.4)",borderRadius:12,width:38,height:38,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",boxShadow:"0 4px 14px rgba(0,230,118,.25)",overflow:"hidden"}}>
   {/* Bouton profil de l'accueil : la carte remplace l'initiale du pseudo. */}
   {/* Bouton profil de l'accueil : la carte, pas la photo uploadée. */}
-  <img src={avatarCard(playerBadge, playerXp).img} alt="" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top"}}/>}
+  <img src={avatarCard(playerBadge, playerXp).img} alt="" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top"}}/>
 </div>
 )}
           </div>
