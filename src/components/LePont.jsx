@@ -11322,7 +11322,7 @@ export default function LePont() {
                 {icon:"⭐", ac:"#FFC93C", label:"XP", val:d.xp||0},
               ].map(function(s,i){return(
                 <div key={i} style={{background:`linear-gradient(160deg, ${s.ac}26 0%, rgba(255,255,255,.03) 55%, rgba(0,0,0,.25) 100%)`,border:`1px solid ${s.ac}55`,borderRadius:20,padding:"14px 16px",boxShadow:`0 14px 34px -16px ${s.ac}66`}}>
-                  <div style={{width:38,height:38,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,background:`${s.ac}22`,border:`1px solid ${s.ac}55`,marginBottom:10}}>{s.icon}</div>
+                  <div style={{width:38,height:38,borderRadius:G.rayonS,border:G.traitFin,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,background:`${s.ac}22`,border:`1px solid ${s.ac}55`,marginBottom:10}}>{s.icon}</div>
                   <div style={{fontFamily:G.heading,fontSize:34,color:s.ac,lineHeight:1,textShadow:`0 0 18px ${s.ac}55`}}>{s.val}</div>
                   <div style={{fontSize:10,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginTop:6}}>{s.label}</div>
                 </div>
@@ -11406,12 +11406,12 @@ export default function LePont() {
       {/* Header */}
       <div style={{zIndex:2,padding:"16px 16px 8px",display:"flex",alignItems:"center",gap:12,position:"sticky",top:0,background:"rgba(0,15,0,.85)",backdropFilter:"blur(10px)"}}>
         <button onClick={()=>setScreen("home")} style={{background:"rgba(255,255,255,.1)",border:"none",borderRadius:"50%",width:38,height:38,cursor:"pointer",color:G.white,fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>←</button>
-        <div style={{fontFamily:G.heading,fontSize:22,color:G.white,letterSpacing:2,flex:1}}>{tr("MON PROFIL","MY PROFILE","MEIN PROFIL","IL MIO PROFILO","MEU PERFIL")}</div>
+        <div style={{...posterText(26,G.white),flex:1}}>{tr("MON ","MY ","MEIN ","IL MIO ","MEU ")}<span style={{color:G.projecteur}}>{tr("PROFIL","PROFILE","PROFIL","PROFILO","PERFIL")}</span></div>
       </div>
 
       {/* Avatar + Pseudo */}
       <div style={{zIndex:1,padding:"16px 20px 8px",textAlign:"center"}}>
-        <div style={{display:"inline-block",width:116,height:154,margin:"0 auto 14px",position:"relative",padding:4,borderRadius:16,background:"conic-gradient(from 200deg, #00E676, #3DA5FF, #C084FC, #FFC93C, #00E676)",boxShadow:"0 10px 40px rgba(0,230,118,.35)"}}>
+        <div style={{display:"inline-block",width:116,height:154,margin:"0 auto 14px",position:"relative",padding:4,borderRadius:G.rayon,background:"conic-gradient(from 200deg, #2A9B4E, #2A6FBF, #F5C22B, #2A9B4E)",border:G.traitFin,boxShadow:G.ombreL}}>
           <div onClick={function(){ const c = avatarCard(playerBadge, playerXp); if (c.img) setViewingAvatar(c.img); }} style={{width:108,height:146,borderRadius:12,background:"#000",display:"flex",alignItems:"center",justifyContent:"center",fontSize:56,color:"#fff",boxShadow:"0 8px 30px rgba(0,230,118,.35)",overflow:"hidden",cursor:"pointer"}}>
             {/* La carte fait office de photo de profil pour tout le monde : elle
                 remplace la photo uploadée, qui n'est plus affichée. */}
@@ -11419,7 +11419,7 @@ export default function LePont() {
           </div>
           <button onClick={function(){setShowCollection(true);}} title={tr("Choisir une carte","Choose a card","Karte wählen","Scegli una carta","Escolher uma carta")} style={{position:"absolute",bottom:-2,right:-2,width:34,height:34,borderRadius:"50%",background:G.accent,border:"3px solid #0d1f0d",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,zIndex:2,cursor:"pointer",padding:0}}>🃏</button>
         </div>
-        <div style={{fontFamily:G.heading,fontSize:28,color:G.white,letterSpacing:1}}>@{playerName||(tr("anonyme","anonymous","anonym","anonimo","anônimo"))}</div>
+        <div style={{...posterText(32,G.white)}}>@{playerName||(tr("anonyme","anonymous","anonym","anonimo","anônimo"))}</div>
         {(() => { const g = getGrade(playerXp); return (
           <div style={{display:"inline-flex",alignItems:"center",gap:6,marginTop:8,padding:"5px 14px",borderRadius:999,background:g.color+"1f",border:"1px solid "+g.color+"55",color:g.color,fontSize:11,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase"}}>{g.emoji} {g.label}</div>
         ); })()}
@@ -11480,7 +11480,7 @@ export default function LePont() {
         return (
           <>
             <div style={{zIndex:1,padding:"14px 20px 0",fontSize:10.5,fontWeight:800,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.4)"}}>{tr("Ma collection","My collection","Meine Sammlung","La mia collezione","Minha coleção")}</div>
-            <div onClick={function(){setShowCollection(true);}} style={{zIndex:1,margin:"10px 16px 8px",padding:"14px 16px",background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.1)",borderRadius:16,cursor:"pointer"}}>
+            <div onClick={function(){setShowCollection(true);}} style={{zIndex:1,margin:"10px 16px 8px",padding:"14px 16px",background:G.nuit,border:G.traitFin,borderRadius:G.rayon,boxShadow:G.ombre,cursor:"pointer"}}>
               <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
                 <span style={{fontFamily:G.heading,fontSize:26,color:G.accent,lineHeight:1}}>{possedees.length}</span>
                 <span style={{fontSize:12.5,color:"rgba(255,255,255,.55)",fontWeight:700}}>/ {CARDS.length} {tr("cartes","cards","Karten","carte","cartas")}</span>
@@ -11506,26 +11506,26 @@ export default function LePont() {
       <div style={{zIndex:1,padding:"14px 20px 0",fontSize:10.5,fontWeight:800,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.4)"}}>{tr("Statistiques","Stats","Statistiken","Statistiche","Estatísticas")}</div>
       <div style={{zIndex:1,padding:"10px 16px 8px",display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
         {/* Record Plug */}
-        <div style={{background:"linear-gradient(160deg, rgba(0,230,118,.16) 0%, rgba(255,255,255,.03) 50%, rgba(0,0,0,.25) 100%)",border:"1px solid rgba(0,230,118,.35)",borderRadius:20,padding:"14px 16px",boxShadow:"0 14px 34px -14px rgba(0,230,118,.4)"}}>
-          <div style={{width:38,height:38,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,background:"rgba(0,230,118,.16)",border:"1px solid rgba(0,230,118,.35)",marginBottom:10}}>🏆</div>
+        <div style={{background:"linear-gradient(160deg, rgba(0,230,118,.22), rgba(0,0,0,.35))",border:G.trait,borderRadius:G.rayon,padding:"14px 16px",boxShadow:G.ombre}}>
+          <div style={{width:38,height:38,borderRadius:G.rayonS,border:G.traitFin,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,background:"rgba(0,230,118,.16)",border:"1px solid rgba(0,230,118,.35)",marginBottom:10}}>🏆</div>
           <div style={{fontFamily:G.heading,fontSize:34,color:"#00E676",lineHeight:1,textShadow:"0 0 18px rgba(0,230,118,.45)"}}>{record?record.score:0}</div>
           <div style={{fontSize:10,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginTop:6}}>{tr("Record Plug","Plug record","Plug-Rekord","Record Plug","Recorde Plug")}</div>
         </div>
         {/* Record Mercato */}
-        <div style={{background:"linear-gradient(160deg, rgba(61,165,255,.16) 0%, rgba(255,255,255,.03) 50%, rgba(0,0,0,.25) 100%)",border:"1px solid rgba(61,165,255,.35)",borderRadius:20,padding:"14px 16px",boxShadow:"0 14px 34px -14px rgba(61,165,255,.4)"}}>
-          <div style={{width:38,height:38,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,background:"rgba(61,165,255,.16)",border:"1px solid rgba(61,165,255,.35)",marginBottom:10}}>⛓️</div>
+        <div style={{background:"linear-gradient(160deg, rgba(61,165,255,.22), rgba(0,0,0,.35))",border:G.trait,borderRadius:G.rayon,padding:"14px 16px",boxShadow:G.ombre}}>
+          <div style={{width:38,height:38,borderRadius:G.rayonS,border:G.traitFin,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,background:"rgba(61,165,255,.16)",border:"1px solid rgba(61,165,255,.35)",marginBottom:10}}>⛓️</div>
           <div style={{fontFamily:G.heading,fontSize:34,color:"#3DA5FF",lineHeight:1,textShadow:"0 0 18px rgba(61,165,255,.45)"}}>{chainRecord?chainRecord.score:0}</div>
           <div style={{fontSize:10,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginTop:6}}>{tr("Record Mercato","Mercato record","Mercato-Rekord","Record Mercato","Recorde Mercato")}</div>
         </div>
         {/* Amis */}
-        <div style={{background:"linear-gradient(160deg, rgba(255,201,60,.16) 0%, rgba(255,255,255,.03) 50%, rgba(0,0,0,.25) 100%)",border:"1px solid rgba(255,201,60,.35)",borderRadius:20,padding:"14px 16px",boxShadow:"0 14px 34px -14px rgba(255,201,60,.4)"}}>
-          <div style={{width:38,height:38,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,background:"rgba(255,201,60,.16)",border:"1px solid rgba(255,201,60,.35)",marginBottom:10}}>👥</div>
+        <div style={{background:"linear-gradient(160deg, rgba(255,201,60,.22), rgba(0,0,0,.35))",border:G.trait,borderRadius:G.rayon,padding:"14px 16px",boxShadow:G.ombre}}>
+          <div style={{width:38,height:38,borderRadius:G.rayonS,border:G.traitFin,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,background:"rgba(255,201,60,.16)",border:"1px solid rgba(255,201,60,.35)",marginBottom:10}}>👥</div>
           <div style={{fontFamily:G.heading,fontSize:34,color:"#FFC93C",lineHeight:1,textShadow:"0 0 18px rgba(255,201,60,.45)"}}>{friendsList.length}</div>
           <div style={{fontSize:10,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginTop:6}}>{tr("Amis","Friends","Freunde","Amici","Amigos")}</div>
         </div>
         {/* Parties */}
-        <div style={{background:"linear-gradient(160deg, rgba(192,132,252,.16) 0%, rgba(255,255,255,.03) 50%, rgba(0,0,0,.25) 100%)",border:"1px solid rgba(192,132,252,.35)",borderRadius:20,padding:"14px 16px",boxShadow:"0 14px 34px -14px rgba(192,132,252,.4)"}}>
-          <div style={{width:38,height:38,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,background:"rgba(192,132,252,.16)",border:"1px solid rgba(192,132,252,.35)",marginBottom:10}}>🎮</div>
+        <div style={{background:"linear-gradient(160deg, rgba(192,132,252,.22), rgba(0,0,0,.35))",border:G.trait,borderRadius:G.rayon,padding:"14px 16px",boxShadow:G.ombre}}>
+          <div style={{width:38,height:38,borderRadius:G.rayonS,border:G.traitFin,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,background:"rgba(192,132,252,.16)",border:"1px solid rgba(192,132,252,.35)",marginBottom:10}}>🎮</div>
           <div style={{fontFamily:G.heading,fontSize:34,color:"#C084FC",lineHeight:1,textShadow:"0 0 18px rgba(192,132,252,.45)"}}>{(record?1:0)+(chainRecord?1:0)}</div>
           <div style={{fontSize:10,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginTop:6}}>{tr("Parties","Games","Spiele","Partite","Jogos")}</div>
         </div>
