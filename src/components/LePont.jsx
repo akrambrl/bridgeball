@@ -2475,7 +2475,7 @@ function getPositiveFeedback(combo, lang){
 if(typeof document!=="undefined"&&!document.getElementById("bb-css")){
   const s=document.createElement("style");s.id="bb-css";
   s.textContent=`
-    @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Anton&family=Inter:wght@400;600;700;800&family=Nunito:wght@400;700;800;900&display=swap');
     @keyframes splashRoll{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
     @keyframes countdownPulse{0%{transform:scale(0.5);opacity:0;}50%{transform:scale(1.2);opacity:1;}100%{transform:scale(1);opacity:1;}}
     @keyframes dropIn{from{opacity:0;transform:translateY(-70px) scale(1.3)}to{opacity:1;transform:translateY(0) scale(1)}}
@@ -2695,6 +2695,67 @@ export default function LePont() {
     bg:"#0E1F14",bgPanel:"rgba(0,0,0,.5)",bgCard:"#141414",dark:"#0a0a0a",white:"#ffffff",
     offWhite:"#F5F5F5",accent:"#00E676",gold:"#FFD600",red:"#FF3D57",
     font:"'Bebas Neue',cursive,sans-serif",heading:"'Bebas Neue',cursive,sans-serif",
+
+    // ── Charte « Olive et Tom » ────────────────────────────────────────
+    // Ce qui fait le manga, c'est le TRAIT et l'OMBRE DURE, pas l'angle vif :
+    // les rayons restent proches de ceux d'avant (arrondi franc). Ces jetons
+    // ne sont pour l'instant appliqués QUE sur l'écran d'accueil mobile.
+    encre:"#081109",        // le trait — noir à biais vert, jamais noir pur
+    pelouse:"#2A9B4E",      // l'accent principal, remplace le vert LED #00E676
+    projecteur:"#F5C22B",   // actions et réussites, moins fluo que #FFD600
+    maillot:"#D93A2B",      // urgence, défaite, compte à rebours
+    ciel:"#2A6FBF",         // l'adversaire, le second camp
+    nuit:"#0E2C17",
+    trait:"3px solid #081109",
+    traitFin:"2px solid #081109",
+    ombre:"4px 4px 0 #081109",
+    ombreL:"5px 5px 0 #081109",
+    rayon:18, rayonS:12, rayonL:20,
+    poster:"'Anton',Impact,sans-serif",
+  };
+  // Lettrage de titre manga : légère italique, contour d'encre, ombre dure.
+  // paintOrder évite que le contour ne ronge l'intérieur des lettres.
+  //
+  // Le contour n'a de sens QUE pour du texte clair sur fond sombre : posé sur
+  // du texte sombre, il se confond avec la lettre, bouche les contre-formes et
+  // rend le mot illisible. Pour un aplat clair (jaune, blanc), utiliser
+  // posterLight, qui ne garde que l'italique.
+  //
+  // L'épaisseur est proportionnelle au corps : un contour fixe de 2 px étouffe
+  // un texte de 15 px alors qu'il se voit à peine sur un titre de 52 px.
+  const posterText = function(size, color, stroke){
+    const w = stroke != null ? stroke : Math.max(1.2, Math.round(size / 16 * 10) / 10);
+    const base = {
+      fontFamily:G.poster, fontSize:size, lineHeight:1, letterSpacing:.5,
+      transform:"skewX(-7deg)", color:color||G.white,
+    };
+    // L'ombre dure d'encre est portée par TOUS les libellés, contourés ou non :
+    // c'est elle qui donne le relief d'affiche. Son décalage suit le corps.
+    // Contour et ombre du LETTRAGE sont réservés aux grands titres. Sur un
+    // libellé de bouton, l'ombre dure ne lit pas comme un effet d'affiche : elle
+    // double le mot d'un fantôme noir décalé, et le contour épaissit les lettres
+    // sans qu'on y gagne rien. Le relief d'un bouton vient déjà de SON PROPRE
+    // encadrement — contour d'encre + ombre dure sur le cadre, pas sur le texte.
+    if (size < 32) return base;
+    const d = Math.round((size / 18 + w) * 10) / 10;
+    return { ...base, WebkitTextStroke:w+"px "+G.encre, paintOrder:"stroke fill",
+      textShadow:d+"px "+d+"px 0 "+G.encre };
+  };
+  // Même lettrage, sans contour ni ombre : pour du texte sombre sur aplat clair.
+  const posterLight = function(size, color){ return posterText(size, color || "#1A1206", 0); };
+  // Bouton unique de la charte. `bg` porte le sens (jaune = action principale,
+  // vert = classement, rouge = urgence) ; le traitement, lui, ne change jamais.
+  // `fg` clair → lettrage contouré ; `fg` sombre → lettrage nu (le contour
+  // boucherait les lettres).
+  const btn = function(bg, fg, size){
+    const c = fg || "#1A1206";
+    const clair = c === G.white || c === "#fff" || c === "#ffffff";
+    return {
+      background:bg, color:c, border:G.trait, boxShadow:G.ombre, borderRadius:G.rayon,
+      padding:"10px 16px",
+      cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:8,
+      ...(clair ? posterText(size||17, c) : posterLight(size||17, c)),
+    };
   };
   const [showSplash, setShowSplash] = useState(true);
   const [screen, setScreen] = useState("home");
@@ -8968,7 +9029,7 @@ export default function LePont() {
             </div>
             {/* SOLO */}
             <div style={{fontSize:10,fontWeight:800,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginBottom:8}}>{tr("Solo · score","Solo · score","Solo · Punkte","Solo · punti","Solo · pontos")}</div>
-            <button onClick={duelSoloStart} style={{width:"100%",padding:"15px",marginBottom:18,background:`linear-gradient(135deg, ${ac}, ${ac2})`,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:16,fontWeight:800,letterSpacing:1,boxShadow:`0 8px 24px ${ac}55`,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+            <button onClick={duelSoloStart} style={{width:"100%",padding:"15px",marginBottom:18,...btn(G.projecteur,null,18),cursor:"pointer",fontFamily:G.font,fontSize:16,fontWeight:800,letterSpacing:1,boxShadow:`0 8px 24px ${ac}55`,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
               ▶ {tr("JOUER SOLO","PLAY SOLO","SOLO SPIELEN","GIOCA SOLO","JOGAR SOLO")} <span style={{fontSize:12,fontWeight:700,opacity:.8}}>· 10/20 pts</span>
             </button>
             {/* EN LIGNE — bouton identique à celui de The Plug / The Mercato */}
@@ -10480,7 +10541,7 @@ export default function LePont() {
         {/* Bouton fermer — seulement si pas encore de pseudo */}
         {<button onClick={function(){setPseudoScreen(false);}} style={{position:"absolute",top:14,right:14,background:"rgba(255,255,255,.1)",border:"none",borderRadius:"50%",width:30,height:30,color:"rgba(255,255,255,.5)",cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>}
         <div style={{textAlign:"center",marginBottom:24}}>
-          <div style={{fontFamily:G.heading,fontSize:52,color:G.white,lineHeight:.9}}>GOAT<span style={{color:G.accent}}>FC</span></div>
+          <div style={{...posterText(52,G.white),lineHeight:.9}}>GOAT<span style={{color:G.projecteur}}>FC</span></div>
           <div style={{fontSize:12,color:"rgba(255,255,255,.4)",marginTop:8,letterSpacing:2}}>{tr("CHOISIS TON PSEUDO","CHOOSE YOUR USERNAME","WÄHLE DEINEN NAMEN","SCEGLI IL TUO NOME","ESCOLHA SEU NOME")}</div>
         </div>
         <input
@@ -11240,7 +11301,16 @@ export default function LePont() {
   );
 
   if(screen==="home") return (
-    <div style={{...shell,animation:"fadeUp .5s ease",height:isDesktop?"auto":"100dvh",minHeight:isDesktop?"100vh":0,overflow:isDesktop?"visible":"hidden"}} key="home">
+    // Fond « match en nocturne » : le trait d'encre (#081109) ne se voit que sur
+    // un fond plus clair que lui. Sur les bandes de pelouse d'origine (#0E1F14),
+    // bordures et ombres dures disparaissaient purement et simplement.
+    // Le grain de trame est posé en superposition, sans intercepter les clics.
+    // NB : on écrase la clé `background` de `shell` plutôt que d'ajouter
+    // `backgroundImage` — sinon le raccourci `background:transparent` gagne.
+    <div style={{...shell,animation:"fadeUp .5s ease",height:isDesktop?"auto":"100dvh",minHeight:isDesktop?"100vh":0,overflow:isDesktop?"visible":"hidden",
+      background:"radial-gradient(70% 22% at 14% 2%, rgba(245,194,43,.26), transparent 70%),radial-gradient(70% 22% at 86% 2%, rgba(245,194,43,.26), transparent 70%),linear-gradient(180deg,#081109 0%,#0E2C17 48%,#17572C 100%) #0E2C17"}} key="home">
+      <div aria-hidden="true" style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",opacity:.16,
+        backgroundImage:"radial-gradient(circle,#000 1px,transparent 1.3px)",backgroundSize:"5px 5px"}}/>
       {pseudoModal}
       {recoveryCodeAfterCreationModal}
       {recoveryInputModal}
@@ -11400,21 +11470,21 @@ export default function LePont() {
         {!dailyRiddle.done && (
         <button
           onClick={function(){ requirePseudo(function(){ window.dispatchEvent(new CustomEvent("goatfc:open-devinette")); }); }}
-          style={{width:"100%",display:"flex",alignItems:"center",gap:11,padding:"11px 14px",background:"linear-gradient(135deg,rgba(224,184,92,.16),rgba(224,184,92,.06))",border:"1px solid rgba(224,184,92,.42)",borderRadius:14,cursor:"pointer",fontFamily:G.font,textAlign:"left",color:G.white}}
+          style={{width:"100%",display:"flex",alignItems:"center",gap:11,padding:"11px 14px",background:G.projecteur,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,cursor:"pointer",fontFamily:G.font,textAlign:"left",color:"#1A1206"}}
         >
           <span style={{fontSize:20,lineHeight:1}}>🕵️</span>
           <span style={{flex:1,minWidth:0}}>
-            <span style={{display:"block",fontSize:13,fontWeight:900,letterSpacing:.4,color:"#F2D680"}}>
+            <span style={{display:"block",...posterLight(17),transformOrigin:"left"}}>
               {tr("DEVINETTE DU JOUR","DAILY RIDDLE","RÄTSEL DES TAGES","INDOVINELLO DEL GIORNO","ADIVINHA DO DIA")}
             </span>
-            <span style={{display:"block",fontSize:11,fontWeight:700,color:"rgba(255,255,255,.45)",marginTop:1}}>
+            <span style={{display:"block",fontSize:11,fontWeight:900,color:"rgba(26,18,6,.72)",marginTop:2}}>
               {tr("Un joueur mystère à deviner","A mystery player to guess","Ein Rätselspieler zu erraten","Un giocatore misterioso da indovinare","Um jogador misterioso para adivinhar")}
             </span>
           </span>
           {dailyRiddle.streak > 0 && (
             <span style={{flexShrink:0,padding:"4px 10px",borderRadius:999,background:"rgba(255,138,42,.16)",border:"1px solid rgba(255,138,42,.5)",color:"#FF8A2A",fontSize:12,fontWeight:900}}>🔥 {dailyRiddle.streak}</span>
           )}
-          <span style={{flexShrink:0,color:"#F2D680",fontSize:16,fontWeight:900}}>›</span>
+          <span style={{flexShrink:0,color:"#1A1206",fontSize:16,fontWeight:900}}>›</span>
         </button>
         )}
 
@@ -11547,10 +11617,11 @@ export default function LePont() {
                   key={i}
                   onClick={function(){setHomeCardIndex(i);localStorage.setItem("bb_home_card", String(i));}}
                   style={{
-                    width: isActive ? 28 : 8,
-                    height: 8,
-                    borderRadius: 4,
-                    background: isActive ? colors[i] : "rgba(255,255,255,.25)",
+                    width: isActive ? 28 : 9,
+                    height: 9,
+                    borderRadius: 5,
+                    border: G.traitFin,
+                    background: isActive ? G.projecteur : "rgba(255,255,255,.25)",
                     transition:"all 0.3s",
                     cursor:"pointer",
                   }}
@@ -12221,22 +12292,14 @@ export default function LePont() {
                     <div style={{display:"flex",gap:10}}>
                       <button onClick={function(){const m=gameConfigModal;setGameConfigModal(null);setTimeout(function(){tryStart(m);},50);}} style={{
                         flex:2,padding:"14px",
-                        background:`linear-gradient(135deg, ${accentColor}, ${accentSecondary})`,
-                        color:"#000",border:"none",borderRadius:50,cursor:"pointer",
-                        fontFamily:G.font,fontSize:15,fontWeight:800,letterSpacing:1,
-                        boxShadow:`0 8px 24px ${accentColor}55`,
-                        display:"flex",alignItems:"center",justifyContent:"center",gap:8,
+                        ...btn(G.projecteur),
                         transition:"transform .15s"
                       }} onMouseDown={(e)=>e.currentTarget.style.transform="scale(.97)"} onMouseUp={(e)=>e.currentTarget.style.transform="scale(1)"} onMouseLeave={(e)=>e.currentTarget.style.transform="scale(1)"}>
                         ▶ {tr("Jouer seul","Play solo","Solo spielen","Gioca da solo","Jogar sozinho")}
                       </button>
                       <button onClick={function(){setDuelMode(gameConfigModal);setDuelDiff(diff);setDuelRounds(totalRounds);setGameConfigModal(null);setTimeout(function(){setShowRoomCreate(true);},100);}} style={{
                         flex:1,padding:"14px",
-                        background:"rgba(255,255,255,.08)",color:G.white,
-                        border:"1px solid rgba(255,255,255,.15)",
-                        borderRadius:50,cursor:"pointer",
-                        fontFamily:G.font,fontSize:12,fontWeight:700,
-                        backdropFilter:"blur(10px)"
+                        ...btn("#0B2213", G.white, 15)
                       }}>
                         👥 {tr("Entre potes","With friends","Mit Freunden","Con gli amici","Com amigos")}
                       </button>
@@ -13525,18 +13588,18 @@ export default function LePont() {
         )}
 
         {/* Multijoueur - rejoindre */}
-        <div style={{background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.1)",borderRadius:16,padding:"14px 14px 12px"}}>
+        <div style={{background:"#0B2213",border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,padding:"14px 14px 12px"}}>
           <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
             <span style={{fontSize:18}}>👥</span>
             <div>
-              <div style={{fontSize:14,fontWeight:800,color:G.white}}>{tr("Joue avec tes potes !","Play with friends!","Spiel mit deinen Freunden!","Gioca con i tuoi amici!","Jogue com seus amigos!")}</div>
-              <div style={{fontSize:11,color:"rgba(255,255,255,.4)"}}>{tr("Crée une salle ou rejoins avec un code","Create a room or join with a code","Erstelle einen Raum oder tritt per Code bei","Crea una stanza o entra con un codice","Crie uma sala ou entre com um código")}</div>
+              <div style={{...posterText(16,G.white),transformOrigin:"left"}}>{tr("Joue avec tes potes !","Play with friends!","Spiel mit deinen Freunden!","Gioca con i tuoi amici!","Jogue com seus amigos!")}</div>
+              <div style={{fontSize:11,color:"rgba(255,255,255,.55)",fontWeight:700,marginTop:2}}>{tr("Crée une salle ou rejoins avec un code","Create a room or join with a code","Erstelle einen Raum oder tritt per Code bei","Crea una stanza o entra con un codice","Crie uma sala ou entre com um código")}</div>
             </div>
           </div>
           <div style={{display:"flex",gap:8}}>
             <input value={roomInput} onChange={function(e){setRoomInput(e.target.value.toUpperCase());setRoomMsg("");}}
               placeholder={tr("Code salle","Room code","Raumcode","Codice stanza","Código da sala")} maxLength={6}
-              style={{flex:1,padding:"10px 12px",borderRadius:12,border:"1.5px solid rgba(255,255,255,.12)",background:"rgba(255,255,255,.05)",color:G.white,fontFamily:G.font,fontSize:14,fontWeight:700,letterSpacing:3,textTransform:"uppercase",outline:"none"}}/>
+              style={{flex:1,padding:"10px 12px",borderRadius:G.rayonS,border:G.trait,background:"#061007",color:G.white,fontFamily:G.font,fontSize:14,fontWeight:700,letterSpacing:3,textTransform:"uppercase",outline:"none"}}/>
             <button onClick={function(){requirePseudo(async function(){
               const code = (roomInput||"").trim().toUpperCase();
               if (code.length !== 6) { setRoomMsg(tr("Code invalide","Invalid code","Ungültiger Code","Codice non valido","Código inválido")); return; }
@@ -13570,30 +13633,30 @@ export default function LePont() {
               }
               // Étape 2 : fallback Plug/Mercato
               joinRoom(code);
-            });}} style={{padding:"10px 14px",background:"rgba(255,255,255,.07)",color:G.white,border:"1px solid rgba(255,255,255,.12)",borderRadius:12,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700}}>{tr("Rejoindre","Join","Beitreten","Entra","Entrar")}</button>
+            });}} style={{padding:"10px 16px",...btn(G.projecteur)}}>{tr("Rejoindre","Join","Beitreten","Entra","Entrar")}</button>
           </div>
         </div>
         {roomMsg && <div style={{fontSize:12,color:"#FF3D57",fontWeight:700,marginTop:-4}}>{roomMsg}</div>}
         {/* Actions */}
         <div style={{display:"flex",gap:8}}>
-          <button onClick={function(){loadLeaderboard(lbMode);setShowLeaderboard(true);}} style={{flex:1,padding:"12px",background:"rgba(0,230,118,.08)",color:G.accent,border:"1px solid rgba(0,230,118,.2)",borderRadius:14,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
-            {Icon.trophy(14,G.accent)} {tr("Classement","Leaderboard","Rangliste","Classifica","Classificação")}
+          <button onClick={function(){loadLeaderboard(lbMode);setShowLeaderboard(true);}} style={{flex:1,...btn(G.pelouse,G.encre)}}>
+            {Icon.trophy(14,G.encre)} {tr("Classement","Leaderboard","Rangliste","Classifica","Classificação")}
           </button>
-          <button onClick={function(){requirePseudo(function(){setShowFriends(true);loadFriends().then(function(ids){fetchFriendScores(ids);});loadDuels();loadFriendRequests();});}} style={{flex:1,padding:"12px",background:"rgba(255,255,255,.05)",color:G.white,border:"1px solid rgba(255,255,255,.1)",borderRadius:14,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",gap:6,position:"relative"}}>
-            {tr("👥 Amis","👥 Friends","👥 Freunde","👥 Amici","👥 Amigos")}{friendRequests.length>0&&<span style={{position:"absolute",top:-4,right:-4,background:"#FF3D57",color:"#fff",borderRadius:"50%",width:16,height:16,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:900}}>{friendRequests.length}</span>}
+          <button onClick={function(){requirePseudo(function(){setShowFriends(true);loadFriends().then(function(ids){fetchFriendScores(ids);});loadDuels();loadFriendRequests();});}} style={{flex:1,...btn("#0B2213",G.white),justifyContent:"center",gap:6,position:"relative"}}>
+            <span style={{WebkitTextStroke:0,textShadow:"none",fontSize:15,lineHeight:1}}>👥</span> {tr("Amis","Friends","Freunde","Amici","Amigos")}{friendRequests.length>0&&<span style={{position:"absolute",top:-4,right:-4,background:"#FF3D57",color:"#fff",borderRadius:"50%",width:16,height:16,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:900}}>{friendRequests.length}</span>}
           </button>
         </div>
 
         {/* Défis ouverts (salon de duels asynchrones) */}
         <button onClick={function(){requirePseudo(function(){setOpenTab("browse");setOpenDuelChooser(false);loadOpenDuels();loadMyOpenDuels();loadReceivedChallenges();setShowOpenDuels(true);});}}
-          style={{position:"relative",display:"flex",alignItems:"center",gap:12,padding:"12px 16px",background:"linear-gradient(90deg, rgba(255,138,42,.18), rgba(255,201,60,.12))",border:"1px solid rgba(255,138,42,.4)",borderRadius:14,cursor:"pointer",width:"100%",textAlign:"left"}}>
-          <div style={{width:28,height:28,borderRadius:"50%",background:"linear-gradient(135deg,#FF8A2A,#FFC93C)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,boxShadow:"0 2px 8px rgba(255,138,42,.4)"}}>⚔️</div>
+          style={{position:"relative",display:"flex",alignItems:"center",gap:12,padding:"12px 16px",background:G.maillot,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,cursor:"pointer",width:"100%",textAlign:"left"}}>
+          <div style={{width:28,height:28,borderRadius:"50%",background:G.projecteur,border:G.traitFin,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15}}>⚔️</div>
           <div style={{flex:1}}>
-            <div style={{fontSize:13,fontWeight:800,color:"#FF8A2A"}}>{tr("Défis ouverts ⚔️","Open challenges ⚔️","Offene Duelle ⚔️","Sfide aperte ⚔️","Desafios abertos ⚔️")}</div>
-            <div style={{fontSize:11,color:"rgba(255,255,255,.4)",marginTop:1}}>{openUnseenCount>0?tr(openUnseenCount+" tentative"+(openUnseenCount>1?"s":"")+" sur tes défis !", openUnseenCount+" new attempt"+(openUnseenCount>1?"s":"")+" on your challenges!", openUnseenCount+(openUnseenCount>1?" neue Versuche":" neuer Versuch")+" auf deine Duelle!", openUnseenCount+(openUnseenCount>1?" nuovi tentativi":" nuovo tentativo")+" sulle tue sfide!", openUnseenCount+(openUnseenCount>1?" novas tentativas":" nova tentativa")+" nos seus desafios!"):tr("Bats les scores des autres — ou lance le tien","Beat other players' scores — or post yours","Schlag die Scores der anderen — oder poste deinen","Batti i punteggi degli altri — o lancia il tuo","Supere as pontuações dos outros — ou lance a sua")}</div>
+            <div style={{...posterText(16,G.white),transformOrigin:"left"}}>{tr("Défis ouverts ⚔️","Open challenges ⚔️","Offene Duelle ⚔️","Sfide aperte ⚔️","Desafios abertos ⚔️")}</div>
+            <div style={{fontSize:11,color:"rgba(255,255,255,.82)",fontWeight:800,marginTop:2}}>{openUnseenCount>0?tr(openUnseenCount+" tentative"+(openUnseenCount>1?"s":"")+" sur tes défis !", openUnseenCount+" new attempt"+(openUnseenCount>1?"s":"")+" on your challenges!", openUnseenCount+(openUnseenCount>1?" neue Versuche":" neuer Versuch")+" auf deine Duelle!", openUnseenCount+(openUnseenCount>1?" nuovi tentativi":" nuovo tentativo")+" sulle tue sfide!", openUnseenCount+(openUnseenCount>1?" novas tentativas":" nova tentativa")+" nos seus desafios!"):tr("Bats les scores des autres — ou lance le tien","Beat other players' scores — or post yours","Schlag die Scores der anderen — oder poste deinen","Batti i punteggi degli altri — o lancia il tuo","Supere as pontuações dos outros — ou lance a sua")}</div>
           </div>
           {(openUnseenCount+receivedChallenges.length)>0 && <span style={{position:"absolute",top:8,right:28,background:"#FF3D57",color:"#fff",borderRadius:"50%",minWidth:18,height:18,padding:"0 5px",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:900}}>{openUnseenCount+receivedChallenges.length}</span>}
-          <span style={{fontSize:16,color:"rgba(255,138,42,.6)"}}>›</span>
+          <span style={{fontSize:16,color:"rgba(255,255,255,.85)",fontWeight:900}}>›</span>
         </button>
 
         {/* GOAT BATTLE (grille 3×3 multijoueur) n'a pas de bouton dédié ici :
