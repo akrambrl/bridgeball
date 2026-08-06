@@ -4,6 +4,8 @@ import { trackPlay, pingPresence, pingLive, trackTime } from "../lib/track";
 import { hapticSuccess, hapticError } from "../lib/native";
 import { pickOpponent, avatarFor } from "../lib/opponents";
 import { displayStreak } from "../lib/streak";
+// Jours calendaires « heure de Paris » — découpage temporel du tableau de bord.
+import { parisDayOf, parisLastDays } from "../lib/days";
 import { WinBanner } from "./landing/WinBanner";
 // Barème de grades et drapeaux : définis une seule fois, partagés avec le desktop.
 import { GRADES, getGrade, countryToFlag } from "../lib/leaderboard";
@@ -2837,6 +2839,11 @@ export default function LePont() {
       // `pseudo` sert à nommer les joueurs dans la section « qui joue à quoi ».
       const pseudos = await sbFetchAll("bb_pseudos?select=player_id,pseudo&order=player_id.asc", 100000) || [];
       const duels = await sbFetchAll("bb_duels?select=id,created_at&created_at=gte."+since+"&order=created_at.desc", 20000) || [];
+      // Jour calendaire (Paris) attaché UNE fois par ligne : le regroupement par
+      // jour et le filtrage par plage se font ensuite par simple comparaison de
+      // chaînes, sans repasser par Intl à chaque changement de plage.
+      for (const r of scores) r.day = parisDayOf(r.created_at);
+      if (hasEvents) for (const r of events) r.day = parisDayOf(r.created_at);
       // Derniers comptes créés — tente avec created_at, se rabat si la colonne n'existe pas
       let recent = await sbFetch("bb_pseudos?select=pseudo,country,created_at&order=created_at.desc&limit=40");
       let recentHasDate = true;
@@ -2877,7 +2884,7 @@ export default function LePont() {
         regIds: pseudos.map(function(p){ return p.player_id; }),
         pseudoById: pseudos.reduce(function(acc,p){ if (p.pseudo) acc[p.player_id] = p.pseudo; return acc; }, {}),
         accounts: pseudos.length,
-        rawDuels: duels.map(function(d){ return d.created_at; }),
+        rawDuels: duels.map(function(d){ return parisDayOf(d.created_at); }),
         recent: recent, recentHasDate: recentHasDate, allTime: allTime,
         playsAllTime: playsAllTime, trackingSince: trackingSince,
       });
@@ -2888,13 +2895,18 @@ export default function LePont() {
     if (!statsData) return null;
     const range = statsRange;
     const nowMs = Date.now();
-    const cut = nowMs - range*24*3600*1000;
-    const inRange = function(iso){ return iso && new Date(iso).getTime() >= cut; };
-    const dayKey = function(iso){ return iso.slice(0,10); };
+    // La plage compte les `range` DERNIERS JOURS CALENDAIRES (Paris), aujourd'hui
+    // inclus — et non une fenêtre glissante de range × 24 h. Sans ça, « 1 j »
+    // affichait « actifs aujourd'hui » en comptant aussi la soirée de la veille :
+    // le grand compteur du haut ne pouvait pas coïncider avec la ligne
+    // « Aujourd'hui » du détail jour par jour juste en dessous.
+    const dayList = parisLastDays(14, nowMs); // du plus récent au plus ancien
+    const cutDay = dayList[Math.min(range, dayList.length) - 1];
+    const inRange = function(day){ return !!day && day >= cutDay; };
     const regSet = new Set(statsData.regIds || []);
     const hasEvents = statsData.hasEvents;
-    const scoresW = (statsData.rawScores || []).filter(function(r){ return inRange(r.created_at); });
-    const eventsW = hasEvents ? (statsData.rawEvents || []).filter(function(r){ return inRange(r.created_at); }) : [];
+    const scoresW = (statsData.rawScores || []).filter(function(r){ return inRange(r.day); });
+    const eventsW = hasEvents ? (statsData.rawEvents || []).filter(function(r){ return inRange(r.day); }) : [];
     // Joueurs actifs = UNION des deux sources. bb_events seul ne suffit pas : un
     // score enregistré dont le ping d'événement a échoué (réseau, ancien bundle
     // en cache, RLS) produisait un « 0 joueur · N parties » contradictoire.
@@ -2959,15 +2971,15 @@ export default function LePont() {
       ? (statsData.rawEvents || []).concat(statsData.rawScores || [])
       : (statsData.rawScores || []);
     const byDayActive = {}, byDayGames = {};
-    for (const r of fullActive) { if (r.created_at) { const k = dayKey(r.created_at); (byDayActive[k] = byDayActive[k] || new Set()).add(r.player_id); } }
-    for (const r of (statsData.rawScores || [])) { if (r.created_at) { const k = dayKey(r.created_at); byDayGames[k] = (byDayGames[k]||0)+1; } }
-    const days = [];
-    for (let i = 0; i < 14; i++) {
-      const d = new Date(nowMs - i*24*3600*1000).toISOString().slice(0,10);
+    for (const r of fullActive) { if (r.day) { (byDayActive[r.day] = byDayActive[r.day] || new Set()).add(r.player_id); } }
+    for (const r of (statsData.rawScores || [])) { if (r.day) { byDayGames[r.day] = (byDayGames[r.day]||0)+1; } }
+    // Mêmes jours que ceux qui servent à découper la plage : la ligne
+    // « Aujourd'hui » est donc exactement ce que compte la carte du haut en 1 j.
+    const days = dayList.map(function(d){
       const set = byDayActive[d];
       let anon = 0; if (set && hasEvents) { set.forEach(function(id){ if(!regSet.has(id)) anon++; }); }
-      days.push({ day: d, players: set ? set.size : 0, anon: anon, games: byDayGames[d] || 0 });
-    }
+      return { day: d, players: set ? set.size : 0, anon: anon, games: byDayGames[d] || 0 };
+    });
     return { range: range, days: days, activeWindow: activeSet.size, anonWindow: anonSet.size,
       gamesWindow: gamesW, duelsWindow: duelsW, playsByMode: playsByMode, totalPlays: totalPlays,
       playsSolo: playsSolo, playsOnline: playsOnline, osCount: osCount, hasEvents: hasEvents,
@@ -11811,7 +11823,7 @@ export default function LePont() {
                     </div>
                   </div>
                   {/* Détail jour par jour — toujours 14 jours (indépendant de la plage) */}
-                  <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.4)",fontWeight:800,textTransform:"uppercase",marginBottom:10,paddingLeft:4}}>Jour par jour · 14 j</div>
+                  <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.4)",fontWeight:800,textTransform:"uppercase",marginBottom:10,paddingLeft:4}}>Jour par jour · 14 j · heure de Paris</div>
                   <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:24}}>
                     {v.days.map(function(d,i){
                       return (
