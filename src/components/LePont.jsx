@@ -12481,7 +12481,9 @@ export default function LePont() {
           const myName = (playerName || "").trim() || tr("Toi","You","Du","Tu","Você");
           // Photo de profil du joueur si elle existe ; sinon on retombe sur le
           // visuel GOAT FC dérivé du pseudo.
-          const myAvatar = playerAvatar || avatarFor(myName);
+          // Carte de collection, comme partout ailleurs : l'ancienne photo uploadée
+           // n'a plus cours (elle restait visible sur ce seul écran).
+           const myAvatar = avatarCard(playerBadge, playerXp).img;
           // isPhoto : photo de profil de l'utilisateur → cadrage centré et repli
           // sur le visuel GOAT FC si l'image ne charge pas (photo supprimée).
           const card = function(name, flag, ring, avatar, revealed, isPhoto){
@@ -12536,12 +12538,12 @@ export default function LePont() {
               </div>
 
               <div style={{position:"relative",display:"flex",alignItems:"flex-start",gap:8,width:"100%",maxWidth:400,marginBottom:32}}>
-                {card(myName, null, "#00E676", myAvatar, true, !!playerAvatar)}
+                {card(myName, null, "#00E676", myAvatar, true, false)}
                 <div style={{display:"flex",flexDirection:"column",alignItems:"center",paddingTop:28,flexShrink:0}}>
                   <div style={{fontFamily:G.heading,fontSize:28,letterSpacing:4,color:found?G.gold:"rgba(255,255,255,.3)",transition:"color .3s"}}>VS</div>
                   {found && <div style={{fontFamily:G.font,fontSize:9,letterSpacing:3,color:G.accent,marginTop:4}}>{tr("✓ TROUVÉ","✓ FOUND","✓ GEFUNDEN","✓ TROVATO","✓ ENCONTRADO")}</div>}
                 </div>
-                {card(opp.pseudo, opp.country, "#3DA5FF", opp.avatar, found)}
+                {card(opp.pseudo, opp.country, "#3DA5FF", oppCard(opp), found, false)}
               </div>
 
               <div style={{position:"relative",textAlign:"center",minHeight:72}}>
