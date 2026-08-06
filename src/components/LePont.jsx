@@ -11995,6 +11995,9 @@ export default function LePont() {
                 <div style={{fontSize:11,letterSpacing:3,color:"rgba(255,255,255,.45)",fontWeight:800,textTransform:"uppercase"}}>Tableau de bord · privé</div>
                 <div style={{fontFamily:G.heading,fontSize:34,letterSpacing:2,color:"#fff",marginTop:4}}>GOAT <span style={{color:"#00E676"}}>STATS</span></div>
               </div>
+                {/* Rafraîchir en haut : en bas de page, il fallait traverser tout le
+                    tableau de bord pour le trouver. */}
+                  <button onClick={function(){setStatsData(null);}} style={{width:"100%",padding:"11px",borderRadius:14,marginBottom:14,border:"1px solid rgba(255,255,255,.15)",background:"rgba(255,255,255,.05)",color:"#fff",fontFamily:G.font,fontWeight:800,fontSize:14,cursor:"pointer"}}>↻ Rafraîchir</button>
               {!statsData ? (
                 <div style={{textAlign:"center",padding:"60px 0",color:"rgba(255,255,255,.5)",fontSize:15}}>⏳ Chargement…</div>
               ) : (() => {
@@ -12323,7 +12326,6 @@ export default function LePont() {
                     <div style={{fontSize:11,color:"rgba(255,200,0,.7)",marginBottom:14,paddingLeft:4}}>⚠️ La date de création n'est pas enregistrée dans la base (colonne <code>created_at</code> absente de bb_pseudos). Je peux te l'ajouter si tu veux les dates.</div>
                   ) : null}
 
-                  <button onClick={function(){setStatsData(null);}} style={{width:"100%",padding:"14px",borderRadius:16,border:"1px solid rgba(255,255,255,.15)",background:"rgba(255,255,255,.05)",color:"#fff",fontFamily:G.font,fontWeight:800,fontSize:14,cursor:"pointer"}}>↻ Rafraîchir</button>
                   {statsData.hasEvents ? (
                     <div style={{textAlign:"center",fontSize:11,color:"rgba(255,255,255,.3)",marginTop:16,lineHeight:1.5}}>Actifs = joueurs uniques (inscrits + anonymes) ayant ouvert l'app ce jour-là (heure UTC). « Parties » = parties terminées.</div>
                   ) : (
