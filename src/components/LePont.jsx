@@ -7,7 +7,7 @@ import { displayStreak } from "../lib/streak";
 // Jours calendaires « heure de Paris » — découpage temporel du tableau de bord.
 import { parisDayOf, parisLastDays } from "../lib/days";
 // Cartes à collectionner (débloquées par l'XP) et badge affiché à côté du pseudo.
-import { CARDS, RARITIES, avatarCard, badgeToShow, cardById, isUnlocked, levelCard, newlyUnlocked, progressToNext, rarityMeta, unlockedCards } from "../lib/collection";
+import { CARDS, RARITIES, avatarCard, badgeToShow, cardById, hasArt, isUnlocked, levelCard, newlyUnlocked, progressToNext, rarityMeta, unlockedCards } from "../lib/collection";
 import { WinBanner } from "./landing/WinBanner";
 // Barème de grades et drapeaux : définis une seule fois, partagés avec le desktop.
 import { GRADES, getGrade, countryToFlag } from "../lib/leaderboard";
@@ -10250,8 +10250,14 @@ export default function LePont() {
                         }}
                       >
                         <div style={{position:"relative",aspectRatio:"3 / 4",overflow:"hidden",background:"#000"}}>
-                          <img src={c.img} alt="" loading="lazy" style={{width:"100%",height:"100%",objectFit:"cover",
-                            filter:ouverte?"none":"grayscale(1) brightness(.32)",transition:"filter .2s"}}/>
+                          {hasArt(c)
+                            ? <img src={c.img} alt="" loading="lazy" style={{width:"100%",height:"100%",objectFit:"cover",
+                                filter:ouverte?"none":"grayscale(1) brightness(.32)",transition:"filter .2s"}}/>
+                            : /* Illustration pas encore livrée : emplacement neutre, jamais
+                                 une image d'emprunt qui ferait croire à une autre carte. */
+                              <div style={{width:"100%",height:"100%",display:"flex",alignItems:"center",justifyContent:"center",
+                                background:"repeating-linear-gradient(135deg,rgba(255,255,255,.04) 0 8px,rgba(255,255,255,.015) 8px 16px)",
+                                color:"rgba(255,255,255,.22)",fontFamily:G.heading,fontSize:30}}>?</div>}
                           {!ouverte && (
                             <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2}}>
                               <span style={{fontSize:18,lineHeight:1}}>🔒</span>
@@ -11429,7 +11435,7 @@ export default function LePont() {
           dernières cartes obtenues, la plus récente en tête. */}
       {(function(){
         const possedees = unlockedCards(playerXp);
-        const apercu = possedees.slice(-5).reverse();
+        const apercu = possedees.filter(hasArt).slice(-5).reverse();
         const prochaine = progressToNext(playerXp);
         return (
           <>

@@ -7,7 +7,8 @@ import {
 describe("catalogue", () => {
   it("a des identifiants et des visuels uniques", () => {
     expect(new Set(CARDS.map((c) => c.id)).size).toBe(CARDS.length);
-    expect(new Set(CARDS.map((c) => c.img)).size).toBe(CARDS.length);
+    const visuels = CARDS.map((c) => c.img).filter(Boolean);
+    expect(new Set(visuels).size).toBe(visuels.length); // pas de doublon
     expect(CARDS.length).toBeGreaterThanOrEqual(20);
   });
 
@@ -58,20 +59,22 @@ describe("catalogue", () => {
     }
   });
 
-  it("expose un visuel et une vignette commençant par / pour chaque carte", () => {
+  it("expose un visuel et une vignette cohérents, ou aucun des deux", () => {
     for (const c of CARDS) {
+      if (c.img === null) { expect(c.thumb).toBeNull(); continue; } // « à venir »
       expect(c.img.startsWith("/")).toBe(true);
-      expect(c.thumb.startsWith("/")).toBe(true);
+      expect(c.thumb!.startsWith("/")).toBe(true);
     }
+    expect(CARDS.filter((c) => c.img).length).toBe(12); // les 12 cartes fournies
   });
 
   it("donne une vignette dédiée aux cartes illustrées (badge léger)", () => {
     // Les cartes livrées vivent dans /cards/ et ont une vignette distincte du
     // visuel plein format : le classement en charge une par joueur.
-    const livrees = CARDS.filter((c) => c.img.startsWith("/cards/"));
+    const livrees = CARDS.filter((c) => c.img && c.img.startsWith("/cards/"));
     expect(livrees.length).toBeGreaterThanOrEqual(12);
     for (const c of livrees) {
-      expect(c.thumb).toBe(c.img.replace(".webp", "-64.webp"));
+      expect(c.thumb).toBe(c.img!.replace(".webp", "-64.webp"));
       expect(c.thumb).not.toBe(c.img);
     }
   });
@@ -180,8 +183,10 @@ describe("levelCard / avatarCard", () => {
     expect(levelCard(0).id).toBe(CARDS[0].id);
     expect(levelCard(149).xp).toBe(50);
     expect(levelCard(150).xp).toBe(150);
-    expect(levelCard(17400).xp).toBe(12000);
-    expect(levelCard(999999).id).toBe(CARDS[CARDS.length - 1].id);
+    // Au-delà des 12 cartes illustrées, la photo de profil reste la dernière
+    // carte QUI A un visuel : jamais un cadre vide.
+    expect(levelCard(17400).id).toBe("international");
+    expect(levelCard(999999).id).toBe("international");
   });
 
   it("ne renvoie jamais rien, même à 0 ou sans XP", () => {
@@ -194,7 +199,7 @@ describe("levelCard / avatarCard", () => {
 
   it("progresse quand le joueur monte", () => {
     let prev = 0;
-    for (const xp of [0, 50, 800, 5000, 38000, 250000]) {
+    for (const xp of [0, 50, 800, 5000]) {
       const i = CARDS.findIndex((c) => c.id === levelCard(xp).id);
       expect(i).toBeGreaterThanOrEqual(prev);
       prev = i;
