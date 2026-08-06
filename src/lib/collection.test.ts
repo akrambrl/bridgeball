@@ -40,6 +40,24 @@ describe("catalogue", () => {
     expect(CARDS.filter((c) => c.xp <= 5000).length).toBeGreaterThanOrEqual(12);
   });
 
+  it("garde le haut de l'échelle hors de portée d'une semaine de jeu", () => {
+    // L'XP est la somme des scores : ~425 XP par partie pour un bon joueur, et
+    // le meilleur compte a fait 56 875 XP en 134 parties. Un plafond bas se
+    // bouclait en une semaine — ce test empêche d'y revenir sans le vouloir.
+    const XP_PAR_PARTIE = 425;
+    const derniere = CARDS[CARDS.length - 1];
+    expect(derniere.xp / XP_PAR_PARTIE).toBeGreaterThan(400); // > 400 parties
+    // Et le compte le plus avancé observé (56 875 XP) ne doit pas tout avoir.
+    expect(unlockedCards(56875).length).toBeLessThan(CARDS.length);
+  });
+
+  it("espace les paliers de plus en plus (progression géométrique en haut)", () => {
+    const hauts = CARDS.filter((c) => c.rarity === "epique" || c.rarity === "legendaire");
+    for (let i = 1; i < hauts.length; i++) {
+      expect(hauts[i].xp / hauts[i - 1].xp).toBeGreaterThanOrEqual(1.3);
+    }
+  });
+
   it("expose un visuel et une vignette commençant par / pour chaque carte", () => {
     for (const c of CARDS) {
       expect(c.img.startsWith("/")).toBe(true);

@@ -6,11 +6,21 @@
 // xp >= card.xp. Rien à synchroniser, donc rien à désynchroniser — seul le
 // badge CHOISI est persisté (une carte non débloquée est refusée à la lecture).
 //
-// Paliers calibrés sur la vraie distribution des comptes (145 comptes) :
-// médiane 145 XP, p75 ≈ 960, p90 ≈ 2 255, p95 ≈ 4 180, p99 ≈ 17 400. Un barème
-// qui grimperait à 30 000+ dès le milieu du tableau n'aurait débloqué presque
-// rien pour presque personne : les 12 premières cartes tiennent donc sous
-// 5 000 XP, et les légendaires servent d'objectif long terme.
+// Paliers calibrés sur les comptes réels ET sur la vitesse de gain observée.
+// L'XP est la SOMME DES SCORES (pas un forfait par partie) : ~425 XP par partie
+// pour un bon joueur, avec des pointes à 2 500 sur une seule partie. Le meilleur
+// compte a atteint 56 875 XP en 134 parties.
+//
+// D'où deux moitiés très différentes :
+//  • bas de l'échelle — le joueur médian est à 145 XP, soit moins d'une bonne
+//    partie : les 12 premières cartes tiennent sous 5 000 XP (p95 ≈ 4 180), pour
+//    qu'il y ait toujours un objectif proche.
+//  • haut de l'échelle — à ~425 XP/partie, un plafond à 50 000 se bouclait en
+//    ~120 parties, soit une semaine pour un joueur assidu. Les 9 dernières
+//    cartes montent donc jusqu'à 250 000 XP (~590 parties).
+//
+// ⚠️ La possession étant DÉDUITE de l'XP, relever un palier retire la carte à
+// ceux qui l'avaient. Ne recalibrer qu'en connaissance de cause.
 //
 // Visuels : les 12 premières cartes (commune + rare) ont leur illustration
 // définitive dans public/cards/ ; les 9 dernières (épique + légendaire) portent
@@ -67,16 +77,16 @@ export const CARDS: Card[] = [
   { id: "buteur",      name: "Le Buteur",        nameEn: "The Striker",     img: "/cards/buteur.webp",        thumb: "/cards/buteur-64.webp", xp: 4000,  rarity: "rare" },
   { id: "international",name: "L'International", nameEn: "The Cap",         img: "/cards/international.webp",        thumb: "/cards/international-64.webp", xp: 5000,  rarity: "rare" },
   // ── Épiques : haut du classement ──
-  { id: "maestro",     name: "Le Maestro",       nameEn: "The Maestro",     img: "/plug-card.png",        thumb: "/plug-card.png", xp: 6500,  rarity: "epique" },
-  { id: "finisseur",   name: "Le Finisseur",     nameEn: "The Finisher",    img: "/mercato-card.png",        thumb: "/mercato-card.png", xp: 8000,  rarity: "epique" },
-  { id: "ballon-or",   name: "Ballon d'Or",      nameEn: "Golden Ball",     img: "/grid-card.png",         thumb: "/grid-card.png", xp: 10000, rarity: "epique" },
-  { id: "intouchable", name: "L'Intouchable",    nameEn: "Untouchable",     img: "/guess-card.png",         thumb: "/guess-card.png", xp: 12500, rarity: "epique" },
-  { id: "phenomene",   name: "Le Phénomène",     nameEn: "The Phenomenon",  img: "/reveal-card.png",         thumb: "/reveal-card.png", xp: 15000, rarity: "epique" },
+  { id: "maestro",     name: "Le Maestro",       nameEn: "The Maestro",     img: "/plug-card.png",        thumb: "/plug-card.png", xp: 8000,  rarity: "epique" },
+  { id: "finisseur",   name: "Le Finisseur",     nameEn: "The Finisher",    img: "/mercato-card.png",        thumb: "/mercato-card.png", xp: 12000,  rarity: "epique" },
+  { id: "ballon-or",   name: "Ballon d'Or",      nameEn: "Golden Ball",     img: "/grid-card.png",         thumb: "/grid-card.png", xp: 18000, rarity: "epique" },
+  { id: "intouchable", name: "L'Intouchable",    nameEn: "Untouchable",     img: "/guess-card.png",         thumb: "/guess-card.png", xp: 26000, rarity: "epique" },
+  { id: "phenomene",   name: "Le Phénomène",     nameEn: "The Phenomenon",  img: "/reveal-card.png",         thumb: "/reveal-card.png", xp: 38000, rarity: "epique" },
   // ── Légendaires : objectif long terme ──
-  { id: "legende",     name: "La Légende",       nameEn: "The Legend",      img: "/duel-card.png",         thumb: "/duel-card.png", xp: 20000, rarity: "legendaire" },
-  { id: "hall-of-fame",name: "Hall of Fame",     nameEn: "Hall of Fame",    img: "/devin-1.png",         thumb: "/devin-1.png", xp: 27000, rarity: "legendaire" },
-  { id: "immortel",    name: "L'Immortel",       nameEn: "The Immortal",    img: "/devin-2.png",         thumb: "/devin-2.png", xp: 35000, rarity: "legendaire" },
-  { id: "goat",        name: "Le GOAT",          nameEn: "The GOAT",        img: "/devin-3.png",     thumb: "/devin-3.png", xp: 50000, rarity: "legendaire" },
+  { id: "legende",     name: "La Légende",       nameEn: "The Legend",      img: "/duel-card.png",         thumb: "/duel-card.png", xp: 55000, rarity: "legendaire" },
+  { id: "hall-of-fame",name: "Hall of Fame",     nameEn: "Hall of Fame",    img: "/devin-1.png",         thumb: "/devin-1.png", xp: 90000, rarity: "legendaire" },
+  { id: "immortel",    name: "L'Immortel",       nameEn: "The Immortal",    img: "/devin-2.png",         thumb: "/devin-2.png", xp: 150000, rarity: "legendaire" },
+  { id: "goat",        name: "Le GOAT",          nameEn: "The GOAT",        img: "/devin-3.png",     thumb: "/devin-3.png", xp: 250000, rarity: "legendaire" },
 ];
 
 export function rarityMeta(rarity: Rarity): RarityMeta {
