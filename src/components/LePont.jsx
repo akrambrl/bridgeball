@@ -7,7 +7,7 @@ import { displayStreak } from "../lib/streak";
 // Jours calendaires « heure de Paris » — découpage temporel du tableau de bord.
 import { parisDayOf, parisLastDays } from "../lib/days";
 // Cartes à collectionner (débloquées par l'XP) et badge affiché à côté du pseudo.
-import { CARDS, RARITIES, badgeToShow, cardById, isUnlocked, newlyUnlocked, progressToNext, rarityMeta, unlockedCards } from "../lib/collection";
+import { CARDS, RARITIES, avatarCard, badgeToShow, cardById, isUnlocked, levelCard, newlyUnlocked, progressToNext, rarityMeta, unlockedCards } from "../lib/collection";
 import { WinBanner } from "./landing/WinBanner";
 // Barème de grades et drapeaux : définis une seule fois, partagés avec le desktop.
 import { GRADES, getGrade, countryToFlag } from "../lib/leaderboard";
@@ -10492,7 +10492,16 @@ export default function LePont() {
                   </div>
                   {/* Avatar rond (photo Supabase Storage ou fallback emoji grade) */}
                   <div style={{width:42,height:42,borderRadius:"50%",background:"linear-gradient(135deg,#00E676,#00A855)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,color:"#fff",overflow:"hidden",position:"relative",flexShrink:0,border:i<3?"2px solid rgba(0,0,0,.3)":"1.5px solid rgba(255,255,255,.15)"}}>
-                    <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22}}>{grade.emoji}</div>
+                    {/* Photo de profil par défaut = la carte du joueur (badge choisi, sinon
+                        carte de son niveau). La photo uploadée, si elle existe, se
+                        superpose par-dessus ; son onError la retire et laisse voir la carte.
+                        objectPosition top : dans un cadre rond, une carte 3:4 doit
+                        montrer le visage, pas le maillot. */}
+                    {(function(){
+                      const b = badgeByPid[entry.pid];
+                      const c = avatarCard(b && b.badge, entry.xp || 0);
+                      return <img src={c.img} alt="" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",objectPosition:"top"}}/>;
+                    })()}
                     <img src={SB_URL + "/storage/v1/object/public/avatars/" + entry.pid + ".jpg"} alt="" onError={function(e){e.currentTarget.style.display="none";}} style={{width:"100%",height:"100%",objectFit:"cover",position:"relative",zIndex:1}}/>
                   </div>
                   <div style={{flex:1,minWidth:0}}>
@@ -11357,7 +11366,9 @@ export default function LePont() {
       <div style={{zIndex:1,padding:"16px 20px 8px",textAlign:"center"}}>
         <div style={{display:"inline-block",width:108,height:108,margin:"0 auto 14px",position:"relative",padding:4,borderRadius:"50%",background:"conic-gradient(from 200deg, #00E676, #3DA5FF, #C084FC, #FFC93C, #00E676)",boxShadow:"0 10px 40px rgba(0,230,118,.35)"}}>
           <div onClick={playerAvatar ? ()=>setViewingAvatar(playerAvatar) : ()=>{const el=document.getElementById("avatar-upload");if(el)el.click();}} style={{width:100,height:100,borderRadius:"50%",background:playerAvatar?"#000":"linear-gradient(135deg,#00E676,#00A855)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:56,color:"#fff",boxShadow:"0 8px 30px rgba(0,230,118,.35)",overflow:"hidden",cursor:"pointer"}}>
-            {playerAvatar ? <img src={playerAvatar} alt="avatar" style={{width:"100%",height:"100%",objectFit:"cover"}}/> : getGrade(playerXp).emoji}
+            {playerAvatar
+              ? <img src={playerAvatar} alt="avatar" style={{width:"100%",height:"100%",objectFit:"cover"}}/>
+              : <img src={avatarCard(playerBadge, playerXp).img} alt="" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top"}}/>}
           </div>
           <label htmlFor="avatar-upload" style={{position:"absolute",bottom:-2,right:-2,width:34,height:34,borderRadius:"50%",background:G.accent,border:"3px solid #0d1f0d",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,zIndex:2,cursor:"pointer"}}>{avatarUploading?"⏳":"📷"}</label>
         </div>
@@ -11441,6 +11452,38 @@ export default function LePont() {
           );
         })()}
       </div>
+
+      {/* Ma collection — dans le corps du profil (et plus seulement dans Mon
+          compte) : c'est une récompense à montrer, pas un réglage. Aperçu des
+          dernières cartes obtenues, la plus récente en tête. */}
+      {(function(){
+        const possedees = unlockedCards(playerXp);
+        const apercu = possedees.slice(-5).reverse();
+        const prochaine = progressToNext(playerXp);
+        return (
+          <>
+            <div style={{zIndex:1,padding:"14px 20px 0",fontSize:10.5,fontWeight:800,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.4)"}}>{tr("Ma collection","My collection","Meine Sammlung","La mia collezione","Minha coleção")}</div>
+            <div onClick={function(){setShowCollection(true);}} style={{zIndex:1,margin:"10px 16px 8px",padding:"14px 16px",background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.1)",borderRadius:16,cursor:"pointer"}}>
+              <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
+                <span style={{fontFamily:G.heading,fontSize:26,color:G.accent,lineHeight:1}}>{possedees.length}</span>
+                <span style={{fontSize:12.5,color:"rgba(255,255,255,.55)",fontWeight:700}}>/ {CARDS.length} {tr("cartes","cards","Karten","carte","cartas")}</span>
+                <span style={{flex:1}}/>
+                {prochaine && <span style={{fontSize:11,color:"rgba(255,255,255,.4)",fontWeight:600}}>{tr("encore","next in","noch","ancora","faltam")} {prochaine.missing.toLocaleString("fr-FR")} XP</span>}
+                <span style={{color:"rgba(255,255,255,.3)",fontSize:15}}>›</span>
+              </div>
+              <div style={{display:"flex",gap:8}}>
+                {apercu.map(function(c){
+                  const rm = rarityMeta(c.rarity);
+                  return <img key={c.id} src={c.thumb} alt="" title={lang==="fr"?c.name:c.nameEn} style={{width:42,height:56,borderRadius:8,objectFit:"cover",border:"1.5px solid "+rm.color,flexShrink:0}}/>;
+                })}
+                {prochaine && (
+                  <div style={{width:42,height:56,borderRadius:8,border:"1.5px dashed rgba(255,255,255,.18)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:15,color:"rgba(255,255,255,.35)"}}>🔒</div>
+                )}
+              </div>
+            </div>
+          </>
+        );
+      })()}
 
       {/* Stats cards */}
       <div style={{zIndex:1,padding:"14px 20px 0",fontSize:10.5,fontWeight:800,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.4)"}}>{tr("Statistiques","Stats","Statistiken","Statistiche","Estatísticas")}</div>
@@ -11733,7 +11776,10 @@ export default function LePont() {
   })()}
 {!launchedFromLandingRef.current && (
 <div onClick={function(){if(!pseudoConfirmed) setPseudoScreen(true); else setScreen("profile");}} style={{background:"linear-gradient(135deg,#00E676,#00A855)",border:"1px solid rgba(0,230,118,.4)",borderRadius:12,width:38,height:38,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",boxShadow:"0 4px 14px rgba(0,230,118,.25)",overflow:"hidden"}}>
-  {playerAvatar ? <img src={playerAvatar} alt="avatar" style={{width:"100%",height:"100%",objectFit:"cover"}}/> : <span style={{fontSize:16,color:"#000",fontWeight:800}}>{(playerName||"?")[0].toUpperCase()}</span>}
+  {/* Bouton profil de l'accueil : la carte remplace l'initiale du pseudo. */}
+  {playerAvatar
+    ? <img src={playerAvatar} alt="avatar" style={{width:"100%",height:"100%",objectFit:"cover"}}/>
+    : <img src={avatarCard(playerBadge, playerXp).img} alt="" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top"}}/>}
 </div>
 )}
           </div>

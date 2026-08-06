@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   CARDS, RARITIES, badgeToShow, cardById, isUnlocked, newlyUnlocked,
-  nextCard, progressToNext, rarityMeta, unlockedCards,
+  nextCard, progressToNext, rarityMeta, unlockedCards, levelCard, avatarCard,
 } from "./collection";
 
 describe("catalogue", () => {
@@ -172,5 +172,42 @@ describe("rarityMeta", () => {
     for (const c of CARDS) {
       expect(rarityMeta(c.rarity).color).toMatch(/^#[0-9A-Fa-f]{6}$/);
     }
+  });
+});
+
+describe("levelCard / avatarCard", () => {
+  it("donne la MEILLEURE carte possédée, jamais la première", () => {
+    expect(levelCard(0).id).toBe(CARDS[0].id);
+    expect(levelCard(149).xp).toBe(50);
+    expect(levelCard(150).xp).toBe(150);
+    expect(levelCard(17400).xp).toBe(12000);
+    expect(levelCard(999999).id).toBe(CARDS[CARDS.length - 1].id);
+  });
+
+  it("ne renvoie jamais rien, même à 0 ou sans XP", () => {
+    // C'est la photo de profil par défaut de TOUT le monde : elle doit exister.
+    for (const xp of [0, undefined as unknown as number, null as unknown as number, -5]) {
+      expect(avatarCard(null, xp)).toBeTruthy();
+      expect(levelCard(xp)).toBeTruthy();
+    }
+  });
+
+  it("progresse quand le joueur monte", () => {
+    let prev = 0;
+    for (const xp of [0, 50, 800, 5000, 38000, 250000]) {
+      const i = CARDS.findIndex((c) => c.id === levelCard(xp).id);
+      expect(i).toBeGreaterThanOrEqual(prev);
+      prev = i;
+    }
+  });
+
+  it("laisse le badge choisi primer sur la carte du niveau", () => {
+    expect(avatarCard("recrue", 17400).id).toBe("recrue");   // choix volontaire
+    expect(avatarCard(null, 17400).id).toBe(levelCard(17400).id);
+  });
+
+  it("retombe sur le niveau si le badge n'est plus mérité", () => {
+    // Cas réel : les paliers ont été relevés, le badge stocké n'est plus acquis.
+    expect(avatarCard("goat", 5000).id).toBe(levelCard(5000).id);
   });
 });
