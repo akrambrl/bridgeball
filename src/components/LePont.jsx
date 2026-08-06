@@ -2540,6 +2540,20 @@ if(typeof document!=="undefined"&&!document.getElementById("bb-css")){
     @keyframes splashTitle{0%{opacity:0;transform:translateY(30px) scale(0.8)}100%{opacity:1;transform:translateY(0) scale(1)}}
     @keyframes splashFadeOut{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.15)}}
     @keyframes splashGlow{0%,100%{box-shadow:0 0 40px rgba(0,230,118,.3),0 0 80px rgba(0,230,118,.1)}50%{box-shadow:0 0 60px rgba(0,230,118,.6),0 0 120px rgba(0,230,118,.2)}}
+    /* ── Cartes de collection, façon FUT ──
+       Le cadre est un dégradé métallique porté par le conteneur (padding), et
+       le visuel s'inscrit dedans : c'est ce liseré qui distingue bronze, argent,
+       or et diamant. Seul le diamant reçoit un reflet animé — un balayage
+       diagonal en surimpression, pas un clignotement, pour rester lisible. */
+    .bbDiamant{position:relative}
+    .bbDiamant::after{
+      content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+      background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.75) 46%,rgba(255,255,255,.15) 54%,transparent 70%);
+      background-size:260% 100%;animation:bbShine 2.8s ease-in-out infinite;mix-blend-mode:screen;
+    }
+    @keyframes bbShine{0%{background-position:120% 0}55%{background-position:-40% 0}100%{background-position:-40% 0}}
+    @media (prefers-reduced-motion:reduce){.bbDiamant::after{animation:none;opacity:.35}}
+
     /* ── Écran de lancement ──
        splash.webp est calibré pour un téléphone (853 × 1844, soit un format très
        vertical). En "cover" sur un écran plus large que haut, il est agrandi
@@ -10242,14 +10256,17 @@ export default function LePont() {
                         key={c.id}
                         onClick={ouverte ? function(){ chooseBadge(c.id); } : undefined}
                         title={ouverte ? (lang==="fr"?c.name:c.nameEn) : (c.xp.toLocaleString("fr-FR") + " XP")}
+                        className={ouverte && rar.cls ? rar.cls : undefined}
                         style={{
-                          padding:0,border:"2px solid "+(active?rar.color:ouverte?rar.color+"55":"rgba(255,255,255,.08)"),
-                          borderRadius:14,overflow:"hidden",background:"rgba(255,255,255,.04)",
+                          padding:2,border:"none",
+                          borderRadius:14,overflow:"hidden",
+                          /* le cadre EST le fond : le visuel s'inscrit dedans */
+                          background:ouverte?rar.frame:"rgba(255,255,255,.07)",
                           cursor:ouverte?"pointer":"default",position:"relative",display:"block",
                           boxShadow:active?"0 0 18px "+rar.glow:"none",transition:"border-color .15s, box-shadow .15s",
                         }}
                       >
-                        <div style={{position:"relative",aspectRatio:"3 / 4",overflow:"hidden",background:"#000"}}>
+                        <div style={{position:"relative",aspectRatio:"3 / 4",overflow:"hidden",background:"#000",borderRadius:11}}>
                           {hasArt(c)
                             ? <img src={c.img} alt="" loading="lazy" style={{width:"100%",height:"100%",objectFit:"cover",
                                 filter:ouverte?"none":"grayscale(1) brightness(.32)",transition:"filter .2s"}}/>

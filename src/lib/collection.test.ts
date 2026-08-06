@@ -20,6 +20,17 @@ describe("catalogue", () => {
     }
   });
 
+  it("compte 1 carte de départ puis 5 par catégorie", () => {
+    const parRarete = RARITIES.map((r) => CARDS.filter((c) => c.rarity === r.key).length);
+    expect(parRarete).toEqual([1, 5, 5, 5, 5]); // départ, bronze, argent, or, diamant
+    expect(CARDS.filter((c) => c.rarity === "depart")[0].xp).toBe(0); // tout le monde l'a
+  });
+
+  it("donne un cadre à chaque catégorie, et un reflet au diamant seul", () => {
+    for (const r of RARITIES) expect(r.frame).toContain("gradient");
+    expect(RARITIES.filter((r) => r.cls).map((r) => r.key)).toEqual(["diamant"]);
+  });
+
   it("ne mélange pas les raretés : chaque bande suit la précédente", () => {
     const order = RARITIES.map((r) => r.key);
     let seen = -1;
@@ -53,7 +64,7 @@ describe("catalogue", () => {
   });
 
   it("espace les paliers de plus en plus (progression géométrique en haut)", () => {
-    const hauts = CARDS.filter((c) => c.rarity === "epique" || c.rarity === "legendaire");
+    const hauts = CARDS.filter((c) => c.rarity === "or" || c.rarity === "diamant");
     for (let i = 1; i < hauts.length; i++) {
       expect(hauts[i].xp / hauts[i - 1].xp).toBeGreaterThanOrEqual(1.3);
     }
