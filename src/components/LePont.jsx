@@ -57,12 +57,23 @@ function readDailyRiddle() {
 // au lieu de "*", car "*" inclurait recovery_code et serait refusé.
 const PSEUDO_COLS = "id,player_id,pseudo,created_at,country,xp,streak_count,streak_last_date,streak_best,streak_freezes,last_notified_grade,xp_season,xp_season_month";
 async function sbFetch(path, options) {
-  const res = await fetch(SB_URL + "/rest/v1/" + path, {
-    ...options,
-    headers: Object.assign({"apikey":SB_KEY,"Authorization":"Bearer "+SB_KEY,"Content-Type":"application/json"},
-      options&&options.method==="POST"?{"Prefer":"return=minimal"}:{},
-      options&&options.headers?options.headers:{})
-  });
+  let res;
+  try {
+    res = await fetch(SB_URL + "/rest/v1/" + path, {
+      ...options,
+      headers: Object.assign({"apikey":SB_KEY,"Authorization":"Bearer "+SB_KEY,"Content-Type":"application/json"},
+        options&&options.method==="POST"?{"Prefer":"return=minimal"}:{},
+        options&&options.headers?options.headers:{})
+    });
+  } catch (e) {
+    // Coupure réseau : `fetch` REJETTE (au lieu de renvoyer une réponse KO). Sans
+    // ce catch, une seule requête ratée faisait échouer tout le chargement du
+    // tableau de bord, qui restait indéfiniment sur « ⏳ Chargement… ». On
+    // renvoie null, comme pour une réponse en erreur : chaque section sait déjà
+    // afficher « données absentes ». Pas de nouvelle tentative ici : sbFetch sert
+    // aussi aux POST, qu'un retour en arrière automatique dupliquerait.
+    return null;
+  }
   if (!res.ok && res.status !== 201) return null;
   if (res.status === 201 || res.headers.get("content-length") === "0") return [];
   try { return await res.json(); } catch { return []; }
