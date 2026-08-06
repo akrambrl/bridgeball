@@ -2736,6 +2736,19 @@ export default function LePont() {
   };
   // Même lettrage, sans contour ni ombre : pour du texte sombre sur aplat clair.
   const posterLight = function(size, color){ return posterText(size, color || "#1A1206", 0); };
+  // Bouton unique de la charte. `bg` porte le sens (jaune = action principale,
+  // vert = classement, rouge = urgence) ; le traitement, lui, ne change jamais.
+  // `fg` clair → lettrage contouré ; `fg` sombre → lettrage nu (le contour
+  // boucherait les lettres).
+  const btn = function(bg, fg, size){
+    const c = fg || "#1A1206";
+    const clair = c === G.white || c === "#fff" || c === "#ffffff";
+    return {
+      background:bg, color:c, border:G.trait, boxShadow:G.ombre, borderRadius:G.rayon,
+      cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:8,
+      ...(clair ? posterText(size||17, c) : posterLight(size||17, c)),
+    };
+  };
   const [showSplash, setShowSplash] = useState(true);
   const [screen, setScreen] = useState("home");
   const [gameMode, setGameMode] = useState("pont");
@@ -9008,7 +9021,7 @@ export default function LePont() {
             </div>
             {/* SOLO */}
             <div style={{fontSize:10,fontWeight:800,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginBottom:8}}>{tr("Solo · score","Solo · score","Solo · Punkte","Solo · punti","Solo · pontos")}</div>
-            <button onClick={duelSoloStart} style={{width:"100%",padding:"15px",marginBottom:18,background:`linear-gradient(135deg, ${ac}, ${ac2})`,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:16,fontWeight:800,letterSpacing:1,boxShadow:`0 8px 24px ${ac}55`,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+            <button onClick={duelSoloStart} style={{width:"100%",padding:"15px",marginBottom:18,...btn(G.projecteur,null,18),cursor:"pointer",fontFamily:G.font,fontSize:16,fontWeight:800,letterSpacing:1,boxShadow:`0 8px 24px ${ac}55`,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
               ▶ {tr("JOUER SOLO","PLAY SOLO","SOLO SPIELEN","GIOCA SOLO","JOGAR SOLO")} <span style={{fontSize:12,fontWeight:700,opacity:.8}}>· 10/20 pts</span>
             </button>
             {/* EN LIGNE — bouton identique à celui de The Plug / The Mercato */}
@@ -12271,22 +12284,14 @@ export default function LePont() {
                     <div style={{display:"flex",gap:10}}>
                       <button onClick={function(){const m=gameConfigModal;setGameConfigModal(null);setTimeout(function(){tryStart(m);},50);}} style={{
                         flex:2,padding:"14px",
-                        background:`linear-gradient(135deg, ${accentColor}, ${accentSecondary})`,
-                        color:"#000",border:"none",borderRadius:50,cursor:"pointer",
-                        fontFamily:G.font,fontSize:15,fontWeight:800,letterSpacing:1,
-                        boxShadow:`0 8px 24px ${accentColor}55`,
-                        display:"flex",alignItems:"center",justifyContent:"center",gap:8,
+                        ...btn(G.projecteur),
                         transition:"transform .15s"
                       }} onMouseDown={(e)=>e.currentTarget.style.transform="scale(.97)"} onMouseUp={(e)=>e.currentTarget.style.transform="scale(1)"} onMouseLeave={(e)=>e.currentTarget.style.transform="scale(1)"}>
                         ▶ {tr("Jouer seul","Play solo","Solo spielen","Gioca da solo","Jogar sozinho")}
                       </button>
                       <button onClick={function(){setDuelMode(gameConfigModal);setDuelDiff(diff);setDuelRounds(totalRounds);setGameConfigModal(null);setTimeout(function(){setShowRoomCreate(true);},100);}} style={{
                         flex:1,padding:"14px",
-                        background:"rgba(255,255,255,.08)",color:G.white,
-                        border:"1px solid rgba(255,255,255,.15)",
-                        borderRadius:50,cursor:"pointer",
-                        fontFamily:G.font,fontSize:12,fontWeight:700,
-                        backdropFilter:"blur(10px)"
+                        ...btn("#0B2213", G.white, 15)
                       }}>
                         👥 {tr("Entre potes","With friends","Mit Freunden","Con gli amici","Com amigos")}
                       </button>
@@ -13620,7 +13625,7 @@ export default function LePont() {
               }
               // Étape 2 : fallback Plug/Mercato
               joinRoom(code);
-            });}} style={{padding:"10px 16px",background:G.projecteur,color:"#1A1206",border:G.trait,boxShadow:"3px 3px 0 "+G.encre,borderRadius:G.rayonS,cursor:"pointer",...posterLight(17)}}>{tr("Rejoindre","Join","Beitreten","Entra","Entrar")}</button>
+            });}} style={{padding:"10px 16px",...btn(G.projecteur)}}>{tr("Rejoindre","Join","Beitreten","Entra","Entrar")}</button>
           </div>
         </div>
         {roomMsg && <div style={{fontSize:12,color:"#FF3D57",fontWeight:700,marginTop:-4}}>{roomMsg}</div>}
