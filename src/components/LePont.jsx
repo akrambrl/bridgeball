@@ -2732,11 +2732,18 @@ export default function LePont() {
     // L'ombre dure d'encre est portée par TOUS les libellés, contourés ou non :
     // c'est elle qui donne le relief d'affiche. Son décalage suit le corps.
     const dec = Math.max(1.5, Math.round(size / 9 * 10) / 10);
-    const ombre = { textShadow:dec+"px "+dec+"px 0 "+G.encre };
+    const om = function(extra){
+      const d = Math.round((dec + extra) * 10) / 10;
+      return { textShadow:d+"px "+d+"px 0 "+G.encre };
+    };
     // Sans contour (texte sombre sur aplat clair) : l'ombre seule, sinon le
     // contour se confondrait avec la lettre et boucherait les contre-formes.
-    if (!w) return { ...base, ...ombre };
-    return { ...base, WebkitTextStroke:w+"px "+G.encre, paintOrder:"stroke fill", ...ombre };
+    if (!w) return { ...base, ...om(0) };
+    // Avec contour, il faut DÉCALER D'AUTANT PLUS : le contour gonfle la lettre
+    // de w px dans toutes les directions et mange l'ombre. Sans ce rattrapage,
+    // une ombre de 1,9 px derrière un contour de 1,2 px ne dépasse que de
+    // 0,7 px — autant dire invisible.
+    return { ...base, WebkitTextStroke:w+"px "+G.encre, paintOrder:"stroke fill", ...om(w) };
   };
   // Même lettrage, sans contour ni ombre : pour du texte sombre sur aplat clair.
   const posterLight = function(size, color){ return posterText(size, color || "#1A1206", 0); };
