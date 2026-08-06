@@ -6,10 +6,11 @@ import {
   getCurrentSeason,
   getGrade,
   countryToFlag,
-  avatarUrl,
   type LbMode,
   type TopPlayer,
 } from "@/lib/leaderboard";
+// Carte de niveau : même photo de profil que sur mobile.
+import { levelCard } from "@/lib/collection";
 
 type Props = { onPlay: (game?: GameMode) => void };
 
@@ -127,20 +128,21 @@ export const LeaderboardView = ({ onPlay }: Props) => {
                     {podium ? podium.medal : p.rank}
                   </div>
 
-                  {/* Photo de profil, repli sur l'emoji du grade si absente */}
+                  {/* Photo de profil = carte du niveau du joueur, comme sur mobile.
+                      Cadre au format de la carte (3:4) et non rond : un cadrage
+                      circulaire amputerait le haut et le bas de l'illustration. */}
                   <div
-                    className="relative flex-shrink-0 h-11 w-11 rounded-full overflow-hidden flex items-center justify-center text-xl"
+                    className="relative flex-shrink-0 h-12 w-9 rounded-md overflow-hidden"
                     style={{
-                      background: "linear-gradient(135deg,#00E676,#00A855)",
-                      border: podium ? "2px solid rgba(0,0,0,.3)" : "1.5px solid rgba(255,255,255,.15)",
+                      background: "#000",
+                      border: podium ? "2px solid rgba(0,0,0,.3)" : "1.5px solid rgba(255,255,255,.28)",
                     }}
                   >
-                    <span className="absolute inset-0 flex items-center justify-center">{grade.emoji}</span>
                     <img
-                      src={avatarUrl(p.pid)}
+                      src={levelCard(p.xp ?? 0).img ?? undefined}
                       alt=""
-                      onError={(e) => { e.currentTarget.style.display = "none"; }}
-                      className="relative z-10 h-full w-full object-cover"
+                      className="h-full w-full object-cover"
+                      style={{ objectPosition: "top" }}
                     />
                   </div>
 
