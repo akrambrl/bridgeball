@@ -4,6 +4,8 @@ import { trackPlay, pingPresence, pingLive, trackTime } from "../lib/track";
 import { hapticSuccess, hapticError } from "../lib/native";
 import { pickOpponent, avatarFor } from "../lib/opponents";
 import { displayStreak } from "../lib/streak";
+// Jours calendaires « heure de Paris » — découpage temporel du tableau de bord.
+import { parisDayOf, parisLastDays } from "../lib/days";
 import { WinBanner } from "./landing/WinBanner";
 // Barème de grades et drapeaux : définis une seule fois, partagés avec le desktop.
 import { GRADES, getGrade, countryToFlag } from "../lib/leaderboard";
@@ -55,15 +57,52 @@ function readDailyRiddle() {
 // au lieu de "*", car "*" inclurait recovery_code et serait refusé.
 const PSEUDO_COLS = "id,player_id,pseudo,created_at,country,xp,streak_count,streak_last_date,streak_best,streak_freezes,last_notified_grade,xp_season,xp_season_month";
 async function sbFetch(path, options) {
-  const res = await fetch(SB_URL + "/rest/v1/" + path, {
-    ...options,
-    headers: Object.assign({"apikey":SB_KEY,"Authorization":"Bearer "+SB_KEY,"Content-Type":"application/json"},
-      options&&options.method==="POST"?{"Prefer":"return=minimal"}:{},
-      options&&options.headers?options.headers:{})
-  });
+  let res;
+  try {
+    res = await fetch(SB_URL + "/rest/v1/" + path, {
+      ...options,
+      headers: Object.assign({"apikey":SB_KEY,"Authorization":"Bearer "+SB_KEY,"Content-Type":"application/json"},
+        options&&options.method==="POST"?{"Prefer":"return=minimal"}:{},
+        options&&options.headers?options.headers:{})
+    });
+  } catch (e) {
+    // Coupure réseau : `fetch` REJETTE (au lieu de renvoyer une réponse KO). Sans
+    // ce catch, une seule requête ratée faisait échouer tout le chargement du
+    // tableau de bord, qui restait indéfiniment sur « ⏳ Chargement… ». On
+    // renvoie null, comme pour une réponse en erreur : chaque section sait déjà
+    // afficher « données absentes ». Pas de nouvelle tentative ici : sbFetch sert
+    // aussi aux POST, qu'un retour en arrière automatique dupliquerait.
+    return null;
+  }
   if (!res.ok && res.status !== 201) return null;
   if (res.status === 201 || res.headers.get("content-length") === "0") return [];
   try { return await res.json(); } catch { return []; }
+}
+// Récupère TOUTES les lignes d'une requête, page par page via l'en-tête Range.
+//
+// L'API PostgREST plafonne CHAQUE réponse à 1000 lignes (réglage « max rows »
+// de Supabase) et le paramètre `limit=50000` dans l'URL ne lève PAS ce plafond :
+// la réponse était donc tronquée en silence. Comme les requêtes du tableau de
+// bord n'imposaient aucun tri, la troncature gardait les lignes les PLUS
+// ANCIENNES et faisait disparaître les jours récents — d'où « Aujourd'hui :
+// 0 joueur » alors que des parties du jour étaient bien comptées ailleurs.
+//
+// IMPORTANT : `path` DOIT contenir un `order=` stable, sinon la pagination peut
+// renvoyer deux fois la même ligne ou en sauter.
+const SB_PAGE = 1000; // = plafond « max rows » de l'API
+async function sbFetchAll(path, maxRows) {
+  const cap = maxRows || 50000;
+  const out = [];
+  for (let from = 0; from < cap; from += SB_PAGE) {
+    const to = Math.min(from + SB_PAGE, cap) - 1;
+    const page = await sbFetch(path, { headers: { "Range-Unit": "items", "Range": from + "-" + to } });
+    // Erreur / table absente : on distingue « rien du tout » (null, la table
+    // n'existe pas) d'une page suivante qui échoue (on garde ce qu'on a).
+    if (page == null) return from === 0 ? null : out;
+    for (const row of page) out.push(row);
+    if (page.length < to - from + 1) break; // dernière page atteinte
+  }
+  return out;
 }
 // Compte EXACT de lignes d'une table (tout l'historique) via l'en-tête
 // Content-Range de PostgREST — sans rapatrier les lignes. Renvoie null si KO.
@@ -2789,7 +2828,7 @@ export default function LePont() {
     async function poll(){
       // en ligne = vu dans les 80 dernières secondes
       const since = new Date(Date.now() - 80*1000).toISOString();
-      const rows = await sbFetch("bb_presence?select=player_id&last_seen=gte."+since+"&limit=10000");
+      const rows = await sbFetchAll("bb_presence?select=player_id&last_seen=gte."+since+"&order=player_id.asc", 10000);
       if (stop) return;
       setLiveNow(Array.isArray(rows) ? rows.length : null);
     }
@@ -2803,12 +2842,19 @@ export default function LePont() {
       // On récupère la fenêtre MAX (14 j) une seule fois ; le filtrage par plage
       // (1/5/10/14 j) se fait ensuite côté client (voir statsView).
       const since = new Date(Date.now() - 14*24*3600*1000).toISOString();
-      const scores = await sbFetch("bb_scores?select=player_id,created_at&created_at=gte."+since+"&order=created_at.desc&limit=20000") || [];
-      const events = await sbFetch("bb_events?select=player_id,created_at,type&created_at=gte."+since+"&limit=50000");
+      // sbFetchAll (et pas sbFetch) : au-delà de 1000 lignes l'API tronque la
+      // réponse, et une fenêtre de 14 j de bb_events dépasse largement ce seuil.
+      const scores = await sbFetchAll("bb_scores?select=player_id,created_at&created_at=gte."+since+"&order=created_at.desc", 20000) || [];
+      const events = await sbFetchAll("bb_events?select=player_id,created_at,type&created_at=gte."+since+"&order=created_at.desc", 50000);
       const hasEvents = Array.isArray(events);
       // `pseudo` sert à nommer les joueurs dans la section « qui joue à quoi ».
-      const pseudos = await sbFetch("bb_pseudos?select=player_id,pseudo&limit=100000") || [];
-      const duels = await sbFetch("bb_duels?select=id,created_at&created_at=gte."+since+"&limit=20000") || [];
+      const pseudos = await sbFetchAll("bb_pseudos?select=player_id,pseudo&order=player_id.asc", 100000) || [];
+      const duels = await sbFetchAll("bb_duels?select=id,created_at&created_at=gte."+since+"&order=created_at.desc", 20000) || [];
+      // Jour calendaire (Paris) attaché UNE fois par ligne : le regroupement par
+      // jour et le filtrage par plage se font ensuite par simple comparaison de
+      // chaînes, sans repasser par Intl à chaque changement de plage.
+      for (const r of scores) r.day = parisDayOf(r.created_at);
+      if (hasEvents) for (const r of events) r.day = parisDayOf(r.created_at);
       // Derniers comptes créés — tente avec created_at, se rabat si la colonne n'existe pas
       let recent = await sbFetch("bb_pseudos?select=pseudo,country,created_at&order=created_at.desc&limit=40");
       let recentHasDate = true;
@@ -2849,7 +2895,7 @@ export default function LePont() {
         regIds: pseudos.map(function(p){ return p.player_id; }),
         pseudoById: pseudos.reduce(function(acc,p){ if (p.pseudo) acc[p.player_id] = p.pseudo; return acc; }, {}),
         accounts: pseudos.length,
-        rawDuels: duels.map(function(d){ return d.created_at; }),
+        rawDuels: duels.map(function(d){ return parisDayOf(d.created_at); }),
         recent: recent, recentHasDate: recentHasDate, allTime: allTime,
         playsAllTime: playsAllTime, trackingSince: trackingSince,
       });
@@ -2860,14 +2906,22 @@ export default function LePont() {
     if (!statsData) return null;
     const range = statsRange;
     const nowMs = Date.now();
-    const cut = nowMs - range*24*3600*1000;
-    const inRange = function(iso){ return iso && new Date(iso).getTime() >= cut; };
-    const dayKey = function(iso){ return iso.slice(0,10); };
+    // La plage compte les `range` DERNIERS JOURS CALENDAIRES (Paris), aujourd'hui
+    // inclus — et non une fenêtre glissante de range × 24 h. Sans ça, « 1 j »
+    // affichait « actifs aujourd'hui » en comptant aussi la soirée de la veille :
+    // le grand compteur du haut ne pouvait pas coïncider avec la ligne
+    // « Aujourd'hui » du détail jour par jour juste en dessous.
+    const dayList = parisLastDays(14, nowMs); // du plus récent au plus ancien
+    const cutDay = dayList[Math.min(range, dayList.length) - 1];
+    const inRange = function(day){ return !!day && day >= cutDay; };
     const regSet = new Set(statsData.regIds || []);
     const hasEvents = statsData.hasEvents;
-    const scoresW = (statsData.rawScores || []).filter(function(r){ return inRange(r.created_at); });
-    const eventsW = hasEvents ? (statsData.rawEvents || []).filter(function(r){ return inRange(r.created_at); }) : [];
-    const activeRowsW = hasEvents ? eventsW : scoresW;
+    const scoresW = (statsData.rawScores || []).filter(function(r){ return inRange(r.day); });
+    const eventsW = hasEvents ? (statsData.rawEvents || []).filter(function(r){ return inRange(r.day); }) : [];
+    // Joueurs actifs = UNION des deux sources. bb_events seul ne suffit pas : un
+    // score enregistré dont le ping d'événement a échoué (réseau, ancien bundle
+    // en cache, RLS) produisait un « 0 joueur · N parties » contradictoire.
+    const activeRowsW = hasEvents ? eventsW.concat(scoresW) : scoresW;
     // Joueurs actifs uniques (+ anonymes) sur la fenêtre
     const activeSet = new Set(), anonSet = new Set();
     for (const r of activeRowsW) { if (r.player_id) { activeSet.add(r.player_id); if (hasEvents && !regSet.has(r.player_id)) anonSet.add(r.player_id); } }
@@ -2923,17 +2977,20 @@ export default function LePont() {
     for (const id in osByDevice) { const o = osByDevice[id]; if (osCount[o] !== undefined) osCount[o]++; else osCount.other++; }
     // Détail jour par jour — TOUJOURS sur les 14 derniers jours (indépendant de la
     // plage choisie), pour que la vue « jour par jour » reste visible même en 1 j.
-    const fullActive = hasEvents ? (statsData.rawEvents || []) : (statsData.rawScores || []);
+    // Même union que ci-dessus : une journée avec des parties a forcément des joueurs.
+    const fullActive = hasEvents
+      ? (statsData.rawEvents || []).concat(statsData.rawScores || [])
+      : (statsData.rawScores || []);
     const byDayActive = {}, byDayGames = {};
-    for (const r of fullActive) { if (r.created_at) { const k = dayKey(r.created_at); (byDayActive[k] = byDayActive[k] || new Set()).add(r.player_id); } }
-    for (const r of (statsData.rawScores || [])) { if (r.created_at) { const k = dayKey(r.created_at); byDayGames[k] = (byDayGames[k]||0)+1; } }
-    const days = [];
-    for (let i = 0; i < 14; i++) {
-      const d = new Date(nowMs - i*24*3600*1000).toISOString().slice(0,10);
+    for (const r of fullActive) { if (r.day) { (byDayActive[r.day] = byDayActive[r.day] || new Set()).add(r.player_id); } }
+    for (const r of (statsData.rawScores || [])) { if (r.day) { byDayGames[r.day] = (byDayGames[r.day]||0)+1; } }
+    // Mêmes jours que ceux qui servent à découper la plage : la ligne
+    // « Aujourd'hui » est donc exactement ce que compte la carte du haut en 1 j.
+    const days = dayList.map(function(d){
       const set = byDayActive[d];
       let anon = 0; if (set && hasEvents) { set.forEach(function(id){ if(!regSet.has(id)) anon++; }); }
-      days.push({ day: d, players: set ? set.size : 0, anon: anon, games: byDayGames[d] || 0 });
-    }
+      return { day: d, players: set ? set.size : 0, anon: anon, games: byDayGames[d] || 0 };
+    });
     return { range: range, days: days, activeWindow: activeSet.size, anonWindow: anonSet.size,
       gamesWindow: gamesW, duelsWindow: duelsW, playsByMode: playsByMode, totalPlays: totalPlays,
       playsSolo: playsSolo, playsOnline: playsOnline, osCount: osCount, hasEvents: hasEvents,
@@ -11777,7 +11834,7 @@ export default function LePont() {
                     </div>
                   </div>
                   {/* Détail jour par jour — toujours 14 jours (indépendant de la plage) */}
-                  <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.4)",fontWeight:800,textTransform:"uppercase",marginBottom:10,paddingLeft:4}}>Jour par jour · 14 j</div>
+                  <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.4)",fontWeight:800,textTransform:"uppercase",marginBottom:10,paddingLeft:4}}>Jour par jour · 14 j · heure de Paris</div>
                   <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:24}}>
                     {v.days.map(function(d,i){
                       return (
