@@ -10189,7 +10189,13 @@ export default function LePont() {
       <button onClick={function(){setShowCollection(false);}} style={{position:"fixed",top:14,left:14,zIndex:100,background:"rgba(0,15,0,.85)",border:"1px solid rgba(255,255,255,.15)",borderRadius:"50%",width:42,height:42,cursor:"pointer",color:G.white,fontSize:20,display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(10px)",boxShadow:"0 4px 14px rgba(0,0,0,.4)"}}>←</button>
       <div style={{...shell,animation:"fadeUp .4s ease",overflow:isDesktop?"visible":"auto"}} key="collection">
         <div style={{zIndex:1,padding:"50px 20px 10px",textAlign:"center"}}>
-          <div style={{fontFamily:G.heading,fontSize:34,color:G.white,letterSpacing:1.4}}>{tr("MA COLLECTION","MY COLLECTION","MEINE SAMMLUNG","LA MIA COLLEZIONE","MINHA COLEÇÃO")}</div>
+          {/* Lettrage de la charte « Olive et Tom » : posterText (Anton, italique
+              légère, contour d'encre + ombre dure) et second mot en jaune
+              projecteur — même construction que le titre « GOAT FC ». */}
+          <div style={{...posterText(40,G.white),lineHeight:.9}}>
+            {tr("MA ","MY ","MEINE ","LA MIA ","MINHA ")}
+            <span style={{color:G.projecteur}}>{tr("COLLECTION","COLLECTION","SAMMLUNG","COLLEZIONE","COLEÇÃO")}</span>
+          </div>
           <div style={{fontSize:13,color:"rgba(255,255,255,.5)",marginTop:6,fontWeight:600}}>
             {possedees.length}/{CARDS.length} · {playerXp.toLocaleString("fr-FR")} XP
           </div>
