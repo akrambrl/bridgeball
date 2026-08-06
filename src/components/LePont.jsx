@@ -10502,7 +10502,8 @@ export default function LePont() {
                       const c = avatarCard(b && b.badge, entry.xp || 0);
                       return <img src={c.img} alt="" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",objectPosition:"top"}}/>;
                     })()}
-                    <img src={SB_URL + "/storage/v1/object/public/avatars/" + entry.pid + ".jpg"} alt="" onError={function(e){e.currentTarget.style.display="none";}} style={{width:"100%",height:"100%",objectFit:"cover",position:"relative",zIndex:1}}/>
+                    {/* La photo uploadée ne se superpose plus : la carte du joueur
+                        (badge choisi, sinon niveau) EST la photo de profil. */}
                   </div>
                   <div style={{flex:1,minWidth:0}}>
                     <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3,flexWrap:"wrap"}}>
@@ -11366,9 +11367,9 @@ export default function LePont() {
       <div style={{zIndex:1,padding:"16px 20px 8px",textAlign:"center"}}>
         <div style={{display:"inline-block",width:108,height:108,margin:"0 auto 14px",position:"relative",padding:4,borderRadius:"50%",background:"conic-gradient(from 200deg, #00E676, #3DA5FF, #C084FC, #FFC93C, #00E676)",boxShadow:"0 10px 40px rgba(0,230,118,.35)"}}>
           <div onClick={playerAvatar ? ()=>setViewingAvatar(playerAvatar) : ()=>{const el=document.getElementById("avatar-upload");if(el)el.click();}} style={{width:100,height:100,borderRadius:"50%",background:playerAvatar?"#000":"linear-gradient(135deg,#00E676,#00A855)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:56,color:"#fff",boxShadow:"0 8px 30px rgba(0,230,118,.35)",overflow:"hidden",cursor:"pointer"}}>
-            {playerAvatar
-              ? <img src={playerAvatar} alt="avatar" style={{width:"100%",height:"100%",objectFit:"cover"}}/>
-              : <img src={avatarCard(playerBadge, playerXp).img} alt="" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top"}}/>}
+            {/* La carte fait office de photo de profil pour tout le monde : elle
+                remplace la photo uploadée, qui n'est plus affichée. */}
+            <img src={avatarCard(playerBadge, playerXp).img} alt="" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top"}}/>}
           </div>
           <label htmlFor="avatar-upload" style={{position:"absolute",bottom:-2,right:-2,width:34,height:34,borderRadius:"50%",background:G.accent,border:"3px solid #0d1f0d",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,zIndex:2,cursor:"pointer"}}>{avatarUploading?"⏳":"📷"}</label>
         </div>
@@ -11757,7 +11758,10 @@ export default function LePont() {
       mythic:  { bg:"linear-gradient(135deg,#C084FC,#FFD600)", border:"#FFD600", color:"#000", shadow:"0 6px 18px rgba(192,132,252,.55)", textColor:"#000", emoji:"⚡" },
       platine: { bg:"linear-gradient(135deg,#E5E4E2,#B6B6B6,#FFFFFF)", border:"#FFFFFF", color:"#000", shadow:"0 6px 20px rgba(255,255,255,.55)", textColor:"#000", emoji:"💎" }
     };
-    const t = streakInDanger ? { bg:"linear-gradient(135deg,#FF3D57,#FF6B35)", border:"#FF3D57", shadow:"0 4px 14px rgba(255,61,87,.55)", textColor:"#fff", emoji:"⚠️" } : tierStyles[tier];
+    // La pastille garde toujours l'apparence de son palier : la variante rouge
+    // « série en danger » (fond #FF3D57, triangle ⚠️, pulsation) alarmait sur
+    // l'accueil pour une information que le détail de série suffit à porter.
+    const t = tierStyles[tier];
     return (
       <div onClick={()=>setShowStreakDetail(true)} style={{
         display:"flex",alignItems:"center",gap:5,
@@ -11767,7 +11771,7 @@ export default function LePont() {
         padding:"7px 11px",
         cursor:"pointer",
         boxShadow:t.shadow,
-        animation: streakInDanger ? "dangerPulse 1.2s ease-in-out infinite" : streakJustIncreased ? "pulseStreak .6s ease-in-out 3" : (tier==="platine" || tier==="mythic" ? "flameGlow 2.5s ease-in-out infinite" : "none")
+        animation: streakJustIncreased ? "pulseStreak .6s ease-in-out 3" : (tier==="platine" || tier==="mythic" ? "flameGlow 2.5s ease-in-out infinite" : "none")
       }}>
         <span style={{fontSize:18,filter: tier==="gold" || tier==="mythic" ? "drop-shadow(0 0 6px #FFD60099)" : tier==="platine" ? "drop-shadow(0 0 6px #FFFFFFAA)" : "none"}}>{t.emoji}</span>
         <span style={{fontFamily:G.heading,fontSize:17,color:t.textColor,fontWeight:800,letterSpacing:.5}}>{dayStreak}</span>
@@ -11777,9 +11781,8 @@ export default function LePont() {
 {!launchedFromLandingRef.current && (
 <div onClick={function(){if(!pseudoConfirmed) setPseudoScreen(true); else setScreen("profile");}} style={{background:"linear-gradient(135deg,#00E676,#00A855)",border:"1px solid rgba(0,230,118,.4)",borderRadius:12,width:38,height:38,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",boxShadow:"0 4px 14px rgba(0,230,118,.25)",overflow:"hidden"}}>
   {/* Bouton profil de l'accueil : la carte remplace l'initiale du pseudo. */}
-  {playerAvatar
-    ? <img src={playerAvatar} alt="avatar" style={{width:"100%",height:"100%",objectFit:"cover"}}/>
-    : <img src={avatarCard(playerBadge, playerXp).img} alt="" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top"}}/>}
+  {/* Bouton profil de l'accueil : la carte, pas la photo uploadée. */}
+  <img src={avatarCard(playerBadge, playerXp).img} alt="" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top"}}/>}
 </div>
 )}
           </div>
@@ -14634,10 +14637,7 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
                 {/* Toi */}
                 <div style={{textAlign:"center"}}>
                   <div style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:64,height:64,borderRadius:"50%",overflow:"hidden",background:"linear-gradient(135deg,#00E676,#0E1F14)",border:"2px solid #00E676",marginBottom:8,marginInline:"auto"}}>
-                    {playerAvatar
-                      ? <img src={playerAvatar} alt="" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top"}}/>
-                      : <span style={{fontFamily:G.heading,fontSize:28,color:G.white}}>{(playerName||"?")[0].toUpperCase()}</span>
-                    }
+                    <img src={avatarCard(playerBadge, playerXp).img} alt="" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top"}}/>
                   </div>
                   <div style={{fontSize:11,color:"#bbb",letterSpacing:1,textTransform:"uppercase"}}>{playerName||"Toi"}</div>
                   <div style={{fontFamily:G.heading,fontSize:32,color:win?verdictColor:G.white,lineHeight:1,marginTop:2}}>{myScore}</div>
