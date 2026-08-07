@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { PLAYERS, RETIRED_PLAYERS, GG_WC_WINNERS, GG_CL_WINNERS } from "../players.jsx";
 import { trackPlay, pingPresence, pingLive, trackTime } from "../lib/track";
 import { hapticSuccess, hapticError } from "../lib/native";
@@ -429,8 +430,8 @@ export const CLUB_COLORS = {
   "Deportivo Alavés":["#003DA5","#FFFFFF"],"CD Mirandés":["#FF0000","#000000"],
   "Fulham":["#FFFFFF","#000000"],"Brentford":["#CC0000","#FFFFFF"],"Midtjylland":["#CC0000","#FFFFFF"],
   "Parma FC":["#FFD700","#003082"],"Sint-Truiden":["#FFD700","#000000"],"RB Salzburg":["#CC0000","#FFFFFF"],
-  "Standard Liège":["#CC0000","#FFFFFF"],"Almería":["#CC0000","#FFFFFF"],
-  "Málaga":["#003082","#FFFFFF"],"River Plate":["#FFFFFF","#CC0000"],"Boca Juniors":["#003399","#FFD700"],
+  "Standard Liège":["#CC0000","#FFFFFF"],
+  "River Plate":["#FFFFFF","#CC0000"],"Boca Juniors":["#003399","#FFD700"],
   "Racing Club":["#1565C0","#FFFFFF"],"Palmeiras":["#006B3F","#FFFFFF"],"Santos":["#000000","#FFFFFF"],"Flamengo":["#E82020","#000000"],"Cruzeiro":["#003399","#FFFFFF"],
   "Cannes":["#E31B23","#FFFFFF"],"Orlando City":["#633492","#F7B024"],
   "Leeds United":["#FFFFFF","#FFD700"],"Empoli FC":["#1565C0","#FFFFFF"],"Udinese Calcio":["#000000","#FFFFFF"],"Bologna FC":["#CC0000","#003082"],
@@ -2515,11 +2516,34 @@ const POSITIVE_FEEDBACK = {
     hot:  ["⚡ UNSTOPPABLE !","🎯 IN THE ZONE !","🔥 CAN'T STOP YOU !","💨 FULL SPEED !","🎪 WHAT A SHOW !"],
     fire: ["💫 PHENOMENAL !","🌟 MACHINE !","👑 WORLD CLASS !","🏟️ CROWD'S ON THEIR FEET !","🎭 ARTIST !"],
     god:  ["🏆 LEGENDARY !!!","👑 BALLON D'OR !","🐐 THE GOAT !","🌌 OUT OF THIS WORLD !","🎖️ RECORD INCOMING !"]
+  },
+  de: {
+    base: ["Sauber ✓","Schön 🎯","Passt ⚽","Ordentlich 👌","Gut gesehen 👀","Stark 💪","Zu leicht 😎","Locker 🚶"],
+    warm: ["🔥 IN FLAMMEN !","💥 SERIE LÄUFT !","⚡ ES ROLLT !","🎯 VOLLTREFFER !","🚀 DU HEBST AB !"],
+    hot:  ["⚡ UNAUFHALTSAM !","🎯 IM TUNNEL !","🔥 NICHT ZU STOPPEN !","💨 VOLLGAS !","🎪 WAS FÜR EINE SHOW !"],
+    fire: ["💫 PHÄNOMENAL !","🌟 MASCHINE !","👑 WELTKLASSE !","🏟️ DAS STADION STEHT !","🎭 KÜNSTLER !"],
+    god:  ["🏆 LEGENDÄR !!!","👑 BALLON D'OR !","🐐 DER GOAT !","🌌 AUSSERGEWÖHNLICH !","🎖️ REKORD IN SICHT !"]
+  },
+  it: {
+    base: ["Pulito ✓","Bello 🎯","Passa ⚽","Preciso 👌","Bell'occhio 👀","Solido 💪","Troppo facile 😎","Tranquillo 🚶"],
+    warm: ["🔥 IN FIAMME !","💥 CHE SERIE !","⚡ SI VIAGGIA !","🎯 IN PIENO !","🚀 STAI DECOLLANDO !"],
+    hot:  ["⚡ IMPRENDIBILE !","🎯 SEI IN ZONA !","🔥 NON TI FERMA NESSUNO !","💨 A TUTTA VELOCITÀ !","🎪 CHE SPETTACOLO !"],
+    fire: ["💫 FENOMENALE !","🌟 MACCHINA !","👑 CLASSE MONDIALE !","🏟️ LO STADIO È IN PIEDI !","🎭 ARTISTA !"],
+    god:  ["🏆 LEGGENDARIO !!!","👑 PALLONE D'ORO !","🐐 IL GOAT !","🌌 FUORI CATEGORIA !","🎖️ RECORD IN VISTA !"]
+  },
+  pt: {
+    base: ["Limpo ✓","Bonito 🎯","Entrou ⚽","Certeiro 👌","Bom olho 👀","Sólido 💪","Fácil demais 😎","Tranquilo 🚶"],
+    warm: ["🔥 PEGANDO FOGO !","💥 QUE SEQUÊNCIA !","⚡ EMBALADO !","🎯 NA MOSCA !","🚀 VOANDO !"],
+    hot:  ["⚡ IMPARÁVEL !","🎯 ESTÁ NA ZONA !","🔥 NINGUÉM TE SEGURA !","💨 A TODA VELOCIDADE !","🎪 QUE ESPETÁCULO !"],
+    fire: ["💫 FENOMENAL !","🌟 MÁQUINA !","👑 CLASSE MUNDIAL !","🏟️ O ESTÁDIO ESTÁ DE PÉ !","🎭 ARTISTA !"],
+    god:  ["🏆 LENDÁRIO !!!","👑 BOLA DE OURO !","🐐 O GOAT !","🌌 FORA DE SÉRIE !","🎖️ RECORDE À VISTA !"]
   }
 };
 
 function getPositiveFeedback(combo, lang){
-  const pool = POSITIVE_FEEDBACK[(lang==="fr"?"fr":"en")];
+  // Les cinq langues de l'app ont chacune leur réserve : sans ça, un joueur
+  // italien ou allemand recevait ses félicitations en anglais.
+  const pool = POSITIVE_FEEDBACK[lang] || POSITIVE_FEEDBACK.en;
   let tier;
   if(combo>=10) tier=pool.god;
   else if(combo>=7) tier=pool.fire;
@@ -8749,18 +8773,46 @@ export default function LePont() {
     );
   })() : null;
 
+  // La bande de verdict était en pastels d'infirmerie — vert d'eau, rose pâle,
+  // crème — cerclés d'un filet fluo. C'est le contraire de la charte : sur
+  // l'affiche, le verdict est un APLAT qui porte le sens (pelouse = juste,
+  // maillot = faux, projecteur = déjà pris), cerclé d'encre. Comme la bande est
+  // collée en haut et pleine largeur, son ombre dure ne peut tomber que vers le
+  // bas : un décalage latéral pendrait dans le vide hors de l'écran.
+  //
+  // Elle part dans un PORTAIL vers document.body, et c'est le point important :
+  // `position:fixed` ne se cale sur le viewport que s'il n'y a aucun ancêtre
+  // transformé au-dessus. Il y en avait un dans The Plug, pas dans The Mercato —
+  // d'où une bande collée en haut de l'écran ici et flottant en plein milieu là.
+  // Sortie de l'arbre du jeu, elle se pose au même endroit dans tous les modes.
+  //
+  // Elle passe DEVANT le chrono et le score, ce qui est assumé : le score est
+  // déjà repris par la bande (« +10 pts »), et le chrono d'une manche de 60 à
+  // 90 s se laisse perdre de vue moins d'une seconde. `pointerEvents:none` fait
+  // le reste — elle ne peut pas intercepter un appui, et pendant les 900 ms où
+  // l'ancienne question est encore à l'écran, elle en évite même.
   const feedbackBar = (fb) => {
-    if(!fb) return null;
-    return (
-      <div style={{position:"fixed",top:0,left:0,right:0,zIndex:50,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"10px 16px",
-        background:fb==="ok"?"#dcfce7":fb==="ko"?"#fee2e2":"#fef9c3",
-        border:`2px solid ${fb==="ok"?G.accent:fb==="ko"?G.red:"#fbbf24"}`,
+    if(!fb || typeof document === "undefined") return null;
+    const ton = fb==="ok" ? {aplat:G.pelouse, texte:G.white}
+              : fb==="ko" ? {aplat:G.maillot, texte:G.white}
+              :             {aplat:G.projecteur, texte:G.encre};
+    // Texte clair → lettrage contouré ; texte d'encre sur le jaune → lettrage nu,
+    // le contour se confondrait avec la lettre.
+    const mot = (taille) => ton.texte===G.white ? posterText(taille, G.white, 1.5) : posterLight(taille, G.encre);
+    const points = {...mot(14), opacity:.85};
+    return createPortal(
+      <div style={{position:"fixed",top:0,left:0,right:0,zIndex:120,pointerEvents:"none",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2,
+        padding:"max(12px, env(safe-area-inset-top)) 16px 12px",
+        background:ton.aplat,
+        borderBottom:G.trait,
+        boxShadow:"0 4px 0 "+G.encre,
         animation:fb==="ok"?"answerOk .5s ease":fb==="ko"?"answerKo .4s ease":"popIn .3s ease",
       }}>
-        {fb==="ok"&&<><div style={{display:"flex",alignItems:"center",gap:8,fontSize:17,fontWeight:800,color:"#16a34a"}}>{Icon.ball(18,"#16a34a")} {feedbackPhrase || (tr("BONNE RÉPONSE !","RIGHT ANSWER !","RICHTIG !","RISPOSTA GIUSTA !","RESPOSTA CERTA !"))}</div><div style={{fontSize:12,fontWeight:600,color:"#16a34a",opacity:.7}}>+{diff==="expert"?30:diff==="moyen"?20:10} pts</div></>}
-        {fb==="ko"&&<><div style={{display:"flex",alignItems:"center",gap:8,fontSize:17,fontWeight:800,color:G.red}}>{Icon.whistle(18,G.red)} {tr("MAUVAISE RÉPONSE","WRONG ANSWER","FALSCH","RISPOSTA SBAGLIATA","RESPOSTA ERRADA")}</div><div style={{fontSize:12,fontWeight:600,color:G.red,opacity:.7}}>−5 pts</div></>}
-        {fb==="used"&&<div style={{display:"flex",alignItems:"center",gap:8,fontSize:15,fontWeight:800,color:"#d97706"}}>{Icon.flag(16,"#d97706")} {tr("CLUB DÉJÀ UTILISÉ","CLUB ALREADY USED","KLUB SCHON BENUTZT","CLUB GIÀ USATO","CLUBE JÁ USADO")}</div>}
-      </div>
+        {fb==="ok"&&<><div style={{display:"flex",alignItems:"center",gap:8}}>{Icon.ball(18,ton.texte)} <span style={mot(20)}>{feedbackPhrase || (tr("BONNE RÉPONSE !","RIGHT ANSWER !","RICHTIG !","RISPOSTA GIUSTA !","RESPOSTA CERTA !"))}</span></div><div style={points}>+{diff==="expert"?30:diff==="moyen"?20:10} pts</div></>}
+        {fb==="ko"&&<><div style={{display:"flex",alignItems:"center",gap:8}}>{Icon.whistle(18,ton.texte)} <span style={mot(20)}>{tr("MAUVAISE RÉPONSE","WRONG ANSWER","FALSCH","RISPOSTA SBAGLIATA","RESPOSTA ERRADA")}</span></div><div style={points}>−5 pts</div></>}
+        {fb==="used"&&<div style={{display:"flex",alignItems:"center",gap:8}}>{Icon.flag(16,ton.texte)} <span style={mot(18)}>{tr("CLUB DÉJÀ UTILISÉ","CLUB ALREADY USED","KLUB SCHON BENUTZT","CLUB GIÀ USATO","CLUBE JÁ USADO")}</span></div>}
+      </div>,
+      document.body
     );
   };
 
@@ -9133,7 +9185,7 @@ export default function LePont() {
             <div style={{...posterText(1,G.projecteur,0),fontSize:13,letterSpacing:3,textTransform:"uppercase",marginBottom:8}}>{tr("Difficulté","Difficulty","Schwierigkeit","Difficoltà","Dificuldade")}</div>
             <div style={{display:"flex",gap:8,marginBottom:16}}>
               {["facile","moyen","expert"].map(function(d){return(
-                <button key={d} onClick={function(){setDuelDiff(d);}} style={{...btn(duelDiff===d?G.projecteur:G.nuit,duelDiff===d?G.encre:G.white,15),flex:1,padding:"9px 6px",borderRadius:G.rayonS,textTransform:"capitalize",fontWeight:700,cursor:"pointer",fontSize:12,textTransform:"capitalize"}}>
+                <button key={d} onClick={function(){setDuelDiff(d);}} style={{...btn(duelDiff===d?G.projecteur:G.nuit,duelDiff===d?G.encre:G.white,15),flex:1,padding:"9px 6px",borderRadius:G.rayonS,textTransform:"capitalize",fontWeight:700,cursor:"pointer",fontSize:12}}>
                   {d}
                 </button>
               );})}
@@ -10614,7 +10666,7 @@ export default function LePont() {
             blanc : sur l'affiche, ce sont les lignes du classement qui portent le
             cadre. Il ne reste que le trait d'encre qui marque son bord haut,
             comme un pli de papier. */}
-        <div style={{...sheet,background:"transparent",borderTop:"none",
+        <div style={{...sheet,background:"transparent",
           border:"none",borderTop:G.trait,borderRadius:"28px 28px 0 0"}}>
           {/* Saison info */}
           {lbMode!=="amis" && (()=>{
@@ -11392,7 +11444,7 @@ export default function LePont() {
             return (
             <div key={i} onClick={onClickHandler} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",borderRadius:G.rayon,background:p.id===playerId?"rgba(42,155,78,.35)":"rgba(8,17,9,.45)",border:G.traitFin,marginBottom:6,cursor:hasRounds?"pointer":"default"}}>
               <div style={{fontFamily:G.heading,fontSize:30,width:40,textAlign:"center",color:i<3?["#FFD600","#C0C0C0","#CD7F32"][i]:"rgba(255,255,255,.3)"}}>{i<3?medals[i]:i+1}</div>
-              <div style={{flex:1,fontSize:14,fontWeight:800,color:p.id===playerId?G.accent:G.white}}>{p.name}{p.id===playerId?" (toi)":""}{p.abandoned?" 🏳️":""}</div>
+              <div style={{flex:1,fontSize:14,fontWeight:800,color:p.id===playerId?G.accent:G.white}}>{p.name}{p.id===playerId?" ("+tr("toi","you","du","tu","você")+")":""}{p.abandoned?" 🏳️":""}</div>
               <div style={{fontFamily:G.heading,fontSize:26,color:i===0?G.gold:G.white}}>{p.score||0} <span style={{fontSize:12,color:"rgba(255,255,255,.3)"}}>pts</span></div>
               {hasRounds && <div style={{fontSize:14,color:"rgba(255,214,0,.7)",marginLeft:4}}>👁️</div>}
             </div>
@@ -12806,7 +12858,6 @@ export default function LePont() {
             boxShadow:G.ombre,
             animation:"fadeIn .2s ease-out",
             pointerEvents:"none",
-            boxShadow:G.ombre,
             whiteSpace:"nowrap"
           }}>
             ⚠️ {tr("Re-appuie sur retour pour quitter","Tap back again to quit","Nochmal Zurück tippen zum Beenden","Tocca di nuovo indietro per uscire","Toque em voltar de novo para sair")}
@@ -13988,7 +14039,7 @@ export default function LePont() {
                             <div key={entry.player_id+"-"+idx} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 10px",background:isMe?"rgba(245,194,43,.28)":"transparent",borderRadius:G.rayonS,marginBottom:3,border:isMe?G.traitFin:"none"}}>
                               <div style={{minWidth:30,fontSize:idx<3?16:13,fontWeight:800,color:idx<3?"#FFD600":"rgba(255,255,255,.6)",textAlign:"center"}}>{medal}</div>
                               <div style={{flex:1}}>
-                                <div style={{fontSize:13,fontWeight:isMe?900:700,color:isMe?"#FFD600":"#fff"}}>{entry.player_name}{isMe?" (toi)":""}</div>
+                                <div style={{fontSize:13,fontWeight:isMe?900:700,color:isMe?"#FFD600":"#fff"}}>{entry.player_name}{isMe?tr(" (toi)"," (you)"," (du)"," (tu)"," (você)"):""}</div>
                                 <div style={{fontSize:10,color:"rgba(255,255,255,.4)",fontFamily:"monospace"}}>{entry.cells_filled}/9 · {"❤️".repeat(entry.lives_left)}{"💔".repeat(3-entry.lives_left)}</div>
                               </div>
                               <div style={{textAlign:"right"}}>
@@ -14490,7 +14541,6 @@ export default function LePont() {
             background:G.projecteur,border:G.trait,boxShadow:G.ombre,
             borderRadius:G.rayon,padding:"10px 16px",textAlign:"center",
             fontSize:13,fontWeight:800,color:"#000",
-            boxShadow:G.ombre,
             animation:"slideDown .4s cubic-bezier(.22,1,.36,1)"}}>
             {abandonNotif}
           </div>
@@ -14644,7 +14694,6 @@ export default function LePont() {
           background:G.projecteur,border:G.trait,boxShadow:G.ombre,
           borderRadius:G.rayon,padding:"10px 16px",textAlign:"center",
           fontSize:13,fontWeight:800,color:"#000",
-          boxShadow:G.ombre,
           animation:"slideDown .4s cubic-bezier(.22,1,.36,1)"}}>
           {abandonNotif}
         </div>
@@ -14782,13 +14831,13 @@ export default function LePont() {
         </div>
         {/* Signaler une erreur : apparaît quand un club vient d'être refusé */}
         {chainLastRejected && (
-          <div style={{marginTop:4,padding:10,background:"rgba(245,194,43,.28)",border:G.traitFin,borderRadius:12}}>
+          <div style={{marginTop:4,padding:10,background:G.nuit,border:G.traitFin,boxShadow:"2px 2px 0 "+G.encre,borderRadius:G.rayonS}}>
             {chainReportSent ? (
-              <div style={{textAlign:"center",fontSize:12,color:"#1a9e5c",fontWeight:800,padding:4}}>✅ {tr("Merci ! On va vérifier.","Thanks! We'll check it.","Danke! Wir prüfen es.","Grazie! Controlleremo.","Obrigado! Vamos verificar.")}</div>
+              <div style={{textAlign:"center",fontSize:12,color:G.projecteur,fontWeight:800,padding:4}}>✅ {tr("Merci ! On va vérifier.","Thanks! We'll check it.","Danke! Wir prüfen es.","Grazie! Controlleremo.","Obrigado! Vamos verificar.")}</div>
             ) : (
               <>
-                <div style={{fontSize:12,color:"#555",marginBottom:8,textAlign:"center",fontWeight:600}}>
-                  <strong style={{color:"#FF6B35"}}>{getClubDisplayName(chainLastRejected.club)}</strong> {tr("refusé pour","refused for","abgelehnt für","rifiutato per","recusado para")} <strong style={{color:"#FF6B35"}}>{chainLastRejected.player}</strong> ?
+                <div style={{fontSize:12,color:"rgba(255,255,255,.75)",marginBottom:8,textAlign:"center",fontWeight:600}}>
+                  <strong style={{color:G.projecteur}}>{getClubDisplayName(chainLastRejected.club)}</strong> {tr("refusé pour","refused for","abgelehnt für","rifiutato per","recusado para")} <strong style={{color:G.projecteur}}>{chainLastRejected.player}</strong> ?
                 </div>
                 <button onClick={async function(){
                   try {
@@ -14808,23 +14857,27 @@ export default function LePont() {
                     });
                   } catch(e) {}
                   setChainReportSent(true);
-                }} style={{width:"100%",padding:"9px",background:"#FF6B35",color:"#fff",border:"none",borderRadius:10,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:800}}>🚩 {tr("Signaler une erreur","Report error","Fehler melden","Segnala un errore","Reportar erro")}</button>
+                }} style={{...btn(G.maillot,G.white,13),width:"100%",padding:"9px"}}>🚩 {tr("Signaler une erreur","Report error","Fehler melden","Segnala un errore","Reportar erro")}</button>
               </>
             )}
           </div>
         )}
+        {/* Les maillons étaient des pastilles BLANCHES posées sur la pelouse : le seul
+            endroit de l'app où le fond était plus clair que le trait d'encre, donc le
+            seul où ni le trait ni l'ombre dure ne pouvaient exister. Repassés en aplat
+            nuit, ils reprennent le cadre et l'ombre portée comme le reste de l'affiche. */}
         {chainHistory.length>0 && (
           <div style={{maxHeight:200,overflowY:"auto",display:"flex",flexDirection:"column",gap:4}}>
-            <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"#ccc",textAlign:"center"}}>The Mercato</div>
+            <div style={{...posterText(1,G.projecteur,0),fontSize:13,letterSpacing:3,textTransform:"uppercase",textAlign:"center",marginBottom:2}}>The Mercato</div>
             {[...chainHistory].reverse().map((h,i)=>(
-              <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"7px 12px",background:G.offWhite,borderRadius:12,animation:`slideIn .3s ease ${i*.04}s both`,opacity:h.passed ? 0.7 : 1}}>
-                <span style={{fontSize:10,color:"#bbb",fontWeight:700,minWidth:18}}>{i+1}.</span>
-                <span style={{fontSize:12,color:G.dark,fontWeight:700,flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{h.player}</span>
-                <span style={{display:"flex",alignItems:"center",flexShrink:0}}>{Icon.transfer(11,"#ccc")}</span>
+              <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"7px 12px",background:h.passed?"rgba(8,17,9,.45)":G.nuit,border:G.traitFin,boxShadow:"2px 2px 0 "+G.encre,borderRadius:G.rayonS,animation:`slideIn .3s ease ${i*.04}s both`,opacity:h.passed ? 0.75 : 1}}>
+                <span style={{...posterText(1,G.projecteur,0),fontSize:14,minWidth:20}}>{i+1}</span>
+                <span style={{...posterText(1,G.white,0),fontSize:15,flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{h.player}</span>
+                <span style={{display:"flex",alignItems:"center",flexShrink:0}}>{Icon.transfer(11,"rgba(255,255,255,.5)")}</span>
                 {h.passed ? (
                   <span style={{display:"flex",alignItems:"center",gap:4,flexShrink:0,fontSize:14}}>🔒</span>
                 ) : (
-                  <span style={{display:"flex",alignItems:"center",gap:4,flexShrink:0}}><ClubLogo club={h.club} size={18}/><span style={{fontSize:12,color:G.bg,fontWeight:700}}>{getClubDisplayName(h.club)}</span></span>
+                  <span style={{display:"flex",alignItems:"center",gap:4,flexShrink:0}}><ClubLogo club={h.club} size={18}/><span style={{...posterText(1,G.white,0),fontSize:14}}>{getClubDisplayName(h.club)}</span></span>
                 )}
               </div>
             ))}
@@ -14844,7 +14897,7 @@ export default function LePont() {
         {/* Terrain dessiné de la charte : les bandes opaques recouvraient le fond. */}
         {terrainCharte}
       <div style={{zIndex:1,padding:"40px 20px 20px",textAlign:"center"}}>
-        <div style={{fontSize:12,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.6)",fontWeight:800}}>Fin de manche {currentRound} · {diff}</div>
+        <div style={{fontSize:12,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.6)",fontWeight:800}}>{tr("Fin de manche","End of round","Rundenende","Fine del round","Fim da rodada")} {currentRound} · {diff}</div>
         <div style={{...posterTitre(48,totalRounds===2&&currentRound===1?G.projecteur:G.white),fontSize:"clamp(30px,9vw,48px)",marginTop:8}}>
           {totalRounds===2&&currentRound===1?(tr("⚽ MI-TEMPS !","⚽ HALF-TIME!","⚽ HALBZEIT!","⚽ INTERVALLO!","⚽ INTERVALO!")):(tr("MANCHE ","ROUND ","RUNDE ","ROUND ","RODADA ")+currentRound+tr(" TERMINÉE"," DONE"," FERTIG"," FINITO"," CONCLUÍDA"))}
         </div>
@@ -14858,7 +14911,7 @@ export default function LePont() {
           </div>
         ))}
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",background:G.projecteur,borderRadius:G.rayon,padding:"16px 20px",border:G.trait,boxShadow:G.ombre}}>
-          <span style={{fontSize:15,color:G.encre,fontWeight:900}}>Total ({roundScores.length}/{totalRounds})</span>
+          <span style={{fontSize:15,color:G.encre,fontWeight:900}}>{tr("Total","Total","Gesamt","Totale","Total")} ({roundScores.length}/{totalRounds})</span>
           <span style={{...posterLight(34,G.encre)}}>{roundScores.reduce((a,b)=>a+b,0)} pts</span>
         </div>
         {/* Classement multi intermédiaire */}
@@ -14870,7 +14923,7 @@ export default function LePont() {
               return(
                 <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderRadius:G.rayonS,background:p.id===playerId?"rgba(42,155,78,.35)":G.nuit,border:G.traitFin,boxShadow:G.ombre,marginBottom:10}}>
                   <span style={{fontSize:18,width:28}}>{i<3?medals[i]:i+1}</span>
-                  <span style={{flex:1,fontSize:13,fontWeight:800,color:p.id===playerId?G.projecteur:G.white}}>{p.name}{p.id===playerId?" (toi)":""}{p.abandoned?" 🏳️":""}</span>
+                  <span style={{flex:1,fontSize:13,fontWeight:800,color:p.id===playerId?G.projecteur:G.white}}>{p.name}{p.id===playerId?" ("+tr("toi","you","du","tu","você")+")":""}{p.abandoned?" 🏳️":""}</span>
                   <span style={{...posterText(24,G.white)}}>{p.partial_score||0} <span style={{fontSize:11,color:"rgba(255,255,255,.45)"}}>pts</span></span>
                 </div>
               );
@@ -15019,9 +15072,9 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
             {roundScores.map((s,i)=>{
               const best=Math.max(...roundScores);
               return(
-                <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",background:s===best?G.dark:G.offWhite,borderRadius:12,padding:"10px 16px",animation:`slideIn .4s ease ${i*.07}s both`}}>
-                  <span style={{fontSize:13,fontWeight:700,color:s===best?G.white:"#aaa"}}>{tr("Manche ","Round ","Runde ","Round ","Rodada ")}{i+1} {s===best?"⭐":""}</span>
-                  <span style={{fontFamily:G.heading,fontSize:24,color:s===best?G.white:G.dark}}>{s} pts</span>
+                <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",background:s===best?"rgba(42,155,78,.35)":G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,padding:"10px 16px",animation:`slideIn .4s ease ${i*.07}s both`}}>
+                  <span style={{fontSize:13,fontWeight:800,color:s===best?G.white:"rgba(255,255,255,.7)"}}>{tr("Manche ","Round ","Runde ","Round ","Rodada ")}{i+1} {s===best?"⭐":""}</span>
+                  <span style={{...posterText(1,G.white,0),fontSize:26}}>{s} pts</span>
                 </div>
               );
             })}
@@ -15116,7 +15169,7 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
             return (
             <div key={i} onClick={onClickHandler} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",borderRadius:G.rayon,background:p.id===playerId?"rgba(42,155,78,.35)":"rgba(8,17,9,.45)",border:G.traitFin,marginBottom:6,cursor:hasRounds?"pointer":"default"}}>
               <div style={{fontFamily:G.heading,fontSize:30,width:40,textAlign:"center",color:i<3?["#FFD600","#C0C0C0","#CD7F32"][i]:"rgba(255,255,255,.3)"}}>{i<3?medals[i]:i+1}</div>
-              <div style={{flex:1,fontSize:14,fontWeight:800,color:p.id===playerId?G.accent:G.white}}>{p.name}{p.id===playerId?" (toi)":""}{p.abandoned?" 🏳️":""}</div>
+              <div style={{flex:1,fontSize:14,fontWeight:800,color:p.id===playerId?G.accent:G.white}}>{p.name}{p.id===playerId?" ("+tr("toi","you","du","tu","você")+")":""}{p.abandoned?" 🏳️":""}</div>
               <div style={{fontFamily:G.heading,fontSize:26,color:i===0?G.gold:G.white}}>{p.score||0} <span style={{fontSize:12,color:"rgba(255,255,255,.3)"}}>pts</span></div>
               {hasRounds && <div style={{fontSize:14,color:"rgba(255,214,0,.7)",marginLeft:4}}>👁️</div>}
             </div>
