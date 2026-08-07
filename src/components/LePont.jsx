@@ -12720,13 +12720,21 @@ export default function LePont() {
             }}
           >
             {homeCards.map(function(card, i){
-              const offset = (i - homeCardIndex + homeN) % homeN;
-              const isActive = offset === 0;
+              // La pile penchait entièrement à droite : `offset` étant un modulo,
+              // il ne descend jamais sous zéro, donc toutes les cartes se rangeaient
+              // du même côté et le carrousel paraissait plat. On prend la distance
+              // SIGNÉE — passé la moitié du tour, la carte est plus proche par la
+              // gauche — pour que la pile s'ouvre des deux côtés et prenne du volume.
+              const brut = (i - homeCardIndex + homeN) % homeN;
+              const dist = brut > homeN / 2 ? brut - homeN : brut;
+              const rang = Math.abs(dist);
+              const sens = dist < 0 ? -1 : 1;
+              const isActive = rang === 0;
               let translateX, scale, opacity, zIndex;
-              if(offset === 0){ translateX = 0;  scale = 1;    opacity = 1;    zIndex = 40; }
-              else if(offset === 1){ translateX = 24; scale = 0.92; opacity = 0.65; zIndex = 30; }
-              else if(offset === 2){ translateX = 44; scale = 0.84; opacity = 0.35; zIndex = 20; }
-              else { translateX = 60; scale = 0.76; opacity = 0.15; zIndex = 10; }
+              if(rang === 0){ translateX = 0;  scale = 1;    opacity = 1;    zIndex = 40; }
+              else if(rang === 1){ translateX = sens * 24; scale = 0.92; opacity = 0.65; zIndex = 30; }
+              else if(rang === 2){ translateX = sens * 44; scale = 0.84; opacity = 0.35; zIndex = 20; }
+              else { translateX = sens * 60; scale = 0.76; opacity = 0.15; zIndex = 10; }
               return (
                 <div
                   key={card.key}
