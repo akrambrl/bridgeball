@@ -2896,6 +2896,13 @@ export default function LePont() {
   const retourCharte = function(onClick){ return (
     <button onClick={onClick} style={{...retourStyle,position:"fixed",top:14,left:14,zIndex:100}}>←</button>
   ); };
+  // Son pendant en haut à droite, pour les feuilles de mode qui se ferment au
+  // lieu de revenir en arrière. Même cadre : une croix et une flèche qui ne se
+  // ressemblent pas donneraient deux vocabulaires pour un même geste.
+  const fermerCharte = function(onClick, z){ return (
+    <button onClick={onClick} style={{...retourStyle,position:"fixed",
+      top:"calc(14px + env(safe-area-inset-top))",right:14,zIndex:z||100,fontSize:24,fontWeight:400}}>×</button>
+  ); };
   // Ligne de liste de la charte — réglage, accès, lien : panneau de nuit, trait
   // d'encre, ombre dure. Une seule définition pour Mon compte et Mon profil,
   // sinon les deux listes divergent au premier ajustement.
@@ -9268,53 +9275,56 @@ export default function LePont() {
     let body = null;
     if(duelScreen==="menu" || !room){
       // ── Lanceur style GOAT Plug : grand visuel + pastille + gros boutons ──
-      const ac = "#FF8A2A", ac2 = "#FFC93C";
+      // Passé à la charte : l'affiche reste intacte en haut, tout ce qui est
+      // dessous prend la pelouse éclairée, les panneaux de nuit cerclés d'encre
+      // et les boutons uniques. Les filets colorés à 40 % d'opacité, les lueurs
+      // portées et les verts LED appartenaient à l'interface d'avant.
       body = (
-        <div style={{position:"relative",width:"100%",minHeight:"100dvh",display:"flex",flexDirection:"column",animation:"fadeIn .3s ease-out"}}>
-          {/* X fermer */}
-          <button onClick={duelLeaveRoom} style={{position:"fixed",top:"calc(14px + env(safe-area-inset-top))",right:14,zIndex:10,width:38,height:38,borderRadius:"50%",background:"rgba(0,0,0,.65)",color:"#fff",border:"1px solid rgba(255,255,255,.25)",fontSize:22,fontWeight:300,lineHeight:1,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(10px)",boxShadow:"0 4px 16px rgba(0,0,0,.5)"}}>×</button>
+        <div style={{position:"relative",width:"100%",minHeight:"100dvh",display:"flex",flexDirection:"column",animation:"fadeIn .3s ease-out",background:fondCharte}}>
+          {terrainCharte}
+          {fermerCharte(duelLeaveRoom, 10)}
           {/* Hero image (visuel entier) */}
-          <div style={{position:"relative",width:"100%",height:"48vh",maxHeight:"520px",minHeight:"280px",overflow:"hidden",background:"#000",flexShrink:0}}>
+          <div style={{position:"relative",zIndex:1,width:"100%",height:"48vh",maxHeight:"520px",minHeight:"280px",overflow:"hidden",background:"#000",flexShrink:0,borderBottom:G.trait}}>
             <img src={DUEL_CARD_IMG} alt="" style={{width:"100%",height:"100%",objectFit:"contain",pointerEvents:"none",userSelect:"none"}} draggable={false}/>
-            <div style={{position:"absolute",bottom:0,left:0,right:0,height:50,background:"linear-gradient(to top, #0a0a0a 0%, transparent 100%)",pointerEvents:"none"}}/>
           </div>
-          <div style={{position:"relative",zIndex:1,padding:"14px 22px calc(22px + env(safe-area-inset-bottom))",flex:1,display:"flex",flexDirection:"column",maxWidth:480,margin:"0 auto",width:"100%",boxSizing:"border-box"}}>
+          <div style={{position:"relative",zIndex:1,padding:"18px 18px calc(22px + env(safe-area-inset-bottom))",flex:1,display:"flex",flexDirection:"column",maxWidth:480,margin:"0 auto",width:"100%",boxSizing:"border-box"}}>
             {/* Pastille format */}
-            <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:12,padding:"10px 16px",background:`${ac}12`,border:`1.5px solid ${ac}40`,borderRadius:12,marginBottom:18,backdropFilter:"blur(10px)",flexWrap:"wrap"}}>
-              <span style={{color:ac,fontSize:13,fontWeight:800,letterSpacing:.5}}>⏱ <span style={{color:G.white}}>90 S</span></span>
-              <span style={{color:ac,fontSize:14,fontWeight:800}}>·</span>
-              <span style={{color:ac,fontSize:13,fontWeight:800,letterSpacing:.5}}>♾ <span style={{color:G.white}}>{tr("MANCHES","ROUNDS","RUNDEN","TURNI","RODADAS")}</span></span>
-              <span style={{color:ac,fontSize:14,fontWeight:800}}>·</span>
-              <span style={{color:ac,fontSize:13,fontWeight:800,letterSpacing:.5}}>🎯 <span style={{color:G.white}}>10/20 PTS</span></span>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:12,padding:"10px 16px",background:G.nuit,border:G.trait,borderRadius:G.rayon,boxShadow:G.ombre,marginBottom:18,flexWrap:"wrap"}}>
+              <span style={{color:G.projecteur,fontSize:13,fontWeight:800,letterSpacing:.5}}>⏱ <span style={{color:G.white}}>90 S</span></span>
+              <span style={{color:G.projecteur,fontSize:14,fontWeight:800}}>·</span>
+              <span style={{color:G.projecteur,fontSize:13,fontWeight:800,letterSpacing:.5}}>♾ <span style={{color:G.white}}>{tr("MANCHES","ROUNDS","RUNDEN","TURNI","RODADAS")}</span></span>
+              <span style={{color:G.projecteur,fontSize:14,fontWeight:800}}>·</span>
+              <span style={{color:G.projecteur,fontSize:13,fontWeight:800,letterSpacing:.5}}>🎯 <span style={{color:G.white}}>10/20 PTS</span></span>
             </div>
             {/* SOLO */}
-            <div style={{fontSize:10,fontWeight:800,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginBottom:8}}>{tr("Solo · score","Solo · score","Solo · Punkte","Solo · punti","Solo · pontos")}</div>
-            <button onClick={duelSoloStart} style={{width:"100%",padding:"15px",marginBottom:18,...btn(G.projecteur,null,18),cursor:"pointer",fontFamily:G.font,fontSize:16,fontWeight:800,letterSpacing:1,boxShadow:`0 8px 24px ${ac}55`,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-              ▶ {tr("JOUER SOLO","PLAY SOLO","SOLO SPIELEN","GIOCA SOLO","JOGAR SOLO")} <span style={{fontSize:12,fontWeight:700,opacity:.8}}>· 10/20 pts</span>
+            <div style={{...posterText(20,G.projecteur),marginBottom:8}}>{tr("Solo · score","Solo · score","Solo · Punkte","Solo · punti","Solo · pontos")}</div>
+            <button onClick={duelSoloStart} style={{...btn(G.projecteur,G.encre,18),width:"100%",padding:"15px",marginBottom:18}}>
+              ▶ {tr("JOUER SOLO","PLAY SOLO","SOLO SPIELEN","GIOCA SOLO","JOGAR SOLO")} <span style={{fontSize:12,fontWeight:800,opacity:.75}}>· 10/20 pts</span>
             </button>
             {/* EN LIGNE — bouton identique à celui de The Plug / The Mercato */}
-            <div style={{fontSize:10,fontWeight:800,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginBottom:8}}>{tr("En ligne","Online","Online","Online","Online")}</div>
+            <div style={{...posterText(20,G.projecteur),marginBottom:8}}>{tr("En ligne","Online","Online","Online","Online")}</div>
             <button onClick={function(){ setDuelScreen(null); setMmSearch({ mode:"duel", opponent: pickOpponent(), phase:"searching" }); }}
-              style={{width:"100%",marginBottom:18,padding:"14px 16px",borderRadius:16,border:"1.5px solid rgba(61,165,255,.6)",background:"linear-gradient(135deg,rgba(61,165,255,.22),rgba(61,165,255,.08))",cursor:"pointer",display:"flex",alignItems:"center",gap:12,textAlign:"left",boxShadow:"0 8px 24px -8px rgba(61,165,255,.5)"}}>
-              <div style={{fontSize:26}}>🌍</div>
+              style={{...ligneCharte,marginBottom:18,padding:"14px 16px",gap:12}}>
+              <span style={pastilleCharte(G.ciel)}>🌍</span>
               <div style={{flex:1}}>
-                <div style={{fontSize:14,fontWeight:900,color:"#fff",letterSpacing:.5}}>{tr("EN LIGNE","ONLINE","ONLINE","ONLINE","ONLINE")}</div>
-                <div style={{fontSize:11,color:"rgba(255,255,255,.55)",marginTop:2}}>{tr("Affronte un adversaire · sans code","Face an opponent · no code","Tritt gegen einen Gegner an · ohne Code","Sfida un avversario · senza codice","Enfrente um adversário · sem código")}</div>
+                <div style={{...posterText(20,G.white)}}>{tr("EN LIGNE","ONLINE","ONLINE","ONLINE","ONLINE")}</div>
+                <div style={{fontSize:11,color:"rgba(255,255,255,.6)",fontWeight:600,marginTop:2}}>{tr("Affronte un adversaire · sans code","Face an opponent · no code","Tritt gegen einen Gegner an · ohne Code","Sfida un avversario · senza codice","Enfrente um adversário · sem código")}</div>
               </div>
-              <div style={{fontSize:18,color:"#3DA5FF"}}>▶</div>
+              <div style={{fontSize:18,color:G.ciel}}>▶</div>
             </button>
 
             {/* Entre potes */}
-            <div style={{fontSize:10,fontWeight:800,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginBottom:8}}>{tr("Entre potes","With friends","Mit Freunden","Con gli amici","Com amigos")}</div>
+            <div style={{...posterText(20,G.projecteur),marginBottom:8}}>{tr("Entre potes","With friends","Mit Freunden","Con gli amici","Com amigos")}</div>
             <div style={{display:"flex",gap:8}}>
-              <button onClick={duelCreateRoom} disabled={duelBusy} style={{flex:1,padding:"14px",background:"rgba(0,230,118,.14)",color:"#00E676",border:"1px solid rgba(0,230,118,.4)",borderRadius:14,cursor:duelBusy?"default":"pointer",fontFamily:G.font,fontSize:13,fontWeight:800,letterSpacing:.5,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>👥 {tr("Créer un salon","Create room","Raum erstellen","Crea una stanza","Criar sala")}</button>
+              <button onClick={duelCreateRoom} disabled={duelBusy} style={{...btn(G.pelouse,G.encre,15),flex:1,padding:"14px",cursor:duelBusy?"default":"pointer",opacity:duelBusy?.6:1}}>👥 {tr("Créer un salon","Create room","Raum erstellen","Crea una stanza","Criar sala")}</button>
             </div>
-            <div style={{display:"flex",gap:8,marginTop:8}}>
+            <div style={{display:"flex",gap:8,marginTop:10}}>
               <input value={duelJoinCode} onChange={function(e){setDuelJoinCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,6));setDuelError("");}} placeholder={tr("CODE DU SALON","ROOM CODE","RAUMCODE","CODICE STANZA","CÓDIGO DA SALA")} maxLength={6}
-                style={{flex:1,minWidth:0,padding:"13px",borderRadius:14,border:"1.5px solid rgba(255,255,255,.15)",background:"rgba(255,255,255,.05)",color:G.white,fontFamily:G.heading,fontSize:18,letterSpacing:4,textAlign:"center",outline:"none"}}/>
-              <button onClick={function(){duelJoinRoom(duelJoinCode);}} disabled={duelBusy||duelJoinCode.length!==6} style={{padding:"0 20px",borderRadius:14,border:"none",background:duelJoinCode.length===6?"#FFD600":"rgba(255,255,255,.08)",color:duelJoinCode.length===6?"#000":"rgba(255,255,255,.3)",fontFamily:G.heading,fontSize:16,letterSpacing:1,cursor:duelJoinCode.length===6?"pointer":"not-allowed"}}>{tr("OK","JOIN","OK","OK","OK")}</button>
+                style={{flex:1,minWidth:0,padding:"13px",borderRadius:G.rayon,border:G.trait,boxShadow:G.ombre,background:G.nuit,color:G.white,fontFamily:G.poster,fontSize:19,letterSpacing:4,textAlign:"center",outline:"none",boxSizing:"border-box"}}/>
+              <button onClick={function(){duelJoinRoom(duelJoinCode);}} disabled={duelBusy||duelJoinCode.length!==6}
+                style={{...btn(duelJoinCode.length===6?G.projecteur:G.nuit,duelJoinCode.length===6?G.encre:"rgba(255,255,255,.45)",16),padding:"0 20px",cursor:duelJoinCode.length===6?"pointer":"not-allowed"}}>{tr("OK","JOIN","OK","OK","OK")}</button>
             </div>
-            {duelError && <div style={{textAlign:"center",fontSize:13,color:"#FF6B6B",fontWeight:700,marginTop:12}}>{duelError}</div>}
+            {duelError && <div style={{textAlign:"center",fontSize:13,color:G.maillot,fontWeight:800,marginTop:12}}>{duelError}</div>}
           </div>
         </div>
       );
@@ -12015,7 +12025,15 @@ export default function LePont() {
         </div>
       </div>
 
-      <div style={{...sheet,gap:10}}>
+      {/* Le flou d'arrière-plan de la feuille d'accueil est retiré : un élément
+          au backdrop-filter devient bloc conteneur pour ses descendants en
+          position:fixed. Les feuilles de mode ouvertes depuis le carrousel
+          (Plug, Mercato, GOAT GRID) vivent dans cette feuille : au lieu de
+          couvrir l'écran, elles s'inscrivaient dans ses bornes — décalées de
+          87 px sous l'en-tête de l'accueil et coupées en bas. Le flou portait
+          2 px sur un fond de pelouse presque uni : personne ne le verra partir,
+          alors que le décalage, lui, se voyait. */}
+      <div style={{...sheet,gap:10,backdropFilter:"none",WebkitBackdropFilter:"none"}}>
 
         {/* Alerte streak en danger — bande supprimée pour gagner de la place verticale.
             L'info reste visible via le badge alerte rouge dans le header (cliquable pour le détail). */}
@@ -12810,12 +12828,13 @@ export default function LePont() {
 
         {gameConfigModal && (
           <div
-            style={{position:"fixed",inset:0,zIndex:300,background:"#0a0a0a",overflowY:"auto",WebkitOverflowScrolling:"touch"}}
+            style={{position:"fixed",inset:0,zIndex:300,background:fondCharte,overflowY:"auto",WebkitOverflowScrolling:"touch"}}
           >
             {(() => {
               const isPont = gameConfigModal==="pont";
-              const accentColor = isPont ? "#FFD600" : "#60a5fa";
-              const accentSecondary = isPont ? "#FF6B35" : "#3b82f6";
+              // L'accent du mode vient des jetons : projecteur pour The Plug,
+              // ciel pour The Mercato. Les anciens #FFD600 / #60a5fa n'en sont pas.
+              const accentColor = isPont ? G.projecteur : G.ciel;
               return (
                 <div style={{
                   position:"relative",
@@ -12825,33 +12844,22 @@ export default function LePont() {
                   flexDirection:"column",
                   animation:"fadeIn .3s ease-out",
                 }}>
-                  {/* ── BOUTON FERMER (X en haut à droite) ── */}
-                  <button onClick={function(){setGameConfigModal(null);}} style={{
-                    position:"fixed",top:"calc(14px + env(safe-area-inset-top))",right:14,zIndex:10,
-                    width:38,height:38,borderRadius:"50%",
-                    background:"rgba(0,0,0,.65)",color:"#fff",
-                    border:"1px solid rgba(255,255,255,.25)",
-                    fontSize:22,fontWeight:300,lineHeight:1,
-                    cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
-                    backdropFilter:"blur(10px)",
-                    boxShadow:"0 4px 16px rgba(0,0,0,.5)"
-                  }}>×</button>
+                  {terrainCharte}
+                  {fermerCharte(function(){setGameConfigModal(null);}, 10)}
 
                   {/* ── HERO IMAGE — visuel ENTIER (pas de crop), hauteur limitée pour laisser place au contenu ── */}
-                  <div style={{position:"relative",width:"100%",height:"50vh",maxHeight:"540px",minHeight:"300px",overflow:"hidden",background:"#000",flexShrink:0}}>
+                  <div style={{position:"relative",zIndex:1,width:"100%",height:"50vh",maxHeight:"540px",minHeight:"300px",overflow:"hidden",background:"#000",flexShrink:0,borderBottom:G.trait}}>
                     <img
                       src={isPont ? PLUG_CARD_IMG : MERCATO_CARD_IMG}
                       alt=""
                       style={{width:"100%",height:"100%",objectFit:"contain",pointerEvents:"none",userSelect:"none"}}
                       draggable={false}
                     />
-                    {/* Gradient bottom pour transition douce vers le contenu */}
-                    <div style={{position:"absolute",bottom:0,left:0,right:0,height:50,background:"linear-gradient(to top, #0a0a0a 0%, transparent 100%)",pointerEvents:"none"}}/>
                   </div>
 
-                  <div style={{position:"relative",zIndex:1,padding:"14px 22px calc(20px + env(safe-area-inset-bottom))",flex:1,display:"flex",flexDirection:"column",justifyContent:"flex-start"}}>
+                  <div style={{position:"relative",zIndex:1,padding:"18px 18px calc(20px + env(safe-area-inset-bottom))",flex:1,display:"flex",flexDirection:"column",justifyContent:"flex-start",maxWidth:480,margin:"0 auto",width:"100%",boxSizing:"border-box"}}>
                     {/* Badge format de jeu (🔗 2 CLUBS → 👤 1 JOUEUR) */}
-                    <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:14,padding:"10px 16px",background:`${accentColor}10`,border:`1.5px solid ${accentColor}40`,borderRadius:12,marginBottom:18,backdropFilter:"blur(10px)"}}>
+                    <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:14,padding:"10px 16px",background:G.nuit,border:G.trait,borderRadius:G.rayon,boxShadow:G.ombre,marginBottom:18,flexWrap:"wrap"}}>
                       {isPont ? (
                         <>
                           <span style={{display:"flex",alignItems:"center",gap:6,color:accentColor,fontSize:14,fontWeight:800,letterSpacing:1}}>🔗 <span style={{color:G.white}}>2 {tr("CLUBS","CLUBS","KLUBS","CLUB","CLUBES")}</span></span>
@@ -12869,22 +12877,25 @@ export default function LePont() {
                       )}
                     </div>
 
-                    {/* Difficulté */}
-                    <div style={{fontSize:10,fontWeight:800,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginBottom:8}}>{tr("Difficulté","Difficulty","Schwierigkeit","Difficoltà","Dificuldade")}</div>
+                    {/* Difficulté — le palier choisi prend l'aplat franc de sa
+                        couleur (pelouse, projecteur, maillot : de l'amateur au
+                        crescendo), les autres l'aplat de nuit. Même cadre d'encre
+                        pour les trois, comme les onglets du classement. */}
+                    <div style={{...posterText(20,G.projecteur),marginBottom:8}}>{tr("Difficulté","Difficulty","Schwierigkeit","Difficoltà","Dificuldade")}</div>
                     <div style={{display:"flex",gap:8,marginBottom:16}}>
                       {["facile","moyen","expert"].map(function(d){
                         const dLabel = d==="facile"?"AMATEUR":d==="moyen"?"PRO":"CRESCENDO";
-                        const dColor = d==="facile"?"#00E676":d==="moyen"?"#FFD600":"#FF3D57";
+                        const dColor = d==="facile"?G.pelouse:d==="moyen"?G.projecteur:G.maillot;
                         const stars = d==="facile"?1:d==="moyen"?2:3;
+                        const on = diff===d;
                         return(
                           <button key={d} onClick={function(){setDiff(d);}} style={{
-                            flex:1,padding:"11px 4px",borderRadius:12,
-                            border:`1.5px solid ${diff===d?dColor:"rgba(255,255,255,.1)"}`,
-                            background:diff===d?`${dColor}15`:"rgba(255,255,255,.03)",
-                            color:diff===d?dColor:"rgba(255,255,255,.5)",
-                            fontFamily:G.font,fontWeight:800,cursor:"pointer",fontSize:12,letterSpacing:1,transition:"all .15s",
+                            flex:1,padding:"11px 4px",borderRadius:G.rayonS,
+                            border:G.traitFin,boxShadow:G.ombre,
+                            background:on?dColor:G.nuit,
+                            color:on?G.encre:"rgba(255,255,255,.6)",
+                            fontFamily:G.font,fontWeight:800,cursor:"pointer",fontSize:12,letterSpacing:1,transition:"background .15s",
                             display:"flex",flexDirection:"column",alignItems:"center",gap:3,
-                            boxShadow:diff===d?`0 4px 16px ${dColor}33`:"none"
                           }}>
                             <div style={{fontSize:11,letterSpacing:1}}>{d==="expert"?"📈":"⭐".repeat(stars)}</div>
                             <div>{dLabel}</div>
@@ -12900,35 +12911,29 @@ export default function LePont() {
                       const m = gameConfigModal;
                       setGameConfigModal(null);
                       setMmSearch({ mode: m, opponent: pickOpponent(), phase: "searching" });
-                    }} style={{
-                      width:"100%",marginBottom:10,padding:"14px 16px",borderRadius:16,
-                      border:"1.5px solid rgba(61,165,255,.6)",
-                      background:"linear-gradient(135deg,rgba(61,165,255,.22),rgba(61,165,255,.08))",
-                      cursor:"pointer",display:"flex",alignItems:"center",gap:12,textAlign:"left",
-                      boxShadow:"0 8px 24px -8px rgba(61,165,255,.5)"
-                    }}>
-                      <div style={{fontSize:26}}>🌍</div>
+                    }} style={{...ligneCharte,marginBottom:12,padding:"14px 16px",gap:12}}>
+                      <span style={pastilleCharte(G.ciel)}>🌍</span>
                       <div style={{flex:1}}>
-                        <div style={{fontSize:14,fontWeight:900,color:"#fff",letterSpacing:.5}}>{tr("EN LIGNE","ONLINE","ONLINE","ONLINE","ONLINE")}</div>
-                        <div style={{fontSize:11,color:"rgba(255,255,255,.55)",marginTop:2}}>
+                        <div style={{...posterText(20,G.white)}}>{tr("EN LIGNE","ONLINE","ONLINE","ONLINE","ONLINE")}</div>
+                        <div style={{fontSize:11,color:"rgba(255,255,255,.6)",fontWeight:600,marginTop:2}}>
                           {tr("Affronte un adversaire · même série de clubs","Face an opponent · same club series","Tritt gegen einen Gegner an · gleiche Klubserie","Sfida un avversario · stessa serie di club","Enfrente um adversário · mesma série de clubes")}
                         </div>
                       </div>
-                      <div style={{fontSize:18,color:"#3DA5FF"}}>▶</div>
+                      <div style={{fontSize:18,color:G.ciel}}>▶</div>
                     </button>
 
                     {/* Boutons */}
                     <div style={{display:"flex",gap:10}}>
                       <button onClick={function(){const m=gameConfigModal;setGameConfigModal(null);setTimeout(function(){tryStart(m);},50);}} style={{
                         flex:2,padding:"14px",
-                        ...btn(G.projecteur),
-                        transition:"transform .15s"
-                      }} onMouseDown={(e)=>e.currentTarget.style.transform="scale(.97)"} onMouseUp={(e)=>e.currentTarget.style.transform="scale(1)"} onMouseLeave={(e)=>e.currentTarget.style.transform="scale(1)"}>
+                        ...btn(G.projecteur,G.encre,17),
+                      }}>
                         ▶ {tr("Jouer seul","Play solo","Solo spielen","Gioca da solo","Jogar sozinho")}
                       </button>
                       <button onClick={function(){setDuelMode(gameConfigModal);setDuelDiff(diff);setDuelRounds(totalRounds);setGameConfigModal(null);setTimeout(function(){setShowRoomCreate(true);},100);}} style={{
                         flex:1,padding:"14px",
-                        ...btn("#0B2213", G.white, 15)
+                        ...btn(G.nuit, G.white, 15),
+                        whiteSpace:"nowrap"
                       }}>
                         👥 {tr("Entre potes","With friends","Mit Freunden","Con gli amici","Com amigos")}
                       </button>
@@ -12959,58 +12964,60 @@ export default function LePont() {
 
         {/* 🐐 Modal de choix Solo / Multi pour GOAT GRID */}
         {ggModeChoice && (
-          <div style={{position:"fixed",inset:0,zIndex:450,background:"#0B1310",backgroundImage:"radial-gradient(ellipse 120% 50% at 50% -5%, rgba(0,230,118,0.10) 0%, transparent 60%)",overflowY:"auto",WebkitOverflowScrolling:"touch"}}>
+          <div style={{position:"fixed",inset:0,zIndex:450,background:fondCharte,overflowY:"auto",WebkitOverflowScrolling:"touch"}}>
             <div style={{position:"relative",width:"100%",minHeight:"100vh",display:"flex",flexDirection:"column",animation:"fadeIn .3s ease-out"}}>
+              {terrainCharte}
+              {fermerCharte(function(){setGgModeChoice(false);}, 10)}
 
-              {/* Fermer */}
-              <button onClick={function(){setGgModeChoice(false);}} style={{position:"fixed",top:"calc(14px + env(safe-area-inset-top))",right:14,zIndex:10,width:40,height:40,borderRadius:"50%",background:"rgba(255,255,255,.08)",color:"#fff",border:"1px solid rgba(255,255,255,.18)",fontSize:22,fontWeight:300,lineHeight:1,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(10px)"}}>×</button>
-
-              {/* Hero compact : l'affiche en couverture, fondue dans le fond sombre */}
-              <div style={{position:"relative",width:"100%",height:"27vh",maxHeight:310,minHeight:200,overflow:"hidden",flexShrink:0}}>
+              {/* Hero compact : l'affiche en couverture, refermée par un trait
+                  d'encre au lieu d'un fondu vers le fond — sur l'affiche, une
+                  image s'arrête net. Le titre passe au lettrage de la charte. */}
+              <div style={{position:"relative",zIndex:1,width:"100%",height:"27vh",maxHeight:310,minHeight:200,overflow:"hidden",flexShrink:0,borderBottom:G.trait}}>
                 <img src={GRID_CARD_IMG} alt="" style={{width:"100%",height:"165%",objectFit:"cover",objectPosition:"center 20%",pointerEvents:"none",userSelect:"none"}} draggable={false}/>
-                <div style={{position:"absolute",inset:0,background:"linear-gradient(to top, #0B1310 6%, rgba(11,19,16,.35) 42%, rgba(11,19,16,.10) 100%)",pointerEvents:"none"}}/>
-                <div style={{position:"absolute",bottom:14,left:0,right:0,textAlign:"center",pointerEvents:"none"}}>
-                  <div style={{fontFamily:G.heading,fontSize:34,letterSpacing:3,lineHeight:1,textShadow:"0 4px 24px rgba(0,0,0,.8)"}}>
-                    <span style={{color:"#FFFFFF"}}>GOAT </span><span style={{color:"#B9F600"}}>GRID</span>
-                  </div>
+                <div style={{position:"absolute",inset:0,background:"linear-gradient(to top, rgba(8,17,9,.92) 4%, rgba(8,17,9,.30) 40%, transparent 100%)",pointerEvents:"none"}}/>
+                <div style={{position:"absolute",bottom:12,left:0,right:0,textAlign:"center",pointerEvents:"none"}}>
+                  <div style={{...posterText(38,G.white)}}>GOAT <span style={{color:G.projecteur}}>GRID</span></div>
                 </div>
               </div>
 
               {/* Contenu */}
-              <div style={{padding:"16px 16px calc(24px + env(safe-area-inset-bottom))",flex:1,display:"flex",flexDirection:"column",gap:12,maxWidth:520,width:"100%",margin:"0 auto"}}>
+              <div style={{position:"relative",zIndex:1,padding:"16px 18px calc(24px + env(safe-area-inset-bottom))",flex:1,display:"flex",flexDirection:"column",gap:12,maxWidth:520,width:"100%",margin:"0 auto",boxSizing:"border-box"}}>
 
-                <div style={{textAlign:"center",fontSize:11,color:"rgba(255,255,255,.45)",letterSpacing:3,fontWeight:800,textTransform:"uppercase",marginBottom:2}}>
+                <div style={{...posterText(22,G.projecteur),textAlign:"center",marginBottom:2}}>
                   {tr("Choisis ton mode","Choose your mode","Wähle deinen Modus","Scegli la modalità","Escolha seu modo")}
                 </div>
 
-                {/* Carte SOLO */}
-                <div onClick={function(){setGgModeChoice(false);ggStartGame();}} style={{position:"relative",overflow:"hidden",borderRadius:20,border:"1px solid rgba(0,230,118,.38)",background:"linear-gradient(135deg, rgba(0,230,118,.12) 0%, rgba(255,255,255,.03) 45%, rgba(0,0,0,.25) 100%)",padding:"16px 14px 16px 16px",cursor:"pointer",display:"flex",alignItems:"center",gap:14,boxShadow:"0 14px 36px -12px rgba(0,230,118,.3)"}}>
-                  <div style={{width:54,height:54,borderRadius:16,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",fontSize:27,background:"rgba(0,230,118,.14)",border:"1px solid rgba(0,230,118,.4)",boxShadow:"inset 0 2px 10px rgba(0,0,0,.35)"}}>🐐</div>
+                {/* Les deux modes en panneaux de nuit cerclés d'encre : c'est la
+                    pastille et le sur-titre qui portent la couleur — pelouse pour
+                    le défi du jour, maillot pour le versus. Les dégradés vers le
+                    noir et les lueurs portées étaient de l'interface d'avant. */}
+                <div onClick={function(){setGgModeChoice(false);ggStartGame();}} style={{...ligneCharte,padding:"16px 14px 16px 16px",gap:14,alignItems:"center"}}>
+                  <div style={pastilleCharte(G.pelouse,54)}>🐐</div>
                   <div style={{flex:1,minWidth:0}}>
-                    <div style={{fontSize:10,fontWeight:800,letterSpacing:2.5,color:"#00E676",textTransform:"uppercase"}}>{tr("Défi du jour","Daily challenge","Tägliche Challenge","Sfida del giorno","Desafio do dia")}</div>
-                    <div style={{fontFamily:G.heading,fontSize:26,color:"#fff",letterSpacing:2,lineHeight:1.1,margin:"3px 0 9px"}}>SOLO</div>
+                    <div style={{fontSize:10,fontWeight:800,letterSpacing:2.5,color:G.pelouse,textTransform:"uppercase"}}>{tr("Défi du jour","Daily challenge","Tägliche Challenge","Sfida del giorno","Desafio do dia")}</div>
+                    <div style={{...posterText(28,G.white),margin:"3px 0 9px"}}>SOLO</div>
                     <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
-                      <span style={{fontSize:10.5,fontWeight:700,color:"rgba(255,255,255,.85)",background:"rgba(0,0,0,.35)",border:"1px solid rgba(255,255,255,.12)",padding:"4px 9px",borderRadius:999,letterSpacing:.3}}>{tr("Grille 3×3","3×3 grid","3×3-Raster","Griglia 3×3","Grade 3×3")}</span>
-                      <span style={{fontSize:10.5,fontWeight:700,color:"rgba(255,255,255,.85)",background:"rgba(0,0,0,.35)",border:"1px solid rgba(255,255,255,.12)",padding:"4px 9px",borderRadius:999,letterSpacing:.3}}>❤️ {tr("3 vies","3 lives","3 Leben","3 vite","3 vidas")}</span>
-                      <span style={{fontSize:10.5,fontWeight:700,color:"rgba(255,255,255,.85)",background:"rgba(0,0,0,.35)",border:"1px solid rgba(255,255,255,.12)",padding:"4px 9px",borderRadius:999,letterSpacing:.3}}>🏆 {tr("Classé","Ranked","Gewertet","Classificato","Ranqueado")}</span>
+                      <span style={{fontSize:10.5,fontWeight:800,color:"rgba(255,255,255,.85)",background:"rgba(8,17,9,.5)",border:G.traitFin,padding:"4px 9px",borderRadius:G.rayonS,letterSpacing:.3}}>{tr("Grille 3×3","3×3 grid","3×3-Raster","Griglia 3×3","Grade 3×3")}</span>
+                      <span style={{fontSize:10.5,fontWeight:800,color:"rgba(255,255,255,.85)",background:"rgba(8,17,9,.5)",border:G.traitFin,padding:"4px 9px",borderRadius:G.rayonS,letterSpacing:.3}}>❤️ {tr("3 vies","3 lives","3 Leben","3 vite","3 vidas")}</span>
+                      <span style={{fontSize:10.5,fontWeight:800,color:"rgba(255,255,255,.85)",background:"rgba(8,17,9,.5)",border:G.traitFin,padding:"4px 9px",borderRadius:G.rayonS,letterSpacing:.3}}>🏆 {tr("Classé","Ranked","Gewertet","Classificato","Ranqueado")}</span>
                     </div>
                   </div>
-                  <div style={{fontSize:28,color:"rgba(0,230,118,.85)",flexShrink:0,fontWeight:300,lineHeight:1}}>›</div>
+                  <div style={{fontSize:26,color:G.pelouse,flexShrink:0,lineHeight:1}}>›</div>
                 </div>
 
                 {/* Carte BATTLE */}
-                <div onClick={function(){setGgModeChoice(false);setGgBattleScreen("menu");setGgBattleError("");setGgBattleCode("");}} style={{position:"relative",overflow:"hidden",borderRadius:20,border:"1px solid rgba(255,107,53,.4)",background:"linear-gradient(135deg, rgba(255,107,53,.13) 0%, rgba(255,255,255,.03) 45%, rgba(0,0,0,.25) 100%)",padding:"16px 14px 16px 16px",cursor:"pointer",display:"flex",alignItems:"center",gap:14,boxShadow:"0 14px 36px -12px rgba(255,107,53,.32)"}}>
-                  <div style={{width:54,height:54,borderRadius:16,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",fontSize:27,background:"rgba(255,107,53,.15)",border:"1px solid rgba(255,107,53,.45)",boxShadow:"inset 0 2px 10px rgba(0,0,0,.35)"}}>⚔️</div>
+                <div onClick={function(){setGgModeChoice(false);setGgBattleScreen("menu");setGgBattleError("");setGgBattleCode("");}} style={{...ligneCharte,padding:"16px 14px 16px 16px",gap:14,alignItems:"center"}}>
+                  <div style={pastilleCharte(G.maillot,54)}>⚔️</div>
                   <div style={{flex:1,minWidth:0}}>
-                    <div style={{fontSize:10,fontWeight:800,letterSpacing:2.5,color:"#FF8A2A",textTransform:"uppercase"}}>{tr("Mode versus","Versus mode","Versus-Modus","Modalità versus","Modo versus")}</div>
-                    <div style={{fontFamily:G.heading,fontSize:26,color:"#fff",letterSpacing:2,lineHeight:1.1,margin:"3px 0 9px"}}>BATTLE</div>
+                    <div style={{fontSize:10,fontWeight:800,letterSpacing:2.5,color:G.maillot,textTransform:"uppercase"}}>{tr("Mode versus","Versus mode","Versus-Modus","Modalità versus","Modo versus")}</div>
+                    <div style={{...posterText(28,G.white),margin:"3px 0 9px"}}>BATTLE</div>
                     <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
-                      <span style={{fontSize:10.5,fontWeight:700,color:"rgba(255,255,255,.85)",background:"rgba(0,0,0,.35)",border:"1px solid rgba(255,255,255,.12)",padding:"4px 9px",borderRadius:999,letterSpacing:.3}}>⏱️ 2 min</span>
-                      <span style={{fontSize:10.5,fontWeight:700,color:"rgba(255,255,255,.85)",background:"rgba(0,0,0,.35)",border:"1px solid rgba(255,255,255,.12)",padding:"4px 9px",borderRadius:999,letterSpacing:.3}}>👥 {tr("2-8 joueurs","2-8 players","2-8 Spieler","2-8 giocatori","2-8 jogadores")}</span>
-                      <span style={{fontSize:10.5,fontWeight:700,color:"rgba(255,255,255,.85)",background:"rgba(0,0,0,.35)",border:"1px solid rgba(255,255,255,.12)",padding:"4px 9px",borderRadius:999,letterSpacing:.3}}>♾️ {tr("Vies","Lives","Leben","Vite","Vidas")}</span>
+                      <span style={{fontSize:10.5,fontWeight:800,color:"rgba(255,255,255,.85)",background:"rgba(8,17,9,.5)",border:G.traitFin,padding:"4px 9px",borderRadius:G.rayonS,letterSpacing:.3}}>⏱️ 2 min</span>
+                      <span style={{fontSize:10.5,fontWeight:800,color:"rgba(255,255,255,.85)",background:"rgba(8,17,9,.5)",border:G.traitFin,padding:"4px 9px",borderRadius:G.rayonS,letterSpacing:.3}}>👥 {tr("2-8 joueurs","2-8 players","2-8 Spieler","2-8 giocatori","2-8 jogadores")}</span>
+                      <span style={{fontSize:10.5,fontWeight:800,color:"rgba(255,255,255,.85)",background:"rgba(8,17,9,.5)",border:G.traitFin,padding:"4px 9px",borderRadius:G.rayonS,letterSpacing:.3}}>♾️ {tr("Vies","Lives","Leben","Vite","Vidas")}</span>
                     </div>
                   </div>
-                  <div style={{fontSize:28,color:"rgba(255,138,42,.85)",flexShrink:0,fontWeight:300,lineHeight:1}}>›</div>
+                  <div style={{fontSize:26,color:G.maillot,flexShrink:0,lineHeight:1}}>›</div>
                 </div>
 
               </div>
@@ -13021,33 +13028,37 @@ export default function LePont() {
         {/* ⚔️ Modal GOAT BATTLE — Multijoueur Menu */}
         {ggBattleScreen === "menu" && (
           <div style={{position:"fixed",inset:0,zIndex:450,display:"flex",alignItems:"flex-start",justifyContent:"center",padding:"80px 20px 40px",background:"rgba(0,0,0,.92)",backdropFilter:"blur(10px)",overflowY:"auto"}}>
-            <div style={{background:"linear-gradient(160deg, #14181F 0%, #0B0E12 100%)",border:"1px solid rgba(255,107,53,.35)",borderRadius:24,boxShadow:"0 24px 60px -20px rgba(255,107,53,.25)",padding:24,maxWidth:380,width:"100%"}}>
+            {/* La feuille du BATTLE prend la nuit et le trait d'encre : son
+                dégradé gris-bleu et son filet orange venaient d'un autre jeu de
+                couleurs que la charte. Boutons uniques : ciel pour l'en ligne,
+                maillot pour créer, nuit pour fermer. */}
+            <div style={{background:G.nuit,border:G.trait,borderRadius:G.rayonL,boxShadow:G.ombreL,padding:22,maxWidth:380,width:"100%"}}>
               <div style={{textAlign:"center",marginBottom:20}}>
                 <div style={{fontSize:50,marginBottom:6}}>⚔️</div>
-                <div style={{fontFamily:G.heading,fontSize:28,letterSpacing:2,color:"#FF6B35",lineHeight:1}}>GOAT BATTLE</div>
-                <div style={{fontSize:11,color:"rgba(255,255,255,.6)",marginTop:6}}>{tr("2 minutes · 2-8 joueurs · Même grille","2 minutes · 2-8 players · Same grid","2 Minuten · 2-8 Spieler · Gleiches Raster","2 minuti · 2-8 giocatori · Stessa griglia","2 minutos · 2-8 jogadores · Mesma grade")}</div>
+                <div style={{...posterText(32,G.white)}}>GOAT <span style={{color:G.maillot}}>BATTLE</span></div>
+                <div style={{fontSize:11.5,color:"rgba(255,255,255,.7)",fontWeight:700,marginTop:6}}>{tr("2 minutes · 2-8 joueurs · Même grille","2 minutes · 2-8 players · Same grid","2 Minuten · 2-8 Spieler · Gleiches Raster","2 minuti · 2-8 giocatori · Stessa griglia","2 minutos · 2-8 jogadores · Mesma grade")}</div>
               </div>
-              
+
               {ggBattleError && (
-                <div style={{padding:10,background:"rgba(255,68,68,.15)",border:"1px solid rgba(255,68,68,.4)",borderRadius:10,color:"#FF6B6B",fontSize:12,marginBottom:14,textAlign:"center"}}>{ggBattleError}</div>
+                <div style={{padding:10,background:"rgba(217,58,43,.3)",border:G.traitFin,borderRadius:G.rayonS,color:G.white,fontSize:12,fontWeight:700,marginBottom:14,textAlign:"center"}}>{ggBattleError}</div>
               )}
-              
+
               {/* Partie rapide — adversaire trouvé automatiquement */}
               <button onClick={function(){
                 setGgBattleScreen(null); setGgBattleError(""); setGgBattleCode("");
                 setMmSearch({ mode:"battle", opponent: pickOpponent(), phase:"searching" });
-              }} style={{width:"100%",padding:"14px",borderRadius:14,border:"1.5px solid rgba(61,165,255,.55)",background:"linear-gradient(135deg,rgba(61,165,255,.25),rgba(61,165,255,.08))",color:"#fff",fontWeight:900,fontSize:14,letterSpacing:1,cursor:"pointer",marginBottom:10,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+              }} style={{...btn(G.ciel,G.white,16),width:"100%",padding:"14px",marginBottom:10}}>
                 🌍 {tr("EN LIGNE","ONLINE","ONLINE","ONLINE","ONLINE")}
               </button>
-              <div style={{fontSize:10,color:"rgba(255,255,255,.4)",textAlign:"center",marginBottom:14}}>
+              <div style={{fontSize:10.5,color:"rgba(255,255,255,.6)",fontWeight:600,textAlign:"center",marginBottom:14}}>
                 {tr("Affronte un adversaire · sans code","Face an opponent · no code","Tritt gegen einen Gegner an · ohne Code","Sfida un avversario · senza codice","Enfrente um adversário · sem código")}
               </div>
 
               {/* Créer une room */}
-              <button onClick={ggBattleCreateRoom} disabled={ggBattleLoading} style={{width:"100%",padding:"14px",borderRadius:14,border:"none",background:"linear-gradient(135deg,#FF6B35,#FF4444)",color:"#fff",fontWeight:800,fontSize:14,letterSpacing:1,cursor:ggBattleLoading?"not-allowed":"pointer",marginBottom:12,opacity:ggBattleLoading?.5:1}}>
+              <button onClick={ggBattleCreateRoom} disabled={ggBattleLoading} style={{...btn(G.maillot,G.white,16),width:"100%",padding:"14px",marginBottom:12,cursor:ggBattleLoading?"not-allowed":"pointer",opacity:ggBattleLoading?.6:1}}>
                 {ggBattleLoading ? "..." : (tr("⚔️ CRÉER UNE ROOM","⚔️ CREATE ROOM","⚔️ RAUM ERSTELLEN","⚔️ CREA UNA ROOM","⚔️ CRIAR UMA SALA"))}
               </button>
-              
+
               {/* Rejoindre via code */}
               <div style={{display:"flex",gap:8,marginBottom:14}}>
                 <input
@@ -13056,14 +13067,16 @@ export default function LePont() {
                   onChange={function(e){setGgBattleCode(e.target.value.toUpperCase().slice(0,6));}}
                   placeholder={tr("CODE","CODE","CODE","CODICE","CÓDIGO")}
                   maxLength={6}
-                  style={{flex:1,minWidth:0,padding:"12px",background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.15)",borderRadius:12,color:G.white,fontSize:16,fontWeight:800,letterSpacing:3,textAlign:"center",fontFamily:"monospace"}}
+                  style={{flex:1,minWidth:0,padding:"12px",background:"rgba(8,17,9,.5)",border:G.traitFin,borderRadius:G.rayonS,color:G.white,fontFamily:G.poster,fontSize:18,letterSpacing:3,textAlign:"center",outline:"none",boxSizing:"border-box"}}
                 />
-                <button onClick={function(){ggBattleJoinRoom(ggBattleCode);}} disabled={ggBattleLoading || ggBattleCode.length < 4} style={{flexShrink:0,padding:"12px 16px",borderRadius:12,border:"1px solid rgba(255,107,53,.4)",background:"rgba(255,107,53,.15)",color:"#FF6B35",fontWeight:800,fontSize:13,cursor:(ggBattleLoading||ggBattleCode.length<4)?"not-allowed":"pointer",opacity:(ggBattleLoading||ggBattleCode.length<4)?.5:1}}>
+                <button onClick={function(){ggBattleJoinRoom(ggBattleCode);}} disabled={ggBattleLoading || ggBattleCode.length < 4}
+                  style={{...btn(ggBattleCode.length>=4?G.projecteur:G.nuit,ggBattleCode.length>=4?G.encre:"rgba(255,255,255,.45)",14),flexShrink:0,padding:"12px 16px",
+                  cursor:(ggBattleLoading||ggBattleCode.length<4)?"not-allowed":"pointer"}}>
                   {tr("REJOINDRE","JOIN","BEITRETEN","UNISCITI","ENTRAR")}
                 </button>
               </div>
-              
-              <button onClick={function(){setGgBattleScreen(null);setGgBattleError("");setGgBattleCode("");}} style={{width:"100%",padding:12,borderRadius:50,border:"none",background:"rgba(255,255,255,.05)",color:"rgba(255,255,255,.7)",fontWeight:700,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
+
+              <button onClick={function(){setGgBattleScreen(null);setGgBattleError("");setGgBattleCode("");}} style={{...btn(G.nuit,G.white,15),width:"100%",padding:12}}>
                 {tr("Fermer","Close","Schließen","Chiudi","Fechar")}
               </button>
             </div>
