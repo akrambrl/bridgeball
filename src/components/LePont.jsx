@@ -2618,13 +2618,40 @@ if(typeof document!=="undefined"&&!document.getElementById("bb-css")){
     @keyframes vsAppear{0%{opacity:0;transform:scale(0) rotate(-15deg)}65%{transform:scale(1.25) rotate(4deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
     @keyframes sheetUp{0%{transform:translateY(100%);opacity:0}100%{transform:translateY(0);opacity:1}}
     /* ── Ouverture d'une carte, façon pack FUT ─────────────────────────────
-       Le dos monte, tourne sur lui-même, éclate en lumière, puis le nom claque.
+       Le dos monte, tremble de plus en plus fort pendant que l'aura de rareté
+       se charge, part sur la tranche, la face arrive de l'autre côté, éclate
+       en lumière, puis le nom claque.
        Les étincelles reçoivent leur direction en variables CSS (--dx/--dy) :
-       une seule règle sert les quatorze éclats. */
+       une seule règle sert les quatorze éclats.
+       Le retournement se joue en DEUX demi-tours sur deux éléments distincts
+       — le dos de 0° à 90°, la face de −90° à 0° — et une seule face est
+       montée à la fois. Une seule carte à deux faces sur le même plan
+       obligerait à compter sur backface-visibility, que WebKit laisse tomber
+       dès qu'un ancêtre anime son transform : le logo du dos réapparaissait
+       alors EN MIROIR par-dessus le joueur. */
     @keyframes bbRayons{from{transform:rotate(0)}to{transform:rotate(360deg)}}
     @keyframes bbCarteMonte{0%{transform:translateY(80px) scale(.8);opacity:0}55%{transform:translateY(-12px) scale(1.05);opacity:1}100%{transform:translateY(0) scale(1);opacity:1}}
-    @keyframes bbCarteFlip{0%{transform:rotateY(0)}100%{transform:rotateY(180deg)}}
     @keyframes bbCarteRespire{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-7px) scale(1.015)}}
+    /* Le suspense, en quatre signes simultanés : le dos tremble, il se gonfle,
+       l'aura de la rareté se charge derrière lui et un reflet le balaie.
+       Le tremblement et le gonflement animent tous deux la propriete transform :
+       ils ne
+       peuvent pas cohabiter sur un même élément (la dernière règle gagne), d'où
+       deux calques — le gonflement dehors, la secousse dedans. */
+    @keyframes bbTremble{
+      0%,100%{transform:translate(0,0) rotate(0)}
+      20%{transform:translate(-2px,1px) rotate(-1.1deg)}
+      40%{transform:translate(2px,-1px) rotate(1.2deg)}
+      60%{transform:translate(-1px,-2px) rotate(-.8deg)}
+      80%{transform:translate(2px,2px) rotate(1deg)}
+    }
+    /* Le gonflement s'arrête à 1,06 et l'y reste (fill both) : les deux demi-tours
+       repartent de cette échelle, sinon la carte sursauterait avant de tourner. */
+    @keyframes bbCharge{0%{transform:scale(1)}100%{transform:scale(1.06)}}
+    @keyframes bbAura{0%{transform:scale(.5);opacity:0}70%{opacity:.7}100%{transform:scale(1.4);opacity:.9}}
+    @keyframes bbBalayage{0%{transform:translateX(-160%) skewX(-18deg)}100%{transform:translateX(160%) skewX(-18deg)}}
+    @keyframes bbDemiTourSortie{0%{transform:rotateY(0) scale(1.06)}100%{transform:rotateY(90deg) scale(1.06)}}
+    @keyframes bbDemiTourEntree{0%{transform:rotateY(-90deg) scale(1.06)}100%{transform:rotateY(0) scale(1)}}
     @keyframes bbEclat{0%{transform:scale(.25);opacity:.9}100%{transform:scale(2.8);opacity:0}}
     @keyframes bbEtincelle{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(.25);opacity:0}}
     @keyframes bbClaque{0%{transform:scale(1.7) skewX(-7deg);opacity:0}60%{transform:scale(.95) skewX(-7deg);opacity:1}100%{transform:scale(1) skewX(-7deg);opacity:1}}
@@ -5223,20 +5250,31 @@ export default function LePont() {
   const [playerBadge, setPlayerBadge] = useState(function(){ try { return localStorage.getItem("bb_badge") || null; } catch (e) { return null; } });
   const [showCollection, setShowCollection] = useState(false);
   const [cardPopup, setCardPopup] = useState(null);   // carte tout juste débloquée
-  // Étape de l'ouverture de carte : 0 rayons, 1 le dos monte, 2 il tourne,
-  // 3 la carte est révélée. Un tap saute à 3 — comme dans FUT, on doit pouvoir
-  // couper l'animation quand on a déjà vu le geste cent fois.
-  const [cardRevealEtape, setCardRevealEtape] = useState(3);
+  // Étapes de l'ouverture de carte :
+  //   0 les rayons seuls · 1 le dos monte · 2 LE SUSPENSE (le dos tremble de
+  //   plus en plus fort, l'aura de rareté se charge) · 3 le dos part sur la
+  //   tranche · 4 la face arrive et éclate · 5 la carte est révélée.
+  // Un tap saute directement à 5 — comme dans FUT, on doit pouvoir couper la
+  // mise en scène quand on a déjà vu le geste cent fois.
+  const CARTE_REVELEE = 5;
+  const [cardRevealEtape, setCardRevealEtape] = useState(CARTE_REVELEE);
   useEffect(function(){
     if (!cardPopup) return;
     let reduit = false;
     try { reduit = window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) {}
-    if (reduit) { setCardRevealEtape(3); return; }   // révélation directe, sans mise en scène
+    if (reduit) { setCardRevealEtape(CARTE_REVELEE); return; }   // révélation directe, sans mise en scène
     setCardRevealEtape(0);
-    const t1 = setTimeout(function(){ setCardRevealEtape(1); }, 550);
-    const t2 = setTimeout(function(){ setCardRevealEtape(2); }, 1500);
-    const t3 = setTimeout(function(){ setCardRevealEtape(3); hapticSuccess(); }, 2100);
-    return function(){ clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+    // Le suspense tient la scène ~1,9 s : assez pour laisser le temps de
+    // deviner la rareté à la couleur de l'aura, pas assez pour lasser à la
+    // dixième carte. Les deux demi-tours font 260 ms chacun.
+    const jalons = [[450,1],[1250,2],[3150,3],[3410,4],[3690,CARTE_REVELEE]];
+    const minuteurs = jalons.map(function(j){
+      return setTimeout(function(){
+        setCardRevealEtape(j[1]);
+        if (j[1] === 4) hapticSuccess();
+      }, j[0]);
+    });
+    return function(){ minuteurs.forEach(clearTimeout); };
   }, [cardPopup]);
   const [badgeByPid, setBadgeByPid] = useState({});   // pid → {badge, xp} pour le classement
   // Badge du joueur, lu à part du gros select (une colonne absente ferait
@@ -8491,9 +8529,11 @@ export default function LePont() {
   // Un tap n'importe où saute à la révélation ; une fois révélée, il ferme.
   const cardUnlockModal = cardPopup ? (() => {
     const rm = rarityMeta(cardPopup.rarity);
-    const revele = cardRevealEtape >= 3;
-    const tourne = cardRevealEtape >= 2;
-    const monte  = cardRevealEtape >= 1;
+    const monte    = cardRevealEtape >= 1;
+    const suspense = cardRevealEtape === 2;
+    const sortie   = cardRevealEtape === 3;   // le dos part sur la tranche
+    const face     = cardRevealEtape >= 4;    // la face est à l'écran
+    const revele   = cardRevealEtape >= CARTE_REVELEE;
     // Quatorze éclats en éventail, direction portée par des variables CSS.
     const etincelles = Array.from({length:14}, function(_, i){
       const a = (i / 14) * Math.PI * 2;
@@ -8503,23 +8543,32 @@ export default function LePont() {
     });
     return (
       <div key="cardUnlock"
-        onClick={function(){ if (revele) setCardPopup(null); else setCardRevealEtape(3); }}
+        onClick={function(){ if (revele) setCardPopup(null); else setCardRevealEtape(CARTE_REVELEE); }}
         style={{position:"fixed",inset:0,zIndex:9997,background:"rgba(8,17,9,.72)",backdropFilter:"blur(6px)",
           display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:20,
           overflow:"hidden",animation:"fadeIn .3s ease"}}>
 
-        {/* Rayons de projecteur, dans la couleur de la rareté */}
+        {/* Rayons de projecteur, dans la couleur de la rareté. Ils accélèrent et
+            se densifient pendant le suspense : c'est le premier signe. */}
         <div aria-hidden="true" style={{position:"absolute",width:"180vmax",height:"180vmax",pointerEvents:"none",
-          opacity:revele?.5:.75,transition:"opacity .5s",
+          opacity:revele?.5:suspense?1:.75,transition:"opacity .6s",
           background:"repeating-conic-gradient(from 0deg, "+rm.color+"22 0deg 7deg, transparent 7deg 20deg)",
-          animation:"bbRayons 22s linear infinite"}}/>
-        {/* Halo qui éclate au moment du retournement */}
-        {tourne && (
+          animation:"bbRayons "+(suspense?"5s":"22s")+" linear infinite"}}/>
+        {/* L'aura de rareté se charge derrière le dos pendant le suspense : la
+            couleur laisse deviner ce qui arrive avant même le retournement,
+            comme la lumière d'un walkout FUT. */}
+        {suspense && (
+          <div aria-hidden="true" style={{position:"absolute",width:340,height:340,borderRadius:"50%",pointerEvents:"none",
+            background:"radial-gradient(circle,"+rm.color+"aa 0%,"+rm.color+"33 45%,transparent 70%)",
+            animation:"bbAura 1.9s ease-in forwards"}}/>
+        )}
+        {/* Halo qui éclate à l'arrivée de la face */}
+        {face && (
           <div aria-hidden="true" style={{position:"absolute",width:320,height:320,borderRadius:"50%",pointerEvents:"none",
             background:"radial-gradient(circle,"+rm.color+"cc 0%,transparent 65%)",animation:"bbEclat .8s ease-out forwards"}}/>
         )}
         {/* Étincelles */}
-        {tourne && etincelles.map(function(e, i){
+        {face && etincelles.map(function(e, i){
           // zIndex 2 : au-dessus de la carte, sinon les éclats partent derrière
           // elle et on n'en voit que ceux qui dépassent du cadre.
           return <div key={i} aria-hidden="true" style={{position:"absolute",zIndex:2,width:e.s,height:e.s,background:e.c,
@@ -8532,29 +8581,47 @@ export default function LePont() {
           <span style={{WebkitTextStroke:0,textShadow:"none"}}>🃏</span> {tr("NOUVELLE CARTE","NEW CARD","NEUE KARTE","NUOVA CARTA","NOVA CARTA")}
         </div>
 
-        {/* La carte : deux faces sur le même plan, retournées ensemble */}
-        <div onClick={function(e){e.stopPropagation(); if (revele) setCardPopup(null); else setCardRevealEtape(3);}}
+        {/* La carte. UNE SEULE face est montée à la fois : le dos jusqu'à ce
+            qu'il ait fini son demi-tour, la face ensuite. C'est ce qui garantit
+            que le logo du dos ne peut pas se retrouver en miroir par-dessus le
+            joueur, quoi que fasse le moteur avec backface-visibility. */}
+        <div onClick={function(e){e.stopPropagation(); if (revele) setCardPopup(null); else setCardRevealEtape(CARTE_REVELEE);}}
           style={{width:"min(74vw, 260px)",aspectRatio:"3 / 4",perspective:1000,zIndex:1,cursor:"pointer",
             animation:monte?(revele?"bbCarteRespire 3.4s ease-in-out infinite":"bbCarteMonte .7s cubic-bezier(.2,.8,.3,1) both"):"none",
             opacity:monte?1:0}}>
-          <div style={{position:"relative",width:"100%",height:"100%",transformStyle:"preserve-3d",
-            transform:tourne?"rotateY(180deg)":"rotateY(0deg)",transition:"transform .6s cubic-bezier(.4,.1,.3,1)"}}>
-            {/* Dos : l'aplat de nuit et le trait d'encre, avec le grain de trame */}
-            <div style={{position:"absolute",inset:0,backfaceVisibility:"hidden",WebkitBackfaceVisibility:"hidden",
-              background:G.nuit,border:G.trait,borderRadius:G.rayon,boxShadow:G.ombreL,
-              display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden"}}>
-              <div aria-hidden="true" style={{position:"absolute",inset:0,opacity:.18,
-                backgroundImage:"radial-gradient(circle,#000 1px,transparent 1.3px)",backgroundSize:"5px 5px"}}/>
-              <img src="/logo.png" alt="" style={{width:"66%",objectFit:"contain",opacity:.9,zIndex:1}}/>
-            </div>
-            {/* Face : la carte dans son cadre de rareté, comme dans la collection */}
-            <div className={rm.cls} style={{position:"absolute",inset:0,backfaceVisibility:"hidden",WebkitBackfaceVisibility:"hidden",
-              transform:"rotateY(180deg)",background:rm.frame,border:G.traitFin,borderRadius:G.rayon,
-              boxShadow:G.ombreL+", 0 0 42px "+rm.glow,padding:4,boxSizing:"border-box"}}>
-              <div style={{width:"100%",height:"100%",borderRadius:14,overflow:"hidden",background:"#000"}}>
-                <img src={cardPopup.img} alt="" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
+          <div style={{position:"relative",width:"100%",height:"100%"}}>
+            {!face ? (
+              /* Dos : l'aplat de nuit et le trait d'encre, avec le grain de
+                 trame. Il tremble pendant le suspense, puis part sur la tranche. */
+              <div key="dos" style={{position:"absolute",inset:0,
+                animation:sortie?"bbDemiTourSortie .26s ease-in both"
+                  :suspense?"bbCharge 1.9s ease-in both":"none"}}>
+                <div style={{position:"absolute",inset:0,
+                  background:G.nuit,border:G.trait,borderRadius:G.rayon,boxShadow:G.ombreL,
+                  display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden",
+                  animation:suspense?"bbTremble .16s linear infinite":"none"}}>
+                  <div aria-hidden="true" style={{position:"absolute",inset:0,opacity:.18,
+                    backgroundImage:"radial-gradient(circle,#000 1px,transparent 1.3px)",backgroundSize:"5px 5px"}}/>
+                  <img src="/logo.png" alt="" style={{width:"66%",objectFit:"contain",opacity:.9,zIndex:1}}/>
+                  {/* Reflet qui balaie le dos, deux fois, pendant le suspense */}
+                  {suspense && (
+                    <div aria-hidden="true" style={{position:"absolute",top:0,bottom:0,width:"55%",zIndex:2,
+                      background:"linear-gradient(90deg,transparent,"+rm.color+"66,transparent)",
+                      animation:"bbBalayage .95s ease-in-out 2"}}/>
+                  )}
+                </div>
               </div>
-            </div>
+            ) : (
+              /* Face : la carte dans son cadre de rareté, comme dans la collection */
+              <div key="face" className={rm.cls} style={{position:"absolute",inset:0,
+                background:rm.frame,border:G.traitFin,borderRadius:G.rayon,
+                boxShadow:G.ombreL+", 0 0 42px "+rm.glow,padding:4,boxSizing:"border-box",
+                animation:revele?"none":"bbDemiTourEntree .28s ease-out both"}}>
+                <div style={{width:"100%",height:"100%",borderRadius:14,overflow:"hidden",background:"#000"}}>
+                  <img src={cardPopup.img} alt="" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -8582,8 +8649,10 @@ export default function LePont() {
           </div>
         )}
 
-        {/* Invitation à couper la mise en scène, comme le « tap » de FUT */}
-        {!revele && (
+        {/* Invitation à couper la mise en scène, comme le « tap » de FUT. Elle
+            disparaît dès le retournement : passé ce point il n'y a plus rien à
+            sauter, et elle restait affichée par-dessus la carte révélée. */}
+        {cardRevealEtape < 3 && (
           <div style={{position:"absolute",bottom:"calc(24px + env(safe-area-inset-bottom))",zIndex:1,
             fontSize:11.5,fontWeight:800,letterSpacing:2,color:"rgba(255,255,255,.55)",textTransform:"uppercase"}}>
             {tr("Touche pour révéler","Tap to reveal","Tippen zum Aufdecken","Tocca per rivelare","Toque para revelar")}
