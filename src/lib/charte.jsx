@@ -68,6 +68,19 @@ export const posterText = function(size, color, stroke){
 };
 // Même lettrage, sans contour ni ombre : pour du texte sombre sur aplat clair.
 export const posterLight = function(size, color){ return posterText(size, color || "#1A1206", 0); };
+// Titre d'affiche susceptible de passer à la ligne. `posterText` colle les
+// lignes (lineHeight 1) : sur un titre d'un seul tenant c'est ce qu'on veut,
+// mais dès qu'il se casse en deux, l'ombre dure de la première ligne retombe
+// dans les lettres de la seconde et le mot devient sale. On desserre donc
+// l'interligne de la hauteur exacte du décalage de l'ombre.
+// Une fois et demie le décalage, et non une seule : en français les capitales
+// portent des accents (É, À) qui montent au-dessus de la hauteur de capitale, et
+// c'est eux qui viennent toucher l'ombre de la ligne du dessus.
+export const posterTitre = function(size, color){
+  const w = Math.max(1.2, Math.round(size / 16 * 10) / 10);
+  const d = Math.round((size / 18 + w) * 10) / 10;
+  return {...posterText(size, color), lineHeight:1 + 1.5 * d / size};
+};
 // Bouton unique de la charte. `bg` porte le sens (jaune = action principale,
 // vert = classement, rouge = urgence) ; le traitement, lui, ne change jamais.
 // `fg` clair → lettrage contouré ; `fg` sombre → lettrage nu (le contour
