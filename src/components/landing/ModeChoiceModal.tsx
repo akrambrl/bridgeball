@@ -23,8 +23,8 @@ const GAMES: Record<Props["game"], { label: string; img: string; pills: () => st
     img: "/mercato-card.png",
     pills: () => [
       "⏱ 90 S",
-      "🔁 " + tr("CHAÎNE SANS FIN", "ENDLESS CHAIN", "ENDLOSE KETTE", "CATENA INFINITA", "CORRENTE SEM FIM"),
-      "🎯 " + tr("3 NIVEAUX", "3 LEVELS", "3 STUFEN", "3 LIVELLI", "3 NÍVEIS"),
+      "🔁 " + tr("CHAÎNE SANS FIN", "ENDLESS CHAIN", "ENDLOSE KETTE", "CATENA INFINITA", "CORRENTE SEM FIM","CADENA SIN FIN"),
+      "🎯 " + tr("3 NIVEAUX", "3 LEVELS", "3 STUFEN", "3 LIVELLI", "3 NÍVEIS","3 NIVELES"),
     ],
   },
   pont: {
@@ -32,8 +32,8 @@ const GAMES: Record<Props["game"], { label: string; img: string; pills: () => st
     img: "/plug-card.png",
     pills: () => [
       "⏱ 90 S",
-      "🔗 " + tr("2 CLUBS", "2 CLUBS", "2 KLUBS", "2 CLUB", "2 CLUBES"),
-      "🎯 " + tr("3 NIVEAUX", "3 LEVELS", "3 STUFEN", "3 LIVELLI", "3 NÍVEIS"),
+      "🔗 " + tr("2 CLUBS", "2 CLUBS", "2 KLUBS", "2 CLUB", "2 CLUBES","2 CLUBES"),
+      "🎯 " + tr("3 NIVEAUX", "3 LEVELS", "3 STUFEN", "3 LIVELLI", "3 NÍVEIS","3 NIVELES"),
     ],
   },
 };
@@ -70,7 +70,7 @@ export const ModeChoiceModal = ({ game, onPick, onClose }: Props) => {
 
       <button
         onClick={onClose}
-        aria-label={tr("Fermer", "Close", "Schließen", "Chiudi", "Fechar")}
+        aria-label={tr("Fermer", "Close", "Schließen", "Chiudi", "Fechar","Cerrar")}
         style={{ ...retourStyle, position: "fixed", top: 14, right: 14, zIndex: 10,
           fontSize: 24, fontWeight: 400 }}
       >
@@ -97,43 +97,43 @@ export const ModeChoiceModal = ({ game, onPick, onClose }: Props) => {
         </div>
 
         {/* Solo */}
-        <div style={sectionLabel}>{tr("Solo · score", "Solo · score", "Solo · Punkte", "Solo · punti", "Solo · pontos")}</div>
+        <div style={sectionLabel}>{tr("Solo · score", "Solo · score", "Solo · Punkte", "Solo · punti", "Solo · pontos","Solo · puntuación")}</div>
         <button
           onClick={() => onPick("solo")}
           style={{ ...btn(G.projecteur, G.encre, 22), width: "100%", padding: 15, marginBottom: 18 }}
         >
-          ▶ {tr("JOUER SOLO", "PLAY SOLO", "SOLO SPIELEN", "GIOCA SOLO", "JOGAR SOLO")}
+          ▶ {tr("JOUER SOLO", "PLAY SOLO", "SOLO SPIELEN", "GIOCA SOLO", "JOGAR SOLO","JUGAR SOLO")}
           <span style={{ ...posterLight(14, G.encre), opacity: .75 }}>
-            · {tr("bats ton record", "beat your record", "schlag deinen Rekord", "batti il tuo record", "bata seu recorde")}
+            · {tr("bats ton record", "beat your record", "schlag deinen Rekord", "batti il tuo record", "bata seu recorde","bate tu récord")}
           </span>
         </button>
 
         {/* En ligne */}
-        <div style={sectionLabel}>{tr("En ligne", "Online", "Online", "Online", "Online")}</div>
+        <div style={sectionLabel}>{tr("En ligne", "Online", "Online", "Online", "Online","En línea")}</div>
         <button
           onClick={() => onPick("online")}
           style={{ width: "100%", marginBottom: 18, padding: "14px 16px", borderRadius: G.rayon, border: G.trait, background: G.ciel, boxShadow: G.ombre, cursor: "pointer", display: "flex", alignItems: "center", gap: 12, textAlign: "left", color: G.white, fontFamily: "inherit" }}
         >
           <div style={{ fontSize: 26 }}>🌍</div>
           <div style={{ flex: 1 }}>
-            <div style={{ ...posterText(1, G.white, 0), fontSize: 20 }}>{tr("EN LIGNE", "ONLINE", "ONLINE", "ONLINE", "ONLINE")}</div>
+            <div style={{ ...posterText(1, G.white, 0), fontSize: 20 }}>{tr("EN LIGNE", "ONLINE", "ONLINE", "ONLINE", "ONLINE","EN LÍNEA")}</div>
             <div style={{ fontSize: 11, color: "rgba(255,255,255,.8)", marginTop: 2 }}>
-              {tr("Affronte un adversaire · sans code", "Face an opponent · no code", "Tritt gegen einen Gegner an · ohne Code", "Sfida un avversario · senza codice", "Enfrente um adversário · sem código")}
+              {tr("Affronte un adversaire · sans code", "Face an opponent · no code", "Tritt gegen einen Gegner an · ohne Code", "Sfida un avversario · senza codice", "Enfrente um adversário · sem código","Enfréntate a un rival · sin código")}
             </div>
           </div>
           <div style={{ fontSize: 18, color: G.white }}>▶</div>
         </button>
 
         {/* Entre potes */}
-        <div style={sectionLabel}>{tr("Entre potes", "With friends", "Mit Freunden", "Con gli amici", "Com amigos")}</div>
+        <div style={sectionLabel}>{tr("Entre potes", "With friends", "Mit Freunden", "Con gli amici", "Com amigos","Con amigos")}</div>
         <button
           onClick={() => onPick("multi")}
           style={{ ...btn(G.pelouse, G.white, 18), width: "100%", padding: 14 }}
         >
-          👥 {tr("Créer un salon", "Create room", "Raum erstellen", "Crea una stanza", "Criar sala")}
+          👥 {tr("Créer un salon", "Create room", "Raum erstellen", "Crea una stanza", "Criar sala","Crear una sala")}
         </button>
         <div style={{ fontSize: 11, color: "rgba(255,255,255,.55)", textAlign: "center", marginTop: 8 }}>
-          {tr("Tu as déjà un code ? Colle-le sur l'accueil.", "Got a code already? Paste it on the home page.", "Schon einen Code? Füg ihn auf der Startseite ein.", "Hai già un codice? Incollalo in home.", "Já tem um código? Cole na página inicial.")}
+          {tr("Tu as déjà un code ? Colle-le sur l'accueil.", "Got a code already? Paste it on the home page.", "Schon einen Code? Füg ihn auf der Startseite ein.", "Hai già un codice? Incollalo in home.", "Já tem um código? Cole na página inicial.","¿Ya tienes un código? Pégalo en la pantalla de inicio.")}
         </div>
       </div>
     </div>

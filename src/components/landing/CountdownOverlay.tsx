@@ -35,8 +35,8 @@ const START_FROM = 3;
 
 function countdownTagline(game: CountdownGame): string {
   switch (game) {
-    case "pont": return tr("Le pont entre deux clubs", "The bridge between two clubs", "Die Brücke zwischen zwei Klubs", "Il ponte tra due club", "A ponte entre dois clubes");
-    case "chaine": return tr("La chaîne sans fin", "The endless chain", "Die endlose Kette", "La catena infinita", "A corrente sem fim");
+    case "pont": return tr("Le pont entre deux clubs", "The bridge between two clubs", "Die Brücke zwischen zwei Klubs", "Il ponte tra due club", "A ponte entre dois clubes","El puente entre dos clubes");
+    case "chaine": return tr("La chaîne sans fin", "The endless chain", "Die endlose Kette", "La catena infinita", "A corrente sem fim","La cadena sin fin");
   }
 }
 
@@ -74,7 +74,7 @@ export const CountdownOverlay = ({ game, onDone, onCancel }: Props) => {
         className="absolute top-4 right-4"
         style={{ ...retourStyle, width:"auto", padding:"9px 16px", fontSize:15, letterSpacing:1.5 }}
       >
-        {tr("ANNULER", "CANCEL", "ABBRECHEN", "ANNULLA", "CANCELAR")}
+        {tr("ANNULER", "CANCEL", "ABBRECHEN", "ANNULLA", "CANCELAR","CANCELAR")}
       </button>
 
       <div className="relative text-center">
@@ -82,7 +82,7 @@ export const CountdownOverlay = ({ game, onDone, onCancel }: Props) => {
           className="mb-2"
           style={{ ...posterText(1, info.accent, 0), fontSize:15, letterSpacing:6 }}
         >
-          {tr("PRÊT ?", "READY?", "BEREIT?", "PRONTO?", "PRONTO?")}
+          {tr("PRÊT ?", "READY?", "BEREIT?", "PRONTO?", "PRONTO?","¿PREPARADO?")}
         </div>
         <div className="mb-1" style={{ ...posterTitre(56, G.white), fontSize:"clamp(34px,6vw,56px)" }}>
           {info.name}
@@ -99,7 +99,7 @@ export const CountdownOverlay = ({ game, onDone, onCancel }: Props) => {
             animation: "countdownPop 1s ease-out forwards",
           }}
         >
-          {n === 0 ? tr("GO !", "GO!", "LOS!", "VIA!", "JÁ!") : n}
+          {n === 0 ? tr("GO !", "GO!", "LOS!", "VIA!", "JÁ!","¡YA!") : n}
         </div>
       </div>
 
