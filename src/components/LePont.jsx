@@ -12745,7 +12745,7 @@ export default function LePont() {
         {/* ── HOME RULES MODAL ── */}
         {homeRulesModal && (() => {
           const RULES_DATA = {
-            grid:    { title: "TROUVE LE JOUEUR", emoji: "🕵️", accent: G.pelouse,
+            grid:    { title: tr("TROUVE LE JOUEUR","GUESS THE PLAYER","ERRATE DEN SPIELER","INDOVINA IL GIOCATORE","ADIVINHE O JOGADOR"), emoji: "🕵️", accent: G.pelouse,
               rules_fr: ["Un joueur mystère à deviner, en illimité","6 essais : chaque proposition révèle des indices (nationalité, zone, poste, âge, club…)","Feedback façon Wordle : ✓ vert, ✗ rouge, ↑↓ pour l'âge","Le parcours est caché — pure déduction (révélable en indice)","Enchaîne les bonnes réponses pour monter ta SÉRIE 🔥 et grimper au classement"],
               rules_en: ["A mystery player to guess, unlimited","6 tries: each guess reveals clues (nationality, zone, position, age, club…)","Wordle-style feedback: ✓ green, ✗ red, ↑↓ for age","The career is hidden — pure deduction (revealable as a hint)","Chain correct answers to build your STREAK 🔥 and climb the leaderboard"],
               rules_de: ["Ein Mystery-Spieler zum Erraten, unbegrenzt","6 Versuche: jeder Tipp deckt Hinweise auf (Nationalität, Zone, Position, Alter, Klub…)","Feedback wie bei Wordle: ✓ grün, ✗ rot, ↑↓ fürs Alter","Die Karriere bleibt verborgen — reine Deduktion (als Hinweis aufdeckbar)","Reihe richtige Antworten aneinander für deine SERIE 🔥 und klettere in der Rangliste"],
@@ -14950,28 +14950,11 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
         {terrainCharte}
       <div style={{zIndex:1,padding:"10px 20px 0",textAlign:"center"}}>
         <WinBanner maxWidth={340} marginTop={0} maxHeight={128} lose={sc <= 0} />
-        <div style={{...posterTitre(30,isNewRecord?G.projecteur:G.white),fontSize:"clamp(20px,6.6vw,30px)",animation:"fadeUp .4s ease .15s both",marginTop:6}}>{isNewRecord?tr("NOUVEAU RECORD !","NEW RECORD!","NEUER REKORD!","NUOVO RECORD!","NOVO RECORDE!"):isChain?tr("TEMPS ÉCOULÉ !","TIME'S UP!","ZEIT ABGELAUFEN!","TEMPO SCADUTO!","TEMPO ESGOTADO!"):""}</div>
-        <div style={{fontSize:"clamp(16px,4.5vw,22px)",color:G.white,fontWeight:800,marginTop:isNewRecord||isChain?6:16,animation:"fadeUp .4s ease .25s both",textTransform:"uppercase",letterSpacing:1,textShadow:"0 2px 10px rgba(0,0,0,.4)"}}>{(function(){
-          const TAUNTS={
-            win:{
-              fr:["BALLON D'OR MÉRITÉ 🏆","T'AS PLIÉ LE MATCH 🎩","CLASSE INTERNATIONALE 🌍","PRESTATION 5 ÉTOILES ⭐","T'ES DANS LE ONZE TYPE 🏟️","MAN OF THE MATCH 🥇","DE LA MAGIE PURE 🪄","RECORD BATTU 📈"],
-              en:["DESERVED BALLON D'OR 🏆","YOU OWNED THE GAME 🎩","WORLD CLASS 🌍","5-STAR PERFORMANCE ⭐","TEAM OF THE WEEK 🏟️","MAN OF THE MATCH 🥇","PURE MAGIC 🪄","RECORD BROKEN 📈"],
-              de:["VERDIENTER BALLON D'OR 🏆","DU HAST DAS SPIEL ZERLEGT 🎩","WELTKLASSE 🌍","5-STERNE-LEISTUNG ⭐","ELF DER WOCHE 🏟️","MAN OF THE MATCH 🥇","REINE MAGIE 🪄","REKORD GEBROCHEN 📈"],
-              it:["PALLONE D'ORO MERITATO 🏆","HAI DOMINATO 🎩","CLASSE MONDIALE 🌍","PRESTAZIONE 5 STELLE ⭐","TOP 11 DELLA SETTIMANA 🏟️","MAN OF THE MATCH 🥇","MAGIA PURA 🪄","RECORD BATTUTO 📈"],
-              pt:["BOLA DE OURO MERECIDA 🏆","VOCÊ DOMINOU O JOGO 🎩","CLASSE MUNDIAL 🌍","ATUAÇÃO 5 ESTRELAS ⭐","SELEÇÃO DA SEMANA 🏟️","MAN OF THE MATCH 🥇","MÁGICA PURA 🪄","RECORDE BATIDO 📈"],
-            },
-            lose:{
-              fr:["T'AS PAS LE NIVEAU.. 👀","C'EST TOUT CE QUE T'AS ? 💀","LE GOAT C'EST TOI OU PAS ? 🐐","ON JOUE PAS, ON DOMINE 😤","T'AS KIFFÉ OU T'AS SOUFFERT ? 😂","PROUVE QUE T'ES PAS UN RANDOM 🔥","LE FOOT C'EST DANS LA TÊTE FRÈRE 🧠","T'AURAIS PAS DÛ RATER LES AUTRES 😏"],
-              en:["NOT GOOD ENOUGH.. 👀","IS THAT ALL YOU GOT? 💀","ARE YOU THE GOAT OR NOT? 🐐","WE DON'T PLAY, WE DOMINATE 😤","DID YOU ENJOY OR SUFFER? 😂","PROVE YOU'RE NOT A RANDOM 🔥","FOOTBALL IS IN THE HEAD BRO 🧠","YOU SHOULDN'T HAVE MISSED THE OTHERS 😏"],
-              de:["NICHT GUT GENUG.. 👀","IST DAS ALLES? 💀","BIST DU DER GOAT ODER NICHT? 🐐","WIR SPIELEN NICHT, WIR DOMINIEREN 😤","SPASS GEHABT ODER GELITTEN? 😂","BEWEIS, DASS DU KEIN NIEMAND BIST 🔥","FUSSBALL IST KOPFSACHE BRUDER 🧠","DU HÄTTEST DIE ANDEREN NICHT VERPASSEN SOLLEN 😏"],
-              it:["NON SEI ALL'ALTEZZA.. 👀","TUTTO QUI? 💀","SEI TU IL GOAT O NO? 🐐","NON SI GIOCA, SI DOMINA 😤","TI SEI DIVERTITO O HAI SOFFERTO? 😂","DIMOSTRA DI NON ESSERE UNO A CASO 🔥","IL CALCIO È NELLA TESTA FRA 🧠","NON DOVEVI SBAGLIARE GLI ALTRI 😏"],
-              pt:["SEM NÍVEL.. 👀","SÓ ISSO? 💀","VOCÊ É O GOAT OU NÃO? 🐐","NÃO SE JOGA, SE DOMINA 😤","CURTIU OU SOFREU? 😂","PROVE QUE VOCÊ NÃO É UM QUALQUER 🔥","FUTEBOL É NA CABEÇA IRMÃO 🧠","NÃO DEVIA TER ERRADO OS OUTROS 😏"],
-            },
-          };
-          const set=isNewRecord?TAUNTS.win:TAUNTS.lose;
-          const arr=set[lang]||set.en||set.fr;
-          return arr[Math.abs(Math.floor(sc * 3 + totalRounds)) % 8];
-        })()}</div>
+        {/* Plus de « TEMPS ÉCOULÉ ! » ni de vanne sous le bandeau : l'écran de
+            fin ne tenait pas d'une pièce, et ces deux lignes ne portaient aucune
+            information — le score et le près-du-record disent déjà tout. Le seul
+            titre qui reste est celui qui annonce quelque chose : le record battu. */}
+        {isNewRecord && <div style={{...posterTitre(30,G.projecteur),fontSize:"clamp(20px,6.6vw,30px)",animation:"fadeUp .4s ease .15s both",marginTop:6}}>{tr("NOUVEAU RECORD !","NEW RECORD!","NEUER REKORD!","NUOVO RECORD!","NOVO RECORDE!")}</div>}
       </div>
       {/* La feuille se serre pour que l'écran tienne d'une pièce : c'est elle
           qui porte le score, les relances et les deux boutons. */}

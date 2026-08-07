@@ -1609,7 +1609,7 @@ const AskingView = ({
       <div className="mb-3 lg:mb-6">
         <div className="flex items-center justify-between text-[10px] lg:text-xs mb-1 lg:mb-2">
           <span className="font-display tracking-widest text-white/50">
-            {overtime ? `QUESTION ${count} · ${tr("PROLONGATIONS","EXTRA TIME","VERLÄNGERUNG","SUPPLEMENTARI","PRORROGAÇÃO")} 🔥` : `QUESTION ${count} / ${max}`}
+            {overtime ? `${tr("QUESTION","QUESTION","FRAGE","DOMANDA","PERGUNTA")} ${count} · ${tr("PROLONGATIONS","EXTRA TIME","VERLÄNGERUNG","SUPPLEMENTARI","PRORROGAÇÃO")} 🔥` : `${tr("QUESTION","QUESTION","FRAGE","DOMANDA","PERGUNTA")} ${count} / ${max}`}
           </span>
           <span className="text-white/40 tabular-nums">
             {(() => { const l = getLang(); const m = remaining > 1;
@@ -1636,7 +1636,7 @@ const AskingView = ({
         style={{ background: G.nuit, border: G.trait, borderRadius: G.rayon, boxShadow: G.ombre }}
       >
         <div className="relative font-display text-[10px] lg:text-xs tracking-[0.45em] mb-1.5 lg:mb-3 flex items-center gap-1.5" style={{ color: G.projecteur }}>
-          <span>🔮</span> QUESTION {count}
+          <span>🔮</span> {tr("QUESTION","QUESTION","FRAGE","DOMANDA","PERGUNTA")} {count}
         </div>
         <h3 className="relative" style={{ ...posterText(30, G.white) }}>
           {qLabel(question)}
