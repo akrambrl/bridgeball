@@ -1564,7 +1564,7 @@ const IntroView = ({ onStart }: { onStart: () => void }) => (
 
     <button
       onClick={onStart}
-      className="goat-pulse inline-flex items-center gap-3 px-8 lg:px-10 py-3 lg:py-4"
+      className="goat-pulse-encre inline-flex items-center gap-3 px-8 lg:px-10 py-3 lg:py-4"
       style={{ ...btn(G.projecteur, G.encre, 24) }}
     >
       <span className="text-xl">{"▶︎"}</span> {tr("COMMENCER","START","START","INIZIA","COMEÇAR")}
@@ -1721,7 +1721,7 @@ const LiveDeductions = ({
 }) => {
   if (history.length === 0) {
     return (
-      <div className="mt-6 rounded-2xl bg-black/20 border border-white/5 px-5 py-6 text-center backdrop-blur-sm">
+      <div className="mt-6 px-5 py-6 text-center" style={{ background: G.nuit, border: G.trait, borderRadius: G.rayon, boxShadow: G.ombre }}>
         <div className="text-3xl mb-2 opacity-70">🔮</div>
         <p className="text-[12px] text-white/50 italic max-w-xs mx-auto leading-relaxed">
           {tr("Le devin attend tes premières réponses pour cerner ton joueur…","The oracle awaits your first answers to zero in on your player…","Das Orakel wartet auf deine ersten Antworten, um deinen Spieler einzugrenzen…","L'oracolo aspetta le tue prime risposte per individuare il tuo giocatore…","O oráculo aguarda suas primeiras respostas para cercar seu jogador…")}
@@ -1736,8 +1736,8 @@ const LiveDeductions = ({
   // On affiche en priorité les 6 dernières (les plus récentes en haut)
   const recent = [...history].reverse().slice(0, 6);
   return (
-    <div className="mt-6 rounded-2xl bg-black/30 border border-white/10 backdrop-blur-sm overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-2 border-b border-white/5 bg-white/[0.03]">
+    <div className="mt-6 overflow-hidden" style={{ background: G.nuit, border: G.trait, borderRadius: G.rayon, boxShadow: G.ombre }}>
+      <div className="flex items-center justify-between px-4 py-2" style={{ borderBottom: G.traitFin, background: "rgba(8,17,9,.45)" }}>
         <span className="font-display text-[10px] tracking-[0.3em] text-[#F5C22B]">
           🧠 {tr("CE QUE JE DÉDUIS","WHAT I'M DEDUCING","WAS ICH ABLEITE","COSA STO DEDUCENDO","O QUE ESTOU DEDUZINDO")}
         </span>
@@ -1764,7 +1764,7 @@ const LiveDeductions = ({
         ))}
       </ol>
       {history.length > 6 && (
-        <div className="px-4 py-2 text-center text-[10px] text-white/30 border-t border-white/5">
+        <div className="px-4 py-2 text-center text-[10px] text-white/40" style={{ borderTop: G.traitFin }}>
           + {history.length - 6} {history.length - 6 > 1 ? tr("autres plus haut","more above","weitere oben","altri sopra","outros acima") : tr("autre plus haut","more above","weitere oben","altro sopra","outro acima")}
         </div>
       )}
@@ -1879,7 +1879,7 @@ const WonView = ({
       </button>
       <button
         onClick={onClose}
-        className="py-4 rounded-2xl border-2 border-white/10 bg-white/[0.03] hover:bg-white/[0.08] text-white/80 font-display text-base tracking-widest transition-colors"
+        className="py-4 transition-colors" style={{ ...btn(G.nuit, G.white, 18) }}
       >
         ← MODES
       </button>
@@ -1910,7 +1910,8 @@ const QaRecap = ({
     <div className="mt-5 text-left">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-white/80 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-2.5 transition-colors"
+        style={{ background: G.nuit, border: G.traitFin, borderRadius: G.rayonS, boxShadow: "2px 2px 0 " + G.encre, color: G.white }}
       >
         <span className="font-display text-xs tracking-[0.25em]">
           📋 {(() => { const l = getLang(); const S = history.length > 1 ? "S" : "";
@@ -1924,7 +1925,7 @@ const QaRecap = ({
         <span className="text-white/40 text-sm">{open ? "▲" : "▼"}</span>
       </button>
       {open && (
-        <ol className="mt-2 space-y-1 max-h-[40vh] overflow-y-auto rounded-xl bg-black/30 p-2 border border-white/5">
+        <ol className="mt-2 space-y-1 max-h-[40vh] overflow-y-auto p-2" style={{ background: "rgba(8,17,9,.45)", border: G.traitFin, borderRadius: G.rayonS }}>
           {history.map((r, i) => (
             <li
               key={i}
@@ -1990,7 +1991,7 @@ const LostView = ({
     )}
 
     {shortlist.length > 0 && (
-      <div className="mb-5 rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.03] to-transparent p-4">
+      <div className="mb-5 p-4" style={{ background: G.nuit, border: G.trait, borderRadius: G.rayon, boxShadow: G.ombre }}>
         <div className="font-display text-[10px] tracking-[0.3em] text-[#F5C22B] mb-3">
           🤔 {tr("PEUT-ÊTRE UN DE CES JOUEURS ?","MAYBE ONE OF THESE PLAYERS?","VIELLEICHT EINER DIESER SPIELER?","FORSE UNO DI QUESTI GIOCATORI?","TALVEZ UM DESTES JOGADORES?")}
         </div>
@@ -2023,7 +2024,7 @@ const LostView = ({
       </button>
       <button
         onClick={onClose}
-        className="py-4 rounded-2xl border-2 border-white/10 bg-white/[0.03] hover:bg-white/[0.08] text-white/80 font-display text-base tracking-widest transition-colors"
+        className="py-4 transition-colors" style={{ ...btn(G.nuit, G.white, 18) }}
       >
         ← MODES
       </button>
@@ -2291,13 +2292,15 @@ const PlayerRevealCard = ({
                 : [...player.clubs.slice(0, 2), `+${player.clubs.length - 4}`, ...player.clubs.slice(-2)]
               ).map((c, i) =>
                 c.startsWith("+") ? (
-                  <span key={`more-${i}`} className="px-1.5 py-0.5 rounded-md text-[9px] text-white/45 border border-white/10 bg-black/20 self-center">
+                  <span key={`more-${i}`} className="px-1.5 py-0.5 text-[9px] self-center"
+                    style={{ background: G.nuit, border: G.traitFin, borderRadius: 8, color: "rgba(255,255,255,.6)" }}>
                     {c}
                   </span>
                 ) : (
                   <span
                     key={c}
-                    className={`px-2 py-0.5 rounded-md ${player.clubs.length > 3 ? "text-[9px]" : "text-[10px]"} bg-black/35 border border-white/15 text-white/90`}
+                    className={`px-2 py-0.5 ${player.clubs.length > 3 ? "text-[9px]" : "text-[10px]"}`}
+                    style={{ background: G.nuit, border: G.traitFin, borderRadius: 8, color: G.white }}
                   >
                     {c}
                   </span>

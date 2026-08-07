@@ -8479,7 +8479,13 @@ export default function LePont() {
     boxShadow:isDesktop?"none":"0 0 60px rgba(0,0,0,.5)",
   };
   const stripes = {position:"absolute",inset:0,zIndex:0,pointerEvents:"none",background:"radial-gradient(ellipse at 50% 0%,rgba(0,230,118,.06) 0%,transparent 70%)"};
-  const sheet = {background:"rgba(0,0,0,.55)",backdropFilter:"blur(2px)",borderRadius:"32px 32px 0 0",flex:1,display:"flex",flexDirection:"column",gap:14,padding:"20px 18px 28px",zIndex:1,boxShadow:"0 -2px 40px rgba(0,0,0,.4)",border:"1px solid rgba(255,255,255,.08)",borderBottom:"none"};
+  // La feuille commune des écrans (fin de manche, fin de partie, classement,
+  // compte…). Elle était le dernier grand panneau resté en « verre » : noir
+  // translucide, flou d'arrière-plan, filet blanc à 8 % et ombre diffuse. Sur la
+  // pelouse éclairée de la charte, ce filet ne se voyait pas et le flou faisait
+  // remonter la tonte à travers le panneau. Aplat de nuit, trait d'encre en haut
+  // (la feuille est collée aux trois autres bords), rayons francs.
+  const sheet = {background:G.nuit,borderTop:G.trait,borderRadius:G.rayonL+"px "+G.rayonL+"px 0 0",flex:1,display:"flex",flexDirection:"column",gap:14,padding:"20px 18px 28px",zIndex:1};
 
   const backBtn = (onClick) => (
     <button onClick={onClick} style={{...retourStyle,width:40,height:40,zIndex:10}}>←</button>
@@ -12677,42 +12683,42 @@ export default function LePont() {
         {/* ── HOME RULES MODAL ── */}
         {homeRulesModal && (() => {
           const RULES_DATA = {
-            grid:    { title: "TROUVE LE JOUEUR", emoji: "🕵️", accent: "#00E676", bg: "linear-gradient(135deg,rgba(0,230,118,.18),rgba(255,214,0,.12))",
+            grid:    { title: "TROUVE LE JOUEUR", emoji: "🕵️", accent: G.pelouse,
               rules_fr: ["Un joueur mystère à deviner, en illimité","6 essais : chaque proposition révèle des indices (nationalité, zone, poste, âge, club…)","Feedback façon Wordle : ✓ vert, ✗ rouge, ↑↓ pour l'âge","Le parcours est caché — pure déduction (révélable en indice)","Enchaîne les bonnes réponses pour monter ta SÉRIE 🔥 et grimper au classement"],
               rules_en: ["A mystery player to guess, unlimited","6 tries: each guess reveals clues (nationality, zone, position, age, club…)","Wordle-style feedback: ✓ green, ✗ red, ↑↓ for age","The career is hidden — pure deduction (revealable as a hint)","Chain correct answers to build your STREAK 🔥 and climb the leaderboard"],
               rules_de: ["Ein Mystery-Spieler zum Erraten, unbegrenzt","6 Versuche: jeder Tipp deckt Hinweise auf (Nationalität, Zone, Position, Alter, Klub…)","Feedback wie bei Wordle: ✓ grün, ✗ rot, ↑↓ fürs Alter","Die Karriere bleibt verborgen — reine Deduktion (als Hinweis aufdeckbar)","Reihe richtige Antworten aneinander für deine SERIE 🔥 und klettere in der Rangliste"],
               rules_it: ["Un giocatore misterioso da indovinare, illimitato","6 tentativi: ogni proposta svela degli indizi (nazionalità, zona, ruolo, età, club…)","Riscontro alla Wordle: ✓ verde, ✗ rosso, ↑↓ per l'età","La carriera è nascosta — pura deduzione (svelabile come indizio)","Concatena le risposte giuste per far salire la tua SERIE 🔥 e scalare la classifica"],
               rules_pt: ["Um jogador misterioso para adivinhar, ilimitado","6 tentativas: cada palpite revela dicas (nacionalidade, zona, posição, idade, clube…)","Retorno estilo Wordle: ✓ verde, ✗ vermelho, ↑↓ para a idade","A carreira fica escondida — pura dedução (revelável como dica)","Encadeie acertos para subir sua SÉRIE 🔥 e escalar o ranking"]
             },
-            mercato: { title: "GOAT MERCATO", emoji: "⛓",  accent: "#60a5fa", bg: "linear-gradient(135deg,rgba(96,165,250,.18),rgba(59,130,246,.12))",
+            mercato: { title: "GOAT MERCATO", emoji: "⛓",  accent: G.projecteur,
               rules_fr: ["Démarre avec un joueur, enchaîne sans t'arrêter","Tape un club où il a joué","Puis un autre joueur qui a joué dans ce club","Et ainsi de suite jusqu'à la fin du chrono","Plus la chaîne est longue, plus tu scores"],
               rules_en: ["Start with a player, chain without stopping","Type a club they played for","Then another player who played at that club","And so on until time runs out","The longer the chain, the bigger the score"],
               rules_de: ["Starte mit einem Spieler und reihe ohne Pause aneinander","Tippe einen Klub ein, für den er gespielt hat","Dann einen anderen Spieler dieses Klubs","Und so weiter, bis die Zeit abläuft","Je länger die Kette, desto mehr Punkte"],
               rules_it: ["Parti da un giocatore e concatena senza fermarti","Scrivi un club in cui ha giocato","Poi un altro giocatore che ha giocato in quel club","E così via fino allo scadere del tempo","Più lunga è la catena, più punti fai"],
               rules_pt: ["Comece por um jogador e encadeie sem parar","Digite um clube onde ele jogou","Depois outro jogador que passou por esse clube","E assim por diante até o tempo acabar","Quanto mais longa a corrente, mais você pontua"]
             },
-            plug:    { title: "GOAT PLUG",    emoji: "⚽", accent: "#FFD600", bg: "linear-gradient(135deg,rgba(255,214,0,.18),rgba(255,107,53,.12))",
+            plug:    { title: "GOAT PLUG",    emoji: "⚽", accent: G.pelouse,
               rules_fr: ["On te montre 2 clubs","Trouve un joueur qui a joué dans les deux","Tu as 60 secondes par manche","+2 points par bonne réponse, −10 par pass","Difficulté progressive : facile → moyen → expert"],
               rules_en: ["We show you 2 clubs","Find a player who played for both","You have 60 seconds per round","+2 points per correct answer, −10 per skip","Progressive difficulty: easy → medium → expert"],
               rules_de: ["Wir zeigen dir 2 Klubs","Finde einen Spieler, der für beide gespielt hat","Du hast 60 Sekunden pro Runde","+2 Punkte pro richtiger Antwort, −10 pro Überspringen","Steigende Schwierigkeit: leicht → mittel → Experte"],
               rules_it: ["Ti mostriamo 2 club","Trova un giocatore che ha giocato in entrambi","Hai 60 secondi per turno","+2 punti per risposta esatta, −10 per ogni salto","Difficoltà progressiva: facile → medio → esperto"],
               rules_pt: ["Mostramos 2 clubes","Ache um jogador que jogou nos dois","Você tem 60 segundos por rodada","+2 pontos por acerto, −10 por pular","Dificuldade progressiva: fácil → médio → expert"]
             },
-            guess:   { title: "GOAT GUESS",   emoji: "🔮", accent: "#C084FC", bg: "linear-gradient(135deg,rgba(192,132,252,.18),rgba(255,138,42,.12))",
+            guess:   { title: "GOAT GUESS",   emoji: "🔮", accent: G.projecteur,
               rules_fr: ["Pense à un footballeur connu (actuel ou retraité)","Je te pose jusqu'à 25 questions oui / non / sais pas","Tu réponds honnêtement, je restreins mes candidats","Je devine ton joueur — si je rate, je retente jusqu'à 5 fois","Questions par étapes : Continent → Nation → Ligue → Club → Poste"],
               rules_en: ["Think of a famous footballer (active or retired)","I'll ask up to 25 yes / no / don't know questions","Answer honestly — I narrow down my candidates","I guess your player — if I'm wrong, I try up to 5 times","Questions by stage: Continent → Nation → League → Club → Position"],
               rules_de: ["Denk an einen bekannten Fußballer (aktiv oder im Ruhestand)","Ich stelle bis zu 25 Fragen: ja / nein / weiß nicht","Antworte ehrlich — ich grenze meine Kandidaten ein","Ich errate deinen Spieler — bei einem Fehler versuche ich es bis zu 5 Mal","Fragen in Etappen: Kontinent → Nation → Liga → Klub → Position"],
               rules_it: ["Pensa a un calciatore famoso (in attività o ritirato)","Ti faccio fino a 25 domande: sì / no / non so","Rispondi onestamente — io restringo i candidati","Indovino il tuo giocatore — se sbaglio, riprovo fino a 5 volte","Domande a tappe: Continente → Nazione → Campionato → Club → Ruolo"],
               rules_pt: ["Pense num jogador famoso (na ativa ou aposentado)","Eu faço até 25 perguntas: sim / não / não sei","Responda com sinceridade — eu vou afunilando os candidatos","Eu adivinho seu jogador — se errar, tento até 5 vezes","Perguntas por etapas: Continente → Nação → Liga → Clube → Posição"]
             },
-            goatgrid:{ title: "GOAT GRID",    emoji: "🎯", accent: "#FF6B35", bg: "linear-gradient(135deg,rgba(255,107,53,.18),rgba(255,68,68,.12))",
+            goatgrid:{ title: "GOAT GRID",    emoji: "🎯", accent: G.maillot,
               rules_fr: ["Une grille 3×3 : 9 cases à remplir","Chaque case croise deux critères (club, nationalité, poste, ligue)","Nomme un joueur qui coche les deux à la fois","Un joueur ne peut servir qu'une seule fois dans la grille","Plus le joueur cité est rare, plus la case rapporte de points"],
               rules_en: ["A 3×3 grid: 9 cells to fill","Each cell crosses two criteria (club, nationality, position, league)","Name a player who matches both at once","A player can only be used once per grid","The rarer the player you name, the more the cell scores"],
               rules_de: ["Ein 3×3-Raster: 9 Felder zu füllen","Jedes Feld kreuzt zwei Kriterien (Klub, Nationalität, Position, Liga)","Nenne einen Spieler, der beide gleichzeitig erfüllt","Ein Spieler darf pro Raster nur einmal vorkommen","Je seltener der genannte Spieler, desto mehr Punkte bringt das Feld"],
               rules_it: ["Una griglia 3×3: 9 caselle da riempire","Ogni casella incrocia due criteri (club, nazionalità, ruolo, campionato)","Nomina un giocatore che soddisfa entrambi insieme","Uno stesso giocatore può servire una sola volta nella griglia","Più il giocatore citato è raro, più punti vale la casella"],
               rules_pt: ["Uma grade 3×3: 9 casas para preencher","Cada casa cruza dois critérios (clube, nacionalidade, posição, liga)","Diga um jogador que atenda aos dois ao mesmo tempo","Um jogador só pode ser usado uma vez na grade","Quanto mais raro o jogador citado, mais pontos a casa vale"]
             },
-            duel:    { title: "GOAT BATTLE",  emoji: "⚔️", accent: "#3DA5FF", bg: "linear-gradient(135deg,rgba(61,165,255,.18),rgba(0,230,118,.12))",
+            duel:    { title: "GOAT BATTLE",  emoji: "⚔️", accent: G.ciel,
               rules_fr: ["Duel en direct sur The Plug","Deux clubs s'affichent, trouve le joueur qui relie les deux","Le plus rapide à répondre marque le point","Crée un salon et partage le code, ou rejoins celui d'un pote","Le meilleur score à la fin des manches l'emporte"],
               rules_en: ["Live head-to-head on The Plug","Two clubs appear — find the player who links them","Fastest correct answer takes the point","Create a room and share the code, or join a friend's","Best score at the end of the rounds wins"],
               rules_de: ["Direktes Duell auf The Plug","Zwei Klubs erscheinen — finde den Spieler, der sie verbindet","Die schnellste richtige Antwort holt den Punkt","Erstelle einen Raum und teile den Code, oder tritt dem eines Freundes bei","Der beste Score am Ende der Runden gewinnt"],
@@ -12733,22 +12739,31 @@ export default function LePont() {
               style={{position:"fixed",inset:0,zIndex:400,display:"flex",alignItems:"flex-end"}}
               onClick={function(e){if(e.target===e.currentTarget)setHomeRulesModal(null);}}
             >
-              <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.75)",backdropFilter:"blur(10px)"}} onClick={function(){setHomeRulesModal(null);}}/>
-              <div style={{position:"relative",width:"100%",background:"#0d1f1a",borderTopLeftRadius:24,borderTopRightRadius:24,padding:"22px 22px 28px",zIndex:1,maxHeight:"80vh",overflowY:"auto",boxShadow:"0 -8px 32px rgba(0,0,0,.6)"}}>
-                {/* Bandeau accent + handle */}
-                <div style={{width:48,height:4,background:"rgba(255,255,255,.2)",borderRadius:2,margin:"0 auto 16px"}}/>
+              <div style={{position:"absolute",inset:0,background:"rgba(8,17,9,.86)"}} onClick={function(){setHomeRulesModal(null);}}/>
+              {/* Feuille de la charte : aplat de nuit, trait d'encre en haut (la
+                  feuille est collée aux trois autres bords), rayons francs. Le
+                  flou d'arrière-plan et l'ombre diffuse appartenaient au
+                  vocabulaire « verre ». */}
+              <div style={{position:"relative",width:"100%",background:G.nuit,borderTop:G.trait,borderTopLeftRadius:G.rayonL,borderTopRightRadius:G.rayonL,padding:"18px 22px 28px",zIndex:1,maxHeight:"80vh",overflowY:"auto"}}>
+                {/* Poignée de la feuille, à l'encre */}
+                <div style={{width:48,height:5,background:G.encre,borderRadius:3,margin:"0 auto 16px"}}/>
                 {/* Titre + emoji */}
                 <div style={{textAlign:"center",marginBottom:18}}>
-                  <div style={{fontSize:48,marginBottom:8,filter:"drop-shadow(0 4px 16px "+data.accent+"55)"}}>{data.emoji}</div>
-                  <div style={{fontFamily:G.heading,fontSize:26,letterSpacing:2,color:data.accent,lineHeight:1,marginBottom:6,textShadow:"0 4px 24px "+data.accent+"33"}}>{data.title}</div>
-                  <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.5)",textTransform:"uppercase",fontWeight:700}}>{tr("Règles du jeu","How to play","Spielregeln","Come si gioca","Como jogar")}</div>
+                  <div style={{fontSize:48,marginBottom:8}}>{data.emoji}</div>
+                  <div style={{...posterText(30,data.accent),marginBottom:6}}>{data.title}</div>
+                  <div style={{...posterText(1,G.projecteur,0),fontSize:13,letterSpacing:3,textTransform:"uppercase"}}>{tr("Règles du jeu","How to play","Spielregeln","Come si gioca","Como jogar")}</div>
                 </div>
                 {/* Liste des règles */}
-                <div style={{background:data.bg,border:"1.5px solid "+data.accent+"40",borderRadius:16,padding:"16px 18px",marginBottom:18}}>
+                <div style={{background:"rgba(8,17,9,.5)",border:G.trait,borderRadius:G.rayon,padding:"14px 16px",marginBottom:18,boxShadow:"inset 2px 2px 0 rgba(8,17,9,.35)"}}>
                   {rules.map(function(r, i){
                     return (
-                      <div key={i} style={{display:"flex",alignItems:"flex-start",gap:12,padding:"8px 0",borderBottom:i<rules.length-1?"1px solid rgba(255,255,255,.08)":"none"}}>
-                        <div style={{minWidth:22,height:22,borderRadius:"50%",background:data.accent,color:"#000",fontSize:11,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",marginTop:1}}>{i+1}</div>
+                      <div key={i} style={{display:"flex",alignItems:"flex-start",gap:12,padding:"9px 0",borderBottom:i<rules.length-1?G.traitFin:"none"}}>
+                        {/* Numéro : aplat de l'accent cerclé d'encre, au rayon
+                            franc — la pastille ronde sans contour était le
+                            dernier reste de l'ancien vocabulaire. */}
+                        <div style={{minWidth:24,height:24,borderRadius:8,background:data.accent,border:"1.5px solid "+G.encre,
+                          ...posterText(1,data.accent===G.projecteur?G.encre:G.white,0),fontSize:14,
+                          display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:1}}>{i+1}</div>
                         <div style={{flex:1,fontSize:14,color:G.white,lineHeight:1.4,fontWeight:500}}>{r}</div>
                       </div>
                     );
@@ -12757,7 +12772,7 @@ export default function LePont() {
                 {/* Bouton fermer */}
                 <button
                   onClick={function(){setHomeRulesModal(null);}}
-                  style={{width:"100%",padding:"15px",background:data.accent,color:"#000",border:"none",borderRadius:14,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800,letterSpacing:1}}
+                  style={{...btn(data.accent,data.accent===G.projecteur?G.encre:G.white,19),width:"100%",padding:"14px"}}
                 >{tr("COMPRIS","GOT IT","VERSTANDEN","CAPITO","ENTENDI")}</button>
               </div>
             </div>
@@ -13561,7 +13576,7 @@ export default function LePont() {
                   )}
 
                   {/* Grille 3x3 */}
-                  <div style={{background:"rgba(8,17,9,.55)",borderRadius:G.rayon,padding:6,border:G.trait,boxShadow:G.ombre,marginBottom:(ggRevealMode||ggReviewMode)?130:8,display:"flex",flex:1,minHeight:0}}>
+                  <div style={{background:G.nuit,borderRadius:G.rayon,padding:6,border:G.trait,boxShadow:G.ombre,marginBottom:(ggRevealMode||ggReviewMode)?130:8,display:"flex",flex:1,minHeight:0}}>
                     <div style={{display:"grid",gridTemplateColumns:"90px minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)",gridTemplateRows:"68px minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)",gap:4,flex:1,width:"100%"}}>
                       
                       {/* Coin haut-gauche vide */}
@@ -13610,11 +13625,15 @@ export default function LePont() {
                                 const rarityStyles = {
                                   // Aplat franc + trait d'encre : la teinte dit la rareté du
                                   // joueur trouvé, le dégradé et la lueur n'ajoutaient rien.
-                                  legendary: { bg: "rgba(245,194,43,.6)",  border: G.traitFin, glow: "2px 2px 0 " + G.encre },
-                                  epic:      { bg: "rgba(185,70,240,.55)", border: G.traitFin, glow: "2px 2px 0 " + G.encre },
-                                  rare:      { bg: "rgba(42,111,191,.6)",  border: G.traitFin, glow: "2px 2px 0 " + G.encre },
-                                  common:    { bg: "rgba(42,155,78,.6)",   border: G.traitFin, glow: "2px 2px 0 " + G.encre },
-                                  trivial:   { bg: "rgba(180,180,180,.45)",border: G.traitFin, glow: "2px 2px 0 " + G.encre },
+                                  // Aplats OPAQUES : à 55-60 % d'alpha, les bandes
+                                  // de tonte du terrain remontaient à travers la
+                                  // case et la teinte de rareté variait d'une
+                                  // colonne à l'autre.
+                                  legendary: { bg: "#B08415", border: G.traitFin, glow: "2px 2px 0 " + G.encre },
+                                  epic:      { bg: "#7A2CA6", border: G.traitFin, glow: "2px 2px 0 " + G.encre },
+                                  rare:      { bg: "#1E4F87", border: G.traitFin, glow: "2px 2px 0 " + G.encre },
+                                  common:    { bg: "#1E6E38", border: G.traitFin, glow: "2px 2px 0 " + G.encre },
+                                  trivial:   { bg: "#5A5F5C", border: G.traitFin, glow: "2px 2px 0 " + G.encre },
                                 };
                                 const s = rarityStyles[filled.rarity] || rarityStyles.trivial;
                                 return(
@@ -13644,13 +13663,14 @@ export default function LePont() {
                                   } else if(!ggGameOver){
                                     setGgSelectedCell({row:i,col:j});
                                   }
-                                }} style={{position:"relative",overflow:"hidden",background:isFlashing&&ggFlash==="ko"?"rgba(217,58,43,.35)":ggRevealMode?"rgba(42,111,191,.25)":"rgba(8,17,9,.3)",border:G.traitFin,cursor:(ggRevealMode||!ggGameOver)?"pointer":"default",transition:"all .15s",padding:4,display:"flex",alignItems:"center",justifyContent:"center",borderRadius:12,animation:isFlashing&&ggFlash==="ko"?"answerKo .4s ease":"none"}}>
-                                  {/* Fond unique : couleur dominante du club (ligne) */}
+                                }} style={{position:"relative",overflow:"hidden",background:isFlashing&&ggFlash==="ko"?G.maillot:ggRevealMode?"#1E4F87":G.nuit,border:G.traitFin,cursor:(ggRevealMode||!ggGameOver)?"pointer":"default",transition:"all .15s",padding:4,display:"flex",alignItems:"center",justifyContent:"center",borderRadius:12,animation:isFlashing&&ggFlash==="ko"?"answerKo .4s ease":"none"}}>
+                                  {/* Teinte du club de la ligne, posée sur l'aplat
+                                      de nuit : c'est ce voile-là qui dit à quelle
+                                      ligne appartient la case. Il était auparavant
+                                      empilé sur un fond translucide, si bien que
+                                      la pelouse remontait au travers. */}
                                   {!ggRevealMode && !(isFlashing&&ggFlash==="ko") && (
-                                    <>
-                                      <div style={{position:"absolute",inset:0,background:rowMain,opacity:.14}}/>
-                                      <div style={{position:"absolute",inset:0,background:"rgba(8,17,9,.30)"}}/>
-                                    </>
+                                    <div style={{position:"absolute",inset:0,background:rowMain,opacity:.18}}/>
                                   )}
                                   <div style={{position:"relative",zIndex:1,width:34,height:34,borderRadius:G.rayonS,display:"flex",alignItems:"center",justifyContent:"center",background:G.nuit,border:G.traitFin,fontSize:ggRevealMode?15:22,color:ggRevealMode?G.ciel:"rgba(255,255,255,.8)",fontWeight:800}}>{ggRevealMode?"?":"+"}</div>
                                 </div>
@@ -14851,7 +14871,7 @@ export default function LePont() {
             )}
           </div>
         )}
-        <button onClick={()=>startRound(currentRound+1)} style={{...btn(totalRounds===2&&currentRound===1?G.pelouse:G.projecteur,G.encre,19),width:"100%",padding:"18px",marginTop:16}}>{Icon.whistle(18,G.encre)} {totalRounds===2&&currentRound===1?(tr("REPRENDRE LA PARTIE →","RESUME GAME →","SPIEL FORTSETZEN →","RIPRENDI LA PARTITA →","RETOMAR JOGO →")):(tr("MANCHE ","ROUND ","RUNDE ","ROUND ","RODADA ")+(currentRound+1))}</button>
+        <button onClick={()=>startRound(currentRound+1)} style={{...btn(totalRounds===2&&currentRound===1?G.pelouse:G.projecteur,totalRounds===2&&currentRound===1?G.white:G.encre,19),width:"100%",padding:"18px",marginTop:16}}>{Icon.whistle(18,totalRounds===2&&currentRound===1?G.white:G.encre)} {totalRounds===2&&currentRound===1?(tr("REPRENDRE LA PARTIE →","RESUME GAME →","SPIEL FORTSETZEN →","RIPRENDI LA PARTITA →","RETOMAR JOGO →")):(tr("MANCHE ","ROUND ","RUNDE ","ROUND ","RODADA ")+(currentRound+1))}</button>
       </div>
     </div>
   );
