@@ -125,6 +125,19 @@ function gameDescription(k: GameKey): string {
     case "duel": return tr("Quatre-vingt-dix secondes, manches illimitées, 10 ou 20 points par bonne réponse. Solo, en ligne ou entre potes.", "Ninety seconds, unlimited rounds, 10 or 20 points per correct answer. Solo, online or with friends.", "Neunzig Sekunden, unbegrenzte Runden, 10 oder 20 Punkte pro richtiger Antwort. Solo, online oder mit Freunden.", "Novanta secondi, turni illimitati, 10 o 20 punti per risposta esatta. Solo, online o con gli amici.", "Noventa segundos, rodadas ilimitadas, 10 ou 20 pontos por acerto. Solo, online ou com amigos.");
   }
 }
+// Nom affiché. Cinq des six sont des marques et ne bougent pas d'une langue à
+// l'autre ; « Trouve le joueur » est une phrase française, et restait en
+// français dans une interface italienne, allemande ou portugaise.
+function gameName(k: GameKey): string {
+  switch (k) {
+    case "grid": return tr("Trouve le joueur", "Guess the player", "Errate den Spieler", "Indovina il giocatore", "Adivinhe o jogador");
+    case "mercato": return "The Mercato";
+    case "plug": return "The Plug";
+    case "goatgrid": return "GOAT Grid";
+    case "duel": return "GOAT Duel";
+    case "guess": return "GOAT Guess";
+  }
+}
 function gameBadge(k: GameKey): string {
   switch (k) {
     case "mercato": return tr("MARATHON", "MARATHON", "MARATHON", "MARATONA", "MARATONA");
@@ -261,10 +274,10 @@ export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels, onOpenFriends }: Pr
             >
               <div className="relative h-14 w-14 overflow-hidden flex-shrink-0"
                 style={{ borderRadius:G.rayonS, border:G.traitFin, background:G.encre }}>
-                <img src={g.img} alt={g.name} className="h-full w-full object-cover" />
+                <img src={g.img} alt={gameName(g.key)} className="h-full w-full object-cover" />
               </div>
               <div className="min-w-0">
-                <div className="truncate" style={{ ...posterText(1, isActive ? G.encre : G.white, 0), fontSize:22 }}>{g.name}</div>
+                <div className="truncate" style={{ ...posterText(1, isActive ? G.encre : G.white, 0), fontSize:22 }}>{gameName(g.key)}</div>
                 <div className="text-xs truncate"
                   style={{ color:isActive ? "rgba(8,17,9,.7)" : "rgba(255,255,255,.5)" }}>{gameTagline(g.key)}</div>
               </div>
@@ -298,7 +311,7 @@ export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels, onOpenFriends }: Pr
             <img
               key={game.key}
               src={game.img}
-              alt={game.name}
+              alt={gameName(game.key)}
               className="goat-float relative max-h-full max-w-full w-auto object-contain"
               style={{ borderRadius:G.rayon, border:G.trait, boxShadow:G.ombreL }}
             />
@@ -326,7 +339,7 @@ export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels, onOpenFriends }: Pr
                   d'affiche font se cogner l'ombre dure de la première dans les
                   capitales de la seconde. */}
               <h2 className="mb-2" style={{ ...posterTitre(48, G.white), fontSize:"clamp(30px,3.4vw,48px)" }}>
-                {game.name}
+                {gameName(game.key)}
               </h2>
               <p className="mb-3" style={{ ...posterText(1, game.accent, 0), fontSize:26, letterSpacing:2 }}>
                 {gameTagline(game.key)}
@@ -337,7 +350,7 @@ export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels, onOpenFriends }: Pr
               <div className="relative my-1 mb-4 md:hidden">
                 <img
                   src={game.img}
-                  alt={game.name}
+                  alt={gameName(game.key)}
                   className="relative h-20 lg:h-24 w-auto"
                   style={{ borderRadius:G.rayonS, border:G.traitFin, boxShadow:G.ombre }}
                 />
