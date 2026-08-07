@@ -2617,6 +2617,17 @@ if(typeof document!=="undefined"&&!document.getElementById("bb-css")){
     @keyframes clubSlideRight{0%{opacity:0;transform:translateX(110%) scale(.88)}65%{transform:translateX(-4%) scale(1.02)}100%{opacity:1;transform:translateX(0) scale(1)}}
     @keyframes vsAppear{0%{opacity:0;transform:scale(0) rotate(-15deg)}65%{transform:scale(1.25) rotate(4deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
     @keyframes sheetUp{0%{transform:translateY(100%);opacity:0}100%{transform:translateY(0);opacity:1}}
+    /* ── Ouverture d'une carte, façon pack FUT ─────────────────────────────
+       Le dos monte, tourne sur lui-même, éclate en lumière, puis le nom claque.
+       Les étincelles reçoivent leur direction en variables CSS (--dx/--dy) :
+       une seule règle sert les quatorze éclats. */
+    @keyframes bbRayons{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+    @keyframes bbCarteMonte{0%{transform:translateY(80px) scale(.8);opacity:0}55%{transform:translateY(-12px) scale(1.05);opacity:1}100%{transform:translateY(0) scale(1);opacity:1}}
+    @keyframes bbCarteFlip{0%{transform:rotateY(0)}100%{transform:rotateY(180deg)}}
+    @keyframes bbCarteRespire{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-7px) scale(1.015)}}
+    @keyframes bbEclat{0%{transform:scale(.25);opacity:.9}100%{transform:scale(2.8);opacity:0}}
+    @keyframes bbEtincelle{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(.25);opacity:0}}
+    @keyframes bbClaque{0%{transform:scale(1.7) skewX(-7deg);opacity:0}60%{transform:scale(.95) skewX(-7deg);opacity:1}100%{transform:scale(1) skewX(-7deg);opacity:1}}
     @keyframes answerOk{0%{transform:scale(1)}30%{transform:scale(1.06)}60%{transform:scale(.97)}100%{transform:scale(1)}}
     @keyframes answerKo{0%,100%{transform:translateX(0)}15%{transform:translateX(-12px)}30%{transform:translateX(10px)}45%{transform:translateX(-8px)}60%{transform:translateX(6px)}75%{transform:translateX(-3px)}}
     @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
@@ -5212,6 +5223,21 @@ export default function LePont() {
   const [playerBadge, setPlayerBadge] = useState(function(){ try { return localStorage.getItem("bb_badge") || null; } catch (e) { return null; } });
   const [showCollection, setShowCollection] = useState(false);
   const [cardPopup, setCardPopup] = useState(null);   // carte tout juste débloquée
+  // Étape de l'ouverture de carte : 0 rayons, 1 le dos monte, 2 il tourne,
+  // 3 la carte est révélée. Un tap saute à 3 — comme dans FUT, on doit pouvoir
+  // couper l'animation quand on a déjà vu le geste cent fois.
+  const [cardRevealEtape, setCardRevealEtape] = useState(3);
+  useEffect(function(){
+    if (!cardPopup) return;
+    let reduit = false;
+    try { reduit = window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) {}
+    if (reduit) { setCardRevealEtape(3); return; }   // révélation directe, sans mise en scène
+    setCardRevealEtape(0);
+    const t1 = setTimeout(function(){ setCardRevealEtape(1); }, 550);
+    const t2 = setTimeout(function(){ setCardRevealEtape(2); }, 1500);
+    const t3 = setTimeout(function(){ setCardRevealEtape(3); hapticSuccess(); }, 2100);
+    return function(){ clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+  }, [cardPopup]);
   const [badgeByPid, setBadgeByPid] = useState({});   // pid → {badge, xp} pour le classement
   // Badge du joueur, lu à part du gros select (une colonne absente ferait
   // échouer toute la requête, cf. PSEUDO_COLS).
@@ -8458,26 +8484,110 @@ export default function LePont() {
   // ── MODAL GRADE UP : célébration quand l'user passe un palier ──
   // ── Popup « nouvelle carte » ── déclenché après une partie qui franchit un
   // palier (voir newlyUnlocked). Un seul bouton : aller la mettre en badge.
+  // Ouverture façon pack FUT : le voile laisse voir l'accueil derrière (c'est là
+  // qu'on vient de gagner la carte), les rayons tournent, le dos monte, tourne
+  // sur lui-même et éclate. Le nom claque ensuite au lettrage d'affiche.
+  // Un tap n'importe où saute à la révélation ; une fois révélée, il ferme.
   const cardUnlockModal = cardPopup ? (() => {
     const rm = rarityMeta(cardPopup.rarity);
+    const revele = cardRevealEtape >= 3;
+    const tourne = cardRevealEtape >= 2;
+    const monte  = cardRevealEtape >= 1;
+    // Quatorze éclats en éventail, direction portée par des variables CSS.
+    const etincelles = Array.from({length:14}, function(_, i){
+      const a = (i / 14) * Math.PI * 2;
+      const d = 120 + (i % 3) * 42;
+      return { dx: Math.round(Math.cos(a) * d), dy: Math.round(Math.sin(a) * d),
+               c: [rm.color, G.projecteur, G.white, G.pelouse][i % 4], s: 5 + (i % 3) * 3 };
+    });
     return (
-      <div key="cardUnlock" onClick={function(){setCardPopup(null);}} style={{position:"fixed",inset:0,zIndex:9997,background:"rgba(0,0,0,.88)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center",padding:20,animation:"fadeIn .25s ease"}}>
-        <div onClick={function(e){e.stopPropagation();}} style={{width:"100%",maxWidth:330,background:"rgba(10,15,10,.98)",border:"2.5px solid "+rm.color,borderRadius:26,padding:"26px 22px 22px",textAlign:"center",boxShadow:"0 0 60px "+rm.glow,animation:"splashBounceIn .5s ease"}}>
-          <div style={{fontSize:11,letterSpacing:3,fontWeight:800,color:"rgba(255,255,255,.5)",marginBottom:14}}>
-            {tr("🃏 NOUVELLE CARTE 🃏","🃏 NEW CARD 🃏","🃏 NEUE KARTE 🃏","🃏 NUOVA CARTA 🃏","🃏 NOVA CARTA 🃏")}
+      <div key="cardUnlock"
+        onClick={function(){ if (revele) setCardPopup(null); else setCardRevealEtape(3); }}
+        style={{position:"fixed",inset:0,zIndex:9997,background:"rgba(8,17,9,.72)",backdropFilter:"blur(6px)",
+          display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:20,
+          overflow:"hidden",animation:"fadeIn .3s ease"}}>
+
+        {/* Rayons de projecteur, dans la couleur de la rareté */}
+        <div aria-hidden="true" style={{position:"absolute",width:"180vmax",height:"180vmax",pointerEvents:"none",
+          opacity:revele?.5:.75,transition:"opacity .5s",
+          background:"repeating-conic-gradient(from 0deg, "+rm.color+"22 0deg 7deg, transparent 7deg 20deg)",
+          animation:"bbRayons 22s linear infinite"}}/>
+        {/* Halo qui éclate au moment du retournement */}
+        {tourne && (
+          <div aria-hidden="true" style={{position:"absolute",width:320,height:320,borderRadius:"50%",pointerEvents:"none",
+            background:"radial-gradient(circle,"+rm.color+"cc 0%,transparent 65%)",animation:"bbEclat .8s ease-out forwards"}}/>
+        )}
+        {/* Étincelles */}
+        {tourne && etincelles.map(function(e, i){
+          // zIndex 2 : au-dessus de la carte, sinon les éclats partent derrière
+          // elle et on n'en voit que ceux qui dépassent du cadre.
+          return <div key={i} aria-hidden="true" style={{position:"absolute",zIndex:2,width:e.s,height:e.s,background:e.c,
+            border:"1.5px solid "+G.encre,borderRadius:2,pointerEvents:"none",
+            "--dx":e.dx+"px","--dy":e.dy+"px",
+            animation:"bbEtincelle .9s cubic-bezier(.2,.7,.3,1) forwards",animationDelay:(i%4)*40+"ms"}}/>;
+        })}
+
+        <div style={{...posterText(24,G.projecteur),marginBottom:16,zIndex:1,textAlign:"center"}}>
+          <span style={{WebkitTextStroke:0,textShadow:"none"}}>🃏</span> {tr("NOUVELLE CARTE","NEW CARD","NEUE KARTE","NUOVA CARTA","NOVA CARTA")}
+        </div>
+
+        {/* La carte : deux faces sur le même plan, retournées ensemble */}
+        <div onClick={function(e){e.stopPropagation(); if (revele) setCardPopup(null); else setCardRevealEtape(3);}}
+          style={{width:"min(74vw, 260px)",aspectRatio:"3 / 4",perspective:1000,zIndex:1,cursor:"pointer",
+            animation:monte?(revele?"bbCarteRespire 3.4s ease-in-out infinite":"bbCarteMonte .7s cubic-bezier(.2,.8,.3,1) both"):"none",
+            opacity:monte?1:0}}>
+          <div style={{position:"relative",width:"100%",height:"100%",transformStyle:"preserve-3d",
+            transform:tourne?"rotateY(180deg)":"rotateY(0deg)",transition:"transform .6s cubic-bezier(.4,.1,.3,1)"}}>
+            {/* Dos : l'aplat de nuit et le trait d'encre, avec le grain de trame */}
+            <div style={{position:"absolute",inset:0,backfaceVisibility:"hidden",WebkitBackfaceVisibility:"hidden",
+              background:G.nuit,border:G.trait,borderRadius:G.rayon,boxShadow:G.ombreL,
+              display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden"}}>
+              <div aria-hidden="true" style={{position:"absolute",inset:0,opacity:.18,
+                backgroundImage:"radial-gradient(circle,#000 1px,transparent 1.3px)",backgroundSize:"5px 5px"}}/>
+              <img src="/logo.png" alt="" style={{width:"66%",objectFit:"contain",opacity:.9,zIndex:1}}/>
+            </div>
+            {/* Face : la carte dans son cadre de rareté, comme dans la collection */}
+            <div className={rm.cls} style={{position:"absolute",inset:0,backfaceVisibility:"hidden",WebkitBackfaceVisibility:"hidden",
+              transform:"rotateY(180deg)",background:rm.frame,border:G.traitFin,borderRadius:G.rayon,
+              boxShadow:G.ombreL+", 0 0 42px "+rm.glow,padding:4,boxSizing:"border-box"}}>
+              <div style={{width:"100%",height:"100%",borderRadius:14,overflow:"hidden",background:"#000"}}>
+                <img src={cardPopup.img} alt="" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
+              </div>
+            </div>
           </div>
-          <img src={cardPopup.img} alt="" style={{width:"100%",aspectRatio:"3 / 4",objectFit:"cover",borderRadius:16,border:"1.5px solid "+rm.color+"88",display:"block"}}/>
-          <div style={{fontFamily:G.heading,fontSize:26,color:G.white,letterSpacing:1,marginTop:14}}>{lang==="fr"?cardPopup.name:cardPopup.nameEn}</div>
-          <div style={{fontSize:12,fontWeight:800,letterSpacing:1.5,color:rm.color,textTransform:"uppercase",marginTop:3}}>{lang==="fr"?rm.label:rm.labelEn}</div>
-          <div style={{display:"flex",gap:10,marginTop:20}}>
-            <button onClick={function(){setCardPopup(null);}} style={{flex:1,padding:"13px 0",borderRadius:13,border:"1px solid rgba(255,255,255,.14)",background:"rgba(255,255,255,.05)",color:"rgba(255,255,255,.7)",fontFamily:G.font,fontWeight:800,fontSize:13.5,cursor:"pointer"}}>
+        </div>
+
+        {/* Nom et rareté : ils claquent une fois la carte retournée */}
+        {revele && (
+          <div style={{zIndex:1,textAlign:"center",marginTop:18,animation:"bbClaque .45s cubic-bezier(.2,.8,.3,1) both"}}>
+            <div style={{...posterText(34,G.white)}}>{lang==="fr"?cardPopup.name:cardPopup.nameEn}</div>
+            <div style={{display:"inline-flex",alignItems:"center",gap:6,marginTop:8,padding:"4px 14px",
+              borderRadius:G.rayonS,background:rm.color,border:G.traitFin,boxShadow:"2px 2px 0 "+G.encre,
+              color:G.encre,fontSize:11.5,fontWeight:900,letterSpacing:2,textTransform:"uppercase"}}>
+              {lang==="fr"?rm.label:rm.labelEn}
+            </div>
+          </div>
+        )}
+
+        {revele && (
+          <div onClick={function(e){e.stopPropagation();}} style={{zIndex:1,display:"flex",gap:10,marginTop:22,width:"100%",maxWidth:330,
+            animation:"fadeUp .4s ease .15s both"}}>
+            <button onClick={function(){setCardPopup(null);}} style={{...btn(G.nuit,G.white,15),flex:1,padding:"13px 0"}}>
               {tr("Plus tard","Later","Später","Più tardi","Depois")}
             </button>
-            <button onClick={function(){ chooseBadge(cardPopup.id); setCardPopup(null); setShowCollection(true); }} style={{flex:1.4,padding:"13px 0",borderRadius:13,border:"none",background:rm.color,color:"#0a0f0a",fontFamily:G.font,fontWeight:900,fontSize:13.5,cursor:"pointer"}}>
+            <button onClick={function(){ chooseBadge(cardPopup.id); setCardPopup(null); setShowCollection(true); }} style={{...btn(rm.color,G.encre,15),flex:1.4,padding:"13px 0"}}>
               {tr("Mettre en badge","Use as badge","Als Abzeichen","Usa come badge","Usar como selo")}
             </button>
           </div>
-        </div>
+        )}
+
+        {/* Invitation à couper la mise en scène, comme le « tap » de FUT */}
+        {!revele && (
+          <div style={{position:"absolute",bottom:"calc(24px + env(safe-area-inset-bottom))",zIndex:1,
+            fontSize:11.5,fontWeight:800,letterSpacing:2,color:"rgba(255,255,255,.55)",textTransform:"uppercase"}}>
+            {tr("Touche pour révéler","Tap to reveal","Tippen zum Aufdecken","Tocca per rivelare","Toque para revelar")}
+          </div>
+        )}
       </div>
     );
   })() : null;
@@ -11782,6 +11892,12 @@ export default function LePont() {
       {tutorialOverlay}
       {welcomeOverlay}
       {duelCreateModal}
+      {/* L'ouverture de carte se joue aussi sur l'accueil : elle n'était montée
+          que sur l'écran de fin de manche, donc quiconque en sortait avant les
+          900 ms de délai — ou gagnait sa carte ailleurs (devinette, grille) — ne
+          la voyait jamais. Son voile laisse voir l'accueil derrière, c'est là
+          que la carte vient d'être gagnée. */}
+      {cardUnlockModal}
       {showRoomCreate && (
         <div
           style={{position:"fixed",inset:0,zIndex:400,display:"flex",alignItems:"flex-end"}}
