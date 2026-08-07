@@ -10539,43 +10539,47 @@ export default function LePont() {
             const grade = getGrade(entry.xp || 0);
             return(
               <div key={i} onClick={()=>{ if(!isMe) { setShowLeaderboard(false); openUserProfile(entry.pid, entry.name, "leaderboard"); } }} style={{
-                /* Les trois métaux du podium sont conservés : c'est le dégradé
-                   qui dit la place, aucun jeton de la charte ne le remplace.
-                   Le reste du classement passe à l'aplat de nuit, ma propre
-                   ligne à la pelouse. Trait d'encre et ombre dure pour tous :
-                   la hiérarchie vient de la couleur, jamais du cadre.
-                   L'écart entre lignes passe à 10 pour laisser voir l'ombre. */
+                /* Aplat + trait, jamais de dégradé : c'est ce qui fait le manga.
+                   Les trois métaux du podium restent — c'est la couleur qui dit
+                   la place — mais en aplat franc, le dégradé lissé qu'ils
+                   avaient avant appartenait à un autre langage visuel.
+                   Ma propre ligne se signale par l'ombre longue et le pseudo en
+                   jaune, pas par un quatrième aplat qui concurrencerait le
+                   podium. L'écart de 10 laisse voir l'ombre de la ligne au-dessus. */
                 borderRadius:G.rayon,
-                background:i===0?"linear-gradient(135deg,"+G.projecteur+","+G.maillot+")"
-                  :i===1?"linear-gradient(135deg,#E8E8E8,#A8A8B0)"
-                  :i===2?"linear-gradient(135deg,#E3A869,#8B5A2B)"
-                  :isMe?"rgba(42,155,78,.42)":G.nuit,
-                border:G.trait,boxShadow:G.ombre,
+                background:i===0?G.projecteur:i===1?"#C8CDD4":i===2?"#CD7F32":G.nuit,
+                border:G.trait,boxShadow:isMe?G.ombreL:G.ombre,
                 marginBottom:10,overflow:"hidden",cursor:isMe?"default":"pointer"}}>
                 <div style={{display:"flex",alignItems:"center",gap:10,padding:"12px 12px"}}>
-                  <div style={{...posterText(28,i<3?G.encre:"rgba(255,255,255,.45)"),width:34,textAlign:"center",flexShrink:0}}>
+                  <div style={{...posterText(28,i<3?G.encre:"rgba(255,255,255,.45)"),width:30,textAlign:"center",flexShrink:0}}>
                     {i<3?medals[i]:(i+1)}
                   </div>
-                  {/* Avatar rond (photo Supabase Storage ou fallback emoji grade) */}
-                  <div style={{width:36,height:48,borderRadius:7,border:G.traitFin,background:"#000",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,color:"#fff",overflow:"hidden",position:"relative",flexShrink:0}}>
-                    {/* Photo de profil par défaut = la carte du joueur (badge choisi, sinon
-                        carte de son niveau). La photo uploadée, si elle existe, se
-                        superpose par-dessus ; son onError la retire et laisse voir la carte.
-                        objectPosition top : dans un cadre rond, une carte 3:4 doit
-                        montrer le visage, pas le maillot. */}
-                    {(function(){
-                      const b = badgeByPid[entry.pid];
-                      const c = avatarCard(b && b.badge, entry.xp || 0);
-                      return <img src={c.img} alt="" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",objectPosition:"top"}}/>;
-                    })()}
-                    {/* La photo uploadée ne se superpose plus : la carte du joueur
-                        (badge choisi, sinon niveau) EST la photo de profil. */}
-                  </div>
+                  {/* La carte du joueur dans son cadre de rareté, comme dans la
+                      collection, sur le profil et sur le VS. C'était le dernier
+                      écran où elle était réduite à une vignette sans cadre :
+                      le liseré métallique est ce qui dit le niveau au premier
+                      coup d'œil, s'en priver ici cassait la lecture. */}
+                  {(function(){
+                    const b = badgeByPid[entry.pid];
+                    const c = avatarCard(b && b.badge, entry.xp || 0);
+                    const rm = rarityMeta(c.rarity);
+                    return (
+                      <div className={rm.cls} style={{width:44,padding:2,borderRadius:G.rayonS,background:rm.frame,
+                        border:G.traitFin,boxShadow:"2px 2px 0 "+G.encre,flexShrink:0}}>
+                        <div style={{aspectRatio:"3 / 4",overflow:"hidden",borderRadius:8,background:"#000"}}>
+                          <img src={c.img} alt="" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top"}}/>
+                        </div>
+                      </div>
+                    );
+                  })()}
                   <div style={{flex:1,minWidth:0}}>
                     <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3,flexWrap:"wrap"}}>
                       <span style={{...posterText(18,i<3?G.encre:isMe?G.projecteur:G.white),display:"inline-block",whiteSpace:"nowrap"}}>{entry.country && <span style={{marginRight:5,fontSize:15}}>{countryToFlag(entry.country)}</span>}{entry.name}{isMe?tr(" (toi)"," (you)"," (du)"," (tu)"," (você)"):""}</span>
-                      <span style={{fontSize:11,fontWeight:800,color:i<3?G.encre:grade.color,background:i<3?"rgba(8,17,9,.18)":grade.color+"22",borderRadius:20,padding:"2px 8px",letterSpacing:.5,border:i<3?"1px solid "+G.encre+"40":"none"}}>{grade.emoji} {grade.label}</span>
-                      {entry.streak>=3 && <span style={{fontSize:11,fontWeight:800,color:G.maillot,background:"rgba(217,58,43,.18)",borderRadius:20,padding:"2px 8px"}}>🔥 {entry.streak}</span>}
+                      {/* Pastilles cerclées d'encre plutôt que des pilules molles :
+                          le trait est la signature de la charte, une pastille
+                          sans contour flottait sur l'aplat du podium. */}
+                      <span style={{fontSize:11,fontWeight:800,color:i<3?G.encre:grade.color,background:i<3?"rgba(8,17,9,.14)":grade.color+"22",borderRadius:G.rayonS,padding:"2px 8px",letterSpacing:.5,border:G.traitFin}}>{grade.emoji} {grade.label}</span>
+                      {entry.streak>=3 && <span style={{fontSize:11,fontWeight:800,color:i<3?G.encre:G.maillot,background:i<3?"rgba(8,17,9,.14)":"rgba(217,58,43,.22)",borderRadius:G.rayonS,padding:"2px 8px",border:G.traitFin}}>🔥 {entry.streak}</span>}
                       {/* Badge de collection — la carte est revalidée contre l'XP
                           du joueur (badgeToShow), pour ne jamais afficher une
                           carte non méritée si la valeur en base est périmée. */}
@@ -10584,7 +10588,7 @@ export default function LePont() {
                         const card = b ? badgeToShow(b.badge, b.xp) : null;
                         if (!card) return null;
                         const rm = rarityMeta(card.rarity);
-                        return <img key="badge" src={card.thumb} alt="" title={lang==="fr"?card.name:card.nameEn} style={{width:16,height:21,borderRadius:4,objectFit:"cover",border:"1.5px solid "+rm.color,flexShrink:0}}/>;
+                        return <img key="badge" src={card.thumb} alt="" title={lang==="fr"?card.name:card.nameEn} style={{width:17,height:23,borderRadius:5,objectFit:"cover",border:G.traitFin,outline:"1.5px solid "+rm.color,outlineOffset:-3.5,flexShrink:0}}/>;
                       })()}
                     </div>
                     {lbMode==="saison"
@@ -10599,16 +10603,20 @@ export default function LePont() {
                    d'encre plein — sur le podium comme ailleurs, c'est le même
                    trait, seule la transparence du fond change. */
                 <div style={{display:"flex",borderTop:G.traitFin,background:i<3?"rgba(8,17,9,.1)":"rgba(0,0,0,.22)"}}>
+                    {/* Sur les aplats du podium, les chiffres passent à l'encre :
+                        le vert et l'olive des couleurs sémantiques disparaissaient
+                        sur le jaune. Ce sont les libellés dessous qui portent le
+                        sens, la couleur n'y ajoutait rien. */}
                     <div style={{flex:1,padding:"10px 0",textAlign:"center",borderRight:G.traitFin}}>
-                      <div style={{...posterText(22,i<3?"#0d5c2a":G.pelouse)}}>{entry.wins||0}</div>
+                      <div style={{...posterText(22,i<3?G.encre:G.pelouse)}}>{entry.wins||0}</div>
                       <div style={{fontSize:11,color:i<3?"rgba(8,17,9,.75)":"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase",fontWeight:i<3?800:400}}>{tr("Victoires","Wins","Siege","Vittorie","Vitórias")}</div>
                     </div>
                     <div style={{flex:1,padding:"10px 0",textAlign:"center",borderRight:G.traitFin}}>
-                      <div style={{...posterText(22,i<3?"#7a5c00":G.projecteur)}}>{entry.draws||0}</div>
+                      <div style={{...posterText(22,i<3?G.encre:G.projecteur)}}>{entry.draws||0}</div>
                       <div style={{fontSize:11,color:i<3?"rgba(8,17,9,.75)":"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase",fontWeight:i<3?800:400}}>{tr("Nuls","Draws","Remis","Pareggi","Empates")}</div>
                     </div>
                     <div style={{flex:1,padding:"10px 0",textAlign:"center"}}>
-                      <div style={{...posterText(22,i<3?"#8a1a2e":G.maillot)}}>{entry.losses||0}</div>
+                      <div style={{...posterText(22,i<3?G.encre:G.maillot)}}>{entry.losses||0}</div>
                       <div style={{fontSize:11,color:i<3?"rgba(8,17,9,.75)":"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase",fontWeight:i<3?800:400}}>{tr("Défaites","Losses","Niederlagen","Sconfitte","Derrotas")}</div>
                     </div>
                   </div>
