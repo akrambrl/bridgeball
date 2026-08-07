@@ -12521,8 +12521,24 @@ export default function LePont() {
           // Photo de profil du joueur si elle existe ; sinon on retombe sur le
           // visuel GOAT FC dérivé du pseudo.
           // Carte de collection, comme partout ailleurs : l'ancienne photo uploadée
-           // n'a plus cours (elle restait visible sur ce seul écran).
-           const myAvatar = avatarCard(playerBadge, playerXp).img;
+          // n'a plus cours (elle restait visible sur ce seul écran).
+          const myAvatar = avatarCard(playerBadge, playerXp).img;
+          // Carte de l'adversaire. Celui du mode EN LIGNE est simulé :
+          // pickOpponent ne renvoie ni XP ni carte, et levelCard(0) donnerait
+          // « La Recrue » à tout le monde — deux adversaires d'affilée avec le
+          // même visage. On tire donc une carte stable depuis son pseudo, comme
+          // avatarFor le fait déjà pour les visuels. Dès que la charge utile
+          // porte une vraie XP (duel entre joueurs), on repasse par levelCard,
+          // qui est la règle partout ailleurs.
+          const oppCard = function(o){
+            if (o && typeof o.xp === "number") return levelCard(o.xp).img;
+            const illustrees = CARDS.filter(hasArt);
+            if (!illustrees.length) return null;
+            const pseudo = (o && o.pseudo) || "";
+            let h = 0;
+            for (let i = 0; i < pseudo.length; i++) h = (h * 31 + pseudo.charCodeAt(i)) | 0;
+            return illustrees[Math.abs(h) % illustrees.length].img;
+          };
           // isPhoto : photo de profil de l'utilisateur → cadrage centré et repli
           // sur le visuel GOAT FC si l'image ne charge pas (photo supprimée).
           const card = function(name, flag, ring, avatar, revealed, isPhoto){
