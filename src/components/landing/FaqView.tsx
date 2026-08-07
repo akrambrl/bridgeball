@@ -5,6 +5,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { tr } from "@/lib/lang";
+import { G, posterText, posterTitre, posterLight } from "@/lib/charte.jsx";
 
 function getFaq(): { q: string; a: string }[] {
   return [
@@ -48,10 +49,12 @@ export const FaqView = () => {
   return (
     <div className="container max-w-3xl mx-auto px-6 lg:px-10 py-10">
       <div className="text-center mb-8">
-        <span className="inline-block px-3 py-1 rounded-full bg-[#FFC93C]/10 text-[#FFC93C] font-display text-xs tracking-[0.3em] mb-3">
+        <span className="inline-block px-3 py-1 mb-3"
+          style={{ ...posterLight(15, G.encre), letterSpacing:3, background:G.projecteur,
+            borderRadius:G.rayonS, border:G.traitFin, boxShadow:"2px 2px 0 "+G.encre }}>
           FAQ
         </span>
-        <h2 className="font-display text-6xl md:text-7xl tracking-wide leading-none">
+        <h2 style={{ ...posterTitre(80, G.white), fontSize:"clamp(44px,8vw,80px)" }}>
           {tr("QUESTIONS FRÉQUENTES", "FREQUENTLY ASKED QUESTIONS", "HÄUFIGE FRAGEN", "DOMANDE FREQUENTI", "PERGUNTAS FREQUENTES")}
         </h2>
       </div>
@@ -61,9 +64,11 @@ export const FaqView = () => {
           <AccordionItem
             key={i}
             value={`q${i}`}
-            className="border-b border-white/10"
+            className="mb-3 px-5"
+            style={{ background:G.nuit, border:G.trait, borderRadius:G.rayon, boxShadow:G.ombre }}
           >
-            <AccordionTrigger className="text-left font-display text-xl md:text-2xl tracking-wide hover:no-underline text-white">
+            <AccordionTrigger className="text-left hover:no-underline py-4"
+              style={{ ...posterText(1, G.white, 0), fontSize:24 }}>
               {it.q}
             </AccordionTrigger>
             <AccordionContent className="text-white/70 leading-relaxed">

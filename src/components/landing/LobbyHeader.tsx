@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { tr, getLang, setLang, LANGS } from "@/lib/lang";
+import { G, posterText, btn, pastilleCharte } from "@/lib/charte.jsx";
 
 export type TabKey = "play" | "tutos" | "leaderboard" | "faq" | "about";
 
@@ -58,28 +59,29 @@ const LangPicker = () => {
         onClick={() => setOpen((o) => !o)}
         aria-label={tr("Changer la langue", "Change language", "Sprache ändern", "Cambia lingua", "Mudar idioma")}
         aria-expanded={open}
-        className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-white/5 border border-white/10 hover:border-white/30 transition-colors"
+        className="flex items-center gap-1.5 px-3 py-2"
+        style={{ background:G.nuit, border:G.traitFin, borderRadius:G.rayonS,
+          boxShadow:"2px 2px 0 "+G.encre, cursor:"pointer" }}
       >
         <span className="text-base leading-none">{current.flag}</span>
-        <span className="font-display text-sm tracking-widest text-white/80">{current.label}</span>
-        <span className="text-[10px] text-white/40">▾</span>
+        <span style={{ ...posterText(1, G.white, 0), fontSize:15, letterSpacing:1.5 }}>{current.label}</span>
+        <span className="text-[10px] text-white/50">▾</span>
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 z-50 w-36 rounded-xl border border-white/15 bg-[#0A1410] shadow-[0_16px_50px_rgba(0,0,0,.7)] overflow-hidden">
+        <div className="absolute right-0 top-full mt-2 z-50 w-36 overflow-hidden"
+          style={{ background:G.nuit, border:G.trait, borderRadius:G.rayonS, boxShadow:G.ombre }}>
           {LANGS.map((l) => (
             <button
               key={l.code}
               onClick={() => setLang(l.code)}
-              className={
-                "w-full flex items-center gap-2.5 px-3.5 py-2.5 text-left transition-colors " +
-                (l.code === current.code
-                  ? "bg-[#00E676]/10 text-[#00E676]"
-                  : "text-white/75 hover:bg-white/5 hover:text-white")
-              }
+              className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-left transition-colors"
+              style={l.code === current.code
+                ? { background:G.pelouse, color:G.white }
+                : { background:"transparent", color:"rgba(255,255,255,.75)" }}
             >
               <span className="text-base leading-none">{l.flag}</span>
-              <span className="font-display text-sm tracking-widest">{l.label}</span>
+              <span style={{ ...posterText(1, "currentColor", 0), fontSize:15, letterSpacing:1.5 }}>{l.label}</span>
               {l.code === current.code && <span className="ml-auto text-xs">✓</span>}
             </button>
           ))}
@@ -104,11 +106,14 @@ export const LobbyHeader = ({ active, onChange }: Props) => {
         <img
           src="/logo.png"
           alt="GOAT FC"
-          className="h-10 lg:h-12 w-auto drop-shadow-[0_4px_20px_rgba(0,230,118,0.25)] group-hover:drop-shadow-[0_4px_25px_rgba(0,230,118,0.5)] transition-all"
+          className="h-10 lg:h-12 w-auto transition-transform group-hover:scale-[1.04]"
+          style={{ filter:"drop-shadow(3px 3px 0 "+G.encre+")" }}
         />
       </button>
 
-      {/* Pills nav */}
+      {/* Onglets : aplat + trait d'encre + ombre dure, comme tout bouton de la
+          charte. L'onglet actif porte le jaune projecteur, les autres la nuit —
+          le contour translucide d'avant était le dernier reste de « verre ». */}
       <nav className="hidden md:flex items-center gap-2 lg:gap-3">
         {TAB_KEYS.map((key) => {
           const isActive = key === active;
@@ -116,12 +121,9 @@ export const LobbyHeader = ({ active, onChange }: Props) => {
             <button
               key={key}
               onClick={() => onChange(key)}
-              className={
-                "px-4 lg:px-6 py-2.5 rounded-full font-display text-base tracking-widest border-2 transition-all " +
-                (isActive
-                  ? "border-[#FFC93C] text-[#FFC93C] bg-[#FFC93C]/5"
-                  : "border-white/15 text-white/70 hover:text-white hover:border-white/30")
-              }
+              className="px-4 lg:px-6"
+              style={{ ...btn(isActive ? G.projecteur : G.nuit, isActive ? G.encre : G.white, 18),
+                padding:"9px 18px", borderRadius:G.rayonS }}
             >
               {tabLabel(key)}
             </button>
@@ -134,12 +136,15 @@ export const LobbyHeader = ({ active, onChange }: Props) => {
         <LangPicker />
 
         {/* Profil compact */}
-        <div className="hidden md:flex items-center gap-2.5 pl-1.5 pr-3 py-1.5 rounded-full bg-white/5 border border-white/10">
-          <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[#00E676] to-[#1E5C2A] flex items-center justify-center font-display text-lg text-[#0A1410]">
+        <div className="hidden md:flex items-center gap-2.5 pl-1.5 pr-3 py-1.5"
+          style={{ background:G.nuit, border:G.traitFin, borderRadius:G.rayonS,
+            boxShadow:"2px 2px 0 "+G.encre }}>
+          <div style={{ ...pastilleCharte(G.pelouse, 32), ...posterText(1, G.white, 0), fontSize:19,
+            width:32, height:32, display:"flex", alignItems:"center", justifyContent:"center" }}>
             {initial}
           </div>
           <div className="flex flex-col leading-tight">
-            <span className="font-display text-sm tracking-wider text-white truncate max-w-[100px]">
+            <span className="truncate max-w-[100px]" style={{ ...posterText(1, G.white, 0), fontSize:15 }}>
               {pseudo}
             </span>
             <span className="text-[10px] text-white/50 font-medium">

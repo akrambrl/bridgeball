@@ -1,5 +1,6 @@
 import type { GameMode } from "@/pages/Home";
 import { tr } from "@/lib/lang";
+import { G, posterText, retourStyle } from "@/lib/charte.jsx";
 
 export type Difficulty = "facile" | "moyen" | "expert";
 
@@ -19,19 +20,19 @@ const DIFFS: {
     key: "facile",
     label: () => tr("FACILE", "EASY", "LEICHT", "FACILE", "FÁCIL"),
     subtitle: () => tr("Stars très connues", "Very famous stars", "Sehr bekannte Stars", "Star molto famose", "Estrelas muito famosas"),
-    accent: "#00E676",
+    accent: G.pelouse,
   },
   {
     key: "moyen",
     label: () => tr("MOYEN", "MEDIUM", "MITTEL", "MEDIO", "MÉDIO"),
     subtitle: () => tr("Bons joueurs", "Good players", "Gute Spieler", "Buoni giocatori", "Bons jogadores"),
-    accent: "#FFC93C",
+    accent: G.projecteur,
   },
   {
     key: "expert",
     label: () => tr("CRESCENDO", "CRESCENDO", "CRESCENDO", "CRESCENDO", "CRESCENDO"),
     subtitle: () => tr("Facile → Moyen → Expert", "Easy → Medium → Expert", "Leicht → Mittel → Experte", "Facile → Medio → Esperto", "Fácil → Médio → Expert"),
-    accent: "#FF3D6E",
+    accent: G.maillot,
   },
 ];
 
@@ -45,26 +46,29 @@ export const DifficultyModal = ({ game, onPick, onClose }: Props) => {
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200"
+      className="fixed inset-0 z-[70] flex items-center justify-center p-4 animate-in fade-in duration-200"
+      style={{ background:"rgba(8,17,9,.86)" }}
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-md rounded-3xl bg-[#0F2017] border-2 border-white/10 p-6 lg:p-8 shadow-2xl"
+        className="relative w-full max-w-md p-6 lg:p-8"
+        style={{ background:G.nuit, border:G.trait, borderRadius:G.rayonL, boxShadow:G.ombreL }}
         onClick={(e) => e.stopPropagation()}
       >
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 h-9 w-9 rounded-full bg-white/5 hover:bg-white/10 text-white/70 hover:text-white flex items-center justify-center text-base"
+          className="absolute top-3 right-3"
+          style={{ ...retourStyle, width:38, height:38, fontSize:22, fontWeight:400 }}
           aria-label="Fermer"
         >
           ✕
         </button>
 
         <div className="text-center mb-6">
-          <div className="font-display text-xs tracking-[0.3em] text-white/40 mb-2">
+          <div className="mb-2" style={{ ...posterText(1, G.projecteur, 0), fontSize:14, letterSpacing:4 }}>
             {GAME_LABEL[game]}
           </div>
-          <h3 className="font-display text-4xl tracking-wide text-white leading-none">
+          <h3 style={posterText(42, G.white)}>
             {tr("CHOISIS TA DIFFICULTÉ", "CHOOSE YOUR DIFFICULTY", "WÄHLE DEINE SCHWIERIGKEIT", "SCEGLI LA DIFFICOLTÀ", "ESCOLHA A DIFICULDADE")}
           </h3>
         </div>
@@ -74,25 +78,23 @@ export const DifficultyModal = ({ game, onPick, onClose }: Props) => {
             <button
               key={d.key}
               onClick={() => onPick(d.key)}
-              className="group w-full flex items-center justify-between gap-3 px-5 py-4 rounded-2xl border-2 border-white/10 bg-white/[0.02] hover:bg-white/[0.06] transition-all"
-              style={
-                {
-                  ["--accent" as never]: d.accent,
-                } as React.CSSProperties
-              }
+              className="group w-full flex items-center justify-between gap-3 px-5 py-4"
+              style={{
+                background: d.accent, border: G.trait, borderRadius: G.rayon,
+                boxShadow: G.ombre, cursor: "pointer",
+              }}
             >
               <div className="text-left">
-                <div
-                  className="font-display text-2xl tracking-widest"
-                  style={{ color: d.accent }}
-                >
+                <div style={{ ...posterText(1, d.accent === G.projecteur ? G.encre : G.white, 0),
+                  fontSize:28, letterSpacing:2 }}>
                   {d.label()}
                 </div>
-                <div className="text-xs text-white/50 mt-0.5">{d.subtitle()}</div>
+                <div className="text-xs mt-0.5"
+                  style={{ color: d.accent === G.projecteur ? "rgba(8,17,9,.7)" : "rgba(255,255,255,.75)" }}>{d.subtitle()}</div>
               </div>
               <span
                 className="text-2xl transition-transform group-hover:translate-x-1"
-                style={{ color: d.accent }}
+                style={{ color: d.accent === G.projecteur ? G.encre : G.white }}
               >
                 ▶
               </span>

@@ -1,10 +1,11 @@
 import { getLang, tr } from "@/lib/lang";
+import { G, posterText, posterTitre, posterLight } from "@/lib/charte.jsx";
 
 export const AboutView = () => {
   const l = getLang();
-  const Plug = <span className="text-[#00E676] font-semibold">The Plug</span>;
-  const Mercato = <span className="text-[#FF8A2A] font-semibold">The Mercato</span>;
-  const Grid = <span className="text-[#00E676] font-semibold">Trouve le joueur</span>;
+  const Plug = <span className="font-semibold" style={{ color: G.pelouse }}>The Plug</span>;
+  const Mercato = <span className="font-semibold" style={{ color: G.projecteur }}>The Mercato</span>;
+  const Grid = <span className="font-semibold" style={{ color: G.pelouse }}>Trouve le joueur</span>;
 
   const prose =
     l === "en" ? (
@@ -126,10 +127,12 @@ export const AboutView = () => {
   return (
     <div className="container max-w-3xl mx-auto px-6 lg:px-10 py-10">
       <div className="text-center mb-8">
-        <span className="inline-block px-3 py-1 rounded-full bg-[#FFC93C]/10 text-[#FFC93C] font-display text-xs tracking-[0.3em] mb-3">
+        <span className="inline-block px-3 py-1 mb-3"
+          style={{ ...posterLight(15, G.encre), letterSpacing:3, background:G.projecteur,
+            borderRadius:G.rayonS, border:G.traitFin, boxShadow:"2px 2px 0 "+G.encre }}>
           {tr("À PROPOS", "ABOUT", "ÜBER UNS", "CHI SIAMO", "SOBRE")}
         </span>
-        <h2 className="font-display text-6xl md:text-7xl tracking-wide leading-none">
+        <h2 style={{ ...posterTitre(80, G.white), fontSize:"clamp(38px,7vw,80px)" }}>
           {tr("L'HISTOIRE DERRIÈRE GOAT FC", "THE STORY BEHIND GOAT FC", "DIE GESCHICHTE HINTER GOAT FC", "LA STORIA DIETRO GOAT FC", "A HISTÓRIA POR TRÁS DO GOAT FC")}
         </h2>
       </div>
@@ -139,16 +142,16 @@ export const AboutView = () => {
       </div>
 
       <div className="mt-10 grid md:grid-cols-3 gap-4">
-        <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
-          <div className="font-display text-5xl text-[#FFC93C] tracking-wider">4 100+</div>
+        <div className="p-5" style={{ background:G.nuit, border:G.trait, borderRadius:G.rayon, boxShadow:G.ombre }}>
+          <div style={posterText(56, G.projecteur)}>4 100+</div>
           <div className="text-sm text-white/60 mt-1">{tr("joueurs dans la base", "players in the database", "Spieler in der Datenbank", "giocatori nel database", "jogadores na base")}</div>
         </div>
-        <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
-          <div className="font-display text-5xl text-[#FFC93C] tracking-wider">3</div>
+        <div className="p-5" style={{ background:G.nuit, border:G.trait, borderRadius:G.rayon, boxShadow:G.ombre }}>
+          <div style={posterText(56, G.projecteur)}>3</div>
           <div className="text-sm text-white/60 mt-1">{tr("jeux différents", "different games", "verschiedene Spiele", "giochi diversi", "jogos diferentes")}</div>
         </div>
-        <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
-          <div className="font-display text-5xl text-[#FFC93C] tracking-wider">∞</div>
+        <div className="p-5" style={{ background:G.nuit, border:G.trait, borderRadius:G.rayon, boxShadow:G.ombre }}>
+          <div style={posterText(56, G.projecteur)}>∞</div>
           <div className="text-sm text-white/60 mt-1">{tr("combinaisons possibles", "possible combinations", "mögliche Kombinationen", "combinazioni possibili", "combinações possíveis")}</div>
         </div>
       </div>

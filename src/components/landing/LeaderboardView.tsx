@@ -11,17 +11,20 @@ import {
 } from "@/lib/leaderboard";
 // Carte de niveau : même photo de profil que sur mobile.
 import { levelCard } from "@/lib/collection";
+import { G, posterText, posterTitre, posterLight, btn } from "@/lib/charte.jsx";
 
 type Props = { onPlay: (game?: GameMode) => void };
 
-// Habillage des 3 premiers, repris du classement mobile : dégradé or / argent /
-// bronze et texte sombre par-dessus. Au-delà, carte verte translucide.
+// Habillage des 3 premiers, repris du classement mobile passé à la charte :
+// APLATS francs cerclés d'encre, plus de dégradé métallique ni d'ombre portée
+// diffuse. L'or devient le jaune projecteur, l'argent et le bronze deux teintes
+// sourdes qui tiennent à côté d'un aplat.
 const PODIUM = [
-  { bg: "linear-gradient(135deg,#FFD600,#FF6B35)", border: "rgba(255,214,0,.6)",   shadow: "0 4px 18px rgba(255,107,53,.35)",  rank: "#FFD600", medal: "🥇" },
-  { bg: "linear-gradient(135deg,#E8E8E8,#A8A8B0)", border: "rgba(200,200,210,.6)", shadow: "0 4px 18px rgba(200,200,210,.25)", rank: "#C0C0C0", medal: "🥈" },
-  { bg: "linear-gradient(135deg,#E3A869,#8B5A2B)", border: "rgba(205,127,50,.6)",  shadow: "0 4px 18px rgba(205,127,50,.3)",   rank: "#CD7F32", medal: "🥉" },
+  { bg: G.projecteur, medal: "🥇" },
+  { bg: "#C9CBC4",    medal: "🥈" },
+  { bg: "#C08A4A",    medal: "🥉" },
 ];
-const DARK_INK = "#1a0d00"; // texte posé sur les dégradés du podium
+const DARK_INK = G.encre; // texte posé sur les aplats clairs du podium
 
 export const LeaderboardView = ({ onPlay }: Props) => {
   // Même défaut que le mobile : l'onglet ouvert est "global" (XP cumulée).
@@ -46,10 +49,12 @@ export const LeaderboardView = ({ onPlay }: Props) => {
   return (
     <div className="container max-w-2xl mx-auto px-6 lg:px-10 py-10">
       <div className="text-center mb-6">
-        <span className="inline-block px-3 py-1 rounded-full bg-[#FFC93C]/10 text-[#FFC93C] font-display text-xs tracking-[0.3em] mb-3">
+        <span className="inline-block px-3 py-1 mb-3"
+          style={{ ...posterLight(15, G.encre), letterSpacing:3, background:G.projecteur,
+            borderRadius:G.rayonS, border:G.traitFin, boxShadow:"2px 2px 0 "+G.encre }}>
           {tr("PALMARÈS", "HONOURS", "BESTENLISTE", "ALBO D'ORO", "PALMARÉS")}
         </span>
-        <h2 className="font-display text-5xl md:text-6xl tracking-wide leading-none">
+        <h2 style={{ ...posterTitre(72, G.white), fontSize:"clamp(48px,7vw,72px)" }}>
           {tr("CLASSEMENT", "LEADERBOARD", "RANGLISTE", "CLASSIFICA", "CLASSIFICAÇÃO")}
         </h2>
         <p className="mt-3 text-white/55 text-sm">
@@ -60,9 +65,10 @@ export const LeaderboardView = ({ onPlay }: Props) => {
       </div>
 
       {/* Bandeau saison — comme sur mobile : mois en cours + compte à rebours */}
-      <div className="flex items-center justify-between gap-4 mb-4 px-4 py-3 rounded-2xl bg-[#FFD600]/[0.08] border border-[#FFD600]/20">
+      <div className="flex items-center justify-between gap-4 mb-4 px-4 py-3"
+        style={{ background:G.nuit, border:G.trait, borderRadius:G.rayon, boxShadow:G.ombre }}>
         <div>
-          <div className="font-display text-xs tracking-[0.15em] text-[#FFD600]">
+          <div style={{ ...posterText(1, G.projecteur, 0), fontSize:16, letterSpacing:2 }}>
             🏆 {season.monthLabel.toUpperCase()}
           </div>
           <div className="text-[11px] text-white/40 mt-0.5">
@@ -82,12 +88,8 @@ export const LeaderboardView = ({ onPlay }: Props) => {
           <button
             key={m}
             onClick={() => setMode(m)}
-            className={
-              "flex-1 py-2.5 rounded-xl border-[1.5px] font-display text-sm tracking-widest transition-colors " +
-              (m === mode
-                ? "border-[#00E676] bg-[#00E676]/10 text-[#00E676]"
-                : "border-white/12 text-white/70 hover:border-white/30 hover:text-white")
-            }
+            style={{ ...btn(m === mode ? G.projecteur : G.nuit, m === mode ? G.encre : G.white, 18),
+              flex:1, padding:"10px 12px", borderRadius:G.rayonS }}
           >
             {m === "saison"
               ? "⭐ " + tr("SAISON", "SEASON", "SAISON", "STAGIONE", "TEMPORADA")
@@ -113,17 +115,18 @@ export const LeaderboardView = ({ onPlay }: Props) => {
             return (
               <div
                 key={p.pid}
-                className="rounded-2xl overflow-hidden"
+                className="overflow-hidden"
                 style={{
-                  background: podium ? podium.bg : "rgba(0,230,118,.18)",
-                  border: "1px solid " + (podium ? podium.border : "rgba(0,230,118,.35)"),
-                  boxShadow: podium ? podium.shadow : undefined,
+                  background: podium ? podium.bg : G.nuit,
+                  border: G.trait,
+                  borderRadius: G.rayon,
+                  boxShadow: G.ombre,
                 }}
               >
                 <div className="flex items-center gap-3 px-3 py-3">
                   <div
-                    className="w-9 flex-shrink-0 text-center font-display text-2xl leading-none"
-                    style={{ color: podium ? podium.rank : "rgba(255,255,255,.3)" }}
+                    className="w-9 flex-shrink-0 text-center"
+                    style={{ ...posterText(1, podium ? DARK_INK : G.white, 0), fontSize:26 }}
                   >
                     {podium ? podium.medal : p.rank}
                   </div>
@@ -132,10 +135,11 @@ export const LeaderboardView = ({ onPlay }: Props) => {
                       Cadre au format de la carte (3:4) et non rond : un cadrage
                       circulaire amputerait le haut et le bas de l'illustration. */}
                   <div
-                    className="relative flex-shrink-0 h-12 w-9 rounded-md overflow-hidden"
+                    className="relative flex-shrink-0 h-12 w-9 overflow-hidden"
                     style={{
-                      background: "#000",
-                      border: podium ? "2px solid rgba(0,0,0,.3)" : "1.5px solid rgba(255,255,255,.28)",
+                      background: G.encre,
+                      borderRadius: 8,
+                      border: G.traitFin,
                     }}
                   >
                     <img
@@ -149,18 +153,19 @@ export const LeaderboardView = ({ onPlay }: Props) => {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span
-                        className="font-display text-lg tracking-wide truncate"
-                        style={{ color: podium ? DARK_INK : "#fff" }}
+                        className="truncate"
+                        style={{ ...posterText(1, podium ? DARK_INK : G.white, 0), fontSize:21 }}
                       >
                         {flag && <span className="mr-1.5 text-[15px]">{flag}</span>}
                         {p.name}
                       </span>
                       <span
-                        className="text-[11px] font-bold rounded-full px-2 py-0.5 tracking-wide whitespace-nowrap"
+                        className="text-[11px] font-bold px-2 py-0.5 tracking-wide whitespace-nowrap"
                         style={{
-                          color: podium ? DARK_INK : grade.color,
-                          background: podium ? "rgba(26,13,0,.18)" : grade.color + "22",
-                          border: podium ? "1px solid rgba(26,13,0,.25)" : "none",
+                          color: G.white,
+                          background: grade.color,
+                          borderRadius: 8,
+                          border: "1.5px solid " + G.encre,
                         }}
                       >
                         {grade.emoji} {grade.label}
@@ -169,13 +174,13 @@ export const LeaderboardView = ({ onPlay }: Props) => {
                   </div>
 
                   <div
-                    className="flex-shrink-0 font-display text-2xl tabular-nums"
-                    style={{ color: podium ? DARK_INK : "#fff" }}
+                    className="flex-shrink-0 tabular-nums"
+                    style={{ ...posterText(1, podium ? DARK_INK : G.white, 0), fontSize:28 }}
                   >
                     {p.score.toLocaleString("fr-FR")}
                     <span
                       className="text-xs ml-1"
-                      style={{ color: podium ? "rgba(26,13,0,.7)" : "rgba(255,255,255,.3)" }}
+                      style={{ color: podium ? "rgba(8,17,9,.7)" : "rgba(255,255,255,.4)" }}
                     >
                       XP
                     </span>
@@ -190,7 +195,8 @@ export const LeaderboardView = ({ onPlay }: Props) => {
       <div className="mt-8 text-center">
         <button
           onClick={() => onPlay("pont")}
-          className="inline-flex items-center gap-2 px-10 py-4 rounded-2xl bg-gradient-to-r from-[#FF8A2A] to-[#FFC93C] text-[#1A0F00] font-display text-2xl tracking-widest shadow-[0_10px_40px_-5px_rgba(255,201,60,0.5)] hover:scale-[1.03] transition-transform"
+          className="inline-flex"
+          style={{ ...btn(G.projecteur, G.encre, 30), padding:"14px 40px", boxShadow:G.ombreL }}
         >
           ▶ {tr("TENTER MA PLACE", "GO FOR MY SPOT", "UM MEINEN PLATZ KÄMPFEN", "TENTA IL TUO POSTO", "IR ATRÁS DO MEU LUGAR")}
         </button>

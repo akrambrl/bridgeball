@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { G } from "@/lib/charte.jsx";
 
 // Bandeau animé joué UNE SEULE FOIS à côté du résultat : séquence de but sur
 // une victoire, séquence de défaite sinon.
@@ -74,10 +75,10 @@ export const WinBanner = ({ maxWidth = 420, marginTop = 10, lose = false }: Prop
         width: "100%",
         maxWidth,
         margin: marginTop + "px auto 0",
-        borderRadius: 14,
+        borderRadius: G.rayonS,
         overflow: "hidden",
-        border: "1px solid " + (lose ? "rgba(255,255,255,.14)" : "rgba(0,230,118,.35)"),
-        boxShadow: "0 10px 30px -12px rgba(0,0,0,.8)",
+        border: G.trait,
+        boxShadow: G.ombre,
         lineHeight: 0,
         animation: "fadeUp .45s ease .1s both",
       }}

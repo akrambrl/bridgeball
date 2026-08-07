@@ -14,6 +14,7 @@ import { GoatGuess } from "@/components/landing/GoatGuess";
 import { FindPlayer } from "@/components/landing/FindPlayer";
 import { tr } from "@/lib/lang";
 import { trackTime } from "@/lib/track";
+import { G, posterText, btn, fondCharte, terrainCharte } from "@/lib/charte.jsx";
 
 // "grid" = « Trouve le joueur » (overlay FindPlayer), "goatgrid" = la
 // grille 3×3 jouée dans LePont. Deux jeux distincts, malgré les noms proches.
@@ -106,7 +107,8 @@ const Home = () => {
       <div className="fixed inset-0 z-50 bg-background overflow-auto">
         <button
           onClick={() => setShowQuitConfirm(true)}
-          className="fixed top-3 right-3 z-[60] flex items-center gap-2 px-4 py-2 rounded-full bg-[#FF8A2A] hover:bg-[#FF7A1A] text-[#1A0F00] font-display text-base tracking-widest shadow-[0_8px_24px_rgba(0,0,0,0.5)] hover:scale-[1.03] active:scale-[0.98] transition-all"
+          className="fixed top-3 right-3 z-[60]"
+          style={{ ...btn(G.projecteur, G.encre, 18), fontFamily:G.font, fontWeight:800, letterSpacing:1.5, transform:"none" }}
           aria-label={tr("Quitter et revenir à la landing GOAT FC", "Quit and return to the GOAT FC landing", "Beenden und zur GOAT-FC-Startseite zurück", "Esci e torna alla landing GOAT FC", "Sair e voltar à landing do GOAT FC")}
           title={tr("Quitter et revenir à la landing", "Quit and return to landing", "Beenden und zur Startseite", "Esci e torna alla landing", "Sair e voltar à landing")}
         >
@@ -118,15 +120,17 @@ const Home = () => {
           <div
             role="dialog"
             aria-modal="true"
-            className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm"
+            className="fixed inset-0 z-[70] flex items-center justify-center p-4"
+            style={{ background:"rgba(8,17,9,.88)" }}
             onClick={() => setShowQuitConfirm(false)}
           >
             <div
-              className="w-full max-w-sm rounded-3xl bg-[#0F2017] border-2 border-white/10 p-6 lg:p-8 shadow-2xl text-center"
+              className="w-full max-w-sm p-6 lg:p-8 text-center"
+              style={{ background:G.nuit, border:G.trait, borderRadius:G.rayonL, boxShadow:G.ombreL }}
               onClick={(e) => e.stopPropagation()}
             >
               <div className="text-5xl mb-3">{onlineOpponent ? "🏳️" : "⚠️"}</div>
-              <h3 className="font-display text-3xl tracking-wide text-white mb-2">
+              <h3 className="mb-2" style={posterText(34, G.white)}>
                 {onlineOpponent ? tr("ABANDONNER LE DUEL ?", "FORFEIT THE DUEL?", "DUELL AUFGEBEN?", "ABBANDONARE IL DUELLO?", "DESISTIR DO DUELO?") : tr("QUITTER LA PARTIE ?", "QUIT THE GAME?", "SPIEL BEENDEN?", "USCIRE DALLA PARTITA?", "SAIR DO JOGO?")}
               </h3>
               <p className="text-sm text-white/60 mb-7">
@@ -144,7 +148,7 @@ const Home = () => {
               <div className="flex flex-col gap-3">
                 <button
                   onClick={() => setShowQuitConfirm(false)}
-                  className="w-full py-3 rounded-xl bg-gradient-to-r from-[#FF8A2A] to-[#FFC93C] text-[#1A0F00] font-display text-lg tracking-widest hover:scale-[1.02] transition-transform"
+                  style={{ ...btn(G.projecteur, G.encre, 22), width:"100%", padding:"12px 16px" }}
                 >
                   ▶ {tr("CONTINUER", "CONTINUE", "WEITER", "CONTINUA", "CONTINUAR")}
                 </button>
@@ -157,7 +161,7 @@ const Home = () => {
                     }
                     setPlaying(false);
                   }}
-                  className="w-full py-3 rounded-xl border-2 border-white/10 bg-white/[0.02] hover:bg-white/[0.06] text-white/80 font-display text-base tracking-widest transition-colors"
+                  style={{ ...btn(G.maillot, G.white, 18), width:"100%", padding:"12px 16px" }}
                 >
                   {onlineOpponent ? tr("Concéder le duel", "Concede the duel", "Duell aufgeben", "Cedi il duello", "Ceder o duelo") : tr("Quitter quand même", "Quit anyway", "Trotzdem beenden", "Esci comunque", "Sair mesmo assim")}
                 </button>
@@ -285,26 +289,23 @@ const Home = () => {
   };
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-[#0A1410] text-white flex flex-col">
-      {/* Background : filigrane GOAT FC géant + grille de terrain */}
+    <div className="relative min-h-screen overflow-x-hidden text-white flex flex-col"
+      style={{ background: fondCharte, backgroundAttachment:"fixed" }}>
+      {/* Le terrain de la charte : bandes de tonte, tracés d'encre et grain
+          sérigraphié, dessinés PAR-DESSUS la pelouse éclairée. Les anciens
+          voiles blancs translucides (filigrane, grille, halo vert) ne tenaient
+          pas la charte : le trait d'encre des panneaux disparaissait dessus. */}
+      {terrainCharte}
+      {/* Filigrane GOAT FC : conservé, mais à l'encre plutôt qu'en blanc. */}
       <div
-        className="pointer-events-none absolute inset-0 opacity-[0.04] select-none flex items-center justify-center"
+        className="pointer-events-none absolute inset-0 select-none flex items-center justify-center"
+        style={{ opacity:.07, zIndex:0 }}
         aria-hidden
       >
-        <span className="text-[28vw] font-black tracking-tighter leading-none">
+        <span className="leading-none" style={{ ...posterText(1, G.encre, 0), fontSize:"28vw" }}>
           GOAT FC
         </span>
       </div>
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.03]"
-        style={{
-          backgroundImage:
-            "repeating-linear-gradient(90deg, #ffffff 0 1px, transparent 1px 100px)",
-        }}
-        aria-hidden
-      />
-      {/* Halo vert subtil */}
-      <div className="pointer-events-none absolute top-1/3 left-1/2 -translate-x-1/2 h-[600px] w-[900px] rounded-full bg-[#1E5C2A]/15 blur-[120px]" />
 
       <LobbyHeader active={tab} onChange={setTab} />
 
@@ -435,22 +436,23 @@ const ForfeitOverlay = ({
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-[90] flex flex-col items-center justify-center bg-black/95 backdrop-blur-md"
+      className="fixed inset-0 z-[90] flex flex-col items-center justify-center"
+      style={{ background:"rgba(8,17,9,.95)" }}
     >
       <div
-        className="absolute inset-0 pointer-events-none opacity-50"
+        className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            "radial-gradient(circle at center, #FF3D6E40 0%, transparent 55%)",
+            "radial-gradient(circle at center, rgba(217,58,43,.30) 0%, transparent 55%)",
         }}
         aria-hidden
       />
       <div className="relative text-center">
         <div className="text-7xl mb-4 animate-in zoom-in duration-300">🏳️</div>
-        <div className="font-display text-sm tracking-[0.4em] text-[#FF3D6E] mb-3">
+        <div className="mb-3" style={{ ...posterText(1, G.maillot, 0), fontSize:15, letterSpacing:6 }}>
           {tr("ABANDON", "FORFEIT", "AUFGABE", "RESA", "DESISTÊNCIA")}
         </div>
-        <div className="font-display text-6xl lg:text-7xl tracking-wider text-[#FF3D6E] leading-none mb-5">
+        <div className="mb-5" style={posterText(84, G.maillot)}>
           {tr("DÉFAITE", "DEFEAT", "NIEDERLAGE", "SCONFITTA", "DERROTA")}
         </div>
         <div className="text-white/80 text-lg">
@@ -459,9 +461,9 @@ const ForfeitOverlay = ({
         <div className="mt-4 flex flex-col items-center gap-2">
           {opponent.avatar && (
             <div
-              className="h-20 w-20 rounded-full overflow-hidden border-2 border-[#FF3D6E]"
+              className="h-20 w-20 overflow-hidden"
               style={{
-                boxShadow: "0 0 30px rgba(255,61,110,0.5)",
+                borderRadius: G.rayonS, border: G.trait, boxShadow: G.ombre,
               }}
             >
               <img
@@ -471,7 +473,7 @@ const ForfeitOverlay = ({
               />
             </div>
           )}
-          <div className="font-display text-3xl tracking-wider text-white">
+          <div style={posterText(34, G.white)}>
             {opponent.pseudo}{" "}
             <span className="text-2xl">{opponent.country}</span>
           </div>
@@ -488,16 +490,20 @@ const ScoreTicker = () => {
   const items = useTickerItems();
   if (items.length === 0) return null;
   return (
-  <div className="relative z-10 border-t border-white/5 bg-black/30 backdrop-blur-sm overflow-hidden">
+  <div className="relative z-10 overflow-hidden"
+    style={{ borderTop:G.trait, background:G.nuit }}>
     <div className="flex items-center gap-3 px-4 py-2.5">
-      <span className="goat-blink shrink-0 px-2 py-0.5 rounded-md bg-[#FF8A2A] text-[#1A0F00] font-display text-xs tracking-widest">
+      <span className="goat-blink shrink-0 px-2 py-0.5"
+        style={{ ...posterText(1, G.encre, 0), fontSize:13, letterSpacing:1.5,
+          background:G.maillot, color:G.white, borderRadius:8, border:G.traitFin,
+          boxShadow:"2px 2px 0 "+G.encre }}>
         {tr("EN DIRECT", "LIVE", "LIVE", "IN DIRETTA", "AO VIVO")}
       </span>
       <div className="flex-1 overflow-hidden">
         <div className="goat-marquee flex gap-12 whitespace-nowrap">
           {[...items, ...items].map((it, i) => (
             <span key={i} className="text-sm text-white/70 flex items-center gap-2">
-              <span className="font-display text-base tracking-wider text-white">
+              <span style={{ ...posterText(1, G.projecteur, 0), fontSize:17 }}>
                 {it.who}
               </span>
               <span>{it.what}</span>

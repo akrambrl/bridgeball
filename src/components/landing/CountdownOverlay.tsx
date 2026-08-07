@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { GameMode } from "@/pages/Home";
 import { tr } from "@/lib/lang";
+import { G, posterText, posterTitre, retourStyle } from "@/lib/charte.jsx";
 
 // Le décompte ne sert qu'aux parties lancées depuis le choix de mode /
 // difficulté, c'est-à-dire The Plug et The Mercato. Les autres jeux démarrent
@@ -21,12 +22,12 @@ const GAME_INFO: Record<
   pont: {
     name: "THE PLUG",
     tagline: "Le pont entre deux clubs",
-    accent: "#00E676",
+    accent: G.pelouse,
   },
   chaine: {
     name: "THE MERCATO",
     tagline: "La chaîne sans fin",
-    accent: "#FF8A2A",
+    accent: G.projecteur,
   },
 };
 
@@ -56,32 +57,34 @@ export const CountdownOverlay = ({ game, onDone, onCancel }: Props) => {
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-[80] flex flex-col items-center justify-center bg-black/95 backdrop-blur-md"
+      className="fixed inset-0 z-[80] flex flex-col items-center justify-center"
+      style={{ background:"rgba(8,17,9,.95)" }}
     >
       {/* Halo couleur du jeu */}
       <div
-        className="absolute inset-0 pointer-events-none opacity-50 transition-opacity"
+        className="absolute inset-0 pointer-events-none opacity-40 transition-opacity"
         style={{
-          background: `radial-gradient(circle at center, ${info.accent}40 0%, transparent 55%)`,
+          background: `radial-gradient(circle at center, ${info.accent} 0%, transparent 55%)`,
         }}
         aria-hidden
       />
 
       <button
         onClick={onCancel}
-        className="absolute top-4 right-4 px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 text-white/60 hover:text-white text-xs font-display tracking-widest border border-white/10"
+        className="absolute top-4 right-4"
+        style={{ ...retourStyle, width:"auto", padding:"9px 16px", fontSize:15, letterSpacing:1.5 }}
       >
         {tr("ANNULER", "CANCEL", "ABBRECHEN", "ANNULLA", "CANCELAR")}
       </button>
 
       <div className="relative text-center">
         <div
-          className="font-display text-xs lg:text-sm tracking-[0.4em] mb-2"
-          style={{ color: info.accent }}
+          className="mb-2"
+          style={{ ...posterText(1, info.accent, 0), fontSize:15, letterSpacing:6 }}
         >
           {tr("PRÊT ?", "READY?", "BEREIT?", "PRONTO?", "PRONTO?")}
         </div>
-        <div className="font-display text-3xl lg:text-5xl tracking-wider text-white mb-1">
+        <div className="mb-1" style={{ ...posterTitre(56, G.white), fontSize:"clamp(34px,6vw,56px)" }}>
           {info.name}
         </div>
         <div className="text-sm text-white/50 mb-10">{countdownTagline(game)}</div>
@@ -89,11 +92,10 @@ export const CountdownOverlay = ({ game, onDone, onCancel }: Props) => {
         {/* Le gros chiffre */}
         <div
           key={n}
-          className="font-display leading-none select-none"
+          className="select-none"
           style={{
-            color: n === 0 ? info.accent : "#FFFFFF",
+            ...posterText(300, n === 0 ? info.accent : G.white),
             fontSize: "clamp(160px, 28vw, 380px)",
-            textShadow: `0 8px 60px ${info.accent}80`,
             animation: "countdownPop 1s ease-out forwards",
           }}
         >
