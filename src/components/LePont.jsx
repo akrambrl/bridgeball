@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { PLAYERS, RETIRED_PLAYERS, GG_WC_WINNERS, GG_CL_WINNERS } from "../players.jsx";
 import { trackPlay, pingPresence, pingLive, trackTime } from "../lib/track";
 import { hapticSuccess, hapticError } from "../lib/native";
@@ -8778,8 +8779,20 @@ export default function LePont() {
   // maillot = faux, projecteur = déjà pris), cerclé d'encre. Comme la bande est
   // collée en haut et pleine largeur, son ombre dure ne peut tomber que vers le
   // bas : un décalage latéral pendrait dans le vide hors de l'écran.
+  //
+  // Elle part dans un PORTAIL vers document.body, et c'est le point important :
+  // `position:fixed` ne se cale sur le viewport que s'il n'y a aucun ancêtre
+  // transformé au-dessus. Il y en avait un dans The Plug, pas dans The Mercato —
+  // d'où une bande collée en haut de l'écran ici et flottant en plein milieu là.
+  // Sortie de l'arbre du jeu, elle se pose au même endroit dans tous les modes.
+  //
+  // Elle passe DEVANT le chrono et le score, ce qui est assumé : le score est
+  // déjà repris par la bande (« +10 pts »), et le chrono d'une manche de 60 à
+  // 90 s se laisse perdre de vue moins d'une seconde. `pointerEvents:none` fait
+  // le reste — elle ne peut pas intercepter un appui, et pendant les 900 ms où
+  // l'ancienne question est encore à l'écran, elle en évite même.
   const feedbackBar = (fb) => {
-    if(!fb) return null;
+    if(!fb || typeof document === "undefined") return null;
     const ton = fb==="ok" ? {aplat:G.pelouse, texte:G.white}
               : fb==="ko" ? {aplat:G.maillot, texte:G.white}
               :             {aplat:G.projecteur, texte:G.encre};
@@ -8787,8 +8800,9 @@ export default function LePont() {
     // le contour se confondrait avec la lettre.
     const mot = (taille) => ton.texte===G.white ? posterText(taille, G.white, 1.5) : posterLight(taille, G.encre);
     const points = {...mot(14), opacity:.85};
-    return (
-      <div style={{position:"fixed",top:0,left:0,right:0,zIndex:50,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2,padding:"12px 16px",
+    return createPortal(
+      <div style={{position:"fixed",top:0,left:0,right:0,zIndex:120,pointerEvents:"none",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2,
+        padding:"max(12px, env(safe-area-inset-top)) 16px 12px",
         background:ton.aplat,
         borderBottom:G.trait,
         boxShadow:"0 4px 0 "+G.encre,
@@ -8797,7 +8811,8 @@ export default function LePont() {
         {fb==="ok"&&<><div style={{display:"flex",alignItems:"center",gap:8}}>{Icon.ball(18,ton.texte)} <span style={mot(20)}>{feedbackPhrase || (tr("BONNE RÉPONSE !","RIGHT ANSWER !","RICHTIG !","RISPOSTA GIUSTA !","RESPOSTA CERTA !"))}</span></div><div style={points}>+{diff==="expert"?30:diff==="moyen"?20:10} pts</div></>}
         {fb==="ko"&&<><div style={{display:"flex",alignItems:"center",gap:8}}>{Icon.whistle(18,ton.texte)} <span style={mot(20)}>{tr("MAUVAISE RÉPONSE","WRONG ANSWER","FALSCH","RISPOSTA SBAGLIATA","RESPOSTA ERRADA")}</span></div><div style={points}>−5 pts</div></>}
         {fb==="used"&&<div style={{display:"flex",alignItems:"center",gap:8}}>{Icon.flag(16,ton.texte)} <span style={mot(18)}>{tr("CLUB DÉJÀ UTILISÉ","CLUB ALREADY USED","KLUB SCHON BENUTZT","CLUB GIÀ USATO","CLUBE JÁ USADO")}</span></div>}
-      </div>
+      </div>,
+      document.body
     );
   };
 
