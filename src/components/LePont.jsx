@@ -2899,8 +2899,11 @@ export default function LePont() {
   // Ligne de liste de la charte — réglage, accès, lien : panneau de nuit, trait
   // d'encre, ombre dure. Une seule définition pour Mon compte et Mon profil,
   // sinon les deux listes divergent au premier ajustement.
+  // Trait PLEIN, comme les lignes du classement : un rectangle de contenu est
+  // toujours dessiné du même crayon d'un écran à l'autre. Le trait fin est
+  // réservé aux petits éléments — pastilles, vignettes, séparateurs internes.
   const ligneCharte = {
-    padding:"14px 18px", background:G.nuit, border:G.traitFin, borderRadius:G.rayon,
+    padding:"14px 18px", background:G.nuit, border:G.trait, borderRadius:G.rayon,
     boxShadow:G.ombre, color:G.white, fontFamily:G.font, fontSize:14, fontWeight:700,
     display:"flex", alignItems:"center", gap:12, textAlign:"left", textDecoration:"none",
     width:"100%", boxSizing:"border-box", cursor:"pointer",
@@ -10406,7 +10409,7 @@ export default function LePont() {
           <div style={{fontSize:12.5,color:"rgba(255,255,255,.75)",marginTop:8,fontWeight:700,letterSpacing:.8}}>{tr("Gère les paramètres de ton compte","Manage your account settings","Verwalte deine Kontoeinstellungen","Gestisci le impostazioni del tuo account","Gerencie as configurações da sua conta")}</div>
         </div>
 
-        <div style={{zIndex:1,padding:"20px 20px",display:"flex",flexDirection:"column",gap:14,maxWidth:560,margin:"0 auto",width:"100%",boxSizing:"border-box"}}>
+        <div style={{zIndex:1,padding:"20px 18px",display:"flex",flexDirection:"column",gap:14,maxWidth:560,margin:"0 auto",width:"100%",boxSizing:"border-box"}}>
 
           {/* Identité */}
           <div style={{padding:"18px 20px",background:G.nuit,borderRadius:G.rayon,border:G.trait,boxShadow:G.ombre}}>
@@ -11584,7 +11587,7 @@ export default function LePont() {
       </div>
 
       {/* Niveau + XP progression */}
-      <div style={{zIndex:1,padding:"0 16px 12px"}}>
+      <div style={{zIndex:1,padding:"0 18px 12px"}}>
         {(() => {
           const grade = getGrade(playerXp);
           // Trouver le prochain palier
@@ -11640,8 +11643,8 @@ export default function LePont() {
         const prochaine = progressToNext(playerXp);
         return (
           <>
-            <div style={{...posterText(22,G.projecteur),zIndex:1,padding:"14px 20px 0"}}>{tr("Ma collection","My collection","Meine Sammlung","La mia collezione","Minha coleção")}</div>
-            <div onClick={function(){setShowCollection(true);}} style={{zIndex:1,margin:"10px 16px 8px",padding:"14px 16px",background:G.nuit,border:G.traitFin,borderRadius:G.rayon,boxShadow:G.ombre,cursor:"pointer"}}>
+            <div style={{...posterText(22,G.projecteur),zIndex:1,padding:"14px 18px 0"}}>{tr("Ma collection","My collection","Meine Sammlung","La mia collezione","Minha coleção")}</div>
+            <div onClick={function(){setShowCollection(true);}} style={{zIndex:1,margin:"10px 18px 8px",padding:"14px 16px",background:G.nuit,border:G.trait,borderRadius:G.rayon,boxShadow:G.ombre,cursor:"pointer"}}>
               <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
                 <span style={{...posterText(28,G.pelouse)}}>{possedees.length}</span>
                 <span style={{fontSize:12.5,color:"rgba(255,255,255,.6)",fontWeight:700}}>/ {CARDS.length} {tr("cartes","cards","Karten","carte","cartas")}</span>
@@ -11671,8 +11674,8 @@ export default function LePont() {
           resté hors charte. C'est la pastille et le chiffre qui portent la
           couleur — pelouse, ciel, projecteur — et le total des parties reste en
           blanc : il compte, il ne qualifie pas. */}
-      <div style={{...posterText(22,G.projecteur),zIndex:1,padding:"14px 20px 0"}}>{tr("Statistiques","Stats","Statistiken","Statistiche","Estatísticas")}</div>
-      <div style={{zIndex:1,padding:"10px 16px 8px",display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+      <div style={{...posterText(22,G.projecteur),zIndex:1,padding:"14px 18px 0"}}>{tr("Statistiques","Stats","Statistiken","Statistiche","Estatísticas")}</div>
+      <div style={{zIndex:1,padding:"10px 18px 8px",display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
         {/* Record Plug */}
         <div style={{background:G.nuit,border:G.trait,borderRadius:G.rayon,padding:"14px 16px",boxShadow:G.ombre}}>
           <div style={{...pastilleCharte(G.pelouse,38),marginBottom:10}}>🏆</div>
@@ -11700,7 +11703,7 @@ export default function LePont() {
       </div>
 
       {/* WhatsApp communauté */}
-      <div style={{zIndex:1,padding:"6px 16px 2px"}}>
+      <div style={{zIndex:1,padding:"6px 18px 2px"}}>
         {/* Le panneau prend la nuit et le trait d'encre comme les autres lignes ;
             le vert WhatsApp reste sur le logo et le titre, c'est une marque, pas
             une couleur de la charte. */}
@@ -11723,8 +11726,8 @@ export default function LePont() {
           charte, celle de Mon compte : elles étaient en blanc à 5 % sur filet à
           10 %, sans trait ni ombre. Chaque pastille prend l'aplat de la couleur
           qui porte son sens. */}
-      <div style={{...posterText(22,G.projecteur),zIndex:1,padding:"10px 20px 0"}}>{tr("Menu","Menu","Menü","Menu","Menu")}</div>
-      <div style={{zIndex:1,padding:"10px 16px 8px",display:"flex",flexDirection:"column",gap:12}}>
+      <div style={{...posterText(22,G.projecteur),zIndex:1,padding:"10px 18px 0"}}>{tr("Menu","Menu","Menü","Menu","Menu")}</div>
+      <div style={{zIndex:1,padding:"10px 18px 8px",display:"flex",flexDirection:"column",gap:12}}>
         {/* Mes amis */}
         <button onClick={()=>{setShowFriends(true);setScreen("home");}} style={{...ligneCharte,padding:"15px 16px",fontSize:15,fontWeight:800,gap:13}}>
           <span style={pastilleCharte(G.pelouse)}>👥</span>
