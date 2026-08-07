@@ -2,7 +2,7 @@ import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from
 import { PLAYERS, RETIRED_PLAYERS, GG_WC_WINNERS, GG_CL_WINNERS } from "../players.jsx";
 import { trackPlay, pingPresence, pingLive, trackTime } from "../lib/track";
 import { hapticSuccess, hapticError } from "../lib/native";
-import { pickOpponent, avatarFor } from "../lib/opponents";
+import { pickOpponent } from "../lib/opponents";
 import { displayStreak } from "../lib/streak";
 // Jours calendaires « heure de Paris » — découpage temporel du tableau de bord.
 import { parisDayOf, parisLastDays } from "../lib/days";
@@ -12530,11 +12530,6 @@ export default function LePont() {
           const found = mmSearch.phase === "found";
           const opp = mmSearch.opponent;
           const myName = (playerName || "").trim() || tr("Toi","You","Du","Tu","Você");
-          // Photo de profil du joueur si elle existe ; sinon on retombe sur le
-          // visuel GOAT FC dérivé du pseudo.
-          // Carte de collection, comme partout ailleurs : l'ancienne photo uploadée
-          // n'a plus cours (elle restait visible sur ce seul écran).
-          const myAvatar = avatarCard(playerBadge, playerXp).img;
           // Carte de l'adversaire. Celui du mode EN LIGNE est simulé :
           // pickOpponent ne renvoie ni XP ni carte, et levelCard(0) donnerait
           // « La Recrue » à tout le monde — deux adversaires d'affilée avec le
@@ -12542,95 +12537,114 @@ export default function LePont() {
           // avatarFor le fait déjà pour les visuels. Dès que la charge utile
           // porte une vraie XP (duel entre joueurs), on repasse par levelCard,
           // qui est la règle partout ailleurs.
+          // Renvoie la CARTE et non son visuel : le cadre du VS reprend le
+          // dégradé de rareté, comme la collection et le profil.
           const oppCard = function(o){
-            if (o && typeof o.xp === "number") return levelCard(o.xp).img;
+            if (o && typeof o.xp === "number") return levelCard(o.xp);
             const illustrees = CARDS.filter(hasArt);
             if (!illustrees.length) return null;
             const pseudo = (o && o.pseudo) || "";
             let h = 0;
             for (let i = 0; i < pseudo.length; i++) h = (h * 31 + pseudo.charCodeAt(i)) | 0;
-            return illustrees[Math.abs(h) % illustrees.length].img;
+            return illustrees[Math.abs(h) % illustrees.length];
           };
-          // isPhoto : photo de profil de l'utilisateur → cadrage centré et repli
-          // sur le visuel GOAT FC si l'image ne charge pas (photo supprimée).
-          const card = function(name, flag, ring, avatar, revealed, isPhoto){
+          // Un joueur du VS : sa carte dans son cadre FUT, son pseudo au
+          // lettrage d'affiche. Tant que l'adversaire n'est pas révélé, le cadre
+          // reste un aplat de nuit avec un « ? » — pas une carte grisée, qui
+          // laisserait deviner qui arrive.
+          const camp = function(nom, drapeau, carte, revele){
+            const rm = carte ? rarityMeta(carte.rarity) : null;
             return (
               <div style={{display:"flex",flexDirection:"column",alignItems:"center",flex:1,minWidth:0}}>
-                <div style={{
-                  width:96,height:96,borderRadius:"50%",overflow:"hidden",
-                  border:`3px solid ${ring}`,boxShadow:`0 0 34px ${ring}55`,
-                  background:`linear-gradient(135deg, ${ring}, #0F2017)`,
-                  display:"flex",alignItems:"center",justifyContent:"center",
-                  transition:"opacity .3s",opacity:revealed?1:.45
+                <div className={revele && rm && rm.cls ? rm.cls : undefined} style={{
+                  width:"100%",padding:3,borderRadius:G.rayon,border:G.trait,boxShadow:G.ombre,
+                  background:revele && rm ? rm.frame : G.nuit,
+                  transition:"background .3s",
                 }}>
-                  {revealed && avatar
-                    ? <img src={avatar} alt="" onError={isPhoto ? function(e){ e.currentTarget.src = avatarFor(name); } : undefined}
-                        style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:isPhoto?"center":"top"}}/>
-                    : <span style={{fontFamily:G.heading,fontSize:38,color:"rgba(255,255,255,.55)"}}>{revealed ? name.charAt(0).toUpperCase() : "?"}</span>}
+                  <div style={{position:"relative",aspectRatio:"3 / 4",overflow:"hidden",borderRadius:G.rayonS,
+                    display:"flex",alignItems:"center",justifyContent:"center",
+                    // Même hachure que les emplacements « à venir » de la
+                    // collection : un aplat noir se lirait comme une image qui
+                    // n'a pas chargé, la hachure dit « pas encore révélé ».
+                    background:revele && carte && carte.img ? "#000"
+                      : "repeating-linear-gradient(135deg,rgba(255,255,255,.05) 0 9px,rgba(255,255,255,.015) 9px 18px)"}}>
+                    {revele && carte && carte.img
+                      ? <img src={carte.img} alt="" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top"}}/>
+                      : <span style={{...posterText(46,"rgba(255,255,255,.28)")}}>?</span>}
+                  </div>
                 </div>
-                <div style={{
-                  marginTop:12,fontFamily:G.heading,fontSize:20,letterSpacing:1,textAlign:"center",
-                  color:revealed?"#fff":"rgba(255,255,255,.4)",
-                  maxWidth:"100%",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"
-                }}>{revealed ? name : "?????"}</div>
-                {revealed && flag && <div style={{fontSize:20,marginTop:2}}>{flag}</div>}
+                <div style={{...posterText(20,revele?G.white:"rgba(255,255,255,.4)"),marginTop:10,textAlign:"center",
+                  maxWidth:"100%",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
+                  {revele ? nom : "?????"}
+                </div>
+                {revele && drapeau && <div style={{fontSize:20,marginTop:2}}>{drapeau}</div>}
               </div>
             );
           };
+          // Les quatre modes tiennent en deux mots : le second passe en jaune
+          // projecteur, comme « GOAT FC » sur l'accueil et « MA COLLECTION ».
+          const titre = mmSearch.mode === "pont" ? "THE PLUG" : mmSearch.mode === "battle" ? "GOAT BATTLE" : mmSearch.mode === "duel" ? "GOAT DUEL" : "THE MERCATO";
+          const coupe = titre.indexOf(" ");
           return (
             <div role="dialog" aria-modal="true" style={{
-              position:"fixed",inset:0,zIndex:340,background:"rgba(0,0,0,.96)",
-              backdropFilter:"blur(8px)",display:"flex",flexDirection:"column",
+              position:"fixed",inset:0,zIndex:340,background:G.bg,
+              display:"flex",flexDirection:"column",
               alignItems:"center",justifyContent:"center",padding:24
             }}>
-              <div style={{
-                position:"absolute",inset:0,pointerEvents:"none",opacity:.5,
-                background:"radial-gradient(circle at center, rgba(61,165,255,.25) 0%, transparent 55%)"
-              }}/>
+              {/* Même pelouse que le reste de l'app : cet écran était le seul
+                  fond noir plat, il se lisait comme une boîte de dialogue posée
+                  par-dessus le jeu plutôt que comme un écran du jeu. */}
+              <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
+                {[0,1,2,3,4,5,6].map(function(i){return(
+                  <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#0E1F14":"#132819"}}/>
+                );})}
+                <div style={{position:"absolute",inset:0,background:"radial-gradient(circle at center, rgba(42,111,191,.18) 0%, rgba(0,15,0,.72) 60%)"}}/>
+              </div>
 
               <button onClick={function(){ setMmSearch(null); }} style={{
-                position:"absolute",top:"calc(14px + env(safe-area-inset-top))",right:14,
-                padding:"8px 16px",borderRadius:999,background:"rgba(255,255,255,.06)",
-                color:"rgba(255,255,255,.6)",border:"1px solid rgba(255,255,255,.15)",
-                fontFamily:G.font,fontSize:12,letterSpacing:2,cursor:"pointer"
+                ...btn("#0B2213", G.white, 15),
+                position:"absolute",top:"calc(14px + env(safe-area-inset-top))",right:14,zIndex:2,
+                padding:"8px 16px",
               }}>{tr("ANNULER","CANCEL","ABBRECHEN","ANNULLA","CANCELAR")}</button>
 
-              <div style={{position:"relative",textAlign:"center",marginBottom:28}}>
-                <div style={{fontFamily:G.font,fontSize:11,letterSpacing:5,color:"#3DA5FF",marginBottom:6}}>
-                  {tr("MODE EN LIGNE","ONLINE MODE","ONLINE-MODUS","MODALITÀ ONLINE","MODO ONLINE")}
+              <div style={{position:"relative",zIndex:1,textAlign:"center",marginBottom:24}}>
+                <div style={{fontSize:11,fontWeight:800,letterSpacing:5,color:G.ciel,marginBottom:8,textTransform:"uppercase"}}>
+                  {tr("Mode en ligne","Online mode","Online-Modus","Modalità online","Modo online")}
                 </div>
-                <div style={{fontFamily:G.heading,fontSize:32,letterSpacing:2,color:"#fff"}}>
-                  {mmSearch.mode === "pont" ? "THE PLUG" : mmSearch.mode === "battle" ? "GOAT BATTLE" : mmSearch.mode === "duel" ? "GOAT DUEL" : "THE MERCATO"}
+                <div style={{...posterText(40,G.white),lineHeight:.9}}>
+                  {titre.slice(0, coupe + 1)}<span style={{color:G.projecteur}}>{titre.slice(coupe + 1)}</span>
                 </div>
               </div>
 
-              <div style={{position:"relative",display:"flex",alignItems:"flex-start",gap:8,width:"100%",maxWidth:400,marginBottom:32}}>
-                {card(myName, null, "#00E676", myAvatar, true, false)}
-                <div style={{display:"flex",flexDirection:"column",alignItems:"center",paddingTop:28,flexShrink:0}}>
-                  <div style={{fontFamily:G.heading,fontSize:28,letterSpacing:4,color:found?G.gold:"rgba(255,255,255,.3)",transition:"color .3s"}}>VS</div>
-                  {found && <div style={{fontFamily:G.font,fontSize:9,letterSpacing:3,color:G.accent,marginTop:4}}>{tr("✓ TROUVÉ","✓ FOUND","✓ GEFUNDEN","✓ TROVATO","✓ ENCONTRADO")}</div>}
+              <div style={{position:"relative",zIndex:1,display:"flex",alignItems:"flex-start",gap:10,width:"100%",maxWidth:380,marginBottom:28}}>
+                {camp(myName, null, avatarCard(playerBadge, playerXp), true)}
+                {/* La colonne du VS est assez large pour que « ✓ TROUVÉ » tienne
+                    sur une ligne : à 52 px le libellé se coupait après le ✓. */}
+                <div style={{display:"flex",flexDirection:"column",alignItems:"center",paddingTop:"22%",flexShrink:0,width:70}}>
+                  <div style={{...posterText(30,found?G.projecteur:"rgba(255,255,255,.3)"),transition:"color .3s"}}>VS</div>
+                  {found && <div style={{fontSize:9,fontWeight:800,letterSpacing:1,color:G.pelouse,marginTop:6,textAlign:"center",whiteSpace:"nowrap"}}>{tr("✓ TROUVÉ","✓ FOUND","✓ GEFUNDEN","✓ TROVATO","✓ ENCONTRADO")}</div>}
                 </div>
-                {card(opp.pseudo, opp.country, "#3DA5FF", oppCard(opp), found, false)}
+                {camp(opp.pseudo, opp.country, oppCard(opp), found)}
               </div>
 
-              <div style={{position:"relative",textAlign:"center",minHeight:72}}>
+              <div style={{position:"relative",zIndex:1,textAlign:"center",minHeight:72}}>
                 {found ? (
                   <>
-                    <div style={{fontFamily:G.heading,fontSize:24,letterSpacing:3,color:G.accent}}>
+                    <div style={{...posterText(30,G.pelouse)}}>
                       {tr("MATCH PRÊT","MATCH READY","MATCH BEREIT","MATCH PRONTO","PARTIDA PRONTA")}
                     </div>
-                    <div style={{fontSize:13,color:"rgba(255,255,255,.5)",marginTop:6}}>
+                    <div style={{fontSize:13,color:"rgba(255,255,255,.55)",fontWeight:700,marginTop:8}}>
                       {tr("La partie va commencer…","The game is about to start…","Das Spiel startet gleich…","La partita sta per iniziare…","O jogo vai começar…")}
                     </div>
                   </>
                 ) : (
                   <>
-                    <div style={{display:"flex",justifyContent:"center",gap:10,marginBottom:12}}>
+                    <div style={{display:"flex",justifyContent:"center",gap:10,marginBottom:14}}>
                       {[0,1,2].map(function(i){return (
-                        <div key={i} className="goat-blink" style={{width:10,height:10,borderRadius:"50%",background:"#3DA5FF",animationDelay:(i*0.3)+"s"}}/>
+                        <div key={i} className="goat-blink" style={{width:11,height:11,borderRadius:"50%",background:G.ciel,border:G.traitFin,animationDelay:(i*0.3)+"s"}}/>
                       );})}
                     </div>
-                    <div style={{fontFamily:G.heading,fontSize:22,letterSpacing:2,color:"#fff"}}>
+                    <div style={{...posterText(24,G.white)}}>
                       {tr("RECHERCHE D'UN ADVERSAIRE","FINDING AN OPPONENT","SUCHE NACH GEGNER","RICERCA AVVERSARIO","PROCURANDO ADVERSÁRIO")}
                     </div>
                   </>
