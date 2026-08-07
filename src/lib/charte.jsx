@@ -108,8 +108,20 @@ export const fondCharte = "radial-gradient(72% 18% at 14% 0%, rgba(245,194,43,.2
 // Le terrain est DESSINÉ par-dessus ce fond — bandes de tonte translucides et
 // tracés d'encre — au lieu d'être peint en aplats opaques qui recouvraient le
 // fond. Le grain de trame sérigraphié ferme la couche, comme sur l'accueil.
+// zIndex -1 et non 0 : un élément POSITIONNÉ à zIndex 0 se peint AU-DESSUS du
+// flux normal, pas en dessous. Le terrain se posait donc par-dessus le contenu
+// des écrans dont le conteneur n'est pas lui-même positionné — la barre
+// d'indices jaune de « Trouve le joueur » paraissait translucide, les carrés
+// d'indice étaient grenés, et le rond central traversait les cases de la grille
+// GOAT GRID et le plateau du duel. À -1, il passe derrière le contenu tout en
+// restant devant le fond de son conteneur, qui est exactement sa place.
+//
+// Ce qui suppose que le conteneur soit un CONTEXTE D'EMPILEMENT, sinon un
+// calque négatif remonterait derrière le fond d'un ancêtre et disparaîtrait.
+// Les conteneurs qui portent déjà un zIndex (overlays, feuilles de mode) en
+// sont un ; ceux qui n'en ont pas doivent porter `isolation:"isolate"`.
 export const terrainCharte = (
-  <div aria-hidden="true" style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
+  <div aria-hidden="true" style={{position:"absolute",inset:0,zIndex:-1,pointerEvents:"none",overflow:"hidden"}}>
     {[0,1,2,3,4,5,6].map(function(i){return(
       <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"rgba(8,17,9,.16)":"transparent"}}/>
     );})}

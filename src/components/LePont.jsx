@@ -8466,6 +8466,10 @@ export default function LePont() {
   const tPct = timeLeft / duration;
   const urgent = timeLeft <= 10 && timeLeft > 0;
   const shell = {
+    // isolation : le terrain de la charte est un calque à zIndex -1, il lui faut
+    // un contexte d'empilement ici pour ne pas remonter derrière le fond d'un
+    // ancêtre. `isolate` en crée un sans rien changer d'autre au rendu.
+    isolation:"isolate",
     minHeight:"100vh",display:"flex",flexDirection:"column",
     background:"transparent",
     // Sur mobile : overflow hidden pour les fonds + scroll géré au cas par cas
@@ -9285,7 +9289,7 @@ export default function LePont() {
         </div>
         <div style={{textAlign:"center",flexShrink:0}}>
           <div style={{fontSize:10,color:"rgba(255,255,255,.55)",fontWeight:800,letterSpacing:1}}>{tr("TEMPS","TIME","ZEIT","TEMPO","TEMPO")}</div>
-          <div style={{...posterText(26,(soloLeft!=null&&soloLeft<=10)?G.maillot:G.white)}}>{soloLeft!=null?soloLeft+"s":"—"}</div>
+          <div style={{...posterText(34,(soloLeft!=null&&soloLeft<=10)?G.maillot:G.white)}}>{soloLeft!=null?soloLeft+"s":"—"}</div>
         </div>
         <div style={{textAlign:"center",flex:1,minWidth:0}}>
           <div style={{fontSize:11,color:"rgba(255,255,255,.55)",fontWeight:700,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{oppName||"—"}</div>
@@ -9300,7 +9304,7 @@ export default function LePont() {
         </div>
         <div style={{textAlign:"center"}}>
           <div style={{fontSize:10,color:"rgba(255,255,255,.55)",fontWeight:800,letterSpacing:1}}>{tr("TEMPS","TIME","ZEIT","TEMPO","TEMPO")}</div>
-          <div style={{...posterText(26,(soloLeft!=null&&soloLeft<=10)?G.maillot:G.white)}}>{soloLeft!=null?soloLeft+"s":"—"}</div>
+          <div style={{...posterText(34,(soloLeft!=null&&soloLeft<=10)?G.maillot:G.white)}}>{soloLeft!=null?soloLeft+"s":"—"}</div>
         </div>
       </div>
     ) : (
@@ -9448,11 +9452,18 @@ export default function LePont() {
                 {duelFlash.pts>=20?"⚡ +20":duelFlash.pts>0?"+10":duelFlash.skipped?tr("PASSÉ","SKIP","ÜBERSPR.","SALTA","PULOU"):tr("RATÉ","MISS","VERPASST","MANCATO","ERROU")}{duelFlash.pts>0?" PTS":""}
               </div>
             )}
-            {(function(){
-              const big = isSolo ? (soloLeft!=null?soloLeft:0) : ansLeft;
-              const danger = isSolo ? (soloLeft!=null&&soloLeft<=10) : ansLeft<=3;
-              return <div style={{...posterText(compact?32:50,danger?G.maillot:G.projecteur),marginBottom:compact?6:10}}>{big}{isSolo?<span style={{fontSize:compact?14:20,color:"rgba(255,255,255,.55)"}}>s</span>:null}</div>;
-            })()}
+            {/* Compte à rebours central. En MULTI il porte les secondes qu'il
+                reste pour répondre — une valeur qu'on ne trouve nulle part
+                ailleurs. En solo (et en partie rapide, même moteur) il portait
+                le chrono GLOBAL, celui-là même qu'affiche déjà la pastille
+                TEMPS de la barre de score juste au-dessus : le minuteur
+                s'égrenait deux fois à l'écran, à deux corps différents. La
+                barre le garde, elle est visible à toutes les phases — y compris
+                au décompte d'entrée et au résultat de manche, où ce bloc-ci
+                n'existe pas. */}
+            {!isSolo && (
+              <div style={{...posterText(compact?32:50,ansLeft<=3?G.maillot:G.projecteur),marginBottom:compact?6:10}}>{ansLeft}</div>
+            )}
             {/* Machine à sous : 2 clubs — empilés en grand, ou côte à côte (compact) si clavier ouvert */}
             <div style={{position:"relative",width:"100%",maxWidth:compact?360:300,marginBottom:compact?8:12}}>
               <div style={{display:"flex",flexDirection:compact?"row":"column",gap:compact?8:14}}>
