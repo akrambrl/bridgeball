@@ -2890,11 +2890,30 @@ export default function LePont() {
   // d'avant était le seul élément d'interface « verre » resté sur ces écrans.
   // La flèche garde la fonte de texte : l'italique d'affiche penche un glyphe
   // directionnel, et Anton n'a pas de dessin pour « ← ».
+  const retourStyle = {...btn(G.nuit,G.white,20),
+    width:44,height:44,padding:0,borderRadius:G.rayonS,flexShrink:0,
+    fontFamily:G.font,fontSize:20,fontWeight:800,letterSpacing:0,transform:"none"};
   const retourCharte = function(onClick){ return (
-    <button onClick={onClick} style={{...btn(G.nuit,G.white,20),position:"fixed",top:14,left:14,zIndex:100,
-      width:44,height:44,padding:0,borderRadius:G.rayonS,
-      fontFamily:G.font,fontSize:20,fontWeight:800,letterSpacing:0,transform:"none"}}>←</button>
+    <button onClick={onClick} style={{...retourStyle,position:"fixed",top:14,left:14,zIndex:100}}>←</button>
   ); };
+  // Ligne de liste de la charte — réglage, accès, lien : panneau de nuit, trait
+  // d'encre, ombre dure. Une seule définition pour Mon compte et Mon profil,
+  // sinon les deux listes divergent au premier ajustement.
+  const ligneCharte = {
+    padding:"14px 18px", background:G.nuit, border:G.traitFin, borderRadius:G.rayon,
+    boxShadow:G.ombre, color:G.white, fontFamily:G.font, fontSize:14, fontWeight:700,
+    display:"flex", alignItems:"center", gap:12, textAlign:"left", textDecoration:"none",
+    width:"100%", boxSizing:"border-box", cursor:"pointer",
+  };
+  // Pastille d'icône des lignes : aplat de la couleur qui porte le sens, cerclé
+  // d'encre. Les carrés translucides d'avant (couleur à 12 % sur filet à 28 %)
+  // ne tenaient pas sur un panneau de nuit.
+  const pastilleCharte = function(bg, taille){
+    const t = taille || 40;
+    return {width:t,height:t,borderRadius:G.rayonS,background:bg,border:G.traitFin,
+      display:"flex",alignItems:"center",justifyContent:"center",fontSize:Math.round(t*.48),
+      flexShrink:0,boxShadow:"2px 2px 0 "+G.encre};
+  };
   const [showSplash, setShowSplash] = useState(true);
   const [screen, setScreen] = useState("home");
   const [gameMode, setGameMode] = useState("pont");
@@ -10366,15 +10385,10 @@ export default function LePont() {
   }
 
   if (showAccount) {
-    // Une seule ligne de réglage, déclinée pour les trois entrées de l'écran
-    // (collection, confidentialité, conditions) : aplat de nuit, trait d'encre
-    // et ombre dure. Les définir une fois évite que les trois divergent.
-    const ligneCompte = {
-      padding:"14px 18px", background:G.nuit, border:G.traitFin, borderRadius:G.rayon,
-      boxShadow:G.ombre, color:G.white, fontFamily:G.font, fontSize:14, fontWeight:700,
-      display:"flex", alignItems:"center", gap:12, textAlign:"left", textDecoration:"none",
-      width:"100%", boxSizing:"border-box", cursor:"pointer",
-    };
+    // Les trois entrées de l'écran (collection, confidentialité, conditions)
+    // prennent la ligne de liste de la charte, celle que Mon profil utilise
+    // aussi : une seule définition pour les deux écrans.
+    const ligneCompte = ligneCharte;
     return (
       <>
       {retourCharte(function(){setShowAccount(false);setConfirmDeleteAccount(0);})}
@@ -11525,34 +11539,47 @@ export default function LePont() {
 
   // ── PROFILE SCREEN ──
   if(screen==="profile") return (
-    <div style={{...shell,overflow:isDesktop?"visible":"auto"}} key="profile">
-      <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
-        {[0,1,2,3,4,5,6].map(function(i){return(
-          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#0E1F14":"#132819"}}/>
-        );})}
-        <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.7)"}}/>
-        <div style={{position:"absolute",top:-60,left:"50%",transform:"translateX(-50%)",width:460,height:360,background:"radial-gradient(ellipse at center, rgba(0,230,118,.20) 0%, transparent 65%)"}}/>
-      </div>
+    // Même pelouse éclairée que le classement et Mon compte : sous le voile noir
+    // à 70 % et le halo vert LED d'avant, aucun trait d'encre ne se voyait.
+    <div style={{...shell,overflow:isDesktop?"visible":"auto",background:fondCharte}} key="profile">
+      {terrainCharte}
 
-      {/* Header */}
-      <div style={{zIndex:2,padding:"16px 16px 8px",display:"flex",alignItems:"center",gap:12,position:"sticky",top:0,background:"rgba(0,15,0,.85)",backdropFilter:"blur(10px)"}}>
-        <button onClick={()=>setScreen("home")} style={{background:"rgba(255,255,255,.1)",border:"none",borderRadius:"50%",width:38,height:38,cursor:"pointer",color:G.white,fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>←</button>
+      {/* Header — bandeau d'encre plutôt que verre flouté : la barre collante est
+          le seul élément qui passe devant le contenu, elle doit être opaque, et
+          son bord bas est un trait comme tous les bords de la charte. */}
+      <div style={{zIndex:2,padding:"14px 16px 10px",display:"flex",alignItems:"center",gap:12,position:"sticky",top:0,
+        background:G.encre,borderBottom:G.traitFin}}>
+        <button onClick={()=>setScreen("home")} style={retourStyle}>←</button>
         <div style={{...posterText(26,G.white),flex:1}}>{tr("MON ","MY ","MEIN ","IL MIO ","MEU ")}<span style={{color:G.projecteur}}>{tr("PROFIL","PROFILE","PROFIL","PROFILO","PERFIL")}</span></div>
       </div>
 
       {/* Avatar + Pseudo */}
       <div style={{zIndex:1,padding:"16px 20px 8px",textAlign:"center"}}>
-        <div style={{display:"inline-block",width:116,height:154,margin:"0 auto 14px",position:"relative",padding:4,borderRadius:G.rayon,background:"conic-gradient(from 200deg, #2A9B4E, #2A6FBF, #F5C22B, #2A9B4E)",border:G.traitFin,boxShadow:G.ombreL}}>
-          <div onClick={function(){ const c = avatarCard(playerBadge, playerXp); if (c.img) setViewingAvatar(c.img); }} style={{width:108,height:146,borderRadius:12,background:"#000",display:"flex",alignItems:"center",justifyContent:"center",fontSize:56,color:"#fff",boxShadow:"0 8px 30px rgba(0,230,118,.35)",overflow:"hidden",cursor:"pointer"}}>
-            {/* La carte fait office de photo de profil pour tout le monde : elle
-                remplace la photo uploadée, qui n'est plus affichée. */}
-            <img src={avatarCard(playerBadge, playerXp).img} alt="" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top"}}/>
-          </div>
-          <button onClick={function(){setShowCollection(true);}} title={tr("Choisir une carte","Choose a card","Karte wählen","Scegli una carta","Escolher uma carta")} style={{position:"absolute",bottom:-2,right:-2,width:34,height:34,borderRadius:"50%",background:G.accent,border:"3px solid #0d1f0d",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,zIndex:2,cursor:"pointer",padding:0}}>🃏</button>
-        </div>
+        {/* La carte prend son cadre de rareté, comme dans la collection, sur le VS
+            et depuis #443 au classement. Le dégradé conique arc-en-ciel disait la
+            charte mais pas le niveau, alors que c'est ce liseré qui le dit
+            partout ailleurs. Et le halo vert LED sous la carte disparaît : le
+            relief vient de l'ombre d'encre. */}
+        {(function(){
+          const c = avatarCard(playerBadge, playerXp);
+          const rm = rarityMeta(c.rarity);
+          return (
+            <div className={rm.cls} style={{display:"inline-block",width:116,height:154,margin:"0 auto 14px",position:"relative",padding:4,borderRadius:G.rayon,background:rm.frame,border:G.traitFin,boxShadow:G.ombreL}}>
+              <div onClick={function(){ if (c.img) setViewingAvatar(c.img); }} style={{width:108,height:146,borderRadius:12,background:"#000",display:"flex",alignItems:"center",justifyContent:"center",fontSize:56,color:"#fff",overflow:"hidden",cursor:"pointer"}}>
+                {/* La carte fait office de photo de profil pour tout le monde : elle
+                    remplace la photo uploadée, qui n'est plus affichée. */}
+                <img src={c.img} alt="" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top"}}/>
+              </div>
+              <button onClick={function(){setShowCollection(true);}} title={tr("Choisir une carte","Choose a card","Karte wählen","Scegli una carta","Escolher uma carta")} style={{position:"absolute",bottom:-4,right:-4,width:34,height:34,borderRadius:G.rayonS,background:G.projecteur,border:G.traitFin,boxShadow:"2px 2px 0 "+G.encre,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,zIndex:2,cursor:"pointer",padding:0}}>🃏</button>
+            </div>
+          );
+        })()}
         <div style={{...posterText(32,G.white)}}>@{playerName||(tr("anonyme","anonymous","anonym","anonimo","anônimo"))}</div>
+        {/* Pastille de grade cerclée d'encre et au rayon de la charte, comme celles
+            des lignes du classement : la pilule à filet coloré était le dernier
+            reste de l'ancien vocabulaire. */}
         {(() => { const g = getGrade(playerXp); return (
-          <div style={{display:"inline-flex",alignItems:"center",gap:6,marginTop:8,padding:"5px 14px",borderRadius:999,background:g.color+"1f",border:"1px solid "+g.color+"55",color:g.color,fontSize:11,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase"}}>{g.emoji} {g.label}</div>
+          <div style={{display:"inline-flex",alignItems:"center",gap:6,marginTop:10,padding:"5px 14px",borderRadius:G.rayonS,background:g.color+"2a",border:G.traitFin,boxShadow:"2px 2px 0 "+G.encre,color:g.color,fontSize:11.5,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase"}}>{g.emoji} {g.label}</div>
         ); })()}
       </div>
 
@@ -11568,33 +11595,36 @@ export default function LePont() {
             ? Math.min(100, ((playerXp - grade.min) / (nextGrade.min - grade.min)) * 100)
             : 100;
           return (
-            <div style={{background:"rgba(255,255,255,.05)",border:"1px solid "+grade.color+"55",borderRadius:18,padding:"14px 16px"}}>
+            <div style={{background:G.nuit,border:G.trait,borderRadius:G.rayon,boxShadow:G.ombre,padding:"14px 16px"}}>
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
                 <div style={{display:"flex",alignItems:"center",gap:10}}>
                   <span style={{fontSize:28}}>{grade.emoji}</span>
                   <div>
-                    <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.5)"}}>{tr("Niveau","Level","Level","Livello","Nível")}</div>
-                    <div style={{fontSize:14,fontWeight:800,color:grade.color}}>{grade.label}</div>
+                    <div style={{fontSize:10,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.55)"}}>{tr("Niveau","Level","Level","Livello","Nível")}</div>
+                    <div style={{...posterText(20,grade.color)}}>{grade.label}</div>
                   </div>
                 </div>
                 <div style={{textAlign:"right"}}>
-                  <div style={{fontFamily:G.heading,fontSize:22,color:G.white,lineHeight:1}}>{playerXp.toLocaleString()}</div>
-                  <div style={{fontSize:10,color:"rgba(255,255,255,.4)",fontWeight:700,letterSpacing:1}}>pts</div>
+                  <div style={{...posterText(26,G.white)}}>{playerXp.toLocaleString()}</div>
+                  <div style={{fontSize:10,color:"rgba(255,255,255,.5)",fontWeight:800,letterSpacing:1}}>pts</div>
                 </div>
               </div>
               {nextGrade ? (
                 <>
-                  <div style={{height:8,background:"rgba(255,255,255,.08)",borderRadius:4,overflow:"hidden",marginBottom:6}}>
-                    <div style={{height:"100%",width:progressPct+"%",background:`linear-gradient(90deg, ${grade.color}, ${nextGrade.color})`,borderRadius:4,transition:"width .5s ease",boxShadow:`0 0 12px ${grade.color}88`}}/>
+                  {/* La jauge passe à l'aplat cerclé d'encre : le dégradé de palier
+                      à palier et son halo appartenaient au vocabulaire LED. La
+                      couleur du grade en cours suffit à dire où on en est. */}
+                  <div style={{height:12,background:"rgba(8,17,9,.55)",border:G.traitFin,borderRadius:G.rayonS,overflow:"hidden",marginBottom:7}}>
+                    <div style={{height:"100%",width:progressPct+"%",background:grade.color,borderRight:progressPct>0&&progressPct<100?G.traitFin:"none",transition:"width .5s ease"}}/>
                   </div>
-                  <div style={{fontSize:11,color:"rgba(255,255,255,.5)",textAlign:"center"}}>
+                  <div style={{fontSize:11.5,color:"rgba(255,255,255,.7)",fontWeight:700,textAlign:"center"}}>
                     {lang==="en"
                       ? `${(nextGrade.min - playerXp).toLocaleString()} XP to ${nextGrade.labelEn} ${nextGrade.emoji}`
                       : `${(nextGrade.min - playerXp).toLocaleString()} XP avant ${nextGrade.label} ${nextGrade.emoji}`}
                   </div>
                 </>
               ) : (
-                <div style={{fontSize:11,color:grade.color,textAlign:"center",fontWeight:800,letterSpacing:1,textTransform:"uppercase"}}>🏆 {tr("Niveau max atteint","Max level reached","Max-Level erreicht","Livello massimo raggiunto","Nível máximo atingido")}</div>
+                <div style={{...posterText(20,grade.color),textAlign:"center"}}><span style={{WebkitTextStroke:0,textShadow:"none"}}>🏆</span> {tr("Niveau max atteint","Max level reached","Max-Level erreicht","Livello massimo raggiunto","Nível máximo atingido")}</div>
               )}
             </div>
           );
@@ -11610,22 +11640,24 @@ export default function LePont() {
         const prochaine = progressToNext(playerXp);
         return (
           <>
-            <div style={{zIndex:1,padding:"14px 20px 0",fontSize:10.5,fontWeight:800,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.4)"}}>{tr("Ma collection","My collection","Meine Sammlung","La mia collezione","Minha coleção")}</div>
+            <div style={{...posterText(22,G.projecteur),zIndex:1,padding:"14px 20px 0"}}>{tr("Ma collection","My collection","Meine Sammlung","La mia collezione","Minha coleção")}</div>
             <div onClick={function(){setShowCollection(true);}} style={{zIndex:1,margin:"10px 16px 8px",padding:"14px 16px",background:G.nuit,border:G.traitFin,borderRadius:G.rayon,boxShadow:G.ombre,cursor:"pointer"}}>
               <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
-                <span style={{fontFamily:G.heading,fontSize:26,color:G.accent,lineHeight:1}}>{possedees.length}</span>
-                <span style={{fontSize:12.5,color:"rgba(255,255,255,.55)",fontWeight:700}}>/ {CARDS.length} {tr("cartes","cards","Karten","carte","cartas")}</span>
+                <span style={{...posterText(28,G.pelouse)}}>{possedees.length}</span>
+                <span style={{fontSize:12.5,color:"rgba(255,255,255,.6)",fontWeight:700}}>/ {CARDS.length} {tr("cartes","cards","Karten","carte","cartas")}</span>
                 <span style={{flex:1}}/>
-                {prochaine && <span style={{fontSize:11,color:"rgba(255,255,255,.4)",fontWeight:600}}>{tr("encore","next in","noch","ancora","faltam")} {prochaine.missing.toLocaleString("fr-FR")} XP</span>}
-                <span style={{color:"rgba(255,255,255,.3)",fontSize:15}}>›</span>
+                {prochaine && <span style={{fontSize:11,color:"rgba(255,255,255,.5)",fontWeight:700}}>{tr("encore","next in","noch","ancora","faltam")} {prochaine.missing.toLocaleString("fr-FR")} XP</span>}
+                <span style={{color:"rgba(255,255,255,.45)",fontSize:15}}>›</span>
               </div>
+              {/* Vignettes cerclées d'encre, liseré de rareté rentré dans le cadre :
+                  le même traitement qu'au classement et sur Mon compte. */}
               <div style={{display:"flex",gap:8}}>
                 {apercu.map(function(c){
                   const rm = rarityMeta(c.rarity);
-                  return <img key={c.id} src={c.thumb} alt="" title={lang==="fr"?c.name:c.nameEn} style={{width:42,height:56,borderRadius:8,objectFit:"cover",border:"1.5px solid "+rm.color,flexShrink:0}}/>;
+                  return <img key={c.id} src={c.thumb} alt="" title={lang==="fr"?c.name:c.nameEn} style={{width:42,height:56,borderRadius:G.rayonS,objectFit:"cover",border:G.traitFin,outline:"2px solid "+rm.color,outlineOffset:-4,flexShrink:0}}/>;
                 })}
                 {prochaine && (
-                  <div style={{width:42,height:56,borderRadius:8,border:"1.5px dashed rgba(255,255,255,.18)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:15,color:"rgba(255,255,255,.35)"}}>🔒</div>
+                  <div style={{width:42,height:56,borderRadius:G.rayonS,border:"2px dashed rgba(8,17,9,.75)",background:"rgba(8,17,9,.35)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:15,color:"rgba(255,255,255,.45)"}}>🔒</div>
                 )}
               </div>
             </div>
@@ -11633,39 +11665,47 @@ export default function LePont() {
         );
       })()}
 
-      {/* Stats cards */}
-      <div style={{zIndex:1,padding:"14px 20px 0",fontSize:10.5,fontWeight:800,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.4)"}}>{tr("Statistiques","Stats","Statistiken","Statistiche","Estatísticas")}</div>
+      {/* Stats cards — les quatre tuiles passent au panneau de nuit : leurs
+          dégradés vers le noir, leurs chiffres au halo néon et leurs teintes LED
+          (#00E676, #3DA5FF, #FFC93C, #C084FC) étaient le dernier bloc de l'écran
+          resté hors charte. C'est la pastille et le chiffre qui portent la
+          couleur — pelouse, ciel, projecteur — et le total des parties reste en
+          blanc : il compte, il ne qualifie pas. */}
+      <div style={{...posterText(22,G.projecteur),zIndex:1,padding:"14px 20px 0"}}>{tr("Statistiques","Stats","Statistiken","Statistiche","Estatísticas")}</div>
       <div style={{zIndex:1,padding:"10px 16px 8px",display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
         {/* Record Plug */}
-        <div style={{background:"linear-gradient(160deg, rgba(0,230,118,.22), rgba(0,0,0,.35))",border:G.trait,borderRadius:G.rayon,padding:"14px 16px",boxShadow:G.ombre}}>
-          <div style={{width:38,height:38,borderRadius:G.rayonS,border:G.traitFin,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,background:"rgba(0,230,118,.16)",border:"1px solid rgba(0,230,118,.35)",marginBottom:10}}>🏆</div>
-          <div style={{fontFamily:G.heading,fontSize:34,color:"#00E676",lineHeight:1,textShadow:"0 0 18px rgba(0,230,118,.45)"}}>{record?record.score:0}</div>
-          <div style={{fontSize:10,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginTop:6}}>{tr("Record Plug","Plug record","Plug-Rekord","Record Plug","Recorde Plug")}</div>
+        <div style={{background:G.nuit,border:G.trait,borderRadius:G.rayon,padding:"14px 16px",boxShadow:G.ombre}}>
+          <div style={{...pastilleCharte(G.pelouse,38),marginBottom:10}}>🏆</div>
+          <div style={{...posterText(34,G.pelouse)}}>{record?record.score:0}</div>
+          <div style={{fontSize:10,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase",color:"rgba(255,255,255,.55)",marginTop:6}}>{tr("Record Plug","Plug record","Plug-Rekord","Record Plug","Recorde Plug")}</div>
         </div>
         {/* Record Mercato */}
-        <div style={{background:"linear-gradient(160deg, rgba(61,165,255,.22), rgba(0,0,0,.35))",border:G.trait,borderRadius:G.rayon,padding:"14px 16px",boxShadow:G.ombre}}>
-          <div style={{width:38,height:38,borderRadius:G.rayonS,border:G.traitFin,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,background:"rgba(61,165,255,.16)",border:"1px solid rgba(61,165,255,.35)",marginBottom:10}}>⛓️</div>
-          <div style={{fontFamily:G.heading,fontSize:34,color:"#3DA5FF",lineHeight:1,textShadow:"0 0 18px rgba(61,165,255,.45)"}}>{chainRecord?chainRecord.score:0}</div>
-          <div style={{fontSize:10,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginTop:6}}>{tr("Record Mercato","Mercato record","Mercato-Rekord","Record Mercato","Recorde Mercato")}</div>
+        <div style={{background:G.nuit,border:G.trait,borderRadius:G.rayon,padding:"14px 16px",boxShadow:G.ombre}}>
+          <div style={{...pastilleCharte(G.ciel,38),marginBottom:10}}>⛓️</div>
+          <div style={{...posterText(34,G.ciel)}}>{chainRecord?chainRecord.score:0}</div>
+          <div style={{fontSize:10,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase",color:"rgba(255,255,255,.55)",marginTop:6}}>{tr("Record Mercato","Mercato record","Mercato-Rekord","Record Mercato","Recorde Mercato")}</div>
         </div>
         {/* Amis */}
-        <div style={{background:"linear-gradient(160deg, rgba(255,201,60,.22), rgba(0,0,0,.35))",border:G.trait,borderRadius:G.rayon,padding:"14px 16px",boxShadow:G.ombre}}>
-          <div style={{width:38,height:38,borderRadius:G.rayonS,border:G.traitFin,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,background:"rgba(255,201,60,.16)",border:"1px solid rgba(255,201,60,.35)",marginBottom:10}}>👥</div>
-          <div style={{fontFamily:G.heading,fontSize:34,color:"#FFC93C",lineHeight:1,textShadow:"0 0 18px rgba(255,201,60,.45)"}}>{friendsList.length}</div>
-          <div style={{fontSize:10,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginTop:6}}>{tr("Amis","Friends","Freunde","Amici","Amigos")}</div>
+        <div style={{background:G.nuit,border:G.trait,borderRadius:G.rayon,padding:"14px 16px",boxShadow:G.ombre}}>
+          <div style={{...pastilleCharte(G.projecteur,38),marginBottom:10}}>👥</div>
+          <div style={{...posterText(34,G.projecteur)}}>{friendsList.length}</div>
+          <div style={{fontSize:10,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase",color:"rgba(255,255,255,.55)",marginTop:6}}>{tr("Amis","Friends","Freunde","Amici","Amigos")}</div>
         </div>
         {/* Parties */}
-        <div style={{background:"linear-gradient(160deg, rgba(192,132,252,.22), rgba(0,0,0,.35))",border:G.trait,borderRadius:G.rayon,padding:"14px 16px",boxShadow:G.ombre}}>
-          <div style={{width:38,height:38,borderRadius:G.rayonS,border:G.traitFin,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,background:"rgba(192,132,252,.16)",border:"1px solid rgba(192,132,252,.35)",marginBottom:10}}>🎮</div>
-          <div style={{fontFamily:G.heading,fontSize:34,color:"#C084FC",lineHeight:1,textShadow:"0 0 18px rgba(192,132,252,.45)"}}>{(record?1:0)+(chainRecord?1:0)}</div>
-          <div style={{fontSize:10,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginTop:6}}>{tr("Parties","Games","Spiele","Partite","Jogos")}</div>
+        <div style={{background:G.nuit,border:G.trait,borderRadius:G.rayon,padding:"14px 16px",boxShadow:G.ombre}}>
+          <div style={{...pastilleCharte("rgba(255,255,255,.9)",38),marginBottom:10}}>🎮</div>
+          <div style={{...posterText(34,G.white)}}>{(record?1:0)+(chainRecord?1:0)}</div>
+          <div style={{fontSize:10,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase",color:"rgba(255,255,255,.55)",marginTop:6}}>{tr("Parties","Games","Spiele","Partite","Jogos")}</div>
         </div>
       </div>
 
       {/* WhatsApp communauté */}
       <div style={{zIndex:1,padding:"6px 16px 2px"}}>
+        {/* Le panneau prend la nuit et le trait d'encre comme les autres lignes ;
+            le vert WhatsApp reste sur le logo et le titre, c'est une marque, pas
+            une couleur de la charte. */}
         <a href="https://chat.whatsapp.com/GpKyFjaxixCJviQawGHNUp" target="_blank" rel="noopener noreferrer"
-          style={{display:"flex",alignItems:"center",gap:12,padding:"12px 16px",background:"rgba(37,211,102,.1)",border:"1px solid rgba(37,211,102,.3)",borderRadius:14,textDecoration:"none"}}>
+          style={{...ligneCharte,padding:"12px 16px"}}>
           <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
             <circle cx="16" cy="16" r="16" fill="#25D366"/>
             <path d="M16 7.5C11.306 7.5 7.5 11.306 7.5 16c0 1.76.504 3.4 1.376 4.785L7.5 24.5l3.837-1.356A8.463 8.463 0 0016 24.5c4.694 0 8.5-3.806 8.5-8.5S20.694 7.5 16 7.5z" fill="white"/>
@@ -11673,43 +11713,46 @@ export default function LePont() {
           </svg>
           <div style={{flex:1}}>
             <div style={{fontSize:13,fontWeight:800,color:"#25D366"}}>{tr("Rejoins la communauté GOAT FC 🐐","Join the GOAT FC community 🐐","Tritt der GOAT FC Community bei 🐐","Unisciti alla community GOAT FC 🐐","Junte-se à comunidade GOAT FC 🐐")}</div>
-            <div style={{fontSize:11,color:"rgba(255,255,255,.4)",marginTop:1}}>{tr("Matchs · Discussions foot · Bugs & Idées","Matches · Football talk · Bugs & Ideas","Matches · Fußball-Talk · Bugs & Ideen","Partite · Chiacchiere di calcio · Bug e idee","Partidas · Papo de futebol · Bugs e ideias")}</div>
+            <div style={{fontSize:11,color:"rgba(255,255,255,.5)",fontWeight:600,marginTop:2}}>{tr("Matchs · Discussions foot · Bugs & Idées","Matches · Football talk · Bugs & Ideas","Matches · Fußball-Talk · Bugs & Ideen","Partite · Chiacchiere di calcio · Bug e idee","Partidas · Papo de futebol · Bugs e ideias")}</div>
           </div>
-          <span style={{fontSize:16,color:"rgba(37,211,102,.6)"}}>›</span>
+          <span style={{fontSize:16,color:"#25D366"}}>›</span>
         </a>
       </div>
 
-      {/* Actions */}
-      <div style={{zIndex:1,padding:"10px 20px 0",fontSize:10.5,fontWeight:800,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.4)"}}>{tr("Menu","Menu","Menü","Menu","Menu")}</div>
-      <div style={{zIndex:1,padding:"10px 16px 8px",display:"flex",flexDirection:"column",gap:10}}>
+      {/* Actions — toutes les entrées du menu passent à la ligne de liste de la
+          charte, celle de Mon compte : elles étaient en blanc à 5 % sur filet à
+          10 %, sans trait ni ombre. Chaque pastille prend l'aplat de la couleur
+          qui porte son sens. */}
+      <div style={{...posterText(22,G.projecteur),zIndex:1,padding:"10px 20px 0"}}>{tr("Menu","Menu","Menü","Menu","Menu")}</div>
+      <div style={{zIndex:1,padding:"10px 16px 8px",display:"flex",flexDirection:"column",gap:12}}>
         {/* Mes amis */}
-        <button onClick={()=>{setShowFriends(true);setScreen("home");}} style={{padding:"15px 16px",background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.1)",borderRadius:18,cursor:"pointer",color:G.white,fontFamily:G.font,fontSize:15,fontWeight:800,display:"flex",alignItems:"center",gap:13,textAlign:"left"}}>
-          <span style={{width:40,height:40,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:19,background:"rgba(0,230,118,.12)",border:"1px solid rgba(0,230,118,.28)",flexShrink:0}}>👥</span>
+        <button onClick={()=>{setShowFriends(true);setScreen("home");}} style={{...ligneCharte,padding:"15px 16px",fontSize:15,fontWeight:800,gap:13}}>
+          <span style={pastilleCharte(G.pelouse)}>👥</span>
           <div style={{flex:1}}>
             <div>{tr("Mes amis","My friends","Meine Freunde","I miei amici","Meus amigos")}</div>
-            <div style={{fontSize:11,color:"rgba(255,255,255,.45)",fontWeight:600,marginTop:3,letterSpacing:.3}}>{friendsList.length} {friendsList.length>1?tr("amis","friends","Freunde","amici","amigos"):tr("ami","friend","Freund","amico","amigo")}</div>
+            <div style={{fontSize:11,color:"rgba(255,255,255,.55)",fontWeight:600,marginTop:3,letterSpacing:.3}}>{friendsList.length} {friendsList.length>1?tr("amis","friends","Freunde","amici","amigos"):tr("ami","friend","Freund","amico","amigo")}</div>
           </div>
-          <span style={{fontSize:18,color:"rgba(255,255,255,.35)"}}>→</span>
+          <span style={{fontSize:18,color:"rgba(255,255,255,.45)"}}>→</span>
         </button>
 
         {/* Classement */}
-        <button onClick={()=>{setLbMode("pont");setLbDiff("facile");loadLeaderboard("pont");setShowLeaderboard(true);setScreen("home");}} style={{padding:"15px 16px",background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.1)",borderRadius:18,cursor:"pointer",color:G.white,fontFamily:G.font,fontSize:15,fontWeight:800,display:"flex",alignItems:"center",gap:13,textAlign:"left"}}>
-          <span style={{width:40,height:40,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:19,background:"rgba(255,201,60,.12)",border:"1px solid rgba(255,201,60,.28)",flexShrink:0}}>🏆</span>
+        <button onClick={()=>{setLbMode("pont");setLbDiff("facile");loadLeaderboard("pont");setShowLeaderboard(true);setScreen("home");}} style={{...ligneCharte,padding:"15px 16px",fontSize:15,fontWeight:800,gap:13}}>
+          <span style={pastilleCharte(G.projecteur)}>🏆</span>
           <div style={{flex:1}}>
             <div>{tr("Classement","Leaderboard","Rangliste","Classifica","Ranking")}</div>
-            <div style={{fontSize:11,color:"rgba(255,255,255,.45)",fontWeight:600,marginTop:3,letterSpacing:.3}}>{tr("Vois ton rang mondial","See your world rank","Sieh deinen Weltrang","Vedi il tuo rango mondiale","Veja seu ranking mundial")}</div>
+            <div style={{fontSize:11,color:"rgba(255,255,255,.55)",fontWeight:600,marginTop:3,letterSpacing:.3}}>{tr("Vois ton rang mondial","See your world rank","Sieh deinen Weltrang","Vedi il tuo rango mondiale","Veja seu ranking mundial")}</div>
           </div>
-          <span style={{fontSize:18,color:"rgba(255,255,255,.35)"}}>→</span>
+          <span style={{fontSize:18,color:"rgba(255,255,255,.45)"}}>→</span>
         </button>
 
         {/* Comment jouer */}
-        <button onClick={()=>{setShowTutorial(true);setTutorialStep(0);}} style={{padding:"15px 16px",background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.1)",borderRadius:18,cursor:"pointer",color:G.white,fontFamily:G.font,fontSize:15,fontWeight:800,display:"flex",alignItems:"center",gap:13,textAlign:"left"}}>
-          <span style={{width:40,height:40,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:19,background:"rgba(61,165,255,.12)",border:"1px solid rgba(61,165,255,.28)",flexShrink:0}}>❓</span>
+        <button onClick={()=>{setShowTutorial(true);setTutorialStep(0);}} style={{...ligneCharte,padding:"15px 16px",fontSize:15,fontWeight:800,gap:13}}>
+          <span style={pastilleCharte(G.ciel)}>❓</span>
           <div style={{flex:1}}>
             <div>{tr("Comment jouer ?","How to play?","Wie man spielt?","Come si gioca?","Como jogar?")}</div>
-            <div style={{fontSize:11,color:"rgba(255,255,255,.45)",fontWeight:600,marginTop:3,letterSpacing:.3}}>{tr("Revoir le tutoriel","See the tutorial again","Tutorial nochmal ansehen","Rivedi il tutorial","Rever o tutorial")}</div>
+            <div style={{fontSize:11,color:"rgba(255,255,255,.55)",fontWeight:600,marginTop:3,letterSpacing:.3}}>{tr("Revoir le tutoriel","See the tutorial again","Tutorial nochmal ansehen","Rivedi il tutorial","Rever o tutorial")}</div>
           </div>
-          <span style={{fontSize:18,color:"rgba(255,255,255,.35)"}}>→</span>
+          <span style={{fontSize:18,color:"rgba(255,255,255,.45)"}}>→</span>
         </button>
 
         {/* Code de récupération */}
@@ -11729,28 +11772,30 @@ export default function LePont() {
               try { localStorage.setItem("bb_recovery_code", newCode); } catch {}
             } catch(e) {}
           }
-        }} style={{padding:"15px 16px",background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.1)",borderRadius:18,cursor:"pointer",color:G.white,fontFamily:G.font,fontSize:15,fontWeight:800,display:"flex",alignItems:"center",gap:13,textAlign:"left"}}>
-          <span style={{width:40,height:40,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:19,background:"rgba(192,132,252,.12)",border:"1px solid rgba(192,132,252,.28)",flexShrink:0}}>🔐</span>
+        }} style={{...ligneCharte,padding:"15px 16px",fontSize:15,fontWeight:800,gap:13}}>
+          <span style={pastilleCharte("rgba(255,255,255,.9)")}>🔐</span>
           <div style={{flex:1}}>
             <div>{tr("Mon code de récupération","My recovery code","Mein Wiederherstellungscode","Il mio codice di recupero","Meu código de recuperação")}</div>
-            <div style={{fontSize:11,color:"rgba(255,255,255,.45)",fontWeight:600,marginTop:3,letterSpacing:.3}}>{tr("Pour retrouver ton compte sur un autre appareil","To use your account on another device","Um dein Konto auf einem anderen Gerät zu nutzen","Per usare il tuo account su un altro dispositivo","Para usar sua conta em outro aparelho")}</div>
+            <div style={{fontSize:11,color:"rgba(255,255,255,.55)",fontWeight:600,marginTop:3,letterSpacing:.3}}>{tr("Pour retrouver ton compte sur un autre appareil","To use your account on another device","Um dein Konto auf einem anderen Gerät zu nutzen","Per usare il tuo account su un altro dispositivo","Para usar sua conta em outro aparelho")}</div>
           </div>
-          <span style={{fontSize:18,color:"rgba(255,255,255,.35)"}}>→</span>
+          <span style={{fontSize:18,color:"rgba(255,255,255,.45)"}}>→</span>
         </button>
 
         {/* Langue */}
-        <div style={{padding:"15px 16px",background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.1)",borderRadius:18,color:G.white,fontFamily:G.font,fontSize:15,fontWeight:800,display:"flex",alignItems:"center",gap:13}}>
-          <span style={{width:40,height:40,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:19,background:"rgba(255,255,255,.12)",border:"1px solid rgba(255,255,255,.28)",flexShrink:0}}>🌐</span>
+        <div style={{...ligneCharte,padding:"15px 16px",fontSize:15,fontWeight:800,gap:13,cursor:"default",flexWrap:"wrap"}}>
+          <span style={pastilleCharte(G.ciel)}>🌐</span>
           <div style={{flex:1}}>
             <div>{tr("Langue","Language","Sprache","Lingua","Idioma")}</div>
-            <div style={{fontSize:11,color:"rgba(255,255,255,.45)",fontWeight:600,marginTop:3,letterSpacing:.3}}>{tr("Choisis ta langue","Choose your language","Wähle deine Sprache","Scegli la lingua","Escolha seu idioma")}</div>
+            <div style={{fontSize:11,color:"rgba(255,255,255,.55)",fontWeight:600,marginTop:3,letterSpacing:.3}}>{tr("Choisis ta langue","Choose your language","Wähle deine Sprache","Scegli la lingua","Escolha seu idioma")}</div>
           </div>
+          {/* Le drapeau actif prend l'aplat jaune et l'encre, les autres l'aplat
+              sombre : même cadre pour les cinq, comme les onglets du classement. */}
           <div style={{display:"flex",gap:6}}>
-            <button onClick={()=>setLanguage("fr")} style={{padding:"7px 9px",background:lang==="fr"?G.accent:"rgba(255,255,255,.08)",color:lang==="fr"?"#06130B":"rgba(255,255,255,.6)",border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800}}>🇫🇷 FR</button>
-            <button onClick={()=>setLanguage("en")} style={{padding:"7px 9px",background:lang==="en"?G.accent:"rgba(255,255,255,.08)",color:lang==="en"?"#06130B":"rgba(255,255,255,.6)",border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800}}>🇬🇧 EN</button>
-            <button onClick={()=>setLanguage("de")} style={{padding:"7px 9px",background:lang==="de"?G.accent:"rgba(255,255,255,.08)",color:lang==="de"?"#06130B":"rgba(255,255,255,.6)",border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800}}>🇩🇪 DE</button>
-            <button onClick={()=>setLanguage("it")} style={{padding:"7px 9px",background:lang==="it"?G.accent:"rgba(255,255,255,.08)",color:lang==="it"?"#06130B":"rgba(255,255,255,.6)",border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800}}>🇮🇹 IT</button>
-            <button onClick={()=>setLanguage("pt")} style={{padding:"7px 9px",background:lang==="pt"?G.accent:"rgba(255,255,255,.08)",color:lang==="pt"?"#06130B":"rgba(255,255,255,.6)",border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800}}>🇵🇹 PT</button>
+            {[{id:"fr",l:"🇫🇷 FR"},{id:"en",l:"🇬🇧 EN"},{id:"de",l:"🇩🇪 DE"},{id:"it",l:"🇮🇹 IT"},{id:"pt",l:"🇵🇹 PT"}].map(function(o){return(
+              <button key={o.id} onClick={()=>setLanguage(o.id)} style={{padding:"7px 8px",
+                background:lang===o.id?G.projecteur:"rgba(8,17,9,.5)",color:lang===o.id?G.encre:"rgba(255,255,255,.7)",
+                border:G.traitFin,borderRadius:G.rayonS,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800}}>{o.l}</button>
+            );})}
           </div>
         </div>
 
@@ -11762,26 +11807,26 @@ export default function LePont() {
             ) + (tr("Nom du/des joueur(s) : \n\nMerci !","Player name(s): \n\nThanks!","Spielername(n): \n\nDanke!","Nome giocatore/i: \n\nGrazie!","Nome do(s) jogador(es): \n\nObrigado!"))
           );
           window.location.href = "mailto:contact@goatfc.online?subject="+subject+"&body="+body;
-        }} style={{padding:"14px 18px",background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.12)",borderRadius:18,cursor:"pointer",color:"rgba(255,255,255,.7)",fontFamily:G.font,fontSize:14,fontWeight:700,display:"flex",alignItems:"center",gap:12,textAlign:"left",marginTop:6}}>
+        }} style={{...ligneCharte,marginTop:6}}>
           <span style={{fontSize:18}}>💡</span>
           <div style={{flex:1}}>
             <div>{tr("Suggérer un joueur","Suggest a player","Spieler vorschlagen","Suggerisci un giocatore","Sugerir um jogador")}</div>
-            <div style={{fontSize:11,color:"rgba(255,255,255,.45)",fontWeight:600,marginTop:2}}>{tr("Un joueur manque ? Dis-le nous !","A missing player? Tell us!","Fehlt ein Spieler? Sag es uns!","Manca un giocatore? Diccelo!","Falta um jogador? Avise a gente!")}</div>
+            <div style={{fontSize:11,color:"rgba(255,255,255,.55)",fontWeight:600,marginTop:2}}>{tr("Un joueur manque ? Dis-le nous !","A missing player? Tell us!","Fehlt ein Spieler? Sag es uns!","Manca un giocatore? Diccelo!","Falta um jogador? Avise a gente!")}</div>
           </div>
-          <span style={{fontSize:18,color:"rgba(255,255,255,.4)"}}>→</span>
+          <span style={{fontSize:18,color:"rgba(255,255,255,.45)"}}>→</span>
         </button>
 
         {/* Mon compte (paramètres + suppression) - subtil */}
-        <button onClick={()=>setShowAccount(true)} style={{padding:"14px 18px",background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.12)",borderRadius:18,cursor:"pointer",color:"rgba(255,255,255,.7)",fontFamily:G.font,fontSize:14,fontWeight:700,display:"flex",alignItems:"center",gap:12,textAlign:"left",marginTop:6}}>
+        <button onClick={()=>setShowAccount(true)} style={{...ligneCharte,marginTop:6}}>
           <span style={{fontSize:18}}>⚙️</span>
           <div style={{flex:1}}>{tr("Mon compte","My account","Mein Konto","Il mio account","Minha conta")}</div>
-          <span style={{fontSize:18,color:"rgba(255,255,255,.4)"}}>→</span>
+          <span style={{fontSize:18,color:"rgba(255,255,255,.45)"}}>→</span>
         </button>
       </div>
 
       {/* Footer */}
       <div style={{zIndex:1,padding:"20px 16px 40px",textAlign:"center"}}>
-        <div style={{fontSize:10,color:"rgba(255,255,255,.2)",letterSpacing:2,textTransform:"uppercase"}}>GOAT FC · v1</div>
+        <div style={{fontSize:10,color:"rgba(255,255,255,.45)",fontWeight:800,letterSpacing:2,textTransform:"uppercase"}}>GOAT FC · v1</div>
       </div>
 
       {pseudoModal}
