@@ -48,6 +48,22 @@
 // img/thumb peuvent valoir null — la carte s'affiche en emplacement « à venir »,
 // surtout PAS avec une image d'emprunt : les visuels de modes de jeu qui
 // servaient de bouche-trous se lisaient comme de vraies cartes.
+//
+// ── Deux styles de dessin, et c'est un choix arrêté ──────────────────────────
+// Les douze visuels du premier lot sont dessinés en manga (Yamal, Ronaldo R9,
+// Henry, Haaland, Mbappé, Ronaldinho, Rooney, Messi, Totti, Zidane, Zlatan,
+// Cristiano) ; les dix-sept suivants sont réalistes. Le classement par époque et
+// stature les entremêle : le diamant se trouve manga à six sur sept, le reste
+// réaliste à vingt et un sur vingt-deux, sans que ça forme une règle.
+//
+// Le mélange est ASSUMÉ. La question a été posée et tranchée : on garde ces
+// cartes. Ne pas rouvrir le sujet à chaque ajout, et surtout ne pas essayer
+// d'uniformiser par traitement d'image — ça a été tenté et jeté sur pièce. Un
+// cel-shading complet (aplats plus trait reconstitué par détection de contours)
+// constelle les visages de points noirs ; une postérisation douce ne rapproche
+// rien. Ce qui sépare les deux familles est le DESSIN — visage d'anime, œil
+// plat, anatomie simplifiée — pas la couleur, et aucun filtre ne fabrique ça.
+// Une convergence passerait forcément par de nouvelles illustrations.
 
 export type Rarity = "depart" | "bronze" | "argent" | "or" | "diamant";
 
