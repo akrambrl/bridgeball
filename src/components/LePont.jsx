@@ -12,7 +12,7 @@ import { parisDayOf, parisLastDays } from "../lib/days";
 import { CARDS, RARITIES, avatarCard, badgeToShow, cardById, hasArt, isUnlocked, levelCard, newlyUnlocked, progressToNext, rarityMeta, unlockedCards } from "../lib/collection";
 import { WinBanner } from "./landing/WinBanner";
 // Barème de grades et drapeaux : définis une seule fois, partagés avec le desktop.
-import { GRADES, getGrade, countryToFlag } from "../lib/leaderboard";
+import { GRADES, getGrade, gradeLabel, countryToFlag } from "../lib/leaderboard";
 
 
 
@@ -8667,7 +8667,7 @@ export default function LePont() {
   })() : null;
 
   const gradeUpModal = gradeUpPopup ? (() => {
-    const label = lang === "en" ? (gradeUpPopup.labelEn || gradeUpPopup.label) : gradeUpPopup.label;
+    const label = gradeLabel(gradeUpPopup);
     const color = gradeUpPopup.color || G.accent;
     return (
       <div style={{position:"fixed",inset:0,zIndex:600,background:"rgba(0,0,0,.85)",backdropFilter:"blur(14px)",display:"flex",alignItems:"center",justifyContent:"center",padding:20,animation:"fadeUp .4s ease"}}>
@@ -9706,7 +9706,7 @@ export default function LePont() {
                     <div style={{width:4,height:30,borderRadius:2,background:iWon?"#00E676":"#FF3D57",flexShrink:0}}/>
                     <div style={{flex:1,minWidth:0}}>
                       <div style={{fontSize:13,fontWeight:800,color:G.white,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>@{a.opponent_name||"?"}</div>
-                      <div style={{fontSize:10,color:"rgba(255,255,255,.45)"}}>{a.mode==="pont"?"The Plug":"The Mercato"} · {a.diff==="facile"?(tr("Facile","Easy","Leicht","Facile","Fácil")):a.diff==="moyen"?(tr("Moyen","Medium","Mittel","Medio","Médio")):"Expert"}</div>
+                      <div style={{fontSize:10,color:"rgba(255,255,255,.45)"}}>{a.mode==="pont"?"The Plug":"The Mercato"} · {a.diff==="facile"?(tr("Facile","Easy","Leicht","Facile","Fácil")):a.diff==="moyen"?(tr("Moyen","Medium","Mittel","Medio","Médio")):tr("Expert","Expert","Experte","Esperto","Expert")}</div>
                     </div>
                     <div style={{textAlign:"right",flexShrink:0}}>
                       <div style={{fontFamily:G.heading,fontSize:15,color:G.white}}>{a.opponent_score}<span style={{color:"rgba(255,255,255,.35)"}}> / {a.challenger_score}</span></div>
@@ -9724,7 +9724,7 @@ export default function LePont() {
                 {myOpenChallenges.map(function(c){ const nb=myOpenAttempts.filter(function(a){return a.mode===c.mode&&a.diff===c.diff&&a.challenger_score===c.challenger_score;}).length; return(
                   <div key={c.id} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",borderRadius:12}}>
                     <div style={{flex:1}}>
-                      <div style={{fontSize:13,fontWeight:800,color:G.white}}>{c.mode==="pont"?"The Plug":"The Mercato"} · {c.diff==="facile"?(tr("Facile","Easy","Leicht","Facile","Fácil")):c.diff==="moyen"?(tr("Moyen","Medium","Mittel","Medio","Médio")):"Expert"}</div>
+                      <div style={{fontSize:13,fontWeight:800,color:G.white}}>{c.mode==="pont"?"The Plug":"The Mercato"} · {c.diff==="facile"?(tr("Facile","Easy","Leicht","Facile","Fácil")):c.diff==="moyen"?(tr("Moyen","Medium","Mittel","Medio","Médio")):tr("Expert","Expert","Experte","Esperto","Expert")}</div>
                       <div style={{fontSize:10,color:"rgba(255,255,255,.45)"}}>{nb} {nb!==1?tr("tentatives","attempts","Versuche","tentativi","tentativas"):tr("tentative","attempt","Versuch","tentativo","tentativa")}</div>
                     </div>
                     <div style={{textAlign:"right"}}><div style={{fontFamily:G.heading,fontSize:18,color:G.gold}}>{c.challenger_score}</div><div style={{fontSize:9,color:"rgba(255,255,255,.4)",textTransform:"uppercase",letterSpacing:1}}>{tr("à battre","to beat","zu schlagen","da battere","a bater")}</div></div>
@@ -9797,7 +9797,7 @@ export default function LePont() {
             </div>
             <div style={{...posterText(1,G.projecteur,0),fontSize:13,letterSpacing:3,textTransform:"uppercase",marginBottom:8}}>{tr("Difficulté","Difficulty","Schwierigkeit","Difficoltà","Dificuldade")}</div>
             <div style={{display:"flex",gap:8,marginBottom:20}}>
-              {[{k:"facile",l:tr("Facile","Easy","Leicht","Facile","Fácil")},{k:"moyen",l:tr("Moyen","Medium","Mittel","Medio","Médio")},{k:"expert",l:"Expert"}].map(function(dd){return(
+              {[{k:"facile",l:tr("Facile","Easy","Leicht","Facile","Fácil")},{k:"moyen",l:tr("Moyen","Medium","Mittel","Medio","Médio")},{k:"expert",l:tr("Expert","Expert","Experte","Esperto","Expert")}].map(function(dd){return(
                 <button key={dd.k} onClick={function(){setDuelDiff(dd.k);}} style={{...btn(duelDiff===dd.k?G.projecteur:G.nuit,duelDiff===dd.k?G.encre:G.white,16),flex:1,padding:"11px 8px",borderRadius:G.rayonS}}>{dd.l}</button>
               );})}
             </div>
@@ -9818,7 +9818,7 @@ export default function LePont() {
                   <div key={d.id} style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",background:G.nuit,border:G.trait,borderRadius:G.rayon,boxShadow:G.ombre}}>
                     <div style={{flex:1,minWidth:0}}>
                       <div style={{fontSize:14,fontWeight:800,color:G.white,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>@{d.challenger_name}</div>
-                      <div style={{fontSize:11,color:"rgba(255,255,255,.5)",marginTop:2}}>{d.mode==="pont"?"The Plug":"The Mercato"} · {d.diff==="facile"?(tr("Facile","Easy","Leicht","Facile","Fácil")):d.diff==="moyen"?(tr("Moyen","Medium","Mittel","Medio","Médio")):"Expert"}</div>
+                      <div style={{fontSize:11,color:"rgba(255,255,255,.5)",marginTop:2}}>{d.mode==="pont"?"The Plug":"The Mercato"} · {d.diff==="facile"?(tr("Facile","Easy","Leicht","Facile","Fácil")):d.diff==="moyen"?(tr("Moyen","Medium","Mittel","Medio","Médio")):tr("Expert","Expert","Experte","Esperto","Expert")}</div>
                     </div>
                     <div style={{textAlign:"right",marginRight:4}}>
                       <div style={{...posterText(1,G.projecteur,0),fontSize:24}}>{d.challenger_score}</div>
@@ -11721,9 +11721,12 @@ export default function LePont() {
                     <div style={{height:"100%",width:progressPct+"%",background:grade.color,borderRight:progressPct>0&&progressPct<100?G.traitFin:"none",transition:"width .5s ease"}}/>
                   </div>
                   <div style={{fontSize:11.5,color:"rgba(255,255,255,.7)",fontWeight:700,textAlign:"center"}}>
-                    {lang==="en"
-                      ? `${(nextGrade.min - playerXp).toLocaleString()} XP to ${nextGrade.labelEn} ${nextGrade.emoji}`
-                      : `${(nextGrade.min - playerXp).toLocaleString()} XP avant ${nextGrade.label} ${nextGrade.emoji}`}
+                    {(function(){
+                      const reste = (nextGrade.min - playerXp).toLocaleString();
+                      const cible = gradeLabel(nextGrade) + " " + nextGrade.emoji;
+                      return tr(`${reste} XP avant ${cible}`, `${reste} XP to ${cible}`,
+                        `${reste} XP bis ${cible}`, `${reste} XP prima di ${cible}`, `${reste} XP até ${cible}`);
+                    })()}
                   </div>
                 </>
               ) : (
@@ -12676,34 +12679,55 @@ export default function LePont() {
           const RULES_DATA = {
             grid:    { title: "TROUVE LE JOUEUR", emoji: "🕵️", accent: "#00E676", bg: "linear-gradient(135deg,rgba(0,230,118,.18),rgba(255,214,0,.12))",
               rules_fr: ["Un joueur mystère à deviner, en illimité","6 essais : chaque proposition révèle des indices (nationalité, zone, poste, âge, club…)","Feedback façon Wordle : ✓ vert, ✗ rouge, ↑↓ pour l'âge","Le parcours est caché — pure déduction (révélable en indice)","Enchaîne les bonnes réponses pour monter ta SÉRIE 🔥 et grimper au classement"],
-              rules_en: ["A mystery player to guess, unlimited","6 tries: each guess reveals clues (nationality, zone, position, age, club…)","Wordle-style feedback: ✓ green, ✗ red, ↑↓ for age","The career is hidden — pure deduction (revealable as a hint)","Chain correct answers to build your STREAK 🔥 and climb the leaderboard"]
+              rules_en: ["A mystery player to guess, unlimited","6 tries: each guess reveals clues (nationality, zone, position, age, club…)","Wordle-style feedback: ✓ green, ✗ red, ↑↓ for age","The career is hidden — pure deduction (revealable as a hint)","Chain correct answers to build your STREAK 🔥 and climb the leaderboard"],
+              rules_de: ["Ein Mystery-Spieler zum Erraten, unbegrenzt","6 Versuche: jeder Tipp deckt Hinweise auf (Nationalität, Zone, Position, Alter, Klub…)","Feedback wie bei Wordle: ✓ grün, ✗ rot, ↑↓ fürs Alter","Die Karriere bleibt verborgen — reine Deduktion (als Hinweis aufdeckbar)","Reihe richtige Antworten aneinander für deine SERIE 🔥 und klettere in der Rangliste"],
+              rules_it: ["Un giocatore misterioso da indovinare, illimitato","6 tentativi: ogni proposta svela degli indizi (nazionalità, zona, ruolo, età, club…)","Riscontro alla Wordle: ✓ verde, ✗ rosso, ↑↓ per l'età","La carriera è nascosta — pura deduzione (svelabile come indizio)","Concatena le risposte giuste per far salire la tua SERIE 🔥 e scalare la classifica"],
+              rules_pt: ["Um jogador misterioso para adivinhar, ilimitado","6 tentativas: cada palpite revela dicas (nacionalidade, zona, posição, idade, clube…)","Retorno estilo Wordle: ✓ verde, ✗ vermelho, ↑↓ para a idade","A carreira fica escondida — pura dedução (revelável como dica)","Encadeie acertos para subir sua SÉRIE 🔥 e escalar o ranking"]
             },
             mercato: { title: "GOAT MERCATO", emoji: "⛓",  accent: "#60a5fa", bg: "linear-gradient(135deg,rgba(96,165,250,.18),rgba(59,130,246,.12))",
               rules_fr: ["Démarre avec un joueur, enchaîne sans t'arrêter","Tape un club où il a joué","Puis un autre joueur qui a joué dans ce club","Et ainsi de suite jusqu'à la fin du chrono","Plus la chaîne est longue, plus tu scores"],
-              rules_en: ["Start with a player, chain without stopping","Type a club they played for","Then another player who played at that club","And so on until time runs out","The longer the chain, the bigger the score"]
+              rules_en: ["Start with a player, chain without stopping","Type a club they played for","Then another player who played at that club","And so on until time runs out","The longer the chain, the bigger the score"],
+              rules_de: ["Starte mit einem Spieler und reihe ohne Pause aneinander","Tippe einen Klub ein, für den er gespielt hat","Dann einen anderen Spieler dieses Klubs","Und so weiter, bis die Zeit abläuft","Je länger die Kette, desto mehr Punkte"],
+              rules_it: ["Parti da un giocatore e concatena senza fermarti","Scrivi un club in cui ha giocato","Poi un altro giocatore che ha giocato in quel club","E così via fino allo scadere del tempo","Più lunga è la catena, più punti fai"],
+              rules_pt: ["Comece por um jogador e encadeie sem parar","Digite um clube onde ele jogou","Depois outro jogador que passou por esse clube","E assim por diante até o tempo acabar","Quanto mais longa a corrente, mais você pontua"]
             },
             plug:    { title: "GOAT PLUG",    emoji: "⚽", accent: "#FFD600", bg: "linear-gradient(135deg,rgba(255,214,0,.18),rgba(255,107,53,.12))",
               rules_fr: ["On te montre 2 clubs","Trouve un joueur qui a joué dans les deux","Tu as 60 secondes par manche","+2 points par bonne réponse, −10 par pass","Difficulté progressive : facile → moyen → expert"],
-              rules_en: ["We show you 2 clubs","Find a player who played for both","You have 60 seconds per round","+2 points per correct answer, −10 per skip","Progressive difficulty: easy → medium → expert"]
+              rules_en: ["We show you 2 clubs","Find a player who played for both","You have 60 seconds per round","+2 points per correct answer, −10 per skip","Progressive difficulty: easy → medium → expert"],
+              rules_de: ["Wir zeigen dir 2 Klubs","Finde einen Spieler, der für beide gespielt hat","Du hast 60 Sekunden pro Runde","+2 Punkte pro richtiger Antwort, −10 pro Überspringen","Steigende Schwierigkeit: leicht → mittel → Experte"],
+              rules_it: ["Ti mostriamo 2 club","Trova un giocatore che ha giocato in entrambi","Hai 60 secondi per turno","+2 punti per risposta esatta, −10 per ogni salto","Difficoltà progressiva: facile → medio → esperto"],
+              rules_pt: ["Mostramos 2 clubes","Ache um jogador que jogou nos dois","Você tem 60 segundos por rodada","+2 pontos por acerto, −10 por pular","Dificuldade progressiva: fácil → médio → expert"]
             },
             guess:   { title: "GOAT GUESS",   emoji: "🔮", accent: "#C084FC", bg: "linear-gradient(135deg,rgba(192,132,252,.18),rgba(255,138,42,.12))",
               rules_fr: ["Pense à un footballeur connu (actuel ou retraité)","Je te pose jusqu'à 25 questions oui / non / sais pas","Tu réponds honnêtement, je restreins mes candidats","Je devine ton joueur — si je rate, je retente jusqu'à 5 fois","Questions par étapes : Continent → Nation → Ligue → Club → Poste"],
-              rules_en: ["Think of a famous footballer (active or retired)","I'll ask up to 25 yes / no / don't know questions","Answer honestly — I narrow down my candidates","I guess your player — if I'm wrong, I try up to 5 times","Questions by stage: Continent → Nation → League → Club → Position"]
+              rules_en: ["Think of a famous footballer (active or retired)","I'll ask up to 25 yes / no / don't know questions","Answer honestly — I narrow down my candidates","I guess your player — if I'm wrong, I try up to 5 times","Questions by stage: Continent → Nation → League → Club → Position"],
+              rules_de: ["Denk an einen bekannten Fußballer (aktiv oder im Ruhestand)","Ich stelle bis zu 25 Fragen: ja / nein / weiß nicht","Antworte ehrlich — ich grenze meine Kandidaten ein","Ich errate deinen Spieler — bei einem Fehler versuche ich es bis zu 5 Mal","Fragen in Etappen: Kontinent → Nation → Liga → Klub → Position"],
+              rules_it: ["Pensa a un calciatore famoso (in attività o ritirato)","Ti faccio fino a 25 domande: sì / no / non so","Rispondi onestamente — io restringo i candidati","Indovino il tuo giocatore — se sbaglio, riprovo fino a 5 volte","Domande a tappe: Continente → Nazione → Campionato → Club → Ruolo"],
+              rules_pt: ["Pense num jogador famoso (na ativa ou aposentado)","Eu faço até 25 perguntas: sim / não / não sei","Responda com sinceridade — eu vou afunilando os candidatos","Eu adivinho seu jogador — se errar, tento até 5 vezes","Perguntas por etapas: Continente → Nação → Liga → Clube → Posição"]
             },
             goatgrid:{ title: "GOAT GRID",    emoji: "🎯", accent: "#FF6B35", bg: "linear-gradient(135deg,rgba(255,107,53,.18),rgba(255,68,68,.12))",
               rules_fr: ["Une grille 3×3 : 9 cases à remplir","Chaque case croise deux critères (club, nationalité, poste, ligue)","Nomme un joueur qui coche les deux à la fois","Un joueur ne peut servir qu'une seule fois dans la grille","Plus le joueur cité est rare, plus la case rapporte de points"],
-              rules_en: ["A 3×3 grid: 9 cells to fill","Each cell crosses two criteria (club, nationality, position, league)","Name a player who matches both at once","A player can only be used once per grid","The rarer the player you name, the more the cell scores"]
+              rules_en: ["A 3×3 grid: 9 cells to fill","Each cell crosses two criteria (club, nationality, position, league)","Name a player who matches both at once","A player can only be used once per grid","The rarer the player you name, the more the cell scores"],
+              rules_de: ["Ein 3×3-Raster: 9 Felder zu füllen","Jedes Feld kreuzt zwei Kriterien (Klub, Nationalität, Position, Liga)","Nenne einen Spieler, der beide gleichzeitig erfüllt","Ein Spieler darf pro Raster nur einmal vorkommen","Je seltener der genannte Spieler, desto mehr Punkte bringt das Feld"],
+              rules_it: ["Una griglia 3×3: 9 caselle da riempire","Ogni casella incrocia due criteri (club, nazionalità, ruolo, campionato)","Nomina un giocatore che soddisfa entrambi insieme","Uno stesso giocatore può servire una sola volta nella griglia","Più il giocatore citato è raro, più punti vale la casella"],
+              rules_pt: ["Uma grade 3×3: 9 casas para preencher","Cada casa cruza dois critérios (clube, nacionalidade, posição, liga)","Diga um jogador que atenda aos dois ao mesmo tempo","Um jogador só pode ser usado uma vez na grade","Quanto mais raro o jogador citado, mais pontos a casa vale"]
             },
             duel:    { title: "GOAT BATTLE",  emoji: "⚔️", accent: "#3DA5FF", bg: "linear-gradient(135deg,rgba(61,165,255,.18),rgba(0,230,118,.12))",
               rules_fr: ["Duel en direct sur The Plug","Deux clubs s'affichent, trouve le joueur qui relie les deux","Le plus rapide à répondre marque le point","Crée un salon et partage le code, ou rejoins celui d'un pote","Le meilleur score à la fin des manches l'emporte"],
-              rules_en: ["Live head-to-head on The Plug","Two clubs appear — find the player who links them","Fastest correct answer takes the point","Create a room and share the code, or join a friend's","Best score at the end of the rounds wins"]
+              rules_en: ["Live head-to-head on The Plug","Two clubs appear — find the player who links them","Fastest correct answer takes the point","Create a room and share the code, or join a friend's","Best score at the end of the rounds wins"],
+              rules_de: ["Direktes Duell auf The Plug","Zwei Klubs erscheinen — finde den Spieler, der sie verbindet","Die schnellste richtige Antwort holt den Punkt","Erstelle einen Raum und teile den Code, oder tritt dem eines Freundes bei","Der beste Score am Ende der Runden gewinnt"],
+              rules_it: ["Duello in diretta su The Plug","Appaiono due club — trova il giocatore che li collega","Il più rapido a rispondere si prende il punto","Crea una stanza e condividi il codice, o entra in quella di un amico","Vince il miglior punteggio alla fine dei turni"],
+              rules_pt: ["Duelo ao vivo no The Plug","Dois clubes aparecem — ache o jogador que os liga","Quem responde certo primeiro leva o ponto","Crie uma sala e compartilhe o código, ou entre na de um amigo","Vence o melhor placar no fim das rodadas"]
             },
           };
           const data = RULES_DATA[homeRulesModal];
           // Garde : une carte sans règles ne doit pas casser l'app (le bouton ⓘ
           // de la carte duel plantait, aucune entrée n'existait pour elle).
           if (!data) return null;
-          const rules = lang === "en" ? data.rules_en : data.rules_fr;
+          const rules = lang === "de" ? (data.rules_de || data.rules_en)
+            : lang === "it" ? (data.rules_it || data.rules_en)
+            : lang === "pt" ? (data.rules_pt || data.rules_en)
+            : lang === "en" ? data.rules_en : data.rules_fr;
           return (
             <div
               style={{position:"fixed",inset:0,zIndex:400,display:"flex",alignItems:"flex-end"}}

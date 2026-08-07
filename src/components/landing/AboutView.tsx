@@ -5,7 +5,7 @@ export const AboutView = () => {
   const l = getLang();
   const Plug = <span className="font-semibold" style={{ color: G.pelouse }}>The Plug</span>;
   const Mercato = <span className="font-semibold" style={{ color: G.projecteur }}>The Mercato</span>;
-  const Grid = <span className="font-semibold" style={{ color: G.pelouse }}>Trouve le joueur</span>;
+  const Grid = <span className="font-semibold" style={{ color: G.pelouse }}>{tr("Trouve le joueur", "Guess the player", "Errate den Spieler", "Indovina il giocatore", "Adivinhe o jogador")}</span>;
 
   const prose =
     l === "en" ? (

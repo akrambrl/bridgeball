@@ -49,20 +49,35 @@ export function getCurrentSeason(): SeasonInfo {
 // ─── Grades ───────────────────────────────────────────────────────────────────
 // Partagés avec LePont (mobile), qui en avait sa propre copie : deux définitions
 // du même barème auraient fini par diverger.
+// Les cinq langues de l'app, et non plus seulement FR + EN : un joueur italien
+// lisait « Titulaire » au milieu d'une interface italienne. GOAT reste GOAT
+// partout, c'est le mot de la marque.
 export const GRADES = [
-  { min: 10000, label: "GOAT",      labelEn: "GOAT",    emoji: "🐐",  color: "#FFD700" },
-  { min: 5000,  label: "Légende",   labelEn: "Legend",  emoji: "☄️",  color: "#FF6B35" },
-  { min: 2000,  label: "Titulaire", labelEn: "Starter", emoji: "🐺",  color: "#00B4D8" },
-  { min: 500,   label: "Espoir",    labelEn: "Rookie",  emoji: "👦🏻", color: "#2EC4B6" },
-  { min: 0,     label: "Amateur",   labelEn: "Amateur", emoji: "🏖️", color: "#8D99AE" },
+  { min: 10000, label: "GOAT",      labelEn: "GOAT",    labelDe: "GOAT",          labelIt: "GOAT",     labelPt: "GOAT",     emoji: "🐐",  color: "#FFD700" },
+  { min: 5000,  label: "Légende",   labelEn: "Legend",  labelDe: "Legende",       labelIt: "Leggenda", labelPt: "Lenda",    emoji: "☄️",  color: "#FF6B35" },
+  { min: 2000,  label: "Titulaire", labelEn: "Starter", labelDe: "Stammspieler",  labelIt: "Titolare", labelPt: "Titular",  emoji: "🐺",  color: "#00B4D8" },
+  { min: 500,   label: "Espoir",    labelEn: "Rookie",  labelDe: "Talent",        labelIt: "Promessa", labelPt: "Promessa", emoji: "👦🏻", color: "#2EC4B6" },
+  { min: 0,     label: "Amateur",   labelEn: "Amateur", labelDe: "Amateur",       labelIt: "Amatore",  labelPt: "Amador",   emoji: "🏖️", color: "#8D99AE" },
 ];
 
 export type Grade = { min: number; label: string; emoji: string; color: string };
 
+/** Libellé d'un grade dans la langue courante. Exporté parce que les appelants
+ *  qui manipulent une entrée BRUTE de GRADES (le palier SUIVANT, par exemple)
+ *  en ont besoin sans passer par getGrade, qui part d'une XP. */
+export function gradeLabel(g: { label: string; labelEn?: string; labelDe?: string; labelIt?: string; labelPt?: string }): string {
+  const l = getLang();
+  if (l === "de") return g.labelDe || g.labelEn || g.label;
+  if (l === "it") return g.labelIt || g.labelEn || g.label;
+  if (l === "pt") return g.labelPt || g.labelEn || g.label;
+  if (l === "en") return g.labelEn || g.label;
+  return g.label;
+}
+
 /** Grade correspondant à une XP cumulée. */
 export function getGrade(xp: number): Grade {
   const g = GRADES.find((g) => xp >= g.min) || GRADES[GRADES.length - 1];
-  return { ...g, label: getLang() === "fr" ? g.label : (g.labelEn || g.label) };
+  return { ...g, label: gradeLabel(g) };
 }
 
 /** Code pays ISO 2 lettres → emoji drapeau ("" si code invalide). */
