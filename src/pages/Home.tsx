@@ -290,7 +290,9 @@ const Home = () => {
 
   return (
     <div className="relative min-h-screen overflow-x-hidden text-white flex flex-col"
-      style={{ background: fondCharte, backgroundAttachment:"fixed" }}>
+      style={{ background: fondCharte, backgroundAttachment:"fixed",
+        // Contexte d'empilement pour le terrain (calque à zIndex -1).
+        isolation:"isolate" }}>
       {/* Le terrain de la charte : bandes de tonte, tracés d'encre et grain
           sérigraphié, dessinés PAR-DESSUS la pelouse éclairée. Les anciens
           voiles blancs translucides (filigrane, grille, halo vert) ne tenaient

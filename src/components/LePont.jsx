@@ -8466,6 +8466,10 @@ export default function LePont() {
   const tPct = timeLeft / duration;
   const urgent = timeLeft <= 10 && timeLeft > 0;
   const shell = {
+    // isolation : le terrain de la charte est un calque à zIndex -1, il lui faut
+    // un contexte d'empilement ici pour ne pas remonter derrière le fond d'un
+    // ancêtre. `isolate` en crée un sans rien changer d'autre au rendu.
+    isolation:"isolate",
     minHeight:"100vh",display:"flex",flexDirection:"column",
     background:"transparent",
     // Sur mobile : overflow hidden pour les fonds + scroll géré au cas par cas

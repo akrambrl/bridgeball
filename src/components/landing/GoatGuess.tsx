@@ -1174,6 +1174,8 @@ export const GoatGuess = ({ onClose }: Props) => {
       // fond sombre à halo violet faisait de cet écran un monde à part, et sur
       // un fond plus sombre que l'encre aucun trait de la charte n'existe.
       background: fondCharte,
+      // Contexte d'empilement pour le terrain (calque à zIndex -1).
+      isolation: "isolate",
       paddingTop: "env(safe-area-inset-top)",
       paddingBottom: "env(safe-area-inset-bottom)",
     }}
