@@ -28,7 +28,7 @@ const STATS_CODE = "akram-goat-2610";
 // parties par mode). L'ordre n'a pas d'importance : l'affichage trie par volume.
 const PLAY_MODES_META = [
   { key:"battle",    label:"GOAT Battle",       emoji:"⚡",  color:"#FFC93C" },
-  { key:"pont",      label:"The Plug",          emoji:"🔗",  color:"#00E676" },
+  { key:"pont",      label:"The Plug",          emoji:"🔗",  color:G.pelouseClaire },
   { key:"chaine",    label:"The Mercato",       emoji:"🔁",  color:"#FF8A2A" },
   { key:"reveal",    label:"Trouve le joueur",  emoji:"🕵️", color:"#E0B85C" },
   { key:"devinette", label:"Devinette du jour", emoji:"🗓️", color:"#F2D680" },
@@ -215,7 +215,7 @@ function getNextGrade(score) {
 // Paliers de chaîne (The Mercato) fêtés en grande pompe.
 const CHAIN_MILESTONES = {
   10: { emoji: "🔥", color: "#FF8A2A" },
-  20: { emoji: "💫", color: "#FFD600" },
+  20: { emoji: "💫", color: G.projecteur },
   30: { emoji: "⚡", color: "#3DA5FF" },
   40: { emoji: "🚀", color: "#C084FC" },
   50: { emoji: "🐐", color: "#FFD700" },
@@ -1234,7 +1234,7 @@ const DAILY_THEMES = {
   4: { id:"SERIEA",     flag:"🇮🇹", labelFr:"JEUDI SERIE A",        labelEn:"THURSDAY SERIE A",      labelDe:"DONNERSTAG SERIE A", labelIt:"GIOVEDÌ SERIE A",    labelPt:"QUINTA SERIE A",      color:"#008C45", filter:"SERIEA" },
   5: { id:"BUNDESLIGA", flag:"🇩🇪", labelFr:"VENDREDI BUNDESLIGA",  labelEn:"FRIDAY BUNDESLIGA",     labelDe:"FREITAG BUNDESLIGA", labelIt:"VENERDÌ BUNDESLIGA", labelPt:"SEXTA BUNDESLIGA",    color:"#D4AF37", filter:"BUNDESLIGA" },
   6: { id:"LEGEND",     flag:"🐐", labelFr:"SAMEDI LÉGENDE",        labelEn:"SATURDAY LEGEND",        labelDe:"SAMSTAG LEGENDE",    labelIt:"SABATO LEGGENDA",    labelPt:"SÁBADO LENDA",        color:"#FFD700", filter:"LEGEND" },
-  0: { id:"JOKER",      flag:"🎲", labelFr:"DIMANCHE JOKER",        labelEn:"SUNDAY JOKER",           labelDe:"SONNTAG JOKER",      labelIt:"DOMENICA JOKER",     labelPt:"DOMINGO JOKER",       color:"#00E676", filter:"JOKER" },
+  0: { id:"JOKER",      flag:"🎲", labelFr:"DIMANCHE JOKER",        labelEn:"SUNDAY JOKER",           labelDe:"SONNTAG JOKER",      labelIt:"DOMENICA JOKER",     labelPt:"DOMINGO JOKER",       color:G.pelouseClaire, filter:"JOKER" },
 };
 
 function getTodayTheme() {
@@ -2625,6 +2625,7 @@ if(typeof document!=="undefined"&&!document.getElementById("bb-css")){
     @keyframes bigAnswerPop{0%{transform:scale(.7);opacity:0}14%{transform:scale(1.06);opacity:1}72%{transform:scale(1);opacity:1}100%{transform:scale(1);opacity:0}}
     @keyframes fadeIn{from{opacity:0}to{opacity:1}}
     @keyframes popIn{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+    @keyframes popInPoster{0%{transform:skewX(-7deg) scale(.6);opacity:0}70%{transform:skewX(-7deg) scale(1.08)}100%{transform:skewX(-7deg) scale(1);opacity:1}}
     @keyframes slideIn{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:translateX(0)}}
     @keyframes dailySlide{0%{opacity:0;transform:translateX(-60px)}100%{opacity:1;transform:translateX(0)}}
     @keyframes scoreUp{0%{transform:scale(1)}50%{transform:scale(1.5);color:#4ade80}100%{transform:scale(1)}}
@@ -2640,6 +2641,7 @@ if(typeof document!=="undefined"&&!document.getElementById("bb-css")){
     @keyframes clubSlideLeft{0%{opacity:0;transform:translateX(-110%) scale(.88)}65%{transform:translateX(4%) scale(1.02)}100%{opacity:1;transform:translateX(0) scale(1)}}
     @keyframes clubSlideRight{0%{opacity:0;transform:translateX(110%) scale(.88)}65%{transform:translateX(-4%) scale(1.02)}100%{opacity:1;transform:translateX(0) scale(1)}}
     @keyframes vsAppear{0%{opacity:0;transform:scale(0) rotate(-15deg)}65%{transform:scale(1.25) rotate(4deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
+    @keyframes vsAppearPoster{0%{opacity:0;transform:skewX(-7deg) scale(0) rotate(-15deg)}65%{transform:skewX(-7deg) scale(1.25) rotate(4deg)}100%{opacity:1;transform:skewX(-7deg) scale(1) rotate(0)}}
     @keyframes sheetUp{0%{transform:translateY(100%);opacity:0}100%{transform:translateY(0);opacity:1}}
     /* ── Ouverture d'une carte, façon pack FUT ─────────────────────────────
        Le dos monte, tremble de plus en plus fort pendant que l'aura de rareté
@@ -8535,7 +8537,7 @@ export default function LePont() {
             strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={circ*(1-tPct)}
             cx={size/2} cy={size/2} r={r} style={{transition:"stroke-dashoffset .9s linear"}}/>
         </svg>
-        <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:G.heading,fontSize:size*.3,color:urgent?"#ef4444":G.white,animation:urgent?"urgentPulse 1s ease infinite":"none"}}>{timeLeft}</div>
+        <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",...posterText(24),fontSize:size*.3,color:urgent?"#ef4444":G.white,animation:urgent?"urgentPulse 1s ease infinite":"none"}}>{timeLeft}</div>
       </div>
     );
   };
@@ -8706,7 +8708,7 @@ export default function LePont() {
 
   const gradeUpModal = gradeUpPopup ? (() => {
     const label = gradeLabel(gradeUpPopup);
-    const color = gradeUpPopup.color || G.accent;
+    const color = gradeUpPopup.color || G.pelouseClaire;
     return (
       <div style={{position:"fixed",inset:0,zIndex:600,background:"rgba(8,17,9,.86)",display:"flex",alignItems:"center",justifyContent:"center",padding:20,animation:"fadeUp .4s ease"}}>
         {/* Rayons de lumière derrière le modal */}
@@ -8739,7 +8741,7 @@ export default function LePont() {
             {gradeUpPopup.emoji}
           </div>
           {/* Label du grade */}
-          <div style={{fontFamily:G.heading,fontSize:28,color:color,lineHeight:1.1,marginBottom:8,textShadow:`0 0 20px ${color}88`,letterSpacing:1}}>
+          <div style={{...posterText(28),color:color,lineHeight:1.1,marginBottom:8,textShadow:`0 0 20px ${color}88`,letterSpacing:1}}>
             {label.toUpperCase()}
           </div>
           {/* Min XP */}
@@ -8818,7 +8820,7 @@ export default function LePont() {
 
   const instructionsPopup = showInstructions&&(() => {
     const isPont = showInstructions==="pont";
-    const accentColor = isPont ? "#FFD600" : "#60a5fa";
+    const accentColor = isPont ? G.projecteur : G.ciel;
     const accentSecondary = isPont ? "#FF6B35" : "#3b82f6";
     return (
       <div onClick={dismissInstructions} style={{position:"fixed",inset:0,zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:"20px",background:"rgba(8,17,9,.86)",animation:"fadeIn .25s ease",cursor:"pointer"}}>
@@ -8846,7 +8848,7 @@ export default function LePont() {
             </div>
 
             {/* Title */}
-            <div style={{fontFamily:G.heading,fontSize:34,color:G.white,letterSpacing:3,textAlign:"center",marginBottom:4,textShadow:`0 2px 12px ${accentColor}66`}}>
+            <div style={{...posterText(34),color:G.white,letterSpacing:3,textAlign:"center",marginBottom:4,textShadow:`0 2px 12px ${accentColor}66`}}>
               {isPont?"GOAT PLUG":"GOAT MERCATO"}
             </div>
             <div style={{fontSize:11,letterSpacing:3,color:accentColor,textTransform:"uppercase",fontWeight:800,textAlign:"center",marginBottom:22}}>
@@ -8871,7 +8873,7 @@ export default function LePont() {
                   <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
                     <div style={{textAlign:"center",padding:"8px 6px",background:"rgba(42,155,78,.35)",borderRadius:10,border:G.traitFin}}>
                       <div style={{fontSize:20,marginBottom:2}}>✓</div>
-                      <div style={{fontSize:13,fontWeight:800,color:"#00E676"}}>+10/20/30</div>
+                      <div style={{fontSize:13,fontWeight:800,color:G.pelouseClaire}}>+10/20/30</div>
                       <div style={{fontSize:9,color:"rgba(255,255,255,.5)",marginTop:2}}>{tr("bonne","correct","richtig","corrette","certas")}</div>
                     </div>
                     <div style={{textAlign:"center",padding:"8px 6px",background:"rgba(217,58,43,.32)",borderRadius:10,border:G.traitFin}}>
@@ -8964,10 +8966,10 @@ export default function LePont() {
                 📲
               </div>
             </div>
-            <div style={{fontFamily:G.heading,fontSize:28,color:G.white,letterSpacing:2,textAlign:"center",marginBottom:4,textShadow:"0 2px 12px rgba(0,230,118,.5)"}}>
+            <div style={{...posterText(28),color:G.white,letterSpacing:2,textAlign:"center",marginBottom:4,textShadow:"0 2px 12px rgba(0,230,118,.5)"}}>
               {tr("INSTALLER GOAT FC","INSTALL GOAT FC","GOAT FC INSTALLIEREN","INSTALLA GOAT FC","INSTALAR GOAT FC")}
             </div>
-            <div style={{fontSize:11,letterSpacing:3,color:"#00E676",textTransform:"uppercase",fontWeight:800,textAlign:"center",marginBottom:22}}>
+            <div style={{fontSize:11,letterSpacing:3,color:G.pelouseClaire,textTransform:"uppercase",fontWeight:800,textAlign:"center",marginBottom:22}}>
               {tr("Reçois les rappels quotidiens 🔥","Get daily reminders 🔥","Erhalte tägliche Erinnerungen 🔥","Ricevi promemoria quotidiani 🔥","Receba lembretes diários 🔥")}
             </div>
 
@@ -8976,7 +8978,7 @@ export default function LePont() {
               <div style={{display:"flex",alignItems:"flex-start",gap:10,marginBottom:10}}>
                 <span style={{fontSize:18}}>🔥</span>
                 <div style={{flex:1,fontSize:13,color:"rgba(255,255,255,.9)",lineHeight:1.4}}>
-                  {lang==="de"?<>Verliere nie deine <strong style={{color:"#FFD600"}}>Serie</strong> — Erinnerung vor Mitternacht</>:lang==="it"?<>Non perdere mai la tua <strong style={{color:"#FFD600"}}>serie</strong> — promemoria prima di mezzanotte</>:lang==="pt"?<>Nunca perca sua <strong style={{color:"#FFD600"}}>sequência</strong> — lembrete antes da meia-noite</>:lang==="en"?<>Never break your <strong style={{color:"#FFD600"}}>streak</strong> — get pinged before midnight</>:<>Ne casse plus ta <strong style={{color:"#FFD600"}}>série</strong> — rappel avant minuit</>}
+                  {lang==="de"?<>Verliere nie deine <strong style={{color:G.projecteur}}>Serie</strong> — Erinnerung vor Mitternacht</>:lang==="it"?<>Non perdere mai la tua <strong style={{color:G.projecteur}}>serie</strong> — promemoria prima di mezzanotte</>:lang==="pt"?<>Nunca perca sua <strong style={{color:G.projecteur}}>sequência</strong> — lembrete antes da meia-noite</>:lang==="en"?<>Never break your <strong style={{color:G.projecteur}}>streak</strong> — get pinged before midnight</>:<>Ne casse plus ta <strong style={{color:G.projecteur}}>série</strong> — rappel avant minuit</>}
                 </div>
               </div>
               <div style={{display:"flex",alignItems:"flex-start",gap:10,marginBottom:10}}>
@@ -8996,13 +8998,13 @@ export default function LePont() {
             {/* Instructions spécifiques plateforme */}
             {ios ? (
               <div style={{background:G.nuit,border:G.traitFin,borderRadius:16,padding:"14px 16px",marginBottom:20}}>
-                <div style={{fontSize:11,fontWeight:800,letterSpacing:2,color:"#00E676",textTransform:"uppercase",marginBottom:10,textAlign:"center"}}>
+                <div style={{fontSize:11,fontWeight:800,letterSpacing:2,color:G.pelouseClaire,textTransform:"uppercase",marginBottom:10,textAlign:"center"}}>
                   {tr("📱 iPhone / iPad","📱 iPhone / iPad","📱 iPhone / iPad","📱 iPhone / iPad","📱 iPhone / iPad")}
                 </div>
                 <div style={{fontSize:13,color:"rgba(255,255,255,.85)",lineHeight:1.6}}>
                   <div style={{marginBottom:6}}><strong style={{color:G.white}}>1.</strong> {lang==="de"?<>Tippe auf den <strong style={{color:"#60a5fa"}}>Teilen-Button</strong> ⬆️ unten in Safari</>:lang==="it"?<>Tocca il <strong style={{color:"#60a5fa"}}>pulsante Condividi</strong> ⬆️ in basso in Safari</>:lang==="pt"?<>Toque no <strong style={{color:"#60a5fa"}}>botão Compartilhar</strong> ⬆️ na parte de baixo do Safari</>:lang==="en"?<>Tap the <strong style={{color:"#60a5fa"}}>Share button</strong> ⬆️ at the bottom of Safari</>:<>Tape le <strong style={{color:"#60a5fa"}}>bouton Partager</strong> ⬆️ en bas de Safari</>}</div>
-                  <div style={{marginBottom:6}}><strong style={{color:G.white}}>2.</strong> {lang==="de"?<>Scrolle nach unten und tippe auf <strong style={{color:"#FFD600"}}>"Zum Home-Bildschirm"</strong></>:lang==="it"?<>Scorri e tocca <strong style={{color:"#FFD600"}}>"Aggiungi a Home"</strong></>:lang==="pt"?<>Role para baixo e toque em <strong style={{color:"#FFD600"}}>"Adicionar à Tela de Início"</strong></>:lang==="en"?<>Scroll down and tap <strong style={{color:"#FFD600"}}>"Add to Home Screen"</strong></>:<>Descend et tape <strong style={{color:"#FFD600"}}>"Sur l'écran d'accueil"</strong></>}</div>
-                  <div><strong style={{color:G.white}}>3.</strong> {lang==="de"?<>Bestätige mit <strong style={{color:"#00E676"}}>"Hinzufügen"</strong></>:lang==="it"?<>Conferma toccando <strong style={{color:"#00E676"}}>"Aggiungi"</strong></>:lang==="pt"?<>Confirme tocando em <strong style={{color:"#00E676"}}>"Adicionar"</strong></>:lang==="en"?<>Confirm by tapping <strong style={{color:"#00E676"}}>"Add"</strong></>:<>Confirme en tapant <strong style={{color:"#00E676"}}>"Ajouter"</strong></>}</div>
+                  <div style={{marginBottom:6}}><strong style={{color:G.white}}>2.</strong> {lang==="de"?<>Scrolle nach unten und tippe auf <strong style={{color:G.projecteur}}>"Zum Home-Bildschirm"</strong></>:lang==="it"?<>Scorri e tocca <strong style={{color:G.projecteur}}>"Aggiungi a Home"</strong></>:lang==="pt"?<>Role para baixo e toque em <strong style={{color:G.projecteur}}>"Adicionar à Tela de Início"</strong></>:lang==="en"?<>Scroll down and tap <strong style={{color:G.projecteur}}>"Add to Home Screen"</strong></>:<>Descend et tape <strong style={{color:G.projecteur}}>"Sur l'écran d'accueil"</strong></>}</div>
+                  <div><strong style={{color:G.white}}>3.</strong> {lang==="de"?<>Bestätige mit <strong style={{color:G.pelouseClaire}}>"Hinzufügen"</strong></>:lang==="it"?<>Conferma toccando <strong style={{color:G.pelouseClaire}}>"Aggiungi"</strong></>:lang==="pt"?<>Confirme tocando em <strong style={{color:G.pelouseClaire}}>"Adicionar"</strong></>:lang==="en"?<>Confirm by tapping <strong style={{color:G.pelouseClaire}}>"Add"</strong></>:<>Confirme en tapant <strong style={{color:G.pelouseClaire}}>"Ajouter"</strong></>}</div>
                 </div>
               </div>
             ) : deferredInstall ? (
@@ -9020,7 +9022,7 @@ export default function LePont() {
               </button>
             ) : (
               <div style={{background:G.nuit,border:G.traitFin,borderRadius:16,padding:"14px 16px",marginBottom:20}}>
-                <div style={{fontSize:11,fontWeight:800,letterSpacing:2,color:"#00E676",textTransform:"uppercase",marginBottom:10,textAlign:"center"}}>
+                <div style={{fontSize:11,fontWeight:800,letterSpacing:2,color:G.pelouseClaire,textTransform:"uppercase",marginBottom:10,textAlign:"center"}}>
                   {tr("📱 Sur ton appareil","📱 On your device","📱 Auf deinem Gerät","📱 Sul tuo dispositivo","📱 No seu aparelho")}
                 </div>
                 <div style={{fontSize:13,color:"rgba(255,255,255,.85)",lineHeight:1.6}}>
@@ -9104,7 +9106,7 @@ export default function LePont() {
           {/* Flame emoji with glow */}
           <div style={{fontSize:82,animation:dayStreak>=7?"flameGlow 2s ease-in-out infinite":"none",marginBottom:4}}>🔥</div>
           {/* Streak count - big */}
-          <div style={{fontFamily:G.heading,fontSize:"clamp(56px,16vw,72px)",color:dayStreak>=7?"#FFD600":"#FF6B35",letterSpacing:1,lineHeight:1,textShadow:dayStreak>=7?"0 0 24px rgba(255,214,0,.6)":"0 0 16px rgba(255,107,53,.5)"}}>{dayStreak}</div>
+          <div style={{...posterText(56),fontSize:"clamp(56px,16vw,72px)",color:dayStreak>=7?G.projecteur:"#FF6B35",letterSpacing:1,lineHeight:1}}>{dayStreak}</div>
           <div style={{fontSize:13,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.6)",fontWeight:800,marginTop:8,marginBottom:22}}>
             {dayStreak<=1?(tr("Jour de suite","Day streak","Tag in Folge","Giorno di fila","Dia seguido")):(tr("Jours de suite","Days in a row","Tage in Folge","Giorni di fila","Dias seguidos"))}
           </div>
@@ -9112,19 +9114,19 @@ export default function LePont() {
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:20}}>
             <div style={{background:"rgba(245,194,43,.28)",border:G.traitFin,borderRadius:14,padding:"12px 10px"}}>
               <div style={{fontSize:22,marginBottom:2}}>🏆</div>
-              <div style={{fontFamily:G.heading,fontSize:26,color:G.gold,lineHeight:1}}>{streakBest}</div>
+              <div style={{...posterText(26),color:G.projecteur,lineHeight:1}}>{streakBest}</div>
               <div style={{fontSize:10,letterSpacing:1.5,textTransform:"uppercase",color:"rgba(255,255,255,.5)",fontWeight:700,marginTop:4}}>{tr("Record","Best ever","Bestwert","Record","Recorde")}</div>
             </div>
             <div style={{background:"rgba(96,165,250,.08)",border:"1px solid rgba(96,165,250,.25)",borderRadius:14,padding:"12px 10px"}}>
               <div style={{fontSize:22,marginBottom:2}}>❄️</div>
-              <div style={{fontFamily:G.heading,fontSize:26,color:"#60a5fa",lineHeight:1}}>{streakFreezes}</div>
+              <div style={{...posterText(26),color:"#60a5fa",lineHeight:1}}>{streakFreezes}</div>
               <div style={{fontSize:10,letterSpacing:1.5,textTransform:"uppercase",color:"rgba(255,255,255,.5)",fontWeight:700,marginTop:4}}>{tr("Rattrapages","Freezes","Freezes","Recuperi","Recuperações")}</div>
             </div>
           </div>
           {/* Info text */}
           <div style={{background:"rgba(8,17,9,.45)",border:G.traitFin,borderRadius:14,padding:"14px 16px",textAlign:"left",marginBottom:8}}>
             <div style={{fontSize:12,color:"rgba(255,255,255,.85)",lineHeight:1.6}}>
-              <strong style={{color:"#FFD600"}}>{tr("🎯 Comment ça marche","🎯 How it works","🎯 So funktioniert's","🎯 Come funziona","🎯 Como funciona")} :</strong><br/>
+              <strong style={{color:G.projecteur}}>{tr("🎯 Comment ça marche","🎯 How it works","🎯 So funktioniert's","🎯 Come funziona","🎯 Como funciona")} :</strong><br/>
               {lang==="de" ? <>
                 • Spiele täglich mindestens 1 Partie, um deine Serie zu halten 🔥<br/>
                 • Alle 7 Tage bekommst du einen <strong>❄️ Freeze</strong> (max. 3)<br/>
@@ -9209,7 +9211,7 @@ export default function LePont() {
           <>
             <div style={{padding:"18px 20px",borderBottom:G.traitFin,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
               <div>
-                <div style={{fontFamily:G.heading,fontSize:22,color:G.white,letterSpacing:2}}>
+                <div style={{...posterText(22),color:G.white,letterSpacing:2}}>
                   {tr("RÉCAP DES QUESTIONS","QUESTIONS RECAP","FRAGEN-ÜBERSICHT","RIEPILOGO DOMANDE","RESUMO DAS PERGUNTAS")}
                 </div>
                 <div style={{fontSize:12,color:"rgba(255,255,255,.4)",marginTop:2}}>
@@ -9222,7 +9224,7 @@ export default function LePont() {
               {roundAnswers.map((a,i)=>{
                 const [ca1,cb1]=getClubColors(a.c1);
                 const [ca2,cb2]=getClubColors(a.c2);
-                const statusColor = a.status==="ok"?"#00E676":a.status==="ko"?"#FF3D57":"#FBE216";
+                const statusColor = a.status==="ok"?G.pelouseClaire:a.status==="ko"?G.maillot:G.projecteur;
                 const statusEmoji = a.status==="ok"?"✓":a.status==="ko"?"✗":"→";
                 return (
                   <div key={i} style={{background:"rgba(8,17,9,.45)",borderRadius:14,padding:"12px 14px",marginBottom:8,border:`1px solid ${statusColor}33`}}>
@@ -9238,7 +9240,7 @@ export default function LePont() {
                     {a.status==="ok" ? (
                       <div style={{fontSize:13,color:"rgba(255,255,255,.85)"}}>
                         <span style={{color:"rgba(255,255,255,.4)"}}>{tr("Ta réponse : ","Your answer: ","Deine Antwort: ","La tua risposta: ","Sua resposta: ")}</span>
-                        <strong style={{color:"#00E676"}}>{a.given}</strong>
+                        <strong style={{color:G.pelouseClaire}}>{a.given}</strong>
                       </div>
                     ) : (
                       <>
@@ -9267,7 +9269,7 @@ export default function LePont() {
           <>
             <div style={{padding:"18px 20px",borderBottom:G.traitFin,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
               <div>
-                <div style={{fontFamily:G.heading,fontSize:22,color:G.white,letterSpacing:2}}>
+                <div style={{...posterText(22),color:G.white,letterSpacing:2}}>
                   {tr("TA CHAÎNE","YOUR CHAIN","DEINE KETTE","LA TUA CATENA","SUA CORRENTE")}
                 </div>
                 <div style={{fontSize:12,color:"rgba(255,255,255,.4)",marginTop:2}}>
@@ -9295,7 +9297,7 @@ export default function LePont() {
         ) : (
           <div style={{padding:"40px 20px",textAlign:"center",color:"rgba(255,255,255,.3)",fontSize:14}}>
             <div style={{padding:"18px 20px",borderBottom:G.traitFin,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-              <div style={{fontFamily:G.heading,fontSize:22,color:G.white,letterSpacing:2}}>{tr("HISTORIQUE","HISTORY","VERLAUF","CRONOLOGIA","HISTÓRICO")}</div>
+              <div style={{...posterText(22),color:G.white,letterSpacing:2}}>{tr("HISTORIQUE","HISTORY","VERLAUF","CRONOLOGIA","HISTÓRICO")}</div>
               <button onClick={()=>setShowHistory(false)} style={{width:36,height:36,borderRadius:"50%",background:G.nuit,border:"none",color:G.white,fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
             </div>
             <div style={{padding:"40px 20px"}}>{tr("Aucune donnée","No data","Keine Daten","Nessun dato","Sem dados")}</div>
@@ -9331,7 +9333,7 @@ export default function LePont() {
     // la pelouse éclairée de la charte les fait exister.
     const shell2 = { position:"fixed", top:0, left:0, right:0, bottom:0, zIndex:11000, background:fondCharte, display:"flex", flexDirection:"column", fontFamily:G.font, color:G.white };
     const bigBtn = (label, onClick, bg, disabled) => (
-      <button onClick={onClick} disabled={disabled} style={{width:"100%",padding:"16px",borderRadius:16,border:"none",background:disabled?"rgba(8,17,9,.45)":bg,color:disabled?"rgba(255,255,255,.35)":"#000",fontFamily:G.heading,fontSize:20,letterSpacing:1.5,cursor:disabled?"not-allowed":"pointer",boxShadow:disabled?"none":"0 8px 24px -8px rgba(0,230,118,.5)"}}>{label}</button>
+      <button onClick={onClick} disabled={disabled} style={{width:"100%",padding:"16px",borderRadius:16,border:"none",background:disabled?"rgba(8,17,9,.45)":bg,color:disabled?"rgba(255,255,255,.35)":"#000",...posterText(20),letterSpacing:1.5,cursor:disabled?"not-allowed":"pointer",boxShadow:disabled?"none":"0 8px 24px -8px rgba(0,230,118,.5)"}}>{label}</button>
     );
     const header = (
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"max(14px,env(safe-area-inset-top)) 16px 10px",background:G.encre,borderBottom:G.traitFin}}>
@@ -9458,18 +9460,18 @@ export default function LePont() {
             <div style={{fontSize:11,letterSpacing:2.5,color:"rgba(255,255,255,.5)",fontWeight:800,textTransform:"uppercase"}}>{isHost?tr("Partage ce code","Share this code","Teile diesen Code","Condividi il codice","Compartilhe o código"):tr("Code du salon","Room code","Raumcode","Codice stanza","Código da sala")}</div>
             {/* Ticket code (tap pour partager / copier) */}
             <button onClick={function(){ duelShareCode(room.code); }} style={{position:"relative",width:"100%",maxWidth:340,background:"linear-gradient(160deg, rgba(255,214,0,.16), rgba(255,214,0,.04))",border:G.traitFin,borderRadius:22,padding:"22px 20px 18px",cursor:"pointer",boxShadow:G.ombre}}>
-              <div style={{fontFamily:G.heading,fontSize:"clamp(40px,13vw,60px)",letterSpacing:"min(10px,2.5vw)",color:"#FFD600",lineHeight:1,textShadow:"0 0 26px rgba(255,214,0,.4)",whiteSpace:"nowrap"}}>{room.code}</div>
-              <div style={{marginTop:14,display:"inline-flex",alignItems:"center",gap:7,background:"rgba(245,194,43,.28)",border:G.traitFin,borderRadius:G.rayon,padding:"8px 16px",color:"#FFD600",fontSize:13,fontWeight:800,letterSpacing:.5}}>
+              <div style={{...posterText(40),fontSize:"clamp(40px,13vw,60px)",letterSpacing:"min(10px,2.5vw)",color:G.projecteur,lineHeight:1,whiteSpace:"nowrap"}}>{room.code}</div>
+              <div style={{marginTop:14,display:"inline-flex",alignItems:"center",gap:7,background:"rgba(245,194,43,.28)",border:G.traitFin,borderRadius:G.rayon,padding:"8px 16px",color:G.projecteur,fontSize:13,fontWeight:800,letterSpacing:.5}}>
                 {duelCodeCopied ? tr("✓ Copié !","✓ Copied!","✓ Kopiert!","✓ Copiato!","✓ Copiado!") : (navigator.share ? tr("📤 Partager","📤 Share","📤 Teilen","📤 Condividi","📤 Compartilhar") : tr("📋 Copier","📋 Copy","📋 Kopieren","📋 Copia","📋 Copiar"))}
               </div>
             </button>
             {/* État d'attente / adversaire */}
             <div style={{width:"100%",maxWidth:340,background:joined?"rgba(42,155,78,.35)":"rgba(8,17,9,.45)",border:G.traitFin,borderRadius:G.rayon,padding:"14px 18px",textAlign:"center",display:"flex",alignItems:"center",justifyContent:"center",gap:10}}>
               {joined ? (
-                <div style={{fontSize:14,fontWeight:800,color:"#00E676"}}>✓ {(room.guest_name||tr("Adversaire","Opponent","Gegner","Avversario","Adversário"))}{tr(" a rejoint !"," joined!"," ist beigetreten!"," è entrato!"," entrou!")}</div>
+                <div style={{fontSize:14,fontWeight:800,color:G.pelouseClaire}}>✓ {(room.guest_name||tr("Adversaire","Opponent","Gegner","Avversario","Adversário"))}{tr(" a rejoint !"," joined!"," ist beigetreten!"," è entrato!"," entrou!")}</div>
               ) : (<>
                 <div style={{display:"flex",gap:4}}>
-                  {[0,1,2].map(function(i){return <span key={i} style={{width:7,height:7,borderRadius:"50%",background:"#FFD600",animation:"floatBob 1s ease-in-out infinite",animationDelay:(i*0.18)+"s"}}/>;})}
+                  {[0,1,2].map(function(i){return <span key={i} style={{width:7,height:7,borderRadius:"50%",background:G.projecteur,animation:"floatBob 1s ease-in-out infinite",animationDelay:(i*0.18)+"s"}}/>;})}
                 </div>
                 <div style={{fontSize:13,fontWeight:700,color:"rgba(255,255,255,.6)"}}>{tr("En attente d'un adversaire…","Waiting for an opponent…","Warte auf einen Gegner…","In attesa di un avversario…","Aguardando um adversário…")}</div>
               </>)}
@@ -9589,9 +9591,9 @@ export default function LePont() {
             <div style={{...posterText(pts>0?48:34,pts>=20?G.projecteur:pts>0?G.pelouse:G.maillot),textAlign:"center"}}>
               {pts>=20 ? (tr("⚡ +20 PTS","⚡ +20 PTS","⚡ +20 PTS","⚡ +20 PTS","⚡ +20 PTS")) : pts>0 ? "+10 PTS" : room.round_skipped ? (tr("PASSÉ","SKIPPED","ÜBERSPRUNGEN","SALTATO","PULADO")) : (tr("RATÉ","MISSED","VERPASST","MANCATO","ERROU"))}
             </div>
-            <div style={{fontSize:14,color:"rgba(255,255,255,.7)",textAlign:"center"}}>{room.club_c1} <span style={{color:"#FFD600"}}>×</span> {room.club_c2}</div>
+            <div style={{fontSize:14,color:"rgba(255,255,255,.7)",textAlign:"center"}}>{room.club_c1} <span style={{color:G.projecteur}}>×</span> {room.club_c2}</div>
             {pts>0 && myAns
-              ? <div style={{fontSize:14,color:"#00E676",textAlign:"center",fontWeight:700}}>✅ <strong style={{color:"#fff"}}>{myAns}</strong></div>
+              ? <div style={{fontSize:14,color:G.pelouseClaire,textAlign:"center",fontWeight:700}}>✅ <strong style={{color:"#fff"}}>{myAns}</strong></div>
               : (example && <div style={{fontSize:13,color:"rgba(255,255,255,.6)",textAlign:"center"}}>{tr("Une réponse valable : ","A valid answer: ","Eine gültige Antwort: ","Una risposta valida: ","Uma resposta válida: ")}<strong style={{color:G.white}}>{example}</strong></div>)}
             <div style={{fontSize:11,color:"rgba(255,255,255,.5)",fontWeight:800,letterSpacing:1,marginTop:2}}>{tr("TOTAL","TOTAL","GESAMT","TOTALE","TOTAL")}</div>
             <div style={{...posterText(42,G.projecteur),marginTop:-2}}>{myScore} pts</div>
@@ -9602,10 +9604,10 @@ export default function LePont() {
             <div style={{...posterText(34,draw?G.projecteur:iWon?G.pelouse:G.maillot),textAlign:"center"}}>
               {draw ? tr("MANCHE NULLE","DRAW — nobody found","UNENTSCHIEDEN","PAREGGIO","EMPATE") : iWon ? tr("🎉 TU GAGNES LA MANCHE","🎉 YOU WIN THE ROUND","🎉 DU GEWINNST DIE RUNDE","🎉 VINCI IL TURNO","🎉 VOCÊ VENCE A RODADA") : tr("L'ADVERSAIRE GAGNE","OPPONENT WINS","GEGNER GEWINNT","VINCE L'AVVERSARIO","O ADVERSÁRIO VENCE")}
             </div>
-            <div style={{fontSize:14,color:"rgba(255,255,255,.7)",textAlign:"center"}}>{room.club_c1} <span style={{color:"#FFD600"}}>×</span> {room.club_c2}</div>
+            <div style={{fontSize:14,color:"rgba(255,255,255,.7)",textAlign:"center"}}>{room.club_c1} <span style={{color:G.projecteur}}>×</span> {room.club_c2}</div>
             {/* Qui a répondu quoi */}
             {iWon && myAns && (
-              <div style={{fontSize:14,color:"#00E676",textAlign:"center",fontWeight:700}}>✅ {tr("Ta réponse : ","You answered ","Deine Antwort: ","La tua risposta: ","Sua resposta: ")}<strong style={{color:"#fff"}}>{myAns}</strong></div>
+              <div style={{fontSize:14,color:G.pelouseClaire,textAlign:"center",fontWeight:700}}>✅ {tr("Ta réponse : ","You answered ","Deine Antwort: ","La tua risposta: ","Sua resposta: ")}<strong style={{color:"#fff"}}>{myAns}</strong></div>
             )}
             {!iWon && !draw && oppAns && (
               <div style={{fontSize:14,color:"#FF8A66",textAlign:"center",fontWeight:700}}>{oppName||tr("Adversaire","Opponent","Gegner","Avversario","Adversário")} : <strong style={{color:"#fff"}}>{oppAns}</strong></div>
@@ -9613,7 +9615,7 @@ export default function LePont() {
             {draw && example && (
               <div style={{fontSize:13,color:"rgba(255,255,255,.6)",textAlign:"center"}}>{tr("Une réponse valable : ","A valid answer: ","Eine gültige Antwort: ","Una risposta valida: ","Uma resposta válida: ")}<strong style={{color:G.white}}>{example}</strong></div>
             )}
-            <div style={{fontFamily:G.heading,fontSize:40,color:G.white,marginTop:4}}>{myScore} <span style={{color:"rgba(255,255,255,.3)"}}>–</span> {oppScore}</div>
+            <div style={{...posterText(40),color:G.white,marginTop:4}}>{myScore} <span style={{color:"rgba(255,255,255,.3)"}}>–</span> {oppScore}</div>
             <div style={{fontSize:12,color:"rgba(255,255,255,.4)"}}>{(room.round||1)<DUEL_ROUNDS?tr("Manche suivante…","Next round…","Nächste Runde…","Prossimo turno…","Próxima rodada…"):tr("Fin…","Final…","Ende…","Fine…","Fim…")}</div>
           </div>
         );
@@ -9627,10 +9629,10 @@ export default function LePont() {
         const sc = myScore||0;
         const correct = room.host_correct||0, fast = room.host_fast||0, rounds = room.host_rounds||0;
         const msg = sc>=150 ? tr("LÉGENDE ! 🐐","LEGEND! 🐐","LEGENDE! 🐐","LEGGENDA! 🐐","LENDA! 🐐") : sc>=100 ? tr("BIEN JOUÉ !","GREAT!","GUT GEMACHT!","BRAVO!","MANDOU BEM!") : sc>=50 ? tr("PAS MAL","NOT BAD","NICHT SCHLECHT","NIENTE MALE","NADA MAL") : tr("CONTINUE À T'ENTRAÎNER","KEEP TRYING","WEITER ÜBEN","CONTINUA AD ALLENARTI","CONTINUE TREINANDO");
-        const accent = sc>=100 ? "#FFD600" : "#00E676";
+        const accent = sc>=100 ? G.projecteur : G.pelouseClaire;
         const tiles = [
-          { v: correct, e:"✅", c:"#00E676", l: tr("bonnes rép.","correct","richtig","giuste","certas") },
-          { v: fast,    e:"⚡", c:"#FFD600", l: tr("éclairs","under 5s","Blitz","lampi","raios") },
+          { v: correct, e:"✅", c:G.pelouseClaire, l: tr("bonnes rép.","correct","richtig","giuste","certas") },
+          { v: fast,    e:"⚡", c:G.projecteur, l: tr("éclairs","under 5s","Blitz","lampi","raios") },
           { v: rounds,  e:"🎯", c:"#3DA5FF", l: tr("manches","rounds","Runden","turni","rodadas") },
         ];
         const puce = [ {t:"6%",l:"10%",s:24,r:-18},{t:"14%",l:"84%",s:16,r:22},{t:"64%",l:"8%",s:28,r:12},{t:"74%",l:"86%",s:18,r:-26},{t:"40%",l:"4%",s:14,r:16},{t:"52%",l:"92%",s:20,r:-12} ];
@@ -9649,26 +9651,26 @@ export default function LePont() {
                 /* Partie rapide : on affiche le résultat ET les deux scores —
                    sans ça l'écran de fin ne disait pas qui avait gagné. */
                 <>
-                  <div style={{fontFamily:G.heading,fontSize:30,letterSpacing:1,textAlign:"center",color:draw?"#FFD600":iWon?"#00E676":"#FF6B35"}}>
+                  <div style={{...posterText(30),letterSpacing:1,textAlign:"center",color:draw?G.projecteur:iWon?G.pelouseClaire:"#FF6B35"}}>
                     {draw?tr("ÉGALITÉ !","DRAW!","UNENTSCHIEDEN!","PAREGGIO!","EMPATE!"):iWon?tr("VICTOIRE !","VICTORY!","SIEG!","VITTORIA!","VITÓRIA!"):tr("DÉFAITE","DEFEAT","NIEDERLAGE","SCONFITTA","DERROTA")}
                   </div>
                   <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:14,width:"100%",marginTop:2}}>
                     <div style={{textAlign:"center",flex:1,minWidth:0}}>
                       <div style={{fontSize:11,color:"rgba(255,255,255,.55)",fontWeight:700,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{room.host_name||tr("Toi","You","Du","Tu","Você")}</div>
-                      <div style={{fontFamily:G.heading,fontSize:46,color:"#00E676",lineHeight:1}}>{myScore||0}</div>
+                      <div style={{...posterText(46),color:G.pelouseClaire,lineHeight:1}}>{myScore||0}</div>
                     </div>
-                    <div style={{fontFamily:G.heading,fontSize:22,color:"rgba(255,255,255,.35)",flexShrink:0}}>VS</div>
+                    <div style={{...posterText(22),color:"rgba(255,255,255,.35)",flexShrink:0}}>VS</div>
                     <div style={{textAlign:"center",flex:1,minWidth:0}}>
                       <div style={{fontSize:11,color:"rgba(255,255,255,.55)",fontWeight:700,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{room.guest_name||"—"} {room.guest_country||""}</div>
-                      <div style={{fontFamily:G.heading,fontSize:46,color:"#FF6B35",lineHeight:1}}>{oppScore||0}</div>
+                      <div style={{...posterText(46),color:"#FF6B35",lineHeight:1}}>{oppScore||0}</div>
                     </div>
                   </div>
                 </>
               ) : (
               <>
               <div style={{fontSize:11,color:"rgba(255,255,255,.5)",fontWeight:800,letterSpacing:3}}>{tr("TON SCORE","YOUR SCORE","DEIN SCORE","IL TUO PUNTEGGIO","SUA PONTUAÇÃO")}</div>
-              <div style={{fontFamily:G.heading,fontSize:72,color:"#FFD600",lineHeight:.9,textShadow:"0 0 30px rgba(255,214,0,.4)"}}>{sc}<span style={{fontSize:26,color:"rgba(255,255,255,.4)"}}> pts</span></div>
-              <div style={{fontFamily:G.heading,fontSize:26,letterSpacing:1,color:accent,textAlign:"center"}}>{msg}</div>
+              <div style={{...posterText(72),color:G.projecteur,lineHeight:.9,textShadow:"0 0 30px rgba(255,214,0,.4)"}}>{sc}<span style={{fontSize:26,color:"rgba(255,255,255,.4)"}}> pts</span></div>
+              <div style={{...posterText(26),letterSpacing:1,color:accent,textAlign:"center"}}>{msg}</div>
               </>
               )}
               {/* Tuiles de stats */}
@@ -9676,15 +9678,15 @@ export default function LePont() {
                 {tiles.map(function(t,i){return(
                   <div key={i} style={{flex:1,background:"rgba(8,17,9,.45)",border:"1px solid "+t.c+"33",borderRadius:16,padding:"12px 4px",textAlign:"center"}}>
                     <div style={{fontSize:15}}>{t.e}</div>
-                    <div style={{fontFamily:G.heading,fontSize:26,color:t.c,lineHeight:1.15}}>{t.v}</div>
+                    <div style={{...posterText(26),color:t.c,lineHeight:1.15}}>{t.v}</div>
                     <div style={{fontSize:9.5,letterSpacing:.5,color:"rgba(255,255,255,.5)",fontWeight:800,textTransform:"uppercase",marginTop:2}}>{t.l}</div>
                   </div>
                 );})}
               </div>
               {/* Boutons */}
               <div style={{display:"flex",gap:10,width:"100%",marginTop:12}}>
-                <button onClick={function(){ if(room.bot) duelQuickStart({ pseudo:room.guest_name, country:room.guest_country, avatar:room.guest_avatar }); else duelSoloStart(); }} style={{flex:1,padding:"16px",borderRadius:16,border:"none",background:G.ciel,color:"#000",fontFamily:G.heading,fontSize:16,letterSpacing:1,cursor:"pointer",boxShadow:G.ombre}}>{tr("↻ REJOUER","↻ AGAIN","↻ NOCHMAL","↻ RIGIOCA","↻ JOGAR DE NOVO")}</button>
-                <button onClick={duelLeaveRoom} style={{flex:1,padding:"16px",borderRadius:16,border:G.traitFin,background:"rgba(8,17,9,.45)",color:G.white,fontFamily:G.heading,fontSize:16,letterSpacing:1,cursor:"pointer"}}>{tr("MENU","MENU","MENÜ","MENU","MENU")}</button>
+                <button onClick={function(){ if(room.bot) duelQuickStart({ pseudo:room.guest_name, country:room.guest_country, avatar:room.guest_avatar }); else duelSoloStart(); }} style={{flex:1,padding:"16px",borderRadius:16,border:"none",background:G.ciel,color:"#000",...posterText(16),letterSpacing:1,cursor:"pointer",boxShadow:G.ombre}}>{tr("↻ REJOUER","↻ AGAIN","↻ NOCHMAL","↻ RIGIOCA","↻ JOGAR DE NOVO")}</button>
+                <button onClick={duelLeaveRoom} style={{flex:1,padding:"16px",borderRadius:16,border:G.traitFin,background:"rgba(8,17,9,.45)",color:G.white,...posterText(16),letterSpacing:1,cursor:"pointer"}}>{tr("MENU","MENU","MENÜ","MENU","MENU")}</button>
               </div>
             </div>
           </div>
@@ -9696,10 +9698,10 @@ export default function LePont() {
             <WinBanner maxWidth={360} marginTop={0} lose={!(iWon||draw)} />
             <div style={{position:"absolute",bottom:-6,left:"50%",transform:"translateX(-50%)",fontSize:40}}>{draw?"🤝":iWon?"🏆":""}</div>
           </div>
-          <div style={{fontFamily:G.heading,fontSize:34,letterSpacing:1,color:draw?"#FFD600":iWon?"#00E676":"#FF6B35",textAlign:"center"}}>
+          <div style={{...posterText(34),letterSpacing:1,color:draw?G.projecteur:iWon?G.pelouseClaire:"#FF6B35",textAlign:"center"}}>
             {draw?tr("ÉGALITÉ !","DRAW!","UNENTSCHIEDEN!","PAREGGIO!","EMPATE!"):iWon?tr("VICTOIRE !","VICTORY!","SIEG!","VITTORIA!","VITÓRIA!"):tr("DÉFAITE","DEFEAT","NIEDERLAGE","SCONFITTA","DERROTA")}
           </div>
-          <div style={{fontFamily:G.heading,fontSize:52,color:G.white}}>{myScore} <span style={{color:"rgba(255,255,255,.3)"}}>–</span> {oppScore}</div>
+          <div style={{...posterText(52),color:G.white}}>{myScore} <span style={{color:"rgba(255,255,255,.3)"}}>–</span> {oppScore}</div>
           <div style={{fontSize:13,color:"rgba(255,255,255,.55)",textAlign:"center"}}>{(myName||tr("Toi","You","Du","Tu","Você"))+" vs "+(oppName||tr("Adversaire","Opponent","Gegner","Avversario","Adversário"))}</div>
           {bigBtn(tr("RETOUR À L'ACCUEIL","BACK TO MENU","ZURÜCK ZUM MENÜ","TORNA AL MENU","VOLTAR AO MENU"), duelLeaveRoom, G.pelouse, false)}
         </div>
@@ -9719,7 +9721,7 @@ export default function LePont() {
       {duelBigAnswer && (
         <div style={{position:"absolute",inset:0,zIndex:60,display:"flex",alignItems:"center",justifyContent:"center",pointerEvents:"none",background:"radial-gradient(circle at 50% 46%, rgba(0,0,0,.55), transparent 62%)"}}>
           <div key={duelBigAnswer.name} style={{textAlign:"center",padding:"0 22px",animation:"bigAnswerPop 1.2s ease-out forwards"}}>
-            <div style={{fontSize:13,fontWeight:900,letterSpacing:3,color:G.pelouse}}>✓ {tr("BONNE RÉPONSE","CORRECT!","RICHTIG!","GIUSTO!","CERTO!")}</div>
+            <div style={{fontSize:13,fontWeight:900,letterSpacing:3,color:G.pelouseClaire}}>✓ {tr("BONNE RÉPONSE","CORRECT!","RICHTIG!","GIUSTO!","CERTO!")}</div>
             <div style={{...posterText(52,G.white),marginTop:8}}>{duelBigAnswer.name}</div>
             {duelBigAnswer.pts && <div style={{...posterText(38,duelBigAnswer.pts>=20?G.projecteur:G.pelouse),marginTop:8}}>{duelBigAnswer.pts>=20?"⚡ ":""}+{duelBigAnswer.pts} PTS</div>}
           </div>
@@ -9769,14 +9771,14 @@ export default function LePont() {
               <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:18}}>
                 {myOpenAttempts.map(function(a){ const iWon=(a.challenger_score||0)>=(a.opponent_score||0); return(
                   <div key={a.id} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",background:"rgba(8,17,9,.45)",border:G.traitFin,borderRadius:12}}>
-                    <div style={{width:4,height:30,borderRadius:2,background:iWon?"#00E676":"#FF3D57",flexShrink:0}}/>
+                    <div style={{width:4,height:30,borderRadius:2,background:iWon?G.pelouse:"#FF3D57",flexShrink:0}}/>
                     <div style={{flex:1,minWidth:0}}>
                       <div style={{fontSize:13,fontWeight:800,color:G.white,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>@{a.opponent_name||"?"}</div>
                       <div style={{fontSize:10,color:"rgba(255,255,255,.45)"}}>{a.mode==="pont"?"The Plug":"The Mercato"} · {a.diff==="facile"?(tr("Facile","Easy","Leicht","Facile","Fácil")):a.diff==="moyen"?(tr("Moyen","Medium","Mittel","Medio","Médio")):tr("Expert","Expert","Experte","Esperto","Expert")}</div>
                     </div>
                     <div style={{textAlign:"right",flexShrink:0}}>
-                      <div style={{fontFamily:G.heading,fontSize:15,color:G.white}}>{a.opponent_score}<span style={{color:"rgba(255,255,255,.35)"}}> / {a.challenger_score}</span></div>
-                      <div style={{fontSize:9,fontWeight:800,letterSpacing:1,textTransform:"uppercase",color:iWon?"#00E676":"#FF3D57"}}>{iWon?(tr("Tu résistes ✓","You held ✓","Gehalten ✓","Hai resistito ✓","Você resistiu ✓")):(tr("Battu","Beaten","Geschlagen","Battuto","Batido"))}</div>
+                      <div style={{...posterText(15),color:G.white}}>{a.opponent_score}<span style={{color:"rgba(255,255,255,.35)"}}> / {a.challenger_score}</span></div>
+                      <div style={{fontSize:9,fontWeight:800,letterSpacing:1,textTransform:"uppercase",color:iWon?G.pelouseClaire:"#FF3D57"}}>{iWon?(tr("Tu résistes ✓","You held ✓","Gehalten ✓","Hai resistito ✓","Você resistiu ✓")):(tr("Battu","Beaten","Geschlagen","Battuto","Batido"))}</div>
                     </div>
                   </div>
                 );})}
@@ -9793,7 +9795,7 @@ export default function LePont() {
                       <div style={{fontSize:13,fontWeight:800,color:G.white}}>{c.mode==="pont"?"The Plug":"The Mercato"} · {c.diff==="facile"?(tr("Facile","Easy","Leicht","Facile","Fácil")):c.diff==="moyen"?(tr("Moyen","Medium","Mittel","Medio","Médio")):tr("Expert","Expert","Experte","Esperto","Expert")}</div>
                       <div style={{fontSize:10,color:"rgba(255,255,255,.45)"}}>{nb} {nb!==1?tr("tentatives","attempts","Versuche","tentativi","tentativas"):tr("tentative","attempt","Versuch","tentativo","tentativa")}</div>
                     </div>
-                    <div style={{textAlign:"right"}}><div style={{fontFamily:G.heading,fontSize:18,color:G.gold}}>{c.challenger_score}</div><div style={{fontSize:9,color:"rgba(255,255,255,.4)",textTransform:"uppercase",letterSpacing:1}}>{tr("à battre","to beat","zu schlagen","da battere","a bater")}</div></div>
+                    <div style={{textAlign:"right"}}><div style={{...posterText(18),color:G.projecteur}}>{c.challenger_score}</div><div style={{fontSize:9,color:"rgba(255,255,255,.4)",textTransform:"uppercase",letterSpacing:1}}>{tr("à battre","to beat","zu schlagen","da battere","a bater")}</div></div>
                   </div>
                 );})}
               </div>
@@ -9818,13 +9820,13 @@ export default function LePont() {
                   ) : (
                     <>
                       <div style={{display:"flex",gap:12,justifyContent:"center",marginBottom:10,fontSize:12,fontWeight:800}}>
-                        <span style={{color:"#00E676"}}>✅ {w}</span>
-                        <span style={{color:"#FFD600"}}>➖ {dr}</span>
+                        <span style={{color:G.pelouseClaire}}>✅ {w}</span>
+                        <span style={{color:G.projecteur}}>➖ {dr}</span>
                         <span style={{color:"#FF3D57"}}>❌ {l}</span>
                       </div>
                       <div style={{display:"flex",flexDirection:"column",gap:6}}>
                         {rws.slice(0,20).map(function(r){
-                          const col=r.res==="win"?"#00E676":r.res==="loss"?"#FF3D57":"#FFD600";
+                          const col=r.res==="win"?G.pelouseClaire:r.res==="loss"?"#FF3D57":G.projecteur;
                           const lbl=r.res==="win"?(tr("GAGNÉ","WON","GEWONNEN","VINTO","VENCEU")):r.res==="loss"?(tr("PERDU","LOST","VERLOREN","PERSO","PERDEU")):(tr("NUL","DRAW","UNENTSCHIEDEN","PARI","EMPATE"));
                           return (
                             <div key={r.id} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 12px",background:"rgba(8,17,9,.45)",borderLeft:"3px solid "+col,borderRadius:10}}>
@@ -9832,7 +9834,7 @@ export default function LePont() {
                                 <div style={{fontSize:13,fontWeight:800,color:G.white,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>vs {r.oppName}</div>
                                 <div style={{fontSize:10,color:"rgba(255,255,255,.4)"}}>{r.mode==="pont"?"The Plug":r.mode==="chaine"?"The Mercato":r.mode==="grid"?"GOAT Grid":r.mode}</div>
                               </div>
-                              <div style={{fontFamily:G.heading,fontSize:16,color:G.white}}>{r.my}<span style={{color:"rgba(255,255,255,.3)",margin:"0 2px"}}>–</span>{r.opp}</div>
+                              <div style={{...posterText(16),color:G.white}}>{r.my}<span style={{color:"rgba(255,255,255,.3)",margin:"0 2px"}}>–</span>{r.opp}</div>
                               <div style={{fontSize:9,fontWeight:900,letterSpacing:1,color:col,background:col+"1a",border:"1px solid "+col+"55",borderRadius:20,padding:"3px 8px",minWidth:48,textAlign:"center"}}>{lbl}</div>
                             </div>
                           );
@@ -9908,7 +9910,7 @@ export default function LePont() {
         {reportSent ? (
           <div style={{textAlign:"center",padding:"20px 0"}}>
             <div style={{fontSize:60,marginBottom:10}}>✅</div>
-            <div style={{fontFamily:G.heading,fontSize:24,color:"#00E676",letterSpacing:1,marginBottom:8}}>
+            <div style={{...posterText(24),color:G.pelouseClaire,letterSpacing:1,marginBottom:8}}>
               {tr("MERCI !","THANKS!","DANKE!","GRAZIE!","OBRIGADO!")}
             </div>
             <div style={{fontSize:14,color:"rgba(255,255,255,.7)",lineHeight:1.5,marginBottom:20}}>
@@ -9921,7 +9923,7 @@ export default function LePont() {
         ) : (
           <>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
-              <div style={{fontFamily:G.heading,fontSize:22,color:G.white,letterSpacing:1}}>
+              <div style={{...posterText(22),color:G.white,letterSpacing:1}}>
                 🚩 {tr("SIGNALER","REPORT","MELDEN","SEGNALA","REPORTAR")}
               </div>
               <button onClick={()=>setReportingAnswer(null)} style={{width:32,height:32,borderRadius:"50%",background:G.nuit,border:"none",color:G.white,fontSize:16,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
@@ -9958,7 +9960,7 @@ export default function LePont() {
                     });
                     setReportSent(true);
                   } catch(e) { setReportSent(true); /* failsafe : on remercie quand même */ }
-                }} style={{padding:"12px 14px",background:"rgba(8,17,9,.45)",border:G.traitFin,borderRadius:12,cursor:"pointer",color:G.white,fontFamily:G.font,fontSize:13,fontWeight:600,textAlign:"left",transition:"all .15s"}} onMouseEnter={(e)=>{e.currentTarget.style.background="rgba(0,230,118,.12)";e.currentTarget.style.borderColor=G.accent;}} onMouseLeave={(e)=>{e.currentTarget.style.background="rgba(8,17,9,.45)";e.currentTarget.style.borderColor="rgba(255,255,255,.12)";}}>
+                }} style={{padding:"12px 14px",background:"rgba(8,17,9,.45)",border:G.traitFin,borderRadius:12,cursor:"pointer",color:G.white,fontFamily:G.font,fontSize:13,fontWeight:600,textAlign:"left",transition:"all .15s"}} onMouseEnter={(e)=>{e.currentTarget.style.background="rgba(42,155,78,.18)";e.currentTarget.style.borderColor=G.pelouse;}} onMouseLeave={(e)=>{e.currentTarget.style.background="rgba(8,17,9,.45)";e.currentTarget.style.borderColor="rgba(255,255,255,.12)";}}>
                   {lang==="de"?(opt.de||opt.en):lang==="it"?(opt.it||opt.en):lang==="pt"?(opt.pt||opt.en):lang==="en"?opt.en:opt.fr}
                 </button>
               ))}
@@ -10084,8 +10086,8 @@ export default function LePont() {
       {/* Header */}
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 20px",borderBottom:G.traitFin}}>
         <button onClick={()=>setCropState(null)} disabled={avatarUploading} style={{background:"none",border:"none",color:"rgba(255,255,255,.7)",fontSize:14,fontFamily:G.font,fontWeight:600,cursor:avatarUploading?"default":"pointer",padding:"8px 4px",opacity:avatarUploading?.4:1}}>{tr("Annuler","Cancel","Abbrechen","Annulla","Cancelar")}</button>
-        <div style={{fontFamily:G.heading,fontSize:16,color:G.white,letterSpacing:1}}>{tr("AJUSTER LA PHOTO","ADJUST PHOTO","FOTO ANPASSEN","REGOLA FOTO","AJUSTAR FOTO")}</div>
-        <button onClick={validateCrop} disabled={avatarUploading} style={{background:"none",border:"none",color:avatarUploading?"rgba(0,230,118,.4)":G.accent,fontSize:14,fontFamily:G.font,fontWeight:800,cursor:avatarUploading?"default":"pointer",padding:"8px 4px"}}>{avatarUploading?(tr("Sauvegarde...","Saving...","Speichern...","Salvataggio...","Salvando...")):(tr("Valider","Confirm","Bestätigen","Conferma","Confirmar"))}</button>
+        <div style={{...posterText(16),color:G.white,letterSpacing:1}}>{tr("AJUSTER LA PHOTO","ADJUST PHOTO","FOTO ANPASSEN","REGOLA FOTO","AJUSTAR FOTO")}</div>
+        <button onClick={validateCrop} disabled={avatarUploading} style={{background:"none",border:"none",color:avatarUploading?"rgba(79,208,122,.45)":G.pelouseClaire,fontSize:14,fontFamily:G.font,fontWeight:800,cursor:avatarUploading?"default":"pointer",padding:"8px 4px"}}>{avatarUploading?(tr("Sauvegarde...","Saving...","Speichern...","Salvataggio...","Salvando...")):(tr("Valider","Confirm","Bestätigen","Conferma","Confirmar"))}</button>
       </div>
       {/* Crop zone — centrée */}
       <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",padding:"20px",touchAction:"none"}}>
@@ -10126,7 +10128,7 @@ export default function LePont() {
             const ny = centerY - (centerY - cropState.y) * scaleRatio;
             setCropState(clampCrop({...cropState, scale:newScale, x:nx, y:ny}));
           }}
-          style={{flex:1,accentColor:G.accent,height:4}}
+          style={{flex:1,accentColor:G.pelouse,height:4}}
         />
         <span style={{fontSize:22,color:"rgba(255,255,255,.4)"}}>+</span>
       </div>
@@ -10153,22 +10155,22 @@ export default function LePont() {
       <div style={{...shell,overflow:isDesktop?"visible":"auto"}} key="duelHistory">
         <div style={{zIndex:3,padding:"12px 16px 0",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
           {backBtn(function(){setShowDuelHistory(false);})}
-          <div style={{fontFamily:G.heading,fontSize:26,color:G.white,letterSpacing:2}}>{tr("MES DÉFIS","MY DUELS","MEINE DUELLE","LE MIE SFIDE","MEUS DUELOS")}</div>
+          <div style={{...posterText(26),color:G.white,letterSpacing:2}}>{tr("MES DÉFIS","MY DUELS","MEINE DUELLE","LE MIE SFIDE","MEUS DUELOS")}</div>
           <div style={{width:40}}/>
         </div>
         <div style={{...sheet,borderRadius:"28px 28px 0 0",marginTop:16}}>
           {/* Bilan */}
           <div style={{display:"flex",gap:8,marginBottom:6}}>
             <div style={{flex:1,background:"rgba(42,155,78,.35)",border:G.traitFin,borderRadius:16,padding:"14px 0",textAlign:"center"}}>
-              <div style={{fontFamily:G.heading,fontSize:30,color:"#00E676"}}>{w}</div>
+              <div style={{...posterText(30),color:G.pelouseClaire}}>{w}</div>
               <div style={{fontSize:10,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginTop:2}}>{tr("Victoires","Wins","Siege","Vittorie","Vitórias")}</div>
             </div>
             <div style={{flex:1,background:"rgba(8,17,9,.45)",border:G.traitFin,borderRadius:16,padding:"14px 0",textAlign:"center"}}>
-              <div style={{fontFamily:G.heading,fontSize:30,color:"#FFD600"}}>{dr}</div>
+              <div style={{...posterText(30),color:G.projecteur}}>{dr}</div>
               <div style={{fontSize:10,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginTop:2}}>{tr("Nuls","Draws","Remis","Pareggi","Empates")}</div>
             </div>
             <div style={{flex:1,background:"rgba(217,58,43,.32)",border:G.traitFin,borderRadius:16,padding:"14px 0",textAlign:"center"}}>
-              <div style={{fontFamily:G.heading,fontSize:30,color:"#FF3D57"}}>{l}</div>
+              <div style={{...posterText(30),color:"#FF3D57"}}>{l}</div>
               <div style={{fontSize:10,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginTop:2}}>{tr("Défaites","Losses","Niederlagen","Sconfitte","Derrotas")}</div>
             </div>
           </div>
@@ -10176,7 +10178,7 @@ export default function LePont() {
           {rows.length===0 ? (
             <div style={{textAlign:"center",padding:"36px 20px",color:"rgba(255,255,255,.4)",fontSize:14,lineHeight:1.5}}>{tr("Aucun défi terminé pour l'instant. Défie un ami ! ⚔️","No completed duel yet. Challenge a friend! ⚔️","Noch kein beendetes Duell. Fordere einen Freund heraus! ⚔️","Ancora nessuna sfida completata. Sfida un amico! ⚔️","Ainda nenhum duelo concluído. Desafie um amigo! ⚔️")}</div>
           ) : rows.map(function(r){
-            const col = r.res==="win"?"#00E676":r.res==="loss"?"#FF3D57":"#FFD600";
+            const col = r.res==="win"?G.pelouseClaire:r.res==="loss"?G.maillot:G.projecteur;
             const label = r.res==="win"?tr("GAGNÉ","WON","GEWONNEN","VINTO","VENCEU"):r.res==="loss"?tr("PERDU","LOST","VERLOREN","PERSO","PERDEU"):tr("NUL","DRAW","UNENT.","PARI","EMPATE");
             let when=""; try{ if(r.when){ const dt=new Date(r.when); const loc={fr:"fr-FR",en:"en-GB",de:"de-DE",it:"it-IT",pt:"pt-PT"}[lang]||"en-GB"; when=dt.toLocaleDateString(loc,{day:"numeric",month:"short"}); } }catch(e){}
             return (
@@ -10185,7 +10187,7 @@ export default function LePont() {
                   <div style={{fontSize:14,fontWeight:800,color:G.white,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>vs {r.oppName}</div>
                   <div style={{fontSize:11,color:"rgba(255,255,255,.4)",marginTop:1}}>{modeLabel(r.mode)}{when?" · "+when:""}</div>
                 </div>
-                <div style={{fontFamily:G.heading,fontSize:20,color:G.white,letterSpacing:1}}>{r.my}<span style={{color:"rgba(255,255,255,.3)",margin:"0 3px"}}>–</span>{r.opp}</div>
+                <div style={{...posterText(20),color:G.white,letterSpacing:1}}>{r.my}<span style={{color:"rgba(255,255,255,.3)",margin:"0 3px"}}>–</span>{r.opp}</div>
                 <div style={{fontSize:10,fontWeight:900,letterSpacing:1,color:col,background:col+"1a",border:"1px solid "+col+"55",borderRadius:20,padding:"4px 9px",minWidth:52,textAlign:"center"}}>{label}</div>
               </div>
             );
@@ -10225,7 +10227,7 @@ export default function LePont() {
           <div style={{zIndex:3,padding:"12px 16px 0",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
             {backBtn(function(){setSelectedFriend(null);})}
             <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
-              <div style={{fontFamily:G.heading,fontSize:22,color:G.white,letterSpacing:2}}>{selectedFriend.name}</div>
+              <div style={{...posterText(22),color:G.white,letterSpacing:2}}>{selectedFriend.name}</div>
               {isUnbeaten && <div style={{fontSize:11,fontWeight:800,color:"#FFD700",background:"rgba(255,215,0,.15)",borderRadius:20,padding:"3px 10px",letterSpacing:.5}}>{tr("😤 T'es invaincu contre lui","😤 You're unbeaten against them","😤 Du bist ungeschlagen gegen ihn","😤 Sei imbattuto contro di lui","😤 Você está invicto contra ele")}</div>}
               {theyDominate && <div style={{fontSize:11,fontWeight:800,color:"#FF3D57",background:"rgba(217,58,43,.32)",borderRadius:20,padding:"3px 10px",letterSpacing:.5}}>{tr("💀 Il n'a jamais perdu contre toi","💀 They've never lost to you","💀 Er hat nie gegen dich verloren","💀 Non ha mai perso contro di te","💀 Nunca perdeu para você")}</div>}
             </div>
@@ -10236,15 +10238,15 @@ export default function LePont() {
             {friendDuels.length > 0 && (
               <div style={{display:"flex",gap:8,marginBottom:4}}>
                 <div style={{flex:1,background:"rgba(42,155,78,.35)",border:G.traitFin,borderRadius:16,padding:"14px 0",textAlign:"center"}}>
-                  <div style={{fontFamily:G.heading,fontSize:32,color:"#00E676"}}>{wins}</div>
+                  <div style={{...posterText(32),color:G.pelouseClaire}}>{wins}</div>
                   <div style={{fontSize:10,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginTop:2}}>{tr("Victoires","Wins","Siege","Vittorie","Vitórias")}</div>
                 </div>
                 <div style={{flex:1,background:"rgba(245,194,43,.28)",border:G.traitFin,borderRadius:16,padding:"14px 0",textAlign:"center"}}>
-                  <div style={{fontFamily:G.heading,fontSize:32,color:G.gold}}>{draws}</div>
+                  <div style={{...posterText(32),color:G.projecteur}}>{draws}</div>
                   <div style={{fontSize:10,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginTop:2}}>{tr("Nuls","Draws","Remis","Pareggi","Empates")}</div>
                 </div>
                 <div style={{flex:1,background:"rgba(217,58,43,.32)",border:G.traitFin,borderRadius:16,padding:"14px 0",textAlign:"center"}}>
-                  <div style={{fontFamily:G.heading,fontSize:32,color:"#FF3D57"}}>{losses}</div>
+                  <div style={{...posterText(32),color:"#FF3D57"}}>{losses}</div>
                   <div style={{fontSize:10,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginTop:2}}>{tr("Défaites","Losses","Niederlagen","Sconfitte","Derrotas")}</div>
                 </div>
               </div>
@@ -10261,11 +10263,11 @@ export default function LePont() {
               return(
                 <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 14px",background:"rgba(8,17,9,.45)",borderRadius:12,marginBottom:6,border:G.traitFin}}>
                   <div>
-                    <div style={{fontSize:13,fontWeight:800,color:won?"#00E676":draw?G.gold:"#FF3D57"}}>{won?tr("🏆 Victoire","🏆 Win","🏆 Sieg","🏆 Vittoria","🏆 Vitória"):draw?tr("🤝 Égalité","🤝 Draw","🤝 Remis","🤝 Pareggio","🤝 Empate"):tr("😅 Défaite","😅 Loss","😅 Niederlage","😅 Sconfitta","😅 Derrota")}</div>
+                    <div style={{fontSize:13,fontWeight:800,color:won?G.pelouseClaire:draw?G.projecteur:G.maillot}}>{won?tr("🏆 Victoire","🏆 Win","🏆 Sieg","🏆 Vittoria","🏆 Vitória"):draw?tr("🤝 Égalité","🤝 Draw","🤝 Remis","🤝 Pareggio","🤝 Empate"):tr("😅 Défaite","😅 Loss","😅 Niederlage","😅 Sconfitta","😅 Derrota")}</div>
                     <div style={{fontSize:11,color:"rgba(255,255,255,.4)"}}>{d.mode==="pont"?"The Plug":"The Mercato"}{d.diff?" · "+d.diff:""}</div>
                   </div>
                   <div style={{textAlign:"right"}}>
-                    <div style={{fontFamily:G.heading,fontSize:22,color:G.white}}>{myScore} <span style={{fontSize:11,color:"rgba(255,255,255,.3)"}}>pts</span></div>
+                    <div style={{...posterText(22),color:G.white}}>{myScore} <span style={{fontSize:11,color:"rgba(255,255,255,.3)"}}>pts</span></div>
                     <div style={{fontSize:11,color:"rgba(255,255,255,.35)"}}>{selectedFriend.name}: {theirScore}</div>
                   </div>
                 </div>
@@ -10291,7 +10293,7 @@ export default function LePont() {
           <div style={{position:"fixed",inset:0,zIndex:400,background:"rgba(8,17,9,.86)",display:"flex",alignItems:"center",justifyContent:"center"}}>
             <div style={{background:"rgba(15,20,15,.97)",borderRadius:24,padding:"28px 24px",maxWidth:320,width:"calc(100% - 40px)",border:G.traitFin,textAlign:"center"}}>
               <div style={{fontSize:32,marginBottom:12}}>👋</div>
-              <div style={{fontFamily:G.heading,fontSize:22,color:G.white,marginBottom:8}}>{tr("Supprimer ","Remove ","Entfernen ","Rimuovere ","Remover ")}{confirmRemove.name}{tr(" ?","?"," ?","?","?")}</div>
+              <div style={{...posterText(22),color:G.white,marginBottom:8}}>{tr("Supprimer ","Remove ","Entfernen ","Rimuovere ","Remover ")}{confirmRemove.name}{tr(" ?","?"," ?","?","?")}</div>
               <div style={{fontSize:13,color:"rgba(255,255,255,.4)",marginBottom:24}}>{tr("Il devra renvoyer une demande pour être à nouveau dans ta liste.","They'll need to send a new request to be back on your list.","Er muss eine neue Anfrage senden, um wieder in deiner Liste zu sein.","Dovrà inviare una nuova richiesta per tornare nella tua lista.","Ele precisará enviar um novo pedido para voltar à sua lista.")}</div>
               <div style={{display:"flex",gap:10}}>
                 <button onClick={function(){setConfirmRemove(null);}} style={{flex:1,padding:"12px",background:"rgba(8,17,9,.45)",color:"rgba(255,255,255,.6)",border:G.trait,borderRadius:G.rayon,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>{tr("Annuler","Cancel","Abbrechen","Annulla","Cancelar")}</button>
@@ -10302,14 +10304,14 @@ export default function LePont() {
         )}
         <div style={{zIndex:3,padding:"12px 16px 0",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
           {backBtn(function(){closeFriends();})}
-          <div style={{fontFamily:G.heading,fontSize:26,color:G.white,letterSpacing:2}}>{tr("AMIS","FRIENDS","FREUNDE","AMICI","AMIGOS")}</div>
+          <div style={{...posterText(26),color:G.white,letterSpacing:2}}>{tr("AMIS","FRIENDS","FREUNDE","AMICI","AMIGOS")}</div>
           <div style={{width:40}}/>
         </div>
         <div style={{...sheet,borderRadius:"28px 28px 0 0",marginTop:16}}>
           {/* Demandes reçues */}
           {friendRequests.length > 0 && (
             <div style={{background:"#123a1e",border:G.traitFin,borderRadius:16,padding:14}}>
-              <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:G.accent,marginBottom:10}}>👋 {tr("Demandes reçues","Requests received","Erhaltene Anfragen","Richieste ricevute","Pedidos recebidos")}</div>
+              <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:G.pelouseClaire,marginBottom:10}}>👋 {tr("Demandes reçues","Requests received","Erhaltene Anfragen","Richieste ricevute","Pedidos recebidos")}</div>
               {friendRequests.map(function(req){return(
                 <div key={req.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
                   <div>
@@ -10328,7 +10330,7 @@ export default function LePont() {
           <button onClick={function(){loadDuels();setShowDuelHistory(true);}} style={{width:"100%",display:"flex",alignItems:"center",gap:10,padding:"13px 16px",background:"rgba(245,194,43,.28)",border:G.traitFin,borderRadius:14,cursor:"pointer",textAlign:"left"}}>
             <span style={{fontSize:20}}>📜</span>
             <div style={{flex:1}}>
-              <div style={{fontSize:14,fontWeight:800,color:G.gold}}>{tr("Historique des défis","Duel history","Duell-Verlauf","Cronologia sfide","Histórico de duelos")}</div>
+              <div style={{fontSize:14,fontWeight:800,color:G.projecteur}}>{tr("Historique des défis","Duel history","Duell-Verlauf","Cronologia sfide","Histórico de duelos")}</div>
               <div style={{fontSize:11,color:"rgba(255,255,255,.4)"}}>{tr("Vois ce que t'as gagné et perdu","See what you won and lost","Sieh, was du gewonnen und verloren hast","Vedi cosa hai vinto e perso","Veja o que você ganhou e perdeu")}</div>
             </div>
             <span style={{fontSize:16,color:"rgba(255,214,0,.6)"}}>›</span>
@@ -10343,12 +10345,12 @@ export default function LePont() {
               <button onClick={function(){addFriend(friendInput);}}
                 style={{padding:"10px 16px",background:G.pelouse,color:"#000",border:"none",borderRadius:12,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>+</button>
             </div>
-            {friendMsg && <div style={{fontSize:12,marginTop:6,color:friendMsg.startsWith("✓")?"#00E676":friendMsg.startsWith("🔍")?"rgba(255,255,255,.5)":"#FF3D57",fontWeight:700}}>{friendMsg}</div>}
+            {friendMsg && <div style={{fontSize:12,marginTop:6,color:friendMsg.startsWith("✓")?G.pelouseClaire:friendMsg.startsWith("🔍")?"rgba(255,255,255,.5)":"#FF3D57",fontWeight:700}}>{friendMsg}</div>}
           </div>
           {/* Liste des amis + demandes en attente */}
           <div>
             <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.3)",marginBottom:8}}>
-              {tr("Mes amis","My friends","Meine Freunde","I miei amici","Meus amigos")} {friendsList.length>0&&<span style={{color:G.accent}}>({friendsList.length})</span>}
+              {tr("Mes amis","My friends","Meine Freunde","I miei amici","Meus amigos")} {friendsList.length>0&&<span style={{color:G.pelouseClaire}}>({friendsList.length})</span>}
             </div>
             {friendsList.length===0 && sentRequests.filter(function(r){return r.status==="pending";}).length===0 && (
               <div style={{textAlign:"center",padding:"24px 0",color:"rgba(255,255,255,.3)",fontSize:14}}>{tr("Aucun ami pour l'instant 👋","No friends yet 👋","Noch keine Freunde 👋","Ancora nessun amico 👋","Ainda sem amigos 👋")}</div>
@@ -10358,7 +10360,7 @@ export default function LePont() {
               <div key={"pending-"+i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 14px",background:"rgba(245,194,43,.28)",borderRadius:14,marginBottom:8,border:"1px dashed rgba(255,214,0,.25)"}}>
                 <div>
                   <div style={{fontSize:15,fontWeight:800,color:"rgba(255,255,255,.5)"}}>{r.to_name || r.to_id}</div>
-                  <div style={{fontSize:11,color:G.gold}}>{tr("⏳ En attente d'acceptation","⏳ Awaiting acceptance","⏳ Warte auf Annahme","⏳ In attesa di accettazione","⏳ Aguardando aceitação")}</div>
+                  <div style={{fontSize:11,color:G.projecteur}}>{tr("⏳ En attente d'acceptation","⏳ Awaiting acceptance","⏳ Warte auf Annahme","⏳ In attesa di accettazione","⏳ Aguardando aceitação")}</div>
                 </div>
               </div>
             );})}
@@ -10492,7 +10494,7 @@ export default function LePont() {
                                  une image d'emprunt qui ferait croire à une autre carte. */
                               <div style={{width:"100%",height:"100%",display:"flex",alignItems:"center",justifyContent:"center",
                                 background:"repeating-linear-gradient(135deg,rgba(255,255,255,.04) 0 8px,rgba(255,255,255,.015) 8px 16px)",
-                                color:"rgba(255,255,255,.22)",fontFamily:G.heading,fontSize:30}}>?</div>}
+                                color:"rgba(255,255,255,.22)",...posterText(30)}}>?</div>}
                           {!ouverte && (
                             <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2}}>
                               <span style={{fontSize:18,lineHeight:1}}>🔒</span>
@@ -10972,7 +10974,7 @@ export default function LePont() {
       </div>
           <div style={{textAlign:"center",zIndex:1}}>
             <div style={{fontSize:14,color:"rgba(255,255,255,.5)",letterSpacing:3,textTransform:"uppercase",marginBottom:16}}>{tr("C'est parti !","Let's go!","Los geht's!","Si parte!","Vamos lá!")}</div>
-            <div style={{fontFamily:G.heading,fontSize:120,color:G.accent,lineHeight:1,animation:"popIn .3s ease"}} key={duelCountdown}>{duelCountdown}</div>
+            <div style={{...posterText(120),color:G.pelouseClaire,lineHeight:1,animation:"popInPoster .3s ease"}} key={duelCountdown}>{duelCountdown}</div>
             <div style={{fontSize:14,color:"rgba(255,255,255,.4)",marginTop:16}}>{players.length} {tr("joueurs","players","Spieler","giocatori","jogadores")}</div>
           </div>
         </div>
@@ -10996,11 +10998,11 @@ export default function LePont() {
       </div>
         <div style={{zIndex:1,padding:"20px 18px 0",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
           {backBtn(leaveRoom)}
-          <div style={{fontFamily:G.heading,fontSize:24,color:G.white,letterSpacing:2}}>{tr("SALLE","ROOM","RAUM","STANZA","SALA")}</div>
+          <div style={{...posterText(24),color:G.white,letterSpacing:2}}>{tr("SALLE","ROOM","RAUM","STANZA","SALA")}</div>
           <div style={{background:"rgba(8,17,9,.45)",border:G.traitFin,borderRadius:12,padding:"6px 14px",textAlign:"center",display:"flex",alignItems:"center",gap:8}}>
             <div>
               <div style={{fontSize:9,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase"}}>{tr("Code","Code","Code","Codice","Código")}</div>
-              <div style={{fontFamily:G.heading,fontSize:20,color:G.gold,letterSpacing:4}}>{room.code}</div>
+              <div style={{...posterText(20),color:G.projecteur,letterSpacing:4}}>{room.code}</div>
             </div>
             <button onClick={function(){
               const link = "https://goatfc.fr?room="+room.code;
@@ -11009,7 +11011,7 @@ export default function LePont() {
               const copiedMsg = tr("Lien copié ! 📋","Link copied! 📋","Link kopiert! 📋","Link copiato! 📋","Link copiado! 📋");
               if(navigator.share){navigator.share({title:shareTitle,text:shareText,url:link});}
               else{navigator.clipboard.writeText(link).then(function(){alert(copiedMsg);});}
-            }} style={{background:"rgba(42,155,78,.35)",border:G.traitFin,borderRadius:8,padding:"6px 10px",color:G.accent,cursor:"pointer",fontSize:13,fontWeight:800,lineHeight:1}}>🔗 {tr("Inviter","Invite","Einladen","Invita","Convidar")}</button>
+            }} style={{background:"rgba(42,155,78,.35)",border:G.traitFin,borderRadius:8,padding:"6px 10px",color:G.pelouseClaire,cursor:"pointer",fontSize:13,fontWeight:800,lineHeight:1}}>🔗 {tr("Inviter","Invite","Einladen","Invita","Convidar")}</button>
           </div>
         </div>
         <div style={{...sheet,borderRadius:"28px 28px 0 0",marginTop:16}}>
@@ -11027,7 +11029,7 @@ export default function LePont() {
                   {p.name.charAt(0).toUpperCase()}
                 </div>
                 <div style={{flex:1}}>
-                  <div style={{fontSize:14,fontWeight:800,color:p.id===playerId?G.accent:G.white}}>{p.name}{p.id===room.host_id?" 👑":""}{p.id===playerId?tr(" (toi)"," (you)"," (du)"," (tu)"," (você)"):""}</div>
+                  <div style={{fontSize:14,fontWeight:800,color:p.id===playerId?G.pelouseClaire:G.white}}>{p.name}{p.id===room.host_id?" 👑":""}{p.id===playerId?tr(" (toi)"," (you)"," (du)"," (tu)"," (você)"):""}</div>
                 </div>
                 <div style={{fontSize:11,color:"rgba(255,255,255,.4)"}}>✓ {tr("Prêt","Ready","Bereit","Pronto","Pronto")}</div>
               </div>
@@ -11035,7 +11037,7 @@ export default function LePont() {
           </div>
           {players.length < 2 && (
             <div style={{textAlign:"center",padding:"8px 0",fontSize:13,color:"rgba(255,255,255,.3)"}}>
-              {tr(<>Partage le code <strong style={{color:G.gold}}>{room.code}</strong> à tes amis</>,<>Share code <strong style={{color:G.gold}}>{room.code}</strong> with your friends</>,<>Teile den Code <strong style={{color:G.gold}}>{room.code}</strong> mit deinen Freunden</>,<>Condividi il codice <strong style={{color:G.gold}}>{room.code}</strong> con i tuoi amici</>,<>Compartilhe o código <strong style={{color:G.gold}}>{room.code}</strong> com seus amigos</>)}
+              {tr(<>Partage le code <strong style={{color:G.projecteur}}>{room.code}</strong> à tes amis</>,<>Share code <strong style={{color:G.projecteur}}>{room.code}</strong> with your friends</>,<>Teile den Code <strong style={{color:G.projecteur}}>{room.code}</strong> mit deinen Freunden</>,<>Condividi il codice <strong style={{color:G.projecteur}}>{room.code}</strong> con i tuoi amici</>,<>Compartilhe o código <strong style={{color:G.projecteur}}>{room.code}</strong> com seus amigos</>)}
             </div>
           )}
           {isHost ? (
@@ -11056,7 +11058,7 @@ export default function LePont() {
 
   // ── TUTORIAL ──
   const TUTORIAL_BASE = [
-    { icon:"⚽", color:"#1a4a2e", accent:"#00E676", t:{
+    { icon:"⚽", color:"#1a4a2e", accent:G.pelouseClaire, t:{
       fr:{title:"GOAT PLUG",subtitle:"Trouve le joueur qui relie 2 clubs",desc:"On te montre 2 clubs. Trouve le joueur qui a joué dans les deux !"},
       en:{title:"GOAT PLUG",subtitle:"Find the player linking 2 clubs",desc:"We show you 2 clubs. Find the player who played for both!"},
       de:{title:"GOAT PLUG",subtitle:"Finde den Spieler, der 2 Klubs verbindet",desc:"Wir zeigen dir 2 Klubs. Finde den Spieler, der in beiden gespielt hat!"},
@@ -11068,7 +11070,7 @@ export default function LePont() {
       de:{title:"GOAT MERCATO",subtitle:"Verkette Spieler → Klub → Spieler",desc:"Ein Spieler wird angezeigt. Nenne einen seiner Klubs, dann einen anderen Spieler dieses Klubs… und so weiter!"},
       it:{title:"GOAT MERCATO",subtitle:"Concatena giocatore → club → giocatore",desc:"Viene mostrato un giocatore. Scrivi un club in cui ha giocato, poi un altro giocatore di quel club… e così via!"},
       pt:{title:"GOAT MERCATO",subtitle:"Encadeie jogador → clube → jogador",desc:"Um jogador é mostrado. Digite um clube dele, depois outro jogador desse clube… e assim por diante!"} } },
-    { icon:"⚡", color:"#3a2a00", accent:"#FFD600", t:{
+    { icon:"⚡", color:"#3a2a00", accent:G.projecteur, t:{
       fr:{title:"DÉFI DU JOUR",subtitle:"Un joueur mystère chaque jour",desc:"Chaque jour, un nouveau joueur mystère à deviner. Reviens tous les jours pour ne pas perdre ta série !"},
       en:{title:"DAILY CHALLENGE",subtitle:"A mystery player every day",desc:"Every day, a new mystery player to guess. Come back daily to keep your streak alive!"},
       de:{title:"TAGES-CHALLENGE",subtitle:"Jeden Tag ein Rätselspieler",desc:"Jeden Tag ein neuer Rätselspieler zum Erraten. Komm täglich zurück, um deine Serie zu halten!"},
@@ -11095,7 +11097,7 @@ export default function LePont() {
             {TUTORIAL_SLIDES.map((_,i)=>(<div key={i} style={{width:i===tutorialStep?24:8,height:8,borderRadius:4,background:i===tutorialStep?sl.accent:"rgba(255,255,255,.2)",transition:"all .3s"}}/>))}
           </div>
           <div style={{fontSize:56,marginBottom:16}}>{sl.icon}</div>
-          <div style={{fontFamily:G.heading,fontSize:32,color:"#fff",letterSpacing:2,marginBottom:6}}>{sl.title}</div>
+          <div style={{...posterText(32),color:"#fff",letterSpacing:2,marginBottom:6}}>{sl.title}</div>
           <div style={{fontSize:13,color:sl.accent,fontWeight:700,letterSpacing:1,marginBottom:16,textTransform:"uppercase"}}>{sl.subtitle}</div>
           <div style={{fontSize:15,color:"rgba(255,255,255,.7)",lineHeight:1.6,marginBottom:32}}>{sl.desc}</div>
           <div style={{display:"flex",gap:10}}>
@@ -11124,13 +11126,13 @@ export default function LePont() {
       <div style={{position:"fixed",inset:0,zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 20px",background:"rgba(8,17,9,.86)",animation:"fadeIn .3s ease"}}>
         <div style={{position:"relative",zIndex:1,width:"100%",maxWidth:380,background:G.bg,borderRadius:28,padding:"32px 24px 24px",border:G.traitFin,textAlign:"center",boxShadow:G.ombre}}>
           <div style={{fontSize:56,marginBottom:16}}>🐐</div>
-          <div style={{fontFamily:G.heading,fontSize:26,color:G.white,letterSpacing:1.2,marginBottom:14}}>
+          <div style={{...posterText(26),color:G.white,letterSpacing:1.2,marginBottom:14}}>
             {tr("BIENVENUE SUR GOAT FC","WELCOME TO GOAT FC","WILLKOMMEN BEI GOAT FC","BENVENUTO SU GOAT FC","BEM-VINDO AO GOAT FC")}
           </div>
           <div style={{fontSize:14,color:"rgba(255,255,255,.75)",lineHeight:1.6,marginBottom:20,textAlign:"left"}}>
             {(function(){
               const li = {padding:0}, ul = {paddingLeft:20,margin:"0 0 12px",color:"rgba(255,255,255,.65)",fontSize:13};
-              const S = {color:G.accent};
+              const S = {color:G.pelouseClaire};
               const blocks = {
                 fr:<><p style={{margin:"0 0 12px"}}>Petit point sur tes données :</p><ul style={ul}><li style={{marginBottom:6}}>On stocke ton <strong style={S}>pseudo, scores et préférences</strong> localement</li><li style={{marginBottom:6}}>Pas de pub trackée, aucune donnée revendue</li><li>Tu peux supprimer ton compte à tout moment dans les paramètres</li></ul></>,
                 en:<><p style={{margin:"0 0 12px"}}>Quick heads-up about your data:</p><ul style={ul}><li style={{marginBottom:6}}>We store your <strong style={S}>username, scores and preferences</strong> locally</li><li style={{marginBottom:6}}>No advertising tracking, no data sold to third parties</li><li>You can delete your account anytime in settings</li></ul></>,
@@ -11169,7 +11171,7 @@ export default function LePont() {
         {/* Barre de chargement */}
         <div style={{position:"absolute",bottom:55,left:"50%",transform:"translateX(-50%)",width:120,zIndex:5}}>
           <div style={{height:3,background:G.nuit,borderRadius:2,overflow:"hidden"}}>
-            <div style={{height:"100%",background:"#00E676",borderRadius:2,animation:"splashLoad 2.2s ease forwards"}}/>
+            <div style={{height:"100%",background:G.pelouse,borderRadius:2,animation:"splashLoad 2.2s ease forwards"}}/>
           </div>
         </div>
       </div>
@@ -11194,12 +11196,12 @@ export default function LePont() {
           autoFocus
           style={{width:"100%",background:"rgba(8,17,9,.45)",border:G.traitFin,borderRadius:14,padding:"14px 16px",fontFamily:G.font,fontSize:17,color:G.white,outline:"none",boxSizing:"border-box",marginBottom:8,textAlign:"center"}}
         />
-        {pseudoMsg && <div style={{fontSize:13,fontWeight:700,color:pseudoMsg.startsWith("❌")?"#FF3D57":"#00E676",marginBottom:8,textAlign:"center"}}>{pseudoMsg}</div>}
+        {pseudoMsg && <div style={{fontSize:13,fontWeight:700,color:pseudoMsg.startsWith("❌")?"#FF3D57":G.pelouseClaire,marginBottom:8,textAlign:"center"}}>{pseudoMsg}</div>}
         <div style={{fontSize:11,color:"rgba(255,255,255,.2)",marginBottom:16,textAlign:"center"}}>{tr("3–12 caractères · lettres, chiffres, _ et . · pas d'espaces","3–12 characters · letters, digits, _ and . · no spaces","3–12 Zeichen · Buchstaben, Ziffern, _ und . · keine Leerzeichen","3–12 caratteri · lettere, cifre, _ e . · niente spazi","3–12 caracteres · letras, números, _ e . · sem espaços")}</div>
         <button
           onClick={function(){checkAndSavePseudo(pseudoInput);}}
           disabled={pseudoChecking||pseudoInput.trim().length<3}
-          style={{width:"100%",padding:"15px",background:pseudoInput.trim().length>=3?G.accent:"rgba(8,17,9,.45)",color:pseudoInput.trim().length>=3?"#000":"rgba(255,255,255,.3)",border:G.trait,borderRadius:G.rayon,cursor:pseudoInput.trim().length>=3?"pointer":"not-allowed",fontFamily:G.font,fontSize:15,fontWeight:800}}
+          style={{width:"100%",padding:"15px",background:pseudoInput.trim().length>=3?G.pelouse:"rgba(8,17,9,.45)",color:pseudoInput.trim().length>=3?"#000":"rgba(255,255,255,.3)",border:G.trait,borderRadius:G.rayon,cursor:pseudoInput.trim().length>=3?"pointer":"not-allowed",fontFamily:G.font,fontSize:15,fontWeight:800}}
         >
           {pseudoChecking?(tr("Vérification...","Checking...","Prüfe...","Verifica...","Verificando...")):(tr("Confirmer →","Confirm →","Bestätigen →","Conferma →","Confirmar →"))}
         </button>
@@ -11225,7 +11227,7 @@ export default function LePont() {
       <div style={{width:"100%",maxWidth:380,background:"rgba(10,20,10,.97)",borderRadius:28,padding:"32px 24px",border:G.traitFin,boxShadow:G.ombre}}>
         <div style={{textAlign:"center",marginBottom:20}}>
           <div style={{fontSize:44,marginBottom:8}}>🔐</div>
-          <div style={{fontFamily:G.heading,fontSize:24,color:G.white,lineHeight:1.1,marginBottom:6}}>{tr("Ton code de récupération","Your recovery code","Dein Wiederherstellungscode","Il tuo codice di recupero","Seu código de recuperação")}</div>
+          <div style={{...posterText(24),color:G.white,lineHeight:1.1,marginBottom:6}}>{tr("Ton code de récupération","Your recovery code","Dein Wiederherstellungscode","Il tuo codice di recupero","Seu código de recuperação")}</div>
           <div style={{fontSize:13,color:"rgba(255,255,255,.55)"}}>{tr("Sauvegarde-le pour retrouver ton compte sur un autre appareil","Save it to access your account from another device","Speichere ihn, um dein Konto auf einem anderen Gerät zu nutzen","Salvalo per accedere al tuo account da un altro dispositivo","Guarde-o para acessar sua conta em outro aparelho")}</div>
         </div>
         <div style={{background:G.pelouse,borderRadius:14,padding:"22px 16px",textAlign:"center",marginBottom:16,boxShadow:G.ombre}}>
@@ -11249,7 +11251,7 @@ export default function LePont() {
         <button
           onClick={function(){setShowRecoveryCodeModal(null);setRecoveryConfirmed(false);}}
           disabled={!recoveryConfirmed}
-          style={{width:"100%",padding:"15px",background:recoveryConfirmed?G.accent:"rgba(8,17,9,.45)",color:recoveryConfirmed?"#000":"rgba(255,255,255,.3)",border:G.trait,borderRadius:G.rayon,cursor:recoveryConfirmed?"pointer":"not-allowed",fontFamily:G.font,fontSize:15,fontWeight:800}}
+          style={{width:"100%",padding:"15px",background:recoveryConfirmed?G.pelouse:"rgba(8,17,9,.45)",color:recoveryConfirmed?"#000":"rgba(255,255,255,.3)",border:G.trait,borderRadius:G.rayon,cursor:recoveryConfirmed?"pointer":"not-allowed",fontFamily:G.font,fontSize:15,fontWeight:800}}
         >
           {tr("OK, c'est noté","OK, I've saved it","OK, gespeichert","OK, salvato","OK, guardado")}
         </button>
@@ -11264,7 +11266,7 @@ export default function LePont() {
         <button onClick={function(){setShowRecoveryInput(false);}} style={{position:"absolute",top:14,right:14,background:G.nuit,border:"none",borderRadius:"50%",width:30,height:30,color:"rgba(255,255,255,.5)",cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
         <div style={{textAlign:"center",marginBottom:22}}>
           <div style={{fontSize:40,marginBottom:6}}>🔐</div>
-          <div style={{fontFamily:G.heading,fontSize:22,color:G.white,lineHeight:1.1,marginBottom:6}}>{tr("Récupérer mon compte","Recover my account","Mein Konto wiederherstellen","Recupera il mio account","Recuperar minha conta")}</div>
+          <div style={{...posterText(22),color:G.white,lineHeight:1.1,marginBottom:6}}>{tr("Récupérer mon compte","Recover my account","Mein Konto wiederherstellen","Recupera il mio account","Recuperar minha conta")}</div>
           <div style={{fontSize:13,color:"rgba(255,255,255,.55)"}}>{tr("Entre le code que tu as sauvegardé","Enter the code you saved","Gib den gespeicherten Code ein","Inserisci il codice che hai salvato","Digite o código que você salvou")}</div>
         </div>
         <input
@@ -11276,11 +11278,11 @@ export default function LePont() {
           maxLength={16}
           style={{width:"100%",background:"rgba(8,17,9,.45)",border:G.traitFin,borderRadius:14,padding:"14px 16px",fontFamily:"ui-monospace, Menlo, monospace",fontSize:17,color:G.white,outline:"none",boxSizing:"border-box",marginBottom:10,textAlign:"center",letterSpacing:1.5}}
         />
-        {recoveryMsg && <div style={{fontSize:13,fontWeight:700,color:recoveryMsg.startsWith("❌")?"#FF3D57":G.accent,marginBottom:10,textAlign:"center"}}>{recoveryMsg}</div>}
+        {recoveryMsg && <div style={{fontSize:13,fontWeight:700,color:recoveryMsg.startsWith("❌")?G.maillot:G.pelouseClaire,marginBottom:10,textAlign:"center"}}>{recoveryMsg}</div>}
         <button
           onClick={recoverAccount}
           disabled={recoveryLoading||recoveryInput.trim().length<16}
-          style={{width:"100%",padding:"15px",background:recoveryInput.trim().length>=16?G.accent:"rgba(8,17,9,.45)",color:recoveryInput.trim().length>=16?"#000":"rgba(255,255,255,.3)",border:G.trait,borderRadius:G.rayon,cursor:recoveryInput.trim().length>=16?"pointer":"not-allowed",fontFamily:G.font,fontSize:15,fontWeight:800,marginTop:6}}
+          style={{width:"100%",padding:"15px",background:recoveryInput.trim().length>=16?G.pelouse:"rgba(8,17,9,.45)",color:recoveryInput.trim().length>=16?"#000":"rgba(255,255,255,.3)",border:G.trait,borderRadius:G.rayon,cursor:recoveryInput.trim().length>=16?"pointer":"not-allowed",fontFamily:G.font,fontSize:15,fontWeight:800,marginTop:6}}
         >
           {recoveryLoading?(tr("Récupération...","Recovering...","Wiederherstellung...","Recupero...","Recuperando...")):(tr("Récupérer →","Recover →","Wiederherstellen →","Recupera →","Recuperar →"))}
         </button>
@@ -11295,7 +11297,7 @@ export default function LePont() {
         <button onClick={function(){setShowMyRecoveryCode(false);}} style={{position:"absolute",top:14,right:14,background:G.nuit,border:"none",borderRadius:"50%",width:30,height:30,color:"rgba(255,255,255,.5)",cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
         <div style={{textAlign:"center",marginBottom:20}}>
           <div style={{fontSize:44,marginBottom:8}}>🔐</div>
-          <div style={{fontFamily:G.heading,fontSize:22,color:G.white,lineHeight:1.1,marginBottom:6}}>{tr("Mon code de récupération","My recovery code","Mein Wiederherstellungscode","Il mio codice di recupero","Meu código de recuperação")}</div>
+          <div style={{...posterText(22),color:G.white,lineHeight:1.1,marginBottom:6}}>{tr("Mon code de récupération","My recovery code","Mein Wiederherstellungscode","Il mio codice di recupero","Meu código de recuperação")}</div>
           <div style={{fontSize:13,color:"rgba(255,255,255,.55)"}}>{tr("Utilise-le pour retrouver ton compte sur un autre appareil","Use it to access your account from another device","Nutze ihn, um dein Konto auf einem anderen Gerät zu öffnen","Usalo per accedere al tuo account da un altro dispositivo","Use-o para acessar sua conta em outro aparelho")}</div>
         </div>
         <div style={{background:G.pelouse,borderRadius:14,padding:"22px 16px",textAlign:"center",marginBottom:14,boxShadow:G.ombre}}>
@@ -11346,7 +11348,7 @@ export default function LePont() {
       </div>
           <div style={{textAlign:"center",zIndex:1}}>
             <div style={{fontSize:14,color:"rgba(255,255,255,.5)",letterSpacing:3,textTransform:"uppercase",marginBottom:16}}>{tr("Adversaire trouvé !","Opponent found!","Gegner gefunden!","Avversario trovato!","Adversário encontrado!")}</div>
-            <div style={{fontFamily:G.heading,fontSize:120,color:G.accent,lineHeight:1,animation:"popIn .3s ease"}} key={duelCountdown}>{duelCountdown}</div>
+            <div style={{...posterText(120),color:G.pelouseClaire,lineHeight:1,animation:"popInPoster .3s ease"}} key={duelCountdown}>{duelCountdown}</div>
             <div style={{fontSize:16,color:"rgba(255,255,255,.5)",marginTop:16}}>vs <strong style={{color:G.white}}>{oppName}</strong></div>
           </div>
         </div>
@@ -11370,7 +11372,7 @@ export default function LePont() {
       </div>
         <div style={{textAlign:"center",zIndex:1,padding:"0 32px"}}>
           <div style={{fontSize:48,marginBottom:16,animation:"spin 2s linear infinite",display:"inline-block"}}>⚽</div>
-          <div style={{fontFamily:G.heading,fontSize:32,color:G.white,marginBottom:8}}>
+          <div style={{...posterText(32),color:G.white,marginBottom:8}}>
             {isReady ? (tr("PRÊT !","READY!","BEREIT!","PRONTO!","PRONTO!")) : (tr("EN ATTENTE...","WAITING...","WARTEN...","IN ATTESA...","AGUARDANDO..."))}
           </div>
           <div style={{fontSize:14,color:"rgba(255,255,255,.5)",marginBottom:32}}>
@@ -11425,10 +11427,10 @@ export default function LePont() {
         </div>
         <div style={{zIndex:1,padding:"32px 20px 12px",textAlign:"center"}}>
           <div style={{fontSize:52,marginBottom:8}}>{iAbandoned?"🏳️":(myRank<=3?medals[myRank-1]:myRank+"ème")}</div>
-          <div style={{fontFamily:G.heading,fontSize:"clamp(30px,8vw,50px)",color:iAbandoned?"#FF3D57":(myRank===1?G.gold:G.white),letterSpacing:2}}>
+          <div style={{...posterText(30),fontSize:"clamp(30px,8vw,50px)",color:iAbandoned?G.maillot:(myRank===1?G.projecteur:G.white),letterSpacing:2}}>
             {iAbandoned?(tr("ABANDON","FORFEIT","AUFGABE","RESA","DESISTÊNCIA")):(myRank===1?(tr("VICTOIRE !","VICTORY!","SIEG!","VITTORIA!","VITÓRIA!")):myRank===2?(tr("2ÈME PLACE","2ND PLACE","2. PLATZ","2° POSTO","2º LUGAR")):myRank===3?(tr("3ÈME PLACE","3RD PLACE","3. PLATZ","3° POSTO","3º LUGAR")):(tr("RÉSULTATS","RESULTS","ERGEBNISSE","RISULTATI","RESULTADOS")))}
           </div>
-          <div style={{fontSize:18,color:iAbandoned?"#fff":(myRank===1?G.gold:"#fff"),marginTop:12,fontWeight:800,padding:"0 16px",lineHeight:1.4,textAlign:"center",animation:"popIn .6s cubic-bezier(.22,1,.36,1) .4s both",textShadow:myRank===1&&!iAbandoned?"0 0 20px rgba(255,214,0,.4)":"none"}}>{msg}</div>
+          <div style={{fontSize:18,color:iAbandoned?"#fff":(myRank===1?G.projecteur:"#fff"),marginTop:12,fontWeight:800,padding:"0 16px",lineHeight:1.4,textAlign:"center",animation:"popIn .6s cubic-bezier(.22,1,.36,1) .4s both",textShadow:myRank===1&&!iAbandoned?"0 0 20px rgba(255,214,0,.4)":"none"}}>{msg}</div>
           {!iAbandoned && <WinBanner maxWidth={300} marginTop={10} lose={myRank!==1} />}
         </div>
         <div style={{...sheet,borderRadius:"28px 28px 0 0"}}>
@@ -11443,9 +11445,9 @@ export default function LePont() {
             } : null;
             return (
             <div key={i} onClick={onClickHandler} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",borderRadius:G.rayon,background:p.id===playerId?"rgba(42,155,78,.35)":"rgba(8,17,9,.45)",border:G.traitFin,marginBottom:6,cursor:hasRounds?"pointer":"default"}}>
-              <div style={{fontFamily:G.heading,fontSize:30,width:40,textAlign:"center",color:i<3?["#FFD600","#C0C0C0","#CD7F32"][i]:"rgba(255,255,255,.3)"}}>{i<3?medals[i]:i+1}</div>
-              <div style={{flex:1,fontSize:14,fontWeight:800,color:p.id===playerId?G.accent:G.white}}>{p.name}{p.id===playerId?" ("+tr("toi","you","du","tu","você")+")":""}{p.abandoned?" 🏳️":""}</div>
-              <div style={{fontFamily:G.heading,fontSize:26,color:i===0?G.gold:G.white}}>{p.score||0} <span style={{fontSize:12,color:"rgba(255,255,255,.3)"}}>pts</span></div>
+              <div style={{...posterText(30),width:40,textAlign:"center",color:i<3?[G.projecteur,"#C0C0C0","#CD7F32"][i]:"rgba(255,255,255,.3)"}}>{i<3?medals[i]:i+1}</div>
+              <div style={{flex:1,fontSize:14,fontWeight:800,color:p.id===playerId?G.pelouseClaire:G.white}}>{p.name}{p.id===playerId?" ("+tr("toi","you","du","tu","você")+")":""}{p.abandoned?" 🏳️":""}</div>
+              <div style={{...posterText(26),color:i===0?G.projecteur:G.white}}>{p.score||0} <span style={{fontSize:12,color:"rgba(255,255,255,.3)"}}>pts</span></div>
               {hasRounds && <div style={{fontSize:14,color:"rgba(255,214,0,.7)",marginLeft:4}}>👁️</div>}
             </div>
           );})}
@@ -11494,7 +11496,7 @@ export default function LePont() {
           {waitingAfterAbandon ? (
             <>
               <div style={{fontSize:64,marginBottom:20}}>🏳️</div>
-              <div style={{fontFamily:G.heading,fontSize:36,color:"#FF3D57",marginBottom:16,letterSpacing:2}}>{tr("ABANDON","FORFEIT","AUFGABE","RESA","DESISTÊNCIA")}</div>
+              <div style={{...posterText(36),color:"#FF3D57",marginBottom:16,letterSpacing:2}}>{tr("ABANDON","FORFEIT","AUFGABE","RESA","DESISTÊNCIA")}</div>
               <div style={{fontSize:17,color:G.white,fontWeight:800,marginBottom:28,lineHeight:1.4,padding:"0 8px"}}>{
                 abandonedAfterOppLeft
                   ? (tr("Pas de match, pas de drame. Reviens quand tu veux 🤝","No match, no drama. Come back anytime 🤝","Kein Match, kein Drama. Komm jederzeit wieder 🤝","Niente partita, niente dramma. Torna quando vuoi 🤝","Sem partida, sem drama. Volte quando quiser 🤝"))
@@ -11512,8 +11514,8 @@ export default function LePont() {
           ) : (
             <>
               <div style={{fontSize:56,marginBottom:20}}>⏳</div>
-              <div style={{fontFamily:G.heading,fontSize:30,color:G.white,marginBottom:12,letterSpacing:1}}>{tr("PARTIE TERMINÉE !","GAME OVER!","GAME OVER!","GAME OVER!","FIM DE JOGO!")}</div>
-              <div style={{fontSize:16,color:G.accent,fontWeight:800,marginBottom:10}}>{tr("Tu as fini ta partie 💪","You finished your game 💪","Du hast dein Spiel beendet 💪","Hai finito la tua partita 💪","Você terminou seu jogo 💪")}</div>
+              <div style={{...posterText(30),color:G.white,marginBottom:12,letterSpacing:1}}>{tr("PARTIE TERMINÉE !","GAME OVER!","GAME OVER!","GAME OVER!","FIM DE JOGO!")}</div>
+              <div style={{fontSize:16,color:G.pelouseClaire,fontWeight:800,marginBottom:10}}>{tr("Tu as fini ta partie 💪","You finished your game 💪","Du hast dein Spiel beendet 💪","Hai finito la tua partita 💪","Você terminou seu jogo 💪")}</div>
               <div style={{fontSize:14,color:"rgba(255,255,255,.6)",lineHeight:1.7,marginBottom:8}}>{tr("Les autres joueurs sont encore en train de jouer.","The other players are still playing.","Die anderen Spieler spielen noch.","Gli altri giocatori stanno ancora giocando.","Os outros jogadores ainda estão jogando.")}</div>
               <div style={{fontSize:14,color:"rgba(255,255,255,.9)",fontWeight:700,lineHeight:1.7,marginBottom:24,background:"rgba(8,17,9,.45)",borderRadius:14,padding:"12px 16px"}}>{tr("👉 Reste sur cet écran — les résultats apparaîtront automatiquement dès que tout le monde aura terminé.","👉 Stay on this screen — results will appear automatically as soon as everyone is done.","👉 Bleib auf diesem Bildschirm — die Ergebnisse erscheinen automatisch, sobald alle fertig sind.","👉 Resta su questa schermata — i risultati appariranno automaticamente appena tutti avranno finito.","👉 Fique nesta tela — os resultados aparecerão automaticamente assim que todos terminarem.")}</div>
               {abandonNotif && <div style={{fontSize:13,color:"#000",fontWeight:800,marginBottom:16,background:"rgba(245,194,43,.28)",borderRadius:12,padding:"10px 14px"}}>{abandonNotif}</div>}
@@ -12017,14 +12019,14 @@ export default function LePont() {
     <div onClick={function(){ installDismissedThisSession.current = false; setShowInstallPrompt(true); }} style={{position:"sticky",top:0,zIndex:40,margin:"0 -16px 12px",padding:"10px 16px",background:G.nuit,borderBottom:G.traitFin,cursor:"pointer",display:"flex",alignItems:"center",gap:10}}>
       <span style={{fontSize:20,flexShrink:0}}>📲</span>
       <div style={{flex:1,minWidth:0}}>
-        <div style={{fontSize:12,fontWeight:800,color:G.accent,letterSpacing:.3,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
+        <div style={{fontSize:12,fontWeight:800,color:G.pelouseClaire,letterSpacing:.3,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
           {tr("Installer GOAT FC","Install GOAT FC","GOAT FC installieren","Installa GOAT FC","Instalar GOAT FC")}
         </div>
         <div style={{fontSize:10,color:"rgba(255,255,255,.55)",marginTop:1,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
           {tr("Reçois les rappels et accède plus vite","Get daily reminders & faster access","Erhalte tägliche Erinnerungen & schnelleren Zugriff","Ricevi promemoria quotidiani e accesso più rapido","Receba lembretes diários e acesso mais rápido")}
         </div>
       </div>
-      <span style={{fontSize:18,color:G.accent,flexShrink:0}}>→</span>
+      <span style={{fontSize:18,color:G.pelouseClaire,flexShrink:0}}>→</span>
     </div>
   );
 
@@ -12071,7 +12073,7 @@ export default function LePont() {
                   <div style={{fontSize:13,fontWeight:800,color:G.white}}>{duelMode==="pont"?"The Plug":"The Mercato"}</div>
                   <div style={{fontSize:12,color:"rgba(255,255,255,.4)"}}>{duelDiff==="facile"?"AMATEUR":duelDiff==="moyen"?"PRO":"CRESCENDO"} · {duelRounds} {duelRounds>1?tr("manches","rounds","Runden","round","rodadas"):tr("manche","round","Runde","round","rodada")}</div>
                 </div>
-                <div style={{fontFamily:G.heading,fontSize:32,color:G.accent}}>2-8 👥</div>
+                <div style={{...posterText(32),color:G.pelouseClaire}}>2-8 👥</div>
               </div>
             </div>
             <div style={{fontSize:12,color:"rgba(255,255,255,.35)",marginBottom:20,textAlign:"center"}}>
@@ -12105,11 +12107,11 @@ export default function LePont() {
         <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between"}}>
           <div style={{flex:1,display:"flex",alignItems:"center"}}>
             <div style={{display:"flex",background:"rgba(0,0,0,.3)",border:G.traitFin,borderRadius:12,padding:3}}>
-              <button onClick={()=>setLanguage("fr")} style={{padding:"5px 6px",background:lang==="fr"?G.accent:"transparent",color:lang==="fr"?"#000":"rgba(255,255,255,.7)",border:"none",borderRadius:9,cursor:"pointer",fontFamily:G.font,fontSize:11,fontWeight:800}}>🇫🇷 FR</button>
-              <button onClick={()=>setLanguage("en")} style={{padding:"5px 6px",background:lang==="en"?G.accent:"transparent",color:lang==="en"?"#000":"rgba(255,255,255,.7)",border:"none",borderRadius:9,cursor:"pointer",fontFamily:G.font,fontSize:11,fontWeight:800}}>🇬🇧 EN</button>
-              <button onClick={()=>setLanguage("de")} style={{padding:"5px 6px",background:lang==="de"?G.accent:"transparent",color:lang==="de"?"#000":"rgba(255,255,255,.7)",border:"none",borderRadius:9,cursor:"pointer",fontFamily:G.font,fontSize:11,fontWeight:800}}>🇩🇪 DE</button>
-              <button onClick={()=>setLanguage("it")} style={{padding:"5px 6px",background:lang==="it"?G.accent:"transparent",color:lang==="it"?"#000":"rgba(255,255,255,.7)",border:"none",borderRadius:9,cursor:"pointer",fontFamily:G.font,fontSize:11,fontWeight:800}}>🇮🇹 IT</button>
-              <button onClick={()=>setLanguage("pt")} style={{padding:"5px 6px",background:lang==="pt"?G.accent:"transparent",color:lang==="pt"?"#000":"rgba(255,255,255,.7)",border:"none",borderRadius:9,cursor:"pointer",fontFamily:G.font,fontSize:11,fontWeight:800}}>🇵🇹 PT</button>
+              <button onClick={()=>setLanguage("fr")} style={{padding:"5px 6px",background:lang==="fr"?G.pelouse:"transparent",color:lang==="fr"?"#000":"rgba(255,255,255,.7)",border:"none",borderRadius:9,cursor:"pointer",fontFamily:G.font,fontSize:11,fontWeight:800}}>🇫🇷 FR</button>
+              <button onClick={()=>setLanguage("en")} style={{padding:"5px 6px",background:lang==="en"?G.pelouse:"transparent",color:lang==="en"?"#000":"rgba(255,255,255,.7)",border:"none",borderRadius:9,cursor:"pointer",fontFamily:G.font,fontSize:11,fontWeight:800}}>🇬🇧 EN</button>
+              <button onClick={()=>setLanguage("de")} style={{padding:"5px 6px",background:lang==="de"?G.pelouse:"transparent",color:lang==="de"?"#000":"rgba(255,255,255,.7)",border:"none",borderRadius:9,cursor:"pointer",fontFamily:G.font,fontSize:11,fontWeight:800}}>🇩🇪 DE</button>
+              <button onClick={()=>setLanguage("it")} style={{padding:"5px 6px",background:lang==="it"?G.pelouse:"transparent",color:lang==="it"?"#000":"rgba(255,255,255,.7)",border:"none",borderRadius:9,cursor:"pointer",fontFamily:G.font,fontSize:11,fontWeight:800}}>🇮🇹 IT</button>
+              <button onClick={()=>setLanguage("pt")} style={{padding:"5px 6px",background:lang==="pt"?G.pelouse:"transparent",color:lang==="pt"?"#000":"rgba(255,255,255,.7)",border:"none",borderRadius:9,cursor:"pointer",fontFamily:G.font,fontSize:11,fontWeight:800}}>🇵🇹 PT</button>
             </div>
           </div>
           <div style={{textAlign:"center",flex:2}}>
@@ -12127,10 +12129,10 @@ export default function LePont() {
     // eslint-disable-next-line no-unreachable
     const tier = dayStreak >= 100 ? "platine" : dayStreak >= 30 ? "mythic" : dayStreak >= 7 ? "gold" : dayStreak >= 3 ? "bronze" : "base";
     const tierStyles = {
-      base:    { bg:"linear-gradient(135deg,rgba(255,107,53,.25),rgba(255,214,0,.15))", border:"rgba(255,107,53,.5)", color:"#FFD600", shadow:"0 2px 8px rgba(255,107,53,.2)", textColor:"#FFD600", emoji:"🔥" },
+      base:    { bg:"linear-gradient(135deg,rgba(255,107,53,.25),rgba(255,214,0,.15))", border:"rgba(255,107,53,.5)", color:G.projecteur, shadow:"0 2px 8px rgba(255,107,53,.2)", textColor:G.projecteur, emoji:"🔥" },
       bronze:  { bg:"linear-gradient(135deg,#D97706,#FBA94F)", border:"#FBA94F", color:"#000", shadow:"0 4px 14px rgba(217,119,6,.45)", textColor:"#000", emoji:"🔥" },
-      gold:    { bg:"linear-gradient(135deg,#FF6B35,#FFD600)", border:"#FFD600", color:"#000", shadow:"0 4px 14px rgba(255,107,53,.45)", textColor:"#000", emoji:"🔥" },
-      mythic:  { bg:"linear-gradient(135deg,#C084FC,#FFD600)", border:"#FFD600", color:"#000", shadow:"0 6px 18px rgba(192,132,252,.55)", textColor:"#000", emoji:"⚡" },
+      gold:    { bg:"linear-gradient(135deg,#FF6B35,#FFD600)", border:G.projecteur, color:"#000", shadow:"0 4px 14px rgba(255,107,53,.45)", textColor:"#000", emoji:"🔥" },
+      mythic:  { bg:"linear-gradient(135deg,#C084FC,#FFD600)", border:G.projecteur, color:"#000", shadow:"0 6px 18px rgba(192,132,252,.55)", textColor:"#000", emoji:"⚡" },
       platine: { bg:"linear-gradient(135deg,#E5E4E2,#B6B6B6,#FFFFFF)", border:"#FFFFFF", color:"#000", shadow:"0 6px 20px rgba(255,255,255,.55)", textColor:"#000", emoji:"💎" }
     };
     // La pastille garde toujours l'apparence de son palier : la variante rouge
@@ -12149,7 +12151,7 @@ export default function LePont() {
         animation: streakJustIncreased ? "pulseStreak .6s ease-in-out 3" : (tier==="platine" || tier==="mythic" ? "flameGlow 2.5s ease-in-out infinite" : "none")
       }}>
         <span style={{fontSize:18,filter: tier==="gold" || tier==="mythic" ? "drop-shadow(0 0 6px #FFD60099)" : tier==="platine" ? "drop-shadow(0 0 6px #FFFFFFAA)" : "none"}}>{t.emoji}</span>
-        <span style={{fontFamily:G.heading,fontSize:17,color:t.textColor,fontWeight:800,letterSpacing:.5}}>{dayStreak}</span>
+        <span style={{...posterText(17),color:t.textColor,fontWeight:800,letterSpacing:.5}}>{dayStreak}</span>
       </div>
     );
   })()}
@@ -12180,7 +12182,7 @@ export default function LePont() {
         {/* Bandeau room en attente */}
         {pendingRoomCode && !pseudoConfirmed && (
           <div style={{background:"rgba(42,155,78,.35)",border:G.traitFin,borderRadius:12,padding:"10px 14px",textAlign:"center"}}>
-            <div style={{fontSize:13,fontWeight:800,color:G.accent}}>🔗 {tr("Salle ","Room ","Raum ","Stanza ","Sala ")}{pendingRoomCode}{tr(" en attente"," pending"," ausstehend"," in attesa"," pendente")}</div>
+            <div style={{fontSize:13,fontWeight:800,color:G.pelouseClaire}}>🔗 {tr("Salle ","Room ","Raum ","Stanza ","Sala ")}{pendingRoomCode}{tr(" en attente"," pending"," ausstehend"," in attesa"," pendente")}</div>
             <div style={{fontSize:11,color:"rgba(255,255,255,.5)",marginTop:2}}>{tr("Crée ton pseudo pour rejoindre automatiquement","Create your username to join automatically","Erstelle deinen Namen, um automatisch beizutreten","Crea il tuo nome per unirti automaticamente","Crie seu nome para entrar automaticamente")}</div>
           </div>
         )}
@@ -12190,7 +12192,7 @@ export default function LePont() {
         {friendRequests.length > 0 && (
           <div style={{background:"#123a1e",border:G.traitFin,borderRadius:12,padding:"10px 14px"}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-              <div style={{fontSize:12,fontWeight:700,color:G.accent}}>👋 {friendRequests.length} {friendRequests.length>1?tr("demandes d'ami","friend requests","Freundschaftsanfragen","richieste di amicizia","pedidos de amizade"):tr("demande d'ami","friend request","Freundschaftsanfrage","richiesta di amicizia","pedido de amizade")}</div>
+              <div style={{fontSize:12,fontWeight:700,color:G.pelouseClaire}}>👋 {friendRequests.length} {friendRequests.length>1?tr("demandes d'ami","friend requests","Freundschaftsanfragen","richieste di amicizia","pedidos de amizade"):tr("demande d'ami","friend request","Freundschaftsanfrage","richiesta di amicizia","pedido de amizade")}</div>
               <button onClick={function(){setShowFriends(true);loadFriendRequests();}} style={{padding:"5px 12px",background:G.pelouse,color:"#000",border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800}}>{tr("Voir","View","Ansehen","Vedi","Ver")}</button>
             </div>
           </div>
@@ -12203,7 +12205,7 @@ export default function LePont() {
               const oppName = d.challenger_id===playerId?d.opponent_name:d.challenger_name;
               return(
                 <div key={d.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                  <div style={{fontSize:12,fontWeight:700,color:G.gold}}>⚡ {tr("Défi de ","Challenge from ","Herausforderung von ","Sfida di ","Desafio de ")}{oppName}</div>
+                  <div style={{fontSize:12,fontWeight:700,color:G.projecteur}}>⚡ {tr("Défi de ","Challenge from ","Herausforderung von ","Sfida di ","Desafio de ")}{oppName}</div>
                   <button onClick={function(){joinDuel(d);}} style={{padding:"5px 12px",background:G.projecteur,color:"#000",border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800}}>{tr("Rejoindre","Join","Beitreten","Unisciti","Entrar")}</button>
                 </div>
               );})}
@@ -12246,9 +12248,9 @@ export default function LePont() {
         {(() => {
           const homeCards = [
               {key:"duel",    img:DUEL_CARD_IMG,    onClick: function(){requirePseudo(function(){setDuelError("");setDuelJoinCode("");setDuelScreen("menu");});}, record: null, recordIcon:null, recordColor:"#3DA5FF"},
-              {key:"grid",    img:REVEAL_CARD_IMG,  onClick: function(){window.dispatchEvent(new CustomEvent("goatfc:open-findplayer"));}, record: null, recordIcon:null, recordColor:"#00E676"},
+              {key:"grid",    img:REVEAL_CARD_IMG,  onClick: function(){window.dispatchEvent(new CustomEvent("goatfc:open-findplayer"));}, record: null, recordIcon:null, recordColor:G.pelouseClaire},
               {key:"mercato", img:MERCATO_CARD_IMG, onClick: function(){setGameConfigModal("chaine");}, record: chainRecord, recordIcon:"⛓",  recordColor:"#60a5fa"},
-              {key:"plug",    img:PLUG_CARD_IMG,    onClick: function(){setGameConfigModal("pont");},   record: record,      recordIcon:"🏆", recordColor:"#FFD600"},
+              {key:"plug",    img:PLUG_CARD_IMG,    onClick: function(){setGameConfigModal("pont");},   record: record,      recordIcon:"🏆", recordColor:G.projecteur},
               {key:"guess",   img:GUESS_CARD_IMG,   onClick: function(){window.dispatchEvent(new CustomEvent("goatfc:open-guess"));}, record: null, recordIcon:null, recordColor:"#C084FC"},
               // GOAT GRID (grille 3×3 solo). Ajouté en fin de liste pour ne pas
               // décaler les index déjà mémorisés dans bb_home_card.
@@ -12351,7 +12353,7 @@ export default function LePont() {
                   {isActive && card.record && (
                     <div style={{position:"absolute",top:12,left:12,display:"flex",alignItems:"center",gap:5,background:G.nuit,padding:"5px 10px",borderRadius:G.rayonS,border:G.traitFin,boxShadow:"2px 2px 0 "+G.encre,zIndex:2}}>
                       <span style={{fontSize:13,color:card.recordColor}}>{card.recordIcon}</span>
-                      <span style={{fontFamily:G.heading,fontSize:14,color:card.recordColor,fontWeight:700}}>{card.record.score} pts</span>
+                      <span style={{...posterText(14),color:card.recordColor,fontWeight:700}}>{card.record.score} pts</span>
                     </div>
                   )}
                 </div>
@@ -12362,7 +12364,7 @@ export default function LePont() {
           {/* Dots indicator */}
           <div style={{display:"flex",justifyContent:"center",gap:8,marginTop:10}}>
             {homeCards.map(function(_c, i){
-              const colors = ["#00E676","#60a5fa","#FFD600","#C084FC","#3DA5FF"];
+              const colors = [G.pelouseClaire,"#60a5fa","#FFD600","#C084FC","#3DA5FF"];
               const isActive = homeCardIndex === i;
               return (
                 <div
@@ -12395,7 +12397,7 @@ export default function LePont() {
             <div style={{maxWidth:520,margin:"0 auto"}}>
               <div style={{textAlign:"center",marginBottom:24}}>
                 <div style={{fontSize:11,letterSpacing:3,color:"rgba(255,255,255,.45)",fontWeight:800,textTransform:"uppercase"}}>Tableau de bord · privé</div>
-                <div style={{fontFamily:G.heading,fontSize:34,letterSpacing:2,color:"#fff",marginTop:4}}>GOAT <span style={{color:"#00E676"}}>STATS</span></div>
+                <div style={{...posterText(34),letterSpacing:2,color:"#fff",marginTop:4}}>GOAT <span style={{color:G.pelouseClaire}}>STATS</span></div>
               </div>
                 {/* Rafraîchir en haut : en bas de page, il fallait traverser tout le
                     tableau de bord pour le trouver. */}
@@ -12412,26 +12414,26 @@ export default function LePont() {
                   {/* EN CE MOMENT — nombre de personnes actuellement sur l'app (temps réel) */}
                   <div style={{position:"relative",background:"linear-gradient(135deg, rgba(0,230,118,.18), rgba(0,0,0,.25))",border:"1px solid rgba(0,230,118,.4)",borderRadius:18,padding:"16px 18px",marginBottom:14,display:"flex",alignItems:"center",gap:14,overflow:"hidden"}}>
                     <div style={{position:"relative",width:12,height:12,flexShrink:0}}>
-                      <span style={{position:"absolute",inset:0,borderRadius:"50%",background:"#00E676",boxShadow:"0 0 10px #00E676"}}/>
+                      <span style={{position:"absolute",inset:0,borderRadius:"50%",background:G.pelouse,boxShadow:"0 0 10px #00E676"}}/>
                       <span style={{position:"absolute",inset:-4,borderRadius:"50%",border:"2px solid #00E676",animation:"livePulse 1.8s ease-out infinite"}}/>
                     </div>
                     <div style={{flex:1}}>
                       <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.6)",fontWeight:800,textTransform:"uppercase"}}>En ce moment</div>
                       <div style={{fontSize:12,color:"rgba(255,255,255,.45)",fontWeight:600,marginTop:1}}>{liveNow==null?"table bb_presence à créer":(liveNow>1?"personnes sur l'app":"personne sur l'app")}</div>
                     </div>
-                    <div style={{fontFamily:G.heading,fontSize:44,color:"#00E676",lineHeight:1,textShadow:"0 0 20px rgba(0,230,118,.45)"}}>{liveNow==null?"—":liveNow}</div>
+                    <div style={{...posterText(44),color:G.pelouseClaire,lineHeight:1,textShadow:"0 0 20px rgba(0,230,118,.45)"}}>{liveNow==null?"—":liveNow}</div>
                   </div>
                   {/* Sélecteur de plage : 1 / 5 / 10 / 14 jours */}
                   <div style={{display:"flex",gap:8,marginBottom:16}}>
                     {[1,5,10,14].map(function(r){
                       const active = statsRange===r;
-                      return <button key={r} onClick={function(){setStatsRange(r);}} style={{flex:1,padding:"11px 0",borderRadius:12,border:"1px solid "+(active?"#00E676":"rgba(255,255,255,.14)"),background:active?"rgba(0,230,118,.16)":"rgba(255,255,255,.04)",color:active?"#00E676":"rgba(255,255,255,.6)",fontFamily:G.font,fontWeight:800,fontSize:13.5,cursor:"pointer",transition:"all .15s"}}>{r} j</button>;
+                      return <button key={r} onClick={function(){setStatsRange(r);}} style={{flex:1,padding:"11px 0",borderRadius:12,border:"1px solid "+(active?G.pelouse:"rgba(255,255,255,.14)"),background:active?"rgba(0,230,118,.16)":"rgba(255,255,255,.04)",color:active?G.pelouseClaire:"rgba(255,255,255,.6)",fontFamily:G.font,fontWeight:800,fontSize:13.5,cursor:"pointer",transition:"all .15s"}}>{r} j</button>;
                     })}
                   </div>
                   {/* Résumé de la fenêtre sélectionnée */}
                   <div style={{background:"linear-gradient(160deg, rgba(0,230,118,.16), rgba(255,255,255,.03) 55%, rgba(0,0,0,.25))",border:"1px solid rgba(0,230,118,.35)",borderRadius:22,padding:"22px 20px",textAlign:"center",boxShadow:"0 16px 44px -16px rgba(0,230,118,.4)",marginBottom:14}}>
                     <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,255,255,.55)",fontWeight:800,textTransform:"uppercase"}}>{rangeLabel}</div>
-                    <div style={{fontFamily:G.heading,fontSize:76,color:"#00E676",lineHeight:1,textShadow:"0 0 26px rgba(0,230,118,.45)"}}>{v.activeWindow}</div>
+                    <div style={{...posterText(76),color:G.pelouseClaire,lineHeight:1,textShadow:"0 0 26px rgba(0,230,118,.45)"}}>{v.activeWindow}</div>
                     <div style={{fontSize:14,color:"rgba(255,255,255,.7)",fontWeight:700}}>{v.range===1?"actifs aujourd'hui":`joueurs actifs · ${v.range} j`}{statsData.hasEvents?` · dont ${v.anonWindow} anonyme${v.anonWindow>1?"s":""}`:""} · {v.gamesWindow} parties{v.duelsWindow?` · ${v.duelsWindow} duels`:""}</div>
                   </div>
                   {/* ─── DEPUIS LE DÉBUT (tout l'historique) ─── */}
@@ -12447,10 +12449,10 @@ export default function LePont() {
                     const pat = statsData.playsAllTime;
                     const playsTot = pat ? Object.keys(pat).reduce(function(s,k){ return s + pat[k].solo + pat[k].online; }, 0) : null;
                     const cards = [
-                      { v: playsTot,   label: "parties jouées",     color: "#00E676", sub: pat ? "tous modes confondus" : "table bb_events absente" },
+                      { v: playsTot,   label: "parties jouées",     color: G.pelouseClaire, sub: pat ? "tous modes confondus" : "table bb_events absente" },
                       { v: at.games,   label: "scores enregistrés", color: "#60a5fa", sub: "modes qui classent un score" },
                       { v: onlineTot,  label: "parties en ligne",   color: "#FF8A2A", sub: `${fmt(at.duels)} duels · ${fmt(at.rooms)} salons` },
-                      { v: at.accounts,label: "comptes créés",      color: "#FFD600", sub: "depuis le lancement" },
+                      { v: at.accounts,label: "comptes créés",      color: G.projecteur, sub: "depuis le lancement" },
                     ];
                     return (
                       <div style={{marginBottom:20}}>
@@ -12458,7 +12460,7 @@ export default function LePont() {
                         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
                           {cards.map(function(c,i){return(
                             <div key={i} style={{background:"linear-gradient(150deg, "+c.color+"1f, rgba(255,255,255,.03) 60%, rgba(0,0,0,.2))",border:"1px solid "+c.color+"44",borderRadius:18,padding:"16px 14px",textAlign:"center"}}>
-                              <div style={{fontFamily:G.heading,fontSize:38,color:c.color,lineHeight:1,textShadow:"0 0 20px "+c.color+"40"}}>{fmt(c.v)}</div>
+                              <div style={{...posterText(38),color:c.color,lineHeight:1,textShadow:"0 0 20px "+c.color+"40"}}>{fmt(c.v)}</div>
                               <div style={{fontSize:10.5,letterSpacing:1,color:"rgba(255,255,255,.6)",fontWeight:800,textTransform:"uppercase",marginTop:7}}>{c.label}</div>
                               <div style={{fontSize:10,color:"rgba(255,255,255,.35)",fontWeight:600,marginTop:3}}>{c.sub}</div>
                             </div>
@@ -12523,11 +12525,11 @@ export default function LePont() {
                   {/* Cartes parties (fenêtre) / comptes (total) */}
                   <div style={{display:"flex",gap:12,marginBottom:20}}>
                     <div style={{flex:1,background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.1)",borderRadius:18,padding:"16px",textAlign:"center"}}>
-                      <div style={{fontFamily:G.heading,fontSize:34,color:"#60a5fa",lineHeight:1}}>{v.gamesWindow}</div>
+                      <div style={{...posterText(34),color:"#60a5fa",lineHeight:1}}>{v.gamesWindow}</div>
                       <div style={{fontSize:10.5,letterSpacing:1,color:"rgba(255,255,255,.5)",fontWeight:800,textTransform:"uppercase",marginTop:6}}>parties / {v.range} j</div>
                     </div>
                     <div style={{flex:1,background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.1)",borderRadius:18,padding:"16px",textAlign:"center"}}>
-                      <div style={{fontFamily:G.heading,fontSize:34,color:"#FFD600",lineHeight:1}}>{statsData.accounts}</div>
+                      <div style={{...posterText(34),color:G.projecteur,lineHeight:1}}>{statsData.accounts}</div>
                       <div style={{fontSize:10.5,letterSpacing:1,color:"rgba(255,255,255,.5)",fontWeight:800,textTransform:"uppercase",marginTop:6}}>comptes créés</div>
                     </div>
                   </div>
@@ -12537,7 +12539,7 @@ export default function LePont() {
                     {v.days.map(function(d,i){
                       return (
                         <div key={i} style={{display:"flex",alignItems:"center",gap:12}}>
-                          <div style={{width:104,fontSize:12.5,color:i===0?"#00E676":"rgba(255,255,255,.6)",fontWeight:i===0?800:600,textTransform:"capitalize",flexShrink:0}}>{i===0?"Aujourd'hui":fmtDay(d.day)}</div>
+                          <div style={{width:104,fontSize:12.5,color:i===0?G.pelouseClaire:"rgba(255,255,255,.6)",fontWeight:i===0?800:600,textTransform:"capitalize",flexShrink:0}}>{i===0?"Aujourd'hui":fmtDay(d.day)}</div>
                           <div style={{flex:1,height:26,background:"rgba(255,255,255,.05)",borderRadius:8,overflow:"hidden",position:"relative"}}>
                             <div style={{height:"100%",width:Math.round(d.players/maxP*100)+"%",minWidth:d.players?8:0,background:i===0?"linear-gradient(90deg,#00E676,#B9F600)":"rgba(96,165,250,.55)",borderRadius:8,transition:"width .4s"}}/>
                           </div>
@@ -12608,7 +12610,7 @@ export default function LePont() {
                                   <span style={{fontSize:11,color:"rgba(255,255,255,.3)",fontWeight:800,minWidth:16}}>{i+1}</span>
                                   <span style={{fontSize:13,fontWeight:800,color:pseudo?"#fff":"rgba(255,255,255,.5)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{pseudo ? "@"+pseudo : "anonyme · "+p.pid}</span>
                                   <span style={{flex:1}}/>
-                                  <span style={{fontSize:13,fontWeight:800,color:"#00E676",flexShrink:0}}>{p.n}</span>
+                                  <span style={{fontSize:13,fontWeight:800,color:G.pelouseClaire,flexShrink:0}}>{p.n}</span>
                                 </div>
                                 <div style={{display:"flex",flexWrap:"wrap",gap:6,marginTop:7}}>
                                   {modes.map(function(m){
@@ -12647,9 +12649,9 @@ export default function LePont() {
                       );
                     }
                     const cards = [
-                      { v: fmtDur(v.timeTotalS / v.sessions), label:"par session", color:"#00E676" },
+                      { v: fmtDur(v.timeTotalS / v.sessions), label:"par session", color:G.pelouseClaire },
                       { v: fmtDur(v.timeTotalS / Math.max(1, v.timePlayers)), label:"par joueur", color:"#60a5fa" },
-                      { v: fmtDur(v.timeTotalS), label:"temps cumulé", color:"#FFD600" },
+                      { v: fmtDur(v.timeTotalS), label:"temps cumulé", color:G.projecteur },
                     ];
                     return (
                       <div style={{marginBottom:24}}>
@@ -12657,7 +12659,7 @@ export default function LePont() {
                         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10}}>
                           {cards.map(function(c,i){return(
                             <div key={i} style={{background:"linear-gradient(150deg, "+c.color+"1f, rgba(255,255,255,.03) 60%, rgba(0,0,0,.2))",border:"1px solid "+c.color+"44",borderRadius:16,padding:"14px 8px",textAlign:"center"}}>
-                              <div style={{fontFamily:G.heading,fontSize:24,color:c.color,lineHeight:1.1}}>{c.v}</div>
+                              <div style={{...posterText(24),color:c.color,lineHeight:1.1}}>{c.v}</div>
                               <div style={{fontSize:9.5,letterSpacing:1,color:"rgba(255,255,255,.55)",fontWeight:800,textTransform:"uppercase",marginTop:6}}>{c.label}</div>
                             </div>
                           );})}
@@ -12679,7 +12681,7 @@ export default function LePont() {
                         </div>
                         <div style={{display:"flex",justifyContent:"space-between",marginTop:8,fontSize:12,fontWeight:700}}>
                           <span style={{color:"#8CC0FF"}}>🎮 Solo · {solo}</span>
-                          <span style={{color:"#00E676"}}>🌐 En ligne · {online}</span>
+                          <span style={{color:G.pelouseClaire}}>🌐 En ligne · {online}</span>
                         </div>
                       </div>
                     );
@@ -12962,7 +12964,7 @@ export default function LePont() {
                     sur une ligne : à 52 px le libellé se coupait après le ✓. */}
                 <div style={{display:"flex",flexDirection:"column",alignItems:"center",paddingTop:"22%",flexShrink:0,width:70}}>
                   <div style={{...posterText(30,found?G.projecteur:"rgba(255,255,255,.3)"),transition:"color .3s"}}>VS</div>
-                  {found && <div style={{fontSize:9,fontWeight:800,letterSpacing:1,color:G.pelouse,marginTop:6,textAlign:"center",whiteSpace:"nowrap"}}>{tr("✓ TROUVÉ","✓ FOUND","✓ GEFUNDEN","✓ TROVATO","✓ ENCONTRADO")}</div>}
+                  {found && <div style={{fontSize:9,fontWeight:800,letterSpacing:1,color:G.pelouseClaire,marginTop:6,textAlign:"center",whiteSpace:"nowrap"}}>{tr("✓ TROUVÉ","✓ FOUND","✓ GEFUNDEN","✓ TROVATO","✓ ENCONTRADO")}</div>}
                 </div>
                 {camp(opp.pseudo, opp.country, oppCard(opp), found)}
               </div>
@@ -13162,7 +13164,7 @@ export default function LePont() {
                 <div onClick={function(){setGgModeChoice(false);ggStartGame();}} style={{...ligneCharte,padding:"16px 14px 16px 16px",gap:14,alignItems:"center"}}>
                   <div style={pastilleCharte(G.pelouse,54)}>🐐</div>
                   <div style={{flex:1,minWidth:0}}>
-                    <div style={{fontSize:10,fontWeight:800,letterSpacing:2.5,color:G.pelouse,textTransform:"uppercase"}}>{tr("Défi du jour","Daily challenge","Tägliche Challenge","Sfida del giorno","Desafio do dia")}</div>
+                    <div style={{fontSize:10,fontWeight:800,letterSpacing:2.5,color:G.pelouseClaire,textTransform:"uppercase"}}>{tr("Défi du jour","Daily challenge","Tägliche Challenge","Sfida del giorno","Desafio do dia")}</div>
                     <div style={{...posterText(28,G.white),margin:"3px 0 9px"}}>SOLO</div>
                     <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
                       <span style={{fontSize:10.5,fontWeight:800,color:"rgba(255,255,255,.85)",background:"rgba(8,17,9,.5)",border:G.traitFin,padding:"4px 9px",borderRadius:G.rayonS,letterSpacing:.3}}>{tr("Grille 3×3","3×3 grid","3×3-Raster","Griglia 3×3","Grade 3×3")}</span>
@@ -13170,7 +13172,7 @@ export default function LePont() {
                       <span style={{fontSize:10.5,fontWeight:800,color:"rgba(255,255,255,.85)",background:"rgba(8,17,9,.5)",border:G.traitFin,padding:"4px 9px",borderRadius:G.rayonS,letterSpacing:.3}}>🏆 {tr("Classé","Ranked","Gewertet","Classificato","Ranqueado")}</span>
                     </div>
                   </div>
-                  <div style={{fontSize:26,color:G.pelouse,flexShrink:0,lineHeight:1}}>›</div>
+                  <div style={{fontSize:26,color:G.pelouseClaire,flexShrink:0,lineHeight:1}}>›</div>
                 </div>
 
                 {/* Carte BATTLE */}
@@ -13278,7 +13280,7 @@ export default function LePont() {
                         <div style={{flex:1,fontSize:13,fontWeight:700,color:G.white}}>
                           {p.name} {isMe && <span style={{fontSize:10,color:"rgba(255,107,53,.7)"}}>({tr("toi","you","du","tu","você")})</span>}
                         </div>
-                        {isHost && <div style={{fontSize:9,color:"#FFD600",letterSpacing:1,fontWeight:800}}>HOST</div>}
+                        {isHost && <div style={{fontSize:9,color:G.projecteur,letterSpacing:1,fontWeight:800}}>HOST</div>}
                       </div>
                     );
                   })}
@@ -13325,7 +13327,7 @@ export default function LePont() {
             <div style={{position:"fixed",inset:0,zIndex:450,display:"flex",alignItems:"flex-start",justifyContent:"center",padding:"80px 20px 40px",background:"rgba(8,17,9,.86)",overflowY:"auto"}}>
               <div style={{background:"linear-gradient(160deg, #14181F 0%, #0B0E12 100%)",border:"1.5px solid "+(isWinner?"rgba(255,214,0,.6)":"rgba(255,107,53,.4)"),borderRadius:24,padding:24,maxWidth:380,width:"100%",textAlign:"center"}}>
                 <div style={{fontSize:60,marginBottom:8}}>{isWinner?"👑":"⚔️"}</div>
-                <div style={{fontFamily:G.heading,fontSize:26,letterSpacing:2,color:isWinner?"#FFD600":"#FF6B35",lineHeight:1,marginBottom:6}}>
+                <div style={{...posterText(26),letterSpacing:2,color:isWinner?G.projecteur:"#FF6B35",lineHeight:1,marginBottom:6}}>
                   {isWinner ? (tr("VICTOIRE !","VICTORY!","SIEG!","VITTORIA!","VITÓRIA!")) : (tr("BATTLE TERMINÉE","BATTLE OVER","BATTLE VORBEI","BATTLE FINITA","BATALHA ENCERRADA"))}
                 </div>
                 <div style={{fontSize:13,color:"rgba(255,255,255,.7)",marginBottom:18}}>
@@ -13345,7 +13347,7 @@ export default function LePont() {
                           {p.name} {isMe && <span style={{fontSize:10,color:"rgba(255,107,53,.7)"}}>({tr("toi","you","du","tu","você")})</span>}
                         </div>
                         <div style={{textAlign:"right"}}>
-                          <div style={{fontSize:14,fontWeight:900,color:idx===0?"#FFD600":G.white}}>{p.cells_filled || 0}/9</div>
+                          <div style={{fontSize:14,fontWeight:900,color:idx===0?G.projecteur:G.white}}>{p.cells_filled || 0}/9</div>
                           <div style={{fontSize:10,color:"rgba(255,255,255,.5)"}}>{p.score || 0} pts</div>
                         </div>
                         {hasGrid && <div style={{fontSize:14,color:"rgba(255,107,53,.7)",marginLeft:4}}>👁️</div>}
@@ -13499,7 +13501,7 @@ export default function LePont() {
                       ) : null}
                       {/* Plug : Réponse donnée */}
                       {isPlug && (
-                        <div style={{fontSize:13,fontWeight:600,color:isOk?"#00E676":(isSkip?"#FFD600":"#FF6B6B")}}>
+                        <div style={{fontSize:13,fontWeight:600,color:isOk?G.pelouseClaire:(isSkip?G.projecteur:"#FF6B6B")}}>
                           {isSkip ? (tr("Passé","Skipped","Übersprungen","Saltato","Pulado")) : (r.given || "—")}
                         </div>
                       )}
@@ -13556,7 +13558,7 @@ export default function LePont() {
                     <>
                       <div onClick={ggTitleTap} style={{...posterText(30,G.white),userSelect:"none",WebkitUserSelect:"none",WebkitTouchCallout:"none",cursor:"pointer"}}>GOAT <span style={{color:G.projecteur}}>GRID</span></div>
                       {ggOverrideSeed > 0 && (
-                        <div style={{fontSize:9,color:ggDemo?"#00E676":"#FFD600",marginTop:2,letterSpacing:1.5,fontWeight:800}}>{ggDemo?"🎬 MODE DÉMO":"🔄 GRILLE TEST"}</div>
+                        <div style={{fontSize:9,color:ggDemo?G.pelouseClaire:G.projecteur,marginTop:2,letterSpacing:1.5,fontWeight:800}}>{ggDemo?"🎬 MODE DÉMO":"🔄 GRILLE TEST"}</div>
                       )}
                     </>
                   )}
@@ -13618,7 +13620,7 @@ export default function LePont() {
                     <div style={{display:"flex",alignItems:"center",gap:6}}>
                       <span style={{fontSize:10,color:"rgba(255,255,255,.5)",fontWeight:600,letterSpacing:1}}>{tr("SCORE","SCORE","SCORE","PUNTEGGIO","PONTUAÇÃO")}</span>
                       <span style={{...posterText(20,G.projecteur)}}>{ggScore}</span>
-                      <span style={{fontSize:11,color:"rgba(255,255,255,.5)",fontFamily:G.heading}}>/ {ggGrid.cells.reduce(function(s,c){return s+c.maxPoints;},0) + 100}</span>
+                      <span style={{...posterText(11,"rgba(255,255,255,.5)")}}>/ {ggGrid.cells.reduce(function(s,c){return s+c.maxPoints;},0) + 100}</span>
                       <span style={{fontSize:10,color:"rgba(255,255,255,.4)"}}>pts</span>
                     </div>
                     <div style={{display:"flex",alignItems:"center",gap:6}}>
@@ -13630,7 +13632,7 @@ export default function LePont() {
                   {/* Mini explainer scoring (masqué en mode battle pour gagner de la place) */}
                   {ggBattleScreen !== "playing" && (
                     <div style={{background:"rgba(8,17,9,.45)",border:G.traitFin,borderRadius:20,padding:"5px 12px",marginBottom:8,fontSize:9.5,color:"rgba(255,255,255,.7)",textAlign:"center",lineHeight:1.3,flexShrink:0}}>
-                      <span style={{color:"#FFD600",fontWeight:800}}>💡 {tr("⭐ 15 · ⭐⭐ / ⭐⭐⭐ 50 pts · 🐐 Sans-faute = +100","⭐ 15 · ⭐⭐ / ⭐⭐⭐ 50 pts · 🐐 No-mistake = +100","⭐ 15 · ⭐⭐ / ⭐⭐⭐ 50 Pkt · 🐐 Fehlerfrei = +100","⭐ 15 · ⭐⭐ / ⭐⭐⭐ 50 pt · 🐐 Senza errori = +100","⭐ 15 · ⭐⭐ / ⭐⭐⭐ 50 pts · 🐐 Sem erros = +100")}</span>
+                      <span style={{color:G.projecteur,fontWeight:800}}>💡 {tr("⭐ 15 · ⭐⭐ / ⭐⭐⭐ 50 pts · 🐐 Sans-faute = +100","⭐ 15 · ⭐⭐ / ⭐⭐⭐ 50 pts · 🐐 No-mistake = +100","⭐ 15 · ⭐⭐ / ⭐⭐⭐ 50 Pkt · 🐐 Fehlerfrei = +100","⭐ 15 · ⭐⭐ / ⭐⭐⭐ 50 pt · 🐐 Senza errori = +100","⭐ 15 · ⭐⭐ / ⭐⭐⭐ 50 pts · 🐐 Sem erros = +100")}</span>
                     </div>
                   )}
 
@@ -13705,7 +13707,7 @@ export default function LePont() {
                                     <div style={{fontSize:12,fontWeight:900,color:"#fff",textShadow:"0 1px 3px rgba(0,0,0,.5)",lineHeight:1.1,textAlign:"center"}}>
                                       {filled.name.toUpperCase().split(" ").map(function(w,wi){return<div key={wi}>{w}</div>;})}
                                     </div>
-                                    <div style={{fontSize:13,fontWeight:900,fontFamily:G.heading,letterSpacing:.5,color:"#fff",textShadow:"0 1px 3px rgba(0,0,0,.5)"}}>+{filled.pts} pts</div>
+                                    <div style={{...posterText(13),fontWeight:900,letterSpacing:.5,color:"#fff"}}>+{filled.pts} pts</div>
                                   </div>
                                 );
                               }
@@ -13744,7 +13746,7 @@ export default function LePont() {
                   {/* 🎬 MODE DÉMO : feuille de réponses (grille fixe) — pour enregistrer une vidéo */}
                   {ggDemo && ggGrid && (
                     <div style={{margin:"14px 16px",background:"rgba(245,194,43,.28)",border:"1px dashed rgba(255,214,0,.4)",borderRadius:14,padding:"12px 14px"}}>
-                      <div style={{fontSize:11,fontWeight:900,letterSpacing:1,color:"#FFD600",marginBottom:8}}>🎬 MODE DÉMO — réponses (une par case)</div>
+                      <div style={{fontSize:11,fontWeight:900,letterSpacing:1,color:G.projecteur,marginBottom:8}}>🎬 MODE DÉMO — réponses (une par case)</div>
                       <div style={{display:"flex",flexDirection:"column",gap:5}}>
                         {ggDemoAnswers(ggGrid.cells).map(function(entry,idx){
                           const c = entry.cell;
@@ -13752,7 +13754,7 @@ export default function LePont() {
                             <div key={idx} style={{display:"flex",alignItems:"center",gap:8,fontSize:12}}>
                               <span style={{width:16,color:"rgba(255,255,255,.4)",fontWeight:800,flexShrink:0}}>{idx+1}</span>
                               <span style={{flex:1,color:"rgba(255,255,255,.7)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.rowCriterion.label} × {c.colCriterion.label}</span>
-                              <span style={{color:"#00E676",fontWeight:800,flexShrink:0}}>{entry.answer}</span>
+                              <span style={{color:G.pelouseClaire,fontWeight:800,flexShrink:0}}>{entry.answer}</span>
                             </div>
                           );
                         })}
@@ -13819,7 +13821,7 @@ export default function LePont() {
                       {ggLastRejected && (
                         <div style={{marginTop:10,padding:10,background:"rgba(245,194,43,.28)",border:G.traitFin,borderRadius:12}}>
                           {ggReportSent ? (
-                            <div style={{textAlign:"center",fontSize:12,color:"#00E676",fontWeight:700,padding:6}}>
+                            <div style={{textAlign:"center",fontSize:12,color:G.pelouseClaire,fontWeight:700,padding:6}}>
                               ✅ {tr("Merci ! On va vérifier.","Thanks! We'll check it.","Danke! Wir prüfen es.","Grazie! Controlleremo.","Obrigado! Vamos verificar.")}
                             </div>
                           ) : (
@@ -13858,7 +13860,7 @@ export default function LePont() {
                         <button 
                           onClick={function(){ if(suggestions.length>0){ggSubmitAnswer(suggestions[0].name);} else if(ggGuess.trim().length>=3){ggSubmitAnswer(ggGuess);} }}
                           disabled={ggGuess.trim().length<3}
-                          style={{flex:2,padding:14,borderRadius:G.rayon,border:G.trait,background:ggGuess.trim().length>=3?"#00E676":"rgba(8,17,9,.45)",color:ggGuess.trim().length>=3?"#000":"rgba(255,255,255,.3)",fontWeight:900,fontSize:14,letterSpacing:1.5,cursor:ggGuess.trim().length>=3?"pointer":"not-allowed"}}
+                          style={{flex:2,padding:14,borderRadius:G.rayon,border:G.trait,background:ggGuess.trim().length>=3?G.pelouse:"rgba(8,17,9,.45)",color:ggGuess.trim().length>=3?"#000":"rgba(255,255,255,.3)",fontWeight:900,fontSize:14,letterSpacing:1.5,cursor:ggGuess.trim().length>=3?"pointer":"not-allowed"}}
                         >{tr("VALIDER","VALIDATE","BESTÄTIGEN","CONVALIDA","VALIDAR")}</button>
                       </div>
                     </div>
@@ -13896,7 +13898,7 @@ export default function LePont() {
                       <div style={{fontSize:60,marginBottom:8}}>
                         {isPerfect ? "🐐" : isVictory ? "🎉" : "😔"}
                       </div>
-                      <div style={{fontFamily:G.heading,fontSize:30,color:isVictory?"#00E676":"#FF6B35",letterSpacing:1,marginBottom:4}}>
+                      <div style={{...posterText(30),color:isVictory?G.pelouseClaire:"#FF6B35",letterSpacing:1,marginBottom:4}}>
                         {isPerfect ? (tr("PARFAIT !","PERFECT!","PERFEKT!","PERFETTO!","PERFEITO!")) : isVictory ? (tr("VICTOIRE !","VICTORY!","SIEG!","VITTORIA!","VITÓRIA!")) : (tr("PARTIE TERMINÉE","GAME OVER","GAME OVER","GAME OVER","FIM DE JOGO"))}
                       </div>
                       <div style={{fontSize:13,color:"rgba(255,255,255,.6)",marginBottom:18}}>
@@ -13906,12 +13908,12 @@ export default function LePont() {
                       {/* Score final (consolidé : score + remplissage + vies) */}
                       <div style={{background:"rgba(245,194,43,.28)",border:G.traitFin,borderRadius:16,padding:"16px 20px",marginBottom:16}}>
                         <div style={{fontSize:11,color:"rgba(255,214,0,.7)",fontWeight:700,letterSpacing:2,marginBottom:2}}>SCORE</div>
-                        <div style={{fontFamily:G.heading,fontSize:44,color:"#FFD600",lineHeight:1}}>{ggScore} <span style={{fontSize:18,opacity:.7}}>pts</span></div>
+                        <div style={{...posterText(44),color:G.projecteur,lineHeight:1}}>{ggScore} <span style={{fontSize:18,opacity:.7}}>pts</span></div>
                         <div style={{fontSize:12,color:"rgba(255,255,255,.6)",marginTop:6,fontWeight:700}}>
                           {filledCount}/9 {tr("rempli","filled","gefüllt","riempito","preenchido")} · {[0,1,2].map(function(i){return(<span key={i}>{i<ggLives?"❤️":"💔"}</span>);})}
                         </div>
                         {isPerfect && (
-                          <div style={{fontSize:11,color:"#00E676",fontWeight:800,marginTop:6}}>+100 {tr("BONUS SANS-FAUTE","NO-MISTAKE BONUS","FEHLERFREI-BONUS","BONUS SENZA ERRORI","BÔNUS SEM ERROS")}</div>
+                          <div style={{fontSize:11,color:G.pelouseClaire,fontWeight:800,marginTop:6}}>+100 {tr("BONUS SANS-FAUTE","NO-MISTAKE BONUS","FEHLERFREI-BONUS","BONUS SENZA ERRORI","BÔNUS SEM ERROS")}</div>
                         )}
                       </div>
 
@@ -13938,11 +13940,11 @@ export default function LePont() {
                         <button onClick={function(){setGgRevealMode(true);setGgReviewMode(false);}} style={{padding:12,borderRadius:G.rayon,border:"1px solid rgba(74,158,255,.4)",background:"rgba(74,158,255,.15)",color:"#7AB8FF",fontWeight:800,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
                           💡 {tr("VOIR LES RÉPONSES POSSIBLES","SEE POSSIBLE ANSWERS","MÖGLICHE ANTWORTEN ANSEHEN","VEDI LE RISPOSTE POSSIBILI","VER RESPOSTAS POSSÍVEIS")}
                         </button>
-                        <button onClick={function(){setGgReviewMode(true);setGgRevealMode(false);setGgRevealCell(null);}} style={{padding:12,borderRadius:G.rayon,border:G.traitFin,background:"rgba(42,155,78,.35)",color:"#00E676",fontWeight:800,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
+                        <button onClick={function(){setGgReviewMode(true);setGgRevealMode(false);setGgRevealCell(null);}} style={{padding:12,borderRadius:G.rayon,border:G.traitFin,background:"rgba(42,155,78,.35)",color:G.pelouseClaire,fontWeight:800,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
                           📋 {tr("REVOIR MA GRILLE","REVIEW MY GRID","MEIN RASTER ANSEHEN","RIVEDI LA GRIGLIA","REVER MINHA GRADE")}
                         </button>
                         {ggOverrideSeed === 0 && (
-                          <button onClick={function(){ggLoadLeaderboard();setGgLeaderboardTab("global");}} style={{padding:12,borderRadius:G.rayon,border:G.traitFin,background:"rgba(245,194,43,.28)",color:"#FFD600",fontWeight:800,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
+                          <button onClick={function(){ggLoadLeaderboard();setGgLeaderboardTab("global");}} style={{padding:12,borderRadius:G.rayon,border:G.traitFin,background:"rgba(245,194,43,.28)",color:G.projecteur,fontWeight:800,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
                             🏆 {tr("CLASSEMENT","LEADERBOARD","RANGLISTE","CLASSIFICA","CLASSIFICAÇÃO")}
                           </button>
                         )}
@@ -13964,7 +13966,7 @@ export default function LePont() {
                           const newGrid = ggGenerateGrid(newSeed);
                           if (newGrid) { setGgGrid(newGrid); setGgError(false); }
                           else setGgError(true);
-                        }} style={{padding:12,borderRadius:G.rayon,border:G.traitFin,background:"rgba(245,194,43,.28)",color:"#FFD600",fontWeight:800,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
+                        }} style={{padding:12,borderRadius:G.rayon,border:G.traitFin,background:"rgba(245,194,43,.28)",color:G.projecteur,fontWeight:800,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
                           🔄 {tr("NOUVELLE GRILLE","NEW GRID","NEUES RASTER","NUOVA GRIGLIA","NOVA GRADE")}
                         </button>
                         <button onClick={function(){setShowGoatGrid(false);}} style={{padding:12,borderRadius:G.rayon,border:G.trait,background:"rgba(8,17,9,.45)",color:"rgba(255,255,255,.7)",fontWeight:700,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
@@ -13986,7 +13988,7 @@ export default function LePont() {
                   <div style={{background:"rgba(74,158,255,.15)",border:"1px solid rgba(74,158,255,.4)",borderRadius:14,padding:"10px 14px",color:"#7AB8FF",fontSize:13,fontWeight:700,textAlign:"center"}}>
                     💡 {tr("Clique sur n'importe quelle case pour voir les réponses","Click any cell to see possible answers","Klicke auf eine Zelle, um mögliche Antworten zu sehen","Clicca su una casella per vedere le risposte","Clique em qualquer célula para ver as respostas")}
                   </div>
-                  <button onClick={function(){setGgRevealMode(false);}} style={{padding:12,borderRadius:G.rayon,border:G.trait,background:"#FFD600",color:"#000",fontWeight:900,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
+                  <button onClick={function(){setGgRevealMode(false);}} style={{padding:12,borderRadius:G.rayon,border:G.trait,background:G.projecteur,color:"#000",fontWeight:900,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
                     ← {tr("RETOUR AU RÉSULTAT","BACK TO RESULT","ZURÜCK ZUM ERGEBNIS","TORNA AL RISULTATO","VOLTAR AO RESULTADO")}
                   </button>
                 </div>
@@ -13995,10 +13997,10 @@ export default function LePont() {
               {/* 📋 Mode REVIEW : bouton retour en bas */}
               {ggReviewMode && (
                 <div style={{position:"fixed",bottom:20,left:20,right:20,zIndex:450,display:"flex",flexDirection:"column",gap:8}}>
-                  <div style={{background:"rgba(42,155,78,.35)",border:G.traitFin,borderRadius:14,padding:"10px 14px",color:"#00E676",fontSize:13,fontWeight:700,textAlign:"center"}}>
+                  <div style={{background:"rgba(42,155,78,.35)",border:G.traitFin,borderRadius:14,padding:"10px 14px",color:G.pelouseClaire,fontSize:13,fontWeight:700,textAlign:"center"}}>
                     📋 {tr("Revue de ta grille remplie","Review your filled grid","Sieh dir dein gefülltes Raster an","Rivedi la tua griglia completata","Reveja sua grade preenchida")}
                   </div>
-                  <button onClick={function(){setGgReviewMode(false);}} style={{padding:12,borderRadius:G.rayon,border:G.trait,background:"#FFD600",color:"#000",fontWeight:900,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
+                  <button onClick={function(){setGgReviewMode(false);}} style={{padding:12,borderRadius:G.rayon,border:G.trait,background:G.projecteur,color:"#000",fontWeight:900,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
                     ← {tr("RETOUR AU RÉSULTAT","BACK TO RESULT","ZURÜCK ZUM ERGEBNIS","TORNA AL RISULTATO","VOLTAR AO RESULTADO")}
                   </button>
                 </div>
@@ -14014,10 +14016,10 @@ export default function LePont() {
                     </div>
                     {/* Tabs */}
                     <div style={{display:"flex",gap:6,marginBottom:12,background:"rgba(0,0,0,.3)",padding:4,borderRadius:G.rayon}}>
-                      <button onClick={function(){setGgLeaderboardTab("global");}} style={{flex:1,padding:8,borderRadius:G.rayon,border:G.trait,background:ggLeaderboardTab==="global"?"#FFD600":"transparent",color:ggLeaderboardTab==="global"?"#000":"rgba(255,255,255,.6)",fontWeight:800,fontSize:12,letterSpacing:1,cursor:"pointer"}}>
+                      <button onClick={function(){setGgLeaderboardTab("global");}} style={{flex:1,padding:8,borderRadius:G.rayon,border:G.trait,background:ggLeaderboardTab==="global"?G.projecteur:"transparent",color:ggLeaderboardTab==="global"?"#000":"rgba(255,255,255,.6)",fontWeight:800,fontSize:12,letterSpacing:1,cursor:"pointer"}}>
                         🌍 {tr("MONDIAL","GLOBAL","GLOBAL","GLOBALE","GLOBAL")}
                       </button>
-                      <button onClick={function(){setGgLeaderboardTab("friends");}} style={{flex:1,padding:8,borderRadius:G.rayon,border:G.trait,background:ggLeaderboardTab==="friends"?"#00E676":"transparent",color:ggLeaderboardTab==="friends"?"#000":"rgba(255,255,255,.6)",fontWeight:800,fontSize:12,letterSpacing:1,cursor:"pointer"}}>
+                      <button onClick={function(){setGgLeaderboardTab("friends");}} style={{flex:1,padding:8,borderRadius:G.rayon,border:G.trait,background:ggLeaderboardTab==="friends"?G.pelouse:"transparent",color:ggLeaderboardTab==="friends"?"#000":"rgba(255,255,255,.6)",fontWeight:800,fontSize:12,letterSpacing:1,cursor:"pointer"}}>
                         👥 {tr("AMIS","FRIENDS","FREUNDE","AMICI","AMIGOS")}
                       </button>
                     </div>
@@ -14037,13 +14039,13 @@ export default function LePont() {
                           const medal = idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : (idx+1)+".";
                           return(
                             <div key={entry.player_id+"-"+idx} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 10px",background:isMe?"rgba(245,194,43,.28)":"transparent",borderRadius:G.rayonS,marginBottom:3,border:isMe?G.traitFin:"none"}}>
-                              <div style={{minWidth:30,fontSize:idx<3?16:13,fontWeight:800,color:idx<3?"#FFD600":"rgba(255,255,255,.6)",textAlign:"center"}}>{medal}</div>
+                              <div style={{minWidth:30,fontSize:idx<3?16:13,fontWeight:800,color:idx<3?G.projecteur:"rgba(255,255,255,.6)",textAlign:"center"}}>{medal}</div>
                               <div style={{flex:1}}>
-                                <div style={{fontSize:13,fontWeight:isMe?900:700,color:isMe?"#FFD600":"#fff"}}>{entry.player_name}{isMe?tr(" (toi)"," (you)"," (du)"," (tu)"," (você)"):""}</div>
+                                <div style={{fontSize:13,fontWeight:isMe?900:700,color:isMe?G.projecteur:"#fff"}}>{entry.player_name}{isMe?tr(" (toi)"," (you)"," (du)"," (tu)"," (você)"):""}</div>
                                 <div style={{fontSize:10,color:"rgba(255,255,255,.4)",fontFamily:"monospace"}}>{entry.cells_filled}/9 · {"❤️".repeat(entry.lives_left)}{"💔".repeat(3-entry.lives_left)}</div>
                               </div>
                               <div style={{textAlign:"right"}}>
-                                <div style={{fontSize:15,fontWeight:900,color:"#FFD600",fontFamily:G.heading}}>{entry.score}</div>
+                                <div style={{...posterText(15,G.projecteur),fontWeight:900}}>{entry.score}</div>
                                 <div style={{fontSize:9,color:"rgba(255,255,255,.4)"}}>/ {entry.max_score}</div>
                               </div>
                             </div>
@@ -14071,9 +14073,9 @@ export default function LePont() {
                       {ggRevealCell.candidates.slice(0, 30).map(function(name){
                         const wasUsed = ggUsedPlayers.has(name);
                         return(
-                          <div key={name} style={{padding:"10px 14px",borderBottom:G.traitFin,fontSize:14,fontWeight:700,color:wasUsed?"#00E676":"#fff",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                          <div key={name} style={{padding:"10px 14px",borderBottom:G.traitFin,fontSize:14,fontWeight:700,color:wasUsed?G.pelouseClaire:"#fff",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                             <span>{name}</span>
-                            {wasUsed && <span style={{fontSize:11,color:"#00E676"}}>✓ {tr("Trouvé","Found","Gefunden","Trovato","Encontrado")}</span>}
+                            {wasUsed && <span style={{fontSize:11,color:G.pelouseClaire}}>✓ {tr("Trouvé","Found","Gefunden","Trovato","Encontrado")}</span>}
                           </div>
                         );
                       })}
@@ -14093,9 +14095,9 @@ export default function LePont() {
                 <div onClick={function(){setGgShowTooltip(null);}} style={{position:"fixed",inset:0,zIndex:500,background:"rgba(8,17,9,.86)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
                   <div onClick={function(e){e.stopPropagation();}} style={{background:G.nuit,border:G.traitFin,borderRadius:20,padding:20,maxWidth:340,width:"100%",textAlign:"center"}}>
                     <div style={{fontSize:11,letterSpacing:2,color:"rgba(255,214,0,.7)",fontWeight:700,marginBottom:8}}>{tr("CRITÈRE","CRITERION","KRITERIUM","CRITERIO","CRITÉRIO")}</div>
-                    <div style={{fontFamily:G.heading,fontSize:24,color:"#FFD600",letterSpacing:1,marginBottom:14}}>{ggShowTooltip.title.toUpperCase()}</div>
+                    <div style={{...posterText(24),color:G.projecteur,letterSpacing:1,marginBottom:14}}>{ggShowTooltip.title.toUpperCase()}</div>
                     <div style={{fontSize:14,lineHeight:1.5,color:"rgba(255,255,255,.85)",textAlign:"left",background:"rgba(8,17,9,.45)",borderRadius:12,padding:14,marginBottom:14}}>{ggShowTooltip.text}</div>
-                    <button onClick={function(){setGgShowTooltip(null);}} style={{width:"100%",padding:12,borderRadius:G.rayon,border:G.trait,background:"#00E676",color:"#000",fontWeight:800,fontSize:13,letterSpacing:1,cursor:"pointer"}}>{tr("OK","GOT IT","OK","OK","OK")}</button>
+                    <button onClick={function(){setGgShowTooltip(null);}} style={{width:"100%",padding:12,borderRadius:G.rayon,border:G.trait,background:G.pelouse,color:"#000",fontWeight:800,fontSize:13,letterSpacing:1,cursor:"pointer"}}>{tr("OK","GOT IT","OK","OK","OK")}</button>
                   </div>
                 </div>
               )}
@@ -14119,7 +14121,7 @@ export default function LePont() {
             {/* Header */}
             <div style={{zIndex:1,padding:"20px 20px 0",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
               <div>
-                <div style={{fontFamily:G.heading,fontSize:26,color:G.gold,letterSpacing:2}}>⚡ {tr("DÉFI DU JOUR","DAILY CHALLENGE","TÄGLICHE CHALLENGE","SFIDA DEL GIORNO","DESAFIO DO DIA")}</div>
+                <div style={{...posterText(26),color:G.projecteur,letterSpacing:2}}>⚡ {tr("DÉFI DU JOUR","DAILY CHALLENGE","TÄGLICHE CHALLENGE","SFIDA DEL GIORNO","DESAFIO DO DIA")}</div>
                 <div style={{fontSize:12,color:"rgba(255,255,255,.5)",marginTop:2}}>{tr("Devine le joueur mystère","Guess the mystery player","Errate den Mystery-Spieler","Indovina il giocatore misterioso","Adivinhe o jogador misterioso")}</div>
               </div>
               <button onClick={function(){setShowDailyGame(false);setDailySuccess(false);setDailyHintLevel(0);setDailyUsedHint(false);setDailyHintData({ position: null, nationality: null, loading: false });}} style={{background:G.nuit,border:G.traitFin,borderRadius:"50%",width:36,height:36,color:G.white,cursor:"pointer",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
@@ -14144,14 +14146,14 @@ export default function LePont() {
                 <div style={{textAlign:"center",marginBottom:8}}>
                   <span style={{
                     fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",padding:"3px 10px",borderRadius:20,
-                    color: dailyPlayer.diff==="facile"?"#00E676":dailyPlayer.diff==="moyen"?"#FFD600":"#FF3D57",
+                    color: dailyPlayer.diff==="facile"?G.pelouseClaire:dailyPlayer.diff==="moyen"?G.projecteur:"#FF3D57",
                     background: dailyPlayer.diff==="facile"?"rgba(0,230,118,.15)":dailyPlayer.diff==="moyen"?"rgba(255,214,0,.15)":"rgba(255,61,87,.15)",
                     border: `1px solid ${dailyPlayer.diff==="facile"?"rgba(0,230,118,.3)":dailyPlayer.diff==="moyen"?"rgba(255,214,0,.3)":"rgba(255,61,87,.3)"}`
                   }}>
                     {dailyPlayer.diff==="facile"?"⭐ AMATEUR":dailyPlayer.diff==="moyen"?"⭐⭐ PRO":"⭐⭐⭐ LEGEND"}
                   </span>
                 </div>
-                <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:G.accent,marginBottom:8,textAlign:"center"}}>{tr("Clubs dans sa carrière","Clubs in career","Klubs in seiner Karriere","Club in carriera","Clubes na carreira")}</div>
+                <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:G.pelouseClaire,marginBottom:8,textAlign:"center"}}>{tr("Clubs dans sa carrière","Clubs in career","Klubs in seiner Karriere","Club in carriera","Clubes na carreira")}</div>
                 <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:0,marginBottom:12}}>
                   {dailyPlayer.clubs.map(function(club,i){
                     const [ca,cb] = getClubColors(club);
@@ -14166,7 +14168,7 @@ export default function LePont() {
                         {i < dailyPlayer.clubs.length - 1 && (
                           <div style={{display:"flex",flexDirection:"column",alignItems:"center",margin:"1px 0"}}>
                             <div style={{width:2,height:5,background:G.pelouse,borderRadius:1,opacity:.6}}/>
-                            <div style={{fontSize:12,color:G.accent,lineHeight:1}}>▼</div>
+                            <div style={{fontSize:12,color:G.pelouseClaire,lineHeight:1}}>▼</div>
                           </div>
                         )}
                       </div>
@@ -14190,7 +14192,7 @@ export default function LePont() {
                   <div style={{fontSize:13,color:"rgba(255,255,255,.5)",fontWeight:600,letterSpacing:2,textTransform:"uppercase",marginBottom:8}}>
                     {tr("La réponse était","The answer was","Die Antwort war","La risposta era","A resposta era")}
                   </div>
-                  <div style={{fontFamily:G.heading,fontSize:"clamp(32px,9vw,54px)",color:"#00E676",letterSpacing:1,marginBottom:14,lineHeight:1.1,padding:"0 10px"}}>
+                  <div style={{...posterText(32),fontSize:"clamp(32px,9vw,54px)",color:G.pelouseClaire,letterSpacing:1,marginBottom:14,lineHeight:1.1,padding:"0 10px"}}>
                     {dailyPlayer.name}
                   </div>
                   <div style={{fontSize:16,color:"rgba(255,255,255,.7)",fontWeight:700,letterSpacing:1,textTransform:"uppercase",marginBottom:6}}>
@@ -14240,7 +14242,7 @@ export default function LePont() {
                   <div style={{fontSize:13,color:"rgba(255,255,255,.5)",fontWeight:600,letterSpacing:2,textTransform:"uppercase",marginBottom:8}}>
                     {tr("La réponse était","The answer was","Die Antwort war","La risposta era","A resposta era")}
                   </div>
-                  <div style={{fontFamily:G.heading,fontSize:"clamp(32px,9vw,54px)",color:"#60a5fa",letterSpacing:1,marginBottom:14,lineHeight:1.1,padding:"0 10px"}}>
+                  <div style={{...posterText(32),fontSize:"clamp(32px,9vw,54px)",color:G.ciel,letterSpacing:1,marginBottom:14,lineHeight:1.1,padding:"0 10px"}}>
                     {dailyPlayer.name}
                   </div>
                   <div style={{fontSize:14,color:"rgba(255,255,255,.5)",marginTop:4,marginBottom:28,maxWidth:300,lineHeight:1.5}}>
@@ -14332,7 +14334,7 @@ export default function LePont() {
           <div onClick={function(){setShowRevealConfirm(false);}} style={{position:"fixed",inset:0,zIndex:500,background:"rgba(8,17,9,.86)",display:"flex",alignItems:"center",justifyContent:"center",padding:20,cursor:"pointer"}}>
             <div onClick={function(e){e.stopPropagation();}} style={{background:"rgba(15,25,15,.96)",borderRadius:24,padding:"28px 24px",maxWidth:340,width:"100%",border:G.traitFin,textAlign:"center",cursor:"default"}}>
               <div style={{fontSize:42,marginBottom:12}}>👁️</div>
-              <div style={{fontFamily:G.heading,fontSize:24,color:G.white,letterSpacing:1,marginBottom:8}}>{tr("VOIR LA RÉPONSE ?","REVEAL ANSWER?","ANTWORT ZEIGEN?","RIVELARE LA RISPOSTA?","REVELAR RESPOSTA?")}</div>
+              <div style={{...posterText(24),color:G.white,letterSpacing:1,marginBottom:8}}>{tr("VOIR LA RÉPONSE ?","REVEAL ANSWER?","ANTWORT ZEIGEN?","RIVELARE LA RISPOSTA?","REVELAR RESPOSTA?")}</div>
               <div style={{fontSize:13,color:"rgba(255,255,255,.55)",marginBottom:22,lineHeight:1.5}}>
                 {lang==="de"?<>Du siehst die Antwort, bekommst heute aber <strong style={{color:G.white}}>0 Punkte</strong>. Deine Serie bleibt nicht erhalten.</>:lang==="it"?<>Vedrai la risposta ma guadagni <strong style={{color:G.white}}>0 punti</strong> oggi. La tua serie non sarà mantenuta.</>:lang==="pt"?<>Você verá a resposta mas ganha <strong style={{color:G.white}}>0 pontos</strong> hoje. Sua sequência não será mantida.</>:lang==="en"?<>You'll see the answer but earn <strong style={{color:G.white}}>0 points</strong> today. Your streak won't be maintained.</>:<>Tu verras la réponse mais tu gagnes <strong style={{color:G.white}}>0 point</strong>. Ta série ne sera pas maintenue.</>}
               </div>
@@ -14355,18 +14357,18 @@ export default function LePont() {
               {dailyReportSent ? (
                 <>
                   <div style={{fontSize:42,marginBottom:12}}>✅</div>
-                  <div style={{fontFamily:G.heading,fontSize:22,color:G.accent,letterSpacing:1,marginBottom:8}}>{tr("MERCI !","THANK YOU!","DANKE!","GRAZIE!","OBRIGADO!")}</div>
+                  <div style={{...posterText(22),color:G.pelouseClaire,letterSpacing:1,marginBottom:8}}>{tr("MERCI !","THANK YOU!","DANKE!","GRAZIE!","OBRIGADO!")}</div>
                   <div style={{fontSize:13,color:"rgba(255,255,255,.55)",marginBottom:22,lineHeight:1.5}}>
                     {tr("Ton signalement a été envoyé. On corrige ça au plus vite.","Your report has been sent. We'll fix it as soon as possible.","Deine Meldung wurde gesendet. Wir beheben es so schnell wie möglich.","La tua segnalazione è stata inviata. La correggeremo il prima possibile.","Seu reporte foi enviado. Vamos corrigir o quanto antes.")}
                   </div>
-                  <button onClick={function(){setShowDailyReportConfirm(false);setDailyReportSent(false);}} style={{width:"100%",padding:"13px",background:"rgba(42,155,78,.35)",color:G.accent,border:G.traitFin,borderRadius:G.rayon,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>
+                  <button onClick={function(){setShowDailyReportConfirm(false);setDailyReportSent(false);}} style={{width:"100%",padding:"13px",background:"rgba(42,155,78,.35)",color:G.pelouseClaire,border:G.traitFin,borderRadius:G.rayon,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>
                     OK
                   </button>
                 </>
               ) : (
                 <>
                   <div style={{fontSize:42,marginBottom:12}}>⚠️</div>
-                  <div style={{fontFamily:G.heading,fontSize:24,color:G.white,letterSpacing:1,marginBottom:8}}>{tr("SIGNALER UNE ERREUR ?","REPORT AN ERROR?","FEHLER MELDEN?","SEGNALARE UN ERRORE?","REPORTAR UM ERRO?")}</div>
+                  <div style={{...posterText(24),color:G.white,letterSpacing:1,marginBottom:8}}>{tr("SIGNALER UNE ERREUR ?","REPORT AN ERROR?","FEHLER MELDEN?","SEGNALARE UN ERRORE?","REPORTAR UM ERRO?")}</div>
                   <div style={{fontSize:13,color:"rgba(255,255,255,.55)",marginBottom:22,lineHeight:1.5}}>
                     {lang==="de"?<>Wenn <strong style={{color:G.white}}>{dailyPlayer.name}</strong> fehlende Klubs oder falsche Infos hat, tippe auf Melden. Bei genügend Meldungen wird der Spieler automatisch ausgeschlossen.</>:lang==="it"?<>Se <strong style={{color:G.white}}>{dailyPlayer.name}</strong> ha club mancanti o informazioni errate, tocca Segnala. Se abbastanza utenti segnalano, il giocatore sarà escluso automaticamente.</>:lang==="pt"?<>Se <strong style={{color:G.white}}>{dailyPlayer.name}</strong> tem clubes faltando ou informações incorretas, toque em Reportar. Se usuários suficientes reportarem, o jogador será excluído automaticamente.</>:lang==="en"?<>If <strong style={{color:G.white}}>{dailyPlayer.name}</strong> has missing clubs or incorrect information, tap Report. If enough users report, the player will be automatically excluded.</>:<>Si <strong style={{color:G.white}}>{dailyPlayer.name}</strong> a des clubs manquants ou des infos fausses, tape Signaler. Si assez d'users signalent, le joueur sera automatiquement exclu.</>}
                   </div>
@@ -14531,7 +14533,7 @@ export default function LePont() {
         {/* Onomatopée comic quand on passe une question (surgit en gros, repart aussitôt) */}
         {skipOno && (
           <div style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:60,display:"flex",alignItems:"center",justifyContent:"center"}}>
-            <div style={{fontFamily:G.heading,fontSize:"clamp(64px,20vw,150px)",lineHeight:1,color:G.projecteur,WebkitTextStroke:"4px "+G.encre,paintOrder:"stroke fill",textShadow:"7px 7px 0 "+G.encre,animation:"onoPop .85s cubic-bezier(.2,.8,.3,1) forwards"}}>{skipOno}</div>
+            <div style={{...posterText(64,G.projecteur),fontSize:"clamp(64px,20vw,150px)",lineHeight:1,animation:"onoPop .85s cubic-bezier(.2,.8,.3,1) forwards"}}>{skipOno}</div>
           </div>
         )}
 
@@ -14588,7 +14590,7 @@ export default function LePont() {
 
           {/* VS */}
           <div style={{display:"flex",justifyContent:"center",alignItems:"center",height:44,zIndex:2,flexShrink:0}}>
-            <div style={{fontFamily:G.heading,fontSize:20,color:G.white,background:G.nuit,borderRadius:G.rayonS,padding:"5px 18px",border:G.trait,boxShadow:G.ombre,animation:"vsAppear .5s cubic-bezier(.22,1,.36,1) .3s both"}}>VS</div>
+            <div style={{...posterText(20),color:G.white,background:G.nuit,borderRadius:G.rayonS,padding:"5px 18px",border:G.trait,boxShadow:G.ombre,animation:"vsAppearPoster .5s cubic-bezier(.22,1,.36,1) .3s both"}}>VS</div>
           </div>
 
           {/* Club 2 */}
@@ -14682,8 +14684,8 @@ export default function LePont() {
           <div style={{position:"absolute",inset:0,background:`radial-gradient(circle at center, ${chainMilestone.color}40 0%, transparent 62%)`,animation:"fadeIn .2s ease"}}/>
           <div style={{position:"relative",textAlign:"center",animation:"chainMsPop .55s cubic-bezier(.22,1.4,.36,1) both"}}>
             <div style={{fontSize:76,lineHeight:1,filter:`drop-shadow(0 0 26px ${chainMilestone.color})`}}>{chainMilestone.emoji}</div>
-            <div style={{fontFamily:G.heading,fontSize:"clamp(48px,15vw,72px)",color:chainMilestone.color,letterSpacing:2,lineHeight:1,marginTop:4,textShadow:`0 0 34px ${chainMilestone.color}aa`}}>{chainMilestone.n}</div>
-            <div style={{fontFamily:G.heading,fontSize:20,color:G.white,letterSpacing:5,marginTop:2}}>{tr("MAILLONS","LINKS","GLIEDER","ANELLI","ELOS")}</div>
+            <div style={{...posterText(48),fontSize:"clamp(48px,15vw,72px)",color:chainMilestone.color,letterSpacing:2,lineHeight:1,marginTop:4}}>{chainMilestone.n}</div>
+            <div style={{...posterText(20),color:G.white,letterSpacing:5,marginTop:2}}>{tr("MAILLONS","LINKS","GLIEDER","ANELLI","ELOS")}</div>
             <div style={{fontSize:13,fontWeight:800,color:"rgba(255,255,255,.9)",marginTop:12,letterSpacing:.5}}>{tr("En feu ! Continue 🔥","On fire! Keep going 🔥","Du brennst! Weiter so 🔥","Sei in fiamme! Continua 🔥","Pegando fogo! Continue 🔥")}</div>
           </div>
         </div>
@@ -14708,7 +14710,7 @@ export default function LePont() {
         {timerCircle(64)}
         {chainRecord
           ? <div style={{background:G.nuit,border:G.traitFin,boxShadow:"2px 2px 0 "+G.encre,borderRadius:G.rayonS,padding:"7px 11px",display:"flex",alignItems:"center",gap:6}}>
-              {Icon.trophy(16,G.gold)}
+              {Icon.trophy(16,G.projecteur)}
               <span style={{...posterText(22,G.projecteur)}}>{chainRecord.score}</span>
             </div>
           : <div style={{width:50}}/>
@@ -14979,7 +14981,7 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
           <div style={{...posterText(56,G.white)}}>{sc}</div>
           <div style={{fontSize:11,color:"rgba(255,255,255,.5)"}}>pts{isChain?` · ${chainCount} ${chainCount>1?tr("liens","links","Glieder","anelli","elos"):tr("lien","link","Glied","anello","elo")}`:`  ·  ${totalRounds} ${totalRounds>1?tr("manches","rounds","Runden","turni","rodadas"):tr("manche","round","Runde","turno","rodada")}`}</div>
           {maxCombo>=3&&<div style={{fontSize:13,color:"#f59e0b",marginTop:4,fontWeight:700}}>🔥 {tr("Meilleur combo","Best combo","Bester Combo","Miglior combo","Melhor combo")} : x{maxCombo}</div>}
-          {isNewRecord&&<div style={{fontSize:12,color:G.accent,marginTop:6,fontStyle:"italic"}}>{tr("Ancien record battu 🎉","Previous record beaten 🎉","Alter Rekord geschlagen 🎉","Vecchio record battuto 🎉","Recorde anterior batido 🎉")}</div>}
+          {isNewRecord&&<div style={{fontSize:12,color:G.pelouseClaire,marginTop:6,fontStyle:"italic"}}>{tr("Ancien record battu 🎉","Previous record beaten 🎉","Alter Rekord geschlagen 🎉","Vecchio record battuto 🎉","Recorde anterior batido 🎉")}</div>}
           {dayStreak>=2&&<div style={{fontSize:12,color:"#FF6B35",marginTop:6,fontWeight:700}}>🔥 {dayStreak} {tr("jours de suite","days in a row","Tage in Folge","giorni di fila","dias seguidos")} !</div>}
         </div>
 
@@ -15054,7 +15056,7 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
                   <div style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:64,height:64,borderRadius:G.rayonS,overflow:"hidden",background:G.ciel,border:G.traitFin,marginBottom:8,marginInline:"auto"}}>
                     {botOpponentRef.current.avatar
                       ? <img src={botOpponentRef.current.avatar} alt="" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top"}}/>
-                      : <span style={{fontFamily:G.heading,fontSize:28,color:G.white}}>{botOpponentRef.current.pseudo[0].toUpperCase()}</span>
+                      : <span style={{...posterText(28),color:G.white}}>{botOpponentRef.current.pseudo[0].toUpperCase()}</span>
                     }
                   </div>
                   <div style={{fontSize:11,color:"#bbb",letterSpacing:1,textTransform:"uppercase",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
@@ -15151,7 +15153,7 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
       </div>
         <div style={{zIndex:1,padding:"32px 20px 16px",textAlign:"center"}}>
           <div style={{fontSize:52,marginBottom:8}}>{iAbandoned?"🏳️":(myRank<=3?medals[myRank-1]:myRank+"ème")}</div> {!iAbandoned && <WinBanner maxWidth={300} marginTop={8} lose={myRank!==1} />}
-          <div style={{fontFamily:G.heading,fontSize:"clamp(30px,8vw,50px)",color:iAbandoned?"#FF3D57":(myRank===1?G.gold:G.white),letterSpacing:2}}>
+          <div style={{...posterText(30),fontSize:"clamp(30px,8vw,50px)",color:iAbandoned?G.maillot:(myRank===1?G.projecteur:G.white),letterSpacing:2}}>
             {iAbandoned?(tr("ABANDON","FORFEIT","AUFGABE","RESA","DESISTÊNCIA")):(myRank===1?(tr("VICTOIRE !","VICTORY!","SIEG!","VITTORIA!","VITÓRIA!")):myRank===2?(tr("2ÈME PLACE","2ND PLACE","2. PLATZ","2° POSTO","2º LUGAR")):myRank===3?(tr("3ÈME PLACE","3RD PLACE","3. PLATZ","3° POSTO","3º LUGAR")):(tr("RÉSULTATS","RESULTS","ERGEBNISSE","RISULTATI","RESULTADOS")))}
           </div>
           {iAbandoned && <div style={{fontSize:15,color:"#fff",marginTop:10,fontWeight:700,padding:"0 16px",lineHeight:1.4}}>{tr("T'as même pas eu le courage d'aller au bout 😂","You didn't even finish 😂","Du hast nicht mal zu Ende gespielt 😂","Non hai nemmeno finito 😂","Você nem terminou 😂")}</div>}
@@ -15168,9 +15170,9 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
             } : null;
             return (
             <div key={i} onClick={onClickHandler} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",borderRadius:G.rayon,background:p.id===playerId?"rgba(42,155,78,.35)":"rgba(8,17,9,.45)",border:G.traitFin,marginBottom:6,cursor:hasRounds?"pointer":"default"}}>
-              <div style={{fontFamily:G.heading,fontSize:30,width:40,textAlign:"center",color:i<3?["#FFD600","#C0C0C0","#CD7F32"][i]:"rgba(255,255,255,.3)"}}>{i<3?medals[i]:i+1}</div>
-              <div style={{flex:1,fontSize:14,fontWeight:800,color:p.id===playerId?G.accent:G.white}}>{p.name}{p.id===playerId?" ("+tr("toi","you","du","tu","você")+")":""}{p.abandoned?" 🏳️":""}</div>
-              <div style={{fontFamily:G.heading,fontSize:26,color:i===0?G.gold:G.white}}>{p.score||0} <span style={{fontSize:12,color:"rgba(255,255,255,.3)"}}>pts</span></div>
+              <div style={{...posterText(30),width:40,textAlign:"center",color:i<3?[G.projecteur,"#C0C0C0","#CD7F32"][i]:"rgba(255,255,255,.3)"}}>{i<3?medals[i]:i+1}</div>
+              <div style={{flex:1,fontSize:14,fontWeight:800,color:p.id===playerId?G.pelouseClaire:G.white}}>{p.name}{p.id===playerId?" ("+tr("toi","you","du","tu","você")+")":""}{p.abandoned?" 🏳️":""}</div>
+              <div style={{...posterText(26),color:i===0?G.projecteur:G.white}}>{p.score||0} <span style={{fontSize:12,color:"rgba(255,255,255,.3)"}}>pts</span></div>
               {hasRounds && <div style={{fontSize:14,color:"rgba(255,214,0,.7)",marginLeft:4}}>👁️</div>}
             </div>
           );})}
@@ -15221,7 +15223,7 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
       : draw
       ? (tr("ÉGALITÉ !","DRAW!","UNENTSCHIEDEN!","PAREGGIO!","EMPATE!"))
       : (tr("DÉFAITE","DEFEAT","NIEDERLAGE","SCONFITTA","DERROTA"));
-    const labelColor = won || abandoned ? G.accent : draw ? G.gold : "#FF3D57";
+    const labelColor = won || abandoned ? G.pelouseClaire : draw ? G.projecteur : G.maillot;
     return (
       <div style={{...shell,animation:"fadeUp .4s ease",overflow:isDesktop?"visible":"auto"}} key="duelResult">
         <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
