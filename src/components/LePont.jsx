@@ -1144,9 +1144,419 @@ const RESULT_MESSAGES = {
       "IT WAS WRITTEN 📝",
     ],
   },
+  de: {
+    winLabels: [
+      "BALLON-D'OR-AUFTRITT 🏆",
+      "DU HAST ALLE ÜBERSPIELT 🎯",
+      "FÜNF-STERNE-AUFTRITT ⭐",
+      "ZU NULL UND GEWONNEN 🧤",
+      "BLEIB UNGESCHLAGEN, KÖNIG 👑",
+      "REINE MAGIE 🪄",
+      "DU HAST DAS SPIEL ZERLEGT 🎩",
+      "WELTKLASSE 🌍",
+      "POESIE AM BALL 🎭",
+      "NEUER REKORD 📈",
+      "ELF DER WOCHE 🏟️",
+      "MAN OF THE MATCH 🥇",
+    ],
+    drawLabels: [
+      "UNENTSCHIEDEN, REVANCHE? 🤝",
+      "HEIMPUNKT GESICHERT ⚖️",
+      "BIS ZUM RÜCKSPIEL 🔁",
+      "DAS RÜCKSPIEL ENTSCHEIDET 📅",
+    ],
+    loseLabels: [
+      "ABSTIEG IN DIE ZWEITE ⬇️",
+      "DU HAST FÜNF GEFANGEN 💥",
+      "VERDIENTE ROTE KARTE 🟥",
+      "ZURÜCK IN DIE FUSSBALLSCHULE 📚",
+      "WÄRM DICH NÄCHSTES MAL BESSER AUF 🔥",
+      "AUF EINEM BEIN GESPIELT 🦶",
+      "ABGEFERTIGT 📝",
+      "DEINE SAISON IST VORBEI 📅",
+      "BANKDRÜCKER-ENERGIE 🪑",
+      "NICHT DEIN ABEND 🫤",
+      "ZUR HALBZEIT AUSGEWECHSELT ⏱️",
+      "VON DEN EIGENEN FANS AUSGEPFIFFEN 😬",
+    ],
+    winCentral: [
+      function(oppName){ return oppName + " kann das Trikot ausziehen 😴"; },
+      function(oppName){ return "Fussballstunde für " + oppName + " 📚"; },
+      function(oppName){ return "Du hast " + oppName + " wie Maradona ausgetanzt 🎩"; },
+      function(oppName){ return "Lehrmeister gegen " + oppName + " 🎓"; },
+      function(oppName){ return "Bei der U13 sieht man mehr Spiel 💀"; },
+      function(oppName){ return "Du hast " + oppName + " auf die Bretter geschickt 🥊"; },
+      function(oppName){ return "Anstoss nochmal, " + oppName + " 🔁"; },
+      function(oppName){ return "Selbst mit VAR war " + oppName + " verloren 📹"; },
+      function(oppName){ return oppName + " muss die Grundlagen üben 📖"; },
+      function(oppName){ return "Darum nennt man dich den Chef 🫡"; },
+      function(oppName){ return "Du steigst in der Kabinenhierarchie 📈"; },
+      function(oppName){ return oppName + " schaut sich die ganze Nacht Wiederholungen an 📺"; },
+    ],
+    loseCentral: [
+      function(oppName){ return "Du wurdest überrollt wie ein Bobbycar 🚗"; },
+      function(oppName){ return oppName + " hat dich zerlegt 💀"; },
+      function(oppName){ return "Selbst beim Freizeitkick wärst du Reserve 🪑"; },
+      function(oppName){ return "Du brauchst ein Kreisliga-Trainingslager 📋"; },
+      function(oppName){ return "Deine Sammelkarten weinen heimlich 😭"; },
+      function(oppName){ return "Du hast wie an einem lahmen Sonntag gespielt 😴"; },
+      function(oppName){ return oppName + " hat dir eine Lehrstunde verpasst 🎓"; },
+      function(oppName){ return "Mehr Fouls als angekommene Pässe ❌"; },
+      function(oppName){ return "Selbst mit elf frischen Auswechselspielern hättest du verloren 🤷"; },
+      function(oppName){ return "Das Publikum hat dich ausgepfiffen 🙉"; },
+      function(oppName){ return oppName + " war eine andere Liga 🌌"; },
+      function(oppName){ return "Du hast den Platz mit dem Wartezimmer verwechselt 🛋️"; },
+    ],
+    drawCentral: [
+      "Unentschieden — die echte Schlacht ist das Rückspiel 🤝",
+      "Punkte geteilt, aber wir wissen, wer den Ball hatte 👀",
+      "Bis zum nächsten Mal, ohne Druck 🔁",
+    ],
+    abandonedCentral: [
+      function(oppName){ return oppName + " ist in die Kabine geflüchtet 🏃"; },
+      function(oppName){ return oppName + " hat die Binde abgegeben 🏳️"; },
+      function(oppName){ return "Sieg am grünen Tisch, zählt aber 🏆"; },
+      function(oppName){ return oppName + " hat den Platz vor dem Schlusspfiff verlassen 🚪"; },
+    ],
+    winTaunts: [
+      "Zu leicht — nächstes Mal spiele ich im Schlaf 😴",
+      "Übe nochmal die Grundlagen 📚",
+      "Komm wieder, wenn du ein Level höher bist 📈",
+      "Wir haben wohl nicht dasselbe Spiel gespielt 🎮",
+      "Danke für die Punkte, das hat mich hochgezogen 🙏",
+      "Für welches Team hast du gespielt? 🤔",
+      "Ich habe dir zu viel Platz gelassen, mein Fehler 🫣",
+      "Revanche? Dann dribble ich weniger 🎯",
+      "Besser als letztes Mal, weiter so 👏",
+      "Als Trainer würdest du dich selbst auswechseln 😬",
+      "Alles gut, trotzdem gut gespielt 🫡",
+      "Nächstes Mal bereite dich richtig vor 💪",
+    ],
+    soloWin: [
+      "GUT ERKANNT! 👏",
+      "GEDÄCHTNIS EINES CHAMPIONS 🧠",
+      "ECHTER KENNER! 🎓",
+      "WIE ZIDANE '98 🌟",
+      "SAUBER UND ABGEZOCKT ✨",
+      "DU BIST EINER VON UNS 👊",
+      "GOAT-NIVEAU 🐐",
+      "ER HAT SEINEN PLATZ VERDIENT ⚽",
+      "WANDELNDES LEXIKON 📖",
+      "ES WAR VORHERBESTIMMT 📝",
+    ],
+  },
+  it: {
+    winLabels: [
+      "PRESTAZIONE DA PALLONE D'ORO 🏆",
+      "HAI SURCLASSATO TUTTI 🎯",
+      "PRESTAZIONE DA CINQUE STELLE ⭐",
+      "PORTA INVIOLATA E VITTORIA 🧤",
+      "RESTA IMBATTUTO, RE 👑",
+      "MAGIA PURA 🪄",
+      "HAI CHIUSO LA PARTITA 🎩",
+      "ROBA DA CLASSE MONDIALE 🌍",
+      "POESIA COL PALLONE 🎭",
+      "NUOVO RECORD 📈",
+      "TOP 11 DELLA SETTIMANA 🏟️",
+      "MAN OF THE MATCH 🥇",
+    ],
+    drawLabels: [
+      "PAREGGIO, RIVINCITA? 🤝",
+      "PUNTO CONQUISTATO IN CASA ⚖️",
+      "CI VEDIAMO AL RITORNO 🔁",
+      "DECIDE IL RITORNO 📅",
+    ],
+    loseLabels: [
+      "DIRITTO IN SERIE B ⬇️",
+      "TI HANNO FATTO LA MANITA 💥",
+      "ROSSO MERITATO 🟥",
+      "TORNA A SCUOLA CALCIO 📚",
+      "RISCALDATI MEGLIO LA PROSSIMA 🔥",
+      "HAI GIOCATO SU UNA GAMBA 🦶",
+      "LEZIONE SEVERA 📝",
+      "LA TUA STAGIONE È FINITA 📅",
+      "ENERGIA DA PANCHINARO 🪑",
+      "NON ERA LA TUA SERATA 🫤",
+      "SOSTITUITO ALL'INTERVALLO ⏱️",
+      "FISCHIATO DAI TUOI TIFOSI 😬",
+    ],
+    winCentral: [
+      function(oppName){ return oppName + " può togliersi la maglia 😴"; },
+      function(oppName){ return "Lezione di calcio per " + oppName + " 📚"; },
+      function(oppName){ return "Hai dribblato " + oppName + " come Maradona 🎩"; },
+      function(oppName){ return "Maestro contro " + oppName + " 🎓"; },
+      function(oppName){ return "Si vede più gioco negli Under 13 💀"; },
+      function(oppName){ return "Hai steso " + oppName + " 🥊"; },
+      function(oppName){ return "Palla al centro " + oppName + ", si ricomincia 🔁"; },
+      function(oppName){ return "Anche col VAR " + oppName + " era perso 📹"; },
+      function(oppName){ return oppName + " deve rivedere le basi 📖"; },
+      function(oppName){ return "Ecco perché ti chiamano il capo 🫡"; },
+      function(oppName){ return "Stai salendo nella gerarchia dello spogliatoio 📈"; },
+      function(oppName){ return oppName + " guarderà i replay tutta la notte 📺"; },
+    ],
+    loseCentral: [
+      function(oppName){ return "Ti hanno travolto come un motorino 🛴"; },
+      function(oppName){ return oppName + " ti ha smontato 💀"; },
+      function(oppName){ return "Anche al calcetto saresti in panchina 🪑"; },
+      function(oppName){ return "Ti serve un ritiro in Terza Categoria 📋"; },
+      function(oppName){ return "Le tue figurine piangono di nascosto 😭"; },
+      function(oppName){ return "Hai giocato come una domenica senza voglia 😴"; },
+      function(oppName){ return oppName + " ti ha dato una lezione magistrale 🎓"; },
+      function(oppName){ return "Più falli che passaggi riusciti ❌"; },
+      function(oppName){ return "Nemmeno con undici cambi freschi avresti vinto 🤷"; },
+      function(oppName){ return "Il pubblico ti ha fischiato all'uscita 🙉"; },
+      function(oppName){ return oppName + " giocava a un altro livello 🌌"; },
+      function(oppName){ return "Hai confuso il campo con la sala d'attesa 🛋️"; },
+    ],
+    drawCentral: [
+      "Pareggio — la vera battaglia è la rivincita 🤝",
+      "Punti divisi, ma sappiamo chi aveva la palla 👀",
+      "Alla prossima, senza pressione 🔁",
+    ],
+    abandonedCentral: [
+      function(oppName){ return oppName + " è scappato negli spogliatoi 🏃"; },
+      function(oppName){ return oppName + " ha restituito la fascia 🏳️"; },
+      function(oppName){ return "Vittoria a tavolino, ma conta 🏆"; },
+      function(oppName){ return oppName + " ha lasciato il campo prima del fischio 🚪"; },
+    ],
+    winTaunts: [
+      "Troppo facile — la prossima gioco dormendo 😴",
+      "Rivedi le basi fratello 📚",
+      "Torna quando sarai salito di livello 📈",
+      "Non stavamo giocando allo stesso gioco 🎮",
+      "Grazie per i punti, mi hai spinto in classifica 🙏",
+      "In che squadra giocavi, scusa? 🤔",
+      "Ti ho lasciato troppo spazio, colpa mia 🫣",
+      "Rivincita? Stavolta dribblo meno 🎯",
+      "Meglio dell'ultima volta, continua 👏",
+      "Se fossi allenatore ti sostituiresti 😬",
+      "Tranquillo, comunque ben giocato 🫡",
+      "La prossima preparati meglio, davvero 💪",
+    ],
+    soloWin: [
+      "BEN VISTO! 👏",
+      "MEMORIA DA CAMPIONE 🧠",
+      "VERO INTENDITORE! 🎓",
+      "COME ZIDANE NEL '98 🌟",
+      "PULITO E CHIRURGICO ✨",
+      "SEI UNO VERO 👊",
+      "LIVELLO GOAT 🐐",
+      "SI È MERITATO IL POSTO ⚽",
+      "ENCICLOPEDIA VIVENTE 📖",
+      "ERA SCRITTO 📝",
+    ],
+  },
+  pt: {
+    winLabels: [
+      "ATUAÇÃO DE BOLA DE OURO 🏆",
+      "VOCÊ PASSOU POR TODOS 🎯",
+      "ATUAÇÃO CINCO ESTRELAS ⭐",
+      "SEM SOFRER GOL E COM A VITÓRIA 🧤",
+      "SIGA INVICTO, REI 👑",
+      "MÁGICA PURA 🪄",
+      "VOCÊ FECHOU O JOGO 🎩",
+      "COISA DE CLASSE MUNDIAL 🌍",
+      "POESIA COM A BOLA 🎭",
+      "NOVO RECORDE 📈",
+      "SELEÇÃO DA SEMANA 🏟️",
+      "MELHOR EM CAMPO 🥇",
+    ],
+    drawLabels: [
+      "EMPATE, REVANCHE? 🤝",
+      "PONTO GARANTIDO EM CASA ⚖️",
+      "ATÉ O JOGO DE VOLTA 🔁",
+      "A VOLTA DECIDE 📅",
+    ],
+    loseLabels: [
+      "DIRETO PRA SÉRIE B ⬇️",
+      "TOMOU UMA GOLEADA 💥",
+      "VERMELHO MERECIDO 🟥",
+      "DE VOLTA À ESCOLINHA 📚",
+      "AQUEÇA MELHOR NA PRÓXIMA 🔥",
+      "JOGOU COM UMA PERNA SÓ 🦶",
+      "LEVOU UMA AULA 📝",
+      "SUA TEMPORADA ACABOU 📅",
+      "ENERGIA DE RESERVA 🪑",
+      "NÃO ERA SUA NOITE 🫤",
+      "SUBSTITUÍDO NO INTERVALO ⏱️",
+      "VAIADO PELA PRÓPRIA TORCIDA 😬",
+    ],
+    winCentral: [
+      function(oppName){ return oppName + " já pode tirar a camisa 😴"; },
+      function(oppName){ return "Aula de futebol para " + oppName + " 📚"; },
+      function(oppName){ return "Você driblou " + oppName + " como o Maradona 🎩"; },
+      function(oppName){ return "Professor contra " + oppName + " 🎓"; },
+      function(oppName){ return "Já vi mais jogo no sub-13 💀"; },
+      function(oppName){ return "Você derrubou " + oppName + " 🥊"; },
+      function(oppName){ return "Bola no centro " + oppName + ", começa de novo 🔁"; },
+      function(oppName){ return "Mesmo com o VAR " + oppName + " estava perdido 📹"; },
+      function(oppName){ return oppName + " precisa rever o básico 📖"; },
+      function(oppName){ return "É por isso que te chamam de patrão 🫡"; },
+      function(oppName){ return "Você está subindo na hierarquia do vestiário 📈"; },
+      function(oppName){ return oppName + " vai ver replays a noite toda 📺"; },
+    ],
+    loseCentral: [
+      function(oppName){ return "Passaram por cima de você como um fusca 🚗"; },
+      function(oppName){ return oppName + " te desmontou 💀"; },
+      function(oppName){ return "Até na pelada você seria reserva 🪑"; },
+      function(oppName){ return "Você precisa de uma pré-temporada na várzea 📋"; },
+      function(oppName){ return "Suas figurinhas estão chorando escondido 😭"; },
+      function(oppName){ return "Você jogou como um domingo sem vontade 😴"; },
+      function(oppName){ return oppName + " te deu uma aula magistral 🎓"; },
+      function(oppName){ return "Mais faltas que passes certos ❌"; },
+      function(oppName){ return "Nem com onze reservas descansados você ganhava 🤷"; },
+      function(oppName){ return "A torcida vaiou sua saída 🙉"; },
+      function(oppName){ return oppName + " jogou em outro nível 🌌"; },
+      function(oppName){ return "Você confundiu o campo com a sala de espera 🛋️"; },
+    ],
+    drawCentral: [
+      "Empate — a briga de verdade é na revanche 🤝",
+      "Pontos divididos, mas sabemos quem tinha a bola 👀",
+      "Até a próxima, sem pressão 🔁",
+    ],
+    abandonedCentral: [
+      function(oppName){ return oppName + " fugiu para o vestiário 🏃"; },
+      function(oppName){ return oppName + " entregou a braçadeira 🏳️"; },
+      function(oppName){ return "Vitória por W.O., mas conta 🏆"; },
+      function(oppName){ return oppName + " saiu de campo antes do apito 🚪"; },
+    ],
+    winTaunts: [
+      "Fácil demais — na próxima jogo dormindo 😴",
+      "Revê o básico, irmão 📚",
+      "Volta quando subir de nível 📈",
+      "Parece que não jogávamos o mesmo jogo 🎮",
+      "Obrigado pelos pontos, me impulsionaram no ranking 🙏",
+      "Você jogava em qual time mesmo? 🤔",
+      "Te dei espaço demais, culpa minha 🫣",
+      "Revanche? Dessa vez dribla menos 🎯",
+      "Melhor que a última vez, continua 👏",
+      "Se fosse técnico, você se substituiria 😬",
+      "De boa, jogou bem mesmo assim 🫡",
+      "Na próxima se prepara melhor, sério 💪",
+    ],
+    soloWin: [
+      "BOA VISÃO! 👏",
+      "MEMÓRIA DE CAMPEÃO 🧠",
+      "VERDADEIRO CONHECEDOR! 🎓",
+      "COMO O ZIDANE EM 98 🌟",
+      "LIMPO E CIRÚRGICO ✨",
+      "VOCÊ É DOS BONS 👊",
+      "NÍVEL GOAT 🐐",
+      "ELE MERECEU O LUGAR ⚽",
+      "ENCICLOPÉDIA VIVA 📖",
+      "ESTAVA ESCRITO 📝",
+    ],
+  },
+  es: {
+    winLabels: [
+      "ACTUACIÓN DE BALÓN DE ORO 🏆",
+      "LOS SUPERASTE A TODOS 🎯",
+      "ACTUACIÓN DE CINCO ESTRELLAS ⭐",
+      "PORTERÍA A CERO Y VICTORIA 🧤",
+      "SIGUE INVICTO, REY 👑",
+      "MAGIA PURA 🪄",
+      "CERRASTE EL PARTIDO 🎩",
+      "COSA DE CLASE MUNDIAL 🌍",
+      "POESÍA CON EL BALÓN 🎭",
+      "NUEVO RÉCORD 📈",
+      "ONCE IDEAL DE LA SEMANA 🏟️",
+      "MEJOR JUGADOR DEL PARTIDO 🥇",
+    ],
+    drawLabels: [
+      "EMPATE, ¿REVANCHA? 🤝",
+      "PUNTO ASEGURADO EN CASA ⚖️",
+      "NOS VEMOS EN LA VUELTA 🔁",
+      "LA VUELTA DECIDE 📅",
+    ],
+    loseLabels: [
+      "DIRECTO A SEGUNDA ⬇️",
+      "TE METIERON UNA MANITA 💥",
+      "ROJA MERECIDA 🟥",
+      "DE VUELTA A LA ESCUELA 📚",
+      "CALIENTA MEJOR LA PRÓXIMA 🔥",
+      "JUGASTE CON UNA SOLA PIERNA 🦶",
+      "TE DIERON UNA LECCIÓN 📝",
+      "TU TEMPORADA SE ACABÓ 📅",
+      "ENERGÍA DE SUPLENTE 🪑",
+      "NO ERA TU NOCHE 🫤",
+      "SUSTITUIDO EN EL DESCANSO ⏱️",
+      "ABUCHEADO POR TU PROPIA AFICIÓN 😬",
+    ],
+    winCentral: [
+      function(oppName){ return oppName + " ya puede quitarse la camiseta 😴"; },
+      function(oppName){ return "Clase de fútbol para " + oppName + " 📚"; },
+      function(oppName){ return "Driblaste a " + oppName + " como Maradona 🎩"; },
+      function(oppName){ return "Maestro contra " + oppName + " 🎓"; },
+      function(oppName){ return "Se ve más juego en categoría infantil 💀"; },
+      function(oppName){ return "Tumbaste a " + oppName + " 🥊"; },
+      function(oppName){ return "Balón al centro " + oppName + ", otra vez 🔁"; },
+      function(oppName){ return "Ni con el VAR se enteró " + oppName + " 📹"; },
+      function(oppName){ return oppName + " tiene que repasar lo básico 📖"; },
+      function(oppName){ return "Por eso te llaman el jefe 🫡"; },
+      function(oppName){ return "Estás subiendo en la jerarquía del vestuario 📈"; },
+      function(oppName){ return oppName + " va a ver repeticiones toda la noche 📺"; },
+    ],
+    loseCentral: [
+      function(oppName){ return "Te pasaron por encima como a un cono 🚗"; },
+      function(oppName){ return oppName + " te desmontó 💀"; },
+      function(oppName){ return "Hasta en un partidillo serías suplente 🪑"; },
+      function(oppName){ return "Necesitas una pretemporada en regional 📋"; },
+      function(oppName){ return "Tus cromos lloran a escondidas 😭"; },
+      function(oppName){ return "Jugaste como un domingo sin ganas 😴"; },
+      function(oppName){ return oppName + " te dio una clase magistral 🎓"; },
+      function(oppName){ return "Más faltas que pases buenos ❌"; },
+      function(oppName){ return "Ni con once suplentes frescos ganabas 🤷"; },
+      function(oppName){ return "La afición pitó tu salida 🙉"; },
+      function(oppName){ return oppName + " jugaba en otro nivel 🌌"; },
+      function(oppName){ return "Confundiste el campo con la sala de espera 🛋️"; },
+    ],
+    drawCentral: [
+      "Empate — la batalla de verdad es la revancha 🤝",
+      "Puntos repartidos, pero sabemos quién tuvo el balón 👀",
+      "Hasta la próxima, sin presión 🔁",
+    ],
+    abandonedCentral: [
+      function(oppName){ return oppName + " huyó al vestuario 🏃"; },
+      function(oppName){ return oppName + " entregó el brazalete 🏳️"; },
+      function(oppName){ return "Victoria por incomparecencia, pero cuenta 🏆"; },
+      function(oppName){ return oppName + " se fue del campo antes del pitido 🚪"; },
+    ],
+    winTaunts: [
+      "Demasiado fácil — la próxima juego dormido 😴",
+      "Repasa lo básico, hermano 📚",
+      "Vuelve cuando subas de nivel 📈",
+      "Parece que no jugábamos al mismo juego 🎮",
+      "Gracias por los puntos, me subieron en la clasificación 🙏",
+      "¿En qué equipo jugabas? 🤔",
+      "Te dejé demasiado espacio, culpa mía 🫣",
+      "¿Revancha? Esta vez driblo menos 🎯",
+      "Mejor que la última vez, sigue así 👏",
+      "Si fueras entrenador te sustituirías 😬",
+      "Tranquilo, bien jugado igualmente 🫡",
+      "La próxima prepárate mejor, en serio 💪",
+    ],
+    soloWin: [
+      "¡BIEN VISTO! 👏",
+      "MEMORIA DE CAMPEÓN 🧠",
+      "¡VERDADERO EXPERTO! 🎓",
+      "COMO ZIDANE EN EL 98 🌟",
+      "LIMPIO Y QUIRÚRGICO ✨",
+      "ERES DE LOS BUENOS 👊",
+      "NIVEL GOAT 🐐",
+      "SE GANÓ SU SITIO ⚽",
+      "ENCICLOPEDIA VIVIENTE 📖",
+      "ESTABA ESCRITO 📝",
+    ],
+  },
 };
 
 // Sélection pseudo-aléatoire stable d'après une seed numérique
+// Les messages de fin n'existaient qu'en français et en anglais, et chaque
+// appel repliait littéralement tout le reste sur l'anglais : un joueur
+// allemand, italien ou portugais lisait sa défaite en anglais.
+function msgResultat(lang) {
+  return RESULT_MESSAGES[lang] || RESULT_MESSAGES.en;
+}
 function pickResultMessage(arr, seed) {
   if (!arr || arr.length === 0) return "";
   const idx = Math.abs(Math.floor(seed * 7)) % arr.length;
@@ -2537,6 +2947,13 @@ const POSITIVE_FEEDBACK = {
     hot:  ["⚡ IMPARÁVEL !","🎯 ESTÁ NA ZONA !","🔥 NINGUÉM TE SEGURA !","💨 A TODA VELOCIDADE !","🎪 QUE ESPETÁCULO !"],
     fire: ["💫 FENOMENAL !","🌟 MÁQUINA !","👑 CLASSE MUNDIAL !","🏟️ O ESTÁDIO ESTÁ DE PÉ !","🎭 ARTISTA !"],
     god:  ["🏆 LENDÁRIO !!!","👑 BOLA DE OURO !","🐐 O GOAT !","🌌 FORA DE SÉRIE !","🎖️ RECORDE À VISTA !"]
+  },
+  es: {
+    base: ["Limpio ✓","Bonito 🎯","Adentro ⚽","Preciso 👌","Buen ojo 👀","Sólido 💪","Demasiado fácil 😎","Tranquilo 🚶"],
+    warm: ["🔥 ¡EN LLAMAS!","💥 ¡QUÉ RACHA!","⚡ ¡A TODA MARCHA!","🎯 ¡EN EL BLANCO!","🚀 ¡ESTÁS DESPEGANDO!"],
+    hot:  ["⚡ ¡IMPARABLE!","🎯 ¡ESTÁS EN RACHA!","🔥 ¡NADIE TE PARA!","💨 ¡A TODA VELOCIDAD!","🎪 ¡QUÉ ESPECTÁCULO!"],
+    fire: ["💫 ¡FENOMENAL!","🌟 ¡MÁQUINA!","👑 ¡CLASE MUNDIAL!","🏟️ ¡EL ESTADIO ESTÁ DE PIE!","🎭 ¡ARTISTA!"],
+    god:  ["🏆 ¡¡LEGENDARIO!!","👑 ¡BALÓN DE ORO!","🐐 ¡EL GOAT!","🌌 ¡FUERA DE SERIE!","🎖️ ¡RÉCORD A LA VISTA!"]
   }
 };
 
@@ -11399,7 +11816,7 @@ export default function LePont() {
     const myEntry = duelResult.players.find(function(p){return p.id===playerId;});
     const myRank = duelResult.players.findIndex(function(p){return p.id===playerId;}) + 1;
     const winner = duelResult.players[0];
-    const L_msg = RESULT_MESSAGES[(lang==="fr"?"fr":"en")];
+    const L_msg = msgResultat(lang);
     const oppNameRoom = (winner && winner.id !== playerId) ? winner.name : "";
     const iAbandoned = duelResult.myAbandoned === true;
     let msg;
@@ -14196,7 +14613,7 @@ export default function LePont() {
                     {dailyPlayer.name}
                   </div>
                   <div style={{fontSize:16,color:"rgba(255,255,255,.7)",fontWeight:700,letterSpacing:1,textTransform:"uppercase",marginBottom:6}}>
-                    {pickResultMessage(RESULT_MESSAGES[(lang==="fr"?"fr":"en")].soloWin, dailyTries * 7 + (dailyPlayer?.name?.length||0))}
+                    {pickResultMessage(msgResultat(lang).soloWin, dailyTries * 7 + (dailyPlayer?.name?.length||0))}
                   </div>
                   <div style={{fontSize:14,color:"rgba(255,255,255,.4)",marginTop:4,marginBottom:24}}>
                     {dailyTries === 1 ? (tr("Trouvé du premier coup 🐐","Got it first try 🐐","Beim ersten Versuch 🐐","Indovinato al primo colpo 🐐","Acertou de primeira 🐐")) : (tr("Trouvé en ","Found in ","Gefunden in ","Trovato in ","Encontrado em ")+dailyTries+" "+(dailyTries>1?tr("essais","attempts","Versuchen","tentativi","tentativas"):tr("essai","attempt","Versuch","tentativo","tentativa")))}
@@ -15229,10 +15646,10 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
           <div style={{...posterTitre(46,labelColor),fontSize:"clamp(30px,8vw,46px)",marginTop:4}}>{label}</div>
           <div style={{fontSize:"clamp(13px,3.5vw,18px)",color:G.white,fontWeight:800,marginTop:6,animation:"fadeUp .4s ease .25s both",textTransform:"uppercase",letterSpacing:1,textShadow:"0 2px 10px rgba(0,0,0,.4)"}}>{
             won
-              ? pickResultMessage(RESULT_MESSAGES[(lang==="fr"?"fr":"en")].winLabels, duelResult.myScore)
+              ? pickResultMessage(msgResultat(lang).winLabels, duelResult.myScore)
               : draw
-              ? pickResultMessage(RESULT_MESSAGES[(lang==="fr"?"fr":"en")].drawLabels, duelResult.myScore)
-              : pickResultMessage(RESULT_MESSAGES[(lang==="fr"?"fr":"en")].loseLabels, duelResult.theirScore)
+              ? pickResultMessage(msgResultat(lang).drawLabels, duelResult.myScore)
+              : pickResultMessage(msgResultat(lang).loseLabels, duelResult.theirScore)
           }</div>
           {(()=>{const grade=getGrade(playerXp); return <div style={{display:"inline-flex",alignItems:"center",gap:8,marginTop:8,background:grade.color,border:G.traitFin,boxShadow:"2px 2px 0 "+G.encre,borderRadius:G.rayonS,padding:"6px 14px"}}><span style={{fontSize:13,fontWeight:800,color:grade.color,letterSpacing:.5}}>{grade.label}</span></div>; })()}
           <div style={{fontSize:14,color:"rgba(255,255,255,.4)",marginTop:8}}>
@@ -15292,13 +15709,13 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
             <div style={{marginBottom:8,padding:"12px 16px",background:"rgba(8,17,9,.45)",borderRadius:14,border:G.traitFin}}>
               <div style={{fontSize:10,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginBottom:6}}>💬 {tr("Message de","Message from","Nachricht von","Messaggio da","Mensagem de")} {duelResult.oppName}</div>
               <div style={{fontSize:14,fontWeight:700,color:G.white}}>
-                {pickResultMessage(RESULT_MESSAGES[(lang==="fr"?"fr":"en")].winTaunts, duelResult.theirScore - duelResult.myScore + duelResult.theirScore)}
+                {pickResultMessage(msgResultat(lang).winTaunts, duelResult.theirScore - duelResult.myScore + duelResult.theirScore)}
               </div>
             </div>
           )}
           <div style={{fontSize:15,color:"rgba(255,255,255,.85)",textAlign:"center",padding:"10px 0",fontWeight:700,lineHeight:1.4}}>
             {(()=>{
-              const L = RESULT_MESSAGES[(lang==="fr"?"fr":"en")];
+              const L = msgResultat(lang);
               const oppName = duelResult.oppName || "";
               if (abandoned) {
                 const fn = pickResultMessage(L.abandonedCentral, duelResult.myScore);
@@ -15319,7 +15736,7 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
             <div style={{marginBottom:8,padding:"10px 16px",background:"rgba(8,17,9,.45)",borderRadius:G.rayon,border:G.traitFin}}>
               <div style={{...posterText(1,G.pelouse,0),fontSize:12,letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>💬 {tr("Message envoyé à","Message sent to","Nachricht gesendet an","Messaggio inviato a","Mensagem enviada para")} {duelResult.oppName}</div>
               <div style={{fontSize:13,color:"rgba(255,255,255,.5)",fontStyle:"italic"}}>
-                {pickResultMessage(RESULT_MESSAGES[(lang==="fr"?"fr":"en")].winTaunts, duelResult.myScore * 3 + duelResult.theirScore)}
+                {pickResultMessage(msgResultat(lang).winTaunts, duelResult.myScore * 3 + duelResult.theirScore)}
               </div>
             </div>
           )}
