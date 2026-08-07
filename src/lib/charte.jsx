@@ -53,6 +53,14 @@ export const posterText = function(size, color, stroke){
   // double le mot d'un fantôme noir décalé, et le contour épaissit les lettres
   // sans qu'on y gagne rien. Le relief d'un bouton vient déjà de SON PROPRE
   // encadrement — contour d'encre + ombre dure sur le cadre, pas sur le texte.
+  // Sauf demande explicite : un contour réclamé par l'appelant est appliqué
+  // quelle que soit la taille. C'est le cas d'un petit libellé posé sur une
+  // couleur qu'on ne choisit pas — le nom d'un club sur la moitié blanche de
+  // son maillot n'est lisible que cerclé d'encre. Pas d'ombre dure pour
+  // autant : sur un petit corps elle double le mot d'un fantôme.
+  if (stroke != null && stroke > 0) {
+    return { ...base, WebkitTextStroke:w+"px "+G.encre, paintOrder:"stroke fill" };
+  }
   if (size < 32) return base;
   const d = Math.round((size / 18 + w) * 10) / 10;
   return { ...base, WebkitTextStroke:w+"px "+G.encre, paintOrder:"stroke fill",

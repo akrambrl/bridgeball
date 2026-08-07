@@ -2617,6 +2617,17 @@ if(typeof document!=="undefined"&&!document.getElementById("bb-css")){
     @keyframes clubSlideRight{0%{opacity:0;transform:translateX(110%) scale(.88)}65%{transform:translateX(-4%) scale(1.02)}100%{opacity:1;transform:translateX(0) scale(1)}}
     @keyframes vsAppear{0%{opacity:0;transform:scale(0) rotate(-15deg)}65%{transform:scale(1.25) rotate(4deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
     @keyframes sheetUp{0%{transform:translateY(100%);opacity:0}100%{transform:translateY(0);opacity:1}}
+    /* ── Ouverture d'une carte, façon pack FUT ─────────────────────────────
+       Le dos monte, tourne sur lui-même, éclate en lumière, puis le nom claque.
+       Les étincelles reçoivent leur direction en variables CSS (--dx/--dy) :
+       une seule règle sert les quatorze éclats. */
+    @keyframes bbRayons{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+    @keyframes bbCarteMonte{0%{transform:translateY(80px) scale(.8);opacity:0}55%{transform:translateY(-12px) scale(1.05);opacity:1}100%{transform:translateY(0) scale(1);opacity:1}}
+    @keyframes bbCarteFlip{0%{transform:rotateY(0)}100%{transform:rotateY(180deg)}}
+    @keyframes bbCarteRespire{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-7px) scale(1.015)}}
+    @keyframes bbEclat{0%{transform:scale(.25);opacity:.9}100%{transform:scale(2.8);opacity:0}}
+    @keyframes bbEtincelle{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(.25);opacity:0}}
+    @keyframes bbClaque{0%{transform:scale(1.7) skewX(-7deg);opacity:0}60%{transform:scale(.95) skewX(-7deg);opacity:1}100%{transform:scale(1) skewX(-7deg);opacity:1}}
     @keyframes answerOk{0%{transform:scale(1)}30%{transform:scale(1.06)}60%{transform:scale(.97)}100%{transform:scale(1)}}
     @keyframes answerKo{0%,100%{transform:translateX(0)}15%{transform:translateX(-12px)}30%{transform:translateX(10px)}45%{transform:translateX(-8px)}60%{transform:translateX(6px)}75%{transform:translateX(-3px)}}
     @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
@@ -5212,6 +5223,21 @@ export default function LePont() {
   const [playerBadge, setPlayerBadge] = useState(function(){ try { return localStorage.getItem("bb_badge") || null; } catch (e) { return null; } });
   const [showCollection, setShowCollection] = useState(false);
   const [cardPopup, setCardPopup] = useState(null);   // carte tout juste débloquée
+  // Étape de l'ouverture de carte : 0 rayons, 1 le dos monte, 2 il tourne,
+  // 3 la carte est révélée. Un tap saute à 3 — comme dans FUT, on doit pouvoir
+  // couper l'animation quand on a déjà vu le geste cent fois.
+  const [cardRevealEtape, setCardRevealEtape] = useState(3);
+  useEffect(function(){
+    if (!cardPopup) return;
+    let reduit = false;
+    try { reduit = window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) {}
+    if (reduit) { setCardRevealEtape(3); return; }   // révélation directe, sans mise en scène
+    setCardRevealEtape(0);
+    const t1 = setTimeout(function(){ setCardRevealEtape(1); }, 550);
+    const t2 = setTimeout(function(){ setCardRevealEtape(2); }, 1500);
+    const t3 = setTimeout(function(){ setCardRevealEtape(3); hapticSuccess(); }, 2100);
+    return function(){ clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+  }, [cardPopup]);
   const [badgeByPid, setBadgeByPid] = useState({});   // pid → {badge, xp} pour le classement
   // Badge du joueur, lu à part du gros select (une colonne absente ferait
   // échouer toute la requête, cf. PSEUDO_COLS).
@@ -8414,7 +8440,7 @@ export default function LePont() {
   const sheet = {background:"rgba(0,0,0,.55)",backdropFilter:"blur(2px)",borderRadius:"32px 32px 0 0",flex:1,display:"flex",flexDirection:"column",gap:14,padding:"20px 18px 28px",zIndex:1,boxShadow:"0 -2px 40px rgba(0,0,0,.4)",border:"1px solid rgba(255,255,255,.08)",borderBottom:"none"};
 
   const backBtn = (onClick) => (
-    <button onClick={onClick} style={{background:"rgba(255,255,255,.07)",backdropFilter:"blur(12px)",border:"1px solid rgba(255,255,255,.1)",borderRadius:14,width:40,height:40,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",zIndex:10,color:G.white,fontSize:18,fontWeight:700,flexShrink:0}}>←</button>
+    <button onClick={onClick} style={{...retourStyle,width:40,height:40,zIndex:10}}>←</button>
   );
 
   const timerCircle = (size=76) => {
@@ -8422,9 +8448,10 @@ export default function LePont() {
     return (
       <div style={{position:"relative",width:size,height:size,animation:urgent?"heartbeat .8s ease infinite":"none"}}>
         <svg style={{width:size,height:size,transform:"rotate(-90deg)"}} viewBox={`0 0 ${size} ${size}`}>
-          <circle fill={urgent?"rgba(255,61,87,.12)":"rgba(255,255,255,.04)"} cx={size/2} cy={size/2} r={size/2}/>
-          <circle fill="none" stroke="rgba(255,255,255,.15)" strokeWidth={4} cx={size/2} cy={size/2} r={r}/>
-          <circle fill="none" stroke={timeLeft<=20?"#FF3D57":timeLeft<=40?"#FFD600":G.accent} strokeWidth={urgent?6:4}
+          <circle fill={urgent?"rgba(217,58,43,.3)":G.nuit} cx={size/2} cy={size/2} r={size/2}/>
+          <circle fill="none" stroke={G.encre} strokeWidth={3} cx={size/2} cy={size/2} r={size/2-1.5}/>
+          <circle fill="none" stroke="rgba(8,17,9,.55)" strokeWidth={4} cx={size/2} cy={size/2} r={r}/>
+          <circle fill="none" stroke={timeLeft<=20?G.maillot:timeLeft<=40?G.projecteur:G.pelouse} strokeWidth={urgent?6:4}
             strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={circ*(1-tPct)}
             cx={size/2} cy={size/2} r={r} style={{transition:"stroke-dashoffset .9s linear"}}/>
         </svg>
@@ -8434,15 +8461,15 @@ export default function LePont() {
   };
 
   const scoreDisplay = (sc, anim) => (
-    <span style={{fontFamily:G.heading,fontSize:34,color:G.white,display:"inline-block",animation:anim==="up"?"scoreUp .5s ease":anim==="down"?"scoreDn .5s ease":"none"}}>{sc}</span>
+    <span style={{...posterText(36,G.white),display:"inline-block",animation:anim==="up"?"scoreUp .5s ease":anim==="down"?"scoreDn .5s ease":"none"}}>{sc}</span>
   );
 
   const comboDisplay = combo>=3?(
-    <div key={combo} style={{position:"absolute",top:-8,left:"50%",transform:"translateX(-50%)",background:"linear-gradient(135deg,#f59e0b,#ef4444)",color:G.white,borderRadius:20,padding:"4px 14px",fontSize:12,fontWeight:800,letterSpacing:1,animation:"comboFire .5s ease",zIndex:20,whiteSpace:"nowrap",boxShadow:"0 4px 15px rgba(245,158,11,.4)"}}>{getComboLabel(combo)}</div>
+    <div key={combo} style={{position:"absolute",top:-8,left:"50%",transform:"translateX(-50%)",background:G.maillot,color:G.white,border:G.traitFin,boxShadow:"2px 2px 0 "+G.encre,borderRadius:G.rayonS,padding:"4px 14px",fontSize:12,fontWeight:900,letterSpacing:1,animation:"comboFire .5s ease",zIndex:20,whiteSpace:"nowrap"}}>{getComboLabel(combo)}</div>
   ):null;
 
   const floatingPoints = comboFloat&&(
-    <div style={{position:"fixed",top:"30%",left:"50%",transform:"translateX(-50%)",fontFamily:G.heading,fontSize:28,color:G.gold,letterSpacing:2,animation:"floatUp 1.2s ease forwards",zIndex:100,textShadow:"0 2px 10px rgba(0,0,0,.3)",pointerEvents:"none"}}>{comboFloat}</div>
+    <div style={{...posterText(32,G.projecteur),position:"fixed",top:"30%",left:"50%",transform:"translateX(-50%) skewX(-7deg)",animation:"floatUp 1.2s ease forwards",zIndex:100,pointerEvents:"none"}}>{comboFloat}</div>
   );
 
   const CONFETTI_COLORS=["#fbbf24","#ef4444","#4ade80","#3b82f6","#a855f7","#f97316"];
@@ -8458,26 +8485,110 @@ export default function LePont() {
   // ── MODAL GRADE UP : célébration quand l'user passe un palier ──
   // ── Popup « nouvelle carte » ── déclenché après une partie qui franchit un
   // palier (voir newlyUnlocked). Un seul bouton : aller la mettre en badge.
+  // Ouverture façon pack FUT : le voile laisse voir l'accueil derrière (c'est là
+  // qu'on vient de gagner la carte), les rayons tournent, le dos monte, tourne
+  // sur lui-même et éclate. Le nom claque ensuite au lettrage d'affiche.
+  // Un tap n'importe où saute à la révélation ; une fois révélée, il ferme.
   const cardUnlockModal = cardPopup ? (() => {
     const rm = rarityMeta(cardPopup.rarity);
+    const revele = cardRevealEtape >= 3;
+    const tourne = cardRevealEtape >= 2;
+    const monte  = cardRevealEtape >= 1;
+    // Quatorze éclats en éventail, direction portée par des variables CSS.
+    const etincelles = Array.from({length:14}, function(_, i){
+      const a = (i / 14) * Math.PI * 2;
+      const d = 120 + (i % 3) * 42;
+      return { dx: Math.round(Math.cos(a) * d), dy: Math.round(Math.sin(a) * d),
+               c: [rm.color, G.projecteur, G.white, G.pelouse][i % 4], s: 5 + (i % 3) * 3 };
+    });
     return (
-      <div key="cardUnlock" onClick={function(){setCardPopup(null);}} style={{position:"fixed",inset:0,zIndex:9997,background:"rgba(0,0,0,.88)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center",padding:20,animation:"fadeIn .25s ease"}}>
-        <div onClick={function(e){e.stopPropagation();}} style={{width:"100%",maxWidth:330,background:"rgba(10,15,10,.98)",border:"2.5px solid "+rm.color,borderRadius:26,padding:"26px 22px 22px",textAlign:"center",boxShadow:"0 0 60px "+rm.glow,animation:"splashBounceIn .5s ease"}}>
-          <div style={{fontSize:11,letterSpacing:3,fontWeight:800,color:"rgba(255,255,255,.5)",marginBottom:14}}>
-            {tr("🃏 NOUVELLE CARTE 🃏","🃏 NEW CARD 🃏","🃏 NEUE KARTE 🃏","🃏 NUOVA CARTA 🃏","🃏 NOVA CARTA 🃏")}
+      <div key="cardUnlock"
+        onClick={function(){ if (revele) setCardPopup(null); else setCardRevealEtape(3); }}
+        style={{position:"fixed",inset:0,zIndex:9997,background:"rgba(8,17,9,.72)",backdropFilter:"blur(6px)",
+          display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:20,
+          overflow:"hidden",animation:"fadeIn .3s ease"}}>
+
+        {/* Rayons de projecteur, dans la couleur de la rareté */}
+        <div aria-hidden="true" style={{position:"absolute",width:"180vmax",height:"180vmax",pointerEvents:"none",
+          opacity:revele?.5:.75,transition:"opacity .5s",
+          background:"repeating-conic-gradient(from 0deg, "+rm.color+"22 0deg 7deg, transparent 7deg 20deg)",
+          animation:"bbRayons 22s linear infinite"}}/>
+        {/* Halo qui éclate au moment du retournement */}
+        {tourne && (
+          <div aria-hidden="true" style={{position:"absolute",width:320,height:320,borderRadius:"50%",pointerEvents:"none",
+            background:"radial-gradient(circle,"+rm.color+"cc 0%,transparent 65%)",animation:"bbEclat .8s ease-out forwards"}}/>
+        )}
+        {/* Étincelles */}
+        {tourne && etincelles.map(function(e, i){
+          // zIndex 2 : au-dessus de la carte, sinon les éclats partent derrière
+          // elle et on n'en voit que ceux qui dépassent du cadre.
+          return <div key={i} aria-hidden="true" style={{position:"absolute",zIndex:2,width:e.s,height:e.s,background:e.c,
+            border:"1.5px solid "+G.encre,borderRadius:2,pointerEvents:"none",
+            "--dx":e.dx+"px","--dy":e.dy+"px",
+            animation:"bbEtincelle .9s cubic-bezier(.2,.7,.3,1) forwards",animationDelay:(i%4)*40+"ms"}}/>;
+        })}
+
+        <div style={{...posterText(24,G.projecteur),marginBottom:16,zIndex:1,textAlign:"center"}}>
+          <span style={{WebkitTextStroke:0,textShadow:"none"}}>🃏</span> {tr("NOUVELLE CARTE","NEW CARD","NEUE KARTE","NUOVA CARTA","NOVA CARTA")}
+        </div>
+
+        {/* La carte : deux faces sur le même plan, retournées ensemble */}
+        <div onClick={function(e){e.stopPropagation(); if (revele) setCardPopup(null); else setCardRevealEtape(3);}}
+          style={{width:"min(74vw, 260px)",aspectRatio:"3 / 4",perspective:1000,zIndex:1,cursor:"pointer",
+            animation:monte?(revele?"bbCarteRespire 3.4s ease-in-out infinite":"bbCarteMonte .7s cubic-bezier(.2,.8,.3,1) both"):"none",
+            opacity:monte?1:0}}>
+          <div style={{position:"relative",width:"100%",height:"100%",transformStyle:"preserve-3d",
+            transform:tourne?"rotateY(180deg)":"rotateY(0deg)",transition:"transform .6s cubic-bezier(.4,.1,.3,1)"}}>
+            {/* Dos : l'aplat de nuit et le trait d'encre, avec le grain de trame */}
+            <div style={{position:"absolute",inset:0,backfaceVisibility:"hidden",WebkitBackfaceVisibility:"hidden",
+              background:G.nuit,border:G.trait,borderRadius:G.rayon,boxShadow:G.ombreL,
+              display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden"}}>
+              <div aria-hidden="true" style={{position:"absolute",inset:0,opacity:.18,
+                backgroundImage:"radial-gradient(circle,#000 1px,transparent 1.3px)",backgroundSize:"5px 5px"}}/>
+              <img src="/logo.png" alt="" style={{width:"66%",objectFit:"contain",opacity:.9,zIndex:1}}/>
+            </div>
+            {/* Face : la carte dans son cadre de rareté, comme dans la collection */}
+            <div className={rm.cls} style={{position:"absolute",inset:0,backfaceVisibility:"hidden",WebkitBackfaceVisibility:"hidden",
+              transform:"rotateY(180deg)",background:rm.frame,border:G.traitFin,borderRadius:G.rayon,
+              boxShadow:G.ombreL+", 0 0 42px "+rm.glow,padding:4,boxSizing:"border-box"}}>
+              <div style={{width:"100%",height:"100%",borderRadius:14,overflow:"hidden",background:"#000"}}>
+                <img src={cardPopup.img} alt="" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
+              </div>
+            </div>
           </div>
-          <img src={cardPopup.img} alt="" style={{width:"100%",aspectRatio:"3 / 4",objectFit:"cover",borderRadius:16,border:"1.5px solid "+rm.color+"88",display:"block"}}/>
-          <div style={{fontFamily:G.heading,fontSize:26,color:G.white,letterSpacing:1,marginTop:14}}>{lang==="fr"?cardPopup.name:cardPopup.nameEn}</div>
-          <div style={{fontSize:12,fontWeight:800,letterSpacing:1.5,color:rm.color,textTransform:"uppercase",marginTop:3}}>{lang==="fr"?rm.label:rm.labelEn}</div>
-          <div style={{display:"flex",gap:10,marginTop:20}}>
-            <button onClick={function(){setCardPopup(null);}} style={{flex:1,padding:"13px 0",borderRadius:13,border:"1px solid rgba(255,255,255,.14)",background:"rgba(255,255,255,.05)",color:"rgba(255,255,255,.7)",fontFamily:G.font,fontWeight:800,fontSize:13.5,cursor:"pointer"}}>
+        </div>
+
+        {/* Nom et rareté : ils claquent une fois la carte retournée */}
+        {revele && (
+          <div style={{zIndex:1,textAlign:"center",marginTop:18,animation:"bbClaque .45s cubic-bezier(.2,.8,.3,1) both"}}>
+            <div style={{...posterText(34,G.white)}}>{lang==="fr"?cardPopup.name:cardPopup.nameEn}</div>
+            <div style={{display:"inline-flex",alignItems:"center",gap:6,marginTop:8,padding:"4px 14px",
+              borderRadius:G.rayonS,background:rm.color,border:G.traitFin,boxShadow:"2px 2px 0 "+G.encre,
+              color:G.encre,fontSize:11.5,fontWeight:900,letterSpacing:2,textTransform:"uppercase"}}>
+              {lang==="fr"?rm.label:rm.labelEn}
+            </div>
+          </div>
+        )}
+
+        {revele && (
+          <div onClick={function(e){e.stopPropagation();}} style={{zIndex:1,display:"flex",gap:10,marginTop:22,width:"100%",maxWidth:330,
+            animation:"fadeUp .4s ease .15s both"}}>
+            <button onClick={function(){setCardPopup(null);}} style={{...btn(G.nuit,G.white,15),flex:1,padding:"13px 0"}}>
               {tr("Plus tard","Later","Später","Più tardi","Depois")}
             </button>
-            <button onClick={function(){ chooseBadge(cardPopup.id); setCardPopup(null); setShowCollection(true); }} style={{flex:1.4,padding:"13px 0",borderRadius:13,border:"none",background:rm.color,color:"#0a0f0a",fontFamily:G.font,fontWeight:900,fontSize:13.5,cursor:"pointer"}}>
+            <button onClick={function(){ chooseBadge(cardPopup.id); setCardPopup(null); setShowCollection(true); }} style={{...btn(rm.color,G.encre,15),flex:1.4,padding:"13px 0"}}>
               {tr("Mettre en badge","Use as badge","Als Abzeichen","Usa come badge","Usar como selo")}
             </button>
           </div>
-        </div>
+        )}
+
+        {/* Invitation à couper la mise en scène, comme le « tap » de FUT */}
+        {!revele && (
+          <div style={{position:"absolute",bottom:"calc(24px + env(safe-area-inset-bottom))",zIndex:1,
+            fontSize:11.5,fontWeight:800,letterSpacing:2,color:"rgba(255,255,255,.55)",textTransform:"uppercase"}}>
+            {tr("Touche pour révéler","Tap to reveal","Tippen zum Aufdecken","Tocca per rivelare","Toque para revelar")}
+          </div>
+        )}
       </div>
     );
   })() : null;
@@ -9077,14 +9188,16 @@ export default function LePont() {
     const ansLeft = duelSpin
       ? DUEL_ANSWER_SECS
       : Math.min(DUEL_ANSWER_SECS, Math.max(0, Math.ceil(DUEL_ANSWER_SECS - (now - (duelAnswerShownAtRef.current || now))/1000)));
-    const shell2 = { position:"fixed", top:0, left:0, right:0, bottom:0, zIndex:11000, background:"linear-gradient(180deg,#0a1410 0%,#0E1F14 100%)", display:"flex", flexDirection:"column", fontFamily:G.font, color:G.white };
+    // Le dégradé vers le noir laissait les cartes de club sans trait ni ombre :
+    // la pelouse éclairée de la charte les fait exister.
+    const shell2 = { position:"fixed", top:0, left:0, right:0, bottom:0, zIndex:11000, background:fondCharte, display:"flex", flexDirection:"column", fontFamily:G.font, color:G.white };
     const bigBtn = (label, onClick, bg, disabled) => (
       <button onClick={onClick} disabled={disabled} style={{width:"100%",padding:"16px",borderRadius:16,border:"none",background:disabled?"rgba(255,255,255,.08)":bg,color:disabled?"rgba(255,255,255,.35)":"#000",fontFamily:G.heading,fontSize:20,letterSpacing:1.5,cursor:disabled?"not-allowed":"pointer",boxShadow:disabled?"none":"0 8px 24px -8px rgba(0,230,118,.5)"}}>{label}</button>
     );
     const header = (
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"max(14px,env(safe-area-inset-top)) 16px 10px",borderBottom:"1px solid rgba(255,255,255,.08)"}}>
-        <button onClick={duelLeaveRoom} style={{background:"rgba(255,255,255,.1)",border:"1px solid rgba(255,255,255,.15)",borderRadius:"50%",width:38,height:38,color:G.white,cursor:"pointer",fontSize:16}}>✕</button>
-        <div style={{fontFamily:G.heading,fontSize:22,letterSpacing:2,color:"#FFD600"}}>⚡ GOAT DUEL</div>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"max(14px,env(safe-area-inset-top)) 16px 10px",background:G.encre,borderBottom:G.traitFin}}>
+        <button onClick={duelLeaveRoom} style={{...retourStyle,width:38,height:38,fontSize:18}}>✕</button>
+        <div style={{...posterText(24,G.projecteur)}}><span style={{WebkitTextStroke:0,textShadow:"none"}}>⚡</span> GOAT DUEL</div>
         <div style={{width:38}}/>
       </div>
     );
@@ -9099,41 +9212,41 @@ export default function LePont() {
       <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:14,padding:"10px 16px"}}>
         <div style={{textAlign:"center",flex:1,minWidth:0}}>
           <div style={{fontSize:11,color:"rgba(255,255,255,.55)",fontWeight:700,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{myName||tr("Toi","You","Du","Tu","Você")}</div>
-          <div style={{fontFamily:G.heading,fontSize:34,color:"#00E676",lineHeight:1}}>{myScore}</div>
+          <div style={{...posterText(38,G.pelouse)}}>{myScore}</div>
         </div>
         <div style={{textAlign:"center",flexShrink:0}}>
-          <div style={{fontSize:10,color:"rgba(255,255,255,.4)",fontWeight:800,letterSpacing:1}}>{tr("TEMPS","TIME","ZEIT","TEMPO","TEMPO")}</div>
-          <div style={{fontFamily:G.heading,fontSize:24,color:(soloLeft!=null&&soloLeft<=10)?"#FF3D57":G.white}}>{soloLeft!=null?soloLeft+"s":"—"}</div>
+          <div style={{fontSize:10,color:"rgba(255,255,255,.55)",fontWeight:800,letterSpacing:1}}>{tr("TEMPS","TIME","ZEIT","TEMPO","TEMPO")}</div>
+          <div style={{...posterText(26,(soloLeft!=null&&soloLeft<=10)?G.maillot:G.white)}}>{soloLeft!=null?soloLeft+"s":"—"}</div>
         </div>
         <div style={{textAlign:"center",flex:1,minWidth:0}}>
           <div style={{fontSize:11,color:"rgba(255,255,255,.55)",fontWeight:700,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{oppName||"—"}</div>
-          <div style={{fontFamily:G.heading,fontSize:34,color:"#FF6B35",lineHeight:1}}>{oppScore}</div>
+          <div style={{...posterText(38,G.ciel)}}>{oppScore}</div>
         </div>
       </div>
     ) : isSolo ? (
       <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:24,padding:"10px 16px"}}>
         <div style={{textAlign:"center"}}>
           <div style={{fontSize:10,color:"rgba(255,255,255,.5)",fontWeight:800,letterSpacing:1}}>{tr("SCORE","SCORE","SCORE","PUNTEGGIO","PONTUAÇÃO")}</div>
-          <div style={{fontFamily:G.heading,fontSize:38,color:"#FFD600",lineHeight:1}}>{myScore}</div>
+          <div style={{...posterText(40,G.projecteur)}}>{myScore}</div>
         </div>
         <div style={{textAlign:"center"}}>
-          <div style={{fontSize:10,color:"rgba(255,255,255,.4)",fontWeight:800,letterSpacing:1}}>{tr("TEMPS","TIME","ZEIT","TEMPO","TEMPO")}</div>
-          <div style={{fontFamily:G.heading,fontSize:24,color:(soloLeft!=null&&soloLeft<=10)?"#FF3D57":G.white}}>{soloLeft!=null?soloLeft+"s":"—"}</div>
+          <div style={{fontSize:10,color:"rgba(255,255,255,.55)",fontWeight:800,letterSpacing:1}}>{tr("TEMPS","TIME","ZEIT","TEMPO","TEMPO")}</div>
+          <div style={{...posterText(26,(soloLeft!=null&&soloLeft<=10)?G.maillot:G.white)}}>{soloLeft!=null?soloLeft+"s":"—"}</div>
         </div>
       </div>
     ) : (
       <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:14,padding:"10px 16px"}}>
         <div style={{textAlign:"center",flex:1}}>
           <div style={{fontSize:11,color:"rgba(255,255,255,.55)",fontWeight:700,letterSpacing:.5,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{myName||tr("Toi","You","Du","Tu","Você")}</div>
-          <div style={{fontFamily:G.heading,fontSize:34,color:"#00E676",lineHeight:1}}>{myScore}</div>
+          <div style={{...posterText(38,G.pelouse)}}>{myScore}</div>
         </div>
         <div style={{textAlign:"center"}}>
-          <div style={{fontSize:10,color:"rgba(255,255,255,.4)",fontWeight:800,letterSpacing:1}}>{tr("MANCHE","ROUND","RUNDE","TURNO","RODADA")}</div>
-          <div style={{fontFamily:G.heading,fontSize:20,color:G.white}}>{room.round||1}/{DUEL_ROUNDS}</div>
+          <div style={{fontSize:10,color:"rgba(255,255,255,.55)",fontWeight:800,letterSpacing:1}}>{tr("MANCHE","ROUND","RUNDE","TURNO","RODADA")}</div>
+          <div style={{...posterText(22,G.white)}}>{room.round||1}/{DUEL_ROUNDS}</div>
         </div>
         <div style={{textAlign:"center",flex:1}}>
           <div style={{fontSize:11,color:"rgba(255,255,255,.55)",fontWeight:700,letterSpacing:.5,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{oppName||tr("Adversaire","Opponent","Gegner","Avversario","Adversário")}</div>
-          <div style={{fontFamily:G.heading,fontSize:34,color:"#FF6B35",lineHeight:1}}>{oppScore}</div>
+          <div style={{...posterText(38,G.ciel)}}>{oppScore}</div>
         </div>
       </div>
     ));
@@ -9238,7 +9351,7 @@ export default function LePont() {
         phaseBody = (
           <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:14,padding:"20px"}}>
             <div style={{fontSize:14,color:"rgba(255,255,255,.5)",letterSpacing:3,textTransform:"uppercase"}}>{tr("Préparez-vous…","Get ready…","Macht euch bereit…","Preparatevi…","Preparem-se…")}</div>
-            <div key={cd} style={{fontFamily:G.heading,fontSize:130,color:G.accent,lineHeight:1,animation:"popIn .3s ease"}}>{cd}</div>
+            <div key={cd} style={{...posterText(130,G.pelouse),animation:"popIn .3s ease"}}>{cd}</div>
           </div>
         );
       } else if(room.phase==="answer"){
@@ -9250,11 +9363,11 @@ export default function LePont() {
         const clubCard = (club, spinning) => {
           const cc = getClubColors(club || "");
           return (
-            <div style={{width:"100%",position:"relative",overflow:"hidden",height:compact?48:74,borderRadius:compact?12:16,boxShadow:"0 8px 24px "+cc[0]+"66",display:"flex",alignItems:"center",justifyContent:"center",border:"2px solid rgba(255,255,255,.14)"}}>
+            <div style={{width:"100%",position:"relative",overflow:"hidden",height:compact?48:74,borderRadius:compact?G.rayonS:G.rayon,boxShadow:G.ombre,display:"flex",alignItems:"center",justifyContent:"center",border:G.trait}}>
               <div style={{position:"absolute",inset:0,background:cc[0]}}/>
               <div style={{position:"absolute",top:0,right:0,width:"55%",bottom:0,background:cc[1],clipPath:"polygon(30% 0%, 100% 0%, 100% 100%, 0% 100%)"}}/>
               <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.18)"}}/>
-              <span key={(spinning?"s":"f")+club} style={{position:"relative",zIndex:1,fontFamily:G.heading,fontSize:compact?17:23,color:"#fff",fontWeight:800,textShadow:"0 2px 7px rgba(0,0,0,.65)",letterSpacing:.5,padding:"0 10px",textAlign:"center",lineHeight:1.05,filter:spinning?"blur(0.7px)":"none",animation:spinning?"duelReelBlur .1s linear infinite alternate":"duelSettle .5s cubic-bezier(.22,1,.36,1)"}}>{club}</span>
+              <span key={(spinning?"s":"f")+club} style={{...posterText(compact?19:26,G.white,1.6),position:"relative",zIndex:1,padding:"0 10px",textAlign:"center",filter:spinning?"blur(0.7px)":"none",animation:spinning?"duelReelBlur .1s linear infinite alternate":"duelSettle .5s cubic-bezier(.22,1,.36,1)"}}>{club}</span>
             </div>
           );
         };
@@ -9262,14 +9375,14 @@ export default function LePont() {
           <div style={{position:"relative",flex:1,display:"flex",flexDirection:"column",minHeight:0,padding:"6px 20px 16px",alignItems:"center"}}>
             {/* SOLO : points en flash flottant entre 2 manches (pas d'écran pause) */}
             {isSolo && duelFlash && (
-              <div key={duelFlash.id} style={{position:"absolute",top:"38%",left:"50%",zIndex:20,pointerEvents:"none",fontFamily:G.heading,fontSize:duelFlash.pts>=20?46:36,letterSpacing:1,color:duelFlash.pts>=20?"#FFD600":duelFlash.pts>0?"#00E676":"#FF6B35",textShadow:"0 4px 20px rgba(0,0,0,.7)",animation:"duelFloat 1.3s ease-out forwards"}}>
+              <div key={duelFlash.id} style={{...posterText(duelFlash.pts>=20?48:38,duelFlash.pts>=20?G.projecteur:duelFlash.pts>0?G.pelouse:G.maillot),position:"absolute",top:"38%",left:"50%",zIndex:20,pointerEvents:"none",animation:"duelFloat 1.3s ease-out forwards"}}>
                 {duelFlash.pts>=20?"⚡ +20":duelFlash.pts>0?"+10":duelFlash.skipped?tr("PASSÉ","SKIP","ÜBERSPR.","SALTA","PULOU"):tr("RATÉ","MISS","VERPASST","MANCATO","ERROU")}{duelFlash.pts>0?" PTS":""}
               </div>
             )}
             {(function(){
               const big = isSolo ? (soloLeft!=null?soloLeft:0) : ansLeft;
               const danger = isSolo ? (soloLeft!=null&&soloLeft<=10) : ansLeft<=3;
-              return <div style={{fontFamily:G.heading,fontSize:compact?28:44,color:danger?"#FF3D57":"#FFD600",lineHeight:1,marginBottom:compact?6:10}}>{big}{isSolo?<span style={{fontSize:compact?13:18,color:"rgba(255,255,255,.4)"}}>s</span>:null}</div>;
+              return <div style={{...posterText(compact?32:50,danger?G.maillot:G.projecteur),marginBottom:compact?6:10}}>{big}{isSolo?<span style={{fontSize:compact?14:20,color:"rgba(255,255,255,.55)"}}>s</span>:null}</div>;
             })()}
             {/* Machine à sous : 2 clubs — empilés en grand, ou côte à côte (compact) si clavier ouvert */}
             <div style={{position:"relative",width:"100%",maxWidth:compact?360:300,marginBottom:compact?8:12}}>
@@ -9277,39 +9390,39 @@ export default function LePont() {
                 {clubCard(duelSpin?duelReel1:room.club_c1, duelSpin)}
                 {clubCard(duelSpin?duelReel2:room.club_c2, duelSpin)}
               </div>
-              <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",zIndex:5,width:compact?30:40,height:compact?30:40,borderRadius:"50%",background:"linear-gradient(135deg,#FFD600,#FF8A2A)",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:G.heading,fontSize:compact?15:20,fontWeight:900,color:"#000",boxShadow:"0 4px 12px rgba(0,0,0,.5)",border:"3px solid #0E1F14"}}>×</div>
+              <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",zIndex:5,width:compact?30:40,height:compact?30:40,borderRadius:"50%",background:G.projecteur,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:G.poster,fontSize:compact?17:22,fontWeight:900,color:G.encre,boxShadow:"2px 2px 0 "+G.encre,border:G.trait}}>×</div>
             </div>
             {duelSpin ? (
-              <div style={{textAlign:"center",padding:"10px",fontSize:14,fontWeight:800,color:"#FFD600",letterSpacing:1}}>🎰 {tr("Tirage des clubs…","Drawing clubs…","Klubs werden gezogen…","Sorteggio dei club…","Sorteando os clubes…")}</div>
+              <div style={{...posterText(20,G.projecteur),textAlign:"center",padding:"10px"}}>🎰 {tr("Tirage des clubs…","Drawing clubs…","Klubs werden gezogen…","Sorteggio dei club…","Sorteando os clubes…")}</div>
             ) : (<>
             {!compact && <div style={{fontSize:12,color:"rgba(255,255,255,.5)",marginBottom:12,textAlign:"center"}}>{tr("Un joueur ayant joué dans les DEUX clubs","A player who played for BOTH clubs","Ein Spieler, der für BEIDE Klubs gespielt hat","Un giocatore che ha giocato in ENTRAMBI i club","Um jogador que jogou nos DOIS clubes")}</div>}
             {answered ? (
               <div style={{textAlign:"center",padding:"18px"}}>
-                <div style={{fontSize:22,fontWeight:900,color:"#00E676"}}>✅ {tr("Trouvé !","Found!","Gefunden!","Trovato!","Encontrado!")}</div>
+                <div style={{...posterText(28,G.pelouse)}}>✅ {tr("Trouvé !","Found!","Gefunden!","Trovato!","Encontrado!")}</div>
                 <div style={{fontSize:13,color:"rgba(255,255,255,.6)",marginTop:6}}>{tr("En attente de la fin de la manche…","Waiting for the round to end…","Warte auf das Rundenende…","In attesa della fine del turno…","Aguardando o fim da rodada…")}</div>
               </div>
             ) : (
               <div style={{width:"100%",maxWidth:420}}>
                 <div style={{display:"flex",gap:8}}>
                   <input autoFocus value={duelInput} onChange={function(e){setDuelInput(e.target.value);if(duelWrong)setDuelWrong(false);}} onKeyDown={function(e){if(e.key==="Enter"){ if(duelSug.length>0){duelSubmitAnswer(duelSug[0].name);} else {duelSubmitAnswer();} }}} placeholder={tr("Nom du joueur…","Player name…","Spielername…","Nome del giocatore…","Nome do jogador…")}
-                    style={{flex:1,minWidth:0,padding:"14px",borderRadius:14,border:"1.5px solid "+(duelWrong?"#FF3D57":"rgba(255,255,255,.15)"),background:duelWrong?"rgba(255,61,87,.14)":"rgba(255,255,255,.06)",color:G.white,fontFamily:G.font,fontSize:16,fontWeight:700,outline:"none",textAlign:"center",animation:duelWrong?"answerKo .4s ease":"none"}}/>
-                  <button onClick={function(){ if(duelSug.length>0){duelSubmitAnswer(duelSug[0].name);} else {duelSubmitAnswer();} }} disabled={duelInput.trim().length<3} style={{padding:"0 20px",borderRadius:14,border:"none",background:duelInput.trim().length>=3?"#00E676":"rgba(255,255,255,.08)",color:duelInput.trim().length>=3?"#000":"rgba(255,255,255,.3)",fontFamily:G.heading,fontSize:16,cursor:duelInput.trim().length>=3?"pointer":"not-allowed"}}>OK</button>
+                    style={{flex:1,minWidth:0,padding:"14px",borderRadius:G.rayon,border:duelWrong?"3px solid "+G.maillot:G.trait,boxShadow:G.ombre,background:duelWrong?"rgba(217,58,43,.3)":G.nuit,color:G.white,fontFamily:G.font,fontSize:16,fontWeight:700,outline:"none",textAlign:"center",boxSizing:"border-box",animation:duelWrong?"answerKo .4s ease":"none"}}/>
+                  <button onClick={function(){ if(duelSug.length>0){duelSubmitAnswer(duelSug[0].name);} else {duelSubmitAnswer();} }} disabled={duelInput.trim().length<3} style={{...btn(duelInput.trim().length>=3?G.pelouse:G.nuit,duelInput.trim().length>=3?G.encre:"rgba(255,255,255,.45)",17),padding:"0 20px",cursor:duelInput.trim().length>=3?"pointer":"not-allowed"}}>OK</button>
                 </div>
                 {duelSug.length > 0 && (
-                  <div style={{marginTop:8,background:"rgba(0,0,0,.35)",border:"1px solid rgba(255,255,255,.1)",borderRadius:12,overflow:"hidden"}}>
+                  <div style={{marginTop:10,background:G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,overflow:"hidden"}}>
                     {duelSug.map(function(p){return(
-                      <div key={p.name} onClick={function(){duelSubmitAnswer(p.name);}} style={{padding:"11px 14px",cursor:"pointer",borderBottom:"1px solid rgba(255,255,255,.05)",fontSize:14,fontWeight:700,color:G.white}}>{p.name}</div>
+                      <div key={p.name} onClick={function(){duelSubmitAnswer(p.name);}} style={{padding:"11px 14px",cursor:"pointer",borderBottom:"2px solid rgba(8,17,9,.55)",fontSize:14,fontWeight:700,color:G.white}}>{p.name}</div>
                     );})}
                   </div>
                 )}
-                {duelWrong && <div style={{textAlign:"center",fontSize:13,color:"#FF3D57",marginTop:10,fontWeight:800}}>❌ {tr("Mauvaise réponse, réessaie !","Wrong answer, try again!","Falsche Antwort, versuch's nochmal!","Risposta sbagliata, riprova!","Resposta errada, tente de novo!")}</div>}
+                {duelWrong && <div style={{textAlign:"center",fontSize:13,color:G.maillot,marginTop:10,fontWeight:800}}>❌ {tr("Mauvaise réponse, réessaie !","Wrong answer, try again!","Falsche Antwort, versuch's nochmal!","Risposta sbagliata, riprova!","Resposta errada, tente de novo!")}</div>}
                 {isSolo ? (
-                  <div style={{textAlign:"center",fontSize:12,color:ansLeft<=5&&ansLeft>0?"#FFD600":"rgba(255,255,255,.4)",marginTop:duelWrong?4:10,fontWeight:700}}>{ansLeft>5?tr("Réponds en moins de 5 s = 20 pts ⚡","Answer under 5s = 20 pts ⚡","Unter 5 Sek. antworten = 20 Pkt ⚡","Rispondi in meno di 5 s = 20 pti ⚡","Responda em menos de 5 s = 20 pts ⚡"):tr("⚡ Vite ! 20 pts","⚡ Quick! 20 pts","⚡ Schnell! 20 Pkt","⚡ Veloce! 20 pti","⚡ Rápido! 20 pts")}</div>
+                  <div style={{textAlign:"center",fontSize:12,color:ansLeft<=5&&ansLeft>0?G.projecteur:"rgba(255,255,255,.55)",marginTop:duelWrong?4:10,fontWeight:700}}>{ansLeft>5?tr("Réponds en moins de 5 s = 20 pts ⚡","Answer under 5s = 20 pts ⚡","Unter 5 Sek. antworten = 20 Pkt ⚡","Rispondi in meno di 5 s = 20 pti ⚡","Responda em menos de 5 s = 20 pts ⚡"):tr("⚡ Vite ! 20 pts","⚡ Quick! 20 pts","⚡ Schnell! 20 Pkt","⚡ Veloce! 20 pti","⚡ Rápido! 20 pts")}</div>
                 ) : (
-                  <div style={{textAlign:"center",fontSize:12,color:oppAnsMs!=null?"#FF6B35":"rgba(255,255,255,.4)",marginTop:duelWrong?4:10,fontWeight:700}}>{oppAnsMs!=null?tr("⚡ L'adversaire a trouvé !","⚡ Opponent found it!","⚡ Gegner hat's gefunden!","⚡ L'avversario ha trovato!","⚡ O adversário encontrou!"):tr("L'adversaire cherche…","Opponent is searching…","Gegner sucht…","L'avversario sta cercando…","O adversário está procurando…")}</div>
+                  <div style={{textAlign:"center",fontSize:12,color:oppAnsMs!=null?G.ciel:"rgba(255,255,255,.55)",marginTop:duelWrong?4:10,fontWeight:700}}>{oppAnsMs!=null?tr("⚡ L'adversaire a trouvé !","⚡ Opponent found it!","⚡ Gegner hat's gefunden!","⚡ L'avversario ha trovato!","⚡ O adversário encontrou!"):tr("L'adversaire cherche…","Opponent is searching…","Gegner sucht…","L'avversario sta cercando…","O adversário está procurando…")}</div>
                 )}
                 {isSolo && (
-                  <button onClick={duelSkip} style={{width:"100%",marginTop:12,padding:"12px",borderRadius:14,border:"1px solid rgba(255,255,255,.15)",background:"rgba(255,255,255,.05)",color:"rgba(255,255,255,.6)",fontFamily:G.font,fontSize:13,fontWeight:700,cursor:"pointer"}}>⏭ {tr("Passer (je ne sais pas)","Skip (I don't know)","Überspringen (weiß nicht)","Salta (non lo so)","Pular (não sei)")}</button>
+                  <button onClick={duelSkip} style={{...btn(G.nuit,G.white,15),width:"100%",marginTop:12,padding:"12px"}}>⏭ {tr("Passer (je ne sais pas)","Skip (I don't know)","Überspringen (weiß nicht)","Salta (non lo so)","Pular (não sei)")}</button>
                 )}
               </div>
             )}
@@ -9327,7 +9440,7 @@ export default function LePont() {
         const pts = room.round_pts; // solo
         phaseBody = isSolo ? (
           <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",alignItems:"center",padding:"20px",gap:10}}>
-            <div style={{fontFamily:G.heading,fontSize:pts>0?46:30,letterSpacing:1,color:pts>=20?"#FFD600":pts>0?"#00E676":"#FF6B35",textAlign:"center"}}>
+            <div style={{...posterText(pts>0?48:34,pts>=20?G.projecteur:pts>0?G.pelouse:G.maillot),textAlign:"center"}}>
               {pts>=20 ? (tr("⚡ +20 PTS","⚡ +20 PTS","⚡ +20 PTS","⚡ +20 PTS","⚡ +20 PTS")) : pts>0 ? "+10 PTS" : room.round_skipped ? (tr("PASSÉ","SKIPPED","ÜBERSPRUNGEN","SALTATO","PULADO")) : (tr("RATÉ","MISSED","VERPASST","MANCATO","ERROU"))}
             </div>
             <div style={{fontSize:14,color:"rgba(255,255,255,.7)",textAlign:"center"}}>{room.club_c1} <span style={{color:"#FFD600"}}>×</span> {room.club_c2}</div>
@@ -9335,12 +9448,12 @@ export default function LePont() {
               ? <div style={{fontSize:14,color:"#00E676",textAlign:"center",fontWeight:700}}>✅ <strong style={{color:"#fff"}}>{myAns}</strong></div>
               : (example && <div style={{fontSize:13,color:"rgba(255,255,255,.6)",textAlign:"center"}}>{tr("Une réponse valable : ","A valid answer: ","Eine gültige Antwort: ","Una risposta valida: ","Uma resposta válida: ")}<strong style={{color:G.white}}>{example}</strong></div>)}
             <div style={{fontSize:11,color:"rgba(255,255,255,.5)",fontWeight:800,letterSpacing:1,marginTop:2}}>{tr("TOTAL","TOTAL","GESAMT","TOTALE","TOTAL")}</div>
-            <div style={{fontFamily:G.heading,fontSize:40,color:"#FFD600",marginTop:-4}}>{myScore} pts</div>
+            <div style={{...posterText(42,G.projecteur),marginTop:-2}}>{myScore} pts</div>
             <div style={{fontSize:12,color:"rgba(255,255,255,.4)"}}>{(room.round||1)<DUEL_ROUNDS?(tr("Manche suivante…","Next round…","Nächste Runde…","Prossimo round…","Próxima rodada…")):(tr("Fin…","Final…","Ende…","Fine…","Fim…"))}</div>
           </div>
         ) : (
           <div style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"center",alignItems:"center",padding:"20px",gap:10}}>
-            <div style={{fontFamily:G.heading,fontSize:30,letterSpacing:1,color:draw?"#FFD600":iWon?"#00E676":"#FF6B35",textAlign:"center"}}>
+            <div style={{...posterText(34,draw?G.projecteur:iWon?G.pelouse:G.maillot),textAlign:"center"}}>
               {draw ? tr("MANCHE NULLE","DRAW — nobody found","UNENTSCHIEDEN","PAREGGIO","EMPATE") : iWon ? tr("🎉 TU GAGNES LA MANCHE","🎉 YOU WIN THE ROUND","🎉 DU GEWINNST DIE RUNDE","🎉 VINCI IL TURNO","🎉 VOCÊ VENCE A RODADA") : tr("L'ADVERSAIRE GAGNE","OPPONENT WINS","GEGNER GEWINNT","VINCE L'AVVERSARIO","O ADVERSÁRIO VENCE")}
             </div>
             <div style={{fontSize:14,color:"rgba(255,255,255,.7)",textAlign:"center"}}>{room.club_c1} <span style={{color:"#FFD600"}}>×</span> {room.club_c2}</div>
@@ -9453,15 +9566,16 @@ export default function LePont() {
     const overlayStyle = { ...shell2, overflowY: duelScreen==="menu"?"auto":(kbFit?"hidden":"visible") };
     if (kbFit) { overlayStyle.top = duelVV.top; overlayStyle.height = duelVV.height; overlayStyle.bottom = "auto"; }
     return (<div key="duel-overlay" style={overlayStyle}>
+      {terrainCharte}
       {duelScreen!=="menu" && !kbFit && header}
       {body}
       {/* Nom du joueur en GROS à chaque bonne réponse (visible pour une vidéo) */}
       {duelBigAnswer && (
         <div style={{position:"absolute",inset:0,zIndex:60,display:"flex",alignItems:"center",justifyContent:"center",pointerEvents:"none",background:"radial-gradient(circle at 50% 46%, rgba(0,0,0,.55), transparent 62%)"}}>
           <div key={duelBigAnswer.name} style={{textAlign:"center",padding:"0 22px",animation:"bigAnswerPop 1.2s ease-out forwards"}}>
-            <div style={{fontSize:13,fontWeight:900,letterSpacing:3,color:"#00E676"}}>✓ {tr("BONNE RÉPONSE","CORRECT!","RICHTIG!","GIUSTO!","CERTO!")}</div>
-            <div style={{fontFamily:G.heading,fontSize:"clamp(34px,9vw,56px)",color:"#fff",textShadow:"0 4px 24px rgba(0,0,0,.85)",lineHeight:1.05,marginTop:8}}>{duelBigAnswer.name}</div>
-            {duelBigAnswer.pts && <div style={{fontFamily:G.heading,fontSize:"clamp(24px,7vw,40px)",color:duelBigAnswer.pts>=20?"#FFD600":"#00E676",textShadow:"0 3px 16px rgba(0,0,0,.8)",marginTop:8}}>{duelBigAnswer.pts>=20?"⚡ ":""}+{duelBigAnswer.pts} PTS</div>}
+            <div style={{fontSize:13,fontWeight:900,letterSpacing:3,color:G.pelouse}}>✓ {tr("BONNE RÉPONSE","CORRECT!","RICHTIG!","GIUSTO!","CERTO!")}</div>
+            <div style={{...posterText(52,G.white),marginTop:8}}>{duelBigAnswer.name}</div>
+            {duelBigAnswer.pts && <div style={{...posterText(38,duelBigAnswer.pts>=20?G.projecteur:G.pelouse),marginTop:8}}>{duelBigAnswer.pts>=20?"⚡ ":""}+{duelBigAnswer.pts} PTS</div>}
           </div>
         </div>
       )}
@@ -11782,6 +11896,12 @@ export default function LePont() {
       {tutorialOverlay}
       {welcomeOverlay}
       {duelCreateModal}
+      {/* L'ouverture de carte se joue aussi sur l'accueil : elle n'était montée
+          que sur l'écran de fin de manche, donc quiconque en sortait avant les
+          900 ms de délai — ou gagnait sa carte ailleurs (devinette, grille) — ne
+          la voyait jamais. Son voile laisse voir l'accueil derrière, c'est là
+          que la carte vient d'être gagnée. */}
+      {cardUnlockModal}
       {showRoomCreate && (
         <div
           style={{position:"fixed",inset:0,zIndex:400,display:"flex",alignItems:"flex-end"}}
@@ -14193,31 +14313,20 @@ export default function LePont() {
     const [ca2,cb2]=getClubColors(cur.c2);
     const tc1=textColor(ca1); const tc2=textColor(ca2);
     return (
-      <div style={{...shell,animation:"fadeIn .2s ease",overflow:isDesktop?"visible":"auto"}} key={"game-"+currentRound}>
-        <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
-        {/* Bandes pelouse */}
-        {[0,1,2,3,4,5,6].map(function(i){return(
-          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#0E1F14":"#132819"}}/>
-        );})}
-        {/* Ligne médiane */}
-        <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:"rgba(255,255,255,.15)",transform:"translateY(-50%)"}}/>
-        {/* Cercle central */}
-        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:180,height:180,borderRadius:"50%",border:"2px solid rgba(255,255,255,.15)"}}/>
-        {/* Point central */}
-        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:8,height:8,borderRadius:"50%",background:"rgba(255,255,255,.2)"}}/>
-        {/* Overlay sombre pour lisibilité */}
-        <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.45)"}}/>
-      </div>
+      <div style={{...shell,animation:"fadeIn .2s ease",overflow:isDesktop?"visible":"auto",background:fondCharte}} key={"game-"+currentRound}>
+        {/* Le terrain dessiné de la charte remplace les bandes opaques : elles
+            recouvraient le fond et laissaient les panneaux sans trait visible. */}
+        {terrainCharte}
         {showQuitConfirm && (
         <div style={{position:"fixed",inset:0,zIndex:300,background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center"}}>
-          <div style={{background:"rgba(15,25,15,.95)",borderRadius:24,padding:"28px 24px",maxWidth:320,width:"calc(100% - 32px)",border:"1px solid rgba(255,255,255,.1)",textAlign:"center"}}>
+          <div style={{background:G.nuit,borderRadius:G.rayonL,padding:"28px 24px",maxWidth:320,width:"calc(100% - 32px)",border:G.trait,boxShadow:G.ombreL,textAlign:"center"}}>
             <div style={{fontSize:40,marginBottom:12}}>🏳️</div>
-            <div style={{fontFamily:G.heading,fontSize:26,color:G.white,marginBottom:8}}>{tr("ABANDONNER ?","QUIT?","AUFGEBEN?","ABBANDONARE?","DESISTIR?")}</div>
+            <div style={{...posterText(30,G.white),marginBottom:10}}>{tr("ABANDONNER ?","QUIT?","AUFGEBEN?","ABBANDONARE?","DESISTIR?")}</div>
             <div style={{fontSize:14,color:"rgba(255,255,255,.5)",marginBottom:24}}>
               {activeDuel ? (tr("Ton adversaire sera déclaré vainqueur.","Your opponent will be declared the winner.","Dein Gegner wird zum Sieger erklärt.","Il tuo avversario sarà dichiarato vincitore.","Seu adversário será declarado vencedor.")) : (tr("Ta partie sera perdue et ton score sera de 0.","Your game will be lost and your score will be 0.","Dein Spiel geht verloren und dein Score ist 0.","La tua partita sarà persa e il punteggio sarà 0.","Seu jogo será perdido e sua pontuação será 0."))}
             </div>
             <div style={{display:"flex",gap:10}}>
-              <button onClick={function(){setShowQuitConfirm(false);}} style={{flex:1,padding:"13px",background:"rgba(255,255,255,.07)",color:G.white,border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>{tr("Continuer","Continue","Weiter","Continua","Continuar")}</button>
+              <button onClick={function(){setShowQuitConfirm(false);}} style={{...btn(G.nuit,G.white,16),flex:1,padding:"13px"}}>{tr("Continuer","Continue","Weiter","Continua","Continuar")}</button>
               <button onClick={async function(){
                 setShowQuitConfirm(false);
                 clearInterval(timerRef.current);
@@ -14225,7 +14334,7 @@ export default function LePont() {
                 if(activeDuelRef.current&&activeDuelRef.current.isRoom){ await abandonRoom(); /* navigation gérée par abandonRoom → showRoomResults ou polling */ }
                 else if(activeDuel){ abandonDuel(); setScreen("home"); }
                 else { setScreen("home"); }
-              }} style={{flex:1,padding:"13px",background:"#FF3D57",color:"#fff",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>{tr("Abandonner","Quit","Aufgeben","Abbandona","Desistir")}</button>
+              }} style={{...btn(G.maillot,G.white,16),flex:1,padding:"13px"}}>{tr("Abandonner","Quit","Aufgeben","Abbandona","Desistir")}</button>
             </div>
           </div>
         </div>
@@ -14238,7 +14347,7 @@ export default function LePont() {
         {/* Onomatopée comic quand on passe une question (surgit en gros, repart aussitôt) */}
         {skipOno && (
           <div style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:60,display:"flex",alignItems:"center",justifyContent:"center"}}>
-            <div style={{fontFamily:G.heading,fontSize:"clamp(64px,20vw,150px)",lineHeight:1,color:"#FFD600",WebkitTextStroke:"3px rgba(0,0,0,.55)",textShadow:"0 6px 0 rgba(0,0,0,.35),0 0 34px rgba(255,214,0,.5)",animation:"onoPop .85s cubic-bezier(.2,.8,.3,1) forwards"}}>{skipOno}</div>
+            <div style={{fontFamily:G.heading,fontSize:"clamp(64px,20vw,150px)",lineHeight:1,color:G.projecteur,WebkitTextStroke:"4px "+G.encre,paintOrder:"stroke fill",textShadow:"7px 7px 0 "+G.encre,animation:"onoPop .85s cubic-bezier(.2,.8,.3,1) forwards"}}>{skipOno}</div>
           </div>
         )}
 
@@ -14255,26 +14364,26 @@ export default function LePont() {
         )}
         <div style={{zIndex:3,padding:"12px 16px 0",display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,flexShrink:0}}>
           {backBtn(()=>{setShowQuitConfirm(true);})}
-          <div style={{background:"rgba(255,255,255,.13)",backdropFilter:"blur(10px)",borderRadius:18,padding:"8px 18px",display:"flex",alignItems:"center",gap:8,position:"relative"}}>
+          <div style={{background:G.nuit,border:G.traitFin,boxShadow:"2px 2px 0 "+G.encre,borderRadius:G.rayonS,padding:"7px 16px",display:"flex",alignItems:"center",gap:8,position:"relative"}}>
             {comboDisplay}
             <span style={{fontSize:11,color:"rgba(255,255,255,.4)",fontWeight:700,letterSpacing:1}}>M{currentRound}/{totalRounds}</span>
             {scoreDisplay(score,scoreAnim)}
             <span style={{fontSize:11,color:"rgba(255,255,255,.5)",fontWeight:600}}>pts</span>
           </div>
           {timerCircle()}
-          {record?<div style={{background:"rgba(255,255,255,.13)",backdropFilter:"blur(10px)",borderRadius:18,padding:"8px 14px",display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:13}}>🏆</span><span style={{fontFamily:G.heading,fontSize:22,color:G.gold}}>{record.score}</span></div>:<div style={{width:70}}/>}
+          {record?<div style={{background:G.nuit,border:G.traitFin,boxShadow:"2px 2px 0 "+G.encre,borderRadius:G.rayonS,padding:"7px 13px",display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:13}}>🏆</span><span style={{...posterText(24,G.projecteur)}}>{record.score}</span></div>:<div style={{width:70}}/>}
         </div>
 
         {/* CRESCENDO BADGE — Plug mode */}
         {(activeDuelRef.current && activeDuelRef.current.isRoom ? activeDuelRef.current.diff : diff) === "expert" && (() => {
           // Au Plug, on calcule le palier selon qIdx (0-9 facile, 10-19 moyen, 20+ expert)
           const tier = qIdx < 10 ? "facile" : qIdx < 20 ? "moyen" : "expert";
-          const tierColor = tier === "facile" ? "#00E676" : tier === "moyen" ? "#FFD600" : "#FF3D57";
+          const tierColor = tier === "facile" ? G.pelouse : tier === "moyen" ? G.projecteur : G.maillot;
           const tierLabel = tier === "facile" ? (tr("FACILE","EASY","LEICHT","FACILE","FÁCIL")) : tier === "moyen" ? (tr("MOYEN","MEDIUM","MITTEL","MEDIO","MÉDIO")) : (tr("EXPERT","EXPERT","EXPERTE","ESPERTO","EXPERT"));
           const tierEmoji = tier === "facile" ? "🟢" : tier === "moyen" ? "🟡" : "🔴";
           return (
             <div style={{zIndex:2,display:"flex",justifyContent:"center",padding:"0 16px 4px"}}>
-              <div style={{background:`${tierColor}22`,border:`1px solid ${tierColor}55`,borderRadius:14,padding:"4px 12px",display:"flex",alignItems:"center",gap:6,backdropFilter:"blur(8px)"}}>
+              <div style={{background:G.nuit,border:G.traitFin,boxShadow:"2px 2px 0 "+G.encre,borderRadius:G.rayonS,padding:"4px 12px",display:"flex",alignItems:"center",gap:6}}>
                 <span style={{fontSize:11}}>{tierEmoji}</span>
                 <span style={{fontSize:10,fontWeight:800,letterSpacing:2,color:tierColor}}>📈 CRESCENDO · {tierLabel}</span>
               </div>
@@ -14285,34 +14394,34 @@ export default function LePont() {
         {/* Club cards — full height */}
         <div key={"clubs-"+animKey} style={{flex:1,display:"flex",flexDirection:"column",gap:0,padding:"10px 0 0",zIndex:1,minHeight:0}}>
           {/* Club 1 */}
-          <div style={{flex:1,margin:"0 14px 0 14px",borderRadius:28,position:"relative",overflow:"hidden",boxShadow:"0 12px 40px "+ca1+"55",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",animation:"clubSlideLeft .55s cubic-bezier(.22,1,.36,1)",animationFillMode:"both"}}>
+          <div style={{flex:1,margin:"0 14px 0 14px",borderRadius:G.rayonL,position:"relative",overflow:"hidden",border:G.trait,boxShadow:G.ombreL,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",animation:"clubSlideLeft .55s cubic-bezier(.22,1,.36,1)",animationFillMode:"both"}}>
             {/* Fond diagonal club 1 */}
             <div style={{position:"absolute",inset:0,background:ca1}}/>
             <div style={{position:"absolute",top:0,right:0,width:"55%",bottom:0,background:cb1,clipPath:"polygon(30% 0%, 100% 0%, 100% 100%, 0% 100%)"}}/>
             <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.18)"}}/>
             <div style={{position:"absolute",width:220,height:220,borderRadius:"50%",border:"3px solid rgba(255,255,255,.1)",top:-40,right:-40,pointerEvents:"none"}}/>
-            <div style={{fontFamily:G.heading,fontSize:"clamp(28px,7.5vw,52px)",color:"#fff",lineHeight:1.05,textAlign:"center",padding:"0 16px",zIndex:1,textShadow:"0 3px 16px rgba(0,0,0,.6)",letterSpacing:1}}>{getClubDisplayName(cur.c1)}</div>
+            <div style={{...posterText(46,G.white,2.2),textAlign:"center",padding:"0 16px",zIndex:1}}>{getClubDisplayName(cur.c1)}</div>
           </div>
 
           {/* VS */}
           <div style={{display:"flex",justifyContent:"center",alignItems:"center",height:44,zIndex:2,flexShrink:0}}>
-            <div style={{fontFamily:G.heading,fontSize:20,color:G.white,letterSpacing:4,background:"rgba(0,0,0,.4)",backdropFilter:"blur(12px)",borderRadius:30,padding:"5px 18px",border:"1.5px solid rgba(255,255,255,.15)",animation:"vsAppear .5s cubic-bezier(.22,1,.36,1) .3s both"}}>VS</div>
+            <div style={{fontFamily:G.heading,fontSize:20,color:G.white,background:G.nuit,borderRadius:G.rayonS,padding:"5px 18px",border:G.trait,boxShadow:G.ombre,animation:"vsAppear .5s cubic-bezier(.22,1,.36,1) .3s both"}}>VS</div>
           </div>
 
           {/* Club 2 */}
-          <div style={{flex:1,margin:"0 14px 10px 14px",borderRadius:28,position:"relative",overflow:"hidden",boxShadow:"0 12px 40px "+ca2+"55",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",animation:"clubSlideRight .55s cubic-bezier(.22,1,.36,1)",animationFillMode:"both"}}>
+          <div style={{flex:1,margin:"0 14px 10px 14px",borderRadius:G.rayonL,position:"relative",overflow:"hidden",border:G.trait,boxShadow:G.ombreL,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",animation:"clubSlideRight .55s cubic-bezier(.22,1,.36,1)",animationFillMode:"both"}}>
             {/* Fond diagonal club 2 */}
             <div style={{position:"absolute",inset:0,background:ca2}}/>
             <div style={{position:"absolute",top:0,right:0,width:"55%",bottom:0,background:cb2,clipPath:"polygon(30% 0%, 100% 0%, 100% 100%, 0% 100%)"}}/>
             <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.18)"}}/>
             <div style={{position:"absolute",width:200,height:200,borderRadius:"50%",border:"3px solid rgba(255,255,255,.1)",bottom:-30,left:-30,pointerEvents:"none"}}/>
-            <div style={{fontFamily:G.heading,fontSize:"clamp(28px,7.5vw,52px)",color:"#fff",lineHeight:1.05,textAlign:"center",padding:"0 16px",zIndex:1,textShadow:"0 3px 16px rgba(0,0,0,.6)",letterSpacing:1}}>{getClubDisplayName(cur.c2)}</div>
+            <div style={{...posterText(46,G.white,2.2),textAlign:"center",padding:"0 16px",zIndex:1}}>{getClubDisplayName(cur.c2)}</div>
           </div>
         </div>
 
         {/* Bottom sheet */}
         <div style={{...sheet,borderRadius:"28px 28px 0 0",animation:"sheetUp .45s cubic-bezier(.22,1,.36,1) .15s both",flexShrink:0,paddingTop:14,gap:10}}>
-          {combo>=3&&<div style={{textAlign:"center",animation:"comboFire .5s ease"}}><span style={{background:"linear-gradient(135deg,#f59e0b,#ef4444)",color:G.white,borderRadius:20,padding:"4px 14px",fontSize:12,fontWeight:800,letterSpacing:1}}>{getComboLabel(combo)} x{combo}</span></div>}
+          {combo>=3&&<div style={{textAlign:"center",animation:"comboFire .5s ease"}}><span style={{background:G.maillot,color:G.white,border:G.traitFin,boxShadow:"2px 2px 0 "+G.encre,borderRadius:G.rayonS,padding:"4px 14px",fontSize:12,fontWeight:900,letterSpacing:1}}>{getComboLabel(combo)} x{combo}</span></div>}
           {feedbackBar(feedback)}
 
           <div style={{display:"flex",flexDirection:"column",gap:12}}>
@@ -14327,14 +14436,14 @@ export default function LePont() {
                   return(
                     <button key={opt} onClick={()=>handleOptionClick(opt)} disabled={!!flash}
                       style={{
-                        padding:"22px 12px", borderRadius:20, cursor:"pointer",
+                        padding:"22px 12px", borderRadius:G.rayon, cursor:"pointer",
                         fontFamily:G.font, fontSize:"clamp(15px,4vw,20px)", fontWeight:800,
                         lineHeight:1.25, transition:"all .15s", position:"relative", overflow:"hidden",
                         minHeight:72,
-                        border: isOk?"2px solid #00E676": isKo?"2px solid #FF3D57":"none",
-                        background: isOk?"#052e16": isKo?"#2d0a0a": "rgba(255,255,255,.1)",
-                        color: isOk?"#00E676": isKo?G.red: G.white,
-                        boxShadow: isOk?"0 0 20px rgba(74,222,128,.4)": isKo?"0 0 20px rgba(239,68,68,.3)":"none",
+                        border: G.trait,
+                        background: isOk?G.pelouse: isKo?G.maillot: G.nuit,
+                        color: isOk?G.encre: G.white,
+                        boxShadow: G.ombre,
                         animation: isOk?"answerOk .4s ease": isKo?"answerKo .4s ease": "optionIn .4s cubic-bezier(.22,1,.36,1) "+(oi*.07)+"s both",
                       }}>
                       <div style={{display:"flex",alignItems:"center",gap:8,justifyContent:"center",position:"relative",zIndex:1}}>
@@ -14346,7 +14455,7 @@ export default function LePont() {
                   );
                 })}
               </div>
-              <button onClick={handlePass} disabled={!!flash} style={{padding:"12px",pointerEvents:flash?"none":"auto",background:"transparent",color:"#bbb",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700,opacity:flash ? 0.3 : 1}}>{tr("Passer → (−10 pts)","Skip → (−10 pts)","Überspringen → (−10 Pkt)","Salta → (−10 pt)","Pular → (−10 pts)")}</button>
+              <button onClick={handlePass} disabled={!!flash} style={{padding:"12px",pointerEvents:flash?"none":"auto",background:G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,cursor:"pointer",...posterText(15,G.white),opacity:flash ? 0.3 : 1}}>{tr("Passer → (−10 pts)","Skip → (−10 pts)","Überspringen → (−10 Pkt)","Salta → (−10 pt)","Pular → (−10 pts)")}</button>
             </div>
       {/* Timer par question supprimé — seul le timer global de la manche reste */}
     </div>
@@ -14365,30 +14474,19 @@ export default function LePont() {
     const [cla, clb] = chainLastClub ? getClubColors(chainLastClub) : ["#1a7a3a","#fff"];
     const clTagColor = chainLastClub ? textColor(cla) : "#fff";
     return (
-    <div style={{...shell,animation:"fadeIn .3s ease",overflow:isDesktop?"visible":"auto"}} key={"chain-"+chainCount}>
-      <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
-        {/* Bandes pelouse */}
-        {[0,1,2,3,4,5,6].map(function(i){return(
-          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#0E1F14":"#132819"}}/>
-        );})}
-        {/* Ligne médiane */}
-        <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:"rgba(255,255,255,.15)",transform:"translateY(-50%)"}}/>
-        {/* Cercle central */}
-        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:180,height:180,borderRadius:"50%",border:"2px solid rgba(255,255,255,.15)"}}/>
-        {/* Point central */}
-        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:8,height:8,borderRadius:"50%",background:"rgba(255,255,255,.2)"}}/>
-        {/* Overlay sombre pour lisibilité */}
-        <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.45)"}}/>
-      </div>
+    <div style={{...shell,animation:"fadeIn .3s ease",overflow:isDesktop?"visible":"auto",background:fondCharte}} key={"chain-"+chainCount}>
+        {/* Le terrain dessiné de la charte remplace les bandes opaques : elles
+            recouvraient le fond et laissaient les panneaux sans trait visible. */}
+        {terrainCharte}
       {showQuitConfirm && (
         <div style={{position:"fixed",inset:0,zIndex:300,background:"rgba(0,0,0,.85)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center"}}>
-          <div style={{background:"rgba(15,25,15,.95)",borderRadius:24,padding:"28px 24px",maxWidth:320,width:"calc(100% - 32px)",border:"1px solid rgba(255,255,255,.1)",textAlign:"center"}}>
+          <div style={{background:G.nuit,borderRadius:G.rayonL,padding:"28px 24px",maxWidth:320,width:"calc(100% - 32px)",border:G.trait,boxShadow:G.ombreL,textAlign:"center"}}>
             <div style={{fontSize:40,marginBottom:12}}>🏳️</div>
-            <div style={{fontFamily:G.heading,fontSize:26,color:G.white,marginBottom:8}}>{tr("ABANDONNER ?","QUIT?","AUFGEBEN?","ABBANDONARE?","DESISTIR?")}</div>
+            <div style={{...posterText(30,G.white),marginBottom:10}}>{tr("ABANDONNER ?","QUIT?","AUFGEBEN?","ABBANDONARE?","DESISTIR?")}</div>
             <div style={{fontSize:14,color:"rgba(255,255,255,.5)",marginBottom:24}}>{tr("Ta partie sera perdue et ton score sera de 0.","Your game will be lost and your score will be 0.","Dein Spiel geht verloren und dein Score ist 0.","La tua partita sarà persa e il punteggio sarà 0.","Seu jogo será perdido e sua pontuação será 0.")}</div>
             <div style={{display:"flex",gap:10}}>
-              <button onClick={function(){setShowQuitConfirm(false);}} style={{flex:1,padding:"13px",background:"rgba(255,255,255,.07)",color:G.white,border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>{tr("Continuer","Continue","Weiter","Continua","Continuar")}</button>
-              <button onClick={async function(){setShowQuitConfirm(false);clearInterval(timerRef.current);clearInterval(qTimerRef.current);if(activeDuelRef.current&&activeDuelRef.current.isRoom){await abandonRoom();/* navigation gérée par abandonRoom */}else if(activeDuel){abandonDuel();setChainPlayer("");setScreen("home");}else{setChainPlayer("");setScreen("home");}}} style={{flex:1,padding:"13px",background:"#FF3D57",color:"#fff",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>{tr("Abandonner","Quit","Aufgeben","Abbandona","Desistir")}</button>
+              <button onClick={function(){setShowQuitConfirm(false);}} style={{...btn(G.nuit,G.white,16),flex:1,padding:"13px"}}>{tr("Continuer","Continue","Weiter","Continua","Continuar")}</button>
+              <button onClick={async function(){setShowQuitConfirm(false);clearInterval(timerRef.current);clearInterval(qTimerRef.current);if(activeDuelRef.current&&activeDuelRef.current.isRoom){await abandonRoom();/* navigation gérée par abandonRoom */}else if(activeDuel){abandonDuel();setChainPlayer("");setScreen("home");}else{setChainPlayer("");setScreen("home");}}} style={{...btn(G.maillot,G.white,16),flex:1,padding:"13px"}}>{tr("Abandonner","Quit","Aufgeben","Abbandona","Desistir")}</button>
             </div>
           </div>
         </div>
@@ -14420,16 +14518,16 @@ export default function LePont() {
       )}
       <div style={{zIndex:2,padding:"12px 16px 8px",display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,position:"sticky",top:0}}>
         {backBtn(()=>{setShowQuitConfirm(true);})}
-        <div style={{background:"rgba(255,255,255,.12)",backdropFilter:"blur(8px)",borderRadius:18,padding:"8px 14px",display:"flex",alignItems:"center",gap:8,position:"relative"}}>
+        <div style={{background:G.nuit,border:G.traitFin,boxShadow:"2px 2px 0 "+G.encre,borderRadius:G.rayonS,padding:"7px 13px",display:"flex",alignItems:"center",gap:8,position:"relative"}}>
           {comboDisplay}
-          <span style={{fontFamily:G.heading,fontSize:30,color:G.white,display:"inline-block",animation:scoreAnim==="up"?"scoreUp .5s ease":scoreAnim==="down"?"scoreDn .5s ease":"none"}}>{chainScore}</span>
+          <span style={{...posterText(32,G.white),display:"inline-block",animation:scoreAnim==="up"?"scoreUp .5s ease":scoreAnim==="down"?"scoreDn .5s ease":"none"}}>{chainScore}</span>
           <span style={{fontSize:11,color:"rgba(255,255,255,.5)",fontWeight:600}}>pts</span>
         </div>
         {timerCircle(64)}
         {chainRecord
-          ? <div style={{background:"rgba(255,255,255,.12)",backdropFilter:"blur(8px)",borderRadius:18,padding:"8px 12px",display:"flex",alignItems:"center",gap:6}}>
+          ? <div style={{background:G.nuit,border:G.traitFin,boxShadow:"2px 2px 0 "+G.encre,borderRadius:G.rayonS,padding:"7px 11px",display:"flex",alignItems:"center",gap:6}}>
               {Icon.trophy(16,G.gold)}
-              <span style={{fontFamily:G.heading,fontSize:20,color:G.gold}}>{chainRecord.score}</span>
+              <span style={{...posterText(22,G.projecteur)}}>{chainRecord.score}</span>
             </div>
           : <div style={{width:50}}/>
         }
@@ -14449,8 +14547,8 @@ export default function LePont() {
         return (
           <div style={{zIndex:2,padding:"0 16px 6px",maxWidth:420,margin:"0 auto",width:"100%",boxSizing:"border-box"}}>
             <div style={{fontSize:10,fontWeight:800,letterSpacing:.5,color:"rgba(255,255,255,.55)",marginBottom:3,textAlign:"center"}}>{carrot} <span style={{color:ng.color}}>{ng.emoji} {ng.label}</span></div>
-            <div style={{height:5,borderRadius:3,background:"rgba(255,255,255,.12)",overflow:"hidden"}}>
-              <div style={{height:"100%",width:pct+"%",background:`linear-gradient(90deg, ${ng.color}, #fff)`,borderRadius:3,transition:"width .4s ease"}}/>
+            <div style={{height:9,borderRadius:G.rayonS,background:"rgba(8,17,9,.55)",border:G.traitFin,overflow:"hidden"}}>
+              <div style={{height:"100%",width:pct+"%",background:ng.color,transition:"width .4s ease"}}/>
             </div>
           </div>
         );
@@ -14459,12 +14557,12 @@ export default function LePont() {
       {/* CRESCENDO BADGE — affiché uniquement en mode Crescendo (diff="expert") */}
       {(activeDuelRef.current && activeDuelRef.current.isRoom ? activeDuelRef.current.diff : diff) === "expert" && (() => {
         const tier = getCrescendoTier(chainCount);
-        const tierColor = tier === "facile" ? "#00E676" : tier === "moyen" ? "#FFD600" : "#FF3D57";
+        const tierColor = tier === "facile" ? G.pelouse : tier === "moyen" ? G.projecteur : G.maillot;
         const tierLabel = tier === "facile" ? (tr("FACILE","EASY","LEICHT","FACILE","FÁCIL")) : tier === "moyen" ? (tr("MOYEN","MEDIUM","MITTEL","MEDIO","MÉDIO")) : (tr("EXPERT","EXPERT","EXPERTE","ESPERTO","EXPERT"));
         const tierEmoji = tier === "facile" ? "🟢" : tier === "moyen" ? "🟡" : "🔴";
         return (
           <div style={{zIndex:2,display:"flex",justifyContent:"center",padding:"0 16px 4px"}}>
-            <div style={{background:`${tierColor}22`,border:`1px solid ${tierColor}55`,borderRadius:14,padding:"4px 12px",display:"flex",alignItems:"center",gap:6,backdropFilter:"blur(8px)"}}>
+            <div style={{background:G.nuit,border:G.traitFin,boxShadow:"2px 2px 0 "+G.encre,borderRadius:G.rayonS,padding:"4px 12px",display:"flex",alignItems:"center",gap:6}}>
               <span style={{fontSize:11}}>{tierEmoji}</span>
               <span style={{fontSize:10,fontWeight:800,letterSpacing:2,color:tierColor}}>📈 CRESCENDO · {tierLabel}</span>
             </div>
@@ -14496,10 +14594,10 @@ export default function LePont() {
       )}
 
       <div key={"cp-"+chainCount} style={{
-        zIndex:2, margin:"4px 16px", borderRadius:24,
-        background:`linear-gradient(145deg, ${pca} 0%, ${pcb} 100%)`,
+        zIndex:2, margin:"4px 16px", borderRadius:G.rayonL,
+        background:pca, borderTop:G.trait, borderLeft:G.trait, borderRight:G.trait, borderBottom:G.trait,
         padding:"20px", textAlign:"center",
-        boxShadow:`0 12px 35px ${pca}55`,
+        boxShadow:G.ombreL,
         animation:"playerDrop .55s cubic-bezier(.22,1,.36,1)",
         position:"sticky", top:70, flexShrink:0, overflow:"hidden",
       }}>
@@ -14510,7 +14608,7 @@ export default function LePont() {
         </div>
         <div style={{display:"flex",alignItems:"center",gap:14,zIndex:1,position:"relative",justifyContent:"center",flexWrap:"wrap"}}>
           <div style={{textAlign:"center"}}>
-            <div style={{fontFamily:G.heading,fontSize:"clamp(18px,5vw,34px)",color:ptc==="#FFF"?"#fff":"#111",lineHeight:1.05,textShadow:ptc==="#FFF"?"0 2px 10px rgba(0,0,0,.25)":"none",letterSpacing:1}}>{chainPlayer}</div>
+            <div style={{...posterText(32,ptc==="#FFF"?G.white:G.encre,ptc==="#FFF"?2:0)}}>{chainPlayer}</div>
             {chainUsedClubs.size>0 && <div style={{fontSize:10,color:ptc==="#FFF"?"rgba(255,255,255,.55)":"rgba(0,0,0,.35)",marginTop:3,fontWeight:600}}>{chainAvailableClubs.length} {chainAvailableClubs.length!==1?tr("clubs disponibles","clubs available","Klubs verfügbar","club disponibili","clubes disponíveis"):tr("club disponible","club available","Klub verfügbar","club disponibile","clube disponível")}</div>}
           </div>
         </div>
@@ -14522,7 +14620,7 @@ export default function LePont() {
         <div style={{position:"relative"}}>
           <input ref={inputRef} value={guess} onChange={e=>setGuess(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleChainSubmit()}
             placeholder={tr("Nom du club...","Club name...","Klubname...","Nome del club...","Nome do clube...")} autoComplete="off"
-            style={{width:"100%",background:flash==="ko"?"#fee2e2":flash==="ok"?"#dcfce7":G.offWhite,border:("2px solid "+(flash==="ko"?G.red:flash==="ok"?G.accent:"#e5e5e0")+""),borderRadius:18,padding:"16px 18px",fontFamily:G.font,fontSize:18,fontWeight:700,color:G.dark,outline:"none",textAlign:"center",transition:"all .15s",boxSizing:"border-box"}}/>
+            style={{width:"100%",background:flash==="ko"?"rgba(217,58,43,.3)":flash==="ok"?"rgba(42,155,78,.35)":G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,padding:"16px 18px",fontFamily:G.font,fontSize:18,fontWeight:700,color:G.white,outline:"none",textAlign:"center",transition:"background .15s",boxSizing:"border-box"}}/>
           {guess.length>=2&&!flash&&(()=>{
             const norm=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
             const q=norm(guess);
@@ -14540,14 +14638,14 @@ export default function LePont() {
               return a.localeCompare(b);
             }).slice(0,5);
             if(!sugg.length) return null;
-            return (<div style={{position:"absolute",top:"100%",left:0,right:0,background:"#fff",border:"1px solid #e5e5e0",borderRadius:14,boxShadow:"0 8px 24px rgba(0,0,0,.15)",zIndex:100,overflow:"hidden",marginTop:4}}>
-              {sugg.map(c=>(<div key={c} onClick={function(){setGuess(c);handleChainSubmit(c);}} style={{padding:"12px 16px",fontFamily:G.font,fontSize:15,fontWeight:700,color:G.dark,cursor:"pointer",borderBottom:"1px solid #f0f0f0",display:"flex",alignItems:"center",gap:10}}><ClubLogo club={c} size={22}/>{getClubDisplayName(c)}</div>))}
+            return (<div style={{position:"absolute",top:"100%",left:0,right:0,background:G.nuit,border:G.trait,borderRadius:G.rayon,boxShadow:G.ombre,zIndex:100,overflow:"hidden",marginTop:6}}>
+              {sugg.map(c=>(<div key={c} onClick={function(){setGuess(c);handleChainSubmit(c);}} style={{padding:"12px 16px",fontFamily:G.font,fontSize:15,fontWeight:700,color:G.white,cursor:"pointer",borderBottom:"2px solid rgba(8,17,9,.55)",display:"flex",alignItems:"center",gap:10}}><ClubLogo club={c} size={22}/>{getClubDisplayName(c)}</div>))}
             </div>);
           })()}
         </div>
         <div style={{display:"flex",gap:10}}>
-          <button onClick={handleChainPass} disabled={!!flash} style={{flex:1,padding:16,background:G.offWhite,color:"#aaa",border:"2px solid #e5e5e0",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700,opacity:flash ? 0.3 : 1}}>{tr("Passer → (−10 pts)","Skip → (−10 pts)","Überspringen → (−10 Pkt)","Salta → (−10 pt)","Pular → (−10 pts)")}</button>
-          <button onClick={handleChainSubmit} style={{flex:2,padding:"16px",background:G.dark,color:G.white,border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:16,fontWeight:800}}>{tr("Valider","Submit","Bestätigen","Conferma","Enviar")}</button>
+          <button onClick={handleChainPass} disabled={!!flash} style={{flex:1,padding:16,background:G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,cursor:"pointer",...posterText(16,G.white),opacity:flash ? 0.3 : 1}}>{tr("Passer → (−10 pts)","Skip → (−10 pts)","Überspringen → (−10 Pkt)","Salta → (−10 pt)","Pular → (−10 pts)")}</button>
+          <button onClick={handleChainSubmit} style={{...btn(G.pelouse,G.encre,18),flex:2,padding:"16px"}}>{tr("Valider","Submit","Bestätigen","Conferma","Enviar")}</button>
         </div>
         {/* Signaler une erreur : apparaît quand un club vient d'être refusé */}
         {chainLastRejected && (
