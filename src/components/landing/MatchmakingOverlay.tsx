@@ -24,15 +24,15 @@ const GAME_LABEL: Record<Props["game"], string> = {
 };
 
 function getStoredPseudo(): string {
-  if (typeof window === "undefined") return tr("Toi", "You", "Du", "Tu", "Você");
+  if (typeof window === "undefined") return tr("Toi", "You", "Du", "Tu", "Você","Tú");
   try {
     return (
       localStorage.getItem("bb_pseudo") ||
       localStorage.getItem("bb_name") ||
-      tr("Toi", "You", "Du", "Tu", "Você")
+      tr("Toi", "You", "Du", "Tu", "Você","Tú")
     );
   } catch {
-    return tr("Toi", "You", "Du", "Tu", "Você");
+    return tr("Toi", "You", "Du", "Tu", "Você","Tú");
   }
 }
 
@@ -147,12 +147,12 @@ export const MatchmakingOverlay = ({ game, onFound, onCancel }: Props) => {
         className="absolute top-4 right-4"
         style={{ ...retourStyle, width:"auto", padding:"9px 16px", fontSize:15, letterSpacing:1.5 }}
       >
-        {tr("ANNULER", "CANCEL", "ABBRECHEN", "ANNULLA", "CANCELAR")}
+        {tr("ANNULER", "CANCEL", "ABBRECHEN", "ANNULLA", "CANCELAR","CANCELAR")}
       </button>
 
       <div className="relative text-center mb-8">
         <div className="mb-2" style={{ ...posterText(1, G.ciel, 0), fontSize:15, letterSpacing:6 }}>
-          {tr("MODE EN LIGNE", "ONLINE MODE", "ONLINE-MODUS", "MODALITÀ ONLINE", "MODO ONLINE")}
+          {tr("MODE EN LIGNE", "ONLINE MODE", "ONLINE-MODUS", "MODALITÀ ONLINE", "MODO ONLINE","MODO EN LÍNEA")}
         </div>
         <div style={{ ...posterTitre(56, G.white), fontSize:"clamp(34px,6vw,56px)" }}>
           {GAME_LABEL[game]}
@@ -177,7 +177,7 @@ export const MatchmakingOverlay = ({ game, onFound, onCancel }: Props) => {
           {phase === "found" && (
             <div className="mt-2 animate-in fade-in duration-300"
               style={{ ...posterText(1, G.pelouse, 0), fontSize:13, letterSpacing:4 }}>
-              {tr("✓ TROUVÉ", "✓ FOUND", "✓ GEFUNDEN", "✓ TROVATO", "✓ ENCONTRADO")}
+              {tr("✓ TROUVÉ", "✓ FOUND", "✓ GEFUNDEN", "✓ TROVATO", "✓ ENCONTRADO","✓ ENCONTRADO")}
             </div>
           )}
         </div>
@@ -206,22 +206,22 @@ export const MatchmakingOverlay = ({ game, onFound, onCancel }: Props) => {
               />
             </div>
             <div style={{ ...posterText(1, G.white, 0), fontSize:32, letterSpacing:2 }}>
-              {tr("RECHERCHE D'UN ADVERSAIRE", "FINDING AN OPPONENT", "SUCHE NACH GEGNER", "RICERCA AVVERSARIO", "PROCURANDO ADVERSÁRIO")}
+              {tr("RECHERCHE D'UN ADVERSAIRE", "FINDING AN OPPONENT", "SUCHE NACH GEGNER", "RICERCA AVVERSARIO", "PROCURANDO ADVERSÁRIO","BUSCANDO RIVAL")}
               <span className="inline-block w-12 text-left">
                 {".".repeat(dots)}
               </span>
             </div>
             <div className="text-sm text-white/40 mt-3">
-              {tr("Tri par niveau et région...", "Sorting by level and region...", "Sortierung nach Level und Region...", "Ordinamento per livello e regione...", "Ordenando por nível e região...")}
+              {tr("Tri par niveau et région...", "Sorting by level and region...", "Sortierung nach Level und Region...", "Ordinamento per livello e regione...", "Ordenando por nível e região...","Ordenando por nivel y región...")}
             </div>
           </div>
         ) : (
           <div className="animate-in fade-in duration-300">
             <div style={{ ...posterText(1, G.pelouse, 0), fontSize:32, letterSpacing:2 }}>
-              {tr("MATCH PRÊT", "MATCH READY", "MATCH BEREIT", "MATCH PRONTO", "PARTIDA PRONTA")}
+              {tr("MATCH PRÊT", "MATCH READY", "MATCH BEREIT", "MATCH PRONTO", "PARTIDA PRONTA","PARTIDA LISTA")}
             </div>
             <div className="text-sm text-white/50 mt-2">
-              {tr("La partie va commencer...", "The game is about to start...", "Das Spiel startet gleich...", "La partita sta per iniziare...", "O jogo vai começar...")}
+              {tr("La partie va commencer...", "The game is about to start...", "Das Spiel startet gleich...", "La partita sta per iniziare...", "O jogo vai começar...","La partida está a punto de empezar...")}
             </div>
           </div>
         )}

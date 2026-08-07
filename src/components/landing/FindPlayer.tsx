@@ -9,6 +9,7 @@ import { CLUB_SPELLS, wereTeammates, mightHaveBeenTeammates, hasSpells } from "@
 import { recordDailyDone, displayStreak } from "@/lib/streak";
 import { WinBanner } from "./WinBanner";
 import { G, posterText, btn, fondCharte, terrainCharte, ligneCharte } from "@/lib/charte.jsx";
+import { chercheJoueurs } from "@/lib/nom";
 
 const SPELL_NAMES = Object.keys(CLUB_SPELLS);
 
@@ -152,10 +153,10 @@ const NOW_Y = new Date().getFullYear();
 
 function posLabel(pos: string): string {
   const l = pos.toLowerCase();
-  if (l.includes("gardien")) return tr("Gardien", "Goalkeeper", "Torwart", "Portiere", "Goleiro");
-  if (l.includes("défenseur") || l.includes("defenseur")) return tr("Défenseur", "Defender", "Verteidiger", "Difensore", "Zagueiro");
-  if (l.includes("milieu")) return tr("Milieu", "Midfielder", "Mittelfeld", "Centrocampista", "Meio-campo");
-  return tr("Attaquant", "Forward", "Stürmer", "Attaccante", "Atacante");
+  if (l.includes("gardien")) return tr("Gardien", "Goalkeeper", "Torwart", "Portiere", "Goleiro","Portero");
+  if (l.includes("défenseur") || l.includes("defenseur")) return tr("Défenseur", "Defender", "Verteidiger", "Difensore", "Zagueiro","Defensa");
+  if (l.includes("milieu")) return tr("Milieu", "Midfielder", "Mittelfeld", "Centrocampista", "Meio-campo","Centrocampista");
+  return tr("Attaquant", "Forward", "Stürmer", "Attaccante", "Atacante","Delantero");
 }
 function posEmoji(pos: string): string {
   const l = pos.toLowerCase();
@@ -293,12 +294,12 @@ function computeChips(guess: Player, answer: Player): Chip[] {
   const lastState: State = gLast && aLast && gLast === aLast ? "ok" : (gLast && answer.clubs.includes(gLast) ? "close" : "no");
   const [lbg, lfg] = clubColors(gLast);
   return [
-    { key: "nat", label: tr("NAT", "NAT", "NAT", "NAZ", "NAC"), top: flag, big: true, state: natMatch ? "ok" : "no" },
-    { key: "cont", label: tr("ZONE", "ZONE", "ZONE", "ZONA", "ZONA"), top: gCont, state: contMatch ? "ok" : "no", bg: CONT_BG, fg: "#dff0ff" },
-    { key: "pos", label: tr("POSTE", "POS", "POS", "RUOLO", "POS"), top: posEmoji(guess.positions[0] || ""), big: true, state: posMatch ? "ok" : "no" },
-    { key: "age", label: tr("ÂGE", "AGE", "ALTER", "ETÀ", "IDADE"), top: gAge ? String(gAge) : "?", state: ageState, arrow: ageArrow },
-    { key: "lastclub", label: tr("CLUB", "CLUB", "KLUB", "CLUB", "CLUBE"), top: gLast ? clubCode(gLast) : "?", state: lastState, bg: lbg, fg: lfg },
-    { key: "clubs", label: tr("COMMUNS", "SHARED", "GETEILT", "COMUNI", "COMUNS"), top: "🛡" + shared, state: clubState },
+    { key: "nat", label: tr("NAT", "NAT", "NAT", "NAZ", "NAC","NAC"), top: flag, big: true, state: natMatch ? "ok" : "no" },
+    { key: "cont", label: tr("ZONE", "ZONE", "ZONE", "ZONA", "ZONA","ZONA"), top: gCont, state: contMatch ? "ok" : "no", bg: CONT_BG, fg: "#dff0ff" },
+    { key: "pos", label: tr("POSTE", "POS", "POS", "RUOLO", "POS","POS"), top: posEmoji(guess.positions[0] || ""), big: true, state: posMatch ? "ok" : "no" },
+    { key: "age", label: tr("ÂGE", "AGE", "ALTER", "ETÀ", "IDADE","EDAD"), top: gAge ? String(gAge) : "?", state: ageState, arrow: ageArrow },
+    { key: "lastclub", label: tr("CLUB", "CLUB", "KLUB", "CLUB", "CLUBE","CLUB"), top: gLast ? clubCode(gLast) : "?", state: lastState, bg: lbg, fg: lfg },
+    { key: "clubs", label: tr("COMMUNS", "SHARED", "GETEILT", "COMUNI", "COMUNS","COMUNES"), top: "🛡" + shared, state: clubState },
   ];
 }
 const SQ: Record<State, string> = { ok: "🟩", close: "🟨", no: "⬛" };
@@ -469,9 +470,11 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
     const q = input.trim().toLowerCase();
     if (q.length < 2) return [];
     const guessed = new Set(guesses.map(g => g.name));
-    const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
-    const nq = norm(q);
-    return ALL.filter(p => !guessed.has(p.name) && norm(p.name).includes(nq))
+    // Ce fichier avait sa propre copie affaiblie du normaliseur : elle ne
+    // dépliait que les accents combinants, donc Højbjerg, Ødegaard et Højlund
+    // étaient introuvables sans taper le ø. On passe par le helper partagé,
+    // qui gère ces lettres et retombe sur la tolérance aux fautes.
+    return chercheJoueurs(q, ALL, p => guessed.has(p.name))
       .sort((a, b) => (a.diff === "facile" ? -1 : 1) - (b.diff === "facile" ? -1 : 1))
       .slice(0, 6);
   }, [input, guesses]);
@@ -488,8 +491,8 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
     // datées) : X = coéquipier vérifié du mystère, Y = coéquipier vérifié de X qui
     // n'a JAMAIS joué avec le mystère. Sinon, repli sûr : simple « J'ai joué avec X »
     // (heuristique club + génération, sans contraste).
-    const jouéAvec = tr("J'ai joué avec", "I played with", "Ich spielte mit", "Ho giocato con", "Joguei com");
-    const maisJamais = tr("mais jamais avec", "but never with", "aber nie mit", "ma mai con", "mas nunca com");
+    const jouéAvec = tr("J'ai joué avec", "I played with", "Ich spielte mit", "Ho giocato con", "Joguei com","Jugué con");
+    const maisJamais = tr("mais jamais avec", "but never with", "aber nie mit", "ma mai con", "mas nunca com","pero nunca con");
     let clue1: string | null = null;
     if (hasSpells(answer.name)) {
       const mates = SPELL_NAMES.filter(n => n !== answer.name && wereTeammates(answer.name, n)).sort();
@@ -510,31 +513,31 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
     const bigs = clubs.filter(c => BIG_CLUBS.has(c));
     if (bigs.length) {
       const bc = bigs[hashStr(answer.name, 17) % bigs.length];
-      clues.push(tr("J'ai porté le maillot de", "I wore the shirt of", "Ich trug das Trikot von", "Ho indossato la maglia del", "Vesti a camisa do") + " " + bc + ".");
+      clues.push(tr("J'ai porté le maillot de", "I wore the shirt of", "Ich trug das Trikot von", "Ho indossato la maglia del", "Vesti a camisa do","Vestí la camiseta de") + " " + bc + ".");
     }
 
     // 3) Pays : « J'ai évolué en … »
     const countries = Array.from(new Set(clubs.map(c => CLUB_COUNTRY[c]).filter(Boolean)));
     if (countries.length) {
       const ci = COUNTRY_INFO[countries[hashStr(answer.name, 13) % countries.length]];
-      if (ci) clues.push(tr("J'ai évolué " + ci.fr, "I played in " + ci.en, "Ich spielte in " + ci.de, "Ho giocato in " + ci.it, "Joguei em " + ci.pt) + ".");
+      if (ci) clues.push(tr("J'ai évolué " + ci.fr, "I played in " + ci.en, "Ich spielte in " + ci.de, "Ho giocato in " + ci.it, "Joguei em " + ci.pt,"Jugué en " + (ci.es || ci.en)) + ".");
     }
 
     // 4) Palmarès (données GOAT Guess : CDM, LDC, Ballon d'Or, entraîneur)
     const has = (s: any) => s && typeof s.has === "function" && s.has(answer.name);
-    if (has(GG_WC_WINNERS)) clues.push(tr("J'ai gagné la Coupe du Monde 🏆", "I won the World Cup 🏆", "Ich wurde Weltmeister 🏆", "Ho vinto la Coppa del Mondo 🏆", "Ganhei a Copa do Mundo 🏆"));
-    if (has(GG_CL_WINNERS)) clues.push(tr("J'ai gagné la Ligue des Champions ⭐", "I won the Champions League ⭐", "Ich gewann die Champions League ⭐", "Ho vinto la Champions League ⭐", "Ganhei a Liga dos Campeões ⭐"));
-    if (has(GG_BALLON_DOR)) clues.push(tr("J'ai remporté le Ballon d'Or 🥇", "I won the Ballon d'Or 🥇", "Ich gewann den Ballon d'Or 🥇", "Ho vinto il Pallone d'Oro 🥇", "Ganhei a Bola de Ouro 🥇"));
-    if (has(ANEC_ENTRAINEUR)) clues.push(tr("Je suis devenu entraîneur 👔", "I became a manager 👔", "Ich wurde Trainer 👔", "Sono diventato allenatore 👔", "Virei treinador 👔"));
-    if (has(GG_SHIRT_10)) clues.push(tr("J'ai porté le mythique numéro 10 🔟", "I wore the iconic number 10 🔟", "Ich trug die legendäre Nummer 10 🔟", "Ho indossato la mitica maglia numero 10 🔟", "Usei a mítica camisa 10 🔟"));
+    if (has(GG_WC_WINNERS)) clues.push(tr("J'ai gagné la Coupe du Monde 🏆", "I won the World Cup 🏆", "Ich wurde Weltmeister 🏆", "Ho vinto la Coppa del Mondo 🏆", "Ganhei a Copa do Mundo 🏆","Gané el Mundial 🏆"));
+    if (has(GG_CL_WINNERS)) clues.push(tr("J'ai gagné la Ligue des Champions ⭐", "I won the Champions League ⭐", "Ich gewann die Champions League ⭐", "Ho vinto la Champions League ⭐", "Ganhei a Liga dos Campeões ⭐","Gané la Champions ⭐"));
+    if (has(GG_BALLON_DOR)) clues.push(tr("J'ai remporté le Ballon d'Or 🥇", "I won the Ballon d'Or 🥇", "Ich gewann den Ballon d'Or 🥇", "Ho vinto il Pallone d'Oro 🥇", "Ganhei a Bola de Ouro 🥇","Gané el Balón de Oro 🥇"));
+    if (has(ANEC_ENTRAINEUR)) clues.push(tr("Je suis devenu entraîneur 👔", "I became a manager 👔", "Ich wurde Trainer 👔", "Sono diventato allenatore 👔", "Virei treinador 👔","Me hice entrenador 👔"));
+    if (has(GG_SHIRT_10)) clues.push(tr("J'ai porté le mythique numéro 10 🔟", "I wore the iconic number 10 🔟", "Ich trug die legendäre Nummer 10 🔟", "Ho indossato la mitica maglia numero 10 🔟", "Usei a mítica camisa 10 🔟","Llevé el mítico número 10 🔟"));
 
     // 5) Nombre de clubs
-    if (clubs.length >= 3) clues.push(tr("J'ai porté les couleurs de", "I wore the colours of", "Ich trug die Farben von", "Ho vestito i colori di", "Vesti as cores de") + " " + clubs.length + " " + tr("clubs différents", "different clubs", "verschiedenen Klubs", "club diversi", "clubes diferentes") + ".");
+    if (clubs.length >= 3) clues.push(tr("J'ai porté les couleurs de", "I wore the colours of", "Ich trug die Farben von", "Ho vestito i colori di", "Vesti as cores de","Defendí los colores de") + " " + clubs.length + " " + tr("clubs différents", "different clubs", "verschiedenen Klubs", "club diversi", "clubes diferentes","clubes diferentes") + ".");
 
     // 5) Décennie (repli)
     const startYear = answer.birthYear ? answer.birthYear + 19 : 0;
     const dec = startYear ? Math.floor(startYear / 10) * 10 : null;
-    if (dec) clues.push(tr("J'ai percé dans les années", "I broke through in the", "Durchbruch in den", "Sono esploso negli anni", "Estourei nos anos") + " " + dec + tr("", "s", "ern", "", "") + ".");
+    if (dec) clues.push(tr("J'ai percé dans les années", "I broke through in the", "Durchbruch in den", "Sono esploso negli anni", "Estourei nos anos","Me di a conocer en los") + " " + dec + tr("", "s", "ern", "", "","s") + ".");
 
     if (!clues.length) return [];
     // Mélange déterministe puis on garde 3-4 indices (types tous distincts).
@@ -666,12 +669,12 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
 
   function shareText(): string {
     const rows = guesses.map(g => computeChips(g, answer).map(c => SQ[c.state]).join("")).join("\n");
-    const head = "🐐 GOAT FC · " + (daily ? tr("Devinette du jour", "Daily riddle", "Rätsel des Tages", "Indovinello del giorno", "Adivinha do dia") : tr("Trouve le joueur", "Guess the player", "Errate den Spieler", "Indovina il giocatore", "Adivinhe o jogador"));
-    const res = won ? `${guesses.length} ${tr("essai", "try", "Versuch", "tentativo", "tentativa")}${guesses.length > 1 ? "s" : ""}` : tr("abandon", "gave up", "aufgegeben", "arreso", "desisti");
+    const head = "🐐 GOAT FC · " + (daily ? tr("Devinette du jour", "Daily riddle", "Rätsel des Tages", "Indovinello del giorno", "Adivinha do dia","Adivinanza del día") : tr("Trouve le joueur", "Guess the player", "Errate den Spieler", "Indovina il giocatore", "Adivinhe o jogador","Adivina el jugador"));
+    const res = won ? `${guesses.length} ${tr("essai", "try", "Versuch", "tentativo", "tentativa","intento")}${guesses.length > 1 ? "s" : ""}` : tr("abandon", "gave up", "aufgegeben", "arreso", "desisti","abandono");
     const streakLine = daily
-      ? "  ·  🔥 " + dailyStreak + " " + tr(dailyStreak > 1 ? "jours" : "jour", dailyStreak > 1 ? "days" : "day", dailyStreak > 1 ? "Tage" : "Tag", dailyStreak > 1 ? "giorni" : "giorno", dailyStreak > 1 ? "dias" : "dia")
-      : (won ? "  ·  🔥 " + tr("Série", "Streak", "Serie", "Serie", "Sequência") + " " + streak : "");
-    const cta = tr("Tu fais mieux ? 👇", "Can you beat it? 👇", "Schaffst du mehr? 👇", "Fai meglio? 👇", "Consegue superar? 👇");
+      ? "  ·  🔥 " + dailyStreak + " " + tr(dailyStreak > 1 ? "jours" : "jour", dailyStreak > 1 ? "days" : "day", dailyStreak > 1 ? "Tage" : "Tag", dailyStreak > 1 ? "giorni" : "giorno", dailyStreak > 1 ? "dias" : "dia",dailyStreak > 1 ? "días" : "día")
+      : (won ? "  ·  🔥 " + tr("Série", "Streak", "Serie", "Serie", "Sequência","Racha") + " " + streak : "");
+    const cta = tr("Tu fais mieux ? 👇", "Can you beat it? 👇", "Schaffst du mehr? 👇", "Fai meglio? 👇", "Consegue superar? 👇","¿Lo haces mejor? 👇");
     return `${head} — ${res}${streakLine}\n${rows}\n\n${cta}\nhttps://goatfc.fr`;
   }
   function doShare() {
@@ -693,22 +696,22 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
     const mates = findTeammates(answer, 2);
     const out: string[] = [];
     if (answer.nationalities[0]) out.push(flag + " " + answer.nationalities[0] + " · " + posEmoji(answer.positions[0] || "") + " " + posLabel(answer.positions[0] || ""));
-    if (decade) out.push("🕰️ " + tr("J'ai percé dans les années", "I broke through in the", "Durchbruch in den", "Sono esploso negli anni", "Estourei nos anos") + " " + decade + tr("", "s", "ern", "", ""));
-    if (first) out.push("🎬 " + tr("J'ai débuté à", "I started at", "Mein Debüt bei", "Ho esordito a", "Comecei no") + " " + first);
-    if (midPick.length) out.push("✈️ " + tr("Je suis passé par", "I played for", "Ich spielte für", "Sono passato per", "Passei por") + " " + midPick.join(", "));
-    if (mates.length) out.push("🤝 " + tr("J'ai côtoyé", "I played alongside", "Ich spielte mit", "Ho giocato con", "Joguei ao lado de") + " " + mates.join(", "));
-    if (last && last !== first) out.push("🏁 " + tr("Dernier maillot :", "Last shirt:", "Letztes Trikot:", "Ultima maglia:", "Última camisa:") + " " + last);
+    if (decade) out.push("🕰️ " + tr("J'ai percé dans les années", "I broke through in the", "Durchbruch in den", "Sono esploso negli anni", "Estourei nos anos","Me di a conocer en los") + " " + decade + tr("", "s", "ern", "", "","s"));
+    if (first) out.push("🎬 " + tr("J'ai débuté à", "I started at", "Mein Debüt bei", "Ho esordito a", "Comecei no","Empecé en") + " " + first);
+    if (midPick.length) out.push("✈️ " + tr("Je suis passé par", "I played for", "Ich spielte für", "Sono passato per", "Passei por","Pasé por") + " " + midPick.join(", "));
+    if (mates.length) out.push("🤝 " + tr("J'ai côtoyé", "I played alongside", "Ich spielte mit", "Ho giocato con", "Joguei ao lado de","Coincidí con") + " " + mates.join(", "));
+    if (last && last !== first) out.push("🏁 " + tr("Dernier maillot :", "Last shirt:", "Letztes Trikot:", "Ultima maglia:", "Última camisa:","Última camiseta:") + " " + last);
     return out;
   }
 
   // Énigme « Qui suis-je ? » — texte instagrammable pour défier ses potes.
   function dailyRiddle(): string {
     return [
-      "🕵️ " + tr("QUI SUIS-JE ?", "WHO AM I?", "WER BIN ICH?", "CHI SONO?", "QUEM SOU EU?"),
+      "🕵️ " + tr("QUI SUIS-JE ?", "WHO AM I?", "WER BIN ICH?", "CHI SONO?", "QUEM SOU EU?","¿QUIÉN SOY?"),
       "",
       ...riddleClues(),
       "",
-      "🐐 " + tr("Devine le joueur mystère sur GOAT FC", "Guess the mystery player on GOAT FC", "Errate den Mystery-Spieler auf GOAT FC", "Indovina il giocatore misterioso su GOAT FC", "Adivinhe o jogador misterioso no GOAT FC"),
+      "🐐 " + tr("Devine le joueur mystère sur GOAT FC", "Guess the mystery player on GOAT FC", "Errate den Mystery-Spieler auf GOAT FC", "Indovina il giocatore misterioso su GOAT FC", "Adivinhe o jogador misterioso no GOAT FC","Adivina el jugador misterioso en GOAT FC"),
       "👉 goatfc.fr",
     ].join("\n");
   }
@@ -746,7 +749,7 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
       ctx.fillText("🐐 GOAT FC", W / 2, 120);
       // Titre
       ctx.fillStyle = "#FFD400"; ctx.font = "700 118px Anton, sans-serif";
-      ctx.fillText(tr("QUI SUIS-JE ?", "WHO AM I?", "WER BIN ICH?", "CHI SONO?", "QUEM SOU EU?"), W / 2, 270);
+      ctx.fillText(tr("QUI SUIS-JE ?", "WHO AM I?", "WER BIN ICH?", "CHI SONO?", "QUEM SOU EU?","¿QUIÉN SOY?"), W / 2, 270);
       // Indices (gauche)
       const clues = riddleClues();
       ctx.textAlign = "left";
@@ -770,7 +773,7 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
       ctx.textAlign = "left"; ctx.fillStyle = "#08150d";
       ctx.font = "700 46px Anton, sans-serif"; ctx.fillText("goatfc.fr", 70, H - 58);
       ctx.textAlign = "right"; ctx.font = "600 30px 'Archivo', Arial, sans-serif";
-      ctx.fillText(tr("Le joueur mystère", "The mystery player", "Der Mystery-Spieler", "Il giocatore misterioso", "O jogador misterioso"), W - 70, H - 58);
+      ctx.fillText(tr("Le joueur mystère", "The mystery player", "Der Mystery-Spieler", "Il giocatore misterioso", "O jogador misterioso","El jugador misterioso"), W - 70, H - 58);
       return await new Promise<Blob | null>(res => cv.toBlob(b => res(b), "image/png", 0.95));
     } catch { return null; }
   }
@@ -811,11 +814,11 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
   const aLastClub = answer.clubs[answer.clubs.length - 1] || "";
   const [aLbg, aLfg] = clubColors(aLastClub);
   const topSlots = [
-    { key: "nat", label: tr("NAT", "NAT", "NAT", "NAZ", "NAC"), value: aFlag, big: true, confirmed: confirmedKeys.has("nat") },
-    { key: "cont", label: tr("ZONE", "ZONE", "ZONE", "ZONA", "ZONA"), value: aCont, bg: CONT_BG, fg: "#dff0ff", confirmed: confirmedKeys.has("cont") },
-    { key: "pos", label: tr("POSTE", "POS", "POS", "RUOLO", "POS"), value: posEmoji(answer.positions[0] || ""), big: true, confirmed: confirmedKeys.has("pos") },
-    { key: "age", label: tr("ÂGE", "AGE", "ALTER", "ETÀ", "IDADE"), value: aAge ? String(aAge) : "?", confirmed: confirmedKeys.has("age") },
-    { key: "lastclub", label: tr("CLUB", "CLUB", "KLUB", "CLUB", "CLUBE"), value: aLastClub ? clubCode(aLastClub) : "?", bg: aLbg, fg: aLfg, confirmed: confirmedKeys.has("lastclub") },
+    { key: "nat", label: tr("NAT", "NAT", "NAT", "NAZ", "NAC","NAC"), value: aFlag, big: true, confirmed: confirmedKeys.has("nat") },
+    { key: "cont", label: tr("ZONE", "ZONE", "ZONE", "ZONA", "ZONA","ZONA"), value: aCont, bg: CONT_BG, fg: "#dff0ff", confirmed: confirmedKeys.has("cont") },
+    { key: "pos", label: tr("POSTE", "POS", "POS", "RUOLO", "POS","POS"), value: posEmoji(answer.positions[0] || ""), big: true, confirmed: confirmedKeys.has("pos") },
+    { key: "age", label: tr("ÂGE", "AGE", "ALTER", "ETÀ", "IDADE","EDAD"), value: aAge ? String(aAge) : "?", confirmed: confirmedKeys.has("age") },
+    { key: "lastclub", label: tr("CLUB", "CLUB", "KLUB", "CLUB", "CLUBE","CLUB"), value: aLastClub ? clubCode(aLastClub) : "?", bg: aLbg, fg: aLfg, confirmed: confirmedKeys.has("lastclub") },
   ] as { key: string; label: string; value: string; big?: boolean; bg?: string; fg?: string; confirmed: boolean }[];
   const allFound = topSlots.every(s => s.confirmed);
   // Un seul attribut restant : le prochain indice terminera la manche, autant le dire.
@@ -837,11 +840,11 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
       {terrainCharte}
       {/* Header */}
       <div style={{ position: "sticky", top: 0, zIndex: 5, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "calc(12px + env(safe-area-inset-top)) 16px 12px", background: G.encre, borderBottom: G.traitFin }}>
-        <button onClick={close} style={{ ...btn(G.nuit, G.white, 15), padding: "8px 12px", flexShrink: 0 }}>← {tr("QUITTER", "QUIT", "BEENDEN", "ESCI", "SAIR")}</button>
-        <div style={{ ...posterText(20, G.projecteur), textAlign: "center", flex: 1, minWidth: 0, lineHeight: 1.05 }}>{daily ? tr("DEVINETTE DU JOUR", "DAILY RIDDLE", "RÄTSEL DES TAGES", "INDOVINELLO DEL GIORNO", "ADIVINHA DO DIA") : tr("TROUVE LE JOUEUR", "GUESS THE PLAYER", "ERRATE DEN SPIELER", "INDOVINA IL GIOCATORE", "ADIVINHE O JOGADOR")}</div>
+        <button onClick={close} style={{ ...btn(G.nuit, G.white, 15), padding: "8px 12px", flexShrink: 0 }}>← {tr("QUITTER", "QUIT", "BEENDEN", "ESCI", "SAIR","SALIR")}</button>
+        <div style={{ ...posterText(20, G.projecteur), textAlign: "center", flex: 1, minWidth: 0, lineHeight: 1.05 }}>{daily ? tr("DEVINETTE DU JOUR", "DAILY RIDDLE", "RÄTSEL DES TAGES", "INDOVINELLO DEL GIORNO", "ADIVINHA DO DIA","ADIVINANZA DEL DÍA") : tr("TROUVE LE JOUEUR", "GUESS THE PLAYER", "ERRATE DEN SPIELER", "INDOVINA IL GIOCATORE", "ADIVINHE O JOGADOR","ADIVINA EL JUGADOR")}</div>
         {(!over && !revealing && !daily) ? (
-          <button onClick={playAgain} aria-label={tr("Changer de joueur (trop dur)", "Change player (too hard)", "Spieler wechseln (zu schwer)", "Cambia giocatore (troppo difficile)", "Trocar de jogador (difícil demais)")} title={tr("Trop dur ? Change de joueur", "Too hard? Change player", "Zu schwer? Spieler wechseln", "Troppo difficile? Cambia", "Difícil? Troca de jogador")} style={{ ...btn(G.projecteur, G.encre, 14), padding: "8px 11px", whiteSpace: "nowrap", flexShrink: 0 }}>
-            {tr("PASSER", "SKIP", "SKIP", "SALTA", "PULAR")} ⏭
+          <button onClick={playAgain} aria-label={tr("Changer de joueur (trop dur)", "Change player (too hard)", "Spieler wechseln (zu schwer)", "Cambia giocatore (troppo difficile)", "Trocar de jogador (difícil demais)","Cambiar de jugador (muy difícil)")} title={tr("Trop dur ? Change de joueur", "Too hard? Change player", "Zu schwer? Spieler wechseln", "Troppo difficile? Cambia", "Difícil? Troca de jogador","¿Muy difícil? Cambia de jugador")} style={{ ...btn(G.projecteur, G.encre, 14), padding: "8px 11px", whiteSpace: "nowrap", flexShrink: 0 }}>
+            {tr("PASSER", "SKIP", "SKIP", "SALTA", "PULAR","PASAR")} ⏭
           </button>
         ) : (
           <div style={{ width: 74 }} />
@@ -852,8 +855,8 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
         {/* Bandeau série + score, uniquement en mode illimité (pas dans la devinette du jour) */}
         {!daily && (
           <div style={{ display: "flex", justifyContent: "center", gap: 8, marginBottom: 12 }}>
-            <span style={{ padding: "5px 12px", borderRadius: G.rayonS, background: G.maillot, border: G.traitFin, boxShadow: "2px 2px 0 " + G.encre, color: G.white, fontSize: 12, fontWeight: 900, letterSpacing: 1 }}>🔥 {tr("SÉRIE", "STREAK", "SERIE", "SERIE", "SÉRIE")} : {streak}</span>
-            <span style={{ padding: "5px 12px", borderRadius: G.rayonS, background: G.projecteur, border: G.traitFin, boxShadow: "2px 2px 0 " + G.encre, color: G.encre, fontSize: 12, fontWeight: 900, letterSpacing: 1 }}>🏆 {tr("SCORE", "SCORE", "PUNKTE", "PUNTI", "PONTOS")} : {score.toLocaleString("fr-FR")}</span>
+            <span style={{ padding: "5px 12px", borderRadius: G.rayonS, background: G.maillot, border: G.traitFin, boxShadow: "2px 2px 0 " + G.encre, color: G.white, fontSize: 12, fontWeight: 900, letterSpacing: 1 }}>🔥 {tr("SÉRIE", "STREAK", "SERIE", "SERIE", "SÉRIE","RACHA")} : {streak}</span>
+            <span style={{ padding: "5px 12px", borderRadius: G.rayonS, background: G.projecteur, border: G.traitFin, boxShadow: "2px 2px 0 " + G.encre, color: G.encre, fontSize: 12, fontWeight: 900, letterSpacing: 1 }}>🏆 {tr("SCORE", "SCORE", "PUNKTE", "PUNTI", "PONTOS","PUNTUACIÓN")} : {score.toLocaleString("fr-FR")}</span>
           </div>
         )}
 
@@ -861,7 +864,7 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
             (CDM, LDC…) sont des INDICES cachés derrière un bouton. */}
         {daily && !over && (
           <div style={{ marginBottom: 12 }}>
-            <div style={{ ...posterText(20, G.projecteur), textAlign: "center", marginBottom: 10 }}>{tr("Clubs dans sa carrière", "Clubs in his career", "Klubs seiner Karriere", "Club della sua carriera", "Clubes na carreira")}</div>
+            <div style={{ ...posterText(20, G.projecteur), textAlign: "center", marginBottom: 10 }}>{tr("Clubs dans sa carrière", "Clubs in his career", "Klubs seiner Karriere", "Club della sua carriera", "Clubes na carreira","Clubes en su carrera")}</div>
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
               {answer.clubs.map((club, i) => {
                 const [c1, c2] = clubColors(club);
@@ -891,7 +894,7 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
                   </div>
                 )}
                 {cluesShown < deviClues.length && (
-                  <button onClick={() => setCluesShown(n => Math.min(deviClues.length, n + 1))} style={{ ...btn(G.projecteur, G.encre, 15), width: "100%", padding: "10px" }}>💡 {cluesShown === 0 ? tr("VOIR UN INDICE", "SHOW A CLUE", "EINEN HINWEIS ZEIGEN", "MOSTRA UN INDIZIO", "VER UMA DICA") : tr("INDICE SUIVANT", "NEXT CLUE", "NÄCHSTER HINWEIS", "INDIZIO SUCCESSIVO", "PRÓXIMA DICA")} ({cluesShown}/{deviClues.length})</button>
+                  <button onClick={() => setCluesShown(n => Math.min(deviClues.length, n + 1))} style={{ ...btn(G.projecteur, G.encre, 15), width: "100%", padding: "10px" }}>💡 {cluesShown === 0 ? tr("VOIR UN INDICE", "SHOW A CLUE", "EINEN HINWEIS ZEIGEN", "MOSTRA UN INDIZIO", "VER UMA DICA","VER UNA PISTA") : tr("INDICE SUIVANT", "NEXT CLUE", "NÄCHSTER HINWEIS", "INDIZIO SUCCESSIVO", "PRÓXIMA DICA","SIGUIENTE PISTA")} ({cluesShown}/{deviClues.length})</button>
                 )}
               </div>
             )}
@@ -905,9 +908,9 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
             <div style={{ display: "flex", justifyContent: "center", gap: 12, marginBottom: 12 }}>
               {[
                 { emoji: "💡", color: G.ciel, onClick: revealOneAttr, disabled: allFound, label: lastClueLeft
-                  ? tr("Dernier indice — dévoile la réponse", "Last clue — reveals the answer", "Letzter Hinweis — zeigt die Lösung", "Ultimo indizio — svela la risposta", "Última dica — revela a resposta")
-                  : tr("Révéler une info", "Reveal a clue", "Info zeigen", "Rivela un'info", "Revelar info") },
-                { emoji: "🏳️", color: G.maillot, onClick: giveUp, disabled: false, label: tr("Abandonner", "Give up", "Aufgeben", "Arrenditi", "Desistir") },
+                  ? tr("Dernier indice — dévoile la réponse", "Last clue — reveals the answer", "Letzter Hinweis — zeigt die Lösung", "Ultimo indizio — svela la risposta", "Última dica — revela a resposta","Última pista — revela la respuesta")
+                  : tr("Révéler une info", "Reveal a clue", "Info zeigen", "Rivela un'info", "Revelar info","Revelar un dato") },
+                { emoji: "🏳️", color: G.maillot, onClick: giveUp, disabled: false, label: tr("Abandonner", "Give up", "Aufgeben", "Arrenditi", "Desistir","Abandonar") },
               ].map(h => (
                 <button key={h.emoji} onClick={h.onClick} disabled={h.disabled} title={h.label} aria-label={h.label} style={{ width: 48, height: 48, borderRadius: G.rayonS, border: G.traitFin, background: h.disabled ? "rgba(8,17,9,.45)" : h.color, color: "#fff", fontSize: 20, cursor: h.disabled ? "not-allowed" : "pointer", opacity: h.disabled ? 0.45 : 1, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: h.disabled ? "none" : "2px 2px 0 " + G.encre }}>{h.emoji}</button>
               ))}
@@ -936,12 +939,12 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
                 // au-dessus du clavier (sinon on « voit pas en haut »).
                 setTimeout(() => { try { inputRef.current?.scrollIntoView({ block: "start", behavior: "smooth" }); } catch { /* noop */ } }, 280);
               }}
-              placeholder={tr("Rechercher un joueur…", "Search a player…", "Spieler suchen…", "Cerca un giocatore…", "Buscar um jogador…")}
+              placeholder={tr("Rechercher un joueur…", "Search a player…", "Spieler suchen…", "Cerca un giocatore…", "Buscar um jogador…","Buscar un jugador…")}
               autoComplete="off"
               style={{ width: "100%", boxSizing: "border-box", padding: "14px 60px 14px 16px", borderRadius: G.rayon, border: G.trait, boxShadow: G.ombre, background: G.nuit, color: "#fff", fontSize: 15, fontWeight: 700, outline: "none", scrollMarginTop: "calc(64px + env(safe-area-inset-top))" }}
             />
             {!daily && (
-            <button onClick={randomGuess} title={tr("Joueur au hasard", "Random player", "Zufälliger Spieler", "Giocatore casuale", "Jogador aleatório")} aria-label={tr("Joueur au hasard", "Random player", "Zufälliger Spieler", "Giocatore casuale", "Jogador aleatório")} style={{ position: "absolute", right: 7, top: 7, bottom: 7, width: 46, borderRadius: G.rayonS, border: G.traitFin, background: G.projecteur, color: G.encre, fontSize: 20, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "2px 2px 0 " + G.encre }}>🎲</button>
+            <button onClick={randomGuess} title={tr("Joueur au hasard", "Random player", "Zufälliger Spieler", "Giocatore casuale", "Jogador aleatório","Jugador al azar")} aria-label={tr("Joueur au hasard", "Random player", "Zufälliger Spieler", "Giocatore casuale", "Jogador aleatório","Jugador al azar")} style={{ position: "absolute", right: 7, top: 7, bottom: 7, width: 46, borderRadius: G.rayonS, border: G.traitFin, background: G.projecteur, color: G.encre, fontSize: 20, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "2px 2px 0 " + G.encre }}>🎲</button>
             )}
             {suggestions.length > 0 && (
               <div style={{ position: "absolute", top: "100%", left: 0, right: 0, zIndex: 10, marginTop: 6, background: G.nuit, border: G.trait, borderRadius: G.rayon, maxHeight: "min(50vh, 320px)", overflowY: "auto", WebkitOverflowScrolling: "touch" as any, boxShadow: G.ombre }}>
@@ -960,7 +963,7 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
         {!over && !revealing && (
           <div style={{ display: "flex", justifyContent: "center", marginBottom: 4 }}>
             <button onClick={openReport} style={{ padding: "8px 16px", borderRadius: G.rayonS, border: G.traitFin, boxShadow: "2px 2px 0 " + G.encre, background: G.nuit, color: G.maillot, fontSize: 12.5, fontWeight: 800, cursor: "pointer" }}>
-              🚩 {tr("Signaler une erreur", "Report an error", "Fehler melden", "Segnala un errore", "Reportar erro")}
+              🚩 {tr("Signaler une erreur", "Report an error", "Fehler melden", "Segnala un errore", "Reportar erro","Reportar un error")}
             </button>
           </div>
         )}
@@ -1016,10 +1019,10 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
         {over && (
           <div style={{ order: 2, marginTop: 12, marginBottom: 4, background: won ? "rgba(42,155,78,.35)" : "rgba(217,58,43,.3)", border: G.trait, boxShadow: G.ombre, borderRadius: G.rayon, padding: 18, textAlign: "center" }}>
             <div style={{ ...posterText(30, won ? G.white : G.white) }}>
-              {won ? tr("BIEN JOUÉ ! 🎉", "WELL DONE! 🎉", "GUT GEMACHT! 🎉", "BEN FATTO! 🎉", "MANDOU BEM! 🎉") : tr("RATÉ ! 😅", "MISSED! 😅", "VERPASST! 😅", "MANCATO! 😅", "ERROU! 😅")}
+              {won ? tr("BIEN JOUÉ ! 🎉", "WELL DONE! 🎉", "GUT GEMACHT! 🎉", "BEN FATTO! 🎉", "MANDOU BEM! 🎉","¡BIEN JUGADO! 🎉") : tr("RATÉ ! 😅", "MISSED! 😅", "VERPASST! 😅", "MANCATO! 😅", "ERROU! 😅","¡FALLASTE! 😅")}
             </div>
             <div style={{ fontSize: 14, color: "#fff", marginTop: 6 }}>
-              {won ? tr("Trouvé en", "Found in", "Gefunden in", "Trovato in", "Encontrado em") + " " + guesses.length + " " + tr("essai", "try", "Versuch", "tentativo", "tentativa") + (guesses.length > 1 ? "s" : "") : tr("C'était", "It was", "Es war", "Era", "Era") + " :"}
+              {won ? tr("Trouvé en", "Found in", "Gefunden in", "Trovato in", "Encontrado em","Encontrado en") + " " + guesses.length + " " + tr("essai", "try", "Versuch", "tentativo", "tentativa","intento") + (guesses.length > 1 ? "s" : "") : tr("C'était", "It was", "Es war", "Era", "Era","Era") + " :"}
             </div>
             {!won && <div style={{ ...posterText(24, G.projecteur), marginTop: 4 }}>{answer.name}</div>}
             {won && (
@@ -1031,28 +1034,28 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
             <WinBanner maxWidth={340} marginTop={12} lose={!won} />
             <div style={{ fontSize: 14, fontWeight: 800, color: "#FF8A2A", marginTop: 6 }}>
               {daily
-                ? "🔥 " + tr("Série", "Streak", "Serie", "Serie", "Sequência") + " : " + dailyStreak + " " + tr(dailyStreak > 1 ? "jours" : "jour", dailyStreak > 1 ? "days" : "day", dailyStreak > 1 ? "Tage" : "Tag", dailyStreak > 1 ? "giorni" : "giorno", dailyStreak > 1 ? "dias" : "dia") + (dailyStreak > 1 && dailyStreak === dailyBest ? "  ·  🏅 " + tr("Record !", "Best!", "Rekord!", "Record!", "Recorde!") : "  ·  🏅 " + tr("Record", "Best", "Rekord", "Record", "Recorde") + " : " + dailyBest)
-                : (won ? "🔥 " + tr("Série", "Streak", "Serie", "Serie", "Sequência") + " : " + streak + "  ·  🏆 " + tr("Total", "Total", "Gesamt", "Totale", "Total") + " : " + score.toLocaleString("fr-FR")
-                       : (streak === 0 ? tr("Série remise à zéro", "Streak reset", "Serie zurückgesetzt", "Serie azzerata", "Sequência zerada") : ""))}
+                ? "🔥 " + tr("Série", "Streak", "Serie", "Serie", "Sequência","Racha") + " : " + dailyStreak + " " + tr(dailyStreak > 1 ? "jours" : "jour", dailyStreak > 1 ? "days" : "day", dailyStreak > 1 ? "Tage" : "Tag", dailyStreak > 1 ? "giorni" : "giorno", dailyStreak > 1 ? "dias" : "dia",dailyStreak > 1 ? "días" : "día") + (dailyStreak > 1 && dailyStreak === dailyBest ? "  ·  🏅 " + tr("Record !", "Best!", "Rekord!", "Record!", "Recorde!","¡Récord!") : "  ·  🏅 " + tr("Record", "Best", "Rekord", "Record", "Recorde","Récord") + " : " + dailyBest)
+                : (won ? "🔥 " + tr("Série", "Streak", "Serie", "Serie", "Sequência","Racha") + " : " + streak + "  ·  🏆 " + tr("Total", "Total", "Gesamt", "Totale", "Total","Total") + " : " + score.toLocaleString("fr-FR")
+                       : (streak === 0 ? tr("Série remise à zéro", "Streak reset", "Serie zurückgesetzt", "Serie azzerata", "Sequência zerada","Racha reiniciada") : ""))}
             </div>
 
             {daily ? (
               <div style={{ width: "100%", marginTop: 14, padding: "15px", background: G.nuit, border: G.trait, boxShadow: G.ombre, borderRadius: G.rayon, fontSize: 15, fontWeight: 900, letterSpacing: .3, color: G.projecteur, textAlign: "center" }}>
-                🌙 {tr("Reviens demain pour porter ta série à " + (dailyStreak + 1) + " 🔥", "Come back tomorrow to reach a " + (dailyStreak + 1) + " streak 🔥", "Komm morgen für Serie " + (dailyStreak + 1) + " zurück 🔥", "Torna domani per arrivare a " + (dailyStreak + 1) + " 🔥", "Volte amanhã para chegar a " + (dailyStreak + 1) + " 🔥")}
+                🌙 {tr("Reviens demain pour porter ta série à " + (dailyStreak + 1) + " 🔥", "Come back tomorrow to reach a " + (dailyStreak + 1) + " streak 🔥", "Komm morgen für Serie " + (dailyStreak + 1) + " zurück 🔥", "Torna domani per arrivare a " + (dailyStreak + 1) + " 🔥", "Volte amanhã para chegar a " + (dailyStreak + 1) + " 🔥","Vuelve mañana para llegar a " + (dailyStreak + 1) + " 🔥")}
               </div>
             ) : (
               <button onClick={playAgain} style={{ ...btn(G.projecteur, G.encre, 18), width: "100%", marginTop: 14, padding: "15px" }}>
-                🔄 {tr("REJOUER", "PLAY AGAIN", "NOCHMAL", "GIOCA ANCORA", "JOGAR DE NOVO")}
+                🔄 {tr("REJOUER", "PLAY AGAIN", "NOCHMAL", "GIOCA ANCORA", "JOGAR DE NOVO","JUGAR OTRA VEZ")}
               </button>
             )}
 
             <button onClick={doShare} style={{ ...btn(G.pelouse, G.encre, 16), width: "100%", marginTop: 10, padding: "13px" }}>
-              {copied ? tr("Copié ! 📋", "Copied! 📋", "Kopiert! 📋", "Copiato! 📋", "Copiado! 📋") : "📤 " + tr("Partager mon résultat", "Share my result", "Ergebnis teilen", "Condividi il risultato", "Compartilhar resultado")}
+              {copied ? tr("Copié ! 📋", "Copied! 📋", "Kopiert! 📋", "Copiato! 📋", "Copiado! 📋","¡Copiado! 📋") : "📤 " + tr("Partager mon résultat", "Share my result", "Ergebnis teilen", "Condividi il risultato", "Compartilhar resultado","Compartir mi resultado")}
             </button>
 
 
             <button onClick={openReport} style={{ marginTop: 12, background: "transparent", border: "none", color: "rgba(255,107,125,.85)", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>
-              🚩 {tr("Signaler une erreur sur ce parcours", "Report an error on this career", "Fehler in diesem Verlauf melden", "Segnala un errore su questa carriera", "Reportar erro nesta carreira")}
+              🚩 {tr("Signaler une erreur sur ce parcours", "Report an error on this career", "Fehler in diesem Verlauf melden", "Segnala un errore su questa carriera", "Reportar erro nesta carreira","Reportar un error en esta trayectoria")}
             </button>
           </div>
         )}
@@ -1063,18 +1066,18 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
         <div style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(0,0,0,.78)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }} onClick={() => setShowRiddle(false)}>
           <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 400, background: G.nuit, border: G.trait, borderRadius: G.rayonL, padding: "24px 20px", boxShadow: G.ombreL }}>
             <div style={{ ...posterText(18, G.white), textAlign: "center" }}>🐐 GOAT FC</div>
-            <div style={{ ...posterText(34, G.projecteur), textAlign: "center", marginTop: 4, marginBottom: 16 }}>🕵️ {tr("QUI SUIS-JE ?", "WHO AM I?", "WER BIN ICH?", "CHI SONO?", "QUEM SOU EU?")}</div>
-            {!over && <div style={{ textAlign: "center", fontSize: 11.5, fontWeight: 700, color: G.projecteur, marginTop: -8, marginBottom: 14 }}>👀 {tr("Ces indices te sont dévoilés en avance", "These clues are revealed to you early", "Diese Hinweise werden dir vorab gezeigt", "Questi indizi ti sono svelati in anticipo", "Estas dicas são reveladas antes")}</div>}
+            <div style={{ ...posterText(34, G.projecteur), textAlign: "center", marginTop: 4, marginBottom: 16 }}>🕵️ {tr("QUI SUIS-JE ?", "WHO AM I?", "WER BIN ICH?", "CHI SONO?", "QUEM SOU EU?","¿QUIÉN SOY?")}</div>
+            {!over && <div style={{ textAlign: "center", fontSize: 11.5, fontWeight: 700, color: G.projecteur, marginTop: -8, marginBottom: 14 }}>👀 {tr("Ces indices te sont dévoilés en avance", "These clues are revealed to you early", "Diese Hinweise werden dir vorab gezeigt", "Questi indizi ti sono svelati in anticipo", "Estas dicas são reveladas antes","Estas pistas se te revelan por adelantado")}</div>}
             <div style={{ display: "flex", flexDirection: "column", gap: 11, marginBottom: 20 }}>
               {riddleClues().map((line, i) => (
                 <div key={i} style={{ fontSize: 15, fontWeight: 700, color: "#F2FFF7", lineHeight: 1.35 }}>{line}</div>
               ))}
             </div>
             <button onClick={shareRiddle} style={{ ...btn(G.projecteur, G.encre, 17), width: "100%", padding: "14px" }}>
-              {riddleCopied ? tr("Copié ! 📋", "Copied! 📋", "Kopiert! 📋", "Copiato! 📋", "Copiado! 📋") : "📤 " + tr("Partager l'énigme", "Share the riddle", "Rätsel teilen", "Condividi l'enigma", "Compartilhar o enigma")}
+              {riddleCopied ? tr("Copié ! 📋", "Copied! 📋", "Kopiert! 📋", "Copiato! 📋", "Copiado! 📋","¡Copiado! 📋") : "📤 " + tr("Partager l'énigme", "Share the riddle", "Rätsel teilen", "Condividi l'enigma", "Compartilhar o enigma","Compartir el enigma")}
             </button>
             <button onClick={() => setShowRiddle(false)} style={{ ...btn("rgba(8,17,9,.5)", G.white, 15), width: "100%", marginTop: 10, padding: "12px" }}>
-              {tr("Fermer", "Close", "Schließen", "Chiudi", "Fechar")}
+              {tr("Fermer", "Close", "Schließen", "Chiudi", "Fechar","Cerrar")}
             </button>
           </div>
         </div>
@@ -1087,14 +1090,14 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
             {reportSent ? (
               <div style={{ textAlign: "center", padding: "10px 0" }}>
                 <div style={{ fontSize: 46, marginBottom: 8 }}>✅</div>
-                <div style={{ ...posterText(26, G.pelouse) }}>{tr("MERCI !", "THANKS!", "DANKE!", "GRAZIE!", "OBRIGADO!")}</div>
-                <div style={{ fontSize: 13, color: "rgba(255,255,255,.7)", marginTop: 6, marginBottom: 18 }}>{tr("Signalement envoyé. On vérifie ce parcours.", "Report sent. We'll check this career.", "Meldung gesendet. Wir prüfen diesen Verlauf.", "Segnalazione inviata. Verificheremo.", "Reporte enviado. Vamos verificar.")}</div>
-                <button onClick={() => setReportOpen(false)} style={{ ...btn(G.pelouse, G.encre, 16), width: "100%", padding: "13px" }}>{tr("Fermer", "Close", "Schließen", "Chiudi", "Fechar")}</button>
+                <div style={{ ...posterText(26, G.pelouse) }}>{tr("MERCI !", "THANKS!", "DANKE!", "GRAZIE!", "OBRIGADO!","¡GRACIAS!")}</div>
+                <div style={{ fontSize: 13, color: "rgba(255,255,255,.7)", marginTop: 6, marginBottom: 18 }}>{tr("Signalement envoyé. On vérifie ce parcours.", "Report sent. We'll check this career.", "Meldung gesendet. Wir prüfen diesen Verlauf.", "Segnalazione inviata. Verificheremo.", "Reporte enviado. Vamos verificar.","Reporte enviado. Vamos a revisar esta trayectoria.")}</div>
+                <button onClick={() => setReportOpen(false)} style={{ ...btn(G.pelouse, G.encre, 16), width: "100%", padding: "13px" }}>{tr("Fermer", "Close", "Schließen", "Chiudi", "Fechar","Cerrar")}</button>
               </div>
             ) : (
               <>
-                <div style={{ ...posterText(26, G.maillot), textAlign: "center", marginBottom: 6 }}>🚩 {tr("SIGNALER UNE ERREUR", "REPORT AN ERROR", "FEHLER MELDEN", "SEGNALA UN ERRORE", "REPORTAR ERRO")}</div>
-                <div style={{ fontSize: 13, color: "rgba(255,255,255,.7)", textAlign: "center", marginBottom: 14, lineHeight: 1.4 }}>{tr("Le parcours de ce joueur te semble faux ou pas à jour ?", "Does this player's career look wrong or outdated?", "Wirkt der Verlauf falsch oder veraltet?", "La carriera di questo giocatore sembra errata?", "A carreira deste jogador parece errada?")}</div>
+                <div style={{ ...posterText(26, G.maillot), textAlign: "center", marginBottom: 6 }}>🚩 {tr("SIGNALER UNE ERREUR", "REPORT AN ERROR", "FEHLER MELDEN", "SEGNALA UN ERRORE", "REPORTAR ERRO","REPORTAR UN ERROR")}</div>
+                <div style={{ fontSize: 13, color: "rgba(255,255,255,.7)", textAlign: "center", marginBottom: 14, lineHeight: 1.4 }}>{tr("Le parcours de ce joueur te semble faux ou pas à jour ?", "Does this player's career look wrong or outdated?", "Wirkt der Verlauf falsch oder veraltet?", "La carriera di questo giocatore sembra errata?", "A carreira deste jogador parece errada?","¿La trayectoria de este jugador te parece errónea o desactualizada?")}</div>
                 {(over || showCareer) && (
                   <div style={{ background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.12)", borderRadius: 12, padding: "10px 12px", marginBottom: 14 }}>
                     <div style={{ fontSize: 14, fontWeight: 800, color: "#fff", marginBottom: 3 }}>{answer.name}</div>
@@ -1104,15 +1107,15 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
                 <textarea
                   value={reportNote}
                   onChange={e => setReportNote(e.target.value)}
-                  placeholder={tr("Qu'est-ce qui est faux ? (facultatif)", "What's wrong? (optional)", "Was ist falsch? (optional)", "Cosa c'è di sbagliato? (facoltativo)", "O que está errado? (opcional)")}
+                  placeholder={tr("Qu'est-ce qui est faux ? (facultatif)", "What's wrong? (optional)", "Was ist falsch? (optional)", "Cosa c'è di sbagliato? (facoltativo)", "O que está errado? (opcional)","¿Qué está mal? (opcional)")}
                   rows={3}
                   style={{ width: "100%", boxSizing: "border-box", padding: "11px 13px", borderRadius: 12, border: "1.5px solid rgba(255,255,255,.15)", background: "rgba(255,255,255,.06)", color: "#fff", fontSize: 14, fontWeight: 500, outline: "none", resize: "none", marginBottom: 14, fontFamily: "inherit" }}
                 />
                 <button onClick={sendReport} style={{ width: "100%", padding: "14px", background: "linear-gradient(135deg,#FF3D57,#FF6B35)", color: "#fff", border: "none", borderRadius: 14, fontSize: 15, fontWeight: 900, cursor: "pointer" }}>
-                  {tr("Envoyer le signalement", "Send report", "Meldung senden", "Invia segnalazione", "Enviar reporte")}
+                  {tr("Envoyer le signalement", "Send report", "Meldung senden", "Invia segnalazione", "Enviar reporte","Enviar el reporte")}
                 </button>
                 <button onClick={() => setReportOpen(false)} style={{ width: "100%", marginTop: 8, padding: "12px", background: "transparent", color: "rgba(255,255,255,.6)", border: "1px solid rgba(255,255,255,.15)", borderRadius: 14, fontSize: 14, fontWeight: 800, cursor: "pointer" }}>
-                  {tr("Annuler", "Cancel", "Abbrechen", "Annulla", "Cancelar")}
+                  {tr("Annuler", "Cancel", "Abbrechen", "Annulla", "Cancelar","Cancelar")}
                 </button>
               </>
             )}

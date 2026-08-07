@@ -10,6 +10,12 @@
 
 export const G = {
   bg:"#0E1F14",bgPanel:"rgba(0,0,0,.5)",bgCard:"#141414",dark:"#0a0a0a",white:"#ffffff",
+  // ── Jetons d'avant la charte — PLUS AUCUN USAGE, ne pas y revenir ──────
+  // `accent` (vert LED) et `gold` (jaune fluo) sont les deux teintes néon que
+  // la charte remplace : prendre `pelouseClaire` ou `projecteur` pour du texte,
+  // `pelouse` ou `projecteur` pour un aplat. `heading` était un alias de `font`,
+  // donc écrire `fontFamily:G.heading` ne distinguait rien : un titre se fait
+  // avec posterText / posterTitre, pas avec une famille de police.
   offWhite:"#F5F5F5",accent:"#00E676",gold:"#FFD600",red:"#FF3D57",
   font:"'Bebas Neue',cursive,sans-serif",heading:"'Bebas Neue',cursive,sans-serif",
 
@@ -19,6 +25,13 @@ export const G = {
   // ne sont pour l'instant appliqués QUE sur l'écran d'accueil mobile.
   encre:"#081109",        // le trait — noir à biais vert, jamais noir pur
   pelouse:"#2A9B4E",      // l'accent principal, remplace le vert LED #00E676
+  // La pelouse est faite pour être un APLAT, pas une couleur de texte : posée
+  // sur le panneau de nuit elle ne donne que 4,2 de contraste, et 2,4 sur la
+  // pelouse éclairée — illisible pour un libellé de 11 px. C'est précisément
+  // pour ça que tout l'app attrapait le vert LED #00E676. Voici sa teinte
+  // éclairée, le seul vert de la charte autorisé sur du TEXTE : 7,6 sur nuit,
+  // 4,4 sur la pelouse. Pour un aplat, garder `pelouse`.
+  pelouseClaire:"#4FD07A",
   projecteur:"#F5C22B",   // actions et réussites, moins fluo que #FFD600
   maillot:"#D93A2B",      // urgence, défaite, compte à rebours
   ciel:"#2A6FBF",         // l'adversaire, le second camp

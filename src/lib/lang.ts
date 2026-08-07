@@ -2,11 +2,11 @@
 // GoatGuess…) qui, contrairement à LePont.jsx, n'avaient aucun mécanisme de
 // langue. La langue est stockée par LePont dans localStorage `bb_lang` ; à
 // défaut on la déduit de la langue du navigateur. Signature identique au helper
-// `tr` de LePont : tr(fr, en, de, it, pt).
+// `tr` de LePont : tr(fr, en, de, it, pt, es).
 
-export type Lang = "fr" | "en" | "de" | "it" | "pt";
+export type Lang = "fr" | "en" | "de" | "it" | "pt" | "es";
 
-const SUPPORTED: Lang[] = ["fr", "en", "de", "it", "pt"];
+const SUPPORTED: Lang[] = ["fr", "en", "de", "it", "pt", "es"];
 
 export function getLang(): Lang {
   try {
@@ -27,6 +27,7 @@ export const LANGS: { code: Lang; flag: string; label: string }[] = [
   { code: "de", flag: "🇩🇪", label: "DE" },
   { code: "it", flag: "🇮🇹", label: "IT" },
   { code: "pt", flag: "🇵🇹", label: "PT" },
+  { code: "es", flag: "🇪🇸", label: "ES" },
 ];
 
 /**
@@ -45,12 +46,14 @@ export function tr(
   en: string,
   de?: string,
   it?: string,
-  pt?: string
+  pt?: string,
+  es?: string
 ): string {
   const l = getLang();
   if (l === "de") return de ?? en ?? fr;
   if (l === "it") return it ?? en ?? fr;
   if (l === "pt") return pt ?? en ?? fr;
+  if (l === "es") return es ?? en ?? fr;
   if (l === "en") return en ?? fr;
   return fr;
 }

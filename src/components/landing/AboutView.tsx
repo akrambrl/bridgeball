@@ -5,7 +5,7 @@ export const AboutView = () => {
   const l = getLang();
   const Plug = <span className="font-semibold" style={{ color: G.pelouse }}>The Plug</span>;
   const Mercato = <span className="font-semibold" style={{ color: G.projecteur }}>The Mercato</span>;
-  const Grid = <span className="font-semibold" style={{ color: G.pelouse }}>{tr("Trouve le joueur", "Guess the player", "Errate den Spieler", "Indovina il giocatore", "Adivinhe o jogador")}</span>;
+  const Grid = <span className="font-semibold" style={{ color: G.pelouse }}>{tr("Trouve le joueur", "Guess the player", "Errate den Spieler", "Indovina il giocatore", "Adivinhe o jogador","Adivina el jugador")}</span>;
 
   const prose =
     l === "en" ? (
@@ -74,6 +74,28 @@ export const AboutView = () => {
           trucchi. Solo un gioco di calcio fatto da e per i tifosi. Benvenuto nel club. 🐐
         </p>
       </>
+    ) : l === "es" ? (
+      <>
+        <p>
+          GOAT FC nació de una{" "}
+          <span className="text-white font-semibold">pandilla de amigos apasionados por el fútbol y los quizzes</span>.
+          De tanto discutir en el bar — «¿dónde jugó ese?», «oye, estos dos clubes tienen un jugador en
+          común, ¿sabes quién?» — nos dimos cuenta de que faltaba un juego hecho para eso.
+        </p>
+        <p>
+          Así que nos lanzamos <span className="text-white font-semibold">juntos</span>. Cada uno con sus
+          obsesiones: la Ligue 1 de los 2000, traspasos olvidados de la Premier League, las cadenas de
+          mercado más locas, leyendas sudamericanas que pasaron por Europa… Lo metimos todo en la misma base.
+        </p>
+        <p>
+          Salieron tres juegos: {Plug} para encontrar el eslabón entre dos clubes, {Mercato} para encadenar
+          traspasos sin fin, y {Grid}, la deducción del jugador misterioso sin límite.
+        </p>
+        <p>
+          GOAT FC es un proyecto entre amigos, hecho con el corazón. Sin anuncios, sin muro de pago, sin
+          trucos. Solo un juego de fútbol hecho por y para aficionados al fútbol. Bienvenido al club. 🐐
+        </p>
+      </>
     ) : l === "pt" ? (
       <>
         <p>
@@ -130,10 +152,10 @@ export const AboutView = () => {
         <span className="inline-block px-3 py-1 mb-3"
           style={{ ...posterLight(15, G.encre), letterSpacing:3, background:G.projecteur,
             borderRadius:G.rayonS, border:G.traitFin, boxShadow:"2px 2px 0 "+G.encre }}>
-          {tr("À PROPOS", "ABOUT", "ÜBER UNS", "CHI SIAMO", "SOBRE")}
+          {tr("À PROPOS", "ABOUT", "ÜBER UNS", "CHI SIAMO", "SOBRE","ACERCA DE")}
         </span>
         <h2 style={{ ...posterTitre(80, G.white), fontSize:"clamp(38px,7vw,80px)" }}>
-          {tr("L'HISTOIRE DERRIÈRE GOAT FC", "THE STORY BEHIND GOAT FC", "DIE GESCHICHTE HINTER GOAT FC", "LA STORIA DIETRO GOAT FC", "A HISTÓRIA POR TRÁS DO GOAT FC")}
+          {tr("L'HISTOIRE DERRIÈRE GOAT FC", "THE STORY BEHIND GOAT FC", "DIE GESCHICHTE HINTER GOAT FC", "LA STORIA DIETRO GOAT FC", "A HISTÓRIA POR TRÁS DO GOAT FC","LA HISTORIA DETRÁS DE GOAT FC")}
         </h2>
       </div>
 
@@ -144,15 +166,15 @@ export const AboutView = () => {
       <div className="mt-10 grid md:grid-cols-3 gap-4">
         <div className="p-5" style={{ background:G.nuit, border:G.trait, borderRadius:G.rayon, boxShadow:G.ombre }}>
           <div style={posterText(56, G.projecteur)}>4 100+</div>
-          <div className="text-sm text-white/60 mt-1">{tr("joueurs dans la base", "players in the database", "Spieler in der Datenbank", "giocatori nel database", "jogadores na base")}</div>
+          <div className="text-sm text-white/60 mt-1">{tr("joueurs dans la base", "players in the database", "Spieler in der Datenbank", "giocatori nel database", "jogadores na base","jugadores en la base")}</div>
         </div>
         <div className="p-5" style={{ background:G.nuit, border:G.trait, borderRadius:G.rayon, boxShadow:G.ombre }}>
           <div style={posterText(56, G.projecteur)}>3</div>
-          <div className="text-sm text-white/60 mt-1">{tr("jeux différents", "different games", "verschiedene Spiele", "giochi diversi", "jogos diferentes")}</div>
+          <div className="text-sm text-white/60 mt-1">{tr("jeux différents", "different games", "verschiedene Spiele", "giochi diversi", "jogos diferentes","juegos diferentes")}</div>
         </div>
         <div className="p-5" style={{ background:G.nuit, border:G.trait, borderRadius:G.rayon, boxShadow:G.ombre }}>
           <div style={posterText(56, G.projecteur)}>∞</div>
-          <div className="text-sm text-white/60 mt-1">{tr("combinaisons possibles", "possible combinations", "mögliche Kombinationen", "combinazioni possibili", "combinações possíveis")}</div>
+          <div className="text-sm text-white/60 mt-1">{tr("combinaisons possibles", "possible combinations", "mögliche Kombinationen", "combinazioni possibili", "combinações possíveis","combinaciones posibles")}</div>
         </div>
       </div>
 

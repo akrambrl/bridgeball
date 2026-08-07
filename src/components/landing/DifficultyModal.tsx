@@ -18,20 +18,20 @@ const DIFFS: {
 }[] = [
   {
     key: "facile",
-    label: () => tr("FACILE", "EASY", "LEICHT", "FACILE", "FÁCIL"),
-    subtitle: () => tr("Stars très connues", "Very famous stars", "Sehr bekannte Stars", "Star molto famose", "Estrelas muito famosas"),
+    label: () => tr("FACILE", "EASY", "LEICHT", "FACILE", "FÁCIL","FÁCIL"),
+    subtitle: () => tr("Stars très connues", "Very famous stars", "Sehr bekannte Stars", "Star molto famose", "Estrelas muito famosas","Estrellas muy conocidas"),
     accent: G.pelouse,
   },
   {
     key: "moyen",
-    label: () => tr("MOYEN", "MEDIUM", "MITTEL", "MEDIO", "MÉDIO"),
-    subtitle: () => tr("Bons joueurs", "Good players", "Gute Spieler", "Buoni giocatori", "Bons jogadores"),
+    label: () => tr("MOYEN", "MEDIUM", "MITTEL", "MEDIO", "MÉDIO","MEDIO"),
+    subtitle: () => tr("Bons joueurs", "Good players", "Gute Spieler", "Buoni giocatori", "Bons jogadores","Buenos jugadores"),
     accent: G.projecteur,
   },
   {
     key: "expert",
-    label: () => tr("CRESCENDO", "CRESCENDO", "CRESCENDO", "CRESCENDO", "CRESCENDO"),
-    subtitle: () => tr("Facile → Moyen → Expert", "Easy → Medium → Expert", "Leicht → Mittel → Experte", "Facile → Medio → Esperto", "Fácil → Médio → Expert"),
+    label: () => tr("CRESCENDO", "CRESCENDO", "CRESCENDO", "CRESCENDO", "CRESCENDO","CRESCENDO"),
+    subtitle: () => tr("Facile → Moyen → Expert", "Easy → Medium → Expert", "Leicht → Mittel → Experte", "Facile → Medio → Esperto", "Fácil → Médio → Expert","Fácil → Medio → Experto"),
     accent: G.maillot,
   },
 ];
@@ -69,7 +69,7 @@ export const DifficultyModal = ({ game, onPick, onClose }: Props) => {
             {GAME_LABEL[game]}
           </div>
           <h3 style={posterText(42, G.white)}>
-            {tr("CHOISIS TA DIFFICULTÉ", "CHOOSE YOUR DIFFICULTY", "WÄHLE DEINE SCHWIERIGKEIT", "SCEGLI LA DIFFICOLTÀ", "ESCOLHA A DIFICULDADE")}
+            {tr("CHOISIS TA DIFFICULTÉ", "CHOOSE YOUR DIFFICULTY", "WÄHLE DEINE SCHWIERIGKEIT", "SCEGLI LA DIFFICOLTÀ", "ESCOLHA A DIFICULDADE","ELIGE TU DIFICULTAD")}
           </h3>
         </div>
 

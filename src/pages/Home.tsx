@@ -109,10 +109,10 @@ const Home = () => {
           onClick={() => setShowQuitConfirm(true)}
           className="fixed top-3 right-3 z-[60]"
           style={{ ...btn(G.projecteur, G.encre, 18), fontFamily:G.font, fontWeight:800, letterSpacing:1.5, transform:"none" }}
-          aria-label={tr("Quitter et revenir à la landing GOAT FC", "Quit and return to the GOAT FC landing", "Beenden und zur GOAT-FC-Startseite zurück", "Esci e torna alla landing GOAT FC", "Sair e voltar à landing do GOAT FC")}
-          title={tr("Quitter et revenir à la landing", "Quit and return to landing", "Beenden und zur Startseite", "Esci e torna alla landing", "Sair e voltar à landing")}
+          aria-label={tr("Quitter et revenir à la landing GOAT FC", "Quit and return to the GOAT FC landing", "Beenden und zur GOAT-FC-Startseite zurück", "Esci e torna alla landing GOAT FC", "Sair e voltar à landing do GOAT FC","Salir y volver a la portada de GOAT FC")}
+          title={tr("Quitter et revenir à la landing", "Quit and return to landing", "Beenden und zur Startseite", "Esci e torna alla landing", "Sair e voltar à landing","Salir y volver a la portada")}
         >
-          ← {tr("QUITTER", "QUIT", "BEENDEN", "ESCI", "SAIR")}
+          ← {tr("QUITTER", "QUIT", "BEENDEN", "ESCI", "SAIR","SALIR")}
         </button>
         <LePont />
 
@@ -131,18 +131,18 @@ const Home = () => {
             >
               <div className="text-5xl mb-3">{onlineOpponent ? "🏳️" : "⚠️"}</div>
               <h3 className="mb-2" style={posterText(34, G.white)}>
-                {onlineOpponent ? tr("ABANDONNER LE DUEL ?", "FORFEIT THE DUEL?", "DUELL AUFGEBEN?", "ABBANDONARE IL DUELLO?", "DESISTIR DO DUELO?") : tr("QUITTER LA PARTIE ?", "QUIT THE GAME?", "SPIEL BEENDEN?", "USCIRE DALLA PARTITA?", "SAIR DO JOGO?")}
+                {onlineOpponent ? tr("ABANDONNER LE DUEL ?", "FORFEIT THE DUEL?", "DUELL AUFGEBEN?", "ABBANDONARE IL DUELLO?", "DESISTIR DO DUELO?","¿ABANDONAR EL DUELO?") : tr("QUITTER LA PARTIE ?", "QUIT THE GAME?", "SPIEL BEENDEN?", "USCIRE DALLA PARTITA?", "SAIR DO JOGO?","¿SALIR DE LA PARTIDA?")}
               </h3>
               <p className="text-sm text-white/60 mb-7">
                 {onlineOpponent ? (
                   <>
-                    {tr("Tu perds automatiquement contre", "You automatically lose against", "Du verlierst automatisch gegen", "Perdi automaticamente contro", "Você perde automaticamente contra")}{" "}
+                    {tr("Tu perds automatiquement contre", "You automatically lose against", "Du verlierst automatisch gegen", "Perdi automaticamente contro", "Você perde automaticamente contra","Pierdes automáticamente contra")}{" "}
                     <span className="text-white font-bold">
                       {onlineOpponent.pseudo} {onlineOpponent.country}
                     </span>
                   </>
                 ) : (
-                  tr("Ta progression en cours sera perdue.", "Your current progress will be lost.", "Dein aktueller Fortschritt geht verloren.", "I tuoi progressi attuali andranno persi.", "Seu progresso atual será perdido.")
+                  tr("Ta progression en cours sera perdue.", "Your current progress will be lost.", "Dein aktueller Fortschritt geht verloren.", "I tuoi progressi attuali andranno persi.", "Seu progresso atual será perdido.","Perderás el progreso actual.")
                 )}
               </p>
               <div className="flex flex-col gap-3">
@@ -150,7 +150,7 @@ const Home = () => {
                   onClick={() => setShowQuitConfirm(false)}
                   style={{ ...btn(G.projecteur, G.encre, 22), width:"100%", padding:"12px 16px" }}
                 >
-                  ▶ {tr("CONTINUER", "CONTINUE", "WEITER", "CONTINUA", "CONTINUAR")}
+                  ▶ {tr("CONTINUER", "CONTINUE", "WEITER", "CONTINUA", "CONTINUAR","CONTINUAR")}
                 </button>
                 <button
                   onClick={() => {
@@ -163,7 +163,7 @@ const Home = () => {
                   }}
                   style={{ ...btn(G.maillot, G.white, 18), width:"100%", padding:"12px 16px" }}
                 >
-                  {onlineOpponent ? tr("Concéder le duel", "Concede the duel", "Duell aufgeben", "Cedi il duello", "Ceder o duelo") : tr("Quitter quand même", "Quit anyway", "Trotzdem beenden", "Esci comunque", "Sair mesmo assim")}
+                  {onlineOpponent ? tr("Concéder le duel", "Concede the duel", "Duell aufgeben", "Cedi il duello", "Ceder o duelo","Conceder el duelo") : tr("Quitter quand même", "Quit anyway", "Trotzdem beenden", "Esci comunque", "Sair mesmo assim","Salir igualmente")}
                 </button>
               </div>
             </div>
@@ -413,7 +413,7 @@ function useTickerItems() {
           if (!r.player_name || seen.has(r.player_name)) continue;
           seen.add(r.player_name);
           const game = MODE_LABEL[r.mode] || r.mode;
-          built.push({ who: r.player_name, what: tr(`vient de scorer ${r.score.toLocaleString("fr-FR")} pts sur ${game} 🔥`, `just scored ${r.score.toLocaleString("en-GB")} pts on ${game} 🔥`, `hat gerade ${r.score.toLocaleString("de-DE")} Pkt bei ${game} erzielt 🔥`, `ha appena segnato ${r.score.toLocaleString("it-IT")} pt su ${game} 🔥`, `acabou de marcar ${r.score.toLocaleString("pt-BR")} pts no ${game} 🔥`) });
+          built.push({ who: r.player_name, what: tr(`vient de scorer ${r.score.toLocaleString("fr-FR")} pts sur ${game} 🔥`, `just scored ${r.score.toLocaleString("en-GB")} pts on ${game} 🔥`, `hat gerade ${r.score.toLocaleString("de-DE")} Pkt bei ${game} erzielt 🔥`, `ha appena segnato ${r.score.toLocaleString("it-IT")} pt su ${game} 🔥`, `acabou de marcar ${r.score.toLocaleString("pt-BR")} pts no ${game} 🔥`,`acaba de marcar ${r.score.toLocaleString("es-ES")} pts en ${game} 🔥`) });
           if (built.length >= 8) break;
         }
         if (built.length > 0) setItems(built);
@@ -452,13 +452,13 @@ const ForfeitOverlay = ({
       <div className="relative text-center">
         <div className="text-7xl mb-4 animate-in zoom-in duration-300">🏳️</div>
         <div className="mb-3" style={{ ...posterText(1, G.maillot, 0), fontSize:15, letterSpacing:6 }}>
-          {tr("ABANDON", "FORFEIT", "AUFGABE", "RESA", "DESISTÊNCIA")}
+          {tr("ABANDON", "FORFEIT", "AUFGABE", "RESA", "DESISTÊNCIA","ABANDONO")}
         </div>
         <div className="mb-5" style={posterText(84, G.maillot)}>
-          {tr("DÉFAITE", "DEFEAT", "NIEDERLAGE", "SCONFITTA", "DERROTA")}
+          {tr("DÉFAITE", "DEFEAT", "NIEDERLAGE", "SCONFITTA", "DERROTA","DERROTA")}
         </div>
         <div className="text-white/80 text-lg">
-          {tr("Tu as concédé le duel contre", "You conceded the duel against", "Du hast das Duell aufgegeben gegen", "Hai ceduto il duello contro", "Você cedeu o duelo contra")}
+          {tr("Tu as concédé le duel contre", "You conceded the duel against", "Du hast das Duell aufgegeben gegen", "Hai ceduto il duello contro", "Você cedeu o duelo contra","Has concedido el duelo contra")}
         </div>
         <div className="mt-4 flex flex-col items-center gap-2">
           {opponent.avatar && (
@@ -481,7 +481,7 @@ const ForfeitOverlay = ({
           </div>
         </div>
         <div className="text-xs text-white/40 mt-6 tracking-widest font-display">
-          {tr("RETOUR AU LOBBY...", "BACK TO LOBBY...", "ZURÜCK ZUR LOBBY...", "RITORNO ALLA LOBBY...", "VOLTANDO AO LOBBY...")}
+          {tr("RETOUR AU LOBBY...", "BACK TO LOBBY...", "ZURÜCK ZUR LOBBY...", "RITORNO ALLA LOBBY...", "VOLTANDO AO LOBBY...","VOLVIENDO AL VESTÍBULO...")}
         </div>
       </div>
     </div>
@@ -499,7 +499,7 @@ const ScoreTicker = () => {
         style={{ ...posterText(1, G.encre, 0), fontSize:13, letterSpacing:1.5,
           background:G.maillot, color:G.white, borderRadius:8, border:G.traitFin,
           boxShadow:"2px 2px 0 "+G.encre }}>
-        {tr("EN DIRECT", "LIVE", "LIVE", "IN DIRETTA", "AO VIVO")}
+        {tr("EN DIRECT", "LIVE", "LIVE", "IN DIRETTA", "AO VIVO","EN DIRECTO")}
       </span>
       <div className="flex-1 overflow-hidden">
         <div className="goat-marquee flex gap-12 whitespace-nowrap">

@@ -13,17 +13,17 @@ const TAB_KEYS: TabKey[] = ["play", "tutos", "leaderboard", "faq", "about"];
 
 function tabLabel(key: TabKey): string {
   switch (key) {
-    case "play": return tr("JOUER", "PLAY", "SPIELEN", "GIOCA", "JOGAR");
-    case "tutos": return tr("TUTOS", "GUIDES", "ANLEITUNG", "GUIDE", "GUIAS");
-    case "leaderboard": return tr("CLASSEMENT", "LEADERBOARD", "RANGLISTE", "CLASSIFICA", "RANKING");
+    case "play": return tr("JOUER", "PLAY", "SPIELEN", "GIOCA", "JOGAR","JUGAR");
+    case "tutos": return tr("TUTOS", "GUIDES", "ANLEITUNG", "GUIDE", "GUIAS","GUÍAS");
+    case "leaderboard": return tr("CLASSEMENT", "LEADERBOARD", "RANGLISTE", "CLASSIFICA", "RANKING","CLASIFICACIÓN");
     case "faq": return "FAQ";
-    case "about": return tr("À PROPOS", "ABOUT", "ÜBER UNS", "CHI SIAMO", "SOBRE");
+    case "about": return tr("À PROPOS", "ABOUT", "ÜBER UNS", "CHI SIAMO", "SOBRE","ACERCA DE");
   }
 }
 
 // Lit le pseudo stocké par LePont (sinon "Invité")
 function getStoredPseudo(): string {
-  const guest = tr("Invité", "Guest", "Gast", "Ospite", "Convidado");
+  const guest = tr("Invité", "Guest", "Gast", "Ospite", "Convidado","Invitado");
   if (typeof window === "undefined") return guest;
   try {
     return (
@@ -57,7 +57,7 @@ const LangPicker = () => {
     <div className="relative" ref={box}>
       <button
         onClick={() => setOpen((o) => !o)}
-        aria-label={tr("Changer la langue", "Change language", "Sprache ändern", "Cambia lingua", "Mudar idioma")}
+        aria-label={tr("Changer la langue", "Change language", "Sprache ändern", "Cambia lingua", "Mudar idioma","Cambiar el idioma")}
         aria-expanded={open}
         className="flex items-center gap-1.5 px-3 py-2"
         style={{ background:G.nuit, border:G.traitFin, borderRadius:G.rayonS,

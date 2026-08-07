@@ -52,15 +52,15 @@ export const LeaderboardView = ({ onPlay }: Props) => {
         <span className="inline-block px-3 py-1 mb-3"
           style={{ ...posterLight(15, G.encre), letterSpacing:3, background:G.projecteur,
             borderRadius:G.rayonS, border:G.traitFin, boxShadow:"2px 2px 0 "+G.encre }}>
-          {tr("PALMARÈS", "HONOURS", "BESTENLISTE", "ALBO D'ORO", "PALMARÉS")}
+          {tr("PALMARÈS", "HONOURS", "BESTENLISTE", "ALBO D'ORO", "PALMARÉS","PALMARÉS")}
         </span>
         <h2 style={{ ...posterTitre(72, G.white), fontSize:"clamp(48px,7vw,72px)" }}>
-          {tr("CLASSEMENT", "LEADERBOARD", "RANGLISTE", "CLASSIFICA", "CLASSIFICAÇÃO")}
+          {tr("CLASSEMENT", "LEADERBOARD", "RANGLISTE", "CLASSIFICA", "CLASSIFICAÇÃO","CLASIFICACIÓN")}
         </h2>
         <p className="mt-3 text-white/55 text-sm">
           {mode === "saison"
-            ? tr("XP gagnée ce mois-ci. Le classement de la saison se réinitialise chaque mois.", "XP earned this month. The season leaderboard resets every month.", "Diesen Monat gesammelte XP. Die Saison-Rangliste wird jeden Monat zurückgesetzt.", "XP guadagnati questo mese. La classifica stagionale si azzera ogni mese.", "XP ganho este mês. O ranking da temporada reinicia todo mês.")
-            : tr("XP cumulée depuis le début. Le même classement que dans l'app mobile.", "Total XP since day one. The same leaderboard as in the mobile app.", "Gesamte XP seit dem ersten Tag. Dieselbe Rangliste wie in der Mobile-App.", "XP totali dall'inizio. La stessa classifica dell'app mobile.", "XP acumulado desde o início. O mesmo ranking do app mobile.")}
+            ? tr("XP gagnée ce mois-ci. Le classement de la saison se réinitialise chaque mois.", "XP earned this month. The season leaderboard resets every month.", "Diesen Monat gesammelte XP. Die Saison-Rangliste wird jeden Monat zurückgesetzt.", "XP guadagnati questo mese. La classifica stagionale si azzera ogni mese.", "XP ganho este mês. O ranking da temporada reinicia todo mês.","XP conseguida este mes. La clasificación de temporada se reinicia cada mes.")
+            : tr("XP cumulée depuis le début. Le même classement que dans l'app mobile.", "Total XP since day one. The same leaderboard as in the mobile app.", "Gesamte XP seit dem ersten Tag. Dieselbe Rangliste wie in der Mobile-App.", "XP totali dall'inizio. La stessa classifica dell'app mobile.", "XP acumulado desde o início. O mesmo ranking do app mobile.","XP acumulada desde el principio. La misma clasificación que en la app móvil.")}
         </p>
       </div>
 
@@ -73,12 +73,12 @@ export const LeaderboardView = ({ onPlay }: Props) => {
           </div>
           <div className="text-[11px] text-white/40 mt-0.5">
             {daysLeft > 0
-              ? tr(`J-${daysLeft} (${hoursLeft}h)`, `${daysLeft}d (${hoursLeft}h) left`, `${daysLeft}T (${hoursLeft}h)`, `${daysLeft}g (${hoursLeft}h)`, `${daysLeft}d (${hoursLeft}h)`)
-              : tr(`Finit dans ${hoursLeft}h`, `Ends in ${hoursLeft}h`, `Endet in ${hoursLeft}h`, `Finisce tra ${hoursLeft}h`, `Termina em ${hoursLeft}h`)}
+              ? tr(`J-${daysLeft} (${hoursLeft}h)`, `${daysLeft}d (${hoursLeft}h) left`, `${daysLeft}T (${hoursLeft}h)`, `${daysLeft}g (${hoursLeft}h)`, `${daysLeft}d (${hoursLeft}h)`,`${daysLeft}d (${hoursLeft}h)`)
+              : tr(`Finit dans ${hoursLeft}h`, `Ends in ${hoursLeft}h`, `Endet in ${hoursLeft}h`, `Finisce tra ${hoursLeft}h`, `Termina em ${hoursLeft}h`,`Termina en ${hoursLeft}h`)}
           </div>
         </div>
         <div className="font-display text-xs tracking-widest text-white/35">
-          {tr("SAISON", "SEASON", "SAISON", "STAGIONE", "TEMPORADA")} {season.num}
+          {tr("SAISON", "SEASON", "SAISON", "STAGIONE", "TEMPORADA","TEMPORADA")} {season.num}
         </div>
       </div>
 
@@ -92,7 +92,7 @@ export const LeaderboardView = ({ onPlay }: Props) => {
               flex:1, padding:"10px 12px", borderRadius:G.rayonS }}
           >
             {m === "saison"
-              ? "⭐ " + tr("SAISON", "SEASON", "SAISON", "STAGIONE", "TEMPORADA")
+              ? "⭐ " + tr("SAISON", "SEASON", "SAISON", "STAGIONE", "TEMPORADA","TEMPORADA")
               : "🌍 GLOBAL"}
           </button>
         ))}
@@ -100,11 +100,11 @@ export const LeaderboardView = ({ onPlay }: Props) => {
 
       {loading ? (
         <div className="py-14 text-center text-white/35 text-sm">
-          {tr("Chargement…", "Loading…", "Laden…", "Caricamento…", "Carregando…")}
+          {tr("Chargement…", "Loading…", "Laden…", "Caricamento…", "Carregando…","Cargando…")}
         </div>
       ) : rows.length === 0 ? (
         <div className="py-14 text-center text-white/30 text-sm">
-          {tr("Aucun score pour le moment", "No scores yet", "Noch keine Scores", "Ancora nessun punteggio", "Ainda sem pontuações")}
+          {tr("Aucun score pour le moment", "No scores yet", "Noch keine Scores", "Ancora nessun punteggio", "Ainda sem pontuações","Todavía no hay puntuaciones")}
         </div>
       ) : (
         <div className="flex flex-col gap-1.5">
@@ -198,7 +198,7 @@ export const LeaderboardView = ({ onPlay }: Props) => {
           className="inline-flex"
           style={{ ...btn(G.projecteur, G.encre, 30), padding:"14px 40px", boxShadow:G.ombreL }}
         >
-          ▶ {tr("TENTER MA PLACE", "GO FOR MY SPOT", "UM MEINEN PLATZ KÄMPFEN", "TENTA IL TUO POSTO", "IR ATRÁS DO MEU LUGAR")}
+          ▶ {tr("TENTER MA PLACE", "GO FOR MY SPOT", "UM MEINEN PLATZ KÄMPFEN", "TENTA IL TUO POSTO", "IR ATRÁS DO MEU LUGAR","IR A POR MI PUESTO")}
         </button>
       </div>
     </div>
