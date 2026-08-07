@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { PLAYERS, GG_WC_WINNERS, GG_CL_WINNERS, GG_BALLON_DOR, GG_SHIRT_10 } from "../../players.jsx";
+import { PLAYERS, RETIRED_PLAYERS, GG_WC_WINNERS, GG_CL_WINNERS, GG_BALLON_DOR, GG_SHIRT_10 } from "../../players.jsx";
 import { CLUB_COLORS } from "../LePont.jsx";
 import { ANEC_ENTRAINEUR } from "./GoatGuess";
 import { tr } from "@/lib/lang";
@@ -51,13 +51,32 @@ function parisDay(): string {
   return p.getFullYear() + "-" + String(p.getMonth() + 1).padStart(2, "0") + "-" + String(p.getDate()).padStart(2, "0");
 }
 
+// Année de naissance plancher : né en 1975+ → a joué après 2000. Partagée par la
+// devinette du jour et le mode illimité, qui écartent tous deux les anciens.
+const MODERN_MIN_BY = 1975;
+
 // ── Joueur mystère du jour ────────────────────────────────────
 // Pool de stars (facile, parcours ≥ 3 clubs), mélangé une fois dans un ordre
 // FIXE (même pour tout le monde), puis on tourne selon le numéro de jour →
 // chaque joueur passe une seule fois avant un cycle complet (pas de répétition).
+//
+// Que des joueurs EN ACTIVITÉ : pas d'anciens. Le mode illimité applique déjà
+// cette règle juste en dessous, la devinette du jour ne le faisait pas — 89 des
+// 195 joueurs du vivier étaient des retraités (Ramos, Rooney, Kroos, Beckham…).
+// Deux garde-fous plutôt qu'un : la liste des retraités, qui est tenue à la main
+// et peut manquer un départ récent, et l'année de naissance, qui écarte les
+// anciens qu'elle n'a pas encore enregistrés (Hagi, Milla, Nedvěd…).
+// Il reste 98 joueurs, soit plus de trois mois de rotation sans répétition.
+export function dailyPool(): Player[] {
+  const enActivite = (p: Player) => !RETIRED_PLAYERS.has(p.name)
+    && !!p.birthYear && (p.birthYear as number) >= MODERN_MIN_BY;
+  const pool = ALL.filter(p => p.diff === "facile" && p.clubs && p.clubs.length >= 3 && p.clubs.length <= 9 && enActivite(p));
+  // Filet de sécurité si la base bouge : on relâche le nombre de clubs, jamais
+  // la règle « en activité », sinon un ancien reviendrait par la porte du fallback.
+  return pool.length > 0 ? pool : ALL.filter(p => p.clubs && p.clubs.length >= 3 && enActivite(p));
+}
 function dailyPlayer(): Player {
-  let pool = ALL.filter(p => p.diff === "facile" && p.clubs && p.clubs.length >= 3 && p.clubs.length <= 9);
-  if (pool.length === 0) pool = ALL.filter(p => p.clubs && p.clubs.length >= 3);
+  const pool = dailyPool();
   const rand = seededRandom(987654321); // graine fixe → même ordre pour tous
   const arr = pool.slice();
   for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); const t = arr[i]; arr[i] = arr[j]; arr[j] = t; }
@@ -68,7 +87,6 @@ function dailyPlayer(): Player {
 // ── Mode illimité : un joueur au hasard, sans répétition proche ────────────────
 // Jamais de joueur "expert" : 70 % facile, 30 % moyen. Que des joueurs modernes
 // (né en 1975+ → a joué après 2000), pas d'anciens.
-const MODERN_MIN_BY = 1975;
 function randomPlayer(seen: Set<string>): Player {
   const inRange = (p: Player) => !!p.clubs && p.clubs.length >= 3 && p.clubs.length <= 9 && !!p.birthYear && (p.birthYear as number) >= MODERN_MIN_BY;
   const facile = ALL.filter(p => p.diff === "facile" && inRange(p));
