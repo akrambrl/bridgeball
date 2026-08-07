@@ -3013,6 +3013,7 @@ if(typeof document!=="undefined"&&!document.getElementById("bb-css")){
     @keyframes bigAnswerPop{0%{transform:scale(.7);opacity:0}14%{transform:scale(1.06);opacity:1}72%{transform:scale(1);opacity:1}100%{transform:scale(1);opacity:0}}
     @keyframes fadeIn{from{opacity:0}to{opacity:1}}
     @keyframes popIn{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+    @keyframes tamponOk{0%{opacity:0;transform:scale(1.35) rotate(-8deg)}60%{transform:scale(.96) rotate(1deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
     @keyframes popInPoster{0%{transform:skewX(-7deg) scale(.6);opacity:0}70%{transform:skewX(-7deg) scale(1.08)}100%{transform:skewX(-7deg) scale(1);opacity:1}}
     @keyframes slideIn{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:translateX(0)}}
     @keyframes dailySlide{0%{opacity:0;transform:translateX(-60px)}100%{opacity:1;transform:translateX(0)}}
@@ -3488,6 +3489,11 @@ export default function LePont() {
   const [showHistory, setShowHistory] = useState(false); // Modal affichage historique
   const [reportingAnswer, setReportingAnswer] = useState(null); // Pour signaler une erreur : {c1, c2, given, validPlayers}
   const [chainLastRejected, setChainLastRejected] = useState(null); // {player, club} pour signaler dans The Mercato
+  // Club qu'on vient de valider, gardé le temps du flash pour l'afficher SUR la
+  // carte du joueur. L'erreur avait trois signaux dont un persistant — champ
+  // rouge, bandeau, encadré de signalement — quand la réussite n'en avait qu'un,
+  // le champ qui verdit, et il disparaît dès que le joueur suivant tombe.
+  const [chainOkClub, setChainOkClub] = useState(null);
   const [chainReportSent, setChainReportSent] = useState(false);
   const [reportMessage, setReportMessage] = useState("");
   const [reportSent, setReportSent] = useState(false);
@@ -8231,7 +8237,7 @@ export default function LePont() {
     setChainPlayer(start.name); setChainUsedClubs(new Set()); setChainUsedPlayers(usedP);
     setChainCount(0); chainCountRef.current=0; setChainScore(0); chainScoreRef.current=0;
     setChainMilestone(null); if(chainMsToRef.current) clearTimeout(chainMsToRef.current);
-    setChainLastClub(""); setChainLastPassed(false); setChainHistory([]); setGuess(""); setFlash(null); setFeedback(null); setChainLastRejected(null);
+    setChainLastClub(""); setChainLastPassed(false); setChainHistory([]); setChainOkClub(null); setGuess(""); setFlash(null); setFeedback(null); setChainLastRejected(null);
     setTimeLeft(CHAIN_DURATION); setScore(0); scoreRef.current=0;
     setMyLbRank(null); setScreen("chainGame");
     setTimeout(()=>inputRef.current?.focus(),200);
@@ -8656,7 +8662,7 @@ export default function LePont() {
         chainMsToRef.current=setTimeout(function(){setChainMilestone(null);},1600);
       }
       handleCorrectAnswer(2,true);
-      setFeedback("ok"); setFlash("ok");
+      setFeedback("ok"); setFlash("ok"); setChainOkClub(getClubDisplayName(matched));
       const clubPlayers=getPlayersForClub(matched).filter(p=>!chainUsedPlayers.has(p)&&getPlayerClubs(p).some(c=>!newUsed.has(c)));
       // Favoriser les joueurs de la bonne difficulté ET les joueurs actuels (80/20)
       const isInRoomCS = activeDuelRef.current && activeDuelRef.current.isRoom;
@@ -8682,7 +8688,7 @@ export default function LePont() {
         if(pool.length === 0){setTimeout(()=>{setFeedback(null);setFlash(null);endChain();},800);return;}
         const fallback = pool[Math.floor(randCS()*pool.length)].name;
         const newUsedP=new Set(chainUsedPlayers); newUsedP.add(fallback);
-        setTimeout(()=>{setChainPlayer(fallback);setChainUsedPlayers(newUsedP);setChainLastClub(matched);setChainLastPassed(false);setGuess("");setFeedback(null);setFlash(null);setTimeout(()=>inputRef.current?.focus(),100);},700);
+        setTimeout(()=>{setChainPlayer(fallback);setChainUsedPlayers(newUsedP);setChainLastClub(matched);setChainLastPassed(false);setGuess("");setFeedback(null);setFlash(null);setChainOkClub(null);setTimeout(()=>inputRef.current?.focus(),100);},700);
         return;
       }
       const preferred = effectiveDiffCS === "facile"
@@ -8703,7 +8709,7 @@ export default function LePont() {
         if (globalFallback.length === 0) { setTimeout(()=>{setFeedback(null);setFlash(null);endChain();},800); return; }
         const fallback = globalFallback[Math.floor(randCS()*globalFallback.length)].name;
         const newUsedP = new Set(chainUsedPlayers); newUsedP.add(fallback);
-        setTimeout(()=>{setChainPlayer(fallback);setChainUsedPlayers(newUsedP);setChainLastClub(matched);setChainLastPassed(false);setGuess("");setFeedback(null);setFlash(null);setTimeout(()=>inputRef.current?.focus(),100);},700);
+        setTimeout(()=>{setChainPlayer(fallback);setChainUsedPlayers(newUsedP);setChainLastClub(matched);setChainLastPassed(false);setGuess("");setFeedback(null);setFlash(null);setChainOkClub(null);setTimeout(()=>inputRef.current?.focus(),100);},700);
         return;
       }
       const diffPool = preferred.length > 0 ? preferred : clubPlayers;
@@ -8721,7 +8727,7 @@ export default function LePont() {
       const newUsedP=new Set(chainUsedPlayers); newUsedP.add(next);
       // Prefetch logos for next player
       
-      setTimeout(()=>{setChainPlayer(next);setChainUsedPlayers(newUsedP);setChainLastClub(matched);setChainLastPassed(false);setGuess("");setFeedback(null);setFlash(null);setTimeout(()=>inputRef.current?.focus(),100);},700);
+      setTimeout(()=>{setChainPlayer(next);setChainUsedPlayers(newUsedP);setChainLastClub(matched);setChainLastPassed(false);setGuess("");setFeedback(null);setFlash(null);setChainOkClub(null);setTimeout(()=>inputRef.current?.focus(),100);},700);
     }else if(matchClub(g,playerClubs)){
       setFlash("used"); setFeedback("used"); playSound("ko");
       setTimeout(()=>{setFlash(null);setFeedback(null);setGuess("");inputRef.current?.focus();},1200);
@@ -15217,6 +15223,19 @@ export default function LePont() {
           </div>
         </div>
         {combo>=3 && <div style={{marginTop:6,fontSize:12,fontWeight:800,color:ptc==="#FFF"?"#fff":"#111",animation:"comboFire .5s ease",zIndex:1,position:"relative"}}>{getComboLabel(combo)} x{combo}</div>}
+        {/* Le tampon de validation. La faute avait trois marques dont une qui
+            reste à l'écran ; la réussite n'avait que le champ de saisie qui
+            verdit, hors du regard — l'œil est sur la carte, c'est elle qu'on
+            vient de résoudre. On y claque donc le club validé, en aplat de
+            pelouse, le temps du flash. */}
+        {flash==="ok" && chainOkClub && (
+          <div style={{position:"absolute",inset:0,zIndex:3,background:G.pelouse,borderRadius:G.rayonL,
+            display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:6,
+            animation:"tamponOk .3s cubic-bezier(.34,1.56,.64,1)"}}>
+            <div style={{...posterText(20,G.white,1.4),letterSpacing:3}}>✓ {tr("VALIDÉ","CORRECT","RICHTIG","VALIDO","VALIDADO","VALIDADO")}</div>
+            <div style={{...posterText(30,G.white,2),textAlign:"center",padding:"0 14px"}}>{chainOkClub}</div>
+          </div>
+        )}
       </div>
 
       <div style={{...sheet,marginTop:0,borderRadius:"28px 28px 0 0"}}>
