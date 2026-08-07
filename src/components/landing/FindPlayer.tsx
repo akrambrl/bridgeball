@@ -387,7 +387,6 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
   const [over, setOver] = useState(() => saved?.over || false);
   const [won, setWon] = useState(() => saved?.won || false);
   const [input, setInput] = useState("");
-  const [board, setBoard] = useState<{ loading: boolean; rows: any[]; myRank: number | null; total: number } | null>(null);
   const [copied, setCopied] = useState(false);
   const [riddleCopied, setRiddleCopied] = useState(false);
   const [showRiddle, setShowRiddle] = useState(false); // aperçu de l'énigme « Qui suis-je ? »
@@ -463,22 +462,8 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
         keepalive: true,
       });
     } catch { /* noop */ }
-    loadBoard();
   }
 
-  async function loadBoard() {
-    setBoard({ loading: true, rows: [], myRank: null, total: 0 });
-    try {
-      const res = await fetch(SB_URL + "/rest/v1/bb_scores?mode=eq.findscore&order=score.desc&limit=300&select=player_id,player_name,score", {
-        headers: { apikey: SB_KEY, Authorization: "Bearer " + SB_KEY },
-      });
-      const list = res.ok ? await res.json() : [];
-      const seen = new Set<string>(); const best: any[] = [];
-      for (const r of Array.isArray(list) ? list : []) { if (seen.has(r.player_id)) continue; seen.add(r.player_id); best.push(r); }
-      const idx = best.findIndex((r: any) => r.player_id === playerId());
-      setBoard({ loading: false, rows: best.slice(0, 10), myRank: idx >= 0 ? idx + 1 : null, total: best.length });
-    } catch { setBoard({ loading: false, rows: [], myRank: null, total: 0 }); }
-  }
 
   const suggestions = useMemo(() => {
     const q = input.trim().toLowerCase();
@@ -597,8 +582,7 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
           setStreak(0);
         }
         setOver(true);
-        loadBoard();
-      }, daily ? 400 : REVEAL_MS);
+          }, daily ? 400 : REVEAL_MS);
     } else {
       setTimeout(() => inputRef.current?.focus(), 50);
     }
@@ -626,7 +610,6 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
     setShowCareer(false);
     setHintRevealed([]);
     setCluesShown(1);
-    setBoard(null);
     trackPlay("reveal");
     setTimeout(() => inputRef.current?.focus(), 60);
   }
@@ -655,7 +638,6 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
     setWon(false);
     setShowCareer(true);
     setOver(true);
-    loadBoard();
   }
 
   // Signaler une erreur de parcours sur le joueur mystère en cours (table bb_reports).
@@ -1068,29 +1050,6 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
               {copied ? tr("Copié ! 📋", "Copied! 📋", "Kopiert! 📋", "Copiato! 📋", "Copiado! 📋") : "📤 " + tr("Partager mon résultat", "Share my result", "Ergebnis teilen", "Condividi il risultato", "Compartilhar resultado")}
             </button>
 
-            {/* Classement du jour */}
-            <div style={{ marginTop: 14, background: G.nuit, border: G.trait, boxShadow: G.ombre, borderRadius: G.rayon, padding: "10px 12px", textAlign: "left" }}>
-              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.5, color: "rgba(255,255,255,.45)", marginBottom: 6, textAlign: "center" }}>🏆 {tr("MEILLEURS SCORES", "TOP SCORES", "BESTE PUNKTE", "MIGLIORI PUNTEGGI", "MELHORES PONTUAÇÕES")}</div>
-              {(!board || board.loading) ? (
-                <div style={{ fontSize: 12, color: "rgba(255,255,255,.4)", textAlign: "center", padding: 6 }}>{tr("Chargement…", "Loading…", "Wird geladen…", "Caricamento…", "Carregando…")}</div>
-              ) : board.rows.length === 0 ? (
-                <div style={{ fontSize: 12, color: "rgba(255,255,255,.4)", textAlign: "center", padding: 6 }}>{tr("Sois le premier !", "Be the first!", "Sei der Erste!", "Sii il primo!", "Seja o primeiro!")}</div>
-              ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-                  {board.rows.map((r, i) => {
-                    const me = r.player_id === playerId();
-                    return (
-                      <div key={r.player_id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderRadius: G.rayonS, background: me ? "rgba(42,155,78,.35)" : "transparent" }}>
-                        <span style={{ width: 20, textAlign: "center", fontWeight: 900, fontSize: 12, color: i === 0 ? "#FFD700" : i === 1 ? "#C0C0C0" : i === 2 ? "#CD7F32" : "rgba(255,255,255,.4)" }}>{i + 1}</span>
-                        <span style={{ flex: 1, fontSize: 13, fontWeight: me ? 800 : 600, color: me ? "#fff" : "rgba(255,255,255,.8)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.player_name || "Anonyme"}</span>
-                        <span style={{ ...posterText(17, G.pelouse) }}>{r.score}</span>
-                      </div>
-                    );
-                  })}
-                  {board.myRank && board.myRank > 10 && <div style={{ fontSize: 11, color: "rgba(255,255,255,.5)", textAlign: "center", marginTop: 4 }}>{tr("Ton rang", "Your rank", "Dein Rang", "Il tuo posto", "Sua posição")} : #{board.myRank} / {board.total}</div>}
-                </div>
-              )}
-            </div>
 
             <button onClick={openReport} style={{ marginTop: 12, background: "transparent", border: "none", color: "rgba(255,107,125,.85)", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>
               🚩 {tr("Signaler une erreur sur ce parcours", "Report an error on this career", "Fehler in diesem Verlauf melden", "Segnala un errore su questa carriera", "Reportar erro nesta carreira")}

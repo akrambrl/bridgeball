@@ -1791,7 +1791,7 @@ const GuessingView = ({
         🔮 {tr("MA DEVINETTE","MY GUESS","MEINE VERMUTUNG","LA MIA IPOTESI","MEU PALPITE")}
       </span>
     </div>
-    <div className="font-display text-xl lg:text-3xl tracking-wider text-white mb-2 lg:mb-5 leading-tight">
+    <div className="mb-2 lg:mb-5" style={{ ...posterText(30, G.white) }}>
       {tr("JE PARIE QUE C'EST...","I BET IT'S...","ICH WETTE, ES IST...","SCOMMETTO CHE È...","APOSTO QUE É...")}
     </div>
 
@@ -2068,29 +2068,15 @@ const futRating = (p: Player) => {
   const base = p.diff === "facile" ? 89 : p.diff === "moyen" ? 83 : 77;
   return base + (h % 5);
 };
-// Palette par rareté façon FUT : or (stars), argent (moyens), bronze (experts)
+// Les trois raretés, à la charte. L'or, l'argent et le bronze métalliques de
+// FUT étaient quatre dégradés superposés par carte : ils n'ont pas de place dans
+// une charte qui ne connaît que l'aplat. On garde le SENS (or = star, argent =
+// moyen, bronze = expert) en reprenant les trois teintes franches déjà servies
+// au podium du classement.
 const TIERS = {
-  facile: {
-    edge: "linear-gradient(160deg,#FFE9A8 0%,#F5D67B 30%,#C9992F 70%,#8A6420 100%)",
-    body: "linear-gradient(180deg,#3A2E14 0%,#241C0C 55%,#140F06 100%)",
-    ink: "#F5D67B",
-    glow: "rgba(245,214,123,0.55)",
-    inner: "radial-gradient(circle at 50% 22%, rgba(245,214,123,0.14), transparent 55%)",
-  },
-  moyen: {
-    edge: "linear-gradient(160deg,#F4F6FA 0%,#C9CFDA 35%,#8E96A6 70%,#5C6470 100%)",
-    body: "linear-gradient(180deg,#2C3038 0%,#1B1E24 55%,#0E1013 100%)",
-    ink: "#D9DEE8",
-    glow: "rgba(217,222,232,0.45)",
-    inner: "radial-gradient(circle at 50% 22%, rgba(217,222,232,0.12), transparent 55%)",
-  },
-  expert: {
-    edge: "linear-gradient(160deg,#E8B584 0%,#C98D50 35%,#96602C 70%,#5E3B1A 100%)",
-    body: "linear-gradient(180deg,#33241A 0%,#201610 55%,#120C08 100%)",
-    ink: "#E2A96F",
-    glow: "rgba(226,169,111,0.5)",
-    inner: "radial-gradient(circle at 50% 22%, rgba(226,169,111,0.12), transparent 55%)",
-  },
+  facile: { flat: G.projecteur, fg: G.encre, glow: "rgba(245,194,43,.5)" },
+  moyen:  { flat: "#C9CBC4",    fg: G.encre, glow: "rgba(201,203,196,.45)" },
+  expert: { flat: "#C08A4A",    fg: G.encre, glow: "rgba(192,138,74,.45)" },
 } as const;
 
 // Couleurs de maillot du club le plus récent connu (on remonte la carrière)
@@ -2104,10 +2090,6 @@ const kitColorsOf = (p: Player): [string, string] | null => {
 
 const initialsOf = (name: string) =>
   name.split(/[\s-]+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase();
-
-// Forme bouclier FUT (bord dégradé simulé par double clip-path)
-const CARD_SHAPE =
-  "polygon(50% 0%, 78% 3%, 94% 10%, 94% 80%, 74% 93%, 50% 100%, 26% 93%, 6% 80%, 6% 10%, 22% 3%)";
 
 // Volutes de fumée et étincelles de la révélation (positions fixes)
 const SMOKE_PUFFS = [
@@ -2202,7 +2184,6 @@ const PlayerRevealCard = ({
   const pos = POS_ABBR[player.positions[0]] || "?";
   const flag = flagOf(player.nationalities[0]);
   const tier = TIERS[player.diff] || TIERS.expert;
-  const gold = tier.ink;
   const kit = kitColorsOf(player);
   return (
     <div className="relative inline-block w-full max-w-[330px] my-1 lg:my-2">
@@ -2228,60 +2209,56 @@ const PlayerRevealCard = ({
         style={{ background: `radial-gradient(circle at 50% 38%, ${tier.glow}, transparent 70%)` }}
         aria-hidden
       />
-      {/* Bord dégradé or→violet, forme bouclier */}
+      {/* La carte, à la charte : un rectangle au rayon franc, cerclé d'encre et
+          posé sur son ombre dure. La forme BOUCLIER de FUT a disparu — un
+          clip-path interdit précisément le trait et l'ombre, qui sont ce qui
+          fait le manga. Le maillot du dernier club connu est peint en deux
+          aplats séparés par une diagonale, exactement comme les cartes de club
+          du duel ; à défaut de maillot connu, la nuit. */}
       <div
-        className="relative mx-auto"
-        style={{
-          clipPath: CARD_SHAPE,
-          padding: 3,
-          background: tier.edge,
-        }}
+        className="relative mx-auto overflow-hidden"
+        style={{ border: G.trait, borderRadius: G.rayon, boxShadow: G.ombreL, background: G.nuit }}
       >
-        <div
-          className="relative px-8 pt-8 pb-14"
-          style={{
-            clipPath: CARD_SHAPE,
-            background: kit
-              ? `linear-gradient(rgba(10,8,16,0.58), rgba(10,8,16,0.58)), linear-gradient(165deg, ${kit[0]} 0%, ${kit[0]} 48%, ${kit[1]} 52%, ${kit[1]} 100%)`
-              : tier.body,
-          }}
-        >
-          {/* Lueur douce derrière le médaillon */}
-          <div
-            className="pointer-events-none absolute inset-0"
-            style={{ background: tier.inner }}
-            aria-hidden
-          />
-          {/* Bloc haut : médaillon centré, note/poste/drapeau en colonne à gauche */}
-          <div className="relative h-28 mt-2">
-            <div className="absolute left-0 top-1/2 -translate-y-1/2 flex flex-col items-center leading-none" style={{ color: gold }}>
-              <div className="font-display text-4xl drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">{rating}</div>
-              <div className="font-display text-xs tracking-[0.25em] mt-1">{pos}</div>
-              <div className="text-2xl mt-1.5 leading-none">{flag}</div>
+        {/* Bandeau de rareté : un aplat franc en haut du cadre. */}
+        <div style={{ height: 8, background: tier.flat, borderBottom: G.trait }} />
+        <div className="relative px-6 pt-6 pb-7">
+          {kit && (
+            <>
+              <div className="absolute inset-0" style={{ background: kit[0] }} aria-hidden />
+              <div className="absolute inset-y-0 right-0" style={{ width: "58%", background: kit[1], clipPath: "polygon(28% 0%, 100% 0%, 100% 100%, 0% 100%)" }} aria-hidden />
+            </>
+          )}
+          {/* Voile d'encre : il assoit le lettrage quel que soit le maillot. */}
+          <div className="absolute inset-0" style={{ background: "rgba(8,17,9,.42)" }} aria-hidden />
+
+          {/* Bloc haut : note / poste / drapeau à gauche, médaillon au centre */}
+          <div className="relative h-24 mt-1">
+            <div className="absolute left-0 top-1/2 -translate-y-1/2 flex flex-col items-center">
+              <div style={{ ...posterText(40, G.white, 2) }}>{rating}</div>
+              <div style={{ ...posterText(1, G.white, 1.2), fontSize: 14, letterSpacing: 2, marginTop: 2 }}>{pos}</div>
+              <div className="text-2xl mt-1 leading-none">{flag}</div>
             </div>
             <div
-              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-28 h-28 rounded-full flex items-center justify-center"
-              style={{
-                // Disque sombre contrasté sur la carte aux couleurs du club
-                background: "radial-gradient(circle at 35% 30%, rgba(255,255,255,0.08), rgba(5,4,10,0.72) 74%)",
-                border: `2px solid ${gold}66`,
-                boxShadow: "inset 0 6px 20px rgba(0,0,0,0.6), 0 8px 24px rgba(0,0,0,0.45)",
-              }}
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 flex items-center justify-center"
+              style={{ background: G.nuit, border: G.trait, borderRadius: G.rayonS, boxShadow: "3px 3px 0 " + G.encre }}
             >
               <PositionAvatar position={player.positions[0]} />
             </div>
           </div>
-          {/* Nom entre filets dorés */}
+
+          {/* Nom, entre deux traits d'encre. Contour d'encre obligatoire : il est
+              posé sur une couleur de maillot qu'on ne choisit pas. */}
           <div className="relative mt-4 text-center">
-            <div className="mx-auto h-px w-4/5" style={{ background: `linear-gradient(90deg, transparent, ${gold}99, transparent)` }} />
-            <div className="font-display text-2xl lg:text-3xl tracking-wider text-white leading-tight py-1.5 px-2 break-words drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]">
+            <div style={{ height: 2, background: G.encre, margin: "0 auto", width: "86%" }} />
+            <div className="py-2 px-1 break-words" style={{ ...posterText(30, G.white, 1.8) }}>
               {player.name}
             </div>
-            <div className="mx-auto h-px w-4/5" style={{ background: `linear-gradient(90deg, transparent, ${gold}99, transparent)` }} />
+            <div style={{ height: 2, background: G.encre, margin: "0 auto", width: "86%" }} />
           </div>
+
           {/* Nation + carrière */}
-          <div className="relative mt-2.5 text-center">
-            <div className="text-[10px] tracking-[0.3em] text-white/75 mb-2">
+          <div className="relative mt-3 text-center">
+            <div style={{ ...posterText(1, G.white, 1.2), fontSize: 13, letterSpacing: 3, marginBottom: 8 }}>
               {flag} {(player.nationalities[0] || "—").toUpperCase()}
             </div>
             {/* Carrières longues : débuts + clubs récents (les plus parlants),

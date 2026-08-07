@@ -5,6 +5,7 @@ import { GoatGuess } from "@/components/landing/GoatGuess";
 import { FindPlayer } from "@/components/landing/FindPlayer";
 import { tr } from "@/lib/lang";
 import { displayStreak } from "@/lib/streak";
+import { G, posterTitre, btn } from "@/lib/charte.jsx";
 
 const BREAKPOINT = 768;
 
@@ -125,16 +126,16 @@ const Index = () => {
         />
       )}
       {devinettePrompt && !devinetteOpen && (
-        <div onClick={() => setDevinettePrompt(false)} style={{ position: "fixed", inset: 0, zIndex: 400, background: "rgba(0,0,0,.72)", backdropFilter: "blur(3px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
-          <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 360, background: "linear-gradient(180deg,#14110a,#0a0a0a)", border: "1px solid rgba(224,184,92,.4)", borderRadius: 22, padding: "26px 22px", textAlign: "center", boxShadow: "0 24px 70px rgba(0,0,0,.65)" }}>
+        <div onClick={() => setDevinettePrompt(false)} style={{ position: "fixed", inset: 0, zIndex: 400, background: "rgba(8,17,9,.86)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+          <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 360, background: G.nuit, border: G.trait, borderRadius: G.rayonL, padding: "26px 22px", textAlign: "center", boxShadow: G.ombreL }}>
             <div style={{ fontSize: 42, marginBottom: 4 }}>🕵️</div>
-            <div style={{ fontFamily: "Anton, sans-serif", fontSize: 26, letterSpacing: 1, color: "#F2D680" }}>{tr("DEVINETTE DU JOUR", "DAILY RIDDLE", "RÄTSEL DES TAGES", "INDOVINELLO DEL GIORNO", "ADIVINHA DO DIA")}</div>
+            <div style={posterTitre(30, G.projecteur)}>{tr("DEVINETTE DU JOUR", "DAILY RIDDLE", "RÄTSEL DES TAGES", "INDOVINELLO DEL GIORNO", "ADIVINHA DO DIA")}</div>
             {promptStreak > 0 && (
-              <div style={{ margin: "10px auto 0", display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 999, background: "rgba(255,138,42,.16)", border: "1px solid rgba(255,138,42,.5)", color: "#FF8A2A", fontSize: 13, fontWeight: 900, letterSpacing: .3 }}>🔥 {tr("Ne perds pas ta série de", "Don't lose your", "Verliere nicht deine Serie von", "Non perdere la tua serie di", "Não perca sua sequência de")} {promptStreak} {tr(promptStreak > 1 ? "jours" : "jour", promptStreak > 1 ? "days" : "day", promptStreak > 1 ? "Tage" : "Tag", promptStreak > 1 ? "giorni" : "giorno", promptStreak > 1 ? "dias" : "dia")} !</div>
+              <div style={{ margin: "10px auto 0", display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: G.rayonS, background: G.maillot, border: G.traitFin, boxShadow: "2px 2px 0 " + G.encre, color: G.white, fontSize: 13, fontWeight: 900, letterSpacing: .3 }}>🔥 {tr("Ne perds pas ta série de", "Don't lose your", "Verliere nicht deine Serie von", "Non perdere la tua serie di", "Não perca sua sequência de")} {promptStreak} {tr(promptStreak > 1 ? "jours" : "jour", promptStreak > 1 ? "days" : "day", promptStreak > 1 ? "Tage" : "Tag", promptStreak > 1 ? "giorni" : "giorno", promptStreak > 1 ? "dias" : "dia")} !</div>
             )}
             <div style={{ fontSize: 14, color: "rgba(255,255,255,.6)", margin: "8px 0 20px", lineHeight: 1.45 }}>{promptStreak > 0 ? tr("Joue aujourd'hui pour la faire grandir 👇", "Play today to keep it going 👇", "Spiele heute weiter 👇", "Gioca oggi per continuarla 👇", "Jogue hoje para mantê-la 👇") : tr("Un joueur mystère t'attend. Sauras-tu le deviner grâce aux indices ?", "A mystery player awaits. Can you guess him from the clues?", "Ein Rätselspieler wartet. Errätst du ihn anhand der Hinweise?", "Ti aspetta un giocatore misterioso. Sai indovinarlo con gli indizi?", "Um jogador misterioso te espera. Consegue adivinhar pelas dicas?")}</div>
-            <button onClick={() => { setDevinettePrompt(false); setDevinetteOpen(true); }} style={{ width: "100%", padding: "14px", borderRadius: 14, border: "none", background: "linear-gradient(135deg,#F6D477,#C89A32)", color: "#3a2a05", fontSize: 16, fontWeight: 900, letterSpacing: .5, cursor: "pointer", marginBottom: 10 }}>{tr("JOUER", "PLAY", "SPIELEN", "GIOCA", "JOGAR")} 🎯</button>
-            <button onClick={() => setDevinettePrompt(false)} style={{ width: "100%", padding: "10px", borderRadius: 12, border: "none", background: "transparent", color: "rgba(255,255,255,.5)", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>{tr("Plus tard", "Later", "Später", "Più tardi", "Mais tarde")}</button>
+            <button onClick={() => { setDevinettePrompt(false); setDevinetteOpen(true); }} style={{ ...btn(G.projecteur, G.encre, 20), width: "100%", padding: "13px", marginBottom: 10 }}>{tr("JOUER", "PLAY", "SPIELEN", "GIOCA", "JOGAR")} 🎯</button>
+            <button onClick={() => setDevinettePrompt(false)} style={{ ...btn(G.nuit, G.white, 16), width: "100%", padding: "11px" }}>{tr("Plus tard", "Later", "Später", "Più tardi", "Mais tarde")}</button>
           </div>
         </div>
       )}
