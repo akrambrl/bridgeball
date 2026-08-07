@@ -8,6 +8,7 @@ import { isNative, hapticLight, hapticHeavy, hapticSuccess } from "@/lib/native"
 import { CLUB_SPELLS, wereTeammates, mightHaveBeenTeammates, hasSpells } from "@/lib/clubSpells";
 import { recordDailyDone, displayStreak } from "@/lib/streak";
 import { WinBanner } from "./WinBanner";
+import { G, posterText, btn, fondCharte, terrainCharte, ligneCharte } from "@/lib/charte.jsx";
 
 const SPELL_NAMES = Object.keys(CLUB_SPELLS);
 
@@ -347,8 +348,10 @@ function loadSavedRound(raw: string | null): SavedRound | null {
   } catch { return null; }
 }
 
-// Fond FUT noir + doré (partagé plein écran / carte « du jour »).
-const REVEAL_BG = "repeating-conic-gradient(from 0deg at 50% 34%, rgba(214,175,84,.05) 0deg 3deg, transparent 3deg 11deg), radial-gradient(circle at 50% 34%, rgba(224,184,92,.26) 0%, rgba(214,175,84,.07) 26%, transparent 56%), radial-gradient(ellipse at 50% 122%, rgba(214,175,84,.12), transparent 60%), linear-gradient(180deg, #14110a 0%, #0a0a0a 45%, #040404 100%)";
+// Fond de la charte, partagé plein écran et carte « du jour ». Le soleil doré
+// sur noir d'avant était un monde à lui : sur un fond plus sombre que l'encre,
+// aucun trait ni aucune ombre de la charte n'existe.
+const REVEAL_BG = fondCharte;
 
 export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; daily?: boolean }) => {
   const seenRef = useRef<Set<string>>(new Set());
@@ -823,18 +826,21 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
   // carte (sinon les modales position:fixed seraient piégées dedans) → on centre
   // via left/right + margin auto.
   const rootStyle: any = daily
-    ? { position: "fixed", inset: 0, margin: "auto", width: "min(94vw, 440px)", height: "fit-content", maxHeight: "88vh", zIndex: 200, borderRadius: 22, border: "1px solid rgba(224,184,92,.4)", boxShadow: "0 24px 70px rgba(0,0,0,.72)", background: REVEAL_BG, overflowY: "auto", WebkitOverflowScrolling: "touch" }
+    ? { position: "fixed", inset: 0, margin: "auto", width: "min(94vw, 440px)", height: "fit-content", maxHeight: "88vh", zIndex: 200, borderRadius: G.rayonL, border: G.trait, boxShadow: G.ombreL, background: REVEAL_BG, overflowY: "auto", WebkitOverflowScrolling: "touch" }
     : { position: "fixed", inset: 0, zIndex: 200, background: REVEAL_BG, overflowY: "auto", WebkitOverflowScrolling: "touch" };
   return (
     <>
       {daily && <div onClick={close} style={{ position: "fixed", inset: 0, zIndex: 199, background: "rgba(0,0,0,.72)", backdropFilter: "blur(3px)" }} />}
     <div ref={scrollRef} style={rootStyle}>
+      {/* Le terrain de la charte, dessiné par-dessus la pelouse (bandes de tonte,
+          tracés d'encre, grain de trame) : sans lui, le fond est un aplat nu. */}
+      {terrainCharte}
       {/* Header */}
-      <div style={{ position: "sticky", top: 0, zIndex: 5, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "calc(12px + env(safe-area-inset-top)) 16px 12px", background: "linear-gradient(180deg,#14110a,rgba(8,8,8,.6))", backdropFilter: "blur(8px)" }}>
-        <button onClick={close} style={{ background: "rgba(255,255,255,.1)", border: "1px solid rgba(224,184,92,.35)", borderRadius: 12, color: "#fff", padding: "8px 12px", fontSize: 14, fontWeight: 800, cursor: "pointer" }}>← {tr("QUITTER", "QUIT", "BEENDEN", "ESCI", "SAIR")}</button>
-        <div style={{ fontFamily: "Anton, sans-serif", fontSize: 22, letterSpacing: 1, textAlign: "center", lineHeight: 1, color: "#F2D680", backgroundImage: "linear-gradient(180deg,#FCEBB8 0%,#E7C15A 52%,#C89A32 100%)", WebkitBackgroundClip: "text", backgroundClip: "text", WebkitTextFillColor: "transparent", textShadow: "0 2px 14px rgba(214,175,84,.35)" }}>{daily ? tr("DEVINETTE DU JOUR", "DAILY RIDDLE", "RÄTSEL DES TAGES", "INDOVINELLO DEL GIORNO", "ADIVINHA DO DIA") : tr("TROUVE LE JOUEUR", "GUESS THE PLAYER", "ERRATE DEN SPIELER", "INDOVINA IL GIOCATORE", "ADIVINHE O JOGADOR")}</div>
+      <div style={{ position: "sticky", top: 0, zIndex: 5, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "calc(12px + env(safe-area-inset-top)) 16px 12px", background: G.encre, borderBottom: G.traitFin }}>
+        <button onClick={close} style={{ ...btn(G.nuit, G.white, 15), padding: "8px 12px", flexShrink: 0 }}>← {tr("QUITTER", "QUIT", "BEENDEN", "ESCI", "SAIR")}</button>
+        <div style={{ ...posterText(20, G.projecteur), textAlign: "center", flex: 1, minWidth: 0, lineHeight: 1.05 }}>{daily ? tr("DEVINETTE DU JOUR", "DAILY RIDDLE", "RÄTSEL DES TAGES", "INDOVINELLO DEL GIORNO", "ADIVINHA DO DIA") : tr("TROUVE LE JOUEUR", "GUESS THE PLAYER", "ERRATE DEN SPIELER", "INDOVINA IL GIOCATORE", "ADIVINHE O JOGADOR")}</div>
         {(!over && !revealing && !daily) ? (
-          <button onClick={playAgain} aria-label={tr("Changer de joueur (trop dur)", "Change player (too hard)", "Spieler wechseln (zu schwer)", "Cambia giocatore (troppo difficile)", "Trocar de jogador (difícil demais)")} title={tr("Trop dur ? Change de joueur", "Too hard? Change player", "Zu schwer? Spieler wechseln", "Troppo difficile? Cambia", "Difícil? Troca de jogador")} style={{ background: "rgba(255,214,0,.12)", border: "1px solid rgba(255,214,0,.45)", borderRadius: 12, color: "#FFD600", padding: "8px 11px", fontSize: 13, fontWeight: 800, cursor: "pointer", whiteSpace: "nowrap" }}>
+          <button onClick={playAgain} aria-label={tr("Changer de joueur (trop dur)", "Change player (too hard)", "Spieler wechseln (zu schwer)", "Cambia giocatore (troppo difficile)", "Trocar de jogador (difícil demais)")} title={tr("Trop dur ? Change de joueur", "Too hard? Change player", "Zu schwer? Spieler wechseln", "Troppo difficile? Cambia", "Difícil? Troca de jogador")} style={{ ...btn(G.projecteur, G.encre, 14), padding: "8px 11px", whiteSpace: "nowrap", flexShrink: 0 }}>
             {tr("PASSER", "SKIP", "SKIP", "SALTA", "PULAR")} ⏭
           </button>
         ) : (
@@ -846,8 +852,8 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
         {/* Bandeau série + score, uniquement en mode illimité (pas dans la devinette du jour) */}
         {!daily && (
           <div style={{ display: "flex", justifyContent: "center", gap: 8, marginBottom: 12 }}>
-            <span style={{ padding: "5px 12px", borderRadius: 999, background: "rgba(255,138,42,.14)", border: "1px solid rgba(255,138,42,.4)", color: "#FF8A2A", fontSize: 12, fontWeight: 900, letterSpacing: 1 }}>🔥 {tr("SÉRIE", "STREAK", "SERIE", "SERIE", "SÉRIE")} : {streak}</span>
-            <span style={{ padding: "5px 12px", borderRadius: 999, background: "rgba(224,184,92,.14)", border: "1px solid rgba(224,184,92,.45)", color: "#F2D680", fontSize: 12, fontWeight: 900, letterSpacing: 1 }}>🏆 {tr("SCORE", "SCORE", "PUNKTE", "PUNTI", "PONTOS")} : {score.toLocaleString("fr-FR")}</span>
+            <span style={{ padding: "5px 12px", borderRadius: G.rayonS, background: G.maillot, border: G.traitFin, boxShadow: "2px 2px 0 " + G.encre, color: G.white, fontSize: 12, fontWeight: 900, letterSpacing: 1 }}>🔥 {tr("SÉRIE", "STREAK", "SERIE", "SERIE", "SÉRIE")} : {streak}</span>
+            <span style={{ padding: "5px 12px", borderRadius: G.rayonS, background: G.projecteur, border: G.traitFin, boxShadow: "2px 2px 0 " + G.encre, color: G.encre, fontSize: 12, fontWeight: 900, letterSpacing: 1 }}>🏆 {tr("SCORE", "SCORE", "PUNKTE", "PUNTI", "PONTOS")} : {score.toLocaleString("fr-FR")}</span>
           </div>
         )}
 
@@ -855,14 +861,14 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
             (CDM, LDC…) sont des INDICES cachés derrière un bouton. */}
         {daily && !over && (
           <div style={{ marginBottom: 12 }}>
-            <div style={{ fontSize: 12, fontWeight: 900, letterSpacing: 1.5, color: "#00E676", textAlign: "center", marginBottom: 10, textTransform: "uppercase" }}>{tr("Clubs dans sa carrière", "Clubs in his career", "Klubs seiner Karriere", "Club della sua carriera", "Clubes na carreira")}</div>
+            <div style={{ ...posterText(20, G.projecteur), textAlign: "center", marginBottom: 10 }}>{tr("Clubs dans sa carrière", "Clubs in his career", "Klubs seiner Karriere", "Club della sua carriera", "Clubes na carreira")}</div>
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
               {answer.clubs.map((club, i) => {
                 const [c1, c2] = clubColors(club);
                 return (
                   <div key={i} style={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
-                    {i > 0 && <div style={{ color: "#00E676", fontSize: 15, lineHeight: 1 }}>▼</div>}
-                    <div style={{ width: "100%", position: "relative", overflow: "hidden", height: 46, borderRadius: 999, display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid rgba(255,255,255,.14)", boxShadow: "0 4px 14px " + c1 + "55" }}>
+                    {i > 0 && <div style={{ color: G.pelouse, fontSize: 15, lineHeight: 1 }}>▼</div>}
+                    <div style={{ width: "100%", position: "relative", overflow: "hidden", height: 46, borderRadius: G.rayonS, display: "flex", alignItems: "center", justifyContent: "center", border: G.traitFin, boxShadow: "3px 3px 0 " + G.encre }}>
                       <div style={{ position: "absolute", inset: 0, background: c1 }} />
                       <div style={{ position: "absolute", top: 0, right: 0, width: "55%", bottom: 0, background: c2, clipPath: "polygon(30% 0%, 100% 0%, 100% 100%, 0% 100%)" }} />
                       <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,.16)" }} />
@@ -876,16 +882,16 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
               <div style={{ marginTop: 12 }}>
                 {/* Indices révélés UN PAR UN (pas tout d'un coup) */}
                 {cluesShown > 0 && (
-                  <div style={{ marginBottom: 8, background: "linear-gradient(180deg, rgba(224,184,92,.14), rgba(224,184,92,.05))", border: "1px solid rgba(224,184,92,.4)", borderRadius: 14, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 5 }}>
+                  <div style={{ marginBottom: 10, background: G.nuit, border: G.trait, borderRadius: G.rayon, boxShadow: G.ombre, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 5 }}>
                     {deviClues.slice(0, cluesShown).map((c, i) => (
-                      <div key={i} style={{ fontSize: 13.5, fontWeight: 600, fontStyle: "italic", color: "#F4E3B8", lineHeight: 1.35, display: "flex", gap: 6 }}>
-                        <span style={{ color: "#E0B85C" }}>▪</span><span>{c}</span>
+                      <div key={i} style={{ fontSize: 13.5, fontWeight: 600, fontStyle: "italic", color: "rgba(255,255,255,.9)", lineHeight: 1.35, display: "flex", gap: 6 }}>
+                        <span style={{ color: G.projecteur }}>▪</span><span>{c}</span>
                       </div>
                     ))}
                   </div>
                 )}
                 {cluesShown < deviClues.length && (
-                  <button onClick={() => setCluesShown(n => Math.min(deviClues.length, n + 1))} style={{ width: "100%", padding: "10px", borderRadius: 12, border: "1px solid rgba(224,184,92,.5)", background: "rgba(224,184,92,.14)", color: "#F2D680", fontSize: 13, fontWeight: 900, letterSpacing: .5, cursor: "pointer" }}>💡 {cluesShown === 0 ? tr("VOIR UN INDICE", "SHOW A CLUE", "EINEN HINWEIS ZEIGEN", "MOSTRA UN INDIZIO", "VER UMA DICA") : tr("INDICE SUIVANT", "NEXT CLUE", "NÄCHSTER HINWEIS", "INDIZIO SUCCESSIVO", "PRÓXIMA DICA")} ({cluesShown}/{deviClues.length})</button>
+                  <button onClick={() => setCluesShown(n => Math.min(deviClues.length, n + 1))} style={{ ...btn(G.projecteur, G.encre, 15), width: "100%", padding: "10px" }}>💡 {cluesShown === 0 ? tr("VOIR UN INDICE", "SHOW A CLUE", "EINEN HINWEIS ZEIGEN", "MOSTRA UN INDIZIO", "VER UMA DICA") : tr("INDICE SUIVANT", "NEXT CLUE", "NÄCHSTER HINWEIS", "INDIZIO SUCCESSIVO", "PRÓXIMA DICA")} ({cluesShown}/{deviClues.length})</button>
                 )}
               </div>
             )}
@@ -898,18 +904,18 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
           <div style={{ marginBottom: 14 }}>
             <div style={{ display: "flex", justifyContent: "center", gap: 12, marginBottom: 12 }}>
               {[
-                { emoji: "💡", color: "#3DA5FF", onClick: revealOneAttr, disabled: allFound, label: lastClueLeft
+                { emoji: "💡", color: G.ciel, onClick: revealOneAttr, disabled: allFound, label: lastClueLeft
                   ? tr("Dernier indice — dévoile la réponse", "Last clue — reveals the answer", "Letzter Hinweis — zeigt die Lösung", "Ultimo indizio — svela la risposta", "Última dica — revela a resposta")
                   : tr("Révéler une info", "Reveal a clue", "Info zeigen", "Rivela un'info", "Revelar info") },
-                { emoji: "🏳️", color: "#FF3D57", onClick: giveUp, disabled: false, label: tr("Abandonner", "Give up", "Aufgeben", "Arrenditi", "Desistir") },
+                { emoji: "🏳️", color: G.maillot, onClick: giveUp, disabled: false, label: tr("Abandonner", "Give up", "Aufgeben", "Arrenditi", "Desistir") },
               ].map(h => (
-                <button key={h.emoji} onClick={h.onClick} disabled={h.disabled} title={h.label} aria-label={h.label} style={{ width: 48, height: 48, borderRadius: "50%", border: "1px solid " + h.color + "66", background: h.disabled ? "rgba(255,255,255,.04)" : h.color + "22", color: "#fff", fontSize: 20, cursor: h.disabled ? "not-allowed" : "pointer", opacity: h.disabled ? 0.4 : 1, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: h.disabled ? "none" : "0 4px 12px " + h.color + "33" }}>{h.emoji}</button>
+                <button key={h.emoji} onClick={h.onClick} disabled={h.disabled} title={h.label} aria-label={h.label} style={{ width: 48, height: 48, borderRadius: G.rayonS, border: G.traitFin, background: h.disabled ? "rgba(8,17,9,.45)" : h.color, color: "#fff", fontSize: 20, cursor: h.disabled ? "not-allowed" : "pointer", opacity: h.disabled ? 0.45 : 1, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: h.disabled ? "none" : "2px 2px 0 " + G.encre }}>{h.emoji}</button>
               ))}
             </div>
-            <div style={{ display: "flex", justifyContent: "center", gap: 5, background: "linear-gradient(180deg,#F7A828,#E7941A)", border: "2px solid #C97E12", borderRadius: 16, padding: "10px 6px", boxShadow: "0 6px 18px rgba(0,0,0,.3)" }}>
+            <div style={{ display: "flex", justifyContent: "center", gap: 5, background: G.projecteur, border: G.trait, borderRadius: G.rayon, padding: "10px 6px", boxShadow: G.ombre }}>
               {topSlots.map(s => (
                 <div key={s.key} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, flex: 1 }}>
-                  <div style={{ width: 40, height: 40, borderRadius: "50%", background: s.confirmed ? (s.bg || "#fff") : "#141414", border: "2px solid " + (s.confirmed ? "#00E676" : "rgba(0,0,0,.35)"), display: "flex", alignItems: "center", justifyContent: "center", fontSize: s.confirmed ? (s.big ? 20 : (s.bg ? 11 : 13)) : 17, fontWeight: 900, color: s.confirmed ? (s.fg || "#06130B") : "rgba(255,255,255,.5)", textShadow: s.confirmed && s.bg ? "0 1px 3px rgba(0,0,0,.6)" : "none", overflow: "hidden" }}>{s.confirmed ? (s.key === "pos" ? <PitchIcon pos={answer.positions[0] || ""} size={26} /> : s.value) : "?"}</div>
+                  <div style={{ width: 40, height: 40, borderRadius: "50%", background: s.confirmed ? (s.bg || "#fff") : G.nuit, border: G.traitFin, outline: s.confirmed ? "2px solid " + G.pelouse : "none", outlineOffset: -4, display: "flex", alignItems: "center", justifyContent: "center", fontSize: s.confirmed ? (s.big ? 20 : (s.bg ? 11 : 13)) : 17, fontWeight: 900, color: s.confirmed ? (s.fg || G.encre) : "rgba(255,255,255,.6)", overflow: "hidden" }}>{s.confirmed ? (s.key === "pos" ? <PitchIcon pos={answer.positions[0] || ""} size={26} /> : s.value) : "?"}</div>
                   <span style={{ fontSize: 7.5, fontWeight: 900, letterSpacing: .3, color: s.confirmed ? "#0a3d1e" : "rgba(30,10,0,.55)" }}>{s.label}</span>
                 </div>
               ))}
@@ -932,15 +938,15 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
               }}
               placeholder={tr("Rechercher un joueur…", "Search a player…", "Spieler suchen…", "Cerca un giocatore…", "Buscar um jogador…")}
               autoComplete="off"
-              style={{ width: "100%", boxSizing: "border-box", padding: "14px 60px 14px 16px", borderRadius: 14, border: "1.5px solid rgba(255,255,255,.25)", background: "rgba(255,255,255,.12)", color: "#fff", fontSize: 15, fontWeight: 600, outline: "none", scrollMarginTop: "calc(64px + env(safe-area-inset-top))" }}
+              style={{ width: "100%", boxSizing: "border-box", padding: "14px 60px 14px 16px", borderRadius: G.rayon, border: G.trait, boxShadow: G.ombre, background: G.nuit, color: "#fff", fontSize: 15, fontWeight: 700, outline: "none", scrollMarginTop: "calc(64px + env(safe-area-inset-top))" }}
             />
             {!daily && (
-            <button onClick={randomGuess} title={tr("Joueur au hasard", "Random player", "Zufälliger Spieler", "Giocatore casuale", "Jogador aleatório")} aria-label={tr("Joueur au hasard", "Random player", "Zufälliger Spieler", "Giocatore casuale", "Jogador aleatório")} style={{ position: "absolute", right: 6, top: 6, bottom: 6, width: 46, borderRadius: 11, border: "none", background: "linear-gradient(135deg,#F6D477,#C89A32)", color: "#3a2a05", fontSize: 20, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 3px 10px rgba(200,154,50,.5)" }}>🎲</button>
+            <button onClick={randomGuess} title={tr("Joueur au hasard", "Random player", "Zufälliger Spieler", "Giocatore casuale", "Jogador aleatório")} aria-label={tr("Joueur au hasard", "Random player", "Zufälliger Spieler", "Giocatore casuale", "Jogador aleatório")} style={{ position: "absolute", right: 7, top: 7, bottom: 7, width: 46, borderRadius: G.rayonS, border: G.traitFin, background: G.projecteur, color: G.encre, fontSize: 20, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "2px 2px 0 " + G.encre }}>🎲</button>
             )}
             {suggestions.length > 0 && (
-              <div style={{ position: "absolute", top: "100%", left: 0, right: 0, zIndex: 10, marginTop: 4, background: "#132419", border: "1px solid rgba(255,255,255,.15)", borderRadius: 12, maxHeight: "min(50vh, 320px)", overflowY: "auto", WebkitOverflowScrolling: "touch" as any, boxShadow: "0 12px 30px rgba(0,0,0,.5)" }}>
+              <div style={{ position: "absolute", top: "100%", left: 0, right: 0, zIndex: 10, marginTop: 6, background: G.nuit, border: G.trait, borderRadius: G.rayon, maxHeight: "min(50vh, 320px)", overflowY: "auto", WebkitOverflowScrolling: "touch" as any, boxShadow: G.ombre }}>
                 {suggestions.map(s => (
-                  <button key={s.name} onClick={() => submitGuess(s)} style={{ display: "flex", width: "100%", alignItems: "center", justifyContent: "space-between", gap: 8, padding: "11px 14px", background: "transparent", border: "none", borderBottom: "1px solid rgba(255,255,255,.06)", color: "#fff", fontSize: 14, fontWeight: 600, cursor: "pointer", textAlign: "left" }}>
+                  <button key={s.name} onClick={() => submitGuess(s)} style={{ display: "flex", width: "100%", alignItems: "center", justifyContent: "space-between", gap: 8, padding: "11px 14px", background: "transparent", border: "none", borderBottom: "2px solid rgba(8,17,9,.55)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", textAlign: "left" }}>
                     <span>{s.name}</span>
                     <span style={{ fontSize: 15 }}>{s.nationalities[0] && NAT_FLAG[s.nationalities[0]] ? NAT_FLAG[s.nationalities[0]] : ""}</span>
                   </button>
@@ -953,7 +959,7 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
         {/* Signaler — dispo en cours de partie */}
         {!over && !revealing && (
           <div style={{ display: "flex", justifyContent: "center", marginBottom: 4 }}>
-            <button onClick={openReport} style={{ padding: "8px 16px", borderRadius: 999, border: "1px solid rgba(255,61,87,.4)", background: "rgba(255,61,87,.08)", color: "#FF6B7D", fontSize: 12.5, fontWeight: 800, cursor: "pointer" }}>
+            <button onClick={openReport} style={{ padding: "8px 16px", borderRadius: G.rayonS, border: G.traitFin, boxShadow: "2px 2px 0 " + G.encre, background: G.nuit, color: G.maillot, fontSize: 12.5, fontWeight: 800, cursor: "pointer" }}>
               🚩 {tr("Signaler une erreur", "Report an error", "Fehler melden", "Segnala un errore", "Reportar erro")}
             </button>
           </div>
@@ -968,7 +974,7 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
             {guesses.slice().reverse().map((g, i) => {
               const correct = g.name === answer.name;
               return (
-                <div key={i} style={{ padding: "8px 14px", borderRadius: 999, background: correct ? "rgba(0,230,118,.16)" : "rgba(255,61,87,.1)", border: "1px solid " + (correct ? "rgba(0,230,118,.5)" : "rgba(255,61,87,.35)"), color: correct ? "#00E676" : "#FF9BA6", fontSize: 13.5, fontWeight: 800 }}>{correct ? "✓ " : "✕ "}{g.name}</div>
+                <div key={i} style={{ padding: "8px 14px", borderRadius: G.rayonS, background: correct ? G.pelouse : "rgba(217,58,43,.3)", border: G.traitFin, boxShadow: "2px 2px 0 " + G.encre, color: correct ? G.encre : G.white, fontSize: 13.5, fontWeight: 800 }}>{correct ? "✓ " : "✕ "}{g.name}</div>
               );
             })}
           </div>
@@ -982,13 +988,13 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
             const correct = g.name === answer.name;
             const anim = gi === animRow; // seule la nouvelle ligne se révèle puce par puce
             return (
-              <div key={gi} style={{ background: correct ? "rgba(0,230,118,.16)" : "rgba(255,255,255,.04)", border: "1px solid " + (correct ? "rgba(0,230,118,.5)" : "rgba(255,255,255,.1)"), borderRadius: 14, padding: "10px 10px 12px" }}>
-                <div style={{ fontSize: 14, fontWeight: 800, color: correct ? "#00E676" : "#fff", marginBottom: 9, textAlign: "center" }}>{correct ? "✓ " : ""}{g.name}</div>
+              <div key={gi} style={{ background: correct ? "rgba(42,155,78,.35)" : G.nuit, border: G.trait, boxShadow: G.ombre, borderRadius: G.rayon, padding: "10px 10px 12px" }}>
+                <div style={{ ...posterText(20, G.white), marginBottom: 9, textAlign: "center" }}>{correct ? "✓ " : ""}{g.name}</div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 3, perspective: 600 }}>
                   {chips.map((c, ci) => {
                     const arrow = c.arrow ? (c.arrow === "up" ? "↑" : "↓") : null;
                     const bBg = arrow ? (c.state === "close" ? "#FFB020" : "#FF3D57")
-                      : c.state === "ok" ? "#00E676" : c.state === "close" ? "#FFB020" : "#FF3D57";
+                      : c.state === "ok" ? G.pelouse : c.state === "close" ? G.projecteur : G.maillot;
                     const bSym = arrow ? arrow : c.state === "no" ? "✕" : "✓";
                     const ring = c.state === "ok" ? "rgba(0,230,118,.7)" : c.state === "close" ? "rgba(255,176,32,.7)" : "rgba(255,61,87,.55)";
                     return (
@@ -1008,16 +1014,16 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
 
         {/* Écran de fin — placé au-dessus des propositions (order 2) pour être vu sans scroller */}
         {over && (
-          <div style={{ order: 2, marginTop: 12, marginBottom: 4, background: won ? "rgba(0,230,118,.12)" : "rgba(255,61,87,.12)", border: "1px solid " + (won ? "rgba(0,230,118,.4)" : "rgba(255,61,87,.4)"), borderRadius: 18, padding: 18, textAlign: "center" }}>
-            <div style={{ fontFamily: "Anton, sans-serif", fontSize: 26, color: won ? "#00E676" : "#FF3D57", letterSpacing: 1 }}>
+          <div style={{ order: 2, marginTop: 12, marginBottom: 4, background: won ? "rgba(42,155,78,.35)" : "rgba(217,58,43,.3)", border: G.trait, boxShadow: G.ombre, borderRadius: G.rayon, padding: 18, textAlign: "center" }}>
+            <div style={{ ...posterText(30, won ? G.white : G.white) }}>
               {won ? tr("BIEN JOUÉ ! 🎉", "WELL DONE! 🎉", "GUT GEMACHT! 🎉", "BEN FATTO! 🎉", "MANDOU BEM! 🎉") : tr("RATÉ ! 😅", "MISSED! 😅", "VERPASST! 😅", "MANCATO! 😅", "ERROU! 😅")}
             </div>
             <div style={{ fontSize: 14, color: "#fff", marginTop: 6 }}>
               {won ? tr("Trouvé en", "Found in", "Gefunden in", "Trovato in", "Encontrado em") + " " + guesses.length + " " + tr("essai", "try", "Versuch", "tentativo", "tentativa") + (guesses.length > 1 ? "s" : "") : tr("C'était", "It was", "Es war", "Era", "Era") + " :"}
             </div>
-            {!won && <div style={{ fontFamily: "Anton, sans-serif", fontSize: 22, color: "#fff", marginTop: 2 }}>{answer.name}</div>}
+            {!won && <div style={{ ...posterText(24, G.projecteur), marginTop: 4 }}>{answer.name}</div>}
             {won && (
-              <div style={{ fontFamily: "Anton, sans-serif", fontSize: 40, color: "#F2D680", letterSpacing: 1, marginTop: 8, textShadow: "0 2px 16px rgba(224,184,92,.4)" }}>+{lastEarned.toLocaleString("fr-FR")} PTS</div>
+              <div style={{ ...posterText(40, G.projecteur), marginTop: 10 }}>+{lastEarned.toLocaleString("fr-FR")} PTS</div>
             )}
             {/* Bandeau animé : séquence de but si trouvé, séquence de défaite
                 sinon. C'est le seul mode où gagner et perdre sont tous deux
@@ -1031,21 +1037,21 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
             </div>
 
             {daily ? (
-              <div style={{ width: "100%", marginTop: 14, padding: "15px", background: "rgba(224,184,92,.12)", border: "1px solid rgba(224,184,92,.4)", borderRadius: 14, fontSize: 15, fontWeight: 900, letterSpacing: .3, color: "#F2D680", textAlign: "center" }}>
+              <div style={{ width: "100%", marginTop: 14, padding: "15px", background: G.nuit, border: G.trait, boxShadow: G.ombre, borderRadius: G.rayon, fontSize: 15, fontWeight: 900, letterSpacing: .3, color: G.projecteur, textAlign: "center" }}>
                 🌙 {tr("Reviens demain pour porter ta série à " + (dailyStreak + 1) + " 🔥", "Come back tomorrow to reach a " + (dailyStreak + 1) + " streak 🔥", "Komm morgen für Serie " + (dailyStreak + 1) + " zurück 🔥", "Torna domani per arrivare a " + (dailyStreak + 1) + " 🔥", "Volte amanhã para chegar a " + (dailyStreak + 1) + " 🔥")}
               </div>
             ) : (
-              <button onClick={playAgain} style={{ width: "100%", marginTop: 14, padding: "15px", background: "linear-gradient(135deg,#FFD600,#FF8A2A)", color: "#1A0F00", border: "none", borderRadius: 14, fontSize: 16, fontWeight: 900, letterSpacing: .5, cursor: "pointer" }}>
+              <button onClick={playAgain} style={{ ...btn(G.projecteur, G.encre, 18), width: "100%", marginTop: 14, padding: "15px" }}>
                 🔄 {tr("REJOUER", "PLAY AGAIN", "NOCHMAL", "GIOCA ANCORA", "JOGAR DE NOVO")}
               </button>
             )}
 
-            <button onClick={doShare} style={{ width: "100%", marginTop: 8, padding: "13px", background: "linear-gradient(135deg,#00E676,#00B85C)", color: "#06130B", border: "none", borderRadius: 14, fontSize: 14, fontWeight: 900, cursor: "pointer" }}>
+            <button onClick={doShare} style={{ ...btn(G.pelouse, G.encre, 16), width: "100%", marginTop: 10, padding: "13px" }}>
               {copied ? tr("Copié ! 📋", "Copied! 📋", "Kopiert! 📋", "Copiato! 📋", "Copiado! 📋") : "📤 " + tr("Partager mon résultat", "Share my result", "Ergebnis teilen", "Condividi il risultato", "Compartilhar resultado")}
             </button>
 
             {/* Classement du jour */}
-            <div style={{ marginTop: 14, background: "rgba(0,0,0,.25)", borderRadius: 12, padding: "10px 12px", textAlign: "left" }}>
+            <div style={{ marginTop: 14, background: G.nuit, border: G.trait, boxShadow: G.ombre, borderRadius: G.rayon, padding: "10px 12px", textAlign: "left" }}>
               <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.5, color: "rgba(255,255,255,.45)", marginBottom: 6, textAlign: "center" }}>🏆 {tr("MEILLEURS SCORES", "TOP SCORES", "BESTE PUNKTE", "MIGLIORI PUNTEGGI", "MELHORES PONTUAÇÕES")}</div>
               {(!board || board.loading) ? (
                 <div style={{ fontSize: 12, color: "rgba(255,255,255,.4)", textAlign: "center", padding: 6 }}>{tr("Chargement…", "Loading…", "Wird geladen…", "Caricamento…", "Carregando…")}</div>
@@ -1056,10 +1062,10 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
                   {board.rows.map((r, i) => {
                     const me = r.player_id === playerId();
                     return (
-                      <div key={r.player_id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 8px", borderRadius: 8, background: me ? "rgba(0,230,118,.16)" : "transparent" }}>
+                      <div key={r.player_id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderRadius: G.rayonS, background: me ? "rgba(42,155,78,.35)" : "transparent" }}>
                         <span style={{ width: 20, textAlign: "center", fontWeight: 900, fontSize: 12, color: i === 0 ? "#FFD700" : i === 1 ? "#C0C0C0" : i === 2 ? "#CD7F32" : "rgba(255,255,255,.4)" }}>{i + 1}</span>
                         <span style={{ flex: 1, fontSize: 13, fontWeight: me ? 800 : 600, color: me ? "#fff" : "rgba(255,255,255,.8)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.player_name || "Anonyme"}</span>
-                        <span style={{ fontFamily: "Anton, sans-serif", fontSize: 15, color: "#00E676" }}>{r.score}</span>
+                        <span style={{ ...posterText(17, G.pelouse) }}>{r.score}</span>
                       </div>
                     );
                   })}
@@ -1078,19 +1084,19 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
       {/* Aperçu de l'énigme « Qui suis-je ? » — les phrases à partager */}
       {showRiddle && (
         <div style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(0,0,0,.78)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }} onClick={() => setShowRiddle(false)}>
-          <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 400, background: "linear-gradient(160deg,#0d2417,#08150d)", border: "1px solid rgba(255,214,0,.35)", borderRadius: 22, padding: "24px 20px", boxShadow: "0 24px 70px rgba(0,0,0,.65)" }}>
-            <div style={{ textAlign: "center", fontFamily: "Anton, sans-serif", fontSize: 15, color: "#fff", letterSpacing: 1 }}>🐐 GOAT FC</div>
-            <div style={{ textAlign: "center", fontFamily: "Anton, sans-serif", fontSize: 34, color: "#FFD600", letterSpacing: 1, marginTop: 2, marginBottom: 16 }}>🕵️ {tr("QUI SUIS-JE ?", "WHO AM I?", "WER BIN ICH?", "CHI SONO?", "QUEM SOU EU?")}</div>
-            {!over && <div style={{ textAlign: "center", fontSize: 11.5, color: "rgba(255,214,0,.8)", marginTop: -8, marginBottom: 14 }}>👀 {tr("Ces indices te sont dévoilés en avance", "These clues are revealed to you early", "Diese Hinweise werden dir vorab gezeigt", "Questi indizi ti sono svelati in anticipo", "Estas dicas são reveladas antes")}</div>}
+          <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 400, background: G.nuit, border: G.trait, borderRadius: G.rayonL, padding: "24px 20px", boxShadow: G.ombreL }}>
+            <div style={{ ...posterText(18, G.white), textAlign: "center" }}>🐐 GOAT FC</div>
+            <div style={{ ...posterText(34, G.projecteur), textAlign: "center", marginTop: 4, marginBottom: 16 }}>🕵️ {tr("QUI SUIS-JE ?", "WHO AM I?", "WER BIN ICH?", "CHI SONO?", "QUEM SOU EU?")}</div>
+            {!over && <div style={{ textAlign: "center", fontSize: 11.5, fontWeight: 700, color: G.projecteur, marginTop: -8, marginBottom: 14 }}>👀 {tr("Ces indices te sont dévoilés en avance", "These clues are revealed to you early", "Diese Hinweise werden dir vorab gezeigt", "Questi indizi ti sono svelati in anticipo", "Estas dicas são reveladas antes")}</div>}
             <div style={{ display: "flex", flexDirection: "column", gap: 11, marginBottom: 20 }}>
               {riddleClues().map((line, i) => (
                 <div key={i} style={{ fontSize: 15, fontWeight: 700, color: "#F2FFF7", lineHeight: 1.35 }}>{line}</div>
               ))}
             </div>
-            <button onClick={shareRiddle} style={{ width: "100%", padding: "14px", background: "linear-gradient(135deg,#FFD600,#FF8A2A)", color: "#1A0F00", border: "none", borderRadius: 14, fontSize: 15, fontWeight: 900, cursor: "pointer" }}>
+            <button onClick={shareRiddle} style={{ ...btn(G.projecteur, G.encre, 17), width: "100%", padding: "14px" }}>
               {riddleCopied ? tr("Copié ! 📋", "Copied! 📋", "Kopiert! 📋", "Copiato! 📋", "Copiado! 📋") : "📤 " + tr("Partager l'énigme", "Share the riddle", "Rätsel teilen", "Condividi l'enigma", "Compartilhar o enigma")}
             </button>
-            <button onClick={() => setShowRiddle(false)} style={{ width: "100%", marginTop: 8, padding: "12px", background: "transparent", color: "rgba(255,255,255,.6)", border: "1px solid rgba(255,255,255,.15)", borderRadius: 14, fontSize: 14, fontWeight: 800, cursor: "pointer" }}>
+            <button onClick={() => setShowRiddle(false)} style={{ ...btn("rgba(8,17,9,.5)", G.white, 15), width: "100%", marginTop: 10, padding: "12px" }}>
               {tr("Fermer", "Close", "Schließen", "Chiudi", "Fechar")}
             </button>
           </div>
@@ -1100,17 +1106,17 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
       {/* Signaler une erreur de parcours */}
       {reportOpen && (
         <div style={{ position: "fixed", inset: 0, zIndex: 320, background: "rgba(0,0,0,.8)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }} onClick={() => setReportOpen(false)}>
-          <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 400, background: "linear-gradient(160deg,#241014,#150808)", border: "1px solid rgba(255,61,87,.4)", borderRadius: 22, padding: "24px 20px", boxShadow: "0 24px 70px rgba(0,0,0,.65)" }}>
+          <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 400, background: G.nuit, border: G.trait, borderRadius: G.rayonL, padding: "24px 20px", boxShadow: G.ombreL }}>
             {reportSent ? (
               <div style={{ textAlign: "center", padding: "10px 0" }}>
                 <div style={{ fontSize: 46, marginBottom: 8 }}>✅</div>
-                <div style={{ fontFamily: "Anton, sans-serif", fontSize: 24, color: "#00E676", letterSpacing: 1 }}>{tr("MERCI !", "THANKS!", "DANKE!", "GRAZIE!", "OBRIGADO!")}</div>
+                <div style={{ ...posterText(26, G.pelouse) }}>{tr("MERCI !", "THANKS!", "DANKE!", "GRAZIE!", "OBRIGADO!")}</div>
                 <div style={{ fontSize: 13, color: "rgba(255,255,255,.7)", marginTop: 6, marginBottom: 18 }}>{tr("Signalement envoyé. On vérifie ce parcours.", "Report sent. We'll check this career.", "Meldung gesendet. Wir prüfen diesen Verlauf.", "Segnalazione inviata. Verificheremo.", "Reporte enviado. Vamos verificar.")}</div>
-                <button onClick={() => setReportOpen(false)} style={{ width: "100%", padding: "13px", background: "#00E676", color: "#06130B", border: "none", borderRadius: 14, fontSize: 14, fontWeight: 900, cursor: "pointer" }}>{tr("Fermer", "Close", "Schließen", "Chiudi", "Fechar")}</button>
+                <button onClick={() => setReportOpen(false)} style={{ ...btn(G.pelouse, G.encre, 16), width: "100%", padding: "13px" }}>{tr("Fermer", "Close", "Schließen", "Chiudi", "Fechar")}</button>
               </div>
             ) : (
               <>
-                <div style={{ textAlign: "center", fontFamily: "Anton, sans-serif", fontSize: 26, color: "#FF6B7D", letterSpacing: 1, marginBottom: 6 }}>🚩 {tr("SIGNALER UNE ERREUR", "REPORT AN ERROR", "FEHLER MELDEN", "SEGNALA UN ERRORE", "REPORTAR ERRO")}</div>
+                <div style={{ ...posterText(26, G.maillot), textAlign: "center", marginBottom: 6 }}>🚩 {tr("SIGNALER UNE ERREUR", "REPORT AN ERROR", "FEHLER MELDEN", "SEGNALA UN ERRORE", "REPORTAR ERRO")}</div>
                 <div style={{ fontSize: 13, color: "rgba(255,255,255,.7)", textAlign: "center", marginBottom: 14, lineHeight: 1.4 }}>{tr("Le parcours de ce joueur te semble faux ou pas à jour ?", "Does this player's career look wrong or outdated?", "Wirkt der Verlauf falsch oder veraltet?", "La carriera di questo giocatore sembra errata?", "A carreira deste jogador parece errada?")}</div>
                 {(over || showCareer) && (
                   <div style={{ background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.12)", borderRadius: 12, padding: "10px 12px", marginBottom: 14 }}>

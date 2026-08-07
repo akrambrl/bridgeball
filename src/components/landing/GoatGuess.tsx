@@ -3,6 +3,7 @@ import { PLAYERS, RETIRED_PLAYERS, GG_WC_WINNERS, GG_CL_WINNERS, GG_BALLON_DOR, 
 import { CLUB_COLORS } from "../LePont.jsx";
 import { trackPlay } from "../../lib/track";
 import { getLang, tr } from "@/lib/lang";
+import { G, posterText, btn, fondCharte, terrainCharte } from "@/lib/charte.jsx";
 
 type Player = {
   name: string;
@@ -1169,30 +1170,22 @@ export const GoatGuess = ({ onClose }: Props) => {
     aria-modal="true"
     className="fixed inset-0 z-[9000] overflow-y-auto"
     style={{
-      // Fond sombre profond (raccord avec l'accueil de l'app) : plus moderne
-      // que la pelouse vert vif, il fait ressortir la carte et l'accent violet.
-      backgroundColor: "#0B1310",
-      backgroundImage:
-        "radial-gradient(ellipse 120% 55% at 50% -5%, rgba(139,92,246,0.16) 0%, transparent 60%), radial-gradient(ellipse 90% 40% at 50% 105%, rgba(0,230,118,0.05) 0%, transparent 60%)",
+      // La pelouse éclairée de la charte, comme partout ailleurs dans l'app. Le
+      // fond sombre à halo violet faisait de cet écran un monde à part, et sur
+      // un fond plus sombre que l'encre aucun trait de la charte n'existe.
+      background: fondCharte,
       paddingTop: "env(safe-area-inset-top)",
       paddingBottom: "env(safe-area-inset-bottom)",
     }}
   >
-    {/* Halo violet subtil en haut — signature GOAT Guess */}
-    <div
-      className="pointer-events-none fixed inset-x-0 top-0 h-[60vh]"
-      style={{
-        background:
-          "radial-gradient(ellipse at 50% 0%, rgba(192,132,252,0.08) 0%, transparent 70%)",
-      }}
-      aria-hidden
-    />
+    {terrainCharte}
 
     {/* Mobile : bouton rond compact pour ne pas chevaucher le titre centré ;
         desktop : libellé complet. */}
     <button
       onClick={onClose}
-      className="fixed top-3 right-3 z-[9001] flex items-center justify-center w-10 h-10 p-0 lg:w-auto lg:h-auto lg:gap-2 lg:px-4 lg:py-2 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 text-white backdrop-blur-md font-display text-sm tracking-widest shadow-[0_8px_24px_rgba(0,0,0,0.4)] hover:scale-[1.03] active:scale-[0.98] transition-all"
+      className="fixed top-3 right-3 z-[9001] flex items-center justify-center w-11 h-11 p-0 lg:w-auto lg:h-auto lg:gap-2 lg:px-4 lg:py-2"
+      style={{ ...btn(G.nuit, G.white, 18), borderRadius: G.rayonS }}
       aria-label={tr("Quitter GOAT Guess","Quit GOAT Guess","GOAT Guess beenden","Esci da GOAT Guess","Sair do GOAT Guess")}
     >
       <span className="lg:hidden text-lg leading-none">←</span>
@@ -1202,12 +1195,12 @@ export const GoatGuess = ({ onClose }: Props) => {
     <div className="relative min-h-screen lg:min-h-screen container max-w-5xl mx-auto px-3 lg:px-6 py-2 lg:py-10">
       {/* Header branding */}
       <div className="text-center mb-2 lg:mb-8">
-        <div className="inline-block px-3 py-1 rounded-full bg-black/40 border border-white/15 backdrop-blur-sm mb-2 lg:mb-3">
-          <span className="font-display text-[10px] tracking-[0.4em] text-[#C084FC]">
+        <div className="inline-block px-3 py-1 mb-2 lg:mb-3" style={{ background: G.nuit, border: G.traitFin, borderRadius: G.rayonS, boxShadow: "2px 2px 0 " + G.encre }}>
+          <span className="font-display text-[10px] tracking-[0.4em]" style={{ color: G.projecteur }}>
             🔮 GOAT GUESS
           </span>
         </div>
-        <h1 className="hidden lg:block font-display text-4xl lg:text-6xl tracking-wider text-white leading-none drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
+        <h1 className="hidden lg:block" style={{ ...posterText(58, G.white) }}>
           {tr("JE DEVINE TON JOUEUR","I'LL GUESS YOUR PLAYER","ICH ERRATE DEINEN SPIELER","INDOVINO IL TUO GIOCATORE","EU ADIVINHO SEU JOGADOR")}
         </h1>
       </div>
@@ -1256,7 +1249,7 @@ export const GoatGuess = ({ onClose }: Props) => {
           </div>
           {!compactMobileDevin && (
             <div className="mt-3 text-center">
-              <div className="font-display text-[10px] tracking-[0.4em] text-[#FFC93C] mb-1 drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]">
+              <div className="font-display text-[10px] tracking-[0.4em] text-[#F5C22B] mb-1 drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]">
                 {tr("LE DEVIN","THE ORACLE","DAS ORAKEL","L'ORACOLO","O ORÁCULO")}
               </div>
               <div className="text-[11px] text-white/70 max-w-[260px] leading-snug italic text-balance">
@@ -1286,7 +1279,7 @@ export const GoatGuess = ({ onClose }: Props) => {
             />
           </div>
           <div className="mt-5 text-center">
-            <div className="font-display text-xs tracking-[0.4em] text-[#FFC93C] mb-1 drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]">
+            <div className="font-display text-xs tracking-[0.4em] text-[#F5C22B] mb-1 drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]">
               {tr("LE DEVIN","THE ORACLE","DAS ORAKEL","L'ORACOLO","O ORÁCULO")}
             </div>
             <div className="text-[11px] text-white/70 max-w-[210px] leading-snug italic text-balance">
@@ -1559,17 +1552,18 @@ const IntroView = ({ onStart }: { onStart: () => void }) => (
     </p>
     <p className="text-white/60 text-xs lg:text-sm mb-4 lg:mb-8">
       {(() => { const l = getLang();
-        if (l === "de") return <>Ich stelle <span className="text-white font-bold">so viele Fragen wie nötig</span>{" "}um ihn zu erraten (meist etwa zwanzig). Antworte <span className="text-[#00E676] font-bold">ja</span>,{" "}<span className="text-[#FF3D6E] font-bold">nein</span> oder{" "}<span className="text-white/70 font-bold">weiß nicht</span>.</>;
-        if (l === "it") return <>Ti faccio <span className="text-white font-bold">tutte le domande necessarie</span>{" "}per indovinarlo (di solito una ventina). Rispondi <span className="text-[#00E676] font-bold">sì</span>,{" "}<span className="text-[#FF3D6E] font-bold">no</span> o{" "}<span className="text-white/70 font-bold">non so</span>.</>;
-        if (l === "pt") return <>Eu faço <span className="text-white font-bold">quantas perguntas forem precisas</span>{" "}para adivinhar (geralmente umas vinte). Responda <span className="text-[#00E676] font-bold">sim</span>,{" "}<span className="text-[#FF3D6E] font-bold">não</span> ou{" "}<span className="text-white/70 font-bold">não sei</span>.</>;
-        if (l === "en") return <>I'll ask <span className="text-white font-bold">as many questions as needed</span>{" "}to guess them (usually around twenty). Answer <span className="text-[#00E676] font-bold">yes</span>,{" "}<span className="text-[#FF3D6E] font-bold">no</span> or{" "}<span className="text-white/70 font-bold">not sure</span>.</>;
-        return <>Je te pose <span className="text-white font-bold">autant de questions qu'il faut</span>{" "}pour le deviner (en général une vingtaine). Réponds <span className="text-[#00E676] font-bold">oui</span>,{" "}<span className="text-[#FF3D6E] font-bold">non</span> ou{" "}<span className="text-white/70 font-bold">je sais pas</span>.</>;
+        if (l === "de") return <>Ich stelle <span className="text-white font-bold">so viele Fragen wie nötig</span>{" "}um ihn zu erraten (meist etwa zwanzig). Antworte <span className="font-bold" style={{ color: G.pelouse }}>ja</span>,{" "}<span className="font-bold" style={{ color: G.maillot }}>nein</span> oder{" "}<span className="text-white/70 font-bold">weiß nicht</span>.</>;
+        if (l === "it") return <>Ti faccio <span className="text-white font-bold">tutte le domande necessarie</span>{" "}per indovinarlo (di solito una ventina). Rispondi <span className="font-bold" style={{ color: G.pelouse }}>sì</span>,{" "}<span className="font-bold" style={{ color: G.maillot }}>no</span> o{" "}<span className="text-white/70 font-bold">non so</span>.</>;
+        if (l === "pt") return <>Eu faço <span className="text-white font-bold">quantas perguntas forem precisas</span>{" "}para adivinhar (geralmente umas vinte). Responda <span className="font-bold" style={{ color: G.pelouse }}>sim</span>,{" "}<span className="font-bold" style={{ color: G.maillot }}>não</span> ou{" "}<span className="text-white/70 font-bold">não sei</span>.</>;
+        if (l === "en") return <>I'll ask <span className="text-white font-bold">as many questions as needed</span>{" "}to guess them (usually around twenty). Answer <span className="font-bold" style={{ color: G.pelouse }}>yes</span>,{" "}<span className="font-bold" style={{ color: G.maillot }}>no</span> or{" "}<span className="text-white/70 font-bold">not sure</span>.</>;
+        return <>Je te pose <span className="text-white font-bold">autant de questions qu'il faut</span>{" "}pour le deviner (en général une vingtaine). Réponds <span className="font-bold" style={{ color: G.pelouse }}>oui</span>,{" "}<span className="font-bold" style={{ color: G.maillot }}>non</span> ou{" "}<span className="text-white/70 font-bold">je sais pas</span>.</>;
       })()}
     </p>
 
     <button
       onClick={onStart}
-      className="goat-pulse inline-flex items-center gap-3 px-8 lg:px-10 py-3 lg:py-4 rounded-2xl bg-gradient-to-r from-[#A855F7] to-[#6D28D9] text-white font-display text-xl lg:text-2xl tracking-widest shadow-[0_12px_32px_-6px_rgba(168,85,247,0.55)] hover:scale-[1.03] active:scale-[0.98] transition-transform"
+      className="goat-pulse inline-flex items-center gap-3 px-8 lg:px-10 py-3 lg:py-4"
+      style={{ ...btn(G.projecteur, G.encre, 24) }}
     >
       <span className="text-xl">{"▶︎"}</span> {tr("COMMENCER","START","START","INIZIA","COMEÇAR")}
     </button>
@@ -1625,10 +1619,10 @@ const AskingView = ({
             })()}
           </span>
         </div>
-        <div className="h-1.5 w-full rounded-full bg-white/10 overflow-hidden">
+        <div className="w-full overflow-hidden" style={{ height: 12, background: "rgba(8,17,9,.55)", border: G.traitFin, borderRadius: G.rayonS }}>
           <div
-            className="h-full bg-gradient-to-r from-[#C084FC] to-[#FF8A2A] transition-all duration-500"
-            style={{ width: `${progress}%` }}
+            className="h-full transition-all duration-500"
+            style={{ width: `${progress}%`, background: G.projecteur, borderRight: progress > 0 && progress < 100 ? G.traitFin : "none" }}
           />
         </div>
       </div>
@@ -1636,24 +1630,13 @@ const AskingView = ({
       {/* Question — bannière dégradé orange→or façon THE PLUG/MERCATO */}
       <div
         key={question.id}
-        className="goat-pop relative overflow-hidden min-h-[88px] lg:min-h-[200px] flex flex-col items-center justify-center text-center mb-3 lg:mb-6 px-4 lg:px-8 py-5 lg:py-8 rounded-[22px] lg:rounded-[30px] shadow-[0_16px_44px_-8px_rgba(139,92,246,0.55)]"
-        style={{ background: "linear-gradient(135deg,#8B5CF6 0%,#7C3AED 45%,#4C1D95 100%)" }}
+        className="goat-pop relative overflow-hidden min-h-[88px] lg:min-h-[200px] flex flex-col items-center justify-center text-center mb-3 lg:mb-6 px-4 lg:px-8 py-5 lg:py-8"
+        style={{ background: G.nuit, border: G.trait, borderRadius: G.rayon, boxShadow: G.ombre }}
       >
-        {/* reflet animé qui balaie la bannière */}
-        <div
-          className="goat-shine pointer-events-none absolute inset-y-0 -left-1/3 w-1/3 skew-x-[-18deg] bg-white/25 blur-md"
-          aria-hidden
-        />
-        {/* moitié diagonale plus claire (forme signature) */}
-        <div
-          className="pointer-events-none absolute top-0 right-0 bottom-0 w-[55%]"
-          style={{ background: "rgba(255,255,255,0.10)", clipPath: "polygon(34% 0%, 100% 0%, 100% 100%, 0% 100%)" }}
-          aria-hidden
-        />
-        <div className="relative font-display text-[10px] lg:text-xs tracking-[0.45em] text-white/70 mb-1.5 lg:mb-3 flex items-center gap-1.5">
+        <div className="relative font-display text-[10px] lg:text-xs tracking-[0.45em] mb-1.5 lg:mb-3 flex items-center gap-1.5" style={{ color: G.projecteur }}>
           <span>🔮</span> QUESTION {count}
         </div>
-        <h3 className="relative font-display text-xl lg:text-4xl tracking-wide text-white leading-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.35)]">
+        <h3 className="relative" style={{ ...posterText(30, G.white) }}>
           {qLabel(question)}
         </h3>
       </div>
@@ -1662,19 +1645,22 @@ const AskingView = ({
       <div className="grid grid-cols-3 gap-2 lg:gap-3 mb-2 lg:mb-3">
         <button
           onClick={() => onAnswer("yes")}
-          className="py-3 lg:py-6 rounded-2xl bg-[#00E676] hover:bg-[#00C966] text-[#0A1410] font-display text-base lg:text-2xl tracking-widest hover:scale-[1.03] active:scale-[0.97] transition-transform shadow-[0_8px_24px_rgba(0,230,118,0.35)]"
+          className="py-3 lg:py-6"
+          style={{ ...btn(G.pelouse, G.encre, 20) }}
         >
           ✓ {tr("OUI","YES","JA","SÌ","SIM")}
         </button>
         <button
           onClick={() => onAnswer("dunno")}
-          className="py-3 lg:py-6 rounded-2xl border-2 border-white/10 bg-white/[0.05] hover:bg-white/[0.10] text-white/80 font-display text-xs lg:text-lg tracking-widest transition-colors"
+          className="py-3 lg:py-6"
+          style={{ ...btn(G.nuit, G.white, 16) }}
         >
           ? {tr("SAIS PAS","NOT SURE","WEISS NICHT","NON SO","NÃO SEI")}
         </button>
         <button
           onClick={() => onAnswer("no")}
-          className="py-3 lg:py-6 rounded-2xl bg-[#FF3D6E] hover:bg-[#E62E5E] text-white font-display text-base lg:text-2xl tracking-widest hover:scale-[1.03] active:scale-[0.97] transition-transform shadow-[0_8px_24px_rgba(255,61,110,0.35)]"
+          className="py-3 lg:py-6"
+          style={{ ...btn(G.maillot, G.white, 20) }}
         >
           ✗ {tr("NON","NO","NEIN","NO","NÃO")}
         </button>
@@ -1710,9 +1696,9 @@ const AskingView = ({
       <div className="mt-3 lg:mt-5">
         <div className="flex items-center justify-between text-[9px] lg:text-[11px] mb-1 tracking-widest font-display text-white/45">
           <span>🔮 {tr("LE GÉNIE SE RAPPROCHE","THE GENIE CLOSES IN","DER GENIE KOMMT NÄHER","IL GENIO SI AVVICINA","O GÊNIO SE APROXIMA")}</span>
-          <span className="tabular-nums text-[#C084FC]/80">{Math.round(smokeFill)}%</span>
+          <span className="tabular-nums" style={{ color: G.projecteur }}>{Math.round(smokeFill)}%</span>
         </div>
-        <div className="relative h-3 lg:h-4 w-full rounded-full bg-white/[0.06] border border-white/10 overflow-hidden">
+        <div className="relative h-3 lg:h-4 w-full overflow-hidden" style={{ background: "rgba(8,17,9,.55)", border: G.traitFin, borderRadius: G.rayonS }}>
           <div
             className="goat-smokebar-fill absolute inset-y-0 left-0 rounded-full transition-[width] duration-700 ease-out"
             style={{ width: `${smokeFill}%` }}
@@ -1744,13 +1730,13 @@ const LiveDeductions = ({
   const ansIcon = (a: Answer) =>
     a === "yes" ? "✓" : a === "no" ? "✗" : "?";
   const ansColor = (a: Answer) =>
-    a === "yes" ? "#00E676" : a === "no" ? "#FF3D6E" : "rgba(255,255,255,0.45)";
+    a === "yes" ? G.pelouse : a === "no" ? G.maillot : "rgba(255,255,255,0.45)";
   // On affiche en priorité les 6 dernières (les plus récentes en haut)
   const recent = [...history].reverse().slice(0, 6);
   return (
     <div className="mt-6 rounded-2xl bg-black/30 border border-white/10 backdrop-blur-sm overflow-hidden">
       <div className="flex items-center justify-between px-4 py-2 border-b border-white/5 bg-white/[0.03]">
-        <span className="font-display text-[10px] tracking-[0.3em] text-[#C084FC]">
+        <span className="font-display text-[10px] tracking-[0.3em] text-[#F5C22B]">
           🧠 {tr("CE QUE JE DÉDUIS","WHAT I'M DEDUCING","WAS ICH ABLEITE","COSA STO DEDUCENDO","O QUE ESTOU DEDUZINDO")}
         </span>
         <span className="text-[10px] text-white/40 tabular-nums">
@@ -1798,8 +1784,8 @@ const GuessingView = ({
   canGoBack: boolean;
 }) => (
   <div className="text-center">
-    <div className="inline-block px-3 py-1 rounded-full bg-[#C084FC]/15 border border-[#C084FC]/30 mb-2 lg:mb-3">
-      <span className="font-display text-[10px] tracking-[0.35em] text-[#C084FC]">
+    <div className="inline-block px-3 py-1 rounded-full bg-[#0E2C17] border-2 border-[#081109] mb-2 lg:mb-3">
+      <span className="font-display text-[10px] tracking-[0.35em] text-[#F5C22B]">
         🔮 {tr("MA DEVINETTE","MY GUESS","MEINE VERMUTUNG","LA MIA IPOTESI","MEU PALPITE")}
       </span>
     </div>
@@ -1807,7 +1793,7 @@ const GuessingView = ({
       {tr("JE PARIE QUE C'EST...","I BET IT'S...","ICH WETTE, ES IST...","SCOMMETTO CHE È...","APOSTO QUE É...")}
     </div>
 
-    <PlayerRevealCard player={guess} accent="#C084FC" />
+    <PlayerRevealCard player={guess} accent={G.projecteur} />
 
     <p className="text-white/60 text-sm mt-3 mb-3 lg:mt-5 lg:mb-4 tracking-wide">
       {tr("Alors, j'ai bon ?","So, am I right?","Und, hab ich recht?","Allora, ho indovinato?","E aí, acertei?")}
@@ -1816,13 +1802,15 @@ const GuessingView = ({
     <div className="grid grid-cols-2 gap-3">
       <button
         onClick={onCorrect}
-        className="py-3 lg:py-4 rounded-2xl bg-gradient-to-r from-[#00C966] to-[#00E676] text-[#0A1410] font-display text-lg lg:text-xl tracking-widest hover:scale-[1.03] active:scale-[0.97] transition-transform shadow-[0_8px_24px_rgba(0,230,118,0.35)]"
+        className="py-3 lg:py-4"
+        style={{ ...btn(G.pelouse, G.encre, 20) }}
       >
         ✓ {tr("OUI !","YES!","JA!","SÌ!","SIM!")}
       </button>
       <button
         onClick={onWrong}
-        className="py-3 lg:py-4 rounded-2xl bg-gradient-to-r from-[#FF3D6E] to-[#E62E5E] text-white font-display text-lg lg:text-xl tracking-widest hover:scale-[1.03] active:scale-[0.97] transition-transform shadow-[0_8px_24px_rgba(255,61,110,0.35)]"
+        className="py-3 lg:py-4"
+        style={{ ...btn(G.maillot, G.white, 20) }}
       >
         ✗ {tr("NON","NO","NEIN","NO","NÃO")}
       </button>
@@ -1860,7 +1848,7 @@ const WonView = ({
           style={{
             left: `${(i * 6.5 + 5) % 100}%`,
             top: `-10px`,
-            background: ["#C084FC", "#FFC93C", "#00E676", "#FF8A2A"][i % 4],
+            background: [G.projecteur, G.pelouse, G.ciel, G.maillot][i % 4],
             animation: `goat-confetti ${2 + (i % 4) * 0.4}s linear ${(i % 5) * 0.15}s forwards`,
           }}
         />
@@ -1875,14 +1863,15 @@ const WonView = ({
       {tr("Tu pensais bien à...","You were thinking of...","Du hast gedacht an...","Stavi pensando a...","Você estava pensando em...")}
     </p>
 
-    <PlayerRevealCard player={guess} accent="#C084FC" />
+    <PlayerRevealCard player={guess} accent={G.projecteur} />
 
-    <QaRecap history={qaHistory} accent="#C084FC" />
+    <QaRecap history={qaHistory} accent={G.projecteur} />
 
     <div className="grid grid-cols-2 gap-3 mt-6">
       <button
         onClick={onRestart}
-        className="py-4 rounded-2xl bg-gradient-to-r from-[#A855F7] to-[#6D28D9] text-white font-display text-lg tracking-widest hover:scale-[1.02] active:scale-[0.97] transition-transform shadow-[0_10px_28px_-6px_rgba(168,85,247,0.55)]"
+        className="py-4"
+        style={{ ...btn(G.projecteur, G.encre, 20) }}
       >
         {"▶︎"} {tr("REJOUER","PLAY AGAIN","NOCHMAL SPIELEN","GIOCA ANCORA","JOGAR DE NOVO")}
       </button>
@@ -1914,7 +1903,7 @@ const QaRecap = ({
       ? tr("✗ Non", "✗ No", "✗ Nein", "✗ No", "✗ Não")
       : tr("? Sais pas", "? Not sure", "? Weiß nicht", "? Non so", "? Não sei");
   const ansColor = (a: Answer) =>
-    a === "yes" ? "#00E676" : a === "no" ? "#FF3D6E" : "rgba(255,255,255,0.5)";
+    a === "yes" ? G.pelouse : a === "no" ? G.maillot : "rgba(255,255,255,0.5)";
   return (
     <div className="mt-5 text-left">
       <button
@@ -1987,8 +1976,8 @@ const LostView = ({
     </p>
 
     {tried.length > 0 && (
-      <div className="mb-4 inline-block px-4 py-2 rounded-xl bg-[#FF3D6E]/10 border border-[#FF3D6E]/30">
-        <div className="text-[10px] tracking-[0.3em] text-[#FF3D6E] mb-1">
+      <div className="mb-4 inline-block px-4 py-2" style={{ background: G.nuit, border: G.trait, borderRadius: G.rayon, boxShadow: G.ombre }}>
+        <div className="text-[10px] tracking-[0.3em] mb-1" style={{ color: G.maillot }}>
           {tr("MES DEVINETTES RATÉES","MY FAILED GUESSES","MEINE FEHLVERSUCHE","I MIEI TENTATIVI FALLITI","MEUS PALPITES ERRADOS")}
         </div>
         <div className="text-xs text-white/70">
@@ -2000,14 +1989,14 @@ const LostView = ({
 
     {shortlist.length > 0 && (
       <div className="mb-5 rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.03] to-transparent p-4">
-        <div className="font-display text-[10px] tracking-[0.3em] text-[#C084FC] mb-3">
+        <div className="font-display text-[10px] tracking-[0.3em] text-[#F5C22B] mb-3">
           🤔 {tr("PEUT-ÊTRE UN DE CES JOUEURS ?","MAYBE ONE OF THESE PLAYERS?","VIELLEICHT EINER DIESER SPIELER?","FORSE UNO DI QUESTI GIOCATORI?","TALVEZ UM DESTES JOGADORES?")}
         </div>
         <div className="flex flex-wrap gap-2 justify-center">
           {shortlist.map((p) => (
             <span
               key={p.name}
-              className="px-3 py-1.5 rounded-full bg-white/[0.05] border border-white/10 text-white/85 text-sm hover:bg-[#C084FC]/15 hover:border-[#C084FC]/40 transition-colors"
+              className="px-3 py-1.5 rounded-xl bg-[#0E2C17] border-2 border-[#081109] text-white text-sm font-bold hover:bg-[#2A9B4E] transition-colors"
             >
               {p.name}
             </span>
@@ -2020,12 +2009,13 @@ const LostView = ({
       {tr("Si ton joueur n'apparaît nulle part, il n'est peut-être pas dans ma base.","If your player doesn't appear anywhere, they may not be in my database.","Wenn dein Spieler nirgends auftaucht, ist er vielleicht nicht in meiner Datenbank.","Se il tuo giocatore non appare da nessuna parte, forse non è nel mio database.","Se seu jogador não aparece em lugar nenhum, talvez não esteja na minha base.")}
     </p>
 
-    <QaRecap history={qaHistory} accent="#C084FC" />
+    <QaRecap history={qaHistory} accent={G.projecteur} />
 
     <div className="grid grid-cols-2 gap-3 mt-6">
       <button
         onClick={onRestart}
-        className="py-4 rounded-2xl bg-gradient-to-r from-[#A855F7] to-[#6D28D9] text-white font-display text-lg tracking-widest hover:scale-[1.02] active:scale-[0.97] transition-transform shadow-[0_10px_28px_-6px_rgba(168,85,247,0.55)]"
+        className="py-4"
+        style={{ ...btn(G.projecteur, G.encre, 20) }}
       >
         {"▶︎"} {tr("REVANCHE","REMATCH","REVANCHE","RIVINCITA","REVANCHE")}
       </button>
@@ -2200,7 +2190,7 @@ const PositionAvatar = ({ position }: { position?: string }) => {
 
 const PlayerRevealCard = ({
   player,
-  accent = "#C084FC",
+  accent = G.projecteur,
 }: {
   player: Player;
   accent?: string;
