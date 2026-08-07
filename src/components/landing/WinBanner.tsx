@@ -52,9 +52,14 @@ type Props = {
   marginTop?: number;
   /** true = séquence de défaite (cadre neutre au lieu du liseré vert). */
   lose?: boolean;
+  /** Plafond de hauteur. L'extrait est en 16/9 : sur un écran de résultat qui
+   *  doit tenir d'une pièce, sa hauteur libre mangeait à elle seule un quart de
+   *  la page. Au-delà du plafond on RECADRE (object-fit: cover) plutôt que de
+   *  déformer — la scène reste lisible, elle est juste resserrée. */
+  maxHeight?: number;
 };
 
-export const WinBanner = ({ maxWidth = 420, marginTop = 10, lose = false }: Props) => {
+export const WinBanner = ({ maxWidth = 420, marginTop = 10, lose = false, maxHeight }: Props) => {
   const ref = useRef<HTMLVideoElement>(null);
   // Initialiseur de useState : le compteur n'avance qu'au MONTAGE, pas à chaque
   // rendu — sinon l'extrait changerait sous les yeux du joueur.
@@ -79,6 +84,7 @@ export const WinBanner = ({ maxWidth = 420, marginTop = 10, lose = false }: Prop
         overflow: "hidden",
         border: G.trait,
         boxShadow: G.ombre,
+        ...(maxHeight ? { maxHeight } : null),
         lineHeight: 0,
         animation: "fadeUp .45s ease .1s both",
       }}
@@ -94,7 +100,7 @@ export const WinBanner = ({ maxWidth = 420, marginTop = 10, lose = false }: Prop
         loop
         preload="auto"
         onCanPlay={e => { e.currentTarget.play().catch(() => { /* noop */ }); }}
-        style={{ width: "100%", height: "auto", display: "block" }}
+        style={maxHeight ? { width: "100%", height: maxHeight, objectFit: "cover", display: "block" } : { width: "100%", height: "auto", display: "block" }}
       >
         <source src={clip.mp4} type="video/mp4" />
         <source src={clip.webm} type="video/webm" />

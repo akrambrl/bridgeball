@@ -5258,6 +5258,8 @@ export default function LePont() {
   // mise en scène quand on a déjà vu le geste cent fois.
   const CARTE_REVELEE = 5;
   const [cardRevealEtape, setCardRevealEtape] = useState(CARTE_REVELEE);
+  // Voir `sauterReveal` : garde-fou contre le tap qui a ouvert le pop-up.
+  const cardTapPretRef = useRef(false);
   useEffect(function(){
     if (!cardPopup) return;
     let reduit = false;
@@ -5274,8 +5276,14 @@ export default function LePont() {
         if (j[1] === 4) hapticSuccess();
       }, j[0]);
     });
-    return function(){ minuteurs.forEach(clearTimeout); };
+    // Le doigt qui a ouvert le pop-up n'a pas le droit de le sauter.
+    cardTapPretRef.current = false;
+    const tGarde = setTimeout(function(){ cardTapPretRef.current = true; }, 600);
+    return function(){ minuteurs.forEach(clearTimeout); clearTimeout(tGarde); };
   }, [cardPopup]);
+  // Un seul point d'entrée pour « couper la mise en scène » : l'overlay et la
+  // carte l'appellent tous les deux, et le garde-fou ne vit qu'ici.
+  function sauterReveal(){ if (cardTapPretRef.current) setCardRevealEtape(CARTE_REVELEE); }
   const [badgeByPid, setBadgeByPid] = useState({});   // pid → {badge, xp} pour le classement
   // Badge du joueur, lu à part du gros select (une colonne absente ferait
   // échouer toute la requête, cf. PSEUDO_COLS).
@@ -8553,7 +8561,7 @@ export default function LePont() {
     });
     return (
       <div key="cardUnlock"
-        onClick={function(){ if (revele) setCardPopup(null); else setCardRevealEtape(CARTE_REVELEE); }}
+        onClick={function(){ if (revele) setCardPopup(null); else sauterReveal(); }}
         style={{position:"fixed",inset:0,zIndex:9997,background:"rgba(8,17,9,.72)",
           display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:20,
           overflow:"hidden",animation:"fadeIn .3s ease"}}>
@@ -8595,7 +8603,7 @@ export default function LePont() {
             qu'il ait fini son demi-tour, la face ensuite. C'est ce qui garantit
             que le logo du dos ne peut pas se retrouver en miroir par-dessus le
             joueur, quoi que fasse le moteur avec backface-visibility. */}
-        <div onClick={function(e){e.stopPropagation(); if (revele) setCardPopup(null); else setCardRevealEtape(CARTE_REVELEE);}}
+        <div onClick={function(e){e.stopPropagation(); if (revele) setCardPopup(null); else sauterReveal();}}
           style={{width:"min(74vw, 260px)",aspectRatio:"3 / 4",perspective:1000,zIndex:1,cursor:"pointer",
             animation:monte?(revele?"bbCarteRespire 3.4s ease-in-out infinite":"bbCarteMonte .7s cubic-bezier(.2,.8,.3,1) both"):"none",
             opacity:monte?1:0}}>
@@ -9109,23 +9117,23 @@ export default function LePont() {
   // ── DUEL CREATE MODAL (partagé entre écrans userProfile, friends, home, leaderboard) ──
   const duelCreateModal = showDuelCreate && (
     <div key="duel-create-modal" style={{position:"fixed",inset:0,zIndex:9998,background:"rgba(8,17,9,.86)",display:"flex",alignItems:"center",justifyContent:"center"}}>
-      <div style={{background:"rgba(15,25,15,.95)",borderRadius:24,padding:"28px 24px",maxWidth:340,width:"calc(100% - 32px)",border:G.traitFin}}>
-        <div style={{fontFamily:G.heading,fontSize:28,color:G.white,marginBottom:4}}>{tr("DÉFIER","CHALLENGE","HERAUSFORDERN","SFIDA","DESAFIAR")}</div>
-        <div style={{fontSize:14,color:"rgba(255,255,255,.5)",marginBottom:20}}>vs <strong style={{color:G.gold}}>{showDuelCreate.name}</strong></div>
-        <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:8}}>Mode</div>
+      <div style={{background:G.nuit,borderRadius:G.rayonL,padding:"26px 22px",maxWidth:340,width:"calc(100% - 32px)",border:G.trait,boxShadow:G.ombreL}}>
+        <div style={{...posterText(32,G.white),marginBottom:4}}>{tr("DÉFIER","CHALLENGE","HERAUSFORDERN","SFIDA","DESAFIAR")}</div>
+        <div style={{fontSize:14,color:"rgba(255,255,255,.6)",marginBottom:20}}>vs <strong style={{color:G.projecteur}}>{showDuelCreate.name}</strong></div>
+        <div style={{...posterText(1,G.projecteur,0),fontSize:13,letterSpacing:3,textTransform:"uppercase",marginBottom:8}}>Mode</div>
         <div style={{display:"flex",gap:8,marginBottom:16}}>
           {["pont","chaine"].map(function(m){return(
-            <button key={m} onClick={function(){setDuelMode(m);}} style={{flex:1,padding:"10px",borderRadius:12,border:G.traitFin,background:duelMode===m?"rgba(0,230,118,.1)":"transparent",color:duelMode===m?G.accent:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:13}}>
+            <button key={m} onClick={function(){setDuelMode(m);}} style={{...btn(duelMode===m?G.pelouse:G.nuit,G.white,16),flex:1,padding:"11px 8px",borderRadius:G.rayonS,fontWeight:700,cursor:"pointer",fontSize:13}}>
               {m==="pont"?"The Plug":"The Mercato"}
             </button>
           );})}
         </div>
         {duelMode==="pont" && (
           <>
-            <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:8}}>{tr("Difficulté","Difficulty","Schwierigkeit","Difficoltà","Dificuldade")}</div>
+            <div style={{...posterText(1,G.projecteur,0),fontSize:13,letterSpacing:3,textTransform:"uppercase",marginBottom:8}}>{tr("Difficulté","Difficulty","Schwierigkeit","Difficoltà","Dificuldade")}</div>
             <div style={{display:"flex",gap:8,marginBottom:16}}>
               {["facile","moyen","expert"].map(function(d){return(
-                <button key={d} onClick={function(){setDuelDiff(d);}} style={{flex:1,padding:"8px",borderRadius:10,border:G.traitFin,background:duelDiff===d?"rgba(255,214,0,.1)":"transparent",color:duelDiff===d?G.gold:G.white,fontFamily:G.font,fontWeight:700,cursor:"pointer",fontSize:12,textTransform:"capitalize"}}>
+                <button key={d} onClick={function(){setDuelDiff(d);}} style={{...btn(duelDiff===d?G.projecteur:G.nuit,duelDiff===d?G.encre:G.white,15),flex:1,padding:"9px 6px",borderRadius:G.rayonS,textTransform:"capitalize",fontWeight:700,cursor:"pointer",fontSize:12,textTransform:"capitalize"}}>
                   {d}
                 </button>
               );})}
@@ -9134,8 +9142,8 @@ export default function LePont() {
           </>
         )}
         <div style={{display:"flex",gap:8,marginTop:8}}>
-          <button onClick={function(){setShowDuelCreate(null);}} style={{flex:1,padding:"12px",background:"rgba(8,17,9,.45)",color:"rgba(255,255,255,.5)",border:G.trait,borderRadius:G.rayon,cursor:"pointer",fontFamily:G.font,fontSize:14}}>{tr("Annuler","Cancel","Abbrechen","Annulla","Cancelar")}</button>
-          <button onClick={function(){ const t = { id:showDuelCreate.id, name:showDuelCreate.name }; setShowDuelCreate(null); setShowFriends(false); playOpenDuel({ mode:duelMode, diff:duelDiff, rounds:duelRounds, target:t }, "create"); }} style={{flex:2,padding:"12px",background:G.pelouse,color:"#000",border:G.trait,borderRadius:G.rayon,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>{tr("Envoyer le défi ⚡","Send challenge ⚡","Herausforderung senden ⚡","Invia la sfida ⚡","Enviar desafio ⚡")}</button>
+          <button onClick={function(){setShowDuelCreate(null);}} style={{...btn(G.nuit,G.white,16),flex:1,padding:"12px"}}>{tr("Annuler","Cancel","Abbrechen","Annulla","Cancelar")}</button>
+          <button onClick={function(){ const t = { id:showDuelCreate.id, name:showDuelCreate.name }; setShowDuelCreate(null); setShowFriends(false); playOpenDuel({ mode:duelMode, diff:duelDiff, rounds:duelRounds, target:t }, "create"); }} style={{...btn(G.pelouse,G.white,17),flex:2,padding:"12px"}}>{tr("Envoyer le défi ⚡","Send challenge ⚡","Herausforderung senden ⚡","Invia la sfida ⚡","Enviar desafio ⚡")}</button>
         </div>
       </div>
     </div>
@@ -9683,19 +9691,19 @@ export default function LePont() {
         </div>
         {openTab==="recus" ? (
           <div>
-            <div style={{fontSize:12,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginBottom:8}}>{tr("On t'a défié","You've been challenged","Du wurdest herausgefordert","Ti hanno sfidato","Você foi desafiado")}</div>
+            <div style={{...posterText(1,G.projecteur,0),fontSize:13,letterSpacing:3,textTransform:"uppercase",marginBottom:8}}>{tr("On t'a défié","You've been challenged","Du wurdest herausgefordert","Ti hanno sfidato","Você foi desafiado")}</div>
             {receivedChallenges.length===0 ? (
               <div style={{textAlign:"center",padding:"16px",color:"rgba(255,255,255,.4)",fontSize:13}}>{tr("Aucun défi reçu pour l'instant.","No challenge received yet.","Noch keine Herausforderung erhalten.","Nessuna sfida ricevuta.","Nenhum desafio recebido.")}</div>
             ) : receivedChallenges.map(function(d){
               const modeLabel = d.mode === "chaine" ? "The Mercato" : "The Plug";
               return (
-                <div key={d.id} style={{display:"flex",alignItems:"center",gap:10,padding:"11px 12px",marginBottom:8,background:"rgba(255,138,42,.10)",border:"1px solid rgba(255,138,42,.35)",borderRadius:14}}>
+                <div key={d.id} style={{display:"flex",alignItems:"center",gap:10,padding:"11px 12px",marginBottom:8,background:G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon}}>
                   <div style={{fontSize:20}}>⚔️</div>
                   <div style={{flex:1,minWidth:0}}>
-                    <div style={{fontSize:13,fontWeight:800,color:G.white,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{d.challenger_name}</div>
+                    <div style={{...posterText(1,G.white,0),fontSize:19,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{d.challenger_name}</div>
                     <div style={{fontSize:11,color:"rgba(255,255,255,.5)",marginTop:1}}>{modeLabel} · {d.diff} · {d.challenger_score} pts {tr("à battre","to beat","zu schlagen","da battere","para bater")}</div>
                   </div>
-                  <button onClick={function(){playOpenDuel(d,"accept");}} style={{flexShrink:0,padding:"9px 14px",background:"#FF8A2A",color:"#000",border:"none",borderRadius:12,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800}}>{tr("Relever","Take it","Annehmen","Accetta","Aceitar")}</button>
+                  <button onClick={function(){playOpenDuel(d,"accept");}} style={{...btn(G.maillot,G.white,16),flexShrink:0,padding:"9px 14px",borderRadius:G.rayonS}}>{tr("Relever","Take it","Annehmen","Accetta","Aceitar")}</button>
                 </div>
               );
             })}
@@ -11395,7 +11403,7 @@ export default function LePont() {
             </div>
           )}
           {((!duelResult.isChain && roundAnswers.length>0) || (duelResult.isChain && chainHistory.length>0)) && (
-            <button onClick={()=>setShowHistory(true)} style={{width:"100%",padding:"13px",background:"rgba(251,226,22,.12)",color:"#FBE216",border:"1.5px solid rgba(251,226,22,.5)",borderRadius:G.rayon,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginTop:8}}>
+            <button onClick={()=>setShowHistory(true)} style={{...btn(G.projecteur,G.encre,17),width:"100%",padding:"13px",borderRadius:G.rayon,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginTop:8}}>
               📋 {duelResult.isChain?(tr("Voir ma chaîne","See my chain","Meine Kette ansehen","Vedi la mia catena","Ver minha corrente")):(tr("Récap des questions","Questions recap","Fragen-Übersicht","Riepilogo domande","Resumo das perguntas"))}
             </button>
           )}
@@ -14885,9 +14893,9 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
       {myRecoveryCodeModal}
         {/* Terrain dessiné de la charte : les bandes opaques recouvraient le fond. */}
         {terrainCharte}
-      <div style={{zIndex:1,padding:"16px 20px 0",textAlign:"center"}}>
-        <WinBanner maxWidth={380} marginTop={0} lose={sc <= 0} />
-        <div style={{...posterTitre(34,isNewRecord?G.projecteur:G.white),fontSize:"clamp(22px,7.4vw,34px)",animation:"fadeUp .4s ease .15s both",marginTop:6}}>{isNewRecord?tr("NOUVEAU RECORD !","NEW RECORD!","NEUER REKORD!","NUOVO RECORD!","NOVO RECORDE!"):isChain?tr("TEMPS ÉCOULÉ !","TIME'S UP!","ZEIT ABGELAUFEN!","TEMPO SCADUTO!","TEMPO ESGOTADO!"):""}</div>
+      <div style={{zIndex:1,padding:"10px 20px 0",textAlign:"center"}}>
+        <WinBanner maxWidth={340} marginTop={0} maxHeight={128} lose={sc <= 0} />
+        <div style={{...posterTitre(30,isNewRecord?G.projecteur:G.white),fontSize:"clamp(20px,6.6vw,30px)",animation:"fadeUp .4s ease .15s both",marginTop:6}}>{isNewRecord?tr("NOUVEAU RECORD !","NEW RECORD!","NEUER REKORD!","NUOVO RECORD!","NOVO RECORDE!"):isChain?tr("TEMPS ÉCOULÉ !","TIME'S UP!","ZEIT ABGELAUFEN!","TEMPO SCADUTO!","TEMPO ESGOTADO!"):""}</div>
         <div style={{fontSize:"clamp(16px,4.5vw,22px)",color:G.white,fontWeight:800,marginTop:isNewRecord||isChain?6:16,animation:"fadeUp .4s ease .25s both",textTransform:"uppercase",letterSpacing:1,textShadow:"0 2px 10px rgba(0,0,0,.4)"}}>{(function(){
           const TAUNTS={
             win:{
@@ -14910,10 +14918,12 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
           return arr[Math.abs(Math.floor(sc * 3 + totalRounds)) % 8];
         })()}</div>
       </div>
-      <div style={sheet}>
-        <div style={{background:G.nuit,borderRadius:G.rayonL,padding:"20px",textAlign:"center",border:G.trait,boxShadow:G.ombreL}}>
+      {/* La feuille se serre pour que l'écran tienne d'une pièce : c'est elle
+          qui porte le score, les relances et les deux boutons. */}
+      <div style={{...sheet,gap:8,padding:"12px 16px 16px"}}>
+        <div style={{background:G.nuit,borderRadius:G.rayonL,padding:"12px 16px",textAlign:"center",border:G.trait,boxShadow:G.ombreL}}>
           <div style={{fontSize:11,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.5)"}}>{isChain?tr("Score","Score","Score","Punteggio","Pontuação"):tr("Score total","Total score","Gesamtpunktzahl","Punteggio totale","Pontuação total")}</div>
-          <div style={{...posterText(76,G.white)}}>{sc}</div>
+          <div style={{...posterText(56,G.white)}}>{sc}</div>
           <div style={{fontSize:11,color:"rgba(255,255,255,.5)"}}>pts{isChain?` · ${chainCount} ${chainCount>1?tr("liens","links","Glieder","anelli","elos"):tr("lien","link","Glied","anello","elo")}`:`  ·  ${totalRounds} ${totalRounds>1?tr("manches","rounds","Runden","turni","rodadas"):tr("manche","round","Runde","turno","rodada")}`}</div>
           {maxCombo>=3&&<div style={{fontSize:13,color:"#f59e0b",marginTop:4,fontWeight:700}}>🔥 {tr("Meilleur combo","Best combo","Bester Combo","Miglior combo","Melhor combo")} : x{maxCombo}</div>}
           {isNewRecord&&<div style={{fontSize:12,color:G.accent,marginTop:6,fontStyle:"italic"}}>{tr("Ancien record battu 🎉","Previous record beaten 🎉","Alter Rekord geschlagen 🎉","Vecchio record battuto 🎉","Recorde anterior batido 🎉")}</div>}
@@ -14927,7 +14937,7 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
           const gap = chainRecord.score - sc;
           const close = gap <= Math.max(20, Math.round(chainRecord.score * 0.12));
           return (
-            <div style={{marginTop:12,background:close?"rgba(245,194,43,.28)":G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,padding:"12px 16px",textAlign:"center"}}>
+            <div style={{marginTop:12,background:close?"rgba(245,194,43,.28)":G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,padding:"9px 14px",textAlign:"center"}}>
               <div style={{fontSize:13.5,fontWeight:900,color:close?"#FF8A2A":"#fff",letterSpacing:.3}}>
                 {close ? tr("SI PROCHE ! 😤 ","SO CLOSE! 😤 ","SO KNAPP! 😤 ","COSÌ VICINO! 😤 ","POR POUCO! 😤 ") : ""}
                 {tr(`Il te manquait ${gap} pts pour ton record`,`${gap} pts short of your record`,`Nur ${gap} Pkt bis zum Rekord`,`Ti mancavano ${gap} pt per il record`,`Faltaram ${gap} pts para o recorde`)}
@@ -14948,8 +14958,8 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
           const remain = Math.max(0, ng.min - playerXp);
           const carrot = tr(`Plus que ${remain} pts avant`, `${remain} pts to`, `Noch ${remain} Pkt bis`, `Ancora ${remain} pt a`, `Faltam ${remain} pts para`);
           return (
-            <div style={{marginTop:12,background:G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,padding:"12px 16px"}}>
-              <div style={{fontSize:12,fontWeight:800,color:"rgba(255,255,255,.85)",marginBottom:7,textAlign:"center"}}>{carrot} <span style={{color:ng.color}}>{ng.emoji} {ng.label}</span></div>
+            <div style={{marginTop:0,background:G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,padding:"9px 14px"}}>
+              <div style={{fontSize:12,fontWeight:800,color:"rgba(255,255,255,.85)",marginBottom:6,textAlign:"center"}}>{carrot} <span style={{color:ng.color}}>{ng.emoji} {ng.label}</span></div>
               <div style={{height:7,borderRadius:4,background:G.nuit,overflow:"hidden"}}>
                 <div style={{height:"100%",width:pct+"%",background:`linear-gradient(90deg, ${ng.color}, #fff)`,borderRadius:4,transition:"width .5s ease"}}/>
               </div>
@@ -14963,28 +14973,32 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
           const botScore = botScoreRef.current;
           const win = myScore > botScore;
           const draw = myScore === botScore;
-          const verdictColor = draw ? "#FFC93C" : win ? "#00E676" : "#FF3D6E";
+          // Le verdict est porté par un APLAT de jeton, pas par un filet
+          // translucide sur un fond teinté : égalité au projecteur, victoire à
+          // la pelouse, défaite au maillot.
+          const verdictBg = draw ? G.projecteur : win ? G.pelouse : G.maillot;
+          const verdictFg = draw ? G.encre : G.white;
           const verdictText = draw ? "ÉGALITÉ" : win ? "VICTOIRE !" : "DÉFAITE";
-          const verdictBg = draw ? "rgba(255,201,60,.12)" : win ? "rgba(0,230,118,.12)" : "rgba(255,61,110,.12)";
           return (
-            <div style={{borderRadius:20,padding:"18px",border:`2px solid ${verdictColor}55`,background:verdictBg,animation:"fadeUp .4s ease .15s both"}}>
-              <div style={{textAlign:"center",fontFamily:G.heading,fontSize:24,letterSpacing:3,color:verdictColor,marginBottom:14}}>
-                {verdictText}
+            <div style={{borderRadius:G.rayon,padding:"16px",border:G.trait,boxShadow:G.ombre,background:G.nuit,animation:"fadeUp .4s ease .15s both"}}>
+              <div style={{textAlign:"center",marginBottom:14}}>
+                <span style={{...posterText(26,verdictFg),display:"inline-block",padding:"5px 16px",background:verdictBg,
+                  border:G.traitFin,borderRadius:G.rayonS,boxShadow:"2px 2px 0 "+G.encre}}>{verdictText}</span>
               </div>
               <div style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",alignItems:"center",gap:10}}>
                 {/* Toi */}
                 <div style={{textAlign:"center"}}>
-                  <div style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:64,height:64,borderRadius:"50%",overflow:"hidden",background:G.pelouse,border:"2px solid #00E676",marginBottom:8,marginInline:"auto"}}>
+                  <div style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:64,height:64,borderRadius:G.rayonS,overflow:"hidden",background:G.pelouse,border:G.traitFin,marginBottom:8,marginInline:"auto"}}>
                     <img src={avatarCard(playerBadge, playerXp).img} alt="" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top"}}/>
                   </div>
                   <div style={{fontSize:11,color:"#bbb",letterSpacing:1,textTransform:"uppercase"}}>{playerName||"Toi"}</div>
-                  <div style={{fontFamily:G.heading,fontSize:32,color:win?verdictColor:G.white,lineHeight:1,marginTop:2}}>{myScore}</div>
+                  <div style={{...posterText(1,win?G.pelouse:G.white,0),fontSize:34,marginTop:2}}>{myScore}</div>
                 </div>
                 {/* VS */}
-                <div style={{fontFamily:G.heading,fontSize:18,color:"#888",letterSpacing:2}}>VS</div>
+                <div style={{...posterText(1,"rgba(255,255,255,.55)",0),fontSize:20,letterSpacing:2}}>VS</div>
                 {/* Bot */}
                 <div style={{textAlign:"center"}}>
-                  <div style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:64,height:64,borderRadius:"50%",overflow:"hidden",background:G.ciel,border:"2px solid #3DA5FF",marginBottom:8,marginInline:"auto"}}>
+                  <div style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:64,height:64,borderRadius:G.rayonS,overflow:"hidden",background:G.ciel,border:G.traitFin,marginBottom:8,marginInline:"auto"}}>
                     {botOpponentRef.current.avatar
                       ? <img src={botOpponentRef.current.avatar} alt="" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top"}}/>
                       : <span style={{fontFamily:G.heading,fontSize:28,color:G.white}}>{botOpponentRef.current.pseudo[0].toUpperCase()}</span>
@@ -14993,7 +15007,7 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
                   <div style={{fontSize:11,color:"#bbb",letterSpacing:1,textTransform:"uppercase",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
                     {botOpponentRef.current.pseudo} <span style={{fontSize:13}}>{botOpponentRef.current.country}</span>
                   </div>
-                  <div style={{fontFamily:G.heading,fontSize:32,color:(!win&&!draw)?verdictColor:G.white,lineHeight:1,marginTop:2}}>{botScore}</div>
+                  <div style={{...posterText(1,(!win&&!draw)?G.maillot:G.white,0),fontSize:34,marginTop:2}}>{botScore}</div>
                 </div>
               </div>
             </div>
@@ -15016,13 +15030,13 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
       
         {/* Actions secondaires compactes : classement / chaîne / partage */}
         <div style={{display:"flex",gap:10}}>
-          <button onClick={()=>{setLbMode(mode);setLbDiff(diff);loadLeaderboard(lbMode);setShowLeaderboard(true);}} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:6,padding:"12px 4px",background:G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,cursor:"pointer",color:G.white}}>
-            <span style={{fontSize:20,lineHeight:1}}>🏆</span>
+          <button onClick={()=>{setLbMode(mode);setLbDiff(diff);loadLeaderboard(lbMode);setShowLeaderboard(true);}} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:4,padding:"8px 4px",background:G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,cursor:"pointer",color:G.white}}>
+            <span style={{fontSize:18,lineHeight:1}}>🏆</span>
             <span style={{fontSize:10,fontWeight:800,letterSpacing:.6,textTransform:"uppercase",whiteSpace:"nowrap"}}>{tr("Classement","Ranking","Rangliste","Classifica","Ranking")}{myLbRank?` #${myLbRank}`:""}</span>
           </button>
           {((!isChain && roundAnswers.length>0) || (isChain && chainHistory.length>0)) && (
-          <button onClick={()=>setShowHistory(true)} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:6,padding:"12px 4px",background:G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,cursor:"pointer",color:G.white}}>
-            <span style={{fontSize:20,lineHeight:1}}>📋</span>
+          <button onClick={()=>setShowHistory(true)} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:4,padding:"8px 4px",background:G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,cursor:"pointer",color:G.white}}>
+            <span style={{fontSize:18,lineHeight:1}}>📋</span>
             <span style={{fontSize:10,fontWeight:800,letterSpacing:.6,textTransform:"uppercase",whiteSpace:"nowrap"}}>{isChain?(tr("Ma chaîne","My chain","Meine Kette","La mia catena","Minha corrente")):(tr("Récap","Recap","Übersicht","Riepilogo","Resumo"))}</span>
           </button>
           )}
@@ -15037,8 +15051,8 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
               `${grade.emoji} Fiz ${sc} pts no modo ${mode} no GOAT FC!\nPatente: ${grade.label}\nVocê tem nível? 👇\nhttps://goatfc.fr`);
             if(navigator.share){navigator.share({title:"GOAT FC",text:txt});}
             else{navigator.clipboard.writeText(txt).then(function(){alert(tr("Copié ! Colle-le où tu veux 📋","Copied! Paste it anywhere 📋","Kopiert! Füg es überall ein 📋","Copiato! Incollalo dove vuoi 📋","Copiado! Cole onde quiser 📋"));});}
-          }} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:6,padding:"12px 4px",background:G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,cursor:"pointer",color:G.white}}>
-            <span style={{fontSize:20,lineHeight:1}}>📤</span>
+          }} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:4,padding:"8px 4px",background:G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,cursor:"pointer",color:G.white}}>
+            <span style={{fontSize:18,lineHeight:1}}>📤</span>
             <span style={{fontSize:10,fontWeight:800,letterSpacing:.6,textTransform:"uppercase",whiteSpace:"nowrap"}}>{tr("Partager","Share","Teilen","Condividi","Compartilhar")}</span>
           </button>
         </div>
@@ -15049,8 +15063,8 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
             <button onClick={()=>setPseudoScreen(true)} style={{...btn(G.projecteur,G.encre,16),padding:"9px 20px",margin:"0 auto"}}>{tr("Créer mon pseudo","Create username","Namen erstellen","Crea nome","Criar nome")}</button>
           </div>
         )}
-        {<button onClick={()=>{if(isChain)startChain();else startCompetition();}} style={{...btn(G.pelouse,G.white,24),width:"100%",padding:"15px",gap:10,boxShadow:G.ombreL}}>{Icon.ball(18,G.white)} {tr("REJOUER","PLAY AGAIN","NOCHMAL SPIELEN","GIOCA ANCORA","JOGAR DE NOVO")}</button>}
-        <button onClick={()=>setScreen("home")} style={{...btn(G.nuit,G.white,18),width:"100%",padding:"13px"}}>{tr("↩ Accueil","↩ Home","↩ Start","↩ Home","↩ Início")}</button>
+        {<button onClick={()=>{if(isChain)startChain();else startCompetition();}} style={{...btn(G.pelouse,G.white,22),width:"100%",padding:"12px",gap:10,boxShadow:G.ombreL}}>{Icon.ball(18,G.white)} {tr("REJOUER","PLAY AGAIN","NOCHMAL SPIELEN","GIOCA ANCORA","JOGAR DE NOVO")}</button>}
+        <button onClick={()=>setScreen("home")} style={{...btn(G.nuit,G.white,17),width:"100%",padding:"10px"}}>{tr("↩ Accueil","↩ Home","↩ Start","↩ Home","↩ Início")}</button>
       </div>
       {historyModal}
       {reportModal}
@@ -15132,7 +15146,7 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
                   `Terminei em ${rank}º no GOAT FC com ${sc} pts\nPatente: ${grade.label}\nhttps://goatfc.fr`);
             if(navigator.share){navigator.share({title:"GOAT FC",text:txt});}
             else{navigator.clipboard.writeText(txt).then(function(){alert(tr("Copié ! 📋","Copied! 📋","Kopiert! 📋","Copiato! 📋","Copiado! 📋"));});}
-          }} style={{width:"100%",padding:"13px",background:G.ciel,color:"#fff",border:G.trait,borderRadius:G.rayon,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginTop:8,marginBottom:6}}>
+          }} style={{...btn(G.ciel,G.white,17),width:"100%",padding:"11px",display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginTop:8,marginBottom:6}}>
             {tr("📤 Partager le résultat","📤 Share the result","📤 Ergebnis teilen","📤 Condividi il risultato","📤 Compartilhar resultado")}
           </button>
           <button onClick={function(){setDuelResult(null);setScreen("home");}} style={{width:"100%",padding:"16px",background:G.pelouse,color:"#000",border:G.trait,borderRadius:G.rayon,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800,marginTop:0}}>
@@ -15174,7 +15188,7 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
       {/* Joueur célébration duel */}
         <div style={{zIndex:1,padding:"16px 20px 0",textAlign:"center"}}>
           <WinBanner maxWidth={380} marginTop={0} lose={!won && !draw} />
-          <div style={{fontFamily:G.heading,fontSize:"clamp(30px,8vw,46px)",color:labelColor,letterSpacing:2,marginTop:4}}>{label}</div>
+          <div style={{...posterTitre(46,labelColor),fontSize:"clamp(30px,8vw,46px)",marginTop:4}}>{label}</div>
           <div style={{fontSize:"clamp(13px,3.5vw,18px)",color:G.white,fontWeight:800,marginTop:6,animation:"fadeUp .4s ease .25s both",textTransform:"uppercase",letterSpacing:1,textShadow:"0 2px 10px rgba(0,0,0,.4)"}}>{
             won
               ? pickResultMessage(RESULT_MESSAGES[(lang==="fr"?"fr":"en")].winLabels, duelResult.myScore)
@@ -15182,7 +15196,7 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
               ? pickResultMessage(RESULT_MESSAGES[(lang==="fr"?"fr":"en")].drawLabels, duelResult.myScore)
               : pickResultMessage(RESULT_MESSAGES[(lang==="fr"?"fr":"en")].loseLabels, duelResult.theirScore)
           }</div>
-          {(()=>{const grade=getGrade(playerXp); return <div style={{display:"inline-flex",alignItems:"center",gap:8,marginTop:8,background:grade.color+"22",borderRadius:20,padding:"6px 14px"}}><span style={{fontSize:13,fontWeight:800,color:grade.color,letterSpacing:.5}}>{grade.label}</span></div>; })()}
+          {(()=>{const grade=getGrade(playerXp); return <div style={{display:"inline-flex",alignItems:"center",gap:8,marginTop:8,background:grade.color,border:G.traitFin,boxShadow:"2px 2px 0 "+G.encre,borderRadius:G.rayonS,padding:"6px 14px"}}><span style={{fontSize:13,fontWeight:800,color:grade.color,letterSpacing:.5}}>{grade.label}</span></div>; })()}
           <div style={{fontSize:14,color:"rgba(255,255,255,.4)",marginTop:8}}>
             {abandoned ? duelResult.oppName+(tr(" a abandonné 🏃"," forfeited 🏃"," hat aufgegeben 🏃"," ha abbandonato 🏃"," desistiu 🏃")) : (tr("Duel ","Duel ","Duell ","Duello ","Duelo "))+(duelResult.mode==="pont"?"The Plug":"The Mercato")}
           </div>
@@ -15190,18 +15204,18 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
         <div style={{...sheet,borderRadius:"28px 28px 0 0"}}>
           {/* Scores */}
           <div style={{display:"flex",gap:12,marginBottom:8}}>
-            <div onClick={Array.isArray(duelResult.myRounds) && duelResult.myRounds.length > 0 ? function(){setReviewRoundsModal({mode:duelResult.mode||"pont",playerName:(tr("Toi","You","Du","Tu","Você")),rounds:duelResult.myRounds});} : null} style={{flex:1,background:"rgba(0,230,118,.08)",border:"2px solid "+(won?"#00E676":"rgba(8,17,9,.45)"),borderRadius:20,padding:"20px 12px",textAlign:"center",cursor:Array.isArray(duelResult.myRounds)&&duelResult.myRounds.length>0?"pointer":"default",position:"relative"}}>
+            <div onClick={Array.isArray(duelResult.myRounds) && duelResult.myRounds.length > 0 ? function(){setReviewRoundsModal({mode:duelResult.mode||"pont",playerName:(tr("Toi","You","Du","Tu","Você")),rounds:duelResult.myRounds});} : null} style={{flex:1,background:won?"rgba(42,155,78,.35)":G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,padding:"18px 12px",textAlign:"center",cursor:Array.isArray(duelResult.myRounds)&&duelResult.myRounds.length>0?"pointer":"default",position:"relative"}}>
               <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:6}}>{tr("Toi","You","Du","Tu","Você")}</div>
-              <div style={{fontFamily:G.heading,fontSize:52,color:won?G.accent:G.white,lineHeight:1}}>{duelResult.myScore}</div>
+              <div style={{...posterText(52,G.white)}}>{duelResult.myScore}</div>
               <div style={{fontSize:11,color:"rgba(255,255,255,.3)",marginTop:4}}>pts</div>
               {Array.isArray(duelResult.myRounds) && duelResult.myRounds.length > 0 && (
                 <div style={{position:"absolute",top:6,right:8,fontSize:14,color:"rgba(255,214,0,.7)"}}>👁️</div>
               )}
             </div>
-            <div style={{display:"flex",alignItems:"center",fontFamily:G.heading,fontSize:24,color:"rgba(255,255,255,.3)"}}>VS</div>
-            <div onClick={Array.isArray(duelResult.theirRounds) && duelResult.theirRounds.length > 0 ? function(){setReviewRoundsModal({mode:duelResult.mode||"pont",playerName:duelResult.oppName,rounds:duelResult.theirRounds});} : null} style={{flex:1,background:"rgba(8,17,9,.45)",border:"2px solid "+(!won&&!draw?"#FF3D57":"rgba(8,17,9,.45)"),borderRadius:20,padding:"20px 12px",textAlign:"center",cursor:Array.isArray(duelResult.theirRounds)&&duelResult.theirRounds.length>0?"pointer":"default",position:"relative"}}>
+            <div style={{display:"flex",alignItems:"center",...posterText(1,"rgba(255,255,255,.5)",0),fontSize:24}}>VS</div>
+            <div onClick={Array.isArray(duelResult.theirRounds) && duelResult.theirRounds.length > 0 ? function(){setReviewRoundsModal({mode:duelResult.mode||"pont",playerName:duelResult.oppName,rounds:duelResult.theirRounds});} : null} style={{flex:1,background:(!won&&!draw)?"rgba(217,58,43,.32)":G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,padding:"18px 12px",textAlign:"center",cursor:Array.isArray(duelResult.theirRounds)&&duelResult.theirRounds.length>0?"pointer":"default",position:"relative"}}>
               <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:6}}>{duelResult.oppName}</div>
-              <div style={{fontFamily:G.heading,fontSize:52,color:(!won&&!draw)?"#FF3D57":G.white,lineHeight:1}}>{duelResult.theirScore}</div>
+              <div style={{...posterText(52,G.white)}}>{duelResult.theirScore}</div>
               <div style={{fontSize:11,color:"rgba(255,255,255,.3)",marginTop:4}}>pts</div>
               {Array.isArray(duelResult.theirRounds) && duelResult.theirRounds.length > 0 && (
                 <div style={{position:"absolute",top:6,right:8,fontSize:14,color:"rgba(255,214,0,.7)"}}>👁️</div>
@@ -15217,7 +15231,7 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
           {won && winStreak >= 2 && (
             <div style={{textAlign:"center",marginBottom:8,padding:"10px 16px",background:G.nuit,borderRadius:14,border:G.traitFin}}>
               <span style={{fontSize:20}}>🔥</span>
-              <span style={{fontFamily:G.heading,fontSize:18,color:"#FF6B35",marginLeft:8,letterSpacing:1}}>
+              <span style={{...posterText(1,G.projecteur,0),fontSize:20,marginLeft:8}}>
                 {winStreak} {tr("VICTOIRES D'AFFILÉE","WINS IN A ROW","SIEGE IN FOLGE","VITTORIE DI FILA","VITÓRIAS SEGUIDAS")}
               </span>
               {winStreak >= 5 && <div style={{fontSize:12,color:"rgba(255,107,53,.8)",marginTop:2}}>
@@ -15230,8 +15244,8 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
             const h2h = duels.filter(function(d){return d.status==="complete"&&(d.challenger_id===playerId||d.opponent_id===playerId)&&(d.challenger_name===duelResult.oppName||d.opponent_name===duelResult.oppName);});
             const lost = h2h.some(function(d){const ms=d.challenger_id===playerId?d.challenger_score:d.opponent_score;const ts=d.challenger_id===playerId?d.opponent_score:d.challenger_score;return ms<ts;});
             return !lost && h2h.length >= 2 ? (
-              <div style={{textAlign:"center",marginBottom:8,padding:"10px 16px",background:"rgba(255,215,0,.1)",borderRadius:14,border:"1px solid rgba(255,215,0,.3)"}}>
-                <span style={{fontFamily:G.heading,fontSize:16,color:"#FFD700",letterSpacing:1}}>😤 {tr("INVAINCU CONTRE","UNBEATEN VS","UNGESCHLAGEN GEGEN","IMBATTUTO CONTRO","INVICTO CONTRA")} {duelResult.oppName.toUpperCase()}</span>
+              <div style={{textAlign:"center",marginBottom:8,padding:"10px 16px",background:G.projecteur,borderRadius:G.rayon,border:G.traitFin,boxShadow:"2px 2px 0 "+G.encre}}>
+                <span style={{...posterText(1,G.encre,0),fontSize:18}}>😤 {tr("INVAINCU CONTRE","UNBEATEN VS","UNGESCHLAGEN GEGEN","IMBATTUTO CONTRO","INVICTO CONTRA")} {duelResult.oppName.toUpperCase()}</span>
               </div>
             ) : null;
           })()}
@@ -15264,8 +15278,8 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
             })()}
           </div>
           {won && !abandoned && (
-            <div style={{marginBottom:8,padding:"10px 16px",background:"rgba(0,230,118,.05)",borderRadius:14,border:G.traitFin}}>
-              <div style={{fontSize:10,color:"rgba(0,230,118,.5)",letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>💬 {tr("Message envoyé à","Message sent to","Nachricht gesendet an","Messaggio inviato a","Mensagem enviada para")} {duelResult.oppName}</div>
+            <div style={{marginBottom:8,padding:"10px 16px",background:"rgba(8,17,9,.45)",borderRadius:G.rayon,border:G.traitFin}}>
+              <div style={{...posterText(1,G.pelouse,0),fontSize:12,letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>💬 {tr("Message envoyé à","Message sent to","Nachricht gesendet an","Messaggio inviato a","Mensagem enviada para")} {duelResult.oppName}</div>
               <div style={{fontSize:13,color:"rgba(255,255,255,.5)",fontStyle:"italic"}}>
                 {pickResultMessage(RESULT_MESSAGES[(lang==="fr"?"fr":"en")].winTaunts, duelResult.myScore * 3 + duelResult.theirScore)}
               </div>
@@ -15293,11 +15307,11 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
             {tr("📤 Partager le résultat","📤 Share the result","📤 Ergebnis teilen","📤 Condividi il risultato","📤 Compartilhar resultado")}
           </button>
           {((!duelResult.isChain && roundAnswers.length>0) || (duelResult.isChain && chainHistory.length>0)) && (
-            <button onClick={()=>setShowHistory(true)} style={{width:"100%",padding:"13px",background:"rgba(251,226,22,.12)",color:"#FBE216",border:"1.5px solid rgba(251,226,22,.5)",borderRadius:G.rayon,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:6}}>
+            <button onClick={()=>setShowHistory(true)} style={{...btn(G.projecteur,G.encre,17),width:"100%",padding:"11px",fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:6}}>
               📋 {duelResult.isChain?(tr("Voir ma chaîne","See my chain","Meine Kette ansehen","Vedi la mia catena","Ver minha corrente")):(tr("Récap des questions","Questions recap","Fragen-Übersicht","Riepilogo domande","Resumo das perguntas"))}
             </button>
           )}
-          <button onClick={function(){setDuelResult(null);setScreen("home");}} style={{width:"100%",padding:"16px",background:G.pelouse,color:"#000",border:G.trait,borderRadius:G.rayon,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800,marginTop:2}}>
+          <button onClick={function(){setDuelResult(null);setScreen("home");}} style={{...btn(G.pelouse,G.white,19),width:"100%",padding:"12px",marginTop:2}}>
             {tr("Retour à l'accueil","Back home","Zurück zum Start","Torna alla home","Voltar ao início")}
           </button>
         </div>
