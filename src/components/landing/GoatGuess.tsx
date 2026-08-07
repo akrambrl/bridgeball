@@ -2115,63 +2115,6 @@ const SPARKS = [
 ];
 
 // Avatar pictogramme par poste (SVG pur, aucune personne réelle représentée)
-const PositionAvatar = ({ position }: { position?: string }) => {
-  const st = { stroke: "#FFFFFF", strokeWidth: 3.4, strokeLinecap: "round" as const, fill: "none" };
-  const cls = "w-16 h-16 drop-shadow-[0_2px_6px_rgba(0,0,0,0.65)]";
-  switch (position) {
-    case "gardien":
-      // Bras levés vers le ballon
-      return (
-        <svg viewBox="0 0 48 48" className={cls} aria-hidden>
-          <circle cx="24" cy="5.5" r="3.2" fill="#FFFFFF" />
-          <circle cx="24" cy="15" r="4.5" fill="#FFFFFF" />
-          <path d="M24 21 L24 31" {...st} />
-          <path d="M24 22 L11 11" {...st} />
-          <path d="M24 22 L37 11" {...st} />
-          <path d="M24 31 L16 43" {...st} />
-          <path d="M24 31 L32 43" {...st} />
-        </svg>
-      );
-    case "defenseur":
-      // Position d'interception, bras écartés bas, appui large
-      return (
-        <svg viewBox="0 0 48 48" className={cls} aria-hidden>
-          <circle cx="24" cy="9" r="4.5" fill="#FFFFFF" />
-          <path d="M24 15 L24 28" {...st} />
-          <path d="M24 19 L10 26" {...st} />
-          <path d="M24 19 L38 26" {...st} />
-          <path d="M24 28 L13 42" {...st} />
-          <path d="M24 28 L35 42" {...st} />
-        </svg>
-      );
-    case "milieu":
-      // Course balle au pied
-      return (
-        <svg viewBox="0 0 48 48" className={cls} aria-hidden>
-          <circle cx="26" cy="9" r="4.5" fill="#FFFFFF" />
-          <path d="M26 15 L24 28" {...st} />
-          <path d="M25 19 L15 25" {...st} />
-          <path d="M25 19 L35 13" {...st} />
-          <path d="M24 28 L15 40" {...st} />
-          <path d="M24 28 L32 38" {...st} />
-          <circle cx="36" cy="41" r="3.2" fill="#FFFFFF" />
-        </svg>
-      );
-    default:
-      // Attaquant : frappe, jambe tendue vers le ballon
-      return (
-        <svg viewBox="0 0 48 48" className={cls} aria-hidden>
-          <circle cx="20" cy="9" r="4.5" fill="#FFFFFF" />
-          <path d="M20 15 L24 27" {...st} />
-          <path d="M21 19 L10 23" {...st} />
-          <path d="M21 19 L31 12" {...st} />
-          <path d="M24 27 L17 41" {...st} />
-          <path d="M24 27 L38 33" {...st} />
-          <circle cx="43" cy="35" r="3.2" fill="#FFFFFF" />
-        </svg>
-      );
-  }
-};
 
 const PlayerRevealCard = ({
   player,
@@ -2231,18 +2174,16 @@ const PlayerRevealCard = ({
           {/* Voile d'encre : il assoit le lettrage quel que soit le maillot. */}
           <div className="absolute inset-0" style={{ background: "rgba(8,17,9,.42)" }} aria-hidden />
 
-          {/* Bloc haut : note / poste / drapeau à gauche, médaillon au centre */}
-          <div className="relative h-24 mt-1">
-            <div className="absolute left-0 top-1/2 -translate-y-1/2 flex flex-col items-center">
-              <div style={{ ...posterText(40, G.white, 2) }}>{rating}</div>
-              <div style={{ ...posterText(1, G.white, 1.2), fontSize: 14, letterSpacing: 2, marginTop: 2 }}>{pos}</div>
-              <div className="text-2xl mt-1 leading-none">{flag}</div>
-            </div>
-            <div
-              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 flex items-center justify-center"
-              style={{ background: G.nuit, border: G.trait, borderRadius: G.rayonS, boxShadow: "3px 3px 0 " + G.encre }}
-            >
-              <PositionAvatar position={player.positions[0]} />
+          {/* Bloc haut : la note, puis le poste et le drapeau à côté d'elle.
+              Le médaillon central est parti avec son pictogramme de poste — un
+              petit bonhomme filaire posé dans une tuile n'avait rien à voir avec
+              le trait d'affiche du reste de la carte, et il occupait à lui seul
+              le tiers de la hauteur. Le poste est déjà dit par ses trois lettres. */}
+          <div className="relative flex items-end gap-3 mt-1">
+            <div style={{ ...posterText(52, G.white, 2.2) }}>{rating}</div>
+            <div className="flex flex-col items-start pb-1.5">
+              <div style={{ ...posterText(1, G.white, 1.2), fontSize: 17, letterSpacing: 2 }}>{pos}</div>
+              <div className="text-2xl mt-0.5 leading-none">{flag}</div>
             </div>
           </div>
 

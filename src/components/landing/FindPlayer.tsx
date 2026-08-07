@@ -830,7 +830,7 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
     : { position: "fixed", inset: 0, zIndex: 200, background: REVEAL_BG, overflowY: "auto", WebkitOverflowScrolling: "touch" };
   return (
     <>
-      {daily && <div onClick={close} style={{ position: "fixed", inset: 0, zIndex: 199, background: "rgba(0,0,0,.72)", backdropFilter: "blur(3px)" }} />}
+      {daily && <div onClick={close} style={{ position: "fixed", inset: 0, zIndex: 199, background: "rgba(8,17,9,.86)" }} />}
     <div ref={scrollRef} style={rootStyle}>
       {/* Le terrain de la charte, dessiné par-dessus la pelouse (bandes de tonte,
           tracés d'encre, grain de trame) : sans lui, le fond est un aplat nu. */}
