@@ -1796,7 +1796,19 @@ const GG_POSITION_POOL = ["gardien","defenseur","milieu","attaquant"];
 
 // Mapping : nom du club → ligue (pour critères "A joué en ...")
 const GG_LIGUE_MAP = {
-  "ligue1": ["PSG","Marseille","Lyon","Monaco","Lille","Rennes","Nice","Lens","Nantes","Strasbourg","Saint-Étienne","Bordeaux","Toulouse","Montpellier","Reims","Brest","Le Havre","Auxerre","Angers","Clermont","Metz","Lorient","Troyes","Ajaccio"],
+  // ⚠️ Ces noms doivent être écrits EXACTEMENT comme dans players.jsx : la
+  // comparaison est une égalité de chaînes (includes), pas une normalisation.
+  // « Saint-Étienne » accentué n'a jamais matché : la base écrit
+  // « Saint-Etienne » dans ses 75 fiches, donc Platini et les autres Verts
+  // échouaient au critère « A joué en L1 ».
+  "ligue1": ["PSG","Marseille","Lyon","Monaco","Lille","Rennes","Nice","Lens","Nantes","Strasbourg","Saint-Etienne","Bordeaux","Toulouse","Montpellier","Reims","Brest","Le Havre","Auxerre","Angers","Clermont","Metz","Lorient","Troyes","Ajaccio",
+    // Clubs passés par la L1 et présents dans la base, qui manquaient à l'appel.
+    // Le critère est club par club, pas saison par saison : la liste contient
+    // déjà des clubs aujourd'hui en L2 (Bordeaux, Troyes, Ajaccio…), on garde la
+    // même convention. Volontairement exclus : Tours, Châteauroux, Niort,
+    // Red Star, Béziers, Quevilly, Orléans — leur passage en D1 est trop ancien
+    // ou inexistant, les inclure ferait passer des joueurs de L2 pour des L1.
+    "Nancy","Sochaux","Bastia","Caen","Valenciennes","Dijon","Guingamp","Amiens","Grenoble","Nîmes","Le Mans","Sedan","Istres","Arles-Avignon","Boulogne","Laval","Paris FC"],
   "premier_league": ["Manchester United","Manchester City","Liverpool","Chelsea","Arsenal","Tottenham","Newcastle","Aston Villa","West Ham","Brighton","Crystal Palace","Brentford","Fulham","Wolverhampton","Everton","Leeds United","Leicester City","Southampton","Bournemouth","Nottingham Forest"],
   "liga": ["Real Madrid","Barcelona","Atletico Madrid","Sevilla","Valencia","Real Sociedad","Athletic Bilbao","Villarreal","Real Betis","Celta Vigo","Espanyol","Getafe","Osasuna","Mallorca","Cádiz","Almería","Girona","Las Palmas","Granada"],
   "serie_a": ["Juventus FC","Inter Milan","AC Milan","AS Roma","SSC Napoli","Atalanta BC","SS Lazio","ACF Fiorentina","Torino FC","Bologna FC","Sassuolo","Udinese Calcio","Empoli FC","Genoa CFC","Cagliari Calcio","Hellas Verona","Lecce","Salernitana","Frosinone","Monza"],

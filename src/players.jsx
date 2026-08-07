@@ -6245,6 +6245,9 @@ export const GG_WC_WINNERS = new Set([
   "Vampeta",
   "Anderson Polga",
   "Juliano Belletti",
+  // Manquait à l'appel : Kaká était bien du groupe 2002 et est entré en jeu
+  // contre le Costa Rica. Signalé par un joueur sur « AC Milan × Vainqueur CDM ».
+  "Kaká",
   // 🇫🇷 France 1998
   "Fabien Barthez",
   "Bernard Lama",
