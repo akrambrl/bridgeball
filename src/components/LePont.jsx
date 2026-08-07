@@ -7,6 +7,7 @@ import { pickOpponent } from "../lib/opponents";
 import { G, posterText, posterTitre, posterLight, btn, fondCharte, terrainCharte,
          retourStyle, retourCharte, fermerCharte, ligneCharte, pastilleCharte } from "../lib/charte.jsx";
 import { displayStreak } from "../lib/streak";
+import { normNom, normCompactNom, normPhoneticNom, levenshteinNom, seuilFuzzy, fuzzyNom } from "../lib/nom";
 // Jours calendaires « heure de Paris » — découpage temporel du tableau de bord.
 import { parisDayOf, parisLastDays } from "../lib/days";
 // Cartes à collectionner (débloquées par l'XP) et badge affiché à côté du pseudo.
@@ -268,7 +269,7 @@ const CLUB_ALIASES = {
   "Valencia":["valence"],
   "Villarreal":["sous-marin jaune"],
   "Athletic Bilbao":["bilbao","athletic club","athletic"],
-  "Real Betis":["betis"],
+  "Real Betis":["betis","betis sevilla","betis seville","betis séville","real betis balompie","verdiblancos"],
   "Sporting CP":["sporting","sporting lisbonne","sporting lisbon"],
   "Benfica":["sl benfica","benfica lisbonne"],
   "Porto":["fc porto"],
@@ -400,6 +401,22 @@ const CLUB_DISPLAY_NAMES = {
 function getClubDisplayName(club){
   if(!club) return club;
   return CLUB_DISPLAY_NAMES[club] || club;
+}
+
+// Le jeu affichait des noms qu'il refusait ensuite à la saisie : « Real Betis
+// Balompié », « LOSC Lille », « Girondins de Bordeaux »… 22 clubs au total dont
+// le nom montré à l'écran n'était ni le nom canonique ni un alias. Recopier
+// l'affichage était donc la façon la plus naturelle — et la plus sûre — de se
+// tromper.
+//
+// Plutôt que d'ajouter ces 22 alias à la main et de laisser le piège se
+// reformer au prochain nom d'affichage ajouté, on verse la table d'affichage
+// dans celle des alias : ce qui est montré est toujours acceptable.
+for (const canonique in CLUB_DISPLAY_NAMES) {
+  const affiche = CLUB_DISPLAY_NAMES[canonique];
+  if (!affiche || affiche === canonique) continue;
+  if (!CLUB_ALIASES[canonique]) CLUB_ALIASES[canonique] = [];
+  if (!CLUB_ALIASES[canonique].includes(affiche)) CLUB_ALIASES[canonique].push(affiche);
 }
 
 export const CLUB_COLORS = {
@@ -1978,64 +1995,18 @@ function seededShuffle(arr, seed) {
 // Translitt\u00e8re les lettres latines sp\u00e9ciales que NFD ne d\u00e9compose pas (\u00f8, \u00e6, \u00df\u2026)
 // AVANT de retirer les caract\u00e8res non ASCII, sinon elles sont supprim\u00e9es et le
 // nom devient intapable (ex: "H\u00f8jbjerg" -> "hjbjerg" au lieu de "hojbjerg").
-function norm(s){return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/\u00f8/g,"o").replace(/\u00e6/g,"ae").replace(/\u0153/g,"oe").replace(/\u00df/g,"ss").replace(/\u0142/g,"l").replace(/[\u0111\u00f0]/g,"d").replace(/\u00fe/g,"th").replace(/\u0131/g,"i").replace(/[^a-z0-9 ]/g,"").trim();}
-// Version sans espaces pour matcher des clubs composés tapés de différentes façons
-// Exemple : "Saint-Etienne", "Saint Etienne", "SaintEtienne" doivent tous matcher
-function normCompact(s){return norm(s).replace(/\s+/g,"");}
-
-// Normalisation phonétique pour gérer fautes type "Patchao" → "Paixao"
-// Convertit certains digrammes en équivalents phonétiques avant comparaison Levenshtein
-function normPhonetic(s){
-  let n = normCompact(s);
-  // Digrammes courants : tch=ch=x (sons portugais/espagnols), ph=f, ck=k, qu=k, sh=ch
-  n = n.replace(/tch/g, "x").replace(/ch/g, "x").replace(/sh/g, "x");
-  n = n.replace(/ph/g, "f").replace(/ck/g, "k").replace(/qu/g, "k");
-  n = n.replace(/y/g, "i").replace(/z/g, "s").replace(/w/g, "v");
-  // Doubles lettres → simple lettre (pour matcher "Nassr" et "Naser")
-  n = n.replace(/(.)\1+/g, "$1");
-  return n;
-}
-
-// Distance de Levenshtein (nombre min d'éditions pour passer de a à b)
-function levenshtein(a, b){
-  if (a === b) return 0;
-  if (a.length < b.length) { const t = a; a = b; b = t; }
-  if (b.length === 0) return a.length;
-  let prev = [];
-  for (let j = 0; j <= b.length; j++) prev[j] = j;
-  for (let i = 1; i <= a.length; i++){
-    let curr = [i];
-    for (let j = 1; j <= b.length; j++){
-      const cost = a[i-1] === b[j-1] ? 0 : 1;
-      curr[j] = Math.min(prev[j] + 1, curr[j-1] + 1, prev[j-1] + cost);
-    }
-    prev = curr;
-  }
-  return prev[b.length];
-}
-
-// Tolérance progressive selon la longueur du mot cible
-function fuzzyThreshold(targetLen){
-  if (targetLen < 6) return 1;       // mots courts : 1 faute max
-  if (targetLen < 12) return 2;      // moyens : 2 fautes
-  return 3;                          // longs : 3 fautes
-}
-
-// Vérifie si guess matche target avec tolérance aux fautes (Levenshtein + phonétique)
-function fuzzyMatch(guess, target){
-  const g1 = normCompact(guess), t1 = normCompact(target);
-  // Match exact post-normalisation classique : pas besoin de fuzzy
-  if (g1 === t1) return true;
-  // Levenshtein sur la version normCompact
-  const d1 = levenshtein(g1, t1);
-  if (d1 <= fuzzyThreshold(t1.length)) return true;
-  // Levenshtein sur la version phonétique (gère "Patchao" → "Paixao")
-  const g2 = normPhonetic(guess), t2 = normPhonetic(target);
-  if (g2 === t2) return true;
-  const d2 = levenshtein(g2, t2);
-  if (d2 <= fuzzyThreshold(t2.length)) return true;
-  return false;
-}
+// Normalisation des noms : une seule implémentation pour toute l'app, dans
+// src/lib/nom.ts. Elle vivait ici, et les jeux logés dans leurs propres
+// fichiers (Trouve le joueur, GOAT Guess) en avaient recopié une version
+// affaiblie qui laissait passer ø, æ et ð — Højbjerg et Ødegaard devenaient
+// introuvables chez eux mais pas ici. On délègue, pour que la divergence ne
+// puisse plus se reformer.
+const norm = normNom;
+const normCompact = normCompactNom;
+const normPhonetic = normPhoneticNom;
+const levenshtein = levenshteinNom;
+const fuzzyThreshold = seuilFuzzy;
+const fuzzyMatch = fuzzyNom;
 // Génère un code de récupération format GOATFC-XXXX-YYYY
 // Utilise uniquement des caractères non ambigus (pas 0/O, 1/I/L, etc.)
 function generateRecoveryCode() {
@@ -5281,9 +5252,20 @@ export default function LePont() {
   // ─── GG : Suggestions autocomplete (≥3 lettres) ────────────
   function ggGetSuggestions(input) {
     if (!input || input.length < 3) return [];
-    const norm = s => s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+    // Cette fonction redéfinissait son propre `norm`, plus faible que celui du
+    // module : il ne dépliait que les accents combinants. Or ø, æ et ð sont des
+    // LETTRES à part entière, pas des lettres accentuées — NFD ne les touche
+    // pas. Højbjerg, Ødegaard et Højlund étaient donc introuvables à moins de
+    // taper le ø, absent d'un clavier français. On prend le `norm` du module.
     const q = norm(input.trim());
-    const matched = PLAYERS_CLEAN.filter(p => p && p.name && norm(p.name).includes(q));
+    let matched = PLAYERS_CLEAN.filter(p => p && p.name && norm(p.name).includes(q));
+    // Rien en sous-chaîne : on retente en tolérant la faute de frappe, comme le
+    // fait déjà la validation (« Hojberg » → « Højbjerg »). Sans ça le joueur
+    // voyait sa réponse acceptée… s'il arrivait à la saisir.
+    if (!matched.length && q.length >= 4) {
+      matched = PLAYERS_CLEAN.filter(p => p && p.name &&
+        norm(p.name).split(" ").some(part => part.length >= 4 && fuzzyMatch(q, part)));
+    }
     
     const diffRank = { facile: 0, moyen: 1, expert: 2 };
     
@@ -14705,9 +14687,11 @@ export default function LePont() {
                       style={{width:"100%",background:dailyFlash==="ko"?"rgba(255,61,87,.15)":"rgba(8,17,9,.45)",border:"2px solid "+(dailyFlash==="ko"?G.maillot:G.encre),borderRadius:18,padding:"18px",fontFamily:G.font,fontSize:19,fontWeight:700,color:"#ffffff",outline:"none",textAlign:"center",transition:"all .2s",boxSizing:"border-box"}}
                     />
                     {dailyGuess.length>=3&&!dailyFlash&&(()=>{
-                      const norm=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+                      // Même correctif qu'en suggestion de GOAT Guess : le `norm`
+                      // du module gère ø/æ/ð, que NFD laisse passer.
                       const q=norm(dailyGuess);
-                      const matched=PLAYERS_CLEAN.filter(p=>p&&p.name&&norm(p.name).includes(q));const sugg=matched.sort((a,b)=>{const an=norm(a.name),bn=norm(b.name);const aStarts=an.startsWith(q),bStarts=bn.startsWith(q);if(aStarts!==bStarts)return aStarts?-1:1;const aWord=an.split(" ").some(w=>w.startsWith(q)),bWord=bn.split(" ").some(w=>w.startsWith(q));if(aWord!==bWord)return aWord?-1:1;const ord={facile:0,moyen:1,expert:2};if(a.diff!==b.diff)return ord[a.diff]-ord[b.diff];return a.name.localeCompare(b.name);}).slice(0,5);
+                      let matched=PLAYERS_CLEAN.filter(p=>p&&p.name&&norm(p.name).includes(q));
+                      if(!matched.length && q.length>=4) matched=PLAYERS_CLEAN.filter(p=>p&&p.name&&norm(p.name).split(" ").some(part=>part.length>=4&&fuzzyMatch(q,part)));const sugg=matched.sort((a,b)=>{const an=norm(a.name),bn=norm(b.name);const aStarts=an.startsWith(q),bStarts=bn.startsWith(q);if(aStarts!==bStarts)return aStarts?-1:1;const aWord=an.split(" ").some(w=>w.startsWith(q)),bWord=bn.split(" ").some(w=>w.startsWith(q));if(aWord!==bWord)return aWord?-1:1;const ord={facile:0,moyen:1,expert:2};if(a.diff!==b.diff)return ord[a.diff]-ord[b.diff];return a.name.localeCompare(b.name);}).slice(0,5);
                       if(!sugg.length) return null;
                       return (<div style={{position:"absolute",top:"100%",left:0,right:0,background:G.nuit,border:G.trait,borderRadius:G.rayon,boxShadow:G.ombre,zIndex:100,overflow:"hidden",marginTop:4}}>
                         {sugg.map(p=>(<div key={p.name} onClick={function(){setDailyGuess(p.name);handleDailySubmit(p.name);}} style={{padding:"14px 18px",fontFamily:G.font,fontSize:15,fontWeight:700,color:"#fff",cursor:"pointer",borderBottom:G.traitFin,textAlign:"left"}}>{p.name}</div>))}

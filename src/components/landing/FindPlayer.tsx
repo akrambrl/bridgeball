@@ -9,6 +9,7 @@ import { CLUB_SPELLS, wereTeammates, mightHaveBeenTeammates, hasSpells } from "@
 import { recordDailyDone, displayStreak } from "@/lib/streak";
 import { WinBanner } from "./WinBanner";
 import { G, posterText, btn, fondCharte, terrainCharte, ligneCharte } from "@/lib/charte.jsx";
+import { chercheJoueurs } from "@/lib/nom";
 
 const SPELL_NAMES = Object.keys(CLUB_SPELLS);
 
@@ -469,9 +470,11 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
     const q = input.trim().toLowerCase();
     if (q.length < 2) return [];
     const guessed = new Set(guesses.map(g => g.name));
-    const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
-    const nq = norm(q);
-    return ALL.filter(p => !guessed.has(p.name) && norm(p.name).includes(nq))
+    // Ce fichier avait sa propre copie affaiblie du normaliseur : elle ne
+    // dépliait que les accents combinants, donc Højbjerg, Ødegaard et Højlund
+    // étaient introuvables sans taper le ø. On passe par le helper partagé,
+    // qui gère ces lettres et retombe sur la tolérance aux fautes.
+    return chercheJoueurs(q, ALL, p => guessed.has(p.name))
       .sort((a, b) => (a.diff === "facile" ? -1 : 1) - (b.diff === "facile" ? -1 : 1))
       .slice(0, 6);
   }, [input, guesses]);
