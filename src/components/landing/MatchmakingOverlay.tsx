@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { GameMode } from "@/pages/Home";
 import { tr } from "@/lib/lang";
 import { avatarFor, pickOpponent } from "@/lib/opponents";
+import { G, posterText, posterTitre, retourStyle } from "@/lib/charte.jsx";
 
 // Ré-exportés pour les consommateurs existants (Home.tsx pour le mode VS BOT,
 // qui saute le matchmaking mais veut un adversaire du même pool).
@@ -54,16 +55,15 @@ const PlayerCard = ({
   return (
     <div className="flex flex-col items-center">
       <div className="relative">
+        {/* Cadre d'encre et ombre dure, à la place du halo flouté et du liseré
+            lumineux : la couleur du camp reste, portée par l'aplat de fond. */}
         <div
-          className="absolute inset-0 rounded-full blur-3xl opacity-50"
-          style={{ backgroundColor: ringColor }}
-        />
-        <div
-          className="relative h-28 w-28 lg:h-32 lg:w-32 rounded-full overflow-hidden flex items-center justify-center shadow-2xl"
+          className="relative h-28 w-28 lg:h-32 lg:w-32 overflow-hidden flex items-center justify-center"
           style={{
-            background: `linear-gradient(135deg, ${ringColor}, #0F2017)`,
-            boxShadow: `0 0 40px ${ringColor}55`,
-            border: `3px solid ${ringColor}`,
+            background: ringColor,
+            borderRadius: G.rayon,
+            border: G.trait,
+            boxShadow: G.ombreL,
           }}
         >
           {revealed && avatar ? (
@@ -75,8 +75,7 @@ const PlayerCard = ({
             />
           ) : (
             <span
-              className="font-display text-5xl"
-              style={{ color: revealed ? "#fff" : "rgba(255,255,255,0.5)" }}
+              style={{ ...posterText(1, revealed ? G.white : "rgba(255,255,255,.6)", 0), fontSize:58 }}
             >
               {revealed ? pseudo.charAt(0).toUpperCase() : "?"}
             </span>
@@ -84,10 +83,8 @@ const PlayerCard = ({
         </div>
       </div>
       <div
-        className={
-          "mt-4 font-display text-2xl lg:text-3xl tracking-wider text-center min-h-[2.5rem] transition-opacity " +
-          (revealed ? "opacity-100 text-white" : "opacity-40 text-white/40")
-        }
+        className={"mt-4 text-center min-h-[2.5rem] transition-opacity " + (revealed ? "opacity-100" : "opacity-45")}
+        style={{ ...posterText(1, G.white, 0), fontSize:32 }}
       >
         {revealed ? pseudo : "?????"}
       </div>
@@ -133,29 +130,31 @@ export const MatchmakingOverlay = ({ game, onFound, onCancel }: Props) => {
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-[80] flex flex-col items-center justify-center bg-black/95 backdrop-blur-md"
+      className="fixed inset-0 z-[80] flex flex-col items-center justify-center"
+      style={{ background:"rgba(8,17,9,.95)" }}
     >
       <div
-        className="absolute inset-0 pointer-events-none opacity-50"
+        className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            "radial-gradient(circle at center, #3DA5FF40 0%, transparent 55%)",
+            "radial-gradient(circle at center, rgba(42,111,191,.28) 0%, transparent 55%)",
         }}
         aria-hidden
       />
 
       <button
         onClick={onCancel}
-        className="absolute top-4 right-4 px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 text-white/60 hover:text-white text-xs font-display tracking-widest border border-white/10"
+        className="absolute top-4 right-4"
+        style={{ ...retourStyle, width:"auto", padding:"9px 16px", fontSize:15, letterSpacing:1.5 }}
       >
         {tr("ANNULER", "CANCEL", "ABBRECHEN", "ANNULLA", "CANCELAR")}
       </button>
 
       <div className="relative text-center mb-8">
-        <div className="font-display text-xs lg:text-sm tracking-[0.4em] text-[#3DA5FF] mb-2">
+        <div className="mb-2" style={{ ...posterText(1, G.ciel, 0), fontSize:15, letterSpacing:6 }}>
           {tr("MODE EN LIGNE", "ONLINE MODE", "ONLINE-MODUS", "MODALITÀ ONLINE", "MODO ONLINE")}
         </div>
-        <div className="font-display text-3xl lg:text-5xl tracking-wider text-white">
+        <div style={{ ...posterTitre(56, G.white), fontSize:"clamp(34px,6vw,56px)" }}>
           {GAME_LABEL[game]}
         </div>
       </div>
@@ -163,22 +162,21 @@ export const MatchmakingOverlay = ({ game, onFound, onCancel }: Props) => {
       <div className="relative flex items-center gap-6 lg:gap-16 mb-10">
         <PlayerCard
           pseudo={myPseudoRef.current}
-          ringColor="#00E676"
+          ringColor={G.pelouse}
           avatar={myAvatarRef.current}
           isPhoto={!!myPhotoRef.current}
         />
 
         <div className="flex flex-col items-center">
           <div
-            className={
-              "font-display text-3xl lg:text-5xl tracking-[0.25em] transition-colors " +
-              (phase === "found" ? "text-[#FFC93C]" : "text-white/30")
-            }
+            style={{ ...posterText(52, phase === "found" ? G.projecteur : "rgba(255,255,255,.35)"),
+              fontSize:"clamp(32px,6vw,52px)", letterSpacing:6 }}
           >
             VS
           </div>
           {phase === "found" && (
-            <div className="font-display text-[10px] tracking-[0.3em] text-[#00E676] mt-2 animate-in fade-in duration-300">
+            <div className="mt-2 animate-in fade-in duration-300"
+              style={{ ...posterText(1, G.pelouse, 0), fontSize:13, letterSpacing:4 }}>
               {tr("✓ TROUVÉ", "✓ FOUND", "✓ GEFUNDEN", "✓ TROVATO", "✓ ENCONTRADO")}
             </div>
           )}
@@ -187,7 +185,7 @@ export const MatchmakingOverlay = ({ game, onFound, onCancel }: Props) => {
         <PlayerCard
           pseudo={opp.pseudo}
           country={opp.country}
-          ringColor="#3DA5FF"
+          ringColor={G.ciel}
           avatar={opp.avatar}
           revealed={phase === "found"}
         />
@@ -197,17 +195,17 @@ export const MatchmakingOverlay = ({ game, onFound, onCancel }: Props) => {
         {phase === "searching" ? (
           <div>
             <div className="flex items-center justify-center gap-3 mb-3">
-              <div className="h-3 w-3 rounded-full bg-[#3DA5FF] goat-blink" />
+              <div className="h-3 w-3 goat-blink" style={{ borderRadius:"50%", background:G.ciel, border:"1.5px solid "+G.encre }} />
               <div
-                className="h-3 w-3 rounded-full bg-[#3DA5FF] goat-blink"
-                style={{ animationDelay: "0.3s" }}
+                className="h-3 w-3 goat-blink"
+                style={{ borderRadius:"50%", background:G.ciel, border:"1.5px solid "+G.encre, animationDelay: "0.3s" }}
               />
               <div
-                className="h-3 w-3 rounded-full bg-[#3DA5FF] goat-blink"
-                style={{ animationDelay: "0.6s" }}
+                className="h-3 w-3 goat-blink"
+                style={{ borderRadius:"50%", background:G.ciel, border:"1.5px solid "+G.encre, animationDelay: "0.6s" }}
               />
             </div>
-            <div className="font-display text-2xl lg:text-3xl tracking-widest text-white">
+            <div style={{ ...posterText(1, G.white, 0), fontSize:32, letterSpacing:2 }}>
               {tr("RECHERCHE D'UN ADVERSAIRE", "FINDING AN OPPONENT", "SUCHE NACH GEGNER", "RICERCA AVVERSARIO", "PROCURANDO ADVERSÁRIO")}
               <span className="inline-block w-12 text-left">
                 {".".repeat(dots)}
@@ -219,7 +217,7 @@ export const MatchmakingOverlay = ({ game, onFound, onCancel }: Props) => {
           </div>
         ) : (
           <div className="animate-in fade-in duration-300">
-            <div className="font-display text-2xl lg:text-3xl tracking-widest text-[#00E676]">
+            <div style={{ ...posterText(1, G.pelouse, 0), fontSize:32, letterSpacing:2 }}>
               {tr("MATCH PRÊT", "MATCH READY", "MATCH BEREIT", "MATCH PRONTO", "PARTIDA PRONTA")}
             </div>
             <div className="text-sm text-white/50 mt-2">

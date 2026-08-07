@@ -5,6 +5,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { tr } from "@/lib/lang";
+import { G, posterText, posterTitre, posterLight } from "@/lib/charte.jsx";
 
 function P({ label, text }: { label: string; text: string }) {
   return (
@@ -25,7 +26,7 @@ function getTutos() {
     {
       id: "plug",
       title: howTo("The Plug"),
-      accent: "#00E676",
+      accent: G.pelouse,
       badge: "SIGNATURE",
       content: (
         <div className="space-y-3 text-sm md:text-base leading-relaxed text-white/80">
@@ -53,7 +54,7 @@ function getTutos() {
     {
       id: "mercato",
       title: howTo("The Mercato"),
-      accent: "#FF8A2A",
+      accent: G.projecteur,
       badge: tr("MARATHON", "MARATHON", "MARATHON", "MARATONA", "MARATONA"),
       content: (
         <div className="space-y-3 text-sm md:text-base leading-relaxed text-white/80">
@@ -81,7 +82,7 @@ function getTutos() {
     {
       id: "grid",
       title: howTo(tr("Trouve le joueur", "Guess the Player", "Errate den Spieler", "Indovina il giocatore", "Adivinhe o jogador")),
-      accent: "#00E676",
+      accent: G.pelouse,
       badge: tr("ILLIMITÉ", "UNLIMITED", "UNBEGRENZT", "ILLIMITATO", "ILIMITADO"),
       content: (
         <div className="space-y-3 text-sm md:text-base leading-relaxed text-white/80">
@@ -114,10 +115,12 @@ export const TutosView = () => {
   return (
     <div className="container max-w-3xl mx-auto px-6 lg:px-10 py-10">
       <div className="text-center mb-8">
-        <span className="inline-block px-3 py-1 rounded-full bg-[#FFC93C]/10 text-[#FFC93C] font-display text-xs tracking-[0.3em] mb-3">
+        <span className="inline-block px-3 py-1 mb-3"
+          style={{ ...posterLight(15, G.encre), letterSpacing:3, background:G.projecteur,
+            borderRadius:G.rayonS, border:G.traitFin, boxShadow:"2px 2px 0 "+G.encre }}>
           {tr("TUTORIELS", "TUTORIALS", "ANLEITUNGEN", "TUTORIAL", "TUTORIAIS")}
         </span>
-        <h2 className="font-display text-6xl md:text-7xl tracking-wide leading-none">
+        <h2 style={{ ...posterTitre(80, G.white), fontSize:"clamp(44px,8vw,80px)" }}>
           {tr("COMMENT JOUER", "HOW TO PLAY", "SO SPIELT MAN", "COME SI GIOCA", "COMO JOGAR")}
         </h2>
         <p className="mt-4 text-white/60">
@@ -130,20 +133,23 @@ export const TutosView = () => {
           <AccordionItem
             key={t.id}
             value={t.id}
-            className="border-2 border-white/10 rounded-2xl bg-white/[0.02] px-5 data-[state=open]:border-white/30"
+            className="px-5"
+            style={{ background:G.nuit, border:G.trait, borderRadius:G.rayon, boxShadow:G.ombre }}
           >
             <AccordionTrigger className="hover:no-underline py-5">
               <div className="flex items-center gap-3 text-left">
                 <span
-                  className="px-2 py-0.5 rounded-md font-display text-xs tracking-[0.25em]"
+                  className="px-2 py-0.5"
                   style={{
-                    backgroundColor: `${t.accent}25`,
-                    color: t.accent,
+                    ...posterText(1, t.accent === G.projecteur ? G.encre : G.white, 0),
+                    fontSize: 13, letterSpacing: 3,
+                    background: t.accent, borderRadius: 8,
+                    border: "1.5px solid " + G.encre,
                   }}
                 >
                   {t.badge}
                 </span>
-                <span className="font-display text-2xl tracking-wider text-white">{t.title}</span>
+                <span style={{ ...posterText(1, G.white, 0), fontSize:26 }}>{t.title}</span>
               </div>
             </AccordionTrigger>
             <AccordionContent>{t.content}</AccordionContent>

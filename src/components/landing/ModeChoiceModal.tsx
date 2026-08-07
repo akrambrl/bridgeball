@@ -1,5 +1,6 @@
 import type { GameMode } from "@/pages/Home";
 import { tr } from "@/lib/lang";
+import { G, posterText, posterLight, btn, fondCharte, terrainCharte, retourStyle } from "@/lib/charte.jsx";
 
 // "bot" a disparu du choix : il menait au MÊME adversaire simulé que "online",
 // à l'animation de recherche près. Deux entrées pour une seule partie, dont une
@@ -12,12 +13,9 @@ type Props = {
   onClose: () => void;
 };
 
-// Palette et structure reprises telles quelles du lanceur GOAT Duel (LePont) :
-// visuel plein cadre, pastille de format, puis une section par façon de jouer.
-const ORANGE = "#FF8A2A";
-const ORANGE_2 = "#FFC93C";
-const BLUE = "#3DA5FF";
-const GREEN = "#00E676";
+// Palette et structure reprises du lanceur GOAT Duel (LePont), lui-même passé à
+// la charte : visuel plein cadre, pastille de format, puis une section par façon
+// de jouer. Les jetons remplacent l'ancienne palette orange / bleu / vert LED.
 
 const GAMES: Record<Props["game"], { label: string; img: string; pills: () => string[] }> = {
   chaine: {
@@ -41,11 +39,10 @@ const GAMES: Record<Props["game"], { label: string; img: string; pills: () => st
 };
 
 const sectionLabel: React.CSSProperties = {
-  fontSize: 10,
-  fontWeight: 800,
+  ...posterText(1, G.projecteur, 0),
+  fontSize: 13,
   letterSpacing: 3,
   textTransform: "uppercase",
-  color: "rgba(255,255,255,.45)",
   marginBottom: 8,
 };
 
@@ -61,7 +58,7 @@ export const ModeChoiceModal = ({ game, onPick, onClose }: Props) => {
         position: "fixed",
         inset: 0,
         zIndex: 11000,
-        background: "linear-gradient(180deg,#0a1410 0%,#0E1F14 100%)",
+        background: fondCharte,
         overflowY: "auto",
         fontFamily: "inherit",
         color: "#fff",
@@ -69,37 +66,31 @@ export const ModeChoiceModal = ({ game, onPick, onClose }: Props) => {
       }}
     >
       <style>{`@keyframes modeFadeIn{from{opacity:0}to{opacity:1}}`}</style>
+      {terrainCharte}
 
       <button
         onClick={onClose}
         aria-label={tr("Fermer", "Close", "Schließen", "Chiudi", "Fechar")}
-        style={{
-          position: "fixed", top: 14, right: 14, zIndex: 10, width: 38, height: 38,
-          borderRadius: "50%", background: "rgba(0,0,0,.65)", color: "#fff",
-          border: "1px solid rgba(255,255,255,.25)", fontSize: 22, fontWeight: 300,
-          lineHeight: 1, cursor: "pointer", display: "flex", alignItems: "center",
-          justifyContent: "center", backdropFilter: "blur(10px)",
-          boxShadow: "0 4px 16px rgba(0,0,0,.5)",
-        }}
+        style={{ ...retourStyle, position: "fixed", top: 14, right: 14, zIndex: 10,
+          fontSize: 24, fontWeight: 400 }}
       >
         ×
       </button>
 
       {/* Visuel du mode, entier (object-contain) — comme sur le lanceur du duel */}
-      <div style={{ position: "relative", width: "100%", height: "48vh", maxHeight: 520, minHeight: 280, overflow: "hidden", background: "#000" }}>
-        <img src={g.img} alt="" draggable={false} style={{ width: "100%", height: "100%", objectFit: "contain", pointerEvents: "none", userSelect: "none" }} />
-        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 50, background: "linear-gradient(to top,#0a1410 0%,transparent 100%)", pointerEvents: "none" }} />
+      <div style={{ position: "relative", zIndex: 1, width: "100%", height: "48vh", maxHeight: 520, minHeight: 280, padding: "16px 0", boxSizing: "border-box", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <img src={g.img} alt="" draggable={false} style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", pointerEvents: "none", userSelect: "none", borderRadius: G.rayon, border: G.trait, boxShadow: G.ombreL }} />
       </div>
 
       <div style={{ position: "relative", zIndex: 1, padding: "14px 22px 40px", maxWidth: 480, margin: "0 auto", width: "100%", boxSizing: "border-box" }}>
         {/* Pastille de format */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, padding: "10px 16px", background: ORANGE + "12", border: "1.5px solid " + ORANGE + "40", borderRadius: 12, marginBottom: 18, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, padding: "10px 16px", background: G.nuit, border: G.trait, borderRadius: G.rayonS, boxShadow: G.ombre, marginBottom: 18, flexWrap: "wrap" }}>
           {g.pills().map((p, i) => (
             <span key={p} style={{ display: "contents" }}>
-              {i > 0 && <span style={{ color: ORANGE, fontSize: 14, fontWeight: 800 }}>·</span>}
-              <span style={{ color: ORANGE, fontSize: 13, fontWeight: 800, letterSpacing: .5 }}>
+              {i > 0 && <span style={{ color: G.projecteur, fontSize: 14, fontWeight: 800 }}>·</span>}
+              <span style={{ ...posterText(1, G.projecteur, 0), fontSize: 15 }}>
                 {p.slice(0, 2)}
-                <span style={{ color: "#fff" }}>{p.slice(2)}</span>
+                <span style={{ color: G.white }}>{p.slice(2)}</span>
               </span>
             </span>
           ))}
@@ -109,10 +100,10 @@ export const ModeChoiceModal = ({ game, onPick, onClose }: Props) => {
         <div style={sectionLabel}>{tr("Solo · score", "Solo · score", "Solo · Punkte", "Solo · punti", "Solo · pontos")}</div>
         <button
           onClick={() => onPick("solo")}
-          style={{ width: "100%", padding: 15, marginBottom: 18, background: "linear-gradient(135deg," + ORANGE + "," + ORANGE_2 + ")", color: "#000", border: "none", borderRadius: 50, cursor: "pointer", fontFamily: "inherit", fontSize: 16, fontWeight: 800, letterSpacing: 1, boxShadow: "0 8px 24px " + ORANGE + "55", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+          style={{ ...btn(G.projecteur, G.encre, 22), width: "100%", padding: 15, marginBottom: 18 }}
         >
           ▶ {tr("JOUER SOLO", "PLAY SOLO", "SOLO SPIELEN", "GIOCA SOLO", "JOGAR SOLO")}
-          <span style={{ fontSize: 12, fontWeight: 700, opacity: .8 }}>
+          <span style={{ ...posterLight(14, G.encre), opacity: .75 }}>
             · {tr("bats ton record", "beat your record", "schlag deinen Rekord", "batti il tuo record", "bata seu recorde")}
           </span>
         </button>
@@ -121,27 +112,27 @@ export const ModeChoiceModal = ({ game, onPick, onClose }: Props) => {
         <div style={sectionLabel}>{tr("En ligne", "Online", "Online", "Online", "Online")}</div>
         <button
           onClick={() => onPick("online")}
-          style={{ width: "100%", marginBottom: 18, padding: "14px 16px", borderRadius: 16, border: "1.5px solid rgba(61,165,255,.6)", background: "linear-gradient(135deg,rgba(61,165,255,.22),rgba(61,165,255,.08))", cursor: "pointer", display: "flex", alignItems: "center", gap: 12, textAlign: "left", color: "#fff", fontFamily: "inherit", boxShadow: "0 8px 24px -8px rgba(61,165,255,.5)" }}
+          style={{ width: "100%", marginBottom: 18, padding: "14px 16px", borderRadius: G.rayon, border: G.trait, background: G.ciel, boxShadow: G.ombre, cursor: "pointer", display: "flex", alignItems: "center", gap: 12, textAlign: "left", color: G.white, fontFamily: "inherit" }}
         >
           <div style={{ fontSize: 26 }}>🌍</div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 14, fontWeight: 900, letterSpacing: .5 }}>{tr("EN LIGNE", "ONLINE", "ONLINE", "ONLINE", "ONLINE")}</div>
-            <div style={{ fontSize: 11, color: "rgba(255,255,255,.55)", marginTop: 2 }}>
+            <div style={{ ...posterText(1, G.white, 0), fontSize: 20 }}>{tr("EN LIGNE", "ONLINE", "ONLINE", "ONLINE", "ONLINE")}</div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,.8)", marginTop: 2 }}>
               {tr("Affronte un adversaire · sans code", "Face an opponent · no code", "Tritt gegen einen Gegner an · ohne Code", "Sfida un avversario · senza codice", "Enfrente um adversário · sem código")}
             </div>
           </div>
-          <div style={{ fontSize: 18, color: BLUE }}>▶</div>
+          <div style={{ fontSize: 18, color: G.white }}>▶</div>
         </button>
 
         {/* Entre potes */}
         <div style={sectionLabel}>{tr("Entre potes", "With friends", "Mit Freunden", "Con gli amici", "Com amigos")}</div>
         <button
           onClick={() => onPick("multi")}
-          style={{ width: "100%", padding: 14, background: "rgba(0,230,118,.14)", color: GREEN, border: "1px solid rgba(0,230,118,.4)", borderRadius: 14, cursor: "pointer", fontFamily: "inherit", fontSize: 13, fontWeight: 800, letterSpacing: .5, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+          style={{ ...btn(G.pelouse, G.white, 18), width: "100%", padding: 14 }}
         >
           👥 {tr("Créer un salon", "Create room", "Raum erstellen", "Crea una stanza", "Criar sala")}
         </button>
-        <div style={{ fontSize: 11, color: "rgba(255,255,255,.35)", textAlign: "center", marginTop: 8 }}>
+        <div style={{ fontSize: 11, color: "rgba(255,255,255,.55)", textAlign: "center", marginTop: 8 }}>
           {tr("Tu as déjà un code ? Colle-le sur l'accueil.", "Got a code already? Paste it on the home page.", "Schon einen Code? Füg ihn auf der Startseite ein.", "Hai già un codice? Incollalo in home.", "Já tem um código? Cole na página inicial.")}
         </div>
       </div>

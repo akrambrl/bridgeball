@@ -3,6 +3,7 @@ import type { GameMode } from "@/pages/Home";
 import { tr } from "@/lib/lang";
 import { fetchTopPlayers, type TopPlayer } from "@/lib/leaderboard";
 import { dailyRiddleDone } from "@/lib/streak";
+import { G, posterText, posterTitre, posterLight, btn, pastilleCharte } from "@/lib/charte.jsx";
 
 type Props = {
   onPlay: (game?: GameMode) => void;
@@ -13,6 +14,11 @@ type Props = {
 
 type GameKey = "plug" | "mercato" | "grid" | "guess" | "goatgrid" | "duel";
 
+// Les accents viennent désormais des quatre jetons de la charte, plus des
+// couleurs libres : le duel prend le ciel (le second camp, par définition dans
+// la charte), la grille le maillot, et les deux paires restantes se partagent
+// projecteur et pelouse. Quatre teintes pour six jeux : l'identité d'une carte
+// vient d'abord de son visuel, l'accent ne fait que la souligner.
 const GAMES: {
   key: GameKey;
   mode: GameMode;
@@ -33,7 +39,7 @@ const GAMES: {
     mascot: "/win1.png",
     description:
       "Pars d'un joueur et enchaîne les transferts. Bats ton record.",
-    accent: "#FF8A2A",
+    accent: G.projecteur,
     badge: "MARATHON",
   },
   {
@@ -45,7 +51,7 @@ const GAMES: {
     mascot: "/win3.png",
     description:
       "Deux clubs, un seul joueur. À toi de trouver le maillon qui les relie.",
-    accent: "#00E676",
+    accent: G.pelouse,
     badge: "SIGNATURE",
   },
   {
@@ -57,7 +63,7 @@ const GAMES: {
     mascot: "/win2.png",
     description:
       "Déduis le joueur mystère grâce à ses indices, en illimité. Enchaîne les bonnes réponses et monte ta série.",
-    accent: "#00E676",
+    accent: G.pelouse,
     badge: "ILLIMITÉ",
   },
   {
@@ -69,7 +75,7 @@ const GAMES: {
     mascot: "/win2.png",
     description:
       "Neuf cases, neuf crit\u00e8res crois\u00e9s. Trouve un joueur qui coche les deux \u00e0 chaque fois.",
-    accent: "#FF6B35",
+    accent: G.maillot,
     badge: "GRILLE",
   },
   {
@@ -81,7 +87,7 @@ const GAMES: {
     mascot: "/win3.png",
     description:
       "Quatre-vingt-dix secondes, manches illimit\u00e9es, 10 ou 20 points par bonne r\u00e9ponse. Solo, en ligne ou entre potes.",
-    accent: "#3DA5FF",
+    accent: G.ciel,
     badge: "1V1",
   },
   {
@@ -93,7 +99,7 @@ const GAMES: {
     mascot: "/win1.png",
     description:
       "Pense à un footballeur. En 25 questions max, je devine de qui il s'agit. 🔮",
-    accent: "#C084FC",
+    accent: G.projecteur,
     badge: "MAGIE",
   },
 ];
@@ -239,7 +245,7 @@ export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels, onOpenFriends }: Pr
     <div className="container max-w-[1440px] mx-auto px-6 lg:px-10 py-6 grid lg:grid-cols-[280px_1fr_320px] gap-6 items-start">
       {/* COLONNE GAUCHE — choix du jeu */}
       <div className="space-y-3">
-        <div className="font-display text-sm tracking-[0.25em] text-white/40 px-1 mb-2">
+        <div className="px-1 mb-2" style={{ ...posterText(1, G.projecteur, 0), fontSize:15, letterSpacing:4 }}>
           {tr("NOS JEUX", "OUR GAMES", "UNSERE SPIELE", "I NOSTRI GIOCHI", "NOSSOS JOGOS")}
         </div>
         {GAMES.map((g) => {
@@ -248,31 +254,31 @@ export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels, onOpenFriends }: Pr
             <button
               key={g.key}
               onClick={() => setSelected(g.key)}
-              className={
-                "w-full text-left rounded-2xl border-2 p-3 flex items-center gap-3 transition-all " +
-                (isActive
-                  ? "border-[#FFC93C] bg-white/[0.04]"
-                  : "border-white/10 hover:border-white/30 bg-white/[0.02] hover:bg-white/[0.04]")
-              }
+              className="w-full text-left p-3 flex items-center gap-3 transition-transform"
+              style={{ background:isActive ? G.projecteur : G.nuit, border:G.trait,
+                borderRadius:G.rayon, boxShadow:G.ombre, cursor:"pointer",
+                transform:isActive ? "translate(-1px,-1px)" : "none" }}
             >
-              <div className="relative h-14 w-14 rounded-xl overflow-hidden flex-shrink-0">
+              <div className="relative h-14 w-14 overflow-hidden flex-shrink-0"
+                style={{ borderRadius:G.rayonS, border:G.traitFin, background:G.encre }}>
                 <img src={g.img} alt={g.name} className="h-full w-full object-cover" />
-                {isActive && (
-                  <div className="absolute inset-0 ring-2 ring-[#FFC93C] rounded-xl" />
-                )}
               </div>
               <div className="min-w-0">
-                <div className="font-display text-xl tracking-wider truncate">{g.name}</div>
-                <div className="text-xs text-white/50 truncate">{gameTagline(g.key)}</div>
+                <div className="truncate" style={{ ...posterText(1, isActive ? G.encre : G.white, 0), fontSize:22 }}>{g.name}</div>
+                <div className="text-xs truncate"
+                  style={{ color:isActive ? "rgba(8,17,9,.7)" : "rgba(255,255,255,.5)" }}>{gameTagline(g.key)}</div>
               </div>
             </button>
           );
         })}
 
-        {/* Live online counter */}
-        <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.02] p-3 flex items-center gap-2.5">
-          <span className="goat-blink h-2.5 w-2.5 rounded-full bg-[#00E676] shadow-[0_0_10px_#00E676]" />
-          <span className="font-display text-base tracking-wider text-white tabular-nums">
+        {/* Compteur « en ligne » : pastille de pelouse cerclée d'encre, plutôt
+            que le point vert LED et son halo lumineux. */}
+        <div className="mt-4 p-3 flex items-center gap-2.5"
+          style={{ background:G.nuit, border:G.trait, borderRadius:G.rayon, boxShadow:G.ombre }}>
+          <span className="goat-blink h-2.5 w-2.5"
+            style={{ borderRadius:"50%", background:G.pelouse, border:"1.5px solid "+G.encre }} />
+          <span className="tabular-nums" style={{ ...posterText(1, G.white, 0), fontSize:19 }}>
             {online}
           </span>
           <span className="text-xs text-white/50">{tr("en ligne", "online", "online", "online", "online")}</span>
@@ -281,24 +287,20 @@ export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels, onOpenFriends }: Pr
 
       {/* CENTRE — preview du jeu sélectionné + mascotte + bouton PLAY */}
       <div className="relative">
-        <div className="relative rounded-3xl overflow-hidden border border-white/10 bg-gradient-to-br from-white/[0.04] to-white/[0.01] backdrop-blur min-h-[460px] lg:h-[calc(100dvh-190px)] lg:min-h-[480px] lg:max-h-[640px]">
-          {/* Halo couleur jeu */}
-          <div
-            className="absolute -top-32 left-1/2 -translate-x-1/2 h-[380px] w-[640px] rounded-full blur-[110px] opacity-30"
-            style={{ backgroundColor: game.accent }}
-          />
+        <div className="relative overflow-hidden min-h-[460px] lg:h-[calc(100dvh-190px)] lg:min-h-[480px] lg:max-h-[640px]"
+          style={{ background:G.nuit, border:G.trait, borderRadius:G.rayonL, boxShadow:G.ombreL }}>
+          {/* Bandeau d'accent du mode : un aplat franc en haut du cadre, à la
+              place du halo flouté — la charte ne connaît pas le dégradé. */}
+          <div className="absolute top-0 left-0 right-0" style={{ height:6, background:game.accent }} />
 
           {/* Visuel du mode — grande carte portrait, comme sur mobile */}
           <div className="hidden md:flex absolute inset-y-0 right-0 w-[50%] items-center justify-center p-6 lg:p-8 pointer-events-none">
-            <div
-              className="absolute inset-10 rounded-full blur-[70px] opacity-30"
-              style={{ backgroundColor: game.accent }}
-            />
             <img
               key={game.key}
               src={game.img}
               alt={game.name}
-              className="goat-float relative max-h-full max-w-full w-auto object-contain rounded-2xl ring-1 ring-white/15 shadow-[0_24px_60px_rgba(0,0,0,0.75)]"
+              className="goat-float relative max-h-full max-w-full w-auto object-contain"
+              style={{ borderRadius:G.rayon, border:G.trait, boxShadow:G.ombreL }}
             />
           </div>
 
@@ -306,49 +308,50 @@ export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels, onOpenFriends }: Pr
           <div className="relative lg:h-full p-6 lg:p-8 flex flex-col justify-center md:max-w-[52%]">
             <div className="flex flex-col items-center md:items-start text-center md:text-left">
               <span
-                className="px-3 py-1 rounded-full font-display text-xs tracking-[0.25em] mb-2"
+                className="px-3 py-1 mb-2"
                 style={{
-                  backgroundColor: `${game.accent}20`,
-                  color: game.accent,
-                  border: `1px solid ${game.accent}40`,
+                  ...posterText(1, game.accent === G.projecteur ? G.encre : G.white, 0),
+                  fontSize: 13, letterSpacing: 3,
+                  background: game.accent,
+                  borderRadius: G.rayonS,
+                  border: G.traitFin,
+                  boxShadow: "2px 2px 0 " + G.encre,
                 }}
               >
                 {gameBadge(game.key)}
               </span>
 
-              <h2 className="font-display text-4xl lg:text-6xl tracking-wide leading-none mb-2">
+              {/* Corps calé pour que le nom du mode le plus long tienne sur UNE
+                  ligne dans la moitié gauche du cadre : deux lignes de lettrage
+                  d'affiche font se cogner l'ombre dure de la première dans les
+                  capitales de la seconde. */}
+              <h2 className="mb-2" style={{ ...posterTitre(48, G.white), fontSize:"clamp(30px,3.4vw,48px)" }}>
                 {game.name}
               </h2>
-              <p
-                className="font-display text-xl lg:text-2xl tracking-widest mb-3"
-                style={{ color: game.accent }}
-              >
+              <p className="mb-3" style={{ ...posterText(1, game.accent, 0), fontSize:26, letterSpacing:2 }}>
                 {gameTagline(game.key)}
               </p>
 
               {/* Card preview — seulement en dessous de md (au-dessus, la grande
                   carte du mode occupe la moitié droite du cadre) */}
               <div className="relative my-1 mb-4 md:hidden">
-                <div
-                  className="absolute inset-0 blur-2xl opacity-50 rounded-2xl"
-                  style={{ backgroundColor: game.accent }}
-                />
                 <img
                   src={game.img}
                   alt={game.name}
-                  className="relative h-20 lg:h-24 w-auto rounded-xl shadow-2xl"
+                  className="relative h-20 lg:h-24 w-auto"
+                  style={{ borderRadius:G.rayonS, border:G.traitFin, boxShadow:G.ombre }}
                 />
               </div>
 
               <p className="text-white/70 max-w-md mb-4 text-sm lg:text-base">{gameDescription(game.key)}</p>
 
-              {/* Gros bouton PLAY */}
+              {/* Gros bouton JOUER */}
               <button
                 onClick={() => onPlay(game.mode)}
-                className="goat-pulse group relative inline-flex items-center gap-3 px-12 py-4 rounded-2xl bg-gradient-to-r from-[#FF8A2A] to-[#FFC93C] text-[#1A0F00] font-display text-4xl tracking-widest hover:scale-[1.03] active:scale-[0.98] transition-transform"
+                className="goat-pulse-encre inline-flex"
+                style={{ ...btn(G.projecteur, G.encre, 44), padding:"14px 48px", boxShadow:G.ombreL }}
               >
-                <span className="text-3xl">▶</span> {tr("JOUER", "PLAY", "SPIELEN", "GIOCA", "JOGAR")}
-                <span className="absolute inset-0 rounded-2xl bg-white/0 group-hover:bg-white/10 transition-colors pointer-events-none" />
+                <span style={{ fontSize:32 }}>▶</span> {tr("JOUER", "PLAY", "SPIELEN", "GIOCA", "JOGAR")}
               </button>
 
               <p className="mt-2 text-xs text-white/40">
@@ -365,19 +368,21 @@ export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels, onOpenFriends }: Pr
         {/* Défis ouverts — salon de duels asynchrones */}
         <button
           onClick={() => onOpenDuels?.(myUnseen > 0 ? "mine" : undefined)}
-          className="relative w-full text-left rounded-2xl border-2 border-[#FF8A2A]/40 bg-gradient-to-br from-[#FF8A2A]/15 to-[#FFC93C]/5 p-4 hover:from-[#FF8A2A]/25 transition-colors"
+          className="relative w-full text-left p-4"
+          style={{ background:G.nuit, border:G.trait, borderRadius:G.rayon, boxShadow:G.ombre, cursor:"pointer" }}
         >
           {myUnseen > 0 && (
-            <span className="goat-blink absolute -top-2 -right-2 flex h-6 min-w-6 items-center justify-center rounded-full bg-[#FF3D57] px-1.5 text-xs font-black text-white shadow-lg">
+            <span className="goat-blink absolute -top-2 -right-2 flex h-6 min-w-6 items-center justify-center px-1.5 text-xs font-black text-white"
+              style={{ background:G.maillot, borderRadius:"50%", border:G.traitFin, boxShadow:"2px 2px 0 "+G.encre }}>
               {myUnseen}
             </span>
           )}
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#FF8A2A] to-[#FFC93C] text-2xl shadow-[0_4px_14px_rgba(255,138,42,0.45)]">
+            <div style={{ ...pastilleCharte(G.projecteur, 44), fontSize:24 }}>
               ⚔️
             </div>
             <div className="min-w-0">
-              <div className="font-display text-lg tracking-wider text-[#FF8A2A]">{tr("DÉFIS OUVERTS", "OPEN CHALLENGES", "OFFENE HERAUSFORDERUNGEN", "SFIDE APERTE", "DESAFIOS ABERTOS")}</div>
+              <div style={{ ...posterText(1, G.projecteur, 0), fontSize:21, letterSpacing:1.5 }}>{tr("DÉFIS OUVERTS", "OPEN CHALLENGES", "OFFENE HERAUSFORDERUNGEN", "SFIDE APERTE", "DESAFIOS ABERTOS")}</div>
               <div className="text-xs text-white/60">
                 {myUnseen > 0
                   ? (myUnseen > 1
@@ -396,19 +401,21 @@ export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels, onOpenFriends }: Pr
         {/* Mes amis — badge rouge si demande(s) reçue(s) */}
         <button
           onClick={() => onOpenFriends?.()}
-          className="relative w-full text-left rounded-2xl border-2 border-[#00E676]/40 bg-gradient-to-br from-[#00E676]/12 to-transparent p-4 hover:from-[#00E676]/20 transition-colors"
+          className="relative w-full text-left p-4"
+          style={{ background:G.nuit, border:G.trait, borderRadius:G.rayon, boxShadow:G.ombre, cursor:"pointer" }}
         >
           {pendingFriends > 0 && (
-            <span className="goat-blink absolute -top-2 -right-2 flex h-6 min-w-6 items-center justify-center rounded-full bg-[#FF3D57] px-1.5 text-xs font-black text-white shadow-lg">
+            <span className="goat-blink absolute -top-2 -right-2 flex h-6 min-w-6 items-center justify-center px-1.5 text-xs font-black text-white"
+              style={{ background:G.maillot, borderRadius:"50%", border:G.traitFin, boxShadow:"2px 2px 0 "+G.encre }}>
               {pendingFriends}
             </span>
           )}
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#00E676] to-[#3DA5FF] text-2xl shadow-[0_4px_14px_rgba(0,230,118,0.4)]">
+            <div style={{ ...pastilleCharte(G.pelouse, 44), fontSize:24 }}>
               👥
             </div>
             <div className="min-w-0">
-              <div className="font-display text-lg tracking-wider text-[#00E676]">{tr("MES AMIS", "MY FRIENDS", "MEINE FREUNDE", "I MIEI AMICI", "MEUS AMIGOS")}</div>
+              <div style={{ ...posterText(1, G.pelouse, 0), fontSize:21, letterSpacing:1.5 }}>{tr("MES AMIS", "MY FRIENDS", "MEINE FREUNDE", "I MIEI AMICI", "MEUS AMIGOS")}</div>
               <div className="text-xs text-white/60">
                 {pendingFriends > 0
                   ? (pendingFriends > 1
@@ -423,9 +430,10 @@ export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels, onOpenFriends }: Pr
         {/* Rejoindre une partie via un code */}
         <form
           onSubmit={submitRoom}
-          className="rounded-2xl border-2 border-[#C084FC]/30 bg-gradient-to-br from-[#C084FC]/10 to-transparent p-4"
+          className="p-4"
+          style={{ background:G.nuit, border:G.trait, borderRadius:G.rayon, boxShadow:G.ombre }}
         >
-          <div className="font-display text-base tracking-[0.2em] text-[#C084FC] mb-3">
+          <div className="mb-3" style={{ ...posterText(1, G.ciel, 0), fontSize:18, letterSpacing:1 }}>
             {tr("🔑 REJOINDRE UNE PARTIE", "🔑 JOIN A GAME", "🔑 SPIEL BEITRETEN", "🔑 ENTRA IN UNA PARTITA", "🔑 ENTRAR NUMA PARTIDA")}
           </div>
           <div className="flex gap-2">
@@ -443,12 +451,17 @@ export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels, onOpenFriends }: Pr
               placeholder="CODE"
               autoComplete="off"
               maxLength={8}
-              className="flex-1 min-w-0 px-3 py-2.5 rounded-xl bg-black/40 border border-white/10 focus:border-[#C084FC] focus:outline-none font-display text-lg tracking-[0.3em] text-center text-white placeholder-white/30"
+              className="flex-1 min-w-0 px-3 py-2.5 text-center placeholder-white/30 focus:outline-none"
+              style={{ ...posterText(1, G.white, 0), fontSize:20, letterSpacing:6,
+                background:"rgba(8,17,9,.55)", border:G.traitFin, borderRadius:G.rayonS }}
             />
             <button
               type="submit"
               disabled={roomCode.trim().length < 4}
-              className="px-4 py-2.5 rounded-xl font-display text-sm tracking-widest bg-[#C084FC] hover:bg-[#B070EE] disabled:bg-white/10 disabled:text-white/30 disabled:cursor-not-allowed text-[#0A1410] transition-colors"
+              style={{ ...btn(roomCode.trim().length < 4 ? "rgba(8,17,9,.55)" : G.ciel, G.white, 18),
+                padding:"10px 18px", borderRadius:G.rayonS,
+                opacity:roomCode.trim().length < 4 ? .5 : 1,
+                cursor:roomCode.trim().length < 4 ? "not-allowed" : "pointer" }}
             >
               GO
             </button>
@@ -464,25 +477,27 @@ export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels, onOpenFriends }: Pr
         {!riddleDone && (
         <button
           onClick={() => window.dispatchEvent(new CustomEvent("goatfc:open-devinette"))}
-          className="w-full flex items-center gap-3 p-4 rounded-2xl border border-[#E0B85C]/40 bg-gradient-to-br from-[#E0B85C]/15 to-[#E0B85C]/5 hover:border-[#E0B85C]/70 transition-colors text-left"
+          className="w-full flex items-center gap-3 p-4 text-left"
+          style={{ background:G.projecteur, border:G.trait, borderRadius:G.rayon, boxShadow:G.ombre, cursor:"pointer" }}
         >
           <span className="text-2xl leading-none">🕵️</span>
           <span className="flex-1 min-w-0">
-            <span className="block font-display text-base tracking-[0.15em] text-[#F2D680]">
+            <span className="block" style={{ ...posterLight(18, G.encre), letterSpacing:.5 }}>
               {tr("DEVINETTE DU JOUR", "DAILY RIDDLE", "RÄTSEL DES TAGES", "INDOVINELLO DEL GIORNO", "ADIVINHA DO DIA")}
             </span>
-            <span className="block text-xs text-white/45 mt-0.5">
+            <span className="block text-xs mt-0.5" style={{ color:"rgba(8,17,9,.7)" }}>
               {tr("Un joueur mystère à deviner", "A mystery player to guess", "Ein Rätselspieler zu erraten", "Un giocatore misterioso da indovinare", "Um jogador misterioso para adivinhar")}
             </span>
           </span>
-          <span className="text-[#F2D680] font-display text-lg">›</span>
+          <span style={{ ...posterLight(24, G.encre) }}>›</span>
         </button>
         )}
 
         {/* Leaderboard preview */}
-        <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-4">
+        <div className="p-4"
+          style={{ background:G.nuit, border:G.trait, borderRadius:G.rayon, boxShadow:G.ombre }}>
           <div className="flex items-center justify-between mb-3">
-            <div className="font-display text-base tracking-[0.2em] text-white/70">
+            <div style={{ ...posterText(1, G.white, 0), fontSize:19, letterSpacing:2.5 }}>
               {tr("🏆 TOP JOUEURS", "🏆 TOP PLAYERS", "🏆 TOP-SPIELER", "🏆 TOP GIOCATORI", "🏆 TOP JOGADORES")}
             </div>
             {/* Aperçu = onglet "global" du mobile : XP cumulée, pas le mois. */}
@@ -494,24 +509,24 @@ export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels, onOpenFriends }: Pr
                 key={p.rank}
                 className="flex items-center gap-2 text-sm"
               >
+                {/* Le podium reprend les jetons de la charte : projecteur, puis
+                    deux aplats plus sourds. L'or/argent/bronze métallique ne
+                    tient pas à côté d'un aplat franc. */}
                 <span
-                  className={
-                    "flex-shrink-0 h-6 w-6 rounded-md flex items-center justify-center font-display text-base " +
-                    (p.rank === 1
-                      ? "bg-[#FFD700] text-black"
-                      : p.rank === 2
-                      ? "bg-[#C0C0C0] text-black"
-                      : p.rank === 3
-                      ? "bg-[#CD7F32] text-black"
-                      : "bg-white/10 text-white/70")
-                  }
+                  className="flex-shrink-0 h-6 w-6 flex items-center justify-center"
+                  style={{ ...posterText(1, p.rank <= 3 ? G.encre : G.white, 0), fontSize:17,
+                    borderRadius:8, border:"1.5px solid "+G.encre,
+                    background: p.rank === 1 ? G.projecteur
+                      : p.rank === 2 ? "#C9CBC4"
+                      : p.rank === 3 ? "#C08A4A"
+                      : "rgba(8,17,9,.55)" }}
                 >
                   {p.rank}
                 </span>
                 <span className="flex-1 truncate text-white/90 font-medium">
                   {p.name}
                 </span>
-                <span className="font-display text-base tabular-nums text-[#FFC93C] tracking-wider">
+                <span className="tabular-nums" style={{ ...posterText(1, G.projecteur, 0), fontSize:19 }}>
                   {p.score.toLocaleString("fr-FR")}
                 </span>
               </li>

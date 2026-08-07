@@ -119,6 +119,21 @@ All colors MUST be HSL.
   animation: goat-pulse-glow 2.2s ease-in-out infinite;
 }
 
+/* Battement du gros bouton JOUER, version charte « Olive et Tom ». Le halo
+   lumineux jaune de goat-pulse n'existe pas dans la charte : ce qui respire
+   ici, c'est l'OMBRE DURE d'encre, qui s'allonge et se rétracte comme un aplat
+   sérigraphié qu'on soulève de la page.
+   Le bouton, lui, ne BOUGE PAS : une cible qui se déplace en continu est plus
+   dure à viser, et elle n'est jamais « stable » pour un lecteur d'écran ni pour
+   un test automatisé. Seule l'ombre travaille. */
+@keyframes goat-pulse-encre {
+  0%, 100% { box-shadow: 5px 5px 0 #081109; }
+  50%      { box-shadow: 9px 9px 0 #081109; }
+}
+.goat-pulse-encre {
+  animation: goat-pulse-encre 2.2s ease-in-out infinite;
+}
+
 @keyframes goat-float {
   0%, 100% { transform: translateY(0px); }
   50% { transform: translateY(-12px); }
