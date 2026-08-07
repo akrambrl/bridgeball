@@ -11395,45 +11395,62 @@ export default function LePont() {
     const d = viewedProfileData;
     const grade = d ? getGrade(d.xp || 0) : null;
     return (
-      <div style={{...shell,overflow:isDesktop?"visible":"auto"}} key="userProfile">
-        <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
-          {[0,1,2,3,4,5,6].map(function(i){return(
-            <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#0E1F14":"#132819"}}/>
-          );})}
-          <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.7)"}}/>
-        </div>
-        <div style={{zIndex:50,padding:"max(16px, env(safe-area-inset-top)) 16px 8px",display:"flex",alignItems:"center",gap:12,position:"sticky",top:0,background:"rgba(0,15,0,.92)",backdropFilter:"blur(10px)",WebkitBackdropFilter:"blur(10px)"}}>
-          <button onClick={()=>{const ret=profileReturn;setViewedProfile(null);setFriendMsg("");setProfileReturn(null);setScreen("home");if(ret==="leaderboard"){setShowLeaderboard(true);}else if(ret==="friends"){setShowFriends(true);}}} style={{background:"rgba(255,255,255,.1)",border:"1px solid rgba(255,255,255,.15)",borderRadius:"50%",width:40,height:40,cursor:"pointer",color:G.white,fontSize:18,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,boxShadow:"0 4px 14px rgba(0,0,0,.4)"}}>←</button>
-          <div style={{fontFamily:G.heading,fontSize:22,color:G.white,letterSpacing:2,flex:1}}>{tr("PROFIL","PROFILE","PROFIL","PROFILO","PERFIL")}</div>
+      /* Le profil d'un autre joueur — celui qu'on ouvre en tapant une ligne du
+         classement — passe à la charte comme Mon profil : même pelouse, même
+         barre d'encre, mêmes rectangles au trait plein. C'était l'écran juste
+         derrière le classement, et il parlait encore l'ancienne langue. */
+      <div style={{...shell,overflow:isDesktop?"visible":"auto",background:fondCharte}} key="userProfile">
+        {terrainCharte}
+        <div style={{zIndex:50,padding:"max(14px, env(safe-area-inset-top)) 16px 10px",display:"flex",alignItems:"center",gap:12,position:"sticky",top:0,background:G.encre,borderBottom:G.traitFin}}>
+          <button onClick={()=>{const ret=profileReturn;setViewedProfile(null);setFriendMsg("");setProfileReturn(null);setScreen("home");if(ret==="leaderboard"){setShowLeaderboard(true);}else if(ret==="friends"){setShowFriends(true);}}} style={retourStyle}>←</button>
+          {/* Un seul mot : il passe entièrement en jaune projecteur, comme
+              CLASSEMENT (le découpage blanc + jaune suppose deux mots). */}
+          <div style={{...posterText(26,G.projecteur),flex:1}}>{tr("PROFIL","PROFILE","PROFIL","PROFILO","PERFIL")}</div>
         </div>
         {!d ? (
-          <div style={{zIndex:1,padding:"60px 20px",textAlign:"center",color:"rgba(255,255,255,.5)"}}>{tr("Chargement...","Loading...","Wird geladen...","Caricamento...","Carregando...")}</div>
+          <div style={{zIndex:1,padding:"40px 18px",textAlign:"center"}}>
+            <div style={{padding:"26px 18px",background:G.nuit,border:G.trait,borderRadius:G.rayon,boxShadow:G.ombre,...posterText(22,G.white)}}>{tr("Chargement...","Loading...","Wird geladen...","Caricamento...","Carregando...")}</div>
+          </div>
         ) : (
           <>
-            <div style={{zIndex:1,padding:"16px 20px 8px",textAlign:"center"}}>
-              <div style={{width:84,height:112,borderRadius:10,margin:"0 auto 14px",border:"2px solid rgba(255,255,255,.3)",background:"#000",display:"flex",alignItems:"center",justifyContent:"center",fontSize:44,color:"#fff",boxShadow:"0 8px 30px rgba(0,230,118,.35)",overflow:"hidden",position:"relative"}}>
-                {/* Photo de profil = carte du niveau du joueur consulté. */}
-                <img src={levelCard(d.xp || 0).img || undefined} alt="" onClick={function(){ const c = levelCard(d.xp || 0); if (c.img) setViewingAvatar(c.img); }} style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",objectPosition:"top",cursor:"zoom-in"}}/>
-              </div>
-              <div style={{fontFamily:G.heading,fontSize:28,color:G.white,letterSpacing:1}}>@{viewedProfile.name}</div>
+            <div style={{zIndex:1,padding:"16px 18px 8px",textAlign:"center"}}>
+              {/* La carte du joueur consulté dans son cadre de rareté, comme sur
+                  Mon profil, dans la collection et au classement. Le liseré blanc
+                  translucide et le halo vert LED ne disaient rien de son niveau. */}
+              {(function(){
+                const c = levelCard(d.xp || 0);
+                const rm = rarityMeta(c.rarity);
+                return (
+                  <div className={rm.cls} style={{display:"inline-block",width:92,height:122,margin:"0 auto 14px",padding:3,borderRadius:G.rayon,background:rm.frame,border:G.traitFin,boxShadow:G.ombreL}}>
+                    <div style={{width:"100%",height:"100%",borderRadius:10,background:"#000",overflow:"hidden",position:"relative"}}>
+                      <img src={c.img || undefined} alt="" onClick={function(){ if (c.img) setViewingAvatar(c.img); }} style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",objectPosition:"top",cursor:"zoom-in"}}/>
+                    </div>
+                  </div>
+                );
+              })()}
+              <div style={{...posterText(30,G.white)}}>@{viewedProfile.name}</div>
               {grade && (
-                <div style={{marginTop:6,display:"inline-block",fontSize:11,fontWeight:800,color:grade.color,background:grade.color+"22",borderRadius:20,padding:"3px 12px",letterSpacing:1}}>{grade.emoji} {grade.label}</div>
+                <div style={{marginTop:8,display:"inline-flex",alignItems:"center",gap:6,fontSize:11.5,fontWeight:800,color:grade.color,background:grade.color+"2a",borderRadius:G.rayonS,border:G.traitFin,boxShadow:"2px 2px 0 "+G.encre,padding:"4px 12px",letterSpacing:1,textTransform:"uppercase"}}>{grade.emoji} {grade.label}</div>
               )}
               {d.rank && (
-                <div style={{marginTop:8,fontSize:13,color:"rgba(255,255,255,.6)"}}>{tr("Classement : #","Rank: #","Rang: #","Posizione: #","Posição: #")}{d.rank}</div>
+                <div style={{marginTop:10,fontSize:12.5,color:"rgba(255,255,255,.75)",fontWeight:700,letterSpacing:.8}}>{tr("Classement : #","Rank: #","Rang: #","Posizione: #","Posição: #")}{d.rank}</div>
               )}
             </div>
-            <div style={{zIndex:1,padding:"8px 16px",display:"flex",gap:10}}>
+            {/* Les deux actions passent au bouton unique de la charte : aplat
+                franc, cadre d'encre, ombre dure. Les pilules à rayon 50 et le
+                dégradé jaune→orange du défi étaient d'avant. Vert pelouse pour
+                lier, jaune projecteur pour défier — l'un noue, l'autre engage. */}
+            <div style={{zIndex:1,padding:"8px 18px",display:"flex",gap:10}}>
               {!d.isFriend ? (
                 d.requestSent ? (
-                  <button disabled style={{flex:1,padding:"13px",background:"rgba(255,255,255,.07)",color:"rgba(255,255,255,.5)",border:"1px solid rgba(255,255,255,.15)",borderRadius:50,cursor:"default",fontFamily:G.font,fontSize:14,fontWeight:700}}>{tr("✓ Demande envoyée","✓ Request sent","✓ Anfrage gesendet","✓ Richiesta inviata","✓ Pedido enviado")}</button>
+                  <button disabled style={{...btn(G.nuit,G.white,15),flex:1,padding:"13px",cursor:"default",opacity:.75}}>{tr("✓ Demande envoyée","✓ Request sent","✓ Anfrage gesendet","✓ Richiesta inviata","✓ Pedido enviado")}</button>
                 ) : (
-                  <button onClick={()=>{requirePseudo(function(){addFriend(viewedProfile.name);});}} style={{flex:1,padding:"13px",background:G.accent,color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>{tr("+ Ajouter en ami","+ Add friend","+ Freund hinzufügen","+ Aggiungi amico","+ Adicionar amigo")}</button>
+                  <button onClick={()=>{requirePseudo(function(){addFriend(viewedProfile.name);});}} style={{...btn(G.pelouse,G.encre,15),flex:1,padding:"13px"}}>{tr("+ Ajouter en ami","+ Add friend","+ Freund hinzufügen","+ Aggiungi amico","+ Adicionar amigo")}</button>
                 )
               ) : (
-                <button onClick={()=>{setConfirmRemove({id:viewedProfile.id,name:viewedProfile.name});}} style={{flex:1,padding:"13px",background:"rgba(255,255,255,.07)",color:"rgba(255,255,255,.7)",border:"1px solid rgba(255,255,255,.15)",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>{tr("✓ Ami · Retirer","✓ Friend · Remove","✓ Freund · Entfernen","✓ Amico · Rimuovi","✓ Amigo · Remover")}</button>
+                <button onClick={()=>{setConfirmRemove({id:viewedProfile.id,name:viewedProfile.name});}} style={{...btn(G.nuit,G.white,15),flex:1,padding:"13px"}}>{tr("✓ Ami · Retirer","✓ Friend · Remove","✓ Freund · Entfernen","✓ Amico · Rimuovi","✓ Amigo · Remover")}</button>
               )}
-              <button onClick={()=>requirePseudo(function(){setShowDuelCreate({id:viewedProfile.id,name:viewedProfile.name});})} style={{flex:1,padding:"13px",background:"linear-gradient(135deg,#FFD600,#FF6B35)",color:"#000",border:"none",borderRadius:50,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>{tr("⚡ Défier","⚡ Challenge","⚡ Herausfordern","⚡ Sfida","⚡ Desafiar")}</button>
+              <button onClick={()=>requirePseudo(function(){setShowDuelCreate({id:viewedProfile.id,name:viewedProfile.name});})} style={{...btn(G.projecteur,G.encre,15),flex:1,padding:"13px"}}>{tr("⚡ Défier","⚡ Challenge","⚡ Herausfordern","⚡ Sfida","⚡ Desafiar")}</button>
             </div>
             {/* Collection du joueur consulté : déduite de son XP, comme pour soi.
                 Seules les cartes illustrées sont montrées. */}
@@ -11442,16 +11459,16 @@ export default function LePont() {
               if (!ses.length) return null;
               return (
                 <>
-                  <div style={{zIndex:1,padding:"16px 20px 0",fontSize:10.5,fontWeight:800,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.4)"}}>{tr("Sa collection","Their collection","Seine Sammlung","La sua collezione","A coleção dele")}</div>
-                  <div style={{zIndex:1,margin:"10px 16px 0",padding:"14px 16px",background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.1)",borderRadius:16}}>
+                  <div style={{...posterText(22,G.projecteur),zIndex:1,padding:"16px 18px 0"}}>{tr("Sa collection","Their collection","Seine Sammlung","La sua collezione","A coleção dele")}</div>
+                  <div style={{zIndex:1,margin:"10px 18px 0",padding:"14px 16px",background:G.nuit,border:G.trait,borderRadius:G.rayon,boxShadow:G.ombre}}>
                     <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
-                      <span style={{fontFamily:G.heading,fontSize:24,color:G.accent,lineHeight:1}}>{ses.length}</span>
-                      <span style={{fontSize:12.5,color:"rgba(255,255,255,.55)",fontWeight:700}}>/ {CARDS.filter(hasArt).length} {tr("cartes","cards","Karten","carte","cartas")}</span>
+                      <span style={{...posterText(28,G.pelouse)}}>{ses.length}</span>
+                      <span style={{fontSize:12.5,color:"rgba(255,255,255,.6)",fontWeight:700}}>/ {CARDS.filter(hasArt).length} {tr("cartes","cards","Karten","carte","cartas")}</span>
                     </div>
                     <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
                       {ses.map(function(c){
                         const rm = rarityMeta(c.rarity);
-                        return <img key={c.id} src={c.thumb} alt="" title={lang==="fr"?c.name:c.nameEn} style={{width:38,height:50,borderRadius:7,objectFit:"cover",border:"1.5px solid "+rm.color}}/>;
+                        return <img key={c.id} src={c.thumb} alt="" title={lang==="fr"?c.name:c.nameEn} style={{width:38,height:50,borderRadius:G.rayonS,objectFit:"cover",border:G.traitFin,outline:"2px solid "+rm.color,outlineOffset:-4}}/>;
                       })}
                     </div>
                   </div>
@@ -11459,77 +11476,86 @@ export default function LePont() {
               );
             })()}
             {friendMsg && !d.isFriend && (
-              <div style={{zIndex:1,padding:"0 16px 8px",fontSize:12,color:friendMsg.indexOf("✓")>=0?G.accent:friendMsg.indexOf("❌")>=0?G.red:"rgba(255,255,255,.7)",textAlign:"center",fontWeight:700}}>{friendMsg}</div>
+              <div style={{zIndex:1,padding:"0 18px 8px",fontSize:12.5,color:friendMsg.indexOf("✓")>=0?G.pelouse:friendMsg.indexOf("❌")>=0?G.maillot:"rgba(255,255,255,.8)",textAlign:"center",fontWeight:800}}>{friendMsg}</div>
             )}
-            <div style={{zIndex:1,padding:"14px 20px 2px",fontSize:10.5,fontWeight:800,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.4)"}}>{tr("Statistiques","Stats","Statistiken","Statistiche","Estatísticas")}</div>
-            <div style={{zIndex:1,padding:"8px 16px 8px",display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+            {/* Mêmes tuiles que sur Mon profil : panneau de nuit, pastille et
+                chiffre en couleur. Les quatre teintes LED et les halos partent. */}
+            <div style={{...posterText(22,G.projecteur),zIndex:1,padding:"14px 18px 2px"}}>{tr("Statistiques","Stats","Statistiken","Statistiche","Estatísticas")}</div>
+            <div style={{zIndex:1,padding:"8px 18px 8px",display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
               {[
-                {icon:"🏆", ac:"#00E676", label:tr("Record Plug","Plug record","Plug-Rekord","Record Plug","Recorde Plug"), val:d.bestPont||0},
-                {icon:"⛓️", ac:"#3DA5FF", label:tr("Record Mercato","Mercato record","Mercato-Rekord","Record Mercato","Recorde Mercato"), val:d.bestChaine||0},
-                {icon:"🎮", ac:"#C084FC", label:tr("Parties","Games","Spiele","Partite","Jogos"), val:d.played||0},
-                {icon:"⭐", ac:"#FFC93C", label:"XP", val:d.xp||0},
+                {icon:"🏆", ac:G.pelouse, label:tr("Record Plug","Plug record","Plug-Rekord","Record Plug","Recorde Plug"), val:d.bestPont||0},
+                {icon:"⛓️", ac:G.ciel, label:tr("Record Mercato","Mercato record","Mercato-Rekord","Record Mercato","Recorde Mercato"), val:d.bestChaine||0},
+                {icon:"🎮", ac:"rgba(255,255,255,.9)", label:tr("Parties","Games","Spiele","Partite","Jogos"), val:d.played||0},
+                {icon:"⭐", ac:G.projecteur, label:"XP", val:d.xp||0},
               ].map(function(s,i){return(
-                <div key={i} style={{background:`linear-gradient(160deg, ${s.ac}26 0%, rgba(255,255,255,.03) 55%, rgba(0,0,0,.25) 100%)`,border:`1px solid ${s.ac}55`,borderRadius:20,padding:"14px 16px",boxShadow:`0 14px 34px -16px ${s.ac}66`}}>
-                  <div style={{width:38,height:38,borderRadius:G.rayonS,border:G.traitFin,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,background:`${s.ac}22`,border:`1px solid ${s.ac}55`,marginBottom:10}}>{s.icon}</div>
-                  <div style={{fontFamily:G.heading,fontSize:34,color:s.ac,lineHeight:1,textShadow:`0 0 18px ${s.ac}55`}}>{s.val}</div>
-                  <div style={{fontSize:10,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginTop:6}}>{s.label}</div>
+                <div key={i} style={{background:G.nuit,border:G.trait,borderRadius:G.rayon,padding:"14px 16px",boxShadow:G.ombre}}>
+                  <div style={{...pastilleCharte(s.ac,38),marginBottom:10}}>{s.icon}</div>
+                  <div style={{...posterText(34,s.ac==="rgba(255,255,255,.9)"?G.white:s.ac)}}>{s.val}</div>
+                  <div style={{fontSize:10,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase",color:"rgba(255,255,255,.55)",marginTop:6}}>{s.label}</div>
                 </div>
               );})}
             </div>
-            <div style={{zIndex:1,padding:"8px 16px"}}>
-              <div style={{background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",borderRadius:14,padding:"10px",display:"flex"}}>
-                <div style={{flex:1,textAlign:"center",borderRight:"1px solid rgba(255,255,255,.06)"}}>
-                  <div style={{fontFamily:G.heading,fontSize:20,color:"#00E676"}}>{d.wins||0}</div>
-                  <div style={{fontSize:9,color:"rgba(255,255,255,.4)",letterSpacing:1,textTransform:"uppercase"}}>{tr("Victoires","Wins","Siege","Vittorie","Vitórias")}</div>
+            {/* Bandeau V/N/D : le même que celui des lignes du classement —
+                séparateurs d'encre, chiffres au lettrage d'affiche. */}
+            <div style={{zIndex:1,padding:"8px 18px"}}>
+              <div style={{background:G.nuit,border:G.trait,borderRadius:G.rayon,boxShadow:G.ombre,padding:"10px",display:"flex"}}>
+                <div style={{flex:1,textAlign:"center",borderRight:G.traitFin}}>
+                  <div style={{...posterText(22,G.pelouse)}}>{d.wins||0}</div>
+                  <div style={{fontSize:9.5,color:"rgba(255,255,255,.55)",fontWeight:700,letterSpacing:1,textTransform:"uppercase"}}>{tr("Victoires","Wins","Siege","Vittorie","Vitórias")}</div>
                 </div>
-                <div style={{flex:1,textAlign:"center",borderRight:"1px solid rgba(255,255,255,.06)"}}>
-                  <div style={{fontFamily:G.heading,fontSize:20,color:G.gold}}>{d.draws||0}</div>
-                  <div style={{fontSize:9,color:"rgba(255,255,255,.4)",letterSpacing:1,textTransform:"uppercase"}}>{tr("Nuls","Draws","Unentschieden","Pareggi","Empates")}</div>
+                <div style={{flex:1,textAlign:"center",borderRight:G.traitFin}}>
+                  <div style={{...posterText(22,G.projecteur)}}>{d.draws||0}</div>
+                  <div style={{fontSize:9.5,color:"rgba(255,255,255,.55)",fontWeight:700,letterSpacing:1,textTransform:"uppercase"}}>{tr("Nuls","Draws","Unentschieden","Pareggi","Empates")}</div>
                 </div>
                 <div style={{flex:1,textAlign:"center"}}>
-                  <div style={{fontFamily:G.heading,fontSize:20,color:"#FF3D57"}}>{d.losses||0}</div>
-                  <div style={{fontSize:9,color:"rgba(255,255,255,.4)",letterSpacing:1,textTransform:"uppercase"}}>{tr("Défaites","Losses","Niederlagen","Sconfitte","Derrotas")}</div>
+                  <div style={{...posterText(22,G.maillot)}}>{d.losses||0}</div>
+                  <div style={{fontSize:9.5,color:"rgba(255,255,255,.55)",fontWeight:700,letterSpacing:1,textTransform:"uppercase"}}>{tr("Défaites","Losses","Niederlagen","Sconfitte","Derrotas")}</div>
                 </div>
               </div>
             </div>
             {d.duelsWith.length > 0 ? (
-              <div style={{zIndex:1,padding:"16px 16px 8px"}}>
-                <div style={{fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.5)",marginBottom:10}}>{tr("Vos parties (","Your games (","Deine Spiele (","Le tue partite (","Seus jogos (")}{d.duelsWith.length}{tr(")",")",")",")",")")}</div>
-                <div style={{background:"rgba(255,255,255,.03)",borderRadius:14,padding:"10px",marginBottom:8,display:"flex",justifyContent:"space-around",border:"1px solid rgba(255,255,255,.06)"}}>
+              <div style={{zIndex:1,padding:"16px 18px 8px"}}>
+                <div style={{...posterText(22,G.projecteur),marginBottom:10}}>{tr("Vos parties (","Your games (","Deine Spiele (","Le tue partite (","Seus jogos (")}{d.duelsWith.length}{tr(")",")",")",")",")")}</div>
+                <div style={{background:G.nuit,border:G.trait,borderRadius:G.rayon,boxShadow:G.ombre,padding:"10px",marginBottom:10,display:"flex",justifyContent:"space-around"}}>
                   <div style={{textAlign:"center"}}>
-                    <div style={{fontFamily:G.heading,fontSize:18,color:"#00E676"}}>{d.myWins}</div>
-                    <div style={{fontSize:9,color:"rgba(255,255,255,.4)",letterSpacing:1,textTransform:"uppercase"}}>{tr("Tes victoires","Your wins","Deine Siege","Le tue vittorie","Suas vitórias")}</div>
+                    <div style={{...posterText(20,G.pelouse)}}>{d.myWins}</div>
+                    <div style={{fontSize:9.5,color:"rgba(255,255,255,.55)",fontWeight:700,letterSpacing:1,textTransform:"uppercase"}}>{tr("Tes victoires","Your wins","Deine Siege","Le tue vittorie","Suas vitórias")}</div>
                   </div>
                   <div style={{textAlign:"center"}}>
-                    <div style={{fontFamily:G.heading,fontSize:18,color:G.gold}}>{d.duelsDraws}</div>
-                    <div style={{fontSize:9,color:"rgba(255,255,255,.4)",letterSpacing:1,textTransform:"uppercase"}}>{tr("Nuls","Draws","Unentschieden","Pareggi","Empates")}</div>
+                    <div style={{...posterText(20,G.projecteur)}}>{d.duelsDraws}</div>
+                    <div style={{fontSize:9.5,color:"rgba(255,255,255,.55)",fontWeight:700,letterSpacing:1,textTransform:"uppercase"}}>{tr("Nuls","Draws","Unentschieden","Pareggi","Empates")}</div>
                   </div>
                   <div style={{textAlign:"center"}}>
-                    <div style={{fontFamily:G.heading,fontSize:18,color:"#FF3D57"}}>{d.myLosses}</div>
-                    <div style={{fontSize:9,color:"rgba(255,255,255,.4)",letterSpacing:1,textTransform:"uppercase"}}>{tr("Ses victoires","Their wins","Seine Siege","Le sue vittorie","As vitórias dele")}</div>
+                    <div style={{...posterText(20,G.maillot)}}>{d.myLosses}</div>
+                    <div style={{fontSize:9.5,color:"rgba(255,255,255,.55)",fontWeight:700,letterSpacing:1,textTransform:"uppercase"}}>{tr("Ses victoires","Their wins","Seine Siege","Le sue vittorie","As vitórias dele")}</div>
                   </div>
                 </div>
-                <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                {/* Historique : chaque partie est un rectangle de la charte, et le
+                    bâton de couleur à gauche dit l'issue — pelouse, projecteur,
+                    maillot — au lieu des trois teintes LED d'avant. */}
+                <div style={{display:"flex",flexDirection:"column",gap:10}}>
                   {d.duelsWith.slice(0,10).map((duel, i) => {
                     const myScore = duel.my || 0;
                     const oppScore = duel.opp || 0;
                     const won = myScore > oppScore;
                     const draw = myScore === oppScore;
                     return (
-                      <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",background:"rgba(255,255,255,.03)",borderRadius:12,border:"1px solid rgba(255,255,255,.05)"}}>
-                        <div style={{width:4,height:28,borderRadius:2,background:draw?"#FFD600":won?"#00E676":"#FF3D57"}}/>
+                      <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",background:G.nuit,borderRadius:G.rayonS,border:G.trait,boxShadow:G.ombre}}>
+                        <div style={{width:6,height:30,borderRadius:3,border:G.traitFin,background:draw?G.projecteur:won?G.pelouse:G.maillot}}/>
                         <div style={{flex:1}}>
-                          <div style={{fontSize:12,fontWeight:700,color:G.white}}>{draw?(tr("Match nul","Draw","Unentschieden","Pareggio","Empate")):won?(tr("Victoire","Win","Sieg","Vittoria","Vitória")):(tr("Défaite","Loss","Niederlage","Sconfitta","Derrota"))}</div>
-                          <div style={{fontSize:10,color:"rgba(255,255,255,.4)"}}>{duel.mode==="pont"?"The Plug":"The Mercato"} · {duel.diff}</div>
+                          <div style={{fontSize:12.5,fontWeight:800,color:G.white}}>{draw?(tr("Match nul","Draw","Unentschieden","Pareggio","Empate")):won?(tr("Victoire","Win","Sieg","Vittoria","Vitória")):(tr("Défaite","Loss","Niederlage","Sconfitta","Derrota"))}</div>
+                          <div style={{fontSize:10.5,color:"rgba(255,255,255,.55)",fontWeight:600}}>{duel.mode==="pont"?"The Plug":"The Mercato"} · {duel.diff}</div>
                         </div>
-                        <div style={{fontFamily:G.heading,fontSize:16,color:G.white}}>{myScore}–{oppScore}</div>
+                        <div style={{...posterText(20,G.white)}}>{myScore}–{oppScore}</div>
                       </div>
                     );
                   })}
                 </div>
               </div>
             ) : (
-              <div style={{zIndex:1,padding:"20px 16px",textAlign:"center",color:"rgba(255,255,255,.4)",fontSize:13}}>{tr("Aucune partie encore jouée contre ce joueur","No game played against this player yet","Noch kein Spiel gegen diesen Spieler","Ancora nessuna partita contro questo giocatore","Nenhum jogo contra este jogador ainda")}</div>
+              <div style={{zIndex:1,padding:"20px 18px"}}>
+                <div style={{padding:"22px 16px",textAlign:"center",background:G.nuit,border:G.trait,borderRadius:G.rayon,boxShadow:G.ombre,color:"rgba(255,255,255,.8)",fontSize:13,fontWeight:700,lineHeight:1.5}}>{tr("Aucune partie encore jouée contre ce joueur","No game played against this player yet","Noch kein Spiel gegen diesen Spieler","Ancora nessuna partita contro questo giocatore","Nenhum jogo contra este jogador ainda")}</div>
+              </div>
             )}
             <div style={{zIndex:1,padding:"20px 16px 40px"}}/>
           </>
