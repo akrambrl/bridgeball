@@ -20,9 +20,9 @@ describe("catalogue", () => {
     }
   });
 
-  it("compte 1 carte de départ puis 5 par catégorie", () => {
+  it("compte 1 carte de départ puis 7 par catégorie", () => {
     const parRarete = RARITIES.map((r) => CARDS.filter((c) => c.rarity === r.key).length);
-    expect(parRarete).toEqual([1, 5, 5, 5, 5]); // départ, bronze, argent, or, diamant
+    expect(parRarete).toEqual([1, 7, 7, 7, 7]); // départ, bronze, argent, or, diamant
     expect(CARDS.filter((c) => c.rarity === "depart")[0].xp).toBe(0); // tout le monde l'a
   });
 
@@ -64,10 +64,17 @@ describe("catalogue", () => {
   });
 
   it("espace les paliers de plus en plus (progression géométrique en haut)", () => {
+    // Le plancher était à 1,3 quand le haut comptait 10 cartes. Il est passé à
+    // 14 : densifier une échelle sans en bouger les bornes resserre
+    // mécaniquement chaque rapport, ce n'est pas une régression. Aucune valeur
+    // insérable entre 5 000 et 8 000 ne tient 1,3 des deux côtés.
     const hauts = CARDS.filter((c) => c.rarity === "or" || c.rarity === "diamant");
     for (let i = 1; i < hauts.length; i++) {
-      expect(hauts[i].xp / hauts[i - 1].xp).toBeGreaterThanOrEqual(1.3);
+      expect(hauts[i].xp / hauts[i - 1].xp).toBeGreaterThanOrEqual(1.15);
     }
+    // Ce que le plancher ne dit plus, la portée totale le dit : le haut de
+    // l'échelle multiplie encore le palier d'entrée par 50.
+    expect(hauts[hauts.length - 1].xp / hauts[0].xp).toBeGreaterThanOrEqual(50);
   });
 
   it("expose un visuel et une vignette cohérents, ou aucun des deux", () => {
@@ -76,7 +83,17 @@ describe("catalogue", () => {
       expect(c.img.startsWith("/")).toBe(true);
       expect(c.thumb!.startsWith("/")).toBe(true);
     }
-    expect(CARDS.filter((c) => c.img).length).toBe(12); // les 12 cartes fournies
+    expect(CARDS.filter((c) => c.img).length).toBe(CARDS.length); // toutes illustrées
+  });
+
+  it("nomme les visuels d'après le joueur, jamais d'après la carte", () => {
+    // Un fichier nommé d'après la carte ment dès le premier reclassement :
+    // /cards/recrue.webp a porté trois joueurs différents avant qu'on arrête.
+    const ids = new Set(CARDS.map((c) => c.id));
+    for (const c of CARDS) {
+      const fichier = c.img!.replace("/cards/", "").replace(".webp", "");
+      expect(ids.has(fichier)).toBe(false);
+    }
   });
 
   it("donne une vignette dédiée aux cartes illustrées (badge léger)", () => {
@@ -147,11 +164,11 @@ describe("nextCard / progressToNext", () => {
 
 describe("newlyUnlocked", () => {
   it("renvoie les cartes franchies entre deux totaux", () => {
-    expect(newlyUnlocked(40, 160).map((c) => c.xp)).toEqual([50, 150]);
+    expect(newlyUnlocked(40, 160).map((c) => c.xp)).toEqual([50, 100, 150]);
   });
 
   it("ne renvoie rien sans franchissement", () => {
-    expect(newlyUnlocked(60, 149)).toEqual([]);
+    expect(newlyUnlocked(101, 149)).toEqual([]);
     expect(newlyUnlocked(500, 500)).toEqual([]);
   });
 
@@ -192,12 +209,13 @@ describe("rarityMeta", () => {
 describe("levelCard / avatarCard", () => {
   it("donne la MEILLEURE carte possédée, jamais la première", () => {
     expect(levelCard(0).id).toBe(CARDS[0].id);
-    expect(levelCard(149).xp).toBe(50);
+    expect(levelCard(149).xp).toBe(100);
     expect(levelCard(150).xp).toBe(150);
-    // Au-delà des 12 cartes illustrées, la photo de profil reste la dernière
-    // carte QUI A un visuel : jamais un cadre vide.
-    expect(levelCard(17400).id).toBe("international");
-    expect(levelCard(999999).id).toBe("international");
+    // La photo de profil est la dernière carte QUI A un visuel : jamais un cadre
+    // vide. Les 29 étant illustrées, c'est simplement la dernière débloquée —
+    // le filtre reste en place pour le jour où une carte arrivera sans visuel.
+    expect(levelCard(17400).id).toBe("finisseur");
+    expect(levelCard(999999).id).toBe("goat");
   });
 
   it("ne renvoie jamais rien, même à 0 ou sans XP", () => {
