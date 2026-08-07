@@ -2515,11 +2515,34 @@ const POSITIVE_FEEDBACK = {
     hot:  ["⚡ UNSTOPPABLE !","🎯 IN THE ZONE !","🔥 CAN'T STOP YOU !","💨 FULL SPEED !","🎪 WHAT A SHOW !"],
     fire: ["💫 PHENOMENAL !","🌟 MACHINE !","👑 WORLD CLASS !","🏟️ CROWD'S ON THEIR FEET !","🎭 ARTIST !"],
     god:  ["🏆 LEGENDARY !!!","👑 BALLON D'OR !","🐐 THE GOAT !","🌌 OUT OF THIS WORLD !","🎖️ RECORD INCOMING !"]
+  },
+  de: {
+    base: ["Sauber ✓","Schön 🎯","Passt ⚽","Ordentlich 👌","Gut gesehen 👀","Stark 💪","Zu leicht 😎","Locker 🚶"],
+    warm: ["🔥 IN FLAMMEN !","💥 SERIE LÄUFT !","⚡ ES ROLLT !","🎯 VOLLTREFFER !","🚀 DU HEBST AB !"],
+    hot:  ["⚡ UNAUFHALTSAM !","🎯 IM TUNNEL !","🔥 NICHT ZU STOPPEN !","💨 VOLLGAS !","🎪 WAS FÜR EINE SHOW !"],
+    fire: ["💫 PHÄNOMENAL !","🌟 MASCHINE !","👑 WELTKLASSE !","🏟️ DAS STADION STEHT !","🎭 KÜNSTLER !"],
+    god:  ["🏆 LEGENDÄR !!!","👑 BALLON D'OR !","🐐 DER GOAT !","🌌 AUSSERGEWÖHNLICH !","🎖️ REKORD IN SICHT !"]
+  },
+  it: {
+    base: ["Pulito ✓","Bello 🎯","Passa ⚽","Preciso 👌","Bell'occhio 👀","Solido 💪","Troppo facile 😎","Tranquillo 🚶"],
+    warm: ["🔥 IN FIAMME !","💥 CHE SERIE !","⚡ SI VIAGGIA !","🎯 IN PIENO !","🚀 STAI DECOLLANDO !"],
+    hot:  ["⚡ IMPRENDIBILE !","🎯 SEI IN ZONA !","🔥 NON TI FERMA NESSUNO !","💨 A TUTTA VELOCITÀ !","🎪 CHE SPETTACOLO !"],
+    fire: ["💫 FENOMENALE !","🌟 MACCHINA !","👑 CLASSE MONDIALE !","🏟️ LO STADIO È IN PIEDI !","🎭 ARTISTA !"],
+    god:  ["🏆 LEGGENDARIO !!!","👑 PALLONE D'ORO !","🐐 IL GOAT !","🌌 FUORI CATEGORIA !","🎖️ RECORD IN VISTA !"]
+  },
+  pt: {
+    base: ["Limpo ✓","Bonito 🎯","Entrou ⚽","Certeiro 👌","Bom olho 👀","Sólido 💪","Fácil demais 😎","Tranquilo 🚶"],
+    warm: ["🔥 PEGANDO FOGO !","💥 QUE SEQUÊNCIA !","⚡ EMBALADO !","🎯 NA MOSCA !","🚀 VOANDO !"],
+    hot:  ["⚡ IMPARÁVEL !","🎯 ESTÁ NA ZONA !","🔥 NINGUÉM TE SEGURA !","💨 A TODA VELOCIDADE !","🎪 QUE ESPETÁCULO !"],
+    fire: ["💫 FENOMENAL !","🌟 MÁQUINA !","👑 CLASSE MUNDIAL !","🏟️ O ESTÁDIO ESTÁ DE PÉ !","🎭 ARTISTA !"],
+    god:  ["🏆 LENDÁRIO !!!","👑 BOLA DE OURO !","🐐 O GOAT !","🌌 FORA DE SÉRIE !","🎖️ RECORDE À VISTA !"]
   }
 };
 
 function getPositiveFeedback(combo, lang){
-  const pool = POSITIVE_FEEDBACK[(lang==="fr"?"fr":"en")];
+  // Les cinq langues de l'app ont chacune leur réserve : sans ça, un joueur
+  // italien ou allemand recevait ses félicitations en anglais.
+  const pool = POSITIVE_FEEDBACK[lang] || POSITIVE_FEEDBACK.en;
   let tier;
   if(combo>=10) tier=pool.god;
   else if(combo>=7) tier=pool.fire;
@@ -8749,17 +8772,31 @@ export default function LePont() {
     );
   })() : null;
 
+  // La bande de verdict était en pastels d'infirmerie — vert d'eau, rose pâle,
+  // crème — cerclés d'un filet fluo. C'est le contraire de la charte : sur
+  // l'affiche, le verdict est un APLAT qui porte le sens (pelouse = juste,
+  // maillot = faux, projecteur = déjà pris), cerclé d'encre. Comme la bande est
+  // collée en haut et pleine largeur, son ombre dure ne peut tomber que vers le
+  // bas : un décalage latéral pendrait dans le vide hors de l'écran.
   const feedbackBar = (fb) => {
     if(!fb) return null;
+    const ton = fb==="ok" ? {aplat:G.pelouse, texte:G.white}
+              : fb==="ko" ? {aplat:G.maillot, texte:G.white}
+              :             {aplat:G.projecteur, texte:G.encre};
+    // Texte clair → lettrage contouré ; texte d'encre sur le jaune → lettrage nu,
+    // le contour se confondrait avec la lettre.
+    const mot = (taille) => ton.texte===G.white ? posterText(taille, G.white, 1.5) : posterLight(taille, G.encre);
+    const points = {...mot(14), opacity:.85};
     return (
-      <div style={{position:"fixed",top:0,left:0,right:0,zIndex:50,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"10px 16px",
-        background:fb==="ok"?"#dcfce7":fb==="ko"?"#fee2e2":"#fef9c3",
-        border:`2px solid ${fb==="ok"?G.accent:fb==="ko"?G.red:"#fbbf24"}`,
+      <div style={{position:"fixed",top:0,left:0,right:0,zIndex:50,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2,padding:"12px 16px",
+        background:ton.aplat,
+        borderBottom:G.trait,
+        boxShadow:"0 4px 0 "+G.encre,
         animation:fb==="ok"?"answerOk .5s ease":fb==="ko"?"answerKo .4s ease":"popIn .3s ease",
       }}>
-        {fb==="ok"&&<><div style={{display:"flex",alignItems:"center",gap:8,fontSize:17,fontWeight:800,color:"#16a34a"}}>{Icon.ball(18,"#16a34a")} {feedbackPhrase || (tr("BONNE RÉPONSE !","RIGHT ANSWER !","RICHTIG !","RISPOSTA GIUSTA !","RESPOSTA CERTA !"))}</div><div style={{fontSize:12,fontWeight:600,color:"#16a34a",opacity:.7}}>+{diff==="expert"?30:diff==="moyen"?20:10} pts</div></>}
-        {fb==="ko"&&<><div style={{display:"flex",alignItems:"center",gap:8,fontSize:17,fontWeight:800,color:G.red}}>{Icon.whistle(18,G.red)} {tr("MAUVAISE RÉPONSE","WRONG ANSWER","FALSCH","RISPOSTA SBAGLIATA","RESPOSTA ERRADA")}</div><div style={{fontSize:12,fontWeight:600,color:G.red,opacity:.7}}>−5 pts</div></>}
-        {fb==="used"&&<div style={{display:"flex",alignItems:"center",gap:8,fontSize:15,fontWeight:800,color:"#d97706"}}>{Icon.flag(16,"#d97706")} {tr("CLUB DÉJÀ UTILISÉ","CLUB ALREADY USED","KLUB SCHON BENUTZT","CLUB GIÀ USATO","CLUBE JÁ USADO")}</div>}
+        {fb==="ok"&&<><div style={{display:"flex",alignItems:"center",gap:8}}>{Icon.ball(18,ton.texte)} <span style={mot(20)}>{feedbackPhrase || (tr("BONNE RÉPONSE !","RIGHT ANSWER !","RICHTIG !","RISPOSTA GIUSTA !","RESPOSTA CERTA !"))}</span></div><div style={points}>+{diff==="expert"?30:diff==="moyen"?20:10} pts</div></>}
+        {fb==="ko"&&<><div style={{display:"flex",alignItems:"center",gap:8}}>{Icon.whistle(18,ton.texte)} <span style={mot(20)}>{tr("MAUVAISE RÉPONSE","WRONG ANSWER","FALSCH","RISPOSTA SBAGLIATA","RESPOSTA ERRADA")}</span></div><div style={points}>−5 pts</div></>}
+        {fb==="used"&&<div style={{display:"flex",alignItems:"center",gap:8}}>{Icon.flag(16,ton.texte)} <span style={mot(18)}>{tr("CLUB DÉJÀ UTILISÉ","CLUB ALREADY USED","KLUB SCHON BENUTZT","CLUB GIÀ USATO","CLUBE JÁ USADO")}</span></div>}
       </div>
     );
   };
