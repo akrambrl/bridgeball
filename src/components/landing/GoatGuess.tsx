@@ -1,10 +1,9 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
 import { PLAYERS, RETIRED_PLAYERS, GG_WC_WINNERS, GG_CL_WINNERS, GG_BALLON_DOR, GG_BALLON_DOR_MULTI, GG_SHIRT_10 } from "../../players.jsx";
 import { CLUB_COLORS } from "../LePont.jsx";
-import { chercheJoueurs } from "@/lib/nom";
 import { trackPlay } from "../../lib/track";
 import { getLang, tr } from "@/lib/lang";
-import { G, posterText, posterTitre, btn, fondCharte, terrainCharte } from "@/lib/charte.jsx";
+import { G, posterText, btn, fondCharte, terrainCharte } from "@/lib/charte.jsx";
 
 type Player = {
   name: string;
@@ -26,11 +25,6 @@ type Question = {
   labelPt?: string; // portugais
   labelEs?: string; // espagnol
   category: QCategory;
-  // Forme AFFIRMATIVE courte, pour le récapitulatif « ce que je sais » du mode
-  // inversé : « Est-ce un défenseur ? » se relit mal en liste, « Défenseur » se
-  // retient. Optionnel : à défaut on retombe sur la question elle-même, ce qui
-  // reste juste, seulement moins ramassé.
-  fait?: string; faitEn?: string; faitDe?: string; faitIt?: string; faitPt?: string; faitEs?: string;
   // null = on ne sait pas (info absente de la base) → le joueur n'est pas
   // filtré quelle que soit la réponse de l'utilisateur.
   predicate: (p: Player) => boolean | null;
@@ -78,17 +72,6 @@ const qLabel = (q: Question) => {
   if (l === "es") return q.labelEs || q.labelEn || q.label;
   if (l === "en") return q.labelEn || q.label;
   return q.label;
-};
-
-// Le fait affirmatif d'une question, dans la langue courante. Repli sur la
-// question elle-même quand aucun fait n'est fourni : c'est plus long à lire,
-// mais jamais faux — et ça évite d'avoir à écrire 157 formulations x 6 langues
-// avant que la fonctionnalité n'existe.
-const qFait = (q: Question) => {
-  const l = getLang();
-  const f = l === "de" ? q.faitDe : l === "it" ? q.faitIt : l === "pt" ? q.faitPt
-    : l === "es" ? q.faitEs : l === "en" ? q.faitEn : q.fait;
-  return f || q.fait || qLabel(q);
 };
 
 const playedFor = (p: Player, club: string) => p.clubs.includes(club);
@@ -577,20 +560,18 @@ const PHYS_COUPE_2002 = new Set(["Ronaldo Nazário"]); // coupe culte CdM 2002
 
 const QUESTIONS: Question[] = [
   // Postes
-  { id: "is-gk", category: "pos", label: "Est-ce un gardien de but ?", labelEn: "Is he a goalkeeper?", labelDe: "Ist er ein Torwart?", labelIt: "È un portiere?", labelPt: "É um goleiro?", labelEs: "¿Es portero?", fait: "Gardien de but", faitEn: "Goalkeeper", faitDe: "Torwart", faitIt: "Portiere", faitPt: "Goleiro", faitEs: "Portero", predicate: (p) => isUniquelyPos(p, POS_GARDIEN) },
-  { id: "is-def", category: "pos", label: "Est-ce un défenseur ?", labelEn: "Is he a defender?", labelDe: "Ist er ein Verteidiger?", labelIt: "È un difensore?", labelPt: "É um zagueiro?", labelEs: "¿Es defensa?", fait: "Défenseur", faitEn: "Defender", faitDe: "Verteidiger", faitIt: "Difensore", faitPt: "Zagueiro", faitEs: "Defensa", predicate: isUniquelyDefender },
-  { id: "is-mid", category: "pos", label: "Est-ce un milieu de terrain ?", labelEn: "Is he a midfielder?", labelDe: "Ist er ein Mittelfeldspieler?", labelIt: "È un centrocampista?", labelPt: "É um meio-campista?", labelEs: "¿Es centrocampista?", fait: "Milieu de terrain", faitEn: "Midfielder", faitDe: "Mittelfeldspieler", faitIt: "Centrocampista", faitPt: "Meio-campista", faitEs: "Centrocampista", predicate: (p) => isUniquelyPos(p, POS_MIL) },
-  { id: "is-att", category: "pos", label: "Est-ce un attaquant ?", labelEn: "Is he a forward?", labelDe: "Ist er ein Stürmer?", labelIt: "È un attaccante?", labelPt: "É um atacante?", labelEs: "¿Es delantero?", fait: "Attaquant", faitEn: "Forward", faitDe: "Stürmer", faitIt: "Attaccante", faitPt: "Atacante", faitEs: "Delantero", predicate: (p) => isUniquelyPos(p, POS_ATT) },
+  { id: "is-gk", category: "pos", label: "Est-ce un gardien de but ?", labelEn: "Is he a goalkeeper?", labelDe: "Ist er ein Torwart?", labelIt: "È un portiere?", labelPt: "É um goleiro?", labelEs: "¿Es portero?", predicate: (p) => isUniquelyPos(p, POS_GARDIEN) },
+  { id: "is-def", category: "pos", label: "Est-ce un défenseur ?", labelEn: "Is he a defender?", labelDe: "Ist er ein Verteidiger?", labelIt: "È un difensore?", labelPt: "É um zagueiro?", labelEs: "¿Es defensa?", predicate: isUniquelyDefender },
+  { id: "is-mid", category: "pos", label: "Est-ce un milieu de terrain ?", labelEn: "Is he a midfielder?", labelDe: "Ist er ein Mittelfeldspieler?", labelIt: "È un centrocampista?", labelPt: "É um meio-campista?", labelEs: "¿Es centrocampista?", predicate: (p) => isUniquelyPos(p, POS_MIL) },
+  { id: "is-att", category: "pos", label: "Est-ce un attaquant ?", labelEn: "Is he a forward?", labelDe: "Ist er ein Stürmer?", labelIt: "È un attaccante?", labelPt: "É um atacante?", labelEs: "¿Es delantero?", predicate: (p) => isUniquelyPos(p, POS_ATT) },
   {
     id: "is-offensive", category: "pos",
     label: "Joue-t-il à un poste offensif (milieu ou attaquant) ?", labelEn: "Does he play in an attacking position (midfield or forward)?", labelDe: "Spielt er auf einer offensiven Position (Mittelfeld oder Sturm)?", labelIt: "Gioca in una posizione offensiva (centrocampo o attacco)?", labelPt: "Joga numa posição ofensiva (meio-campo ou ataque)?", labelEs: "¿Juega en una posición ofensiva (centrocampista o delantero)?",
-    fait: "Poste offensif", faitEn: "Attacking position", faitDe: "Offensivposition", faitIt: "Posizione offensiva", faitPt: "Posição ofensiva", faitEs: "Posición ofensiva",
     predicate: (p) => hasPos(p, POS_MIL) || hasPos(p, POS_ATT),
   },
   {
     id: "is-defensive", category: "pos",
     label: "Joue-t-il à un poste défensif (gardien ou défenseur) ?", labelEn: "Does he play in a defensive position (goalkeeper or defender)?", labelDe: "Spielt er auf einer defensiven Position (Torwart oder Verteidiger)?", labelIt: "Gioca in una posizione difensiva (portiere o difensore)?", labelPt: "Joga numa posição defensiva (goleiro ou zagueiro)?", labelEs: "¿Juega en una posición defensiva (portero o defensa)?",
-    fait: "Poste défensif", faitEn: "Defensive position", faitDe: "Defensivposition", faitIt: "Posizione difensiva", faitPt: "Posição defensiva", faitEs: "Posición defensiva",
     predicate: (p) => hasPos(p, POS_GARDIEN) || isDefender(p),
   },
   {
@@ -625,90 +606,87 @@ const QUESTIONS: Question[] = [
   {
     id: "cont-eu", category: "cont",
     label: "Vient-il d'un pays européen ?", labelEn: "Is he from a European country?", labelDe: "Kommt er aus einem europäischen Land?", labelIt: "Viene da un paese europeo?", labelPt: "É de um país europeu?", labelEs: "¿Es de un país europeo?",
-    fait: "Européen", faitEn: "European", faitDe: "Europäer", faitIt: "Europeo", faitPt: "Europeu", faitEs: "Europeo",
     predicate: (p) => p.nationalities.some((n) => EUROPE.has(n)),
   },
   {
     id: "cont-sa", category: "cont",
     label: "Vient-il d'un pays sud-américain ?", labelEn: "Is he from a South American country?", labelDe: "Kommt er aus einem südamerikanischen Land?", labelIt: "Viene da un paese sudamericano?", labelPt: "É de um país sul-americano?", labelEs: "¿Es de un país sudamericano?",
-    fait: "Sud-Américain", faitEn: "South American", faitDe: "Südamerikaner", faitIt: "Sudamericano", faitPt: "Sul-americano", faitEs: "Sudamericano",
     predicate: (p) => p.nationalities.some((n) => SOUTH_AMERICA.has(n)),
   },
   {
     id: "cont-af", category: "cont",
     label: "Vient-il d'un pays africain ?", labelEn: "Is he from an African country?", labelDe: "Kommt er aus einem afrikanischen Land?", labelIt: "Viene da un paese africano?", labelPt: "É de um país africano?", labelEs: "¿Es de un país africano?",
-    fait: "Africain", faitEn: "African", faitDe: "Afrikaner", faitIt: "Africano", faitPt: "Africano", faitEs: "Africano",
     predicate: (p) => p.nationalities.some((n) => AFRICA.has(n)),
   },
 
   // Clubs majeurs
-  { id: "club-real", category: "club", label: "A-t-il joué au Real Madrid ?", labelEn: "Did he play for Real Madrid?", labelDe: "Hat er für Real Madrid gespielt?", labelIt: "Ha giocato nel Real Madrid?", labelPt: "Jogou pelo Real Madrid?", labelEs: "¿Jugó en el Real Madrid?", fait: "Real Madrid", predicate: (p) => playedFor(p, "Real Madrid") },
-  { id: "club-barca", category: "club", label: "A-t-il joué au FC Barcelone ?", labelEn: "Did he play for Barcelona?", labelDe: "Hat er für den FC Barcelona gespielt?", labelIt: "Ha giocato nel Barcellona?", labelPt: "Jogou pelo Barcelona?", labelEs: "¿Jugó en el FC Barcelona?", fait: "Barcelona", predicate: (p) => playedFor(p, "Barcelona") },
-  { id: "club-atm", category: "club", label: "A-t-il joué à l'Atlético Madrid ?", labelEn: "Did he play for Atletico Madrid?", labelDe: "Hat er für Atlético Madrid gespielt?", labelIt: "Ha giocato nell'Atlético Madrid?", labelPt: "Jogou pelo Atlético de Madrid?", labelEs: "¿Jugó en el Atlético de Madrid?", fait: "Atletico Madrid", predicate: (p) => playedFor(p, "Atletico Madrid") },
-  { id: "club-sevilla", category: "club", label: "A-t-il joué au FC Séville ?", labelEn: "Did he play for Sevilla?", labelDe: "Hat er für den FC Sevilla gespielt?", labelIt: "Ha giocato nel Siviglia?", labelPt: "Jogou pelo Sevilla?", labelEs: "¿Jugó en el Sevilla FC?", fait: "Sevilla", predicate: (p) => playedFor(p, "Sevilla") },
-  { id: "club-mu", category: "club", label: "A-t-il joué à Manchester United ?", labelEn: "Did he play for Manchester United?", labelDe: "Hat er für Manchester United gespielt?", labelIt: "Ha giocato nel Manchester United?", labelPt: "Jogou pelo Manchester United?", labelEs: "¿Jugó en el Manchester United?", fait: "Manchester United", predicate: (p) => playedFor(p, "Manchester United") },
-  { id: "club-mc", category: "club", label: "A-t-il joué à Manchester City ?", labelEn: "Did he play for Manchester City?", labelDe: "Hat er für Manchester City gespielt?", labelIt: "Ha giocato nel Manchester City?", labelPt: "Jogou pelo Manchester City?", labelEs: "¿Jugó en el Manchester City?", fait: "Manchester City", predicate: (p) => playedFor(p, "Manchester City") },
-  { id: "club-liv", category: "club", label: "A-t-il joué à Liverpool ?", labelEn: "Did he play for Liverpool?", labelDe: "Hat er für Liverpool gespielt?", labelIt: "Ha giocato nel Liverpool?", labelPt: "Jogou pelo Liverpool?", labelEs: "¿Jugó en el Liverpool?", fait: "Liverpool", predicate: (p) => playedFor(p, "Liverpool") },
-  { id: "club-che", category: "club", label: "A-t-il joué à Chelsea ?", labelEn: "Did he play for Chelsea?", labelDe: "Hat er für Chelsea gespielt?", labelIt: "Ha giocato nel Chelsea?", labelPt: "Jogou pelo Chelsea?", labelEs: "¿Jugó en el Chelsea?", fait: "Chelsea", predicate: (p) => playedFor(p, "Chelsea") },
-  { id: "club-ars", category: "club", label: "A-t-il joué à Arsenal ?", labelEn: "Did he play for Arsenal?", labelDe: "Hat er für Arsenal gespielt?", labelIt: "Ha giocato nell'Arsenal?", labelPt: "Jogou pelo Arsenal?", labelEs: "¿Jugó en el Arsenal?", fait: "Arsenal", predicate: (p) => playedFor(p, "Arsenal") },
-  { id: "club-tot", category: "club", label: "A-t-il joué à Tottenham ?", labelEn: "Did he play for Tottenham?", labelDe: "Hat er für Tottenham gespielt?", labelIt: "Ha giocato nel Tottenham?", labelPt: "Jogou pelo Tottenham?", labelEs: "¿Jugó en el Tottenham?", fait: "Tottenham", predicate: (p) => playedFor(p, "Tottenham") },
-  { id: "club-juv", category: "club", label: "A-t-il joué à la Juventus ?", labelEn: "Did he play for Juventus FC?", labelDe: "Hat er für Juventus gespielt?", labelIt: "Ha giocato nella Juventus?", labelPt: "Jogou pela Juventus?", labelEs: "¿Jugó en la Juventus?", fait: "Juventus FC", predicate: (p) => playedFor(p, "Juventus FC") },
-  { id: "club-milan", category: "club", label: "A-t-il joué à l'AC Milan ?", labelEn: "Did he play for AC Milan?", labelDe: "Hat er für den AC Mailand gespielt?", labelIt: "Ha giocato nel Milan?", labelPt: "Jogou pelo Milan?", labelEs: "¿Jugó en el AC Milan?", fait: "AC Milan", predicate: (p) => playedFor(p, "AC Milan") },
-  { id: "club-inter", category: "club", label: "A-t-il joué à l'Inter Milan ?", labelEn: "Did he play for Inter Milan?", labelDe: "Hat er für Inter Mailand gespielt?", labelIt: "Ha giocato nell'Inter?", labelPt: "Jogou pela Inter de Milão?", labelEs: "¿Jugó en el Inter de Milán?", fait: "Inter Milan", predicate: (p) => playedFor(p, "Inter Milan") },
-  { id: "club-roma", category: "club", label: "A-t-il joué à l'AS Roma ?", labelEn: "Did he play for AS Roma?", labelDe: "Hat er für die AS Rom gespielt?", labelIt: "Ha giocato nella Roma?", labelPt: "Jogou pela Roma?", labelEs: "¿Jugó en la AS Roma?", fait: "AS Roma", predicate: (p) => playedFor(p, "AS Roma") },
-  { id: "club-napoli", category: "club", label: "A-t-il joué à Naples ?", labelEn: "Did he play for SSC Napoli?", labelDe: "Hat er für die SSC Neapel gespielt?", labelIt: "Ha giocato nel Napoli?", labelPt: "Jogou pelo Napoli?", labelEs: "¿Jugó en el Nápoles?", fait: "SSC Napoli", predicate: (p) => playedFor(p, "SSC Napoli") },
-  { id: "club-bayern", category: "club", label: "A-t-il joué au Bayern Munich ?", labelEn: "Did he play for Bayern Munich?", labelDe: "Hat er für den FC Bayern München gespielt?", labelIt: "Ha giocato nel Bayern Monaco?", labelPt: "Jogou pelo Bayern de Munique?", labelEs: "¿Jugó en el Bayern de Múnich?", fait: "Bayern Munich", predicate: (p) => playedFor(p, "Bayern Munich") },
-  { id: "club-bvb", category: "club", label: "A-t-il joué au Borussia Dortmund ?", labelEn: "Did he play for Borussia Dortmund?", labelDe: "Hat er für Borussia Dortmund gespielt?", labelIt: "Ha giocato nel Borussia Dortmund?", labelPt: "Jogou pelo Borussia Dortmund?", labelEs: "¿Jugó en el Borussia Dortmund?", fait: "Borussia Dortmund", predicate: (p) => playedFor(p, "Borussia Dortmund") },
-  { id: "club-psg", category: "club", label: "A-t-il joué au PSG ?", labelEn: "Did he play for PSG?", labelDe: "Hat er für PSG gespielt?", labelIt: "Ha giocato nel PSG?", labelPt: "Jogou pelo PSG?", labelEs: "¿Jugó en el PSG?", fait: "PSG", predicate: (p) => playedFor(p, "PSG") },
-  { id: "club-om", category: "club", label: "A-t-il joué à l'Olympique de Marseille ?", labelEn: "Did he play for Marseille?", labelDe: "Hat er für Olympique Marseille gespielt?", labelIt: "Ha giocato nell'Olympique Marsiglia?", labelPt: "Jogou pelo Olympique de Marselha?", labelEs: "¿Jugó en el Olympique de Marsella?", fait: "Marseille", predicate: (p) => playedFor(p, "Marseille") },
-  { id: "club-ol", category: "club", label: "A-t-il joué à l'Olympique Lyonnais ?", labelEn: "Did he play for Lyon?", labelDe: "Hat er für Olympique Lyon gespielt?", labelIt: "Ha giocato nell'Olympique Lione?", labelPt: "Jogou pelo Olympique Lyon?", labelEs: "¿Jugó en el Olympique de Lyon?", fait: "Lyon", predicate: (p) => playedFor(p, "Lyon") },
-  { id: "club-monaco", category: "club", label: "A-t-il joué à l'AS Monaco ?", labelEn: "Did he play for Monaco?", labelDe: "Hat er für die AS Monaco gespielt?", labelIt: "Ha giocato nel Monaco?", labelPt: "Jogou pelo Monaco?", labelEs: "¿Jugó en el AS Mónaco?", fait: "Monaco", predicate: (p) => playedFor(p, "Monaco") },
-  { id: "club-lille", category: "club", label: "A-t-il joué au LOSC Lille ?", labelEn: "Did he play for Lille?", labelDe: "Hat er für den LOSC Lille gespielt?", labelIt: "Ha giocato nel Lille?", labelPt: "Jogou pelo Lille?", labelEs: "¿Jugó en el LOSC Lille?", fait: "Lille", predicate: (p) => playedFor(p, "Lille") },
-  { id: "club-ajax", category: "club", label: "A-t-il joué à l'Ajax Amsterdam ?", labelEn: "Did he play for Ajax Amsterdam?", labelDe: "Hat er für Ajax Amsterdam gespielt?", labelIt: "Ha giocato nell'Ajax?", labelPt: "Jogou pelo Ajax?", labelEs: "¿Jugó en el Ajax de Ámsterdam?", fait: "Ajax Amsterdam", predicate: (p) => playedFor(p, "Ajax Amsterdam") },
-  { id: "club-porto", category: "club", label: "A-t-il joué au FC Porto ?", labelEn: "Did he play for Porto?", labelDe: "Hat er für den FC Porto gespielt?", labelIt: "Ha giocato nel Porto?", labelPt: "Jogou pelo Porto?", labelEs: "¿Jugó en el FC Oporto?", fait: "Porto", predicate: (p) => playedFor(p, "Porto") },
-  { id: "club-benfica", category: "club", label: "A-t-il joué au Benfica ?", labelEn: "Did he play for Benfica?", labelDe: "Hat er für Benfica gespielt?", labelIt: "Ha giocato nel Benfica?", labelPt: "Jogou pelo Benfica?", labelEs: "¿Jugó en el Benfica?", fait: "Benfica", predicate: (p) => playedFor(p, "Benfica") },
-  { id: "club-sporting", category: "club", label: "A-t-il joué au Sporting CP ?", labelEn: "Did he play for Sporting CP?", labelDe: "Hat er für Sporting CP gespielt?", labelIt: "Ha giocato nello Sporting CP?", labelPt: "Jogou pelo Sporting CP?", labelEs: "¿Jugó en el Sporting de Lisboa?", fait: "Sporting CP", predicate: (p) => playedFor(p, "Sporting CP") },
-  { id: "club-newcastle", category: "club", label: "A-t-il joué à Newcastle ?", labelEn: "Did he play for Newcastle?", labelDe: "Hat er für Newcastle gespielt?", labelIt: "Ha giocato nel Newcastle?", labelPt: "Jogou pelo Newcastle?", labelEs: "¿Jugó en el Newcastle?", fait: "Newcastle", predicate: (p) => playedFor(p, "Newcastle") },
+  { id: "club-real", category: "club", label: "A-t-il joué au Real Madrid ?", labelEn: "Did he play for Real Madrid?", labelDe: "Hat er für Real Madrid gespielt?", labelIt: "Ha giocato nel Real Madrid?", labelPt: "Jogou pelo Real Madrid?", labelEs: "¿Jugó en el Real Madrid?", predicate: (p) => playedFor(p, "Real Madrid") },
+  { id: "club-barca", category: "club", label: "A-t-il joué au FC Barcelone ?", labelEn: "Did he play for Barcelona?", labelDe: "Hat er für den FC Barcelona gespielt?", labelIt: "Ha giocato nel Barcellona?", labelPt: "Jogou pelo Barcelona?", labelEs: "¿Jugó en el FC Barcelona?", predicate: (p) => playedFor(p, "Barcelona") },
+  { id: "club-atm", category: "club", label: "A-t-il joué à l'Atlético Madrid ?", labelEn: "Did he play for Atletico Madrid?", labelDe: "Hat er für Atlético Madrid gespielt?", labelIt: "Ha giocato nell'Atlético Madrid?", labelPt: "Jogou pelo Atlético de Madrid?", labelEs: "¿Jugó en el Atlético de Madrid?", predicate: (p) => playedFor(p, "Atletico Madrid") },
+  { id: "club-sevilla", category: "club", label: "A-t-il joué au FC Séville ?", labelEn: "Did he play for Sevilla?", labelDe: "Hat er für den FC Sevilla gespielt?", labelIt: "Ha giocato nel Siviglia?", labelPt: "Jogou pelo Sevilla?", labelEs: "¿Jugó en el Sevilla FC?", predicate: (p) => playedFor(p, "Sevilla") },
+  { id: "club-mu", category: "club", label: "A-t-il joué à Manchester United ?", labelEn: "Did he play for Manchester United?", labelDe: "Hat er für Manchester United gespielt?", labelIt: "Ha giocato nel Manchester United?", labelPt: "Jogou pelo Manchester United?", labelEs: "¿Jugó en el Manchester United?", predicate: (p) => playedFor(p, "Manchester United") },
+  { id: "club-mc", category: "club", label: "A-t-il joué à Manchester City ?", labelEn: "Did he play for Manchester City?", labelDe: "Hat er für Manchester City gespielt?", labelIt: "Ha giocato nel Manchester City?", labelPt: "Jogou pelo Manchester City?", labelEs: "¿Jugó en el Manchester City?", predicate: (p) => playedFor(p, "Manchester City") },
+  { id: "club-liv", category: "club", label: "A-t-il joué à Liverpool ?", labelEn: "Did he play for Liverpool?", labelDe: "Hat er für Liverpool gespielt?", labelIt: "Ha giocato nel Liverpool?", labelPt: "Jogou pelo Liverpool?", labelEs: "¿Jugó en el Liverpool?", predicate: (p) => playedFor(p, "Liverpool") },
+  { id: "club-che", category: "club", label: "A-t-il joué à Chelsea ?", labelEn: "Did he play for Chelsea?", labelDe: "Hat er für Chelsea gespielt?", labelIt: "Ha giocato nel Chelsea?", labelPt: "Jogou pelo Chelsea?", labelEs: "¿Jugó en el Chelsea?", predicate: (p) => playedFor(p, "Chelsea") },
+  { id: "club-ars", category: "club", label: "A-t-il joué à Arsenal ?", labelEn: "Did he play for Arsenal?", labelDe: "Hat er für Arsenal gespielt?", labelIt: "Ha giocato nell'Arsenal?", labelPt: "Jogou pelo Arsenal?", labelEs: "¿Jugó en el Arsenal?", predicate: (p) => playedFor(p, "Arsenal") },
+  { id: "club-tot", category: "club", label: "A-t-il joué à Tottenham ?", labelEn: "Did he play for Tottenham?", labelDe: "Hat er für Tottenham gespielt?", labelIt: "Ha giocato nel Tottenham?", labelPt: "Jogou pelo Tottenham?", labelEs: "¿Jugó en el Tottenham?", predicate: (p) => playedFor(p, "Tottenham") },
+  { id: "club-juv", category: "club", label: "A-t-il joué à la Juventus ?", labelEn: "Did he play for Juventus FC?", labelDe: "Hat er für Juventus gespielt?", labelIt: "Ha giocato nella Juventus?", labelPt: "Jogou pela Juventus?", labelEs: "¿Jugó en la Juventus?", predicate: (p) => playedFor(p, "Juventus FC") },
+  { id: "club-milan", category: "club", label: "A-t-il joué à l'AC Milan ?", labelEn: "Did he play for AC Milan?", labelDe: "Hat er für den AC Mailand gespielt?", labelIt: "Ha giocato nel Milan?", labelPt: "Jogou pelo Milan?", labelEs: "¿Jugó en el AC Milan?", predicate: (p) => playedFor(p, "AC Milan") },
+  { id: "club-inter", category: "club", label: "A-t-il joué à l'Inter Milan ?", labelEn: "Did he play for Inter Milan?", labelDe: "Hat er für Inter Mailand gespielt?", labelIt: "Ha giocato nell'Inter?", labelPt: "Jogou pela Inter de Milão?", labelEs: "¿Jugó en el Inter de Milán?", predicate: (p) => playedFor(p, "Inter Milan") },
+  { id: "club-roma", category: "club", label: "A-t-il joué à l'AS Roma ?", labelEn: "Did he play for AS Roma?", labelDe: "Hat er für die AS Rom gespielt?", labelIt: "Ha giocato nella Roma?", labelPt: "Jogou pela Roma?", labelEs: "¿Jugó en la AS Roma?", predicate: (p) => playedFor(p, "AS Roma") },
+  { id: "club-napoli", category: "club", label: "A-t-il joué à Naples ?", labelEn: "Did he play for SSC Napoli?", labelDe: "Hat er für die SSC Neapel gespielt?", labelIt: "Ha giocato nel Napoli?", labelPt: "Jogou pelo Napoli?", labelEs: "¿Jugó en el Nápoles?", predicate: (p) => playedFor(p, "SSC Napoli") },
+  { id: "club-bayern", category: "club", label: "A-t-il joué au Bayern Munich ?", labelEn: "Did he play for Bayern Munich?", labelDe: "Hat er für den FC Bayern München gespielt?", labelIt: "Ha giocato nel Bayern Monaco?", labelPt: "Jogou pelo Bayern de Munique?", labelEs: "¿Jugó en el Bayern de Múnich?", predicate: (p) => playedFor(p, "Bayern Munich") },
+  { id: "club-bvb", category: "club", label: "A-t-il joué au Borussia Dortmund ?", labelEn: "Did he play for Borussia Dortmund?", labelDe: "Hat er für Borussia Dortmund gespielt?", labelIt: "Ha giocato nel Borussia Dortmund?", labelPt: "Jogou pelo Borussia Dortmund?", labelEs: "¿Jugó en el Borussia Dortmund?", predicate: (p) => playedFor(p, "Borussia Dortmund") },
+  { id: "club-psg", category: "club", label: "A-t-il joué au PSG ?", labelEn: "Did he play for PSG?", labelDe: "Hat er für PSG gespielt?", labelIt: "Ha giocato nel PSG?", labelPt: "Jogou pelo PSG?", labelEs: "¿Jugó en el PSG?", predicate: (p) => playedFor(p, "PSG") },
+  { id: "club-om", category: "club", label: "A-t-il joué à l'Olympique de Marseille ?", labelEn: "Did he play for Marseille?", labelDe: "Hat er für Olympique Marseille gespielt?", labelIt: "Ha giocato nell'Olympique Marsiglia?", labelPt: "Jogou pelo Olympique de Marselha?", labelEs: "¿Jugó en el Olympique de Marsella?", predicate: (p) => playedFor(p, "Marseille") },
+  { id: "club-ol", category: "club", label: "A-t-il joué à l'Olympique Lyonnais ?", labelEn: "Did he play for Lyon?", labelDe: "Hat er für Olympique Lyon gespielt?", labelIt: "Ha giocato nell'Olympique Lione?", labelPt: "Jogou pelo Olympique Lyon?", labelEs: "¿Jugó en el Olympique de Lyon?", predicate: (p) => playedFor(p, "Lyon") },
+  { id: "club-monaco", category: "club", label: "A-t-il joué à l'AS Monaco ?", labelEn: "Did he play for Monaco?", labelDe: "Hat er für die AS Monaco gespielt?", labelIt: "Ha giocato nel Monaco?", labelPt: "Jogou pelo Monaco?", labelEs: "¿Jugó en el AS Mónaco?", predicate: (p) => playedFor(p, "Monaco") },
+  { id: "club-lille", category: "club", label: "A-t-il joué au LOSC Lille ?", labelEn: "Did he play for Lille?", labelDe: "Hat er für den LOSC Lille gespielt?", labelIt: "Ha giocato nel Lille?", labelPt: "Jogou pelo Lille?", labelEs: "¿Jugó en el LOSC Lille?", predicate: (p) => playedFor(p, "Lille") },
+  { id: "club-ajax", category: "club", label: "A-t-il joué à l'Ajax Amsterdam ?", labelEn: "Did he play for Ajax Amsterdam?", labelDe: "Hat er für Ajax Amsterdam gespielt?", labelIt: "Ha giocato nell'Ajax?", labelPt: "Jogou pelo Ajax?", labelEs: "¿Jugó en el Ajax de Ámsterdam?", predicate: (p) => playedFor(p, "Ajax Amsterdam") },
+  { id: "club-porto", category: "club", label: "A-t-il joué au FC Porto ?", labelEn: "Did he play for Porto?", labelDe: "Hat er für den FC Porto gespielt?", labelIt: "Ha giocato nel Porto?", labelPt: "Jogou pelo Porto?", labelEs: "¿Jugó en el FC Oporto?", predicate: (p) => playedFor(p, "Porto") },
+  { id: "club-benfica", category: "club", label: "A-t-il joué au Benfica ?", labelEn: "Did he play for Benfica?", labelDe: "Hat er für Benfica gespielt?", labelIt: "Ha giocato nel Benfica?", labelPt: "Jogou pelo Benfica?", labelEs: "¿Jugó en el Benfica?", predicate: (p) => playedFor(p, "Benfica") },
+  { id: "club-sporting", category: "club", label: "A-t-il joué au Sporting CP ?", labelEn: "Did he play for Sporting CP?", labelDe: "Hat er für Sporting CP gespielt?", labelIt: "Ha giocato nello Sporting CP?", labelPt: "Jogou pelo Sporting CP?", labelEs: "¿Jugó en el Sporting de Lisboa?", predicate: (p) => playedFor(p, "Sporting CP") },
+  { id: "club-newcastle", category: "club", label: "A-t-il joué à Newcastle ?", labelEn: "Did he play for Newcastle?", labelDe: "Hat er für Newcastle gespielt?", labelIt: "Ha giocato nel Newcastle?", labelPt: "Jogou pelo Newcastle?", labelEs: "¿Jugó en el Newcastle?", predicate: (p) => playedFor(p, "Newcastle") },
 
   // Ligues
-  { id: "lg-pl", category: "league", label: "A-t-il joué en Premier League anglaise ?", labelEn: "Has he played in the English Premier League?", labelDe: "Hat er in der englischen Premier League gespielt?", labelIt: "Ha giocato nella Premier League inglese?", labelPt: "Jogou na Premier League inglesa?", labelEs: "¿Jugó en la Premier League inglesa?", fait: "A joué en Premier League", faitEn: "Played in the Premier League", faitDe: "Spielte in der Premier League", faitIt: "Ha giocato in Premier League", faitPt: "Jogou na Premier League", faitEs: "Jugó en la Premier League", predicate: (p) => playedForAny(p, PREMIER_LEAGUE) },
-  { id: "lg-liga", category: "league", label: "A-t-il joué en Liga espagnole ?", labelEn: "Has he played in the Spanish La Liga?", labelDe: "Hat er in der spanischen La Liga gespielt?", labelIt: "Ha giocato nella Liga spagnola?", labelPt: "Jogou na La Liga espanhola?", labelEs: "¿Jugó en la Liga española?", fait: "A joué en Liga", faitEn: "Played in La Liga", faitDe: "Spielte in La Liga", faitIt: "Ha giocato in Liga", faitPt: "Jogou na Liga", faitEs: "Jugó en LaLiga", predicate: (p) => playedForAny(p, LIGA) },
-  { id: "lg-seriea", category: "league", label: "A-t-il joué en Serie A italienne ?", labelEn: "Has he played in the Italian Serie A?", labelDe: "Hat er in der italienischen Serie A gespielt?", labelIt: "Ha giocato nella Serie A italiana?", labelPt: "Jogou na Serie A italiana?", labelEs: "¿Jugó en la Serie A italiana?", fait: "A joué en Serie A", faitEn: "Played in Serie A", faitDe: "Spielte in der Serie A", faitIt: "Ha giocato in Serie A", faitPt: "Jogou na Serie A", faitEs: "Jugó en la Serie A", predicate: (p) => playedForAny(p, SERIE_A) },
-  { id: "lg-l1", category: "league", label: "A-t-il joué en Ligue 1 française ?", labelEn: "Has he played in the French Ligue 1?", labelDe: "Hat er in der französischen Ligue 1 gespielt?", labelIt: "Ha giocato nella Ligue 1 francese?", labelPt: "Jogou na Ligue 1 francesa?", labelEs: "¿Jugó en la Ligue 1 francesa?", fait: "A joué en Ligue 1", faitEn: "Played in Ligue 1", faitDe: "Spielte in der Ligue 1", faitIt: "Ha giocato in Ligue 1", faitPt: "Jogou na Ligue 1", faitEs: "Jugó en la Ligue 1", predicate: (p) => playedForAny(p, LIGUE_1) },
-  { id: "lg-bl", category: "league", label: "A-t-il joué en Bundesliga allemande ?", labelEn: "Has he played in the German Bundesliga?", labelDe: "Hat er in der deutschen Bundesliga gespielt?", labelIt: "Ha giocato nella Bundesliga tedesca?", labelPt: "Jogou na Bundesliga alemã?", labelEs: "¿Jugó en la Bundesliga alemana?", fait: "A joué en Bundesliga", faitEn: "Played in the Bundesliga", faitDe: "Spielte in der Bundesliga", faitIt: "Ha giocato in Bundesliga", faitPt: "Jogou na Bundesliga", faitEs: "Jugó en la Bundesliga", predicate: (p) => playedForAny(p, BUNDESLIGA) },
+  { id: "lg-pl", category: "league", label: "A-t-il joué en Premier League anglaise ?", labelEn: "Has he played in the English Premier League?", labelDe: "Hat er in der englischen Premier League gespielt?", labelIt: "Ha giocato nella Premier League inglese?", labelPt: "Jogou na Premier League inglesa?", labelEs: "¿Jugó en la Premier League inglesa?", predicate: (p) => playedForAny(p, PREMIER_LEAGUE) },
+  { id: "lg-liga", category: "league", label: "A-t-il joué en Liga espagnole ?", labelEn: "Has he played in the Spanish La Liga?", labelDe: "Hat er in der spanischen La Liga gespielt?", labelIt: "Ha giocato nella Liga spagnola?", labelPt: "Jogou na La Liga espanhola?", labelEs: "¿Jugó en la Liga española?", predicate: (p) => playedForAny(p, LIGA) },
+  { id: "lg-seriea", category: "league", label: "A-t-il joué en Serie A italienne ?", labelEn: "Has he played in the Italian Serie A?", labelDe: "Hat er in der italienischen Serie A gespielt?", labelIt: "Ha giocato nella Serie A italiana?", labelPt: "Jogou na Serie A italiana?", labelEs: "¿Jugó en la Serie A italiana?", predicate: (p) => playedForAny(p, SERIE_A) },
+  { id: "lg-l1", category: "league", label: "A-t-il joué en Ligue 1 française ?", labelEn: "Has he played in the French Ligue 1?", labelDe: "Hat er in der französischen Ligue 1 gespielt?", labelIt: "Ha giocato nella Ligue 1 francese?", labelPt: "Jogou na Ligue 1 francesa?", labelEs: "¿Jugó en la Ligue 1 francesa?", predicate: (p) => playedForAny(p, LIGUE_1) },
+  { id: "lg-bl", category: "league", label: "A-t-il joué en Bundesliga allemande ?", labelEn: "Has he played in the German Bundesliga?", labelDe: "Hat er in der deutschen Bundesliga gespielt?", labelIt: "Ha giocato nella Bundesliga tedesca?", labelPt: "Jogou na Bundesliga alemã?", labelEs: "¿Jugó en la Bundesliga alemana?", predicate: (p) => playedForAny(p, BUNDESLIGA) },
 
   // Clubs additionnels (deuxième couche, ~30-100 joueurs chacun)
-  { id: "club-leverkusen", category: "club", label: "A-t-il joué au Bayer Leverkusen ?", labelEn: "Did he play for Bayer Leverkusen?", labelDe: "Hat er für Bayer Leverkusen gespielt?", labelIt: "Ha giocato nel Bayer Leverkusen?", labelPt: "Jogou pelo Bayer Leverkusen?", labelEs: "¿Jugó en el Bayer Leverkusen?", fait: "Bayer Leverkusen", predicate: (p) => playedFor(p, "Bayer Leverkusen") },
-  { id: "club-leipzig", category: "club", label: "A-t-il joué au RB Leipzig ?", labelEn: "Did he play for RB Leipzig?", labelDe: "Hat er für RB Leipzig gespielt?", labelIt: "Ha giocato nel RB Lipsia?", labelPt: "Jogou pelo RB Leipzig?", labelEs: "¿Jugó en el RB Leipzig?", fait: "RB Leipzig", predicate: (p) => playedFor(p, "RB Leipzig") },
-  { id: "club-schalke", category: "club", label: "A-t-il joué à Schalke 04 ?", labelEn: "Did he play for Schalke?", labelDe: "Hat er für Schalke 04 gespielt?", labelIt: "Ha giocato nello Schalke 04?", labelPt: "Jogou pelo Schalke 04?", labelEs: "¿Jugó en el Schalke 04?", fait: "Schalke", predicate: (p) => playedFor(p, "Schalke") },
-  { id: "club-wolfsburg", category: "club", label: "A-t-il joué à Wolfsburg ?", labelEn: "Did he play for Wolfsburg?", labelDe: "Hat er für Wolfsburg gespielt?", labelIt: "Ha giocato nel Wolfsburg?", labelPt: "Jogou pelo Wolfsburg?", labelEs: "¿Jugó en el Wolfsburgo?", fait: "Wolfsburg", predicate: (p) => playedFor(p, "Wolfsburg") },
-  { id: "club-frankfurt", category: "club", label: "A-t-il joué à l'Eintracht Frankfurt ?", labelEn: "Did he play for Eintracht Frankfurt?", labelDe: "Hat er für Eintracht Frankfurt gespielt?", labelIt: "Ha giocato nell'Eintracht Francoforte?", labelPt: "Jogou pelo Eintracht Frankfurt?", labelEs: "¿Jugó en el Eintracht de Fráncfort?", fait: "Eintracht Frankfurt", predicate: (p) => playedFor(p, "Eintracht Frankfurt") },
-  { id: "club-stuttgart", category: "club", label: "A-t-il joué à Stuttgart ?", labelEn: "Did he play for Stuttgart?", labelDe: "Hat er für den VfB Stuttgart gespielt?", labelIt: "Ha giocato nello Stoccarda?", labelPt: "Jogou pelo Stuttgart?", labelEs: "¿Jugó en el Stuttgart?", fait: "Stuttgart", predicate: (p) => playedFor(p, "Stuttgart") },
-  { id: "club-lazio", category: "club", label: "A-t-il joué à la Lazio ?", labelEn: "Did he play for SS Lazio?", labelDe: "Hat er für Lazio Rom gespielt?", labelIt: "Ha giocato nella Lazio?", labelPt: "Jogou pela Lazio?", labelEs: "¿Jugó en la Lazio?", fait: "SS Lazio", predicate: (p) => playedFor(p, "SS Lazio") },
-  { id: "club-atalanta", category: "club", label: "A-t-il joué à l'Atalanta ?", labelEn: "Did he play for Atalanta BC?", labelDe: "Hat er für Atalanta Bergamo gespielt?", labelIt: "Ha giocato nell'Atalanta?", labelPt: "Jogou pela Atalanta?", labelEs: "¿Jugó en el Atalanta?", fait: "Atalanta BC", predicate: (p) => playedFor(p, "Atalanta BC") },
+  { id: "club-leverkusen", category: "club", label: "A-t-il joué au Bayer Leverkusen ?", labelEn: "Did he play for Bayer Leverkusen?", labelDe: "Hat er für Bayer Leverkusen gespielt?", labelIt: "Ha giocato nel Bayer Leverkusen?", labelPt: "Jogou pelo Bayer Leverkusen?", labelEs: "¿Jugó en el Bayer Leverkusen?", predicate: (p) => playedFor(p, "Bayer Leverkusen") },
+  { id: "club-leipzig", category: "club", label: "A-t-il joué au RB Leipzig ?", labelEn: "Did he play for RB Leipzig?", labelDe: "Hat er für RB Leipzig gespielt?", labelIt: "Ha giocato nel RB Lipsia?", labelPt: "Jogou pelo RB Leipzig?", labelEs: "¿Jugó en el RB Leipzig?", predicate: (p) => playedFor(p, "RB Leipzig") },
+  { id: "club-schalke", category: "club", label: "A-t-il joué à Schalke 04 ?", labelEn: "Did he play for Schalke?", labelDe: "Hat er für Schalke 04 gespielt?", labelIt: "Ha giocato nello Schalke 04?", labelPt: "Jogou pelo Schalke 04?", labelEs: "¿Jugó en el Schalke 04?", predicate: (p) => playedFor(p, "Schalke") },
+  { id: "club-wolfsburg", category: "club", label: "A-t-il joué à Wolfsburg ?", labelEn: "Did he play for Wolfsburg?", labelDe: "Hat er für Wolfsburg gespielt?", labelIt: "Ha giocato nel Wolfsburg?", labelPt: "Jogou pelo Wolfsburg?", labelEs: "¿Jugó en el Wolfsburgo?", predicate: (p) => playedFor(p, "Wolfsburg") },
+  { id: "club-frankfurt", category: "club", label: "A-t-il joué à l'Eintracht Frankfurt ?", labelEn: "Did he play for Eintracht Frankfurt?", labelDe: "Hat er für Eintracht Frankfurt gespielt?", labelIt: "Ha giocato nell'Eintracht Francoforte?", labelPt: "Jogou pelo Eintracht Frankfurt?", labelEs: "¿Jugó en el Eintracht de Fráncfort?", predicate: (p) => playedFor(p, "Eintracht Frankfurt") },
+  { id: "club-stuttgart", category: "club", label: "A-t-il joué à Stuttgart ?", labelEn: "Did he play for Stuttgart?", labelDe: "Hat er für den VfB Stuttgart gespielt?", labelIt: "Ha giocato nello Stoccarda?", labelPt: "Jogou pelo Stuttgart?", labelEs: "¿Jugó en el Stuttgart?", predicate: (p) => playedFor(p, "Stuttgart") },
+  { id: "club-lazio", category: "club", label: "A-t-il joué à la Lazio ?", labelEn: "Did he play for SS Lazio?", labelDe: "Hat er für Lazio Rom gespielt?", labelIt: "Ha giocato nella Lazio?", labelPt: "Jogou pela Lazio?", labelEs: "¿Jugó en la Lazio?", predicate: (p) => playedFor(p, "SS Lazio") },
+  { id: "club-atalanta", category: "club", label: "A-t-il joué à l'Atalanta ?", labelEn: "Did he play for Atalanta BC?", labelDe: "Hat er für Atalanta Bergamo gespielt?", labelIt: "Ha giocato nell'Atalanta?", labelPt: "Jogou pela Atalanta?", labelEs: "¿Jugó en el Atalanta?", predicate: (p) => playedFor(p, "Atalanta BC") },
   { id: "club-fiorentina", category: "club", label: "A-t-il joué à la Fiorentina ?", labelEn: "Did he play for Fiorentina?", labelDe: "Hat er für den AC Florenz gespielt?", labelIt: "Ha giocato nella Fiorentina?", labelPt: "Jogou pela Fiorentina?", labelEs: "¿Jugó en la Fiorentina?", predicate: (p) => playedForAny(p, ["Fiorentina", "ACF Fiorentina"]) },
-  { id: "club-sassuolo", category: "club", label: "A-t-il joué à Sassuolo ?", labelEn: "Did he play for Sassuolo?", labelDe: "Hat er für Sassuolo gespielt?", labelIt: "Ha giocato nel Sassuolo?", labelPt: "Jogou pelo Sassuolo?", labelEs: "¿Jugó en el Sassuolo?", fait: "Sassuolo", predicate: (p) => playedFor(p, "Sassuolo") },
-  { id: "club-villarreal", category: "club", label: "A-t-il joué à Villarreal ?", labelEn: "Did he play for Villarreal?", labelDe: "Hat er für Villarreal gespielt?", labelIt: "Ha giocato nel Villarreal?", labelPt: "Jogou pelo Villarreal?", labelEs: "¿Jugó en el Villarreal?", fait: "Villarreal", predicate: (p) => playedFor(p, "Villarreal") },
-  { id: "club-valencia", category: "club", label: "A-t-il joué à Valence ?", labelEn: "Did he play for Valencia?", labelDe: "Hat er für den FC Valencia gespielt?", labelIt: "Ha giocato nel Valencia?", labelPt: "Jogou pelo Valencia?", labelEs: "¿Jugó en el Valencia?", fait: "Valencia", predicate: (p) => playedFor(p, "Valencia") },
-  { id: "club-sociedad", category: "club", label: "A-t-il joué à la Real Sociedad ?", labelEn: "Did he play for Real Sociedad?", labelDe: "Hat er für Real Sociedad gespielt?", labelIt: "Ha giocato nella Real Sociedad?", labelPt: "Jogou pela Real Sociedad?", labelEs: "¿Jugó en la Real Sociedad?", fait: "Real Sociedad", predicate: (p) => playedFor(p, "Real Sociedad") },
-  { id: "club-betis", category: "club", label: "A-t-il joué au Real Betis ?", labelEn: "Did he play for Real Betis?", labelDe: "Hat er für Real Betis gespielt?", labelIt: "Ha giocato nel Real Betis?", labelPt: "Jogou pelo Real Betis?", labelEs: "¿Jugó en el Real Betis?", fait: "Real Betis", predicate: (p) => playedFor(p, "Real Betis") },
-  { id: "club-westham", category: "club", label: "A-t-il joué à West Ham ?", labelEn: "Did he play for West Ham?", labelDe: "Hat er für West Ham gespielt?", labelIt: "Ha giocato nel West Ham?", labelPt: "Jogou pelo West Ham?", labelEs: "¿Jugó en el West Ham?", fait: "West Ham", predicate: (p) => playedFor(p, "West Ham") },
-  { id: "club-everton", category: "club", label: "A-t-il joué à Everton ?", labelEn: "Did he play for Everton?", labelDe: "Hat er für Everton gespielt?", labelIt: "Ha giocato nell'Everton?", labelPt: "Jogou pelo Everton?", labelEs: "¿Jugó en el Everton?", fait: "Everton", predicate: (p) => playedFor(p, "Everton") },
-  { id: "club-aston", category: "club", label: "A-t-il joué à Aston Villa ?", labelEn: "Did he play for Aston Villa?", labelDe: "Hat er für Aston Villa gespielt?", labelIt: "Ha giocato nell'Aston Villa?", labelPt: "Jogou pelo Aston Villa?", labelEs: "¿Jugó en el Aston Villa?", fait: "Aston Villa", predicate: (p) => playedFor(p, "Aston Villa") },
-  { id: "club-fulham", category: "club", label: "A-t-il joué à Fulham ?", labelEn: "Did he play for Fulham?", labelDe: "Hat er für Fulham gespielt?", labelIt: "Ha giocato nel Fulham?", labelPt: "Jogou pelo Fulham?", labelEs: "¿Jugó en el Fulham?", fait: "Fulham", predicate: (p) => playedFor(p, "Fulham") },
-  { id: "club-nice", category: "club", label: "A-t-il joué à l'OGC Nice ?", labelEn: "Did he play for Nice?", labelDe: "Hat er für den OGC Nizza gespielt?", labelIt: "Ha giocato nel Nizza?", labelPt: "Jogou pelo Nice?", labelEs: "¿Jugó en el OGC Niza?", fait: "Nice", predicate: (p) => playedFor(p, "Nice") },
-  { id: "club-rennes", category: "club", label: "A-t-il joué au Stade Rennais ?", labelEn: "Did he play for Rennes?", labelDe: "Hat er für Stade Rennais gespielt?", labelIt: "Ha giocato nel Rennes?", labelPt: "Jogou pelo Rennes?", labelEs: "¿Jugó en el Stade Rennais?", fait: "Rennes", predicate: (p) => playedFor(p, "Rennes") },
-  { id: "club-bordeaux", category: "club", label: "A-t-il joué aux Girondins de Bordeaux ?", labelEn: "Did he play for Bordeaux?", labelDe: "Hat er für Girondins Bordeaux gespielt?", labelIt: "Ha giocato nel Bordeaux?", labelPt: "Jogou pelo Bordeaux?", labelEs: "¿Jugó en el Girondins de Burdeos?", fait: "Bordeaux", predicate: (p) => playedFor(p, "Bordeaux") },
+  { id: "club-sassuolo", category: "club", label: "A-t-il joué à Sassuolo ?", labelEn: "Did he play for Sassuolo?", labelDe: "Hat er für Sassuolo gespielt?", labelIt: "Ha giocato nel Sassuolo?", labelPt: "Jogou pelo Sassuolo?", labelEs: "¿Jugó en el Sassuolo?", predicate: (p) => playedFor(p, "Sassuolo") },
+  { id: "club-villarreal", category: "club", label: "A-t-il joué à Villarreal ?", labelEn: "Did he play for Villarreal?", labelDe: "Hat er für Villarreal gespielt?", labelIt: "Ha giocato nel Villarreal?", labelPt: "Jogou pelo Villarreal?", labelEs: "¿Jugó en el Villarreal?", predicate: (p) => playedFor(p, "Villarreal") },
+  { id: "club-valencia", category: "club", label: "A-t-il joué à Valence ?", labelEn: "Did he play for Valencia?", labelDe: "Hat er für den FC Valencia gespielt?", labelIt: "Ha giocato nel Valencia?", labelPt: "Jogou pelo Valencia?", labelEs: "¿Jugó en el Valencia?", predicate: (p) => playedFor(p, "Valencia") },
+  { id: "club-sociedad", category: "club", label: "A-t-il joué à la Real Sociedad ?", labelEn: "Did he play for Real Sociedad?", labelDe: "Hat er für Real Sociedad gespielt?", labelIt: "Ha giocato nella Real Sociedad?", labelPt: "Jogou pela Real Sociedad?", labelEs: "¿Jugó en la Real Sociedad?", predicate: (p) => playedFor(p, "Real Sociedad") },
+  { id: "club-betis", category: "club", label: "A-t-il joué au Real Betis ?", labelEn: "Did he play for Real Betis?", labelDe: "Hat er für Real Betis gespielt?", labelIt: "Ha giocato nel Real Betis?", labelPt: "Jogou pelo Real Betis?", labelEs: "¿Jugó en el Real Betis?", predicate: (p) => playedFor(p, "Real Betis") },
+  { id: "club-westham", category: "club", label: "A-t-il joué à West Ham ?", labelEn: "Did he play for West Ham?", labelDe: "Hat er für West Ham gespielt?", labelIt: "Ha giocato nel West Ham?", labelPt: "Jogou pelo West Ham?", labelEs: "¿Jugó en el West Ham?", predicate: (p) => playedFor(p, "West Ham") },
+  { id: "club-everton", category: "club", label: "A-t-il joué à Everton ?", labelEn: "Did he play for Everton?", labelDe: "Hat er für Everton gespielt?", labelIt: "Ha giocato nell'Everton?", labelPt: "Jogou pelo Everton?", labelEs: "¿Jugó en el Everton?", predicate: (p) => playedFor(p, "Everton") },
+  { id: "club-aston", category: "club", label: "A-t-il joué à Aston Villa ?", labelEn: "Did he play for Aston Villa?", labelDe: "Hat er für Aston Villa gespielt?", labelIt: "Ha giocato nell'Aston Villa?", labelPt: "Jogou pelo Aston Villa?", labelEs: "¿Jugó en el Aston Villa?", predicate: (p) => playedFor(p, "Aston Villa") },
+  { id: "club-fulham", category: "club", label: "A-t-il joué à Fulham ?", labelEn: "Did he play for Fulham?", labelDe: "Hat er für Fulham gespielt?", labelIt: "Ha giocato nel Fulham?", labelPt: "Jogou pelo Fulham?", labelEs: "¿Jugó en el Fulham?", predicate: (p) => playedFor(p, "Fulham") },
+  { id: "club-nice", category: "club", label: "A-t-il joué à l'OGC Nice ?", labelEn: "Did he play for Nice?", labelDe: "Hat er für den OGC Nizza gespielt?", labelIt: "Ha giocato nel Nizza?", labelPt: "Jogou pelo Nice?", labelEs: "¿Jugó en el OGC Niza?", predicate: (p) => playedFor(p, "Nice") },
+  { id: "club-rennes", category: "club", label: "A-t-il joué au Stade Rennais ?", labelEn: "Did he play for Rennes?", labelDe: "Hat er für Stade Rennais gespielt?", labelIt: "Ha giocato nel Rennes?", labelPt: "Jogou pelo Rennes?", labelEs: "¿Jugó en el Stade Rennais?", predicate: (p) => playedFor(p, "Rennes") },
+  { id: "club-bordeaux", category: "club", label: "A-t-il joué aux Girondins de Bordeaux ?", labelEn: "Did he play for Bordeaux?", labelDe: "Hat er für Girondins Bordeaux gespielt?", labelIt: "Ha giocato nel Bordeaux?", labelPt: "Jogou pelo Bordeaux?", labelEs: "¿Jugó en el Girondins de Burdeos?", predicate: (p) => playedFor(p, "Bordeaux") },
   { id: "club-saintet", category: "club", label: "A-t-il joué à l'AS Saint-Étienne ?", labelEn: "Did he play for Saint-Étienne?", labelDe: "Hat er für AS Saint-Étienne gespielt?", labelIt: "Ha giocato nel Saint-Étienne?", labelPt: "Jogou pelo Saint-Étienne?", labelEs: "¿Jugó en el AS Saint-Étienne?", predicate: (p) => playedForAny(p, ["Saint-Étienne", "Saint-Etienne"]) },
-  { id: "club-nantes", category: "club", label: "A-t-il joué au FC Nantes ?", labelEn: "Did he play for Nantes?", labelDe: "Hat er für den FC Nantes gespielt?", labelIt: "Ha giocato nel Nantes?", labelPt: "Jogou pelo Nantes?", labelEs: "¿Jugó en el FC Nantes?", fait: "Nantes", predicate: (p) => playedFor(p, "Nantes") },
-  { id: "club-lens", category: "club", label: "A-t-il joué au RC Lens ?", labelEn: "Did he play for Lens?", labelDe: "Hat er für den RC Lens gespielt?", labelIt: "Ha giocato nel Lens?", labelPt: "Jogou pelo Lens?", labelEs: "¿Jugó en el RC Lens?", fait: "Lens", predicate: (p) => playedFor(p, "Lens") },
-  { id: "club-feyenoord", category: "club", label: "A-t-il joué à Feyenoord ?", labelEn: "Did he play for Feyenoord?", labelDe: "Hat er für Feyenoord gespielt?", labelIt: "Ha giocato nel Feyenoord?", labelPt: "Jogou pelo Feyenoord?", labelEs: "¿Jugó en el Feyenoord?", fait: "Feyenoord", predicate: (p) => playedFor(p, "Feyenoord") },
-  { id: "club-psv", category: "club", label: "A-t-il joué au PSV Eindhoven ?", labelEn: "Did he play for PSV Eindhoven?", labelDe: "Hat er für die PSV Eindhoven gespielt?", labelIt: "Ha giocato nel PSV Eindhoven?", labelPt: "Jogou pelo PSV Eindhoven?", labelEs: "¿Jugó en el PSV Eindhoven?", fait: "PSV Eindhoven", predicate: (p) => playedFor(p, "PSV Eindhoven") },
-  { id: "club-galata", category: "club", label: "A-t-il joué à Galatasaray ?", labelEn: "Did he play for Galatasaray?", labelDe: "Hat er für Galatasaray gespielt?", labelIt: "Ha giocato nel Galatasaray?", labelPt: "Jogou pelo Galatasaray?", labelEs: "¿Jugó en el Galatasaray?", fait: "Galatasaray", predicate: (p) => playedFor(p, "Galatasaray") },
-  { id: "club-fener", category: "club", label: "A-t-il joué à Fenerbahçe ?", labelEn: "Did he play for Fenerbahce?", labelDe: "Hat er für Fenerbahçe gespielt?", labelIt: "Ha giocato nel Fenerbahçe?", labelPt: "Jogou pelo Fenerbahçe?", labelEs: "¿Jugó en el Fenerbahçe?", fait: "Fenerbahce", predicate: (p) => playedFor(p, "Fenerbahce") },
-  { id: "club-celtic", category: "club", label: "A-t-il joué au Celtic Glasgow ?", labelEn: "Did he play for Celtic?", labelDe: "Hat er für Celtic Glasgow gespielt?", labelIt: "Ha giocato nel Celtic?", labelPt: "Jogou pelo Celtic?", labelEs: "¿Jugó en el Celtic de Glasgow?", fait: "Celtic", predicate: (p) => playedFor(p, "Celtic") },
-  { id: "club-boca", category: "club", label: "A-t-il joué à Boca Juniors ?", labelEn: "Did he play for Boca Juniors?", labelDe: "Hat er für die Boca Juniors gespielt?", labelIt: "Ha giocato nel Boca Juniors?", labelPt: "Jogou pelo Boca Juniors?", labelEs: "¿Jugó en Boca Juniors?", fait: "Boca Juniors", predicate: (p) => playedFor(p, "Boca Juniors") },
-  { id: "club-river", category: "club", label: "A-t-il joué à River Plate ?", labelEn: "Did he play for River Plate?", labelDe: "Hat er für River Plate gespielt?", labelIt: "Ha giocato nel River Plate?", labelPt: "Jogou pelo River Plate?", labelEs: "¿Jugó en River Plate?", fait: "River Plate", predicate: (p) => playedFor(p, "River Plate") },
+  { id: "club-nantes", category: "club", label: "A-t-il joué au FC Nantes ?", labelEn: "Did he play for Nantes?", labelDe: "Hat er für den FC Nantes gespielt?", labelIt: "Ha giocato nel Nantes?", labelPt: "Jogou pelo Nantes?", labelEs: "¿Jugó en el FC Nantes?", predicate: (p) => playedFor(p, "Nantes") },
+  { id: "club-lens", category: "club", label: "A-t-il joué au RC Lens ?", labelEn: "Did he play for Lens?", labelDe: "Hat er für den RC Lens gespielt?", labelIt: "Ha giocato nel Lens?", labelPt: "Jogou pelo Lens?", labelEs: "¿Jugó en el RC Lens?", predicate: (p) => playedFor(p, "Lens") },
+  { id: "club-feyenoord", category: "club", label: "A-t-il joué à Feyenoord ?", labelEn: "Did he play for Feyenoord?", labelDe: "Hat er für Feyenoord gespielt?", labelIt: "Ha giocato nel Feyenoord?", labelPt: "Jogou pelo Feyenoord?", labelEs: "¿Jugó en el Feyenoord?", predicate: (p) => playedFor(p, "Feyenoord") },
+  { id: "club-psv", category: "club", label: "A-t-il joué au PSV Eindhoven ?", labelEn: "Did he play for PSV Eindhoven?", labelDe: "Hat er für die PSV Eindhoven gespielt?", labelIt: "Ha giocato nel PSV Eindhoven?", labelPt: "Jogou pelo PSV Eindhoven?", labelEs: "¿Jugó en el PSV Eindhoven?", predicate: (p) => playedFor(p, "PSV Eindhoven") },
+  { id: "club-galata", category: "club", label: "A-t-il joué à Galatasaray ?", labelEn: "Did he play for Galatasaray?", labelDe: "Hat er für Galatasaray gespielt?", labelIt: "Ha giocato nel Galatasaray?", labelPt: "Jogou pelo Galatasaray?", labelEs: "¿Jugó en el Galatasaray?", predicate: (p) => playedFor(p, "Galatasaray") },
+  { id: "club-fener", category: "club", label: "A-t-il joué à Fenerbahçe ?", labelEn: "Did he play for Fenerbahce?", labelDe: "Hat er für Fenerbahçe gespielt?", labelIt: "Ha giocato nel Fenerbahçe?", labelPt: "Jogou pelo Fenerbahçe?", labelEs: "¿Jugó en el Fenerbahçe?", predicate: (p) => playedFor(p, "Fenerbahce") },
+  { id: "club-celtic", category: "club", label: "A-t-il joué au Celtic Glasgow ?", labelEn: "Did he play for Celtic?", labelDe: "Hat er für Celtic Glasgow gespielt?", labelIt: "Ha giocato nel Celtic?", labelPt: "Jogou pelo Celtic?", labelEs: "¿Jugó en el Celtic de Glasgow?", predicate: (p) => playedFor(p, "Celtic") },
+  { id: "club-boca", category: "club", label: "A-t-il joué à Boca Juniors ?", labelEn: "Did he play for Boca Juniors?", labelDe: "Hat er für die Boca Juniors gespielt?", labelIt: "Ha giocato nel Boca Juniors?", labelPt: "Jogou pelo Boca Juniors?", labelEs: "¿Jugó en Boca Juniors?", predicate: (p) => playedFor(p, "Boca Juniors") },
+  { id: "club-river", category: "club", label: "A-t-il joué à River Plate ?", labelEn: "Did he play for River Plate?", labelDe: "Hat er für River Plate gespielt?", labelIt: "Ha giocato nel River Plate?", labelPt: "Jogou pelo River Plate?", labelEs: "¿Jugó en River Plate?", predicate: (p) => playedFor(p, "River Plate") },
 
   // Nationalités additionnelles
   { id: "nat-dk", category: "nat", label: "Est-il danois ?", labelEn: "Is he Danish?", labelDe: "Ist er Däne?", labelIt: "È danese?", labelPt: "É dinamarquês?", labelEs: "¿Es danés?", predicate: (p) => hasNat(p, "Danemark") },
@@ -729,25 +707,21 @@ const QUESTIONS: Question[] = [
   {
     id: "retired", category: "profile",
     label: "Est-il retraité (n'a plus joué récemment) ?", labelEn: "Is he retired (no longer playing)?", labelDe: "Ist er im Ruhestand (spielt nicht mehr)?", labelIt: "È in pensione (non gioca più)?", labelPt: "Está aposentado (não joga mais)?", labelEs: "¿Está retirado (ya no ha jugado recientemente)?",
-    fait: "Retraité", faitEn: "Retired", faitDe: "Im Ruhestand", faitIt: "Ritirato", faitPt: "Aposentado", faitEs: "Retirado",
     predicate: (p) => RETIRED_PLAYERS.has(p.name),
   },
   {
     id: "nomad", category: "profile",
     label: "A-t-il joué dans 5 clubs différents ou plus ?", labelEn: "Has he played for 5 different clubs or more?", labelDe: "Hat er für 5 oder mehr verschiedene Klubs gespielt?", labelIt: "Ha giocato in 5 o più club diversi?", labelPt: "Jogou em 5 clubes diferentes ou mais?", labelEs: "¿Ha jugado en 5 clubes diferentes o más?",
-    fait: "Beaucoup de clubs", faitEn: "Many clubs", faitDe: "Viele Klubs", faitIt: "Molti club", faitPt: "Muitos clubes", faitEs: "Muchos clubes",
     predicate: (p) => p.clubs.length >= 5,
   },
   {
     id: "very-nomad", category: "profile",
     label: "A-t-il eu une carrière de globe-trotter (7 clubs ou plus) ?", labelEn: "Has he had a globe-trotter career (7 clubs or more)?", labelDe: "Hatte er eine Globetrotter-Karriere (7 Klubs oder mehr)?", labelIt: "Ha avuto una carriera da giramondo (7 club o più)?", labelPt: "Teve uma carreira de globe-trotter (7 clubes ou mais)?", labelEs: "¿Ha tenido una carrera trotamundos (7 clubes o más)?",
-    fait: "Très nomade", faitEn: "Very well travelled", faitDe: "Sehr viele Klubs", faitIt: "Molto girovago", faitPt: "Muito rodado", faitEs: "Muy trotamundos",
     predicate: (p) => p.clubs.length >= 7,
   },
   {
     id: "loyal", category: "profile",
     label: "Est-ce un joueur fidèle (1 ou 2 clubs dans toute sa carrière) ?", labelEn: "Is he a loyal player (1 or 2 clubs in his whole career)?", labelDe: "Ist er ein treuer Spieler (1 oder 2 Klubs in seiner ganzen Karriere)?", labelIt: "È un giocatore fedele (1 o 2 club in tutta la carriera)?", labelPt: "É um jogador fiel (1 ou 2 clubes na carreira toda)?", labelEs: "¿Es un jugador fiel (1 o 2 clubes en toda su carrera)?",
-    fait: "Fidèle à peu de clubs", faitEn: "Loyal to few clubs", faitDe: "Wenige Klubs", faitIt: "Fedele a pochi club", faitPt: "Fiel a poucos clubes", faitEs: "Fiel a pocos clubes",
     predicate: (p) => p.clubs.length <= 2,
   },
 
@@ -755,13 +729,11 @@ const QUESTIONS: Question[] = [
   {
     id: "won-ucl", category: "profile",
     label: "A-t-il déjà gagné la Ligue des Champions avec son club ?", labelEn: "Has he ever won the Champions League with his club?", labelDe: "Hat er jemals die Champions League mit seinem Klub gewonnen?", labelIt: "Ha mai vinto la Champions League con il suo club?", labelPt: "Já ganhou a Liga dos Campeões com seu clube?", labelEs: "¿Ha ganado la Champions con su club?",
-    fait: "A gagné la Ligue des Champions", faitEn: "Won the Champions League", faitDe: "Gewann die Champions League", faitIt: "Ha vinto la Champions League", faitPt: "Ganhou a Liga dos Campeões", faitEs: "Ganó la Champions",
     predicate: (p) => GG_CL_WINNERS.has(p.name),
   },
   {
     id: "won-wc", category: "profile",
     label: "A-t-il déjà gagné la Coupe du Monde avec sa sélection ?", labelEn: "Has he ever won the World Cup with his national team?", labelDe: "Hat er jemals die Weltmeisterschaft mit seiner Nationalmannschaft gewonnen?", labelIt: "Ha mai vinto la Coppa del Mondo con la sua nazionale?", labelPt: "Já ganhou a Copa do Mundo com sua seleção?", labelEs: "¿Ha ganado el Mundial con su selección?",
-    fait: "A gagné la Coupe du Monde", faitEn: "Won the World Cup", faitDe: "Wurde Weltmeister", faitIt: "Ha vinto il Mondiale", faitPt: "Ganhou a Copa do Mundo", faitEs: "Ganó el Mundial",
     predicate: (p) => GG_WC_WINNERS.has(p.name),
   },
 
@@ -769,7 +741,6 @@ const QUESTIONS: Question[] = [
   {
     id: "era-90s", category: "era",
     label: "Est-il né dans les années 90 (entre 1990 et 1999) ?", labelEn: "Was he born in the 1990s (between 1990 and 1999)?", labelDe: "Wurde er in den 1990ern geboren (zwischen 1990 und 1999)?", labelIt: "È nato negli anni '90 (tra il 1990 e il 1999)?", labelPt: "Nasceu nos anos 90 (entre 1990 e 1999)?", labelEs: "¿Nació en los años 90 (entre 1990 y 1999)?",
-    fait: "Carrière dans les années 90", faitEn: "Career in the 90s", faitDe: "Karriere in den 90ern", faitIt: "Carriera negli anni 90", faitPt: "Carreira nos anos 90", faitEs: "Carrera en los 90",
     predicate: (p) =>
       p.birthYear === undefined
         ? null
@@ -778,7 +749,6 @@ const QUESTIONS: Question[] = [
   {
     id: "era-2000s", category: "era",
     label: "Est-il né dans les années 2000 (entre 2000 et 2009) ?", labelEn: "Was he born in the 2000s (between 2000 and 2009)?", labelDe: "Wurde er in den 2000ern geboren (zwischen 2000 und 2009)?", labelIt: "È nato negli anni 2000 (tra il 2000 e il 2009)?", labelPt: "Nasceu nos anos 2000 (entre 2000 e 2009)?", labelEs: "¿Nació en los años 2000 (entre 2000 y 2009)?",
-    fait: "Carrière dans les années 2000", faitEn: "Career in the 2000s", faitDe: "Karriere in den 2000ern", faitIt: "Carriera negli anni 2000", faitPt: "Carreira nos anos 2000", faitEs: "Carrera en los 2000",
     predicate: (p) =>
       p.birthYear === undefined
         ? null
@@ -787,7 +757,6 @@ const QUESTIONS: Question[] = [
   {
     id: "era-80s", category: "era",
     label: "Est-il né dans les années 80 (entre 1980 et 1989) ?", labelEn: "Was he born in the 1980s (between 1980 and 1989)?", labelDe: "Wurde er in den 1980ern geboren (zwischen 1980 und 1989)?", labelIt: "È nato negli anni '80 (tra il 1980 e il 1989)?", labelPt: "Nasceu nos anos 80 (entre 1980 e 1989)?", labelEs: "¿Nació en los años 80 (entre 1980 y 1989)?",
-    fait: "Carrière dans les années 80", faitEn: "Career in the 80s", faitDe: "Karriere in den 80ern", faitIt: "Carriera negli anni 80", faitPt: "Carreira nos anos 80", faitEs: "Carrera en los 80",
     predicate: (p) =>
       p.birthYear === undefined
         ? null
@@ -796,14 +765,12 @@ const QUESTIONS: Question[] = [
   {
     id: "era-old", category: "era",
     label: "Est-il né avant 1980 (légende plus ancienne) ?", labelEn: "Was he born before 1980 (an older legend)?", labelDe: "Wurde er vor 1980 geboren (eine ältere Legende)?", labelIt: "È nato prima del 1980 (una leggenda più vecchia)?", labelPt: "Nasceu antes de 1980 (uma lenda mais antiga)?", labelEs: "¿Nació antes de 1980 (leyenda más antigua)?",
-    fait: "Joueur retraité de longue date", faitEn: "Long retired", faitDe: "Lange im Ruhestand", faitIt: "Ritirato da tempo", faitPt: "Aposentado há muito", faitEs: "Retirado hace tiempo",
     predicate: (p) =>
       p.birthYear === undefined ? null : p.birthYear < 1980,
   },
   {
     id: "era-gen-z", category: "era",
     label: "A-t-il moins de 25 ans aujourd'hui (né après 2001) ?", labelEn: "Is he under 25 today (born after 2001)?", labelDe: "Ist er heute unter 25 (nach 2001 geboren)?", labelIt: "Ha meno di 25 anni oggi (nato dopo il 2001)?", labelPt: "Tem menos de 25 anos hoje (nascido depois de 2001)?", labelEs: "¿Tiene menos de 25 años hoy (nacido después de 2001)?",
-    fait: "Génération Z", faitEn: "Gen Z", faitDe: "Generation Z", faitIt: "Generazione Z", faitPt: "Geração Z", faitEs: "Generación Z",
     predicate: (p) =>
       p.birthYear === undefined ? null : p.birthYear >= 2001,
   },
@@ -1141,39 +1108,7 @@ const countMismatch = (p: Player, history: QA[]): number => {
   return s;
 };
 
-type Phase = "intro" | "asking" | "guessing" | "won" | "lost"
-  // Mode INVERSÉ : c'est le génie qui pense à un joueur.
-  | "inverse" | "inverseGagne" | "inversePerdu";
-
-// Vingt questions, puis il faut donner un nom. Un seul essai : faux = perdu.
-const INVERSE_MAX_Q = 20;
-
-// Points d'une manche gagnée, selon le nombre de questions posées. Même forme
-// de barème que « Trouve le joueur » (1000 / 500 / 200 / 100), mais indexée sur
-// les questions et non sur les essais : ici il n'y a qu'un seul essai.
-function scoreManche(questions: number): number {
-  return questions <= 5 ? 1000 : questions <= 10 ? 500 : questions <= 15 ? 200 : 100;
-}
-
-// Le vivier du mode inversé : uniquement des joueurs CONNUS. Le génie pioche
-// dans les 5 622 entrées de la base pour DEVINER, mais quand c'est lui qui
-// choisit, tomber sur un inconnu rendrait la manche impossible — vingt
-// questions ne servent à rien si le nom ne dit rien à personne.
-// Même bornes d'âge et de carrière que « Trouve le joueur ».
-const inversePool = (): Player[] =>
-  (PLAYERS as Player[]).filter(
-    (p) => p.diff === "facile" && p.clubs?.length >= 3 && p.clubs.length <= 9
-      && !!p.birthYear && (p.birthYear as number) >= 1982
-  );
-
-// La réponse du génie à une question, pour SON joueur. `null` veut dire que
-// l'info manque en base — le prédicat le modélisait déjà pour l'autre sens, ce
-// qui donne gratuitement le troisième bouton « je ne sais pas ».
-type ReponseGenie = "oui" | "non" | "inconnu";
-function repondGenie(q: Question, cible: Player): ReponseGenie {
-  const r = q.predicate(cible);
-  return r === null ? "inconnu" : r ? "oui" : "non";
-}
+type Phase = "intro" | "asking" | "guessing" | "won" | "lost";
 
 type Props = {
   onClose: () => void;
@@ -1277,11 +1212,11 @@ export const GoatGuess = ({ onClose }: Props) => {
       {/* Layout 2 colonnes desktop, stacked mobile — pas d'encadré global */}
       <div className="grid lg:grid-cols-[1fr_280px] gap-2 lg:gap-10 items-start">
         {/* Contenu principal du jeu — sans encadré sombre, directement sur la pelouse.
-            `min-w-0` : un enfant de grille a `min-width:auto`, donc il s'élargit
-            à son contenu au lieu de tenir dans sa piste. Tant que les vues
-            étaient étroites ça ne se voyait pas ; la liste de questions du mode
-            inversé, elle, poussait ce bloc à 767px dans une piste de 388 et tout
-            l'écran débordait à droite. */}
+            `min-w-0` : ce bloc est un enfant de grille, et un enfant de grille a
+            `min-width:auto` — il s'élargit à son contenu au lieu de tenir dans sa
+            piste. Les vues actuelles sont étroites, donc rien ne le déclenche
+            aujourd'hui ; une vue plus large suffirait à faire déborder tout
+            l'écran vers la droite. Un garde-fou, pas un correctif. */}
         <div className="relative w-full min-w-0">
           <GoatGuessGame
             onClose={onClose}
@@ -1394,47 +1329,6 @@ const GoatGuessGame = ({
   const [rejectedGuesses, setRejectedGuesses] = useState<Set<string>>(new Set());
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [currentGuess, setCurrentGuess] = useState<Player | null>(null);
-
-  // ── Mode inversé : le génie pense à un joueur ────────────────────────────
-  const [cible, setCible] = useState<Player | null>(null);
-  const [posees, setPosees] = useState<{ q: Question; r: ReponseGenie }[]>([]);
-  const [proposition, setProposition] = useState("");
-  const [gagnes, setGagnes] = useState(0);        // points de la dernière manche
-  const vusRef = useRef<Set<string>>(new Set());   // anti-répétition entre manches
-
-  function demarrerInverse() {
-    const pool = inversePool();
-    let libres = pool.filter((p) => !vusRef.current.has(p.name));
-    if (libres.length === 0) { vusRef.current.clear(); libres = pool; }
-    const choisi = libres[Math.floor(Math.random() * libres.length)];
-    vusRef.current.add(choisi.name);
-    setCible(choisi);
-    setPosees([]);
-    setProposition("");
-    setPhase("inverse");
-  }
-
-  function poserQuestion(q: Question) {
-    if (!cible || posees.length >= INVERSE_MAX_Q) return;
-    if (posees.some((x) => x.q.id === q.id)) return;   // déjà posée : ne compte pas
-    setPosees((prev) => [...prev, { q, r: repondGenie(q, cible) }]);
-  }
-
-  function proposerNom(p: Player) {
-    if (!cible) return;
-    // Un seul essai, comme demandé : juste ou faux, la manche s'arrête.
-    if (p.name !== cible.name) { setGagnes(0); setPhase("inversePerdu"); return; }
-    const points = scoreManche(posees.length);
-    setGagnes(points);
-    try {
-      const total = (parseInt(localStorage.getItem("bb_genie_pts") || "0", 10) || 0) + points;
-      localStorage.setItem("bb_genie_pts", String(total));
-    } catch { /* le total local n'est qu'un confort */ }
-    // L'XP passe par l'événement global : ce composant vit hors de LePont et
-    // n'a pas accès à `addXp`. Même canal que « Trouve le joueur ».
-    try { window.dispatchEvent(new CustomEvent("goatfc:award-xp", { detail: { amount: points } })); } catch { /* noop */ }
-    setPhase("inverseGagne");
-  }
   // « Fumée de génie » : nombre de réponses tranchées (oui/non). Chaque réponse
   // fait monter la barre de fumée ; un « je sais pas » ne la remplit pas.
   const [smokeSteps, setSmokeSteps] = useState(0);
@@ -1615,7 +1509,7 @@ const GoatGuessGame = ({
 
   return (
     <div>
-      {phase === "intro" && <IntroView onStart={startGame} onStartInverse={demarrerInverse} />}
+      {phase === "intro" && <IntroView onStart={startGame} />}
       {phase === "asking" && currentQuestion && (
         <AskingView
           question={currentQuestion}
@@ -1646,22 +1540,6 @@ const GoatGuessGame = ({
           qaHistory={qaHistory}
         />
       )}
-      {phase === "inverse" && cible && (
-        <InverseView
-          cible={cible}
-          posees={posees}
-          onPoser={poserQuestion}
-          proposition={proposition}
-          setProposition={setProposition}
-          onProposer={proposerNom}
-        />
-      )}
-      {phase === "inverseGagne" && cible && (
-        <InverseFinView gagne points={gagnes} cible={cible} posees={posees} onRestart={demarrerInverse} onClose={onClose} />
-      )}
-      {phase === "inversePerdu" && cible && (
-        <InverseFinView gagne={false} points={0} cible={cible} posees={posees} onRestart={demarrerInverse} onClose={onClose} />
-      )}
       {phase === "lost" && (
         <LostView
           onRestart={startGame}
@@ -1675,7 +1553,7 @@ const GoatGuessGame = ({
   );
 };
 
-const IntroView = ({ onStart, onStartInverse }: { onStart: () => void; onStartInverse: () => void }) => (
+const IntroView = ({ onStart }: { onStart: () => void }) => (
   <div className="text-center">
     <div className="text-4xl lg:text-6xl mb-3 lg:mb-5">🔮</div>
     <p className="text-white/80 text-sm lg:text-lg mb-2 lg:mb-3">
@@ -1703,23 +1581,6 @@ const IntroView = ({ onStart, onStartInverse }: { onStart: () => void; onStartIn
     >
       <span className="text-xl">{"▶︎"}</span> {tr("COMMENCER","START","START","INIZIA","COMEÇAR","EMPEZAR")}
     </button>
-
-    {/* Le mode inversé : mêmes questions, sens contraire. */}
-    <div className="mt-6">
-      <div className="text-white/35 text-[11px] font-bold tracking-[3px] uppercase mb-3">
-        {tr("ou à l'envers","or the other way","oder andersherum","o al contrario","ou ao contrário","o al revés")}
-      </div>
-      <button
-        onClick={onStartInverse}
-        className="inline-flex items-center gap-3 px-7 lg:px-9 py-3"
-        style={{ ...btn(G.ciel, G.white, 20), display: "inline-flex" }}
-      >
-        <span className="text-xl">🧠</span> {tr("LE GÉNIE PENSE À UN JOUEUR","THE GENIE THINKS OF A PLAYER","DER GEIST DENKT AN EINEN SPIELER","IL GENIO PENSA A UN GIOCATORE","O GÉNIO PENSA NUM JOGADOR","EL GENIO PIENSA EN UN JUGADOR")}
-      </button>
-      <p className="mt-2 text-xs text-white/45">
-        {tr("À toi de poser les questions. 20 au maximum, puis il faut donner un nom.","You ask the questions. 20 max, then you must name him.","Du stellst die Fragen. Höchstens 20, dann musst du einen Namen nennen.","Tocca a te fare le domande. Massimo 20, poi devi dare un nome.","Você faz as perguntas. No máximo 20, depois tem de dar um nome.","Tú haces las preguntas. 20 como máximo, luego hay que dar un nombre.")}
-      </p>
-    </div>
 
     <p className="mt-4 text-xs text-white/40">
       {tr('Astuce : plus tu réponds précisément (évite les "sais pas"), mieux je devine.', 'Tip: the more precisely you answer (avoid "not sure"), the better I guess.', 'Tipp: Je genauer du antwortest (vermeide „weiß nicht"), desto besser errate ich.', 'Consiglio: più rispondi con precisione (evita i "non so"), meglio indovino.', 'Dica: quanto mais preciso você responde (evite "não sei"), melhor eu adivinho.','Truco: cuanto más preciso respondas (evita los "ni idea"), mejor adivino.')}
@@ -2388,240 +2249,3 @@ const PlayerRevealCard = ({
 
 
 export default GoatGuess;
-
-// ── Mode inversé : le génie a choisi, le joueur interroge ──────────────────
-//
-// La saisie ne comprend pas le langage : elle FILTRE les 157 questions de la
-// banque. Le joueur a la sensation de poser sa question, mais il tombe
-// toujours sur une question à laquelle le génie sait répondre — pas de « je
-// n'ai pas compris », pas de backend, pas de latence.
-const InverseView = ({
-  cible, posees, onPoser, proposition, setProposition, onProposer,
-}: {
-  cible: Player;
-  posees: { q: Question; r: ReponseGenie }[];
-  onPoser: (q: Question) => void;
-  proposition: string;
-  setProposition: (v: string) => void;
-  onProposer: (p: Player) => void;
-}) => {
-  const [recherche, setRecherche] = useState("");
-  const [categorie, setCategorie] = useState<QCategory | null>(null);
-  const verdictRef = useRef<HTMLDivElement | null>(null);
-  const saisieRef = useRef<HTMLInputElement | null>(null);
-  const restantes = INVERSE_MAX_Q - posees.length;
-  const aCourt = restantes <= 0;
-  const dejaPosees = new Set(posees.map((x) => x.q.id));
-
-  const CATEGORIES: { id: QCategory; label: string }[] = [
-    { id: "pos", label: tr("Poste","Position","Position","Ruolo","Posição","Posición") },
-    { id: "nat", label: tr("Pays","Country","Land","Paese","País","País") },
-    { id: "cont", label: tr("Continent","Continent","Kontinent","Continente","Continente","Continente") },
-    { id: "club", label: tr("Clubs","Clubs","Klubs","Club","Clubes","Clubes") },
-    { id: "league", label: tr("Championnats","Leagues","Ligen","Campionati","Ligas","Ligas") },
-    { id: "era", label: tr("Époque","Era","Ära","Epoca","Época","Época") },
-    { id: "profile", label: tr("Profil","Profile","Profil","Profilo","Perfil","Perfil") },
-    { id: "physique", label: tr("Physique","Physique","Statur","Fisico","Físico","Físico") },
-    { id: "anecdote", label: tr("Palmarès","Honours","Erfolge","Palmarès","Palmarés","Palmarés") },
-  ];
-
-  const visibles = useMemo(() => {
-    const q = recherche.trim().toLowerCase();
-    return QUESTIONS
-      .filter((x) => !dejaPosees.has(x.id))
-      .filter((x) => (categorie ? x.category === categorie : true))
-      .filter((x) => (q ? qLabel(x).toLowerCase().includes(q) : true))
-      .slice(0, q || categorie ? 40 : 12);
-  }, [recherche, categorie, posees.length]);
-
-  const suggestions = useMemo(
-    () => (proposition.trim().length >= 2 ? chercheJoueurs(proposition, inversePool()).slice(0, 6) : []),
-    [proposition],
-  );
-
-  return (
-    /* `min-w-0` : cette vue vit dans une grille, et un enfant de grille a
-       `min-width:auto` — il s'élargit à son contenu au lieu de tenir dans sa
-       piste. Sans ça, les libellés de questions poussaient le bloc à 576px
-       dans une piste de 388, et tout l'écran débordait à droite. */
-    <div className="w-full min-w-0">
-      {/* Pas de bouton « Quitter » ici : la croix globale de GOAT Guess est
-          déjà fixée en haut à droite, les deux se chevauchaient. */}
-      {/* Le verdict est ouvert dès la PREMIÈRE question — on peut répondre sans
-          épuiser les vingt. Mais il vit en bas de l'écran, sous la liste de
-          questions : sur un téléphone il fallait tout faire défiler pour le
-          trouver, au point de croire qu'il n'existait pas. Ce raccourci y
-          emmène et pose le curseur dans le champ. */}
-      <div className="flex items-center justify-between gap-2 mb-3">
-        <button
-          onClick={() => {
-            verdictRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-            setTimeout(() => saisieRef.current?.focus(), 350);
-          }}
-          style={{ ...btn(G.pelouse, G.white, 15), padding: "9px 14px", display: "inline-flex", alignItems: "center", gap: 7 }}
-        >
-          💡 {tr("J'ai trouvé !","I've got it!","Ich hab's!","Ce l'ho!","Já sei!","¡Lo tengo!")}
-        </button>
-        <div style={{ ...posterText(18, aCourt ? G.maillot : G.projecteur), letterSpacing: 1 }}>
-          {posees.length}/{INVERSE_MAX_Q}
-        </div>
-      </div>
-
-      <div className="text-center mb-4">
-        <div className="text-4xl mb-2">🔮</div>
-        <div style={{ ...posterTitre(30, G.white), fontSize: "clamp(22px,6vw,30px)" }}>
-          {tr("JE PENSE À UN JOUEUR","I'M THINKING OF A PLAYER","ICH DENKE AN EINEN SPIELER","STO PENSANDO A UN GIOCATORE","ESTOU A PENSAR NUM JOGADOR","ESTOY PENSANDO EN UN JUGADOR")}
-        </div>
-        <p className="text-white/55 text-sm mt-1">
-          {aCourt
-            ? tr("Plus de questions — donne un nom.","No questions left — name him.","Keine Fragen mehr — nenn einen Namen.","Niente più domande — dai un nome.","Sem mais perguntas — dá um nome.","No quedan preguntas — di un nombre.")
-            : tr("Pose tes questions, je réponds oui ou non.","Ask your questions, I answer yes or no.","Stell deine Fragen, ich antworte ja oder nein.","Fai le tue domande, rispondo sì o no.","Faz as tuas perguntas, respondo sim ou não.","Haz tus preguntas, respondo sí o no.")}
-        </p>
-      </div>
-
-      {/* Ce qui est CONFIRMÉ, en tête. Le journal complet dit tout, mais on y
-          relit autant de « non » que de « oui » : ce qu'on cherche en pleine
-          réflexion, c'est la courte liste de ce qu'on sait DÉJÀ du joueur. */}
-      {posees.some((x) => x.r === "oui") && (
-        <div className="mb-3 px-3 py-2.5"
-          style={{ background: "rgba(79,208,122,.14)", border: "2px solid " + G.pelouseClaire, borderRadius: G.rayon }}>
-          <div className="text-[10px] font-black tracking-[2px] uppercase mb-2" style={{ color: G.pelouseClaire }}>
-            ✓ {tr("Ce que je sais","What I know","Was ich weiß","Quello che so","O que eu sei","Lo que sé")}
-          </div>
-          <div className="flex flex-wrap gap-1.5">
-            {posees.filter((x) => x.r === "oui").map((x, i) => (
-              <span key={i} className="text-[12px] font-extrabold px-2.5 py-1"
-                style={{ background: G.pelouseClaire, color: G.encre, borderRadius: 7, border: G.traitFin }}>
-                {qFait(x.q)}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Ce que le génie a déjà répondu — la trace du raisonnement */}
-      {posees.length > 0 && (
-        <div className="mb-4 flex flex-col gap-1.5" style={{ maxHeight: 210, overflowY: "auto" }}>
-          {posees.map((x, i) => (
-            <div key={i} className="flex items-center gap-2 px-3 py-2"
-              style={{ background: G.nuit, border: G.traitFin, borderRadius: G.rayonS }}>
-              <span className="text-[12.5px] text-white/75 flex-1">{qLabel(x.q)}</span>
-              <span className="text-[11px] font-black tracking-wider px-2 py-1"
-                style={{ borderRadius: 6, border: G.traitFin, color: G.encre,
-                  background: x.r === "oui" ? G.pelouseClaire : x.r === "non" ? G.maillot : "#8D99AE" }}>
-                {x.r === "oui" ? tr("OUI","YES","JA","SÌ","SIM","SÍ")
-                  : x.r === "non" ? tr("NON","NO","NEIN","NO","NÃO","NO")
-                  : tr("JE SAIS PAS","NOT SURE","WEISS NICHT","NON SO","NÃO SEI","NI IDEA")}
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {!aCourt && (
-        <>
-          <input
-            value={recherche}
-            onChange={(e) => setRecherche(e.target.value)}
-            placeholder={tr("Pose ta question…","Ask your question…","Stell deine Frage…","Fai la tua domanda…","Faz a tua pergunta…","Haz tu pregunta…")}
-            className="w-full mb-2"
-            style={{ padding: "12px 14px", background: G.nuit, border: G.trait, borderRadius: G.rayon,
-              color: G.white, fontFamily: G.font, fontSize: 14, fontWeight: 700, outline: "none" }}
-          />
-          <div className="flex gap-1.5 mb-3 overflow-x-auto pb-1">
-            {CATEGORIES.map((c) => (
-              <button key={c.id} onClick={() => setCategorie(categorie === c.id ? null : c.id)}
-                style={{ ...btn(categorie === c.id ? G.projecteur : G.nuit, categorie === c.id ? G.encre : G.white, 13),
-                  padding: "7px 12px", whiteSpace: "nowrap", flexShrink: 0 }}>
-                {c.label}
-              </button>
-            ))}
-          </div>
-          <div className="flex flex-col gap-1.5 mb-5" style={{ maxHeight: 260, overflowY: "auto" }}>
-            {visibles.length === 0 && (
-              <div className="text-center text-white/40 text-sm py-6">
-                {tr("Aucune question ne correspond.","No matching question.","Keine passende Frage.","Nessuna domanda corrispondente.","Nenhuma pergunta corresponde.","Ninguna pregunta coincide.")}
-              </div>
-            )}
-            {visibles.map((q) => (
-              <button key={q.id} onClick={() => { onPoser(q); setRecherche(""); }}
-                className="text-left"
-                style={{ padding: "11px 13px", background: "rgba(8,17,9,.45)", border: G.traitFin,
-                  borderRadius: G.rayonS, color: G.white, fontSize: 13, fontWeight: 600, lineHeight: 1.3 }}>
-                {qLabel(q)}
-              </button>
-            ))}
-          </div>
-        </>
-      )}
-
-      {/* La proposition finale : un seul essai */}
-      <div ref={verdictRef} style={{ background: G.nuit, border: G.trait, borderRadius: G.rayon, padding: "14px", boxShadow: G.ombre }}>
-        <div className="text-[11px] font-black tracking-[2px] uppercase mb-2" style={{ color: G.projecteur }}>
-          {tr("Ton verdict — un seul essai","Your verdict — one try only","Dein Urteil — nur ein Versuch","Il tuo verdetto — un solo tentativo","O teu veredicto — uma só tentativa","Tu veredicto — un solo intento")}
-        </div>
-        <input
-          ref={saisieRef}
-          value={proposition}
-          onChange={(e) => setProposition(e.target.value)}
-          placeholder={tr("Nom du joueur…","Player name…","Spielername…","Nome del giocatore…","Nome do jogador…","Nombre del jugador…")}
-          style={{ width: "100%", padding: "12px 14px", background: "rgba(8,17,9,.6)", border: G.traitFin,
-            borderRadius: G.rayonS, color: G.white, fontFamily: G.font, fontSize: 14, fontWeight: 700, outline: "none" }}
-        />
-        {suggestions.length > 0 && (
-          <div className="flex flex-col gap-1.5 mt-2">
-            {suggestions.map((p) => (
-              <button key={p.name} onClick={() => onProposer(p)} className="text-left"
-                style={{ padding: "10px 13px", background: G.pelouse, border: G.traitFin,
-                  borderRadius: G.rayonS, color: G.white, fontSize: 13.5, fontWeight: 800 }}>
-                {p.name}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
-
-// Fin de manche du mode inversé : on montre TOUJOURS la réponse et le parcours
-// du joueur, gagné ou perdu — c'est ce qu'on vient chercher.
-const InverseFinView = ({
-  gagne, points, cible, posees, onRestart, onClose,
-}: {
-  gagne: boolean;
-  points: number;
-  cible: Player;
-  posees: { q: Question; r: ReponseGenie }[];
-  onRestart: () => void;
-  onClose: () => void;
-}) => (
-  <div className="text-center w-full min-w-0">
-    <div className="text-4xl mb-2">{gagne ? "🎉" : "😅"}</div>
-    <div style={{ ...posterTitre(44, gagne ? G.pelouseClaire : G.maillot), fontSize: "clamp(30px,8vw,44px)" }}>
-      {gagne
-        ? tr("TROUVÉ !","GOT HIM!","GEFUNDEN!","TROVATO!","ENCONTRADO!","¡ENCONTRADO!")
-        : tr("RATÉ !","MISSED!","DANEBEN!","MANCATO!","ERROU!","¡FALLASTE!")}
-    </div>
-    <p className="text-white/60 text-sm mt-1 mb-4">
-      {gagne
-        ? tr("En " + posees.length + " question" + (posees.length > 1 ? "s" : "") + ".", "In " + posees.length + " question" + (posees.length > 1 ? "s" : "") + ".", "In " + posees.length + " Frage(n).", "In " + posees.length + " domanda/e.", "Em " + posees.length + " pergunta(s).", "En " + posees.length + " pregunta(s).")
-        : tr("Je pensais à…","I was thinking of…","Ich dachte an…","Pensavo a…","Eu pensava em…","Pensaba en…")}
-    </p>
-
-    {gagne && (
-      <div style={{ ...posterText(38, G.projecteur), marginBottom: 12 }}>+{points.toLocaleString("fr-FR")} PTS</div>
-    )}
-
-    <PlayerRevealCard player={cible} accent={gagne ? G.pelouseClaire : G.maillot} />
-
-    <div className="grid grid-cols-2 gap-3 mt-6">
-      <button onClick={onRestart} className="py-4" style={{ ...btn(G.projecteur, G.encre, 20) }}>
-        {"▶︎"} {tr("REJOUER","PLAY AGAIN","NOCHMAL","GIOCA ANCORA","JOGAR DE NOVO","JUGAR OTRA VEZ")}
-      </button>
-      <button onClick={onClose} className="py-4" style={{ ...btn(G.nuit, G.white, 20) }}>
-        ← {tr("MODES","MODES","MODI","MODI","MODOS","MODOS")}
-      </button>
-    </div>
-  </div>
-);
