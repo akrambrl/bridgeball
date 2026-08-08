@@ -11371,6 +11371,25 @@ export default function LePont() {
             <div style={{fontSize:12,color:"rgba(255,255,255,.7)",fontWeight:700,letterSpacing:.8,textAlign:"center",marginBottom:16}}>{tr("Champions des saisons passées","Past season champions","Champions vergangener Saisons","Campioni delle stagioni passate","Campeões das temporadas passadas","Campeones de temporadas pasadas")}</div>
             {hallOfFame.length === 0 && <div style={{textAlign:"center",color:"rgba(255,255,255,.8)",padding:"22px 14px",fontSize:13.5,fontWeight:700,lineHeight:1.5,background:"rgba(23,87,44,.45)",border:G.traitFin,borderRadius:G.rayon,boxShadow:G.ombre}}>{tr("Pas encore de champion — la première saison est en cours !","No champion yet — the first season is ongoing!","Noch kein Champion — die erste Saison läuft!","Ancora nessun campione — la prima stagione è in corso!","Ainda sem campeão — a primeira temporada está em andamento!","Todavía no hay campeón — ¡la primera temporada está en marcha!")}</div>}
             {hallOfFame.map(function(s,i){
+              // La carte d'un champion, telle qu'il la porte : `badgeByPid` dit
+              // quelle carte il a CHOISIE, l'XP de la saison sert de repli sur
+              // la carte de son niveau. Même règle qu'au classement et sur les
+              // profils — un joueur ne doit pas changer de tête d'un écran à
+              // l'autre.
+              const carteDe = function(pid, xp, taille){
+                const b = badgeByPid[pid];
+                const c = avatarCard(b && b.badge, xp || 0);
+                if (!c || !c.img) return null;
+                const rmc = rarityMeta(c.rarity);
+                return (
+                  <div style={{width:taille,height:Math.round(taille*4/3),margin:"0 auto 6px",
+                    padding:2,borderRadius:7,background:rmc.frame,border:G.traitFin,boxShadow:"2px 2px 0 "+G.encre}}>
+                    <div style={{width:"100%",height:"100%",borderRadius:5,overflow:"hidden",background:"#000"}}>
+                      <img src={c.img} alt="" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top",display:"block"}}/>
+                    </div>
+                  </div>
+                );
+              };
               // Transformer le monthKey "2026-04" en nom lisible
               const monthNamesFr = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
               const monthNamesEn = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -11399,7 +11418,8 @@ export default function LePont() {
                         et la marche du champion se retrouvait seule en aplat. */}
                     {s.runner_up_name ? (
                       <div style={{textAlign:"center",background:"#C8CDD4",border:G.traitFin,borderRadius:G.rayonS,boxShadow:G.ombre,padding:"12px 6px"}}>
-                        <div style={{fontSize:26,marginBottom:4}}>🥈</div>
+                        <div style={{fontSize:22,marginBottom:2}}>🥈</div>
+                        {carteDe(s.runner_up_id, s.runner_up_xp, 34)}
                         <div style={{fontSize:13,fontWeight:800,color:G.encre,marginBottom:2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{s.runner_up_name}</div>
                         <div style={{...posterLight(18,G.encre)}}>{s.runner_up_xp}</div>
                         <div style={{fontSize:9,color:"rgba(8,17,9,.75)",letterSpacing:1,fontWeight:800}}>pts</div>
@@ -11410,7 +11430,8 @@ export default function LePont() {
                         nu sur le jaune (posterLight), le contour d'encre
                         boucherait des lettres posées sur clair. */}
                     <div style={{textAlign:"center",background:G.projecteur,border:G.trait,borderRadius:G.rayon,padding:"14px 6px",boxShadow:G.ombre,transform:"translateY(-4px)"}}>
-                      <div style={{fontSize:32,marginBottom:4}}>👑</div>
+                      <div style={{fontSize:26,marginBottom:2}}>👑</div>
+                      {carteDe(s.champion_id, s.champion_score, 44)}
                       <div style={{fontSize:14,fontWeight:800,color:G.encre,marginBottom:2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{s.champion_name}</div>
                       <div style={{...posterLight(22,G.encre)}}>{s.champion_score}</div>
                       <div style={{fontSize:9,color:"rgba(8,17,9,.75)",letterSpacing:1,fontWeight:800}}>pts</div>
@@ -11418,7 +11439,8 @@ export default function LePont() {
                     {/* 3rd */}
                     {s.third_name ? (
                       <div style={{textAlign:"center",background:"#CD7F32",border:G.traitFin,borderRadius:G.rayonS,boxShadow:G.ombre,padding:"12px 6px"}}>
-                        <div style={{fontSize:26,marginBottom:4}}>🥉</div>
+                        <div style={{fontSize:22,marginBottom:2}}>🥉</div>
+                        {carteDe(s.third_id, s.third_xp, 34)}
                         <div style={{fontSize:13,fontWeight:800,color:G.encre,marginBottom:2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{s.third_name}</div>
                         <div style={{...posterLight(18,G.encre)}}>{s.third_xp}</div>
                         <div style={{fontSize:9,color:"rgba(8,17,9,.75)",letterSpacing:1,fontWeight:800}}>pts</div>
