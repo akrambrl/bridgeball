@@ -52,9 +52,18 @@ function parisDay(): string {
   return p.getFullYear() + "-" + String(p.getMonth() + 1).padStart(2, "0") + "-" + String(p.getDate()).padStart(2, "0");
 }
 
-// Année de naissance plancher : né en 1975+ → a joué après 2000. Partagée par la
-// devinette du jour et le mode illimité, qui écartent tous deux les anciens.
-const MODERN_MIN_BY = 1975;
+// Année de naissance plancher, partagée par la devinette du jour, le mode
+// illimité et le tirage au hasard du dé.
+//
+// Elle valait 1975, avec le commentaire « a joué après 2000 » — ce qui était
+// faux : un joueur né en 1975 débute vers 1994, en pleine décennie précédente.
+// Le plancher ne faisait donc pas ce qu'il annonçait, et le jeu proposait des
+// carrières que la plupart des joueurs n'ont jamais vues.
+//
+// 1982 → première saison vers 2001 (même hypothèse de début à 19 ans que
+// l'indice « j'ai percé dans les années »). La carrière est alors entièrement
+// dans les années 2000 et après.
+const MODERN_MIN_BY = 1982;
 
 // ── Joueur mystère du jour ────────────────────────────────────
 // Pool de stars (facile, parcours ≥ 3 clubs), mélangé une fois dans un ordre
