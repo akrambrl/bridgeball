@@ -10822,7 +10822,7 @@ export default function LePont() {
     return (
       <>
       {retourCharte(function(){setShowCollection(false);})}
-      <div style={{...shell,animation:"fadeUp .4s ease",overflow:isDesktop?"visible":"auto",background:fondCharte}} key="collection">
+      <div style={{...shell,animation:"fadeUp .4s ease",height:isDesktop?undefined:"100dvh",minHeight:isDesktop?shell.minHeight:0,overflow:isDesktop?"visible":"auto",background:fondCharte}} key="collection">
         {terrainCharte}
         {/* 64 px de retrait haut, et non 50 : le bouton retour de la charte est
             un carré de 44 px posé à 14 px du bord, donc il descend à 58 px. Un
@@ -10947,7 +10947,7 @@ export default function LePont() {
           d'avant la charte : son vert fluo n'existe plus dans les jetons. La
           pelouse éclairée le remplace, et c'est elle qui fait exister le trait
           d'encre des panneaux ci-dessous. */}
-      <div style={{...shell,animation:"fadeUp .4s ease",overflow:isDesktop?"visible":"auto",background:fondCharte}} key="account">
+      <div style={{...shell,animation:"fadeUp .4s ease",height:isDesktop?undefined:"100dvh",minHeight:isDesktop?shell.minHeight:0,overflow:isDesktop?"visible":"auto",background:fondCharte}} key="account">
         {terrainCharte}
         {/* Le titre descend sous le bouton retour : le lettrage d'affiche est plus
             large que l'ancien libellé et son contour d'encre venait toucher le
@@ -11056,9 +11056,18 @@ export default function LePont() {
       <>
       {/* Floating back button — OUTSIDE animated container so it doesn't move during fadeUp */}
       {retourCharte(function(){setShowLeaderboard(false);})}
-      <div style={{...shell,animation:"fadeUp .4s ease",overflow:isDesktop?"visible":"auto",background:fondCharte}} key="lb">
+      {/* C'est le DOCUMENT qui défilait, pas cette coque : `shell` est en
+          minHeight:100vh, donc il grandit avec son contenu au lieu de défiler.
+          Une entête `sticky` n'a alors aucun conteneur défilant auquel
+          s'accrocher et s'en va avec le reste. On borne donc la hauteur ici
+          pour que l'écran devienne son propre conteneur — l'entête tient, et
+          le bouton retour, qui est fixe, se pose toujours dessus. */}
+      <div style={{...shell,animation:"fadeUp .4s ease",
+        height:isDesktop?undefined:"100dvh",minHeight:isDesktop?shell.minHeight:0,
+        overflow:isDesktop?"visible":"auto",background:fondCharte}} key="lb">
         {terrainCharte}
-        <div style={{zIndex:1,padding:"12px 20px 12px 70px",display:"flex",alignItems:"center",gap:12}}>
+        <div style={{zIndex:3,position:"sticky",top:0,background:G.encre,borderBottom:G.traitFin,
+        padding:"max(12px, env(safe-area-inset-top)) 20px 12px 70px",display:"flex",alignItems:"center",gap:12}}>
           <div style={{flex:1,textAlign:"center"}}>
             <div style={{...posterText(40,G.projecteur)}}>{tr("CLASSEMENT","LEADERBOARD","RANGLISTE","CLASSIFICA","CLASSIFICAÇÃO","CLASIFICACIÓN")}</div>
             {/* Le mois et le compte à rebours ne sont plus répétés sous le titre :

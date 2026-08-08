@@ -163,7 +163,10 @@ export const retourStyle = {...btn(G.nuit,G.white,20),
   width:44,height:44,padding:0,borderRadius:G.rayonS,flexShrink:0,
   fontFamily:G.font,fontSize:20,fontWeight:800,letterSpacing:0,transform:"none"};
 export const retourCharte = function(onClick){ return (
-  <button onClick={onClick} style={{...retourStyle,position:"fixed",top:14,left:14,zIndex:100}}>←</button>
+  <button onClick={onClick} style={{...retourStyle,position:"fixed",
+    // Même décalage que son jumeau `fermerCharte` : sans lui, le bouton se
+    // range sous la barre d'état sur un iPhone à encoche.
+    top:"calc(14px + env(safe-area-inset-top))",left:14,zIndex:100}}>←</button>
 ); };
 // Son pendant en haut à droite, pour les feuilles de mode qui se ferment au
 // lieu de revenir en arrière. Même cadre : une croix et une flèche qui ne se
