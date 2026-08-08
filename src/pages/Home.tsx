@@ -314,7 +314,7 @@ const Home = () => {
       <main className="relative flex-1 z-10">
         {tab === "play" && <LobbyView onPlay={onPlay} onJoinRoom={onJoinRoom} onOpenDuels={onOpenDuels} onOpenFriends={onOpenFriends} />}
         {tab === "tutos" && <TutosView />}
-        {tab === "leaderboard" && <LeaderboardView onPlay={onPlay} />}
+        {tab === "leaderboard" && <LeaderboardView />}
         {tab === "faq" && <FaqView />}
         {tab === "about" && <AboutView />}
       </main>
