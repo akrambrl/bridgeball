@@ -1040,7 +1040,7 @@ export const PLAYERS = [
   { name:"Mark van Bommel", clubs:["PSV Eindhoven", "Barcelona", "Bayern Munich", "AC Milan"], diff:"expert", nationalities:["Pays-Bas"], positions:["milieu"], birthYear:1977 },
   { name:"Antony", clubs:["São Paulo", "Ajax Amsterdam", "Manchester United", "Real Betis"], diff:"moyen", nationalities:["Brésil"], positions:["attaquant"], birthYear:2000 },
   { name:"Gleison Bremer", clubs:["Torino FC", "Juventus FC", "Grêmio"], diff:"expert", nationalities:["Brésil"], positions:["defenseur"], birthYear:1997 },
-  { name:"Alejandro Garnacho", clubs:["Atletico Madrid", "Manchester United", "Chelsea", "Aston Villa"], diff:"moyen", nationalities:["Argentine"], positions:["milieu"], birthYear:2004 },
+  { name:"Alejandro Garnacho", clubs:["Atletico Madrid", "Manchester United", "Chelsea", "Aston Villa"], diff:"moyen", nationalities:["Argentine"], positions:["attaquant"], birthYear:2004 },
   { name:"Kobbie Mainoo", clubs:["Manchester United"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:2005 },
   { name:"Dean Huijsen", clubs:["Juventus FC", "AS Roma", "Bournemouth", "Real Madrid"], diff:"moyen", nationalities:["Espagne"], positions:["defenseur"], birthYear:2005 },
   { name:"Savinho", clubs:["Atlético Mineiro", "Troyes", "PSV Eindhoven", "Girona", "Manchester City"], diff:"moyen", nationalities:["Brésil"], positions:["attaquant"], birthYear:2004 },
@@ -1242,7 +1242,7 @@ export const PLAYERS = [
   { name:"Robbie Fowler", clubs:["Liverpool", "Manchester City", "Liverpool"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1975 },
   { name:"Kevin Keegan", clubs:["Liverpool", "Newcastle"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1951 },
   { name:"Peter Schmeichel", clubs:["Brondby", "Manchester United", "Sporting CP", "Aston Villa", "Manchester City"], diff:"facile", nationalities:["Danemark"], positions:["gardien"], birthYear:1963 },
-  { name:"Roy Keane", clubs:["Cobh Ramblers", "Nottingham Forest", "Manchester United", "Celtic"], diff:"facile", nationalities:["Irlande"], positions:["attaquant"], birthYear:1971 },
+  { name:"Roy Keane", clubs:["Cobh Ramblers", "Nottingham Forest", "Manchester United", "Celtic"], diff:"facile", nationalities:["Irlande"], positions:["milieu"], birthYear:1971 },
   { name:"Paul Scholes", clubs:["Manchester United"], diff:"facile", nationalities:["Angleterre"], positions:["milieu"], birthYear:1974 },
   { name:"Gary Neville", clubs:["Manchester United"], diff:"moyen", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1975 },
   { name:"Teddy Sheringham", clubs:["Manchester United", "Tottenham"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1966 },
@@ -1896,7 +1896,7 @@ export const PLAYERS = [
   // Monaco
   { name:"David Trezeguet", clubs:["Monaco", "Juventus FC", "River Plate"], diff:"facile", nationalities:["France"], positions:["attaquant"], birthYear:1977 },
   { name:"Fernando Morientes", clubs:["Real Zaragoza", "Real Madrid", "Monaco", "Liverpool", "Valencia", "Marseille"], diff:"moyen", nationalities:["Espagne"], positions:["attaquant"], birthYear:1976 },
-  { name:"Djibril Sidibé", clubs:["Troyes", "Lille", "Monaco", "Everton", "AEK Athens", "Bordeaux"], diff:"facile", nationalities:["France"], positions:["defenseur"], birthYear:1992 },
+  { name:"Djibril Sidibé", clubs:["Troyes", "Lille", "Monaco", "Everton", "AEK Athens", "Toulouse"], diff:"facile", nationalities:["France"], positions:["defenseur"], birthYear:1992 },
   { name:"Kamil Glik", clubs:["Torino FC", "Monaco", "Benevento"], diff:"moyen", nationalities:["Pologne"], positions:["defenseur"], birthYear:1988 },
   { name:"Aleksandr Golovin", clubs:["CSKA Moscow", "Monaco"], diff:"moyen", nationalities:["Russie"], positions:["milieu"], birthYear:1996 },
   // PSG
@@ -1998,7 +1998,7 @@ export const PLAYERS = [
   { name:"Roberto Donadoni", clubs:["Atalanta BC", "AC Milan"], diff:"moyen", nationalities:["Italie"], positions:["milieu"], birthYear:1963 },
   { name:"Zvonimir Boban", clubs:["Dinamo Zagreb", "Bari", "AC Milan", "Celta Vigo"], diff:"moyen", nationalities:["Croatie"], positions:["milieu"], birthYear:1968 },
   { name:"Massimo Ambrosini", clubs:["AC Milan", "ACF Fiorentina"], diff:"moyen", nationalities:["Italie"], positions:["milieu"], birthYear:1977 },
-  { name:"Demetrio Albertini", clubs:["AC Milan", "Atletico Madrid", "SS Lazio", "Atalanta BC", "Barcelona"], diff:"moyen", nationalities:["Italie"], positions:["attaquant"], birthYear:1971 },
+  { name:"Demetrio Albertini", clubs:["AC Milan", "Atletico Madrid", "SS Lazio", "Atalanta BC", "Barcelona"], diff:"moyen", nationalities:["Italie"], positions:["milieu"], birthYear:1971 },
   { name:"Gianluca Zambrotta", clubs:["Bari", "Juventus FC", "Barcelona", "AC Milan"], diff:"moyen", nationalities:["Italie"], positions:["defenseur"], birthYear:1977 },
   // Inter Milan
   { name:"Marco Materazzi", clubs:["Perugia", "Everton", "Inter Milan"], diff:"facile", nationalities:["Italie"], positions:["defenseur"], birthYear:1973 },
@@ -3960,7 +3960,7 @@ export const PLAYERS = [
   { name:"Dion Lopy", clubs:["Diambars", "Reims", "Almería"], diff:"expert", nationalities:["Sénégal"], positions:["milieu"] , birthYear:2002 },
   { name:"Igor Matanović", clubs:["Karlsruher SC", "Eintracht Frankfurt", "Fortuna Düsseldorf", "SC Freiburg"], diff:"expert", nationalities:["Croatie"], positions:["attaquant"] , birthYear:2003 },
   { name:"Juan Portillo", clubs:["Talleres", "River Plate"], diff:"expert", nationalities:["Argentine"], positions:["defenseur"], birthYear:2000 },
-  { name:"Abdallah Sima", clubs:["Slavia Prague", "Brighton", "Stoke City", "Angers", "Rangers", "Lens"], diff:"moyen", nationalities:["Sénégal"], positions:["attaquant"], birthYear:2001 },
+  { name:"Abdallah Sima", clubs:["Slavia Prague", "Brighton", "Stoke City", "Angers", "Rangers", "Brest", "Lens"], diff:"moyen", nationalities:["Sénégal"], positions:["attaquant"], birthYear:2001 },
   { name:"Ignacio De Arruabarrena", clubs:["Defensor Sporting", "Boston River", "Liverpool Montevideo", "Atlético Tucumán", "Barcelona Guayaquil"], diff:"expert", nationalities:["Uruguay"], positions:["gardien"], birthYear:1997 },
   { name:"Gonzalo Valle", clubs:["LDU Quito"], diff:"expert", nationalities:["Équateur"], positions:["gardien"], birthYear:1996 },
   { name:"Alvyn Sanches", clubs:["Lausanne", "Young Boys"], diff:"expert", nationalities:["Suisse"], positions:["milieu"], birthYear:2003 },
@@ -6295,10 +6295,28 @@ export const GG_WC_WINNERS = new Set([
   "Zetti",
   "Ronaldão",
   "Ricardo Gomes",
+  // ── Vainqueurs manquants, repêchés sur signalements ──────────────
+  // La liste ci-dessus ne couvrait que 1994/1998/2002. Tous les noms qui
+  // suivent viennent de la catégorie fr.wikipedia « Vainqueur de la Coupe du
+  // monde de football », recoupée avec notre base sur l'année de naissance
+  // (pour écarter les homonymes) PUIS sur la section Palmarès de leur article.
+  // Couvre 1934 → 2022 : Italie 34/38/82, Angleterre 66, Brésil 58/62/70,
+  // Allemagne 74/90, Argentine 86/2022, France 98.
+  "Alessandro Altobelli", "Andreas Brehme", "Andreas Möller", "Bernd Hölzenbein",
+  "Bobby Charlton", "Bodo Illgner", "Bruno Conti", "Claudio Gentile",
+  "Franco Baresi", "Gaetano Scirea", "Garrincha", "Geoff Hurst",
+  "Gerd Müller", "Germán Pezzella", "Giancarlo Antognoni", "Giuseppe Bergomi",
+  "Giuseppe Meazza", "Gordon Banks", "Guido Buchwald", "Jack Charlton",
+  "Jorge Burruchaga", "Jorge Valdano", "Jürgen Klinsmann", "Jürgen Kohler",
+  "Karl-Heinz Riedle", "Klaus Augenthaler", "Marco Tardelli", "Nicolás Tagliafico",
+  "Paolo Rossi", "Paul Breitner", "Pelé", "Pierre Littbarski",
+  "Robert Pires", "Rudi Völler", "Sepp Maier", "Thomas Berthold",
+  "Thomas Häßler", "Uwe Bein",
 ]);
 
-// 🏆 Champions League winners (depuis 2000)
-// Liste exhaustive des 26 finales LDC depuis 2000
+// 🏆 Vainqueurs de la Ligue des champions
+// Découpage finale par finale depuis 2000, complété plus bas par les
+// vainqueurs d'avant 2000 et par la finale 2026.
 // Noms exacts de la base players.jsx
 export const GG_CL_WINNERS = new Set([
   // 🇪🇸 Real Madrid 2000
@@ -6451,6 +6469,40 @@ export const GG_CL_WINNERS = new Set([
   "Willian Pacho","Nuno Mendes","Presnel Kimpembe","Lucas Beraldo","Vitinha","João Neves",
   "Fabián Ruiz","Warren Zaïre-Emery","Lee Kang-in","Senny Mayulu","Ousmane Dembélé",
   "Khvicha Kvaratskhelia","Désiré Doué","Gonçalo Ramos","Bradley Barcola",
+  // ── Avant 2000 + finales manquantes, repêchés sur signalements ────
+  // Le critère de la grille s'appelle « Vainqueur LDC » sans borne de date :
+  // s'arrêter aux finales depuis 2000 refusait Deschamps, Desailly et Boli
+  // (OM 1993) ou Beckenbauer, ce que les joueurs ont signalé. Même méthode que
+  // pour la Coupe du monde : catégorie fr.wikipedia « Vainqueur de la Ligue des
+  // champions de l'UEFA » (qui couvre aussi l'ère Coupe des clubs champions),
+  // recoupée sur l'année de naissance puis sur la section Palmarès.
+  // Contient aussi la finale 2026 (PSG-Arsenal), absente du découpage ci-dessus.
+  "Abedi Pele", "Alessandro Del Piero", "Alessio Tacchinardi", "Alex Oxlade-Chamberlain",
+  "Anatoliy Tymoshchuk", "Andoni Zubizarreta", "Andreas Möller", "Basile Boli",
+  "Billy Gilmour", "Brian Laudrup", "Christian Panucci", "Ciro Ferrara",
+  "Danny Simpson", "David Beckham", "Davor Šuker", "Dejan Savićević",
+  "Demetrio Albertini", "Didier Deschamps", "Dro Fernández", "Dwight Yorke",
+  "Edgar Davids", "Fabien Barthez", "Fabrizio Ravanelli", "Finidi George",
+  "Franco Baresi", "Franz Beckenbauer", "Gaetano Scirea", "Gianluca Vialli",
+  "Gianni Rivera", "Ibrahim Mbaye", "Ivan Cordoba", "Jari Litmanen",
+  "Jean-Pierre Papin", "Jonny Evans", "Joshua Zirkzee", "Jürgen Kohler",
+  "Karl-Heinz Riedle", "Kevin Keegan", "Louis Saha", "Lucas Chevalier",
+  "Manuel Amoros", "Marc Bartra", "Marc Overmars", "Marcel Desailly",
+  "Marco Tardelli", "Marcos Llorente", "Matthias Sammer", "Michael Laudrup",
+  "Michael Reiziger", "Mário Coluna", "Nicky Butt", "Nwankwo Kanu",
+  "Ole Gunnar Solskjær", "Oriol Romeu", "Paolo Rossi", "Pascal Olmeta",
+  "Patrick Kluivert", "Paulo Futre", "Pedro Mendes", "Pep Guardiola",
+  "Peter Schmeichel", "Phil Neville", "Piet Keizer", "Pirri",
+  "Predrag Mijatović", "Renato Marin", "Rico Lewis", "Rivaldo",
+  "Robert Prosinečki", "Ronald de Boer", "Roy Keane", "Rudi Völler",
+  "Ryan Bertrand", "Sergio Gómez", "Siniša Mihajlović", "Teddy Sheringham",
+  "Wim Suurbier", "Winston Bogarde", "Álvaro Odriozola", "Éric Di Meco",
+  // Absents de la catégorie fr.wikipedia (elle est lacunaire sur les années
+  // 70-80) mais vérifiés un par un dans la section Palmarès de leur article :
+  // Cruyff (Ajax 1971-73), van Basten et Gullit (Milan 1989-90),
+  // Breitner et Beckenbauer (Bayern 1974), Platini (Juventus 1985).
+  "Johan Cruyff", "Marco van Basten", "Ruud Gullit", "Paul Breitner",
+  "Michel Platini",
 ]);
 
 // ─── Vainqueurs du Ballon d'Or masculin (1956 → 2025, pas de Ballon d'Or 2020) ───

@@ -558,7 +558,7 @@ const PHYS_PETIT = new Set(["N'Golo Kanté", "Lionel Messi"]); // ≤ 1m70
 const PHYS_GRAND = new Set(["Peter Crouch", "Erling Haaland", "Virgil van Dijk"]); // > 1m90
 const PHYS_COUPE_2002 = new Set(["Ronaldo Nazário"]); // coupe culte CdM 2002
 
-const QUESTIONS: Question[] = [
+export const QUESTIONS: Question[] = [
   // Postes
   { id: "is-gk", category: "pos", label: "Est-ce un gardien de but ?", labelEn: "Is he a goalkeeper?", labelDe: "Ist er ein Torwart?", labelIt: "È un portiere?", labelPt: "É um goleiro?", labelEs: "¿Es portero?", predicate: (p) => isUniquelyPos(p, POS_GARDIEN) },
   { id: "is-def", category: "pos", label: "Est-ce un défenseur ?", labelEn: "Is he a defender?", labelDe: "Ist er ein Verteidiger?", labelIt: "È un difensore?", labelPt: "É um zagueiro?", labelEs: "¿Es defensa?", predicate: isUniquelyDefender },
@@ -767,6 +767,55 @@ const QUESTIONS: Question[] = [
     label: "Est-il né avant 1980 (légende plus ancienne) ?", labelEn: "Was he born before 1980 (an older legend)?", labelDe: "Wurde er vor 1980 geboren (eine ältere Legende)?", labelIt: "È nato prima del 1980 (una leggenda più vecchia)?", labelPt: "Nasceu antes de 1980 (uma lenda mais antiga)?", labelEs: "¿Nació antes de 1980 (leyenda más antigua)?",
     predicate: (p) =>
       p.birthYear === undefined ? null : p.birthYear < 1980,
+  },
+  // Avant 1980 la base compte ~680 joueurs : sans découpage, "né avant 1980"
+  // était l'unique bit d'information sur tout un tiers de siècle de carrières
+  // et le Devin s'y noyait. On redécoupe par décennie, comme pour les récents.
+  {
+    id: "era-70s", category: "era",
+    label: "Est-il né dans les années 70 (entre 1970 et 1979) ?", labelEn: "Was he born in the 1970s (between 1970 and 1979)?", labelDe: "Wurde er in den 1970ern geboren (zwischen 1970 und 1979)?", labelIt: "È nato negli anni '70 (tra il 1970 e il 1979)?", labelPt: "Nasceu nos anos 70 (entre 1970 e 1979)?", labelEs: "¿Nació en los años 70 (entre 1970 y 1979)?",
+    predicate: (p) =>
+      p.birthYear === undefined
+        ? null
+        : p.birthYear >= 1970 && p.birthYear <= 1979,
+  },
+  {
+    id: "era-60s", category: "era",
+    label: "Est-il né dans les années 60 (entre 1960 et 1969) ?", labelEn: "Was he born in the 1960s (between 1960 and 1969)?", labelDe: "Wurde er in den 1960ern geboren (zwischen 1960 und 1969)?", labelIt: "È nato negli anni '60 (tra il 1960 e il 1969)?", labelPt: "Nasceu nos anos 60 (entre 1960 e 1969)?", labelEs: "¿Nació en los años 60 (entre 1960 y 1969)?",
+    predicate: (p) =>
+      p.birthYear === undefined
+        ? null
+        : p.birthYear >= 1960 && p.birthYear <= 1969,
+  },
+  {
+    id: "era-ancient", category: "era",
+    label: "Est-il né avant 1960 (une gloire d'avant-guerre ou des années 50) ?", labelEn: "Was he born before 1960 (a pre-war or 1950s great)?", labelDe: "Wurde er vor 1960 geboren (eine Größe der Vorkriegszeit oder der 50er)?", labelIt: "È nato prima del 1960 (una gloria prebellica o degli anni '50)?", labelPt: "Nasceu antes de 1960 (uma glória pré-guerra ou dos anos 50)?", labelEs: "¿Nació antes de 1960 (una gloria de preguerra o de los años 50)?",
+    predicate: (p) =>
+      p.birthYear === undefined ? null : p.birthYear < 1960,
+  },
+  // Découpage en demi-décennies pour les deux plus gros paquets de la base
+  // (années 90 : ~2400 joueurs, années 2000 : ~1400).
+  {
+    id: "era-90s-early", category: "era",
+    label: "Est-il né entre 1990 et 1994 ?", labelEn: "Was he born between 1990 and 1994?", labelDe: "Wurde er zwischen 1990 und 1994 geboren?", labelIt: "È nato tra il 1990 e il 1994?", labelPt: "Nasceu entre 1990 e 1994?", labelEs: "¿Nació entre 1990 y 1994?",
+    predicate: (p) =>
+      p.birthYear === undefined
+        ? null
+        : p.birthYear >= 1990 && p.birthYear <= 1994,
+  },
+  {
+    id: "era-85-89", category: "era",
+    label: "Est-il né entre 1985 et 1989 ?", labelEn: "Was he born between 1985 and 1989?", labelDe: "Wurde er zwischen 1985 und 1989 geboren?", labelIt: "È nato tra il 1985 e il 1989?", labelPt: "Nasceu entre 1985 e 1989?", labelEs: "¿Nació entre 1985 y 1989?",
+    predicate: (p) =>
+      p.birthYear === undefined
+        ? null
+        : p.birthYear >= 1985 && p.birthYear <= 1989,
+  },
+  {
+    id: "era-teen", category: "era",
+    label: "A-t-il 21 ans ou moins aujourd'hui (né en 2005 ou après) ?", labelEn: "Is he 21 or younger today (born in 2005 or later)?", labelDe: "Ist er heute 21 oder jünger (2005 oder später geboren)?", labelIt: "Ha 21 anni o meno oggi (nato nel 2005 o dopo)?", labelPt: "Tem 21 anos ou menos hoje (nascido em 2005 ou depois)?", labelEs: "¿Tiene 21 años o menos hoy (nacido en 2005 o después)?",
+    predicate: (p) =>
+      p.birthYear === undefined ? null : p.birthYear >= 2005,
   },
   {
     id: "era-gen-z", category: "era",
