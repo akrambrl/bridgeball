@@ -56,7 +56,7 @@ type Props = {
    *  doit tenir d'une pièce, sa hauteur libre mangeait à elle seule un quart de
    *  la page. Au-delà du plafond on RECADRE (object-fit: cover) plutôt que de
    *  déformer — la scène reste lisible, elle est juste resserrée. */
-  maxHeight?: number;
+  maxHeight?: number | string;
 };
 
 export const WinBanner = ({ maxWidth = 420, marginTop = 10, lose = false, maxHeight }: Props) => {

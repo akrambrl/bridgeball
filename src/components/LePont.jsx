@@ -15387,8 +15387,8 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
       {myRecoveryCodeModal}
         {/* Terrain dessiné de la charte : les bandes opaques recouvraient le fond. */}
         {terrainCharte}
-      <div style={{zIndex:1,padding:"10px 20px 0",textAlign:"center"}}>
-        <WinBanner maxWidth={340} marginTop={0} maxHeight={128} lose={sc <= 0} />
+      <div style={{zIndex:1,padding:"6px 20px 0",textAlign:"center"}}>
+        <WinBanner maxWidth={320} marginTop={0} maxHeight={"min(96px, 13vh)"} lose={sc <= 0} />
         {/* Plus de « TEMPS ÉCOULÉ ! » ni de vanne sous le bandeau : l'écran de
             fin ne tenait pas d'une pièce, et ces deux lignes ne portaient aucune
             information — le score et le près-du-record disent déjà tout. Le seul
@@ -15397,10 +15397,10 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
       </div>
       {/* La feuille se serre pour que l'écran tienne d'une pièce : c'est elle
           qui porte le score, les relances et les deux boutons. */}
-      <div style={{...sheet,gap:8,padding:"12px 16px 16px"}}>
-        <div style={{background:G.nuit,borderRadius:G.rayonL,padding:"12px 16px",textAlign:"center",border:G.trait,boxShadow:G.ombreL}}>
+      <div style={{...sheet,gap:6,padding:"10px 16px 14px"}}>
+        <div style={{background:G.nuit,borderRadius:G.rayonL,padding:"8px 16px",textAlign:"center",border:G.trait,boxShadow:G.ombreL}}>
           <div style={{fontSize:11,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.5)"}}>{isChain?tr("Score","Score","Score","Punteggio","Pontuação","Puntuación"):tr("Score total","Total score","Gesamtpunktzahl","Punteggio totale","Pontuação total","Puntuación total")}</div>
-          <div style={{...posterText(56,G.white)}}>{sc}</div>
+          <div style={{...posterText(46,G.white)}}>{sc}</div>
           <div style={{fontSize:11,color:"rgba(255,255,255,.5)"}}>pts{isChain?` · ${chainCount} ${chainCount>1?tr("liens","links","Glieder","anelli","elos","eslabones"):tr("lien","link","Glied","anello","elo","eslabón")}`:`  ·  ${totalRounds} ${totalRounds>1?tr("manches","rounds","Runden","turni","rodadas","rondas"):tr("manche","round","Runde","turno","rodada","ronda")}`}</div>
           {maxCombo>=3&&<div style={{fontSize:13,color:"#f59e0b",marginTop:4,fontWeight:700}}>🔥 {tr("Meilleur combo","Best combo","Bester Combo","Miglior combo","Melhor combo","Mejor combo")} : x{maxCombo}</div>}
           {isNewRecord&&<div style={{fontSize:12,color:G.pelouseClaire,marginTop:6,fontStyle:"italic"}}>{tr("Ancien record battu 🎉","Previous record beaten 🎉","Alter Rekord geschlagen 🎉","Vecchio record battuto 🎉","Recorde anterior batido 🎉","Récord anterior superado 🎉")}</div>}
@@ -15414,7 +15414,7 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
           const gap = chainRecord.score - sc;
           const close = gap <= Math.max(20, Math.round(chainRecord.score * 0.12));
           return (
-            <div style={{marginTop:12,background:close?"rgba(245,194,43,.28)":G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,padding:"9px 14px",textAlign:"center"}}>
+            <div style={{marginTop:6,background:close?"rgba(245,194,43,.28)":G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,padding:"7px 14px",textAlign:"center"}}>
               <div style={{fontSize:13.5,fontWeight:900,color:close?"#FF8A2A":"#fff",letterSpacing:.3}}>
                 {close ? tr("SI PROCHE ! 😤 ","SO CLOSE! 😤 ","SO KNAPP! 😤 ","COSÌ VICINO! 😤 ","POR POUCO! 😤 ","¡QUÉ CERCA! 😤 ") : ""}
                 {tr(`Il te manquait ${gap} pts pour ton record`,`${gap} pts short of your record`,`Nur ${gap} Pkt bis zum Rekord`,`Ti mancavano ${gap} pt per il record`,`Faltaram ${gap} pts para o recorde`,`Te faltaron ${gap} pts para tu récord`)}
@@ -15457,7 +15457,7 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
           const verdictFg = draw ? G.encre : G.white;
           const verdictText = draw ? "ÉGALITÉ" : win ? "VICTOIRE !" : "DÉFAITE";
           return (
-            <div style={{borderRadius:G.rayon,padding:"16px",border:G.trait,boxShadow:G.ombre,background:G.nuit,animation:"fadeUp .4s ease .15s both"}}>
+            <div style={{borderRadius:G.rayon,padding:"10px 14px",border:G.trait,boxShadow:G.ombre,background:G.nuit,animation:"fadeUp .4s ease .15s both"}}>
               <div style={{textAlign:"center",marginBottom:14}}>
                 <span style={{...posterText(26,verdictFg),display:"inline-block",padding:"5px 16px",background:verdictBg,
                   border:G.traitFin,borderRadius:G.rayonS,boxShadow:"2px 2px 0 "+G.encre}}>{verdictText}</span>
@@ -15465,11 +15465,11 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
               <div style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",alignItems:"center",gap:10}}>
                 {/* Toi */}
                 <div style={{textAlign:"center"}}>
-                  <div style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:64,height:64,borderRadius:G.rayonS,overflow:"hidden",background:G.pelouse,border:G.traitFin,marginBottom:8,marginInline:"auto"}}>
+                  <div style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:52,height:52,borderRadius:G.rayonS,overflow:"hidden",background:G.pelouse,border:G.traitFin,marginBottom:8,marginInline:"auto"}}>
                     <img src={avatarCard(playerBadge, playerXp).img} alt="" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top"}}/>
                   </div>
                   <div style={{fontSize:11,color:"#bbb",letterSpacing:1,textTransform:"uppercase"}}>{playerName||"Toi"}</div>
-                  <div style={{...posterText(1,win?G.pelouse:G.white,0),fontSize:34,marginTop:2}}>{myScore}</div>
+                  <div style={{...posterText(1,win?G.pelouse:G.white,0),fontSize:28,marginTop:0}}>{myScore}</div>
                 </div>
                 {/* VS */}
                 <div style={{...posterText(1,"rgba(255,255,255,.55)",0),fontSize:20,letterSpacing:2}}>VS</div>
