@@ -9,6 +9,20 @@ import { G, posterTitre, btn } from "@/lib/charte.jsx";
 
 const BREAKPOINT = 768;
 
+// Jeu demandé par l'URL (`/?play=<mode>`), tel que l'émettent les pages SEO.
+//
+// Ces deux modes-là vivent dans des overlays montés ICI, pas dans LePont : c'est
+// donc à Index de lire le paramètre. Et il faut le lire à l'INITIALISATION de
+// l'état, pas dans un effet : LePont est un enfant, ses effets tournent avant
+// ceux du parent, et il efface l'URL au passage. Un effet d'Index arriverait
+// toujours après le ménage.
+//
+// Attention aux deux noms proches, cf. le type GameMode : `grid` = « Trouve le
+// joueur », `goatgrid` = la grille 3×3 (celle-là démarre bien dans LePont).
+function jeuDemandeParURL(): string | null {
+  try { return new URLSearchParams(window.location.search).get("play"); } catch { return null; }
+}
+
 const Index = () => {
   const [isMobile, setIsMobile] = useState(
     () => typeof window !== "undefined" && window.innerWidth < BREAKPOINT
@@ -17,9 +31,11 @@ const Index = () => {
   // quand on la quitte un instant (ex. faire une capture d'écran à envoyer à un
   // pote), on rouvre le jeu au lieu de retomber sur l'accueil.
   const [goatGuessOpen, setGoatGuessOpen] = useState(() => {
+    if (jeuDemandeParURL() === "guess") return true;
     try { return sessionStorage.getItem("bb_active_overlay") === "guess"; } catch { return false; }
   });
   const [findPlayerOpen, setFindPlayerOpen] = useState(() => {
+    if (jeuDemandeParURL() === "grid") return true;
     try { return sessionStorage.getItem("bb_active_overlay") === "findplayer"; } catch { return false; }
   });
   const [devinetteOpen, setDevinetteOpen] = useState(() => {

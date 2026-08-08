@@ -5498,7 +5498,12 @@ export default function LePont() {
       } else if (play === "chaine" || play === "mercato") {
         setGameMode("chaine");
         startChain(reqDiff);
-      } else if (play === "grid" || play === "goatgrid") {
+      } else if (play === "goatgrid") {
+        // `grid` était traité ici comme un alias de `goatgrid` : le lien « JOUER »
+        // de la page /trouve-le-joueur/ ouvrait donc la grille 3×3 au lieu du jeu
+        // annoncé. Ce sont deux jeux différents (cf. le type GameMode), et
+        // « Trouve le joueur » vit dans un overlay monté par Index — qui lit
+        // `?play=grid` lui-même. Pareil pour `guess` : rien à faire ici.
         ggStartGame();
       } else if (play === "duel" || play === "goatduel") {
         // GOAT Duel : on ouvre son menu (solo / en ligne / entre potes),
