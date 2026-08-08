@@ -103,8 +103,12 @@ const Home = () => {
   }, []);
 
   if (playing) {
+    // Le jeu tient dans une colonne, mais elle était posée sur `bg-background` —
+    // un jeton CLAIR, donc deux marges blanches de part et d'autre d'une app
+    // entièrement sombre. On pose le fond de nuit de la charte : la colonne se
+    // détache dessus grâce à son ombre portée, au lieu de flotter sur du papier.
     return (
-      <div className="fixed inset-0 z-50 bg-background overflow-auto">
+      <div className="fixed inset-0 z-50 overflow-auto" style={{ background:G.nuit }}>
         <button
           onClick={() => setShowQuitConfirm(true)}
           className="fixed top-3 right-3 z-[60]"
