@@ -1116,6 +1116,13 @@ type Phase = "intro" | "asking" | "guessing" | "won" | "lost"
 // Vingt questions, puis il faut donner un nom. Un seul essai : faux = perdu.
 const INVERSE_MAX_Q = 20;
 
+// Points d'une manche gagnée, selon le nombre de questions posées. Même forme
+// de barème que « Trouve le joueur » (1000 / 500 / 200 / 100), mais indexée sur
+// les questions et non sur les essais : ici il n'y a qu'un seul essai.
+function scoreManche(questions: number): number {
+  return questions <= 5 ? 1000 : questions <= 10 ? 500 : questions <= 15 ? 200 : 100;
+}
+
 // Le vivier du mode inversé : uniquement des joueurs CONNUS. Le génie pioche
 // dans les 5 622 entrées de la base pour DEVINER, mais quand c'est lui qui
 // choisit, tomber sur un inconnu rendrait la manche impossible — vingt
@@ -1360,6 +1367,7 @@ const GoatGuessGame = ({
   const [cible, setCible] = useState<Player | null>(null);
   const [posees, setPosees] = useState<{ q: Question; r: ReponseGenie }[]>([]);
   const [proposition, setProposition] = useState("");
+  const [gagnes, setGagnes] = useState(0);        // points de la dernière manche
   const vusRef = useRef<Set<string>>(new Set());   // anti-répétition entre manches
 
   function demarrerInverse() {
@@ -1383,7 +1391,17 @@ const GoatGuessGame = ({
   function proposerNom(p: Player) {
     if (!cible) return;
     // Un seul essai, comme demandé : juste ou faux, la manche s'arrête.
-    setPhase(p.name === cible.name ? "inverseGagne" : "inversePerdu");
+    if (p.name !== cible.name) { setGagnes(0); setPhase("inversePerdu"); return; }
+    const points = scoreManche(posees.length);
+    setGagnes(points);
+    try {
+      const total = (parseInt(localStorage.getItem("bb_genie_pts") || "0", 10) || 0) + points;
+      localStorage.setItem("bb_genie_pts", String(total));
+    } catch { /* le total local n'est qu'un confort */ }
+    // L'XP passe par l'événement global : ce composant vit hors de LePont et
+    // n'a pas accès à `addXp`. Même canal que « Trouve le joueur ».
+    try { window.dispatchEvent(new CustomEvent("goatfc:award-xp", { detail: { amount: points } })); } catch { /* noop */ }
+    setPhase("inverseGagne");
   }
   // « Fumée de génie » : nombre de réponses tranchées (oui/non). Chaque réponse
   // fait monter la barre de fumée ; un « je sais pas » ne la remplit pas.
@@ -1607,10 +1625,10 @@ const GoatGuessGame = ({
         />
       )}
       {phase === "inverseGagne" && cible && (
-        <InverseFinView gagne cible={cible} posees={posees} onRestart={demarrerInverse} onClose={onClose} />
+        <InverseFinView gagne points={gagnes} cible={cible} posees={posees} onRestart={demarrerInverse} onClose={onClose} />
       )}
       {phase === "inversePerdu" && cible && (
-        <InverseFinView gagne={false} cible={cible} posees={posees} onRestart={demarrerInverse} onClose={onClose} />
+        <InverseFinView gagne={false} points={0} cible={cible} posees={posees} onRestart={demarrerInverse} onClose={onClose} />
       )}
       {phase === "lost" && (
         <LostView
@@ -2500,9 +2518,10 @@ const InverseView = ({
 // Fin de manche du mode inversé : on montre TOUJOURS la réponse et le parcours
 // du joueur, gagné ou perdu — c'est ce qu'on vient chercher.
 const InverseFinView = ({
-  gagne, cible, posees, onRestart, onClose,
+  gagne, points, cible, posees, onRestart, onClose,
 }: {
   gagne: boolean;
+  points: number;
   cible: Player;
   posees: { q: Question; r: ReponseGenie }[];
   onRestart: () => void;
@@ -2520,6 +2539,10 @@ const InverseFinView = ({
         ? tr("En " + posees.length + " question" + (posees.length > 1 ? "s" : "") + ".", "In " + posees.length + " question" + (posees.length > 1 ? "s" : "") + ".", "In " + posees.length + " Frage(n).", "In " + posees.length + " domanda/e.", "Em " + posees.length + " pergunta(s).", "En " + posees.length + " pregunta(s).")
         : tr("Je pensais à…","I was thinking of…","Ich dachte an…","Pensavo a…","Eu pensava em…","Pensaba en…")}
     </p>
+
+    {gagne && (
+      <div style={{ ...posterText(38, G.projecteur), marginBottom: 12 }}>+{points.toLocaleString("fr-FR")} PTS</div>
+    )}
 
     <PlayerRevealCard player={cible} accent={gagne ? G.pelouseClaire : G.maillot} />
 
