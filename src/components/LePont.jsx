@@ -3494,6 +3494,17 @@ export default function LePont() {
   // rouge, bandeau, encadré de signalement — quand la réussite n'en avait qu'un,
   // le champ qui verdit, et il disparaît dès que le joueur suivant tombe.
   const [chainOkClub, setChainOkClub] = useState(null);
+  // Les six drapeaux en rang mangeaient toute la largeur de l'entête. Un seul
+  // bouton porte désormais la langue courante, et la liste passe en modale.
+  const [showLangues, setShowLangues] = useState(false);
+  const LANGUES = [
+    {id:"fr", drapeau:"🇫🇷", code:"FR", nom:"Français"},
+    {id:"en", drapeau:"🇬🇧", code:"EN", nom:"English"},
+    {id:"de", drapeau:"🇩🇪", code:"DE", nom:"Deutsch"},
+    {id:"it", drapeau:"🇮🇹", code:"IT", nom:"Italiano"},
+    {id:"pt", drapeau:"🇵🇹", code:"PT", nom:"Português"},
+    {id:"es", drapeau:"🇪🇸", code:"ES", nom:"Español"},
+  ];
   const [chainReportSent, setChainReportSent] = useState(false);
   const [reportMessage, setReportMessage] = useState("");
   const [reportSent, setReportSent] = useState(false);
@@ -12462,6 +12473,38 @@ export default function LePont() {
           la voyait jamais. Son voile laisse voir l'accueil derrière, c'est là
           que la carte vient d'être gagnée. */}
       {cardUnlockModal}
+      {/* Choix de la langue. Les six drapeaux tenaient en rang dans l'entête et
+          en mangeaient toute la largeur ; ils passent ici, en liste lisible où
+          chaque langue est écrite dans sa propre langue. */}
+      {showLangues && (
+        <div onClick={function(){setShowLangues(false);}}
+          style={{position:"fixed",inset:0,zIndex:600,background:"rgba(8,17,9,.86)",
+            display:"flex",alignItems:"center",justifyContent:"center",padding:20,animation:"fadeIn .2s ease"}}>
+          <div onClick={function(e){e.stopPropagation();}}
+            style={{width:"100%",maxWidth:320,background:G.nuit,border:G.trait,boxShadow:G.ombreL,
+              borderRadius:G.rayonL,padding:"18px 16px",animation:"popIn .3s cubic-bezier(.34,1.56,.64,1)"}}>
+            <div style={{...posterText(24,G.projecteur),textAlign:"center",marginBottom:14}}>
+              {tr("CHOISIS TA LANGUE","CHOOSE YOUR LANGUAGE","SPRACHE WÄHLEN","SCEGLI LA LINGUA","ESCOLHA O IDIOMA","ELIGE TU IDIOMA")}
+            </div>
+            <div style={{display:"flex",flexDirection:"column",gap:7}}>
+              {LANGUES.map(function(o){
+                const actif = lang === o.id;
+                return (
+                  <button key={o.id} onClick={function(){setLanguage(o.id);setShowLangues(false);}}
+                    style={{display:"flex",alignItems:"center",gap:11,width:"100%",padding:"11px 14px",
+                      background:actif?G.projecteur:"rgba(8,17,9,.45)",color:actif?G.encre:G.white,
+                      border:G.traitFin,boxShadow:"2px 2px 0 "+G.encre,borderRadius:G.rayonS,cursor:"pointer",
+                      fontFamily:G.font,fontSize:15,fontWeight:800,textAlign:"left"}}>
+                    <span style={{fontSize:19,lineHeight:1}}>{o.drapeau}</span>
+                    <span style={{flex:1}}>{o.nom}</span>
+                    {actif && <span style={{fontSize:15}}>✓</span>}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
       {showRoomCreate && (
         <div
           style={{position:"fixed",inset:0,zIndex:400,display:"flex",alignItems:"flex-end"}}
@@ -12511,14 +12554,18 @@ export default function LePont() {
       <div style={{zIndex:1,padding:"6px 20px 2px"}}>
         <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between"}}>
           <div style={{flex:1,display:"flex",alignItems:"center"}}>
-            <div style={{display:"flex",background:"rgba(0,0,0,.3)",border:G.traitFin,borderRadius:12,padding:3}}>
-              <button onClick={()=>setLanguage("fr")} style={{padding:"5px 6px",background:lang==="fr"?G.pelouse:"transparent",color:lang==="fr"?"#000":"rgba(255,255,255,.7)",border:"none",borderRadius:9,cursor:"pointer",fontFamily:G.font,fontSize:11,fontWeight:800}}>🇫🇷 FR</button>
-              <button onClick={()=>setLanguage("en")} style={{padding:"5px 6px",background:lang==="en"?G.pelouse:"transparent",color:lang==="en"?"#000":"rgba(255,255,255,.7)",border:"none",borderRadius:9,cursor:"pointer",fontFamily:G.font,fontSize:11,fontWeight:800}}>🇬🇧 EN</button>
-              <button onClick={()=>setLanguage("de")} style={{padding:"5px 6px",background:lang==="de"?G.pelouse:"transparent",color:lang==="de"?"#000":"rgba(255,255,255,.7)",border:"none",borderRadius:9,cursor:"pointer",fontFamily:G.font,fontSize:11,fontWeight:800}}>🇩🇪 DE</button>
-              <button onClick={()=>setLanguage("it")} style={{padding:"5px 6px",background:lang==="it"?G.pelouse:"transparent",color:lang==="it"?"#000":"rgba(255,255,255,.7)",border:"none",borderRadius:9,cursor:"pointer",fontFamily:G.font,fontSize:11,fontWeight:800}}>🇮🇹 IT</button>
-              <button onClick={()=>setLanguage("pt")} style={{padding:"5px 6px",background:lang==="pt"?G.pelouse:"transparent",color:lang==="pt"?"#000":"rgba(255,255,255,.7)",border:"none",borderRadius:9,cursor:"pointer",fontFamily:G.font,fontSize:11,fontWeight:800}}>🇵🇹 PT</button>
-              <button onClick={()=>setLanguage("es")} style={{padding:"5px 6px",background:lang==="es"?G.pelouse:"transparent",color:lang==="es"?"#000":"rgba(255,255,255,.7)",border:"none",borderRadius:9,cursor:"pointer",fontFamily:G.font,fontSize:11,fontWeight:800}}>🇪🇸 ES</button>
-            </div>
+            {(function(){
+              const L = LANGUES.find(function(x){return x.id===lang;}) || LANGUES[0];
+              return (
+                <button onClick={function(){setShowLangues(true);}} aria-label={tr("Changer la langue","Change language","Sprache ändern","Cambia lingua","Mudar de idioma","Cambiar el idioma")}
+                  style={{display:"flex",alignItems:"center",gap:5,padding:"6px 9px",background:G.nuit,border:G.traitFin,
+                    boxShadow:"2px 2px 0 "+G.encre,borderRadius:G.rayonS,cursor:"pointer",fontFamily:G.font,
+                    fontSize:12,fontWeight:800,color:G.white,letterSpacing:.5}}>
+                  <span style={{fontSize:14,lineHeight:1}}>{L.drapeau}</span>{L.code}
+                  <span style={{fontSize:9,color:"rgba(255,255,255,.5)"}}>▼</span>
+                </button>
+              );
+            })()}
           </div>
           <div style={{textAlign:"center",flex:2}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"center"}}>
