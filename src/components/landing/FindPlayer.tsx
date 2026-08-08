@@ -539,14 +539,26 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
     const dec = startYear ? Math.floor(startYear / 10) * 10 : null;
     if (dec) clues.push(tr("J'ai percé dans les années", "I broke through in the", "Durchbruch in den", "Sono esploso negli anni", "Estourei nos anos","Me di a conocer en los") + " " + dec + tr("", "s", "ern", "", "","s") + ".");
 
+    // 6) Génération (repli le plus sûr : `inRange` garantit une année de
+    //    naissance pour TOUS les joueurs tirés, dans les deux modes). C'est
+    //    l'indice qui permet de promettre au moins un indice à chacun, même aux
+    //    quatre cinquièmes du vivier qui n'ont aucun palmarès enregistré.
+    if (answer.birthYear) {
+      const d0 = Math.floor((answer.birthYear as number) / 10) * 10;
+      const gen = d0 + "-" + (d0 + 9);
+      clues.push(tr("Je suis de la génération", "I'm from the", "Ich gehöre zur Generation", "Sono della generazione", "Sou da geração","Soy de la generación") + " " + gen + tr("", " generation", "", "", "","") + ".");
+    }
+
     if (!clues.length) return [];
     // Mélange déterministe puis on garde 3-4 indices (types tous distincts).
     const uniq = Array.from(new Set(clues));
     let s = (hashStr(answer.name, 131) % 2147483647) || 1;
     const rand = () => { s = (s * 16807) % 2147483647; return s / 2147483647; };
     for (let i = uniq.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); const t = uniq[i]; uniq[i] = uniq[j]; uniq[j] = t; }
-    return uniq.slice(0, 4);
-  }, [answer.name]);
+    // 5 en illimité contre 4 en devinette du jour : ici les indices ont remplacé
+    // la révélation de pastilles, il faut de quoi tenir toute une manche.
+    return uniq.slice(0, daily ? 4 : 5);
+  }, [answer.name, daily]);
 
   function submitGuess(p: Player) {
     if (over || revealing) return;
@@ -617,22 +629,18 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
     setTimeout(() => inputRef.current?.focus(), 60);
   }
 
-  // 💡 Indice : révèle une pastille (un attribut) non encore trouvée.
+  // 💡 Indice : dévoile la phrase d'indice suivante.
   //
-  // Quand c'est la DERNIÈRE, la manche se termine d'elle-même et la réponse est
-  // dévoilée : tout est connu, il n'y a plus rien à déduire, et faire taper un
-  // nom qu'on vient d'afficher n'apporte rien. Ça ferme aussi une faille — tout
-  // révéler puis répondre comptait jusqu'ici comme une victoire et conservait la
-  // série intacte.
-  function revealOneAttr() {
-    const conf = new Set<string>(hintRevealed);
-    guesses.forEach(g => computeChips(g, answer).forEach(c => { if (c.state === "ok") conf.add(c.key); }));
-    const remaining = ["nat", "cont", "pos", "age", "lastclub"].filter(k => !conf.has(k));
-    if (remaining.length === 0) return;
-    const pick = remaining[Math.floor(Math.random() * remaining.length)];
-    setHintRevealed(prev => prev.includes(pick) ? prev : [...prev, pick]);
-    // Court délai : on laisse la dernière pastille se retourner avant l'écran de fin.
-    if (remaining.length === 1) setTimeout(() => { giveUp(); }, 700);
+  // L'ampoule retournait auparavant une pastille de la grille, et quand c'était
+  // la DERNIÈRE elle terminait la manche en affichant la réponse. Vu du joueur,
+  // un bouton « indice » lui donnait donc la solution — d'autant que
+  // l'avertissement vivait dans un `title`, invisible sur un écran tactile.
+  //
+  // Elle donne maintenant un vrai indice, comme en devinette du jour : palmarès,
+  // coéquipier, grand club, pays, génération. Rien n'est révélé de la grille, la
+  // déduction reste entière, et aucun clic ne peut plus coûter la manche.
+  function revealOneClue() {
+    setCluesShown(n => Math.min(deviClues.length, n + 1));
   }
 
   // 🏳️ Abandonner : dévoile la réponse (fin de manche, série remise à zéro).
@@ -820,9 +828,9 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
     { key: "age", label: tr("ÂGE", "AGE", "ALTER", "ETÀ", "IDADE","EDAD"), value: aAge ? String(aAge) : "?", confirmed: confirmedKeys.has("age") },
     { key: "lastclub", label: tr("CLUB", "CLUB", "KLUB", "CLUB", "CLUBE","CLUB"), value: aLastClub ? clubCode(aLastClub) : "?", bg: aLbg, fg: aLfg, confirmed: confirmedKeys.has("lastclub") },
   ] as { key: string; label: string; value: string; big?: boolean; bg?: string; fg?: string; confirmed: boolean }[];
-  const allFound = topSlots.every(s => s.confirmed);
-  // Un seul attribut restant : le prochain indice terminera la manche, autant le dire.
-  const lastClueLeft = topSlots.filter(s => !s.confirmed).length === 1;
+  // `allFound` et `lastClueLeft` ont disparu avec l'ancienne ampoule : elle
+  // retournait des pastilles et devait savoir quand c'était la dernière. Les
+  // indices ne touchent plus à la grille, leur compteur est `cluesShown`.
 
   // En « Devinette du jour » : carte centrée bornée (ne prend pas tout l'écran),
   // avec un fond derrière. En GOAT reveal : plein écran. Pas de transform sur la
@@ -905,11 +913,23 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
             (là c'est une devinette pure : on lit les indices et on tape des noms). */}
         {!over && !daily && (
           <div style={{ marginBottom: 14 }}>
+            {/* Les indices déjà obtenus, au-dessus des boutons : c'est eux qu'on
+                relit en réfléchissant, ils ne doivent pas être sous la grille. */}
+            {cluesShown > 0 && (
+              <div style={{ marginBottom: 12, background: G.nuit, border: G.trait, borderRadius: G.rayon, boxShadow: G.ombre, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 5 }}>
+                {deviClues.slice(0, cluesShown).map((c, i) => (
+                  <div key={i} style={{ fontSize: 13.5, fontWeight: 600, fontStyle: "italic", color: "rgba(255,255,255,.9)", lineHeight: 1.35, display: "flex", gap: 6 }}>
+                    <span style={{ color: G.projecteur }}>▪</span><span>{c}</span>
+                  </div>
+                ))}
+              </div>
+            )}
             <div style={{ display: "flex", justifyContent: "center", gap: 12, marginBottom: 12 }}>
               {[
-                { emoji: "💡", color: G.ciel, onClick: revealOneAttr, disabled: allFound, label: lastClueLeft
-                  ? tr("Dernier indice — dévoile la réponse", "Last clue — reveals the answer", "Letzter Hinweis — zeigt die Lösung", "Ultimo indizio — svela la risposta", "Última dica — revela a resposta","Última pista — revela la respuesta")
-                  : tr("Révéler une info", "Reveal a clue", "Info zeigen", "Rivela un'info", "Revelar info","Revelar un dato") },
+                { emoji: "💡", color: G.ciel, onClick: revealOneClue, disabled: cluesShown >= deviClues.length,
+                  label: cluesShown >= deviClues.length
+                  ? tr("Plus d'indice disponible", "No clue left", "Kein Hinweis mehr", "Nessun indizio rimasto", "Sem mais dicas","Sin más pistas")
+                  : tr("Un indice (" + (cluesShown + 1) + "/" + deviClues.length + ")", "A clue (" + (cluesShown + 1) + "/" + deviClues.length + ")", "Ein Hinweis (" + (cluesShown + 1) + "/" + deviClues.length + ")", "Un indizio (" + (cluesShown + 1) + "/" + deviClues.length + ")", "Uma dica (" + (cluesShown + 1) + "/" + deviClues.length + ")","Una pista (" + (cluesShown + 1) + "/" + deviClues.length + ")") },
                 { emoji: "🏳️", color: G.maillot, onClick: giveUp, disabled: false, label: tr("Abandonner", "Give up", "Aufgeben", "Arrenditi", "Desistir","Abandonar") },
               ].map(h => (
                 <button key={h.emoji} onClick={h.onClick} disabled={h.disabled} title={h.label} aria-label={h.label} style={{ width: 48, height: 48, borderRadius: G.rayonS, border: G.traitFin, background: h.disabled ? "rgba(8,17,9,.45)" : h.color, color: "#fff", fontSize: 20, cursor: h.disabled ? "not-allowed" : "pointer", opacity: h.disabled ? 0.45 : 1, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: h.disabled ? "none" : "2px 2px 0 " + G.encre }}>{h.emoji}</button>
