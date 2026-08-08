@@ -79,7 +79,14 @@ faux via Transfermarkt. Dans le doute, ne pas toucher.
    la branche de dev, ouvrir la PR, merger en squash.
 5. Ne PAS mettre l'identifiant du modèle dans les commits/PR.
 
-## 5. Journal (optionnel)
+## 5. Journal
 
-Tenir un court récap par run dans le corps de la PR : id du signalement, verdict
-(corrigé / rejeté + raison), fiche(s) touchée(s).
+`docs/reports-journal.md` : un bloc par passe, avec pour chaque signalement son
+verdict (corrigé / rejeté + raison) et la ou les fiches touchées.
+
+Ce n'est pas de la décoration : `reports-state.json` ne retient qu'un compteur,
+donc un signalement **rejeté** est indistinguable d'un signalement jamais lu.
+Sans le journal, la même revendication revient et on refait la vérification à
+zéro — c'est exactement ce qui s'est produit sur les id 27-46, re-vérifiés
+entièrement le 8 août 2026 faute de trace. Les rejets méritent une ligne autant
+que les corrections.
