@@ -8963,7 +8963,11 @@ export default function LePont() {
     // un contexte d'empilement ici pour ne pas remonter derrière le fond d'un
     // ancêtre. `isolate` en crée un sans rien changer d'autre au rendu.
     isolation:"isolate",
-    minHeight:"100vh",display:"flex",flexDirection:"column",
+    // `100dvh` et non `100vh` : sur Android, `vh` se fige sur la fenêtre la plus
+    // GRANDE (barre d'URL rétractée), donc un écran calé sur 100vh dépasse
+    // toujours la zone réellement visible. `dvh` suit la fenêtre du moment. Il
+    // ne peut que réduire la hauteur imposée, jamais l'augmenter.
+    minHeight:"100dvh",display:"flex",flexDirection:"column",
     background:"transparent",
     // Sur mobile : overflow hidden pour les fonds + scroll géré au cas par cas
     // Sur desktop : overflow auto pour permettre le scroll quand le contenu dépasse
@@ -8978,7 +8982,15 @@ export default function LePont() {
   // pelouse éclairée de la charte, ce filet ne se voyait pas et le flou faisait
   // remonter la tonte à travers le panneau. Aplat de nuit, trait d'encre en haut
   // (la feuille est collée aux trois autres bords), rayons francs.
-  const sheet = {background:G.nuit,borderTop:G.trait,borderRadius:G.rayonL+"px "+G.rayonL+"px 0 0",flex:1,display:"flex",flexDirection:"column",gap:14,padding:"20px 18px 28px",zIndex:1};
+  // Le `28px` du bas était un chiffre nu, et c'est ce qui piégeait les joueurs
+  // Android. La page déclare `viewport-fit=cover` : la fenêtre s'étend DERRIÈRE
+  // la barre de navigation du système. Une feuille qui s'arrête à 28px du bord
+  // de la fenêtre s'arrête donc sous cette barre — son dernier bouton devient
+  // intouchable. Et comme tout « tient » dans la hauteur déclarée, le navigateur
+  // n'a rien à faire défiler : le joueur ne peut ni voir ni atteindre le bouton,
+  // ni scroller pour aller le chercher. `env(safe-area-inset-bottom)` est
+  // exactement la mesure de cette barre.
+  const sheet = {background:G.nuit,borderTop:G.trait,borderRadius:G.rayonL+"px "+G.rayonL+"px 0 0",flex:1,display:"flex",flexDirection:"column",gap:14,padding:"20px 18px calc(28px + env(safe-area-inset-bottom))",zIndex:1};
 
   const backBtn = (onClick) => (
     <button onClick={onClick} style={{...retourStyle,width:40,height:40,zIndex:10}}>←</button>
@@ -15749,8 +15761,14 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
         <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.45)"}}/>
       </div>
       {/* Joueur célébration duel */}
-        <div style={{zIndex:1,padding:"16px 20px 0",textAlign:"center"}}>
-          <WinBanner maxWidth={380} marginTop={0} lose={!won && !draw} />
+        {/* Même patron que l'écran de fin solo : `flex:1 1 0` + `minHeight:0`
+            donne à l'entête une hauteur définie — ce que la feuille lui laisse,
+            pas plus. Le bandeau (le plus gros bloc de l'écran, 212px) se serre
+            donc tout seul sur un petit gabarit au lieu de pousser « Retour à
+            l'accueil » hors de l'écran. Sur un grand écran il garde sa taille. */}
+        <div style={{zIndex:1,padding:"12px 20px 0",textAlign:"center",
+          flex:"1 1 0",minHeight:0,overflow:"hidden",display:"flex",flexDirection:"column",justifyContent:"center",alignItems:"center"}}>
+          <WinBanner maxWidth={380} marginTop={0} maxHeight={212} fill lose={!won && !draw} />
           <div style={{...posterTitre(46,labelColor),fontSize:"clamp(30px,8vw,46px)",marginTop:4}}>{label}</div>
           <div style={{fontSize:"clamp(13px,3.5vw,18px)",color:G.white,fontWeight:800,marginTop:6,animation:"fadeUp .4s ease .25s both",textTransform:"uppercase",letterSpacing:1,textShadow:"0 2px 10px rgba(0,0,0,.4)"}}>{
             won
@@ -15759,12 +15777,18 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
               ? pickResultMessage(msgResultat(lang).drawLabels, duelResult.myScore)
               : pickResultMessage(msgResultat(lang).loseLabels, duelResult.theirScore)
           }</div>
-          {(()=>{const grade=getGrade(playerXp); return <div style={{display:"inline-flex",alignItems:"center",gap:8,marginTop:8,background:grade.color,border:G.traitFin,boxShadow:"2px 2px 0 "+G.encre,borderRadius:G.rayonS,padding:"6px 14px"}}><span style={{fontSize:13,fontWeight:800,color:grade.color,letterSpacing:.5}}>{grade.label}</span></div>; })()}
+          {/* Le texte était peint dans la couleur EXACTE de son fond : la pastille
+              s'affichait comme un pavé orange vide. Même recette que la pastille
+              de grade du profil — aplat translucide, texte dans la teinte pleine. */}
+          {(()=>{const grade=getGrade(playerXp); return <div style={{display:"inline-flex",alignItems:"center",gap:6,marginTop:8,background:grade.color+"2a",border:G.traitFin,boxShadow:"2px 2px 0 "+G.encre,borderRadius:G.rayonS,padding:"5px 12px"}}><span style={{fontSize:12,fontWeight:800,color:grade.color,letterSpacing:1,textTransform:"uppercase"}}>{grade.emoji} {grade.label}</span></div>; })()}
           <div style={{fontSize:14,color:"rgba(255,255,255,.4)",marginTop:8}}>
             {abandoned ? duelResult.oppName+(tr(" a abandonné 🏃"," forfeited 🏃"," hat aufgegeben 🏃"," ha abbandonato 🏃"," desistiu 🏃"," ha abandonado 🏃")) : (tr("Duel ","Duel ","Duell ","Duello ","Duelo ","Duelo "))+(duelResult.mode==="pont"?"The Plug":"The Mercato")}
           </div>
         </div>
-        <div style={{...sheet,borderRadius:"28px 28px 0 0"}}>
+        {/* `flex:0 0 auto` : la feuille prend ce qu'il lui faut et rien de plus.
+            Avec le `flex:1` par défaut, elle se battait avec l'entête pour
+            l'espace au lieu de le lui laisser. */}
+        <div style={{...sheet,borderRadius:"28px 28px 0 0",flex:"0 0 auto"}}>
           {/* Scores */}
           <div style={{display:"flex",gap:12,marginBottom:8}}>
             <div onClick={Array.isArray(duelResult.myRounds) && duelResult.myRounds.length > 0 ? function(){setReviewRoundsModal({mode:duelResult.mode||"pont",playerName:(tr("Toi","You","Du","Tu","Você","Tú")),rounds:duelResult.myRounds});} : null} style={{flex:1,background:won?"rgba(42,155,78,.35)":G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,padding:"18px 12px",textAlign:"center",cursor:Array.isArray(duelResult.myRounds)&&duelResult.myRounds.length>0?"pointer":"default",position:"relative"}}>
