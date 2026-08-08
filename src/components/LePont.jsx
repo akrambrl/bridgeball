@@ -12681,19 +12681,14 @@ export default function LePont() {
         {!dailyRiddle.done && (
         <button
           onClick={function(){ requirePseudo(function(){ window.dispatchEvent(new CustomEvent("goatfc:open-devinette")); }); }}
-          style={{width:"100%",display:"flex",alignItems:"center",gap:11,padding:"11px 14px",background:G.projecteur,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,cursor:"pointer",fontFamily:G.font,textAlign:"left",color:"#1A1206"}}
+          style={{width:"100%",display:"flex",alignItems:"center",gap:9,padding:"5px 12px",background:G.projecteur,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,cursor:"pointer",fontFamily:G.font,textAlign:"left",color:"#1A1206"}}
         >
-          <span style={{fontSize:20,lineHeight:1}}>🕵️</span>
-          <span style={{flex:1,minWidth:0}}>
-            <span style={{display:"block",...posterLight(17),transformOrigin:"left"}}>
-              {tr("DEVINETTE DU JOUR","DAILY RIDDLE","RÄTSEL DES TAGES","INDOVINELLO DEL GIORNO","ADIVINHA DO DIA","ADIVINANZA DEL DÍA")}
-            </span>
-            <span style={{display:"block",fontSize:11,fontWeight:900,color:"rgba(26,18,6,.72)",marginTop:2}}>
-              {tr("Un joueur mystère à deviner","A mystery player to guess","Ein Rätselspieler zu erraten","Un giocatore misterioso da indovinare","Um jogador misterioso para adivinhar","Un jugador misterioso para adivinar")}
-            </span>
+          <span style={{fontSize:17,lineHeight:1}}>🕵️</span>
+          <span style={{flex:1,minWidth:0,...posterLight(15),transformOrigin:"left",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
+            {tr("DEVINETTE DU JOUR","DAILY RIDDLE","RÄTSEL DES TAGES","INDOVINELLO DEL GIORNO","ADIVINHA DO DIA","ADIVINANZA DEL DÍA")}
           </span>
           {dailyRiddle.streak > 0 && (
-            <span style={{flexShrink:0,padding:"4px 10px",borderRadius:999,background:"rgba(255,138,42,.16)",border:"1px solid rgba(255,138,42,.5)",color:"#FF8A2A",fontSize:12,fontWeight:900}}>🔥 {dailyRiddle.streak}</span>
+            <span style={{flexShrink:0,padding:"2px 8px",borderRadius:999,background:"rgba(255,138,42,.16)",border:"1px solid rgba(255,138,42,.5)",color:"#FF8A2A",fontSize:11,fontWeight:900,lineHeight:1.3}}>🔥 {dailyRiddle.streak}</span>
           )}
           <span style={{flexShrink:0,color:"#1A1206",fontSize:16,fontWeight:900}}>›</span>
         </button>
