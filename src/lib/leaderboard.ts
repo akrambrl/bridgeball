@@ -52,12 +52,26 @@ export function getCurrentSeason(): SeasonInfo {
 // Les cinq langues de l'app, et non plus seulement FR + EN : un joueur italien
 // lisait « Titulaire » au milieu d'une interface italienne. GOAT reste GOAT
 // partout, c'est le mot de la marque.
+// ─── Les seuils sont calés sur la collection (src/lib/collection.ts) ─────────
+// Le grade et la carte racontaient deux histoires différentes : on était « GOAT »
+// dès 10 000 XP alors que la carte « Le GOAT » demande 250 000. Chaque grade
+// commence désormais exactement là où commence un palier de rareté, et le
+// dernier tombe pile sur la carte qui porte son nom :
+//
+//   Amateur   0        départ + bronze   (La Recrue → La Révélation)
+//   Espoir    1 200    début argent      (Le Titulaire)
+//   Titulaire 5 000    début or          (L'International)
+//   Légende   38 000   début diamant     (Le Roi)
+//   GOAT      250 000  la carte Le GOAT  (Maradona)
+//
+// Toucher un `min` ici ne retire aucune carte — les deux barèmes sont
+// indépendants — mais change le grade affiché de TOUS les joueurs d'un coup.
 export const GRADES = [
-  { min: 10000, label: "GOAT",      labelEn: "GOAT",    labelDe: "GOAT",          labelIt: "GOAT",     labelPt: "GOAT", labelEs: "GOAT",     emoji: "🐐",  color: "#FFD700" },
-  { min: 5000,  label: "Légende",   labelEn: "Legend",  labelDe: "Legende",       labelIt: "Leggenda", labelPt: "Lenda", labelEs: "Leyenda",    emoji: "☄️",  color: "#FF6B35" },
-  { min: 2000,  label: "Titulaire", labelEn: "Starter", labelDe: "Stammspieler",  labelIt: "Titolare", labelPt: "Titular", labelEs: "Titular",  emoji: "🐺",  color: "#00B4D8" },
-  { min: 500,   label: "Espoir",    labelEn: "Rookie",  labelDe: "Talent",        labelIt: "Promessa", labelPt: "Promessa", labelEs: "Promesa", emoji: "👦🏻", color: "#2EC4B6" },
-  { min: 0,     label: "Amateur",   labelEn: "Amateur", labelDe: "Amateur",       labelIt: "Amatore",  labelPt: "Amador", labelEs: "Amateur",   emoji: "🏖️", color: "#8D99AE" },
+  { min: 250000, label: "GOAT",      labelEn: "GOAT",    labelDe: "GOAT",          labelIt: "GOAT",     labelPt: "GOAT", labelEs: "GOAT",     emoji: "🐐",  color: "#FFD700" },
+  { min: 38000,  label: "Légende",   labelEn: "Legend",  labelDe: "Legende",       labelIt: "Leggenda", labelPt: "Lenda", labelEs: "Leyenda",    emoji: "☄️",  color: "#FF6B35" },
+  { min: 5000,   label: "Titulaire", labelEn: "Starter", labelDe: "Stammspieler",  labelIt: "Titolare", labelPt: "Titular", labelEs: "Titular",  emoji: "🐺",  color: "#00B4D8" },
+  { min: 1200,   label: "Espoir",    labelEn: "Rookie",  labelDe: "Talent",        labelIt: "Promessa", labelPt: "Promessa", labelEs: "Promesa", emoji: "👦🏻", color: "#2EC4B6" },
+  { min: 0,      label: "Amateur",   labelEn: "Amateur", labelDe: "Amateur",       labelIt: "Amatore",  labelPt: "Amador", labelEs: "Amateur",   emoji: "🏖️", color: "#8D99AE" },
 ];
 
 export type Grade = { min: number; label: string; emoji: string; color: string };
