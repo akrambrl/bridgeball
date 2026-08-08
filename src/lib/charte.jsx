@@ -98,6 +98,11 @@ export const posterTitre = function(size, color){
 // vert = classement, rouge = urgence) ; le traitement, lui, ne change jamais.
 // `fg` clair → lettrage contouré ; `fg` sombre → lettrage nu (le contour
 // boucherait les lettres).
+//
+// ATTENTION : cette recette pose `display:flex`, donc le bouton est un bloc.
+// Dans un parent en `text-center`, il ne se centrera PAS — `text-center` ne
+// centre que de l'inline — et se collera à gauche à la largeur de son contenu.
+// Pour un bouton centré, redéclarer `display:"inline-flex"` APRÈS l'étalement.
 export const btn = function(bg, fg, size){
   const c = fg || "#1A1206";
   const clair = c === G.white || c === "#fff" || c === "#ffffff";

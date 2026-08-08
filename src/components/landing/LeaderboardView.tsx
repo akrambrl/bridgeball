@@ -196,7 +196,7 @@ export const LeaderboardView = ({ onPlay }: Props) => {
         <button
           onClick={() => onPlay("pont")}
           className="inline-flex"
-          style={{ ...btn(G.projecteur, G.encre, 30), padding:"14px 40px", boxShadow:G.ombreL }}
+          style={{ ...btn(G.projecteur, G.encre, 30), display:"inline-flex", padding:"14px 40px", boxShadow:G.ombreL }}
         >
           ▶ {tr("TENTER MA PLACE", "GO FOR MY SPOT", "UM MEINEN PLATZ KÄMPFEN", "TENTA IL TUO POSTO", "IR ATRÁS DO MEU LUGAR","IR A POR MI PUESTO")}
         </button>
