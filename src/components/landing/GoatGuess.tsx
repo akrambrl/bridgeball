@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { PLAYERS, RETIRED_PLAYERS, GG_WC_WINNERS, GG_CL_WINNERS, GG_BALLON_DOR, GG_BALLON_DOR_MULTI, GG_SHIRT_10 } from "../../players.jsx";
 import { CLUB_COLORS } from "../LePont.jsx";
+import { chercheJoueurs } from "@/lib/nom";
 import { trackPlay } from "../../lib/track";
 import { getLang, tr } from "@/lib/lang";
-import { G, posterText, btn, fondCharte, terrainCharte } from "@/lib/charte.jsx";
+import { G, posterText, posterTitre, btn, fondCharte, terrainCharte } from "@/lib/charte.jsx";
 
 type Player = {
   name: string;
@@ -1108,7 +1109,32 @@ const countMismatch = (p: Player, history: QA[]): number => {
   return s;
 };
 
-type Phase = "intro" | "asking" | "guessing" | "won" | "lost";
+type Phase = "intro" | "asking" | "guessing" | "won" | "lost"
+  // Mode INVERSÉ : c'est le génie qui pense à un joueur.
+  | "inverse" | "inverseGagne" | "inversePerdu";
+
+// Vingt questions, puis il faut donner un nom. Un seul essai : faux = perdu.
+const INVERSE_MAX_Q = 20;
+
+// Le vivier du mode inversé : uniquement des joueurs CONNUS. Le génie pioche
+// dans les 5 622 entrées de la base pour DEVINER, mais quand c'est lui qui
+// choisit, tomber sur un inconnu rendrait la manche impossible — vingt
+// questions ne servent à rien si le nom ne dit rien à personne.
+// Même bornes d'âge et de carrière que « Trouve le joueur ».
+const inversePool = (): Player[] =>
+  (PLAYERS as Player[]).filter(
+    (p) => p.diff === "facile" && p.clubs?.length >= 3 && p.clubs.length <= 9
+      && !!p.birthYear && (p.birthYear as number) >= 1982
+  );
+
+// La réponse du génie à une question, pour SON joueur. `null` veut dire que
+// l'info manque en base — le prédicat le modélisait déjà pour l'autre sens, ce
+// qui donne gratuitement le troisième bouton « je ne sais pas ».
+type ReponseGenie = "oui" | "non" | "inconnu";
+function repondGenie(q: Question, cible: Player): ReponseGenie {
+  const r = q.predicate(cible);
+  return r === null ? "inconnu" : r ? "oui" : "non";
+}
 
 type Props = {
   onClose: () => void;
@@ -1211,8 +1237,13 @@ export const GoatGuess = ({ onClose }: Props) => {
 
       {/* Layout 2 colonnes desktop, stacked mobile — pas d'encadré global */}
       <div className="grid lg:grid-cols-[1fr_280px] gap-2 lg:gap-10 items-start">
-        {/* Contenu principal du jeu — sans encadré sombre, directement sur la pelouse */}
-        <div className="relative w-full">
+        {/* Contenu principal du jeu — sans encadré sombre, directement sur la pelouse.
+            `min-w-0` : un enfant de grille a `min-width:auto`, donc il s'élargit
+            à son contenu au lieu de tenir dans sa piste. Tant que les vues
+            étaient étroites ça ne se voyait pas ; la liste de questions du mode
+            inversé, elle, poussait ce bloc à 767px dans une piste de 388 et tout
+            l'écran débordait à droite. */}
+        <div className="relative w-full min-w-0">
           <GoatGuessGame
             onClose={onClose}
             onAdvanceDevin={advanceDevin}
@@ -1324,6 +1355,36 @@ const GoatGuessGame = ({
   const [rejectedGuesses, setRejectedGuesses] = useState<Set<string>>(new Set());
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [currentGuess, setCurrentGuess] = useState<Player | null>(null);
+
+  // ── Mode inversé : le génie pense à un joueur ────────────────────────────
+  const [cible, setCible] = useState<Player | null>(null);
+  const [posees, setPosees] = useState<{ q: Question; r: ReponseGenie }[]>([]);
+  const [proposition, setProposition] = useState("");
+  const vusRef = useRef<Set<string>>(new Set());   // anti-répétition entre manches
+
+  function demarrerInverse() {
+    const pool = inversePool();
+    let libres = pool.filter((p) => !vusRef.current.has(p.name));
+    if (libres.length === 0) { vusRef.current.clear(); libres = pool; }
+    const choisi = libres[Math.floor(Math.random() * libres.length)];
+    vusRef.current.add(choisi.name);
+    setCible(choisi);
+    setPosees([]);
+    setProposition("");
+    setPhase("inverse");
+  }
+
+  function poserQuestion(q: Question) {
+    if (!cible || posees.length >= INVERSE_MAX_Q) return;
+    if (posees.some((x) => x.q.id === q.id)) return;   // déjà posée : ne compte pas
+    setPosees((prev) => [...prev, { q, r: repondGenie(q, cible) }]);
+  }
+
+  function proposerNom(p: Player) {
+    if (!cible) return;
+    // Un seul essai, comme demandé : juste ou faux, la manche s'arrête.
+    setPhase(p.name === cible.name ? "inverseGagne" : "inversePerdu");
+  }
   // « Fumée de génie » : nombre de réponses tranchées (oui/non). Chaque réponse
   // fait monter la barre de fumée ; un « je sais pas » ne la remplit pas.
   const [smokeSteps, setSmokeSteps] = useState(0);
@@ -1504,7 +1565,7 @@ const GoatGuessGame = ({
 
   return (
     <div>
-      {phase === "intro" && <IntroView onStart={startGame} />}
+      {phase === "intro" && <IntroView onStart={startGame} onStartInverse={demarrerInverse} />}
       {phase === "asking" && currentQuestion && (
         <AskingView
           question={currentQuestion}
@@ -1535,6 +1596,22 @@ const GoatGuessGame = ({
           qaHistory={qaHistory}
         />
       )}
+      {phase === "inverse" && cible && (
+        <InverseView
+          cible={cible}
+          posees={posees}
+          onPoser={poserQuestion}
+          proposition={proposition}
+          setProposition={setProposition}
+          onProposer={proposerNom}
+        />
+      )}
+      {phase === "inverseGagne" && cible && (
+        <InverseFinView gagne cible={cible} posees={posees} onRestart={demarrerInverse} onClose={onClose} />
+      )}
+      {phase === "inversePerdu" && cible && (
+        <InverseFinView gagne={false} cible={cible} posees={posees} onRestart={demarrerInverse} onClose={onClose} />
+      )}
       {phase === "lost" && (
         <LostView
           onRestart={startGame}
@@ -1548,7 +1625,7 @@ const GoatGuessGame = ({
   );
 };
 
-const IntroView = ({ onStart }: { onStart: () => void }) => (
+const IntroView = ({ onStart, onStartInverse }: { onStart: () => void; onStartInverse: () => void }) => (
   <div className="text-center">
     <div className="text-4xl lg:text-6xl mb-3 lg:mb-5">🔮</div>
     <p className="text-white/80 text-sm lg:text-lg mb-2 lg:mb-3">
@@ -1576,6 +1653,23 @@ const IntroView = ({ onStart }: { onStart: () => void }) => (
     >
       <span className="text-xl">{"▶︎"}</span> {tr("COMMENCER","START","START","INIZIA","COMEÇAR","EMPEZAR")}
     </button>
+
+    {/* Le mode inversé : mêmes questions, sens contraire. */}
+    <div className="mt-6">
+      <div className="text-white/35 text-[11px] font-bold tracking-[3px] uppercase mb-3">
+        {tr("ou à l'envers","or the other way","oder andersherum","o al contrario","ou ao contrário","o al revés")}
+      </div>
+      <button
+        onClick={onStartInverse}
+        className="inline-flex items-center gap-3 px-7 lg:px-9 py-3"
+        style={{ ...btn(G.ciel, G.white, 20), display: "inline-flex" }}
+      >
+        <span className="text-xl">🧠</span> {tr("LE GÉNIE PENSE À UN JOUEUR","THE GENIE THINKS OF A PLAYER","DER GEIST DENKT AN EINEN SPIELER","IL GENIO PENSA A UN GIOCATORE","O GÉNIO PENSA NUM JOGADOR","EL GENIO PIENSA EN UN JUGADOR")}
+      </button>
+      <p className="mt-2 text-xs text-white/45">
+        {tr("À toi de poser les questions. 20 au maximum, puis il faut donner un nom.","You ask the questions. 20 max, then you must name him.","Du stellst die Fragen. Höchstens 20, dann musst du einen Namen nennen.","Tocca a te fare le domande. Massimo 20, poi devi dare un nome.","Você faz as perguntas. No máximo 20, depois tem de dar um nome.","Tú haces las preguntas. 20 como máximo, luego hay que dar un nombre.")}
+      </p>
+    </div>
 
     <p className="mt-4 text-xs text-white/40">
       {tr('Astuce : plus tu réponds précisément (évite les "sais pas"), mieux je devine.', 'Tip: the more precisely you answer (avoid "not sure"), the better I guess.', 'Tipp: Je genauer du antwortest (vermeide „weiß nicht"), desto besser errate ich.', 'Consiglio: più rispondi con precisione (evita i "non so"), meglio indovino.', 'Dica: quanto mais preciso você responde (evite "não sei"), melhor eu adivinho.','Truco: cuanto más preciso respondas (evita los "ni idea"), mejor adivino.')}
@@ -2244,3 +2338,198 @@ const PlayerRevealCard = ({
 
 
 export default GoatGuess;
+
+// ── Mode inversé : le génie a choisi, le joueur interroge ──────────────────
+//
+// La saisie ne comprend pas le langage : elle FILTRE les 157 questions de la
+// banque. Le joueur a la sensation de poser sa question, mais il tombe
+// toujours sur une question à laquelle le génie sait répondre — pas de « je
+// n'ai pas compris », pas de backend, pas de latence.
+const InverseView = ({
+  cible, posees, onPoser, proposition, setProposition, onProposer,
+}: {
+  cible: Player;
+  posees: { q: Question; r: ReponseGenie }[];
+  onPoser: (q: Question) => void;
+  proposition: string;
+  setProposition: (v: string) => void;
+  onProposer: (p: Player) => void;
+}) => {
+  const [recherche, setRecherche] = useState("");
+  const [categorie, setCategorie] = useState<QCategory | null>(null);
+  const restantes = INVERSE_MAX_Q - posees.length;
+  const aCourt = restantes <= 0;
+  const dejaPosees = new Set(posees.map((x) => x.q.id));
+
+  const CATEGORIES: { id: QCategory; label: string }[] = [
+    { id: "pos", label: tr("Poste","Position","Position","Ruolo","Posição","Posición") },
+    { id: "nat", label: tr("Pays","Country","Land","Paese","País","País") },
+    { id: "cont", label: tr("Continent","Continent","Kontinent","Continente","Continente","Continente") },
+    { id: "club", label: tr("Clubs","Clubs","Klubs","Club","Clubes","Clubes") },
+    { id: "league", label: tr("Championnats","Leagues","Ligen","Campionati","Ligas","Ligas") },
+    { id: "era", label: tr("Époque","Era","Ära","Epoca","Época","Época") },
+    { id: "profile", label: tr("Profil","Profile","Profil","Profilo","Perfil","Perfil") },
+    { id: "physique", label: tr("Physique","Physique","Statur","Fisico","Físico","Físico") },
+    { id: "anecdote", label: tr("Palmarès","Honours","Erfolge","Palmarès","Palmarés","Palmarés") },
+  ];
+
+  const visibles = useMemo(() => {
+    const q = recherche.trim().toLowerCase();
+    return QUESTIONS
+      .filter((x) => !dejaPosees.has(x.id))
+      .filter((x) => (categorie ? x.category === categorie : true))
+      .filter((x) => (q ? qLabel(x).toLowerCase().includes(q) : true))
+      .slice(0, q || categorie ? 40 : 12);
+  }, [recherche, categorie, posees.length]);
+
+  const suggestions = useMemo(
+    () => (proposition.trim().length >= 2 ? chercheJoueurs(proposition, inversePool()).slice(0, 6) : []),
+    [proposition],
+  );
+
+  return (
+    /* `min-w-0` : cette vue vit dans une grille, et un enfant de grille a
+       `min-width:auto` — il s'élargit à son contenu au lieu de tenir dans sa
+       piste. Sans ça, les libellés de questions poussaient le bloc à 576px
+       dans une piste de 388, et tout l'écran débordait à droite. */
+    <div className="w-full min-w-0">
+      {/* Pas de bouton « Quitter » ici : la croix globale de GOAT Guess est
+          déjà fixée en haut à droite, les deux se chevauchaient. */}
+      <div className="flex justify-end mb-3">
+        <div style={{ ...posterText(18, aCourt ? G.maillot : G.projecteur), letterSpacing: 1 }}>
+          {posees.length}/{INVERSE_MAX_Q}
+        </div>
+      </div>
+
+      <div className="text-center mb-4">
+        <div className="text-4xl mb-2">🔮</div>
+        <div style={{ ...posterTitre(30, G.white), fontSize: "clamp(22px,6vw,30px)" }}>
+          {tr("JE PENSE À UN JOUEUR","I'M THINKING OF A PLAYER","ICH DENKE AN EINEN SPIELER","STO PENSANDO A UN GIOCATORE","ESTOU A PENSAR NUM JOGADOR","ESTOY PENSANDO EN UN JUGADOR")}
+        </div>
+        <p className="text-white/55 text-sm mt-1">
+          {aCourt
+            ? tr("Plus de questions — donne un nom.","No questions left — name him.","Keine Fragen mehr — nenn einen Namen.","Niente più domande — dai un nome.","Sem mais perguntas — dá um nome.","No quedan preguntas — di un nombre.")
+            : tr("Pose tes questions, je réponds oui ou non.","Ask your questions, I answer yes or no.","Stell deine Fragen, ich antworte ja oder nein.","Fai le tue domande, rispondo sì o no.","Faz as tuas perguntas, respondo sim ou não.","Haz tus preguntas, respondo sí o no.")}
+        </p>
+      </div>
+
+      {/* Ce que le génie a déjà répondu — la trace du raisonnement */}
+      {posees.length > 0 && (
+        <div className="mb-4 flex flex-col gap-1.5" style={{ maxHeight: 210, overflowY: "auto" }}>
+          {posees.map((x, i) => (
+            <div key={i} className="flex items-center gap-2 px-3 py-2"
+              style={{ background: G.nuit, border: G.traitFin, borderRadius: G.rayonS }}>
+              <span className="text-[12.5px] text-white/75 flex-1">{qLabel(x.q)}</span>
+              <span className="text-[11px] font-black tracking-wider px-2 py-1"
+                style={{ borderRadius: 6, border: G.traitFin, color: G.encre,
+                  background: x.r === "oui" ? G.pelouseClaire : x.r === "non" ? G.maillot : "#8D99AE" }}>
+                {x.r === "oui" ? tr("OUI","YES","JA","SÌ","SIM","SÍ")
+                  : x.r === "non" ? tr("NON","NO","NEIN","NO","NÃO","NO")
+                  : tr("JE SAIS PAS","NOT SURE","WEISS NICHT","NON SO","NÃO SEI","NI IDEA")}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {!aCourt && (
+        <>
+          <input
+            value={recherche}
+            onChange={(e) => setRecherche(e.target.value)}
+            placeholder={tr("Pose ta question…","Ask your question…","Stell deine Frage…","Fai la tua domanda…","Faz a tua pergunta…","Haz tu pregunta…")}
+            className="w-full mb-2"
+            style={{ padding: "12px 14px", background: G.nuit, border: G.trait, borderRadius: G.rayon,
+              color: G.white, fontFamily: G.font, fontSize: 14, fontWeight: 700, outline: "none" }}
+          />
+          <div className="flex gap-1.5 mb-3 overflow-x-auto pb-1">
+            {CATEGORIES.map((c) => (
+              <button key={c.id} onClick={() => setCategorie(categorie === c.id ? null : c.id)}
+                style={{ ...btn(categorie === c.id ? G.projecteur : G.nuit, categorie === c.id ? G.encre : G.white, 13),
+                  padding: "7px 12px", whiteSpace: "nowrap", flexShrink: 0 }}>
+                {c.label}
+              </button>
+            ))}
+          </div>
+          <div className="flex flex-col gap-1.5 mb-5" style={{ maxHeight: 260, overflowY: "auto" }}>
+            {visibles.length === 0 && (
+              <div className="text-center text-white/40 text-sm py-6">
+                {tr("Aucune question ne correspond.","No matching question.","Keine passende Frage.","Nessuna domanda corrispondente.","Nenhuma pergunta corresponde.","Ninguna pregunta coincide.")}
+              </div>
+            )}
+            {visibles.map((q) => (
+              <button key={q.id} onClick={() => { onPoser(q); setRecherche(""); }}
+                className="text-left"
+                style={{ padding: "11px 13px", background: "rgba(8,17,9,.45)", border: G.traitFin,
+                  borderRadius: G.rayonS, color: G.white, fontSize: 13, fontWeight: 600, lineHeight: 1.3 }}>
+                {qLabel(q)}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* La proposition finale : un seul essai */}
+      <div style={{ background: G.nuit, border: G.trait, borderRadius: G.rayon, padding: "14px", boxShadow: G.ombre }}>
+        <div className="text-[11px] font-black tracking-[2px] uppercase mb-2" style={{ color: G.projecteur }}>
+          {tr("Ton verdict — un seul essai","Your verdict — one try only","Dein Urteil — nur ein Versuch","Il tuo verdetto — un solo tentativo","O teu veredicto — uma só tentativa","Tu veredicto — un solo intento")}
+        </div>
+        <input
+          value={proposition}
+          onChange={(e) => setProposition(e.target.value)}
+          placeholder={tr("Nom du joueur…","Player name…","Spielername…","Nome del giocatore…","Nome do jogador…","Nombre del jugador…")}
+          style={{ width: "100%", padding: "12px 14px", background: "rgba(8,17,9,.6)", border: G.traitFin,
+            borderRadius: G.rayonS, color: G.white, fontFamily: G.font, fontSize: 14, fontWeight: 700, outline: "none" }}
+        />
+        {suggestions.length > 0 && (
+          <div className="flex flex-col gap-1.5 mt-2">
+            {suggestions.map((p) => (
+              <button key={p.name} onClick={() => onProposer(p)} className="text-left"
+                style={{ padding: "10px 13px", background: G.pelouse, border: G.traitFin,
+                  borderRadius: G.rayonS, color: G.white, fontSize: 13.5, fontWeight: 800 }}>
+                {p.name}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Fin de manche du mode inversé : on montre TOUJOURS la réponse et le parcours
+// du joueur, gagné ou perdu — c'est ce qu'on vient chercher.
+const InverseFinView = ({
+  gagne, cible, posees, onRestart, onClose,
+}: {
+  gagne: boolean;
+  cible: Player;
+  posees: { q: Question; r: ReponseGenie }[];
+  onRestart: () => void;
+  onClose: () => void;
+}) => (
+  <div className="text-center w-full min-w-0">
+    <div className="text-4xl mb-2">{gagne ? "🎉" : "😅"}</div>
+    <div style={{ ...posterTitre(44, gagne ? G.pelouseClaire : G.maillot), fontSize: "clamp(30px,8vw,44px)" }}>
+      {gagne
+        ? tr("TROUVÉ !","GOT HIM!","GEFUNDEN!","TROVATO!","ENCONTRADO!","¡ENCONTRADO!")
+        : tr("RATÉ !","MISSED!","DANEBEN!","MANCATO!","ERROU!","¡FALLASTE!")}
+    </div>
+    <p className="text-white/60 text-sm mt-1 mb-4">
+      {gagne
+        ? tr("En " + posees.length + " question" + (posees.length > 1 ? "s" : "") + ".", "In " + posees.length + " question" + (posees.length > 1 ? "s" : "") + ".", "In " + posees.length + " Frage(n).", "In " + posees.length + " domanda/e.", "Em " + posees.length + " pergunta(s).", "En " + posees.length + " pregunta(s).")
+        : tr("Je pensais à…","I was thinking of…","Ich dachte an…","Pensavo a…","Eu pensava em…","Pensaba en…")}
+    </p>
+
+    <PlayerRevealCard player={cible} accent={gagne ? G.pelouseClaire : G.maillot} />
+
+    <div className="grid grid-cols-2 gap-3 mt-6">
+      <button onClick={onRestart} className="py-4" style={{ ...btn(G.projecteur, G.encre, 20) }}>
+        {"▶︎"} {tr("REJOUER","PLAY AGAIN","NOCHMAL","GIOCA ANCORA","JOGAR DE NOVO","JUGAR OTRA VEZ")}
+      </button>
+      <button onClick={onClose} className="py-4" style={{ ...btn(G.nuit, G.white, 20) }}>
+        ← {tr("MODES","MODES","MODI","MODI","MODOS","MODOS")}
+      </button>
+    </div>
+  </div>
+);
