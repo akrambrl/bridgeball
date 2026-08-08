@@ -5822,6 +5822,37 @@ export default function LePont() {
   useEffect(function(){
     if (screen === "home" && pseudoConfirmed) { loadMyOpenDuels(); loadReceivedChallenges(); }
   }, [screen, pseudoConfirmed]);
+
+  // Rattrapage du drapeau manquant.
+  //
+  // Le pays n'était détecté qu'au moment de CRÉER ou de CHANGER son pseudo, et
+  // jamais réessayé. Or `detectCountry` dépend d'un tiers (ipapi.co) qui peut
+  // échouer ce jour-là : bloqueur de pub, navigation privée, quota du service.
+  // Le joueur restait alors sans drapeau à vie — au 8 août 2026, 45 comptes sur
+  // 163 étaient dans ce cas, sans qu'aucun code pays soit malformé.
+  //
+  // On repasse donc à chaque ouverture, mais SEULEMENT si la case est vide :
+  // jamais d'écrasement d'un pays déjà enregistré. Et l'appel réseau lui-même
+  // ne part qu'une fois — `detectCountry` garde sa réponse dans localStorage.
+  useEffect(function(){
+    if (!playerId || !pseudoConfirmed) return;
+    let stop = false;
+    (async function(){
+      try {
+        const rows = await sbFetch("bb_pseudos?player_id=eq." + playerId + "&select=country&limit=1");
+        if (stop || !Array.isArray(rows) || rows.length === 0) return;
+        if (rows[0].country) return;   // déjà renseigné : on ne touche à rien
+        const code = await detectCountry();
+        if (stop || !code) return;
+        await sbFetch("bb_pseudos?player_id=eq." + playerId, {
+          method: "PATCH",
+          body: JSON.stringify({ country: code }),
+          headers: { "Prefer": "return=minimal" },
+        });
+      } catch (e) { /* le drapeau n'est pas vital : on réessaiera à la prochaine ouverture */ }
+    })();
+    return function(){ stop = true; };
+  }, [playerId, pseudoConfirmed]);
   const [showQuitConfirm, setShowQuitConfirm] = useState(false);
   const [gameConfigModal, setGameConfigModal] = useState(null);
   const [activeCard, setActiveCard] = useState("pont");
