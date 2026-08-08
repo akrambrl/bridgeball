@@ -3072,6 +3072,29 @@ if(typeof document!=="undefined"&&!document.getElementById("bb-css")){
     @keyframes bbEclat{0%{transform:scale(.25);opacity:.9}100%{transform:scale(2.8);opacity:0}}
     @keyframes bbEtincelle{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(.25);opacity:0}}
     @keyframes bbClaque{0%{transform:scale(1.7) skewX(-7deg);opacity:0}60%{transform:scale(.95) skewX(-7deg);opacity:1}100%{transform:scale(1) skewX(-7deg);opacity:1}}
+    /* La carte tourne sur elle-même et se démasque en même temps.
+       Trois tours pleins (1080deg) : on retombe donc sur un MULTIPLE de 360,
+       la carte finit face au joueur et jamais en miroir. Le flou décroît le
+       long du tour, si bien que les demi-tours où l'on voit le dos de l'image
+       sont justement ceux qui sont encore illisibles. */
+    @keyframes bbToupie{
+      0%{transform:rotateY(0) scale(.94)}
+      15%{transform:rotateY(160deg) scale(1.06)}
+      55%{transform:rotateY(720deg) scale(1.1)}
+      82%{transform:rotateY(1010deg) scale(1.05)}
+      100%{transform:rotateY(1080deg) scale(1)}
+    }
+    /* Le flou vit sur l'IMAGE, jamais sur le cadre : flouter le cadre efface le
+       liseré de rareté et l'ombre d'encre, et la carte n'est plus un objet mais
+       une tache. On garde donc un vrai cadre net, avec un portrait masqué. */
+    @keyframes bbDemasque{
+      0%{filter:blur(15px) saturate(1.6) brightness(1.15)}
+      55%{filter:blur(7px) saturate(1.5) brightness(1.15)}
+      82%{filter:blur(2px) saturate(1.2) brightness(1.05)}
+      100%{filter:blur(0) saturate(1) brightness(1)}
+    }
+    /* Respiration du voile tant qu'on n'a pas cliqué. */
+    @keyframes bbVoile{0%,100%{filter:blur(14px) saturate(1.5) brightness(1.1)}50%{filter:blur(17px) saturate(1.7) brightness(1.2)}}
     @keyframes answerOk{0%{transform:scale(1)}30%{transform:scale(1.06)}60%{transform:scale(.97)}100%{transform:scale(1)}}
     @keyframes answerKo{0%,100%{transform:translateX(0)}15%{transform:translateX(-12px)}30%{transform:translateX(10px)}45%{transform:translateX(-8px)}60%{transform:translateX(6px)}75%{transform:translateX(-3px)}}
     @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
@@ -5727,40 +5750,39 @@ export default function LePont() {
   const [playerBadge, setPlayerBadge] = useState(function(){ try { return localStorage.getItem("bb_badge") || null; } catch (e) { return null; } });
   const [showCollection, setShowCollection] = useState(false);
   const [cardPopup, setCardPopup] = useState(null);   // carte tout juste débloquée
-  // Étapes de l'ouverture de carte :
-  //   0 les rayons seuls · 1 le dos monte · 2 LE SUSPENSE (le dos tremble de
-  //   plus en plus fort, l'aura de rareté se charge) · 3 le dos part sur la
-  //   tranche · 4 la face arrive et éclate · 5 la carte est révélée.
-  // Un tap saute directement à 5 — comme dans FUT, on doit pouvoir couper la
-  // mise en scène quand on a déjà vu le geste cent fois.
-  const CARTE_REVELEE = 5;
-  const [cardRevealEtape, setCardRevealEtape] = useState(CARTE_REVELEE);
-  // Voir `sauterReveal` : garde-fou contre le tap qui a ouvert le pop-up.
-  const cardTapPretRef = useRef(false);
+  // Ouverture d'une carte, en trois temps — et c'est le JOUEUR qui déclenche :
+  //
+  //   "voile"    la carte est là, floutée. On devine la couleur de sa rareté,
+  //              rien d'autre. Un bouton « Découvrir la carte » attend.
+  //   "toupie"   elle tourne trois tours sur elle-même en se démasquant.
+  //   "revele"   nom, rareté, boutons.
+  //
+  // L'ancienne version enchaînait six étapes sur minuteur : la carte se
+  // révélait toute seule pendant qu'on regardait ailleurs. Le geste appartient
+  // maintenant au joueur, ce qui est tout l'intérêt d'une ouverture de carte.
+  const TOUPIE_MS = 1500;   // doit rester égal à la durée de l'animation bbToupie
+  const [cardRevealEtape, setCardRevealEtape] = useState("revele");
+  const toupieRef = useRef(null);
   useEffect(function(){
     if (!cardPopup) return;
     let reduit = false;
     try { reduit = window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) {}
-    if (reduit) { setCardRevealEtape(CARTE_REVELEE); return; }   // révélation directe, sans mise en scène
-    setCardRevealEtape(0);
-    // Le suspense tient la scène ~1,9 s : assez pour laisser le temps de
-    // deviner la rareté à la couleur de l'aura, pas assez pour lasser à la
-    // dixième carte. Les deux demi-tours font 260 ms chacun.
-    const jalons = [[450,1],[1250,2],[3150,3],[3410,4],[3690,CARTE_REVELEE]];
-    const minuteurs = jalons.map(function(j){
-      return setTimeout(function(){
-        setCardRevealEtape(j[1]);
-        if (j[1] === 4) hapticSuccess();
-      }, j[0]);
-    });
-    // Le doigt qui a ouvert le pop-up n'a pas le droit de le sauter.
-    cardTapPretRef.current = false;
-    const tGarde = setTimeout(function(){ cardTapPretRef.current = true; }, 600);
-    return function(){ minuteurs.forEach(clearTimeout); clearTimeout(tGarde); };
+    // Mouvement réduit : on ne fait pas tourner la carte, mais on garde le
+    // geste — sinon le joueur perd la découverte en plus de l'animation.
+    setCardRevealEtape("voile");
+    if (reduit) { /* la toupie sera sautée au clic */ }
+    return function(){ if (toupieRef.current) { clearTimeout(toupieRef.current); toupieRef.current = null; } };
   }, [cardPopup]);
-  // Un seul point d'entrée pour « couper la mise en scène » : l'overlay et la
-  // carte l'appellent tous les deux, et le garde-fou ne vit qu'ici.
-  function sauterReveal(){ if (cardTapPretRef.current) setCardRevealEtape(CARTE_REVELEE); }
+
+  function decouvrirCarte() {
+    if (cardRevealEtape !== "voile") return;
+    let reduit = false;
+    try { reduit = window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) {}
+    hapticSuccess();
+    if (reduit) { setCardRevealEtape("revele"); return; }
+    setCardRevealEtape("toupie");
+    toupieRef.current = setTimeout(function(){ setCardRevealEtape("revele"); }, TOUPIE_MS);
+  }
   const [badgeByPid, setBadgeByPid] = useState({});   // pid → {badge, xp} pour le classement
   // Badge du joueur, lu à part du gros select (une colonne absente ferait
   // échouer toute la requête, cf. PSEUDO_COLS).
@@ -9065,11 +9087,9 @@ export default function LePont() {
   // Un tap n'importe où saute à la révélation ; une fois révélée, il ferme.
   const cardUnlockModal = cardPopup ? (() => {
     const rm = rarityMeta(cardPopup.rarity);
-    const monte    = cardRevealEtape >= 1;
-    const suspense = cardRevealEtape === 2;
-    const sortie   = cardRevealEtape === 3;   // le dos part sur la tranche
-    const face     = cardRevealEtape >= 4;    // la face est à l'écran
-    const revele   = cardRevealEtape >= CARTE_REVELEE;
+    const voile   = cardRevealEtape === "voile";
+    const toupie  = cardRevealEtape === "toupie";
+    const revele  = cardRevealEtape === "revele";
     // Quatorze éclats en éventail, direction portée par des variables CSS.
     const etincelles = Array.from({length:14}, function(_, i){
       const a = (i / 14) * Math.PI * 2;
@@ -9079,34 +9099,32 @@ export default function LePont() {
     });
     return (
       <div key="cardUnlock"
-        onClick={function(){ if (revele) setCardPopup(null); else sauterReveal(); }}
-        style={{position:"fixed",inset:0,zIndex:9997,background:"rgba(8,17,9,.72)",
+        // Tant que la carte n'est pas découverte, un clic dans le vide ne ferme
+        // RIEN : sinon on rate sa carte d'un doigt mal placé, sans retour possible.
+        onClick={function(){ if (revele) setCardPopup(null); }}
+        style={{position:"fixed",inset:0,zIndex:9997,background:"rgba(8,17,9,.93)",
           display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:20,
           overflow:"hidden",animation:"fadeIn .3s ease"}}>
 
-        {/* Rayons de projecteur, dans la couleur de la rareté. Ils accélèrent et
-            se densifient pendant le suspense : c'est le premier signe. */}
+        {/* Rayons de projecteur dans la couleur de la rareté : ils s'emballent
+            pendant que la carte tourne. */}
         <div aria-hidden="true" style={{position:"absolute",width:"180vmax",height:"180vmax",pointerEvents:"none",
-          opacity:revele?.5:suspense?1:.75,transition:"opacity .6s",
+          opacity:revele?.5:toupie?1:.7,transition:"opacity .6s",
           background:"repeating-conic-gradient(from 0deg, "+rm.color+"22 0deg 7deg, transparent 7deg 20deg)",
-          animation:"bbRayons "+(suspense?"5s":"22s")+" linear infinite"}}/>
-        {/* L'aura de rareté se charge derrière le dos pendant le suspense : la
-            couleur laisse deviner ce qui arrive avant même le retournement,
-            comme la lumière d'un walkout FUT. */}
-        {suspense && (
+          animation:"bbRayons "+(toupie?"4s":"22s")+" linear infinite"}}/>
+        {/* L'aura de rareté se charge derrière la carte pendant le tour. */}
+        {toupie && (
           <div aria-hidden="true" style={{position:"absolute",width:340,height:340,borderRadius:"50%",pointerEvents:"none",
             background:"radial-gradient(circle,"+rm.color+"aa 0%,"+rm.color+"33 45%,transparent 70%)",
-            animation:"bbAura 1.9s ease-in forwards"}}/>
+            animation:"bbAura 1.5s ease-in forwards"}}/>
         )}
-        {/* Halo qui éclate à l'arrivée de la face */}
-        {face && (
+        {/* Halo qui éclate à l'arrivée */}
+        {revele && (
           <div aria-hidden="true" style={{position:"absolute",width:320,height:320,borderRadius:"50%",pointerEvents:"none",
             background:"radial-gradient(circle,"+rm.color+"cc 0%,transparent 65%)",animation:"bbEclat .8s ease-out forwards"}}/>
         )}
         {/* Étincelles */}
-        {face && etincelles.map(function(e, i){
-          // zIndex 2 : au-dessus de la carte, sinon les éclats partent derrière
-          // elle et on n'en voit que ceux qui dépassent du cadre.
+        {revele && etincelles.map(function(e, i){
           return <div key={i} aria-hidden="true" style={{position:"absolute",zIndex:2,width:e.s,height:e.s,background:e.c,
             border:"1.5px solid "+G.encre,borderRadius:2,pointerEvents:"none",
             "--dx":e.dx+"px","--dy":e.dy+"px",
@@ -9117,51 +9135,37 @@ export default function LePont() {
           <span style={{WebkitTextStroke:0,textShadow:"none"}}>🃏</span> {tr("NOUVELLE CARTE","NEW CARD","NEUE KARTE","NUOVA CARTA","NOVA CARTA","NUEVA CARTA")}
         </div>
 
-        {/* La carte. UNE SEULE face est montée à la fois : le dos jusqu'à ce
-            qu'il ait fini son demi-tour, la face ensuite. C'est ce qui garantit
-            que le logo du dos ne peut pas se retrouver en miroir par-dessus le
-            joueur, quoi que fasse le moteur avec backface-visibility. */}
-        <div onClick={function(e){e.stopPropagation(); if (revele) setCardPopup(null); else sauterReveal();}}
-          style={{width:"min(74vw, 260px)",aspectRatio:"3 / 4",perspective:1000,zIndex:1,cursor:"pointer",
-            animation:monte?(revele?"bbCarteRespire 3.4s ease-in-out infinite":"bbCarteMonte .7s cubic-bezier(.2,.8,.3,1) both"):"none",
-            opacity:monte?1:0}}>
-          <div style={{position:"relative",width:"100%",height:"100%"}}>
-            {!face ? (
-              /* Dos : l'aplat de nuit et le trait d'encre, avec le grain de
-                 trame. Il tremble pendant le suspense, puis part sur la tranche. */
-              <div key="dos" style={{position:"absolute",inset:0,
-                animation:sortie?"bbDemiTourSortie .26s ease-in both"
-                  :suspense?"bbCharge 1.9s ease-in both":"none"}}>
-                <div style={{position:"absolute",inset:0,
-                  background:G.nuit,border:G.trait,borderRadius:G.rayon,boxShadow:G.ombreL,
-                  display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden",
-                  animation:suspense?"bbTremble .16s linear infinite":"none"}}>
-                  <div aria-hidden="true" style={{position:"absolute",inset:0,opacity:.18,
-                    backgroundImage:"radial-gradient(circle,#000 1px,transparent 1.3px)",backgroundSize:"5px 5px"}}/>
-                  <img src="/logo.png" alt="" style={{width:"66%",objectFit:"contain",opacity:.9,zIndex:1}}/>
-                  {/* Reflet qui balaie le dos, deux fois, pendant le suspense */}
-                  {suspense && (
-                    <div aria-hidden="true" style={{position:"absolute",top:0,bottom:0,width:"55%",zIndex:2,
-                      background:"linear-gradient(90deg,transparent,"+rm.color+"66,transparent)",
-                      animation:"bbBalayage .95s ease-in-out 2"}}/>
-                  )}
-                </div>
-              </div>
-            ) : (
-              /* Face : la carte dans son cadre de rareté, comme dans la collection */
-              <div key="face" className={rm.cls} style={{position:"absolute",inset:0,
-                background:rm.frame,border:G.traitFin,borderRadius:G.rayon,
-                boxShadow:G.ombreL+", 0 0 42px "+rm.glow,padding:4,boxSizing:"border-box",
-                animation:revele?"none":"bbDemiTourEntree .28s ease-out both"}}>
-                <div style={{width:"100%",height:"100%",borderRadius:14,overflow:"hidden",background:"#000"}}>
-                  <img src={cardPopup.img} alt="" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
-                </div>
-              </div>
-            )}
+        {/* La carte. Une seule face est montée, TOUJOURS celle du joueur : ce
+            qui la cache n'est pas un dos mais un flou, et le flou survit à la
+            rotation sans risquer de montrer un logo en miroir. */}
+        {/* `position:relative` INDISPENSABLE : la carte est en `inset:0`, et sans
+            contexte de positionnement ici elle se résout contre l'overlay
+            plein écran — elle couvre alors tout l'écran, sans cadre ni format. */}
+        <div style={{position:"relative",width:"min(74vw, 260px)",aspectRatio:"3 / 4",perspective:1200,zIndex:1,
+          animation:revele?"bbCarteRespire 3.4s ease-in-out infinite":"none"}}>
+          <div className={rm.cls} style={{position:"absolute",inset:0,
+            background:rm.frame,border:G.traitFin,borderRadius:G.rayon,
+            boxShadow:G.ombreL+", 0 0 42px "+rm.glow,padding:4,boxSizing:"border-box",
+            animation:toupie?"bbToupie "+TOUPIE_MS+"ms cubic-bezier(.2,.7,.25,1) both":"none"}}>
+            <div style={{width:"100%",height:"100%",borderRadius:14,overflow:"hidden",background:"#000"}}>
+              <img src={cardPopup.img} alt="" style={{width:"100%",height:"100%",objectFit:"cover",display:"block",
+                animation:toupie?"bbDemasque "+TOUPIE_MS+"ms cubic-bezier(.2,.7,.25,1) both"
+                  :voile?"bbVoile 2.6s ease-in-out infinite":"none"}}/>
+            </div>
           </div>
         </div>
 
-        {/* Nom et rareté : ils claquent une fois la carte retournée */}
+        {/* Le bouton qui déclenche tout. Sans lui la carte reste floutée : la
+            découverte est un geste, pas une attente. */}
+        {voile && (
+          <button onClick={function(e){ e.stopPropagation(); decouvrirCarte(); }}
+            style={{...btn(rm.color,G.encre,17),zIndex:3,marginTop:26,padding:"15px 26px",
+              display:"inline-flex",alignItems:"center",gap:9,animation:"fadeUp .45s ease .2s both"}}>
+            ✨ {tr("Découvrir la carte","Reveal the card","Karte aufdecken","Scopri la carta","Revelar a carta","Descubrir la carta")}
+          </button>
+        )}
+
+        {/* Nom et rareté : ils claquent une fois la carte révélée */}
         {revele && (
           <div style={{zIndex:1,textAlign:"center",marginTop:18,animation:"bbClaque .45s cubic-bezier(.2,.8,.3,1) both"}}>
             <div style={{...posterText(34,G.white)}}>{lang==="fr"?cardPopup.name:cardPopup.nameEn}</div>
@@ -9182,16 +9186,6 @@ export default function LePont() {
             <button onClick={function(){ chooseBadge(cardPopup.id); setCardPopup(null); setShowCollection(true); }} style={{...btn(rm.color,G.encre,15),flex:1.4,padding:"13px 0"}}>
               {tr("Mettre en badge","Use as badge","Als Abzeichen","Usa come badge","Usar como selo","Poner de insignia")}
             </button>
-          </div>
-        )}
-
-        {/* Invitation à couper la mise en scène, comme le « tap » de FUT. Elle
-            disparaît dès le retournement : passé ce point il n'y a plus rien à
-            sauter, et elle restait affichée par-dessus la carte révélée. */}
-        {cardRevealEtape < 3 && (
-          <div style={{position:"absolute",bottom:"calc(24px + env(safe-area-inset-bottom))",zIndex:1,
-            fontSize:11.5,fontWeight:800,letterSpacing:2,color:"rgba(255,255,255,.55)",textTransform:"uppercase"}}>
-            {tr("Touche pour révéler","Tap to reveal","Tippen zum Aufdecken","Tocca per rivelare","Toque para revelar","Toca para revelar")}
           </div>
         )}
       </div>
