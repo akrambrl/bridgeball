@@ -5578,15 +5578,19 @@ export default function LePont() {
     try {
       const saved = localStorage.getItem("bb_lang");
       if (saved === "fr" || saved === "en" || saved === "de" || saved === "it" || saved === "pt" || saved === "es") return saved;
-      // Pas de choix enregistré : on détecte la langue du navigateur (FR / EN / DE / IT / PT / ES),
-      // sinon on retombe sur le français (public cible historique).
+      // Pas de choix enregistré : on détecte la langue du navigateur.
       const nav = ((navigator.language || navigator.userLanguage || "") + "").toLowerCase();
+      if (nav.indexOf("fr") === 0) return "fr";
       if (nav.indexOf("de") === 0) return "de";
       if (nav.indexOf("it") === 0) return "it";
       if (nav.indexOf("pt") === 0) return "pt";
       if (nav.indexOf("es") === 0) return "es";
       if (nav.indexOf("en") === 0) return "en";
-      return "fr";
+      // Repli sur l'anglais et non sur le français : il ne sert QUE pour les
+      // langues absentes des six — un téléphone en fr-* est déjà parti sur le
+      // français ci-dessus. Un néerlandophone ou un arabophone lit donc
+      // l'anglais, qu'il a plus de chances de comprendre.
+      return "en";
     } catch { return "fr"; }
   });
   const setLanguage = (l) => {

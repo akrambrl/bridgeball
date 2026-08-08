@@ -12,12 +12,16 @@ export function getLang(): Lang {
   try {
     const saved = localStorage.getItem("bb_lang");
     if (saved && SUPPORTED.includes(saved as Lang)) return saved as Lang;
-    const nav = (navigator.language || "fr").slice(0, 2).toLowerCase();
+    const nav = (navigator.language || "en").slice(0, 2).toLowerCase();
     if (SUPPORTED.includes(nav as Lang)) return nav as Lang;
   } catch {
     /* SSR / storage indisponible */
   }
-  return "fr";
+  // Repli sur l'anglais et non sur le français : il ne sert QUE pour les
+  // langues absentes des six — un téléphone en fr-* tombe sur le français
+  // juste au-dessus. Un néerlandophone ou un arabophone lit donc l'anglais,
+  // qu'il a plus de chances de comprendre que le français.
+  return "en";
 }
 
 /** Langues proposées, dans l'ordre d'affichage du sélecteur. */
