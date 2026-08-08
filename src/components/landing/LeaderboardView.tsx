@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import type { GameMode } from "@/pages/Home";
 import { tr } from "@/lib/lang";
 import {
   fetchTopPlayers,
@@ -13,7 +12,8 @@ import {
 import { levelCard } from "@/lib/collection";
 import { G, posterText, posterTitre, posterLight, btn } from "@/lib/charte.jsx";
 
-type Props = { onPlay: (game?: GameMode) => void };
+// Plus aucune prop : le bouton « Tenter ma place » du bas était le seul appelant
+// de `onPlay`. Le classement se consulte, il ne lance plus de partie.
 
 // Habillage des 3 premiers, repris du classement mobile passé à la charte :
 // APLATS francs cerclés d'encre, plus de dégradé métallique ni d'ombre portée
@@ -26,7 +26,7 @@ const PODIUM = [
 ];
 const DARK_INK = G.encre; // texte posé sur les aplats clairs du podium
 
-export const LeaderboardView = ({ onPlay }: Props) => {
+export const LeaderboardView = () => {
   // Même défaut que le mobile : l'onglet ouvert est "global" (XP cumulée).
   const [mode, setMode] = useState<LbMode>("global");
   const [rows, setRows] = useState<TopPlayer[]>([]);
@@ -192,15 +192,6 @@ export const LeaderboardView = ({ onPlay }: Props) => {
         </div>
       )}
 
-      <div className="mt-8 text-center">
-        <button
-          onClick={() => onPlay("pont")}
-          className="inline-flex"
-          style={{ ...btn(G.projecteur, G.encre, 30), display:"inline-flex", padding:"14px 40px", boxShadow:G.ombreL }}
-        >
-          ▶ {tr("TENTER MA PLACE", "GO FOR MY SPOT", "UM MEINEN PLATZ KÄMPFEN", "TENTA IL TUO POSTO", "IR ATRÁS DO MEU LUGAR","IR A POR MI PUESTO")}
-        </button>
-      </div>
     </div>
   );
 };
