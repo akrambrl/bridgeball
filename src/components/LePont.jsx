@@ -8988,8 +8988,16 @@ export default function LePont() {
     // conteneur de défilement et échappe à cette règle. Résultat, la page
     // glissait latéralement de deux pixels.
     fontFamily:G.font,position:"relative",overflow:isDesktop?"auto":"hidden",
-    maxWidth:isDesktop?"100%":430,marginLeft:"auto",marginRight:"auto",
-    boxShadow:isDesktop?"none":"0 0 60px rgba(0,0,0,.5)",
+    // Sur ordinateur, la colonne reste une COLONNE.
+    //
+    // `maxWidth:"100%"` étirait sur 1024 ou 1440px des écrans dessinés pour 430 :
+    // la page Amis devenait une barre d'un mètre de long, les écrans de fin des
+    // encadrés vides géants, et le matchmaking se disloquait. Aucun de ces
+    // écrans n'a de mise en page « large » — ils n'ont qu'une version, celle de
+    // l'app. On la borne donc, et l'ombre portée qui détachait déjà la colonne
+    // sur mobile vaut aussi ici : c'est elle qui la pose sur la pelouse.
+    maxWidth:isDesktop?"min(520px, 100%)":430,marginLeft:"auto",marginRight:"auto",
+    boxShadow:"0 0 60px rgba(0,0,0,.5)",
   };
   const stripes = {position:"absolute",inset:0,zIndex:0,pointerEvents:"none",background:"radial-gradient(ellipse at 50% 0%,rgba(0,230,118,.06) 0%,transparent 70%)"};
   // La feuille commune des écrans (fin de manche, fin de partie, classement,
