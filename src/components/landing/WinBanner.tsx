@@ -57,9 +57,11 @@ type Props = {
    *  la page. Au-delà du plafond on RECADRE (object-fit: cover) plutôt que de
    *  déformer — la scène reste lisible, elle est juste resserrée. */
   maxHeight?: number | string;
+  /** Le bandeau remplit la hauteur que son parent lui laisse (parent en flex à hauteur définie). */
+  fill?: boolean;
 };
 
-export const WinBanner = ({ maxWidth = 420, marginTop = 10, lose = false, maxHeight }: Props) => {
+export const WinBanner = ({ maxWidth = 420, marginTop = 10, lose = false, maxHeight, fill = false }: Props) => {
   const ref = useRef<HTMLVideoElement>(null);
   // Initialiseur de useState : le compteur n'avance qu'au MONTAGE, pas à chaque
   // rendu — sinon l'extrait changerait sous les yeux du joueur.
@@ -85,6 +87,7 @@ export const WinBanner = ({ maxWidth = 420, marginTop = 10, lose = false, maxHei
         border: G.trait,
         boxShadow: G.ombre,
         ...(maxHeight ? { maxHeight } : null),
+        ...(fill ? { height: "100%" } : null),
         lineHeight: 0,
         animation: "fadeUp .45s ease .1s both",
       }}
@@ -100,7 +103,9 @@ export const WinBanner = ({ maxWidth = 420, marginTop = 10, lose = false, maxHei
         loop
         preload="auto"
         onCanPlay={e => { e.currentTarget.play().catch(() => { /* noop */ }); }}
-        style={maxHeight ? { width: "100%", height: maxHeight, objectFit: "cover", display: "block" } : { width: "100%", height: "auto", display: "block" }}
+        style={fill ? { width: "100%", height: "100%", objectFit: "cover", display: "block" }
+          : maxHeight ? { width: "100%", height: maxHeight, objectFit: "cover", display: "block" }
+          : { width: "100%", height: "auto", display: "block" }}
       >
         <source src={clip.mp4} type="video/mp4" />
         <source src={clip.webm} type="video/webm" />

@@ -8955,9 +8955,6 @@ export default function LePont() {
     <span style={{...posterText(36,G.white),display:"inline-block",animation:anim==="up"?"scoreUp .5s ease":anim==="down"?"scoreDn .5s ease":"none"}}>{sc}</span>
   );
 
-  const comboDisplay = combo>=3?(
-    <div key={combo} style={{position:"absolute",top:-8,left:"50%",transform:"translateX(-50%)",background:G.maillot,color:G.white,border:G.traitFin,boxShadow:"2px 2px 0 "+G.encre,borderRadius:G.rayonS,padding:"4px 14px",fontSize:12,fontWeight:900,letterSpacing:1,animation:"comboFire .5s ease",zIndex:20,whiteSpace:"nowrap"}}>{getComboLabel(combo)}</div>
-  ):null;
 
   const floatingPoints = comboFloat&&(
     <div style={{...posterText(32,G.projecteur),position:"fixed",top:"30%",left:"50%",transform:"translateX(-50%) skewX(-7deg)",animation:"floatUp 1.2s ease forwards",zIndex:100,pointerEvents:"none"}}>{comboFloat}</div>
@@ -11208,16 +11205,6 @@ export default function LePont() {
                           sans contour flottait sur l'aplat du podium. */}
                       <span style={{fontSize:11,fontWeight:800,color:i<3?G.encre:grade.color,background:i<3?"rgba(8,17,9,.14)":grade.color+"22",borderRadius:G.rayonS,padding:"2px 8px",letterSpacing:.5,border:G.traitFin}}>{grade.emoji} {grade.label}</span>
                       {entry.streak>=3 && <span style={{fontSize:11,fontWeight:800,color:i<3?G.encre:G.maillot,background:i<3?"rgba(8,17,9,.14)":"rgba(217,58,43,.22)",borderRadius:G.rayonS,padding:"2px 8px",border:G.traitFin}}>🔥 {entry.streak}</span>}
-                      {/* Badge de collection — la carte est revalidée contre l'XP
-                          du joueur (badgeToShow), pour ne jamais afficher une
-                          carte non méritée si la valeur en base est périmée. */}
-                      {(function(){
-                        const b = badgeByPid[entry.pid];
-                        const card = b ? badgeToShow(b.badge, b.xp) : null;
-                        if (!card) return null;
-                        const rm = rarityMeta(card.rarity);
-                        return <img key="badge" src={card.thumb} alt="" title={lang==="fr"?card.name:card.nameEn} style={{width:17,height:23,borderRadius:5,objectFit:"cover",border:G.traitFin,outline:"1.5px solid "+rm.color,outlineOffset:-3.5,flexShrink:0}}/>;
-                      })()}
                     </div>
                     {lbMode==="saison"
                       ? null
@@ -14976,7 +14963,6 @@ export default function LePont() {
         <div style={{zIndex:3,padding:"12px 16px 0",display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,flexShrink:0}}>
           {backBtn(()=>{setShowQuitConfirm(true);})}
           <div style={{background:G.nuit,border:G.traitFin,boxShadow:"2px 2px 0 "+G.encre,borderRadius:G.rayonS,padding:"7px 16px",display:"flex",alignItems:"center",gap:8,position:"relative"}}>
-            {comboDisplay}
             <span style={{fontSize:11,color:"rgba(255,255,255,.4)",fontWeight:700,letterSpacing:1}}>M{currentRound}/{totalRounds}</span>
             {scoreDisplay(score,scoreAnim)}
             <span style={{fontSize:11,color:"rgba(255,255,255,.5)",fontWeight:600}}>pts</span>
@@ -15129,7 +15115,6 @@ export default function LePont() {
       <div style={{zIndex:2,padding:"12px 16px 8px",display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,position:"sticky",top:0}}>
         {backBtn(()=>{setShowQuitConfirm(true);})}
         <div style={{background:G.nuit,border:G.traitFin,boxShadow:"2px 2px 0 "+G.encre,borderRadius:G.rayonS,padding:"7px 13px",display:"flex",alignItems:"center",gap:8,position:"relative"}}>
-          {comboDisplay}
           <span style={{...posterText(32,G.white),display:"inline-block",animation:scoreAnim==="up"?"scoreUp .5s ease":scoreAnim==="down"?"scoreDn .5s ease":"none"}}>{chainScore}</span>
           <span style={{fontSize:11,color:"rgba(255,255,255,.5)",fontWeight:600}}>pts</span>
         </div>
@@ -15387,8 +15372,14 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
       {myRecoveryCodeModal}
         {/* Terrain dessiné de la charte : les bandes opaques recouvraient le fond. */}
         {terrainCharte}
-      <div style={{zIndex:1,padding:"6px 20px 0",textAlign:"center"}}>
-        <WinBanner maxWidth={320} marginTop={0} maxHeight={"min(96px, 13vh)"} lose={sc <= 0} />
+      {/* `flex:1 1 0` donne à l'entête une hauteur DÉFINIE — exactement ce que
+          la feuille lui laisse — sans quoi le `height:100%` du bandeau n'a rien
+          contre quoi se résoudre et retombe sur la hauteur intrinsèque de la
+          vidéo. `overflow:hidden` garantit qu'il ne peut jamais repousser le
+          reste hors de l'écran, quel que soit le gabarit. */}
+      <div style={{zIndex:1,padding:"6px 20px 0",textAlign:"center",
+        flex:"1 1 0",minHeight:0,overflow:"hidden",display:"flex",flexDirection:"column",justifyContent:"center",alignItems:"center"}}>
+        <WinBanner maxWidth={380} marginTop={0} maxHeight={240} fill lose={sc <= 0} />
         {/* Plus de « TEMPS ÉCOULÉ ! » ni de vanne sous le bandeau : l'écran de
             fin ne tenait pas d'une pièce, et ces deux lignes ne portaient aucune
             information — le score et le près-du-record disent déjà tout. Le seul
@@ -15397,7 +15388,7 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
       </div>
       {/* La feuille se serre pour que l'écran tienne d'une pièce : c'est elle
           qui porte le score, les relances et les deux boutons. */}
-      <div style={{...sheet,gap:6,padding:"10px 16px 14px"}}>
+      <div style={{...sheet,flex:"0 0 auto",gap:6,padding:"10px 16px 14px"}}>
         <div style={{background:G.nuit,borderRadius:G.rayonL,padding:"8px 16px",textAlign:"center",border:G.trait,boxShadow:G.ombreL}}>
           <div style={{fontSize:11,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.5)"}}>{isChain?tr("Score","Score","Score","Punteggio","Pontuação","Puntuación"):tr("Score total","Total score","Gesamtpunktzahl","Punteggio totale","Pontuação total","Puntuación total")}</div>
           <div style={{...posterText(46,G.white)}}>{sc}</div>
