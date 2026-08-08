@@ -8,6 +8,7 @@ import { G, posterText, posterTitre, posterLight, btn, fondCharte, terrainCharte
          retourStyle, retourCharte, fermerCharte, ligneCharte, pastilleCharte } from "../lib/charte.jsx";
 import { displayStreak } from "../lib/streak";
 import { normNom, normCompactNom, normPhoneticNom, levenshteinNom, seuilFuzzy, fuzzyNom } from "../lib/nom";
+import { cadenceSalon } from "../lib/cadence";
 // Jours calendaires « heure de Paris » — découpage temporel du tableau de bord.
 import { parisDayOf, parisLastDays } from "../lib/days";
 // Cartes à collectionner (débloquées par l'XP) et badge affiché à côté du pseudo.
@@ -4034,9 +4035,31 @@ export default function LePont() {
         duelHostTick(fresh);
       }
     }
-    poll();
-    const iv=setInterval(poll, 800);
-    return function(){ stop=true; clearInterval(iv); };
+    // Cadence adaptative. Les 800 ms d'origine s'appliquaient partout : dans le
+    // salon d'attente, pendant la manche et sur l'écran de résultats. C'est la
+    // requête la plus coûteuse de l'app — 75 par minute et par joueur — et elle
+    // n'a besoin de cette nervosité QUE pendant la manche, où l'on court après
+    // l'adversaire. Ailleurs, deux secondes ne se voient pas.
+    //
+    // Onglet caché : on lève le pied sans s'arrêter. L'hôte fait avancer les
+    // phases depuis SON sondage (duelHostTick) — le suspendre figerait la partie
+    // pour tout le monde, pas seulement pour lui.
+    function cadence(){
+      const visible = typeof document === "undefined" || document.visibilityState === "visible";
+      return cadenceSalon(duelScreen, visible);
+    }
+    let t = null;
+    function boucle(){
+      poll().catch(function(){}).then(function(){
+        if (!stop) t = setTimeout(boucle, cadence());
+      });
+    }
+    boucle();
+    // Retour au premier plan : on rattrape tout de suite au lieu d'attendre le
+    // prochain tour, sinon l'écran reste périmé jusqu'à 2,5 s.
+    const onVis = function(){ if (document.visibilityState === "visible" && !stop) { clearTimeout(t); boucle(); } };
+    document.addEventListener("visibilitychange", onVis);
+    return function(){ stop=true; clearTimeout(t); document.removeEventListener("visibilitychange", onVis); };
   }, [duelRoom && duelRoom.id, duelScreen]);
 
   // Mode SOLO : séquenceur local (remplace le polling) — fait avancer les phases
