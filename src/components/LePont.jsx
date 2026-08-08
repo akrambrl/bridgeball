@@ -16,6 +16,7 @@ import { CARDS, RARITIES, avatarCard, badgeToShow, cardById, hasArt, isUnlocked,
 import { WinBanner } from "./landing/WinBanner";
 // Barème de grades et drapeaux : définis une seule fois, partagés avec le desktop.
 import { GRADES, getGrade, gradeLabel, countryToFlag } from "../lib/leaderboard";
+import { duelTermine } from "../lib/duel";
 
 
 
@@ -6114,7 +6115,7 @@ export default function LePont() {
     // Historique tête-à-tête normalisé {mode, diff, my, opp, when} — duels 1v1
     // (les parties en salon partagées sont ajoutées plus bas, après fetch).
     const duelRows = duels.filter(d =>
-      d.status === "complete" &&
+      duelTermine(d) &&
       ((d.challenger_id === playerId && d.opponent_id === id) ||
        (d.opponent_id === playerId && d.challenger_id === id))
     ).map(d => {
@@ -10285,7 +10286,7 @@ export default function LePont() {
             )}
             {/* Défis terminés (historique gagné/perdu) */}
             {(function(){
-              const done = (duels||[]).filter(function(d){ return d.status==="complete" && (d.challenger_id===playerId || d.opponent_id===playerId); });
+              const done = (duels||[]).filter(function(d){ return duelTermine(d) && (d.challenger_id===playerId || d.opponent_id===playerId); });
               let w=0,l=0,dr=0;
               const rws = done.map(function(d){
                 const isChal=d.challenger_id===playerId;
@@ -10623,7 +10624,7 @@ export default function LePont() {
   // ── HISTORIQUE DES DÉFIS ──
   if (showDuelHistory) {
     const modeLabel = function(m){ return m==="pont"?"The Plug":m==="chaine"?"The Mercato":m==="grid"?"GOAT Grid":m||"Duel"; };
-    const mine = (duels||[]).filter(function(d){ return d.status==="complete" && (d.challenger_id===playerId || d.opponent_id===playerId); });
+    const mine = (duels||[]).filter(function(d){ return duelTermine(d) && (d.challenger_id===playerId || d.opponent_id===playerId); });
     let w=0, l=0, dr=0;
     const rows = mine.map(function(d){
       const isChal = d.challenger_id===playerId;
