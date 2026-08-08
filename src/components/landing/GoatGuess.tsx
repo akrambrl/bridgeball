@@ -2375,6 +2375,8 @@ const InverseView = ({
 }) => {
   const [recherche, setRecherche] = useState("");
   const [categorie, setCategorie] = useState<QCategory | null>(null);
+  const verdictRef = useRef<HTMLDivElement | null>(null);
+  const saisieRef = useRef<HTMLInputElement | null>(null);
   const restantes = INVERSE_MAX_Q - posees.length;
   const aCourt = restantes <= 0;
   const dejaPosees = new Set(posees.map((x) => x.q.id));
@@ -2413,7 +2415,21 @@ const InverseView = ({
     <div className="w-full min-w-0">
       {/* Pas de bouton « Quitter » ici : la croix globale de GOAT Guess est
           déjà fixée en haut à droite, les deux se chevauchaient. */}
-      <div className="flex justify-end mb-3">
+      {/* Le verdict est ouvert dès la PREMIÈRE question — on peut répondre sans
+          épuiser les vingt. Mais il vit en bas de l'écran, sous la liste de
+          questions : sur un téléphone il fallait tout faire défiler pour le
+          trouver, au point de croire qu'il n'existait pas. Ce raccourci y
+          emmène et pose le curseur dans le champ. */}
+      <div className="flex items-center justify-between gap-2 mb-3">
+        <button
+          onClick={() => {
+            verdictRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+            setTimeout(() => saisieRef.current?.focus(), 350);
+          }}
+          style={{ ...btn(G.pelouse, G.white, 15), padding: "9px 14px", display: "inline-flex", alignItems: "center", gap: 7 }}
+        >
+          💡 {tr("J'ai trouvé !","I've got it!","Ich hab's!","Ce l'ho!","Já sei!","¡Lo tengo!")}
+        </button>
         <div style={{ ...posterText(18, aCourt ? G.maillot : G.projecteur), letterSpacing: 1 }}>
           {posees.length}/{INVERSE_MAX_Q}
         </div>
@@ -2488,11 +2504,12 @@ const InverseView = ({
       )}
 
       {/* La proposition finale : un seul essai */}
-      <div style={{ background: G.nuit, border: G.trait, borderRadius: G.rayon, padding: "14px", boxShadow: G.ombre }}>
+      <div ref={verdictRef} style={{ background: G.nuit, border: G.trait, borderRadius: G.rayon, padding: "14px", boxShadow: G.ombre }}>
         <div className="text-[11px] font-black tracking-[2px] uppercase mb-2" style={{ color: G.projecteur }}>
           {tr("Ton verdict — un seul essai","Your verdict — one try only","Dein Urteil — nur ein Versuch","Il tuo verdetto — un solo tentativo","O teu veredicto — uma só tentativa","Tu veredicto — un solo intento")}
         </div>
         <input
+          ref={saisieRef}
           value={proposition}
           onChange={(e) => setProposition(e.target.value)}
           placeholder={tr("Nom du joueur…","Player name…","Spielername…","Nome del giocatore…","Nome do jogador…","Nombre del jugador…")}
