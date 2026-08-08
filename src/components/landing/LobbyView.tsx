@@ -362,7 +362,7 @@ export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels, onOpenFriends }: Pr
               <button
                 onClick={() => onPlay(game.mode)}
                 className="goat-pulse-encre inline-flex"
-                style={{ ...btn(G.projecteur, G.encre, 44), padding:"14px 48px", boxShadow:G.ombreL }}
+                style={{ ...btn(G.projecteur, G.encre, 44), display:"inline-flex", padding:"14px 48px", boxShadow:G.ombreL }}
               >
                 <span style={{ fontSize:32 }}>▶</span> {tr("JOUER", "PLAY", "SPIELEN", "GIOCA", "JOGAR","JUGAR")}
               </button>

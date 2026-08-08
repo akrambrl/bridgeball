@@ -1568,7 +1568,11 @@ const IntroView = ({ onStart }: { onStart: () => void }) => (
     <button
       onClick={onStart}
       className="goat-pulse-encre inline-flex items-center gap-3 px-8 lg:px-10 py-3 lg:py-4"
-      style={{ ...btn(G.projecteur, G.encre, 24) }}
+      /* `btn()` pose display:flex, ce qui l'emporte sur la classe inline-flex et
+         rend le bouton BLOC : sa largeur reste ajustée au contenu, mais
+         `text-center` du parent ne centre que de l'inline, donc il se collait à
+         gauche. On rétablit l'affichage inline voulu par la classe. */
+      style={{ ...btn(G.projecteur, G.encre, 24), display: "inline-flex" }}
     >
       <span className="text-xl">{"▶︎"}</span> {tr("COMMENCER","START","START","INIZIA","COMEÇAR","EMPEZAR")}
     </button>

@@ -3494,6 +3494,17 @@ export default function LePont() {
   // rouge, bandeau, encadré de signalement — quand la réussite n'en avait qu'un,
   // le champ qui verdit, et il disparaît dès que le joueur suivant tombe.
   const [chainOkClub, setChainOkClub] = useState(null);
+  // Les six drapeaux en rang mangeaient toute la largeur de l'entête. Un seul
+  // bouton porte désormais la langue courante, et la liste passe en modale.
+  const [showLangues, setShowLangues] = useState(false);
+  const LANGUES = [
+    {id:"fr", drapeau:"🇫🇷", code:"FR", nom:"Français"},
+    {id:"en", drapeau:"🇬🇧", code:"EN", nom:"English"},
+    {id:"de", drapeau:"🇩🇪", code:"DE", nom:"Deutsch"},
+    {id:"it", drapeau:"🇮🇹", code:"IT", nom:"Italiano"},
+    {id:"pt", drapeau:"🇵🇹", code:"PT", nom:"Português"},
+    {id:"es", drapeau:"🇪🇸", code:"ES", nom:"Español"},
+  ];
   const [chainReportSent, setChainReportSent] = useState(false);
   const [reportMessage, setReportMessage] = useState("");
   const [reportSent, setReportSent] = useState(false);
@@ -5567,15 +5578,19 @@ export default function LePont() {
     try {
       const saved = localStorage.getItem("bb_lang");
       if (saved === "fr" || saved === "en" || saved === "de" || saved === "it" || saved === "pt" || saved === "es") return saved;
-      // Pas de choix enregistré : on détecte la langue du navigateur (FR / EN / DE / IT / PT / ES),
-      // sinon on retombe sur le français (public cible historique).
+      // Pas de choix enregistré : on détecte la langue du navigateur.
       const nav = ((navigator.language || navigator.userLanguage || "") + "").toLowerCase();
+      if (nav.indexOf("fr") === 0) return "fr";
       if (nav.indexOf("de") === 0) return "de";
       if (nav.indexOf("it") === 0) return "it";
       if (nav.indexOf("pt") === 0) return "pt";
       if (nav.indexOf("es") === 0) return "es";
       if (nav.indexOf("en") === 0) return "en";
-      return "fr";
+      // Repli sur l'anglais et non sur le français : il ne sert QUE pour les
+      // langues absentes des six — un téléphone en fr-* est déjà parti sur le
+      // français ci-dessus. Un néerlandophone ou un arabophone lit donc
+      // l'anglais, qu'il a plus de chances de comprendre.
+      return "en";
     } catch { return "fr"; }
   });
   const setLanguage = (l) => {
@@ -8955,9 +8970,6 @@ export default function LePont() {
     <span style={{...posterText(36,G.white),display:"inline-block",animation:anim==="up"?"scoreUp .5s ease":anim==="down"?"scoreDn .5s ease":"none"}}>{sc}</span>
   );
 
-  const comboDisplay = combo>=3?(
-    <div key={combo} style={{position:"absolute",top:-8,left:"50%",transform:"translateX(-50%)",background:G.maillot,color:G.white,border:G.traitFin,boxShadow:"2px 2px 0 "+G.encre,borderRadius:G.rayonS,padding:"4px 14px",fontSize:12,fontWeight:900,letterSpacing:1,animation:"comboFire .5s ease",zIndex:20,whiteSpace:"nowrap"}}>{getComboLabel(combo)}</div>
-  ):null;
 
   const floatingPoints = comboFloat&&(
     <div style={{...posterText(32,G.projecteur),position:"fixed",top:"30%",left:"50%",transform:"translateX(-50%) skewX(-7deg)",animation:"floatUp 1.2s ease forwards",zIndex:100,pointerEvents:"none"}}>{comboFloat}</div>
@@ -10825,7 +10837,7 @@ export default function LePont() {
     return (
       <>
       {retourCharte(function(){setShowCollection(false);})}
-      <div style={{...shell,animation:"fadeUp .4s ease",overflow:isDesktop?"visible":"auto",background:fondCharte}} key="collection">
+      <div style={{...shell,animation:"fadeUp .4s ease",height:isDesktop?undefined:"100dvh",minHeight:isDesktop?shell.minHeight:0,overflow:isDesktop?"visible":"auto",background:fondCharte}} key="collection">
         {terrainCharte}
         {/* 64 px de retrait haut, et non 50 : le bouton retour de la charte est
             un carré de 44 px posé à 14 px du bord, donc il descend à 58 px. Un
@@ -10950,7 +10962,7 @@ export default function LePont() {
           d'avant la charte : son vert fluo n'existe plus dans les jetons. La
           pelouse éclairée le remplace, et c'est elle qui fait exister le trait
           d'encre des panneaux ci-dessous. */}
-      <div style={{...shell,animation:"fadeUp .4s ease",overflow:isDesktop?"visible":"auto",background:fondCharte}} key="account">
+      <div style={{...shell,animation:"fadeUp .4s ease",height:isDesktop?undefined:"100dvh",minHeight:isDesktop?shell.minHeight:0,overflow:isDesktop?"visible":"auto",background:fondCharte}} key="account">
         {terrainCharte}
         {/* Le titre descend sous le bouton retour : le lettrage d'affiche est plus
             large que l'ancien libellé et son contour d'encre venait toucher le
@@ -11059,9 +11071,18 @@ export default function LePont() {
       <>
       {/* Floating back button — OUTSIDE animated container so it doesn't move during fadeUp */}
       {retourCharte(function(){setShowLeaderboard(false);})}
-      <div style={{...shell,animation:"fadeUp .4s ease",overflow:isDesktop?"visible":"auto",background:fondCharte}} key="lb">
+      {/* C'est le DOCUMENT qui défilait, pas cette coque : `shell` est en
+          minHeight:100vh, donc il grandit avec son contenu au lieu de défiler.
+          Une entête `sticky` n'a alors aucun conteneur défilant auquel
+          s'accrocher et s'en va avec le reste. On borne donc la hauteur ici
+          pour que l'écran devienne son propre conteneur — l'entête tient, et
+          le bouton retour, qui est fixe, se pose toujours dessus. */}
+      <div style={{...shell,animation:"fadeUp .4s ease",
+        height:isDesktop?undefined:"100dvh",minHeight:isDesktop?shell.minHeight:0,
+        overflow:isDesktop?"visible":"auto",background:fondCharte}} key="lb">
         {terrainCharte}
-        <div style={{zIndex:1,padding:"12px 20px 12px 70px",display:"flex",alignItems:"center",gap:12}}>
+        <div style={{zIndex:3,position:"sticky",top:0,background:G.encre,borderBottom:G.traitFin,
+        padding:"max(12px, env(safe-area-inset-top)) 20px 12px 70px",display:"flex",alignItems:"center",gap:12}}>
           <div style={{flex:1,textAlign:"center"}}>
             <div style={{...posterText(40,G.projecteur)}}>{tr("CLASSEMENT","LEADERBOARD","RANGLISTE","CLASSIFICA","CLASSIFICAÇÃO","CLASIFICACIÓN")}</div>
             {/* Le mois et le compte à rebours ne sont plus répétés sous le titre :
@@ -11208,16 +11229,6 @@ export default function LePont() {
                           sans contour flottait sur l'aplat du podium. */}
                       <span style={{fontSize:11,fontWeight:800,color:i<3?G.encre:grade.color,background:i<3?"rgba(8,17,9,.14)":grade.color+"22",borderRadius:G.rayonS,padding:"2px 8px",letterSpacing:.5,border:G.traitFin}}>{grade.emoji} {grade.label}</span>
                       {entry.streak>=3 && <span style={{fontSize:11,fontWeight:800,color:i<3?G.encre:G.maillot,background:i<3?"rgba(8,17,9,.14)":"rgba(217,58,43,.22)",borderRadius:G.rayonS,padding:"2px 8px",border:G.traitFin}}>🔥 {entry.streak}</span>}
-                      {/* Badge de collection — la carte est revalidée contre l'XP
-                          du joueur (badgeToShow), pour ne jamais afficher une
-                          carte non méritée si la valeur en base est périmée. */}
-                      {(function(){
-                        const b = badgeByPid[entry.pid];
-                        const card = b ? badgeToShow(b.badge, b.xp) : null;
-                        if (!card) return null;
-                        const rm = rarityMeta(card.rarity);
-                        return <img key="badge" src={card.thumb} alt="" title={lang==="fr"?card.name:card.nameEn} style={{width:17,height:23,borderRadius:5,objectFit:"cover",border:G.traitFin,outline:"1.5px solid "+rm.color,outlineOffset:-3.5,flexShrink:0}}/>;
-                      })()}
                     </div>
                     {lbMode==="saison"
                       ? null
@@ -12466,6 +12477,38 @@ export default function LePont() {
           la voyait jamais. Son voile laisse voir l'accueil derrière, c'est là
           que la carte vient d'être gagnée. */}
       {cardUnlockModal}
+      {/* Choix de la langue. Les six drapeaux tenaient en rang dans l'entête et
+          en mangeaient toute la largeur ; ils passent ici, en liste lisible où
+          chaque langue est écrite dans sa propre langue. */}
+      {showLangues && (
+        <div onClick={function(){setShowLangues(false);}}
+          style={{position:"fixed",inset:0,zIndex:600,background:"rgba(8,17,9,.86)",
+            display:"flex",alignItems:"center",justifyContent:"center",padding:20,animation:"fadeIn .2s ease"}}>
+          <div onClick={function(e){e.stopPropagation();}}
+            style={{width:"100%",maxWidth:320,background:G.nuit,border:G.trait,boxShadow:G.ombreL,
+              borderRadius:G.rayonL,padding:"18px 16px",animation:"popIn .3s cubic-bezier(.34,1.56,.64,1)"}}>
+            <div style={{...posterText(24,G.projecteur),textAlign:"center",marginBottom:14}}>
+              {tr("CHOISIS TA LANGUE","CHOOSE YOUR LANGUAGE","SPRACHE WÄHLEN","SCEGLI LA LINGUA","ESCOLHA O IDIOMA","ELIGE TU IDIOMA")}
+            </div>
+            <div style={{display:"flex",flexDirection:"column",gap:7}}>
+              {LANGUES.map(function(o){
+                const actif = lang === o.id;
+                return (
+                  <button key={o.id} onClick={function(){setLanguage(o.id);setShowLangues(false);}}
+                    style={{display:"flex",alignItems:"center",gap:11,width:"100%",padding:"11px 14px",
+                      background:actif?G.projecteur:"rgba(8,17,9,.45)",color:actif?G.encre:G.white,
+                      border:G.traitFin,boxShadow:"2px 2px 0 "+G.encre,borderRadius:G.rayonS,cursor:"pointer",
+                      fontFamily:G.font,fontSize:15,fontWeight:800,textAlign:"left"}}>
+                    <span style={{fontSize:19,lineHeight:1}}>{o.drapeau}</span>
+                    <span style={{flex:1}}>{o.nom}</span>
+                    {actif && <span style={{fontSize:15}}>✓</span>}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
       {showRoomCreate && (
         <div
           style={{position:"fixed",inset:0,zIndex:400,display:"flex",alignItems:"flex-end"}}
@@ -12515,14 +12558,18 @@ export default function LePont() {
       <div style={{zIndex:1,padding:"6px 20px 2px"}}>
         <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between"}}>
           <div style={{flex:1,display:"flex",alignItems:"center"}}>
-            <div style={{display:"flex",background:"rgba(0,0,0,.3)",border:G.traitFin,borderRadius:12,padding:3}}>
-              <button onClick={()=>setLanguage("fr")} style={{padding:"5px 6px",background:lang==="fr"?G.pelouse:"transparent",color:lang==="fr"?"#000":"rgba(255,255,255,.7)",border:"none",borderRadius:9,cursor:"pointer",fontFamily:G.font,fontSize:11,fontWeight:800}}>🇫🇷 FR</button>
-              <button onClick={()=>setLanguage("en")} style={{padding:"5px 6px",background:lang==="en"?G.pelouse:"transparent",color:lang==="en"?"#000":"rgba(255,255,255,.7)",border:"none",borderRadius:9,cursor:"pointer",fontFamily:G.font,fontSize:11,fontWeight:800}}>🇬🇧 EN</button>
-              <button onClick={()=>setLanguage("de")} style={{padding:"5px 6px",background:lang==="de"?G.pelouse:"transparent",color:lang==="de"?"#000":"rgba(255,255,255,.7)",border:"none",borderRadius:9,cursor:"pointer",fontFamily:G.font,fontSize:11,fontWeight:800}}>🇩🇪 DE</button>
-              <button onClick={()=>setLanguage("it")} style={{padding:"5px 6px",background:lang==="it"?G.pelouse:"transparent",color:lang==="it"?"#000":"rgba(255,255,255,.7)",border:"none",borderRadius:9,cursor:"pointer",fontFamily:G.font,fontSize:11,fontWeight:800}}>🇮🇹 IT</button>
-              <button onClick={()=>setLanguage("pt")} style={{padding:"5px 6px",background:lang==="pt"?G.pelouse:"transparent",color:lang==="pt"?"#000":"rgba(255,255,255,.7)",border:"none",borderRadius:9,cursor:"pointer",fontFamily:G.font,fontSize:11,fontWeight:800}}>🇵🇹 PT</button>
-              <button onClick={()=>setLanguage("es")} style={{padding:"5px 6px",background:lang==="es"?G.pelouse:"transparent",color:lang==="es"?"#000":"rgba(255,255,255,.7)",border:"none",borderRadius:9,cursor:"pointer",fontFamily:G.font,fontSize:11,fontWeight:800}}>🇪🇸 ES</button>
-            </div>
+            {(function(){
+              const L = LANGUES.find(function(x){return x.id===lang;}) || LANGUES[0];
+              return (
+                <button onClick={function(){setShowLangues(true);}} aria-label={tr("Changer la langue","Change language","Sprache ändern","Cambia lingua","Mudar de idioma","Cambiar el idioma")}
+                  style={{display:"flex",alignItems:"center",gap:5,padding:"6px 9px",background:G.nuit,border:G.traitFin,
+                    boxShadow:"2px 2px 0 "+G.encre,borderRadius:G.rayonS,cursor:"pointer",fontFamily:G.font,
+                    fontSize:12,fontWeight:800,color:G.white,letterSpacing:.5}}>
+                  <span style={{fontSize:14,lineHeight:1}}>{L.drapeau}</span>{L.code}
+                  <span style={{fontSize:9,color:"rgba(255,255,255,.5)"}}>▼</span>
+                </button>
+              );
+            })()}
           </div>
           <div style={{textAlign:"center",flex:2}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"center"}}>
@@ -12634,19 +12681,14 @@ export default function LePont() {
         {!dailyRiddle.done && (
         <button
           onClick={function(){ requirePseudo(function(){ window.dispatchEvent(new CustomEvent("goatfc:open-devinette")); }); }}
-          style={{width:"100%",display:"flex",alignItems:"center",gap:11,padding:"11px 14px",background:G.projecteur,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,cursor:"pointer",fontFamily:G.font,textAlign:"left",color:"#1A1206"}}
+          style={{width:"100%",display:"flex",alignItems:"center",gap:9,padding:"5px 12px",background:G.projecteur,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,cursor:"pointer",fontFamily:G.font,textAlign:"left",color:"#1A1206"}}
         >
-          <span style={{fontSize:20,lineHeight:1}}>🕵️</span>
-          <span style={{flex:1,minWidth:0}}>
-            <span style={{display:"block",...posterLight(17),transformOrigin:"left"}}>
-              {tr("DEVINETTE DU JOUR","DAILY RIDDLE","RÄTSEL DES TAGES","INDOVINELLO DEL GIORNO","ADIVINHA DO DIA","ADIVINANZA DEL DÍA")}
-            </span>
-            <span style={{display:"block",fontSize:11,fontWeight:900,color:"rgba(26,18,6,.72)",marginTop:2}}>
-              {tr("Un joueur mystère à deviner","A mystery player to guess","Ein Rätselspieler zu erraten","Un giocatore misterioso da indovinare","Um jogador misterioso para adivinhar","Un jugador misterioso para adivinar")}
-            </span>
+          <span style={{fontSize:17,lineHeight:1}}>🕵️</span>
+          <span style={{flex:1,minWidth:0,...posterLight(15),transformOrigin:"left",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
+            {tr("DEVINETTE DU JOUR","DAILY RIDDLE","RÄTSEL DES TAGES","INDOVINELLO DEL GIORNO","ADIVINHA DO DIA","ADIVINANZA DEL DÍA")}
           </span>
           {dailyRiddle.streak > 0 && (
-            <span style={{flexShrink:0,padding:"4px 10px",borderRadius:999,background:"rgba(255,138,42,.16)",border:"1px solid rgba(255,138,42,.5)",color:"#FF8A2A",fontSize:12,fontWeight:900}}>🔥 {dailyRiddle.streak}</span>
+            <span style={{flexShrink:0,padding:"2px 8px",borderRadius:999,background:"rgba(255,138,42,.16)",border:"1px solid rgba(255,138,42,.5)",color:"#FF8A2A",fontSize:11,fontWeight:900,lineHeight:1.3}}>🔥 {dailyRiddle.streak}</span>
           )}
           <span style={{flexShrink:0,color:"#1A1206",fontSize:16,fontWeight:900}}>›</span>
         </button>
@@ -14976,7 +15018,6 @@ export default function LePont() {
         <div style={{zIndex:3,padding:"12px 16px 0",display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,flexShrink:0}}>
           {backBtn(()=>{setShowQuitConfirm(true);})}
           <div style={{background:G.nuit,border:G.traitFin,boxShadow:"2px 2px 0 "+G.encre,borderRadius:G.rayonS,padding:"7px 16px",display:"flex",alignItems:"center",gap:8,position:"relative"}}>
-            {comboDisplay}
             <span style={{fontSize:11,color:"rgba(255,255,255,.4)",fontWeight:700,letterSpacing:1}}>M{currentRound}/{totalRounds}</span>
             {scoreDisplay(score,scoreAnim)}
             <span style={{fontSize:11,color:"rgba(255,255,255,.5)",fontWeight:600}}>pts</span>
@@ -15129,7 +15170,6 @@ export default function LePont() {
       <div style={{zIndex:2,padding:"12px 16px 8px",display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,position:"sticky",top:0}}>
         {backBtn(()=>{setShowQuitConfirm(true);})}
         <div style={{background:G.nuit,border:G.traitFin,boxShadow:"2px 2px 0 "+G.encre,borderRadius:G.rayonS,padding:"7px 13px",display:"flex",alignItems:"center",gap:8,position:"relative"}}>
-          {comboDisplay}
           <span style={{...posterText(32,G.white),display:"inline-block",animation:scoreAnim==="up"?"scoreUp .5s ease":scoreAnim==="down"?"scoreDn .5s ease":"none"}}>{chainScore}</span>
           <span style={{fontSize:11,color:"rgba(255,255,255,.5)",fontWeight:600}}>pts</span>
         </div>
@@ -15387,8 +15427,14 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
       {myRecoveryCodeModal}
         {/* Terrain dessiné de la charte : les bandes opaques recouvraient le fond. */}
         {terrainCharte}
-      <div style={{zIndex:1,padding:"10px 20px 0",textAlign:"center"}}>
-        <WinBanner maxWidth={340} marginTop={0} maxHeight={128} lose={sc <= 0} />
+      {/* `flex:1 1 0` donne à l'entête une hauteur DÉFINIE — exactement ce que
+          la feuille lui laisse — sans quoi le `height:100%` du bandeau n'a rien
+          contre quoi se résoudre et retombe sur la hauteur intrinsèque de la
+          vidéo. `overflow:hidden` garantit qu'il ne peut jamais repousser le
+          reste hors de l'écran, quel que soit le gabarit. */}
+      <div style={{zIndex:1,padding:"6px 20px 0",textAlign:"center",
+        flex:"1 1 0",minHeight:0,overflow:"hidden",display:"flex",flexDirection:"column",justifyContent:"center",alignItems:"center"}}>
+        <WinBanner maxWidth={380} marginTop={0} maxHeight={240} fill lose={sc <= 0} />
         {/* Plus de « TEMPS ÉCOULÉ ! » ni de vanne sous le bandeau : l'écran de
             fin ne tenait pas d'une pièce, et ces deux lignes ne portaient aucune
             information — le score et le près-du-record disent déjà tout. Le seul
@@ -15397,10 +15443,10 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
       </div>
       {/* La feuille se serre pour que l'écran tienne d'une pièce : c'est elle
           qui porte le score, les relances et les deux boutons. */}
-      <div style={{...sheet,gap:8,padding:"12px 16px 16px"}}>
-        <div style={{background:G.nuit,borderRadius:G.rayonL,padding:"12px 16px",textAlign:"center",border:G.trait,boxShadow:G.ombreL}}>
+      <div style={{...sheet,flex:"0 0 auto",gap:6,padding:"10px 16px 14px"}}>
+        <div style={{background:G.nuit,borderRadius:G.rayonL,padding:"8px 16px",textAlign:"center",border:G.trait,boxShadow:G.ombreL}}>
           <div style={{fontSize:11,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.5)"}}>{isChain?tr("Score","Score","Score","Punteggio","Pontuação","Puntuación"):tr("Score total","Total score","Gesamtpunktzahl","Punteggio totale","Pontuação total","Puntuación total")}</div>
-          <div style={{...posterText(56,G.white)}}>{sc}</div>
+          <div style={{...posterText(46,G.white)}}>{sc}</div>
           <div style={{fontSize:11,color:"rgba(255,255,255,.5)"}}>pts{isChain?` · ${chainCount} ${chainCount>1?tr("liens","links","Glieder","anelli","elos","eslabones"):tr("lien","link","Glied","anello","elo","eslabón")}`:`  ·  ${totalRounds} ${totalRounds>1?tr("manches","rounds","Runden","turni","rodadas","rondas"):tr("manche","round","Runde","turno","rodada","ronda")}`}</div>
           {maxCombo>=3&&<div style={{fontSize:13,color:"#f59e0b",marginTop:4,fontWeight:700}}>🔥 {tr("Meilleur combo","Best combo","Bester Combo","Miglior combo","Melhor combo","Mejor combo")} : x{maxCombo}</div>}
           {isNewRecord&&<div style={{fontSize:12,color:G.pelouseClaire,marginTop:6,fontStyle:"italic"}}>{tr("Ancien record battu 🎉","Previous record beaten 🎉","Alter Rekord geschlagen 🎉","Vecchio record battuto 🎉","Recorde anterior batido 🎉","Récord anterior superado 🎉")}</div>}
@@ -15414,7 +15460,7 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
           const gap = chainRecord.score - sc;
           const close = gap <= Math.max(20, Math.round(chainRecord.score * 0.12));
           return (
-            <div style={{marginTop:12,background:close?"rgba(245,194,43,.28)":G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,padding:"9px 14px",textAlign:"center"}}>
+            <div style={{marginTop:6,background:close?"rgba(245,194,43,.28)":G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,padding:"7px 14px",textAlign:"center"}}>
               <div style={{fontSize:13.5,fontWeight:900,color:close?"#FF8A2A":"#fff",letterSpacing:.3}}>
                 {close ? tr("SI PROCHE ! 😤 ","SO CLOSE! 😤 ","SO KNAPP! 😤 ","COSÌ VICINO! 😤 ","POR POUCO! 😤 ","¡QUÉ CERCA! 😤 ") : ""}
                 {tr(`Il te manquait ${gap} pts pour ton record`,`${gap} pts short of your record`,`Nur ${gap} Pkt bis zum Rekord`,`Ti mancavano ${gap} pt per il record`,`Faltaram ${gap} pts para o recorde`,`Te faltaron ${gap} pts para tu récord`)}
@@ -15457,7 +15503,7 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
           const verdictFg = draw ? G.encre : G.white;
           const verdictText = draw ? "ÉGALITÉ" : win ? "VICTOIRE !" : "DÉFAITE";
           return (
-            <div style={{borderRadius:G.rayon,padding:"16px",border:G.trait,boxShadow:G.ombre,background:G.nuit,animation:"fadeUp .4s ease .15s both"}}>
+            <div style={{borderRadius:G.rayon,padding:"10px 14px",border:G.trait,boxShadow:G.ombre,background:G.nuit,animation:"fadeUp .4s ease .15s both"}}>
               <div style={{textAlign:"center",marginBottom:14}}>
                 <span style={{...posterText(26,verdictFg),display:"inline-block",padding:"5px 16px",background:verdictBg,
                   border:G.traitFin,borderRadius:G.rayonS,boxShadow:"2px 2px 0 "+G.encre}}>{verdictText}</span>
@@ -15465,11 +15511,11 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
               <div style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",alignItems:"center",gap:10}}>
                 {/* Toi */}
                 <div style={{textAlign:"center"}}>
-                  <div style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:64,height:64,borderRadius:G.rayonS,overflow:"hidden",background:G.pelouse,border:G.traitFin,marginBottom:8,marginInline:"auto"}}>
+                  <div style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:52,height:52,borderRadius:G.rayonS,overflow:"hidden",background:G.pelouse,border:G.traitFin,marginBottom:8,marginInline:"auto"}}>
                     <img src={avatarCard(playerBadge, playerXp).img} alt="" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top"}}/>
                   </div>
                   <div style={{fontSize:11,color:"#bbb",letterSpacing:1,textTransform:"uppercase"}}>{playerName||"Toi"}</div>
-                  <div style={{...posterText(1,win?G.pelouse:G.white,0),fontSize:34,marginTop:2}}>{myScore}</div>
+                  <div style={{...posterText(1,win?G.pelouse:G.white,0),fontSize:28,marginTop:0}}>{myScore}</div>
                 </div>
                 {/* VS */}
                 <div style={{...posterText(1,"rgba(255,255,255,.55)",0),fontSize:20,letterSpacing:2}}>VS</div>
