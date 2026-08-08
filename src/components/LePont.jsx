@@ -6152,6 +6152,18 @@ export default function LePont() {
         setViewedProfileData(function(prev){ return prev ? {...prev, xp: userData[0].xp || 0} : prev; });
       }
     } catch {}
+    // Carte choisie par le joueur, lue à part du select ci-dessus : la colonne
+    // `badge` peut être absente selon le schéma, et l'inclure ferait échouer
+    // toute la requête (même raison qu'au chargement du classement).
+    // Sans elle, le profil retombait sur la carte de NIVEAU alors que la ligne
+    // du classement affiche la carte choisie — deux cartes pour un même joueur.
+    try {
+      const badgeRows = await sbFetch("bb_pseudos?player_id=eq."+id+"&select=badge&limit=1");
+      if (Array.isArray(badgeRows) && badgeRows.length > 0) {
+        const chosen = badgeRows[0].badge || null;
+        setViewedProfileData(function(prev){ return prev ? {...prev, badge: chosen} : prev; });
+      }
+    } catch {}
     // Records réels depuis bb_scores (source de vérité) — indépendant du leaderboard
     // en mémoire (qui, en mode global, remplace le score par l'XP et met les records
     // à 0 pour les joueurs ajoutés via le fallback XP). Corrige "Record Plug/Mercato 0"
@@ -12003,7 +12015,12 @@ export default function LePont() {
                   Mon profil, dans la collection et au classement. Le liseré blanc
                   translucide et le halo vert LED ne disaient rien de son niveau. */}
               {(function(){
-                const c = levelCard(d.xp || 0);
+                // `levelCard` ignore la carte que le joueur a CHOISIE et rend
+                // toujours celle de son niveau : le même joueur apparaissait
+                // donc avec deux avatars différents selon qu'on le regardait au
+                // classement ou sur son profil. `avatarCard` respecte le choix
+                // et ne retombe sur le niveau qu'à défaut.
+                const c = avatarCard(d.badge, d.xp || 0);
                 const rm = rarityMeta(c.rarity);
                 return (
                   <div className={rm.cls} style={{display:"inline-block",width:92,height:122,margin:"0 auto 14px",padding:3,borderRadius:G.rayon,background:rm.frame,border:G.traitFin,boxShadow:G.ombreL}}>
