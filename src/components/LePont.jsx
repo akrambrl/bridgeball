@@ -12772,8 +12772,8 @@ export default function LePont() {
                    haut que prévu creuserait une bande d'or vide sous le
                    lettrage. Les deux maxima laissent l'image se poser dans la
                    boîte quel que soit son rapport. */
-                <img src="/logo-mot.png?v=1" onError={function(){setLogoMotAbsent(true);}}
-                  style={{maxWidth:"100%",maxHeight:"clamp(56px,15vw,96px)",width:"auto",height:"auto",
+                <img src="/logo-mot.webp?v=1" onError={function(){setLogoMotAbsent(true);}}
+                  style={{maxWidth:"100%",maxHeight:"clamp(64px,19vw,112px)",width:"auto",height:"auto",
                     display:"block",margin:"0 auto"}} alt="GOAT FC"/>
               )}
             </div>
