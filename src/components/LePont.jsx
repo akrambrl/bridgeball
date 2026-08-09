@@ -3530,6 +3530,10 @@ export default function LePont() {
   // Les six drapeaux en rang mangeaient toute la largeur de l'entête. Un seul
   // bouton porte désormais la langue courante, et la liste passe en modale.
   const [showLangues, setShowLangues] = useState(false);
+  // Le logotype lettré de l'en-tête est un fichier fourni à part. S'il manque,
+  // on retombe sur l'écusson plutôt que d'afficher une image cassée en haut de
+  // l'accueil — c'est le premier écran, il ne peut pas dépendre d'un fichier.
+  const [logoMotAbsent, setLogoMotAbsent] = useState(false);
   const LANGUES = [
     {id:"fr", drapeau:"🇫🇷", code:"FR", nom:"Français"},
     {id:"en", drapeau:"🇬🇧", code:"EN", nom:"English"},
@@ -12730,16 +12734,32 @@ export default function LePont() {
               );
             })()}
           </div>
-          <div style={{textAlign:"center",flex:2}}>
+          {/* flex:3 et non 2 : un logotype est large, et le comprimer dans un
+              tiers de la bande le rendrait illisible sur téléphone. Les deux
+              colonnes de commandes se contentent de ce qu'il leur laisse. */}
+          <div style={{textAlign:"center",flex:3}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"center"}}>
-              {/* Le logo porte son propre fond doré : posé sur la bande d'or, il
-                  dessinait un rectangle plus texturé que le reste, sans que rien
-                  ne dise pourquoi. Plutôt que de subir la couture, on l'assume
-                  en écusson — trait d'encre, ombre dure, rayon franc, comme
-                  toute forme de la charte. Une version détourée le rendrait
-                  inutile, mais elle n'existe pas encore. */}
-              <img src="/logo.png?v=3" style={{height:"clamp(64px,16vw,96px)",width:"auto",objectFit:"contain",
-                border:G.trait,borderRadius:G.rayonS,boxShadow:G.ombre,display:"block"}} alt="GOAT FC"/>
+              {/* L'en-tête porte le logotype lettré, pas l'écusson carré : un
+                  carré cerclé d'encre lisait comme un bouton, et le lettrage
+                  est ce qui nomme le jeu. Il est posé nu — ni cadre, ni ombre
+                  portée : il en a déjà une, dessinée.
+                  Le fichier doit être détouré (fond transparent). Avec un fond
+                  opaque, son rectangle se découpe sur l'or de la bande, et
+                  c'est justement le défaut qui avait forcé l'écusson.
+                  Repli sur l'écusson si le fichier n'est pas là. */}
+              {logoMotAbsent ? (
+                <img src="/logo.png?v=3" style={{height:"clamp(64px,16vw,96px)",width:"auto",objectFit:"contain",
+                  border:G.trait,borderRadius:G.rayonS,boxShadow:G.ombre,display:"block"}} alt="GOAT FC"/>
+              ) : (
+                /* Borné en largeur ET en hauteur, jamais dimensionné : le
+                   bandeau prend la taille de son contenu, donc un fichier plus
+                   haut que prévu creuserait une bande d'or vide sous le
+                   lettrage. Les deux maxima laissent l'image se poser dans la
+                   boîte quel que soit son rapport. */
+                <img src="/logo-mot.png?v=1" onError={function(){setLogoMotAbsent(true);}}
+                  style={{maxWidth:"100%",maxHeight:"clamp(56px,15vw,96px)",width:"auto",height:"auto",
+                    display:"block",margin:"0 auto"}} alt="GOAT FC"/>
+              )}
             </div>
           </div>
           <div style={{flex:1,display:"flex",justifyContent:"flex-end",alignItems:"center",gap:8}}>
