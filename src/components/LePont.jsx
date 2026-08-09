@@ -20,6 +20,18 @@ import { duelTermine } from "../lib/duel";
 
 
 
+// Un duel TERMINE porte l'un de deux statuts, et c'est la source d'un bug qui
+// a vide tout le classement de ses V/N/D :
+//   • « complete »  : un defi nominatif joue jusqu'au bout
+//   • « open_done » : un defi OUVERT releve par quelqu'un
+// Les deux portent leurs deux scores. Or les compteurs ne regardaient que le
+// premier — sur 204 duels en base, 147 sont en open_done et UN SEUL en
+// complete. Tout le monde affichait donc 0 victoire, 0 nul, 0 defaite.
+// Toute requete ou tout filtre qui compte des duels doit passer par ici.
+const DUEL_FINI_SQL = "status=in.(complete,open_done)";
+const DUEL_FINI = ["complete", "open_done"];
+const duelFini = function(d){ return !!d && DUEL_FINI.indexOf(d.status) !== -1; };
+
 const SB_URL = "https://ialjlsrgcolocoaegzrc.supabase.co";
 const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhbGpsc3JnY29sb2NvYWVnenJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1MDM3NzksImV4cCI6MjA5MTA3OTc3OX0.-SU8anuPhnpoa-PYhIHQqrcuOBsHxdtBJKRZuiGcGwM";
 
@@ -6683,7 +6695,7 @@ export default function LePont() {
         const won = myScore > theirScore;
         // Calculer le streak depuis Supabase
         try {
-          const history = await sbFetch("bb_duels?status=eq.complete&or=(challenger_id.eq."+playerId+",opponent_id.eq."+playerId+")&order=created_at.asc&select=challenger_id,challenger_score,opponent_score");
+          const history = await sbFetch("bb_duels?"+DUEL_FINI_SQL+"&or=(challenger_id.eq."+playerId+",opponent_id.eq."+playerId+")&order=created_at.asc&select=challenger_id,challenger_score,opponent_score");
           if (Array.isArray(history)) {
             let streak = 0;
             const results = history.map(function(d){
@@ -7749,7 +7761,7 @@ export default function LePont() {
         if (row.mode === "pont" && row.score > stats[row.player_id].bestPont) stats[row.player_id].bestPont = row.score;
         if (row.mode === "chaine" && row.score > stats[row.player_id].bestChaine) stats[row.player_id].bestChaine = row.score;
       });
-      const duels = await sbFetch("bb_duels?status=eq.complete"+((!mode||isGlobal)?"":"&mode=eq."+mode)+"&select=challenger_id,opponent_id,challenger_score,opponent_score&limit=500");
+      const duels = await sbFetch("bb_duels?"+DUEL_FINI_SQL+((!mode||isGlobal)?"":"&mode=eq."+mode)+"&select=challenger_id,opponent_id,challenger_score,opponent_score&limit=500");
       if (Array.isArray(duels)) {
         duels.forEach(function(d) {
           [d.challenger_id, d.opponent_id].forEach(function(pid) {
@@ -7796,7 +7808,7 @@ export default function LePont() {
         });
       }
       // Calculer les streaks depuis les duels triés par date
-      const duelsDated = await sbFetch("bb_duels?status=eq.complete&select=challenger_id,opponent_id,challenger_score,opponent_score,created_at&order=created_at.asc&limit=1000");
+      const duelsDated = await sbFetch("bb_duels?"+DUEL_FINI_SQL+"&select=challenger_id,opponent_id,challenger_score,opponent_score,created_at&order=created_at.asc&limit=1000");
       if (Array.isArray(duelsDated)) {
         // Grouper les résultats par joueur dans l'ordre chronologique
         const playerResults = {};
@@ -10770,7 +10782,7 @@ export default function LePont() {
     // ── VUE DÉTAIL AMI ──
     if (selectedFriend) {
       const friendDuels = duels.filter(function(d){
-        return d.status==="complete" && (d.challenger_id===selectedFriend.id || d.opponent_id===selectedFriend.id);
+        return duelFini(d) && (d.challenger_id===selectedFriend.id || d.opponent_id===selectedFriend.id);
       });
       let wins=0, losses=0, draws=0;
       friendDuels.forEach(function(d){
@@ -10932,7 +10944,7 @@ export default function LePont() {
                 const fscores = friendScores.filter(function(s){return s.player_id===fid;});
                 fname = names[fid] || (fscores.length > 0 ? fscores[0].player_name : fid);
               } catch { }
-              const friendDuelCount = duels.filter(function(d){return d.status==="complete"&&(d.challenger_id===fid||d.opponent_id===fid);}).length;
+              const friendDuelCount = duels.filter(function(d){return duelFini(d)&&(d.challenger_id===fid||d.opponent_id===fid);}).length;
               return (
                 <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 14px",background:G.nuit,borderRadius:14,marginBottom:8,border:G.traitFin,cursor:"pointer"}}
                   onClick={function(){setShowFriends(false);openUserProfile(fid,fname,"friends");}}>
@@ -15991,22 +16003,17 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
             l'accueil » hors de l'écran. Sur un grand écran il garde sa taille. */}
         <div style={{zIndex:1,padding:"12px 20px 0",textAlign:"center",
           flex:"1 1 0",minHeight:0,overflow:"hidden",display:"flex",flexDirection:"column",justifyContent:"center",alignItems:"center"}}>
-          <WinBanner maxWidth={380} marginTop={0} maxHeight={212} fill lose={!won && !draw} />
+          {/* 212 px etait le plafond quand quatre blocs se partageaient la
+              hauteur sous elle. Ils sont partis : la cinematique prend leur
+              place. `flex:1 1 0` sur l'entete la fait de toute facon se serrer
+              d'elle-meme sur un petit gabarit, donc le plafond ne sert qu'a
+              l'empecher de devenir enorme sur grand ecran. */}
+          <WinBanner maxWidth={460} marginTop={0} maxHeight={380} fill lose={!won && !draw} />
           <div style={{...posterTitre(46,labelColor),fontSize:"clamp(30px,8vw,46px)",marginTop:4}}>{label}</div>
-          <div style={{fontSize:"clamp(13px,3.5vw,18px)",color:G.white,fontWeight:800,marginTop:6,animation:"fadeUp .4s ease .25s both",textTransform:"uppercase",letterSpacing:1,textShadow:"0 2px 10px rgba(0,0,0,.4)"}}>{
-            won
-              ? pickResultMessage(msgResultat(lang).winLabels, duelResult.myScore)
-              : draw
-              ? pickResultMessage(msgResultat(lang).drawLabels, duelResult.myScore)
-              : pickResultMessage(msgResultat(lang).loseLabels, duelResult.theirScore)
-          }</div>
-          {/* Le texte était peint dans la couleur EXACTE de son fond : la pastille
-              s'affichait comme un pavé orange vide. Même recette que la pastille
-              de grade du profil — aplat translucide, texte dans la teinte pleine. */}
-          {(()=>{const grade=getGrade(playerXp); return <div style={{display:"inline-flex",alignItems:"center",gap:6,marginTop:8,background:G.nuit,border:G.traitFin,boxShadow:"2px 2px 0 "+G.encre,borderRadius:G.rayonS,padding:"5px 12px"}}><span style={{fontSize:12,fontWeight:800,color:grade.color,letterSpacing:1,textTransform:"uppercase"}}>{grade.emoji} {grade.label}</span></div>; })()}
-          <div style={{fontSize:14,color:"rgba(255,255,255,.4)",marginTop:8}}>
-            {abandoned ? duelResult.oppName+(tr(" a abandonné 🏃"," forfeited 🏃"," hat aufgegeben 🏃"," ha abbandonato 🏃"," desistiu 🏃"," ha abandonado 🏃")) : (tr("Duel ","Duel ","Duell ","Duello ","Duelo ","Duelo "))+(duelResult.mode==="pont"?"The Plug":"The Mercato")}
-          </div>
+          {/* Trois blocs retires ici : la vanne de defaite, la pastille de
+              grade et la ligne « Duel The Plug ». Ils repoussaient le reste de
+              l'ecran vers le bas alors que le score dit deja tout, et c'est la
+              cinematique qui recupere leur place. */}
         </div>
         {/* `flex:0 0 auto` : la feuille prend ce qu'il lui faut et rien de plus.
             Avec le `flex:1` par défaut, elle se battait avec l'entête pour
@@ -16032,11 +16039,8 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
               )}
             </div>
           </div>
-          {Array.isArray(duelResult.myRounds) && duelResult.myRounds.length > 0 && (
-            <div style={{fontSize:10,color:"rgba(255,255,255,.4)",textAlign:"center",marginTop:-2,marginBottom:8,fontStyle:"italic"}}>
-              👁️ {tr("Tape sur un score pour voir les réponses","Tap a score box to see the answers","Tippe auf einen Score, um die Antworten zu sehen","Tocca un punteggio per vedere le risposte","Toque numa pontuação para ver as respostas","Toca una puntuación para ver las respuestas")}
-            </div>
-          )}
+          {/* L'invite « tape sur un score » est retiree : l'oeil pose sur
+              chaque case la porte deja, et elle coutait une ligne. */}
           {/* Streak banner */}
           {won && winStreak >= 2 && (
             <div style={{textAlign:"center",marginBottom:8,padding:"10px 16px",background:G.nuit,borderRadius:14,border:G.traitFin}}>
@@ -16051,7 +16055,7 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
           )}
           {/* Badge Invaincu */}
           {won && duelResult.oppName && (()=>{
-            const h2h = duels.filter(function(d){return d.status==="complete"&&(d.challenger_id===playerId||d.opponent_id===playerId)&&(d.challenger_name===duelResult.oppName||d.opponent_name===duelResult.oppName);});
+            const h2h = duels.filter(function(d){return duelFini(d)&&(d.challenger_id===playerId||d.opponent_id===playerId)&&(d.challenger_name===duelResult.oppName||d.opponent_name===duelResult.oppName);});
             const lost = h2h.some(function(d){const ms=d.challenger_id===playerId?d.challenger_score:d.opponent_score;const ts=d.challenger_id===playerId?d.opponent_score:d.challenger_score;return ms<ts;});
             return !lost && h2h.length >= 2 ? (
               <div style={{textAlign:"center",marginBottom:8,padding:"10px 16px",background:G.projecteur,borderRadius:G.rayon,border:G.traitFin,boxShadow:"2px 2px 0 "+G.encre}}>
@@ -16059,63 +16063,13 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
               </div>
             ) : null;
           })()}
-          {/* Message auto du vainqueur au perdant */}
-          {!won && !draw && !abandoned && duelResult.oppName && (
-            <div style={{marginBottom:8,padding:"12px 16px",background:"rgba(8,17,9,.45)",borderRadius:14,border:G.traitFin}}>
-              <div style={{fontSize:10,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginBottom:6}}>💬 {tr("Message de","Message from","Nachricht von","Messaggio da","Mensagem de","Mensaje de")} {duelResult.oppName}</div>
-              <div style={{fontSize:14,fontWeight:700,color:G.white}}>
-                {pickResultMessage(msgResultat(lang).winTaunts, duelResult.theirScore - duelResult.myScore + duelResult.theirScore)}
-              </div>
-            </div>
-          )}
-          <div style={{fontSize:15,color:"rgba(255,255,255,.85)",textAlign:"center",padding:"10px 0",fontWeight:700,lineHeight:1.4}}>
-            {(()=>{
-              const L = msgResultat(lang);
-              const oppName = duelResult.oppName || "";
-              if (abandoned) {
-                const fn = pickResultMessage(L.abandonedCentral, duelResult.myScore);
-                return typeof fn === "function" ? fn(oppName) : fn;
-              }
-              if (won) {
-                const fn = pickResultMessage(L.winCentral, duelResult.myScore);
-                return typeof fn === "function" ? fn(oppName) : fn;
-              }
-              if (draw) {
-                return pickResultMessage(L.drawCentral, duelResult.myScore);
-              }
-              const fn = pickResultMessage(L.loseCentral, duelResult.theirScore);
-              return typeof fn === "function" ? fn(oppName) : fn;
-            })()}
-          </div>
-          {won && !abandoned && (
-            <div style={{marginBottom:8,padding:"10px 16px",background:"rgba(8,17,9,.45)",borderRadius:G.rayon,border:G.traitFin}}>
-              <div style={{...posterText(1,G.pelouse,0),fontSize:12,letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>💬 {tr("Message envoyé à","Message sent to","Nachricht gesendet an","Messaggio inviato a","Mensagem enviada para","Mensaje enviado a")} {duelResult.oppName}</div>
-              <div style={{fontSize:13,color:"rgba(255,255,255,.5)",fontStyle:"italic"}}>
-                {pickResultMessage(msgResultat(lang).winTaunts, duelResult.myScore * 3 + duelResult.theirScore)}
-              </div>
-            </div>
-          )}
-          <button onClick={function(){
-            const grade = getGrade(playerXp);
-            const opp = duelResult.oppName, my = duelResult.myScore, their = duelResult.theirScore;
-            const txt = won
-              ? tr(
-                  `${grade.emoji} J'ai écrasé ${opp} ${my}-${their} sur GOAT FC 😤\nGrade : ${grade.label}\nT'as le niveau ? 👇\nhttps://goatfc.fr`,
-                  `${grade.emoji} I crushed ${opp} ${my}-${their} on GOAT FC 😤\nRank: ${grade.label}\nCan you beat me? 👇\nhttps://goatfc.fr`,
-                  `${grade.emoji} Ich habe ${opp} ${my}-${their} auf GOAT FC zerlegt 😤\nRang: ${grade.label}\nSchaffst du das? 👇\nhttps://goatfc.fr`,
-                  `${grade.emoji} Ho asfaltato ${opp} ${my}-${their} su GOAT FC 😤\nGrado: ${grade.label}\nCe la fai? 👇\nhttps://goatfc.fr`,
-                  `${grade.emoji} Atropelei ${opp} ${my}-${their} no GOAT FC 😤\nPatente: ${grade.label}\nVocê tem nível? 👇\nhttps://goatfc.fr`,`${grade.emoji} He arrollado a ${opp} ${my}-${their} en GOAT FC 😤\nRango: ${grade.label}\n¿Tienes nivel? 👇\nhttps://goatfc.fr`)
-              : tr(
-                  `J'ai perdu ${my}-${their} contre ${opp} sur GOAT FC 😤\nLa revanche arrive...\nhttps://goatfc.fr`,
-                  `I lost ${my}-${their} to ${opp} on GOAT FC 😤\nRematch incoming...\nhttps://goatfc.fr`,
-                  `Ich habe ${my}-${their} gegen ${opp} auf GOAT FC verloren 😤\nDie Revanche kommt...\nhttps://goatfc.fr`,
-                  `Ho perso ${my}-${their} contro ${opp} su GOAT FC 😤\nLa rivincita arriva...\nhttps://goatfc.fr`,
-                  `Perdi ${my}-${their} para ${opp} no GOAT FC 😤\nA revanche vem aí...\nhttps://goatfc.fr`,`He perdido ${my}-${their} contra ${opp} en GOAT FC 😤\nLa revancha llega...\nhttps://goatfc.fr`);
-            if(navigator.share){navigator.share({title:"GOAT FC",text:txt});}
-            else{navigator.clipboard.writeText(txt).then(function(){alert(tr("Copié ! 📋","Copied! 📋","Kopiert! 📋","Copiato! 📋","Copiado! 📋","¡Copiado! 📋"));});}
-          }} style={{width:"100%",padding:"13px",background:G.ciel,color:"#fff",border:G.trait,borderRadius:G.rayon,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:6}}>
-            {tr("📤 Partager le résultat","📤 Share the result","📤 Ergebnis teilen","📤 Condividi il risultato","📤 Compartilhar resultado","📤 Compartir el resultado")}
-          </button>
+          {/* Le message automatique du vainqueur au perdant est retire. */}
+          {/* La phrase centrale de commentaire est retiree elle aussi. */}
+          {/* Le jumeau du message recu — « Message envoye a X », affiche quand
+              on GAGNE — part avec lui. Le garder aurait fait revenir sur
+              l'ecran de victoire le debordement qu'on vient de corriger sur
+              celui de defaite. */}
+          {/* Le bouton de partage est retire de cet ecran. */}
           {((!duelResult.isChain && roundAnswers.length>0) || (duelResult.isChain && chainHistory.length>0)) && (
             <button onClick={()=>setShowHistory(true)} style={{...btn(G.projecteur,G.encre,17),width:"100%",padding:"11px",fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:6}}>
               📋 {duelResult.isChain?(tr("Voir ma chaîne","See my chain","Meine Kette ansehen","Vedi la mia catena","Ver minha corrente","Ver mi cadena")):(tr("Récap des questions","Questions recap","Fragen-Übersicht","Riepilogo domande","Resumo das perguntas","Repaso de las preguntas"))}
