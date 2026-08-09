@@ -45,7 +45,50 @@ if (manquantes.length) {
     " — relancer `node scripts/social/polices.mjs`");
 }
 
-for (const [id, nom] of Object.entries(NOMS)) {
+// ── Déclinaison 9:16 ────────────────────────────────────────────────────
+// Instagram pousse le vertical partout (reels, stories, et le feed qui
+// accepte le 4:5 mais affiche le 9:16 en pleine hauteur). On sort donc les
+// mêmes posts en 1080×1920.
+//
+// Le bloc n'est pas redupliqué dans le HTML : on le clone au rendu et on lui
+// change sa classe de format. Six copies à maintenir en double, c'est six
+// occasions de corriger un texte d'un côté et pas de l'autre.
+//
+// Les tailles de police posées en style inline (v2, v7, v8...) sont laissées
+// telles quelles : la largeur ne change pas entre le carré et le 9:16, donc
+// ce qui tenait sur une ligne y tient encore. Seule la hauteur grandit.
+//
+// v5 et v6 sont déjà en 9:16, v9 est une bannière de profil (1500×500) : ni
+// l'un ni l'autre n'a de déclinaison à produire.
+const VERTICAUX = {
+  v1: "10-9x16-marque",  v2: "11-9x16-devinette", v3: "12-9x16-modes",
+  v4: "13-9x16-grades",  v7: "14-9x16-grid",      v8: "15-9x16-duel",
+};
+await page.evaluate((ids) => {
+  for (const id of ids) {
+    const src = document.getElementById(id);
+    if (!src) continue;
+    const copie = src.cloneNode(true);
+    copie.id = id + "-916";
+    copie.classList.remove("carre", "portrait", "banniere");
+    copie.classList.add("vertical");
+    // Plusieurs titres portent leur taille en style inline, posée pour tenir
+    // dans le carré. Un style inline bat la feuille : sans ce rattrapage ils
+    // resteraient à la taille du carré au milieu d'une affiche deux fois plus
+    // haute. On les grandit du même facteur, la largeur utile ne changeant pas.
+    const titre = copie.querySelector(".titre");
+    if (titre && titre.style.fontSize) {
+      titre.style.fontSize = Math.round(parseFloat(titre.style.fontSize) * 1.3) + "px";
+    }
+    document.body.appendChild(copie);
+  }
+}, Object.keys(VERTICAUX));
+await page.waitForTimeout(300);
+
+const TOUT = { ...NOMS };
+for (const [id, nom] of Object.entries(VERTICAUX)) TOUT[id + "-916"] = nom;
+
+for (const [id, nom] of Object.entries(TOUT)) {
   const el = await page.$("#" + id);
   if (!el) { console.warn("bloc introuvable :", id); continue; }
   const b = await el.boundingBox();

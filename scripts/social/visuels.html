@@ -111,6 +111,55 @@
     text-shadow:10px 10px 0 var(--encre)}
   .story .marque{font-size:32px;letter-spacing:.16em;margin-top:30px}
 
+  /* ── 1080 × 1920 (9:16) ────────────────────────────────────────────── */
+  /* Déclinaison verticale des posts carrés et portraits. rendre.mjs clone le
+     bloc et remplace sa classe de format par celle-ci — d'où l'échelle
+     complète ici, elle ne peut hériter de rien.
+     Contrairement à .story, le bas n'est PAS réservé : ce sont des posts, pas
+     des stories, l'interface d'Instagram ne vient pas mordre dedans. Un
+     rembourrage de 330px y creuserait un trou. */
+  .vertical{width:1080px;height:1920px}
+  .vertical .contenu{padding:130px 97px 140px}
+  .vertical .pastille{font-size:38px;letter-spacing:.1em;padding:12px 26px;border-radius:18px}
+  .vertical .kick{font-size:42px;letter-spacing:.13em;margin-bottom:14px}
+  .vertical .titre{font-size:150px;line-height:1.04;-webkit-text-stroke:13px var(--encre);
+    text-shadow:13px 13px 0 var(--encre)}
+  .vertical .marque{font-size:34px;letter-spacing:.16em;margin-top:30px}
+  /* Le blason descend un peu : à 70px du haut sur 1920, il flottait tout seul
+     dans un angle très loin du reste. */
+  .vertical .blason{top:96px;right:82px;width:148px;height:148px}
+
+  /* Les blocs de contenu grandissent avec le format. Sans ça, un contenu
+     calibré pour 1080 de haut posé dans 1920 se vide par le milieu : le cadre
+     grandit, la composition non. La largeur, elle, ne bouge pas — on ne fait
+     donc grandir que ce qui peut grandir sans déborder des 886px utiles. */
+  .vertical .eventail img{width:330px;margin-left:-76px}
+  .vertical .eventail img:nth-child(3){width:376px}
+
+  .vertical .indices{gap:24px;margin-top:48px}
+  .vertical .indice{padding:30px 32px;font-size:46px;border-radius:20px}
+  .vertical .indice b{font-size:36px}
+
+  .vertical .duo-modes{gap:40px}
+  .vertical .modes{gap:18px}
+  .vertical .mode{padding:22px 24px;border-radius:20px}
+  .vertical .mode .nom{font-size:36px}
+  .vertical .tel{width:440px;flex:0 0 440px}
+
+  .vertical .paliers{gap:22px;margin-top:48px}
+  .vertical .palier{padding:26px 30px;border-radius:20px}
+  .vertical .palier .em{font-size:50px}
+  .vertical .palier .nom{font-size:52px}
+  .vertical .palier .xp{font-size:46px}
+
+  .vertical .grille{width:760px;gap:20px;margin-top:52px}
+  .vertical .case{font-size:80px;border-radius:20px}
+
+  .vertical .duo-score{margin-top:48px}
+  .vertical .camp{padding:56px 40px;gap:16px}
+  .vertical .camp .qui{font-size:46px}
+  .vertical .camp .pts{font-size:150px}
+
   /* ── 1500 × 500 ────────────────────────────────────────────────────── */
   .banniere{width:1500px;height:500px}
   .banniere .contenu{padding:60px 96px;justify-content:center}
@@ -120,6 +169,10 @@
 
   /* ── Blocs de contenu ───────────────────────────────────────────────── */
   .modes{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:34px 0 0}
+  /* La liste des modes à côté du téléphone : une seule colonne, et c'est la
+     rangée qui porte l'écart, pas la marge de la liste. */
+  .duo-modes{display:flex;align-items:center;gap:36px;margin-top:40px}
+  .duo-modes .modes{grid-template-columns:1fr;margin:0;flex:1;gap:14px}
   .mode{display:flex;align-items:center;gap:16px;padding:18px 20px;border-radius:16px;
     background:var(--nuit);border:4px solid var(--encre);box-shadow:5px 5px 0 var(--encre)}
   .mode .ico{width:56px;height:56px;flex:0 0 56px;border-radius:12px;border:3px solid var(--encre);
@@ -141,7 +194,10 @@
     box-shadow:5px 5px 0 var(--encre);display:grid;place-items:center;
     font-family:'Bebas Neue',sans-serif;font-size:56px;color:var(--creme);background:var(--nuit)}
   .case.ok{background:var(--pelouse)}
-  .case.non{background:rgba(8,17,9,.5);color:rgba(237,231,216,.35)}
+  /* Aplat opaque et non un noir translucide : sur l'or, rgba(8,17,9,.5)
+     donne un kaki qui se lit comme une couleur choisie au lieu d'une case
+     vide. Sur l'ancien fond vert le même code passait inaperçu. */
+  .case.non{background:var(--nuit);color:rgba(242,231,206,.3)}
 
   .carte-bloc{display:flex;align-items:flex-end;gap:44px;margin:40px 0 0}
   .carte-img{width:430px;aspect-ratio:3/4;object-fit:cover;border-radius:20px;
@@ -294,8 +350,11 @@
       <!-- Le téléphone à droite, les modes à gauche : la maquette porte la
            preuve, la liste porte l'information. Les sept noms sont ceux de
            l'app, pas des noms d'affiche. -->
-      <div style="display:flex;align-items:center;gap:36px;margin-top:40px">
-        <div class="modes" style="grid-template-columns:1fr;margin:0;flex:1;gap:14px">
+      <!-- Classe et non style inline : le format 9:16 doit pouvoir réajuster
+           l'écart et la largeur du téléphone, et un style inline gagnerait
+           contre la feuille. -->
+      <div class="duo-modes">
+        <div class="modes">
           <div class="mode"><span class="ico" style="background:#FFC93C">⚡</span><span class="nom">GOAT BATTLE</span></div>
           <div class="mode"><span class="ico" style="background:#4FD07A">🔗</span><span class="nom">THE PLUG</span></div>
           <div class="mode"><span class="ico" style="background:#FF8A2A">🔁</span><span class="nom">THE MERCATO</span></div>
