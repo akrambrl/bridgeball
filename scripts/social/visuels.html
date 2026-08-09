@@ -279,6 +279,30 @@
   .camp .pts{font-family:'Anton',sans-serif;transform:skewX(-7deg);font-size:96px;color:var(--creme);
     -webkit-text-stroke:5px var(--encre);paint-order:stroke fill;line-height:1}
 
+  /* ── Téléphone portant une vraie capture ────────────────────────────── */
+  /* Les captures viennent de scripts/social/captures.mjs, qui rend l'app pour
+     de vrai. Une maquette redessinee a la main se perime des que l'ecran
+     bouge, et elle ment sur ce que l'utilisateur trouvera en installant —
+     exactement le reproche fait aux affiches montrant des modes inexistants.
+     Le rapport 430/932 est celui de la capture : le forcer autrement
+     recadrerait l'ecran. */
+  .mobile{position:relative;flex:0 0 auto;aspect-ratio:430/932;
+    border-radius:46px;background:var(--encre);border:9px solid var(--encre);
+    box-shadow:20px 20px 0 rgba(8,17,9,.5);overflow:hidden}
+  .mobile img{display:block;width:100%;height:100%;object-fit:cover;
+    object-position:top center;border-radius:38px}
+  /* La devinette est une MODALE : sa capture montre un voile sombre au-dessus
+     et au-dessous. Agrandir pour remplir le cadre etait une fausse bonne idee
+     — la modale est moins large que l'ecran, donc tout zoom suffisant pour
+     manger les bandes rognait « Quitter » et le champ de recherche. On se
+     contente de la recentrer : les bandes restent, mais c'est exactement ce
+     que voit un joueur. */
+  .mobile.serre img{object-position:center center}
+  /* L'affiche se lit en deux colonnes : le discours a gauche, la preuve a
+     droite. Le texte garde sa largeur de lecture, le telephone prend le reste. */
+  .duo-appli{display:flex;align-items:center;gap:44px;height:100%}
+  .duo-appli .propos{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center}
+
   /* ── Maquette de téléphone ──────────────────────────────────────────── */
   /* Les affiches de référence montrent l'app dans un téléphone, et c'est ce
      qui les rend crédibles : on ne promet pas un jeu, on le montre. L'écran
@@ -333,20 +357,15 @@
 <div class="v carre" id="v1">
   <div class="tonte"></div><div class="mediane"></div><div class="rond"></div>
   <div class="voile"></div><div class="socle"></div><div class="grain"></div>
-  <img class="blason" src="../../public/logo.png" alt="">
   <div class="contenu">
-    <span class="pastille">7 MODES DE JEU</span>
-    <div class="eventail">
-      <img src="../../public/cards/zidane.webp" alt="">
-      <img src="../../public/cards/r9.webp" alt="">
-      <img src="../../public/cards/maradona.webp" alt="">
-      <img src="../../public/cards/messi.webp" alt="">
-      <img src="../../public/cards/mbappe.webp" alt="">
-    </div>
-    <div>
-      <div class="kick">Un joueur, une grille, une devinette</div>
-      <h1 class="titre">LE QUIZ FOOT<br>QUOTIDIEN</h1>
-      <div class="marque">GOATFC.FR · GRATUIT, SANS COMPTE</div>
+    <div class="duo-appli">
+      <div class="propos">
+        <span class="pastille">7 MODES DE JEU</span>
+        <div class="kick" style="margin-top:26px">Un joueur, une grille,<br>une devinette</div>
+        <h1 class="titre" style="font-size:76px">LE QUIZ<br>FOOT<br>QUOTIDIEN</h1>
+        <div class="marque">GOATFC.FR · GRATUIT</div>
+      </div>
+      <div class="mobile" style="height:100%"><img src="captures/accueil.webp" alt=""></div>
     </div>
   </div>
 </div>
@@ -355,20 +374,15 @@
 <div class="v carre" id="v2">
   <div class="tonte"></div><div class="mediane"></div><div class="rond"></div>
   <div class="voile"></div><div class="socle"></div><div class="grain"></div>
-  <img class="blason" src="../../public/logo.png" alt="">
-  <img class="joueur mystere" src="../../public/cards/zidane.webp" style="right:-8%;bottom:6%;width:330px;transform:rotate(5deg)" alt="">
   <div class="contenu">
-    <span class="pastille">DEVINETTE DU JOUR</span>
-    <div style="flex:1;display:flex;flex-direction:column;justify-content:center">
-      <div class="indices">
-        <div class="indice"><b>ÉPOQUE</b>Génération 1990-1999</div>
-        <div class="indice"><b>PALMARÈS</b>Il a gagné la Ligue des Champions</div>
-        <div class="indice"><b>PARCOURS</b>Il a joué en Premier League</div>
+    <div class="duo-appli">
+      <div class="propos">
+        <span class="pastille">DEVINETTE DU JOUR</span>
+        <h1 class="titre" style="font-size:80px;margin-top:26px">QUI EST<br>CE<br>JOUEUR ?</h1>
+        <div class="kick" style="margin-top:14px">Les indices tombent<br>un par un</div>
+        <div class="marque">5 ESSAIS · UNE PAR JOUR</div>
       </div>
-    </div>
-    <div>
-      <h1 class="titre" style="font-size:88px">QUI EST<br>CE JOUEUR ?</h1>
-      <div class="marque">5 ESSAIS · NOUVELLE DEVINETTE CHAQUE JOUR</div>
+      <div class="mobile serre" style="height:100%"><img src="captures/devinette.webp" alt=""></div>
     </div>
   </div>
 </div>
@@ -398,27 +412,7 @@
           <div class="mode"><span class="ico" style="background:#C084FC">🔮</span><span class="nom">GOAT GUESS</span></div>
           <div class="mode"><span class="ico" style="background:#F2D680">🗓️</span><span class="nom">DEVINETTE DU JOUR</span></div>
         </div>
-        <div class="tel">
-          <div class="encoche"></div>
-          <div class="ecran">
-            <div class="entete"><img src="../../public/logo.png" alt=""><span>GOAT FC</span></div>
-            <div class="ligne"><span class="pion" style="background:#FFC93C">⚡</span><span class="txt">GOAT BATTLE</span></div>
-            <div class="ligne"><span class="pion" style="background:#4FD07A">🔗</span><span class="txt">THE PLUG</span></div>
-            <div class="ligne"><span class="pion" style="background:#FF8A2A">🔁</span><span class="txt">THE MERCATO</span></div>
-            <div class="ligne"><span class="pion" style="background:#E0B85C">🕵️</span><span class="txt">TROUVE LE JOUEUR</span></div>
-            <div class="ligne"><span class="pion" style="background:#3DA5FF">▦</span><span class="txt">GOAT GRID</span></div>
-            <div class="ligne"><span class="pion" style="background:#C084FC">🔮</span><span class="txt">GOAT GUESS</span></div>
-            <div class="ligne"><span class="pion" style="background:#F2D680">🗓️</span><span class="txt">DEVINETTE</span></div>
-            <div class="pied">
-              <div class="ligne"><span class="pion" style="background:#2A9B4E">👥</span>
-                <span><span class="txt">MES AMIS</span><span class="sous">12 AMIS</span></span>
-                <span class="fleche">→</span></div>
-              <div class="ligne"><span class="pion" style="background:#F5C22B">🏆</span>
-                <span><span class="txt">CLASSEMENT</span><span class="sous">VOIS TON RANG MONDIAL</span></span>
-                <span class="fleche">→</span></div>
-            </div>
-          </div>
-        </div>
+        <div class="mobile" style="width:400px"><img src="captures/accueil.webp" alt=""></div>
       </div>
     </div>
     <div class="marque">GOATFC.FR</div>
@@ -524,19 +518,18 @@
 <div class="v carre" id="v8">
   <div class="tonte"></div><div class="mediane"></div><div class="rond"></div>
   <div class="voile"></div><div class="socle"></div><div class="grain"></div>
-  <img class="joueur" src="../../public/cards/mbappe.webp" style="left:-9%;bottom:4%;width:300px;transform:rotate(-7deg)" alt="">
-  <img class="joueur" src="../../public/cards/haaland.webp" style="right:-9%;bottom:4%;width:300px;transform:rotate(7deg)" alt="">
   <div class="contenu">
-    <span class="pastille">GOAT BATTLE</span>
-    <div style="flex:1;display:flex;flex-direction:column;justify-content:center">
-      <div class="duo-score">
-        <div class="camp" style="background:var(--pelouse)"><span class="qui">TOI</span><span class="pts">9</span></div>
-        <div class="camp" style="background:var(--ciel)"><span class="qui">L'ADVERSAIRE</span><span class="pts">8</span></div>
+    <div class="duo-appli">
+      <div class="propos">
+        <span class="pastille">GOAT BATTLE</span>
+        <h1 class="titre" style="font-size:78px;margin-top:26px">DÉFIE<br>TES POTES</h1>
+        <div class="kick" style="margin-top:14px">En direct, contre<br>quelqu'un de vrai</div>
+        <div class="duo-score" style="margin-top:26px">
+          <div class="camp" style="background:var(--pelouse);padding:20px 12px"><span class="qui">TOI</span><span class="pts" style="font-size:64px">9</span></div>
+          <div class="camp" style="background:var(--ciel);padding:20px 12px"><span class="qui">LUI</span><span class="pts" style="font-size:64px">8</span></div>
+        </div>
       </div>
-    </div>
-    <div>
-      <h1 class="titre" style="font-size:92px">GAGNÉ À LA<br>DERNIÈRE QUESTION</h1>
-      <div class="marque">DUEL EN DIRECT · GOATFC.FR</div>
+      <div class="mobile" style="height:100%"><img src="captures/partie.webp" alt=""></div>
     </div>
   </div>
 </div>
