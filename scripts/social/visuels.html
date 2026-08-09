@@ -14,8 +14,19 @@
 -->
 <!doctype html>
 <html lang="fr"><head><meta charset="utf-8">
+<!-- Exactement les deux polices de l'app, et rien d'autre : Anton pour les
+     titres d'affiche, Bebas Neue pour tout le reste. Une troisième famille
+     s'était glissée ici (Archivo) alors qu'elle n'existe nulle part dans le
+     produit — un visuel composé dans une police que l'app n'a jamais chargée
+     ne ressemble pas à l'app.
+
+     Les faces sont EMBARQUÉES (scripts/social/polices.mjs les regénère). Un
+     @import vers fonts.googleapis.com échouait en silence : le Chromium qui
+     rend les PNG n'a pas de réseau, et ni Anton ni Bebas Neue ne sont
+     installées sur la machine. Les titres repliaient donc sur Impact et le
+     reste sur le sans-serif générique, sans que rien ne le signale. -->
+<link rel="stylesheet" href="polices.css">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Archivo:wght@400;600&display=swap');
 
   /* Charte OR — alignée sur src/lib/charte.jsx.
      La règle qui gouverne toute la composition : SUR L'OR, SEULE L'ENCRE SE LIT.
@@ -28,7 +39,7 @@
     --creme:#F2E7CE;--pelouse:#2A9B4E;--clair:#4FD07A;--maillot:#D93A2B;--ciel:#2A6FBF;
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  body{background:#222;font-family:'Archivo',sans-serif;display:flex;flex-direction:column;
+  body{background:#222;font-family:'Bebas Neue',sans-serif;display:flex;flex-direction:column;
        align-items:flex-start;gap:40px;padding:40px}
 
   /* ── L'arène de la charte : or, lignes de vitesse, trame sérigraphiée ── */
@@ -53,9 +64,16 @@
 
   /* ── Lettrage d'affiche ─────────────────────────────────────────────── */
   /* Crème contouré d'encre : le seul lettrage clair qui tienne sur l'or, et
-     c'est celui du logo. */
+     c'est celui du logo.
+     Le lettrage du logo est DESSINÉ : bords arrachés, coups de brosse, pleins
+     irréguliers. Aucune police ne fait ça, et l'app n'en charge que deux
+     (Anton, Bebas Neue) — en importer une troisième pour les visuels, c'est
+     exactement le défaut qu'on vient de corriger. On garde donc Anton et on
+     lui casse le contour au filtre #dechire (turbulence + déplacement) : le
+     bord cesse d'être une courbe nette et devient une découpe. C'est une
+     approximation du lettrage à la main, pas le lettrage lui-même. */
   .titre{font-family:'Anton',Impact,sans-serif;transform:skewX(-7deg);color:var(--creme);
-    paint-order:stroke fill;letter-spacing:.5px;}
+    paint-order:stroke fill;letter-spacing:.5px;filter:url(#dechire);}
   /* Le surtitre était jaune : sur un fond jaune il disparaissait. Encre. */
   .kick{font-family:'Bebas Neue',sans-serif;color:var(--encre);line-height:1;}
   /* La pastille était un aplat jaune : invisible sur l'or. Elle devient
@@ -71,7 +89,7 @@
   .carre .contenu{padding:97px}
   .carre .pastille{font-size:34px;letter-spacing:.1em;padding:10px 22px;border-radius:16px}
   .carre .kick{font-size:38px;letter-spacing:.13em;margin-bottom:12px}
-  .carre .titre{font-size:104px;line-height:1.06;-webkit-text-stroke:7px var(--encre);
+  .carre .titre{font-size:104px;line-height:1.06;-webkit-text-stroke:10px var(--encre);
     text-shadow:10px 10px 0 var(--encre)}
   .carre .marque{font-size:30px;letter-spacing:.16em;margin-top:26px}
 
@@ -80,7 +98,7 @@
   .portrait .contenu{padding:97px 97px 120px}
   .portrait .pastille{font-size:34px;letter-spacing:.1em;padding:10px 22px;border-radius:16px}
   .portrait .kick{font-size:36px;letter-spacing:.13em;margin-bottom:12px}
-  .portrait .titre{font-size:92px;line-height:1.08;-webkit-text-stroke:6px var(--encre);
+  .portrait .titre{font-size:92px;line-height:1.08;-webkit-text-stroke:9px var(--encre);
     text-shadow:9px 9px 0 var(--encre)}
   .portrait .marque{font-size:30px;letter-spacing:.16em;margin-top:26px}
 
@@ -89,7 +107,7 @@
   .story .contenu{padding:97px 97px 330px}   /* le tiers du bas reste libre */
   .story .pastille{font-size:36px;letter-spacing:.1em;padding:12px 26px;border-radius:18px}
   .story .kick{font-size:40px;letter-spacing:.13em;margin-bottom:14px}
-  .story .titre{font-size:108px;line-height:1.06;-webkit-text-stroke:7px var(--encre);
+  .story .titre{font-size:108px;line-height:1.06;-webkit-text-stroke:10px var(--encre);
     text-shadow:10px 10px 0 var(--encre)}
   .story .marque{font-size:32px;letter-spacing:.16em;margin-top:30px}
 
@@ -97,7 +115,7 @@
   .banniere{width:1500px;height:500px}
   .banniere .contenu{padding:60px 96px;justify-content:center}
   .banniere .kick{font-size:32px;letter-spacing:.14em;margin-bottom:12px}
-  .banniere .titre{font-size:96px;line-height:1;-webkit-text-stroke:6px var(--encre);
+  .banniere .titre{font-size:96px;line-height:1;-webkit-text-stroke:9px var(--encre);
     text-shadow:9px 9px 0 var(--encre)}
 
   /* ── Blocs de contenu ───────────────────────────────────────────────── */
@@ -133,7 +151,7 @@
     color:var(--or);line-height:1;margin-bottom:14px}
   .carte-info .nom{font-family:'Anton',sans-serif;transform:skewX(-7deg);font-size:70px;
     color:var(--creme);-webkit-text-stroke:5px var(--encre);paint-order:stroke fill;
-    text-shadow:7px 7px 0 var(--encre);line-height:1.08}
+    text-shadow:7px 7px 0 var(--encre);line-height:1.08;filter:url(#dechire)}
   .carte-info .seuil{font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:.08em;
     color:rgba(237,231,216,.75);margin-top:18px}
   /* Éventail de cartes : léger chevauchement et rotations alternées, comme une
@@ -160,7 +178,7 @@
   .indices{display:flex;flex-direction:column;gap:16px;margin:36px 0 0}
   .indice{display:flex;align-items:center;gap:18px;padding:20px 24px;border-radius:16px;
     background:var(--nuit);border:4px solid var(--encre);box-shadow:5px 5px 0 var(--encre);
-    font-size:32px;color:var(--creme);font-weight:500}
+    font-family:'Bebas Neue',sans-serif;font-size:38px;letter-spacing:.02em;color:var(--creme);line-height:1.15}
   .indice b{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:.1em;
     color:var(--or);font-weight:400;flex:0 0 auto}
 
@@ -170,7 +188,56 @@
   .camp .qui{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:.08em;color:var(--creme)}
   .camp .pts{font-family:'Anton',sans-serif;transform:skewX(-7deg);font-size:96px;color:var(--creme);
     -webkit-text-stroke:5px var(--encre);paint-order:stroke fill;line-height:1}
+
+  /* ── Maquette de téléphone ──────────────────────────────────────────── */
+  /* Les affiches de référence montrent l'app dans un téléphone, et c'est ce
+     qui les rend crédibles : on ne promet pas un jeu, on le montre. L'écran
+     est reconstruit avec les jetons de la charte — donc si la charte bouge,
+     la maquette bouge avec, au lieu de figer une capture périmée. */
+  .tel{width:340px;flex:0 0 340px;aspect-ratio:9/19;border-radius:46px;background:var(--encre);
+    border:8px solid var(--encre);box-shadow:16px 16px 0 var(--encre);position:relative;
+    display:flex;overflow:hidden}
+  .tel .ecran{flex:1;border-radius:38px;background:var(--or);overflow:hidden;
+    display:flex;flex-direction:column;gap:7px;padding:32px 12px 14px}
+  .tel .encoche{position:absolute;top:8px;left:50%;transform:translateX(-50%);width:104px;height:20px;
+    border-radius:0 0 14px 14px;background:var(--encre);z-index:2}
+  .tel .entete{display:flex;align-items:center;gap:9px;padding-bottom:4px}
+  .tel .entete img{width:46px;height:46px;object-fit:cover;border-radius:11px;
+    border:3px solid var(--encre);box-shadow:3px 3px 0 var(--encre);display:block}
+  .tel .entete span{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:.06em;
+    color:var(--encre);line-height:1}
+  .tel .ligne{display:flex;align-items:center;gap:9px;padding:7px 11px;border-radius:13px;
+    background:var(--nuit);border:3px solid var(--encre);box-shadow:4px 4px 0 var(--encre)}
+  .tel .ligne .pion{width:29px;height:29px;flex:0 0 29px;border-radius:8px;border:3px solid var(--encre);
+    display:grid;place-items:center;font-size:16px}
+  .tel .ligne .txt{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.04em;
+    color:var(--creme);line-height:1}
+  /* L'écran d'accueil de l'app se termine sur « Mes amis » et « Classement »
+     (LePont.jsx, lignes 12462 et 12472). On les remet ici plutôt que
+     d'inventer une barre d'onglets : l'app n'en a pas, la navigation se fait
+     depuis cette liste. Elles servent aussi à remplir le bas de l'écran, qui
+     resterait vide sans elles. */
+  .tel .pied{margin-top:auto;display:flex;flex-direction:column;gap:7px;padding-top:7px}
+  .tel .pied .ligne .txt{display:block}
+  .tel .pied .ligne .sous{display:block;font-family:'Bebas Neue',sans-serif;font-size:16px;
+    letter-spacing:.03em;color:rgba(242,231,206,.55);line-height:1;margin-top:4px}
+  .tel .pied .fleche{margin-left:auto;font-size:20px;color:rgba(242,231,206,.45);line-height:1}
 </style></head><body>
+
+<!-- Le filtre qui casse le bord du lettrage. La turbulence sert de carte de
+     déplacement : chaque pixel du texte est poussé d'au plus `scale` px dans
+     une direction tirée du bruit, ce qui grignote le contour comme un bord
+     arraché. Trop de scale et les lettres se liquéfient ; 7 px sur du 90-110 px
+     entame le trait sans toucher à la lisibilité. La région du filtre est
+     élargie, sinon l'ombre portée de 10 px se fait couper. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <filter id="dechire" x="-15%" y="-15%" width="130%" height="130%"
+          color-interpolation-filters="sRGB">
+    <feTurbulence type="fractalNoise" baseFrequency="0.021 0.037" numOctaves="3" seed="9" result="bruit"/>
+    <feDisplacementMap in="SourceGraphic" in2="bruit" scale="7"
+                       xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+</svg>
 
 <!-- ══ 1 · Carré — la marque ═══════════════════════════════════════════ -->
 <div class="v carre" id="v1">
@@ -224,21 +291,40 @@
     <div>
       <span class="pastille">TOUT EST GRATUIT</span>
       <h1 class="titre" style="margin-top:30px;font-size:86px">SEPT FAÇONS<br>DE JOUER</h1>
-      <div class="modes">
-        <div class="mode"><span class="ico" style="background:#FFC93C">⚡</span><span class="nom">GOAT BATTLE</span></div>
-        <div class="mode"><span class="ico" style="background:#4FD07A">🔗</span><span class="nom">THE PLUG</span></div>
-        <div class="mode"><span class="ico" style="background:#FF8A2A">🔁</span><span class="nom">THE MERCATO</span></div>
-        <div class="mode"><span class="ico" style="background:#E0B85C">🕵️</span><span class="nom">TROUVE LE JOUEUR</span></div>
-        <div class="mode"><span class="ico" style="background:#3DA5FF">▦</span><span class="nom">GOAT GRID</span></div>
-        <div class="mode"><span class="ico" style="background:#C084FC">🔮</span><span class="nom">GOAT GUESS</span></div>
-        <div class="mode" style="grid-column:1/-1"><span class="ico" style="background:#F2D680">🗓️</span><span class="nom">DEVINETTE DU JOUR</span></div>
-      </div>
-      <div class="eventail" style="margin-top:56px">
-        <img src="../../public/cards/henry.webp" alt="">
-        <img src="../../public/cards/drogba.webp" alt="">
-        <img src="../../public/cards/zidane.webp" alt="">
-        <img src="../../public/cards/totti.webp" alt="">
-        <img src="../../public/cards/pirlo.webp" alt="">
+      <!-- Le téléphone à droite, les modes à gauche : la maquette porte la
+           preuve, la liste porte l'information. Les sept noms sont ceux de
+           l'app, pas des noms d'affiche. -->
+      <div style="display:flex;align-items:center;gap:36px;margin-top:40px">
+        <div class="modes" style="grid-template-columns:1fr;margin:0;flex:1;gap:14px">
+          <div class="mode"><span class="ico" style="background:#FFC93C">⚡</span><span class="nom">GOAT BATTLE</span></div>
+          <div class="mode"><span class="ico" style="background:#4FD07A">🔗</span><span class="nom">THE PLUG</span></div>
+          <div class="mode"><span class="ico" style="background:#FF8A2A">🔁</span><span class="nom">THE MERCATO</span></div>
+          <div class="mode"><span class="ico" style="background:#E0B85C">🕵️</span><span class="nom">TROUVE LE JOUEUR</span></div>
+          <div class="mode"><span class="ico" style="background:#3DA5FF">▦</span><span class="nom">GOAT GRID</span></div>
+          <div class="mode"><span class="ico" style="background:#C084FC">🔮</span><span class="nom">GOAT GUESS</span></div>
+          <div class="mode"><span class="ico" style="background:#F2D680">🗓️</span><span class="nom">DEVINETTE DU JOUR</span></div>
+        </div>
+        <div class="tel">
+          <div class="encoche"></div>
+          <div class="ecran">
+            <div class="entete"><img src="../../public/logo.png" alt=""><span>GOAT FC</span></div>
+            <div class="ligne"><span class="pion" style="background:#FFC93C">⚡</span><span class="txt">GOAT BATTLE</span></div>
+            <div class="ligne"><span class="pion" style="background:#4FD07A">🔗</span><span class="txt">THE PLUG</span></div>
+            <div class="ligne"><span class="pion" style="background:#FF8A2A">🔁</span><span class="txt">THE MERCATO</span></div>
+            <div class="ligne"><span class="pion" style="background:#E0B85C">🕵️</span><span class="txt">TROUVE LE JOUEUR</span></div>
+            <div class="ligne"><span class="pion" style="background:#3DA5FF">▦</span><span class="txt">GOAT GRID</span></div>
+            <div class="ligne"><span class="pion" style="background:#C084FC">🔮</span><span class="txt">GOAT GUESS</span></div>
+            <div class="ligne"><span class="pion" style="background:#F2D680">🗓️</span><span class="txt">DEVINETTE</span></div>
+            <div class="pied">
+              <div class="ligne"><span class="pion" style="background:#2A9B4E">👥</span>
+                <span><span class="txt">MES AMIS</span><span class="sous">12 AMIS</span></span>
+                <span class="fleche">→</span></div>
+              <div class="ligne"><span class="pion" style="background:#F5C22B">🏆</span>
+                <span><span class="txt">CLASSEMENT</span><span class="sous">VOIS TON RANG MONDIAL</span></span>
+                <span class="fleche">→</span></div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     <div class="marque">GOATFC.FR</div>

@@ -32,6 +32,19 @@ await page.waitForLoadState("networkidle");
 await page.evaluate(() => document.fonts.ready);
 await page.waitForTimeout(500);
 
+// Garde-fou : une police absente ne casse rien, elle se remplace en silence
+// par un repli — et le défaut ne se voit que sur le PNG fini. C'est
+// exactement ce qui est arrivé ici (Anton repliait sur Impact, Bebas Neue sur
+// le sans-serif générique) parce que l'@import Google ne pouvait pas aboutir.
+// On refuse maintenant de rendre plutôt que de sortir neuf visuels faux.
+const manquantes = await page.evaluate(() =>
+  ["Anton", "Bebas Neue"].filter((f) => !document.fonts.check(`40px "${f}"`)));
+if (manquantes.length) {
+  await navigateur.close();
+  throw new Error("polices non chargées : " + manquantes.join(", ") +
+    " — relancer `node scripts/social/polices.mjs`");
+}
+
 for (const [id, nom] of Object.entries(NOMS)) {
   const el = await page.$("#" + id);
   if (!el) { console.warn("bloc introuvable :", id); continue; }
