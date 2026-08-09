@@ -12710,16 +12710,28 @@ export default function LePont() {
 
       {/* ── HEADER compact ── */}
       <div style={{zIndex:1,padding:"6px 20px 2px"}}>
-        {/* Le bandeau d'en-tête est la seule surface où l'or de la charte se voit
-            sur téléphone : en dessous, la feuille de contenu occupe tout l'écran.
-            C'est le parti pris « l'or en cadre » — l'app reste l'écusson noir du
-            logo, l'or l'encadre. Le fond est posé ICI et non laissé au conteneur
-            parce qu'un calque de décor passe par-dessus lui ; `position:relative`
-            et un zIndex le remettent devant. Les marges négatives le font saigner
-            jusqu'aux bords, sinon l'or s'arrêterait au rembourrage de l'écran. */}
+        {/* Bandeau d'en-tête à l'encre. Le rapport s'est inversé : tant que le
+            contenu vivait sur une feuille noire, c'est ici que l'or se voyait ;
+            maintenant que l'or tient toute la page, c'est le bandeau qui doit
+            être la surface sombre — sinon rien ne détache le haut de l'écran.
+            Même encre que les en-têtes du classement et du profil.
+            Le fond est posé ICI et non laissé au conteneur parce qu'un calque
+            de décor passe par-dessus lui ; `position:relative` et un zIndex le
+            remettent devant. Les marges négatives le font saigner jusqu'aux
+            bords, sinon la bande s'arrêterait au rembourrage de l'écran. */}
         <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",
-          position:"relative",zIndex:1,background:G.or,
-          margin:"-14px -18px 6px",padding:"14px 18px 10px"}}>
+          position:"relative",zIndex:1,background:G.encre,
+          /* La bande remonte sous la barre d'état et rembourre d'autant : #root
+             est décalé de env(safe-area-inset-top), donc sans ça le haut de
+             l'écran reste peint par body — un liseré doré au-dessus d'une bande
+             noire. Le rembourrage rend au contenu la place que la marge lui
+             prend, il ne passe donc pas sous l'encoche.
+             Bénéfice au passage : la barre d'état iOS est en black-translucent,
+             c'est-à-dire en texte clair. Elle était posée sur l'or. */
+          marginTop:"calc(-14px - env(safe-area-inset-top))",
+          marginLeft:-18,marginRight:-18,marginBottom:6,
+          paddingTop:"calc(14px + env(safe-area-inset-top))",
+          paddingLeft:18,paddingRight:18,paddingBottom:10}}>
           <div style={{flex:1,display:"flex",alignItems:"center"}}>
             {(function(){
               const L = LANGUES.find(function(x){return x.id===lang;}) || LANGUES[0];
