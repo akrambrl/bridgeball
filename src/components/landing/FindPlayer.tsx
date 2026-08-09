@@ -8,7 +8,7 @@ import { isNative, hapticLight, hapticHeavy, hapticSuccess } from "@/lib/native"
 import { CLUB_SPELLS, wereTeammates, mightHaveBeenTeammates, hasSpells } from "@/lib/clubSpells";
 import { recordDailyDone, displayStreak } from "@/lib/streak";
 import { WinBanner } from "./WinBanner";
-import { G, posterText, btn, fondCharte, terrainCharte, ligneCharte } from "@/lib/charte.jsx";
+import { G, posterText, btn, fondCharte, areneCharte, ligneCharte } from "@/lib/charte.jsx";
 import { chercheJoueurs } from "@/lib/nom";
 
 const SPELL_NAMES = Object.keys(CLUB_SPELLS);
@@ -854,7 +854,7 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
     <div ref={scrollRef} style={rootStyle}>
       {/* Le terrain de la charte, dessiné par-dessus la pelouse (bandes de tonte,
           tracés d'encre, grain de trame) : sans lui, le fond est un aplat nu. */}
-      {terrainCharte}
+      {areneCharte}
       {/* Header */}
       <div style={{ position: "sticky", top: 0, zIndex: 5, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "calc(12px + env(safe-area-inset-top)) 16px 12px", background: G.encre, borderBottom: G.traitFin }}>
         <button onClick={close} style={{ ...btn(G.nuit, G.white, 15), padding: "8px 12px", flexShrink: 0 }}>← {tr("QUITTER", "QUIT", "BEENDEN", "ESCI", "SAIR","SALIR")}</button>

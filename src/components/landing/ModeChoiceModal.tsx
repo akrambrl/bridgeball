@@ -1,6 +1,6 @@
 import type { GameMode } from "@/pages/Home";
 import { tr } from "@/lib/lang";
-import { G, posterText, posterLight, btn, fondCharte, terrainCharte, retourStyle } from "@/lib/charte.jsx";
+import { G, posterText, posterLight, btn, fondCharte, areneCharte, retourStyle } from "@/lib/charte.jsx";
 
 // "bot" a disparu du choix : il menait au MÊME adversaire simulé que "online",
 // à l'animation de recherche près. Deux entrées pour une seule partie, dont une
@@ -66,7 +66,7 @@ export const ModeChoiceModal = ({ game, onPick, onClose }: Props) => {
       }}
     >
       <style>{`@keyframes modeFadeIn{from{opacity:0}to{opacity:1}}`}</style>
-      {terrainCharte}
+      {areneCharte}
 
       <button
         onClick={onClose}

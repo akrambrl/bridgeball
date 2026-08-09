@@ -3,7 +3,7 @@ import { PLAYERS, RETIRED_PLAYERS, GG_WC_WINNERS, GG_CL_WINNERS, GG_BALLON_DOR, 
 import { CLUB_COLORS } from "../LePont.jsx";
 import { trackPlay } from "../../lib/track";
 import { getLang, tr } from "@/lib/lang";
-import { G, posterText, btn, fondCharte, terrainCharte } from "@/lib/charte.jsx";
+import { G, posterText, btn, fondCharte, areneCharte } from "@/lib/charte.jsx";
 
 type Player = {
   name: string;
@@ -1231,7 +1231,7 @@ export const GoatGuess = ({ onClose }: Props) => {
       paddingBottom: "env(safe-area-inset-bottom)",
     }}
   >
-    {terrainCharte}
+    {areneCharte}
 
     {/* Mobile : bouton rond compact pour ne pas chevaucher le titre centré ;
         desktop : libellé complet. */}
