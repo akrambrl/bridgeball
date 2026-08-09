@@ -12697,7 +12697,16 @@ export default function LePont() {
 
       {/* ── HEADER compact ── */}
       <div style={{zIndex:1,padding:"6px 20px 2px"}}>
-        <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between"}}>
+        {/* Le bandeau d'en-tête est la seule surface où l'or de la charte se voit
+            sur téléphone : en dessous, la feuille de contenu occupe tout l'écran.
+            C'est le parti pris « l'or en cadre » — l'app reste l'écusson noir du
+            logo, l'or l'encadre. Le fond est posé ICI et non laissé au conteneur
+            parce qu'un calque de décor passe par-dessus lui ; `position:relative`
+            et un zIndex le remettent devant. Les marges négatives le font saigner
+            jusqu'aux bords, sinon l'or s'arrêterait au rembourrage de l'écran. */}
+        <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",
+          position:"relative",zIndex:1,background:G.or,
+          margin:"-14px -18px 6px",padding:"14px 18px 10px"}}>
           <div style={{flex:1,display:"flex",alignItems:"center"}}>
             {(function(){
               const L = LANGUES.find(function(x){return x.id===lang;}) || LANGUES[0];
