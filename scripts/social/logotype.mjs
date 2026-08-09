@@ -3,7 +3,11 @@
 //     node scripts/social/logotype.mjs
 //
 //   entrée  : scripts/social/logo-mot-maitre.png   (l'export tel qu'il arrive)
-//   sortie  : public/logo-mot.png                  (détouré, recadré au ras)
+//   sortie  : public/logo-mot.webp                 (détouré, recadré, 640 px)
+//
+// WebP et non PNG : le halo est un dégradé doux, que PNG encode très mal —
+// 296 Ko contre une trentaine en WebP, pour une image chargée à chaque
+// ouverture de l'accueil. WebP porte la transparence aussi bien.
 //
 // Le recadrage n'est pas cosmétique. L'en-tête borne le logotype en hauteur ET
 // en largeur, sinon un fichier plus haut que large creuse une bande d'or vide
@@ -21,7 +25,7 @@ import { dirname, join } from "node:path";
 
 const ici = dirname(fileURLToPath(import.meta.url));
 const source = join(ici, "logo-mot-maitre.png");
-const cible = join(ici, "..", "..", "public", "logo-mot.png");
+const cible = join(ici, "..", "..", "public", "logo-mot.webp");
 
 if (!existsSync(source)) {
   console.error("Fichier absent : " + source);
@@ -48,6 +52,13 @@ const resultat = await page.evaluate(async (uri) => {
 
   // Un pixel compte dès qu'il n'est pas quasi transparent : le seuil bas garde
   // le halo et l'ombre portée, qui font partie du dessin.
+  //
+  // Sur le logotype actuel ce recadrage ne gagne presque rien (1536×1024 →
+  // 1473×891) : son halo est quasi opaque jusqu'aux bords, il n'y a pas de
+  // marge à retirer. Monter le seuil n'y change rien — essayé jusqu'à 210, on
+  // gagne deux pixels. L'étape reste utile pour un export qui, lui, aurait de
+  // vraies marges transparentes ; la taille du lettrage se règle donc dans
+  // l'en-tête, pas ici.
   const SEUIL = 12;
   let hg = c.width, hd = -1, hh = c.height, hb = -1;
   for (let y = 0; y < c.height; y++) {
@@ -68,11 +79,21 @@ const resultat = await page.evaluate(async (uri) => {
                  coin(0, c.height - 1) > 250 && coin(c.width - 1, c.height - 1) > 250;
 
   const l = hd - hg + 1, h = hb - hh + 1;
+
+  // Redimensionné à 640 px de large. L'en-tête l'affiche à 112 px de haut au
+  // maximum, soit environ 185 px de large : 640 couvre encore un écran à 3x.
+  // Sorti à sa taille d'origine, ce fichier pèse 1,4 Mo — pour une image
+  // chargée à chaque ouverture de l'accueil, c'est indéfendable.
+  const LARGEUR = Math.min(640, l);
+  const hauteur = Math.round(h * (LARGEUR / l));
   const sortie = document.createElement("canvas");
-  sortie.width = l; sortie.height = h;
-  sortie.getContext("2d").drawImage(c, hg, hh, l, h, 0, 0, l, h);
+  sortie.width = LARGEUR; sortie.height = hauteur;
+  const sx = sortie.getContext("2d");
+  sx.imageSmoothingQuality = "high";
+  sx.drawImage(c, hg, hh, l, h, 0, 0, LARGEUR, hauteur);
   return { opaque, source: [c.width, c.height], recadre: [l, h],
-           png: sortie.toDataURL("image/png").split(",")[1] };
+           sortie: [LARGEUR, hauteur],
+           webp: sortie.toDataURL("image/webp", 0.88).split(",")[1] };
 }, uri);
 
 await navigateur.close();
@@ -85,6 +106,7 @@ if (resultat.opaque) {
   process.exit(1);
 }
 
-writeFileSync(cible, Buffer.from(resultat.png, "base64"));
+writeFileSync(cible, Buffer.from(resultat.webp, "base64"));
 console.log("source  ", resultat.source.join("×"));
-console.log("recadré ", resultat.recadre.join("×"), "→ public/logo-mot.png");
+console.log("recadré ", resultat.recadre.join("×"));
+console.log("sortie  ", resultat.sortie.join("×"), "→ public/logo-mot.webp");
