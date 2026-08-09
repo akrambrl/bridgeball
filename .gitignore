@@ -33,3 +33,7 @@ coverage/
 # l'historique git — on garde le dépôt à la source, pas aux livrables.
 goatfc-story*.mp4
 *.story.mp4
+
+
+# relevé temporaire du check mercato (scripts/mercato-effectifs.py)
+effectifs.json
