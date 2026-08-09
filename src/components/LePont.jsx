@@ -12932,8 +12932,13 @@ export default function LePont() {
               // largeur suit la hauteur dispo (flex) → jamais écrasée sur écran court.
               aspectRatio:"1086 / 1448",
               flex:isDesktop?undefined:"1 1 auto",
-              width:isDesktop?"min(280px, 75vw)":"auto",
-              maxWidth:"min(280px, 75vw)",
+              // 280 px etait un plafond arbitraire : sur un ecran de 430 px il
+              // laissait 114 px inutilises de chaque cote reunis. Leve a 92vw,
+              // c'est le rapport de la carte qui redevient le facteur limitant,
+              // donc la hauteur disponible — d'ou les quelques pixels repris
+              // juste en dessous, sur les pastilles et le libelle.
+              width:isDesktop?"min(300px, 75vw)":"auto",
+              maxWidth:"min(340px, 92vw)",
               height:isDesktop?"clamp(340px, 82vw, 400px)":undefined,
               // Plancher indispensable : avec `minHeight:0`, la carte était le
               // seul bloc élastique de l'accueil et absorbait TOUTE la place
@@ -13044,7 +13049,7 @@ export default function LePont() {
           </div>
 
           {/* Dots indicator */}
-          <div style={{display:"flex",justifyContent:"center",gap:8,marginTop:10}}>
+          <div style={{display:"flex",justifyContent:"center",gap:8,marginTop:6}}>
             {homeCards.map(function(_c, i){
               const colors = [G.pelouseClaire,"#60a5fa","#FFD600","#C084FC","#3DA5FF"];
               const isActive = homeCardIndex === i;
@@ -13070,7 +13075,7 @@ export default function LePont() {
           {/* Encre et non blanc transparent : ce libellé est posé à nu sur la
               feuille, qui est maintenant l'or de la charte. Du blanc à 35 %
               y disparaît — sur l'or, seule l'encre se lit. */}
-          <div style={{textAlign:"center",fontSize:9,color:"rgba(8,17,9,.62)",marginTop:6,letterSpacing:1.5,textTransform:"uppercase"}}>
+          <div style={{textAlign:"center",fontSize:9,color:"rgba(8,17,9,.62)",marginTop:4,letterSpacing:1.5,textTransform:"uppercase"}}>
             {tr("← Glisse • Tape pour jouer →","← Swipe • Tap to play →","← Wischen • Tippen zum Spielen →","← Scorri • Tocca per giocare →","← Deslize • Toque para jogar →","← Desliza • Toca para jugar →")}
           </div>
         </div>
