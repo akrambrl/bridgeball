@@ -37,3 +37,5 @@ goatfc-story*.mp4
 
 # relevé temporaire du check mercato (scripts/mercato-effectifs.py)
 effectifs.json
+maxifoot.json
+mf-ajouts.json
