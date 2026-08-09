@@ -9346,11 +9346,17 @@ export default function LePont() {
     const mot = (taille) => ton.texte===G.white ? posterText(taille, G.white, 1.5) : posterLight(taille, G.encre);
     const points = {...mot(14), opacity:.85};
     return createPortal(
-      <div style={{position:"fixed",top:0,left:0,right:0,zIndex:120,pointerEvents:"none",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2,
-        padding:"max(12px, env(safe-area-inset-top)) 16px 12px",
+      /* En BAS et non en haut. En haut, le bandeau recouvrait le score, le
+         chronometre et le trophee — c'est-a-dire tout ce qu'on veut lire
+         justement au moment ou l'on vient de marquer. En bas il mord sur la
+         liste des reponses deja donnees, qui peut attendre une seconde.
+         Les animations sont des rebonds (echelle, secousse), pas des
+         glissements : elles restent justes une fois le bandeau deplace. */
+      <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:120,pointerEvents:"none",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2,
+        padding:"12px 16px max(12px, env(safe-area-inset-bottom))",
         background:ton.aplat,
-        borderBottom:G.trait,
-        boxShadow:"0 4px 0 "+G.encre,
+        borderTop:G.trait,
+        boxShadow:"0 -4px 0 "+G.encre,
         animation:fb==="ok"?"answerOk .5s ease":fb==="ko"?"answerKo .4s ease":"popIn .3s ease",
       }}>
         {fb==="ok"&&<><div style={{display:"flex",alignItems:"center",gap:8}}>{Icon.ball(18,ton.texte)} <span style={mot(20)}>{feedbackPhrase || (tr("BONNE RÉPONSE !","RIGHT ANSWER !","RICHTIG !","RISPOSTA GIUSTA !","RESPOSTA CERTA !","¡RESPUESTA CORRECTA!"))}</span></div><div style={points}>+{diff==="expert"?30:diff==="moyen"?20:10} pts</div></>}
@@ -15461,7 +15467,11 @@ export default function LePont() {
           <div style={{zIndex:2,padding:"0 16px 6px",maxWidth:420,margin:"0 auto",width:"100%",boxSizing:"border-box"}}>
             {/* Encre : cette ligne est posée à nu sur la feuille, passée à l'or.
                 Le nom du grade suivant garde sa couleur, portée par le gras. */}
-            <div style={{fontSize:10,fontWeight:800,letterSpacing:.5,color:"rgba(8,17,9,.72)",marginBottom:3,textAlign:"center"}}>{carrot} <span style={{color:ng.color}}>{ng.emoji} {ng.label}</span></div>
+            {/* Le nom du grade suivant etait peint de la couleur du grade. Celle de GOAT
+                est #FFD700 : sur l'or, il disparaissait purement et simplement — la
+                phrase se terminait dans le vide. Tout passe a l'encre ; c'est
+                l'emoji qui dit lequel. */}
+            <div style={{fontSize:10,fontWeight:800,letterSpacing:.5,color:"rgba(8,17,9,.72)",marginBottom:3,textAlign:"center"}}>{carrot} <span style={{color:"rgba(8,17,9,.9)"}}>{ng.emoji} {ng.label}</span></div>
             <div style={{height:9,borderRadius:G.rayonS,background:"rgba(8,17,9,.55)",border:G.traitFin,overflow:"hidden"}}>
               <div style={{height:"100%",width:pct+"%",background:ng.color,transition:"width .4s ease"}}/>
             </div>

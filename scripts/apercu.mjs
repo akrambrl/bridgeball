@@ -136,6 +136,9 @@ const CHEMINS = {
   collection: [],   // via le profil, puis le bloc des cartes
   compte:     [],   // via le profil, puis « Mon compte »
   "partie-fin": [], // une partie solo, puis on passe jusqu'a la fin de manche
+  "partie-faux": [], // une partie solo, puis une reponse fausse : le bandeau
+  "mercato-faux": [], // The Mercato, puis une reponse fausse
+  "mercato-juste": [], // The Mercato, puis une VRAIE bonne reponse : le bandeau
 };
 // Les six modes du carrousel de l'accueil, dans leur ordre de la table
 // homeCards. On selectionne la pastille correspondante avant de taper la
@@ -165,8 +168,9 @@ if (ecran === "collection" || ecran === "compte") {
 }
 
 // Un mode precis du carrousel : pastille, puis carte.
-if (ecran.startsWith("mode-")) {
-  const i = MODES_CARROUSEL.indexOf(ecran.slice(5));
+if (ecran.startsWith("mode-") || ecran.startsWith("mercato-")) {
+  const i = ecran.startsWith("mercato-") ? MODES_CARROUSEL.indexOf("mercato")
+                                         : MODES_CARROUSEL.indexOf(ecran.slice(5));
   // Les pastilles sont les seuls petits blocs cliquables sous la carte.
   const pastilles = page.locator("div[style*='border-radius: 5px'][style*='cursor: pointer']");
   if (await pastilles.count() > i) {
@@ -181,7 +185,7 @@ if (ecran.startsWith("mode-")) {
   await page.waitForTimeout(2800);
 }
 
-if (ecran === "jeu" || ecran === "partie" || ecran === "partie-fin") {
+if (ecran === "jeu" || ecran === "partie" || ecran === "partie-fin" || ecran === "partie-faux") {
   // La carte du carrousel lance le mode affiché. On clique aux coordonnées
   // plutôt que sur l'<img> : le gestionnaire est porté par un calque au-dessus
   // d'elle, qui intercepte le clic et fait échouer un click() ciblé.
@@ -190,7 +194,7 @@ if (ecran === "jeu" || ecran === "partie" || ecran === "partie-fin") {
   await page.mouse.click(carte.x + carte.width / 2, carte.y + carte.height / 2);
   await page.waitForTimeout(2800);
 }
-if (ecran === "partie" || ecran === "partie-fin") {
+if (ecran === "partie" || ecran === "partie-fin" || ecran === "partie-faux" || ecran.startsWith("mercato-")) {
   const solo = page.getByRole("button", { name:/jouer se?ul|jouer solo/i }).first();
   await solo.click();
   await page.waitForTimeout(3000);
@@ -201,6 +205,48 @@ if (ecran === "partie" || ecran === "partie-fin") {
 // paires. Il faut donc laisser le temps s'ecouler. C'est long, mais c'est le
 // seul moyen de voir cet ecran — et le voir vaut mieux que le corriger a
 // l'aveugle.
+// Le bandeau de reponse est le meme composant qu'on ait juste ou faux : une
+// reponse volontairement fausse suffit a le faire apparaitre, et c'est le seul
+// moyen de le voir sans connaitre la reponse attendue.
+// C'est The Mercato qui porte le bandeau de reponse ; GOAT DUEL, lui, se
+// contente de secouer le champ en rouge. Chercher le bandeau dans le mauvais
+// mode ne donne donc rien.
+// Le bandeau de bonne reponse ne se declenche que sur une VRAIE bonne
+// reponse : une reponse fausse, dans ce mode, se contente de passer au joueur
+// suivant. On lit donc le nom affiche et on lui donne un de ses clubs, pris
+// dans players.jsx — la meme source que le jeu.
+if (ecran === "mercato-juste") {
+  const nom = (await page.locator("text=/DONNE UN CLUB DE/i").first()
+    .locator("xpath=..").innerText()).split("\n").pop().trim();
+  const base = await readFile(join(ici, "..", "src", "players.jsx"), "utf8");
+  const ligne = base.split("\n").find((l) => l.includes('name:"' + nom + '"'));
+  const clubs = ligne ? [...ligne.matchAll(/"([^"]+)"/g)].map((m) => m[1]) : [];
+  const club = clubs.find((c) => c !== nom && !["facile", "moyen", "expert"].includes(c));
+  if (!club) { console.error("aucun club trouve pour", nom); process.exit(1); }
+  console.log("joueur affiche :", nom, "→ on repond", club);
+  await page.locator("input[type='text'], input:not([type])").first().fill(club);
+  const bv = await page.getByRole("button", { name: /^\s*valider\s*$/i }).first().boundingBox();
+  if (bv) await page.mouse.click(bv.x + bv.width / 2, bv.y + bv.height / 2);
+  await page.locator("text=/\\+\\d+ pts/").first()
+    .waitFor({ state: "visible", timeout: 4000 })
+    .catch(() => console.warn("bandeau non attrape"));
+}
+
+if (ecran === "partie-faux" || ecran === "mercato-faux") {
+  const champ = page.locator("input[type='text'], input:not([type])").first();
+  await champ.fill("zzzz");
+  // Clic aux coordonnees : le bouton est sous un calque qui intercepte, comme
+  // la carte du carrousel. Un click() cible echouait en silence, et le champ
+  // restait rempli sans que rien ne soit soumis.
+  const bValider = await page.getByRole("button", { name: /^\s*valider\s*$/i }).first().boundingBox();
+  if (bValider) await page.mouse.click(bValider.x + bValider.width / 2, bValider.y + bValider.height / 2);
+  // Le bandeau ne vit qu'une poignee de dixiemes : toute attente fixe le rate,
+  // trop tot ou trop tard. On le guette.
+  const bandeau = page.locator("text=/MAUVAISE R|CLUB DEJA|CLUB DÉJÀ/i").first();
+  await bandeau.waitFor({ state: "visible", timeout: 4000 })
+    .catch(() => console.warn("bandeau non attrape — la capture montrera la question suivante"));
+}
+
 if (ecran === "partie-fin") {
   const limite = 110000, pas = 5000;
   let attendu = 0;
