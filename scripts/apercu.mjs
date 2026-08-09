@@ -97,11 +97,31 @@ for (const libelle of [/plus tard/i, /^fermer$/i]) {
   }
 }
 
-if (ecran === "classement") {
-  const bouton = page.getByRole("button", { name:/classement/i }).first();
-  await bouton.scrollIntoViewIfNeeded();
-  await bouton.click();
-  await page.waitForTimeout(1500);
+// Chaque écran est une suite de clics depuis l'accueil. Un écran atteint par
+// un chemin plus tortueux n'a pas sa place ici : mieux vaut l'ajouter le jour
+// où on en a besoin que maintenir une recette qui ne sert pas.
+const CHEMINS = {
+  accueil:    [],
+  classement: [/classement/i],
+  amis:       [/^👥 Amis$|^Amis$/i],
+  devinette:  [/devinette du jour/i],
+  profil:     [],   // l'avatar n'est pas un bouton : traité à part
+};
+if (!(ecran in CHEMINS)) {
+  console.error("écran inconnu :", ecran, "— connus :", Object.keys(CHEMINS).join(", "));
+  process.exit(1);
+}
+for (const libelle of CHEMINS[ecran]) {
+  const b = page.getByRole("button", { name:libelle }).first();
+  await b.scrollIntoViewIfNeeded();
+  await b.click();
+  await page.waitForTimeout(1600);
+}
+if (ecran === "profil") {
+  // L'avatar de l'en-tête ouvre le profil ; c'est une image cliquable, pas un
+  // bouton, donc getByRole ne la voit pas.
+  await page.locator("img[src*='/cards/']").first().click();
+  await page.waitForTimeout(1600);
 }
 
 const chemin = join(ici, "..", "apercu-" + ecran + ".png");

@@ -10745,16 +10745,14 @@ export default function LePont() {
       });
       const isUnbeaten = friendDuels.length >= 1 && losses === 0;
       const theyDominate = friendDuels.length >= 1 && wins === 0;
+      // Les deux vues Amis peignaient leur propre fond : un aplat de nuit sur
+      // toute la page, hérité du temps où le fond était une pelouse qu'il
+      // fallait couvrir. Elles étaient les dernières à ne pas passer par
+      // fondCharte, et l'écran sortait noir au milieu d'une app dorée. Même
+      // fond et même arène que le classement et le profil.
       return (
-        <div style={{...shell,overflowY:isDesktop?"visible":"auto",overflowX:isDesktop?"visible":"hidden"}} key="friendDetail">
-          <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
-            {/* Aplat de panneau : les bandes de tonte sont parties avec la pelouse.
-              Sur la charte or, une carte est l'écusson noir du logo. */}
-            <div style={{position:"absolute",inset:0,background:G.nuit}}/>
-            <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:G.nuit,transform:"translateY(-50%)"}}/>
-            <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:180,height:180,borderRadius:"50%",border:G.traitFin}}/>
-            <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.45)"}}/>
-          </div>
+        <div style={{...shell,overflowY:isDesktop?"visible":"auto",overflowX:isDesktop?"visible":"hidden",background:fondCharte}} key="friendDetail">
+          {areneCharte}
           <div style={{zIndex:3,padding:"12px 16px 0",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
             {backBtn(function(){setSelectedFriend(null);})}
             <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
@@ -10811,20 +10809,13 @@ export default function LePont() {
 
     // ── VUE LISTE AMIS ──
     return (
-      <div style={{...shell,overflowY:isDesktop?"visible":"auto",overflowX:isDesktop?"visible":"hidden"}} key="friends">
-        <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
-          {/* Aplat de panneau : les bandes de tonte sont parties avec la pelouse.
-              Sur la charte or, une carte est l'écusson noir du logo. */}
-            <div style={{position:"absolute",inset:0,background:G.nuit}}/>
-          <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:G.nuit,transform:"translateY(-50%)"}}/>
-          <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:180,height:180,borderRadius:"50%",border:G.traitFin}}/>
-          <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.45)"}}/>
-        </div>
+      <div style={{...shell,overflowY:isDesktop?"visible":"auto",overflowX:isDesktop?"visible":"hidden",background:fondCharte}} key="friends">
+        {areneCharte}
         {duelCreateModal}
         {/* Modal confirmation suppression ami */}
         {confirmRemove && (
           <div style={{position:"fixed",inset:0,zIndex:400,background:"rgba(8,17,9,.86)",display:"flex",alignItems:"center",justifyContent:"center"}}>
-            <div style={{background:"rgba(15,20,15,.97)",borderRadius:24,padding:"28px 24px",maxWidth:320,width:"calc(100% - 40px)",border:G.traitFin,textAlign:"center"}}>
+            <div style={{background:G.nuit,borderRadius:24,padding:"28px 24px",maxWidth:320,width:"calc(100% - 40px)",border:G.traitFin,textAlign:"center"}}>
               <div style={{fontSize:32,marginBottom:12}}>👋</div>
               <div style={{...posterText(22),color:G.white,marginBottom:8}}>{tr("Supprimer ","Remove ","Entfernen ","Rimuovere ","Remover ","Eliminar ")}{confirmRemove.name}{tr(" ?","?"," ?","?","?","?")}</div>
               <div style={{fontSize:13,color:"rgba(255,255,255,.4)",marginBottom:24}}>{tr("Il devra renvoyer une demande pour être à nouveau dans ta liste.","They'll need to send a new request to be back on your list.","Er muss eine neue Anfrage senden, um wieder in deiner Liste zu sein.","Dovrà inviare una nuova richiesta per tornare nella tua lista.","Ele precisará enviar um novo pedido para voltar à sua lista.","Tendrá que enviarte otra solicitud para volver a tu lista.")}</div>
@@ -10843,7 +10834,7 @@ export default function LePont() {
         <div style={{...sheet,borderRadius:"28px 28px 0 0",marginTop:16}}>
           {/* Demandes reçues */}
           {friendRequests.length > 0 && (
-            <div style={{background:"#123a1e",border:G.traitFin,borderRadius:16,padding:14}}>
+            <div style={{background:G.nuit,border:G.traitFin,borderRadius:16,padding:14}}>
               <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:G.pelouseClaire,marginBottom:10}}>👋 {tr("Demandes reçues","Requests received","Erhaltene Anfragen","Richieste ricevute","Pedidos recebidos","Solicitudes recibidas")}</div>
               {friendRequests.map(function(req){return(
                 <div key={req.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
@@ -11533,7 +11524,7 @@ export default function LePont() {
         {/* Point central */}
         <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:8,height:8,borderRadius:"50%",background:G.nuit}}/>
         {/* Overlay sombre pour lisibilité */}
-        <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.45)"}}/>
+        <div style={{position:"absolute",inset:0,background:"rgba(8,17,9,.45)"}}/>
       </div>
           <div style={{textAlign:"center",zIndex:1}}>
             <div style={{fontSize:14,color:"rgba(255,255,255,.5)",letterSpacing:3,textTransform:"uppercase",marginBottom:16}}>{tr("C'est parti !","Let's go!","Los geht's!","Si parte!","Vamos lá!","¡Vamos!")}</div>
@@ -11557,7 +11548,7 @@ export default function LePont() {
         {/* Point central */}
         <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:8,height:8,borderRadius:"50%",background:G.nuit}}/>
         {/* Overlay sombre pour lisibilité */}
-        <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.45)"}}/>
+        <div style={{position:"absolute",inset:0,background:"rgba(8,17,9,.45)"}}/>
       </div>
         <div style={{zIndex:1,padding:"20px 18px 0",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
           {backBtn(leaveRoom)}
@@ -11743,7 +11734,7 @@ export default function LePont() {
 
   const pseudoModal = pseudoScreen ? (
     <div style={{position:"fixed",inset:0,zIndex:400,background:"rgba(8,17,9,.86)",display:"flex",alignItems:"center",justifyContent:"center"}}>
-      <div style={{width:"calc(100% - 40px)",maxWidth:360,background:"rgba(10,20,10,.97)",borderRadius:28,padding:"32px 24px",border:G.traitFin,position:"relative"}}>
+      <div style={{width:"calc(100% - 40px)",maxWidth:360,background:G.nuit,borderRadius:28,padding:"32px 24px",border:G.traitFin,position:"relative"}}>
         {/* Bouton fermer — seulement si pas encore de pseudo */}
         {<button onClick={function(){setPseudoScreen(false);}} style={{position:"absolute",top:14,right:14,background:G.nuit,border:"none",borderRadius:"50%",width:30,height:30,color:"rgba(255,255,255,.5)",cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>}
         <div style={{textAlign:"center",marginBottom:24}}>
@@ -11787,7 +11778,7 @@ export default function LePont() {
   // ── MODAL : Affichage du code de récupération après création ──
   const recoveryCodeAfterCreationModal = showRecoveryCodeModal ? (
     <div style={{position:"fixed",inset:0,zIndex:500,background:"rgba(8,17,9,.86)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
-      <div style={{width:"100%",maxWidth:380,background:"rgba(10,20,10,.97)",borderRadius:28,padding:"32px 24px",border:G.traitFin,boxShadow:G.ombre}}>
+      <div style={{width:"100%",maxWidth:380,background:G.nuit,borderRadius:28,padding:"32px 24px",border:G.traitFin,boxShadow:G.ombre}}>
         <div style={{textAlign:"center",marginBottom:20}}>
           <div style={{fontSize:44,marginBottom:8}}>🔐</div>
           <div style={{...posterText(24),color:G.white,lineHeight:1.1,marginBottom:6}}>{tr("Ton code de récupération","Your recovery code","Dein Wiederherstellungscode","Il tuo codice di recupero","Seu código de recuperação","Tu código de recuperación")}</div>
@@ -11825,7 +11816,7 @@ export default function LePont() {
   // ── MODAL : Saisie du code pour récupérer un compte ──
   const recoveryInputModal = showRecoveryInput ? (
     <div style={{position:"fixed",inset:0,zIndex:500,background:"rgba(8,17,9,.86)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
-      <div style={{width:"100%",maxWidth:360,background:"rgba(10,20,10,.97)",borderRadius:28,padding:"28px 24px",border:G.traitFin,position:"relative"}}>
+      <div style={{width:"100%",maxWidth:360,background:G.nuit,borderRadius:28,padding:"28px 24px",border:G.traitFin,position:"relative"}}>
         <button onClick={function(){setShowRecoveryInput(false);}} style={{position:"absolute",top:14,right:14,background:G.nuit,border:"none",borderRadius:"50%",width:30,height:30,color:"rgba(255,255,255,.5)",cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
         <div style={{textAlign:"center",marginBottom:22}}>
           <div style={{fontSize:40,marginBottom:6}}>🔐</div>
@@ -11856,7 +11847,7 @@ export default function LePont() {
   // ── MODAL : Affichage du code depuis le profil (l'user a cliqué "Mon code de récup") ──
   const myRecoveryCodeModal = showMyRecoveryCode ? (
     <div style={{position:"fixed",inset:0,zIndex:500,background:"rgba(8,17,9,.86)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
-      <div style={{width:"100%",maxWidth:380,background:"rgba(10,20,10,.97)",borderRadius:28,padding:"32px 24px",border:G.traitFin,position:"relative"}}>
+      <div style={{width:"100%",maxWidth:380,background:G.nuit,borderRadius:28,padding:"32px 24px",border:G.traitFin,position:"relative"}}>
         <button onClick={function(){setShowMyRecoveryCode(false);}} style={{position:"absolute",top:14,right:14,background:G.nuit,border:"none",borderRadius:"50%",width:30,height:30,color:"rgba(255,255,255,.5)",cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
         <div style={{textAlign:"center",marginBottom:20}}>
           <div style={{fontSize:44,marginBottom:8}}>🔐</div>
@@ -11907,7 +11898,7 @@ export default function LePont() {
         {/* Point central */}
         <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:8,height:8,borderRadius:"50%",background:G.nuit}}/>
         {/* Overlay sombre pour lisibilité */}
-        <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.45)"}}/>
+        <div style={{position:"absolute",inset:0,background:"rgba(8,17,9,.45)"}}/>
       </div>
           <div style={{textAlign:"center",zIndex:1}}>
             <div style={{fontSize:14,color:"rgba(255,255,255,.5)",letterSpacing:3,textTransform:"uppercase",marginBottom:16}}>{tr("Adversaire trouvé !","Opponent found!","Gegner gefunden!","Avversario trovato!","Adversário encontrado!","¡Rival encontrado!")}</div>
@@ -11931,7 +11922,7 @@ export default function LePont() {
         {/* Point central */}
         <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:8,height:8,borderRadius:"50%",background:G.nuit}}/>
         {/* Overlay sombre pour lisibilité */}
-        <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.45)"}}/>
+        <div style={{position:"absolute",inset:0,background:"rgba(8,17,9,.45)"}}/>
       </div>
         <div style={{textAlign:"center",zIndex:1,padding:"0 32px"}}>
           <div style={{fontSize:48,marginBottom:16,animation:"spin 2s linear infinite",display:"inline-block"}}>⚽</div>
@@ -11988,7 +11979,7 @@ export default function LePont() {
             <div style={{position:"absolute",inset:0,background:G.nuit}}/>
           <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:G.nuit,transform:"translateY(-50%)"}}/>
           <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:180,height:180,borderRadius:"50%",border:G.traitFin}}/>
-          <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.45)"}}/>
+          <div style={{position:"absolute",inset:0,background:"rgba(8,17,9,.45)"}}/>
         </div>
         <div style={{zIndex:1,padding:"32px 20px 12px",textAlign:"center"}}>
           <div style={{fontSize:52,marginBottom:8}}>{iAbandoned?"🏳️":(myRank<=3?medals[myRank-1]:myRank+"ème")}</div>
@@ -12057,7 +12048,7 @@ export default function LePont() {
             <div style={{position:"absolute",inset:0,background:G.nuit}}/>
           <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:G.nuit,transform:"translateY(-50%)"}}/>
           <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:180,height:180,borderRadius:"50%",border:G.traitFin}}/>
-          <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.45)"}}/>
+          <div style={{position:"absolute",inset:0,background:"rgba(8,17,9,.45)"}}/>
         </div>
         <div style={{textAlign:"center",zIndex:1,padding:"0 32px"}}>
           {waitingAfterAbandon ? (
@@ -12144,7 +12135,12 @@ export default function LePont() {
               })()}
               <div style={{...posterText(30,G.white)}}>@{viewedProfile.name}</div>
               {grade && (
-                <div style={{marginTop:8,display:"inline-flex",alignItems:"center",gap:6,fontSize:11.5,fontWeight:800,color:grade.color,background:grade.color+"2a",borderRadius:G.rayonS,border:G.traitFin,boxShadow:"2px 2px 0 "+G.encre,padding:"4px 12px",letterSpacing:1,textTransform:"uppercase"}}>{grade.emoji} {grade.label}</div>
+                /* Panneau sombre et non une teinte du grade : ces deux ecrans
+                   sont passes sur fond or, et un aplat translucide de la
+                   couleur du grade s'y delavait — l'orange de Legende sur du
+                   jaune ne se lisait plus. Sur nuit, la couleur du grade
+                   reprend tout son contraste. */
+                <div style={{marginTop:8,display:"inline-flex",alignItems:"center",gap:6,fontSize:11.5,fontWeight:800,color:grade.color,background:G.nuit,borderRadius:G.rayonS,border:G.traitFin,boxShadow:"2px 2px 0 "+G.encre,padding:"4px 12px",letterSpacing:1,textTransform:"uppercase"}}>{grade.emoji} {grade.label}</div>
               )}
               {d.rank && (
                 <div style={{marginTop:10,fontSize:12.5,color:"rgba(255,255,255,.75)",fontWeight:700,letterSpacing:.8}}>{tr("Classement : #","Rank: #","Rang: #","Posizione: #","Posição: #","Clasificación: #")}{d.rank}</div>
@@ -12320,9 +12316,12 @@ export default function LePont() {
         <div style={{...posterText(32,G.white)}}>@{playerName||(tr("anonyme","anonymous","anonym","anonimo","anônimo","anónimo"))}</div>
         {/* Pastille de grade cerclée d'encre et au rayon de la charte, comme celles
             des lignes du classement : la pilule à filet coloré était le dernier
-            reste de l'ancien vocabulaire. */}
+            reste de l'ancien vocabulaire.
+            Panneau sombre et non une teinte du grade : cet écran est passé sur
+            fond or, et un aplat translucide s'y délavait — l'orange de Légende
+            posé sur du jaune ne se lisait plus. */}
         {(() => { const g = getGrade(playerXp); return (
-          <div style={{display:"inline-flex",alignItems:"center",gap:6,marginTop:10,padding:"5px 14px",borderRadius:G.rayonS,background:g.color+"2a",border:G.traitFin,boxShadow:"2px 2px 0 "+G.encre,color:g.color,fontSize:11.5,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase"}}>{g.emoji} {g.label}</div>
+          <div style={{display:"inline-flex",alignItems:"center",gap:6,marginTop:10,padding:"5px 14px",borderRadius:G.rayonS,background:G.nuit,border:G.traitFin,boxShadow:"2px 2px 0 "+G.encre,color:g.color,fontSize:11.5,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase"}}>{g.emoji} {g.label}</div>
         ); })()}
       </div>
 
@@ -12705,7 +12704,7 @@ export default function LePont() {
         {/* Point central */}
         <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:8,height:8,borderRadius:"50%",background:G.nuit}}/>
         {/* Overlay sombre pour lisibilité */}
-        <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.45)"}}/>
+        <div style={{position:"absolute",inset:0,background:"rgba(8,17,9,.45)"}}/>
       </div>
 
       {/* ── HEADER compact ── */}
@@ -12833,7 +12832,7 @@ export default function LePont() {
         {installBanner}
         {/* Bandeau demandes d'amis */}
         {friendRequests.length > 0 && (
-          <div style={{background:"#123a1e",border:G.traitFin,borderRadius:12,padding:"10px 14px"}}>
+          <div style={{background:G.nuit,border:G.traitFin,borderRadius:12,padding:"10px 14px"}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
               <div style={{fontSize:12,fontWeight:700,color:G.pelouseClaire}}>👋 {friendRequests.length} {friendRequests.length>1?tr("demandes d'ami","friend requests","Freundschaftsanfragen","richieste di amicizia","pedidos de amizade","solicitudes de amistad"):tr("demande d'ami","friend request","Freundschaftsanfrage","richiesta di amicizia","pedido de amizade","solicitud de amistad")}</div>
               <button onClick={function(){setShowFriends(true);loadFriendRequests();}} style={{padding:"5px 12px",background:G.pelouse,color:"#000",border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800}}>{tr("Voir","View","Ansehen","Vedi","Ver","Ver")}</button>
@@ -14944,7 +14943,7 @@ export default function LePont() {
 
                   {/* Hints display */}
                   {dailyHintLevel >= 1 && (
-                    <div style={{background:"#123a1e",border:"1px solid rgba(96,165,250,.5)",borderRadius:14,padding:"12px 14px",marginBottom:8,display:"flex",flexDirection:"column",gap:6}}>
+                    <div style={{background:G.nuit,border:"1px solid rgba(96,165,250,.5)",borderRadius:14,padding:"12px 14px",marginBottom:8,display:"flex",flexDirection:"column",gap:6}}>
                       <div style={{display:"flex",alignItems:"center",gap:8}}>
                         <span style={{fontSize:16}}>💡</span>
                         <span style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"#60a5fa"}}>{tr("Indice","Hint","Tipp","Indizio","Dica","Pista")} {dailyHintLevel}/2</span>
@@ -14994,7 +14993,7 @@ export default function LePont() {
         {/* Modal confirmation "Voir la réponse" */}
         {showRevealConfirm && dailyPlayer && (
           <div onClick={function(){setShowRevealConfirm(false);}} style={{position:"fixed",inset:0,zIndex:500,background:"rgba(8,17,9,.86)",display:"flex",alignItems:"center",justifyContent:"center",padding:20,cursor:"pointer"}}>
-            <div onClick={function(e){e.stopPropagation();}} style={{background:"rgba(15,25,15,.96)",borderRadius:24,padding:"28px 24px",maxWidth:340,width:"100%",border:G.traitFin,textAlign:"center",cursor:"default"}}>
+            <div onClick={function(e){e.stopPropagation();}} style={{background:G.nuit,borderRadius:24,padding:"28px 24px",maxWidth:340,width:"100%",border:G.traitFin,textAlign:"center",cursor:"default"}}>
               <div style={{fontSize:42,marginBottom:12}}>👁️</div>
               <div style={{...posterText(24),color:G.white,letterSpacing:1,marginBottom:8}}>{tr("VOIR LA RÉPONSE ?","REVEAL ANSWER?","ANTWORT ZEIGEN?","RIVELARE LA RISPOSTA?","REVELAR RESPOSTA?","¿VER LA RESPUESTA?")}</div>
               <div style={{fontSize:13,color:"rgba(255,255,255,.55)",marginBottom:22,lineHeight:1.5}}>
@@ -15015,7 +15014,7 @@ export default function LePont() {
         {/* Modal confirmation "Signaler une erreur" sur le défi du jour */}
         {showDailyReportConfirm && dailyPlayer && (
           <div onClick={function(){if(!dailyReportSent)setShowDailyReportConfirm(false);}} style={{position:"fixed",inset:0,zIndex:500,background:"rgba(8,17,9,.86)",display:"flex",alignItems:"center",justifyContent:"center",padding:20,cursor:"pointer"}}>
-            <div onClick={function(e){e.stopPropagation();}} style={{background:"rgba(15,25,15,.96)",borderRadius:24,padding:"28px 24px",maxWidth:340,width:"100%",border:G.traitFin,textAlign:"center",cursor:"default"}}>
+            <div onClick={function(e){e.stopPropagation();}} style={{background:G.nuit,borderRadius:24,padding:"28px 24px",maxWidth:340,width:"100%",border:G.traitFin,textAlign:"center",cursor:"default"}}>
               {dailyReportSent ? (
                 <>
                   <div style={{fontSize:42,marginBottom:12}}>✅</div>
@@ -15811,7 +15810,7 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
         {/* Point central */}
         <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:8,height:8,borderRadius:"50%",background:G.nuit}}/>
         {/* Overlay sombre pour lisibilité */}
-        <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.45)"}}/>
+        <div style={{position:"absolute",inset:0,background:"rgba(8,17,9,.45)"}}/>
       </div>
         <div style={{zIndex:1,padding:"32px 20px 16px",textAlign:"center"}}>
           <div style={{fontSize:52,marginBottom:8}}>{iAbandoned?"🏳️":(myRank<=3?medals[myRank-1]:myRank+"ème")}</div> {!iAbandoned && <WinBanner maxWidth={300} marginTop={8} lose={myRank!==1} />}
@@ -15900,7 +15899,7 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
         {/* Point central */}
         <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:8,height:8,borderRadius:"50%",background:G.nuit}}/>
         {/* Overlay sombre pour lisibilité */}
-        <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.45)"}}/>
+        <div style={{position:"absolute",inset:0,background:"rgba(8,17,9,.45)"}}/>
       </div>
       {/* Joueur célébration duel */}
         {/* Même patron que l'écran de fin solo : `flex:1 1 0` + `minHeight:0`
@@ -15922,7 +15921,7 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
           {/* Le texte était peint dans la couleur EXACTE de son fond : la pastille
               s'affichait comme un pavé orange vide. Même recette que la pastille
               de grade du profil — aplat translucide, texte dans la teinte pleine. */}
-          {(()=>{const grade=getGrade(playerXp); return <div style={{display:"inline-flex",alignItems:"center",gap:6,marginTop:8,background:grade.color+"2a",border:G.traitFin,boxShadow:"2px 2px 0 "+G.encre,borderRadius:G.rayonS,padding:"5px 12px"}}><span style={{fontSize:12,fontWeight:800,color:grade.color,letterSpacing:1,textTransform:"uppercase"}}>{grade.emoji} {grade.label}</span></div>; })()}
+          {(()=>{const grade=getGrade(playerXp); return <div style={{display:"inline-flex",alignItems:"center",gap:6,marginTop:8,background:G.nuit,border:G.traitFin,boxShadow:"2px 2px 0 "+G.encre,borderRadius:G.rayonS,padding:"5px 12px"}}><span style={{fontSize:12,fontWeight:800,color:grade.color,letterSpacing:1,textTransform:"uppercase"}}>{grade.emoji} {grade.label}</span></div>; })()}
           <div style={{fontSize:14,color:"rgba(255,255,255,.4)",marginTop:8}}>
             {abandoned ? duelResult.oppName+(tr(" a abandonné 🏃"," forfeited 🏃"," hat aufgegeben 🏃"," ha abbandonato 🏃"," desistiu 🏃"," ha abandonado 🏃")) : (tr("Duel ","Duel ","Duell ","Duello ","Duelo ","Duelo "))+(duelResult.mode==="pont"?"The Plug":"The Mercato")}
           </div>
