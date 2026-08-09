@@ -390,6 +390,52 @@ export const CLUB_SPELLS: Record<string, Spell[]> = {
   "Kurt Zouma": [{ club: "Saint-Étienne", from: 2011, to: 2014 }, { club: "Chelsea", from: 2014, to: 2021 }, { club: "West Ham", from: 2021, to: 2024 }],
   "Mario Balotelli": [{ club: "Inter Milan", from: 2007, to: 2010 }, { club: "Manchester City", from: 2010, to: 2013 }, { club: "AC Milan", from: 2013, to: 2014 }, { club: "Liverpool", from: 2014, to: 2016 }, { club: "Nice", from: 2016, to: 2019 }, { club: "Marseille", from: 2019, to: 2019 }],
   "Jean-Clair Todibo": [{ club: "Barcelona", from: 2019, to: 2020 }, { club: "Nice", from: 2021, to: 2024 }, { club: "West Ham", from: 2024, to: 2026 }],
+
+  // ── Ajout automatique depuis Wikidata (P54 + qualificatifs de dates) ─────
+  // Sourcé par scripts/spells-wikidata : QID retenu seulement s'il est humain,
+  // footballeur ET né l'année que dit players.jsx — un homonyme ne passe pas.
+  //
+  // Trois règles ont écarté plus de joueurs qu'elles n'en ont retenu, et c'est
+  // voulu :
+  //   • un joueur n'entre que si TOUS ses clubs de players.jsx sont datés. Une
+  //     liste partielle serait pire que rien : l'indice « mais jamais avec Y »
+  //     lit ces périodes pour affirmer une ABSENCE.
+  //   • deux périodes qui se chevauchent à des clubs différents = une des deux
+  //     est fausse, et on ne sait pas laquelle. Wikidata porte par exemple deux
+  //     passages de Schuster à l'Atlético, dont un en 1996-97 où il était à
+  //     Pumas. Joueur refusé en entier.
+  //   • une période à durée nulle (2023-2023, un prêt de six mois noté à
+  //     l'année) reçoit sa saison : le test de coéquipiers est strict, une
+  //     durée nulle ne chevaucherait jamais rien et ferait répondre « jamais
+  //     ensemble » à propos d'un vrai coéquipier.
+  "Alan Shearer": [{ club: "Southampton", from: 1988, to: 1992 }, { club: "Blackburn", from: 1992, to: 1996 }, { club: "Newcastle", from: 1996, to: 2006 }],
+  "Alisson Becker": [{ club: "Internacional", from: 2013, to: 2016 }, { club: "AS Roma", from: 2016, to: 2018 }, { club: "Liverpool", from: 2018, to: 2026 }],
+  "Andreas Brehme": [{ club: "Saarbrücken", from: 1980, to: 1981 }, { club: "Kaiserslautern", from: 1981, to: 1986 }, { club: "Bayern Munich", from: 1986, to: 1988 }, { club: "Inter Milan", from: 1988, to: 1992 }, { club: "Real Zaragoza", from: 1992, to: 1993 }, { club: "Kaiserslautern", from: 1993, to: 1998 }],
+  "Bryan Robson": [{ club: "West Brom", from: 1974, to: 1981 }, { club: "Manchester United", from: 1981, to: 1994 }, { club: "Middlesbrough", from: 1994, to: 1997 }],
+  "Cody Gakpo": [{ club: "PSV Eindhoven", from: 2018, to: 2023 }, { club: "Liverpool", from: 2023, to: 2026 }],
+  "Dennis Bergkamp": [{ club: "Ajax Amsterdam", from: 1986, to: 1993 }, { club: "Inter Milan", from: 1993, to: 1995 }, { club: "Arsenal", from: 1995, to: 2006 }],
+  "Diego Maradona": [{ club: "Argentinos Juniors", from: 1976, to: 1981 }, { club: "Boca Juniors", from: 1981, to: 1982 }, { club: "Barcelona", from: 1982, to: 1984 }, { club: "SSC Napoli", from: 1984, to: 1991 }, { club: "Sevilla", from: 1992, to: 1993 }, { club: "Newell's", from: 1993, to: 1994 }, { club: "Boca Juniors", from: 1995, to: 1997 }],
+  "Désiré Doué": [{ club: "Rennes", from: 2021, to: 2024 }, { club: "PSG", from: 2024, to: 2026 }],
+  "Franco Baresi": [{ club: "AC Milan", from: 1977, to: 1997 }],
+  "Gheorghe Hagi": [{ club: "Sportul Studențesc", from: 1983, to: 1987 }, { club: "Steaua Bucharest", from: 1987, to: 1990 }, { club: "Real Madrid", from: 1990, to: 1992 }, { club: "Brescia", from: 1992, to: 1994 }, { club: "Barcelona", from: 1994, to: 1996 }, { club: "Galatasaray", from: 1996, to: 2001 }],
+  "Lamine Yamal": [{ club: "Barcelona", from: 2023, to: 2026 }],
+  "Luis Figo": [{ club: "Sporting CP", from: 1989, to: 1995 }, { club: "Barcelona", from: 1995, to: 2000 }, { club: "Real Madrid", from: 2000, to: 2005 }, { club: "Inter Milan", from: 2005, to: 2009 }],
+  "Lúcio": [{ club: "Internacional", from: 1998, to: 2000 }, { club: "Bayer Leverkusen", from: 2001, to: 2004 }, { club: "Bayern Munich", from: 2004, to: 2009 }, { club: "Inter Milan", from: 2009, to: 2012 }, { club: "Juventus FC", from: 2012, to: 2013 }, { club: "São Paulo", from: 2013, to: 2014 }],
+  "Marco van Basten": [{ club: "Ajax Amsterdam", from: 1981, to: 1987 }, { club: "AC Milan", from: 1987, to: 1995 }],
+  "Michael Ballack": [{ club: "Bayer Leverkusen", from: 1999, to: 2002 }, { club: "Bayern Munich", from: 2002, to: 2006 }, { club: "Chelsea", from: 2006, to: 2010 }, { club: "Bayer Leverkusen", from: 2010, to: 2012 }],
+  "Michel Platini": [{ club: "Nancy", from: 1972, to: 1979 }, { club: "Saint-Etienne", from: 1979, to: 1982 }, { club: "Juventus FC", from: 1982, to: 1987 }],
+  "Moussa Diaby": [{ club: "PSG", from: 2018, to: 2019 }, { club: "Bayer Leverkusen", from: 2019, to: 2023 }, { club: "Aston Villa", from: 2023, to: 2024 }, { club: "Al Ittihad", from: 2024, to: 2026 }],
+  "Oliver Kahn": [{ club: "Karlsruher SC", from: 1987, to: 1994 }, { club: "Bayern Munich", from: 1994, to: 2008 }],
+  "Paul Breitner": [{ club: "Bayern Munich", from: 1970, to: 1974 }, { club: "Real Madrid", from: 1974, to: 1977 }, { club: "Bayern Munich", from: 1978, to: 1983 }],
+  "Paul Gascoigne": [{ club: "Newcastle", from: 1985, to: 1988 }, { club: "Tottenham", from: 1988, to: 1992 }, { club: "SS Lazio", from: 1992, to: 1995 }, { club: "Rangers", from: 1995, to: 1998 }, { club: "Middlesbrough", from: 1998, to: 2000 }, { club: "Everton", from: 2000, to: 2002 }, { club: "Burnley", from: 2002, to: 2003 }],
+  "Pelé": [{ club: "Santos", from: 1956, to: 1974 }, { club: "New York Cosmos", from: 1975, to: 1977 }],
+  "Phil Foden": [{ club: "Manchester City", from: 2016, to: 2026 }],
+  "Rivaldo": [{ club: "Deportivo La Coruna", from: 1996, to: 1997 }, { club: "Barcelona", from: 1997, to: 2002 }, { club: "AC Milan", from: 2002, to: 2003 }],
+  "Roberto Baggio": [{ club: "ACF Fiorentina", from: 1985, to: 1990 }, { club: "Juventus FC", from: 1990, to: 1995 }, { club: "AC Milan", from: 1995, to: 1997 }, { club: "Bologna FC", from: 1997, to: 1998 }, { club: "Inter Milan", from: 1998, to: 2000 }],
+  "Roger Milla": [{ club: "Tonnerre Yaoundé", from: 1974, to: 1977 }, { club: "Valenciennes", from: 1977, to: 1979 }, { club: "Monaco", from: 1979, to: 1980 }, { club: "Bastia", from: 1980, to: 1984 }, { club: "Saint-Etienne", from: 1984, to: 1986 }, { club: "Montpellier", from: 1986, to: 1989 }, { club: "Tonnerre Yaoundé", from: 1990, to: 1994 }],
+  "Ronaldo Nazário": [{ club: "Cruzeiro", from: 1993, to: 1994 }, { club: "PSV Eindhoven", from: 1994, to: 1996 }, { club: "Barcelona", from: 1996, to: 1997 }, { club: "Inter Milan", from: 1997, to: 2002 }, { club: "Real Madrid", from: 2002, to: 2007 }, { club: "AC Milan", from: 2007, to: 2008 }, { club: "Corinthians", from: 2009, to: 2011 }],
+  "Roy Keane": [{ club: "Cobh Ramblers", from: 1989, to: 1990 }, { club: "Nottingham Forest", from: 1990, to: 1993 }, { club: "Manchester United", from: 1993, to: 2005 }, { club: "Celtic", from: 2005, to: 2006 }],
+  "Stefan de Vrij": [{ club: "Feyenoord", from: 2009, to: 2014 }, { club: "SS Lazio", from: 2014, to: 2018 }, { club: "Inter Milan", from: 2018, to: 2026 }, { club: "Panathinaikos", from: 2026, to: 2027 }],
 };
 
 // Deux joueurs ont-ils été coéquipiers ? (même club + saisons qui se chevauchent)
