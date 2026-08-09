@@ -42,3 +42,6 @@ mf-ajouts.json
 
 # sorties du générateur de visuels sociaux
 scripts/social/sortie/
+
+# captures de scripts/apercu.mjs
+apercu-*.png
