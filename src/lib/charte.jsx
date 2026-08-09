@@ -174,8 +174,16 @@ export const fondCharte = "radial-gradient(120% 80% at 50% 38%, rgba(245,194,43,
 // calque négatif remonterait derrière le fond d'un ancêtre et disparaîtrait.
 // Les conteneurs qui portent déjà un zIndex (overlays, feuilles de mode) en
 // sont un ; ceux qui n'en ont pas doivent porter `isolation:"isolate"`.
+// `fixed` et non `absolute` : en absolu, l'arène s'arrête aux bords de l'écran
+// qui la porte — lequel commence sous la barre d'état, puisque #root est décalé
+// de env(safe-area-inset-top). Il restait donc un bandeau d'or lisse en haut,
+// et l'arène se coupait au défilement. En fixe, elle couvre le viewport entier,
+// barre d'état comprise, d'un seul tenant : un seul jeu de lignes de vitesse
+// pour toute l'app, sans raccord possible.
+// Elle n'échappe pas pour autant à son écran : `shell` porte isolation:isolate,
+// qui lui crée un contexte d'empilement — le zIndex -1 y reste enfermé.
 export const areneCharte = (
-  <div aria-hidden="true" style={{position:"absolute",inset:0,zIndex:-1,pointerEvents:"none",overflow:"hidden"}}>
+  <div aria-hidden="true" style={{position:"fixed",inset:0,zIndex:-1,pointerEvents:"none",overflow:"hidden"}}>
     <div style={{position:"absolute",inset:"-25%",
       background:"repeating-conic-gradient(from 0deg at 50% 42%, rgba(8,17,9,.42) 0deg .55deg, rgba(8,17,9,0) .55deg 2.7deg)"}}/>
     {/* Le cœur de l'arène reste dégagé, comme au centre du logo : sans ça, les

@@ -10776,39 +10776,39 @@ export default function LePont() {
             <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
               <div style={{...posterText(22),color:G.white,letterSpacing:2}}>{selectedFriend.name}</div>
               {isUnbeaten && <div style={{fontSize:11,fontWeight:800,color:"#FFD700",background:"rgba(255,215,0,.15)",borderRadius:20,padding:"3px 10px",letterSpacing:.5}}>{tr("😤 T'es invaincu contre lui","😤 You're unbeaten against them","😤 Du bist ungeschlagen gegen ihn","😤 Sei imbattuto contro di lui","😤 Você está invicto contra ele","😤 Estás invicto contra él")}</div>}
-              {theyDominate && <div style={{fontSize:11,fontWeight:800,color:"#FF3D57",background:"rgba(217,58,43,.32)",borderRadius:20,padding:"3px 10px",letterSpacing:.5}}>{tr("💀 Il n'a jamais perdu contre toi","💀 They've never lost to you","💀 Er hat nie gegen dich verloren","💀 Non ha mai perso contro di te","💀 Nunca perdeu para você","💀 Nunca ha perdido contra ti")}</div>}
+              {theyDominate && <div style={{fontSize:11,fontWeight:800,color:"#FF3D57",background:G.nuit,borderRadius:20,padding:"3px 10px",letterSpacing:.5}}>{tr("💀 Il n'a jamais perdu contre toi","💀 They've never lost to you","💀 Er hat nie gegen dich verloren","💀 Non ha mai perso contro di te","💀 Nunca perdeu para você","💀 Nunca ha perdido contra ti")}</div>}
             </div>
             <button onClick={function(){setShowDuelCreate({id:selectedFriend.id,name:selectedFriend.name});}} style={{padding:"8px 14px",background:G.pelouse,color:"#000",border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:800}}>{tr("⚡ Défier","⚡ Challenge","⚡ Herausfordern","⚡ Sfida","⚡ Desafiar","⚡ Retar")}</button>
           </div>
-          <div style={{...sheet,background:G.nuit,borderTop:G.trait,borderRadius:"28px 28px 0 0",marginTop:16}}>
+          <div style={{...sheet,borderRadius:"28px 28px 0 0",marginTop:16}}>
             {/* Bilan */}
             {friendDuels.length > 0 && (
               <div style={{display:"flex",gap:8,marginBottom:4}}>
-                <div style={{flex:1,background:"rgba(42,155,78,.35)",border:G.traitFin,borderRadius:16,padding:"14px 0",textAlign:"center"}}>
+                <div style={{flex:1,background:G.nuit,border:G.traitFin,borderRadius:16,padding:"14px 0",textAlign:"center"}}>
                   <div style={{...posterText(32),color:G.pelouseClaire}}>{wins}</div>
                   <div style={{fontSize:10,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginTop:2}}>{tr("Victoires","Wins","Siege","Vittorie","Vitórias","Victorias")}</div>
                 </div>
-                <div style={{flex:1,background:"rgba(245,194,43,.28)",border:G.traitFin,borderRadius:16,padding:"14px 0",textAlign:"center"}}>
+                <div style={{flex:1,background:G.nuit,border:G.traitFin,borderRadius:16,padding:"14px 0",textAlign:"center"}}>
                   <div style={{...posterText(32),color:G.projecteur}}>{draws}</div>
                   <div style={{fontSize:10,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginTop:2}}>{tr("Nuls","Draws","Remis","Pareggi","Empates","Empates")}</div>
                 </div>
-                <div style={{flex:1,background:"rgba(217,58,43,.32)",border:G.traitFin,borderRadius:16,padding:"14px 0",textAlign:"center"}}>
+                <div style={{flex:1,background:G.nuit,border:G.traitFin,borderRadius:16,padding:"14px 0",textAlign:"center"}}>
                   <div style={{...posterText(32),color:"#FF3D57"}}>{losses}</div>
                   <div style={{fontSize:10,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginTop:2}}>{tr("Défaites","Losses","Niederlagen","Sconfitte","Derrotas","Derrotas")}</div>
                 </div>
               </div>
             )}
             {/* Historique */}
-            <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.3)",marginBottom:8,marginTop:4}}>{tr("Historique","History","Verlauf","Cronologia","Histórico","Historial")}</div>
+            <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(8,17,9,.62)",marginBottom:8,marginTop:4}}>{tr("Historique","History","Verlauf","Cronologia","Histórico","Historial")}</div>
             {friendDuels.length===0 && (
-              <div style={{textAlign:"center",padding:"32px 0",color:"rgba(255,255,255,.3)",fontSize:14}}>{tr("Aucun duel encore joué avec ","No duels played with ","Noch keine Duelle mit ","Ancora nessuna sfida con ","Ainda nenhum duelo com ","Aún no has jugado ningún duelo con ")}{selectedFriend.name} 👀</div>
+              <div style={{textAlign:"center",padding:"32px 0",color:"rgba(8,17,9,.62)",fontSize:14}}>{tr("Aucun duel encore joué avec ","No duels played with ","Noch keine Duelle mit ","Ancora nessuna sfida con ","Ainda nenhum duelo com ","Aún no has jugado ningún duelo con ")}{selectedFriend.name} 👀</div>
             )}
             {friendDuels.map(function(d,i){
               const myScore = d.challenger_id===playerId ? d.challenger_score : d.opponent_score;
               const theirScore = d.challenger_id===playerId ? d.opponent_score : d.challenger_score;
               const won = myScore>theirScore; const draw = myScore===theirScore;
               return(
-                <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 14px",background:"rgba(8,17,9,.45)",borderRadius:12,marginBottom:6,border:G.traitFin}}>
+                <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 14px",background:G.nuit,borderRadius:12,marginBottom:6,border:G.traitFin}}>
                   <div>
                     <div style={{fontSize:13,fontWeight:800,color:won?G.pelouseClaire:draw?G.projecteur:G.maillot}}>{won?tr("🏆 Victoire","🏆 Win","🏆 Sieg","🏆 Vittoria","🏆 Vitória","🏆 Victoria"):draw?tr("🤝 Égalité","🤝 Draw","🤝 Remis","🤝 Pareggio","🤝 Empate","🤝 Empate"):tr("😅 Défaite","😅 Loss","😅 Niederlage","😅 Sconfitta","😅 Derrota","😅 Derrota")}</div>
                     <div style={{fontSize:11,color:"rgba(255,255,255,.4)"}}>{d.mode==="pont"?"The Plug":"The Mercato"}{d.diff?" · "+d.diff:""}</div>
@@ -10849,7 +10849,7 @@ export default function LePont() {
           <div style={{...posterText(26),color:G.white,letterSpacing:2}}>{tr("AMIS","FRIENDS","FREUNDE","AMICI","AMIGOS","AMIGOS")}</div>
           <div style={{width:40}}/>
         </div>
-        <div style={{...sheet,background:G.nuit,borderTop:G.trait,borderRadius:"28px 28px 0 0",marginTop:16}}>
+        <div style={{...sheet,borderRadius:"28px 28px 0 0",marginTop:16}}>
           {/* Demandes reçues */}
           {friendRequests.length > 0 && (
             <div style={{background:G.nuit,border:G.traitFin,borderRadius:16,padding:14}}>
@@ -10862,14 +10862,14 @@ export default function LePont() {
                   </div>
                   <div style={{display:"flex",gap:6}}>
                     <button onClick={function(){acceptRequest(req);}} style={{padding:"8px 14px",background:G.pelouse,color:"#000",border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:800}}>✓</button>
-                    <button onClick={function(){declineRequest(req);}} style={{padding:"8px 12px",background:"rgba(8,17,9,.45)",color:"rgba(255,255,255,.4)",border:"none",borderRadius:20,cursor:"pointer",fontSize:13}}>✕</button>
+                    <button onClick={function(){declineRequest(req);}} style={{padding:"8px 12px",background:G.nuit,color:"rgba(255,255,255,.4)",border:"none",borderRadius:20,cursor:"pointer",fontSize:13}}>✕</button>
                   </div>
                 </div>
               );})}
             </div>
           )}
           {/* Historique des défis */}
-          <button onClick={function(){loadDuels();setShowDuelHistory(true);}} style={{width:"100%",display:"flex",alignItems:"center",gap:10,padding:"13px 16px",background:"rgba(245,194,43,.28)",border:G.traitFin,borderRadius:14,cursor:"pointer",textAlign:"left"}}>
+          <button onClick={function(){loadDuels();setShowDuelHistory(true);}} style={{width:"100%",display:"flex",alignItems:"center",gap:10,padding:"13px 16px",background:G.nuit,border:G.traitFin,borderRadius:14,cursor:"pointer",textAlign:"left"}}>
             <span style={{fontSize:20}}>📜</span>
             <div style={{flex:1}}>
               <div style={{fontSize:14,fontWeight:800,color:G.projecteur}}>{tr("Historique des défis","Duel history","Duell-Verlauf","Cronologia sfide","Histórico de duelos","Historial de duelos")}</div>
@@ -10878,7 +10878,7 @@ export default function LePont() {
             <span style={{fontSize:16,color:"rgba(255,214,0,.6)"}}>›</span>
           </button>
           {/* Ajouter un ami */}
-          <div style={{background:"rgba(8,17,9,.45)",border:G.traitFin,borderRadius:16,padding:16}}>
+          <div style={{background:G.nuit,border:G.traitFin,borderRadius:16,padding:16}}>
             <div style={{fontSize:12,fontWeight:700,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginBottom:8}}>{tr("Ajouter un ami","Add a friend","Freund hinzufügen","Aggiungi un amico","Adicionar amigo","Añadir un amigo")}</div>
             <div style={{display:"flex",gap:8}}>
               <input value={friendInput} onChange={function(e){setFriendInput(e.target.value);setFriendMsg("");}}
@@ -10891,15 +10891,15 @@ export default function LePont() {
           </div>
           {/* Liste des amis + demandes en attente */}
           <div>
-            <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.3)",marginBottom:8}}>
+            <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(8,17,9,.62)",marginBottom:8}}>
               {tr("Mes amis","My friends","Meine Freunde","I miei amici","Meus amigos","Mis amigos")} {friendsList.length>0&&<span style={{color:G.pelouseClaire}}>({friendsList.length})</span>}
             </div>
             {friendsList.length===0 && sentRequests.filter(function(r){return r.status==="pending";}).length===0 && (
-              <div style={{textAlign:"center",padding:"24px 0",color:"rgba(255,255,255,.3)",fontSize:14}}>{tr("Aucun ami pour l'instant 👋","No friends yet 👋","Noch keine Freunde 👋","Ancora nessun amico 👋","Ainda sem amigos 👋","Todavía no tienes amigos 👋")}</div>
+              <div style={{textAlign:"center",padding:"24px 0",color:"rgba(8,17,9,.62)",fontSize:14}}>{tr("Aucun ami pour l'instant 👋","No friends yet 👋","Noch keine Freunde 👋","Ancora nessun amico 👋","Ainda sem amigos 👋","Todavía no tienes amigos 👋")}</div>
             )}
             {/* Demandes en attente intégrées dans la liste */}
             {sentRequests.filter(function(r){return r.status==="pending";}).map(function(r,i){return(
-              <div key={"pending-"+i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 14px",background:"rgba(245,194,43,.28)",borderRadius:14,marginBottom:8,border:"1px dashed rgba(255,214,0,.25)"}}>
+              <div key={"pending-"+i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 14px",background:G.nuit,borderRadius:14,marginBottom:8,border:"1px dashed rgba(255,214,0,.25)"}}>
                 <div>
                   <div style={{fontSize:15,fontWeight:800,color:"rgba(255,255,255,.5)"}}>{r.to_name || r.to_id}</div>
                   <div style={{fontSize:11,color:G.projecteur}}>{tr("⏳ En attente d'acceptation","⏳ Awaiting acceptance","⏳ Warte auf Annahme","⏳ In attesa di accettazione","⏳ Aguardando aceitação","⏳ Esperando aceptación")}</div>
@@ -10915,7 +10915,7 @@ export default function LePont() {
               } catch { }
               const friendDuelCount = duels.filter(function(d){return d.status==="complete"&&(d.challenger_id===fid||d.opponent_id===fid);}).length;
               return (
-                <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 14px",background:"rgba(8,17,9,.45)",borderRadius:14,marginBottom:8,border:G.traitFin,cursor:"pointer"}}
+                <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 14px",background:G.nuit,borderRadius:14,marginBottom:8,border:G.traitFin,cursor:"pointer"}}
                   onClick={function(){setShowFriends(false);openUserProfile(fid,fname,"friends");}}>
                   <div>
                     <div style={{fontSize:15,fontWeight:800,color:G.white}}>{fname}</div>
@@ -10930,7 +10930,7 @@ export default function LePont() {
               );
             })}
           </div>
-          <button onClick={function(){closeFriends();}} style={{width:"100%",background:"rgba(8,17,9,.45)",color:"rgba(255,255,255,.5)",border:G.traitFin,borderRadius:G.rayon,cursor:"pointer",fontFamily:G.font,fontSize:13,padding:"10px",marginTop:4}}>{tr("↩ Retour","↩ Back","↩ Zurück","↩ Indietro","↩ Voltar","↩ Volver")}</button>
+          <button onClick={function(){closeFriends();}} style={{width:"100%",background:G.nuit,color:"rgba(255,255,255,.5)",border:G.traitFin,borderRadius:G.rayon,cursor:"pointer",fontFamily:G.font,fontSize:13,padding:"10px",marginTop:4}}>{tr("↩ Retour","↩ Back","↩ Zurück","↩ Indietro","↩ Voltar","↩ Volver")}</button>
         </div>
       </div>
     );
@@ -12719,8 +12719,9 @@ export default function LePont() {
 
       {/* ── HEADER compact ── */}
       <div style={{zIndex:1,padding:"6px 20px 2px"}}>
-        {/* Bandeau d'en-tête en or, dans la continuité de la page. Il a été à
-            l'encre un temps ; l'or est le choix retenu.
+        {/* Bandeau d'en-tête sans fond propre : l'arène passe dessous et ses
+            lignes de vitesse traversent le haut de l'écran comme le reste. Un
+            aplat d'or ici, même de la bonne couleur, coupait la texture net.
             La bande garde sa remontée sous la barre d'état : #root est décalé
             de env(safe-area-inset-top) et la zone au-dessus est peinte par
             body, donc sans elle la bande s'arrêterait sous l'encoche.
@@ -12729,7 +12730,7 @@ export default function LePont() {
             remettent devant. Les marges négatives le font saigner jusqu'aux
             bords, sinon la bande s'arrêterait au rembourrage de l'écran. */}
         <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",
-          position:"relative",zIndex:1,background:G.or,
+          position:"relative",zIndex:1,background:"transparent",
           /* La bande remonte sous la barre d'état et rembourre d'autant : #root
              est décalé de env(safe-area-inset-top), donc sans ça le haut de
              l'écran reste peint par body — un liseré doré au-dessus d'une bande
