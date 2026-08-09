@@ -12,10 +12,11 @@
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     <meta name="googlebot" content="index, follow" />
     <meta name="theme-color" content="#0E1F14" />
-    <!-- Fond sombre immédiat : évite le flash blanc pendant le chargement du JS
-         (le body par défaut est blanc alors que toute l'app est sombre) -->
+    <!-- Fond posé avant le JS : évite le flash blanc au chargement. Doit suivre
+         le fond de la charte — depuis le passage à l'or, un pré-fond vert
+         faisait clignoter l'écran en vert avant de virer au jaune. -->
     <style>
-      html, body { background: #0A140A; color-scheme: dark; }
+      html, body { background: #F5C22B; color-scheme: dark; }
     </style>
 
     <!-- Canonical (domaine principal goatfc.fr) -->

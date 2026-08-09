@@ -9,7 +9,10 @@
 // rayons restent des arrondis francs.
 
 export const G = {
-  bg:"#0E1F14",bgPanel:"rgba(0,0,0,.5)",bgCard:"#141414",dark:"#0a0a0a",white:"#ffffff",
+  // `bg` n'est PAS le fond de la page — celui-là vient de `fondCharte`. C'est la
+  // surface de deux modales plein écran. Le passer à l'or y a mis du texte blanc
+  // sur jaune, illisible : il reste donc une surface SOMBRE, alignée sur `nuit`.
+  bg:"#12160F",bgPanel:"rgba(0,0,0,.5)",bgCard:"#141414",dark:"#0a0a0a",white:"#ffffff",
   // ── Jetons d'avant la charte — PLUS AUCUN USAGE, ne pas y revenir ──────
   // `accent` (vert LED) et `gold` (jaune fluo) sont les deux teintes néon que
   // la charte remplace : prendre `pelouseClaire` ou `projecteur` pour du texte,
@@ -19,23 +22,38 @@ export const G = {
   offWhite:"#F5F5F5",accent:"#00E676",gold:"#FFD600",red:"#FF3D57",
   font:"'Bebas Neue',cursive,sans-serif",heading:"'Bebas Neue',cursive,sans-serif",
 
-  // ── Charte « Olive et Tom » ────────────────────────────────────────
+  // ── Charte « Olive et Tom », version OR ────────────────────────────
   // Ce qui fait le manga, c'est le TRAIT et l'OMBRE DURE, pas l'angle vif :
-  // les rayons restent proches de ceux d'avant (arrondi franc). Ces jetons
-  // ne sont pour l'instant appliqués QUE sur l'écran d'accueil mobile.
+  // les rayons restent des arrondis francs.
+  //
+  // LE RENVERSEMENT. La charte était une pelouse verte avec le jaune en
+  // accent. Elle est désormais calée sur le logo : un APLAT D'OR plein champ,
+  // un écusson noir posé dessus, un lettrage crème. Le vert n'est plus le
+  // sol, il redevient ce qu'il dit — la validation, le positif.
+  //
+  // La règle qui découle des mesures et qu'il ne faut jamais oublier :
+  // SUR L'OR, SEULE L'ENCRE SE LIT. Le crème tombe à 1,4, le vert clair à 1,2,
+  // le rouge à 2,8. Toute couleur autre que l'encre doit donc vivre À
+  // L'INTÉRIEUR d'une forme cerclée d'encre, jamais en texte posé sur le fond.
+  // Dans un panneau, à l'inverse, tout se lit : crème 14,9 · or 11,0 ·
+  // vert clair 9,3 · pelouse 5,1.
   encre:"#081109",        // le trait — noir à biais vert, jamais noir pur
-  pelouse:"#2A9B4E",      // l'accent principal, remplace le vert LED #00E676
-  // La pelouse est faite pour être un APLAT, pas une couleur de texte : posée
-  // sur le panneau de nuit elle ne donne que 4,2 de contraste, et 2,4 sur la
-  // pelouse éclairée — illisible pour un libellé de 11 px. C'est précisément
-  // pour ça que tout l'app attrapait le vert LED #00E676. Voici sa teinte
-  // éclairée, le seul vert de la charte autorisé sur du TEXTE : 7,6 sur nuit,
-  // 4,4 sur la pelouse. Pour un aplat, garder `pelouse`.
+  or:"#F5C22B",           // LE FOND. Même teinte que l'ancien `projecteur`.
+  orSombre:"#D9A21A",     // la trame de points et les aplats secondaires sur l'or
+  creme:"#F2E7CE",        // le lettrage du logo — le blanc de la charte
+  pelouse:"#2A9B4E",      // validation, aplat de positif — DANS un panneau
+  // La pelouse est faite pour être un APLAT, pas une couleur de texte : elle
+  // ne donne que 5,1 sur le panneau et 2,1 sur l'or. Voici sa teinte éclairée,
+  // le seul vert autorisé sur du TEXTE : 9,3 sur le panneau. Sur l'or, aucun
+  // vert ne se lit — pas même celui-là.
   pelouseClaire:"#4FD07A",
-  projecteur:"#F5C22B",   // actions et réussites, moins fluo que #FFD600
+  // `projecteur` EST devenu le fond : un aplat jaune posé sur l'or disparaît.
+  // Il ne sert donc plus qu'à l'intérieur d'un panneau, où il donne 11,0. Pour
+  // une action principale posée sur le fond, prendre `nuit` (l'écusson noir).
+  projecteur:"#F5C22B",
   maillot:"#D93A2B",      // urgence, défaite, compte à rebours
   ciel:"#2A6FBF",         // l'adversaire, le second camp
-  nuit:"#0E2C17",
+  nuit:"#12160F",         // l'écusson du logo : le noir des panneaux
   trait:"3px solid #081109",
   traitFin:"2px solid #081109",
   ombre:"4px 4px 0 #081109",
@@ -113,16 +131,14 @@ export const btn = function(bg, fg, size){
     ...(clair ? posterText(size||17, c) : posterLight(size||17, c)),
   };
 };
-// ── Le terrain de la charte ───────────────────────────────────────────
+// ── Le fond de la charte ──────────────────────────────────────────────
 // Le trait d'encre (#081109) et l'ombre dure n'existent que sur un fond plus
-// clair qu'eux. Sur les bandes de pelouse d'origine (#0E1F14) doublées d'un
-// voile noir, un panneau de nuit cerclé d'encre rendait un rectangle mou :
-// le cadre et son ombre se fondaient dans le fond. La pelouse passe donc à la
-// valeur éclairée de la charte, celle du bas du dégradé de l'accueil, avec le
-// halo des projecteurs en haut.
+// clair qu'eux. C'était la difficulté de la version verte, où le panneau et
+// son ombre se noyaient dans la pelouse sombre. Sur l'or, la question ne se
+// pose plus : 11,5 de contraste, le trait claque et l'ombre porte.
 // À écraser dans la clé `background` du conteneur, pas en `backgroundImage` :
 // le raccourci `background:transparent` de `shell` reprendrait le dessus.
-export const fondCharte = "radial-gradient(72% 18% at 14% 0%, rgba(245,194,43,.20), transparent 70%),radial-gradient(72% 18% at 86% 0%, rgba(245,194,43,.20), transparent 70%),#17572C";
+export const fondCharte = "radial-gradient(120% 80% at 50% 38%, rgba(245,194,43,.96) 0 34%, rgba(217,162,26,.55) 100%),#F5C22B";
 // Le terrain est DESSINÉ par-dessus ce fond — bandes de tonte translucides et
 // tracés d'encre — au lieu d'être peint en aplats opaques qui recouvraient le
 // fond. Le grain de trame sérigraphié ferme la couche, comme sur l'accueil.
@@ -138,25 +154,38 @@ export const fondCharte = "radial-gradient(72% 18% at 14% 0%, rgba(245,194,43,.2
 // calque négatif remonterait derrière le fond d'un ancêtre et disparaîtrait.
 // Les conteneurs qui portent déjà un zIndex (overlays, feuilles de mode) en
 // sont un ; ceux qui n'en ont pas doivent porter `isolation:"isolate"`.
-export const terrainCharte = (
+// L'ARÈNE remplace le terrain. Les bandes de tonte, la ligne médiane et le rond
+// central étaient l'iconographie d'une pelouse : sur un aplat d'or, ils ne
+// veulent plus rien dire. Le logo donne le motif de remplacement — les lignes
+// de vitesse du manga, qui convergent vers le centre, et la trame sérigraphiée.
+//
+// Les lignes sont un `repeating-conic-gradient` : un dégradé conique répété
+// dessine des coins qui rayonnent depuis un point, ce qui est exactement une
+// ligne de vitesse. Le centre est ensuite RECOUVERT d'un aplat d'or au lieu
+// d'être masqué : un `mask-image` aurait marché aussi, mais il n'est pas
+// également fiable d'un moteur à l'autre, et le recouvrement ne coûte rien.
+//
+// zIndex -1 et non 0 : un élément POSITIONNÉ à zIndex 0 se peint AU-DESSUS du
+// flux normal, pas en dessous. Le décor se posait donc par-dessus le contenu
+// des écrans dont le conteneur n'est pas lui-même positionné. À -1, il passe
+// derrière le contenu tout en restant devant le fond de son conteneur.
+//
+// Ce qui suppose que le conteneur soit un CONTEXTE D'EMPILEMENT, sinon un
+// calque négatif remonterait derrière le fond d'un ancêtre et disparaîtrait.
+// Les conteneurs qui portent déjà un zIndex (overlays, feuilles de mode) en
+// sont un ; ceux qui n'en ont pas doivent porter `isolation:"isolate"`.
+export const areneCharte = (
   <div aria-hidden="true" style={{position:"absolute",inset:0,zIndex:-1,pointerEvents:"none",overflow:"hidden"}}>
-    {[0,1,2,3,4,5,6].map(function(i){return(
-      <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"rgba(8,17,9,.16)":"transparent"}}/>
-    );})}
-    {/* Ligne médiane, rond central et point de coup d'envoi : à l'encre, comme
-        tout tracé de la charte, et non plus en blanc translucide. */}
-    <div style={{position:"absolute",left:0,right:0,top:"50%",height:3,background:"rgba(8,17,9,.45)",transform:"translateY(-50%)"}}/>
-    <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:180,height:180,borderRadius:"50%",border:"3px solid rgba(8,17,9,.45)"}}/>
-    <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:10,height:10,borderRadius:"50%",background:"rgba(8,17,9,.45)"}}/>
-    {/* Nocturne en haut d'écran : un voile d'encre sur la hauteur du titre, pour
-        garder la nuit de l'accueil sous le lettrage et n'éclairer la pelouse
-        qu'à partir des panneaux. Hauteur fixe et non proportionnelle : sur une
-        page qui défile, un dégradé sur toute la hauteur laisserait la moitié
-        haute dans le noir et le trait d'encre y disparaîtrait à nouveau. */}
-    <div style={{position:"absolute",top:0,left:0,right:0,height:200,
-      background:"linear-gradient(180deg,rgba(8,17,9,.74),rgba(8,17,9,0))"}}/>
-    <div style={{position:"absolute",inset:0,opacity:.12,
-      backgroundImage:"radial-gradient(circle,#000 1px,transparent 1.3px)",backgroundSize:"5px 5px"}}/>
+    <div style={{position:"absolute",inset:"-25%",
+      background:"repeating-conic-gradient(from 0deg at 50% 42%, rgba(8,17,9,.42) 0deg .55deg, rgba(8,17,9,0) .55deg 2.7deg)"}}/>
+    {/* Le cœur de l'arène reste dégagé, comme au centre du logo : sans ça, les
+        lignes se rejoignent en une tache noire au milieu de l'écran. */}
+    <div style={{position:"absolute",inset:0,
+      background:"radial-gradient(circle at 50% 42%, #F5C22B 0 20%, rgba(245,194,43,.92) 32%, rgba(245,194,43,0) 62%)"}}/>
+    {/* La trame sérigraphiée ferme la couche. Points d'or sombre et non de noir :
+        sur l'or, une trame noire grise le fond au lieu de le texturer. */}
+    <div style={{position:"absolute",inset:0,opacity:.5,
+      backgroundImage:"radial-gradient(circle,#D9A21A 1.4px,transparent 1.7px)",backgroundSize:"7px 7px"}}/>
   </div>
 );
 // Bouton retour de la charte : le même cadre d'encre et la même ombre dure que

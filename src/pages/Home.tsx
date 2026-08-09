@@ -14,7 +14,7 @@ import { GoatGuess } from "@/components/landing/GoatGuess";
 import { FindPlayer } from "@/components/landing/FindPlayer";
 import { tr } from "@/lib/lang";
 import { trackTime } from "@/lib/track";
-import { G, posterText, btn, fondCharte, terrainCharte } from "@/lib/charte.jsx";
+import { G, posterText, btn, fondCharte, areneCharte } from "@/lib/charte.jsx";
 
 // "grid" = « Trouve le joueur » (overlay FindPlayer), "goatgrid" = la
 // grille 3×3 jouée dans LePont. Deux jeux distincts, malgré les noms proches.
@@ -301,7 +301,7 @@ const Home = () => {
           sérigraphié, dessinés PAR-DESSUS la pelouse éclairée. Les anciens
           voiles blancs translucides (filigrane, grille, halo vert) ne tenaient
           pas la charte : le trait d'encre des panneaux disparaissait dessus. */}
-      {terrainCharte}
+      {areneCharte}
       {/* Filigrane GOAT FC : conservé, mais à l'encre plutôt qu'en blanc. */}
       <div
         className="pointer-events-none absolute inset-0 select-none flex items-center justify-center"

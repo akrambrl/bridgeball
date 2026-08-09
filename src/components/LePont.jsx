@@ -4,7 +4,7 @@ import { PLAYERS, RETIRED_PLAYERS, GG_WC_WINNERS, GG_CL_WINNERS } from "../playe
 import { trackPlay, pingPresence, pingLive, trackTime } from "../lib/track";
 import { hapticSuccess, hapticError } from "../lib/native";
 import { pickOpponent } from "../lib/opponents";
-import { G, posterText, posterTitre, posterLight, btn, fondCharte, terrainCharte,
+import { G, posterText, posterTitre, posterLight, btn, fondCharte, areneCharte,
          retourStyle, retourCharte, fermerCharte, ligneCharte, pastilleCharte } from "../lib/charte.jsx";
 import { displayStreak } from "../lib/streak";
 import { normNom, normCompactNom, normPhoneticNom, levenshteinNom, seuilFuzzy, fuzzyNom } from "../lib/nom";
@@ -3116,9 +3116,17 @@ if(typeof document!=="undefined"&&!document.getElementById("bb-css")){
     @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
     @keyframes heartbeat{0%,100%{transform:scale(1)}15%{transform:scale(1.15)}30%{transform:scale(1)}45%{transform:scale(1.1)}60%{transform:scale(1)}}
     @keyframes urgentPulse{0%,100%{opacity:1}50%{opacity:.6}} @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-    html,body,#root{background:#0E1F14!important;min-height:100vh;min-height:100dvh;}
-    html{background:#0E1F14!important;}
-    #root{background-image:repeating-linear-gradient(90deg,#0E1F14 0,#0E1F14 14.28%,#132819 14.28%,#132819 28.57%,#0E1F14 28.57%,#0E1F14 42.86%,#132819 42.86%,#132819 57.14%,#0E1F14 57.14%,#0E1F14 71.43%,#132819 71.43%,#132819 85.71%,#0E1F14 85.71%)!important;padding-top:env(safe-area-inset-top);}
+    /* Le sol de l'application. Écrit ici et non dans la charte parce qu'il faut
+       des !important pour passer devant les bases Tailwind, mais les VALEURS
+       viennent de la charte : les recopier à la main les avait déjà laissées
+       diverger — ces trois lignes sont restées vertes une version entière après
+       le passage a l'or, et repeignaient la page par-dessus fondCharte.
+       (Pas d'accent grave ici : ce bloc EST un template literal, une backtick
+       le refermerait au milieu du CSS.)
+       Les bandes de tonte disparaissent avec la pelouse : sur un aplat d'or,
+       une rayure verticale ne raconte plus un terrain, elle salit le fond. */
+    html,body,#root{background:${G.or}!important;min-height:100vh;min-height:100dvh;}
+    #root{padding-top:env(safe-area-inset-top);}
   `;
 document.title = 'GOAT FC';
 document.head.appendChild(s);
@@ -9344,9 +9352,9 @@ export default function LePont() {
         <div onClick={(e)=>e.stopPropagation()} style={{position:"relative",borderRadius:28,maxWidth:380,width:"100%",overflow:"hidden",animation:"popIn .4s cubic-bezier(.34,1.56,.64,1)",cursor:"default",boxShadow:G.ombre}}>
           {/* Fond pelouse */}
           <div style={{position:"absolute",inset:0,zIndex:0,overflow:"hidden"}}>
-            {[0,1,2,3,4,5,6].map(i => (
-              <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#0E1F14":"#132819"}}/>
-            ))}
+            {/* Aplat de panneau : les bandes de tonte sont parties avec la pelouse.
+              Sur la charte or, une carte est l'écusson noir du logo. */}
+            <div style={{position:"absolute",inset:0,background:G.nuit}}/>
             <div style={{position:"absolute",inset:0,background:`linear-gradient(180deg, ${accentColor}25 0%, rgba(10,20,10,.88) 50%, rgba(10,20,10,.95) 100%)`}}/>
             <div style={{position:"absolute",top:-60,left:-60,width:240,height:240,borderRadius:"50%",background:`radial-gradient(circle, ${accentColor}40 0%, transparent 70%)`,filter:"blur(30px)"}}/>
             <div style={{position:"absolute",top:-40,right:-40,width:200,height:200,borderRadius:"50%",background:`radial-gradient(circle, ${accentSecondary}30 0%, transparent 70%)`,filter:"blur(30px)"}}/>
@@ -9467,9 +9475,9 @@ export default function LePont() {
         <div onClick={(e)=>e.stopPropagation()} style={{position:"relative",borderRadius:28,maxWidth:380,width:"100%",overflow:"hidden",animation:"popIn .4s cubic-bezier(.34,1.56,.64,1)",cursor:"default",boxShadow:G.ombre}}>
           {/* Fond pelouse */}
           <div style={{position:"absolute",inset:0,zIndex:0,overflow:"hidden"}}>
-            {[0,1,2,3,4,5,6].map(i => (
-              <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#0E1F14":"#132819"}}/>
-            ))}
+            {/* Aplat de panneau : les bandes de tonte sont parties avec la pelouse.
+              Sur la charte or, une carte est l'écusson noir du logo. */}
+            <div style={{position:"absolute",inset:0,background:G.nuit}}/>
             <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, rgba(0,230,118,.22) 0%, rgba(10,20,10,.90) 50%, rgba(10,20,10,.95) 100%)"}}/>
             <div style={{position:"absolute",top:-60,left:-60,width:240,height:240,borderRadius:"50%",background:"radial-gradient(circle, rgba(0,230,118,.45) 0%, transparent 70%)",filter:"blur(40px)"}}/>
             <div style={{position:"absolute",top:-40,right:-40,width:200,height:200,borderRadius:"50%",background:"radial-gradient(circle, rgba(255,214,0,.35) 0%, transparent 70%)",filter:"blur(40px)"}}/>
@@ -9918,7 +9926,7 @@ export default function LePont() {
       // portées et les verts LED appartenaient à l'interface d'avant.
       body = (
         <div style={{position:"relative",width:"100%",minHeight:"100dvh",display:"flex",flexDirection:"column",animation:"fadeIn .3s ease-out",background:fondCharte}}>
-          {terrainCharte}
+          {areneCharte}
           {fermerCharte(duelLeaveRoom, 10)}
           {/* Hero image (visuel entier) */}
           <div style={{position:"relative",zIndex:1,width:"100%",height:"48vh",maxHeight:"520px",minHeight:"280px",overflow:"hidden",background:"#000",flexShrink:0,borderBottom:G.trait}}>
@@ -10231,7 +10239,7 @@ export default function LePont() {
     const overlayStyle = { ...shell2, overflowY: duelScreen==="menu"?"auto":(kbFit?"hidden":"visible") };
     if (kbFit) { overlayStyle.top = duelVV.top; overlayStyle.height = duelVV.height; overlayStyle.bottom = "auto"; }
     return (<div key="duel-overlay" style={overlayStyle}>
-      {terrainCharte}
+      {areneCharte}
       {duelScreen!=="menu" && !kbFit && header}
       {body}
       {/* Nom du joueur en GROS à chaque bonne réponse (visible pour une vidéo) */}
@@ -10736,7 +10744,9 @@ export default function LePont() {
       return (
         <div style={{...shell,overflowY:isDesktop?"visible":"auto",overflowX:isDesktop?"visible":"hidden"}} key="friendDetail">
           <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
-            {[0,1,2,3,4,5,6].map(function(i){return(<div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#0E1F14":"#132819"}}/>);})}
+            {/* Aplat de panneau : les bandes de tonte sont parties avec la pelouse.
+              Sur la charte or, une carte est l'écusson noir du logo. */}
+            <div style={{position:"absolute",inset:0,background:G.nuit}}/>
             <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:G.nuit,transform:"translateY(-50%)"}}/>
             <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:180,height:180,borderRadius:"50%",border:G.traitFin}}/>
             <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.45)"}}/>
@@ -10799,7 +10809,9 @@ export default function LePont() {
     return (
       <div style={{...shell,overflowY:isDesktop?"visible":"auto",overflowX:isDesktop?"visible":"hidden"}} key="friends">
         <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
-          {[0,1,2,3,4,5,6].map(function(i){return(<div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#0E1F14":"#132819"}}/>);})}
+          {/* Aplat de panneau : les bandes de tonte sont parties avec la pelouse.
+              Sur la charte or, une carte est l'écusson noir du logo. */}
+            <div style={{position:"absolute",inset:0,background:G.nuit}}/>
           <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:G.nuit,transform:"translateY(-50%)"}}/>
           <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:180,height:180,borderRadius:"50%",border:G.traitFin}}/>
           <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.45)"}}/>
@@ -10934,7 +10946,7 @@ export default function LePont() {
       <>
       {retourCharte(function(){setShowCollection(false);})}
       <div style={{...shell,animation:"fadeUp .4s ease",height:isDesktop?undefined:"100dvh",minHeight:isDesktop?shell.minHeight:0,overflowY:isDesktop?"visible":"auto",overflowX:isDesktop?"visible":"hidden",background:fondCharte}} key="collection">
-        {terrainCharte}
+        {areneCharte}
         {/* 64 px de retrait haut, et non 50 : le bouton retour de la charte est
             un carré de 44 px posé à 14 px du bord, donc il descend à 58 px. Un
             titre centré sur 40 px de corps est assez large pour venir buter
@@ -11059,7 +11071,7 @@ export default function LePont() {
           pelouse éclairée le remplace, et c'est elle qui fait exister le trait
           d'encre des panneaux ci-dessous. */}
       <div style={{...shell,animation:"fadeUp .4s ease",height:isDesktop?undefined:"100dvh",minHeight:isDesktop?shell.minHeight:0,overflowY:isDesktop?"visible":"auto",overflowX:isDesktop?"visible":"hidden",background:fondCharte}} key="account">
-        {terrainCharte}
+        {areneCharte}
         {/* Le titre descend sous le bouton retour : le lettrage d'affiche est plus
             large que l'ancien libellé et son contour d'encre venait toucher le
             cadre du bouton. */}
@@ -11176,7 +11188,7 @@ export default function LePont() {
       <div style={{...shell,animation:"fadeUp .4s ease",
         height:isDesktop?undefined:"100dvh",minHeight:isDesktop?shell.minHeight:0,
         overflowY:isDesktop?"visible":"auto",overflowX:isDesktop?"visible":"hidden",background:fondCharte}} key="lb">
-        {terrainCharte}
+        {areneCharte}
         <div style={{zIndex:3,position:"sticky",top:0,background:G.encre,borderBottom:G.traitFin,
         padding:"max(12px, env(safe-area-inset-top)) 20px 12px 70px",display:"flex",alignItems:"center",gap:12}}>
           <div style={{flex:1,textAlign:"center"}}>
@@ -11498,9 +11510,9 @@ export default function LePont() {
         <div style={{...shell,alignItems:"center",justifyContent:"center"}} key="countdown">
           <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
         {/* Bandes pelouse */}
-        {[0,1,2,3,4,5,6].map(function(i){return(
-          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#0E1F14":"#132819"}}/>
-        );})}
+        {/* Aplat de panneau : les bandes de tonte sont parties avec la pelouse.
+              Sur la charte or, une carte est l'écusson noir du logo. */}
+            <div style={{position:"absolute",inset:0,background:G.nuit}}/>
         {/* Ligne médiane */}
         <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:G.nuit,transform:"translateY(-50%)"}}/>
         {/* Cercle central */}
@@ -11522,9 +11534,9 @@ export default function LePont() {
       <div style={{...shell,overflowY:isDesktop?"visible":"auto",overflowX:isDesktop?"visible":"hidden"}} key="room">
         <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
         {/* Bandes pelouse */}
-        {[0,1,2,3,4,5,6].map(function(i){return(
-          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#0E1F14":"#132819"}}/>
-        );})}
+        {/* Aplat de panneau : les bandes de tonte sont parties avec la pelouse.
+              Sur la charte or, une carte est l'écusson noir du logo. */}
+            <div style={{position:"absolute",inset:0,background:G.nuit}}/>
         {/* Ligne médiane */}
         <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:G.nuit,transform:"translateY(-50%)"}}/>
         {/* Cercle central */}
@@ -11872,9 +11884,9 @@ export default function LePont() {
         <div style={{...shell,alignItems:"center",justifyContent:"center"}} key="countdown">
           <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
         {/* Bandes pelouse */}
-        {[0,1,2,3,4,5,6].map(function(i){return(
-          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#0E1F14":"#132819"}}/>
-        );})}
+        {/* Aplat de panneau : les bandes de tonte sont parties avec la pelouse.
+              Sur la charte or, une carte est l'écusson noir du logo. */}
+            <div style={{position:"absolute",inset:0,background:G.nuit}}/>
         {/* Ligne médiane */}
         <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:G.nuit,transform:"translateY(-50%)"}}/>
         {/* Cercle central */}
@@ -11896,9 +11908,9 @@ export default function LePont() {
       <div style={{...shell,alignItems:"center",justifyContent:"center"}} key="waiting">
         <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
         {/* Bandes pelouse */}
-        {[0,1,2,3,4,5,6].map(function(i){return(
-          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#0E1F14":"#132819"}}/>
-        );})}
+        {/* Aplat de panneau : les bandes de tonte sont parties avec la pelouse.
+              Sur la charte or, une carte est l'écusson noir du logo. */}
+            <div style={{position:"absolute",inset:0,background:G.nuit}}/>
         {/* Ligne médiane */}
         <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:G.nuit,transform:"translateY(-50%)"}}/>
         {/* Cercle central */}
@@ -11958,7 +11970,9 @@ export default function LePont() {
     return (
       <div style={{...shell,animation:"fadeUp .4s ease",overflowY:isDesktop?"visible":"auto",overflowX:isDesktop?"visible":"hidden"}} key="roomResult2">
         <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
-          {[0,1,2,3,4,5,6].map(function(i){return(<div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#0E1F14":"#132819"}}/>);})}
+          {/* Aplat de panneau : les bandes de tonte sont parties avec la pelouse.
+              Sur la charte or, une carte est l'écusson noir du logo. */}
+            <div style={{position:"absolute",inset:0,background:G.nuit}}/>
           <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:G.nuit,transform:"translateY(-50%)"}}/>
           <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:180,height:180,borderRadius:"50%",border:G.traitFin}}/>
           <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.45)"}}/>
@@ -12025,7 +12039,9 @@ export default function LePont() {
     return (
       <div style={{...shell,alignItems:"center",justifyContent:"center"}} key="waitingRoom">
         <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
-          {[0,1,2,3,4,5,6].map(function(i){return(<div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(i/7*100)+"%",background:i%2===0?"#0E1F14":"#132819"}}/>);})}
+          {/* Aplat de panneau : les bandes de tonte sont parties avec la pelouse.
+              Sur la charte or, une carte est l'écusson noir du logo. */}
+            <div style={{position:"absolute",inset:0,background:G.nuit}}/>
           <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:G.nuit,transform:"translateY(-50%)"}}/>
           <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:180,height:180,borderRadius:"50%",border:G.traitFin}}/>
           <div style={{position:"absolute",inset:0,background:"rgba(0,15,0,.45)"}}/>
@@ -12080,7 +12096,7 @@ export default function LePont() {
          barre d'encre, mêmes rectangles au trait plein. C'était l'écran juste
          derrière le classement, et il parlait encore l'ancienne langue. */
       <div style={{...shell,overflowY:isDesktop?"visible":"auto",overflowX:isDesktop?"visible":"hidden",background:fondCharte}} key="userProfile">
-        {terrainCharte}
+        {areneCharte}
         <div style={{zIndex:50,padding:"max(14px, env(safe-area-inset-top)) 16px 10px",display:"flex",alignItems:"center",gap:12,position:"sticky",top:0,background:G.encre,borderBottom:G.traitFin}}>
           <button onClick={()=>{const ret=profileReturn;setViewedProfile(null);setFriendMsg("");setProfileReturn(null);setScreen("home");if(ret==="leaderboard"){setShowLeaderboard(true);}else if(ret==="friends"){setShowFriends(true);}}} style={retourStyle}>←</button>
           {/* Un seul mot : il passe entièrement en jaune projecteur, comme
@@ -12256,7 +12272,7 @@ export default function LePont() {
     // Même pelouse éclairée que le classement et Mon compte : sous le voile noir
     // à 70 % et le halo vert LED d'avant, aucun trait d'encre ne se voyait.
     <div style={{...shell,overflowY:isDesktop?"visible":"auto",overflowX:isDesktop?"visible":"hidden",background:fondCharte}} key="profile">
-      {terrainCharte}
+      {areneCharte}
 
       {/* Header — bandeau d'encre plutôt que verre flouté : la barre collante est
           le seul élément qui passe devant le contenu, elle doit être opaque, et
@@ -12671,9 +12687,9 @@ export default function LePont() {
       )}
       <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
         {/* Bandes pelouse */}
-        {[0,1,2,3,4,5,6].map(function(i){return(
-          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#0E1F14":"#132819"}}/>
-        );})}
+        {/* Aplat de panneau : les bandes de tonte sont parties avec la pelouse.
+              Sur la charte or, une carte est l'écusson noir du logo. */}
+            <div style={{position:"absolute",inset:0,background:G.nuit}}/>
         {/* Ligne médiane */}
         <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:G.nuit,transform:"translateY(-50%)"}}/>
         {/* Cercle central */}
@@ -13539,9 +13555,9 @@ export default function LePont() {
                   fond noir plat, il se lisait comme une boîte de dialogue posée
                   par-dessus le jeu plutôt que comme un écran du jeu. */}
               <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
-                {[0,1,2,3,4,5,6].map(function(i){return(
-                  <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#0E1F14":"#132819"}}/>
-                );})}
+                {/* Aplat de panneau : les bandes de tonte sont parties avec la pelouse.
+              Sur la charte or, une carte est l'écusson noir du logo. */}
+            <div style={{position:"absolute",inset:0,background:G.nuit}}/>
                 <div style={{position:"absolute",inset:0,background:"radial-gradient(circle at center, rgba(42,111,191,.18) 0%, rgba(0,15,0,.72) 60%)"}}/>
               </div>
 
@@ -13616,7 +13632,7 @@ export default function LePont() {
                   flexDirection:"column",
                   animation:"fadeIn .3s ease-out",
                 }}>
-                  {terrainCharte}
+                  {areneCharte}
                   {fermerCharte(function(){setGameConfigModal(null);}, 10)}
 
                   {/* ── HERO IMAGE — visuel ENTIER (pas de crop), hauteur limitée pour laisser place au contenu ── */}
@@ -13738,7 +13754,7 @@ export default function LePont() {
         {ggModeChoice && (
           <div style={{position:"fixed",inset:0,zIndex:450,background:fondCharte,overflowY:"auto",WebkitOverflowScrolling:"touch"}}>
             <div style={{position:"relative",width:"100%",minHeight:"100vh",display:"flex",flexDirection:"column",animation:"fadeIn .3s ease-out"}}>
-              {terrainCharte}
+              {areneCharte}
               {fermerCharte(function(){setGgModeChoice(false);}, 10)}
 
               {/* Hero compact : l'affiche en couverture, refermée par un trait
@@ -14128,7 +14144,7 @@ export default function LePont() {
         {/* 🐐 Modal GOAT GRID — Mode quotidien grille 3x3 (ou battle playing) */}
         {(showGoatGrid || ggBattleScreen === "playing") && (
           <div style={{position:"fixed",inset:0,zIndex:400,display:"flex",flexDirection:"column",background:fondCharte}}>
-            {terrainCharte}
+            {areneCharte}
             
             {/* Compte à rebours pré-jeu (mode battle uniquement) */}
             {ggBattleScreen === "playing" && ggBattleCountdown > 0 && (
@@ -14713,7 +14729,9 @@ export default function LePont() {
           <div style={{position:"fixed",inset:0,zIndex:400,display:"flex",flexDirection:"column"}}>
             {/* Fond pelouse */}
             <div style={{position:"absolute",inset:0,zIndex:0,overflow:"hidden"}}>
-              {[0,1,2,3,4,5,6].map(function(i){return(<div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#0E1F14":"#132819"}}/>);})}
+              {/* Aplat de panneau : les bandes de tonte sont parties avec la pelouse.
+              Sur la charte or, une carte est l'écusson noir du logo. */}
+            <div style={{position:"absolute",inset:0,background:G.nuit}}/>
               <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:G.nuit,transform:"translateY(-50%)"}}/>
               <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:180,height:180,borderRadius:"50%",border:G.traitFin}}/>
               <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, rgba(255,214,0,.15) 0%, rgba(255,107,53,.15) 40%, rgba(0,15,0,.85) 100%)"}}/>
@@ -15106,7 +15124,7 @@ export default function LePont() {
       <div style={{...shell,animation:"fadeIn .2s ease",overflowY:isDesktop?"visible":"auto",overflowX:isDesktop?"visible":"hidden",background:fondCharte}} key={"game-"+currentRound}>
         {/* Le terrain dessiné de la charte remplace les bandes opaques : elles
             recouvraient le fond et laissaient les panneaux sans trait visible. */}
-        {terrainCharte}
+        {areneCharte}
         {showQuitConfirm && (
         <div style={{position:"fixed",inset:0,zIndex:300,background:"rgba(8,17,9,.86)",display:"flex",alignItems:"center",justifyContent:"center"}}>
           <div style={{background:G.nuit,borderRadius:G.rayonL,padding:"28px 24px",maxWidth:320,width:"calc(100% - 32px)",border:G.trait,boxShadow:G.ombreL,textAlign:"center"}}>
@@ -15265,7 +15283,7 @@ export default function LePont() {
     <div style={{...shell,animation:"fadeIn .3s ease",overflowY:isDesktop?"visible":"auto",overflowX:isDesktop?"visible":"hidden",background:fondCharte}} key={"chain-"+chainCount}>
         {/* Le terrain dessiné de la charte remplace les bandes opaques : elles
             recouvraient le fond et laissaient les panneaux sans trait visible. */}
-        {terrainCharte}
+        {areneCharte}
       {showQuitConfirm && (
         <div style={{position:"fixed",inset:0,zIndex:300,background:"rgba(8,17,9,.86)",display:"flex",alignItems:"center",justifyContent:"center"}}>
           <div style={{background:G.nuit,borderRadius:G.rayonL,padding:"28px 24px",maxWidth:320,width:"calc(100% - 32px)",border:G.trait,boxShadow:G.ombreL,textAlign:"center"}}>
@@ -15512,7 +15530,7 @@ export default function LePont() {
   if(screen==="roundEnd") return (
     <div style={{...shell,animation:"fadeUp .4s ease",overflowY:isDesktop?"visible":"auto",overflowX:isDesktop?"visible":"hidden",background:fondCharte}} key="roundEnd">
         {/* Terrain dessiné de la charte : les bandes opaques recouvraient le fond. */}
-        {terrainCharte}
+        {areneCharte}
       <div style={{zIndex:1,padding:"40px 20px 20px",textAlign:"center"}}>
         <div style={{fontSize:12,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.6)",fontWeight:800}}>{tr("Fin de manche","End of round","Rundenende","Fine del round","Fim da rodada","Fin de la ronda")} {currentRound} · {diff}</div>
         <div style={{...posterTitre(48,totalRounds===2&&currentRound===1?G.projecteur:G.white),fontSize:"clamp(30px,9vw,48px)",marginTop:8}}>
@@ -15562,7 +15580,7 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
       {recoveryInputModal}
       {myRecoveryCodeModal}
         {/* Terrain dessiné de la charte : les bandes opaques recouvraient le fond. */}
-        {terrainCharte}
+        {areneCharte}
       {/* `flex:1 1 0` donne à l'entête une hauteur DÉFINIE — exactement ce que
           la feuille lui laisse — sans quoi le `height:100%` du bandeau n'a rien
           contre quoi se résoudre et retombe sur la hauteur intrinsèque de la
@@ -15743,9 +15761,9 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
       <div style={{...shell,animation:"fadeUp .4s ease",overflowY:isDesktop?"visible":"auto",overflowX:isDesktop?"visible":"hidden"}} key="roomResult">
         <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
         {/* Bandes pelouse */}
-        {[0,1,2,3,4,5,6].map(function(i){return(
-          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#0E1F14":"#132819"}}/>
-        );})}
+        {/* Aplat de panneau : les bandes de tonte sont parties avec la pelouse.
+              Sur la charte or, une carte est l'écusson noir du logo. */}
+            <div style={{position:"absolute",inset:0,background:G.nuit}}/>
         {/* Ligne médiane */}
         <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:G.nuit,transform:"translateY(-50%)"}}/>
         {/* Cercle central */}
@@ -15832,9 +15850,9 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
       <div style={{...shell,animation:"fadeUp .4s ease",overflowY:isDesktop?"visible":"auto",overflowX:isDesktop?"visible":"hidden"}} key="duelResult">
         <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
         {/* Bandes pelouse */}
-        {[0,1,2,3,4,5,6].map(function(i){return(
-          <div key={i} style={{position:"absolute",top:0,bottom:0,left:(i/7*100)+"%",width:(1/7*100)+"%",background:i%2===0?"#0E1F14":"#132819"}}/>
-        );})}
+        {/* Aplat de panneau : les bandes de tonte sont parties avec la pelouse.
+              Sur la charte or, une carte est l'écusson noir du logo. */}
+            <div style={{position:"absolute",inset:0,background:G.nuit}}/>
         {/* Ligne médiane */}
         <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:G.nuit,transform:"translateY(-50%)"}}/>
         {/* Cercle central */}
