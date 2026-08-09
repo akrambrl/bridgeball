@@ -11155,7 +11155,7 @@ export default function LePont() {
                   </ul>
                 )}
                 <div style={{display:"flex",gap:10,marginTop:18}}>
-                  <button onClick={function(){setConfirmDeleteAccount(0);}} style={{...btn("#0B2213",G.white,16),flex:1,padding:"13px"}}>
+                  <button onClick={function(){setConfirmDeleteAccount(0);}} style={{...btn(G.nuit,G.white,16),flex:1,padding:"13px"}}>
                     {tr("Annuler","Cancel","Abbrechen","Annulla","Cancelar","Cancelar")}
                   </button>
                   <button onClick={function(){
@@ -11246,7 +11246,7 @@ export default function LePont() {
                 /* L'onglet actif prend l'aplat jaune projecteur, les autres
                    l'aplat de nuit : même encadrement d'encre pour les trois,
                    c'est la couleur seule qui dit lequel est ouvert. */
-                ...(lbMode===m ? btn(G.projecteur,null,15) : btn("#0B2213",G.white,15)),
+                ...(lbMode===m ? btn(G.projecteur,null,15) : btn(G.nuit,G.white,15)),
                 flex:1, minWidth:60, padding:"10px 6px",
               }}>
                 {m==="saison"?tr("⭐ Saison","⭐ Season","⭐ Saison","⭐ Stagione","⭐ Temporada","⭐ Temporada"):m==="global"?"🌍 Global":tr("👥 Amis","👥 Friends","👥 Freunde","👥 Amici","👥 Amigos","👥 Amigos")}
@@ -11258,7 +11258,7 @@ export default function LePont() {
               chaque segment — deux traits collés l'un à l'autre feraient une
               barre noire au milieu du groupe. */}
           {lbMode==="saison" && (
-            <div style={{display:"flex",gap:4,marginBottom:10,marginTop:6,padding:4,background:"#0B2213",borderRadius:G.rayonS,border:G.traitFin,boxShadow:G.ombre}}>
+            <div style={{display:"flex",gap:4,marginBottom:10,marginTop:6,padding:4,background:G.nuit,borderRadius:G.rayonS,border:G.traitFin,boxShadow:G.ombre}}>
               {[{id:"monde",emoji:"🌍"},{id:"amis",emoji:"👥"}].map(function(s){return(
                 <button key={s.id} onClick={function(){setLbSeasonScope(s.id);}} style={{flex:1,padding:"8px 10px",borderRadius:8,border:"none",background:lbSeasonScope===s.id?G.projecteur:"transparent",color:lbSeasonScope===s.id?G.encre:"rgba(255,255,255,.55)",fontFamily:G.font,fontSize:12,fontWeight:800,cursor:"pointer",letterSpacing:.5,transition:"all .15s"}}>
                   {s.emoji} {s.id==="monde"?tr("Monde","World","Welt","Mondo","Mundo","Mundo"):tr("Amis","Friends","Freunde","Amici","Amigos","Amigos")}
@@ -11291,6 +11291,14 @@ export default function LePont() {
             const displayRank = i + 1;
             const isMe = entry.pid === playerId;
             const medals = ["🥇","🥈","🥉"];
+            /* Le métal ne peut plus être un aplat : `projecteur` vaut #F5C22B,
+               qui EST le fond de page depuis la bascule sur l'or — la ligne du
+               champion devenait invisible, et l'argent comme le bronze
+               viraient au sale sur le jaune. Le métal passe donc dans le
+               liseré et dans le lettrage, sur le même panneau sombre que les
+               autres lignes : c'est déjà le langage des cadres de rareté des
+               cartes, et c'est le seul qui tienne sur l'or. */
+            const metal = i===0?G.projecteur:i===1?"#C8CDD4":i===2?"#CD7F32":null;
             // Le grade affiché est basé sur l'XP cumulée totale du joueur (cohérent avec le profil)
             // — pas le score de la partie (qui peut être trompeur)
             const grade = getGrade(entry.xp || 0);
@@ -11304,11 +11312,11 @@ export default function LePont() {
                    jaune, pas par un quatrième aplat qui concurrencerait le
                    podium. L'écart de 10 laisse voir l'ombre de la ligne au-dessus. */
                 borderRadius:G.rayon,
-                background:i===0?G.projecteur:i===1?"#C8CDD4":i===2?"#CD7F32":G.nuit,
-                border:G.trait,boxShadow:isMe?G.ombreL:G.ombre,
+                background:G.nuit,
+                border:metal?("4px solid "+metal):G.trait,boxShadow:isMe?G.ombreL:G.ombre,
                 marginBottom:10,overflow:"hidden",cursor:isMe?"default":"pointer"}}>
                 <div style={{display:"flex",alignItems:"center",gap:10,padding:"12px 12px"}}>
-                  <div style={{...posterText(28,i<3?G.encre:"rgba(255,255,255,.45)"),width:30,textAlign:"center",flexShrink:0}}>
+                  <div style={{...posterText(28,metal||"rgba(255,255,255,.45)"),width:30,textAlign:"center",flexShrink:0}}>
                     {i<3?medals[i]:(i+1)}
                   </div>
                   {/* La carte du joueur dans son cadre de rareté, comme dans la
@@ -11331,40 +11339,40 @@ export default function LePont() {
                   })()}
                   <div style={{flex:1,minWidth:0}}>
                     <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3,flexWrap:"wrap"}}>
-                      <span style={{...posterText(18,i<3?G.encre:isMe?G.projecteur:G.white),display:"inline-block",whiteSpace:"nowrap"}}>{entry.country && <span style={{marginRight:5,fontSize:15}}>{countryToFlag(entry.country)}</span>}{entry.name}{isMe?tr(" (toi)"," (you)"," (du)"," (tu)"," (você)"," (tú)"):""}</span>
+                      <span style={{...posterText(18,metal||(isMe?G.projecteur:G.white)),display:"inline-block",whiteSpace:"nowrap"}}>{entry.country && <span style={{marginRight:5,fontSize:15}}>{countryToFlag(entry.country)}</span>}{entry.name}{isMe?tr(" (toi)"," (you)"," (du)"," (tu)"," (você)"," (tú)"):""}</span>
                       {/* Pastilles cerclées d'encre plutôt que des pilules molles :
                           le trait est la signature de la charte, une pastille
                           sans contour flottait sur l'aplat du podium. */}
-                      <span style={{fontSize:11,fontWeight:800,color:i<3?G.encre:grade.color,background:i<3?"rgba(8,17,9,.14)":grade.color+"22",borderRadius:G.rayonS,padding:"2px 8px",letterSpacing:.5,border:G.traitFin}}>{grade.emoji} {grade.label}</span>
-                      {entry.streak>=3 && <span style={{fontSize:11,fontWeight:800,color:i<3?G.encre:G.maillot,background:i<3?"rgba(8,17,9,.14)":"rgba(217,58,43,.22)",borderRadius:G.rayonS,padding:"2px 8px",border:G.traitFin}}>🔥 {entry.streak}</span>}
+                      <span style={{fontSize:11,fontWeight:800,color:grade.color,background:grade.color+"22",borderRadius:G.rayonS,padding:"2px 8px",letterSpacing:.5,border:G.traitFin}}>{grade.emoji} {grade.label}</span>
+                      {entry.streak>=3 && <span style={{fontSize:11,fontWeight:800,color:G.maillot,background:"rgba(217,58,43,.22)",borderRadius:G.rayonS,padding:"2px 8px",border:G.traitFin}}>🔥 {entry.streak}</span>}
                     </div>
                     {lbMode==="saison"
                       ? null
-                      : <div style={{fontSize:12,color:i<3?"rgba(8,17,9,.85)":"rgba(255,255,255,.5)",marginTop:3,fontWeight:i<3?700:400}}>{entry.played} {entry.played>1?tr("parties","games","Spiele","partite","jogos","partidas"):tr("partie","game","Spiel","partita","jogo","partida")}</div>
+                      : <div style={{fontSize:12,color:"rgba(255,255,255,.5)",marginTop:3}}>{entry.played} {entry.played>1?tr("parties","games","Spiele","partite","jogos","partidas"):tr("partie","game","Spiel","partita","jogo","partida")}</div>
                     }
                   </div>
-                  <div style={{...posterText(28,i<3?G.encre:G.white),flexShrink:0}}>{entry.score} <span style={{fontSize:12,color:i<3?"rgba(8,17,9,.7)":"rgba(255,255,255,.35)",fontWeight:i<3?700:400}}>pts</span></div>
+                  <div style={{...posterText(28,metal||G.white),flexShrink:0}}>{entry.score} <span style={{fontSize:12,color:"rgba(255,255,255,.35)"}}>pts</span></div>
                 </div>
                 {lbMode!=="saison" && (
                 /* Le bandeau V/N/D est séparé du corps de la ligne par un trait
                    d'encre plein — sur le podium comme ailleurs, c'est le même
                    trait, seule la transparence du fond change. */
-                <div style={{display:"flex",borderTop:G.traitFin,background:i<3?"rgba(8,17,9,.1)":"rgba(0,0,0,.22)"}}>
+                <div style={{display:"flex",borderTop:G.traitFin,background:"rgba(0,0,0,.22)"}}>
                     {/* Sur les aplats du podium, les chiffres passent à l'encre :
                         le vert et l'olive des couleurs sémantiques disparaissaient
                         sur le jaune. Ce sont les libellés dessous qui portent le
                         sens, la couleur n'y ajoutait rien. */}
                     <div style={{flex:1,padding:"10px 0",textAlign:"center",borderRight:G.traitFin}}>
-                      <div style={{...posterText(22,i<3?G.encre:G.pelouse)}}>{entry.wins||0}</div>
-                      <div style={{fontSize:11,color:i<3?"rgba(8,17,9,.75)":"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase",fontWeight:i<3?800:400}}>{tr("Victoires","Wins","Siege","Vittorie","Vitórias","Victorias")}</div>
+                      <div style={{...posterText(22,G.pelouse)}}>{entry.wins||0}</div>
+                      <div style={{fontSize:11,color:"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase"}}>{tr("Victoires","Wins","Siege","Vittorie","Vitórias","Victorias")}</div>
                     </div>
                     <div style={{flex:1,padding:"10px 0",textAlign:"center",borderRight:G.traitFin}}>
-                      <div style={{...posterText(22,i<3?G.encre:G.projecteur)}}>{entry.draws||0}</div>
-                      <div style={{fontSize:11,color:i<3?"rgba(8,17,9,.75)":"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase",fontWeight:i<3?800:400}}>{tr("Nuls","Draws","Remis","Pareggi","Empates","Empates")}</div>
+                      <div style={{...posterText(22,G.projecteur)}}>{entry.draws||0}</div>
+                      <div style={{fontSize:11,color:"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase"}}>{tr("Nuls","Draws","Remis","Pareggi","Empates","Empates")}</div>
                     </div>
                     <div style={{flex:1,padding:"10px 0",textAlign:"center"}}>
-                      <div style={{...posterText(22,i<3?G.encre:G.maillot)}}>{entry.losses||0}</div>
-                      <div style={{fontSize:11,color:i<3?"rgba(8,17,9,.75)":"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase",fontWeight:i<3?800:400}}>{tr("Défaites","Losses","Niederlagen","Sconfitte","Derrotas","Derrotas")}</div>
+                      <div style={{...posterText(22,G.maillot)}}>{entry.losses||0}</div>
+                      <div style={{fontSize:11,color:"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase"}}>{tr("Défaites","Losses","Niederlagen","Sconfitte","Derrotas","Derrotas")}</div>
                     </div>
                   </div>
                 )}
@@ -11412,7 +11420,7 @@ export default function LePont() {
                 le stroke la cerne de noir au lieu de la détourer. */}
             <div style={{...posterText(34,G.projecteur),marginBottom:6,textAlign:"center"}}><span style={{WebkitTextStroke:0,textShadow:"none"}}>🏅</span> HALL OF FAME</div>
             <div style={{fontSize:12,color:"rgba(255,255,255,.7)",fontWeight:700,letterSpacing:.8,textAlign:"center",marginBottom:16}}>{tr("Champions des saisons passées","Past season champions","Champions vergangener Saisons","Campioni delle stagioni passate","Campeões das temporadas passadas","Campeones de temporadas pasadas")}</div>
-            {hallOfFame.length === 0 && <div style={{textAlign:"center",color:"rgba(255,255,255,.8)",padding:"22px 14px",fontSize:13.5,fontWeight:700,lineHeight:1.5,background:"rgba(23,87,44,.45)",border:G.traitFin,borderRadius:G.rayon,boxShadow:G.ombre}}>{tr("Pas encore de champion — la première saison est en cours !","No champion yet — the first season is ongoing!","Noch kein Champion — die erste Saison läuft!","Ancora nessun campione — la prima stagione è in corso!","Ainda sem campeão — a primeira temporada está em andamento!","Todavía no hay campeón — ¡la primera temporada está en marcha!")}</div>}
+            {hallOfFame.length === 0 && <div style={{textAlign:"center",color:"rgba(255,255,255,.8)",padding:"22px 14px",fontSize:13.5,fontWeight:700,lineHeight:1.5,background:"rgba(245,194,43,.12)",border:G.traitFin,borderRadius:G.rayon,boxShadow:G.ombre}}>{tr("Pas encore de champion — la première saison est en cours !","No champion yet — the first season is ongoing!","Noch kein Champion — die erste Saison läuft!","Ancora nessun campione — la prima stagione è in corso!","Ainda sem campeão — a primeira temporada está em andamento!","Todavía no hay campeón — ¡la primera temporada está en marcha!")}</div>}
             {hallOfFame.map(function(s,i){
               // La carte d'un champion, telle qu'il la porte : `badgeByPid` dit
               // quelle carte il a CHOISIE, l'XP de la saison sert de repli sur
@@ -11443,10 +11451,11 @@ export default function LePont() {
                 monthLabel = (lang==="fr"?monthNamesFr:monthNamesEn)[mi] + " " + y;
               }
               return (
-                /* La carte de saison s'éclaircit d'un voile de pelouse : posée en
+                /* La carte de saison s'éclaircit d'un voile d'or : posée en
                    nuit sur une feuille passée en nuit elle aussi, elle s'y fondait
-                   et son trait d'encre n'avait plus rien à border. */
-                <div key={i} style={{background:"rgba(23,87,44,.45)",borderRadius:G.rayon,border:G.trait,marginBottom:16,padding:"16px 14px",boxShadow:G.ombre}}>
+                   et son trait d'encre n'avait plus rien à border. Le voile était
+                   un vert de pelouse, resté de la charte d'avant. */
+                <div key={i} style={{background:"rgba(245,194,43,.12)",borderRadius:G.rayon,border:G.trait,marginBottom:16,padding:"16px 14px",boxShadow:G.ombre}}>
                   {/* Header saison */}
                   <div style={{textAlign:"center",marginBottom:12}}>
                     <div style={{fontSize:11,fontWeight:800,letterSpacing:3,color:G.projecteur,textTransform:"uppercase"}}>{tr("Saison","Season","Saison","Stagione","Temporada","Temporada")} {s.season_number}</div>
@@ -11493,7 +11502,7 @@ export default function LePont() {
                 </div>
               );
             })}
-            <button onClick={function(){setShowHallOfFame(false);}} style={{...btn("#0B2213",G.white,17),width:"100%",padding:"14px",marginTop:8}}>{tr("Fermer","Close","Schließen","Chiudi","Fechar","Cerrar")}</button>
+            <button onClick={function(){setShowHallOfFame(false);}} style={{...btn(G.nuit,G.white,17),width:"100%",padding:"14px",marginTop:8}}>{tr("Fermer","Close","Schließen","Chiudi","Fechar","Cerrar")}</button>
           </div>
         </div>
       )}
@@ -13573,7 +13582,7 @@ export default function LePont() {
               </div>
 
               <button onClick={function(){ setMmSearch(null); }} style={{
-                ...btn("#0B2213", G.white, 15),
+                ...btn(G.nuit, G.white, 15),
                 position:"absolute",top:"calc(14px + env(safe-area-inset-top))",right:14,zIndex:2,
                 padding:"8px 16px",
               }}>{tr("ANNULER","CANCEL","ABBRECHEN","ANNULLA","CANCELAR","CANCELAR")}</button>
@@ -15035,7 +15044,7 @@ export default function LePont() {
         )}
 
         {/* Multijoueur - rejoindre */}
-        <div style={{background:"#0B2213",border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,padding:"14px 14px 12px"}}>
+        <div style={{background:G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,padding:"14px 14px 12px"}}>
           <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
             <span style={{fontSize:18}}>👥</span>
             <div>
@@ -15089,7 +15098,7 @@ export default function LePont() {
           <button onClick={function(){loadLeaderboard(lbMode);setShowLeaderboard(true);}} style={{flex:1,...btn(G.pelouse,G.encre)}}>
             {Icon.trophy(14,G.encre)} {tr("Classement","Leaderboard","Rangliste","Classifica","Classificação","Clasificación")}
           </button>
-          <button onClick={function(){requirePseudo(function(){setShowFriends(true);loadFriends().then(function(ids){fetchFriendScores(ids);});loadDuels();loadFriendRequests();});}} style={{flex:1,...btn("#0B2213",G.white),justifyContent:"center",gap:6,position:"relative"}}>
+          <button onClick={function(){requirePseudo(function(){setShowFriends(true);loadFriends().then(function(ids){fetchFriendScores(ids);});loadDuels();loadFriendRequests();});}} style={{flex:1,...btn(G.nuit,G.white),justifyContent:"center",gap:6,position:"relative"}}>
             <span style={{WebkitTextStroke:0,textShadow:"none",fontSize:15,lineHeight:1}}>👥</span> {tr("Amis","Friends","Freunde","Amici","Amigos","Amigos")}{friendRequests.length>0&&<span style={{position:"absolute",top:-4,right:-4,background:"#FF3D57",color:"#fff",borderRadius:"50%",width:16,height:16,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:900}}>{friendRequests.length}</span>}
           </button>
         </div>
