@@ -9951,7 +9951,7 @@ export default function LePont() {
               de la charte plutôt que par du noir. Il y a DEUX écrans de choix
               de mode dans ce fichier — celui-ci et gameConfigModal — et ils
               portent chacun leur propre affiche. */}
-          <div style={{position:"relative",zIndex:1,width:"100%",height:"48vh",maxHeight:"520px",minHeight:"280px",overflow:"hidden",background:"transparent",flexShrink:0,borderBottom:G.trait}}>
+          <div style={{position:"relative",zIndex:1,width:"100%",aspectRatio:"1086 / 1448",minHeight:"280px",overflow:"hidden",background:"transparent",flexShrink:0,borderBottom:G.trait}}>
             <img src={DUEL_CARD_IMG} alt="" style={{width:"100%",height:"100%",objectFit:"contain",pointerEvents:"none",userSelect:"none"}} draggable={false}/>
           </div>
           <div style={{position:"relative",zIndex:1,padding:"18px 18px calc(22px + env(safe-area-inset-bottom))",flex:1,display:"flex",flexDirection:"column",maxWidth:480,margin:"0 auto",width:"100%",boxSizing:"border-box"}}>
@@ -13740,7 +13740,7 @@ export default function LePont() {
                       chaque côté. En noir elles coupaient l'écran en deux ; en
                       transparent, c'est fondCharte — posé sur le conteneur juste
                       au-dessus — qui les remplit, et l'or continue sans couture. */}
-                  <div style={{position:"relative",zIndex:1,width:"100%",height:"50vh",maxHeight:"540px",minHeight:"300px",overflow:"hidden",background:"transparent",flexShrink:0,borderBottom:G.trait}}>
+                  <div style={{position:"relative",zIndex:1,width:"100%",aspectRatio:"1086 / 1448",minHeight:"280px",overflow:"hidden",background:"transparent",flexShrink:0,borderBottom:G.trait}}>
                     <img
                       src={isPont ? PLUG_CARD_IMG : MERCATO_CARD_IMG}
                       alt=""
@@ -13864,12 +13864,16 @@ export default function LePont() {
               {/* Hero compact : l'affiche en couverture, refermée par un trait
                   d'encre au lieu d'un fondu vers le fond — sur l'affiche, une
                   image s'arrête net. Le titre passe au lettrage de la charte. */}
-              <div style={{position:"relative",zIndex:1,width:"100%",height:"27vh",maxHeight:310,minHeight:200,overflow:"hidden",flexShrink:0,borderBottom:G.trait}}>
-                <img src={GRID_CARD_IMG} alt="" style={{width:"100%",height:"165%",objectFit:"cover",objectPosition:"center 20%",pointerEvents:"none",userSelect:"none"}} draggable={false}/>
-                <div style={{position:"absolute",inset:0,background:"linear-gradient(to top, rgba(8,17,9,.92) 4%, rgba(8,17,9,.30) 40%, transparent 100%)",pointerEvents:"none"}}/>
-                <div style={{position:"absolute",bottom:12,left:0,right:0,textAlign:"center",pointerEvents:"none"}}>
-                  <div style={{...posterText(38,G.white)}}>GOAT <span style={{color:G.projecteur}}>GRID</span></div>
-                </div>
+              {/* L'affiche entiere, comme sur les autres ecrans de mode. Elle
+                  etait recadree en bandeau de 27vh, ce qui coupait la couronne
+                  et la tete des joueurs — et l'ecran, qui ne porte que deux
+                  choix, laissait un grand vide en dessous. */}
+              <div style={{position:"relative",zIndex:1,width:"100%",aspectRatio:"1086 / 1448",minHeight:200,overflow:"hidden",flexShrink:0,borderBottom:G.trait}}>
+                <img src={GRID_CARD_IMG} alt="" style={{width:"100%",height:"100%",objectFit:"contain",pointerEvents:"none",userSelect:"none"}} draggable={false}/>
+                {/* Plus de voile ni de titre rapporte : l'affiche porte deja
+                    « GOAT GRID » en toutes lettres. Ils avaient un sens quand
+                    elle etait recadree en bandeau — le titre du dessin etait
+                    alors hors champ. Entiere, le nom s'ecrivait deux fois. */}
               </div>
 
               {/* Contenu */}
