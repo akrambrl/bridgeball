@@ -40,14 +40,18 @@ const serveur = createServer(async (req, res) => {
 });
 await new Promise((ok) => serveur.listen(4173, ok));
 
-const JOUEURS = [
-  { pid:"p1", nom:"jules",   score:41220, xp:120000, pays:"FR" },
-  { pid:"p2", nom:"nadia",   score:33810, xp:64000,  pays:"BE" },
-  { pid:"p3", nom:"james10", score:22165, xp:12000,  pays:"NL" },
-  { pid:"p4", nom:"vice",    score:13070, xp:9000,   pays:"FR" },
-  { pid:"p5", nom:"sjdrums", score:10230, xp:8000,   pays:"BE" },
-  { pid:"p6", nom:"strudel", score:7055,  xp:6000,   pays:"FR" },
-];
+// Vingt-quatre joueurs et non six : avec une liste courte, le classement ne
+// deborde pas assez pour que le defilement montre quoi que ce soit.
+const NOMS_ESSAI = ["jules","nadia","james10","vice","sjdrums","strudel","kader","lila",
+  "toto","mehdi","anna","bruno","chloe","dario","elias","fatou","gabin","hugo",
+  "ines","jonas","kenza","lucas","maya","nino"];
+const PAYS_ESSAI = ["FR","BE","NL","IT","ES","PT"];
+const JOUEURS = NOMS_ESSAI.map((nom, i) => ({
+  pid: "p" + (i + 1), nom,
+  score: 41220 - i * 1600,
+  xp: Math.max(500, 120000 - i * 5200),
+  pays: PAYS_ESSAI[i % PAYS_ESSAI.length],
+}));
 
 // --no-proxy-server : cette machine impose un proxy sortant qui coupe
 // localhost (ERR_CONNECTION_RESET). Rien n'est perdu, Supabase étant bouché
@@ -55,7 +59,11 @@ const JOUEURS = [
 const navigateur = await chromium.launch({
   args: ["--no-proxy-server"],
   ...(process.env.PLAYWRIGHT_CHROMIUM ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM } : {}) });
-const ctx = await navigateur.newContext({ viewport:{ width:430, height:932 }, deviceScaleFactor:2 });
+// LARGEUR permet de basculer sur le chemin desktop, qui n'a pas le même modèle
+// de défilement : là, c'est le document qui défile, pas un conteneur interne.
+const LARGEUR = Number(process.env.LARGEUR || 430);
+const ctx = await navigateur.newContext({
+  viewport:{ width:LARGEUR, height:932 }, deviceScaleFactor:LARGEUR > 900 ? 1 : 2 });
 
 await ctx.route("**/rest/v1/**", async (route) => {
   const url = route.request().url();
@@ -107,6 +115,7 @@ const CHEMINS = {
   devinette:  [/devinette du jour/i],
   profil:     [],   // l'avatar n'est pas un bouton : traité à part
   jeu:        [],   // la carte du carrousel non plus
+  "classement-bas": [/classement/i],   // puis défilé jusqu'en bas
   partie:     [],   // idem, puis « Jouer solo »
 };
 if (!(ecran in CHEMINS)) {
@@ -138,6 +147,21 @@ if (ecran === "profil") {
   // bouton, donc getByRole ne la voit pas.
   await page.locator("img[src*='/cards/']").first().click();
   await page.waitForTimeout(1600);
+}
+
+// Le bas d'un écran ne se photographie pas tout seul : ces écrans bornent leur
+// hauteur et défilent DANS un conteneur interne, pas dans le document. On
+// cherche donc le conteneur qui déborde vraiment.
+if (ecran.endsWith("-bas")) {
+  const ou = await page.evaluate(() => {
+    const d = [...document.querySelectorAll("div")].find(
+      (e) => e.scrollHeight > e.clientHeight + 200 && getComputedStyle(e).overflowY === "auto");
+    if (d) { d.scrollTop = d.scrollHeight; return "conteneur interne"; }
+    window.scrollTo(0, document.body.scrollHeight);
+    return "document";
+  });
+  console.log("défilé jusqu'en bas via :", ou);
+  await page.waitForTimeout(900);
 }
 
 const chemin = join(ici, "..", "apercu-" + ecran + ".png");
