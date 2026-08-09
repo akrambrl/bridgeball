@@ -10176,7 +10176,11 @@ export default function LePont() {
         const sc = myScore||0;
         const correct = room.host_correct||0, fast = room.host_fast||0, rounds = room.host_rounds||0;
         const msg = sc>=150 ? tr("LÉGENDE ! 🐐","LEGEND! 🐐","LEGENDE! 🐐","LEGGENDA! 🐐","LENDA! 🐐","¡LEYENDA! 🐐") : sc>=100 ? tr("BIEN JOUÉ !","GREAT!","GUT GEMACHT!","BRAVO!","MANDOU BEM!","¡BIEN JUGADO!") : sc>=50 ? tr("PAS MAL","NOT BAD","NICHT SCHLECHT","NIENTE MALE","NADA MAL","NADA MAL") : tr("CONTINUE À T'ENTRAÎNER","KEEP TRYING","WEITER ÜBEN","CONTINUA AD ALLENARTI","CONTINUE TREINANDO","SIGUE ENTRENANDO");
-        const accent = sc>=100 ? G.projecteur : G.pelouseClaire;
+        // Le message de fin est pose sur l'or : au-dela de 100 pts il partait
+        // en `projecteur`, donc EXACTEMENT la couleur du fond — seul son
+        // contour d'encre le sauvait. Creme au-dessus, comme le lettrage
+        // d'affiche ; le vert clair reste en dessous, il tient grace au contour.
+        const accent = sc>=100 ? G.creme : G.pelouseClaire;
         const tiles = [
           { v: correct, e:"✅", c:G.pelouseClaire, l: tr("bonnes rép.","correct","richtig","giuste","certas","aciertos") },
           { v: fast,    e:"⚡", c:G.projecteur, l: tr("éclairs","under 5s","Blitz","lampi","raios","rayos") },
@@ -10215,15 +10219,24 @@ export default function LePont() {
                 </>
               ) : (
               <>
-              <div style={{fontSize:11,color:"rgba(255,255,255,.5)",fontWeight:800,letterSpacing:3}}>{tr("TON SCORE","YOUR SCORE","DEIN SCORE","IL TUO PUNTEGGIO","SUA PONTUAÇÃO","TU PUNTUACIÓN")}</div>
-              <div style={{...posterText(72),color:G.projecteur,lineHeight:.9,textShadow:"0 0 30px rgba(255,214,0,.4)"}}>{sc}<span style={{fontSize:26,color:"rgba(255,255,255,.4)"}}> pts</span></div>
+              {/* Encre : pose a nu sur la feuille, passee a l'or. */}
+              <div style={{fontSize:11,color:"rgba(8,17,9,.7)",fontWeight:800,letterSpacing:3}}>{tr("TON SCORE","YOUR SCORE","DEIN SCORE","IL TUO PUNTEGGIO","SUA PONTUAÇÃO","TU PUNTUACIÓN")}</div>
+              {/* Le score etait en projecteur — soit la couleur du fond depuis
+                  la bascule — avec un halo jaune par-dessus : du jaune sur du
+                  jaune, seul son contour d'encre le sauvait. Il passe en creme,
+                  et le halo saute : il n'eclairait plus rien. */}
+              <div style={{...posterText(72),color:G.creme,lineHeight:.9}}>{sc}<span style={{fontSize:26,color:"rgba(8,17,9,.6)",marginLeft:10,WebkitTextStroke:0,textShadow:"none"}}>pts</span></div>
               <div style={{...posterText(26),letterSpacing:1,color:accent,textAlign:"center"}}>{msg}</div>
               </>
               )}
               {/* Tuiles de stats */}
               <div style={{display:"flex",gap:10,width:"100%",marginTop:4}}>
-                {tiles.map(function(t,i){return(
-                  <div key={i} style={{flex:1,background:"rgba(8,17,9,.45)",border:"1px solid "+t.c+"33",borderRadius:16,padding:"12px 4px",textAlign:"center"}}>
+                {tiles.map(function(t,i){
+                  // Panneau opaque et trait d'encre : l'aplat translucide et le
+                  // filet colore viraient a l'olive sur l'or, emportant leurs
+                  // libelles avec eux.
+                  return(
+                  <div key={i} style={{flex:1,background:G.nuit,border:G.traitFin,boxShadow:"3px 3px 0 "+G.encre,borderRadius:16,padding:"12px 4px",textAlign:"center"}}>
                     <div style={{fontSize:15}}>{t.e}</div>
                     <div style={{...posterText(26),color:t.c,lineHeight:1.15}}>{t.v}</div>
                     <div style={{fontSize:9.5,letterSpacing:.5,color:"rgba(255,255,255,.5)",fontWeight:800,textTransform:"uppercase",marginTop:2}}>{t.l}</div>
@@ -10233,7 +10246,7 @@ export default function LePont() {
               {/* Boutons */}
               <div style={{display:"flex",gap:10,width:"100%",marginTop:12}}>
                 <button onClick={function(){ if(room.bot) duelQuickStart({ pseudo:room.guest_name, country:room.guest_country, avatar:room.guest_avatar }); else duelSoloStart(); }} style={{flex:1,padding:"16px",borderRadius:16,border:"none",background:G.ciel,color:"#000",...posterText(16),letterSpacing:1,cursor:"pointer",boxShadow:G.ombre}}>{tr("↻ REJOUER","↻ AGAIN","↻ NOCHMAL","↻ RIGIOCA","↻ JOGAR DE NOVO","↻ JUGAR OTRA VEZ")}</button>
-                <button onClick={duelLeaveRoom} style={{flex:1,padding:"16px",borderRadius:16,border:G.traitFin,background:"rgba(8,17,9,.45)",color:G.white,...posterText(16),letterSpacing:1,cursor:"pointer"}}>{tr("MENU","MENU","MENÜ","MENU","MENU","MENÚ")}</button>
+                <button onClick={duelLeaveRoom} style={{flex:1,padding:"16px",borderRadius:16,border:G.trait,boxShadow:G.ombre,background:G.nuit,color:G.white,...posterText(16),letterSpacing:1,cursor:"pointer"}}>{tr("MENU","MENU","MENÜ","MENU","MENU","MENÚ")}</button>
               </div>
             </div>
           </div>
@@ -10972,7 +10985,9 @@ export default function LePont() {
             {tr("MA ","MY ","MEINE ","LA MIA ","MINHA ","MI ")}
             <span style={{color:G.projecteur}}>{tr("COLLECTION","COLLECTION","SAMMLUNG","COLLEZIONE","COLEÇÃO","COLECCIÓN")}</span>
           </div>
-          <div style={{fontSize:13,color:"rgba(255,255,255,.5)",marginTop:6,fontWeight:600}}>
+          {/* Encre : ce compteur est pose a nu sur la feuille, passee a l'or.
+              Du blanc a 50 % n'y laisse rien. */}
+          <div style={{fontSize:13,color:"rgba(8,17,9,.72)",marginTop:6,fontWeight:800}}>
             {possedees.length}/{CARDS.length} · {playerXp.toLocaleString("fr-FR")} XP
           </div>
         </div>
@@ -11005,9 +11020,15 @@ export default function LePont() {
             return (
               <div key={rar.key} style={{marginBottom:24}}>
                 <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
-                  <span style={{...posterText(22,rar.color)}}>{lang==="fr"?rar.label:rar.labelEn}</span>
+                  {/* posterLight et non posterText : ces intertitres sont poses
+                      sur l'or, et le contour d'encre de posterText est fait pour
+                      du texte clair sur fond sombre. Les couleurs de rarete —
+                      un gris-bleu pour Depart, un argent pour Argent — y
+                      disparaissaient. L'encre les porte, la rarete reste dite
+                      par le cadre des cartes en dessous. */}
+                  <span style={{...posterLight(22,G.encre)}}>{lang==="fr"?rar.label:rar.labelEn}</span>
                   <span style={{flex:1,height:2,background:"rgba(8,17,9,.55)"}}/>
-                  <span style={{fontSize:11.5,fontWeight:800,color:"rgba(255,255,255,.6)"}}>{nbPossedees}/{cartes.length}</span>
+                  <span style={{fontSize:11.5,fontWeight:800,color:"rgba(8,17,9,.7)"}}>{nbPossedees}/{cartes.length}</span>
                 </div>
                 <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(92px,1fr))",gap:12}}>
                   {cartes.map(function(c){
@@ -11090,7 +11111,7 @@ export default function LePont() {
             cadre du bouton. */}
         <div style={{zIndex:1,padding:"66px 20px 14px",textAlign:"center"}}>
           <div style={{...posterText(38,G.white)}}>{tr("MON ","MY ","MEIN ","IL MIO ","MINHA ","MI ")}<span style={{color:G.projecteur}}>{tr("COMPTE","ACCOUNT","KONTO","ACCOUNT","CONTA","CUENTA")}</span></div>
-          <div style={{fontSize:12.5,color:"rgba(255,255,255,.75)",marginTop:8,fontWeight:700,letterSpacing:.8}}>{tr("Gère les paramètres de ton compte","Manage your account settings","Verwalte deine Kontoeinstellungen","Gestisci le impostazioni del tuo account","Gerencie as configurações da sua conta","Gestiona los ajustes de tu cuenta")}</div>
+          <div style={{fontSize:12.5,color:"rgba(8,17,9,.72)",marginTop:8,fontWeight:800,letterSpacing:.8}}>{tr("Gère les paramètres de ton compte","Manage your account settings","Verwalte deine Kontoeinstellungen","Gestisci le impostazioni del tuo account","Gerencie as configurações da sua conta","Gestiona los ajustes de tu cuenta")}</div>
         </div>
 
         <div style={{zIndex:1,padding:"20px 18px",display:"flex",flexDirection:"column",gap:14,maxWidth:560,margin:"0 auto",width:"100%",boxSizing:"border-box"}}>
