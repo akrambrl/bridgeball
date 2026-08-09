@@ -19,12 +19,17 @@ import { G, posterText, posterTitre, posterLight, btn } from "@/lib/charte.jsx";
 // APLATS francs cerclés d'encre, plus de dégradé métallique ni d'ombre portée
 // diffuse. L'or devient le jaune projecteur, l'argent et le bronze deux teintes
 // sourdes qui tiennent à côté d'un aplat.
+// Le métal est un LISERÉ, pas un aplat. En aplat, la marche du champion
+// prenait G.projecteur — #F5C22B, soit exactement le fond de page depuis la
+// bascule sur l'or (Home.tsx pose fondCharte) : la ligne du premier avait la
+// couleur du fond et disparaissait. Argent et bronze, eux, viraient au sale.
+// Même correction que sur le classement mobile : panneau sombre pour tous,
+// le métal passe dans le contour et le lettrage.
 const PODIUM = [
-  { bg: G.projecteur, medal: "🥇" },
-  { bg: "#C9CBC4",    medal: "🥈" },
-  { bg: "#C08A4A",    medal: "🥉" },
+  { metal: G.projecteur, medal: "🥇" },
+  { metal: "#C9CBC4",    medal: "🥈" },
+  { metal: "#C08A4A",    medal: "🥉" },
 ];
-const DARK_INK = G.encre; // texte posé sur les aplats clairs du podium
 
 export const LeaderboardView = () => {
   // Même défaut que le mobile : l'onglet ouvert est "global" (XP cumulée).
@@ -117,8 +122,8 @@ export const LeaderboardView = () => {
                 key={p.pid}
                 className="overflow-hidden"
                 style={{
-                  background: podium ? podium.bg : G.nuit,
-                  border: G.trait,
+                  background: G.nuit,
+                  border: podium ? "4px solid " + podium.metal : G.trait,
                   borderRadius: G.rayon,
                   boxShadow: G.ombre,
                 }}
@@ -126,7 +131,7 @@ export const LeaderboardView = () => {
                 <div className="flex items-center gap-3 px-3 py-3">
                   <div
                     className="w-9 flex-shrink-0 text-center"
-                    style={{ ...posterText(1, podium ? DARK_INK : G.white, 0), fontSize:26 }}
+                    style={{ ...posterText(1, podium ? podium.metal : G.white, 0), fontSize:26 }}
                   >
                     {podium ? podium.medal : p.rank}
                   </div>
@@ -154,7 +159,7 @@ export const LeaderboardView = () => {
                     <div className="flex items-center gap-2 flex-wrap">
                       <span
                         className="truncate"
-                        style={{ ...posterText(1, podium ? DARK_INK : G.white, 0), fontSize:21 }}
+                        style={{ ...posterText(1, podium ? podium.metal : G.white, 0), fontSize:21 }}
                       >
                         {flag && <span className="mr-1.5 text-[15px]">{flag}</span>}
                         {p.name}
@@ -175,12 +180,12 @@ export const LeaderboardView = () => {
 
                   <div
                     className="flex-shrink-0 tabular-nums"
-                    style={{ ...posterText(1, podium ? DARK_INK : G.white, 0), fontSize:28 }}
+                    style={{ ...posterText(1, podium ? podium.metal : G.white, 0), fontSize:28 }}
                   >
                     {p.score.toLocaleString("fr-FR")}
                     <span
                       className="text-xs ml-1"
-                      style={{ color: podium ? "rgba(8,17,9,.7)" : "rgba(255,255,255,.4)" }}
+                      style={{ color: "rgba(255,255,255,.4)" }}
                     >
                       XP
                     </span>
