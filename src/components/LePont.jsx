@@ -9894,7 +9894,7 @@ export default function LePont() {
           <div style={{...posterText(38,G.pelouse)}}>{myScore}</div>
         </div>
         <div style={{textAlign:"center",flexShrink:0}}>
-          <div style={{fontSize:10,color:"rgba(255,255,255,.55)",fontWeight:800,letterSpacing:1}}>{tr("TEMPS","TIME","ZEIT","TEMPO","TEMPO","TIEMPO")}</div>
+          <div style={{fontSize:10,color:"rgba(8,17,9,.7)",fontWeight:800,letterSpacing:1}}>{tr("TEMPS","TIME","ZEIT","TEMPO","TEMPO","TIEMPO")}</div>
           <div style={{...posterText(34,(soloLeft!=null&&soloLeft<=10)?G.maillot:G.white)}}>{soloLeft!=null?soloLeft+"s":"—"}</div>
         </div>
         <div style={{textAlign:"center",flex:1,minWidth:0}}>
@@ -9905,11 +9905,11 @@ export default function LePont() {
     ) : isSolo ? (
       <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:24,padding:"10px 16px"}}>
         <div style={{textAlign:"center"}}>
-          <div style={{fontSize:10,color:"rgba(255,255,255,.5)",fontWeight:800,letterSpacing:1}}>{tr("SCORE","SCORE","SCORE","PUNTEGGIO","PONTUAÇÃO","PUNTUACIÓN")}</div>
+          <div style={{fontSize:10,color:"rgba(8,17,9,.7)",fontWeight:800,letterSpacing:1}}>{tr("SCORE","SCORE","SCORE","PUNTEGGIO","PONTUAÇÃO","PUNTUACIÓN")}</div>
           <div style={{...posterText(40,G.projecteur)}}>{myScore}</div>
         </div>
         <div style={{textAlign:"center"}}>
-          <div style={{fontSize:10,color:"rgba(255,255,255,.55)",fontWeight:800,letterSpacing:1}}>{tr("TEMPS","TIME","ZEIT","TEMPO","TEMPO","TIEMPO")}</div>
+          <div style={{fontSize:10,color:"rgba(8,17,9,.7)",fontWeight:800,letterSpacing:1}}>{tr("TEMPS","TIME","ZEIT","TEMPO","TEMPO","TIEMPO")}</div>
           <div style={{...posterText(34,(soloLeft!=null&&soloLeft<=10)?G.maillot:G.white)}}>{soloLeft!=null?soloLeft+"s":"—"}</div>
         </div>
       </div>
@@ -9920,7 +9920,7 @@ export default function LePont() {
           <div style={{...posterText(38,G.pelouse)}}>{myScore}</div>
         </div>
         <div style={{textAlign:"center"}}>
-          <div style={{fontSize:10,color:"rgba(255,255,255,.55)",fontWeight:800,letterSpacing:1}}>{tr("MANCHE","ROUND","RUNDE","TURNO","RODADA","RONDA")}</div>
+          <div style={{fontSize:10,color:"rgba(8,17,9,.7)",fontWeight:800,letterSpacing:1}}>{tr("MANCHE","ROUND","RUNDE","TURNO","RODADA","RONDA")}</div>
           <div style={{...posterText(22,G.white)}}>{room.round||1}/{DUEL_ROUNDS}</div>
         </div>
         <div style={{textAlign:"center",flex:1}}>
@@ -10081,7 +10081,7 @@ export default function LePont() {
             {duelSpin ? (
               <div style={{...posterText(20,G.projecteur),textAlign:"center",padding:"10px"}}>🎰 {tr("Tirage des clubs…","Drawing clubs…","Klubs werden gezogen…","Sorteggio dei club…","Sorteando os clubes…","Sorteando los clubes…")}</div>
             ) : (<>
-            {!compact && <div style={{fontSize:12,color:"rgba(255,255,255,.5)",marginBottom:12,textAlign:"center"}}>{tr("Un joueur ayant joué dans les DEUX clubs","A player who played for BOTH clubs","Ein Spieler, der für BEIDE Klubs gespielt hat","Un giocatore che ha giocato in ENTRAMBI i club","Um jogador que jogou nos DOIS clubes","Un jugador que haya jugado en LOS DOS clubes")}</div>}
+            {!compact && <div style={{fontSize:12,color:"rgba(8,17,9,.72)",fontWeight:700,marginBottom:12,textAlign:"center"}}>{tr("Un joueur ayant joué dans les DEUX clubs","A player who played for BOTH clubs","Ein Spieler, der für BEIDE Klubs gespielt hat","Un giocatore che ha giocato in ENTRAMBI i club","Um jogador que jogou nos DOIS clubes","Un jugador que haya jugado en LOS DOS clubes")}</div>}
             {answered ? (
               <div style={{textAlign:"center",padding:"18px"}}>
                 <div style={{...posterText(28,G.pelouse)}}>✅ {tr("Trouvé !","Found!","Gefunden!","Trovato!","Encontrado!","¡Encontrado!")}</div>
@@ -10103,7 +10103,7 @@ export default function LePont() {
                 )}
                 {duelWrong && <div style={{textAlign:"center",fontSize:13,color:G.maillot,marginTop:10,fontWeight:800}}>❌ {tr("Mauvaise réponse, réessaie !","Wrong answer, try again!","Falsche Antwort, versuch's nochmal!","Risposta sbagliata, riprova!","Resposta errada, tente de novo!","Respuesta incorrecta, ¡inténtalo otra vez!")}</div>}
                 {isSolo ? (
-                  <div style={{textAlign:"center",fontSize:12,color:ansLeft<=5&&ansLeft>0?G.projecteur:"rgba(255,255,255,.55)",marginTop:duelWrong?4:10,fontWeight:700}}>{ansLeft>5?tr("Réponds en moins de 5 s = 20 pts ⚡","Answer under 5s = 20 pts ⚡","Unter 5 Sek. antworten = 20 Pkt ⚡","Rispondi in meno di 5 s = 20 pti ⚡","Responda em menos de 5 s = 20 pts ⚡","Responde en menos de 5 s = 20 pts ⚡"):tr("⚡ Vite ! 20 pts","⚡ Quick! 20 pts","⚡ Schnell! 20 Pkt","⚡ Veloce! 20 pti","⚡ Rápido! 20 pts","⚡ ¡Rápido! 20 pts")}</div>
+                  <div style={{textAlign:"center",fontSize:12,color:ansLeft<=5&&ansLeft>0?G.maillot:"rgba(8,17,9,.72)",marginTop:duelWrong?4:10,fontWeight:800}}>{ansLeft>5?tr("Réponds en moins de 5 s = 20 pts ⚡","Answer under 5s = 20 pts ⚡","Unter 5 Sek. antworten = 20 Pkt ⚡","Rispondi in meno di 5 s = 20 pti ⚡","Responda em menos de 5 s = 20 pts ⚡","Responde en menos de 5 s = 20 pts ⚡"):tr("⚡ Vite ! 20 pts","⚡ Quick! 20 pts","⚡ Schnell! 20 Pkt","⚡ Veloce! 20 pti","⚡ Rápido! 20 pts","⚡ ¡Rápido! 20 pts")}</div>
                 ) : (
                   <div style={{textAlign:"center",fontSize:12,color:oppAnsMs!=null?G.ciel:"rgba(255,255,255,.55)",marginTop:duelWrong?4:10,fontWeight:700}}>{oppAnsMs!=null?tr("⚡ L'adversaire a trouvé !","⚡ Opponent found it!","⚡ Gegner hat's gefunden!","⚡ L'avversario ha trovato!","⚡ O adversário encontrou!","⚡ ¡El rival lo ha encontrado!"):tr("L'adversaire cherche…","Opponent is searching…","Gegner sucht…","L'avversario sta cercando…","O adversário está procurando…","El rival está buscando…")}</div>
                 )}
@@ -15394,7 +15394,9 @@ export default function LePont() {
         const carrot = tr(`Plus que ${remain} pts avant`, `${remain} pts to`, `Noch ${remain} Pkt bis`, `Ancora ${remain} pt a`, `Faltam ${remain} pts para`,`Faltan ${remain} pts para`);
         return (
           <div style={{zIndex:2,padding:"0 16px 6px",maxWidth:420,margin:"0 auto",width:"100%",boxSizing:"border-box"}}>
-            <div style={{fontSize:10,fontWeight:800,letterSpacing:.5,color:"rgba(255,255,255,.55)",marginBottom:3,textAlign:"center"}}>{carrot} <span style={{color:ng.color}}>{ng.emoji} {ng.label}</span></div>
+            {/* Encre : cette ligne est posée à nu sur la feuille, passée à l'or.
+                Le nom du grade suivant garde sa couleur, portée par le gras. */}
+            <div style={{fontSize:10,fontWeight:800,letterSpacing:.5,color:"rgba(8,17,9,.72)",marginBottom:3,textAlign:"center"}}>{carrot} <span style={{color:ng.color}}>{ng.emoji} {ng.label}</span></div>
             <div style={{height:9,borderRadius:G.rayonS,background:"rgba(8,17,9,.55)",border:G.traitFin,overflow:"hidden"}}>
               <div style={{height:"100%",width:pct+"%",background:ng.color,transition:"width .4s ease"}}/>
             </div>
