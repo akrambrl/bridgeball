@@ -9079,7 +9079,16 @@ export default function LePont() {
   // n'a rien à faire défiler : le joueur ne peut ni voir ni atteindre le bouton,
   // ni scroller pour aller le chercher. `env(safe-area-inset-bottom)` est
   // exactement la mesure de cette barre.
-  const sheet = {background:G.nuit,borderTop:G.trait,borderRadius:G.rayonL+"px "+G.rayonL+"px 0 0",flex:1,display:"flex",flexDirection:"column",gap:14,padding:"20px 18px calc(28px + env(safe-area-inset-bottom))",zIndex:1};
+  // La feuille de contenu ne porte plus d'aplat : c'est l'or de la charte qui
+  // passe dessous, sur toute la hauteur de l'écran et plus seulement dans le
+  // bandeau d'en-tête. Ce sont les blocs posés dessus qui portent le cadre —
+  // panneau sombre, trait d'encre, ombre dure — comme les lignes du classement.
+  //
+  // Corollaire non negociable : un bloc pose sur cette feuille doit avoir un
+  // fond OPAQUE. Un aplat translucide vire a l'olive sur l'or, et le texte
+  // clair qu'il porte disparait. Les ecrans dont le contenu n'est pas fait de
+  // panneaux autonomes se redonnent un aplat sombre explicitement (voir Amis).
+  const sheet = {background:"transparent",borderTop:G.trait,borderRadius:G.rayonL+"px "+G.rayonL+"px 0 0",flex:1,display:"flex",flexDirection:"column",gap:14,padding:"20px 18px calc(28px + env(safe-area-inset-bottom))",zIndex:1};
 
   const backBtn = (onClick) => (
     <button onClick={onClick} style={{...retourStyle,width:40,height:40,zIndex:10}}>←</button>
@@ -9946,12 +9955,12 @@ export default function LePont() {
               <span style={{color:G.projecteur,fontSize:13,fontWeight:800,letterSpacing:.5}}>🎯 <span style={{color:G.white}}>10/20 PTS</span></span>
             </div>
             {/* SOLO */}
-            <div style={{...posterText(20,G.projecteur),marginBottom:8}}>{tr("Solo · score","Solo · score","Solo · Punkte","Solo · punti","Solo · pontos","Solo · puntuación")}</div>
+            <div style={{...posterLight(20,G.encre),marginBottom:8}}>{tr("Solo · score","Solo · score","Solo · Punkte","Solo · punti","Solo · pontos","Solo · puntuación")}</div>
             <button onClick={duelSoloStart} style={{...btn(G.projecteur,G.encre,18),width:"100%",padding:"15px",marginBottom:18}}>
               ▶ {tr("JOUER SOLO","PLAY SOLO","SOLO SPIELEN","GIOCA SOLO","JOGAR SOLO","JUGAR SOLO")} <span style={{fontSize:12,fontWeight:800,opacity:.75}}>· 10/20 pts</span>
             </button>
             {/* EN LIGNE — bouton identique à celui de The Plug / The Mercato */}
-            <div style={{...posterText(20,G.projecteur),marginBottom:8}}>{tr("En ligne","Online","Online","Online","Online","En línea")}</div>
+            <div style={{...posterLight(20,G.encre),marginBottom:8}}>{tr("En ligne","Online","Online","Online","Online","En línea")}</div>
             <button onClick={function(){ setDuelScreen(null); setMmSearch({ mode:"duel", opponent: pickOpponent(), phase:"searching" }); }}
               style={{...ligneCharte,marginBottom:18,padding:"14px 16px",gap:12}}>
               <span style={pastilleCharte(G.ciel)}>🌍</span>
@@ -9963,7 +9972,7 @@ export default function LePont() {
             </button>
 
             {/* Entre potes */}
-            <div style={{...posterText(20,G.projecteur),marginBottom:8}}>{tr("Entre potes","With friends","Mit Freunden","Con gli amici","Com amigos","Con amigos")}</div>
+            <div style={{...posterLight(20,G.encre),marginBottom:8}}>{tr("Entre potes","With friends","Mit Freunden","Con gli amici","Com amigos","Con amigos")}</div>
             <div style={{display:"flex",gap:8}}>
               <button onClick={duelCreateRoom} disabled={duelBusy} style={{...btn(G.pelouse,G.encre,15),flex:1,padding:"14px",cursor:duelBusy?"default":"pointer",opacity:duelBusy?.6:1}}>👥 {tr("Créer un salon","Create room","Raum erstellen","Crea una stanza","Criar sala","Crear una sala")}</button>
             </div>
@@ -10762,7 +10771,7 @@ export default function LePont() {
             </div>
             <button onClick={function(){setShowDuelCreate({id:selectedFriend.id,name:selectedFriend.name});}} style={{padding:"8px 14px",background:G.pelouse,color:"#000",border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:800}}>{tr("⚡ Défier","⚡ Challenge","⚡ Herausfordern","⚡ Sfida","⚡ Desafiar","⚡ Retar")}</button>
           </div>
-          <div style={{...sheet,borderRadius:"28px 28px 0 0",marginTop:16}}>
+          <div style={{...sheet,background:G.nuit,borderRadius:"28px 28px 0 0",marginTop:16}}>
             {/* Bilan */}
             {friendDuels.length > 0 && (
               <div style={{display:"flex",gap:8,marginBottom:4}}>
@@ -10831,7 +10840,7 @@ export default function LePont() {
           <div style={{...posterText(26),color:G.white,letterSpacing:2}}>{tr("AMIS","FRIENDS","FREUNDE","AMICI","AMIGOS","AMIGOS")}</div>
           <div style={{width:40}}/>
         </div>
-        <div style={{...sheet,borderRadius:"28px 28px 0 0",marginTop:16}}>
+        <div style={{...sheet,background:G.nuit,borderRadius:"28px 28px 0 0",marginTop:16}}>
           {/* Demandes reçues */}
           {friendRequests.length > 0 && (
             <div style={{background:G.nuit,border:G.traitFin,borderRadius:16,padding:14}}>
@@ -12692,20 +12701,12 @@ export default function LePont() {
           </div>
         </div>
       )}
-      <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
-        {/* Bandes pelouse */}
-        {/* Aplat de panneau : les bandes de tonte sont parties avec la pelouse.
-              Sur la charte or, une carte est l'écusson noir du logo. */}
-            <div style={{position:"absolute",inset:0,background:G.nuit}}/>
-        {/* Ligne médiane */}
-        <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:G.nuit,transform:"translateY(-50%)"}}/>
-        {/* Cercle central */}
-        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:180,height:180,borderRadius:"50%",border:G.traitFin}}/>
-        {/* Point central */}
-        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:8,height:8,borderRadius:"50%",background:G.nuit}}/>
-        {/* Overlay sombre pour lisibilité */}
-        <div style={{position:"absolute",inset:0,background:"rgba(8,17,9,.45)"}}/>
-      </div>
+      {/* Le calque de décor peignait ici un aplat de nuit sur inset:0, plus un
+          voile sombre par-dessus : à eux deux ils recouvraient entièrement
+          fondCharte. L'or ne se voyait donc que dans le bandeau d'en-tête, tout
+          le reste de l'accueil restait noir. C'était le dernier reste du décor
+          de pelouse — ligne médiane, rond central — qui n'a plus d'objet sur
+          une arène. areneCharte, monté plus haut, porte désormais le décor. */}
 
       {/* ── HEADER compact ── */}
       <div style={{zIndex:1,padding:"6px 20px 2px"}}>
@@ -13036,7 +13037,10 @@ export default function LePont() {
           </div>
 
           {/* Hint */}
-          <div style={{textAlign:"center",fontSize:9,color:"rgba(255,255,255,.35)",marginTop:6,letterSpacing:1.5,textTransform:"uppercase"}}>
+          {/* Encre et non blanc transparent : ce libellé est posé à nu sur la
+              feuille, qui est maintenant l'or de la charte. Du blanc à 35 %
+              y disparaît — sur l'or, seule l'encre se lit. */}
+          <div style={{textAlign:"center",fontSize:9,color:"rgba(8,17,9,.62)",marginTop:6,letterSpacing:1.5,textTransform:"uppercase"}}>
             {tr("← Glisse • Tape pour jouer →","← Swipe • Tap to play →","← Wischen • Tippen zum Spielen →","← Scorri • Tocca per giocare →","← Deslize • Toque para jogar →","← Desliza • Toca para jugar →")}
           </div>
         </div>
@@ -13708,7 +13712,7 @@ export default function LePont() {
                         couleur (pelouse, projecteur, maillot : de l'amateur au
                         crescendo), les autres l'aplat de nuit. Même cadre d'encre
                         pour les trois, comme les onglets du classement. */}
-                    <div style={{...posterText(20,G.projecteur),marginBottom:8}}>{tr("Difficulté","Difficulty","Schwierigkeit","Difficoltà","Dificuldade","Dificultad")}</div>
+                    <div style={{...posterLight(20,G.encre),marginBottom:8}}>{tr("Difficulté","Difficulty","Schwierigkeit","Difficoltà","Dificuldade","Dificultad")}</div>
                     <div style={{display:"flex",gap:8,marginBottom:16}}>
                       {["facile","moyen","expert"].map(function(d){
                         const dLabel = d==="facile"?"AMATEUR":d==="moyen"?"PRO":"CRESCENDO";
@@ -15143,8 +15147,9 @@ export default function LePont() {
         {/* Duel en direct : désormais une carte du carrousel (plus de bouton en bas) */}
 
         {/* Footer discret : version + liens légaux */}
-        <div style={{textAlign:"center",padding:"8px 0 2px",fontSize:10,color:"rgba(255,255,255,.3)",letterSpacing:1.5,flexShrink:0}}>
-          GOAT FC · <a href="/privacy/" target="_blank" rel="noopener noreferrer" style={{color:"rgba(255,255,255,.45)",textDecoration:"underline"}}>{tr("Confidentialité","Privacy","Datenschutz","Privacy","Privacidade","Privacidad")}</a> · <a href="/terms/" target="_blank" rel="noopener noreferrer" style={{color:"rgba(255,255,255,.45)",textDecoration:"underline"}}>{tr("Conditions","Terms","Bedingungen","Termini","Termos","Términos")}</a>
+        {/* Même raison que le libellé du carrousel : posé à nu sur l'or. */}
+        <div style={{textAlign:"center",padding:"8px 0 2px",fontSize:10,color:"rgba(8,17,9,.55)",letterSpacing:1.5,flexShrink:0}}>
+          GOAT FC · <a href="/privacy/" target="_blank" rel="noopener noreferrer" style={{color:"rgba(8,17,9,.78)",textDecoration:"underline"}}>{tr("Confidentialité","Privacy","Datenschutz","Privacy","Privacidade","Privacidad")}</a> · <a href="/terms/" target="_blank" rel="noopener noreferrer" style={{color:"rgba(8,17,9,.78)",textDecoration:"underline"}}>{tr("Conditions","Terms","Bedingungen","Termini","Termos","Términos")}</a>
         </div>
 
       </div>
