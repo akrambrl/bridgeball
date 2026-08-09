@@ -12723,7 +12723,14 @@ export default function LePont() {
           </div>
           <div style={{textAlign:"center",flex:2}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"center"}}>
-              <img src="/logo.png" style={{height:"clamp(78px,19.5vw,120px)",maxWidth:"100%",objectFit:"contain"}} alt="GOAT FC"/>
+              {/* Le logo porte son propre fond doré : posé sur la bande d'or, il
+                  dessinait un rectangle plus texturé que le reste, sans que rien
+                  ne dise pourquoi. Plutôt que de subir la couture, on l'assume
+                  en écusson — trait d'encre, ombre dure, rayon franc, comme
+                  toute forme de la charte. Une version détourée le rendrait
+                  inutile, mais elle n'existe pas encore. */}
+              <img src="/logo.png?v=3" style={{height:"clamp(64px,16vw,96px)",width:"auto",objectFit:"contain",
+                border:G.trait,borderRadius:G.rayonS,boxShadow:G.ombre,display:"block"}} alt="GOAT FC"/>
             </div>
           </div>
           <div style={{flex:1,display:"flex",justifyContent:"flex-end",alignItems:"center",gap:8}}>
