@@ -1089,7 +1089,7 @@ export const PLAYERS = [
   { name:"Ferland Mendy", clubs:["Le Havre", "Lyon", "Real Madrid"], diff:"moyen", nationalities:["France"], positions:["defenseur"], birthYear:1995 },
   { name:"Alphonso Davies", clubs:["Vancouver Whitecaps", "Bayern Munich"], diff:"moyen", nationalities:["Canada"], positions:["defenseur"], birthYear:2000 },
   { name:"Joško Gvardiol", clubs:["Dinamo Zagreb", "RB Leipzig", "Manchester City"], diff:"moyen", nationalities:["Croatie"], positions:["defenseur"], birthYear:2002 },
-  { name:"Ibrahima Konate", clubs:["Lens", "RB Leipzig", "Liverpool", "Real Madrid"], diff:"facile", nationalities:["France"], positions:["defenseur"], birthYear:1999 },
+  { name:"Ibrahima Konate", clubs:["Sochaux", "RB Leipzig", "Liverpool", "Real Madrid"], diff:"facile", nationalities:["France"], positions:["defenseur"], birthYear:1999 },
   { name:"Kim Min-jae", clubs:["Jeonbuk Hyundai", "Beijing Guoan", "Fenerbahce", "SSC Napoli", "Bayern Munich"], diff:"moyen", nationalities:["Corée du Sud"], positions:["defenseur"], birthYear:1996 },
   { name:"Pau Torres", clubs:["Villarreal", "Aston Villa"], diff:"expert", nationalities:["Espagne"], positions:["defenseur"] , birthYear:1997 },
   { name:"Jurriën Timber", clubs:["Ajax Amsterdam", "Arsenal"], diff:"moyen", nationalities:["Pays-Bas"], positions:["defenseur"], birthYear:2001 },
