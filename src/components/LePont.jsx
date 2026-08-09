@@ -12714,17 +12714,17 @@ export default function LePont() {
 
       {/* ── HEADER compact ── */}
       <div style={{zIndex:1,padding:"6px 20px 2px"}}>
-        {/* Bandeau d'en-tête à l'encre. Le rapport s'est inversé : tant que le
-            contenu vivait sur une feuille noire, c'est ici que l'or se voyait ;
-            maintenant que l'or tient toute la page, c'est le bandeau qui doit
-            être la surface sombre — sinon rien ne détache le haut de l'écran.
-            Même encre que les en-têtes du classement et du profil.
+        {/* Bandeau d'en-tête en or, dans la continuité de la page. Il a été à
+            l'encre un temps ; l'or est le choix retenu.
+            La bande garde sa remontée sous la barre d'état : #root est décalé
+            de env(safe-area-inset-top) et la zone au-dessus est peinte par
+            body, donc sans elle la bande s'arrêterait sous l'encoche.
             Le fond est posé ICI et non laissé au conteneur parce qu'un calque
             de décor passe par-dessus lui ; `position:relative` et un zIndex le
             remettent devant. Les marges négatives le font saigner jusqu'aux
             bords, sinon la bande s'arrêterait au rembourrage de l'écran. */}
         <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",
-          position:"relative",zIndex:1,background:G.encre,
+          position:"relative",zIndex:1,background:G.or,
           /* La bande remonte sous la barre d'état et rembourre d'autant : #root
              est décalé de env(safe-area-inset-top), donc sans ça le haut de
              l'écran reste peint par body — un liseré doré au-dessus d'une bande
