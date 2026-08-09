@@ -83,18 +83,31 @@ await ctx.route("**/rest/v1/**", async (route) => {
 });
 
 const page = await ctx.newPage();
-await page.addInitScript(() => {
+// `bienvenue` veut le tout premier lancement ; `tutoriel` veut l'etape
+// SUIVANTE, donc la banniere marquee comme vue mais pas le tutoriel. Passer
+// par un clic sur « J'ai compris » ne marche pas : une modale plein ecran a
+// zIndex 400, rendue directement sous #root, recouvre la banniere — laquelle
+// vit dans le shell, dont `isolation:isolate` enferme son zIndex 9999.
+const PREMIER_LANCEMENT = ecran === "bienvenue" ? "tout"
+                        : ecran === "tutoriel"  ? "apres-banniere" : "non";
+await page.addInitScript((premier) => {
   // L'accueil est derrière l'accueil-tutoriel : sans ces clés, on photographie
-  // le carrousel d'introduction quel que soit l'écran demandé.
-  localStorage.setItem("bb_welcome_seen", "1");
-  localStorage.setItem("bb_tutorial_done", "1");
+  // le carrousel d'introduction quel que soit l'écran demandé. On ne les pose
+  // donc PAS quand c'est justement lui qu'on vient voir.
+  if (premier !== "tout") localStorage.setItem("bb_welcome_seen", "1");
+  if (premier === "non")   localStorage.setItem("bb_tutorial_done", "1");
   localStorage.setItem("bb_name", "jules");
   localStorage.setItem("bb_lang", "fr");
-});
+}, PREMIER_LANCEMENT);
 await page.goto("http://localhost:4173/");
 await page.waitForLoadState("networkidle");
-await page.waitForTimeout(1200);
+// L'écran de démarrage dure 2,5 s et REMPLACE l'app pendant ce temps : tant
+// qu'il est là, rien n'est cliquable et les modales du premier lancement ne
+// sont même pas montées. Un clic tombé dans cette fenêtre ne fait rien, sans
+// erreur — c'est ce qui rendait le tutoriel impossible à atteindre.
+await page.waitForTimeout(3400);
 
+// Le tutoriel vient APRÈS la bannière de bienvenue : il faut la passer.
 // Les invites du jour (devinette, installation) se posent par-dessus l'accueil
 // et masqueraient l'écran demandé.
 for (const libelle of [/plus tard/i, /^fermer$/i]) {
@@ -116,6 +129,8 @@ const CHEMINS = {
   profil:     [],   // l'avatar n'est pas un bouton : traité à part
   jeu:        [],   // la carte du carrousel non plus
   "classement-bas": [/classement/i],   // puis défilé jusqu'en bas
+  bienvenue:  [],   // premier lancement : la bannière RGPD
+  tutoriel:   [],   // premier lancement : le carrousel, après la bannière
   partie:     [],   // idem, puis « Jouer solo »
 };
 if (!(ecran in CHEMINS)) {
