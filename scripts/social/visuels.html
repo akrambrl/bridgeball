@@ -223,6 +223,25 @@
   .eventail img:nth-child(4){transform:rotate(4deg)}
   .eventail img:nth-child(5){transform:rotate(9deg)}
 
+  /* ── Joueurs découpés ───────────────────────────────────────────────── */
+  /* L'app possède neuf joueurs détourés (public/win*.png, lose*.png), en tenue
+     GOAT FC. Les visuels n'en montraient aucun : ils étaient composés de
+     lettrage et de panneaux, sans personne dedans.
+     Un détourage ne peut pas porter le cadre de la charte — il n'a pas de
+     bord droit à cerner. Le trait d'encre est donc reconstitué en quatre
+     ombres portées d'un pixel décalé dans les quatre directions, et l'ombre
+     dure de la charte par une cinquième, franche et sans flou.
+     zIndex 1 : au-dessus de l'arène, DERRIÈRE le contenu (qui est à 2). Un
+     joueur ne doit jamais passer devant un texte. */
+  .joueur{position:absolute;bottom:0;z-index:1;pointer-events:none;user-select:none;
+    filter:drop-shadow(4px 0 0 var(--encre)) drop-shadow(-4px 0 0 var(--encre))
+           drop-shadow(0 4px 0 var(--encre)) drop-shadow(0 -4px 0 var(--encre))
+           drop-shadow(16px 16px 0 rgba(8,17,9,.45));}
+  /* Pas de classe miroir. Retourner un joueur retourne aussi le GOAT FC
+     imprime sur son maillot, qui sort en « TAOG » — c'est sorti tel quel sur
+     le duel et sur la banniere au premier essai. Quand il faut un vis-a-vis,
+     on prend un joueur qui regarde deja dans l'autre sens (win3). */
+
   /* Le blason porte son propre fond doré : posé sur l'or il dessinerait un
      rectangle plus texturé sans que rien ne le justifie. On l'assume en
      écusson, comme dans l'en-tête de l'app. */
@@ -300,6 +319,7 @@
   <div class="tonte"></div><div class="mediane"></div><div class="rond"></div>
   <div class="voile"></div><div class="socle"></div><div class="grain"></div>
   <img class="blason" src="../../public/logo.png" alt="">
+  <img class="joueur" src="../../public/win2.png" style="right:-9%;height:44%" alt="">
   <div class="contenu">
     <span class="pastille">7 MODES DE JEU</span>
     <div class="eventail">
@@ -322,6 +342,7 @@
   <div class="tonte"></div><div class="mediane"></div><div class="rond"></div>
   <div class="voile"></div><div class="socle"></div><div class="grain"></div>
   <img class="blason" src="../../public/logo.png" alt="">
+  <img class="joueur" src="../../public/win1.png" style="right:-10%;height:45%" alt="">
   <div class="contenu">
     <span class="pastille">DEVINETTE DU JOUR</span>
     <div style="flex:1;display:flex;flex-direction:column;justify-content:center">
@@ -424,6 +445,7 @@
   <div class="tonte"></div><div class="mediane"></div><div class="rond"></div>
   <div class="voile"></div><div class="socle"></div><div class="grain"></div>
   <img class="blason" src="../../public/logo.png" alt="">
+  <img class="joueur" src="../../public/win2.png" style="right:-12%;height:40%" alt="">
   <div class="contenu">
     <span class="pastille">DEVINETTE DU JOUR</span>
     <div style="flex:1;display:flex;flex-direction:column;justify-content:center">
@@ -466,6 +488,9 @@
   <div class="tonte"></div><div class="mediane"></div><div class="rond"></div>
   <div class="voile"></div><div class="socle"></div><div class="grain"></div>
   <img class="blason" src="../../public/logo.png" alt="">
+  <!-- A gauche, il passait sous le titre et masquait la ligne du bas. Le bloc
+       de texte occupe le coin bas-gauche : le joueur va donc a droite. -->
+  <img class="joueur" src="../../public/win3.png" style="right:-14%;height:48%" alt="">
   <div class="contenu">
     <span class="pastille">GOAT GRID</span>
     <div style="flex:1;display:flex;align-items:center;justify-content:center">
@@ -486,7 +511,8 @@
 <div class="v carre" id="v8">
   <div class="tonte"></div><div class="mediane"></div><div class="rond"></div>
   <div class="voile"></div><div class="socle"></div><div class="grain"></div>
-  <img class="blason" src="../../public/logo.png" alt="">
+  <img class="joueur" src="../../public/win2.png" style="left:-13%;height:47%" alt="">
+  <img class="joueur" src="../../public/win3.png" style="right:-13%;height:52%" alt="">
   <div class="contenu">
     <span class="pastille">GOAT BATTLE</span>
     <div style="flex:1;display:flex;flex-direction:column;justify-content:center">
@@ -507,6 +533,8 @@
   <div class="tonte"></div><div class="mediane"></div><div class="rond"></div>
   <div class="voile"></div><div class="socle"></div><div class="grain"></div>
   <img class="blason" src="../../public/logo.png" alt="">
+  <img class="joueur" src="../../public/win3.png" style="left:50%;height:126%" alt="">
+  <img class="joueur" src="../../public/win2.png" style="left:70%;height:112%" alt="">
   <div class="contenu">
     <div>
       <div class="kick">GOATFC.FR</div>
