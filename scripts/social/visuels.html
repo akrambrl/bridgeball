@@ -17,42 +17,53 @@
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Archivo:wght@400;600&display=swap');
 
+  /* Charte OR — alignée sur src/lib/charte.jsx.
+     La règle qui gouverne toute la composition : SUR L'OR, SEULE L'ENCRE SE LIT.
+     Le crème y tombe à 1,4 de contraste, le vert clair à 1,2. Toute couleur
+     autre que l'encre vit donc DANS un panneau sombre, jamais posée sur le fond.
+     Seule exception : le lettrage d'affiche, dont le contour d'encre le porte —
+     c'est exactement ce que fait le « GOAT » du logo. */
   :root{
-    --encre:#081109;--terrain:#17572C;--nuit:#0E2C17;--pelouse:#2A9B4E;
-    --clair:#4FD07A;--projecteur:#F5C22B;--maillot:#D93A2B;--ciel:#2A6FBF;--papier:#EDE7D8;
+    --encre:#081109;--or:#F5C22B;--or-sombre:#D9A21A;--nuit:#12160F;
+    --creme:#F2E7CE;--pelouse:#2A9B4E;--clair:#4FD07A;--maillot:#D93A2B;--ciel:#2A6FBF;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   body{background:#222;font-family:'Archivo',sans-serif;display:flex;flex-direction:column;
        align-items:flex-start;gap:40px;padding:40px}
 
-  /* ── Le terrain de la charte : pelouse, projecteurs, tonte, voile, grain ── */
-  .v{position:relative;overflow:hidden;flex:0 0 auto;
-     background:
-       radial-gradient(72% 16% at 14% 0%, rgba(245,194,43,.20), transparent 70%),
-       radial-gradient(72% 16% at 86% 0%, rgba(245,194,43,.20), transparent 70%),
-       var(--terrain);}
-  .v .tonte{position:absolute;inset:0;background:repeating-linear-gradient(90deg,
-    rgba(8,17,9,.16) 0 calc(100%/14), transparent calc(100%/14) calc(100%/7));}
-  .v .rond{position:absolute;top:44%;left:50%;transform:translate(-50%,-50%);
-    width:62%;aspect-ratio:1;border-radius:50%;border:5px solid rgba(8,17,9,.26);}
-  .v .mediane{position:absolute;left:0;right:0;top:44%;height:5px;background:rgba(8,17,9,.26);}
-  .v .voile{position:absolute;top:0;left:0;right:0;height:36%;
-    background:linear-gradient(180deg,rgba(8,17,9,.80),rgba(8,17,9,0));}
-  .v .socle{position:absolute;bottom:0;left:0;right:0;height:42%;
-    background:linear-gradient(0deg,rgba(8,17,9,.86),rgba(8,17,9,0));}
-  .v .grain{position:absolute;inset:0;opacity:.13;
-    background-image:radial-gradient(circle,#000 1px,transparent 1.4px);background-size:6px 6px;}
+  /* ── L'arène de la charte : or, lignes de vitesse, trame sérigraphiée ── */
+  .v{position:relative;overflow:hidden;flex:0 0 auto;background:var(--or);}
+  /* Lignes de vitesse : un dégradé conique répété dessine des coins qui
+     rayonnent depuis un point, ce qui EST une ligne de vitesse. */
+  .v .tonte{position:absolute;inset:-25%;background:repeating-conic-gradient(from 0deg at 50% 42%,
+    rgba(8,17,9,.46) 0deg .55deg, rgba(8,17,9,0) .55deg 2.7deg);}
+  /* Le cœur reste dégagé, comme au centre du logo : sans ça les lignes se
+     rejoignent en une tache noire au milieu du visuel. */
+  .v .rond{position:absolute;inset:0;background:radial-gradient(circle at 50% 42%,
+    var(--or) 0 18%, rgba(245,194,43,.92) 30%, rgba(245,194,43,0) 60%);}
+  .v .mediane{display:none;}
+  .v .voile{display:none;}
+  .v .socle{display:none;}
+  /* Trame d'or sombre et non de noir : sur l'or, une trame noire grise le fond
+     au lieu de le texturer. */
+  .v .grain{position:absolute;inset:0;opacity:.55;
+    background-image:radial-gradient(circle,var(--or-sombre) 1.6px,transparent 2px);background-size:9px 9px;}
   .v .contenu{position:absolute;inset:0;display:flex;flex-direction:column;
     justify-content:space-between;z-index:2;}
 
   /* ── Lettrage d'affiche ─────────────────────────────────────────────── */
-  .titre{font-family:'Anton',Impact,sans-serif;transform:skewX(-7deg);color:#fff;
+  /* Crème contouré d'encre : le seul lettrage clair qui tienne sur l'or, et
+     c'est celui du logo. */
+  .titre{font-family:'Anton',Impact,sans-serif;transform:skewX(-7deg);color:var(--creme);
     paint-order:stroke fill;letter-spacing:.5px;}
-  .kick{font-family:'Bebas Neue',sans-serif;color:var(--projecteur);line-height:1;}
-  .pastille{align-self:flex-start;font-family:'Bebas Neue',sans-serif;color:#1A1206;
-    background:var(--projecteur);border:4px solid var(--encre);box-shadow:6px 6px 0 var(--encre);
+  /* Le surtitre était jaune : sur un fond jaune il disparaissait. Encre. */
+  .kick{font-family:'Bebas Neue',sans-serif;color:var(--encre);line-height:1;}
+  /* La pastille était un aplat jaune : invisible sur l'or. Elle devient
+     l'écusson noir, lettré crème. */
+  .pastille{align-self:flex-start;font-family:'Bebas Neue',sans-serif;color:var(--creme);
+    background:var(--nuit);border:4px solid var(--encre);box-shadow:6px 6px 0 var(--encre);
     line-height:1.25;}
-  .marque{font-family:'Bebas Neue',sans-serif;color:rgba(237,231,216,.72);}
+  .marque{font-family:'Bebas Neue',sans-serif;color:rgba(8,17,9,.72);}
   .panneau{background:var(--nuit);border:4px solid var(--encre);box-shadow:7px 7px 0 var(--encre);}
 
   /* ── 1080 × 1080 ───────────────────────────────────────────────────── */
@@ -95,22 +106,22 @@
     background:var(--nuit);border:4px solid var(--encre);box-shadow:5px 5px 0 var(--encre)}
   .mode .ico{width:56px;height:56px;flex:0 0 56px;border-radius:12px;border:3px solid var(--encre);
     display:grid;place-items:center;font-size:28px;box-shadow:3px 3px 0 var(--encre)}
-  .mode .nom{font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:.05em;color:#fff;line-height:1}
+  .mode .nom{font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:.05em;color:var(--creme);line-height:1}
 
   .paliers{display:flex;flex-direction:column;gap:14px;margin:34px 0 0}
   .palier{display:flex;align-items:center;gap:18px;padding:16px 22px;border-radius:16px;
     background:var(--nuit);border:4px solid var(--encre);box-shadow:5px 5px 0 var(--encre)}
   .palier .em{font-size:38px;line-height:1}
   .palier .nom{font-family:'Bebas Neue',sans-serif;font-size:40px;letter-spacing:.05em;
-    color:#fff;line-height:1;flex:1}
+    color:var(--creme);line-height:1;flex:1}
   .palier .xp{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:.05em;
-    color:var(--projecteur);font-variant-numeric:tabular-nums}
+    color:var(--or);font-variant-numeric:tabular-nums}
 
   .grille{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:36px 0 0;
     width:520px;align-self:center}
   .case{aspect-ratio:1;border-radius:14px;border:4px solid var(--encre);
     box-shadow:5px 5px 0 var(--encre);display:grid;place-items:center;
-    font-family:'Bebas Neue',sans-serif;font-size:56px;color:#fff;background:var(--nuit)}
+    font-family:'Bebas Neue',sans-serif;font-size:56px;color:var(--creme);background:var(--nuit)}
   .case.ok{background:var(--pelouse)}
   .case.non{background:rgba(8,17,9,.5);color:rgba(237,231,216,.35)}
 
@@ -119,9 +130,9 @@
     border:6px solid var(--encre);box-shadow:12px 12px 0 var(--encre);display:block}
   .carte-info{padding-bottom:14px}
   .carte-info .rarete{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:.12em;
-    color:var(--projecteur);line-height:1;margin-bottom:14px}
+    color:var(--or);line-height:1;margin-bottom:14px}
   .carte-info .nom{font-family:'Anton',sans-serif;transform:skewX(-7deg);font-size:70px;
-    color:#fff;-webkit-text-stroke:5px var(--encre);paint-order:stroke fill;
+    color:var(--creme);-webkit-text-stroke:5px var(--encre);paint-order:stroke fill;
     text-shadow:7px 7px 0 var(--encre);line-height:1.08}
   .carte-info .seuil{font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:.08em;
     color:rgba(237,231,216,.75);margin-top:18px}
@@ -138,18 +149,26 @@
   .eventail img:nth-child(4){transform:rotate(4deg)}
   .eventail img:nth-child(5){transform:rotate(9deg)}
 
+  /* Le blason porte son propre fond doré : posé sur l'or il dessinerait un
+     rectangle plus texturé sans que rien ne le justifie. On l'assume en
+     écusson, comme dans l'en-tête de l'app. */
+  .blason{position:absolute;top:70px;right:70px;width:132px;height:132px;z-index:3;
+    border:5px solid var(--encre);border-radius:18px;box-shadow:7px 7px 0 var(--encre);
+    object-fit:cover;display:block}
+  .banniere .blason{top:auto;bottom:56px;right:70px;width:112px;height:112px}
+
   .indices{display:flex;flex-direction:column;gap:16px;margin:36px 0 0}
   .indice{display:flex;align-items:center;gap:18px;padding:20px 24px;border-radius:16px;
     background:var(--nuit);border:4px solid var(--encre);box-shadow:5px 5px 0 var(--encre);
-    font-size:32px;color:var(--papier);font-weight:500}
+    font-size:32px;color:var(--creme);font-weight:500}
   .indice b{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:.1em;
-    color:var(--projecteur);font-weight:400;flex:0 0 auto}
+    color:var(--or);font-weight:400;flex:0 0 auto}
 
   .duo-score{display:flex;align-items:stretch;gap:0;margin:40px 0 0;border-radius:20px;
     overflow:hidden;border:6px solid var(--encre);box-shadow:10px 10px 0 var(--encre)}
   .camp{flex:1;padding:34px 30px;display:flex;flex-direction:column;gap:10px;align-items:center}
-  .camp .qui{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:.08em;color:#fff}
-  .camp .pts{font-family:'Anton',sans-serif;transform:skewX(-7deg);font-size:96px;color:#fff;
+  .camp .qui{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:.08em;color:var(--creme)}
+  .camp .pts{font-family:'Anton',sans-serif;transform:skewX(-7deg);font-size:96px;color:var(--creme);
     -webkit-text-stroke:5px var(--encre);paint-order:stroke fill;line-height:1}
 </style></head><body>
 
@@ -157,6 +176,7 @@
 <div class="v carre" id="v1">
   <div class="tonte"></div><div class="mediane"></div><div class="rond"></div>
   <div class="voile"></div><div class="socle"></div><div class="grain"></div>
+  <img class="blason" src="../../public/logo.png" alt="">
   <div class="contenu">
     <span class="pastille">7 MODES DE JEU</span>
     <div class="eventail">
@@ -178,6 +198,7 @@
 <div class="v carre" id="v2">
   <div class="tonte"></div><div class="mediane"></div><div class="rond"></div>
   <div class="voile"></div><div class="socle"></div><div class="grain"></div>
+  <img class="blason" src="../../public/logo.png" alt="">
   <div class="contenu">
     <span class="pastille">DEVINETTE DU JOUR</span>
     <div style="flex:1;display:flex;flex-direction:column;justify-content:center">
@@ -198,6 +219,7 @@
 <div class="v portrait" id="v3">
   <div class="tonte"></div><div class="mediane"></div><div class="rond"></div>
   <div class="voile"></div><div class="socle"></div><div class="grain"></div>
+  <img class="blason" src="../../public/logo.png" alt="">
   <div class="contenu">
     <div>
       <span class="pastille">TOUT EST GRATUIT</span>
@@ -227,6 +249,7 @@
 <div class="v portrait" id="v4">
   <div class="tonte"></div><div class="mediane"></div><div class="rond"></div>
   <div class="voile"></div><div class="socle"></div><div class="grain"></div>
+  <img class="blason" src="../../public/logo.png" alt="">
   <div class="contenu">
     <div>
       <span class="pastille">PROGRESSION</span>
@@ -236,8 +259,8 @@
         <div class="palier"><span class="em">👦🏻</span><span class="nom">ESPOIR</span><span class="xp">1 200 XP</span></div>
         <div class="palier"><span class="em">🐺</span><span class="nom">TITULAIRE</span><span class="xp">5 000 XP</span></div>
         <div class="palier"><span class="em">☄️</span><span class="nom">LÉGENDE</span><span class="xp">38 000 XP</span></div>
-        <div class="palier" style="border-color:var(--projecteur);box-shadow:5px 5px 0 var(--encre)">
-          <span class="em">🐐</span><span class="nom" style="color:var(--projecteur)">GOAT</span><span class="xp">250 000 XP</span></div>
+        <div class="palier" style="border-color:var(--or);box-shadow:5px 5px 0 var(--encre)">
+          <span class="em">🐐</span><span class="nom" style="color:var(--or)">GOAT</span><span class="xp">250 000 XP</span></div>
       </div>
       <div class="eventail" style="margin-top:52px">
         <img src="../../public/cards/yamal.webp" alt="">
@@ -255,6 +278,7 @@
 <div class="v story" id="v5">
   <div class="tonte"></div><div class="mediane"></div><div class="rond"></div>
   <div class="voile"></div><div class="socle"></div><div class="grain"></div>
+  <img class="blason" src="../../public/logo.png" alt="">
   <div class="contenu">
     <span class="pastille">DEVINETTE DU JOUR</span>
     <div style="flex:1;display:flex;flex-direction:column;justify-content:center">
@@ -276,6 +300,7 @@
 <div class="v story" id="v6">
   <div class="tonte"></div><div class="mediane"></div><div class="rond"></div>
   <div class="voile"></div><div class="socle"></div><div class="grain"></div>
+  <img class="blason" src="../../public/logo.png" alt="">
   <div class="contenu">
     <span class="pastille">NOUVELLE CARTE</span>
     <div style="flex:1;display:flex;align-items:center;justify-content:center">
@@ -293,6 +318,7 @@
 <div class="v carre" id="v7">
   <div class="tonte"></div><div class="mediane"></div><div class="rond"></div>
   <div class="voile"></div><div class="socle"></div><div class="grain"></div>
+  <img class="blason" src="../../public/logo.png" alt="">
   <div class="contenu">
     <span class="pastille">GOAT GRID</span>
     <div style="flex:1;display:flex;align-items:center;justify-content:center">
@@ -313,6 +339,7 @@
 <div class="v carre" id="v8">
   <div class="tonte"></div><div class="mediane"></div><div class="rond"></div>
   <div class="voile"></div><div class="socle"></div><div class="grain"></div>
+  <img class="blason" src="../../public/logo.png" alt="">
   <div class="contenu">
     <span class="pastille">GOAT BATTLE</span>
     <div style="flex:1;display:flex;flex-direction:column;justify-content:center">
@@ -332,6 +359,7 @@
 <div class="v banniere" id="v9">
   <div class="tonte"></div><div class="mediane"></div><div class="rond"></div>
   <div class="voile"></div><div class="socle"></div><div class="grain"></div>
+  <img class="blason" src="../../public/logo.png" alt="">
   <div class="contenu">
     <div>
       <div class="kick">GOATFC.FR</div>

@@ -20,7 +20,10 @@ const NOMS = {
   v7: "07-carre-grid",      v8: "08-carre-duel",       v9: "09-banniere",
 };
 
-const navigateur = await chromium.launch();
+// Même échappatoire que pour icones.mjs : le binaire épinglé n'est pas toujours
+// celui que Playwright cherche par défaut selon la machine.
+const navigateur = await chromium.launch(
+  process.env.PLAYWRIGHT_CHROMIUM ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM } : {});
 const page = await navigateur.newPage({ viewport: { width: 1700, height: 1000 }, deviceScaleFactor: 1 });
 await page.goto("file://" + join(ici, "visuels.html"));
 await page.waitForLoadState("networkidle");
