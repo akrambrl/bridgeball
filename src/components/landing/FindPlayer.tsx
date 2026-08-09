@@ -247,8 +247,13 @@ function haptic(kind: "hit" | "multi" | "win") {
 type State = "ok" | "close" | "no";
 type Chip = { key: string; label: string; top: string; big?: boolean; state: State; arrow?: "up" | "down"; bg?: string; fg?: string };
 
-// Coéquipiers probables : mêmes clubs + même génération (±4 ans de naissance →
-// forte chance d'avoir joué ensemble, faute de données d'années par club).
+// Joueurs passés par les MÊMES CLUBS, à une génération près (±4 ans de
+// naissance). Ce n'est PAS une liste de coéquipiers : sans années par club, on
+// ne peut pas savoir s'ils se sont croisés. Openda (2000) et Konaté (1999)
+// partagent Lens et Leipzig et sortent en tête de cette liste, alors que
+// Konaté avait quitté les deux clubs avant l'arrivée d'Openda.
+// Les appelants ne doivent donc jamais en tirer un « j'ai joué avec » : c'est
+// CLUB_SPELLS qui tranche ça, et lui seul.
 // Déterministe (même résultat pour tout le monde).
 function findTeammates(answer: Player, n: number): string[] {
   const ay = answer.birthYear || 0;
@@ -502,6 +507,11 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
     // (heuristique club + génération, sans contraste).
     const jouéAvec = tr("J'ai joué avec", "I played with", "Ich spielte mit", "Ho giocato con", "Joguei com","Jugué con");
     const maisJamais = tr("mais jamais avec", "but never with", "aber nie mit", "ma mai con", "mas nunca com","pero nunca con");
+    // Formulation du repli : vraie sans les dates, là où « j'ai joué avec »
+    // ne l'est que si CLUB_SPELLS confirme le chevauchement.
+    const memeClub = tr("Je suis passé par le même club que", "I played for the same club as",
+      "Ich spielte beim selben Klub wie", "Sono passato dallo stesso club di",
+      "Passei pelo mesmo clube que", "Pasé por el mismo club que");
     let clue1: string | null = null;
     if (hasSpells(answer.name)) {
       const mates = SPELL_NAMES.filter(n => n !== answer.name && wereTeammates(answer.name, n)).sort();
@@ -513,8 +523,15 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
       }
     }
     if (!clue1) {
+      // Repli : on ne dit PAS « j'ai joué avec ». findTeammates ne sait pas si
+      // deux joueurs se sont croisés — il rapproche un même club et des
+      // naissances a ±4 ans, et ça produit des affirmations fausses. Cas
+      // signalé : Openda (2000) et Konaté (1999) partagent Lens ET Leipzig,
+      // mais Konaté a quitté les deux avant qu'Openda n'y arrive. La paire
+      // idéale pour tromper l'heuristique, et elle est sortie telle quelle.
+      // On énonce donc ce que la base prouve : le même club, sans dire quand.
       const mate = findTeammates(answer, 1)[0] || null;
-      if (mate) clue1 = jouéAvec + " " + mate + ".";
+      if (mate) clue1 = memeClub + " " + mate + ".";
     }
     if (clue1) clues.push(clue1);
 
@@ -716,7 +733,9 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
     if (decade) out.push("🕰️ " + tr("J'ai percé dans les années", "I broke through in the", "Durchbruch in den", "Sono esploso negli anni", "Estourei nos anos","Me di a conocer en los") + " " + decade + tr("", "s", "ern", "", "","s"));
     if (first) out.push("🎬 " + tr("J'ai débuté à", "I started at", "Mein Debüt bei", "Ho esordito a", "Comecei no","Empecé en") + " " + first);
     if (midPick.length) out.push("✈️ " + tr("Je suis passé par", "I played for", "Ich spielte für", "Sono passato per", "Passei por","Pasé por") + " " + midPick.join(", "));
-    if (mates.length) out.push("🤝 " + tr("J'ai côtoyé", "I played alongside", "Ich spielte mit", "Ho giocato con", "Joguei ao lado de","Coincidí con") + " " + mates.join(", "));
+    // Même correction que pour l'indice : findTeammates ne prouve pas qu'on
+    // s'est croisés, seulement qu'on est passés par le même club.
+    if (mates.length) out.push("👕 " + tr("Mêmes clubs que", "Same clubs as", "Gleiche Klubs wie", "Stessi club di", "Mesmos clubes que","Mismos clubes que") + " " + mates.join(", "));
     if (last && last !== first) out.push("🏁 " + tr("Dernier maillot :", "Last shirt:", "Letztes Trikot:", "Ultima maglia:", "Última camisa:","Última camiseta:") + " " + last);
     return out;
   }
