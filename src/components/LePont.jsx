@@ -9088,7 +9088,12 @@ export default function LePont() {
   // fond OPAQUE. Un aplat translucide vire a l'olive sur l'or, et le texte
   // clair qu'il porte disparait. Les ecrans dont le contenu n'est pas fait de
   // panneaux autonomes se redonnent un aplat sombre explicitement (voir Amis).
-  const sheet = {background:"transparent",borderTop:G.trait,borderRadius:G.rayonL+"px "+G.rayonL+"px 0 0",flex:1,display:"flex",flexDirection:"column",gap:14,padding:"20px 18px calc(28px + env(safe-area-inset-bottom))",zIndex:1};
+  // Plus de borderTop : ce liseré marquait le pli entre l'or du bandeau et le
+  // noir de la feuille. La feuille étant passée en transparent, il ne bordait
+  // plus rien — il tirait juste un trait noir en travers de l'écran, entre du
+  // jaune et du jaune. Les rares feuilles qui gardent un aplat sombre le
+  // redemandent explicitement : là, il borde vraiment un panneau.
+  const sheet = {background:"transparent",borderRadius:G.rayonL+"px "+G.rayonL+"px 0 0",flex:1,display:"flex",flexDirection:"column",gap:14,padding:"20px 18px calc(28px + env(safe-area-inset-bottom))",zIndex:1};
 
   const backBtn = (onClick) => (
     <button onClick={onClick} style={{...retourStyle,width:40,height:40,zIndex:10}}>←</button>
@@ -10775,7 +10780,7 @@ export default function LePont() {
             </div>
             <button onClick={function(){setShowDuelCreate({id:selectedFriend.id,name:selectedFriend.name});}} style={{padding:"8px 14px",background:G.pelouse,color:"#000",border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:800}}>{tr("⚡ Défier","⚡ Challenge","⚡ Herausfordern","⚡ Sfida","⚡ Desafiar","⚡ Retar")}</button>
           </div>
-          <div style={{...sheet,background:G.nuit,borderRadius:"28px 28px 0 0",marginTop:16}}>
+          <div style={{...sheet,background:G.nuit,borderTop:G.trait,borderRadius:"28px 28px 0 0",marginTop:16}}>
             {/* Bilan */}
             {friendDuels.length > 0 && (
               <div style={{display:"flex",gap:8,marginBottom:4}}>
@@ -10844,7 +10849,7 @@ export default function LePont() {
           <div style={{...posterText(26),color:G.white,letterSpacing:2}}>{tr("AMIS","FRIENDS","FREUNDE","AMICI","AMIGOS","AMIGOS")}</div>
           <div style={{width:40}}/>
         </div>
-        <div style={{...sheet,background:G.nuit,borderRadius:"28px 28px 0 0",marginTop:16}}>
+        <div style={{...sheet,background:G.nuit,borderTop:G.trait,borderRadius:"28px 28px 0 0",marginTop:16}}>
           {/* Demandes reçues */}
           {friendRequests.length > 0 && (
             <div style={{background:G.nuit,border:G.traitFin,borderRadius:16,padding:14}}>
@@ -11215,7 +11220,7 @@ export default function LePont() {
             cadre. Il ne reste que le trait d'encre qui marque son bord haut,
             comme un pli de papier. */}
         <div style={{...sheet,background:"transparent",
-          border:"none",borderTop:G.trait,borderRadius:"28px 28px 0 0"}}>
+          border:"none",borderRadius:"28px 28px 0 0"}}>
           {/* Saison info */}
           {lbMode!=="amis" && (()=>{
             const s = getCurrentSeason();
@@ -14811,7 +14816,7 @@ export default function LePont() {
               <button onClick={function(){setShowDailyGame(false);setDailySuccess(false);setDailyHintLevel(0);setDailyUsedHint(false);setDailyHintData({ position: null, nationality: null, loading: false });}} style={{background:G.nuit,border:G.traitFin,borderRadius:"50%",width:36,height:36,color:G.white,cursor:"pointer",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
             </div>
             {/* Contenu */}
-            <div style={{...sheet,borderRadius:"28px 28px 0 0",marginTop:20,zIndex:1,flex:1,justifyContent:"flex-start",overflowY:"auto",paddingTop:20,paddingBottom:40,background:G.nuit}}>
+            <div style={{...sheet,borderTop:G.trait,borderRadius:"28px 28px 0 0",marginTop:20,zIndex:1,flex:1,justifyContent:"flex-start",overflowY:"auto",paddingTop:20,paddingBottom:40,background:G.nuit}}>
               {/* Theme banner (jour de la semaine) */}
               {(() => {
                 const theme = getTodayTheme();
