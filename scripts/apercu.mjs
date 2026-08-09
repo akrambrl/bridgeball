@@ -106,6 +106,7 @@ const CHEMINS = {
   amis:       [/^👥 Amis$|^Amis$/i],
   devinette:  [/devinette du jour/i],
   profil:     [],   // l'avatar n'est pas un bouton : traité à part
+  jeu:        [],   // la carte du carrousel non plus
 };
 if (!(ecran in CHEMINS)) {
   console.error("écran inconnu :", ecran, "— connus :", Object.keys(CHEMINS).join(", "));
@@ -116,6 +117,15 @@ for (const libelle of CHEMINS[ecran]) {
   await b.scrollIntoViewIfNeeded();
   await b.click();
   await page.waitForTimeout(1600);
+}
+if (ecran === "jeu") {
+  // La carte du carrousel lance le mode affiché. On clique aux coordonnées
+  // plutôt que sur l'<img> : le gestionnaire est porté par un calque au-dessus
+  // d'elle, qui intercepte le clic et fait échouer un click() ciblé.
+  const carte = await page.locator("img[src*='-card']").first().boundingBox();
+  if (!carte) { console.error("carte du carrousel introuvable"); process.exit(1); }
+  await page.mouse.click(carte.x + carte.width / 2, carte.y + carte.height / 2);
+  await page.waitForTimeout(2800);
 }
 if (ecran === "profil") {
   // L'avatar de l'en-tête ouvre le profil ; c'est une image cliquable, pas un
