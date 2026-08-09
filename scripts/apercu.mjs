@@ -129,10 +129,19 @@ const CHEMINS = {
   profil:     [],   // l'avatar n'est pas un bouton : traité à part
   jeu:        [],   // la carte du carrousel non plus
   "classement-bas": [/classement/i],   // puis défilé jusqu'en bas
+  "hall-of-fame": [/classement/i, /hall of fame/i],
   bienvenue:  [],   // premier lancement : la bannière RGPD
   tutoriel:   [],   // premier lancement : le carrousel, après la bannière
   partie:     [],   // idem, puis « Jouer solo »
+  collection: [],   // via le profil, puis le bloc des cartes
+  compte:     [],   // via le profil, puis « Mon compte »
+  "partie-fin": [], // une partie solo, puis on passe jusqu'a la fin de manche
 };
+// Les six modes du carrousel de l'accueil, dans leur ordre de la table
+// homeCards. On selectionne la pastille correspondante avant de taper la
+// carte : c'est le seul moyen d'ouvrir un mode qui n'est pas celui affiche.
+const MODES_CARROUSEL = ["duel", "grid", "mercato", "plug", "guess", "goatgrid"];
+for (const m of MODES_CARROUSEL) CHEMINS["mode-" + m] = [];
 if (!(ecran in CHEMINS)) {
   console.error("écran inconnu :", ecran, "— connus :", Object.keys(CHEMINS).join(", "));
   process.exit(1);
@@ -143,7 +152,36 @@ for (const libelle of CHEMINS[ecran]) {
   await b.click();
   await page.waitForTimeout(1600);
 }
-if (ecran === "jeu" || ecran === "partie") {
+// Les ecrans qui vivent derriere le profil : on l'ouvre d'abord.
+if (ecran === "collection" || ecran === "compte") {
+  await page.locator("img[src*='/cards/']").first().click();
+  await page.waitForTimeout(1500);
+  const cible = ecran === "collection"
+    ? page.locator("div").filter({ hasText: /^\d+\s*\/\s*\d+\s*cartes/ }).last()
+    : page.getByRole("button", { name: /mon compte/i }).first();
+  await cible.scrollIntoViewIfNeeded();
+  await cible.click();
+  await page.waitForTimeout(1600);
+}
+
+// Un mode precis du carrousel : pastille, puis carte.
+if (ecran.startsWith("mode-")) {
+  const i = MODES_CARROUSEL.indexOf(ecran.slice(5));
+  // Les pastilles sont les seuls petits blocs cliquables sous la carte.
+  const pastilles = page.locator("div[style*='border-radius: 5px'][style*='cursor: pointer']");
+  if (await pastilles.count() > i) {
+    await pastilles.nth(i).click();
+    await page.waitForTimeout(900);
+  } else {
+    console.warn("pastilles du carrousel introuvables — on ouvre la carte affichée");
+  }
+  const carte = await page.locator("img[src*='-card']").first().boundingBox();
+  if (!carte) { console.error("carte du carrousel introuvable"); process.exit(1); }
+  await page.mouse.click(carte.x + carte.width / 2, carte.y + carte.height / 2);
+  await page.waitForTimeout(2800);
+}
+
+if (ecran === "jeu" || ecran === "partie" || ecran === "partie-fin") {
   // La carte du carrousel lance le mode affiché. On clique aux coordonnées
   // plutôt que sur l'<img> : le gestionnaire est porté par un calque au-dessus
   // d'elle, qui intercepte le clic et fait échouer un click() ciblé.
@@ -152,10 +190,28 @@ if (ecran === "jeu" || ecran === "partie") {
   await page.mouse.click(carte.x + carte.width / 2, carte.y + carte.height / 2);
   await page.waitForTimeout(2800);
 }
-if (ecran === "partie") {
-  const solo = page.getByRole("button", { name:/jouer solo/i }).first();
+if (ecran === "partie" || ecran === "partie-fin") {
+  const solo = page.getByRole("button", { name:/jouer se?ul|jouer solo/i }).first();
   await solo.click();
   await page.waitForTimeout(3000);
+}
+
+// La fin de manche ne s'atteint qu'en jouant, et la manche est au CHRONOMETRE
+// (90 s) : passer les questions ne l'epuise pas, ca ne fait qu'enchainer les
+// paires. Il faut donc laisser le temps s'ecouler. C'est long, mais c'est le
+// seul moyen de voir cet ecran — et le voir vaut mieux que le corriger a
+// l'aveugle.
+if (ecran === "partie-fin") {
+  const limite = 110000, pas = 5000;
+  let attendu = 0;
+  while (attendu < limite) {
+    await page.waitForTimeout(pas);
+    attendu += pas;
+    const fini = await page.getByRole("button", { name:/rejouer|retour|↩/i }).first()
+      .isVisible().catch(() => false);
+    if (fini) { console.log("fin de manche atteinte apres", attendu / 1000, "s"); break; }
+  }
+  await page.waitForTimeout(1500);
 }
 if (ecran === "profil") {
   // L'avatar de l'en-tête ouvre le profil ; c'est une image cliquable, pas un
