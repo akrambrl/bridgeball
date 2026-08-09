@@ -9942,7 +9942,11 @@ export default function LePont() {
           {areneCharte}
           {fermerCharte(duelLeaveRoom, 10)}
           {/* Hero image (visuel entier) */}
-          <div style={{position:"relative",zIndex:1,width:"100%",height:"48vh",maxHeight:"520px",minHeight:"280px",overflow:"hidden",background:"#000",flexShrink:0,borderBottom:G.trait}}>
+          {/* Même raison qu'au-dessus : bandes de contain remplies par le fond
+              de la charte plutôt que par du noir. Il y a DEUX écrans de choix
+              de mode dans ce fichier — celui-ci et gameConfigModal — et ils
+              portent chacun leur propre affiche. */}
+          <div style={{position:"relative",zIndex:1,width:"100%",height:"48vh",maxHeight:"520px",minHeight:"280px",overflow:"hidden",background:"transparent",flexShrink:0,borderBottom:G.trait}}>
             <img src={DUEL_CARD_IMG} alt="" style={{width:"100%",height:"100%",objectFit:"contain",pointerEvents:"none",userSelect:"none"}} draggable={false}/>
           </div>
           <div style={{position:"relative",zIndex:1,padding:"18px 18px calc(22px + env(safe-area-inset-bottom))",flex:1,display:"flex",flexDirection:"column",maxWidth:480,margin:"0 auto",width:"100%",boxSizing:"border-box"}}>
@@ -13691,7 +13695,12 @@ export default function LePont() {
                   {fermerCharte(function(){setGameConfigModal(null);}, 10)}
 
                   {/* ── HERO IMAGE — visuel ENTIER (pas de crop), hauteur limitée pour laisser place au contenu ── */}
-                  <div style={{position:"relative",zIndex:1,width:"100%",height:"50vh",maxHeight:"540px",minHeight:"300px",overflow:"hidden",background:"#000",flexShrink:0,borderBottom:G.trait}}>
+                  {/* Transparent et non noir : l'affiche est en objectFit:contain, donc
+                      dès que son rapport ne tombe pas juste il reste des bandes de
+                      chaque côté. En noir elles coupaient l'écran en deux ; en
+                      transparent, c'est fondCharte — posé sur le conteneur juste
+                      au-dessus — qui les remplit, et l'or continue sans couture. */}
+                  <div style={{position:"relative",zIndex:1,width:"100%",height:"50vh",maxHeight:"540px",minHeight:"300px",overflow:"hidden",background:"transparent",flexShrink:0,borderBottom:G.trait}}>
                     <img
                       src={isPont ? PLUG_CARD_IMG : MERCATO_CARD_IMG}
                       alt=""
