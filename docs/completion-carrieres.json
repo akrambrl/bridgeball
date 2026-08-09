@@ -1,0 +1,10305 @@
+[
+ {
+  "nom": "Rabah Madjer",
+  "avant": [
+   "NA Hussein Dey",
+   "Racing Paris",
+   "Porto"
+  ],
+  "apres": [
+   "NA Hussein Dey",
+   "Racing Paris",
+   "Tours",
+   "Porto",
+   "Qatar SC"
+  ],
+  "ajoutes": [
+   "Qatar SC",
+   "Tours"
+  ]
+ },
+ {
+  "nom": "Rigobert Song",
+  "avant": [
+   "Metz",
+   "Liverpool",
+   "West Ham",
+   "Lens",
+   "Galatasaray"
+  ],
+  "apres": [
+   "Metz",
+   "Salernitana",
+   "Liverpool",
+   "West Ham",
+   "Köln",
+   "Lens",
+   "Galatasaray",
+   "Trabzonspor"
+  ],
+  "ajoutes": [
+   "Trabzonspor",
+   "Köln",
+   "Salernitana"
+  ]
+ },
+ {
+  "nom": "Garrincha",
+  "avant": [
+   "Botafogo",
+   "Corinthians"
+  ],
+  "apres": [
+   "Botafogo",
+   "Corinthians",
+   "Junior"
+  ],
+  "ajoutes": [
+   "Junior"
+  ]
+ },
+ {
+  "nom": "Sócrates",
+  "avant": [
+   "Corinthians",
+   "ACF Fiorentina"
+  ],
+  "apres": [
+   "Corinthians",
+   "ACF Fiorentina",
+   "Santos"
+  ],
+  "ajoutes": [
+   "Santos"
+  ]
+ },
+ {
+  "nom": "Johan Neeskens",
+  "avant": [
+   "Ajax Amsterdam",
+   "Barcelona"
+  ],
+  "apres": [
+   "Ajax Amsterdam",
+   "Barcelona",
+   "Groningen"
+  ],
+  "ajoutes": [
+   "Groningen"
+  ]
+ },
+ {
+  "nom": "Ian Rush",
+  "avant": [
+   "Liverpool",
+   "Juventus FC",
+   "Liverpool",
+   "Leeds United"
+  ],
+  "apres": [
+   "Liverpool",
+   "Juventus FC",
+   "Liverpool",
+   "Leeds United",
+   "Newcastle",
+   "Sheffield United",
+   "Sydney Olympic"
+  ],
+  "ajoutes": [
+   "Sydney Olympic",
+   "Sheffield United",
+   "Newcastle"
+  ]
+ },
+ {
+  "nom": "José Luis Chilavert",
+  "avant": [
+   "San Lorenzo",
+   "Vélez Sarsfield",
+   "Strasbourg"
+  ],
+  "apres": [
+   "Sportivo Luqueño",
+   "San Lorenzo",
+   "Guaraní",
+   "Real Zaragoza",
+   "Vélez Sarsfield",
+   "Strasbourg",
+   "Peñarol"
+  ],
+  "ajoutes": [
+   "Real Zaragoza",
+   "Peñarol",
+   "Guaraní",
+   "Sportivo Luqueño"
+  ]
+ },
+ {
+  "nom": "Dino Zoff",
+  "avant": [
+   "SSC Napoli",
+   "Juventus FC"
+  ],
+  "apres": [
+   "Udinese Calcio",
+   "SSC Napoli",
+   "Juventus FC"
+  ],
+  "ajoutes": [
+   "Udinese Calcio"
+  ]
+ },
+ {
+  "nom": "Sardar Azmoun",
+  "avant": [
+   "Rubin Kazan",
+   "Zenit",
+   "Bayer Leverkusen",
+   "AS Roma",
+   "Shabab Al Ahli"
+  ],
+  "apres": [
+   "Sepahan",
+   "Rubin Kazan",
+   "Rostov",
+   "Zenit",
+   "Bayer Leverkusen",
+   "AS Roma",
+   "Shabab Al Ahli"
+  ],
+  "ajoutes": [
+   "Rostov",
+   "Sepahan"
+  ]
+ },
+ {
+  "nom": "Roberto Soldado",
+  "avant": [
+   "Real Madrid",
+   "Getafe",
+   "Valencia",
+   "Tottenham",
+   "Villarreal",
+   "Granada",
+   "Levante"
+  ],
+  "apres": [
+   "Real Madrid",
+   "Osasuna",
+   "Getafe",
+   "Valencia",
+   "Tottenham",
+   "Villarreal",
+   "Granada",
+   "Levante"
+  ],
+  "ajoutes": [
+   "Osasuna"
+  ]
+ },
+ {
+  "nom": "Gaël Kakuta",
+  "avant": [
+   "Chelsea",
+   "Bolton",
+   "Vitesse",
+   "SS Lazio",
+   "Sevilla",
+   "Amiens",
+   "Lens"
+  ],
+  "apres": [
+   "Chelsea",
+   "Bolton",
+   "Fulham",
+   "Vitesse",
+   "Dijon",
+   "SS Lazio",
+   "Rayo Vallecano",
+   "Sevilla",
+   "Amiens",
+   "Lens",
+   "Hebei China Fortune"
+  ],
+  "ajoutes": [
+   "Fulham",
+   "Dijon",
+   "Rayo Vallecano",
+   "Hebei China Fortune"
+  ]
+ },
+ {
+  "nom": "Lionel Messi",
+  "avant": [
+   "Barcelona",
+   "PSG",
+   "Inter Miami"
+  ],
+  "apres": [
+   "Newell's Old Boys",
+   "Barcelona B",
+   "Barcelona",
+   "PSG",
+   "Inter Miami"
+  ],
+  "ajoutes": [
+   "Newell's Old Boys",
+   "Barcelona B"
+  ]
+ },
+ {
+  "nom": "Erling Haaland",
+  "avant": [
+   "Molde",
+   "Salzburg",
+   "Borussia Dortmund",
+   "Manchester City"
+  ],
+  "apres": [
+   "Bryne",
+   "Molde",
+   "Salzburg",
+   "Borussia Dortmund",
+   "Manchester City"
+  ],
+  "ajoutes": [
+   "Bryne"
+  ]
+ },
+ {
+  "nom": "Taiwo Awoniyi",
+  "avant": [
+   "Liverpool",
+   "FSV Frankfurt",
+   "NEC Nijmegen",
+   "Mouscron",
+   "Union Berlin",
+   "Nottingham Forest"
+  ],
+  "apres": [
+   "Liverpool",
+   "FSV Frankfurt",
+   "NEC Nijmegen",
+   "Mouscron",
+   "Gent",
+   "Mainz",
+   "Union Berlin",
+   "Nottingham Forest"
+  ],
+  "ajoutes": [
+   "Gent",
+   "Mainz"
+  ]
+ },
+ {
+  "nom": "Jorge Burruchaga",
+  "avant": [
+   "Independiente",
+   "Nantes",
+   "Valenciennes"
+  ],
+  "apres": [
+   "Arsenal de Sarandí",
+   "Independiente",
+   "Nantes",
+   "Valenciennes"
+  ],
+  "ajoutes": [
+   "Arsenal de Sarandí"
+  ]
+ },
+ {
+  "nom": "Matías Almeyda",
+  "avant": [
+   "River Plate",
+   "SS Lazio",
+   "Parma FC",
+   "Inter Milan",
+   "Brescia",
+   "ACF Fiorentina"
+  ],
+  "apres": [
+   "River Plate",
+   "Sevilla",
+   "SS Lazio",
+   "Parma FC",
+   "Inter Milan",
+   "Brescia",
+   "ACF Fiorentina",
+   "Quilmes",
+   "Lyn Oslo"
+  ],
+  "ajoutes": [
+   "Quilmes",
+   "Lyn Oslo",
+   "Sevilla"
+  ]
+ },
+ {
+  "nom": "Edmundo",
+  "avant": [
+   "Vasco da Gama",
+   "Palmeiras",
+   "Flamengo",
+   "ACF Fiorentina",
+   "SSC Napoli",
+   "Santos"
+  ],
+  "apres": [
+   "Vasco da Gama",
+   "Palmeiras",
+   "Flamengo",
+   "Corinthians",
+   "ACF Fiorentina",
+   "SSC Napoli",
+   "Santos",
+   "Tokyo Verdy",
+   "Urawa Red Diamonds",
+   "Fluminense",
+   "Figueirense"
+  ],
+  "ajoutes": [
+   "Tokyo Verdy",
+   "Corinthians",
+   "Figueirense",
+   "Urawa Red Diamonds",
+   "Fluminense"
+  ]
+ },
+ {
+  "nom": "Bernd Schuster",
+  "avant": [
+   "Köln",
+   "Barcelona",
+   "Real Madrid",
+   "Atletico Madrid",
+   "Bayer Leverkusen",
+   "Atletico Madrid"
+  ],
+  "apres": [
+   "Köln",
+   "Barcelona",
+   "Real Madrid",
+   "Atletico Madrid",
+   "Bayer Leverkusen",
+   "Atletico Madrid",
+   "Pumas UNAM"
+  ],
+  "ajoutes": [
+   "Pumas UNAM"
+  ]
+ },
+ {
+  "nom": "René Higuita",
+  "avant": [
+   "Millonarios",
+   "Atlético Nacional",
+   "Real Valladolid",
+   "Atlético Nacional",
+   "Independiente Medellín"
+  ],
+  "apres": [
+   "Millonarios",
+   "Atlético Nacional",
+   "Real Valladolid",
+   "Atlético Nacional",
+   "Veracruz",
+   "Independiente Medellín",
+   "Aucas"
+  ],
+  "ajoutes": [
+   "Aucas",
+   "Veracruz"
+  ]
+ },
+ {
+  "nom": "Freddy Rincón",
+  "avant": [
+   "Independiente Santa Fe",
+   "América de Cali",
+   "SSC Napoli",
+   "Real Madrid",
+   "Palmeiras",
+   "Corinthians",
+   "Cruzeiro"
+  ],
+  "apres": [
+   "Independiente Santa Fe",
+   "América de Cali",
+   "SSC Napoli",
+   "Real Madrid",
+   "Palmeiras",
+   "Corinthians",
+   "Cruzeiro",
+   "Santos"
+  ],
+  "ajoutes": [
+   "Santos"
+  ]
+ },
+ {
+  "nom": "Pierluigi Casiraghi",
+  "avant": [
+   "Juventus FC",
+   "SS Lazio",
+   "Chelsea"
+  ],
+  "apres": [
+   "Monza",
+   "Juventus FC",
+   "SS Lazio",
+   "Chelsea"
+  ],
+  "ajoutes": [
+   "Monza"
+  ]
+ },
+ {
+  "nom": "Andreas Brehme",
+  "avant": [
+   "Kaiserslautern",
+   "Bayern Munich",
+   "Inter Milan",
+   "Real Zaragoza",
+   "Kaiserslautern"
+  ],
+  "apres": [
+   "Saarbrücken",
+   "Kaiserslautern",
+   "Bayern Munich",
+   "Inter Milan",
+   "Real Zaragoza",
+   "Kaiserslautern"
+  ],
+  "ajoutes": [
+   "Saarbrücken"
+  ]
+ },
+ {
+  "nom": "Fredi Bobic",
+  "avant": [
+   "Stuttgart",
+   "Borussia Dortmund",
+   "Bolton",
+   "Hannover",
+   "Hertha Berlin"
+  ],
+  "apres": [
+   "Stuttgarter Kickers",
+   "Stuttgart",
+   "Borussia Dortmund",
+   "Bolton",
+   "Hannover",
+   "Hertha Berlin",
+   "Rijeka"
+  ],
+  "ajoutes": [
+   "Rijeka",
+   "Stuttgarter Kickers"
+  ]
+ },
+ {
+  "nom": "Markus Babbel",
+  "avant": [
+   "Bayern Munich",
+   "Hamburg",
+   "Liverpool",
+   "Stuttgart"
+  ],
+  "apres": [
+   "Bayern Munich",
+   "Hamburg",
+   "Liverpool",
+   "Blackburn",
+   "Stuttgart"
+  ],
+  "ajoutes": [
+   "Blackburn"
+  ]
+ },
+ {
+  "nom": "Peter Beardsley",
+  "avant": [
+   "Carlisle United",
+   "Vancouver Whitecaps",
+   "Newcastle",
+   "Liverpool",
+   "Everton",
+   "Manchester City",
+   "Fulham"
+  ],
+  "apres": [
+   "Carlisle United",
+   "Vancouver Whitecaps",
+   "Manchester United",
+   "Newcastle",
+   "Liverpool",
+   "Everton",
+   "Bolton",
+   "Manchester City",
+   "Fulham",
+   "Hartlepool United"
+  ],
+  "ajoutes": [
+   "Bolton",
+   "Manchester United",
+   "Hartlepool United"
+  ]
+ },
+ {
+  "nom": "Sunday Oliseh",
+  "avant": [
+   "Standard Liège",
+   "Reggiana",
+   "Köln",
+   "Ajax Amsterdam",
+   "Juventus FC",
+   "Borussia Dortmund",
+   "Bochum"
+  ],
+  "apres": [
+   "Standard Liège",
+   "Reggiana",
+   "Köln",
+   "Ajax Amsterdam",
+   "Juventus FC",
+   "Borussia Dortmund",
+   "Bochum",
+   "Genk"
+  ],
+  "ajoutes": [
+   "Genk"
+  ]
+ },
+ {
+  "nom": "Daniel Amokachi",
+  "avant": [
+   "Club Brugge",
+   "Everton",
+   "Besiktas",
+   "1860 Munich"
+  ],
+  "apres": [
+   "Club Brugge",
+   "Everton",
+   "Besiktas",
+   "1860 Munich",
+   "Colorado Rapids"
+  ],
+  "ajoutes": [
+   "Colorado Rapids"
+  ]
+ },
+ {
+  "nom": "Danny Welbeck",
+  "avant": [
+   "Manchester United",
+   "Sunderland",
+   "Arsenal",
+   "Watford",
+   "Brighton",
+   "Chelsea"
+  ],
+  "apres": [
+   "Manchester United",
+   "Sunderland",
+   "Preston",
+   "Arsenal",
+   "Watford",
+   "Brighton",
+   "Chelsea"
+  ],
+  "ajoutes": [
+   "Preston"
+  ]
+ },
+ {
+  "nom": "Amad Diallo",
+  "avant": [
+   "Atalanta BC",
+   "Manchester United",
+   "Sunderland"
+  ],
+  "apres": [
+   "Atalanta BC",
+   "Manchester United",
+   "Sunderland",
+   "Rangers"
+  ],
+  "ajoutes": [
+   "Rangers"
+  ]
+ },
+ {
+  "nom": "Benjamin Šeško",
+  "avant": [
+   "Salzburg",
+   "RB Leipzig",
+   "Manchester United"
+  ],
+  "apres": [
+   "Liefering",
+   "Salzburg",
+   "RB Leipzig",
+   "Manchester United"
+  ],
+  "ajoutes": [
+   "Liefering"
+  ]
+ },
+ {
+  "nom": "Marten de Roon",
+  "avant": [
+   "Heerenveen",
+   "Atalanta BC",
+   "Middlesbrough"
+  ],
+  "apres": [
+   "Sparta Rotterdam",
+   "Heerenveen",
+   "Atalanta BC",
+   "Middlesbrough"
+  ],
+  "ajoutes": [
+   "Sparta Rotterdam"
+  ]
+ },
+ {
+  "nom": "Sergi Roberto",
+  "avant": [
+   "Barcelona",
+   "Como"
+  ],
+  "apres": [
+   "Barcelona B",
+   "Barcelona",
+   "Como",
+   "LA Galaxy"
+  ],
+  "ajoutes": [
+   "Barcelona B",
+   "LA Galaxy"
+  ]
+ },
+ {
+  "nom": "Folarin Balogun",
+  "avant": [
+   "Arsenal",
+   "Middlesbrough",
+   "Reims",
+   "Monaco"
+  ],
+  "apres": [
+   "Arsenal",
+   "Middlesbrough",
+   "Stade de Reims",
+   "Reims",
+   "Monaco"
+  ],
+  "ajoutes": [
+   "Stade de Reims"
+  ]
+ },
+ {
+  "nom": "Hugo Ekitiké",
+  "avant": [
+   "Reims",
+   "PSG",
+   "Eintracht Frankfurt",
+   "Liverpool"
+  ],
+  "apres": [
+   "Stade de Reims",
+   "Reims",
+   "PSG",
+   "Eintracht Frankfurt",
+   "Liverpool"
+  ],
+  "ajoutes": [
+   "Stade de Reims"
+  ]
+ },
+ {
+  "nom": "James Milner",
+  "avant": [
+   "Leeds United",
+   "Newcastle",
+   "Aston Villa",
+   "Manchester City",
+   "Liverpool",
+   "Brighton"
+  ],
+  "apres": [
+   "Leeds United",
+   "Swindon",
+   "Newcastle",
+   "Aston Villa",
+   "Manchester City",
+   "Liverpool",
+   "Brighton"
+  ],
+  "ajoutes": [
+   "Swindon"
+  ]
+ },
+ {
+  "nom": "Matheus Cunha",
+  "avant": [
+   "RB Leipzig",
+   "Hertha Berlin",
+   "Atletico Madrid",
+   "Wolverhampton",
+   "Manchester United"
+  ],
+  "apres": [
+   "Sion",
+   "RB Leipzig",
+   "Hertha Berlin",
+   "Atletico Madrid",
+   "Wolverhampton",
+   "Manchester United"
+  ],
+  "ajoutes": [
+   "Sion"
+  ]
+ },
+ {
+  "nom": "Pierre-Emile Højbjerg",
+  "avant": [
+   "Bayern Munich",
+   "Southampton",
+   "Tottenham",
+   "Marseille"
+  ],
+  "apres": [
+   "Bayern Munich II",
+   "Bayern Munich",
+   "Augsburg",
+   "Schalke",
+   "Southampton",
+   "Tottenham",
+   "Marseille"
+  ],
+  "ajoutes": [
+   "Augsburg",
+   "Schalke",
+   "Bayern Munich II"
+  ]
+ },
+ {
+  "nom": "Serhou Guirassy",
+  "avant": [
+   "Lille",
+   "Köln",
+   "Rennes",
+   "AC Milan",
+   "Stuttgart",
+   "Borussia Dortmund"
+  ],
+  "apres": [
+   "Lille",
+   "Köln",
+   "Auxerre",
+   "Amiens",
+   "Rennes",
+   "AC Milan",
+   "Stuttgart",
+   "Borussia Dortmund"
+  ],
+  "ajoutes": [
+   "Auxerre",
+   "Amiens"
+  ]
+ },
+ {
+  "nom": "Nico Schlotterbeck",
+  "avant": [
+   "SC Freiburg",
+   "Borussia Dortmund"
+  ],
+  "apres": [
+   "SC Freiburg",
+   "Union Berlin",
+   "Borussia Dortmund"
+  ],
+  "ajoutes": [
+   "Union Berlin"
+  ]
+ },
+ {
+  "nom": "Ozan Kabak",
+  "avant": [
+   "Schalke",
+   "Liverpool",
+   "Hoffenheim"
+  ],
+  "apres": [
+   "Galatasaray",
+   "Schalke",
+   "Stuttgart",
+   "Liverpool",
+   "Norwich City",
+   "Hoffenheim"
+  ],
+  "ajoutes": [
+   "Stuttgart",
+   "Galatasaray",
+   "Norwich City"
+  ]
+ },
+ {
+  "nom": "Jonathan Tah",
+  "avant": [
+   "Bayer Leverkusen",
+   "Bayern Munich"
+  ],
+  "apres": [
+   "Hamburg",
+   "Fortuna Düsseldorf",
+   "Bayer Leverkusen",
+   "Bayern Munich"
+  ],
+  "ajoutes": [
+   "Hamburg",
+   "Fortuna Düsseldorf"
+  ]
+ },
+ {
+  "nom": "Victor Boniface",
+  "avant": [
+   "Bayer Leverkusen",
+   "Werder Bremen"
+  ],
+  "apres": [
+   "Bodø/Glimt",
+   "Union Saint-Gilloise",
+   "Bayer Leverkusen",
+   "Werder Bremen"
+  ],
+  "ajoutes": [
+   "Bodø/Glimt",
+   "Union Saint-Gilloise"
+  ]
+ },
+ {
+  "nom": "Konrad Laimer",
+  "avant": [
+   "Salzburg",
+   "RB Leipzig",
+   "Bayern Munich"
+  ],
+  "apres": [
+   "Liefering",
+   "Salzburg",
+   "RB Leipzig",
+   "Bayern Munich"
+  ],
+  "ajoutes": [
+   "Liefering"
+  ]
+ },
+ {
+  "nom": "Marcel Sabitzer",
+  "avant": [
+   "RB Leipzig",
+   "Bayern Munich",
+   "Manchester United",
+   "Borussia Dortmund"
+  ],
+  "apres": [
+   "Admira Wacker",
+   "Rapid Vienna",
+   "RB Leipzig",
+   "Bayern Munich",
+   "Manchester United",
+   "Borussia Dortmund"
+  ],
+  "ajoutes": [
+   "Rapid Vienna",
+   "Admira Wacker"
+  ]
+ },
+ {
+  "nom": "Péter Gulácsi",
+  "avant": [
+   "Liverpool",
+   "RB Leipzig",
+   "Villarreal"
+  ],
+  "apres": [
+   "Liverpool",
+   "MTK Budapest",
+   "Tranmere",
+   "Hull City",
+   "RB Leipzig",
+   "Villarreal"
+  ],
+  "ajoutes": [
+   "Tranmere",
+   "MTK Budapest",
+   "Hull City"
+  ]
+ },
+ {
+  "nom": "Wout Weghorst",
+  "avant": [
+   "Wolfsburg",
+   "Burnley",
+   "Manchester United",
+   "Ajax Amsterdam"
+  ],
+  "apres": [
+   "Emmen",
+   "Heracles Almelo",
+   "AZ Alkmaar",
+   "Wolfsburg",
+   "Burnley",
+   "Manchester United",
+   "Hoffenheim",
+   "Ajax Amsterdam"
+  ],
+  "ajoutes": [
+   "Emmen",
+   "Heracles Almelo",
+   "AZ Alkmaar",
+   "Hoffenheim"
+  ]
+ },
+ {
+  "nom": "Ivan Perišić",
+  "avant": [
+   "Borussia Dortmund",
+   "Bayern Munich",
+   "Inter Milan",
+   "Tottenham",
+   "PSV Eindhoven"
+  ],
+  "apres": [
+   "Sochaux",
+   "Club Brugge",
+   "Borussia Dortmund",
+   "Wolfsburg",
+   "Bayern Munich",
+   "Inter Milan",
+   "Tottenham",
+   "PSV Eindhoven",
+   "Hajduk Split"
+  ],
+  "ajoutes": [
+   "Sochaux",
+   "Club Brugge",
+   "Wolfsburg",
+   "Hajduk Split"
+  ]
+ },
+ {
+  "nom": "André Ayew",
+  "avant": [
+   "Marseille",
+   "Swansea",
+   "West Ham",
+   "Fenerbahce",
+   "NAC Breda"
+  ],
+  "apres": [
+   "Marseille",
+   "Lorient",
+   "Arles-Avignon",
+   "Swansea",
+   "West Ham",
+   "Fenerbahce",
+   "NAC Breda",
+   "Al Sadd",
+   "Nottingham Forest",
+   "Le Havre"
+  ],
+  "ajoutes": [
+   "Lorient",
+   "Arles-Avignon",
+   "Al Sadd",
+   "Nottingham Forest",
+   "Le Havre"
+  ]
+ },
+ {
+  "nom": "Nicolás Otamendi",
+  "avant": [
+   "Valencia",
+   "Manchester City",
+   "Benfica"
+  ],
+  "apres": [
+   "Vélez Sarsfield",
+   "Porto",
+   "Valencia",
+   "Atlético Mineiro",
+   "Manchester City",
+   "Benfica",
+   "River Plate"
+  ],
+  "ajoutes": [
+   "Vélez Sarsfield",
+   "Porto",
+   "Atlético Mineiro",
+   "River Plate"
+  ]
+ },
+ {
+  "nom": "Diogo Costa",
+  "avant": [
+   "Porto"
+  ],
+  "apres": [
+   "Porto B",
+   "Porto"
+  ],
+  "ajoutes": [
+   "Porto B"
+  ]
+ },
+ {
+  "nom": "João Moutinho",
+  "avant": [
+   "Sporting CP",
+   "Porto",
+   "Monaco",
+   "Wolverhampton"
+  ],
+  "apres": [
+   "Sporting CP",
+   "Porto",
+   "Monaco",
+   "Wolverhampton",
+   "Braga"
+  ],
+  "ajoutes": [
+   "Braga"
+  ]
+ },
+ {
+  "nom": "Jakub Kiwior",
+  "avant": [
+   "Spezia",
+   "Arsenal",
+   "Porto"
+  ],
+  "apres": [
+   "Žilina",
+   "Spezia",
+   "Arsenal",
+   "Porto"
+  ],
+  "ajoutes": [
+   "Žilina"
+  ]
+ },
+ {
+  "nom": "Jan Bednarek",
+  "avant": [
+   "Lech Poznań",
+   "Southampton",
+   "Porto"
+  ],
+  "apres": [
+   "Lech Poznań",
+   "Southampton",
+   "Aston Villa",
+   "Porto"
+  ],
+  "ajoutes": [
+   "Aston Villa"
+  ]
+ },
+ {
+  "nom": "Luuk de Jong",
+  "avant": [
+   "Borussia Mönchengladbach",
+   "Newcastle",
+   "PSV Eindhoven",
+   "Barcelona",
+   "Sevilla",
+   "Porto"
+  ],
+  "apres": [
+   "De Graafschap",
+   "Twente",
+   "Borussia Mönchengladbach",
+   "Newcastle",
+   "PSV Eindhoven",
+   "Barcelona",
+   "Sevilla",
+   "Porto"
+  ],
+  "ajoutes": [
+   "De Graafschap",
+   "Twente"
+  ]
+ },
+ {
+  "nom": "Lucas Torreira",
+  "avant": [
+   "Sampdoria",
+   "Arsenal",
+   "Atletico Madrid",
+   "Galatasaray"
+  ],
+  "apres": [
+   "Pescara",
+   "Montevideo Wanderers",
+   "Sampdoria",
+   "Arsenal",
+   "Atletico Madrid",
+   "ACF Fiorentina",
+   "Galatasaray"
+  ],
+  "ajoutes": [
+   "Pescara",
+   "Montevideo Wanderers",
+   "ACF Fiorentina"
+  ]
+ },
+ {
+  "nom": "Mateo Retegui",
+  "avant": [
+   "Tigre",
+   "Genoa CFC",
+   "Atalanta BC",
+   "Al Qadsiah"
+  ],
+  "apres": [
+   "Boca Juniors",
+   "Talleres",
+   "Tigre",
+   "Genoa CFC",
+   "Atalanta BC",
+   "Al Qadsiah"
+  ],
+  "ajoutes": [
+   "Boca Juniors",
+   "Talleres"
+  ]
+ },
+ {
+  "nom": "Georginio Wijnaldum",
+  "avant": [
+   "PSV Eindhoven",
+   "Newcastle",
+   "Liverpool",
+   "PSG",
+   "Al Ettifaq"
+  ],
+  "apres": [
+   "Feyenoord",
+   "PSV Eindhoven",
+   "Newcastle",
+   "Liverpool",
+   "PSG",
+   "Al Ettifaq"
+  ],
+  "ajoutes": [
+   "Feyenoord"
+  ]
+ },
+ {
+  "nom": "Youssef En-Nesyri",
+  "avant": [
+   "Málaga",
+   "Leganés",
+   "Sevilla",
+   "Fenerbahce"
+  ],
+  "apres": [
+   "Málaga",
+   "Leganés",
+   "Sevilla",
+   "Fenerbahce",
+   "Al Ittihad"
+  ],
+  "ajoutes": [
+   "Al Ittihad"
+  ]
+ },
+ {
+  "nom": "Pablo Marí",
+  "avant": [
+   "Mallorca",
+   "NAC Breda",
+   "Manchester City",
+   "Deportivo La Coruna",
+   "Flamengo",
+   "Arsenal",
+   "Udinese Calcio",
+   "Monza",
+   "ACF Fiorentina",
+   "Al Hilal"
+  ],
+  "apres": [
+   "Mallorca",
+   "Girona",
+   "NAC Breda",
+   "Manchester City",
+   "Deportivo La Coruna",
+   "Flamengo",
+   "Arsenal",
+   "Udinese Calcio",
+   "Monza",
+   "ACF Fiorentina",
+   "Al Hilal"
+  ],
+  "ajoutes": [
+   "Girona"
+  ]
+ },
+ {
+  "nom": "João Cancelo",
+  "avant": [
+   "Juventus FC",
+   "Manchester City",
+   "Barcelona",
+   "Bayern Munich",
+   "Al Hilal"
+  ],
+  "apres": [
+   "Benfica B",
+   "Benfica",
+   "Valencia",
+   "Inter Milan",
+   "Juventus FC",
+   "Manchester City",
+   "Barcelona",
+   "Bayern Munich",
+   "Al Hilal"
+  ],
+  "ajoutes": [
+   "Benfica",
+   "Valencia",
+   "Benfica B",
+   "Inter Milan"
+  ]
+ },
+ {
+  "nom": "Íñigo Martínez",
+  "avant": [
+   "Real Sociedad",
+   "Athletic Bilbao",
+   "Barcelona",
+   "Al Nassr"
+  ],
+  "apres": [
+   "Real Sociedad B",
+   "Real Sociedad",
+   "Athletic Bilbao",
+   "Barcelona",
+   "Al Nassr"
+  ],
+  "ajoutes": [
+   "Real Sociedad B"
+  ]
+ },
+ {
+  "nom": "Kevin De Bruyne",
+  "avant": [
+   "Genk",
+   "Chelsea",
+   "Wolfsburg",
+   "Manchester City",
+   "SSC Napoli"
+  ],
+  "apres": [
+   "Genk",
+   "Chelsea",
+   "Werder Bremen",
+   "Wolfsburg",
+   "Manchester City",
+   "SSC Napoli"
+  ],
+  "ajoutes": [
+   "Werder Bremen"
+  ]
+ },
+ {
+  "nom": "Víctor Valdés",
+  "avant": [
+   "Barcelona",
+   "Manchester United",
+   "Standard Liège",
+   "Middlesbrough"
+  ],
+  "apres": [
+   "Barcelona B",
+   "Barcelona",
+   "Manchester United",
+   "Standard Liège",
+   "Middlesbrough"
+  ],
+  "ajoutes": [
+   "Barcelona B"
+  ]
+ },
+ {
+  "nom": "Jesús Navas",
+  "avant": [
+   "Sevilla",
+   "Manchester City",
+   "Sevilla"
+  ],
+  "apres": [
+   "Sevilla",
+   "Sevilla Atlético",
+   "Manchester City",
+   "Sevilla"
+  ],
+  "ajoutes": [
+   "Sevilla Atlético"
+  ]
+ },
+ {
+  "nom": "Antoine Griezmann",
+  "avant": [
+   "Real Sociedad",
+   "Atletico Madrid",
+   "Barcelona",
+   "Atletico Madrid"
+  ],
+  "apres": [
+   "Real Sociedad",
+   "Atletico Madrid",
+   "Barcelona",
+   "Atletico Madrid",
+   "Orlando City"
+  ],
+  "ajoutes": [
+   "Orlando City"
+  ]
+ },
+ {
+  "nom": "Zlatan Ibrahimović",
+  "avant": [
+   "Malmö",
+   "Ajax Amsterdam",
+   "Juventus FC",
+   "Inter Milan",
+   "Barcelona",
+   "AC Milan",
+   "PSG",
+   "Manchester United",
+   "LA Galaxy",
+   "AC Milan"
+  ],
+  "apres": [
+   "Malmö FF",
+   "Malmö",
+   "Ajax Amsterdam",
+   "Juventus FC",
+   "Inter Milan",
+   "Barcelona",
+   "AC Milan",
+   "PSG",
+   "Manchester United",
+   "LA Galaxy",
+   "AC Milan"
+  ],
+  "ajoutes": [
+   "Malmö FF"
+  ]
+ },
+ {
+  "nom": "Gareth Bale",
+  "avant": [
+   "Southampton",
+   "Tottenham",
+   "Real Madrid"
+  ],
+  "apres": [
+   "Southampton",
+   "Tottenham",
+   "Real Madrid",
+   "LAFC"
+  ],
+  "ajoutes": [
+   "LAFC"
+  ]
+ },
+ {
+  "nom": "Wayne Rooney",
+  "avant": [
+   "Everton",
+   "Manchester United",
+   "Everton",
+   "DC United"
+  ],
+  "apres": [
+   "Everton",
+   "Manchester United",
+   "Everton",
+   "DC United",
+   "Derby County"
+  ],
+  "ajoutes": [
+   "Derby County"
+  ]
+ },
+ {
+  "nom": "Didier Drogba",
+  "avant": [
+   "Le Mans",
+   "Guingamp",
+   "Marseille",
+   "Chelsea",
+   "Galatasaray",
+   "Chelsea"
+  ],
+  "apres": [
+   "Le Mans",
+   "Guingamp",
+   "Marseille",
+   "Chelsea",
+   "Shanghai Shenhua",
+   "Galatasaray",
+   "Chelsea"
+  ],
+  "ajoutes": [
+   "Shanghai Shenhua"
+  ]
+ },
+ {
+  "nom": "David Beckham",
+  "avant": [
+   "Manchester United",
+   "Real Madrid",
+   "AC Milan",
+   "PSG",
+   "LA Galaxy"
+  ],
+  "apres": [
+   "Manchester United",
+   "Preston",
+   "Real Madrid",
+   "AC Milan",
+   "PSG",
+   "LA Galaxy"
+  ],
+  "ajoutes": [
+   "Preston"
+  ]
+ },
+ {
+  "nom": "Raheem Sterling",
+  "avant": [
+   "QPR",
+   "Liverpool",
+   "Manchester City",
+   "Chelsea",
+   "Arsenal"
+  ],
+  "apres": [
+   "QPR",
+   "Liverpool",
+   "Manchester City",
+   "Chelsea",
+   "Arsenal",
+   "Feyenoord"
+  ],
+  "ajoutes": [
+   "Feyenoord"
+  ]
+ },
+ {
+  "nom": "Adrien Rabiot",
+  "avant": [
+   "PSG",
+   "Juventus FC",
+   "Marseille",
+   "AC Milan"
+  ],
+  "apres": [
+   "Toulouse",
+   "PSG",
+   "Juventus FC",
+   "Marseille",
+   "AC Milan"
+  ],
+  "ajoutes": [
+   "Toulouse"
+  ]
+ },
+ {
+  "nom": "Jamal Musiala",
+  "avant": [
+   "Chelsea",
+   "Bayern Munich"
+  ],
+  "apres": [
+   "Chelsea",
+   "Bayern Munich",
+   "Bayern Munich II"
+  ],
+  "ajoutes": [
+   "Bayern Munich II"
+  ]
+ },
+ {
+  "nom": "Shkodran Mustafi",
+  "avant": [
+   "Everton",
+   "Sampdoria",
+   "Valencia",
+   "Arsenal",
+   "Schalke"
+  ],
+  "apres": [
+   "Everton",
+   "Sampdoria",
+   "Valencia",
+   "Arsenal",
+   "Schalke",
+   "Levante"
+  ],
+  "ajoutes": [
+   "Levante"
+  ]
+ },
+ {
+  "nom": "Alfredo Di Stéfano",
+  "avant": [
+   "River Plate",
+   "Millonarios",
+   "Real Madrid",
+   "Espanyol"
+  ],
+  "apres": [
+   "Boca Juniors",
+   "Huracán",
+   "River Plate",
+   "Millonarios",
+   "Real Madrid",
+   "Espanyol"
+  ],
+  "ajoutes": [
+   "Boca Juniors",
+   "Huracán"
+  ]
+ },
+ {
+  "nom": "George Best",
+  "avant": [
+   "Manchester United",
+   "Fulham"
+  ],
+  "apres": [
+   "Manchester United",
+   "Stockport",
+   "Fulham",
+   "Hibernian",
+   "Bournemouth"
+  ],
+  "ajoutes": [
+   "Hibernian",
+   "Stockport",
+   "Bournemouth"
+  ]
+ },
+ {
+  "nom": "Bobby Charlton",
+  "avant": [
+   "Manchester United",
+   "Preston"
+  ],
+  "apres": [
+   "Manchester United",
+   "Preston",
+   "Waterford"
+  ],
+  "ajoutes": [
+   "Waterford"
+  ]
+ },
+ {
+  "nom": "Inaki Williams",
+  "avant": [
+   "Athletic Bilbao"
+  ],
+  "apres": [
+   "Bilbao Athletic",
+   "Athletic Bilbao"
+  ],
+  "ajoutes": [
+   "Bilbao Athletic"
+  ]
+ },
+ {
+  "nom": "Axel Disasi",
+  "avant": [
+   "Paris FC",
+   "Reims",
+   "Monaco",
+   "Chelsea",
+   "Aston Villa"
+  ],
+  "apres": [
+   "Paris FC",
+   "Reims",
+   "Monaco",
+   "Stade de Reims",
+   "Chelsea",
+   "Aston Villa",
+   "West Ham"
+  ],
+  "ajoutes": [
+   "Stade de Reims",
+   "West Ham"
+  ]
+ },
+ {
+  "nom": "Sofiane Boufal",
+  "avant": [
+   "Angers",
+   "Lille",
+   "Southampton",
+   "Celta Vigo",
+   "Al-Rayyan"
+  ],
+  "apres": [
+   "Angers",
+   "Lille",
+   "Southampton",
+   "Celta Vigo",
+   "Al-Rayyan",
+   "Union Saint-Gilloise",
+   "Le Havre"
+  ],
+  "ajoutes": [
+   "Union Saint-Gilloise",
+   "Le Havre"
+  ]
+ },
+ {
+  "nom": "Diego Carlos",
+  "avant": [
+   "Porto",
+   "Estoril",
+   "Nantes",
+   "Sevilla",
+   "Aston Villa",
+   "Fenerbahce"
+  ],
+  "apres": [
+   "São Paulo",
+   "Porto",
+   "Estoril",
+   "Porto B",
+   "Nantes",
+   "Sevilla",
+   "Aston Villa",
+   "Fenerbahce",
+   "Como"
+  ],
+  "ajoutes": [
+   "Porto B",
+   "São Paulo",
+   "Como"
+  ]
+ },
+ {
+  "nom": "Harry Winks",
+  "avant": [
+   "Tottenham",
+   "Sampdoria",
+   "Leicester City"
+  ],
+  "apres": [
+   "Tottenham",
+   "Sampdoria",
+   "Leicester City",
+   "Cagliari Calcio"
+  ],
+  "ajoutes": [
+   "Cagliari Calcio"
+  ]
+ },
+ {
+  "nom": "David Silva",
+  "avant": [
+   "Valencia",
+   "Manchester City",
+   "Real Sociedad"
+  ],
+  "apres": [
+   "Valencia Mestalla",
+   "Valencia",
+   "Eibar",
+   "Celta Vigo",
+   "Manchester City",
+   "Real Sociedad"
+  ],
+  "ajoutes": [
+   "Eibar",
+   "Celta Vigo",
+   "Valencia Mestalla"
+  ]
+ },
+ {
+  "nom": "Victor Osimhen",
+  "avant": [
+   "Lille",
+   "SSC Napoli",
+   "Galatasaray"
+  ],
+  "apres": [
+   "Wolfsburg",
+   "Charleroi",
+   "Lille",
+   "SSC Napoli",
+   "Galatasaray"
+  ],
+  "ajoutes": [
+   "Charleroi",
+   "Wolfsburg"
+  ]
+ },
+ {
+  "nom": "Thiago Silva",
+  "avant": [
+   "Fluminense",
+   "Juventude",
+   "Porto",
+   "Dynamo Moscow",
+   "AC Milan",
+   "PSG",
+   "Chelsea",
+   "Fluminense"
+  ],
+  "apres": [
+   "Porto B",
+   "Fluminense",
+   "Juventude",
+   "Porto",
+   "Dynamo Moscow",
+   "AC Milan",
+   "PSG",
+   "Chelsea",
+   "Fluminense"
+  ],
+  "ajoutes": [
+   "Porto B"
+  ]
+ },
+ {
+  "nom": "Casemiro",
+  "avant": [
+   "São Paulo",
+   "Real Madrid",
+   "Porto",
+   "Manchester United",
+   "Inter Miami"
+  ],
+  "apres": [
+   "São Paulo",
+   "Real Madrid",
+   "Real Madrid Castilla",
+   "Porto",
+   "Manchester United",
+   "Inter Miami"
+  ],
+  "ajoutes": [
+   "Real Madrid Castilla"
+  ]
+ },
+ {
+  "nom": "Jordan Henderson",
+  "avant": [
+   "Sunderland",
+   "Liverpool",
+   "Al Ettifaq",
+   "Ajax Amsterdam",
+   "Chelsea"
+  ],
+  "apres": [
+   "Sunderland",
+   "Coventry City",
+   "Liverpool",
+   "Al Ettifaq",
+   "Ajax Amsterdam",
+   "Brentford",
+   "Chelsea"
+  ],
+  "ajoutes": [
+   "Coventry City",
+   "Brentford"
+  ]
+ },
+ {
+  "nom": "Harry Maguire",
+  "avant": [
+   "Sheffield United",
+   "Hull City",
+   "Leicester City",
+   "Manchester United"
+  ],
+  "apres": [
+   "Sheffield United",
+   "Hull City",
+   "Wigan Athletic",
+   "Leicester City",
+   "Manchester United"
+  ],
+  "ajoutes": [
+   "Wigan Athletic"
+  ]
+ },
+ {
+  "nom": "Kieran Trippier",
+  "avant": [
+   "Tottenham",
+   "Atletico Madrid",
+   "Newcastle",
+   "Wolverhampton"
+  ],
+  "apres": [
+   "Manchester City",
+   "Barnsley",
+   "Burnley",
+   "Tottenham",
+   "Atletico Madrid",
+   "Newcastle",
+   "Wolverhampton"
+  ],
+  "ajoutes": [
+   "Manchester City",
+   "Barnsley",
+   "Burnley"
+  ]
+ },
+ {
+  "nom": "Khvicha Kvaratskhelia",
+  "avant": [
+   "Rustavi",
+   "Dinamo Tbilisi",
+   "Rubin Kazan",
+   "Dinamo Batumi",
+   "SSC Napoli",
+   "PSG"
+  ],
+  "apres": [
+   "Rustavi",
+   "Dinamo Tbilisi",
+   "Rubin Kazan",
+   "Lokomotiv Moscow",
+   "Dinamo Batumi",
+   "SSC Napoli",
+   "PSG"
+  ],
+  "ajoutes": [
+   "Lokomotiv Moscow"
+  ]
+ },
+ {
+  "nom": "Pierre-Emerick Aubameyang",
+  "avant": [
+   "Borussia Dortmund",
+   "Arsenal",
+   "Barcelona",
+   "Chelsea",
+   "Marseille",
+   "Deportivo La Coruna"
+  ],
+  "apres": [
+   "AC Milan",
+   "Dijon",
+   "Lille",
+   "Saint-Etienne",
+   "Borussia Dortmund",
+   "Arsenal",
+   "Barcelona",
+   "Chelsea",
+   "Marseille",
+   "Deportivo La Coruna",
+   "Al Qadsiah"
+  ],
+  "ajoutes": [
+   "AC Milan",
+   "Dijon",
+   "Lille",
+   "Saint-Etienne",
+   "Al Qadsiah"
+  ]
+ },
+ {
+  "nom": "Edinson Cavani",
+  "avant": [
+   "SSC Napoli",
+   "PSG",
+   "Manchester United"
+  ],
+  "apres": [
+   "SSC Napoli",
+   "PSG",
+   "Manchester United",
+   "Valencia",
+   "Boca Juniors"
+  ],
+  "ajoutes": [
+   "Valencia",
+   "Boca Juniors"
+  ]
+ },
+ {
+  "nom": "Álvaro Morata",
+  "avant": [
+   "Real Madrid",
+   "Juventus FC",
+   "Chelsea",
+   "Atletico Madrid",
+   "AC Milan",
+   "Galatasaray",
+   "Como"
+  ],
+  "apres": [
+   "Real Madrid",
+   "Real Madrid Castilla",
+   "Juventus FC",
+   "Chelsea",
+   "Atletico Madrid",
+   "AC Milan",
+   "Galatasaray",
+   "Como"
+  ],
+  "ajoutes": [
+   "Real Madrid Castilla"
+  ]
+ },
+ {
+  "nom": "Xabi Alonso",
+  "avant": [
+   "Real Sociedad",
+   "Liverpool",
+   "Real Madrid",
+   "Bayern Munich"
+  ],
+  "apres": [
+   "Real Sociedad B",
+   "Real Sociedad",
+   "Eibar",
+   "Liverpool",
+   "Real Madrid",
+   "Bayern Munich"
+  ],
+  "ajoutes": [
+   "Real Sociedad B",
+   "Eibar"
+  ]
+ },
+ {
+  "nom": "Andrés Iniesta",
+  "avant": [
+   "Barcelona",
+   "Vissel Kobe",
+   "Emirates Club"
+  ],
+  "apres": [
+   "Barcelona B",
+   "Barcelona",
+   "Vissel Kobe",
+   "Emirates Club"
+  ],
+  "ajoutes": [
+   "Barcelona B"
+  ]
+ },
+ {
+  "nom": "Frank Lampard",
+  "avant": [
+   "West Ham",
+   "Chelsea",
+   "Manchester City",
+   "New York City FC"
+  ],
+  "apres": [
+   "West Ham",
+   "Swansea",
+   "Chelsea",
+   "Manchester City",
+   "New York City FC"
+  ],
+  "ajoutes": [
+   "Swansea"
+  ]
+ },
+ {
+  "nom": "Rio Ferdinand",
+  "avant": [
+   "West Ham",
+   "Leeds United",
+   "Manchester United",
+   "QPR"
+  ],
+  "apres": [
+   "West Ham",
+   "Bournemouth",
+   "Leeds United",
+   "Manchester United",
+   "QPR"
+  ],
+  "ajoutes": [
+   "Bournemouth"
+  ]
+ },
+ {
+  "nom": "Randal Kolo Muani",
+  "avant": [
+   "Nantes",
+   "Eintracht Frankfurt",
+   "PSG",
+   "Juventus FC",
+   "Tottenham"
+  ],
+  "apres": [
+   "Nantes",
+   "Boulogne",
+   "Eintracht Frankfurt",
+   "PSG",
+   "Juventus FC",
+   "Tottenham"
+  ],
+  "ajoutes": [
+   "Boulogne"
+  ]
+ },
+ {
+  "nom": "Nico Williams",
+  "avant": [
+   "Athletic Bilbao"
+  ],
+  "apres": [
+   "Bilbao Athletic",
+   "Athletic Bilbao"
+  ],
+  "ajoutes": [
+   "Bilbao Athletic"
+  ]
+ },
+ {
+  "nom": "Granit Xhaka",
+  "avant": [
+   "Borussia Mönchengladbach",
+   "Arsenal",
+   "Bayer Leverkusen",
+   "Sunderland"
+  ],
+  "apres": [
+   "Basel",
+   "Borussia Mönchengladbach",
+   "Arsenal",
+   "Bayer Leverkusen",
+   "Sunderland"
+  ],
+  "ajoutes": [
+   "Basel"
+  ]
+ },
+ {
+  "nom": "Mats Hummels",
+  "avant": [
+   "Borussia Dortmund",
+   "Bayern Munich",
+   "AS Roma"
+  ],
+  "apres": [
+   "Bayern Munich II",
+   "Borussia Dortmund",
+   "Bayern Munich",
+   "AS Roma"
+  ],
+  "ajoutes": [
+   "Bayern Munich II"
+  ]
+ },
+ {
+  "nom": "Leon Goretzka",
+  "avant": [
+   "Schalke",
+   "Bayern Munich"
+  ],
+  "apres": [
+   "Bochum",
+   "Schalke",
+   "Bayern Munich"
+  ],
+  "ajoutes": [
+   "Bochum"
+  ]
+ },
+ {
+  "nom": "Marco Verratti",
+  "avant": [
+   "Pescara",
+   "PSG",
+   "Al Arabi"
+  ],
+  "apres": [
+   "Pescara",
+   "PSG",
+   "Al Arabi",
+   "Al-Duhail"
+  ],
+  "ajoutes": [
+   "Al-Duhail"
+  ]
+ },
+ {
+  "nom": "Sergio Busquets",
+  "avant": [
+   "Barcelona",
+   "Inter Miami"
+  ],
+  "apres": [
+   "Barcelona B",
+   "Barcelona",
+   "Inter Miami"
+  ],
+  "ajoutes": [
+   "Barcelona B"
+  ]
+ },
+ {
+  "nom": "Giorgio Chiellini",
+  "avant": [
+   "Juventus FC",
+   "LAFC"
+  ],
+  "apres": [
+   "Juventus FC",
+   "ACF Fiorentina",
+   "LAFC"
+  ],
+  "ajoutes": [
+   "ACF Fiorentina"
+  ]
+ },
+ {
+  "nom": "Arturo Vidal",
+  "avant": [
+   "Juventus FC",
+   "Bayern Munich",
+   "Barcelona",
+   "Inter Milan"
+  ],
+  "apres": [
+   "Colo-Colo",
+   "Universidad de Chile",
+   "Juventus FC",
+   "Bayern Munich",
+   "Barcelona",
+   "Inter Milan",
+   "Athletico Paranaense"
+  ],
+  "ajoutes": [
+   "Colo-Colo",
+   "Universidad de Chile",
+   "Athletico Paranaense"
+  ]
+ },
+ {
+  "nom": "Blaise Matuidi",
+  "avant": [
+   "PSG",
+   "Juventus FC"
+  ],
+  "apres": [
+   "Troyes",
+   "Saint-Etienne",
+   "PSG",
+   "Juventus FC",
+   "Inter Miami"
+  ],
+  "ajoutes": [
+   "Saint-Etienne",
+   "Troyes",
+   "Inter Miami"
+  ]
+ },
+ {
+  "nom": "Ciro Immobile",
+  "avant": [
+   "Juventus FC",
+   "Torino FC",
+   "Borussia Dortmund",
+   "Sevilla",
+   "SS Lazio",
+   "Besiktas",
+   "Bologna FC",
+   "Paris FC"
+  ],
+  "apres": [
+   "Juventus FC",
+   "Pescara",
+   "Genoa CFC",
+   "Torino FC",
+   "Borussia Dortmund",
+   "Sevilla",
+   "SS Lazio",
+   "Besiktas",
+   "Bologna FC",
+   "Paris FC"
+  ],
+  "ajoutes": [
+   "Genoa CFC",
+   "Pescara"
+  ]
+ },
+ {
+  "nom": "Santi Cazorla",
+  "avant": [
+   "Villarreal",
+   "Málaga",
+   "Arsenal"
+  ],
+  "apres": [
+   "Villarreal",
+   "Villarreal B",
+   "Málaga",
+   "Arsenal",
+   "Al Sadd",
+   "Real Oviedo"
+  ],
+  "ajoutes": [
+   "Villarreal B",
+   "Real Oviedo",
+   "Al Sadd"
+  ]
+ },
+ {
+  "nom": "Fábio Coentrão",
+  "avant": [
+   "Benfica",
+   "Real Madrid",
+   "Monaco",
+   "Sporting CP",
+   "Rio Ave"
+  ],
+  "apres": [
+   "Benfica",
+   "Real Zaragoza",
+   "Real Madrid",
+   "Monaco",
+   "Sporting CP",
+   "Rio Ave"
+  ],
+  "ajoutes": [
+   "Real Zaragoza"
+  ]
+ },
+ {
+  "nom": "Fernando Redondo",
+  "avant": [
+   "Tenerife",
+   "Real Madrid",
+   "AC Milan"
+  ],
+  "apres": [
+   "Argentinos Juniors",
+   "Tenerife",
+   "Real Madrid",
+   "AC Milan"
+  ],
+  "ajoutes": [
+   "Argentinos Juniors"
+  ]
+ },
+ {
+  "nom": "Maniche",
+  "avant": [
+   "Benfica",
+   "Porto",
+   "Dynamo Moscow",
+   "Chelsea",
+   "Atletico Madrid",
+   "Inter Milan",
+   "Sporting CP"
+  ],
+  "apres": [
+   "Alverca",
+   "Benfica",
+   "Porto",
+   "Dynamo Moscow",
+   "Chelsea",
+   "Atletico Madrid",
+   "Inter Milan",
+   "Köln",
+   "Sporting CP"
+  ],
+  "ajoutes": [
+   "Alverca",
+   "Köln"
+  ]
+ },
+ {
+  "nom": "Ruud van Nistelrooy",
+  "avant": [
+   "PSV Eindhoven",
+   "Manchester United",
+   "Real Madrid"
+  ],
+  "apres": [
+   "Den Bosch",
+   "Heerenveen",
+   "PSV Eindhoven",
+   "Manchester United",
+   "Real Madrid",
+   "Hamburg"
+  ],
+  "ajoutes": [
+   "Hamburg",
+   "Heerenveen",
+   "Den Bosch"
+  ]
+ },
+ {
+  "nom": "Patrick Kluivert",
+  "avant": [
+   "Ajax Amsterdam",
+   "Barcelona",
+   "AS Roma",
+   "Valencia",
+   "Newcastle"
+  ],
+  "apres": [
+   "Ajax Amsterdam",
+   "Barcelona",
+   "AS Roma",
+   "AC Milan",
+   "Valencia",
+   "Newcastle",
+   "PSV Eindhoven",
+   "Lille"
+  ],
+  "ajoutes": [
+   "Lille",
+   "PSV Eindhoven",
+   "AC Milan"
+  ]
+ },
+ {
+  "nom": "Clarence Seedorf",
+  "avant": [
+   "Ajax Amsterdam",
+   "Sampdoria",
+   "Real Madrid",
+   "Inter Milan",
+   "AC Milan"
+  ],
+  "apres": [
+   "Ajax Amsterdam",
+   "Sampdoria",
+   "Real Madrid",
+   "Inter Milan",
+   "AC Milan",
+   "Botafogo"
+  ],
+  "ajoutes": [
+   "Botafogo"
+  ]
+ },
+ {
+  "nom": "Christian Vieri",
+  "avant": [
+   "SS Lazio",
+   "Inter Milan",
+   "AC Milan"
+  ],
+  "apres": [
+   "Torino FC",
+   "Pisa",
+   "Ravenna",
+   "Venezia",
+   "Atalanta BC",
+   "Juventus FC",
+   "Atletico Madrid",
+   "SS Lazio",
+   "Inter Milan",
+   "AC Milan",
+   "ACF Fiorentina"
+  ],
+  "ajoutes": [
+   "Juventus FC",
+   "ACF Fiorentina",
+   "Atalanta BC",
+   "Venezia",
+   "Torino FC",
+   "Ravenna",
+   "Atletico Madrid",
+   "Pisa"
+  ]
+ },
+ {
+  "nom": "Fabio Cannavaro",
+  "avant": [
+   "SSC Napoli",
+   "Parma FC",
+   "Inter Milan",
+   "Juventus FC",
+   "Real Madrid",
+   "Juventus FC"
+  ],
+  "apres": [
+   "SSC Napoli",
+   "Parma FC",
+   "Inter Milan",
+   "Juventus FC",
+   "Real Madrid",
+   "Juventus FC",
+   "Shabab Al Ahli"
+  ],
+  "ajoutes": [
+   "Shabab Al Ahli"
+  ]
+ },
+ {
+  "nom": "Deco",
+  "avant": [
+   "Porto",
+   "Barcelona",
+   "Chelsea"
+  ],
+  "apres": [
+   "Corinthians",
+   "Alverca",
+   "Benfica",
+   "Porto",
+   "Barcelona",
+   "Chelsea",
+   "Fluminense"
+  ],
+  "ajoutes": [
+   "Alverca",
+   "Corinthians",
+   "Benfica",
+   "Fluminense"
+  ]
+ },
+ {
+  "nom": "Nani",
+  "avant": [
+   "Sporting CP",
+   "Manchester United",
+   "Sporting CP",
+   "Valencia",
+   "Sporting CP"
+  ],
+  "apres": [
+   "Sporting CP",
+   "Manchester United",
+   "Sporting CP",
+   "Valencia",
+   "Sporting CP",
+   "SS Lazio",
+   "Orlando City",
+   "Venezia",
+   "Melbourne Victory",
+   "Adana Demirspor",
+   "Estrela Amadora"
+  ],
+  "ajoutes": [
+   "SS Lazio",
+   "Orlando City",
+   "Venezia",
+   "Melbourne Victory",
+   "Adana Demirspor",
+   "Estrela Amadora"
+  ]
+ },
+ {
+  "nom": "Arjen Robben",
+  "avant": [
+   "PSV Eindhoven",
+   "Chelsea",
+   "Real Madrid",
+   "Bayern Munich"
+  ],
+  "apres": [
+   "Groningen",
+   "PSV Eindhoven",
+   "Chelsea",
+   "Real Madrid",
+   "Bayern Munich"
+  ],
+  "ajoutes": [
+   "Groningen"
+  ]
+ },
+ {
+  "nom": "Rayan Cherki",
+  "avant": [
+   "Lyon",
+   "Manchester City"
+  ],
+  "apres": [
+   "Lyon B",
+   "Lyon",
+   "Manchester City"
+  ],
+  "ajoutes": [
+   "Lyon B"
+  ]
+ },
+ {
+  "nom": "Diego Costa",
+  "avant": [
+   "Atletico Madrid",
+   "Chelsea"
+  ],
+  "apres": [
+   "Penafiel",
+   "Braga",
+   "Atletico Madrid",
+   "Celta Vigo",
+   "Real Valladolid",
+   "Rayo Vallecano",
+   "Chelsea",
+   "Atlético Mineiro",
+   "Wolverhampton",
+   "Botafogo",
+   "Grêmio"
+  ],
+  "ajoutes": [
+   "Celta Vigo",
+   "Penafiel",
+   "Rayo Vallecano",
+   "Real Valladolid",
+   "Braga",
+   "Atlético Mineiro",
+   "Wolverhampton",
+   "Botafogo",
+   "Grêmio"
+  ]
+ },
+ {
+  "nom": "Marc-André ter Stegen",
+  "avant": [
+   "Borussia Mönchengladbach",
+   "Barcelona",
+   "Ajax Amsterdam"
+  ],
+  "apres": [
+   "Borussia Mönchengladbach",
+   "Barcelona",
+   "Ajax Amsterdam",
+   "Girona"
+  ],
+  "ajoutes": [
+   "Girona"
+  ]
+ },
+ {
+  "nom": "Dominik Szoboszlai",
+  "avant": [
+   "Salzburg",
+   "RB Leipzig",
+   "Liverpool"
+  ],
+  "apres": [
+   "Liefering",
+   "Salzburg",
+   "RB Leipzig",
+   "Liverpool"
+  ],
+  "ajoutes": [
+   "Liefering"
+  ]
+ },
+ {
+  "nom": "Federico Valverde",
+  "avant": [
+   "Peñarol",
+   "Deportivo La Coruna",
+   "Real Madrid"
+  ],
+  "apres": [
+   "Peñarol",
+   "Deportivo La Coruna",
+   "Real Madrid Castilla",
+   "Real Madrid"
+  ],
+  "ajoutes": [
+   "Real Madrid Castilla"
+  ]
+ },
+ {
+  "nom": "Andriy Lunin",
+  "avant": [
+   "Dnipro",
+   "Real Madrid",
+   "Leganés",
+   "Real Valladolid",
+   "Oviedo"
+  ],
+  "apres": [
+   "Zorya Luhansk",
+   "Dnipro",
+   "Real Madrid",
+   "Leganés",
+   "Real Valladolid",
+   "Oviedo",
+   "Real Oviedo"
+  ],
+  "ajoutes": [
+   "Zorya Luhansk",
+   "Real Oviedo"
+  ]
+ },
+ {
+  "nom": "Vinícius Júnior",
+  "avant": [
+   "Flamengo",
+   "Real Madrid"
+  ],
+  "apres": [
+   "Flamengo",
+   "Real Madrid",
+   "Real Madrid Castilla"
+  ],
+  "ajoutes": [
+   "Real Madrid Castilla"
+  ]
+ },
+ {
+  "nom": "Giovanni van Bronckhorst",
+  "avant": [
+   "Feyenoord",
+   "Rangers",
+   "Arsenal",
+   "Barcelona"
+  ],
+  "apres": [
+   "Feyenoord",
+   "RKC Waalwijk",
+   "Rangers",
+   "Arsenal",
+   "Barcelona"
+  ],
+  "ajoutes": [
+   "RKC Waalwijk"
+  ]
+ },
+ {
+  "nom": "Nicolas Anelka",
+  "avant": [
+   "Arsenal",
+   "Real Madrid",
+   "PSG",
+   "Manchester City",
+   "Chelsea",
+   "Fenerbahce"
+  ],
+  "apres": [
+   "Arsenal",
+   "Real Madrid",
+   "PSG",
+   "Manchester City",
+   "Liverpool",
+   "Bolton",
+   "Chelsea",
+   "Fenerbahce",
+   "Shanghai Shenhua",
+   "Juventus FC",
+   "West Brom",
+   "Mumbai City"
+  ],
+  "ajoutes": [
+   "Liverpool",
+   "Bolton",
+   "Juventus FC",
+   "Shanghai Shenhua",
+   "West Brom",
+   "Mumbai City"
+  ]
+ },
+ {
+  "nom": "Sylvain Wiltord",
+  "avant": [
+   "Bordeaux",
+   "Arsenal",
+   "Lyon",
+   "Marseille",
+   "Rennes"
+  ],
+  "apres": [
+   "Bordeaux",
+   "Arsenal",
+   "Lyon",
+   "Marseille",
+   "Rennes",
+   "Metz",
+   "Nantes"
+  ],
+  "ajoutes": [
+   "Metz",
+   "Nantes"
+  ]
+ },
+ {
+  "nom": "Marc Overmars",
+  "avant": [
+   "Ajax Amsterdam",
+   "Arsenal",
+   "Barcelona"
+  ],
+  "apres": [
+   "Go Ahead Eagles",
+   "Willem II",
+   "Ajax Amsterdam",
+   "Arsenal",
+   "Barcelona"
+  ],
+  "ajoutes": [
+   "Willem II",
+   "Go Ahead Eagles"
+  ]
+ },
+ {
+  "nom": "Marcel Desailly",
+  "avant": [
+   "Marseille",
+   "AC Milan",
+   "Chelsea"
+  ],
+  "apres": [
+   "Nantes",
+   "Marseille",
+   "AC Milan",
+   "Chelsea",
+   "Al-Gharafa",
+   "Qatar SC"
+  ],
+  "ajoutes": [
+   "Nantes",
+   "Qatar SC",
+   "Al-Gharafa"
+  ]
+ },
+ {
+  "nom": "William Gallas",
+  "avant": [
+   "Chelsea",
+   "Arsenal",
+   "Tottenham"
+  ],
+  "apres": [
+   "Marseille",
+   "Chelsea",
+   "Arsenal",
+   "Tottenham",
+   "Perth Glory"
+  ],
+  "ajoutes": [
+   "Marseille",
+   "Perth Glory"
+  ]
+ },
+ {
+  "nom": "Kolo Toure",
+  "avant": [
+   "Arsenal",
+   "Manchester City",
+   "Liverpool"
+  ],
+  "apres": [
+   "ASEC Mimosas",
+   "Arsenal",
+   "Manchester City",
+   "Liverpool",
+   "Celtic"
+  ],
+  "ajoutes": [
+   "Celtic",
+   "ASEC Mimosas"
+  ]
+ },
+ {
+  "nom": "Willy Sagnol",
+  "avant": [
+   "Monaco",
+   "Bayern Munich"
+  ],
+  "apres": [
+   "Saint-Etienne",
+   "Monaco",
+   "Bayern Munich"
+  ],
+  "ajoutes": [
+   "Saint-Etienne"
+  ]
+ },
+ {
+  "nom": "Giovane Élber",
+  "avant": [
+   "Grasshoppers",
+   "Stuttgart",
+   "Bayern Munich",
+   "Lyon",
+   "Borussia Mönchengladbach"
+  ],
+  "apres": [
+   "Londrina EC",
+   "Grasshoppers",
+   "AC Milan",
+   "Stuttgart",
+   "Bayern Munich",
+   "Lyon",
+   "Borussia Mönchengladbach"
+  ],
+  "ajoutes": [
+   "AC Milan",
+   "Londrina EC"
+  ]
+ },
+ {
+  "nom": "Roque Santa Cruz",
+  "avant": [
+   "Olimpia Asuncion",
+   "Bayern Munich",
+   "Blackburn",
+   "Manchester City",
+   "Málaga",
+   "Cardiff City"
+  ],
+  "apres": [
+   "Olimpia Asuncion",
+   "Bayern Munich",
+   "Blackburn",
+   "Manchester City",
+   "Málaga",
+   "Cardiff City",
+   "Real Betis",
+   "Cruz Azul",
+   "Libertad"
+  ],
+  "ajoutes": [
+   "Real Betis",
+   "Cruz Azul",
+   "Libertad"
+  ]
+ },
+ {
+  "nom": "Karl-Heinz Riedle",
+  "avant": [
+   "Borussia Dortmund",
+   "Liverpool"
+  ],
+  "apres": [
+   "Augsburg",
+   "Werder Bremen",
+   "SS Lazio",
+   "Borussia Dortmund",
+   "Liverpool",
+   "Fulham"
+  ],
+  "ajoutes": [
+   "Werder Bremen",
+   "SS Lazio",
+   "Augsburg",
+   "Fulham"
+  ]
+ },
+ {
+  "nom": "Stefan Effenberg",
+  "avant": [
+   "Borussia Mönchengladbach",
+   "Bayern Munich",
+   "ACF Fiorentina",
+   "Bayern Munich",
+   "Borussia Mönchengladbach",
+   "Wolfsburg"
+  ],
+  "apres": [
+   "Borussia Mönchengladbach",
+   "Bayern Munich",
+   "ACF Fiorentina",
+   "Bayern Munich",
+   "Borussia Mönchengladbach",
+   "Wolfsburg",
+   "Al Arabi"
+  ],
+  "ajoutes": [
+   "Al Arabi"
+  ]
+ },
+ {
+  "nom": "Alessandro Costacurta",
+  "avant": [
+   "AC Milan"
+  ],
+  "apres": [
+   "AC Milan",
+   "Monza"
+  ],
+  "ajoutes": [
+   "Monza"
+  ]
+ },
+ {
+  "nom": "Andrea Pirlo",
+  "avant": [
+   "Inter Milan",
+   "AC Milan",
+   "Juventus FC",
+   "New York City FC"
+  ],
+  "apres": [
+   "Brescia",
+   "Inter Milan",
+   "Reggina",
+   "AC Milan",
+   "Juventus FC",
+   "New York City FC"
+  ],
+  "ajoutes": [
+   "Brescia",
+   "Reggina"
+  ]
+ },
+ {
+  "nom": "Cláudio Taffarel",
+  "avant": [
+   "Internacional",
+   "Parma FC",
+   "Atlético Mineiro",
+   "Galatasaray"
+  ],
+  "apres": [
+   "Internacional",
+   "Parma FC",
+   "Reggiana",
+   "Atlético Mineiro",
+   "Galatasaray"
+  ],
+  "ajoutes": [
+   "Reggiana"
+  ]
+ },
+ {
+  "nom": "Lúcio",
+  "avant": [
+   "Internacional",
+   "Bayer Leverkusen",
+   "Bayern Munich",
+   "Inter Milan"
+  ],
+  "apres": [
+   "Internacional",
+   "Bayer Leverkusen",
+   "Bayern Munich",
+   "Inter Milan",
+   "Juventus FC",
+   "São Paulo"
+  ],
+  "ajoutes": [
+   "Juventus FC",
+   "São Paulo"
+  ]
+ },
+ {
+  "nom": "Cristian Chivu",
+  "avant": [
+   "Universitatea Craiova",
+   "Ajax Amsterdam",
+   "AS Roma",
+   "Inter Milan"
+  ],
+  "apres": [
+   "FCM Reșița",
+   "Universitatea Craiova",
+   "Ajax Amsterdam",
+   "AS Roma",
+   "Inter Milan"
+  ],
+  "ajoutes": [
+   "FCM Reșița"
+  ]
+ },
+ {
+  "nom": "Ricardo Quaresma",
+  "avant": [
+   "Sporting CP",
+   "Barcelona",
+   "Porto",
+   "Chelsea",
+   "Inter Milan",
+   "Besiktas",
+   "Al Ahli",
+   "Kasımpaşa"
+  ],
+  "apres": [
+   "Sporting CP",
+   "Barcelona",
+   "Porto",
+   "Chelsea",
+   "Inter Milan",
+   "Besiktas",
+   "Al Ahli",
+   "Shabab Al Ahli",
+   "Kasımpaşa",
+   "Vitoria Guimaraes"
+  ],
+  "ajoutes": [
+   "Shabab Al Ahli",
+   "Vitoria Guimaraes"
+  ]
+ },
+ {
+  "nom": "Juliano Belletti",
+  "avant": [
+   "São Paulo",
+   "Atlético Mineiro",
+   "Villarreal",
+   "Barcelona",
+   "Chelsea"
+  ],
+  "apres": [
+   "São Paulo",
+   "Atlético Mineiro",
+   "Villarreal",
+   "Barcelona",
+   "Chelsea",
+   "Fluminense"
+  ],
+  "ajoutes": [
+   "Fluminense"
+  ]
+ },
+ {
+  "nom": "John Arne Riise",
+  "avant": [
+   "Monaco",
+   "Liverpool",
+   "AS Roma",
+   "Fulham",
+   "APOEL",
+   "Delhi Dynamos"
+  ],
+  "apres": [
+   "Aalesund",
+   "Monaco",
+   "Liverpool",
+   "AS Roma",
+   "Fulham",
+   "APOEL",
+   "Delhi Dynamos"
+  ],
+  "ajoutes": [
+   "Aalesund"
+  ]
+ },
+ {
+  "nom": "Milan Baroš",
+  "avant": [
+   "Banik Ostrava",
+   "Liverpool",
+   "Aston Villa",
+   "Lyon",
+   "Portsmouth",
+   "Galatasaray",
+   "Antalyaspor",
+   "Slavia Prague",
+   "Mladá Boleslav"
+  ],
+  "apres": [
+   "Banik Ostrava",
+   "Liverpool",
+   "Aston Villa",
+   "Lyon",
+   "Portsmouth",
+   "Galatasaray",
+   "Antalyaspor",
+   "Slavia Prague",
+   "Mladá Boleslav",
+   "Slovan Liberec"
+  ],
+  "ajoutes": [
+   "Slovan Liberec"
+  ]
+ },
+ {
+  "nom": "Teddy Sheringham",
+  "avant": [
+   "Manchester United",
+   "Tottenham"
+  ],
+  "apres": [
+   "Millwall",
+   "Nottingham Forest",
+   "Manchester United",
+   "Tottenham",
+   "Portsmouth",
+   "West Ham",
+   "Colchester",
+   "Stevenage"
+  ],
+  "ajoutes": [
+   "Colchester",
+   "Portsmouth",
+   "West Ham",
+   "Nottingham Forest",
+   "Millwall",
+   "Stevenage"
+  ]
+ },
+ {
+  "nom": "Andy Cole",
+  "avant": [
+   "Manchester United",
+   "Newcastle",
+   "Blackburn"
+  ],
+  "apres": [
+   "Arsenal",
+   "Fulham",
+   "Bristol City",
+   "Manchester United",
+   "Newcastle",
+   "Blackburn",
+   "Manchester City",
+   "Portsmouth",
+   "Birmingham City",
+   "Sunderland",
+   "Nottingham Forest",
+   "Burnley"
+  ],
+  "ajoutes": [
+   "Birmingham City",
+   "Arsenal",
+   "Portsmouth",
+   "Bristol City",
+   "Sunderland",
+   "Manchester City",
+   "Nottingham Forest",
+   "Burnley",
+   "Fulham"
+  ]
+ },
+ {
+  "nom": "Dwight Yorke",
+  "avant": [
+   "Manchester United",
+   "Aston Villa"
+  ],
+  "apres": [
+   "Manchester United",
+   "Aston Villa",
+   "Blackburn",
+   "Birmingham City",
+   "Sydney FC",
+   "Sunderland"
+  ],
+  "ajoutes": [
+   "Sydney FC",
+   "Sunderland",
+   "Birmingham City",
+   "Blackburn"
+  ]
+ },
+ {
+  "nom": "Abedi Pele",
+  "avant": [
+   "Marseille",
+   "Lille",
+   "Lyon",
+   "Torino FC"
+  ],
+  "apres": [
+   "Zurich",
+   "Al Sadd",
+   "Marseille",
+   "Lille",
+   "Lyon",
+   "Torino FC",
+   "1860 Munich"
+  ],
+  "ajoutes": [
+   "Zurich",
+   "1860 Munich",
+   "Al Sadd"
+  ]
+ },
+ {
+  "nom": "Javier Zanetti",
+  "avant": [
+   "Inter Milan"
+  ],
+  "apres": [
+   "Banfield",
+   "Inter Milan"
+  ],
+  "ajoutes": [
+   "Banfield"
+  ]
+ },
+ {
+  "nom": "Nicola Ventola",
+  "avant": [
+   "Bari",
+   "Inter Milan",
+   "Atalanta BC"
+  ],
+  "apres": [
+   "Bari",
+   "Inter Milan",
+   "Bologna FC",
+   "Atalanta BC",
+   "Crystal Palace",
+   "Torino FC"
+  ],
+  "ajoutes": [
+   "Torino FC",
+   "Crystal Palace",
+   "Bologna FC"
+  ]
+ },
+ {
+  "nom": "Boudewijn Zenden",
+  "avant": [
+   "Barcelona",
+   "Chelsea",
+   "Liverpool",
+   "Marseille"
+  ],
+  "apres": [
+   "PSV Eindhoven",
+   "Barcelona",
+   "Chelsea",
+   "Middlesbrough",
+   "Liverpool",
+   "Marseille",
+   "Sunderland"
+  ],
+  "ajoutes": [
+   "Middlesbrough",
+   "Sunderland",
+   "PSV Eindhoven"
+  ]
+ },
+ {
+  "nom": "Marc Wilmots",
+  "avant": [
+   "Schalke",
+   "Inter Milan"
+  ],
+  "apres": [
+   "Mechelen",
+   "Standard Liège",
+   "Schalke",
+   "Inter Milan"
+  ],
+  "ajoutes": [
+   "Standard Liège",
+   "Mechelen"
+  ]
+ },
+ {
+  "nom": "Frank Rijkaard",
+  "avant": [
+   "Ajax Amsterdam",
+   "AC Milan"
+  ],
+  "apres": [
+   "Ajax Amsterdam",
+   "Real Zaragoza",
+   "Sporting CP",
+   "AC Milan"
+  ],
+  "ajoutes": [
+   "Real Zaragoza",
+   "Sporting CP"
+  ]
+ },
+ {
+  "nom": "Ronald Koeman",
+  "avant": [
+   "Ajax Amsterdam",
+   "Barcelona"
+  ],
+  "apres": [
+   "Groningen",
+   "Ajax Amsterdam",
+   "Barcelona",
+   "PSV Eindhoven",
+   "Feyenoord"
+  ],
+  "ajoutes": [
+   "Feyenoord",
+   "Groningen",
+   "PSV Eindhoven"
+  ]
+ },
+ {
+  "nom": "Lassana Diarra",
+  "avant": [
+   "Chelsea",
+   "Arsenal",
+   "Portsmouth",
+   "Real Madrid",
+   "Anzhi",
+   "Lokomotiv Moscow",
+   "Marseille",
+   "Al-Jazira",
+   "PSG"
+  ],
+  "apres": [
+   "Le Havre",
+   "Chelsea",
+   "Arsenal",
+   "Portsmouth",
+   "Real Madrid",
+   "Anzhi",
+   "Anzhi Makhachkala",
+   "Lokomotiv Moscow",
+   "Marseille",
+   "Al-Jazira",
+   "PSG"
+  ],
+  "ajoutes": [
+   "Le Havre",
+   "Anzhi Makhachkala"
+  ]
+ },
+ {
+  "nom": "Edgar Davids",
+  "avant": [
+   "Ajax Amsterdam",
+   "Juventus FC",
+   "Barcelona",
+   "Inter Milan"
+  ],
+  "apres": [
+   "Ajax Amsterdam",
+   "AC Milan",
+   "Juventus FC",
+   "Barcelona",
+   "Inter Milan",
+   "Tottenham",
+   "Crystal Palace",
+   "Barnet"
+  ],
+  "ajoutes": [
+   "Barnet",
+   "Tottenham",
+   "AC Milan",
+   "Crystal Palace"
+  ]
+ },
+ {
+  "nom": "Ryan Babel",
+  "avant": [
+   "Ajax Amsterdam",
+   "Liverpool",
+   "Galatasaray"
+  ],
+  "apres": [
+   "Ajax Amsterdam",
+   "Liverpool",
+   "Hoffenheim",
+   "Kasımpaşa",
+   "Galatasaray",
+   "Fulham",
+   "Eyüpspor"
+  ],
+  "ajoutes": [
+   "Hoffenheim",
+   "Kasımpaşa",
+   "Fulham",
+   "Eyüpspor"
+  ]
+ },
+ {
+  "nom": "Axel Witsel",
+  "avant": [
+   "Benfica",
+   "Zenit",
+   "Borussia Dortmund",
+   "Atletico Madrid"
+  ],
+  "apres": [
+   "Standard Liège",
+   "Benfica",
+   "Zenit",
+   "Tianjin Quanjian",
+   "Borussia Dortmund",
+   "Atletico Madrid",
+   "Girona"
+  ],
+  "ajoutes": [
+   "Standard Liège",
+   "Tianjin Quanjian",
+   "Girona"
+  ]
+ },
+ {
+  "nom": "Sebastian Giovinco",
+  "avant": [
+   "Juventus FC",
+   "Toronto FC"
+  ],
+  "apres": [
+   "Juventus FC",
+   "Toronto FC",
+   "Al Hilal",
+   "Sampdoria"
+  ],
+  "ajoutes": [
+   "Al Hilal",
+   "Sampdoria"
+  ]
+ },
+ {
+  "nom": "Javier Hernandez",
+  "avant": [
+   "Manchester United",
+   "Real Madrid",
+   "LA Galaxy"
+  ],
+  "apres": [
+   "Guadalajara",
+   "Manchester United",
+   "Real Madrid",
+   "Bayer Leverkusen",
+   "West Ham",
+   "Sevilla",
+   "LA Galaxy"
+  ],
+  "ajoutes": [
+   "Guadalajara",
+   "Bayer Leverkusen",
+   "West Ham",
+   "Sevilla"
+  ]
+ },
+ {
+  "nom": "Christian Karembeu",
+  "avant": [
+   "Nantes",
+   "Sampdoria",
+   "Real Madrid",
+   "Middlesbrough",
+   "Olympiacos"
+  ],
+  "apres": [
+   "Nantes",
+   "Sampdoria",
+   "Real Madrid",
+   "Middlesbrough",
+   "Olympiacos",
+   "Servette",
+   "Bastia"
+  ],
+  "ajoutes": [
+   "Servette",
+   "Bastia"
+  ]
+ },
+ {
+  "nom": "Emmanuel Adebayor",
+  "avant": [
+   "Monaco",
+   "Arsenal",
+   "Manchester City",
+   "Real Madrid",
+   "Tottenham"
+  ],
+  "apres": [
+   "Metz",
+   "Monaco",
+   "Arsenal",
+   "Manchester City",
+   "Real Madrid",
+   "Tottenham",
+   "Crystal Palace",
+   "Istanbul Başakşehir",
+   "Kayserispor",
+   "Olimpia Asuncion"
+  ],
+  "ajoutes": [
+   "Metz",
+   "Crystal Palace",
+   "Istanbul Başakşehir",
+   "Kayserispor",
+   "Olimpia Asuncion"
+  ]
+ },
+ {
+  "nom": "Ben White",
+  "avant": [
+   "Brighton",
+   "Leeds United",
+   "Arsenal"
+  ],
+  "apres": [
+   "Brighton",
+   "Newport County",
+   "Leeds United",
+   "Peterborough United",
+   "Arsenal"
+  ],
+  "ajoutes": [
+   "Newport County",
+   "Peterborough United"
+  ]
+ },
+ {
+  "nom": "Alexander Isak",
+  "avant": [
+   "Borussia Dortmund",
+   "Willem II",
+   "Real Sociedad",
+   "Newcastle",
+   "Liverpool"
+  ],
+  "apres": [
+   "AIK",
+   "Borussia Dortmund",
+   "Willem II",
+   "Real Sociedad",
+   "Newcastle",
+   "Liverpool"
+  ],
+  "ajoutes": [
+   "AIK"
+  ]
+ },
+ {
+  "nom": "Fabián Ruiz",
+  "avant": [
+   "Real Betis",
+   "SSC Napoli",
+   "PSG"
+  ],
+  "apres": [
+   "Real Betis",
+   "Elche",
+   "SSC Napoli",
+   "PSG"
+  ],
+  "ajoutes": [
+   "Elche"
+  ]
+ },
+ {
+  "nom": "Marco Asensio",
+  "avant": [
+   "Real Mallorca",
+   "Real Madrid",
+   "PSG",
+   "Aston Villa",
+   "Fenerbahce"
+  ],
+  "apres": [
+   "Mallorca",
+   "Real Mallorca",
+   "Real Madrid",
+   "PSG",
+   "Espanyol",
+   "Aston Villa",
+   "Fenerbahce"
+  ],
+  "ajoutes": [
+   "Mallorca",
+   "Espanyol"
+  ]
+ },
+ {
+  "nom": "Ferran Torres",
+  "avant": [
+   "Valencia",
+   "Manchester City",
+   "Barcelona"
+  ],
+  "apres": [
+   "Valencia Mestalla",
+   "Valencia",
+   "Manchester City",
+   "Barcelona"
+  ],
+  "ajoutes": [
+   "Valencia Mestalla"
+  ]
+ },
+ {
+  "nom": "Sven Bender",
+  "avant": [
+   "Borussia Dortmund",
+   "Bayer Leverkusen"
+  ],
+  "apres": [
+   "1860 Munich",
+   "Borussia Dortmund",
+   "Bayer Leverkusen"
+  ],
+  "ajoutes": [
+   "1860 Munich"
+  ]
+ },
+ {
+  "nom": "Javier Mascherano",
+  "avant": [
+   "Liverpool",
+   "Barcelona"
+  ],
+  "apres": [
+   "River Plate",
+   "Corinthians",
+   "West Ham",
+   "Liverpool",
+   "Barcelona",
+   "Hebei China Fortune"
+  ],
+  "ajoutes": [
+   "Corinthians",
+   "River Plate",
+   "West Ham",
+   "Hebei China Fortune"
+  ]
+ },
+ {
+  "nom": "Goran Pandev",
+  "avant": [
+   "SS Lazio",
+   "Inter Milan",
+   "SSC Napoli",
+   "Genoa CFC"
+  ],
+  "apres": [
+   "Spezia",
+   "SS Lazio",
+   "Inter Milan",
+   "SSC Napoli",
+   "Galatasaray",
+   "Genoa CFC",
+   "Parma FC"
+  ],
+  "ajoutes": [
+   "Spezia",
+   "Galatasaray",
+   "Parma FC"
+  ]
+ },
+ {
+  "nom": "Diego Milito",
+  "avant": [
+   "Genoa CFC",
+   "Inter Milan"
+  ],
+  "apres": [
+   "Racing Club",
+   "Genoa CFC",
+   "Real Zaragoza",
+   "Inter Milan"
+  ],
+  "ajoutes": [
+   "Real Zaragoza",
+   "Racing Club"
+  ]
+ },
+ {
+  "nom": "Esteban Cambiasso",
+  "avant": [
+   "Real Madrid",
+   "Inter Milan"
+  ],
+  "apres": [
+   "Real Madrid Castilla",
+   "Independiente",
+   "River Plate",
+   "Real Madrid",
+   "Inter Milan",
+   "Leicester City",
+   "Olympiacos"
+  ],
+  "ajoutes": [
+   "River Plate",
+   "Independiente",
+   "Leicester City",
+   "Olympiacos",
+   "Real Madrid Castilla"
+  ]
+ },
+ {
+  "nom": "Milos Kerkez",
+  "avant": [
+   "AC Milan",
+   "AZ Alkmaar",
+   "Bournemouth",
+   "Liverpool"
+  ],
+  "apres": [
+   "Győri ETO",
+   "AC Milan",
+   "AZ Alkmaar",
+   "Bournemouth",
+   "Liverpool"
+  ],
+  "ajoutes": [
+   "Győri ETO"
+  ]
+ },
+ {
+  "nom": "Mattia Zaccagni",
+  "avant": [
+   "Hellas Verona",
+   "SS Lazio"
+  ],
+  "apres": [
+   "Hellas Verona",
+   "Venezia",
+   "SS Lazio"
+  ],
+  "ajoutes": [
+   "Venezia"
+  ]
+ },
+ {
+  "nom": "Hernán Crespo",
+  "avant": [
+   "Parma FC",
+   "SS Lazio",
+   "Inter Milan",
+   "Chelsea",
+   "AC Milan",
+   "Inter Milan",
+   "Genoa CFC",
+   "Parma FC"
+  ],
+  "apres": [
+   "River Plate",
+   "Parma FC",
+   "SS Lazio",
+   "Inter Milan",
+   "Chelsea",
+   "AC Milan",
+   "Inter Milan",
+   "Genoa CFC",
+   "Parma FC"
+  ],
+  "ajoutes": [
+   "River Plate"
+  ]
+ },
+ {
+  "nom": "Branislav Ivanović",
+  "avant": [
+   "OFK Beograd",
+   "Lokomotiv Moscow",
+   "Chelsea",
+   "Zenit",
+   "West Bromwich"
+  ],
+  "apres": [
+   "OFK Beograd",
+   "Lokomotiv Moscow",
+   "Chelsea",
+   "Zenit",
+   "West Bromwich",
+   "West Brom"
+  ],
+  "ajoutes": [
+   "West Brom"
+  ]
+ },
+ {
+  "nom": "Djibril Cissé",
+  "avant": [
+   "Auxerre",
+   "Liverpool",
+   "Marseille",
+   "Sunderland",
+   "Panathinaikos",
+   "SS Lazio",
+   "QPR",
+   "Krasnodar",
+   "Bastia",
+   "Yverdon-Sport"
+  ],
+  "apres": [
+   "Auxerre",
+   "Liverpool",
+   "Marseille",
+   "Sunderland",
+   "Panathinaikos",
+   "SS Lazio",
+   "QPR",
+   "Krasnodar",
+   "Al-Gharafa",
+   "Kuban Krasnodar",
+   "Bastia",
+   "Yverdon-Sport"
+  ],
+  "ajoutes": [
+   "Al-Gharafa",
+   "Kuban Krasnodar"
+  ]
+ },
+ {
+  "nom": "Demba Ba",
+  "avant": [
+   "Rouen",
+   "Mouscron",
+   "Hoffenheim",
+   "West Ham",
+   "Newcastle",
+   "Chelsea",
+   "Besiktas",
+   "Shanghai Shenhua",
+   "Göztepe",
+   "Istanbul Başakşehir",
+   "Lugano"
+  ],
+  "apres": [
+   "Rouen",
+   "Mouscron",
+   "Excelsior Mouscron",
+   "Hoffenheim",
+   "West Ham",
+   "Newcastle",
+   "Chelsea",
+   "Besiktas",
+   "Shanghai Shenhua",
+   "Göztepe",
+   "Istanbul Başakşehir",
+   "Lugano"
+  ],
+  "ajoutes": [
+   "Excelsior Mouscron"
+  ]
+ },
+ {
+  "nom": "Sulley Muntari",
+  "avant": [
+   "Udinese Calcio",
+   "Portsmouth",
+   "Inter Milan",
+   "AC Milan"
+  ],
+  "apres": [
+   "Udinese Calcio",
+   "Portsmouth",
+   "Inter Milan",
+   "Sunderland",
+   "AC Milan",
+   "Pescara",
+   "Hearts of Oak"
+  ],
+  "ajoutes": [
+   "Sunderland",
+   "Pescara",
+   "Hearts of Oak"
+  ]
+ },
+ {
+  "nom": "Robinho",
+  "avant": [
+   "Santos",
+   "Real Madrid",
+   "Manchester City",
+   "AC Milan",
+   "Guangzhou Evergrande",
+   "Atlético Mineiro",
+   "Istanbul Başakşehir"
+  ],
+  "apres": [
+   "Santos",
+   "Real Madrid",
+   "Manchester City",
+   "AC Milan",
+   "Guangzhou Evergrande",
+   "Atlético Mineiro",
+   "Sivasspor",
+   "Istanbul Başakşehir"
+  ],
+  "ajoutes": [
+   "Sivasspor"
+  ]
+ },
+ {
+  "nom": "Michael Carrick",
+  "avant": [
+   "West Ham",
+   "Tottenham",
+   "Manchester United"
+  ],
+  "apres": [
+   "West Ham",
+   "Swindon",
+   "Birmingham City",
+   "Tottenham",
+   "Manchester United"
+  ],
+  "ajoutes": [
+   "Birmingham City",
+   "Swindon"
+  ]
+ },
+ {
+  "nom": "Kyle Walker",
+  "avant": [
+   "Sheffield United",
+   "Tottenham",
+   "Aston Villa",
+   "QPR",
+   "Manchester City",
+   "AC Milan",
+   "Burnley"
+  ],
+  "apres": [
+   "Sheffield United",
+   "Northampton",
+   "Tottenham",
+   "Aston Villa",
+   "QPR",
+   "Manchester City",
+   "AC Milan",
+   "Burnley"
+  ],
+  "ajoutes": [
+   "Northampton"
+  ]
+ },
+ {
+  "nom": "Steven Nzonzi",
+  "avant": [
+   "Amiens",
+   "Blackburn",
+   "Stoke City",
+   "Sevilla",
+   "AS Roma",
+   "Galatasaray",
+   "Rennes",
+   "Al-Rayyan"
+  ],
+  "apres": [
+   "Amiens",
+   "Blackburn",
+   "Stoke City",
+   "Sevilla",
+   "AS Roma",
+   "Galatasaray",
+   "Rennes",
+   "Al-Rayyan",
+   "Konyaspor",
+   "Sepahan"
+  ],
+  "ajoutes": [
+   "Konyaspor",
+   "Sepahan"
+  ]
+ },
+ {
+  "nom": "Florian Thauvin",
+  "avant": [
+   "Grenoble",
+   "Bastia",
+   "Marseille",
+   "Newcastle",
+   "Tigres UANL",
+   "Udinese Calcio",
+   "Lens"
+  ],
+  "apres": [
+   "Grenoble",
+   "Bastia",
+   "Marseille",
+   "Lille",
+   "Newcastle",
+   "Tigres UANL",
+   "Udinese Calcio",
+   "Lens"
+  ],
+  "ajoutes": [
+   "Lille"
+  ]
+ },
+ {
+  "nom": "Jan Vertonghen",
+  "avant": [
+   "Ajax Amsterdam",
+   "Tottenham",
+   "Benfica"
+  ],
+  "apres": [
+   "Ajax Amsterdam",
+   "RKC Waalwijk",
+   "Tottenham",
+   "Benfica",
+   "Anderlecht"
+  ],
+  "ajoutes": [
+   "RKC Waalwijk",
+   "Anderlecht"
+  ]
+ },
+ {
+  "nom": "Moussa Sissoko",
+  "avant": [
+   "Toulouse",
+   "Newcastle",
+   "Tottenham",
+   "Watford",
+   "Nantes"
+  ],
+  "apres": [
+   "Toulouse",
+   "Newcastle",
+   "Tottenham",
+   "Watford",
+   "Nantes",
+   "Panathinaikos"
+  ],
+  "ajoutes": [
+   "Panathinaikos"
+  ]
+ },
+ {
+  "nom": "Wilson Palacios",
+  "avant": [
+   "Wigan Athletic",
+   "Tottenham",
+   "Stoke City"
+  ],
+  "apres": [
+   "Birmingham City",
+   "Wigan Athletic",
+   "Tottenham",
+   "Stoke City",
+   "Miami FC"
+  ],
+  "ajoutes": [
+   "Birmingham City",
+   "Miami FC"
+  ]
+ },
+ {
+  "nom": "Nabil Fekir",
+  "avant": [
+   "Lyon",
+   "Real Betis",
+   "Al-Jazira"
+  ],
+  "apres": [
+   "Lyon",
+   "Real Betis",
+   "Al-Jazira",
+   "Abha"
+  ],
+  "ajoutes": [
+   "Abha"
+  ]
+ },
+ {
+  "nom": "Victor Moses",
+  "avant": [
+   "Crystal Palace",
+   "Wigan Athletic",
+   "Chelsea",
+   "Liverpool",
+   "Stoke City",
+   "West Ham",
+   "Fenerbahce",
+   "Spartak Moscow",
+   "Inter Milan"
+  ],
+  "apres": [
+   "Crystal Palace",
+   "Wigan Athletic",
+   "Chelsea",
+   "Liverpool",
+   "Stoke City",
+   "West Ham",
+   "Fenerbahce",
+   "Spartak Moscow",
+   "Inter Milan",
+   "Luton Town"
+  ],
+  "ajoutes": [
+   "Luton Town"
+  ]
+ },
+ {
+  "nom": "John Obi Mikel",
+  "avant": [
+   "Chelsea",
+   "Trabzonspor"
+  ],
+  "apres": [
+   "Lyn Oslo",
+   "Chelsea",
+   "Tianjin Jinmen Tiger",
+   "Trabzonspor",
+   "Middlesbrough",
+   "Stoke City"
+  ],
+  "ajoutes": [
+   "Lyn Oslo",
+   "Middlesbrough",
+   "Tianjin Jinmen Tiger",
+   "Stoke City"
+  ]
+ },
+ {
+  "nom": "David Luiz",
+  "avant": [
+   "Benfica",
+   "Chelsea",
+   "PSG",
+   "Arsenal",
+   "Flamengo",
+   "Fortaleza",
+   "Pafos"
+  ],
+  "apres": [
+   "São Paulo",
+   "Benfica",
+   "Chelsea",
+   "PSG",
+   "Arsenal",
+   "Flamengo",
+   "Fortaleza",
+   "Pafos"
+  ],
+  "ajoutes": [
+   "São Paulo"
+  ]
+ },
+ {
+  "nom": "Gary Cahill",
+  "avant": [
+   "Bolton",
+   "Chelsea",
+   "Crystal Palace"
+  ],
+  "apres": [
+   "Aston Villa",
+   "Burnley",
+   "Sheffield United",
+   "Bolton",
+   "Chelsea",
+   "Crystal Palace",
+   "Bournemouth"
+  ],
+  "ajoutes": [
+   "Aston Villa",
+   "Burnley",
+   "Sheffield United",
+   "Bournemouth"
+  ]
+ },
+ {
+  "nom": "Ryan Bertrand",
+  "avant": [
+   "Chelsea",
+   "Southampton"
+  ],
+  "apres": [
+   "Chelsea",
+   "Bournemouth",
+   "Oldham",
+   "Norwich City",
+   "Reading",
+   "Nottingham Forest",
+   "Southampton",
+   "Aston Villa",
+   "Leicester City"
+  ],
+  "ajoutes": [
+   "Bournemouth",
+   "Oldham",
+   "Norwich City",
+   "Reading",
+   "Nottingham Forest",
+   "Aston Villa",
+   "Leicester City"
+  ]
+ },
+ {
+  "nom": "Shaun Wright-Phillips",
+  "avant": [
+   "Manchester City",
+   "Chelsea",
+   "Manchester City"
+  ],
+  "apres": [
+   "Manchester City",
+   "Chelsea",
+   "Manchester City",
+   "QPR",
+   "New York Red Bulls"
+  ],
+  "ajoutes": [
+   "QPR",
+   "New York Red Bulls"
+  ]
+ },
+ {
+  "nom": "Salomon Kalou",
+  "avant": [
+   "Feyenoord",
+   "Chelsea",
+   "Lille",
+   "Hertha Berlin",
+   "Botafogo"
+  ],
+  "apres": [
+   "ASEC Mimosas",
+   "Feyenoord",
+   "Chelsea",
+   "Lille",
+   "Hertha Berlin",
+   "Botafogo",
+   "Arta/Solar7"
+  ],
+  "ajoutes": [
+   "ASEC Mimosas",
+   "Arta/Solar7"
+  ]
+ },
+ {
+  "nom": "Paulo Ferreira",
+  "avant": [
+   "Porto",
+   "Chelsea"
+  ],
+  "apres": [
+   "Vitória de Setúbal",
+   "Porto",
+   "Chelsea"
+  ],
+  "ajoutes": [
+   "Vitória de Setúbal"
+  ]
+ },
+ {
+  "nom": "David Villa",
+  "avant": [
+   "Valencia",
+   "Barcelona",
+   "Atletico Madrid",
+   "New York City FC",
+   "Vissel Kobe"
+  ],
+  "apres": [
+   "Sporting Gijón",
+   "Real Zaragoza",
+   "Valencia",
+   "Barcelona",
+   "Atletico Madrid",
+   "New York City FC",
+   "Melbourne City",
+   "Vissel Kobe"
+  ],
+  "ajoutes": [
+   "Real Zaragoza",
+   "Sporting Gijón",
+   "Melbourne City"
+  ]
+ },
+ {
+  "nom": "Benjamin Mendy",
+  "avant": [
+   "Le Havre",
+   "Marseille",
+   "Monaco",
+   "Manchester City"
+  ],
+  "apres": [
+   "Le Havre",
+   "Marseille",
+   "Monaco",
+   "Manchester City",
+   "Lorient",
+   "Zurich",
+   "Pogoń Szczecin"
+  ],
+  "ajoutes": [
+   "Lorient",
+   "Zurich",
+   "Pogoń Szczecin"
+  ]
+ },
+ {
+  "nom": "Patrice Evra",
+  "avant": [
+   "Nice",
+   "Monaco",
+   "Manchester United",
+   "Juventus FC",
+   "Marseille",
+   "West Ham"
+  ],
+  "apres": [
+   "Monza",
+   "Nice",
+   "Monaco",
+   "Manchester United",
+   "Juventus FC",
+   "Marseille",
+   "West Ham"
+  ],
+  "ajoutes": [
+   "Monza"
+  ]
+ },
+ {
+  "nom": "Emre Can",
+  "avant": [
+   "Bayern Munich",
+   "Bayer Leverkusen",
+   "Liverpool",
+   "Juventus FC",
+   "Borussia Dortmund"
+  ],
+  "apres": [
+   "Bayern Munich II",
+   "Bayern Munich",
+   "Bayer Leverkusen",
+   "Liverpool",
+   "Juventus FC",
+   "Borussia Dortmund"
+  ],
+  "ajoutes": [
+   "Bayern Munich II"
+  ]
+ },
+ {
+  "nom": "Dušan Tadić",
+  "avant": [
+   "Groningen",
+   "Twente",
+   "Southampton",
+   "Ajax Amsterdam",
+   "Fenerbahce",
+   "AEK Athens",
+   "NEC Nijmegen"
+  ],
+  "apres": [
+   "Vojvodina",
+   "Groningen",
+   "Twente",
+   "Southampton",
+   "Ajax Amsterdam",
+   "Fenerbahce",
+   "AEK Athens",
+   "Al-Wahda",
+   "NEC Nijmegen"
+  ],
+  "ajoutes": [
+   "Vojvodina",
+   "Al-Wahda"
+  ]
+ },
+ {
+  "nom": "Luka Jović",
+  "avant": [
+   "Real Madrid",
+   "ACF Fiorentina",
+   "AC Milan"
+  ],
+  "apres": [
+   "Benfica",
+   "Eintracht Frankfurt",
+   "Real Madrid",
+   "ACF Fiorentina",
+   "AC Milan",
+   "AEK Athens"
+  ],
+  "ajoutes": [
+   "Benfica",
+   "Eintracht Frankfurt",
+   "AEK Athens"
+  ]
+ },
+ {
+  "nom": "Filip Kostić",
+  "avant": [
+   "Groningen",
+   "Stuttgart",
+   "Hamburg",
+   "Eintracht Frankfurt",
+   "Juventus FC",
+   "Fenerbahce"
+  ],
+  "apres": [
+   "Groningen",
+   "Stuttgart",
+   "Hamburg",
+   "Eintracht Frankfurt",
+   "Juventus FC",
+   "Fenerbahce",
+   "PSV Eindhoven"
+  ],
+  "ajoutes": [
+   "PSV Eindhoven"
+  ]
+ },
+ {
+  "nom": "Kasper Schmeichel",
+  "avant": [
+   "Manchester City",
+   "Notts County",
+   "Leeds United",
+   "Leicester City",
+   "Nice",
+   "Anderlecht",
+   "Celtic"
+  ],
+  "apres": [
+   "Manchester City",
+   "Darlington",
+   "Bury",
+   "Cardiff City",
+   "Falkirk",
+   "Coventry City",
+   "Notts County",
+   "Leeds United",
+   "Leicester City",
+   "Nice",
+   "Anderlecht",
+   "Celtic"
+  ],
+  "ajoutes": [
+   "Cardiff City",
+   "Darlington",
+   "Coventry City",
+   "Bury",
+   "Falkirk"
+  ]
+ },
+ {
+  "nom": "Lee Kang-in",
+  "avant": [
+   "Valencia",
+   "Mallorca",
+   "PSG",
+   "Atletico Madrid"
+  ],
+  "apres": [
+   "Valencia Mestalla",
+   "Valencia",
+   "Mallorca",
+   "PSG",
+   "Atletico Madrid"
+  ],
+  "ajoutes": [
+   "Valencia Mestalla"
+  ]
+ },
+ {
+  "nom": "Hwang Hee-chan",
+  "avant": [
+   "Pohang Steelers",
+   "Salzburg",
+   "Hamburg",
+   "RB Leipzig",
+   "Wolverhampton"
+  ],
+  "apres": [
+   "Liefering",
+   "Pohang Steelers",
+   "Salzburg",
+   "Hamburg",
+   "RB Leipzig",
+   "Wolverhampton"
+  ],
+  "ajoutes": [
+   "Liefering"
+  ]
+ },
+ {
+  "nom": "Takefusa Kubo",
+  "avant": [
+   "FC Tokyo",
+   "Real Madrid",
+   "Mallorca",
+   "Villarreal",
+   "Getafe",
+   "Real Sociedad"
+  ],
+  "apres": [
+   "FC Tokyo",
+   "Yokohama F. Marinos",
+   "Real Madrid",
+   "Mallorca",
+   "Villarreal",
+   "Getafe",
+   "Real Sociedad"
+  ],
+  "ajoutes": [
+   "Yokohama F. Marinos"
+  ]
+ },
+ {
+  "nom": "Malik Tillman",
+  "avant": [
+   "Greuther Fürth",
+   "Bayern Munich",
+   "Rangers",
+   "PSV Eindhoven",
+   "Bayer Leverkusen"
+  ],
+  "apres": [
+   "Bayern Munich II",
+   "Greuther Fürth",
+   "Bayern Munich",
+   "Rangers",
+   "PSV Eindhoven",
+   "Bayer Leverkusen"
+  ],
+  "ajoutes": [
+   "Bayern Munich II"
+  ]
+ },
+ {
+  "nom": "Andrej Kramarić",
+  "avant": [
+   "Leicester City",
+   "Hoffenheim"
+  ],
+  "apres": [
+   "Lokomotiva Zagreb",
+   "Rijeka",
+   "Leicester City",
+   "Hoffenheim"
+  ],
+  "ajoutes": [
+   "Lokomotiva Zagreb",
+   "Rijeka"
+  ]
+ },
+ {
+  "nom": "Dominik Livaković",
+  "avant": [
+   "Dinamo Zagreb",
+   "Fenerbahce"
+  ],
+  "apres": [
+   "NK Zagreb",
+   "Dinamo Zagreb",
+   "Fenerbahce",
+   "Girona"
+  ],
+  "ajoutes": [
+   "NK Zagreb",
+   "Girona"
+  ]
+ },
+ {
+  "nom": "Jefferson Lerma",
+  "avant": [
+   "Levante",
+   "Bournemouth",
+   "Crystal Palace"
+  ],
+  "apres": [
+   "Atlético Huila",
+   "Levante",
+   "Bournemouth",
+   "Crystal Palace"
+  ],
+  "ajoutes": [
+   "Atlético Huila"
+  ]
+ },
+ {
+  "nom": "Rodrigo De Paul",
+  "avant": [
+   "Udinese Calcio",
+   "Atletico Madrid",
+   "Inter Miami"
+  ],
+  "apres": [
+   "Racing Club",
+   "Valencia",
+   "Udinese Calcio",
+   "Atletico Madrid",
+   "Inter Miami"
+  ],
+  "ajoutes": [
+   "Racing Club",
+   "Valencia"
+  ]
+ },
+ {
+  "nom": "Javier Pastore",
+  "avant": [
+   "Huracán",
+   "Palermo",
+   "PSG",
+   "AS Roma",
+   "Elche"
+  ],
+  "apres": [
+   "Talleres",
+   "Huracán",
+   "Palermo",
+   "PSG",
+   "AS Roma",
+   "Elche",
+   "Qatar SC"
+  ],
+  "ajoutes": [
+   "Talleres",
+   "Qatar SC"
+  ]
+ },
+ {
+  "nom": "Julian Draxler",
+  "avant": [
+   "Schalke",
+   "Wolfsburg",
+   "PSG",
+   "Benfica",
+   "Al Ahli"
+  ],
+  "apres": [
+   "Schalke",
+   "Wolfsburg",
+   "PSG",
+   "Benfica",
+   "Al Ahli",
+   "Al-Ahli Doha"
+  ],
+  "ajoutes": [
+   "Al-Ahli Doha"
+  ]
+ },
+ {
+  "nom": "Salvatore Sirigu",
+  "avant": [
+   "Palermo",
+   "PSG",
+   "Sevilla",
+   "Osasuna",
+   "Torino FC",
+   "Genoa CFC",
+   "SSC Napoli",
+   "ACF Fiorentina",
+   "Fatih Karagümrük"
+  ],
+  "apres": [
+   "Palermo",
+   "PSG",
+   "Cremonese",
+   "Sevilla",
+   "Osasuna",
+   "Torino FC",
+   "Genoa CFC",
+   "SSC Napoli",
+   "ACF Fiorentina",
+   "Fatih Karagümrük"
+  ],
+  "ajoutes": [
+   "Cremonese"
+  ]
+ },
+ {
+  "nom": "Serge Aurier",
+  "avant": [
+   "Toulouse",
+   "PSG",
+   "Tottenham",
+   "Villarreal",
+   "Nottingham Forest",
+   "Galatasaray"
+  ],
+  "apres": [
+   "Lens",
+   "Toulouse",
+   "PSG",
+   "Tottenham",
+   "Villarreal",
+   "Nottingham Forest",
+   "Galatasaray",
+   "Persepolis"
+  ],
+  "ajoutes": [
+   "Lens",
+   "Persepolis"
+  ]
+ },
+ {
+  "nom": "Alphonse Areola",
+  "avant": [
+   "PSG",
+   "Bastia",
+   "Villarreal",
+   "Real Madrid",
+   "Fulham",
+   "West Ham"
+  ],
+  "apres": [
+   "Lens",
+   "PSG",
+   "Bastia",
+   "Villarreal",
+   "Real Madrid",
+   "Fulham",
+   "West Ham"
+  ],
+  "ajoutes": [
+   "Lens"
+  ]
+ },
+ {
+  "nom": "Juan Bernat",
+  "avant": [
+   "Valencia",
+   "Bayern Munich",
+   "PSG",
+   "Benfica",
+   "Villarreal",
+   "Getafe",
+   "Eibar"
+  ],
+  "apres": [
+   "Valencia",
+   "Valencia Mestalla",
+   "Bayern Munich",
+   "PSG",
+   "Benfica",
+   "Villarreal",
+   "Getafe",
+   "Eibar"
+  ],
+  "ajoutes": [
+   "Valencia Mestalla"
+  ]
+ },
+ {
+  "nom": "Ander Herrera",
+  "avant": [
+   "Real Zaragoza",
+   "Athletic Bilbao",
+   "Manchester United",
+   "PSG",
+   "Boca Juniors"
+  ],
+  "apres": [
+   "Real Zaragoza B",
+   "Real Zaragoza",
+   "Athletic Bilbao",
+   "Manchester United",
+   "PSG",
+   "Boca Juniors"
+  ],
+  "ajoutes": [
+   "Real Zaragoza B"
+  ]
+ },
+ {
+  "nom": "Nordi Mukiele",
+  "avant": [
+   "Laval",
+   "Montpellier",
+   "RB Leipzig",
+   "PSG",
+   "Bayer Leverkusen"
+  ],
+  "apres": [
+   "Laval",
+   "Montpellier",
+   "RB Leipzig",
+   "PSG",
+   "Bayer Leverkusen",
+   "Sunderland"
+  ],
+  "ajoutes": [
+   "Sunderland"
+  ]
+ },
+ {
+  "nom": "Éder Militão",
+  "avant": [
+   "Porto",
+   "Real Madrid"
+  ],
+  "apres": [
+   "São Paulo",
+   "Porto",
+   "Real Madrid"
+  ],
+  "ajoutes": [
+   "São Paulo"
+  ]
+ },
+ {
+  "nom": "Yann Sommer",
+  "avant": [
+   "Basel",
+   "Borussia Mönchengladbach",
+   "Bayern Munich",
+   "Inter Milan",
+   "Club Brugge"
+  ],
+  "apres": [
+   "Basel",
+   "Grasshoppers",
+   "Borussia Mönchengladbach",
+   "Bayern Munich",
+   "Inter Milan",
+   "Club Brugge"
+  ],
+  "ajoutes": [
+   "Grasshoppers"
+  ]
+ },
+ {
+  "nom": "Breel Embolo",
+  "avant": [
+   "Schalke",
+   "Borussia Mönchengladbach",
+   "Monaco"
+  ],
+  "apres": [
+   "Basel",
+   "Schalke",
+   "Borussia Mönchengladbach",
+   "Monaco",
+   "Rennes"
+  ],
+  "ajoutes": [
+   "Basel",
+   "Rennes"
+  ]
+ },
+ {
+  "nom": "Tijjani Reijnders",
+  "avant": [
+   "AZ Alkmaar",
+   "RKC Waalwijk",
+   "AC Milan",
+   "Manchester City"
+  ],
+  "apres": [
+   "PEC Zwolle",
+   "AZ Alkmaar",
+   "RKC Waalwijk",
+   "AC Milan",
+   "Manchester City"
+  ],
+  "ajoutes": [
+   "PEC Zwolle"
+  ]
+ },
+ {
+  "nom": "Leandro Trossard",
+  "avant": [
+   "Genk",
+   "Brighton",
+   "Arsenal",
+   "Besiktas"
+  ],
+  "apres": [
+   "Genk",
+   "Lommel",
+   "Westerlo",
+   "OH Leuven",
+   "Brighton",
+   "Arsenal",
+   "Besiktas"
+  ],
+  "ajoutes": [
+   "Lommel",
+   "Westerlo",
+   "OH Leuven"
+  ]
+ },
+ {
+  "nom": "Martín Zubimendi",
+  "avant": [
+   "Real Sociedad",
+   "Arsenal"
+  ],
+  "apres": [
+   "Real Sociedad B",
+   "Real Sociedad",
+   "Arsenal"
+  ],
+  "ajoutes": [
+   "Real Sociedad B"
+  ]
+ },
+ {
+  "nom": "João Palhinha",
+  "avant": [
+   "Sporting CP",
+   "Fulham",
+   "Bayern Munich"
+  ],
+  "apres": [
+   "Sporting CP B",
+   "Moreirense",
+   "Sporting CP",
+   "Braga",
+   "Fulham",
+   "Bayern Munich",
+   "Tottenham"
+  ],
+  "ajoutes": [
+   "Moreirense",
+   "Sporting CP B",
+   "Braga",
+   "Tottenham"
+  ]
+ },
+ {
+  "nom": "Nelson Semedo",
+  "avant": [
+   "Barcelona",
+   "Wolverhampton",
+   "Fenerbahce"
+  ],
+  "apres": [
+   "Benfica",
+   "Barcelona",
+   "Wolverhampton",
+   "Fenerbahce"
+  ],
+  "ajoutes": [
+   "Benfica"
+  ]
+ },
+ {
+  "nom": "Maxwel Cornet",
+  "avant": [
+   "Lyon",
+   "Burnley",
+   "West Ham"
+  ],
+  "apres": [
+   "Metz",
+   "Lyon",
+   "Burnley",
+   "West Ham",
+   "Genoa CFC"
+  ],
+  "ajoutes": [
+   "Metz",
+   "Genoa CFC"
+  ]
+ },
+ {
+  "nom": "Lyle Foster",
+  "avant": [
+   "Monaco",
+   "Cercle Brugge",
+   "Westerlo",
+   "Burnley"
+  ],
+  "apres": [
+   "Orlando Pirates",
+   "Monaco",
+   "Cercle Brugge",
+   "Vitoria Guimaraes",
+   "Westerlo",
+   "Burnley"
+  ],
+  "ajoutes": [
+   "Orlando Pirates",
+   "Vitoria Guimaraes"
+  ]
+ },
+ {
+  "nom": "Mostafa Mohamed",
+  "avant": [
+   "Zamalek",
+   "Galatasaray",
+   "Nantes"
+  ],
+  "apres": [
+   "Zamalek",
+   "Tala'ea El Gaish",
+   "Galatasaray",
+   "Nantes"
+  ],
+  "ajoutes": [
+   "Tala'ea El Gaish"
+  ]
+ },
+ {
+  "nom": "Moses Simon",
+  "avant": [
+   "Trenčín",
+   "Gent",
+   "Levante",
+   "Nantes",
+   "Paris FC"
+  ],
+  "apres": [
+   "Ajax Amsterdam",
+   "Trenčín",
+   "Gent",
+   "Levante",
+   "Nantes",
+   "Paris FC"
+  ],
+  "ajoutes": [
+   "Ajax Amsterdam"
+  ]
+ },
+ {
+  "nom": "Moussa Niakhaté",
+  "avant": [
+   "Metz",
+   "Mainz",
+   "Nottingham Forest",
+   "Lyon"
+  ],
+  "apres": [
+   "Valenciennes",
+   "Metz",
+   "Mainz",
+   "Nottingham Forest",
+   "Lyon"
+  ],
+  "ajoutes": [
+   "Valenciennes"
+  ]
+ },
+ {
+  "nom": "Aïssa Mandi",
+  "avant": [
+   "Reims",
+   "Real Betis",
+   "Villarreal",
+   "Lille",
+   "Levante"
+  ],
+  "apres": [
+   "Stade de Reims",
+   "Reims",
+   "Real Betis",
+   "Villarreal",
+   "Lille",
+   "Levante"
+  ],
+  "ajoutes": [
+   "Stade de Reims"
+  ]
+ },
+ {
+  "nom": "Romain Saïss",
+  "avant": [
+   "Le Havre",
+   "Angers",
+   "Wolverhampton",
+   "Besiktas",
+   "Al Sadd",
+   "Al Shabab"
+  ],
+  "apres": [
+   "Clermont",
+   "Le Havre",
+   "Angers",
+   "Wolverhampton",
+   "Besiktas",
+   "Al Sadd",
+   "Al Shabab"
+  ],
+  "ajoutes": [
+   "Clermont"
+  ]
+ },
+ {
+  "nom": "Dejan Lovren",
+  "avant": [
+   "Dinamo Zagreb",
+   "Lyon",
+   "Southampton",
+   "Liverpool",
+   "Zenit",
+   "PAOK"
+  ],
+  "apres": [
+   "Inter Zaprešić",
+   "Dinamo Zagreb",
+   "Lyon",
+   "Southampton",
+   "Liverpool",
+   "Zenit",
+   "PAOK"
+  ],
+  "ajoutes": [
+   "Inter Zaprešić"
+  ]
+ },
+ {
+  "nom": "David Seaman",
+  "avant": [
+   "QPR",
+   "Arsenal",
+   "Manchester City"
+  ],
+  "apres": [
+   "Leeds United",
+   "Peterborough United",
+   "Birmingham City",
+   "QPR",
+   "Arsenal",
+   "Manchester City"
+  ],
+  "ajoutes": [
+   "Birmingham City",
+   "Peterborough United",
+   "Leeds United"
+  ]
+ },
+ {
+  "nom": "Ian Wright",
+  "avant": [
+   "Crystal Palace",
+   "Arsenal",
+   "West Ham",
+   "Celtic",
+   "Burnley"
+  ],
+  "apres": [
+   "Crystal Palace",
+   "Arsenal",
+   "West Ham",
+   "Celtic",
+   "Nottingham Forest",
+   "Burnley"
+  ],
+  "ajoutes": [
+   "Nottingham Forest"
+  ]
+ },
+ {
+  "nom": "Joe Hart",
+  "avant": [
+   "Shrewsbury",
+   "Manchester City",
+   "Birmingham City",
+   "Blackpool",
+   "Torino FC",
+   "West Ham",
+   "Burnley",
+   "Tottenham",
+   "Celtic"
+  ],
+  "apres": [
+   "Shrewsbury",
+   "Manchester City",
+   "Tranmere",
+   "Birmingham City",
+   "Blackpool",
+   "Torino FC",
+   "West Ham",
+   "Burnley",
+   "Tottenham",
+   "Celtic"
+  ],
+  "ajoutes": [
+   "Tranmere"
+  ]
+ },
+ {
+  "nom": "Tino Asprilla",
+  "avant": [
+   "Atlético Nacional",
+   "Parma FC",
+   "Newcastle",
+   "Fluminense",
+   "Palmeiras"
+  ],
+  "apres": [
+   "Atlético Nacional",
+   "Parma FC",
+   "Newcastle",
+   "Fluminense",
+   "Palmeiras",
+   "Atlante",
+   "Universidad de Chile",
+   "Cortuluá"
+  ],
+  "ajoutes": [
+   "Universidad de Chile",
+   "Atlante",
+   "Cortuluá"
+  ]
+ },
+ {
+  "nom": "Les Ferdinand",
+  "avant": [
+   "QPR",
+   "Newcastle",
+   "Tottenham",
+   "West Ham",
+   "Leicester City",
+   "Bolton",
+   "Reading"
+  ],
+  "apres": [
+   "QPR",
+   "Brentford",
+   "Newcastle",
+   "Tottenham",
+   "West Ham",
+   "Leicester City",
+   "Bolton",
+   "Reading",
+   "Watford"
+  ],
+  "ajoutes": [
+   "Brentford",
+   "Watford"
+  ]
+ },
+ {
+  "nom": "Shay Given",
+  "avant": [
+   "Celtic",
+   "Blackburn",
+   "Sunderland",
+   "Newcastle",
+   "Manchester City",
+   "Aston Villa",
+   "Middlesbrough",
+   "Stoke City"
+  ],
+  "apres": [
+   "Celtic",
+   "Blackburn",
+   "Swindon",
+   "Sunderland",
+   "Newcastle",
+   "Manchester City",
+   "Aston Villa",
+   "Middlesbrough",
+   "Stoke City"
+  ],
+  "ajoutes": [
+   "Swindon"
+  ]
+ },
+ {
+  "nom": "Nick Pope",
+  "avant": [
+   "Ipswich Town",
+   "Charlton",
+   "Burnley",
+   "Bury",
+   "Aldershot",
+   "Newcastle"
+  ],
+  "apres": [
+   "Ipswich Town",
+   "Charlton",
+   "Welling",
+   "Cambridge United",
+   "York City",
+   "Burnley",
+   "Bury",
+   "Aldershot",
+   "Newcastle"
+  ],
+  "ajoutes": [
+   "Welling",
+   "Cambridge United",
+   "York City"
+  ]
+ },
+ {
+  "nom": "Mikel Arteta",
+  "avant": [
+   "Barcelona",
+   "PSG",
+   "Rangers",
+   "Real Sociedad",
+   "Everton",
+   "Arsenal"
+  ],
+  "apres": [
+   "Barcelona B",
+   "Barcelona",
+   "PSG",
+   "Rangers",
+   "Real Sociedad",
+   "Everton",
+   "Arsenal"
+  ],
+  "ajoutes": [
+   "Barcelona B"
+  ]
+ },
+ {
+  "nom": "Emmanuel Eboué",
+  "avant": [
+   "Beveren",
+   "Arsenal",
+   "Galatasaray",
+   "Sunderland",
+   "Antalyaspor",
+   "Mamelodi Sundowns"
+  ],
+  "apres": [
+   "ASEC Mimosas",
+   "Beveren",
+   "Arsenal",
+   "Galatasaray",
+   "Sunderland",
+   "Antalyaspor",
+   "Mamelodi Sundowns"
+  ],
+  "ajoutes": [
+   "ASEC Mimosas"
+  ]
+ },
+ {
+  "nom": "Edin Džeko",
+  "avant": [
+   "Wolfsburg",
+   "Manchester City",
+   "AS Roma",
+   "Inter Milan",
+   "Fenerbahce",
+   "ACF Fiorentina"
+  ],
+  "apres": [
+   "Teplice",
+   "Wolfsburg",
+   "Manchester City",
+   "AS Roma",
+   "Inter Milan",
+   "Fenerbahce",
+   "ACF Fiorentina",
+   "Schalke"
+  ],
+  "ajoutes": [
+   "Teplice",
+   "Schalke"
+  ]
+ },
+ {
+  "nom": "Neven Subotić",
+  "avant": [
+   "Mainz",
+   "Borussia Dortmund",
+   "Köln",
+   "Saint-Etienne",
+   "Union Berlin",
+   "Denizlispor"
+  ],
+  "apres": [
+   "Mainz",
+   "Borussia Dortmund",
+   "Köln",
+   "Saint-Etienne",
+   "Union Berlin",
+   "Denizlispor",
+   "SCR Altach"
+  ],
+  "ajoutes": [
+   "SCR Altach"
+  ]
+ },
+ {
+  "nom": "Łukasz Piszczek",
+  "avant": [
+   "Zaglebie Lubin",
+   "Hertha Berlin",
+   "Borussia Dortmund"
+  ],
+  "apres": [
+   "Zaglebie Lubin",
+   "Hertha Berlin",
+   "Zagłębie Lubin",
+   "Borussia Dortmund"
+  ],
+  "ajoutes": [
+   "Zagłębie Lubin"
+  ]
+ },
+ {
+  "nom": "Makoto Hasebe",
+  "avant": [
+   "Wolfsburg",
+   "Nuremberg",
+   "Eintracht Frankfurt"
+  ],
+  "apres": [
+   "Urawa Red Diamonds",
+   "Wolfsburg",
+   "Nuremberg",
+   "Eintracht Frankfurt"
+  ],
+  "ajoutes": [
+   "Urawa Red Diamonds"
+  ]
+ },
+ {
+  "nom": "André Silva",
+  "avant": [
+   "Porto",
+   "AC Milan",
+   "Sevilla",
+   "Eintracht Frankfurt",
+   "RB Leipzig",
+   "Werder Bremen",
+   "Elche",
+   "Real Sociedad"
+  ],
+  "apres": [
+   "Porto B",
+   "Porto",
+   "AC Milan",
+   "Sevilla",
+   "Eintracht Frankfurt",
+   "RB Leipzig",
+   "Werder Bremen",
+   "Elche",
+   "Real Sociedad"
+  ],
+  "ajoutes": [
+   "Porto B"
+  ]
+ },
+ {
+  "nom": "Kevin-Prince Boateng",
+  "avant": [
+   "Hertha Berlin",
+   "Tottenham",
+   "Borussia Dortmund",
+   "Portsmouth",
+   "AC Milan",
+   "Schalke",
+   "Las Palmas",
+   "Eintracht Frankfurt",
+   "Sassuolo",
+   "Barcelona",
+   "ACF Fiorentina",
+   "Besiktas",
+   "Monza"
+  ],
+  "apres": [
+   "Hertha Berlin",
+   "Tottenham",
+   "Borussia Dortmund",
+   "Portsmouth",
+   "AC Milan",
+   "Genoa CFC",
+   "Schalke",
+   "Las Palmas",
+   "Eintracht Frankfurt",
+   "Sassuolo",
+   "Barcelona",
+   "ACF Fiorentina",
+   "Besiktas",
+   "Monza"
+  ],
+  "ajoutes": [
+   "Genoa CFC"
+  ]
+ },
+ {
+  "nom": "David Ginola",
+  "avant": [
+   "PSG",
+   "Newcastle",
+   "Tottenham",
+   "Aston Villa",
+   "Everton"
+  ],
+  "apres": [
+   "Toulon",
+   "Racing Paris",
+   "Stade Brestois",
+   "PSG",
+   "Newcastle",
+   "Tottenham",
+   "Aston Villa",
+   "Everton"
+  ],
+  "ajoutes": [
+   "Toulon",
+   "Stade Brestois",
+   "Racing Paris"
+  ]
+ },
+ {
+  "nom": "Basile Boli",
+  "avant": [
+   "Auxerre",
+   "Marseille",
+   "Rangers",
+   "Monaco"
+  ],
+  "apres": [
+   "Auxerre",
+   "Marseille",
+   "Rangers",
+   "Monaco",
+   "Urawa Red Diamonds"
+  ],
+  "ajoutes": [
+   "Urawa Red Diamonds"
+  ]
+ },
+ {
+  "nom": "Chris Waddle",
+  "avant": [
+   "Newcastle",
+   "Tottenham",
+   "Marseille",
+   "Sheffield Wednesday",
+   "Burnley",
+   "Bradford City"
+  ],
+  "apres": [
+   "Newcastle",
+   "Tottenham",
+   "Marseille",
+   "Sheffield Wednesday",
+   "Falkirk",
+   "Burnley",
+   "Bradford City",
+   "Sunderland",
+   "Torquay United"
+  ],
+  "ajoutes": [
+   "Sunderland",
+   "Torquay United",
+   "Falkirk"
+  ]
+ },
+ {
+  "nom": "Enzo Francescoli",
+  "avant": [
+   "River Plate",
+   "Racing Club",
+   "Cagliari Calcio",
+   "Torino FC",
+   "Marseille"
+  ],
+  "apres": [
+   "Montevideo Wanderers",
+   "River Plate",
+   "Racing Club",
+   "Racing Paris",
+   "Cagliari Calcio",
+   "Torino FC",
+   "Marseille"
+  ],
+  "ajoutes": [
+   "Racing Paris",
+   "Montevideo Wanderers"
+  ]
+ },
+ {
+  "nom": "Olivier Dacourt",
+  "avant": [
+   "Strasbourg",
+   "Everton",
+   "Lens",
+   "Leeds United",
+   "AS Roma",
+   "Inter Milan",
+   "Fulham"
+  ],
+  "apres": [
+   "Strasbourg",
+   "Everton",
+   "Lens",
+   "Leeds United",
+   "AS Roma",
+   "Inter Milan",
+   "Fulham",
+   "Standard Liège"
+  ],
+  "ajoutes": [
+   "Standard Liège"
+  ]
+ },
+ {
+  "nom": "Benjamin Bourigeaud",
+  "avant": [
+   "Lens",
+   "Rennes",
+   "Al-Duhail"
+  ],
+  "apres": [
+   "Lens",
+   "Rennes",
+   "Al-Duhail",
+   "Al-Ahli Doha"
+  ],
+  "ajoutes": [
+   "Al-Ahli Doha"
+  ]
+ },
+ {
+  "nom": "Hugo Sánchez",
+  "avant": [
+   "Pumas UNAM",
+   "Atletico Madrid",
+   "Real Madrid"
+  ],
+  "apres": [
+   "Pumas UNAM",
+   "Atletico Madrid",
+   "Real Madrid",
+   "Club América",
+   "Rayo Vallecano",
+   "Atlante",
+   "FC Dallas",
+   "Atletico Celaya"
+  ],
+  "ajoutes": [
+   "FC Dallas",
+   "Atlante",
+   "Club América",
+   "Rayo Vallecano",
+   "Atletico Celaya"
+  ]
+ },
+ {
+  "nom": "Pep Guardiola",
+  "avant": [
+   "Barcelona",
+   "Brescia",
+   "AS Roma",
+   "Dorados"
+  ],
+  "apres": [
+   "Barcelona B",
+   "Barcelona",
+   "Brescia",
+   "AS Roma",
+   "Dorados",
+   "Al-Ahli Doha"
+  ],
+  "ajoutes": [
+   "Barcelona B",
+   "Al-Ahli Doha"
+  ]
+ },
+ {
+  "nom": "Marcos Llorente",
+  "avant": [
+   "Real Madrid",
+   "Alavés",
+   "Atletico Madrid",
+   "Real Betis"
+  ],
+  "apres": [
+   "Real Madrid Castilla",
+   "Real Madrid",
+   "Alavés",
+   "Atletico Madrid",
+   "Real Betis"
+  ],
+  "ajoutes": [
+   "Real Madrid Castilla"
+  ]
+ },
+ {
+  "nom": "Diego Godín",
+  "avant": [
+   "Villarreal",
+   "Atletico Madrid",
+   "Inter Milan",
+   "Cagliari Calcio"
+  ],
+  "apres": [
+   "Villarreal",
+   "Atletico Madrid",
+   "Inter Milan",
+   "Cagliari Calcio",
+   "Atlético Mineiro",
+   "Vélez Sarsfield"
+  ],
+  "ajoutes": [
+   "Atlético Mineiro",
+   "Vélez Sarsfield"
+  ]
+ },
+ {
+  "nom": "Filipe Luís",
+  "avant": [
+   "Ajax Amsterdam",
+   "Deportivo",
+   "Atletico Madrid",
+   "Chelsea",
+   "Flamengo"
+  ],
+  "apres": [
+   "Figueirense",
+   "Ajax Amsterdam",
+   "Real Madrid Castilla",
+   "Deportivo",
+   "Atletico Madrid",
+   "Chelsea",
+   "Flamengo"
+  ],
+  "ajoutes": [
+   "Real Madrid Castilla",
+   "Figueirense"
+  ]
+ },
+ {
+  "nom": "Luís Fabiano",
+  "avant": [
+   "Rennes",
+   "São Paulo",
+   "Porto",
+   "Sevilla",
+   "Al Nassr"
+  ],
+  "apres": [
+   "Rennes",
+   "São Paulo",
+   "Porto",
+   "Sevilla",
+   "Al Nassr",
+   "Vasco da Gama"
+  ],
+  "ajoutes": [
+   "Vasco da Gama"
+  ]
+ },
+ {
+  "nom": "Álvaro Negredo",
+  "avant": [
+   "Almería",
+   "Sevilla",
+   "Manchester City",
+   "Valencia",
+   "Middlesbrough",
+   "Besiktas"
+  ],
+  "apres": [
+   "Rayo Vallecano",
+   "Real Madrid Castilla",
+   "Almería",
+   "Sevilla",
+   "Real Madrid",
+   "Manchester City",
+   "Valencia",
+   "Middlesbrough",
+   "Besiktas",
+   "Cádiz",
+   "Real Valladolid"
+  ],
+  "ajoutes": [
+   "Real Madrid Castilla",
+   "Rayo Vallecano",
+   "Real Madrid",
+   "Cádiz",
+   "Real Valladolid"
+  ]
+ },
+ {
+  "nom": "Gaizka Mendieta",
+  "avant": [
+   "Valencia",
+   "SS Lazio",
+   "Barcelona",
+   "Middlesbrough"
+  ],
+  "apres": [
+   "Castellón",
+   "Valencia",
+   "SS Lazio",
+   "Barcelona",
+   "Middlesbrough"
+  ],
+  "ajoutes": [
+   "Castellón"
+  ]
+ },
+ {
+  "nom": "Claudio López",
+  "avant": [
+   "Racing Club",
+   "Valencia",
+   "SS Lazio",
+   "Boca Juniors"
+  ],
+  "apres": [
+   "Racing Club",
+   "Valencia",
+   "SS Lazio",
+   "Boca Juniors",
+   "Club América",
+   "Colorado Rapids"
+  ],
+  "ajoutes": [
+   "Colorado Rapids",
+   "Club América"
+  ]
+ },
+ {
+  "nom": "Roberto Donadoni",
+  "avant": [
+   "Atalanta BC",
+   "AC Milan"
+  ],
+  "apres": [
+   "Atalanta BC",
+   "AC Milan",
+   "New York Red Bulls",
+   "Al Ittihad"
+  ],
+  "ajoutes": [
+   "Al Ittihad",
+   "New York Red Bulls"
+  ]
+ },
+ {
+  "nom": "Gianluca Zambrotta",
+  "avant": [
+   "Bari",
+   "Juventus FC",
+   "Barcelona",
+   "AC Milan"
+  ],
+  "apres": [
+   "Como",
+   "Bari",
+   "Juventus FC",
+   "Barcelona",
+   "AC Milan"
+  ],
+  "ajoutes": [
+   "Como"
+  ]
+ },
+ {
+  "nom": "Walter Samuel",
+  "avant": [
+   "Boca Juniors",
+   "AS Roma",
+   "Real Madrid",
+   "Inter Milan",
+   "Basel"
+  ],
+  "apres": [
+   "Newell's Old Boys",
+   "Boca Juniors",
+   "AS Roma",
+   "Real Madrid",
+   "Inter Milan",
+   "Basel"
+  ],
+  "ajoutes": [
+   "Newell's Old Boys"
+  ]
+ },
+ {
+  "nom": "Andrea Barzagli",
+  "avant": [
+   "Chievo",
+   "Palermo",
+   "Wolfsburg",
+   "Juventus FC"
+  ],
+  "apres": [
+   "Piacenza",
+   "Chievo",
+   "Palermo",
+   "Wolfsburg",
+   "Juventus FC"
+  ],
+  "ajoutes": [
+   "Piacenza"
+  ]
+ },
+ {
+  "nom": "Radja Nainggolan",
+  "avant": [
+   "Piacenza",
+   "Cagliari Calcio",
+   "AS Roma",
+   "Inter Milan",
+   "Antwerp"
+  ],
+  "apres": [
+   "Piacenza",
+   "Cagliari Calcio",
+   "AS Roma",
+   "Inter Milan",
+   "Antwerp",
+   "SPAL"
+  ],
+  "ajoutes": [
+   "SPAL"
+  ]
+ },
+ {
+  "nom": "Aldair",
+  "avant": [
+   "Flamengo",
+   "Benfica",
+   "AS Roma"
+  ],
+  "apres": [
+   "Flamengo",
+   "Benfica",
+   "AS Roma",
+   "Genoa CFC"
+  ],
+  "ajoutes": [
+   "Genoa CFC"
+  ]
+ },
+ {
+  "nom": "Dominic Solanke",
+  "avant": [
+   "Chelsea",
+   "Liverpool",
+   "Bournemouth",
+   "Tottenham"
+  ],
+  "apres": [
+   "Chelsea",
+   "Vitesse",
+   "Liverpool",
+   "Bournemouth",
+   "Tottenham"
+  ],
+  "ajoutes": [
+   "Vitesse"
+  ]
+ },
+ {
+  "nom": "Morgan Rogers",
+  "avant": [
+   "Manchester City",
+   "Bournemouth",
+   "Middlesbrough",
+   "Aston Villa",
+   "Chelsea"
+  ],
+  "apres": [
+   "Manchester City",
+   "West Brom",
+   "Bournemouth",
+   "Lincoln City",
+   "Middlesbrough",
+   "Blackpool",
+   "Aston Villa",
+   "Chelsea"
+  ],
+  "ajoutes": [
+   "West Brom",
+   "Lincoln City",
+   "Blackpool"
+  ]
+ },
+ {
+  "nom": "Álex Baena",
+  "avant": [
+   "Villarreal",
+   "Girona",
+   "Real Valladolid",
+   "Atletico Madrid"
+  ],
+  "apres": [
+   "Villarreal B",
+   "Villarreal",
+   "Girona",
+   "Real Valladolid",
+   "Atletico Madrid"
+  ],
+  "ajoutes": [
+   "Villarreal B"
+  ]
+ },
+ {
+  "nom": "Édouard Mendy",
+  "avant": [
+   "Le Havre",
+   "Cherbourg",
+   "Marseille",
+   "Reims",
+   "Rennes",
+   "Chelsea",
+   "Al Ahli"
+  ],
+  "apres": [
+   "Stade de Reims",
+   "Le Havre",
+   "Cherbourg",
+   "Marseille",
+   "Reims",
+   "Rennes",
+   "Chelsea",
+   "Al Ahli"
+  ],
+  "ajoutes": [
+   "Stade de Reims"
+  ]
+ },
+ {
+  "nom": "Dodi Lukébakio",
+  "avant": [
+   "Anderlecht",
+   "Watford",
+   "Charleroi",
+   "Fortuna Düsseldorf",
+   "Hertha Berlin",
+   "Wolfsburg",
+   "Sevilla",
+   "Benfica"
+  ],
+  "apres": [
+   "Anderlecht",
+   "Toulouse",
+   "Watford",
+   "Charleroi",
+   "Fortuna Düsseldorf",
+   "Hertha Berlin",
+   "Wolfsburg",
+   "Sevilla",
+   "Benfica"
+  ],
+  "ajoutes": [
+   "Toulouse"
+  ]
+ },
+ {
+  "nom": "Georges Mikautadze",
+  "avant": [
+   "Metz",
+   "Ajaccio",
+   "Seraing",
+   "Lyon",
+   "Villarreal"
+  ],
+  "apres": [
+   "Metz",
+   "Ajaccio",
+   "Seraing",
+   "Lyon",
+   "Ajax Amsterdam",
+   "Villarreal"
+  ],
+  "ajoutes": [
+   "Ajax Amsterdam"
+  ]
+ },
+ {
+  "nom": "Aymeric Laporte",
+  "avant": [
+   "Athletic Bilbao",
+   "Manchester City",
+   "Al Nassr"
+  ],
+  "apres": [
+   "Athletic Bilbao",
+   "Bilbao Athletic",
+   "Manchester City",
+   "Al Nassr"
+  ],
+  "ajoutes": [
+   "Bilbao Athletic"
+  ]
+ },
+ {
+  "nom": "Dan Ndoye",
+  "avant": [
+   "Lausanne",
+   "Nice",
+   "Basel",
+   "Bologna FC",
+   "Nottingham Forest"
+  ],
+  "apres": [
+   "Lausanne-Sport",
+   "Lausanne",
+   "Nice",
+   "Basel",
+   "Bologna FC",
+   "Nottingham Forest"
+  ],
+  "ajoutes": [
+   "Lausanne-Sport"
+  ]
+ },
+ {
+  "nom": "Yunus Musah",
+  "avant": [
+   "Valencia",
+   "AC Milan",
+   "Atalanta BC"
+  ],
+  "apres": [
+   "Valencia Mestalla",
+   "Valencia",
+   "AC Milan",
+   "Atalanta BC"
+  ],
+  "ajoutes": [
+   "Valencia Mestalla"
+  ]
+ },
+ {
+  "nom": "Robin Gosens",
+  "avant": [
+   "Heracles",
+   "Atalanta BC",
+   "Inter Milan",
+   "Union Berlin",
+   "ACF Fiorentina"
+  ],
+  "apres": [
+   "Vitesse",
+   "Heracles Almelo",
+   "Heracles",
+   "Atalanta BC",
+   "Inter Milan",
+   "Union Berlin",
+   "ACF Fiorentina",
+   "Schalke"
+  ],
+  "ajoutes": [
+   "Heracles Almelo",
+   "Vitesse",
+   "Schalke"
+  ]
+ },
+ {
+  "nom": "Giorgi Mamardashvili",
+  "avant": [
+   "Dinamo Tbilisi",
+   "Rubin Kazan",
+   "Valencia",
+   "Celta Vigo",
+   "Liverpool"
+  ],
+  "apres": [
+   "Dinamo Tbilisi",
+   "Rubin Kazan",
+   "Lokomotivi Tbilisi",
+   "Valencia",
+   "Celta Vigo",
+   "Liverpool"
+  ],
+  "ajoutes": [
+   "Lokomotivi Tbilisi"
+  ]
+ },
+ {
+  "nom": "Jacob Ramsey",
+  "avant": [
+   "Aston Villa",
+   "Newcastle"
+  ],
+  "apres": [
+   "Aston Villa",
+   "Doncaster",
+   "Newcastle"
+  ],
+  "ajoutes": [
+   "Doncaster"
+  ]
+ },
+ {
+  "nom": "Aaron Ramsdale",
+  "avant": [
+   "Sheffield United",
+   "Bournemouth",
+   "Arsenal",
+   "Southampton",
+   "Newcastle"
+  ],
+  "apres": [
+   "Sheffield United",
+   "Bournemouth",
+   "Chesterfield",
+   "Arsenal",
+   "Southampton",
+   "Newcastle"
+  ],
+  "ajoutes": [
+   "Chesterfield"
+  ]
+ },
+ {
+  "nom": "Kiernan Dewsbury-Hall",
+  "avant": [
+   "Leicester City",
+   "Chelsea",
+   "Everton"
+  ],
+  "apres": [
+   "Leicester City",
+   "Blackpool",
+   "Luton Town",
+   "Chelsea",
+   "Everton"
+  ],
+  "ajoutes": [
+   "Blackpool",
+   "Luton Town"
+  ]
+ },
+ {
+  "nom": "James Trafford",
+  "avant": [
+   "Manchester City",
+   "Bolton",
+   "Burnley",
+   "Leeds United"
+  ],
+  "apres": [
+   "Manchester City",
+   "Accrington Stanley",
+   "Bolton",
+   "Burnley",
+   "Leeds United"
+  ],
+  "ajoutes": [
+   "Accrington Stanley"
+  ]
+ },
+ {
+  "nom": "Antonio Nusa",
+  "avant": [
+   "Club Brugge",
+   "RB Leipzig"
+  ],
+  "apres": [
+   "Club Brugge",
+   "Stabæk",
+   "RB Leipzig"
+  ],
+  "ajoutes": [
+   "Stabæk"
+  ]
+ },
+ {
+  "nom": "Milan Škriniar",
+  "avant": [
+   "Sampdoria",
+   "Inter Milan",
+   "PSG",
+   "Fenerbahce"
+  ],
+  "apres": [
+   "Žilina",
+   "Sampdoria",
+   "Inter Milan",
+   "PSG",
+   "Fenerbahce"
+  ],
+  "ajoutes": [
+   "Žilina"
+  ]
+ },
+ {
+  "nom": "Denis Bouanga",
+  "avant": [
+   "Lorient",
+   "Nîmes",
+   "Saint-Etienne",
+   "LAFC"
+  ],
+  "apres": [
+   "Lorient",
+   "Strasbourg",
+   "Tours",
+   "Nîmes",
+   "Saint-Etienne",
+   "LAFC"
+  ],
+  "ajoutes": [
+   "Strasbourg",
+   "Tours"
+  ]
+ },
+ {
+  "nom": "Jonny Evans",
+  "avant": [
+   "Manchester United",
+   "Sunderland",
+   "West Brom",
+   "Leicester City"
+  ],
+  "apres": [
+   "Manchester United",
+   "Antwerp",
+   "Sunderland",
+   "West Brom",
+   "Leicester City"
+  ],
+  "ajoutes": [
+   "Antwerp"
+  ]
+ },
+ {
+  "nom": "Tom Heaton",
+  "avant": [
+   "Manchester United",
+   "Cardiff City",
+   "Bristol City",
+   "Burnley",
+   "Aston Villa",
+   "Manchester United"
+  ],
+  "apres": [
+   "Manchester United",
+   "Swindon",
+   "Antwerp",
+   "Cardiff City",
+   "QPR",
+   "Rochdale",
+   "Wycombe",
+   "Bristol City",
+   "Burnley",
+   "Aston Villa",
+   "Manchester United"
+  ],
+  "ajoutes": [
+   "Swindon",
+   "Antwerp",
+   "QPR",
+   "Rochdale",
+   "Wycombe"
+  ]
+ },
+ {
+  "nom": "Francesco Acerbi",
+  "avant": [
+   "Pavia",
+   "Reggina",
+   "Chievo",
+   "Genoa CFC",
+   "AC Milan",
+   "Sassuolo",
+   "SS Lazio",
+   "Inter Milan"
+  ],
+  "apres": [
+   "Pavia",
+   "Spezia",
+   "Renate",
+   "Reggina",
+   "Chievo",
+   "Genoa CFC",
+   "AC Milan",
+   "Sassuolo",
+   "SS Lazio",
+   "Inter Milan"
+  ],
+  "ajoutes": [
+   "Spezia",
+   "Renate"
+  ]
+ },
+ {
+  "nom": "Stanislav Lobotka",
+  "avant": [
+   "SSC Napoli"
+  ],
+  "apres": [
+   "Nordsjælland",
+   "Celta Vigo",
+   "SSC Napoli"
+  ],
+  "ajoutes": [
+   "Nordsjælland",
+   "Celta Vigo"
+  ]
+ },
+ {
+  "nom": "Moise Kean",
+  "avant": [
+   "ACF Fiorentina"
+  ],
+  "apres": [
+   "Juventus FC",
+   "Hellas Verona",
+   "Everton",
+   "ACF Fiorentina"
+  ],
+  "ajoutes": [
+   "Juventus FC",
+   "Hellas Verona",
+   "Everton"
+  ]
+ },
+ {
+  "nom": "Amir Rrahmani",
+  "avant": [
+   "SSC Napoli"
+  ],
+  "apres": [
+   "Lokomotiva Zagreb",
+   "Hellas Verona",
+   "SSC Napoli"
+  ],
+  "ajoutes": [
+   "Hellas Verona",
+   "Lokomotiva Zagreb"
+  ]
+ },
+ {
+  "nom": "Danilo Pereira",
+  "avant": [
+   "Parma FC",
+   "Roda JC",
+   "Marítimo",
+   "Porto",
+   "PSG",
+   "Al Ittihad"
+  ],
+  "apres": [
+   "Parma FC",
+   "Aris",
+   "Roda JC",
+   "Marítimo",
+   "Porto",
+   "PSG",
+   "Al Ittihad"
+  ],
+  "ajoutes": [
+   "Aris"
+  ]
+ },
+ {
+  "nom": "Yannick Carrasco",
+  "avant": [
+   "Monaco",
+   "Atletico Madrid",
+   "Dalian Pro",
+   "Al Shabab"
+  ],
+  "apres": [
+   "Monaco",
+   "Atletico Madrid",
+   "Dalian Pro",
+   "Dalian Aerbin",
+   "Al Shabab"
+  ],
+  "ajoutes": [
+   "Dalian Aerbin"
+  ]
+ },
+ {
+  "nom": "Tim Kleindienst",
+  "avant": [
+   "Borussia Mönchengladbach"
+  ],
+  "apres": [
+   "Energie Cottbus",
+   "SC Freiburg",
+   "Heidenheim",
+   "Gent",
+   "Borussia Mönchengladbach"
+  ],
+  "ajoutes": [
+   "Energie Cottbus",
+   "SC Freiburg",
+   "Heidenheim",
+   "Gent"
+  ]
+ },
+ {
+  "nom": "Vedat Muriqi",
+  "avant": [
+   "Fenerbahce",
+   "SS Lazio",
+   "Mallorca"
+  ],
+  "apres": [
+   "Giresunspor",
+   "Çaykur Rizespor",
+   "Fenerbahce",
+   "SS Lazio",
+   "Mallorca"
+  ],
+  "ajoutes": [
+   "Giresunspor",
+   "Çaykur Rizespor"
+  ]
+ },
+ {
+  "nom": "Benjamin André",
+  "avant": [
+   "Lille"
+  ],
+  "apres": [
+   "Ajaccio",
+   "Rennes",
+   "Lille"
+  ],
+  "ajoutes": [
+   "Ajaccio",
+   "Rennes"
+  ]
+ },
+ {
+  "nom": "Juan Musso",
+  "avant": [
+   "Atletico Madrid"
+  ],
+  "apres": [
+   "Racing Club",
+   "Udinese Calcio",
+   "Atalanta BC",
+   "Atletico Madrid"
+  ],
+  "ajoutes": [
+   "Racing Club",
+   "Atalanta BC",
+   "Udinese Calcio"
+  ]
+ },
+ {
+  "nom": "Robin Koch",
+  "avant": [
+   "Eintracht Frankfurt"
+  ],
+  "apres": [
+   "Kaiserslautern",
+   "SC Freiburg",
+   "Leeds United",
+   "Eintracht Frankfurt"
+  ],
+  "ajoutes": [
+   "Kaiserslautern",
+   "Leeds United",
+   "SC Freiburg"
+  ]
+ },
+ {
+  "nom": "Ermedin Demirović",
+  "avant": [
+   "Stuttgart"
+  ],
+  "apres": [
+   "Alavés",
+   "Sochaux",
+   "Almería",
+   "SC Freiburg",
+   "Augsburg",
+   "Stuttgart"
+  ],
+  "ajoutes": [
+   "Augsburg",
+   "Alavés",
+   "Sochaux",
+   "Almería",
+   "SC Freiburg"
+  ]
+ },
+ {
+  "nom": "Antonio Valencia",
+  "avant": [
+   "LDU Quito",
+   "Villarreal",
+   "Recreativo Huelva",
+   "Wigan Athletic",
+   "Manchester United",
+   "Querétaro"
+  ],
+  "apres": [
+   "El Nacional",
+   "LDU Quito",
+   "Villarreal",
+   "Recreativo Huelva",
+   "Wigan Athletic",
+   "Manchester United",
+   "Querétaro"
+  ],
+  "ajoutes": [
+   "El Nacional"
+  ]
+ },
+ {
+  "nom": "Óscar Mingueza",
+  "avant": [
+   "Barcelona",
+   "Celta Vigo",
+   "Crystal Palace"
+  ],
+  "apres": [
+   "Barcelona B",
+   "Barcelona",
+   "Celta Vigo",
+   "Crystal Palace"
+  ],
+  "ajoutes": [
+   "Barcelona B"
+  ]
+ },
+ {
+  "nom": "Davide Zappacosta",
+  "avant": [
+   "Atalanta BC",
+   "Torino FC",
+   "AS Roma",
+   "Chelsea",
+   "Genoa CFC"
+  ],
+  "apres": [
+   "Avellino",
+   "Atalanta BC",
+   "Torino FC",
+   "AS Roma",
+   "Chelsea",
+   "Genoa CFC"
+  ],
+  "ajoutes": [
+   "Avellino"
+  ]
+ },
+ {
+  "nom": "Marko Livaja",
+  "avant": [
+   "Hajduk Split",
+   "Inter Milan",
+   "Empoli FC",
+   "Cesena",
+   "Atalanta BC",
+   "Las Palmas",
+   "AEK Athens"
+  ],
+  "apres": [
+   "Hajduk Split",
+   "Inter Milan",
+   "Rubin Kazan",
+   "Empoli FC",
+   "Cesena",
+   "Atalanta BC",
+   "Las Palmas",
+   "AEK Athens"
+  ],
+  "ajoutes": [
+   "Rubin Kazan"
+  ]
+ },
+ {
+  "nom": "Mitchell Weiser",
+  "avant": [
+   "Bayern Munich",
+   "Kaiserslautern",
+   "Hertha Berlin",
+   "Bayer Leverkusen",
+   "Benfica",
+   "Werder Bremen"
+  ],
+  "apres": [
+   "Köln",
+   "Bayern Munich",
+   "Kaiserslautern",
+   "Hertha Berlin",
+   "Bayer Leverkusen",
+   "Benfica",
+   "Werder Bremen"
+  ],
+  "ajoutes": [
+   "Köln"
+  ]
+ },
+ {
+  "nom": "Krzysztof Piątek",
+  "avant": [
+   "Cracovia",
+   "Genoa CFC",
+   "AC Milan",
+   "Hertha Berlin",
+   "Salernitana",
+   "Istanbul Başakşehir",
+   "Al-Duhail"
+  ],
+  "apres": [
+   "Zagłębie Lubin",
+   "Cracovia",
+   "Genoa CFC",
+   "AC Milan",
+   "Hertha Berlin",
+   "ACF Fiorentina",
+   "Salernitana",
+   "Istanbul Başakşehir",
+   "Al-Duhail"
+  ],
+  "ajoutes": [
+   "Zagłębie Lubin",
+   "ACF Fiorentina"
+  ]
+ },
+ {
+  "nom": "Roland Sallai",
+  "avant": [
+   "Palermo",
+   "APOEL",
+   "Cagliari Calcio",
+   "SC Freiburg",
+   "Galatasaray"
+  ],
+  "apres": [
+   "Puskás Akadémia",
+   "Palermo",
+   "APOEL",
+   "Cagliari Calcio",
+   "SC Freiburg",
+   "Galatasaray"
+  ],
+  "ajoutes": [
+   "Puskás Akadémia"
+  ]
+ },
+ {
+  "nom": "Brais Méndez",
+  "avant": [
+   "Celta Vigo",
+   "Real Sociedad"
+  ],
+  "apres": [
+   "Celta Vigo",
+   "Real Sociedad",
+   "Columbus Crew"
+  ],
+  "ajoutes": [
+   "Columbus Crew"
+  ]
+ },
+ {
+  "nom": "Saša Lukić",
+  "avant": [
+   "Partizan",
+   "Levante",
+   "Torino FC",
+   "Fulham"
+  ],
+  "apres": [
+   "Partizan",
+   "Levante",
+   "Torino FC",
+   "Fulham",
+   "Ipswich Town"
+  ],
+  "ajoutes": [
+   "Ipswich Town"
+  ]
+ },
+ {
+  "nom": "Nicolas Raskin",
+  "avant": [
+   "Standard Liège",
+   "Rangers"
+  ],
+  "apres": [
+   "Gent",
+   "Standard Liège",
+   "Rangers"
+  ],
+  "ajoutes": [
+   "Gent"
+  ]
+ },
+ {
+  "nom": "Mehdi Taremi",
+  "avant": [
+   "Persepolis",
+   "Rio Ave",
+   "Porto",
+   "Inter Milan",
+   "Olympiacos"
+  ],
+  "apres": [
+   "Persepolis",
+   "Al-Gharafa",
+   "Rio Ave",
+   "Porto",
+   "Inter Milan",
+   "Olympiacos"
+  ],
+  "ajoutes": [
+   "Al-Gharafa"
+  ]
+ },
+ {
+  "nom": "Sergio Gómez",
+  "avant": [
+   "Borussia Dortmund",
+   "Anderlecht",
+   "Manchester City",
+   "Real Sociedad"
+  ],
+  "apres": [
+   "Borussia Dortmund",
+   "Barcelona B",
+   "Huesca",
+   "Anderlecht",
+   "Manchester City",
+   "Real Sociedad"
+  ],
+  "ajoutes": [
+   "Barcelona B",
+   "Huesca"
+  ]
+ },
+ {
+  "nom": "Raoul Bellanova",
+  "avant": [
+   "AC Milan",
+   "Bordeaux",
+   "Cagliari Calcio",
+   "Inter Milan",
+   "Torino FC",
+   "Atalanta BC"
+  ],
+  "apres": [
+   "Pescara",
+   "AC Milan",
+   "Bordeaux",
+   "Cagliari Calcio",
+   "Inter Milan",
+   "Torino FC",
+   "Atalanta BC"
+  ],
+  "ajoutes": [
+   "Pescara"
+  ]
+ },
+ {
+  "nom": "Mats Wieffer",
+  "avant": [
+   "Heerenveen",
+   "Excelsior",
+   "Feyenoord",
+   "Brighton"
+  ],
+  "apres": [
+   "Twente",
+   "Heerenveen",
+   "Excelsior",
+   "Feyenoord",
+   "Brighton"
+  ],
+  "ajoutes": [
+   "Twente"
+  ]
+ },
+ {
+  "nom": "James Tavernier",
+  "avant": [
+   "Newcastle",
+   "MK Dons",
+   "Wigan Athletic",
+   "Rotherham United",
+   "Rangers"
+  ],
+  "apres": [
+   "Newcastle",
+   "Sheffield Wednesday",
+   "Gateshead",
+   "Carlisle United",
+   "MK Dons",
+   "Shrewsbury",
+   "Wigan Athletic",
+   "Rotherham United",
+   "Rangers",
+   "Bristol City"
+  ],
+  "ajoutes": [
+   "Shrewsbury",
+   "Sheffield Wednesday",
+   "Gateshead",
+   "Carlisle United",
+   "Bristol City"
+  ]
+ },
+ {
+  "nom": "Lewis Dunk",
+  "avant": [
+   "Brighton"
+  ],
+  "apres": [
+   "Brighton",
+   "Bristol City"
+  ],
+  "ajoutes": [
+   "Bristol City"
+  ]
+ },
+ {
+  "nom": "Cristiano Biraghi",
+  "avant": [
+   "Inter Milan",
+   "Catania",
+   "Granada",
+   "Bologna FC",
+   "Pescara",
+   "Sassuolo",
+   "ACF Fiorentina",
+   "Torino FC"
+  ],
+  "apres": [
+   "Atalanta BC",
+   "Inter Milan",
+   "Catania",
+   "Chievo",
+   "Granada",
+   "Bologna FC",
+   "Pescara",
+   "Sassuolo",
+   "ACF Fiorentina",
+   "Torino FC"
+  ],
+  "ajoutes": [
+   "Atalanta BC",
+   "Chievo"
+  ]
+ },
+ {
+  "nom": "Jonas Hofmann",
+  "avant": [
+   "Borussia Dortmund",
+   "Mainz",
+   "Borussia Mönchengladbach",
+   "Bayer Leverkusen"
+  ],
+  "apres": [
+   "Hoffenheim",
+   "Borussia Dortmund",
+   "Mainz",
+   "Borussia Mönchengladbach",
+   "Bayer Leverkusen"
+  ],
+  "ajoutes": [
+   "Hoffenheim"
+  ]
+ },
+ {
+  "nom": "José Gayà",
+  "avant": [
+   "Valencia"
+  ],
+  "apres": [
+   "Valencia",
+   "Valencia Mestalla"
+  ],
+  "ajoutes": [
+   "Valencia Mestalla"
+  ]
+ },
+ {
+  "nom": "Alexander Djiku",
+  "avant": [
+   "Bastia",
+   "Caen",
+   "Strasbourg",
+   "Fenerbahce"
+  ],
+  "apres": [
+   "Bastia",
+   "Caen",
+   "Strasbourg",
+   "Fenerbahce",
+   "Spartak Moscow"
+  ],
+  "ajoutes": [
+   "Spartak Moscow"
+  ]
+ },
+ {
+  "nom": "Johan Mojica",
+  "avant": [
+   "Rayo Vallecano",
+   "Girona",
+   "Atalanta BC",
+   "Elche",
+   "Villarreal",
+   "Osasuna",
+   "Mallorca"
+  ],
+  "apres": [
+   "Rayo Vallecano",
+   "Deportivo Cali",
+   "Girona",
+   "Atalanta BC",
+   "Real Valladolid",
+   "Elche",
+   "Villarreal",
+   "Osasuna",
+   "Mallorca"
+  ],
+  "ajoutes": [
+   "Deportivo Cali",
+   "Real Valladolid"
+  ]
+ },
+ {
+  "nom": "Álex Moreno",
+  "avant": [
+   "Mallorca",
+   "Rayo Vallecano",
+   "Real Betis",
+   "Aston Villa",
+   "Girona"
+  ],
+  "apres": [
+   "Mallorca",
+   "Rayo Vallecano",
+   "Elche",
+   "Real Betis",
+   "Aston Villa",
+   "Nottingham Forest",
+   "Girona"
+  ],
+  "ajoutes": [
+   "Elche",
+   "Nottingham Forest"
+  ]
+ },
+ {
+  "nom": "Saïd Benrahma",
+  "avant": [
+   "Nice",
+   "Brentford",
+   "West Ham",
+   "Lyon",
+   "NEOM SC"
+  ],
+  "apres": [
+   "Angers",
+   "Châteauroux",
+   "Nice",
+   "Brentford",
+   "West Ham",
+   "Lyon",
+   "NEOM SC"
+  ],
+  "ajoutes": [
+   "Angers",
+   "Châteauroux"
+  ]
+ },
+ {
+  "nom": "Orbelín Pineda",
+  "avant": [
+   "Pachuca",
+   "Cruz Azul",
+   "Celta Vigo",
+   "AEK Athens"
+  ],
+  "apres": [
+   "Querétaro",
+   "Guadalajara",
+   "Pachuca",
+   "Cruz Azul",
+   "Celta Vigo",
+   "AEK Athens",
+   "Monterrey"
+  ],
+  "ajoutes": [
+   "Guadalajara",
+   "Querétaro",
+   "Monterrey"
+  ]
+ },
+ {
+  "nom": "Josh Cullen",
+  "avant": [
+   "West Ham",
+   "Anderlecht",
+   "Burnley"
+  ],
+  "apres": [
+   "West Ham",
+   "Bradford City",
+   "Bolton",
+   "Charlton",
+   "Anderlecht",
+   "Burnley"
+  ],
+  "ajoutes": [
+   "Bradford City",
+   "Bolton",
+   "Charlton"
+  ]
+ },
+ {
+  "nom": "Joe Rodon",
+  "avant": [
+   "Swansea",
+   "Tottenham",
+   "Rennes",
+   "Leeds United"
+  ],
+  "apres": [
+   "Swansea",
+   "Cheltenham Town",
+   "Tottenham",
+   "Rennes",
+   "Leeds United"
+  ],
+  "ajoutes": [
+   "Cheltenham Town"
+  ]
+ },
+ {
+  "nom": "Predrag Rajković",
+  "avant": [
+   "Red Star Belgrade",
+   "Maccabi Tel Aviv",
+   "Reims",
+   "Mallorca",
+   "Al Ittihad"
+  ],
+  "apres": [
+   "Red Star Belgrade",
+   "Maccabi Tel Aviv",
+   "Reims",
+   "Stade de Reims",
+   "Mallorca",
+   "Al Ittihad"
+  ],
+  "ajoutes": [
+   "Stade de Reims"
+  ]
+ },
+ {
+  "nom": "Bryan Gil",
+  "avant": [
+   "Sevilla",
+   "Leganés",
+   "Eibar",
+   "Tottenham",
+   "Valencia",
+   "Girona"
+  ],
+  "apres": [
+   "Sevilla Atlético",
+   "Sevilla",
+   "Leganés",
+   "Eibar",
+   "Tottenham",
+   "Valencia",
+   "Girona"
+  ],
+  "ajoutes": [
+   "Sevilla Atlético"
+  ]
+ },
+ {
+  "nom": "Roman Bürki",
+  "avant": [
+   "Young Boys",
+   "Grasshoppers",
+   "Stuttgart",
+   "Borussia Dortmund",
+   "St. Louis City"
+  ],
+  "apres": [
+   "Young Boys",
+   "Thun",
+   "Grasshoppers",
+   "Stuttgart",
+   "SC Freiburg",
+   "Borussia Dortmund",
+   "St. Louis City"
+  ],
+  "ajoutes": [
+   "Thun",
+   "SC Freiburg"
+  ]
+ },
+ {
+  "nom": "Jack Butland",
+  "avant": [
+   "Birmingham City",
+   "Stoke City",
+   "Crystal Palace",
+   "Manchester United",
+   "Rangers",
+   "Hull City"
+  ],
+  "apres": [
+   "Birmingham City",
+   "Cheltenham Town",
+   "Stoke City",
+   "Barnsley",
+   "Crystal Palace",
+   "Manchester United",
+   "Leeds United",
+   "Derby County",
+   "Rangers",
+   "Hull City"
+  ],
+  "ajoutes": [
+   "Leeds United",
+   "Cheltenham Town",
+   "Barnsley",
+   "Derby County"
+  ]
+ },
+ {
+  "nom": "Franco Vázquez",
+  "avant": [
+   "Belgrano",
+   "Palermo",
+   "Sevilla",
+   "Parma FC"
+  ],
+  "apres": [
+   "Belgrano",
+   "Palermo",
+   "Rayo Vallecano",
+   "Sevilla",
+   "Parma FC",
+   "Cremonese"
+  ],
+  "ajoutes": [
+   "Rayo Vallecano",
+   "Cremonese"
+  ]
+ },
+ {
+  "nom": "Michael Keane",
+  "avant": [
+   "Manchester United",
+   "Burnley",
+   "Everton"
+  ],
+  "apres": [
+   "Manchester United",
+   "Leicester City",
+   "Derby County",
+   "Burnley",
+   "Blackburn",
+   "Everton"
+  ],
+  "ajoutes": [
+   "Leicester City",
+   "Derby County",
+   "Blackburn"
+  ]
+ },
+ {
+  "nom": "Clinton Mata",
+  "avant": [
+   "Charleroi",
+   "Club Brugge",
+   "Lyon"
+  ],
+  "apres": [
+   "Eupen",
+   "Charleroi",
+   "Club Brugge",
+   "Lyon"
+  ],
+  "ajoutes": [
+   "Eupen"
+  ]
+ },
+ {
+  "nom": "Juan Fernando Quintero",
+  "avant": [
+   "Pescara",
+   "Porto",
+   "Rennes",
+   "River Plate",
+   "Shenzhen",
+   "Junior",
+   "Racing Club"
+  ],
+  "apres": [
+   "Atlético Nacional",
+   "Pescara",
+   "Porto",
+   "Rennes",
+   "River Plate",
+   "Shenzhen",
+   "Junior",
+   "Racing Club",
+   "América de Cali"
+  ],
+  "ajoutes": [
+   "Atlético Nacional",
+   "América de Cali"
+  ]
+ },
+ {
+  "nom": "Enes Ünal",
+  "avant": [
+   "Bursaspor",
+   "Manchester City",
+   "Twente",
+   "Villarreal",
+   "Levante",
+   "Real Valladolid",
+   "Getafe",
+   "Bournemouth"
+  ],
+  "apres": [
+   "Bursaspor",
+   "Manchester City",
+   "Genk",
+   "Twente",
+   "NAC Breda",
+   "Villarreal",
+   "Levante",
+   "Real Valladolid",
+   "Getafe",
+   "Bournemouth"
+  ],
+  "ajoutes": [
+   "Genk",
+   "NAC Breda"
+  ]
+ },
+ {
+  "nom": "Junya Ito",
+  "avant": [
+   "Ventforet Kofu",
+   "Kashiwa Reysol",
+   "Genk",
+   "Reims"
+  ],
+  "apres": [
+   "Ventforet Kofu",
+   "Kashiwa Reysol",
+   "Genk",
+   "Reims",
+   "Stade de Reims"
+  ],
+  "ajoutes": [
+   "Stade de Reims"
+  ]
+ },
+ {
+  "nom": "Chris Führich",
+  "avant": [
+   "Borussia Dortmund",
+   "Paderborn",
+   "Stuttgart"
+  ],
+  "apres": [
+   "Köln",
+   "Borussia Dortmund",
+   "Paderborn",
+   "Stuttgart"
+  ],
+  "ajoutes": [
+   "Köln"
+  ]
+ },
+ {
+  "nom": "Iñaki Peña",
+  "avant": [
+   "Barcelona",
+   "Galatasaray",
+   "Elche",
+   "Panathinaikos"
+  ],
+  "apres": [
+   "Barcelona B",
+   "Barcelona",
+   "Galatasaray",
+   "Elche",
+   "Panathinaikos"
+  ],
+  "ajoutes": [
+   "Barcelona B"
+  ]
+ },
+ {
+  "nom": "Abel Hernández",
+  "avant": [
+   "Central Español",
+   "Peñarol",
+   "Palermo",
+   "Hull City",
+   "Al Ahli",
+   "CSKA Moscow",
+   "Internacional"
+  ],
+  "apres": [
+   "Central Español",
+   "Peñarol",
+   "Palermo",
+   "Hull City",
+   "Al Ahli",
+   "CSKA Moscow",
+   "Al-Ahli Doha",
+   "Internacional",
+   "Fluminense",
+   "Atlético San Luis",
+   "Rosario Central",
+   "Liverpool Montevideo"
+  ],
+  "ajoutes": [
+   "Al-Ahli Doha",
+   "Fluminense",
+   "Atlético San Luis",
+   "Rosario Central",
+   "Liverpool Montevideo"
+  ]
+ },
+ {
+  "nom": "Manuel Lanzini",
+  "avant": [
+   "River Plate",
+   "Al-Jazira",
+   "West Ham",
+   "Vélez Sarsfield"
+  ],
+  "apres": [
+   "River Plate",
+   "Fluminense",
+   "Al-Jazira",
+   "West Ham",
+   "Vélez Sarsfield"
+  ],
+  "ajoutes": [
+   "Fluminense"
+  ]
+ },
+ {
+  "nom": "Filip Đuričić",
+  "avant": [
+   "Heerenveen",
+   "Benfica",
+   "Mainz",
+   "Anderlecht",
+   "Sampdoria",
+   "Sassuolo",
+   "Hellas Verona",
+   "Panathinaikos",
+   "APOEL"
+  ],
+  "apres": [
+   "Heerenveen",
+   "Benfica",
+   "Mainz",
+   "Southampton",
+   "Anderlecht",
+   "Sampdoria",
+   "Sassuolo",
+   "Hellas Verona",
+   "Panathinaikos",
+   "APOEL"
+  ],
+  "ajoutes": [
+   "Southampton"
+  ]
+ },
+ {
+  "nom": "Luis Muriel",
+  "avant": [
+   "Deportivo Cali",
+   "Lecce",
+   "Udinese Calcio",
+   "Sampdoria",
+   "Sevilla",
+   "Atalanta BC",
+   "Orlando City"
+  ],
+  "apres": [
+   "Deportivo Cali",
+   "Lecce",
+   "Udinese Calcio",
+   "Sampdoria",
+   "Sevilla",
+   "Atalanta BC",
+   "ACF Fiorentina",
+   "Orlando City",
+   "Junior"
+  ],
+  "ajoutes": [
+   "ACF Fiorentina",
+   "Junior"
+  ]
+ },
+ {
+  "nom": "Alberto Moreno",
+  "avant": [
+   "Sevilla",
+   "Liverpool",
+   "Villarreal",
+   "PAOK",
+   "Como"
+  ],
+  "apres": [
+   "Sevilla Atlético",
+   "Sevilla",
+   "Liverpool",
+   "Villarreal",
+   "PAOK",
+   "Como"
+  ],
+  "ajoutes": [
+   "Sevilla Atlético"
+  ]
+ },
+ {
+  "nom": "Antonio Sanabria",
+  "avant": [
+   "River Plate",
+   "AS Roma",
+   "Sassuolo",
+   "Sporting Gijón",
+   "Real Betis",
+   "Genoa CFC",
+   "Torino FC",
+   "Cremonese"
+  ],
+  "apres": [
+   "Barcelona B",
+   "River Plate",
+   "AS Roma",
+   "Sassuolo",
+   "Sporting Gijón",
+   "Real Betis",
+   "Genoa CFC",
+   "Torino FC",
+   "Cremonese"
+  ],
+  "ajoutes": [
+   "Barcelona B"
+  ]
+ },
+ {
+  "nom": "Florian Grillitsch",
+  "avant": [
+   "Werder Bremen",
+   "Hoffenheim",
+   "Ajax Amsterdam",
+   "Braga"
+  ],
+  "apres": [
+   "Werder Bremen",
+   "Hoffenheim",
+   "Ajax Amsterdam",
+   "Braga",
+   "Real Valladolid"
+  ],
+  "ajoutes": [
+   "Real Valladolid"
+  ]
+ },
+ {
+  "nom": "Florian Neuhaus",
+  "avant": [
+   "1860 Munich",
+   "Düsseldorf",
+   "Borussia Mönchengladbach"
+  ],
+  "apres": [
+   "1860 Munich",
+   "Düsseldorf",
+   "Borussia Mönchengladbach",
+   "Fortuna Düsseldorf"
+  ],
+  "ajoutes": [
+   "Fortuna Düsseldorf"
+  ]
+ },
+ {
+  "nom": "Leo Østigård",
+  "avant": [
+   "Molde",
+   "Brighton",
+   "Coventry City",
+   "Sankt Pauli",
+   "Stoke City",
+   "Genoa CFC",
+   "SSC Napoli",
+   "Rennes"
+  ],
+  "apres": [
+   "Molde",
+   "Brighton",
+   "Viking",
+   "Coventry City",
+   "Sankt Pauli",
+   "Stoke City",
+   "Genoa CFC",
+   "SSC Napoli",
+   "Rennes",
+   "Hoffenheim"
+  ],
+  "ajoutes": [
+   "Viking",
+   "Hoffenheim"
+  ]
+ },
+ {
+  "nom": "Amar Dedić",
+  "avant": [
+   "Salzburg",
+   "Benfica"
+  ],
+  "apres": [
+   "Liefering",
+   "Wolfsberger AC",
+   "Salzburg",
+   "Benfica",
+   "Marseille"
+  ],
+  "ajoutes": [
+   "Liefering",
+   "Wolfsberger AC",
+   "Marseille"
+  ]
+ },
+ {
+  "nom": "Christian Benteke",
+  "avant": [
+   "Genk",
+   "Standard Liège",
+   "Aston Villa",
+   "Liverpool",
+   "Crystal Palace",
+   "DC United"
+  ],
+  "apres": [
+   "Genk",
+   "Standard Liège",
+   "Mechelen",
+   "Aston Villa",
+   "Liverpool",
+   "Crystal Palace",
+   "DC United",
+   "Al-Wahda"
+  ],
+  "ajoutes": [
+   "Mechelen",
+   "Al-Wahda"
+  ]
+ },
+ {
+  "nom": "Charles Aránguiz",
+  "avant": [
+   "Cobreloa",
+   "Universidad de Chile",
+   "Internacional",
+   "Bayer Leverkusen"
+  ],
+  "apres": [
+   "Cobreloa",
+   "Cobresal",
+   "Colo-Colo",
+   "Quilmes",
+   "Universidad de Chile",
+   "Internacional",
+   "Bayer Leverkusen"
+  ],
+  "ajoutes": [
+   "Quilmes",
+   "Colo-Colo",
+   "Cobresal"
+  ]
+ },
+ {
+  "nom": "Luis Advíncula",
+  "avant": [
+   "Sporting Cristal",
+   "Hoffenheim",
+   "Bursaspor",
+   "Tigres",
+   "Lobos BUAP",
+   "Rayo Vallecano",
+   "Boca Juniors",
+   "Alianza Lima"
+  ],
+  "apres": [
+   "Juan Aurich",
+   "Sporting Cristal",
+   "Hoffenheim",
+   "Vitória de Setúbal",
+   "Bursaspor",
+   "Tigres",
+   "Lobos BUAP",
+   "Newell's Old Boys",
+   "Rayo Vallecano",
+   "Boca Juniors",
+   "Alianza Lima"
+  ],
+  "ajoutes": [
+   "Juan Aurich",
+   "Vitória de Setúbal",
+   "Newell's Old Boys"
+  ]
+ },
+ {
+  "nom": "Jesse Lingard",
+  "avant": [
+   "Manchester United",
+   "Leicester City",
+   "Birmingham City",
+   "Brighton",
+   "Derby County",
+   "West Ham",
+   "Nottingham Forest",
+   "FC Seoul"
+  ],
+  "apres": [
+   "Manchester United",
+   "Leicester City",
+   "Birmingham City",
+   "Brighton",
+   "Derby County",
+   "West Ham",
+   "Nottingham Forest",
+   "FC Seoul",
+   "Corinthians"
+  ],
+  "ajoutes": [
+   "Corinthians"
+  ]
+ },
+ {
+  "nom": "André Gomes",
+  "avant": [
+   "Benfica",
+   "Valencia",
+   "Barcelona",
+   "Everton",
+   "Lille"
+  ],
+  "apres": [
+   "Benfica",
+   "Valencia",
+   "Barcelona",
+   "Everton",
+   "Lille",
+   "Columbus Crew"
+  ],
+  "ajoutes": [
+   "Columbus Crew"
+  ]
+ },
+ {
+  "nom": "Josip Brekalo",
+  "avant": [
+   "Wolfsburg",
+   "Stuttgart",
+   "Torino FC",
+   "ACF Fiorentina",
+   "Kayserispor",
+   "Hertha Berlin"
+  ],
+  "apres": [
+   "Wolfsburg",
+   "Stuttgart",
+   "Torino FC",
+   "ACF Fiorentina",
+   "Kayserispor",
+   "Hertha Berlin",
+   "Hajduk Split",
+   "Kasımpaşa",
+   "Real Oviedo"
+  ],
+  "ajoutes": [
+   "Hajduk Split",
+   "Kasımpaşa",
+   "Real Oviedo"
+  ]
+ },
+ {
+  "nom": "Salomón Rondón",
+  "avant": [
+   "Aragua",
+   "Las Palmas",
+   "Málaga",
+   "Rubin Kazan",
+   "Zenit",
+   "Newcastle",
+   "West Brom",
+   "Dalian Pro",
+   "CSKA Moscow",
+   "Everton",
+   "River Plate",
+   "Pachuca",
+   "Real Oviedo"
+  ],
+  "apres": [
+   "Aragua",
+   "Las Palmas",
+   "Málaga",
+   "Rubin Kazan",
+   "Zenit",
+   "Newcastle",
+   "West Brom",
+   "Dalian Pro",
+   "CSKA Moscow",
+   "Dalian Aerbin",
+   "Everton",
+   "River Plate",
+   "Pachuca",
+   "Real Oviedo"
+  ],
+  "ajoutes": [
+   "Dalian Aerbin"
+  ]
+ },
+ {
+  "nom": "Enzo Pérez",
+  "avant": [
+   "Estudiantes",
+   "Benfica",
+   "Valencia",
+   "River Plate"
+  ],
+  "apres": [
+   "Godoy Cruz",
+   "Estudiantes",
+   "Benfica",
+   "Valencia",
+   "River Plate",
+   "Argentinos Juniors"
+  ],
+  "ajoutes": [
+   "Godoy Cruz",
+   "Argentinos Juniors"
+  ]
+ },
+ {
+  "nom": "Miguel Borja",
+  "avant": [
+   "Sociedad Anónima Deportiva Nacional",
+   "Cortuluá",
+   "Olimpia",
+   "Palmeiras",
+   "Junior",
+   "River Plate"
+  ],
+  "apres": [
+   "Sociedad Anónima Deportiva Nacional",
+   "Cortuluá",
+   "Olimpia",
+   "Palmeiras",
+   "Junior",
+   "River Plate",
+   "Olimpo",
+   "Independiente Santa Fe"
+  ],
+  "ajoutes": [
+   "Olimpo",
+   "Independiente Santa Fe"
+  ]
+ },
+ {
+  "nom": "Ben Godfrey",
+  "avant": [
+   "Norwich City",
+   "Shrewsbury",
+   "Everton",
+   "Atalanta BC",
+   "Ipswich Town",
+   "Brøndby"
+  ],
+  "apres": [
+   "York City",
+   "Norwich City",
+   "Shrewsbury",
+   "Everton",
+   "Atalanta BC",
+   "Ipswich Town",
+   "Brøndby"
+  ],
+  "ajoutes": [
+   "York City"
+  ]
+ },
+ {
+  "nom": "Ianis Hagi",
+  "avant": [
+   "Viitorul Constanța",
+   "ACF Fiorentina",
+   "Genk",
+   "Rangers",
+   "Alanyaspor"
+  ],
+  "apres": [
+   "Viitorul Constanța",
+   "ACF Fiorentina",
+   "Genk",
+   "Rangers",
+   "Alavés",
+   "Alanyaspor"
+  ],
+  "ajoutes": [
+   "Alavés"
+  ]
+ },
+ {
+  "nom": "Hernán Barcos",
+  "avant": [
+   "River Plate",
+   "Independiente",
+   "LDU Quito",
+   "Tigres",
+   "Grêmio",
+   "Palmeiras",
+   "Tianjin",
+   "Pumas UNAM",
+   "Sporting Cristal",
+   "Delfin",
+   "Aucas",
+   "Athletico Paranaense",
+   "Alianza Lima"
+  ],
+  "apres": [
+   "Racing Club",
+   "Guaraní",
+   "Shenzhen",
+   "River Plate",
+   "Independiente",
+   "LDU Quito",
+   "Tigres",
+   "Grêmio",
+   "Palmeiras",
+   "Tianjin",
+   "Pumas UNAM",
+   "Sporting Cristal",
+   "Tianjin Jinmen Tiger",
+   "Delfin",
+   "Aucas",
+   "Sporting CP",
+   "Athletico Paranaense",
+   "Alianza Lima"
+  ],
+  "ajoutes": [
+   "Shenzhen",
+   "Guaraní",
+   "Racing Club",
+   "Tianjin Jinmen Tiger",
+   "Sporting CP"
+  ]
+ },
+ {
+  "nom": "Mateusz Klich",
+  "avant": [
+   "Cracovia",
+   "Kaiserslautern",
+   "Wolfsburg",
+   "Twente",
+   "Leeds United",
+   "DC United"
+  ],
+  "apres": [
+   "PEC Zwolle",
+   "Cracovia",
+   "Kaiserslautern",
+   "Wolfsburg",
+   "Twente",
+   "Leeds United",
+   "DC United"
+  ],
+  "ajoutes": [
+   "PEC Zwolle"
+  ]
+ },
+ {
+  "nom": "Lucas Pérez",
+  "avant": [
+   "Atletico Madrid B",
+   "Rayo Vallecano",
+   "Karpaty Lviv",
+   "PAOK",
+   "Deportivo La Coruna",
+   "Arsenal",
+   "West Ham",
+   "Alavés",
+   "Cádiz"
+  ],
+  "apres": [
+   "Atletico Madrid B",
+   "Rayo Vallecano",
+   "Karpaty Lviv",
+   "PAOK",
+   "Deportivo La Coruna",
+   "Arsenal",
+   "West Ham",
+   "Alavés",
+   "Elche",
+   "Cádiz",
+   "PSV Eindhoven"
+  ],
+  "ajoutes": [
+   "Elche",
+   "PSV Eindhoven"
+  ]
+ },
+ {
+  "nom": "José Campaña",
+  "avant": [
+   "Sevilla",
+   "Crystal Palace",
+   "Sampdoria",
+   "Levante",
+   "Real Betis",
+   "Mallorca",
+   "Ceuta"
+  ],
+  "apres": [
+   "Sevilla Atlético",
+   "Sevilla",
+   "Crystal Palace",
+   "Sampdoria",
+   "Porto",
+   "Porto B",
+   "Levante",
+   "Real Betis",
+   "Mallorca",
+   "Ceuta"
+  ],
+  "ajoutes": [
+   "Sevilla Atlético",
+   "Porto",
+   "Porto B"
+  ]
+ },
+ {
+  "nom": "José Luis Palomino",
+  "avant": [
+   "Argentinos Juniors",
+   "Metalist",
+   "Ludogorets",
+   "Atalanta BC",
+   "Cremonese",
+   "Talleres"
+  ],
+  "apres": [
+   "San Lorenzo",
+   "Argentinos Juniors",
+   "Metalist",
+   "Ludogorets",
+   "Metz",
+   "Atalanta BC",
+   "Cremonese",
+   "Talleres"
+  ],
+  "ajoutes": [
+   "San Lorenzo",
+   "Metz"
+  ]
+ },
+ {
+  "nom": "Habib Diallo",
+  "avant": [
+   "Génération Foot",
+   "Metz",
+   "Strasbourg",
+   "Al Shabab"
+  ],
+  "apres": [
+   "Génération Foot",
+   "Metz",
+   "Strasbourg",
+   "Al Shabab",
+   "Stade Brestois"
+  ],
+  "ajoutes": [
+   "Stade Brestois"
+  ]
+ },
+ {
+  "nom": "Javier Saviola",
+  "avant": [
+   "River Plate",
+   "Barcelona",
+   "Monaco",
+   "Sevilla",
+   "Real Madrid",
+   "Benfica",
+   "Olympiacos"
+  ],
+  "apres": [
+   "River Plate",
+   "Barcelona",
+   "Monaco",
+   "Sevilla",
+   "Real Madrid",
+   "Benfica",
+   "Olympiacos",
+   "Hellas Verona"
+  ],
+  "ajoutes": [
+   "Hellas Verona"
+  ]
+ },
+ {
+  "nom": "Gabriel Heinze",
+  "avant": [
+   "Sporting CP",
+   "Real Valladolid",
+   "PSG",
+   "Manchester United",
+   "Real Madrid",
+   "Marseille",
+   "AS Roma"
+  ],
+  "apres": [
+   "Newell's Old Boys",
+   "Sporting CP",
+   "Real Valladolid",
+   "PSG",
+   "Manchester United",
+   "Real Madrid",
+   "Marseille",
+   "AS Roma"
+  ],
+  "ajoutes": [
+   "Newell's Old Boys"
+  ]
+ },
+ {
+  "nom": "Davor Šuker",
+  "avant": [
+   "Dinamo Zagreb",
+   "Sevilla",
+   "Real Madrid",
+   "Arsenal",
+   "West Ham",
+   "1860 Munich"
+  ],
+  "apres": [
+   "Osijek",
+   "Dinamo Zagreb",
+   "Sevilla",
+   "Real Madrid",
+   "Arsenal",
+   "West Ham",
+   "1860 Munich"
+  ],
+  "ajoutes": [
+   "Osijek"
+  ]
+ },
+ {
+  "nom": "Fredrik Ljungberg",
+  "avant": [
+   "Halmstads BK",
+   "Arsenal",
+   "West Ham",
+   "Seattle Sounders",
+   "Chicago Fire",
+   "Shimizu S-Pulse",
+   "Mumbai City"
+  ],
+  "apres": [
+   "Halmstads BK",
+   "Arsenal",
+   "West Ham",
+   "Seattle Sounders",
+   "Chicago Fire",
+   "Shimizu S-Pulse",
+   "Celtic",
+   "Mumbai City"
+  ],
+  "ajoutes": [
+   "Celtic"
+  ]
+ },
+ {
+  "nom": "Brian Laudrup",
+  "avant": [
+   "Brøndby",
+   "Bayern Munich",
+   "ACF Fiorentina",
+   "AC Milan",
+   "Rangers",
+   "Chelsea",
+   "Ajax Amsterdam"
+  ],
+  "apres": [
+   "Brøndby",
+   "Bayern Munich",
+   "ACF Fiorentina",
+   "AC Milan",
+   "Rangers",
+   "Chelsea",
+   "Copenhagen",
+   "Ajax Amsterdam"
+  ],
+  "ajoutes": [
+   "Copenhagen"
+  ]
+ },
+ {
+  "nom": "Rudi Völler",
+  "avant": [
+   "Werder Bremen",
+   "AS Roma",
+   "AC Milan",
+   "Marseille",
+   "Bayer Leverkusen"
+  ],
+  "apres": [
+   "1860 Munich",
+   "Werder Bremen",
+   "AS Roma",
+   "AC Milan",
+   "Marseille",
+   "Bayer Leverkusen"
+  ],
+  "ajoutes": [
+   "1860 Munich"
+  ]
+ },
+ {
+  "nom": "Glenn Hoddle",
+  "avant": [
+   "Tottenham",
+   "Monaco",
+   "Chelsea"
+  ],
+  "apres": [
+   "Tottenham",
+   "Monaco",
+   "Swindon",
+   "Chelsea"
+  ],
+  "ajoutes": [
+   "Swindon"
+  ]
+ },
+ {
+  "nom": "Manuel Almunia",
+  "avant": [
+   "Osasuna",
+   "Albacete",
+   "Recreativo Huelva",
+   "Arsenal",
+   "Watford",
+   "West Ham"
+  ],
+  "apres": [
+   "Osasuna",
+   "Albacete",
+   "Recreativo Huelva",
+   "Sabadell",
+   "Eibar",
+   "Celta Vigo",
+   "Arsenal",
+   "Watford",
+   "West Ham"
+  ],
+  "ajoutes": [
+   "Sabadell",
+   "Eibar",
+   "Celta Vigo"
+  ]
+ },
+ {
+  "nom": "Thomas Vermaelen",
+  "avant": [
+   "Ajax Amsterdam",
+   "Arsenal",
+   "Barcelona",
+   "AS Roma",
+   "Vissel Kobe"
+  ],
+  "apres": [
+   "Ajax Amsterdam",
+   "RKC Waalwijk",
+   "Arsenal",
+   "Barcelona",
+   "AS Roma",
+   "Vissel Kobe"
+  ],
+  "ajoutes": [
+   "RKC Waalwijk"
+  ]
+ },
+ {
+  "nom": "Eduardo da Silva",
+  "avant": [
+   "Bangu",
+   "Dinamo Zagreb",
+   "Arsenal",
+   "Shakhtar Donetsk",
+   "Flamengo",
+   "Athletico Paranaense"
+  ],
+  "apres": [
+   "Inter Zaprešić",
+   "Bangu",
+   "Dinamo Zagreb",
+   "Arsenal",
+   "Shakhtar Donetsk",
+   "Flamengo",
+   "Athletico Paranaense"
+  ],
+  "ajoutes": [
+   "Inter Zaprešić"
+  ]
+ },
+ {
+  "nom": "Kieran Gibbs",
+  "avant": [
+   "Arsenal",
+   "West Brom",
+   "Inter Miami"
+  ],
+  "apres": [
+   "Arsenal",
+   "Norwich City",
+   "West Brom",
+   "Inter Miami"
+  ],
+  "ajoutes": [
+   "Norwich City"
+  ]
+ },
+ {
+  "nom": "Alberto Aquilani",
+  "avant": [
+   "AS Roma",
+   "Liverpool",
+   "Juventus FC",
+   "AC Milan",
+   "ACF Fiorentina",
+   "Sporting CP",
+   "Pescara",
+   "Sassuolo"
+  ],
+  "apres": [
+   "Triestina",
+   "AS Roma",
+   "Liverpool",
+   "Juventus FC",
+   "AC Milan",
+   "ACF Fiorentina",
+   "Sporting CP",
+   "Pescara",
+   "Sassuolo",
+   "Las Palmas"
+  ],
+  "ajoutes": [
+   "Triestina",
+   "Las Palmas"
+  ]
+ },
+ {
+  "nom": "Patrick van Aanholt",
+  "avant": [
+   "Chelsea",
+   "Coventry City",
+   "Newcastle",
+   "Leicester City",
+   "Vitesse",
+   "Sunderland",
+   "Crystal Palace",
+   "Galatasaray"
+  ],
+  "apres": [
+   "Chelsea",
+   "Coventry City",
+   "Newcastle",
+   "Leicester City",
+   "Wigan Athletic",
+   "Vitesse",
+   "Sunderland",
+   "Crystal Palace",
+   "Galatasaray"
+  ],
+  "ajoutes": [
+   "Wigan Athletic"
+  ]
+ },
+ {
+  "nom": "Fabio Borini",
+  "avant": [
+   "Chelsea",
+   "Swansea",
+   "Parma FC",
+   "AS Roma",
+   "Liverpool",
+   "Sunderland",
+   "AC Milan",
+   "Hellas Verona",
+   "Karagümrük",
+   "Sampdoria"
+  ],
+  "apres": [
+   "Chelsea",
+   "Swansea",
+   "Parma FC",
+   "AS Roma",
+   "Liverpool",
+   "Sunderland",
+   "AC Milan",
+   "Hellas Verona",
+   "Karagümrük",
+   "Fatih Karagümrük",
+   "Sampdoria"
+  ],
+  "ajoutes": [
+   "Fatih Karagümrük"
+  ]
+ },
+ {
+  "nom": "Andros Townsend",
+  "avant": [
+   "Tottenham",
+   "Leyton Orient",
+   "Birmingham City",
+   "QPR",
+   "Newcastle",
+   "Crystal Palace",
+   "Everton",
+   "Luton Town",
+   "Antalyaspor"
+  ],
+  "apres": [
+   "Tottenham",
+   "Leyton Orient",
+   "Yeovil",
+   "MK Dons",
+   "Ipswich Town",
+   "Watford",
+   "Millwall",
+   "Birmingham City",
+   "Leeds United",
+   "QPR",
+   "Newcastle",
+   "Crystal Palace",
+   "Everton",
+   "Luton Town",
+   "Antalyaspor"
+  ],
+  "ajoutes": [
+   "Yeovil",
+   "Leeds United",
+   "MK Dons",
+   "Ipswich Town",
+   "Watford",
+   "Millwall"
+  ]
+ },
+ {
+  "nom": "Danny Rose",
+  "avant": [
+   "Leeds United",
+   "Tottenham",
+   "Watford",
+   "Sunderland",
+   "Newcastle"
+  ],
+  "apres": [
+   "Leeds United",
+   "Tottenham",
+   "Watford",
+   "Peterborough United",
+   "Bristol City",
+   "Sunderland",
+   "Newcastle"
+  ],
+  "ajoutes": [
+   "Peterborough United",
+   "Bristol City"
+  ]
+ },
+ {
+  "nom": "Adam Johnson",
+  "avant": [
+   "Middlesbrough",
+   "Manchester City",
+   "Sunderland"
+  ],
+  "apres": [
+   "Middlesbrough",
+   "Leeds United",
+   "Watford",
+   "Manchester City",
+   "Sunderland"
+  ],
+  "ajoutes": [
+   "Watford",
+   "Leeds United"
+  ]
+ },
+ {
+  "nom": "Felipe Caicedo",
+  "avant": [
+   "Rocafuerte",
+   "Basel",
+   "Manchester City",
+   "Sporting CP",
+   "Málaga",
+   "Levante",
+   "Lokomotiv Moscow",
+   "Espanyol",
+   "SS Lazio",
+   "Genoa CFC",
+   "Inter Miami"
+  ],
+  "apres": [
+   "Rocafuerte",
+   "Basel",
+   "Manchester City",
+   "Sporting CP",
+   "Málaga",
+   "Levante",
+   "Lokomotiv Moscow",
+   "Espanyol",
+   "Al-Jazira",
+   "SS Lazio",
+   "Genoa CFC",
+   "Inter Miami"
+  ],
+  "ajoutes": [
+   "Al-Jazira"
+  ]
+ },
+ {
+  "nom": "Jack Rodwell",
+  "avant": [
+   "Everton",
+   "Manchester City",
+   "Sunderland",
+   "Blackburn",
+   "Sheffield United",
+   "AS Roma",
+   "Western Sydney Wanderers"
+  ],
+  "apres": [
+   "Everton",
+   "Manchester City",
+   "Sunderland",
+   "Blackburn",
+   "Sheffield United",
+   "AS Roma",
+   "Western Sydney Wanderers",
+   "Sydney FC"
+  ],
+  "ajoutes": [
+   "Sydney FC"
+  ]
+ },
+ {
+  "nom": "Leon Osman",
+  "avant": [
+   "Everton"
+  ],
+  "apres": [
+   "Everton",
+   "Carlisle United",
+   "Derby County"
+  ],
+  "ajoutes": [
+   "Derby County",
+   "Carlisle United"
+  ]
+ },
+ {
+  "nom": "Roger Johnson",
+  "avant": [
+   "Cardiff City",
+   "Birmingham City",
+   "Wolverhampton",
+   "West Ham"
+  ],
+  "apres": [
+   "Wycombe",
+   "Cardiff City",
+   "Birmingham City",
+   "Wolverhampton",
+   "Sheffield Wednesday",
+   "West Ham",
+   "Charlton",
+   "Pune City",
+   "Bromley"
+  ],
+  "ajoutes": [
+   "Wycombe",
+   "Sheffield Wednesday",
+   "Charlton",
+   "Pune City",
+   "Bromley"
+  ]
+ },
+ {
+  "nom": "Cameron Jerome",
+  "avant": [
+   "Cardiff City",
+   "Birmingham City",
+   "Stoke City",
+   "Crystal Palace",
+   "Norwich City",
+   "Derby County",
+   "Göztepe",
+   "MK Dons",
+   "Luton Town",
+   "Coventry City",
+   "Bolton"
+  ],
+  "apres": [
+   "Middlesbrough",
+   "Cardiff City",
+   "Birmingham City",
+   "Stoke City",
+   "Crystal Palace",
+   "Norwich City",
+   "Derby County",
+   "Göztepe",
+   "MK Dons",
+   "Luton Town",
+   "Coventry City",
+   "Bolton"
+  ],
+  "ajoutes": [
+   "Middlesbrough"
+  ]
+ },
+ {
+  "nom": "Christian Benítez",
+  "avant": [
+   "El Nacional",
+   "Santos Laguna",
+   "Birmingham City",
+   "Club América",
+   "Al-Jazira"
+  ],
+  "apres": [
+   "El Nacional",
+   "Santos Laguna",
+   "Birmingham City",
+   "Club América",
+   "Al-Jazira",
+   "El Jaish"
+  ],
+  "ajoutes": [
+   "El Jaish"
+  ]
+ },
+ {
+  "nom": "Mido",
+  "avant": [
+   "Zamalek",
+   "Ajax Amsterdam",
+   "Celta Vigo",
+   "Marseille",
+   "AS Roma",
+   "Tottenham",
+   "Middlesbrough",
+   "Wigan Athletic",
+   "West Ham"
+  ],
+  "apres": [
+   "Zamalek",
+   "Gent",
+   "Ajax Amsterdam",
+   "Celta Vigo",
+   "Marseille",
+   "AS Roma",
+   "Tottenham",
+   "Middlesbrough",
+   "Wigan Athletic",
+   "West Ham",
+   "Barnsley"
+  ],
+  "ajoutes": [
+   "Barnsley",
+   "Gent"
+  ]
+ },
+ {
+  "nom": "Junior Hoilett",
+  "avant": [
+   "Blackburn",
+   "Paderborn",
+   "QPR",
+   "Cardiff City",
+   "Reading"
+  ],
+  "apres": [
+   "Blackburn",
+   "Paderborn",
+   "QPR",
+   "Cardiff City",
+   "Reading",
+   "Aberdeen",
+   "Hibernian",
+   "Swindon"
+  ],
+  "ajoutes": [
+   "Aberdeen",
+   "Hibernian",
+   "Swindon"
+  ]
+ },
+ {
+  "nom": "Thomas Sørensen",
+  "avant": [
+   "OB",
+   "Sunderland",
+   "Aston Villa",
+   "Stoke City"
+  ],
+  "apres": [
+   "OB",
+   "Sunderland",
+   "Aston Villa",
+   "Stoke City",
+   "Melbourne City"
+  ],
+  "ajoutes": [
+   "Melbourne City"
+  ]
+ },
+ {
+  "nom": "Glenn Whelan",
+  "avant": [
+   "Manchester City",
+   "Bury",
+   "Sheffield Wednesday",
+   "Stoke City",
+   "Aston Villa",
+   "Hearts",
+   "Fleetwood",
+   "Bristol Rovers"
+  ],
+  "apres": [
+   "Manchester City",
+   "Bury",
+   "Sheffield Wednesday",
+   "Stoke City",
+   "Aston Villa",
+   "Hearts",
+   "Heart of Midlothian",
+   "Fleetwood",
+   "Bristol Rovers"
+  ],
+  "ajoutes": [
+   "Heart of Midlothian"
+  ]
+ },
+ {
+  "nom": "Rory Delap",
+  "avant": [
+   "Carlisle United",
+   "Derby County",
+   "Southampton",
+   "Sunderland",
+   "Stoke City",
+   "Burnley",
+   "Barnsley"
+  ],
+  "apres": [
+   "Carlisle United",
+   "Derby County",
+   "Southampton",
+   "Sunderland",
+   "Stoke City",
+   "Burnley",
+   "Barnsley",
+   "Burton Albion"
+  ],
+  "ajoutes": [
+   "Burton Albion"
+  ]
+ },
+ {
+  "nom": "Tuncay Şanlı",
+  "avant": [
+   "Sakaryaspor",
+   "Fenerbahce",
+   "Middlesbrough",
+   "Stoke City",
+   "Wolfsburg",
+   "Bolton"
+  ],
+  "apres": [
+   "Sakaryaspor",
+   "Fenerbahce",
+   "Middlesbrough",
+   "Stoke City",
+   "Wolfsburg",
+   "Bolton",
+   "Bursaspor",
+   "Pune City"
+  ],
+  "ajoutes": [
+   "Bursaspor",
+   "Pune City"
+  ]
+ },
+ {
+  "nom": "Aaron Hughes",
+  "avant": [
+   "Newcastle",
+   "Aston Villa",
+   "Fulham",
+   "QPR",
+   "Brighton",
+   "Melbourne City",
+   "Hearts"
+  ],
+  "apres": [
+   "Newcastle",
+   "Aston Villa",
+   "Fulham",
+   "QPR",
+   "Brighton",
+   "Melbourne City",
+   "Hearts",
+   "Kerala Blasters",
+   "Heart of Midlothian"
+  ],
+  "ajoutes": [
+   "Kerala Blasters",
+   "Heart of Midlothian"
+  ]
+ },
+ {
+  "nom": "Bobby Zamora",
+  "avant": [
+   "Bristol Rovers",
+   "Brighton",
+   "Tottenham",
+   "West Ham",
+   "Fulham",
+   "QPR"
+  ],
+  "apres": [
+   "Bristol Rovers",
+   "Brighton",
+   "Bath City",
+   "Tottenham",
+   "West Ham",
+   "Fulham",
+   "QPR"
+  ],
+  "ajoutes": [
+   "Bath City"
+  ]
+ },
+ {
+  "nom": "Phil Bardsley",
+  "avant": [
+   "Manchester United",
+   "Burnley",
+   "Rangers",
+   "Aston Villa",
+   "Sheffield United",
+   "Sunderland",
+   "Stoke City"
+  ],
+  "apres": [
+   "Manchester United",
+   "Antwerp",
+   "Burnley",
+   "Rangers",
+   "Aston Villa",
+   "Sheffield United",
+   "Sunderland",
+   "Stoke City"
+  ],
+  "ajoutes": [
+   "Antwerp"
+  ]
+ },
+ {
+  "nom": "Johan Elmander",
+  "avant": [
+   "Örgryte",
+   "Feyenoord",
+   "Brøndby",
+   "Toulouse",
+   "Bolton",
+   "Galatasaray",
+   "Norwich City"
+  ],
+  "apres": [
+   "Örgryte",
+   "Feyenoord",
+   "Brøndby",
+   "NAC Breda",
+   "Toulouse",
+   "Bolton",
+   "Galatasaray",
+   "Norwich City"
+  ],
+  "ajoutes": [
+   "NAC Breda"
+  ]
+ },
+ {
+  "nom": "Marcus Hahnemann",
+  "avant": [
+   "Colorado Rapids",
+   "Fulham",
+   "Reading",
+   "Wolverhampton",
+   "Everton",
+   "Seattle Sounders"
+  ],
+  "apres": [
+   "Colorado Rapids",
+   "Fulham",
+   "Reading",
+   "Rochdale",
+   "Wolverhampton",
+   "Everton",
+   "Seattle Sounders"
+  ],
+  "ajoutes": [
+   "Rochdale"
+  ]
+ },
+ {
+  "nom": "Sam Vokes",
+  "avant": [
+   "Bournemouth",
+   "Wolverhampton",
+   "Leeds United",
+   "Norwich City",
+   "Burnley",
+   "Stoke City",
+   "Wycombe"
+  ],
+  "apres": [
+   "Bournemouth",
+   "Wolverhampton",
+   "Leeds United",
+   "Bristol City",
+   "Norwich City",
+   "Burnley",
+   "Sheffield United",
+   "Stoke City",
+   "Wycombe"
+  ],
+  "ajoutes": [
+   "Bristol City",
+   "Sheffield United"
+  ]
+ },
+ {
+  "nom": "Hugo Rodallega",
+  "avant": [
+   "Deportes Quindío",
+   "Deportivo Cali",
+   "Necaxa",
+   "Monterrey",
+   "Wigan Athletic",
+   "Fulham",
+   "Trabzonspor",
+   "Alanyaspor",
+   "Denizlispor",
+   "Bahia",
+   "Atlético Nacional"
+  ],
+  "apres": [
+   "Deportes Quindío",
+   "Deportivo Cali",
+   "Atlas",
+   "Necaxa",
+   "Monterrey",
+   "Wigan Athletic",
+   "Fulham",
+   "Trabzonspor",
+   "Alanyaspor",
+   "Denizlispor",
+   "Bahia",
+   "Atlético Nacional",
+   "Independiente Santa Fe"
+  ],
+  "ajoutes": [
+   "Atlas",
+   "Independiente Santa Fe"
+  ]
+ },
+ {
+  "nom": "Mohamed Diamé",
+  "avant": [
+   "Lens",
+   "Linares",
+   "Rayo Vallecano",
+   "Wigan Athletic",
+   "West Ham",
+   "Hull City",
+   "Newcastle",
+   "Al Ahli",
+   "Doncaster"
+  ],
+  "apres": [
+   "Lens",
+   "Linares",
+   "Rayo Vallecano",
+   "Wigan Athletic",
+   "West Ham",
+   "Hull City",
+   "Newcastle",
+   "Al Ahli",
+   "Doncaster",
+   "Al-Ahli Doha",
+   "Fuenlabrada",
+   "Al-Sailiya"
+  ],
+  "ajoutes": [
+   "Al-Ahli Doha",
+   "Fuenlabrada",
+   "Al-Sailiya"
+  ]
+ },
+ {
+  "nom": "Jimmy Bullard",
+  "avant": [
+   "Gillingham",
+   "Wigan Athletic",
+   "Fulham",
+   "Hull City",
+   "Ipswich Town",
+   "MK Dons"
+  ],
+  "apres": [
+   "West Ham",
+   "Peterborough United",
+   "Gillingham",
+   "Wigan Athletic",
+   "Fulham",
+   "Hull City",
+   "Ipswich Town",
+   "MK Dons"
+  ],
+  "ajoutes": [
+   "West Ham",
+   "Peterborough United"
+  ]
+ },
+ {
+  "nom": "Kevin Kilbane",
+  "avant": [
+   "Preston",
+   "West Brom",
+   "Sunderland",
+   "Everton",
+   "Wigan Athletic",
+   "Hull City",
+   "Huddersfield",
+   "Coventry City"
+  ],
+  "apres": [
+   "Preston",
+   "West Brom",
+   "Sunderland",
+   "Everton",
+   "Wigan Athletic",
+   "Hull City",
+   "Huddersfield",
+   "Derby County",
+   "Coventry City"
+  ],
+  "ajoutes": [
+   "Derby County"
+  ]
+ },
+ {
+  "nom": "David James",
+  "avant": [
+   "Watford",
+   "Liverpool",
+   "Aston Villa",
+   "West Ham",
+   "Manchester City",
+   "Portsmouth",
+   "Bristol City",
+   "Bournemouth"
+  ],
+  "apres": [
+   "Watford",
+   "Liverpool",
+   "Aston Villa",
+   "West Ham",
+   "Manchester City",
+   "Portsmouth",
+   "Bristol City",
+   "Bournemouth",
+   "Kerala Blasters"
+  ],
+  "ajoutes": [
+   "Kerala Blasters"
+  ]
+ },
+ {
+  "nom": "Valon Behrami",
+  "avant": [
+   "SS Lazio",
+   "West Ham",
+   "ACF Fiorentina",
+   "SSC Napoli",
+   "Hamburg",
+   "Watford",
+   "Udinese Calcio",
+   "Genoa CFC",
+   "Sion"
+  ],
+  "apres": [
+   "Hellas Verona",
+   "SS Lazio",
+   "West Ham",
+   "ACF Fiorentina",
+   "SSC Napoli",
+   "Hamburg",
+   "Watford",
+   "Udinese Calcio",
+   "Genoa CFC",
+   "Sion"
+  ],
+  "ajoutes": [
+   "Hellas Verona"
+  ]
+ },
+ {
+  "nom": "Luís Boa Morte",
+  "avant": [
+   "Sporting CP",
+   "Arsenal",
+   "Southampton",
+   "Fulham",
+   "West Ham",
+   "Larissa",
+   "Chesterfield"
+  ],
+  "apres": [
+   "Sporting CP",
+   "Arsenal",
+   "Southampton",
+   "Fulham",
+   "West Ham",
+   "Larissa",
+   "Chesterfield",
+   "Orlando Pirates"
+  ],
+  "ajoutes": [
+   "Orlando Pirates"
+  ]
+ },
+ {
+  "nom": "Alessandro Diamanti",
+  "avant": [
+   "Livorno",
+   "West Ham",
+   "Brescia",
+   "Bologna FC",
+   "Guangzhou Evergrande",
+   "ACF Fiorentina",
+   "Atalanta BC",
+   "Watford",
+   "Perth Glory"
+  ],
+  "apres": [
+   "AlbinoLeffe",
+   "Livorno",
+   "West Ham",
+   "Brescia",
+   "Bologna FC",
+   "Guangzhou Evergrande",
+   "ACF Fiorentina",
+   "Atalanta BC",
+   "Watford",
+   "Perth Glory"
+  ],
+  "ajoutes": [
+   "AlbinoLeffe"
+  ]
+ },
+ {
+  "nom": "Tim Krul",
+  "avant": [
+   "Newcastle",
+   "Falkirk",
+   "Carlisle United",
+   "AZ Alkmaar",
+   "Brighton",
+   "Norwich City",
+   "Luton Town"
+  ],
+  "apres": [
+   "Newcastle",
+   "Falkirk",
+   "Carlisle United",
+   "Ajax Amsterdam",
+   "AZ Alkmaar",
+   "Brighton",
+   "Norwich City",
+   "Luton Town"
+  ],
+  "ajoutes": [
+   "Ajax Amsterdam"
+  ]
+ },
+ {
+  "nom": "Danny Simpson",
+  "avant": [
+   "Manchester United",
+   "Sunderland",
+   "Ipswich Town",
+   "Blackburn",
+   "Newcastle",
+   "QPR",
+   "Leicester City",
+   "Huddersfield",
+   "Bristol City"
+  ],
+  "apres": [
+   "Manchester United",
+   "Antwerp",
+   "Sunderland",
+   "Ipswich Town",
+   "Blackburn",
+   "Newcastle",
+   "QPR",
+   "Leicester City",
+   "Huddersfield",
+   "Bristol City"
+  ],
+  "ajoutes": [
+   "Antwerp"
+  ]
+ },
+ {
+  "nom": "Andy Carroll",
+  "avant": [
+   "Newcastle",
+   "Preston",
+   "Liverpool",
+   "West Ham",
+   "West Brom",
+   "Reading"
+  ],
+  "apres": [
+   "Newcastle",
+   "Preston",
+   "Liverpool",
+   "West Ham",
+   "West Brom",
+   "Reading",
+   "Amiens",
+   "Dagenham & Redbridge"
+  ],
+  "ajoutes": [
+   "Amiens",
+   "Dagenham & Redbridge"
+  ]
+ },
+ {
+  "nom": "Shola Ameobi",
+  "avant": [
+   "Newcastle",
+   "Stoke City",
+   "Crystal Palace",
+   "Bolton",
+   "Fleetwood",
+   "Notts County",
+   "Gateshead"
+  ],
+  "apres": [
+   "Newcastle",
+   "Stoke City",
+   "Gaziantep",
+   "Crystal Palace",
+   "Bolton",
+   "Fleetwood",
+   "Notts County",
+   "Gateshead"
+  ],
+  "ajoutes": [
+   "Gaziantep"
+  ]
+ },
+ {
+  "nom": "Craig Cathcart",
+  "avant": [
+   "Manchester United",
+   "Plymouth",
+   "Blackpool",
+   "Watford"
+  ],
+  "apres": [
+   "Manchester United",
+   "Antwerp",
+   "Plymouth",
+   "Blackpool",
+   "Watford"
+  ],
+  "ajoutes": [
+   "Antwerp"
+  ]
+ },
+ {
+  "nom": "Charlie Adam",
+  "avant": [
+   "Rangers",
+   "Ross County",
+   "Blackpool",
+   "Liverpool",
+   "Stoke City",
+   "Reading"
+  ],
+  "apres": [
+   "Rangers",
+   "Ross County",
+   "Blackpool",
+   "Liverpool",
+   "Stoke City",
+   "Reading",
+   "Dundee"
+  ],
+  "ajoutes": [
+   "Dundee"
+  ]
+ },
+ {
+  "nom": "Jonjo Shelvey",
+  "avant": [
+   "Charlton",
+   "Liverpool",
+   "Blackpool",
+   "Swansea",
+   "Newcastle",
+   "Nottingham Forest",
+   "Burnley"
+  ],
+  "apres": [
+   "Charlton",
+   "Liverpool",
+   "Blackpool",
+   "Swansea",
+   "Newcastle",
+   "Nottingham Forest",
+   "Çaykur Rizespor",
+   "Eyüpspor",
+   "Burnley"
+  ],
+  "ajoutes": [
+   "Çaykur Rizespor",
+   "Eyüpspor"
+  ]
+ },
+ {
+  "nom": "Adel Taarabt",
+  "avant": [
+   "Lens",
+   "Tottenham",
+   "QPR",
+   "AC Milan",
+   "Genoa CFC",
+   "Benfica",
+   "Al-Nasr"
+  ],
+  "apres": [
+   "Lens",
+   "Tottenham",
+   "QPR",
+   "Fulham",
+   "AC Milan",
+   "Genoa CFC",
+   "Benfica",
+   "Al-Nasr"
+  ],
+  "ajoutes": [
+   "Fulham"
+  ]
+ },
+ {
+  "nom": "Grant Holt",
+  "avant": [
+   "Rochdale",
+   "Nottingham Forest",
+   "Shrewsbury",
+   "Norwich City",
+   "Wigan Athletic",
+   "Wolverhampton"
+  ],
+  "apres": [
+   "Sheffield Wednesday",
+   "Rochdale",
+   "Nottingham Forest",
+   "Shrewsbury",
+   "Blackpool",
+   "Norwich City",
+   "Wigan Athletic",
+   "Aston Villa",
+   "Huddersfield",
+   "Wolverhampton",
+   "Hibernian"
+  ],
+  "ajoutes": [
+   "Sheffield Wednesday",
+   "Blackpool",
+   "Aston Villa",
+   "Huddersfield",
+   "Hibernian"
+  ]
+ },
+ {
+  "nom": "Michel Vorm",
+  "avant": [
+   "Utrecht",
+   "Swansea",
+   "Tottenham"
+  ],
+  "apres": [
+   "Utrecht",
+   "Den Bosch",
+   "Swansea",
+   "Tottenham"
+  ],
+  "ajoutes": [
+   "Den Bosch"
+  ]
+ },
+ {
+  "nom": "Scott Sinclair",
+  "avant": [
+   "Bristol Rovers",
+   "Chelsea",
+   "Swansea",
+   "Manchester City",
+   "West Brom",
+   "Aston Villa",
+   "Celtic",
+   "Preston"
+  ],
+  "apres": [
+   "Bristol Rovers",
+   "Chelsea",
+   "QPR",
+   "Plymouth",
+   "Charlton",
+   "Crystal Palace",
+   "Birmingham City",
+   "Wigan Athletic",
+   "Swansea",
+   "Manchester City",
+   "West Brom",
+   "Aston Villa",
+   "Celtic",
+   "Preston"
+  ],
+  "ajoutes": [
+   "Birmingham City",
+   "QPR",
+   "Wigan Athletic",
+   "Charlton",
+   "Plymouth",
+   "Crystal Palace"
+  ]
+ },
+ {
+  "nom": "Gylfi Sigurðsson",
+  "avant": [
+   "Reading",
+   "Hoffenheim",
+   "Swansea",
+   "Tottenham",
+   "Everton"
+  ],
+  "apres": [
+   "Reading",
+   "Shrewsbury",
+   "Crewe",
+   "Hoffenheim",
+   "Swansea",
+   "Tottenham",
+   "Everton"
+  ],
+  "ajoutes": [
+   "Shrewsbury",
+   "Crewe"
+  ]
+ },
+ {
+  "nom": "Royston Drenthe",
+  "avant": [
+   "Feyenoord",
+   "Real Madrid",
+   "Everton",
+   "Reading",
+   "Sheffield Wednesday",
+   "Sparta Rotterdam"
+  ],
+  "apres": [
+   "Feyenoord",
+   "Real Madrid",
+   "Hércules",
+   "Everton",
+   "Reading",
+   "Sheffield Wednesday",
+   "Sparta Rotterdam",
+   "Baniyas"
+  ],
+  "ajoutes": [
+   "Hércules",
+   "Baniyas"
+  ]
+ },
+ {
+  "nom": "Ali Al-Habsi",
+  "avant": [
+   "Lyn Oslo",
+   "Bolton",
+   "Wigan Athletic",
+   "Reading",
+   "Al Hilal"
+  ],
+  "apres": [
+   "Al-Nasr",
+   "Lyn Oslo",
+   "Bolton",
+   "Wigan Athletic",
+   "Brighton",
+   "Reading",
+   "Al Hilal",
+   "West Brom"
+  ],
+  "ajoutes": [
+   "Al-Nasr",
+   "Brighton",
+   "West Brom"
+  ]
+ },
+ {
+  "nom": "Jermaine Pennant",
+  "avant": [
+   "Arsenal",
+   "Birmingham City",
+   "Liverpool",
+   "Real Zaragoza",
+   "Stoke City",
+   "Wolverhampton",
+   "Bury"
+  ],
+  "apres": [
+   "Notts County",
+   "Arsenal",
+   "Watford",
+   "Birmingham City",
+   "Liverpool",
+   "Real Zaragoza",
+   "Portsmouth",
+   "Stoke City",
+   "Wolverhampton",
+   "Bury",
+   "Pune City",
+   "Wigan Athletic"
+  ],
+  "ajoutes": [
+   "Portsmouth",
+   "Watford",
+   "Notts County",
+   "Pune City",
+   "Wigan Athletic"
+  ]
+ },
+ {
+  "nom": "Rickie Lambert",
+  "avant": [
+   "Bristol Rovers",
+   "Southampton",
+   "Liverpool",
+   "West Brom",
+   "Cardiff City"
+  ],
+  "apres": [
+   "Blackpool",
+   "Stockport",
+   "Rochdale",
+   "Bristol Rovers",
+   "Southampton",
+   "Liverpool",
+   "West Brom",
+   "Cardiff City"
+  ],
+  "ajoutes": [
+   "Stockport",
+   "Blackpool",
+   "Rochdale"
+  ]
+ },
+ {
+  "nom": "Jay Rodriguez",
+  "avant": [
+   "Burnley",
+   "Southampton",
+   "West Brom"
+  ],
+  "apres": [
+   "Burnley",
+   "Barnsley",
+   "Southampton",
+   "West Brom"
+  ],
+  "ajoutes": [
+   "Barnsley"
+  ]
+ },
+ {
+  "nom": "Kevin Mirallas",
+  "avant": [
+   "Lille",
+   "Saint-Etienne",
+   "Olympiacos",
+   "Everton",
+   "ACF Fiorentina",
+   "Antwerp",
+   "Gaziantep"
+  ],
+  "apres": [
+   "Lille",
+   "Saint-Etienne",
+   "Olympiacos",
+   "Everton",
+   "ACF Fiorentina",
+   "Antwerp",
+   "Gaziantep",
+   "Moreirense",
+   "AEL Limassol"
+  ],
+  "ajoutes": [
+   "Moreirense",
+   "AEL Limassol"
+  ]
+ },
+ {
+  "nom": "Aron Gunnarsson",
+  "avant": [
+   "AZ Alkmaar",
+   "Coventry City",
+   "Cardiff City",
+   "Al Arabi",
+   "Al Ettifaq"
+  ],
+  "apres": [
+   "AZ Alkmaar",
+   "Coventry City",
+   "Cardiff City",
+   "Al Arabi",
+   "Al Ettifaq",
+   "Al-Gharafa"
+  ],
+  "ajoutes": [
+   "Al-Gharafa"
+  ]
+ },
+ {
+  "nom": "Glenn Murray",
+  "avant": [
+   "Brighton",
+   "Rochdale",
+   "Crystal Palace",
+   "Reading",
+   "Bournemouth",
+   "Watford",
+   "Nottingham Forest"
+  ],
+  "apres": [
+   "Carlisle United",
+   "Stockport",
+   "Brighton",
+   "Rochdale",
+   "Crystal Palace",
+   "Reading",
+   "Bournemouth",
+   "Watford",
+   "Nottingham Forest"
+  ],
+  "ajoutes": [
+   "Stockport",
+   "Carlisle United"
+  ]
+ },
+ {
+  "nom": "Dwight Gayle",
+  "avant": [
+   "Peterborough United",
+   "Crystal Palace",
+   "Newcastle",
+   "West Brom",
+   "Stoke City"
+  ],
+  "apres": [
+   "Dagenham & Redbridge",
+   "Peterborough United",
+   "Crystal Palace",
+   "Newcastle",
+   "West Brom",
+   "Stoke City"
+  ],
+  "ajoutes": [
+   "Dagenham & Redbridge"
+  ]
+ },
+ {
+  "nom": "Joe Ledley",
+  "avant": [
+   "Cardiff City",
+   "Celtic",
+   "Crystal Palace",
+   "Derby County"
+  ],
+  "apres": [
+   "Cardiff City",
+   "Celtic",
+   "Crystal Palace",
+   "Derby County",
+   "Charlton",
+   "Newcastle Jets",
+   "Newport County"
+  ],
+  "ajoutes": [
+   "Newcastle Jets",
+   "Newport County",
+   "Charlton"
+  ]
+ },
+ {
+  "nom": "Stevan Jovetić",
+  "avant": [
+   "Partizan",
+   "ACF Fiorentina",
+   "Manchester City",
+   "Inter Milan",
+   "Sevilla",
+   "Monaco",
+   "Hertha Berlin"
+  ],
+  "apres": [
+   "Partizan",
+   "ACF Fiorentina",
+   "Manchester City",
+   "Inter Milan",
+   "Sevilla",
+   "Monaco",
+   "Hertha Berlin",
+   "Olympiacos",
+   "Omonia Nicosia"
+  ],
+  "ajoutes": [
+   "Olympiacos",
+   "Omonia Nicosia"
+  ]
+ },
+ {
+  "nom": "Erik Lamela",
+  "avant": [
+   "River Plate",
+   "AS Roma",
+   "Tottenham",
+   "Sevilla"
+  ],
+  "apres": [
+   "River Plate",
+   "AS Roma",
+   "Tottenham",
+   "Sevilla",
+   "AEK Athens"
+  ],
+  "ajoutes": [
+   "AEK Athens"
+  ]
+ },
+ {
+  "nom": "Nacer Chadli",
+  "avant": [
+   "Twente",
+   "Tottenham",
+   "West Brom",
+   "Monaco",
+   "Anderlecht",
+   "Istanbul Başakşehir"
+  ],
+  "apres": [
+   "AGOVV Apeldoorn",
+   "Twente",
+   "Tottenham",
+   "West Brom",
+   "Monaco",
+   "Anderlecht",
+   "Istanbul Başakşehir",
+   "Westerlo"
+  ],
+  "ajoutes": [
+   "AGOVV Apeldoorn",
+   "Westerlo"
+  ]
+ },
+ {
+  "nom": "Luis Alberto",
+  "avant": [
+   "Sevilla",
+   "Liverpool",
+   "Deportivo La Coruna",
+   "SS Lazio",
+   "Al-Duhail"
+  ],
+  "apres": [
+   "Sevilla Atlético",
+   "Sevilla",
+   "Barcelona B",
+   "Liverpool",
+   "Deportivo La Coruna",
+   "SS Lazio",
+   "Al-Duhail"
+  ],
+  "ajoutes": [
+   "Sevilla Atlético",
+   "Barcelona B"
+  ]
+ },
+ {
+  "nom": "Andoni Zubizarreta",
+  "avant": [
+   "Real Sociedad",
+   "Alavés",
+   "Athletic Bilbao",
+   "Barcelona",
+   "Valencia"
+  ],
+  "apres": [
+   "Real Sociedad",
+   "Alavés",
+   "Athletic Bilbao",
+   "Bilbao Athletic",
+   "Barcelona",
+   "Valencia"
+  ],
+  "ajoutes": [
+   "Bilbao Athletic"
+  ]
+ },
+ {
+  "nom": "Nolito",
+  "avant": [
+   "Barcelona",
+   "Benfica",
+   "Celta Vigo",
+   "Granada",
+   "Manchester City",
+   "Sevilla",
+   "Ibiza"
+  ],
+  "apres": [
+   "Barcelona B",
+   "Barcelona",
+   "Benfica",
+   "Celta Vigo",
+   "Granada",
+   "Manchester City",
+   "Sevilla",
+   "Ibiza"
+  ],
+  "ajoutes": [
+   "Barcelona B"
+  ]
+ },
+ {
+  "nom": "José Antonio Reyes",
+  "avant": [
+   "Sevilla",
+   "Arsenal",
+   "Real Madrid",
+   "Atletico Madrid",
+   "Benfica",
+   "Barcelona",
+   "Córdoba",
+   "Extremadura"
+  ],
+  "apres": [
+   "Sevilla Atlético",
+   "Sevilla",
+   "Arsenal",
+   "Real Madrid",
+   "Atletico Madrid",
+   "Benfica",
+   "Barcelona",
+   "Córdoba",
+   "Extremadura"
+  ],
+  "ajoutes": [
+   "Sevilla Atlético"
+  ]
+ },
+ {
+  "nom": "Pablo Sarabia",
+  "avant": [
+   "Real Madrid",
+   "Getafe",
+   "Sevilla",
+   "Paris FC",
+   "Sporting CP",
+   "Wolverhampton",
+   "Al Arabi"
+  ],
+  "apres": [
+   "Real Madrid Castilla",
+   "Real Madrid",
+   "Getafe",
+   "Sevilla",
+   "Paris FC",
+   "Sporting CP",
+   "Wolverhampton",
+   "Al Arabi"
+  ],
+  "ajoutes": [
+   "Real Madrid Castilla"
+  ]
+ },
+ {
+  "nom": "Christopher Jullien",
+  "avant": [
+   "SC Freiburg",
+   "Dijon",
+   "Toulouse",
+   "Celtic"
+  ],
+  "apres": [
+   "Auxerre",
+   "SC Freiburg",
+   "Dijon",
+   "Toulouse",
+   "Celtic"
+  ],
+  "ajoutes": [
+   "Auxerre"
+  ]
+ },
+ {
+  "nom": "Pierre Littbarski",
+  "avant": [
+   "Köln",
+   "Vegalta Sendai",
+   "Saipa"
+  ],
+  "apres": [
+   "Köln",
+   "Racing Paris",
+   "Vegalta Sendai",
+   "Saipa"
+  ],
+  "ajoutes": [
+   "Racing Paris"
+  ]
+ },
+ {
+  "nom": "Ray Wilkins",
+  "avant": [
+   "Chelsea",
+   "Manchester United",
+   "AC Milan",
+   "Rangers",
+   "Paris FC",
+   "Rangers",
+   "Crystal Palace",
+   "Wycombe",
+   "Hibernian",
+   "Millwall",
+   "Leyton Orient"
+  ],
+  "apres": [
+   "Chelsea",
+   "Manchester United",
+   "AC Milan",
+   "Rangers",
+   "Paris FC",
+   "Rangers",
+   "QPR",
+   "Crystal Palace",
+   "Wycombe",
+   "Hibernian",
+   "Millwall",
+   "Leyton Orient"
+  ],
+  "ajoutes": [
+   "QPR"
+  ]
+ },
+ {
+  "nom": "William Carvalho",
+  "avant": [
+   "Sporting CP",
+   "Club Brugge",
+   "Real Betis",
+   "Pachuca"
+  ],
+  "apres": [
+   "Sporting CP",
+   "Club Brugge",
+   "Cercle Brugge",
+   "Real Betis",
+   "Pachuca"
+  ],
+  "ajoutes": [
+   "Cercle Brugge"
+  ]
+ },
+ {
+  "nom": "Cédric Soares",
+  "avant": [
+   "Sporting CP",
+   "Académica",
+   "Southampton",
+   "AC Milan",
+   "Arsenal",
+   "Fulham",
+   "São Paulo"
+  ],
+  "apres": [
+   "Sporting CP",
+   "Académica",
+   "Southampton",
+   "AC Milan",
+   "Inter Milan",
+   "Arsenal",
+   "Fulham",
+   "São Paulo"
+  ],
+  "ajoutes": [
+   "Inter Milan"
+  ]
+ },
+ {
+  "nom": "Paulo Futre",
+  "avant": [
+   "Sporting CP",
+   "Porto",
+   "Atletico Madrid",
+   "Benfica",
+   "Marseille",
+   "Reggiana",
+   "AC Milan",
+   "West Ham",
+   "Yokohama FC",
+   "Reggina"
+  ],
+  "apres": [
+   "Sporting CP",
+   "Porto",
+   "Atletico Madrid",
+   "Benfica",
+   "Marseille",
+   "Reggiana",
+   "AC Milan",
+   "West Ham",
+   "Yokohama FC",
+   "Reggina",
+   "Yokohama Flügels"
+  ],
+  "ajoutes": [
+   "Yokohama Flügels"
+  ]
+ },
+ {
+  "nom": "Bruno Alves",
+  "avant": [
+   "Porto",
+   "Farense",
+   "Vitória",
+   "AEK Athens",
+   "Zenit",
+   "Fenerbahce",
+   "Cagliari Calcio",
+   "Rangers",
+   "Parma FC",
+   "Apollon Smyrnis"
+  ],
+  "apres": [
+   "Porto B",
+   "Porto",
+   "Farense",
+   "Vitória",
+   "Vitoria Guimaraes",
+   "AEK Athens",
+   "Zenit",
+   "Fenerbahce",
+   "Cagliari Calcio",
+   "Rangers",
+   "Parma FC",
+   "Apollon Smyrnis"
+  ],
+  "ajoutes": [
+   "Vitoria Guimaraes",
+   "Porto B"
+  ]
+ },
+ {
+  "nom": "Jeremain Lens",
+  "avant": [
+   "AZ Alkmaar",
+   "PSV Eindhoven",
+   "Dynamo Kyiv",
+   "Sunderland"
+  ],
+  "apres": [
+   "AZ Alkmaar",
+   "NEC Nijmegen",
+   "PSV Eindhoven",
+   "Dynamo Kyiv",
+   "Sunderland"
+  ],
+  "ajoutes": [
+   "NEC Nijmegen"
+  ]
+ },
+ {
+  "nom": "Wim Jonk",
+  "avant": [
+   "Volendam",
+   "Ajax Amsterdam",
+   "AC Milan",
+   "PSV Eindhoven",
+   "Sheffield Wednesday"
+  ],
+  "apres": [
+   "Volendam",
+   "Ajax Amsterdam",
+   "AC Milan",
+   "Inter Milan",
+   "PSV Eindhoven",
+   "Sheffield Wednesday"
+  ],
+  "ajoutes": [
+   "Inter Milan"
+  ]
+ },
+ {
+  "nom": "Walter Zenga",
+  "avant": [
+   "AC Milan",
+   "Salernitana",
+   "Sporting CP B",
+   "Sambenedettese",
+   "Sampdoria",
+   "Padova",
+   "New England Revolution"
+  ],
+  "apres": [
+   "AC Milan",
+   "Salernitana",
+   "Inter Milan",
+   "Sporting CP B",
+   "Sambenedettese",
+   "Sampdoria",
+   "Padova",
+   "New England Revolution"
+  ],
+  "ajoutes": [
+   "Inter Milan"
+  ]
+ },
+ {
+  "nom": "Christian Panucci",
+  "avant": [
+   "Genoa CFC",
+   "AC Milan",
+   "Real Madrid",
+   "AC Milan",
+   "Chelsea",
+   "AS Roma",
+   "Monaco",
+   "Parma FC"
+  ],
+  "apres": [
+   "Genoa CFC",
+   "AC Milan",
+   "Real Madrid",
+   "AC Milan",
+   "Inter Milan",
+   "Chelsea",
+   "AS Roma",
+   "Monaco",
+   "Parma FC"
+  ],
+  "ajoutes": [
+   "Inter Milan"
+  ]
+ },
+ {
+  "nom": "Stefano Fiore",
+  "avant": [
+   "Cosenza",
+   "Parma FC",
+   "Padova",
+   "Udinese Calcio",
+   "SS Lazio",
+   "Valencia",
+   "ACF Fiorentina",
+   "Torino FC",
+   "Livorno",
+   "Mantova"
+  ],
+  "apres": [
+   "Cosenza",
+   "Parma FC",
+   "Padova",
+   "Chievo",
+   "Udinese Calcio",
+   "SS Lazio",
+   "Valencia",
+   "ACF Fiorentina",
+   "Torino FC",
+   "Livorno",
+   "Mantova"
+  ],
+  "ajoutes": [
+   "Chievo"
+  ]
+ },
+ {
+  "nom": "Marco Delvecchio",
+  "avant": [
+   "AC Milan",
+   "Venezia",
+   "Udinese Calcio",
+   "AS Roma",
+   "Parma FC",
+   "Brescia",
+   "Ascoli"
+  ],
+  "apres": [
+   "Inter Milan",
+   "AC Milan",
+   "Venezia",
+   "Udinese Calcio",
+   "AS Roma",
+   "Parma FC",
+   "Brescia",
+   "Ascoli"
+  ],
+  "ajoutes": [
+   "Inter Milan"
+  ]
+ },
+ {
+  "nom": "Ricardo Zamora",
+  "avant": [
+   "Barcelona",
+   "Real Madrid",
+   "Nice"
+  ],
+  "apres": [
+   "Espanyol",
+   "Barcelona",
+   "Real Madrid",
+   "Nice"
+  ],
+  "ajoutes": [
+   "Espanyol"
+  ]
+ },
+ {
+  "nom": "Marcelo Gallardo",
+  "avant": [
+   "River Plate",
+   "Monaco",
+   "PSG",
+   "Nacional"
+  ],
+  "apres": [
+   "River Plate",
+   "Monaco",
+   "PSG",
+   "Nacional",
+   "DC United"
+  ],
+  "ajoutes": [
+   "DC United"
+  ]
+ }
+]
