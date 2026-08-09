@@ -1,0 +1,343 @@
+<!-- Générateur des visuels réseaux sociaux de GOAT FC.
+     Chaque bloc .v est un post, rendu au pixel près par scripts/social/rendre.mjs :
+
+         node scripts/social/rendre.mjs
+
+     Les images sortent dans scripts/social/sortie/ aux dimensions exactes
+     d'Instagram. Pour un nouveau post, dupliquer un bloc, lui donner un id et
+     l'ajouter à la table NOMS du script de rendu.
+
+     Tout ce qui est ici applique la charte de src/lib/charte.jsx : encre
+     #081109 en contour et en ombre dure, Anton penché de 7°, fond de pelouse
+     éclairée. Ne rien inventer ici — quand la charte bouge, c'est charte.jsx
+     qui fait foi.
+-->
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Archivo:wght@400;600&display=swap');
+
+  :root{
+    --encre:#081109;--terrain:#17572C;--nuit:#0E2C17;--pelouse:#2A9B4E;
+    --clair:#4FD07A;--projecteur:#F5C22B;--maillot:#D93A2B;--ciel:#2A6FBF;--papier:#EDE7D8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#222;font-family:'Archivo',sans-serif;display:flex;flex-direction:column;
+       align-items:flex-start;gap:40px;padding:40px}
+
+  /* ── Le terrain de la charte : pelouse, projecteurs, tonte, voile, grain ── */
+  .v{position:relative;overflow:hidden;flex:0 0 auto;
+     background:
+       radial-gradient(72% 16% at 14% 0%, rgba(245,194,43,.20), transparent 70%),
+       radial-gradient(72% 16% at 86% 0%, rgba(245,194,43,.20), transparent 70%),
+       var(--terrain);}
+  .v .tonte{position:absolute;inset:0;background:repeating-linear-gradient(90deg,
+    rgba(8,17,9,.16) 0 calc(100%/14), transparent calc(100%/14) calc(100%/7));}
+  .v .rond{position:absolute;top:44%;left:50%;transform:translate(-50%,-50%);
+    width:62%;aspect-ratio:1;border-radius:50%;border:5px solid rgba(8,17,9,.26);}
+  .v .mediane{position:absolute;left:0;right:0;top:44%;height:5px;background:rgba(8,17,9,.26);}
+  .v .voile{position:absolute;top:0;left:0;right:0;height:36%;
+    background:linear-gradient(180deg,rgba(8,17,9,.80),rgba(8,17,9,0));}
+  .v .socle{position:absolute;bottom:0;left:0;right:0;height:42%;
+    background:linear-gradient(0deg,rgba(8,17,9,.86),rgba(8,17,9,0));}
+  .v .grain{position:absolute;inset:0;opacity:.13;
+    background-image:radial-gradient(circle,#000 1px,transparent 1.4px);background-size:6px 6px;}
+  .v .contenu{position:absolute;inset:0;display:flex;flex-direction:column;
+    justify-content:space-between;z-index:2;}
+
+  /* ── Lettrage d'affiche ─────────────────────────────────────────────── */
+  .titre{font-family:'Anton',Impact,sans-serif;transform:skewX(-7deg);color:#fff;
+    paint-order:stroke fill;letter-spacing:.5px;}
+  .kick{font-family:'Bebas Neue',sans-serif;color:var(--projecteur);line-height:1;}
+  .pastille{align-self:flex-start;font-family:'Bebas Neue',sans-serif;color:#1A1206;
+    background:var(--projecteur);border:4px solid var(--encre);box-shadow:6px 6px 0 var(--encre);
+    line-height:1.25;}
+  .marque{font-family:'Bebas Neue',sans-serif;color:rgba(237,231,216,.72);}
+  .panneau{background:var(--nuit);border:4px solid var(--encre);box-shadow:7px 7px 0 var(--encre);}
+
+  /* ── 1080 × 1080 ───────────────────────────────────────────────────── */
+  .carre{width:1080px;height:1080px}
+  .carre .contenu{padding:97px}
+  .carre .pastille{font-size:34px;letter-spacing:.1em;padding:10px 22px;border-radius:16px}
+  .carre .kick{font-size:38px;letter-spacing:.13em;margin-bottom:12px}
+  .carre .titre{font-size:104px;line-height:1.06;-webkit-text-stroke:7px var(--encre);
+    text-shadow:10px 10px 0 var(--encre)}
+  .carre .marque{font-size:30px;letter-spacing:.16em;margin-top:26px}
+
+  /* ── 1080 × 1350 ───────────────────────────────────────────────────── */
+  .portrait{width:1080px;height:1350px}
+  .portrait .contenu{padding:97px 97px 120px}
+  .portrait .pastille{font-size:34px;letter-spacing:.1em;padding:10px 22px;border-radius:16px}
+  .portrait .kick{font-size:36px;letter-spacing:.13em;margin-bottom:12px}
+  .portrait .titre{font-size:92px;line-height:1.08;-webkit-text-stroke:6px var(--encre);
+    text-shadow:9px 9px 0 var(--encre)}
+  .portrait .marque{font-size:30px;letter-spacing:.16em;margin-top:26px}
+
+  /* ── 1080 × 1920 ───────────────────────────────────────────────────── */
+  .story{width:1080px;height:1920px}
+  .story .contenu{padding:97px 97px 330px}   /* le tiers du bas reste libre */
+  .story .pastille{font-size:36px;letter-spacing:.1em;padding:12px 26px;border-radius:18px}
+  .story .kick{font-size:40px;letter-spacing:.13em;margin-bottom:14px}
+  .story .titre{font-size:108px;line-height:1.06;-webkit-text-stroke:7px var(--encre);
+    text-shadow:10px 10px 0 var(--encre)}
+  .story .marque{font-size:32px;letter-spacing:.16em;margin-top:30px}
+
+  /* ── 1500 × 500 ────────────────────────────────────────────────────── */
+  .banniere{width:1500px;height:500px}
+  .banniere .contenu{padding:60px 96px;justify-content:center}
+  .banniere .kick{font-size:32px;letter-spacing:.14em;margin-bottom:12px}
+  .banniere .titre{font-size:96px;line-height:1;-webkit-text-stroke:6px var(--encre);
+    text-shadow:9px 9px 0 var(--encre)}
+
+  /* ── Blocs de contenu ───────────────────────────────────────────────── */
+  .modes{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:34px 0 0}
+  .mode{display:flex;align-items:center;gap:16px;padding:18px 20px;border-radius:16px;
+    background:var(--nuit);border:4px solid var(--encre);box-shadow:5px 5px 0 var(--encre)}
+  .mode .ico{width:56px;height:56px;flex:0 0 56px;border-radius:12px;border:3px solid var(--encre);
+    display:grid;place-items:center;font-size:28px;box-shadow:3px 3px 0 var(--encre)}
+  .mode .nom{font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:.05em;color:#fff;line-height:1}
+
+  .paliers{display:flex;flex-direction:column;gap:14px;margin:34px 0 0}
+  .palier{display:flex;align-items:center;gap:18px;padding:16px 22px;border-radius:16px;
+    background:var(--nuit);border:4px solid var(--encre);box-shadow:5px 5px 0 var(--encre)}
+  .palier .em{font-size:38px;line-height:1}
+  .palier .nom{font-family:'Bebas Neue',sans-serif;font-size:40px;letter-spacing:.05em;
+    color:#fff;line-height:1;flex:1}
+  .palier .xp{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:.05em;
+    color:var(--projecteur);font-variant-numeric:tabular-nums}
+
+  .grille{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:36px 0 0;
+    width:520px;align-self:center}
+  .case{aspect-ratio:1;border-radius:14px;border:4px solid var(--encre);
+    box-shadow:5px 5px 0 var(--encre);display:grid;place-items:center;
+    font-family:'Bebas Neue',sans-serif;font-size:56px;color:#fff;background:var(--nuit)}
+  .case.ok{background:var(--pelouse)}
+  .case.non{background:rgba(8,17,9,.5);color:rgba(237,231,216,.35)}
+
+  .carte-bloc{display:flex;align-items:flex-end;gap:44px;margin:40px 0 0}
+  .carte-img{width:430px;aspect-ratio:3/4;object-fit:cover;border-radius:20px;
+    border:6px solid var(--encre);box-shadow:12px 12px 0 var(--encre);display:block}
+  .carte-info{padding-bottom:14px}
+  .carte-info .rarete{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:.12em;
+    color:var(--projecteur);line-height:1;margin-bottom:14px}
+  .carte-info .nom{font-family:'Anton',sans-serif;transform:skewX(-7deg);font-size:70px;
+    color:#fff;-webkit-text-stroke:5px var(--encre);paint-order:stroke fill;
+    text-shadow:7px 7px 0 var(--encre);line-height:1.08}
+  .carte-info .seuil{font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:.08em;
+    color:rgba(237,231,216,.75);margin-top:18px}
+  /* Éventail de cartes : léger chevauchement et rotations alternées, comme une
+     main qu'on étale. Chaque carte garde son trait d'encre et son ombre dure. */
+  .eventail{display:flex;justify-content:center;align-items:center}
+  .eventail img{width:230px;aspect-ratio:3/4;object-fit:cover;border-radius:16px;
+    border:5px solid var(--encre);box-shadow:8px 8px 0 var(--encre);display:block;
+    margin-left:-46px;background:var(--nuit)}
+  .eventail img:first-child{margin-left:0}
+  .eventail img:nth-child(1){transform:rotate(-9deg)}
+  .eventail img:nth-child(2){transform:rotate(-4deg)}
+  .eventail img:nth-child(3){transform:rotate(0deg);z-index:3;width:262px}
+  .eventail img:nth-child(4){transform:rotate(4deg)}
+  .eventail img:nth-child(5){transform:rotate(9deg)}
+
+  .indices{display:flex;flex-direction:column;gap:16px;margin:36px 0 0}
+  .indice{display:flex;align-items:center;gap:18px;padding:20px 24px;border-radius:16px;
+    background:var(--nuit);border:4px solid var(--encre);box-shadow:5px 5px 0 var(--encre);
+    font-size:32px;color:var(--papier);font-weight:500}
+  .indice b{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:.1em;
+    color:var(--projecteur);font-weight:400;flex:0 0 auto}
+
+  .duo-score{display:flex;align-items:stretch;gap:0;margin:40px 0 0;border-radius:20px;
+    overflow:hidden;border:6px solid var(--encre);box-shadow:10px 10px 0 var(--encre)}
+  .camp{flex:1;padding:34px 30px;display:flex;flex-direction:column;gap:10px;align-items:center}
+  .camp .qui{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:.08em;color:#fff}
+  .camp .pts{font-family:'Anton',sans-serif;transform:skewX(-7deg);font-size:96px;color:#fff;
+    -webkit-text-stroke:5px var(--encre);paint-order:stroke fill;line-height:1}
+</style></head><body>
+
+<!-- ══ 1 · Carré — la marque ═══════════════════════════════════════════ -->
+<div class="v carre" id="v1">
+  <div class="tonte"></div><div class="mediane"></div><div class="rond"></div>
+  <div class="voile"></div><div class="socle"></div><div class="grain"></div>
+  <div class="contenu">
+    <span class="pastille">7 MODES DE JEU</span>
+    <div class="eventail">
+      <img src="../../public/cards/zidane.webp" alt="">
+      <img src="../../public/cards/r9.webp" alt="">
+      <img src="../../public/cards/maradona.webp" alt="">
+      <img src="../../public/cards/messi.webp" alt="">
+      <img src="../../public/cards/mbappe.webp" alt="">
+    </div>
+    <div>
+      <div class="kick">Un joueur, une grille, une devinette</div>
+      <h1 class="titre">LE QUIZ FOOT<br>QUOTIDIEN</h1>
+      <div class="marque">GOATFC.FR · GRATUIT, SANS COMPTE</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 2 · Carré — la devinette du jour ════════════════════════════════ -->
+<div class="v carre" id="v2">
+  <div class="tonte"></div><div class="mediane"></div><div class="rond"></div>
+  <div class="voile"></div><div class="socle"></div><div class="grain"></div>
+  <div class="contenu">
+    <span class="pastille">DEVINETTE DU JOUR</span>
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center">
+      <div class="indices">
+        <div class="indice"><b>ÉPOQUE</b>Génération 1990-1999</div>
+        <div class="indice"><b>PALMARÈS</b>Il a gagné la Ligue des Champions</div>
+        <div class="indice"><b>PARCOURS</b>Il a joué en Premier League</div>
+      </div>
+    </div>
+    <div>
+      <h1 class="titre" style="font-size:88px">QUI EST<br>CE JOUEUR ?</h1>
+      <div class="marque">5 ESSAIS · NOUVELLE DEVINETTE CHAQUE JOUR</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 3 · Portrait — les sept modes ═══════════════════════════════════ -->
+<div class="v portrait" id="v3">
+  <div class="tonte"></div><div class="mediane"></div><div class="rond"></div>
+  <div class="voile"></div><div class="socle"></div><div class="grain"></div>
+  <div class="contenu">
+    <div>
+      <span class="pastille">TOUT EST GRATUIT</span>
+      <h1 class="titre" style="margin-top:30px;font-size:86px">SEPT FAÇONS<br>DE JOUER</h1>
+      <div class="modes">
+        <div class="mode"><span class="ico" style="background:#FFC93C">⚡</span><span class="nom">GOAT BATTLE</span></div>
+        <div class="mode"><span class="ico" style="background:#4FD07A">🔗</span><span class="nom">THE PLUG</span></div>
+        <div class="mode"><span class="ico" style="background:#FF8A2A">🔁</span><span class="nom">THE MERCATO</span></div>
+        <div class="mode"><span class="ico" style="background:#E0B85C">🕵️</span><span class="nom">TROUVE LE JOUEUR</span></div>
+        <div class="mode"><span class="ico" style="background:#3DA5FF">▦</span><span class="nom">GOAT GRID</span></div>
+        <div class="mode"><span class="ico" style="background:#C084FC">🔮</span><span class="nom">GOAT GUESS</span></div>
+        <div class="mode" style="grid-column:1/-1"><span class="ico" style="background:#F2D680">🗓️</span><span class="nom">DEVINETTE DU JOUR</span></div>
+      </div>
+      <div class="eventail" style="margin-top:56px">
+        <img src="../../public/cards/henry.webp" alt="">
+        <img src="../../public/cards/drogba.webp" alt="">
+        <img src="../../public/cards/zidane.webp" alt="">
+        <img src="../../public/cards/totti.webp" alt="">
+        <img src="../../public/cards/pirlo.webp" alt="">
+      </div>
+    </div>
+    <div class="marque">GOATFC.FR</div>
+  </div>
+</div>
+
+<!-- ══ 4 · Portrait — les paliers ══════════════════════════════════════ -->
+<div class="v portrait" id="v4">
+  <div class="tonte"></div><div class="mediane"></div><div class="rond"></div>
+  <div class="voile"></div><div class="socle"></div><div class="grain"></div>
+  <div class="contenu">
+    <div>
+      <span class="pastille">PROGRESSION</span>
+      <h1 class="titre" style="margin-top:30px;font-size:86px">CINQ GRADES,<br>29 CARTES</h1>
+      <div class="paliers">
+        <div class="palier"><span class="em">🏖️</span><span class="nom">AMATEUR</span><span class="xp">0 XP</span></div>
+        <div class="palier"><span class="em">👦🏻</span><span class="nom">ESPOIR</span><span class="xp">1 200 XP</span></div>
+        <div class="palier"><span class="em">🐺</span><span class="nom">TITULAIRE</span><span class="xp">5 000 XP</span></div>
+        <div class="palier"><span class="em">☄️</span><span class="nom">LÉGENDE</span><span class="xp">38 000 XP</span></div>
+        <div class="palier" style="border-color:var(--projecteur);box-shadow:5px 5px 0 var(--encre)">
+          <span class="em">🐐</span><span class="nom" style="color:var(--projecteur)">GOAT</span><span class="xp">250 000 XP</span></div>
+      </div>
+      <div class="eventail" style="margin-top:52px">
+        <img src="../../public/cards/yamal.webp" alt="">
+        <img src="../../public/cards/haaland.webp" alt="">
+        <img src="../../public/cards/zidane.webp" alt="">
+        <img src="../../public/cards/ronaldinho.webp" alt="">
+        <img src="../../public/cards/maradona.webp" alt="">
+      </div>
+    </div>
+    <div class="marque">GOATFC.FR</div>
+  </div>
+</div>
+
+<!-- ══ 5 · Story — la devinette ════════════════════════════════════════ -->
+<div class="v story" id="v5">
+  <div class="tonte"></div><div class="mediane"></div><div class="rond"></div>
+  <div class="voile"></div><div class="socle"></div><div class="grain"></div>
+  <div class="contenu">
+    <span class="pastille">DEVINETTE DU JOUR</span>
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center">
+      <div class="indices">
+        <div class="indice"><b>ÉPOQUE</b>Génération 1990-1999</div>
+        <div class="indice"><b>PALMARÈS</b>Champion du monde</div>
+        <div class="indice"><b>PARCOURS</b>Passé par la Serie A</div>
+        <div class="indice"><b>POSTE</b>Milieu de terrain</div>
+      </div>
+    </div>
+    <div>
+      <h1 class="titre">TU AS<br>5 ESSAIS</h1>
+      <div class="marque">SWIPE UP · GOATFC.FR</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 6 · Story — la carte débloquée ══════════════════════════════════ -->
+<div class="v story" id="v6">
+  <div class="tonte"></div><div class="mediane"></div><div class="rond"></div>
+  <div class="voile"></div><div class="socle"></div><div class="grain"></div>
+  <div class="contenu">
+    <span class="pastille">NOUVELLE CARTE</span>
+    <div style="flex:1;display:flex;align-items:center;justify-content:center">
+      <img class="carte-img" style="width:640px" src="../../public/cards/maradona.webp" alt="">
+    </div>
+    <div>
+      <div class="kick">Rareté diamant · il n'y en a qu'une</div>
+      <h1 class="titre" style="font-size:100px">LE GOAT</h1>
+      <div class="marque">250 000 XP · GOATFC.FR</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 7 · Carré — la grille du jour ═══════════════════════════════════ -->
+<div class="v carre" id="v7">
+  <div class="tonte"></div><div class="mediane"></div><div class="rond"></div>
+  <div class="voile"></div><div class="socle"></div><div class="grain"></div>
+  <div class="contenu">
+    <span class="pastille">GOAT GRID</span>
+    <div style="flex:1;display:flex;align-items:center;justify-content:center">
+      <div class="grille">
+        <div class="case ok">✓</div><div class="case ok">✓</div><div class="case non">?</div>
+        <div class="case ok">✓</div><div class="case non">?</div><div class="case non">?</div>
+        <div class="case non">?</div><div class="case ok">✓</div><div class="case non">?</div>
+      </div>
+    </div>
+    <div>
+      <h1 class="titre" style="font-size:96px">4 CASES<br>SUR 9</h1>
+      <div class="marque">UNE NOUVELLE GRILLE CHAQUE JOUR</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 8 · Carré — le duel ═════════════════════════════════════════════ -->
+<div class="v carre" id="v8">
+  <div class="tonte"></div><div class="mediane"></div><div class="rond"></div>
+  <div class="voile"></div><div class="socle"></div><div class="grain"></div>
+  <div class="contenu">
+    <span class="pastille">GOAT BATTLE</span>
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center">
+      <div class="duo-score">
+        <div class="camp" style="background:var(--pelouse)"><span class="qui">TOI</span><span class="pts">9</span></div>
+        <div class="camp" style="background:var(--ciel)"><span class="qui">L'ADVERSAIRE</span><span class="pts">8</span></div>
+      </div>
+    </div>
+    <div>
+      <h1 class="titre" style="font-size:92px">GAGNÉ À LA<br>DERNIÈRE QUESTION</h1>
+      <div class="marque">DUEL EN DIRECT · GOATFC.FR</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 9 · Bannière ════════════════════════════════════════════════════ -->
+<div class="v banniere" id="v9">
+  <div class="tonte"></div><div class="mediane"></div><div class="rond"></div>
+  <div class="voile"></div><div class="socle"></div><div class="grain"></div>
+  <div class="contenu">
+    <div>
+      <div class="kick">GOATFC.FR</div>
+      <h1 class="titre">LE QUIZ FOOT QUOTIDIEN</h1>
+    </div>
+  </div>
+</div>
+
+</body></html>

@@ -39,3 +39,6 @@ goatfc-story*.mp4
 effectifs.json
 maxifoot.json
 mf-ajouts.json
+
+# sorties du générateur de visuels sociaux
+scripts/social/sortie/
