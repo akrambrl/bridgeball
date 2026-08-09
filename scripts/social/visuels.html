@@ -140,7 +140,22 @@
   .vertical .indice{padding:30px 32px;font-size:46px;border-radius:20px}
   .vertical .indice b{font-size:36px}
 
-  .vertical .duo-modes{gap:40px}
+  /* En 9:16, l'affiche d'application s'empile au lieu de se juxtaposer. En
+     rangee, le telephone prend toute la hauteur du cadre — 1650 px — donc
+     761 px de large, et il ne restait que 125 px au texte : le titre sortait
+     en « LE QUI / FOO / QUO ». Empile, le discours tient le haut sur toute la
+     largeur et le telephone prend ce qui reste, sa largeur decoulant de son
+     rapport. */
+  .vertical .duo-appli{flex-direction:column;align-items:stretch;gap:34px}
+  .vertical .duo-appli .propos{flex:0 0 auto;justify-content:flex-start}
+  .vertical .duo-appli .mobile{flex:1 1 auto;min-height:0;height:auto;align-self:center}
+
+  /* En 9:16, la rangee prend la hauteur restante au lieu de laisser 500 px de
+     vide sous elle : les sept modes s'aerent et le telephone grandit d'autant,
+     sa largeur suivant son rapport. */
+  .vertical .bloc-modes{flex:1;min-height:0}
+  .vertical .duo-modes{gap:40px;flex:1;min-height:0;align-items:stretch}
+  .vertical .duo-modes .mobile{width:auto;height:100%}
   .vertical .modes{gap:18px}
   .vertical .mode{padding:22px 24px;border-radius:20px}
   .vertical .mode .nom{font-size:36px}
@@ -173,6 +188,8 @@
      rangée qui porte l'écart, pas la marge de la liste. */
   .duo-modes{display:flex;align-items:center;gap:36px;margin-top:40px}
   .duo-modes .modes{grid-template-columns:1fr;margin:0;flex:1;gap:14px}
+  .duo-modes .mobile{width:400px}
+  .bloc-modes{display:flex;flex-direction:column}
   .mode{display:flex;align-items:center;gap:16px;padding:18px 20px;border-radius:16px;
     background:var(--nuit);border:4px solid var(--encre);box-shadow:5px 5px 0 var(--encre)}
   .mode .ico{width:56px;height:56px;flex:0 0 56px;border-radius:12px;border:3px solid var(--encre);
@@ -393,7 +410,7 @@
   <div class="voile"></div><div class="socle"></div><div class="grain"></div>
   <img class="blason" src="../../public/logo.png" alt="">
   <div class="contenu">
-    <div>
+    <div class="bloc-modes">
       <span class="pastille">TOUT EST GRATUIT</span>
       <h1 class="titre" style="margin-top:30px;font-size:86px">SEPT FAÇONS<br>DE JOUER</h1>
       <!-- Le téléphone à droite, les modes à gauche : la maquette porte la
@@ -412,7 +429,7 @@
           <div class="mode"><span class="ico" style="background:#C084FC">🔮</span><span class="nom">GOAT GUESS</span></div>
           <div class="mode"><span class="ico" style="background:#F2D680">🗓️</span><span class="nom">DEVINETTE DU JOUR</span></div>
         </div>
-        <div class="mobile" style="width:400px"><img src="captures/accueil.webp" alt=""></div>
+        <div class="mobile"><img src="captures/accueil.webp" alt=""></div>
       </div>
     </div>
     <div class="marque">GOATFC.FR</div>
