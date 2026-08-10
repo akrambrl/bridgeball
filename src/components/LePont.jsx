@@ -14468,21 +14468,40 @@ export default function LePont() {
                 const todayDate = new Date().toLocaleDateString(tr("fr-FR","en-US","de-DE","it-IT","pt-PT","es-ES"),{day:'numeric',month:'short'});
                 const shareText = "🐐 GOAT GRID — " + todayDate + "\n\n" + gridEmojis.join("\n") + "\n\n" + ggScore + " pts · " + filledCount + "/9" + (isPerfect ? " · " + tr("PARFAIT","PERFECT","PERFEKT","PERFETTO","PERFEITO","PERFECTO") + " 🐐" : "") + "\n\n" + tr("Joue sur goatfc.online","Play on goatfc.online","Spiel auf goatfc.online","Gioca su goatfc.online","Jogue em goatfc.online","Juega en goatfc.online");
                 
+                // Tient sur UNE page. C'était `alignItems:flex-start` + 80 px de marge
+                // haute + `overflowY:auto` : six boutons, un panneau de score, la grille
+                // d'emojis et une note de pied débordaient toujours, et il fallait faire
+                // défiler pour atteindre « Fermer ».
+                // La carte est maintenant une colonne flex bornée à la hauteur de la
+                // fenêtre : la cinématique absorbe le mou en haut (flex:1 1 0), tout le
+                // reste prend sa hauteur naturelle. `overflowY:auto` reste comme filet sur
+                // un très petit gabarit, mais n'a plus à servir.
                 return (
-                  <div style={{position:"fixed",inset:0,zIndex:500,background:"rgba(8,17,9,.86)",display:"flex",alignItems:"flex-start",justifyContent:"center",padding:"80px 20px 40px",overflowY:"auto"}}>
+                  <div style={{position:"fixed",inset:0,zIndex:500,background:"rgba(8,17,9,.86)",display:"flex",alignItems:"center",justifyContent:"center",padding:"10px 14px",overflowY:"auto"}}>
                     {/* Trait et ombre DURE de la charte. Le filet d'avant était un
                           rgba(0,230,118,.5), c'est-à-dire l'ancien `accent` vert LED que
                           la charte remplace — le palette le dit explicitement. */}
-                    <div style={{background:G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:24,padding:24,maxWidth:380,width:"100%",textAlign:"center"}}>
-                      
-                      {/* Titre selon résultat */}
-                      <div style={{fontSize:60,marginBottom:8}}>
-                        {isPerfect ? "🐐" : isVictory ? "🎉" : "😔"}
+                    <div style={{background:G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:24,padding:12,maxWidth:380,width:"100%",maxHeight:"calc(100dvh - 20px)",textAlign:"center",display:"flex",flexDirection:"column",gap:7}}>
+
+                      {/* CINEMATIQUE a la place de l'emoji. Tous les autres ecrans de fin
+                          de l'app jouent une sequence de but ou de defaite ; celui-ci se
+                          contentait d'un 🐐 de 60 px, ce qui faisait de la grille le seul
+                          mode dont la victoire ne se fetait pas.
+                          Une hauteur SOUHAITEE (24vh, plafonnee a 200 px) et non `flex:1 1 0`.
+                          Avec une base 0, la video se reduisait a son minimum meme sur un
+                          grand ecran : la carte n'est pas etiree — elle est seulement
+                          BORNEE par maxHeight — donc il n'y avait aucun espace libre a
+                          distribuer. Une hauteur explicite lui donne sa taille, et
+                          `flexShrink:1` (seul element de la carte a l'avoir) la lui fait
+                          rendre quand le contenu deborde sur un petit gabarit. C'est la
+                          cinematique qui cede, jamais le score ni les boutons. */}
+                      <div style={{width:"100%",height:"24vh",maxHeight:200,minHeight:56,flexShrink:1,display:"flex"}}>
+                        <WinBanner maxWidth={9999} marginTop={0} fill lose={!isVictory} />
                       </div>
-                      <div style={{...posterText(30),color:isVictory?G.pelouseClaire:G.maillot,letterSpacing:1,marginBottom:4}}>
+                      <div style={{...posterText(30),color:isVictory?G.pelouseClaire:G.maillot,letterSpacing:1,flexShrink:0}}>
                         {isPerfect ? (tr("PARFAIT !","PERFECT!","PERFEKT!","PERFETTO!","PERFEITO!","¡PERFECTO!")) : isVictory ? (tr("VICTOIRE !","VICTORY!","SIEG!","VITTORIA!","VITÓRIA!","¡VICTORIA!")) : (tr("PARTIE TERMINÉE","GAME OVER","GAME OVER","GAME OVER","FIM DE JOGO","PARTIDA TERMINADA"))}
                       </div>
-                      <div style={{fontSize:13,color:G.creme,opacity:.75,marginBottom:18}}>
+                      <div style={{fontSize:13,color:G.creme,opacity:.75,marginTop:-6,flexShrink:0}}>
                         {isPerfect ? (tr("Grille parfaite, aucune erreur !","Grid filled without mistakes!","Raster fehlerfrei gefüllt!","Griglia completata senza errori!","Grade preenchida sem erros!","¡Cuadrícula perfecta, sin ningún fallo!")) : isVictory ? (tr("Tu as rempli toute la grille","You filled the whole grid","Du hast das ganze Raster gefüllt","Hai riempito tutta la griglia","Você preencheu toda a grade","Has completado toda la cuadrícula")) : (tr("Tu as utilisé toutes tes vies","You used all your lives","Du hast alle Leben verbraucht","Hai usato tutte le vite","Você usou todas as vidas","Has gastado todas tus vidas"))}
                       </div>
                       
@@ -14491,7 +14510,7 @@ export default function LePont() {
                           donnait un khaki — exactement la teinte que la charte évite — avec
                           un chiffre or par-dessus. En aplat franc, l'encre y donne 11,5 et
                           le score devient le point le plus fort de l'écran, ce qu'il est. */}
-                      <div style={{background:G.projecteur,border:G.trait,boxShadow:G.ombre,borderRadius:16,padding:"16px 20px",marginBottom:16}}>
+                      <div style={{background:G.projecteur,border:G.trait,boxShadow:G.ombre,borderRadius:16,padding:"10px 16px",flexShrink:0}}>
                         <div style={{fontSize:11,color:"rgba(8,17,9,.75)",fontWeight:800,letterSpacing:2,marginBottom:2}}>SCORE</div>
                         {/* Contour EXPLICITE, obligatoire sur un aplat CLAIR. Au-delà de 32 px,
                             posterText ajoute d'office une ombre dure d'encre décalée de
@@ -14510,12 +14529,14 @@ export default function LePont() {
                       </div>
 
                       {/* Mini aperçu Wordle-style */}
-                      <div style={{background:G.encre,border:G.traitFin,borderRadius:14,padding:14,marginBottom:14,fontFamily:"monospace",fontSize:24,letterSpacing:6,lineHeight:1.3}}>
+                      <div style={{background:G.encre,border:G.traitFin,borderRadius:14,padding:"5px 10px",fontFamily:"monospace",fontSize:17,letterSpacing:4,lineHeight:1.2,flexShrink:0}}>
                         {gridEmojis.map(function(row,i){return(<div key={i}>{row}</div>);})}
                       </div>
                       
-                      {/* Boutons d'action */}
-                      <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                      {/* Boutons d'action. « Nouvelle grille » et « Fermer » partagent une
+                          ligne : ce sont les deux sorties, et empilées elles coûtaient
+                          80 px que la cinématique prend mieux. */}
+                      <div style={{display:"flex",flexDirection:"column",gap:7,flexShrink:0}}>
                         <button onClick={async function(){
                           try {
                             if (navigator.share) {
@@ -14529,17 +14550,18 @@ export default function LePont() {
                         }} style={{...btn(G.pelouse,G.white,15),width:"100%",padding:14,letterSpacing:1.5}}>
                           {ggShareCopied ? "✅ " + tr("COPIÉ !","COPIED!","KOPIERT!","COPIATO!","COPIADO!","¡COPIADO!") : "📤 " + tr("PARTAGER MON RÉSULTAT","SHARE MY RESULT","MEIN ERGEBNIS TEILEN","CONDIVIDI IL RISULTATO","COMPARTILHAR RESULTADO","COMPARTIR MI RESULTADO")}
                         </button>
-                        <button onClick={function(){setGgRevealMode(true);setGgReviewMode(false);}} style={{...btn(G.ciel,G.white,14),width:"100%",padding:12,letterSpacing:1}}>
+                        <button onClick={function(){setGgRevealMode(true);setGgReviewMode(false);}} style={{...btn(G.ciel,G.white,14),width:"100%",padding:10,letterSpacing:1}}>
                           💡 {tr("VOIR LES RÉPONSES POSSIBLES","SEE POSSIBLE ANSWERS","MÖGLICHE ANTWORTEN ANSEHEN","VEDI LE RISPOSTE POSSIBILI","VER RESPOSTAS POSSÍVEIS","VER LAS RESPUESTAS POSIBLES")}
                         </button>
-                        <button onClick={function(){setGgReviewMode(true);setGgRevealMode(false);setGgRevealCell(null);}} style={{...btn(G.pelouse,G.white,14),width:"100%",padding:12,letterSpacing:1}}>
+                        <button onClick={function(){setGgReviewMode(true);setGgRevealMode(false);setGgRevealCell(null);}} style={{...btn(G.pelouse,G.white,14),width:"100%",padding:10,letterSpacing:1}}>
                           📋 {tr("REVOIR MA GRILLE","REVIEW MY GRID","MEIN RASTER ANSEHEN","RIVEDI LA GRIGLIA","REVER MINHA GRADE","VER MI CUADRÍCULA")}
                         </button>
                         {ggOverrideSeed === 0 && (
-                          <button onClick={function(){ggLoadLeaderboard();setGgLeaderboardTab("global");}} style={{...btn(G.projecteur,G.encre,14),width:"100%",padding:12,letterSpacing:1}}>
+                          <button onClick={function(){ggLoadLeaderboard();setGgLeaderboardTab("global");}} style={{...btn(G.projecteur,G.encre,14),width:"100%",padding:10,letterSpacing:1}}>
                             🏆 {tr("CLASSEMENT","LEADERBOARD","RANGLISTE","CLASSIFICA","CLASSIFICAÇÃO","CLASIFICACIÓN")}
                           </button>
                         )}
+                        <div style={{display:"flex",gap:7}}>
                         <button onClick={function(){
                           const newSeed = Math.floor(Math.random() * 1000000) + 1;
                           setGgOverrideSeed(newSeed);
@@ -14558,15 +14580,16 @@ export default function LePont() {
                           const newGrid = ggGenerateGrid(newSeed);
                           if (newGrid) { setGgGrid(newGrid); setGgError(false); }
                           else setGgError(true);
-                        }} style={{...btn(G.projecteur,G.encre,14),width:"100%",padding:12,letterSpacing:1}}>
+                        }} style={{...btn(G.projecteur,G.encre,14),flex:2,minWidth:0,padding:10,letterSpacing:.6}}>
                           🔄 {tr("NOUVELLE GRILLE","NEW GRID","NEUES RASTER","NUOVA GRIGLIA","NOVA GRADE","NUEVA CUADRÍCULA")}
                         </button>
-                        <button onClick={function(){setShowGoatGrid(false);}} style={{...btn(G.encre,G.creme,14),width:"100%",padding:12,letterSpacing:1}}>
+                        <button onClick={function(){setShowGoatGrid(false);}} style={{...btn(G.encre,G.creme,14),flex:1,minWidth:0,padding:10,letterSpacing:.6}}>
                           {tr("Fermer","Close","Schließen","Chiudi","Fechar","Cerrar")}
                         </button>
+                        </div>
                       </div>
 
-                      <div style={{marginTop:14,fontSize:11,color:G.creme,opacity:.6,fontStyle:"italic"}}>
+                      <div style={{fontSize:10.5,color:G.creme,opacity:.6,fontStyle:"italic",flexShrink:0}}>
                         {tr("Nouvelle grille demain à minuit 🐐","New grid tomorrow at midnight 🐐","Neues Raster morgen um Mitternacht 🐐","Nuova griglia domani a mezzanotte 🐐","Nova grade amanhã à meia-noite 🐐","Nueva cuadrícula mañana a medianoche 🐐")}
                       </div>
                     </div>
