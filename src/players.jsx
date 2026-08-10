@@ -1750,7 +1750,10 @@ export const PLAYERS = [
   { name:"Youssef Msakni", clubs:["Espérance Tunis", "Valenciennes", "Al-Duhail"], diff:"expert", nationalities:["Tunisie"], positions:["milieu"] , birthYear:1990 },
   { name:"Aymen Dahmen", clubs:["CS Sfaxien", "Reims"], diff:"expert", nationalities:["Tunisie"], positions:["gardien"] , birthYear:1997 },
   // Équipe nationale France 2026 (compléments)
-  { name:"Lucas Digne", clubs:["Lille", "Barcelona", "Everton", "Aston Villa"], diff:"moyen", nationalities:["France"], positions:["defenseur"], birthYear:1993 },
+  // Deux passages au PSG (2013-2015 puis 2026) et le prêt à Rome au milieu : le
+  // premier séjour parisien et Rome manquaient depuis le début, indépendamment
+  // du transfert de 2026. Un club répété est la convention du fichier (75 joueurs).
+  { name:"Lucas Digne", clubs:["Lille", "PSG", "AS Roma", "Barcelona", "Everton", "Aston Villa", "PSG"], diff:"moyen", nationalities:["France"], positions:["defenseur"], birthYear:1993 },
   { name:"Malo Gusto", clubs:["Lyon", "Chelsea"], diff:"moyen", nationalities:["France"], positions:["defenseur"], birthYear:2003 },
   { name:"Wesley Fofana", clubs:["Saint-Etienne", "Leicester City", "Chelsea"], diff:"moyen", nationalities:["France"], positions:["defenseur"], birthYear:2000 },
   { name:"Maghnes Akliouche", clubs:["Monaco", "PSG"], diff:"expert", nationalities:["Algérie"], positions:["attaquant"] , birthYear:2002 },

@@ -11,9 +11,14 @@
 // La seule source qui autorise cette affirmation est CLUB_SPELLS, qui porte les
 // années. Ces tests verrouillent sa propriété fondamentale.
 import { describe, it, expect } from "vitest";
+import { readFileSync } from "node:fs";
 import { CLUB_SPELLS, wereTeammates, hasSpells } from "../lib/clubSpells";
+import { PLAYERS } from "@/players.jsx";
 
 const NOMS = Object.keys(CLUB_SPELLS);
+const JOUEURS = PLAYERS as any[];
+const NOMS_BASE = new Set(JOUEURS.map((p) => p.name));
+const CLUBS_BASE = new Set(JOUEURS.flatMap((p) => p.clubs ?? []));
 
 describe("wereTeammates n'affirme que ce que les dates prouvent", () => {
   it("chaque paire déclarée coéquipière partage un club à des années qui se chevauchent", () => {
@@ -40,6 +45,51 @@ describe("wereTeammates n'affirme que ce que les dates prouvent", () => {
       table[a].some((s1) => table[b].some(
         (s2) => s1.club === s2.club && s1.from < s2.to && s2.from < s1.to));
     expect(seCroisent("Parti tôt", "Arrivé tard")).toBe(false);
+  });
+
+  // L'en-tête de clubSpells.ts pose la règle « les noms de joueurs et de clubs
+  // doivent matcher EXACTEMENT ceux de players.jsx », mais rien ne la vérifiait.
+  // 7 joueurs et 18 clubs y contrevenaient : « Andres Iniesta » sans accent,
+  // « Roma » quand la base écrit « AS Roma », « Lazio » pour « SS Lazio »… Chaque
+  // écart rend une carrière datée MUETTE — hasSpells répond non, ou le club commun
+  // n'est jamais reconnu — sans qu'aucune erreur ne se produise. Le défaut ne se
+  // voit pas : la fonctionnalité est simplement plus faible qu'elle en a l'air.
+  it("chaque joueur daté existe dans players.jsx, sous la même orthographe", () => {
+    expect(NOMS.filter((n) => !NOMS_BASE.has(n))).toEqual([]);
+  });
+
+  // Une clé répétée dans un littéral d'objet ne lève aucune erreur : la dernière
+  // écrase la première, en silence. C'est arrivé en réalignant « Alisson » sur
+  // « Alisson Becker », qui existait déjà plus bas avec une carrière plus complète.
+  it("aucune carrière n'est déclarée deux fois", () => {
+    // Chemin depuis la racine : sous vitest, import.meta.url n'est pas une URL
+    // de fichier, et readFileSync la refuse.
+    const source = readFileSync("src/lib/clubSpells.ts", "utf8");
+    const table = source.slice(source.indexOf("CLUB_SPELLS"), source.indexOf("\n};"));
+    const cles = [...table.matchAll(/^  "([^"]+)": \[/gm)].map((m) => m[1]);
+    const doublons = cles.filter((c, i) => cles.indexOf(c) !== i);
+    expect(doublons).toEqual([]);
+    expect(cles.length).toBe(NOMS.length);
+  });
+
+  it("chaque club daté existe dans players.jsx, sous la même orthographe", () => {
+    const orphelins = new Set<string>();
+    for (const n of NOMS) for (const s of CLUB_SPELLS[n]) if (!CLUBS_BASE.has(s.club)) orphelins.add(s.club);
+    expect([...orphelins]).toEqual([]);
+  });
+
+  it("une arrivée en 2026 se croise bien avec un joueur arrivé avant", () => {
+    // Convention du fichier : une arrivée en 2026 se note { from: 2026, to: 2027 }.
+    // Digne rejoint le PSG en 2026 ; il doit être coéquipier de quelqu'un qui y
+    // était déjà et dont le séjour est daté au-delà de 2026.
+    const digne = CLUB_SPELLS["Lucas Digne"];
+    expect(digne).toBeDefined();
+    const psg = digne.filter((s) => s.club === "PSG");
+    expect(psg).toHaveLength(2);                 // 2013-2015 puis 2026
+    expect(psg[1]).toEqual({ club: "PSG", from: 2026, to: 2027 });
+    // Le prêt à Rome coupe le premier séjour parisien : pas un bloc 2013-2016.
+    expect(digne.find((s) => s.club === "AS Roma")).toEqual({ club: "AS Roma", from: 2015, to: 2016 });
+    expect(psg[0].to).toBe(2015);
   });
 
   it("refuse de se prononcer quand un des deux joueurs n'est pas daté", () => {
