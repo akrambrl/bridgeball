@@ -13,7 +13,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { G, posterText, btn, fondCharte, areneCharte } from "../lib/charte.jsx";
 import { countryToFlag } from "../lib/leaderboard";
 import { parisDayOf, parisLastDays } from "../lib/days";
-import { PLAY_MODES, MODES_PAR_CLE, RUBRIQUES, FILTRES_VIDES,
+import { PLAY_MODES, MODES_PAR_CLE, RUBRIQUES, FILTRES_VIDES, PLAGE_DEFAUT,
          agregeTracking, formatDuree } from "../lib/tracking.js";
 
 const SEUIL_PC = 1000;          // au-delà : barre latérale et grilles multi-colonnes
@@ -514,7 +514,9 @@ export default function Tracking(props) {
   const [data, setData] = useState(null);
   const [liveNow, setLiveNow] = useState(null);
   const [rubrique, setRubrique] = useState("resume");
-  const [filtres, setFiltres] = useState(FILTRES_VIDES);
+  // Ouvert sur PLAGE_DEFAUT et non sur la plage neutre : la première question
+  // qu'on se pose en ouvrant le tableau de bord est « et aujourd'hui ? ».
+  const [filtres, setFiltres] = useState(Object.assign({}, FILTRES_VIDES, { plage: PLAGE_DEFAUT }));
   const [largeur, setLargeur] = useState(function () {
     try { return window.innerWidth; } catch (e) { return 390; }
   });
