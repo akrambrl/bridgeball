@@ -15365,17 +15365,29 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
       {myRecoveryCodeModal}
         {/* Terrain dessiné de la charte : les bandes opaques recouvraient le fond. */}
         {areneCharte}
-      {/* L'entête prend sa hauteur NATURELLE et non tout l'espace restant. Avec
-          flex:1 1 0 + justifyContent:center, elle prenait toute la place libre et
-          centrait dedans un bandeau plafonné à 240 px : d'où deux vides, un
-          au-dessus de la séquence et un plus grand en dessous. C'est ce que
-          « mal structuré » désignait.
-          Le bandeau prend maintenant la largeur disponible et sa hauteur 16/9
-          naturelle — pas de plafond, donc aucun recadrage — et le mou restant est
-          réparti entre les blocs de la feuille plutôt que gardé en un seul trou. */}
+      {/* L'entête absorbe le mou, mais en GRANDISSANT et non en centrant. La
+          version d'avant faisait flex:1 1 0 + justifyContent:center autour d'un
+          bandeau plafonné à 240 px : la boîte prenait la place libre, le bandeau
+          restait petit au milieu, d'où deux vides — un au-dessus de la séquence,
+          un plus grand en dessous. C'est ce que « mal structuré » désignait.
+          Ici la boîte s'étire et la séquence s'étire AVEC elle (fill), donc la
+          place libre devient de l'image et non du fond. */}
       <div style={{zIndex:1,padding:"6px 12px 0",textAlign:"center",
-        flex:"0 0 auto",display:"flex",flexDirection:"column",alignItems:"center"}}>
-        <WinBanner maxWidth={9999} marginTop={0} lose={sc <= 0} />
+        flex:"1 1 auto",minHeight:0,display:"flex",flexDirection:"column",alignItems:"center"}}>
+        {/* C'est la SÉQUENCE qui absorbe le mou, pas un vide. Plafonner l'espace
+            élastique du bas rangeait le surplus sous le dernier bouton, où il
+            faisait décoller le contenu du bas de l'écran ; le donner à la
+            cinématique agrandit la seule chose qui gagne à être grande. Bornée à
+            42vh — au-delà, un extrait 16/9 étiré en hauteur se recadre trop et on
+            perd les côtés de la scène — et à 170 px au minimum. */}
+        {/* flex:"1 1 0" et non "1 1 auto" : une base 0 donne à ce bloc une hauteur
+            DÉFINIE, sans quoi le height:100% du bandeau n'a rien contre quoi se
+            résoudre et retombe sur la hauteur intrinsèque de la vidéo — laissant
+            un vide sous elle. Le piège est documenté dans le code d'origine, et
+            j'y suis retombé en passant en "auto". */}
+        <div style={{width:"100%",flex:"1 1 0",minHeight:170,maxHeight:"42vh",display:"flex"}}>
+          <WinBanner maxWidth={9999} marginTop={0} fill lose={sc <= 0} />
+        </div>
         {/* Plus de « TEMPS ÉCOULÉ ! » ni de vanne sous le bandeau : l'écran de
             fin ne tenait pas d'une pièce, et ces deux lignes ne portaient aucune
             information — le score et le près-du-record disent déjà tout. Le seul
@@ -15498,12 +15510,15 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
           </div>
         )}
       
-        {/* UN SEUL espace élastique, ici. Réparti entre tous les blocs
-            (space-between), le mou donnait six intervalles égaux et un écran qui
-            flotte ; groupé en un point, il sépare ce qui s'est PASSÉ — la
-            séquence, le score, la progression — de ce qu'on peut FAIRE, et le
-            groupe d'actions s'ancre en bas, sous le pouce. */}
-        <div style={{flex:"1 1 auto",minHeight:0}}/>
+        {/* UN SEUL espace élastique, ici, et PLAFONNÉ. Réparti entre tous les
+            blocs (space-between), le mou donnait six intervalles égaux et un écran
+            qui flotte ; groupé sans plafond, il creusait un trou d'or au milieu
+            quand le contenu est court — un score sans liste de manches ni
+            « si proche » laisse 170 px à combler. Plafonné à 28 px, il marque la
+            séparation entre ce qui s'est PASSÉ — séquence, score, progression — et
+            ce qu'on peut FAIRE, et le surplus se range sous le dernier bouton, où
+            il se lit comme une marge de page et non comme un vide. */}
+        <div style={{flex:"1 1 auto",minHeight:0,maxHeight:28}}/>
         {/* Actions secondaires compactes : classement / chaîne / partage */}
         <div style={{display:"flex",gap:10}}>
           <button onClick={()=>{setLbMode(mode);setLbDiff(diff);loadLeaderboard(lbMode);setShowLeaderboard(true);}} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:4,padding:"8px 4px",background:G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,cursor:"pointer",color:G.white}}>
