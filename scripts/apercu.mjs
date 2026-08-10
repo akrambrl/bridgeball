@@ -265,6 +265,12 @@ CHEMINS["tracking"] = [];
 // `tracking-filtre` sert à vérifier le CÂBLAGE des filtres : les tests couvrent
 // le calcul, pas le fait qu'un menu déroulant atteigne bien l'agrégation.
 CHEMINS["tracking-filtre"] = [];
+// `battle-manches` ne photographie pas une mise en page : il JOUE GOAT Battle en
+// solo et relève la paire de clubs posée à chaque manche. C'est la seule
+// vérification de bout en bout du tirage anti-répétition — les tests couvrent la
+// règle, l'audit la simule, mais aucun des deux ne prouve que le vrai écran
+// enchaîne des manches différentes.
+CHEMINS["battle-manches"] = [];
 if (!(ecran in CHEMINS)) {
   console.error("écran inconnu :", ecran, "— connus :", Object.keys(CHEMINS).join(", "));
   process.exit(1);
@@ -412,6 +418,43 @@ if (ecran === "profil") {
   // bouton, donc getByRole ne la voit pas.
   await page.locator("img[src*='/cards/']").first().click();
   await page.waitForTimeout(1600);
+}
+
+if (ecran === "battle-manches") {
+  // Pastille 0 du carrousel = GOAT Battle (« duel » dans MODES_CARROUSEL).
+  const pastilles = page.locator("div[style*='border-radius: 5px'][style*='cursor: pointer']");
+  if (await pastilles.count() > 0) { await pastilles.nth(0).click(); await page.waitForTimeout(900); }
+  const carte = await page.locator("img[src*='-card']").first().boundingBox();
+  if (!carte) { console.error("carte du carrousel introuvable"); process.exit(1); }
+  await page.mouse.click(carte.x + carte.width / 2, carte.y + carte.height / 2);
+  await page.waitForTimeout(2000);
+  await page.getByRole("button", { name:/jouer solo/i }).first().click();
+
+  // Les deux cartes de club sont les seuls blocs à clipPath en polygone de
+  // l'écran ; on lit leur texte. Il faut attendre l'arrêt des rouleaux, sinon on
+  // relève un club de l'animation « machine à sous » et non la question posée.
+  const paires = [];
+  const passer = page.getByRole("button", { name:/passer \(je ne sais pas\)/i }).first();
+  for (let manche = 0; manche < 14; manche++) {
+    await page.waitForTimeout(1500); // DUEL_SOLO_SPIN_MS = 1000, plus la marge
+    const clubs = await page.locator("div[style*='clip-path'] , span").evaluateAll(() => {
+      const cartes = [...document.querySelectorAll("div")].filter(d => {
+        const st = d.getAttribute("style") || "";
+        return st.includes("clip-path: polygon(30%");
+      });
+      return cartes.map(c => (c.parentElement?.innerText || "").trim()).filter(Boolean);
+    });
+    if (clubs.length < 2) { console.warn("manche", manche + 1, ": cartes de club illisibles"); break; }
+    paires.push([clubs[0], clubs[1]].sort().join(" / "));
+    if (!(await passer.isVisible().catch(() => false))) break;
+    await passer.click();
+  }
+  const uniques = new Set(paires);
+  console.log("manches relevées :", paires.length);
+  for (const p of paires) console.log("   ", p);
+  console.log(uniques.size === paires.length
+    ? "✅ aucune paire posée deux fois dans la partie"
+    : "❌ " + (paires.length - uniques.size) + " paire(s) reposée(s) dans la MÊME partie");
 }
 
 if (ecran === "tracking-filtre") {
