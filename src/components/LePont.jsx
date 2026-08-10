@@ -5547,14 +5547,10 @@ export default function LePont() {
   // contrairement à createDuel() qui ouvre une salle d'attente temps réel.
   const [receivedChallenges, setReceivedChallenges] = useState([]);
   const [duelTarget, setDuelTarget] = useState(null); // {id,name} quand on défie quelqu'un en particulier
-  // ── Ticker « en direct » ──
-  // Il existait déjà sur la landing PC (ScoreTicker dans src/pages/Home.tsx) mais
-  // pas sur l'accueil mobile, qui ne disait donc jamais qu'il y a du monde. Sur
-  // une app dont les gros joueurs viennent du multi, l'absence d'autrui à l'écran
-  // est une information — fausse.
-  // ATTENTION : la phrase est écrite deux fois, ici et dans Home.tsx. La changer
-  // d'un côté sans l'autre fait diverger les deux surfaces.
-  const [ticker, setTicker] = useState([]);
+  // Le ticker « en direct » de la landing PC a été essayé ici puis retiré : la
+  // bande mangeait la hauteur du carrousel, et les cartes de mode — qui SONT
+  // l'entrée dans le jeu — devenaient trop petites. Il reste sur la landing PC,
+  // où la place ne manque pas (ScoreTicker dans src/pages/Home.tsx).
   const [openNotif, setOpenNotif] = useState(null); // bannière de confirmation "défi posté"
   // Score déjà posté en défi depuis l'écran de fin : évite d'en poster dix en
   // tapotant, et permet de remplacer le bouton par sa confirmation.
@@ -5801,35 +5797,6 @@ export default function LePont() {
     } catch {}
   }, []);
 
-
-  // Derniers scores pour le ticker. Une requête au montage, pas de rafraîchi :
-  // c'est une preuve de vie, pas un flux temps réel — et l'accueil ne doit rien
-  // devoir à une requête qui échoue (le ticker disparaît, rien d'autre).
-  useEffect(function(){
-    let mort = false;
-    (async function(){
-      const rows = await sbFetch("bb_scores?order=created_at.desc&limit=25&select=player_name,score,mode");
-      if (mort || !Array.isArray(rows)) return;
-      const LIBELLE = { pont:"The Plug", chaine:"The Mercato", grid:"GOAT Grid", findscore:"Trouve le joueur" };
-      const vus = {}, construits = [];
-      for (const r of rows) {
-        // Un joueur une seule fois : sans ça, celui qui vient d'enchaîner dix
-        // parties occupe toute la bande et on croit qu'il n'y a que lui.
-        if (!r.player_name || vus[r.player_name] || (r.score||0) <= 0) continue;
-        vus[r.player_name] = 1;
-        construits.push({ qui: r.player_name, quoi:
-          tr("vient de scorer " + (r.score).toLocaleString("fr-FR") + " pts sur " + (LIBELLE[r.mode]||r.mode) + " 🔥",
-             "just scored " + (r.score).toLocaleString("en-GB") + " pts on " + (LIBELLE[r.mode]||r.mode) + " 🔥",
-             "hat gerade " + (r.score).toLocaleString("de-DE") + " Pkt bei " + (LIBELLE[r.mode]||r.mode) + " erzielt 🔥",
-             "ha appena segnato " + (r.score).toLocaleString("it-IT") + " pt su " + (LIBELLE[r.mode]||r.mode) + " 🔥",
-             "acabou de marcar " + (r.score).toLocaleString("pt-BR") + " pts no " + (LIBELLE[r.mode]||r.mode) + " 🔥",
-             "acaba de marcar " + (r.score).toLocaleString("es-ES") + " pts en " + (LIBELLE[r.mode]||r.mode) + " 🔥") });
-        if (construits.length >= 8) break;
-      }
-      setTicker(construits);
-    })();
-    return function(){ mort = true; };
-  }, [lang]);
 
   // Load pseudo silently on mount
   useEffect(() => {
@@ -9913,7 +9880,9 @@ export default function LePont() {
       // et les boutons uniques. Les filets colorés à 40 % d'opacité, les lueurs
       // portées et les verts LED appartenaient à l'interface d'avant.
       body = (
-        <div style={{position:"relative",width:"100%",minHeight:"100dvh",display:"flex",flexDirection:"column",animation:"fadeIn .3s ease-out",background:fondCharte}}>
+        // Hauteur exacte et non minimum : l'affiche prend ce qui reste, donc
+        // l'écran tient sur une page. Voir la feuille Plug/Mercato pour le détail.
+        <div style={{position:"relative",width:"100%",height:"100dvh",overflow:"hidden",display:"flex",flexDirection:"column",animation:"fadeIn .3s ease-out",background:fondCharte}}>
           {areneCharte}
           {fermerCharte(duelLeaveRoom, 10)}
           {/* Hero image (visuel entier) */}
@@ -9921,10 +9890,10 @@ export default function LePont() {
               de la charte plutôt que par du noir. Il y a DEUX écrans de choix
               de mode dans ce fichier — celui-ci et gameConfigModal — et ils
               portent chacun leur propre affiche. */}
-          <div style={{position:"relative",zIndex:1,width:"100%",aspectRatio:"1086 / 1448",minHeight:"280px",overflow:"hidden",background:"transparent",flexShrink:0,borderBottom:G.trait}}>
+          <div style={{position:"relative",zIndex:1,width:"100%",flex:"1 1 0",minHeight:0,overflow:"hidden",background:"transparent",borderBottom:G.trait}}>
             <img src={DUEL_CARD_IMG} alt="" style={{width:"100%",height:"100%",objectFit:"contain",pointerEvents:"none",userSelect:"none"}} draggable={false}/>
           </div>
-          <div style={{position:"relative",zIndex:1,padding:"18px 18px calc(22px + env(safe-area-inset-bottom))",flex:1,display:"flex",flexDirection:"column",maxWidth:480,margin:"0 auto",width:"100%",boxSizing:"border-box"}}>
+          <div style={{position:"relative",zIndex:1,padding:"14px 18px calc(16px + env(safe-area-inset-bottom))",flexShrink:0,display:"flex",flexDirection:"column",maxWidth:480,margin:"0 auto",width:"100%",boxSizing:"border-box"}}>
             {/* Pastille format */}
             <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:12,padding:"10px 16px",background:G.nuit,border:G.trait,borderRadius:G.rayon,boxShadow:G.ombre,marginBottom:18,flexWrap:"wrap"}}>
               <span style={{color:G.projecteur,fontSize:13,fontWeight:800,letterSpacing:.5}}>⏱ <span style={{color:G.white}}>90 S</span></span>
@@ -12919,33 +12888,6 @@ export default function LePont() {
             <div style={{fontSize:11,color:"rgba(255,255,255,.5)",marginTop:2}}>{tr("Crée ton pseudo pour rejoindre automatiquement","Create your username to join automatically","Erstelle deinen Namen, um automatisch beizutreten","Crea il tuo nome per unirti automaticamente","Crie seu nome para entrar automaticamente","Crea tu nombre para entrar automáticamente")}</div>
           </div>
         )}
-        {/* ── EN DIRECT ──
-            Posé haut, avant les invites : c'est ce qui dit qu'il y a quelqu'un
-            en face. Le libellé et le défilement reprennent ceux de la landing
-            PC (goat-blink / goat-marquee, définis dans src/index.css). */}
-        {ticker.length > 0 && (
-          <div style={{background:G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,
-            overflow:"hidden",display:"flex",alignItems:"center",gap:10,padding:"8px 10px"}}>
-            <span className="goat-blink" style={{...posterText(13,G.white,0),flexShrink:0,
-              letterSpacing:1.2,background:G.maillot,borderRadius:G.rayonS,border:G.traitFin,
-              padding:"3px 8px",boxShadow:"2px 2px 0 "+G.encre}}>
-              {tr("EN DIRECT","LIVE","LIVE","IN DIRETTA","AO VIVO","EN DIRECTO")}
-            </span>
-            <div style={{flex:1,overflow:"hidden",minWidth:0}}>
-              {/* La liste est doublée : c'est ce qui rend le défilement continu,
-                  la seconde copie entrant quand la première sort. */}
-              <div className="goat-marquee" style={{display:"flex",gap:40,whiteSpace:"nowrap"}}>
-                {ticker.concat(ticker).map(function(it,i){ return (
-                  <span key={i} style={{fontSize:12.5,color:"rgba(255,255,255,.72)",
-                    display:"flex",alignItems:"center",gap:6}}>
-                    <span style={{...posterText(15,G.projecteur)}}>{it.qui}</span>
-                    <span>{it.quoi}</span>
-                  </span>
-                );})}
-              </div>
-            </div>
-          </div>
-        )}
         {/* Bannière installation app (iOS Safari / Android non installé) */}
         {installBanner}
         {/* Bandeau demandes d'amis */}
@@ -13446,7 +13388,12 @@ export default function LePont() {
                 <div style={{
                   position:"relative",
                   width:"100%",
-                  minHeight:"100vh",
+                  // Hauteur EXACTE du viewport, pas un minimum : c'est ce qui
+                  // permet à l'affiche de prendre ce qui reste et garantit que
+                  // l'écran tient sur une page. dvh et non vh — sur Android, vh
+                  // se fige sur la fenêtre barre d'URL rétractée.
+                  height:"100dvh",
+                  overflow:"hidden",
                   display:"flex",
                   flexDirection:"column",
                   animation:"fadeIn .3s ease-out",
@@ -13460,7 +13407,7 @@ export default function LePont() {
                       chaque côté. En noir elles coupaient l'écran en deux ; en
                       transparent, c'est fondCharte — posé sur le conteneur juste
                       au-dessus — qui les remplit, et l'or continue sans couture. */}
-                  <div style={{position:"relative",zIndex:1,width:"100%",aspectRatio:"1086 / 1448",minHeight:"280px",overflow:"hidden",background:"transparent",flexShrink:0,borderBottom:G.trait}}>
+                  <div style={{position:"relative",zIndex:1,width:"100%",flex:"1 1 0",minHeight:0,overflow:"hidden",background:"transparent",borderBottom:G.trait}}>
                     <img
                       src={isPont ? PLUG_CARD_IMG : MERCATO_CARD_IMG}
                       alt=""
@@ -13469,7 +13416,7 @@ export default function LePont() {
                     />
                   </div>
 
-                  <div style={{position:"relative",zIndex:1,padding:"18px 18px calc(20px + env(safe-area-inset-bottom))",flex:1,display:"flex",flexDirection:"column",justifyContent:"flex-start",maxWidth:480,margin:"0 auto",width:"100%",boxSizing:"border-box"}}>
+                  <div style={{position:"relative",zIndex:1,padding:"14px 18px calc(16px + env(safe-area-inset-bottom))",flexShrink:0,display:"flex",flexDirection:"column",justifyContent:"flex-start",maxWidth:480,margin:"0 auto",width:"100%",boxSizing:"border-box"}}>
                     {/* Badge format de jeu (🔗 2 CLUBS → 👤 1 JOUEUR) */}
                     <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:14,padding:"10px 16px",background:G.nuit,border:G.trait,borderRadius:G.rayon,boxShadow:G.ombre,marginBottom:18,flexWrap:"wrap"}}>
                       {isPont ? (
@@ -13577,7 +13524,7 @@ export default function LePont() {
         {/* 🐐 Modal de choix Solo / Multi pour GOAT GRID */}
         {ggModeChoice && (
           <div style={{position:"fixed",inset:0,zIndex:450,background:fondCharte,overflowY:"auto",WebkitOverflowScrolling:"touch"}}>
-            <div style={{position:"relative",width:"100%",minHeight:"100vh",display:"flex",flexDirection:"column",animation:"fadeIn .3s ease-out"}}>
+            <div style={{position:"relative",width:"100%",height:"100dvh",overflow:"hidden",display:"flex",flexDirection:"column",animation:"fadeIn .3s ease-out"}}>
               {areneCharte}
               {fermerCharte(function(){setGgModeChoice(false);}, 10)}
 
@@ -13588,7 +13535,7 @@ export default function LePont() {
                   etait recadree en bandeau de 27vh, ce qui coupait la couronne
                   et la tete des joueurs — et l'ecran, qui ne porte que deux
                   choix, laissait un grand vide en dessous. */}
-              <div style={{position:"relative",zIndex:1,width:"100%",aspectRatio:"1086 / 1448",minHeight:200,overflow:"hidden",flexShrink:0,borderBottom:G.trait}}>
+              <div style={{position:"relative",zIndex:1,width:"100%",flex:"1 1 0",minHeight:0,overflow:"hidden",borderBottom:G.trait}}>
                 <img src={GRID_CARD_IMG} alt="" style={{width:"100%",height:"100%",objectFit:"contain",pointerEvents:"none",userSelect:"none"}} draggable={false}/>
                 {/* Plus de voile ni de titre rapporte : l'affiche porte deja
                     « GOAT GRID » en toutes lettres. Ils avaient un sens quand
@@ -13597,7 +13544,7 @@ export default function LePont() {
               </div>
 
               {/* Contenu */}
-              <div style={{position:"relative",zIndex:1,padding:"16px 18px calc(24px + env(safe-area-inset-bottom))",flex:1,display:"flex",flexDirection:"column",gap:12,maxWidth:520,width:"100%",margin:"0 auto",boxSizing:"border-box"}}>
+              <div style={{position:"relative",zIndex:1,padding:"14px 18px calc(16px + env(safe-area-inset-bottom))",flexShrink:0,display:"flex",flexDirection:"column",gap:12,maxWidth:520,width:"100%",margin:"0 auto",boxSizing:"border-box"}}>
 
                 <div style={{...posterText(22,G.projecteur),textAlign:"center",marginBottom:2}}>
                   {tr("Choisis ton mode","Choose your mode","Wähle deinen Modus","Scegli la modalità","Escolha seu modo","Elige tu modo")}
