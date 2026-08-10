@@ -83,6 +83,28 @@ naissance, et un joueur inconnu du public rend une devinette injouable. À
 trancher au cas par cas — Emegha (Strasbourg → Chelsea, 22 M£) et Stanković
 sont les plus défendables.
 
+## L'ORDRE compte : le dernier club est publié
+
+`riddleClues()` dans `FindPlayer.tsx` publie « 🏁 Dernier maillot : X » à partir
+du **dernier élément** de `clubs`. Ajouter un club ne suffit donc pas : il doit
+être ajouté **à la fin**, et un joueur qui revient dans un club y figure deux
+fois. Sans ça, l'énigme partagée annonce un maillot que le joueur ne porte plus.
+
+Contrôle passé sur les 55 joueurs concernés : trois fiches ne finissaient pas
+par leur club de 2026, et une seule était fausse.
+
+- **Randal Kolo Muani** finissait par Tottenham. Il est à la Juventus depuis le
+  2 août (38 M€ + 12 de bonus,
+  [annonce du PSG](https://www.psg.fr/en/content/randal-kolo-muani-completes-move-to-juventus-psg-2026)) —
+  et comme il y était déjà en prêt en 2025, la Juve apparaît deux fois. Corrigé.
+- **Loïs Openda** finit par Lyon : c'est juste. La Juve l'a acheté à Leipzig
+  puis prêté à Lyon le 28 juillet.
+- **Mathys Detourbet** finit par Monaco : c'est juste aussi. City l'a acheté à
+  Troyes puis prêté à Monaco immédiatement.
+
+Les deux derniers cas disent la règle : quand un club achète pour prêter aussitôt,
+c'est le club de prêt qui va en dernier, parce que c'est là que le joueur joue.
+
 ## Ce que cet audit ne couvre pas
 
 - **Les prêts.** Plusieurs mouvements de l'été sont des prêts ou des retours de
