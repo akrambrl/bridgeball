@@ -243,6 +243,9 @@ const CHEMINS = {
 // carte : c'est le seul moyen d'ouvrir un mode qui n'est pas celui affiche.
 const MODES_CARROUSEL = ["duel", "grid", "mercato", "plug", "guess", "goatgrid"];
 for (const m of MODES_CARROUSEL) CHEMINS["mode-" + m] = [];
+// `partie-plug` couvre le démarrage de The Plug en solo : c'est le chemin qui
+// passait à côté de startCompetition(), donc à côté du comptage.
+CHEMINS["partie-plug"] = [];
 // Le tableau de bord de suivi n'est pas dans l'app : il s'ouvre par ?stats=CODE,
 // et ses rubriques sont des onglets. LARGEUR=1280 donne la version PC.
 for (const r of ["resume", "audience", "modes", "joueurs", "comptes"]) CHEMINS["tracking-" + r] = [];
@@ -273,8 +276,9 @@ if (ecran === "collection" || ecran === "compte") {
 }
 
 // Un mode precis du carrousel : pastille, puis carte.
-if (ecran.startsWith("mode-") || ecran.startsWith("mercato-")) {
+if (ecran.startsWith("mode-") || ecran.startsWith("mercato-") || ecran === "partie-plug") {
   const i = ecran.startsWith("mercato-") ? MODES_CARROUSEL.indexOf("mercato")
+          : ecran === "partie-plug"      ? MODES_CARROUSEL.indexOf("plug")
                                          : MODES_CARROUSEL.indexOf(ecran.slice(5));
   // Les pastilles sont les seuls petits blocs cliquables sous la carte.
   const pastilles = page.locator("div[style*='border-radius: 5px'][style*='cursor: pointer']");
@@ -299,7 +303,8 @@ if (ecran === "jeu" || ecran === "partie" || ecran === "partie-fin" || ecran ===
   await page.mouse.click(carte.x + carte.width / 2, carte.y + carte.height / 2);
   await page.waitForTimeout(2800);
 }
-if (ecran === "partie" || ecran === "partie-fin" || ecran === "partie-faux" || ecran.startsWith("mercato-")) {
+if (ecran === "partie" || ecran === "partie-fin" || ecran === "partie-faux"
+    || ecran === "partie-plug" || ecran.startsWith("mercato-")) {
   const solo = page.getByRole("button", { name:/jouer se?ul|jouer solo/i }).first();
   await solo.click();
   await page.waitForTimeout(3000);
