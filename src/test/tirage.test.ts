@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { clePaire, pairesJouables, tirerEnEvitant, memoriser, nettoyerVus } from "../lib/tirage.js";
+import { clePaire, pairesRetenues, tirerEnEvitant, memoriser, nettoyerVus } from "../lib/tirage.js";
 
 // Ces tests verrouillent ce que l'audit du tirage a trouvé cassé :
 //   • GOAT Battle tirait sans aucune mémoire — 30 % des parties posaient deux
@@ -19,24 +19,40 @@ describe("clePaire", () => {
   });
 });
 
-describe("pairesJouables", () => {
+describe("pairesRetenues", () => {
   const clubs = ["A", "B", "C"];
 
-  it("ne rend que les paires qui ont un joueur commun", () => {
-    // A-B ont un commun, A-C aussi, B-C non.
-    const communs = (x: string, y: string) => (x === "B" && y === "C" ? 0 : 1);
-    const p = pairesJouables(clubs, communs);
-    expect(p).toEqual([["A", "B"], ["A", "C"]]);
+  it("ne rend que les paires que le prédicat accepte", () => {
+    const retenir = (x: string, y: string) => !(x === "B" && y === "C");
+    expect(pairesRetenues(clubs, retenir)).toEqual([["A", "B"], ["A", "C"]]);
   });
 
   it("ne rend jamais un club face à lui-même", () => {
-    const p = pairesJouables(clubs, () => 1);
-    for (const [a, b] of p) expect(a).not.toBe(b);
+    for (const [a, b] of pairesRetenues(clubs, () => true)) expect(a).not.toBe(b);
   });
 
   it("ne rend chaque paire qu'une fois", () => {
-    const p = pairesJouables(clubs, () => 1);
+    const p = pairesRetenues(clubs, () => true);
     expect(new Set(p.map(([a, b]) => clePaire(a, b))).size).toBe(p.length);
+  });
+
+  it("applique la barre de GOAT Battle : 1 réponse célèbre OU 3 réponses", () => {
+    // La barre entière, telle qu'elle vit dans LePont.jsx. Les deux branches
+    // comptent : sans la première on garde une manche morte (1 réponse inconnue),
+    // sans la seconde on jette une bonne question (8 réponses, aucune célèbre).
+    const communs: Record<string, string[]> = {
+      "A|B": ["star"],                       // 1 réponse, mais célèbre → retenue
+      "A|C": ["obscur"],                     // 1 réponse inconnue      → écartée
+      "B|C": ["o1", "o2", "o3"],             // 3 réponses inconnues    → retenue
+      "A|D": ["o1", "o2"],                   // 2 réponses inconnues    → écartée
+    };
+    const celebres = new Set(["star"]);
+    const retenir = (x: string, y: string) => {
+      const c = communs[x + "|" + y] || [];
+      return c.length >= 3 || c.some(n => celebres.has(n));
+    };
+    expect(pairesRetenues(["A", "B", "C", "D"], retenir))
+      .toEqual([["A", "B"], ["B", "C"]]);
   });
 });
 

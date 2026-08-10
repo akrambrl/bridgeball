@@ -24,7 +24,7 @@ import { readFileSync } from "node:fs";
 // Les règles de tirage anti-répétition sont dans une lib .js sans import, donc
 // Node sait la lire : on la charge pour de vrai au lieu de la découper dans le
 // source. Ce qui est mesuré ici est exactement ce que le jeu exécute.
-import { clePaire, pairesJouables, tirerEnEvitant, memoriser } from "../src/lib/tirage.js";
+import { clePaire, pairesRetenues, tirerEnEvitant, memoriser } from "../src/lib/tirage.js";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
@@ -98,6 +98,7 @@ const A_EXTRAIRE = [
   "POPULAR_CLUBS_FACILE", "PONT_CLUBS", "ELITE_CLUBS_RANK", "FAMOUS_CLUBS", "DUEL_CLUBS",
   "shuffle", "isRetiredPlayer", "famousClubCount", "getClubRank",
   "getPlayersForClub", "duelCommonPlayers",
+  "DUEL_REPONSES_MIN", "duelPaireRetenue",
   "DUEL_PAIRES", "DUEL_MEMOIRE", "DUEL_MEMOIRE_MAX", "duelPairesRecentes", "duelRollPair",
   "buildPontDB",
 ];
@@ -116,7 +117,7 @@ const faussestockage = {
 };
 
 const jeu = new Function("PLAYERS", "RETIRED_PLAYERS", "G", "localStorage",
-  "clePaire", "pairesJouables", "tirerEnEvitant", "memoriser", `
+  "clePaire", "pairesRetenues", "tirerEnEvitant", "memoriser", `
   const PLAYERS_CLEAN = PLAYERS.filter(p => p && p.name && p.clubs && Array.isArray(p.clubs));
   const CLUB_INDEX = {};
   for (const p of PLAYERS_CLEAN) {
@@ -126,16 +127,36 @@ const jeu = new Function("PLAYERS", "RETIRED_PLAYERS", "G", "localStorage",
       if (!CLUB_INDEX[c].includes(p.name)) CLUB_INDEX[c].push(p.name);
     }
   }
+  // duelPaireRetenue lit PLAYER_DIFF pour savoir si une réponse est célèbre.
+  const PLAYER_DIFF = {};
+  for (const p of PLAYERS_CLEAN) PLAYER_DIFF[p.name] = p.diff || "moyen";
   ${source}
-  return { PLAYERS_CLEAN, CLUB_INDEX, DUEL_CLUBS, DUEL_PAIRES, FAMOUS_CLUBS,
-           POPULAR_CLUBS_FACILE, PONT_CLUBS, shuffle, isRetiredPlayer, famousClubCount,
-           duelCommonPlayers, duelRollPair, buildPontDB };
+  return { PLAYERS_CLEAN, CLUB_INDEX, DUEL_CLUBS, DUEL_PAIRES, DUEL_REPONSES_MIN, PLAYER_DIFF,
+           duelPaireRetenue, DUEL_MEMOIRE_MAX, FAMOUS_CLUBS, POPULAR_CLUBS_FACILE, PONT_CLUBS, shuffle,
+           isRetiredPlayer, famousClubCount, duelCommonPlayers, duelRollPair, buildPontDB };
 `)(PLAYERS, RETIRED_PLAYERS, new Proxy({}, { get: () => "#000" }), faussestockage,
-   clePaire, pairesJouables, tirerEnEvitant, memoriser);
+   clePaire, pairesRetenues, tirerEnEvitant, memoriser);
 
-const { PLAYERS_CLEAN, DUEL_CLUBS, DUEL_PAIRES, shuffle, isRetiredPlayer,
-        famousClubCount, duelCommonPlayers, duelRollPair, buildPontDB } = jeu;
+const { PLAYERS_CLEAN, DUEL_CLUBS, DUEL_PAIRES, DUEL_REPONSES_MIN, duelPaireRetenue,
+        shuffle, isRetiredPlayer, famousClubCount, duelCommonPlayers, duelRollPair,
+        buildPontDB } = jeu;
 const DB = buildPontDB();
+
+// ── Cohérence des deux listes de clubs ──────────────────────────────────────
+// Les deux encodent le MÊME critère — « club qu'un spectateur occasionnel
+// replace » — pour deux modes différents. GOAT Battle ne doit donc jamais poser
+// un club que Le Plug juge trop obscur pour son niveau facile. Le contrôle vit
+// ici et non dans les tests parce que les deux listes sont dans LePont.jsx, hors
+// de portée d'un import.
+{
+  const hors = DUEL_CLUBS.filter(c => !jeu.POPULAR_CLUBS_FACILE.has(c));
+  const inconnus = DUEL_CLUBS.filter(c => !jeu.CLUB_INDEX[c]);
+  if (inconnus.length) console.log("⚠️  clubs de GOAT Battle absents de la base :", inconnus.join(", "));
+  if (hors.length) console.log("⚠️  clubs de GOAT Battle hors de POPULAR_CLUBS_FACILE :", hors.join(", "));
+  if (!hors.length && !inconnus.length)
+    console.log(`Cohérence des listes : les ${DUEL_CLUBS.length} clubs de GOAT Battle sont tous`
+      + ` dans les ${jeu.POPULAR_CLUBS_FACILE.size} clubs jugés reconnaissables. ✅`);
+}
 
 // ── Outils de mesure ────────────────────────────────────────────────────────
 // Pourquoi la reprise se mesure d'une partie à la SUIVANTE et non sur toutes :
@@ -400,21 +421,32 @@ console.log(`  moyen   : ${String(revealPools.moyen.length).padStart(4)} joueurs
 // de manches donnerait MOINS de répétitions, pas plus.
 const MANCHES_PAR_BATTLE = 12;
 
-// Nom distinct de la fonction pairesJouables importée : ici c'est l'ENSEMBLE des
+// Nom distinct de la fonction pairesRetenues importée : ici c'est l'ENSEMBLE des
 // paires du mode, sous forme de libellés lisibles pour le comptage.
 const paires = new Set(DUEL_PAIRES.map(p => [...p].sort().join(" / ")));
+// Le plafond de mémoire n'est pas exporté par le module extrait sous ce nom :
+// on le relit pour l'afficher, plutôt que d'écrire 60 en dur dans un libellé.
+const DUEL_MEMOIRE_MAX_SIM = jeu.DUEL_MEMOIRE_MAX;
 
-// AVANT : le tirage d'origine, deux clubs au hasard jusqu'à tomber sur une paire
-// jouable, sans aucune mémoire. Recopié ici EXPRÈS — c'est la seule façon de
-// chiffrer ce que la correction apporte, et le code d'origine n'existe plus.
+// AVANT : le tirage d'origine — 20 clubs, deux tirés au hasard jusqu'à tomber sur
+// une paire jouable, sans aucune mémoire et sans barre de qualité. Recopié ici
+// EXPRÈS, liste de clubs comprise : c'est la seule façon de chiffrer ce que la
+// correction apporte, et ce code n'existe plus.
+const CLUBS_AVANT = [
+  "Real Madrid","Barcelona","Atletico Madrid","Sevilla","Valencia",
+  "Manchester United","Manchester City","Liverpool","Chelsea","Arsenal","Tottenham",
+  "Bayern Munich","Borussia Dortmund",
+  "Juventus FC","Inter Milan","AC Milan","SSC Napoli","AS Roma",
+  "PSG","Marseille",
+];
 function tirerBattleSansMemoire() {
   return function () {
     const partie = [];
     for (let i = 0; i < MANCHES_PAR_BATTLE; i++) {
       let c1 = "Real Madrid", c2 = "Barcelona";
       for (let k = 0; k < 80; k++) {
-        const a = DUEL_CLUBS[Math.floor(Math.random() * DUEL_CLUBS.length)];
-        const b = DUEL_CLUBS[Math.floor(Math.random() * DUEL_CLUBS.length)];
+        const a = CLUBS_AVANT[Math.floor(Math.random() * CLUBS_AVANT.length)];
+        const b = CLUBS_AVANT[Math.floor(Math.random() * CLUBS_AVANT.length)];
         if (a === b) continue;
         if (duelCommonPlayers(a, b).length > 0) { c1 = a; c2 = b; break; }
       }
@@ -423,6 +455,12 @@ function tirerBattleSansMemoire() {
     return partie;
   };
 }
+// Vivier de l'ancienne version, pour que le pourcentage de couverture ait un sens.
+const PAIRES_AVANT = new Set();
+for (let i = 0; i < CLUBS_AVANT.length; i++)
+  for (let j = i + 1; j < CLUBS_AVANT.length; j++)
+    if (duelCommonPlayers(CLUBS_AVANT[i], CLUBS_AVANT[j]).length > 0)
+      PAIRES_AVANT.add([CLUBS_AVANT[i], CLUBS_AVANT[j]].sort().join(" / "));
 
 // APRÈS : le vrai duelRollPair, mémoire comprise. On vide le stockage à chaque
 // fabrique — un nouveau joueur n'hérite pas de l'historique du précédent.
@@ -440,9 +478,27 @@ function tirerBattle() {
 
 titre("4. GOAT BATTLE — vivier de paires de clubs");
 console.log(`  ${DUEL_CLUBS.length} clubs au tirage → ${DUEL_CLUBS.length * (DUEL_CLUBS.length - 1) / 2} paires possibles,`
-  + ` dont ${paires.size} jouables`);
-for (const [nom, fab] of [["AVANT (aucune mémoire)", tirerBattleSansMemoire], ["APRÈS (mémoire de 60)", tirerBattle]]) {
-  const c = couverture(fab, paires.size);
+  + ` dont ${paires.size} retenues (>= ${DUEL_REPONSES_MIN} réponses, ou une réponse célèbre)`);
+// Combien de paires la BARRE écarte, et pourquoi. Une paire « morte » a une ou
+// deux réponses, toutes inconnues : dix secondes pour une réponse que personne ne
+// trouve. Sans barre, elles entrent dans le vivier.
+{
+  let jouables = 0, mortes = [];
+  for (let i = 0; i < DUEL_CLUBS.length; i++) {
+    for (let j = i + 1; j < DUEL_CLUBS.length; j++) {
+      const com = duelCommonPlayers(DUEL_CLUBS[i], DUEL_CLUBS[j]);
+      if (com.length === 0) continue;
+      jouables++;
+      if (!duelPaireRetenue(DUEL_CLUBS[i], DUEL_CLUBS[j])) mortes.push(DUEL_CLUBS[i] + " / " + DUEL_CLUBS[j] + " (" + com.length + ")");
+    }
+  }
+  console.log(`  ${jouables} paires ont au moins une réponse ; la barre en écarte ${mortes.length} comme manches mortes`);
+  if (mortes.length) console.log("     ex. : " + mortes.slice(0, 5).join(" · "));
+}
+for (const [nom, fab, vivier] of [
+  [`AVANT — ${CLUBS_AVANT.length} clubs, sans mémoire ni barre`, tirerBattleSansMemoire, PAIRES_AVANT.size],
+  [`APRÈS — ${DUEL_CLUBS.length} clubs, mémoire de ${DUEL_MEMOIRE_MAX_SIM} + barre`, tirerBattle, paires.size]]) {
+  const c = couverture(fab, vivier);
   const r = reprise(fab);
   // Le doublon DANS la même partie est la mesure qui compte ici : c'est la
   // répétition qu'un joueur ne peut pas ne pas voir.
@@ -451,11 +507,11 @@ for (const [nom, fab] of [["AVANT (aucune mémoire)", tirerBattleSansMemoire], [
     const p = fab()();
     if (new Set(p).size < p.length) avecDoublon++;
   }
-  console.log(`\n  → ${nom} — ${MANCHES_PAR_BATTLE} manches/partie sur un vivier de ${paires.size}`);
+  console.log(`\n  → ${nom} — ${MANCHES_PAR_BATTLE} manches/partie sur un vivier de ${vivier}`);
   console.log(`     parties posant DEUX FOIS la même question : ${pct(avecDoublon / PARTIES)}`);
   console.log(`     reprise d'une partie à la suivante : ${pct(r)}`);
   console.log(`     médiane avant répétition : ${medianeAvantRepetition(fab)} partie(s)`);
-  console.log(`     ${c.distinctes} paires distinctes vues sur ${PARTIES} parties (${pct(c.distinctes / paires.size)} du vivier)`);
+  console.log(`     ${c.distinctes} paires distinctes vues sur ${PARTIES} parties (${pct(c.distinctes / vivier)} du vivier)`);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
