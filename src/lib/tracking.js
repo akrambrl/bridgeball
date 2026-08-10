@@ -26,7 +26,17 @@ export const MODES_PAR_CLE = PLAY_MODES.reduce(function (acc, m) { acc[m.key] = 
 // de parties ne bougeait pas.
 export const MODE_DU_SCORE = { pont: "pont", chaine: "chaine", findscore: "reveal" };
 
+// Base neutre de l'agrégation : aucun filtre, et la plage la PLUS LARGE, parce
+// qu'ici « vide » veut dire « ne restreint rien ». Ce n'est pas ce que le tableau
+// de bord montre en premier — cette valeur-là est PLAGE_DEFAUT, plus bas. Les
+// deux ont longtemps été confondues, ce qui ouvrait le tableau de bord sur
+// 14 jours alors que la question du quotidien est « et aujourd'hui ? ».
 export const FILTRES_VIDES = { plage: 14, mode: "tous", public: "tous", support: "tous", recherche: "" };
+
+// Plage à l'ouverture. La plage n'est pas comptée comme un filtre actif
+// (nbFiltresActifs l'ignore) et le bouton de remise à zéro la conserve : la
+// changer ici ne touche donc que le premier écran.
+export const PLAGE_DEFAUT = 1;
 
 export const RUBRIQUES = [
   { key: "resume",   label: "Vue d'ensemble", emoji: "📊" },
