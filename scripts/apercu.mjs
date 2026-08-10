@@ -297,6 +297,15 @@ CHEMINS["duel-fin"] = [];
 // `battle-clavier` rejoue le défaut du clavier : l'overlay doit continuer à
 // couvrir l'écran même quand la zone jouable se recale sur la fenêtre visible.
 CHEMINS["battle-clavier"] = [];
+// `grille` photographie GOAT GRID en jeu — le plateau 3×3, ses en-têtes de
+// critères et ses cases vides. LARGEUR=1280 pour le rendu PC.
+CHEMINS["grille"] = [];
+// `grille-remplie` va plus loin : il REMPLIT les neuf cases, pour photographier
+// l'état qu'on ne voit pas autrement — les cases trouvées, dont la teinte dit la
+// rareté du joueur. Le mode démo (cinq tapes sur le titre) affiche les réponses,
+// on les lui emprunte.
+CHEMINS["grille-remplie"] = [];
+CHEMINS["grille-fin"] = [];
 if (!(ecran in CHEMINS)) {
   console.error("écran inconnu :", ecran, "— connus :", Object.keys(CHEMINS).join(", "));
   process.exit(1);
@@ -443,6 +452,83 @@ if (ecran === "profil") {
   // L'avatar de l'en-tête ouvre le profil ; c'est une image cliquable, pas un
   // bouton, donc getByRole ne la voit pas.
   await page.locator("img[src*='/cards/']").first().click();
+  await page.waitForTimeout(1600);
+}
+
+if (ecran === "grille" || ecran === "grille-remplie" || ecran === "grille-fin") {
+  // GOAT GRID en jeu. Deux chemins, parce que l'accueil n'est pas le même :
+  // sur mobile un carrousel de cartes, sur ordinateur une liste de modes à
+  // gauche puis un bouton JOUER. Sans la branche PC, l'aperçu restait sur la
+  // page d'accueil et photographiait la landing — ce qui s'est produit au
+  // premier essai.
+  if (LARGEUR > 900) {
+    await page.getByText(/^GOAT Grid$/).first().click();
+    await page.waitForTimeout(900);
+    // « JOUER » tout court attrape le lien de la barre de NAVIGATION, qui porte
+    // le même mot. Le grand bouton de lancement porte un ▶ : on s'y accroche.
+    await page.getByRole("button", { name:/▶\s*JOUER/i }).first().click();
+    await page.waitForTimeout(2600);
+  } else {
+  const pastilles = page.locator("div[style*='border-radius: 5px'][style*='cursor: pointer']");
+  const i = MODES_CARROUSEL.indexOf("goatgrid");
+  if (await pastilles.count() > i) { await pastilles.nth(i).click(); await page.waitForTimeout(900); }
+  const carte = await page.locator("img[src*='-card']").first().boundingBox();
+  if (!carte) { console.error("carte du carrousel introuvable"); process.exit(1); }
+  await page.mouse.click(carte.x + carte.width / 2, carte.y + carte.height / 2);
+  await page.waitForTimeout(2200);
+  }
+  const solo = page.locator("div").filter({ hasText: /^Défi du jour/ }).first();
+  const cible = (await solo.count()) ? solo : page.getByText(/^SOLO$/).first();
+  await cible.scrollIntoViewIfNeeded().catch(() => {});
+  await cible.click({ force:true }).catch(() => {});
+  await page.waitForTimeout(2600);
+}
+
+if (ecran === "grille-remplie" || ecran === "grille-fin") {
+  // Cinq tapes sur le titre ouvrent le mode démo, qui liste une réponse par case.
+  const titre = page.getByText(/^GOAT GRID$/).first();
+  for (let k = 0; k < 5; k++) { await titre.click({ force:true }); await page.waitForTimeout(120); }
+  await page.waitForTimeout(900);
+  const reponses = await page.evaluate(() => {
+    const lignes = [...document.querySelectorAll("div")].filter(d =>
+      /MODE DÉMO — réponses/.test(d.textContent || "") && d.children.length <= 3);
+    const bloc = lignes[lignes.length - 1];
+    if (!bloc) return [];
+    const liste = bloc.parentElement;
+    return [...liste.querySelectorAll("div > div > span:last-child")]
+      .map(s => (s.textContent || "").trim()).filter(Boolean);
+  });
+  console.log("réponses du mode démo :", reponses.length, reponses.slice(0, 3).join(" · ") + "…");
+  // Les cases vides portent le « + ». On les prend une par une : chaque réponse
+  // trouvée en retire une de la liste, donc on relit à chaque tour.
+  for (const nom of reponses) {
+    const vides = page.locator("div").filter({ hasText: /^\+$/ });
+    if (await vides.count() === 0) break;
+    await vides.first().click({ force:true }).catch(() => {});
+    await page.waitForTimeout(700);
+    // Le champ de la modale porte son invite : on le cible par le placeholder
+    // plutôt que par sa position, et on FRAPPE les touches — un `fill` direct ne
+    // déclenche pas l'autocomplétion, qui écoute la saisie.
+    const champ = page.locator("input[placeholder*='lettres'], input[placeholder*='letters']").first();
+    if (!(await champ.count())) break;
+    await champ.click({ force:true }).catch(() => {});
+    await champ.pressSequentially(nom, { delay: 25 });
+    await page.waitForTimeout(1000);
+    // La suggestion se touche : on prend le premier bouton qui porte le nom.
+    const sugg = page.getByRole("button", { name:new RegExp(nom.split(" ").pop(), "i") }).first();
+    if (await sugg.count()) { await sugg.click({ force:true }).catch(() => {}); }
+    await page.waitForTimeout(400);
+    const valider = page.getByRole("button", { name:/^VALIDER$/i }).first();
+    if (await valider.count()) { await valider.click({ force:true }).catch(() => {}); }
+    await page.waitForTimeout(1200);
+  }
+  // La grille terminée ouvre son écran de fin, qui recouvre le plateau. On garde
+  // les deux : `grille-fin` photographie la modale, `grille-remplie` la referme
+  // sur les neuf cases trouvées avec « REVOIR MA GRILLE ».
+  if (ecran !== "grille-fin") {
+    const revoir = page.getByRole("button", { name:/revoir ma grille/i }).first();
+    if (await revoir.count()) { await revoir.click({ force:true }).catch(() => {}); }
+  }
   await page.waitForTimeout(1600);
 }
 
