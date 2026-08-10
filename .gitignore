@@ -45,3 +45,6 @@ scripts/social/sortie/
 
 # captures de scripts/apercu.mjs
 apercu-*.png
+
+# rendus de scripts/tiktok.mjs (vidéos, régénérables)
+tiktok/
