@@ -14091,7 +14091,12 @@ export default function LePont() {
                     </>
                   ) : (
                     <>
-                      <div onClick={ggTitleTap} style={{...posterText(30,G.white),userSelect:"none",WebkitUserSelect:"none",WebkitTouchCallout:"none",cursor:"pointer"}}>GOAT <span style={{color:G.projecteur}}>GRID</span></div>
+                      {/* À L'ENCRE. « GOAT » était en blanc (1,7 sur l'or) et « GRID » en
+                          projecteur, c'est-à-dire la teinte EXACTE du fond : le second mot
+                          était donc invisible et le premier à peine lisible. Le contraste
+                          de l'encre est de 11,5. Le mot mis en avant se distingue par la
+                          pelouse, seul aplat coloré qui tienne dans un mot cerclé d'encre. */}
+                      <div onClick={ggTitleTap} style={{...posterText(30,G.encre),userSelect:"none",WebkitUserSelect:"none",WebkitTouchCallout:"none",cursor:"pointer"}}>GOAT <span style={{color:G.pelouse}}>GRID</span></div>
                       {ggOverrideSeed > 0 && (
                         <div style={{fontSize:9,color:ggDemo?G.pelouseClaire:G.projecteur,marginTop:2,letterSpacing:1.5,fontWeight:800}}>{ggDemo?"🎬 MODE DÉMO":"🔄 GRILLE TEST"}</div>
                       )}
@@ -14164,16 +14169,26 @@ export default function LePont() {
                     </div>
                   </div>
 
-                  {/* Mini explainer scoring (masqué en mode battle pour gagner de la place) */}
+                  {/* Mini explainer scoring (masqué en mode battle pour gagner de la place).
+                      Panneau OPAQUE : le voile d'encre à 45 % laissait passer l'or et
+                      tournait au khaki, avec un texte blanc à 70 % par-dessus. */}
                   {ggBattleScreen !== "playing" && (
-                    <div style={{background:"rgba(8,17,9,.45)",border:G.traitFin,borderRadius:20,padding:"5px 12px",marginBottom:8,fontSize:9.5,color:"rgba(255,255,255,.7)",textAlign:"center",lineHeight:1.3,flexShrink:0}}>
+                    <div style={{background:G.nuit,border:G.traitFin,boxShadow:"2px 2px 0 "+G.encre,borderRadius:20,padding:"5px 12px",marginBottom:8,fontSize:9.5,color:G.creme,textAlign:"center",lineHeight:1.3,flexShrink:0}}>
                       <span style={{color:G.projecteur,fontWeight:800}}>💡 {tr("⭐ 15 · ⭐⭐ / ⭐⭐⭐ 50 pts · 🐐 Sans-faute = +100","⭐ 15 · ⭐⭐ / ⭐⭐⭐ 50 pts · 🐐 No-mistake = +100","⭐ 15 · ⭐⭐ / ⭐⭐⭐ 50 Pkt · 🐐 Fehlerfrei = +100","⭐ 15 · ⭐⭐ / ⭐⭐⭐ 50 pt · 🐐 Senza errori = +100","⭐ 15 · ⭐⭐ / ⭐⭐⭐ 50 pts · 🐐 Sem erros = +100","⭐ 15 · ⭐⭐ / ⭐⭐⭐ 50 pts · 🐐 Sin fallos = +100")}</span>
                     </div>
                   )}
 
                   {/* Grille 3x3 */}
-                  <div style={{background:G.nuit,borderRadius:G.rayon,padding:6,border:G.trait,boxShadow:G.ombre,marginBottom:(ggRevealMode||ggReviewMode)?130:8,display:"flex",flex:1,minHeight:0}}>
-                    <div style={{display:"grid",gridTemplateColumns:"90px minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)",gridTemplateRows:"68px minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)",gap:4,flex:1,width:"100%"}}>
+                  {/* PLUS DE DALLE SOMBRE derrière le plateau. Une seule grande carte
+                      de nuit contenant des cases sombres, c'était l'interface d'avant la
+                      charte : les traits d'encre des cases se perdaient dans le noir de la
+                      dalle, d'où l'impression de tuiles plates. Les cases sont maintenant
+                      posées DIRECTEMENT sur l'or, chacune son propre écusson cerclé
+                      d'encre — le motif de la charte partout ailleurs dans l'app.
+                      Le `gap` passe de 4 à 7 : sans dalle, c'est l'or qui fait la
+                      séparation, et il lui faut de quoi se voir entre deux ombres dures. */}
+                  <div style={{marginBottom:(ggRevealMode||ggReviewMode)?130:8,display:"flex",flex:1,minHeight:0}}>
+                    <div style={{display:"grid",gridTemplateColumns:"90px minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)",gridTemplateRows:"68px minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)",gap:7,flex:1,width:"100%"}}>
                       
                       {/* Coin haut-gauche vide */}
                       <div/>
@@ -14183,13 +14198,13 @@ export default function LePont() {
                         const [cMain] = ggGetCriterionColors(crit);
                         const emoji = ggGetCriterionEmoji(crit);
                         return(
-                          <div key={"col-"+j} onClick={function(){setGgShowTooltip({title: ggGetCriterionDisplayLabel(crit, lang), text: ggGetCriterionTooltip(crit, lang)});}} style={{position:"relative",overflow:"hidden",borderRadius:G.rayonS,border:G.traitFin,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:"4px",boxShadow:"2px 2px 0 "+G.encre}}>
+                          <div key={"col-"+j} onClick={function(){setGgShowTooltip({title: ggGetCriterionDisplayLabel(crit, lang), text: ggGetCriterionTooltip(crit, lang)});}} style={{position:"relative",overflow:"hidden",borderRadius:G.rayonS,border:G.trait,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:"4px",boxShadow:G.ombre}}>
                             <div style={{position:"absolute",inset:0,background:cMain}}/>
-                                                        <div style={{position:"relative",zIndex:1,color:"#fff",textShadow:"0 1px 4px rgba(0,0,0,.6)",fontWeight:900,fontSize:11.5,letterSpacing:0.2,lineHeight:1.1,textAlign:"center",overflowWrap:"break-word",hyphens:"auto"}}>
+                                                        <div style={{position:"relative",zIndex:1,...posterText(15,G.white,1.2),fontSize:11.5,letterSpacing:0.2,lineHeight:1.15,textAlign:"center",overflowWrap:"break-word",hyphens:"auto"}}>
                               {emoji && <div style={{fontSize:17,marginBottom:1}}>{emoji}</div>}
                               <div>{ggGetCriterionDisplayLabel(crit, lang).toUpperCase()}</div>
                             </div>
-                            <div style={{position:"absolute",top:4,right:4,width:15,height:15,borderRadius:"50%",background:"rgba(0,0,0,.3)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,color:"rgba(255,255,255,.85)",zIndex:2}}>ⓘ</div>
+                            <div style={{position:"absolute",top:4,right:4,width:16,height:16,borderRadius:"50%",background:G.nuit,border:"1.5px solid "+G.encre,display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,color:G.creme,zIndex:2}}>ⓘ</div>
                           </div>
                         );
                       })}
@@ -14201,13 +14216,13 @@ export default function LePont() {
                         return(
                           <React.Fragment key={"row-"+i}>
                             {/* Critère ligne */}
-                            <div onClick={function(){setGgShowTooltip({title: ggGetCriterionDisplayLabel(rowCrit, lang), text: ggGetCriterionTooltip(rowCrit, lang)});}} style={{position:"relative",overflow:"hidden",borderRadius:G.rayonS,border:G.traitFin,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:"4px",boxShadow:"2px 2px 0 "+G.encre}}>
+                            <div onClick={function(){setGgShowTooltip({title: ggGetCriterionDisplayLabel(rowCrit, lang), text: ggGetCriterionTooltip(rowCrit, lang)});}} style={{position:"relative",overflow:"hidden",borderRadius:G.rayonS,border:G.trait,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:"4px",boxShadow:G.ombre}}>
                               <div style={{position:"absolute",inset:0,background:rcMain}}/>
-                                                            <div style={{position:"relative",zIndex:1,color:"#fff",textShadow:"0 1px 4px rgba(0,0,0,.6)",fontWeight:900,fontSize:11.5,letterSpacing:0.2,lineHeight:1.1,textAlign:"center",overflowWrap:"break-word",hyphens:"auto"}}>
+                                                            <div style={{position:"relative",zIndex:1,...posterText(15,G.white,1.2),fontSize:11.5,letterSpacing:0.2,lineHeight:1.15,textAlign:"center",overflowWrap:"break-word",hyphens:"auto"}}>
                                 {emoji && <div style={{fontSize:17,marginBottom:1}}>{emoji}</div>}
                                 <div>{ggGetCriterionDisplayLabel(rowCrit, lang).toUpperCase()}</div>
                               </div>
-                              <div style={{position:"absolute",top:4,right:4,width:15,height:15,borderRadius:"50%",background:"rgba(0,0,0,.3)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,color:"rgba(255,255,255,.85)",zIndex:2}}>ⓘ</div>
+                              <div style={{position:"absolute",top:4,right:4,width:16,height:16,borderRadius:"50%",background:G.nuit,border:"1.5px solid "+G.encre,display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,color:G.creme,zIndex:2}}>ⓘ</div>
                             </div>
                             
                             {/* 3 cases de la ligne */}
@@ -14225,11 +14240,14 @@ export default function LePont() {
                                   // de tonte du terrain remontaient à travers la
                                   // case et la teinte de rareté variait d'une
                                   // colonne à l'autre.
-                                  legendary: { bg: "#B08415", border: G.traitFin, glow: "2px 2px 0 " + G.encre },
-                                  epic:      { bg: "#7A2CA6", border: G.traitFin, glow: "2px 2px 0 " + G.encre },
-                                  rare:      { bg: "#1E4F87", border: G.traitFin, glow: "2px 2px 0 " + G.encre },
-                                  common:    { bg: "#1E6E38", border: G.traitFin, glow: "2px 2px 0 " + G.encre },
-                                  trivial:   { bg: "#5A5F5C", border: G.traitFin, glow: "2px 2px 0 " + G.encre },
+                                  // Trait et ombre de CARTE (3 px / 4 px) et non de
+                                  // pastille : sans la dalle sombre derrière, c'est le
+                                  // cerne d'encre qui détache la case de l'or.
+                                  legendary: { bg: "#B08415", border: G.trait, glow: G.ombre },
+                                  epic:      { bg: "#7A2CA6", border: G.trait, glow: G.ombre },
+                                  rare:      { bg: "#1E4F87", border: G.trait, glow: G.ombre },
+                                  common:    { bg: "#1E6E38", border: G.trait, glow: G.ombre },
+                                  trivial:   { bg: "#5A5F5C", border: G.trait, glow: G.ombre },
                                 };
                                 const s = rarityStyles[filled.rarity] || rarityStyles.trivial;
                                 return(
@@ -14239,7 +14257,13 @@ export default function LePont() {
                                       if(c) setGgRevealCell(c);
                                     }
                                   }} style={{borderRadius:G.rayonS,padding:4,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:3,background:s.bg,border:s.border,boxShadow:s.glow,animation:"slideUp .4s ease",cursor:ggRevealMode?"pointer":"default"}}>
-                                    <div style={{fontSize:12,fontWeight:900,color:"#fff",textShadow:"0 1px 3px rgba(0,0,0,.5)",lineHeight:1.1,textAlign:"center"}}>
+                                    {/* Lettrage d'affiche cerclé d'encre, et non un gras
+                                        système à ombre floue : l'ombre douce est de
+                                        l'interface d'avant, la charte ne connaît que le
+                                        trait et l'ombre DURE. Contour explicite parce que
+                                        la teinte de rareté sous le nom va du doré clair au
+                                        gris. */}
+                                    <div style={{...posterText(14,G.white,1.4),fontSize:12.5,lineHeight:1.15,textAlign:"center"}}>
                                       {filled.name.toUpperCase().split(" ").map(function(w,wi){return<div key={wi}>{w}</div>;})}
                                     </div>
                                     <div style={{...posterText(13),fontWeight:900,letterSpacing:.5,color:"#fff"}}>+{filled.pts} pts</div>
@@ -14259,7 +14283,7 @@ export default function LePont() {
                                   } else if(!ggGameOver){
                                     setGgSelectedCell({row:i,col:j});
                                   }
-                                }} style={{position:"relative",overflow:"hidden",background:isFlashing&&ggFlash==="ko"?G.maillot:ggRevealMode?"#1E4F87":G.nuit,border:G.traitFin,cursor:(ggRevealMode||!ggGameOver)?"pointer":"default",transition:"all .15s",padding:4,display:"flex",alignItems:"center",justifyContent:"center",borderRadius:12,animation:isFlashing&&ggFlash==="ko"?"answerKo .4s ease":"none"}}>
+                                }} style={{position:"relative",overflow:"hidden",background:isFlashing&&ggFlash==="ko"?G.maillot:ggRevealMode?"#1E4F87":G.nuit,border:G.trait,boxShadow:G.ombre,cursor:(ggRevealMode||!ggGameOver)?"pointer":"default",transition:"all .15s",padding:4,display:"flex",alignItems:"center",justifyContent:"center",borderRadius:G.rayonS,animation:isFlashing&&ggFlash==="ko"?"answerKo .4s ease":"none"}}>
                                   {/* Teinte du club de la ligne, posée sur l'aplat
                                       de nuit : c'est ce voile-là qui dit à quelle
                                       ligne appartient la case. Il était auparavant
@@ -14268,7 +14292,11 @@ export default function LePont() {
                                   {!ggRevealMode && !(isFlashing&&ggFlash==="ko") && (
                                     <div style={{position:"absolute",inset:0,background:rowMain,opacity:.18}}/>
                                   )}
-                                  <div style={{position:"relative",zIndex:1,width:34,height:34,borderRadius:G.rayonS,display:"flex",alignItems:"center",justifyContent:"center",background:G.nuit,border:G.traitFin,fontSize:ggRevealMode?15:22,color:ggRevealMode?G.ciel:"rgba(255,255,255,.8)",fontWeight:800}}>{ggRevealMode?"?":"+"}</div>
+                                  {/* Pastille d'appel : elle était en nuit SUR une case de nuit, donc
+                                      un rond qu'on ne voyait qu'à son filet. En or — la
+                                      couleur de l'action dans la charte, 11,0 sur un
+                                      panneau — la case dit enfin qu'elle se remplit. */}
+                                  <div style={{position:"relative",zIndex:1,width:34,height:34,borderRadius:G.rayonS,display:"flex",alignItems:"center",justifyContent:"center",background:ggRevealMode?G.nuit:G.projecteur,border:G.traitFin,boxShadow:"2px 2px 0 "+G.encre,...posterText(22,ggRevealMode?G.ciel:G.encre,0),fontSize:ggRevealMode?15:22}}>{ggRevealMode?"?":"+"}</div>
                                 </div>
                               );
                             })}
@@ -14279,8 +14307,10 @@ export default function LePont() {
                   </div>
 
                   {/* 🎬 MODE DÉMO : feuille de réponses (grille fixe) — pour enregistrer une vidéo */}
+                  {/* Panneau OPAQUE : un voile d'or à 28 % posé sur l'or, c'était du jaune
+                      sur du jaune, et le relevé des réponses devenait illisible. */}
                   {ggDemo && ggGrid && (
-                    <div style={{margin:"14px 16px",background:"rgba(245,194,43,.28)",border:"1px dashed rgba(255,214,0,.4)",borderRadius:14,padding:"12px 14px"}}>
+                    <div style={{margin:"14px 16px",background:G.nuit,border:"2px dashed "+G.orSombre,borderRadius:14,padding:"12px 14px"}}>
                       <div style={{fontSize:11,fontWeight:900,letterSpacing:1,color:G.projecteur,marginBottom:8}}>🎬 MODE DÉMO — réponses (une par case)</div>
                       <div style={{display:"flex",flexDirection:"column",gap:5}}>
                         {ggDemoAnswers(ggGrid.cells).map(function(entry,idx){
@@ -14427,33 +14457,47 @@ export default function LePont() {
                 
                 return (
                   <div style={{position:"fixed",inset:0,zIndex:500,background:"rgba(8,17,9,.86)",display:"flex",alignItems:"flex-start",justifyContent:"center",padding:"80px 20px 40px",overflowY:"auto"}}>
-                    <div style={{background:G.nuit,border:"1px solid "+(isVictory?"rgba(0,230,118,.5)":"rgba(255,107,53,.5)"),borderRadius:24,padding:24,maxWidth:380,width:"100%",textAlign:"center"}}>
+                    {/* Trait et ombre DURE de la charte. Le filet d'avant était un
+                          rgba(0,230,118,.5), c'est-à-dire l'ancien `accent` vert LED que
+                          la charte remplace — le palette le dit explicitement. */}
+                    <div style={{background:G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:24,padding:24,maxWidth:380,width:"100%",textAlign:"center"}}>
                       
                       {/* Titre selon résultat */}
                       <div style={{fontSize:60,marginBottom:8}}>
                         {isPerfect ? "🐐" : isVictory ? "🎉" : "😔"}
                       </div>
-                      <div style={{...posterText(30),color:isVictory?G.pelouseClaire:"#FF6B35",letterSpacing:1,marginBottom:4}}>
+                      <div style={{...posterText(30),color:isVictory?G.pelouseClaire:G.maillot,letterSpacing:1,marginBottom:4}}>
                         {isPerfect ? (tr("PARFAIT !","PERFECT!","PERFEKT!","PERFETTO!","PERFEITO!","¡PERFECTO!")) : isVictory ? (tr("VICTOIRE !","VICTORY!","SIEG!","VITTORIA!","VITÓRIA!","¡VICTORIA!")) : (tr("PARTIE TERMINÉE","GAME OVER","GAME OVER","GAME OVER","FIM DE JOGO","PARTIDA TERMINADA"))}
                       </div>
-                      <div style={{fontSize:13,color:"rgba(255,255,255,.6)",marginBottom:18}}>
+                      <div style={{fontSize:13,color:G.creme,opacity:.75,marginBottom:18}}>
                         {isPerfect ? (tr("Grille parfaite, aucune erreur !","Grid filled without mistakes!","Raster fehlerfrei gefüllt!","Griglia completata senza errori!","Grade preenchida sem erros!","¡Cuadrícula perfecta, sin ningún fallo!")) : isVictory ? (tr("Tu as rempli toute la grille","You filled the whole grid","Du hast das ganze Raster gefüllt","Hai riempito tutta la griglia","Você preencheu toda a grade","Has completado toda la cuadrícula")) : (tr("Tu as utilisé toutes tes vies","You used all your lives","Du hast alle Leben verbraucht","Hai usato tutte le vite","Você usou todas as vidas","Has gastado todas tus vidas"))}
                       </div>
                       
                       {/* Score final (consolidé : score + remplissage + vies) */}
-                      <div style={{background:"rgba(245,194,43,.28)",border:G.traitFin,borderRadius:16,padding:"16px 20px",marginBottom:16}}>
-                        <div style={{fontSize:11,color:"rgba(255,214,0,.7)",fontWeight:700,letterSpacing:2,marginBottom:2}}>SCORE</div>
-                        <div style={{...posterText(44),color:G.projecteur,lineHeight:1}}>{ggScore} <span style={{fontSize:18,opacity:.7}}>pts</span></div>
-                        <div style={{fontSize:12,color:"rgba(255,255,255,.6)",marginTop:6,fontWeight:700}}>
+                      {/* Aplat d'OR et lettrage d'ENCRE. Le voile d'or à 28 % sur le noir
+                          donnait un khaki — exactement la teinte que la charte évite — avec
+                          un chiffre or par-dessus. En aplat franc, l'encre y donne 11,5 et
+                          le score devient le point le plus fort de l'écran, ce qu'il est. */}
+                      <div style={{background:G.projecteur,border:G.trait,boxShadow:G.ombre,borderRadius:16,padding:"16px 20px",marginBottom:16}}>
+                        <div style={{fontSize:11,color:"rgba(8,17,9,.75)",fontWeight:800,letterSpacing:2,marginBottom:2}}>SCORE</div>
+                        {/* Contour EXPLICITE, obligatoire sur un aplat CLAIR. Au-delà de 32 px,
+                            posterText ajoute d'office une ombre dure d'encre décalée de
+                            ~5,4 px. Sur un panneau sombre elle est invisible (encre sur
+                            noir) ; sur cet aplat d'or elle se voit et double le nombre —
+                            « 235 » sortait avec un second 235 en travers. Passer un contour
+                            prend l'autre branche de la recette : contour, pas d'ombre.
+                            Même correction que le titre de l'écran de résultat de duel. */}
+                        <div style={{...posterText(44,G.encre,2.8),lineHeight:1}}>{ggScore} <span style={{fontSize:18,opacity:.7}}>pts</span></div>
+                        <div style={{fontSize:12,color:"rgba(8,17,9,.75)",marginTop:6,fontWeight:800}}>
                           {filledCount}/9 {tr("rempli","filled","gefüllt","riempito","preenchido","relleno")} · {[0,1,2].map(function(i){return(<span key={i}>{i<ggLives?"❤️":"💔"}</span>);})}
                         </div>
                         {isPerfect && (
-                          <div style={{fontSize:11,color:G.pelouseClaire,fontWeight:800,marginTop:6}}>+100 {tr("BONUS SANS-FAUTE","NO-MISTAKE BONUS","FEHLERFREI-BONUS","BONUS SENZA ERRORI","BÔNUS SEM ERROS","BONUS SIN FALLOS")}</div>
+                          <div style={{fontSize:11,color:G.encre,fontWeight:900,marginTop:6}}>+100 {tr("BONUS SANS-FAUTE","NO-MISTAKE BONUS","FEHLERFREI-BONUS","BONUS SENZA ERRORI","BÔNUS SEM ERROS","BONUS SIN FALLOS")}</div>
                         )}
                       </div>
 
                       {/* Mini aperçu Wordle-style */}
-                      <div style={{background:"rgba(0,0,0,.3)",borderRadius:14,padding:14,marginBottom:14,fontFamily:"monospace",fontSize:24,letterSpacing:6,lineHeight:1.3}}>
+                      <div style={{background:G.encre,border:G.traitFin,borderRadius:14,padding:14,marginBottom:14,fontFamily:"monospace",fontSize:24,letterSpacing:6,lineHeight:1.3}}>
                         {gridEmojis.map(function(row,i){return(<div key={i}>{row}</div>);})}
                       </div>
                       
@@ -14469,17 +14513,17 @@ export default function LePont() {
                               setTimeout(function(){setGgShareCopied(false);}, 2000);
                             }
                           } catch(e) {}
-                        }} style={{padding:14,borderRadius:G.rayon,border:G.trait,background:G.pelouse,color:"#000",fontWeight:900,fontSize:14,letterSpacing:1.5,cursor:"pointer"}}>
+                        }} style={{...btn(G.pelouse,G.white,15),width:"100%",padding:14,letterSpacing:1.5}}>
                           {ggShareCopied ? "✅ " + tr("COPIÉ !","COPIED!","KOPIERT!","COPIATO!","COPIADO!","¡COPIADO!") : "📤 " + tr("PARTAGER MON RÉSULTAT","SHARE MY RESULT","MEIN ERGEBNIS TEILEN","CONDIVIDI IL RISULTATO","COMPARTILHAR RESULTADO","COMPARTIR MI RESULTADO")}
                         </button>
-                        <button onClick={function(){setGgRevealMode(true);setGgReviewMode(false);}} style={{padding:12,borderRadius:G.rayon,border:"1px solid rgba(74,158,255,.4)",background:"rgba(74,158,255,.15)",color:"#7AB8FF",fontWeight:800,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
+                        <button onClick={function(){setGgRevealMode(true);setGgReviewMode(false);}} style={{...btn(G.ciel,G.white,14),width:"100%",padding:12,letterSpacing:1}}>
                           💡 {tr("VOIR LES RÉPONSES POSSIBLES","SEE POSSIBLE ANSWERS","MÖGLICHE ANTWORTEN ANSEHEN","VEDI LE RISPOSTE POSSIBILI","VER RESPOSTAS POSSÍVEIS","VER LAS RESPUESTAS POSIBLES")}
                         </button>
-                        <button onClick={function(){setGgReviewMode(true);setGgRevealMode(false);setGgRevealCell(null);}} style={{padding:12,borderRadius:G.rayon,border:G.traitFin,background:"rgba(42,155,78,.35)",color:G.pelouseClaire,fontWeight:800,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
+                        <button onClick={function(){setGgReviewMode(true);setGgRevealMode(false);setGgRevealCell(null);}} style={{...btn(G.pelouse,G.white,14),width:"100%",padding:12,letterSpacing:1}}>
                           📋 {tr("REVOIR MA GRILLE","REVIEW MY GRID","MEIN RASTER ANSEHEN","RIVEDI LA GRIGLIA","REVER MINHA GRADE","VER MI CUADRÍCULA")}
                         </button>
                         {ggOverrideSeed === 0 && (
-                          <button onClick={function(){ggLoadLeaderboard();setGgLeaderboardTab("global");}} style={{padding:12,borderRadius:G.rayon,border:G.traitFin,background:"rgba(245,194,43,.28)",color:G.projecteur,fontWeight:800,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
+                          <button onClick={function(){ggLoadLeaderboard();setGgLeaderboardTab("global");}} style={{...btn(G.projecteur,G.encre,14),width:"100%",padding:12,letterSpacing:1}}>
                             🏆 {tr("CLASSEMENT","LEADERBOARD","RANGLISTE","CLASSIFICA","CLASSIFICAÇÃO","CLASIFICACIÓN")}
                           </button>
                         )}
@@ -14501,15 +14545,15 @@ export default function LePont() {
                           const newGrid = ggGenerateGrid(newSeed);
                           if (newGrid) { setGgGrid(newGrid); setGgError(false); }
                           else setGgError(true);
-                        }} style={{padding:12,borderRadius:G.rayon,border:G.traitFin,background:"rgba(245,194,43,.28)",color:G.projecteur,fontWeight:800,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
+                        }} style={{...btn(G.projecteur,G.encre,14),width:"100%",padding:12,letterSpacing:1}}>
                           🔄 {tr("NOUVELLE GRILLE","NEW GRID","NEUES RASTER","NUOVA GRIGLIA","NOVA GRADE","NUEVA CUADRÍCULA")}
                         </button>
-                        <button onClick={function(){setShowGoatGrid(false);}} style={{padding:12,borderRadius:G.rayon,border:G.trait,background:"rgba(8,17,9,.45)",color:"rgba(255,255,255,.7)",fontWeight:700,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
+                        <button onClick={function(){setShowGoatGrid(false);}} style={{...btn(G.encre,G.creme,14),width:"100%",padding:12,letterSpacing:1}}>
                           {tr("Fermer","Close","Schließen","Chiudi","Fechar","Cerrar")}
                         </button>
                       </div>
 
-                      <div style={{marginTop:14,fontSize:11,color:"rgba(255,255,255,.4)",fontStyle:"italic"}}>
+                      <div style={{marginTop:14,fontSize:11,color:G.creme,opacity:.6,fontStyle:"italic"}}>
                         {tr("Nouvelle grille demain à minuit 🐐","New grid tomorrow at midnight 🐐","Neues Raster morgen um Mitternacht 🐐","Nuova griglia domani a mezzanotte 🐐","Nova grade amanhã à meia-noite 🐐","Nueva cuadrícula mañana a medianoche 🐐")}
                       </div>
                     </div>
@@ -14520,7 +14564,7 @@ export default function LePont() {
               {/* 🔍 Mode REVEAL : indicateur en haut + bouton retour */}
               {ggRevealMode && !ggRevealCell && (
                 <div style={{position:"fixed",bottom:20,left:20,right:20,zIndex:450,display:"flex",flexDirection:"column",gap:8}}>
-                  <div style={{background:"rgba(74,158,255,.15)",border:"1px solid rgba(74,158,255,.4)",borderRadius:14,padding:"10px 14px",color:"#7AB8FF",fontSize:13,fontWeight:700,textAlign:"center"}}>
+                  <div style={{background:G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:14,padding:"10px 14px",color:G.ciel,fontSize:13,fontWeight:800,textAlign:"center"}}>
                     💡 {tr("Clique sur n'importe quelle case pour voir les réponses","Click any cell to see possible answers","Klicke auf eine Zelle, um mögliche Antworten zu sehen","Clicca su una casella per vedere le risposte","Clique em qualquer célula para ver as respostas","Toca cualquier casilla para ver las respuestas")}
                   </div>
                   <button onClick={function(){setGgRevealMode(false);}} style={{padding:12,borderRadius:G.rayon,border:G.trait,background:G.projecteur,color:"#000",fontWeight:900,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
@@ -14532,7 +14576,7 @@ export default function LePont() {
               {/* 📋 Mode REVIEW : bouton retour en bas */}
               {ggReviewMode && (
                 <div style={{position:"fixed",bottom:20,left:20,right:20,zIndex:450,display:"flex",flexDirection:"column",gap:8}}>
-                  <div style={{background:"rgba(42,155,78,.35)",border:G.traitFin,borderRadius:14,padding:"10px 14px",color:G.pelouseClaire,fontSize:13,fontWeight:700,textAlign:"center"}}>
+                  <div style={{background:G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:14,padding:"10px 14px",color:G.pelouseClaire,fontSize:13,fontWeight:800,textAlign:"center"}}>
                     📋 {tr("Revue de ta grille remplie","Review your filled grid","Sieh dir dein gefülltes Raster an","Rivedi la tua griglia completata","Reveja sua grade preenchida","Repaso de tu cuadrícula completada")}
                   </div>
                   <button onClick={function(){setGgReviewMode(false);}} style={{padding:12,borderRadius:G.rayon,border:G.trait,background:G.projecteur,color:"#000",fontWeight:900,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
