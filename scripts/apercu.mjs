@@ -294,6 +294,9 @@ CHEMINS["battle-manches"] = [];
 // `duel-fin` photographie l'écran de résultat d'un défi (VICTOIRE / ÉGALITÉ /
 // DÉFAITE, les deux scores côte à côte). À lancer avec DEFI=1.
 CHEMINS["duel-fin"] = [];
+// `battle-clavier` rejoue le défaut du clavier : l'overlay doit continuer à
+// couvrir l'écran même quand la zone jouable se recale sur la fenêtre visible.
+CHEMINS["battle-clavier"] = [];
 if (!(ecran in CHEMINS)) {
   console.error("écran inconnu :", ecran, "— connus :", Object.keys(CHEMINS).join(", "));
   process.exit(1);
@@ -441,6 +444,60 @@ if (ecran === "profil") {
   // bouton, donc getByRole ne la voit pas.
   await page.locator("img[src*='/cards/']").first().click();
   await page.waitForTimeout(1600);
+}
+
+if (ecran === "battle-clavier") {
+  // Reproduit le défaut signalé : GOAT Battle lancé, clavier « ouvert », et
+  // l'accueil qui réapparaissait sous l'overlay. On ne peut pas ouvrir un vrai
+  // clavier logiciel dans un navigateur de test, donc on force la condition que
+  // l'app observe — un écart de plus de 120 px entre window.innerHeight et
+  // visualViewport.height, ET un champ de saisie focalisé.
+  const pastilles = page.locator("div[style*='border-radius: 5px'][style*='cursor: pointer']");
+  if (await pastilles.count() > 0) { await pastilles.nth(0).click(); await page.waitForTimeout(900); }
+  const carte = await page.locator("img[src*='-card']").first().boundingBox();
+  if (!carte) { console.error("carte du carrousel introuvable"); process.exit(1); }
+  await page.mouse.click(carte.x + carte.width / 2, carte.y + carte.height / 2);
+  await page.waitForTimeout(2000);
+  await page.getByRole("button", { name:/jouer solo/i }).first().click();
+  await page.waitForTimeout(2200);
+  await page.evaluate(() => {
+    // innerHeight gonflé + visualViewport rétréci = ce que voit l'app quand le
+    // clavier occupe le bas de l'écran.
+    Object.defineProperty(window, "innerHeight", { value: 932, configurable: true });
+    const vv = window.visualViewport;
+    Object.defineProperty(vv, "height", { value: 420, configurable: true });
+    Object.defineProperty(vv, "offsetTop", { value: 0, configurable: true });
+    const champ = document.querySelector("input");
+    if (champ) champ.focus();
+    vv.dispatchEvent(new Event("resize"));
+  });
+  await page.waitForTimeout(1200);
+  // Y a-t-il du contenu de l'ACCUEIL réellement ATTEIGNABLE à l'écran ? La
+  // question n'est pas « existe-t-il dans le DOM » — l'accueil reste monté sous
+  // l'overlay, c'est normal — mais « est-il le dessus au point où il s'affiche ».
+  // On le demande donc à elementFromPoint, qui répond exactement ça.
+  const fuite = await page.evaluate(() => {
+    const cibles = [...document.querySelectorAll("button")].filter(e =>
+      /Défis ouverts|Classement|Rejoindre/i.test(e.textContent || ""));
+    const dehors = [];
+    for (const e of cibles) {
+      const r = e.getBoundingClientRect();
+      if (r.width < 10 || r.height < 10) continue;
+      const x = Math.round(r.left + r.width / 2);
+      const y = Math.round(r.top + r.height / 2);
+      if (y < 0 || y > window.innerHeight - 1) continue;   // hors écran : pas une fuite
+      const dessus = document.elementFromPoint(x, y);
+      // Fuite si l'élément d'accueil EST le dessus (ou contient ce qui l'est) :
+      // rien de l'overlay ne s'interpose alors entre lui et le doigt.
+      if (dessus && (dessus === e || e.contains(dessus))) {
+        dehors.push((e.textContent || "").trim().slice(0, 40));
+      }
+    }
+    return dehors;
+  });
+  console.log(fuite.length === 0
+    ? "✅ aucun élément de l'accueil visible sous l'overlay"
+    : "⚠️  éléments d'accueil dans la zone visible : " + JSON.stringify(fuite));
 }
 
 if (ecran === "duel-fin") {

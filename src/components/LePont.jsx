@@ -3661,14 +3661,30 @@ export default function LePont() {
     const vv = window.visualViewport;
     if (!vv) return;
     const onR = function(){
-      const open = (window.innerHeight - vv.height) > 120;
+      // Le seul écart de hauteur ne suffit PAS à conclure au clavier. Sur iOS,
+      // `window.innerHeight` est la fenêtre la plus grande (barres rétractées)
+      // alors que `visualViewport.height` est celle du moment : les barres de
+      // Safari à elles seules creusent souvent plus de 120 px, et l'app croyait
+      // le clavier ouvert en permanence. On exige donc qu'un CHAMP DE SAISIE ait
+      // le focus — sans champ actif, aucun clavier logiciel n'est affiché.
+      const actif = document.activeElement;
+      const saisie = !!actif && (actif.tagName === "INPUT" || actif.tagName === "TEXTAREA");
+      const open = saisie && (window.innerHeight - vv.height) > 120;
       setDuelKbOpen(open);
       setDuelVV(open ? { height: Math.round(vv.height), top: Math.round(vv.offsetTop || 0) } : null);
     };
     vv.addEventListener("resize", onR);
     vv.addEventListener("scroll", onR);
+    // focusin/focusout en plus des événements de fenêtre : maintenant que la
+    // décision dépend du focus, elle doit être recalculée quand le focus bouge.
+    // Le seul `resize` suffisait tant que la hauteur décidait de tout.
+    window.addEventListener("focusin", onR);
+    window.addEventListener("focusout", onR);
     onR();
-    return function(){ vv.removeEventListener("resize", onR); vv.removeEventListener("scroll", onR); };
+    return function(){
+      vv.removeEventListener("resize", onR); vv.removeEventListener("scroll", onR);
+      window.removeEventListener("focusin", onR); window.removeEventListener("focusout", onR);
+    };
   }, [duelScreen]);
   // Partage / copie du code de salon (Web Share si dispo, sinon presse-papiers)
   function duelShareCode(code){
@@ -10321,11 +10337,24 @@ export default function LePont() {
     // clavier) → plus rien à faire défiler, les 2 clubs restent visibles.
     const kbFit = duelKbOpen && duelScreen==="playing" && duelVV;
     const overlayStyle = { ...shell2, overflowY: duelScreen==="menu"?"auto":(kbFit?"hidden":"visible") };
-    if (kbFit) { overlayStyle.top = duelVV.top; overlayStyle.height = duelVV.height; overlayStyle.bottom = "auto"; }
-    return (<div key="duel-overlay" style={overlayStyle}>
-      {areneCharte}
+    // L'OVERLAY garde inset:0 en toutes circonstances. Il portait avant
+    // `top`/`height` recalés sur la fenêtre visible quand le clavier s'ouvrait —
+    // et il cessait alors de couvrir l'écran : l'ACCUEIL réapparaissait sous lui.
+    // Le défaut a échappé longtemps parce que le décor (areneCharte) est en
+    // `position:fixed` et couvre, lui, tout l'écran : la zone découverte gardait
+    // donc l'or et les lignes de vitesse, et l'accueil s'y devinait seulement en
+    // filigrane derrière la trame. Ce qu'on recale, c'est la zone JOUABLE.
+    const zoneVisible = kbFit ? { position:"absolute", top:duelVV.top, left:0, right:0,
+      height:duelVV.height, display:"flex", flexDirection:"column", overflow:"hidden" } : null;
+    // Hors clavier, on ne pose AUCUN conteneur supplémentaire : le chemin normal
+    // garde exactement la chaîne flex d'avant.
+    const contenu = (<>
       {duelScreen!=="menu" && !kbFit && header}
       {body}
+    </>);
+    return (<div key="duel-overlay" style={overlayStyle}>
+      {areneCharte}
+      {kbFit ? <div style={zoneVisible}>{contenu}</div> : contenu}
       {/* Nom du joueur en GROS à chaque bonne réponse (visible pour une vidéo) */}
       {duelBigAnswer && (
         <div style={{position:"absolute",inset:0,zIndex:60,display:"flex",alignItems:"center",justifyContent:"center",pointerEvents:"none",background:"radial-gradient(circle at 50% 46%, rgba(0,0,0,.55), transparent 62%)"}}>
