@@ -449,6 +449,38 @@ if (ecran.endsWith("-bas")) {
   await page.waitForTimeout(900);
 }
 
+// MESURE=1 : liste la géométrie des blocs de l'écran, pour savoir D'OÙ vient un
+// écart au lieu de le deviner. Un vide de 50 px entre deux panneaux vient soit
+// d'une marge, soit d'un padding, soit d'un espace élastique — et une capture ne
+// le dit pas.
+if (process.env.MESURE) {
+  const blocs = await page.evaluate(() => {
+    const dedans = (e) => {
+      const r = e.getBoundingClientRect();
+      const st = getComputedStyle(e);
+      return { t: Math.round(r.top), h: Math.round(r.height),
+               mt: st.marginTop, mb: st.marginBottom, pt: st.paddingTop, pb: st.paddingBottom,
+               flex: st.flex, quoi: (e.className || e.tagName).toString().slice(0, 28) };
+    };
+    // La coque est le premier enfant de #root qui remplit l'écran.
+    const root = document.getElementById("root");
+    const coque = [...root.querySelectorAll("div")].find(
+      (e) => e.getBoundingClientRect().height > innerHeight * 0.8 && e.children.length > 1);
+    if (!coque) return null;
+    return [...coque.children].map(dedans);
+  });
+  if (!blocs) console.log("coque introuvable");
+  else {
+    console.log("géométrie des blocs (haut · hauteur · marges · paddings · flex) :");
+    let bas = null;
+    for (const b of blocs) {
+      if (bas !== null && b.h > 0) console.log("        ↕ écart : " + (b.t - bas) + " px");
+      if (b.h > 0) bas = b.t + b.h;
+      console.log(`  ${String(b.t).padStart(4)} +${String(b.h).padStart(4)}  m ${b.mt}/${b.mb}  p ${b.pt}/${b.pb}  flex ${b.flex}  ${b.quoi}`);
+    }
+  }
+}
+
 const suffixe = LARGEUR > 900 ? "-pc" : "";
 const chemin = join(ici, "..", "apercu-" + ecran + suffixe + ".png");
 await page.screenshot({ path:chemin, fullPage:false });

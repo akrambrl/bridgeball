@@ -15365,23 +15365,32 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
       {myRecoveryCodeModal}
         {/* Terrain dessiné de la charte : les bandes opaques recouvraient le fond. */}
         {areneCharte}
-      {/* `flex:1 1 0` donne à l'entête une hauteur DÉFINIE — exactement ce que
-          la feuille lui laisse — sans quoi le `height:100%` du bandeau n'a rien
-          contre quoi se résoudre et retombe sur la hauteur intrinsèque de la
-          vidéo. `overflow:hidden` garantit qu'il ne peut jamais repousser le
-          reste hors de l'écran, quel que soit le gabarit. */}
-      <div style={{zIndex:1,padding:"6px 20px 0",textAlign:"center",
-        flex:"1 1 0",minHeight:0,overflow:"hidden",display:"flex",flexDirection:"column",justifyContent:"center",alignItems:"center"}}>
-        <WinBanner maxWidth={380} marginTop={0} maxHeight={240} fill lose={sc <= 0} />
+      {/* L'entête prend sa hauteur NATURELLE et non tout l'espace restant. Avec
+          flex:1 1 0 + justifyContent:center, elle prenait toute la place libre et
+          centrait dedans un bandeau plafonné à 240 px : d'où deux vides, un
+          au-dessus de la séquence et un plus grand en dessous. C'est ce que
+          « mal structuré » désignait.
+          Le bandeau prend maintenant la largeur disponible et sa hauteur 16/9
+          naturelle — pas de plafond, donc aucun recadrage — et le mou restant est
+          réparti entre les blocs de la feuille plutôt que gardé en un seul trou. */}
+      <div style={{zIndex:1,padding:"6px 12px 0",textAlign:"center",
+        flex:"0 0 auto",display:"flex",flexDirection:"column",alignItems:"center"}}>
+        <WinBanner maxWidth={9999} marginTop={0} lose={sc <= 0} />
         {/* Plus de « TEMPS ÉCOULÉ ! » ni de vanne sous le bandeau : l'écran de
             fin ne tenait pas d'une pièce, et ces deux lignes ne portaient aucune
             information — le score et le près-du-record disent déjà tout. Le seul
             titre qui reste est celui qui annonce quelque chose : le record battu. */}
-        {isNewRecord && <div style={{...posterTitre(30,G.projecteur),fontSize:"clamp(20px,6.6vw,30px)",animation:"fadeUp .4s ease .15s both",marginTop:6}}>{tr("NOUVEAU RECORD !","NEW RECORD!","NEUER REKORD!","NUOVO RECORD!","NOVO RECORDE!","¡NUEVO RÉCORD!")}</div>}
+        {/* À L'ENCRE et non en projecteur : sur la charte or, `projecteur` EST la
+            teinte du fond — ce titre était donc peint en or sur or, invisible,
+            tout en occupant 41 px sous la séquence. C'est ce trou-là qu'on voyait
+            entre la vidéo et le score, et qu'aucune capture n'expliquait ; il a
+            fallu mesurer la géométrie des blocs pour le trouver. */}
+        {isNewRecord && <div style={{...posterTitre(30,G.encre),fontSize:"clamp(20px,6.6vw,30px)",animation:"fadeUp .4s ease .15s both",marginTop:6}}>{tr("NOUVEAU RECORD !","NEW RECORD!","NEUER REKORD!","NUOVO RECORD!","NOVO RECORDE!","¡NUEVO RÉCORD!")}</div>}
       </div>
-      {/* La feuille se serre pour que l'écran tienne d'une pièce : c'est elle
-          qui porte le score, les relances et les deux boutons. */}
-      <div style={{...sheet,flex:"0 0 auto",gap:6,padding:"10px 16px 14px"}}>
+      {/* La feuille absorbe le mou et le répartit entre ses blocs (space-between)
+          au lieu de le laisser en un vide unique. C'est elle qui porte le score,
+          les relances et les boutons. */}
+      <div style={{...sheet,flex:"1 1 auto",justifyContent:"flex-start",gap:8,padding:"10px 16px 14px"}}>
         <div style={{background:G.nuit,borderRadius:G.rayonL,padding:"8px 16px",textAlign:"center",border:G.trait,boxShadow:G.ombreL}}>
           <div style={{fontSize:11,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.5)"}}>{isChain?tr("Score","Score","Score","Punteggio","Pontuação","Puntuación"):tr("Score total","Total score","Gesamtpunktzahl","Punteggio totale","Pontuação total","Puntuación total")}</div>
           <div style={{...posterText(46,G.white)}}>{sc}</div>
@@ -15489,6 +15498,12 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
           </div>
         )}
       
+        {/* UN SEUL espace élastique, ici. Réparti entre tous les blocs
+            (space-between), le mou donnait six intervalles égaux et un écran qui
+            flotte ; groupé en un point, il sépare ce qui s'est PASSÉ — la
+            séquence, le score, la progression — de ce qu'on peut FAIRE, et le
+            groupe d'actions s'ancre en bas, sous le pouce. */}
+        <div style={{flex:"1 1 auto",minHeight:0}}/>
         {/* Actions secondaires compactes : classement / chaîne / partage */}
         <div style={{display:"flex",gap:10}}>
           <button onClick={()=>{setLbMode(mode);setLbDiff(diff);loadLeaderboard(lbMode);setShowLeaderboard(true);}} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:4,padding:"8px 4px",background:G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,cursor:"pointer",color:G.white}}>
