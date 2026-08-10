@@ -97,6 +97,26 @@ await ctx.route("**/rest/v1/**", async (route) => {
     corps = JOUEURS.map((j, i) => ({ player_id:j.pid, player_name:j.nom, score:j.score,
       mode:i % 3 === 0 ? "chaine" : "pont", created_at:ilYaJours(i % 14) }));
   } else if (url.includes("bb_duels")) {
+    // DEFI=1 : un défi OUVERT relevable, avec un score à battre. C'est le seul
+    // chemin vers l'écran de résultat de duel (`duelResult`) : on relève le défi,
+    // on joue, et à la fin du chrono submitDuelScore pose le résultat. Sans ça
+    // l'écran n'était pas photographiable, donc sa charte était corrigée à
+    // l'aveugle — c'est exactement le fond sombre qu'on vient d'y trouver.
+    if (process.env.DEFI) {
+      // Un SEUL défi ouvert, et rien d'autre : « mes défis », les tentatives et
+      // l'historique restent vides pour que le salon n'ait qu'une carte à cliquer.
+      // On laisse la réponse partir par le fulfill commun en bas — lui seul pose
+      // les en-têtes CORS et content-range dont l'app a besoin.
+      corps = url.includes("status=eq.open&")
+        ? [{ id:"defi-1", challenger_id:"p6", challenger_name:"sjdrums",
+             // DEFI_SCORE règle le score à battre, donc la BRANCHE affichée :
+             // au-dessus on photographie DÉFAITE, en dessous VICTOIRE. Les deux
+             // titres n'ont pas la même teinte et c'est justement ce qu'on vérifie.
+             mode:"pont", diff:"facile", rounds:1,
+             challenger_score:Number(process.env.DEFI_SCORE || 290),
+             created_at:ilYaJours(0) }]
+        : [];
+    } else
     corps = JOUEURS.slice(0, 3).flatMap((j, i) => Array.from({ length:3 + i }, (_, k) => ({
       id:j.pid + "-" + k, created_at:ilYaJours(k % 14),
       challenger_id:j.pid, opponent_id:JOUEURS[(JOUEURS.indexOf(j) + 1) % 6].pid,
@@ -271,6 +291,9 @@ CHEMINS["tracking-filtre"] = [];
 // règle, l'audit la simule, mais aucun des deux ne prouve que le vrai écran
 // enchaîne des manches différentes.
 CHEMINS["battle-manches"] = [];
+// `duel-fin` photographie l'écran de résultat d'un défi (VICTOIRE / ÉGALITÉ /
+// DÉFAITE, les deux scores côte à côte). À lancer avec DEFI=1.
+CHEMINS["duel-fin"] = [];
 if (!(ecran in CHEMINS)) {
   console.error("écran inconnu :", ecran, "— connus :", Object.keys(CHEMINS).join(", "));
   process.exit(1);
@@ -418,6 +441,38 @@ if (ecran === "profil") {
   // bouton, donc getByRole ne la voit pas.
   await page.locator("img[src*='/cards/']").first().click();
   await page.waitForTimeout(1600);
+}
+
+if (ecran === "duel-fin") {
+  // Le bouton porte parfois une pastille de compteur dans son nom accessible.
+  await page.getByRole("button", { name:/défis ouverts/i }).first().click();
+  await page.waitForTimeout(1800);
+  // La carte du défi de sjdrums : on clique le bouton qui lance la tentative.
+  const relever = page.getByRole("button", { name:/relever|battre|jouer|290/i }).first();
+  if (await relever.count()) {
+    await relever.scrollIntoViewIfNeeded();
+    await relever.click({ force:true });
+  } else {
+    console.warn("bouton de défi introuvable — capture de la liste");
+  }
+  await page.waitForTimeout(2500);
+  // La partie dure ROUND_DURATION = 90 s. On répond juste assez pour finir avec
+  // un score, puis on laisse le chrono tomber : c'est l'écran de FIN qu'on veut.
+  for (let i = 0; i < 6; i++) {
+    const opts = page.locator("button").filter({ hasText: /^[A-ZÀ-Ü][\w' .-]+$/ });
+    if (await opts.count() > 1) { await opts.nth(1).click().catch(() => {}); }
+    await page.waitForTimeout(1200);
+  }
+  const limite = 120000, pas = 5000;
+  let attendu = 0;
+  while (attendu < limite) {
+    await page.waitForTimeout(pas);
+    attendu += pas;
+    const fini = await page.getByRole("button", { name:/retour à l'accueil/i }).first()
+      .isVisible().catch(() => false);
+    if (fini) { console.log("écran de résultat atteint après", attendu / 1000, "s"); break; }
+  }
+  await page.waitForTimeout(1200);
 }
 
 if (ecran === "battle-manches") {

@@ -12138,20 +12138,21 @@ export default function LePont() {
     }
     return (
       <div style={{...shell,animation:"fadeUp .4s ease",overflowY:isDesktop?"visible":"auto",overflowX:isDesktop?"visible":"hidden"}} key="roomResult2">
-        <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
-          {/* Aplat de panneau : les bandes de tonte sont parties avec la pelouse.
-              Sur la charte or, une carte est l'écusson noir du logo. */}
-            <div style={{position:"absolute",inset:0,background:G.nuit}}/>
-          <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:G.nuit,transform:"translateY(-50%)"}}/>
-          <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:180,height:180,borderRadius:"50%",border:G.traitFin}}/>
-          <div style={{position:"absolute",inset:0,background:"rgba(8,17,9,.45)"}}/>
-        </div>
+        {/* Même fond que le résultat de duel 1v1 : ce sont deux écrans de fin de
+            partie à plusieurs, en laisser un sombre se lirait comme un bug. */}
+        {areneCharte}
         <div style={{zIndex:1,padding:"32px 20px 12px",textAlign:"center"}}>
           <div style={{fontSize:52,marginBottom:8}}>{iAbandoned?"🏳️":(myRank<=3?medals[myRank-1]:myRank+"ème")}</div>
-          <div style={{...posterText(30),fontSize:"clamp(30px,8vw,50px)",color:iAbandoned?G.maillot:(myRank===1?G.projecteur:G.white),letterSpacing:2}}>
+          <div style={{...posterText(30),fontSize:"clamp(30px,8vw,50px)",color:G.encre,letterSpacing:2}}>
             {iAbandoned?(tr("ABANDON","FORFEIT","AUFGABE","RESA","DESISTÊNCIA","ABANDONO")):(myRank===1?(tr("VICTOIRE !","VICTORY!","SIEG!","VITTORIA!","VITÓRIA!","¡VICTORIA!")):myRank===2?(tr("2ÈME PLACE","2ND PLACE","2. PLATZ","2° POSTO","2º LUGAR","2º PUESTO")):myRank===3?(tr("3ÈME PLACE","3RD PLACE","3. PLATZ","3° POSTO","3º LUGAR","3º PUESTO")):(tr("RÉSULTATS","RESULTS","ERGEBNISSE","RISULTATI","RESULTADOS","RESULTADOS")))}
           </div>
-          <div style={{fontSize:18,color:iAbandoned?"#fff":(myRank===1?G.projecteur:"#fff"),marginTop:12,fontWeight:800,padding:"0 16px",lineHeight:1.4,textAlign:"center",animation:"popIn .6s cubic-bezier(.22,1,.36,1) .4s both",textShadow:myRank===1&&!iAbandoned?"0 0 20px rgba(255,214,0,.4)":"none"}}>{msg}</div>
+          {/* Titre et phrase à l'encre : posterText(30) ne pose PAS de contour (le
+              contour n'arrive qu'à partir de 32), donc ces deux lignes sont des
+              aplats de couleur nus sur l'or — le projecteur y valait 1,0 (c'est la
+              teinte du fond) et le blanc 1,7. Le rang, lui, se lit déjà sur la
+              médaille juste au-dessus. La lueur dorée part avec : sur un fond or,
+              un halo or n'éclaire rien. */}
+          <div style={{fontSize:18,color:G.encre,marginTop:12,fontWeight:800,padding:"0 16px",lineHeight:1.4,textAlign:"center",animation:"popIn .6s cubic-bezier(.22,1,.36,1) .4s both"}}>{msg}</div>
           {!iAbandoned && <WinBanner maxWidth={300} marginTop={10} lose={myRank!==1} />}
         </div>
         <div style={{...sheet,borderRadius:"28px 28px 0 0"}}>
@@ -12165,7 +12166,7 @@ export default function LePont() {
               });
             } : null;
             return (
-            <div key={i} onClick={onClickHandler} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",borderRadius:G.rayon,background:p.id===playerId?"rgba(42,155,78,.35)":"rgba(8,17,9,.45)",border:G.traitFin,marginBottom:6,cursor:hasRounds?"pointer":"default"}}>
+            <div key={i} onClick={onClickHandler} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",borderRadius:G.rayon,background:p.id===playerId?"#1A4525":G.nuit,border:G.traitFin,marginBottom:6,cursor:hasRounds?"pointer":"default"}}>
               <div style={{...posterText(30),width:40,textAlign:"center",color:i<3?[G.projecteur,"#C0C0C0","#CD7F32"][i]:"rgba(255,255,255,.3)"}}>{i<3?medals[i]:i+1}</div>
               <div style={{flex:1,fontSize:14,fontWeight:800,color:p.id===playerId?G.pelouseClaire:G.white}}>{p.name}{p.id===playerId?" ("+tr("toi","you","du","tu","você","tú")+")":""}{p.abandoned?" 🏳️":""}</div>
               <div style={{...posterText(26),color:i===0?G.projecteur:G.white}}>{p.score||0} <span style={{fontSize:12,color:"rgba(255,255,255,.3)"}}>pts</span></div>
@@ -12173,12 +12174,12 @@ export default function LePont() {
             </div>
           );})}
           {duelResult.players.some(function(p){return Array.isArray(p.rounds) && p.rounds.length > 0;}) && (
-            <div style={{fontSize:10,color:"rgba(255,255,255,.4)",textAlign:"center",marginTop:6,marginBottom:6,fontStyle:"italic"}}>
+            <div style={{fontSize:10,color:G.encre,opacity:.75,textAlign:"center",marginTop:6,marginBottom:6,fontStyle:"italic"}}>
               👁️ {tr("Tape sur un joueur pour voir ses réponses","Tap a player to see their answers","Tippe auf einen Spieler, um seine Antworten zu sehen","Tocca un giocatore per vedere le sue risposte","Toque num jogador para ver suas respostas","Toca a un jugador para ver sus respuestas")}
             </div>
           )}
           {((!duelResult.isChain && roundAnswers.length>0) || (duelResult.isChain && chainHistory.length>0)) && (
-            <button onClick={()=>setShowHistory(true)} style={{...btn(G.projecteur,G.encre,17),width:"100%",padding:"13px",borderRadius:G.rayon,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginTop:8}}>
+            <button onClick={()=>setShowHistory(true)} style={{...btn(G.nuit,G.projecteur,17),width:"100%",padding:"13px",borderRadius:G.rayon,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginTop:8}}>
               📋 {duelResult.isChain?(tr("Voir ma chaîne","See my chain","Meine Kette ansehen","Vedi la mia catena","Ver minha corrente","Ver mi cadena")):(tr("Récap des questions","Questions recap","Fragen-Übersicht","Riepilogo domande","Resumo das perguntas","Repaso de las preguntas"))}
             </button>
           )}
@@ -12189,7 +12190,7 @@ export default function LePont() {
             </button>
           )}
           {duelResult.hostId && duelResult.hostId !== playerId && duelResult.isRoom && (
-            <div style={{textAlign:"center",fontSize:11,color:"rgba(255,255,255,.5)",marginTop:8,fontStyle:"italic"}}>
+            <div style={{textAlign:"center",fontSize:11,color:G.encre,opacity:.7,marginTop:8,fontStyle:"italic"}}>
               {tr("En attente d'une revanche...","Waiting for the host to rematch...","Warten auf Revanche vom Host...","In attesa della rivincita dell'host...","Aguardando a revanche do anfitrião...","Esperando la revancha del anfitrión...")}
             </div>
           )}
@@ -15791,23 +15792,30 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
       : draw
       ? (tr("ÉGALITÉ !","DRAW!","UNENTSCHIEDEN!","PAREGGIO!","EMPATE!","¡EMPATE!"))
       : (tr("DÉFAITE","DEFEAT","NIEDERLAGE","SCONFITTA","DERROTA","DERROTA"));
-    const labelColor = won || abandoned ? G.pelouseClaire : draw ? G.projecteur : G.maillot;
+    // Le titre est posé DIRECTEMENT sur l'or, donc ses teintes ne peuvent pas être
+    // celles d'un panneau. Mesuré sur #F5C22B : encre 11,5 · rouge 2,8 · pelouse
+    // 2,1 · vert clair 1,2 · projecteur 1,0. Deux changements en découlent :
+    //   • le vert clair passe à `pelouse`, la teinte pleine — à 1,2 le vert clair
+    //     se confond avec le fond, et seul le contour du lettrage subsistait ;
+    //   • l'égalité passe du projecteur à l'encre, parce que `projecteur` EST la
+    //     couleur du fond : le mot devenait un contour creux.
+    // Le rouge reste : posterTitre(46) pose un contour d'encre, donc la lisibilité
+    // vient de l'arête et la teinte ne porte plus que le sens.
+    const labelColor = won || abandoned ? G.pelouse : draw ? G.encre : G.maillot;
+    // Les deux cases de score portaient un voile TRANSLUCIDE (vert à 35 %, rouge
+    // à 32 %). Sur un fond sombre ça donnait ce que montre l'app aujourd'hui ;
+    // sur l'or, un voile foncé laisse passer le jaune et tourne au khaki. Les
+    // voici en aplats OPAQUES, calculés comme le mélange d'avant sur `nuit` — donc
+    // l'écran garde exactement la couleur qu'il avait, sans dépendre du fond.
+    const casePerdue = "#522218";  // rgba(217,58,43,.32) sur #12160F
+    const caseGagnee = "#1A4525";  // rgba(42,155,78,.35) sur #12160F
     return (
-      <div style={{...shell,animation:"fadeUp .4s ease",overflowY:isDesktop?"visible":"auto",overflowX:isDesktop?"visible":"hidden"}} key="duelResult">
-        <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
-        {/* Bandes pelouse */}
-        {/* Aplat de panneau : les bandes de tonte sont parties avec la pelouse.
-              Sur la charte or, une carte est l'écusson noir du logo. */}
-            <div style={{position:"absolute",inset:0,background:G.nuit}}/>
-        {/* Ligne médiane */}
-        <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:G.nuit,transform:"translateY(-50%)"}}/>
-        {/* Cercle central */}
-        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:180,height:180,borderRadius:"50%",border:G.traitFin}}/>
-        {/* Point central */}
-        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:8,height:8,borderRadius:"50%",background:G.nuit}}/>
-        {/* Overlay sombre pour lisibilité */}
-        <div style={{position:"absolute",inset:0,background:"rgba(8,17,9,.45)"}}/>
-      </div>
+      <div style={{...shell,animation:"fadeUp .4s ease",overflowY:isDesktop?"visible":"auto",overflowX:isDesktop?"visible":"hidden",background:fondCharte}} key="duelResult">
+        {/* Terrain dessiné de la charte, comme sur l'écran de fin solo. Ce qu'il
+            remplace : un aplat `nuit` plein champ hérité de l'ancienne pelouse,
+            avec ligne médiane, rond central et voile d'encre à 45 %. Cinq calques
+            pour reconstituer un fond sombre que la charte a abandonné. */}
+        {areneCharte}
       {/* Joueur célébration duel */}
         {/* Même patron que l'écran de fin solo : `flex:1 1 0` + `minHeight:0`
             donne à l'entête une hauteur définie — ce que la feuille lui laisse,
@@ -15822,7 +15830,18 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
               d'elle-meme sur un petit gabarit, donc le plafond ne sert qu'a
               l'empecher de devenir enorme sur grand ecran. */}
           <WinBanner maxWidth={460} marginTop={0} maxHeight={380} fill lose={!won && !draw} />
-          <div style={{...posterTitre(46,labelColor),fontSize:"clamp(30px,8vw,46px)",marginTop:4}}>{label}</div>
+          {/* Contour EXPLICITE, et c'est ce qui rend le titre lisible sur l'or.
+              posterText ajoute d'office, au-delà de 32 px, une ombre DURE d'encre
+              décalée de ~5,5 px. Sur l'ancien fond sombre cette ombre était
+              invisible (encre sur nuit) ; sur l'or elle devient un second mot
+              noir en travers du premier — « DÉFAITE » sortait dédoublé et
+              illisible. Passer un contour explicite emprunte l'autre branche de
+              posterText : contour d'encre, PAS d'ombre. 2,9 px est la largeur que
+              la recette calcule elle-même pour ce corps (size/16), donc le
+              lettrage garde exactement son épaisseur.
+              C'est aussi pour ça qu'on n'a plus besoin de posterTitre ici : son
+              interligne desserré ne servait qu'à éloigner cette ombre. */}
+          <div style={{...posterText(46,labelColor,2.9),fontSize:"clamp(30px,8vw,46px)",marginTop:4}}>{label}</div>
           {/* Trois blocs retires ici : la vanne de defaite, la pastille de
               grade et la ligne « Duel The Plug ». Ils repoussaient le reste de
               l'ecran vers le bas alors que le score dit deja tout, et c'est la
@@ -15834,7 +15853,7 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
         <div style={{...sheet,borderRadius:"28px 28px 0 0",flex:"0 0 auto"}}>
           {/* Scores */}
           <div style={{display:"flex",gap:12,marginBottom:8}}>
-            <div onClick={Array.isArray(duelResult.myRounds) && duelResult.myRounds.length > 0 ? function(){setReviewRoundsModal({mode:duelResult.mode||"pont",playerName:(tr("Toi","You","Du","Tu","Você","Tú")),rounds:duelResult.myRounds});} : null} style={{flex:1,background:won?"rgba(42,155,78,.35)":G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,padding:"18px 12px",textAlign:"center",cursor:Array.isArray(duelResult.myRounds)&&duelResult.myRounds.length>0?"pointer":"default",position:"relative"}}>
+            <div onClick={Array.isArray(duelResult.myRounds) && duelResult.myRounds.length > 0 ? function(){setReviewRoundsModal({mode:duelResult.mode||"pont",playerName:(tr("Toi","You","Du","Tu","Você","Tú")),rounds:duelResult.myRounds});} : null} style={{flex:1,background:won?caseGagnee:G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,padding:"18px 12px",textAlign:"center",cursor:Array.isArray(duelResult.myRounds)&&duelResult.myRounds.length>0?"pointer":"default",position:"relative"}}>
               <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:6}}>{tr("Toi","You","Du","Tu","Você","Tú")}</div>
               <div style={{...posterText(52,G.white)}}>{duelResult.myScore}</div>
               <div style={{fontSize:11,color:"rgba(255,255,255,.3)",marginTop:4}}>pts</div>
@@ -15842,8 +15861,10 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
                 <div style={{position:"absolute",top:6,right:8,fontSize:14,color:"rgba(255,214,0,.7)"}}>👁️</div>
               )}
             </div>
-            <div style={{display:"flex",alignItems:"center",...posterText(1,"rgba(255,255,255,.5)",0),fontSize:24}}>VS</div>
-            <div onClick={Array.isArray(duelResult.theirRounds) && duelResult.theirRounds.length > 0 ? function(){setReviewRoundsModal({mode:duelResult.mode||"pont",playerName:duelResult.oppName,rounds:duelResult.theirRounds});} : null} style={{flex:1,background:(!won&&!draw)?"rgba(217,58,43,.32)":G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,padding:"18px 12px",textAlign:"center",cursor:Array.isArray(duelResult.theirRounds)&&duelResult.theirRounds.length>0?"pointer":"default",position:"relative"}}>
+            {/* « VS » est posé sur le FOND, entre les deux cases : à l'encre.
+                Un blanc à 50 % tombait à 1,7 sur l'or. */}
+            <div style={{display:"flex",alignItems:"center",...posterText(1,G.encre,0),fontSize:24}}>VS</div>
+            <div onClick={Array.isArray(duelResult.theirRounds) && duelResult.theirRounds.length > 0 ? function(){setReviewRoundsModal({mode:duelResult.mode||"pont",playerName:duelResult.oppName,rounds:duelResult.theirRounds});} : null} style={{flex:1,background:(!won&&!draw)?casePerdue:G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,padding:"18px 12px",textAlign:"center",cursor:Array.isArray(duelResult.theirRounds)&&duelResult.theirRounds.length>0?"pointer":"default",position:"relative"}}>
               <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.4)",marginBottom:6}}>{duelResult.oppName}</div>
               <div style={{...posterText(52,G.white)}}>{duelResult.theirScore}</div>
               <div style={{fontSize:11,color:"rgba(255,255,255,.3)",marginTop:4}}>pts</div>
@@ -15871,8 +15892,10 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
             const h2h = duels.filter(function(d){return duelFini(d)&&(d.challenger_id===playerId||d.opponent_id===playerId)&&(d.challenger_name===duelResult.oppName||d.opponent_name===duelResult.oppName);});
             const lost = h2h.some(function(d){const ms=d.challenger_id===playerId?d.challenger_score:d.opponent_score;const ts=d.challenger_id===playerId?d.opponent_score:d.challenger_score;return ms<ts;});
             return !lost && h2h.length >= 2 ? (
-              <div style={{textAlign:"center",marginBottom:8,padding:"10px 16px",background:G.projecteur,borderRadius:G.rayon,border:G.traitFin,boxShadow:"2px 2px 0 "+G.encre}}>
-                <span style={{...posterText(1,G.encre,0),fontSize:18}}>😤 {tr("INVAINCU CONTRE","UNBEATEN VS","UNGESCHLAGEN GEGEN","IMBATTUTO CONTRO","INVICTO CONTRA","INVICTO CONTRA")} {duelResult.oppName.toUpperCase()}</span>
+              <div style={{textAlign:"center",marginBottom:8,padding:"10px 16px",background:G.nuit,borderRadius:G.rayon,border:G.traitFin,boxShadow:"2px 2px 0 "+G.encre}}>
+                {/* Écusson noir et lettrage or, et non l'inverse : un aplat or
+                    posé sur l'or n'a plus de bord. Dans le panneau, l'or donne 11,0. */}
+                <span style={{...posterText(1,G.projecteur,0),fontSize:18}}>😤 {tr("INVAINCU CONTRE","UNBEATEN VS","UNGESCHLAGEN GEGEN","IMBATTUTO CONTRO","INVICTO CONTRA","INVICTO CONTRA")} {duelResult.oppName.toUpperCase()}</span>
               </div>
             ) : null;
           })()}
@@ -15884,7 +15907,7 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
               celui de defaite. */}
           {/* Le bouton de partage est retire de cet ecran. */}
           {((!duelResult.isChain && roundAnswers.length>0) || (duelResult.isChain && chainHistory.length>0)) && (
-            <button onClick={()=>setShowHistory(true)} style={{...btn(G.projecteur,G.encre,17),width:"100%",padding:"11px",fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:6}}>
+            <button onClick={()=>setShowHistory(true)} style={{...btn(G.nuit,G.projecteur,17),width:"100%",padding:"11px",fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:6}}>
               📋 {duelResult.isChain?(tr("Voir ma chaîne","See my chain","Meine Kette ansehen","Vedi la mia catena","Ver minha corrente","Ver mi cadena")):(tr("Récap des questions","Questions recap","Fragen-Übersicht","Riepilogo domande","Resumo das perguntas","Repaso de las preguntas"))}
             </button>
           )}
