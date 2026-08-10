@@ -14343,21 +14343,34 @@ export default function LePont() {
                 const [colMain, colSecond] = ggGetCriterionColors(colCrit);
                 const suggestions = ggGetSuggestions(ggGuess);
                 // Carte critère "design" : dégradé aux couleurs du critère + pastille emoji
+                // La carte de critère, alignée sur les tuiles du plateau : APLAT franc
+                // de la teinte du critère, cerclé d'encre, ombre dure, lettrage d'affiche.
+                //
+                // Ce qu'elle avait : un dégradé de la teinte à 20 % d'alpha, un filet à
+                // 53 %, un halo flouté de 18 px, et une ombre portée dont la valeur était
+                // `G.ombre + main + "aa"` — soit « 4px 4px 0 #081109#2A9B4Eaa ». Une
+                // couleur CSS invalide invalide TOUTE la déclaration box-shadow : cette
+                // carte n'avait donc aucune ombre, ni portée ni interne, malgré les deux
+                // qu'elle croyait déclarer. Le flou tenait au seul calque blur.
+                //
+                // Contour explicite sur le libellé : la teinte sous le mot n'est pas
+                // choisie — bleu clair pour l'Argentine, noir pour la Juventus.
                 const critCard = (emoji, main, second, label) => (
-                  <div style={{flex:1,position:"relative",background:"linear-gradient(150deg, "+main+"33, "+second+"1f 70%, rgba(0,0,0,.25))",border:"1.5px solid "+main+"88",borderRadius:16,padding:"14px 8px 12px",textAlign:"center",boxShadow:G.ombre+main+"aa, inset 0 1px 0 rgba(255,255,255,.06)",overflow:"hidden"}}>
-                    <div style={{position:"absolute",top:-18,left:"50%",transform:"translateX(-50%)",width:60,height:60,borderRadius:"50%",background:main,opacity:.25,filter:"blur(18px)"}}/>
-                    {emoji && <div style={{position:"relative",width:40,height:40,margin:"0 auto 6px",borderRadius:"50%",background:"rgba(0,0,0,.35)",border:"1px solid "+main+"66",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,boxShadow:G.ombre}}>{emoji}</div>}
-                    <div style={{position:"relative",fontSize:11.5,fontWeight:900,color:"#fff",lineHeight:1.2,letterSpacing:.3,textShadow:"0 1px 3px rgba(0,0,0,.6)"}}>{label.toUpperCase()}</div>
+                  <div style={{flex:1,position:"relative",background:main,border:G.trait,borderRadius:16,padding:"14px 8px 12px",textAlign:"center",boxShadow:G.ombre,overflow:"hidden"}}>
+                    {emoji && <div style={{position:"relative",width:40,height:40,margin:"0 auto 6px",borderRadius:"50%",background:G.nuit,border:G.traitFin,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,boxShadow:"2px 2px 0 "+G.encre}}>{emoji}</div>}
+                    <div style={{position:"relative",...posterText(15,G.white,1.2),fontSize:11.5,lineHeight:1.2,letterSpacing:.3}}>{label.toUpperCase()}</div>
                   </div>
                 );
                 return (
                   <div onClick={function(){if(!ggFlash){setGgSelectedCell(null);setGgGuess("");}}} style={{position:"fixed",inset:0,zIndex:500,background:"rgba(8,17,9,.86)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
-                    <div onClick={function(e){e.stopPropagation();}} style={{position:"relative",background:"linear-gradient(165deg, #16241c 0%, #0d1712 55%, #0a0f0c 100%)",border:G.traitFin,borderRadius:24,padding:22,maxWidth:370,width:"100%",boxShadow:G.ombre}}>
-                      {/* Halo d'ambiance en haut de la carte */}
-                      <div style={{position:"absolute",top:0,left:0,right:0,height:120,borderRadius:"24px 24px 0 0",background:"radial-gradient(ellipse 70% 100% at 50% 0%, rgba(0,230,118,.14), transparent 70%)",pointerEvents:"none"}}/>
+                    {/* Panneau de nuit, trait et ombre de la charte. Le dégradé vers le noir
+                        et le halo vert du haut sont partis : ce halo était un
+                        rgba(0,230,118,.14), l'ancien `accent` vert LED que la charte
+                        remplace — la palette le déclare mort. */}
+                    <div onClick={function(e){e.stopPropagation();}} style={{position:"relative",background:G.nuit,border:G.trait,borderRadius:24,padding:22,maxWidth:370,width:"100%",boxShadow:G.ombre}}>
                       <div style={{position:"relative",textAlign:"center",marginBottom:16}}>
-                        <div style={{fontSize:13,fontWeight:900,letterSpacing:1,color:"#fff"}}>🎯 {tr("QUI MATCHE ?","WHO FITS?","WER PASST?","CHI CI STA?","QUEM ENCAIXA?","¿QUIÉN ENCAJA?")}</div>
-                        <div style={{fontSize:10,letterSpacing:2,color:"rgba(255,255,255,.4)",fontWeight:700,marginTop:3}}>{tr("UN JOUEUR POUR CES 2 CRITÈRES","A PLAYER FOR THESE 2 CRITERIA","EIN SPIELER FÜR DIESE 2 KRITERIEN","UN GIOCATORE PER QUESTI 2 CRITERI","UM JOGADOR PARA ESTES 2 CRITÉRIOS","UN JUGADOR PARA ESTOS 2 CRITERIOS")}</div>
+                        <div style={{...posterText(20,G.projecteur),letterSpacing:1}}>🎯 {tr("QUI MATCHE ?","WHO FITS?","WER PASST?","CHI CI STA?","QUEM ENCAIXA?","¿QUIÉN ENCAJA?")}</div>
+                        <div style={{fontSize:10,letterSpacing:2,color:G.creme,opacity:.6,fontWeight:800,marginTop:3}}>{tr("UN JOUEUR POUR CES 2 CRITÈRES","A PLAYER FOR THESE 2 CRITERIA","EIN SPIELER FÜR DIESE 2 KRITERIEN","UN GIOCATORE PER QUESTI 2 CRITERI","UM JOGADOR PARA ESTES 2 CRITÉRIOS","UN JUGADOR PARA ESTOS 2 CRITERIOS")}</div>
                       </div>
                       <div style={{position:"relative",display:"flex",gap:10,marginBottom:18,alignItems:"stretch"}}>
                         {critCard(rowEmoji, rowMain, rowSecond, ggGetCriterionDisplayLabel(rowCrit, lang))}
@@ -14371,12 +14384,12 @@ export default function LePont() {
                         onChange={function(e){setGgGuess(e.target.value);}}
                         onKeyDown={function(e){if(e.key==="Enter"){ if(suggestions.length>0){ggSubmitAnswer(suggestions[0].name);} else if(ggGuess.trim().length>=3){ggSubmitAnswer(ggGuess);} }}}
                         placeholder={tr("Tape au moins 3 lettres...","Type at least 3 letters...","Mindestens 3 Buchstaben eingeben...","Scrivi almeno 3 lettere...","Digite ao menos 3 letras...","Escribe al menos 3 letras...")}
-                        style={{width:"100%",background:ggFlash==="ko"?"rgba(239,68,68,.15)":"rgba(8,17,9,.45)",border:"2px solid "+(ggFlash==="ko"?G.maillot:G.encre),borderRadius:14,padding:"14px 16px",color:"#fff",fontSize:16,fontWeight:700,outline:"none",textAlign:"center",boxSizing:"border-box",animation:ggFlash==="ko"?"answerKo .4s ease":"none"}}
+                        style={{width:"100%",background:G.encre,border:"2px solid "+(ggFlash==="ko"?G.maillot:G.orSombre),borderRadius:14,padding:"14px 16px",color:G.creme,fontSize:16,fontWeight:700,outline:"none",textAlign:"center",boxSizing:"border-box",animation:ggFlash==="ko"?"answerKo .4s ease":"none"}}
                       />
                       {suggestions.length > 0 && (
-                        <div style={{marginTop:8,background:"rgba(8,17,9,.45)",borderRadius:12,maxHeight:180,overflowY:"auto"}}>
+                        <div style={{marginTop:8,background:G.encre,border:G.traitFin,borderRadius:12,maxHeight:180,overflowY:"auto"}}>
                           {suggestions.map(function(p){return(
-                            <div key={p.name} onClick={function(){ggSubmitAnswer(p.name);}} style={{padding:"10px 14px",cursor:"pointer",borderBottom:G.traitFin,fontSize:14,fontWeight:700,color:"#fff",transition:"background .1s"}} onMouseEnter={function(e){e.currentTarget.style.background="rgba(0,230,118,.08)";}} onMouseLeave={function(e){e.currentTarget.style.background="transparent";}}>
+                            <div key={p.name} onClick={function(){ggSubmitAnswer(p.name);}} style={{padding:"10px 14px",cursor:"pointer",borderBottom:G.traitFin,fontSize:14,fontWeight:800,color:G.creme,transition:"background .1s"}} onMouseEnter={function(e){e.currentTarget.style.background="rgba(245,194,43,.16)";}} onMouseLeave={function(e){e.currentTarget.style.background="transparent";}}>
                               {p.name}
                             </div>
                           );})}
@@ -14384,15 +14397,15 @@ export default function LePont() {
                       )}
                       {/* Bouton "Signaler" : apparaît après une mauvaise réponse */}
                       {ggLastRejected && (
-                        <div style={{marginTop:10,padding:10,background:"rgba(245,194,43,.28)",border:G.traitFin,borderRadius:12}}>
+                        <div style={{marginTop:10,padding:10,background:G.encre,border:G.traitFin,borderRadius:12}}>
                           {ggReportSent ? (
                             <div style={{textAlign:"center",fontSize:12,color:G.pelouseClaire,fontWeight:700,padding:6}}>
                               ✅ {tr("Merci ! On va vérifier.","Thanks! We'll check it.","Danke! Wir prüfen es.","Grazie! Controlleremo.","Obrigado! Vamos verificar.","¡Gracias! Lo revisaremos.")}
                             </div>
                           ) : (
                             <>
-                              <div style={{fontSize:11,color:"rgba(255,255,255,.7)",marginBottom:6,textAlign:"center"}}>
-                                <strong style={{color:"#FF6B35"}}>{ggLastRejected.playerName}</strong> {tr("refusé ?","refused?","abgelehnt?","rifiutato?","recusado?","¿rechazado?")}
+                              <div style={{fontSize:11,color:G.creme,marginBottom:6,textAlign:"center"}}>
+                                <strong style={{color:G.maillot}}>{ggLastRejected.playerName}</strong> {tr("refusé ?","refused?","abgelehnt?","rifiutato?","recusado?","¿rechazado?")}
                               </div>
                               <button onClick={async function(){
                                 try {
@@ -14412,7 +14425,7 @@ export default function LePont() {
                                   });
                                   setGgReportSent(true);
                                 } catch(e) { setGgReportSent(true); }
-                              }} style={{width:"100%",padding:10,borderRadius:G.rayon,border:G.trait,background:"rgba(245,194,43,.28)",color:"#FF8A66",fontWeight:800,fontSize:12,letterSpacing:1,cursor:"pointer"}}>
+                              }} style={{...btn(G.projecteur,G.encre,13),width:"100%",padding:10,letterSpacing:1}}>
                                 ⚠️ {tr("Je suis sûr que ça devrait passer","I'm sure it should pass","Ich bin sicher, das sollte gelten","Sono sicuro che dovrebbe valere","Tenho certeza que deveria valer","Seguro que esto debería valer")}
                               </button>
                             </>
@@ -14421,11 +14434,11 @@ export default function LePont() {
                       )}
                       {/* Boutons Valider + Annuler */}
                       <div style={{display:"flex",gap:8,marginTop:14}}>
-                        <button onClick={function(){setGgSelectedCell(null);setGgGuess("");setGgLastRejected(null);setGgReportSent(false);}} style={{flex:1,padding:14,borderRadius:G.rayon,border:G.trait,background:"rgba(8,17,9,.45)",color:"#fff",fontWeight:800,fontSize:13,letterSpacing:1,cursor:"pointer"}}>{tr("Annuler","Cancel","Abbrechen","Annulla","Cancelar","Cancelar")}</button>
+                        <button onClick={function(){setGgSelectedCell(null);setGgGuess("");setGgLastRejected(null);setGgReportSent(false);}} style={{...btn(G.encre,G.creme,14),flex:1,padding:14,letterSpacing:1}}>{tr("Annuler","Cancel","Abbrechen","Annulla","Cancelar","Cancelar")}</button>
                         <button 
                           onClick={function(){ if(suggestions.length>0){ggSubmitAnswer(suggestions[0].name);} else if(ggGuess.trim().length>=3){ggSubmitAnswer(ggGuess);} }}
                           disabled={ggGuess.trim().length<3}
-                          style={{flex:2,padding:14,borderRadius:G.rayon,border:G.trait,background:ggGuess.trim().length>=3?G.pelouse:"rgba(8,17,9,.45)",color:ggGuess.trim().length>=3?"#000":"rgba(255,255,255,.3)",fontWeight:900,fontSize:14,letterSpacing:1.5,cursor:ggGuess.trim().length>=3?"pointer":"not-allowed"}}
+                          style={{...btn(ggGuess.trim().length>=3?G.pelouse:G.encre,ggGuess.trim().length>=3?G.white:"rgba(242,231,206,.35)",15),flex:2,padding:14,letterSpacing:1.5,cursor:ggGuess.trim().length>=3?"pointer":"not-allowed"}}
                         >{tr("VALIDER","VALIDATE","BESTÄTIGEN","CONVALIDA","VALIDAR","VALIDAR")}</button>
                       </div>
                     </div>
