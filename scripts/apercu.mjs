@@ -65,21 +65,57 @@ const LARGEUR = Number(process.env.LARGEUR || 430);
 const ctx = await navigateur.newContext({
   viewport:{ width:LARGEUR, height:932 }, deviceScaleFactor:LARGEUR > 900 ? 1 : 2 });
 
+// Le tableau de bord de suivi lit bb_events et bb_presence, et compte les
+// tables via l'en-tête content-range sans rapatrier de lignes (sbCount). Sans
+// ces deux ajouts, il s'affichait « table bb_events absente » partout et tous
+// les totaux restaient à «—» : la moitié des rubriques était invisible.
+const MODES_ESSAI = ["pont", "chaine", "grid", "guess", "battle", "reveal", "devinette"];
+const ilYaJours = (n) => new Date(Date.now() - n * 24 * 3600 * 1000).toISOString();
+const EVENEMENTS = JOUEURS.flatMap((j, i) => {
+  const lignes = [
+    { player_id:j.pid, created_at:ilYaJours(i % 14), type:"open_" + (i % 3 === 0 ? "ios" : i % 3 === 1 ? "android" : "other") },
+    { player_id:j.pid, created_at:ilYaJours(i % 14), type:"dur_" + (120 + i * 47) },
+  ];
+  // Assez de parties pour que les barres se distinguent : les premiers joueurs
+  // en jouent beaucoup, les derniers presque pas.
+  for (let k = 0; k < 24 - i; k++) {
+    const m = MODES_ESSAI[(i + k) % MODES_ESSAI.length];
+    lignes.push({ player_id:j.pid, created_at:ilYaJours(k % 14),
+                  type:"play_" + m + (k % 5 === 0 ? "_online" : "") });
+  }
+  return lignes;
+});
+
 await ctx.route("**/rest/v1/**", async (route) => {
   const url = route.request().url();
   let corps = [];
   if (url.includes("bb_scores")) {
-    corps = JOUEURS.map((j) => ({ player_id:j.pid, player_name:j.nom, score:j.score, mode:"pont" }));
+    corps = JOUEURS.map((j, i) => ({ player_id:j.pid, player_name:j.nom, score:j.score,
+      mode:i % 3 === 0 ? "chaine" : "pont", created_at:ilYaJours(i % 14) }));
   } else if (url.includes("bb_duels")) {
     corps = JOUEURS.slice(0, 3).flatMap((j, i) => Array.from({ length:3 + i }, (_, k) => ({
+      id:j.pid + "-" + k, created_at:ilYaJours(k % 14),
       challenger_id:j.pid, opponent_id:JOUEURS[(JOUEURS.indexOf(j) + 1) % 6].pid,
       challenger_score: k % 3 === 0 ? 9 : 5, opponent_score: k % 3 === 0 ? 5 : 9, status:"complete" })));
+  } else if (url.includes("bb_events")) {
+    corps = EVENEMENTS;
+  } else if (url.includes("bb_presence")) {
+    corps = JOUEURS.slice(0, 4).map((j) => ({ player_id:j.pid }));
   } else if (url.includes("bb_pseudos")) {
-    corps = JOUEURS.map((j) => ({ player_id:j.pid, pseudo:j.nom, xp:j.xp,
-      xp_season:j.score, xp_season_month:new Date().toISOString().slice(0, 7), country:j.pays }));
+    corps = JOUEURS.map((j, i) => ({ player_id:j.pid, pseudo:j.nom, xp:j.xp,
+      xp_season:j.score, xp_season_month:new Date().toISOString().slice(0, 7), country:j.pays,
+      created_at:ilYaJours(i % 14) }));
   }
+  // content-range sur TOUTE réponse : c'est le seul canal par lequel sbCount
+  // apprend un total, et il lui suffit de la partie après le « / ». Il faut
+  // AUSSI l'exposer : sur une réponse d'une autre origine, le navigateur ne
+  // laisse lire que les en-têtes listés là — sans quoi sbCount lisait null et
+  // tout le bloc « depuis le début » restait à zéro.
   await route.fulfill({ status:200, contentType:"application/json",
-    headers:{ "access-control-allow-origin":"*" }, body:JSON.stringify(corps) });
+    headers:{ "access-control-allow-origin":"*",
+              "access-control-expose-headers":"content-range",
+              "content-range":"0-" + Math.max(0, corps.length - 1) + "/" + corps.length },
+    body:JSON.stringify(corps) });
 });
 
 const page = await ctx.newPage();
@@ -99,7 +135,11 @@ await page.addInitScript((premier) => {
   localStorage.setItem("bb_name", "jules");
   localStorage.setItem("bb_lang", "fr");
 }, PREMIER_LANCEMENT);
-await page.goto("http://localhost:4173/");
+// Le tableau de bord vit derrière un code dans l'URL, lu au montage : il faut
+// donc le passer dès le chargement, pas après.
+const CODE_STATS = (await readFile(join(ici, "..", "src", "components", "LePont.jsx"), "utf8"))
+  .match(/const STATS_CODE = "([^"]+)"/)[1];
+await page.goto("http://localhost:4173/" + (ecran.startsWith("tracking") ? "?stats=" + CODE_STATS : ""));
 await page.waitForLoadState("networkidle");
 // L'écran de démarrage dure 2,5 s et REMPLACE l'app pendant ce temps : tant
 // qu'il est là, rien n'est cliquable et les modales du premier lancement ne
@@ -145,6 +185,13 @@ const CHEMINS = {
 // carte : c'est le seul moyen d'ouvrir un mode qui n'est pas celui affiche.
 const MODES_CARROUSEL = ["duel", "grid", "mercato", "plug", "guess", "goatgrid"];
 for (const m of MODES_CARROUSEL) CHEMINS["mode-" + m] = [];
+// Le tableau de bord de suivi n'est pas dans l'app : il s'ouvre par ?stats=CODE,
+// et ses rubriques sont des onglets. LARGEUR=1280 donne la version PC.
+for (const r of ["resume", "audience", "modes", "joueurs", "comptes"]) CHEMINS["tracking-" + r] = [];
+CHEMINS["tracking"] = [];
+// `tracking-filtre` sert à vérifier le CÂBLAGE des filtres : les tests couvrent
+// le calcul, pas le fait qu'un menu déroulant atteigne bien l'agrégation.
+CHEMINS["tracking-filtre"] = [];
 if (!(ecran in CHEMINS)) {
   console.error("écran inconnu :", ecran, "— connus :", Object.keys(CHEMINS).join(", "));
   process.exit(1);
@@ -266,6 +313,26 @@ if (ecran === "profil") {
   await page.waitForTimeout(1600);
 }
 
+if (ecran === "tracking-filtre") {
+  // Deux menus, pour voir que les filtres se cumulent et que le bouton de remise
+  // à zéro apparaît avec le bon compte.
+  const menus = page.locator("select");
+  await menus.nth(1).selectOption("grid");     // Mode
+  await menus.nth(2).selectOption("inscrits"); // Public
+  await page.waitForTimeout(600);
+  await page.getByRole("button", { name:/modes de jeu/i }).first().click();
+  await page.waitForTimeout(600);
+}
+// Une rubrique du tableau de bord : les onglets portent leur libellé.
+else if (ecran.startsWith("tracking-")) {
+  const LIBELLES = { resume:/vue d'ensemble/i, audience:/audience/i, modes:/modes de jeu/i,
+                     joueurs:/^\s*👤 Joueurs\s*$|^Joueurs$/i, comptes:/comptes/i };
+  const cible = LIBELLES[ecran.slice(9)];
+  const b = page.getByRole("button", { name:cible }).first();
+  if (await b.count()) { await b.click(); await page.waitForTimeout(700); }
+  else console.warn("onglet introuvable :", ecran);
+}
+
 // Le bas d'un écran ne se photographie pas tout seul : ces écrans bornent leur
 // hauteur et défilent DANS un conteneur interne, pas dans le document. On
 // cherche donc le conteneur qui déborde vraiment.
@@ -281,7 +348,8 @@ if (ecran.endsWith("-bas")) {
   await page.waitForTimeout(900);
 }
 
-const chemin = join(ici, "..", "apercu-" + ecran + ".png");
+const suffixe = LARGEUR > 900 ? "-pc" : "";
+const chemin = join(ici, "..", "apercu-" + ecran + suffixe + ".png");
 await page.screenshot({ path:chemin, fullPage:false });
 console.log("écrit", chemin);
 await navigateur.close();
