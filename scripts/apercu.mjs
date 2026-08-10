@@ -99,6 +99,22 @@ await ctx.route("**/rest/v1/**", async (route) => {
       challenger_score: k % 3 === 0 ? 9 : 5, opponent_score: k % 3 === 0 ? 5 : 9, status:"complete" })));
   } else if (url.includes("bb_events")) {
     corps = EVENEMENTS;
+  } else if (url.includes("bb_friend_requests")) {
+    // La liste d'amis est RELUE depuis les demandes acceptées, qui écrasent
+    // localStorage : seeder bb_friends ne suffisait pas, l'écran retombait sur
+    // son état vide. On répond selon le sens demandé par la requête.
+    // Trois requêtes distinctes selon le sens et le statut : les amis viennent
+    // des demandes ACCEPTÉES dans les deux sens, les demandes reçues et les
+    // demandes envoyées encore en attente ont chacune la leur.
+    const recues = url.includes("to_id=eq.");
+    const acceptees = url.includes("status=eq.accepted");
+    if (acceptees && recues)  corps = [{ from_id:"p4", from_name:"vice", status:"accepted" }];
+    else if (acceptees)       corps = [{ to_id:"p2", to_name:"nadia", status:"accepted" },
+                                       { to_id:"p3", to_name:"james10", status:"accepted" }];
+    else if (recues)          corps = [{ id:"r1", from_id:"p5", from_name:"sjdrums", status:"pending" }];
+    else                      corps = [{ to_id:"p2", to_name:"nadia", status:"accepted" },
+                                       { to_id:"p3", to_name:"james10", status:"accepted" },
+                                       { to_id:"p6", to_name:"strudel", status:"pending" }];
   } else if (url.includes("bb_presence")) {
     corps = JOUEURS.slice(0, 4).map((j) => ({ player_id:j.pid }));
   } else if (url.includes("bb_pseudos")) {
@@ -134,6 +150,11 @@ await page.addInitScript((premier) => {
   if (premier === "non")   localStorage.setItem("bb_tutorial_done", "1");
   localStorage.setItem("bb_name", "jules");
   localStorage.setItem("bb_lang", "fr");
+  // La liste d'amis vit en localStorage, pas dans une table : sans ces clés,
+  // l'écran Amis ne montrait QUE son état vide, et tout ce qui s'y passe une
+  // fois qu'on a des amis restait invisible.
+  localStorage.setItem("bb_friends", JSON.stringify(["p2", "p3", "p4"]));
+  localStorage.setItem("bb_friend_names", JSON.stringify({ p2:"nadia", p3:"james10", p4:"vice" }));
 }, PREMIER_LANCEMENT);
 // Le tableau de bord vit derrière un code dans l'URL, lu au montage : il faut
 // donc le passer dès le chargement, pas après.
@@ -158,13 +179,41 @@ for (const libelle of [/plus tard/i, /^fermer$/i]) {
   }
 }
 
+// L'écran Amis n'a pas la même porte selon la largeur : sur téléphone c'est le
+// bouton de l'accueil, sur un écran large c'est la carte « Mes amis » de la
+// landing desktop, qui monte LePont avec ?friends=1. Passer directement par ce
+// paramètre ne marche pas sur téléphone : il attend la confirmation du pseudo,
+// qui n'est pas encore arrivée au chargement, et on photographiait l'accueil.
+if (ecran.startsWith("amis")) {
+  const porte = LARGEUR >= 768
+    ? page.getByText(/^MES AMIS$/i).first()
+    // Le compteur de demandes reçues s'ajoute au nom accessible du bouton
+    // (« 👥 Amis 1 ») : un libellé ancré à la fin ne le trouve plus.
+    : page.getByRole("button", { name:/^(👥 )?Amis\b/i }).first();
+  if (await porte.count()) {
+    // scrollIntoViewIfNeeded d'abord : le bouton de l'accueil est sous la ligne
+    // de flottaison, et un clic direct attend qu'il soit « stable » sans jamais
+    // l'amener dans la vue.
+    await porte.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(300);
+    await porte.click({ force:true });
+    await page.waitForTimeout(2600);
+  } else console.warn("porte de l'écran Amis introuvable");
+  if (ecran === "amis-defis") {
+    await page.getByRole("button", { name:/historique des d/i }).first().click();
+    await page.waitForTimeout(1600);
+  }
+}
+
 // Chaque écran est une suite de clics depuis l'accueil. Un écran atteint par
 // un chemin plus tortueux n'a pas sa place ici : mieux vaut l'ajouter le jour
 // où on en a besoin que maintenir une recette qui ne sert pas.
 const CHEMINS = {
   accueil:    [],
   classement: [/classement/i],
-  amis:       [/^👥 Amis$|^Amis$/i],
+  amis:       [],   // porte propre à la largeur, cf. plus bas
+  // L'écran voisin, atteint depuis la liste d'amis.
+  "amis-defis":  [],   // « Historique des défis »
   devinette:  [/devinette du jour/i],
   profil:     [],   // l'avatar n'est pas un bouton : traité à part
   jeu:        [],   // la carte du carrousel non plus

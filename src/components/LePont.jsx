@@ -5268,7 +5268,7 @@ export default function LePont() {
   }
   // Ferme le panneau amis ; si ouvert depuis la landing, on rend la main à la landing
   function closeFriends() {
-    setShowFriends(false); setFriendMsg(""); setSelectedFriend(null);
+    setShowFriends(false); setFriendMsg("");
     if (friendsFromLandingRef.current) {
       friendsFromLandingRef.current = false;
       try { window.dispatchEvent(new CustomEvent("goatfc:back-to-landing")); } catch(e) {}
@@ -5306,7 +5306,6 @@ export default function LePont() {
       friendsFromLandingRef.current = true;
       try { window.history.replaceState({}, "", window.location.pathname); } catch(e) {}
       requirePseudo(function(){
-        setSelectedFriend(null);
         loadFriends().then(function(ids){fetchFriendScores(ids);});
         loadDuels();
         loadFriendRequests();
@@ -5517,7 +5516,6 @@ export default function LePont() {
     return function(){ clearInterval(iv); document.removeEventListener("visibilitychange", onVis); };
   }, []);
   const [showFriends, setShowFriends] = useState(false);
-  const [selectedFriend, setSelectedFriend] = useState(null); // {id, name}
   const [viewedProfile, setViewedProfile] = useState(null); // {id, name} - profile being viewed
   const [viewedProfileData, setViewedProfileData] = useState(null); // fetched stats
   const [profileReturn, setProfileReturn] = useState(null); // "leaderboard" | "friends" | null : d'où on a ouvert le profil (pour la flèche retour)
@@ -10597,241 +10595,262 @@ export default function LePont() {
       if(res==="win") w++; else if(res==="loss") l++; else dr++;
       return { id:d.id, oppName:oppName, my:my, opp:opp, res:res, mode:d.mode, diff:d.diff, when:d.created_at };
     });
+    // Cet écran ne peignait AUCUN fond : `shell` est transparent, donc il
+    // s'ouvrait sur ce qui traînait derrière au lieu de l'or de la charte. Il
+    // reprend la structure du classement, comme la liste d'amis d'où il vient.
+    const bilan = [
+      { n:w,  l:tr("Victoires","Wins","Siege","Vittorie","Vitórias","Victorias"), c:G.pelouseClaire },
+      { n:dr, l:tr("Nuls","Draws","Remis","Pareggi","Empates","Empates"),         c:G.projecteur },
+      { n:l,  l:tr("Défaites","Losses","Niederlagen","Sconfitte","Derrotas","Derrotas"), c:G.maillot },
+    ];
     return (
-      <div style={{...shell,overflowY:isDesktop?"visible":"auto",overflowX:isDesktop?"visible":"hidden"}} key="duelHistory">
-        <div style={{zIndex:3,padding:"12px 16px 0",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-          {backBtn(function(){setShowDuelHistory(false);})}
-          <div style={{...posterText(26),color:G.white,letterSpacing:2}}>{tr("MES DÉFIS","MY DUELS","MEINE DUELLE","LE MIE SFIDE","MEUS DUELOS","MIS DUELOS")}</div>
+      <>
+      {retourCharte(function(){setShowDuelHistory(false);})}
+      <div style={{...shell,animation:"fadeUp .4s ease",
+        height:isDesktop?undefined:"100dvh",minHeight:isDesktop?shell.minHeight:0,
+        overflowY:isDesktop?"visible":"auto",overflowX:isDesktop?"visible":"hidden",background:fondCharte}} key="duelHistory">
+        {areneCharte}
+        <div style={{zIndex:3,position:"sticky",top:0,background:G.encre,borderBottom:G.traitFin,
+          padding:"max(12px, env(safe-area-inset-top)) 20px 12px 70px",display:"flex",alignItems:"center",gap:12}}>
+          <div style={{flex:1,textAlign:"center"}}>
+            <div style={{...posterText(38,G.projecteur)}}>{tr("MES DÉFIS","MY DUELS","MEINE DUELLE","LE MIE SFIDE","MEUS DUELOS","MIS DUELOS")}</div>
+            <div style={{fontSize:12,color:"rgba(255,255,255,.75)",fontWeight:700,letterSpacing:.8}}>
+              {rows.length > 0
+                ? rows.length + " " + (rows.length > 1 ? tr("défis terminés","duels played","beendete Duelle","sfide concluse","duelos concluídos","duelos terminados") : tr("défi terminé","duel played","beendetes Duell","sfida conclusa","duelo concluído","duelo terminado"))
+                : tr("Aucun défi terminé","No duel played yet","Noch kein Duell","Ancora nessuna sfida","Ainda nenhum duelo","Ningún duelo terminado")}
+            </div>
+          </div>
           <div style={{width:40}}/>
         </div>
-        <div style={{...sheet,borderRadius:"28px 28px 0 0",marginTop:16}}>
-          {/* Bilan */}
-          <div style={{display:"flex",gap:8,marginBottom:6}}>
-            <div style={{flex:1,background:"rgba(42,155,78,.35)",border:G.traitFin,borderRadius:16,padding:"14px 0",textAlign:"center"}}>
-              <div style={{...posterText(30),color:G.pelouseClaire}}>{w}</div>
-              <div style={{fontSize:10,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginTop:2}}>{tr("Victoires","Wins","Siege","Vittorie","Vitórias","Victorias")}</div>
-            </div>
-            <div style={{flex:1,background:"rgba(8,17,9,.45)",border:G.traitFin,borderRadius:16,padding:"14px 0",textAlign:"center"}}>
-              <div style={{...posterText(30),color:G.projecteur}}>{dr}</div>
-              <div style={{fontSize:10,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginTop:2}}>{tr("Nuls","Draws","Remis","Pareggi","Empates","Empates")}</div>
-            </div>
-            <div style={{flex:1,background:"rgba(217,58,43,.32)",border:G.traitFin,borderRadius:16,padding:"14px 0",textAlign:"center"}}>
-              <div style={{...posterText(30),color:"#FF3D57"}}>{l}</div>
-              <div style={{fontSize:10,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginTop:2}}>{tr("Défaites","Losses","Niederlagen","Sconfitte","Derrotas","Derrotas")}</div>
-            </div>
+        <div style={{...sheet}}>
+          {/* Bilan — les tuiles prenaient un aplat translucide cerclé d'un filet :
+              sur l'or, un fond translucide vire au khaki. Panneau de nuit, la
+              couleur ne portant plus que le chiffre. */}
+          <div style={{display:"flex",gap:10}}>
+            {bilan.map(function(b){return(
+              <div key={b.l} style={{flex:1,background:G.nuit,border:G.trait,boxShadow:G.ombre,
+                borderRadius:G.rayon,padding:"14px 0",textAlign:"center"}}>
+                <div style={{...posterText(30),color:b.c}}>{b.n}</div>
+                <div style={{fontSize:10,color:"rgba(255,255,255,.5)",fontWeight:800,letterSpacing:1.5,textTransform:"uppercase",marginTop:4}}>{b.l}</div>
+              </div>
+            );})}
           </div>
           {/* Liste */}
           {rows.length===0 ? (
-            <div style={{textAlign:"center",padding:"36px 20px",color:"rgba(255,255,255,.4)",fontSize:14,lineHeight:1.5}}>{tr("Aucun défi terminé pour l'instant. Défie un ami ! ⚔️","No completed duel yet. Challenge a friend! ⚔️","Noch kein beendetes Duell. Fordere einen Freund heraus! ⚔️","Ancora nessuna sfida completata. Sfida un amico! ⚔️","Ainda nenhum duelo concluído. Desafie um amigo! ⚔️","Ningún duelo terminado por ahora. ¡Reta a un amigo! ⚔️")}</div>
-          ) : rows.map(function(r){
-            const col = r.res==="win"?G.pelouseClaire:r.res==="loss"?G.maillot:G.projecteur;
-            const label = r.res==="win"?tr("GAGNÉ","WON","GEWONNEN","VINTO","VENCEU","GANADO"):r.res==="loss"?tr("PERDU","LOST","VERLOREN","PERSO","PERDEU","PERDIDO"):tr("NUL","DRAW","UNENT.","PARI","EMPATE","EMPATE");
-            let when=""; try{ if(r.when){ const dt=new Date(r.when); const loc={fr:"fr-FR",en:"en-GB",de:"de-DE",it:"it-IT",pt:"pt-PT",es:"es-ES"}[lang]||"en-GB"; when=dt.toLocaleDateString(loc,{day:"numeric",month:"short"}); } }catch(e){}
-            return (
-              <div key={r.id} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",background:"rgba(8,17,9,.45)",border:"1px solid "+col+"33",borderLeft:"3px solid "+col,borderRadius:14,marginBottom:8}}>
-                <div style={{flex:1,minWidth:0}}>
-                  <div style={{fontSize:14,fontWeight:800,color:G.white,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>vs {r.oppName}</div>
-                  <div style={{fontSize:11,color:"rgba(255,255,255,.4)",marginTop:1}}>{modeLabel(r.mode)}{when?" · "+when:""}</div>
-                </div>
-                <div style={{...posterText(20),color:G.white,letterSpacing:1}}>{r.my}<span style={{color:"rgba(255,255,255,.3)",margin:"0 3px"}}>–</span>{r.opp}</div>
-                <div style={{fontSize:10,fontWeight:900,letterSpacing:1,color:col,background:col+"1a",border:"1px solid "+col+"55",borderRadius:20,padding:"4px 9px",minWidth:52,textAlign:"center"}}>{label}</div>
-              </div>
-            );
-          })}
-          <button onClick={function(){setShowDuelHistory(false);}} style={{width:"100%",background:"rgba(8,17,9,.45)",color:"rgba(255,255,255,.5)",border:G.traitFin,borderRadius:G.rayon,cursor:"pointer",fontFamily:G.font,fontSize:13,padding:"10px",marginTop:4}}>{tr("↩ Retour","↩ Back","↩ Zurück","↩ Indietro","↩ Voltar","↩ Volver")}</button>
+            <div style={{background:G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,
+              padding:"26px 20px",textAlign:"center"}}>
+              <div style={{fontSize:34,marginBottom:10}}>⚔️</div>
+              <div style={{...posterText(20,G.white),marginBottom:6}}>{tr("Aucun défi terminé","No duel finished yet","Noch kein beendetes Duell","Ancora nessuna sfida conclusa","Ainda nenhum duelo concluído","Ningún duelo terminado")}</div>
+              <div style={{fontSize:13,color:"rgba(255,255,255,.5)",lineHeight:1.5}}>{tr("Défie un ami depuis ta liste pour lancer un 1v1.","Challenge a friend from your list to start a 1v1.","Fordere einen Freund aus deiner Liste zum 1v1 heraus.","Sfida un amico dalla tua lista per un 1v1.","Desafie um amigo da sua lista para um 1v1.","Reta a un amigo de tu lista para un 1v1.")}</div>
+            </div>
+          ) : (
+            <div style={{display:"flex",flexDirection:"column",gap:10}}>
+              {rows.map(function(r){
+                const col = r.res==="win"?G.pelouseClaire:r.res==="loss"?G.maillot:G.projecteur;
+                const label = r.res==="win"?tr("GAGNÉ","WON","GEWONNEN","VINTO","VENCEU","GANADO"):r.res==="loss"?tr("PERDU","LOST","VERLOREN","PERSO","PERDEU","PERDIDO"):tr("NUL","DRAW","UNENT.","PARI","EMPATE","EMPATE");
+                let when=""; try{ if(r.when){ const dt=new Date(r.when); const loc={fr:"fr-FR",en:"en-GB",de:"de-DE",it:"it-IT",pt:"pt-PT",es:"es-ES"}[lang]||"en-GB"; when=dt.toLocaleDateString(loc,{day:"numeric",month:"short"}); } }catch(e){}
+                return (
+                  <div key={r.id} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",
+                    background:G.nuit,border:G.trait,borderLeft:"9px solid "+col,boxShadow:G.ombre,borderRadius:G.rayon}}>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{...posterText(17,G.white),overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>vs {r.oppName}</div>
+                      <div style={{fontSize:11.5,color:"rgba(255,255,255,.45)",fontWeight:600,marginTop:3}}>{modeLabel(r.mode)}{when?" · "+when:""}</div>
+                    </div>
+                    <div style={{...posterText(22),color:G.white,letterSpacing:1,flexShrink:0}}>{r.my}<span style={{color:"rgba(255,255,255,.3)",margin:"0 3px"}}>–</span>{r.opp}</div>
+                    <div style={{fontSize:10,fontWeight:900,letterSpacing:1,color:col,background:col+"22",
+                      border:G.traitFin,borderRadius:G.rayonS,padding:"4px 9px",minWidth:52,textAlign:"center",flexShrink:0}}>{label}</div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
+      </>
     );
   }
 
   // ── LEADERBOARD SCREEN ──
   // ── FRIENDS SCREEN ──
   if (showFriends) {
-    // ── VUE DÉTAIL AMI ──
-    if (selectedFriend) {
-      const friendDuels = duels.filter(function(d){
-        return duelFini(d) && (d.challenger_id===selectedFriend.id || d.opponent_id===selectedFriend.id);
-      });
-      let wins=0, losses=0, draws=0;
-      friendDuels.forEach(function(d){
-        const myScore = d.challenger_id===playerId ? d.challenger_score : d.opponent_score;
-        const theirScore = d.challenger_id===playerId ? d.opponent_score : d.challenger_score;
-        if(myScore>theirScore) wins++;
-        else if(myScore===theirScore) draws++;
-        else losses++;
-      });
-      const isUnbeaten = friendDuels.length >= 1 && losses === 0;
-      const theyDominate = friendDuels.length >= 1 && wins === 0;
-      // Les deux vues Amis peignaient leur propre fond : un aplat de nuit sur
-      // toute la page, hérité du temps où le fond était une pelouse qu'il
-      // fallait couvrir. Elles étaient les dernières à ne pas passer par
-      // fondCharte, et l'écran sortait noir au milieu d'une app dorée. Même
-      // fond et même arène que le classement et le profil.
-      return (
-        <div style={{...shell,overflowY:isDesktop?"visible":"auto",overflowX:isDesktop?"visible":"hidden",background:fondCharte}} key="friendDetail">
-          {areneCharte}
-          <div style={{zIndex:3,padding:"12px 16px 0",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-            {backBtn(function(){setSelectedFriend(null);})}
-            <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
-              <div style={{...posterText(22),color:G.white,letterSpacing:2}}>{selectedFriend.name}</div>
-              {isUnbeaten && <div style={{fontSize:11,fontWeight:800,color:"#FFD700",background:"rgba(255,215,0,.15)",borderRadius:20,padding:"3px 10px",letterSpacing:.5}}>{tr("😤 T'es invaincu contre lui","😤 You're unbeaten against them","😤 Du bist ungeschlagen gegen ihn","😤 Sei imbattuto contro di lui","😤 Você está invicto contra ele","😤 Estás invicto contra él")}</div>}
-              {theyDominate && <div style={{fontSize:11,fontWeight:800,color:"#FF3D57",background:G.nuit,borderRadius:20,padding:"3px 10px",letterSpacing:.5}}>{tr("💀 Il n'a jamais perdu contre toi","💀 They've never lost to you","💀 Er hat nie gegen dich verloren","💀 Non ha mai perso contro di te","💀 Nunca perdeu para você","💀 Nunca ha perdido contra ti")}</div>}
-            </div>
-            <button onClick={function(){setShowDuelCreate({id:selectedFriend.id,name:selectedFriend.name});}} style={{padding:"8px 14px",background:G.pelouse,color:"#000",border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:800}}>{tr("⚡ Défier","⚡ Challenge","⚡ Herausfordern","⚡ Sfida","⚡ Desafiar","⚡ Retar")}</button>
-          </div>
-          <div style={{...sheet,borderRadius:"28px 28px 0 0",marginTop:16}}>
-            {/* Bilan */}
-            {friendDuels.length > 0 && (
-              <div style={{display:"flex",gap:8,marginBottom:4}}>
-                <div style={{flex:1,background:G.nuit,border:G.traitFin,borderRadius:16,padding:"14px 0",textAlign:"center"}}>
-                  <div style={{...posterText(32),color:G.pelouseClaire}}>{wins}</div>
-                  <div style={{fontSize:10,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginTop:2}}>{tr("Victoires","Wins","Siege","Vittorie","Vitórias","Victorias")}</div>
-                </div>
-                <div style={{flex:1,background:G.nuit,border:G.traitFin,borderRadius:16,padding:"14px 0",textAlign:"center"}}>
-                  <div style={{...posterText(32),color:G.projecteur}}>{draws}</div>
-                  <div style={{fontSize:10,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginTop:2}}>{tr("Nuls","Draws","Remis","Pareggi","Empates","Empates")}</div>
-                </div>
-                <div style={{flex:1,background:G.nuit,border:G.traitFin,borderRadius:16,padding:"14px 0",textAlign:"center"}}>
-                  <div style={{...posterText(32),color:"#FF3D57"}}>{losses}</div>
-                  <div style={{fontSize:10,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginTop:2}}>{tr("Défaites","Losses","Niederlagen","Sconfitte","Derrotas","Derrotas")}</div>
-                </div>
-              </div>
-            )}
-            {/* Historique */}
-            <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(8,17,9,.62)",marginBottom:8,marginTop:4}}>{tr("Historique","History","Verlauf","Cronologia","Histórico","Historial")}</div>
-            {friendDuels.length===0 && (
-              <div style={{textAlign:"center",padding:"32px 0",color:"rgba(8,17,9,.62)",fontSize:14}}>{tr("Aucun duel encore joué avec ","No duels played with ","Noch keine Duelle mit ","Ancora nessuna sfida con ","Ainda nenhum duelo com ","Aún no has jugado ningún duelo con ")}{selectedFriend.name} 👀</div>
-            )}
-            {friendDuels.map(function(d,i){
-              const myScore = d.challenger_id===playerId ? d.challenger_score : d.opponent_score;
-              const theirScore = d.challenger_id===playerId ? d.opponent_score : d.challenger_score;
-              const won = myScore>theirScore; const draw = myScore===theirScore;
-              return(
-                <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 14px",background:G.nuit,borderRadius:12,marginBottom:6,border:G.traitFin}}>
-                  <div>
-                    <div style={{fontSize:13,fontWeight:800,color:won?G.pelouseClaire:draw?G.projecteur:G.maillot}}>{won?tr("🏆 Victoire","🏆 Win","🏆 Sieg","🏆 Vittoria","🏆 Vitória","🏆 Victoria"):draw?tr("🤝 Égalité","🤝 Draw","🤝 Remis","🤝 Pareggio","🤝 Empate","🤝 Empate"):tr("😅 Défaite","😅 Loss","😅 Niederlage","😅 Sconfitta","😅 Derrota","😅 Derrota")}</div>
-                    <div style={{fontSize:11,color:"rgba(255,255,255,.4)"}}>{d.mode==="pont"?"The Plug":"The Mercato"}{d.diff?" · "+d.diff:""}</div>
-                  </div>
-                  <div style={{textAlign:"right"}}>
-                    <div style={{...posterText(22),color:G.white}}>{myScore} <span style={{fontSize:11,color:"rgba(255,255,255,.3)"}}>pts</span></div>
-                    <div style={{fontSize:11,color:"rgba(255,255,255,.35)"}}>{selectedFriend.name}: {theirScore}</div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      );
-    }
-
+    // La VUE DÉTAIL AMI a été retirée : c'était un face-à-face par ami (bilan +
+    // historique des duels contre lui) que RIEN n'ouvrait. `selectedFriend`
+    // n'est jamais posé qu'à null, et taper la ligne d'un ami appelle
+    // openUserProfile, qui mène au profil complet — plus riche, et lui accessible.
     // ── VUE LISTE AMIS ──
+    //
+    // Cet écran était le dernier resté sur l'habillage d'avant la charte : titre
+    // en blanc posé à nu sur l'or (où le blanc tombe à 1,4 de contraste), pas
+    // d'entête noire comme le classement, panneaux au trait fin et aux rayons
+    // arbitraires, boutons en pilules sans cadre, état vide en texte nu sur le
+    // fond, et un « ↩ Retour » en bas qui doublait la flèche du haut.
+    //
+    // Il reprend maintenant exactement la structure du classement : flèche
+    // flottante, bandeau d'encre collant qui porte le titre d'affiche et le
+    // compte, feuille transparente, et des rectangles de contenu dessinés du
+    // même crayon — panneau de nuit, trait plein, ombre dure.
+    const demandesEnAttente = sentRequests.filter(function(r){ return r.status === "pending"; });
+    // Le libellé de section est posé À NU sur l'or : seule l'encre s'y lit.
+    const titreSection = {fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",
+      color:"rgba(8,17,9,.62)",marginBottom:8,paddingLeft:2};
+    // Vignette d'un ami : sa carte de badge quand on la connaît (badgeByPid n'est
+    // rempli qu'après un passage par le classement), sinon son initiale. Mieux
+    // vaut une pastille assumée qu'un avatar par défaut qui ment sur le niveau.
+    const vignetteAmi = function(fid, fname){
+      const info = badgeByPid[fid];
+      if (info) {
+        const c = avatarCard(info.badge, info.xp || 0);
+        const rm = rarityMeta(c.rarity);
+        return (
+          <div className={rm.cls} style={{width:44,padding:2,borderRadius:G.rayonS,background:rm.frame,
+            border:G.traitFin,boxShadow:"2px 2px 0 "+G.encre,flexShrink:0}}>
+            <div style={{aspectRatio:"3 / 4",overflow:"hidden",borderRadius:8,background:"#000"}}>
+              <img src={c.img} alt="" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top"}}/>
+            </div>
+          </div>
+        );
+      }
+      return <div style={pastilleCharte(G.orSombre,44)}>{String(fname||"?").charAt(0).toUpperCase()}</div>;
+    };
     return (
-      <div style={{...shell,overflowY:isDesktop?"visible":"auto",overflowX:isDesktop?"visible":"hidden",background:fondCharte}} key="friends">
+      <>
+      {retourCharte(function(){closeFriends();})}
+      {/* Même borne de hauteur que le classement : `shell` est en minHeight, donc
+          il grandit avec son contenu au lieu de défiler, et un bandeau `sticky`
+          n'a alors aucun conteneur défilant auquel s'accrocher. */}
+      <div style={{...shell,animation:"fadeUp .4s ease",
+        height:isDesktop?undefined:"100dvh",minHeight:isDesktop?shell.minHeight:0,
+        overflowY:isDesktop?"visible":"auto",overflowX:isDesktop?"visible":"hidden",background:fondCharte}} key="friends">
         {areneCharte}
         {duelCreateModal}
         {/* Modal confirmation suppression ami */}
         {confirmRemove && (
           <div style={{position:"fixed",inset:0,zIndex:400,background:"rgba(8,17,9,.86)",display:"flex",alignItems:"center",justifyContent:"center"}}>
-            <div style={{background:G.nuit,borderRadius:24,padding:"28px 24px",maxWidth:320,width:"calc(100% - 40px)",border:G.traitFin,textAlign:"center"}}>
+            <div style={{background:G.nuit,borderRadius:G.rayonL,padding:"28px 24px",maxWidth:320,width:"calc(100% - 40px)",border:G.trait,boxShadow:G.ombreL,textAlign:"center"}}>
               <div style={{fontSize:32,marginBottom:12}}>👋</div>
               <div style={{...posterText(22),color:G.white,marginBottom:8}}>{tr("Supprimer ","Remove ","Entfernen ","Rimuovere ","Remover ","Eliminar ")}{confirmRemove.name}{tr(" ?","?"," ?","?","?","?")}</div>
-              <div style={{fontSize:13,color:"rgba(255,255,255,.4)",marginBottom:24}}>{tr("Il devra renvoyer une demande pour être à nouveau dans ta liste.","They'll need to send a new request to be back on your list.","Er muss eine neue Anfrage senden, um wieder in deiner Liste zu sein.","Dovrà inviare una nuova richiesta per tornare nella tua lista.","Ele precisará enviar um novo pedido para voltar à sua lista.","Tendrá que enviarte otra solicitud para volver a tu lista.")}</div>
+              <div style={{fontSize:13,color:"rgba(255,255,255,.45)",marginBottom:24,lineHeight:1.5}}>{tr("Il devra renvoyer une demande pour être à nouveau dans ta liste.","They'll need to send a new request to be back on your list.","Er muss eine neue Anfrage senden, um wieder in deiner Liste zu sein.","Dovrà inviare una nuova richiesta per tornare nella tua lista.","Ele precisará enviar um novo pedido para voltar à sua lista.","Tendrá que enviarte otra solicitud para volver a tu lista.")}</div>
               <div style={{display:"flex",gap:10}}>
-                <button onClick={function(){setConfirmRemove(null);}} style={{flex:1,padding:"12px",background:"rgba(8,17,9,.45)",color:"rgba(255,255,255,.6)",border:G.trait,borderRadius:G.rayon,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>{tr("Annuler","Cancel","Abbrechen","Annulla","Cancelar","Cancelar")}</button>
-                <button onClick={function(){removeFriend(confirmRemove.id);setConfirmRemove(null);}} style={{flex:1,padding:"12px",background:"#FF3D57",color:"#fff",border:G.trait,borderRadius:G.rayon,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>{tr("Supprimer","Remove","Entfernen","Rimuovi","Remover","Eliminar")}</button>
+                <button onClick={function(){setConfirmRemove(null);}} style={{...btn(G.nuit,G.white,15),flex:1}}>{tr("Annuler","Cancel","Abbrechen","Annulla","Cancelar","Cancelar")}</button>
+                <button onClick={function(){removeFriend(confirmRemove.id);setConfirmRemove(null);}} style={{...btn(G.maillot,G.white,15),flex:1}}>{tr("Supprimer","Remove","Entfernen","Rimuovi","Remover","Eliminar")}</button>
               </div>
             </div>
           </div>
         )}
-        <div style={{zIndex:3,padding:"12px 16px 0",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-          {backBtn(function(){closeFriends();})}
-          <div style={{...posterText(26),color:G.white,letterSpacing:2}}>{tr("AMIS","FRIENDS","FREUNDE","AMICI","AMIGOS","AMIGOS")}</div>
-          <div style={{width:40}}/>
+        {/* Bandeau d'encre : le titre était en blanc à nu sur l'or, où il ne se
+            lisait pas. Ici il est dans un panneau, donc il peut prendre l'or. */}
+        <div style={{zIndex:3,position:"sticky",top:0,background:G.encre,borderBottom:G.traitFin,
+          padding:"max(12px, env(safe-area-inset-top)) 20px 12px 70px",display:"flex",alignItems:"center",gap:12}}>
+          <div style={{flex:1,textAlign:"center"}}>
+            <div style={{...posterText(40,G.projecteur)}}>{tr("AMIS","FRIENDS","FREUNDE","AMICI","AMIGOS","AMIGOS")}</div>
+            <div style={{fontSize:12,color:"rgba(255,255,255,.75)",fontWeight:700,letterSpacing:.8}}>
+              {friendsList.length > 0
+                ? friendsList.length + " " + (friendsList.length > 1 ? tr("amis","friends","Freunde","amici","amigos","amigos") : tr("ami","friend","Freund","amico","amigo","amigo"))
+                : tr("Personne dans ta liste","Nobody on your list","Niemand in deiner Liste","Nessuno nella tua lista","Ninguém na sua lista","Nadie en tu lista")}
+              {friendRequests.length > 0 ? " · " + friendRequests.length + " " + tr("demande","request","Anfrage","richiesta","pedido","solicitud") + (friendRequests.length > 1 ? "s" : "") : ""}
+              {demandesEnAttente.length > 0 ? " · " + demandesEnAttente.length + " " + tr("en attente","pending","offen","in attesa","pendente","pendiente") : ""}
+            </div>
+          </div>
+          <div style={{width:40}}/>{/* spacer pour centrer le titre */}
         </div>
-        <div style={{...sheet,borderRadius:"28px 28px 0 0",marginTop:16}}>
+        <div style={{...sheet}}>
           {/* Demandes reçues */}
           {friendRequests.length > 0 && (
-            <div style={{background:G.nuit,border:G.traitFin,borderRadius:16,padding:14}}>
-              <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:G.pelouseClaire,marginBottom:10}}>👋 {tr("Demandes reçues","Requests received","Erhaltene Anfragen","Richieste ricevute","Pedidos recebidos","Solicitudes recibidas")}</div>
-              {friendRequests.map(function(req){return(
-                <div key={req.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-                  <div>
-                    <div style={{fontSize:14,fontWeight:800,color:G.white}}>{req.from_name}</div>
-                    <div style={{fontSize:11,color:"rgba(255,255,255,.4)"}}>{tr("veut être ton ami · ","wants to be your friend · ","möchte dein Freund sein · ","vuole essere tuo amico · ","quer ser seu amigo · ","quiere ser tu amigo · ")}{req.from_id}</div>
+            <div style={{background:G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,padding:16}}>
+              <div style={{...posterText(18,G.pelouseClaire),marginBottom:12}}>👋 {tr("Demandes reçues","Requests received","Erhaltene Anfragen","Richieste ricevute","Pedidos recebidos","Solicitudes recibidas")}</div>
+              <div style={{display:"flex",flexDirection:"column",gap:10}}>
+                {friendRequests.map(function(req){return(
+                  <div key={req.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
+                    <div style={{minWidth:0,flex:1}}>
+                      <div style={{...posterText(17,G.white),overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{req.from_name}</div>
+                      <div style={{fontSize:11,color:"rgba(255,255,255,.45)"}}>{tr("veut être ton ami · ","wants to be your friend · ","möchte dein Freund sein · ","vuole essere tuo amico · ","quer ser seu amigo · ","quiere ser tu amigo · ")}{req.from_id}</div>
+                    </div>
+                    <div style={{display:"flex",gap:8,flexShrink:0}}>
+                      <button onClick={function(){acceptRequest(req);}} style={{...btn(G.pelouse,G.white,15),padding:"8px 14px"}}>✓</button>
+                      <button onClick={function(){declineRequest(req);}} style={{...btn(G.nuit,G.white,15),padding:"8px 12px"}}>✕</button>
+                    </div>
                   </div>
-                  <div style={{display:"flex",gap:6}}>
-                    <button onClick={function(){acceptRequest(req);}} style={{padding:"8px 14px",background:G.pelouse,color:"#000",border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:800}}>✓</button>
-                    <button onClick={function(){declineRequest(req);}} style={{padding:"8px 12px",background:G.nuit,color:"rgba(255,255,255,.4)",border:"none",borderRadius:20,cursor:"pointer",fontSize:13}}>✕</button>
-                  </div>
-                </div>
-              );})}
+                );})}
+              </div>
             </div>
           )}
           {/* Historique des défis */}
-          <button onClick={function(){loadDuels();setShowDuelHistory(true);}} style={{width:"100%",display:"flex",alignItems:"center",gap:10,padding:"13px 16px",background:G.nuit,border:G.traitFin,borderRadius:14,cursor:"pointer",textAlign:"left"}}>
-            <span style={{fontSize:20}}>📜</span>
-            <div style={{flex:1}}>
-              <div style={{fontSize:14,fontWeight:800,color:G.projecteur}}>{tr("Historique des défis","Duel history","Duell-Verlauf","Cronologia sfide","Histórico de duelos","Historial de duelos")}</div>
-              <div style={{fontSize:11,color:"rgba(255,255,255,.4)"}}>{tr("Vois ce que t'as gagné et perdu","See what you won and lost","Sieh, was du gewonnen und verloren hast","Vedi cosa hai vinto e perso","Veja o que você ganhou e perdeu","Mira lo que has ganado y perdido")}</div>
+          <button onClick={function(){loadDuels();setShowDuelHistory(true);}} style={ligneCharte}>
+            <div style={pastilleCharte(G.projecteur)}>📜</div>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontSize:14,fontWeight:800,color:G.white}}>{tr("Historique des défis","Duel history","Duell-Verlauf","Cronologia sfide","Histórico de duelos","Historial de duelos")}</div>
+              <div style={{fontSize:11,color:"rgba(255,255,255,.45)",fontWeight:600}}>{tr("Vois ce que t'as gagné et perdu","See what you won and lost","Sieh, was du gewonnen und verloren hast","Vedi cosa hai vinto e perso","Veja o que você ganhou e perdeu","Mira lo que has ganado y perdido")}</div>
             </div>
-            <span style={{fontSize:16,color:"rgba(255,214,0,.6)"}}>›</span>
+            <span style={{fontSize:20,color:"rgba(255,255,255,.35)",flexShrink:0}}>›</span>
           </button>
           {/* Ajouter un ami */}
-          <div style={{background:G.nuit,border:G.traitFin,borderRadius:16,padding:16}}>
-            <div style={{fontSize:12,fontWeight:700,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginBottom:8}}>{tr("Ajouter un ami","Add a friend","Freund hinzufügen","Aggiungi un amico","Adicionar amigo","Añadir un amigo")}</div>
-            <div style={{display:"flex",gap:8}}>
+          <div style={{background:G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,padding:16}}>
+            <div style={{...posterText(18,G.projecteur),marginBottom:10}}>{tr("Ajouter un ami","Add a friend","Freund hinzufügen","Aggiungi un amico","Adicionar amigo","Añadir un amigo")}</div>
+            <div style={{display:"flex",gap:10}}>
               <input value={friendInput} onChange={function(e){setFriendInput(e.target.value);setFriendMsg("");}}
                 placeholder={tr("Pseudo de ton ami...","Your friend's username...","Nutzername deines Freundes...","Nome utente del tuo amico...","Nome de usuário do seu amigo...","Nombre de tu amigo...")} maxLength={20}
-                style={{flex:1,padding:"10px 14px",borderRadius:12,border:G.traitFin,background:"#141414",color:G.white,fontFamily:G.font,fontSize:15,fontWeight:600,outline:"none"}}/>
-              <button onClick={function(){addFriend(friendInput);}}
-                style={{padding:"10px 16px",background:G.pelouse,color:"#000",border:"none",borderRadius:12,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800}}>+</button>
+                style={{flex:1,minWidth:0,padding:"11px 14px",borderRadius:G.rayonS,border:G.traitFin,background:G.bgCard,color:G.white,fontFamily:G.font,fontSize:15,fontWeight:600,outline:"none",boxSizing:"border-box"}}/>
+              <button onClick={function(){addFriend(friendInput);}} style={{...btn(G.pelouse,G.white,20),padding:"0 18px",flexShrink:0}}>+</button>
             </div>
-            {friendMsg && <div style={{fontSize:12,marginTop:6,color:friendMsg.startsWith("✓")?G.pelouseClaire:friendMsg.startsWith("🔍")?"rgba(255,255,255,.5)":"#FF3D57",fontWeight:700}}>{friendMsg}</div>}
+            {friendMsg && <div style={{fontSize:12.5,marginTop:8,fontWeight:700,lineHeight:1.4,
+              color:friendMsg.startsWith("✓")?G.pelouseClaire:friendMsg.startsWith("🔍")?"rgba(255,255,255,.55)":G.maillot}}>{friendMsg}</div>}
           </div>
           {/* Liste des amis + demandes en attente */}
           <div>
-            <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(8,17,9,.62)",marginBottom:8}}>
-              {tr("Mes amis","My friends","Meine Freunde","I miei amici","Meus amigos","Mis amigos")} {friendsList.length>0&&<span style={{color:G.pelouseClaire}}>({friendsList.length})</span>}
+            <div style={titreSection}>
+              {tr("Mes amis","My friends","Meine Freunde","I miei amici","Meus amigos","Mis amigos")}{friendsList.length > 0 ? " · " + friendsList.length : ""}
             </div>
-            {friendsList.length===0 && sentRequests.filter(function(r){return r.status==="pending";}).length===0 && (
-              <div style={{textAlign:"center",padding:"24px 0",color:"rgba(8,17,9,.62)",fontSize:14}}>{tr("Aucun ami pour l'instant 👋","No friends yet 👋","Noch keine Freunde 👋","Ancora nessun amico 👋","Ainda sem amigos 👋","Todavía no tienes amigos 👋")}</div>
-            )}
-            {/* Demandes en attente intégrées dans la liste */}
-            {sentRequests.filter(function(r){return r.status==="pending";}).map(function(r,i){return(
-              <div key={"pending-"+i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 14px",background:G.nuit,borderRadius:14,marginBottom:8,border:"1px dashed rgba(255,214,0,.25)"}}>
-                <div>
-                  <div style={{fontSize:15,fontWeight:800,color:"rgba(255,255,255,.5)"}}>{r.to_name || r.to_id}</div>
-                  <div style={{fontSize:11,color:G.projecteur}}>{tr("⏳ En attente d'acceptation","⏳ Awaiting acceptance","⏳ Warte auf Annahme","⏳ In attesa di accettazione","⏳ Aguardando aceitação","⏳ Esperando aceptación")}</div>
-                </div>
+            {friendsList.length === 0 && demandesEnAttente.length === 0 && (
+              /* L'état vide était du texte nu posé sur l'or, à 62 % d'encre : il
+                 lui faut un panneau, comme à tout ce qui n'est pas de l'encre. */
+              <div style={{background:G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,
+                padding:"26px 20px",textAlign:"center"}}>
+                <div style={{fontSize:34,marginBottom:10}}>👋</div>
+                <div style={{...posterText(20,G.white),marginBottom:6}}>{tr("Aucun ami pour l'instant","No friends yet","Noch keine Freunde","Ancora nessun amico","Ainda sem amigos","Todavía no tienes amigos")}</div>
+                <div style={{fontSize:13,color:"rgba(255,255,255,.5)",lineHeight:1.5}}>{tr("Ajoute un pseudo ci-dessus pour le défier en 1v1 et le voir dans ton classement.","Add a username above to challenge them 1v1 and see them in your leaderboard.","Füge oben einen Nutzernamen hinzu, um ihn im 1v1 herauszufordern und in deiner Rangliste zu sehen.","Aggiungi un nome utente sopra per sfidarlo 1v1 e vederlo nella tua classifica.","Adicione um nome de usuário acima para desafiá-lo em 1v1 e vê-lo na sua classificação.","Añade un nombre arriba para retarlo en 1v1 y verlo en tu clasificación.")}</div>
               </div>
-            );})}
-            {friendsList.map(function(fid, i) {
-              let fname = fid;
-              try {
-                const names = JSON.parse(localStorage.getItem("bb_friend_names") || "{}");
-                const fscores = friendScores.filter(function(s){return s.player_id===fid;});
-                fname = names[fid] || (fscores.length > 0 ? fscores[0].player_name : fid);
-              } catch { }
-              const friendDuelCount = duels.filter(function(d){return duelFini(d)&&(d.challenger_id===fid||d.opponent_id===fid);}).length;
-              return (
-                <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 14px",background:G.nuit,borderRadius:14,marginBottom:8,border:G.traitFin,cursor:"pointer"}}
-                  onClick={function(){setShowFriends(false);openUserProfile(fid,fname,"friends");}}>
-                  <div>
-                    <div style={{fontSize:15,fontWeight:800,color:G.white}}>{fname}</div>
-                    <div style={{fontSize:11,color:"rgba(255,255,255,.35)"}}>{friendDuelCount>0?friendDuelCount+" "+(friendDuelCount>1?tr("duels joués","duels played","Duelle gespielt","sfide giocate","duelos jogados","duelos jugados"):tr("duel joué","duel played","Duell gespielt","sfida giocata","duelo jogado","duelo jugado")):tr("Aucun duel encore","No duels yet","Noch keine Duelle","Ancora nessuna sfida","Ainda nenhum duelo","Aún no hay duelos")}</div>
-                  </div>
-                  <div style={{display:"flex",gap:8,alignItems:"center"}}>
-                    <button onClick={function(e){e.stopPropagation();setShowDuelCreate({id:fid,name:fname});}} style={{padding:"7px 12px",background:G.pelouse,color:"#000",border:"none",borderRadius:20,cursor:"pointer",fontFamily:G.font,fontSize:12,fontWeight:800}}>{tr("⚡ Défier","⚡ Challenge","⚡ Herausfordern","⚡ Sfida","⚡ Desafiar","⚡ Retar")}</button>
-                    <button onClick={function(e){e.stopPropagation();setConfirmRemove({id:fid,name:fname});}} style={{padding:"7px 10px",background:"transparent",border:G.traitFin,borderRadius:20,cursor:"pointer",color:"rgba(255,255,255,.4)",fontSize:12}}>✕</button>
-                    <span style={{color:"rgba(255,255,255,.3)",fontSize:18}}>›</span>
+            )}
+            <div style={{display:"flex",flexDirection:"column",gap:10}}>
+              {/* Demandes en attente intégrées dans la liste */}
+              {demandesEnAttente.map(function(r,i){return(
+                <div key={"pending-"+i} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",
+                  background:G.nuit,borderRadius:G.rayon,border:"3px dashed "+G.encre,boxShadow:G.ombre}}>
+                  <div style={pastilleCharte(G.orSombre,40)}>⏳</div>
+                  <div style={{minWidth:0,flex:1}}>
+                    <div style={{...posterText(17,"rgba(255,255,255,.62)"),overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{r.to_name || r.to_id}</div>
+                    <div style={{fontSize:11,color:G.projecteur,fontWeight:700}}>{tr("En attente d'acceptation","Awaiting acceptance","Warte auf Annahme","In attesa di accettazione","Aguardando aceitação","Esperando aceptación")}</div>
                   </div>
                 </div>
-              );
-            })}
+              );})}
+              {friendsList.map(function(fid, i) {
+                let fname = fid;
+                try {
+                  const names = JSON.parse(localStorage.getItem("bb_friend_names") || "{}");
+                  const fscores = friendScores.filter(function(s){return s.player_id===fid;});
+                  fname = names[fid] || (fscores.length > 0 ? fscores[0].player_name : fid);
+                } catch { }
+                const friendDuelCount = duels.filter(function(d){return duelFini(d)&&(d.challenger_id===fid||d.opponent_id===fid);}).length;
+                return (
+                  <div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",
+                    background:G.nuit,borderRadius:G.rayon,border:G.trait,boxShadow:G.ombre,cursor:"pointer"}}
+                    onClick={function(){setShowFriends(false);openUserProfile(fid,fname,"friends");}}>
+                    {vignetteAmi(fid, fname)}
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{...posterText(18,G.white),overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{fname}</div>
+                      <div style={{fontSize:11.5,color:"rgba(255,255,255,.45)",fontWeight:600,marginTop:3}}>{friendDuelCount>0?friendDuelCount+" "+(friendDuelCount>1?tr("duels joués","duels played","Duelle gespielt","sfide giocate","duelos jogados","duelos jugados"):tr("duel joué","duel played","Duell gespielt","sfida giocata","duelo jogado","duelo jugado")):tr("Aucun duel encore","No duels yet","Noch keine Duelle","Ancora nessuna sfida","Ainda nenhum duelo","Aún no hay duelos")}</div>
+                    </div>
+                    <div style={{display:"flex",gap:8,alignItems:"center",flexShrink:0}}>
+                      <button onClick={function(e){e.stopPropagation();setShowDuelCreate({id:fid,name:fname});}} style={{...btn(G.pelouse,G.white,14),padding:"8px 12px"}}>⚡ {tr("Défier","Challenge","Herausfordern","Sfida","Desafiar","Retar")}</button>
+                      <button onClick={function(e){e.stopPropagation();setConfirmRemove({id:fid,name:fname});}} style={{...btn(G.nuit,G.white,14),padding:"8px 11px"}}>✕</button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-          <button onClick={function(){closeFriends();}} style={{width:"100%",background:G.nuit,color:"rgba(255,255,255,.5)",border:G.traitFin,borderRadius:G.rayon,cursor:"pointer",fontFamily:G.font,fontSize:13,padding:"10px",marginTop:4}}>{tr("↩ Retour","↩ Back","↩ Zurück","↩ Indietro","↩ Voltar","↩ Volver")}</button>
         </div>
       </div>
+      </>
     );
   }
 
