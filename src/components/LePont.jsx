@@ -19,6 +19,8 @@ import { WinBanner } from "./landing/WinBanner";
 import { GRADES, getGrade, gradeLabel, countryToFlag } from "../lib/leaderboard";
 import { duelTermine } from "../lib/duel";
 import { prochainsTotauxXp } from "../lib/xp";
+// Règles de tirage anti-répétition, partagées avec « Trouve le joueur ».
+import { clePaire, pairesJouables, tirerEnEvitant, memoriser } from "../lib/tirage.js";
 import Tracking from "./Tracking.jsx";
 
 
@@ -2141,15 +2143,49 @@ const DUEL_RESULT_SECS = 1.8; // écran résultat de manche (court)
 const DUEL_SPIN_MS = 2200;   // durée du tirage "machine à sous" (clubs aléatoires)
 const DUEL_SOLO_SECS = 90;   // SOLO : temps TOTAL de la partie (manches illimitées)
 const DUEL_SOLO_SPIN_MS = 1000; // SOLO : tirage plus court (le temps total est limité)
-// Tire une paire de clubs aléatoire GARANTIE jouable (>=1 joueur commun)
+// Toutes les paires JOUABLES, calculées une fois. DUEL_CLUBS et CLUB_INDEX sont
+// figés au chargement, donc énumérer à chaque manche ne servirait à rien — et
+// surtout, tirer au hasard « jusqu'à tomber sur une paire jouable » ne permet pas
+// d'exclure les paires déjà vues : sur un vivier réduit, la boucle épuise ses 80
+// essais et retombe sur le repli, qui est toujours le même.
+const DUEL_PAIRES = pairesJouables(DUEL_CLUBS, function(a,b){ return duelCommonPlayers(a,b).length; });
+
+// Mémoire des paires déjà posées. Elle vit ICI, dans le tireur, et non chez
+// l'appelant : les cinq sites de tirage (solo, partie rapide, manche suivante
+// solo, lancement 1v1, manche suivante 1v1) passent tous par duelRollPair, donc
+// aucun ne peut oublier de l'appliquer. En 1v1 seul l'hôte tire — l'invité lit
+// club_c1/club_c2 dans la ligne du salon — donc une mémoire locale suffit.
+//
+// Ce qu'elle corrige, mesuré par scripts/audit-tirage.mjs : le tirage n'avait
+// AUCUNE mémoire, ni entre deux parties ni même entre deux manches. Sur 20 clubs
+// il n'existe que 189 paires jouables ; à 12 manches par partie de 90 s, 30 % des
+// parties posaient DEUX FOIS la même question, et il fallait 2 parties en médiane
+// pour revoir une paire. C'est le seul des quatre modes qui n'avait pas de
+// garde-fou — Le Plug en a un (60 paires), Le Mercato aussi (5 starters).
+//
+// 60 mémorisées sur 189 : il reste toujours au moins 129 candidates, donc le
+// tirage ne peut pas se retrouver coincé.
+const DUEL_MEMOIRE = "goatfc_recent_battle_pairs";
+const DUEL_MEMOIRE_MAX = 60;
+function duelPairesRecentes(){
+  try {
+    const v = JSON.parse(localStorage.getItem(DUEL_MEMOIRE) || "[]");
+    return Array.isArray(v) ? v : [];
+  } catch(e){ return []; }
+}
+
+// Tire une paire de clubs GARANTIE jouable (>=1 joueur commun) et pas vue récemment.
 function duelRollPair(){
-  for(let i=0;i<80;i++){
-    const c1 = DUEL_CLUBS[Math.floor(Math.random()*DUEL_CLUBS.length)];
-    const c2 = DUEL_CLUBS[Math.floor(Math.random()*DUEL_CLUBS.length)];
-    if(c1===c2) continue;
-    if(duelCommonPlayers(c1, c2).length > 0) return [c1, c2];
-  }
-  return ["Real Madrid", "Barcelona"]; // repli (ont des joueurs communs)
+  const paire = tirerEnEvitant(DUEL_PAIRES, function(p){ return clePaire(p[0], p[1]); },
+    new Set(duelPairesRecentes()));
+  if(!paire) return ["Real Madrid", "Barcelona"]; // vivier vide : ne devrait pas arriver
+  try {
+    localStorage.setItem(DUEL_MEMOIRE,
+      JSON.stringify(memoriser(clePaire(paire[0], paire[1]), duelPairesRecentes(), DUEL_MEMOIRE_MAX)));
+  } catch(e){}
+  // Le SENS reste tiré : sans ça, une même paire se présenterait toujours dans
+  // l'ordre alphabétique de DUEL_CLUBS sur les rouleaux de la machine à sous.
+  return Math.random() < 0.5 ? [paire[0], paire[1]] : [paire[1], paire[0]];
 }
 
 // CRESCENDO HELPER : retourne la difficulté "effective" en mode crescendo selon le nombre de liens accomplis

@@ -10,6 +10,7 @@ import { recordDailyDone, displayStreak } from "@/lib/streak";
 import { WinBanner } from "./WinBanner";
 import { G, posterText, btn, fondCharte, areneCharte, ligneCharte } from "@/lib/charte.jsx";
 import { chercheJoueurs } from "@/lib/nom";
+import { nettoyerVus } from "@/lib/tirage.js";
 
 const SPELL_NAMES = Object.keys(CLUB_SPELLS);
 
@@ -94,6 +95,27 @@ function dailyPlayer(): Player {
   return arr[((dayIdx % arr.length) + arr.length) % arr.length];
 }
 
+// ── Les joueurs déjà tirés, d'une ouverture du mode à la suivante ─────────────
+// Cette liste vivait dans un useRef(new Set()) : elle repartait donc vide à
+// chaque montage du composant, c'est-à-dire à chaque ouverture du mode. La
+// protection anti-répétition existait et fonctionnait — mais seulement tant qu'on
+// enchaînait les manches sans fermer. Mesuré par scripts/audit-tirage.mjs : 188
+// parties avant de revoir un joueur en enchaînant, contre 20 en rouvrant le mode
+// à chaque partie. Le vivier n'était pas le problème, la mémoire l'était.
+const VUS_KEY = "bb_reveal_vus";
+function chargerVus(): Set<string> {
+  try {
+    // nettoyerVus écarte les noms qui n'existent PLUS dans la base : une fiche
+    // renommée ou retirée resterait sinon dans la liste pour toujours et
+    // rognerait le vivier sans qu'aucun cycle puisse l'en sortir.
+    return nettoyerVus(JSON.parse(localStorage.getItem(VUS_KEY) || "[]"),
+      new Set(ALL.map(p => p.name)));
+  } catch { return new Set(); }
+}
+function enregistrerVus(seen: Set<string>) {
+  try { localStorage.setItem(VUS_KEY, JSON.stringify([...seen])); } catch { /* noop */ }
+}
+
 // ── Mode illimité : un joueur au hasard, sans répétition proche ────────────────
 // Jamais de joueur "expert" : 70 % facile, 30 % moyen. Que des joueurs modernes
 // (né en 1975+ → a joué après 2000), pas d'anciens.
@@ -110,6 +132,7 @@ function randomPlayer(seen: Set<string>): Player {
   if (cand.length === 0) { pool.forEach(p => seen.delete(p.name)); cand = pool; }
   const pick = cand[Math.floor(Math.random() * cand.length)];
   seen.add(pick.name);
+  enregistrerVus(seen); // ici et pas au démontage : fermer l'onglet ne prévient pas
   return pick;
 }
 
@@ -387,7 +410,12 @@ function loadSavedRound(raw: string | null): SavedRound | null {
 const REVEAL_BG = fondCharte;
 
 export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; daily?: boolean }) => {
-  const seenRef = useRef<Set<string>>(new Set());
+  // useState et non useRef : l'initialiseur d'un useState ne tourne qu'au premier
+  // rendu, alors que l'argument d'un useRef est évalué à CHAQUE rendu (même s'il
+  // est ignoré ensuite) — on relirait le localStorage à chaque frappe au clavier.
+  // Le Set est muté sur place et ne déclenche jamais de rendu, ce qui est voulu :
+  // changer de joueur mystère passe par setAnswer.
+  const [vus] = useState<Set<string>>(chargerVus);
   // En mode « Devinette du jour » : 1 joueur/jour partagé, sauvegarde persistante
   // par jour (localStorage) → on retrouve son résultat même après avoir fermé.
   // En mode illimité : sauvegarde de session (sessionStorage) qui se réinitialise.
@@ -396,7 +424,7 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
   const savedRef = useRef<SavedRound | null | undefined>(undefined);
   if (savedRef.current === undefined) savedRef.current = loadSavedRound(store ? store.getItem(storeKey) : null);
   const saved = savedRef.current;
-  const [answer, setAnswer] = useState<Player>(() => saved?.answer || (daily ? dailyPlayer() : randomPlayer(seenRef.current)));
+  const [answer, setAnswer] = useState<Player>(() => saved?.answer || (daily ? dailyPlayer() : randomPlayer(vus)));
 
   const [guesses, setGuesses] = useState<Player[]>(() => saved?.guesses || []);
   const [over, setOver] = useState(() => saved?.over || false);
@@ -641,7 +669,7 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
   // Mode illimité : nouvelle manche avec un joueur au hasard. (Désactivé « du jour ».)
   function playAgain() {
     if (daily) return;
-    setAnswer(randomPlayer(seenRef.current));
+    setAnswer(randomPlayer(vus));
     setGuesses([]);
     setOver(false);
     setWon(false);
