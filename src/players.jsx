@@ -928,7 +928,7 @@ export const PLAYERS = [
   { name:"Miroslav Klose", clubs:["Werder Bremen", "Bayern Munich", "SS Lazio"], diff:"moyen", nationalities:["Allemagne"], positions:["attaquant"], birthYear:1978 },
   { name:"Lucas Hernandez", clubs:["Atletico Madrid", "Bayern Munich", "PSG"], diff:"moyen", nationalities:["France"], positions:["defenseur"], birthYear:1996 },
   { name:"Dayot Upamecano", clubs:["Salzburg", "RB Leipzig", "Bayern Munich"], diff:"moyen", nationalities:["France"], positions:["defenseur"], birthYear:1998 },
-  { name:"Randal Kolo Muani", clubs:["Nantes", "Boulogne", "Eintracht Frankfurt", "PSG", "Juventus FC", "Tottenham"], diff:"facile", nationalities:["France"], positions:["attaquant"], birthYear:1998 },
+  { name:"Randal Kolo Muani", clubs:["Nantes", "Boulogne", "Eintracht Frankfurt", "PSG", "Juventus FC", "Tottenham", "Juventus FC"], diff:"facile", nationalities:["France"], positions:["attaquant"], birthYear:1998 },
   { name:"Wissam Ben Yedder", clubs:["Toulouse", "Sevilla", "Monaco"], diff:"expert", nationalities:["France"], positions:["attaquant"] , birthYear:1990 },
   { name:"Jonathan Clauss", clubs:["Marseille", "Nice"], diff:"expert", nationalities:["France"], positions:["defenseur"], birthYear:1992 },
   { name:"Dani Olmo", clubs:["Dinamo Zagreb", "RB Leipzig", "Barcelona"], diff:"facile", nationalities:["Espagne"], positions:["milieu"], birthYear:1998 },
