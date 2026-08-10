@@ -802,7 +802,7 @@ export const PLAYERS = [
   // Chelsea
   { name:"Filip Jörgensen", clubs:["Villarreal", "Chelsea"], diff:"expert", nationalities:["Suède"], positions:["gardien"], birthYear:2002 },
   { name:"Levi Colwill", clubs:["Chelsea", "Huddersfield", "Brighton"], diff:"moyen", nationalities:["Angleterre"], positions:["defenseur"], birthYear:2003 },
-  { name:"Trevoh Chalobah", clubs:["Chelsea", "Ipswich Town", "Huddersfield", "Lorient"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1999 },
+  { name:"Trevoh Chalobah", clubs:["Chelsea", "Ipswich Town", "Huddersfield", "Lorient", "Como"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1999 },
   { name:"Benoît Badiashile", clubs:["Monaco", "Chelsea"], diff:"moyen", nationalities:["France"], positions:["defenseur"], birthYear:2001 },
   { name:"Romeo Lavia", clubs:["Anderlecht", "Manchester City", "Southampton", "Chelsea"], diff:"moyen", nationalities:["Belgique"], positions:["milieu"], birthYear:2004 },
   // Tottenham

@@ -105,6 +105,17 @@ par leur club de 2026, et une seule était fausse.
 Les deux derniers cas disent la règle : quand un club achète pour prêter aussitôt,
 c'est le club de prêt qui va en dernier, parce que c'est là que le joueur joue.
 
+## Signalements ponctuels après l'audit
+
+| Signalé | Vérification | Décision |
+|---|---|---|
+| Trevoh Chalobah → Côme | Officialisé le 9 août, 30 M€ + 6, contrat de 5 ans, annoncé par le club ([ESPN](https://www.espn.com/soccer/story/_/id/49568762/como-announce-signing-trevoh-chalobah-chelsea)) | **écrit** — club « Como » dans la base, pas « Côme » |
+| Darwin Núñez → Trabzonspor | **Pas signé.** Accord de principe pour un PRÊT depuis Al-Hilal, vice-président en route pour l'Arabie saoudite, ni visite médicale ni annonce | **non écrit** — à reprendre quand c'est officiel |
+
+Le second cas est exactement celui pour lequel la règle existe : la presse titre
+« accord trouvé », ce qui n'est pas « transfert acté ». Sur un jeu qui pose des
+questions, écrire un transfert qui ne se fait pas revient à inventer une réponse.
+
 ## Ce que cet audit ne couvre pas
 
 - **Les prêts.** Plusieurs mouvements de l'été sont des prêts ou des retours de
