@@ -23,6 +23,19 @@ function jeuDemandeParURL(): string | null {
   try { return new URLSearchParams(window.location.search).get("play"); } catch { return null; }
 }
 
+// Le tableau de bord privé est demandé (`/?stats=…`). Lu au niveau module, comme
+// `jeuDemandeParURL`, parce que trois initialiseurs d'état et un effet en ont
+// besoin AVANT que LePont n'efface l'URL.
+//
+// Pourquoi ça compte : ouvrir le tableau de bord n'est pas jouer. Le pop-up de la
+// devinette du jour se déclenchait 1,4 s après le montage sans regarder l'URL,
+// donc il s'ouvrait PAR-DESSUS le tableau de bord — et les trois overlays de jeu
+// mémorisés en sessionStorage se rouvraient de la même façon si on consultait les
+// stats juste après une partie.
+function tableauDeBordDemande(): boolean {
+  try { return new URLSearchParams(window.location.search).has("stats"); } catch { return false; }
+}
+
 const Index = () => {
   const [isMobile, setIsMobile] = useState(
     () => typeof window !== "undefined" && window.innerWidth < BREAKPOINT
@@ -31,14 +44,17 @@ const Index = () => {
   // quand on la quitte un instant (ex. faire une capture d'écran à envoyer à un
   // pote), on rouvre le jeu au lieu de retomber sur l'accueil.
   const [goatGuessOpen, setGoatGuessOpen] = useState(() => {
+    if (tableauDeBordDemande()) return false;
     if (jeuDemandeParURL() === "guess") return true;
     try { return sessionStorage.getItem("bb_active_overlay") === "guess"; } catch { return false; }
   });
   const [findPlayerOpen, setFindPlayerOpen] = useState(() => {
+    if (tableauDeBordDemande()) return false;
     if (jeuDemandeParURL() === "grid") return true;
     try { return sessionStorage.getItem("bb_active_overlay") === "findplayer"; } catch { return false; }
   });
   const [devinetteOpen, setDevinetteOpen] = useState(() => {
+    if (tableauDeBordDemande()) return false;
     try { return sessionStorage.getItem("bb_active_overlay") === "devinette"; } catch { return false; }
   });
   const [devinettePrompt, setDevinettePrompt] = useState(false); // petit pop-up d'invitation sur l'accueil
@@ -93,6 +109,7 @@ const Index = () => {
   // session pour ne pas être insistant). Une fois trouvée/terminée → plus de pop-up.
   useEffect(() => {
     if (!isMobile) return;
+    if (tableauDeBordDemande()) return;   // consulter les stats n'est pas jouer
     try {
       const d = new Date();
       const paris = new Date(d.toLocaleString("en-US", { timeZone: "Europe/Paris" }));
@@ -119,9 +136,7 @@ const Index = () => {
   // normalement <Home />, donc le paramètre n'était jamais lu et le lien
   // retombait sur le jeu. On monte LePont dès que le paramètre est présent ;
   // c'est LePont qui valide le code, comme sur mobile.
-  const wantsStats = (() => {
-    try { return new URLSearchParams(window.location.search).has("stats"); } catch { return false; }
-  })();
+  const wantsStats = tableauDeBordDemande();
 
   if (!isMobile && !wantsStats) return <Home />;
 

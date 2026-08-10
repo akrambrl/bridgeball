@@ -207,11 +207,16 @@ await page.waitForTimeout(3400);
 // Le tutoriel vient APRÈS la bannière de bienvenue : il faut la passer.
 // Les invites du jour (devinette, installation) se posent par-dessus l'accueil
 // et masqueraient l'écran demandé.
-for (const libelle of [/plus tard/i, /^fermer$/i]) {
-  const b = page.getByRole("button", { name: libelle }).first();
-  if (await b.count() && await b.isVisible().catch(() => false)) {
-    await b.click().catch(() => {});
-    await page.waitForTimeout(400);
+// SAUF sur le tableau de bord : là, l'invite ne doit pas s'ouvrir du tout, et
+// l'écarter ici masquerait précisément ce qu'on veut vérifier. C'est ce qui s'est
+// passé au premier essai — le contrôle passait au vert sans rien prouver.
+if (!ecran.startsWith("tracking")) {
+  for (const libelle of [/plus tard/i, /^fermer$/i]) {
+    const b = page.getByRole("button", { name: libelle }).first();
+    if (await b.count() && await b.isVisible().catch(() => false)) {
+      await b.click().catch(() => {});
+      await page.waitForTimeout(400);
+    }
   }
 }
 
@@ -534,6 +539,26 @@ if (ecran === "grille-remplie" || ecran === "grille-fin") {
     if (await revoir.count()) { await revoir.click({ force:true }).catch(() => {}); }
   }
   await page.waitForTimeout(1600);
+  if (ecran === "grille-fin") {
+    // La question posée : est-ce que ça TIENT sur une page ? On mesure la carte
+    // contre la fenêtre, et on regarde si l'enveloppe a de quoi défiler.
+    const m = await page.evaluate(() => {
+      const enveloppe = [...document.querySelectorAll("div")].find(d => {
+        const st = getComputedStyle(d);
+        return st.position === "fixed" && st.zIndex === "500" && d.querySelector("video");
+      });
+      if (!enveloppe) return null;
+      const carte = enveloppe.firstElementChild;
+      return { fenetre: window.innerHeight,
+               carte: Math.round(carte.getBoundingClientRect().height),
+               defile: enveloppe.scrollHeight - enveloppe.clientHeight,
+               boutons: enveloppe.querySelectorAll("button").length };
+    });
+    if (!m) console.log("carte de fin introuvable");
+    else console.log(`carte ${m.carte} px dans une fenêtre de ${m.fenetre} px · `
+      + `${m.boutons} boutons · débordement ${m.defile} px `
+      + (m.defile <= 0 ? "✅ tient sur une page" : "⚠️ il faut défiler"));
+  }
 }
 
 if (ecran === "grille-saisie") {
@@ -694,6 +719,34 @@ if (ecran === "tracking-filtre") {
   await page.getByRole("button", { name:/modes de jeu/i }).first().click();
   await page.waitForTimeout(600);
 }
+// Ouvrir le tableau de bord n'est pas jouer : le pop-up de la devinette du jour
+// se déclenchait 1,4 s après le montage sans regarder l'URL. On laisse passer ce
+// délai puis on vérifie qu'aucun overlay de jeu n'est apparu.
+if (ecran.startsWith("tracking")) {
+  await page.waitForTimeout(3000);
+  // On cherche l'OVERLAY, pas le texte : l'accueil reste monté sous le tableau de
+  // bord et sa barre porte elle aussi les mots « Devinette du jour ». Le pop-up,
+  // lui, est un calque position:fixed à zIndex 400 — et les overlays de jeu
+  // (GOAT Guess, Trouve le joueur) sont des plein-écrans montés par Index.
+  const parasites = await page.evaluate(() => {
+    const vus = [];
+    for (const e of document.querySelectorAll("div")) {
+      const st = getComputedStyle(e);
+      if (st.position !== "fixed") continue;
+      const z = parseInt(st.zIndex, 10);
+      // 400 à 9000 : au-dessus, c'est le tableau de bord lui-même (z 9999).
+      if (!(z >= 400 && z < 9000)) continue;
+      const r = e.getBoundingClientRect();
+      if (r.width < window.innerWidth * 0.6 || r.height < window.innerHeight * 0.5) continue;
+      vus.push("calque z=" + z + " : " + (e.textContent || "").trim().slice(0, 46));
+    }
+    return vus;
+  });
+  console.log(parasites.length === 0
+    ? "✅ aucun pop-up de devinette sur le tableau de bord"
+    : "⚠️ pop-up parasite : " + JSON.stringify(parasites));
+}
+
 // Une rubrique du tableau de bord : les onglets portent leur libellé.
 else if (ecran.startsWith("tracking-")) {
   const LIBELLES = { resume:/vue d'ensemble/i, audience:/audience/i, modes:/modes de jeu/i,
