@@ -9882,7 +9882,7 @@ export default function LePont() {
       body = (
         // Hauteur exacte et non minimum : l'affiche prend ce qui reste, donc
         // l'écran tient sur une page. Voir la feuille Plug/Mercato pour le détail.
-        <div style={{position:"relative",width:"100%",height:"100dvh",overflow:"hidden",display:"flex",flexDirection:"column",animation:"fadeIn .3s ease-out",background:fondCharte}}>
+        <div style={{position:"relative",width:"100%",height:"100dvh",overflowY:"auto",display:"flex",flexDirection:"column",animation:"fadeIn .3s ease-out",background:fondCharte}}>
           {areneCharte}
           {fermerCharte(duelLeaveRoom, 10)}
           {/* Hero image (visuel entier) */}
@@ -9890,8 +9890,8 @@ export default function LePont() {
               de la charte plutôt que par du noir. Il y a DEUX écrans de choix
               de mode dans ce fichier — celui-ci et gameConfigModal — et ils
               portent chacun leur propre affiche. */}
-          <div style={{position:"relative",zIndex:1,width:"100%",flex:"1 1 0",minHeight:0,overflow:"hidden",background:"transparent",borderBottom:G.trait}}>
-            <img src={DUEL_CARD_IMG} alt="" style={{width:"100%",height:"100%",objectFit:"contain",pointerEvents:"none",userSelect:"none"}} draggable={false}/>
+          <div style={{position:"relative",zIndex:1,width:"100%",aspectRatio:"1086 / 1448",flex:"0 1 auto",minHeight:0,overflow:"hidden",background:"transparent",borderBottom:G.trait}}>
+            <img src={DUEL_CARD_IMG} alt="" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center bottom",pointerEvents:"none",userSelect:"none"}} draggable={false}/>
           </div>
           <div style={{position:"relative",zIndex:1,padding:"14px 18px calc(16px + env(safe-area-inset-bottom))",flexShrink:0,display:"flex",flexDirection:"column",maxWidth:480,margin:"0 auto",width:"100%",boxSizing:"border-box"}}>
             {/* Pastille format */}
@@ -13393,7 +13393,9 @@ export default function LePont() {
                   // l'écran tient sur une page. dvh et non vh — sur Android, vh
                   // se fige sur la fenêtre barre d'URL rétractée.
                   height:"100dvh",
-                  overflow:"hidden",
+                  // auto et non hidden : sur un écran vraiment court, mieux vaut
+                  // pouvoir atteindre « Jouer seul » en défilant que le voir coupé.
+                  overflowY:"auto",
                   display:"flex",
                   flexDirection:"column",
                   animation:"fadeIn .3s ease-out",
@@ -13407,11 +13409,11 @@ export default function LePont() {
                       chaque côté. En noir elles coupaient l'écran en deux ; en
                       transparent, c'est fondCharte — posé sur le conteneur juste
                       au-dessus — qui les remplit, et l'or continue sans couture. */}
-                  <div style={{position:"relative",zIndex:1,width:"100%",flex:"1 1 0",minHeight:0,overflow:"hidden",background:"transparent",borderBottom:G.trait}}>
+                  <div style={{position:"relative",zIndex:1,width:"100%",aspectRatio:"1086 / 1448",flex:"0 1 auto",minHeight:0,overflow:"hidden",background:"transparent",borderBottom:G.trait}}>
                     <img
                       src={isPont ? PLUG_CARD_IMG : MERCATO_CARD_IMG}
                       alt=""
-                      style={{width:"100%",height:"100%",objectFit:"contain",pointerEvents:"none",userSelect:"none"}}
+                      style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center bottom",pointerEvents:"none",userSelect:"none"}}
                       draggable={false}
                     />
                   </div>
@@ -13524,7 +13526,7 @@ export default function LePont() {
         {/* 🐐 Modal de choix Solo / Multi pour GOAT GRID */}
         {ggModeChoice && (
           <div style={{position:"fixed",inset:0,zIndex:450,background:fondCharte,overflowY:"auto",WebkitOverflowScrolling:"touch"}}>
-            <div style={{position:"relative",width:"100%",height:"100dvh",overflow:"hidden",display:"flex",flexDirection:"column",animation:"fadeIn .3s ease-out"}}>
+            <div style={{position:"relative",width:"100%",height:"100dvh",overflowY:"auto",display:"flex",flexDirection:"column",animation:"fadeIn .3s ease-out"}}>
               {areneCharte}
               {fermerCharte(function(){setGgModeChoice(false);}, 10)}
 
@@ -13535,8 +13537,8 @@ export default function LePont() {
                   etait recadree en bandeau de 27vh, ce qui coupait la couronne
                   et la tete des joueurs — et l'ecran, qui ne porte que deux
                   choix, laissait un grand vide en dessous. */}
-              <div style={{position:"relative",zIndex:1,width:"100%",flex:"1 1 0",minHeight:0,overflow:"hidden",borderBottom:G.trait}}>
-                <img src={GRID_CARD_IMG} alt="" style={{width:"100%",height:"100%",objectFit:"contain",pointerEvents:"none",userSelect:"none"}} draggable={false}/>
+              <div style={{position:"relative",zIndex:1,width:"100%",aspectRatio:"1086 / 1448",flex:"0 1 auto",minHeight:0,overflow:"hidden",borderBottom:G.trait}}>
+                <img src={GRID_CARD_IMG} alt="" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center bottom",pointerEvents:"none",userSelect:"none"}} draggable={false}/>
                 {/* Plus de voile ni de titre rapporte : l'affiche porte deja
                     « GOAT GRID » en toutes lettres. Ils avaient un sens quand
                     elle etait recadree en bandeau — le titre du dessin etait
