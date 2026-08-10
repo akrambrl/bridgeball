@@ -8910,7 +8910,7 @@ export default function LePont() {
     seenInstructions.current.add(mode);
     try{localStorage.setItem("bb_seen",JSON.stringify([...seenInstructions.current]));}catch{}
     if(mode==="chaine")startChain();
-    else{setCombo(0);setMaxCombo(0);comboRef.current=0;lastAnswerTime.current=Date.now();setRoundScores([]);setCurrentRound(1);setIsNewRecord(false);setMyLbRank(null);startRound(1);}
+    else startCompetition();
   }
 
   function dismissInstructions() {
@@ -8919,7 +8919,7 @@ export default function LePont() {
     try{localStorage.setItem("bb_seen",JSON.stringify([...seenInstructions.current]));}catch{}
     setShowInstructions(null);
     if(mode==="chaine")startChain();
-    else{setCombo(0);setMaxCombo(0);comboRef.current=0;lastAnswerTime.current=Date.now();setRoundScores([]);setCurrentRound(1);setIsNewRecord(false);setMyLbRank(null);startRound(1);}
+    else startCompetition();
   }
 
   const activeQueue = queue.length > 0 ? queue : queueRef.current;
