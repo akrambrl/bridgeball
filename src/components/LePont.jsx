@@ -14528,11 +14528,17 @@ export default function LePont() {
                         )}
                       </div>
 
-                      {/* Mini aperçu Wordle-style */}
-                      <div style={{background:G.encre,border:G.traitFin,borderRadius:14,padding:"5px 10px",fontFamily:"monospace",fontSize:17,letterSpacing:4,lineHeight:1.2,flexShrink:0}}>
-                        {gridEmojis.map(function(row,i){return(<div key={i}>{row}</div>);})}
-                      </div>
-                      
+                      {/* L'aperçu « à la Wordle » (les neuf petits carrés) est retiré : il
+                          répétait en emojis ce que la grille juste derrière montre en clair,
+                          et il coûtait 90 px sur un écran qui doit tenir d'une pièce.
+                          Ces 90 px ne vont PAS à la cinématique : son plafond de 200 px est
+                          exactement le 16/9 de la largeur de la carte (352 px), donc
+                          l'agrandir la ferait recadrer — `objectFit:cover` rognerait le haut
+                          et le bas de la scène. La carte est simplement plus compacte.
+                          `gridEmojis` RESTE calculé : c'est lui qui porte le motif dans le
+                          texte de partage (shareText), où il a tout son sens — là, le
+                          destinataire n'a pas la grille sous les yeux. */}
+
                       {/* Boutons d'action. « Nouvelle grille » et « Fermer » partagent une
                           ligne : ce sont les deux sorties, et empilées elles coûtaient
                           80 px que la cinématique prend mieux. */}
