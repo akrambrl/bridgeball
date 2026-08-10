@@ -306,6 +306,10 @@ CHEMINS["grille"] = [];
 // on les lui emprunte.
 CHEMINS["grille-remplie"] = [];
 CHEMINS["grille-fin"] = [];
+// `grille-saisie` ouvre la modale « QUI MATCHE ? » — l'écran où l'on tape sa
+// réponse. Avec SAISIE=refus, il tape un nom faux d'abord, pour photographier
+// aussi le champ en erreur et le panneau « je suis sûr que ça devrait passer ».
+CHEMINS["grille-saisie"] = [];
 if (!(ecran in CHEMINS)) {
   console.error("écran inconnu :", ecran, "— connus :", Object.keys(CHEMINS).join(", "));
   process.exit(1);
@@ -455,7 +459,7 @@ if (ecran === "profil") {
   await page.waitForTimeout(1600);
 }
 
-if (ecran === "grille" || ecran === "grille-remplie" || ecran === "grille-fin") {
+if (ecran === "grille" || ecran === "grille-remplie" || ecran === "grille-fin" || ecran === "grille-saisie") {
   // GOAT GRID en jeu. Deux chemins, parce que l'accueil n'est pas le même :
   // sur mobile un carrousel de cartes, sur ordinateur une liste de modes à
   // gauche puis un bouton JOUER. Sans la branche PC, l'aperçu restait sur la
@@ -530,6 +534,31 @@ if (ecran === "grille-remplie" || ecran === "grille-fin") {
     if (await revoir.count()) { await revoir.click({ force:true }).catch(() => {}); }
   }
   await page.waitForTimeout(1600);
+}
+
+if (ecran === "grille-saisie") {
+  // Une case vide porte le « + » : on l'ouvre.
+  const vides = page.locator("div").filter({ hasText: /^\+$/ });
+  if (await vides.count()) { await vides.first().click({ force:true }).catch(() => {}); }
+  await page.waitForTimeout(900);
+  const champ = page.locator("input[placeholder*='lettres'], input[placeholder*='letters']").first();
+  if (await champ.count()) {
+    await champ.click({ force:true }).catch(() => {});
+    // SAISIE=refus : un nom volontairement faux, validé, pour obtenir l'état
+    // d'erreur et le panneau de signalement. Sinon on tape de quoi faire
+    // apparaître la liste de suggestions.
+    if (process.env.SAISIE === "refus") {
+      await champ.pressSequentially("Zinedine Zidane", { delay: 25 });
+      await page.waitForTimeout(900);
+      const valider = page.getByRole("button", { name:/^VALIDER$/i }).first();
+      if (await valider.count()) { await valider.click({ force:true }).catch(() => {}); }
+      await page.waitForTimeout(1600);
+    } else {
+      await champ.pressSequentially("mar", { delay: 40 });
+      await page.waitForTimeout(1200);
+    }
+  }
+  await page.waitForTimeout(800);
 }
 
 if (ecran === "battle-clavier") {
