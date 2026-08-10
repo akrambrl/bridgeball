@@ -17,6 +17,7 @@ import { WinBanner } from "./landing/WinBanner";
 // Barème de grades et drapeaux : définis une seule fois, partagés avec le desktop.
 import { GRADES, getGrade, gradeLabel, countryToFlag } from "../lib/leaderboard";
 import { duelTermine } from "../lib/duel";
+import { prochainsTotauxXp } from "../lib/xp";
 
 
 
@@ -7903,20 +7904,77 @@ export default function LePont() {
     return 0;                           // Loin = défaite
   }
 
+  // Gains d'XP qu'on n'a pas pu écrire faute d'avoir pu lire la ligne serveur.
+  // Ils attendent ici et sont ajoutés à la première partie qui, elle, arrive à
+  // lire. Voir addXp : c'est la seule branche qui a le droit de ne rien écrire.
+  const XP_EN_ATTENTE = "bb_xp_pending";
+  function lireXpEnAttente() {
+    try {
+      const n = parseInt(localStorage.getItem(XP_EN_ATTENTE) || "0", 10);
+      return n > 0 ? n : 0;
+    } catch (e) { return 0; }
+  }
+  function ecrireXpEnAttente(n) {
+    try {
+      if (n > 0) localStorage.setItem(XP_EN_ATTENTE, String(n));
+      else localStorage.removeItem(XP_EN_ATTENTE);
+    } catch (e) {}
+  }
+
   // Incrémente l'XP du joueur (lifetime ET saisonnier) en local et dans Supabase
   // Appelé à la fin de chaque partie avec le score gagné
+  //
+  // Le total cumulé est calculé à partir de la LIGNE SERVEUR, pas de l'état
+  // React. L'ancienne version faisait `playerXp + gain` puis écrivait le
+  // résultat : dès que l'état local valait 0 alors que la base portait un vrai
+  // total (nouvel appareil, stockage vidé, chargement du pseudo qui échoue mais
+  // pseudoConfirmed restauré depuis localStorage), la partie suivante remplaçait
+  // le total stocké par « 0 + gain ». C'est ce qui a ramené le champion de
+  // juillet de 33 700 XP à ~5 000, et la signature du défaut — xp == xp_season
+  // alors que le joueur jouait depuis des mois — se lisait sur des dizaines de
+  // lignes. On ne peut donc jamais écrire un cumul inférieur à celui déjà stocké.
   async function addXp(scoreGained) {
     if (!playerId || !pseudoConfirmed) return;
-    const xpGained = Math.max(0, scoreGained); // pas d'XP négatif si score <0
+    const enAttente = lireXpEnAttente();
+    const xpGained = Math.max(0, scoreGained) + enAttente; // pas d'XP négatif si score <0
     if (xpGained === 0) return;
     const season = getCurrentSeason();
-    const oldXp = playerXp;
-    const newXp = oldXp + xpGained;
-    // Si on est dans un nouveau mois, on reset automatiquement l'XP saison avant d'ajouter
-    // (cas où le joueur n'a pas ouvert l'app au changement de mois)
-    const newXpSeason = playerXpSeason + xpGained; // la logique de reset est dans loadPlayerXp au démarrage
+
+    let serveur = null;
+    for (let essai = 0; essai < 2 && !serveur; essai++) {
+      try {
+        const lu = await sbFetch("bb_pseudos?player_id=eq." + playerId +
+          "&select=xp,xp_season,xp_season_month,last_notified_grade&limit=1");
+        if (Array.isArray(lu) && lu.length > 0) serveur = lu[0];
+      } catch (e) {}
+    }
+    if (!serveur) {
+      // Total stocké inconnu : on refuse de l'écraser. Le gain attend en local,
+      // et on ne touche pas playerXp — sinon il serait compté deux fois, une
+      // fois dans l'état et une fois dans l'attente.
+      ecrireXpEnAttente(xpGained);
+      return;
+    }
+
+    // Règle et cas limites dans src/lib/xp.ts, verrouillés par src/test/xp.test.ts.
+    const totaux = prochainsTotauxXp({
+      localXp: playerXp,
+      localXpSeason: playerXpSeason,
+      serverXp: serveur.xp,
+      serverXpSeason: serveur.xp_season,
+      serverMonth: serveur.xp_season_month,
+      currentMonth: season.monthKey,
+      gain: xpGained
+    });
+    const oldXp = totaux.base;
+    const newXp = totaux.xp;
+    const newXpSeason = totaux.xpSeason;
     setPlayerXp(newXp);
     setPlayerXpSeason(newXpSeason);
+    // Le gain en attente est maintenant porté par l'état local : on le retire
+    // de l'attente tout de suite, même si le PATCH ci-dessous échoue, sinon le
+    // prochain appel l'ajouterait une seconde fois par-dessus.
+    ecrireXpEnAttente(0);
 
     // Cartes de collection franchies par ce gain d'XP. Rien à stocker : la
     // possession se déduit de l'XP. On mémorise seulement les annonces déjà
@@ -7951,17 +8009,13 @@ export default function LePont() {
     
     // Double-check : si on vient de franchir un palier MAIS aussi si le grade stocké en DB
     // n'est pas encore à jour (ex: user à 510 XP mais last_notified_grade=4), on force le popup
-    try {
-      const currentData = await sbFetch("bb_pseudos?player_id=eq." + playerId + "&select=last_notified_grade&limit=1");
-      if (Array.isArray(currentData) && currentData.length > 0) {
-        const dbNotifiedGrade = currentData[0].last_notified_grade;
-        // Si le grade actuel (newGradeIdx) est plus haut que le grade notifié en DB (dbNotifiedGrade)
-        // → grade up à afficher
-        if (typeof dbNotifiedGrade === "number" && newGradeIdx < dbNotifiedGrade && newGradeIdx !== -1) {
-          hasLeveledUp = true;
-        }
-      }
-    } catch(e) {}
+    // (le grade notifié vient de la même lecture que le cumul, plus haut : une requête suffit)
+    const dbNotifiedGrade = serveur.last_notified_grade;
+    // Si le grade actuel (newGradeIdx) est plus haut que le grade notifié en DB (dbNotifiedGrade)
+    // → grade up à afficher
+    if (typeof dbNotifiedGrade === "number" && newGradeIdx < dbNotifiedGrade && newGradeIdx !== -1) {
+      hasLeveledUp = true;
+    }
 
     try {
       await sbFetch("bb_pseudos?player_id=eq." + playerId, {
