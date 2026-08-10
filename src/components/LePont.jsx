@@ -5547,10 +5547,21 @@ export default function LePont() {
   // contrairement à createDuel() qui ouvre une salle d'attente temps réel.
   const [receivedChallenges, setReceivedChallenges] = useState([]);
   const [duelTarget, setDuelTarget] = useState(null); // {id,name} quand on défie quelqu'un en particulier
+<<<<<<< HEAD
   // Le ticker « en direct » de la landing PC a été essayé ici puis retiré : la
   // bande mangeait la hauteur du carrousel, et les cartes de mode — qui SONT
   // l'entrée dans le jeu — devenaient trop petites. Il reste sur la landing PC,
   // où la place ne manque pas (ScoreTicker dans src/pages/Home.tsx).
+=======
+  // ── Ticker « en direct » ──
+  // Il existait déjà sur la landing PC (ScoreTicker dans src/pages/Home.tsx) mais
+  // pas sur l'accueil mobile, qui ne disait donc jamais qu'il y a du monde. Sur
+  // une app dont les gros joueurs viennent du multi, l'absence d'autrui à l'écran
+  // est une information — fausse.
+  // ATTENTION : la phrase est écrite deux fois, ici et dans Home.tsx. La changer
+  // d'un côté sans l'autre fait diverger les deux surfaces.
+  const [ticker, setTicker] = useState([]);
+>>>>>>> origin/main
   const [openNotif, setOpenNotif] = useState(null); // bannière de confirmation "défi posté"
   // Score déjà posté en défi depuis l'écran de fin : évite d'en poster dix en
   // tapotant, et permet de remplacer le bouton par sa confirmation.
@@ -5797,6 +5808,35 @@ export default function LePont() {
     } catch {}
   }, []);
 
+
+  // Derniers scores pour le ticker. Une requête au montage, pas de rafraîchi :
+  // c'est une preuve de vie, pas un flux temps réel — et l'accueil ne doit rien
+  // devoir à une requête qui échoue (le ticker disparaît, rien d'autre).
+  useEffect(function(){
+    let mort = false;
+    (async function(){
+      const rows = await sbFetch("bb_scores?order=created_at.desc&limit=25&select=player_name,score,mode");
+      if (mort || !Array.isArray(rows)) return;
+      const LIBELLE = { pont:"The Plug", chaine:"The Mercato", grid:"GOAT Grid", findscore:"Trouve le joueur" };
+      const vus = {}, construits = [];
+      for (const r of rows) {
+        // Un joueur une seule fois : sans ça, celui qui vient d'enchaîner dix
+        // parties occupe toute la bande et on croit qu'il n'y a que lui.
+        if (!r.player_name || vus[r.player_name] || (r.score||0) <= 0) continue;
+        vus[r.player_name] = 1;
+        construits.push({ qui: r.player_name, quoi:
+          tr("vient de scorer " + (r.score).toLocaleString("fr-FR") + " pts sur " + (LIBELLE[r.mode]||r.mode) + " 🔥",
+             "just scored " + (r.score).toLocaleString("en-GB") + " pts on " + (LIBELLE[r.mode]||r.mode) + " 🔥",
+             "hat gerade " + (r.score).toLocaleString("de-DE") + " Pkt bei " + (LIBELLE[r.mode]||r.mode) + " erzielt 🔥",
+             "ha appena segnato " + (r.score).toLocaleString("it-IT") + " pt su " + (LIBELLE[r.mode]||r.mode) + " 🔥",
+             "acabou de marcar " + (r.score).toLocaleString("pt-BR") + " pts no " + (LIBELLE[r.mode]||r.mode) + " 🔥",
+             "acaba de marcar " + (r.score).toLocaleString("es-ES") + " pts en " + (LIBELLE[r.mode]||r.mode) + " 🔥") });
+        if (construits.length >= 8) break;
+      }
+      setTicker(construits);
+    })();
+    return function(){ mort = true; };
+  }, [lang]);
 
   // Load pseudo silently on mount
   useEffect(() => {
@@ -12886,6 +12926,33 @@ export default function LePont() {
           <div style={{background:"rgba(42,155,78,.35)",border:G.traitFin,borderRadius:12,padding:"10px 14px",textAlign:"center"}}>
             <div style={{fontSize:13,fontWeight:800,color:G.pelouseClaire}}>🔗 {tr("Salle ","Room ","Raum ","Stanza ","Sala ","Sala ")}{pendingRoomCode}{tr(" en attente"," pending"," ausstehend"," in attesa"," pendente"," pendiente")}</div>
             <div style={{fontSize:11,color:"rgba(255,255,255,.5)",marginTop:2}}>{tr("Crée ton pseudo pour rejoindre automatiquement","Create your username to join automatically","Erstelle deinen Namen, um automatisch beizutreten","Crea il tuo nome per unirti automaticamente","Crie seu nome para entrar automaticamente","Crea tu nombre para entrar automáticamente")}</div>
+          </div>
+        )}
+        {/* ── EN DIRECT ──
+            Posé haut, avant les invites : c'est ce qui dit qu'il y a quelqu'un
+            en face. Le libellé et le défilement reprennent ceux de la landing
+            PC (goat-blink / goat-marquee, définis dans src/index.css). */}
+        {ticker.length > 0 && (
+          <div style={{background:G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,
+            overflow:"hidden",display:"flex",alignItems:"center",gap:10,padding:"8px 10px"}}>
+            <span className="goat-blink" style={{...posterText(13,G.white,0),flexShrink:0,
+              letterSpacing:1.2,background:G.maillot,borderRadius:G.rayonS,border:G.traitFin,
+              padding:"3px 8px",boxShadow:"2px 2px 0 "+G.encre}}>
+              {tr("EN DIRECT","LIVE","LIVE","IN DIRETTA","AO VIVO","EN DIRECTO")}
+            </span>
+            <div style={{flex:1,overflow:"hidden",minWidth:0}}>
+              {/* La liste est doublée : c'est ce qui rend le défilement continu,
+                  la seconde copie entrant quand la première sort. */}
+              <div className="goat-marquee" style={{display:"flex",gap:40,whiteSpace:"nowrap"}}>
+                {ticker.concat(ticker).map(function(it,i){ return (
+                  <span key={i} style={{fontSize:12.5,color:"rgba(255,255,255,.72)",
+                    display:"flex",alignItems:"center",gap:6}}>
+                    <span style={{...posterText(15,G.projecteur)}}>{it.qui}</span>
+                    <span>{it.quoi}</span>
+                  </span>
+                );})}
+              </div>
+            </div>
           </div>
         )}
         {/* Bannière installation app (iOS Safari / Android non installé) */}
