@@ -20,7 +20,7 @@ import { GRADES, getGrade, gradeLabel, countryToFlag } from "../lib/leaderboard"
 import { duelTermine } from "../lib/duel";
 import { prochainsTotauxXp } from "../lib/xp";
 // Règles de tirage anti-répétition, partagées avec « Trouve le joueur ».
-import { clePaire, pairesJouables, tirerEnEvitant, memoriser } from "../lib/tirage.js";
+import { clePaire, pairesRetenues, tirerEnEvitant, memoriser } from "../lib/tirage.js";
 import Tracking from "./Tracking.jsx";
 
 
@@ -714,27 +714,58 @@ export const CLUB_COLORS = {
 // du Plug : une paire ne peut rester en "facile" QUE si les 2 clubs en font
 // partie. Les paires impliquant d'autres clubs de PONT_CLUBS sont rétrogradées
 // en "moyen" pour ne pas exposer le débutant à Valence, Fluminense, etc.
+// Le critère, et il a été reformulé : « club qu'un spectateur occasionnel
+// REPLACE », et non « club d'élite ». La différence compte, parce que la
+// difficulté d'une question du Plug se joue à deux endroits — reconnaître les
+// deux clubs, et connaître un joueur qui les relie — et que le SECOND est déjà
+// garanti ailleurs : une paire ne tombe en « facile » que si au moins un joueur
+// de difficulté facile la relie (voir buildPontDB). Cette liste ne décide donc
+// que du premier point. L'Everton n'a rien gagné depuis trente ans et reste
+// immédiatement identifiable ; le retenir n'expose personne.
+//
+// Elle est passée de 32 à 59 clubs, ce qui porte le vivier facile de 259 à 579
+// paires. À 13 questions par partie (médiane de production), un joueur régulier
+// faisait le tour du vivier en 20 parties ; il lui en faut 45. Le facile reste
+// une rampe d'accès et non un domicile — au-delà, il y a les 4 302 paires du
+// moyen — mais 20 parties, c'était trop court pour une rampe.
 const POPULAR_CLUBS_FACILE = new Set([
   // Premier League majeurs
   "Manchester United","Manchester City","Liverpool","Chelsea","Arsenal","Tottenham","Newcastle",
+  // Premier League : noms qui se placent sans suivre le championnat
+  "Everton","West Ham","Aston Villa","Leicester City",
   // La Liga top 3
   "Real Madrid","Barcelona","Atletico Madrid",
+  // La Liga : habitués de la coupe d'Europe
+  "Sevilla","Valencia","Villarreal","Athletic Bilbao","Real Betis",
   // Serie A majeurs
   "Juventus FC","AC Milan","Inter Milan","SSC Napoli","AS Roma",
+  // Serie A : le reste du haut de tableau
+  "SS Lazio","ACF Fiorentina","Atalanta BC",
   // Bundesliga top 2
   "Bayern Munich","Borussia Dortmund",
+  // Bundesliga : les suivants
+  "Bayer Leverkusen","RB Leipzig","Eintracht Frankfurt","Schalke",
   // Ligue 1 majeurs
   "PSG","Marseille","Lyon","Monaco",
+  // Ligue 1 : le public de l'app est d'abord francophone, ces noms lui sont
+  // aussi familiers que ceux du haut de la Premier League.
+  "Lille","Nice","Lens","Rennes",
   // Portugal big 3
   "Benfica","Porto","Sporting CP",
   // Eredivisie phare
   "Ajax Amsterdam",
+  // Eredivisie : les deux autres du trio néerlandais
+  "PSV Eindhoven","Feyenoord",
   // Saoudien (effet stars récentes)
   "Al Nassr","Al Hilal","Al Ittihad",
   // MLS (Messi/Beckham effect)
   "Inter Miami","LA Galaxy",
   // Turquie majeurs
   "Galatasaray","Fenerbahce",
+  // Turquie : le troisième du big 3 d'Istanbul
+  "Besiktas",
+  // Amérique du Sud : géants dont le nom circule bien au-delà de leur pays
+  "Flamengo","Boca Juniors","River Plate","Santos",
 ]);
 
 const PONT_CLUBS = new Set([
@@ -2121,14 +2152,36 @@ function easyChainPool(names) {
 function getPlayersForClub(club){return CLUB_INDEX[club]||[];}
 
 // ─── GOAT DUEL — Plug temps réel 1v1 (5 manches) ──────────────
-// 20 tops clubs européens curés : ~toutes les paires ont un joueur commun
-// dans la base (1 seule paire sur 190 sans lien → manche annulée/rejouée).
+// 36 clubs curés. C'étaient 20, ce qui ne faisait que 189 paires jouables : à
+// 12 manches par partie de 90 s, le vivier tenait deux parties avant de se
+// répéter, et il laissait dehors les clubs les plus fournis de la base — West
+// Ham (174 joueurs), l'Ajax (167), Aston Villa (163), l'Everton (152).
+//
+// Le critère d'entrée n'est PAS « club d'élite » mais « club qu'un spectateur
+// occasionnel replace ». Ce qui rend une manche difficile, ce n'est pas le
+// palmarès du club, c'est de ne pas reconnaître son nom sur le rouleau. L'Everton
+// n'a rien gagné depuis trente ans et reste immédiatement identifiable.
+//
+// Élargir seul ne suffisait pas : à 36 clubs sans barre, on passait de 6 à 94
+// manches sans réponse trouvable. C'est DUEL_PAIRES qui les écarte, plus bas.
 const DUEL_CLUBS = [
+  // Espagne
   "Real Madrid","Barcelona","Atletico Madrid","Sevilla","Valencia",
+  // Angleterre
   "Manchester United","Manchester City","Liverpool","Chelsea","Arsenal","Tottenham",
-  "Bayern Munich","Borussia Dortmund",
-  "Juventus FC","Inter Milan","AC Milan","SSC Napoli","AS Roma",
-  "PSG","Marseille",
+  "Everton","Aston Villa","West Ham","Newcastle",
+  // Allemagne
+  "Bayern Munich","Borussia Dortmund","Bayer Leverkusen","RB Leipzig",
+  // Italie
+  "Juventus FC","Inter Milan","AC Milan","SSC Napoli","AS Roma","SS Lazio","ACF Fiorentina",
+  // France
+  "PSG","Marseille","Lyon","Monaco",
+  // Portugal
+  "Porto","Benfica","Sporting CP",
+  // Pays-Bas
+  "Ajax Amsterdam","PSV Eindhoven",
+  // Turquie
+  "Galatasaray","Fenerbahce",
 ];
 // Joueurs ayant joué dans les DEUX clubs = réponses valides d'une manche
 function duelCommonPlayers(c1, c2){
@@ -2143,12 +2196,33 @@ const DUEL_RESULT_SECS = 1.8; // écran résultat de manche (court)
 const DUEL_SPIN_MS = 2200;   // durée du tirage "machine à sous" (clubs aléatoires)
 const DUEL_SOLO_SECS = 90;   // SOLO : temps TOTAL de la partie (manches illimitées)
 const DUEL_SOLO_SPIN_MS = 1000; // SOLO : tirage plus court (le temps total est limité)
-// Toutes les paires JOUABLES, calculées une fois. DUEL_CLUBS et CLUB_INDEX sont
+// La BARRE d'entrée d'une paire, et pas seulement « a-t-elle une réponse ».
+//
+// Une paire est retenue si elle a au moins une réponse CÉLÈBRE, ou au moins trois
+// réponses — assez pour qu'un connaisseur en trouve une. Les deux branches sont
+// nécessaires :
+//   • sans la première, Atletico/Dortmund passe avec son unique joueur commun
+//     inconnu : dix secondes pour une réponse que personne ne trouve, c'est une
+//     manche morte ;
+//   • sans la seconde, on jetterait Sevilla/Manchester City et ses 8 réponses
+//     dont aucune « facile » — ce n'est pas une manche morte, c'est une bonne
+//     question pour qui suit le foot.
+// Mesuré : sur les 20 clubs d'avant, 6 paires sur 189 étaient mortes. En passant
+// à 36 clubs sans barre, elles seraient 94 sur 630. La barre est ce qui rend
+// l'élargissement sûr — elle en laisse 522, soit 2,8 fois le vivier d'avant.
+const DUEL_REPONSES_MIN = 3;
+function duelPaireRetenue(a, b){
+  const communs = duelCommonPlayers(a, b);
+  if (communs.length >= DUEL_REPONSES_MIN) return true;
+  return communs.some(function(n){ return PLAYER_DIFF[n] === "facile"; });
+}
+
+// Toutes les paires retenues, calculées une fois. DUEL_CLUBS et CLUB_INDEX sont
 // figés au chargement, donc énumérer à chaque manche ne servirait à rien — et
 // surtout, tirer au hasard « jusqu'à tomber sur une paire jouable » ne permet pas
 // d'exclure les paires déjà vues : sur un vivier réduit, la boucle épuise ses 80
 // essais et retombe sur le repli, qui est toujours le même.
-const DUEL_PAIRES = pairesJouables(DUEL_CLUBS, function(a,b){ return duelCommonPlayers(a,b).length; });
+const DUEL_PAIRES = pairesRetenues(DUEL_CLUBS, duelPaireRetenue);
 
 // Mémoire des paires déjà posées. Elle vit ICI, dans le tireur, et non chez
 // l'appelant : les cinq sites de tirage (solo, partie rapide, manche suivante

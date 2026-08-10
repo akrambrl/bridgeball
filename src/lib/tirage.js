@@ -19,7 +19,7 @@ export function clePaire(c1, c2) {
 }
 
 /**
- * Toutes les paires de `clubs` qui ont au moins un joueur commun.
+ * Toutes les paires de `clubs` que `retenir` accepte.
  *
  * Calculé UNE fois par l'appelant plutôt qu'à chaque manche : c'est ce qui permet
  * d'exclure les paires déjà vues. Le tirage d'origine faisait « deux clubs au
@@ -27,15 +27,20 @@ export function clePaire(c1, c2) {
  * peut pas filtrer — sur un vivier rétréci elle épuise ses essais et retombe
  * toujours sur la même paire de repli.
  *
+ * `retenir` est un prédicat et non un simple « a-t-elle une réponse ? » : la barre
+ * de GOAT Battle demande une réponse CÉLÈBRE ou assez de réponses pour qu'un
+ * connaisseur en trouve une. Sans cette barre, élargir la liste des clubs
+ * multiplie les manches sans réponse trouvable — mesuré, de 6 à 94.
+ *
  * @param {string[]} clubs
- * @param {(a: string, b: string) => number} nbCommuns
+ * @param {(a: string, b: string) => boolean} retenir
  * @returns {[string, string][]}
  */
-export function pairesJouables(clubs, nbCommuns) {
+export function pairesRetenues(clubs, retenir) {
   const out = [];
   for (let i = 0; i < clubs.length; i++) {
     for (let j = i + 1; j < clubs.length; j++) {
-      if (nbCommuns(clubs[i], clubs[j]) > 0) out.push([clubs[i], clubs[j]]);
+      if (retenir(clubs[i], clubs[j])) out.push([clubs[i], clubs[j]]);
     }
   }
   return out;
