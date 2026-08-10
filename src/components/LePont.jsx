@@ -7387,6 +7387,27 @@ export default function LePont() {
     } catch(e) { console.error(e); }
   }
 
+  // Annule une demande qu'on a ENVOYÉE. Il n'y avait aucun moyen de le faire :
+  // une demande jamais acceptée restait dans la liste pour toujours. Sur ce
+  // compte, quinze traînaient depuis avril, dont deux d'il y a trois mois, et
+  // elles s'affichaient AVANT les quatre vrais amis. À l'échelle de la base,
+  // 27 demandes en attente pour 21 acceptées : plus de la moitié n'aboutit pas.
+  async function cancelSentRequest(r) {
+    const cible = r.to_id;
+    setSentRequests(function(prev){ return prev.filter(function(x){ return x.to_id !== cible; }); });
+    try {
+      const pending = JSON.parse(localStorage.getItem("bb_pending_sent") || "[]");
+      localStorage.setItem("bb_pending_sent", JSON.stringify(pending.filter(function(p){ return p.to_id !== cible; })));
+    } catch {}
+    // Par from_id + to_id et non par id : une demande tout juste envoyée n'existe
+    // en local que sous un identifiant temporaire, qui ne correspond à rien côté base.
+    try {
+      await sbFetch("bb_friend_requests?from_id=eq." + playerId + "&to_id=eq." + cible,
+        { method:"DELETE", headers:{ "Prefer":"return=minimal" } });
+      loadFriendRequests();
+    } catch(e) { console.error(e); }
+  }
+
   async function removeFriend(fid) {
     const newList = friendsList.filter(function(id){return id !== fid;});
     localStorage.setItem("bb_friends", JSON.stringify(newList));
@@ -10693,6 +10714,18 @@ export default function LePont() {
     // Le libellé de section est posé À NU sur l'or : seule l'encre s'y lit.
     const titreSection = {fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",
       color:"rgba(8,17,9,.62)",marginBottom:8,paddingLeft:2};
+    // Depuis quand une demande attend. Sans cette date, une demande de trois mois
+    // et une d'hier se ressemblent, et on ne sait pas laquelle est morte.
+    const depuisQuand = function(iso){
+      if (!iso) return null;
+      const j = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+      if (!isFinite(j) || j < 0) return null;
+      if (j === 0) return tr("aujourd'hui","today","heute","oggi","hoje","hoy");
+      if (j === 1) return tr("depuis hier","since yesterday","seit gestern","da ieri","desde ontem","desde ayer");
+      if (j < 30) return tr("depuis "+j+" jours","for "+j+" days","seit "+j+" Tagen","da "+j+" giorni","há "+j+" dias","desde hace "+j+" días");
+      const m = Math.round(j / 30);
+      return tr("depuis "+m+" mois","for "+m+" month"+(m>1?"s":""),"seit "+m+" Monaten","da "+m+" mesi","há "+m+" meses","desde hace "+m+" meses");
+    };
     // Vignette d'un ami : sa carte de badge quand on la connaît (badgeByPid n'est
     // rempli qu'après un passage par le classement), sinon son initiale. Mieux
     // vaut une pastille assumée qu'un avatar par défaut qui ment sur le niveau.
@@ -10795,7 +10828,7 @@ export default function LePont() {
             {friendMsg && <div style={{fontSize:12.5,marginTop:8,fontWeight:700,lineHeight:1.4,
               color:friendMsg.startsWith("✓")?G.pelouseClaire:friendMsg.startsWith("🔍")?"rgba(255,255,255,.55)":G.maillot}}>{friendMsg}</div>}
           </div>
-          {/* Liste des amis + demandes en attente */}
+          {/* Liste des amis */}
           <div>
             <div style={titreSection}>
               {tr("Mes amis","My friends","Meine Freunde","I miei amici","Meus amigos","Mis amigos")}{friendsList.length > 0 ? " · " + friendsList.length : ""}
@@ -10811,17 +10844,6 @@ export default function LePont() {
               </div>
             )}
             <div style={{display:"flex",flexDirection:"column",gap:10}}>
-              {/* Demandes en attente intégrées dans la liste */}
-              {demandesEnAttente.map(function(r,i){return(
-                <div key={"pending-"+i} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",
-                  background:G.nuit,borderRadius:G.rayon,border:"3px dashed "+G.encre,boxShadow:G.ombre}}>
-                  <div style={pastilleCharte(G.orSombre,40)}>⏳</div>
-                  <div style={{minWidth:0,flex:1}}>
-                    <div style={{...posterText(17,"rgba(255,255,255,.62)"),overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{r.to_name || r.to_id}</div>
-                    <div style={{fontSize:11,color:G.projecteur,fontWeight:700}}>{tr("En attente d'acceptation","Awaiting acceptance","Warte auf Annahme","In attesa di accettazione","Aguardando aceitação","Esperando aceptación")}</div>
-                  </div>
-                </div>
-              );})}
               {friendsList.map(function(fid, i) {
                 let fname = fid;
                 try {
@@ -10848,6 +10870,38 @@ export default function LePont() {
               })}
             </div>
           </div>
+          {/* ── DEMANDES ENVOYÉES ──
+              Elles étaient DANS « Mes amis », et au-dessus des vrais amis : une
+              demande jamais acceptée n'est pas un ami, et quinze d'entre elles
+              enterraient les quatre qui comptaient. Section à part, datée, et
+              annulable — ce qui n'existait pas. */}
+          {demandesEnAttente.length > 0 && (
+            <div>
+              <div style={titreSection}>
+                {tr("Demandes envoyées","Sent requests","Gesendete Anfragen","Richieste inviate","Pedidos enviados","Solicitudes enviadas")} · {demandesEnAttente.length}
+              </div>
+              <div style={{display:"flex",flexDirection:"column",gap:10}}>
+                {demandesEnAttente.map(function(r,i){
+                  const age = depuisQuand(r.created_at);
+                  return (
+                    <div key={"pending-"+(r.id||i)} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",
+                      background:G.nuit,borderRadius:G.rayon,border:"3px dashed "+G.encre,boxShadow:G.ombre}}>
+                      <div style={pastilleCharte(G.orSombre,40)}>⏳</div>
+                      <div style={{minWidth:0,flex:1}}>
+                        <div style={{...posterText(17,"rgba(255,255,255,.62)"),overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{r.to_name || r.to_id}</div>
+                        <div style={{fontSize:11,color:G.projecteur,fontWeight:700}}>
+                          {tr("Pas encore acceptée","Not accepted yet","Noch nicht angenommen","Non ancora accettata","Ainda não aceito","Aún sin aceptar")}{age ? " · " + age : ""}
+                        </div>
+                      </div>
+                      <button onClick={function(){cancelSentRequest(r);}}
+                        style={{...btn(G.nuit,G.white,14),padding:"8px 11px",flexShrink:0}}
+                        aria-label={tr("Annuler la demande","Cancel request","Anfrage abbrechen","Annulla richiesta","Cancelar pedido","Cancelar solicitud")}>✕</button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </div>
       </>

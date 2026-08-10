@@ -62,8 +62,12 @@ const navigateur = await chromium.launch({
 // LARGEUR permet de basculer sur le chemin desktop, qui n'a pas le même modèle
 // de défilement : là, c'est le document qui défile, pas un conteneur interne.
 const LARGEUR = Number(process.env.LARGEUR || 430);
+// HAUTEUR : certains écrans bornent leur hauteur et défilent dans un conteneur
+// interne que le repli « -bas » n'attrape pas toujours. Agrandir la fenêtre est
+// plus sûr que deviner quel div défile.
+const HAUTEUR = Number(process.env.HAUTEUR || 932);
 const ctx = await navigateur.newContext({
-  viewport:{ width:LARGEUR, height:932 }, deviceScaleFactor:LARGEUR > 900 ? 1 : 2 });
+  viewport:{ width:LARGEUR, height:HAUTEUR }, deviceScaleFactor:LARGEUR > 900 ? 1 : 2 });
 
 // Le tableau de bord de suivi lit bb_events et bb_presence, et compte les
 // tables via l'en-tête content-range sans rapatrier de lignes (sbCount). Sans
@@ -112,9 +116,13 @@ await ctx.route("**/rest/v1/**", async (route) => {
     else if (acceptees)       corps = [{ to_id:"p2", to_name:"nadia", status:"accepted" },
                                        { to_id:"p3", to_name:"james10", status:"accepted" }];
     else if (recues)          corps = [{ id:"r1", from_id:"p5", from_name:"sjdrums", status:"pending" }];
+    // Plusieurs demandes en attente, d'âges différents : c'est le cas réel — sur
+    // un compte de production, quinze traînaient dont deux vieilles de trois mois.
     else                      corps = [{ to_id:"p2", to_name:"nadia", status:"accepted" },
                                        { to_id:"p3", to_name:"james10", status:"accepted" },
-                                       { to_id:"p6", to_name:"strudel", status:"pending" }];
+                                       { id:"s1", to_id:"p6", to_name:"strudel", status:"pending", created_at:ilYaJours(0) },
+                                       { id:"s2", to_id:"p7", to_name:"kader",   status:"pending", created_at:ilYaJours(4) },
+                                       { id:"s3", to_id:"p8", to_name:"lila",    status:"pending", created_at:ilYaJours(96) }];
   } else if (url.includes("bb_presence")) {
     corps = JOUEURS.slice(0, 4).map((j) => ({ player_id:j.pid }));
   } else if (url.includes("bb_pseudos")) {
@@ -214,6 +222,7 @@ const CHEMINS = {
   amis:       [],   // porte propre à la largeur, cf. plus bas
   // L'écran voisin, atteint depuis la liste d'amis.
   "amis-defis":  [],   // « Historique des défis »
+  "amis-bas":    [],   // le bas de la liste, où vivent les demandes envoyées
   devinette:  [/devinette du jour/i],
   profil:     [],   // l'avatar n'est pas un bouton : traité à part
   jeu:        [],   // la carte du carrousel non plus
