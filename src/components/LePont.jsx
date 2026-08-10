@@ -5547,7 +5547,18 @@ export default function LePont() {
   // contrairement à createDuel() qui ouvre une salle d'attente temps réel.
   const [receivedChallenges, setReceivedChallenges] = useState([]);
   const [duelTarget, setDuelTarget] = useState(null); // {id,name} quand on défie quelqu'un en particulier
+  // ── Ticker « en direct » ──
+  // Il existait déjà sur la landing PC (ScoreTicker dans src/pages/Home.tsx) mais
+  // pas sur l'accueil mobile, qui ne disait donc jamais qu'il y a du monde. Sur
+  // une app dont les gros joueurs viennent du multi, l'absence d'autrui à l'écran
+  // est une information — fausse.
+  // ATTENTION : la phrase est écrite deux fois, ici et dans Home.tsx. La changer
+  // d'un côté sans l'autre fait diverger les deux surfaces.
+  const [ticker, setTicker] = useState([]);
   const [openNotif, setOpenNotif] = useState(null); // bannière de confirmation "défi posté"
+  // Score déjà posté en défi depuis l'écran de fin : évite d'en poster dix en
+  // tapotant, et permet de remplacer le bouton par sa confirmation.
+  const [defiPoste, setDefiPoste] = useState(null);
   const [openTab, setOpenTab] = useState("browse"); // onglet du salon : "browse" | "mine"
   const [myOpenChallenges, setMyOpenChallenges] = useState([]); // mes défis encore ouverts
   const [myOpenAttempts, setMyOpenAttempts] = useState([]); // tentatives reçues sur mes défis
@@ -5790,6 +5801,35 @@ export default function LePont() {
     } catch {}
   }, []);
 
+
+  // Derniers scores pour le ticker. Une requête au montage, pas de rafraîchi :
+  // c'est une preuve de vie, pas un flux temps réel — et l'accueil ne doit rien
+  // devoir à une requête qui échoue (le ticker disparaît, rien d'autre).
+  useEffect(function(){
+    let mort = false;
+    (async function(){
+      const rows = await sbFetch("bb_scores?order=created_at.desc&limit=25&select=player_name,score,mode");
+      if (mort || !Array.isArray(rows)) return;
+      const LIBELLE = { pont:"The Plug", chaine:"The Mercato", grid:"GOAT Grid", findscore:"Trouve le joueur" };
+      const vus = {}, construits = [];
+      for (const r of rows) {
+        // Un joueur une seule fois : sans ça, celui qui vient d'enchaîner dix
+        // parties occupe toute la bande et on croit qu'il n'y a que lui.
+        if (!r.player_name || vus[r.player_name] || (r.score||0) <= 0) continue;
+        vus[r.player_name] = 1;
+        construits.push({ qui: r.player_name, quoi:
+          tr("vient de scorer " + (r.score).toLocaleString("fr-FR") + " pts sur " + (LIBELLE[r.mode]||r.mode) + " 🔥",
+             "just scored " + (r.score).toLocaleString("en-GB") + " pts on " + (LIBELLE[r.mode]||r.mode) + " 🔥",
+             "hat gerade " + (r.score).toLocaleString("de-DE") + " Pkt bei " + (LIBELLE[r.mode]||r.mode) + " erzielt 🔥",
+             "ha appena segnato " + (r.score).toLocaleString("it-IT") + " pt su " + (LIBELLE[r.mode]||r.mode) + " 🔥",
+             "acabou de marcar " + (r.score).toLocaleString("pt-BR") + " pts no " + (LIBELLE[r.mode]||r.mode) + " 🔥",
+             "acaba de marcar " + (r.score).toLocaleString("es-ES") + " pts en " + (LIBELLE[r.mode]||r.mode) + " 🔥") });
+        if (construits.length >= 8) break;
+      }
+      setTicker(construits);
+    })();
+    return function(){ mort = true; };
+  }, [lang]);
 
   // Load pseudo silently on mount
   useEffect(() => {
@@ -6415,6 +6455,56 @@ export default function LePont() {
     // Ses stats seront mises à jour automatiquement la prochaine fois qu'il ouvre le classement (lecture bb_rooms status=complete).
   }
 
+  // Publie un score en défi ouvert. Extrait de submitDuelScore, où il était
+  // enfoui dans la branche openRole==="create" : seul un joueur DÉJÀ dans le
+  // salon de défis pouvait donc en poster un. C'est ce qui explique que 22
+  // joueurs sur 176 aient lancé tous les défis de l'app, et le top 3 la moitié.
+  //
+  // `cible` non nul = défi nominatif (status "sent"), sinon ouvert à tous
+  // (status "open", et opponent_id porte la sentinelle "OPEN" car la colonne est
+  // NOT NULL).
+  async function posterDefi(mode, diff, rounds, sc, cible, mesManches) {
+    if (!playerId || !pseudoConfirmed) return false;
+    try {
+      await sbFetch("bb_duels", { method:"POST",
+        headers:{"Content-Type":"application/json","Prefer":"return=minimal"},
+        body: JSON.stringify({
+          challenger_id: playerId, challenger_name: (playerName||"Anonyme").trim(),
+          opponent_id: cible ? cible.id : "OPEN",
+          opponent_name: cible ? cible.name : "",
+          mode: mode, diff: diff, rounds: rounds || 1,
+          challenger_score: sc, status: cible ? "sent" : "open"
+        })});
+    } catch(e) { console.error("Post défi error:", e); return false; }
+    setOpenNotif(cible
+      ? (tr("Défi envoyé à ","Challenge sent to ","Herausforderung gesendet an ","Sfida inviata a ","Desafio enviado para ","Reto enviado a ") + cible.name + " · " + sc + " pts")
+      : (tr("Défi posté ! Score à battre : ","Open challenge posted! Score to beat: ","Herausforderung gepostet! Zu schlagen: ","Sfida pubblicata! Punteggio da battere: ","Desafio publicado! Pontuação a bater: ","¡Reto publicado! Puntuación a batir: ")) + sc + " ⚡");
+    setTimeout(function(){ setOpenNotif(null); }, 5000);
+    // Qui prévenir. La liste d'amis SEULE ne suffit pas : sur cette base, 27
+    // demandes d'ami sont en attente pour 21 acceptées, donc la plupart des
+    // joueurs n'ont personne. On y ajoute les adversaires déjà affrontés — un
+    // duel joué est un lien plus solide qu'une demande jamais acceptée, et il
+    // n'exige aucune démarche.
+    try {
+      const vus = {};
+      (cible ? [cible.id] : (friendsList||[])).forEach(function(id){ if(id) vus[id]=1; });
+      if (!cible) {
+        (duels||[]).forEach(function(d){
+          const autre = d.challenger_id === playerId ? d.opponent_id : d.challenger_id;
+          if (autre && autre !== playerId && autre !== "OPEN") vus[autre]=1;
+        });
+      }
+      const kind = cible ? "duel_challenge" : "duel_new";
+      Object.keys(vus).forEach(function(fid){
+        fetch(SB_URL + "/functions/v1/send-friend-notification", {
+          method:"POST", headers:{"Content-Type":"application/json","Authorization":"Bearer "+SB_KEY},
+          body: JSON.stringify({ to_id: fid, from_name: (playerName||"Quelqu'un").trim(), type:kind, mode: mode })
+        }).catch(function(){});
+      });
+    } catch(e) {}
+    return true;
+  }
+
   async function submitDuelScore(sc) {
     if (!activeDuel) return;
     // ─── Défis ouverts (asynchrones) ───
@@ -6425,34 +6515,7 @@ export default function LePont() {
       // Défi NOMINATIF : même flux asynchrone que le défi ouvert, mais adressé à
       // un joueur précis (status "sent" au lieu de "open"). Il le retrouve dans
       // l'onglet "Reçus" et le relève quand il veut.
-      const target = duel.target || null;
-      try {
-        await sbFetch("bb_duels", { method:"POST", headers:{"Content-Type":"application/json","Prefer":"return=minimal"}, body: JSON.stringify({
-          challenger_id: playerId, challenger_name: (playerName||"Anonyme").trim(),
-          // sentinelles quand le défi est ouvert à tous : la colonne opponent_id est NOT NULL
-          opponent_id: target ? target.id : "OPEN",
-          opponent_name: target ? target.name : "",
-          mode: duel.mode, diff: duel.diff, rounds: duel.rounds || 1,
-          challenger_score: sc, status: target ? "sent" : "open"
-        })});
-                setOpenNotif(target
-          ? (tr("Défi envoyé à ","Challenge sent to ","Herausforderung gesendet an ","Sfida inviata a ","Desafio enviado para ","Reto enviado a ") + target.name + " · " + sc + " pts")
-          : (tr("Défi posté ! Score à battre : ","Open challenge posted! Score to beat: ","Herausforderung gepostet! Zu schlagen: ","Sfida pubblicata! Punteggio da battere: ","Desafio publicado! Pontuação a bater: ","¡Reto publicado! Puntuación a batir: "))+sc+" ⚡");
-        setTimeout(function(){ setOpenNotif(null); }, 5000);
-        // Notif push : prévenir mes amis qu'un nouveau défi est dispo (best-effort)
-        try {
-          // Défi nominatif : une seule notif, au joueur visé. Défi ouvert : on
-          // prévient tous les amis, comme avant.
-          const targets = target ? [target.id] : (friendsList||[]);
-          const kind = target ? "duel_challenge" : "duel_new";
-          targets.forEach(function(fid){
-            fetch(SB_URL + "/functions/v1/send-friend-notification", {
-              method:"POST", headers:{"Content-Type":"application/json","Authorization":"Bearer "+SB_KEY},
-              body: JSON.stringify({ to_id: fid, from_name: (playerName||"Quelqu'un").trim(), type:kind, mode: duel.mode })
-            }).catch(function(){});
-          });
-        } catch(e) {}
-      } catch(e) { console.error("Open duel post error:", e); }
+      await posterDefi(duel.mode, duel.diff, duel.rounds, sc, duel.target || null, myRounds);
       return;
     }
     if (activeDuel.openRole === "accept") {
@@ -8191,6 +8254,7 @@ export default function LePont() {
 
   function startChain(diffOverride) {
     trackPlay("chaine", !!activeDuelRef.current); // en ligne si duel/salon actif
+    setDefiPoste(null);
     roundStartTime.current = null;
     botScoreRef.current = null;
     setIsNewRecord(false); setMyLastPts(null); setCombo(0); setMaxCombo(0); comboRef.current=0; lastAnswerTime.current=Date.now();
@@ -8265,6 +8329,7 @@ export default function LePont() {
 
   function startCompetition() {
     trackPlay("pont", !!activeDuelRef.current); // en ligne si duel/salon actif
+    setDefiPoste(null);
     setCombo(0); setMaxCombo(0); comboRef.current=0; lastAnswerTime.current=Date.now();
     setRoundScores([]); setCurrentRound(1); setIsNewRecord(false); setMyLbRank(null); setMyLastPts(null);
     startRound(1);
@@ -10840,7 +10905,22 @@ export default function LePont() {
                 padding:"26px 20px",textAlign:"center"}}>
                 <div style={{fontSize:34,marginBottom:10}}>👋</div>
                 <div style={{...posterText(20,G.white),marginBottom:6}}>{tr("Aucun ami pour l'instant","No friends yet","Noch keine Freunde","Ancora nessun amico","Ainda sem amigos","Todavía no tienes amigos")}</div>
-                <div style={{fontSize:13,color:"rgba(255,255,255,.5)",lineHeight:1.5}}>{tr("Ajoute un pseudo ci-dessus pour le défier en 1v1 et le voir dans ton classement.","Add a username above to challenge them 1v1 and see them in your leaderboard.","Füge oben einen Nutzernamen hinzu, um ihn im 1v1 herauszufordern und in deiner Rangliste zu sehen.","Aggiungi un nome utente sopra per sfidarlo 1v1 e vederlo nella tua classifica.","Adicione um nome de usuário acima para desafiá-lo em 1v1 e vê-lo na sua classificação.","Añade un nombre arriba para retarlo en 1v1 y verlo en tu clasificación.")}</div>
+                <div style={{fontSize:13,color:"rgba(255,255,255,.5)",lineHeight:1.5,marginBottom:14}}>{tr("Ajoute un pseudo ci-dessus pour le défier en 1v1 et le voir dans ton classement.","Add a username above to challenge them 1v1 and see them in your leaderboard.","Füge oben einen Nutzernamen hinzu, um ihn im 1v1 herauszufordern und in deiner Rangliste zu sehen.","Aggiungi un nome utente sopra per sfidarlo 1v1 e vederlo nella tua classifica.","Adicione um nome de usuário acima para desafiá-lo em 1v1 e vê-lo na sua classificação.","Añade un nombre arriba para retarlo en 1v1 y verlo en tu clasificación.")}</div>
+                {/* Sortie de secours : sans ce bouton, l'écran ne proposait qu'une
+                    démarche qui aboutit une fois sur deux — sur cette base, 27
+                    demandes d'ami en attente pour 21 acceptées. Les défis ouverts,
+                    eux, n'exigent l'accord de personne : 183 postés, 152 relevés. */}
+                <button onClick={function(){
+                  closeFriends();
+                  requirePseudo(function(){
+                    setOpenTab("browse"); setOpenDuelChooser(false);
+                    loadOpenDuels(); loadMyOpenDuels(); loadReceivedChallenges();
+                    setShowOpenDuels(true);
+                  });
+                }} style={{...btn(G.maillot,G.white,17),width:"100%"}}>
+                  ⚔️ {tr("Relever un défi ouvert","Take an open challenge","Offene Herausforderung annehmen","Raccogli una sfida aperta","Aceitar um desafio aberto","Aceptar un reto abierto")}
+                </button>
+                <div style={{fontSize:11.5,color:"rgba(255,255,255,.4)",lineHeight:1.5,marginTop:10}}>{tr("Pas besoin d'ami : n'importe qui peut relever ton score, et toi le sien.","No friend needed: anyone can beat your score, and you theirs.","Kein Freund nötig: jeder kann deinen Score schlagen, und du seinen.","Nessun amico necessario: chiunque può battere il tuo punteggio, e tu il suo.","Sem precisar de amigo: qualquer um pode bater sua pontuação, e você a dele.","Sin necesidad de amigos: cualquiera puede batir tu puntuación, y tú la suya.")}</div>
               </div>
             )}
             <div style={{display:"flex",flexDirection:"column",gap:10}}>
@@ -12837,6 +12917,33 @@ export default function LePont() {
           <div style={{background:"rgba(42,155,78,.35)",border:G.traitFin,borderRadius:12,padding:"10px 14px",textAlign:"center"}}>
             <div style={{fontSize:13,fontWeight:800,color:G.pelouseClaire}}>🔗 {tr("Salle ","Room ","Raum ","Stanza ","Sala ","Sala ")}{pendingRoomCode}{tr(" en attente"," pending"," ausstehend"," in attesa"," pendente"," pendiente")}</div>
             <div style={{fontSize:11,color:"rgba(255,255,255,.5)",marginTop:2}}>{tr("Crée ton pseudo pour rejoindre automatiquement","Create your username to join automatically","Erstelle deinen Namen, um automatisch beizutreten","Crea il tuo nome per unirti automaticamente","Crie seu nome para entrar automaticamente","Crea tu nombre para entrar automáticamente")}</div>
+          </div>
+        )}
+        {/* ── EN DIRECT ──
+            Posé haut, avant les invites : c'est ce qui dit qu'il y a quelqu'un
+            en face. Le libellé et le défilement reprennent ceux de la landing
+            PC (goat-blink / goat-marquee, définis dans src/index.css). */}
+        {ticker.length > 0 && (
+          <div style={{background:G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,
+            overflow:"hidden",display:"flex",alignItems:"center",gap:10,padding:"8px 10px"}}>
+            <span className="goat-blink" style={{...posterText(13,G.white,0),flexShrink:0,
+              letterSpacing:1.2,background:G.maillot,borderRadius:G.rayonS,border:G.traitFin,
+              padding:"3px 8px",boxShadow:"2px 2px 0 "+G.encre}}>
+              {tr("EN DIRECT","LIVE","LIVE","IN DIRETTA","AO VIVO","EN DIRECTO")}
+            </span>
+            <div style={{flex:1,overflow:"hidden",minWidth:0}}>
+              {/* La liste est doublée : c'est ce qui rend le défilement continu,
+                  la seconde copie entrant quand la première sort. */}
+              <div className="goat-marquee" style={{display:"flex",gap:40,whiteSpace:"nowrap"}}>
+                {ticker.concat(ticker).map(function(it,i){ return (
+                  <span key={i} style={{fontSize:12.5,color:"rgba(255,255,255,.72)",
+                    display:"flex",alignItems:"center",gap:6}}>
+                    <span style={{...posterText(15,G.projecteur)}}>{it.qui}</span>
+                    <span>{it.quoi}</span>
+                  </span>
+                );})}
+              </div>
+            </div>
           </div>
         )}
         {/* Bannière installation app (iOS Safari / Android non installé) */}
@@ -15467,6 +15574,28 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
             <div style={{fontSize:12,color:"rgba(255,255,255,.5)",marginBottom:10}}>{tr("Crée un pseudo pour apparaître au classement","Create a username to appear on the leaderboard","Erstelle einen Namen, um in der Rangliste zu erscheinen","Crea un nome per apparire in classifica","Crie um nome para aparecer no ranking","Crea un nombre para aparecer en la clasificación")}</div>
             <button onClick={()=>setPseudoScreen(true)} style={{...btn(G.projecteur,G.encre,16),padding:"9px 20px",margin:"0 auto"}}>{tr("Créer mon pseudo","Create username","Namen erstellen","Crea nome","Criar nome","Crear mi nombre")}</button>
           </div>
+        )}
+        {/* ── POSTER CE SCORE EN DÉFI ──
+            L'écran de fin est le seul endroit où un score existe. Jusqu'ici il
+            ne menait qu'au classement, et poster un défi demandait d'aller le
+            faire depuis le salon — d'où 22 joueurs sur 176 qui en avaient jamais
+            lancé un, et un top 3 responsable de la moitié des défis de l'app.
+            Caché pendant un duel : le score y part déjà à l'adversaire. */}
+        {pseudoConfirmed && sc > 0 && !activeDuelRef.current && (
+          defiPoste === sc ? (
+            <div style={{background:G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,
+              padding:"12px 16px",textAlign:"center"}}>
+              <div style={{...posterText(17,G.pelouseClaire)}}>⚡ {tr("Défi posté","Challenge posted","Herausforderung gepostet","Sfida pubblicata","Desafio publicado","Reto publicado")}</div>
+              <div style={{fontSize:12,color:"rgba(255,255,255,.5)",marginTop:3}}>{tr("Les autres vont tenter de battre tes ","Others will try to beat your ","Andere versuchen, deine ","Gli altri proveranno a battere i tuoi ","Os outros vão tentar bater seus ","Los demás intentarán batir tus ")}{sc} pts</div>
+            </div>
+          ) : (
+            <button onClick={function(){
+              posterDefi(mode, diff, totalRounds, sc, null, isChain ? chainHistory : roundAnswers)
+                .then(function(ok){ if (ok) setDefiPoste(sc); });
+            }} style={{...btn(G.maillot,G.white,20),width:"100%",padding:"12px",gap:10,boxShadow:G.ombreL}}>
+              ⚔️ {tr("Défier les autres avec ce score","Challenge others with this score","Andere mit diesem Score herausfordern","Sfida gli altri con questo punteggio","Desafie os outros com esta pontuação","Reta a los demás con esta puntuación")}
+            </button>
+          )
         )}
         {<button onClick={()=>{if(isChain)startChain();else startCompetition();}} style={{...btn(G.pelouse,G.white,22),width:"100%",padding:"12px",gap:10,boxShadow:G.ombreL}}>{Icon.ball(18,G.white)} {tr("REJOUER","PLAY AGAIN","NOCHMAL SPIELEN","GIOCA ANCORA","JOGAR DE NOVO","JUGAR OTRA VEZ")}</button>}
         <button onClick={()=>setScreen("home")} style={{...btn(G.nuit,G.white,17),width:"100%",padding:"10px"}}>{tr("↩ Accueil","↩ Home","↩ Start","↩ Home","↩ Início","↩ Inicio")}</button>

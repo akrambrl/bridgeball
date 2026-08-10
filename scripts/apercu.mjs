@@ -104,6 +104,10 @@ await ctx.route("**/rest/v1/**", async (route) => {
   } else if (url.includes("bb_events")) {
     corps = EVENEMENTS;
   } else if (url.includes("bb_friend_requests")) {
+    // VIDE=1 : aucune relation, pour photographier les états vides — ils portent
+    // leurs propres textes et leurs propres sorties de secours.
+    if (process.env.VIDE) { corps = []; }
+    else {
     // La liste d'amis est RELUE depuis les demandes acceptées, qui écrasent
     // localStorage : seeder bb_friends ne suffisait pas, l'écran retombait sur
     // son état vide. On répond selon le sens demandé par la requête.
@@ -123,6 +127,7 @@ await ctx.route("**/rest/v1/**", async (route) => {
                                        { id:"s1", to_id:"p6", to_name:"strudel", status:"pending", created_at:ilYaJours(0) },
                                        { id:"s2", to_id:"p7", to_name:"kader",   status:"pending", created_at:ilYaJours(4) },
                                        { id:"s3", to_id:"p8", to_name:"lila",    status:"pending", created_at:ilYaJours(96) }];
+    }
   } else if (url.includes("bb_presence")) {
     corps = JOUEURS.slice(0, 4).map((j) => ({ player_id:j.pid }));
   } else if (url.includes("bb_pseudos")) {
@@ -150,20 +155,23 @@ const page = await ctx.newPage();
 // vit dans le shell, dont `isolation:isolate` enferme son zIndex 9999.
 const PREMIER_LANCEMENT = ecran === "bienvenue" ? "tout"
                         : ecran === "tutoriel"  ? "apres-banniere" : "non";
+const PREMIER_LANCEMENT_OBJ = { etape: PREMIER_LANCEMENT, vide: !!process.env.VIDE };
 await page.addInitScript((premier) => {
   // L'accueil est derrière l'accueil-tutoriel : sans ces clés, on photographie
   // le carrousel d'introduction quel que soit l'écran demandé. On ne les pose
   // donc PAS quand c'est justement lui qu'on vient voir.
-  if (premier !== "tout") localStorage.setItem("bb_welcome_seen", "1");
-  if (premier === "non")   localStorage.setItem("bb_tutorial_done", "1");
+  if (premier.etape !== "tout") localStorage.setItem("bb_welcome_seen", "1");
+  if (premier.etape === "non")   localStorage.setItem("bb_tutorial_done", "1");
   localStorage.setItem("bb_name", "jules");
   localStorage.setItem("bb_lang", "fr");
   // La liste d'amis vit en localStorage, pas dans une table : sans ces clés,
   // l'écran Amis ne montrait QUE son état vide, et tout ce qui s'y passe une
   // fois qu'on a des amis restait invisible.
-  localStorage.setItem("bb_friends", JSON.stringify(["p2", "p3", "p4"]));
-  localStorage.setItem("bb_friend_names", JSON.stringify({ p2:"nadia", p3:"james10", p4:"vice" }));
-}, PREMIER_LANCEMENT);
+  if (!premier.vide) {
+    localStorage.setItem("bb_friends", JSON.stringify(["p2", "p3", "p4"]));
+    localStorage.setItem("bb_friend_names", JSON.stringify({ p2:"nadia", p3:"james10", p4:"vice" }));
+  }
+}, { ...PREMIER_LANCEMENT_OBJ });
 // Le tableau de bord vit derrière un code dans l'URL, lu au montage : il faut
 // donc le passer dès le chargement, pas après.
 const CODE_STATS = (await readFile(join(ici, "..", "src", "components", "LePont.jsx"), "utf8"))
@@ -237,6 +245,10 @@ const CHEMINS = {
   "partie-faux": [], // une partie solo, puis une reponse fausse : le bandeau
   "mercato-faux": [], // The Mercato, puis une reponse fausse
   "mercato-juste": [], // The Mercato, puis une VRAIE bonne reponse : le bandeau
+  // `mercato-fin` : The Mercato joue POUR DE VRAI (bonnes reponses), puis on
+  // laisse le chronometre s'epuiser. C'est le seul moyen d'atteindre l'ecran de
+  // fin avec un score > 0 — celui qui porte le bouton « defier les autres ».
+  "mercato-fin": [],
 };
 // Les six modes du carrousel de l'accueil, dans leur ordre de la table
 // homeCards. On selectionne la pastille correspondante avant de taper la
@@ -325,21 +337,47 @@ if (ecran === "partie" || ecran === "partie-fin" || ecran === "partie-faux"
 // reponse : une reponse fausse, dans ce mode, se contente de passer au joueur
 // suivant. On lit donc le nom affiche et on lui donne un de ses clubs, pris
 // dans players.jsx — la meme source que le jeu.
-if (ecran === "mercato-juste") {
+// Repond juste UNE fois dans The Mercato : lit le joueur affiche et lui donne un
+// de ses clubs, pris dans players.jsx — la meme source que le jeu.
+async function repondJuste() {
   const nom = (await page.locator("text=/DONNE UN CLUB DE/i").first()
     .locator("xpath=..").innerText()).split("\n").pop().trim();
   const base = await readFile(join(ici, "..", "src", "players.jsx"), "utf8");
   const ligne = base.split("\n").find((l) => l.includes('name:"' + nom + '"'));
   const clubs = ligne ? [...ligne.matchAll(/"([^"]+)"/g)].map((m) => m[1]) : [];
   const club = clubs.find((c) => c !== nom && !["facile", "moyen", "expert"].includes(c));
-  if (!club) { console.error("aucun club trouve pour", nom); process.exit(1); }
+  if (!club) { console.warn("aucun club trouve pour", nom); return false; }
   console.log("joueur affiche :", nom, "→ on repond", club);
   await page.locator("input[type='text'], input:not([type])").first().fill(club);
   const bv = await page.getByRole("button", { name: /^\s*valider\s*$/i }).first().boundingBox();
   if (bv) await page.mouse.click(bv.x + bv.width / 2, bv.y + bv.height / 2);
+  return true;
+}
+
+if (ecran === "mercato-juste") {
+  await repondJuste();
   await page.locator("text=/\\+\\d+ pts/").first()
     .waitFor({ state: "visible", timeout: 4000 })
     .catch(() => console.warn("bandeau non attrape"));
+}
+
+if (ecran === "mercato-fin") {
+  // Trois bonnes reponses suffisent a poser un score, puis on laisse tomber le
+  // chronometre (90 s) : passer les questions ne l'epuise pas.
+  for (let k = 0; k < 3; k++) {
+    const ok = await repondJuste().catch(() => false);
+    if (!ok) break;
+    await page.waitForTimeout(1200);
+  }
+  console.log("on laisse le chronometre s'epuiser…");
+  const limite = 110000, pas = 5000;
+  for (let attendu = 0; attendu < limite; attendu += pas) {
+    await page.waitForTimeout(pas);
+    const fini = await page.getByRole("button", { name: /rejouer|accueil/i }).first()
+      .isVisible().catch(() => false);
+    if (fini) { console.log("ecran de fin atteint apres", (attendu + pas) / 1000, "s"); break; }
+  }
+  await page.waitForTimeout(1200);
 }
 
 if (ecran === "partie-faux" || ecran === "mercato-faux") {
