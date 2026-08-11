@@ -4,8 +4,8 @@
   "description": "Trouve le joueur qui fait le pont entre deux clubs de football !",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0E1F14",
-  "theme_color": "#0E1F14",
+  "background_color": "#F5C22B",
+  "theme_color": "#F5C22B",
   "orientation": "portrait",
   "icons": [
     {

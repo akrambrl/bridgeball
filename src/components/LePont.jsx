@@ -3242,6 +3242,22 @@ if(typeof document!=="undefined"&&!document.getElementById("bb-css")){
        une rayure verticale ne raconte plus un terrain, elle salit le fond. */
     html,body,#root{background:${G.or}!important;min-height:100vh;min-height:100dvh;}
     #root{padding-top:env(safe-area-inset-top);}
+    /* VOILE DE LA BARRE D'ÉTAT.
+       L'app tourne en black-translucent : le décor passe donc SOUS l'horloge et
+       la batterie, mais ce mode force aussi le texte système en BLANC. Or le
+       blanc sur l'or ne donne que 1,66 de contraste — l'heure et la batterie
+       devenaient des fantômes, alors que l'encre en donne 11,5.
+       D'où ce voile d'encre, dans la seule hauteur de la barre d'état, dégradé
+       vers le transparent pour ne pas couper le décor net. Le blanc y remonte à
+       18,3. Le haut de l'écran devient un bandeau VOULU au lieu d'un aplat subi.
+       En ::before de body plutôt qu'en JSX : areneCharte est monté une fois par
+       écran, il y aurait eu vingt points d'insertion à tenir en phase.
+       Sur un écran sans encoche (ordinateur, Android sans découpe),
+       env(safe-area-inset-top) vaut 0 : la règle existe et ne se voit pas.
+       pointer-events:none, sinon il avalerait les taps du haut de l'écran. */
+    body::before{content:"";position:fixed;top:0;left:0;right:0;
+      height:env(safe-area-inset-top);pointer-events:none;z-index:2147483000;
+      background:linear-gradient(180deg,rgba(8,17,9,.78) 0%,rgba(8,17,9,.55) 65%,rgba(8,17,9,0) 100%);}
   `;
 document.title = 'GOAT FC';
 document.head.appendChild(s);
