@@ -14355,26 +14355,40 @@ export default function LePont() {
                 //
                 // Contour explicite sur le libellé : la teinte sous le mot n'est pas
                 // choisie — bleu clair pour l'Argentine, noir pour la Juventus.
+                //
+                // Les deux libellés sont alignés PAR LE BAS, et c'est le seul moyen de les
+                // aligner tout court : un critère de club n'a pas d'écusson (son nom EST le
+                // critère), un critère de poste ou de pays en a un. Le libellé du premier
+                // flottait donc au milieu de sa carte pendant que celui du second tombait
+                // sous son écusson — deux textes censés se lire comme une paire, sur deux
+                // lignes différentes. En calant les libellés en bas et en laissant
+                // l'écusson se centrer dans l'espace restant (la zone `flex:1`), les deux
+                // mots reviennent sur la même ligne quelle que soit la nature du critère.
                 const critCard = (emoji, main, second, label) => (
-                  <div style={{flex:1,position:"relative",background:main,border:G.trait,borderRadius:16,padding:"14px 8px 12px",textAlign:"center",boxShadow:G.ombre,overflow:"hidden"}}>
-                    {emoji && <div style={{position:"relative",width:40,height:40,margin:"0 auto 6px",borderRadius:"50%",background:G.nuit,border:G.traitFin,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,boxShadow:"2px 2px 0 "+G.encre}}>{emoji}</div>}
-                    <div style={{position:"relative",...posterText(15,G.white,1.2),fontSize:11.5,lineHeight:1.2,letterSpacing:.3}}>{label.toUpperCase()}</div>
+                  <div style={{flex:1,position:"relative",background:main,border:G.trait,borderRadius:16,padding:"12px 8px",minHeight:92,display:"flex",flexDirection:"column",textAlign:"center",boxShadow:G.ombre,overflow:"hidden"}}>
+                    <div style={{flex:1,minHeight:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                      {emoji && <div style={{position:"relative",width:38,height:38,borderRadius:"50%",background:G.nuit,border:G.traitFin,display:"flex",alignItems:"center",justifyContent:"center",fontSize:21,boxShadow:"2px 2px 0 "+G.encre,flexShrink:0}}>{emoji}</div>}
+                    </div>
+                    <div style={{position:"relative",...posterText(15,G.white,1.2),fontSize:11.5,lineHeight:1.2,letterSpacing:.3,marginTop:6,flexShrink:0}}>{label.toUpperCase()}</div>
                   </div>
                 );
                 return (
                   <div onClick={function(){if(!ggFlash){setGgSelectedCell(null);setGgGuess("");}}} style={{position:"fixed",inset:0,zIndex:500,background:"rgba(8,17,9,.86)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
-                    {/* Panneau de nuit, trait et ombre de la charte. Le dégradé vers le noir
-                        et le halo vert du haut sont partis : ce halo était un
-                        rgba(0,230,118,.14), l'ancien `accent` vert LED que la charte
-                        remplace — la palette le déclare mort. */}
-                    <div onClick={function(e){e.stopPropagation();}} style={{position:"relative",background:G.nuit,border:G.trait,borderRadius:24,padding:22,maxWidth:370,width:"100%",boxShadow:G.ombre}}>
+                    {/* Carte SUR L'OR. Le panneau était de nuit ; l'or demande de reprendre
+                        chaque couleur de texte, parce que sur ce fond « seule l'encre se
+                        lit » — le crème tombe à 1,4 de contraste et l'or à 1,0, c'est-à-dire
+                        qu'il DEVIENT le fond. D'où : titre et sous-titre en encre, et tout
+                        ce qui doit rester clair (la saisie, les suggestions) enfermé dans un
+                        aplat sombre opaque, jamais posé à nu sur le jaune. */}
+                    <div onClick={function(e){e.stopPropagation();}} style={{position:"relative",background:fondCharte,border:G.trait,borderRadius:24,padding:22,maxWidth:370,width:"100%",boxShadow:G.ombreL}}>
                       <div style={{position:"relative",textAlign:"center",marginBottom:16}}>
-                        <div style={{...posterText(20,G.projecteur),letterSpacing:1}}>🎯 {tr("QUI MATCHE ?","WHO FITS?","WER PASST?","CHI CI STA?","QUEM ENCAIXA?","¿QUIÉN ENCAJA?")}</div>
-                        <div style={{fontSize:10,letterSpacing:2,color:G.creme,opacity:.6,fontWeight:800,marginTop:3}}>{tr("UN JOUEUR POUR CES 2 CRITÈRES","A PLAYER FOR THESE 2 CRITERIA","EIN SPIELER FÜR DIESE 2 KRITERIEN","UN GIOCATORE PER QUESTI 2 CRITERI","UM JOGADOR PARA ESTES 2 CRITÉRIOS","UN JUGADOR PARA ESTOS 2 CRITERIOS")}</div>
+                        <div style={{...posterLight(20,G.encre),letterSpacing:1}}>🎯 {tr("QUI MATCHE ?","WHO FITS?","WER PASST?","CHI CI STA?","QUEM ENCAIXA?","¿QUIÉN ENCAJA?")}</div>
+                        <div style={{fontSize:10,letterSpacing:2,color:G.encre,opacity:.72,fontWeight:800,marginTop:3}}>{tr("UN JOUEUR POUR CES 2 CRITÈRES","A PLAYER FOR THESE 2 CRITERIA","EIN SPIELER FÜR DIESE 2 KRITERIEN","UN GIOCATORE PER QUESTI 2 CRITERI","UM JOGADOR PARA ESTES 2 CRITÉRIOS","UN JUGADOR PARA ESTOS 2 CRITERIOS")}</div>
                       </div>
                       <div style={{position:"relative",display:"flex",gap:10,marginBottom:18,alignItems:"stretch"}}>
                         {critCard(rowEmoji, rowMain, rowSecond, ggGetCriterionDisplayLabel(rowCrit, lang))}
-                        <div style={{alignSelf:"center",flexShrink:0,width:30,height:30,borderRadius:"50%",background:G.projecteur,border:G.traitFin,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:G.poster,fontSize:17,fontWeight:900,color:G.encre,boxShadow:"2px 2px 0 "+G.encre}}>×</div>
+                        {/* Pastille de nuit et non d'or : un aplat d'or posé sur l'or disparaît. */}
+                        <div style={{alignSelf:"center",flexShrink:0,width:30,height:30,borderRadius:"50%",background:G.nuit,border:G.traitFin,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:G.poster,fontSize:17,fontWeight:900,color:G.or,boxShadow:"2px 2px 0 "+G.encre}}>×</div>
                         {critCard(colEmoji, colMain, colSecond, ggGetCriterionDisplayLabel(colCrit, lang))}
                       </div>
                       <input
@@ -14384,10 +14398,10 @@ export default function LePont() {
                         onChange={function(e){setGgGuess(e.target.value);}}
                         onKeyDown={function(e){if(e.key==="Enter"){ if(suggestions.length>0){ggSubmitAnswer(suggestions[0].name);} else if(ggGuess.trim().length>=3){ggSubmitAnswer(ggGuess);} }}}
                         placeholder={tr("Tape au moins 3 lettres...","Type at least 3 letters...","Mindestens 3 Buchstaben eingeben...","Scrivi almeno 3 lettere...","Digite ao menos 3 letras...","Escribe al menos 3 letras...")}
-                        style={{width:"100%",background:G.encre,border:"2px solid "+(ggFlash==="ko"?G.maillot:G.orSombre),borderRadius:14,padding:"14px 16px",color:G.creme,fontSize:16,fontWeight:700,outline:"none",textAlign:"center",boxSizing:"border-box",animation:ggFlash==="ko"?"answerKo .4s ease":"none"}}
+                        style={{width:"100%",background:G.encre,border:"2px solid "+(ggFlash==="ko"?G.maillot:G.encre),borderRadius:14,padding:"14px 16px",color:G.creme,fontSize:16,fontWeight:700,outline:"none",textAlign:"center",boxSizing:"border-box",boxShadow:G.ombre,animation:ggFlash==="ko"?"answerKo .4s ease":"none"}}
                       />
                       {suggestions.length > 0 && (
-                        <div style={{marginTop:8,background:G.encre,border:G.traitFin,borderRadius:12,maxHeight:180,overflowY:"auto"}}>
+                        <div style={{marginTop:12,background:G.encre,border:G.traitFin,borderRadius:12,boxShadow:G.ombre,maxHeight:180,overflowY:"auto"}}>
                           {suggestions.map(function(p){return(
                             <div key={p.name} onClick={function(){ggSubmitAnswer(p.name);}} style={{padding:"10px 14px",cursor:"pointer",borderBottom:G.traitFin,fontSize:14,fontWeight:800,color:G.creme,transition:"background .1s"}} onMouseEnter={function(e){e.currentTarget.style.background="rgba(245,194,43,.16)";}} onMouseLeave={function(e){e.currentTarget.style.background="transparent";}}>
                               {p.name}
@@ -14397,7 +14411,7 @@ export default function LePont() {
                       )}
                       {/* Bouton "Signaler" : apparaît après une mauvaise réponse */}
                       {ggLastRejected && (
-                        <div style={{marginTop:10,padding:10,background:G.encre,border:G.traitFin,borderRadius:12}}>
+                        <div style={{marginTop:12,padding:10,background:G.encre,border:G.traitFin,borderRadius:12,boxShadow:G.ombre}}>
                           {ggReportSent ? (
                             <div style={{textAlign:"center",fontSize:12,color:G.pelouseClaire,fontWeight:700,padding:6}}>
                               ✅ {tr("Merci ! On va vérifier.","Thanks! We'll check it.","Danke! Wir prüfen es.","Grazie! Controlleremo.","Obrigado! Vamos verificar.","¡Gracias! Lo revisaremos.")}
@@ -14432,15 +14446,31 @@ export default function LePont() {
                           )}
                         </div>
                       )}
-                      {/* Boutons Valider + Annuler */}
-                      <div style={{display:"flex",gap:8,marginTop:14}}>
-                        <button onClick={function(){setGgSelectedCell(null);setGgGuess("");setGgLastRejected(null);setGgReportSent(false);}} style={{...btn(G.encre,G.creme,14),flex:1,padding:14,letterSpacing:1}}>{tr("Annuler","Cancel","Abbrechen","Annulla","Cancelar","Cancelar")}</button>
-                        <button 
-                          onClick={function(){ if(suggestions.length>0){ggSubmitAnswer(suggestions[0].name);} else if(ggGuess.trim().length>=3){ggSubmitAnswer(ggGuess);} }}
-                          disabled={ggGuess.trim().length<3}
-                          style={{...btn(ggGuess.trim().length>=3?G.pelouse:G.encre,ggGuess.trim().length>=3?G.white:"rgba(242,231,206,.35)",15),flex:2,padding:14,letterSpacing:1.5,cursor:ggGuess.trim().length>=3?"pointer":"not-allowed"}}
-                        >{tr("VALIDER","VALIDATE","BESTÄTIGEN","CONVALIDA","VALIDAR","VALIDAR")}</button>
-                      </div>
+                      {/* Boutons Valider + Annuler.
+                          Les deux libellés partagent MÊME corps, MÊME casse, MÊME interlettrage
+                          et MÊME rembourrage. Ils étaient en 14 et 15 px, l'un en capitales et
+                          l'autre non, avec des interlettrages différents : deux boutons côte à
+                          côte qui ne se ressemblaient pas. La hiérarchie reste — elle passe par
+                          la LARGEUR (1 contre 2) et la couleur, pas par la taille du texte.
+                          `minHeight` fixe la hauteur des deux plutôt que de la laisser
+                          dépendre du corps du libellé. */}
+                      {(function(){
+                        const actif = ggGuess.trim().length >= 3;
+                        const commun = {padding:"13px 10px",minHeight:52,letterSpacing:1.2,textTransform:"uppercase"};
+                        return (
+                          <div style={{display:"flex",gap:8,marginTop:14,alignItems:"stretch"}}>
+                            <button onClick={function(){setGgSelectedCell(null);setGgGuess("");setGgLastRejected(null);setGgReportSent(false);}} style={{...btn(G.nuit,G.creme,15),...commun,flex:1}}>{tr("Annuler","Cancel","Abbrechen","Annulla","Cancelar","Cancelar")}</button>
+                            <button
+                              onClick={function(){ if(suggestions.length>0){ggSubmitAnswer(suggestions[0].name);} else if(actif){ggSubmitAnswer(ggGuess);} }}
+                              disabled={!actif}
+                              /* Inactif en or sombre et non en encre : sur l'or, un bouton
+                                 presque noir reste le plus VOYANT des deux, et l'action
+                                 principale paraissait donc désactivée à l'envers. */
+                              style={{...btn(actif?G.pelouse:G.orSombre,actif?G.white:"rgba(8,17,9,.45)",15),...commun,flex:2,cursor:actif?"pointer":"not-allowed"}}
+                            >{tr("VALIDER","VALIDATE","BESTÄTIGEN","CONVALIDA","VALIDAR","VALIDAR")}</button>
+                          </div>
+                        );
+                      })()}
                     </div>
                   </div>
                 );
