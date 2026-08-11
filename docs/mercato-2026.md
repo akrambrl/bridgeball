@@ -116,6 +116,41 @@ Le second cas est exactement celui pour lequel la règle existe : la presse titr
 « accord trouvé », ce qui n'est pas « transfert acté ». Sur un jeu qui pose des
 questions, écrire un transfert qui ne se fait pas revient à inventer une réponse.
 
+## Passe du 11 août
+
+| Mouvement | Vérification | Décision |
+|---|---|---|
+| **Ronald Araújo**, Barcelona → Liverpool | Officiel : prêt payant avec option d'achat à 55 M€, annoncé par les deux clubs, le joueur s'entraîne déjà à Kirkby | **écrit** — Liverpool ajouté en fin de liste |
+| **Idrissa Gueye** → Al Diriyah (libre) | Officiel : annonce du club saoudien le 9 août, en fin de contrat à Everton | **écrit** |
+| **Facundo Medina**, Marseille → Bayer Leverkusen | Accord seulement (kicker parle d'une « Einigung » : 20 M€ + bonus, contrat jusqu'en 2031), aucune annonce de club | **non écrit** |
+| **Darwin Núñez** → Trabzonspor | Toujours pas signé au 11 août : « 99 % », signatures annoncées « dans quelques jours », aucun dépôt KAP | **non écrit** |
+
+Vérifier Gueye a fait remonter **trois erreurs de données** qui n'avaient rien à
+voir avec son transfert, et qui étaient toutes plus graves que lui :
+
+1. `players.jsx` s'arrêtait au **PSG** alors que `clubSpells.ts` portait déjà son
+   retour à Everton en 2022. L'énigme publiait donc « Dernier maillot : PSG »
+   depuis quatre ans.
+2. Il figurait dans `RETIRED_PLAYERS` alors qu'il venait de signer. Ce drapeau
+   n'est pas décoratif : il pilote la pondération 80/20 des joueurs actifs dans
+   The Plug et The Mercato, et `dailyPool()` exclut les retraités de la devinette
+   du jour — un actif marqué retraité disparaît de la rotation quotidienne.
+3. Son poste était `attaquant` au lieu de `milieu`. GOAT GRID croise les postes
+   comme critères de grille : un poste faux rend une case du jeu fausse.
+
+La première est verrouillée par un test (`src/test/coequipiers.test.ts`) : **un
+passage encore ouvert dans `clubSpells` doit être le dernier club de
+`players.jsx`**. L'invariant plus large — « le dernier club des deux fichiers
+concorde » — a été mesuré puis **rejeté** : il échoue pour 144 des 341 joueurs
+datés, parce que `clubSpells` est volontairement partiel (Iniesta y finit à
+Barcelone, la base le suit jusqu'à Emirates Club). Seule la version étroite est
+vraie, et c'est exactement la règle qui avait lâché.
+
+Au passage, **Filip Jørgensen → Strasbourg** est confirmé comme un **prêt**
+(Chelsea le prête pour la saison), ce qui tranche une ligne laissée « non
+tranché » par l'audit initial. Rien à écrire pour autant : le joueur n'est pas
+dans `players.jsx`, l'y mettre reste un choix de couverture.
+
 ## Ce que cet audit ne couvre pas
 
 - **Les prêts.** Plusieurs mouvements de l'été sont des prêts ou des retours de

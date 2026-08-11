@@ -78,6 +78,30 @@ describe("wereTeammates n'affirme que ce que les dates prouvent", () => {
     expect([...orphelins]).toEqual([]);
   });
 
+  // Idrissa Gueye est revenu à Everton en 2022 : clubSpells le savait, players.jsx
+  // s'arrêtait au PSG. riddleClues() publie « Dernier maillot » d'après le DERNIER
+  // élément de players.jsx — l'indice a donc désigné le mauvais club pendant quatre
+  // ans, sans qu'aucun test ne bronche. clubSpells est volontairement partiel (il
+  // ne porte que les passages utiles à la logique de coéquipiers, pas les fins de
+  // carrière en second rideau), donc on ne peut pas exiger que ses deux dernières
+  // lignes concordent partout. Mais un passage ENCORE OUVERT, si : si la table dit
+  // qu'un joueur est actuellement dans un club, ce club est forcément le dernier
+  // de sa liste dans players.jsx.
+  it("un passage encore ouvert est le dernier club de players.jsx", () => {
+    const parNom = new Map(JOUEURS.map((p) => [p.name, p]));
+    const fautifs: string[] = [];
+    for (const n of NOMS) {
+      const ouvert = CLUB_SPELLS[n].filter((s) => s.to >= 2027);
+      if (ouvert.length === 0) continue;
+      const clubs = parNom.get(n)?.clubs ?? [];
+      const dernier = clubs[clubs.length - 1];
+      for (const s of ouvert) {
+        if (s.club !== dernier) fautifs.push(n + " : " + s.club + " ouvert, mais players.jsx finit sur " + dernier);
+      }
+    }
+    expect(fautifs).toEqual([]);
+  });
+
   it("une arrivée en 2026 se croise bien avec un joueur arrivé avant", () => {
     // Convention du fichier : une arrivée en 2026 se note { from: 2026, to: 2027 }.
     // Digne rejoint le PSG en 2026 ; il doit être coéquipier de quelqu'un qui y

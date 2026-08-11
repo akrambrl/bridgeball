@@ -864,7 +864,7 @@ export const PLAYERS = [
   { name:"Jarrad Branthwaite", clubs:["Carlisle United", "Everton", "Blackburn", "PSV Eindhoven"], diff:"moyen", nationalities:["Angleterre"], positions:["defenseur"], birthYear:2002 },
   { name:"Dwight McNeil", clubs:["Burnley", "Everton"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1999 },
   { name:"Beto", clubs:["Portimonense", "Udinese Calcio", "Everton"], diff:"expert", nationalities:["Portugal"], positions:["attaquant"], birthYear:1998 },
-  { name:"Idrissa Gueye", clubs:["Lille", "Aston Villa", "Everton", "PSG"], diff:"moyen", nationalities:["Sénégal"], positions:["attaquant"], birthYear:1989 },
+  { name:"Idrissa Gueye", clubs:["Lille", "Aston Villa", "Everton", "PSG", "Everton", "Al Diriyah"], diff:"moyen", nationalities:["Sénégal"], positions:["milieu"], birthYear:1989 },
   // Wolves
   { name:"José Sá", clubs:["Porto", "Olympiacos", "Wolverhampton"], diff:"expert", nationalities:["Portugal"], positions:["gardien"], birthYear:1993 },
   { name:"João Gomes", clubs:["Flamengo", "Wolverhampton", "Aston Villa"], diff:"moyen", nationalities:["Brésil"], positions:["milieu"], birthYear:2001 },
@@ -1568,7 +1568,7 @@ export const PLAYERS = [
   { name:"Manuel Ugarte", clubs:["Fénix", "Famalicão", "Sporting CP", "PSG", "Manchester United"], diff:"moyen", nationalities:["Uruguay"], positions:["milieu"], birthYear:2001 },
   { name:"Rodrigo Bentancur", clubs:["Boca Juniors", "Juventus FC", "Tottenham"], diff:"moyen", nationalities:["Uruguay"], positions:["milieu"], birthYear:1997 },
   { name:"Nicolás De La Cruz", clubs:["Liverpool Montevideo", "River Plate", "Flamengo"], diff:"moyen", nationalities:["Uruguay"], positions:["milieu"], birthYear:1997 },
-  { name:"Ronald Araújo", clubs:["Boston River", "Rentistas", "Barcelona"], diff:"moyen", nationalities:["Uruguay"], positions:["defenseur"], birthYear:1999 },
+  { name:"Ronald Araújo", clubs:["Boston River", "Rentistas", "Barcelona", "Liverpool"], diff:"moyen", nationalities:["Uruguay"], positions:["defenseur"], birthYear:1999 },
   { name:"José María Giménez", clubs:["Atletico Madrid"], diff:"expert", nationalities:["Uruguay"], positions:["defenseur"], birthYear:1995 },
   // Équipe nationale Colombie 2026
   { name:"Dávinson Sánchez", clubs:["Ajax Amsterdam", "Tottenham", "Galatasaray"], diff:"moyen", nationalities:["Colombie"], positions:["defenseur"], birthYear:1996 },
@@ -5985,7 +5985,7 @@ export const RETIRED_PLAYERS = new Set([ "Esteban Cambiasso","Eusébio","Ezequie
   "Gaël Clichy","Gareth Bale","Gary Neville","Gennaro Gattuso","George Weah",
   "Georginio Wijnaldum","Gerard Piqué","Giorgio Chiellini","Glen Johnson","Gonzalo Higuain",
   "Graham Stack","Gregory Coupet","Gus Poyet","Hasan Salihamidzic","Hatem Ben Arfa",
-  "Henri Lansbury","Hernan Crespo","Hulk","Idrissa Gueye","Igors Stepanovs",
+  "Henri Lansbury","Hernan Crespo","Hulk","Igors Stepanovs",
   "Iker Casillas","Ivan Perišić","Ivan Rakitic","James Milner","Jamie Carragher",
   "Jamie Vardy","Jan Kirchhoff","Jaroslaw Bieniuk","Jasper Cillessen","Javier Hernandez",
   "Javier Zanetti","Jay Emmanuel-Thomas","Jay-Jay Okocha","Jeremie Aliadiere",
