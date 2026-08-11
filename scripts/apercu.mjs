@@ -804,8 +804,36 @@ if (process.env.MESURE) {
   }
 }
 
+// ENCOCHE=47 simule une zone de sécurité haute (valeur d'un iPhone à encoche).
+//
+// Pourquoi c'est nécessaire : dans un navigateur d'ordinateur,
+// `env(safe-area-inset-top)` vaut TOUJOURS 0. Toute la couche « zone de
+// sécurité » de l'app — le décalage de #root, la remontée du bandeau
+// d'en-tête, le voile derrière la barre d'état — était donc invisible sur
+// chaque aperçu, et n'a jamais pu être vérifiée autrement que sur un vrai
+// téléphone. C'est exactement là qu'un défaut s'est logé.
+//
+// On surcharge les deux règles qui en dépendent, APRÈS le rendu : l'app
+// réinjecte sa feuille de style au chargement, un style posé plus tôt
+// disparaîtrait.
+const ENCOCHE = Number(process.env.ENCOCHE || 0);
+if (ENCOCHE > 0) {
+  await page.evaluate((h) => {
+    const s = document.createElement("style");
+    s.textContent = "#root{padding-top:" + h + "px !important}"
+      + "body::before{height:" + h + "px !important}";
+    document.head.appendChild(s);
+  }, ENCOCHE);
+  await page.waitForTimeout(300);
+  const voile = await page.evaluate(() => {
+    const st = getComputedStyle(document.body, "::before");
+    return { hauteur: st.height, z: st.zIndex };
+  });
+  console.log("encoche simulée : " + ENCOCHE + " px — voile de barre d'état " + voile.hauteur + " (z " + voile.z + ")");
+}
+
 const suffixe = LARGEUR > 900 ? "-pc" : "";
-const chemin = join(ici, "..", "apercu-" + ecran + suffixe + ".png");
+const chemin = join(ici, "..", "apercu-" + ecran + suffixe + (ENCOCHE > 0 ? "-encoche" : "") + ".png");
 await page.screenshot({ path:chemin, fullPage:false });
 console.log("écrit", chemin);
 await navigateur.close();
