@@ -263,7 +263,7 @@ export const CLUB_SPELLS: Record<string, Spell[]> = {
   "Frenkie de Jong": [{ club: "Ajax Amsterdam", from: 2015, to: 2019 }, { club: "Barcelona", from: 2019, to: 2026 }],
   "Pedri": [{ club: "Barcelona", from: 2020, to: 2026 }],
   "Gavi": [{ club: "Barcelona", from: 2021, to: 2026 }],
-  "Ronald Araújo": [{ club: "Barcelona", from: 2020, to: 2026 }],
+  "Ronald Araújo": [{ club: "Barcelona", from: 2020, to: 2026 }, { club: "Liverpool", from: 2026, to: 2027 }],
   "Jules Kounde": [{ club: "Sevilla", from: 2019, to: 2022 }, { club: "Barcelona", from: 2022, to: 2026 }],
   "Marc-André ter Stegen": [{ club: "Borussia Mönchengladbach", from: 2010, to: 2014 }, { club: "Barcelona", from: 2014, to: 2026 }],
   "Raphinha": [{ club: "Leeds United", from: 2020, to: 2022 }, { club: "Barcelona", from: 2022, to: 2026 }],
@@ -354,7 +354,7 @@ export const CLUB_SPELLS: Record<string, Spell[]> = {
   // ── Cadres Ligue 1 ──────────────────────────────────────────
   // PSG
   "Presnel Kimpembe": [{ club: "PSG", from: 2014, to: 2026 }],
-  "Idrissa Gueye": [{ club: "Lille", from: 2010, to: 2015 }, { club: "Aston Villa", from: 2015, to: 2016 }, { club: "Everton", from: 2016, to: 2019 }, { club: "PSG", from: 2019, to: 2022 }, { club: "Everton", from: 2022, to: 2025 }],
+  "Idrissa Gueye": [{ club: "Lille", from: 2010, to: 2015 }, { club: "Aston Villa", from: 2015, to: 2016 }, { club: "Everton", from: 2016, to: 2019 }, { club: "PSG", from: 2019, to: 2022 }, { club: "Everton", from: 2022, to: 2026 }, { club: "Al Diriyah", from: 2026, to: 2027 }],
   "Achraf Hakimi": [{ club: "Real Madrid", from: 2017, to: 2020 }, { club: "Inter Milan", from: 2020, to: 2021 }, { club: "PSG", from: 2021, to: 2026 }],
   "Vitinha": [{ club: "Porto", from: 2020, to: 2022 }, { club: "PSG", from: 2022, to: 2026 }],
   "Warren Zaïre-Emery": [{ club: "PSG", from: 2022, to: 2026 }],
