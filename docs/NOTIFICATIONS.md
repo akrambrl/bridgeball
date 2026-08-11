@@ -111,6 +111,26 @@ de l'abonnement en place à la clé courante, révoque celui qui ne correspond p
 et se réabonne. Le remplacement se fait au prochain lancement de l'app, sans que
 l'utilisateur ait quoi que ce soit à faire — la permission, elle, reste acquise.
 
+Côté serveur, les lignes périmées se nettoient aussi toutes seules, mais **pas au
+premier lancement** :
+
+- un abonnement créé avec une autre clé répond `403` ;
+- un `403` **alors qu'aucun envoi n'a réussi** est traité comme une erreur de
+  configuration : le workflow échoue et **ne supprime rien**. Purger là-dessus
+  viderait toute la table sur ce qui pourrait n'être qu'un secret mal collé ;
+- un `403` **alors que d'autres envois ont réussi** prouve que la clé privée est
+  bonne : cette ligne-là vient d'une paire précédente, elle est supprimée.
+
+Conséquence pratique après une rotation : le premier envoi réel est **rouge**,
+avec autant d'erreurs que d'anciens abonnés. Il redevient vert dès qu'une seule
+personne s'est réabonnée, et les anciennes lignes disparaissent à ce moment-là.
+Pour aller plus vite, on peut vider la table à la main dans Supabase — rien n'est
+perdu, ces abonnements ne pouvaient de toute façon plus rien recevoir :
+
+```sql
+delete from public.bb_push_subscriptions;
+```
+
 Pour générer une paire :
 
 ```bash

@@ -23,7 +23,7 @@
 import webpush from "web-push";
 import { PLAYERS, RETIRED_PLAYERS } from "../src/players.jsx";
 import { parisDay, poolDevinette, joueurDuJour, accrocheDevinette } from "../src/lib/devinette.js";
-import { dedupeAbonnements, decisionEnvoi, tagDuJour } from "../src/lib/push.js";
+import { dedupeAbonnements, decisionEnvoi, decisionFinale, tagDuJour } from "../src/lib/push.js";
 
 // Surchargeable pour pouvoir exercer l'envoi de bout en bout contre un faux
 // Supabase et un faux service de push, sans toucher à la production. C'est ce
@@ -156,25 +156,36 @@ async function main() {
 
   const resultats = await enParallele(garder, PARALLELE, (a) => envoyer(a, charge));
 
+  // Deuxième passe, une fois l'issue de TOUS les envois connue : un 403 isolé au
+  // milieu d'envois réussis ne parle pas de notre clé mais d'un abonnement créé
+  // avec une autre — voir decisionFinale.
+  const auMoinsUnSucces = resultats.some(function(r){ return r.decision === "ok"; });
   const compte = { ok: 0, purger: 0, alerter: 0, reessayer: 0 };
-  const aPurger = [], alertes = [];
+  const aPurger = [], perimes = [], alertes = [];
   resultats.forEach((r, i) => {
-    compte[r.decision] = (compte[r.decision] || 0) + 1;
-    if (r.decision === "purger") aPurger.push(garder[i].id);
-    if (r.decision === "alerter") alertes.push("HTTP " + r.status + " — " + (r.message || ""));
+    const d = decisionFinale(r.status, auMoinsUnSucces);
+    compte[d] = (compte[d] || 0) + 1;
+    if (d === "purger") (r.status === 401 || r.status === 403 ? perimes : aPurger).push(garder[i].id);
+    if (d === "alerter") alertes.push("HTTP " + r.status + " — " + (r.message || ""));
   });
 
   log("── Envoyé : " + compte.ok + " ✓  |  morts : " + compte.purger
     + "  |  à retenter : " + compte.reessayer + "  |  erreurs : " + compte.alerter);
 
   await supprimer(aPurger, "abonnements morts (404/410)");
+  await supprimer(perimes, "abonnements signés par une ancienne clé VAPID (403)");
   await supprimer(doublons.map((d) => d.id), "doublons d'endpoint");
   await supprimer(inutilisables.map((d) => d.id), "lignes sans clés de chiffrement");
 
   if (alertes.length) {
-    // 401/403 = notre clé VAPID est refusée. Ce n'est pas un abonné cassé, c'est
-    // la configuration : il faut que le workflow ÉCHOUE, sinon la panne passe
-    // pour un envoi réussi à zéro personne.
+    // Des alertes ALORS QU'AUCUN envoi n'a réussi : c'est notre clé VAPID qui
+    // est refusée, pas les abonnés. Il faut que le workflow ÉCHOUE, sinon la
+    // panne passe pour un envoi réussi à zéro personne.
+    //
+    // Le premier lancement réel après un changement de paire VAPID tombe
+    // légitimement ici : tous les abonnements datent de l'ancienne clé, donc
+    // aucun succès ne vient prouver que la nouvelle est bonne. Le rouge se
+    // résorbe dès qu'un seul réabonné reçoit sa notification.
     log("── ⚠ " + alertes.length + " erreurs non imputables aux abonnés :");
     for (const a of alertes.slice(0, 5)) log("   " + a);
     process.exitCode = 1;

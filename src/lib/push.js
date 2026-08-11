@@ -76,6 +76,31 @@ export function decisionEnvoi(status) {
 }
 
 /**
+ * La décision définitive, une fois l'issue des AUTRES envois connue.
+ *
+ * `decisionEnvoi` refuse de purger sur 401/403 parce qu'un refus de signature
+ * peut venir de notre configuration, et purger là-dessus viderait toute la table
+ * sur une simple erreur de clé. Mais si UN SEUL envoi a réussi, cette hypothèse
+ * tombe : la clé privée est manifestement valide, donc un 403 isolé ne parle plus
+ * de nous — il parle de cet abonnement-là, créé avec une AUTRE clé publique. Un
+ * abonnement est lié pour toujours à la clé qui l'a créé : celui-ci ne recevra
+ * jamais rien, il faut le supprimer pour que son propriétaire se réabonne.
+ *
+ * C'est exactement le cas au changement de paire VAPID : les anciens abonnements
+ * disparaissent d'eux-mêmes dès que les premiers réabonnés reçoivent leur
+ * notification, sans intervention et sans risque.
+ *
+ * @param {number} status
+ * @param {boolean} auMoinsUnSucces
+ * @returns {"ok"|"purger"|"alerter"|"reessayer"}
+ */
+export function decisionFinale(status, auMoinsUnSucces) {
+  const d = decisionEnvoi(status);
+  if (d === "alerter" && (status === 401 || status === 403) && auMoinsUnSucces) return "purger";
+  return d;
+}
+
+/**
  * Le `tag` de la notification du jour.
  *
  * Deux notifications de même tag se REMPLACENT sur l'appareil au lieu de
