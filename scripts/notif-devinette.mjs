@@ -19,7 +19,12 @@ import { parisDay, poolDevinette, joueurDuJour, accrocheDevinette } from "../src
 import { tagDuJour } from "../src/lib/push.js";
 import { preparer, lireAbonnements, envoyerLot, nettoyer, signalerAlertes, log } from "./push-io.mjs";
 
-const CIBLE = "https://goatfc.fr/?utm_source=push&utm_medium=notif&utm_campaign=devinette";
+// `play=devinette` OUVRE la devinette. Sans ce paramètre, la notification
+// annonçait le joueur mystère du jour et déposait sur l'accueil, où il fallait
+// encore le trouver soi-même — une notification qui ne mène pas où elle promet.
+// Le nom du paramètre est celui que lisent déjà Index.tsx et Home.tsx pour les
+// autres modes, et que les pages SEO utilisent dans leurs boutons.
+const CIBLE = "https://goatfc.fr/?play=devinette&utm_source=push&utm_medium=notif&utm_campaign=devinette";
 
 const args = process.argv.slice(2);
 const dryRun = args.includes("--dry-run");
