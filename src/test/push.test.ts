@@ -5,7 +5,7 @@
 // deux points où une erreur coûte cher : les doublons d'abonnement, et le
 // traitement d'un refus du serveur de push.
 import { describe, it, expect } from "vitest";
-import { abonnementUtilisable, dedupeAbonnements, decisionEnvoi, tagDuJour } from "../lib/push.js";
+import { abonnementUtilisable, dedupeAbonnements, decisionEnvoi, decisionFinale, tagDuJour } from "../lib/push.js";
 
 const abo = (id: string, endpoint: string, created_at: string) =>
   ({ id, endpoint, p256dh: "cle", auth: "auth", created_at });
@@ -112,6 +112,36 @@ describe("decisionEnvoi", () => {
   it("alerte plutôt que de deviner sur un code inconnu", () => {
     expect(decisionEnvoi(400)).toBe("alerter");
     expect(decisionEnvoi(0)).toBe("alerter");
+  });
+});
+
+describe("decisionFinale", () => {
+  it("purge un 403 quand d'autres envois ont réussi : c'est l'abonnement, pas la clé", () => {
+    // Un abonnement est lié pour toujours à la clé publique qui l'a créé. Si la
+    // clé privée signe correctement pour les autres, ce 403 dit seulement que
+    // celui-ci vient d'une paire précédente : il ne recevra jamais rien.
+    expect(decisionFinale(403, true)).toBe("purger");
+    expect(decisionFinale(401, true)).toBe("purger");
+  });
+
+  it("n'y touche PAS quand aucun envoi n'a réussi : là, c'est bien notre clé", () => {
+    // Le cas du premier lancement après un changement de paire VAPID : tous les
+    // abonnements datent de l'ancienne clé, donc rien ne vient prouver que la
+    // nouvelle est bonne. Purger ici viderait la table sur ce qui pourrait tout
+    // aussi bien être un secret mal collé.
+    expect(decisionFinale(403, false)).toBe("alerter");
+    expect(decisionFinale(401, false)).toBe("alerter");
+  });
+
+  it("ne change rien aux autres codes, succès ou pas", () => {
+    for (const succes of [true, false]) {
+      expect(decisionFinale(410, succes)).toBe("purger");
+      expect(decisionFinale(404, succes)).toBe("purger");
+      expect(decisionFinale(429, succes)).toBe("reessayer");
+      expect(decisionFinale(500, succes)).toBe("reessayer");
+      expect(decisionFinale(201, succes)).toBe("ok");
+      expect(decisionFinale(400, succes)).toBe("alerter");
+    }
   });
 });
 
