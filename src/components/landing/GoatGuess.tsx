@@ -99,7 +99,7 @@ const LIGA = [
   "Real Betis", "Celta Vigo", "Getafe", "Espanyol", "Mallorca", "Girona",
   "Cadiz", "Alaves", "Granada", "Osasuna", "Las Palmas", "Levante",
   "Rayo Vallecano", "Elche", "Almeria", "Leganés", "Eibar", "Real Valladolid",
-  "Sporting Gijón", "Oviedo", "Real Oviedo", "Málaga", "Malaga", "Numancia",
+  "Sporting Gijón", "Real Oviedo", "Málaga", "Numancia",
   "Tenerife", "Deportivo La Coruña", "Cultural Leonesa",
   "Cádiz", "Alavés", "Almería", "Deportivo La Coruna",
 ];

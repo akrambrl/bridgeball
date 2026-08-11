@@ -24,6 +24,9 @@ const DISTINCTS_ASSUMES = new Set([
   "Al Ahly / Al Ahli",                 // Le Caire et Djeddah/Dubaï
   "Al Nassr / Al-Nasr",                // Riyad et Dubaï
   "Tigre / Tigres",                    // Atlético Tigre (ARG) et Tigres UANL (MEX)
+  // Vérifiés en ajoutant la clé « sans préfixe » : ce sont bien deux clubs.
+  "AFC Wimbledon / Wimbledon",         // le club refondé en 2002, et le Wimbledon FC devenu MK Dons
+  "Olimpia / CD Olimpia",              // Asunción (Paraguay) et Tegucigalpa (Honduras, Quioto)
 ]);
 
 const squelette = (s: string) =>
@@ -55,6 +58,28 @@ describe("orthographe des clubs", () => {
   it("ne laisse pas passer les variantes d'une lettre (Olympiakos / Olympiacos)", () => {
     const doublons = groupesEnDouble(cleSouple)
       .filter((l) => !DISTINCTS_ASSUMES.has(l.join(" / ")))
+      .map((l) => l.map((c) => `${c} (${clubs.get(c)})`).join(" / "));
+    expect(doublons).toEqual([]);
+  });
+
+  // Le préfixe de forme (Stade de, Real, SV, NK, MSV…) échappait aux deux clés
+  // précédentes : « Reims » et « Stade de Reims » n'ont pas le même squelette.
+  // La devinette du jour affichait donc Édouard Mendy avec les DEUX dans la même
+  // carrière, comme s'il y avait joué deux fois. Neuf clubs étaient dans ce cas.
+  //
+  // Le préfixe n'est retiré que s'il RESTE quelque chose derrière : sans ça,
+  // « Real Madrid » et « Madrid » se confondraient, et surtout on ne veut pas
+  // qu'un club dont le nom entier EST le préfixe disparaisse.
+  const PREFIXES = /^(stade de|stade|real|sv|nk|hnk|msv|fsv|vfl|vfb|tsv|bsc|sk|ss|ssc|afc|cd|cf|ca|rc|sc|ac|as|fc|us|ud|sd)\s+/i;
+  const sansPrefixe = (s: string) => {
+    const court = squelette(s.replace(PREFIXES, ""));
+    return court.length >= 4 ? court : squelette(s);
+  };
+
+  it("n'écrit jamais le même club avec et sans son préfixe (Reims / Stade de Reims)", () => {
+    const doublons = groupesEnDouble(sansPrefixe)
+      .filter((l) => !DISTINCTS_ASSUMES.has(l.join(" / ")))
+      .filter((l) => !DISTINCTS_ASSUMES.has([...l].reverse().join(" / ")))
       .map((l) => l.map((c) => `${c} (${clubs.get(c)})`).join(" / "));
     expect(doublons).toEqual([]);
   });
