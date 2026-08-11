@@ -10080,13 +10080,18 @@ export default function LePont() {
         <div style={{position:"relative",width:"100%",height:"100dvh",overflowY:"auto",display:"flex",flexDirection:"column",animation:"fadeIn .3s ease-out",background:fondCharte}}>
           {areneCharte}
           {fermerCharte(duelLeaveRoom, 10)}
-          {/* Hero image (visuel entier) */}
+          {/* L'AFFICHE ENTIÈRE. Le conteneur demande le ratio de la carte, mais
+              il a le droit de rétrécir pour que l'écran tienne sur une page —
+              et en `cover`, rétrécir RECADRE. Cadré par le bas, on ne voyait
+              plus que des jambes et le titre, les visages passaient hors champ.
+              En `contain`, l'image se pose entière et laisse deux bandes sur les
+              côtés, que fondCharte remplit : l'or continue sans couture. */}
           {/* Même raison qu'au-dessus : bandes de contain remplies par le fond
               de la charte plutôt que par du noir. Il y a DEUX écrans de choix
               de mode dans ce fichier — celui-ci et gameConfigModal — et ils
               portent chacun leur propre affiche. */}
           <div style={{position:"relative",zIndex:1,width:"100%",aspectRatio:"1086 / 1448",flex:"0 1 auto",minHeight:0,overflow:"hidden",background:"transparent",borderBottom:G.trait}}>
-            <img src={DUEL_CARD_IMG} alt="" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center bottom",pointerEvents:"none",userSelect:"none"}} draggable={false}/>
+            <img src={DUEL_CARD_IMG} alt="" style={{width:"100%",height:"100%",objectFit:"contain",objectPosition:"center",pointerEvents:"none",userSelect:"none"}} draggable={false}/>
           </div>
           <div style={{position:"relative",zIndex:1,padding:"14px 18px calc(16px + env(safe-area-inset-bottom))",flexShrink:0,display:"flex",flexDirection:"column",maxWidth:480,margin:"0 auto",width:"100%",boxSizing:"border-box"}}>
             {/* Pastille format */}
@@ -13622,7 +13627,7 @@ export default function LePont() {
                     <img
                       src={isPont ? PLUG_CARD_IMG : MERCATO_CARD_IMG}
                       alt=""
-                      style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center bottom",pointerEvents:"none",userSelect:"none"}}
+                      style={{width:"100%",height:"100%",objectFit:"contain",objectPosition:"center",pointerEvents:"none",userSelect:"none"}}
                       draggable={false}
                     />
                   </div>
@@ -13747,7 +13752,7 @@ export default function LePont() {
                   et la tete des joueurs — et l'ecran, qui ne porte que deux
                   choix, laissait un grand vide en dessous. */}
               <div style={{position:"relative",zIndex:1,width:"100%",aspectRatio:"1086 / 1448",flex:"0 1 auto",minHeight:0,overflow:"hidden",borderBottom:G.trait}}>
-                <img src={GRID_CARD_IMG} alt="" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center bottom",pointerEvents:"none",userSelect:"none"}} draggable={false}/>
+                <img src={GRID_CARD_IMG} alt="" style={{width:"100%",height:"100%",objectFit:"contain",objectPosition:"center",pointerEvents:"none",userSelect:"none"}} draggable={false}/>
                 {/* Plus de voile ni de titre rapporte : l'affiche porte deja
                     « GOAT GRID » en toutes lettres. Ils avaient un sens quand
                     elle etait recadree en bandeau — le titre du dessin etait
