@@ -14430,20 +14430,23 @@ export default function LePont() {
                 // Contour explicite sur le libellé : la teinte sous le mot n'est pas
                 // choisie — bleu clair pour l'Argentine, noir pour la Juventus.
                 //
-                // Les deux libellés sont alignés PAR LE BAS, et c'est le seul moyen de les
-                // aligner tout court : un critère de club n'a pas d'écusson (son nom EST le
-                // critère), un critère de poste ou de pays en a un. Le libellé du premier
-                // flottait donc au milieu de sa carte pendant que celui du second tombait
-                // sous son écusson — deux textes censés se lire comme une paire, sur deux
-                // lignes différentes. En calant les libellés en bas et en laissant
-                // l'écusson se centrer dans l'espace restant (la zone `flex:1`), les deux
-                // mots reviennent sur la même ligne quelle que soit la nature du critère.
+                // Chaque carte CENTRE son contenu, et c'est un revirement assumé.
+                //
+                // Un critère de club n'a pas d'écusson — son nom EST le critère — alors
+                // qu'un critère de poste ou de pays en a un. Pour que les deux libellés
+                // tombent sur la même ligne, ils avaient été calés PAR LE BAS, l'écusson
+                // se centrant dans l'espace restant. Aligner les deux mots, oui, mais au
+                // prix d'une carte de club au texte collé en bas sous une grande zone
+                // vide : ça se lit comme un défaut de mise en page, pas comme un choix.
+                //
+                // Chaque carte est donc traitée comme un écusson autonome, contenu centré.
+                // Les libellés ne partagent plus une ligne commune, mais aucune des deux
+                // cartes ne paraît bancale — et c'est la carte, pas la ligne, que l'œil
+                // lit en premier.
                 const critCard = (emoji, main, second, label) => (
-                  <div style={{flex:1,position:"relative",background:main,border:G.trait,borderRadius:16,padding:"12px 8px",minHeight:92,display:"flex",flexDirection:"column",textAlign:"center",boxShadow:G.ombre,overflow:"hidden"}}>
-                    <div style={{flex:1,minHeight:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                      {emoji && <div style={{position:"relative",width:38,height:38,borderRadius:"50%",background:G.nuit,border:G.traitFin,display:"flex",alignItems:"center",justifyContent:"center",fontSize:21,boxShadow:"2px 2px 0 "+G.encre,flexShrink:0}}>{emoji}</div>}
-                    </div>
-                    <div style={{position:"relative",...posterText(15,G.white,1.2),fontSize:11.5,lineHeight:1.2,letterSpacing:.3,marginTop:6,flexShrink:0}}>{label.toUpperCase()}</div>
+                  <div style={{flex:1,position:"relative",background:main,border:G.trait,borderRadius:16,padding:"12px 8px",minHeight:92,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:6,textAlign:"center",boxShadow:G.ombre,overflow:"hidden"}}>
+                    {emoji && <div style={{position:"relative",width:38,height:38,borderRadius:"50%",background:G.nuit,border:G.traitFin,display:"flex",alignItems:"center",justifyContent:"center",fontSize:21,boxShadow:"2px 2px 0 "+G.encre,flexShrink:0}}>{emoji}</div>}
+                    <div style={{position:"relative",...posterText(15,G.white,1.2),fontSize:11.5,lineHeight:1.2,letterSpacing:.3}}>{label.toUpperCase()}</div>
                   </div>
                 );
                 return (
