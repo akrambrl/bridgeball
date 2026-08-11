@@ -13,26 +13,24 @@
 // est reproductible : on peut le déplacer, le recolorer ou corriger un nom sans
 // toucher au dessin.
 //
-// ── Le bandeau, et pourquoi il n'est pas décoratif ─────────────────────────
-// Les illustrations occupent leur cadre en entier — le tiers bas est pris sur
-// les six (jambes, table, plateau de jeu). Un titre posé par-dessus se battrait
-// avec le dessin. D'où un aplat en bas, qui ne recouvre que la zone déjà la
-// moins lisible de chaque dessin.
+// ── Le titre est posé À MÊME LE DESSIN, en relief ──────────────────────────
+// Pas de bandeau : le titre vit sur l'illustration, comme sur une affiche.
 //
-// ── Aplat d'OR, lettrage d'ENCRE ───────────────────────────────────────────
-// C'est la règle de la charte prise au mot : sur l'or, seule l'encre se lit —
-// 11,5 de contraste, quand le crème tombe à 1,4 et le blanc à 1,7. Le lettrage
-// n'a donc besoin ni de cerne ni d'ombre : la charte prescrit `posterLight` sur
-// un aplat clair, c'est-à-dire l'italique seule. Un cerne d'encre sur des
-// lettres d'encre boucherait les contre-formes pour rien.
+// Ce qui le rend lisible n'est PAS la couleur des lettres mais leur CONTOUR.
+// Le fond est doré, chargé de lignes de vitesse et de trame : un lettrage crème
+// posé nu y tomberait à 1,4 de contraste et disparaîtrait. Cerné d'encre, c'est
+// le contour qui porte le contraste — 11,5 contre l'or — et le crème ne sert
+// plus qu'à remplir. D'où la recette de la charte pour un grand titre : contour
+// d'encre, puis ombre dure d'encre décalée. Les deux ensemble donnent le relief.
 //
-// La ligne d'encre entre le dessin et le bandeau est ÉPAISSE, et il le faut :
-// l'illustration est elle aussi dorée, c'est ce trait seul qui fait lire le
-// bandeau comme un panneau et non comme la suite du fond.
+// Le piège à connaître : cette même recette appliquée à des lettres d'ENCRE sur
+// l'or double le mot d'un fantôme noir — l'ombre a la couleur de la lettre. Elle
+// ne marche que sur un lettrage clair, ce qui est le cas ici.
 //
-// Uniforme sur les six, parce que ce sont les ILLUSTRATIONS qui distinguent les
-// modes — un titre d'une couleur par carte ferait six objets au lieu d'une
-// famille.
+// En BAS, sur les six. C'est là que se trouvent les jambes, la table, le plateau
+// — la zone la moins porteuse de chaque dessin — et c'est là que les visuels
+// d'avant mettaient déjà leur titre. Uniforme, parce que ce sont les
+// ILLUSTRATIONS qui distinguent les modes.
 
 import { chromium } from "playwright";
 import { readFile, writeFile, stat, rm } from "node:fs/promises";
@@ -53,13 +51,14 @@ const jeton = (nom) => {
   if (!m) throw new Error("jeton de charte introuvable : " + nom);
   return m[1];
 };
-const G = { encre: jeton("encre"), or: jeton("or"), orSombre: jeton("orSombre") };
+const G = { encre: jeton("encre"), or: jeton("or"), creme: jeton("creme") };
 
 // 1086 x 1448 : le format des illustrations, et celui que les composants posent
 // en dur (`aspectRatio:"1086 / 1448"`).
 const L = 543, H = 724, ECHELLE = 2;
-const BANDEAU = 208;          // hauteur de l'aplat d'or, en CSS
-const LARGEUR_TITRE = L - 76; // marge de sécurité de part et d'autre
+const BAS = 34;               // distance du titre au bord bas, en CSS
+const HAUTEUR_TITRE = 250;    // la bande où le titre a le droit de vivre
+const LARGEUR_TITRE = L - 74; // marge de sécurité de part et d'autre
 
 const anton = await readFile(join(ici, "polices", "anton-latin.woff2"));
 const b64 = (b, t) => "data:" + t + ";base64," + b.toString("base64");
@@ -82,23 +81,22 @@ function page(dessin, mot) {
   body{width:${L}px;height:${H}px;overflow:hidden;position:relative;background:${G.or};
     font-family:'Anton',Impact,sans-serif;-webkit-font-smoothing:antialiased}
   .dessin{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
-  /* L'aplat d'or, et sa ligne d'encre : une transition franche se lit comme un
-     panneau voulu, un dégradé comme une bavure. */
-  .bandeau{position:absolute;left:0;right:0;bottom:0;height:${BANDEAU}px;background:${G.or};
-    border-top:10px solid ${G.encre};display:flex;flex-direction:column;
-    align-items:center;justify-content:center;gap:8px;padding:14px 34px}
+  .titre{position:absolute;left:0;right:0;bottom:${BAS}px;height:${HAUTEUR_TITRE}px;
+    display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px}
   /* Le cadre d'encre de la charte, sur les quatre bords. */
   .cadre{position:absolute;inset:0;box-shadow:inset 0 0 0 9px ${G.encre};pointer-events:none}
-  /* Ni cerne ni ombre : la charte prescrit l'italique seule sur un aplat clair.
-     Le décalage d'or sombre du grand mot est la seule concession au relief
-     d'affiche — il reste dans la famille de l'or, il n'ajoute pas de couleur. */
-  .goat{font-size:56px;line-height:1;letter-spacing:2.5px;color:${G.encre};
-    transform:skewX(-7deg)}
-  .mot{font-size:132px;line-height:1;letter-spacing:1px;color:${G.encre};
-    transform:skewX(-7deg);text-shadow:6px 6px 0 ${G.orSombre}}
+  /* L'ordre de peinture (stroke puis fill) est indispensable : par défaut le
+     contour est peint PAR-DESSUS la lettre et lui ronge l'intérieur — à 9 px,
+     les contre-formes du A et du O se bouchent complètement. */
+  .goat{font-size:62px;line-height:1;letter-spacing:2px;color:${G.creme};
+    transform:skewX(-7deg);-webkit-text-stroke:6px ${G.encre};paint-order:stroke fill;
+    text-shadow:6px 6px 0 ${G.encre}}
+  .mot{font-size:132px;line-height:1;letter-spacing:1px;color:${G.creme};
+    transform:skewX(-7deg);-webkit-text-stroke:9px ${G.encre};paint-order:stroke fill;
+    text-shadow:11px 11px 0 ${G.encre}}
   </style></head><body>
     <img class="dessin" src="${b64(dessin, "image/png")}" alt="">
-    <div class="bandeau">
+    <div class="titre">
       <div class="goat">GOAT</div>
       <div class="mot">${mot}</div>
     </div>
@@ -169,13 +167,14 @@ for (const carte of aFaire) {
   // lettres, du cerne et de l'italique — et régler la largeur seule laissait
   // « BATTLE » déborder du bandeau par le bas.
   await onglet.evaluate((max) => {
-    const bandeau = document.querySelector(".bandeau");
+    const zone = document.querySelector(".titre");
     const mot = document.querySelector(".mot");
     const goat = document.querySelector(".goat");
-    const place = bandeau.clientHeight - 28;   // le rembourrage du bandeau
     let corps = parseFloat(getComputedStyle(mot).fontSize);
-    const deborde = () => mot.getBoundingClientRect().width > max
-      || goat.getBoundingClientRect().height + mot.getBoundingClientRect().height + 10 > place;
+    // L'ombre dure sort de la boîte de la lettre : on garde de la marge pour
+    // qu'elle ne soit pas rognée par le bord de la carte.
+    const deborde = () => mot.getBoundingClientRect().width + 14 > max
+      || goat.getBoundingClientRect().height + mot.getBoundingClientRect().height + 18 > zone.clientHeight;
     while (deborde() && corps > 30) { corps -= 2; mot.style.fontSize = corps + "px"; }
   }, LARGEUR_TITRE);
 
