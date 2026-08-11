@@ -196,7 +196,13 @@ await page.addInitScript((premier) => {
 // donc le passer dès le chargement, pas après.
 const CODE_STATS = (await readFile(join(ici, "..", "src", "components", "LePont.jsx"), "utf8"))
   .match(/const STATS_CODE = "([^"]+)"/)[1];
-await page.goto("http://localhost:4173/" + (ecran.startsWith("tracking") ? "?stats=" + CODE_STATS : ""));
+// REQUETE=play=devinette permet de photographier une arrivée par URL — c'est le
+// chemin des notifications push et des boutons des pages SEO. Sans ça, un mode
+// qui ne s'ouvre QUE par l'URL n'était vérifiable qu'à la main sur un téléphone :
+// c'est précisément là que « la notif mène à l'accueil » est passé inaperçu.
+const REQUETE = process.env.REQUETE || "";
+await page.goto("http://localhost:4173/"
+  + (ecran.startsWith("tracking") ? "?stats=" + CODE_STATS : REQUETE ? "?" + REQUETE : ""));
 await page.waitForLoadState("networkidle");
 // L'écran de démarrage dure 2,5 s et REMPLACE l'app pendant ce temps : tant
 // qu'il est là, rien n'est cliquable et les modales du premier lancement ne

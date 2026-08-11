@@ -59,7 +59,22 @@ const Home = () => {
   useEffect(() => { trackTime(); }, []);
   // Devinette du jour : elle n'existait que sur mobile (pop-up dans Index.tsx),
   // le desktop n'y avait aucun accès. Ouverte depuis le lobby.
-  const [devinetteOpen, setDevinetteOpen] = useState(false);
+  // Lu à l'INITIALISATION et non dans un effet, et mémorisé en sessionStorage.
+  // C'est la règle que le commentaire de Index.tsx énonce déjà : l'effet qui lit
+  // `?play=` EFFACE l'URL juste après, donc tout remontage du composant perd le
+  // lien. Et Home se remonte — mesuré : la devinette s'ouvrait bien, puis
+  // disparaissait au remontage suivant, l'URL étant déjà nettoyée. La
+  // notification quotidienne déposait donc sur l'accueil, sur ordinateur.
+  const [devinetteOpen, setDevinetteOpen] = useState(() => {
+    try { if (new URLSearchParams(window.location.search).get("play") === "devinette") return true; } catch { /* noop */ }
+    try { return sessionStorage.getItem("bb_active_overlay") === "devinette"; } catch { return false; }
+  });
+  useEffect(() => {
+    try {
+      if (devinetteOpen) sessionStorage.setItem("bb_active_overlay", "devinette");
+      else if (sessionStorage.getItem("bb_active_overlay") === "devinette") sessionStorage.removeItem("bb_active_overlay");
+    } catch { /* noop */ }
+  }, [devinetteOpen]);
   useEffect(() => {
     const onDevinette = () => setDevinetteOpen(true);
     window.addEventListener("goatfc:open-devinette", onDevinette);
@@ -85,7 +100,17 @@ const Home = () => {
     try {
       mode = new URLSearchParams(window.location.search).get("play");
     } catch { /* noop */ }
-    if (!mode) return;
+    if (!mode) {
+      // `?friends=1` et `?duels=1` sont lus par LePont, pas ici : il suffit de le
+      // monter. C'est exactement ce que font les boutons « Mes amis » et
+      // « Défis » du lobby. Sans cette branche, la notification de demande d'ami
+      // déposait sur le lobby sur ordinateur, alors que le paramètre était là.
+      try {
+        const p = new URLSearchParams(window.location.search);
+        if (p.get("friends") === "1" || p.get("duels") === "1") setPlaying(true);
+      } catch { /* noop */ }
+      return;
+    }
     if (mode === "goatgrid" || mode === "duel") {
       // LePont lit ?play=<mode> puis nettoie l'URL lui-même : surtout ne pas
       // l'effacer ici, il ne verrait plus rien au montage.
@@ -94,6 +119,10 @@ const Home = () => {
     }
     if (mode === "guess") setGoatGuessOpen(true);
     else if (mode === "grid") setFindPlayerOpen(true);
+    // `devinette` est déjà ouverte par l'initialisation de l'état ci-dessus. On
+    // garde la branche pour tomber sur le nettoyage d'URL commun, sinon le
+    // paramètre resterait et rouvrirait la devinette à chaque rechargement.
+    else if (mode === "devinette") { /* rien à faire, déjà ouvert */ }
     else if (mode === "pont" || mode === "chaine") setPendingMode(mode);
     else return;
     // On nettoie l'URL pour ne pas relancer le jeu à chaque retour à l'accueil

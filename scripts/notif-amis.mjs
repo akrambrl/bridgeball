@@ -25,7 +25,11 @@ import { preparer, lireTout, lireAbonnements, modifier, envoyerLot, nettoyer,
          signalerAlertes, log } from "./push-io.mjs";
 
 const TABLE = "bb_friend_requests";
-const CIBLE = "https://goatfc.fr/?utm_source=push&utm_medium=notif&utm_campaign=ami";
+// `friends=1` ouvre le panneau « Mes amis », où la demande est acceptable d'un
+// tap. Sans ce paramètre la notification déposait sur l'accueil : elle annonçait
+// une demande d'ami et laissait la chercher. C'est le même paramètre que le
+// bouton « Mes amis » du lobby utilise déjà.
+const CIBLE = "https://goatfc.fr/?friends=1&utm_source=push&utm_medium=notif&utm_campaign=ami";
 // Au-delà, une demande n'est plus annoncée : elle est seulement marquée. Sert de
 // garde-fou à la première exécution, où toutes les demandes en attente depuis
 // des mois partiraient sinon d'un coup.

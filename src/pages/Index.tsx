@@ -55,6 +55,10 @@ const Index = () => {
   });
   const [devinetteOpen, setDevinetteOpen] = useState(() => {
     if (tableauDeBordDemande()) return false;
+    // La devinette était le SEUL des trois overlays à ne pas lire `?play=`. La
+    // notification quotidienne pointait donc sur l'accueil : elle annonçait la
+    // devinette du jour et n'y menait pas.
+    if (jeuDemandeParURL() === "devinette") return true;
     try { return sessionStorage.getItem("bb_active_overlay") === "devinette"; } catch { return false; }
   });
   const [devinettePrompt, setDevinettePrompt] = useState(false); // petit pop-up d'invitation sur l'accueil
