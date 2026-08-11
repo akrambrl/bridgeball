@@ -15109,7 +15109,7 @@ export default function LePont() {
         {/* Footer discret : version + liens légaux */}
         {/* Même raison que le libellé du carrousel : posé à nu sur l'or. */}
         <div style={{textAlign:"center",padding:"8px 0 2px",fontSize:10,color:"rgba(8,17,9,.55)",letterSpacing:1.5,flexShrink:0}}>
-          GOAT FC · <a href="/privacy/" target="_blank" rel="noopener noreferrer" style={{color:"rgba(8,17,9,.78)",textDecoration:"underline"}}>{tr("Confidentialité","Privacy","Datenschutz","Privacy","Privacidade","Privacidad")}</a> · <a href="/terms/" target="_blank" rel="noopener noreferrer" style={{color:"rgba(8,17,9,.78)",textDecoration:"underline"}}>{tr("Conditions","Terms","Bedingungen","Termini","Termos","Términos")}</a>
+          GOAT FC · <a href="/privacy/" target="_blank" rel="noopener noreferrer" style={{color:"rgba(8,17,9,.78)",textDecoration:"underline"}}>{tr("Confidentialité","Privacy","Datenschutz","Privacy","Privacidade","Privacidad")}</a> · <a href="/terms/" target="_blank" rel="noopener noreferrer" style={{color:"rgba(8,17,9,.78)",textDecoration:"underline"}}>{tr("Conditions","Terms","Bedingungen","Termini","Termos","Términos")}</a> · <span style={{opacity:.75}}>{__BUILD__}</span>
         </div>
 
       </div>

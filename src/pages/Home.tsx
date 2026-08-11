@@ -505,6 +505,11 @@ const ScoreTicker = () => {
           boxShadow:"2px 2px 0 "+G.encre }}>
         {tr("EN DIRECT", "LIVE", "LIVE", "IN DIRETTA", "AO VIVO","EN DIRECTO")}
       </span>
+      {/* Numéro de build, à droite du bandeau et hors du défilement. Il sert à
+          répondre en deux secondes à « est-ce que j'ai bien la dernière version ? » :
+          plusieurs écrans corrigés et déployés ont été signalés comme « encore à
+          l'ancien style » alors que la prod était à jour, et il n'existait aucun
+          moyen de le vérifier depuis l'app. */}
       <div className="flex-1 overflow-hidden">
         <div className="goat-marquee flex gap-12 whitespace-nowrap">
           {[...items, ...items].map((it, i) => (
@@ -518,6 +523,7 @@ const ScoreTicker = () => {
           ))}
         </div>
       </div>
+      <span className="text-xs text-white/35 flex-shrink-0 ml-4 tabular-nums">{__BUILD__}</span>
     </div>
   </div>
   );
