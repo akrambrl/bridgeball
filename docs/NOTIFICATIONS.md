@@ -22,16 +22,42 @@ Trois défauts côté client s'y ajoutaient :
 
 ## Ce qui existe maintenant
 
+Deux envoyeurs, un seul circuit.
+
 ```
-GitHub Actions (cron quotidien)
-  └── scripts/notif-devinette.mjs
-        ├── lit bb_push_subscriptions       (clé service_role)
-        ├── calcule le joueur du jour       (src/lib/devinette.js)
-        ├── envoie, chiffré et signé VAPID  (web-push)
-        └── purge les abonnements morts, les doublons, les lignes sans clés
+scripts/push-io.mjs          ← le circuit : lecture paginée, chiffrement,
+  │                             envoi, purge, marquage
+  ├── notif-devinette.mjs    ← cron quotidien, même message pour tous
+  └── notif-amis.mjs         ← sondage /15 min, un message par destinataire
 ```
 
-Un seul message, une fois par jour : **la devinette du jour**. Le texte est une
+Les **décisions** vivent dans `src/lib/push.js`, qui ne touche pas au réseau et se
+teste unitairement. `push-io.mjs` ne fait que des entrées-sorties. Sans cette
+séparation, le second envoyeur aurait recopié la lecture paginée, le
+chiffrement, la purge et la limite de parallélisme du premier — et les deux
+auraient divergé au premier correctif.
+
+## Colonnes à créer
+
+`notif-amis.mjs` a besoin d'une colonne qui n'existe pas d'origine. **À lancer une
+fois** dans Supabase → SQL Editor, sinon le script s'arrête avec un message qui
+renvoie ici :
+
+```sql
+alter table public.bb_friend_requests add column if not exists notified_at timestamptz;
+```
+
+Pourquoi une colonne et pas seulement le `tag` de la notification : un tag
+remplace une notification **encore affichée**. Dès que l'utilisateur la balaie,
+le sondage suivant en recrée une, avec vibration. Il faut une trace en base, et
+`bb_pseudos.last_notified_grade` posait déjà ce précédent.
+
+Aucune règle RLS à toucher : l'envoyeur utilise la clé `service_role`, qui les
+contourne. Le client, lui, n'écrit jamais cette colonne.
+
+## La devinette du jour
+
+Un seul message, une fois par jour. Le texte est une
 accroche, pas une réponse — nombre de clubs, poste, décennie d'éclosion. Il ne
 cite ni le nom ni aucun club, et un test le vérifie sur la totalité du vivier :
 une notification arrive avant qu'on ouvre le jeu, un nom dedans supprimerait la
@@ -45,6 +71,35 @@ l'envoyeur aurait garanti sa divergence, et une notification qui décrit un autr
 joueur que le jeu est un mensonge visible par tout le monde. Une seule
 implémentation, deux appelants, et un test (`src/test/devinette.test.ts`) qui
 tombe si quelqu'un remet une copie dans le composant.
+
+## Les demandes d'ami
+
+Un sondage toutes les 15 minutes, et non un envoi à l'instant de l'insertion :
+signer une notification depuis le client demanderait la clé privée VAPID, où elle
+serait publique. Il faut un serveur, et le seul disponible est le cron GitHub.
+Une demande d'ami annoncée dans le quart d'heure reste utile — un défi en direct
+ne le supporterait pas, ce qui est la raison pour laquelle « X te défie » n'est
+pas branché de cette façon.
+
+GitHub accepte 5 minutes au minimum mais retarde volontiers ses crons de
+plusieurs minutes sous charge : viser plus serré donnerait l'illusion du temps
+réel sans la tenir.
+
+Trois règles gouvernent le tri (`demandesANotifier`) :
+
+| Cas | Décision | Pourquoi |
+|---|---|---|
+| `notified_at` déjà rempli | ignorer | sinon la même demande repart à chaque sondage |
+| statut ≠ `pending` | marquer, ne pas envoyer | rien à annoncer, et la ligne n'a plus à être réexaminée |
+| plus vieille que 24 h | marquer, ne pas envoyer | garde-fou de la **première** exécution : sans lui, toutes les demandes en attente depuis des mois partiraient d'un coup |
+
+Deux détails qui comptent :
+
+- **Une notification par destinataire, pas par demande.** Quelqu'un qui revient
+  après une absence peut avoir trois demandes en attente ; trois notifications
+  simultanées se lisent comme du harcèlement.
+- **On ne marque que ce qui a été reçu.** Une panne passagère du service de push
+  laisse la demande annonçable au prochain sondage, au lieu de la perdre.
 
 ## Mise en route — les deux secrets à créer
 
@@ -70,14 +125,18 @@ avec la CLI `supabase`.
 ## Essayer sans rien envoyer
 
 ```bash
-npm run notif:essai   # circuit complet contre un faux Supabase et un faux service de push
+npm run notif:essai   # les deux circuits, contre un faux Supabase et un faux service de push
 ```
 
-Cet essai vérifie ce que les tests unitaires ne peuvent pas : lecture paginée,
-chiffrement `aes128gcm`, signature VAPID, purge des morts et des doublons. Il
-sert de vraies clés ECDH et un vrai HTTPS (certificat auto-signé jetable), parce
-que `web-push` refuse de chiffrer sans les premières et que la vérification
+Ces essais vérifient ce que les tests unitaires ne peuvent pas : lecture paginée,
+chiffrement `aes128gcm`, signature VAPID, purge des morts et des doublons. Ils
+servent de vraies clés ECDH et un vrai HTTPS (certificat auto-signé jetable),
+parce que `web-push` refuse de chiffrer sans les premières et que la vérification
 d'abonnement exige le second.
+
+Celui des amis lance le script **deux fois de suite** et vérifie que le second
+passage n'envoie rien. C'est la propriété qui compte : un sondage qui réenverrait
+la même demande toutes les 15 minutes serait pire que pas de notification.
 
 Pour une simulation contre la **vraie** base, sans envoyer :
 
@@ -85,7 +144,14 @@ Pour une simulation contre la **vraie** base, sans envoyer :
 SB_SERVICE_KEY=... npm run notif:sec
 ```
 
-Elle compte les abonnés par plateforme et n'envoie rien.
+Elle compte les abonnés par plateforme et n'envoie rien. Pour les amis :
+
+```bash
+SB_SERVICE_KEY=... npm run notif:amis:sec
+```
+
+Elle affiche les messages qui partiraient, sans envoyer ni marquer quoi que ce
+soit — donc sans consommer les demandes.
 
 Depuis GitHub : **Actions → Notification devinette → Run workflow**, en laissant
 `dry_run` coché.
@@ -152,7 +218,10 @@ La publique fait 87 caractères, la privée 43. La publique va dans
   corriger demande une colonne de plus et une écriture côté client.
 - **Les défis reçus.** `bb_duels` contient déjà les défis en attente
   (`status=sent`) : « X te défie » serait la notification la plus forte, et elle
-  pousserait le mode multi. Elle n'est pas branchée.
+  pousserait le mode multi. Elle n'est pas branchée — et un quart d'heure de
+  retard, acceptable pour une demande d'ami, ne l'est pas pour un défi qui
+  attend une réponse. Elle mériterait un déclenchement immédiat, donc une Edge
+  Function appelée par un webhook Supabase.
 - **iOS hors PWA.** Sur iPhone, les notifications web n'existent que si l'app est
   **installée** sur l'écran d'accueil. Le code en tient compte
   (`typeof Notification === "undefined"`), mais aucun message n'explique cette

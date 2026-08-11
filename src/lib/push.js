@@ -101,6 +101,78 @@ export function decisionFinale(status, auMoinsUnSucces) {
 }
 
 /**
+ * Quelles demandes d'ami notifier, et lesquelles marquer sans rien envoyer.
+ *
+ * Le tri se joue sur trois questions, et chacune évite une bêtise précise :
+ *
+ *  • `notified_at` déjà rempli → on ne renvoie pas. Sans cette colonne, un
+ *    sondage toutes les 10 minutes réenverrait la même demande indéfiniment
+ *    jusqu'à ce qu'elle soit acceptée. Le `tag` ne suffirait pas : il remplace
+ *    une notification encore affichée, mais une fois qu'elle est balayée, la
+ *    suivante réalerte.
+ *  • la demande n'est plus en attente → rien à annoncer, mais on la marque quand
+ *    même : elle n'a plus à être réexaminée à chaque tour.
+ *  • la demande est plus vieille que la fenêtre → on la marque SANS envoyer.
+ *    C'est le garde-fou de la première exécution : sans lui, toutes les demandes
+ *    en attente depuis des mois partiraient d'un coup, et chacun recevrait une
+ *    rafale de « X t'a ajouté en ami » vieux de l'été dernier.
+ *
+ * @param {Array} lignes de bb_friend_requests
+ * @param {number} maintenant horodatage
+ * @param {number} fenetreMs âge maximal d'une demande encore annonçable
+ * @returns {{aEnvoyer: Array, aMarquerSansEnvoi: Array}}
+ */
+export function demandesANotifier(lignes, maintenant, fenetreMs) {
+  const aEnvoyer = [], aMarquerSansEnvoi = [];
+  for (const l of lignes || []) {
+    if (!l || l.notified_at) continue;
+    if (l.status !== "pending") { aMarquerSansEnvoi.push(l); continue; }
+    const cree = Date.parse(l.created_at);
+    // Date illisible : on marque sans envoyer, plutôt que de traiter la ligne
+    // comme neuve et de l'annoncer à tort.
+    if (isNaN(cree) || maintenant - cree > fenetreMs) { aMarquerSansEnvoi.push(l); continue; }
+    aEnvoyer.push(l);
+  }
+  return { aEnvoyer, aMarquerSansEnvoi };
+}
+
+/**
+ * Une notification par DESTINATAIRE, pas par demande.
+ *
+ * Quelqu'un qui revient après une absence peut avoir trois demandes en attente :
+ * trois notifications simultanées se lisent comme du harcèlement, alors qu'une
+ * seule dit la même chose.
+ *
+ * @param {Array} demandes du même destinataire
+ * @returns {{titre: string, corps: string}}
+ */
+export function accrocheAmis(demandes) {
+  const noms = (demandes || []).map(function(d){ return (d.from_name || "Quelqu'un").trim() || "Quelqu'un"; });
+  if (noms.length <= 1) {
+    return { titre: "Nouvelle demande d'ami 🤝", corps: noms[0] + " veut être ton ami. Accepte et défie-le !" };
+  }
+  // À deux, on nomme les deux : « Karim et 1 autre » est plus froid et pas plus
+  // court que « Karim et Léa ». Au-delà, le décompte reprend la main.
+  const qui = noms.length === 2 ? noms[0] + " et " + noms[1] : noms[0] + " et " + (noms.length - 1) + " autres";
+  return {
+    titre: noms.length + " demandes d'ami 🤝",
+    // « veulent » dans les deux cas : le sujet est pluriel dès qu'ils sont deux.
+    corps: qui + " veulent être tes amis. Accepte et défie-les !",
+  };
+}
+
+/** Regroupe des lignes par la valeur d'une clé. */
+export function grouperPar(lignes, cle) {
+  const out = new Map();
+  for (const l of lignes || []) {
+    const k = l[cle];
+    const groupe = out.get(k);
+    if (groupe) groupe.push(l); else out.set(k, [l]);
+  }
+  return out;
+}
+
+/**
  * Le `tag` de la notification du jour.
  *
  * Deux notifications de même tag se REMPLACENT sur l'appareil au lieu de

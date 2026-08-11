@@ -11,8 +11,9 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "notif:essai": "tsx scripts/notif-devinette.essai.mjs",
+    "notif:essai": "tsx scripts/notif-devinette.essai.mjs && tsx scripts/notif-amis.essai.mjs",
     "notif:sec": "tsx scripts/notif-devinette.mjs --dry-run",
+    "notif:amis:sec": "tsx scripts/notif-amis.mjs --dry-run",
     "ios:sync": "npm run build && npx cap sync ios",
     "ios:open": "npx cap open ios"
   },
