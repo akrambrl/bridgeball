@@ -1,0 +1,57 @@
+# Notifications « X t'a ajouté en ami ».
+#
+# Sondage et non déclenchement immédiat : signer une notification au moment de
+# l'insertion demanderait la clé privée VAPID côté client, où elle serait
+# publique. Il faut un serveur, et le seul disponible ici est ce cron.
+#
+# Mêmes secrets que la devinette : SB_SERVICE_KEY et VAPID_PRIVATE_KEY.
+# Demande aussi une colonne en base — voir docs/NOTIFICATIONS.md.
+name: Notification amis
+
+on:
+  schedule:
+    # Toutes les 15 minutes. GitHub accepte 5 minutes au minimum mais retarde
+    # volontiers les crons de plusieurs minutes sous charge : viser plus serré
+    # donnerait une illusion de temps réel sans la tenir. Une demande d'ami
+    # annoncée dans le quart d'heure reste utile.
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Simuler sans rien envoyer ni marquer"
+        type: boolean
+        default: true
+
+# Deux exécutions simultanées annonceraient deux fois la même demande : la
+# seconde lirait les lignes avant que la première ne les ait marquées.
+concurrency:
+  group: notif-amis
+  cancel-in-progress: false
+
+jobs:
+  envoyer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Installer les dépendances
+        # Le dépôt embarque Playwright : sans cette variable, npm ci
+        # téléchargerait des navigateurs dont l'envoi n'a aucun besoin.
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+        run: npm ci
+
+      - name: Envoyer
+        env:
+          SB_SERVICE_KEY: ${{ secrets.SB_SERVICE_KEY }}
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+          VAPID_SUBJECT: https://goatfc.fr
+        run: |
+          npx tsx scripts/notif-amis.mjs \
+            ${{ (github.event_name == 'workflow_dispatch' && inputs.dry_run) && '--dry-run' || '' }}

@@ -5,7 +5,8 @@
 // deux points où une erreur coûte cher : les doublons d'abonnement, et le
 // traitement d'un refus du serveur de push.
 import { describe, it, expect } from "vitest";
-import { abonnementUtilisable, dedupeAbonnements, decisionEnvoi, decisionFinale, tagDuJour } from "../lib/push.js";
+import { abonnementUtilisable, dedupeAbonnements, decisionEnvoi, decisionFinale, tagDuJour,
+         demandesANotifier, accrocheAmis, grouperPar } from "../lib/push.js";
 
 const abo = (id: string, endpoint: string, created_at: string) =>
   ({ id, endpoint, p256dh: "cle", auth: "auth", created_at });
@@ -142,6 +143,105 @@ describe("decisionFinale", () => {
       expect(decisionFinale(201, succes)).toBe("ok");
       expect(decisionFinale(400, succes)).toBe("alerter");
     }
+  });
+});
+
+describe("demandesANotifier", () => {
+  const H = 3600000;
+  const maintenant = Date.parse("2026-08-11T12:00:00Z");
+  const dem = (id: string, o: any = {}) => ({
+    id, from_id: "f", from_name: "Machin", to_id: "t", to_name: "Toi",
+    status: "pending", created_at: "2026-08-11T11:50:00Z", notified_at: null, ...o,
+  });
+
+  it("annonce une demande récente et en attente", () => {
+    const { aEnvoyer } = demandesANotifier([dem("1")], maintenant, 24 * H);
+    expect(aEnvoyer.map((d: any) => d.id)).toEqual(["1"]);
+  });
+
+  it("ignore une demande DÉJÀ notifiée", () => {
+    // Sans ça, un sondage toutes les 15 minutes réenverrait la même demande
+    // indéfiniment jusqu'à ce qu'elle soit acceptée.
+    const r = demandesANotifier([dem("1", { notified_at: "2026-08-11T11:55:00Z" })], maintenant, 24 * H);
+    expect(r.aEnvoyer).toEqual([]);
+    expect(r.aMarquerSansEnvoi).toEqual([]);
+  });
+
+  it("classe sans envoi une demande qui n'est plus en attente", () => {
+    const r = demandesANotifier([dem("1", { status: "accepted" })], maintenant, 24 * H);
+    expect(r.aEnvoyer).toEqual([]);
+    expect(r.aMarquerSansEnvoi.map((d: any) => d.id)).toEqual(["1"]);
+  });
+
+  it("classe sans envoi les demandes plus vieilles que la fenêtre", () => {
+    // Le garde-fou de la PREMIÈRE exécution : sans lui, toutes les demandes en
+    // attente depuis des mois partiraient d'un coup, et chacun recevrait une
+    // rafale de « X t'a ajouté en ami » vieux de l'été dernier.
+    const r = demandesANotifier([
+      dem("vieille", { created_at: "2026-06-01T10:00:00Z" }),
+      dem("recente"),
+    ], maintenant, 24 * H);
+    expect(r.aEnvoyer.map((d: any) => d.id)).toEqual(["recente"]);
+    expect(r.aMarquerSansEnvoi.map((d: any) => d.id)).toEqual(["vieille"]);
+  });
+
+  it("classe sans envoi une date illisible, au lieu de la croire neuve", () => {
+    const r = demandesANotifier([dem("1", { created_at: "n'importe quoi" })], maintenant, 24 * H);
+    expect(r.aEnvoyer).toEqual([]);
+    expect(r.aMarquerSansEnvoi.map((d: any) => d.id)).toEqual(["1"]);
+  });
+
+  it("supporte une table vide", () => {
+    expect(demandesANotifier([], maintenant, 24 * H).aEnvoyer).toEqual([]);
+    expect(demandesANotifier(null, maintenant, 24 * H).aEnvoyer).toEqual([]);
+  });
+});
+
+describe("accrocheAmis", () => {
+  const d = (nom: string | null) => ({ from_name: nom });
+
+  it("nomme la personne quand il n'y en a qu'une", () => {
+    expect(accrocheAmis([d("Karim")]).corps).toContain("Karim");
+  });
+
+  it("regroupe plusieurs demandes en UNE notification", () => {
+    // Quelqu'un qui revient après une absence peut avoir trois demandes en
+    // attente : trois notifications simultanées se lisent comme du harcèlement.
+    const a = accrocheAmis([d("Karim"), d("Léa"), d("Sam")]);
+    expect(a.titre).toContain("3");
+    expect(a.corps).toContain("Karim");
+    expect(a.corps).toContain("2 autres");
+  });
+
+  it("nomme les deux personnes quand elles sont deux", () => {
+    expect(accrocheAmis([d("Karim"), d("Léa")]).corps).toContain("Karim et Léa veulent");
+  });
+
+  it("accorde toujours le verbe au pluriel dès qu'ils sont plusieurs", () => {
+    // « Karim et 1 autre veut être tes amis » : le sujet est pluriel, le verbe
+    // doit l'être aussi. La première version se trompait, et le test aussi.
+    for (const n of [2, 3, 5]) {
+      const corps = accrocheAmis(Array.from({ length: n }, (_, i) => d("N" + i))).corps;
+      expect(corps).toContain("veulent");
+      expect(corps).not.toContain(" veut ");
+    }
+  });
+
+  it("survit à un pseudo absent ou vide", () => {
+    expect(accrocheAmis([d(null)]).corps).toContain("Quelqu'un");
+    expect(accrocheAmis([d("   ")]).corps).toContain("Quelqu'un");
+  });
+});
+
+describe("grouperPar", () => {
+  it("regroupe par la clé donnée", () => {
+    const g = grouperPar([{ to: "a", n: 1 }, { to: "b", n: 2 }, { to: "a", n: 3 }], "to");
+    expect([...g.keys()].sort()).toEqual(["a", "b"]);
+    expect(g.get("a").map((x: any) => x.n)).toEqual([1, 3]);
+  });
+
+  it("supporte une liste vide", () => {
+    expect(grouperPar(null, "to").size).toBe(0);
   });
 });
 
