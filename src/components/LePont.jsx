@@ -3248,24 +3248,30 @@ document.head.appendChild(s);
 }
 
 // ── NOTIFICATIONS ──
-const NOTIF_MESSAGES_FR = [
-  { title:"⚽ GOAT FC t'attend !", body:"Tu connais tous les transferts ? Prouve-le !" },
-  { title:"🏆 Bats ton record !", body:"Ton record t'attend. Reviens jouer !" },
-  { title:"⚽ C'est l'heure du quiz !", body:"Qui a joué dans ces deux clubs ? Viens tester !" },
-  { title:"🔗 La Chaîne t'appelle !", body:"Combien de clubs peux-tu enchaîner aujourd'hui ?" },
-  { title:"📊 Le classement bouge !", body:"Quelqu'un a peut-être battu ton record..." },
-];
-const NOTIF_MESSAGES_EN = [
-  { title:"⚽ GOAT FC is waiting!", body:"You know all the transfers? Prove it!" },
-  { title:"🏆 Beat your record!", body:"Your record is waiting. Come back and play!" },
-  { title:"⚽ Quiz time!", body:"Who played for these two clubs? Come test yourself!" },
-  { title:"🔗 The Chain calls you!", body:"How many clubs can you chain today?" },
-  { title:"📊 The leaderboard is moving!", body:"Someone might have beaten your record..." },
-];
-function getNotifMessages(){ try { return localStorage.getItem("bb_lang")==="en" ? NOTIF_MESSAGES_EN : NOTIF_MESSAGES_FR; } catch { return NOTIF_MESSAGES_FR; } }
-const NOTIF_MESSAGES = NOTIF_MESSAGES_FR;
-
-function pickRandom(arr) { return arr[Math.floor(Math.random()*arr.length)]; }
+//
+// Ce qui vivait ici et qui est parti : cinq messages de rappel (« GOAT FC
+// t'attend ! »), un `sendNotif` bâti sur `new Notification()` et un
+// `scheduleNextNotif` qui posait un setTimeout de 24 h. Aucune des trois pièces
+// ne pouvait fonctionner :
+//
+//  • `new Notification()` lève « Illegal constructor » sur Chrome Android ET en
+//    PWA iOS — la totalité du public de l'app. Une notification déclenchée par
+//    une page doit passer par le service worker. L'erreur était avalée par un
+//    try/catch : la fonction ne notifiait rien, sans jamais se plaindre.
+//  • un setTimeout de 24 h suppose un onglet ouvert 24 h. Un onglet mobile est
+//    gelé en quelques minutes : le minuteur ne s'est jamais déclenché une seule
+//    fois.
+//  • et surtout : RIEN, nulle part, n'envoyait de push. Ni Edge Function, ni
+//    cron, ni dépendance web-push. L'app demandait la permission d'envoyer des
+//    notifications et promettait « on te pinguera si t'as pas joué depuis 24h »
+//    sans qu'aucune ligne de code ne puisse tenir cette promesse — alors qu'un
+//    refus de notification est DÉFINITIF, on ne peut pas redemander.
+//
+// L'envoi réel vit désormais côté serveur : scripts/notif-devinette.mjs, lancé
+// une fois par jour par .github/workflows/notif-devinette.yml. Il ne reste ici
+// que ce qui appartient au navigateur — demander la permission, et tenir
+// l'abonnement à jour. Les anciens messages de rappel sont dans l'historique
+// git si un rappel hebdomadaire est décidé plus tard.
 
 async function requestNotifPermission() {
   if (!("Notification" in window)) return false;
@@ -3294,10 +3300,22 @@ function isAndroid() {
   return /android/i.test(window.navigator.userAgent);
 }
 
-// VAPID public key pour signer les subscriptions push
-// Clé publique générée via vapidkeys.com — la private key correspondante doit être stockée
-// dans Supabase Secrets pour l'Edge Function qui enverra les notifs
-const VAPID_PUBLIC_KEY = "BOwSf9_eF4dgLAp1KD3e1dfX1qurhcaMvAOnJpYL7hwuXhfgX0cJnswXuhe5VPAEWjrLjVJD61b6crJXzG0HVMg";
+// Clé publique VAPID : elle identifie l'expéditeur auprès du service de push.
+// Sa moitié privée vit dans les secrets GitHub (voir docs/NOTIFICATIONS.md) et
+// ne doit jamais entrer dans le dépôt.
+//
+// Paire REGÉNÉRÉE : la précédente n'avait pas de moitié privée connue, donc
+// aucune notification n'aurait jamais pu être signée. Conséquence à connaître —
+// un abonnement est lié pour toujours à la clé publique avec laquelle il a été
+// créé : tous ceux enregistrés avant ce changement sont inutilisables. C'est
+// `subscribeToPush` qui les remplace, en révoquant tout abonnement signé par une
+// autre clé que celle-ci.
+const VAPID_PUBLIC_KEY = "BIDTT9eBO0qcUxJQq4WnNwOe9RR39XlWTo3bFTIjc7Uwt6V4kFwbA2qcLYkBOBw391wbecoBkhAN41MvKvIIkyk";
+// L'endpoint déjà transmis à Supabase. La table n'a pas de contrainte d'unicité
+// sur `endpoint` — chaque POST y ajoute donc une LIGNE, il ne remplace rien.
+// Sans cette mémoire, réabonner à chaque lancement ferait grossir la table d'une
+// ligne par ouverture de l'app.
+const PUSH_ENDPOINT_KEY = "bb_push_endpoint";
 
 // Convertit une base64 URL-safe en Uint8Array (nécessaire pour l'API PushManager)
 function urlBase64ToUint8Array(base64String) {
@@ -3309,25 +3327,52 @@ function urlBase64ToUint8Array(base64String) {
   return outputArray;
 }
 
-// S'abonne aux push notifications et sauvegarde le token dans Supabase
+// Un abonnement signé par une AUTRE clé VAPID que la nôtre ne recevra jamais
+// rien : le service de push refuse la signature (403). Il faut donc le détecter
+// pour le révoquer, sinon `getSubscription()` rend éternellement un abonnement
+// mort et l'utilisateur n'est jamais réabonné.
+function memeCleServeur(sub) {
+  try {
+    const brut = sub && sub.options && sub.options.applicationServerKey;
+    if (!brut) return false;
+    const vue = new Uint8Array(brut), attendue = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
+    if (vue.length !== attendue.length) return false;
+    for (let i = 0; i < vue.length; i++) if (vue[i] !== attendue[i]) return false;
+    return true;
+  } catch(e) { return false; }
+}
+
+// S'abonne aux notifications push et enregistre l'abonnement dans Supabase.
+// Rend VRAI seulement si l'enregistrement a réellement abouti : l'ancienne
+// version rendait `true` sans regarder la réponse du POST, si bien qu'un échec
+// réseau ou un refus de la base passait pour un succès.
 async function subscribeToPush(playerId, sbFetch) {
   try {
     if (!("serviceWorker" in navigator) || !("PushManager" in window)) return false;
-    if (Notification.permission !== "granted") return false;
+    if (typeof Notification === "undefined" || Notification.permission !== "granted") return false;
     const reg = await navigator.serviceWorker.ready;
-    // Vérifier s'il y a déjà une subscription active
     let sub = await reg.pushManager.getSubscription();
+    if (sub && !memeCleServeur(sub)) {
+      try { await sub.unsubscribe(); } catch(e) {}
+      sub = null;
+      try { localStorage.removeItem(PUSH_ENDPOINT_KEY); } catch(e) {}
+    }
     if (!sub) {
       sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
       });
     }
-    // Envoyer la subscription à Supabase
     const subJson = sub.toJSON();
-    await sbFetch("bb_push_subscriptions", {
+    if (!subJson || !subJson.endpoint || !subJson.keys || !subJson.keys.p256dh || !subJson.keys.auth) return false;
+    // Déjà transmis : on ne réécrit pas. Voir PUSH_ENDPOINT_KEY — un POST ici
+    // AJOUTE une ligne, il n'en remplace aucune.
+    let dejaTransmis = null;
+    try { dejaTransmis = localStorage.getItem(PUSH_ENDPOINT_KEY); } catch(e) {}
+    if (dejaTransmis === subJson.endpoint) return true;
+    const reponse = await sbFetch("bb_push_subscriptions", {
       method: "POST",
-      headers: { "Content-Type":"application/json", "Prefer":"resolution=merge-duplicates,return=minimal" },
+      headers: { "Content-Type":"application/json", "Prefer":"return=minimal" },
       body: JSON.stringify({
         player_id: playerId,
         endpoint: subJson.endpoint,
@@ -3337,52 +3382,27 @@ async function subscribeToPush(playerId, sbFetch) {
         standalone: isStandalone()
       })
     });
+    // sbFetch rend null sur échec réseau ou réponse KO, [] sur un 201.
+    if (reponse === null) return false;
+    try { localStorage.setItem(PUSH_ENDPOINT_KEY, subJson.endpoint); } catch(e) {}
     return true;
   } catch(e) {
     return false;
   }
 }
 
-function sendNotif(title, body) {
-  if (!("Notification" in window) || Notification.permission !== "granted") return;
+// Absent depuis plus de 24 h ? Sert au bandeau « content de te revoir », qui
+// existait déjà, dessiné et traduit en six langues, mais que rien n'allumait :
+// cette fonction n'était appelée de nulle part et `wasAway` restait faux à vie.
+// À n'appeler qu'UNE fois par chargement — elle écrit la date de visite.
+function retourApresAbsence() {
   try {
-    new Notification(title, {
-      body,
-      icon: "/icon-192.png",
-      badge: "/icon-192.png",
-      tag: "goatfc-reminder",
-      renotify: true,
-    });
-  } catch(e) {}
-}
-
-function checkAndScheduleNotif() {
-  try {
-    const last = localStorage.getItem("bb_last_visit");
-    const now = Date.now();
-    localStorage.setItem("bb_last_visit", String(now));
-
-    if (last) {
-      const elapsed = now - parseInt(last);
-      const h24 = 24 * 60 * 60 * 1000;
-      // If 24h+ since last visit, note it (notif already sent by timer or we show banner)
-      if (elapsed > h24) {
-        return true; // Signal: user was away 24h+
-      }
-    }
-    return false;
+    const derniere = localStorage.getItem("bb_last_visit");
+    localStorage.setItem("bb_last_visit", String(Date.now()));
+    if (!derniere) return false;
+    const ecoule = Date.now() - parseInt(derniere, 10);
+    return isFinite(ecoule) && ecoule > 24 * 60 * 60 * 1000;
   } catch { return false; }
-}
-
-function scheduleNextNotif() {
-  if (!("Notification" in window) || Notification.permission !== "granted") return;
-  // Schedule a notification in 24h if the tab stays open (PWA)
-  const h24 = 24 * 60 * 60 * 1000;
-  setTimeout(() => {
-    const msg = pickRandom(getNotifMessages());
-    sendNotif(msg.title, msg.body);
-    scheduleNextNotif(); // Reschedule for next 24h
-  }, h24);
 }
 
 
@@ -3503,7 +3523,6 @@ export default function LePont() {
   // On met un ref pour ne pas retrigger le useEffect à chaque changement
   const installDismissedThisSession = useRef(false);
   const [deferredInstall, setDeferredInstall] = useState(null); // Pour Android: l'event beforeinstallprompt
-  const [pushSubscribed, setPushSubscribed] = useState(false);
   const [showNotifPrompt, setShowNotifPrompt] = useState(false);
   const [lbMode, setLbMode] = useState("global");
   const [lbSeasonScope, setLbSeasonScope] = useState("monde"); // "monde" ou "amis" pour l'onglet Saison
@@ -6046,6 +6065,39 @@ export default function LePont() {
       }
     } catch {}
   }, [pseudoConfirmed, dayStreak, record, chainRecord]);
+
+  // Réabonnement à CHAQUE lancement, quand la permission est déjà accordée.
+  //
+  // L'abonnement ne se faisait qu'à l'instant précis où l'utilisateur tapait
+  // « Oui, active ! ». Tout ce qui arrive après passait donc à la trappe : un
+  // POST raté ce jour-là, un endpoint que le navigateur renouvelle (ça arrive
+  // tout seul), une permission accordée avant l'existence de ce code, et depuis
+  // ce commit le changement de clé VAPID. Dans chacun de ces cas la permission
+  // était accordée et l'utilisateur ne recevait rien — sans aucun moyen de s'en
+  // rendre compte ni de réparer, puisque le bouton ne réapparaît jamais une fois
+  // la permission accordée.
+  //
+  // subscribeToPush est idempotent : il ne réécrit en base que si l'endpoint a
+  // changé (voir PUSH_ENDPOINT_KEY).
+  useEffect(() => {
+    if (!pseudoConfirmed || !playerId) return;
+    if (typeof Notification === "undefined" || Notification.permission !== "granted") return;
+    let vivant = true;
+    subscribeToPush(playerId, sbFetch).then(function(ok){
+      if (!vivant) return;
+      // `ok` n'est pas affiché : c'est le journal du workflow d'envoi qui dit
+      // combien d'abonnés ont reçu la notification, pas l'app.
+      if (ok) setNotifGranted(true);
+    });
+    return () => { vivant = false; };
+  }, [pseudoConfirmed, playerId]);
+
+  // Bandeau « content de te revoir » après plus de 24 h d'absence. Une seule
+  // fois par chargement : retourApresAbsence() écrit la date de visite, donc
+  // deux appels de suite feraient toujours répondre « non » au second.
+  useEffect(() => {
+    if (retourApresAbsence()) setWasAway(true);
+  }, []);
 
   // Poll for friend requests and duels every 15s
   useEffect(() => {
@@ -9654,8 +9706,13 @@ export default function LePont() {
         <div style={{display:"flex",alignItems:"center",gap:12}}>
           <div style={{fontSize:28}}>🔔</div>
           <div>
-            <div style={{fontSize:14,fontWeight:800,color:G.white}}>{tr("Reçois des rappels !","Get reminders!","Erinnerungen erhalten!","Ricevi promemoria!","Receba lembretes!","¡Recibe recordatorios!")}</div>
-            <div style={{fontSize:12,color:"rgba(255,255,255,.6)",marginTop:2}}>{tr("On te pinguera si t'as pas joué depuis 24h","We'll ping you if you haven't played for 24h","Wir erinnern dich, wenn du 24 Std. nicht gespielt hast","Ti avvisiamo se non giochi da 24 ore","A gente te avisa se você não jogar por 24h","Te avisaremos si no juegas en 24h")}</div>
+            {/* Le texte promet désormais ce que le serveur envoie VRAIMENT — une
+                notification par jour pour la devinette. Il annonçait « on te
+                pinguera si t'as pas joué depuis 24h », un rappel que rien n'a
+                jamais été capable d'envoyer. Promettre ce qu'on ne tient pas
+                coûte cher ici : un refus de notification est définitif. */}
+            <div style={{fontSize:14,fontWeight:800,color:G.white}}>{tr("La devinette du jour ?","The daily riddle?","Das Rätsel des Tages?","L'indovinello del giorno?","O enigma do dia?","¿El acertijo del día?")}</div>
+            <div style={{fontSize:12,color:"rgba(255,255,255,.6)",marginTop:2}}>{tr("Un seul message par jour, quand le joueur mystère change","One message a day, when the mystery player changes","Eine Nachricht pro Tag, wenn der Rätselspieler wechselt","Un solo messaggio al giorno, quando cambia il giocatore misterioso","Uma mensagem por dia, quando o jogador misterioso muda","Un solo mensaje al día, cuando cambia el jugador misterioso")}</div>
           </div>
         </div>
         <div style={{display:"flex",gap:8}}>
@@ -9663,13 +9720,10 @@ export default function LePont() {
             const ok = await requestNotifPermission();
             setNotifGranted(ok);
             setShowNotifPrompt(false);
-            if (ok) {
-              scheduleNextNotif();
-              // S'abonner aux vraies push notifications (visible même app fermée)
-              if (playerId && pseudoConfirmed) {
-                const subscribed = await subscribeToPush(playerId, sbFetch);
-                setPushSubscribed(subscribed);
-              }
+            // S'abonner tout de suite : l'effet de réabonnement au lancement ne
+            // repassera qu'au prochain chargement de l'app.
+            if (ok && playerId && pseudoConfirmed) {
+              await subscribeToPush(playerId, sbFetch);
             }
           }} style={{flex:2,padding:"11px",background:"#16a34a",color:G.white,border:G.trait,borderRadius:G.rayon,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:800}}>
             {tr("✓ Oui, active !","✓ Yes, enable!","✓ Ja, aktivieren!","✓ Sì, attiva!","✓ Sim, ativar!","✓ ¡Sí, activar!")}

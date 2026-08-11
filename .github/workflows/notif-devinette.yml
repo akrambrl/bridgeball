@@ -1,0 +1,67 @@
+# Envoi de la notification quotidienne « devinette du jour ».
+#
+# C'est le déclencheur qui manquait : sans lui, les abonnements push
+# s'accumulaient dans Supabase sans que rien ne leur envoie jamais rien.
+#
+# Deux secrets à créer dans Settings → Secrets and variables → Actions :
+#   SB_SERVICE_KEY     clé service_role Supabase (la table des abonnés est
+#                      illisible avec la clé publique, par choix de sécurité)
+#   VAPID_PRIVATE_KEY  clé privée VAPID (voir docs/NOTIFICATIONS.md)
+name: Notification devinette
+
+on:
+  schedule:
+    # 17:00 UTC = 19 h à Paris en été, 18 h en hiver. GitHub n'accepte que
+    # l'UTC ; une heure de décalage l'hiver est préférable à deux crons qui
+    # risqueraient d'envoyer deux fois le même jour.
+    - cron: "0 17 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Simuler sans rien envoyer"
+        type: boolean
+        default: true
+      jour:
+        description: "Forcer un jour (YYYY-MM-DD), vide = aujourd'hui"
+        type: string
+        default: ""
+
+# Deux exécutions simultanées enverraient la notification en double.
+concurrency:
+  group: notif-devinette
+  cancel-in-progress: false
+
+jobs:
+  envoyer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Installer les dépendances
+        # Le dépôt embarque Playwright : sans cette variable, npm ci
+        # téléchargerait des navigateurs dont l'envoi n'a aucun besoin.
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+        run: npm ci
+
+      - name: Vérifier la logique avant d'envoyer
+        # Le joueur du jour est calculé ici ET dans l'app : si les deux
+        # divergent, la notification décrit un autre joueur que le jeu. Ces
+        # tests verrouillent l'égalité — mieux vaut ne rien envoyer que mentir.
+        run: npx vitest run src/test/devinette.test.ts src/test/push.test.ts
+
+      - name: Envoyer
+        env:
+          SB_SERVICE_KEY: ${{ secrets.SB_SERVICE_KEY }}
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+          VAPID_SUBJECT: https://goatfc.fr
+        run: |
+          npx tsx scripts/notif-devinette.mjs \
+            ${{ (github.event_name == 'workflow_dispatch' && inputs.dry_run) && '--dry-run' || '' }} \
+            ${{ inputs.jour != '' && format('--jour={0}', inputs.jour) || '' }}
