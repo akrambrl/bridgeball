@@ -11,6 +11,7 @@ import { WinBanner } from "./WinBanner";
 import { G, posterText, btn, fondCharte, areneCharte, ligneCharte } from "@/lib/charte.jsx";
 import { chercheJoueurs } from "@/lib/nom";
 import { nettoyerVus } from "@/lib/tirage.js";
+import { parisDay, poolDevinette, joueurDuJour, MODERN_MIN_BY } from "@/lib/devinette.js";
 
 const SPELL_NAMES = Object.keys(CLUB_SPELLS);
 
@@ -41,58 +42,19 @@ const CHIP_STAGGER = 0.38; // secondes entre chaque puce (révélation plus lent
 const CHIP_DUR = 0.6; // durée d'apparition d'une puce
 const REVEAL_MS = Math.round((5 * CHIP_STAGGER + CHIP_DUR) * 1000) + 250; // 6 puces (index 0..5)
 
-// ── Helpers seed / date ──────────────────────────────────────
-function seededRandom(seed: number): () => number {
-  let s = seed % 2147483647;
-  if (s <= 0) s += 2147483646;
-  return function () { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; };
-}
-function parisDay(): string {
-  const d = new Date();
-  const p = new Date(d.toLocaleString("en-US", { timeZone: "Europe/Paris" }));
-  return p.getFullYear() + "-" + String(p.getMonth() + 1).padStart(2, "0") + "-" + String(p.getDate()).padStart(2, "0");
-}
-
-// Année de naissance plancher, partagée par la devinette du jour, le mode
-// illimité et le tirage au hasard du dé.
-//
-// Elle valait 1975, avec le commentaire « a joué après 2000 » — ce qui était
-// faux : un joueur né en 1975 débute vers 1994, en pleine décennie précédente.
-// Le plancher ne faisait donc pas ce qu'il annonçait, et le jeu proposait des
-// carrières que la plupart des joueurs n'ont jamais vues.
-//
-// 1982 → première saison vers 2001 (même hypothèse de début à 19 ans que
-// l'indice « j'ai percé dans les années »). La carrière est alors entièrement
-// dans les années 2000 et après.
-const MODERN_MIN_BY = 1982;
-
 // ── Joueur mystère du jour ────────────────────────────────────
-// Pool de stars (facile, parcours ≥ 3 clubs), mélangé une fois dans un ordre
-// FIXE (même pour tout le monde), puis on tourne selon le numéro de jour →
-// chaque joueur passe une seule fois avant un cycle complet (pas de répétition).
-//
-// Que des joueurs EN ACTIVITÉ : pas d'anciens. Le mode illimité applique déjà
-// cette règle juste en dessous, la devinette du jour ne le faisait pas — 89 des
-// 195 joueurs du vivier étaient des retraités (Ramos, Rooney, Kroos, Beckham…).
-// Deux garde-fous plutôt qu'un : la liste des retraités, qui est tenue à la main
-// et peut manquer un départ récent, et l'année de naissance, qui écarte les
-// anciens qu'elle n'a pas encore enregistrés (Hagi, Milla, Nedvěd…).
-// Il reste 98 joueurs, soit plus de trois mois de rotation sans répétition.
+// Le calcul lui-même vit dans src/lib/devinette.js, et pas ici : la
+// notification quotidienne est envoyée par un script Node qui doit annoncer LA
+// devinette du jour, donc désigner exactement le même joueur que l'app. Ce
+// fichier importe LePont.jsx (15 000 lignes) et React — impossible à charger
+// depuis un script. Recopier la formule là-bas aurait garanti sa divergence, et
+// une notification qui décrit un autre joueur que le jeu est un mensonge visible
+// par tout le monde. Une seule implémentation, deux appelants.
 export function dailyPool(): Player[] {
-  const enActivite = (p: Player) => !RETIRED_PLAYERS.has(p.name)
-    && !!p.birthYear && (p.birthYear as number) >= MODERN_MIN_BY;
-  const pool = ALL.filter(p => p.diff === "facile" && p.clubs && p.clubs.length >= 3 && p.clubs.length <= 9 && enActivite(p));
-  // Filet de sécurité si la base bouge : on relâche le nombre de clubs, jamais
-  // la règle « en activité », sinon un ancien reviendrait par la porte du fallback.
-  return pool.length > 0 ? pool : ALL.filter(p => p.clubs && p.clubs.length >= 3 && enActivite(p));
+  return poolDevinette(ALL, RETIRED_PLAYERS) as Player[];
 }
 function dailyPlayer(): Player {
-  const pool = dailyPool();
-  const rand = seededRandom(987654321); // graine fixe → même ordre pour tous
-  const arr = pool.slice();
-  for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); const t = arr[i]; arr[i] = arr[j]; arr[j] = t; }
-  const dayIdx = Math.floor(Date.parse(parisDay() + "T00:00:00Z") / 86400000);
-  return arr[((dayIdx % arr.length) + arr.length) % arr.length];
+  return joueurDuJour(dailyPool(), parisDay()) as Player;
 }
 
 // ── Les joueurs déjà tirés, d'une ouverture du mode à la suivante ─────────────
