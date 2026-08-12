@@ -20,7 +20,7 @@ type Props = {
 const GAMES: Record<Props["game"], { label: string; img: string; pills: () => string[] }> = {
   chaine: {
     label: "THE MERCATO",
-    img: "/mercato-card.png",
+    img: "/mercato-card.webp",
     pills: () => [
       "⏱ 90 S",
       "🔁 " + tr("CHAÎNE SANS FIN", "ENDLESS CHAIN", "ENDLOSE KETTE", "CATENA INFINITA", "CORRENTE SEM FIM","CADENA SIN FIN"),
@@ -29,7 +29,7 @@ const GAMES: Record<Props["game"], { label: string; img: string; pills: () => st
   },
   pont: {
     label: "THE PLUG",
-    img: "/plug-card.png",
+    img: "/plug-card.webp",
     pills: () => [
       "⏱ 90 S",
       "🔗 " + tr("2 CLUBS", "2 CLUBS", "2 KLUBS", "2 CLUB", "2 CLUBES","2 CLUBES"),

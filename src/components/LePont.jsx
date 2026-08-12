@@ -988,12 +988,12 @@ function isRetiredPlayer(name) {
 const SPLASH_IMG = "/splash.webp"; // WebP : 229 Ko vs 1,76 Mo en PNG
 
 
-const PLUG_CARD_IMG = "/plug-card.png";
-const MERCATO_CARD_IMG = "/mercato-card.png";
-const GRID_CARD_IMG = "/grid-card.png";
-const REVEAL_CARD_IMG = "/reveal-card.png";
-const GUESS_CARD_IMG = "/guess-card.png";
-const DUEL_CARD_IMG = "/duel-card.png";
+const PLUG_CARD_IMG = "/plug-card.webp";
+const MERCATO_CARD_IMG = "/mercato-card.webp";
+const GRID_CARD_IMG = "/grid-card.webp";
+const REVEAL_CARD_IMG = "/reveal-card.webp";
+const GUESS_CARD_IMG = "/guess-card.webp";
+const DUEL_CARD_IMG = "/duel-card.webp";
 
 // ── MESSAGES DE RÉSULTAT UNIFIÉS (Plug, Mercato, solo, duel, multi) ──
 const RESULT_MESSAGES = {
@@ -5537,7 +5537,7 @@ export default function LePont() {
         ? reqDiffRaw
         : null;
     if (reqDiff) setDiff(reqDiff);
-    // Bot adversaire depuis la landing (?bot=Pseudo&flag=🇫🇷&avatar=/win1.png) — mode EN LIGNE
+    // Bot adversaire depuis la landing (?bot=Pseudo&flag=🇫🇷&avatar=/win1.webp) — mode EN LIGNE
     const botPseudo = params.get("bot");
     const botFlag = params.get("flag");
     const botAvatar = params.get("avatar");
@@ -10720,7 +10720,7 @@ export default function LePont() {
           <div>
             <div style={{...posterText(1,G.projecteur,0),fontSize:13,letterSpacing:3,textTransform:"uppercase",marginBottom:8}}>{tr("Jeu","Game","Spiel","Gioco","Jogo","Juego")}</div>
             <div style={{display:"flex",gap:10,marginBottom:16}}>
-              {[{k:"chaine",l:"The Mercato",tag:tr("La chaîne sans fin","The endless chain","Die endlose Kette","La catena infinita","A corrente sem fim","La cadena sin fin"),img:"/mercato-card.png",ac:G.projecteur},{k:"pont",l:"The Plug",tag:tr("Le pont entre deux clubs","The bridge between two clubs","Die Brücke zwischen zwei Klubs","Il ponte tra due club","A ponte entre dois clubes","El puente entre dos clubes"),img:"/plug-card.png",ac:G.pelouse}].map(function(m){var on=duelMode===m.k;return(
+              {[{k:"chaine",l:"The Mercato",tag:tr("La chaîne sans fin","The endless chain","Die endlose Kette","La catena infinita","A corrente sem fim","La cadena sin fin"),img:"/mercato-card.webp",ac:G.projecteur},{k:"pont",l:"The Plug",tag:tr("Le pont entre deux clubs","The bridge between two clubs","Die Brücke zwischen zwei Klubs","Il ponte tra due club","A ponte entre dois clubes","El puente entre dos clubes"),img:"/plug-card.webp",ac:G.pelouse}].map(function(m){var on=duelMode===m.k;return(
                 <button key={m.k} onClick={function(){setDuelMode(m.k);}} style={{flex:1,position:"relative",padding:0,borderRadius:G.rayon,overflow:"hidden",border:G.trait,background:on?m.ac:G.nuit,boxShadow:G.ombre,cursor:"pointer"}}>
                   <div style={{position:"relative",height:92,overflow:"hidden",borderBottom:G.traitFin}}>
                     <img src={m.img} alt={m.l} style={{width:"100%",height:"100%",objectFit:"cover",display:"block",opacity:on?1:0.55}}/>
@@ -13242,7 +13242,7 @@ export default function LePont() {
                   c'est justement le défaut qui avait forcé l'écusson.
                   Repli sur l'écusson si le fichier n'est pas là. */}
               {logoMotAbsent ? (
-                <img src="/logo.png?v=3" style={{height:"clamp(64px,16vw,96px)",width:"auto",objectFit:"contain",
+                <img src="/logo.webp?v=4" style={{height:"clamp(64px,16vw,96px)",width:"auto",objectFit:"contain",
                   border:G.trait,borderRadius:G.rayonS,boxShadow:G.ombre,display:"block"}} alt="GOAT FC"/>
               ) : (
                 /* Borné en largeur ET en hauteur, jamais dimensionné : le

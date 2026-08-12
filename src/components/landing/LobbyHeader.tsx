@@ -104,7 +104,7 @@ export const LobbyHeader = ({ active, onChange }: Props) => {
         aria-label="GOAT FC accueil"
       >
         <img
-          src="/logo.png"
+          src="/logo.webp"
           alt="GOAT FC"
           className="h-10 lg:h-12 w-auto transition-transform group-hover:scale-[1.04]"
           style={{ filter:"drop-shadow(3px 3px 0 "+G.encre+")" }}

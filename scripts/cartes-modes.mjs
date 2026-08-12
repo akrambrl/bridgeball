@@ -5,7 +5,7 @@
 //     node scripts/cartes-modes.mjs plug duel  # seulement ceux-là
 //
 // Entrée  : visuels/bruts/<mode>.png   — l'illustration, 1086 x 1448, sans texte
-// Sortie  : public/<mode>-card.png     — la même, avec le titre
+// Sortie  : public/<mode>-card.webp    — la même, avec le titre
 //
 // Pourquoi le titre est posé ICI et non demandé au générateur d'images : ces
 // modèles écrivent de travers — lettres inventées, accents baladeurs, mots
@@ -154,7 +154,11 @@ for (const carte of aFaire) {
     continue;
   }
 
-  const sortie = join(racine, "public", carte.cle + "-card.png");
+  // WebP et non PNG : ces cartes partent dans le bundle de l'app, et sur des
+  // illustrations à aplats le PNG coûtait le double pour rien (mesuré : 613 Ko
+  // contre 405 en WebP q86, SSIM 0,98). Voir scripts/images-webp.mjs.
+  const sortie = join(racine, "public", carte.cle + "-card.webp");
+  const provisoire = sortie.replace(/\.webp$/, ".tmp.png");
   let avant = 0;
   try { avant = (await stat(sortie)).size; } catch { /* nouveau fichier */ }
 
@@ -178,12 +182,24 @@ for (const carte of aFaire) {
     while (deborde() && corps > 30) { corps -= 2; mot.style.fontSize = corps + "px"; }
   }, LARGEUR_TITRE);
 
-  await writeFile(sortie, await onglet.screenshot({ type: "png" }));
-  const palette = await alleger(sortie);
-  const apres = (await stat(sortie)).size;
-  console.log("  " + (carte.cle + "-card.png").padEnd(18)
-    + (avant ? (avant / 1024).toFixed(0) + " Ko → " : "") + (apres / 1024).toFixed(0) + " Ko"
-    + (palette ? "" : "   (ffmpeg absent : pas de réduction de palette)"));
+  // Playwright ne sait capturer qu'en PNG ou JPEG : on passe donc par un PNG
+  // provisoire, qu'on encode en WebP avant de l'effacer.
+  await writeFile(provisoire, await onglet.screenshot({ type: "png" }));
+  let converti = true;
+  try {
+    await lancer("ffmpeg", ["-y", "-loglevel", "error", "-i", provisoire,
+      "-c:v", "libwebp", "-quality", "86", "-compression_level", "6", sortie]);
+  } catch (e) {
+    // Sans ffmpeg on garde le PNG plutôt que de ne rien écrire, et on le dit.
+    await writeFile(sortie.replace(/\.webp$/, ".png"), await readFile(provisoire));
+    converti = false;
+  }
+  await rm(provisoire, { force: true });
+  const apres = converti ? (await stat(sortie)).size : 0;
+  console.log("  " + (carte.cle + "-card.webp").padEnd(18)
+    + (avant ? (avant / 1024).toFixed(0) + " Ko → " : "")
+    + (converti ? (apres / 1024).toFixed(0) + " Ko" : "PNG de repli")
+    + (converti ? "" : "   (ffmpeg absent : WebP impossible)"));
 }
 
 await navigateur.close();
