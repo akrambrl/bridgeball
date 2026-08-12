@@ -1,0 +1,354 @@
+#!/usr/bin/env node
+// Les VISUELS D'ANNONCE à poster sur Instagram et TikTok.
+//
+//     node scripts/visuels-annonce.mjs                  # les quatre
+//     node scripts/visuels-annonce.mjs cadeau           # une annonce
+//     node scripts/visuels-annonce.mjs stores story     # un seul format
+//
+// Sortie : visuels/annonces/<annonce>-<format>.png
+//
+// DEUX FORMATS et pas un. 1080×1350 pour le fil (le portrait 4:5 occupe presque
+// deux fois la hauteur d'un carré à largeur égale) et 1080×1920 pour les stories
+// et TikTok. Une image carrée postée en story laisse deux bandes vides, et une
+// verticale recadrée dans le fil se fait couper la tête : ce sont deux compositions
+// différentes, pas un redimensionnement.
+//
+// TOUT VIENT DE LA CHARTE, lue dans src/lib/charte.jsx comme TEXTE — charte.jsx
+// crée un élément JSX au niveau du module, donc l'importer depuis Node réclamerait
+// React. Le décor est celui de l'accueil (lignes de vitesse + trame), le lettrage
+// est composé avec la vraie police du logo, et le mot-symbole est le fichier de
+// l'app. Rien n'est redessiné : ces visuels doivent ressembler à l'app, sinon ils
+// annoncent autre chose qu'elle.
+//
+// ── CE QUE CE SCRIPT NE FAIT PAS, ET POURQUOI ──────────────────────────────
+//
+// Pas de badge « App Store » ni « Google Play ». Ce sont des marques déposées
+// fournies par Apple et Google avec des règles d'usage précises (proportions,
+// zone de respiration, formulations autorisées) ; un badge refait à la main est
+// à la fois faux et attaquable. Le visuel écrit donc « SUR iOS ET ANDROID » en
+// texte. Les vrais badges se téléchargent chez Apple et Google, et se posent
+// quand les fiches sont acceptées.
+//
+// Pas de logo « EA SPORTS FC » non plus. Nommer le lot est un usage nominatif
+// légitime ; en reprendre l'identité visuelle ne l'est pas.
+//
+// Pas de date au jour près pour les stores. Une soumission passe par la revue
+// d'Apple, dont le délai ne t'appartient pas : « OCTOBRE 2026 » est une promesse
+// tenable, « 1ER OCTOBRE » ne l'est pas.
+
+import { chromium } from "playwright";
+import { readFile, writeFile, mkdir, stat, rm } from "node:fs/promises";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
+
+const ici = dirname(fileURLToPath(import.meta.url));
+const racine = join(ici, "..");
+const lancer = promisify(execFile);
+
+const source = await readFile(join(racine, "src", "lib", "charte.jsx"), "utf8");
+function jeton(nom) {
+  const m = source.match(new RegExp(nom + ':\\s*"(#[0-9A-Fa-f]{3,8})"'));
+  if (!m) throw new Error("jeton de charte introuvable : " + nom);
+  return m[1];
+}
+const G = {
+  encre: jeton("encre"), or: jeton("or"), orSombre: jeton("orSombre"),
+  creme: jeton("creme"), nuit: jeton("nuit"), pelouseClaire: jeton("pelouseClaire"),
+};
+
+const b64 = (b, t) => "data:" + t + ";base64," + b.toString("base64");
+const anton = b64(await readFile(join(ici, "polices", "anton-latin.woff2")), "font/woff2");
+const motSymbole = b64(await readFile(join(racine, "public", "logo-mot.webp")), "image/webp");
+
+// Rendu à l'échelle 2 : on compose en CSS à la moitié des pixels visés, ce qui
+// garde des tailles de police lisibles dans le code et sort du 2× net.
+const ECHELLE = 2;
+const story = (f) => f.h > 800;
+const FORMATS = {
+  feed:  { l: 540, h: 675 },   // → 1080 × 1350, le portrait du fil
+  story: { l: 540, h: 960 },   // → 1080 × 1920, stories et TikTok
+};
+
+// ── Le décor de l'accueil, à l'identique ───────────────────────────────────
+// Les lignes de vitesse sont un dégradé conique répété : un conique dessine des
+// coins qui rayonnent depuis un point, ce qui EST une ligne de vitesse. Le centre
+// est ensuite recouvert d'un aplat plutôt que masqué, sinon les lignes se
+// rejoignent en une tache. La trame sérigraphiée ferme la couche, en or sombre
+// sur l'or — une trame noire grise le fond au lieu de le texturer.
+const lignes = (couleur, ep, pas) => `repeating-conic-gradient(from 0deg at 50% 30%,
+  ${couleur} 0deg ${ep}deg, transparent ${ep}deg ${pas}deg)`;
+
+const decorOr = `
+  <div style="position:absolute;inset:0;background:radial-gradient(120% 80% at 50% 26%,
+    rgba(245,194,43,.96) 0 34%, rgba(217,162,26,.55) 100%), ${G.or}"></div>
+  <div style="position:absolute;inset:-25%;background:${lignes("rgba(8,17,9,.42)", .55, 2.7)}"></div>
+  <div style="position:absolute;inset:0;background:radial-gradient(circle at 50% 30%,
+    ${G.or} 0 18%, rgba(245,194,43,.92) 30%, rgba(245,194,43,0) 60%)"></div>
+  <div style="position:absolute;inset:0;opacity:.5;background-size:7px 7px;
+    background-image:radial-gradient(circle, ${G.orSombre} 1.4px, transparent 1.7px)"></div>`;
+
+// ── Les deux annonces ──────────────────────────────────────────────────────
+//
+// Règle de couleur, mesurée dans la charte et non choisie à l'œil : SUR L'OR,
+// SEULE L'ENCRE SE LIT. Le crème y tombe à 1,4 de contraste et le blanc à 1,7,
+// contre 11,5 pour l'encre. Les petits textes posés sur le jaune sont donc en
+// encre, sans exception.
+//
+// Les GRANDS titres échappent à cette règle par leur CONTOUR : cerné d'encre, un
+// lettrage crème tient son contraste par le cerne, et le crème ne sert plus qu'à
+// remplir. C'est la recette d'affiche de la charte — contour d'encre puis ombre
+// dure décalée. Elle ne marche que sur un lettrage CLAIR : appliquée à des lettres
+// d'encre, l'ombre a la couleur de la lettre et double le mot d'un fantôme noir.
+//
+// Dans le bandeau de nuit, tout se libère : blanc 18,3, crème 14,9, or 11,0.
+const ANNONCES = {
+  cadeau: {
+    fichier: "cadeau-septembre",
+    surligne: "HALL OF FAME · SEPTEMBRE 2026",
+    titre: ["LE N°1", "DU MOIS", "REPART AVEC"],
+    vedette: "FC 27",
+    corps: "Le meilleur joueur du classement mensuel gagne le jeu. "
+         + "Tout le monde part à égalité le 1er septembre.",
+    appel: "goatfc.fr",
+    mentions: "Concours de connaissances sans obligation d'achat · Règlement complet sur goatfc.fr · "
+            + "Jeu non sponsorisé, administré ni associé à Instagram ou TikTok · Lot dématérialisé, "
+            + "plateforme au choix du gagnant ou carte cadeau de valeur équivalente.",
+  },
+  stores: {
+    fichier: "stores-octobre",
+    surligne: "L'APPLI ARRIVE",
+    titre: ["SUR iOS", "ET ANDROID"],
+    vedette: "OCTOBRE 2026",
+    corps: "Six modes de jeu, un classement mensuel, et des duels contre tes potes. "
+         + "En attendant, ça se joue déjà dans le navigateur.",
+    appel: "goatfc.fr",
+    mentions: "iOS et Android sont des marques de leurs détenteurs respectifs. "
+            + "Disponibilité soumise à la validation des plateformes.",
+  },
+};
+
+// ── Les légendes ───────────────────────────────────────────────────────────
+// Écrites ici et non laissées à improviser : ce qui se joue dans la légende, ce
+// sont les deux choses que le visuel ne peut pas porter — l'appel à l'action et
+// les mentions du concours. Un visuel de concours sans règlement accessible est
+// attaquable, et sur Instagram comme sur TikTok la non-affiliation doit être dite.
+const LEGENDES = {
+  cadeau: {
+    instagram: `🏆 SEPTEMBRE, C'EST PARTI.
+
+Le n°1 du classement mensuel de GOAT FC repart avec FC 27.
+
+Tout le monde part à égalité le 1er septembre. Le classement compte les points de tes six modes préférés, jour après jour — donc ça ne se gagne pas en une soirée, ça se gagne en revenant.
+
+👉 Ça se joue sur goatfc.fr, sans rien installer.
+📱 Et l'appli arrive sur iOS et Android en octobre.
+
+Concours de connaissances sans obligation d'achat. Règlement complet sur goatfc.fr. Jeu non sponsorisé, administré ni associé à Instagram. Lot dématérialisé, plateforme au choix du gagnant ou carte cadeau de valeur équivalente.
+
+#football #quizfoot #mercato #ligue1 #premierleague #jeuconcours #concours #goatfc`,
+    tiktok: `Le n°1 du mois repart avec FC 27 🏆
+
+Classement remis à zéro le 1er septembre — tout le monde part à égalité.
+Ça se joue sur goatfc.fr, appli iOS et Android en octobre 📱
+
+Règlement sur goatfc.fr · Sans obligation d'achat · Jeu non associé à TikTok
+
+#football #quizfoot #mercato #footballtiktok #concours #goatfc`,
+  },
+  stores: {
+    instagram: `📱 GOAT FC ARRIVE SUR iOS ET ANDROID — OCTOBRE 2026.
+
+Six modes, un classement mensuel, et des duels en direct contre tes potes.
+
+En attendant, tout est déjà jouable dans le navigateur sur goatfc.fr — et le classement de septembre est lancé, avec FC 27 pour le n°1 du mois. Autant prendre de l'avance.
+
+👉 goatfc.fr
+
+#football #quizfoot #mercato #ligue1 #premierleague #applifoot #goatfc`,
+    tiktok: `L'appli arrive en octobre 📱 iOS + Android
+
+6 modes, un classement du mois, des duels en direct.
+En attendant ça se joue déjà sur goatfc.fr 👉 et le n°1 de septembre repart avec FC 27
+
+#football #quizfoot #mercato #footballtiktok #goatfc`,
+  },
+};
+
+async function ecrireLegendes(cles) {
+  const bouts = ["# Légendes prêtes à coller",
+    "",
+    "Générées par `scripts/visuels-annonce.mjs`. Le visuel porte déjà les mentions",
+    "obligatoires en petit ; la légende les répète parce que c'est elle qui est lue,",
+    "et parce qu'un visuel recadré par la plateforme peut les rogner.",
+    ""];
+  for (const cle of cles) {
+    const l = LEGENDES[cle];
+    if (!l) continue;
+    bouts.push("## " + cle, "", "### Instagram", "", "```", l.instagram, "```", "",
+               "### TikTok", "", "```", l.tiktok, "```", "");
+  }
+  await writeFile(join(racine, "visuels", "annonces", "legendes.md"), bouts.join("\n"));
+}
+
+function page(a, f) {
+  const { l, h } = f;
+  const story = h > 800;   // même seuil que le helper du module
+  // Le bandeau de nuit prend la moitié basse en story, un peu plus du tiers en
+  // fil : dans les deux cas il doit tenir la vedette, le corps et les mentions
+  // sans que le titre du haut ne se retrouve à l'étroit.
+  const bandeau = story ? 52 : 45;
+  const tTitre = story ? 62 : 54;        // corps du titre en relief
+  const tVedette = story ? 96 : 78;
+  return `<!doctype html><html><head><meta charset="utf-8"><style>
+  @font-face{font-family:'Anton';src:url(${anton}) format('woff2');font-display:block}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{width:${l}px;height:${h}px;overflow:hidden;position:relative;background:${G.or};
+    font-family:'Anton',Impact,sans-serif;-webkit-font-smoothing:antialiased}
+  /* La moitié haute : le décor d'or, le mot-symbole, la surligne d'encre et le
+     titre en relief. */
+  .haut{position:absolute;left:0;right:0;top:0;height:${100 - bandeau}%;overflow:hidden}
+  .contenuHaut{position:absolute;inset:0;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:${story ? 14 : 10}px;padding:${story ? 42 : 32}px 30px}
+  .mot{width:${story ? 210 : 186}px;height:auto;display:block}
+  .surligne{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-weight:900;
+    font-size:${story ? 15 : 13}px;letter-spacing:${story ? 3.4 : 2.8}px;color:${G.encre};
+    text-transform:uppercase;text-align:center}
+  /* L'ordre de peinture est indispensable : par défaut le contour est peint
+     PAR-DESSUS la lettre et lui ronge l'intérieur — à cette épaisseur, les
+     contre-formes du A et du O se bouchent complètement. */
+  .titre span{display:block}
+  .titre{font-size:${tTitre}px;line-height:.94;letter-spacing:.5px;color:${G.creme};
+    transform:skewX(-7deg);-webkit-text-stroke:${story ? 7 : 6}px ${G.encre};
+    paint-order:stroke fill;text-shadow:${story ? 8 : 7}px ${story ? 8 : 7}px 0 ${G.encre};
+    text-align:center;text-wrap:balance}
+  /* Le bandeau de nuit : là, blanc, crème et or se lisent tous les trois. */
+  .bas{position:absolute;left:0;right:0;bottom:0;height:${bandeau}%;background:${G.nuit};
+    box-shadow:inset 0 ${story ? 11 : 9}px 0 ${G.encre};
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:${story ? 16 : 12}px;padding:${story ? 34 : 26}px ${story ? 40 : 32}px}
+  .vedette{font-size:${tVedette}px;line-height:1;letter-spacing:1px;color:${G.or};
+    transform:skewX(-7deg);text-shadow:${story ? 6 : 5}px ${story ? 6 : 5}px 0 rgba(0,0,0,.55);
+    text-align:center}
+  .corps{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-weight:700;
+    font-size:${story ? 17 : 14.5}px;line-height:1.45;color:${G.creme};text-align:center;
+    max-width:${story ? 420 : 400}px}
+  .appel{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-weight:900;
+    font-size:${story ? 20 : 17}px;letter-spacing:1.5px;color:${G.encre};
+    background:${G.or};border:3px solid ${G.encre};border-radius:11px;
+    padding:${story ? "11px 26px" : "9px 22px"};box-shadow:4px 4px 0 rgba(0,0,0,.5)}
+  /* Les mentions ne sont pas décoratives : un concours annoncé sans règlement ni
+     mention de non-affiliation aux plateformes est un concours attaquable. Assez
+     petites pour ne pas prendre la vedette, assez grandes pour être lues — le
+     crème à 45 % tient encore 6,7 de contraste sur la nuit. */
+  .mentions{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-weight:600;
+    font-size:${story ? 9.5 : 8.5}px;line-height:1.4;color:rgba(240,233,214,.62);
+    text-align:center;max-width:${story ? 440 : 420}px}
+  .cadre{position:absolute;inset:0;box-shadow:inset 0 0 0 ${story ? 11 : 9}px ${G.encre};
+    pointer-events:none}
+  </style></head><body>
+    <div class="haut">
+      ${decorOr}
+      <div class="contenuHaut">
+        <img class="mot" src="${motSymbole}" alt="GOAT FC">
+        <div class="surligne">${a.surligne}</div>
+        <div class="titre">${a.titre.map((l) => `<span>${l}</span>`).join("")}</div>
+      </div>
+    </div>
+    <div class="bas">
+      <div class="vedette">${a.vedette}</div>
+      <div class="corps">${a.corps}</div>
+      <div class="appel">${a.appel}</div>
+      <div class="mentions">${a.mentions}</div>
+    </div>
+    <div class="cadre"></div>
+  </body></html>`;
+}
+
+/** Réduit le PNG à une palette : ce sont des aplats et des trames, pas des photos. */
+async function alleger(chemin) {
+  const brut = chemin.replace(/\.png$/, ".brut.png");
+  try {
+    await writeFile(brut, await readFile(chemin));
+    await lancer("ffmpeg", ["-y", "-loglevel", "error", "-i", brut,
+      "-vf", "split[a][b];[a]palettegen=max_colors=128:stats_mode=full[p];[b][p]paletteuse=dither=none",
+      chemin]);
+    return true;
+  } catch (e) {
+    return false;   // mieux vaut un fichier lourd qu'un script qui refuse de tourner
+  } finally {
+    await rm(brut, { force: true });
+  }
+}
+
+const args = process.argv.slice(2);
+const cles = Object.keys(ANNONCES).filter((k) => !args.length || args.includes(k));
+const formats = Object.keys(FORMATS).filter((k) => !args.includes("feed") && !args.includes("story")
+  ? true : args.includes(k));
+if (!cles.length) {
+  console.error("annonces connues : " + Object.keys(ANNONCES).join(", "));
+  process.exit(1);
+}
+
+const sortie = join(racine, "visuels", "annonces");
+await mkdir(sortie, { recursive: true });
+
+const navigateur = await chromium.launch({
+  args: ["--no-proxy-server"],
+  ...(process.env.PLAYWRIGHT_CHROMIUM ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM } : {}),
+});
+
+for (const cle of cles) {
+  for (const nomFormat of formats) {
+    const f = FORMATS[nomFormat];
+    const ctx = await navigateur.newContext({
+      viewport: { width: f.l, height: f.h }, deviceScaleFactor: ECHELLE });
+    const onglet = await ctx.newPage();
+    await onglet.setContent(page(ANNONCES[cle], f), { waitUntil: "load" });
+    // La police est en @font-face avec font-display:block : sans cette attente,
+    // la capture part parfois sur la police de repli, et le lettrage n'est plus
+    // celui du logo. Le défaut est sournois — l'image paraît juste « un peu
+    // différente », pas cassée.
+    await onglet.evaluate(() => document.fonts.ready);
+    // ── LE TITRE EST MESURÉ, PAS DEVINÉ ────────────────────────────────────
+    // Premier rendu : « REPART AVEC » et « ET ANDROID » touchaient les deux bords
+    // et leur ombre était rognée par le cadre d'encre. Compter les caractères ne
+    // marche pas — la largeur dépend du dessin des lettres — et deux réglages en
+    // dur ne survivraient pas au premier changement de texte.
+    //
+    // Deux dépassements que `scrollWidth` ne voit pas et qu'il faut retirer de la
+    // place disponible : l'INCLINAISON, qui élargit le tracé d'environ
+    // tan(7°) × hauteur de ligne, et l'OMBRE DURE, décalée vers la droite. Sans
+    // eux, un titre « qui rentre » sort quand même de son cadre.
+    const corps = await onglet.evaluate((arg) => {
+      const titre = document.querySelector(".titre");
+      const zone = document.querySelector(".contenuHaut");
+      const st = getComputedStyle(zone);
+      const dispo = zone.clientWidth - parseFloat(st.paddingLeft) - parseFloat(st.paddingRight);
+      const lignes = [...titre.querySelectorAll("span")];
+      const large = () => Math.max(...lignes.map((l) => l.getBoundingClientRect().width));
+      let px = parseFloat(getComputedStyle(titre).fontSize);
+      for (let i = 0; i < 60; i++) {
+        const marge = Math.tan(7 * Math.PI / 180) * px * 0.94 + arg.ombre;
+        if (large() + marge <= dispo || px <= arg.plancher) break;
+        px -= 1;
+        titre.style.fontSize = px + "px";
+      }
+      return { px, dispo: Math.round(dispo), large: Math.round(large()) };
+    }, { ombre: story(f) ? 8 : 7, plancher: 26 });
+    await onglet.waitForTimeout(120);
+    const chemin = join(sortie, ANNONCES[cle].fichier + "-" + nomFormat + ".png");
+    await onglet.screenshot({ path: chemin });
+    await ctx.close();
+    const allege = await alleger(chemin);
+    const { size } = await stat(chemin);
+    console.log("  " + (f.l * ECHELLE) + "×" + (f.h * ECHELLE) + "  "
+      + chemin.replace(racine + "/", "") + "  " + Math.round(size / 1024) + " ko"
+      + "  titre " + corps.px + "px (" + corps.large + "/" + corps.dispo + ")"
+      + (allege ? "" : "  ffmpeg absent"));
+  }
+}
+await navigateur.close();
+await ecrireLegendes(cles);
+console.log("\nLégendes prêtes à coller : visuels/annonces/legendes.md");
