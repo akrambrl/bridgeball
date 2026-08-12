@@ -104,6 +104,68 @@ describe("filtre de mode", () => {
   });
 });
 
+// Le défaut signalé depuis le tableau de bord : « 44 actifs · filtré » affiché
+// sous un filtre GOAT Battle où le graphique juste en dessous ne comptait que
+// 10 parties. Les 44 avaient ouvert l'app ; le filtre, lui, promettait autre
+// chose. Trois chiffres se contredisaient sur le même écran.
+describe("un filtre de jeu restreint aussi les ACTIFS", () => {
+  it("ne compte pas comme actif celui qui a seulement ouvert l'app", () => {
+    // alice et dev-42 ont tous deux un `open_*` aujourd'hui, mais seule alice a
+    // lancé une partie de GOAT Grid (hier). Sous ce filtre, l'active est alice.
+    const g = vue({ mode: "grid" });
+    expect(g.actifs).toBe(1);
+    expect(g.joueurs.map((p) => p.pid)).toEqual(["alice"]);
+  });
+
+  it("tombe à zéro quand aucune partie du mode n'est dans la fenêtre", () => {
+    // La partie de GOAT Grid est d'HIER : en plage « 1 j », plus personne n'a
+    // joué à ce mode aujourd'hui, même si deux joueurs ont ouvert l'app.
+    expect(vue({ mode: "grid", plage: 1 }).actifs).toBe(0);
+    expect(vue({ mode: "battle" }).actifs).toBe(0);   // aucun événement battle
+  });
+
+  it("applique la même règle au détail jour par jour", () => {
+    const g = vue({ mode: "grid" });
+    const hier = g.parJour.find((d) => d.day === HIER)!;
+    const auj = g.parJour.find((d) => d.day === AUJ)!;
+    expect(hier.players).toBe(1);
+    expect(auj.players).toBe(0);   // les `open_*` d'aujourd'hui ne comptent plus
+  });
+
+  it("mais laisse les actifs intacts SANS filtre de jeu", () => {
+    // Le filtre de public, lui, ne parle pas de partie : quelqu'un qui ouvre
+    // l'app reste un joueur actif, c'est bien ce que ce chiffre veut dire.
+    expect(vue().actifs).toBe(2);
+    expect(vue({ plage: 1 }).actifs).toBe(2);
+  });
+});
+
+describe("« parties » ne se compte pas sur les scores", () => {
+  it("compte les parties sur les ÉVÉNEMENTS, pour les sept modes", () => {
+    // bb_scores ne reçoit que trois modes sur sept (MODE_DU_SCORE). Compter les
+    // parties là affichait « 0 partie » sous GOAT Battle, GOAT Grid, GOAT Guess
+    // et Devinette — zéro par construction, jamais parce que personne n'a joué.
+    const g = vue({ mode: "grid" });
+    expect(g.parties).toBe(0);          // aucun score : c'est exact, et inutile
+    expect(g.partiesVues).toBe(1);      // une partie a bien été lancée
+    expect(g.totalParties).toBe(1);
+  });
+
+  it("le détail jour par jour compte lui aussi les parties lancées", () => {
+    // Sans ça, la ligne « Aujourd'hui » annonçait 0 partie juste sous un
+    // graphique qui en affichait dix.
+    const g = vue({ mode: "grid" });
+    expect(g.parJour.find((d) => d.day === HIER)!.games).toBe(1);
+  });
+
+  it("retombe sur les scores quand bb_events est absente", () => {
+    const s = agregeTracking({ ...DONNEES, hasEvents: false, rawEvents: null },
+      FILTRES_VIDES, JOURS)!;
+    expect(s.partiesVues).toBe(s.parties);
+    expect(s.partiesVues).toBe(3);
+  });
+});
+
 describe("filtre de public", () => {
   it("ne garde que les inscrits", () => {
     const i = vue({ public: "inscrits" });

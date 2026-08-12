@@ -342,6 +342,13 @@ CHEMINS["tracking"] = [];
 // `tracking-filtre` sert à vérifier le CÂBLAGE des filtres : les tests couvrent
 // le calcul, pas le fait qu'un menu déroulant atteigne bien l'agrégation.
 CHEMINS["tracking-filtre"] = [];
+// `tracking-coherence` confronte les chiffres du tableau de bord ENTRE EUX, sur
+// les données réelles. C'est le contrôle qui manquait : « 44 actifs · filtré » a
+// été affiché pendant des semaines sous un filtre GOAT Battle dont le graphique
+// juste en dessous ne comptait que 10 parties — les 44 avaient ouvert l'app.
+// Chaque nombre était défendable seul, et faux à côté de l'autre. MODE=<clé>
+// choisit le mode à éprouver (grid par défaut, celui qui a le plus de trafic).
+CHEMINS["tracking-coherence"] = [];
 // `battle-manches` ne photographie pas une mise en page : il JOUE GOAT Battle en
 // solo et relève la paire de clubs posée à chaque manche. C'est la seule
 // vérification de bout en bout du tirage anti-répétition — les tests couvrent la
@@ -989,6 +996,84 @@ if (ecran === "battle-manches") {
   console.log(uniques.size === paires.length
     ? "✅ aucune paire posée deux fois dans la partie"
     : "❌ " + (paires.length - uniques.size) + " paire(s) reposée(s) dans la MÊME partie");
+}
+
+if (ecran === "tracking-coherence") {
+  const cle = process.env.MODE || "grid";
+  const menus = page.locator("select");
+  await menus.nth(1).selectOption(cle);
+  await page.waitForTimeout(700);
+
+  // Le grand compteur du haut, dans la rubrique « Vue d'ensemble ».
+  await page.getByRole("button", { name:/vue d'ensemble/i }).first().click();
+  await page.waitForTimeout(700);
+  const enTete = await page.evaluate(() => {
+    // Le panneau du haut est le premier à porter « actifs » ou « joueurs actifs ».
+    for (const e of document.querySelectorAll("div")) {
+      const t = (e.textContent || "");
+      if (!/actifs? (aujourd'hui|·)/.test(t) || t.length > 400) continue;
+      const gros = t.match(/(\d[\d\s ]*)\s*(?:actifs?|joueurs)/);
+      return { texte: t.replace(/\s+/g, " ").trim(),
+               parties: (t.match(/·\s*(\d+)\s*parties/) || [])[1] || null,
+               duels:   (t.match(/·\s*(\d+)\s*duels/)   || [])[1] || null,
+               actifs:  gros ? gros[1].replace(/\D/g, "") : null };
+    }
+    return null;
+  });
+
+  // Le graphique par mode, dans la rubrique « Modes de jeu ».
+  await page.getByRole("button", { name:/modes de jeu/i }).first().click();
+  await page.waitForTimeout(700);
+  const duMode = await page.evaluate((c) => {
+    const NOMS = { battle:"GOAT Battle", pont:"The Plug", chaine:"The Mercato",
+                   reveal:"Trouve le joueur", devinette:"Devinette du jour",
+                   grid:"GOAT Grid", guess:"GOAT Guess" };
+    const nom = NOMS[c];
+    // DEUX graphiques portent le même mode : « Parties par mode · N j », qui suit
+    // les filtres, et « Parties par mode · depuis le début », qui les ignore. Sans
+    // borner la recherche au premier, le contrôle relevait le total historique
+    // (696) et le comparait au compteur du jour (6) — un écart inventé de toutes
+    // pièces, qui aurait fait chercher un défaut inexistant.
+    let section = null;
+    for (const e of document.querySelectorAll("section")) {
+      if (/parties par mode\s*·\s*\d+\s*j/i.test(e.textContent || "")) { section = e; break; }
+    }
+    if (!section) return null;
+    // Dans cette section, la ligne du mode commence par son ÉMOJI et non par son
+    // nom : on retient donc l'élément le PLUS COURT qui contienne le nom ET le
+    // couple « n · p% », c'est-à-dire la ligne elle-même et non ses parents.
+    let meilleur = null;
+    for (const e of section.querySelectorAll("div")) {
+      const t = (e.textContent || "");
+      if (t.indexOf(nom) === -1) continue;
+      const m = t.match(/(\d+)\s*·\s*\d+%/);
+      if (!m) continue;
+      if (!meilleur || t.length < meilleur.taille) meilleur = { n: Number(m[1]), taille: t.length };
+    }
+    return meilleur ? meilleur.n : null;
+  }, cle);
+
+  if (!enTete) { console.warn("en-tête du tableau de bord introuvable"); }
+  else {
+    console.log("mode filtré : " + cle);
+    console.log("  en-tête : " + enTete.texte.slice(0, 120));
+    console.log("  graphique par mode : " + duMode + " parties");
+    const p = enTete.parties === null ? null : Number(enTete.parties);
+    const a = enTete.actifs === null ? null : Number(enTete.actifs);
+    console.log(p !== null && duMode !== null && p === duMode
+      ? "✅ le compteur du haut et le graphique disent la même chose (" + p + " parties)"
+      : "❌ le haut annonce " + p + " parties, le graphique " + duMode);
+    // Un joueur ne peut pas jouer moins d'une fois : sous un filtre de mode, il y
+    // a forcément au moins autant de parties que de joueurs actifs... et jamais
+    // plus d'actifs que de parties. C'est ce test-là que « 44 actifs pour 10
+    // parties » violait.
+    console.log(a !== null && duMode !== null && a <= duMode
+      ? "✅ " + a + " actifs pour " + duMode + " parties — cohérent"
+      : "❌ " + a + " actifs annoncés pour seulement " + duMode + " parties du mode");
+    console.log(enTete.duels === null
+      ? "✅ aucun compte de duels dans un en-tête filtré (il ne sait pas filtrer)"
+      : "❌ l'en-tête filtré affiche " + enTete.duels + " duels, qui ignorent les filtres");
+  }
 }
 
 if (ecran === "tracking-filtre") {

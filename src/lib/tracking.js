@@ -141,8 +141,19 @@ export function agregeTracking(data, filtres, jours) {
   // Joueurs actifs = UNION des deux sources. bb_events seul ne suffit pas : un
   // score enregistré dont le ping d'événement a échoué (réseau, ancien bundle en
   // cache, RLS) produisait un « 0 joueur · N parties » contradictoire.
+  //
+  // MAIS il faut alors retirer les événements qui ne sont pas des parties, sinon
+  // le filtre de mode ne touche pas ce compteur. passeEvent les laisse passer
+  // exprès — `open_*` et `dur_*` ne portent pas de mode, et les écarter viderait
+  // « appareils » et « temps passé » dès qu'on filtre un mode. Sauf qu'ils
+  // arrivaient ensuite ici : l'écran affichait « 44 actifs · filtré » sur un
+  // filtre GOAT Battle où seuls 10 joueurs avaient lancé une partie. Les 44
+  // avaient ouvert l'app, ce qui est un autre chiffre — vrai, mais pas celui que
+  // le filtre annonce.
+  const filtreDeJeu = f.mode !== "tous" || f.support !== "tous";
+  const prouveActivite = function (r) { return !filtreDeJeu || !!modeDeType(r.type); };
   const actifs = new Set(), anonymes = new Set();
-  const lignesActives = aEvents ? eventsW.concat(scoresW) : scoresW;
+  const lignesActives = aEvents ? eventsW.filter(prouveActivite).concat(scoresW) : scoresW;
   for (const r of lignesActives) {
     if (!r.player_id) continue;
     actifs.add(r.player_id);
@@ -190,10 +201,18 @@ export function agregeTracking(data, filtres, jours) {
   const toutScores = (data.rawScores || []).filter(function (r) { return passeScore(r, false); });
   const toutEvents = aEvents ? (data.rawEvents || []).filter(function (r) { return passeEvent(r, false); }) : [];
   const actifsParJour = {}, partiesParJour = {};
-  for (const r of (aEvents ? toutEvents.concat(toutScores) : toutScores)) {
+  const toutActives = aEvents ? toutEvents.filter(prouveActivite).concat(toutScores) : toutScores;
+  for (const r of toutActives) {
     if (r.day) (actifsParJour[r.day] = actifsParJour[r.day] || new Set()).add(r.player_id);
   }
-  for (const r of toutScores) { if (r.day) partiesParJour[r.day] = (partiesParJour[r.day] || 0) + 1; }
+  // Une partie se compte sur les ÉVÉNEMENTS quand ils existent, pas sur les
+  // scores. bb_scores ne reçoit que les modes qui classent un score — trois sur
+  // sept (voir MODE_DU_SCORE) — donc compter les parties là revenait à afficher
+  // « 0 partie » tous les jours sous un filtre GOAT Battle, GOAT Grid, GOAT Guess
+  // ou Devinette, juste à côté d'un graphique qui en annonçait dix. Zéro par
+  // construction, jamais parce que personne n'avait joué.
+  const partiesDe = aEvents ? toutEvents.filter(function (r) { return !!modeDeType(r.type); }) : toutScores;
+  for (const r of partiesDe) { if (r.day) partiesParJour[r.day] = (partiesParJour[r.day] || 0) + 1; }
   const parJour = jours.map(function (d) {
     const set = actifsParJour[d];
     let anon = 0;
@@ -209,7 +228,17 @@ export function agregeTracking(data, filtres, jours) {
   return {
     plage: f.plage, filtresActifs: nbFiltresActifs(f), aEvents: aEvents,
     actifs: actifs.size, anonymes: anonymes.size,
+    // `parties` compte les SCORES ENREGISTRÉS, et seuls trois modes en écrivent :
+    // c'est un chiffre juste, mais qui ne répond pas à « combien de parties ».
+    // `partiesVues` répond à celle-là, sur les événements, pour les sept modes —
+    // et c'est lui qui va dans le grand compteur du haut, là où l'écran promet un
+    // résultat « filtré ».
     parties: scoresW.length,
+    partiesVues: aEvents ? totalParties : scoresW.length,
+    // Les duels n'obéissent QU'À LA PLAGE : bb_duels est chargée sans les
+    // identifiants des joueurs (select=id,created_at), donc ni le public ni la
+    // recherche ne peuvent s'y appliquer. Le tableau de bord doit donc dire que ce
+    // chiffre-là est hors filtres au lieu de le présenter comme filtré.
     duels: (data.rawDuels || []).filter(dansPlage).length,
     parMode: parMode, totalParties: totalParties, solo: solo, enLigne: enLigne,
     joueurs: joueurs, joueursInscrits: joueurs.filter(function (p) { return !!p.pseudo; }).length,
