@@ -10247,17 +10247,31 @@ export default function LePont() {
         <div style={{position:"relative",width:"100%",height:"100dvh",overflowY:"auto",display:"flex",flexDirection:"column",animation:"fadeIn .3s ease-out",background:fondCharte}}>
           {areneCharte}
           {fermerCharte(duelLeaveRoom, 10)}
-          {/* L'AFFICHE ENTIÈRE. Le conteneur demande le ratio de la carte, mais
-              il a le droit de rétrécir pour que l'écran tienne sur une page —
-              et en `cover`, rétrécir RECADRE. Cadré par le bas, on ne voyait
-              plus que des jambes et le titre, les visages passaient hors champ.
-              En `contain`, l'image se pose entière et laisse deux bandes sur les
-              côtés, que fondCharte remplit : l'or continue sans couture. */}
-          {/* Même raison qu'au-dessus : bandes de contain remplies par le fond
-              de la charte plutôt que par du noir. Il y a DEUX écrans de choix
-              de mode dans ce fichier — celui-ci et gameConfigModal — et ils
-              portent chacun leur propre affiche. */}
-          <div style={{position:"relative",zIndex:1,width:"100%",aspectRatio:"1086 / 1448",flex:"0 1 auto",minHeight:0,overflow:"hidden",background:"transparent",borderBottom:G.trait}}>
+          {/* L'AFFICHE ENTIÈRE, ET SUR TOUTE LA LARGEUR.
+              `flex:"0 0 auto"` — donc le conteneur NE RÉTRÉCIT PLUS. C'est le
+              coeur du réglage, et il a mis trois passes à se stabiliser :
+                • en `cover`, rétrécir RECADRE : on ne voyait plus que des jambes,
+                  le titre partait hors champ ;
+                • en `contain` + `0 1 auto`, l'image restait entière mais le
+                  conteneur, écrasé par le contenu du dessous, devenait plus large
+                  que l'image — d'où deux bandes d'or sur les côtés. Mesuré sur la
+                  feuille Battle : boîte 430x470 pour une affiche de 430x573,
+                  soit 40 px de bande de chaque côté. GOAT GRID, qui a moins de
+                  contenu, tenait ses 573 px et remplissait, lui, la largeur : les
+                  deux feuilles n'avaient pas le même rendu.
+              Ne plus rétrécir règle les deux d'un coup. La contrepartie est
+              assumée : sur la feuille Battle, la plus chargée, l'écran ne tient
+              plus tout à fait sur une page et il faut faire défiler d'une
+              centaine de pixels pour atteindre « Entre potes ». Déformer
+              l'affiche pour éviter ça coûtait plus cher que le défilement.
+
+              `maxWidth:480` va AVEC, et n'est pas décoratif : la feuille n'a pas
+              de branche « ordinateur », donc sur une fenêtre de 1200 px de large
+              une affiche en `width:100%` qui ne rétrécit plus réclamerait 1600 px
+              de haut. C'est le rétrécissement qui la bornait avant. On la cale
+              donc sur la même colonne que le contenu du dessous — sans effet sur
+              téléphone, où l'écran fait moins de 480. */}
+          <div style={{position:"relative",zIndex:1,width:"100%",aspectRatio:"1086 / 1448",flex:"0 0 auto",maxWidth:480,margin:"0 auto",overflow:"hidden",background:"transparent",borderBottom:G.trait}}>
             <img src={DUEL_CARD_IMG} alt="" style={{width:"100%",height:"100%",objectFit:"contain",objectPosition:"center",pointerEvents:"none",userSelect:"none"}} draggable={false}/>
           </div>
           <div style={{position:"relative",zIndex:1,padding:"14px 18px calc(16px + env(safe-area-inset-bottom))",flexShrink:0,display:"flex",flexDirection:"column",maxWidth:480,margin:"0 auto",width:"100%",boxSizing:"border-box"}}>
@@ -13853,7 +13867,7 @@ export default function LePont() {
                       chaque côté. En noir elles coupaient l'écran en deux ; en
                       transparent, c'est fondCharte — posé sur le conteneur juste
                       au-dessus — qui les remplit, et l'or continue sans couture. */}
-                  <div style={{position:"relative",zIndex:1,width:"100%",aspectRatio:"1086 / 1448",flex:"0 1 auto",minHeight:0,overflow:"hidden",background:"transparent",borderBottom:G.trait}}>
+                  <div style={{position:"relative",zIndex:1,width:"100%",aspectRatio:"1086 / 1448",flex:"0 0 auto",maxWidth:480,margin:"0 auto",overflow:"hidden",background:"transparent",borderBottom:G.trait}}>
                     <img
                       src={isPont ? PLUG_CARD_IMG : MERCATO_CARD_IMG}
                       alt=""
@@ -13981,7 +13995,7 @@ export default function LePont() {
                   etait recadree en bandeau de 27vh, ce qui coupait la couronne
                   et la tete des joueurs — et l'ecran, qui ne porte que deux
                   choix, laissait un grand vide en dessous. */}
-              <div style={{position:"relative",zIndex:1,width:"100%",aspectRatio:"1086 / 1448",flex:"0 1 auto",minHeight:0,overflow:"hidden",borderBottom:G.trait}}>
+              <div style={{position:"relative",zIndex:1,width:"100%",aspectRatio:"1086 / 1448",flex:"0 0 auto",maxWidth:480,margin:"0 auto",overflow:"hidden",borderBottom:G.trait}}>
                 <img src={GRID_CARD_IMG} alt="" style={{width:"100%",height:"100%",objectFit:"contain",objectPosition:"center",pointerEvents:"none",userSelect:"none"}} draggable={false}/>
                 {/* Plus de voile ni de titre rapporte : l'affiche porte deja
                     « GOAT GRID » en toutes lettres. Ils avaient un sens quand
