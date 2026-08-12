@@ -62,12 +62,12 @@ async function mesurer() {
   const parJour = new Map();
   for (const e of ev) {
     const j = fmtJour.format(new Date(e.created_at));
-    if (!parJour.has(j)) parJour.set(j, { joueurs: new Set(), parties: 0, sessions: 0, secondes: 0, lignes: 0 });
+    if (!parJour.has(j)) parJour.set(j, { joueurs: new Set(), parties: 0, enLigne: 0, sessions: 0, secondes: 0, lignes: 0 });
     const d = parJour.get(j);
     d.lignes++;
     if (e.player_id) d.joueurs.add(e.player_id);
     const t = String(e.type || "");
-    if (t.startsWith("play_")) d.parties++;
+    if (t.startsWith("play_")) { d.parties++; if (t.endsWith("_online")) d.enLigne++; }
     if (t.startsWith("dur_")) {
       const s = parseInt(t.slice(4), 10);
       if (s > 0) { d.sessions++; d.secondes += s; }
@@ -89,6 +89,10 @@ async function mesurer() {
     sessionsParJoueur: moy(avecDuree, (d) => d.sessions) / dau,
     minutesParJoueur: moy(avecDuree, (d) => d.secondes) / dau / 60,
     lignesParJoueur: moy(avecDuree, (d) => d.lignes) / dau,
+    partEnLigne: moy(avecDuree, (d) => d.enLigne) / Math.max(moy(avecDuree, (d) => d.parties), 1),
+    // Un duel = deux joueurs et plusieurs manches : on l'approche par les parties
+    // en ligne, deux par duel.
+    duelsParJoueur: moy(avecDuree, (d) => d.enLigne) / dau / 2,
     dernier: tous.length ? tous[tous.length - 1] : null,
   };
 }
@@ -104,6 +108,43 @@ const BANNIERE_RAFRAICHIT_S = nb("BANNIERE_RAFRAICHIT_S", 60);
 // La vidéo récompensée est OPTIONNELLE par nature (un indice, une seconde
 // chance) : seule une fraction des joueurs la regarde, mais elle paie le mieux.
 const RECOMPENSEE_PAR_JOUEUR = nb("RECOMPENSEE_PAR_JOUEUR", 0.3);
+
+// ── LE MIX GÉOGRAPHIQUE COMPTE PLUS QUE LE NOMBRE ──────────────────────────
+//
+// « 5000 joueurs en Europe » n'est PAS « 5 fois 1000 joueurs en France » : l'eCPM
+// varie du simple au triple d'un pays à l'autre. Un joueur suisse ou britannique
+// rapporte plus qu'un joueur français ; un joueur roumain ou portugais rapporte
+// deux à trois fois moins.
+//
+// Coefficients relatifs à la France, APPROXIMATIFS et à remplacer par tes propres
+// relevés dès le premier mois. Ils suffisent à trancher la seule question qui
+// compte ici : la composition de l'audience pèse-t-elle plus que sa taille.
+const COEF_PAYS = {
+  CH: 1.30, GB: 1.20, SE: 1.20, NO: 1.25, DK: 1.20, DE: 1.15, NL: 1.10,
+  AT: 1.05, IE: 1.10, FR: 1.00, BE: 1.00, FI: 1.05,
+  IT: 0.70, ES: 0.65, PT: 0.50, GR: 0.40, PL: 0.45, CZ: 0.50, HU: 0.40, RO: 0.35,
+};
+
+// Deux Europe très différentes, et c'est le fond de la réponse.
+//
+// « europe-langues » suit les SIX LANGUES que l'app parle déjà : le premium du
+// nord compense la décote du sud, et le mix retombe presque au niveau français.
+// « europe-large » est ce qui arrive quand la croissance n'est pas ciblée et vient
+// d'où le trafic est le moins cher.
+const MARCHES = {
+  france: { FR: 1 },
+  "europe-langues": { FR: .35, DE: .10, AT: .03, CH: .04, GB: .10, IE: .02,
+                      IT: .12, ES: .12, PT: .06, BE: .04, NL: .02 },
+  "europe-large": { FR: .18, DE: .07, GB: .06, IT: .10, ES: .12, PT: .07,
+                    PL: .12, RO: .09, GR: .06, CZ: .05, HU: .05, NL: .03 },
+};
+const MARCHE = process.env.MARCHE || "france";
+if (!MARCHES[MARCHE]) {
+  console.error("marchés connus : " + Object.keys(MARCHES).join(", "));
+  process.exit(1);
+}
+const coefMarche = Object.entries(MARCHES[MARCHE])
+  .reduce((s, [pays, part]) => s + part * (COEF_PAYS[pays] ?? 1), 0);
 
 // eCPM France, en euros pour mille impressions. FOURCHETTES DE MARCHÉ, pas des
 // relevés — à remplacer par tes vrais chiffres après un mois.
@@ -121,11 +162,32 @@ const DECOTE_SANS_CONSENTEMENT = nb("DECOTE_SANS_CONSENTEMENT", 0.55);
 
 // ── 3. COÛTS ───────────────────────────────────────────────────────────────
 const CHANGE_USD_EUR = nb("CHANGE_USD_EUR", 0.92);
+//
+// Deux charges que la première version de ce script oubliait, et qui ne sont pas
+// des détails :
+//
+//  • VERCEL. Le plan gratuit est réservé à un usage NON COMMERCIAL. Le jour où
+//    l'app porte de la publicité, elle devient commerciale : il faut passer au
+//    plan payant. Ce n'est pas une question d'échelle, c'est une question de
+//    nature — la charge apparaît au premier euro de pub, pas au millième joueur.
+//  • LE CALCUL SUPABASE. Le forfait Pro comprend une instance modeste. Le sondage
+//    du multi étant la requête la plus fréquente de l'app, c'est lui qui obligera
+//    à la faire grossir bien avant que la base ne soit pleine. Chiffré ici par
+//    palier, et à confirmer par une vraie montée en charge — pas par ce script.
 const FIXES_MENSUELS = [
   { poste: "Compte Apple Developer", montant: 99 * CHANGE_USD_EUR / 12, note: "99 $/an" },
   { poste: "Supabase Pro", montant: 25 * CHANGE_USD_EUR, note: "25 $/mois — le gratuit ne suffit plus" },
+  { poste: "Vercel Pro", montant: 20 * CHANGE_USD_EUR, note: "le gratuit interdit l'usage commercial" },
   { poste: "Nom de domaine", montant: 15 / 12, note: "~15 €/an" },
 ];
+// Palier de calcul Supabase à ajouter selon la charge de sondage, en euros/mois.
+// Approximatif et volontairement prudent.
+function calculSupabase(reqParSeconde) {
+  if (reqParSeconde < 5) return { montant: 0, note: "l'instance du forfait suffit" };
+  if (reqParSeconde < 25) return { montant: 10 * CHANGE_USD_EUR, note: "petit palier de calcul" };
+  if (reqParSeconde < 80) return { montant: 60 * CHANGE_USD_EUR, note: "palier moyen" };
+  return { montant: 110 * CHANGE_USD_EUR, note: "gros palier — et il faut revoir le sondage" };
+}
 const UNIQUES = [
   { poste: "Compte Google Play", montant: 25 * CHANGE_USD_EUR, note: "une seule fois" },
 ];
@@ -141,11 +203,36 @@ function revenus(u, dau, niveau) {
   const bannieres = dau * (u.minutesParJoueur * 60 / BANNIERE_RAFRAICHIT_S);
   const recompensees = dau * RECOMPENSEE_PAR_JOUEUR;
   const mixte = CONSENTEMENT + (1 - CONSENTEMENT) * DECOTE_SANS_CONSENTEMENT;
-  const parJour = (n, e) => n / 1000 * e * REMPLISSAGE * mixte;
+  const parJour = (n, e) => n / 1000 * e * REMPLISSAGE * mixte * coefMarche;
   const jour = parJour(inters, ECPM.interstitiel[niveau])
              + parJour(bannieres, ECPM.banniere[niveau])
              + parJour(recompensees, ECPM.recompensee[niveau]);
   return { inters, bannieres, recompensees, jour, mois: jour * 30.4 };
+}
+
+// ── LE SONDAGE DU MULTI ────────────────────────────────────────────────────
+//
+// Toute la synchronisation des duels passe par du sondage REST — il n'y a pas de
+// temps réel (voir src/lib/cadence.ts, qui le dit : « la requête la plus coûteuse
+// de l'app »). À 800 ms pendant la manche, c'est 75 requêtes par minute et par
+// joueur, et ça ne se dilue pas : ça se multiplie par le nombre de joueurs.
+//
+// C'est pour cette raison que le coût technique n'est PAS proportionnel aux
+// revenus à grande échelle : la pub grandit en linéaire, le sondage aussi, mais il
+// franchit des paliers d'infrastructure que la pub ne franchit pas.
+const SONDAGE_MS_JEU = nb("SONDAGE_MS_JEU", 800);
+const SONDAGE_MS_SALON = nb("SONDAGE_MS_SALON", 2000);
+const MIN_JEU_PAR_DUEL = nb("MIN_JEU_PAR_DUEL", 2);
+const MIN_SALON_PAR_DUEL = nb("MIN_SALON_PAR_DUEL", 1);
+
+function sondage(dau, duelsParDau) {
+  const duels = dau * duelsParDau;
+  const parJoueurParDuel = MIN_JEU_PAR_DUEL * 60000 / SONDAGE_MS_JEU
+                         + MIN_SALON_PAR_DUEL * 60000 / SONDAGE_MS_SALON;
+  const requetes = duels * 2 * parJoueurParDuel;   // deux joueurs par duel
+  return { duels, requetes, parSeconde: requetes / 86400,
+           // Une pointe concentre une bonne part de la journée sur une heure.
+           pointeParSeconde: requetes * 0.15 / 3600 };
 }
 
 const u = await mesurer();
@@ -160,6 +247,15 @@ console.log("  minutes par joueur             " + u.minutesParJoueur.toFixed(1)
   + "   (" + (u.minutesParJoueur / Math.max(u.sessionsParJoueur, .01)).toFixed(1) + " min par session)");
 if (u.dernier) console.log("  dernier jour complet           " + u.dernier[0]
   + " : " + u.dernier[1].joueurs.size + " joueurs, " + u.dernier[1].parties + " parties");
+
+console.log("  parties en ligne               " + Math.round(u.partEnLigne * 100)
+  + " %  → " + u.duelsParJoueur.toFixed(2) + " duel par joueur et par jour");
+
+console.log("\n═══ MARCHÉ : " + MARCHE + " ═══");
+const mix = Object.entries(MARCHES[MARCHE]).sort((a, b) => b[1] - a[1]);
+console.log("  " + mix.map(([p, n]) => p + " " + Math.round(n * 100) + "%").join(" · "));
+console.log("  coefficient d'eCPM par rapport à la France : " + coefMarche.toFixed(2)
+  + (coefMarche >= .95 ? "   (équivalent)" : coefMarche >= .8 ? "   (un peu moins)" : "   (NETTEMENT moins)"));
 
 console.log("\n═══ HYPOTHÈSES (modifiables) ═════════════════════════════════════");
 console.log("  1 interstitiel toutes les " + INTER_TOUS_LES + " parties, bannière rafraîchie à "
@@ -192,13 +288,31 @@ console.log("  cotisations micro-entreprise : " + Math.round(COTISATIONS * 100) 
 console.log("    → proportionnel : cette charge grandit avec les revenus, elle ne se dilue pas.");
 
 console.log("\n═══ CE QU'IL RESTE, APRÈS COTISATIONS ET CHARGES ═════════════════");
-console.log("   joueurs/j        bas     moyen      haut");
+console.log("   joueurs/j        bas     moyen      haut   calcul Supabase");
 for (const dau of DAU_DEMANDES) {
-  const net = (niveau) => revenus(u, dau, niveau).mois * (1 - COTISATIONS) - fixe - LOT_MENSUEL;
+  // Le palier de calcul dépend de la POINTE de sondage, pas de la moyenne : c'est
+  // la pointe qui fait tomber une instance.
+  const p = sondage(dau, u.duelsParJoueur);
+  const calcul = calculSupabase(p.pointeParSeconde);
+  const net = (niveau) => revenus(u, dau, niveau).mois * (1 - COTISATIONS)
+    - fixe - LOT_MENSUEL - calcul.montant;
   const signe = (x) => (x >= 0 ? "  " : " ") + eur(x);
   console.log("  " + String(dau).padStart(8) + signe(net("bas")).padStart(11)
-    + signe(net("moyen")).padStart(10) + signe(net("haut")).padStart(10));
+    + signe(net("moyen")).padStart(10) + signe(net("haut")).padStart(10)
+    + "   " + (calcul.montant ? eur(calcul.montant) : "—").padStart(7) + "  " + calcul.note);
 }
+
+console.log("\n═══ CHARGE TECHNIQUE DU MULTI (sondage REST) ═════════════════════");
+console.log("   joueurs/j     duels/j    requêtes/j   req/s moyen   req/s en pointe");
+for (const dau of DAU_DEMANDES) {
+  const p = sondage(dau, u.duelsParJoueur);
+  console.log("  " + String(dau).padStart(8) + String(Math.round(p.duels)).padStart(12)
+    + String(Math.round(p.requetes).toLocaleString("fr-FR")).padStart(14)
+    + p.parSeconde.toFixed(1).padStart(13) + p.pointeParSeconde.toFixed(0).padStart(18));
+}
+console.log("  Le sondage grandit AUSSI VITE que les revenus, mais il franchit des");
+console.log("  paliers d'infrastructure que la pub ne franchit pas. C'est le premier");
+console.log("  poste à revoir avant de viser plusieurs milliers de joueurs.");
 
 // ── 5. LE SEUIL ────────────────────────────────────────────────────────────
 // Le chiffre le plus utile du script : en dessous, l'app coûte de l'argent.
