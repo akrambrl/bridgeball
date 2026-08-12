@@ -284,6 +284,11 @@ const CHEMINS = {
   // parce que le défaut était là — le tutoriel est monté dans le rendu de
   // l'accueil, donc le clic depuis le profil n'affichait rien.
   "comment-jouer": [],
+  // `ecran-accueil` : le mode d'emploi « sur l'écran d'accueil », depuis le
+  // profil. ONGLET=android bascule sur l'autre plateforme — le navigateur de
+  // cette machine n'est ni un iPhone ni un Android, donc l'onglet présélectionné
+  // est toujours le même et l'autre resterait invérifiable.
+  "ecran-accueil": [],
   "partie-fin": [], // une partie solo, puis on passe jusqu'a la fin de manche
   "partie-faux": [], // une partie solo, puis une reponse fausse : le bandeau
   "mercato-faux": [], // The Mercato, puis une reponse fausse
@@ -488,11 +493,36 @@ if (ecran === "tutoriel" && process.env.ETAPE) {
   }
 }
 
-if (ecran === "profil" || ecran === "comment-jouer") {
+if (ecran === "profil" || ecran === "comment-jouer" || ecran === "ecran-accueil") {
   // L'avatar de l'en-tête ouvre le profil ; c'est une image cliquable, pas un
   // bouton, donc getByRole ne la voit pas.
   await page.locator("img[src*='/cards/']").first().click();
   await page.waitForTimeout(1600);
+}
+
+if (ecran === "ecran-accueil") {
+  const b = page.getByRole("button", { name: /écran d'accueil|home screen|startbildschirm|schermata home|tela de início|pantalla de inicio/i }).first();
+  await b.scrollIntoViewIfNeeded().catch(() => {});
+  await b.click({ force: true }).catch(() => {});
+  await page.waitForTimeout(1100);
+  // Le navigateur de cette machine n'est ni un iPhone ni un Android : l'onglet
+  // présélectionné retombe donc toujours sur Android. ONGLET=ios va voir l'autre.
+  //
+  // Les motifs sont ANCRÉS sur le libellé exact des onglets : /iphone/i attrapait
+  // le bouton du menu juste au-dessus, dont le sous-titre dit « iPhone et
+  // Android, en 4 étapes ». Le clic rouvrait donc la feuille et remettait
+  // l'onglet par défaut — on croyait la bascule cassée.
+  if (process.env.ONGLET) {
+    const cible = process.env.ONGLET === "ios" ? /iPhone \/ iPad$/i : /Android$/i;
+    await page.getByRole("button", { name: cible }).first().click({ force: true }).catch(() => {});
+    await page.waitForTimeout(500);
+  }
+  // La feuille est-elle bien LÀ ? C'est un panneau monté dans le rendu du
+  // profil : s'il atterrissait ailleurs, le clic ne montrerait rien.
+  const vu = await page.getByRole("button", { name: /^(compris|got it|verstanden|capito|entendi|entendido)$/i })
+    .first().isVisible().catch(() => false);
+  console.log(vu ? "mode d'emploi ouvert ✅" : "⚠️ la feuille ne s'affiche pas");
+  if (!vu) process.exitCode = 1;
 }
 
 if (ecran === "comment-jouer") {
