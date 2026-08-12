@@ -2821,6 +2821,63 @@ function ggGetCriterionTooltip(criterion, lang) {
 // `criterion.label` est écrit en FRANÇAIS à la génération de la grille : c'est
 // la clé, pas le texte à montrer. On ne s'en sert donc que comme dernier repli
 // (un club, dont le nom ne se traduit pas).
+// ── Le libellé d'une pastille de critère, AJUSTÉ À LA MESURE ───────────────
+//
+// Signalé : « A JOUÉ EN SÉRIE A » sortait coupé en « SE-RIE ». Le corps était FIGÉ
+// à 11,5 px quelle que soit la longueur du libellé, et la pastille fait moins de
+// 80 px de large : le navigateur cassait donc le mot, avec une césure là où la
+// langue du document le permettait, ou en laissant un « A » seul sur la ligne
+// suivante selon la largeur de l'écran. Deux symptômes, une seule cause.
+//
+// `hyphens:none` était nécessaire — il n'y a aucune raison de couper un mot dans
+// une pastille de trois mots — mais PAS suffisant : sans césure, le mot se casse
+// quand même, sans le tiret. Ce qu'il faut, c'est que le texte TIENNE.
+//
+// Mesuré à la largeur réelle, police du logo : « A JOUÉ EN SÉRIE A » déborde à
+// 11,5 px et tient sur une ligne dès 10 px.
+//
+// TROIS SEUILS, la même recette que la question de GOAT GUESS, et pour la même
+// raison : deux seuils forceraient un mauvais compromis. Les libellés courts
+// méritent leur pleine taille ; « VAINQUEUR LIGUE DES CHAMPIONS » ne tiendra
+// jamais sur une ligne et n'a pas à être puni pour autant.
+const PASTILLE_MAX = 11.5;      // le confort des libellés courts
+const PASTILLE_PLANCHER = 9;    // jusqu'où on descend POUR TENIR SUR UNE LIGNE
+const PASTILLE_REPLI = 10.5;    // le corps quand une ligne est hors d'atteinte
+function LibelleCritere(props) {
+  const ref = React.useRef(null);
+  const [corps, setCorps] = React.useState(PASTILLE_MAX);
+  React.useLayoutEffect(function(){
+    const el = ref.current;
+    if (!el) return;
+    let annule = false;
+    function ajuster() {
+      if (annule || !ref.current) return;
+      const e = ref.current;
+      const large = e.parentElement ? e.parentElement.clientWidth : 0;
+      if (!large) return;
+      let px = PASTILLE_MAX;
+      e.style.fontSize = px + "px";
+      // Une seule ligne = la hauteur rendue tient dans une hauteur de ligne.
+      const uneLigne = function(){ return e.scrollHeight <= Math.ceil(px * 1.15) + 1; };
+      while (!uneLigne() && px > PASTILLE_PLANCHER) { px -= 0.5; e.style.fontSize = px + "px"; }
+      const retenu = uneLigne() ? px : PASTILLE_REPLI;
+      // On REPOSE la taille explicitement. Effacer le style après mesure puis
+      // appeler setCorps avec la valeur qu'il avait déjà ne re-rend pas : le style
+      // effacé n'est alors jamais réécrit et tout sort au corps hérité. C'est le
+      // défaut qui avait fait sortir les quatorze questions de GOAT GUESS à 16 px.
+      e.style.fontSize = retenu + "px";
+      setCorps(retenu);
+    }
+    ajuster();
+    // La police du logo arrive après le premier rendu : mesurer avant elle donne
+    // la largeur de la police de repli, donc un mauvais verdict.
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(ajuster).catch(function(){});
+    window.addEventListener("resize", ajuster);
+    return function(){ annule = true; window.removeEventListener("resize", ajuster); };
+  }, [props.texte]);
+  return <div ref={ref} style={{fontSize:corps+"px"}}>{props.texte}</div>;
+}
+
 function ggGetCriterionDisplayLabel(criterion, lang) {
   if (criterion.type === "position") return nomPoste(criterion.value, lang);
   if (criterion.type === "nationality") return nomPays(criterion.value, lang);
@@ -14108,7 +14165,7 @@ export default function LePont() {
                       <div key={p.id} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 12px",background:isMe?"rgba(255,107,53,.1)":"rgba(8,17,9,.45)",border:"1px solid "+(isMe?"rgba(255,107,53,.3)":"rgba(8,17,9,.45)"),borderRadius:10}}>
                         <div style={{fontSize:18}}>{isHost?"👑":"⚔️"}</div>
                         <div style={{flex:1,fontSize:13,fontWeight:700,color:G.white}}>
-                          {p.name} {isMe && <span style={{fontSize:10,color:"rgba(255,107,53,.7)"}}>({tr("toi","you","du","tu","você","tú")})</span>}
+                          {p.name} {isMe && <span style={{fontSize:10,color:G.maillot,fontWeight:800}}>({tr("toi","you","du","tu","você","tú")})</span>}
                         </div>
                         {isHost && <div style={{fontSize:9,color:G.projecteur,letterSpacing:1,fontWeight:800}}>HOST</div>}
                       </div>
@@ -14155,9 +14212,9 @@ export default function LePont() {
           
           return (
             <div style={{position:"fixed",inset:0,zIndex:450,display:"flex",alignItems:"flex-start",justifyContent:"center",padding:"80px 20px 40px",background:"rgba(8,17,9,.86)",overflowY:"auto"}}>
-              <div style={{background:"linear-gradient(160deg, #14181F 0%, #0B0E12 100%)",border:"1.5px solid "+(isWinner?"rgba(255,214,0,.6)":"rgba(255,107,53,.4)"),borderRadius:24,padding:24,maxWidth:380,width:"100%",textAlign:"center"}}>
+              <div style={{background:G.nuit,border:G.trait,boxShadow:G.ombreL,borderRadius:G.rayonL,padding:24,maxWidth:380,width:"100%",textAlign:"center"}}>
                 <div style={{fontSize:60,marginBottom:8}}>{isWinner?"👑":"⚔️"}</div>
-                <div style={{...posterText(26),letterSpacing:2,color:isWinner?G.projecteur:"#FF6B35",lineHeight:1,marginBottom:6}}>
+                <div style={{...posterText(26),letterSpacing:2,color:isWinner?G.projecteur:G.maillot,lineHeight:1,marginBottom:6}}>
                   {isWinner ? (tr("VICTOIRE !","VICTORY!","SIEG!","VITTORIA!","VITÓRIA!","¡VICTORIA!")) : (tr("BATTLE TERMINÉE","BATTLE OVER","BATTLE VORBEI","BATTLE FINITA","BATALHA ENCERRADA","BATALLA TERMINADA"))}
                 </div>
                 <div style={{fontSize:13,color:"rgba(255,255,255,.7)",marginBottom:18}}>
@@ -14180,7 +14237,7 @@ export default function LePont() {
                           <div style={{fontSize:14,fontWeight:900,color:idx===0?G.projecteur:G.white}}>{p.cells_filled || 0}/9</div>
                           <div style={{fontSize:10,color:"rgba(255,255,255,.5)"}}>{p.score || 0} pts</div>
                         </div>
-                        {hasGrid && <div style={{fontSize:14,color:"rgba(255,107,53,.7)",marginLeft:4}}>👁️</div>}
+                        {hasGrid && <div style={{fontSize:14,color:G.projecteur,marginLeft:4}}>👁️</div>}
                       </div>
                     );
                   })}
@@ -14193,7 +14250,7 @@ export default function LePont() {
                 
                 {/* Bouton Relancer (host uniquement) */}
                 {ggBattleRoom.host_id === playerId && (
-                  <button onClick={ggBattleRestartGame} disabled={ggBattleLoading} style={{width:"100%",padding:14,borderRadius:G.rayon,border:G.trait,background:G.pelouse,color:"#000",fontWeight:900,fontSize:14,letterSpacing:1,cursor:ggBattleLoading?"not-allowed":"pointer",marginBottom:8,opacity:ggBattleLoading?.5:1}}>
+                  <button onClick={ggBattleRestartGame} disabled={ggBattleLoading} style={{...btn(G.pelouse,G.encre,15),width:"100%",padding:14,marginBottom:10,cursor:ggBattleLoading?"wait":"pointer"}}>
                     {ggBattleLoading ? "..." : "🔄 " + (tr("RELANCER","REMATCH","REVANCHE","RIVINCITA","REVANCHE","REVANCHA"))}
                   </button>
                 )}
@@ -14209,7 +14266,7 @@ export default function LePont() {
                   setGgBattleCode("");
                   setGgBattleError("");
                   setGgGameOver(false);
-                }} style={{width:"100%",padding:14,borderRadius:G.rayon,border:G.trait,background:G.maillot,color:"#fff",fontWeight:800,fontSize:13,letterSpacing:1,cursor:"pointer"}}>
+                }} style={{...btn(G.nuit,G.white,15),width:"100%",padding:14,cursor:"pointer"}}>
                   {tr("RETOUR","BACK TO HOME","ZUM START","ALLA HOME","VOLTAR","VOLVER AL INICIO")}
                 </button>
               </div>
@@ -14495,9 +14552,9 @@ export default function LePont() {
                         return(
                           <div key={"col-"+j} onClick={function(){setGgShowTooltip({title: ggGetCriterionDisplayLabel(crit, lang), text: ggGetCriterionTooltip(crit, lang)});}} style={{position:"relative",overflow:"hidden",borderRadius:G.rayonS,border:G.trait,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:"4px",boxShadow:G.ombre}}>
                             <div style={{position:"absolute",inset:0,background:cMain}}/>
-                                                        <div style={{position:"relative",zIndex:1,...posterText(15,G.white,1.2),fontSize:11.5,letterSpacing:0.2,lineHeight:1.15,textAlign:"center",overflowWrap:"break-word",hyphens:"auto"}}>
+                                                        <div style={{position:"relative",zIndex:1,...posterText(15,G.white,1.2),fontSize:11.5,letterSpacing:0.2,lineHeight:1.15,textAlign:"center",overflowWrap:"break-word",hyphens:"none"}}>
                               {emoji && <div style={{fontSize:17,marginBottom:1}}>{emoji}</div>}
-                              <div>{ggGetCriterionDisplayLabel(crit, lang).toUpperCase()}</div>
+                              <LibelleCritere texte={ggGetCriterionDisplayLabel(crit, lang).toUpperCase()}/>
                             </div>
                             <div style={{position:"absolute",top:4,right:4,width:16,height:16,borderRadius:"50%",background:G.nuit,border:"1.5px solid "+G.encre,display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,color:G.creme,zIndex:2}}>ⓘ</div>
                           </div>
@@ -14513,9 +14570,9 @@ export default function LePont() {
                             {/* Critère ligne */}
                             <div onClick={function(){setGgShowTooltip({title: ggGetCriterionDisplayLabel(rowCrit, lang), text: ggGetCriterionTooltip(rowCrit, lang)});}} style={{position:"relative",overflow:"hidden",borderRadius:G.rayonS,border:G.trait,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:"4px",boxShadow:G.ombre}}>
                               <div style={{position:"absolute",inset:0,background:rcMain}}/>
-                                                            <div style={{position:"relative",zIndex:1,...posterText(15,G.white,1.2),fontSize:11.5,letterSpacing:0.2,lineHeight:1.15,textAlign:"center",overflowWrap:"break-word",hyphens:"auto"}}>
+                                                            <div style={{position:"relative",zIndex:1,...posterText(15,G.white,1.2),fontSize:11.5,letterSpacing:0.2,lineHeight:1.15,textAlign:"center",overflowWrap:"break-word",hyphens:"none"}}>
                                 {emoji && <div style={{fontSize:17,marginBottom:1}}>{emoji}</div>}
-                                <div>{ggGetCriterionDisplayLabel(rowCrit, lang).toUpperCase()}</div>
+                                <LibelleCritere texte={ggGetCriterionDisplayLabel(rowCrit, lang).toUpperCase()}/>
                               </div>
                               <div style={{position:"absolute",top:4,right:4,width:16,height:16,borderRadius:"50%",background:G.nuit,border:"1.5px solid "+G.encre,display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,color:G.creme,zIndex:2}}>ⓘ</div>
                             </div>

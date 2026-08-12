@@ -882,6 +882,38 @@ if (ecran === "grille-saisie") {
 }
 
 
+// Les libellés de critère sont AJUSTÉS À LA MESURE (voir LibelleCritere) : ce
+// contrôle rapporte le corps retenu et signale tout débordement. Il ne dépend pas
+// de la grille du jour — si un libellé long tombe un matin, il le dira.
+if (ecran === "grille" || ecran === "grille-saisie") {
+  const chips = await page.evaluate(() => {
+    const out = [];
+    for (const e of document.querySelectorAll("div")) {
+      const st = getComputedStyle(e);
+      if (!/px$/.test(st.fontSize)) continue;
+      const t = (e.textContent || "").trim();
+      // Une pastille : du texte court, en majuscules, dans un parent à bord d'encre.
+      if (!t || t.length < 3 || t !== t.toUpperCase() || e.children.length) continue;
+      const p = e.parentElement;
+      if (!p || p.clientWidth > 130 || p.clientWidth < 40) continue;
+      out.push({ t: t.slice(0, 28), px: Math.round(parseFloat(st.fontSize) * 10) / 10,
+                 lignes: Math.round(e.scrollHeight / (parseFloat(st.fontSize) * 1.15)),
+                 deborde: e.scrollWidth > p.clientWidth + 1 });
+    }
+    return out;
+  });
+  if (!chips.length) console.log("aucune pastille de critère mesurée");
+  else {
+    console.log("pastilles de critère — corps retenu et lignes");
+    for (const c of chips) console.log("   " + c.t.padEnd(30) + String(c.px).padStart(5)
+      + " px   " + c.lignes + "L" + (c.deborde ? "   ❌ DÉBORDE" : ""));
+    const mauvais = chips.filter((c) => c.deborde);
+    console.log(mauvais.length === 0
+      ? "✅ aucune pastille ne déborde de son cadre"
+      : "❌ " + mauvais.length + " pastille(s) débordent");
+  }
+}
+
 if (ecran === "battle-suggestion") {
   // Aller jusqu'à l'écran de saisie de GOAT Battle en solo.
   const pastilles = page.locator("div[style*='border-radius: 5px'][style*='cursor: pointer']");
