@@ -6,7 +6,7 @@
 // traitement d'un refus du serveur de push.
 import { describe, it, expect } from "vitest";
 import { abonnementUtilisable, dedupeAbonnements, decisionEnvoi, decisionFinale, tagDuJour,
-         demandesANotifier, accrocheAmis, grouperPar } from "../lib/push.js";
+         demandesANotifier, accrocheAmis, grouperPar, resumerCorps, repartitionHotes } from "../lib/push.js";
 
 const abo = (id: string, endpoint: string, created_at: string) =>
   ({ id, endpoint, p256dh: "cle", auth: "auth", created_at });
@@ -255,5 +255,91 @@ describe("tagDuJour", () => {
     // s'empiler : même si le cron se déclenche deux fois, l'utilisateur ne voit
     // qu'une devinette.
     expect(tagDuJour("2026-08-11")).toBe(tagDuJour("2026-08-11"));
+  });
+});
+
+// La panne qui a motivé ces deux fonctions : sept envois sur onze échouaient en
+// HTTP 400 chaque jour, et le journal n'en disait rien de plus que « HTTP 400 —
+// Received unexpected response code ». Ce message vient de web-push et est
+// TOUJOURS le même ; la cause est dans `body`, qui était jeté.
+describe("resumerCorps", () => {
+  it("lit le refus d'Apple", () => {
+    expect(resumerCorps('{"reason":"BadDeviceToken"}')).toBe("BadDeviceToken");
+    expect(resumerCorps('{"reason":"BadJwtToken"}')).toBe("BadJwtToken");
+  });
+
+  it("lit le refus de FCM, message ET statut", () => {
+    const corps = '{"error":{"code":400,"message":"The registration token is not a valid FCM registration token","status":"INVALID_ARGUMENT"}}';
+    const r = resumerCorps(corps);
+    expect(r).toContain("registration token is not a valid");
+    expect(r).toContain("INVALID_ARGUMENT");
+  });
+
+  it("garde l'errno de Mozilla — c'est lui qui distingue les 400 entre eux", () => {
+    // 110 « en-tête de chiffrement invalide » et 105 « abonnement invalide »
+    // arrivent tous deux en HTTP 400 mais n'ont pas la même cause : l'un est
+    // notre requête, l'autre l'abonné. Sans l'errno, ils sont indistinguables.
+    const r = resumerCorps('{"code":400,"errno":110,"error":"Bad Request","message":"Invalid encryption headers"}');
+    expect(r).toContain("Invalid encryption headers");
+    expect(r).toContain("errno 110");
+  });
+
+  it("ne rend pas deux fois la même chose", () => {
+    // Certains services répètent le libellé dans `reason` et `message`.
+    expect(resumerCorps('{"reason":"BadDeviceToken","message":"BadDeviceToken"}')).toBe("BadDeviceToken");
+  });
+
+  it("retombe sur le texte brut quand ce n'est pas du JSON", () => {
+    expect(resumerCorps("<html><body>Bad Request</body></html>")).toContain("Bad Request");
+    expect(resumerCorps("  push failed \n  badly  ")).toBe("push failed badly");
+  });
+
+  it("ne casse pas sur un corps vide ou absent", () => {
+    expect(resumerCorps("")).toBe("");
+    expect(resumerCorps(null)).toBe("");
+    expect(resumerCorps(undefined)).toBe("");
+    expect(resumerCorps("{}")).toBe("{}");
+  });
+
+  it("borne la longueur : un corps énorme ne doit pas noyer le journal", () => {
+    expect(resumerCorps("x".repeat(5000)).length).toBe(200);
+    expect(resumerCorps(JSON.stringify({ message: "y".repeat(5000) })).length).toBe(200);
+  });
+});
+
+describe("repartitionHotes", () => {
+  const a = (endpoint: string, platform?: string) => ({ endpoint, platform });
+
+  it("compte par service de push, pas par plateforme déclarée", () => {
+    const r = repartitionHotes([
+      a("https://web.push.apple.com/aaa", "ios"),
+      a("https://web.push.apple.com/bbb", "desktop"), // Safari macOS : même service
+      a("https://fcm.googleapis.com/fcm/send/ccc", "android"),
+    ]);
+    expect(r.map((h) => h.hote)).toEqual(["web.push.apple.com", "fcm.googleapis.com"]);
+    expect(r[0].nombre).toBe(2);
+    expect(r[0].plateformes).toEqual({ ios: 1, desktop: 1 });
+  });
+
+  it("expose l'écart de longueur, qui trahit un endpoint tronqué", () => {
+    // Tous les endpoints d'un même service font la même taille à quelques
+    // caractères près : un écart franc signale une écriture tronquée, donc un
+    // jeton que le service refusera — en HTTP 400, sans autre indice.
+    const r = repartitionHotes([
+      a("https://fcm.googleapis.com/fcm/send/" + "x".repeat(152)),
+      a("https://fcm.googleapis.com/fcm/send/" + "x".repeat(152)),
+      a("https://fcm.googleapis.com/fcm/send/" + "x".repeat(60)),
+    ]);
+    expect(r[0].longueurMax - r[0].longueurMin).toBe(92);
+  });
+
+  it("ne jette pas sur un endpoint illisible et le range à part", () => {
+    const r = repartitionHotes([a("pas-une-url"), a("https://fcm.googleapis.com/fcm/send/z")]);
+    expect(r.find((h) => h.hote === "?")?.nombre).toBe(1);
+  });
+
+  it("rend une liste vide sans abonnés", () => {
+    expect(repartitionHotes([])).toEqual([]);
+    expect(repartitionHotes(null)).toEqual([]);
   });
 });

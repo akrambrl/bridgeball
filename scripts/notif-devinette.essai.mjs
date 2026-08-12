@@ -27,6 +27,21 @@ import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import webpush from "web-push";
+
+// Une paire VAPID JETABLE quand le secret n'est pas dans l'environnement.
+//
+// Sans ça, ce banc d'essai ne pouvait tourner QUE sur une machine où
+// VAPID_PRIVATE_KEY était exporté : ailleurs, l'envoyeur s'arrêtait sur
+// « clé absente » et les six vérifications tombaient d'un coup — un banc
+// d'essai qui échoue faute de secret ne dit rien du code qu'il teste.
+//
+// La moitié publique n'est pas transmise : push-io.mjs la code en dur, et le
+// faux service de push ne vérifie aucune signature. Ce qui est éprouvé ici,
+// c'est que la requête est bien signée et chiffrée, pas que la paire soit la
+// vraie — celle-là ne doit jamais se trouver dans le dépôt.
+const CLE_PRIVEE_ESSAI = process.env.VAPID_PRIVATE_KEY || webpush.generateVAPIDKeys().privateKey;
+
 
 const ici = dirname(fileURLToPath(import.meta.url));
 const b64u = (b) => Buffer.from(b).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
@@ -43,14 +58,24 @@ execFileSync("openssl", ["req", "-x509", "-newkey", "rsa:2048", "-nodes", "-days
   "-keyout", join(dossier, "k.pem"), "-out", join(dossier, "c.pem")], { stdio: "ignore" });
 const tls = { key: readFileSync(join(dossier, "k.pem")), cert: readFileSync(join(dossier, "c.pem")) };
 
-// Quatre lignes pour quatre cas : un abonné vivant, un DOUBLON du vivant (même
+// Cinq lignes pour cinq cas : un abonné vivant, un DOUBLON du vivant (même
 // endpoint, plus ancien — celui que la table accumule faute de contrainte
-// d'unicité), un abonné mort (410), et une ligne sans clés de chiffrement.
+// d'unicité), un abonné mort (410), une ligne sans clés de chiffrement, et un
+// abonné REFUSÉ en 400 avec un motif dans le corps de la réponse.
+//
+// Ce dernier cas vient de la production : sept envois sur treize échouaient
+// chaque jour en HTTP 400, et le journal n'en disait rien d'autre que « Received
+// unexpected response code » — le message générique de web-push, identique quelle
+// que soit la cause, alors que l'explication est dans `body`. Un 400 doit
+// désormais laisser sa raison dans le journal, et ne PAS entraîner de purge :
+// tant qu'on ne sait pas ce qu'il veut dire, supprimer la ligne serait perdre
+// définitivement un abonné qui ne peut pas se réabonner tout seul.
 const ABONNES = [
   { id: "a1", endpoint: base + "/push/vivant", ...cles(), platform: "android", created_at: "2026-08-05T10:00:00Z" },
   { id: "a0", endpoint: base + "/push/vivant", ...cles(), platform: "android", created_at: "2026-01-01T10:00:00Z" },
   { id: "a2", endpoint: base + "/push/mort", ...cles(), platform: "ios", created_at: "2026-08-06T10:00:00Z" },
   { id: "a3", endpoint: base + "/push/vivant2", p256dh: "", auth: "", platform: "desktop", created_at: "2026-08-07T10:00:00Z" },
+  { id: "a4", endpoint: base + "/push/refuse", ...cles(), platform: "ios", created_at: "2026-08-08T10:00:00Z" },
 ];
 
 const recus = [], supprimes = [];
@@ -79,18 +104,32 @@ const serveur = createServer(tls, (req, res) => {
     res.writeHead(201); res.end(); return;
   }
   if (chemin === "/push/mort") { res.writeHead(410); res.end(); return; }
+  // Le format d'Apple. Chaque service a le sien — FCM enveloppe dans `error`,
+  // Mozilla ajoute un `errno` — et resumerCorps les lit tous les trois.
+  if (chemin === "/push/refuse") {
+    res.writeHead(400, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ reason: "BadDeviceToken" })); return;
+  }
   res.writeHead(404); res.end();
 });
 
 await new Promise((ok) => serveur.listen(PORT, "127.0.0.1", ok));
 
+// Le journal est CAPTURÉ, pas seulement affiché : ce que le script écrit fait
+// partie de ce qu'on vérifie. Le défaut réparé ici était entièrement un défaut
+// de journal — l'envoi se comportait correctement, mais ne disait pas pourquoi
+// il échouait, et c'est ce silence qui a laissé la panne un mois en place.
+let journal = "";
 const code = await new Promise((ok) => {
   const fils = spawn("npx", ["tsx", join(ici, "notif-devinette.mjs"), "--jour=2026-08-11"], {
-    stdio: "inherit",
+    stdio: ["ignore", "pipe", "pipe"],
     env: { ...process.env, SB_URL: base, SB_SERVICE_KEY: "fausse-cle-de-service",
-      VAPID_PRIVATE_KEY: process.env.VAPID_PRIVATE_KEY || "", VAPID_SUBJECT: "https://goatfc.fr",
+      VAPID_PRIVATE_KEY: CLE_PRIVEE_ESSAI, VAPID_SUBJECT: "https://goatfc.fr",
       NODE_TLS_REJECT_UNAUTHORIZED: "0" },
   });
+  for (const flux of [fils.stdout, fils.stderr]) {
+    flux.on("data", (d) => { journal += d; process.stdout.write(d); });
+  }
   fils.on("exit", ok);
 });
 serveur.close();
@@ -105,7 +144,14 @@ attendu("message chiffré en aes128gcm", recus[0] && recus[0].encodage, "aes128g
 attendu("requête signée VAPID", recus[0] && recus[0].signe, true);
 attendu("l'abonné mort, le doublon et la ligne sans clés sont supprimés",
   supprimes.slice().sort(), ["a0", "a2", "a3"]);
-attendu("code de sortie", code, 0);
+// « a4 » N'EST PAS dans cette liste, et c'est voulu : un 400 dont on ne sait pas
+// encore interpréter le motif ne justifie pas de supprimer l'abonné. La liste
+// ci-dessus le vérifie déjà en étant exhaustive.
+attendu("le refus 400 laisse son motif dans le journal", /BadDeviceToken/.test(journal), true);
+attendu("le journal donne le service qui refuse", /HTTP 400 sur 127\.0\.0\.1/.test(journal), true);
+// Un refus inexpliqué doit COLORER LA TÂCHE EN ROUGE. Sans ça, « envoyé à 1
+// personne sur 2 » passerait pour un succès tous les jours.
+attendu("code de sortie", code, 1);
 // Une seule lecture : la première page rend moins de lignes que le plafond, ce
 // qui suffit à savoir qu'il n'y en a pas d'autre. Demander une deuxième page
 // serait un aller-retour pour rien.

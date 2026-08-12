@@ -17,7 +17,7 @@
 import { PLAYERS, RETIRED_PLAYERS } from "../src/players.jsx";
 import { parisDay, poolDevinette, joueurDuJour, accrocheDevinette } from "../src/lib/devinette.js";
 import { tagDuJour } from "../src/lib/push.js";
-import { preparer, lireAbonnements, envoyerLot, nettoyer, signalerAlertes, log } from "./push-io.mjs";
+import { preparer, lireAbonnements, envoyerLot, nettoyer, signalerAlertes, journalAbonnes, log } from "./push-io.mjs";
 
 // `play=devinette` OUVRE la devinette. Sans ce paramètre, la notification
 // annonçait le joueur mystère du jour et déposait sur l'accueil, où il fallait
@@ -60,9 +60,10 @@ async function main() {
 
   if (dryRun) {
     log("── À BLANC : " + abos.garder.length + " envois simulés, rien n'est parti.");
-    const parPlateforme = {};
-    for (const a of abos.garder) parPlateforme[a.platform || "?"] = (parPlateforme[a.platform || "?"] || 0) + 1;
-    log("   plateformes : " + JSON.stringify(parPlateforme));
+    // Par SERVICE de push et non par `platform` : c'est le service qui accepte
+    // ou refuse, et `platform` n'est qu'une déclaration de l'app. Voir
+    // repartitionHotes.
+    journalAbonnes(abos.garder);
     return;
   }
 

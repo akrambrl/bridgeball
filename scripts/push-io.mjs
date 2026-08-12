@@ -9,7 +9,7 @@
 // teste unitairement. Ici, il n'y a que des entrées-sorties.
 
 import webpush from "web-push";
-import { dedupeAbonnements, decisionEnvoi, decisionFinale } from "../src/lib/push.js";
+import { dedupeAbonnements, decisionEnvoi, decisionFinale, resumerCorps, repartitionHotes } from "../src/lib/push.js";
 
 export const SB_URL = process.env.SB_URL || "https://ialjlsrgcolocoaegzrc.supabase.co";
 export const VAPID_PUBLIC_KEY = "BIDTT9eBO0qcUxJQq4WnNwOe9RR39XlWTo3bFTIjc7Uwt6V4kFwbA2qcLYkBOBw391wbecoBkhAN41MvKvIIkyk";
@@ -134,18 +134,37 @@ async function enParallele(items, limite, tache) {
   return res;
 }
 
+/** L'hôte d'un endpoint : le service de push, seule granularité utile au journal. */
+function hoteDe(endpoint) {
+  try { return new URL(endpoint).host; } catch (e) { return "?"; }
+}
+
 async function envoyerUn(abonne, charge) {
+  const hote = hoteDe(abonne.endpoint);
   try {
     await webpush.sendNotification(
       { endpoint: abonne.endpoint, keys: { p256dh: abonne.p256dh, auth: abonne.auth } },
       charge, { TTL: 12 * 3600, urgency: "normal" }
     );
-    return { decision: "ok", status: 201 };
+    return { decision: "ok", status: 201, hote };
   } catch (e) {
     const status = e && typeof e.statusCode === "number" ? e.statusCode : 0;
-    return { decision: decisionEnvoi(status), status,
+    // `e.body` PORTE la cause ; `e.message` vaut invariablement « Received
+    // unexpected response code ». Ne garder que le message, c'était rapporter
+    // sept échecs par jour sans un mot sur leur raison. Un statut 0 signale un
+    // échec AVANT la requête (chiffrement, DNS) : là, le message est tout ce
+    // qu'on a, et il est parlant.
+    const corps = e && e.body !== undefined ? resumerCorps(e.body) : "";
+    return { decision: decisionEnvoi(status), status, hote, corps,
       message: e && e.message ? String(e.message).slice(0, 160) : "" };
   }
+}
+
+/** La ligne d'alerte : l'hôte d'abord, puisque c'est lui qui refuse. */
+function ligneAlerte(r, abonne) {
+  const plateforme = (abonne && abonne.platform) || "?";
+  const cause = r.corps || r.message || "(réponse vide)";
+  return "HTTP " + r.status + " sur " + r.hote + " (" + plateforme + ") — " + cause;
 }
 
 /**
@@ -170,12 +189,41 @@ export async function envoyerLot(abonnes, charges) {
     compte[d] = (compte[d] || 0) + 1;
     if (d === "ok") reussis.add(abonnes[i].player_id);
     if (d === "purger") (r.status === 401 || r.status === 403 ? perimes : aPurger).push(abonnes[i].id);
-    if (d === "alerter") alertes.push("HTTP " + r.status + " — " + (r.message || ""));
+    if (d === "alerter") alertes.push(ligneAlerte(r, abonnes[i]));
   });
 
   log("── Envoyé : " + compte.ok + " ✓  |  morts : " + compte.purger
     + "  |  à retenter : " + compte.reessayer + "  |  erreurs : " + compte.alerter);
+  journalParHote(resultats, abonnes);
   return { compte, aPurger, perimes, alertes, reussis };
+}
+
+/**
+ * Le bilan PAR SERVICE de push, toujours affiché.
+ *
+ * « 2 réussis, 7 en erreur » ne dit pas où passe la frontière. Si les sept
+ * échecs sont tous chez le même service et les deux succès chez un autre, la
+ * cause est dans ce que ce service exige de nous ; s'ils sont mélangés, elle est
+ * dans les abonnements. C'est la première question à trancher, donc elle est
+ * dans le journal de chaque exécution et pas seulement en cas d'échec.
+ */
+function journalParHote(resultats, abonnes) {
+  const parHote = new Map();
+  resultats.forEach(function(r, i){
+    const hote = r.hote || hoteDe(abonnes[i] && abonnes[i].endpoint);
+    let e = parHote.get(hote);
+    if (!e) { e = { ok: 0, echecs: new Map() }; parHote.set(hote, e); }
+    if (r.decision === "ok") e.ok++;
+    else {
+      const cle = r.status + " " + (r.corps || r.message || "");
+      e.echecs.set(cle, (e.echecs.get(cle) || 0) + 1);
+    }
+  });
+  for (const [hote, e] of parHote) {
+    const total = e.ok + [...e.echecs.values()].reduce(function(s, n){ return s + n; }, 0);
+    log("   " + hote + " : " + e.ok + "/" + total + " reçus");
+    for (const [cle, n] of e.echecs) log("     ×" + n + "  " + cle);
+  }
 }
 
 /** Purge d'après le résultat d'un envoi, plus les rebuts du dédoublonnage. */
@@ -197,6 +245,25 @@ export async function nettoyer(resultat, abos, dryRun) {
 export function signalerAlertes(alertes) {
   if (!alertes.length) return;
   log("── ⚠ " + alertes.length + " erreurs non imputables aux abonnés :");
-  for (const a of alertes.slice(0, 5)) log("   " + a);
+  // Regroupées, PAS tronquées. La version précédente affichait les cinq
+  // premières lignes : sur sept erreurs identiques elle n'en montrait aucune de
+  // neuve, et sur sept erreurs dont une seule différait, c'est précisément
+  // celle-là qu'elle risquait de cacher. Ici, chaque cause distincte apparaît
+  // une fois avec son nombre d'occurrences.
+  const causes = new Map();
+  for (const a of alertes) causes.set(a, (causes.get(a) || 0) + 1);
+  for (const [cause, n] of [...causes].sort(function(x, y){ return y[1] - x[1]; })) {
+    log("   ×" + n + "  " + cause);
+  }
   process.exitCode = 1;
+}
+
+/** Le détail des abonnés par service de push, pour les exécutions à blanc. */
+export function journalAbonnes(abonnes) {
+  for (const h of repartitionHotes(abonnes)) {
+    const longueur = h.longueurMin === h.longueurMax
+      ? String(h.longueurMin) : h.longueurMin + "–" + h.longueurMax;
+    log("   " + h.hote + " : " + h.nombre + " abonné(s), endpoint " + longueur
+      + " car., " + JSON.stringify(h.plateformes));
+  }
 }

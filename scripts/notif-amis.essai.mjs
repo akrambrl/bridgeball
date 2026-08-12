@@ -20,6 +20,21 @@ import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import webpush from "web-push";
+
+// Une paire VAPID JETABLE quand le secret n'est pas dans l'environnement.
+//
+// Sans ça, ce banc d'essai ne pouvait tourner QUE sur une machine où
+// VAPID_PRIVATE_KEY était exporté : ailleurs, l'envoyeur s'arrêtait sur
+// « clé absente » et les six vérifications tombaient d'un coup — un banc
+// d'essai qui échoue faute de secret ne dit rien du code qu'il teste.
+//
+// La moitié publique n'est pas transmise : push-io.mjs la code en dur, et le
+// faux service de push ne vérifie aucune signature. Ce qui est éprouvé ici,
+// c'est que la requête est bien signée et chiffrée, pas que la paire soit la
+// vraie — celle-là ne doit jamais se trouver dans le dépôt.
+const CLE_PRIVEE_ESSAI = process.env.VAPID_PRIVATE_KEY || webpush.generateVAPIDKeys().privateKey;
+
 
 const ici = dirname(fileURLToPath(import.meta.url));
 const b64u = (b) => Buffer.from(b).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
@@ -108,7 +123,7 @@ function lancer(tour) {
     spawn("npx", ["tsx", join(ici, "notif-amis.mjs")], {
       stdio: "inherit",
       env: { ...process.env, SB_URL: base, SB_SERVICE_KEY: "fausse-cle-de-service",
-        VAPID_PRIVATE_KEY: process.env.VAPID_PRIVATE_KEY || "", VAPID_SUBJECT: "https://goatfc.fr",
+        VAPID_PRIVATE_KEY: CLE_PRIVEE_ESSAI, VAPID_SUBJECT: "https://goatfc.fr",
         NODE_TLS_REJECT_UNAUTHORIZED: "0" },
     }).on("exit", ok);
   });

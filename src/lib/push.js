@@ -161,6 +161,85 @@ export function accrocheAmis(demandes) {
   };
 }
 
+/**
+ * Ce que le service de push a RÉPONDU, en une ligne lisible.
+ *
+ * Pourquoi ça existe. web-push lève une erreur dont le `message` est toujours le
+ * même — « Received unexpected response code » — et met l'explication réelle
+ * dans `body`, que le journal jetait. Résultat : sept échecs quotidiens
+ * rapportés comme « HTTP 400 » sans un mot sur la cause, donc indiagnostiquables.
+ *
+ * Chaque service a son format, et aucun n'est celui du voisin :
+ *   Apple    {"reason":"BadDeviceToken"}
+ *   FCM      {"error":{"code":400,"message":"…","status":"INVALID_ARGUMENT"}}
+ *   Mozilla  {"code":400,"errno":110,"error":"Bad Request","message":"…"}
+ * D'où la liste de pistes plutôt qu'un champ unique. `errno` est conservé parce
+ * que chez Mozilla c'est lui qui distingue « abonnement invalide » de « en-tête
+ * de chiffrement invalide » — deux causes opposées sous le même HTTP 400.
+ *
+ * Un corps illisible n'est pas une erreur : on rend le texte brut resserré,
+ * ce qui vaut toujours mieux que rien.
+ */
+export function resumerCorps(corps) {
+  if (corps === null || corps === undefined) return "";
+  const texte = String(corps).trim();
+  if (!texte) return "";
+  try {
+    const j = JSON.parse(texte);
+    if (j && typeof j === "object") {
+      const pistes = [
+        j.reason,
+        j.message,
+        j.error && j.error.message,
+        typeof j.error === "string" ? j.error : null,
+        j.error && j.error.status,
+        j.errno !== undefined && j.errno !== null ? "errno " + j.errno : null,
+      ];
+      const vues = new Set(), retenues = [];
+      for (const p of pistes) {
+        if (!p) continue;
+        const s = String(p).replace(/\s+/g, " ").trim();
+        if (!s || vues.has(s)) continue;
+        vues.add(s); retenues.push(s);
+      }
+      if (retenues.length) return retenues.join(" / ").slice(0, 200);
+    }
+  } catch (e) { /* pas du JSON : on retombe sur le texte brut */ }
+  return texte.replace(/\s+/g, " ").slice(0, 200);
+}
+
+/**
+ * Combien d'abonnés par SERVICE de push, et sur quelles longueurs d'endpoint.
+ *
+ * `platform` ne répond pas à la question : elle est déclarée par l'app d'après
+ * l'agent utilisateur (`ios`, `android`, `desktop`), alors qu'un échec en masse
+ * se lit par service — Apple, FCM et Mozilla n'ont ni les mêmes exigences ni les
+ * mêmes messages d'erreur. Sans ce découpage, « 2 réussis, 7 en 400 » ne dit pas
+ * si la frontière est un service ou un hasard.
+ *
+ * Les longueurs sont là pour une panne précise : un `endpoint` tronqué à
+ * l'écriture (colonne trop courte, copie partielle) produit un jeton refusé par
+ * le service — donc un 400 — et se repère à un écart de longueur au sein d'un
+ * même hôte, où tous les endpoints font normalement la même taille à quelques
+ * caractères près.
+ */
+export function repartitionHotes(abonnes) {
+  const parHote = new Map();
+  for (const a of abonnes || []) {
+    let hote = "?";
+    try { hote = new URL(a.endpoint).host; } catch (e) { /* endpoint illisible */ }
+    let e = parHote.get(hote);
+    if (!e) { e = { hote, nombre: 0, longueurMin: Infinity, longueurMax: 0, plateformes: {} }; parHote.set(hote, e); }
+    e.nombre++;
+    const n = a && typeof a.endpoint === "string" ? a.endpoint.length : 0;
+    e.longueurMin = Math.min(e.longueurMin, n);
+    e.longueurMax = Math.max(e.longueurMax, n);
+    const p = (a && a.platform) || "?";
+    e.plateformes[p] = (e.plateformes[p] || 0) + 1;
+  }
+  return [...parHote.values()].sort(function(x, y){ return y.nombre - x.nombre || x.hote.localeCompare(y.hote); });
+}
+
 /** Regroupe des lignes par la valeur d'une clé. */
 export function grouperPar(lignes, cle) {
   const out = new Map();
