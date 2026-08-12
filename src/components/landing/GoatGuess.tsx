@@ -1164,12 +1164,37 @@ type Props = {
   onClose: () => void;
 };
 
-const DEVIN_IMAGES = [
-  "/devin-1.png?v=3",
-  "/devin-2.png?v=3",
-  "/devin-3.png?v=3",
-  "/devin-4.png?v=3",
-];
+// LES QUATRE POSES RACONTENT UNE PROGRESSION, et le jeu s'en sert au lieu de
+// tirer au hasard. Avec l'ancien devin, les quatre dessins étaient quatre
+// variantes de « il réfléchit » : l'ordre n'avait aucune importance. Le nouveau
+// va des mains ouvertes aux éclairs, et sortir la pose du triomphe pendant la
+// question 1 se voit tout de suite.
+//
+// `.webp` et non `.png` : les fichiers d'origine pèsent 2,4 à 3 Mo pièce, soit
+// 10,6 Mo pour quatre images de mascotte sur une app qu'on installe et qui doit
+// s'ouvrir en 4G. Réduits à 832 px de large — 270 x 3, la densité la plus élevée
+// qui existe — et encodés en WebP, ils tombent à 788 Ko en tout, sans différence
+// visible à la taille d'affichage. Voir scripts/devin-images.mjs.
+const DEVIN = {
+  invite: "/devin-1.webp",   // mains ouvertes : « pense à ton joueur »
+  concentre: "/devin-2.webp", // il tient sa capuche, tête baissée
+  sait: "/devin-3.webp",     // doigt sur la bouche, sourire, oeil doré
+  triomphe: "/devin-4.webp", // poings serrés, éclairs
+} as const;
+
+/**
+ * La pose que porte chaque moment de la partie.
+ *
+ * « lost » reprend la pose de concentration et NON les éclairs : le devin vient
+ * de se tromper, lui faire lever les poings serait à contre-emploi.
+ */
+function poseDuMoment(phase: Phase): string {
+  if (phase === "asking") return DEVIN.concentre;
+  if (phase === "guessing") return DEVIN.sait;
+  if (phase === "won") return DEVIN.triomphe;
+  if (phase === "lost") return DEVIN.concentre;
+  return DEVIN.invite;
+}
 
 const DevinAvatar = ({
   src,
@@ -1197,21 +1222,12 @@ const DevinAvatar = ({
 };
 
 export const GoatGuess = ({ onClose }: Props) => {
-  const [devinIdx, setDevinIdx] = useState(() =>
-    Math.floor(Math.random() * DEVIN_IMAGES.length)
-  );
-  const advanceDevin = useCallback(() => {
-    setDevinIdx((prev) => {
-      if (DEVIN_IMAGES.length <= 1) return prev;
-      let next = prev;
-      while (next === prev) {
-        next = Math.floor(Math.random() * DEVIN_IMAGES.length);
-      }
-      return next;
-    });
-  }, []);
-  const devinSrc = DEVIN_IMAGES[devinIdx];
   const [gamePhase, setGamePhase] = useState<Phase>("intro");
+  const devinSrc = poseDuMoment(gamePhase);
+  // `onAdvanceDevin` est appelé à chaque réponse. Il ne change plus la pose —
+  // c'est la phase qui la porte — mais on garde le point d'accroche : c'est là
+  // que viendrait une réaction ponctuelle si on en veut une un jour.
+  const advanceDevin = useCallback(() => {}, []);
   // Écrans à contenu dense (carte joueur) : on réduit la mascotte mobile pour
   // que tout tienne sans scroller.
   const compactMobileDevin =
