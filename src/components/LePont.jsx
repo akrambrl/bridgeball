@@ -25,6 +25,7 @@ import { clePaire, pairesRetenues, tirerEnEvitant, memoriser } from "../lib/tira
 // fichier pour la raison d'être des deux niveaux de correspondance.
 import { pseudoInterdit } from "../lib/pseudo";
 import { pushARetransmettre } from "../lib/push.js";
+import { handlersDeTap } from "../lib/tap.js";
 // Vocabulaire foot en six langues : la base est écrite en français, l'affichage
 // ne doit jamais montrer la clé telle quelle.
 import { choisir as choisirMot, nomPays, nomPoste, nomPosteLong, nomLigue,
@@ -10402,7 +10403,7 @@ export default function LePont() {
                 {duelSug.length > 0 && (
                   <div style={{marginTop:10,background:G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,overflow:"hidden"}}>
                     {duelSug.map(function(p){return(
-                      <div key={p.name} onClick={function(){duelSubmitAnswer(p.name);}} style={{padding:"11px 14px",cursor:"pointer",borderBottom:"2px solid rgba(8,17,9,.55)",fontSize:14,fontWeight:700,color:G.white}}>{p.name}</div>
+                      <div key={p.name} {...handlersDeTap(function(){duelSubmitAnswer(p.name);})} style={{padding:"11px 14px",cursor:"pointer",borderBottom:"2px solid rgba(8,17,9,.55)",fontSize:14,fontWeight:700,color:G.white}}>{p.name}</div>
                     );})}
                   </div>
                 )}
@@ -14700,7 +14701,7 @@ export default function LePont() {
                       {suggestions.length > 0 && (
                         <div style={{marginTop:12,background:G.encre,border:G.traitFin,borderRadius:12,boxShadow:G.ombre,maxHeight:180,overflowY:"auto"}}>
                           {suggestions.map(function(p){return(
-                            <div key={p.name} onClick={function(){ggSubmitAnswer(p.name);}} style={{padding:"10px 14px",cursor:"pointer",borderBottom:G.traitFin,fontSize:14,fontWeight:800,color:G.creme,transition:"background .1s"}} onMouseEnter={function(e){e.currentTarget.style.background="rgba(245,194,43,.16)";}} onMouseLeave={function(e){e.currentTarget.style.background="transparent";}}>
+                            <div key={p.name} {...handlersDeTap(function(){ggSubmitAnswer(p.name);})} style={{padding:"10px 14px",cursor:"pointer",borderBottom:G.traitFin,fontSize:14,fontWeight:800,color:G.creme,transition:"background .1s"}} onMouseEnter={function(e){e.currentTarget.style.background="rgba(245,194,43,.16)";}} onMouseLeave={function(e){e.currentTarget.style.background="transparent";}}>
                               {p.name}
                             </div>
                           );})}

@@ -358,6 +358,12 @@ CHEMINS["battle-manches"] = [];
 // `duel-fin` photographie l'écran de résultat d'un défi (VICTOIRE / ÉGALITÉ /
 // DÉFAITE, les deux scores côte à côte). À lancer avec DEFI=1.
 CHEMINS["duel-fin"] = [];
+// `battle-suggestion` rejoue le défaut « je ne peux pas toucher la suggestion
+// tant que le clavier est ouvert », et surtout il en DÉMONTRE la cause : la perte
+// de focus referme le clavier, le layout compact se défait, et le clic arrive
+// après que la suggestion a bougé. Le contrôle mesure le déplacement puis vérifie
+// que le tap tactile, lui, est traité avant.
+CHEMINS["battle-suggestion"] = [];
 // `battle-clavier` rejoue le défaut du clavier : l'overlay doit continuer à
 // couvrir l'écran même quand la zone jouable se recale sur la fenêtre visible.
 CHEMINS["battle-clavier"] = [];
@@ -873,6 +879,141 @@ if (ecran === "grille-saisie") {
     }
   }
   await page.waitForTimeout(800);
+}
+
+
+if (ecran === "battle-suggestion") {
+  // Aller jusqu'à l'écran de saisie de GOAT Battle en solo.
+  const pastilles = page.locator("div[style*='border-radius: 5px'][style*='cursor: pointer']");
+  if (await pastilles.count() > 0) { await pastilles.nth(0).click(); await page.waitForTimeout(900); }
+  const carte = await page.locator("img[src*='-card']").first().boundingBox();
+  if (!carte) { console.error("carte du carrousel introuvable"); process.exit(1); }
+  await page.mouse.click(carte.x + carte.width / 2, carte.y + carte.height / 2);
+  await page.waitForTimeout(2000);
+  await page.getByRole("button", { name:/jouer solo/i }).first().click();
+  await page.waitForTimeout(2600);
+
+  // ── Un clavier logiciel PILOTABLE ───────────────────────────────────────────
+  // Il n'y en a pas dans un navigateur de test : on force ce que l'app OBSERVE,
+  // c'est-à-dire un visualViewport bien plus court que innerHeight ET un champ
+  // focalisé (sa détection exige les deux, voir LePont).
+  //
+  // L'état vit sur `window.__kb` et NON dans une variable de fermeture, et il ne
+  // change que sur appel explicite. Deux essais s'y sont perdus : la première
+  // version restaurait la hauteur depuis un écouteur de `blur`, et la partie
+  // continuant de tourner pendant la mesure, la fin d'une manche remontait le
+  // champ, déclenchait ce blur, et défaisait la simulation avant qu'on la lise.
+  // Le contrôle annonçait alors « pas de déplacement mesuré » — un faux négatif
+  // parfaitement crédible.
+  //
+  // Autre écueil, corrigé ici : patcher les hauteurs ne suffit pas, l'app ne
+  // recalcule que sur un ÉVÉNEMENT. Sans le `resize`, l'écart était bien de
+  // 512 px et le layout restait pourtant large.
+  await page.evaluate(() => {
+    // L'accueil reste MONTÉ sous l'overlay : `querySelector("input")` visait son
+    // champ « Code salle » et non celui de la partie — premier essai perdu là.
+    window.__champJeu = () => [...document.querySelectorAll("input")]
+      .find((e) => /nom du joueur|player name|spielername|nome del|nome do|nombre del/i.test(e.placeholder || ""));
+    window.__kb = { ouvert: false };
+    const vv = window.visualViewport;
+    Object.defineProperty(vv, "height", {
+      get: () => (window.__kb.ouvert ? 420 : 932), configurable: true });
+    Object.defineProperty(vv, "offsetTop", { value: 0, configurable: true });
+    Object.defineProperty(window, "innerHeight", { value: 932, configurable: true });
+  });
+  const clavier = (ouvert) => page.evaluate((o) => {
+    window.__kb.ouvert = o;
+    const champ = window.__champJeu();
+    if (champ) { if (o) champ.focus(); else champ.blur(); }
+    window.visualViewport.dispatchEvent(new Event("resize"));
+  }, ouvert);
+  const mesurerSuggestion = () => page.evaluate(() => {
+    const sug = [...document.querySelectorAll("div")].find(e =>
+      e.children.length === 0 && /di mar/i.test(e.textContent || ""));
+    if (!sug) return null;
+    const r = sug.getBoundingClientRect();
+    return { texte: (sug.textContent || "").trim(),
+             x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) };
+  });
+  // L'indication « les DEUX clubs » n'est rendue que si !compact : c'est le
+  // témoin le plus direct du layout, et il ne dépend d'aucune mesure de pixels.
+  const layout = () => page.evaluate(() => ({
+    ecart: Math.round(window.innerHeight - window.visualViewport.height),
+    compact: !/joué dans les DEUX clubs/i.test(document.body.innerText),
+  }));
+
+  await page.getByPlaceholder(/nom du joueur/i).first().fill("di mari");
+  await page.waitForTimeout(500);
+  await clavier(true);
+  await page.waitForTimeout(500);
+
+  const l1 = await layout();
+  console.log("clavier ouvert  → écart " + l1.ecart + " px, layout compact : " + l1.compact);
+  const avant = await mesurerSuggestion();
+  if (!avant) { console.error("suggestion introuvable"); process.exit(1); }
+  console.log("   suggestion « " + avant.texte + " » à y=" + avant.y);
+
+  // ── LA DÉMONSTRATION : le clavier se referme, le layout se déplie, et que
+  // trouve-t-on aux coordonnées où le doigt avait appuyé ? C'est là que le clic
+  // d'origine atterrissait, après coup.
+  await clavier(false);
+  await page.waitForTimeout(600);
+  const l2 = await layout();
+  const apres = await mesurerSuggestion();
+  const dessous = await page.evaluate((pt) => {
+    const e = document.elementFromPoint(pt.x, pt.y);
+    return (e ? e.textContent || "" : "").trim().slice(0, 34);
+  }, avant);
+  console.log("clavier fermé   → écart " + l2.ecart + " px, layout compact : " + l2.compact);
+  const decalage = apres ? apres.y - avant.y : null;
+  console.log("   la suggestion est passée à y=" + (apres ? apres.y : "?")
+    + (decalage == null ? "" : "  (déplacée de " + decalage + " px)"));
+  console.log("   à y=" + avant.y + ", là où était le doigt : « " + dessous + " »");
+  console.log(l1.compact && decalage && Math.abs(decalage) > 20
+    ? "✅ défaut reproduit : un clic distribué après le dépliage tombe " + Math.abs(decalage) + " px à côté"
+    : "⚠️ mécanisme non reproduit ici (compact " + l1.compact + ", décalage " + decalage + " px)");
+
+  // ── Et le tap tactile, qui doit être traité AVANT tout déplacement.
+  await page.getByPlaceholder(/nom du joueur/i).first().fill("di mari");
+  await page.waitForTimeout(500);
+  await clavier(true);
+  await page.waitForTimeout(500);
+
+  const tap = await page.evaluate(() => {
+    const sug = [...document.querySelectorAll("div")].find(e =>
+      e.children.length === 0 && /di mar/i.test(e.textContent || ""));
+    if (!sug) return { erreur: "suggestion disparue avant le tap" };
+    const r = sug.getBoundingClientRect();
+    const x = r.left + r.width / 2, y = r.top + r.height / 2;
+    const toucher = () => new Touch({ identifier: 1, target: sug, clientX: x, clientY: y });
+    const envoyer = (type, avecTouche) => {
+      const e = new TouchEvent(type, { bubbles: true, cancelable: true,
+        touches: avecTouche ? [toucher()] : [], changedTouches: [toucher()] });
+      sug.dispatchEvent(e);
+      return e.defaultPrevented;
+    };
+    envoyer("touchstart", true);
+    return { empeche: envoyer("touchend", false) };
+  });
+  await page.waitForTimeout(1000);
+
+  const apresTap = await page.evaluate(() => ({
+    sugEncoreLa: [...document.querySelectorAll("div")].some(e =>
+      e.children.length === 0 && /di mar/i.test(e.textContent || "")),
+    traitee: /mauvaise réponse|wrong answer|trouvé|found/i.test(document.body.innerText),
+    saisie: window.__champJeu()?.value ?? null,
+  }));
+  if (tap.erreur) { console.log("❌ " + tap.erreur); }
+  else {
+    console.log(tap.empeche
+      ? "✅ l'action par défaut est empêchée : le focus reste, donc rien ne se déplace"
+      : "❌ l'action par défaut passe encore — le focus part et tout se déplace");
+    const reagi = !apresTap.sugEncoreLa || apresTap.traitee || apresTap.saisie !== "di mari";
+    console.log(reagi
+      ? "✅ le tap est pris en compte — liste refermée : " + !apresTap.sugEncoreLa
+        + ", réponse traitée : " + apresTap.traitee + ", saisie : " + JSON.stringify(apresTap.saisie)
+      : "❌ le tap ne déclenche rien : la suggestion reste et la saisie est inchangée");
+  }
 }
 
 if (ecran === "battle-clavier") {

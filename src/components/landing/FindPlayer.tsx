@@ -13,6 +13,7 @@ import { G, posterText, btn, fondCharte, areneCharte, ligneCharte } from "@/lib/
 import { chercheJoueurs } from "@/lib/nom";
 import { nettoyerVus } from "@/lib/tirage.js";
 import { parisDay, poolDevinette, joueurDuJour, MODERN_MIN_BY, nbClubs } from "@/lib/devinette.js";
+import { handlersDeTap } from "@/lib/tap.js";
 
 const SPELL_NAMES = Object.keys(CLUB_SPELLS);
 
@@ -1000,7 +1001,7 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
             {suggestions.length > 0 && (
               <div style={{ position: "absolute", top: "100%", left: 0, right: 0, zIndex: 10, marginTop: 6, background: G.nuit, border: G.trait, borderRadius: G.rayon, maxHeight: "min(50vh, 320px)", overflowY: "auto", WebkitOverflowScrolling: "touch" as any, boxShadow: G.ombre }}>
                 {suggestions.map(s => (
-                  <button key={s.name} onClick={() => submitGuess(s)} style={{ display: "flex", width: "100%", alignItems: "center", justifyContent: "space-between", gap: 8, padding: "11px 14px", background: "transparent", border: "none", borderBottom: "2px solid rgba(8,17,9,.55)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", textAlign: "left" }}>
+                  <button key={s.name} {...handlersDeTap(() => submitGuess(s))} style={{ display: "flex", width: "100%", alignItems: "center", justifyContent: "space-between", gap: 8, padding: "11px 14px", background: "transparent", border: "none", borderBottom: "2px solid rgba(8,17,9,.55)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", textAlign: "left" }}>
                     <span>{s.name}</span>
                     <span style={{ fontSize: 15 }}>{s.nationalities[0] && NAT_FLAG[s.nationalities[0]] ? NAT_FLAG[s.nationalities[0]] : ""}</span>
                   </button>
