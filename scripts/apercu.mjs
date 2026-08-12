@@ -280,6 +280,10 @@ const CHEMINS = {
   partie:     [],   // idem, puis « Jouer solo »
   collection: [],   // via le profil, puis le bloc des cartes
   compte:     [],   // via le profil, puis « Mon compte »
+  // `comment-jouer` : le tutoriel REVU depuis le menu du profil. Écran à part
+  // parce que le défaut était là — le tutoriel est monté dans le rendu de
+  // l'accueil, donc le clic depuis le profil n'affichait rien.
+  "comment-jouer": [],
   "partie-fin": [], // une partie solo, puis on passe jusqu'a la fin de manche
   "partie-faux": [], // une partie solo, puis une reponse fausse : le bandeau
   "mercato-faux": [], // The Mercato, puis une reponse fausse
@@ -471,11 +475,37 @@ if (ecran === "partie-fin") {
   }
   await page.waitForTimeout(1500);
 }
-if (ecran === "profil") {
+// ETAPE=2 avance le carrousel du tutoriel de deux « Suivant ». Chaque diapo
+// porte un accent différent (pelouse, or, maillot, ciel) : sans ça on ne
+// photographiait jamais que la première, et les trois autres restaient
+// invérifiables.
+if (ecran === "tutoriel" && process.env.ETAPE) {
+  for (let k = 0; k < Number(process.env.ETAPE); k++) {
+    const suivant = page.getByRole("button", { name: /suivant|next|weiter|avanti|próximo|siguiente/i }).first();
+    if (!(await suivant.count())) break;
+    await suivant.click({ force: true }).catch(() => {});
+    await page.waitForTimeout(500);
+  }
+}
+
+if (ecran === "profil" || ecran === "comment-jouer") {
   // L'avatar de l'en-tête ouvre le profil ; c'est une image cliquable, pas un
   // bouton, donc getByRole ne la voit pas.
   await page.locator("img[src*='/cards/']").first().click();
   await page.waitForTimeout(1600);
+}
+
+if (ecran === "comment-jouer") {
+  const b = page.getByRole("button", { name: /comment jouer|how to play|wie man spielt|come si gioca|como jogar|cómo se juega/i }).first();
+  await b.scrollIntoViewIfNeeded().catch(() => {});
+  await b.click({ force: true }).catch(() => {});
+  await page.waitForTimeout(1400);
+  // Le contrôle qui compte : le carrousel est-il VISIBLE ? Un clic qui posait
+  // showTutorial sans rien monter passait inaperçu jusqu'au téléphone.
+  const vu = await page.getByRole("button", { name: /passer|skip|überspringen|salta|pular|pasar/i })
+    .first().isVisible().catch(() => false);
+  console.log(vu ? "tutoriel ouvert ✅" : "⚠️ rien ne s'affiche — le tutoriel n'est pas monté sur cet écran");
+  if (!vu) process.exitCode = 1;
 }
 
 if (ecran === "grille" || ecran === "grille-remplie" || ecran === "grille-fin" || ecran === "grille-saisie") {

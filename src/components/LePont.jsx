@@ -11906,31 +11906,40 @@ export default function LePont() {
 
 
   // ── TUTORIAL ──
+  // Les accents sont ceux que les feuilles de règles donnent déjà aux modes
+  // (RULES_DATA) : pelouse pour le jeu de base, or pour le mercato, maillot pour
+  // ce qui a un compte à rebours, ciel pour l'adversaire. Deux diapos portaient
+  // des teintes HORS CHARTE — un bleu pastel #60a5fa et un violet #c084fc, une
+  // couleur qui n'existe nulle part ailleurs dans l'app.
   const TUTORIAL_BASE = [
-    { icon:"⚽", accent:G.pelouseClaire, t:{
+    { icon:"⚽", accent:G.pelouse, t:{
       fr:{title:"GOAT PLUG",subtitle:"Trouve le joueur qui relie 2 clubs",desc:"On te montre 2 clubs. Trouve le joueur qui a joué dans les deux !"},
       en:{title:"GOAT PLUG",subtitle:"Find the player linking 2 clubs",desc:"We show you 2 clubs. Find the player who played for both!"},
       de:{title:"GOAT PLUG",subtitle:"Finde den Spieler, der 2 Klubs verbindet",desc:"Wir zeigen dir 2 Klubs. Finde den Spieler, der in beiden gespielt hat!"},
       it:{title:"GOAT PLUG",subtitle:"Trova il giocatore che collega 2 club",desc:"Ti mostriamo 2 club. Trova il giocatore che ha giocato in entrambi!"},
-      pt:{title:"GOAT PLUG",subtitle:"Encontre o jogador que liga 2 clubes",desc:"Mostramos 2 clubes. Encontre o jogador que jogou nos dois!"} } },
-    { icon:"⛓", accent:"#60a5fa", t:{
+      pt:{title:"GOAT PLUG",subtitle:"Encontre o jogador que liga 2 clubes",desc:"Mostramos 2 clubes. Encontre o jogador que jogou nos dois!"},
+      es:{title:"GOAT PLUG",subtitle:"Encuentra al jugador que une 2 clubes",desc:"Te mostramos 2 clubes. ¡Encuentra al jugador que jugó en los dos!"} } },
+    { icon:"⛓", accent:G.projecteur, t:{
       fr:{title:"GOAT MERCATO",subtitle:"Enchaîne joueur → club → joueur",desc:"Un joueur est affiché. Tape un club où il a joué, puis un autre joueur de ce club… et ainsi de suite !"},
       en:{title:"GOAT MERCATO",subtitle:"Chain player → club → player",desc:"A player is shown. Type a club they played for, then another player from that club… and so on!"},
       de:{title:"GOAT MERCATO",subtitle:"Verkette Spieler → Klub → Spieler",desc:"Ein Spieler wird angezeigt. Nenne einen seiner Klubs, dann einen anderen Spieler dieses Klubs… und so weiter!"},
       it:{title:"GOAT MERCATO",subtitle:"Concatena giocatore → club → giocatore",desc:"Viene mostrato un giocatore. Scrivi un club in cui ha giocato, poi un altro giocatore di quel club… e così via!"},
-      pt:{title:"GOAT MERCATO",subtitle:"Encadeie jogador → clube → jogador",desc:"Um jogador é mostrado. Digite um clube dele, depois outro jogador desse clube… e assim por diante!"} } },
-    { icon:"⚡", accent:G.projecteur, t:{
+      pt:{title:"GOAT MERCATO",subtitle:"Encadeie jogador → clube → jogador",desc:"Um jogador é mostrado. Digite um clube dele, depois outro jogador desse clube… e assim por diante!"},
+      es:{title:"GOAT MERCATO",subtitle:"Encadena jugador → club → jugador",desc:"Aparece un jugador. Escribe un club donde jugó, luego otro jugador de ese club… ¡y así sucesivamente!"} } },
+    { icon:"⚡", accent:G.maillot, t:{
       fr:{title:"DÉFI DU JOUR",subtitle:"Un joueur mystère chaque jour",desc:"Chaque jour, un nouveau joueur mystère à deviner. Reviens tous les jours pour ne pas perdre ta série !"},
       en:{title:"DAILY CHALLENGE",subtitle:"A mystery player every day",desc:"Every day, a new mystery player to guess. Come back daily to keep your streak alive!"},
       de:{title:"TAGES-CHALLENGE",subtitle:"Jeden Tag ein Rätselspieler",desc:"Jeden Tag ein neuer Rätselspieler zum Erraten. Komm täglich zurück, um deine Serie zu halten!"},
       it:{title:"SFIDA DEL GIORNO",subtitle:"Un giocatore misterioso ogni giorno",desc:"Ogni giorno un nuovo giocatore misterioso da indovinare. Torna ogni giorno per non perdere la serie!"},
-      pt:{title:"DESAFIO DO DIA",subtitle:"Um jogador misterioso todo dia",desc:"Todo dia, um novo jogador misterioso para adivinhar. Volte diariamente para manter sua sequência!"} } },
-    { icon:"👥", accent:"#c084fc", t:{
+      pt:{title:"DESAFIO DO DIA",subtitle:"Um jogador misterioso todo dia",desc:"Todo dia, um novo jogador misterioso para adivinhar. Volte diariamente para manter sua sequência!"},
+      es:{title:"RETO DEL DÍA",subtitle:"Un jugador misterioso cada día",desc:"Cada día, un nuevo jugador misterioso que adivinar. ¡Vuelve todos los días para no perder tu racha!"} } },
+    { icon:"👥", accent:G.ciel, t:{
       fr:{title:"MULTIJOUEUR",subtitle:"Joue avec tes potes",desc:"Crée une salle, partage le code, et affrontez-vous en temps réel jusqu'à 8 joueurs !"},
       en:{title:"MULTIPLAYER",subtitle:"Play with your friends",desc:"Create a room, share the code, and battle in real time with up to 8 players!"},
       de:{title:"MEHRSPIELER",subtitle:"Spiel mit deinen Freunden",desc:"Erstelle einen Raum, teile den Code und tretet in Echtzeit mit bis zu 8 Spielern an!"},
       it:{title:"MULTIGIOCATORE",subtitle:"Gioca con i tuoi amici",desc:"Crea una stanza, condividi il codice e sfidatevi in tempo reale fino a 8 giocatori!"},
-      pt:{title:"MULTIJOGADOR",subtitle:"Jogue com seus amigos",desc:"Crie uma sala, compartilhe o código e enfrentem-se em tempo real com até 8 jogadores!"} } },
+      pt:{title:"MULTIJOGADOR",subtitle:"Jogue com seus amigos",desc:"Crie uma sala, compartilhe o código e enfrentem-se em tempo real com até 8 jogadores!"},
+      es:{title:"MULTIJUGADOR",subtitle:"Juega con tus colegas",desc:"¡Crea una sala, comparte el código y enfrentaos en tiempo real hasta 8 jugadores!"} } },
   ];
   const TUTORIAL_SLIDES = TUTORIAL_BASE.map(function(s){ return Object.assign({ icon:s.icon, accent:s.accent }, s.t[lang] || s.t.en); });
   // Le tutoriel s'affiche comme un overlay par-dessus l'écran d'accueil
@@ -11939,29 +11948,52 @@ export default function LePont() {
   const tutorialOverlay = showTutorial ? (() => {
     const sl = TUTORIAL_SLIDES[tutorialStep];
     const closeTutorial = () => { setShowTutorial(false); try{localStorage.setItem("bb_tutorial_done","1");}catch{} };
+    // Sur l'or, un aplat d'or disparaît : l'encre est la seule lettre lisible
+    // (11,5). Dans un panneau de nuit, à l'inverse, tout se lit — d'où le texte
+    // sur le bouton, encre quand l'aplat est doré, crème sinon. C'est la règle
+    // que suit déjà la feuille de règles des modes.
+    const surAccent = sl.accent === G.projecteur ? G.encre : G.white;
     return (
       <div style={{position:"fixed",inset:0,zIndex:9998,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 20px",background:"rgba(8,17,9,.86)",animation:"fadeIn .3s ease"}}>
-        {/* Panneau de la charte : aplat de nuit, trait d'encre plein, ombre
-            dure, rayon franc. Chaque diapo portait auparavant son propre aplat
-            teinté (#1a4a2e, #1a2a4a…), rayon 28 et filet fin — le vocabulaire
-            d'avant la charte, et le dernier endroit de l'app où il restait.
-            C'est l'accent qui distingue les diapos, pas le fond. */}
-        <div style={{position:"relative",zIndex:1,width:"100%",maxWidth:380,background:G.nuit,borderRadius:G.rayonL,padding:"36px 24px 28px",border:G.trait,textAlign:"center",boxShadow:G.ombreL}}>
-          <div style={{display:"flex",justifyContent:"center",gap:8,marginBottom:28}}>
-            {TUTORIAL_SLIDES.map((_,i)=>(<div key={i} style={{width:i===tutorialStep?24:8,height:8,borderRadius:4,background:i===tutorialStep?sl.accent:"rgba(255,255,255,.2)",transition:"all .3s"}}/>))}
+        {/* Le panneau était déjà passé au nuit et au trait d'encre, mais son
+            INTÉRIEUR gardait le vocabulaire d'avant : titre sans cerne, texte
+            gris à 70 %, boutons en aplat nu, « Passer » à 30 % d'opacité. Il
+            reprend ici, pièce par pièce, celui de la feuille de règles des
+            modes — pastille cerclée, titre à l'encre, sur-titre doré, bloc
+            enfoncé pour le texte, boutons `btn`. */}
+        <div style={{position:"relative",zIndex:1,width:"100%",maxWidth:380,background:G.nuit,borderRadius:G.rayonL,padding:"28px 22px 24px",border:G.trait,textAlign:"center",boxShadow:G.ombreL}}>
+          {/* Les pastilles de progression : aplat cerclé d'encre comme tout le
+              reste, et non un rectangle de blanc translucide. */}
+          <div style={{display:"flex",justifyContent:"center",gap:7,marginBottom:22}}>
+            {TUTORIAL_SLIDES.map((_,i)=>(<div key={i} style={{width:i===tutorialStep?26:9,height:9,borderRadius:5,
+              background:i===tutorialStep?sl.accent:G.encre,border:"1.5px solid "+G.encre,transition:"all .3s"}}/>))}
           </div>
-          <div style={{fontSize:56,marginBottom:16}}>{sl.icon}</div>
-          <div style={{...posterText(32),color:"#fff",letterSpacing:2,marginBottom:6}}>{sl.title}</div>
-          <div style={{fontSize:13,color:sl.accent,fontWeight:700,letterSpacing:1,marginBottom:16,textTransform:"uppercase"}}>{sl.subtitle}</div>
-          <div style={{fontSize:15,color:"rgba(255,255,255,.7)",lineHeight:1.6,marginBottom:32}}>{sl.desc}</div>
+          {/* L'icône dans la pastille de la charte, à l'aplat de l'accent :
+              posée nue à 56 px elle flottait sans appartenir au panneau. */}
+          <div style={{...pastilleCharte(sl.accent,64),margin:"0 auto 14px",fontSize:32}}>{sl.icon}</div>
+          {/* 33 et non 31 : posterText ne pose son contour d'encre et son ombre
+              dure qu'à partir de 32 px — en dessous, on récupère un lettrage nu
+              qui perd tout le relief d'affiche. Et en CRÈME, pas à l'accent :
+              la charte est explicite, la pelouse est « faite pour être un aplat,
+              pas une couleur de texte » (5,1 sur le panneau contre 14,9 pour le
+              crème). L'accent vit donc dans les formes cerclées — la pastille,
+              la pastille de progression, l'aplat du bouton. */}
+          <div style={{...posterText(33,G.creme),marginBottom:7}}>{sl.title}</div>
+          <div style={{...posterText(1,G.projecteur,0),fontSize:12,letterSpacing:2.4,textTransform:"uppercase",lineHeight:1.35,marginBottom:16}}>{sl.subtitle}</div>
+          {/* Le mode d'emploi dans un bloc ENFONCÉ, comme la liste des règles :
+              c'est ce qui le détache du panneau au lieu de le diluer dedans. */}
+          <div style={{background:"rgba(8,17,9,.5)",border:G.trait,borderRadius:G.rayon,padding:"14px 16px",marginBottom:20,
+            boxShadow:"inset 2px 2px 0 rgba(8,17,9,.35)",fontSize:14.5,color:G.creme,lineHeight:1.5,textAlign:"left",fontWeight:500}}>{sl.desc}</div>
           <div style={{display:"flex",gap:10}}>
-            {tutorialStep > 0 && <button onClick={()=>setTutorialStep(s=>s-1)} style={{flex:1,padding:"14px",background:G.encre,color:"rgba(242,231,206,.72)",border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>{tr("← Retour","← Back","← Zurück","← Indietro","← Voltar","← Volver")}</button>}
+            {tutorialStep > 0 && <button onClick={()=>setTutorialStep(s=>s-1)} style={{...btn(G.encre,G.creme,15),flex:1,padding:"13px"}}>{tr("← Retour","← Back","← Zurück","← Indietro","← Voltar","← Volver")}</button>}
             {tutorialStep < TUTORIAL_SLIDES.length-1
-              ? <button onClick={()=>setTutorialStep(s=>s+1)} style={{flex:2,padding:"14px",background:sl.accent,color:G.encre,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800}}>{tr("Suivant →","Next →","Weiter →","Avanti →","Próximo →","Siguiente →")}</button>
-              : <button onClick={closeTutorial} style={{flex:2,padding:"14px",background:sl.accent,color:G.encre,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800}}>{tr("C'est parti 🚀","Let's go 🚀","Los geht's 🚀","Si parte 🚀","Vamos lá 🚀","¡Vamos! 🚀")}</button>
+              ? <button onClick={()=>setTutorialStep(s=>s+1)} style={{...btn(sl.accent,surAccent,17),flex:2,padding:"13px"}}>{tr("Suivant →","Next →","Weiter →","Avanti →","Próximo →","Siguiente →")}</button>
+              : <button onClick={closeTutorial} style={{...btn(sl.accent,surAccent,17),flex:2,padding:"13px"}}>{tr("C'est parti 🚀","Let's go 🚀","Los geht's 🚀","Si parte 🚀","Vamos lá 🚀","¡Vamos! 🚀")}</button>
             }
           </div>
-          {tutorialStep < TUTORIAL_SLIDES.length-1 && <button onClick={closeTutorial} style={{marginTop:16,background:"none",border:"none",color:"rgba(255,255,255,.3)",cursor:"pointer",fontFamily:G.font,fontSize:13}}>{tr("Passer","Skip","Überspringen","Salta","Pular","Pasar")}</button>}
+          {/* « Passer » était à 30 % d'opacité : une sortie de secours qu'on ne
+              voit pas n'en est pas une. Souligné, en crème atténué. */}
+          {tutorialStep < TUTORIAL_SLIDES.length-1 && <button onClick={closeTutorial} style={{marginTop:14,background:"none",border:"none",color:"rgba(242,231,206,.62)",cursor:"pointer",fontFamily:G.font,fontSize:13,letterSpacing:1,textDecoration:"underline",textUnderlineOffset:3}}>{tr("Passer","Skip","Überspringen","Salta","Pular","Pasar")}</button>}
         </div>
       </div>
     );
@@ -11981,14 +12013,21 @@ export default function LePont() {
         {/* Même panneau que le tutoriel qui la suit : c'est le premier écran
             que voit un nouveau joueur, il ne peut pas être dans un autre style
             que l'app. */}
-        <div style={{position:"relative",zIndex:1,width:"100%",maxWidth:380,background:G.nuit,borderRadius:G.rayonL,padding:"32px 24px 24px",border:G.trait,textAlign:"center",boxShadow:G.ombreL}}>
-          <div style={{fontSize:56,marginBottom:16}}>🐐</div>
-          <div style={{...posterText(26),color:G.white,letterSpacing:1.2,marginBottom:14}}>
+        <div style={{position:"relative",zIndex:1,width:"100%",maxWidth:380,background:G.nuit,borderRadius:G.rayonL,padding:"28px 22px 22px",border:G.trait,textAlign:"center",boxShadow:G.ombreL}}>
+          {/* Même traitement que le tutoriel qu'elle enchaîne : pastille cerclée
+              plutôt qu'emoji nu, titre au relief d'affiche (posterTitre, qui
+              gère le passage à la ligne — le titre tient sur deux lignes et
+              posterText y recollerait l'ombre de la première), bloc enfoncé
+              pour le texte. Sans ça, les deux écrans du premier lancement
+              n'étaient pas dans le même style l'un que l'autre. */}
+          <div style={{...pastilleCharte(G.pelouse,64),margin:"0 auto 14px",fontSize:32}}>🐐</div>
+          <div style={{...posterTitre(29,G.creme),marginBottom:14}}>
             {tr("BIENVENUE SUR GOAT FC","WELCOME TO GOAT FC","WILLKOMMEN BEI GOAT FC","BENVENUTO SU GOAT FC","BEM-VINDO AO GOAT FC","BIENVENIDO A GOAT FC")}
           </div>
-          <div style={{fontSize:14,color:"rgba(255,255,255,.75)",lineHeight:1.6,marginBottom:20,textAlign:"left"}}>
+          <div style={{background:"rgba(8,17,9,.5)",border:G.trait,borderRadius:G.rayon,padding:"14px 16px",marginBottom:16,
+            boxShadow:"inset 2px 2px 0 rgba(8,17,9,.35)",fontSize:14,color:G.creme,lineHeight:1.55,textAlign:"left",fontWeight:500}}>
             {(function(){
-              const li = {padding:0}, ul = {paddingLeft:20,margin:"0 0 12px",color:"rgba(255,255,255,.65)",fontSize:13};
+              const ul = {paddingLeft:18,margin:0,color:"rgba(242,231,206,.8)",fontSize:13};
               const S = {color:G.pelouseClaire};
               const blocks = {
                 fr:<><p style={{margin:"0 0 12px"}}>Petit point sur tes données :</p><ul style={ul}><li style={{marginBottom:6}}>On stocke ton <strong style={S}>pseudo, scores et préférences</strong> localement</li><li style={{marginBottom:6}}>Pas de pub trackée, aucune donnée revendue</li><li>Tu peux supprimer ton compte à tout moment dans les paramètres</li></ul></>,
@@ -11996,16 +12035,17 @@ export default function LePont() {
                 de:<><p style={{margin:"0 0 12px"}}>Kurz zu deinen Daten:</p><ul style={ul}><li style={{marginBottom:6}}>Wir speichern deinen <strong style={S}>Benutzernamen, Scores und Einstellungen</strong> lokal</li><li style={{marginBottom:6}}>Kein Werbe-Tracking, keine Daten an Dritte verkauft</li><li>Du kannst dein Konto jederzeit in den Einstellungen löschen</li></ul></>,
                 it:<><p style={{margin:"0 0 12px"}}>Due parole sui tuoi dati:</p><ul style={ul}><li style={{marginBottom:6}}>Salviamo il tuo <strong style={S}>nome utente, punteggi e preferenze</strong> localmente</li><li style={{marginBottom:6}}>Nessun tracciamento pubblicitario, nessun dato venduto a terzi</li><li>Puoi eliminare il tuo account in qualsiasi momento nelle impostazioni</li></ul></>,
                 pt:<><p style={{margin:"0 0 12px"}}>Um aviso rápido sobre seus dados:</p><ul style={ul}><li style={{marginBottom:6}}>Armazenamos seu <strong style={S}>nome de usuário, pontuações e preferências</strong> localmente</li><li style={{marginBottom:6}}>Sem rastreamento de anúncios, nenhum dado vendido a terceiros</li><li>Você pode excluir sua conta a qualquer momento nas configurações</li></ul></>,
+                es:<><p style={{margin:"0 0 12px"}}>Un aviso rápido sobre tus datos:</p><ul style={ul}><li style={{marginBottom:6}}>Guardamos tu <strong style={S}>apodo, puntuaciones y preferencias</strong> en local</li><li style={{marginBottom:6}}>Sin publicidad rastreada, ningún dato revendido</li><li>Puedes borrar tu cuenta cuando quieras en los ajustes</li></ul></>,
               };
               return blocks[lang] || blocks.en;
             })()}
           </div>
-          <div style={{display:"flex",gap:8,fontSize:11,color:"rgba(255,255,255,.4)",marginBottom:18,justifyContent:"center"}}>
-            <a href="/privacy" target="_blank" rel="noopener noreferrer" style={{color:"rgba(255,255,255,.5)",textDecoration:"underline"}}>{tr("Politique de confidentialité","Privacy Policy","Datenschutz","Privacy","Privacidade","Política de privacidad")}</a>
-            <span>·</span>
-            <a href="/terms" target="_blank" rel="noopener noreferrer" style={{color:"rgba(255,255,255,.5)",textDecoration:"underline"}}>{tr("CGU","Terms","AGB","Termini","Termos","Términos")}</a>
+          <div style={{display:"flex",gap:8,fontSize:11.5,marginBottom:16,justifyContent:"center"}}>
+            <a href="/privacy" target="_blank" rel="noopener noreferrer" style={{color:"rgba(242,231,206,.62)",textDecoration:"underline",textUnderlineOffset:3}}>{tr("Politique de confidentialité","Privacy Policy","Datenschutz","Privacy","Privacidade","Política de privacidad")}</a>
+            <span style={{color:"rgba(242,231,206,.4)"}}>·</span>
+            <a href="/terms" target="_blank" rel="noopener noreferrer" style={{color:"rgba(242,231,206,.62)",textDecoration:"underline",textUnderlineOffset:3}}>{tr("CGU","Terms","AGB","Termini","Termos","Términos")}</a>
           </div>
-          <button onClick={closeWelcome} style={{width:"100%",padding:"14px",background:G.pelouse,color:G.encre,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800}}>
+          <button onClick={closeWelcome} style={{...btn(G.pelouse,G.white,17),width:"100%",padding:"13px"}}>
             {tr("J'ai compris 🐐","Got it 🐐","Verstanden 🐐","Ho capito 🐐","Entendi 🐐","Entendido 🐐")}
           </button>
         </div>
@@ -12795,7 +12835,13 @@ export default function LePont() {
         </button>
 
         {/* Comment jouer */}
-        <button onClick={()=>{setShowTutorial(true);setTutorialStep(0);}} style={{...ligneCharte,padding:"15px 16px",fontSize:15,fontWeight:800,gap:13}}>
+        {/* `setScreen("home")` est INDISPENSABLE, exactement comme pour « Mes
+            amis » et « Classement » juste au-dessus : le tutoriel est un
+            overlay monté dans le rendu de l'accueil (`if(screen==="home")`),
+            pas dans celui du profil. Sans ce retour, le clic posait bien
+            showTutorial=true mais rien ne s'affichait — et le tutoriel
+            surgissait plus tard, à la prochaine visite de l'accueil. */}
+        <button onClick={()=>{setShowTutorial(true);setTutorialStep(0);setScreen("home");}} style={{...ligneCharte,padding:"15px 16px",fontSize:15,fontWeight:800,gap:13}}>
           <span style={pastilleCharte(G.ciel)}>❓</span>
           <div style={{flex:1}}>
             <div>{tr("Comment jouer ?","How to play?","Wie man spielt?","Come si gioca?","Como jogar?","¿Cómo se juega?")}</div>
