@@ -38,7 +38,7 @@ const POOL: { pseudo: string; country: string }[] = [
 ];
 
 // Avatars : réutilise les visuels GOAT FC existants (joueurs en maillot)
-const AVATARS = ["/win1.png", "/win2.png", "/win3.png", "/win4.png", "/win5.png"];
+const AVATARS = ["/win1.webp", "/win2.webp", "/win3.webp", "/win4.webp", "/win5.webp"];
 
 // Hash stable pseudo → avatar (le même pseudo garde toujours le même visage)
 export function avatarFor(pseudo: string): string {
