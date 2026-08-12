@@ -13,6 +13,7 @@
     "test:watch": "vitest",
     "notif:essai": "tsx scripts/notif-devinette.essai.mjs && tsx scripts/notif-amis.essai.mjs",
     "notif:sec": "tsx scripts/notif-devinette.mjs --dry-run",
+    "stats:heures": "node scripts/heures-jeu.mjs",
     "notif:amis:sec": "tsx scripts/notif-amis.mjs --dry-run",
     "ios:sync": "npm run build && npx cap sync ios",
     "ios:open": "npx cap open ios"

@@ -11,10 +11,28 @@ name: Notification devinette
 
 on:
   schedule:
-    # 17:00 UTC = 19 h à Paris en été, 18 h en hiver. GitHub n'accepte que
-    # l'UTC ; une heure de décalage l'hiver est préférable à deux crons qui
-    # risqueraient d'envoyer deux fois le même jour.
-    - cron: "0 17 * * *"
+    # VISÉ : autour de midi à Paris. Mesuré, pas deviné — voir
+    # scripts/heures-jeu.mjs, sur 183 parties de devinette et 14 jours :
+    #
+    #   envoi à …   déjà joué   joueurs présents à cette heure
+    #      10 h        32 %                 1
+    #      12 h        40 %                 9
+    #      20 h        81 %                 7
+    #
+    # L'ancien envoi de 20 h arrivait APRÈS la partie pour quatre abonnés sur
+    # cinq : une relance qui annonce ce qui est déjà fait apprend surtout à ne
+    # plus l'ouvrir. Le matin tôt vide la case « déjà joué » mais ne trouve
+    # personne — ce public joue le midi, le soir et jusqu'à 2 h du matin. Midi
+    # garde 60 % de marge, rassemble le plus de monde avec 13 h, et laisse tout
+    # l'après-midi et la soirée pour jouer si la notification est balayée.
+    #
+    # 09:00 UTC et non 10:00 : GitHub ne garantit rien sur les tâches planifiées
+    # et les deux exécutions observées ont démarré 57 min après l'heure demandée
+    # (17:57 pour un cron à 17:00). L'arrivée réelle est donc attendue entre 11 h
+    # et 12 h à Paris en été, 10 h et 11 h en hiver — un décalage d'une heure
+    # l'hiver reste préférable à deux crons, qui risqueraient d'envoyer deux fois
+    # le même jour.
+    - cron: "0 9 * * *"
   workflow_dispatch:
     inputs:
       dry_run:

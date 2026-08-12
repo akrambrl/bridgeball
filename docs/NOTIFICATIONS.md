@@ -158,14 +158,64 @@ Depuis GitHub : **Actions → Notification devinette → Run workflow**, en lais
 
 ## Le cron
 
-`0 17 * * *` — 19 h à Paris en été, 18 h en hiver. GitHub n'accepte que l'UTC ;
-une heure de décalage l'hiver vaut mieux que deux crons, qui risqueraient
-d'envoyer deux fois le même jour.
+`0 9 * * *`, visant **midi à Paris**. Deux corrections par rapport à la lecture
+naïve du cron :
+
+- GitHub ne garantit rien sur l'heure des tâches planifiées. Les exécutions
+  observées ont démarré **57 minutes** après l'heure demandée (17:57 pour un cron
+  à 17:00), deux fois de suite. L'arrivée réelle est donc attendue entre 11 h et
+  12 h à Paris en été.
+- L'heure d'été. `9:00` UTC vaut 11 h à Paris en été et 10 h en hiver. Une heure
+  de décalage l'hiver vaut mieux que deux crons, qui risqueraient d'envoyer deux
+  fois le même jour.
 
 Garde-fou supplémentaire : le `tag` de la notification contient le jour
 (`goatfc-devinette-2026-08-11`). Deux notifications de même tag se **remplacent**
 sur l'appareil au lieu de s'empiler — même envoyée deux fois, la devinette
 n'apparaît qu'une fois.
+
+### Pourquoi midi, et pas 20 h ni 10 h
+
+L'envoi partait à 20 h. La question « et si le joueur a déjà fait la devinette ? »
+a une réponse chiffrée, que `npm run stats:heures -- --mode=devinette` recalcule à
+la demande (lecture seule, clé publique). Sur 183 parties et 14 jours :
+
+| envoi à | ont déjà joué | joueurs présents à cette heure |
+|---|---|---|
+| 8 h  | 27 % | 4 |
+| 10 h | 32 % | 1 |
+| 12 h | 40 % | 9 |
+| 13 h | 48 % | 9 |
+| 19 h | 76 % | 9 |
+| 20 h | 81 % | 7 |
+| 22 h | 95 % | 12 |
+
+À 20 h, **quatre notifications sur cinq arrivaient après la partie qu'elles
+annonçaient**. Une relance qui annonce ce qui est déjà fait n'agace pas seulement :
+elle apprend à ne plus ouvrir les suivantes, et c'est le canal entier qui se perd.
+
+Le matin très tôt vide la colonne « déjà joué » mais ne trouve personne : ce
+public joue le midi, le soir, et jusqu'à 2 h du matin — 22 joueurs distincts entre
+minuit et 2 h, contre 1 à 10 h. Midi garde 60 % de marge, rassemble le plus de
+monde avec 13 h, et laisse tout l'après-midi et la soirée pour jouer si la
+notification est balayée.
+
+Deux précautions de lecture, à garder si l'heure est rediscutée :
+
+- La distribution est **elle-même façonnée** par l'envoi de 20 h. L'effet est
+  faible — seules 14 des 183 parties tombent dans les deux heures qui suivent la
+  notification — et cette faiblesse est justement ce qui prouve que 20 h ne
+  fonctionnait pas.
+- Compter les **parties** ne suffit pas : quelques joueurs qui enchaînent les
+  manches créent un pic. Ce sont les **joueurs distincts** par heure qui décident.
+  La première mesure donnait 77 parties à 1 h du matin ; c'était bien 13 personnes
+  différentes, mais il fallait le vérifier.
+
+Il reste 40 % de notifications qui arrivent après coup. Les supprimer demande de
+savoir qui a **terminé** la devinette, ce que le serveur ignore : `trackPlay`
+signale l'**ouverture** du mode, pas sa fin. Filtrer là-dessus tairait la relance
+de celui qui a commencé et abandonné — précisément celui à qui elle sert. Le jour
+où ça vaudra le coup, il faudra d'abord enregistrer la fin de partie.
 
 ## Lire un échec d'envoi
 
