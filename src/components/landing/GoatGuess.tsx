@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { PLAYERS, RETIRED_PLAYERS, GG_WC_WINNERS, GG_CL_WINNERS, GG_BALLON_DOR, GG_BALLON_DOR_MULTI, GG_SHIRT_10 } from "../../players.jsx";
 import { CLUB_COLORS } from "../LePont.jsx";
 import { trackPlay } from "../../lib/track";
@@ -1679,6 +1679,95 @@ const IntroView = ({ onStart }: { onStart: () => void }) => (
   </div>
 );
 
+/**
+ * La question, AJUSTÉE pour tenir sur une ligne.
+ *
+ * Elle était figée à 30 px, donc « Vient-il d'un pays africain ? » se cassait en
+ * deux avec le « ? » seul sur la seconde ligne. On réduit le corps jusqu'à ce que
+ * le texte tienne, en le MESURANT — compter les caractères ne marche pas, la
+ * largeur dépend du dessin des lettres et de l'italique, et c'est déjà la leçon
+ * apprise sur les titres des cartes de mode (scripts/cartes-modes.mjs).
+ *
+ * UN PLANCHER, et il est assumé. La question la plus longue de la base fait 85
+ * signes (« A-t-il joué avec une protection sur le visage ou la tête… ») : la
+ * faire tenir sur une ligne de 374 px demanderait 8 px de corps, illisible. En
+ * dessous de MIN on repasse donc au retour à la ligne, à MIN. Sur les 978
+ * libellés des six langues, la médiane est à 28 signes — la très grande majorité
+ * tient sur une ligne sans même descendre beaucoup.
+ */
+// TROIS seuils et non deux, parce que deux forçaient un mauvais compromis.
+//   MAX             le corps de confort, celui des questions courtes ;
+//   PLANCHER_LIGNE  jusqu'où on accepte de descendre POUR TENIR SUR UNE LIGNE ;
+//   CORPS_REPLI     le corps utilisé quand une ligne est hors d'atteinte.
+//
+// Un plancher unique à 17 px laissait trois questions sur quatorze passer à la
+// ligne alors qu'elles tenaient à 15. Et descendre le plancher à 14 pour les
+// attraper aurait puni les rares questions vraiment longues : elles se seraient
+// retrouvées à 14 px ET sur deux lignes, c'est-à-dire au pire des deux mondes.
+// On tente donc la ligne unique jusqu'à 14, et si même là ça ne rentre pas, on
+// REMONTE à 20 et on laisse le texte se casser proprement.
+const MAX_CORPS = 30, PLANCHER_LIGNE = 14, CORPS_REPLI = 20;
+
+const QuestionAjustee = ({ texte }: { texte: string }) => {
+  const ref = useRef<HTMLHeadingElement | null>(null);
+  const [corps, setCorps] = useState(MAX_CORPS);
+  const [surUneLigne, setSurUneLigne] = useState(true);
+
+  useLayoutEffect(() => {
+    const e = ref.current;
+    if (!e) return;
+    let annule = false;
+    const ajuster = () => {
+      if (annule || !ref.current) return;
+      const n = ref.current;
+      let taille = MAX_CORPS;
+      // On mesure en `nowrap` : c'est le seul état où `scrollWidth` dit la
+      // largeur que le texte VOUDRAIT, et non celle qu'il occupe une fois cassé.
+      n.style.whiteSpace = "nowrap";
+      n.style.fontSize = taille + "px";
+      while (taille > PLANCHER_LIGNE && n.scrollWidth > n.clientWidth) {
+        taille -= 1;
+        n.style.fontSize = taille + "px";
+      }
+      const tient = n.scrollWidth <= n.clientWidth;
+      if (!tient) taille = CORPS_REPLI;
+      // On REPOSE la taille trouvée au lieu de vider la propriété. Vider était un
+      // vrai défaut, et sournois : quand la question tenait déjà au corps maximum,
+      // la boucle ne réduisait rien, `setCorps` recevait la valeur qu'il avait
+      // déjà, React ne re-rendait donc pas — et le style que la mesure venait
+      // d'effacer n'était jamais réécrit. La question retombait sur le 16 px
+      // hérité du document. Mesuré : les quatorze questions d'affilée sortaient
+      // toutes à 16 px, courtes comprises.
+      n.style.fontSize = taille + "px";
+      n.style.whiteSpace = tient ? "nowrap" : "normal";
+      setCorps(taille);
+      setSurUneLigne(tient);
+    };
+    ajuster();
+    // La police d'affiche est un webfont : mesurer avant son arrivée donne la
+    // largeur de la police de repli, donc un mauvais corps qui reste en place.
+    if (document.fonts && document.fonts.status !== "loaded") {
+      document.fonts.ready.then(ajuster).catch(() => {});
+    }
+    // Rotation de l'écran, ou barre d'adresse qui se replie : la largeur change.
+    const obs = typeof ResizeObserver !== "undefined" ? new ResizeObserver(ajuster) : null;
+    if (obs && e.parentElement) obs.observe(e.parentElement);
+    return () => { annule = true; if (obs) obs.disconnect(); };
+  }, [texte]);
+
+  return (
+    <h3
+      ref={ref}
+      className="relative w-full"
+      style={{ ...posterText(corps, G.white), fontSize: corps,
+               whiteSpace: surUneLigne ? "nowrap" : "normal",
+               overflow: "hidden", textOverflow: "clip" }}
+    >
+      {texte}
+    </h3>
+  );
+};
+
 const AskingView = ({
   question,
   count,
@@ -1742,9 +1831,7 @@ const AskingView = ({
         <div className="relative font-display text-[10px] lg:text-xs tracking-[0.45em] mb-1.5 lg:mb-3 flex items-center gap-1.5" style={{ color: G.projecteur }}>
           <span>🔮</span> {tr("QUESTION","QUESTION","FRAGE","DOMANDA","PERGUNTA","PREGUNTA")} {count}
         </div>
-        <h3 className="relative" style={{ ...posterText(30, G.white) }}>
-          {qLabel(question)}
-        </h3>
+        <QuestionAjustee texte={qLabel(question)} />
       </div>
 
       {/* Boutons réponse — plus hauts pour meilleur tap-target */}

@@ -526,6 +526,47 @@ if (ecran === "guess" || ecran === "guess-question") {
       .first().click({ force: true }).catch(() => {});
     await page.waitForTimeout(1400);
   }
+  // Sur l'écran des questions, on mesure aussi si la question TIENT SUR UNE
+  // LIGNE : c'est ce qui était demandé, et une capture ne le dit que pour la
+  // question tirée ce jour-là. QUESTIONS=n en enchaîne plusieurs.
+  if (ecran === "guess-question") {
+    const tours = Number(process.env.QUESTIONS || 1);
+    const bilan = [];
+    for (let k = 0; k < tours; k++) {
+      const m = await page.evaluate(() => {
+        const h = document.querySelector("h3");
+        if (!h) return null;
+
+        const st = getComputedStyle(h);
+        const corps = parseFloat(st.fontSize);
+        const lignes = Math.round(h.getBoundingClientRect().height / (corps * parseFloat(st.lineHeight) / corps || 1));
+        // Le nombre de lignes se déduit de la hauteur rapportée à l'interligne
+        // effectif, `lineHeight` valant `normal` sur ce lettrage.
+        const inter = st.lineHeight === "normal" ? corps : parseFloat(st.lineHeight);
+        return { style: h.getAttribute("style") || "", scrollW: h.scrollWidth,
+                 clientW: h.clientWidth,
+                 texte: (h.textContent || "").trim(), corps: Math.round(corps),
+                 lignes: Math.max(1, Math.round(h.getBoundingClientRect().height / inter)),
+                 deborde: h.scrollWidth > h.clientWidth + 1 };
+      });
+      if (m) bilan.push(m);
+      // Répondre fait passer à la question suivante.
+      await page.getByRole("button", { name: /^\?? ?(SAIS PAS|NOT SURE|WEISS NICHT|NON SO|NÃO SEI|NI IDEA)$/i })
+        .first().click({ force: true }).catch(() => {});
+      await page.waitForTimeout(550);
+    }
+    let mauvaises = 0;
+    for (const b of bilan) {
+      const ok = b.lignes === 1 && !b.deborde;
+      if (!ok) mauvaises++;
+      console.log((ok ? "  1 ligne " : "  " + b.lignes + " lignes")
+        + "  " + String(b.corps).padStart(2) + " px  " + b.texte.slice(0, 46)
+        + (process.env.DEBUG ? "\n      scrollW=" + b.scrollW + " clientW=" + b.clientW
+           + " style=" + b.style.slice(0, 150) : ""));
+    }
+    console.log(bilan.length - mauvaises + "/" + bilan.length + " sur une seule ligne");
+  }
+
   // Le contrôle qui compte : l'énoncé est-il LISIBLE ? Il était peint en blanc
   // à 80, 60 et 40 % d'opacité directement sur l'or, où le blanc plein ne donne
   // que 1,66 de contraste. On vérifie que chaque paragraphe repose sur un fond
