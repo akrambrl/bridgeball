@@ -3568,6 +3568,12 @@ export default function LePont() {
   // On met un ref pour ne pas retrigger le useEffect à chaque changement
   const installDismissedThisSession = useRef(false);
   const [deferredInstall, setDeferredInstall] = useState(null); // Pour Android: l'event beforeinstallprompt
+  // Le mode d'emploi « sur l'écran d'accueil », ouvert DEPUIS LE PROFIL — à ne
+  // pas confondre avec `showInstallPrompt`, qui est l'invite spontanée que l'app
+  // décide de montrer. Celui-ci est consultable, il ne s'impose jamais : il
+  // couvre donc les DEUX plateformes, pas seulement celle du téléphone en main.
+  const [showInstallGuide, setShowInstallGuide] = useState(false);
+  const [installGuideOs, setInstallGuideOs] = useState(null); // "ios" | "android", null = on déduit
   const [showNotifPrompt, setShowNotifPrompt] = useState(false);
   const [lbMode, setLbMode] = useState("global");
   const [lbSeasonScope, setLbSeasonScope] = useState("monde"); // "monde" ou "amis" pour l'onglet Saison
@@ -9652,100 +9658,210 @@ export default function LePont() {
   })();
 
 
-  // ── INSTALL APP PROMPT ──
-  const installPrompt = showInstallPrompt && !isStandalone() && (() => {
-    const ios = isIOS();
+  // ── « SUR L'ÉCRAN D'ACCUEIL » — le mode d'emploi d'installation ──
+  //
+  // UNE seule boîte, pour deux usages :
+  //  • CONSULTÉ, depuis le menu du profil. C'est le cas neuf : l'invite ci-dessous
+  //    ne se déclenche qu'à partir d'une première partie et se tait quatorze jours
+  //    dès qu'on l'écarte — quiconque l'avait refusée n'avait plus aucun moyen de
+  //    retrouver les étapes.
+  //  • IMPOSÉ, l'invite spontanée (`showInstallPrompt`), déclenchée par la série.
+  //    Elle garde sa logique intacte ; seules sa croix et le nom de sa sortie
+  //    changent — « plus tard » quand c'est l'app qui insiste, « compris » quand
+  //    on est venu lire.
+  //
+  // Il y avait DEUX dialogues d'installation, dont un resté dans l'ancien
+  // vocabulaire : voiles verts en rgba(0,230,118), gras bleu #60a5fa, rayons en
+  // dur. Deux boîtes du même sujet dans deux styles est pire que l'une ou
+  // l'autre : celle-là est partie, celle-ci prend ses deux rôles.
+  //
+  // Les DEUX plateformes sont montrées, avec un sélecteur, là où l'ancienne
+  // n'affichait que celle du téléphone en main : on vient souvent y chercher les
+  // étapes pour expliquer à quelqu'un d'autre, et la détection se trompe (un iPad
+  // récent s'annonce comme un Mac). Le bon onglet est présélectionné.
+  //
+  // Monté dans le rendu du PROFIL **et** de l'accueil, les deux écrans qui
+  // l'ouvrent. C'est la leçon du tutoriel « Comment jouer ? », dont l'overlay
+  // n'existait que sur l'accueil : un panneau doit être monté là où on l'ouvre.
+  const guideInvite = showInstallPrompt && !isStandalone() && !showInstallGuide;
+  const installGuide = (showInstallGuide || guideInvite) && (() => {
+    const os = installGuideOs || (isIOS() ? "ios" : "android");
+    const deja = isStandalone();
+    // Les étapes sont du texte simple ; ce qu'il faut CHERCHER DES YEUX sur
+    // l'écran du téléphone est encadré de ** et ressort en gras. Écrire du JSX
+    // par langue rendait ces quarante-huit phrases illisibles.
+    const gras = (t) => t.split("**").map((bout, i) =>
+      i % 2 ? <strong key={i} style={{color:G.projecteur}}>{bout}</strong> : bout);
+    const ETAPES = {
+      ios: {
+        fr: ["Ouvre GOAT FC dans **Safari** — sur iPhone, les autres navigateurs ne savent pas installer",
+             "Tape le bouton **Partager** ⬆️ dans la barre du bas",
+             "Fais défiler la liste, puis choisis **Sur l'écran d'accueil**",
+             "Tape **Ajouter** en haut à droite — l'icône apparaît avec tes autres apps"],
+        en: ["Open GOAT FC in **Safari** — on iPhone, other browsers can't install",
+             "Tap the **Share** button ⬆️ in the bottom bar",
+             "Scroll the list, then pick **Add to Home Screen**",
+             "Tap **Add** at the top right — the icon lands with your other apps"],
+        de: ["Öffne GOAT FC in **Safari** — auf dem iPhone können andere Browser nicht installieren",
+             "Tippe auf **Teilen** ⬆️ in der unteren Leiste",
+             "Scrolle die Liste und wähle **Zum Home-Bildschirm**",
+             "Tippe oben rechts auf **Hinzufügen** — das Symbol erscheint bei deinen Apps"],
+        it: ["Apri GOAT FC in **Safari** — su iPhone gli altri browser non possono installare",
+             "Tocca il pulsante **Condividi** ⬆️ nella barra in basso",
+             "Scorri l'elenco e scegli **Aggiungi alla schermata Home**",
+             "Tocca **Aggiungi** in alto a destra — l'icona compare con le altre app"],
+        pt: ["Abra o GOAT FC no **Safari** — no iPhone, os outros navegadores não instalam",
+             "Toque no botão **Compartilhar** ⬆️ na barra de baixo",
+             "Role a lista e escolha **Adicionar à Tela de Início**",
+             "Toque em **Adicionar** no canto superior direito — o ícone aparece com os outros apps"],
+        es: ["Abre GOAT FC en **Safari** — en iPhone, los demás navegadores no pueden instalar",
+             "Toca el botón **Compartir** ⬆️ en la barra de abajo",
+             "Baja por la lista y elige **Añadir a pantalla de inicio**",
+             "Toca **Añadir** arriba a la derecha — el icono aparece con tus otras apps"],
+      },
+      android: {
+        fr: ["Ouvre GOAT FC dans **Chrome**",
+             "Tape le menu **⋮** en haut à droite",
+             "Choisis **Installer l'application**, ou **Ajouter à l'écran d'accueil**",
+             "Confirme avec **Installer** — l'icône apparaît avec tes autres apps"],
+        en: ["Open GOAT FC in **Chrome**",
+             "Tap the **⋮** menu at the top right",
+             "Pick **Install app**, or **Add to Home screen**",
+             "Confirm with **Install** — the icon lands with your other apps"],
+        de: ["Öffne GOAT FC in **Chrome**",
+             "Tippe oben rechts auf das Menü **⋮**",
+             "Wähle **App installieren** oder **Zum Startbildschirm hinzufügen**",
+             "Bestätige mit **Installieren** — das Symbol erscheint bei deinen Apps"],
+        it: ["Apri GOAT FC in **Chrome**",
+             "Tocca il menu **⋮** in alto a destra",
+             "Scegli **Installa app** oppure **Aggiungi a schermata Home**",
+             "Conferma con **Installa** — l'icona compare con le altre app"],
+        pt: ["Abra o GOAT FC no **Chrome**",
+             "Toque no menu **⋮** no canto superior direito",
+             "Escolha **Instalar app** ou **Adicionar à tela inicial**",
+             "Confirme com **Instalar** — o ícone aparece com os outros apps"],
+        es: ["Abre GOAT FC en **Chrome**",
+             "Toca el menú **⋮** arriba a la derecha",
+             "Elige **Instalar aplicación** o **Añadir a la pantalla de inicio**",
+             "Confirma con **Instalar** — el icono aparece con tus otras apps"],
+      },
+    };
+    const etapes = ETAPES[os][lang] || ETAPES[os].en;
+    const accent = os === "ios" ? G.ciel : G.pelouse;
+    const fermer = () => {
+      setShowInstallGuide(false);
+      // Refermer l'INVITE, c'est la décliner : on note la date pour ne pas la
+      // reproposer avant quatorze jours. Refermer le mode d'emploi consulté
+      // exprès ne doit rien noter du tout.
+      if (guideInvite) {
+        setShowInstallPrompt(false);
+        installDismissedThisSession.current = true;
+        try { localStorage.setItem("bb_install_dismissed", String(Date.now())); } catch {}
+      }
+    };
+    const onglet = (cle, libelle) => (
+      <button onClick={()=>setInstallGuideOs(cle)} style={{flex:1,padding:"10px 8px",
+        background:os===cle?(cle==="ios"?G.ciel:G.pelouse):"rgba(8,17,9,.5)",
+        border:G.traitFin,borderRadius:G.rayonS,cursor:"pointer",
+        ...posterText(15,os===cle?G.white:"rgba(255,255,255,.7)",os===cle?1.2:0)}}>{libelle}</button>
+    );
     return (
-      <div onClick={() => { setShowInstallPrompt(false); installDismissedThisSession.current = true; try{localStorage.setItem("bb_install_dismissed", String(Date.now()));}catch{} }} style={{position:"fixed",inset:0,zIndex:500,background:"rgba(8,17,9,.86)",display:"flex",alignItems:"center",justifyContent:"center",padding:"20px",animation:"fadeIn .25s ease",cursor:"pointer"}}>
-        <div onClick={(e)=>e.stopPropagation()} style={{position:"relative",borderRadius:28,maxWidth:380,width:"100%",overflow:"hidden",animation:"popIn .4s cubic-bezier(.34,1.56,.64,1)",cursor:"default",boxShadow:G.ombre}}>
-          {/* Fond pelouse */}
-          <div style={{position:"absolute",inset:0,zIndex:0,overflow:"hidden"}}>
-            {/* Aplat de panneau : les bandes de tonte sont parties avec la pelouse.
-              Sur la charte or, une carte est l'écusson noir du logo. */}
-            <div style={{position:"absolute",inset:0,background:G.nuit}}/>
-            <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, rgba(0,230,118,.22) 0%, rgba(10,20,10,.90) 50%, rgba(10,20,10,.95) 100%)"}}/>
-            <div style={{position:"absolute",top:-60,left:-60,width:240,height:240,borderRadius:"50%",background:"radial-gradient(circle, rgba(0,230,118,.45) 0%, transparent 70%)",filter:"blur(40px)"}}/>
-            <div style={{position:"absolute",top:-40,right:-40,width:200,height:200,borderRadius:"50%",background:"radial-gradient(circle, rgba(255,214,0,.35) 0%, transparent 70%)",filter:"blur(40px)"}}/>
+      <div style={{position:"fixed",inset:0,zIndex:600,display:"flex",alignItems:"flex-end"}}
+        onClick={function(e){if(e.target===e.currentTarget)fermer();}}>
+        <div style={{position:"absolute",inset:0,background:"rgba(8,17,9,.86)"}} onClick={fermer}/>
+        {/* Même feuille que les règles des modes : aplat de nuit, trait d'encre
+            en haut, poignée d'encre, et elle défile si le texte déborde. */}
+        <div style={{position:"relative",width:"100%",background:G.nuit,borderTop:G.trait,
+          borderTopLeftRadius:G.rayonL,borderTopRightRadius:G.rayonL,padding:"18px 22px 28px",zIndex:1,
+          maxHeight:"86vh",overflowY:"auto"}}>
+          <div style={{width:48,height:5,background:G.encre,borderRadius:3,margin:"0 auto 16px"}}/>
+          {/* La croix seulement sur l'invite : un panneau que l'app impose doit
+              montrer sa sortie. Celui qu'on est venu ouvrir a déjà son bouton. */}
+          {guideInvite && (
+            <button onClick={fermer} style={{...retourStyle,position:"absolute",top:14,right:14,zIndex:2,width:32,height:32,fontSize:16}}>✕</button>
+          )}
+          <div style={{textAlign:"center",marginBottom:16}}>
+            <div style={{...pastilleCharte(G.projecteur,60),margin:"0 auto 10px",fontSize:30}}>📲</div>
+            <div style={{...posterTitre(29,G.creme),marginBottom:6}}>
+              {tr("SUR L'ÉCRAN D'ACCUEIL","ON YOUR HOME SCREEN","AUF DEN STARTBILDSCHIRM","SULLA SCHERMATA HOME","NA TELA DE INÍCIO","EN LA PANTALLA DE INICIO")}
+            </div>
+            <div style={{...posterText(1,G.projecteur,0),fontSize:12,letterSpacing:2.4,textTransform:"uppercase",lineHeight:1.35}}>
+              {tr("GOAT FC comme une vraie app","GOAT FC like a real app","GOAT FC wie eine echte App","GOAT FC come una vera app","GOAT FC como um app de verdade","GOAT FC como una app de verdad")}
+            </div>
           </div>
-          <button onClick={()=>{ setShowInstallPrompt(false); installDismissedThisSession.current = true; try{localStorage.setItem("bb_install_dismissed", String(Date.now()));}catch{} }} style={{...retourStyle,position:"absolute",top:14,right:14,zIndex:2,width:32,height:32,fontSize:16}}>✕</button>
 
-          <div style={{position:"relative",zIndex:1,padding:"32px 26px 26px"}}>
-            {/* Icon */}
-            <div style={{display:"flex",justifyContent:"center",marginBottom:14}}>
-              <div style={{width:84,height:84,borderRadius:20,background:G.pelouse,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:G.ombre,fontSize:44}}>
-                📲
+          {deja ? (
+            /* Dérouler quatre étapes à quelqu'un qui a DÉJÀ l'app sur son écran
+               d'accueil, c'est l'envoyer chercher un bouton Partager qui n'existe
+               pas ici : en mode installé, il n'y a plus de barre de navigateur. */
+            <div style={{background:"rgba(8,17,9,.5)",border:G.trait,borderRadius:G.rayon,padding:"18px 16px",
+              marginBottom:18,boxShadow:"inset 2px 2px 0 rgba(8,17,9,.35)",textAlign:"center"}}>
+              <div style={{fontSize:34,marginBottom:8}}>✅</div>
+              <div style={{...posterText(20,G.pelouseClaire),marginBottom:6}}>
+                {tr("C'EST DÉJÀ FAIT","ALREADY DONE","SCHON ERLEDIGT","GIÀ FATTO","JÁ ESTÁ FEITO","YA ESTÁ HECHO")}
+              </div>
+              <div style={{fontSize:13.5,color:G.creme,lineHeight:1.5,fontWeight:500}}>
+                {tr("Tu joues depuis l'app installée. Les étapes ci-dessous servent à l'installer sur un AUTRE téléphone.","You're playing from the installed app. The steps below are for installing it on ANOTHER phone.","Du spielst über die installierte App. Die Schritte unten sind für die Installation auf einem ANDEREN Handy.","Stai giocando dall'app installata. I passaggi sotto servono a installarla su UN ALTRO telefono.","Você está jogando pelo app instalado. Os passos abaixo servem para instalar em OUTRO celular.","Estás jugando desde la app instalada. Los pasos de abajo sirven para instalarla en OTRO teléfono.")}
               </div>
             </div>
-            <div style={{...posterText(28),color:G.white,letterSpacing:2,textAlign:"center",marginBottom:4,textShadow:"0 2px 12px rgba(0,230,118,.5)"}}>
-              {tr("INSTALLER GOAT FC","INSTALL GOAT FC","GOAT FC INSTALLIEREN","INSTALLA GOAT FC","INSTALAR GOAT FC","INSTALAR GOAT FC")}
-            </div>
-            <div style={{fontSize:11,letterSpacing:3,color:G.pelouseClaire,textTransform:"uppercase",fontWeight:800,textAlign:"center",marginBottom:22}}>
-              {tr("Reçois les rappels quotidiens 🔥","Get daily reminders 🔥","Erhalte tägliche Erinnerungen 🔥","Ricevi promemoria quotidiani 🔥","Receba lembretes diários 🔥","Recibe los recordatorios diarios 🔥")}
-            </div>
+          ) : null}
 
-            {/* Benefits */}
-            <div style={{background:"rgba(8,17,9,.45)",border:G.traitFin,borderRadius:16,padding:"14px 16px",marginBottom:14}}>
-              <div style={{display:"flex",alignItems:"flex-start",gap:10,marginBottom:10}}>
-                <span style={{fontSize:18}}>🔥</span>
-                <div style={{flex:1,fontSize:13,color:"rgba(255,255,255,.9)",lineHeight:1.4}}>
-                  {lang==="de"?<>Verliere nie deine <strong style={{color:G.projecteur}}>Serie</strong> — Erinnerung vor Mitternacht</>:lang==="it"?<>Non perdere mai la tua <strong style={{color:G.projecteur}}>serie</strong> — promemoria prima di mezzanotte</>:lang==="pt"?<>Nunca perca sua <strong style={{color:G.projecteur}}>sequência</strong> — lembrete antes da meia-noite</>:lang==="es"?<>No pierdas nunca tu <strong style={{color:G.projecteur}}>racha</strong> — aviso antes de medianoche</>:lang==="en"?<>Never break your <strong style={{color:G.projecteur}}>streak</strong> — get pinged before midnight</>:<>Ne casse plus ta <strong style={{color:G.projecteur}}>série</strong> — rappel avant minuit</>}
-                </div>
-              </div>
-              <div style={{display:"flex",alignItems:"flex-start",gap:10,marginBottom:10}}>
-                <span style={{fontSize:18}}>⚡</span>
-                <div style={{flex:1,fontSize:13,color:"rgba(255,255,255,.9)",lineHeight:1.4}}>
-                  {lang==="de"?<>Schnellerer Zugriff — <strong>ein Tipp</strong> vom Startbildschirm</>:lang==="it"?<>Accesso più rapido — <strong>un tocco</strong> dalla schermata Home</>:lang==="pt"?<>Acesso mais rápido — <strong>um toque</strong> da tela inicial</>:lang==="es"?<>Acceso más rápido — <strong>un toque</strong> desde la pantalla de inicio</>:lang==="en"?<>Faster access — <strong>one tap</strong> from your home screen</>:<>Accès rapide — <strong>un tap</strong> depuis l'écran d'accueil</>}
-                </div>
-              </div>
-              <div style={{display:"flex",alignItems:"flex-start",gap:10}}>
-                <span style={{fontSize:18}}>🎯</span>
-                <div style={{flex:1,fontSize:13,color:"rgba(255,255,255,.9)",lineHeight:1.4}}>
-                  {lang==="de"?<>Vollbild-Erlebnis, keine Browserleiste</>:lang==="it"?<>Esperienza a schermo intero, senza barra del browser</>:lang==="pt"?<>Experiência em tela cheia, sem barra do navegador</>:lang==="es"?<>Experiencia a pantalla completa, sin barra del navegador</>:lang==="en"?<>Full-screen experience, no browser bar</>:<>Expérience plein écran, pas de barre navigateur</>}
-                </div>
-              </div>
-            </div>
+          {/* Le sélecteur de plateforme, dans le cadre des onglets du classement */}
+          <div style={{display:"flex",gap:8,marginBottom:14}}>
+            {onglet("ios","🍎 iPhone / iPad")}
+            {onglet("android","🤖 Android")}
+          </div>
 
-            {/* Instructions spécifiques plateforme */}
-            {ios ? (
-              <div style={{background:G.nuit,border:G.traitFin,borderRadius:16,padding:"14px 16px",marginBottom:20}}>
-                <div style={{fontSize:11,fontWeight:800,letterSpacing:2,color:G.pelouseClaire,textTransform:"uppercase",marginBottom:10,textAlign:"center"}}>
-                  {tr("📱 iPhone / iPad","📱 iPhone / iPad","📱 iPhone / iPad","📱 iPhone / iPad","📱 iPhone / iPad","📱 iPhone / iPad")}
-                </div>
-                <div style={{fontSize:13,color:"rgba(255,255,255,.85)",lineHeight:1.6}}>
-                  <div style={{marginBottom:6}}><strong style={{color:G.white}}>1.</strong> {lang==="de"?<>Tippe auf den <strong style={{color:"#60a5fa"}}>Teilen-Button</strong> ⬆️ unten in Safari</>:lang==="it"?<>Tocca il <strong style={{color:"#60a5fa"}}>pulsante Condividi</strong> ⬆️ in basso in Safari</>:lang==="pt"?<>Toque no <strong style={{color:"#60a5fa"}}>botão Compartilhar</strong> ⬆️ na parte de baixo do Safari</>:lang==="es"?<>Toca el <strong style={{color:"#60a5fa"}}>botón Compartir</strong> ⬆️ en la parte de abajo de Safari</>:lang==="en"?<>Tap the <strong style={{color:"#60a5fa"}}>Share button</strong> ⬆️ at the bottom of Safari</>:<>Tape le <strong style={{color:"#60a5fa"}}>bouton Partager</strong> ⬆️ en bas de Safari</>}</div>
-                  <div style={{marginBottom:6}}><strong style={{color:G.white}}>2.</strong> {lang==="de"?<>Scrolle nach unten und tippe auf <strong style={{color:G.projecteur}}>"Zum Home-Bildschirm"</strong></>:lang==="it"?<>Scorri e tocca <strong style={{color:G.projecteur}}>"Aggiungi a Home"</strong></>:lang==="pt"?<>Role para baixo e toque em <strong style={{color:G.projecteur}}>"Adicionar à Tela de Início"</strong></>:lang==="es"?<>Baja y toca <strong style={{color:G.projecteur}}>«Añadir a pantalla de inicio»</strong></>:lang==="en"?<>Scroll down and tap <strong style={{color:G.projecteur}}>"Add to Home Screen"</strong></>:<>Descend et tape <strong style={{color:G.projecteur}}>"Sur l'écran d'accueil"</strong></>}</div>
-                  <div><strong style={{color:G.white}}>3.</strong> {lang==="de"?<>Bestätige mit <strong style={{color:G.pelouseClaire}}>"Hinzufügen"</strong></>:lang==="it"?<>Conferma toccando <strong style={{color:G.pelouseClaire}}>"Aggiungi"</strong></>:lang==="pt"?<>Confirme tocando em <strong style={{color:G.pelouseClaire}}>"Adicionar"</strong></>:lang==="es"?<>Confirma tocando <strong style={{color:G.pelouseClaire}}>«Añadir»</strong></>:lang==="en"?<>Confirm by tapping <strong style={{color:G.pelouseClaire}}>"Add"</strong></>:<>Confirme en tapant <strong style={{color:G.pelouseClaire}}>"Ajouter"</strong></>}</div>
-                </div>
-              </div>
-            ) : deferredInstall ? (
-              <button onClick={async function(){
-                try {
-                  deferredInstall.prompt();
-                  const choice = await deferredInstall.userChoice;
-                  if (choice.outcome === "accepted") {
-                    setShowInstallPrompt(false);
-                    setDeferredInstall(null);
-                  }
-                } catch(e) {}
-              }} style={{width:"100%",padding:"16px",background:G.pelouse,color:"#000",border:G.trait,borderRadius:G.rayon,cursor:"pointer",fontFamily:G.font,fontSize:16,fontWeight:800,letterSpacing:1,boxShadow:G.ombre,display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:10}}>
-                ⬇ {tr("INSTALLER MAINTENANT","INSTALL NOW","JETZT INSTALLIEREN","INSTALLA ORA","INSTALAR AGORA","INSTALAR AHORA")}
-              </button>
-            ) : (
-              <div style={{background:G.nuit,border:G.traitFin,borderRadius:16,padding:"14px 16px",marginBottom:20}}>
-                <div style={{fontSize:11,fontWeight:800,letterSpacing:2,color:G.pelouseClaire,textTransform:"uppercase",marginBottom:10,textAlign:"center"}}>
-                  {tr("📱 Sur ton appareil","📱 On your device","📱 Auf deinem Gerät","📱 Sul tuo dispositivo","📱 No seu aparelho","📱 En tu dispositivo")}
-                </div>
-                <div style={{fontSize:13,color:"rgba(255,255,255,.85)",lineHeight:1.6}}>
-                  {tr("Ouvre le menu (⋮) de ton navigateur, puis tape \"Installer l'application\" ou \"Ajouter à l'écran d'accueil\"","Look for the menu (⋮) in your browser, then tap \"Install app\" or \"Add to Home Screen\"","Öffne das Menü (⋮) deines Browsers und tippe auf \"App installieren\" oder \"Zum Startbildschirm hinzufügen\"","Apri il menu (⋮) del browser, poi tocca \"Installa app\" o \"Aggiungi a schermata Home\"","Abra o menu (⋮) do seu navegador e toque em \"Instalar app\" ou \"Adicionar à tela inicial\"","Abre el menú (⋮) de tu navegador y pulsa «Instalar aplicación» o «Añadir a la pantalla de inicio»")}
-                </div>
-              </div>
-            )}
-
-            {/* Dismiss */}
-            <button onClick={()=>{ setShowInstallPrompt(false); installDismissedThisSession.current = true; try{localStorage.setItem("bb_install_dismissed", String(Date.now()));}catch{} }} style={{width:"100%",padding:"12px",background:"transparent",color:"rgba(255,255,255,.5)",border:G.traitFin,borderRadius:G.rayon,cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:600}}>
-              {tr("Plus tard","Maybe later","Vielleicht später","Più tardi","Talvez depois","Más tarde")}
+          {/* Android sait s'installer tout seul : quand le navigateur nous a
+              donné l'événement, un bouton vaut mieux que quatre étapes. On garde
+              les étapes en dessous — l'événement n'arrive pas toujours. */}
+          {os === "android" && deferredInstall && !deja && (
+            <button onClick={async function(){
+              try {
+                deferredInstall.prompt();
+                const choix = await deferredInstall.userChoice;
+                if (choix.outcome === "accepted") { setDeferredInstall(null); setShowInstallGuide(false); }
+              } catch(e) { /* le navigateur a refusé : les étapes restent là */ }
+            }} style={{...btn(G.pelouse,G.white,18),width:"100%",padding:"14px",marginBottom:12}}>
+              ⬇ {tr("INSTALLER MAINTENANT","INSTALL NOW","JETZT INSTALLIEREN","INSTALLA ORA","INSTALAR AGORA","INSTALAR AHORA")}
             </button>
+          )}
+
+          <div style={{background:"rgba(8,17,9,.5)",border:G.trait,borderRadius:G.rayon,padding:"14px 16px",
+            marginBottom:18,boxShadow:"inset 2px 2px 0 rgba(8,17,9,.35)"}}>
+            {etapes.map(function(e, i){
+              return (
+                <div key={i} style={{display:"flex",alignItems:"flex-start",gap:12,padding:"9px 0",
+                  borderBottom:i<etapes.length-1?G.traitFin:"none"}}>
+                  <div style={{minWidth:24,height:24,borderRadius:8,background:accent,border:"1.5px solid "+G.encre,
+                    ...posterText(1,G.white,0),fontSize:14,display:"flex",alignItems:"center",
+                    justifyContent:"center",flexShrink:0,marginTop:1}}>{i+1}</div>
+                  <div style={{flex:1,fontSize:14,color:G.creme,lineHeight:1.45,fontWeight:500}}>{gras(e)}</div>
+                </div>
+              );
+            })}
           </div>
+
+          {/* Ce qu'on y gagne : c'est la raison d'installer, et elle n'était dite
+              que dans l'invite spontanée, que beaucoup ne voient jamais. */}
+          <div style={{display:"flex",gap:14,justifyContent:"center",marginBottom:18,flexWrap:"wrap"}}>
+            {[["🔥",tr("Ta série","Your streak","Deine Serie","La tua serie","Sua sequência","Tu racha")],
+              ["⚡",tr("Un seul tap","One tap","Ein Tipp","Un tocco","Um toque","Un toque")],
+              ["🎯",tr("Plein écran","Full screen","Vollbild","Schermo intero","Tela cheia","Pantalla completa")]].map(function(d,i){
+              return (
+                <div key={i} style={{display:"flex",alignItems:"center",gap:6}}>
+                  <span style={{fontSize:17}}>{d[0]}</span>
+                  <span style={{fontSize:12,color:"rgba(242,231,206,.75)",fontWeight:700,letterSpacing:.3}}>{d[1]}</span>
+                </div>
+              );
+            })}
+          </div>
+
+          <button onClick={fermer} style={{...btn(G.projecteur,G.encre,19),width:"100%",padding:"14px"}}>
+            {guideInvite
+              ? tr("PLUS TARD","MAYBE LATER","SPÄTER","PIÙ TARDI","MAIS TARDE","MÁS TARDE")
+              : tr("COMPRIS","GOT IT","VERSTANDEN","CAPITO","ENTENDI","ENTENDIDO")}
+          </button>
         </div>
       </div>
     );
@@ -12850,6 +12966,24 @@ export default function LePont() {
           <span style={{fontSize:18,color:"rgba(255,255,255,.45)"}}>→</span>
         </button>
 
+        {/* Sur l'écran d'accueil — le mode d'emploi, consultable quand on veut.
+            L'invite spontanée (`showInstallPrompt`) ne se déclenche qu'à partir de
+            trois jours de série et ne revient pas si on l'a écartée : sans cette
+            entrée, quiconque l'avait refusée une fois n'avait plus aucun moyen
+            de retrouver les étapes. */}
+        <button onClick={()=>{setInstallGuideOs(null);setShowInstallGuide(true);}} style={{...ligneCharte,padding:"15px 16px",fontSize:15,fontWeight:800,gap:13}}>
+          <span style={pastilleCharte(G.pelouse)}>📲</span>
+          <div style={{flex:1}}>
+            <div>{tr("Sur l'écran d'accueil","On your home screen","Auf den Startbildschirm","Sulla schermata Home","Na tela de início","En la pantalla de inicio")}</div>
+            <div style={{fontSize:11,color:"rgba(255,255,255,.55)",fontWeight:600,marginTop:3,letterSpacing:.3}}>
+              {isStandalone()
+                ? tr("Déjà installée ✓","Already installed ✓","Schon installiert ✓","Già installata ✓","Já instalado ✓","Ya instalada ✓")
+                : tr("iPhone et Android, en 4 étapes","iPhone and Android, in 4 steps","iPhone und Android, in 4 Schritten","iPhone e Android, in 4 passaggi","iPhone e Android, em 4 passos","iPhone y Android, en 4 pasos")}
+            </div>
+          </div>
+          <span style={{fontSize:18,color:"rgba(255,255,255,.45)"}}>→</span>
+        </button>
+
         {/* Code de récupération */}
         <button onClick={async function(){
           setShowMyRecoveryCode(true);
@@ -12930,6 +13064,7 @@ export default function LePont() {
       {myRecoveryCodeModal}
       {avatarViewer}
       {cropperModal}
+      {installGuide}
     </div>
   );
 
@@ -12969,7 +13104,7 @@ export default function LePont() {
       {recoveryInputModal}
       {myRecoveryCodeModal}
       {streakModal}
-      {installPrompt}
+      {installGuide}
       {notifPrompt}
       {tutorialOverlay}
       {welcomeOverlay}
