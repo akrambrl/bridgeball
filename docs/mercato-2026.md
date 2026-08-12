@@ -214,6 +214,26 @@ dans la table des couleurs de clubs, avec deux bleus différents. En JS la secon
 gagne : la première n'avait jamais eu d'effet. Retirée, l'avertissement de build
 disparaît et aucune couleur ne change.
 
+## À FAIRE APRÈS CHAQUE PASSE DE MERCATO
+
+```bash
+npm run devinette:rotation
+```
+
+Toucher à `players.jsx` peut faire entrer ou sortir un joueur du vivier de la
+devinette du jour. Le calendrier étant désormais **écrit** dans
+`src/lib/devinette-rotation.js`, il ne se réordonne plus tout seul — mais il faut
+l'étendre pour que les nouveaux entrants finissent par passer. La commande n'ajoute
+qu'à la fin de la liste et refuse d'écrire si elle détecte une répétition à moins
+de douze jours.
+
+Pourquoi ça compte : avant cette correction, chaque modification de `players.jsx`
+réordonnait **tout** le calendrier, passé compris. En corrigeant le comptage des
+clubs, le vivier est passé de 96 à 97 joueurs et les douze jours examinés ont tous
+changé de joueur — la devinette a resservi quelqu'un qui venait de passer, et ça a
+été signalé. Cinq modifications de `players.jsx` dans la même semaine, donc cinq
+réordonnancements.
+
 ## Ce que cet audit ne couvre pas
 
 - **Les prêts.** Plusieurs mouvements de l'été sont des prêts ou des retours de

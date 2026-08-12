@@ -5,7 +5,8 @@
 import { describe, it, expect } from "vitest";
 import { PLAYERS, RETIRED_PLAYERS } from "@/players.jsx";
 import { parisDay, jourIndex, poolDevinette, joueurDuJour, accrocheDevinette, MODERN_MIN_BY,
-         clubsDistincts, nbClubs } from "@/lib/devinette.js";
+         clubsDistincts, nbClubs, nomInscritPour } from "@/lib/devinette.js";
+import { ROTATION, EPOQUE_JOUR } from "@/lib/devinette-rotation.js";
 import { parisDayOf } from "@/lib/days";
 import { dailyPool } from "@/components/landing/FindPlayer";
 
@@ -39,15 +40,23 @@ describe("le joueur du jour", () => {
     expect(joueurDuJour(POOL, "2026-08-11").name).toBe(joueurDuJour(POOL, "2026-08-11").name);
   });
 
-  it("ne se répète pas avant un cycle complet du vivier", () => {
-    // C'est la promesse du mode : « chaque joueur passe une seule fois ». Elle
-    // tient parce que le vivier est mélangé une fois avec une graine FIXE puis
-    // parcouru par rotation — pas retiré au hasard chaque jour.
+  it("passe tout le vivier sur un cycle, sans doublon", () => {
+    // La promesse du mode : « chaque joueur passe une seule fois ». Elle est
+    // maintenant portée par un calendrier ÉCRIT (devinette-rotation.js), et elle
+    // se vérifie donc SUR UN CYCLE, à partir de son début.
+    //
+    // CE QUI A ÉTÉ ÉCHANGÉ, et il faut le savoir : la version d'avant garantissait
+    // l'unicité sur N'IMPORTE QUELLE fenêtre de la taille du vivier, parce que
+    // c'était une rotation modulo. Mais elle l'obtenait au prix d'un calendrier qui
+    // se réordonnait entièrement dès qu'un joueur entrait ou sortait du vivier —
+    // le défaut signalé en production. Une fenêtre à cheval sur deux cycles peut
+    // désormais revoir quelqu'un, jamais à moins de douze jours (test plus bas).
+    // Les deux garanties ne peuvent pas coexister, c'est démontré en tête de
+    // scripts/devinette-rotation.mjs.
     const vus = new Set<string>();
-    const base = jourIndex("2026-08-11");
     for (let i = 0; i < POOL.length; i++) {
-      const jour = new Date((base + i) * 86400000).toISOString().slice(0, 10);
-      vus.add(joueurDuJour(POOL, jour).name);
+      const jour = new Date((EPOQUE_JOUR + i) * 86400000).toISOString().slice(0, 10);
+      vus.add(joueurDuJour(POOL, jour)!.name);
     }
     expect(vus.size).toBe(POOL.length);
   });
@@ -156,5 +165,84 @@ describe("compter les clubs quand un club revient", () => {
   it("tout le vivier a bien 3 à 9 clubs DIFFÉRENTS", () => {
     const hors = POOL.filter((p: any) => nbClubs(p) < 3 || nbClubs(p) > 9).map((p: any) => p.name);
     expect(hors).toEqual([]);
+  });
+});
+
+// Le signalement : « la devinette du jour est la même que celle de quelques jours ».
+// Cause : joueurDuJour faisait `melange(vivier)[jour % vivier.length]` sur un vivier
+// RECALCULÉ depuis players.jsx. Le mélange avait une graine fixe, mais il mélangeait
+// une liste dont le contenu bouge — un joueur qui entre ou sort réordonnait TOUT le
+// calendrier. En corrigeant le comptage des clubs, le vivier est passé de 96 à 97 et
+// les douze jours examinés ont tous changé de joueur.
+describe("le calendrier est ÉCRIT, donc stable", () => {
+  const jourDe = (pos: number) =>
+    new Date((EPOQUE_JOUR + pos) * 86400000).toISOString().slice(0, 10);
+
+  it("le jour d'époque donne la première case", () => {
+    expect(joueurDuJour(POOL, jourDe(0))!.name).toBe(ROTATION[0]);
+    expect(joueurDuJour(POOL, jourDe(5))!.name).toBe(ROTATION[5]);
+  });
+
+  it("AJOUTER un joueur au vivier ne déplace AUCUN jour déjà attribué", () => {
+    // LE test de cette correction. C'est exactement ce qui s'est produit en
+    // production, et c'est ce qui ne doit plus jamais se produire.
+    const intrus = { name: "Zzz Intrus", clubs: ["A", "B", "C", "D"], diff: "facile",
+                     nationalities: ["France"], positions: ["milieu"], birthYear: 1999 };
+    const agrandi = [...POOL, intrus as any];
+    const ecarts: string[] = [];
+    for (let pos = 0; pos < 60; pos++) {
+      const j = jourDe(pos);
+      const avant = joueurDuJour(POOL, j)!.name;
+      const apres = joueurDuJour(agrandi, j)!.name;
+      if (avant !== apres) ecarts.push(j + " : " + avant + " → " + apres);
+    }
+    expect(ecarts).toEqual([]);
+  });
+
+  it("RETIRER un joueur ne déplace que les jours qui étaient les siens", () => {
+    // On ne peut pas garantir mieux : son jour doit bien changer. Ce qui compte est
+    // que les AUTRES ne bougent pas.
+    const sansPremier = POOL.filter((p: any) => p.name !== ROTATION[0]);
+    const ecarts: string[] = [];
+    for (let pos = 1; pos < 40; pos++) {
+      const j = jourDe(pos);
+      if (ROTATION[pos] === ROTATION[0]) continue;
+      const avant = joueurDuJour(POOL, j)!.name;
+      const apres = joueurDuJour(sansPremier, j)!.name;
+      if (avant !== apres) ecarts.push(j + " : " + avant + " → " + apres);
+    }
+    expect(ecarts).toEqual([]);
+  });
+
+  it("aucune répétition à moins de douze jours sur tout le calendrier", () => {
+    // La jointure entre deux cycles est l'endroit à risque : rien n'empêche
+    // naturellement le dernier joueur d'un cycle de rouvrir le suivant. Le premier
+    // essai du générateur a produit deux répétitions à onze jours d'écart.
+    const trop: string[] = [];
+    for (let i = 1; i < ROTATION.length; i++) {
+      for (let k = 1; k <= 12 && i - k >= 0; k++) {
+        if (ROTATION[i] === ROTATION[i - k]) trop.push(ROTATION[i] + " en " + (i - k) + " et " + i);
+      }
+    }
+    expect(trop).toEqual([]);
+  });
+
+  it("couvre plus d'un an, pour ne pas retomber sur le calcul instable", () => {
+    // Au-delà de la liste, joueurDuJour reprend l'ancien calcul — donc
+    // l'instabilité. La liste doit laisser largement le temps de l'étendre.
+    expect(ROTATION.length).toBeGreaterThan(365);
+  });
+
+  it("tous les noms inscrits existent dans le vivier", () => {
+    const dedans = new Set(POOL.map((p: any) => p.name));
+    const absents = [...new Set(ROTATION)].filter((n) => !dedans.has(n));
+    expect(absents).toEqual([]);
+  });
+
+  it("hors de la liste, il n'y a pas de nom inscrit", () => {
+    expect(nomInscritPour(jourDe(-1))).toBeNull();
+    expect(nomInscritPour(jourDe(ROTATION.length))).toBeNull();
+    // Et le mode continue de rendre un joueur : le repli fonctionne.
+    expect(joueurDuJour(POOL, jourDe(ROTATION.length))).not.toBeNull();
   });
 });
