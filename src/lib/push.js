@@ -94,10 +94,43 @@ export function decisionEnvoi(status) {
  * @param {boolean} auMoinsUnSucces
  * @returns {"ok"|"purger"|"alerter"|"reessayer"}
  */
-export function decisionFinale(status, auMoinsUnSucces) {
+export function decisionFinale(status, auMoinsUnSucces, corps) {
   const d = decisionEnvoi(status);
   if (d === "alerter" && (status === 401 || status === 403) && auMoinsUnSucces) return "purger";
+  if (d === "alerter" && status === 400 && abonnementMortSelonCorps(corps)) return "purger";
   return d;
+}
+
+// Ce qui, dans le corps d'un refus, désigne l'ABONNEMENT et pas nous.
+//
+// Les services ne s'accordent pas sur le code à rendre pour un abonnement mort.
+// 404 et 410 sont les cas propres, déjà traités ; mais Apple répond 400
+// « BadDeviceToken » pour un jeton qui n'est plus valide, et FCM 400 pour un
+// jeton de notification périmé. Sans cette lecture, ces lignes-là échouent
+// éternellement : jamais purgées puisque le code n'est pas 410, jamais
+// délivrées puisque le jeton est mort.
+const CORPS_ABONNEMENT_MORT = /bad ?device ?token|bad ?subscription|expired ?token|unregistered|not ?registered|invalid ?registration|unauthorized ?registration|registration token is not|invalid subscription|subscription (?:has |is )?expired/i;
+
+// …mais surtout, ce qui désigne NOTRE configuration et interdit donc de purger.
+// Un refus qui parle de signature, de JWT ou de VAPID parle de la clé du serveur :
+// purger là-dessus viderait la table sur une erreur de secret, exactement ce que
+// decisionEnvoi refuse de faire sur un 403. Ce garde passe AVANT l'autre, parce
+// qu'un même corps peut contenir les deux mots — « ExpiredProviderToken » d'Apple
+// désigne notre jeton d'autorisation, pas l'appareil.
+const CORPS_NOTRE_FAUTE = /jwt|vapid|provider|signature|authorization|authentication|payload|encryption|header|topic|too large/i;
+
+/**
+ * VRAI si le corps d'un HTTP 400 dit que l'ABONNEMENT est mort.
+ *
+ * Volontairement étroit : en cas de doute, on n'efface pas. Ce qui n'est pas
+ * reconnu ici reste rapporté tel quel dans le journal (voir resumerCorps), ce
+ * qui permet d'élargir la règle sur pièces plutôt que par supposition.
+ */
+export function abonnementMortSelonCorps(corps) {
+  if (!corps) return false;
+  const t = String(corps);
+  if (CORPS_NOTRE_FAUTE.test(t)) return false;
+  return CORPS_ABONNEMENT_MORT.test(t);
 }
 
 /**
@@ -159,6 +192,120 @@ export function accrocheAmis(demandes) {
     // « veulent » dans les deux cas : le sujet est pluriel dès qu'ils sont deux.
     corps: qui + " veulent être tes amis. Accepte et défie-les !",
   };
+}
+
+/**
+ * Faut-il (re)transmettre cet endpoint à Supabase ?
+ *
+ * L'app garde en local l'endpoint déjà envoyé, pour ne pas ajouter une ligne à
+ * chaque ouverture — la table n'a pas de contrainte d'unicité, donc un POST
+ * ajoute, il ne remplace pas. Mais cette mémoire est LOCALE : elle ne sait pas si
+ * la ligne existe encore côté serveur.
+ *
+ * C'est un piège concret. Dès que l'envoyeur purge une ligne — abonnement mort,
+ * doublon, refus définitif du service de push — le marqueur local continue
+ * d'affirmer « déjà transmis » et l'abonné n'est JAMAIS réinscrit : de son côté
+ * la permission reste accordée, donc rien ne le lui signale et rien ne le lui
+ * redemande. Il disparaît des notifications pour de bon, sans qu'aucun des deux
+ * camps ne le sache.
+ *
+ * D'où une péremption d'une semaine, et le format « endpoint|horodatage ». Coût
+ * maximal : une ligne en doublon par abonné et par semaine, que dedupeAbonnements
+ * écarte et que la purge des doublons supprime le jour même. C'est ce qui rend
+ * une purge RÉPARABLE, donc défendable.
+ *
+ * Un marqueur sans horodatage vient de l'ancien format : traité comme périmé, il
+ * repose une fois les lignes éventuellement déjà purgées.
+ */
+const PUSH_MARQUEUR_MS = 7 * 24 * 3600 * 1000;
+
+export function pushARetransmettre(marqueur, endpoint, maintenant) {
+  if (!marqueur) return true;
+  const sep = marqueur.lastIndexOf("|");
+  if (sep < 0) return true;
+  if (marqueur.slice(0, sep) !== endpoint) return true;
+  const pose = Number(marqueur.slice(sep + 1));
+  if (!Number.isFinite(pose) || pose <= 0) return true;
+  return maintenant - pose >= PUSH_MARQUEUR_MS;
+}
+
+/**
+ * Ce que le service de push a RÉPONDU, en une ligne lisible.
+ *
+ * Pourquoi ça existe. web-push lève une erreur dont le `message` est toujours le
+ * même — « Received unexpected response code » — et met l'explication réelle
+ * dans `body`, que le journal jetait. Résultat : sept échecs quotidiens
+ * rapportés comme « HTTP 400 » sans un mot sur la cause, donc indiagnostiquables.
+ *
+ * Chaque service a son format, et aucun n'est celui du voisin :
+ *   Apple    {"reason":"BadDeviceToken"}
+ *   FCM      {"error":{"code":400,"message":"…","status":"INVALID_ARGUMENT"}}
+ *   Mozilla  {"code":400,"errno":110,"error":"Bad Request","message":"…"}
+ * D'où la liste de pistes plutôt qu'un champ unique. `errno` est conservé parce
+ * que chez Mozilla c'est lui qui distingue « abonnement invalide » de « en-tête
+ * de chiffrement invalide » — deux causes opposées sous le même HTTP 400.
+ *
+ * Un corps illisible n'est pas une erreur : on rend le texte brut resserré,
+ * ce qui vaut toujours mieux que rien.
+ */
+export function resumerCorps(corps) {
+  if (corps === null || corps === undefined) return "";
+  const texte = String(corps).trim();
+  if (!texte) return "";
+  try {
+    const j = JSON.parse(texte);
+    if (j && typeof j === "object") {
+      const pistes = [
+        j.reason,
+        j.message,
+        j.error && j.error.message,
+        typeof j.error === "string" ? j.error : null,
+        j.error && j.error.status,
+        j.errno !== undefined && j.errno !== null ? "errno " + j.errno : null,
+      ];
+      const vues = new Set(), retenues = [];
+      for (const p of pistes) {
+        if (!p) continue;
+        const s = String(p).replace(/\s+/g, " ").trim();
+        if (!s || vues.has(s)) continue;
+        vues.add(s); retenues.push(s);
+      }
+      if (retenues.length) return retenues.join(" / ").slice(0, 200);
+    }
+  } catch (e) { /* pas du JSON : on retombe sur le texte brut */ }
+  return texte.replace(/\s+/g, " ").slice(0, 200);
+}
+
+/**
+ * Combien d'abonnés par SERVICE de push, et sur quelles longueurs d'endpoint.
+ *
+ * `platform` ne répond pas à la question : elle est déclarée par l'app d'après
+ * l'agent utilisateur (`ios`, `android`, `desktop`), alors qu'un échec en masse
+ * se lit par service — Apple, FCM et Mozilla n'ont ni les mêmes exigences ni les
+ * mêmes messages d'erreur. Sans ce découpage, « 2 réussis, 7 en 400 » ne dit pas
+ * si la frontière est un service ou un hasard.
+ *
+ * Les longueurs sont là pour une panne précise : un `endpoint` tronqué à
+ * l'écriture (colonne trop courte, copie partielle) produit un jeton refusé par
+ * le service — donc un 400 — et se repère à un écart de longueur au sein d'un
+ * même hôte, où tous les endpoints font normalement la même taille à quelques
+ * caractères près.
+ */
+export function repartitionHotes(abonnes) {
+  const parHote = new Map();
+  for (const a of abonnes || []) {
+    let hote = "?";
+    try { hote = new URL(a.endpoint).host; } catch (e) { /* endpoint illisible */ }
+    let e = parHote.get(hote);
+    if (!e) { e = { hote, nombre: 0, longueurMin: Infinity, longueurMax: 0, plateformes: {} }; parHote.set(hote, e); }
+    e.nombre++;
+    const n = a && typeof a.endpoint === "string" ? a.endpoint.length : 0;
+    e.longueurMin = Math.min(e.longueurMin, n);
+    e.longueurMax = Math.max(e.longueurMax, n);
+    const p = (a && a.platform) || "?";
+    e.plateformes[p] = (e.plateformes[p] || 0) + 1;
+  }
+  return [...parHote.values()].sort(function(x, y){ return y.nombre - x.nombre || x.hote.localeCompare(y.hote); });
 }
 
 /** Regroupe des lignes par la valeur d'une clé. */

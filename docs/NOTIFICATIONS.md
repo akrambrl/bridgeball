@@ -167,6 +167,57 @@ Garde-fou supplémentaire : le `tag` de la notification contient le jour
 sur l'appareil au lieu de s'empiler — même envoyée deux fois, la devinette
 n'apparaît qu'une fois.
 
+## Lire un échec d'envoi
+
+Le journal du workflow donne, à chaque exécution, un bilan **par service de
+push** :
+
+```
+── Envoyé : 6 ✓  |  morts : 0  |  à retenter : 0  |  erreurs : 7
+   web.push.apple.com : 0/7 reçus
+     ×7  400 BadDeviceToken
+   fcm.googleapis.com : 6/6 reçus
+```
+
+C'est le découpage qui compte : `platform` est déclarée par l'app d'après l'agent
+utilisateur, alors qu'un échec en masse se lit par service. Si tous les échecs
+sont chez le même service et tous les succès chez un autre, la cause est dans ce
+que ce service exige de nous ; s'ils sont mélangés, elle est dans les
+abonnements.
+
+Le motif vient du **corps** de la réponse, pas du message d'erreur. `web-push`
+lève toujours le même `Received unexpected response code` quelle que soit la
+cause, et met l'explication dans `body` — les trois services n'ayant aucun format
+commun (`{"reason":…}` chez Apple, `{"error":{"message":…}}` chez FCM,
+`{"errno":…,"message":…}` chez Mozilla), `resumerCorps` les lit tous les trois.
+
+### Le cas du HTTP 400
+
+Un `400` ne dit pas à lui seul de qui il parle, et c'est son motif qui décide :
+
+| motif | verdict |
+|---|---|
+| `BadDeviceToken`, `NotRegistered`, `Invalid subscription`… | **purge** : le jeton est mort, comme un 410 |
+| `BadJwtToken`, `VAPID`, `signature`, `encryption`… | **alerte, aucune purge** : c'est notre clé qui est en cause |
+| inconnu | **alerte, aucune purge** |
+
+La liste des motifs est volontairement étroite (`abonnementMortSelonCorps`) : en
+cas de doute, on n'efface pas, et le motif reste dans le journal pour élargir la
+règle sur pièces plutôt que par supposition.
+
+### Pourquoi une purge est réparable
+
+L'app garde en `localStorage` l'endpoint déjà transmis, pour ne pas ajouter une
+ligne à chaque ouverture. Ce marqueur **périme au bout d'une semaine**
+(`pushARetransmettre`), et c'est ce qui rend toute purge réversible : sans
+péremption, une ligne supprimée côté serveur n'était jamais réécrite — la
+permission restant accordée sur l'appareil, rien ne le signalait à l'utilisateur
+et rien ne le lui redemandait, si bien qu'il disparaissait des notifications pour
+de bon.
+
+Coût : au maximum une ligne en doublon par abonné et par semaine, que le
+dédoublonnage supprime le jour même.
+
 ## Changer les clés VAPID
 
 Un abonnement est lié **pour toujours** à la clé publique avec laquelle il a été
