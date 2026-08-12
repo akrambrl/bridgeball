@@ -175,7 +175,12 @@ const page = await ctx.newPage();
 // vit dans le shell, dont `isolation:isolate` enferme son zIndex 9999.
 const PREMIER_LANCEMENT = ecran === "bienvenue" ? "tout"
                         : ecran === "tutoriel"  ? "apres-banniere" : "non";
-const PREMIER_LANCEMENT_OBJ = { etape: PREMIER_LANCEMENT, vide: !!process.env.VIDE };
+// LANGUE=de photographie l'écran dans une autre des six langues. Sans ça, une
+// chaîne restée en français sous une interface allemande ne se voyait que sur
+// le téléphone de quelqu'un — c'est comme ça que les critères de GOAT GRID
+// sont restés « MILIEU » et « PAYS-BAS » en allemand.
+const LANGUE = process.env.LANGUE || "fr";
+const PREMIER_LANCEMENT_OBJ = { etape: PREMIER_LANCEMENT, vide: !!process.env.VIDE, langue: LANGUE };
 await page.addInitScript((premier) => {
   // L'accueil est derrière l'accueil-tutoriel : sans ces clés, on photographie
   // le carrousel d'introduction quel que soit l'écran demandé. On ne les pose
@@ -183,7 +188,7 @@ await page.addInitScript((premier) => {
   if (premier.etape !== "tout") localStorage.setItem("bb_welcome_seen", "1");
   if (premier.etape === "non")   localStorage.setItem("bb_tutorial_done", "1");
   localStorage.setItem("bb_name", "jules");
-  localStorage.setItem("bb_lang", "fr");
+  localStorage.setItem("bb_lang", premier.langue || "fr");
   // La liste d'amis vit en localStorage, pas dans une table : sans ces clés,
   // l'écran Amis ne montrait QUE son état vide, et tout ce qui s'y passe une
   // fois qu'on a des amis restait invisible.
@@ -217,7 +222,10 @@ await page.waitForTimeout(3400);
 // l'écarter ici masquerait précisément ce qu'on veut vérifier. C'est ce qui s'est
 // passé au premier essai — le contrôle passait au vert sans rien prouver.
 if (!ecran.startsWith("tracking")) {
-  for (const libelle of [/plus tard/i, /^fermer$/i]) {
+  // Les six langues : sous LANGUE=de, « Plus tard » n'existe plus et le bouton
+  // « Später » restait devant l'écran, interceptant tous les clics suivants.
+  for (const libelle of [/plus tard|maybe later|later|später|più tardi|depois|más tarde/i,
+                         /^(fermer|close|schließen|chiudi|fechar|cerrar)$/i]) {
     const b = page.getByRole("button", { name: libelle }).first();
     if (await b.count() && await b.isVisible().catch(() => false)) {
       await b.click().catch(() => {});
@@ -257,16 +265,16 @@ if (ecran.startsWith("amis")) {
 // où on en a besoin que maintenir une recette qui ne sert pas.
 const CHEMINS = {
   accueil:    [],
-  classement: [/classement/i],
+  classement: [/classement|leaderboard|rangliste|classifica|ranking|clasificación/i],
   amis:       [],   // porte propre à la largeur, cf. plus bas
   // L'écran voisin, atteint depuis la liste d'amis.
   "amis-defis":  [],   // « Historique des défis »
   "amis-bas":    [],   // le bas de la liste, où vivent les demandes envoyées
-  devinette:  [/devinette du jour/i],
+  devinette:  [/devinette du jour|daily riddle|rätsel des tages|indovinello del giorno|adivinha do dia|adivinanza del día/i],
   profil:     [],   // l'avatar n'est pas un bouton : traité à part
   jeu:        [],   // la carte du carrousel non plus
-  "classement-bas": [/classement/i],   // puis défilé jusqu'en bas
-  "hall-of-fame": [/classement/i, /hall of fame/i],
+  "classement-bas": [/classement|leaderboard|rangliste|classifica|ranking|clasificación/i],   // puis défilé jusqu'en bas
+  "hall-of-fame": [/classement|leaderboard|rangliste|classifica|ranking|clasificación/i, /hall of fame/i],
   bienvenue:  [],   // premier lancement : la bannière RGPD
   tutoriel:   [],   // premier lancement : le carrousel, après la bannière
   partie:     [],   // idem, puis « Jouer solo »
@@ -336,8 +344,8 @@ if (ecran === "collection" || ecran === "compte") {
   await page.locator("img[src*='/cards/']").first().click();
   await page.waitForTimeout(1500);
   const cible = ecran === "collection"
-    ? page.locator("div").filter({ hasText: /^\d+\s*\/\s*\d+\s*cartes/ }).last()
-    : page.getByRole("button", { name: /mon compte/i }).first();
+    ? page.locator("div").filter({ hasText: /^\d+\s*\/\s*\d+\s*(cartes|cards|Karten|carte|cartas)/ }).last()
+    : page.getByRole("button", { name: /mon compte|my account|mein konto|il mio account|minha conta|mi cuenta/i }).first();
   await cible.scrollIntoViewIfNeeded();
   await cible.click();
   await page.waitForTimeout(1600);
@@ -492,7 +500,7 @@ if (ecran === "grille" || ecran === "grille-remplie" || ecran === "grille-fin" |
   await page.mouse.click(carte.x + carte.width / 2, carte.y + carte.height / 2);
   await page.waitForTimeout(2200);
   }
-  const solo = page.locator("div").filter({ hasText: /^Défi du jour/ }).first();
+  const solo = page.locator("div").filter({ hasText: /^(Défi du jour|Daily challenge|Tägliche Challenge|Sfida del giorno|Desafio do dia|Reto del día)/ }).first();
   const cible = (await solo.count()) ? solo : page.getByText(/^SOLO$/).first();
   await cible.scrollIntoViewIfNeeded().catch(() => {});
   await cible.click({ force:true }).catch(() => {});
@@ -524,7 +532,7 @@ if (ecran === "grille-remplie" || ecran === "grille-fin") {
     // Le champ de la modale porte son invite : on le cible par le placeholder
     // plutôt que par sa position, et on FRAPPE les touches — un `fill` direct ne
     // déclenche pas l'autocomplétion, qui écoute la saisie.
-    const champ = page.locator("input[placeholder*='lettres'], input[placeholder*='letters']").first();
+    const champ = page.locator("input[placeholder*='lettres'], input[placeholder*='letters'], input[placeholder*='Buchstaben'], input[placeholder*='lettere'], input[placeholder*='letras']").first();
     if (!(await champ.count())) break;
     await champ.click({ force:true }).catch(() => {});
     await champ.pressSequentially(nom, { delay: 25 });
@@ -533,7 +541,7 @@ if (ecran === "grille-remplie" || ecran === "grille-fin") {
     const sugg = page.getByRole("button", { name:new RegExp(nom.split(" ").pop(), "i") }).first();
     if (await sugg.count()) { await sugg.click({ force:true }).catch(() => {}); }
     await page.waitForTimeout(400);
-    const valider = page.getByRole("button", { name:/^VALIDER$/i }).first();
+    const valider = page.getByRole("button", { name:/^(VALIDER|VALIDATE|BESTÄTIGEN|CONVALIDA|VALIDAR)$/i }).first();
     if (await valider.count()) { await valider.click({ force:true }).catch(() => {}); }
     await page.waitForTimeout(1200);
   }
@@ -541,7 +549,7 @@ if (ecran === "grille-remplie" || ecran === "grille-fin") {
   // les deux : `grille-fin` photographie la modale, `grille-remplie` la referme
   // sur les neuf cases trouvées avec « REVOIR MA GRILLE ».
   if (ecran !== "grille-fin") {
-    const revoir = page.getByRole("button", { name:/revoir ma grille/i }).first();
+    const revoir = page.getByRole("button", { name:/revoir ma grille|review my grid|raster ansehen|rivedi la griglia|ver minha grade|ver mi cuadr/i }).first();
     if (await revoir.count()) { await revoir.click({ force:true }).catch(() => {}); }
   }
   await page.waitForTimeout(1600);
@@ -572,7 +580,7 @@ if (ecran === "grille-saisie") {
   const vides = page.locator("div").filter({ hasText: /^\+$/ });
   if (await vides.count()) { await vides.first().click({ force:true }).catch(() => {}); }
   await page.waitForTimeout(900);
-  const champ = page.locator("input[placeholder*='lettres'], input[placeholder*='letters']").first();
+  const champ = page.locator("input[placeholder*='lettres'], input[placeholder*='letters'], input[placeholder*='Buchstaben'], input[placeholder*='lettere'], input[placeholder*='letras']").first();
   if (await champ.count()) {
     await champ.click({ force:true }).catch(() => {});
     // SAISIE=refus : un nom volontairement faux, validé, pour obtenir l'état
@@ -581,7 +589,7 @@ if (ecran === "grille-saisie") {
     if (process.env.SAISIE === "refus") {
       await champ.pressSequentially("Zinedine Zidane", { delay: 25 });
       await page.waitForTimeout(900);
-      const valider = page.getByRole("button", { name:/^VALIDER$/i }).first();
+      const valider = page.getByRole("button", { name:/^(VALIDER|VALIDATE|BESTÄTIGEN|CONVALIDA|VALIDAR)$/i }).first();
       if (await valider.count()) { await valider.click({ force:true }).catch(() => {}); }
       await page.waitForTimeout(1600);
     } else {
