@@ -13,6 +13,12 @@
 // (package.json est en "type": "module"), sans étape de compilation. Aucun
 // import ici, pour la même raison.
 
+// Import STATIQUE et non dynamique : le fichier est généré puis commité, donc il
+// existe toujours. Un `await import()` en repli aurait introduit un top-level await
+// dans une bibliothèque que l'app charge au démarrage — un coût de compatibilité
+// réel pour se protéger d'un fichier qui ne peut pas manquer.
+import { ROTATION, EPOQUE_JOUR } from "./devinette-rotation.js";
+
 /** Jour calendaire parisien au format "YYYY-MM-DD". */
 export function parisDay(maintenant) {
   const d = maintenant == null ? new Date() : new Date(maintenant);
@@ -105,6 +111,14 @@ export function poolDevinette(joueurs, retraites) {
   return pool.length > 0 ? pool : joueurs.filter((p) => p.clubs && nbClubs(p) >= 3 && enActivite(p));
 }
 
+/** Le nom inscrit au calendrier pour ce jour, ou null s'il n'y en a pas. */
+export function nomInscritPour(jour) {
+  if (!ROTATION || EPOQUE_JOUR == null) return null;
+  const pos = jourIndex(jour) - EPOQUE_JOUR;
+  if (pos < 0 || pos >= ROTATION.length) return null;
+  return ROTATION[pos];
+}
+
 /** Générateur pseudo-aléatoire à graine (Lehmer) — même ordre pour tout le monde. */
 function aleaGraine(graine) {
   let s = graine % 2147483647;
@@ -118,8 +132,36 @@ function aleaGraine(graine) {
 const GRAINE = 987654321;
 
 /** Le joueur mystère d'un jour donné. */
+/**
+ * Le joueur d'un jour donné.
+ *
+ * LA ROTATION EST ÉCRITE, PAS CALCULÉE, et c'est une correction de fond. La
+ * version précédente faisait `melange(vivier)[jour % vivier.length]`. Le mélange
+ * avait bien une graine fixe, mais il mélangeait une liste dont le contenu et la
+ * taille bougent : il suffisait qu'un joueur entre ou sorte du vivier pour que
+ * TOUT le calendrier se réordonne, passé comme futur.
+ *
+ * Constaté en production : en corrigeant le comptage des clubs (un club où le
+ * joueur est revenu était compté deux fois, ce qui excluait Zlatan et Lukaku du
+ * vivier), celui-ci est passé de 96 à 97 joueurs — et les douze jours examinés ont
+ * tous changé de joueur. players.jsx a été modifié cinq fois dans la même semaine
+ * à cause du mercato : cinq réordonnancements, donc autant d'occasions de
+ * resservir quelqu'un qui venait de passer. C'est ce qui a été signalé.
+ *
+ * La liste figée (src/lib/devinette-rotation.js) est donc consultée d'abord. Le
+ * calcul d'origine reste en REPLI pour trois cas : avant l'époque de la liste,
+ * au-delà de sa fin, et quand le nom inscrit n'est plus dans le vivier (joueur
+ * devenu retraité, fiche renommée). Le repli ne rend pas le mauvais joueur, il
+ * rend seulement un joueur dont le choix redevient sensible au vivier — pour cette
+ * journée-là uniquement.
+ */
 export function joueurDuJour(pool, jour) {
   if (!pool || pool.length === 0) return null;
+  const inscrit = nomInscritPour(jour);
+  if (inscrit) {
+    const trouve = pool.find(function (p) { return p && p.name === inscrit; });
+    if (trouve) return trouve;
+  }
   const alea = aleaGraine(GRAINE);
   const arr = pool.slice();
   for (let i = arr.length - 1; i > 0; i--) {
