@@ -2,7 +2,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { PLAYERS, RETIRED_PLAYERS, GG_WC_WINNERS, GG_CL_WINNERS, GG_BALLON_DOR, GG_SHIRT_10 } from "../../players.jsx";
 import { CLUB_COLORS } from "../LePont.jsx";
 import { ANEC_ENTRAINEUR } from "./GoatGuess";
-import { tr } from "@/lib/lang";
+import { getLang, tr } from "@/lib/lang";
+import { nomPays } from "@/lib/vocabulaire";
 import { trackPlay } from "../../lib/track";
 import { isNative, hapticLight, hapticHeavy, hapticSuccess } from "@/lib/native";
 import { CLUB_SPELLS, wereTeammates, mightHaveBeenTeammates, hasSpells } from "@/lib/clubSpells";
@@ -119,7 +120,9 @@ const NAT_FLAG: Record<string, string> = {
   Ouzbékistan: "🇺🇿", Gambie: "🇬🇲", Angola: "🇦🇴", Qatar: "🇶🇦", Venezuela: "🇻🇪", Israël: "🇮🇱",
   "République du Congo": "🇨🇬", Finlande: "🇫🇮", Biélorussie: "🇧🇾", Bénin: "🇧🇯", Oman: "🇴🇲",
 };
-function natLabel(nat: string): string { return (NAT_FLAG[nat] ? NAT_FLAG[nat] + " " : "") + nat; }
+// Le drapeau, puis le nom du pays DANS LA LANGUE DU JOUEUR : la base écrit
+// « Pays-Bas » parce que c'est sa clé, pas parce que c'est ce qu'il faut lire.
+function natLabel(nat: string): string { return (NAT_FLAG[nat] ? NAT_FLAG[nat] + " " : "") + nomPays(nat, getLang()); }
 
 // Continent (zone) de chaque nationalité foot → code court affiché dans la puce.
 const NAT_CONT: Record<string, string> = {
@@ -719,7 +722,7 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
     const flag = answer.nationalities[0] ? (NAT_FLAG[answer.nationalities[0]] || "🏴") : "";
     const mates = findTeammates(answer, 2);
     const out: string[] = [];
-    if (answer.nationalities[0]) out.push(flag + " " + answer.nationalities[0] + " · " + posEmoji(answer.positions[0] || "") + " " + posLabel(answer.positions[0] || ""));
+    if (answer.nationalities[0]) out.push(flag + " " + nomPays(answer.nationalities[0], getLang()) + " · " + posEmoji(answer.positions[0] || "") + " " + posLabel(answer.positions[0] || ""));
     if (decade) out.push("🕰️ " + tr("J'ai percé dans les années", "I broke through in the", "Durchbruch in den", "Sono esploso negli anni", "Estourei nos anos","Me di a conocer en los") + " " + decade + tr("", "s", "ern", "", "","s"));
     if (first) out.push("🎬 " + tr("J'ai débuté à", "I started at", "Mein Debüt bei", "Ho esordito a", "Comecei no","Empecé en") + " " + first);
     if (midPick.length) out.push("✈️ " + tr("Je suis passé par", "I played for", "Ich spielte für", "Sono passato per", "Passei por","Pasé por") + " " + midPick.join(", "));

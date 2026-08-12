@@ -67,10 +67,16 @@
 
 export type Rarity = "depart" | "bronze" | "argent" | "or" | "diamant";
 
+import { getLang } from "./lang";
+
 export type RarityMeta = {
   key: Rarity;
   label: string;
   labelEn: string;
+  labelDe?: string;
+  labelIt?: string;
+  labelPt?: string;
+  labelEs?: string;
   /** Couleur du liseré et du nom de la catégorie. */
   color: string;
   /** Halo porté par la carte (boxShadow). */
@@ -83,17 +89,33 @@ export type RarityMeta = {
 
 // Ordre croissant de rareté — sert aussi à trier l'affichage de la collection.
 export const RARITIES: RarityMeta[] = [
-  { key: "depart",  label: "Départ",  labelEn: "Starter",  color: "#8D99AE", glow: "rgba(141,153,174,.4)",
+  { key: "depart",  label: "Départ",  labelEn: "Starter",  labelDe: "Start",   labelIt: "Inizio",   labelPt: "Início",   labelEs: "Inicio",
+    color: "#8D99AE", glow: "rgba(141,153,174,.4)",
     frame: "linear-gradient(160deg,#9AA5B1,#5C6672)" },
-  { key: "bronze",  label: "Bronze",  labelEn: "Bronze",   color: "#CD7F32", glow: "rgba(205,127,50,.45)",
+  { key: "bronze",  label: "Bronze",  labelEn: "Bronze",   labelDe: "Bronze",  labelIt: "Bronzo",   labelPt: "Bronze",   labelEs: "Bronce",
+    color: "#CD7F32", glow: "rgba(205,127,50,.45)",
     frame: "linear-gradient(160deg,#E8A860,#8C4E1A)" },
-  { key: "argent",  label: "Argent",  labelEn: "Silver",   color: "#C8CDD4", glow: "rgba(200,205,212,.45)",
+  { key: "argent",  label: "Argent",  labelEn: "Silver",   labelDe: "Silber",  labelIt: "Argento",  labelPt: "Prata",    labelEs: "Plata",
+    color: "#C8CDD4", glow: "rgba(200,205,212,.45)",
     frame: "linear-gradient(160deg,#FFFFFF,#8E97A3)" },
-  { key: "or",      label: "Or",      labelEn: "Gold",     color: "#F5C22B", glow: "rgba(245,194,43,.5)",
+  { key: "or",      label: "Or",      labelEn: "Gold",     labelDe: "Gold",    labelIt: "Oro",      labelPt: "Ouro",     labelEs: "Oro",
+    color: "#F5C22B", glow: "rgba(245,194,43,.5)",
     frame: "linear-gradient(160deg,#FFE066,#B98407)" },
-  { key: "diamant", label: "Diamant", labelEn: "Diamond",  color: "#8FE9FF", glow: "rgba(143,233,255,.65)",
+  { key: "diamant", label: "Diamant", labelEn: "Diamond",  labelDe: "Diamant", labelIt: "Diamante", labelPt: "Diamante", labelEs: "Diamante",
+    color: "#8FE9FF", glow: "rgba(143,233,255,.65)",
     frame: "linear-gradient(160deg,#FFFFFF,#8FE9FF,#5AA6FF,#FFFFFF)", cls: "bbDiamant" },
 ];
+
+/** Nom de la rareté dans la langue courante — même repli que `tr` : en, puis fr. */
+export function rarityLabel(r: RarityMeta): string {
+  const l = getLang();
+  if (l === "de") return r.labelDe || r.labelEn || r.label;
+  if (l === "it") return r.labelIt || r.labelEn || r.label;
+  if (l === "pt") return r.labelPt || r.labelEn || r.label;
+  if (l === "es") return r.labelEs || r.labelEn || r.label;
+  if (l === "en") return r.labelEn || r.label;
+  return r.label;
+}
 
 export type Card = {
   id: string;
@@ -149,6 +171,55 @@ export const CARDS: Card[] = [
   { id: "immortel",        name: "L'Immortel",         nameEn: "The Immortal",       img: "/cards/zidane.webp",     thumb: "/cards/zidane-64.webp",     xp: 150000, rarity: "diamant" },  // Zinédine Zidane · 1972
   { id: "goat",            name: "Le GOAT",            nameEn: "The GOAT",           img: "/cards/maradona.webp",   thumb: "/cards/maradona-64.webp",   xp: 250000, rarity: "diamant" },  // Diego Maradona · 1960
 ];
+
+// ── Noms de cartes dans les six langues ──────────────────────────────────────
+// La table CARDS ne porte que le français et l'anglais, et ses lignes sont déjà
+// larges : les quatre autres langues vivent ici, indexées par `id`. Sans elles,
+// une collection en allemand affichait « The Rookie » sous un titre « MEINE
+// SAMMLUNG ».
+//
+// Ce sont des noms de CARTE, pas des traductions littérales : on garde le
+// registre — court, imagé, un peu solennel — plutôt que le mot à mot.
+const NOMS_CARTES: Record<string, { de: string; it: string; pt: string; es: string }> = {
+  "recrue":          { de: "Der Neuzugang",     it: "La Recluta",         pt: "O Novato",           es: "El Novato" },
+  "premier-but":     { de: "Erstes Tor",        it: "Primo Gol",          pt: "Primeiro Gol",       es: "Primer Gol" },
+  "premier-contrat": { de: "Erster Vertrag",    it: "Primo Contratto",    pt: "Primeiro Contrato",  es: "Primer Contrato" },
+  "banc":            { de: "Auf der Bank",      it: "In Panchina",        pt: "No Banco",           es: "En el Banquillo" },
+  "entrant":         { de: "Der Joker",         it: "Il Subentrante",     pt: "O Reserva",          es: "El Suplente" },
+  "premier-onze":    { de: "Erste Elf",         it: "Primo Undici",       pt: "Onze Inicial",       es: "El Once Inicial" },
+  "regulier":        { de: "Der Dauerbrenner",  it: "Il Costante",        pt: "O Constante",        es: "El Fijo" },
+  "revelation":      { de: "Die Entdeckung",    it: "La Rivelazione",     pt: "A Revelação",        es: "La Revelación" },
+  "titulaire":       { de: "Der Stammspieler",  it: "Il Titolare",        pt: "O Titular",          es: "El Titular" },
+  "cadre":           { de: "Die Stütze",        it: "Il Pilastro",        pt: "O Pilar",            es: "El Pilar" },
+  "numero-10":       { de: "Die Nummer 10",     it: "Il Numero 10",       pt: "O Camisa 10",        es: "El Número 10" },
+  "brassard":        { de: "Die Kapitänsbinde", it: "La Fascia",          pt: "A Braçadeira",       es: "El Brazalete" },
+  "meneur":          { de: "Der Spielmacher",   it: "Il Regista",         pt: "O Armador",          es: "El Organizador" },
+  "patron":          { de: "Der Chef",          it: "Il Capo",            pt: "O Chefe",            es: "El Jefe" },
+  "buteur":          { de: "Der Torjäger",      it: "Il Bomber",          pt: "O Artilheiro",       es: "El Goleador" },
+  "international":   { de: "Der Nationalspieler", it: "Il Nazionale",     pt: "O Internacional",    es: "El Internacional" },
+  "recordman":       { de: "Der Rekordhalter",  it: "Il Recordman",       pt: "O Recordista",       es: "El Recordista" },
+  "maestro":         { de: "Der Maestro",       it: "Il Maestro",         pt: "O Maestro",          es: "El Maestro" },
+  "finisseur":       { de: "Der Vollstrecker",  it: "Il Finalizzatore",   pt: "O Finalizador",      es: "El Finalizador" },
+  "ballon-or":       { de: "Unaufhaltsam",      it: "L'Inarrestabile",    pt: "O Imparável",        es: "El Imparable" },
+  "palmares":        { de: "Die Titelsammlung", it: "La Bacheca",         pt: "A Sala de Troféus",  es: "El Palmarés" },
+  "intouchable":     { de: "Unantastbar",       it: "L'Intoccabile",      pt: "O Intocável",        es: "El Intocable" },
+  "phenomene":       { de: "Der König",         it: "Il Re",              pt: "O Rei",              es: "El Rey" },
+  "sorcier":         { de: "Der Zauberer",      it: "Il Mago",            pt: "O Mago",             es: "El Mago" },
+  "legende":         { de: "Die Legende",       it: "La Leggenda",        pt: "A Lenda",            es: "La Leyenda" },
+  "hall-of-fame":    { de: "Hall of Fame",      it: "Hall of Fame",       pt: "Hall of Fame",       es: "Hall of Fame" },
+  "sacre":           { de: "Die Krönung",       it: "La Consacrazione",   pt: "A Consagração",      es: "La Consagración" },
+  "immortel":        { de: "Der Unsterbliche",  it: "L'Immortale",        pt: "O Imortal",          es: "El Inmortal" },
+  "goat":            { de: "Der GOAT",          it: "Il GOAT",            pt: "O GOAT",             es: "El GOAT" },
+};
+
+/** Nom d'une carte dans la langue courante. Repli : anglais, puis français. */
+export function cardName(card: { id: string; name: string; nameEn: string }): string {
+  const l = getLang();
+  if (l === "fr") return card.name;
+  const autres = NOMS_CARTES[card.id];
+  if (autres && (autres as any)[l]) return (autres as any)[l];
+  return card.nameEn || card.name;
+}
 
 export function rarityMeta(rarity: Rarity): RarityMeta {
   return RARITIES.find((r) => r.key === rarity) || RARITIES[0];

@@ -3,6 +3,7 @@ import { PLAYERS, RETIRED_PLAYERS, GG_WC_WINNERS, GG_CL_WINNERS, GG_BALLON_DOR, 
 import { CLUB_COLORS } from "../LePont.jsx";
 import { trackPlay } from "../../lib/track";
 import { getLang, tr } from "@/lib/lang";
+import { nomPays } from "@/lib/vocabulaire";
 import { G, posterText, btn, fondCharte, areneCharte } from "@/lib/charte.jsx";
 
 type Player = {
@@ -2263,7 +2264,7 @@ const PlayerRevealCard = ({
           {/* Nation + carrière */}
           <div className="relative mt-3 text-center">
             <div style={{ ...posterText(1, G.white, 1.2), fontSize: 13, letterSpacing: 3, marginBottom: 8 }}>
-              {flag} {(player.nationalities[0] || "—").toUpperCase()}
+              {flag} {nomPays(player.nationalities[0] || "—", getLang()).toUpperCase()}
             </div>
             {/* Carrières longues : débuts + clubs récents (les plus parlants),
                 le reste résumé par « +N » au centre. */}

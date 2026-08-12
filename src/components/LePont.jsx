@@ -13,7 +13,7 @@ import { cadenceSalon } from "../lib/cadence";
 // parisDayOf / parisLastDays servaient au tableau de bord de suivi, parti dans
 // Tracking.jsx, qui les importe désormais lui-même.
 // Cartes à collectionner (débloquées par l'XP) et badge affiché à côté du pseudo.
-import { CARDS, RARITIES, avatarCard, badgeToShow, cardById, hasArt, isUnlocked, levelCard, newlyUnlocked, progressToNext, rarityMeta, unlockedCards } from "../lib/collection";
+import { CARDS, RARITIES, avatarCard, badgeToShow, cardById, hasArt, isUnlocked, levelCard, newlyUnlocked, progressToNext, cardName, rarityLabel, rarityMeta, unlockedCards } from "../lib/collection";
 import { WinBanner } from "./landing/WinBanner";
 // Barème de grades et drapeaux : définis une seule fois, partagés avec le desktop.
 import { GRADES, getGrade, gradeLabel, countryToFlag } from "../lib/leaderboard";
@@ -21,6 +21,10 @@ import { duelTermine } from "../lib/duel";
 import { prochainsTotauxXp } from "../lib/xp";
 // Règles de tirage anti-répétition, partagées avec « Trouve le joueur ».
 import { clePaire, pairesRetenues, tirerEnEvitant, memoriser } from "../lib/tirage.js";
+// Vocabulaire foot en six langues : la base est écrite en français, l'affichage
+// ne doit jamais montrer la clé telle quelle.
+import { choisir as choisirMot, nomPays, nomPoste, nomPosteLong, nomLigue,
+         nomLigueLongue, nomMois, nomTrophee, MOT_ENTRAINEUR } from "../lib/vocabulaire";
 import Tracking from "./Tracking.jsx";
 
 
@@ -200,15 +204,15 @@ function getCurrentSeason() {
   const hours = Math.floor((remaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
   // Clé du mois au format "2026-04" pour stockage DB
   const monthKey = paris.getFullYear() + "-" + String(paris.getMonth()+1).padStart(2,'0');
-  // Noms de mois français/anglais pour affichage
-  const monthNamesFr = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
-  const monthNamesEn = ["January","February","March","April","May","June","July","August","September","October","November","December"];
   return {
     num: num + 1,
     start, end, days, hours,
     monthKey,
-    monthNameFr: monthNamesFr[paris.getMonth()] + " " + paris.getFullYear(),
-    monthNameEn: monthNamesEn[paris.getMonth()] + " " + paris.getFullYear()
+    // Le mois et l'année BRUTS : le nom se compose à l'affichage, où la langue
+    // est connue. Les deux champs monthNameFr/monthNameEn d'avant obligeaient à
+    // choisir entre deux langues sur une app qui en parle six.
+    mois: paris.getMonth(),
+    annee: paris.getFullYear(),
   };
 }
 
@@ -218,9 +222,9 @@ function getNextGrade(score) {
   let next = null;
   for (let i = GRADES.length - 1; i >= 0; i--) { if (GRADES[i].min > score) { next = GRADES[i]; break; } }
   if (!next) return null;
-  let lang = "fr";
-  try { lang = localStorage.getItem("bb_lang") || "fr"; } catch {}
-  return { ...next, label: lang === "fr" ? next.label : (next.labelEn || next.label) };
+  // `gradeLabel` connaît les six langues ; le tri FR/EN qui vivait ici affichait
+  // « Legend » à un joueur allemand alors que la table dit « Legende ».
+  return { ...next, label: gradeLabel(next) };
 }
 // Paliers de chaîne (The Mercato) fêtés en grande pompe.
 const CHAIN_MILESTONES = {
@@ -2723,76 +2727,102 @@ function ggGetCriterionEmoji(criterion) {
 }
 
 // ─── Tooltip explication d'un critère ────────────────────────
+// Six langues, comme le reste de l'app : la version d'avant ne connaissait que
+// le français et l'anglais, donc un joueur en allemand lisait une infobulle
+// française sous une interface allemande.
 function ggGetCriterionTooltip(criterion, lang) {
-  const isEn = lang === "en";
+  const phrase = (mots) => choisirMot(mots, lang);
   if (criterion.type === "club") {
-    return isEn ? `The player played at ${criterion.value} (at least one professional season).` : `Le joueur a évolué au ${criterion.value} (au moins une saison professionnelle).`;
+    const c = criterion.value;
+    return phrase({
+      fr: `Le joueur a évolué au ${c} (au moins une saison professionnelle).`,
+      en: `The player played at ${c} (at least one professional season).`,
+      de: `Der Spieler stand bei ${c} unter Vertrag (mindestens eine Profisaison).`,
+      it: `Il giocatore ha giocato al ${c} (almeno una stagione da professionista).`,
+      pt: `O jogador atuou no ${c} (pelo menos uma temporada profissional).`,
+      es: `El jugador jugó en el ${c} (al menos una temporada profesional).`,
+    });
   }
   if (criterion.type === "nationality") {
-    return isEn ? `The player has the sporting nationality of ${criterion.value}.` : `Le joueur a la nationalité sportive ${criterion.value}.`;
+    const p = nomPays(criterion.value, lang);
+    return phrase({
+      fr: `Le joueur a la nationalité sportive ${p}.`,
+      en: `The player has the sporting nationality of ${p}.`,
+      de: `Der Spieler besitzt die Sportnationalität ${p}.`,
+      it: `Il giocatore ha la nazionalità sportiva ${p}.`,
+      pt: `O jogador tem a nacionalidade esportiva ${p}.`,
+      es: `El jugador tiene la nacionalidad deportiva ${p}.`,
+    });
   }
   if (criterion.type === "position") {
-    if (isEn) {
-      const en = { gardien: "goalkeeper", defenseur: "defender", milieu: "midfielder", attaquant: "forward" };
-      return `The player primarily plays as a ${en[criterion.value] || criterion.value}.`;
-    }
-    const labels = { gardien: "gardien de but", defenseur: "défenseur", milieu: "milieu de terrain", attaquant: "attaquant" };
-    return `Le joueur évolue principalement au poste de ${labels[criterion.value] || criterion.value}.`;
+    const p = nomPosteLong(criterion.value, lang);
+    return phrase({
+      fr: `Le joueur évolue principalement au poste de ${p}.`,
+      en: `The player primarily plays as a ${p}.`,
+      de: `Der Spieler spielt hauptsächlich als ${p}.`,
+      it: `Il giocatore gioca principalmente da ${p}.`,
+      pt: `O jogador atua principalmente como ${p}.`,
+      es: `El jugador juega principalmente de ${p}.`,
+    });
   }
   if (criterion.type === "league") {
-    if (isEn) {
-      const en = { ligue1: "French Ligue 1", premier_league: "English Premier League", liga: "Spanish La Liga", serie_a: "Italian Serie A", bundesliga: "German Bundesliga" };
-      return `The player has played in at least one club of the ${en[criterion.value] || criterion.value}.`;
-    }
-    const ligues = { ligue1: "Ligue 1 française", premier_league: "Premier League anglaise", liga: "Liga espagnole", serie_a: "Serie A italienne", bundesliga: "Bundesliga allemande" };
-    return `Le joueur a évolué dans au moins un club de ${ligues[criterion.value] || criterion.value}.`;
+    const l = nomLigueLongue(criterion.value, lang);
+    return phrase({
+      fr: `Le joueur a évolué dans au moins un club de ${l}.`,
+      en: `The player has played in at least one club of the ${l}.`,
+      de: `Der Spieler hat bei mindestens einem Klub der ${l} gespielt.`,
+      it: `Il giocatore ha giocato in almeno un club della ${l}.`,
+      pt: `O jogador atuou em pelo menos um clube da ${l}.`,
+      es: `El jugador jugó en al menos un club de la ${l}.`,
+    });
   }
   if (criterion.type === "trophy") {
-    if (criterion.value === "world_cup") return isEn ? "The player has won at least one World Cup with their national team." : "Le joueur a remporté au moins une Coupe du Monde avec sa sélection nationale.";
-    if (criterion.value === "champions_league") return isEn ? "The player has won at least one UEFA Champions League with their club." : "Le joueur a remporté au moins une UEFA Champions League avec son club.";
-    return isEn ? "The player has won this trophy." : "Le joueur a remporté ce trophée.";
+    if (criterion.value === "world_cup") return phrase({
+      fr: "Le joueur a remporté au moins une Coupe du Monde avec sa sélection nationale.",
+      en: "The player has won at least one World Cup with their national team.",
+      de: "Der Spieler hat mit seiner Nationalmannschaft mindestens eine Weltmeisterschaft gewonnen.",
+      it: "Il giocatore ha vinto almeno un Mondiale con la sua nazionale.",
+      pt: "O jogador venceu pelo menos uma Copa do Mundo com a sua seleção.",
+      es: "El jugador ganó al menos un Mundial con su selección.",
+    });
+    if (criterion.value === "champions_league") return phrase({
+      fr: "Le joueur a remporté au moins une UEFA Champions League avec son club.",
+      en: "The player has won at least one UEFA Champions League with their club.",
+      de: "Der Spieler hat mit seinem Klub mindestens eine UEFA Champions League gewonnen.",
+      it: "Il giocatore ha vinto almeno una UEFA Champions League con il suo club.",
+      pt: "O jogador venceu pelo menos uma UEFA Champions League com o seu clube.",
+      es: "El jugador ganó al menos una UEFA Champions League con su club.",
+    });
+    return phrase({
+      fr: "Le joueur a remporté ce trophée.", en: "The player has won this trophy.",
+      de: "Der Spieler hat diese Trophäe gewonnen.", it: "Il giocatore ha vinto questo trofeo.",
+      pt: "O jogador conquistou este troféu.", es: "El jugador ganó este trofeo.",
+    });
   }
   if (criterion.type === "coach") {
-    return isEn ? "This former player later became a manager/coach." : "Cet ancien joueur est ensuite devenu entraîneur.";
+    return phrase({
+      fr: "Cet ancien joueur est ensuite devenu entraîneur.",
+      en: "This former player later became a manager/coach.",
+      de: "Dieser frühere Spieler wurde später Trainer.",
+      it: "Questo ex giocatore è poi diventato allenatore.",
+      pt: "Este ex-jogador tornou-se depois treinador.",
+      es: "Este exjugador se convirtió después en entrenador.",
+    });
   }
   return "";
 }
 
-// Retourne le label affiché du critère selon la langue (FR/EN)
+// Libellé affiché d'un critère, dans les six langues.
+//
+// `criterion.label` est écrit en FRANÇAIS à la génération de la grille : c'est
+// la clé, pas le texte à montrer. On ne s'en sert donc que comme dernier repli
+// (un club, dont le nom ne se traduit pas).
 function ggGetCriterionDisplayLabel(criterion, lang) {
-  if (lang === "en") {
-    if (criterion.type === "position") {
-      const en = { gardien: "GOALKEEPER", defenseur: "DEFENDER", milieu: "MIDFIELDER", attaquant: "FORWARD" };
-      return en[criterion.value] || criterion.label;
-    }
-    if (criterion.type === "league") {
-      const en = { ligue1: "Played in L1", premier_league: "Played in PL", liga: "Played in Liga", serie_a: "Played in Serie A", bundesliga: "Played in Bundesliga" };
-      return en[criterion.value] || criterion.label;
-    }
-    if (criterion.type === "trophy") {
-      if (criterion.value === "world_cup") return "WC Winner";
-      if (criterion.value === "champions_league") return "UCL Winner";
-    }
-    if (criterion.type === "coach") {
-      return "Became coach";
-    }
-    if (criterion.type === "nationality") {
-      // Traduire les nationalités courantes
-      const en = {
-        "France":"France","Espagne":"Spain","Italie":"Italy","Allemagne":"Germany","Angleterre":"England",
-        "Portugal":"Portugal","Pays-Bas":"Netherlands","Belgique":"Belgium","Croatie":"Croatia",
-        "Brésil":"Brazil","Argentine":"Argentina","Uruguay":"Uruguay","Colombie":"Colombia","Chili":"Chile",
-        "Mexique":"Mexico","États-Unis":"USA",
-        "Maroc":"Morocco","Sénégal":"Senegal","Algérie":"Algeria","Côte d'Ivoire":"Ivory Coast",
-        "Cameroun":"Cameroon","Nigeria":"Nigeria","Tunisie":"Tunisia","Ghana":"Ghana","Égypte":"Egypt",
-        "Pologne":"Poland","Tchéquie":"Czechia","Serbie":"Serbia","Russie":"Russia","Ukraine":"Ukraine",
-        "Suède":"Sweden","Norvège":"Norway","Danemark":"Denmark","Suisse":"Switzerland","Autriche":"Austria",
-        "Turquie":"Turkey","Grèce":"Greece","Irlande":"Ireland","Écosse":"Scotland","Pays de Galles":"Wales",
-        "Japon":"Japan","Corée du Sud":"South Korea","Australie":"Australia",
-      };
-      return en[criterion.value] || criterion.label;
-    }
-  }
+  if (criterion.type === "position") return nomPoste(criterion.value, lang);
+  if (criterion.type === "nationality") return nomPays(criterion.value, lang);
+  if (criterion.type === "league") return nomLigue(criterion.value, lang);
+  if (criterion.type === "trophy") return nomTrophee(criterion.value, lang);
+  if (criterion.type === "coach") return choisirMot(MOT_ENTRAINEUR, lang);
   return criterion.label;
 }
 
@@ -8097,7 +8127,14 @@ export default function LePont() {
         localStorage.setItem("bb_pending_grade_up", JSON.stringify({
           min: newGrade.min,
           label: newGrade.label,
+          // Les SIX libellés : la modale de montée de grade appelle gradeLabel
+          // sur cet objet relu du stockage. N'en garder que deux la faisait
+          // retomber sur l'anglais pour les quatre autres langues.
           labelEn: newGrade.labelEn,
+          labelDe: newGrade.labelDe,
+          labelIt: newGrade.labelIt,
+          labelPt: newGrade.labelPt,
+          labelEs: newGrade.labelEs,
           emoji: newGrade.emoji,
           color: newGrade.color,
           timestamp: Date.now()
@@ -9349,11 +9386,11 @@ export default function LePont() {
         {/* Nom et rareté : ils claquent une fois la carte révélée */}
         {revele && (
           <div style={{zIndex:1,textAlign:"center",marginTop:18,animation:"bbClaque .45s cubic-bezier(.2,.8,.3,1) both"}}>
-            <div style={{...posterText(34,G.white)}}>{lang==="fr"?cardPopup.name:cardPopup.nameEn}</div>
+            <div style={{...posterText(34,G.white)}}>{cardName(cardPopup)}</div>
             <div style={{display:"inline-flex",alignItems:"center",gap:6,marginTop:8,padding:"4px 14px",
               borderRadius:G.rayonS,background:rm.color,border:G.traitFin,boxShadow:"2px 2px 0 "+G.encre,
               color:G.encre,fontSize:11.5,fontWeight:900,letterSpacing:2,textTransform:"uppercase"}}>
-              {lang==="fr"?rm.label:rm.labelEn}
+              {rarityLabel(rm)}
             </div>
           </div>
         )}
@@ -11220,7 +11257,7 @@ export default function LePont() {
               <div style={{display:"flex",alignItems:"baseline",gap:8,marginBottom:8}}>
                 <span style={{fontSize:11,letterSpacing:1.5,fontWeight:800,color:"rgba(255,255,255,.45)",textTransform:"uppercase"}}>{tr("Prochaine carte","Next card","Nächste Karte","Prossima carta","Próxima carta","Siguiente carta")}</span>
                 <span style={{flex:1}}/>
-                <span style={{fontSize:12,fontWeight:800,color:rarityMeta(prochaine.card.rarity).color}}>{lang==="fr"?prochaine.card.name:prochaine.card.nameEn}</span>
+                <span style={{fontSize:12,fontWeight:800,color:rarityMeta(prochaine.card.rarity).color}}>{cardName(prochaine.card)}</span>
               </div>
               <div style={{height:12,background:"rgba(8,17,9,.55)",border:G.traitFin,borderRadius:G.rayonS,overflow:"hidden"}}>
                 <div style={{height:"100%",width:Math.round(prochaine.ratio*100)+"%",minWidth:prochaine.ratio>0?6:0,background:G.pelouse,transition:"width .4s"}}/>
@@ -11247,7 +11284,7 @@ export default function LePont() {
                       un gris-bleu pour Depart, un argent pour Argent — y
                       disparaissaient. L'encre les porte, la rarete reste dite
                       par le cadre des cartes en dessous. */}
-                  <span style={{...posterLight(22,G.encre)}}>{lang==="fr"?rar.label:rar.labelEn}</span>
+                  <span style={{...posterLight(22,G.encre)}}>{rarityLabel(rar)}</span>
                   <span style={{flex:1,height:2,background:"rgba(8,17,9,.55)"}}/>
                   <span style={{fontSize:11.5,fontWeight:800,color:"rgba(8,17,9,.7)"}}>{nbPossedees}/{cartes.length}</span>
                 </div>
@@ -11259,7 +11296,7 @@ export default function LePont() {
                       <button
                         key={c.id}
                         onClick={ouverte ? function(){ chooseBadge(c.id); } : undefined}
-                        title={ouverte ? (lang==="fr"?c.name:c.nameEn) : (c.xp.toLocaleString("fr-FR") + " XP")}
+                        title={ouverte ? cardName(c) : (c.xp.toLocaleString("fr-FR") + " XP")}
                         className={ouverte && rar.cls ? rar.cls : undefined}
                         style={{
                           padding:3,border:G.traitFin,boxShadow:ouverte?G.ombre:"none",
@@ -11291,7 +11328,7 @@ export default function LePont() {
                         </div>
                         <div style={{padding:"6px 6px 7px",fontSize:10.5,fontWeight:800,lineHeight:1.25,
                           color:ouverte?G.white:"rgba(255,255,255,.35)",textAlign:"center",fontFamily:G.font}}>
-                          {lang==="fr"?c.name:c.nameEn}
+                          {cardName(c)}
                         </div>
                       </button>
                     );
@@ -11476,7 +11513,7 @@ export default function LePont() {
                       bandeau, il était écrit en libellé de 11 px. Et le compte à
                       rebours prend le maillot dans ses trois derniers jours :
                       c'est à ça que sert cette couleur dans la charte. */}
-                  <div style={{...posterText(20,G.projecteur)}}><span style={{WebkitTextStroke:0,textShadow:"none"}}>🏆</span> {(lang==="fr"?s.monthNameFr:s.monthNameEn).toUpperCase()}</div>
+                  <div style={{...posterText(20,G.projecteur)}}><span style={{WebkitTextStroke:0,textShadow:"none"}}>🏆</span> {(nomMois(s.mois, lang) + " " + s.annee).toUpperCase()}</div>
                   <div style={{fontSize:10.5,fontWeight:800,letterSpacing:1,marginTop:2,
                     color:daysLeft<=3?G.maillot:"rgba(255,255,255,.55)"}}>
                     {daysLeft > 0
@@ -11644,12 +11681,11 @@ export default function LePont() {
                 <span style={{WebkitTextStroke:0,textShadow:"none"}}>🏛</span> HALL OF FAME
               </div>
               {hallOfFame.slice(0,5).map(function(s,i){
-                const monthNamesFr = ["Jan","Fév","Mars","Avr","Mai","Juin","Juil","Août","Sept","Oct","Nov","Déc"];
-                const monthNamesEn = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
                 let monthShort = tr("Saison "+s.season_number,"Season "+s.season_number,"Saison "+s.season_number,"Stagione "+s.season_number,"Temporada "+s.season_number,"Temporada "+s.season_number);
                 if (s.season_month) {
                   const [y, m] = s.season_month.split("-");
-                  monthShort = (lang==="fr"?monthNamesFr:monthNamesEn)[parseInt(m,10)-1] + " " + y.slice(2);
+                  monthShort = nomMois(parseInt(m,10)-1, lang, true) + " " + y.slice(2);
                 }
                 return (
                   <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",background:G.nuit,borderRadius:G.rayonS,marginBottom:10,border:G.traitFin,boxShadow:G.ombre}}>
@@ -11697,13 +11733,12 @@ export default function LePont() {
                 );
               };
               // Transformer le monthKey "2026-04" en nom lisible
-              const monthNamesFr = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
-              const monthNamesEn = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
               let monthLabel = "";
               if (s.season_month) {
                 const [y, m] = s.season_month.split("-");
                 const mi = parseInt(m,10) - 1;
-                monthLabel = (lang==="fr"?monthNamesFr:monthNamesEn)[mi] + " " + y;
+                monthLabel = nomMois(mi, lang) + " " + y;
               }
               return (
                 /* La carte de saison s'éclaircit d'un voile d'or : posée en
@@ -12447,7 +12482,7 @@ export default function LePont() {
                     <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
                       {ses.map(function(c){
                         const rm = rarityMeta(c.rarity);
-                        return <img key={c.id} src={c.thumb} alt="" title={lang==="fr"?c.name:c.nameEn} style={{width:38,height:50,borderRadius:G.rayonS,objectFit:"cover",border:G.traitFin,outline:"2px solid "+rm.color,outlineOffset:-4}}/>;
+                        return <img key={c.id} src={c.thumb} alt="" title={cardName(c)} style={{width:38,height:50,borderRadius:G.rayonS,objectFit:"cover",border:G.traitFin,outline:"2px solid "+rm.color,outlineOffset:-4}}/>;
                       })}
                     </div>
                   </div>
@@ -12668,7 +12703,7 @@ export default function LePont() {
               <div style={{display:"flex",gap:8}}>
                 {apercu.map(function(c){
                   const rm = rarityMeta(c.rarity);
-                  return <img key={c.id} src={c.thumb} alt="" title={lang==="fr"?c.name:c.nameEn} style={{width:42,height:56,borderRadius:G.rayonS,objectFit:"cover",border:G.traitFin,outline:"2px solid "+rm.color,outlineOffset:-4,flexShrink:0}}/>;
+                  return <img key={c.id} src={c.thumb} alt="" title={cardName(c)} style={{width:42,height:56,borderRadius:G.rayonS,objectFit:"cover",border:G.traitFin,outline:"2px solid "+rm.color,outlineOffset:-4,flexShrink:0}}/>;
                 })}
                 {prochaine && (
                   <div style={{width:42,height:56,borderRadius:G.rayonS,border:"2px dashed rgba(8,17,9,.75)",background:"rgba(8,17,9,.35)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:15,color:"rgba(255,255,255,.45)"}}>🔒</div>
