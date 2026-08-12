@@ -151,6 +151,13 @@ await ctx.route("**/rest/v1/**", async (route) => {
   } else if (url.includes("bb_presence")) {
     corps = JOUEURS.slice(0, 4).map((j) => ({ player_id:j.pid }));
   } else if (url.includes("bb_pseudos")) {
+    // `pseudo-refuse` veut l'écran de SAISIE du pseudo. Vider bb_name ne suffit
+    // pas : l'app va relire son pseudo en base par player_id et se reconfirme
+    // toute seule. Il faut donc aussi répondre « aucune ligne » à cette lecture,
+    // sinon l'aperçu photographiait l'accueil et tapait dans le code de salon.
+    if (ecran === "pseudo-refuse") {
+      corps = [];
+    } else
     corps = JOUEURS.map((j, i) => ({ player_id:j.pid, pseudo:j.nom, xp:j.xp,
       xp_season:j.score, xp_season_month:new Date().toISOString().slice(0, 7), country:j.pays,
       created_at:ilYaJours(i % 14) }));
@@ -180,14 +187,17 @@ const PREMIER_LANCEMENT = ecran === "bienvenue" ? "tout"
 // le téléphone de quelqu'un — c'est comme ça que les critères de GOAT GRID
 // sont restés « MILIEU » et « PAYS-BAS » en allemand.
 const LANGUE = process.env.LANGUE || "fr";
-const PREMIER_LANCEMENT_OBJ = { etape: PREMIER_LANCEMENT, vide: !!process.env.VIDE, langue: LANGUE };
+// `pseudo-refuse` a besoin qu'AUCUN pseudo ne soit posé : c'est l'absence de
+// bb_name qui fait apparaître l'écran de saisie.
+const PREMIER_LANCEMENT_OBJ = { etape: PREMIER_LANCEMENT, vide: !!process.env.VIDE, langue: LANGUE,
+  sansPseudo: ecran === "pseudo-refuse" };
 await page.addInitScript((premier) => {
   // L'accueil est derrière l'accueil-tutoriel : sans ces clés, on photographie
   // le carrousel d'introduction quel que soit l'écran demandé. On ne les pose
   // donc PAS quand c'est justement lui qu'on vient voir.
   if (premier.etape !== "tout") localStorage.setItem("bb_welcome_seen", "1");
   if (premier.etape === "non")   localStorage.setItem("bb_tutorial_done", "1");
-  localStorage.setItem("bb_name", "jules");
+  if (!premier.sansPseudo) localStorage.setItem("bb_name", "jules");
   localStorage.setItem("bb_lang", premier.langue || "fr");
   // La liste d'amis vit en localStorage, pas dans une table : sans ces clés,
   // l'écran Amis ne montrait QUE son état vide, et tout ce qui s'y passe une
@@ -289,6 +299,10 @@ const CHEMINS = {
   // cette machine n'est ni un iPhone ni un Android, donc l'onglet présélectionné
   // est toujours le même et l'autre resterait invérifiable.
   "ecran-accueil": [],
+  // `pseudo-refuse` : l'écran de choix de pseudo, avec un pseudo interdit tapé.
+  // Le contrôle de modération est le seul endroit de l'app où un message
+  // d'erreur DOIT rester vague — il ne faut pas que la liste se devine.
+  "pseudo-refuse": [],
   "partie-fin": [], // une partie solo, puis on passe jusqu'a la fin de manche
   "partie-faux": [], // une partie solo, puis une reponse fausse : le bandeau
   "mercato-faux": [], // The Mercato, puis une reponse fausse
@@ -498,6 +512,30 @@ if (ecran === "profil" || ecran === "comment-jouer" || ecran === "ecran-accueil"
   // bouton, donc getByRole ne la voit pas.
   await page.locator("img[src*='/cards/']").first().click();
   await page.waitForTimeout(1600);
+}
+
+if (ecran === "pseudo-refuse") {
+  // La modale de pseudo ne s'ouvre pas d'elle-même sur l'accueil : c'est l'avatar
+  // de l'en-tête qui l'appelle quand aucun pseudo n'est confirmé. Sans ce clic,
+  // l'aperçu tapait dans le champ « code de salon » et concluait, à tort, que le
+  // pseudo était passé.
+  await page.locator("img[src*='/cards/']").first().click().catch(() => {});
+  await page.waitForTimeout(900);
+  // Ciblé par son PLACEHOLDER, et pas par sa position : « premier » attrapait le
+  // champ « code de salon » de l'accueil, « dernier » aussi — la modale n'est pas
+  // le dernier input du document. On tapait donc le pseudo dans le code de salon,
+  // et le contrôle concluait à tort que le pseudo était passé.
+  const champ = page.getByPlaceholder(/pseudo|username|nutzername|nome|apodo/i).first();
+  await champ.click({ force: true }).catch(() => {});
+  await champ.pressSequentially(process.env.PSEUDO || "H1tl3r_88", { delay: 30 });
+  await page.waitForTimeout(300);
+  const valider = page.getByRole("button", { name: /valider|confirm|bestätigen|conferma|validar/i }).first();
+  if (await valider.count()) { await valider.click({ force: true }).catch(() => {}); }
+  await page.waitForTimeout(1200);
+  const texte = await page.evaluate(() => document.body.innerText);
+  const refuse = /pas autorisé|isn't allowed|nicht erlaubt|non è consentito|não é permitido|no está permitido|réservé|reserved|reserviert|riservato|reservado/i.test(texte);
+  console.log(refuse ? "pseudo refusé ✅" : "⚠️ le pseudo est passé");
+  if (!refuse) process.exitCode = 1;
 }
 
 if (ecran === "ecran-accueil") {
