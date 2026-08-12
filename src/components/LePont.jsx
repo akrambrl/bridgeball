@@ -10398,7 +10398,7 @@ export default function LePont() {
                 <div style={{display:"flex",gap:8}}>
                   <input autoFocus value={duelInput} onChange={function(e){setDuelInput(e.target.value);if(duelWrong)setDuelWrong(false);}} onKeyDown={function(e){if(e.key==="Enter"){ if(duelSug.length>0){duelSubmitAnswer(duelSug[0].name);} else {duelSubmitAnswer();} }}} placeholder={tr("Nom du joueur…","Player name…","Spielername…","Nome del giocatore…","Nome do jogador…","Nombre del jugador…")}
                     style={{flex:1,minWidth:0,padding:"14px",borderRadius:G.rayon,border:duelWrong?"3px solid "+G.maillot:G.trait,boxShadow:G.ombre,background:duelWrong?"rgba(217,58,43,.3)":G.nuit,color:G.white,fontFamily:G.font,fontSize:16,fontWeight:700,outline:"none",textAlign:"center",boxSizing:"border-box",animation:duelWrong?"answerKo .4s ease":"none"}}/>
-                  <button onClick={function(){ if(duelSug.length>0){duelSubmitAnswer(duelSug[0].name);} else {duelSubmitAnswer();} }} disabled={duelInput.trim().length<3} style={{...btn(duelInput.trim().length>=3?G.pelouse:G.nuit,duelInput.trim().length>=3?G.encre:"rgba(255,255,255,.45)",17),padding:"0 20px",cursor:duelInput.trim().length>=3?"pointer":"not-allowed"}}>OK</button>
+                  <button {...handlersDeTap(function(){ if(duelSug.length>0){duelSubmitAnswer(duelSug[0].name);} else {duelSubmitAnswer();} }, duelInput.trim().length>=3)} disabled={duelInput.trim().length<3} style={{...btn(duelInput.trim().length>=3?G.pelouse:G.nuit,duelInput.trim().length>=3?G.encre:"rgba(255,255,255,.45)",17),padding:"0 20px",cursor:duelInput.trim().length>=3?"pointer":"not-allowed"}}>OK</button>
                 </div>
                 {duelSug.length > 0 && (
                   <div style={{marginTop:10,background:G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,overflow:"hidden"}}>
@@ -10414,7 +10414,7 @@ export default function LePont() {
                   <div style={{textAlign:"center",fontSize:12,color:oppAnsMs!=null?G.ciel:"rgba(255,255,255,.55)",marginTop:duelWrong?4:10,fontWeight:700}}>{oppAnsMs!=null?tr("⚡ L'adversaire a trouvé !","⚡ Opponent found it!","⚡ Gegner hat's gefunden!","⚡ L'avversario ha trovato!","⚡ O adversário encontrou!","⚡ ¡El rival lo ha encontrado!"):tr("L'adversaire cherche…","Opponent is searching…","Gegner sucht…","L'avversario sta cercando…","O adversário está procurando…","El rival está buscando…")}</div>
                 )}
                 {isSolo && (
-                  <button onClick={duelSkip} style={{...btn(G.nuit,G.white,15),width:"100%",marginTop:12,padding:"12px"}}>⏭ {tr("Passer (je ne sais pas)","Skip (I don't know)","Überspringen (weiß nicht)","Salta (non lo so)","Pular (não sei)","Pasar (no lo sé)")}</button>
+                  <button {...handlersDeTap(duelSkip)} style={{...btn(G.nuit,G.white,15),width:"100%",marginTop:12,padding:"12px"}}>⏭ {tr("Passer (je ne sais pas)","Skip (I don't know)","Überspringen (weiß nicht)","Salta (non lo so)","Pular (não sei)","Pasar (no lo sé)")}</button>
                 )}
               </div>
             )}
@@ -14757,9 +14757,9 @@ export default function LePont() {
                         const commun = {padding:"13px 10px",minHeight:52,letterSpacing:1.2,textTransform:"uppercase"};
                         return (
                           <div style={{display:"flex",gap:8,marginTop:14,alignItems:"stretch"}}>
-                            <button onClick={function(){setGgSelectedCell(null);setGgGuess("");setGgLastRejected(null);setGgReportSent(false);}} style={{...btn(G.nuit,G.creme,15),...commun,flex:1}}>{tr("Annuler","Cancel","Abbrechen","Annulla","Cancelar","Cancelar")}</button>
+                            <button {...handlersDeTap(function(){setGgSelectedCell(null);setGgGuess("");setGgLastRejected(null);setGgReportSent(false);})} style={{...btn(G.nuit,G.creme,15),...commun,flex:1}}>{tr("Annuler","Cancel","Abbrechen","Annulla","Cancelar","Cancelar")}</button>
                             <button
-                              onClick={function(){ if(suggestions.length>0){ggSubmitAnswer(suggestions[0].name);} else if(actif){ggSubmitAnswer(ggGuess);} }}
+                              {...handlersDeTap(function(){ if(suggestions.length>0){ggSubmitAnswer(suggestions[0].name);} else if(actif){ggSubmitAnswer(ggGuess);} }, actif)}
                               disabled={!actif}
                               /* Inactif en or sombre et non en encre : sur l'or, un bouton
                                  presque noir reste le plus VOYANT des deux, et l'action

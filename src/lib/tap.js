@@ -55,9 +55,15 @@ const FENETRE_FANTOME = 700;
  * Le clic reste branché : sur ordinateur `touchend` n'arrive jamais, et une
  * activation au clavier (Entrée sur un `<button>`) passe elle aussi par le clic.
  *
+ * Le second paramètre est INDISPENSABLE sur un bouton désactivé : `disabled`
+ * empêche le navigateur d'émettre un `click`, mais pas `touchend`, qui reste
+ * distribué à l'élément. Sans ce garde, toucher un « VALIDER » grisé validerait.
+ *
  * @param {() => void} action ce qu'il faut faire quand l'élément est activé
+ * @param {boolean} [actif] à faux, l'élément ne réagit à rien (bouton désactivé)
  */
-export function handlersDeTap(action) {
+export function handlersDeTap(action, actif) {
+  const permis = actif === undefined ? true : !!actif;
   return {
     onTouchStart: function (e) {
       const t = e && e.touches && e.touches[0];
@@ -71,6 +77,7 @@ export function handlersDeTap(action) {
           Math.abs(t.clientY - depart.y) > SEUIL_TAP) bouge = true;
     },
     onTouchEnd: function (e) {
+      if (!permis) { depart = null; return; }
       if (bouge) { depart = null; return; }   // c'était un défilement
       // Supprime le clic émulé ET la perte de focus : rien ne se déplace, et le
       // clavier reste ouvert.
@@ -80,6 +87,7 @@ export function handlersDeTap(action) {
       action();
     },
     onClick: function () {
+      if (!permis) return;
       if (Date.now() - dernierTactile < FENETRE_FANTOME) return;  // clic fantôme
       action();
     },
