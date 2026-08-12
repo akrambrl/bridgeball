@@ -185,7 +185,7 @@ export async function envoyerLot(abonnes, charges) {
   const compte = { ok: 0, purger: 0, alerter: 0, reessayer: 0 };
   const aPurger = [], perimes = [], alertes = [], reussis = new Set();
   resultats.forEach(function(r, i){
-    const d = decisionFinale(r.status, auMoinsUnSucces);
+    const d = decisionFinale(r.status, auMoinsUnSucces, r.corps);
     compte[d] = (compte[d] || 0) + 1;
     if (d === "ok") reussis.add(abonnes[i].player_id);
     if (d === "purger") (r.status === 401 || r.status === 403 ? perimes : aPurger).push(abonnes[i].id);
@@ -228,7 +228,8 @@ function journalParHote(resultats, abonnes) {
 
 /** Purge d'après le résultat d'un envoi, plus les rebuts du dédoublonnage. */
 export async function nettoyer(resultat, abos, dryRun) {
-  await supprimer(TABLE_ABOS, resultat.aPurger, "abonnements morts (404/410)", dryRun);
+  await supprimer(TABLE_ABOS, resultat.aPurger,
+    "abonnements morts (404/410, ou 400 dont le motif désigne l'abonnement)", dryRun);
   await supprimer(TABLE_ABOS, resultat.perimes, "abonnements signés par une ancienne clé VAPID (403)", dryRun);
   await supprimer(TABLE_ABOS, abos.doublons.map(function(d){ return d.id; }), "doublons d'endpoint", dryRun);
   await supprimer(TABLE_ABOS, abos.inutilisables.map(function(d){ return d.id; }), "lignes sans clés de chiffrement", dryRun);

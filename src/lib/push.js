@@ -94,10 +94,43 @@ export function decisionEnvoi(status) {
  * @param {boolean} auMoinsUnSucces
  * @returns {"ok"|"purger"|"alerter"|"reessayer"}
  */
-export function decisionFinale(status, auMoinsUnSucces) {
+export function decisionFinale(status, auMoinsUnSucces, corps) {
   const d = decisionEnvoi(status);
   if (d === "alerter" && (status === 401 || status === 403) && auMoinsUnSucces) return "purger";
+  if (d === "alerter" && status === 400 && abonnementMortSelonCorps(corps)) return "purger";
   return d;
+}
+
+// Ce qui, dans le corps d'un refus, désigne l'ABONNEMENT et pas nous.
+//
+// Les services ne s'accordent pas sur le code à rendre pour un abonnement mort.
+// 404 et 410 sont les cas propres, déjà traités ; mais Apple répond 400
+// « BadDeviceToken » pour un jeton qui n'est plus valide, et FCM 400 pour un
+// jeton de notification périmé. Sans cette lecture, ces lignes-là échouent
+// éternellement : jamais purgées puisque le code n'est pas 410, jamais
+// délivrées puisque le jeton est mort.
+const CORPS_ABONNEMENT_MORT = /bad ?device ?token|bad ?subscription|expired ?token|unregistered|not ?registered|invalid ?registration|unauthorized ?registration|registration token is not|invalid subscription|subscription (?:has |is )?expired/i;
+
+// …mais surtout, ce qui désigne NOTRE configuration et interdit donc de purger.
+// Un refus qui parle de signature, de JWT ou de VAPID parle de la clé du serveur :
+// purger là-dessus viderait la table sur une erreur de secret, exactement ce que
+// decisionEnvoi refuse de faire sur un 403. Ce garde passe AVANT l'autre, parce
+// qu'un même corps peut contenir les deux mots — « ExpiredProviderToken » d'Apple
+// désigne notre jeton d'autorisation, pas l'appareil.
+const CORPS_NOTRE_FAUTE = /jwt|vapid|provider|signature|authorization|authentication|payload|encryption|header|topic|too large/i;
+
+/**
+ * VRAI si le corps d'un HTTP 400 dit que l'ABONNEMENT est mort.
+ *
+ * Volontairement étroit : en cas de doute, on n'efface pas. Ce qui n'est pas
+ * reconnu ici reste rapporté tel quel dans le journal (voir resumerCorps), ce
+ * qui permet d'élargir la règle sur pièces plutôt que par supposition.
+ */
+export function abonnementMortSelonCorps(corps) {
+  if (!corps) return false;
+  const t = String(corps);
+  if (CORPS_NOTRE_FAUTE.test(t)) return false;
+  return CORPS_ABONNEMENT_MORT.test(t);
 }
 
 /**
@@ -159,6 +192,41 @@ export function accrocheAmis(demandes) {
     // « veulent » dans les deux cas : le sujet est pluriel dès qu'ils sont deux.
     corps: qui + " veulent être tes amis. Accepte et défie-les !",
   };
+}
+
+/**
+ * Faut-il (re)transmettre cet endpoint à Supabase ?
+ *
+ * L'app garde en local l'endpoint déjà envoyé, pour ne pas ajouter une ligne à
+ * chaque ouverture — la table n'a pas de contrainte d'unicité, donc un POST
+ * ajoute, il ne remplace pas. Mais cette mémoire est LOCALE : elle ne sait pas si
+ * la ligne existe encore côté serveur.
+ *
+ * C'est un piège concret. Dès que l'envoyeur purge une ligne — abonnement mort,
+ * doublon, refus définitif du service de push — le marqueur local continue
+ * d'affirmer « déjà transmis » et l'abonné n'est JAMAIS réinscrit : de son côté
+ * la permission reste accordée, donc rien ne le lui signale et rien ne le lui
+ * redemande. Il disparaît des notifications pour de bon, sans qu'aucun des deux
+ * camps ne le sache.
+ *
+ * D'où une péremption d'une semaine, et le format « endpoint|horodatage ». Coût
+ * maximal : une ligne en doublon par abonné et par semaine, que dedupeAbonnements
+ * écarte et que la purge des doublons supprime le jour même. C'est ce qui rend
+ * une purge RÉPARABLE, donc défendable.
+ *
+ * Un marqueur sans horodatage vient de l'ancien format : traité comme périmé, il
+ * repose une fois les lignes éventuellement déjà purgées.
+ */
+const PUSH_MARQUEUR_MS = 7 * 24 * 3600 * 1000;
+
+export function pushARetransmettre(marqueur, endpoint, maintenant) {
+  if (!marqueur) return true;
+  const sep = marqueur.lastIndexOf("|");
+  if (sep < 0) return true;
+  if (marqueur.slice(0, sep) !== endpoint) return true;
+  const pose = Number(marqueur.slice(sep + 1));
+  if (!Number.isFinite(pose) || pose <= 0) return true;
+  return maintenant - pose >= PUSH_MARQUEUR_MS;
 }
 
 /**

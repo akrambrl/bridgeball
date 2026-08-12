@@ -6,7 +6,7 @@
 // traitement d'un refus du serveur de push.
 import { describe, it, expect } from "vitest";
 import { abonnementUtilisable, dedupeAbonnements, decisionEnvoi, decisionFinale, tagDuJour,
-         demandesANotifier, accrocheAmis, grouperPar, resumerCorps, repartitionHotes } from "../lib/push.js";
+         demandesANotifier, accrocheAmis, grouperPar, resumerCorps, repartitionHotes, pushARetransmettre, abonnementMortSelonCorps } from "../lib/push.js";
 
 const abo = (id: string, endpoint: string, created_at: string) =>
   ({ id, endpoint, p256dh: "cle", auth: "auth", created_at });
@@ -341,5 +341,116 @@ describe("repartitionHotes", () => {
   it("rend une liste vide sans abonnés", () => {
     expect(repartitionHotes([])).toEqual([]);
     expect(repartitionHotes(null)).toEqual([]);
+  });
+});
+
+describe("pushARetransmettre", () => {
+  const T0 = Date.parse("2026-08-12T12:00:00Z");
+  const JOUR = 86400000;
+  const ep = "https://fcm.googleapis.com/fcm/send/abc";
+
+  it("ne repose rien quand l'endpoint vient d'être transmis", () => {
+    // Le POST AJOUTE une ligne, il n'en remplace aucune : réécrire à chaque
+    // ouverture ferait grossir la table d'une ligne par lancement.
+    expect(pushARetransmettre(ep + "|" + T0, ep, T0 + 60000)).toBe(false);
+    expect(pushARetransmettre(ep + "|" + T0, ep, T0 + 6 * JOUR)).toBe(false);
+  });
+
+  it("repose au bout d'une semaine — c'est ce qui rend une purge réparable", () => {
+    // LE test qui compte. Sans péremption, un abonné purgé côté serveur n'est
+    // jamais réinscrit : sa permission reste accordée, donc rien ne le lui
+    // redemande, et il ne reçoit plus jamais rien.
+    expect(pushARetransmettre(ep + "|" + T0, ep, T0 + 7 * JOUR)).toBe(true);
+    expect(pushARetransmettre(ep + "|" + T0, ep, T0 + 30 * JOUR)).toBe(true);
+  });
+
+  it("repose immédiatement quand l'endpoint a changé", () => {
+    // Le navigateur renouvelle un endpoint sans avertir : l'ancien est mort.
+    expect(pushARetransmettre(ep + "|" + T0, ep + "-neuf", T0 + 60000)).toBe(true);
+  });
+
+  it("repose quand il n'y a pas de marqueur du tout", () => {
+    expect(pushARetransmettre(null, ep, T0)).toBe(true);
+    expect(pushARetransmettre("", ep, T0)).toBe(true);
+  });
+
+  it("traite l'ANCIEN format comme périmé", () => {
+    // Les marqueurs déjà posés valent l'endpoint nu, sans horodatage. Les tenir
+    // pour valides à vie reconduirait exactement la panne qu'on répare : ceux
+    // dont la ligne a déjà été purgée resteraient injoignables pour toujours.
+    expect(pushARetransmettre(ep, ep, T0)).toBe(true);
+  });
+
+  it("repose plutôt que de faire confiance à un marqueur abîmé", () => {
+    expect(pushARetransmettre(ep + "|", ep, T0)).toBe(true);
+    expect(pushARetransmettre(ep + "|pas-un-nombre", ep, T0)).toBe(true);
+    expect(pushARetransmettre(ep + "|0", ep, T0)).toBe(true);
+    expect(pushARetransmettre(ep + "|-5", ep, T0)).toBe(true);
+  });
+
+  it("découpe sur le DERNIER séparateur : un endpoint peut contenir une barre", () => {
+    // « | » n'apparaît pas dans une URL de push en pratique, mais découper sur
+    // le premier séparateur ferait comparer un endpoint tronqué, donc reposer la
+    // ligne à chaque lancement — la fuite que la mémoire devait empêcher.
+    const bizarre = "https://push.example/a|b/c";
+    expect(pushARetransmettre(bizarre + "|" + T0, bizarre, T0 + 60000)).toBe(false);
+  });
+});
+
+// La panne de production : sept lignes echouaient en HTTP 400 tous les jours,
+// jamais purgees parce que le code n'etait pas 410, jamais delivrees parce que le
+// jeton etait mort. Ces deux blocs decident quand un 400 vaut un 410.
+describe("abonnementMortSelonCorps", () => {
+  it("reconnaît un jeton mort chez Apple et chez FCM", () => {
+    expect(abonnementMortSelonCorps('{"reason":"BadDeviceToken"}')).toBe(true);
+    expect(abonnementMortSelonCorps('{"reason":"Unregistered"}')).toBe(true);
+    expect(abonnementMortSelonCorps("NotRegistered")).toBe(true);
+    expect(abonnementMortSelonCorps("InvalidRegistration")).toBe(true);
+    expect(abonnementMortSelonCorps("Invalid subscription")).toBe(true);
+  });
+
+  it("REFUSE de purger dès que le refus parle de notre configuration", () => {
+    // Le garde le plus important. « ExpiredProviderToken » contient bien
+    // « Token », mais désigne NOTRE jeton d'autorisation, pas l'appareil :
+    // purger là-dessus viderait la table sur une erreur de secret.
+    expect(abonnementMortSelonCorps('{"reason":"ExpiredProviderToken"}')).toBe(false);
+    expect(abonnementMortSelonCorps('{"reason":"BadJwtToken"}')).toBe(false);
+    expect(abonnementMortSelonCorps("VAPID credentials mismatch")).toBe(false);
+    expect(abonnementMortSelonCorps("Invalid encryption headers")).toBe(false);
+    expect(abonnementMortSelonCorps("invalid authentication")).toBe(false);
+    expect(abonnementMortSelonCorps("Request payload too large")).toBe(false);
+  });
+
+  it("n'invente rien sur un corps vide ou inconnu", () => {
+    // Ce qui n'est pas reconnu reste rapporté dans le journal : la règle
+    // s'élargit sur pièces, pas par supposition.
+    expect(abonnementMortSelonCorps("")).toBe(false);
+    expect(abonnementMortSelonCorps(null)).toBe(false);
+    expect(abonnementMortSelonCorps(undefined)).toBe(false);
+    expect(abonnementMortSelonCorps("Bad Request")).toBe(false);
+    expect(abonnementMortSelonCorps('{"errno":110}')).toBe(false);
+  });
+});
+
+describe("decisionFinale sur un HTTP 400", () => {
+  it("purge quand le motif désigne l'abonnement", () => {
+    expect(decisionFinale(400, true, "BadDeviceToken")).toBe("purger");
+    // Et indépendamment des autres envois : un jeton nommé mort par le service
+    // l'est, qu'un autre abonné ait reçu sa notification ou non.
+    expect(decisionFinale(400, false, "BadDeviceToken")).toBe("purger");
+  });
+
+  it("alerte toujours quand le motif est inconnu ou nous accuse", () => {
+    expect(decisionFinale(400, true, "BadJwtToken")).toBe("alerter");
+    expect(decisionFinale(400, true, "Bad Request")).toBe("alerter");
+    expect(decisionFinale(400, true, undefined)).toBe("alerter");
+    expect(decisionFinale(400, true)).toBe("alerter");
+  });
+
+  it("ne change rien aux autres codes, quel que soit le corps", () => {
+    // Un corps parlant ne doit pas transformer une panne serveur en purge.
+    expect(decisionFinale(500, true, "BadDeviceToken")).toBe("reessayer");
+    expect(decisionFinale(429, true, "BadDeviceToken")).toBe("reessayer");
+    expect(decisionFinale(201, true, "BadDeviceToken")).toBe("ok");
   });
 });

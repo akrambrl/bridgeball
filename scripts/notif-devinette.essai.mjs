@@ -16,8 +16,8 @@
 //    ça, web-push refuse de chiffrer et l'essai ne prouverait rien.
 //  • le faux service de push est en HTTPS, avec un certificat auto-signé fait
 //    sur place. Un endpoint de push est toujours en https, et la vérification
-//    d'abonnement l'exige — servir en http aurait écarté les quatre abonnés
-//    avant tout envoi, et l'essai serait passé en ne testant rien.
+//    d'abonnement l'exige — servir en http aurait écarté TOUS les abonnés avant
+//    le moindre envoi, et l'essai serait passé en ne testant rien.
 
 import { createServer } from "node:https";
 import { spawn } from "node:child_process";
@@ -58,24 +58,29 @@ execFileSync("openssl", ["req", "-x509", "-newkey", "rsa:2048", "-nodes", "-days
   "-keyout", join(dossier, "k.pem"), "-out", join(dossier, "c.pem")], { stdio: "ignore" });
 const tls = { key: readFileSync(join(dossier, "k.pem")), cert: readFileSync(join(dossier, "c.pem")) };
 
-// Cinq lignes pour cinq cas : un abonné vivant, un DOUBLON du vivant (même
+// Six lignes pour six cas : un abonné vivant, un DOUBLON du vivant (même
 // endpoint, plus ancien — celui que la table accumule faute de contrainte
-// d'unicité), un abonné mort (410), une ligne sans clés de chiffrement, et un
-// abonné REFUSÉ en 400 avec un motif dans le corps de la réponse.
+// d'unicité), un abonné mort (410), une ligne sans clés de chiffrement, et deux
+// abonnés REFUSÉS en 400 — l'un dont le motif accuse le jeton, l'autre dont le
+// motif accuse notre clé.
 //
-// Ce dernier cas vient de la production : sept envois sur treize échouaient
-// chaque jour en HTTP 400, et le journal n'en disait rien d'autre que « Received
-// unexpected response code » — le message générique de web-push, identique quelle
-// que soit la cause, alors que l'explication est dans `body`. Un 400 doit
-// désormais laisser sa raison dans le journal, et ne PAS entraîner de purge :
-// tant qu'on ne sait pas ce qu'il veut dire, supprimer la ligne serait perdre
-// définitivement un abonné qui ne peut pas se réabonner tout seul.
+// Ces deux derniers cas viennent de la production : sept envois sur treize
+// échouaient chaque jour en HTTP 400, et le journal n'en disait rien d'autre que
+// « Received unexpected response code » — le message générique de web-push,
+// identique quelle que soit la cause, alors que l'explication est dans `body`.
+//
+// Un 400 laisse donc désormais sa raison dans le journal, et c'est cette raison
+// qui décide : un motif qui nomme le jeton vaut un 410 et la ligne part ; un
+// motif qui accuse notre clé alerte et ne touche à rien ; un motif inconnu
+// alerte aussi. La règle est volontairement étroite — en cas de doute, on
+// n'efface pas.
 const ABONNES = [
   { id: "a1", endpoint: base + "/push/vivant", ...cles(), platform: "android", created_at: "2026-08-05T10:00:00Z" },
   { id: "a0", endpoint: base + "/push/vivant", ...cles(), platform: "android", created_at: "2026-01-01T10:00:00Z" },
   { id: "a2", endpoint: base + "/push/mort", ...cles(), platform: "ios", created_at: "2026-08-06T10:00:00Z" },
   { id: "a3", endpoint: base + "/push/vivant2", p256dh: "", auth: "", platform: "desktop", created_at: "2026-08-07T10:00:00Z" },
   { id: "a4", endpoint: base + "/push/refuse", ...cles(), platform: "ios", created_at: "2026-08-08T10:00:00Z" },
+  { id: "a5", endpoint: base + "/push/refuse-nous", ...cles(), platform: "ios", created_at: "2026-08-09T10:00:00Z" },
 ];
 
 const recus = [], supprimes = [];
@@ -110,6 +115,14 @@ const serveur = createServer(tls, (req, res) => {
     res.writeHead(400, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ reason: "BadDeviceToken" })); return;
   }
+  // Le MÊME code, l'autre verdict : « BadJwtToken » accuse notre clé de
+  // serveur, pas l'appareil. Purger sur ce motif viderait la table entière sur
+  // une erreur de secret — la panne deviendrait irréparable, puisqu'il faudrait
+  // que chaque joueur réaccorde une permission qu'il a déjà donnée.
+  if (chemin === "/push/refuse-nous") {
+    res.writeHead(400, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ reason: "BadJwtToken" })); return;
+  }
   res.writeHead(404); res.end();
 });
 
@@ -142,13 +155,15 @@ const attendu = (nom, reel, veut) => { if (JSON.stringify(reel) !== JSON.stringi
 attendu("une seule notification envoyée (le doublon n'a pas reçu deux fois)", recus.length, 1);
 attendu("message chiffré en aes128gcm", recus[0] && recus[0].encodage, "aes128gcm");
 attendu("requête signée VAPID", recus[0] && recus[0].signe, true);
-attendu("l'abonné mort, le doublon et la ligne sans clés sont supprimés",
-  supprimes.slice().sort(), ["a0", "a2", "a3"]);
-// « a4 » N'EST PAS dans cette liste, et c'est voulu : un 400 dont on ne sait pas
-// encore interpréter le motif ne justifie pas de supprimer l'abonné. La liste
-// ci-dessus le vérifie déjà en étant exhaustive.
+// La liste est EXHAUSTIVE, et c'est la moitié la plus importante de cette
+// vérification : « a4 » y est (400 « BadDeviceToken », le jeton est mort et rien
+// ne le ressuscitera) et « a5 » n'y est PAS (400 « BadJwtToken », qui accuse
+// notre clé). Le même code HTTP, deux verdicts opposés selon le motif.
+attendu("le mort, le doublon, la ligne sans clés et le jeton mort sont supprimés",
+  supprimes.slice().sort(), ["a0", "a2", "a3", "a4"]);
 attendu("le refus 400 laisse son motif dans le journal", /BadDeviceToken/.test(journal), true);
 attendu("le journal donne le service qui refuse", /HTTP 400 sur 127\.0\.0\.1/.test(journal), true);
+attendu("un 400 qui accuse notre clé alerte au lieu de purger", /HTTP 400 .*BadJwtToken/.test(journal), true);
 // Un refus inexpliqué doit COLORER LA TÂCHE EN ROUGE. Sans ça, « envoyé à 1
 // personne sur 2 » passerait pour un succès tous les jours.
 attendu("code de sortie", code, 1);
@@ -159,4 +174,5 @@ attendu("une seule lecture pour un lot plus petit que le plafond", lectures, 1);
 
 console.log("");
 if (echecs.length) { for (const e of echecs) console.error("✗ " + e); process.exit(1); }
-console.log("✓ circuit complet vérifié : 1 envoi chiffré et signé, 3 lignes purgées (mort, doublon, sans clés)");
+console.log("✓ circuit complet vérifié : 1 envoi chiffré et signé, 4 lignes purgées "
+  + "(mort 410, jeton mort en 400, doublon, sans clés), et 1 refus signalé sans purge");

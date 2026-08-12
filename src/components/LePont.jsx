@@ -24,6 +24,7 @@ import { clePaire, pairesRetenues, tirerEnEvitant, memoriser } from "../lib/tira
 // Modération des pseudos : haine, insultes, usurpation. Voir l'en-tête du
 // fichier pour la raison d'être des deux niveaux de correspondance.
 import { pseudoInterdit } from "../lib/pseudo";
+import { pushARetransmettre } from "../lib/push.js";
 // Vocabulaire foot en six langues : la base est écrite en français, l'affichage
 // ne doit jamais montrer la clé telle quelle.
 import { choisir as choisirMot, nomPays, nomPoste, nomPosteLong, nomLigue,
@@ -3364,6 +3365,10 @@ const VAPID_PUBLIC_KEY = "BIDTT9eBO0qcUxJQq4WnNwOe9RR39XlWTo3bFTIjc7Uwt6V4kFwbA2
 // Sans cette mémoire, réabonner à chaque lancement ferait grossir la table d'une
 // ligne par ouverture de l'app.
 const PUSH_ENDPOINT_KEY = "bb_push_endpoint";
+// Le marqueur vaut « endpoint|horodatage » et PÉRIME au bout d'une semaine :
+// cette mémoire est locale et ne sait pas si la ligne existe encore côté
+// serveur, si bien qu'une purge rendait l'abonné définitivement injoignable.
+// Tout le raisonnement est dans pushARetransmettre (src/lib/push.js).
 
 // Convertit une base64 URL-safe en Uint8Array (nécessaire pour l'API PushManager)
 function urlBase64ToUint8Array(base64String) {
@@ -3413,11 +3418,12 @@ async function subscribeToPush(playerId, sbFetch) {
     }
     const subJson = sub.toJSON();
     if (!subJson || !subJson.endpoint || !subJson.keys || !subJson.keys.p256dh || !subJson.keys.auth) return false;
-    // Déjà transmis : on ne réécrit pas. Voir PUSH_ENDPOINT_KEY — un POST ici
-    // AJOUTE une ligne, il n'en remplace aucune.
+    // Déjà transmis, et depuis moins d'une semaine : on ne réécrit pas. Voir
+    // PUSH_ENDPOINT_KEY — un POST ici AJOUTE une ligne, il n'en remplace aucune,
+    // mais ne jamais réécrire rendait toute purge irréversible.
     let dejaTransmis = null;
     try { dejaTransmis = localStorage.getItem(PUSH_ENDPOINT_KEY); } catch(e) {}
-    if (dejaTransmis === subJson.endpoint) return true;
+    if (!pushARetransmettre(dejaTransmis, subJson.endpoint, Date.now())) return true;
     const reponse = await sbFetch("bb_push_subscriptions", {
       method: "POST",
       headers: { "Content-Type":"application/json", "Prefer":"return=minimal" },
@@ -3432,7 +3438,7 @@ async function subscribeToPush(playerId, sbFetch) {
     });
     // sbFetch rend null sur échec réseau ou réponse KO, [] sur un 201.
     if (reponse === null) return false;
-    try { localStorage.setItem(PUSH_ENDPOINT_KEY, subJson.endpoint); } catch(e) {}
+    try { localStorage.setItem(PUSH_ENDPOINT_KEY, subJson.endpoint + "|" + Date.now()); } catch(e) {}
     return true;
   } catch(e) {
     return false;
