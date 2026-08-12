@@ -973,6 +973,31 @@ if (ecran === "battle-suggestion") {
     ? "✅ défaut reproduit : un clic distribué après le dépliage tombe " + Math.abs(decalage) + " px à côté"
     : "⚠️ mécanisme non reproduit ici (compact " + l1.compact + ", décalage " + decalage + " px)");
 
+  // ── Le bouton « Passer » subit exactement le même sort : il est encore plus
+  // bas dans l'écran, donc plus déplacé que la suggestion.
+  await clavier(true);
+  await page.waitForTimeout(400);
+  const passerAvant = await page.evaluate(() => {
+    const b = [...document.querySelectorAll("button")].find(e => /passer|skip|überspr|salta|pular|pasar/i.test(e.textContent || ""));
+    if (!b) return null;
+    const r = b.getBoundingClientRect();
+    return { y: Math.round(r.top + r.height / 2), x: Math.round(r.left + r.width / 2) };
+  });
+  await clavier(false);
+  await page.waitForTimeout(500);
+  const passerApres = await page.evaluate((pt) => {
+    const b = [...document.querySelectorAll("button")].find(e => /passer|skip|überspr|salta|pular|pasar/i.test(e.textContent || ""));
+    const r = b ? b.getBoundingClientRect() : null;
+    const dessous = pt ? document.elementFromPoint(pt.x, pt.y) : null;
+    return { y: r ? Math.round(r.top + r.height / 2) : null,
+             dessous: (dessous ? dessous.textContent || "" : "").trim().slice(0, 34) };
+  }, passerAvant);
+  if (passerAvant && passerApres.y != null) {
+    console.log("bouton « Passer » : y=" + passerAvant.y + " clavier ouvert → y="
+      + passerApres.y + " fermé  (déplacé de " + (passerApres.y - passerAvant.y) + " px)");
+    console.log("   à y=" + passerAvant.y + " on trouve désormais : « " + passerApres.dessous + " »");
+  }
+
   // ── Et le tap tactile, qui doit être traité AVANT tout déplacement.
   await page.getByPlaceholder(/nom du joueur/i).first().fill("di mari");
   await page.waitForTimeout(500);
@@ -1003,6 +1028,36 @@ if (ecran === "battle-suggestion") {
     traitee: /mauvaise réponse|wrong answer|trouvé|found/i.test(document.body.innerText),
     saisie: window.__champJeu()?.value ?? null,
   }));
+  // ── Le tap sur « Passer », clavier ouvert.
+  await clavier(true);
+  await page.waitForTimeout(600);
+  const passerTap = await page.evaluate(() => {
+    const b = [...document.querySelectorAll("button")].find(e => /passer|skip|überspr|salta|pular|pasar/i.test(e.textContent || ""));
+    if (!b) return { erreur: "bouton Passer introuvable" };
+    const avant = (document.querySelector("input[placeholder]") && window.__champJeu()) ? window.__champJeu().value : null;
+    const r = b.getBoundingClientRect();
+    const x = r.left + r.width / 2, y = r.top + r.height / 2;
+    const t = () => new Touch({ identifier: 2, target: b, clientX: x, clientY: y });
+    const envoyer = (type, avecTouche) => {
+      const e = new TouchEvent(type, { bubbles: true, cancelable: true,
+        touches: avecTouche ? [t()] : [], changedTouches: [t()] });
+      b.dispatchEvent(e);
+      return e.defaultPrevented;
+    };
+    envoyer("touchstart", true);
+    return { empeche: envoyer("touchend", false), saisieAvant: avant };
+  });
+  await page.waitForTimeout(1200);
+  const apresPasser = await page.evaluate(() => ({
+    passe: /passé|skip|übersp|salta|pulou|pasado/i.test(document.body.innerText),
+    saisie: window.__champJeu()?.value ?? null,
+  }));
+  console.log(passerTap.erreur ? "❌ " + passerTap.erreur
+    : (apresPasser.saisie === "" || apresPasser.passe
+        ? "✅ « Passer » répond au doigt clavier ouvert (manche passée : " + apresPasser.passe
+          + ", saisie : " + JSON.stringify(apresPasser.saisie) + ")"
+        : "❌ « Passer » ne répond pas : saisie " + JSON.stringify(apresPasser.saisie)));
+
   if (tap.erreur) { console.log("❌ " + tap.erreur); }
   else {
     console.log(tap.empeche

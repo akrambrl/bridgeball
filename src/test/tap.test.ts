@@ -103,3 +103,38 @@ describe("handlersDeTap", () => {
     expect(appels).toBe(1);
   });
 });
+
+// `disabled` empêche le navigateur d'émettre un `click`, mais PAS `touchend` :
+// sans garde, toucher un bouton grisé l'aurait activé — une régression que
+// l'extension aux boutons « OK » et « VALIDER » introduisait directement.
+describe("handlersDeTap sur un élément désactivé", () => {
+  beforeEach(() => reinitialiserTap());
+
+  it("ne réagit ni au doigt ni au clic quand actif vaut faux", () => {
+    let appels = 0;
+    const h = handlersDeTap(() => { appels++; }, false);
+    h.onTouchStart(toucher(10, 10));
+    h.onTouchEnd(fin().e);
+    h.onClick();
+    expect(appels).toBe(0);
+  });
+
+  it("réagit normalement quand actif vaut vrai, ou n'est pas précisé", () => {
+    let a = 0, b = 0;
+    const vrai = handlersDeTap(() => { a++; }, true);
+    vrai.onTouchStart(toucher(0, 0)); vrai.onTouchEnd(fin().e);
+    reinitialiserTap();
+    const omis = handlersDeTap(() => { b++; });
+    omis.onTouchStart(toucher(0, 0)); omis.onTouchEnd(fin().e);
+    expect([a, b]).toEqual([1, 1]);
+  });
+
+  it("n'empêche pas l'action par défaut d'un élément désactivé", () => {
+    // Rien ne doit être consommé : le navigateur garde son comportement.
+    const h = handlersDeTap(() => {}, false);
+    h.onTouchStart(toucher(5, 5));
+    const f = fin();
+    h.onTouchEnd(f.e);
+    expect(f.empeche()).toBe(false);
+  });
+});
