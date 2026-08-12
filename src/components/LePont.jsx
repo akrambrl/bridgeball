@@ -5952,7 +5952,6 @@ export default function LePont() {
     loadDuels();
     loadFriendRequests();
     loadSeasons();
-    checkAndCloseSeason();
     // Fetch la blacklist des joueurs signalés buggés pour le défi du jour
     // Si le joueur du jour est dans la blacklist (≥3 signalements), on le remplace
     (async function() {
@@ -6008,24 +6007,20 @@ export default function LePont() {
           setPseudoConfirmed(true);
           // Charger XP cumulé depuis Supabase (0 si colonne vide ou pas encore créée)
           if (typeof mine[0].xp === "number") setPlayerXp(mine[0].xp);
-          // Charger XP saison : si le mois stocké correspond au mois en cours, on garde. Sinon reset à 0.
+          // XP de la saison, pour information seulement : cette colonne ne décide
+          // plus rien. Elle triait le classement du mois, et le client pouvait y
+          // écrire n'importe quoi — c'est le classement recalculé par le serveur
+          // qui fait autorité désormais (bb_classement_courant).
+          //
+          // Plus aucune ÉCRITURE ici : la remise à zéro mensuelle n'a plus d'objet,
+          // et la section 6 de docs/supabase-classement.sql retire au client le
+          // droit de toucher à cette colonne.
           try {
             const currentMonth = getCurrentSeason().monthKey;
             const storedMonth = mine[0].xp_season_month;
-            if (storedMonth === currentMonth && typeof mine[0].xp_season === "number") {
-              setPlayerXpSeason(mine[0].xp_season);
-            } else {
-              // Nouveau mois (ou première fois) : reset à 0 et sync Supabase
-              setPlayerXpSeason(0);
-              if (storedMonth !== currentMonth) {
-                // Reset côté serveur pour que ça soit cohérent pour les autres lectures
-                sbFetch("bb_pseudos?player_id=eq." + playerId, {
-                  method: "PATCH",
-                  headers: { "Content-Type":"application/json", "Prefer":"return=minimal" },
-                  body: JSON.stringify({ xp_season: 0, xp_season_month: currentMonth })
-                }).catch(()=>{});
-              }
-            }
+            setPlayerXpSeason(
+              storedMonth === currentMonth && typeof mine[0].xp_season === "number"
+                ? mine[0].xp_season : 0);
           } catch(e) {}
           // Charger streak Supabase et réconcilier avec localStorage (le plus élevé gagne)
           try {
@@ -7749,110 +7744,76 @@ export default function LePont() {
     } catch(e) {}
   }
 
-  async function checkAndCloseSeason() {
-    const season = getCurrentSeason();
-    if (season.num <= 1) return; // pas encore de saison précédente à clôturer
-    try {
-      // Calculer le monthKey de la saison précédente
-      const now = new Date();
-      const paris = new Date(now.toLocaleString('en-US',{timeZone:'Europe/Paris'}));
-      const prevMonth = new Date(paris.getFullYear(), paris.getMonth() - 1, 1);
-      const prevMonthKey = prevMonth.getFullYear() + "-" + String(prevMonth.getMonth()+1).padStart(2,'0');
-      // Garde supplémentaire : prevMonthKey doit être >= mois de SEASON_START
-      // (sinon on essaierait de clôturer une saison qui n'a jamais existé)
-      const seasonStartKey = "2026-04";
-      if (prevMonthKey < seasonStartKey) return;
-      // Vérifier si la saison précédente a déjà été clôturée
-      const prev = await sbFetch("bb_seasons?season_number=eq."+(season.num-1)+"&limit=1");
-      if (Array.isArray(prev) && prev.length > 0) return; // déjà clôturée
-
-      // Récupérer les joueurs avec xp_season du mois précédent
-      const rows = await sbFetch("bb_pseudos?select=player_id,pseudo,xp_season&xp_season_month=eq."+prevMonthKey+"&order=xp_season.desc&limit=10");
-      if (!Array.isArray(rows) || rows.length === 0) return;
-      const top = rows.filter(r => (r.xp_season || 0) > 0);
-      // Garde anti-bidon : il faut au moins 3 joueurs ayant participé pour valider la saison
-      if (top.length < 3) return;
-
-      const champion = top[0];
-      const runnerUp = top[1] || null;
-      const third = top[2] || null;
-
-      // Créer l'entrée Hall of Fame.
-      // ⚠️ La table bb_seasons ne contient aujourd'hui que les colonnes du
-      // champion (season_number, champion_*, mode, ended_at) : un insert avec
-      // le podium complet est rejeté par PostgREST (colonnes inconnues) et les
-      // saisons 2+ n'ont jamais été enregistrées. On tente le podium complet
-      // (au cas où les colonnes seraient ajoutées côté DB), puis on retombe
-      // sur le schéma minimal pour ne jamais perdre le titre du champion.
-      const championRow = {
-        season_number: season.num - 1,
-        champion_id: champion.player_id,
-        champion_name: champion.pseudo,
-        champion_score: champion.xp_season,
-        mode: "global",
-        ended_at: new Date().toISOString()
-      };
-      const fullPodiumRow = {
-        ...championRow,
-        season_month: prevMonthKey,
-        runner_up_id: runnerUp ? runnerUp.player_id : null,
-        runner_up_name: runnerUp ? runnerUp.pseudo : null,
-        runner_up_xp: runnerUp ? runnerUp.xp_season : null,
-        third_id: third ? third.player_id : null,
-        third_name: third ? third.pseudo : null,
-        third_xp: third ? third.xp_season : null
-      };
-      let created = await sbFetch("bb_seasons", {
-        method: "POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify(fullPodiumRow)
-      });
-      if (created === null) {
-        created = await sbFetch("bb_seasons", {
-          method: "POST",
-          headers: {"Content-Type":"application/json"},
-          body: JSON.stringify(championRow)
-        });
-      }
-      if (created === null) {
-        console.warn("bb_seasons : échec de la clôture de la saison", season.num - 1);
-        return;
-      }
-      loadSeasons();
-    } catch(e) { /* silent */ }
-  }
+  // `checkAndCloseSeason` a été RETIRÉE. Elle lisait le top 10 de la colonne
+  // falsifiable `xp_season` et écrivait elle-même le Hall of Fame — depuis le
+  // téléphone du premier joueur à ouvrir l'app après le 1er du mois, avec la clé
+  // publique. La clôture appartient au serveur : `bb_cloturer_saison`, appelée
+  // par .github/workflows/cloture-saison.yml, qui refuse de couronner quiconque
+  // si un mode joué manque au barème.
 
   async function loadLeaderboard(mode) {
     try {
-      // Mode Saison : classement par XP du mois en cours (table bb_pseudos)
+      // Mode Saison : le classement est RECALCULÉ PAR LE SERVEUR depuis les
+      // scores, il n'est plus lu dans une colonne.
+      //
+      // Avant, il triait `bb_pseudos.xp_season` — une colonne que le client
+      // écrivait lui-même. La clé anon étant publique, un seul PATCH suffisait
+      // pour se poser à 999 999 999, ou pour remettre un rival à zéro. Tant
+      // qu'un lot dépend de ce classement, c'était une porte ouverte.
+      //
+      // La fonction `bb_classement_courant` additionne, pour chaque jour et
+      // chaque mode, le MEILLEUR score du joueur ramené sur 100. Il n'y a donc
+      // plus de compteur à falsifier, et un score gonflé ne rapporte pas plus
+      // qu'un très bon score honnête. Voir docs/supabase-classement.sql.
       if (mode === "saison") {
-        const currentMonth = getCurrentSeason().monthKey;
-        // On récupère tous les joueurs dont xp_season_month correspond au mois en cours
-        const rows = await sbFetch("bb_pseudos?select=player_id,pseudo,xp,xp_season,xp_season_month,country&xp_season_month=eq."+currentMonth+"&order=xp_season.desc&limit=50");
-        if (!Array.isArray(rows)) { setLeaderboard([]); return; }
-        const sorted = rows
-          .filter(r => (r.xp_season || 0) > 0)
-          .map(function(r, i) { return {
-            name: r.pseudo || "?",
-            pid: r.player_id,
-            score: r.xp_season || 0,
-            xp: r.xp || 0, // XP lifetime pour afficher le grade
-            xpSeason: r.xp_season || 0,
-            country: r.country || null,
-            rank: i + 1,
-            played: 0, wins:0, draws:0, losses:0, streak:0
-          }; });
-        setLeaderboard(sorted);
+        const rows = await sbFetch("rpc/bb_classement_courant", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: "{}"
+        });
+        if (!Array.isArray(rows)) {
+          // Le SQL n'est pas encore appliqué : on n'affiche rien plutôt qu'un
+          // classement calculé sur l'ancienne colonne, qui serait faux ET
+          // falsifiable. Un onglet vide se voit ; un faux classement, non.
+          setLeaderboard([]);
+          return;
+        }
+        // Le pays et l'XP servent au drapeau et au grade : ils viennent de
+        // bb_pseudos, que la fonction ne renvoie pas (elle ne doit renvoyer que
+        // ce qui est vérifiable).
+        let infos = {};
+        try {
+          const ids = rows.slice(0, 50).map(function(r){return r.player_id;}).join(",");
+          if (ids) {
+            const p = await sbFetch("bb_pseudos?select=player_id,xp,country&player_id=in.(" + encodeURIComponent(ids) + ")");
+            if (Array.isArray(p)) for (const l of p) infos[l.player_id] = l;
+          }
+        } catch (e) { /* le classement s'affiche sans drapeau ni grade */ }
+        setLeaderboard(rows.slice(0, 50).map(function(r, i) { return {
+          name: r.pseudo || "?",
+          pid: r.player_id,
+          score: r.points || 0,
+          xp: (infos[r.player_id] || {}).xp || 0,
+          xpSeason: r.points || 0,
+          country: (infos[r.player_id] || {}).country || null,
+          // Deux mesures que l'ancien classement ne pouvait pas donner, et qui
+          // distinguent d'un coup d'oeil un joueur régulier d'un score posé à la
+          // main : un vrai joueur touche plusieurs modes sur plusieurs jours.
+          jours: r.jours || 0,
+          modesJoues: r.modes || 0,
+          rank: i + 1,
+          played: 0, wins:0, draws:0, losses:0, streak:0
+        }; }));
         return;
       }
       const isAmis = mode === "amis";
       const isGlobal = mode === "global" || isAmis;
       const season = getCurrentSeason();
 
-      // Couronner le champion de la saison précédente si pas encore fait (fire-and-forget)
-      if (season.num > 1) {
-        checkAndCloseSeason();
-      }
+      // La clôture de saison N'EST PLUS FAITE ICI. Elle l'était par le premier
+      // joueur qui ouvrait l'app après le 1er du mois — donc par un client, avec
+      // la clé publique, sur un classement lui-même falsifiable. Elle est passée
+      // à une tâche planifiée : .github/workflows/cloture-saison.yml.
 
       // Filtre par saison sauf pour l'onglet Amis
       // Saison 1 = pas de filtre date (tous les scores historiques) — filtre actif dès saison 2
@@ -8127,10 +8088,20 @@ export default function LePont() {
       await sbFetch("bb_pseudos?player_id=eq." + playerId, {
         method: "PATCH",
         headers: { "Content-Type":"application/json", "Prefer":"return=minimal" },
+        // `xp_season` N'EST PLUS ENVOYÉ. C'était le compteur qui décidait du
+        // champion du mois, et le client pouvait y écrire ce qu'il voulait. Le
+        // classement est désormais recalculé par le serveur depuis les scores :
+        // la colonne ne sert plus à rien, et la section 6 de
+        // docs/supabase-classement.sql retire le droit de l'écrire.
+        //
+        // ⚠️ C'est pour ça que le SQL s'applique APRÈS ce déploiement : un
+        // privilège retiré sur une colonne fait échouer le PATCH ENTIER, donc
+        // l'XP, les grades et les cartes s'arrêteraient aussi.
+        //
+        // `xp` reste envoyé, en connaissance de cause : il ne décide plus rien au
+        // classement, il ne sert qu'aux grades et aux cartes. Du cosmétique.
         body: JSON.stringify({
           xp: newXp,
-          xp_season: newXpSeason,
-          xp_season_month: season.monthKey,
           ...(hasLeveledUp ? { last_notified_grade: newGradeIdx } : {})
         })
       });

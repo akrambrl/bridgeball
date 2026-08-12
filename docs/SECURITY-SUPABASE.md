@@ -144,3 +144,41 @@ aurait cru bloquer ce qu'on ne bloquait plus.
 Les pseudos **déjà en base** échappent au trigger, qui ne regarde que les
 écritures. `node scripts/audit-pseudos.mjs` les relit et liste ceux à traiter ; il
 est en lecture seule, le renommage se fait à la main.
+
+---
+
+## Classement mensuel : d'une colonne falsifiable à un calcul serveur
+
+Le champion du mois était décidé par `bb_pseudos.xp_season`, **une colonne que le
+client écrivait lui-même**. La clé `anon` étant publique, une requête suffisait
+pour se poser à 999 999 999, ou pour remettre un rival à zéro — le filtre étant un
+simple `player_id`. Et la **clôture de saison était faite par l'app** : le premier
+joueur à l'ouvrir après le 1er du mois écrivait le Hall of Fame, `bb_seasons`
+étant elle aussi ouverte en écriture.
+
+Trois portes ouvertes, sur ce qui doit décider de l'attribution d'un lot.
+
+[`supabase-classement.sql`](supabase-classement.sql) les ferme :
+
+- le classement est **recalculé** depuis `bb_scores` — il n'y a plus de compteur à
+  falsifier ;
+- pour chaque **jour** et chaque **mode**, seul le meilleur score compte, et il
+  rapporte **au plus 100 points**. Un score gonflé ne rapporte donc pas plus qu'un
+  très bon score honnête ;
+- un trigger borne les scores, impose une cadence minimale et **écrase
+  `created_at` avec l'heure du serveur** — sans quoi on pouvait antidater une
+  partie pour paraître régulier, ou l'insérer dans un mois déjà clos ;
+- `bb_seasons` est fermée au client, la clôture passe par
+  `.github/workflows/cloture-saison.yml`, qui **refuse de couronner** si un mode
+  joué manque au barème ou s'il y a moins de trois participants.
+
+**Ce que ça ne fait pas** : il n'y a toujours pas d'authentification, donc le
+serveur ne sait pas qui l'appelle. Quelqu'un peut encore déclarer un score
+plausible sans avoir joué. Le plafond journalier fait qu'il ne peut pas gagner
+avec un seul coup — pour truquer un mois entier il faudrait poser un bon score
+chaque jour dans chaque mode, ce qui se voit dans les colonnes `jours` et `modes`
+du classement. **Avant d'expédier un lot, regarder ces deux colonnes.**
+
+L'étape suivante, si les lots prennent de la valeur, est l'authentification
+anonyme Supabase — elle seule empêche l'usurpation et rend les bannissements
+possibles.

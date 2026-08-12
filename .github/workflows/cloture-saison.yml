@@ -1,0 +1,69 @@
+# Clôture de la saison écoulée et couronnement du champion du mois.
+#
+# Ce déclencheur remplace un mécanisme qui vivait dans l'APP : le premier joueur
+# à l'ouvrir après le 1er du mois lisait le classement et écrivait lui-même le
+# Hall of Fame, avec la clé publique. Tant qu'un lot dépend de ce titre, ça ne
+# pouvait pas rester côté client.
+#
+# Un seul secret, DÉJÀ créé pour les notifications :
+#   SB_SERVICE_KEY   clé service_role Supabase (bb_cloturer_saison est en
+#                    SECURITY DEFINER et son exécution est retirée à `anon`)
+#
+# ⚠️ docs/supabase-classement.sql doit être appliqué AVANT la première exécution,
+#    sinon la fonction n'existe pas et la tâche échoue — bruyamment, ce qui est
+#    le comportement voulu.
+name: Clôture de saison
+
+on:
+  schedule:
+    # Le 1er de chaque mois à 03:00 UTC, soit 5 h à Paris en été, 4 h en hiver.
+    # Assez tard pour que le mois soit bien terminé partout, assez tôt pour que
+    # le palmarès soit à jour au réveil des joueurs.
+    - cron: "0 3 1 * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Afficher le podium sans rien écrire"
+        type: boolean
+        default: true
+      mois:
+        description: "Forcer un mois (YYYY-MM), vide = le mois écoulé"
+        type: string
+        default: ""
+
+# Deux exécutions simultanées tenteraient d'écrire la même saison. La fonction
+# refuse déjà un doublon, mais autant ne pas la mettre à l'épreuve.
+concurrency:
+  group: cloture-saison
+  cancel-in-progress: false
+
+jobs:
+  cloturer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Installer les dépendances
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+        run: npm ci
+
+      - name: Vérifier la numérotation avant d'écrire
+        # Le numéro de saison est calculé ici ET dans l'app. S'ils divergent, le
+        # palmarès enregistre une saison que l'app ne reconnaît plus, sans erreur
+        # nulle part. Mieux vaut ne rien clôturer que clôturer sous un faux numéro.
+        run: npx vitest run src/test/saison.test.ts
+
+      - name: Clôturer
+        env:
+          SB_SERVICE_KEY: ${{ secrets.SB_SERVICE_KEY }}
+        run: |
+          node scripts/cloture-saison.mjs \
+            ${{ (github.event_name == 'workflow_dispatch' && inputs.dry_run) && '--dry-run' || '' }} \
+            ${{ inputs.mois != '' && format('--mois={0}', inputs.mois) || '' }}
