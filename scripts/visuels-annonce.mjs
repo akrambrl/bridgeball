@@ -62,6 +62,27 @@ const b64 = (b, t) => "data:" + t + ";base64," + b.toString("base64");
 const anton = b64(await readFile(join(ici, "polices", "anton-latin.woff2")), "font/woff2");
 const motSymbole = b64(await readFile(join(racine, "public", "logo-mot.webp")), "image/webp");
 
+// ── L'ARTWORK DU LOT, s'il est fourni ──────────────────────────────────────
+// Déposé à la main dans visuels/bruts/ (fc27.jpg, .png ou .webp), parce que c'est
+// une image de tiers : elle n'a pas à vivre dans public/, qui part dans le bundle
+// de l'app.
+//
+// Montrer l'art officiel d'un lot dans un concours est un usage courant et
+// défendable — on désigne le produit qu'on offre. Ce qui ne l'est pas, c'est de
+// laisser croire à un partenariat : d'où la mention de non-affiliation ajoutée
+// automatiquement dès que l'image est utilisée. C'est elle qui protège, pas
+// l'absence de logo.
+const LOT_FICHIERS = ["fc27.jpg", "fc27.jpeg", "fc27.png", "fc27.webp"];
+const TYPES = { jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", webp: "image/webp" };
+let artLot = null;
+for (const nom of LOT_FICHIERS) {
+  try {
+    const brut = await readFile(join(racine, "visuels", "bruts", nom));
+    artLot = { donnee: b64(brut, TYPES[nom.split(".").pop()]), nom };
+    break;
+  } catch (e) { /* pas celui-là */ }
+}
+
 // Rendu à l'échelle 2 : on compose en CSS à la moitié des pixels visés, ce qui
 // garde des tailles de police lisibles dans le code et sort du 2× net.
 const ECHELLE = 2;
@@ -107,14 +128,20 @@ const ANNONCES = {
   cadeau: {
     fichier: "cadeau-septembre",
     surligne: "HALL OF FAME · SEPTEMBRE 2026",
-    titre: ["LE N°1", "DU MOIS", "REPART AVEC"],
+    titre: ["LE N°1 DU MOIS", "REPART AVEC"],
     vedette: "FC 27",
+    // Remplacée par l'artwork quand il est déposé : une image du jeu dit le lot
+    // mieux que son nom écrit.
+    artwork: true,
     corps: "Le meilleur joueur du classement mensuel gagne le jeu. "
          + "Tout le monde part à égalité le 1er septembre.",
     appel: "goatfc.fr",
     mentions: "Concours de connaissances sans obligation d'achat · Règlement complet sur goatfc.fr · "
             + "Jeu non sponsorisé, administré ni associé à Instagram ou TikTok · Lot dématérialisé, "
             + "plateforme au choix du gagnant ou carte cadeau de valeur équivalente.",
+    mentionsArtwork: "EA SPORTS FC 27 est une marque d'Electronic Arts Inc., qui n'est ni "
+            + "organisateur, ni sponsor, ni partenaire de ce concours. Visuel du jeu à titre "
+            + "d'illustration du lot.",
   },
   stores: {
     fichier: "stores-octobre",
@@ -198,7 +225,10 @@ function page(a, f) {
   // Le bandeau de nuit prend la moitié basse en story, un peu plus du tiers en
   // fil : dans les deux cas il doit tenir la vedette, le corps et les mentions
   // sans que le titre du haut ne se retrouve à l'étroit.
-  const bandeau = story ? 52 : 45;
+  // Avec l'artwork, le bandeau prend nettement plus de place : le cadre 16/9 doit
+  // tenir sa hauteur ENTIÈRE, plus le corps, l'appel et les mentions.
+  const avecArt = !!(a.artwork && artLot);
+  const bandeau = avecArt ? (story ? 58 : 60) : (story ? 52 : 45);
   const tTitre = story ? 62 : 54;        // corps du titre en relief
   const tVedette = story ? 96 : 78;
   return `<!doctype html><html><head><meta charset="utf-8"><style>
@@ -231,6 +261,19 @@ function page(a, f) {
   .vedette{font-size:${tVedette}px;line-height:1;letter-spacing:1px;color:${G.or};
     transform:skewX(-7deg);text-shadow:${story ? 6 : 5}px ${story ? 6 : 5}px 0 rgba(0,0,0,.55);
     text-align:center}
+  /* L'artwork est CADRÉ à la charte — trait d'encre et ombre dure — et non posé
+     nu : encadré, il se lit comme « le lot », posé nu il se lit comme le fond du
+     visuel, et l'annonce n'aurait plus l'air d'être la tienne. */
+  /* flex:0 0 auto est INDISPENSABLE : dans un conteneur flex en colonne, un
+     élément qui tient sa proportion se laisse écraser dès que le contenu déborde,
+     et le cadre sortait à 47 px de haut au lieu de 236. Même piège que les
+     affiches de mode, où le visuel se retrouvait en bandes noires.
+     (Et pas d'accent grave dans ce commentaire : il vit DANS un gabarit de
+     chaîne, qu'un accent grave refermerait au milieu.) */
+  .cadreLot{flex:0 0 auto;width:100%;max-width:${story ? 430 : 390}px;aspect-ratio:16 / 9;
+    border:${story ? 5 : 4}px solid ${G.encre};border-radius:${story ? 14 : 11}px;
+    overflow:hidden;box-shadow:${story ? 7 : 6}px ${story ? 7 : 6}px 0 rgba(0,0,0,.55)}
+  .cadreLot img{width:100%;height:100%;object-fit:cover;display:block}
   .corps{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-weight:700;
     font-size:${story ? 17 : 14.5}px;line-height:1.45;color:${G.creme};text-align:center;
     max-width:${story ? 420 : 400}px}
@@ -257,10 +300,13 @@ function page(a, f) {
       </div>
     </div>
     <div class="bas">
-      <div class="vedette">${a.vedette}</div>
+      ${a.artwork && artLot
+        ? `<div class="cadreLot"><img src="${artLot.donnee}" alt="${a.vedette}"></div>`
+        : `<div class="vedette">${a.vedette}</div>`}
       <div class="corps">${a.corps}</div>
       <div class="appel">${a.appel}</div>
-      <div class="mentions">${a.mentions}</div>
+      <div class="mentions">${a.artwork && artLot
+        ? a.mentions + " " + a.mentionsArtwork : a.mentions}</div>
     </div>
     <div class="cadre"></div>
   </body></html>`;
@@ -289,6 +335,13 @@ const formats = Object.keys(FORMATS).filter((k) => !args.includes("feed") && !ar
 if (!cles.length) {
   console.error("annonces connues : " + Object.keys(ANNONCES).join(", "));
   process.exit(1);
+}
+
+if (cles.includes("cadeau")) {
+  console.log(artLot
+    ? "artwork du lot : visuels/bruts/" + artLot.nom
+    : "artwork du lot ABSENT — dépose-le dans visuels/bruts/ (fc27.jpg, .png ou .webp)\n"
+      + "  en attendant, le visuel écrit « FC 27 » en lettres.");
 }
 
 const sortie = join(racine, "visuels", "annonces");
