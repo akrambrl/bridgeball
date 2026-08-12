@@ -151,6 +151,69 @@ Au passage, **Filip Jørgensen → Strasbourg** est confirmé comme un **prêt**
 tranché » par l'audit initial. Rien à écrire pour autant : le joueur n'est pas
 dans `players.jsx`, l'y mettre reste un choix de couverture.
 
+## Passe du 12 août
+
+Demandée à partir d'un signalement : « Rulli à Manchester City ».
+
+| Mouvement | Vérification | Décision |
+|---|---|---|
+| **Gerónimo Rulli**, Marseille → Man. City | Officiel : permanent, 3,6 M€, contrat de 2 ans, doublure de Donnarumma après le départ de Trafford à Leeds ([beIN](https://www.beinsports.com/en-us/soccer/premier-league/articles/rulli-joins-manchester-city-to-strengthen-goalkeeping-options-2026-08-07)) | **écrit** — City ajouté une **2ᵉ** fois |
+| **Romelu Lukaku**, Napoli → Fenerbahce | Officiel : permanent, 6 M€ + bonus ([ESPN](https://www.espn.com/soccer/story/_/id/49591252/fenerbahce-sign-romelu-lukaku-napoli)) | **écrit** |
+| **Nahuel Molina**, Atlético → AS Roma | Officiel : permanent, ~18 M€, contrat jusqu'en 2029 ([RomaPress](https://romapress.net/official-nahuel-molina-joins-roma)) | **écrit** |
+| **Franjo Ivanović**, Benfica → Lens | Officiel : prêt jusqu'en fin de saison 2026-27, sans option d'achat, annoncé par Benfica ([slbenfica.pt](https://www.slbenfica.pt/en-us/agora/noticias/2026/08/12/futebol-benfica-ivanovic-emprestimo-lens)) | **écrit** |
+| **Mohamed Salah**, Liverpool → Trabzonspor | Officiel depuis le 6 août, libre, 2 ans ([Al Jazeera](https://www.aljazeera.com/sports/2026/8/6/mohamed-salah-signs-two-year-deal-with-trabzonspor-after-liverpool-exit)) | **déjà en base** |
+| **Darwin Núñez** → Trabzonspor | Toujours pas signé au 12 août : « attendu en Turquie pour la visite médicale et la signature ». Troisième passage où la presse titre l'accord | **non écrit** |
+| **Cristian Romero** → Atlético | Simple piste, citée comme la raison du départ de Molina | **non écrit** |
+
+Vérifiés au passage et **déjà à jour** : Guessand → Crystal Palace et Posch →
+Mainz, tous deux officialisés le 12 août ; Tonali, Senesi, Mateus Fernandes, van
+Hecke → Tottenham ; Rogers → Chelsea ; van Dijk, toujours à Liverpool (contrat
+prolongé jusqu'en 2027).
+
+**Deux angles morts de l'audit initial, confirmés par cette passe.** Les 22 clubs
+étaient balayés sur leurs *arrivées* : un départ vers un club hors liste
+n'apparaissait jamais. Salah → Trabzonspor était donc invisible pour la méthode —
+il n'était en base que par chance. Et **Tottenham ne figurait pas dans les 22**,
+alors qu'ils ont recruté pour plus de 260 M€ cet été.
+
+Deux noms de ce marché restent **absents** de `players.jsx` : **Andy Robertson**
+(Liverpool 2018-2026 → Tottenham, libre) et **Martin Dubravka**. Le premier est le
+plus défendable de tous les manques relevés jusqu'ici — neuf saisons à Liverpool,
+capitaine de l'Écosse. C'est un choix de couverture, pas une erreur de données.
+
+### `clubs.length` n'était pas un nombre de clubs
+
+Écrire Rulli a fait apparaître un défaut qui n'avait rien à voir avec lui, et qui
+touchait **80 joueurs**.
+
+La liste `clubs` est ordonnée et son dernier élément est publié comme « 🏁 Dernier
+maillot » : un joueur qui revient dans un club y figure donc deux fois. Mais
+`clubs.length` était utilisé comme un nombre de clubs à trois endroits.
+
+- **L'éligibilité à la devinette du jour** exige 3 à 9 clubs. Comptées avec les
+  répétitions, les 10 entrées de **Zlatan Ibrahimović** (9 clubs) dépassaient le
+  plafond : il ne sortait **jamais** en devinette du jour. Même cas pour
+  **Lukaku**, **Nani** et **Valderrama**. À l'inverse, Trubin, Vítor Baía et
+  Robbie Fowler y entraient avec **2** clubs réels, ce que le plancher de 3 existe
+  précisément pour empêcher.
+- **L'accroche de la notification** annonçait « 8 clubs » pour Rulli, qui en a
+  porté 7.
+- **L'indice « J'ai porté les couleurs de N clubs DIFFÉRENTS »** comptait les
+  répétitions, ce que le mot « différents » démentait.
+- Deux comptes de **clubs communs** dans le retour de partie : un joueur revenu
+  dans un club valait deux clubs partagés, ce qui faisait passer la pastille au
+  vert sur un seul maillot commun.
+
+Les comptes passent désormais par `nbClubs()`. **La liste, elle, garde ses
+doublons** — c'est le piège de cette correction : `new Set` conserve la *première*
+occurrence, donc dédoublonner la liste ferait repasser Rulli pour un joueur de
+Marseille. Un test fixe les deux moitiés de la règle.
+
+Au passage, `LePont.jsx` définissait **deux fois** la clef `Deportivo La Coruna`
+dans la table des couleurs de clubs, avec deux bleus différents. En JS la seconde
+gagne : la première n'avait jamais eu d'effet. Retirée, l'avertissement de build
+disparaît et aucune couleur ne change.
+
 ## Ce que cet audit ne couvre pas
 
 - **Les prêts.** Plusieurs mouvements de l'été sont des prêts ou des retours de

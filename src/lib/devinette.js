@@ -61,13 +61,48 @@ export function jourIndex(jour) {
  * peut manquer un départ récent, et l'année de naissance, qui écarte les anciens
  * qu'elle n'a pas encore enregistrés (Hagi, Milla, Nedvěd…).
  */
+/**
+ * Les clubs d'un joueur SANS répétition, et leur nombre.
+ *
+ * `clubs` est une liste ORDONNÉE dont le dernier élément est publié comme
+ * « 🏁 Dernier maillot ». Un joueur qui revient dans un club y figure donc DEUX
+ * FOIS, à sa place chronologique — c'est voulu, et c'est la seule façon d'avoir
+ * à la fois le bon ordre et le bon dernier maillot (Kolo Muani : Juventus,
+ * Tottenham, Juventus).
+ *
+ * Mais alors `clubs.length` n'est plus un nombre de clubs, et il était utilisé
+ * comme tel à trois endroits. Conséquences mesurées sur 80 joueurs à doublon :
+ *
+ *  • l'ÉLIGIBILITÉ à la devinette du jour exige 3 à 9 clubs. Comptés avec les
+ *    répétitions, Zlatan Ibrahimović (10 entrées, 9 clubs), Lukaku, Nani et
+ *    Valderrama passaient au-dessus du plafond et disparaissaient du vivier
+ *    quotidien — quatre des noms les plus reconnaissables du jeu, écartés par un
+ *    doublon. À l'inverse, Trubin, Vítor Baía et Robbie Fowler y entraient avec
+ *    2 clubs réels, ce que le plancher de 3 existe précisément pour empêcher.
+ *  • l'accroche de la notification annonçait « 8 clubs » pour un joueur qui en a
+ *    porté 7.
+ *  • l'indice « J'ai porté les couleurs de N clubs DIFFÉRENTS » comptait les
+ *    répétitions, ce que le mot « différents » démentait.
+ *
+ * D'où cette fonction : la liste garde ses doublons pour l'ordre, les COMPTES
+ * passent par ici.
+ */
+export function clubsDistincts(joueur) {
+  return joueur && joueur.clubs ? [...new Set(joueur.clubs)] : [];
+}
+
+/** Combien de clubs différents — jamais `clubs.length`, voir clubsDistincts. */
+export function nbClubs(joueur) {
+  return clubsDistincts(joueur).length;
+}
+
 export function poolDevinette(joueurs, retraites) {
   const enActivite = (p) => !retraites.has(p.name) && !!p.birthYear && p.birthYear >= MODERN_MIN_BY;
   const pool = joueurs.filter((p) => p.diff === "facile" && p.clubs
-    && p.clubs.length >= 3 && p.clubs.length <= 9 && enActivite(p));
+    && nbClubs(p) >= 3 && nbClubs(p) <= 9 && enActivite(p));
   // Filet de sécurité si la base bouge : on relâche le nombre de clubs, jamais
   // la règle « en activité », sinon un ancien reviendrait par la porte du repli.
-  return pool.length > 0 ? pool : joueurs.filter((p) => p.clubs && p.clubs.length >= 3 && enActivite(p));
+  return pool.length > 0 ? pool : joueurs.filter((p) => p.clubs && nbClubs(p) >= 3 && enActivite(p));
 }
 
 /** Générateur pseudo-aléatoire à graine (Lehmer) — même ordre pour tout le monde. */
@@ -113,7 +148,7 @@ export function accrocheDevinette(joueur) {
   const titre = "Devinette du jour ⚽";
   if (!joueur) return { titre, corps: "Le joueur mystère du jour t'attend. Tu le trouves ?" };
   const bouts = [];
-  if (joueur.clubs && joueur.clubs.length) bouts.push(joueur.clubs.length + " clubs");
+  if (nbClubs(joueur)) bouts.push(nbClubs(joueur) + " clubs");
   const poste = joueur.positions && joueur.positions.length ? POSTES_FR[joueur.positions[0]] : null;
   if (poste) bouts.push(poste);
   if (joueur.birthYear) bouts.push("révélé dans les années " + Math.floor((joueur.birthYear + 19) / 10) * 10);

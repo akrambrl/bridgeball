@@ -12,7 +12,7 @@ import { WinBanner } from "./WinBanner";
 import { G, posterText, btn, fondCharte, areneCharte, ligneCharte } from "@/lib/charte.jsx";
 import { chercheJoueurs } from "@/lib/nom";
 import { nettoyerVus } from "@/lib/tirage.js";
-import { parisDay, poolDevinette, joueurDuJour, MODERN_MIN_BY } from "@/lib/devinette.js";
+import { parisDay, poolDevinette, joueurDuJour, MODERN_MIN_BY, nbClubs } from "@/lib/devinette.js";
 
 const SPELL_NAMES = Object.keys(CLUB_SPELLS);
 
@@ -83,7 +83,7 @@ function enregistrerVus(seen: Set<string>) {
 // Jamais de joueur "expert" : 70 % facile, 30 % moyen. Que des joueurs modernes
 // (né en 1975+ → a joué après 2000), pas d'anciens.
 function randomPlayer(seen: Set<string>): Player {
-  const inRange = (p: Player) => !!p.clubs && p.clubs.length >= 3 && p.clubs.length <= 9 && !!p.birthYear && (p.birthYear as number) >= MODERN_MIN_BY;
+  const inRange = (p: Player) => !!p.clubs && nbClubs(p) >= 3 && nbClubs(p) <= 9 && !!p.birthYear && (p.birthYear as number) >= MODERN_MIN_BY;
   const facile = ALL.filter(p => p.diff === "facile" && inRange(p));
   const moyen = ALL.filter(p => p.diff === "moyen" && inRange(p));
   const wantFacile = Math.random() < 0.7; // 70 % facile / 30 % moyen
@@ -254,12 +254,20 @@ function findTeammates(answer: Player, n: number): string[] {
   const rank = (d: string) => (d === "facile" ? 0 : d === "moyen" ? 1 : 2);
   cands.sort((a, b) => {
     if (rank(a.diff) !== rank(b.diff)) return rank(a.diff) - rank(b.diff);
-    const sa = a.clubs.filter(c => answer.clubs.includes(c)).length;
-    const sb = b.clubs.filter(c => answer.clubs.includes(c)).length;
+    const sa = communs(a, answer);
+    const sb = communs(b, answer);
     if (sb !== sa) return sb - sa;
     return a.name.localeCompare(b.name);
   });
   return cands.slice(0, n).map(p => p.name);
+}
+
+// Combien de clubs DIFFÉRENTS deux joueurs ont en commun.
+// Sans le Set, un joueur revenu dans un club (Kolo Muani deux fois à la Juve)
+// comptait pour deux clubs communs : la pastille passait au vert sur un seul
+// maillot partagé, et le classement des coéquipiers proposés était faussé.
+function communs(a: Player, b: Player): number {
+  return new Set((a.clubs || []).filter(c => (b.clubs || []).includes(c))).size;
 }
 
 // Code court d'un club pour la puce (ex. "Real Madrid" → "REA", "Inter Milan" → "INT").
@@ -278,7 +286,7 @@ function computeChips(guess: Player, answer: Player): Chip[] {
   const aCont = continentOf(answer.nationalities[0]);
   const contMatch = gCont !== "?" && gCont === aCont;
   const posMatch = guess.positions.some(p => answer.positions.some(a => a.toLowerCase() === p.toLowerCase()));
-  const shared = guess.clubs.filter(c => answer.clubs.includes(c)).length;
+  const shared = communs(guess, answer);
   const gy = guess.birthYear || 0, ay = answer.birthYear || 0;
   // Âge affiché = celui de la proposition ; flèche = sens vers le mystère.
   const gAge = gy ? NOW_Y - gy : 0;
@@ -529,7 +537,9 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
     if (clue1) clues.push(clue1);
 
     // 2) Grand club : « J'ai porté le maillot de … »
-    const bigs = clubs.filter(c => BIG_CLUBS.has(c));
+    // Dédoublonné : sinon un club figurant deux fois avait deux fois plus de
+    // chances d'être tiré comme « grand club » que les autres.
+    const bigs = [...new Set(clubs)].filter(c => BIG_CLUBS.has(c));
     if (bigs.length) {
       const bc = bigs[hashStr(answer.name, 17) % bigs.length];
       clues.push(tr("J'ai porté le maillot de", "I wore the shirt of", "Ich trug das Trikot von", "Ho indossato la maglia del", "Vesti a camisa do","Vestí la camiseta de") + " " + bc + ".");
@@ -551,7 +561,7 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
     if (has(GG_SHIRT_10)) clues.push(tr("J'ai porté le mythique numéro 10 🔟", "I wore the iconic number 10 🔟", "Ich trug die legendäre Nummer 10 🔟", "Ho indossato la mitica maglia numero 10 🔟", "Usei a mítica camisa 10 🔟","Llevé el mítico número 10 🔟"));
 
     // 5) Nombre de clubs
-    if (clubs.length >= 3) clues.push(tr("J'ai porté les couleurs de", "I wore the colours of", "Ich trug die Farben von", "Ho vestito i colori di", "Vesti as cores de","Defendí los colores de") + " " + clubs.length + " " + tr("clubs différents", "different clubs", "verschiedenen Klubs", "club diversi", "clubes diferentes","clubes diferentes") + ".");
+    if (nbClubs(answer) >= 3) clues.push(tr("J'ai porté les couleurs de", "I wore the colours of", "Ich trug die Farben von", "Ho vestito i colori di", "Vesti as cores de","Defendí los colores de") + " " + nbClubs(answer) + " " + tr("clubs différents", "different clubs", "verschiedenen Klubs", "club diversi", "clubes diferentes","clubes diferentes") + ".");
 
     // 5) Décennie (repli)
     const startYear = answer.birthYear ? answer.birthYear + 19 : 0;
