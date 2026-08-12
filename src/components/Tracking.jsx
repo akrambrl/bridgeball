@@ -246,7 +246,12 @@ function RubriqueResume(props) {
           <div style={{fontSize:14,color:BLANC(.7),fontWeight:700}}>
             {v.plage === 1 ? "actifs aujourd'hui" : "joueurs actifs · " + v.plage + " j"}
             {v.aEvents ? " · dont " + v.anonymes + " anonyme" + (v.anonymes > 1 ? "s" : "") : ""}
-            {" · " + v.parties + " parties"}{v.duels ? " · " + v.duels + " duels" : ""}
+            {" · " + v.partiesVues + " parties"}
+            {/* Les duels ne sont filtrables que par la plage (voir agregeTracking) :
+                sous un filtre, cette ligne promet « filtré » et ne peut pas tenir
+                cette promesse pour eux. Ils restent visibles dans le détail, où
+                leur portée est écrite. */}
+            {v.duels && !v.filtresActifs ? " · " + v.duels + " duels" : ""}
           </div>
         </div>
       </Bloc>
@@ -264,10 +269,12 @@ function RubriqueResume(props) {
       </Bloc>
       <Bloc titre={"Parties sur la fenêtre · " + v.plage + " j"}>
         <Grille min={pc ? 200 : 150}>
-          <Carte valeur={v.parties} label={"parties / " + v.plage + " j"} color="#60a5fa"/>
-          <Carte valeur={v.totalParties} label={"lancées / " + v.plage + " j"} color={G.pelouseClaire}
-                 sous={v.aEvents ? "tous modes" : "bb_events absente"}/>
-          <Carte valeur={v.duels} label={"duels / " + v.plage + " j"} color="#FF8A2A"/>
+          <Carte valeur={v.totalParties} label={"parties / " + v.plage + " j"} color={G.pelouseClaire}
+                 sous={v.aEvents ? "les sept modes" : "bb_events absente"}/>
+          <Carte valeur={v.parties} label={"scores / " + v.plage + " j"} color="#60a5fa"
+                 sous="modes qui classent un score"/>
+          <Carte valeur={v.duels} label={"duels / " + v.plage + " j"} color="#FF8A2A"
+                 sous={v.filtresActifs ? "hors filtres" : "sur la fenêtre"}/>
           <Carte valeur={v.joueurs.length} label="joueurs vus" color={G.projecteur}
                  sous={v.joueursInscrits + " inscrits"}/>
         </Grille>
@@ -286,7 +293,7 @@ function RubriqueAudience(props) {
     <>
       <Bloc titre="Jour par jour · 14 j · heure de Paris">
         <JourParJour v={v}/>
-        <Note>p = parties terminées · a = joueurs sans compte. La vue couvre toujours
+        <Note>p = parties lancées · a = joueurs sans compte. La vue couvre toujours
               14 jours ; la plage ne change que les compteurs.</Note>
       </Bloc>
       <Bloc titre={"⏱️ Temps passé dans l'app · " + v.plage + " j"}>
@@ -691,7 +698,10 @@ export default function Tracking(props) {
       <div style={{textAlign:"center",fontSize:11,fontWeight:700,color:G.encre,
                    marginTop:16,lineHeight:1.5}}>
         {v.aEvents
-          ? "Actifs = joueurs uniques (inscrits + anonymes) vus dans la fenêtre, heure de Paris. « Parties » = parties terminées avec un score."
+          ? "Actifs = joueurs uniques (inscrits + anonymes) vus dans la fenêtre, heure de Paris — "
+            + "sous un filtre de mode ou de support, ceux qui ont lancé une partie qui y correspond, "
+            + "et non ceux qui ont seulement ouvert l'app. « Parties » = parties lancées, tous modes ; "
+            + "« scores » = les trois modes qui enregistrent un score."
           : "⚠️ Table bb_events absente : les anonymes ne sont pas comptés et le détail par mode est indisponible."}
       </div>
     </>
