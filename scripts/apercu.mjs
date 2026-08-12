@@ -148,6 +148,15 @@ await ctx.route("**/rest/v1/**", async (route) => {
                                        { id:"s2", to_id:"p7", to_name:"kader",   status:"pending", created_at:ilYaJours(4) },
                                        { id:"s3", to_id:"p8", to_name:"lila",    status:"pending", created_at:ilYaJours(96) }];
     }
+  } else if (url.includes("rpc/bb_classement_courant") || url.includes("rpc/bb_classement_mois")) {
+    // Le classement de la saison vient désormais d'une FONCTION serveur, plus
+    // d'une colonne. Sans cette réponse, l'onglet Saison serait vide sur tous
+    // les aperçus — ce qui est le bon comportement quand le SQL n'est pas
+    // appliqué, mais rend l'écran invérifiable ici.
+    corps = JOUEURS.slice(0, 12).map((j, i) => ({
+      player_id: j.pid, pseudo: j.nom,
+      points: 1400 - i * 95, jours: Math.max(1, 14 - i), modes: Math.max(1, 5 - (i % 5)),
+    }));
   } else if (url.includes("bb_presence")) {
     corps = JOUEURS.slice(0, 4).map((j) => ({ player_id:j.pid }));
   } else if (url.includes("bb_pseudos")) {
