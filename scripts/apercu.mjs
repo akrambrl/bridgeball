@@ -507,6 +507,51 @@ if (ecran === "tutoriel" && process.env.ETAPE) {
   }
 }
 
+// Sur une feuille de mode, on MESURE l'affiche : le conteneur demande le ratio
+// portrait de l'image, mais il a le droit de rétrécir pour que l'écran tienne sur
+// une page — et une fois rétréci il devient plus large que l'image, donc
+// `contain` laisse deux bandes de fond sur les côtés. C'est ce que voit l'oeil :
+// « le visuel ne remplit pas la largeur ».
+if (ecran.startsWith("mode-")) {
+  const m = await page.evaluate(() => {
+    // La PLUS LARGE, et non la première : l'accueil reste monté DERRIÈRE la
+    // feuille, donc sa carte de carrousel arrive avant dans le document et
+    // c'est elle qu'on mesurait — 253 px de large sur un écran de 430. Le même
+    // piège s'est déjà refermé deux fois dans ce fichier.
+    const img = [...document.querySelectorAll("img")]
+      .filter(i => /-card\.png/.test(i.src) && i.getBoundingClientRect().width > 100)
+      .sort((a, b) => b.getBoundingClientRect().width - a.getBoundingClientRect().width)[0];
+    if (!img) return null;
+    const boite = img.parentElement.getBoundingClientRect();
+    const r = img.getBoundingClientRect();
+    // Taille RÉELLEMENT peinte par object-fit: contain, que getBoundingClientRect
+    // ne donne pas — il rend la boîte de l'img, pas le pixel dessiné.
+    const ratio = img.naturalWidth / img.naturalHeight;
+    const peintW = Math.min(r.width, r.height * ratio);
+    const peintH = Math.min(r.height, r.width / ratio);
+    // Le débordement se mesure sur l'ANCÊTRE QUI DÉFILE, pas sur le body : la
+    // feuille fait 100dvh et défile dans son propre conteneur.
+    let deborde = 0, e = img.parentElement;
+    while (e) {
+      if (e.scrollHeight - e.clientHeight > 2 && getComputedStyle(e).overflowY !== "visible") {
+        deborde = e.scrollHeight - e.clientHeight; break;
+      }
+      e = e.parentElement;
+    }
+    return { fenetre: window.innerHeight, boiteW: Math.round(boite.width),
+             boiteH: Math.round(boite.height), peintW: Math.round(peintW),
+             peintH: Math.round(peintH), deborde: Math.round(deborde) };
+  });
+  if (!m) console.log("affiche introuvable");
+  else {
+    const bandes = Math.round((m.boiteW - m.peintW) / 2);
+    console.log(`boite ${m.boiteW}x${m.boiteH} · peint ${m.peintW}x${m.peintH} · `
+      + `bandes laterales ${bandes} px `
+      + (bandes <= 1 ? "OK remplit la largeur" : "PAS pleine largeur")
+      + (m.deborde > 0 ? `  ·  defilement ${m.deborde} px` : "  ·  tient sur une page"));
+  }
+}
+
 if (ecran === "profil" || ecran === "comment-jouer" || ecran === "ecran-accueil") {
   // L'avatar de l'en-tête ouvre le profil ; c'est une image cliquable, pas un
   // bouton, donc getByRole ne la voit pas.
