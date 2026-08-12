@@ -299,6 +299,12 @@ const CHEMINS = {
   // cette machine n'est ni un iPhone ni un Android, donc l'onglet présélectionné
   // est toujours le même et l'autre resterait invérifiable.
   "ecran-accueil": [],
+  // `guess` : l'accueil de GOAT Guess. Il s'ouvre par un évènement de fenêtre et
+  // non par un bouton, donc on le déclenche à la main.
+  guess: [],
+  // `guess-question` : l'écran des questions, derrière COMMENCER. Le même défaut
+  // de lisibilité peut s'y trouver, et il ne se voit pas depuis l'accueil du mode.
+  "guess-question": [],
   // `pseudo-refuse` : l'écran de choix de pseudo, avec un pseudo interdit tapé.
   // Le contrôle de modération est le seul endroit de l'app où un message
   // d'erreur DOIT rester vague — il ne faut pas que la liste se devine.
@@ -512,6 +518,75 @@ if (ecran === "tutoriel" && process.env.ETAPE) {
 // une page — et une fois rétréci il devient plus large que l'image, donc
 // `contain` laisse deux bandes de fond sur les côtés. C'est ce que voit l'oeil :
 // « le visuel ne remplit pas la largeur ».
+if (ecran === "guess" || ecran === "guess-question") {
+  await page.evaluate(() => window.dispatchEvent(new CustomEvent("goatfc:open-guess")));
+  await page.waitForTimeout(2200);
+  if (ecran === "guess-question") {
+    await page.getByRole("button", { name: /commencer|start|inizia|começar|empezar/i })
+      .first().click({ force: true }).catch(() => {});
+    await page.waitForTimeout(1400);
+  }
+  // Le contrôle qui compte : l'énoncé est-il LISIBLE ? Il était peint en blanc
+  // à 80, 60 et 40 % d'opacité directement sur l'or, où le blanc plein ne donne
+  // que 1,66 de contraste. On vérifie que chaque paragraphe repose sur un fond
+  // sombre, ou qu'il est écrit à l'encre.
+  const lisible = await page.evaluate(() => {
+    const lum = (c) => {
+      const n = (c.match(/[\d.]+/g) || []).slice(0, 3).map(Number);
+      if (n.length < 3) return 1;
+      const [r, g, b] = n.map((v) => {
+        const x = v / 255; return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4);
+      });
+      return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    };
+    // Le fond EFFECTIF : on remonte jusqu'à trouver un aplat opaque. Le fond de
+    // la charte est doré, donc c'est lui qu'on suppose en dernier recours — et
+    // c'est justement là que le blanc ne se lit pas.
+    const fond = (e) => {
+      let n = e;
+      while (n) {
+        const st = getComputedStyle(n);
+        const bg = st.backgroundColor;
+        if (bg && !/rgba\(0, 0, 0, 0\)|transparent/.test(bg)) {
+          const a = (bg.match(/[\d.]+/g) || [])[3];
+          if (a === undefined || Number(a) > 0.55) return bg;
+        }
+        n = n.parentElement;
+      }
+      return "rgb(245, 194, 43)";
+    };
+    // On parcourt les NOEUDS DE TEXTE et non les éléments : filtrer sur
+    // `children.length === 0` laissait passer tout libellé contenant un <span>,
+    // et c'est comme ça que « QUESTION 1 / 25 » et « candidats restants » ont
+    // échappé au premier contrôle alors qu'ils étaient illisibles à l'écran.
+    const pires = [];
+    const vus = new Set();
+    const marche = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    for (let n = marche.nextNode(); n; n = marche.nextNode()) {
+      const t = (n.nodeValue || "").trim();
+      if (t.length < 4) continue;
+      const e = n.parentElement;
+      if (!e) continue;
+      const st = getComputedStyle(e);
+      if (st.display === "none" || st.visibility === "hidden") continue;
+      const r = e.getBoundingClientRect();
+      if (r.width < 4 || r.height < 4) continue;
+      // L'opacité HÉRITÉE compte : un parent à 0.4 divise le contraste réel.
+      let op = 1, a = e;
+      while (a) { op *= parseFloat(getComputedStyle(a).opacity || "1"); a = a.parentElement; }
+      if (op < 0.05) continue;
+      const cl = lum(st.color) + 0.05, bl = lum(fond(e)) + 0.05;
+      let ratio = cl > bl ? cl / bl : bl / cl;
+      ratio = 1 + (ratio - 1) * op;   // l'opacité rapproche le texte de son fond
+      const cle = t.slice(0, 30);
+      if (ratio < 3 && !vus.has(cle)) { vus.add(cle); pires.push(cle + " → " + ratio.toFixed(2)); }
+    }
+    return pires;
+  });
+  if (!lisible.length) console.log("tous les textes au-dessus de 3:1 ✅");
+  else { console.log("⚠️ illisible :"); lisible.forEach((l) => console.log("   " + l)); process.exitCode = 1; }
+}
+
 if (ecran.startsWith("mode-")) {
   const m = await page.evaluate(() => {
     // La PLUS LARGE, et non la première : l'accueil reste monté DERRIÈRE la
