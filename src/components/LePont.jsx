@@ -635,7 +635,6 @@ export const CLUB_COLORS = {
   "Elche":["#008C39","#FFFFFF"],
   "Alavés":["#003DA5","#FFFFFF"],
   "Málaga":["#87CEEB","#FFFFFF"],
-  "Deportivo La Coruna":["#0046AD","#FFFFFF"],
   "Al Ettifaq":["#C8102E","#FBE216"],
   "Al Shabab":["#FFFFFF","#000000"],
   "Al-Gharafa":["#C8102E","#000000"],

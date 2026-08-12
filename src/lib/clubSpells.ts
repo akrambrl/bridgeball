@@ -176,7 +176,7 @@ export const CLUB_SPELLS: Record<string, Spell[]> = {
   "Jan Vertonghen": [{ club: "Ajax Amsterdam", from: 2006, to: 2012 }, { club: "Tottenham", from: 2012, to: 2020 }],
   // Leicester / Everton
   "Jamie Vardy": [{ club: "Leicester City", from: 2012, to: 2026 }],
-  "Romelu Lukaku": [{ club: "Everton", from: 2014, to: 2017 }, { club: "Manchester United", from: 2017, to: 2019 }, { club: "Inter Milan", from: 2019, to: 2021 }, { club: "Chelsea", from: 2021, to: 2022 }, { club: "Inter Milan", from: 2022, to: 2023 }, { club: "AS Roma", from: 2023, to: 2024 }, { club: "SSC Napoli", from: 2024, to: 2026 }],
+  "Romelu Lukaku": [{ club: "Everton", from: 2014, to: 2017 }, { club: "Manchester United", from: 2017, to: 2019 }, { club: "Inter Milan", from: 2019, to: 2021 }, { club: "Chelsea", from: 2021, to: 2022 }, { club: "Inter Milan", from: 2022, to: 2023 }, { club: "AS Roma", from: 2023, to: 2024 }, { club: "SSC Napoli", from: 2024, to: 2026 }, { club: "Fenerbahce", from: 2026, to: 2027 }],
   "Seamus Coleman": [{ club: "Everton", from: 2009, to: 2026 }],
 
   // ── Cadres Serie A ──────────────────────────────────────────

@@ -4,7 +4,8 @@
 // et que la notification n'en donne pas la réponse.
 import { describe, it, expect } from "vitest";
 import { PLAYERS, RETIRED_PLAYERS } from "@/players.jsx";
-import { parisDay, jourIndex, poolDevinette, joueurDuJour, accrocheDevinette, MODERN_MIN_BY } from "@/lib/devinette.js";
+import { parisDay, jourIndex, poolDevinette, joueurDuJour, accrocheDevinette, MODERN_MIN_BY,
+         clubsDistincts, nbClubs } from "@/lib/devinette.js";
 import { parisDayOf } from "@/lib/days";
 import { dailyPool } from "@/components/landing/FindPlayer";
 
@@ -102,5 +103,58 @@ describe("l'accroche de la notification ne divulgue pas la réponse", () => {
     const a = accrocheDevinette(null);
     expect(a.titre.length).toBeGreaterThan(0);
     expect(a.corps.length).toBeGreaterThan(0);
+  });
+});
+
+// `clubs` est une liste ORDONNÉE : un joueur revenu dans un club y figure deux
+// fois, parce que le dernier élément est publié comme « 🏁 Dernier maillot ».
+// `clubs.length` n'est donc pas un nombre de clubs, et il l'était pris pour tel.
+describe("compter les clubs quand un club revient", () => {
+  const rulli = (PLAYERS as any[]).find((p) => p.name === "Gerónimo Rulli");
+  const zlatan = (PLAYERS as any[]).find((p) => p.name === "Zlatan Ibrahimović");
+
+  it("ne compte pas deux fois un club où le joueur est revenu", () => {
+    // Rulli : Manchester City en 2016 puis de nouveau en 2026. Huit entrées,
+    // sept clubs.
+    expect(rulli.clubs.filter((c: string) => c === "Manchester City")).toHaveLength(2);
+    expect(rulli.clubs.length).toBe(8);
+    expect(nbClubs(rulli)).toBe(7);
+  });
+
+  it("garde la liste ORDONNÉE intacte : le dernier maillot reste le bon", () => {
+    // Le piège de la déduplication : `new Set` conserve la PREMIÈRE occurrence,
+    // donc dédoublonner la liste ferait repasser Rulli pour un joueur de
+    // Marseille. Les comptes se dédoublonnent, la liste jamais.
+    expect(rulli.clubs[rulli.clubs.length - 1]).toBe("Manchester City");
+    expect(clubsDistincts(rulli)[clubsDistincts(rulli).length - 1]).toBe("Marseille");
+  });
+
+  it("la notification annonce le nombre de clubs DIFFÉRENTS", () => {
+    expect(accrocheDevinette(rulli).corps).toContain("7 clubs");
+    expect(accrocheDevinette(rulli).corps).not.toContain("8 clubs");
+  });
+
+  it("un doublon n'exclut plus du vivier quotidien", () => {
+    // LE test qui compte. Le vivier exige 3 à 9 clubs. Comptées avec les
+    // répétitions, les 10 entrées de Zlatan passaient le plafond : l'un des noms
+    // les plus reconnaissables du jeu ne sortait jamais en devinette du jour.
+    expect(zlatan.clubs.length).toBeGreaterThan(9);
+    expect(nbClubs(zlatan)).toBe(9);
+    const eligible = (p: any) => nbClubs(p) >= 3 && nbClubs(p) <= 9;
+    expect(eligible(zlatan)).toBe(true);
+  });
+
+  it("et un doublon ne fait plus entrer un joueur à deux clubs", () => {
+    // L'autre sens, tout aussi faux : le plancher de 3 clubs existe pour que
+    // l'énigme ait de la matière. Robbie Fowler a trois entrées pour deux clubs.
+    const fowler = (PLAYERS as any[]).find((p) => p.name === "Robbie Fowler");
+    expect(fowler.clubs.length).toBe(3);
+    expect(nbClubs(fowler)).toBe(2);
+    expect(POOL.some((p: any) => p.name === "Robbie Fowler")).toBe(false);
+  });
+
+  it("tout le vivier a bien 3 à 9 clubs DIFFÉRENTS", () => {
+    const hors = POOL.filter((p: any) => nbClubs(p) < 3 || nbClubs(p) > 9).map((p: any) => p.name);
+    expect(hors).toEqual([]);
   });
 });

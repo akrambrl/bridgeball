@@ -715,7 +715,7 @@ export const PLAYERS = [
   { name:"Timothy Weah", clubs:["PSG", "Celtic", "Lille", "Juventus FC", "Marseille"], diff:"facile", nationalities:["États-Unis"], positions:["attaquant"], birthYear:2000 },
   { name:"Quentin Merlin", clubs:["Nantes", "Marseille", "Rennes"], diff:"expert", nationalities:["France"], positions:["defenseur"], birthYear:2002 },
   { name:"Geoffrey Kondogbia", clubs:["Lens", "Sevilla", "Monaco", "Inter Milan", "Valencia", "Atletico Madrid", "Marseille"], diff:"facile", nationalities:["Centrafrique"], positions:["milieu"], birthYear:1993 },
-  { name:"Gerónimo Rulli", clubs:["Estudiantes", "Manchester City", "Real Sociedad", "Montpellier", "Villarreal", "Ajax Amsterdam", "Marseille"], diff:"facile", nationalities:["Argentine"], positions:["gardien"], birthYear:1992 },
+  { name:"Gerónimo Rulli", clubs:["Estudiantes", "Manchester City", "Real Sociedad", "Montpellier", "Villarreal", "Ajax Amsterdam", "Marseille", "Manchester City"], diff:"facile", nationalities:["Argentine"], positions:["gardien"], birthYear:1992 },
   { name:"Lutsharel Geertruida", clubs:["Feyenoord", "RB Leipzig", "Sunderland"], diff:"moyen", nationalities:["Pays-Bas"], positions:["defenseur"], birthYear:2000 },
   { name:"Tochukwu Nnadi", clubs:["Zulte Waregem", "Marseille"], diff:"expert", nationalities:["Nigeria"], positions:["milieu"], birthYear:2003 },
   // Lyon - été 2025
@@ -1115,7 +1115,7 @@ export const PLAYERS = [
   { name:"Vinícius Júnior", clubs:["Flamengo", "Real Madrid", "Real Madrid Castilla"], diff:"facile", nationalities:["Brésil"], positions:["attaquant"], birthYear:2000 },
   { name:"Mariano Díaz", clubs:["Real Madrid", "Lyon", "Sevilla"], diff:"expert", nationalities:["République dominicaine"], positions:["attaquant"] , birthYear:1993 },
   { name:"Joshua Kimmich", clubs:["Stuttgart", "RB Leipzig", "Bayern Munich"], diff:"facile", nationalities:["Allemagne"], positions:["milieu"], birthYear:1995 },
-  { name:"Romelu Lukaku", clubs:["Anderlecht", "Chelsea", "West Brom", "Everton", "Manchester United", "Inter Milan", "Chelsea", "Inter Milan", "AS Roma", "SSC Napoli"], diff:"facile", nationalities:["Belgique"], positions:["attaquant"], birthYear:1993 },
+  { name:"Romelu Lukaku", clubs:["Anderlecht", "Chelsea", "West Brom", "Everton", "Manchester United", "Inter Milan", "Chelsea", "Inter Milan", "AS Roma", "SSC Napoli", "Fenerbahce"], diff:"facile", nationalities:["Belgique"], positions:["attaquant"], birthYear:1993 },
   { name:"Carles Puyol", clubs:["Barcelona"], diff:"moyen", nationalities:["Espagne"], positions:["defenseur"], birthYear:1978 },
   { name:"José Manuel Pinto", clubs:["Real Betis", "Celta Vigo", "Barcelona"], diff:"expert", nationalities:["Espagne"], positions:["gardien"] , birthYear:1975 },
   { name:"Aliaksandr Hleb", clubs:["BATE Borisov", "Stuttgart", "Arsenal", "Barcelona", "Birmingham City", "Wolfsburg", "Krylia Sovetov"], diff:"expert", nationalities:["Biélorussie"], positions:["milieu"] , birthYear:1981 },
@@ -1637,7 +1637,7 @@ export const PLAYERS = [
   { name:"Clément Chantôme", clubs:["PSG", "Toulouse", "Bordeaux", "Rennes", "Bastia", "Orléans"], diff:"expert", nationalities:["France"], positions:["attaquant"] , birthYear:1987 },
   { name:"Mevlüt Erdinç", clubs:["Sochaux", "PSG", "Rennes", "Saint-Etienne", "Guingamp", "Metz", "Istanbul Başakşehir"], diff:"expert", nationalities:["Turquie"], positions:["attaquant"] , birthYear:1987 },
   // === Fin ajouts QSI ===
-  { name:"Nahuel Molina", clubs:["Udinese Calcio", "Atletico Madrid"], diff:"expert", nationalities:["Argentine"], positions:["defenseur"], birthYear:1998 },
+  { name:"Nahuel Molina", clubs:["Udinese Calcio", "Atletico Madrid", "AS Roma"], diff:"expert", nationalities:["Argentine"], positions:["defenseur"], birthYear:1998 },
   // Équipe nationale Brésil 2026 (compléments)
   { name:"Raphinha", clubs:["Avaí", "Vitoria Guimaraes", "Sporting CP", "Rennes", "Leeds United", "Barcelona"], diff:"moyen", nationalities:["Brésil"], positions:["attaquant"], birthYear:1996 },
   { name:"Lucas Paquetá", clubs:["Flamengo", "AC Milan", "Lyon", "West Ham"], diff:"moyen", nationalities:["Brésil"], positions:["milieu"], birthYear:1997 },
@@ -2188,7 +2188,7 @@ export const PLAYERS = [
   // Benfica
   { name:"Enzo Barrenechea", clubs:["Newell's", "Juventus FC", "Sion", "Frosinone", "Aston Villa", "Valencia", "Benfica"], diff:"expert", nationalities:["Argentine"], positions:["milieu"], birthYear:2001 },
   { name:"Rafael Obrador", clubs:["Real Madrid", "Benfica"], diff:"expert", nationalities:["Espagne"], positions:["defenseur"], birthYear:2004 },
-  { name:"Franjo Ivanović", clubs:["Rijeka", "Union Saint-Gilloise", "Benfica"], diff:"expert", nationalities:["Croatie"], positions:["attaquant"], birthYear:2003 },
+  { name:"Franjo Ivanović", clubs:["Rijeka", "Union Saint-Gilloise", "Benfica", "Lens"], diff:"expert", nationalities:["Croatie"], positions:["attaquant"], birthYear:2003 },
   // Porto
   { name:"Borja Sainz", clubs:["Athletic Bilbao", "Giresunspor", "Norwich City", "Porto"], diff:"expert", nationalities:["Espagne"], positions:["attaquant"], birthYear:2001 },
   { name:"Yann Karamoh", clubs:["Inter Milan", "Bordeaux", "Parma FC", "Torino FC", "Montpellier", "Porto"], diff:"moyen", nationalities:["Côte d'Ivoire"], positions:["attaquant"], birthYear:1998 },
