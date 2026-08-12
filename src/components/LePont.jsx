@@ -21,6 +21,9 @@ import { duelTermine } from "../lib/duel";
 import { prochainsTotauxXp } from "../lib/xp";
 // Règles de tirage anti-répétition, partagées avec « Trouve le joueur ».
 import { clePaire, pairesRetenues, tirerEnEvitant, memoriser } from "../lib/tirage.js";
+// Modération des pseudos : haine, insultes, usurpation. Voir l'en-tête du
+// fichier pour la raison d'être des deux niveaux de correspondance.
+import { pseudoInterdit } from "../lib/pseudo";
 // Vocabulaire foot en six langues : la base est écrite en français, l'affichage
 // ne doit jamais montrer la clé telle quelle.
 import { choisir as choisirMot, nomPays, nomPoste, nomPosteLong, nomLigue,
@@ -7305,6 +7308,17 @@ export default function LePont() {
     if (/\s/.test(clean)) { setPseudoMsg(tr("❌ Pas d'espaces","❌ No spaces","❌ Keine Leerzeichen","❌ Niente spazi","❌ Sem espaços","❌ Sin espacios")); return; }
     if (!/^[a-zA-Z0-9_\-]+$/.test(clean)) { setPseudoMsg(tr("❌ Lettres, chiffres, _ et - uniquement","❌ Letters, digits, _ and - only","❌ Nur Buchstaben, Ziffern, _ und -","❌ Solo lettere, cifre, _ e -","❌ Apenas letras, números, _ e -","❌ Solo letras, números, _ y -")); return; }
     if (/^[_\-]/.test(clean) || /[_\-]$/.test(clean)) { setPseudoMsg(tr("❌ Ne peut pas commencer ou finir par _ ou -","❌ Cannot start or end with _ or -","❌ Darf nicht mit _ oder - beginnen oder enden","❌ Non può iniziare o finire con _ o -","❌ Não pode começar ou terminar com _ ou -","❌ No puede empezar ni terminar por _ o -")); return; }
+    // Modération. AVANT l'appel réseau : inutile d'aller demander à la base si
+    // « H1tl3r » est libre. Le message ne répète PAS le mot refusé et ne dit pas
+    // lequel des termes a matché — sinon la liste se devine par tâtonnement, et
+    // on offre un jeu à celui qui cherche à passer.
+    const motifRefus = pseudoInterdit(clean);
+    if (motifRefus) {
+      setPseudoMsg(motifRefus === "usurpation"
+        ? tr("❌ Ce pseudo est réservé, choisis-en un autre","❌ This username is reserved, pick another","❌ Dieser Name ist reserviert, wähle einen anderen","❌ Questo nome è riservato, scegline un altro","❌ Este nome é reservado, escolha outro","❌ Ese nombre está reservado, elige otro")
+        : tr("❌ Ce pseudo n'est pas autorisé","❌ This username isn't allowed","❌ Dieser Name ist nicht erlaubt","❌ Questo nome non è consentito","❌ Este nome não é permitido","❌ Ese nombre no está permitido"));
+      return;
+    }
     setPseudoChecking(true);
     setPseudoMsg(tr("Vérification...","Checking...","Prüfe...","Verifica...","Verificando...","Comprobando..."));
     try {

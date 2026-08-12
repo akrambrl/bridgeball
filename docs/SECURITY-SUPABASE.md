@@ -118,3 +118,29 @@ vraie isolation par utilisateur, la solution propre est :
 
 En attendant, **Phase 1 + Phase 2 couvrent les risques critiques** (destruction
 du classement, fuite des push, prise de contrôle via recovery_code).
+
+---
+
+## Modération des pseudos
+
+Un pseudo haineux ou injurieux est visible partout : classement, Hall of Fame,
+demandes d'amis, salons de duel. `src/lib/pseudo.ts` refuse la saisie côté
+client, avec une normalisation qui ramène « H1tl3r », « h.i.t.l.e.r » et
+« HiiiTLER » au même squelette.
+
+**Mais ce contrôle ne protège rien tout seul.** La clé `anon` est publique, donc
+un POST direct sur `bb_pseudos` s'en moque complètement — c'est exactement la
+limite décrite ci-dessus. Le verrou réel est
+[`supabase-pseudos-interdits.sql`](supabase-pseudos-interdits.sql) : un trigger
+`before insert or update` qui rejoue la même liste en base, plus un contrôle de
+format qui refuse tout ce qui n'est pas `[a-zA-Z0-9_-]{3,12}`. Ce dernier ferme
+le trou des homoglyphes — « Hitlеr » avec un « е » cyrillique passe n'importe
+quelle liste de termes, mais pas ce gabarit.
+
+Le fichier SQL est **généré** depuis la liste JavaScript (`node
+scripts/pseudos-sql.mjs`) : deux listes tenues à la main auraient divergé, et on
+aurait cru bloquer ce qu'on ne bloquait plus.
+
+Les pseudos **déjà en base** échappent au trigger, qui ne regarde que les
+écritures. `node scripts/audit-pseudos.mjs` les relit et liste ceux à traiter ; il
+est en lecture seule, le renommage se fait à la main.
