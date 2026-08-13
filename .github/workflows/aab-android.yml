@@ -1,0 +1,178 @@
+# Construit l'AAB Android signé, prêt à déposer sur Google Play.
+#
+# ── POURQUOI DANS LE CLOUD ─────────────────────────────────────────────────
+#
+# Construire un AAB demande le SDK Android (~6 Go) et un JDK. Le faire ici évite
+# de les installer sur une machine, et rend chaque mise à jour reproductible : un
+# clic, et l'AAB tombe en artefact.
+#
+# ── LES QUATRE SECRETS À CRÉER, ET COMMENT ─────────────────────────────────
+#
+# Réglages du dépôt → Secrets and variables → Actions → New repository secret.
+# LA CLÉ NE DOIT PASSER PAR AUCUN AUTRE CANAL : ni message, ni e-mail, ni fichier
+# partagé. Elle va de ta machine à ce formulaire, directement.
+#
+#   ANDROID_KEYSTORE_BASE64   le keystore encodé, obtenu par :
+#                               base64 -i goatfc-upload.jks | pbcopy
+#                             (le résultat est dans ton presse-papier, collé tel quel)
+#   ANDROID_KEYSTORE_PASSWORD le mot de passe du keystore (-storepass)
+#   ANDROID_KEY_ALIAS         l'alias, « goatfc » si tu as suivi la commande du doc
+#   ANDROID_KEY_PASSWORD      le mot de passe de la clé (souvent le même)
+#
+# La commande keytool qui crée le keystore, et la différence entre clé d'envoi et
+# clé de signature de l'app, sont dans docs/signature-android.md.
+#
+# ── LE NUMÉRO DE VERSION EST LE PIÈGE ──────────────────────────────────────
+#
+# Play refuse un AAB dont le versionCode a déjà été déposé, et il ne peut que
+# MONTER. Par défaut on prend le numéro d'exécution du workflow, qui est
+# strictement croissant et ne demande rien à personne. Un build local, lui, garde
+# le versionCode 1 du fichier gradle : deux sources de numérotation qui se
+# télescopent, d'où la recommandation de ne construire QUE par ici.
+name: AAB Android
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_name:
+        description: "Nom de version affiché aux joueurs (ex. 1.0.0)"
+        type: string
+        default: "1.0.0"
+      version_code:
+        description: "Numéro interne — laisser vide pour prendre le numéro d'exécution"
+        type: string
+        default: ""
+
+# Deux builds simultanés se battraient pour le cache Gradle.
+concurrency:
+  group: aab-android
+  cancel-in-progress: false
+
+jobs:
+  construire:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Installer les dépendances
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+        run: npm ci
+
+      # Les tests AVANT le build : un AAB qui part sur le store avec une
+      # régression coûte un aller-retour de revue, et la revue est le seul délai
+      # qu'on ne contrôle pas.
+      - name: Tests
+        run: npx vitest run
+
+      - name: Installer ffmpeg
+        # Le contrôle de la coque décode les pixels de l'icône adaptative pour
+        # vérifier que la marque tient dans la zone sûre du lanceur. Sans ffmpeg,
+        # le script le dit et passe — ce qui reviendrait à ne pas contrôler. On
+        # l'installe donc plutôt que d'accepter un contrôle sauté.
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+
+      - name: Contrôler la coque native
+        # API cible, couleur de la coque contre celle du manifeste, fond de
+        # l'icône adaptative, identifiant de l'app, et la marque tient-elle dans
+        # la zone sûre du lanceur. Play exige l'API 36 pour toute nouvelle
+        # application depuis le 31 août 2026.
+        run: npm run coque:verifie
+
+      - name: Construire les assets web
+        run: npm run build
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Synchroniser Capacitor
+        run: npx cap sync android
+
+      # ── LA CLÉ ────────────────────────────────────────────────────────────
+      # Écrite sur le disque du runner, qui est détruit à la fin du job. Aucune
+      # valeur n'est affichée : GitHub masque les secrets dans les journaux, mais
+      # on ne compte pas sur ce masquage — rien n'est jamais echo.
+      - name: Poser la clé de signature
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PWD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PWD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [ -z "${KEYSTORE_B64}" ]; then
+            echo "::error::Le secret ANDROID_KEYSTORE_BASE64 est vide ou absent."
+            echo "Sans lui l'AAB serait non signé, et Play le refuserait."
+            echo "Voir l'en-tête de ce workflow pour les quatre secrets à créer."
+            exit 1
+          fi
+          printf '%s' "${KEYSTORE_B64}" | base64 -d > "${RUNNER_TEMP}/upload.jks"
+          # Un secret mal copié donne un fichier illisible : on le vérifie AVANT
+          # de compiler, plutôt que de laisser Gradle échouer vingt minutes plus
+          # tard sur un message obscur.
+          keytool -list -keystore "${RUNNER_TEMP}/upload.jks" \
+            -storepass "${KEYSTORE_PWD}" > /dev/null
+          echo "keystore lisible ✅"
+          {
+            echo "storeFile=${RUNNER_TEMP}/upload.jks"
+            echo "storePassword=${KEYSTORE_PWD}"
+            echo "keyAlias=${KEY_ALIAS}"
+            echo "keyPassword=${KEY_PWD}"
+          } > android/key.properties
+
+      - name: Numéroter la version
+        env:
+          NOM: ${{ inputs.version_name }}
+          CODE: ${{ inputs.version_code }}
+        run: |
+          set -euo pipefail
+          CODE="${CODE:-}"
+          if [ -z "${CODE}" ]; then CODE="${GITHUB_RUN_NUMBER}"; fi
+          sed -i "s/versionCode .*/versionCode ${CODE}/" android/app/build.gradle
+          sed -i "s/versionName \".*\"/versionName \"${NOM}\"/" android/app/build.gradle
+          grep -E "versionCode|versionName" android/app/build.gradle
+
+      - name: Construire l'AAB
+        run: cd android && ./gradlew bundleRelease --no-daemon
+
+      # ── LE CONTRÔLE QUI MANQUAIT ──────────────────────────────────────────
+      # Sans signature valide, Play refuse le dépôt APRÈS le téléversement. On le
+      # vérifie donc ici, où l'échec est immédiat et lisible. Ce contrôle n'a
+      # jamais pu tourner sur la machine de développement, qui n'a pas de SDK
+      # Android : c'est ce build-ci qui l'éprouve pour la première fois.
+      - name: Vérifier que l'AAB est signé
+        run: |
+          set -euo pipefail
+          AAB=android/app/build/outputs/bundle/release/app-release.aab
+          test -f "${AAB}" || { echo "::error::AAB introuvable"; exit 1; }
+          if jarsigner -verify "${AAB}" | grep -q "jar verified"; then
+            echo "AAB signé ✅"
+          else
+            echo "::error::L'AAB n'est PAS signé — Play le refuserait."
+            jarsigner -verify -verbose "${AAB}" | tail -20
+            exit 1
+          fi
+          ls -lh "${AAB}"
+
+      - name: Effacer la clé du runner
+        # Le runner est détruit de toute façon, mais un `if: always()` qui efface
+        # coûte une ligne et retire le fichier des étapes suivantes.
+        if: always()
+        run: rm -f "${RUNNER_TEMP}/upload.jks" android/key.properties
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: goatfc-aab-${{ inputs.version_name }}-${{ github.run_number }}
+          path: android/app/build/outputs/bundle/release/app-release.aab
+          retention-days: 30
+          if-no-files-found: error
