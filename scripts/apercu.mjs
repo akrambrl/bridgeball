@@ -204,9 +204,20 @@ const PREMIER_LANCEMENT = ecran === "bienvenue" ? "tout"
 const LANGUE = process.env.LANGUE || "fr";
 // `pseudo-refuse` a besoin qu'AUCUN pseudo ne soit posé : c'est l'absence de
 // bb_name qui fait apparaître l'écran de saisie.
+// STOCKAGE pose des clés arbitraires avant le chargement, en JSON :
+//
+//   STOCKAGE='{"bb_chain_record":"{\"score\":9999}"}' node scripts/apercu.mjs mercato-fin
+//
+// Certains blocs d'un écran ne s'affichent QUE selon l'état local, et l'aperçu
+// partait toujours d'un stockage vierge : une partie de démonstration battait
+// donc systématiquement le record, ce qui posait la ligne « NOUVEAU RECORD ! »
+// entre la séquence et le score. Cette ligne écarte les deux blocs — et masquait
+// l'écart réel, celui qu'un joueur voit quand il ne bat rien.
+const STOCKAGE = process.env.STOCKAGE ? JSON.parse(process.env.STOCKAGE) : {};
 const PREMIER_LANCEMENT_OBJ = { etape: PREMIER_LANCEMENT, vide: !!process.env.VIDE, langue: LANGUE,
-  sansPseudo: ecran === "pseudo-refuse" };
+  sansPseudo: ecran === "pseudo-refuse", stockage: STOCKAGE };
 await page.addInitScript((premier) => {
+  for (const [cle, valeur] of Object.entries(premier.stockage || {})) localStorage.setItem(cle, valeur);
   // L'accueil est derrière l'accueil-tutoriel : sans ces clés, on photographie
   // le carrousel d'introduction quel que soit l'écran demandé. On ne les pose
   // donc PAS quand c'est justement lui qu'on vient voir.
@@ -595,6 +606,104 @@ if (ecran === "mercato-fin") {
     if (fini) { console.log("ecran de fin atteint apres", (attendu + pas) / 1000, "s"); break; }
   }
   await page.waitForTimeout(1200);
+
+  // ── L'ÉCART ENTRE LA SÉQUENCE ET LE PREMIER ENCADRÉ ─────────────────────
+  //
+  // Signalement : « les encadrés se touchent ». Les deux blocs portent la même
+  // bordure épaisse de la charte, donc dès que l'écart tombe sous quelques
+  // pixels les deux traits se lisent comme un seul et l'écran paraît collé.
+  //
+  // Ce contrôle mesure aussi l'écart HORS ligne de record : une partie de
+  // démonstration bat toujours le record, et « NOUVEAU RECORD ! » s'insère
+  // justement entre les deux. C'est l'écart sans cette ligne que voit un joueur
+  // ordinaire — celui qu'il faut juger.
+  //
+  // Et il mesure l'écart VISIBLE, ombre déduite. C'est le piège qui a fait
+  // conclure « pas de défaut » sur un premier relevé : les boîtes étaient bien à
+  // 10 px, mais le bandeau porte `box-shadow: 4px 4px 0`, un aplat opaque qui
+  // remplit 4 de ces 10 px. L'écart des boîtes n'est donc pas ce que l'œil voit.
+  const ecart = await page.evaluate(() => {
+    const video = document.querySelector("video");
+    if (!video) return { erreur: "aucune séquence à l'écran" };
+    const bandeau = video.parentElement.getBoundingClientRect();
+    // Décalage vertical de l'ombre du bandeau : deuxième longueur de box-shadow.
+    const ombre = Math.max(0, parseFloat(
+      (getComputedStyle(video.parentElement).boxShadow.match(/(-?[\d.]+)px\s+(-?[\d.]+)px/) || [])[2] || 0));
+    // Le premier bloc encadré et opaque qui commence sous la séquence.
+    let carte = null;
+    for (const el of document.querySelectorAll("div")) {
+      const st = getComputedStyle(el);
+      if (parseFloat(st.borderTopWidth) < 2) continue;
+      if (st.backgroundColor === "rgba(0, 0, 0, 0)") continue;
+      const r = el.getBoundingClientRect();
+      if (r.width < 140 || r.height < 40 || r.top < bandeau.bottom - 40) continue;
+      if (!carte || r.top < carte.top) carte = { top: r.top, texte: (el.innerText || "").split("\n")[0] };
+    }
+    if (!carte) return { erreur: "aucun encadré sous la séquence" };
+    // La ligne de record, s'il y en a une : on retranche sa hauteur ET sa marge.
+    let record = 0;
+    for (const el of document.querySelectorAll("div")) {
+      if (!/NOUVEAU RECORD|NEW RECORD|NEUER REKORD|NUOVO RECORD|NOVO RECORDE/i.test(el.textContent || "")) continue;
+      if (el.children.length) continue;
+      const r = el.getBoundingClientRect();
+      if (r.height > record) record = r.height + parseFloat(getComputedStyle(el).marginTop || 0);
+    }
+    // ET TOUS LES COUPLES DE LA FEUILLE, pas seulement le premier. Le même piège
+    // y joue : l'écart est de 8 px mais chaque carte porte `box-shadow: 5px 5px 0`,
+    // donc il ne reste que 3 px visibles entre deux blocs voisins.
+    const feuille = [...document.querySelectorAll("div")].find((d) => {
+      const st = d.getAttribute("style") || "";
+      return st.includes("flex-direction: column") && parseFloat(getComputedStyle(d).rowGap) > 0
+        && [...d.children].filter((c) => c.getBoundingClientRect().height > 30).length >= 3
+        && d.getBoundingClientRect().top > bandeau.top;
+    });
+    const couples = [];
+    if (feuille) {
+      const blocs = [...feuille.children].filter((c) => c.getBoundingClientRect().height > 30);
+      for (let i = 0; i + 1 < blocs.length; i++) {
+        const a = blocs[i].getBoundingClientRect(), b = blocs[i + 1].getBoundingClientRect();
+        const o = Math.max(0, parseFloat(
+          (getComputedStyle(blocs[i]).boxShadow.match(/(-?[\d.]+)px\s+(-?[\d.]+)px/) || [])[2] || 0));
+        couples.push({ visible: Math.round(b.top - a.bottom - o),
+          quoi: (blocs[i].innerText || "?").split("\n")[0].slice(0, 14) + " → "
+              + (blocs[i + 1].innerText || "?").split("\n")[0].slice(0, 14) });
+      }
+    }
+    return { brut: Math.round(carte.top - bandeau.bottom), record: Math.round(record),
+      ombre: Math.round(ombre), suivant: carte.texte, couples };
+  });
+  if (ecart.erreur) { console.warn("écart non mesuré :", ecart.erreur); process.exitCode = 1; }
+  else {
+    const visible = ecart.brut - ecart.record - ecart.ombre;
+    console.log(`écart séquence → « ${ecart.suivant} » : ${ecart.brut} px de boîte à boîte`
+      + (ecart.record ? `, dont ${ecart.record} px de ligne de record` : "")
+      + `, moins ${ecart.ombre} px d'ombre → ${visible} px VISIBLES`);
+    // 12 px : en dessous, deux bordures de 3 px séparées par un filet d'or se
+    // lisent comme un seul bloc. Signalé sur un écran qui en avait 6.
+    if (visible < 12) { console.warn("❌ les deux encadrés se touchent"); process.exitCode = 1; }
+    else console.log("encadrés séparés ✅");
+    for (const c of ecart.couples || []) console.log(`   ${c.quoi} : ${c.visible} px visibles`);
+    const pire = (ecart.couples || []).reduce((m, c) => Math.min(m, c.visible), 999);
+    if (pire < 999) {
+      if (pire < 8) { console.warn(`❌ deux encadrés de la feuille à ${pire} px visibles`); process.exitCode = 1; }
+      else console.log(`cartes de la feuille séparées ✅ (au plus serré : ${pire} px)`);
+    }
+  }
+
+  // SANS_RECORD=1 retire la ligne « NOUVEAU RECORD ! » avant la photo. Une partie
+  // de démonstration bat toujours le record, donc l'aperçu ne montrait JAMAIS
+  // l'écran tel que le voit un joueur ordinaire — celui où la séquence et le
+  // score se retrouvent à 10 px l'un de l'autre. C'est cette version-là qui a été
+  // signalée, et elle était invisible ici.
+  if (process.env.SANS_RECORD) {
+    await page.evaluate(() => {
+      for (const el of document.querySelectorAll("div")) {
+        if (el.children.length) continue;
+        if (/NOUVEAU RECORD|NEW RECORD|NEUER REKORD|NUOVO RECORD|NOVO RECORDE/i.test(el.textContent || "")) el.style.display = "none";
+      }
+    });
+    await page.waitForTimeout(300);
+  }
 }
 
 if (ecran === "partie-faux" || ecran === "mercato-faux") {
