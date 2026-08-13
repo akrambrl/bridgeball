@@ -69,9 +69,16 @@ create table public.bb_pseudos (
   xp_season_month     text
 );
 
+-- PAS de contrainte d'unicité sur season_number, et c'est CONFORME à la
+-- production : la table y contient deux fois la saison 4, avec le même champion
+-- et le même horodatage à la seconde — trace de l'ancienne clôture côté client,
+-- qui tournait sur le téléphone du premier joueur à ouvrir l'app. Le seul
+-- rempart contre le doublon est donc le test `if exists` de bb_cloturer_saison,
+-- et le banc doit éprouver CE rempart, pas une contrainte que la vraie base n'a
+-- pas.
 create table public.bb_seasons (
   id             bigserial primary key,
-  season_number  int unique not null,
+  season_number  int not null,
   champion_id    text,
   champion_name  text,
   champion_score integer,

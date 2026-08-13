@@ -100,6 +100,14 @@ drop policy if exists p_bareme_select on public.bb_modes_bareme;
 do $$ begin
   if exists (select 1 from pg_roles where rolname = 'anon') then
     create policy p_bareme_select on public.bb_modes_bareme for select to anon using (true);
+    -- Le GRANT en plus de la politique, et pas seulement la politique : une
+    -- politique RLS n'accorde aucun privilège, elle ne fait que filtrer ce que
+    -- le privilège autorise déjà. Sur Supabase le grant vient des privilèges par
+    -- défaut du schéma public, donc l'oubli ne se voyait pas — mais
+    -- `bb_classement_mois` n'est pas en SECURITY DEFINER : elle lit ce barème
+    -- SOUS L'IDENTITÉ de l'appelant, donc sans ce droit l'onglet Saison tombe
+    -- en erreur au lieu de s'afficher. L'écrire ici rend le fichier autonome.
+    grant select on public.bb_modes_bareme to anon;
   end if;
 end $$;
 
@@ -311,12 +319,46 @@ begin
   return query select 'ok'::text, (c.pseudo || ' — ' || c.points || ' points')::text;
 end $$;
 
--- Plus personne d'autre que le serveur n'écrit le Hall of Fame.
+-- ── PLUS PERSONNE D'AUTRE QUE LE SERVEUR N'ÉCRIT LE HALL OF FAME ───────────
+--
+-- ⚠️ LE RETRAIT SE FAIT SUR `public`, PAS SUR `anon`, et la nuance a coûté une
+--    fausse saison en production. La première version disait
+--
+--        revoke execute on function public.bb_cloturer_saison(text, int) from anon;
+--
+--    et ne retirait RIEN. Postgres accorde EXECUTE à PUBLIC sur toute fonction
+--    dès sa création, et PUBLIC couvre `anon` : retirer le grant direct d'un rôle
+--    qui n'en a jamais eu ne change rien. La fonction étant en SECURITY DEFINER,
+--    n'importe qui muni de la clé publique — qui est dans le bundle — pouvait
+--    donc couronner qui il voulait, quels que soient les droits sur bb_seasons.
+--    Constaté pour de vrai : un appel de contrôle a écrit une saison 999.
+--
+--    Pourquoi le `revoke insert on bb_seasons` juste en dessous, lui, marchait :
+--    les TABLES n'ont pas de grant PUBLIC par défaut. Les FONCTIONS si. C'est la
+--    même erreur que la section 6, où un privilège de colonne ne restreignait
+--    pas un rôle détenant l'UPDATE de la table.
+--
+-- Éprouvé par npm run sql:essai, qui prend le rôle `anon` et essaie vraiment
+-- d'appeler la clôture — le contrôle qui manquait.
 drop policy if exists p_bb_seasons_insert on public.bb_seasons;
+
+revoke execute on function public.bb_cloturer_saison(text, int) from public;
+-- Le service, lui, doit pouvoir l'appeler : c'est la tâche planifiée du 1er du
+-- mois, avec la clé de service. Le grant est explicite parce qu'il ne dépend
+-- plus de PUBLIC, qu'on vient de retirer.
 do $$ begin
+  if exists (select 1 from pg_roles where rolname = 'service_role') then
+    grant execute on function public.bb_cloturer_saison(text, int) to service_role;
+  end if;
   if exists (select 1 from pg_roles where rolname = 'anon') then
     revoke insert on public.bb_seasons from anon;
+    -- Ceinture et bretelles : si un grant direct existait par ailleurs (les
+    -- privilèges par défaut de Supabase en posent un sur les nouvelles
+    -- fonctions), le retrait de PUBLIC seul ne l'enlèverait pas.
     revoke execute on function public.bb_cloturer_saison(text, int) from anon;
+  end if;
+  if exists (select 1 from pg_roles where rolname = 'authenticated') then
+    revoke execute on function public.bb_cloturer_saison(text, int) from authenticated;
   end if;
 end $$;
 

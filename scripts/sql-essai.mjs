@@ -183,6 +183,40 @@ async function eprouver(typeScore) {
   if (!okOrphelin) bon = false;
   console.log((okOrphelin ? "✅ " : "❌ ") + "clôture refusée sur mode hors barème : " + c3);
 
+  // ── LE CONTRÔLE QUI MANQUAIT, ET QUI A COÛTÉ UNE FAUSSE SAISON ──────────
+  // La clôture est en SECURITY DEFINER : qui peut l'APPELER peut couronner
+  // n'importe qui, quels que soient les droits sur bb_seasons. Le banc vérifiait
+  // que la fonction marche, jamais qu'elle est INTERDITE à la clé publique.
+  //
+  // Une sonde lancée sur la production s'est donc exécutée pour de vrai et a
+  // écrit une saison 999 dans le Hall of Fame. Le fichier disait
+  // `revoke execute ... from anon`, ce qui ne retire RIEN : Postgres accorde
+  // EXECUTE à PUBLIC sur toute fonction, et PUBLIC couvre anon. C'est la même
+  // erreur que la section 6 sur les colonnes — un revoke ciblé sur un rôle qui
+  // n'a jamais eu de grant direct.
+  //
+  // Pourquoi le `revoke insert on bb_seasons`, lui, fonctionnait : les TABLES
+  // n'ont pas de grant PUBLIC par défaut, les FONCTIONS si.
+  let clotureInterdite = false, retour = "";
+  try {
+    retour = (await psql(["-tAc", "set role anon; select etat from "
+      + "public.bb_cloturer_saison(to_char(now(), 'YYYY-MM'), 97)"], base)).trim();
+  } catch (e) {
+    clotureInterdite = /permission denied|denied for/i.test(String(e.message));
+  }
+  if (!clotureInterdite) bon = false;
+  console.log((clotureInterdite ? "✅ " : "❌ ") + "anon ne peut PAS appeler la clôture"
+    + (clotureInterdite ? "" : "  ← APPELÉE, retour « " + retour + " » : n'importe qui couronne"));
+
+  // Le classement, lui, DOIT rester appelable : c'est l'onglet Saison de l'app.
+  let classementOuvert = true;
+  try {
+    await psql(["-tAc", "set role anon; select count(*) from public.bb_classement_courant()"], base);
+  } catch { classementOuvert = false; }
+  if (!classementOuvert) bon = false;
+  console.log((classementOuvert ? "✅ " : "❌ ") + "anon peut toujours lire le classement"
+    + (classementOuvert ? "" : "  ← l'onglet Saison serait vide"));
+
   // ── SECTION 6, LA PLUS PIÉGEUSE ─────────────────────────────────────────
   // Elle est commentée dans le fichier (elle attend le déploiement) : on
   // l'applique ICI, telle quelle, pour vérifier qu'elle fera ce qu'elle
