@@ -468,6 +468,12 @@ CHEMINS["grille-fin"] = [];
 // réponse. Avec SAISIE=refus, il tape un nom faux d'abord, pour photographier
 // aussi le champ en erreur et le panneau « je suis sûr que ça devrait passer ».
 CHEMINS["grille-saisie"] = [];
+// `grille-partie` photographie une partie ENTAMÉE : quelques cases trouvées,
+// d'autres encore vides, des vies entamées et un score qui a commencé à monter.
+// C'est ce qu'il faut pour une fiche de store — un écran de choix de mode ne
+// montre pas le jeu, et une grille entièrement remplie ne montre plus de jeu à
+// faire. CASES règle le nombre de cases remplies (5 sur 9 par défaut).
+CHEMINS["grille-partie"] = [];
 // `grid-battle` remonte le chemin « jouer à GOAT GRID entre amis » : carte du
 // carrousel → « Choisis ton mode » → carte BATTLE → « CRÉER UNE ROOM ». Le
 // signalement était « il n'y a pas de bouton créer une salle », donc ce n'est
@@ -916,7 +922,8 @@ if (ecran === "comment-jouer") {
   if (!vu) process.exitCode = 1;
 }
 
-if (ecran === "grille" || ecran === "grille-remplie" || ecran === "grille-fin" || ecran === "grille-saisie") {
+if (ecran === "grille" || ecran === "grille-remplie" || ecran === "grille-fin"
+    || ecran === "grille-saisie" || ecran === "grille-partie") {
   // GOAT GRID en jeu. Deux chemins, parce que l'accueil n'est pas le même :
   // sur mobile un carrousel de cartes, sur ordinateur une liste de modes à
   // gauche puis un bouton JOUER. Sans la branche PC, l'aperçu restait sur la
@@ -1061,7 +1068,7 @@ if (ecran === "grid-battle") {
   }
 }
 
-if (ecran === "grille-remplie" || ecran === "grille-fin") {
+if (ecran === "grille-remplie" || ecran === "grille-fin" || ecran === "grille-partie") {
   // Cinq tapes sur le titre ouvrent le mode démo, qui liste une réponse par case.
   const titre = page.getByText(/^GOAT GRID$/).first();
   for (let k = 0; k < 5; k++) { await titre.click({ force:true }); await page.waitForTimeout(120); }
@@ -1078,10 +1085,24 @@ if (ecran === "grille-remplie" || ecran === "grille-fin") {
   console.log("réponses du mode démo :", reponses.length, reponses.slice(0, 3).join(" · ") + "…");
   // Les cases vides portent le « + ». On les prend une par une : chaque réponse
   // trouvée en retire une de la liste, donc on relit à chaque tour.
+  //
+  // `grille-partie` s'arrête avant la fin, et ne remplit PAS les cases dans
+  // l'ordre : un damier de cases trouvées en haut à gauche donnerait une image
+  // de grille abandonnée. Le motif ci-dessous puise dans la liste des cases
+  // ENCORE vides — dont la taille diminue à chaque tour — ce qui disperse les
+  // réponses sur le plateau sans dépendre du hasard.
+  const MAX_CASES = ecran === "grille-partie" ? Number(process.env.CASES || 5) : 9;
+  const MOTIF = [0, 2, 1, 3, 0, 1, 0, 0, 0];
+  let posees = 0;
   for (const nom of reponses) {
+    if (posees >= MAX_CASES) break;
     const vides = page.locator("div").filter({ hasText: /^\+$/ });
-    if (await vides.count() === 0) break;
-    await vides.first().click({ force:true }).catch(() => {});
+    const restantes = await vides.count();
+    if (restantes === 0) break;
+    const cible = ecran === "grille-partie"
+      ? Math.min(MOTIF[posees] || 0, restantes - 1)
+      : 0;
+    await vides.nth(cible).click({ force:true }).catch(() => {});
     await page.waitForTimeout(700);
     // Le champ de la modale porte son invite : on le cible par le placeholder
     // plutôt que par sa position, et on FRAPPE les touches — un `fill` direct ne
@@ -1098,11 +1119,133 @@ if (ecran === "grille-remplie" || ecran === "grille-fin") {
     const valider = page.getByRole("button", { name:/^(VALIDER|VALIDATE|BESTÄTIGEN|CONVALIDA|VALIDAR)$/i }).first();
     if (await valider.count()) { await valider.click({ force:true }).catch(() => {}); }
     await page.waitForTimeout(1200);
+    posees++;
+  }
+  if (ecran === "grille-partie") {
+    console.log("partie entamée : " + posees + " case(s) remplie(s) sur 9");
+    // ── ON RETIRE L'HABILLAGE DE DÉBOGAGE, PAS LE JEU ──────────────────────
+    //
+    // Le mode démo est le seul moyen de connaître les réponses, donc de remplir
+    // des cases : il pose une graine fixe et LISTE les neuf solutions. Mais il
+    // affiche aussi « 🎬 MODE DÉMO » sous le titre et un panneau qui donne toutes
+    // les réponses — deux choses qu'aucun joueur ne voit, et qui n'ont rien à
+    // faire sur une fiche de store.
+    //
+    // Le couper après coup est impossible : ggToggleDemo REMET LA GRILLE À ZÉRO
+    // (cases, vies, score), donc on perdrait la partie qu'on vient de jouer. Et
+    // il n'existe pas de moyen de forcer cette graine sans le mode.
+    //
+    // Ce qu'on retire est donc l'OUTIL, pas le jeu : la grille vient du vrai
+    // générateur, les cases trouvées sont de vraies réponses validées par l'app,
+    // les vies et le score sont ceux du moteur. L'état montré est un état qu'un
+    // joueur peut atteindre — c'est le panneau de débogage qui ne l'est pas.
+    // GARDER_DEMO=1 saute le retrait : c'est ainsi qu'on ÉPROUVE le contrôle de
+    // débordement juste en dessous. Le panneau des réponses vole sa hauteur au
+    // plateau, les cases se resserrent et les noms mordent sur la rangée voisine
+    // — l'état exact du premier essai. Un contrôle qui n'a jamais déclenché ne
+    // prouve rien.
+    const retires = process.env.GARDER_DEMO === "1" ? 0 : await page.evaluate(() => {
+      let n = 0;
+      // LE PANNEAU, désigné comme plus haut dans ce fichier : son TITRE est un div
+      // feuille (≤ 3 enfants), et le panneau est son PARENT. Une première version
+      // cherchait « le div qui contient ce texte et plus de cinq div » : elle a
+      // attrapé un ANCÊTRE englobant tout le plateau, l'a supprimé, et la capture
+      // a photographié l'accueil. Pire, le contrôle de débordement juste en
+      // dessous est passé au vert — il ne restait aucune case à mesurer.
+      const titres = [...document.querySelectorAll("div")].filter((d) =>
+        /MODE DÉMO — réponses/i.test(d.textContent || "") && d.children.length <= 3);
+      const titre = titres[titres.length - 1];
+      if (titre && titre.parentElement) { titre.parentElement.remove(); n++; }
+      // L'étiquette sous le titre : un div FEUILLE au texte exact.
+      for (const d of [...document.querySelectorAll("div")]) {
+        if (d.children.length === 0
+            && /^(🎬\s*MODE DÉMO|🔄\s*GRILLE TEST)$/i.test((d.textContent || "").trim())) {
+          d.remove(); n++;
+        }
+      }
+      return n;
+    });
+    console.log("habillage de débogage retiré : " + retires + " bloc(s)");
+    await page.waitForTimeout(700);
+
+    // ET ON MESURE CE QUI DÉBORDE. Premier essai : les noms trouvés sortaient de
+    // leur case et se peignaient par-dessus la rangée voisine — « CRISTIANO
+    // RONALDO » à cheval sur AC MILAN. Le panneau volait la hauteur du plateau.
+    // Une capture de store avec du texte qui chevauche est inutilisable, donc
+    // c'est un contrôle, pas une observation.
+    // LE PLATEAU EST-IL TOUJOURS LÀ ? Sans cette vérification, tout ce qui suit
+    // peut réussir en ne trouvant rien — c'est exactement ce qui s'est produit.
+    const plateau = await page.evaluate(() => {
+      const trouvees = [...document.querySelectorAll("div")].filter((d) =>
+        /\+\d+\s*pts/i.test((d.textContent || "").trim())
+        && (d.textContent || "").trim().length < 60).length;
+      const vides = [...document.querySelectorAll("div")].filter((d) =>
+        (d.textContent || "").trim() === "+").length;
+      return { trouvees, vides };
+    });
+    const assezDeCases = plateau.trouvees >= 1 && plateau.trouvees + plateau.vides >= 6;
+    if (!assezDeCases) {
+      console.error("⚠️ LE PLATEAU A DISPARU : " + plateau.trouvees + " case(s) trouvée(s), "
+        + plateau.vides + " vide(s). La suppression du panneau a emporté le jeu.");
+      process.exitCode = 1;
+    } else {
+      console.log("plateau intact : " + plateau.trouvees + " trouvée(s), "
+        + plateau.vides + " vide(s)");
+    }
+    // CE QU'ON MESURE : le contenu d'une case sort-il de la CASE ? Et non pas
+    // « un div a-t-il un scrollHeight plus grand que son clientHeight », qui est
+    // ce que la première version demandait. Elle signalait cinq débordements sur
+    // une image où rien n'était coupé : l'élément le plus étroit à porter le motif
+    // « +15 pts » est le petit libellé de points lui-même, 13 px de boîte pour
+    // 16 px de contenu — un écart de hauteur de ligne, pas un défaut.
+    //
+    // Le vrai défaut, celui vu au premier essai, était que le NOM se peignait
+    // par-dessus la rangée voisine. Ça se mesure en comparant le bas des enfants
+    // au bas de la case, et pas autrement.
+    const debords = await page.evaluate(() => {
+      const mauvais = [];
+      const cases = [...document.querySelectorAll("div")].filter((d) => {
+        const t = (d.textContent || "").trim();
+        // Une case TROUVÉE porte un nom ET les points : le libellé seul fait
+        // moins de douze caractères, la case en fait plus.
+        return /\+\d+\s*pts/i.test(t) && t.length > 12 && t.length < 60
+          && d.children.length > 0;
+      });
+      // La plus PROFONDE des correspondances imbriquées : c'est la case, pas son
+      // conteneur de rangée.
+      const feuilles = cases.filter((d) => !cases.some((a) => a !== d && d.contains(a)));
+      for (const c of feuilles) {
+        const boite = c.getBoundingClientRect();
+        let bas = boite.top, droite = boite.left;
+        for (const e of c.querySelectorAll("*")) {
+          const r = e.getBoundingClientRect();
+          if (r.height === 0) continue;
+          if (r.bottom > bas) bas = r.bottom;
+          if (r.right > droite) droite = r.right;
+        }
+        const sousLaCase = Math.round(bas - boite.bottom);
+        const horsCase = Math.round(droite - boite.right);
+        // 4 px : au-dessus, le texte mord visiblement sur la case voisine. En
+        // dessous, c'est de l'arrondi de rendu.
+        if (sousLaCase > 4 || horsCase > 4) {
+          mauvais.push((c.textContent || "").trim().replace(/\s+/g, " ").slice(0, 30)
+            + " dépasse de " + sousLaCase + " px en bas, " + horsCase + " px à droite");
+        }
+      }
+      return mauvais;
+    });
+    if (debords.length) {
+      console.error("⚠️ " + debords.length + " case(s) dont le contenu déborde :");
+      debords.forEach((m) => console.error("   " + m));
+      process.exitCode = 1;
+    } else {
+      console.log("aucune case ne déborde ✅");
+    }
   }
   // La grille terminée ouvre son écran de fin, qui recouvre le plateau. On garde
   // les deux : `grille-fin` photographie la modale, `grille-remplie` la referme
   // sur les neuf cases trouvées avec « REVOIR MA GRILLE ».
-  if (ecran !== "grille-fin") {
+  if (ecran !== "grille-fin" && ecran !== "grille-partie") {
     const revoir = page.getByRole("button", { name:/revoir ma grille|review my grid|raster ansehen|rivedi la griglia|ver minha grade|ver mi cuadr/i }).first();
     if (await revoir.count()) { await revoir.click({ force:true }).catch(() => {}); }
   }
