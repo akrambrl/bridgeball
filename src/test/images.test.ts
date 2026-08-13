@@ -128,3 +128,44 @@ describe("manifest.json", () => {
     expect(manifeste.theme_color.toUpperCase()).toBe("#F5C22B");
   });
 });
+
+// ── LES POLICES DU HARNAIS DOIVENT RESTER LÀ ──────────────────────────────
+//
+// L'app charge Anton, Bebas Neue, Inter et Nunito depuis Google Fonts. Une
+// machine sans accès à ce CDN — celle des aperçus, celle d'une CI — peint alors
+// tout en police système, EN SILENCE : les quatre requêtes échouent et
+// `document.fonts.check()` répond quand même `true`, parce qu'il ne dit pas si la
+// police est chargée mais si le texte serait rendu.
+//
+// Treize captures du Play Store sont parties avec le mauvais lettrage avant que
+// quelqu'un ne le remarque à l'œil. Pire, les polices de repli sont plus LARGES
+// que les condensées : les pastilles passaient à la ligne, le bloc des choix
+// mesurait 387 px au lieu de 320, et le plafond de l'affiche de GOAT GRID avait
+// été dimensionné sur ce chiffre faux.
+//
+// scripts/apercu.mjs les injecte donc en data URI et refuse de photographier si
+// elles ne sont pas appliquées. Ce test garde l'autre bout : que les fichiers
+// existent, et qu'ils soient de vrais woff2.
+describe("polices embarquées pour les aperçus", () => {
+  const POLICES = ["anton-latin.woff2", "bebas-neue-latin.woff2"];
+  const DOSSIER = join(process.cwd(), "scripts", "polices");
+
+  for (const nom of POLICES) {
+    it(nom + " est présente et est bien un woff2", () => {
+      const chemin = join(DOSSIER, nom);
+      expect(existsSync(chemin)).toBe(true);
+      // La signature d'un woff2 est « wOF2 » sur les quatre premiers octets. Un
+      // fichier tronqué ou une page d'erreur HTML téléchargée à sa place
+      // passerait un simple contrôle d'existence.
+      const tete = readFileSync(chemin).subarray(0, 4).toString("latin1");
+      expect(tete).toBe("wOF2");
+    });
+  }
+
+  it("apercu.mjs les injecte toutes les deux", () => {
+    const src = readFileSync(join(process.cwd(), "scripts", "apercu.mjs"), "utf8");
+    for (const nom of POLICES) expect(src).toContain(nom);
+    // Et il doit REFUSER de capturer sans elles, pas seulement prévenir.
+    expect(src).toContain("POLICE NON APPLIQUÉE");
+  });
+});
