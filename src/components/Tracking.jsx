@@ -536,12 +536,25 @@ export default function Tracking(props) {
   }, []);
 
   // « En ce moment » — rafraîchi toutes les 15 s tant que le dashboard est ouvert.
+  //
+  // ON SE RETIRE DU COMPTE. Le tableau de bord est rendu DANS l'app
+  // (`{statsMode && <Tracking/>}`), pas à sa place : le battement de cœur de
+  // LePont continue donc de tourner pendant qu'on le regarde, et on s'inscrit
+  // soi-même dans bb_presence toutes les 30 s. Le compteur affichait « 1
+  // personne sur l'app » à toute heure du jour et de la nuit — c'était le
+  // spectateur. Relevé sur les données réelles : la seule ligne dans la fenêtre
+  // des 80 s portait le pseudo du propriétaire du tableau de bord.
+  //
+  // Le chiffre utile est « qui d'AUTRE est là », puisqu'on sait déjà qu'on y est.
   useEffect(function () {
     let stop = false;
+    let moi = null;
+    try { moi = localStorage.getItem("bb_player_id"); } catch (e) { /* noop */ }
     async function poll() {
       const depuis = new Date(Date.now() - 80 * 1000).toISOString(); // vu dans les 80 dernières s
       const rows = await sb.fetchAll("bb_presence?select=player_id&last_seen=gte." + depuis + "&order=player_id.asc", 10000);
-      if (!stop) setLiveNow(Array.isArray(rows) ? rows.length : null);
+      if (!stop) setLiveNow(Array.isArray(rows)
+        ? rows.filter(function (r) { return r.player_id !== moi; }).length : null);
     }
     poll();
     const iv = setInterval(poll, 15000);
@@ -638,7 +651,9 @@ export default function Tracking(props) {
           En ce moment
         </div>
         <div style={{fontSize:12,color:BLANC(.45),fontWeight:600,marginTop:1}}>
-          {liveNow == null ? "table bb_presence à créer" : (liveNow > 1 ? "personnes sur l'app" : "personne sur l'app")}
+          {liveNow == null ? "table bb_presence à créer"
+            : liveNow === 0 ? "personne d'autre que toi"
+            : (liveNow > 1 ? "autres joueurs sur l'app" : "autre joueur sur l'app")}
         </div>
       </div>
       <div style={{...posterText(44),color:G.pelouseClaire,lineHeight:1}}>{liveNow == null ? "—" : liveNow}</div>
