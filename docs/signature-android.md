@@ -65,28 +65,58 @@ keytool -genkeypair -v \
   qui expire est une app qu'on ne peut plus mettre à jour.
 - **4096 bits** plutôt que 2048 : ça ne coûte rien et ça ne se change pas après.
 
-### Les neuf invites, dans l'ordre
+### Les neuf invites, dans l'ordre — ET DANS LA LANGUE DU JDK
 
-C'est là qu'on se perd : keytool pose six questions d'identité que rien
-n'annonce, et si une réponse se décale il **recommence tout depuis le début**.
+C'est là qu'on se perd, pour deux raisons. keytool pose six questions d'identité
+que rien n'annonce, et si une réponse se décale il **recommence tout depuis le
+début**. Et il parle la langue du système : sur un Mac français, les invites sont
+en français **et la confirmation attend `oui`**.
 
-| # | ce qui s'affiche | ce que tu tapes |
-|---|---|---|
-| 1 | `Enter keystore password:` | ton mot de passe (invisible à la frappe) |
-| 2 | `Re-enter new password:` | le même |
-| 3 | `What is your first and last name?` | ton nom |
-| 4 | `What is the name of your organizational unit?` | `GOAT FC` |
-| 5 | `What is the name of your organization?` | `GOAT FC` |
-| 6 | `What is the name of your City or Locality?` | ta ville |
-| 7 | `What is the name of your State or Province?` | ta région |
-| 8 | `What is the two-letter country code for this unit?` | `FR` |
-| 9 | `Is CN=… correct?  [no]:` | **`yes`** — pas « oui », pas ENTRÉE |
+Ce n'est pas un détail cosmétique. Éprouvé sur un keytool français en répondant
+`yes` : la commande a reposé la première question **21 fois** et n'a créé **aucun
+fichier**. Répondre dans la mauvaise langue, c'est la boucle infinie.
 
-L'invite 9 est le piège : la valeur par défaut entre crochets est `no`, donc
-appuyer sur ENTRÉE relance les six questions. Il faut écrire `yes`.
+| # | JDK en français | JDK en anglais | réponse |
+|---|---|---|---|
+| 1 | `Entrez le mot de passe du fichier de clés :` | `Enter keystore password:` | ton mot de passe (invisible à la frappe) |
+| 2 | `Ressaisissez le nouveau mot de passe :` | `Re-enter new password:` | le même |
+| 3 | `Quels sont vos nom et prénom ?` | `What is your first and last name?` | ton nom |
+| 4 | `Quel est le nom de votre unité organisationnelle ?` | `…organizational unit?` | `GOAT FC` |
+| 5 | `Quel est le nom de votre entreprise ?` | `…organization?` | `GOAT FC` |
+| 6 | `Quel est le nom de votre ville de résidence ?` | `…City or Locality?` | ta ville |
+| 7 | `Quel est le nom de votre état ou province ?` | `…State or Province?` | ta région |
+| 8 | `Quel est le code pays à deux lettres pour cette unité ?` | `…two-letter country code…?` | `FR` |
+| 9 | `Est-ce CN=… ?` `[non]:` | `Is CN=… correct?` `[no]:` | **`oui`** / **`yes`** |
+
+L'invite 9 est le piège : la valeur par défaut entre crochets est *non*, donc
+ENTRÉE relance les six questions — et un `yes` sur un JDK français fait pareil.
+
+Pour forcer l'anglais si les accents s'affichent mal :
+`keytool -J-Duser.language=en …`
 
 Ces valeurs finissent dans le certificat, pas sur la fiche Play. Personne ne les
 verra.
+
+### Et si keytool est absent
+
+`keytool` fait partie du JDK, et **macOS répond « Unable to locate a Java
+Runtime »** sans lui — pas `command not found`, donc même le diagnostic était
+faux dans une version précédente de ce document.
+
+Sans Homebrew, ce qui est le cas le plus courant sur un Mac neuf, un seul bloc
+télécharge le bon installateur et l'ouvre, en détectant Apple Silicon ou Intel :
+
+```bash
+curl -L -o ~/Downloads/temurin21.pkg \
+  "https://api.adoptium.net/v3/installer/latest/21/ga/mac/$(uname -m | sed 's/arm64/aarch64/;s/x86_64/x64/')/jdk/hotspot/normal/eclipse?project=jdk" \
+  && open ~/Downloads/temurin21.pkg
+```
+
+Les deux liens ont été vérifiés : ils répondent 200 et rendent bien
+`OpenJDK21U-jdk_aarch64_mac` et `OpenJDK21U-jdk_x64_mac`.
+
+Puis **fermer complètement le Terminal** (`Cmd + Q`) et le rouvrir : un shell déjà
+ouvert ne verra pas le nouveau JDK.
 
 ### Vérifier que la clé est bonne
 
