@@ -48,3 +48,6 @@ apercu-*.png
 
 # rendus de scripts/tiktok.mjs (vidéos, régénérables)
 tiktok/
+
+# Captures d'apercu, regenerees a la demande (scripts/apercu.mjs)
+apercu-*.png

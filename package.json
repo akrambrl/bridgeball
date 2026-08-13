@@ -21,7 +21,8 @@
     "ios:sync": "npm run build && npx cap sync ios",
     "ios:open": "npx cap open ios",
     "coque": "node scripts/coque-native.mjs",
-    "coque:verifie": "node scripts/coque-native.mjs --verifie"
+    "coque:verifie": "node scripts/coque-native.mjs --verifie",
+    "store": "node scripts/visuels-store.mjs"
   },
   "dependencies": {
     "@capacitor/app": "^8.1.1",
