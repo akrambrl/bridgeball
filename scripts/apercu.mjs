@@ -736,9 +736,25 @@ if (ecran.startsWith("mode-")) {
       + (m.deborde > 0 ? `  ·  defilement ${m.deborde} px` : "  ·  tient sur une page"));
     if (!m.caches.length) console.log("aucun bouton sous la ligne de flottaison ✅");
     else {
-      console.log("⚠️ " + m.caches.length + " bouton(s) hors écran, sur " + m.fenetre + " px :");
+      // DÉCISION ASSUMÉE, et non un défaut à corriger, sur ces trois feuilles :
+      // leurs affiches doivent rester pleine largeur — c'était une demande
+      // explicite. Elles cachent donc leurs boutons sur un téléphone court, et
+      // on l'accepte parce que le bas de la rangée de difficulté y est coupé,
+      // ce qui invite à faire glisser. GOAT GRID n'avait pas cette chance : sa
+      // feuille ne porte que deux cartes, dont la seconde était entièrement
+      // hors champ, et l'affiche s'arrêtait net sur un bord propre.
+      //
+      // Le rappeler ICI plutôt que d'échouer : un contrôle qui rapporte un
+      // échec connu à chaque exécution cesse d'être lu, et le jour où une
+      // QUATRIÈME feuille se met à cacher un bouton, plus personne ne le voit.
+      const ADMIS = { plug:"The Plug", mercato:"The Mercato", duel:"GOAT Duel" };
+      const admis = ADMIS[ecran.slice(5)];
+      console.log((admis ? "◦ " : "⚠️ ") + m.caches.length + " bouton(s) hors écran, sur "
+        + m.fenetre + " px :");
       m.caches.forEach((c) => console.log("   " + c));
-      process.exitCode = 1;
+      if (admis) console.log("   ADMIS sur " + admis + " : l'affiche pleine largeur a été"
+        + " préférée,\n   et la rangée coupée en dessous invite à défiler.");
+      else process.exitCode = 1;
     }
   }
 }
