@@ -168,6 +168,26 @@ Le workflow **vérifie la signature avant de te livrer le fichier** (`jarsigner
 -verify`) : sans ça, Play refuse le dépôt après le téléversement, ce qui coûte un
 aller-retour.
 
+### Mesuré au premier build réussi
+
+Run n° 2 du 13 août 2026, tout vert en **2 min 56 s** — dont 1 min 35 s pour
+`bundleRelease`. `jarsigner` répond « jar verified », l'AAB pèse **16 Mo**, très
+loin de la limite de 200 Mo.
+
+### L'artefact est un ZIP, l'AAB est dedans
+
+GitHub emballe toujours les artefacts. Le téléchargement donne
+`goatfc-aab-1.0.0-N.zip` : **il faut le décompresser** et déposer le
+`app-release.aab` qu'il contient. Play refuse le `.zip` tel quel.
+
+### Ce que le premier build a appris
+
+Il a échoué une fois, en 39 s, sur `mergeReleaseResources` : un `--` dans un
+commentaire XML de `ic_launcher_background.xml`, ce que **XML interdit** à
+l'intérieur d'un `<!-- -->`. `npm run coque:verifie` scanne désormais tous les XML
+de `res` pour ça, et tourne APRÈS `cap sync` pour voir ce que Gradle va vraiment
+compiler.
+
 ### Le numéro de version est le piège
 
 Play refuse un `versionCode` déjà déposé, et il ne peut que **monter**. Le workflow
