@@ -73,8 +73,11 @@ const GAMES: {
     tagline: "La grille 3\u00d73",
     img: "/grid-card.webp",
     mascot: "/win2.webp",
+    // \u00ab Solo ou en versus \u00bb est dit ici parce que le bouton JOUER ouvre
+    // maintenant le choix des deux, comme sur mobile : la fiche annon\u00e7ait une
+    // grille solo alors que le mode a un versus \u00e0 huit.
     description:
-      "Neuf cases, neuf crit\u00e8res crois\u00e9s. Trouve un joueur qui coche les deux \u00e0 chaque fois.",
+      "Neuf cases, neuf crit\u00e8res crois\u00e9s. Trouve un joueur qui coche les deux \u00e0 chaque fois. Solo, ou en versus jusqu'\u00e0 8 joueurs.",
     accent: G.maillot,
     badge: "GRILLE",
   },

@@ -5628,7 +5628,14 @@ export default function LePont() {
         // annoncé. Ce sont deux jeux différents (cf. le type GameMode), et
         // « Trouve le joueur » vit dans un overlay monté par Index — qui lit
         // `?play=grid` lui-même. Pareil pour `guess` : rien à faire ici.
-        ggStartGame();
+        // LE CHOIX DU MODE, et non le solo directement. `ggStartGame()` lançait
+        // le défi du jour : sur ordinateur, GOAT BATTLE n'était donc atteignable
+        // par AUCUN chemin — la feuille « Choisis ton mode » n'a qu'un appelant,
+        // la carte du carrousel, qui n'existe que sur mobile. Créer un salon pour
+        // jouer entre amis était littéralement absent de la version PC, ce qui est
+        // exactement le signalement reçu. Même traitement que GOAT Duel juste en
+        // dessous, dont le bouton JOUER ouvre son menu solo / en ligne / potes.
+        setGgModeChoice(true);
       } else if (play === "duel" || play === "goatduel") {
         // GOAT Duel : on ouvre son menu (solo / en ligne / entre potes),
         // exactement comme la carte du carrousel mobile.
@@ -5655,7 +5662,13 @@ export default function LePont() {
       // GOAT Duel vit dans son propre overlay : sans lui, fermer le duel laissait
       // l'utilisateur sur l'accueil de LePont au lieu de rendre la main à la landing.
       !!duelScreen ||
-      (ggBattleScreen && ggBattleScreen === "playing");
+      // La feuille « Choisis ton mode » et tout le parcours BATTLE comptent
+      // comme « dans le jeu », au même titre que le menu de GOAT Duel juste
+      // au-dessus : sinon, fermer la feuille depuis la landing PC laissait
+      // l'accueil MOBILE de LePont affiché en plein écran d'ordinateur au lieu
+      // de rendre la main à la landing.
+      ggModeChoice ||
+      !!ggBattleScreen;
     if (inGame) {
       wasInGameRef.current = true;
       return;
@@ -5665,7 +5678,7 @@ export default function LePont() {
       launchedFromLandingRef.current = false;
       wasInGameRef.current = false;
     }
-  }, [screen, showGoatGrid, ggBattleScreen, duelScreen]);
+  }, [screen, showGoatGrid, ggBattleScreen, duelScreen, ggModeChoice]);
 
   // Lock viewport : empêche zoom utilisateur, scroll horizontal, overscroll
   // pour que l'app se comporte comme une app native en PWA sur téléphone
@@ -14017,8 +14030,18 @@ export default function LePont() {
 
         {/* 🐐 Modal de choix Solo / Multi pour GOAT GRID */}
         {ggModeChoice && (
-          <div style={{position:"fixed",inset:0,zIndex:450,background:fondCharte,overflowY:"auto",WebkitOverflowScrolling:"touch"}}>
-            <div style={{position:"relative",width:"100%",height:"100dvh",overflowY:"auto",display:"flex",flexDirection:"column",animation:"fadeIn .3s ease-out"}}>
+          // UN SEUL conteneur qui défile, et c'est l'INTÉRIEUR. Il y en avait
+          // deux emboîtés : le calque fixe portait `overflowY: auto` et
+          // `-webkit-overflow-scrolling: touch`, l'intérieur portait
+          // `height: 100dvh` et son propre `overflowY: auto`. Le calque ne
+          // débordait donc jamais — son unique enfant fait exactement 100dvh —
+          // et c'était l'intérieur qui devait défiler, sans l'accélération
+          // tactile d'iOS. Deux défilements imbriqués dont le mauvais est
+          // accéléré, c'est la recette d'un écran qui ne bouge pas sous le
+          // doigt : le calque passe en `hidden` et l'intérieur récupère
+          // l'accélération.
+          <div style={{position:"fixed",inset:0,zIndex:450,background:fondCharte,overflow:"hidden"}}>
+            <div style={{position:"relative",width:"100%",height:"100dvh",overflowY:"auto",WebkitOverflowScrolling:"touch",display:"flex",flexDirection:"column",animation:"fadeIn .3s ease-out"}}>
               {areneCharte}
               {fermerCharte(function(){setGgModeChoice(false);}, 10)}
 
@@ -14029,7 +14052,24 @@ export default function LePont() {
                   etait recadree en bandeau de 27vh, ce qui coupait la couronne
                   et la tete des joueurs — et l'ecran, qui ne porte que deux
                   choix, laissait un grand vide en dessous. */}
-              <div style={{position:"relative",zIndex:1,width:"100%",aspectRatio:"1086 / 1448",flex:"0 0 auto",maxWidth:480,margin:"0 auto",overflow:"hidden",borderBottom:G.trait}}>
+              {/* LARGEUR PLAFONNÉE PAR LA HAUTEUR DISPONIBLE, et non par un
+                  nombre fixe. Sans ce plafond, l'affiche portrait prenait toute
+                  la largeur — 520 px de haut sur un écran de 390 — et le bloc
+                  des choix (387 px mesurés) partait sous la ligne de flottaison :
+                  la carte BATTLE était invisible dès qu'un téléphone descendait
+                  sous ~810 px de hauteur utile, c'est-à-dire sur presque tous
+                  une fois les barres de Safari comptées. On croyait donc que
+                  jouer à GOAT GRID entre amis n'existait pas — le signalement
+                  était « il n'y a pas de bouton créer une salle », alors que le
+                  bouton est deux écrans plus loin, derrière cette carte.
+                  Défiler n'était pas une réponse : l'affiche remplit l'écran
+                  jusqu'au bord, donc rien n'annonce qu'il y a quelque chose en
+                  dessous.
+                  390 px est la hauteur mesurée du bloc des choix, et la zone
+                  sûre du bas s'y ajoute sur un téléphone à encoche. Le plancher
+                  de 170 px évite qu'un très petit écran ne réduise l'affiche à
+                  une vignette : là, on accepte de défiler. */}
+              <div style={{position:"relative",zIndex:1,width:"100%",aspectRatio:"1086 / 1448",flex:"0 0 auto",maxWidth:"min(480px, max(170px, calc((100dvh - 390px - env(safe-area-inset-bottom)) * 1086 / 1448)))",margin:"0 auto",overflow:"hidden",borderBottom:G.trait}}>
                 <img src={GRID_CARD_IMG} alt="" style={{width:"100%",height:"100%",objectFit:"contain",objectPosition:"center",pointerEvents:"none",userSelect:"none"}} draggable={false}/>
                 {/* Plus de voile ni de titre rapporte : l'affiche porte deja
                     « GOAT GRID » en toutes lettres. Ils avaient un sens quand
@@ -14040,7 +14080,13 @@ export default function LePont() {
               {/* Contenu */}
               <div style={{position:"relative",zIndex:1,padding:"14px 18px calc(16px + env(safe-area-inset-bottom))",flexShrink:0,display:"flex",flexDirection:"column",gap:12,maxWidth:520,width:"100%",margin:"0 auto",boxSizing:"border-box"}}>
 
-                <div style={{...posterText(22,G.projecteur),textAlign:"center",marginBottom:2}}>
+                {/* posterLight À L'ENCRE : ce titre était en projecteur, soit la
+                    teinte EXACTE du fond de la feuille — il ne restait qu'un
+                    fantôme, le contour d'encre de posterText. Sur l'or, seule
+                    l'encre se lit (11,5 contre 1,0 pour le projecteur), et
+                    posterText est fait pour du texte clair sur fond sombre :
+                    des lettres d'encre y sortent doublées d'un halo noir. */}
+                <div style={{...posterLight(22,G.encre),textAlign:"center",marginBottom:2}}>
                   {tr("Choisis ton mode","Choose your mode","Wähle deinen Modus","Scegli la modalità","Escolha seu modo","Elige tu modo")}
                 </div>
 

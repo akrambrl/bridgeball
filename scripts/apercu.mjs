@@ -380,6 +380,14 @@ CHEMINS["grille-fin"] = [];
 // réponse. Avec SAISIE=refus, il tape un nom faux d'abord, pour photographier
 // aussi le champ en erreur et le panneau « je suis sûr que ça devrait passer ».
 CHEMINS["grille-saisie"] = [];
+// `grid-battle` remonte le chemin « jouer à GOAT GRID entre amis » : carte du
+// carrousel → « Choisis ton mode » → carte BATTLE → « CRÉER UNE ROOM ». Le
+// signalement était « il n'y a pas de bouton créer une salle », donc ce n'est
+// pas une mise en page qu'on photographie mais une ACCESSIBILITÉ : à chaque
+// étape, l'élément existe-t-il, et est-il dans la partie visible de son
+// conteneur défilant ? Un bouton sous la ligne de flottaison est absent pour
+// qui ne sait pas qu'il faut défiler.
+CHEMINS["grid-battle"] = [];
 if (!(ecran in CHEMINS)) {
   console.error("écran inconnu :", ecran, "— connus :", Object.keys(CHEMINS).join(", "));
   process.exit(1);
@@ -652,12 +660,26 @@ if (ecran === "guess" || ecran === "guess-question") {
 
 if (ecran.startsWith("mode-")) {
   const m = await page.evaluate(() => {
-    // La PLUS LARGE, et non la première : l'accueil reste monté DERRIÈRE la
-    // feuille, donc sa carte de carrousel arrive avant dans le document et
-    // c'est elle qu'on mesurait — 253 px de large sur un écran de 430. Le même
-    // piège s'est déjà refermé deux fois dans ce fichier.
-    const img = [...document.querySelectorAll("img")]
-      .filter(i => /-card\.png/.test(i.src) && i.getBoundingClientRect().width > 100)
+    // CELLE QUI EST DANS LA FEUILLE, désignée par son ancêtre `position: fixed`.
+    // L'accueil reste monté DERRIÈRE, avec sa propre carte de carrousel : le
+    // piège s'est déjà refermé trois fois ici. « La première » attrapait celle
+    // de l'accueil ; « la plus large » a tenu jusqu'à ce que l'affiche de la
+    // feuille se plafonne en hauteur — depuis, sur un écran court, c'est elle la
+    // plus ÉTROITE des deux, et on mesurait de nouveau l'accueil (ainsi que SON
+    // débordement, d'où un « défilement 217 px » sur une feuille qui tenait).
+    // Seule la feuille sort de l'arbre de l'accueil par `position: fixed`.
+    const dansUneFeuille = (e) => {
+      for (let p = e.parentElement; p; p = p.parentElement) {
+        if (getComputedStyle(p).position === "fixed") return true;
+      }
+      return false;
+    };
+    const cartes = [...document.querySelectorAll("img")]
+      // .webp AUSSI : les affiches de mode sont passées au WebP, et ce motif
+      // ancré sur .png a fait dire « affiche introuvable » au contrôle sans que
+      // rien ne signale qu'il ne mesurait plus rien.
+      .filter(i => /-card\.(png|webp)/.test(i.src) && i.getBoundingClientRect().width > 100);
+    const img = cartes.filter(dansUneFeuille)
       .sort((a, b) => b.getBoundingClientRect().width - a.getBoundingClientRect().width)[0];
     if (!img) return null;
     const boite = img.parentElement.getBoundingClientRect();
@@ -669,16 +691,41 @@ if (ecran.startsWith("mode-")) {
     const peintH = Math.min(r.height, r.width / ratio);
     // Le débordement se mesure sur l'ANCÊTRE QUI DÉFILE, pas sur le body : la
     // feuille fait 100dvh et défile dans son propre conteneur.
+    // La remontée S'ARRÊTE au premier ancêtre `position: fixed`. Les feuilles de
+    // mode sont montées DANS l'arbre de l'accueil et n'en sortent que par
+    // `position: fixed` : sans cette borne, la remontée franchissait la feuille
+    // et rapportait le débordement de l'ACCUEIL resté derrière — « défilement
+    // 153 px » sur une feuille qui tenait entièrement à l'écran.
     let deborde = 0, e = img.parentElement;
     while (e) {
       if (e.scrollHeight - e.clientHeight > 2 && getComputedStyle(e).overflowY !== "visible") {
         deborde = e.scrollHeight - e.clientHeight; break;
       }
+      if (getComputedStyle(e).position === "fixed") break;
       e = e.parentElement;
+    }
+    // LES BOUTONS SOUS LA LIGNE DE FLOTTAISON. Le débordement seul ne dit pas
+    // ce qu'on perd : une feuille peut déborder de 200 px de décor sans rien
+    // cacher, ou de 20 px en emportant le seul bouton qui mène au multijoueur.
+    // C'est ce défaut-là qui a fait conclure que jouer à GOAT GRID entre amis
+    // n'existait pas — l'affiche remplissait l'écran, donc rien n'annonçait
+    // qu'il y avait un choix en dessous.
+    let feuille = img.parentElement;
+    while (feuille && getComputedStyle(feuille).position !== "fixed") feuille = feuille.parentElement;
+    const caches = [];
+    if (feuille) {
+      for (const b of feuille.querySelectorAll("button,[role=button]")) {
+        const r = b.getBoundingClientRect();
+        if (!r.height) continue;
+        if (r.top > window.innerHeight - 8) {
+          caches.push((b.textContent || "?").trim().replace(/\s+/g, " ").slice(0, 28)
+            + " (à " + Math.round(r.top) + ")");
+        }
+      }
     }
     return { fenetre: window.innerHeight, boiteW: Math.round(boite.width),
              boiteH: Math.round(boite.height), peintW: Math.round(peintW),
-             peintH: Math.round(peintH), deborde: Math.round(deborde) };
+             peintH: Math.round(peintH), deborde: Math.round(deborde), caches };
   });
   if (!m) console.log("affiche introuvable");
   else {
@@ -687,6 +734,12 @@ if (ecran.startsWith("mode-")) {
       + `bandes laterales ${bandes} px `
       + (bandes <= 1 ? "OK remplit la largeur" : "PAS pleine largeur")
       + (m.deborde > 0 ? `  ·  defilement ${m.deborde} px` : "  ·  tient sur une page"));
+    if (!m.caches.length) console.log("aucun bouton sous la ligne de flottaison ✅");
+    else {
+      console.log("⚠️ " + m.caches.length + " bouton(s) hors écran, sur " + m.fenetre + " px :");
+      m.caches.forEach((c) => console.log("   " + c));
+      process.exitCode = 1;
+    }
   }
 }
 
@@ -786,6 +839,122 @@ if (ecran === "grille" || ecran === "grille-remplie" || ecran === "grille-fin" |
   await cible.scrollIntoViewIfNeeded().catch(() => {});
   await cible.click({ force:true }).catch(() => {});
   await page.waitForTimeout(2600);
+}
+
+if (ecran === "grid-battle") {
+  // Deux portes, comme pour `grille` : le carrousel sur mobile, la liste des
+  // modes puis « ▶ JOUER » sur ordinateur. Sans la branche PC on restait sur
+  // l'accueil et le contrôle annonçait les deux cartes ABSENTES — un faux
+  // négatif, alors que c'est justement sur PC que l'app est souvent essayée.
+  if (LARGEUR > 900) {
+    await page.getByText(/^GOAT Grid$/).first().click();
+    await page.waitForTimeout(900);
+    await page.getByRole("button", { name:/▶\s*JOUER/i }).first().click();
+    await page.waitForTimeout(2200);
+  } else {
+  const pastilles = page.locator("div[style*='border-radius: 5px'][style*='cursor: pointer']");
+  const i = MODES_CARROUSEL.indexOf("goatgrid");
+  if (await pastilles.count() > i) { await pastilles.nth(i).click(); await page.waitForTimeout(900); }
+  const carte = await page.locator("img[src*='-card']").first().boundingBox();
+  if (!carte) { console.error("carte du carrousel introuvable"); process.exit(1); }
+  await page.mouse.click(carte.x + carte.width / 2, carte.y + carte.height / 2);
+  await page.waitForTimeout(2200);
+  }
+
+  // Mesure commune aux deux étapes : le texte est-il là, peint, et dans la
+  // fenêtre visible ? On remonte au premier ancêtre qui défile pour dire de
+  // combien il faudrait défiler — c'est ce chiffre qui décide si l'élément
+  // « n'existe pas » du point de vue de qui regarde l'écran.
+  const situer = (motif) => page.evaluate((m) => {
+    const re = new RegExp(m);
+    const cibles = [...document.querySelectorAll("div,button,span")]
+      .filter((e) => re.test((e.textContent || "").trim()) && e.getBoundingClientRect().height > 0)
+      .sort((a, b) => a.getBoundingClientRect().height - b.getBoundingClientRect().height);
+    const e = cibles[0];
+    if (!e) return { trouve: false };
+    const r = e.getBoundingClientRect();
+    const st = getComputedStyle(e);
+    let scroller = e.parentElement, aDefiler = 0;
+    while (scroller) {
+      if (scroller.scrollHeight - scroller.clientHeight > 2
+          && getComputedStyle(scroller).overflowY !== "visible") break;
+      scroller = scroller.parentElement;
+    }
+    if (scroller) {
+      const sr = scroller.getBoundingClientRect();
+      aDefiler = Math.max(0, Math.round(r.bottom - sr.bottom));
+    }
+    return { trouve: true, haut: Math.round(r.top), bas: Math.round(r.bottom),
+             fenetre: window.innerHeight, opacite: st.opacity, visibilite: st.visibility,
+             dansLaFenetre: r.top >= 0 && r.bottom <= window.innerHeight + 1,
+             aDefiler, defilable: !!scroller };
+  }, motif);
+
+  const dire = (nom, m) => {
+    if (!m.trouve) { console.log("❌ " + nom + " : ABSENT du document"); process.exitCode = 1; return; }
+    console.log((m.dansLaFenetre ? "✅ " : "⚠️  ") + nom + " : " + m.haut + "→" + m.bas
+      + " px sur " + m.fenetre + (m.dansLaFenetre ? "  (dans la fenêtre)"
+      : m.defilable ? "  HORS FENÊTRE — il faut défiler de " + m.aDefiler + " px"
+                    : "  HORS FENÊTRE et AUCUN ancêtre ne défile"));
+    if (!m.dansLaFenetre) process.exitCode = 1;
+  };
+
+  console.log("\n── « Choisis ton mode » ──");
+  // Les deux blocs de la feuille, mesurés : l'affiche mange la hauteur, le bloc
+  // des choix est incompressible. C'est leur SOMME face à la fenêtre qui décide.
+  // On part du TITRE de la feuille et non de l'affiche : « la plus large des
+  // images grid-card » désignait la carte du carrousel restée montée derrière,
+  // et depuis que l'affiche se plafonne en hauteur elle peut être la plus
+  // ÉTROITE des deux. Le titre, lui, n'existe que dans cette feuille.
+  const blocs = await page.evaluate(() => {
+    const titre = [...document.querySelectorAll("div")].find((d) =>
+      /^(Choisis ton mode|Choose your mode|Wähle deinen Modus|Scegli la modalità|Escolha seu modo|Elige tu modo)$/
+        .test((d.textContent || "").trim()));
+    if (!titre) return null;
+    const choix = titre.parentElement;
+    const affiche = choix.previousElementSibling;
+    if (!affiche) return null;
+    const a = affiche.getBoundingClientRect(), c = choix.getBoundingClientRect();
+    // Et QUI fait déborder, le cas échéant : sur un écran court la feuille
+    // gardait 217 px de défilement alors que ses deux cartes tenaient à
+    // l'écran. Nommer le coupable évite de corriger la mise en page de travers.
+    const feuille = affiche.parentElement;
+    let bas = "", basY = -Infinity;
+    for (const e of feuille.querySelectorAll("*")) {
+      const r = e.getBoundingClientRect();
+      if (r.height && r.bottom > basY) {
+        basY = r.bottom;
+        bas = e.tagName.toLowerCase() + " «" + (e.textContent || "").trim().slice(0, 24) + "»";
+      }
+    }
+    return { afficheW: Math.round(a.width), afficheH: Math.round(a.height),
+             choixH: Math.round(c.height), fenetre: window.innerHeight,
+             deborde: Math.round(feuille.scrollHeight - feuille.clientHeight),
+             bas, basY: Math.round(basY) };
+  });
+  if (blocs) console.log("affiche " + blocs.afficheW + "×" + blocs.afficheH
+    + " + choix " + blocs.choixH + " = " + (blocs.afficheH + blocs.choixH)
+    + " px pour " + blocs.fenetre + " px de fenêtre"
+    + (blocs.deborde > 2 ? "\n   défilement " + blocs.deborde + " px · le plus bas : "
+        + blocs.bas + " à " + blocs.basY : "\n   tient sur une page"));
+  dire("carte SOLO", await situer("^SOLO$"));
+  dire("carte BATTLE", await situer("^BATTLE$"));
+
+  // ETAPE=choix s'arrête sur la feuille, pour la PHOTOGRAPHIER : l'écran final
+  // est sinon le menu BATTLE, et la feuille — celle dont la mise en page est en
+  // cause — n'apparaît sur aucune image.
+  if (process.env.ETAPE === "choix") { await page.waitForTimeout(400); }
+  else {
+  const battle = page.getByText(/^BATTLE$/).first();
+  await battle.scrollIntoViewIfNeeded().catch(() => {});
+  await battle.click({ force:true }).catch(() => {});
+  await page.waitForTimeout(1600);
+
+  console.log("\n── menu GOAT BATTLE ──");
+  dire("bouton EN LIGNE", await situer("^🌍 EN LIGNE$"));
+  dire("bouton CRÉER UNE ROOM", await situer("CRÉER UNE ROOM"));
+  dire("bouton REJOINDRE", await situer("^REJOINDRE$"));
+  }
 }
 
 if (ecran === "grille-remplie" || ecran === "grille-fin") {
