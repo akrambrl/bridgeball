@@ -14065,11 +14065,18 @@ export default function LePont() {
                   Défiler n'était pas une réponse : l'affiche remplit l'écran
                   jusqu'au bord, donc rien n'annonce qu'il y a quelque chose en
                   dessous.
-                  390 px est la hauteur mesurée du bloc des choix, et la zone
+                  330 px est la hauteur MESURÉE du bloc des choix, et la zone
                   sûre du bas s'y ajoute sur un téléphone à encoche. Le plancher
                   de 170 px évite qu'un très petit écran ne réduise l'affiche à
-                  une vignette : là, on accepte de défiler. */}
-              <div style={{position:"relative",zIndex:1,width:"100%",aspectRatio:"1086 / 1448",flex:"0 0 auto",maxWidth:"min(480px, max(170px, calc((100dvh - 390px - env(safe-area-inset-bottom)) * 1086 / 1448)))",margin:"0 auto",overflow:"hidden",borderBottom:G.trait}}>
+                  une vignette : là, on accepte de défiler.
+                  La première version réservait 390 px, mesurés dans un harnais
+                  où les polices de Google Fonts n'étaient pas chargées : le
+                  texte, peint en repli système, était plus large et les pastilles
+                  passaient à la ligne. Avec Anton et Bebas Neue, condensées, le
+                  bloc fait 320 px et l'affiche récupère les 70 px de différence.
+                  Le harnais embarque désormais les deux polices et REFUSE de
+                  photographier si elles ne sont pas appliquées. */}
+              <div style={{position:"relative",zIndex:1,width:"100%",aspectRatio:"1086 / 1448",flex:"0 0 auto",maxWidth:"min(480px, max(170px, calc((100dvh - 330px - env(safe-area-inset-bottom)) * 1086 / 1448)))",margin:"0 auto",overflow:"hidden",borderBottom:G.trait}}>
                 <img src={GRID_CARD_IMG} alt="" style={{width:"100%",height:"100%",objectFit:"contain",objectPosition:"center",pointerEvents:"none",userSelect:"none"}} draggable={false}/>
                 {/* Plus de voile ni de titre rapporte : l'affiche porte deja
                     « GOAT GRID » en toutes lettres. Ils avaient un sens quand

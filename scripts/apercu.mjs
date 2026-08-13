@@ -231,9 +231,91 @@ const CODE_STATS = (await readFile(join(ici, "..", "src", "components", "LePont.
 // qui ne s'ouvre QUE par l'URL n'était vérifiable qu'à la main sur un téléphone :
 // c'est précisément là que « la notif mène à l'accueil » est passé inaperçu.
 const REQUETE = process.env.REQUETE || "";
+// ── LES POLICES SONT SERVIES EN LOCAL, ET C'EST INDISPENSABLE ──────────────
+//
+// L'app charge Anton, Bebas Neue, Inter et Nunito depuis Google Fonts, et cette
+// machine n'y a pas accès depuis le navigateur : les quatre requêtes échouent, et
+// tout est peint avec la police système. En SILENCE — `document.fonts.check()`
+// répond même `true` pour les quatre, parce qu'il ne dit pas si la police est
+// chargée, seulement que le texte serait rendu. Un contrôle qui rassure sans rien
+// vérifier.
+//
+// Mesuré : « GOAT GRID BATTLE » à 60 px faisait exactement 390 px en Anton comme
+// en repli — donc Anton n'était pas appliquée. Treize captures du Play Store sont
+// parties avec le mauvais lettrage avant que quelqu'un ne le remarque à l'œil.
+//
+// Le dépôt versionne déjà Anton pour cette raison exacte, et son LISEZ-MOI le dit
+// noir sur blanc : « une police chargée depuis un CDN au moment du rendu échoue en
+// silence et retombe sur une police système — le visuel partirait avec le mauvais
+// lettrage sans que rien ne le signale. » Bebas Neue l'accompagne maintenant.
+//
+// Inter et Nunito ne sont PAS embarquées : ce sont des sans-serif de texte
+// courant, dont le repli système est très proche, et le défaut visible portait sur
+// le LETTRAGE d'affiche. Si un écran de texte devait être jugé au détail, ce
+// serait le moment de les ajouter.
+const POLICES = [
+  { famille: "Anton", fichier: "anton-latin.woff2" },
+  { famille: "Bebas Neue", fichier: "bebas-neue-latin.woff2" },
+];
+const cssPolices = (await Promise.all(POLICES.map(async (p) => {
+  const b64 = (await readFile(join(ici, "polices", p.fichier))).toString("base64");
+  return `@font-face{font-family:"${p.famille}";`
+    + `src:url(data:font/woff2;base64,${b64}) format("woff2");`
+    + `font-weight:400;font-style:normal;font-display:block}`;
+}))).join("\n");
+// addStyleTag après le rendu ne suffirait pas : l'app réinjecte sa feuille de
+// style au chargement, et le @import de Google Fonts y est en tête. On pose donc
+// les @font-face AVANT tout script, par addInitScript.
+await page.addInitScript((css) => {
+  const poser = () => {
+    const s = document.createElement("style");
+    s.id = "apercu-polices";
+    s.textContent = css;
+    (document.head || document.documentElement).appendChild(s);
+  };
+  if (document.head) poser();
+  else document.addEventListener("DOMContentLoaded", poser, { once: true });
+}, cssPolices);
+
 await page.goto("http://localhost:4173/"
   + (ecran.startsWith("tracking") ? "?stats=" + CODE_STATS : REQUETE ? "?" + REQUETE : ""));
 await page.waitForLoadState("networkidle");
+
+// LE CONTRÔLE QUI MANQUAIT. On ne demande pas à `document.fonts.check()`, qui
+// mentirait : on MESURE la largeur d'un même texte dans la famille visée puis dans
+// le repli. Si elle est identique, la police n'est pas peinte, et une capture
+// partirait avec le mauvais lettrage.
+const policesOk = await page.evaluate(async (familles) => {
+  // ON FORCE LE CHARGEMENT AVANT DE MESURER. `document.fonts.ready` ne suffit pas :
+  // il se résout dès qu'aucun chargement n'est EN COURS, et une police que rien
+  // n'a encore demandée n'est jamais chargée. Le premier span de mesure déclenchait
+  // donc le chargement de façon asynchrone et se peignait en repli — le contrôle
+  // annonçait « police non appliquée » alors qu'elle l'était une fraction de
+  // seconde plus tard. Un faux négatif qui aurait fait chercher au mauvais endroit.
+  await Promise.all(familles.map((f) => document.fonts.load(`60px "${f}"`).catch(() => {})));
+  await document.fonts.ready;
+  const mesure = (f) => {
+    const s = document.createElement("span");
+    s.textContent = "GOAT GRID BATTLE";
+    s.style.cssText = "position:absolute;visibility:hidden;white-space:nowrap;"
+      + "font-size:60px;font-family:" + f;
+    document.body.appendChild(s);
+    const l = s.getBoundingClientRect().width;
+    s.remove();
+    return Math.round(l);
+  };
+  const repli = mesure("monospace");
+  return familles.map((f) => ({ f, large: mesure(`"${f}", monospace`), repli }));
+}, POLICES.map((p) => p.famille));
+const manquantes = policesOk.filter((p) => p.large === p.repli);
+if (manquantes.length) {
+  console.error("⚠️ POLICE NON APPLIQUÉE : " + manquantes.map((p) => p.f).join(", ")
+    + " — même largeur qu'en repli. La capture aurait le mauvais lettrage.");
+  process.exitCode = 1;
+} else {
+  console.log("polices : " + policesOk.map((p) => p.f + " " + p.large + "px").join(" · ")
+    + "  (repli " + policesOk[0].repli + "px) ✅");
+}
 // L'écran de démarrage dure 2,5 s et REMPLACE l'app pendant ce temps : tant
 // qu'il est là, rien n'est cliquable et les modales du premier lancement ne
 // sont même pas montées. Un clic tombé dans cette fenêtre ne fait rien, sans
