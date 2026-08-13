@@ -48,10 +48,13 @@ const VERIFIE = process.argv.includes("--verifie");
 // bannière se rend en une seconde. Les séparer évite de tout refaire pour
 // déplacer un mot — et c'est en la retouchant qu'on la corrige.
 const BANNIERE_SEULE = process.argv.includes("--banniere");
+// Et --tablettes pour ne refaire que les deux séries de tablette, sans relancer
+// les cinq écrans de téléphone dont deux JOUENT une partie entière.
+const TABLETTES_SEULES = process.argv.includes("--tablettes");
 
 const OR = "#F5C22B", ENCRE = "#081109", NUIT = "#12160F", CREME = "#F2E7CE";
 
-/** Les cinq écrans, dans l'ordre où ils apparaîtront sur la fiche. */
+/** Les cinq écrans TÉLÉPHONE, dans l'ordre où ils apparaîtront sur la fiche. */
 const CAPTURES = [
   { n: "01-plug",     ecran: "partie-plug",  quoi: "The Plug — deux clubs, un joueur" },
   { n: "02-mercato",  ecran: "mercato-juste", quoi: "The Mercato — la chaîne de transferts" },
@@ -60,21 +63,83 @@ const CAPTURES = [
   { n: "05-reveal",   ecran: "mode-grid",     quoi: "Trouve le joueur — la déduction" },
 ];
 
+// ── LES TABLETTES SONT OBLIGATOIRES, et pas au même format ────────────────
+//
+// La fiche exige des captures 7 pouces ET 10 pouces, avec des bornes différentes :
+// 7" veut chaque côté entre 320 et 3840, 10" entre 1080 et 7680. Un 1080×1920 de
+// téléphone passe donc en 7" mais serait au plancher en 10".
+//
+// SURTOUT, une tablette n'affiche pas la même app. Au-delà de 900 px de large,
+// l'accueil bascule sur sa mise en page à trois colonnes — liste des modes,
+// affiche au centre, classement et social à droite. Recopier les captures de
+// téléphone dans la rubrique tablette serait montrer autre chose que ce que
+// l'utilisateur verra. On capture donc le vrai rendu large en 1920×1080.
+//
+// Le 7 pouces, lui, reçoit bien la mise en page mobile : on la prend en 1440×2560,
+// soit la même disposition à une taille de tablette.
+const TAB10 = [
+  { n: "t10-1-accueil",   ecran: "accueil",      quoi: "l'accueil trois colonnes" },
+  { n: "t10-2-classement", ecran: "classement",  quoi: "le classement" },
+  { n: "t10-3-grille",     ecran: "grille",      quoi: "GOAT GRID en jeu" },
+  // `hall-of-fame` a été essayé et écarté : son chemin passe par un bouton du
+  // classement qui n'existe pas dans la mise en page large, donc rien n'est
+  // capturé. La devinette, elle, a son propre panneau sur l'accueil PC.
+  { n: "t10-4-devinette",  ecran: "devinette",    quoi: "la devinette du jour" },
+];
+const TAB7 = [
+  { n: "t7-1-goatgrid", ecran: "mode-goatgrid", quoi: "GOAT GRID — solo ou versus" },
+  { n: "t7-2-guess",    ecran: "mode-guess",    quoi: "GOAT Guess — le Devin" },
+  { n: "t7-3-reveal",   ecran: "mode-grid",     quoi: "Trouve le joueur" },
+  { n: "t7-4-classement", ecran: "classement",  quoi: "le classement" },
+];
+
 const ko = (o) => Math.round(o / 1024) + " ko";
 
-async function capturer() {
-  for (const c of CAPTURES) {
-    // 360×640 en CSS à l'échelle 3 = 1080×1920. Une largeur de téléphone réaliste,
-    // donc une mise en page qu'on peut juger, et le format exact demandé.
+/**
+ * Capture une série d'écrans à une taille donnée.
+ *
+ * `largeur > 900` fait basculer apercu sur le chemin PC, ET il ajoute alors « -pc »
+ * au nom du fichier qu'il écrit. Oublier ce suffixe fait copier une image
+ * PÉRIMÉE d'une exécution précédente sans que rien ne le signale — c'est arrivé,
+ * et la capture 10 pouces sortait en 860×1864 au lieu de 1920×1080.
+ */
+async function capturerSerie(liste, largeur, hauteur, echelle) {
+  const suffixe = largeur > 900 ? "-pc" : "";
+  for (const c of liste) {
+    const brut = join(racine, "apercu-" + c.ecran + suffixe + ".png");
+    await unlink(brut).catch(() => {});
     await lancer("node", [join(ici, "apercu.mjs"), c.ecran], {
       cwd: racine, timeout: 300000,
-      env: { ...process.env, LARGEUR: "360", HAUTEUR: "640", ECHELLE: "3" },
+      env: { ...process.env, LARGEUR: String(largeur), HAUTEUR: String(hauteur),
+             ECHELLE: String(echelle) },
     }).catch(() => {});
-    const brut = join(racine, "apercu-" + c.ecran + ".png");
-    await copyFile(brut, join(SORTIE, c.n + ".png"));
+    // ON CONTINUE SI UNE CAPTURE MANQUE. La première version faisait un copyFile
+    // sec : `hall-of-fame` n'a pas de chemin sur la version PC, la copie a levé
+    // ENOENT, et les douze autres captures déjà prises sont parties avec — après
+    // cinq minutes de rendu. Un écran qui ne se photographie pas est une
+    // information, pas une raison de tout perdre.
+    try {
+      await copyFile(brut, join(SORTIE, c.n + ".png"));
+      console.log("  " + c.n.padEnd(16) + c.quoi);
+    } catch {
+      console.log("  ⚠ " + c.n.padEnd(14) + "introuvable — l'écran « " + c.ecran
+        + " » n'a pas de chemin à cette largeur");
+    }
     await unlink(brut).catch(() => {});
-    console.log("  " + c.n.padEnd(12) + c.quoi);
   }
+}
+
+async function capturer() {
+  // 360×640 en CSS à l'échelle 3 = 1080×1920. Une largeur de téléphone réaliste,
+  // donc une mise en page qu'on peut juger, et le format exact demandé.
+  if (!TABLETTES_SEULES) {
+    console.log("  · téléphone 1080×1920");
+    await capturerSerie(CAPTURES, 360, 640, 3);
+  }
+  console.log("  · tablette 10 pouces 1920×1080 — la mise en page large");
+  await capturerSerie(TAB10, 1280, 720, 1.5);
+  console.log("  · tablette 7 pouces 1440×2560");
+  await capturerSerie(TAB7, 720, 1280, 2);
 }
 
 // ─── LA BANNIÈRE ────────────────────────────────────────────────────────────
@@ -214,23 +279,47 @@ async function dimensions(chemin) {
 
 async function controler() {
   const fichiers = (await readdir(SORTIE)).filter((f) => f.endsWith(".png")).sort();
-  const captures = fichiers.filter((f) => /^\d\d-/.test(f));
 
-  dire(captures.length >= 2 && captures.length <= 8,
-    captures.length + " capture(s) — Play en veut entre 2 et 8");
+  // Les trois rubriques de la fiche, chacune avec SES bornes. Le 10 pouces est le
+  // seul dont le plancher soit 1080 : un 1080×1920 de téléphone y serait tout
+  // juste accepté, alors qu'il montrerait la mauvaise mise en page.
+  const RUBRIQUES = [
+    { nom: "téléphone", motif: /^\d\d-/,  mini: 320,  maxi: 3840, mini_n: 2 },
+    { nom: "tablette 10\"", motif: /^t10-/, mini: 1080, maxi: 7680, mini_n: 1 },
+    { nom: "tablette 7\"",  motif: /^t7-/,  mini: 320,  maxi: 3840, mini_n: 1 },
+  ];
 
-  for (const f of captures) {
-    const d = await dimensions(join(SORTIE, f));
-    const { size } = await stat(join(SORTIE, f));
-    // 9:16 à 0,5 % près. Play refuse tout autre rapport que 16:9 ou 9:16.
-    const rapport = d.l / d.h;
-    const bonRapport = Math.abs(rapport - 9 / 16) < 0.005 || Math.abs(rapport - 16 / 9) < 0.005;
-    const bornes = [d.l, d.h].every((c) => c >= 320 && c <= 3840);
-    dire(bonRapport && bornes && size <= 8 * 1024 * 1024,
-      f.padEnd(16) + d.l + "×" + d.h + "  " + ko(size)
-      + (bonRapport ? "" : "  ← rapport " + rapport.toFixed(3) + ", il faut 9:16 ou 16:9")
-      + (bornes ? "" : "  ← chaque côté doit tenir entre 320 et 3840"));
+  for (const r of RUBRIQUES) {
+    const lot = fichiers.filter((f) => r.motif.test(f));
+    dire(lot.length >= r.mini_n && lot.length <= 8,
+      r.nom + " : " + lot.length + " capture(s) — Play en accepte jusqu'à 8"
+      + (lot.length >= r.mini_n ? "" : "  ← il en faut au moins " + r.mini_n));
+    for (const f of lot) {
+      const d = await dimensions(join(SORTIE, f));
+      const { size } = await stat(join(SORTIE, f));
+      // 16:9 ou 9:16 à 0,5 % près. Play refuse tout autre rapport.
+      const rapport = d.l / d.h;
+      const bonRapport = Math.abs(rapport - 9 / 16) < 0.005 || Math.abs(rapport - 16 / 9) < 0.005;
+      const bornes = [d.l, d.h].every((c) => c >= r.mini && c <= r.maxi);
+      dire(bonRapport && bornes && size <= 8 * 1024 * 1024,
+        "   " + f.padEnd(20) + d.l + "×" + d.h + "  " + ko(size)
+        + (bonRapport ? "" : "  ← rapport " + rapport.toFixed(3) + ", il faut 9:16 ou 16:9")
+        + (bornes ? "" : "  ← chaque côté doit tenir entre " + r.mini + " et " + r.maxi));
+    }
   }
+
+  // La promotion par Play a une condition de plus, et elle vaut d'être tenue :
+  // au moins quatre captures de téléphone, dont trois au bon rapport et à 1080 px
+  // au minimum. Sans elle, l'app ne peut pas être mise en avant.
+  const tel = fichiers.filter((f) => /^\d\d-/.test(f));
+  let promouvables = 0;
+  for (const f of tel) {
+    const d = await dimensions(join(SORTIE, f));
+    if (Math.max(d.l, d.h) >= 1080) promouvables++;
+  }
+  dire(tel.length >= 4 && promouvables >= 3,
+    "éligible à la promotion : " + tel.length + " captures dont " + promouvables
+    + " à 1080 px ou plus (il faut 4 et 3)");
 
   const ban = join(SORTIE, "banniere-1024x500.png");
   const d = await dimensions(ban).catch(() => null);
@@ -257,8 +346,10 @@ if (!VERIFIE) {
     console.log("── captures, prises dans le vrai jeu");
     await capturer();
   }
-  console.log("\n── bannière");
-  await banniere();
+  if (!TABLETTES_SEULES) {
+    console.log("\n── bannière");
+    await banniere();
+  }
   console.log();
 }
 await controler();
