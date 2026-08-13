@@ -53,9 +53,15 @@ captures/
 .idea/navEditor.xml
 
 # Keystore files
-# Uncomment the following lines if you do not want to check your keystore files in.
-#*.jks
-#*.keystore
+#
+# DÉCOMMENTÉES, contrairement au modèle d'Android Studio qui les livre en
+# commentaire. Un keystore poussé sur GitHub, même dans un dépôt privé, est à
+# considérer comme compromis : il faut alors demander à Google de réinitialiser la
+# clé d'envoi. Et key.properties contient le MOT DE PASSE du keystore, donc il ne
+# vaut pas mieux. Voir docs/signature-android.md.
+*.jks
+*.keystore
+key.properties
 
 # External native build folder generated in Android Studio 2.2 and later
 .externalNativeBuild

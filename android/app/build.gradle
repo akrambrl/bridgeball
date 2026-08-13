@@ -1,5 +1,25 @@
 apply plugin: 'com.android.application'
 
+// ── SIGNATURE DE PUBLICATION ────────────────────────────────────────────────
+//
+// Sans cette section, `./gradlew bundleRelease` produit un AAB NON SIGNÉ, et il
+// le fait sans se plaindre : c'est Play qui refuse le dépôt, après le
+// téléversement. Le défaut se découvre donc au pire moment.
+//
+// Les identifiants vivent dans android/key.properties, qui n'est PAS versionné —
+// il contient le mot de passe du keystore. Voir docs/signature-android.md pour la
+// commande keytool et pourquoi cette clé ne doit jamais quitter la machine de son
+// propriétaire.
+//
+// PAS DE VALEUR PAR DÉFAUT, et c'est volontaire : si le fichier manque, la tâche
+// s'arrête avec un message qui dit quoi faire, au lieu de retomber sur la clé de
+// débogage. Un AAB signé en debug est accepté par Gradle et rejeté par Play.
+def fichierCles = rootProject.file("key.properties")
+def cles = new Properties()
+if (fichierCles.exists()) {
+    fichierCles.withInputStream { cles.load(it) }
+}
+
 android {
     namespace = "fr.goatfc.app"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -16,11 +36,38 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        release {
+            if (fichierCles.exists()) {
+                storeFile file(cles['storeFile'])
+                storePassword cles['storePassword']
+                keyAlias cles['keyAlias']
+                keyPassword cles['keyPassword']
+            }
+        }
+    }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            if (fichierCles.exists()) {
+                signingConfig signingConfigs.release
+            }
         }
+    }
+}
+
+// Le garde-fou : produire un AAB de publication sans clé n'a aucun intérêt, donc
+// on refuse AVANT de compiler plutôt que de livrer un fichier que Play rejettera.
+gradle.taskGraph.whenReady { graphe ->
+    def publication = graphe.allTasks.any {
+        it.name.toLowerCase().contains("release") && (it.name.startsWith("bundle") || it.name.startsWith("assemble"))
+    }
+    if (publication && !fichierCles.exists()) {
+        throw new GradleException(
+            "android/key.properties est absent : l'AAB serait NON SIGNÉ et Play le refuserait.\n" +
+            "  Crée-le avec storeFile / storePassword / keyAlias / keyPassword.\n" +
+            "  La commande keytool et l'explication sont dans docs/signature-android.md.")
     }
 }
 
