@@ -16066,7 +16066,24 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
       {/* La feuille absorbe le mou et le répartit entre ses blocs (space-between)
           au lieu de le laisser en un vide unique. C'est elle qui porte le score,
           les relances et les boutons. */}
-      <div style={{...sheet,flex:"1 1 auto",justifyContent:"flex-start",gap:8,padding:"10px 16px 14px"}}>
+      {/* L'ÉCART QUI COMPTE EST CELUI QU'ON VOIT, PAS CELUI DE LA BOÎTE.
+          Signalé : « les encadrés se touchent ». Mesuré sur cet écran, en 393 px
+          de large : 8 px entre deux cartes, dont 5 mangés par l'ombre dure de la
+          charte (`box-shadow: 5px 5px 0`, un aplat opaque et non un flou). Il
+          restait 3 px visibles entre deux bordures de 3 px — les blocs se
+          lisaient comme un seul. Et 6 px seulement sous la séquence, dont
+          l'ombre vaut 4.
+          On revient donc au gap:14 du style `sheet` commun, celui de tout le
+          reste de l'app, soit 9 px visibles ; et 20 px de padding haut sous la
+          séquence, soit 16 px visibles. Cet écran était le seul à écraser ce
+          rythme, pour gagner 30 px de hauteur sur un écran qui défile de toute
+          façon — un mauvais échange.
+          Pourquoi ça n'avait pas été vu : une partie de démonstration bat
+          toujours le record, et « NOUVEAU RECORD ! » s'insérait entre la
+          séquence et le score, écartant tout de 37 px. SANS_RECORD=1 dans
+          scripts/apercu.mjs photographie l'écran sans cette ligne, et le
+          contrôle y mesure tous les couples, ombre déduite. */}
+      <div style={{...sheet,flex:"1 1 auto",justifyContent:"flex-start",padding:"20px 16px 14px"}}>
         <div style={{background:G.nuit,borderRadius:G.rayonL,padding:"8px 16px",textAlign:"center",border:G.trait,boxShadow:G.ombreL}}>
           <div style={{fontSize:11,letterSpacing:3,textTransform:"uppercase",color:"rgba(255,255,255,.5)"}}>{isChain?tr("Score","Score","Score","Punteggio","Pontuação","Puntuación"):tr("Score total","Total score","Gesamtpunktzahl","Punteggio totale","Pontuação total","Puntuación total")}</div>
           <div style={{...posterText(46,G.white)}}>{sc}</div>
