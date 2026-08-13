@@ -13,11 +13,13 @@
 # partagé. Elle va de ta machine à ce formulaire, directement.
 #
 #   ANDROID_KEYSTORE_BASE64   le keystore encodé, obtenu par :
-#                               base64 -i goatfc-upload.jks | pbcopy
+#                               base64 -i goatfc-upload.p12 | pbcopy
 #                             (le résultat est dans ton presse-papier, collé tel quel)
 #   ANDROID_KEYSTORE_PASSWORD le mot de passe du keystore (-storepass)
 #   ANDROID_KEY_ALIAS         l'alias, « goatfc » si tu as suivi la commande du doc
-#   ANDROID_KEY_PASSWORD      le mot de passe de la clé (souvent le même)
+#   ANDROID_KEY_PASSWORD      le mot de passe de la clé. Avec un keystore PKCS12 —
+#                             le format recommandé dans le doc — il n'y en a qu'UN :
+#                             mets ici la MÊME valeur que ci-dessus.
 #
 # La commande keytool qui crée le keystore, et la différence entre clé d'envoi et
 # clé de signature de l'app, sont dans docs/signature-android.md.
@@ -116,15 +118,15 @@ jobs:
             echo "Voir l'en-tête de ce workflow pour les quatre secrets à créer."
             exit 1
           fi
-          printf '%s' "${KEYSTORE_B64}" | base64 -d > "${RUNNER_TEMP}/upload.jks"
+          printf '%s' "${KEYSTORE_B64}" | base64 -d > "${RUNNER_TEMP}/upload.p12"
           # Un secret mal copié donne un fichier illisible : on le vérifie AVANT
           # de compiler, plutôt que de laisser Gradle échouer vingt minutes plus
           # tard sur un message obscur.
-          keytool -list -keystore "${RUNNER_TEMP}/upload.jks" \
+          keytool -list -keystore "${RUNNER_TEMP}/upload.p12" \
             -storepass "${KEYSTORE_PWD}" > /dev/null
           echo "keystore lisible ✅"
           {
-            echo "storeFile=${RUNNER_TEMP}/upload.jks"
+            echo "storeFile=${RUNNER_TEMP}/upload.p12"
             echo "storePassword=${KEYSTORE_PWD}"
             echo "keyAlias=${KEY_ALIAS}"
             echo "keyPassword=${KEY_PWD}"
@@ -168,7 +170,7 @@ jobs:
         # Le runner est détruit de toute façon, mais un `if: always()` qui efface
         # coûte une ligne et retire le fichier des étapes suivantes.
         if: always()
-        run: rm -f "${RUNNER_TEMP}/upload.jks" android/key.properties
+        run: rm -f "${RUNNER_TEMP}/upload.p12" android/key.properties
 
       - uses: actions/upload-artifact@v4
         with:

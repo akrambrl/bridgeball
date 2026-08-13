@@ -26,33 +26,86 @@ Une clé d'envoi qui fuit permet à quelqu'un de déposer une version sur ton co
 Play App Signing limite les dégâts et la clé est réinitialisable, mais la bonne
 pratique reste simple : **elle ne quitte jamais ta machine**.
 
-## La commande, à lancer sur ton Mac
+## D'abord : as-tu keytool ?
 
-Dans un dossier que tu sauvegardes (pas dans le dépôt) :
+`keytool` vient avec Java, et **macOS ne l'a pas d'origine**. À vérifier avant tout :
+
+```bash
+keytool -help
+```
+
+Si la réponse est `command not found`, installe un JDK :
+
+```bash
+brew install --cask temurin
+```
+
+(ou télécharge Temurin 21 sur adoptium.net si tu n'as pas Homebrew). Puis
+relance `keytool -help` — tu dois voir une liste d'options.
+
+## La commande
+
+Dans un dossier que tu sauvegardes, PAS dans le dépôt :
 
 ```bash
 keytool -genkeypair -v \
-  -keystore goatfc-upload.jks \
+  -keystore goatfc-upload.p12 \
   -alias goatfc \
   -keyalg RSA -keysize 4096 \
   -validity 10000 \
-  -storetype JKS
+  -storetype PKCS12
 ```
 
-- **10 000 jours** ≈ 27 ans. Play exige une validité qui dépasse largement 2033 ;
-  une clé qui expire est une app qu'on ne peut plus mettre à jour.
-- **4096 bits** plutôt que 2048 : ça ne coûte rien et ça ne se change pas après coup.
-- L'alias `goatfc` et le mot de passe te seront redemandés à chaque build. Note-les
-  dans ton gestionnaire de mots de passe **tout de suite** — pas dans un fichier
-  texte à côté du keystore.
+- **PKCS12 et non JKS.** Éprouvé : JKS affiche un avertissement
+  (« proprietary format… recommended to migrate to PKCS12 ») et demande un
+  **second** mot de passe pour la clé. PKCS12 est propre, n'en demande qu'un, et
+  Play l'accepte aussi bien.
+- **10 000 jours** ≈ 27 ans. Vérifié à la génération : valide jusqu'au
+  29 décembre 2053. Play exige une validité qui dépasse largement 2033 ; une clé
+  qui expire est une app qu'on ne peut plus mettre à jour.
+- **4096 bits** plutôt que 2048 : ça ne coûte rien et ça ne se change pas après.
 
-Aux questions posées, ce qui compte : `CN` (ton nom ou GOAT FC), `O` (l'entité),
-`C` = `FR`. Ces valeurs apparaissent dans le certificat, pas sur la fiche.
+### Les neuf invites, dans l'ordre
+
+C'est là qu'on se perd : keytool pose six questions d'identité que rien
+n'annonce, et si une réponse se décale il **recommence tout depuis le début**.
+
+| # | ce qui s'affiche | ce que tu tapes |
+|---|---|---|
+| 1 | `Enter keystore password:` | ton mot de passe (invisible à la frappe) |
+| 2 | `Re-enter new password:` | le même |
+| 3 | `What is your first and last name?` | ton nom |
+| 4 | `What is the name of your organizational unit?` | `GOAT FC` |
+| 5 | `What is the name of your organization?` | `GOAT FC` |
+| 6 | `What is the name of your City or Locality?` | ta ville |
+| 7 | `What is the name of your State or Province?` | ta région |
+| 8 | `What is the two-letter country code for this unit?` | `FR` |
+| 9 | `Is CN=… correct?  [no]:` | **`yes`** — pas « oui », pas ENTRÉE |
+
+L'invite 9 est le piège : la valeur par défaut entre crochets est `no`, donc
+appuyer sur ENTRÉE relance les six questions. Il faut écrire `yes`.
+
+Ces valeurs finissent dans le certificat, pas sur la fiche Play. Personne ne les
+verra.
+
+### Vérifier que la clé est bonne
+
+```bash
+keytool -list -v -keystore goatfc-upload.p12 | grep -E "Alias|Valid|RSA"
+```
+
+Tu dois lire `goatfc`, une validité jusqu'en 2053, et `4096-bit RSA key`.
+
+### Note le mot de passe MAINTENANT
+
+Dans ton gestionnaire de mots de passe, pas dans un fichier à côté du keystore.
+Il te sera redemandé à chaque build, et personne ne peut le retrouver pour toi.
 
 ## Ce que le dépôt ne doit JAMAIS contenir
 
 ```
 *.jks
+*.p12
 *.keystore
 key.properties
 ```
@@ -73,10 +126,10 @@ directement : ni message, ni e-mail, ni fichier partagé.
 
 | secret | valeur |
 |---|---|
-| `ANDROID_KEYSTORE_BASE64` | `base64 -i goatfc-upload.jks \| pbcopy` puis coller |
+| `ANDROID_KEYSTORE_BASE64` | `base64 -i goatfc-upload.p12 \| pbcopy` puis coller |
 | `ANDROID_KEYSTORE_PASSWORD` | le mot de passe du keystore |
 | `ANDROID_KEY_ALIAS` | `goatfc` |
-| `ANDROID_KEY_PASSWORD` | le mot de passe de la clé |
+| `ANDROID_KEY_PASSWORD` | **le même mot de passe** — PKCS12 n'en a qu'un |
 
 Puis Actions → **AAB Android** → Run workflow. L'AAB est en bas de la page
 d'exécution, dans les artefacts.
@@ -97,7 +150,7 @@ par le workflow.
 Il faut le SDK Android et un JDK 21. Crée `android/key.properties`, ignoré par git :
 
 ```properties
-storeFile=/chemin/absolu/vers/goatfc-upload.jks
+storeFile=/chemin/absolu/vers/goatfc-upload.p12
 storePassword=…
 keyAlias=goatfc
 keyPassword=…
