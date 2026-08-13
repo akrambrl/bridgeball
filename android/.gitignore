@@ -60,6 +60,8 @@ captures/
 # clé d'envoi. Et key.properties contient le MOT DE PASSE du keystore, donc il ne
 # vaut pas mieux. Voir docs/signature-android.md.
 *.jks
+*.p12
+*.pfx
 *.keystore
 key.properties
 

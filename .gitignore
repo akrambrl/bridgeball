@@ -51,3 +51,17 @@ tiktok/
 
 # Captures d'apercu, regenerees a la demande (scripts/apercu.mjs)
 apercu-*.png
+
+# Clés de signature — NULLE PART dans le dépôt, à aucun niveau.
+#
+# Le modèle d'Android Studio livre ces lignes en commentaire, et elles ne
+# couvraient que android/. Recommander le format PKCS12 a rouvert le trou :
+# *.jks était ignoré, *.p12 non. Un keystore poussé sur GitHub, même en dépôt
+# privé, est à considérer comme compromis — il faut alors demander à Google de
+# réinitialiser la clé d'envoi. key.properties contient le MOT DE PASSE, donc il
+# ne vaut pas mieux. Voir docs/signature-android.md.
+*.jks
+*.p12
+*.pfx
+*.keystore
+key.properties
