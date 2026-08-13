@@ -97,8 +97,43 @@ export function decisionEnvoi(status) {
 export function decisionFinale(status, auMoinsUnSucces, corps) {
   const d = decisionEnvoi(status);
   if (d === "alerter" && (status === 401 || status === 403) && auMoinsUnSucces) return "purger";
+  // APPLE DIT LA MÊME CHOSE EN 400. Le raisonnement ci-dessus vaut mot pour mot
+  // ici : un abonnement créé avec une autre clé publique ne recevra jamais rien.
+  // Seul le code HTTP change — Apple répond 400 « VapidPkHashMismatch » là où les
+  // autres répondent 403, et le nom dit exactement ce qu'il se passe : le hachage
+  // de la clé publique de l'abonnement ne correspond pas à celle qui signe.
+  //
+  // Sans cette ligne, ces refus étaient IMMORTELS, et c'est ce qu'on a observé :
+  // sept abonnements iOS refusés chaque jour, à l'identique, depuis le changement
+  // de paire VAPID. Jamais purgés, parce que `abonnementMortSelonCorps` voit le
+  // mot « vapid » dans le corps et en conclut — à juste titre pour
+  // « ExpiredProviderToken » — que le problème vient de NOTRE clé. Jamais
+  // délivrés, puisque la clé de l'abonnement est bien celle d'avant. Sept
+  // téléphones muets et un journal rouge tous les midis.
+  //
+  // `auMoinsUnSucces` est le garde-fou qui rend ceci sûr, et il n'est pas
+  // facultatif : au lendemain d'une rotation de clé, TOUS les envois rendraient
+  // ce refus, et purger viderait la table entière. Aucun succès, aucune purge.
+  if (d === "alerter" && status === 400 && auMoinsUnSucces && corpsCleDUnAutreServeur(corps)) {
+    return "purger";
+  }
   if (d === "alerter" && status === 400 && abonnementMortSelonCorps(corps)) return "purger";
   return d;
+}
+
+// Le seul refus mentionnant VAPID qui parle de l'ABONNEMENT et non de nous.
+// Volontairement littéral : c'est le nom exact que rend Apple, et élargir ce
+// motif reviendrait à défaire le garde de CORPS_NOTRE_FAUTE juste en dessous.
+const CORPS_CLE_D_UN_AUTRE_SERVEUR = /vapid ?pk ?hash ?mismatch/i;
+
+/**
+ * VRAI si le corps dit que l'abonnement porte la clé publique d'un AUTRE
+ * serveur — donc la nôtre d'avant. Rien à réparer côté serveur : cet abonnement
+ * doit être refait par son propriétaire, et pour ça il faut le supprimer.
+ */
+export function corpsCleDUnAutreServeur(corps) {
+  if (!corps) return false;
+  return CORPS_CLE_D_UN_AUTRE_SERVEUR.test(String(corps));
 }
 
 // Ce qui, dans le corps d'un refus, désigne l'ABONNEMENT et pas nous.
