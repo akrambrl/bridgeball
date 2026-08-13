@@ -61,9 +61,40 @@ Déjà couvert par `.gitignore`. Un keystore poussé sur GitHub, même dans un d
 privé, est à considérer comme compromis : il faut alors demander à Google de
 réinitialiser la clé d'envoi.
 
-## Brancher la signature sur le build
+## Produire l'AAB : par GitHub Actions
 
-Crée `android/key.properties` (ignoré par git) :
+C'est le chemin retenu, et il évite d'installer 6 Go d'outils Android sur une
+machine. Le workflow `.github/workflows/aab-android.yml` construit l'AAB signé et
+le dépose en artefact.
+
+**Quatre secrets à créer**, dans Réglages du dépôt → Secrets and variables →
+Actions → New repository secret. La clé va de ta machine à ce formulaire,
+directement : ni message, ni e-mail, ni fichier partagé.
+
+| secret | valeur |
+|---|---|
+| `ANDROID_KEYSTORE_BASE64` | `base64 -i goatfc-upload.jks \| pbcopy` puis coller |
+| `ANDROID_KEYSTORE_PASSWORD` | le mot de passe du keystore |
+| `ANDROID_KEY_ALIAS` | `goatfc` |
+| `ANDROID_KEY_PASSWORD` | le mot de passe de la clé |
+
+Puis Actions → **AAB Android** → Run workflow. L'AAB est en bas de la page
+d'exécution, dans les artefacts.
+
+Le workflow **vérifie la signature avant de te livrer le fichier** (`jarsigner
+-verify`) : sans ça, Play refuse le dépôt après le téléversement, ce qui coûte un
+aller-retour.
+
+### Le numéro de version est le piège
+
+Play refuse un `versionCode` déjà déposé, et il ne peut que **monter**. Le workflow
+prend par défaut le numéro d'exécution, strictement croissant. Un build local, lui,
+garde le `versionCode 1` du fichier gradle — d'où l'intérêt de ne construire que
+par le workflow.
+
+## Et en local, si tu y tiens
+
+Il faut le SDK Android et un JDK 21. Crée `android/key.properties`, ignoré par git :
 
 ```properties
 storeFile=/chemin/absolu/vers/goatfc-upload.jks
@@ -72,11 +103,9 @@ keyAlias=goatfc
 keyPassword=…
 ```
 
-`android/app/build.gradle` le lit s'il existe, et retombe sur la signature de
-débogage sinon — de sorte qu'un `assembleDebug` marche sans clé, et qu'un
-`bundleRelease` refuse de produire un AAB non signé silencieusement.
-
-## Produire l'AAB du test fermé
+`android/app/build.gradle` le lit s'il existe. **S'il manque, la tâche s'arrête**
+avec un message qui dit quoi faire, au lieu de retomber sur la clé de débogage :
+un AAB signé en debug est accepté par Gradle et rejeté par Play.
 
 ```bash
 npm run build && npx cap sync android

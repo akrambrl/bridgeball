@@ -194,7 +194,17 @@ async function controler() {
   //    plan : tout pixel opaque HORS du cercle de 66,7 % serait rogné par le
   //    masque du lanceur.
   const fg = join(ANDROID, "mipmap-xxxhdpi", "ic_launcher_foreground.png");
-  if (await existe(fg)) {
+  // ffmpeg ne sert qu'ICI, à décoder l'image en pixels bruts. S'il manque, on le
+  // DIT au lieu de planter : un contrôle qui casse le build pour un outil absent
+  // fait perdre plus qu'il ne protège, et un contrôle silencieusement sauté est
+  // pire encore. Le workflow AAB l'installe, donc là il tourne vraiment.
+  let ffmpegLa = true;
+  try { await lancer("ffmpeg", ["-version"]); } catch { ffmpegLa = false; }
+  if (await existe(fg) && !ffmpegLa) {
+    console.log("◦  marque dans la zone sûre : NON VÉRIFIÉE — ffmpeg absent de cette"
+      + " machine.\n   Le workflow AAB l'installe ; en local : apt install ffmpeg.");
+  }
+  if (await existe(fg) && ffmpegLa) {
     // ON LIT LES PIXELS, sans acrobatie de filtre. Une première version enchaînait
     // deux `geq` et `signalstats` pour lire l'alpha : la métadonnée ne sortait
     // pas, la mesure valait −1, et le contrôle annonçait tout de même « rien à
