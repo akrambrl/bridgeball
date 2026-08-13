@@ -48,7 +48,7 @@
 --  sans avoir joué. Ce que ce fichier garantit, c'est qu'un tel score ne peut pas
 --  faire gagner : les points sont PLAFONNÉS par jour et par mode (section 3),
 --  donc réclamer 60 000 sur la devinette rapporte exactement autant que le
---  réussir honnêtement — 100 points, une fois. Pour truquer un mois entier il
+--  réussir honnêtement — 1000 points, une fois. Pour truquer un mois entier il
 --  faudrait poser un bon score chaque jour dans chaque mode, ce qui est
 --  détectable et, surtout, revient à jouer.
 --
@@ -58,20 +58,38 @@
 
 
 -- ─── 1. LE BARÈME ───────────────────────────────────────────────────────────
--- `reference` est le score qui vaut 100 points. Il n'a pas à être le record :
--- c'est « un très bon score », et tout ce qui dépasse est plafonné à 100.
+-- `reference` est le score qui vaut 1000 points. Il n'a pas à être le record :
+-- c'est « un très bon score », et tout ce qui dépasse est plafonné à 1000.
 --
 -- `score_max` sert à un autre usage : refuser l'absurde à l'entrée. Il peut être
 -- large — trois fois le meilleur score observé — parce que ce n'est PAS lui qui
 -- protège le classement, c'est le plafond. Le garder large évite de refuser un
 -- vrai record humain.
 --
--- Valeurs calées sur la distribution réelle mesurée le 12 août 2026 :
---   mode         n     médiane   p99     max
---   chaine     629       130      535    570
---   pont       521       220     1025   1185
---   findscore  185      2000    22800  23000
---   mercatoday   4       300      320    320
+-- ── LE BARÈME DOIT ÊTRE COMPARABLE ENTRE MODES ─────────────────────────────
+--
+-- La première version prenait « un très bon score » par mode, sans regarder ce
+-- que ça donnait pour une partie ORDINAIRE. Mesuré ensuite sur la vraie
+-- distribution, une partie médiane rapportait :
+--
+--   mode              n    médiane   points   verdict
+--   chaine          665       125       250   aligné
+--   pont            547       260       260   aligné
+--   findscore       225      1900       100   2,5× moins pour un effort égal
+--   mercatoday        4       170       570   2× plus
+--
+-- Le classement disait donc silencieusement quel mode farmer. La cause n'est pas
+-- une faute de saisie mais la FORME des distributions : la médiane de « Trouve le
+-- joueur » est à 8 % de son maximum, celle du Plug à 22 %. Prendre « un très bon
+-- score » comme référence pénalise donc les modes à longue traîne.
+--
+-- findscore passe de 20 000 à 7 500 et mercatoday de 300 à 700, pour qu'une
+-- partie médiane vaille à peu près la même chose partout. `score_max` ne change
+-- pas : ce n'est pas lui qui protège le classement, c'est le plafond.
+--
+-- CE BARÈME EST UNE TABLE, et c'est le point : le recalibrer est un UPDATE, sans
+-- redéploiement de l'app ni mise à jour du store. Le classement étant recalculé
+-- depuis les scores, il s'applique rétroactivement.
 create table if not exists public.bb_modes_bareme (
   mode      text primary key,
   reference int  not null check (reference > 0),
@@ -83,8 +101,8 @@ create table if not exists public.bb_modes_bareme (
 insert into public.bb_modes_bareme (mode, reference, score_min, score_max, libelle) values
   ('pont',       1000, -600,  3000, 'GOAT Plug'),
   ('chaine',      500, -600,  2000, 'GOAT Mercato'),
-  ('findscore', 20000,    0, 60000, 'Trouve le joueur — score'),
-  ('mercatoday',  300,    0,  2000, 'Mercato du jour'),
+  ('findscore',  7500,    0, 60000, 'Trouve le joueur — score'),
+  ('mercatoday',  700,    0,  2000, 'Mercato du jour'),
   ('findplayer',  600,    0,  3000, 'Trouve le joueur'),
   ('findstreak',   10,    0,   200, 'Trouve le joueur — série')
 on conflict (mode) do update
@@ -180,9 +198,17 @@ create trigger bb_scores_garde_trg
 
 
 -- ─── 3. LA NORMALISATION ────────────────────────────────────────────────────
--- 100 points pour la référence du mode, plafonné. Un score négatif vaut 0 : les
+-- 1000 points pour la référence du mode, plafonné. Un score négatif vaut 0 : les
 -- pénalités de pass n'ont pas à faire perdre des points de classement, elles ont
 -- déjà coûté le score de la partie.
+--
+-- POURQUOI 1000 ET NON 100. Le plafond à 100 donnait des totaux dix fois plus
+-- petits que l'XP affichée jusque-là — une partie de Plug à 950 points valait
+-- 95 — et l'onglet Saison paraissait cassé à côté de l'onglet Global, qui montre
+-- toujours l'XP. Ce n'était pas un défaut de calcul (recalcul indépendant depuis
+-- bb_scores : chiffres identiques au serveur) mais un changement d'UNITÉ non dit.
+-- À 1000, l'échelle retrouve l'ordre de grandeur familier sans rien changer à la
+-- mécanique : le meilleur score du jour par mode, et rien de plus.
 --
 -- LE PARAMÈTRE EST `numeric` ET NON `int`, et ce n'est pas une préférence :
 -- `bb_scores.score` n'est PAS un entier sur la base de production. Mesuré, pas
@@ -200,7 +226,7 @@ create trigger bb_scores_garde_trg
 create or replace function public.bb_points_normalises(p_mode text, p_score numeric)
 returns int language sql stable as $$
   select coalesce((
-    select least(100, greatest(0, round(100.0 * p_score / b.reference)))::int
+    select least(1000, greatest(0, round(1000.0 * p_score / b.reference)))::int
       from public.bb_modes_bareme b where b.mode = p_mode
   ), 0)
 $$;
@@ -208,7 +234,7 @@ $$;
 
 -- ─── 4. LE CLASSEMENT DU MOIS ───────────────────────────────────────────────
 -- LA RÈGLE, en une phrase : pour chaque JOUR et chaque MODE, seul le MEILLEUR
--- score du joueur compte, et il rapporte au plus 100 points.
+-- score du joueur compte, et il rapporte au plus 1000 points.
 --
 -- Ce plafond est le cœur de la sécurité, et il n'est pas là par hasard :
 --   • un score gonflé ne rapporte pas plus qu'un très bon score honnête ;
@@ -246,7 +272,7 @@ returns table (
     select g.player_id,
            (g.created_at at time zone 'Europe/Paris')::date as jour,
            'goatgrid' as mode,
-           least(100, greatest(0, round(100.0 * max(g.score)
+           least(1000, greatest(0, round(1000.0 * max(g.score)
                  / nullif(max(g.max_score), 0))))::int as pts
       from public.bb_gg_scores g
      where to_char(g.created_at at time zone 'Europe/Paris', 'YYYY-MM') = p_mois

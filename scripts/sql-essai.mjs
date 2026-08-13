@@ -83,12 +83,45 @@ const CONTROLES = [
     attendu: (v) => Number(v) >= 3,
     dire: (v) => v + " joueur(s) classé(s)" },
 
-  { nom: "les points sont PLAFONNÉS à 100 par jour et par mode",
+  { nom: "les points sont PLAFONNÉS à 1000 par jour et par mode",
     // Le plafond est le cœur de la sécurité : c'est lui, et non les bornes, qui
     // fait qu'un score gonflé ne rapporte pas plus qu'un très bon score.
+    //
+    // 1000 et non 100 : à 100, les totaux valaient le dixième de l'XP affichée
+    // jusque-là — une partie de Plug à 950 points en rapportait 95 — et l'onglet
+    // Saison paraissait cassé à côté de l'onglet Global, resté en XP. Le calcul
+    // était juste, c'est l'unité qui avait changé sans le dire.
     sql: "select public.bb_points_normalises('pont', 999999)",
-    attendu: (v) => Number(v) === 100,
+    attendu: (v) => Number(v) === 1000,
     dire: (v) => "999 999 en pont → " + v + " points" },
+
+  { nom: "la référence du mode vaut EXACTEMENT le plafond",
+    // Le point d'ancrage de toute l'échelle : `reference` est par définition le
+    // score qui vaut le maximum. Si ce contrôle casse, la normalisation a dérivé.
+    sql: "select public.bb_points_normalises('pont', 1000)",
+    attendu: (v) => Number(v) === 1000,
+    dire: (v) => "1000 en pont (= la référence) → " + v + " points" },
+
+  { nom: "une partie MÉDIANE vaut à peu près la même chose dans chaque mode",
+    // Le défaut que le recalibrage répare : avec findscore à 20 000, une partie
+    // médiane de « Trouve le joueur » rapportait 2,5 fois moins qu'une médiane de
+    // Plug pour un effort équivalent, et le classement disait donc quel mode
+    // farmer. Médianes mesurées sur la production : pont 260, chaine 125,
+    // findscore 1900, mercatoday 170.
+    sql: `select greatest(
+            public.bb_points_normalises('pont', 260),
+            public.bb_points_normalises('chaine', 125),
+            public.bb_points_normalises('findscore', 1900),
+            public.bb_points_normalises('mercatoday', 170))
+          - least(
+            public.bb_points_normalises('pont', 260),
+            public.bb_points_normalises('chaine', 125),
+            public.bb_points_normalises('findscore', 1900),
+            public.bb_points_normalises('mercatoday', 170))`,
+    // 120 points d'écart sur une échelle de 1000, soit 12 % : au-delà, un mode
+    // devient objectivement plus rentable qu'un autre.
+    attendu: (v) => Number(v) <= 120,
+    dire: (v) => "écart max-min entre modes sur une partie médiane : " + v + " points" },
 
   { nom: "un score NÉGATIF vaut 0 et ne retire rien",
     sql: "select public.bb_points_normalises('pont', -450)",
