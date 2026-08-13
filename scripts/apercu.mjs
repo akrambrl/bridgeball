@@ -66,8 +66,14 @@ const LARGEUR = Number(process.env.LARGEUR || 430);
 // interne que le repli « -bas » n'attrape pas toujours. Agrandir la fenêtre est
 // plus sûr que deviner quel div défile.
 const HAUTEUR = Number(process.env.HAUTEUR || 932);
+// ECHELLE force la densité de la capture. Utile pour les captures du Play Store,
+// qui doivent sortir en 1080×1920 exactement : 360×640 en CSS à l'échelle 3 donne
+// ce format tout en laissant l'app se disposer sur une largeur de téléphone
+// réaliste. Sans ce réglage il fallait viser 540 px de CSS, une largeur qu'aucun
+// téléphone n'a et sur laquelle la mise en page ne se juge pas.
+const ECHELLE = Number(process.env.ECHELLE || (LARGEUR > 900 ? 1 : 2));
 const ctx = await navigateur.newContext({
-  viewport:{ width:LARGEUR, height:HAUTEUR }, deviceScaleFactor:LARGEUR > 900 ? 1 : 2 });
+  viewport:{ width:LARGEUR, height:HAUTEUR }, deviceScaleFactor:ECHELLE });
 
 // Le tableau de bord de suivi lit bb_events et bb_presence, et compte les
 // tables via l'en-tête content-range sans rapatrier de lignes (sbCount). Sans
