@@ -52,7 +52,7 @@
 
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { readFile, writeFile, access } from "node:fs/promises";
+import { readFile, writeFile, access, readdir } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
@@ -141,9 +141,12 @@ async function generer() {
       + " px · icône " + Math.round(48 * d.x) + " px");
   }
   await writeFile(join(ANDROID, "values", "ic_launcher_background.xml"),
+// Pas de tiret double dans ce commentaire : XML l'interdit à l'intérieur d'un
+// <!-- -->, et aapt2 casse le build sur « The string is not permitted within
+// comments ». L'option de capacitor-assets s'écrit donc sans ses deux tirets.
 `<?xml version="1.0" encoding="utf-8"?>
-<!-- L'OR DE LA CHARTE, et non le blanc. capacitor-assets ignore
-     --iconBackgroundColor et écrit #FFFFFF : l'icône adaptative composite le
+<!-- L'OR DE LA CHARTE, et non le blanc. capacitor-assets ignore l'option
+     iconBackgroundColor et écrit #FFFFFF : l'icône adaptative composite le
      premier plan SUR cette couleur, donc le logo se serait affiché sur un carré
      blanc, sur l'écran d'accueil comme dans la fiche Play. Écrit par
      scripts/coque-native.mjs — ne pas modifier à la main. -->
@@ -239,6 +242,40 @@ async function controler() {
   for (const p of ["android", "ios"]) {
     dire(await existe(join(racine, p)), "plateforme " + p + " présente");
   }
+
+  // 6. LES COMMENTAIRES XML DES RESSOURCES. Éprouvé au premier vrai build : aapt2
+  //    a refusé ic_launcher_background.xml sur « The string "--" is not permitted
+  //    within comments » — un tiret double écrit par ce script lui-même, en citant
+  //    une option en ligne de commande. XML l'interdit à l'intérieur d'un
+  //    <!-- -->, et aucun éditeur ne le signale.
+  //
+  //    Le contrôle est ici et pas dans les tests parce qu'il garde un dossier que
+  //    `cap sync` réécrit : il doit tourner juste avant le build, sur l'état réel
+  //    du disque. Il coûte quelques millisecondes et remplace 40 secondes de
+  //    Gradle pour découvrir la même chose.
+  const fautifs = [];
+  const parcourir = async (d) => {
+    for (const e of await readdir(d, { withFileTypes: true })) {
+      const p = join(d, e.name);
+      if (e.isDirectory()) { if (e.name !== "build") await parcourir(p); continue; }
+      if (!e.name.endsWith(".xml")) continue;
+      const t = await readFile(p, "utf8");
+      const ouverts = (t.match(/<!--/g) || []).length;
+      const fermes = (t.match(/-->/g) || []).length;
+      if (ouverts !== fermes) { fautifs.push(p + " : commentaire non fermé"); continue; }
+      for (const m of t.matchAll(/<!--([\s\S]*?)-->/g)) {
+        if (!m[1].includes("--")) continue;
+        const ligne = t.slice(0, m.index).split("\n").length;
+        fautifs.push(p + ":" + ligne + " : tiret double dans un commentaire");
+      }
+    }
+  };
+  const res = join(racine, "android", "app", "src", "main", "res");
+  if (await existe(res)) await parcourir(res);
+  dire(fautifs.length === 0, "commentaires XML des ressources : "
+    + (fautifs.length === 0 ? "aucun tiret double"
+       : fautifs.length + " à corriger ← AAPT2 REFUSERA DE COMPILER\n   "
+         + fautifs.join("\n   ")));
 }
 
 if (!VERIFIE) { console.log("── icônes Android"); await generer(); console.log(); }

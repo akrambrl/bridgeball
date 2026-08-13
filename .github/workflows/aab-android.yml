@@ -80,13 +80,6 @@ jobs:
         # l'installe donc plutôt que d'accepter un contrôle sauté.
         run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
 
-      - name: Contrôler la coque native
-        # API cible, couleur de la coque contre celle du manifeste, fond de
-        # l'icône adaptative, identifiant de l'app, et la marque tient-elle dans
-        # la zone sûre du lanceur. Play exige l'API 36 pour toute nouvelle
-        # application depuis le 31 août 2026.
-        run: npm run coque:verifie
-
       - name: Construire les assets web
         run: npm run build
 
@@ -99,6 +92,17 @@ jobs:
 
       - name: Synchroniser Capacitor
         run: npx cap sync android
+
+      # APRÈS `cap sync`, et c'est voulu : le contrôle des commentaires XML lit le
+      # dossier res tel que Gradle va le compiler, y compris les fichiers que
+      # Capacitor vient d'y écrire. Placé avant, il aurait laissé passer ce que la
+      # synchronisation ajoute.
+      - name: Contrôler la coque native
+        # API cible, couleur de la coque contre celle du manifeste, fond de
+        # l'icône adaptative, identifiant de l'app, la marque tient-elle dans la
+        # zone sûre du lanceur, et les commentaires XML des ressources. Play exige
+        # l'API 36 pour toute nouvelle application depuis le 31 août 2026.
+        run: npm run coque:verifie
 
       # ── LA CLÉ ────────────────────────────────────────────────────────────
       # Écrite sur le disque du runner, qui est détruit à la fin du job. Aucune
