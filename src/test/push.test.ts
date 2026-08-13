@@ -6,7 +6,7 @@
 // traitement d'un refus du serveur de push.
 import { describe, it, expect } from "vitest";
 import { abonnementUtilisable, dedupeAbonnements, decisionEnvoi, decisionFinale, tagDuJour,
-         demandesANotifier, accrocheAmis, grouperPar, resumerCorps, repartitionHotes, pushARetransmettre, abonnementMortSelonCorps } from "../lib/push.js";
+         demandesANotifier, accrocheAmis, grouperPar, resumerCorps, repartitionHotes, pushARetransmettre, abonnementMortSelonCorps, corpsCleDUnAutreServeur } from "../lib/push.js";
 
 const abo = (id: string, endpoint: string, created_at: string) =>
   ({ id, endpoint, p256dh: "cle", auth: "auth", created_at });
@@ -452,5 +452,62 @@ describe("decisionFinale sur un HTTP 400", () => {
     expect(decisionFinale(500, true, "BadDeviceToken")).toBe("reessayer");
     expect(decisionFinale(429, true, "BadDeviceToken")).toBe("reessayer");
     expect(decisionFinale(201, true, "BadDeviceToken")).toBe("ok");
+  });
+});
+
+// ── LE REFUS IMMORTEL D'APPLE ─────────────────────────────────────────────
+//
+// Diagnostiqué sur le journal réel du 13 août 2026, midi à Paris :
+//
+//     ── Envoyé : 8 ✓  |  morts : 0  |  à retenter : 0  |  erreurs : 7
+//        web.push.apple.com : 5/12 reçus
+//          ×7  400 VapidPkHashMismatch
+//        fcm.googleapis.com : 3/3 reçus
+//
+// Sept abonnements iOS refusés chaque jour, à l'identique, depuis le changement
+// de paire VAPID. Jamais purgés — `abonnementMortSelonCorps` voit « vapid » et
+// conclut que le problème vient de notre clé — et jamais délivrés, puisque la
+// clé de l'abonnement est bien celle d'avant. Sept téléphones muets.
+describe("VapidPkHashMismatch : l'abonnement porte notre ANCIENNE clé", () => {
+  const REFUS = '{"reason":"VapidPkHashMismatch"}';
+
+  it("purge quand d'autres envois ont réussi : la clé privée est bonne", () => {
+    // Même fait que le 403 des autres services, autre code HTTP. Huit envois
+    // sont passés dans le journal ci-dessus : la signature est donc valide, et
+    // ces sept-là parlent d'eux-mêmes, pas de nous.
+    expect(decisionFinale(400, true, REFUS)).toBe("purger");
+  });
+
+  it("n'y touche PAS si AUCUN envoi n'a réussi : ce serait une rotation de clé", () => {
+    // Le garde-fou qui rend la règle sûre. Au lendemain d'une rotation, tous les
+    // abonnements rendraient ce refus : purger viderait la table entière.
+    expect(decisionFinale(400, false, REFUS)).toBe("alerter");
+  });
+
+  it("reste hors du champ de abonnementMortSelonCorps", () => {
+    // Le jeton de l'appareil n'est pas mort : c'est la clé qui ne correspond
+    // plus. La distinction compte, parce que ce prédicat purge SANS regarder si
+    // un envoi a réussi.
+    expect(abonnementMortSelonCorps(REFUS)).toBe(false);
+  });
+
+  it("ne confond pas avec ExpiredProviderToken, qui parle bien de NOUS", () => {
+    // Le jeton d'autorisation d'Apple, côté serveur. Aucune purge, quoi qu'il
+    // arrive : c'est à nous de le renouveler.
+    expect(decisionFinale(400, true, '{"reason":"ExpiredProviderToken"}')).toBe("alerter");
+    expect(decisionFinale(400, false, '{"reason":"ExpiredProviderToken"}')).toBe("alerter");
+  });
+
+  it("reconnaît le nom quelle que soit la casse ou l'espacement", () => {
+    expect(corpsCleDUnAutreServeur("vapidpkhashmismatch")).toBe(true);
+    expect(corpsCleDUnAutreServeur("VAPID Pk Hash Mismatch")).toBe(true);
+    expect(corpsCleDUnAutreServeur("BadDeviceToken")).toBe(false);
+    expect(corpsCleDUnAutreServeur("")).toBe(false);
+    expect(corpsCleDUnAutreServeur(null)).toBe(false);
+  });
+
+  it("un 400 sans corps reconnaissable continue d'alerter, jamais de purger", () => {
+    // La règle reste étroite : ce qui n'est pas reconnu est rapporté, pas effacé.
+    expect(decisionFinale(400, true, "Received unexpected response code")).toBe("alerter");
   });
 });

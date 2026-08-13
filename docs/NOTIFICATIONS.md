@@ -248,12 +248,47 @@ Un `400` ne dit pas à lui seul de qui il parle, et c'est son motif qui décide 
 | motif | verdict |
 |---|---|
 | `BadDeviceToken`, `NotRegistered`, `Invalid subscription`… | **purge** : le jeton est mort, comme un 410 |
-| `BadJwtToken`, `VAPID`, `signature`, `encryption`… | **alerte, aucune purge** : c'est notre clé qui est en cause |
+| `VapidPkHashMismatch` | **purge, mais seulement si un autre envoi a réussi** — voir ci-dessous |
+| `BadJwtToken`, `ExpiredProviderToken`, `signature`, `encryption`… | **alerte, aucune purge** : c'est notre clé qui est en cause |
 | inconnu | **alerte, aucune purge** |
 
 La liste des motifs est volontairement étroite (`abonnementMortSelonCorps`) : en
 cas de doute, on n'efface pas, et le motif reste dans le journal pour élargir la
 règle sur pièces plutôt que par supposition.
+
+### `VapidPkHashMismatch`, le refus qui était immortel
+
+C'est le seul motif mentionnant VAPID qui parle de l'**abonnement** et non de
+nous : le hachage de la clé publique enregistrée dans l'abonnement ne correspond
+pas à celle qui signe. Autrement dit, cet abonnement a été créé avec notre
+**ancienne** paire. Apple répond `400` là où les autres services répondent `403`
+pour le même fait.
+
+Il a fallu un journal pour le voir. Celui du 13 août 2026 :
+
+```
+── 15 lignes en base → 15 abonnés uniques
+── Envoyé : 8 ✓  |  morts : 0  |  à retenter : 0  |  erreurs : 7
+   web.push.apple.com : 5/12 reçus
+     ×7  400 VapidPkHashMismatch
+   fcm.googleapis.com : 3/3 reçus
+```
+
+Sept abonnements iOS refusés **chaque jour, à l'identique**, depuis le changement
+de paire. Jamais purgés, parce que le mot « vapid » dans le corps faisait conclure
+à un problème de notre clé — ce qui est juste pour `ExpiredProviderToken`, et faux
+ici. Jamais délivrés, puisque la clé de l'abonnement est bien celle d'avant. Sept
+téléphones muets et un journal rouge tous les midis.
+
+Le côté client, lui, faisait déjà son travail : `memeCleServeur` compare la clé de
+l'abonnement à la nôtre, se désabonne et se réabonne. Mais **le POST de
+réabonnement AJOUTE une ligne, il n'en remplace aucune** : la vieille restait en
+base et échouait à vie. D'où les chiffres — 15 lignes pour 8 appareils joignables.
+
+La purge est donc décidée comme pour un `403` : uniquement **si au moins un envoi
+a réussi**. Ce garde-fou n'est pas facultatif. Au lendemain d'une rotation de clé,
+tous les abonnements rendraient ce refus, et purger viderait la table entière.
+Aucun succès, aucune purge.
 
 ### Pourquoi une purge est réparable
 
