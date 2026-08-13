@@ -58,7 +58,12 @@ const OR = "#F5C22B", ENCRE = "#081109", NUIT = "#12160F", CREME = "#F2E7CE";
 const CAPTURES = [
   { n: "01-plug",     ecran: "partie-plug",  quoi: "The Plug — deux clubs, un joueur" },
   { n: "02-mercato",  ecran: "mercato-juste", quoi: "The Mercato — la chaîne de transferts" },
-  { n: "03-goatgrid", ecran: "mode-goatgrid", quoi: "GOAT GRID — solo ou versus" },
+  // GOAT GRID montre une partie ENTAMÉE et non l'écran de choix de mode : cinq
+  // cases trouvées, quatre encore vides, trois vies, le score qui monte. Un écran
+  // de choix ne montre pas le jeu ; une grille pleine ne montre plus de jeu à
+  // faire. C'est `grille-partie`, qui retire au passage l'habillage de débogage du
+  // mode démo — le seul moyen de connaître les réponses — sans toucher au jeu.
+  { n: "03-goatgrid", ecran: "grille-partie", quoi: "GOAT GRID — une grille entamée" },
   { n: "04-guess",    ecran: "mode-guess",    quoi: "GOAT Guess — le Devin" },
   { n: "05-reveal",   ecran: "mode-grid",     quoi: "Trouve le joueur — la déduction" },
 ];
