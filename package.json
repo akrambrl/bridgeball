@@ -19,15 +19,17 @@
     "sql:essai": "node scripts/sql-essai.mjs",
     "notif:amis:sec": "tsx scripts/notif-amis.mjs --dry-run",
     "ios:sync": "npm run build && npx cap sync ios",
-    "ios:open": "npx cap open ios"
+    "ios:open": "npx cap open ios",
+    "coque": "node scripts/coque-native.mjs",
+    "coque:verifie": "node scripts/coque-native.mjs --verifie"
   },
   "dependencies": {
-    "@capacitor/app": "^6.0.3",
-    "@capacitor/core": "^6.2.1",
-    "@capacitor/haptics": "^6.0.3",
-    "@capacitor/keyboard": "^6.0.4",
-    "@capacitor/splash-screen": "^6.0.4",
-    "@capacitor/status-bar": "^6.0.3",
+    "@capacitor/app": "^8.1.1",
+    "@capacitor/core": "^8.5.0",
+    "@capacitor/haptics": "^8.0.0",
+    "@capacitor/keyboard": "^8.0.0",
+    "@capacitor/splash-screen": "^8.0.0",
+    "@capacitor/status-bar": "^8.0.0",
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-alert-dialog": "^1.1.14",
@@ -81,8 +83,10 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
-    "@capacitor/cli": "^6.2.1",
-    "@capacitor/ios": "^6.2.1",
+    "@capacitor/android": "^8.5.0",
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^8.5.0",
+    "@capacitor/ios": "^8.5.0",
     "@eslint/js": "^9.32.0",
     "@playwright/test": "^1.57.0",
     "@tailwindcss/typography": "^0.5.16",

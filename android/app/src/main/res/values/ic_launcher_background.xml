@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- L'OR DE LA CHARTE, et non le blanc. capacitor-assets ignore
+     --iconBackgroundColor et écrit #FFFFFF : l'icône adaptative composite le
+     premier plan SUR cette couleur, donc le logo se serait affiché sur un carré
+     blanc, sur l'écran d'accueil comme dans la fiche Play. Écrit par
+     scripts/coque-native.mjs — ne pas modifier à la main. -->
+<resources>
+    <color name="ic_launcher_background">#F5C22B</color>
+</resources>
