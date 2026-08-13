@@ -2,6 +2,15 @@
 --  GOAT FC — Classement mensuel VÉRIFIABLE côté serveur
 --  À coller dans Supabase → SQL Editor → Run. Idempotent : relançable.
 --
+--  ⚠️ NE JAMAIS MODIFIER CE FICHIER SANS LE LANCER : `npm run sql:essai`.
+--     Il monte un Postgres jetable au schéma de production et le passe en
+--     entier. Sa première version avait été envoyée sans avoir jamais été
+--     exécutée, et elle contenait DEUX défauts qu'aucune relecture n'a vus :
+--     un arrêt en 42883 au milieu du déploiement (paramètre `int` contre une
+--     colonne qui n'est pas entière, section 3), et une section 6 qui ne
+--     bloquait rien du tout (un privilège de colonne ne restreint pas un rôle
+--     qui a l'UPDATE de la table). Les deux sont expliqués sur place.
+--
 --  ⚠️ ORDRE DE DÉPLOIEMENT : l'application d'abord, ce fichier ENSUITE.
 --     La dernière section retire au client le droit d'écrire `xp_season`. Si
 --     elle est appliquée avant que l'app ait cessé de l'envoyer, le PATCH entier
@@ -166,7 +175,21 @@ create trigger bb_scores_garde_trg
 -- 100 points pour la référence du mode, plafonné. Un score négatif vaut 0 : les
 -- pénalités de pass n'ont pas à faire perdre des points de classement, elles ont
 -- déjà coûté le score de la partie.
-create or replace function public.bb_points_normalises(p_mode text, p_score int)
+--
+-- LE PARAMÈTRE EST `numeric` ET NON `int`, et ce n'est pas une préférence :
+-- `bb_scores.score` n'est PAS un entier sur la base de production. Mesuré, pas
+-- supposé — un filtre `?score=eq.1.5` y est accepté, alors qu'il répond 400
+-- « invalid input syntax for type integer » sur bb_gg_scores.score,
+-- bb_pseudos.xp et bb_seasons.champion_score. Or Postgres ne descend pas
+-- IMPLICITEMENT de numeric vers int pour résoudre une fonction : déclarée en
+-- `int`, celle-ci était introuvable depuis `bb_classement_mois`, et le fichier
+-- s'arrêtait en plein déploiement sur
+--     42883: function public.bb_points_normalises(text, numeric) does not exist
+-- Les appels castent en plus explicitement, ce qui rend le fichier indifférent
+-- au type exact de la colonne — la sonde prouve qu'elle n'est pas entière sans
+-- dire si elle est numeric ou double precision, et un cast explicite couvre les
+-- deux. Éprouvé dans les deux cas : npm run sql:essai.
+create or replace function public.bb_points_normalises(p_mode text, p_score numeric)
 returns int language sql stable as $$
   select coalesce((
     select least(100, greatest(0, round(100.0 * p_score / b.reference)))::int
@@ -203,7 +226,10 @@ returns table (
     select s.player_id,
            (s.created_at at time zone 'Europe/Paris')::date as jour,
            s.mode,
-           public.bb_points_normalises(s.mode, max(s.score)) as pts
+           -- `::numeric` explicite : voir la section 3. La colonne n'est pas
+           -- entière en production, et un cast explicite passe quel que soit son
+           -- type réel — c'est ici que le fichier s'arrêtait en 42883.
+           public.bb_points_normalises(s.mode, max(s.score)::numeric) as pts
       from public.bb_scores s
      where to_char(s.created_at at time zone 'Europe/Paris', 'YYYY-MM') = p_mois
      group by 1, 2, 3
@@ -297,15 +323,46 @@ end $$;
 
 -- ─── 6. RETRAIT DU COMPTEUR FALSIFIABLE ─────────────────────────────────────
 -- ⚠️ À N'APPLIQUER QU'APRÈS avoir déployé l'application qui a cessé d'écrire
---    `xp_season`. Un privilège retiré sur UNE colonne fait échouer le PATCH
---    ENTIER : l'app écrit `xp` et `xp_season` dans la même requête, donc la
---    retirer trop tôt arrête aussi l'XP, les grades et les cartes.
+--    `xp_season`. Un privilège retiré sur une colonne fait échouer le PATCH
+--    ENTIER : si l'app envoie encore `xp` et `xp_season` ensemble, la retirer
+--    trop tôt arrête aussi l'XP, les grades et les cartes.
+--
+-- ── POURQUOI UN REVOKE DE COLONNE NE SUFFIT PAS ────────────────────────────
+--
+-- La première version de cette section disait simplement :
+--
+--     revoke update (xp_season, xp_season_month) on public.bb_pseudos from anon;
+--
+-- et elle NE FAISAIT RIEN. En Postgres, un privilège de colonne ne restreint
+-- rien quand le rôle détient déjà l'UPDATE au niveau de la TABLE : le droit de
+-- table couvre toutes les colonnes, présentes et futures, et `revoke update
+-- (col)` ne retire qu'une éventuelle attribution colonne par colonne. Or
+-- Supabase accorde précisément l'UPDATE de table à `anon` sur tout le schéma
+-- public. Le compteur restait donc modifiable par n'importe qui, et le fichier
+-- prétendait le contraire.
+--
+-- Découvert en EXÉCUTANT le fichier, pas en le relisant : `npm run sql:essai`
+-- prend le rôle `anon` et essaie vraiment de se poser à 999 999 999.
+--
+-- La forme qui marche est donc : retirer le droit de table, puis rendre
+-- exactement les colonnes que l'app écrit. La liste vient des sept sites
+-- d'écriture de LePont.jsx, seul fichier qui écrive cette table — et le banc
+-- d'essai vérifie CHACUNE d'elles, parce qu'en oublier une casserait un PATCH
+-- entier en production.
+--
+-- L'INSERT reste au niveau de la table : la création d'un pseudo écrit
+-- player_id, pseudo, country et recovery_code d'un coup, et rien de ce qui est
+-- inséré ne décide du classement.
 --
 -- Décommenter APRÈS le déploiement :
 --
 -- do $$ begin
 --   if exists (select 1 from pg_roles where rolname = 'anon') then
---     revoke update (xp_season, xp_season_month) on public.bb_pseudos from anon;
+--     revoke update on public.bb_pseudos from anon;
+--     grant update (pseudo, country, xp, last_notified_grade,
+--                   streak_count, streak_last_date, streak_best, streak_freezes,
+--                   badge, recovery_code)
+--       on public.bb_pseudos to anon;
 --   end if;
 -- end $$;
 --
