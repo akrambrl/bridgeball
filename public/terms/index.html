@@ -121,8 +121,14 @@ footer {
 
 /* Le bouton de retour : un jeton de la charte, plus un verre flouté.
    `backdrop-filter` a disparu — la charte est faite d'aplats opaques. */
+/* POSITION ABSOLUE ET NON FIXE, et c'est une correction et non un choix
+   d'origine : fixe, ce jeton reste collé en haut à gauche pendant tout le
+   défilement et RECOUVRE le premier mot de la ligne qui passe derrière lui —
+   sur quinze pages de texte juridique, ça fait quinze mots avalés. Il se pose
+   donc au haut du document et s'en va avec lui. Le retour reste offert deux
+   fois : ici en haut, et en toutes lettres dans le pied de page. */
 .back-fab {
-  position:fixed; top:14px; left:14px; z-index:100;
+  position:absolute; top:14px; left:14px; z-index:100;
   background:var(--nuit); color:var(--creme);
   border:var(--trait); border-radius:50%;
   width:44px; height:44px; cursor:pointer; font-size:20px;
@@ -334,8 +340,8 @@ For any questions regarding these Terms:<br>
 </section>
 
 <footer>
-<a href="/" style="color:var(--accent);">← Back to GOAT FC</a><br><br>
-© 2026 GOAT FC · <a href="/privacy">Privacy Policy</a>
+<a href="/">← Back to GOAT FC</a><br><br>
+© 2026 GOAT FC · <a href="/privacy">Privacy Policy</a> · <a href="/reglement">Contest Rules</a>
 </footer>
 
 </div>

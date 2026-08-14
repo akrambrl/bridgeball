@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Règlement du concours — GOAT FC</title>
+<meta name="description" content="Règlement complet du concours mensuel GOAT FC : conditions de participation, désignation du gagnant, dotation et remise du lot.">
+<meta name="robots" content="index,follow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
+<style>
+/* ── CHARTE « Olive et Tom », version OR — pages légales ───────────────────
+   Reprise de src/lib/charte.jsx. Le texte juridique n'est pas touché : seule
+   cette feuille change.
+
+   LA RÈGLE QUI COMMANDE TOUT LE RESTE, et qui vient des mesures de contraste
+   de la charte : SUR L'OR, SEULE L'ENCRE SE LIT. Le crème tombe à 1,4, le vert
+   clair à 1,2, le rouge à 2,8. Donc tout ce qui est posé sur le fond — texte,
+   liens, gras, titres — est à l'encre. À l'INVERSE, dans un panneau sombre,
+   tout se lit : crème 14,9 · or 11,0. D'où les règles contextuelles
+   `.box strong` et compagnie : la même emphase change de couleur selon ce
+   qu'elle a derrière elle.
+
+   La police du CORPS reste une pile système, et c'est délibéré : Anton et
+   Bebas Neue sont des lettrages d'affiche, illisibles sur quinze pages de
+   texte juridique. Le manga est dans le trait et l'ombre dure, pas dans
+   l'obligation de tout écrire en capitales condensées. */
+:root {
+  --encre:#081109;      /* le trait — noir à biais vert, jamais noir pur */
+  --or:#F5C22B;         /* LE FOND */
+  --or-sombre:#D9A21A;  /* la trame de points */
+  --creme:#F2E7CE;      /* le lettrage, DANS un panneau */
+  --nuit:#12160F;       /* l'écusson : le noir des panneaux */
+  --maillot:#D93A2B;    /* urgence */
+  --trait:3px solid #081109;
+  --trait-fin:2px solid #081109;
+  --ombre:4px 4px 0 #081109;
+}
+* { box-sizing:border-box; }
+body {
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  background:var(--or); color:var(--encre); margin:0; padding:0; line-height:1.7;
+  /* La trame sérigraphiée de la charte, en points d'or sombre et non de noir :
+     sur l'or, une trame noire grise le fond au lieu de le texturer. */
+  background-image:radial-gradient(circle,var(--or-sombre) 1.2px,transparent 1.5px);
+  background-size:7px 7px;
+}
+.container { max-width:780px; margin:0 auto; padding:40px 24px 80px; }
+header { padding:30px 0 20px; border-bottom:var(--trait); margin-bottom:30px; }
+
+/* Lettrage d'affiche : italique légère et ombre dure, SANS contour d'encre.
+   Le contour n'a de sens que pour du texte clair sur fond sombre ; posé sur
+   un titre déjà sombre, il bouche les contre-formes et rend le mot illisible. */
+h1 {
+  font-family:'Anton',Impact,'Haettenschweiler',sans-serif; font-weight:400;
+  font-size:clamp(30px,8vw,44px); line-height:1.05; margin:0 0 8px;
+  color:var(--encre); letter-spacing:.5px;
+  transform:skewX(-7deg); transform-origin:left center;
+  text-shadow:3px 3px 0 rgba(8,17,9,.18);
+}
+h2 {
+  font-family:'Anton',Impact,'Haettenschweiler',sans-serif; font-weight:400;
+  font-size:clamp(20px,5vw,26px); line-height:1.15;
+  margin:40px 0 12px; color:var(--encre); letter-spacing:.4px;
+  transform:skewX(-7deg); transform-origin:left center;
+}
+h3 { font-size:16px; font-weight:800; margin:22px 0 8px; color:var(--encre); }
+.subtitle { color:rgba(8,17,9,.62); font-size:14px; font-weight:600; }
+p, li { color:var(--encre); font-size:15px; }
+ul { padding-left:20px; }
+li { margin-bottom:6px; }
+strong { color:var(--encre); font-weight:800; }
+a { color:var(--encre); font-weight:700; text-decoration:underline; text-underline-offset:3px; }
+.email { color:var(--encre); font-weight:800; }
+hr { border:none; height:3px; background:var(--encre); margin:34px 0; border-radius:2px; }
+
+/* ── LES PANNEAUX ────────────────────────────────────────────────────────
+   Aplat de nuit, trait d'encre, ombre DURE — jamais de flou, jamais de verre.
+   Et le renversement des couleurs : à l'intérieur, l'or redevient lisible. */
+.box {
+  background:var(--nuit); color:var(--creme);
+  border:var(--trait); border-radius:18px; box-shadow:var(--ombre);
+  padding:16px 20px; margin:18px 0;
+}
+.box p, .box li { color:var(--creme); }
+.box strong, .box .email, .box a { color:var(--or); }
+
+.warning {
+  background:var(--nuit); color:var(--creme);
+  border:var(--trait); border-left:9px solid var(--maillot);
+  border-radius:18px; box-shadow:var(--ombre); padding:16px 20px; margin:18px 0;
+}
+.warning p, .warning li { color:var(--creme); }
+.warning strong { color:var(--or); }
+
+.last-updated {
+  background:var(--nuit); color:var(--creme);
+  border:var(--trait-fin); border-radius:12px; box-shadow:var(--ombre);
+  padding:8px 14px; font-size:13px; font-weight:700;
+  display:inline-block; margin-bottom:22px;
+}
+
+/* ── LES BOUTONS DE LANGUE ───────────────────────────────────────────────
+   L'actif est un aplat de NUIT et non d'or : un bouton or posé sur le fond or
+   disparaîtrait. C'est la règle de la charte pour une action principale. */
+.lang-switch { display:inline-flex; gap:10px; margin-top:16px; }
+.lang-switch button {
+  background:transparent; color:var(--encre);
+  border:var(--trait-fin); border-radius:12px; box-shadow:var(--ombre);
+  padding:7px 15px; cursor:pointer; font-weight:800; font-size:13px;
+  font-family:inherit; transition:transform .12s;
+}
+.lang-switch button:hover { transform:translate(-1px,-1px); }
+.lang-switch button:active { transform:translate(2px,2px); box-shadow:2px 2px 0 var(--encre); }
+.lang-switch button.active { background:var(--nuit); color:var(--creme); }
+
+footer {
+  margin-top:64px; padding-top:24px; border-top:var(--trait);
+  color:rgba(8,17,9,.62); font-size:13px; text-align:center; font-weight:600;
+}
+.hidden { display:none; }
+
+/* Le bouton de retour : un jeton de la charte, plus un verre flouté.
+   `backdrop-filter` a disparu — la charte est faite d'aplats opaques. */
+/* POSITION ABSOLUE ET NON FIXE, et c'est une correction et non un choix
+   d'origine : fixe, ce jeton reste collé en haut à gauche pendant tout le
+   défilement et RECOUVRE le premier mot de la ligne qui passe derrière lui —
+   sur quinze pages de texte juridique, ça fait quinze mots avalés. Il se pose
+   donc au haut du document et s'en va avec lui. Le retour reste offert deux
+   fois : ici en haut, et en toutes lettres dans le pied de page. */
+.back-fab {
+  position:absolute; top:14px; left:14px; z-index:100;
+  background:var(--nuit); color:var(--creme);
+  border:var(--trait); border-radius:50%;
+  width:44px; height:44px; cursor:pointer; font-size:20px;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:var(--ombre); text-decoration:none; transition:transform .12s;
+}
+.back-fab:hover { transform:translate(-1px,-1px); }
+.back-fab:active { transform:translate(2px,2px); box-shadow:2px 2px 0 var(--encre); }
+
+/* Le titre passe sous le bouton de retour sur petit écran : on lui laisse la place. */
+@media (max-width:600px) {
+  .container { padding-top:24px; }
+  header { padding-top:44px; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .back-fab, .lang-switch button { transition:none; }
+}
+</style>
+</head>
+<body>
+<a href="/" class="back-fab" aria-label="Retour à GOAT FC">←</a>
+<div class="container">
+
+<header>
+<h1>🏆 Règlement du concours</h1>
+<div class="subtitle">GOAT FC — goatfc.fr</div>
+<div class="lang-switch">
+<button id="btn-fr" class="active" onclick="show('fr')">🇫🇷 Français</button>
+<button id="btn-en" onclick="show('en')">🇬🇧 English</button>
+</div>
+</header>
+
+<!-- ─────────── VERSION FRANÇAISE ─────────── -->
+<section id="content-fr">
+<div class="last-updated">Dernière mise à jour : 14 août 2026</div>
+
+<div class="box">
+<strong>L'essentiel, en cinq lignes.</strong>
+<ul>
+<li>Le concours est <strong>gratuit et sans obligation d'achat</strong>.</li>
+<li>Il se joue du <strong>1<sup>er</sup> au 30 septembre 2026</strong>, heure de Paris.</li>
+<li>Le <strong>premier du classement mensuel</strong> gagne le jeu <strong>EA SPORTS FC 27</strong> en version dématérialisée.</li>
+<li>Le classement récompense la <strong>régularité</strong> : rejouer le même mode vingt fois dans la journée n'ajoute rien.</li>
+<li>Aucune donnée n'est demandée pour participer : jouer suffit.</li>
+</ul>
+</div>
+
+<h2>1. Organisateur</h2>
+<div class="box">
+<strong>GOAT FC</strong><br>
+Email : <span class="email">contact@goatfc.online</span><br>
+Site : goatfc.fr
+</div>
+<p>Ci-après « l'Organisateur ». Le présent règlement est consultable gratuitement et en permanence à l'adresse <strong>goatfc.fr/reglement</strong>, ainsi que depuis l'onglet Profil de l'application.</p>
+
+<h2>2. Objet</h2>
+<p>L'Organisateur met en place un concours de connaissances gratuit et sans obligation d'achat, désigné « <strong>Hall of Fame — Septembre 2026</strong> », dans le cadre de son application de quiz football GOAT FC.</p>
+<p>Il s'agit d'un <strong>concours</strong> et non d'une loterie : le gagnant est désigné par ses seuls résultats de jeu, sans aucune intervention du hasard dans l'attribution du lot.</p>
+
+<h2>3. Durée</h2>
+<p>Le concours se déroule du <strong>mardi 1<sup>er</sup> septembre 2026 à 00h00</strong> au <strong>mercredi 30 septembre 2026 à 23h59min59s</strong>, heure de Paris (Europe/Paris) — soit la totalité de la saison mensuelle de septembre.</p>
+<p>Le classement est arrêté au basculement du 1<sup>er</sup> octobre 2026 à 00h00, heure de Paris. Toute partie jouée après cet instant compte pour la saison suivante.</p>
+<div class="warning">
+<p><strong>Toutes les heures et toutes les journées de ce règlement s'entendent en heure de Paris</strong>, y compris pour les participants situés dans un autre fuseau. C'est le fuseau qui découpe les journées dans le calcul du classement, et il est le même pour tout le monde.</p>
+</div>
+
+<h2>4. Conditions de participation</h2>
+<p>La participation est ouverte à toute personne physique :</p>
+<ul>
+<li>âgée d'au moins <strong>16 ans</strong> à la date de participation, conformément aux conditions générales d'utilisation de GOAT FC ;</li>
+<li>disposant d'un accès à l'application, dans un navigateur ou via l'application mobile ;</li>
+<li>ayant réservé un <strong>pseudo</strong> dans l'application — le classement identifie les participants par leur pseudo.</li>
+</ul>
+<p>Les participants <strong>mineurs de 16 et 17 ans</strong> doivent avoir obtenu l'autorisation préalable de leur représentant légal. L'Organisateur pourra demander une confirmation écrite de cette autorisation avant toute remise de lot.</p>
+<p>Sont exclus de la participation l'Organisateur, les personnes ayant participé directement à la conception ou à l'administration du concours, ainsi que les membres de leur famille directe.</p>
+<p>Une seule participation par personne physique est admise. Un même joueur ne peut pas concourir avec plusieurs comptes ; le cas échéant, la section 9 s'applique.</p>
+
+<h2>5. Modalités de participation — gratuité</h2>
+<p>Pour participer, il suffit de jouer à GOAT FC pendant la période du concours. <strong>Aucune inscription spécifique, aucun achat, aucun abonnement et aucune dépense ne sont requis.</strong> L'application est gratuite et ne comporte à ce jour aucun achat intégré.</p>
+<p>Les seuls frais éventuels sont ceux de la connexion Internet du participant, facturés par son opérateur selon son propre contrat, et que l'Organisateur ne rembourse pas — ces frais étant engagés que le participant concoure ou non.</p>
+
+<h2>6. Désignation du gagnant</h2>
+<p>Le gagnant est le participant occupant la <strong>première place du classement mensuel</strong> de septembre 2026 à l'arrêt du classement.</p>
+<p>Ce classement est calculé <strong>par le serveur</strong>, à partir des parties enregistrées. Son mode de calcul est le suivant :</p>
+<ul>
+<li>pour chaque participant, chaque <strong>journée</strong> (heure de Paris) et chaque <strong>mode de jeu</strong>, seul le <strong>meilleur score de la journée</strong> dans ce mode est retenu ;</li>
+<li>ce meilleur score est converti en un nombre de points <strong>normalisé sur une échelle commune de 0 à 1000</strong>, afin que tous les modes pèsent le même poids quelle que soit leur façon de compter ;</li>
+<li>les points ainsi obtenus sont <strong>additionnés sur l'ensemble du mois</strong>.</li>
+</ul>
+<p>Il en découle trois conséquences, qui sont l'objet même de ce mode de calcul :</p>
+<ul>
+<li>rejouer <strong>vingt fois le même mode dans la même journée</strong> ne rapporte pas plus qu'une seule très bonne partie ;</li>
+<li>un score anormalement élevé ne rapporte pas plus qu'un excellent score honnête, puisque l'échelle est plafonnée ;</li>
+<li>pour accumuler des points, il faut <strong>jouer plusieurs modes, sur plusieurs jours</strong>.</li>
+</ul>
+<p><strong>En cas d'égalité de points</strong>, les participants sont départagés dans cet ordre :</p>
+<ul>
+<li>d'abord, le participant ayant joué le <strong>plus grand nombre de journées distinctes</strong> dans le mois ;</li>
+<li>ensuite, si l'égalité subsiste, l'<strong>ordre alphabétique du pseudo</strong>.</li>
+</ul>
+<p>Le classement affiché dans l'application fait foi. En cas de divergence entre l'affichage et les données du serveur, ce sont les données du serveur qui prévalent.</p>
+
+<h2>7. Dotation</h2>
+<p>Le lot mis en jeu est <strong>un (1) exemplaire du jeu vidéo EA SPORTS FC 27</strong>, édition standard, en <strong>version dématérialisée</strong>.</p>
+<ul>
+<li>La <strong>plateforme est au choix du gagnant</strong> parmi celles sur lesquelles le jeu est commercialisé à la date de la remise.</li>
+<li>Si le jeu n'était pas disponible sur la plateforme choisie, ou plus disponible à la vente, l'Organisateur remettrait à la place une <strong>carte cadeau dématérialisée de valeur commerciale équivalente</strong>, utilisable sur la boutique de la plateforme choisie.</li>
+<li>La valeur du lot correspond au <strong>prix public de vente de l'édition standard du jeu au jour de la remise</strong>.</li>
+</ul>
+<p>Le lot est <strong>nominatif</strong>. Il ne peut être ni échangé, ni cédé, ni repris, ni faire l'objet d'une contrepartie financière, totale ou partielle.</p>
+<p>Un seul lot est attribué pour l'ensemble du concours.</p>
+
+<h2>8. Annonce et remise du lot</h2>
+<p>Le gagnant est annoncé dans l'application, dans la section <strong>Hall of Fame</strong> de l'onglet Classement, à l'issue du mois. Il reçoit également une <strong>notification</strong> s'il a autorisé les notifications sur son appareil.</p>
+<p>Le gagnant dispose d'un délai de <strong>trente (30) jours calendaires</strong> à compter de l'annonce pour réclamer son lot, en écrivant à <span class="email">contact@goatfc.online</span>.</p>
+<div class="box">
+<p><strong>Comment prouver que le compte gagnant est bien le vôtre.</strong> GOAT FC ne demande ni email ni mot de passe : votre compte n'est identifié que par votre pseudo et par un <strong>code de récupération</strong> au format <strong>GOATFC-XXXX-XXXX</strong>, qui vous a été remis à la création de votre compte et que vous retrouvez à tout moment dans l'onglet <strong>Profil</strong>.</p>
+<p>Ce code est le seul élément qui n'est connu que de vous. Il vous est donc demandé de le joindre à votre réclamation : c'est ce qui empêche un tiers de réclamer un lot à votre place.</p>
+</div>
+<div class="warning">
+<p><strong>Ne communiquez ce code à personne d'autre que l'Organisateur, et uniquement à l'adresse <span class="email">contact@goatfc.online</span>.</strong> Quiconque le détient peut reprendre votre compte sur son propre appareil. L'Organisateur ne vous demandera jamais ce code par un autre canal, et jamais en dehors d'une réclamation de lot que vous avez vous-même engagée.</p>
+</div>
+<p>Le lot est transmis par voie électronique, à l'adresse email depuis laquelle la réclamation a été faite, dans un délai de <strong>trente (30) jours</strong> à compter de la validation de la réclamation.</p>
+<p><strong>Passé le délai de trente jours sans réclamation</strong>, ou si le gagnant ne peut être identifié, ou s'il refuse le lot, celui-ci est attribué au participant classé immédiatement après lui, selon les mêmes modalités et le même délai.</p>
+
+<h2>9. Fraude et disqualification</h2>
+<p>L'Organisateur se réserve le droit d'écarter du classement, sans préavis, tout participant :</p>
+<ul>
+<li>utilisant <strong>plusieurs comptes</strong> pour concourir ;</li>
+<li>recourant à un <strong>procédé automatisé</strong>, à une modification de l'application ou à toute manipulation des scores transmis au serveur ;</li>
+<li>exploitant un <strong>défaut technique</strong> de l'application pour obtenir des points ;</li>
+<li>ayant adopté un <strong>pseudo</strong> ou un comportement contraires aux conditions générales d'utilisation.</li>
+</ul>
+<p>Les scores manifestement incompatibles avec les règles d'un mode de jeu sont écartés du calcul. Un participant écarté ne peut prétendre à aucune indemnité, et le lot est attribué au participant suivant au classement.</p>
+
+<h2>10. Non-affiliation</h2>
+<p>Ce concours n'est en aucune manière sponsorisé, administré, soutenu ni associé à :</p>
+<ul>
+<li><strong>Electronic Arts Inc.</strong> — EA SPORTS et EA SPORTS FC sont des marques d'Electronic Arts Inc. Le jeu constitue le lot du concours ; son éditeur n'en est ni organisateur, ni partenaire, ni sponsor ;</li>
+<li><strong>Instagram et Meta Platforms, Inc.</strong> ;</li>
+<li><strong>TikTok et ByteDance Ltd.</strong> ;</li>
+<li><strong>Apple Inc.</strong> et <strong>Google LLC</strong>, ni leurs boutiques d'applications respectives.</li>
+</ul>
+<p>Les participants reconnaissent que ces sociétés sont totalement dégagées de toute responsabilité au titre du présent concours, et que toute question, réclamation ou remarque doit être adressée à l'Organisateur et à lui seul.</p>
+
+<h2>11. Données personnelles</h2>
+<p>La participation au concours ne nécessite <strong>aucune donnée personnelle supplémentaire</strong> par rapport à l'usage ordinaire de l'application : le classement s'appuie sur le pseudo et les scores déjà traités dans le cadre du jeu.</p>
+<p>Des données ne sont demandées qu'<strong>au moment de la réclamation du lot</strong>, et seulement pour la remettre : adresse email de contact et, le cas échéant, confirmation de l'autorisation parentale pour un participant mineur. Ces données sont conservées le temps nécessaire à la remise du lot et aux obligations comptables et probatoires qui s'y rattachent, puis supprimées.</p>
+<p>Le traitement des données personnelles est décrit en détail dans la <a href="/privacy">politique de confidentialité</a>, qui précise également comment exercer vos droits d'accès, de rectification, d'effacement et d'opposition.</p>
+
+<h2>12. Responsabilité</h2>
+<p>L'Organisateur ne saurait être tenu responsable d'un dysfonctionnement du réseau, du matériel du participant, d'une interruption du service, d'une perte de données ou de tout autre événement indépendant de sa volonté empêchant un participant de jouer ou d'être classé.</p>
+<p>L'Organisateur ne saurait davantage être tenu responsable de l'usage fait du lot après sa remise, ni des conditions d'utilisation propres à la plateforme sur laquelle le lot est utilisé.</p>
+
+<h2>13. Modification, suspension, annulation</h2>
+<p>L'Organisateur se réserve le droit de <strong>modifier, écourter, prolonger, suspendre ou annuler</strong> le concours si les circonstances l'exigent, notamment en cas de force majeure ou d'événement rendant impossible son déroulement normal.</p>
+<p>Toute modification fait l'objet d'une <strong>mise à jour du présent règlement</strong> à cette même adresse, avec sa date. Aucune modification ne peut avoir pour effet de priver un gagnant déjà désigné du lot qui lui revient.</p>
+
+<h2>14. Acceptation du règlement</h2>
+<p>La participation au concours emporte <strong>acceptation pleine et entière du présent règlement</strong>, ainsi que des <a href="/terms">conditions générales d'utilisation</a> de GOAT FC.</p>
+
+<h2>15. Loi applicable et réclamations</h2>
+<p>Le présent règlement est soumis au <strong>droit français</strong>.</p>
+<p>Toute réclamation relative au concours doit être adressée à <span class="email">contact@goatfc.online</span> dans un délai de trente (30) jours suivant la fin du concours. Une solution amiable sera recherchée en priorité.</p>
+<p>Vous pouvez également recourir à la plateforme européenne de règlement des litiges en ligne : <a href="https://ec.europa.eu/consumers/odr" target="_blank" rel="noopener noreferrer">ec.europa.eu/consumers/odr</a></p>
+
+<h2>16. Contact</h2>
+<p>Pour toute question relative au concours :</p>
+<div class="box">
+<span class="email">contact@goatfc.online</span>
+</div>
+</section>
+
+<!-- ─────────── ENGLISH VERSION ─────────── -->
+<section id="content-en" class="hidden">
+<div class="last-updated">Last updated: 14 August 2026</div>
+
+<div class="box">
+<strong>The short version.</strong>
+<ul>
+<li>The contest is <strong>free and requires no purchase</strong>.</li>
+<li>It runs from <strong>1 to 30 September 2026</strong>, Paris time.</li>
+<li>The <strong>player ranked first in the monthly leaderboard</strong> wins a digital copy of <strong>EA SPORTS FC 27</strong>.</li>
+<li>The leaderboard rewards <strong>consistency</strong>: replaying the same mode twenty times in one day adds nothing.</li>
+<li>No personal data is required to take part — playing is enough.</li>
+</ul>
+</div>
+
+<h2>1. Organiser</h2>
+<div class="box">
+<strong>GOAT FC</strong><br>
+Email: <span class="email">contact@goatfc.online</span><br>
+Website: goatfc.fr
+</div>
+<p>Hereinafter "the Organiser". These rules are permanently available free of charge at <strong>goatfc.fr/reglement</strong>, and from the Profile tab inside the app.</p>
+
+<h2>2. Purpose</h2>
+<p>The Organiser is running a free skill-based contest, requiring no purchase, named "<strong>Hall of Fame — September 2026</strong>", within its football quiz application GOAT FC.</p>
+<p>This is a <strong>skill contest</strong>, not a lottery: the winner is determined solely by their game results, with no element of chance in awarding the prize.</p>
+
+<h2>3. Duration</h2>
+<p>The contest runs from <strong>Tuesday 1 September 2026 at 00:00</strong> to <strong>Wednesday 30 September 2026 at 23:59:59</strong>, Paris time (Europe/Paris) — the whole of the September monthly season.</p>
+<p>The leaderboard is frozen at the rollover to 1 October 2026, 00:00 Paris time. Any game played after that moment counts towards the following season.</p>
+<div class="warning">
+<p><strong>All times and days in these rules are Paris time</strong>, including for participants in other time zones. That time zone is what divides the days in the leaderboard calculation, and it is the same for everyone.</p>
+</div>
+
+<h2>4. Eligibility</h2>
+<p>The contest is open to any natural person who:</p>
+<ul>
+<li>is at least <strong>16 years old</strong> at the time of participation, in line with the GOAT FC terms of service;</li>
+<li>has access to the application, in a browser or through the mobile app;</li>
+<li>has reserved a <strong>username</strong> in the application — the leaderboard identifies participants by their username.</li>
+</ul>
+<p>Participants aged <strong>16 and 17</strong> must have obtained prior authorisation from their legal guardian. The Organiser may request written confirmation of that authorisation before awarding any prize.</p>
+<p>Excluded from participation: the Organiser, anyone directly involved in designing or administering the contest, and members of their immediate family.</p>
+<p>One entry per natural person. A player may not compete using several accounts; where they do, section 9 applies.</p>
+
+<h2>5. How to take part — free entry</h2>
+<p>To take part, simply play GOAT FC during the contest period. <strong>No specific registration, no purchase, no subscription and no expense are required.</strong> The application is free and currently contains no in-app purchases.</p>
+<p>The only possible cost is the participant's own Internet connection, billed by their provider under their own contract, and not reimbursed by the Organiser — since that cost is incurred whether or not the participant competes.</p>
+
+<h2>6. Determining the winner</h2>
+<p>The winner is the participant ranked <strong>first in the September 2026 monthly leaderboard</strong> when it is frozen.</p>
+<p>That leaderboard is computed <strong>server-side</strong> from recorded games, as follows:</p>
+<ul>
+<li>for each participant, each <strong>day</strong> (Paris time) and each <strong>game mode</strong>, only that day's <strong>best score</strong> in that mode is kept;</li>
+<li>that best score is converted into points on a <strong>common normalised scale from 0 to 1000</strong>, so that every mode carries the same weight regardless of how it counts;</li>
+<li>the resulting points are <strong>summed across the whole month</strong>.</li>
+</ul>
+<p>Three consequences follow, and they are the very purpose of this calculation:</p>
+<ul>
+<li>replaying <strong>the same mode twenty times in one day</strong> earns no more than a single very good game;</li>
+<li>an abnormally high score earns no more than an excellent honest one, since the scale is capped;</li>
+<li>to accumulate points you must <strong>play several modes, across several days</strong>.</li>
+</ul>
+<p><strong>In the event of a tie on points</strong>, participants are separated in this order:</p>
+<ul>
+<li>first, the participant who played on the <strong>greatest number of distinct days</strong> during the month;</li>
+<li>then, if still tied, <strong>alphabetical order of username</strong>.</li>
+</ul>
+<p>The leaderboard displayed in the application is authoritative. Where the display and the server data diverge, the server data prevails.</p>
+
+<h2>7. Prize</h2>
+<p>The prize is <strong>one (1) copy of the video game EA SPORTS FC 27</strong>, standard edition, in <strong>digital form</strong>.</p>
+<ul>
+<li>The <strong>platform is the winner's choice</strong>, among those on which the game is sold at the time of delivery.</li>
+<li>Should the game be unavailable on the chosen platform, or no longer on sale, the Organiser will instead provide a <strong>digital gift card of equivalent commercial value</strong>, usable on the chosen platform's store.</li>
+<li>The prize value corresponds to the <strong>retail price of the standard edition on the day it is awarded</strong>.</li>
+</ul>
+<p>The prize is <strong>personal to the winner</strong>. It cannot be exchanged, transferred, returned, or converted into cash, in whole or in part.</p>
+<p>A single prize is awarded for the whole contest.</p>
+
+<h2>8. Announcement and delivery of the prize</h2>
+<p>The winner is announced in the application, in the <strong>Hall of Fame</strong> section of the Leaderboard tab, at the end of the month. They also receive a <strong>notification</strong> if notifications are enabled on their device.</p>
+<p>The winner has <strong>thirty (30) calendar days</strong> from the announcement to claim the prize, by writing to <span class="email">contact@goatfc.online</span>.</p>
+<div class="box">
+<p><strong>How to prove the winning account is yours.</strong> GOAT FC asks for no email and no password: your account is identified only by your username and by a <strong>recovery code</strong> in the form <strong>GOATFC-XXXX-XXXX</strong>, given to you when your account was created and available at any time in the <strong>Profile</strong> tab.</p>
+<p>That code is the only element known to you alone. You are therefore asked to include it with your claim: it is what prevents someone else from claiming a prize in your place.</p>
+</div>
+<div class="warning">
+<p><strong>Never share this code with anyone other than the Organiser, and only at <span class="email">contact@goatfc.online</span>.</strong> Anyone holding it can take over your account on their own device. The Organiser will never ask you for this code through any other channel, and never outside a prize claim you initiated yourself.</p>
+</div>
+<p>The prize is delivered electronically, to the email address from which the claim was made, within <strong>thirty (30) days</strong> of the claim being validated.</p>
+<p><strong>If thirty days pass without a claim</strong>, or if the winner cannot be identified, or declines the prize, it is awarded to the next-ranked participant, under the same terms and the same deadline.</p>
+
+<h2>9. Fraud and disqualification</h2>
+<p>The Organiser reserves the right to remove from the leaderboard, without notice, any participant who:</p>
+<ul>
+<li>uses <strong>several accounts</strong> to compete;</li>
+<li>uses an <strong>automated process</strong>, a modified version of the application, or any manipulation of the scores sent to the server;</li>
+<li>exploits a <strong>technical fault</strong> in the application to obtain points;</li>
+<li>has adopted a <strong>username</strong> or behaviour contrary to the terms of service.</li>
+</ul>
+<p>Scores plainly incompatible with a game mode's rules are excluded from the calculation. A removed participant may claim no compensation, and the prize goes to the next participant in the ranking.</p>
+
+<h2>10. No affiliation</h2>
+<p>This contest is in no way sponsored, administered, endorsed by, or associated with:</p>
+<ul>
+<li><strong>Electronic Arts Inc.</strong> — EA SPORTS and EA SPORTS FC are trademarks of Electronic Arts Inc. The game is the contest prize; its publisher is neither organiser, partner, nor sponsor;</li>
+<li><strong>Instagram and Meta Platforms, Inc.</strong>;</li>
+<li><strong>TikTok and ByteDance Ltd.</strong>;</li>
+<li><strong>Apple Inc.</strong> and <strong>Google LLC</strong>, nor their respective app stores.</li>
+</ul>
+<p>Participants acknowledge that these companies bear no responsibility whatsoever in relation to this contest, and that any question, claim or comment must be addressed to the Organiser alone.</p>
+
+<h2>11. Personal data</h2>
+<p>Taking part requires <strong>no personal data beyond ordinary use of the application</strong>: the leaderboard relies on the username and scores already processed as part of the game.</p>
+<p>Data is requested only <strong>when the prize is claimed</strong>, and solely in order to deliver it: a contact email address and, where applicable, confirmation of parental authorisation for a minor. That data is kept for as long as needed to deliver the prize and to meet the related accounting and evidential obligations, then deleted.</p>
+<p>Personal data processing is described in full in the <a href="/privacy">privacy policy</a>, which also explains how to exercise your rights of access, rectification, erasure and objection.</p>
+
+<h2>12. Liability</h2>
+<p>The Organiser cannot be held liable for network failures, participant hardware faults, service interruptions, data loss, or any other event beyond its control preventing a participant from playing or from being ranked.</p>
+<p>Nor can the Organiser be held liable for the use made of the prize once delivered, or for the terms of use of the platform on which the prize is redeemed.</p>
+
+<h2>13. Amendment, suspension, cancellation</h2>
+<p>The Organiser reserves the right to <strong>amend, shorten, extend, suspend or cancel</strong> the contest should circumstances require, in particular in cases of force majeure or of any event making its normal running impossible.</p>
+<p>Any amendment is published as an <strong>update to these rules</strong> at this same address, with its date. No amendment may deprive an already-designated winner of the prize due to them.</p>
+
+<h2>14. Acceptance of the rules</h2>
+<p>Taking part in the contest implies <strong>full and unreserved acceptance of these rules</strong>, as well as of the GOAT FC <a href="/terms">terms of service</a>.</p>
+
+<h2>15. Governing law and claims</h2>
+<p>These rules are governed by <strong>French law</strong>.</p>
+<p>Any claim relating to the contest must be sent to <span class="email">contact@goatfc.online</span> within thirty (30) days of the end of the contest. An amicable solution will be sought first.</p>
+<p>You may also use the European online dispute resolution platform: <a href="https://ec.europa.eu/consumers/odr" target="_blank" rel="noopener noreferrer">ec.europa.eu/consumers/odr</a></p>
+
+<h2>16. Contact</h2>
+<p>For any question about the contest:</p>
+<div class="box">
+<span class="email">contact@goatfc.online</span>
+</div>
+</section>
+
+<footer>
+<a href="/">← Retour à GOAT FC</a><br><br>
+© 2026 GOAT FC · <a href="/privacy">Confidentialité</a> · <a href="/terms">CGU</a>
+</footer>
+
+</div>
+
+<script>
+function show(lang) {
+  document.getElementById('content-fr').classList.toggle('hidden', lang !== 'fr');
+  document.getElementById('content-en').classList.toggle('hidden', lang !== 'en');
+  document.getElementById('btn-fr').classList.toggle('active', lang === 'fr');
+  document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+  document.documentElement.lang = lang;
+}
+if (navigator.language && navigator.language.startsWith('en')) show('en');
+</script>
+
+</body>
+</html>

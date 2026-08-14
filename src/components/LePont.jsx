@@ -11663,6 +11663,17 @@ export default function LePont() {
             <span style={{fontSize:14,color:"rgba(255,255,255,.45)"}}>↗</span>
           </a>
 
+          {/* Le règlement du concours se range AVEC les autres textes de
+              référence, et non dans l'écran du classement : un joueur qui
+              cherche ses droits vient au profil, comme il vient y chercher ses
+              CGU. C'est aussi ici qu'il trouve son code de récupération, dont le
+              règlement fait la preuve d'identité au moment de réclamer le lot. */}
+          <a href="/reglement" target="_blank" rel="noopener noreferrer" style={ligneCompte}>
+            <span style={{fontSize:18}}>🏆</span>
+            <div style={{flex:1}}>{tr("Règlement du concours","Contest Rules","Teilnahmebedingungen","Regolamento del concorso","Regulamento do concurso","Bases del concurso")}</div>
+            <span style={{fontSize:14,color:"rgba(255,255,255,.45)"}}>↗</span>
+          </a>
+
           {/* Zone danger — panneau de nuit comme les autres : sur la pelouse
               éclairée, le rouge délavé à 14 % tournait au brun sale. C'est le
               lettrage du titre et l'aplat du bouton qui portent l'alerte, le
@@ -15606,7 +15617,7 @@ export default function LePont() {
         {/* Footer discret : version + liens légaux */}
         {/* Même raison que le libellé du carrousel : posé à nu sur l'or. */}
         <div style={{textAlign:"center",padding:"8px 0 2px",fontSize:10,color:"rgba(8,17,9,.55)",letterSpacing:1.5,flexShrink:0}}>
-          GOAT FC · <a href="/privacy/" target="_blank" rel="noopener noreferrer" style={{color:"rgba(8,17,9,.78)",textDecoration:"underline"}}>{tr("Confidentialité","Privacy","Datenschutz","Privacy","Privacidade","Privacidad")}</a> · <a href="/terms/" target="_blank" rel="noopener noreferrer" style={{color:"rgba(8,17,9,.78)",textDecoration:"underline"}}>{tr("Conditions","Terms","Bedingungen","Termini","Termos","Términos")}</a> · <span style={{opacity:.75}}>{__BUILD__}</span>
+          GOAT FC · <a href="/privacy/" target="_blank" rel="noopener noreferrer" style={{color:"rgba(8,17,9,.78)",textDecoration:"underline"}}>{tr("Confidentialité","Privacy","Datenschutz","Privacy","Privacidade","Privacidad")}</a> · <a href="/terms/" target="_blank" rel="noopener noreferrer" style={{color:"rgba(8,17,9,.78)",textDecoration:"underline"}}>{tr("Conditions","Terms","Bedingungen","Termini","Termos","Términos")}</a> · <a href="/reglement/" target="_blank" rel="noopener noreferrer" style={{color:"rgba(8,17,9,.78)",textDecoration:"underline"}}>{tr("Règlement","Contest rules","Teilnahmebedingungen","Regolamento","Regulamento","Bases")}</a> · <span style={{opacity:.75}}>{__BUILD__}</span>
         </div>
 
       </div>
