@@ -23,7 +23,8 @@
     "ios:open": "npx cap open ios",
     "coque": "node scripts/coque-native.mjs",
     "coque:verifie": "node scripts/coque-native.mjs --verifie",
-    "store": "node scripts/visuels-store.mjs"
+    "store": "node scripts/visuels-store.mjs",
+    "ios:visuels": "node scripts/visuels-ios.mjs"
   },
   "dependencies": {
     "@capacitor/app": "^8.1.1",
