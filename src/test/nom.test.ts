@@ -35,15 +35,53 @@ describe("fuzzyNom", () => {
     expect(fuzzyNom("Zidane", "Ribery")).toBe(false);
   });
 
-  // Limite connue, antérieure à l'extraction du helper : le seuil tolère une
-  // faute dès qu'un mot fait moins de six lettres, donc deux noms courts qui ne
-  // diffèrent que d'un caractère se rejoignent. « Kane » est accepté pour
-  // « Kanté ». Le test la fixe plutôt que de la taire — resserrer le seuil
-  // ferait perdre les vraies fautes de frappe sur les noms courts, c'est un
-  // arbitrage à trancher, pas un oubli.
-  it("confond encore des noms proches d'une ou deux lettres", () => {
-    expect(fuzzyNom("Kane", "Kanté")).toBe(true);
-    expect(fuzzyNom("Haaland", "Holland")).toBe(true);
+  // ── L'ARBITRAGE, TRANCHÉ ────────────────────────────────────────────────
+  //
+  // La version précédente de ce test FIXAIT la limite au lieu de la corriger :
+  // « Kane » était accepté pour « Kanté », et le commentaire disait que
+  // resserrer le seuil ferait perdre les vraies fautes de frappe — « un
+  // arbitrage à trancher ».
+  //
+  // Il a été tranché par une mesure, provoquée par un signalement de joueur
+  // (« pepe » sur FC Porto). Sur les 5 622 joueurs de la base, le seuil d'une
+  // faute pour les noms de moins de six lettres confondait huit paires de
+  // joueurs RÉELLEMENT DIFFÉRENTS : Gavi ↔ Xavi, Bento ↔ Beto, Zico ↔ Zizo,
+  // Kaká ↔ Kaku, Zico ↔ Pico, Isi ↔ Pizzi, Jonny ↔ Doni, Pizzi ↔ Pirri.
+  //
+  // Accepter Xavi quand la réponse est Gavi n'est pas de l'indulgence envers
+  // une faute de frappe : c'est une mauvaise réponse comptée juste, donc un
+  // score faussé, donc un classement faussé. Le seuil passe à zéro sous six
+  // lettres, et les huit paires disparaissent.
+  //
+  // Ce que ça NE coûTE PAS : la tolérance sur les noms longs, qui est là où les
+  // fautes de frappe arrivent vraiment — les deux cas ci-dessus le vérifient.
+  it("ne confond plus deux joueurs dont le nom court diffère d'une lettre", () => {
+    expect(fuzzyNom("Kane", "Kanté")).toBe(false);
+    expect(fuzzyNom("Gavi", "Xavi")).toBe(false);
+    expect(fuzzyNom("pepe", "Pelé")).toBe(false);
+    // Et un nom court reste évidemment accepté quand il est juste.
+    expect(fuzzyNom("Pedri", "Pedri")).toBe(true);
+    expect(fuzzyNom("pedri", "Pedri")).toBe(true);
+  });
+
+  // ── CE QUI RESTE, ET QUI N'EST PAS RÉGLÉ ────────────────────────────────
+  //
+  // Le seuil reste de deux fautes entre six et onze lettres, et de trois
+  // au-delà. Sur la base entière, 268 paires de joueurs distincts se rejoignent
+  // encore — dont Jude Bellingham ↔ Jobe Bellingham, Nico González ↔ Nicolás
+  // González, Diogo Costa ↔ Diego Costa, Lionel Messi ↔ Lionel Mpasi.
+  //
+  // Aucun seuil proportionnel à la longueur ne peut les séparer : les deux
+  // Bellingham diffèrent de deux caractères sur quatorze. Il faudrait comparer
+  // PRÉNOM et NOM séparément, avec le seuil appliqué à chaque partie — les
+  // frères se sépareraient alors sur « jude » contre « jobe », quatre lettres,
+  // seuil zéro.
+  //
+  // Ce test fixe la limite en attendant cette refonte, pour qu'elle ne se
+  // redécouvre pas par un signalement de joueur.
+  it("limite connue : deux noms complets proches se rejoignent encore", () => {
+    expect(fuzzyNom("Jude Bellingham", "Jobe Bellingham")).toBe(true);
+    expect(fuzzyNom("Lionel Messi", "Lionel Mpasi")).toBe(true);
   });
 });
 

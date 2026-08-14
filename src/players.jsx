@@ -130,7 +130,11 @@ export const PLAYERS = [
   // Eredivisie / Liga Portugal
   { name:"Mauro Júnior", clubs:["PSV Eindhoven"], diff:"expert", nationalities:["Brésil"], positions:["defenseur"], birthYear:1998 },
   { name:"Walter Benítez", clubs:["Quilmes", "Nice", "PSV Eindhoven"], diff:"expert", nationalities:["Argentine"], positions:["gardien"], birthYear:1993 },
-  { name:"Pepê (Porto)", clubs:["Grêmio", "Porto"], diff:"expert", nationalities:["Brésil"], positions:["attaquant"], birthYear:1997 },
+  // Homonyme désambiguïsé par la NATIONALITÉ et non par le club, comme
+  // « Pepe (Portugal) » et « Luis Suárez (Espagne) ». Il s'appelait
+  // « Pepê (Porto) », et ce nom donnait la réponse : dans The Mercato on doit
+  // citer les clubs du joueur affiché, or il n'en a que deux — Grêmio et Porto.
+  { name:"Pepê (Brésil)", clubs:["Grêmio", "Porto"], diff:"expert", nationalities:["Brésil"], positions:["attaquant"], birthYear:1997 },
   { name:"Stephen Eustáquio", clubs:["Leixões", "Chaves", "Paços de Ferreira", "Cruz Azul", "Porto"], diff:"expert", nationalities:["Canada"], positions:["milieu"], birthYear:1996 },
   { name:"Wendell", clubs:["Grêmio", "Bayer Leverkusen", "Porto"], diff:"expert", nationalities:["Brésil"], positions:["defenseur"], birthYear:1993 },
   { name:"Anatoliy Trubin", clubs:["Shakhtar Donetsk", "Benfica", "Shakhtar Donetsk"], diff:"expert", nationalities:["Ukraine"], positions:["gardien"], birthYear:2001 },
