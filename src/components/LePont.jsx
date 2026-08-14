@@ -2131,6 +2131,15 @@ function matchClub(input,playerClubs){
   }
   return null;
 }
+// ── OUVERT AUX ESSAIS ──────────────────────────────────────────────────────
+// `matchClub` décide si la réponse d'un joueur est bonne. C'est la règle la plus
+// centrale du Mercato, et elle n'était éprouvée nulle part : un signalement
+// (« Porto refusé ») ne pouvait donc être ni reproduit ni écarté autrement qu'en
+// relisant le code. On l'expose pour que le banc d'essai interroge LA fonction
+// et non une copie — une copie finit toujours par diverger de l'originale, et
+// c'est exactement le jour où elle diverge que l'essai ment.
+export const __regles = { matchClub, CLUB_ALIASES, checkGuess };
+
 // Index nom → joueur : la sélection de la chaîne interroge des dizaines de noms
 // par coup, et un find() linéaire sur ~4800 entrées à chaque fois coûtait cher.
 const PLAYER_BY_NAME = new Map(PLAYERS_CLEAN.map(function(p){ return [p.name, p]; }));

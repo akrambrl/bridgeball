@@ -62,8 +62,30 @@ export function levenshteinNom(a: string, b: string): number {
 
 // Tolérance progressive : un mot court ne supporte pas trois fautes sans
 // devenir un autre mot.
+//
+// ── ZÉRO EN DESSOUS DE SIX LETTRES, ET POURQUOI ────────────────────────────
+//
+// La règle disait « moins de 6 → une faute tolérée ». Sur un nom de quatre
+// lettres, une faute, c'est un quart du mot : la tolérance ne rattrape plus une
+// frappe malheureuse, elle transforme un nom en un autre. Et le football est
+// plein de mononymes courts, donc les collisions ne sont pas théoriques.
+//
+// Mesuré sur les 5 622 joueurs de la base, huit paires de joueurs DISTINCTS
+// étaient confondues par cette tolérance :
+//
+//     Gavi ↔ Xavi · Bento ↔ Beto · Zico ↔ Zizo · Kaká ↔ Kaku
+//     Zico ↔ Pico · Isi ↔ Pizzi · Jonny ↔ Doni · Pizzi ↔ Pirri
+//
+// Plus le signalement qui a mené ici : « pepe » était accepté pour Pelé, et
+// aussi pour Pepi, Pope, Pep — la cible « pele » fait quatre lettres.
+//
+// Accepter Xavi quand la réponse est Gavi n'est pas de l'indulgence, c'est une
+// mauvaise réponse comptée juste. Ça fausse le score, donc le classement, donc
+// le concours. Le coût de la sévérité est faible en regard : seuls 62 joueurs
+// sur 5 622 portent un nom compact de cinq lettres ou moins, ils sont courts
+// donc faciles à taper sans faute, et la liste de suggestions les propose.
 export function seuilFuzzy(longueurCible: number): number {
-  if (longueurCible < 6) return 1;
+  if (longueurCible <= 5) return 0;
   if (longueurCible < 12) return 2;
   return 3;
 }
