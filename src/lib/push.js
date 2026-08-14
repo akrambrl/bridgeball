@@ -365,3 +365,47 @@ export function grouperPar(lignes, cle) {
 export function tagDuJour(jour) {
   return "goatfc-devinette-" + jour;
 }
+
+/**
+ * Le service de push d'un abonnement. C'est un FAIT, contrairement à `platform`.
+ *
+ * `platform` est déclarée par l'app d'après l'agent utilisateur ; l'hôte de
+ * l'endpoint est décidé par le navigateur qui a créé l'abonnement et ne peut pas
+ * se tromper sur lui-même.
+ */
+export function hoteAbonnement(endpoint) {
+  try { return new URL(endpoint).host; } catch (e) { return "?"; }
+}
+
+/** Un endpoint servi par Apple — donc un appareil Apple, sans discussion. */
+export function servaitParApple(endpoint) {
+  return /(^|\.)push\.apple\.com$/i.test(hoteAbonnement(endpoint));
+}
+
+/**
+ * Sépare les abonnements ANDROID des abonnements Apple, pour une campagne qui ne
+ * concerne qu'Android — un test fermé Play, par exemple.
+ *
+ * Pourquoi ce tri existe : envoyer « deviens testeur Android » à un joueur
+ * iPhone, c'est lui promettre ce qu'il ne peut pas faire, et une permission de
+ * notification refusée ne se redemande pas. Le coût d'une erreur est donc
+ * définitif, ce qui justifie de trancher sur le seul signal fiable.
+ *
+ * LE SERVICE PRIME SUR LA DÉCLARATION, dans les deux sens :
+ *  • service Apple + platform « android » → ÉCARTÉ. La déclaration se trompe.
+ *  • service Google + platform « ios »    → GARDÉ, et signalé. C'est
+ *    vraisemblablement un Chrome sur Android que la détection d'agent
+ *    utilisateur a mal rangé.
+ *
+ * Les abonnements « desktop » sont gardés : quelqu'un qui joue assez pour avoir
+ * accepté les notifications sur son PC a très probablement un téléphone.
+ */
+export function ciblerAndroid(abonnes) {
+  const cibles = [], apple = [], desaccords = [];
+  for (const a of abonnes || []) {
+    if (servaitParApple(a && a.endpoint)) { apple.push(a); continue; }
+    if (a && a.platform === "ios") desaccords.push(a);
+    cibles.push(a);
+  }
+  return { cibles, apple, desaccords };
+}
