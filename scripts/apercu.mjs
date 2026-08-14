@@ -969,6 +969,87 @@ if (ecran === "profil" || ecran === "comment-jouer" || ecran === "ecran-accueil"
   await page.waitForTimeout(1600);
 }
 
+// ── LE PROFIL DÉFILE-T-IL VRAIMENT ? ──────────────────────────────────────
+//
+// Signalé par les testeurs Android : impossible de défiler sur le profil, donc
+// impossible d'atteindre « Mon code de récupération » — et ce code est ce qui
+// permet de retrouver son compte après une installation, puisque le stockage de
+// la coque native est séparé de celui du navigateur. Un profil qui ne défile pas
+// enferme donc le joueur dans un compte vide.
+//
+// Le contrôle ne se contente pas de mesurer un débordement : il DÉFILE et vérifie
+// que le bouton devient visible. Un conteneur peut déborder ET refuser de
+// défiler — c'est précisément le défaut qu'on cherche.
+if (ecran === "profil") {
+  const diag = await page.evaluate(() => {
+    const bouton = [...document.querySelectorAll("button")].find((b) =>
+      /code de r|recovery code|Wiederherstellungscode|codice di recupero|c(ó|o)digo de recupera/i.test(b.textContent || ""));
+    if (!bouton) return { erreur: "bouton du code de récupération introuvable" };
+
+    // Qui est censé défiler ? On remonte la chaîne et on note le premier ancêtre
+    // qui déborde, avec son overflow — la cause se lit là.
+    const chaine = [];
+    for (let e = bouton.parentElement; e; e = e.parentElement) {
+      const st = getComputedStyle(e);
+      chaine.push({
+        balise: e.tagName.toLowerCase(),
+        overflowY: st.overflowY,
+        hauteur: Math.round(e.clientHeight),
+        contenu: Math.round(e.scrollHeight),
+        deborde: e.scrollHeight - e.clientHeight > 2,
+      });
+      if (chaine.length >= 4) break;
+    }
+    const doc = document.scrollingElement;
+    return {
+      fenetre: window.innerHeight,
+      boutonTop: Math.round(bouton.getBoundingClientRect().top),
+      visibleAvant: bouton.getBoundingClientRect().top < window.innerHeight,
+      chaine,
+      docDeborde: doc.scrollHeight - doc.clientHeight,
+      docOverflow: getComputedStyle(doc).overflowY,
+    };
+  });
+
+  if (diag.erreur) { console.warn("profil :", diag.erreur); process.exitCode = 1; }
+  else {
+    console.log("── le code de récupération est à " + diag.boutonTop + " px, fenêtre "
+      + diag.fenetre + " px" + (diag.visibleAvant ? "  (déjà visible)" : "  → hors écran"));
+    console.log("   document : déborde de " + diag.docDeborde + " px, overflow-y " + diag.docOverflow);
+    for (const c of diag.chaine) {
+      console.log("   " + c.balise.padEnd(4) + " overflow-y " + c.overflowY.padEnd(8)
+        + " hauteur " + String(c.hauteur).padStart(5) + " contenu " + String(c.contenu).padStart(5)
+        + (c.deborde ? "  ← déborde" : ""));
+    }
+
+    // ON DÉFILE POUR DE VRAI, à la molette comme le ferait un doigt, et on
+    // regarde si le bouton se rapproche. `scrollIntoView` ne prouverait rien :
+    // il déplace le contenu même dans un conteneur qu'un utilisateur ne peut pas
+    // faire défiler.
+    await page.mouse.move(200, 400);
+    for (let i = 0; i < 12; i++) await page.mouse.wheel(0, 400);
+    await page.waitForTimeout(400);
+    const apres = await page.evaluate(() => {
+      const b = [...document.querySelectorAll("button")].find((x) =>
+        /code de r|recovery code|Wiederherstellungscode|codice di recupero|c(ó|o)digo de recupera/i.test(x.textContent || ""));
+      return b ? Math.round(b.getBoundingClientRect().top) : null;
+    });
+    const bouge = apres !== null && Math.abs(apres - diag.boutonTop) > 20;
+    const atteint = apres !== null && apres < diag.fenetre - 8;
+    console.log("   après 12 crans de molette : le bouton est à " + apres + " px");
+    if (diag.visibleAvant) {
+      console.log("profil : le code est visible sans défiler ✅");
+    } else if (atteint) {
+      console.log("profil : le code devient atteignable en défilant ✅"
+        + (bouge ? "" : " (mais rien n'a bougé, à revérifier)"));
+    } else {
+      console.warn("❌ profil : le code de récupération reste HORS ÉCRAN même après"
+        + " défilement — c'est le défaut signalé par les testeurs Android.");
+      process.exitCode = 1;
+    }
+  }
+}
+
 if (ecran === "pseudo-refuse") {
   // La modale de pseudo ne s'ouvre pas d'elle-même sur l'accueil : c'est l'avatar
   // de l'en-tête qui l'appelle quand aucun pseudo n'est confirmé. Sans ce clic,

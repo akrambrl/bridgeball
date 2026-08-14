@@ -9319,6 +9319,39 @@ export default function LePont() {
     boxShadow:"0 0 60px rgba(0,0,0,.5)",
   };
   const stripes = {position:"absolute",inset:0,zIndex:0,pointerEvents:"none",background:"radial-gradient(ellipse at 50% 0%,rgba(0,230,118,.06) 0%,transparent 70%)"};
+  // ── UN ÉCRAN QUI DÉFILE DOIT AVOIR UNE HAUTEUR, PAS SEULEMENT UN OVERFLOW ──
+  //
+  // Signalé par les testeurs Android : impossible de défiler sur le profil, donc
+  // impossible d'atteindre « Mon code de récupération » — le seul moyen de
+  // retrouver son compte après une installation, le stockage de la coque native
+  // étant séparé de celui du navigateur.
+  //
+  // MESURÉ sur l'écran profil en 393×852 : le conteneur portait bien
+  // `overflowY:"auto"`, et pourtant sa hauteur valait 1942 px pour un contenu de
+  // 1942 px — il ne défilait pas. `shell` ne pose qu'un `minHeight:"100dvh"` :
+  // sans hauteur DÉFINIE, la boîte grandit jusqu'à son contenu et ne devient
+  // jamais une zone de défilement. Ce qui défilait, c'était le DOCUMENT.
+  //
+  // Sur un navigateur ça marche par accident. Dans une WebView, non — et le même
+  // piège est déjà documenté quelques lignes plus haut à propos de la barre de
+  // navigation Android : « comme tout tient dans la hauteur déclarée, le
+  // navigateur n'a rien à faire défiler ».
+  //
+  // Le motif était DÉJÀ dans ce fichier, appliqué à trois écrans sur seize.
+  // Le voici nommé une fois, pour que le prochain écran l'hérite au lieu de
+  // redécouvrir le défaut par un signalement.
+  //
+  // `WebkitOverflowScrolling:"touch"` avec : sans lui, le défilement d'un
+  // conteneur interne n'a pas d'inertie sur iOS et paraît cassé même quand il
+  // fonctionne.
+  const ecranDefilant = {
+    height: isDesktop ? "auto" : "100dvh",
+    overflowY: isDesktop ? "visible" : "auto",
+    // `overflowX:"hidden"` et jamais le raccourci `overflow` : voir shell, le
+    // lettrage penché élargit les boîtes de ~2,5 px de chaque côté.
+    overflowX: isDesktop ? "visible" : "hidden",
+    WebkitOverflowScrolling: "touch",
+  };
   // La feuille commune des écrans (fin de manche, fin de partie, classement,
   // compte…). Elle était le dernier grand panneau resté en « verre » : noir
   // translucide, flou d'arrière-plan, filet blanc à 8 % et ombre diffuse. Sur la
@@ -11130,7 +11163,7 @@ export default function LePont() {
       {retourCharte(function(){setShowDuelHistory(false);})}
       <div style={{...shell,animation:"fadeUp .4s ease",
         height:isDesktop?undefined:"100dvh",minHeight:isDesktop?shell.minHeight:0,
-        overflowY:isDesktop?"visible":"auto",overflowX:isDesktop?"visible":"hidden",background:fondCharte}} key="duelHistory">
+        ...ecranDefilant,background:fondCharte}} key="duelHistory">
         {areneCharte}
         <div style={{zIndex:3,position:"sticky",top:0,background:G.encre,borderBottom:G.traitFin,
           padding:"max(12px, env(safe-area-inset-top)) 20px 12px 70px",display:"flex",alignItems:"center",gap:12}}>
@@ -11254,7 +11287,7 @@ export default function LePont() {
           n'a alors aucun conteneur défilant auquel s'accrocher. */}
       <div style={{...shell,animation:"fadeUp .4s ease",
         height:isDesktop?undefined:"100dvh",minHeight:isDesktop?shell.minHeight:0,
-        overflowY:isDesktop?"visible":"auto",overflowX:isDesktop?"visible":"hidden",background:fondCharte}} key="friends">
+        ...ecranDefilant,background:fondCharte}} key="friends">
         {areneCharte}
         {duelCreateModal}
         {/* Modal confirmation suppression ami */}
@@ -11446,7 +11479,7 @@ export default function LePont() {
     return (
       <>
       {retourCharte(function(){setShowCollection(false);})}
-      <div style={{...shell,animation:"fadeUp .4s ease",height:isDesktop?undefined:"100dvh",minHeight:isDesktop?shell.minHeight:0,overflowY:isDesktop?"visible":"auto",overflowX:isDesktop?"visible":"hidden",background:fondCharte}} key="collection">
+      <div style={{...shell,animation:"fadeUp .4s ease",height:isDesktop?undefined:"100dvh",minHeight:isDesktop?shell.minHeight:0,...ecranDefilant,background:fondCharte}} key="collection">
         {areneCharte}
         {/* 64 px de retrait haut, et non 50 : le bouton retour de la charte est
             un carré de 44 px posé à 14 px du bord, donc il descend à 58 px. Un
@@ -11579,7 +11612,7 @@ export default function LePont() {
           d'avant la charte : son vert fluo n'existe plus dans les jetons. La
           pelouse éclairée le remplace, et c'est elle qui fait exister le trait
           d'encre des panneaux ci-dessous. */}
-      <div style={{...shell,animation:"fadeUp .4s ease",height:isDesktop?undefined:"100dvh",minHeight:isDesktop?shell.minHeight:0,overflowY:isDesktop?"visible":"auto",overflowX:isDesktop?"visible":"hidden",background:fondCharte}} key="account">
+      <div style={{...shell,animation:"fadeUp .4s ease",height:isDesktop?undefined:"100dvh",minHeight:isDesktop?shell.minHeight:0,...ecranDefilant,background:fondCharte}} key="account">
         {areneCharte}
         {/* Le titre descend sous le bouton retour : le lettrage d'affiche est plus
             large que l'ancien libellé et son contour d'encre venait toucher le
@@ -11696,7 +11729,7 @@ export default function LePont() {
           le bouton retour, qui est fixe, se pose toujours dessus. */}
       <div style={{...shell,animation:"fadeUp .4s ease",
         height:isDesktop?undefined:"100dvh",minHeight:isDesktop?shell.minHeight:0,
-        overflowY:isDesktop?"visible":"auto",overflowX:isDesktop?"visible":"hidden",background:fondCharte}} key="lb">
+        ...ecranDefilant,background:fondCharte}} key="lb">
         {areneCharte}
         <div style={{zIndex:3,position:"sticky",top:0,background:G.encre,borderBottom:G.traitFin,
         padding:"max(12px, env(safe-area-inset-top)) 20px 12px 70px",display:"flex",alignItems:"center",gap:12}}>
@@ -12047,7 +12080,7 @@ export default function LePont() {
       );
     }
     return (
-      <div style={{...shell,overflowY:isDesktop?"visible":"auto",overflowX:isDesktop?"visible":"hidden"}} key="room">
+      <div style={{...shell,...ecranDefilant}} key="room">
         <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
         {/* Bandes pelouse */}
         {/* Aplat de panneau : les bandes de tonte sont parties avec la pelouse.
@@ -12532,7 +12565,7 @@ export default function LePont() {
       msg = typeof fn === "function" ? fn(oppNameRoom) : fn;
     }
     return (
-      <div style={{...shell,animation:"fadeUp .4s ease",overflowY:isDesktop?"visible":"auto",overflowX:isDesktop?"visible":"hidden"}} key="roomResult2">
+      <div style={{...shell,animation:"fadeUp .4s ease",...ecranDefilant}} key="roomResult2">
         {/* Même fond que le résultat de duel 1v1 : ce sont deux écrans de fin de
             partie à plusieurs, en laisser un sombre se lirait comme un bug. */}
         {areneCharte}
@@ -12660,7 +12693,7 @@ export default function LePont() {
          classement — passe à la charte comme Mon profil : même pelouse, même
          barre d'encre, mêmes rectangles au trait plein. C'était l'écran juste
          derrière le classement, et il parlait encore l'ancienne langue. */
-      <div style={{...shell,overflowY:isDesktop?"visible":"auto",overflowX:isDesktop?"visible":"hidden",background:fondCharte}} key="userProfile">
+      <div style={{...shell,...ecranDefilant,background:fondCharte}} key="userProfile">
         {areneCharte}
         <div style={{zIndex:50,padding:"max(14px, env(safe-area-inset-top)) 16px 10px",display:"flex",alignItems:"center",gap:12,position:"sticky",top:0,background:G.encre,borderBottom:G.traitFin}}>
           <button onClick={()=>{const ret=profileReturn;setViewedProfile(null);setFriendMsg("");setProfileReturn(null);setScreen("home");if(ret==="leaderboard"){setShowLeaderboard(true);}else if(ret==="friends"){setShowFriends(true);}}} style={retourStyle}>←</button>
@@ -12841,7 +12874,7 @@ export default function LePont() {
   if(screen==="profile") return (
     // Même pelouse éclairée que le classement et Mon compte : sous le voile noir
     // à 70 % et le halo vert LED d'avant, aucun trait d'encre ne se voyait.
-    <div style={{...shell,overflowY:isDesktop?"visible":"auto",overflowX:isDesktop?"visible":"hidden",background:fondCharte}} key="profile">
+    <div style={{...shell,...ecranDefilant,background:fondCharte}} key="profile">
       {areneCharte}
 
       {/* Header — bandeau d'encre plutôt que verre flouté : la barre collante est
@@ -13197,7 +13230,7 @@ export default function LePont() {
     // du carrousel, seul bloc élastique : plutôt que de laisser l'écran
     // déborder, il l'écrasait. Maintenant que la carte a un plancher, le
     // débordement doit pouvoir se lire — d'où `auto`.
-    <div style={{...shell,animation:"fadeUp .5s ease",height:isDesktop?"auto":"100dvh",minHeight:isDesktop?"100vh":0,overflowY:isDesktop?"visible":"auto",overflowX:isDesktop?"visible":"hidden",
+    <div style={{...shell,animation:"fadeUp .5s ease",height:isDesktop?"auto":"100dvh",minHeight:isDesktop?"100vh":0,...ecranDefilant,
       background:fondCharte}}>
       {areneCharte}
       {pseudoModal}
@@ -15589,7 +15622,7 @@ export default function LePont() {
     const [ca2,cb2]=getClubColors(cur.c2);
     const tc1=textColor(ca1); const tc2=textColor(ca2);
     return (
-      <div style={{...shell,animation:"fadeIn .2s ease",overflowY:isDesktop?"visible":"auto",overflowX:isDesktop?"visible":"hidden",background:fondCharte}} key={"game-"+currentRound}>
+      <div style={{...shell,animation:"fadeIn .2s ease",...ecranDefilant,background:fondCharte}} key={"game-"+currentRound}>
         {/* Le terrain dessiné de la charte remplace les bandes opaques : elles
             recouvraient le fond et laissaient les panneaux sans trait visible. */}
         {areneCharte}
@@ -15748,7 +15781,7 @@ export default function LePont() {
     const [cla, clb] = chainLastClub ? getClubColors(chainLastClub) : ["#1a7a3a","#fff"];
     const clTagColor = chainLastClub ? textColor(cla) : "#fff";
     return (
-    <div style={{...shell,animation:"fadeIn .3s ease",overflowY:isDesktop?"visible":"auto",overflowX:isDesktop?"visible":"hidden",background:fondCharte}} key={"chain-"+chainCount}>
+    <div style={{...shell,animation:"fadeIn .3s ease",...ecranDefilant,background:fondCharte}} key={"chain-"+chainCount}>
         {/* Le terrain dessiné de la charte remplace les bandes opaques : elles
             recouvraient le fond et laissaient les panneaux sans trait visible. */}
         {areneCharte}
@@ -16002,7 +16035,7 @@ export default function LePont() {
   // ── CHAIN GAME TIMER BAR (injected via CSS position:fixed, already in game screen) ──
   // ── ROUND END ──
   if(screen==="roundEnd") return (
-    <div style={{...shell,animation:"fadeUp .4s ease",overflowY:isDesktop?"visible":"auto",overflowX:isDesktop?"visible":"hidden",background:fondCharte}} key="roundEnd">
+    <div style={{...shell,animation:"fadeUp .4s ease",...ecranDefilant,background:fondCharte}} key="roundEnd">
         {/* Terrain dessiné de la charte : les bandes opaques recouvraient le fond. */}
         {areneCharte}
       <div style={{zIndex:1,padding:"40px 20px 20px",textAlign:"center"}}>
@@ -16047,7 +16080,7 @@ export default function LePont() {
   );
 
   // ── FINAL ──
-const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{...shell,animation:"fadeUp .4s ease",overflowY:isDesktop?"visible":"auto",overflowX:isDesktop?"visible":"hidden",background:fondCharte}} key={isChain?"chainEnd":"final"}>
+const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{...shell,animation:"fadeUp .4s ease",...ecranDefilant,background:fondCharte}} key={isChain?"chainEnd":"final"}>
       {openNotifBanner}
       {pseudoModal}
       {recoveryCodeAfterCreationModal}
@@ -16301,7 +16334,7 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
     const myRank = duelResult.players.findIndex(function(p){return p.id===playerId;}) + 1;
     const iAbandoned = duelResult.myAbandoned === true;
     return (
-      <div style={{...shell,animation:"fadeUp .4s ease",overflowY:isDesktop?"visible":"auto",overflowX:isDesktop?"visible":"hidden"}} key="roomResult">
+      <div style={{...shell,animation:"fadeUp .4s ease",...ecranDefilant}} key="roomResult">
         <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
         {/* Bandes pelouse */}
         {/* Aplat de panneau : les bandes de tonte sont parties avec la pelouse.
@@ -16406,7 +16439,7 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
     const casePerdue = "#522218";  // rgba(217,58,43,.32) sur #12160F
     const caseGagnee = "#1A4525";  // rgba(42,155,78,.35) sur #12160F
     return (
-      <div style={{...shell,animation:"fadeUp .4s ease",overflowY:isDesktop?"visible":"auto",overflowX:isDesktop?"visible":"hidden",background:fondCharte}} key="duelResult">
+      <div style={{...shell,animation:"fadeUp .4s ease",...ecranDefilant,background:fondCharte}} key="duelResult">
         {/* Terrain dessiné de la charte, comme sur l'écran de fin solo. Ce qu'il
             remplace : un aplat `nuit` plein champ hérité de l'ancienne pelouse,
             avec ligne médiane, rond central et voile d'encre à 45 %. Cinq calques
