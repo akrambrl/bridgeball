@@ -1,0 +1,230 @@
+# Construit l'IPA iOS signé et le dépose sur TestFlight.
+#
+# ── POURQUOI DANS LE CLOUD, ET PAS SUR LE MAC ──────────────────────────────
+#
+# Xcode ne tourne que sur macOS, et il pèse ~15 Go. Le MacBook de développement
+# n'a même pas de JDK — installer Xcode et gérer les certificats à la main est le
+# chemin le plus sûr vers une semaine perdue. Les runners macOS de GitHub ont
+# Xcode préinstallé, et ce dépôt étant public, leurs minutes ne sont pas facturées.
+#
+# ── TROIS SECRETS, ET PAS SIX ──────────────────────────────────────────────
+#
+# La méthode classique demande d'exporter un certificat de distribution (.p12) et
+# un profil de provisionnement depuis un Mac, puis de les coller en secrets. On ne
+# fait PAS ça : `-allowProvisioningUpdates` avec une clé d'API App Store Connect
+# laisse Xcode créer et récupérer lui-même certificat et profil. Trois secrets au
+# lieu de six, et rien à exporter depuis une machine qui n'a pas Xcode.
+#
+#   APPSTORE_KEY_ID       l'identifiant de la clé (10 caractères)
+#   APPSTORE_ISSUER_ID    l'identifiant d'émetteur, un UUID
+#   APPSTORE_PRIVATE_KEY  le CONTENU du fichier .p8, en-têtes comprises
+#
+# Ces trois valeurs viennent d'App Store Connect → Utilisateurs et accès → Intégrations
+# → Clés API App Store Connect. Le .p8 ne se télécharge QU'UNE FOIS : perdu, il faut
+# révoquer la clé et en créer une autre. Voir docs/STORE-IOS.md.
+#
+# LA CLÉ NE DOIT PASSER PAR AUCUN AUTRE CANAL que le formulaire des secrets :
+# elle permet de déposer des versions sur le compte, et de les retirer.
+#
+# ── CE WORKFLOW N'A JAMAIS TOURNÉ ──────────────────────────────────────────
+#
+# Il ne peut pas l'être avant qu'un compte Apple Developer existe. Le premier
+# lancement est donc le premier vrai essai, exactement comme pour l'AAB — qui a
+# cassé sur un tiret double en 39 secondes. Deux garde-fous préventifs sont déjà
+# en place : le schéma partagé `App.xcscheme` est versionné (sans lui, xcodebuild
+# ne trouve aucun schéma sur un checkout neuf), et il n'y a pas de Podfile à
+# installer, Capacitor 8 étant passé à Swift Package Manager.
+name: IPA iOS
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_name:
+        description: "Version affichée aux joueurs (ex. 1.0.0)"
+        type: string
+        default: "1.0.0"
+      build_number:
+        description: "Numéro de build — laisser vide pour le numéro d'exécution"
+        type: string
+        default: ""
+      televerser:
+        description: "Déposer sur TestFlight (décocher pour ne construire que l'IPA)"
+        type: boolean
+        default: true
+
+# Deux archives simultanées se battraient pour le même numéro de build.
+concurrency:
+  group: ipa-ios
+  cancel-in-progress: false
+
+jobs:
+  construire:
+    runs-on: macos-15
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Installer les dépendances
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+        run: npm ci
+
+      # Les tests AVANT le build : une régression qui part sur TestFlight coûte un
+      # aller-retour de revue, et la revue est le seul délai qu'on ne contrôle pas.
+      - name: Tests
+        run: npx vitest run
+
+      - name: Construire les assets web
+        run: npm run build
+
+      - name: Synchroniser Capacitor
+        run: npx cap sync ios
+
+      - name: Vérifier ce que xcodebuild va trouver
+        # Le contrôle qui aurait évité le premier échec côté Android : on regarde
+        # AVANT de compiler que le schéma existe et que la cible répond. Un schéma
+        # absent donne « xcodebuild: error: The project does not contain a scheme
+        # named App », vingt minutes après le début du job sur un runner facturé.
+        run: |
+          set -euo pipefail
+          xcodebuild -project ios/App/App.xcodeproj -list
+          test -f ios/App/App.xcodeproj/xcshareddata/xcschemes/App.xcscheme \
+            || { echo "::error::Schéma partagé App.xcscheme absent du dépôt."; exit 1; }
+          echo "schéma partagé présent ✅"
+
+      - name: Numéroter la version
+        env:
+          NOM: ${{ inputs.version_name }}
+          BUILD: ${{ inputs.build_number }}
+        run: |
+          set -euo pipefail
+          BUILD="${BUILD:-}"
+          if [ -z "${BUILD}" ]; then BUILD="${GITHUB_RUN_NUMBER}"; fi
+          # App Store Connect refuse un numéro de build déjà déposé pour une même
+          # version, et il ne peut que MONTER. Le numéro d'exécution est
+          # strictement croissant et ne demande rien à personne.
+          cd ios/App
+          sed -i '' "s/MARKETING_VERSION = .*/MARKETING_VERSION = ${NOM};/" App.xcodeproj/project.pbxproj
+          sed -i '' "s/CURRENT_PROJECT_VERSION = .*/CURRENT_PROJECT_VERSION = ${BUILD};/" App.xcodeproj/project.pbxproj
+          grep -E "MARKETING_VERSION|CURRENT_PROJECT_VERSION" App.xcodeproj/project.pbxproj | sort -u
+
+      # ── LA CLÉ D'API ──────────────────────────────────────────────────────
+      # Écrite là où xcodebuild et altool la cherchent tous les deux. Le runner est
+      # détruit à la fin du job ; rien n'est jamais affiché.
+      - name: Poser la clé App Store Connect
+        env:
+          KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
+          ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
+          PRIVATE_KEY: ${{ secrets.APPSTORE_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "${KEY_ID}" ] || [ -z "${ISSUER_ID}" ] || [ -z "${PRIVATE_KEY}" ]; then
+            echo "::error::Un des trois secrets App Store Connect est vide ou absent."
+            echo "Voir l'en-tête de ce workflow, et docs/STORE-IOS.md."
+            exit 1
+          fi
+          mkdir -p ~/.appstoreconnect/private_keys
+          printf '%s' "${PRIVATE_KEY}" > ~/.appstoreconnect/private_keys/AuthKey_${KEY_ID}.p8
+          # Un .p8 mal copié se voit tout de suite à ses en-têtes : autant échouer
+          # ici, avec un message clair, qu'à l'archivage sur une erreur de signature.
+          head -1 ~/.appstoreconnect/private_keys/AuthKey_${KEY_ID}.p8 \
+            | grep -q "BEGIN PRIVATE KEY" \
+            || { echo "::error::Le secret APPSTORE_PRIVATE_KEY ne ressemble pas à un .p8 (en-tête BEGIN PRIVATE KEY absente)."; exit 1; }
+          echo "clé lisible ✅"
+
+      - name: Archiver
+        env:
+          KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
+          ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
+        run: |
+          set -euo pipefail
+          # -project et non -workspace : il n'y a pas de .xcworkspace, Capacitor 8
+          # utilisant Swift Package Manager plutôt que CocoaPods.
+          #
+          # -allowProvisioningUpdates avec la clé d'API : Xcode crée ou récupère
+          # lui-même le certificat de distribution et le profil. C'est ce qui évite
+          # d'exporter un .p12 depuis un Mac qui n'a pas Xcode.
+          xcodebuild -project ios/App/App.xcodeproj \
+            -scheme App \
+            -configuration Release \
+            -destination "generic/platform=iOS" \
+            -archivePath "${RUNNER_TEMP}/App.xcarchive" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath ~/.appstoreconnect/private_keys/AuthKey_${KEY_ID}.p8 \
+            -authenticationKeyID "${KEY_ID}" \
+            -authenticationKeyIssuerID "${ISSUER_ID}" \
+            archive
+
+      - name: Exporter l'IPA
+        env:
+          KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
+          ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
+        run: |
+          set -euo pipefail
+          cat > "${RUNNER_TEMP}/export.plist" <<'PLIST'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key><string>app-store-connect</string>
+            <key>destination</key><string>export</string>
+            <key>signingStyle</key><string>automatic</string>
+            <key>uploadSymbols</key><true/>
+          </dict>
+          </plist>
+          PLIST
+          xcodebuild -exportArchive \
+            -archivePath "${RUNNER_TEMP}/App.xcarchive" \
+            -exportPath "${RUNNER_TEMP}/export" \
+            -exportOptionsPlist "${RUNNER_TEMP}/export.plist" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath ~/.appstoreconnect/private_keys/AuthKey_${KEY_ID}.p8 \
+            -authenticationKeyID "${KEY_ID}" \
+            -authenticationKeyIssuerID "${ISSUER_ID}"
+          ls -lh "${RUNNER_TEMP}/export"
+
+      - name: Vérifier l'IPA avant de le déposer
+        # Sans signature valide, App Store Connect refuse APRÈS le téléversement.
+        # `altool --validate-app` fait le même contrôle qu'un dépôt, sans déposer :
+        # l'échec est immédiat et lisible au lieu d'arriver par e-mail une heure plus tard.
+        env:
+          KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
+          ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
+        run: |
+          set -euo pipefail
+          IPA=$(ls "${RUNNER_TEMP}"/export/*.ipa | head -1)
+          echo "IPA : ${IPA}"
+          xcrun altool --validate-app -f "${IPA}" -t ios \
+            --apiKey "${KEY_ID}" --apiIssuer "${ISSUER_ID}"
+          echo "IPA validé ✅"
+
+      - name: Déposer sur TestFlight
+        if: ${{ inputs.televerser }}
+        env:
+          KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
+          ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
+        run: |
+          set -euo pipefail
+          IPA=$(ls "${RUNNER_TEMP}"/export/*.ipa | head -1)
+          xcrun altool --upload-app -f "${IPA}" -t ios \
+            --apiKey "${KEY_ID}" --apiIssuer "${ISSUER_ID}"
+          echo "Déposé. Le traitement par Apple prend 5 à 30 minutes avant"
+          echo "que la version apparaisse dans TestFlight."
+
+      - name: Effacer la clé du runner
+        # Le runner est détruit de toute façon, mais un `if: always()` qui efface
+        # coûte une ligne et retire le fichier des étapes suivantes.
+        if: always()
+        run: rm -rf ~/.appstoreconnect/private_keys
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: goatfc-ipa-${{ inputs.version_name }}-${{ github.run_number }}
+          path: ${{ runner.temp }}/export/*.ipa
+          retention-days: 30
+          if-no-files-found: error
