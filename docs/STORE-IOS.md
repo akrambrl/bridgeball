@@ -5,9 +5,47 @@ Contrairement à Android, Apple **refuse** les simples « site web emballé » (
 vraie coque native, avec des **fonctions natives** et les assets **empaquetés**
 (l'app marche offline). C'est ce qui fait passer la revue.
 
-> ⚠️ Il faut un **Mac avec Xcode** pour builder iOS. Les étapes `npx cap …`
-> ci-dessous se font sur le Mac. Le reste (config, code natif, dépendances) est
-> déjà prêt dans le repo.
+> ✅ **Tu n'as PAS besoin d'installer Xcode.** Le workflow
+> `.github/workflows/ipa-ios.yml` construit l'IPA signé sur un runner macOS de
+> GitHub et le dépose sur TestFlight. Le dépôt étant public, ces minutes ne sont
+> pas facturées. Xcode ne devient utile que pour déboguer sur un simulateur.
+
+---
+
+## 🚦 L'ordre réel des choses, et le seul vrai bloquant
+
+| # | étape | délai | qui |
+|---|---|---|---|
+| 1 | **S'inscrire au Apple Developer Program — 99 $/an** | **24-48 h**, parfois plus (vérification d'identité) | toi |
+| 2 | Créer la clé d'API App Store Connect (3 secrets) | 5 min | toi |
+| 3 | Créer l'app dans App Store Connect (`fr.goatfc.app`) | 10 min | toi |
+| 4 | Lancer le workflow **IPA iOS** | ~20 min | un clic |
+| 5 | TestFlight interne (jusqu'à 100 testeurs) | immédiat, sans revue | toi |
+| 6 | Revue App Store | 1 à 3 jours | Apple |
+
+**Rien ne peut avancer avant le point 1**, pas même un essai du workflow.
+
+**Et la bonne nouvelle :** Apple n'a **aucune** exigence équivalente aux 12 testeurs
+pendant 14 jours de Google. TestFlight interne est immédiat. À compte égal, iOS
+sort donc PLUS VITE qu'Android.
+
+## 📱 iPhone SEUL, et c'est une décision datée
+
+`TARGETED_DEVICE_FAMILY` est passé de `"1,2"` à `"1"` le 14 août 2026.
+
+Motif, mesuré et non supposé : la mise en page à trois colonnes (celle qui
+s'active au-delà de 900 px de large) **ne remplit pas un iPad en portrait** — le
+contenu tient dans le haut du cadre et 60 % de l'écran reste du fond vide. Apple
+contrôle le rendu iPad dès qu'une app se déclare compatible, et une mise en page
+qui ne remplit pas est un motif de refus au titre du design.
+
+Ouvrir ce chantier à six semaines du lancement n'était pas le bon échange. L'iPad
+reste jouable dans le navigateur, comme aujourd'hui.
+
+**Pour le rétablir plus tard :** remettre `"1,2"`, adapter la mise en page large
+aux ratios hauts, puis `npm run ios:visuels -- --ipad`. Le contrôle des visuels
+LIT cette valeur dans le projet : remettre l'iPad sans refaire les captures fait
+échouer `npm run ios:visuels`, et non le téléversement chez Apple.
 
 ---
 
@@ -32,15 +70,16 @@ justement ce qu'Apple attend pour ne **pas** te refuser sous 4.2.
 
 ## 1. Générer le projet iOS (sur Mac)
 
+Le dossier `ios/` **existe déjà** dans le dépôt — `npx cap add ios` n'est plus à
+faire et écraserait la configuration. Sur un Mac, pour déboguer :
+
 ```bash
 npm install
-npm run build
-npx cap add ios         # crée le dossier ios/ (une seule fois)
 npm run ios:sync        # build web + copie dans la coque
 npm run ios:open        # ouvre Xcode
 ```
 
-À chaque modif du site ensuite : `npm run ios:sync`.
+À chaque modif du site ensuite : `npm run ios:sync`. Le workflow le fait seul.
 
 ## 2. Icônes & splash
 
@@ -59,7 +98,9 @@ Apple les ajoute). Ton `public/icon-512.png` peut servir de base (à re-génére
 
 - **Signing & Capabilities** : sélectionne ton **Team** (compte Apple Developer),
   Bundle Identifier `fr.goatfc.app`.
-- **Deployment Target** : iOS 14+ (16.4+ si tu actives le push web/natif).
+- **Deployment Target** : le projet est à **iOS 15.0** — relevé dans
+  `project.pbxproj`, et non supposé. Ce document annonçait « iOS 14+ ».
+  Il faudra 16.4+ le jour où tu activeras le push natif.
 - Lance sur un **simulateur** puis un **iPhone réel** pour vérifier haptique,
   splash, clavier, offline.
 
@@ -67,8 +108,15 @@ Apple les ajoute). Ton `public/icon-512.png` peut servir de base (à re-génére
 
 - **Apple Developer Program** : **99 $/an** (obligatoire).
 - **App Store Connect** → crée l'app (Bundle ID `fr.goatfc.app`).
-- **Captures d'écran** obligatoires : iPhone **6.7"** (1290×2796) et **6.5"**
-  (1242×2688).
+- **Captures d'écran** : `npm run ios:visuels` les rend et les CONTRÔLE, dans
+  `visuels/store-ios/`. Une seule taille iPhone est exigée — **6.9" en
+  1290×2796** — et Apple dérive les autres. L'ancienne version de ce document
+  demandait aussi du 6.5" en 1242×2688 : ce n'est plus nécessaire, et le second
+  format n'était même pas le bon. Vérifié sur la documentation d'App Store
+  Connect le 14 août 2026, en recroisant deux sources — un premier relevé
+  annonçait « 1260 × 2736 », un format qui ne correspond à aucun iPhone.
+- **Aucun canal alpha**, nulle part. Apple refuse. Play ne le refuse que sur sa
+  bannière, donc c'est un piège pour qui recopie les visuels d'un store à l'autre.
 - **App Privacy (nutrition labels)** — déclare les mêmes données que côté Android :
   - Pseudo, scores → *User Content / Identifiers*
   - **Pays via IP** (`ipapi.co`, tiers) → *Location (Coarse)*
@@ -77,7 +125,8 @@ Apple les ajoute). Ton `public/icon-512.png` peut servir de base (à re-génére
   - Indique : **pas de suivi publicitaire** (App Tracking Transparency non requis
     tant que tu ne traques pas cross-app).
 - **Suppression de compte** : Apple l'exige → déjà présente in-app ✅.
-- **Politique de confidentialité** : URL `https://goatfc.fr/privacy`.
+- **Politique de confidentialité** : `https://goatfc.fr/privacy/` — vérifiée
+  vivante (HTTP 200). L'adresse de contact qui y figure est `contact@goatfc.online`.
 - **Classification d'âge** : quiz → 4+, mais signale l'**interaction entre
   utilisateurs** (pseudos/duels) et prévois signalement/blocage.
 

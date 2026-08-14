@@ -18,15 +18,29 @@
 //     et iPad DÈS QUE l'app se déclare compatible iPad.
 //   • Apple n'a pas d'image de présentation façon bannière 1024×500.
 //
-// ── LA CAPTURE iPad EST OBLIGATOIRE ICI, ET CE N'EST PAS UN CHOIX ──────────
+// ── LA CAPTURE iPad EST EXIGÉE OU NON SELON LE PROJET, ET ON LE LIT ───────
 //
-// ios/App/App.xcodeproj porte `TARGETED_DEVICE_FAMILY = "1,2"`, soit iPhone ET
-// iPad. Apple exige alors au moins une capture iPad, et ses testeurs vérifieront
-// le rendu sur iPad — une mise en page cassée là est un motif de refus.
+// Apple exige au moins une capture iPad DÈS QUE l'app se déclare compatible iPad,
+// et ses testeurs vérifient alors le rendu sur iPad — une mise en page qui ne
+// remplit pas y est un motif de refus.
 //
-// Si on voulait s'en passer, il faudrait passer la famille à "1" (iPhone seul) et
-// renoncer aux utilisateurs iPad. Le rendu large de l'app existe et il est déjà
-// éprouvé côté Play (les captures 10 pouces), donc autant le garder.
+// Ce script ne suppose donc rien : il LIT `TARGETED_DEVICE_FAMILY` dans
+// ios/App/App.xcodeproj et en déduit ce qu'il exige. « 1 » = iPhone seul, « 1,2 »
+// = iPhone et iPad. Remettre l'iPad dans le projet sans refaire les captures
+// ferait échouer le téléversement chez Apple ; ici, ça fera échouer le contrôle,
+// ce qui coûte deux minutes au lieu d'un aller-retour.
+//
+// ── L'ÉTAT ACTUEL : iPhone SEUL, et c'est une décision ────────────────────
+//
+// La famille est passée à « 1 » le 14 août 2026, pour le lancement d'octobre.
+// Motif : la mise en page à trois colonnes ne remplit pas un iPad en PORTRAIT —
+// mesuré, 60 % de fond vide — et ouvrir ce chantier de mise en page à six
+// semaines du lancement n'était pas le bon échange. L'iPad reste jouable dans le
+// navigateur, comme aujourd'hui.
+//
+// Pour le rétablir plus tard : remettre « 1,2 », adapter la mise en page large
+// aux ratios hauts, puis `npm run ios:visuels -- --ipad`. Le code des captures
+// iPad est gardé exprès, il n'est plus appelé par défaut.
 //
 // ── LES TAILLES, VÉRIFIÉES ET NON RECOPIÉES DE MÉMOIRE ────────────────────
 //
@@ -66,16 +80,13 @@
 // (UISupportedInterfaceOrientations~ipad). On montre donc l'app dans
 // l'orientation où elle est à son avantage, sans rien inventer.
 //
-// ⚠️ RESTE ENTIER : un joueur qui tient son iPad en PORTRAIT verra bien ces 60 %
-//    de vide. Ce n'est pas un défaut de capture mais un défaut de mise en page, et
-//    Apple contrôle le rendu iPad dès qu'une app se déclare compatible. Trois
-//    issues possibles, à trancher : passer TARGETED_DEVICE_FAMILY à "1" (iPhone
-//    seul), retirer le portrait des orientations iPad, ou adapter la mise en page
-//    large aux ratios hauts. Voir docs/STORE-IOS.md.
+// C'est ce constat qui a fait passer la famille d'appareils à « 1 » : le vide en
+// portrait n'était pas un défaut de capture mais un défaut de mise en page, et
+// une capture flatteuse aurait masqué ce qu'un joueur aurait vraiment vu.
 
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { mkdir, readdir, stat, unlink, copyFile } from "node:fs/promises";
+import { mkdir, readdir, readFile, stat, unlink, copyFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
@@ -148,20 +159,55 @@ async function dimensions(chemin) {
   return { l: Number(l), h: Number(h), pix };
 }
 
+/**
+ * L'iPad est-il ciblé par le projet Xcode ?
+ *
+ * On le LIT au lieu de le supposer : c'est cette valeur qui décide si Apple
+ * exigera des captures iPad. Les deux configurations (Debug et Release) doivent
+ * dire la même chose — si elles divergent, c'est la Release qui compte, mais on
+ * le signale plutôt que de choisir en silence.
+ */
+async function ipadCible() {
+  const pbx = await readFile(join(racine, "ios", "App", "App.xcodeproj", "project.pbxproj"), "utf8");
+  const trouvees = [...pbx.matchAll(/TARGETED_DEVICE_FAMILY = "([^"]+)"/g)].map((m) => m[1]);
+  if (!trouvees.length) return { cible: null, familles: [] };
+  const familles = [...new Set(trouvees)];
+  return { cible: familles.some((f) => f.split(",").includes("2")), familles };
+}
+
 async function controler() {
   const fichiers = (await readdir(SORTIE).catch(() => [])).filter((f) => f.endsWith(".png")).sort();
   if (!fichiers.length) { dire(false, "aucune capture dans " + SORTIE); return; }
 
+  const { cible: ipad, familles } = await ipadCible();
+  if (ipad === null) {
+    dire(false, "TARGETED_DEVICE_FAMILY introuvable dans project.pbxproj");
+    return;
+  }
+  dire(familles.length === 1,
+    "famille d'appareils déclarée : " + familles.join(" et ") + "  → "
+    + (ipad ? "iPhone ET iPad" : "iPhone seul")
+    + (familles.length === 1 ? "" : "  ← les configurations divergent, à aligner"));
+
   // Dimensions EXACTES, contrairement à Play qui accepte une plage. Une capture
   // hors liste est refusée au téléversement, pas à la revue : l'erreur se paie
   // tout de suite, mais elle se paie.
+  //
+  // `requis` est DÉDUIT du projet : une capture iPad n'est obligatoire que si le
+  // projet se déclare compatible iPad. Remettre l'iPad sans refaire les captures
+  // échoue donc ici, et non chez Apple.
   const FAMILLES = [
-    { nom: "iPhone 6.9\"", motif: /^iphone-/, l: 1290, h: 2796 },
-    { nom: "iPad 13\"",    motif: /^ipad-/,   l: 2752, h: 2064 },
+    { nom: "iPhone 6.9\"", motif: /^iphone-/, l: 1290, h: 2796, requis: true },
+    { nom: "iPad 13\"",    motif: /^ipad-/,   l: 2752, h: 2064, requis: ipad },
   ];
 
   for (const f of FAMILLES) {
     const lot = fichiers.filter((x) => f.motif.test(x));
+    if (!f.requis && !lot.length) {
+      console.log("◦  " + f.nom + " : aucune capture, et aucune n'est exigée"
+        + " — le projet ne cible pas l'iPad");
+      continue;
+    }
     dire(lot.length >= 1 && lot.length <= 10,
       f.nom + " : " + lot.length + " capture(s) — Apple en accepte 1 à 10"
       + (lot.length ? "" : "  ← il en faut AU MOINS UNE"));
@@ -201,8 +247,13 @@ if (!VERIFIE) {
     console.log("── iPhone 6.9 pouces — 1290×2796");
     await capturerSerie(IPHONE, 430, 932, 3);
   }
-  console.log("── iPad 13 pouces en PAYSAGE — 2752×2064, la mise en page large");
-  await capturerSerie(IPAD, 1376, 1032, 2);
+  // La série iPad est DORMANTE : elle ne se rend qu'avec --ipad, le projet ne
+  // ciblant plus l'iPad. Le code reste là pour le jour où la mise en page large
+  // saura remplir un ratio haut — voir l'en-tête.
+  if (IPAD_SEUL) {
+    console.log("── iPad 13 pouces en PAYSAGE — 2752×2064, la mise en page large");
+    await capturerSerie(IPAD, 1376, 1032, 2);
+  }
   console.log();
 }
 await controler();
