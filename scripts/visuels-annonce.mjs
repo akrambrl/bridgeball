@@ -32,6 +32,13 @@
 // Pas de logo « EA SPORTS FC » non plus. Nommer le lot est un usage nominatif
 // légitime ; en reprendre l'identité visuelle ne l'est pas.
 //
+// L'adresse du règlement est DONNÉE EN ENTIER — goatfc.fr/reglement — et non
+// réduite au domaine. Quand ces textes ont été écrits, la page n'existait pas et
+// « sur goatfc.fr » était la seule chose honnête à dire. Elle existe maintenant :
+// renvoyer à l'accueil obligerait le lecteur à chercher, et un règlement qu'on
+// doit chercher est un règlement qu'on ne lit pas — c'est-à-dire exactement ce
+// que la mention est censée empêcher.
+//
 // Pas de date au jour près pour les stores. Une soumission passe par la revue
 // d'Apple, dont le délai ne t'appartient pas : « OCTOBRE 2026 » est une promesse
 // tenable, « 1ER OCTOBRE » ne l'est pas.
@@ -136,7 +143,7 @@ const ANNONCES = {
     corps: "Le meilleur joueur du classement mensuel gagne le jeu. "
          + "Tout le monde part à égalité le 1er septembre.",
     appel: "goatfc.fr",
-    mentions: "Concours de connaissances sans obligation d'achat · Règlement complet sur goatfc.fr · "
+    mentions: "Concours de connaissances sans obligation d'achat · Règlement complet sur goatfc.fr/reglement · "
             + "Jeu non sponsorisé, administré ni associé à Instagram ou TikTok · Lot dématérialisé, "
             + "plateforme au choix du gagnant ou carte cadeau de valeur équivalente.",
     mentionsArtwork: "EA SPORTS FC 27 est une marque d'Electronic Arts Inc., qui n'est ni "
@@ -172,7 +179,7 @@ Tout le monde part à égalité le 1er septembre. Le classement compte les point
 👉 Ça se joue sur goatfc.fr, sans rien installer.
 📱 Et l'appli arrive sur iOS et Android en octobre.
 
-Concours de connaissances sans obligation d'achat. Règlement complet sur goatfc.fr. Jeu non sponsorisé, administré ni associé à Instagram. Lot dématérialisé, plateforme au choix du gagnant ou carte cadeau de valeur équivalente.
+Concours de connaissances sans obligation d'achat. Règlement complet sur goatfc.fr/reglement. Jeu non sponsorisé, administré ni associé à Instagram. Lot dématérialisé, plateforme au choix du gagnant ou carte cadeau de valeur équivalente.
 
 #football #quizfoot #mercato #ligue1 #premierleague #jeuconcours #concours #goatfc`,
     tiktok: `Le n°1 du mois repart avec FC 27 🏆
@@ -180,7 +187,7 @@ Concours de connaissances sans obligation d'achat. Règlement complet sur goatfc
 Classement remis à zéro le 1er septembre — tout le monde part à égalité.
 Ça se joue sur goatfc.fr, appli iOS et Android en octobre 📱
 
-Règlement sur goatfc.fr · Sans obligation d'achat · Jeu non associé à TikTok
+Règlement sur goatfc.fr/reglement · Sans obligation d'achat · Jeu non associé à TikTok
 
 #football #quizfoot #mercato #footballtiktok #concours #goatfc`,
   },
