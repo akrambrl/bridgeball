@@ -18,7 +18,7 @@ Tout le monde part à égalité le 1er septembre. Le classement compte les point
 👉 Ça se joue sur goatfc.fr, sans rien installer.
 📱 Et l'appli arrive sur iOS et Android en octobre.
 
-Concours de connaissances sans obligation d'achat. Règlement complet sur goatfc.fr. Jeu non sponsorisé, administré ni associé à Instagram. Lot dématérialisé, plateforme au choix du gagnant ou carte cadeau de valeur équivalente.
+Concours de connaissances sans obligation d'achat. Règlement complet sur goatfc.fr/reglement. Jeu non sponsorisé, administré ni associé à Instagram. Lot dématérialisé, plateforme au choix du gagnant ou carte cadeau de valeur équivalente.
 
 #football #quizfoot #mercato #ligue1 #premierleague #jeuconcours #concours #goatfc
 ```
@@ -31,34 +31,7 @@ Le n°1 du mois repart avec FC 27 🏆
 Classement remis à zéro le 1er septembre — tout le monde part à égalité.
 Ça se joue sur goatfc.fr, appli iOS et Android en octobre 📱
 
-Règlement sur goatfc.fr · Sans obligation d'achat · Jeu non associé à TikTok
+Règlement sur goatfc.fr/reglement · Sans obligation d'achat · Jeu non associé à TikTok
 
 #football #quizfoot #mercato #footballtiktok #concours #goatfc
-```
-
-## stores
-
-### Instagram
-
-```
-📱 GOAT FC ARRIVE SUR iOS ET ANDROID — OCTOBRE 2026.
-
-Six modes, un classement mensuel, et des duels en direct contre tes potes.
-
-En attendant, tout est déjà jouable dans le navigateur sur goatfc.fr — et le classement de septembre est lancé, avec FC 27 pour le n°1 du mois. Autant prendre de l'avance.
-
-👉 goatfc.fr
-
-#football #quizfoot #mercato #ligue1 #premierleague #applifoot #goatfc
-```
-
-### TikTok
-
-```
-L'appli arrive en octobre 📱 iOS + Android
-
-6 modes, un classement du mois, des duels en direct.
-En attendant ça se joue déjà sur goatfc.fr 👉 et le n°1 de septembre repart avec FC 27
-
-#football #quizfoot #mercato #footballtiktok #goatfc
 ```
