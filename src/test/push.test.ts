@@ -6,7 +6,8 @@
 // traitement d'un refus du serveur de push.
 import { describe, it, expect } from "vitest";
 import { abonnementUtilisable, dedupeAbonnements, decisionEnvoi, decisionFinale, tagDuJour,
-         demandesANotifier, accrocheAmis, grouperPar, resumerCorps, repartitionHotes, pushARetransmettre, abonnementMortSelonCorps, corpsCleDUnAutreServeur } from "../lib/push.js";
+         demandesANotifier, accrocheAmis, grouperPar, resumerCorps, repartitionHotes, pushARetransmettre, abonnementMortSelonCorps, corpsCleDUnAutreServeur,
+         ciblerAndroid, servaitParApple } from "../lib/push.js";
 
 const abo = (id: string, endpoint: string, created_at: string) =>
   ({ id, endpoint, p256dh: "cle", auth: "auth", created_at });
@@ -509,5 +510,71 @@ describe("VapidPkHashMismatch : l'abonnement porte notre ANCIENNE clé", () => {
   it("un 400 sans corps reconnaissable continue d'alerter, jamais de purger", () => {
     // La règle reste étroite : ce qui n'est pas reconnu est rapporté, pas effacé.
     expect(decisionFinale(400, true, "Received unexpected response code")).toBe("alerter");
+  });
+});
+
+// ── LE CIBLAGE ANDROID ──────────────────────────────────────────────────────
+//
+// Ce tri décide qui reçoit « deviens testeur Android ». L'erreur coûte cher et
+// ne se rattrape pas : une permission de notification refusée ne se redemande
+// pas, donc promettre à un joueur iPhone ce qu'il ne peut pas faire est
+// définitif. D'où des tests sur les DEUX sens du désaccord entre le service de
+// push, qui est un fait, et `platform`, qui n'est qu'une déclaration de l'app.
+describe("ciblerAndroid", () => {
+  const ab = (endpoint: string, platform?: string) => ({ endpoint, platform } as any);
+  const APPLE = "https://web.push.apple.com/abc";
+  const FCM = "https://fcm.googleapis.com/fcm/send/abc";
+
+  it("écarte les abonnements servis par Apple", () => {
+    const r = ciblerAndroid([ab(APPLE, "ios"), ab(FCM, "android")]);
+    expect(r.cibles.length).toBe(1);
+    expect(r.cibles[0].endpoint).toBe(FCM);
+    expect(r.apple.length).toBe(1);
+  });
+
+  it("LE SERVICE PRIME : Apple + platform « android » est quand même écarté", () => {
+    // Le cas qui justifie de ne pas se fier à `platform` : un iPad qui se déclare
+    // Android aurait reçu la demande.
+    const r = ciblerAndroid([ab(APPLE, "android")]);
+    expect(r.cibles.length).toBe(0);
+    expect(r.apple.length).toBe(1);
+  });
+
+  it("l'inverse est GARDÉ et signalé : service Google + platform « ios »", () => {
+    // Vraisemblablement un Chrome sur Android mal rangé par la détection d'agent
+    // utilisateur. On le garde — le service ne se trompe pas — mais on le dit.
+    const r = ciblerAndroid([ab(FCM, "ios")]);
+    expect(r.cibles.length).toBe(1);
+    expect(r.desaccords.length).toBe(1);
+  });
+
+  it("garde les abonnements desktop", () => {
+    // Quelqu'un qui joue assez pour avoir accepté les notifications sur son PC a
+    // très probablement un téléphone Android.
+    const r = ciblerAndroid([ab("https://updates.push.services.mozilla.com/x", "desktop")]);
+    expect(r.cibles.length).toBe(1);
+    expect(r.desaccords.length).toBe(0);
+  });
+
+  it("un endpoint illisible n'est pas pris pour un appareil Apple", () => {
+    // Il part avec les cibles : l'envoi échouera de lui-même et la purge le
+    // traitera. Le classer chez Apple le rendrait invisible pour toujours.
+    const r = ciblerAndroid([ab("pas une url"), ab("", "android")]);
+    expect(r.apple.length).toBe(0);
+    expect(r.cibles.length).toBe(2);
+  });
+
+  it("ne se fait pas avoir par un hôte qui contient le nom d'Apple", () => {
+    // `push.apple.com.evil.test` n'est pas Apple. L'ancrage de fin de chaîne est
+    // ce qui distingue les deux.
+    expect(servaitParApple("https://web.push.apple.com/x")).toBe(true);
+    expect(servaitParApple("https://PUSH.APPLE.COM/x")).toBe(true);
+    expect(servaitParApple("https://push.apple.com.evil.test/x")).toBe(false);
+    expect(servaitParApple("https://fcm.googleapis.com/x")).toBe(false);
+  });
+
+  it("une liste vide ou absente ne casse pas", () => {
+    expect(ciblerAndroid([]).cibles.length).toBe(0);
+    expect(ciblerAndroid(null as any).cibles.length).toBe(0);
   });
 });

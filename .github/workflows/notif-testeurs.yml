@@ -1,0 +1,67 @@
+# Envoi UNIQUE : « je cherche 12 testeurs Android pour la sortie Play Store ».
+#
+# ── PAS DE CRON, ET C'EST LE POINT ─────────────────────────────────────────
+#
+# Les deux autres workflows de notification sont périodiques parce qu'ils
+# annoncent quelque chose de neuf chaque jour. Celui-ci annonce une campagne :
+# programmé, il redemanderait la même faveur indéfiniment. Il se déclenche donc à
+# la main, une fois.
+#
+# ⚠️ RELANCER CE WORKFLOW RENVOIE LA NOTIFICATION. Rien ne mémorise qui a déjà
+#    été prévenu — il n'y a pas de colonne pour ça, et en ajouter une pour un
+#    envoi unique coûterait plus que le risque. Le tag est fixe (`testeurs-android`),
+#    donc un second envoi REMPLACE la notification sur l'appareil au lieu de s'y
+#    empiler : le joueur est re-sonné une fois, il ne se retrouve pas avec une
+#    pile. À faire seulement si le premier envoi a échoué.
+#
+# ── LE MODE À BLANC EST LA VALEUR PAR DÉFAUT ───────────────────────────────
+#
+# `dry_run` vaut true à l'ouverture du formulaire. Un envoi de notification ne se
+# rattrape pas : il faut DÉCOCHER la case pour que ça parte, et le journal du
+# premier lancement dit exactement combien d'appareils seraient touchés, et par
+# quel service. On regarde, puis on décide.
+#
+# Secrets : SB_SERVICE_KEY et VAPID_PRIVATE_KEY, les mêmes que les deux autres
+# envois. Voir docs/NOTIFICATIONS.md.
+name: Notification testeurs
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Simuler sans rien envoyer (décocher pour envoyer POUR DE VRAI)"
+        type: boolean
+        default: true
+
+# Deux exécutions simultanées enverraient la notification en double.
+concurrency:
+  group: notif-testeurs
+  cancel-in-progress: false
+
+jobs:
+  envoyer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Installer les dépendances
+        # Le dépôt embarque Playwright : sans cette variable, npm ci
+        # téléchargerait des navigateurs dont l'envoi n'a aucun besoin.
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+        run: npm ci
+
+      - name: Envoyer
+        env:
+          SB_SERVICE_KEY: ${{ secrets.SB_SERVICE_KEY }}
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+          VAPID_SUBJECT: https://goatfc.fr
+        run: |
+          npx tsx scripts/notif-testeurs.mjs \
+            ${{ inputs.dry_run && '--dry-run' || '' }}
