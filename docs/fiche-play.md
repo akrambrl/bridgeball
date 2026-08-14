@@ -80,5 +80,5 @@ Tu choisis un pseudo et tu joues. Pas d'adresse e-mail, pas de mot de passe. Un 
 
 Six langues : français, anglais, allemand, italien, portugais, espagnol.
 
-Une question, un joueur qui manque, une erreur dans un effectif ? contact@goatfc.fr
+Une question, un joueur qui manque, une erreur dans un effectif ? contact@goatfc.online
 ```
