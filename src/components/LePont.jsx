@@ -7393,10 +7393,36 @@ export default function LePont() {
     setPseudoChecking(true);
     setPseudoMsg(tr("Vérification...","Checking...","Prüfe...","Verifica...","Verificando...","Comprobando..."));
     try {
-      // Check if pseudo already taken (case-insensitive)
-      const existing = await sbFetch("bb_pseudos?pseudo=ilike."+encodeURIComponent(clean)+"&select=player_id&limit=1");
-      if (Array.isArray(existing) && existing.length > 0) {
-        if (existing[0].player_id === playerId) {
+      // Déjà pris ? Insensible à la casse, et le « _ » est ÉCHAPPÉ.
+      //
+      // `_` est un joker dans LIKE, et le format des pseudos l'autorise : le
+      // motif `a_ram` attrapait donc `akram`, et l'app annonçait « déjà pris »
+      // sur un pseudo libre. Le même piège est déjà documenté dans
+      // docs/supabase-renommer-pseudo.sql, côté SQL ; il restait ici. Le format
+      // étant borné à [a-zA-Z0-9_-], `_` est le seul joker possible.
+      const motif = clean.replace(/([\\_%])/g, "\\$1");
+      // limit=5 et non 1 : la base porte encore quatre paires de pseudos qui ne
+      // diffèrent que par la majuscule (héritage du défaut ci-dessous). Avec
+      // limit=1, un de ces joueurs pouvait recevoir la ligne de l'AUTRE et se
+      // voir refuser son propre pseudo.
+      const existing = await sbFetch("bb_pseudos?pseudo=ilike."+encodeURIComponent(motif)+"&select=player_id&limit=5");
+      // ON ÉCHOUE FERMÉ, et c'est le vrai correctif.
+      //
+      // sbFetch rend `null` sur TOUTE panne : coupure réseau, réponse en erreur,
+      // JSON illisible. Ce null traversait le `Array.isArray(existing) && …`
+      // sans rien déclencher, et l'exécution filait droit vers la création du
+      // pseudo. Une seule requête ratée suffisait donc à poser un pseudo déjà
+      // pris — et rien en base ne s'y opposait, faute d'index unique.
+      // C'est l'explication la plus plausible des quatre doublons de casse
+      // constatés en production. Voir docs/supabase-pseudo-unique.sql, qui pose
+      // la garantie côté serveur ; ici on refuse au lieu de supposer.
+      if (!Array.isArray(existing)) {
+        setPseudoMsg(tr("❌ Vérification impossible. Réessaie.","❌ Can't check right now. Try again.","❌ Prüfung nicht möglich. Versuch's nochmal.","❌ Verifica impossibile. Riprova.","❌ Não foi possível verificar. Tente de novo.","❌ No se puede comprobar. Inténtalo otra vez."));
+        setPseudoChecking(false);
+        return;
+      }
+      if (existing.length > 0) {
+        if (existing.some(function(r){ return r.player_id === playerId; })) {
           // It's mine - confirm it
           setPseudoConfirmed(true);
           setPseudoScreen(false);
