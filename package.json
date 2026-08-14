@@ -17,6 +17,7 @@
     "devinette:rotation": "tsx scripts/devinette-rotation.mjs",
     "images:webp": "node scripts/images-webp.mjs",
     "sql:essai": "node scripts/sql-essai.mjs",
+    "sql:pseudo": "node scripts/sql-pseudo-unique.essai.mjs",
     "notif:amis:sec": "tsx scripts/notif-amis.mjs --dry-run",
     "ios:sync": "npm run build && npx cap sync ios",
     "ios:open": "npx cap open ios",
