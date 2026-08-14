@@ -4,33 +4,142 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Privacy Policy — GOAT FC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
 <style>
-:root { --bg:#0a1410; --fg:#f5f5f0; --accent:#00e676; --muted:rgba(245,245,240,.6); --card:rgba(255,255,255,.05); --border:rgba(255,255,255,.1); }
+/* ── CHARTE « Olive et Tom », version OR — pages légales ───────────────────
+   Reprise de src/lib/charte.jsx. Le texte juridique n'est pas touché : seule
+   cette feuille change.
+
+   LA RÈGLE QUI COMMANDE TOUT LE RESTE, et qui vient des mesures de contraste
+   de la charte : SUR L'OR, SEULE L'ENCRE SE LIT. Le crème tombe à 1,4, le vert
+   clair à 1,2, le rouge à 2,8. Donc tout ce qui est posé sur le fond — texte,
+   liens, gras, titres — est à l'encre. À l'INVERSE, dans un panneau sombre,
+   tout se lit : crème 14,9 · or 11,0. D'où les règles contextuelles
+   `.box strong` et compagnie : la même emphase change de couleur selon ce
+   qu'elle a derrière elle.
+
+   La police du CORPS reste une pile système, et c'est délibéré : Anton et
+   Bebas Neue sont des lettrages d'affiche, illisibles sur quinze pages de
+   texte juridique. Le manga est dans le trait et l'ombre dure, pas dans
+   l'obligation de tout écrire en capitales condensées. */
+:root {
+  --encre:#081109;      /* le trait — noir à biais vert, jamais noir pur */
+  --or:#F5C22B;         /* LE FOND */
+  --or-sombre:#D9A21A;  /* la trame de points */
+  --creme:#F2E7CE;      /* le lettrage, DANS un panneau */
+  --nuit:#12160F;       /* l'écusson : le noir des panneaux */
+  --maillot:#D93A2B;    /* urgence */
+  --trait:3px solid #081109;
+  --trait-fin:2px solid #081109;
+  --ombre:4px 4px 0 #081109;
+}
 * { box-sizing:border-box; }
-body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background:var(--bg); color:var(--fg); margin:0; padding:0; line-height:1.7; }
+body {
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  background:var(--or); color:var(--encre); margin:0; padding:0; line-height:1.7;
+  /* La trame sérigraphiée de la charte, en points d'or sombre et non de noir :
+     sur l'or, une trame noire grise le fond au lieu de le texturer. */
+  background-image:radial-gradient(circle,var(--or-sombre) 1.2px,transparent 1.5px);
+  background-size:7px 7px;
+}
 .container { max-width:780px; margin:0 auto; padding:40px 24px 80px; }
-header { padding:30px 0 20px; border-bottom:1px solid var(--border); margin-bottom:30px; }
-h1 { font-size:32px; margin:0 0 6px; letter-spacing:.5px; color:var(--accent); }
-.subtitle { color:var(--muted); font-size:14px; }
-.lang-switch { display:inline-flex; gap:8px; margin-top:14px; }
-.lang-switch button { background:var(--card); color:var(--fg); border:1px solid var(--border); border-radius:20px; padding:6px 14px; cursor:pointer; font-weight:600; font-size:13px; }
-.lang-switch button.active { background:var(--accent); color:#000; border-color:var(--accent); }
-h2 { color:var(--accent); font-size:20px; margin-top:36px; margin-bottom:12px; letter-spacing:.3px; }
-h3 { font-size:16px; margin-top:20px; margin-bottom:8px; color:var(--fg); }
-p, li { color:rgba(245,245,240,.85); font-size:15px; }
+header { padding:30px 0 20px; border-bottom:var(--trait); margin-bottom:30px; }
+
+/* Lettrage d'affiche : italique légère et ombre dure, SANS contour d'encre.
+   Le contour n'a de sens que pour du texte clair sur fond sombre ; posé sur
+   un titre déjà sombre, il bouche les contre-formes et rend le mot illisible. */
+h1 {
+  font-family:'Anton',Impact,'Haettenschweiler',sans-serif; font-weight:400;
+  font-size:clamp(30px,8vw,44px); line-height:1.05; margin:0 0 8px;
+  color:var(--encre); letter-spacing:.5px;
+  transform:skewX(-7deg); transform-origin:left center;
+  text-shadow:3px 3px 0 rgba(8,17,9,.18);
+}
+h2 {
+  font-family:'Anton',Impact,'Haettenschweiler',sans-serif; font-weight:400;
+  font-size:clamp(20px,5vw,26px); line-height:1.15;
+  margin:40px 0 12px; color:var(--encre); letter-spacing:.4px;
+  transform:skewX(-7deg); transform-origin:left center;
+}
+h3 { font-size:16px; font-weight:800; margin:22px 0 8px; color:var(--encre); }
+.subtitle { color:rgba(8,17,9,.62); font-size:14px; font-weight:600; }
+p, li { color:var(--encre); font-size:15px; }
 ul { padding-left:20px; }
 li { margin-bottom:6px; }
-strong { color:var(--accent); font-weight:700; }
-.box { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px 20px; margin:14px 0; }
-.email { color:var(--accent); font-weight:600; }
-hr { border:none; height:1px; background:var(--border); margin:30px 0; }
-footer { margin-top:60px; padding-top:24px; border-top:1px solid var(--border); color:var(--muted); font-size:13px; text-align:center; }
+strong { color:var(--encre); font-weight:800; }
+a { color:var(--encre); font-weight:700; text-decoration:underline; text-underline-offset:3px; }
+.email { color:var(--encre); font-weight:800; }
+hr { border:none; height:3px; background:var(--encre); margin:34px 0; border-radius:2px; }
+
+/* ── LES PANNEAUX ────────────────────────────────────────────────────────
+   Aplat de nuit, trait d'encre, ombre DURE — jamais de flou, jamais de verre.
+   Et le renversement des couleurs : à l'intérieur, l'or redevient lisible. */
+.box {
+  background:var(--nuit); color:var(--creme);
+  border:var(--trait); border-radius:18px; box-shadow:var(--ombre);
+  padding:16px 20px; margin:18px 0;
+}
+.box p, .box li { color:var(--creme); }
+.box strong, .box .email, .box a { color:var(--or); }
+
+.warning {
+  background:var(--nuit); color:var(--creme);
+  border:var(--trait); border-left:9px solid var(--maillot);
+  border-radius:18px; box-shadow:var(--ombre); padding:16px 20px; margin:18px 0;
+}
+.warning p, .warning li { color:var(--creme); }
+.warning strong { color:var(--or); }
+
+.last-updated {
+  background:var(--nuit); color:var(--creme);
+  border:var(--trait-fin); border-radius:12px; box-shadow:var(--ombre);
+  padding:8px 14px; font-size:13px; font-weight:700;
+  display:inline-block; margin-bottom:22px;
+}
+
+/* ── LES BOUTONS DE LANGUE ───────────────────────────────────────────────
+   L'actif est un aplat de NUIT et non d'or : un bouton or posé sur le fond or
+   disparaîtrait. C'est la règle de la charte pour une action principale. */
+.lang-switch { display:inline-flex; gap:10px; margin-top:16px; }
+.lang-switch button {
+  background:transparent; color:var(--encre);
+  border:var(--trait-fin); border-radius:12px; box-shadow:var(--ombre);
+  padding:7px 15px; cursor:pointer; font-weight:800; font-size:13px;
+  font-family:inherit; transition:transform .12s;
+}
+.lang-switch button:hover { transform:translate(-1px,-1px); }
+.lang-switch button:active { transform:translate(2px,2px); box-shadow:2px 2px 0 var(--encre); }
+.lang-switch button.active { background:var(--nuit); color:var(--creme); }
+
+footer {
+  margin-top:64px; padding-top:24px; border-top:var(--trait);
+  color:rgba(8,17,9,.62); font-size:13px; text-align:center; font-weight:600;
+}
 .hidden { display:none; }
-a { color:var(--accent); }
-.last-updated { background:rgba(0,230,118,.08); border:1px solid rgba(0,230,118,.2); border-radius:10px; padding:10px 14px; font-size:13px; color:var(--accent); display:inline-block; margin-bottom:20px; }
-.back-fab { position:fixed; top:14px; left:14px; z-index:100; background:rgba(0,15,0,.85); border:1px solid rgba(255,255,255,.15); border-radius:50%; width:42px; height:42px; cursor:pointer; color:var(--fg); font-size:20px; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); box-shadow:0 4px 14px rgba(0,0,0,.4); text-decoration:none; transition:transform .15s; }
-.back-fab:hover, .back-fab:active { transform:scale(1.05); background:rgba(0,230,118,.15); }
-@media (max-width: 600px) { .container { padding-top:24px; } header { padding-top:18px; } }
+
+/* Le bouton de retour : un jeton de la charte, plus un verre flouté.
+   `backdrop-filter` a disparu — la charte est faite d'aplats opaques. */
+.back-fab {
+  position:fixed; top:14px; left:14px; z-index:100;
+  background:var(--nuit); color:var(--creme);
+  border:var(--trait); border-radius:50%;
+  width:44px; height:44px; cursor:pointer; font-size:20px;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:var(--ombre); text-decoration:none; transition:transform .12s;
+}
+.back-fab:hover { transform:translate(-1px,-1px); }
+.back-fab:active { transform:translate(2px,2px); box-shadow:2px 2px 0 var(--encre); }
+
+/* Le titre passe sous le bouton de retour sur petit écran : on lui laisse la place. */
+@media (max-width:600px) {
+  .container { padding-top:24px; }
+  header { padding-top:44px; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .back-fab, .lang-switch button { transition:none; }
+}
 </style>
 </head>
 <body>
