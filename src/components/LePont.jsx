@@ -18,6 +18,9 @@ import { WinBanner } from "./landing/WinBanner";
 // Barème de grades et drapeaux : définis une seule fois, partagés avec le desktop.
 import { GRADES, getGrade, gradeLabel, countryToFlag } from "../lib/leaderboard";
 import { duelTermine } from "../lib/duel";
+// Réclamation du lot : les règles (qui peut réclamer, pour quel mois, ce qu'on
+// accepte comme saisie) et le tirage sûr du code de récupération.
+import { lotAReclamer, manques, normaliserCode, tirerCode, PLATEFORMES } from "../lib/reclamation";
 import { prochainsTotauxXp } from "../lib/xp";
 // Règles de tirage anti-répétition, partagées avec « Trouve le joueur ».
 import { clePaire, pairesRetenues, tirerEnEvitant, memoriser } from "../lib/tirage.js";
@@ -2054,15 +2057,16 @@ const normPhonetic = normPhoneticNom;
 const levenshtein = levenshteinNom;
 const fuzzyThreshold = seuilFuzzy;
 const fuzzyMatch = fuzzyNom;
-// Génère un code de récupération format GOATFC-XXXX-YYYY
-// Utilise uniquement des caractères non ambigus (pas 0/O, 1/I/L, etc.)
+// Génère un code de récupération format GOATFC-XXXX-YYYY.
+//
+// Le tirage vit désormais dans src/lib/reclamation.js, et il est CRYPTOGRAPHIQUE.
+// Ce n'était pas le cas : `Math.random()` suffisait tant que ce code ne gardait
+// qu'un pseudo, mais il est devenu la preuve d'identité qui donne accès au lot
+// du concours — et `Math.random()` n'offre aucune garantie face à quelqu'un qui
+// chercherait à prédire un tirage. Le rejet uniforme y est aussi traité : sans
+// lui, `octet % 31` rendait les huit premières lettres 12 % plus probables.
 function generateRecoveryCode() {
-  const chars = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
-  let code = "GOATFC-";
-  for (let i = 0; i < 4; i++) code += chars[Math.floor(Math.random() * chars.length)];
-  code += "-";
-  for (let i = 0; i < 4; i++) code += chars[Math.floor(Math.random() * chars.length)];
-  return code;
+  return tirerCode();
 }
 function checkGuess(g,players){
   const gn=norm(g);
@@ -3626,6 +3630,14 @@ export default function LePont() {
   const [chainLastPassed, setChainLastPassed] = useState(false); // true si le club lien a été passé (à cacher avec cadenas)
   const [leaderboard, setLeaderboard] = useState([]);
   const [hallOfFame, setHallOfFame] = useState([]);
+  // Les saisons qui ont RÉELLEMENT porté un lot. Sans cette liste, dès la
+  // deuxième saison tous les anciens champions verraient un bouton « réclamer »
+  // qui ne mène nulle part — et on ne retire pas une promesse déjà affichée.
+  const [lots, setLots] = useState([]);
+  const [reclamationOuverte, setReclamationOuverte] = useState(false);
+  const [recForm, setRecForm] = useState({ code:"", email:"", plateforme:"", autorisation:false });
+  const [recEtat, setRecEtat] = useState(null);   // null | "envoi" | "ok" | "deja"
+  const [recMsg, setRecMsg] = useState("");
   const [showHallOfFame, setShowHallOfFame] = useState(false);
   const [myLbRank, setMyLbRank] = useState(null);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
@@ -8064,13 +8076,232 @@ export default function LePont() {
         }
       } catch(e){}
       setLeaderboard(sorted);
-      // Charger le Hall of Fame
+      // Charger le Hall of Fame ET la liste des saisons dotées. Les deux
+      // ensemble : c'est leur CROISEMENT qui dit s'il y a un lot à réclamer,
+      // l'un sans l'autre ne décide rien.
       try {
-        const hof = await sbFetch("bb_seasons?order=season_number.desc&limit=10");
+        const [hof, dotees] = await Promise.all([
+          sbFetch("bb_seasons?order=season_number.desc&limit=10"),
+          sbFetch("bb_lots?select=season_number,intitule&order=season_number.desc"),
+        ]);
         if (Array.isArray(hof)) setHallOfFame(hof);
+        // Un échec ici ne doit rien casser : la table peut ne pas encore exister
+        // sur une base où le SQL n'a pas été appliqué. Le bandeau ne s'affiche
+        // simplement pas, et le reste du classement fonctionne.
+        if (Array.isArray(dotees)) setLots(dotees);
       } catch(e){}
     } catch(e) { setLeaderboard([]); }
   }
+
+  // ── RÉCLAMER LE LOT ────────────────────────────────────────────────────
+  //
+  // Rien n'est décidé ici. Tout ce que cette fonction contrôle avant d'envoyer
+  // est du CONFORT — ne pas faire un aller-retour réseau pour se voir répondre
+  // « email invalide ». La décision appartient à `bb_reclamer_lot`, côté
+  // serveur, seule à pouvoir lire le code de récupération d'un compte.
+  async function envoyerReclamation() {
+    const code = normaliserCode(recForm.code);
+    const absents = manques({ ...recForm, code });
+    if (absents.length > 0) {
+      setRecMsg(tr(
+        "❌ Il manque : " + absents.join(", "),
+        "❌ Missing: " + absents.join(", "),
+        "❌ Es fehlt: " + absents.join(", "),
+        "❌ Manca: " + absents.join(", "),
+        "❌ Falta: " + absents.join(", "),
+        "❌ Falta: " + absents.join(", ")));
+      return;
+    }
+    setRecEtat("envoi"); setRecMsg("");
+    try {
+      const r = await sbFetch("rpc/bb_reclamer_lot", {
+        method: "POST",
+        body: JSON.stringify({
+          p_code: code, p_email: recForm.email.trim(),
+          p_plateforme: recForm.plateforme, p_autorisation: true,
+        }),
+      });
+      const ligne = Array.isArray(r) ? r[0] : r;
+      if (!ligne || !ligne.etat) {
+        // Échec fermé : on ne prétend PAS que c'est parti. Un gagnant qui croit
+        // avoir réclamé et qui ne l'a pas fait perd son lot au bout de 30 jours.
+        setRecEtat(null);
+        setRecMsg(tr("❌ Envoi impossible. Réessaie, ou écris à contact@goatfc.online",
+          "❌ Could not send. Try again, or email contact@goatfc.online",
+          "❌ Senden fehlgeschlagen. Versuch es erneut oder schreib an contact@goatfc.online",
+          "❌ Invio impossibile. Riprova, o scrivi a contact@goatfc.online",
+          "❌ Falha no envio. Tente de novo, ou escreva para contact@goatfc.online",
+          "❌ No se pudo enviar. Inténtalo de nuevo, o escribe a contact@goatfc.online"));
+        return;
+      }
+      if (ligne.etat === "ok" || ligne.etat === "deja") {
+        setRecEtat(ligne.etat);
+        setRecMsg(ligne.detail || "");
+        return;
+      }
+      // Les refus sont nommés par le serveur : on les traduit plutôt que
+      // d'afficher « erreur », qui n'aide personne à s'en sortir.
+      const raisons = {
+        code_inconnu: tr("❌ Ce code ne correspond à aucun compte.","❌ This code matches no account.","❌ Dieser Code gehört zu keinem Konto.","❌ Questo codice non corrisponde a nessun account.","❌ Este código não corresponde a nenhuma conta.","❌ Este código no corresponde a ninguna cuenta."),
+        email: tr("❌ Cette adresse email ne semble pas valide.","❌ That email address doesn't look valid.","❌ Diese E-Mail-Adresse scheint ungültig.","❌ Questo indirizzo email non sembra valido.","❌ Este email não parece válido.","❌ Ese correo no parece válido."),
+        autorisation: tr("❌ Il faut cocher la déclaration.","❌ You must tick the declaration.","❌ Du musst die Erklärung ankreuzen.","❌ Devi spuntare la dichiarazione.","❌ É preciso marcar a declaração.","❌ Debes marcar la declaración."),
+        pas_de_lot: tr("❌ Ce compte n'a pas de lot à réclamer.","❌ This account has no prize to claim.","❌ Dieses Konto hat keinen Gewinn.","❌ Questo account non ha premi da reclamare.","❌ Esta conta não tem prêmio a reclamar.","❌ Esta cuenta no tiene premio que reclamar."),
+        delai_depasse: tr("❌ Le délai de réclamation est dépassé. Écris à contact@goatfc.online","❌ The claim period has ended. Email contact@goatfc.online","❌ Die Frist ist abgelaufen. Schreib an contact@goatfc.online","❌ Il termine è scaduto. Scrivi a contact@goatfc.online","❌ O prazo terminou. Escreva para contact@goatfc.online","❌ El plazo ha terminado. Escribe a contact@goatfc.online"),
+      };
+      setRecEtat(null);
+      setRecMsg(raisons[ligne.detail] || ("❌ " + (ligne.detail || "")));
+    } catch(e) {
+      setRecEtat(null);
+      setRecMsg("❌ " + (e.message || ""));
+    }
+  }
+
+  // Déclarée ICI, avant tous les rendus, et pas à côté des autres modales.
+  // L'écran du classement est un `return` anticipé situé AVANT elles : un
+  // `const` déclaré plus bas y tombe dans sa zone morte, et le référencer
+  // lève une ReferenceError qui casse l'écran entier. La compilation ne le
+  // voit pas, les tests unitaires non plus — seul un rendu réel le montre.
+  // ── MODAL : RÉCLAMATION DU LOT ────────────────────────────────────────────
+  //
+  // Trois choses seulement sont demandées, et chacune sert la remise : le code
+  // (qui prouve que le compte gagnant est bien le sien), l'adresse (qui reçoit
+  // le lot) et la plateforme (que le règlement laisse au choix du gagnant). Rien
+  // d'autre — un formulaire de concours qui demande une date de naissance ou une
+  // adresse postale pour un jeu dématérialisé collecte ce dont il n'a pas besoin.
+  const reclamationModal = reclamationOuverte ? (function(){
+    const lot = lotAReclamer(playerId, hallOfFame, lots);
+    const champ = {width:"100%",background:"rgba(8,17,9,.45)",border:G.traitFin,borderRadius:14,
+      padding:"13px 15px",fontFamily:G.font,fontSize:15,color:G.white,outline:"none",
+      boxSizing:"border-box",marginBottom:10};
+    const fermer = function(){ setReclamationOuverte(false); setRecMsg(""); setRecEtat(null); };
+    return (
+      <div style={{position:"fixed",inset:0,zIndex:520,background:"rgba(8,17,9,.88)",display:"flex",
+        alignItems:"center",justifyContent:"center",padding:20,overflowY:"auto"}}>
+        <div style={{width:"100%",maxWidth:400,background:G.nuit,borderRadius:28,padding:"28px 24px",
+          border:G.traitFin,position:"relative",maxHeight:"92dvh",overflowY:"auto"}}>
+          <button onClick={fermer} style={{position:"absolute",top:14,right:14,background:G.nuit,
+            border:"none",borderRadius:"50%",width:30,height:30,color:"rgba(255,255,255,.5)",
+            cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+
+          {/* ── APRÈS ENVOI ────────────────────────────────────────────────
+              « Déjà reçue » n'est PAS une erreur, et ne doit pas s'afficher
+              comme telle : c'est la bonne réponse à un double clic ou à un
+              réseau qui repart. Le gagnant doit être rassuré, pas alarmé. */}
+          {(recEtat === "ok" || recEtat === "deja") ? (
+            <div style={{textAlign:"center"}}>
+              <div style={{fontSize:44,marginBottom:10}}>✅</div>
+              <div style={{...posterText(22),color:G.white,lineHeight:1.15,marginBottom:10}}>
+                {recEtat === "ok"
+                  ? tr("Réclamation envoyée","Claim sent","Anfrage gesendet","Richiesta inviata","Pedido enviado","Solicitud enviada")
+                  : tr("Déjà enregistrée","Already registered","Bereits erfasst","Già registrata","Já registrado","Ya registrada")}
+              </div>
+              <div style={{fontSize:13.5,color:"rgba(255,255,255,.8)",lineHeight:1.55,marginBottom:16}}>
+                {tr("On te contacte à l'adresse indiquée, sous 30 jours. Garde ce numéro de dossier.",
+                    "We'll contact you at that address within 30 days. Keep this reference.",
+                    "Wir melden uns innerhalb von 30 Tagen. Bewahre diese Nummer auf.",
+                    "Ti contattiamo entro 30 giorni. Conserva questo riferimento.",
+                    "Entramos em contato em até 30 dias. Guarde esta referência.",
+                    "Te contactamos en 30 días. Guarda esta referencia.")}
+              </div>
+              {recMsg && (
+                <div style={{background:G.or,borderRadius:14,padding:"14px 12px",marginBottom:16,
+                  boxShadow:G.ombre,border:G.traitFin}}>
+                  <div style={{fontFamily:"ui-monospace, Menlo, monospace",fontSize:13,fontWeight:800,
+                    color:G.encre,userSelect:"all",wordBreak:"break-all"}}>{recMsg}</div>
+                </div>
+              )}
+              <button onClick={fermer} style={{...btn(G.pelouse,G.white,15),width:"100%",padding:"14px"}}>
+                {tr("Fermer","Close","Schließen","Chiudi","Fechar","Cerrar")}
+              </button>
+            </div>
+          ) : (
+            <>
+              <div style={{textAlign:"center",marginBottom:18}}>
+                <div style={{fontSize:40,marginBottom:6}}>🏆</div>
+                <div style={{...posterText(22),color:G.white,lineHeight:1.1,marginBottom:6}}>
+                  {tr("Réclamer mon lot","Claim my prize","Gewinn anfordern","Reclama il premio","Reclamar meu prêmio","Reclamar mi premio")}
+                </div>
+                {lot && <div style={{fontSize:12.5,color:"rgba(255,255,255,.6)",lineHeight:1.4}}>{lot.intitule}</div>}
+              </div>
+
+              <div style={{fontSize:11,color:"rgba(255,255,255,.5)",fontWeight:700,letterSpacing:1,marginBottom:6}}>
+                {tr("TON CODE DE RÉCUPÉRATION","YOUR RECOVERY CODE","DEIN WIEDERHERSTELLUNGSCODE","IL TUO CODICE","SEU CÓDIGO","TU CÓDIGO")}
+              </div>
+              <input value={recForm.code}
+                onChange={function(e){setRecForm({...recForm,code:e.target.value.toUpperCase()});setRecMsg("");}}
+                placeholder="GOATFC-XXXX-XXXX" maxLength={16}
+                style={{...champ,fontFamily:"ui-monospace, Menlo, monospace",letterSpacing:1.5,textAlign:"center"}}/>
+              {/* La raison du code est dite ICI, au moment où on le demande, et
+                  pas seulement dans le règlement : c'est ce qui distingue une
+                  demande légitime d'une tentative d'hameçonnage. */}
+              <div style={{fontSize:11.5,color:"rgba(255,255,255,.45)",lineHeight:1.5,marginBottom:14}}>
+                {tr("C'est la seule chose que toi seul possèdes : elle prouve que le compte gagnant est bien le tien. On ne te le demandera jamais ailleurs que dans cet écran.",
+                    "It's the one thing only you have: it proves the winning account is yours. We will never ask for it anywhere but this screen.",
+                    "Nur du besitzt ihn: er beweist, dass das Gewinnerkonto dir gehört. Wir fragen ihn nirgendwo sonst ab.",
+                    "È l'unica cosa che possiedi solo tu: prova che l'account vincente è il tuo. Non te lo chiederemo altrove.",
+                    "É a única coisa que só você tem: prova que a conta vencedora é sua. Nunca pediremos em outro lugar.",
+                    "Es lo único que solo tú tienes: prueba que la cuenta ganadora es tuya. Nunca te lo pediremos en otro sitio.")}
+              </div>
+
+              <div style={{fontSize:11,color:"rgba(255,255,255,.5)",fontWeight:700,letterSpacing:1,marginBottom:6}}>
+                {tr("ADRESSE EMAIL","EMAIL ADDRESS","E-MAIL-ADRESSE","INDIRIZZO EMAIL","EMAIL","CORREO")}
+              </div>
+              <input value={recForm.email} type="email" inputMode="email" autoComplete="email"
+                onChange={function(e){setRecForm({...recForm,email:e.target.value});setRecMsg("");}}
+                placeholder="toi@exemple.fr" style={champ}/>
+
+              <div style={{fontSize:11,color:"rgba(255,255,255,.5)",fontWeight:700,letterSpacing:1,marginBottom:8}}>
+                {tr("PLATEFORME","PLATFORM","PLATTFORM","PIATTAFORMA","PLATAFORMA","PLATAFORMA")}
+              </div>
+              <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:14}}>
+                {PLATEFORMES.map(function(p){
+                  const actif = recForm.plateforme === p.cle;
+                  return (
+                    <button key={p.cle} onClick={function(){setRecForm({...recForm,plateforme:p.cle});setRecMsg("");}}
+                      style={{...(actif ? btn(G.pelouse,G.white,13) : btn(G.nuit,G.white,13)),
+                        padding:"9px 13px",flex:"0 0 auto"}}>{p.nom}</button>
+                  );
+                })}
+              </div>
+
+              <label style={{display:"flex",alignItems:"flex-start",gap:10,marginBottom:16,cursor:"pointer"}}>
+                <input type="checkbox" checked={recForm.autorisation}
+                  onChange={function(e){setRecForm({...recForm,autorisation:e.target.checked});setRecMsg("");}}
+                  style={{marginTop:3,cursor:"pointer"}}/>
+                <span style={{fontSize:12.5,color:"rgba(255,255,255,.8)",lineHeight:1.45}}>
+                  {tr("J'ai 18 ans ou plus, ou j'ai l'autorisation de mon représentant légal, et j'accepte le règlement du concours.",
+                      "I am 18 or older, or I have my legal guardian's permission, and I accept the contest rules.",
+                      "Ich bin 18 oder älter, oder habe die Erlaubnis meines Erziehungsberechtigten, und akzeptiere die Teilnahmebedingungen.",
+                      "Ho 18 anni o più, o ho l'autorizzazione del mio tutore, e accetto il regolamento.",
+                      "Tenho 18 anos ou mais, ou tenho autorização do meu responsável, e aceito o regulamento.",
+                      "Tengo 18 años o más, o cuento con permiso de mi tutor, y acepto las bases.")}
+                </span>
+              </label>
+
+              {recMsg && (
+                <div style={{fontSize:13,fontWeight:700,color:G.maillot,marginBottom:12,textAlign:"center",lineHeight:1.45}}>
+                  {recMsg}
+                </div>
+              )}
+
+              <button onClick={envoyerReclamation} disabled={recEtat === "envoi"}
+                style={{...btn(G.pelouse,G.white,15),width:"100%",padding:"15px",
+                  opacity:recEtat === "envoi" ? .6 : 1}}>
+                {recEtat === "envoi"
+                  ? tr("Envoi...","Sending...","Senden...","Invio...","Enviando...","Enviando...")
+                  : tr("Envoyer ma réclamation","Send my claim","Anfrage senden","Invia richiesta","Enviar pedido","Enviar solicitud")}
+              </button>
+              <a href="/reglement" target="_blank" rel="noopener noreferrer"
+                style={{display:"block",textAlign:"center",marginTop:12,fontSize:11.5,fontWeight:700,
+                  color:"rgba(242,231,206,.6)",textDecoration:"underline",textUnderlineOffset:3}}>
+                {tr("Lire le règlement du concours","Read the contest rules","Teilnahmebedingungen lesen","Leggi il regolamento","Ler o regulamento","Leer las bases")}
+              </a>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  })() : null;
 
   function footballPoints(sc, list) {
     // Comparer à mon propre meilleur score, pas au #1 global
@@ -11770,6 +12001,51 @@ export default function LePont() {
             comme un pli de papier. */}
         <div style={{...sheet,background:"transparent",
           border:"none",borderRadius:"28px 28px 0 0"}}>
+
+          {/* ── LE BANDEAU DU GAGNANT ────────────────────────────────────
+              Posé TOUT EN HAUT du classement, avant le bandeau de saison :
+              c'est la seule chose de cet écran qui appelle une action, et une
+              action qui expire au bout de trente jours. Enfoui plus bas, il se
+              lirait après le classement du mois en cours, c'est-à-dire trop
+              tard pour être remarqué.
+
+              Il n'apparaît que si le joueur est champion d'une saison qui a
+              VRAIMENT porté un lot — voir lotAReclamer. */}
+          {(function(){
+            const lot = lotAReclamer(playerId, hallOfFame, lots);
+            if (!lot) return null;
+            return (
+              <div style={{background:G.or,border:G.trait,borderRadius:G.rayon,
+                boxShadow:G.ombre,padding:"18px 18px 16px",marginBottom:16,textAlign:"center"}}>
+                <div style={{fontSize:36,lineHeight:1,marginBottom:6}}>🏆</div>
+                <div style={{...posterText(24,G.encre),lineHeight:1.05,marginBottom:6}}>
+                  {tr("TU AS GAGNÉ","YOU WON","DU HAST GEWONNEN","HAI VINTO","VOCÊ GANHOU","HAS GANADO")}
+                </div>
+                {/* Sur l'or, seule l'encre se lit : le crème y tombe à 1,4 de
+                    contraste. Tout ce bandeau est donc à l'encre. */}
+                <div style={{fontSize:13.5,fontWeight:700,color:"rgba(8,17,9,.82)",
+                  lineHeight:1.5,marginBottom:14}}>
+                  {lot.intitule}
+                </div>
+                <button onClick={function(){
+                  setReclamationOuverte(true); setRecEtat(null); setRecMsg("");
+                  // Le code est déjà connu de l'appareil qui a créé le compte :
+                  // le pré-remplir évite de l'aller chercher dans le profil, et
+                  // ne révèle rien que cet appareil ne sache déjà.
+                  let connu = ""; try { connu = localStorage.getItem("bb_recovery_code") || ""; } catch {}
+                  setRecForm({ code:connu, email:"", plateforme:"", autorisation:false });
+                }} style={{...btn(G.nuit,G.creme,15),width:"100%",padding:"14px"}}>
+                  {tr("Réclamer mon lot →","Claim my prize →","Gewinn anfordern →","Reclama il premio →","Reclamar meu prêmio →","Reclamar mi premio →")}
+                </button>
+                <a href="/reglement" target="_blank" rel="noopener noreferrer"
+                  style={{display:"block",marginTop:10,fontSize:11.5,fontWeight:700,
+                    color:"rgba(8,17,9,.7)",textDecoration:"underline",textUnderlineOffset:3}}>
+                  {tr("Lire le règlement","Read the contest rules","Teilnahmebedingungen lesen","Leggi il regolamento","Ler o regulamento","Leer las bases")}
+                </a>
+              </div>
+            );
+          })()}
+
           {/* Saison info */}
           {lbMode!=="amis" && (()=>{
             const s = getCurrentSeason();
@@ -12066,6 +12342,14 @@ export default function LePont() {
           </div>
         </div>
       )}
+      {/* La modale de réclamation est montée ICI AUSSI, et c'est le rendu qui
+          l'a imposé : l'écran du classement est un `return` anticipé, dont
+          l'arbre ne contient aucune des modales globales. Le bandeau du gagnant
+          y vit, son bouton se cliquait, et il ne se passait rien — la modale
+          n'existait tout simplement pas dans cette branche. Ni les tests
+          unitaires ni la compilation ne pouvaient le voir : seul un rendu réel
+          le montre. */}
+      {reclamationModal}
       </>
     );
   }
@@ -13216,6 +13500,7 @@ export default function LePont() {
       {recoveryCodeAfterCreationModal}
       {recoveryInputModal}
       {myRecoveryCodeModal}
+      {reclamationModal}
       {avatarViewer}
       {cropperModal}
       {installGuide}
@@ -13257,6 +13542,7 @@ export default function LePont() {
       {recoveryCodeAfterCreationModal}
       {recoveryInputModal}
       {myRecoveryCodeModal}
+      {reclamationModal}
       {streakModal}
       {installGuide}
       {notifPrompt}
@@ -16106,6 +16392,7 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
       {recoveryCodeAfterCreationModal}
       {recoveryInputModal}
       {myRecoveryCodeModal}
+      {reclamationModal}
         {/* Terrain dessiné de la charte : les bandes opaques recouvraient le fond. */}
         {areneCharte}
       {/* L'entête absorbe le mou, mais en GRANDISSANT et non en centrant. La

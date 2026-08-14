@@ -163,6 +163,31 @@ await ctx.route("**/rest/v1/**", async (route) => {
       player_id: j.pid, pseudo: j.nom,
       points: 1400 - i * 95, jours: Math.max(1, 14 - i), modes: Math.max(1, 5 - (i % 5)),
     }));
+  } else if (url.includes("bb_lots")) {
+    // LOT=1 met le joueur LOCAL en champion d'une saison dotée, pour que le
+    // bandeau de réclamation apparaisse. Sans ça il ne s'affiche jamais dans un
+    // aperçu — et un écran qui ne se photographie pas se corrige à l'aveugle,
+    // ce qui a déjà coûté un fond sombre sur l'écran de résultat de duel.
+    corps = process.env.LOT
+      ? [{ season_number:6, intitule:"EA SPORTS FC 27 — édition standard, dématérialisée" }]
+      : [];
+  } else if (url.includes("bb_seasons")) {
+    corps = process.env.LOT
+      ? [{ season_number:6, champion_id:"local", champion_name:"toi", champion_score:4200,
+           mode:"global", ended_at:ilYaJours(1) },
+         { season_number:5, champion_id:"p2", champion_name:"nadia", champion_score:3900,
+           mode:"global", ended_at:ilYaJours(32) }]
+      : JOUEURS.slice(0, 4).map((j, i) => ({ season_number:5 - i, champion_id:j.pid,
+          champion_name:j.nom, champion_score:4200 - i * 300, mode:"global", ended_at:ilYaJours(30 * (i + 1)) }));
+  } else if (url.includes("rpc/bb_reclamer_lot")) {
+    // La réponse du serveur, telle qu'il la rend vraiment : une ligne
+    // {etat, detail}. RECLAMATION règle laquelle, pour photographier aussi les
+    // refus — un écran de succès est toujours plus facile à soigner que ses
+    // messages d'erreur, donc ce sont eux qu'il faut pouvoir regarder.
+    const cas = process.env.RECLAMATION || "ok";
+    corps = cas === "ok"   ? [{ etat:"ok", detail:"GOATFC-LOT-6-local" }]
+          : cas === "deja" ? [{ etat:"deja", detail:"GOATFC-LOT-6-local" }]
+          : [{ etat:"refus", detail:cas }];
   } else if (url.includes("bb_presence")) {
     corps = JOUEURS.slice(0, 4).map((j) => ({ player_id:j.pid }));
   } else if (url.includes("bb_pseudos")) {
@@ -393,6 +418,19 @@ const CHEMINS = {
   jeu:        [],   // la carte du carrousel non plus
   "classement-bas": [/classement|leaderboard|rangliste|classifica|ranking|clasificación/i],   // puis défilé jusqu'en bas
   "hall-of-fame": [/classement|leaderboard|rangliste|classifica|ranking|clasificación/i, /hall of fame/i],
+  // `reclamation` : le formulaire de réclamation du lot, derrière le bandeau du
+  // gagnant. Il exige LOT=1, qui met le joueur local en champion d'une saison
+  // dotée — sans quoi le bandeau, et donc le bouton, n'existent pas.
+  //
+  //   LOT=1 STOCKAGE='{"bb_player_id":"local"}' node scripts/apercu.mjs reclamation
+  //
+  // RECLAMATION=deja | code_inconnu | delai_depasse photographie les autres
+  // réponses du serveur : les messages d'erreur sont ce qu'on soigne le moins et
+  // ce que le gagnant lit au pire moment.
+  reclamation: [/classement|leaderboard|rangliste|classifica|ranking|clasificación/i,
+                /réclamer mon lot|claim my prize|gewinn anfordern|reclama il premio|reclamar/i],
+  "reclamation-envoyee": [/classement|leaderboard|rangliste|classifica|ranking|clasificación/i,
+                /réclamer mon lot|claim my prize|gewinn anfordern|reclama il premio|reclamar/i],
   bienvenue:  [],   // premier lancement : la bannière RGPD
   tutoriel:   [],   // premier lancement : le carrousel, après la bannière
   partie:     [],   // idem, puis « Jouer solo »
@@ -503,6 +541,18 @@ for (const libelle of CHEMINS[ecran]) {
   await b.click();
   await page.waitForTimeout(1600);
 }
+// `reclamation-envoyee` : l'écran d'APRÈS envoi. Il se remplit et s'envoie ici
+// plutôt que de se photographier à l'état vide, parce que c'est le seul moment
+// où le gagnant lit son numéro de dossier — et qu'un accusé de réception
+// illisible se découvre toujours trop tard.
+if (ecran === "reclamation-envoyee") {
+  await page.getByPlaceholder("toi@exemple.fr").fill("akram@exemple.fr");
+  await page.getByRole("button", { name: /PlayStation 5/i }).click();
+  await page.locator("input[type=checkbox]").last().check();
+  await page.getByRole("button", { name: /envoyer ma réclamation|send my claim/i }).click();
+  await page.waitForTimeout(1200);
+}
+
 // Les ecrans qui vivent derriere le profil : on l'ouvre d'abord.
 if (ecran === "collection" || ecran === "compte") {
   await page.locator("img[src*='/cards/']").first().click();

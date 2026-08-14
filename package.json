@@ -25,7 +25,8 @@
     "coque:verifie": "node scripts/coque-native.mjs --verifie",
     "store": "node scripts/visuels-store.mjs",
     "ios:visuels": "node scripts/visuels-ios.mjs",
-    "charte": "node scripts/audit-charte.mjs"
+    "charte": "node scripts/audit-charte.mjs",
+    "sql:reclamation": "node scripts/sql-reclamation.essai.mjs"
   },
   "dependencies": {
     "@capacitor/app": "^8.1.1",
