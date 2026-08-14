@@ -95,6 +95,68 @@ const SIGNATURES = [
   },
 ];
 
+// ── SAVOIR CE QUI EST UN COMMENTAIRE ───────────────────────────────────────
+//
+// La charte et ces scripts DÉCRIVENT abondamment l'ancien style : « le vert LED
+// a été remplacé », « backdrop-filter a disparu ». Citer n'est pas employer, et
+// un audit qui signale ses propres explications se fait ignorer.
+//
+// La première version testait le début de ligne (`//`, `*`, `/*`). Ça marche sur
+// la première et la dernière ligne d'un bloc, et ça rate toutes celles du milieu
+// qui ne commencent pas par une étoile — c'est comme ça que le commentaire de la
+// charte sur `backdrop-filter` a été signalé comme une infraction.
+//
+// On suit donc réellement l'état `/* … */` et `<!-- … -->` d'une ligne à l'autre.
+//
+// CE QU'ON NE FAIT PAS, DÉLIBÉRÉMENT : traiter `//` comme un début de commentaire
+// dans ce balayage. Les pages légales contiennent `https://fonts.googleapis.com`,
+// et une règle naïve marquerait ces lignes comme commentées — donc les
+// EXCLURAIT de l'audit. Un faux négatif coûte plus cher qu'un faux positif : il
+// rassure. Le `//` reste traité par le test de début de ligne, où il est sans
+// ambiguïté.
+// Ce qui reste d'un fragment une fois retirées les accolades de la syntaxe JSX.
+const codeNu = (s) => s.replace(/[{}]/g, "").trim();
+
+function lignesCommentees(texte) {
+  const lignes = texte.split("\n");
+  const commentee = new Array(lignes.length).fill(false);
+  let bloc = null;          // "/*" ou "<!--" quand on est dedans
+  lignes.forEach((ligne, i) => {
+    let reste = ligne, vuDuCode = false, debutBloc = bloc !== null;
+    while (reste.length) {
+      if (bloc) {
+        const fin = reste.indexOf(bloc === "/*" ? "*/" : "-->");
+        if (fin === -1) { reste = ""; break; }
+        reste = reste.slice(fin + (bloc === "/*" ? 2 : 3));
+        bloc = null;
+      } else {
+        const o1 = reste.indexOf("/*"), o2 = reste.indexOf("<!--");
+        const o = o1 === -1 ? o2 : o2 === -1 ? o1 : Math.min(o1, o2);
+        // Un commentaire JSX s'écrit `{/* … */}` : les accolades sont la syntaxe
+        // qui le porte, pas du code qui l'accompagne. Sans les retirer, la
+        // première ligne d'un commentaire JSX passe pour du code — et c'est
+        // ainsi que l'explication du halo vert (LePont.jsx:11611) était comptée
+        // comme une infraction au même titre que le halo lui-même.
+        if (o === -1) { if (codeNu(reste)) vuDuCode = true; break; }
+        if (codeNu(reste.slice(0, o))) vuDuCode = true;
+        bloc = o === o1 ? "/*" : "<!--";
+        reste = reste.slice(o + (bloc === "/*" ? 2 : 4));
+      }
+    }
+    // Commentée = la ligne était déjà dans un bloc ou en ouvre un, ET elle ne
+    // porte aucun code en dehors.
+    commentee[i] = (debutBloc || bloc !== null || /\/\*|<!--/.test(ligne)) && !vuDuCode;
+  });
+  return commentee;
+}
+
+// Le test de début de ligne, conservé pour `//`, `*`, `--` : sans ambiguïté là
+// où le balayage de blocs ne peut pas trancher.
+function ligneDeCommentaire(nu) {
+  return nu.startsWith("//") || nu.startsWith("*") || nu.startsWith("/*")
+      || nu.startsWith("--") || nu.startsWith("<!--");
+}
+
 async function fichiers(dossier, profondeur = 0) {
   const out = [];
   let entrees;
@@ -132,16 +194,15 @@ for (const f of [...liste].sort()) {
   // Le fichier de la charte lui-même DÉCRIT l'ancien style dans ses
   // commentaires : le citer n'est pas l'employer. Idem pour ce script.
   const lignes = texte.split("\n");
+  const enCommentaire = lignesCommentees(texte);
   for (const s of SIGNATURES) {
     lignes.forEach((ligne, i) => {
       s.motif.lastIndex = 0;
       if (!s.motif.test(ligne)) return;
-      // On saute les lignes de commentaire : la charte et les scripts
-      // expliquent abondamment ce qui a été retiré, et une explication n'est
-      // pas une trace. C'est ce qui distingue un audit utile d'un audit bruyant.
+      // Une explication n'est pas une trace : c'est ce qui distingue un audit
+      // utile d'un audit bruyant.
       const nu = ligne.trim();
-      if (nu.startsWith("//") || nu.startsWith("*") || nu.startsWith("/*")
-          || nu.startsWith("--") || nu.startsWith("<!--")) return;
+      if (enCommentaire[i] || ligneDeCommentaire(nu)) return;
       trouvailles.get(s.cle).push({ f, n: i + 1, texte: nu.slice(0, 150) });
     });
   }
@@ -165,13 +226,13 @@ for (const f of [...liste].sort()) {
   // On suit l'accolade plutôt que de deviner des numéros de ligne : la table
   // grandira sans que ce script ait à le savoir.
   let dansDonnees = false;
+  const enCommentaire = lignesCommentees(texte);
   texte.split("\n").forEach((ligne, i) => {
     const nu = ligne.trim();
     if (/^(export )?const [A-Z_]*(COLORS|COULEURS)\b.*=\s*\{/.test(nu)) dansDonnees = true;
     else if (dansDonnees && /^\};?$/.test(nu)) { dansDonnees = false; return; }
     if (dansDonnees) return;
-    if (nu.startsWith("//") || nu.startsWith("*") || nu.startsWith("/*")
-        || nu.startsWith("--") || nu.startsWith("<!--")) return;
+    if (enCommentaire[i] || ligneDeCommentaire(nu)) return;
     for (const m of ligne.matchAll(/#[0-9a-fA-F]{3,8}\b/g)) {
       const c = m[0].toLowerCase();
       // On ignore les formes à 4 et 8 chiffres (couleur + alpha) et les ancres
@@ -196,7 +257,46 @@ for (const [c, ou] of tri.slice(0, 18)) {
 }
 if (tri.length > 18) console.log("   … et " + (tri.length - 18) + " autre(s) teinte(s)");
 
-let total = horsPalette.size;
+// ── PASSAGE 2 : LES VARIABLES CSS FANTÔMES ────────────────────────────────
+//
+// POURQUOI CE PASSAGE EXISTE. Le passage 1 cherche des valeurs hexadécimales.
+// Il a donc laissé passer, dans les deux pages légales, un `style="color:
+// var(--accent)"` — `--accent` étant une variable de L'ANCIENNE charte, qui n'a
+// pas été redéclarée dans la nouvelle. Aucun hexadécimal, aucune signature
+// connue : invisible pour l'audit, et pourtant c'est bien un reste.
+//
+// Une variable non définie ne casse rien bruyamment : la déclaration devient
+// invalide, la propriété retombe sur sa valeur héritée, et la page reste
+// « presque » juste. C'est exactement le genre de reste qui survit à un
+// changement de charte — il ne se voit qu'en comparant à l'intention.
+//
+// On ne regarde que les pages autonomes (.html, .css) : là, une variable doit
+// être définie dans le fichier même. Dans le JSX, les couleurs viennent de
+// l'objet `G` de charte.jsx, pas de variables CSS.
+const fantomes = [];
+for (const f of [...liste].sort()) {
+  if (!/\.(html|css)$/.test(f) || /audit-charte/.test(f)) continue;
+  let texte;
+  try { texte = await readFile(join(racine, f), "utf8"); } catch { continue; }
+  const definies = new Set();
+  for (const m of texte.matchAll(/(--[a-zA-Z][\w-]*)\s*:/g)) definies.add(m[1]);
+  const enCommentaire = lignesCommentees(texte);
+  texte.split("\n").forEach((ligne, i) => {
+    if (enCommentaire[i] || ligneDeCommentaire(ligne.trim())) return;
+    for (const m of ligne.matchAll(/var\(\s*(--[a-zA-Z][\w-]*)\s*(?:,[^)]*)?\)/g)) {
+      // `var(--x, valeur)` porte sa propre solution de repli : ce n'est pas un
+      // fantôme, c'est une valeur par défaut assumée.
+      if (/,/.test(m[0])) continue;
+      if (definies.has(m[1])) continue;
+      fantomes.push({ f, n: i + 1, nom: m[1], texte: ligne.trim().slice(0, 120) });
+    }
+  });
+}
+console.log("\n" + (fantomes.length ? "❌ " : "✅ ") + "VARIABLES CSS FANTÔMES — employées, jamais définies");
+console.log("   " + (fantomes.length ? fantomes.length + " emplacement(s)" : "aucune"));
+for (const t of fantomes) console.log("   " + t.f + ":" + t.n + "  " + t.nom + "   " + t.texte);
+
+let total = horsPalette.size + fantomes.length;
 for (const s of SIGNATURES) {
   const lot = trouvailles.get(s.cle);
   total += lot.length;
