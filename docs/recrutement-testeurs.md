@@ -49,6 +49,65 @@ et des désinscriptions, et il faut rester **au-dessus de 12 en permanence**.
 
 ---
 
+## 0. Le DM Instagram, pour quelqu'un que tu connais
+
+**Le plus important d'abord : plus de la moitié de tes joueurs sont sur iPhone**
+— 106 iOS contre 90 Android sur les 7 derniers jours. Un test fermé Play ne
+concerne qu'Android, donc si tu ne sais pas sur quoi la personne joue, la
+question passe en premier. Sinon tu brûles la moitié de tes demandes.
+
+Celui-ci est écrit pour un DM : des blocs courts, pas de mise en forme (Instagram
+n'en garde aucune), et le lien vient plus tard. À coller tel quel.
+
+```
+Yo ! J'ai un service à te demander, ça prend 2 min 🙏
+
+GOAT FC sort sur le Play Store, et Google me bloque : il me faut 12 testeurs
+Android avant de pouvoir publier. Tu joues déjà, donc t'es exactement la
+personne qu'il me faut.
+
+Ce que ça implique concrètement :
+— j'ajoute ton adresse Gmail, je t'envoie un lien
+— tu installes l'app depuis le Play Store
+— tu la gardes 2 semaines
+
+C'est tout. Tu joues comme d'habitude, pas besoin d'y aller tous les jours.
+Et t'as la version Android avant tout le monde.
+
+T'es bien sur Android ? Si oui je t'ajoute 🙌
+```
+
+**Pourquoi la question Android est à la FIN** : posée en premier, elle transforme
+la demande en interrogatoire. Placée là, la personne a déjà lu ce qu'on lui
+demande et répond « oui, vas-y » d'un seul message.
+
+### Si tu sais déjà qu'il est sur Android
+
+```
+Yo ! Petit service, 2 min 🙏
+
+GOAT FC sort sur le Play Store et Google me demande 12 testeurs Android avant
+de valider. Tu joues déjà, donc t'es parfait pour ça.
+
+Tu installes l'app avec un lien que je t'envoie, tu la gardes 2 semaines, et
+tu joues comme d'habitude. Rien d'autre. En échange t'as la version Android
+avant tout le monde.
+
+Envoie-moi l'adresse Gmail avec laquelle t'es connecté au Play Store et je
+t'ajoute 🙌
+```
+
+### Et si c'est un iPhone
+
+Ne le laisse pas en plan, il te servira en octobre.
+
+```
+Ah mince, c'est Android uniquement pour ce test 😅 Mais l'iOS arrive en octobre,
+je te préviens dès que c'est dispo pour que tu l'aies en premier 🙌
+```
+
+---
+
 ## 1. Le message direct — celui qui convertit
 
 Court, il dit ce qu'ils y gagnent, et il demande un oui avant d'envoyer le lien.
