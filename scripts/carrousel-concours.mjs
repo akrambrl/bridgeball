@@ -67,6 +67,11 @@ const G = {
 
 const b64 = (buf, type) => "data:" + type + ";base64," + buf.toString("base64");
 const anton = b64(await readFile(join(ici, "polices", "anton-latin.woff2")), "font/woff2");
+// BEBAS NEUE : la police de l'app. `G.font` et `G.heading` de la charte la
+// désignent tous les deux — Anton n'y sert QUE au lettrage d'affiche
+// (`G.poster`). Les visuels composaient leur texte courant dans une pile
+// système : ils ne ressemblaient donc à l'app que par leurs titres.
+const bebas = b64(await readFile(join(ici, "polices", "bebas-neue-latin.woff2")), "font/woff2");
 const motSymbole = b64(await readFile(join(racine, "public", "logo-mot.webp")), "image/webp");
 
 // L'artwork du lot. Image de TIERS : déposée à la main dans visuels/bruts/, et
@@ -217,6 +222,7 @@ function page(d, n, total) {
   const bandeau = d.artwork ? 60 : 55;
   return `<!doctype html><html><head><meta charset="utf-8"><style>
   @font-face{font-family:'Anton';src:url(${anton}) format('woff2');font-display:block}
+  @font-face{font-family:'Bebas Neue';src:url(${bebas}) format('woff2');font-display:block}
   *{margin:0;padding:0;box-sizing:border-box}
   .c{position:absolute;inset:0}
   body{width:${L}px;height:${H}px;overflow:hidden;position:relative;background:${G.or};
@@ -229,12 +235,12 @@ function page(d, n, total) {
      n'indique combien de vues restent, et un lecteur qui ne sait pas qu'il en
      reste cinq s'arrête à la deuxième. */
   .compteur{position:absolute;top:22px;right:24px;z-index:5;
-    font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-weight:900;
-    font-size:13px;letter-spacing:1.5px;color:${G.encre};
+    font-family:'Bebas Neue',Impact,sans-serif;font-weight:400;
+    font-size:16px;letter-spacing:1.6px;color:${G.encre};
     background:rgba(245,194,43,.9);border:2.5px solid ${G.encre};border-radius:9px;
     padding:5px 10px;box-shadow:3px 3px 0 ${G.encre}}
-  .surligne{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-weight:900;
-    font-size:14px;letter-spacing:3.2px;color:${G.encre};text-transform:uppercase;
+  .surligne{font-family:'Bebas Neue',Impact,sans-serif;font-weight:400;
+    font-size:17px;letter-spacing:3.4px;color:${G.encre};text-transform:uppercase;
     text-align:center}
   /* L'ordre de peinture est indispensable : par défaut le contour est peint
      PAR-DESSUS la lettre et lui ronge l'intérieur — à cette épaisseur, les
@@ -254,11 +260,11 @@ function page(d, n, total) {
     text-shadow:8px 8px 0 rgba(0,0,0,.55);text-align:center}
   .prix{font-size:30px;line-height:1;color:${G.or};transform:skewX(-7deg);
     text-shadow:5px 5px 0 rgba(0,0,0,.55);text-align:center;letter-spacing:1px}
-  .corps{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-weight:700;
-    font-size:18.5px;line-height:1.5;color:${G.creme};text-align:center;max-width:445px}
+  .corps{font-family:'Bebas Neue',Impact,sans-serif;font-weight:400;
+    font-size:22px;letter-spacing:.4px;line-height:1.4;color:${G.creme};text-align:center;max-width:445px}
   .corps b{color:${G.or};font-weight:900}
-  .appel{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-weight:900;
-    font-size:21px;letter-spacing:1.5px;color:${G.encre};
+  .appel{font-family:'Bebas Neue',Impact,sans-serif;font-weight:400;
+    font-size:26px;letter-spacing:1.8px;color:${G.encre};
     background:${G.or};border:3px solid ${G.encre};border-radius:11px;
     padding:11px 26px;box-shadow:4px 4px 0 rgba(0,0,0,.5)}
   /* ── LES LISTES ────────────────────────────────────────────────────────
@@ -275,24 +281,32 @@ function page(d, n, total) {
      Copié sur le vrai écran (LePont.jsx, homeRulesModal) et non recomposé de
      mémoire : un motif « à peu près juste » se voit tout de suite à côté de
      l'original. */
+  /* LES TAILLES ONT ÉTÉ REMONTÉES D'ENVIRON 20 % en passant à Bebas Neue.
+     Elle est CONDENSÉE et sans bas-de-casse : à nombre de pixels égal, elle
+     rend un texte nettement plus étroit et perçu plus petit qu'une pile
+     système. Les mentions légales, elles, ont carrément gonflé de 8,5 à 12 px —
+     à 8,5 en Bebas elles n'étaient plus lisibles sur un téléphone, et une
+     mention qu'on ne lit pas ne protège personne. La graisse retombe à 400 :
+     Bebas n'a qu'une graisse, demander 700 ou 900 déclenche une graisse
+     SYNTHÉTIQUE que le navigateur épaissit lui-même, et qui empâte les lettres. */
   .cadre-liste{width:100%;max-width:452px;background:rgba(8,17,9,.5);
     border:3px solid ${G.encre};border-radius:18px;padding:0 16px;overflow:hidden;
     box-shadow:inset 3px 3px 0 rgba(8,17,9,.35)}
   .ligne{display:flex;align-items:flex-start;gap:13px;padding:12px 0;
     border-bottom:2px solid ${G.encre};
-    font-family:system-ui,-apple-system,'Segoe UI',sans-serif;text-align:left}
+    font-family:'Bebas Neue',Impact,sans-serif;text-align:left}
   .ligne:last-child{border-bottom:none}
   /* La pastille du numéro : aplat d'or, RAYON FRANC et non cercle, cerclée
      d'encre. Le cercle sans contour était le dernier reste de l'ancien
      vocabulaire, et il a été retiré de l'app pour cette raison. */
   .num{flex:0 0 auto;min-width:30px;height:30px;border-radius:9px;background:${G.or};
-    color:${G.encre};font-family:'Anton',Impact,sans-serif;font-size:19px;
+    color:${G.encre};font-family:'Anton',Impact,sans-serif;font-size:20px;
     display:flex;align-items:center;justify-content:center;
     border:2px solid ${G.encre};margin-top:1px}
-  .titreLigne{font-weight:900;font-size:17px;color:${G.or};line-height:1.28}
-  .sousLigne{font-weight:700;font-size:14.5px;color:rgba(242,231,206,.82);
+  .titreLigne{font-weight:400;font-size:21px;letter-spacing:.4px;color:${G.or};line-height:1.28}
+  .sousLigne{font-weight:400;font-size:17px;letter-spacing:.3px;color:rgba(242,231,206,.82);
     line-height:1.35;margin-top:2px}
-  .texteLigne{flex:1;font-weight:700;font-size:16px;color:${G.creme};line-height:1.42}
+  .texteLigne{flex:1;font-weight:400;font-size:19px;letter-spacing:.3px;color:${G.creme};line-height:1.42}
   .croixMarque{flex:0 0 auto;font-size:19px;color:${G.maillot};line-height:1.2;margin-top:-1px}
   .puceMarque{flex:0 0 auto;font-size:17px;color:${G.or};font-weight:900;line-height:1.3}
   /* La 1re place se distingue par un APLAT D'OR sur sa ligne, pas par un cadre
@@ -314,8 +328,8 @@ function page(d, n, total) {
     border-radius:14px;overflow:hidden;box-shadow:7px 7px 0 rgba(0,0,0,.55);line-height:0}
   .cadreLot img{width:100%;height:auto;display:block}
   .mentions{position:absolute;left:0;right:0;bottom:12px;padding:0 34px;
-    font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-weight:600;
-    font-size:8.5px;line-height:1.4;color:rgba(240,233,214,.5);text-align:center}
+    font-family:'Bebas Neue',Impact,sans-serif;font-weight:400;
+    font-size:12px;letter-spacing:.2px;line-height:1.35;color:rgba(240,233,214,.62);text-align:center}
   .cadre{position:absolute;inset:0;box-shadow:inset 0 0 0 11px ${G.encre};
     pointer-events:none}
   </style></head><body>
