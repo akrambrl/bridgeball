@@ -27,7 +27,8 @@
     "ios:visuels": "node scripts/visuels-ios.mjs",
     "charte": "node scripts/audit-charte.mjs",
     "sql:reclamation": "node scripts/sql-reclamation.essai.mjs",
-    "carrousel": "node scripts/carrousel-concours.mjs"
+    "carrousel": "node scripts/carrousel-concours.mjs",
+    "posts": "node scripts/posts-concours.mjs"
   },
   "dependencies": {
     "@capacitor/app": "^8.1.1",
