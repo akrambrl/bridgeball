@@ -75,7 +75,7 @@ export const CLUB_SPELLS: Record<string, Spell[]> = {
   "Edinson Cavani": [{ club: "Palermo", from: 2007, to: 2010 }, { club: "SSC Napoli", from: 2010, to: 2013 }, { club: "PSG", from: 2013, to: 2020 }, { club: "Manchester United", from: 2020, to: 2022 }, { club: "Valencia", from: 2022, to: 2023 }],
   "Marco Verratti": [{ club: "PSG", from: 2012, to: 2023 }],
   "Marquinhos": [{ club: "AS Roma", from: 2012, to: 2013 }, { club: "PSG", from: 2013, to: 2026 }],
-  "Thiago Silva": [{ club: "AC Milan", from: 2009, to: 2012 }, { club: "PSG", from: 2012, to: 2020 }, { club: "Chelsea", from: 2020, to: 2024 }, { club: "Fluminense", from: 2024, to: 2026 }],
+  "Thiago Silva": [{ club: "Fluminense", from: 2006, to: 2009 }, { club: "AC Milan", from: 2009, to: 2012 }, { club: "PSG", from: 2012, to: 2020 }, { club: "Chelsea", from: 2020, to: 2024 }, { club: "Fluminense", from: 2024, to: 2026 }],
 
   // ── Juventus ────────────────────────────────────────────────
   "Gianluigi Buffon": [{ club: "Parma FC", from: 1995, to: 2001 }, { club: "Juventus FC", from: 2001, to: 2018 }, { club: "PSG", from: 2018, to: 2019 }, { club: "Juventus FC", from: 2019, to: 2021 }, { club: "Parma FC", from: 2021, to: 2023 }],
@@ -176,7 +176,7 @@ export const CLUB_SPELLS: Record<string, Spell[]> = {
   "Jan Vertonghen": [{ club: "Ajax Amsterdam", from: 2006, to: 2012 }, { club: "Tottenham", from: 2012, to: 2020 }],
   // Leicester / Everton
   "Jamie Vardy": [{ club: "Leicester City", from: 2012, to: 2026 }],
-  "Romelu Lukaku": [{ club: "Everton", from: 2014, to: 2017 }, { club: "Manchester United", from: 2017, to: 2019 }, { club: "Inter Milan", from: 2019, to: 2021 }, { club: "Chelsea", from: 2021, to: 2022 }, { club: "Inter Milan", from: 2022, to: 2023 }, { club: "AS Roma", from: 2023, to: 2024 }, { club: "SSC Napoli", from: 2024, to: 2026 }, { club: "Fenerbahce", from: 2026, to: 2027 }],
+  "Romelu Lukaku": [{ club: "Anderlecht", from: 2009, to: 2011 }, { club: "Chelsea", from: 2011, to: 2014 }, { club: "Everton", from: 2014, to: 2017 }, { club: "Manchester United", from: 2017, to: 2019 }, { club: "Inter Milan", from: 2019, to: 2021 }, { club: "Chelsea", from: 2021, to: 2022 }, { club: "Inter Milan", from: 2022, to: 2023 }, { club: "AS Roma", from: 2023, to: 2024 }, { club: "SSC Napoli", from: 2024, to: 2026 }, { club: "Fenerbahce", from: 2026, to: 2027 }],
   "Seamus Coleman": [{ club: "Everton", from: 2009, to: 2026 }],
 
   // ── Cadres Serie A ──────────────────────────────────────────
@@ -193,7 +193,7 @@ export const CLUB_SPELLS: Record<string, Spell[]> = {
   "Wojciech Szczęsny": [{ club: "Arsenal", from: 2009, to: 2015 }, { club: "AS Roma", from: 2015, to: 2017 }, { club: "Juventus FC", from: 2017, to: 2024 }, { club: "Barcelona", from: 2024, to: 2026 }],
   "Federico Chiesa": [{ club: "ACF Fiorentina", from: 2016, to: 2020 }, { club: "Juventus FC", from: 2020, to: 2024 }, { club: "Liverpool", from: 2024, to: 2026 }],
   "Andrea Barzagli": [{ club: "Palermo", from: 2003, to: 2008 }, { club: "Wolfsburg", from: 2008, to: 2011 }, { club: "Juventus FC", from: 2011, to: 2019 }],
-  "Carlos Tevez": [{ club: "West Ham", from: 2006, to: 2007 }, { club: "Manchester United", from: 2007, to: 2009 }, { club: "Manchester City", from: 2009, to: 2013 }, { club: "Juventus FC", from: 2013, to: 2015 }, { club: "Boca Juniors", from: 2015, to: 2016 }],
+  "Carlos Tevez": [{ club: "Boca Juniors", from: 2001, to: 2004 }, { club: "Corinthians", from: 2005, to: 2006 }, { club: "West Ham", from: 2006, to: 2007 }, { club: "Manchester United", from: 2007, to: 2009 }, { club: "Manchester City", from: 2009, to: 2013 }, { club: "Juventus FC", from: 2013, to: 2015 }, { club: "Boca Juniors", from: 2015, to: 2016 }],
   "Douglas Costa": [{ club: "Shakhtar Donetsk", from: 2010, to: 2015 }, { club: "Bayern Munich", from: 2015, to: 2017 }, { club: "Juventus FC", from: 2017, to: 2020 }],
   // AC Milan
   "Paolo Maldini": [{ club: "AC Milan", from: 1985, to: 2009 }],
@@ -257,7 +257,11 @@ export const CLUB_SPELLS: Record<string, Spell[]> = {
   "Álvaro Morata": [{ club: "Real Madrid", from: 2010, to: 2014 }, { club: "Juventus FC", from: 2014, to: 2016 }, { club: "Real Madrid", from: 2016, to: 2017 }, { club: "Chelsea", from: 2017, to: 2019 }, { club: "Atletico Madrid", from: 2019, to: 2024 }, { club: "AC Milan", from: 2024, to: 2025 }],
   "Thomas Partey": [{ club: "Atletico Madrid", from: 2015, to: 2020 }, { club: "Arsenal", from: 2020, to: 2025 }],
   "Rodri": [{ club: "Villarreal", from: 2015, to: 2018 }, { club: "Atletico Madrid", from: 2018, to: 2019 }, { club: "Manchester City", from: 2019, to: 2026 }],
-  "Ángel Correa": [{ club: "Atletico Madrid", from: 2015, to: 2025 }, { club: "Tigres", from: 2025, to: 2026 }],
+  // « Tigres » tout court désigne l'Atlético Tigre argentin dans la base — le club
+  // mexicain s'y écrit « Tigres UANL », et la règle en tête de fichier veut une
+  // égalité stricte avec players.jsx. Écrit court, ce passage ne correspondait à
+  // rien et Correa n'avait de coéquipier nulle part après 2025.
+  "Ángel Correa": [{ club: "Atletico Madrid", from: 2015, to: 2025 }, { club: "Tigres UANL", from: 2025, to: 2026 }],
   "Rodrigo De Paul": [{ club: "Valencia", from: 2014, to: 2016 }, { club: "Udinese Calcio", from: 2016, to: 2021 }, { club: "Atletico Madrid", from: 2021, to: 2025 }, { club: "Inter Miami", from: 2025, to: 2026 }],
   // Barcelone (moderne)
   "Frenkie de Jong": [{ club: "Ajax Amsterdam", from: 2015, to: 2019 }, { club: "Barcelona", from: 2019, to: 2026 }],
@@ -293,7 +297,7 @@ export const CLUB_SPELLS: Record<string, Spell[]> = {
   // Barcelone (légendes)
   "Deco": [{ club: "Porto", from: 1999, to: 2004 }, { club: "Barcelona", from: 2004, to: 2008 }, { club: "Chelsea", from: 2008, to: 2010 }, { club: "Fluminense", from: 2010, to: 2013 }],
   "Víctor Valdés": [{ club: "Barcelona", from: 2002, to: 2014 }, { club: "Manchester United", from: 2015, to: 2016 }],
-  "Éric Abidal": [{ club: "Lyon", from: 2004, to: 2007 }, { club: "Barcelona", from: 2007, to: 2013 }, { club: "Monaco", from: 2013, to: 2014 }],
+  "Éric Abidal": [{ club: "Monaco", from: 2000, to: 2002 }, { club: "Lille", from: 2002, to: 2004 }, { club: "Lyon", from: 2004, to: 2007 }, { club: "Barcelona", from: 2007, to: 2013 }, { club: "Monaco", from: 2013, to: 2014 }],
   "Seydou Keita": [{ club: "Sevilla", from: 2007, to: 2008 }, { club: "Barcelona", from: 2008, to: 2012 }],
   // Séville / Valence / Villarreal / Athletic / Sociedad / Betis
   "Jesús Navas": [{ club: "Sevilla", from: 2003, to: 2013 }, { club: "Manchester City", from: 2013, to: 2017 }, { club: "Sevilla", from: 2017, to: 2025 }],
@@ -320,7 +324,7 @@ export const CLUB_SPELLS: Record<string, Spell[]> = {
   "Corentin Tolisso": [{ club: "Lyon", from: 2013, to: 2017 }, { club: "Bayern Munich", from: 2017, to: 2022 }, { club: "Lyon", from: 2022, to: 2026 }],
   "Benjamin Pavard": [{ club: "Lille", from: 2015, to: 2016 }, { club: "Stuttgart", from: 2016, to: 2019 }, { club: "Bayern Munich", from: 2019, to: 2023 }, { club: "Inter Milan", from: 2023, to: 2026 }],
   "Niklas Süle": [{ club: "Hoffenheim", from: 2009, to: 2017 }, { club: "Bayern Munich", from: 2017, to: 2022 }, { club: "Borussia Dortmund", from: 2022, to: 2026 }],
-  "Philipp Lahm": [{ club: "Stuttgart", from: 2003, to: 2005 }, { club: "Bayern Munich", from: 2005, to: 2017 }],
+  "Philipp Lahm": [{ club: "Bayern Munich", from: 2002, to: 2003 }, { club: "Stuttgart", from: 2003, to: 2005 }, { club: "Bayern Munich", from: 2005, to: 2017 }],
   // Dortmund
   "Marco Reus": [{ club: "Borussia Mönchengladbach", from: 2009, to: 2012 }, { club: "Borussia Dortmund", from: 2012, to: 2024 }, { club: "LA Galaxy", from: 2024, to: 2026 }],
   "Mats Hummels": [{ club: "Borussia Dortmund", from: 2008, to: 2016 }, { club: "Bayern Munich", from: 2016, to: 2019 }, { club: "Borussia Dortmund", from: 2019, to: 2024 }, { club: "AS Roma", from: 2024, to: 2025 }],
@@ -347,7 +351,7 @@ export const CLUB_SPELLS: Record<string, Spell[]> = {
   "Klaas-Jan Huntelaar": [{ club: "Ajax Amsterdam", from: 2006, to: 2009 }, { club: "Real Madrid", from: 2009, to: 2010 }, { club: "AC Milan", from: 2010, to: 2011 }, { club: "Schalke", from: 2011, to: 2017 }, { club: "Ajax Amsterdam", from: 2017, to: 2021 }],
   "Julian Draxler": [{ club: "Schalke", from: 2011, to: 2015 }, { club: "Wolfsburg", from: 2015, to: 2017 }, { club: "PSG", from: 2017, to: 2023 }],
   "Benedikt Höwedes": [{ club: "Schalke", from: 2007, to: 2017 }, { club: "Juventus FC", from: 2017, to: 2018 }, { club: "Lokomotiv Moscow", from: 2018, to: 2020 }],
-  "Claudio Pizarro": [{ club: "Bayern Munich", from: 2001, to: 2007 }, { club: "Chelsea", from: 2007, to: 2008 }, { club: "Werder Bremen", from: 2008, to: 2012 }, { club: "Bayern Munich", from: 2012, to: 2015 }, { club: "Werder Bremen", from: 2015, to: 2020 }],
+  "Claudio Pizarro": [{ club: "Werder Bremen", from: 1999, to: 2001 }, { club: "Bayern Munich", from: 2001, to: 2007 }, { club: "Chelsea", from: 2007, to: 2008 }, { club: "Werder Bremen", from: 2008, to: 2012 }, { club: "Bayern Munich", from: 2012, to: 2015 }, { club: "Werder Bremen", from: 2015, to: 2020 }],
   "Sami Khedira": [{ club: "Stuttgart", from: 2006, to: 2010 }, { club: "Real Madrid", from: 2010, to: 2015 }, { club: "Juventus FC", from: 2015, to: 2021 }],
   "Sébastien Haller": [{ club: "Eintracht Frankfurt", from: 2017, to: 2019 }, { club: "West Ham", from: 2019, to: 2021 }, { club: "Ajax Amsterdam", from: 2021, to: 2022 }, { club: "Borussia Dortmund", from: 2022, to: 2024 }],
   "Luka Jović": [{ club: "Eintracht Frankfurt", from: 2017, to: 2019 }, { club: "Real Madrid", from: 2019, to: 2023 }, { club: "AC Milan", from: 2024, to: 2025 }],
