@@ -92,6 +92,39 @@ for (const nom of LOT_FICHIERS) {
 const ECHELLE = 2;
 const L = 540, H = 960;   // → 1080 × 1920
 
+// ── LES ZONES QUE LA PLATEFORME RECOUVRE ───────────────────────────────────
+//
+// Une image postée sur TikTok ou en story Instagram n'est pas montrée seule :
+// la plateforme pose PAR-DESSUS le pseudo, la légende, le son, et la colonne
+// de boutons (like, commentaire, partage). Ce qui tombe dessous est masqué.
+//
+// La première version posait les mentions légales à 12 px du bas — exactement
+// sous la légende et le pseudo. Elles étaient donc invisibles là où elles sont
+// le plus nécessaires, et un visuel de concours dont les mentions ne se lisent
+// pas ne vaut pas mieux qu'un visuel sans mentions.
+//
+// Les marges ci-dessous sont en pixels de COMPOSITION (moitié de la sortie,
+// l'échelle étant de 2). Elles sont volontairement moins larges que les
+// « safe zones » publicitaires de TikTok, qui réservent près de 500 px en bas :
+// ce carrousel est d'abord un carrousel de FIL Instagram, où rien ne recouvre
+// l'image. On protège donc ce qui compte — le texte — sans amputer la
+// composition de moitié pour un cas qui n'est pas le principal.
+const RESERVE = {
+  haut: 75,     // 150 px en sortie : barre de recherche / entête de story
+  bas: 190,     // 380 px : légende, pseudo, son
+  droite: 70,   // 140 px : la colonne des boutons d'action…
+  // …mais SEULEMENT dans la moitié basse. La colonne like / commentaire /
+  // partage ne court pas sur toute la hauteur : elle est ancrée en bas, au-
+  // dessus de la légende. Un titre posé à 20 % de hauteur n'est pas recouvert.
+  //
+  // Cette précision n'est pas un détail de confort : la première version du
+  // contrôle traitait la bande de droite comme pleine hauteur et signalait les
+  // TITRES. Suivre ce contrôle-là aurait conduit à rétrécir chaque titre pour
+  // éviter un recouvrement qui n'existe pas. Un contrôle trop sévère se fait
+  // désobéir, puis ignorer — et il emporte les vrais signalements avec lui.
+  droiteDepuis: 0.45,
+};
+
 // ── LE COMPTE INSTAGRAM ────────────────────────────────────────────────────
 // À VÉRIFIER AVANT DE PUBLIER. Aucun compte n'était déclaré nulle part dans le
 // dépôt : celui-ci est déduit du nom de l'app, pas constaté. Un pseudo faux
@@ -232,9 +265,17 @@ const MENTIONS_EA = " · EA SPORTS FC 27 est une marque d'Electronic Arts Inc., 
   + "ni organisateur, ni sponsor, ni partenaire de ce concours.";
 
 function page(d, n, total) {
-  // Le bandeau de nuit occupe la moitié basse. Sur la diapositive du lot il en
-  // prend plus, l'artwork devant tenir sa hauteur entière.
-  const bandeau = d.artwork ? 60 : 55;
+  // ── OÙ PASSE LA LIGNE DE PARTAGE ────────────────────────────────────────
+  // Le bandeau de nuit prenait la moitié basse. Il en prend désormais près des
+  // trois quarts, et ce n'est pas un choix esthétique : les 190 derniers pixels
+  // sont RÉSERVÉS à la plateforme (voir RESERVE), donc inutilisables. Sans
+  // remonter cette ligne, le contenu se retrouvait comprimé dans ce qui restait
+  // — le contrôle de débordement a refusé deux diapositives, ce qui est
+  // exactement son travail.
+  //
+  // L'aplat de nuit, lui, descend toujours jusqu'au bord : c'est une couleur,
+  // qu'elle soit recouverte ne coûte rien. Seul le TEXTE remonte.
+  const bandeau = d.artwork ? 74 : 70;
   return `<!doctype html><html><head><meta charset="utf-8"><style>
   @font-face{font-family:'Anton';src:url(${anton}) format('woff2');font-display:block}
   @font-face{font-family:'Bebas Neue';src:url(${bebas}) format('woff2');font-display:block}
@@ -249,7 +290,9 @@ function page(d, n, total) {
   /* Le compteur de diapositives. Il n'est pas décoratif : sur Instagram, rien
      n'indique combien de vues restent, et un lecteur qui ne sait pas qu'il en
      reste cinq s'arrête à la deuxième. */
-  .compteur{position:absolute;top:22px;right:24px;z-index:5;
+  /* Le compteur descend sous l'entête de la plateforme et se décale de la
+     colonne de boutons. */
+  .compteur{position:absolute;top:${RESERVE.haut + 14}px;right:${RESERVE.droite + 14}px;z-index:5;
     font-family:'Bebas Neue',Impact,sans-serif;font-weight:400;
     font-size:16px;letter-spacing:1.6px;color:${G.encre};
     background:rgba(245,194,43,.9);border:2.5px solid ${G.encre};border-radius:9px;
@@ -268,7 +311,7 @@ function page(d, n, total) {
   .bas{position:absolute;left:0;right:0;bottom:0;height:${bandeau}%;background:${G.nuit};
     box-shadow:inset 0 10px 0 ${G.encre};
     display:flex;flex-direction:column;align-items:center;justify-content:center;
-    gap:15px;padding:30px 36px 26px}
+    gap:15px;padding:30px ${36 + RESERVE.droite / 2}px ${RESERVE.bas + 44}px}
   /* Le gros chiffre : « 0 » et « 0 € » sont les deux arguments qui se retiennent.
      Ils méritent la place que prend un chiffre, pas celle que prend une phrase. */
   .grosMot{font-size:150px;line-height:.85;color:${G.or};transform:skewX(-7deg);
@@ -342,9 +385,26 @@ function page(d, n, total) {
   .cadreLot{flex:0 0 auto;width:100%;max-width:430px;border:5px solid ${G.encre};
     border-radius:14px;overflow:hidden;box-shadow:7px 7px 0 rgba(0,0,0,.55);line-height:0}
   .cadreLot img{width:100%;height:auto;display:block}
-  .mentions{position:absolute;left:0;right:0;bottom:12px;padding:0 34px;
+  /* Les mentions se posent AU-DESSUS de la zone que la plateforme recouvre, et
+     non collées au bord. Voir RESERVE en tête de fichier. */
+  .mentions{position:absolute;left:0;right:${RESERVE.droite}px;bottom:${RESERVE.bas}px;
+    padding:0 12px 0 34px;
     font-family:'Bebas Neue',Impact,sans-serif;font-weight:400;
     font-size:12px;letter-spacing:.2px;line-height:1.35;color:rgba(240,233,214,.62);text-align:center}
+  /* ── LA RÉSERVE, HABILLÉE ────────────────────────────────────────────────
+     Les 380 derniers pixels sont laissés au pseudo, à la légende et au son de
+     la plateforme. Vides, ils se lisent comme un oubli dans le fil Instagram,
+     où rien ne recouvre l'image.
+     On y pose donc la trame sérigraphiée de la charte — de la DÉCORATION et
+     pas du texte. Elle ferme la composition, et le jour où TikTok l'a
+     recouverte on n'a rien perdu. Poser une signature écrite ici aurait
+     demandé une exception au contrôle des zones, et une exception dans un
+     contrôle finit toujours par en accueillir une deuxième. */
+  .reserve{position:absolute;left:0;right:0;bottom:0;height:${RESERVE.bas}px;
+    pointer-events:none;opacity:.5;background-size:7px 7px;
+    background-image:radial-gradient(circle, rgba(245,194,43,.22) 1.3px, transparent 1.6px);
+    -webkit-mask-image:linear-gradient(to bottom, transparent, #000 55%);
+    mask-image:linear-gradient(to bottom, transparent, #000 55%)}
   .cadre{position:absolute;inset:0;box-shadow:inset 0 0 0 11px ${G.encre};
     pointer-events:none}
   </style></head><body>
@@ -385,6 +445,7 @@ function page(d, n, total) {
       ${d.appel ? `<div class="appel">${d.appel}</div>` : ""}
       <div class="mentions">${MENTIONS}${d.artwork || d.puces || d.podium ? MENTIONS_EA : ""}</div>
     </div>
+    <div class="reserve"></div>
     <div class="cadre"></div>
   </body></html>`;
 }
@@ -417,7 +478,7 @@ const navigateur = await chromium.launch({
   ...(process.env.PLAYWRIGHT_CHROMIUM ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM } : {}),
 });
 
-let debordements = 0;
+let debordements = 0, recouverts = 0;
 for (const [i, d] of DIAPOS.entries()) {
   const ctx = await navigateur.newContext({
     viewport: { width: L, height: H }, deviceScaleFactor: ECHELLE });
@@ -472,6 +533,41 @@ for (const [i, d] of DIAPOS.entries()) {
   });
   if (bas.deborde) debordements++;
 
+  // ── AUCUN TEXTE DANS LA ZONE QUE LA PLATEFORME RECOUVRE ──────────────────
+  //
+  // Le contrôle que ce script n'avait pas, et qui a laissé passer des mentions
+  // légales posées à 12 px du bas — c'est-à-dire sous la légende TikTok. On
+  // mesure chaque bloc de texte contre les trois bandes réservées, au lieu
+  // d'espérer qu'un réglage de padding suffise.
+  //
+  // Le DÉCOR est exclu : l'aplat de nuit, le décor d'or et le cadre d'encre
+  // descendent jusqu'au bord et c'est voulu — une couleur recouverte ne coûte
+  // rien. Seul ce qui se LIT doit rester visible.
+  const masques = await onglet.evaluate((R) => {
+    const dedans = [];
+    const zones = [
+      { nom: "haut", test: (b) => b.top < R.haut },
+      { nom: "bas", test: (b) => b.bottom > innerHeight - R.bas },
+      { nom: "droite", test: (b) => b.right > innerWidth - R.droite
+                                 && b.bottom > innerHeight * R.droiteDepuis },
+    ];
+    const aDuTexte = (e) => [...e.childNodes].some(
+      (n) => n.nodeType === 3 && n.textContent.trim().length > 0);
+    for (const e of document.querySelectorAll("body *")) {
+      if (e.classList.contains("c") || e.classList.contains("cadre")) continue;
+      if (!aDuTexte(e)) continue;
+      const b = e.getBoundingClientRect();
+      if (b.width === 0 || b.height === 0) continue;
+      for (const z of zones) {
+        if (z.test(b)) dedans.push(z.nom + ":" + (e.className || e.tagName)
+          + " (" + Math.round(b.top) + "→" + Math.round(b.bottom) + ")");
+      }
+    }
+    return dedans;
+  }, RESERVE);
+  if (masques.length) recouverts++;
+
+
   const chemin = join(sortie, d.fichier + ".png");
   await onglet.screenshot({ path: chemin });
   await ctx.close();
@@ -480,8 +576,9 @@ for (const [i, d] of DIAPOS.entries()) {
   await alleger(chemin, d.artwork ? 256 : 128);
   const taille = Math.round((await readFile(chemin)).length / 1024);
   console.log(`  ${(i + 1 + "").padStart(2, "0")}/${DIAPOS.length}  ${d.fichier}.png`
-    + `  ${taille} ko  titre ${titre.taille}px (${titre.largeur}/${titre.dispo})`
-    + `  bas ${bas.deborde ? "❌ DÉBORDE" : "✅ " + bas.marge + "px de marge"}`);
+    + `  ${taille} ko  titre ${titre.taille}px`
+    + `  bas ${bas.deborde ? "❌ DÉBORDE" : "✅ " + bas.marge + "px"}`
+    + `  zones ${masques.length ? "❌ " + masques.join(" · ") : "✅ dégagées"}`);
 }
 
 await navigateur.close();
@@ -489,7 +586,12 @@ await navigateur.close();
 console.log("\n" + (debordements
   ? "❌ " + debordements + " diapositive(s) débordent — raccourcis le texte ou réduis la liste."
   : "✅ les " + DIAPOS.length + " diapositives tiennent dans leur cadre."));
+console.log(recouverts
+  ? "❌ " + recouverts + " diapositive(s) ont du texte sous l'interface de la plateforme."
+  : "✅ aucun texte sous le pseudo, la légende ou les boutons de la plateforme"
+    + "  (réserves : " + RESERVE.haut * 2 + " px en haut, " + RESERVE.bas * 2
+    + " en bas, " + RESERVE.droite * 2 + " à droite, en pixels de sortie)");
 console.log("   " + sortie);
 console.log("\nÀ poster dans l'ordre des noms de fichiers. Instagram et TikTok gardent");
 console.log("l'ordre de sélection, pas l'ordre alphabétique : sélectionne-les une par une.");
-process.exit(debordements ? 1 : 0);
+process.exit(debordements || recouverts ? 1 : 0);

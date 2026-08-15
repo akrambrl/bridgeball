@@ -99,6 +99,18 @@ for (const nom of LOT_FICHIERS) {
 // garde des tailles de police lisibles dans le code et sort du 2× net.
 const ECHELLE = 2;
 const story = (f) => f.h > 800;
+
+// ── LES ZONES QUE LA PLATEFORME RECOUVRE ───────────────────────────────────
+//
+// Une image postée en story ou sur TikTok n'est pas montrée seule : pseudo,
+// légende, son et colonne de boutons se posent PAR-DESSUS. Les mentions
+// légales étaient à 12 px du bas — donc invisibles là où elles sont le plus
+// nécessaires.
+//
+// Ne s'applique QU'AU FORMAT VERTICAL. Le 1080×1350 est un format de FIL :
+// l'interface s'y place SOUS l'image, pas dessus. Lui imposer les mêmes marges
+// amputerait la composition pour un recouvrement qui n'existe pas.
+const RESERVE_STORY = { haut: 75, bas: 190, droite: 70 };
 const FORMATS = {
   feed:  { l: 540, h: 675 },   // → 1080 × 1350, le portrait du fil
   story: { l: 540, h: 960 },   // → 1080 × 1920, stories et TikTok
@@ -234,7 +246,7 @@ async function ecrireLegendes(cles) {
     "obligatoires en petit ; la légende les répète parce que c'est elle qui est lue,",
     "et parce qu'un visuel recadré par la plateforme peut les rogner.",
     ""];
-  for (const cle of cles) {
+for (const cle of cles) {
     const l = LEGENDES[cle];
     if (!l) continue;
     bouts.push("## " + cle, "", "### Instagram", "", "```", l.instagram, "```", "",
@@ -252,7 +264,14 @@ function page(a, f) {
   // Avec l'artwork, le bandeau prend nettement plus de place : le cadre 16/9 doit
   // tenir sa hauteur ENTIÈRE, plus le corps, l'appel et les mentions.
   const avecArt = !!(a.artwork && artLot);
-  const bandeau = avecArt ? (story ? 58 : 60) : (story ? 52 : 45);
+  // En STORY, le bandeau remonte : les 190 derniers pixels de composition sont
+  // réservés à l'interface de la plateforme, donc inutilisables. Le format de
+  // fil, lui, ne change pas.
+  // Réglé PAR MESURE et non repris du carrousel : ce visuel porte un
+  // mot-symbole de 210 px et un titre de 61 px, contre 150 et 54 là-bas. À 74 %,
+  // la bande d'or tombait à 250 px et coupait « REPART AVEC » — le contrôle du
+  // titre ne le voit pas, il mesure la LARGEUR, pas la hauteur disponible.
+  const bandeau = avecArt ? (story ? 70 : 66) : (story ? 60 : 45);
   const tTitre = story ? 62 : 54;        // corps du titre en relief
   const tVedette = story ? 96 : 78;
   return `<!doctype html><html><head><meta charset="utf-8"><style>
@@ -265,8 +284,9 @@ function page(a, f) {
      titre en relief. */
   .haut{position:absolute;left:0;right:0;top:0;height:${100 - bandeau}%;overflow:hidden}
   .contenuHaut{position:absolute;inset:0;display:flex;flex-direction:column;
-    align-items:center;justify-content:center;gap:${story ? 14 : 10}px;padding:${story ? 42 : 32}px 30px}
-  .mot{width:${story ? 210 : 186}px;height:auto;display:block}
+    align-items:center;justify-content:center;gap:${story ? 11 : 10}px;
+    padding:${story ? 26 : 32}px 30px ${story ? 20 : 32}px}
+  .mot{width:${story ? 178 : 186}px;height:auto;display:block}
   .surligne{font-family:'Bebas Neue',Impact,sans-serif;font-weight:400;
     font-size:${story ? 18 : 16}px;letter-spacing:${story ? 3.6 : 3}px;color:${G.encre};
     text-transform:uppercase;text-align:center}
@@ -282,7 +302,9 @@ function page(a, f) {
   .bas{position:absolute;left:0;right:0;bottom:0;height:${bandeau}%;background:${G.nuit};
     box-shadow:inset 0 ${story ? 11 : 9}px 0 ${G.encre};
     display:flex;flex-direction:column;align-items:center;justify-content:center;
-    gap:${story ? 16 : 12}px;padding:${story ? 34 : 26}px ${story ? 40 : 32}px}
+    gap:${story ? 12 : 10}px;
+    padding:${story ? 34 : 26}px ${story ? 40 + RESERVE_STORY.droite / 2 : 32}px
+            ${story ? RESERVE_STORY.bas + 30 : 26}px ${story ? 40 : 32}px}
   .vedette{font-size:${tVedette}px;line-height:1;letter-spacing:1px;color:${G.or};
     transform:skewX(-7deg);text-shadow:${story ? 6 : 5}px ${story ? 6 : 5}px 0 rgba(0,0,0,.55);
     text-align:center}
@@ -307,7 +329,7 @@ function page(a, f) {
      dans un 16/9 en mode cover, ce bandeau se serait fait rogner sur les cotes
      — c'est-a-dire perdre le logo a gauche ET le joueur a droite, pour ne
      garder que le fond noir du milieu. */
-  .cadreLot{flex:0 0 auto;width:100%;max-width:${story ? 430 : 390}px;
+  .cadreLot{flex:0 0 auto;width:100%;max-width:${story ? 360 : 330}px;
     border:${story ? 5 : 4}px solid ${G.encre};border-radius:${story ? 14 : 11}px;
     overflow:hidden;box-shadow:${story ? 7 : 6}px ${story ? 7 : 6}px 0 rgba(0,0,0,.55);
     line-height:0}
@@ -326,7 +348,15 @@ function page(a, f) {
      crème à 45 % tient encore 6,7 de contraste sur la nuit. */
   .mentions{font-family:'Bebas Neue',Impact,sans-serif;font-weight:400;
     font-size:${story ? 13 : 12}px;letter-spacing:.2px;line-height:1.35;color:rgba(240,233,214,.68);
-    text-align:center;max-width:${story ? 440 : 420}px}
+    text-align:center;max-width:${story ? 476 : 452}px}
+  /* La trame de la charte dans la réserve : de la décoration, pas du texte.
+     Vide, cette bande se lit comme un oubli ; recouverte par la plateforme, on
+     n'y perd rien. */
+  .reserve{position:absolute;left:0;right:0;bottom:0;height:${RESERVE_STORY.bas}px;
+    pointer-events:none;opacity:.5;background-size:7px 7px;
+    background-image:radial-gradient(circle, rgba(245,194,43,.22) 1.3px, transparent 1.6px);
+    -webkit-mask-image:linear-gradient(to bottom, transparent, #000 55%);
+    mask-image:linear-gradient(to bottom, transparent, #000 55%)}
   .cadre{position:absolute;inset:0;box-shadow:inset 0 0 0 ${story ? 11 : 9}px ${G.encre};
     pointer-events:none}
   </style></head><body>
@@ -347,6 +377,7 @@ function page(a, f) {
       <div class="mentions">${a.artwork && artLot
         ? a.mentions + " " + a.mentionsArtwork : a.mentions}</div>
     </div>
+    ${story ? '<div class="reserve"></div>' : ""}
     <div class="cadre"></div>
   </body></html>`;
 }
@@ -383,6 +414,7 @@ if (cles.includes("cadeau")) {
       + "  en attendant, le visuel écrit « FC 27 » en lettres.");
 }
 
+let deborde = 0;
 const sortie = join(racine, "visuels", "annonces");
 await mkdir(sortie, { recursive: true });
 
@@ -430,6 +462,25 @@ for (const cle of cles) {
       return { px, dispo: Math.round(dispo), large: Math.round(large()) };
     }, { ombre: story(f) ? 8 : 7, plancher: 26 });
     await onglet.waitForTimeout(120);
+    // ── LE BANDEAU BAS DÉBORDE-T-IL ? ────────────────────────────────────────
+    // Le contrôle qui manquait à CE générateur, et que le carrousel avait déjà.
+    // `.bas` est en hauteur fixe : si son contenu est plus grand, il déborde
+    // VERS LE HAUT et recouvre le titre — c'est exactement ce qui est arrivé au
+    // format story quand la réserve de la plateforme a mangé 190 px. Rien ne le
+    // signalait : ni la compilation, ni la mesure du titre, qui regarde la
+    // largeur et pas la hauteur disponible.
+    const debord = await onglet.evaluate(() => {
+      const b = document.querySelector(".bas");
+      const haut = document.querySelector(".haut").getBoundingClientRect();
+      let plusHaut = Infinity;
+      for (const e of b.children) plusHaut = Math.min(plusHaut, e.getBoundingClientRect().top);
+      return { trop: Math.round(Math.max(0, haut.bottom - plusHaut)),
+               interne: b.scrollHeight > b.clientHeight + 1 };
+    });
+    if (debord.trop > 0 || debord.interne) deborde++;
+    if (debord.trop > 0 || debord.interne)
+      console.log("      ↳ débordement : " + debord.trop + "px sur le titre"
+        + (debord.interne ? ", et le bandeau lui-même déborde" : ""));
     const chemin = join(sortie, ANNONCES[cle].fichier + "-" + nomFormat + ".png");
     await onglet.screenshot({ path: chemin });
     await ctx.close();
@@ -442,5 +493,9 @@ for (const cle of cles) {
   }
 }
 await navigateur.close();
+
+console.log("\n" + (deborde
+  ? "❌ " + deborde + " visuel(s) débordent : le bandeau bas recouvre le titre."
+  : "✅ aucun bandeau ne déborde sur le titre."));
 await ecrireLegendes(cles);
 console.log("\nLégendes prêtes à coller : visuels/annonces/legendes.md");
