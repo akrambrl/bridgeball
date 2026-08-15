@@ -39,7 +39,7 @@
 // version simplifiée pour l'affiche.
 
 import { chromium } from "playwright";
-import { readFile, writeFile, mkdir, rm } from "node:fs/promises";
+import { readFile, writeFile, mkdir, rm, readdir } from "node:fs/promises";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
@@ -549,6 +549,21 @@ async function alleger(chemin, couleurs) {
 
 const sortie = join(racine, "visuels", "annonces", "carrousel");
 await mkdir(sortie, { recursive: true });
+
+// ── LE DOSSIER EST VIDÉ AVANT D'ÉCRIRE ────────────────────────────────────
+//
+// Les fichiers portent leur NUMÉRO D'ORDRE. Insérer une diapositive renumérote
+// toutes les suivantes — et laissait les anciennes derrière, sous leur ancien
+// nom. Le dossier contenait alors deux « 03 », deux « 04 »… et quelqu'un qui
+// sélectionne tout pour publier poste des doublons dans le désordre.
+//
+// C'est arrivé au premier ajout : neuf diapositives générées, quinze fichiers
+// dans le dossier. Le script fait donc le ménage lui-même, parce que se
+// souvenir de le faire à la main est exactement le genre de chose qu'on oublie
+// le jour où on publie.
+for (const vieux of await readdir(sortie)) {
+  if (vieux.endsWith(".png")) await rm(join(sortie, vieux));
+}
 
 console.log(artLot
   ? "artwork du lot : visuels/bruts/" + artLot.nom
