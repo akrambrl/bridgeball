@@ -1,7 +1,8 @@
 import { describe, it, expect } from "vitest";
 import {
-  moisDeLaSaison, saisonDuMois, lotAReclamer, emailPlausible,
-  normaliserCode, codeValide, plateformeValide, manques,
+  moisDeLaSaison, saisonDuMois, saisonDoteeRecente, lotPourRang, rangDans,
+  libellePlace, medaille, emailPlausible, normaliserCode, codeValide,
+  plateformeValide, enseigneValide, souhaitDuRang, manques,
   tirerCode, ALPHABET_CODE, MOTIF_CODE,
 } from "../lib/reclamation";
 
@@ -37,43 +38,99 @@ describe("moisDeLaSaison", () => {
   });
 });
 
-describe("lotAReclamer", () => {
-  const saisons = [
-    { season_number: 6, champion_id: "p1", champion_name: "akram2", champion_score: 4200 },
-    { season_number: 5, champion_id: "p2", champion_name: "badbr2", champion_score: 3900 },
+describe("le podium", () => {
+  // Une saison est réclamable quand elle est CLOSE (ligne dans bb_seasons) ET
+  // dotée (lignes dans bb_lots). Les deux, jamais l'une sans l'autre.
+  const saisons = [{ season_number: 6 }, { season_number: 5 }];
+  const lots = [
+    { season_number: 6, rang: 1, intitule: "FC 27 Ultimate" },
+    { season_number: 6, rang: 2, intitule: "Carte cadeau 50 €" },
+    { season_number: 6, rang: 3, intitule: "Carte cadeau 30 €" },
   ];
-  const lots = [{ season_number: 6, intitule: "EA SPORTS FC 27" }];
 
-  it("le champion du mois doté a un lot", () => {
-    const r = lotAReclamer("p1", saisons, lots);
-    expect(r).toMatchObject({ saison: 6, mois: "2026-09", intitule: "EA SPORTS FC 27" });
+  it("trouve la saison close et dotée", () => {
+    expect(saisonDoteeRecente(saisons, lots)).toBe(6);
   });
 
-  // LE contrôle qui évite le pire travers : sans lui, dès la deuxième saison
-  // tous les anciens champions verraient un bouton « réclamer » qui ne mène
-  // nulle part — et on ne peut pas retirer une promesse déjà affichée.
-  it("le champion d'un mois SANS lot n'a rien à réclamer", () => {
-    expect(lotAReclamer("p2", saisons, lots)).toBeNull();
+  // LE contrôle qui empêche le pire travers : sans lui, le joueur en tête le
+  // 12 septembre verrait « réclamer ton lot » alors que le mois n'est pas fini.
+  it("une saison dotée mais PAS close n'est pas réclamable", () => {
+    expect(saisonDoteeRecente([{ season_number: 5 }], lots)).toBeNull();
   });
 
-  it("un joueur qui n'a rien gagné n'a rien à réclamer", () => {
-    expect(lotAReclamer("p9", saisons, lots)).toBeNull();
+  it("la plus récente quand deux saisons sont dotées", () => {
+    const l2 = [...lots, { season_number: 3, rang: 1, intitule: "un maillot" }];
+    expect(saisonDoteeRecente([{ season_number: 6 }, { season_number: 3 }], l2)).toBe(6);
   });
 
-  it("si deux mois ont porté un lot, c'est le plus récent qui est proposé", () => {
-    const s = [
-      { season_number: 6, champion_id: "p1", champion_name: "a" },
-      { season_number: 3, champion_id: "p1", champion_name: "a" },
-    ];
-    const l = [{ season_number: 6, intitule: "FC 27" }, { season_number: 3, intitule: "un maillot" }];
-    expect(lotAReclamer("p1", s, l)!.saison).toBe(6);
+  it("les trois places ont un lot, la quatrième non", () => {
+    expect(lotPourRang(lots, 6, 1)!.intitule).toBe("FC 27 Ultimate");
+    expect(lotPourRang(lots, 6, 2)!.intitule).toBe("Carte cadeau 50 €");
+    expect(lotPourRang(lots, 6, 3)!.intitule).toBe("Carte cadeau 30 €");
+    expect(lotPourRang(lots, 6, 4)).toBeNull();
+  });
+
+  it("le lot porte le mois de sa saison", () => {
+    expect(lotPourRang(lots, 6, 1)!.mois).toBe("2026-09");
   });
 
   it("ne casse pas sur des entrées absentes", () => {
-    expect(lotAReclamer("", saisons, lots)).toBeNull();
-    expect(lotAReclamer("p1", null as any, lots)).toBeNull();
-    expect(lotAReclamer("p1", saisons, null as any)).toBeNull();
-    expect(lotAReclamer("p1", [null as any, undefined as any], lots)).toBeNull();
+    expect(saisonDoteeRecente(null as any, lots)).toBeNull();
+    expect(saisonDoteeRecente(saisons, null as any)).toBeNull();
+    expect(saisonDoteeRecente([null as any], lots)).toBeNull();
+    expect(lotPourRang(lots, 6, 0)).toBeNull();
+    expect(lotPourRang(lots, 6, 1.5)).toBeNull();
+    expect(lotPourRang(null as any, 6, 1)).toBeNull();
+  });
+});
+
+describe("rangDans", () => {
+  const classement = [
+    { player_id: "b", pseudo: "bea",  points: 900, jours: 10 },
+    { player_id: "a", pseudo: "ali",  points: 1200, jours: 12 },
+    { player_id: "c", pseudo: "caro", points: 900, jours: 14 },
+  ];
+
+  // On REtrie plutôt que de faire confiance à l'ordre reçu : PostgREST peut
+  // réordonner une réponse, et un rang lu sur un tableau supposé trié est un
+  // rang faux qui a l'air juste.
+  it("classe par points, puis par jours, malgré l'ordre reçu", () => {
+    expect(rangDans(classement, "a")).toBe(1);
+    expect(rangDans(classement, "c")).toBe(2);   // même points que b, plus de jours
+    expect(rangDans(classement, "b")).toBe(3);
+  });
+
+  it("départage à égalité parfaite par l'ordre alphabétique du pseudo", () => {
+    const ex = [
+      { player_id: "z", pseudo: "zoe", points: 500, jours: 5 },
+      { player_id: "a", pseudo: "ana", points: 500, jours: 5 },
+    ];
+    expect(rangDans(ex, "a")).toBe(1);
+    expect(rangDans(ex, "z")).toBe(2);
+  });
+
+  it("rend null pour qui n'est pas classé", () => {
+    expect(rangDans(classement, "inconnu")).toBeNull();
+    expect(rangDans(null as any, "a")).toBeNull();
+    expect(rangDans(classement, "")).toBeNull();
+  });
+});
+
+describe("libellés du podium", () => {
+  it("nomme les trois places dans les six langues", () => {
+    expect(libellePlace(1, "fr")).toBe("1ʳᵉ place");
+    expect(libellePlace(2, "en")).toBe("2nd place");
+    expect(libellePlace(3, "es")).toBe("3er puesto");
+  });
+  it("ne nomme rien au-delà du podium", () => {
+    expect(libellePlace(4, "fr")).toBe("");
+    expect(medaille(4)).toBe("");
+  });
+  it("retombe sur l'anglais pour une langue inconnue", () => {
+    expect(libellePlace(1, "nl")).toBe("1st place");
+  });
+  it("les médailles", () => {
+    expect([medaille(1), medaille(2), medaille(3)]).toEqual(["🥇", "🥈", "🥉"]);
   });
 });
 
@@ -118,17 +175,41 @@ describe("le code", () => {
 describe("manques", () => {
   const bon = { code: "GOATFC-AAAA-BBBB", email: "a@b.fr", plateforme: "ps5", autorisation: true };
   it("ne signale rien quand tout est là", () => {
-    expect(manques(bon)).toEqual([]);
+    expect(manques(bon, 1)).toEqual([]);
   });
   // Rendre la LISTE et non un booléen : un écran qui dit « formulaire invalide »
   // sans dire quoi fait recommencer à l'aveugle.
   it("nomme chaque manque", () => {
-    expect(manques({ ...bon, code: "x" })).toEqual(["code"]);
-    expect(manques({ ...bon, email: "x" })).toEqual(["email"]);
-    expect(manques({ ...bon, plateforme: "gameboy" })).toEqual(["plateforme"]);
-    expect(manques({ ...bon, autorisation: false })).toEqual(["autorisation"]);
-    expect(manques({ code: "", email: "", plateforme: "", autorisation: false }))
+    expect(manques({ ...bon, code: "x" }, 1)).toEqual(["code"]);
+    expect(manques({ ...bon, email: "x" }, 1)).toEqual(["email"]);
+    expect(manques({ ...bon, plateforme: "gameboy" }, 1)).toEqual(["plateforme"]);
+    expect(manques({ ...bon, autorisation: false }, 1)).toEqual(["autorisation"]);
+    expect(manques({ code: "", email: "", plateforme: "", autorisation: false }, 1))
       .toEqual(["code", "email", "plateforme", "autorisation"]);
+  });
+
+  // ── LE CHAMP CHANGE DE NATURE SELON LA PLACE ────────────────────────────
+  // Le premier reçoit un JEU : liste fermée de plateformes. Les deuxième et
+  // troisième reçoivent une CARTE CADEAU de l'enseigne de leur choix — leur
+  // proposer « PlayStation / Xbox / PC » n'aurait aucun sens, et une liste
+  // d'enseignes serait forcément incomplète.
+  it("le 1er choisit une plateforme, les autres une enseigne", () => {
+    expect(souhaitDuRang(1)).toBe("plateforme");
+    expect(souhaitDuRang(2)).toBe("enseigne");
+    expect(souhaitDuRang(3)).toBe("enseigne");
+  });
+  it("une enseigne libre est acceptée pour le 2e et le 3e", () => {
+    expect(manques({ ...bon, plateforme: "Amazon" }, 2)).toEqual([]);
+    expect(manques({ ...bon, plateforme: "Fnac" }, 3)).toEqual([]);
+    // …mais pas vide, et pas une seule lettre.
+    expect(manques({ ...bon, plateforme: "" }, 2)).toEqual(["enseigne"]);
+    expect(manques({ ...bon, plateforme: "A" }, 2)).toEqual(["enseigne"]);
+  });
+  it("une plateforme du menu ne suffit PAS à valider une enseigne vide", () => {
+    expect(enseigneValide("")).toBe(false);
+    expect(enseigneValide("  ")).toBe(false);
+    expect(enseigneValide("Steam")).toBe(true);
+    expect(enseigneValide("x".repeat(61))).toBe(false);
   });
   it("la plateforme doit être une de celles proposées", () => {
     expect(plateformeValide("ps5")).toBe(true);

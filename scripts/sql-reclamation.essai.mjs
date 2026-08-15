@@ -70,43 +70,56 @@ async function demarrer() {
   throw new Error("le cluster ne répond pas sur le port " + PORT);
 }
 
-// Le schéma de production réduit aux tables que le fichier touche. Les types
-// suivent docs/supabase-classement.essai.sql, qui les a MESURÉS.
-// Pas de `\set` ici : c'est une méta-commande de psql, refusée par `-c`, qui
-// n'envoie que du SQL. L'arrêt sur erreur est déjà posé par -v ON_ERROR_STOP=1.
-const SCHEMA = `
-create table public.bb_pseudos (
-  id bigserial primary key,
-  player_id text unique not null,
-  pseudo text,
-  recovery_code text
-);
-create table public.bb_seasons (
-  id bigserial primary key,
-  season_number int not null,
-  champion_id text,
-  champion_name text,
-  champion_score integer,
-  mode text,
-  ended_at timestamptz
-);
-do $$ begin
-  if not exists (select 1 from pg_roles where rolname = 'anon') then create role anon nologin; end if;
-  if not exists (select 1 from pg_roles where rolname = 'authenticated') then create role authenticated nologin; end if;
-  if not exists (select 1 from pg_roles where rolname = 'service_role') then create role service_role nologin; end if;
-end $$;
-grant usage on schema public to anon, authenticated, service_role;
+// ── LE SCHÉMA VIENT DU BANC DU CLASSEMENT, PAS D'UNE COPIE ────────────────
+//
+// bb_reclamer_lot appelle bb_classement_mois pour RECALCULER le rang. Le banc
+// doit donc poser le vrai classement, pas un champion écrit à la main : sinon
+// il éprouverait une fonction différente de celle qui tournera en production.
+// On rejoue donc docs/supabase-classement.essai.sql (les tables, aux types
+// mesurés) puis docs/supabase-classement.sql (les fonctions), avant notre
+// fichier.
+const SCHEMA_CLASSEMENT = join(racine, "docs", "supabase-classement.essai.sql");
+const FONCTIONS_CLASSEMENT = join(racine, "docs", "supabase-classement.sql");
 
+// Quatre joueurs, des scores qui donnent un podium NET : 1er, 2e, 3e, 4e. Le
+// quatrième est celui qui compte le plus dans ce banc — c'est lui qui ne doit
+// rien pouvoir réclamer.
+const JEU = `
 insert into public.bb_pseudos (player_id, pseudo, recovery_code) values
-  ('gagnant', 'akram2',  'GOATFC-AAAA-BBBB'),
-  ('perdant', 'badbr2',  'GOATFC-CCCC-DDDD'),
-  ('ancien',  'sodinho2','GOATFC-EEEE-FFFF');
+  ('or',     'akram2',   'GOATFC-AAAA-BBBB'),
+  ('argent', 'badbr2',   'GOATFC-CCCC-DDDD'),
+  ('bronze', 'faridp9',  'GOATFC-EEEE-FFFF'),
+  ('quatre', 'sodinho2', 'GOATFC-GGGG-HHHH');
 
--- Saison 6 = septembre 2026, celle qui porte le lot. Saison 5 n'en porte pas :
--- son champion ne doit rien pouvoir réclamer.
+-- Des scores en SEPTEMBRE 2026, le mois de la saison 6. Chacun joue plusieurs
+-- jours et plusieurs modes, sinon le classement les écarte.
+--
+-- LE DÉCLENCHEUR ANTI-SPAM EST DÉSACTIVÉ LE TEMPS DE POSER LE JEU D'ESSAI.
+-- bb_scores_garde() refuse deux scores du même joueur dans le même mode à moins
+-- de dix secondes d'intervalle — c'est exactement son travail, et il l'a fait :
+-- il a rejeté cette insertion groupée. On le contourne pour SEMER, jamais pour
+-- éprouver : les contrôles qui suivent passent tous par la fonction publique,
+-- avec ses gardes en place.
+alter table public.bb_scores disable trigger user;
+
+insert into public.bb_scores (player_id, player_name, mode, score, created_at)
+select j.pid, j.nom, m.mode, j.base + m.bonus,
+       timestamptz '2026-09-05 12:00:00+02' + (d || ' day')::interval
+  from (values ('or','akram2',900), ('argent','badbr2',700),
+               ('bronze','faridp9',500), ('quatre','sodinho2',300)) as j(pid,nom,base),
+       (values ('pont',0), ('chaine',-40)) as m(mode,bonus),
+       generate_series(0, 3) as d;
+
+alter table public.bb_scores enable trigger user;
+
+-- La saison 6 est CLOSE : c'est cette ligne qui ouvre la réclamation.
 insert into public.bb_seasons (season_number, champion_id, champion_name, champion_score, mode, ended_at)
-values (6, 'gagnant', 'akram2', 4200, 'global', now()),
-       (5, 'ancien',  'sodinho2', 3900, 'global', now());
+values (6, 'or', 'akram2', 4200, 'global', now());
+
+-- La saison 5 est close AUSSI mais ne porte aucun lot : son champion ne doit
+-- rien pouvoir réclamer.
+insert into public.bb_seasons (season_number, champion_id, champion_name, champion_score, mode, ended_at)
+values (5, 'quatre', 'sodinho2', 3900, 'global', now());
 `;
 
 /**
@@ -135,7 +148,11 @@ async function eprouver() {
   const base = "essai_lot";
   await psql(["-c", "drop database if exists " + base]);
   await psql(["-c", "create database " + base]);
-  await psql(["-c", SCHEMA], base);
+  // Le type du score est éprouvé en numeric : le banc du classement le passe
+  // aussi en double precision, et le nôtre n'en dépend pas.
+  await psql(["-v", "type_score=numeric", "-f", SCHEMA_CLASSEMENT], base);
+  await psql(["-f", FONCTIONS_CLASSEMENT], base);
+  await psql(["-c", JEU], base);
   await psql(["-f", FICHIER], base);
 
   let bon = true;
@@ -159,27 +176,41 @@ async function eprouver() {
     + "'GOATFC-AAAA-BBBB', 'a@b.fr', 'ps5', false)", base);
   dire(auto === "refus:autorisation", "la case d'autorisation est obligatoire  (" + auto + ")");
 
-  // ── 4. UN CHAMPION D'UNE SAISON SANS LOT NE RÉCLAME RIEN ──────────────────
-  //     C'est le contrôle qui empêche « tous les anciens champions voient un
-  //     bouton réclamer » dès la deuxième saison.
-  const sansLot = await commeAnon(
-    "select etat || ':' || detail from public.bb_reclamer_lot("
-    + "'GOATFC-EEEE-FFFF', 'a@b.fr', 'pc', true)", base);
-  dire(sansLot === "refus:pas_de_lot",
-    "champion d'une saison SANS lot : refusé  (" + sansLot + ")");
+  // ── 4. LE PODIUM EST BIEN CELUI QU'ON CROIT ───────────────────────────────
+  //     On lit le classement réel avant de réclamer quoi que ce soit : si le
+  //     jeu d'essai ne produit pas le podium attendu, tous les contrôles qui
+  //     suivent ne prouveraient rien.
+  const podium = await commeAnon(
+    "select string_agg(player_id, ',' order by points desc, jours desc, pseudo asc) "
+    + "from public.bb_classement_mois('2026-09')", base);
+  dire(podium === "or,argent,bronze,quatre",
+    "le classement de septembre est bien or > argent > bronze > quatre  (" + podium + ")");
+  const mois = await commeAnon("select public.bb_mois_de_saison(6)", base);
+  dire(mois === "2026-09", "la saison 6 est bien septembre 2026  (" + mois + ")");
 
-  // ── 5. UN JOUEUR QUI N'A RIEN GAGNÉ NON PLUS ──────────────────────────────
-  const pasChampion = await commeAnon(
-    "select etat || ':' || detail from public.bb_reclamer_lot("
-    + "'GOATFC-CCCC-DDDD', 'a@b.fr', 'pc', true)", base);
-  dire(pasChampion === "refus:pas_de_lot",
-    "un joueur qui n'a rien gagné : refusé  (" + pasChampion + ")");
+  // ── 5. LES TROIS RANGS RÉCOMPENSÉS RÉCLAMENT ──────────────────────────────
+  for (const [code, qui, rangAttendu] of [
+    ["GOATFC-AAAA-BBBB", "1er", 1],
+    ["GOATFC-CCCC-DDDD", "2e",  2],
+    ["GOATFC-EEEE-FFFF", "3e",  3],
+  ]) {
+    const r = await commeAnon(
+      "select etat || ':' || detail from public.bb_reclamer_lot("
+      + "'" + code + "', 'a@b.fr', 'ps5', true)", base);
+    const attendu = new RegExp("^ok:GOATFC-LOT-6-" + rangAttendu + "-");
+    dire(attendu.test(r), "le " + qui + " réclame, et son rang est " + rangAttendu + "  (" + r + ")");
+  }
 
-  // ── 6. LE VRAI GAGNANT RÉCLAME ────────────────────────────────────────────
-  const ok = await commeAnon(
-    "select etat from public.bb_reclamer_lot("
-    + "'goatfc-aaaa-bbbb', '  Akram@Exemple.fr ', 'ps5', true)", base);
-  dire(ok === "ok", "le gagnant réclame, code en minuscules et espaces compris  (" + ok + ")");
+  // ── 6. LE QUATRIÈME NE RÉCLAME RIEN ───────────────────────────────────────
+  //     LE contrôle de ce banc. Trois lots, quatre joueurs : celui qui rate le
+  //     podium d'une place ne doit rien recevoir, et c'est aussi celui qui est
+  //     le plus tenté d'essayer.
+  const quatre = await commeAnon(
+    "select etat || ':' || detail from public.bb_reclamer_lot("
+    + "'GOATFC-GGGG-HHHH', 'a@b.fr', 'pc', true)", base);
+  dire(quatre === "refus:pas_de_lot",
+    "le 4e ne réclame rien, alors qu'il est champion d'une saison SANS lot  ("
+    + quatre + ")");
 
   // ── 7. ET UNE SEULE FOIS ──────────────────────────────────────────────────
   //     L'idempotence n'est pas un luxe : un double clic ou un réseau qui repart
@@ -189,11 +220,30 @@ async function eprouver() {
     + "'GOATFC-AAAA-BBBB', 'autre@exemple.fr', 'pc', true)", base);
   dire(deux === "deja", "une deuxième réclamation répond « déjà »  (" + deux + ")");
   const combien = await psql(["-tAc", "select count(*) from public.bb_reclamations"], base);
-  dire(combien.trim() === "1", "une seule ligne enregistrée  (" + combien.trim() + ")");
+  dire(combien.trim() === "3", "trois lignes enregistrées, une par gagnant  (" + combien.trim() + ")");
+  const rangs = await psql(["-tAc",
+    "select string_agg(rang || ':' || player_id, ' ' order by rang) from public.bb_reclamations"], base);
+  dire(rangs.trim() === "1:or 2:argent 3:bronze",
+    "chaque réclamation porte le bon rang  (" + rangs.trim() + ")");
+
+  // ── 7 bis. UN PODIUM QUI SE CORRIGE ───────────────────────────────────────
+  //     Le rang est RECALCULÉ, pas figé. Si les scores d'un tricheur sont
+  //     effacés après la clôture, le 4e devient 3e — et il peut réclamer.
+  //     C'est la propriété qui distingue ce modèle d'un podium gravé à la
+  //     clôture, lequel aurait donné le lot au tricheur.
+  await psql(["-c", "delete from public.bb_reclamations;"
+    + " delete from public.bb_scores where player_id = 'bronze'"], base);
+  const promu = await commeAnon(
+    "select etat || ':' || detail from public.bb_reclamer_lot("
+    + "'GOATFC-GGGG-HHHH', 'a@b.fr', 'pc', true)", base);
+  dire(/^ok:GOATFC-LOT-6-3-/.test(promu),
+    "le 4e devient 3e quand le bronze est écarté des scores  (" + promu + ")");
+  // On remet le jeu d'essai en état pour la suite.
+  await psql(["-c", "delete from public.bb_reclamations"], base);
 
   // ── 8. LE DÉLAI ───────────────────────────────────────────────────────────
   await psql(["-c", "delete from public.bb_reclamations;"
-    + " update public.bb_lots set ouvert_jusqu_a = now() - interval '1 day' where season_number = 6"], base);
+    + " update public.bb_lots set ouvert_jusqu_a = now() - interval '1 day'"], base);
   const tard = await commeAnon(
     "select etat || ':' || detail from public.bb_reclamer_lot("
     + "'GOATFC-AAAA-BBBB', 'a@b.fr', 'ps5', true)", base);
@@ -205,18 +255,18 @@ async function eprouver() {
   // La table contient des ADRESSES EMAIL. Si anon peut la lire, la fuite est
   // totale et silencieuse.
   await psql(["-c", "insert into public.bb_reclamations "
-    + "(season_number, player_id, email, autorisation) "
-    + "values (6, 'gagnant', 'prive@exemple.fr', true)"], base);
+    + "(season_number, rang, player_id, email, autorisation) "
+    + "values (6, 1, 'or', 'prive@exemple.fr', true)"], base);
   dire(await refuse("select email from public.bb_reclamations", base),
     "anon ne peut PAS lire les adresses des réclamations");
   dire(await refuse("insert into public.bb_reclamations "
-    + "(season_number, player_id, email, autorisation) "
-    + "values (6, 'usurpateur', 'x@y.fr', true)", base),
+    + "(season_number, rang, player_id, email, autorisation) "
+    + "values (6, 1, 'usurpateur', 'x@y.fr', true)", base),
     "anon ne peut PAS écrire directement dans les réclamations");
   dire(await refuse("update public.bb_reclamations set statut = 'remis'", base),
     "anon ne peut PAS changer le statut d'une réclamation");
-  dire(await refuse("insert into public.bb_lots (season_number, intitule) "
-    + "values (7, 'un lot que je m''invente')", base),
+  dire(await refuse("insert into public.bb_lots (season_number, rang, intitule) "
+    + "values (7, 1, 'un lot que je m''invente')", base),
     "anon ne peut PAS s'inventer un lot");
 
   // Et ce qui doit RESTER ouvert : sans ça, l'app ne sait pas s'il faut
@@ -226,8 +276,8 @@ async function eprouver() {
     try { lots = await commeAnon("select count(*) from public.bb_lots", base); return true; }
     catch { return false; }
   })();
-  dire(lisible && Number(lots) >= 1,
-    "anon PEUT lire la liste des lots  (" + lots + " lot(s))");
+  dire(lisible && Number(lots) === 3,
+    "anon PEUT lire les TROIS lots  (" + lots + ")");
 
   // ── 10. LE SUIVI NE FUIT PAS L'ADRESSE ────────────────────────────────────
   const suivi = await commeAnon(

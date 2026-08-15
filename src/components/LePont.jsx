@@ -20,7 +20,9 @@ import { GRADES, getGrade, gradeLabel, countryToFlag } from "../lib/leaderboard"
 import { duelTermine } from "../lib/duel";
 // Réclamation du lot : les règles (qui peut réclamer, pour quel mois, ce qu'on
 // accepte comme saisie) et le tirage sûr du code de récupération.
-import { lotAReclamer, manques, normaliserCode, tirerCode, PLATEFORMES } from "../lib/reclamation";
+import { saisonDoteeRecente, lotPourRang, rangDans, moisDeLaSaison, libellePlace,
+         medaille, souhaitDuRang, manques, normaliserCode, tirerCode,
+         PLATEFORMES } from "../lib/reclamation";
 import { prochainsTotauxXp } from "../lib/xp";
 // Règles de tirage anti-répétition, partagées avec « Trouve le joueur ».
 import { clePaire, pairesRetenues, tirerEnEvitant, memoriser } from "../lib/tirage.js";
@@ -3634,6 +3636,10 @@ export default function LePont() {
   // deuxième saison tous les anciens champions verraient un bouton « réclamer »
   // qui ne mène nulle part — et on ne retire pas une promesse déjà affichée.
   const [lots, setLots] = useState([]);
+  // Le lot QUI M'EST DÛ, rang compris — ou null. Calculé une fois au chargement
+  // du classement plutôt qu'à chaque rendu : il demande d'aller chercher le
+  // classement final du mois, ce qu'on ne fait pas soixante fois par seconde.
+  const [monLot, setMonLot] = useState(null);
   const [reclamationOuverte, setReclamationOuverte] = useState(false);
   const [recForm, setRecForm] = useState({ code:"", email:"", plateforme:"", autorisation:false });
   const [recEtat, setRecEtat] = useState(null);   // null | "envoi" | "ok" | "deja"
@@ -8076,19 +8082,40 @@ export default function LePont() {
         }
       } catch(e){}
       setLeaderboard(sorted);
-      // Charger le Hall of Fame ET la liste des saisons dotées. Les deux
-      // ensemble : c'est leur CROISEMENT qui dit s'il y a un lot à réclamer,
-      // l'un sans l'autre ne décide rien.
+      // Charger le Hall of Fame ET la liste des lots. Les deux ensemble : c'est
+      // leur CROISEMENT qui dit s'il y a quelque chose à réclamer — une saison
+      // close (ligne dans bb_seasons) ET dotée (lignes dans bb_lots). L'un sans
+      // l'autre ne décide rien.
       try {
         const [hof, dotees] = await Promise.all([
           sbFetch("bb_seasons?order=season_number.desc&limit=10"),
-          sbFetch("bb_lots?select=season_number,intitule&order=season_number.desc"),
+          sbFetch("bb_lots?select=season_number,rang,intitule&order=season_number.desc,rang"),
         ]);
         if (Array.isArray(hof)) setHallOfFame(hof);
         // Un échec ici ne doit rien casser : la table peut ne pas encore exister
         // sur une base où le SQL n'a pas été appliqué. Le bandeau ne s'affiche
         // simplement pas, et le reste du classement fonctionne.
         if (Array.isArray(dotees)) setLots(dotees);
+
+        // ── LE RANG, ET POURQUOI IL FAUT ALLER LE CHERCHER ─────────────────
+        //
+        // bb_seasons n'enregistre QUE le champion. Le 2e et le 3e n'y figurent
+        // nulle part : il n'y a rien à lire. On redemande donc le classement
+        // final du mois — la même fonction serveur qui alimente l'onglet Saison,
+        // et celle que bb_reclamer_lot rejouera pour trancher.
+        //
+        // Ce n'est pas une vérification de sécurité : c'est ce qui évite de
+        // proposer un bouton à quelqu'un que le serveur refusera, et de dire
+        // « 2e place » à quelqu'un qui est 3e.
+        const saison = saisonDoteeRecente(Array.isArray(hof) ? hof : [],
+                                          Array.isArray(dotees) ? dotees : []);
+        if (saison) {
+          const cl = await sbFetch("rpc/bb_classement_mois", {
+            method: "POST", body: JSON.stringify({ p_mois: moisDeLaSaison(saison) }) });
+          setMonLot(lotPourRang(dotees, saison, rangDans(cl, playerId)));
+        } else {
+          setMonLot(null);
+        }
       } catch(e){}
     } catch(e) { setLeaderboard([]); }
   }
@@ -8101,7 +8128,7 @@ export default function LePont() {
   // serveur, seule à pouvoir lire le code de récupération d'un compte.
   async function envoyerReclamation() {
     const code = normaliserCode(recForm.code);
-    const absents = manques({ ...recForm, code });
+    const absents = manques({ ...recForm, code }, monLot ? monLot.rang : 1);
     if (absents.length > 0) {
       setRecMsg(tr(
         "❌ Il manque : " + absents.join(", "),
@@ -8169,7 +8196,8 @@ export default function LePont() {
   // d'autre — un formulaire de concours qui demande une date de naissance ou une
   // adresse postale pour un jeu dématérialisé collecte ce dont il n'a pas besoin.
   const reclamationModal = reclamationOuverte ? (function(){
-    const lot = lotAReclamer(playerId, hallOfFame, lots);
+    const lot = monLot;
+    const rang = lot ? lot.rang : 1;
     const champ = {width:"100%",background:"rgba(8,17,9,.45)",border:G.traitFin,borderRadius:14,
       padding:"13px 15px",fontFamily:G.font,fontSize:15,color:G.white,outline:"none",
       boxSizing:"border-box",marginBottom:10};
@@ -8221,7 +8249,15 @@ export default function LePont() {
                 <div style={{...posterText(22),color:G.white,lineHeight:1.1,marginBottom:6}}>
                   {tr("Réclamer mon lot","Claim my prize","Gewinn anfordern","Reclama il premio","Reclamar meu prêmio","Reclamar mi premio")}
                 </div>
-                {lot && <div style={{fontSize:12.5,color:"rgba(255,255,255,.6)",lineHeight:1.4}}>{lot.intitule}</div>}
+                {lot && (
+                  <>
+                    <div style={{fontSize:11.5,fontWeight:900,letterSpacing:1.3,color:G.or,
+                      marginBottom:4,textTransform:"uppercase"}}>
+                      {medaille(rang)} {libellePlace(rang, lang)}
+                    </div>
+                    <div style={{fontSize:12.5,color:"rgba(255,255,255,.6)",lineHeight:1.4}}>{lot.intitule}</div>
+                  </>
+                )}
               </div>
 
               <div style={{fontSize:11,color:"rgba(255,255,255,.5)",fontWeight:700,letterSpacing:1,marginBottom:6}}>
@@ -8250,19 +8286,45 @@ export default function LePont() {
                 onChange={function(e){setRecForm({...recForm,email:e.target.value});setRecMsg("");}}
                 placeholder="toi@exemple.fr" style={champ}/>
 
+              {/* ── CE QU'ON DEMANDE DÉPEND DE CE QU'ON REÇOIT ──────────────
+                  Le premier reçoit un JEU : il choisit une plateforme, dans une
+                  liste fermée, parce que le jeu n'existe que là. Les deuxième et
+                  troisième reçoivent une CARTE CADEAU de l'enseigne de leur
+                  choix — leur proposer « PlayStation / Xbox / PC » n'aurait
+                  aucun sens, et une liste d'enseignes serait forcément
+                  incomplète. C'est donc un champ libre. */}
               <div style={{fontSize:11,color:"rgba(255,255,255,.5)",fontWeight:700,letterSpacing:1,marginBottom:8}}>
-                {tr("PLATEFORME","PLATFORM","PLATTFORM","PIATTAFORMA","PLATAFORMA","PLATAFORMA")}
+                {souhaitDuRang(rang) === "plateforme"
+                  ? tr("PLATEFORME","PLATFORM","PLATTFORM","PIATTAFORMA","PLATAFORMA","PLATAFORMA")
+                  : tr("ENSEIGNE SOUHAITÉE","PREFERRED RETAILER","GEWÜNSCHTE MARKE","INSEGNA DESIDERATA","LOJA DESEJADA","TIENDA DESEADA")}
               </div>
-              <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:14}}>
-                {PLATEFORMES.map(function(p){
-                  const actif = recForm.plateforme === p.cle;
-                  return (
-                    <button key={p.cle} onClick={function(){setRecForm({...recForm,plateforme:p.cle});setRecMsg("");}}
-                      style={{...(actif ? btn(G.pelouse,G.white,13) : btn(G.nuit,G.white,13)),
-                        padding:"9px 13px",flex:"0 0 auto"}}>{p.nom}</button>
-                  );
-                })}
-              </div>
+              {souhaitDuRang(rang) === "plateforme" ? (
+                <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:14}}>
+                  {PLATEFORMES.map(function(p){
+                    const actif = recForm.plateforme === p.cle;
+                    return (
+                      <button key={p.cle} onClick={function(){setRecForm({...recForm,plateforme:p.cle});setRecMsg("");}}
+                        style={{...(actif ? btn(G.pelouse,G.white,13) : btn(G.nuit,G.white,13)),
+                          padding:"9px 13px",flex:"0 0 auto"}}>{p.nom}</button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <>
+                  <input value={recForm.plateforme} maxLength={60}
+                    onChange={function(e){setRecForm({...recForm,plateforme:e.target.value});setRecMsg("");}}
+                    placeholder={tr("Amazon, Fnac, Steam, PSN…","Amazon, Steam, PSN…","Amazon, Steam, PSN…","Amazon, Steam, PSN…","Amazon, Steam, PSN…","Amazon, Steam, PSN…")}
+                    style={champ}/>
+                  <div style={{fontSize:11.5,color:"rgba(255,255,255,.45)",lineHeight:1.5,marginBottom:14}}>
+                    {tr("Dis-nous où tu veux ta carte cadeau. Si l'enseigne n'est pas disponible, on te proposera l'équivalent le plus proche.",
+                        "Tell us where you'd like your gift card. If that retailer isn't available, we'll offer the closest equivalent.",
+                        "Sag uns, wo du deinen Gutschein möchtest. Ist die Marke nicht verfügbar, schlagen wir die nächstbeste vor.",
+                        "Dicci dove vuoi la tua carta regalo. Se l'insegna non è disponibile, ti proporremo l'equivalente più vicino.",
+                        "Diga onde quer seu vale-presente. Se a loja não estiver disponível, ofereceremos o equivalente mais próximo.",
+                        "Dinos dónde quieres tu tarjeta regalo. Si la tienda no está disponible, te ofreceremos el equivalente más cercano.")}
+                  </div>
+                </>
+              )}
 
               <label style={{display:"flex",alignItems:"flex-start",gap:10,marginBottom:16,cursor:"pointer"}}>
                 <input type="checkbox" checked={recForm.autorisation}
@@ -12002,49 +12064,53 @@ export default function LePont() {
         <div style={{...sheet,background:"transparent",
           border:"none",borderRadius:"28px 28px 0 0"}}>
 
-          {/* ── LE BANDEAU DU GAGNANT ────────────────────────────────────
+          {/* ── LE BANDEAU DU PODIUM ──────────────────────────────────────
               Posé TOUT EN HAUT du classement, avant le bandeau de saison :
               c'est la seule chose de cet écran qui appelle une action, et une
               action qui expire au bout de trente jours. Enfoui plus bas, il se
               lirait après le classement du mois en cours, c'est-à-dire trop
               tard pour être remarqué.
 
-              Il n'apparaît que si le joueur est champion d'une saison qui a
-              VRAIMENT porté un lot — voir lotAReclamer. */}
-          {(function(){
-            const lot = lotAReclamer(playerId, hallOfFame, lots);
-            if (!lot) return null;
-            return (
-              <div style={{background:G.or,border:G.trait,borderRadius:G.rayon,
-                boxShadow:G.ombre,padding:"18px 18px 16px",marginBottom:16,textAlign:"center"}}>
-                <div style={{fontSize:36,lineHeight:1,marginBottom:6}}>🏆</div>
-                <div style={{...posterText(24,G.encre),lineHeight:1.05,marginBottom:6}}>
-                  {tr("TU AS GAGNÉ","YOU WON","DU HAST GEWONNEN","HAI VINTO","VOCÊ GANHOU","HAS GANADO")}
-                </div>
-                {/* Sur l'or, seule l'encre se lit : le crème y tombe à 1,4 de
-                    contraste. Tout ce bandeau est donc à l'encre. */}
-                <div style={{fontSize:13.5,fontWeight:700,color:"rgba(8,17,9,.82)",
-                  lineHeight:1.5,marginBottom:14}}>
-                  {lot.intitule}
-                </div>
-                <button onClick={function(){
-                  setReclamationOuverte(true); setRecEtat(null); setRecMsg("");
-                  // Le code est déjà connu de l'appareil qui a créé le compte :
-                  // le pré-remplir évite de l'aller chercher dans le profil, et
-                  // ne révèle rien que cet appareil ne sache déjà.
-                  let connu = ""; try { connu = localStorage.getItem("bb_recovery_code") || ""; } catch {}
-                  setRecForm({ code:connu, email:"", plateforme:"", autorisation:false });
-                }} style={{...btn(G.nuit,G.creme,15),width:"100%",padding:"14px"}}>
-                  {tr("Réclamer mon lot →","Claim my prize →","Gewinn anfordern →","Reclama il premio →","Reclamar meu prêmio →","Reclamar mi premio →")}
-                </button>
-                <a href="/reglement" target="_blank" rel="noopener noreferrer"
-                  style={{display:"block",marginTop:10,fontSize:11.5,fontWeight:700,
-                    color:"rgba(8,17,9,.7)",textDecoration:"underline",textUnderlineOffset:3}}>
-                  {tr("Lire le règlement","Read the contest rules","Teilnahmebedingungen lesen","Leggi il regolamento","Ler o regulamento","Leer las bases")}
-                </a>
+              Il n'apparaît que si le joueur est sur un rang RÉCOMPENSÉ d'une
+              saison close — voir le calcul de `monLot` au chargement. Le 4e ne
+              voit rien : lui montrer un bandeau qu'il ne peut pas actionner
+              serait pire que de ne rien lui montrer. */}
+          {monLot && (
+            <div style={{background:G.or,border:G.trait,borderRadius:G.rayon,
+              boxShadow:G.ombre,padding:"18px 18px 16px",marginBottom:16,textAlign:"center"}}>
+              <div style={{fontSize:36,lineHeight:1,marginBottom:6}}>{medaille(monLot.rang)}</div>
+              <div style={{...posterText(24,G.encre),lineHeight:1.05,marginBottom:2}}>
+                {monLot.rang === 1
+                  ? tr("TU AS GAGNÉ","YOU WON","DU HAST GEWONNEN","HAI VINTO","VOCÊ GANHOU","HAS GANADO")
+                  : tr("TU ES SUR LE PODIUM","YOU'RE ON THE PODIUM","DU BIST AUF DEM PODIUM","SEI SUL PODIO","VOCÊ ESTÁ NO PÓDIO","ESTÁS EN EL PODIO")}
               </div>
-            );
-          })()}
+              {/* Sur l'or, seule l'encre se lit : le crème y tombe à 1,4 de
+                  contraste. Tout ce bandeau est donc à l'encre. */}
+              <div style={{fontSize:12,fontWeight:900,letterSpacing:1.4,
+                color:"rgba(8,17,9,.72)",marginBottom:8,textTransform:"uppercase"}}>
+                {libellePlace(monLot.rang, lang)}
+              </div>
+              <div style={{fontSize:13.5,fontWeight:700,color:"rgba(8,17,9,.82)",
+                lineHeight:1.5,marginBottom:14}}>
+                {monLot.intitule}
+              </div>
+              <button onClick={function(){
+                setReclamationOuverte(true); setRecEtat(null); setRecMsg("");
+                // Le code est déjà connu de l'appareil qui a créé le compte :
+                // le pré-remplir évite de l'aller chercher dans le profil, et
+                // ne révèle rien que cet appareil ne sache déjà.
+                let connu = ""; try { connu = localStorage.getItem("bb_recovery_code") || ""; } catch {}
+                setRecForm({ code:connu, email:"", plateforme:"", autorisation:false });
+              }} style={{...btn(G.nuit,G.creme,15),width:"100%",padding:"14px"}}>
+                {tr("Réclamer mon lot →","Claim my prize →","Gewinn anfordern →","Reclama il premio →","Reclamar meu prêmio →","Reclamar mi premio →")}
+              </button>
+              <a href="/reglement" target="_blank" rel="noopener noreferrer"
+                style={{display:"block",marginTop:10,fontSize:11.5,fontWeight:700,
+                  color:"rgba(8,17,9,.7)",textDecoration:"underline",textUnderlineOffset:3}}>
+                {tr("Lire le règlement","Read the contest rules","Teilnahmebedingungen lesen","Leggi il regolamento","Ler o regulamento","Leer las bases")}
+              </a>
+            </div>
+          )}
 
           {/* Saison info */}
           {lbMode!=="amis" && (()=>{
