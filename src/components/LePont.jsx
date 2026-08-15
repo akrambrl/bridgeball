@@ -13065,59 +13065,45 @@ export default function LePont() {
     const isReady = waitingDuel.status === "ready";
     if (duelCountdown !== null) {
       return (
-        <div style={{...shell,alignItems:"center",justifyContent:"center"}} key="countdown">
-          <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
-        {/* Bandes pelouse */}
-        {/* Aplat de panneau : les bandes de tonte sont parties avec la pelouse.
-              Sur la charte or, une carte est l'écusson noir du logo. */}
-            <div style={{position:"absolute",inset:0,background:G.nuit}}/>
-        {/* Ligne médiane */}
-        <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:G.nuit,transform:"translateY(-50%)"}}/>
-        {/* Cercle central */}
-        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:180,height:180,borderRadius:"50%",border:G.traitFin}}/>
-        {/* Point central */}
-        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:8,height:8,borderRadius:"50%",background:G.nuit}}/>
-        {/* Overlay sombre pour lisibilité */}
-        <div style={{position:"absolute",inset:0,background:"rgba(8,17,9,.45)"}}/>
-      </div>
-          <div style={{textAlign:"center",zIndex:1}}>
+        <div style={{...shell,alignItems:"center",justifyContent:"center",padding:"0 20px"}} key="countdown">
+        {/* Le terrain de la charte verte est parti d'ici aussi : un aplat de
+            nuit sur toute la surface, une ligne médiane et un point central
+            peints en G.nuit SUR ce G.nuit — donc invisibles — et un rond de
+            180 px qui restait seul au milieu. Ces deux écrans-là ne durent
+            que quelques secondes : c'est ce qui explique qu'on ne les ait
+            jamais regardés. */}
+        {areneCharte}
+        <div style={{textAlign:"center",zIndex:1,background:G.nuit,border:G.trait,
+          boxShadow:G.ombre,borderRadius:G.rayon,padding:"28px 24px",width:"100%",maxWidth:340}}>
             <div style={{fontSize:14,color:"rgba(255,255,255,.5)",letterSpacing:3,textTransform:"uppercase",marginBottom:16}}>{tr("Adversaire trouvé !","Opponent found!","Gegner gefunden!","Avversario trovato!","Adversário encontrado!","¡Rival encontrado!")}</div>
-            <div style={{...posterText(120),color:G.pelouseClaire,lineHeight:1,animation:"popInPoster .3s ease"}} key={duelCountdown}>{duelCountdown}</div>
+            <div style={{...posterText(120),color:G.projecteur,lineHeight:1,animation:"popInPoster .3s ease"}} key={duelCountdown}>{duelCountdown}</div>
             <div style={{fontSize:16,color:"rgba(255,255,255,.5)",marginTop:16}}>vs <strong style={{color:G.white}}>{oppName}</strong></div>
           </div>
         </div>
       );
     }
     return (
-      <div style={{...shell,alignItems:"center",justifyContent:"center"}} key="waiting">
-        <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
-        {/* Bandes pelouse */}
-        {/* Aplat de panneau : les bandes de tonte sont parties avec la pelouse.
-              Sur la charte or, une carte est l'écusson noir du logo. */}
-            <div style={{position:"absolute",inset:0,background:G.nuit}}/>
-        {/* Ligne médiane */}
-        <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:G.nuit,transform:"translateY(-50%)"}}/>
-        {/* Cercle central */}
-        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:180,height:180,borderRadius:"50%",border:G.traitFin}}/>
-        {/* Point central */}
-        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:8,height:8,borderRadius:"50%",background:G.nuit}}/>
-        {/* Overlay sombre pour lisibilité */}
-        <div style={{position:"absolute",inset:0,background:"rgba(8,17,9,.45)"}}/>
-      </div>
-        <div style={{textAlign:"center",zIndex:1,padding:"0 32px"}}>
+      <div style={{...shell,alignItems:"center",justifyContent:"center",padding:"0 20px"}} key="waiting">
+        {areneCharte}
+        <div style={{textAlign:"center",zIndex:1,background:G.nuit,border:G.trait,
+          boxShadow:G.ombre,borderRadius:G.rayon,padding:"28px 24px",width:"100%",maxWidth:360}}>
           <div style={{fontSize:48,marginBottom:16,animation:"spin 2s linear infinite",display:"inline-block"}}>⚽</div>
-          <div style={{...posterText(32),color:G.white,marginBottom:8}}>
+          <div style={{...posterText(32),color:G.projecteur,marginBottom:8}}>
             {isReady ? (tr("PRÊT !","READY!","BEREIT!","PRONTO!","PRONTO!","¡LISTO!")) : (tr("EN ATTENTE...","WAITING...","WARTEN...","IN ATTESA...","AGUARDANDO...","ESPERANDO..."))}
           </div>
           <div style={{fontSize:14,color:"rgba(255,255,255,.5)",marginBottom:32}}>
             {isReady ? (tr("La partie va commencer !","Game about to start!","Das Spiel startet gleich!","La partita sta per iniziare!","O jogo vai começar!","¡La partida va a empezar!")) : (tr("En attente de ","Waiting for ","Warte auf ","In attesa di ","Aguardando ","Esperando a ")+oppName+"...")}
           </div>
-          <div style={{background:"rgba(8,17,9,.45)",borderRadius:20,padding:"16px 24px",marginBottom:24,border:G.traitFin}}>
+          <div style={{background:"rgba(8,17,9,.5)",borderRadius:G.rayonS,padding:"14px 20px",marginBottom:24,border:G.traitFin,boxShadow:"inset 2px 2px 0 rgba(8,17,9,.35)"}}>
             <div style={{fontSize:11,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>Mode</div>
             <div style={{fontSize:16,fontWeight:800,color:G.white}}>{waitingDuel.mode==="pont"?"The Plug":"The Mercato"}{waitingDuel.diff?" · "+waitingDuel.diff:""}</div>
           </div>
+          {/* Aplat de maillot cerclé d'encre, comme les autres boutons de la charte :
+              le rouge translucide à 32 % appartenait au vocabulaire du verre.
+              (Un commentaire JSX ne peut pas être le premier enfant d'un `&&` —
+              il doit rester DEHORS, comme ici.) */}
           {!isReady && (
-            <button onClick={cancelWaiting} style={{padding:"12px 28px",background:"rgba(217,58,43,.32)",color:"#FF3D57",border:G.traitFin,borderRadius:G.rayon,cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:700}}>
+            <button onClick={cancelWaiting} style={{...btn(G.maillot,G.white,15),padding:"12px 28px"}}>
               Annuler
             </button>
           )}
@@ -13128,6 +13114,16 @@ export default function LePont() {
 
 
   // ── ROOM RESULT (priorité sur l'écran d'attente) ──
+  //
+  // IL Y EN AVAIT DEUX. Un second bloc, identique dans sa condition, vivait
+  // 3 800 lignes plus bas — donc inatteignable : celui-ci retourne pour tout
+  // `duelResult.isRoom`, l'autre n'a jamais pu s'exécuter. Il portait encore le
+  // terrain de foot de la charte verte et une liste de joueurs d'avant l'or.
+  //
+  // Du code mort qui ressemble à du code vivant est pire que pas de code : on
+  // corrige l'écran qui ne s'affiche jamais, on teste, on ne voit rien changer,
+  // et on cherche ailleurs. Il est supprimé. Si un jour l'écran de fin de salle
+  // doit varier, c'est ICI que ça se décide, pas dans une seconde copie.
   if (duelResult && duelResult.isRoom) {
     const medals = ["🥇","🥈","🥉"];
     const myEntry = duelResult.players.find(function(p){return p.id===playerId;});
@@ -16918,87 +16914,6 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
 
   // ── WAITING FOR ROOM RESULTS ──
   // ── DUEL RESULT SCREEN ──
-  if (duelResult && duelResult.isRoom) {
-    const medals = ["🥇","🥈","🥉"];
-    const myEntry = duelResult.players.find(function(p){return p.id===playerId;});
-    const myRank = duelResult.players.findIndex(function(p){return p.id===playerId;}) + 1;
-    const iAbandoned = duelResult.myAbandoned === true;
-    return (
-      <div style={{...shell,animation:"fadeUp .4s ease",...ecranDefilant}} key="roomResult">
-        <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
-        {/* Bandes pelouse */}
-        {/* Aplat de panneau : les bandes de tonte sont parties avec la pelouse.
-              Sur la charte or, une carte est l'écusson noir du logo. */}
-            <div style={{position:"absolute",inset:0,background:G.nuit}}/>
-        {/* Ligne médiane */}
-        <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:G.nuit,transform:"translateY(-50%)"}}/>
-        {/* Cercle central */}
-        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:180,height:180,borderRadius:"50%",border:G.traitFin}}/>
-        {/* Point central */}
-        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:8,height:8,borderRadius:"50%",background:G.nuit}}/>
-        {/* Overlay sombre pour lisibilité */}
-        <div style={{position:"absolute",inset:0,background:"rgba(8,17,9,.45)"}}/>
-      </div>
-        <div style={{zIndex:1,padding:"32px 20px 16px",textAlign:"center"}}>
-          <div style={{fontSize:52,marginBottom:8}}>{iAbandoned?"🏳️":(myRank<=3?medals[myRank-1]:myRank+"ème")}</div> {!iAbandoned && <WinBanner maxWidth={300} marginTop={8} lose={myRank!==1} />}
-          <div style={{...posterText(30),fontSize:"clamp(30px,8vw,50px)",color:iAbandoned?G.maillot:(myRank===1?G.projecteur:G.white),letterSpacing:2}}>
-            {iAbandoned?(tr("ABANDON","FORFEIT","AUFGABE","RESA","DESISTÊNCIA","ABANDONO")):(myRank===1?(tr("VICTOIRE !","VICTORY!","SIEG!","VITTORIA!","VITÓRIA!","¡VICTORIA!")):myRank===2?(tr("2ÈME PLACE","2ND PLACE","2. PLATZ","2° POSTO","2º LUGAR","2º PUESTO")):myRank===3?(tr("3ÈME PLACE","3RD PLACE","3. PLATZ","3° POSTO","3º LUGAR","3º PUESTO")):(tr("RÉSULTATS","RESULTS","ERGEBNISSE","RISULTATI","RESULTADOS","RESULTADOS")))}
-          </div>
-          {iAbandoned && <div style={{fontSize:15,color:"#fff",marginTop:10,fontWeight:700,padding:"0 16px",lineHeight:1.4}}>{tr("T'as même pas eu le courage d'aller au bout 😂","You didn't even finish 😂","Du hast nicht mal zu Ende gespielt 😂","Non hai nemmeno finito 😂","Você nem terminou 😂","Ni siquiera has tenido el valor de llegar al final 😂")}</div>}
-        </div>
-        <div style={{...sheet,borderRadius:"28px 28px 0 0"}}>
-          {duelResult.players.map(function(p,i){
-            const hasRounds = Array.isArray(p.rounds) && p.rounds.length > 0;
-            const onClickHandler = hasRounds ? function(){
-              setReviewRoundsModal({
-                mode: duelResult.mode || "pont",
-                playerName: p.name + (p.id===playerId ? (tr(" (toi)"," (you)"," (du)"," (tu)"," (você)"," (tú)")) : ""),
-                rounds: p.rounds,
-              });
-            } : null;
-            return (
-            <div key={i} onClick={onClickHandler} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",borderRadius:G.rayon,background:p.id===playerId?"rgba(42,155,78,.35)":"rgba(8,17,9,.45)",border:G.traitFin,marginBottom:6,cursor:hasRounds?"pointer":"default"}}>
-              <div style={{...posterText(30),width:40,textAlign:"center",color:i<3?[G.projecteur,"#C0C0C0","#CD7F32"][i]:"rgba(255,255,255,.3)"}}>{i<3?medals[i]:i+1}</div>
-              <div style={{flex:1,fontSize:14,fontWeight:800,color:p.id===playerId?G.pelouseClaire:G.white}}>{p.name}{p.id===playerId?" ("+tr("toi","you","du","tu","você","tú")+")":""}{p.abandoned?" 🏳️":""}</div>
-              <div style={{...posterText(26),color:i===0?G.projecteur:G.white}}>{p.score||0} <span style={{fontSize:12,color:"rgba(255,255,255,.3)"}}>pts</span></div>
-              {hasRounds && <div style={{fontSize:14,color:"rgba(255,214,0,.7)",marginLeft:4}}>👁️</div>}
-            </div>
-          );})}
-          {duelResult.players.some(function(p){return Array.isArray(p.rounds) && p.rounds.length > 0;}) && (
-            <div style={{fontSize:10,color:"rgba(255,255,255,.4)",textAlign:"center",marginTop:6,marginBottom:6,fontStyle:"italic"}}>
-              👁️ {tr("Tape sur un joueur pour voir ses réponses","Tap a player to see their answers","Tippe auf einen Spieler, um seine Antworten zu sehen","Tocca un giocatore per vedere le sue risposte","Toque num jogador para ver suas respostas","Toca a un jugador para ver sus respuestas")}
-            </div>
-          )}
-          <button onClick={function(){
-            const myEntry = duelResult.players.find(function(p){return p.id===playerId;});
-            const grade = getGrade(playerXp);
-            const rank = duelResult.players.findIndex(function(p){return p.id===playerId;})+1;
-            const sc = myEntry?.score||0;
-            const txt = rank===1
-              ? tr(
-                  `${grade.emoji} J'ai remporté la salle sur GOAT FC avec ${sc} pts 🏆\nGrade : ${grade.label}\nT'as le niveau ? 👇\nhttps://goatfc.fr`,
-                  `${grade.emoji} I won the room on GOAT FC with ${sc} pts 🏆\nRank: ${grade.label}\nCan you beat me? 👇\nhttps://goatfc.fr`,
-                  `${grade.emoji} Ich habe den Raum auf GOAT FC mit ${sc} Pkt gewonnen 🏆\nRang: ${grade.label}\nSchaffst du das? 👇\nhttps://goatfc.fr`,
-                  `${grade.emoji} Ho vinto la stanza su GOAT FC con ${sc} pt 🏆\nGrado: ${grade.label}\nCe la fai? 👇\nhttps://goatfc.fr`,
-                  `${grade.emoji} Venci a sala no GOAT FC com ${sc} pts 🏆\nPatente: ${grade.label}\nVocê tem nível? 👇\nhttps://goatfc.fr`,`${grade.emoji} He ganado la sala en GOAT FC con ${sc} pts 🏆\nRango: ${grade.label}\n¿Tienes nivel? 👇\nhttps://goatfc.fr`)
-              : tr(
-                  `J'ai terminé ${rank}ème sur GOAT FC avec ${sc} pts\nGrade : ${grade.label}\nhttps://goatfc.fr`,
-                  `I finished #${rank} on GOAT FC with ${sc} pts\nRank: ${grade.label}\nhttps://goatfc.fr`,
-                  `Ich wurde ${rank}. auf GOAT FC mit ${sc} Pkt\nRang: ${grade.label}\nhttps://goatfc.fr`,
-                  `Ho chiuso ${rank}° su GOAT FC con ${sc} pt\nGrado: ${grade.label}\nhttps://goatfc.fr`,
-                  `Terminei em ${rank}º no GOAT FC com ${sc} pts\nPatente: ${grade.label}\nhttps://goatfc.fr`,`He terminado ${rank}º en GOAT FC con ${sc} pts\nRango: ${grade.label}\nhttps://goatfc.fr`);
-            if(navigator.share){navigator.share({title:"GOAT FC",text:txt});}
-            else{navigator.clipboard.writeText(txt).then(function(){alert(tr("Copié ! 📋","Copied! 📋","Kopiert! 📋","Copiato! 📋","Copiado! 📋","¡Copiado! 📋"));});}
-          }} style={{...btn(G.ciel,G.white,17),width:"100%",padding:"11px",display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginTop:8,marginBottom:6}}>
-            {tr("📤 Partager le résultat","📤 Share the result","📤 Ergebnis teilen","📤 Condividi il risultato","📤 Compartilhar resultado","📤 Compartir el resultado")}
-          </button>
-          <button onClick={function(){setDuelResult(null);setScreen("home");}} style={{width:"100%",padding:"16px",background:G.pelouse,color:"#000",border:G.trait,borderRadius:G.rayon,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800,marginTop:0}}>
-            {tr("Retour à l'accueil","Back home","Zurück zum Start","Torna alla home","Voltar ao início","Volver al inicio")}
-          </button>
-        </div>
-      </div>
-    );
-  }
   if (duelResult) {
     const won = duelResult.myScore > duelResult.theirScore;
     const draw = duelResult.myScore === duelResult.theirScore;
