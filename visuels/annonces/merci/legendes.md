@@ -13,7 +13,9 @@ script — les nombres auront bougé.
 ```
 🙏 MERCI.
 
-Depuis avril 2026, vous êtes 276 à avoir créé un compte sur GOAT FC. 205 d'entre vous ont joué au moins une partie, et ensemble vous en avez enchaîné 1 679, depuis 21 pays.
+Vous êtes 278 à avoir créé un compte sur GOAT FC, depuis 21 pays.
+
+Et en 21 jours de suivi, tous modes confondus, vous avez joué 2 505 parties. 228 d'entre vous sont entrés sur le terrain sur cette seule période.
 
 Aucune pub. Aucun budget. Aucune équipe. GOAT FC tourne parce que vous revenez — et ça, ça ne s'achète pas.
 
@@ -27,10 +29,10 @@ Aucune pub. Aucun budget. Aucune équipe. GOAT FC tourne parce que vous revenez 
 ```
 📊 CE QUE VOUS AVEZ FAIT, EN DÉTAIL.
 
-⚡ 123 parties en une seule journée, le 13 août — le record absolu
-⚔️ 292 duels menés jusqu'au bout, deux joueurs face à face
-📅 70 journées avec au moins une partie, sur les 130 écoulées
-🟨 50 grilles GOAT GRID remplies
+⚡ 259 parties en une seule journée, le 14 août — le record absolu
+⚔️ 528 parties en ligne : 378 duels et 150 salons
+🏅 1 681 scores enregistrés au classement depuis la toute première partie, en avril 2026
+👥 228 joueurs vus sur le terrain en 21 jours
 
 Chacun de ces chiffres, c'est quelqu'un qui a ouvert l'app sans qu'on le lui demande. Merci.
 
