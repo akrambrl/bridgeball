@@ -74,60 +74,104 @@ async function toutes(requete) {
   return out;
 }
 
+/** Compte sans rapatrier : PostgREST rend le total dans content-range.
+ *
+ *  La COLONNE compte. Sur ce projet, le SELECT de bb_pseudos est accordé
+ *  colonne par colonne : `select=*` y part en 42501 « permission denied », la
+ *  réponse n'a pas de content-range, et le total sort à null sans rien dire.
+ *  On nomme donc une colonne qu'on sait lisible. */
+async function compte(table, filtre, colonne) {
+  const r = await fetch(SB_URL + table + "?select=" + (colonne || "*") + (filtre ? "&" + filtre : ""),
+    { headers: { ...enTetes, Prefer: "count=exact", Range: "0-0" } });
+  const cr = r.headers.get("content-range");
+  if (!r.ok || !cr) throw new Error("comptage refusé sur " + table + " (HTTP " + r.status + ")");
+  return Number(cr.split("/")[1]);
+}
+
+// Les sept modes suivis, lus dans src/lib/tracking.js — la MÊME liste que le
+// tableau de bord privé. Recopiée ici, elle divergerait au premier mode ajouté
+// et l'affiche annoncerait moins de parties que la console. tracking.js importe
+// charte.jsx, qui est du JSX : on lit donc le fichier, on ne l'importe pas.
+const MODES = [...(await readFile(join(racine, "src", "lib", "tracking.js"), "utf8"))
+  .matchAll(/\{\s*key:\s*"(\w+)"/g)].map((m) => m[1]);
+if (MODES.length < 7) throw new Error("liste des modes illisible dans tracking.js");
+
 const MOIS = ["janvier", "février", "mars", "avril", "mai", "juin",
   "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
-// « du mois de avril » : trois mois de l'année commencent par une voyelle et
-// veulent l'élision. Le « h » d'aucun mois n'est en jeu, la règle tient en une
-// classe de caractères.
+// « du mois de avril » : trois mois commencent par une voyelle et veulent
+// l'élision. Aucun mois ne pose de « h » aspiré, la règle tient en une classe.
 const deMois = (m) => (/^[aeiouâéèêîôû]/i.test(m) ? "d'" : "de ") + m;
-// Espace INSÉCABLE entre les milliers, et NON l'espace fine : à 44 px en
-// Anton la fine ne se voit pas et « 1 679 » se lit « 1679 ». Insécable quand
-// même — une coupure de ligne au milieu ferait lire « 1 » puis « 679 ».
-const nombre = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+// Espace INSÉCABLE entre les milliers, et NON l'espace fine : à 44 px en Anton
+// la fine ne se voit pas et « 2 505 » se lit « 2505 ». Insécable quand même —
+// une coupure de ligne au milieu ferait lire « 2 » puis « 505 ».
+const nombre = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, "\u00a0");
+const leJour = (iso) => { const d = new Date(iso); return d.getDate() + " " + MOIS[d.getMonth()]; };
 
+// ── DEUX HORLOGES, ET C'EST LE PIÈGE DE CE FICHIER ────────────────────────
+//
+// bb_scores court depuis la PREMIÈRE PARTIE (avril). bb_events, lui, n'existe
+// que depuis la mise en place du suivi par mode — trois semaines. Les deux ne
+// couvrent donc pas la même période, et « 2 505 parties depuis avril » serait
+// faux de quatre mois.
+//
+// C'est aussi ce qui explique l'écart qu'on croit voir : 1 680 « parties » lues
+// dans bb_scores contre 2 505 au tableau de bord. Aucun des deux n'a tort — le
+// premier ne compte que les modes qui CLASSENT un score, le second compte les
+// sept modes, y compris la devinette et Trouve-le-joueur qui n'en écrivent
+// aucun. Chaque nombre part donc sur l'affiche AVEC sa période et sa portée.
 async function mesurer() {
-  const [scores, joueurs, duels, grilles, saisons] = await Promise.all([
-    toutes("bb_scores?select=mode,player_id,created_at&order=created_at.asc"),
+  const [scores, joueurs, evenements, duels, salons, inscrits, saisons] = await Promise.all([
+    toutes("bb_scores?select=player_id,created_at&order=created_at.asc"),
     toutes("bb_pseudos?select=player_id,country"),
-    toutes("bb_duels?select=challenger_score,opponent_score"),
-    toutes("bb_gg_scores?select=id"),
+    toutes("bb_events?select=player_id,created_at&type=like.play_*&order=created_at.asc"),
+    compte("bb_duels", null, "id"), compte("bb_rooms", null, "id"),
+    compte("bb_pseudos", null, "player_id"),
     toutes("bb_seasons?select=season_number,champion_name,season_month,ended_at&order=season_number.asc"),
   ]);
   if (!scores.length || !joueurs.length) throw new Error("tables vides — lecture suspecte");
 
+  // Le total du tableau de bord, refait à l'identique : la somme des sept modes,
+  // solo et en ligne. Compté par type plutôt que sur les lignes rapatriées, pour
+  // que le nombre reste juste même si un type d'événement s'ajoute plus tard.
+  let partiesToutesModes = 0;
+  for (const m of MODES) {
+    partiesToutesModes += await compte("bb_events", "type=eq.play_" + m, "id");
+    partiesToutesModes += await compte("bb_events", "type=eq.play_" + m + "_online", "id");
+  }
+
   const parJour = {};
-  for (const s of scores) {
-    const j = s.created_at.slice(0, 10);
+  for (const e of evenements) {
+    const j = e.created_at.slice(0, 10);
     parJour[j] = (parJour[j] || 0) + 1;
   }
   const [jourRecord, partiesRecord] = Object.entries(parJour).sort((a, b) => b[1] - a[1])[0];
-  const debut = new Date(scores[0].created_at);
 
-  // bb_seasons porte des doublons (la saison 4 y figure deux fois) : dédoublonner
-  // par NUMÉRO, sinon le même champion serait félicité deux fois sur l'affiche.
   const parNumero = new Map();
+  // bb_seasons porte la saison 4 EN DOUBLE : dédoublonner par numéro, sinon le
+  // même champion serait félicité deux fois sur l'affiche.
   for (const s of saisons) if (!parNumero.has(s.season_number)) parNumero.set(s.season_number, s);
 
+  const debutScores = new Date(scores[0].created_at);
   return {
-    inscrits: joueurs.length,
-    // Ceux qui ont VRAIMENT joué. C'est ce nombre-là qu'on remercie ; l'écart
-    // avec les inscrits, ce sont les comptes créés puis abandonnés.
-    actifs: new Set(scores.map((s) => s.player_id)).size,
-    parties: scores.length,
-    duels: duels.filter((d) => d.challenger_score != null && d.opponent_score != null).length,
-    grilles: grilles.length,
+    inscrits,
+    parties: partiesToutesModes,
+    scores: scores.length,
+    enLigne: duels + salons, duels, salons,
     pays: new Set(joueurs.map((j) => j.country).filter(Boolean)).size,
-    journees: Object.keys(parJour).length,
-    joursEcoules: Math.round((Date.now() - debut.getTime()) / 86400000) + 1,
-    partiesRecord, jourRecord,
-    depuis: MOIS[debut.getMonth()] + " " + debut.getFullYear(),
+    // Les joueurs VUS dans les événements, pas seulement ceux qui ont classé un
+    // score : c'est le nombre de gens qui ont vraiment ouvert un mode.
+    vus: new Set(evenements.map((e) => e.player_id).filter(Boolean)).size,
+    partiesRecord, jourRecord: leJour(jourRecord),
+    joursSuivis: Object.keys(parJour).length,
+    depuisScores: MOIS[debutScores.getMonth()] + " " + debutScores.getFullYear(),
+    depuisSuivi: leJour(evenements[0].created_at),
     champions: [...parNumero.values()].filter((s) => s.champion_name).map((s) => ({
       nom: s.champion_name,
       mois: s.season_month
         ? MOIS[Number(s.season_month.slice(5, 7)) - 1]
         // Les deux premières saisons n'ont pas de season_month : leur mois se
-        // déduit de la date de clôture, qui tombe le 1er du mois SUIVANT pour
-        // la saison 2 — d'où le recul d'un jour avant de lire le mois.
+        // déduit de la clôture, qui tombe le 1er du mois SUIVANT pour la
+        // saison 2 — d'où le recul d'un jour avant de lire le mois.
         : MOIS[new Date(new Date(s.ended_at).getTime() - 86400000).getMonth()],
     })),
   };
@@ -142,22 +186,15 @@ try {
   process.exit(1);
 }
 
-const jourLisible = (() => {
-  const d = new Date(S.jourRecord);
-  return d.getDate() + " " + MOIS[d.getMonth()];
-})();
-
 console.log("chiffres lus sur Supabase (clé publique, lecture seule) :");
-console.log("  inscrits ................ " + S.inscrits);
-console.log("  dont ayant joué ......... " + S.actifs);
-console.log("  parties classées ........ " + S.parties);
-console.log("  duels menés au bout ..... " + S.duels);
-console.log("  grilles GOAT GRID ....... " + S.grilles);
-console.log("  pays .................... " + S.pays);
-console.log("  journées avec du jeu .... " + S.journees);
-console.log("  record sur une journée .. " + S.partiesRecord + " le " + S.jourRecord);
-console.log("  première partie ......... " + S.depuis);
-console.log("  champions couronnés ..... " + S.champions.map((c) => c.nom + " (" + c.mois + ")").join(", "));
+console.log("  parties, les 7 modes ..... " + S.parties + "   (suivi depuis le " + S.depuisSuivi + ", " + S.joursSuivis + " jours)");
+console.log("  scores classés ........... " + S.scores + "   (depuis " + S.depuisScores + ")");
+console.log("  parties en ligne ......... " + S.enLigne + "   (" + S.duels + " duels + " + S.salons + " salons)");
+console.log("  comptes créés ............ " + S.inscrits);
+console.log("  joueurs vus jouer ........ " + S.vus);
+console.log("  pays ..................... " + S.pays);
+console.log("  record sur une journée ... " + S.partiesRecord + " le " + S.jourRecord);
+console.log("  champions couronnés ...... " + S.champions.map((c) => c.nom + " (" + c.mois + ")").join(", "));
 if (SEULEMENT_CHIFFRES) process.exit(0);
 
 // ── LA CHARTE ──────────────────────────────────────────────────────────────
@@ -209,29 +246,32 @@ const POSTS = [
   {
     fichier: "1-les-chiffres",
     bandeau: 50,
-    surligne: "DEPUIS " + S.depuis.toUpperCase(),
+    // PAS de période dans la surligne : les trois chiffres de ce panneau n'ont
+    // pas la même horloge (les parties datent du suivi, les inscrits et les pays
+    // du lancement). Une seule date au-dessus des trois en rendrait deux fausses.
+    surligne: "LES SEPT MODES · TOUS CONFONDUS",
     titre: ["MERCI", "À VOUS " + nombre(S.inscrits)],
     chiffres: [
       [nombre(S.parties), "parties jouées"],
-      [nombre(S.actifs), "joueurs sur le terrain"],
-      [nombre(S.pays), S.pays > 1 ? "pays" : "pays"],
+      [nombre(S.inscrits), "comptes créés"],
+      [nombre(S.pays), "pays"],
     ],
-    pied: "GOAT FC n'a ni pub, ni budget, ni équipe. Il tourne parce que "
-        + "<b>vous revenez</b>. Merci.",
+    pied: "<b>" + nombre(S.parties) + " parties en " + S.joursSuivis + " jours.</b> "
+        + "GOAT FC n'a ni pub, ni budget, ni équipe — il tourne parce que vous revenez. Merci.",
   },
   {
     fichier: "2-vos-records",
     fond: "duel",
     surligne: "LES RECORDS DE LA COMMUNAUTÉ",
     titre: ["CE QUE VOUS", "AVEZ FAIT"],
+    // Chaque ligne porte SA période dans son sous-titre. C'est la seule façon
+    // honnête de faire tenir sur la même affiche un chiffre de trois semaines et
+    // un chiffre de quatre mois.
     liste: [
-      [nombre(S.partiesRecord) + " parties en une journée", "le " + jourLisible + ", record absolu"],
-      [nombre(S.duels) + " duels menés au bout", "deux joueurs, un score, un gagnant"],
-      // « pas un jour sans personne » serait FAUX : 70 journées actives sur les
-      // 128 écoulées depuis la première partie, il y a bien eu des jours vides.
-      // Un chiffre juste sous une phrase fausse reste un visuel qui ment.
-      [nombre(S.journees) + " journées avec du jeu", "sur les " + S.joursEcoules + " depuis la première partie"],
-      [nombre(S.grilles) + " grilles GOAT GRID", "neuf cases, trois vies"],
+      [nombre(S.partiesRecord) + " parties en une journée", "le " + S.jourRecord + ", record absolu"],
+      [nombre(S.enLigne) + " parties en ligne", nombre(S.duels) + " duels et " + nombre(S.salons) + " salons"],
+      [nombre(S.scores) + " scores au classement", "depuis la toute première partie, en " + S.depuisScores.split(" ")[0]],
+      [nombre(S.vus) + " joueurs sur le terrain", "en " + S.joursSuivis + " jours de suivi"],
     ],
     pied: "Chacun de ces chiffres, c'est quelqu'un qui a ouvert l'app "
         + "<b>sans qu'on le lui demande</b>.",
@@ -241,10 +281,10 @@ const POSTS = [
     bandeau: 58,
     surligne: "HALL OF FAME",
     titre: ["BRAVO", "AUX CHAMPIONS"],
-    // Ce n'est PAS un podium : chacun de ces trois-là est PREMIER, dans son
-    // mois à lui. Les décorer or/argent/bronze les classerait les uns par
-    // rapport aux autres, ce qui n'a aucun sens — et reléguerait deux champions
-    // au rang de dauphins sur une affiche censée les féliciter.
+    // Ce n'est PAS un podium : chacun de ces trois-là est PREMIER, dans son mois
+    // à lui. Les décorer or/argent/bronze les classerait les uns par rapport aux
+    // autres et reléguerait deux champions au rang de dauphins, sur une affiche
+    // censée les féliciter.
     palmares: S.champions.map((c) => [c.nom, "champion du mois " + deMois(c.mois)]),
     pied: "Le 1ᵉʳ septembre, le compteur repart à zéro pour tout le monde — "
         + "et cette fois, <b>le podium repart avec quelque chose</b>.",
@@ -393,7 +433,9 @@ if (!artDuel) console.warn("⚠️  illustration duel absente — le post 2 se r
 const LEGENDES = {
   "1-les-chiffres": `🙏 MERCI.
 
-Depuis ${S.depuis}, vous êtes ${nombre(S.inscrits)} à avoir créé un compte sur GOAT FC. ${nombre(S.actifs)} d'entre vous ont joué au moins une partie, et ensemble vous en avez enchaîné ${nombre(S.parties)}, depuis ${nombre(S.pays)} pays.
+Vous êtes ${nombre(S.inscrits)} à avoir créé un compte sur GOAT FC, depuis ${nombre(S.pays)} pays.
+
+Et en ${S.joursSuivis} jours de suivi, tous modes confondus, vous avez joué ${nombre(S.parties)} parties. ${nombre(S.vus)} d'entre vous sont entrés sur le terrain sur cette seule période.
 
 Aucune pub. Aucun budget. Aucune équipe. GOAT FC tourne parce que vous revenez — et ça, ça ne s'achète pas.
 
@@ -403,10 +445,10 @@ Aucune pub. Aucun budget. Aucune équipe. GOAT FC tourne parce que vous revenez 
 
   "2-vos-records": `📊 CE QUE VOUS AVEZ FAIT, EN DÉTAIL.
 
-⚡ ${nombre(S.partiesRecord)} parties en une seule journée, le ${jourLisible} — le record absolu
-⚔️ ${nombre(S.duels)} duels menés jusqu'au bout, deux joueurs face à face
-📅 ${nombre(S.journees)} journées avec au moins une partie, sur les ${S.joursEcoules} écoulées
-🟨 ${nombre(S.grilles)} grilles GOAT GRID remplies
+⚡ ${nombre(S.partiesRecord)} parties en une seule journée, le ${S.jourRecord} — le record absolu
+⚔️ ${nombre(S.enLigne)} parties en ligne : ${nombre(S.duels)} duels et ${nombre(S.salons)} salons
+🏅 ${nombre(S.scores)} scores enregistrés au classement depuis la toute première partie, en ${S.depuisScores}
+👥 ${nombre(S.vus)} joueurs vus sur le terrain en ${S.joursSuivis} jours
 
 Chacun de ces chiffres, c'est quelqu'un qui a ouvert l'app sans qu'on le lui demande. Merci.
 
@@ -426,6 +468,15 @@ Le 1ᵉʳ septembre, le compteur repart à zéro pour tout le monde — et cette
 
 #football #foot #quizfoot #culturefoot #classement #champion #ligue1 #premierleague #goatfc`,
 };
+
+// Un gabarit qui interpole une variable disparue n'échoue pas : il écrit
+// « undefined » et le fichier part tel quel. C'est arrivé — trois fois dans les
+// légendes après avoir renommé les chiffres. Le rendu ne pouvait pas le voir,
+// les légendes ne passent pas par le navigateur.
+for (const [nom, texte] of Object.entries(LEGENDES)) {
+  const trou = texte.match(/undefined|NaN/);
+  if (trou) throw new Error("légende « " + nom + " » : « " + trou[0] + " » interpolé — une variable a changé de nom.");
+}
 
 async function ecrireLegendes() {
   const bouts = ["# Légendes des posts de remerciement", "",
