@@ -102,6 +102,12 @@ create table if not exists public.bb_reclamations (
   player_id     text not null,
   pseudo        text,
   email         text not null,
+  -- Le compte Instagram du gagnant. C'est le SEUL moyen de rapprocher un compte
+  -- GOAT FC — anonyme — d'un abonné, d'un commentaire et d'une story. Sans lui,
+  -- les conditions de l'article 5.1 du règlement seraient invérifiables, donc
+  -- décoratives : annoncées mais jamais appliquées, ce qui est pire que ne pas
+  -- les annoncer.
+  instagram     text,
   plateforme    text,
   -- Le règlement demande l'autorisation du représentant légal pour les 16-17
   -- ans. On garde la déclaration, pas l'âge : l'app ne connaît pas l'âge.
@@ -118,6 +124,11 @@ do $$ begin
                   where table_schema = 'public' and table_name = 'bb_reclamations'
                     and column_name = 'rang') then
     alter table public.bb_reclamations add column rang int not null default 1;
+  end if;
+  if not exists (select 1 from information_schema.columns
+                  where table_schema = 'public' and table_name = 'bb_reclamations'
+                    and column_name = 'instagram') then
+    alter table public.bb_reclamations add column instagram text;
   end if;
 end $$;
 
@@ -169,9 +180,12 @@ end $$;
 -- 8,5 × 10^11 combinaisons. Une recherche exhaustive en ligne est hors de
 -- portée, et il n'y a donc pas de limitation de débit ici — en ajouter une
 -- exigerait un état par appelant que le rôle anonyme ne fournit pas.
+drop function if exists public.bb_reclamer_lot(text, text, text, boolean);
+
 create or replace function public.bb_reclamer_lot(
   p_code         text,
   p_email        text,
+  p_instagram    text default null,
   p_plateforme   text default null,
   p_autorisation boolean default false
 ) returns table (etat text, detail text)
@@ -215,6 +229,18 @@ begin
   --       légal pour les mineurs. La case doit être cochée.
   if not coalesce(p_autorisation, false) then
     return query select 'refus'::text, 'autorisation'::text;
+    return;
+  end if;
+
+  -- 4.3 bis — Le compte Instagram, sans lequel les conditions de l'article 5.1
+  --           (abonnement, deux amis identifiés, partage en story) ne peuvent
+  --           pas être vérifiées. On contrôle qu'il y a un pseudo plausible, pas
+  --           qu'il existe : Instagram n'expose aucune interface publique
+  --           permettant de le savoir, et prétendre le vérifier ici serait un
+  --           contrôle de façade. La VRAIE vérification est manuelle, à la
+  --           remise — le règlement le dit ainsi.
+  if btrim(coalesce(p_instagram, '')) !~ '^@?[A-Za-z0-9._]{1,30}$' then
+    return query select 'refus'::text, 'instagram'::text;
     return;
   end if;
 
@@ -277,9 +303,12 @@ begin
   --       répéter.
   begin
     insert into public.bb_reclamations
-      (season_number, rang, player_id, pseudo, email, plateforme, autorisation)
+      (season_number, rang, player_id, pseudo, email, instagram, plateforme, autorisation)
     values
       (v_num, v_rang, v_player, v_pseudo, btrim(p_email),
+       -- Rangé SANS l'arobase, pour que « @toto » et « toto » ne fassent qu'un
+       -- seul dossier à vérifier.
+       ltrim(btrim(p_instagram), '@'),
        nullif(btrim(coalesce(p_plateforme, '')), ''), true);
   exception when unique_violation then
     return query select 'deja'::text,
@@ -312,7 +341,7 @@ $$;
 -- ⚠️ LE RETRAIT SE FAIT SUR `public`, PAS SUR `anon`. Voir l'en-tête : retirer
 --    un droit à un rôle qui ne l'a jamais eu nommément ne retire rien, parce que
 --    le droit vient de PUBLIC. C'est l'erreur qui a produit la saison 999.
-revoke execute on function public.bb_reclamer_lot(text, text, text, boolean) from public;
+revoke execute on function public.bb_reclamer_lot(text, text, text, text, boolean) from public;
 revoke execute on function public.bb_etat_reclamation(text) from public;
 
 -- L'app appelle ces deux fonctions avec la clé publique : le rôle `anon` doit
@@ -320,11 +349,11 @@ revoke execute on function public.bb_etat_reclamation(text) from public;
 -- sans le code, et n'écrit rien sans lui.
 do $$ begin
   if exists (select 1 from pg_roles where rolname = 'anon') then
-    execute 'grant execute on function public.bb_reclamer_lot(text, text, text, boolean) to anon';
+    execute 'grant execute on function public.bb_reclamer_lot(text, text, text, text, boolean) to anon';
     execute 'grant execute on function public.bb_etat_reclamation(text) to anon';
   end if;
   if exists (select 1 from pg_roles where rolname = 'authenticated') then
-    execute 'grant execute on function public.bb_reclamer_lot(text, text, text, boolean) to authenticated';
+    execute 'grant execute on function public.bb_reclamer_lot(text, text, text, text, boolean) to authenticated';
     execute 'grant execute on function public.bb_etat_reclamation(text) to authenticated';
   end if;
   if exists (select 1 from pg_roles where rolname = 'service_role') then
@@ -350,7 +379,7 @@ on conflict (season_number, rang) do update
 -- ─── 8. POUR LIRE LES RÉCLAMATIONS REÇUES ───────────────────────────────────
 -- Depuis le tableau de bord Supabase (qui n'est pas `anon`) :
 --
---   select season_number, rang, pseudo, email, plateforme, statut, created_at
+--   select season_number, rang, pseudo, email, instagram, plateforme, statut, created_at
 --     from public.bb_reclamations order by season_number desc, rang;
 --
 -- Et pour marquer un lot comme remis :

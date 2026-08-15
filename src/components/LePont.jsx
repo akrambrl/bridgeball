@@ -21,8 +21,8 @@ import { duelTermine } from "../lib/duel";
 // Réclamation du lot : les règles (qui peut réclamer, pour quel mois, ce qu'on
 // accepte comme saisie) et le tirage sûr du code de récupération.
 import { saisonDoteeRecente, lotPourRang, rangDans, moisDeLaSaison, libellePlace,
-         medaille, souhaitDuRang, manques, normaliserCode, tirerCode,
-         PLATEFORMES } from "../lib/reclamation";
+         medaille, souhaitDuRang, manques, normaliserCode, normaliserInstagram,
+         tirerCode, PLATEFORMES } from "../lib/reclamation";
 import { prochainsTotauxXp } from "../lib/xp";
 // Règles de tirage anti-répétition, partagées avec « Trouve le joueur ».
 import { clePaire, pairesRetenues, tirerEnEvitant, memoriser } from "../lib/tirage.js";
@@ -3641,7 +3641,7 @@ export default function LePont() {
   // classement final du mois, ce qu'on ne fait pas soixante fois par seconde.
   const [monLot, setMonLot] = useState(null);
   const [reclamationOuverte, setReclamationOuverte] = useState(false);
-  const [recForm, setRecForm] = useState({ code:"", email:"", plateforme:"", autorisation:false });
+  const [recForm, setRecForm] = useState({ code:"", email:"", instagram:"", plateforme:"", autorisation:false });
   const [recEtat, setRecEtat] = useState(null);   // null | "envoi" | "ok" | "deja"
   const [recMsg, setRecMsg] = useState("");
   const [showHallOfFame, setShowHallOfFame] = useState(false);
@@ -8145,6 +8145,7 @@ export default function LePont() {
         method: "POST",
         body: JSON.stringify({
           p_code: code, p_email: recForm.email.trim(),
+          p_instagram: normaliserInstagram(recForm.instagram),
           p_plateforme: recForm.plateforme, p_autorisation: true,
         }),
       });
@@ -8171,6 +8172,7 @@ export default function LePont() {
       const raisons = {
         code_inconnu: tr("❌ Ce code ne correspond à aucun compte.","❌ This code matches no account.","❌ Dieser Code gehört zu keinem Konto.","❌ Questo codice non corrisponde a nessun account.","❌ Este código não corresponde a nenhuma conta.","❌ Este código no corresponde a ninguna cuenta."),
         email: tr("❌ Cette adresse email ne semble pas valide.","❌ That email address doesn't look valid.","❌ Diese E-Mail-Adresse scheint ungültig.","❌ Questo indirizzo email non sembra valido.","❌ Este email não parece válido.","❌ Ese correo no parece válido."),
+        instagram: tr("❌ Indique ton compte Instagram : c'est lui qui permet de vérifier l'abonnement, les 2 amis identifiés et la story.","❌ Enter your Instagram account: that's what lets us check the follow, the 2 tagged friends and the story.","❌ Gib dein Instagram-Konto an: nur so lassen sich Abo, die 2 markierten Freunde und die Story prüfen.","❌ Indica il tuo account Instagram: serve a verificare il follow, i 2 amici taggati e la storia.","❌ Informe sua conta do Instagram: é o que permite verificar o follow, os 2 amigos marcados e o story.","❌ Indica tu cuenta de Instagram: es lo que permite comprobar el seguimiento, los 2 amigos etiquetados y la historia."),
         autorisation: tr("❌ Il faut cocher la déclaration.","❌ You must tick the declaration.","❌ Du musst die Erklärung ankreuzen.","❌ Devi spuntare la dichiarazione.","❌ É preciso marcar a declaração.","❌ Debes marcar la declaración."),
         pas_de_lot: tr("❌ Ce compte n'a pas de lot à réclamer.","❌ This account has no prize to claim.","❌ Dieses Konto hat keinen Gewinn.","❌ Questo account non ha premi da reclamare.","❌ Esta conta não tem prêmio a reclamar.","❌ Esta cuenta no tiene premio que reclamar."),
         delai_depasse: tr("❌ Le délai de réclamation est dépassé. Écris à contact@goatfc.online","❌ The claim period has ended. Email contact@goatfc.online","❌ Die Frist ist abgelaufen. Schreib an contact@goatfc.online","❌ Il termine è scaduto. Scrivi a contact@goatfc.online","❌ O prazo terminou. Escreva para contact@goatfc.online","❌ El plazo ha terminado. Escribe a contact@goatfc.online"),
@@ -8293,6 +8295,25 @@ export default function LePont() {
                   choix — leur proposer « PlayStation / Xbox / PC » n'aurait
                   aucun sens, et une liste d'enseignes serait forcément
                   incomplète. C'est donc un champ libre. */}
+              <div style={{fontSize:11,color:"rgba(255,255,255,.5)",fontWeight:700,letterSpacing:1,marginBottom:6}}>
+                {tr("TON COMPTE INSTAGRAM","YOUR INSTAGRAM ACCOUNT","DEIN INSTAGRAM-KONTO","IL TUO ACCOUNT INSTAGRAM","SUA CONTA DO INSTAGRAM","TU CUENTA DE INSTAGRAM")}
+              </div>
+              <input value={recForm.instagram} maxLength={31}
+                onChange={function(e){setRecForm({...recForm,instagram:e.target.value});setRecMsg("");}}
+                placeholder="@ton.pseudo" style={champ}/>
+              {/* La RAISON du champ est dite ici, au moment où on le demande.
+                  Un gagnant à qui on réclame son Instagram sans expliquer
+                  pourquoi a toutes les raisons de se méfier — et l'article 5.1
+                  du règlement, lui, se lit ailleurs. */}
+              <div style={{fontSize:11.5,color:"rgba(255,255,255,.45)",lineHeight:1.5,marginBottom:14}}>
+                {tr("Il sert à vérifier les conditions du règlement : abonnement au compte, 2 amis identifiés en commentaire et partage en story. Un compte GOAT FC étant anonyme, c'est le seul lien possible.",
+                    "It's used to check the contest conditions: following the account, 2 friends tagged in a comment, and a story share. A GOAT FC account is anonymous, so it's the only possible link.",
+                    "Er dient zur Prüfung der Bedingungen: Abo, 2 markierte Freunde im Kommentar und Story-Teilung. Ein GOAT-FC-Konto ist anonym — das ist die einzige mögliche Verbindung.",
+                    "Serve a verificare le condizioni: follow, 2 amici taggati nei commenti e condivisione in storia. Un account GOAT FC è anonimo, è l'unico collegamento possibile.",
+                    "Serve para verificar as condições: seguir a conta, 2 amigos marcados no comentário e partilha no story. Uma conta GOAT FC é anónima, é a única ligação possível.",
+                    "Sirve para comprobar las condiciones: seguir la cuenta, 2 amigos etiquetados en comentario y compartir en historia. Una cuenta GOAT FC es anónima, es el único vínculo posible.")}
+              </div>
+
               <div style={{fontSize:11,color:"rgba(255,255,255,.5)",fontWeight:700,letterSpacing:1,marginBottom:8}}>
                 {souhaitDuRang(rang) === "plateforme"
                   ? tr("PLATEFORME","PLATFORM","PLATTFORM","PIATTAFORMA","PLATAFORMA","PLATAFORMA")
@@ -12100,7 +12121,7 @@ export default function LePont() {
                 // le pré-remplir évite de l'aller chercher dans le profil, et
                 // ne révèle rien que cet appareil ne sache déjà.
                 let connu = ""; try { connu = localStorage.getItem("bb_recovery_code") || ""; } catch {}
-                setRecForm({ code:connu, email:"", plateforme:"", autorisation:false });
+                setRecForm({ code:connu, email:"", instagram:"", plateforme:"", autorisation:false });
               }} style={{...btn(G.nuit,G.creme,15),width:"100%",padding:"14px"}}>
                 {tr("Réclamer mon lot →","Claim my prize →","Gewinn anfordern →","Reclama il premio →","Reclamar meu prêmio →","Reclamar mi premio →")}
               </button>

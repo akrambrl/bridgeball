@@ -161,19 +161,19 @@ async function eprouver() {
   // ── 1. UN MAUVAIS CODE NE RÉCLAME RIEN ────────────────────────────────────
   const inconnu = await commeAnon(
     "select etat || ':' || detail from public.bb_reclamer_lot("
-    + "'GOATFC-ZZZZ-ZZZZ', 'x@y.fr', 'ps5', true)", base);
+    + "'GOATFC-ZZZZ-ZZZZ', 'x@y.fr', 'toto', 'ps5', true)", base);
   dire(inconnu === "refus:code_inconnu", "un code inconnu est refusé  (" + inconnu + ")");
 
   // ── 2. UNE ADRESSE IMPOSSIBLE EST REFUSÉE ─────────────────────────────────
   const mail = await commeAnon(
     "select etat || ':' || detail from public.bb_reclamer_lot("
-    + "'GOATFC-AAAA-BBBB', 'pas-une-adresse', 'ps5', true)", base);
+    + "'GOATFC-AAAA-BBBB', 'pas-une-adresse', 'toto', 'ps5', true)", base);
   dire(mail === "refus:email", "une adresse impossible est refusée  (" + mail + ")");
 
   // ── 3. SANS L'AUTORISATION DÉCLARÉE, RIEN ─────────────────────────────────
   const auto = await commeAnon(
     "select etat || ':' || detail from public.bb_reclamer_lot("
-    + "'GOATFC-AAAA-BBBB', 'a@b.fr', 'ps5', false)", base);
+    + "'GOATFC-AAAA-BBBB', 'a@b.fr', 'toto', 'ps5', false)", base);
   dire(auto === "refus:autorisation", "la case d'autorisation est obligatoire  (" + auto + ")");
 
   // ── 4. LE PODIUM EST BIEN CELUI QU'ON CROIT ───────────────────────────────
@@ -188,6 +188,26 @@ async function eprouver() {
   const mois = await commeAnon("select public.bb_mois_de_saison(6)", base);
   dire(mois === "2026-09", "la saison 6 est bien septembre 2026  (" + mois + ")");
 
+  // ── 4 bis. SANS COMPTE INSTAGRAM, PAS DE RÉCLAMATION ──────────────────────
+  //     La condition de l'article 5.1 doit être BLOQUANTE, pas décorative : une
+  //     condition annoncée mais jamais appliquée est pire que pas de condition.
+  await psql(["-c", "delete from public.bb_reclamations"], base);
+  for (const [valeur, quoi] of [["", "vide"], ["   ", "des espaces"],
+                                ["a b", "un espace au milieu"], ["x".repeat(31), "trop long"]]) {
+    const r = await commeAnon(
+      "select etat || ':' || detail from public.bb_reclamer_lot("
+      + "'GOATFC-AAAA-BBBB', 'a@b.fr', '" + valeur + "', 'ps5', true)", base);
+    dire(r === "refus:instagram", "compte Instagram " + quoi + " : refusé  (" + r + ")");
+  }
+  // Et l'arobase est optionnelle : « @toto » et « toto » sont le même compte.
+  const avecArobase = await commeAnon(
+    "select etat from public.bb_reclamer_lot("
+    + "'GOATFC-AAAA-BBBB', 'a@b.fr', '  @Toto.99 ', 'ps5', true)", base);
+  const range = await psql(["-tAc", "select instagram from public.bb_reclamations limit 1"], base);
+  dire(avecArobase === "ok" && range.trim() === "Toto.99",
+    "l'arobase et les espaces sont retirés avant rangement  (" + range.trim() + ")");
+  await psql(["-c", "delete from public.bb_reclamations"], base);
+
   // ── 5. LES TROIS RANGS RÉCOMPENSÉS RÉCLAMENT ──────────────────────────────
   for (const [code, qui, rangAttendu] of [
     ["GOATFC-AAAA-BBBB", "1er", 1],
@@ -196,7 +216,7 @@ async function eprouver() {
   ]) {
     const r = await commeAnon(
       "select etat || ':' || detail from public.bb_reclamer_lot("
-      + "'" + code + "', 'a@b.fr', 'ps5', true)", base);
+      + "'" + code + "', 'a@b.fr', '@toto', 'ps5', true)", base);
     const attendu = new RegExp("^ok:GOATFC-LOT-6-" + rangAttendu + "-");
     dire(attendu.test(r), "le " + qui + " réclame, et son rang est " + rangAttendu + "  (" + r + ")");
   }
@@ -207,7 +227,7 @@ async function eprouver() {
   //     le plus tenté d'essayer.
   const quatre = await commeAnon(
     "select etat || ':' || detail from public.bb_reclamer_lot("
-    + "'GOATFC-GGGG-HHHH', 'a@b.fr', 'pc', true)", base);
+    + "'GOATFC-GGGG-HHHH', 'a@b.fr', 'toto', 'pc', true)", base);
   dire(quatre === "refus:pas_de_lot",
     "le 4e ne réclame rien, alors qu'il est champion d'une saison SANS lot  ("
     + quatre + ")");
@@ -217,7 +237,7 @@ async function eprouver() {
   //     ne doit pas ouvrir un second dossier.
   const deux = await commeAnon(
     "select etat from public.bb_reclamer_lot("
-    + "'GOATFC-AAAA-BBBB', 'autre@exemple.fr', 'pc', true)", base);
+    + "'GOATFC-AAAA-BBBB', 'autre@exemple.fr', 'toto', 'pc', true)", base);
   dire(deux === "deja", "une deuxième réclamation répond « déjà »  (" + deux + ")");
   const combien = await psql(["-tAc", "select count(*) from public.bb_reclamations"], base);
   dire(combien.trim() === "3", "trois lignes enregistrées, une par gagnant  (" + combien.trim() + ")");
@@ -235,7 +255,7 @@ async function eprouver() {
     + " delete from public.bb_scores where player_id = 'bronze'"], base);
   const promu = await commeAnon(
     "select etat || ':' || detail from public.bb_reclamer_lot("
-    + "'GOATFC-GGGG-HHHH', 'a@b.fr', 'pc', true)", base);
+    + "'GOATFC-GGGG-HHHH', 'a@b.fr', 'toto', 'pc', true)", base);
   dire(/^ok:GOATFC-LOT-6-3-/.test(promu),
     "le 4e devient 3e quand le bronze est écarté des scores  (" + promu + ")");
   // On remet le jeu d'essai en état pour la suite.
@@ -246,7 +266,7 @@ async function eprouver() {
     + " update public.bb_lots set ouvert_jusqu_a = now() - interval '1 day'"], base);
   const tard = await commeAnon(
     "select etat || ':' || detail from public.bb_reclamer_lot("
-    + "'GOATFC-AAAA-BBBB', 'a@b.fr', 'ps5', true)", base);
+    + "'GOATFC-AAAA-BBBB', 'a@b.fr', 'toto', 'ps5', true)", base);
   dire(tard === "refus:delai_depasse", "après le délai, c'est refusé  (" + tard + ")");
   await psql(["-c", "update public.bb_lots set ouvert_jusqu_a = now() + interval '30 days'"], base);
 

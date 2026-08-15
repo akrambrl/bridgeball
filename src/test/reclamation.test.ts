@@ -3,6 +3,7 @@ import {
   moisDeLaSaison, saisonDuMois, saisonDoteeRecente, lotPourRang, rangDans,
   libellePlace, medaille, emailPlausible, normaliserCode, codeValide,
   plateformeValide, enseigneValide, souhaitDuRang, manques,
+  instagramValide, normaliserInstagram,
   tirerCode, ALPHABET_CODE, MOTIF_CODE,
 } from "../lib/reclamation";
 
@@ -173,7 +174,8 @@ describe("le code", () => {
 });
 
 describe("manques", () => {
-  const bon = { code: "GOATFC-AAAA-BBBB", email: "a@b.fr", plateforme: "ps5", autorisation: true };
+  const bon = { code: "GOATFC-AAAA-BBBB", email: "a@b.fr", instagram: "toto",
+                plateforme: "ps5", autorisation: true };
   it("ne signale rien quand tout est là", () => {
     expect(manques(bon, 1)).toEqual([]);
   });
@@ -184,8 +186,9 @@ describe("manques", () => {
     expect(manques({ ...bon, email: "x" }, 1)).toEqual(["email"]);
     expect(manques({ ...bon, plateforme: "gameboy" }, 1)).toEqual(["plateforme"]);
     expect(manques({ ...bon, autorisation: false }, 1)).toEqual(["autorisation"]);
-    expect(manques({ code: "", email: "", plateforme: "", autorisation: false }, 1))
-      .toEqual(["code", "email", "plateforme", "autorisation"]);
+    expect(manques({ ...bon, instagram: "" }, 1)).toEqual(["instagram"]);
+    expect(manques({ code: "", email: "", instagram: "", plateforme: "", autorisation: false }, 1))
+      .toEqual(["code", "email", "instagram", "plateforme", "autorisation"]);
   });
 
   // ── LE CHAMP CHANGE DE NATURE SELON LA PLACE ────────────────────────────
@@ -211,6 +214,28 @@ describe("manques", () => {
     expect(enseigneValide("Steam")).toBe(true);
     expect(enseigneValide("x".repeat(61))).toBe(false);
   });
+  // ── LE COMPTE INSTAGRAM ─────────────────────────────────────────────────
+  // Le règlement conditionne la remise à trois actions sur Instagram, et un
+  // compte GOAT FC est anonyme : ce pseudo est le SEUL lien possible entre le
+  // gagnant et son abonnement, son commentaire et sa story. Sans lui la
+  // condition serait décorative — annoncée, jamais applicable.
+  it("le compte Instagram est obligatoire, quel que soit le rang", () => {
+    for (const rang of [1, 2, 3]) {
+      expect(manques({ ...bon, plateforme: rang === 1 ? "ps5" : "Fnac", instagram: "" }, rang))
+        .toContain("instagram");
+    }
+  });
+  it("accepte la forme qu'Instagram s'impose, arobase optionnelle", () => {
+    for (const v of ["toto", "@toto", "to.to_99", "a", "x".repeat(30)])
+      expect(instagramValide(v)).toBe(true);
+    for (const v of ["", "  ", "a b", "toto!", "x".repeat(31), "@@toto"])
+      expect(instagramValide(v)).toBe(false);
+  });
+  it("range le pseudo sans arobase — « @toto » et « toto » sont le même compte", () => {
+    expect(normaliserInstagram("  @Toto.99 ")).toBe("Toto.99");
+    expect(normaliserInstagram("Toto.99")).toBe("Toto.99");
+  });
+
   it("la plateforme doit être une de celles proposées", () => {
     expect(plateformeValide("ps5")).toBe(true);
     expect(plateformeValide("autre")).toBe(true);

@@ -92,6 +92,13 @@ for (const nom of LOT_FICHIERS) {
 const ECHELLE = 2;
 const L = 540, H = 960;   // → 1080 × 1920
 
+// ── LE COMPTE INSTAGRAM ────────────────────────────────────────────────────
+// À VÉRIFIER AVANT DE PUBLIER. Aucun compte n'était déclaré nulle part dans le
+// dépôt : celui-ci est déduit du nom de l'app, pas constaté. Un pseudo faux
+// imprimé sur un visuel envoie les gens chez quelqu'un d'autre, et ça ne se
+// rattrape pas une fois posté.
+const COMPTE_IG = "@goatfc";
+
 const lignes = (couleur, ep, pas) => `repeating-conic-gradient(from 0deg at 50% 30%,
   ${couleur} 0deg ${ep}deg, transparent ${ep}deg ${pas}deg)`;
 
@@ -189,11 +196,19 @@ const DIAPOS = [
   {
     fichier: "07-comment-participer",
     surligne: "SANS OBLIGATION D'ACHAT",
-    titre: ["POUR PARTICIPER,", "IL SUFFIT DE JOUER"],
-    grosMot: "0 €",
-    corps: "Pas d'inscription, pas d'achat, pas d'abonnement. Tu ouvres "
-         + "<b>goatfc.fr</b> dans ton navigateur et tu joues. C'est tout.",
-    appel: "goatfc.fr",
+    titre: ["POUR PARTICIPER", "ET ÊTRE ÉLIGIBLE"],
+    // Quatre gestes, numérotés, dont UN seul est le jeu. Les trois autres
+    // conditionnent la REMISE du lot, pas le classement : c'est dit ici comme
+    // dans le règlement, parce qu'un joueur qui découvre la condition au moment
+    // de réclamer se sent piégé — et il aurait raison.
+    liste: [
+      ["Joue sur goatfc.fr", "gratuit, rien à installer"],
+      ["Abonne-toi à " + COMPTE_IG, "sur Instagram"],
+      ["Identifie 2 amis", "en commentaire de ce post"],
+      ["Partage ce post en story", "et laisse-la en ligne"],
+    ],
+    corps: "Le classement décide de <b>l'ordre</b>. Les trois gestes Instagram "
+         + "sont vérifiés <b>au moment de la remise</b>.",
   },
   {
     fichier: "08-les-dates",
