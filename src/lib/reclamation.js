@@ -55,37 +55,72 @@ export function saisonDuMois(mois) {
 }
 
 /**
- * Ce joueur a-t-il un lot à réclamer ?
+ * La saison DOTÉE la plus récente parmi celles qui sont closes.
  *
- * `saisons` : les lignes de bb_seasons (champion_id, season_number).
- * `lots`    : les lignes de bb_lots (season_number, intitule) — la liste des
- *             saisons pour lesquelles un lot a RÉELLEMENT été mis en jeu.
+ * `saisons` : les lignes de bb_seasons (une saison close y a une ligne).
+ * `lots`    : les lignes de bb_lots (season_number, rang, intitule).
  *
- * La double condition est le point important : être champion ne suffit pas, il
- * faut que ce mois-là ait porté un lot. Sinon, dès la deuxième saison, tous les
- * anciens champions verraient un bouton « réclamer » qui ne mène à rien.
+ * La présence dans bb_seasons est ce qui prouve que le mois est FINI. Sans
+ * cette condition, le joueur en tête le 12 septembre verrait un bouton
+ * « réclamer ton lot » alors que le mois n'est pas terminé.
  */
-export function lotAReclamer(playerId, saisons, lots) {
-  if (!playerId || !Array.isArray(saisons) || !Array.isArray(lots)) return null;
-  const parNumero = new Map();
-  for (const l of lots) {
-    if (l && Number.isInteger(l.season_number)) parNumero.set(l.season_number, l);
-  }
-  // La plus récente d'abord : si deux mois ont porté un lot, on propose celui
-  // qu'on vient de gagner, pas celui de l'an dernier.
-  const gagnees = saisons
-    .filter((s) => s && s.champion_id === playerId && parNumero.has(s.season_number))
-    .sort((a, b) => b.season_number - a.season_number);
-  if (gagnees.length === 0) return null;
-  const s = gagnees[0];
-  const lot = parNumero.get(s.season_number);
-  return {
-    saison: s.season_number,
-    mois: moisDeLaSaison(s.season_number),
-    intitule: lot.intitule,
-    pseudo: s.champion_name || null,
-    score: s.champion_score ?? null,
+export function saisonDoteeRecente(saisons, lots) {
+  if (!Array.isArray(saisons) || !Array.isArray(lots)) return null;
+  const dotees = new Set(lots.filter(Boolean).map((l) => l.season_number));
+  const closes = saisons.filter((s) => s && dotees.has(s.season_number))
+    .map((s) => s.season_number)
+    .sort((a, b) => b - a);
+  return closes.length ? closes[0] : null;
+}
+
+/**
+ * Le lot d'un rang donné, ou null si ce rang n'est pas récompensé.
+ *
+ * C'EST ICI QUE LE PODIUM S'ARRÊTE. Trois lots, et le quatrième ne reçoit rien :
+ * ce test est la seule chose qui empêche l'app de proposer un bouton
+ * « réclamer » à quelqu'un que le serveur refusera. Il ne DÉCIDE rien — la
+ * décision est dans bb_reclamer_lot — mais un bouton qui échoue toujours est
+ * pire qu'un bouton absent.
+ */
+export function lotPourRang(lots, saison, rang) {
+  if (!Array.isArray(lots) || !Number.isInteger(rang) || rang < 1) return null;
+  const l = lots.find((x) => x && x.season_number === saison && x.rang === rang);
+  if (!l) return null;
+  return { saison, rang, mois: moisDeLaSaison(saison), intitule: l.intitule };
+}
+
+/**
+ * Le rang d'un joueur dans un classement rendu par bb_classement_mois.
+ *
+ * La fonction serveur rend déjà ses lignes triées ; on ne s'y fie pas pour
+ * autant et on réapplique l'ordre. PostgREST peut réordonner une réponse selon
+ * les paramètres de la requête, et un rang lu sur un tableau supposé trié est
+ * un rang faux qui a l'air juste.
+ */
+export function rangDans(classement, playerId) {
+  if (!Array.isArray(classement) || !playerId) return null;
+  const tri = classement.filter(Boolean).slice().sort((a, b) =>
+    (b.points || 0) - (a.points || 0)
+    || (b.jours || 0) - (a.jours || 0)
+    || String(a.pseudo || "").localeCompare(String(b.pseudo || "")));
+  const i = tri.findIndex((r) => r.player_id === playerId);
+  return i === -1 ? null : i + 1;
+}
+
+/** Le libellé d'une place, dans les six langues de l'app. */
+export function libellePlace(rang, lang) {
+  const table = {
+    1: { fr: "1ʳᵉ place", en: "1st place", de: "1. Platz", it: "1º posto", pt: "1º lugar", es: "1er puesto" },
+    2: { fr: "2ᵉ place",  en: "2nd place", de: "2. Platz", it: "2º posto", pt: "2º lugar", es: "2º puesto" },
+    3: { fr: "3ᵉ place",  en: "3rd place", de: "3. Platz", it: "3º posto", pt: "3º lugar", es: "3er puesto" },
   };
+  const l = table[rang];
+  return l ? (l[lang] || l.en) : "";
+}
+
+/** La médaille d'une place. Rien au-delà du podium : il n'y a rien à fêter. */
+export function medaille(rang) {
+  return { 1: "🥇", 2: "🥈", 3: "🥉" }[rang] || "";
 }
 
 /**
@@ -123,31 +158,54 @@ export function codeValide(valeur) {
   return MOTIF_CODE.test(normaliserCode(valeur));
 }
 
-// Les plateformes proposées. La liste sert l'écran ET le règlement, qui promet
-// « plateforme au choix du gagnant ». `autre` existe pour ne pas transformer une
-// promesse ouverte en menu fermé.
+// Les plateformes proposées au PREMIER, qui reçoit un jeu. Le règlement promet
+// « la plateforme au choix du gagnant » ; `autre` existe pour ne pas transformer
+// une promesse ouverte en menu fermé.
 export const PLATEFORMES = [
   { cle: "ps5", nom: "PlayStation 5" },
   { cle: "xbox", nom: "Xbox Series X|S" },
   { cle: "pc", nom: "PC" },
   { cle: "switch", nom: "Nintendo Switch" },
-  { cle: "autre", nom: "Autre / carte cadeau" },
+  { cle: "autre", nom: "Autre" },
 ];
+
+/**
+ * Ce qu'on demande au gagnant dépend de ce qu'il reçoit.
+ *
+ * Le premier reçoit un JEU : il choisit une plateforme, dans une liste fermée,
+ * parce que le jeu n'existe que là. Les deuxième et troisième reçoivent une
+ * CARTE CADEAU de l'enseigne de leur choix : leur proposer « PlayStation 5 /
+ * Xbox / PC » n'aurait aucun sens, et une liste d'enseignes serait forcément
+ * incomplète — c'est un champ libre.
+ */
+export function souhaitDuRang(rang) {
+  return rang === 1 ? "plateforme" : "enseigne";
+}
 
 export function plateformeValide(cle) {
   return PLATEFORMES.some((p) => p.cle === cle);
+}
+
+/** Une enseigne saisie à la main : on vérifie qu'il y a quelque chose, pas quoi. */
+export function enseigneValide(valeur) {
+  const v = String(valeur || "").trim();
+  return v.length >= 2 && v.length <= 60;
 }
 
 /**
  * Le formulaire est-il envoyable ? Rend la liste des manques, pas un booléen :
  * un écran qui dit « formulaire invalide » sans dire quoi fait recommencer à
  * l'aveugle.
+ *
+ * `rang` décide de la nature du troisième champ — voir souhaitDuRang.
  */
-export function manques({ code, email, plateforme, autorisation }) {
+export function manques({ code, email, plateforme, autorisation }, rang) {
   const out = [];
   if (!codeValide(code)) out.push("code");
   if (!emailPlausible(email)) out.push("email");
-  if (!plateformeValide(plateforme)) out.push("plateforme");
+  if (souhaitDuRang(rang) === "plateforme") {
+    if (!plateformeValide(plateforme)) out.push("plateforme");
+  } else if (!enseigneValide(plateforme)) out.push("enseigne");
   if (!autorisation) out.push("autorisation");
   return out;
 }

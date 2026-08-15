@@ -113,14 +113,27 @@ const DIAPOS = [
   {
     fichier: "01-le-lot",
     surligne: "HALL OF FAME · SEPTEMBRE 2026",
-    titre: ["LE N°1 DU MOIS", "REPART AVEC"],
+    titre: ["LE PODIUM DU MOIS", "REPART AVEC"],
     artwork: true,
-    prix: "VALEUR 109,99 €",
-    corps: "EA SPORTS FC 27, <b>édition Ultimate</b>. Un seul gagnant : "
-         + "le premier du classement de septembre.",
+    prix: "1ᵉʳ · VALEUR 109,99 €",
+    corps: "EA SPORTS FC 27, <b>édition Ultimate</b>, sur la plateforme de ton "
+         + "choix. Et le podium ne s'arrête pas au premier →",
   },
   {
-    fichier: "02-tout-le-monde-a-zero",
+    // Les trois lots sur UNE diapositive, tôt : c'est ce qui fait rester
+    // quelqu'un qui se sait incapable de finir premier. Un concours à lot
+    // unique se lit « ce n'est pas pour moi » et se referme.
+    fichier: "02-trois-places",
+    surligne: "TROIS PLACES RÉCOMPENSÉES",
+    titre: ["TU N'AS PAS BESOIN", "D'ÊTRE PREMIER"],
+    podium: [
+      ["🥇", "1ᵉʳ", "EA SPORTS FC 27 édition Ultimate", "valeur 109,99 €"],
+      ["🥈", "2ᵉ",  "Carte cadeau de 50 €", "enseigne de ton choix"],
+      ["🥉", "3ᵉ",  "Carte cadeau de 30 €", "enseigne de ton choix"],
+    ],
+  },
+  {
+    fichier: "03-tout-le-monde-a-zero",
     surligne: "LE 1ER SEPTEMBRE À 00H00",
     titre: ["TOUT LE MONDE", "PART À ZÉRO"],
     // Le mot qui compte. Un joueur qui arrive le 12 septembre doit comprendre
@@ -131,7 +144,7 @@ const DIAPOS = [
          + "point que tout le monde.",
   },
   {
-    fichier: "03-comment-on-marque",
+    fichier: "04-comment-on-marque",
     surligne: "LA RÈGLE",
     titre: ["COMMENT ON", "MARQUE DES POINTS"],
     liste: [
@@ -141,7 +154,7 @@ const DIAPOS = [
     ],
   },
   {
-    fichier: "04-ce-qui-ne-marche-pas",
+    fichier: "05-ce-qui-ne-marche-pas",
     surligne: "ET CE QUI NE MARCHE PAS",
     titre: ["ÇA NE SE GAGNE PAS", "EN UNE SOIRÉE"],
     // Dit en négatif, exprès. Annoncer ce qui NE rapporte pas est ce qui
@@ -154,7 +167,7 @@ const DIAPOS = [
          + "jours</b>. La régularité gagne, pas l'acharnement d'un soir.",
   },
   {
-    fichier: "05-dans-l-edition-ultimate",
+    fichier: "06-dans-l-edition-ultimate",
     surligne: "CE QUE TU REÇOIS VRAIMENT",
     titre: ["DANS L'ÉDITION", "ULTIMATE"],
     // Chaque ligne vient de la page officielle d'EA. Les bonus de précommande
@@ -169,7 +182,7 @@ const DIAPOS = [
     ],
   },
   {
-    fichier: "06-comment-participer",
+    fichier: "07-comment-participer",
     surligne: "SANS OBLIGATION D'ACHAT",
     titre: ["POUR PARTICIPER,", "IL SUFFIT DE JOUER"],
     grosMot: "0 €",
@@ -178,7 +191,7 @@ const DIAPOS = [
     appel: "goatfc.fr",
   },
   {
-    fichier: "07-les-dates",
+    fichier: "08-les-dates",
     surligne: "À RETENIR",
     titre: ["DU 1ER AU", "30 SEPTEMBRE"],
     dates: [
@@ -274,6 +287,27 @@ function page(d, n, total) {
     font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-weight:700;
     font-size:16.5px;line-height:1.4;color:${G.creme};text-align:left}
   .puce span:first-child{flex:0 0 auto;color:${G.or};font-size:17px;font-weight:900}
+  /* ── LE PODIUM ─────────────────────────────────────────────────────────
+     La 1re place est en or plein, les deux autres cerclées : la hiérarchie
+     doit se voir SANS lire, sinon les trois lots se valent à l'œil et la
+     diapositive ne dit plus rien de la course. */
+  .podium{display:flex;flex-direction:column;gap:13px;width:100%;max-width:450px}
+  .place{display:flex;align-items:center;gap:13px;border-radius:14px;
+    padding:14px 16px;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;
+    text-align:left}
+  .place.or{background:${G.or};border:3px solid ${G.encre};box-shadow:4px 4px 0 rgba(0,0,0,.5)}
+  .place.autre{background:rgba(245,194,43,.1);border:2.5px solid ${G.or}}
+  .placeMedaille{flex:0 0 auto;font-size:30px;line-height:1}
+  .placeRang{flex:0 0 auto;font-family:'Anton',Impact,sans-serif;font-size:26px;
+    transform:skewX(-7deg);min-width:34px}
+  .place.or .placeRang{color:${G.encre}}
+  .place.autre .placeRang{color:${G.or}}
+  .placeQuoi{font-weight:900;font-size:16px;line-height:1.25}
+  .place.or .placeQuoi{color:${G.encre}}
+  .place.autre .placeQuoi{color:${G.creme}}
+  .placeSous{font-weight:700;font-size:13px;line-height:1.3;margin-top:2px}
+  .place.or .placeSous{color:rgba(8,17,9,.72)}
+  .place.autre .placeSous{color:rgba(242,231,206,.7)}
   .dates{display:flex;flex-direction:column;gap:16px;width:100%;max-width:440px}
   .date{display:flex;flex-direction:column;background:rgba(245,194,43,.1);
     border:2.5px solid ${G.or};border-radius:13px;padding:15px 18px;
@@ -316,12 +350,18 @@ function page(d, n, total) {
         `<div class="croixLigne"><span>✕</span><span>${t}</span></div>`).join("")}</div>` : ""}
       ${d.puces ? `<div class="puces">${d.puces.map((t) =>
         `<div class="puce"><span>▸</span><span>${t}</span></div>`).join("")}</div>` : ""}
+      ${d.podium ? `<div class="podium">${d.podium.map(([m, r, quoi, sous], i) =>
+        `<div class="place ${i === 0 ? "or" : "autre"}">
+          <div class="placeMedaille">${m}</div>
+          <div class="placeRang">${r}</div>
+          <div><div class="placeQuoi">${quoi}</div>
+          <div class="placeSous">${sous}</div></div></div>`).join("")}</div>` : ""}
       ${d.dates ? `<div class="dates">${d.dates.map(([q, w]) =>
         `<div class="date"><div class="dateQuand">${q}</div>
           <div class="dateQuoi">${w}</div></div>`).join("")}</div>` : ""}
       ${d.corps ? `<div class="corps">${d.corps}</div>` : ""}
       ${d.appel ? `<div class="appel">${d.appel}</div>` : ""}
-      <div class="mentions">${MENTIONS}${d.artwork || d.puces ? MENTIONS_EA : ""}</div>
+      <div class="mentions">${MENTIONS}${d.artwork || d.puces || d.podium ? MENTIONS_EA : ""}</div>
     </div>
     <div class="cadre"></div>
   </body></html>`;

@@ -163,14 +163,29 @@ await ctx.route("**/rest/v1/**", async (route) => {
       player_id: j.pid, pseudo: j.nom,
       points: 1400 - i * 95, jours: Math.max(1, 14 - i), modes: Math.max(1, 5 - (i % 5)),
     }));
+    // LOT=1 pose le joueur LOCAL dans ce classement, à la place demandée par
+    // RANG (1, 2, 3… ou 4 pour le cas qui compte : hors podium, aucun bandeau).
+    //
+    // C'est ici et nulle part ailleurs : une première version ajoutait une
+    // branche plus bas dans la chaîne pour `rpc/bb_classement_mois`, sans voir
+    // que CELLE-CI l'intercepte déjà. La branche morte rendait un classement
+    // sans le joueur local, le rang sortait à null, et le bandeau n'apparaissait
+    // jamais — un aperçu qui montre l'absence d'un écran qu'on vient d'écrire.
+    if (process.env.LOT) {
+      const rang = Math.max(1, Number(process.env.RANG || 1));
+      corps.splice(rang - 1, 0, { player_id: "local", pseudo: "toi",
+        points: 1400 - (rang - 1) * 95 + 40, jours: 14, modes: 6 });
+      corps = corps.map((r, i) => ({ ...r, points: 1500 - i * 95 }));
+    }
   } else if (url.includes("bb_lots")) {
-    // LOT=1 met le joueur LOCAL en champion d'une saison dotée, pour que le
-    // bandeau de réclamation apparaisse. Sans ça il ne s'affiche jamais dans un
-    // aperçu — et un écran qui ne se photographie pas se corrige à l'aveugle,
-    // ce qui a déjà coûté un fond sombre sur l'écran de résultat de duel.
-    corps = process.env.LOT
-      ? [{ season_number:6, intitule:"EA SPORTS FC 27 — édition standard, dématérialisée" }]
-      : [];
+    // LOT=1 place le joueur LOCAL sur le podium d'une saison dotée, pour que le
+    // bandeau de réclamation apparaisse. RANG=1|2|3|4 choisit SA place — et 4
+    // est le cas qui compte : hors podium, aucun bandeau ne doit s'afficher.
+    corps = process.env.LOT ? [
+      { season_number:6, rang:1, intitule:"EA SPORTS FC 27 — édition Ultimate, dématérialisée, sur la plateforme au choix du gagnant (109,99 €)" },
+      { season_number:6, rang:2, intitule:"Carte cadeau dématérialisée de 50 € — enseigne au choix du gagnant" },
+      { season_number:6, rang:3, intitule:"Carte cadeau dématérialisée de 30 € — enseigne au choix du gagnant" },
+    ] : [];
   } else if (url.includes("bb_seasons")) {
     corps = process.env.LOT
       ? [{ season_number:6, champion_id:"local", champion_name:"toi", champion_score:4200,
