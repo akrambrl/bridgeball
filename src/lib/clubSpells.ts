@@ -267,7 +267,9 @@ export const CLUB_SPELLS: Record<string, Spell[]> = {
   "Jules Kounde": [{ club: "Sevilla", from: 2019, to: 2022 }, { club: "Barcelona", from: 2022, to: 2026 }],
   "Marc-André ter Stegen": [{ club: "Borussia Mönchengladbach", from: 2010, to: 2014 }, { club: "Barcelona", from: 2014, to: 2026 }],
   "Raphinha": [{ club: "Leeds United", from: 2020, to: 2022 }, { club: "Barcelona", from: 2022, to: 2026 }],
-  "Ferran Torres": [{ club: "Valencia", from: 2017, to: 2020 }, { club: "Manchester City", from: 2020, to: 2022 }, { club: "Barcelona", from: 2022, to: 2026 }],
+  // Le `to: 2026` du Barça n'est plus « encore là » mais une vraie année de
+  // départ : Torres a signé au PSG jusqu'en 2031 (annonce du club, 15/08/2026).
+  "Ferran Torres": [{ club: "Valencia", from: 2017, to: 2020 }, { club: "Manchester City", from: 2020, to: 2022 }, { club: "Barcelona", from: 2022, to: 2026 }, { club: "PSG", from: 2026, to: 2027 }],
   "Ivan Rakitić": [{ club: "Sevilla", from: 2011, to: 2014 }, { club: "Barcelona", from: 2014, to: 2020 }, { club: "Sevilla", from: 2020, to: 2024 }],
   "Sergi Roberto": [{ club: "Barcelona", from: 2013, to: 2024 }],
   "Ousmane Dembélé": [{ club: "Rennes", from: 2015, to: 2016 }, { club: "Borussia Dortmund", from: 2016, to: 2017 }, { club: "Barcelona", from: 2017, to: 2023 }, { club: "PSG", from: 2023, to: 2026 }],
