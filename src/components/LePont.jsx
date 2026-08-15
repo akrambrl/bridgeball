@@ -9758,6 +9758,32 @@ export default function LePont() {
     <button onClick={onClick} style={{...retourStyle,width:40,height:40,zIndex:10}}>←</button>
   );
 
+  // COMMENT L'APP MONTRE UN JOUEUR : sa carte de collection quand on la connaît
+  // — `badgeByPid` n'est rempli qu'après un passage par le classement — sinon
+  // une pastille d'or SOMBRE portant son initiale.
+  //
+  // Elle vivait dans le rendu de la liste d'amis, donc elle n'existait que là.
+  // La salle, elle, dessinait des ronds VERTS avec l'initiale : le vocabulaire
+  // de l'ancienne charte, celui d'avant l'or. Deux façons de représenter la même
+  // chose dans la même app, dont une périmée. Hissée ici, il n'y en a plus qu'une.
+  const vignetteJoueur = function(pid, nom, taille){
+    const t = taille || 44;
+    const info = badgeByPid[pid];
+    if (info) {
+      const c = avatarCard(info.badge, info.xp || 0);
+      const rm = rarityMeta(c.rarity);
+      return (
+        <div className={rm.cls} style={{width:t,padding:2,borderRadius:G.rayonS,background:rm.frame,
+          border:G.traitFin,boxShadow:"2px 2px 0 "+G.encre,flexShrink:0}}>
+          <div style={{aspectRatio:"3 / 4",overflow:"hidden",borderRadius:8,background:"#000"}}>
+            <img src={c.img} alt="" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top"}}/>
+          </div>
+        </div>
+      );
+    }
+    return <div style={pastilleCharte(G.orSombre,t)}>{String(nom||"?").charAt(0).toUpperCase()}</div>;
+  };
+
   const timerCircle = (size=76) => {
     const r=(size/2)-5; const circ=2*Math.PI*r;
     return (
@@ -11632,25 +11658,6 @@ export default function LePont() {
       const m = Math.round(j / 30);
       return tr("depuis "+m+" mois","for "+m+" month"+(m>1?"s":""),"seit "+m+" Monaten","da "+m+" mesi","há "+m+" meses","desde hace "+m+" meses");
     };
-    // Vignette d'un ami : sa carte de badge quand on la connaît (badgeByPid n'est
-    // rempli qu'après un passage par le classement), sinon son initiale. Mieux
-    // vaut une pastille assumée qu'un avatar par défaut qui ment sur le niveau.
-    const vignetteAmi = function(fid, fname){
-      const info = badgeByPid[fid];
-      if (info) {
-        const c = avatarCard(info.badge, info.xp || 0);
-        const rm = rarityMeta(c.rarity);
-        return (
-          <div className={rm.cls} style={{width:44,padding:2,borderRadius:G.rayonS,background:rm.frame,
-            border:G.traitFin,boxShadow:"2px 2px 0 "+G.encre,flexShrink:0}}>
-            <div style={{aspectRatio:"3 / 4",overflow:"hidden",borderRadius:8,background:"#000"}}>
-              <img src={c.img} alt="" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top"}}/>
-            </div>
-          </div>
-        );
-      }
-      return <div style={pastilleCharte(G.orSombre,44)}>{String(fname||"?").charAt(0).toUpperCase()}</div>;
-    };
     return (
       <>
       {retourCharte(function(){closeFriends();})}
@@ -11816,7 +11823,7 @@ export default function LePont() {
                   <div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",
                     background:G.nuit,borderRadius:G.rayon,border:G.trait,boxShadow:G.ombre,cursor:"pointer"}}
                     onClick={function(){setShowFriends(false);openUserProfile(fid,fname,"friends");}}>
-                    {vignetteAmi(fid, fname)}
+                    {vignetteJoueur(fid, fname)}
                     <div style={{flex:1,minWidth:0}}>
                       <div style={{...posterText(18,G.white),overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{fname}</div>
                       <div style={{fontSize:11.5,color:"rgba(255,255,255,.45)",fontWeight:600,marginTop:3}}>{friendDuelCount>0?friendDuelCount+" "+(friendDuelCount>1?tr("duels joués","duels played","Duelle gespielt","sfide giocate","duelos jogados","duelos jugados"):tr("duel joué","duel played","Duell gespielt","sfida giocata","duelo jogado","duelo jugado")):tr("Aucun duel encore","No duels yet","Noch keine Duelle","Ancora nessuna sfida","Ainda nenhum duelo","Aún no hay duelos")}</div>
@@ -12612,10 +12619,7 @@ export default function LePont() {
               {players.map(function(p, i){return(
                 <div key={i} style={{display:"flex",alignItems:"center",gap:11,padding:"11px 14px",
                   borderBottom:G.traitFin,background:p.id===playerId?"rgba(245,194,43,.12)":"transparent"}}>
-                  <div style={{...pastilleCharte(p.id===room.host_id?G.projecteur:G.pelouse,34),
-                    fontSize:15,fontWeight:800,color:p.id===room.host_id?G.encre:"#fff"}}>
-                    {p.name.charAt(0).toUpperCase()}
-                  </div>
+                  {vignetteJoueur(p.id, p.name, 38)}
                   <div style={{flex:1,minWidth:0}}>
                     <div style={{fontSize:14.5,fontWeight:800,color:p.id===playerId?G.projecteur:G.white,
                       overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
