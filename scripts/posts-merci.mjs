@@ -147,8 +147,11 @@ async function mesurer() {
   const [jourRecord, partiesRecord] = Object.entries(parJour).sort((a, b) => b[1] - a[1])[0];
 
   const parNumero = new Map();
-  // bb_seasons porte la saison 4 EN DOUBLE : dédoublonner par numéro, sinon le
-  // même champion serait félicité deux fois sur l'affiche.
+  // bb_seasons a porté la saison 4 EN DOUBLE — deux clients l'ont écrite à 43 ms
+  // d'écart le 31 juillet. docs/supabase-nettoyage-saisons.sql l'enlève et pose
+  // la contrainte UNIQUE qui l'empêche de revenir ; ce dédoublonnage reste, il
+  // coûte une Map et évite de féliciter deux fois le même champion si l'affiche
+  // est rendue sur une base où le nettoyage n'a pas encore été passé.
   for (const s of saisons) if (!parNumero.has(s.season_number)) parNumero.set(s.season_number, s);
 
   const debutScores = new Date(scores[0].created_at);
