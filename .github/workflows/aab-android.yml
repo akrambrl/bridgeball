@@ -55,9 +55,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: "24"
           cache: npm
@@ -83,7 +83,7 @@ jobs:
       - name: Construire les assets web
         run: npm run build
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: "21"
@@ -176,7 +176,7 @@ jobs:
         if: always()
         run: rm -f "${RUNNER_TEMP}/upload.p12" android/key.properties
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: goatfc-aab-${{ inputs.version_name }}-${{ github.run_number }}
           path: android/app/build/outputs/bundle/release/app-release.aab
