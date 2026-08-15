@@ -62,9 +62,9 @@ jobs:
     runs-on: macos-15
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: "24"
           cache: npm
@@ -222,7 +222,7 @@ jobs:
         if: always()
         run: rm -rf ~/.appstoreconnect/private_keys
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: goatfc-ipa-${{ inputs.version_name }}-${{ github.run_number }}
           path: ${{ runner.temp }}/export/*.ipa
