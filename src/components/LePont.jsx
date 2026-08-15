@@ -12535,96 +12535,131 @@ export default function LePont() {
     if (duelCountdown !== null) {
       const oppName = players.filter(function(p){return p.id!==playerId;}).map(function(p){return p.name;}).join(", ");
       return (
-        <div style={{...shell,alignItems:"center",justifyContent:"center"}} key="countdown">
-          <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
-        {/* Bandes pelouse */}
-        {/* Aplat de panneau : les bandes de tonte sont parties avec la pelouse.
-              Sur la charte or, une carte est l'écusson noir du logo. */}
-            <div style={{position:"absolute",inset:0,background:G.nuit}}/>
-        {/* Ligne médiane */}
-        <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:G.nuit,transform:"translateY(-50%)"}}/>
-        {/* Cercle central */}
-        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:180,height:180,borderRadius:"50%",border:G.traitFin}}/>
-        {/* Point central */}
-        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:8,height:8,borderRadius:"50%",background:G.nuit}}/>
-        {/* Overlay sombre pour lisibilité */}
-        <div style={{position:"absolute",inset:0,background:"rgba(8,17,9,.45)"}}/>
-      </div>
-          <div style={{textAlign:"center",zIndex:1}}>
-            <div style={{fontSize:14,color:"rgba(255,255,255,.5)",letterSpacing:3,textTransform:"uppercase",marginBottom:16}}>{tr("C'est parti !","Let's go!","Los geht's!","Si parte!","Vamos lá!","¡Vamos!")}</div>
-            <div style={{...posterText(120),color:G.pelouseClaire,lineHeight:1,animation:"popInPoster .3s ease"}} key={duelCountdown}>{duelCountdown}</div>
-            <div style={{fontSize:14,color:"rgba(255,255,255,.4)",marginTop:16}}>{players.length} {tr("joueurs","players","Spieler","giocatori","jogadores","jugadores")}</div>
+        <div style={{...shell,alignItems:"center",justifyContent:"center",padding:"0 20px"}} key="countdown">
+          {areneCharte}
+          {/* LE TERRAIN A ÉTÉ RETIRÉ. Il restait ici quatre calques de l'ancienne
+              charte verte : un aplat de nuit sur TOUTE la surface, une ligne
+              médiane et un point central peints en G.nuit SUR ce même G.nuit —
+              donc invisibles — un rond de 180 px, et un voile d'encre par-dessus.
+              Le seul survivant visible était le rond, qui flottait au milieu du
+              vide. Le décompte se pose maintenant sur l'or, comme le reste. */}
+          <div style={{textAlign:"center",zIndex:1,background:G.nuit,border:G.trait,
+            boxShadow:G.ombre,borderRadius:G.rayon,padding:"28px 32px",width:"100%",maxWidth:340}}>
+            <div style={{fontSize:14,color:"rgba(255,255,255,.6)",letterSpacing:3,textTransform:"uppercase",marginBottom:16}}>{tr("C'est parti !","Let's go!","Los geht's!","Si parte!","Vamos lá!","¡Vamos!")}</div>
+            <div style={{...posterText(120),color:G.projecteur,lineHeight:1,animation:"popInPoster .3s ease"}} key={duelCountdown}>{duelCountdown}</div>
+            <div style={{fontSize:14,color:"rgba(255,255,255,.55)",marginTop:16}}>{players.length} {tr("joueurs","players","Spieler","giocatori","jogadores","jugadores")}</div>
           </div>
         </div>
       );
     }
     return (
       <div style={{...shell,...ecranDefilant}} key="room">
-        <div style={{position:"absolute",inset:0,zIndex:0,pointerEvents:"none",overflow:"hidden"}}>
-        {/* Bandes pelouse */}
-        {/* Aplat de panneau : les bandes de tonte sont parties avec la pelouse.
-              Sur la charte or, une carte est l'écusson noir du logo. */}
-            <div style={{position:"absolute",inset:0,background:G.nuit}}/>
-        {/* Ligne médiane */}
-        <div style={{position:"absolute",left:0,right:0,top:"50%",height:2,background:G.nuit,transform:"translateY(-50%)"}}/>
-        {/* Cercle central */}
-        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:180,height:180,borderRadius:"50%",border:G.traitFin}}/>
-        {/* Point central */}
-        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:8,height:8,borderRadius:"50%",background:G.nuit}}/>
-        {/* Overlay sombre pour lisibilité */}
-        <div style={{position:"absolute",inset:0,background:"rgba(8,17,9,.45)"}}/>
-      </div>
-        <div style={{zIndex:1,padding:"20px 18px 0",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-          {backBtn(leaveRoom)}
-          <div style={{...posterText(24),color:G.white,letterSpacing:2}}>{tr("SALLE","ROOM","RAUM","STANZA","SALA","SALA")}</div>
-          <div style={{background:"rgba(8,17,9,.45)",border:G.traitFin,borderRadius:12,padding:"6px 14px",textAlign:"center",display:"flex",alignItems:"center",gap:8}}>
-            <div>
-              <div style={{fontSize:9,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase"}}>{tr("Code","Code","Code","Codice","Código","Código")}</div>
-              <div style={{...posterText(20),color:G.projecteur,letterSpacing:4}}>{room.code}</div>
+        {/* L'arène est montée écran par écran : sans elle, l'or reste un aplat
+            lisse et la salle n'a pas les lignes de vitesse du reste de l'app. */}
+        {areneCharte}
+        {/* LE TERRAIN A ÉTÉ RETIRÉ ICI AUSSI, et c'est cet écran-là qui le
+            montrait : un aplat de nuit couvrait TOUTE la surface, ce qui faisait
+            de la salle le seul écran de l'app à masquer le fond or. La ligne
+            médiane et le point central étaient peints en G.nuit sur ce G.nuit —
+            invisibles depuis le changement de charte. Seul restait le rond de
+            180 px, qui flottait au milieu du vide sous le bouton. */}
+        {retourCharte(leaveRoom)}
+        {/* Le bandeau d'encre des autres écrans. Le titre était en blanc à nu :
+            posé sur l'or il serait tombé à 1,4 de contraste, dans un panneau
+            d'encre il peut prendre l'or. */}
+        <div style={{zIndex:3,position:"sticky",top:0,background:G.encre,borderBottom:G.traitFin,
+          padding:"max(12px, env(safe-area-inset-top)) 20px 12px 70px",display:"flex",alignItems:"center",gap:12}}>
+          <div style={{flex:1,textAlign:"center"}}>
+            <div style={{...posterText(34,G.projecteur)}}>{tr("SALLE","ROOM","RAUM","STANZA","SALA","SALA")}</div>
+            <div style={{fontSize:12,color:"rgba(255,255,255,.75)",fontWeight:700,letterSpacing:.8}}>
+              {tr("Code","Code","Code","Codice","Código","Código")}{" "}
+              <strong style={{color:G.projecteur,letterSpacing:2.5}}>{room.code}</strong>
+              {" · "}{players.length}/8 {tr("joueurs","players","Spieler","giocatori","jogadores","jugadores")}
             </div>
-            <button onClick={function(){
-              const link = "https://goatfc.fr?room="+room.code;
-              const shareTitle = tr("GOAT FC — Rejoins ma salle !","GOAT FC — Join my room!","GOAT FC — Tritt meinem Raum bei!","GOAT FC — Entra nella mia stanza!","GOAT FC — Entre na minha sala!","GOAT FC — ¡Entra en mi sala!");
-              const shareText = tr("Rejoins ma salle sur GOAT FC 🐐","Join my room on GOAT FC 🐐","Tritt meinem Raum auf GOAT FC bei 🐐","Entra nella mia stanza su GOAT FC 🐐","Entre na minha sala no GOAT FC 🐐","Entra en mi sala de GOAT FC 🐐");
-              const copiedMsg = tr("Lien copié ! 📋","Link copied! 📋","Link kopiert! 📋","Link copiato! 📋","Link copiado! 📋","¡Enlace copiado! 📋");
-              if(navigator.share){navigator.share({title:shareTitle,text:shareText,url:link});}
-              else{navigator.clipboard.writeText(link).then(function(){alert(copiedMsg);});}
-            }} style={{background:"rgba(42,155,78,.35)",border:G.traitFin,borderRadius:8,padding:"6px 10px",color:G.pelouseClaire,cursor:"pointer",fontSize:13,fontWeight:800,lineHeight:1}}>🔗 {tr("Inviter","Invite","Einladen","Invita","Convidar","Invitar")}</button>
           </div>
+          <div style={{width:40}}/>{/* spacer pour centrer le titre */}
         </div>
-        <div style={{...sheet,borderRadius:"28px 28px 0 0",marginTop:16}}>
-          <div style={{background:"rgba(8,17,9,.45)",borderRadius:14,padding:"10px 14px",marginBottom:4}}>
-            <div style={{fontSize:11,color:"rgba(255,255,255,.4)",letterSpacing:2,textTransform:"uppercase",marginBottom:2}}>{tr("Mode","Mode","Modus","Modalità","Modo","Modo")}</div>
+        <div style={{...sheet}}>
+          {/* Inviter : un aplat d'or cerclé d'encre, pas un bouton translucide.
+              Tant qu'on est seul dans la salle, c'est LA seule chose à faire —
+              elle était reléguée dans un coin de l'en-tête, à 13 px. */}
+          <button onClick={function(){
+            const link = "https://goatfc.fr?room="+room.code;
+            const shareTitle = tr("GOAT FC — Rejoins ma salle !","GOAT FC — Join my room!","GOAT FC — Tritt meinem Raum bei!","GOAT FC — Entra nella mia stanza!","GOAT FC — Entre na minha sala!","GOAT FC — ¡Entra en mi sala!");
+            const shareText = tr("Rejoins ma salle sur GOAT FC 🐐","Join my room on GOAT FC 🐐","Tritt meinem Raum auf GOAT FC bei 🐐","Entra nella mia stanza su GOAT FC 🐐","Entre na minha sala no GOAT FC 🐐","Entra en mi sala de GOAT FC 🐐");
+            const copiedMsg = tr("Lien copié ! 📋","Link copied! 📋","Link kopiert! 📋","Link copiato! 📋","Link copiado! 📋","¡Enlace copiado! 📋");
+            if(navigator.share){navigator.share({title:shareTitle,text:shareText,url:link});}
+            else{navigator.clipboard.writeText(link).then(function(){alert(copiedMsg);});}
+          }} style={{...btn(G.projecteur,G.encre,17),width:"100%",padding:"15px"}}>
+            🔗 {tr("Inviter des joueurs","Invite players","Spieler einladen","Invita giocatori","Convidar jogadores","Invitar jugadores")}
+          </button>
+
+          <div style={{background:G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,padding:"12px 16px"}}>
+            <div style={{fontSize:11,color:"rgba(255,255,255,.5)",letterSpacing:2,textTransform:"uppercase",marginBottom:3}}>{tr("Mode","Mode","Modus","Modalità","Modo","Modo")}</div>
             <div style={{fontSize:15,fontWeight:800,color:G.white}}>{room.mode==="pont"?"The Plug":"The Mercato"}{room.diff?" · "+(room.diff==="facile"?"AMATEUR":room.diff==="moyen"?"PRO":"CRESCENDO"):""} · {room.rounds||1} {(room.rounds||1)>1?tr("manches","rounds","Runden","turni","rodadas","rondas"):tr("manche","round","Runde","turno","rodada","ronda")}</div>
           </div>
+
+          {/* Le libellé de section est posé À NU sur l'or : il lui faut l'encre.
+              En blanc à 30 % il tombait à 1,2 de contraste. */}
           <div>
-            <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.3)",marginBottom:8}}>
+            <div style={{fontSize:11,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(8,17,9,.7)",marginBottom:8}}>
               {tr("Joueurs","Players","Spieler","Giocatori","Jogadores","Jugadores")} ({players.length}/8)
             </div>
-            {players.map(function(p, i){return(
-              <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",background:p.id===playerId?"rgba(42,155,78,.35)":"rgba(8,17,9,.45)",borderRadius:G.rayonS,marginBottom:6,border:G.traitFin}}>
-                <div style={{width:32,height:32,borderRadius:"50%",background:G.pelouse,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:800,color:"#fff",flexShrink:0}}>
-                  {p.name.charAt(0).toUpperCase()}
+            {/* UN panneau, pas une vignette par joueur : c'est la forme des
+                listes de l'app. Les places libres sont dessinées, pour qu'on
+                voie qu'il en manque plutôt que de le déduire du compteur. */}
+            <div style={{background:G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,overflow:"hidden"}}>
+              {players.map(function(p, i){return(
+                <div key={i} style={{display:"flex",alignItems:"center",gap:11,padding:"11px 14px",
+                  borderBottom:G.traitFin,background:p.id===playerId?"rgba(245,194,43,.12)":"transparent"}}>
+                  <div style={{...pastilleCharte(p.id===room.host_id?G.projecteur:G.pelouse,34),
+                    fontSize:15,fontWeight:800,color:p.id===room.host_id?G.encre:"#fff"}}>
+                    {p.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontSize:14.5,fontWeight:800,color:p.id===playerId?G.projecteur:G.white,
+                      overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
+                      {p.name}{p.id===room.host_id?" 👑":""}{p.id===playerId?tr(" (toi)"," (you)"," (du)"," (tu)"," (você)"," (tú)"):""}
+                    </div>
+                  </div>
+                  <div style={{fontSize:11,fontWeight:700,color:G.pelouseClaire,flexShrink:0}}>✓ {tr("Prêt","Ready","Bereit","Pronto","Pronto","Listo")}</div>
                 </div>
-                <div style={{flex:1}}>
-                  <div style={{fontSize:14,fontWeight:800,color:p.id===playerId?G.pelouseClaire:G.white}}>{p.name}{p.id===room.host_id?" 👑":""}{p.id===playerId?tr(" (toi)"," (you)"," (du)"," (tu)"," (você)"," (tú)"):""}</div>
+              );})}
+              {/* LES HUIT PLACES, toujours. En n'en dessinant que deux, la liste
+                  s'arrêtait au tiers de l'écran et laissait un vide d'or jusqu'au
+                  bouton — c'est ce vide qu'on est venu corriger. Dessinées toutes,
+                  les places libres tiennent la page ET disent ce que « 1/8 »
+                  demande de déduire : il reste sept sièges. */}
+              {Array.from({length:8 - players.length}).map(function(_, i){return(
+                <div key={"vide"+i} style={{display:"flex",alignItems:"center",gap:11,padding:"11px 14px",
+                  borderBottom:i===7-players.length?"none":G.traitFin}}>
+                  <div style={{width:34,height:34,borderRadius:G.rayonS,border:"2px dashed rgba(242,231,206,.28)",flexShrink:0}}/>
+                  <div style={{flex:1,fontSize:13.5,fontWeight:700,color:"rgba(242,231,206,.45)"}}>
+                    {tr("Place libre","Free slot","Freier Platz","Posto libero","Vaga livre","Plaza libre")}
+                  </div>
                 </div>
-                <div style={{fontSize:11,color:"rgba(255,255,255,.4)"}}>✓ {tr("Prêt","Ready","Bereit","Pronto","Pronto","Listo")}</div>
-              </div>
-            );})}
+              );})}
+            </div>
           </div>
+
+          {/* Ce ressort pousse l'action en bas de l'écran. Sans lui, le bouton
+              se posait juste sous la liste et laissait la moitié de l'affiche
+              vide en dessous — le vide de la capture. */}
+          <div style={{flex:1,minHeight:12}}/>
           {players.length < 2 && (
-            <div style={{textAlign:"center",padding:"8px 0",fontSize:13,color:"rgba(255,255,255,.3)"}}>
-              {tr(<>Partage le code <strong style={{color:G.projecteur}}>{room.code}</strong> à tes amis</>,<>Share code <strong style={{color:G.projecteur}}>{room.code}</strong> with your friends</>,<>Teile den Code <strong style={{color:G.projecteur}}>{room.code}</strong> mit deinen Freunden</>,<>Condividi il codice <strong style={{color:G.projecteur}}>{room.code}</strong> con i tuoi amici</>,<>Compartilhe o código <strong style={{color:G.projecteur}}>{room.code}</strong> com seus amigos</>,<>Comparte el código <strong style={{color:G.projecteur}}>{room.code}</strong> con tus amigos</>)}
+            <div style={{textAlign:"center",fontSize:13.5,fontWeight:700,color:"rgba(8,17,9,.72)",lineHeight:1.45}}>
+              {tr(<>Partage le code <strong style={{color:G.encre,letterSpacing:1.5}}>{room.code}</strong> à tes amis</>,<>Share code <strong style={{color:G.encre,letterSpacing:1.5}}>{room.code}</strong> with your friends</>,<>Teile den Code <strong style={{color:G.encre,letterSpacing:1.5}}>{room.code}</strong> mit deinen Freunden</>,<>Condividi il codice <strong style={{color:G.encre,letterSpacing:1.5}}>{room.code}</strong> con i tuoi amici</>,<>Compartilhe o código <strong style={{color:G.encre,letterSpacing:1.5}}>{room.code}</strong> com seus amigos</>,<>Comparte el código <strong style={{color:G.encre,letterSpacing:1.5}}>{room.code}</strong> con tus amigos</>)}
             </div>
           )}
           {isHost ? (
             <button onClick={startRoomGame} disabled={players.length < 2}
-              style={{width:"100%",padding:"16px",background:players.length>=2?G.pelouse:"rgba(8,17,9,.45)",color:players.length>=2?"#000":"rgba(255,255,255,.3)",border:G.trait,borderRadius:G.rayon,cursor:players.length>=2?"pointer":"not-allowed",fontFamily:G.font,fontSize:15,fontWeight:800,marginTop:4}}>
+              style={{...btn(players.length>=2?G.pelouse:G.nuit, players.length>=2?"#000":"rgba(242,231,206,.45)",16),
+                width:"100%",padding:"16px",cursor:players.length>=2?"pointer":"not-allowed"}}>
               {players.length < 2 ? tr("En attente de joueurs...","Waiting for players...","Warte auf Spieler...","In attesa di giocatori...","Aguardando jogadores...","Esperando jugadores...") : tr("🚀 Lancer la partie ("+players.length+" joueurs)","🚀 Start game ("+players.length+" players)","🚀 Spiel starten ("+players.length+" Spieler)","🚀 Avvia la partita ("+players.length+" giocatori)","🚀 Iniciar jogo ("+players.length+" jogadores)","🚀 Empezar la partida ("+players.length+" jugadores)")}
             </button>
           ) : (
-            <div style={{textAlign:"center",padding:"14px",fontSize:13,color:"rgba(255,255,255,.4)",background:"rgba(8,17,9,.45)",borderRadius:16}}>
+            <div style={{textAlign:"center",padding:"14px",fontSize:13.5,fontWeight:700,color:"rgba(242,231,206,.85)",
+              background:G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon}}>
               ⏳ {tr("En attente que "+room.host_name+" lance la partie...","Waiting for "+room.host_name+" to start...",room.host_name+" startet gleich...","In attesa che "+room.host_name+" avvii la partita...","Aguardando "+room.host_name+" iniciar...","Esperando a que "+room.host_name+" empiece...")}
             </div>
           )}
