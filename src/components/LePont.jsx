@@ -5829,6 +5829,8 @@ export default function LePont() {
   const [friendLoading, setFriendLoading] = useState(false);
   const [friendRequests, setFriendRequests] = useState([]); // incoming pending requests
   const [sentRequests, setSentRequests] = useState(function(){ try { return JSON.parse(localStorage.getItem("bb_pending_sent") || "[]"); } catch { return []; } });     // requests I sent
+  const [friendSug, setFriendSug] = useState([]);        // pseudos proposés pendant la frappe
+  const [friendSugCherche, setFriendSugCherche] = useState(false);
   // Duels
   const [duels, setDuels] = useState([]);
   const [showDuelHistory, setShowDuelHistory] = useState(false); // écran historique des défis
@@ -7677,14 +7679,61 @@ export default function LePont() {
     } catch(e) { console.error("deleteAccount error:", e); }
   }
 
-  async function addFriend(pseudo) {
+  // ─── Suggestions de pseudos pendant la frappe ─────────────────────────────
+  // « Ajouter un ami » exigeait le pseudo EXACT : la recherche partait en
+  // `ilike.<pseudo>` sans joker, donc une lettre de travers renvoyait « Pseudo
+  // introuvable » sans jamais dire laquelle. Le seul recours était de redemander
+  // l'orthographe à l'ami. On cherche maintenant à chaque frappe.
+  //
+  // Le terme est réduit à [a-zA-Z0-9_-], le format même des pseudos : ça écarte
+  // du même geste les jokers `%` et `*` et les virgules, qui sont la syntaxe des
+  // filtres PostgREST et casseraient la requête. Le `_`, lui, est légal dans un
+  // pseudo ET joker d'un caractère côté SQL — on le laisse passer : il élargit la
+  // liste sans jamais y faire entrer un pseudo qui n'existe pas.
+  useEffect(function(){
+    const terme = friendInput.trim().replace(/[^a-zA-Z0-9_-]/g, "");
+    if (terme.length < 2) { setFriendSug([]); setFriendSugCherche(false); return; }
+    setFriendSugCherche(true);
+    // Une requête par frappe partirait cinq fois pour « thiba », et rien ne
+    // garantit l'ordre des réponses : `annule` fait que seule la dernière écrit.
+    let annule = false;
+    const minuteur = setTimeout(async function(){
+      try {
+        const r = await sbFetch("bb_pseudos?pseudo=ilike.*" + encodeURIComponent(terme)
+          + "*&select=player_id,pseudo,xp&order=xp.desc&limit=20");
+        if (annule) return;
+        const bas = terme.toLowerCase();
+        setFriendSug((Array.isArray(r) ? r : [])
+          .filter(function(p){ return p && p.pseudo && p.player_id !== playerId; })
+          // Ce qui COMMENCE par ce qu'on tape passe devant : en tapant « thib »
+          // on cherche « thibault », pas « marib ». À égalité, le plus actif.
+          .sort(function(a,b){
+            const da = a.pseudo.toLowerCase().indexOf(bas) === 0 ? 0 : 1;
+            const db = b.pseudo.toLowerCase().indexOf(bas) === 0 ? 0 : 1;
+            return da !== db ? da - db : (b.xp||0) - (a.xp||0);
+          })
+          .slice(0, 6));
+      } catch { if (!annule) setFriendSug([]); }
+      finally { if (!annule) setFriendSugCherche(false); }
+    }, 250);
+    return function(){ annule = true; clearTimeout(minuteur); };
+  }, [friendInput, playerId]);
+
+  // `cible` : la ligne exacte choisie dans les suggestions, {player_id, pseudo}.
+  // Sans elle on repasse par une recherche `ilike`, où le `_` est un JOKER d'un
+  // caractère : demander « al_x » en ami pouvait tomber sur « alex ». Quand on a
+  // cliqué un pseudo, on sait déjà à qui on parle — on ne le recherche pas.
+  async function addFriend(pseudo, cible) {
     const clean = pseudo.trim();
     if (clean.length < 2) { setFriendMsg(tr("Pseudo trop court","Username too short","Name zu kurz","Nome troppo corto","Nome muito curto","Nombre demasiado corto")); return; }
     if (clean.toLowerCase() === (playerName||"").toLowerCase()) { setFriendMsg(tr("C'est ton propre pseudo !","That's your own username!","Das ist dein eigener Name!","È il tuo stesso nome!","Esse é o seu próprio nome!","¡Ese es tu propio nombre!")); return; }
     setFriendMsg(tr("🔍 Recherche...","🔍 Searching...","🔍 Suche...","🔍 Ricerca...","🔍 Buscando...","🔍 Buscando..."));
     try {
       // Chercher le player_id correspondant au pseudo
-      const result = await sbFetch("bb_pseudos?pseudo=ilike."+encodeURIComponent(clean)+"&select=player_id,pseudo&limit=1");
+      let result = cible && cible.player_id ? [cible] : null;
+      if (!result) {
+        result = await sbFetch("bb_pseudos?pseudo=ilike."+encodeURIComponent(clean)+"&select=player_id,pseudo&limit=1");
+      }
       if (!Array.isArray(result) || result.length === 0) {
         setFriendMsg(tr("❌ Pseudo introuvable. Vérifie l'orthographe.","❌ Username not found. Check the spelling.","❌ Name nicht gefunden. Prüfe die Schreibweise.","❌ Nome non trovato. Controlla l'ortografia.","❌ Nome não encontrado. Verifique a grafia.","❌ Nombre no encontrado. Revisa la ortografía."));
         return;
@@ -11678,10 +11727,49 @@ export default function LePont() {
             <div style={{...posterText(18,G.projecteur),marginBottom:10}}>{tr("Ajouter un ami","Add a friend","Freund hinzufügen","Aggiungi un amico","Adicionar amigo","Añadir un amigo")}</div>
             <div style={{display:"flex",gap:10}}>
               <input value={friendInput} onChange={function(e){setFriendInput(e.target.value);setFriendMsg("");}}
-                placeholder={tr("Pseudo de ton ami...","Your friend's username...","Nutzername deines Freundes...","Nome utente del tuo amico...","Nome de usuário do seu amigo...","Nombre de tu amigo...")} maxLength={20}
+                onKeyDown={function(e){ if(e.key==="Enter"){ if(friendSug.length>0) addFriend(friendSug[0].pseudo, friendSug[0]); else addFriend(friendInput); } }}
+                placeholder={tr("Tape les premières lettres...","Type the first letters...","Erste Buchstaben eingeben...","Scrivi le prime lettere...","Digite as primeiras letras...","Escribe las primeras letras...")} maxLength={20}
                 style={{flex:1,minWidth:0,padding:"11px 14px",borderRadius:G.rayonS,border:G.traitFin,background:G.bgCard,color:G.white,fontFamily:G.font,fontSize:15,fontWeight:600,outline:"none",boxSizing:"border-box"}}/>
-              <button onClick={function(){addFriend(friendInput);}} style={{...btn(G.pelouse,G.white,20),padding:"0 18px",flexShrink:0}}>+</button>
+              <button onClick={function(){ if(friendSug.length>0) addFriend(friendSug[0].pseudo, friendSug[0]); else addFriend(friendInput); }} style={{...btn(G.pelouse,G.white,20),padding:"0 18px",flexShrink:0}}>+</button>
             </div>
+            {/* Les propositions. Un pseudo déjà ami ou déjà sollicité reste
+                AFFICHÉ mais grisé : le masquer ferait croire qu'il n'existe pas,
+                et on retomberait sur « Pseudo introuvable » — le défaut qu'on
+                vient de corriger. */}
+            {/* Les propositions vivent dans UN panneau creusé, pas six pastilles :
+                c'est la forme des listes de l'app. Son fond doit être plus clair
+                que l'encre des filets, sinon les séparateurs se posent encre sur
+                encre — d'où rgba(8,17,9,.5) et non G.encre. */}
+            {friendSug.length > 0 && (
+              <div style={{marginTop:10,background:"rgba(8,17,9,.5)",border:G.trait,borderRadius:G.rayon,
+                boxShadow:"inset 2px 2px 0 rgba(8,17,9,.35)",overflow:"hidden"}}>
+                {friendSug.map(function(s,i){
+                  const deja = friendsList.indexOf(s.player_id) >= 0;
+                  const envoye = !!sentRequests.find(function(r){return r.to_id===s.player_id && r.status==="pending";});
+                  const inerte = deja || envoye;
+                  return (
+                    <div key={s.player_id}
+                      {...handlersDeTap(function(){ if(!inerte) addFriend(s.pseudo, s); }, !inerte)}
+                      style={{display:"flex",alignItems:"center",gap:10,padding:"11px 14px",cursor:inerte?"default":"pointer",
+                        borderBottom:i<friendSug.length-1?G.traitFin:"none",opacity:inerte?.55:1}}>
+                      <span style={{flex:1,minWidth:0,fontFamily:G.font,fontSize:14.5,fontWeight:800,color:G.creme,
+                        overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{s.pseudo}</span>
+                      {inerte
+                        ? <span style={{fontSize:11,fontWeight:700,color:"rgba(242,231,206,.6)",flexShrink:0}}>
+                            {deja ? tr("déjà ami","already a friend","schon befreundet","già amico","já é amigo","ya sois amigos")
+                                  : tr("demande envoyée","request sent","Anfrage gesendet","richiesta inviata","pedido enviado","solicitud enviada")}
+                          </span>
+                        : <span style={{fontSize:11,fontWeight:700,color:G.projecteur,flexShrink:0}}>+ {tr("ajouter","add","hinzufügen","aggiungi","adicionar","añadir")}</span>}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            {friendSug.length === 0 && !friendSugCherche && friendInput.trim().length >= 2 && !friendMsg && (
+              <div style={{marginTop:8,fontSize:12.5,fontWeight:700,color:"rgba(255,255,255,.45)"}}>
+                {tr("Aucun joueur à ce nom.","No player with that name.","Kein Spieler mit diesem Namen.","Nessun giocatore con questo nome.","Nenhum jogador com esse nome.","Ningún jugador con ese nombre.")}
+              </div>
+            )}
             {friendMsg && <div style={{fontSize:12.5,marginTop:8,fontWeight:700,lineHeight:1.4,
               color:friendMsg.startsWith("✓")?G.pelouseClaire:friendMsg.startsWith("🔍")?"rgba(255,255,255,.55)":G.maillot}}>{friendMsg}</div>}
           </div>

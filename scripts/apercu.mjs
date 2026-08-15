@@ -212,10 +212,20 @@ await ctx.route("**/rest/v1/**", async (route) => {
     // sinon l'aperçu photographiait l'accueil et tapait dans le code de salon.
     if (ecran === "pseudo-refuse") {
       corps = [];
-    } else
+    } else {
     corps = JOUEURS.map((j, i) => ({ player_id:j.pid, pseudo:j.nom, xp:j.xp,
       xp_season:j.score, xp_season_month:new Date().toISOString().slice(0, 7), country:j.pays,
       created_at:ilYaJours(i % 14) }));
+    // Les suggestions d'ami interrogent `pseudo=ilike.*terme*`. Répondre la
+    // table entière ferait une liste identique quoi qu'on tape : l'aperçu
+    // montrerait un filtre qui marche sans qu'il marche. On applique donc le
+    // filtre ici, comme le ferait Postgres.
+    const filtre = /[?&]pseudo=ilike\.([^&]*)/.exec(url);
+    if (filtre) {
+      const terme = decodeURIComponent(filtre[1]).replace(/\*/g, "").toLowerCase();
+      corps = corps.filter((r) => r.pseudo.toLowerCase().includes(terme));
+    }
+    }
   }
   // content-range sur TOUTE réponse : c'est le seul canal par lequel sbCount
   // apprend un total, et il lui suffit de la partie après le « / ». Il faut
@@ -416,6 +426,17 @@ if (ecran.startsWith("amis")) {
     await page.getByRole("button", { name:/historique des d/i }).first().click();
     await page.waitForTimeout(1600);
   }
+  // `amis-ajout` : on TAPE dans le champ, parce que les suggestions n'existent
+  // qu'après une frappe. Un aperçu qui se contente d'ouvrir l'écran ne montre
+  // rien de ce qu'on vient d'écrire. AJOUT règle ce qu'on tape, pour
+  // photographier aussi bien une liste de propositions qu'un « aucun joueur ».
+  if (ecran === "amis-ajout") {
+    const champ = page.getByPlaceholder(/premières lettres|first letters/i).first();
+    await champ.scrollIntoViewIfNeeded();
+    await champ.click();
+    await champ.type(process.env.AJOUT || "ja", { delay:60 });
+    await page.waitForTimeout(1200);   // 250 ms d'attente de frappe + la requête
+  }
 }
 
 // Chaque écran est une suite de clics depuis l'accueil. Un écran atteint par
@@ -428,6 +449,7 @@ const CHEMINS = {
   // L'écran voisin, atteint depuis la liste d'amis.
   "amis-defis":  [],   // « Historique des défis »
   "amis-bas":    [],   // le bas de la liste, où vivent les demandes envoyées
+  "amis-ajout":  [],   // « Ajouter un ami », champ rempli, suggestions ouvertes
   devinette:  [/devinette du jour|daily riddle|rätsel des tages|indovinello del giorno|adivinha do dia|adivinanza del día/i],
   profil:     [],   // l'avatar n'est pas un bouton : traité à part
   jeu:        [],   // la carte du carrousel non plus
