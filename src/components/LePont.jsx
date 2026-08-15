@@ -5946,11 +5946,23 @@ export default function LePont() {
     })();
     return function(){ stop = true; };
   }, [playerId]);
-  // Badges des autres joueurs, pour les afficher dans le classement. Une seule
-  // requête à l'ouverture, plutôt que de faire circuler le champ dans toute
-  // l'agrégation du classement. `xp` sert à valider le badge (cf. badgeToShow).
+  // Badges des autres joueurs. Une seule requête, plutôt que de faire circuler le
+  // champ dans toute l'agrégation du classement. `xp` sert à valider le badge
+  // (cf. badgeToShow).
+  //
+  // ELLE NE PARTAIT QU'À L'OUVERTURE DU CLASSEMENT. La salle affichait donc des
+  // initiales même pour des joueurs qui ont choisi une carte : la vignette était
+  // la bonne, c'est la table qui était vide. Un défaut invisible en lecture — le
+  // composant a l'air correct, il n'a simplement rien à afficher.
+  //
+  // La dépendance est le CODE de la salle et non l'objet `room` : celui-ci est
+  // relu par le sondage toutes les quelques secondes et change d'identité à
+  // chaque fois, ce qui relancerait la requête en boucle. Le code, lui, ne bouge
+  // pas tant qu'on est dans la même salle — et change quand on en rejoint une
+  // autre, ce qui est exactement le moment où il faut recharger.
+  const codeSalle = room ? room.code : null;
   useEffect(function(){
-    if (!showLeaderboard) return;
+    if (!showLeaderboard && !codeSalle) return;
     let stop = false;
     (async function(){
       const rows = await sbFetch("bb_pseudos?select=player_id,badge,xp&badge=not.is.null&limit=2000");
@@ -5960,7 +5972,7 @@ export default function LePont() {
       setBadgeByPid(map);
     })();
     return function(){ stop = true; };
-  }, [showLeaderboard]);
+  }, [showLeaderboard, codeSalle]);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [viewingAvatar, setViewingAvatar] = useState(null); // URL de la photo à visualiser en plein écran
   const [cropState, setCropState] = useState(null); // {url, scale, x, y, naturalW, naturalH} — état du cropper

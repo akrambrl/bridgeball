@@ -46,6 +46,10 @@ const NOMS_ESSAI = ["jules","nadia","james10","vice","sjdrums","strudel","kader"
   "toto","mehdi","anna","bruno","chloe","dario","elias","fatou","gabin","hugo",
   "ines","jonas","kenza","lucas","maya","nino"];
 const PAYS_ESSAI = ["FR","BE","NL","IT","ES","PT"];
+// Des identifiants de cartes RÉELS, pris dans src/lib/collection.ts : un
+// identifiant inventé rendrait la carte de départ et l'aperçu montrerait la même
+// vignette pour tout le monde sans qu'on sache si c'est le repli ou la vraie.
+const BADGES_ESSAI = ["patron", "meneur", "numero-10", "titulaire", "banc"];
 const JOUEURS = NOMS_ESSAI.map((nom, i) => ({
   pid: "p" + (i + 1), nom,
   score: 41220 - i * 1600,
@@ -233,9 +237,15 @@ await ctx.route("**/rest/v1/**", async (route) => {
     if (ecran === "pseudo-refuse") {
       corps = [];
     } else {
+    // `badge` : la carte que le joueur a choisie. Sans elle, tout écran qui
+    // affiche une vignette retombe sur l'initiale, et on photographie un repli
+    // en croyant photographier la fonctionnalité. On en donne une sur deux —
+    // l'app doit tenir les deux cas dans la même liste.
     corps = JOUEURS.map((j, i) => ({ player_id:j.pid, pseudo:j.nom, xp:j.xp,
+      badge: i % 2 === 0 ? BADGES_ESSAI[(i / 2) % BADGES_ESSAI.length] : null,
       xp_season:j.score, xp_season_month:new Date().toISOString().slice(0, 7), country:j.pays,
       created_at:ilYaJours(i % 14) }));
+    if (url.includes("badge=not.is.null")) corps = corps.filter((r) => r.badge);
     // Les suggestions d'ami interrogent `pseudo=ilike.*terme*`. Répondre la
     // table entière ferait une liste identique quoi qu'on tape : l'aperçu
     // montrerait un filtre qui marche sans qu'il marche. On applique donc le
