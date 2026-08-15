@@ -193,16 +193,41 @@ export function enseigneValide(valeur) {
 }
 
 /**
+ * Un pseudo Instagram plausible.
+ *
+ * Le règlement (article 5.1) conditionne la remise à trois actions sur
+ * Instagram : abonnement, deux amis identifiés en commentaire, partage en
+ * story. Un compte GOAT FC étant anonyme, le pseudo Instagram est le SEUL
+ * moyen de rapprocher le gagnant de ces trois actions.
+ *
+ * On ne vérifie PAS que le compte existe : Instagram n'expose aucune interface
+ * publique permettant de le savoir, et prétendre le faire ici serait un
+ * contrôle de façade. On vérifie la FORME — celle qu'Instagram s'impose :
+ * lettres, chiffres, point et tiret bas, 30 caractères au plus. L'arobase est
+ * tolérée en entrée et retirée au rangement, pour que « @toto » et « toto » ne
+ * fassent pas deux dossiers.
+ */
+export function instagramValide(valeur) {
+  return /^@?[A-Za-z0-9._]{1,30}$/.test(String(valeur || "").trim());
+}
+
+/** Le pseudo Instagram sous sa forme rangée : sans arobase ni espaces. */
+export function normaliserInstagram(valeur) {
+  return String(valeur || "").trim().replace(/^@+/, "");
+}
+
+/**
  * Le formulaire est-il envoyable ? Rend la liste des manques, pas un booléen :
  * un écran qui dit « formulaire invalide » sans dire quoi fait recommencer à
  * l'aveugle.
  *
  * `rang` décide de la nature du troisième champ — voir souhaitDuRang.
  */
-export function manques({ code, email, plateforme, autorisation }, rang) {
+export function manques({ code, email, instagram, plateforme, autorisation }, rang) {
   const out = [];
   if (!codeValide(code)) out.push("code");
   if (!emailPlausible(email)) out.push("email");
+  if (!instagramValide(instagram)) out.push("instagram");
   if (souhaitDuRang(rang) === "plateforme") {
     if (!plateformeValide(plateforme)) out.push("plateforme");
   } else if (!enseigneValide(plateforme)) out.push("enseigne");
