@@ -240,7 +240,7 @@ end $$;
 -- Le délai suit le règlement : trente jours après l'annonce, l'annonce ayant
 -- lieu à la clôture du 1er octobre.
 insert into public.bb_lots (season_number, intitule, ouvert_jusqu_a)
-values (6, 'EA SPORTS FC 27 — édition standard, dématérialisée', '2026-10-31 23:59:59+01')
+values (6, 'EA SPORTS FC 27 — édition Ultimate, dématérialisée (109,99 €)', '2026-10-31 23:59:59+01')
 on conflict (season_number) do update
   set intitule = excluded.intitule,
       ouvert_jusqu_a = excluded.ouvert_jusqu_a;

@@ -136,12 +136,13 @@ const ANNONCES = {
     fichier: "cadeau-septembre",
     surligne: "HALL OF FAME · SEPTEMBRE 2026",
     titre: ["LE N°1 DU MOIS", "REPART AVEC"],
-    vedette: "FC 27",
+    vedette: "FC 27 ULTIMATE",
     // Remplacée par l'artwork quand il est déposé : une image du jeu dit le lot
     // mieux que son nom écrit.
     artwork: true,
-    corps: "Le meilleur joueur du classement mensuel gagne le jeu. "
-         + "Tout le monde part à égalité le 1er septembre.",
+    corps: "EA SPORTS FC 27, <b>édition Ultimate</b> — valeur 109,99 €. "
+         + "Le n°1 du classement mensuel repart avec. Tout le monde part à "
+         + "égalité le 1er septembre.",
     appel: "goatfc.fr",
     mentions: "Concours de connaissances sans obligation d'achat · Règlement complet sur goatfc.fr/reglement · "
             + "Jeu non sponsorisé, administré ni associé à Instagram ou TikTok · Lot dématérialisé, "
@@ -172,7 +173,7 @@ const LEGENDES = {
   cadeau: {
     instagram: `🏆 SEPTEMBRE, C'EST PARTI.
 
-Le n°1 du classement mensuel de GOAT FC repart avec FC 27.
+Le n°1 du classement mensuel de GOAT FC repart avec FC 27, édition Ultimate — 109,99 €.
 
 Tout le monde part à égalité le 1er septembre. Le classement compte les points de tes six modes préférés, jour après jour — donc ça ne se gagne pas en une soirée, ça se gagne en revenant.
 
@@ -182,7 +183,7 @@ Tout le monde part à égalité le 1er septembre. Le classement compte les point
 Concours de connaissances sans obligation d'achat. Règlement complet sur goatfc.fr/reglement. Jeu non sponsorisé, administré ni associé à Instagram. Lot dématérialisé, plateforme au choix du gagnant ou carte cadeau de valeur équivalente.
 
 #football #quizfoot #mercato #ligue1 #premierleague #jeuconcours #concours #goatfc`,
-    tiktok: `Le n°1 du mois repart avec FC 27 🏆
+    tiktok: `Le n°1 du mois repart avec FC 27 édition Ultimate 🏆 (109,99 €)
 
 Classement remis à zéro le 1er septembre — tout le monde part à égalité.
 Ça se joue sur goatfc.fr, appli iOS et Android en octobre 📱
@@ -196,7 +197,7 @@ Règlement sur goatfc.fr/reglement · Sans obligation d'achat · Jeu non associ�
 
 Six modes, un classement mensuel, et des duels en direct contre tes potes.
 
-En attendant, tout est déjà jouable dans le navigateur sur goatfc.fr — et le classement de septembre est lancé, avec FC 27 pour le n°1 du mois. Autant prendre de l'avance.
+En attendant, tout est déjà jouable dans le navigateur sur goatfc.fr — et le classement de septembre est lancé, avec FC 27 édition Ultimate pour le n°1 du mois. Autant prendre de l'avance.
 
 👉 goatfc.fr
 
@@ -204,7 +205,7 @@ En attendant, tout est déjà jouable dans le navigateur sur goatfc.fr — et le
     tiktok: `L'appli arrive en octobre 📱 iOS + Android
 
 6 modes, un classement du mois, des duels en direct.
-En attendant ça se joue déjà sur goatfc.fr 👉 et le n°1 de septembre repart avec FC 27
+En attendant ça se joue déjà sur goatfc.fr 👉 et le n°1 de septembre repart avec FC 27 Ultimate
 
 #football #quizfoot #mercato #footballtiktok #goatfc`,
   },
@@ -297,6 +298,7 @@ function page(a, f) {
   .corps{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-weight:700;
     font-size:${story ? 17 : 14.5}px;line-height:1.45;color:${G.creme};text-align:center;
     max-width:${story ? 420 : 400}px}
+  .corps b{color:${G.or};font-weight:900}
   .appel{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-weight:900;
     font-size:${story ? 20 : 17}px;letter-spacing:1.5px;color:${G.encre};
     background:${G.or};border:3px solid ${G.encre};border-radius:11px;

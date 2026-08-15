@@ -11,7 +11,7 @@ et parce qu'un visuel recadré par la plateforme peut les rogner.
 ```
 🏆 SEPTEMBRE, C'EST PARTI.
 
-Le n°1 du classement mensuel de GOAT FC repart avec FC 27.
+Le n°1 du classement mensuel de GOAT FC repart avec FC 27, édition Ultimate — 109,99 €.
 
 Tout le monde part à égalité le 1er septembre. Le classement compte les points de tes six modes préférés, jour après jour — donc ça ne se gagne pas en une soirée, ça se gagne en revenant.
 
@@ -26,7 +26,7 @@ Concours de connaissances sans obligation d'achat. Règlement complet sur goatfc
 ### TikTok
 
 ```
-Le n°1 du mois repart avec FC 27 🏆
+Le n°1 du mois repart avec FC 27 édition Ultimate 🏆 (109,99 €)
 
 Classement remis à zéro le 1er septembre — tout le monde part à égalité.
 Ça se joue sur goatfc.fr, appli iOS et Android en octobre 📱
