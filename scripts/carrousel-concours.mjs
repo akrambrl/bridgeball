@@ -176,7 +176,7 @@ const DIAPOS = [
       "Le jeu complet EA SPORTS FC 27",
       "Jusqu'à 6 000 points FC, versés en 3 fois",
       "Premium Pass de la Saison 1",
-      "Mode Carrière : 3 ICONs/Héros, coach 5 étoiles, recruteurs jeunes et seniors 5 étoiles",
+      "Mode Carrière : 3 ICONs/Héros, coach et recruteurs 5 étoiles",
       "Ultimate Team : un emplacement d'Evolution en plus",
       "The Grounds : survêtement signature et bonus d'XP",
     ],
@@ -262,58 +262,49 @@ function page(d, n, total) {
     background:${G.or};border:3px solid ${G.encre};border-radius:11px;
     padding:11px 26px;box-shadow:4px 4px 0 rgba(0,0,0,.5)}
   /* ── LES LISTES ────────────────────────────────────────────────────────
-     Trois formes distinctes parce qu'elles disent trois choses distinctes :
-     une règle numérotée, un interdit, un inventaire. Les confondre en une
-     seule liste à puces ferait lire l'interdit comme un avantage. */
-  .regles{display:flex;flex-direction:column;gap:17px;width:100%;max-width:440px}
-  .regle{display:flex;align-items:flex-start;gap:12px;
-    background:rgba(245,194,43,.1);border:2.5px solid ${G.or};border-radius:13px;
-    padding:16px 17px}
-  .num{flex:0 0 auto;width:37px;height:37px;border-radius:10px;background:${G.or};
-    color:${G.encre};font-size:23px;display:flex;align-items:center;
-    justify-content:center;border:2.5px solid ${G.encre};box-shadow:2.5px 2.5px 0 ${G.encre}}
-  .regleTxt{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;text-align:left}
-  .regleTitre{font-weight:900;font-size:18.5px;color:${G.or};line-height:1.25}
-  .regleSous{font-weight:700;font-size:15px;color:rgba(242,231,206,.8);line-height:1.35;
-    margin-top:2px}
-  .croix{display:flex;flex-direction:column;gap:14px;width:100%;max-width:440px}
-  .croixLigne{display:flex;align-items:flex-start;gap:11px;
-    background:rgba(217,58,43,.14);border:2.5px solid ${G.maillot};border-radius:13px;
-    padding:15px 16px;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;
-    font-weight:700;font-size:16.5px;line-height:1.42;color:${G.creme};text-align:left}
-  .croixLigne span:first-child{flex:0 0 auto;font-size:19px;color:${G.maillot}}
-  .puces{display:flex;flex-direction:column;gap:12px;width:100%;max-width:450px}
-  .puce{display:flex;align-items:flex-start;gap:10px;
-    font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-weight:700;
-    font-size:16.5px;line-height:1.4;color:${G.creme};text-align:left}
-  .puce span:first-child{flex:0 0 auto;color:${G.or};font-size:17px;font-weight:900}
-  /* ── LE PODIUM ─────────────────────────────────────────────────────────
-     La 1re place est en or plein, les deux autres cerclées : la hiérarchie
-     doit se voir SANS lire, sinon les trois lots se valent à l'œil et la
-     diapositive ne dit plus rien de la course. */
-  .podium{display:flex;flex-direction:column;gap:13px;width:100%;max-width:450px}
-  .place{display:flex;align-items:center;gap:13px;border-radius:14px;
-    padding:14px 16px;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;
-    text-align:left}
-  .place.or{background:${G.or};border:3px solid ${G.encre};box-shadow:4px 4px 0 rgba(0,0,0,.5)}
-  .place.autre{background:rgba(245,194,43,.1);border:2.5px solid ${G.or}}
-  .placeMedaille{flex:0 0 auto;font-size:30px;line-height:1}
-  .placeRang{flex:0 0 auto;font-family:'Anton',Impact,sans-serif;font-size:26px;
-    transform:skewX(-7deg);min-width:34px}
-  .place.or .placeRang{color:${G.encre}}
-  .place.autre .placeRang{color:${G.or}}
-  .placeQuoi{font-weight:900;font-size:16px;line-height:1.25}
-  .place.or .placeQuoi{color:${G.encre}}
-  .place.autre .placeQuoi{color:${G.creme}}
-  .placeSous{font-weight:700;font-size:13px;line-height:1.3;margin-top:2px}
-  .place.or .placeSous{color:rgba(8,17,9,.72)}
-  .place.autre .placeSous{color:rgba(242,231,206,.7)}
-  .dates{display:flex;flex-direction:column;gap:16px;width:100%;max-width:440px}
-  .date{display:flex;flex-direction:column;background:rgba(245,194,43,.1);
-    border:2.5px solid ${G.or};border-radius:13px;padding:15px 18px;
+     UN SEUL PANNEAU, pas une boîte par ligne.
+
+     La première version encadrait chaque élément d'un filet d'or fin sur le
+     fond de nuit. Ce n'est pas un motif de la charte : c'en est même l'inverse.
+     La charte n'a que des APLATS OPAQUES CERCLÉS D'ENCRE, et une liste s'y
+     présente comme dans la feuille « Règles du jeu » de l'app — un panneau
+     unique, trait d'encre, ombre INTÉRIEURE, et des lignes séparées par un
+     filet d'encre fin. Le filet d'or empilé faisait une grille de vignettes,
+     un vocabulaire qui appartient au verre et pas à l'affiche.
+
+     Copié sur le vrai écran (LePont.jsx, homeRulesModal) et non recomposé de
+     mémoire : un motif « à peu près juste » se voit tout de suite à côté de
+     l'original. */
+  .cadre-liste{width:100%;max-width:452px;background:rgba(8,17,9,.5);
+    border:3px solid ${G.encre};border-radius:18px;padding:0 16px;overflow:hidden;
+    box-shadow:inset 3px 3px 0 rgba(8,17,9,.35)}
+  .ligne{display:flex;align-items:flex-start;gap:13px;padding:12px 0;
+    border-bottom:2px solid ${G.encre};
     font-family:system-ui,-apple-system,'Segoe UI',sans-serif;text-align:left}
-  .dateQuand{font-weight:900;font-size:18px;color:${G.or};letter-spacing:.6px}
-  .dateQuoi{font-weight:700;font-size:15.5px;color:rgba(242,231,206,.85);margin-top:2px}
+  .ligne:last-child{border-bottom:none}
+  /* La pastille du numéro : aplat d'or, RAYON FRANC et non cercle, cerclée
+     d'encre. Le cercle sans contour était le dernier reste de l'ancien
+     vocabulaire, et il a été retiré de l'app pour cette raison. */
+  .num{flex:0 0 auto;min-width:30px;height:30px;border-radius:9px;background:${G.or};
+    color:${G.encre};font-family:'Anton',Impact,sans-serif;font-size:19px;
+    display:flex;align-items:center;justify-content:center;
+    border:2px solid ${G.encre};margin-top:1px}
+  .titreLigne{font-weight:900;font-size:17px;color:${G.or};line-height:1.28}
+  .sousLigne{font-weight:700;font-size:14.5px;color:rgba(242,231,206,.82);
+    line-height:1.35;margin-top:2px}
+  .texteLigne{flex:1;font-weight:700;font-size:16px;color:${G.creme};line-height:1.42}
+  .croixMarque{flex:0 0 auto;font-size:19px;color:${G.maillot};line-height:1.2;margin-top:-1px}
+  .puceMarque{flex:0 0 auto;font-size:17px;color:${G.or};font-weight:900;line-height:1.3}
+  /* La 1re place se distingue par un APLAT D'OR sur sa ligne, pas par un cadre
+     de plus : la hiérarchie doit se voir sans lire, et l'or est ce que la
+     charte emploie pour dire « celui-là ». */
+  .ligne.or{background:${G.or};margin:0 -16px;padding-left:16px;padding-right:16px}
+  .ligne.or .titreLigne{color:${G.encre}}
+  .ligne.or .sousLigne{color:rgba(8,17,9,.72)}
+  .ligne.or .rang{color:${G.encre}}
+  .rang{flex:0 0 auto;font-family:'Anton',Impact,sans-serif;font-size:25px;
+    transform:skewX(-7deg);min-width:32px;color:${G.or};line-height:1.1}
+  .medaille{flex:0 0 auto;font-size:27px;line-height:1}
   /* L'artwork est CADRÉ à la charte — trait d'encre et ombre dure — et non posé
      nu : encadré il se lit comme « le lot », posé nu il se lit comme le fond du
      visuel, et l'annonce n'aurait plus l'air d'être la tienne.
@@ -342,23 +333,25 @@ function page(d, n, total) {
         ? `<div class="cadreLot"><img src="${artLot.donnee}" alt="EA SPORTS FC 27"></div>` : ""}
       ${d.prix ? `<div class="prix">${d.prix}</div>` : ""}
       ${d.grosMot ? `<div class="grosMot">${d.grosMot}</div>` : ""}
-      ${d.liste ? `<div class="regles">${d.liste.map(([t, s], i) =>
-        `<div class="regle"><div class="num">${i + 1}</div>
-          <div class="regleTxt"><div class="regleTitre">${t}</div>
-          <div class="regleSous">${s}</div></div></div>`).join("")}</div>` : ""}
-      ${d.listeCroix ? `<div class="croix">${d.listeCroix.map((t) =>
-        `<div class="croixLigne"><span>✕</span><span>${t}</span></div>`).join("")}</div>` : ""}
-      ${d.puces ? `<div class="puces">${d.puces.map((t) =>
-        `<div class="puce"><span>▸</span><span>${t}</span></div>`).join("")}</div>` : ""}
-      ${d.podium ? `<div class="podium">${d.podium.map(([m, r, quoi, sous], i) =>
-        `<div class="place ${i === 0 ? "or" : "autre"}">
-          <div class="placeMedaille">${m}</div>
-          <div class="placeRang">${r}</div>
-          <div><div class="placeQuoi">${quoi}</div>
-          <div class="placeSous">${sous}</div></div></div>`).join("")}</div>` : ""}
-      ${d.dates ? `<div class="dates">${d.dates.map(([q, w]) =>
-        `<div class="date"><div class="dateQuand">${q}</div>
-          <div class="dateQuoi">${w}</div></div>`).join("")}</div>` : ""}
+      ${d.liste ? `<div class="cadre-liste">${d.liste.map(([t, sous], i) =>
+        `<div class="ligne"><div class="num">${i + 1}</div>
+          <div><div class="titreLigne">${t}</div>
+          <div class="sousLigne">${sous}</div></div></div>`).join("")}</div>` : ""}
+      ${d.listeCroix ? `<div class="cadre-liste">${d.listeCroix.map((t) =>
+        `<div class="ligne"><div class="croixMarque">✕</div>
+          <div class="texteLigne">${t}</div></div>`).join("")}</div>` : ""}
+      ${d.puces ? `<div class="cadre-liste">${d.puces.map((t) =>
+        `<div class="ligne"><div class="puceMarque">▸</div>
+          <div class="texteLigne">${t}</div></div>`).join("")}</div>` : ""}
+      ${d.podium ? `<div class="cadre-liste">${d.podium.map(([m, r, quoi, sous], i) =>
+        `<div class="ligne${i === 0 ? " or" : ""}">
+          <div class="medaille">${m}</div>
+          <div class="rang">${r}</div>
+          <div><div class="titreLigne">${quoi}</div>
+          <div class="sousLigne">${sous}</div></div></div>`).join("")}</div>` : ""}
+      ${d.dates ? `<div class="cadre-liste">${d.dates.map(([q, w]) =>
+        `<div class="ligne"><div><div class="titreLigne">${q}</div>
+          <div class="sousLigne">${w}</div></div></div>`).join("")}</div>` : ""}
       ${d.corps ? `<div class="corps">${d.corps}</div>` : ""}
       ${d.appel ? `<div class="appel">${d.appel}</div>` : ""}
       <div class="mentions">${MENTIONS}${d.artwork || d.puces || d.podium ? MENTIONS_EA : ""}</div>
