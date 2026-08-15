@@ -31,7 +31,8 @@
     "posts": "node scripts/posts-concours.mjs",
     "transferts": "node scripts/transferts.mjs",
     "audit:fiches": "tsx scripts/audit-fiches.mjs",
-    "merci": "node scripts/posts-merci.mjs"
+    "merci": "node scripts/posts-merci.mjs",
+    "sql:saisons": "node scripts/sql-saisons.essai.mjs"
   },
   "dependencies": {
     "@capacitor/app": "^8.1.1",
