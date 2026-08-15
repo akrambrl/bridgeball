@@ -87,6 +87,33 @@ for (const nom of LOT_FICHIERS) {
   } catch (e) { /* pas celui-là */ }
 }
 
+// ── LES CAPTURES DE L'APP ─────────────────────────────────────────────────
+//
+// De VRAIES captures, produites par scripts/apercu.mjs, et non des maquettes :
+// une maquette dessine ce qu'on voudrait montrer, une capture montre ce qui
+// existe. Sur un visuel de concours, la différence n'est pas cosmétique — c'est
+// la promesse faite à quelqu'un qui va installer l'app derrière.
+//
+// Recadrées au MÊME rapport, sinon deux téléphones côte à côte n'ont pas la
+// même tête ; et le vide d'or du bas d'écran ne dit rien du jeu.
+//
+//   node scripts/apercu.mjs partie     → visuels/captures/partie.png
+//   ffmpeg -i partie.png -vf "crop=860:1180:0:0" plug-cadre.png
+const CAPTURES = {};
+for (const [cle, nom] of [["plug", "plug-cadre.png"], ["devinette", "devinette-cadre.png"]]) {
+  try {
+    CAPTURES[cle] = b64(await readFile(join(racine, "visuels", "captures", nom)), "image/png");
+  } catch (e) { /* la diapositive se rendra sans, et le script le dira */ }
+}
+
+// L'illustration manga de l'app — deux joueurs qui s'affrontent, dessinés dans
+// la charte (or, encre, trame). Aucun footballeur RÉEL n'y figure, contrairement
+// aux cartes de collection : elle est donc publiable sans réserve.
+let artDuel = null;
+try {
+  artDuel = b64(await readFile(join(racine, "visuels", "bruts", "duel.png")), "image/png");
+} catch (e) { /* le podium se rendra sur le décor d'or */ }
+
 // Composé à la moitié des pixels visés puis capturé en 2× : ça garde des tailles
 // de police lisibles dans le code et sort du 2× net.
 const ECHELLE = 2;
@@ -169,6 +196,12 @@ const DIAPOS = [
     // quelqu'un qui se sait incapable de finir premier. Un concours à lot
     // unique se lit « ce n'est pas pour moi » et se referme.
     fichier: "02-trois-places",
+    // L'illustration manga de l'app en fond de la bande d'or. Elle dit
+    // « affrontement » sans une ligne de texte, ce qui est exactement le sujet
+    // d'un podium. Je ne SAIS PAS dessiner de nouvelles illustrations : celle-ci
+    // vient de visuels/bruts, elle est déjà à toi, et aucun footballeur réel n'y
+    // figure — contrairement aux cartes de collection, qu'on ne publie pas.
+    fond: "duel",
     surligne: "TROIS PLACES RÉCOMPENSÉES",
     titre: ["TU N'AS PAS BESOIN", "D'ÊTRE PREMIER"],
     podium: [
@@ -178,7 +211,18 @@ const DIAPOS = [
     ],
   },
   {
-    fichier: "03-tout-le-monde-a-zero",
+    // DE VRAIES CAPTURES, et posée TÔT : quelqu'un qui n'a jamais ouvert
+    // l'app ne sait pas ce qu'on lui demande de jouer. Trois diapositives de
+    // règles avant de lui avoir montré l'écran, c'est expliquer les règles
+    // d'un sport qu'il n'a jamais vu.
+    fichier: "03-le-jeu",
+    surligne: "SIX MODES, ZÉRO INSTALLATION",
+    titre: ["C'EST UN QUIZ", "DE FOOT EXIGEANT"],
+    captures: ["plug", "devinette"],
+    legendes: ["Le joueur qui relie deux clubs", "Le parcours à reconstituer"],
+  },
+  {
+    fichier: "04-tout-le-monde-a-zero",
     surligne: "LE 1ER SEPTEMBRE À 00H00",
     titre: ["TOUT LE MONDE", "PART À ZÉRO"],
     // Le mot qui compte. Un joueur qui arrive le 12 septembre doit comprendre
@@ -189,7 +233,7 @@ const DIAPOS = [
          + "point que tout le monde.",
   },
   {
-    fichier: "04-comment-on-marque",
+    fichier: "05-comment-on-marque",
     surligne: "LA RÈGLE",
     titre: ["COMMENT ON", "MARQUE DES POINTS"],
     liste: [
@@ -199,7 +243,7 @@ const DIAPOS = [
     ],
   },
   {
-    fichier: "05-ce-qui-ne-marche-pas",
+    fichier: "06-ce-qui-ne-marche-pas",
     surligne: "ET CE QUI NE MARCHE PAS",
     titre: ["ÇA NE SE GAGNE PAS", "EN UNE SOIRÉE"],
     // Dit en négatif, exprès. Annoncer ce qui NE rapporte pas est ce qui
@@ -212,7 +256,7 @@ const DIAPOS = [
          + "jours</b>. La régularité gagne, pas l'acharnement d'un soir.",
   },
   {
-    fichier: "06-dans-l-edition-ultimate",
+    fichier: "07-dans-l-edition-ultimate",
     surligne: "CE QUE TU REÇOIS VRAIMENT",
     titre: ["DANS L'ÉDITION", "ULTIMATE"],
     // Chaque ligne vient de la page officielle d'EA. Les bonus de précommande
@@ -227,7 +271,7 @@ const DIAPOS = [
     ],
   },
   {
-    fichier: "07-comment-participer",
+    fichier: "08-comment-participer",
     surligne: "SANS OBLIGATION D'ACHAT",
     titre: ["POUR PARTICIPER", "ET ÊTRE ÉLIGIBLE"],
     // Quatre gestes, numérotés, dont UN seul est le jeu. Les trois autres
@@ -244,7 +288,7 @@ const DIAPOS = [
          + "sont vérifiés <b>au moment de la remise</b>.",
   },
   {
-    fichier: "08-les-dates",
+    fichier: "09-les-dates",
     surligne: "À RETENIR",
     titre: ["DU 1ER AU", "30 SEPTEMBRE"],
     dates: [
@@ -405,12 +449,44 @@ function page(d, n, total) {
     background-image:radial-gradient(circle, rgba(245,194,43,.22) 1.3px, transparent 1.6px);
     -webkit-mask-image:linear-gradient(to bottom, transparent, #000 55%);
     mask-image:linear-gradient(to bottom, transparent, #000 55%)}
+  /* ── LES CAPTURES DE L'APP ─────────────────────────────────────────────
+     Deux écrans côte à côte, cadrés à la charte — trait d'encre et ombre dure,
+     comme tout ce que la charte encadre. Volontairement PAS de coque de
+     téléphone dessinée : une coque générique ajoute du chrome qui n'est pas de
+     la charte et vieillit mal, alors que le cadre d'encre est déjà le langage
+     de l'app.
+     Le cadrage par le HAUT (object-position) est délibéré : les captures sont
+     déjà recadrées en amont, mais si le rapport bougeait, mieux vaut perdre le
+     bas d'écran — qui est du vide d'or — que le haut, où vit le jeu.
+     (Aucun accent grave dans ce commentaire : il vit dans un gabarit de chaîne
+     JavaScript, qu'un accent grave refermerait au milieu du CSS. C'est la
+     troisième fois que ce piège se referme sur moi dans ce fichier.) */
+  .captures{display:flex;gap:14px;width:100%;max-width:452px;align-items:flex-start}
+  .capture{flex:1 1 0;min-width:0}
+  .capture .vue{width:100%;aspect-ratio:860 / 1180;overflow:hidden;
+    border:3px solid ${G.encre};border-radius:16px;box-shadow:5px 5px 0 rgba(0,0,0,.55)}
+  .capture .vue img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
+  .capture .sous{margin-top:9px;font-family:'Bebas Neue',Impact,sans-serif;font-weight:400;
+    font-size:15px;letter-spacing:.3px;line-height:1.25;color:rgba(242,231,206,.82);
+    text-align:center}
+  /* ── L'ILLUSTRATION EN FOND DE LA BANDE D'OR ───────────────────────────
+     Posée SOUS le décor de trame et sous le lettrage, en légère atténuation :
+     à pleine opacité elle mange le titre, qui est ce qu'on doit lire en premier.
+     Le dégradé du bas la fond dans la bande de nuit au lieu de la couper net. */
+  .fondArt{position:absolute;inset:0;overflow:hidden}
+  .fondArt img{width:100%;height:100%;object-fit:cover;object-position:center 32%;
+    display:block;opacity:.9}
+  .fondArt::after{content:"";position:absolute;inset:0;
+    background:linear-gradient(to bottom, rgba(245,194,43,.10) 0%,
+      rgba(245,194,43,.42) 55%, rgba(18,22,15,.85) 100%)}
   .cadre{position:absolute;inset:0;box-shadow:inset 0 0 0 11px ${G.encre};
     pointer-events:none}
   </style></head><body>
     <div class="compteur">${n} / ${total}</div>
     <div class="haut">
-      ${decorOr}
+      ${d.fond === "duel" && artDuel
+        ? `<div class="fondArt"><img src="${artDuel}" alt=""></div>`
+        : decorOr}
       <div class="contenuHaut">
         <img class="mot" src="${motSymbole}" alt="GOAT FC">
         <div class="surligne">${d.surligne}</div>
@@ -429,6 +505,11 @@ function page(d, n, total) {
       ${d.listeCroix ? `<div class="cadre-liste">${d.listeCroix.map((t) =>
         `<div class="ligne"><div class="croixMarque">✕</div>
           <div class="texteLigne">${t}</div></div>`).join("")}</div>` : ""}
+      ${d.captures ? `<div class="captures">${d.captures.map((c, i) =>
+        CAPTURES[c]
+          ? `<div class="capture"><div class="vue"><img src="${CAPTURES[c]}" alt=""></div>
+              <div class="sous">${(d.legendes || [])[i] || ""}</div></div>`
+          : "").join("")}</div>` : ""}
       ${d.puces ? `<div class="cadre-liste">${d.puces.map((t) =>
         `<div class="ligne"><div class="puceMarque">▸</div>
           <div class="texteLigne">${t}</div></div>`).join("")}</div>` : ""}
