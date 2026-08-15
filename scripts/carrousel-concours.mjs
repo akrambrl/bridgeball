@@ -126,11 +126,11 @@ const RESERVE = {
 };
 
 // ── LE COMPTE INSTAGRAM ────────────────────────────────────────────────────
-// À VÉRIFIER AVANT DE PUBLIER. Aucun compte n'était déclaré nulle part dans le
-// dépôt : celui-ci est déduit du nom de l'app, pas constaté. Un pseudo faux
-// imprimé sur un visuel envoie les gens chez quelqu'un d'autre, et ça ne se
-// rattrape pas une fois posté.
-const COMPTE_IG = "@goatfc";
+// Donné par le propriétaire du compte. La version précédente portait « @goatfc »,
+// DÉDUIT du nom de l'app et jamais constaté — un pseudo faux imprimé sur un
+// visuel envoie les gens chez quelqu'un d'autre, et ne se rattrape pas une fois
+// posté. Il vit ici, en un seul endroit, pour que le corriger reste une ligne.
+const COMPTE_IG = "@goatfc_app";
 
 const lignes = (couleur, ep, pas) => `repeating-conic-gradient(from 0deg at 50% 30%,
   ${couleur} 0deg ${ep}deg, transparent ${ep}deg ${pas}deg)`;

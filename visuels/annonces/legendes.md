@@ -21,7 +21,7 @@ Tout le monde part à égalité le 1er septembre. Le classement compte les point
 
 👉 Ça se joue sur goatfc.fr, sans rien installer.
 
-⚠️ Pour être éligible aux lots : abonne-toi à @goatfc, identifie 2 amis en commentaire et partage ce post en story. Le classement décide de l'ordre, ces 3 gestes sont vérifiés à la remise.
+⚠️ Pour être éligible aux lots : abonne-toi à @goatfc_app, identifie 2 amis en commentaire et partage ce post en story. Le classement décide de l'ordre, ces 3 gestes sont vérifiés à la remise.
 📱 Et l'appli arrive sur iOS et Android en octobre.
 
 Concours de connaissances sans obligation d'achat. Règlement complet sur goatfc.fr/reglement. Jeu non sponsorisé, administré ni associé à Instagram. Lots dématérialisés, plateforme ou enseigne au choix des gagnants.
