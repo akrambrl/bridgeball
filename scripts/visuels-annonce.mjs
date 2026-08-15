@@ -67,6 +67,11 @@ const G = {
 
 const b64 = (b, t) => "data:" + t + ";base64," + b.toString("base64");
 const anton = b64(await readFile(join(ici, "polices", "anton-latin.woff2")), "font/woff2");
+// BEBAS NEUE : la police de l'app. `G.font` et `G.heading` de la charte la
+// désignent tous les deux — Anton n'y sert QUE au lettrage d'affiche
+// (`G.poster`). Les visuels composaient leur texte courant dans une pile
+// système : ils ne ressemblaient donc à l'app que par leurs titres.
+const bebas = b64(await readFile(join(ici, "polices", "bebas-neue-latin.woff2")), "font/woff2");
 const motSymbole = b64(await readFile(join(racine, "public", "logo-mot.webp")), "image/webp");
 
 // ── L'ARTWORK DU LOT, s'il est fourni ──────────────────────────────────────
@@ -145,8 +150,8 @@ const ANNONCES = {
          + "à égalité le 1er septembre.",
     appel: "goatfc.fr",
     mentions: "Concours de connaissances sans obligation d'achat · Règlement complet sur goatfc.fr/reglement · "
-            + "Jeu non sponsorisé, administré ni associé à Instagram ou TikTok · Lot dématérialisé, "
-            + "plateforme au choix du gagnant ou carte cadeau de valeur équivalente.",
+            + "Jeu non sponsorisé, administré ni associé à Instagram ou TikTok · Trois lots "
+            + "dématérialisés, plateforme ou enseigne au choix des gagnants.",
     mentionsArtwork: "EA SPORTS FC 27 est une marque d'Electronic Arts Inc., qui n'est ni "
             + "organisateur, ni sponsor, ni partenaire de ce concours. Visuel du jeu à titre "
             + "d'illustration du lot.",
@@ -248,6 +253,7 @@ function page(a, f) {
   const tVedette = story ? 96 : 78;
   return `<!doctype html><html><head><meta charset="utf-8"><style>
   @font-face{font-family:'Anton';src:url(${anton}) format('woff2');font-display:block}
+  @font-face{font-family:'Bebas Neue';src:url(${bebas}) format('woff2');font-display:block}
   *{margin:0;padding:0;box-sizing:border-box}
   body{width:${l}px;height:${h}px;overflow:hidden;position:relative;background:${G.or};
     font-family:'Anton',Impact,sans-serif;-webkit-font-smoothing:antialiased}
@@ -257,8 +263,8 @@ function page(a, f) {
   .contenuHaut{position:absolute;inset:0;display:flex;flex-direction:column;
     align-items:center;justify-content:center;gap:${story ? 14 : 10}px;padding:${story ? 42 : 32}px 30px}
   .mot{width:${story ? 210 : 186}px;height:auto;display:block}
-  .surligne{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-weight:900;
-    font-size:${story ? 15 : 13}px;letter-spacing:${story ? 3.4 : 2.8}px;color:${G.encre};
+  .surligne{font-family:'Bebas Neue',Impact,sans-serif;font-weight:400;
+    font-size:${story ? 18 : 16}px;letter-spacing:${story ? 3.6 : 3}px;color:${G.encre};
     text-transform:uppercase;text-align:center}
   /* L'ordre de peinture est indispensable : par défaut le contour est peint
      PAR-DESSUS la lettre et lui ronge l'intérieur — à cette épaisseur, les
@@ -302,20 +308,20 @@ function page(a, f) {
     overflow:hidden;box-shadow:${story ? 7 : 6}px ${story ? 7 : 6}px 0 rgba(0,0,0,.55);
     line-height:0}
   .cadreLot img{width:100%;height:auto;display:block}
-  .corps{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-weight:700;
-    font-size:${story ? 17 : 14.5}px;line-height:1.45;color:${G.creme};text-align:center;
+  .corps{font-family:'Bebas Neue',Impact,sans-serif;font-weight:400;
+    font-size:${story ? 21 : 18}px;letter-spacing:.4px;line-height:1.38;color:${G.creme};text-align:center;
     max-width:${story ? 420 : 400}px}
   .corps b{color:${G.or};font-weight:900}
-  .appel{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-weight:900;
-    font-size:${story ? 20 : 17}px;letter-spacing:1.5px;color:${G.encre};
+  .appel{font-family:'Bebas Neue',Impact,sans-serif;font-weight:400;
+    font-size:${story ? 25 : 21}px;letter-spacing:1.8px;color:${G.encre};
     background:${G.or};border:3px solid ${G.encre};border-radius:11px;
     padding:${story ? "11px 26px" : "9px 22px"};box-shadow:4px 4px 0 rgba(0,0,0,.5)}
   /* Les mentions ne sont pas décoratives : un concours annoncé sans règlement ni
      mention de non-affiliation aux plateformes est un concours attaquable. Assez
      petites pour ne pas prendre la vedette, assez grandes pour être lues — le
      crème à 45 % tient encore 6,7 de contraste sur la nuit. */
-  .mentions{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-weight:600;
-    font-size:${story ? 9.5 : 8.5}px;line-height:1.4;color:rgba(240,233,214,.62);
+  .mentions{font-family:'Bebas Neue',Impact,sans-serif;font-weight:400;
+    font-size:${story ? 13 : 12}px;letter-spacing:.2px;line-height:1.35;color:rgba(240,233,214,.68);
     text-align:center;max-width:${story ? 440 : 420}px}
   .cadre{position:absolute;inset:0;box-shadow:inset 0 0 0 ${story ? 11 : 9}px ${G.encre};
     pointer-events:none}
