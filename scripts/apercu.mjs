@@ -98,6 +98,7 @@ const EVENEMENTS = JOUEURS.flatMap((j, i) => {
 
 await ctx.route("**/rest/v1/**", async (route) => {
   const url = route.request().url();
+  if (process.env.TRACE) console.log("   → " + route.request().method() + " " + url.split("/rest/v1/")[1].slice(0, 120));
   let corps = [];
   if (url.includes("bb_scores")) {
     corps = JOUEURS.map((j, i) => ({ player_id:j.pid, player_name:j.nom, score:j.score,
@@ -203,6 +204,25 @@ await ctx.route("**/rest/v1/**", async (route) => {
     corps = cas === "ok"   ? [{ etat:"ok", detail:"GOATFC-LOT-6-local" }]
           : cas === "deja" ? [{ etat:"deja", detail:"GOATFC-LOT-6-local" }]
           : [{ etat:"refus", detail:cas }];
+  } else if (url.includes("bb_rooms")) {
+    // `status=eq.complete` sert aux statistiques de tête-à-tête : y répondre la
+    // salle d'attente ferait passer une partie non jouée pour une partie finie.
+    if (url.includes("status=eq.complete")) { corps = []; } else {
+    // L'écran Salle. Le lien ?room=CODE fait passer l'app par joinRoom, qui
+    // PATCHE la salle puis la RELIT pour vérifier que son ajout a tenu. Comme
+    // toutes les lectures reçoivent la même réponse ici, la salle doit déjà
+    // contenir le joueur local : sinon la boucle de reprise tourne cinq fois et
+    // renonce, et on photographie l'accueil au lieu de la salle.
+    //
+    // SALLE règle le nombre de joueurs : 1 (le cas réel, seul avec des places
+    // libres) ou plus, jusqu'à voir le bouton « Lancer » s'activer.
+    const combien = Math.max(1, Math.min(8, Number(process.env.SALLE || 1)));
+    const dedans = [{ id:"local", name:"james10", score:null, status:"waiting" }]
+      .concat(JOUEURS.slice(0, combien - 1).map((j) => ({ id:j.pid, name:j.nom, score:null, status:"waiting" })));
+    corps = [{ id:"salle-1", code:"2DE22N", host_id:"local", host_name:"james10",
+               mode:"chaine", diff:"facile", rounds:1, status:"waiting",
+               players:JSON.stringify(dedans), created_at:ilYaJours(0) }];
+    }
   } else if (url.includes("bb_presence")) {
     corps = JOUEURS.slice(0, 4).map((j) => ({ player_id:j.pid }));
   } else if (url.includes("bb_pseudos")) {
@@ -240,6 +260,13 @@ await ctx.route("**/rest/v1/**", async (route) => {
 });
 
 const page = await ctx.newPage();
+// TRACE=1 fait remonter la console du navigateur. Un écran qui ne s'ouvre pas
+// laisse l'aperçu sur l'accueil sans rien dire : c'est le seul moyen de savoir
+// si l'app a refusé, ou si elle n'a jamais essayé.
+if (process.env.TRACE) {
+  page.on("console", (m) => console.log("   [" + m.type() + "] " + m.text().slice(0, 300)));
+  page.on("pageerror", (e) => console.log("   [erreur] " + e.message.slice(0, 300)));
+}
 // `bienvenue` veut le tout premier lancement ; `tutoriel` veut l'etape
 // SUIVANTE, donc la banniere marquee comme vue mais pas le tutoriel. Passer
 // par un clic sur « J'ai compris » ne marche pas : une modale plein ecran a
@@ -407,6 +434,19 @@ if (!ecran.startsWith("tracking")) {
 // landing desktop, qui monte LePont avec ?friends=1. Passer directement par ce
 // paramètre ne marche pas sur téléphone : il attend la confirmation du pseudo,
 // qui n'est pas encore arrivée au chargement, et on photographiait l'accueil.
+// L'écran Salle s'atteint par le CHAMP de l'accueil, « Code salle » + Rejoindre.
+// Le lien ?room=CODE devrait marcher aussi, mais il ne déclenche pas joinRoom
+// ici — aucun appel à bb_rooms ne part — alors que le champ, lui, emprunte le
+// chemin qu'un joueur suit vraiment. On photographie ce qu'ils font.
+if (ecran === "salle") {
+  const champ = page.getByPlaceholder(/code salle|room code/i).first();
+  await champ.scrollIntoViewIfNeeded();
+  await champ.fill("2DE22N");
+  await page.waitForTimeout(200);
+  await page.getByRole("button", { name:/rejoindre|join/i }).first().click();
+  await page.waitForTimeout(2500);
+}
+
 if (ecran.startsWith("amis")) {
   const porte = LARGEUR >= 768
     ? page.getByText(/^MES AMIS$/i).first()
@@ -450,6 +490,7 @@ const CHEMINS = {
   "amis-defis":  [],   // « Historique des défis »
   "amis-bas":    [],   // le bas de la liste, où vivent les demandes envoyées
   "amis-ajout":  [],   // « Ajouter un ami », champ rempli, suggestions ouvertes
+  salle:      [],   // rejointe par le lien ?room= ; SALLE règle le nombre de joueurs
   devinette:  [/devinette du jour|daily riddle|rätsel des tages|indovinello del giorno|adivinha do dia|adivinanza del día/i],
   profil:     [],   // l'avatar n'est pas un bouton : traité à part
   jeu:        [],   // la carte du carrousel non plus
