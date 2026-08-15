@@ -2144,7 +2144,6 @@ function matchClub(input,playerClubs){
 // relisant le code. On l'expose pour que le banc d'essai interroge LA fonction
 // et non une copie — une copie finit toujours par diverger de l'originale, et
 // c'est exactement le jour où elle diverge que l'essai ment.
-export const __regles = { matchClub, CLUB_ALIASES, checkGuess };
 
 // Index nom → joueur : la sélection de la chaîne interroge des dizaines de noms
 // par coup, et un find() linéaire sur ~4800 entrées à chaque fois coûtait cher.
@@ -2153,14 +2152,30 @@ function getPlayerClubs(name){const p=PLAYER_BY_NAME.get(name);return p?p.clubs:
 
 // Vivier « facile » d'une liste de joueurs d'un même club, élargi si trop mince.
 //
-// Seuls 145 joueurs sur ~4800 portent diff:"facile", et 25 des 62 clubs connus
-// en comptent 3 ou moins (Lyon : Benzema, Depay, Lloris ; RB Leipzig et
-// Eintracht Frankfurt : aucun). Une fois le joueur courant retiré du vivier, il
-// n'en restait souvent qu'un ou deux : d'où « je réponds Lyon sur Lloris et
-// c'est toujours Benzema ». On complète donc avec les joueurs "moyen" qui ont au
-// moins deux clubs connus — tout aussi reconnaissables. Lyon passe de 3 à 60
-// candidats.
-const CHAIN_EASY_MIN = 6;
+// Seuls 225 joueurs sur 5 622 portent diff:"facile", et beaucoup de clubs en
+// comptent trois ou moins. Une fois le joueur courant retiré du vivier il n'en
+// restait souvent qu'un : d'où « je réponds Lyon sur Lloris et c'est toujours
+// Benzema ». On complète donc avec les joueurs "moyen" qui ont au moins deux
+// clubs connus — tout aussi reconnaissables (Dalglish, Zoff, Neeskens, Tim
+// Howard sont dans ce tiroir).
+//
+// ── LE SEUIL ÉTAIT À 6, ET IL SE RETOURNAIT CONTRE SON INTENTION ──────
+//
+// Il n'est atteint que par 50 clubs sur les 1 549 de la base : sur les 1 499
+// autres, l'élargissement partait AUTOMATIQUEMENT et les faciles se retrouvaient
+// noyés. Sur un club à 3 faciles et 57 « connus », la chance de tomber sur une
+// vedette était de 5 %. Le seuil censé garantir la variété supprimait en fait la
+// notoriété partout.
+//
+// Mesuré sur les 80 clubs les plus fournis, ceux qu'on nomme vraiment :
+//
+//   seuil 6 -> 44 clubs servent des faciles purs
+//   seuil 3 -> 62        et il reste au moins 3 candidats, donc pas de
+//                        « c'est toujours Benzema »
+//   seuil 1 -> 76        mais un club à 1 seul facile le ressert à chaque fois
+//
+// 3 est le point où la notoriété gagne sans que la variété tombe.
+const CHAIN_EASY_MIN = 3;
 function easyChainPool(names) {
   const easy = [], known = [];
   for (const n of names) {
@@ -2172,6 +2187,16 @@ function easyChainPool(names) {
   return easy.length >= CHAIN_EASY_MIN ? easy : easy.concat(known);
 }
 function getPlayersForClub(club){return CLUB_INDEX[club]||[];}
+
+// La surface d'essai des règles du jeu. `easyChainPool` et son seuil en font
+// partie depuis qu'on a mesuré qu'un seuil trop haut vidait le mode AMATEUR de
+// ses vedettes : un réglage qui se retourne contre son intention doit être tenu
+// par un test, pas par un commentaire.
+//
+// Déclaré ICI et non plus au-dessus : `const` ne se hisse pas, et citer
+// easyChainPool avant sa définition partait en zone morte temporelle.
+export const __regles = { matchClub, CLUB_ALIASES, checkGuess,
+  easyChainPool, famousClubCount, getPlayersForClub, CHAIN_EASY_MIN };
 
 // ─── GOAT DUEL — Plug temps réel 1v1 (5 manches) ──────────────
 // 36 clubs curés. C'étaient 20, ce qui ne faisait que 189 paires jouables : à
