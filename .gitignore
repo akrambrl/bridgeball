@@ -72,3 +72,9 @@ key.properties
 # visuel de concours. Le visuel compose, lui, est versionne — il porte la mention
 # de non-affiliation et c'est la piece qu'on publie.
 visuels/bruts/fc27.*
+
+# Cache du recoupement Wikidata (scripts/audit-fiches.mjs --wikidata).
+# Plusieurs Mo de données dérivées, régénérables en une commande : elles n'ont
+# rien à faire dans l'historique, et figées elles mentiraient sur une source qui
+# bouge tous les jours.
+.cache/

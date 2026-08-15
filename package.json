@@ -29,7 +29,8 @@
     "sql:reclamation": "node scripts/sql-reclamation.essai.mjs",
     "carrousel": "node scripts/carrousel-concours.mjs",
     "posts": "node scripts/posts-concours.mjs",
-    "transferts": "node scripts/transferts.mjs"
+    "transferts": "node scripts/transferts.mjs",
+    "audit:fiches": "tsx scripts/audit-fiches.mjs"
   },
   "dependencies": {
     "@capacitor/app": "^8.1.1",
