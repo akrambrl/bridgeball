@@ -1118,10 +1118,24 @@ if (ecran === "profil" || ecran === "comment-jouer" || ecran === "ecran-accueil"
 // Le contrôle ne se contente pas de mesurer un débordement : il DÉFILE et vérifie
 // que le bouton devient visible. Un conteneur peut déborder ET refuser de
 // défiler — c'est précisément le défaut qu'on cherche.
-if (ecran === "profil") {
-  const diag = await page.evaluate(() => {
+//
+// DEFILEMENT généralise ce contrôle à n'importe quel écran, en visant un bouton
+// par son libellé :
+//
+//   HAUTEUR=660 DEFILEMENT='accueil' node scripts/apercu.mjs mercato-fin
+//
+// Écrit le jour où un testeur Android a signalé qu'après une partie, on ne peut
+// pas défiler jusqu'à « Accueil ». Le même défaut, un autre écran — et il n'y
+// avait pas de moyen de le regarder ailleurs que sur le profil.
+const CIBLE_DEFILEMENT = process.env.DEFILEMENT
+  ? new RegExp(process.env.DEFILEMENT, "i")
+  : /code de r|recovery code|Wiederherstellungscode|codice di recupero|c(ó|o)digo de recupera/i;
+
+if (ecran === "profil" || process.env.DEFILEMENT) {
+  const diag = await page.evaluate((motif) => {
+    const re = new RegExp(motif.source, motif.flags);
     const bouton = [...document.querySelectorAll("button")].find((b) =>
-      /code de r|recovery code|Wiederherstellungscode|codice di recupero|c(ó|o)digo de recupera/i.test(b.textContent || ""));
+      re.test(b.textContent || ""));
     if (!bouton) return { erreur: "bouton du code de récupération introuvable" };
 
     // Qui est censé défiler ? On remonte la chaîne et on note le premier ancêtre
@@ -1147,11 +1161,12 @@ if (ecran === "profil") {
       docDeborde: doc.scrollHeight - doc.clientHeight,
       docOverflow: getComputedStyle(doc).overflowY,
     };
-  });
+  }, { source: CIBLE_DEFILEMENT.source, flags: CIBLE_DEFILEMENT.flags });
 
-  if (diag.erreur) { console.warn("profil :", diag.erreur); process.exitCode = 1; }
+  const quoi = process.env.DEFILEMENT ? "le bouton visé" : "le code de récupération";
+  if (diag.erreur) { console.warn(ecran + " :", diag.erreur); process.exitCode = 1; }
   else {
-    console.log("── le code de récupération est à " + diag.boutonTop + " px, fenêtre "
+    console.log("── " + quoi + " est à " + diag.boutonTop + " px, fenêtre "
       + diag.fenetre + " px" + (diag.visibleAvant ? "  (déjà visible)" : "  → hors écran"));
     console.log("   document : déborde de " + diag.docDeborde + " px, overflow-y " + diag.docOverflow);
     for (const c of diag.chaine) {
@@ -1164,24 +1179,26 @@ if (ecran === "profil") {
     // regarde si le bouton se rapproche. `scrollIntoView` ne prouverait rien :
     // il déplace le contenu même dans un conteneur qu'un utilisateur ne peut pas
     // faire défiler.
+    await page.evaluate((m) => { window.__motifDefilement = m; },
+      { source: CIBLE_DEFILEMENT.source, flags: CIBLE_DEFILEMENT.flags });
     await page.mouse.move(200, 400);
     for (let i = 0; i < 12; i++) await page.mouse.wheel(0, 400);
     await page.waitForTimeout(400);
     const apres = await page.evaluate(() => {
       const b = [...document.querySelectorAll("button")].find((x) =>
-        /code de r|recovery code|Wiederherstellungscode|codice di recupero|c(ó|o)digo de recupera/i.test(x.textContent || ""));
+        new RegExp(window.__motifDefilement.source, window.__motifDefilement.flags).test(x.textContent || ""));
       return b ? Math.round(b.getBoundingClientRect().top) : null;
     });
     const bouge = apres !== null && Math.abs(apres - diag.boutonTop) > 20;
     const atteint = apres !== null && apres < diag.fenetre - 8;
     console.log("   après 12 crans de molette : le bouton est à " + apres + " px");
     if (diag.visibleAvant) {
-      console.log("profil : le code est visible sans défiler ✅");
+      console.log(ecran + " : " + quoi + " est visible sans défiler ✅");
     } else if (atteint) {
-      console.log("profil : le code devient atteignable en défilant ✅"
+      console.log(ecran + " : " + quoi + " devient atteignable en défilant ✅"
         + (bouge ? "" : " (mais rien n'a bougé, à revérifier)"));
     } else {
-      console.warn("❌ profil : le code de récupération reste HORS ÉCRAN même après"
+      console.warn("❌ " + ecran + " : " + quoi + " reste HORS ÉCRAN même après"
         + " défilement — c'est le défaut signalé par les testeurs Android.");
       process.exitCode = 1;
     }

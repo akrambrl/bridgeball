@@ -2027,6 +2027,33 @@ function seededRandom(seed) {
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
+// ── LA REVANCHE REJOUAIT LA MÊME PARTIE ───────────────────────────────────
+//
+// En salle, le tirage est SEMÉ pour que tous les joueurs voient la même chose :
+// la graine vaut `id de la salle + "_chain"`. Mais « Relancer » garde la même
+// salle — c'est le principe, on ne change ni le code ni les joueurs. Même id,
+// même graine, même joueur de départ : la revanche rejouait la partie précédente,
+// à l'identique.
+//
+// On numérote donc les manches. Le compteur voyage dans le JSON des joueurs, que
+// l'hôte réécrit entièrement à chaque relance — pas de colonne à ajouter, donc
+// pas de migration à passer avant que le correctif serve. Il est lu sur le
+// premier joueur : l'hôte l'écrit sur tous, ils portent tous la même valeur.
+function mancheDeSalle(r) {
+  try {
+    const j = typeof r.players === "string" ? JSON.parse(r.players) : (r.players || []);
+    return (Array.isArray(j) && j[0] && Number(j[0].manche)) || 0;
+  } catch { return 0; }
+}
+
+// La graine d'un tirage de salle. Nommée plutôt que recomposée à la main sur
+// trois lignes : c'est en la recomposant qu'on avait oublié la manche à un
+// endroit sur deux, et un tirage semé sur une graine presque bonne ne se voit
+// pas — il rejoue simplement la partie d'avant.
+function graineSalle(duel, suffixe) {
+  return hashStringToSeed(String(duel.id) + "_m" + (duel.manche || 0) + suffixe);
+}
+
 function hashStringToSeed(str) {
   let h = 2166136261;
   for (let i = 0; i < str.length; i++) {
@@ -2196,7 +2223,8 @@ function getPlayersForClub(club){return CLUB_INDEX[club]||[];}
 // Déclaré ICI et non plus au-dessus : `const` ne se hisse pas, et citer
 // easyChainPool avant sa définition partait en zone morte temporelle.
 export const __regles = { matchClub, CLUB_ALIASES, checkGuess,
-  easyChainPool, famousClubCount, getPlayersForClub, CHAIN_EASY_MIN };
+  easyChainPool, famousClubCount, getPlayersForClub, CHAIN_EASY_MIN,
+  graineSalle, mancheDeSalle };
 
 // ─── GOAT DUEL — Plug temps réel 1v1 (5 manches) ──────────────
 // 36 clubs curés. C'étaient 20, ce qui ne faisait que 189 paires jouables : à
@@ -6719,6 +6747,9 @@ export default function LePont() {
       const r = data[0];
       const players = typeof r.players === "string" ? JSON.parse(r.players) : r.players;
       // Reset les scores et rounds des joueurs (mais on les garde dans la room)
+      // La manche suivante. Portée par CHAQUE joueur pour que n'importe lequel
+      // puisse la lire, quel que soit celui qui arrive en tête du tableau.
+      const mancheSuivante = mancheDeSalle(r) + 1;
       const resetPlayers = (players || []).filter(function(p){ return !p.abandoned; }).map(function(p){
         return {
           id: p.id,
@@ -6728,6 +6759,7 @@ export default function LePont() {
           rounds: [],
           status: "playing",
           abandoned: false,
+          manche: mancheSuivante,
         };
       });
       await sbFetch("bb_rooms?id=eq."+duelResult.roomId, {
@@ -6740,7 +6772,7 @@ export default function LePont() {
         }),
       });
       // Le host rejoint le lobby de la nouvelle partie
-      const roomDuel = {id:r.id, isRoom:true, challenger_id:r.host_id, mode:r.mode, diff:r.diff, rounds:r.rounds};
+      const roomDuel = {id:r.id, isRoom:true, challenger_id:r.host_id, mode:r.mode, diff:r.diff, rounds:r.rounds, manche:mancheSuivante};
       activeDuelRef.current = roomDuel;
       setActiveDuel(roomDuel);
       setRoom(Object.assign({}, r, {players: resetPlayers, status: "lobby"}));
@@ -7130,7 +7162,7 @@ export default function LePont() {
   function launchRoomGame(r) {
     clearInterval(roomPollRef.current); // stopper le polling lobby
     setRoom(null);
-    const roomDuel = {id:r.id, isRoom:true, challenger_id:r.host_id, mode:r.mode, diff:r.diff, rounds:r.rounds};
+    const roomDuel = {id:r.id, isRoom:true, challenger_id:r.host_id, mode:r.mode, diff:r.diff, rounds:r.rounds, manche:mancheDeSalle(r)};
     setActiveDuel(roomDuel);
     activeDuelRef.current = roomDuel;
     setTotalRounds(r.rounds || 1);
@@ -7228,7 +7260,7 @@ export default function LePont() {
           const meInRoom = (players || []).find(function(p){ return p.id === playerId; });
           if (meInRoom) {
             // Rejoindre le lobby de la nouvelle partie
-            const roomDuel = {id:r.id, isRoom:true, challenger_id:r.host_id, mode:r.mode, diff:r.diff, rounds:r.rounds};
+            const roomDuel = {id:r.id, isRoom:true, challenger_id:r.host_id, mode:r.mode, diff:r.diff, rounds:r.rounds, manche:mancheDeSalle(r)};
             activeDuelRef.current = roomDuel;
             setActiveDuel(roomDuel);
             setRoom(r);
@@ -8865,7 +8897,7 @@ export default function LePont() {
     }
     
     // Seeded shuffle in multiplayer room for fair questions across all players
-    const roomSeed = isInRoom ? hashStringToSeed(String(activeDuelRef.current.id) + "_r" + round) : null;
+    const roomSeed = isInRoom ? graineSalle(activeDuelRef.current, "_r" + round) : null;
     const doShuffle = isInRoom ? (arr) => seededShuffle(arr, roomSeed) : shuffle;
     
     let q;
@@ -8963,7 +8995,7 @@ export default function LePont() {
     const effectiveDiff = isInRoom && activeDuelRef.current.diff
       ? activeDuelRef.current.diff
       : (diffOverride || diff);
-    const roomSeed = isInRoom ? hashStringToSeed(String(activeDuelRef.current.id) + "_chain") : null;
+    const roomSeed = isInRoom ? graineSalle(activeDuelRef.current, "_chain") : null;
     const rand = isInRoom ? seededRandom(roomSeed) : Math.random;
     // CRESCENDO MODE : le starter (lien 0) doit toujours être un joueur FACILE pour amorcer la chaîne en douceur
     // Le pool s'étendra ensuite progressivement avec chainCount (voir handleChainSubmit/handleChainPass)
@@ -9364,7 +9396,7 @@ export default function LePont() {
       const allPairsForOpts = [...(DB["facile"]||[]), ...(DB["moyen"]||[]), ...(DB["expert"]||[])];
       // If we've gone through the whole queue, rebuild with fresh shuffle (seeded in room)
       if (next >= queue.length) {
-        const reshuffleSeed = isInRoom ? hashStringToSeed(String(activeDuelRef.current.id) + "_r" + currentRound + "_reshuffle") : null;
+        const reshuffleSeed = isInRoom ? graineSalle(activeDuelRef.current, "_r" + currentRound + "_reshuffle") : null;
         const fresh = reshuffleSeed !== null ? seededShuffle(DB[effectiveDiff], reshuffleSeed) : shuffle(DB[effectiveDiff]);
         setQueue(fresh);
         const optSeed = isInRoom ? hashStringToSeed(String(activeDuelRef.current.id) + "_opt_" + (fresh[0].p.join("|"))) : null;
