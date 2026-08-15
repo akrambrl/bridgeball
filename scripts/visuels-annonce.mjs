@@ -277,10 +277,23 @@ function page(a, f) {
      affiches de mode, où le visuel se retrouvait en bandes noires.
      (Et pas d'accent grave dans ce commentaire : il vit DANS un gabarit de
      chaîne, qu'un accent grave refermerait au milieu.) */
-  .cadreLot{flex:0 0 auto;width:100%;max-width:${story ? 430 : 390}px;aspect-ratio:16 / 9;
+  /* PAS d'aspect-ratio impose, et pas d'object-fit:cover. Le cadre epouse les
+     proportions de l'image deposee.
+     (Aucun accent grave dans ce commentaire : il vit dans un gabarit de chaine
+     JavaScript, qu'un accent grave refermerait au milieu du CSS.)
+
+     C'etait un 16/9 fixe, ce qui marche tant que l'artwork est un 16/9. Le
+     notre ne l'est pas : la key art officielle porte « ULTIMATE EDITION » sous
+     le logo, alors que le lot annonce est l'edition STANDARD. Elle a donc ete
+     recadree au-dessus de cette ligne, ce qui en fait un bandeau large. Force
+     dans un 16/9 en mode cover, ce bandeau se serait fait rogner sur les cotes
+     — c'est-a-dire perdre le logo a gauche ET le joueur a droite, pour ne
+     garder que le fond noir du milieu. */
+  .cadreLot{flex:0 0 auto;width:100%;max-width:${story ? 430 : 390}px;
     border:${story ? 5 : 4}px solid ${G.encre};border-radius:${story ? 14 : 11}px;
-    overflow:hidden;box-shadow:${story ? 7 : 6}px ${story ? 7 : 6}px 0 rgba(0,0,0,.55)}
-  .cadreLot img{width:100%;height:100%;object-fit:cover;display:block}
+    overflow:hidden;box-shadow:${story ? 7 : 6}px ${story ? 7 : 6}px 0 rgba(0,0,0,.55);
+    line-height:0}
+  .cadreLot img{width:100%;height:auto;display:block}
   .corps{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-weight:700;
     font-size:${story ? 17 : 14.5}px;line-height:1.45;color:${G.creme};text-align:center;
     max-width:${story ? 420 : 400}px}

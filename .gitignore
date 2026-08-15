@@ -65,3 +65,10 @@ apercu-*.png
 *.pfx
 *.keystore
 key.properties
+
+# L'artwork du lot est une image de TIERS, deposee a la main dans visuels/bruts/.
+# Elle ne rentre pas dans le depot : celui-ci est PUBLIC, et republier le fichier
+# source d'EA tel quel est un acte de diffusion distinct de son usage dans un
+# visuel de concours. Le visuel compose, lui, est versionne — il porte la mention
+# de non-affiliation et c'est la piece qu'on publie.
+visuels/bruts/fc27.*
