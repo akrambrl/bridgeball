@@ -64,14 +64,14 @@ const CARTES = [
   { id: "ballon-or",       biais: 0.2, visage: { x: 0.50, y: 0.18,  h: 0.34 } },
   { id: "palmares",        biais: 0.2, visage: { x: 0.36, y: 0.17,  h: 0.34 } },
   { id: "intouchable",     biais: 0.3, visage: { x: 0.48, y: 0.165, h: 0.28 } },
-  { id: "phenomene",       biais: 0.4, visage: { x: 0.50, y: 0.26,  h: 0.44 } },
+  { id: "phenomene",       biais: 1.0, visage: { x: 0.50, y: 0.145, h: 0.20 } },
   { id: "sorcier",         biais: 1.0, visage: { x: 0.53, y: 0.235, h: 0.20 } },
   { id: "legende",         biais: 0.2, visage: { x: 0.50, y: 0.135, h: 0.24 } },
   { id: "hall-of-fame",    biais: 1.0, visage: { x: 0.13, y: 0.17,  h: 0.24 } },
   // Le trophée occupe tout le haut du cadre : la coupe se prend en bas, sinon
   // il sort de l'image. C'est la seule carte à biais nul.
   { id: "sacre",           biais: 0.0, visage: { x: 0.48, y: 0.50,  h: 0.22 } },
-  { id: "immortel",        biais: 1.0, visage: { x: 0.50, y: 0.145, h: 0.20 } },
+  { id: "immortel",        biais: 0.4, visage: { x: 0.50, y: 0.26,  h: 0.44 } },
   { id: "goat",            biais: 0.3, visage: { x: 0.50, y: 0.30,  h: 0.62 } },
 ];
 
