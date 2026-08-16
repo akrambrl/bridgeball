@@ -86,13 +86,19 @@ describe("catalogue", () => {
     expect(CARDS.filter((c) => c.img).length).toBe(CARDS.length); // toutes illustrées
   });
 
-  it("nomme les visuels d'après le joueur, jamais d'après la carte", () => {
-    // Un fichier nommé d'après la carte ment dès le premier reclassement :
-    // /cards/recrue.webp a porté trois joueurs différents avant qu'on arrête.
-    const ids = new Set(CARDS.map((c) => c.id));
+  it("nomme chaque visuel d'après sa carte", () => {
+    // Cette règle était l'inverse tant que les visuels représentaient des
+    // footballeurs réels : le fichier portait le nom du joueur, parce qu'un
+    // fichier nommé d'après la carte aurait menti au premier reclassement.
+    //
+    // Les visuels montrent maintenant un personnage unique dont chaque étape de
+    // carrière EST une carte. Il n'y a donc plus de nom de joueur à porter, et
+    // un décalage entre `id` et fichier ne serait plus qu'une occasion de se
+    // tromper — sur `ballon-or` et `phenomene`, dont le nom affiché ne
+    // correspond déjà plus à l'id, c'est la seule chose qui raccroche.
     for (const c of CARDS) {
-      const fichier = c.img!.replace("/cards/", "").replace(".webp", "");
-      expect(ids.has(fichier)).toBe(false);
+      expect(c.img).toBe(`/cards/${c.id}.webp`);
+      expect(c.thumb).toBe(`/cards/${c.id}-64.webp`);
     }
   });
 
