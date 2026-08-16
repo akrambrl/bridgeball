@@ -27,6 +27,23 @@
             android:grantUriPermissions="true">
             <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/file_paths" />
         </provider>
+
+        <!-- ADMOB — L'IDENTIFIANT D'APPLICATION EST OBLIGATOIRE.
+             Sans cette balise, l'app NE DÉMARRE PAS : le SDK Google Mobile Ads
+             lève une exception au lancement et Android ferme le processus. Ce
+             n'est pas un avertissement, c'est un crash immédiat, et il ne se voit
+             qu'une fois l'AAB installé sur un téléphone.
+
+             Celui-ci est l'identifiant de TEST de Google, public et documenté. Il
+             laisse l'app démarrer et sert des pubs d'essai. À remplacer par
+             l'identifiant d'application de ton compte AdMob — celui en ~, pas
+             celui de l'unité publicitaire en / (ce sont deux choses différentes,
+             et les confondre donne le même crash).
+             https://developers.google.com/admob/android/quick-start -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-3940256099942544~3347511713" />
+        
     </application>
 
     <!-- Permissions -->
