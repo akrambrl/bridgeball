@@ -7,6 +7,7 @@ import { pickOpponent } from "../lib/opponents";
 import { G, posterText, posterTitre, posterLight, btn, fondCharte, areneCharte,
          retourStyle, retourCharte, fermerCharte, ligneCharte, pastilleCharte } from "../lib/charte.jsx";
 import { displayStreak } from "../lib/streak";
+import { estDisponible as pubDisponible, montrerRecompensee } from "../lib/pub";
 import { normNom, normCompactNom, normPhoneticNom, levenshteinNom, seuilFuzzy, fuzzyNom } from "../lib/nom";
 import { cadenceSalon } from "../lib/cadence";
 // Jours calendaires « heure de Paris » — découpage temporel du tableau de bord.
@@ -5942,6 +5943,14 @@ export default function LePont() {
   const [pseudoChecking, setPseudoChecking] = useState(false);
   const [pseudoMsg, setPseudoMsg] = useState("");
   const [playerAvatar, setPlayerAvatar] = useState(null);
+  // ── LA PUB RÉCOMPENSÉE DE FIN DE PARTIE ────────────────────────────────
+  // `pubPrete` est un ÉTAT et non un appel direct à estDisponible() : la pub se
+  // charge en tâche de fond, et une fonction lue au rendu ne redéclenche rien
+  // quand elle devient vraie. Le bouton n'apparaîtrait alors qu'à la partie
+  // suivante. On sonde donc tant que l'écran de fin est affiché.
+  const [pubPrete, setPubPrete] = useState(false);
+  const [xpDoublee, setXpDoublee] = useState(false);   // déjà réclamée sur CETTE partie
+  const [pubEnCours, setPubEnCours] = useState(false);
   const [playerXp, setPlayerXp] = useState(0); // XP cumulé (lifetime), chargé depuis Supabase au démarrage et incrémenté après chaque partie
   const [playerXpSeason, setPlayerXpSeason] = useState(0); // XP du mois en cours, reset à chaque début de mois
   // ─── Collection de cartes ───────────────────────────────────────────────────
@@ -6332,6 +6341,46 @@ export default function LePont() {
   }, []);
 
   useEffect(()=>{scoreRef.current=score;},[score]);
+
+  // Sonde la disponibilité de la pub pendant que l'écran de fin est affiché, et
+  // remet le compteur à zéro dès qu'on en sort : la récompense vaut pour UNE
+  // partie, pas pour la session.
+  useEffect(function(){
+    const surEcranDeFin = screen === "final" || screen === "chainEnd";
+    if (!surEcranDeFin) { setPubPrete(false); setXpDoublee(false); return; }
+    let stop = false;
+    // `bb_pub_demo` fait APPARAÎTRE le bouton dans l'aperçu, où AdMob n'existe
+    // pas — même procédé que `bb_gg_demo` pour GOAT GRID. Il ne donne rien : le
+    // clic passe quand même par montrerRecompensee(), qui rend faux hors coque.
+    // Sans ce drapeau, on ne pourrait pas photographier un bouton qui ne
+    // s'affiche jamais dans un navigateur, et sa charte resterait à l'aveugle.
+    let demo = false;
+    try { demo = localStorage.getItem("bb_pub_demo") === "1"; } catch { demo = false; }
+    const verifie = function(){ if (!stop) setPubPrete(pubDisponible() || demo); };
+    verifie();
+    const t = setInterval(verifie, 700);
+    return function(){ stop = true; clearInterval(t); };
+  }, [screen]);
+
+  // Sonde la disponibilité de la pub pendant que l'écran de fin est à l'écran,
+  // et remet le compteur à zéro dès qu'on en sort : la récompense vaut pour UNE
+  // partie, pas pour la session.
+  useEffect(function(){
+    const surEcranDeFin = screen === "final" || screen === "chainEnd";
+    if (!surEcranDeFin) { setPubPrete(false); setXpDoublee(false); return; }
+    let stop = false;
+    // `bb_pub_demo` fait APPARAÎTRE le bouton dans l'aperçu, où AdMob n'existe
+    // pas — même procédé que `bb_gg_demo` pour GOAT GRID. Il ne donne rien : le
+    // clic passe quand même par montrerRecompensee(), qui rend faux hors coque.
+    // Sans ce drapeau, on ne pourrait pas photographier un bouton qui ne
+    // s'affiche jamais dans un navigateur, et sa charte resterait à l'aveugle.
+    let demo = false;
+    try { demo = localStorage.getItem("bb_pub_demo") === "1"; } catch { demo = false; }
+    const verifie = function(){ if (!stop) setPubPrete(pubDisponible() || demo); };
+    verifie();
+    const t = setInterval(verifie, 700);
+    return function(){ stop = true; clearInterval(t); };
+  }, [screen]);
 
   // Auto-join room une fois le pseudo confirmé
   useEffect(()=>{
@@ -16901,6 +16950,44 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
               ⚔️ {tr("Défier les autres avec ce score","Challenge others with this score","Andere mit diesem Score herausfordern","Sfida gli altri con questo punteggio","Desafie os outros com esta pontuação","Reta a los demás con esta puntuación")}
             </button>
           )
+        )}
+        {/* ── DOUBLER SON XP EN REGARDANT UNE PUB ──────────────────────────
+            La SEULE récompense qu'on peut offrir sans toucher au concours.
+            Le classement mensuel se calcule sur bb_scores, jamais sur l'XP :
+            doubler l'XP fait avancer la collection de cartes, pas le rang. Une
+            récompense qui aiderait dans le Plug, le Mercato, Trouve le joueur ou
+            le Mercato du jour — les six modes du barème — permettrait d'acheter
+            son classement à coups de pubs, sur un lot à 110 €.
+
+            Le bouton n'apparaît QUE si une pub est réellement chargée : proposer
+            une récompense qu'on ne sait pas servir déçoit plus que ne rien
+            proposer. Hors coque native, pubDisponible() rend faux — donc rien
+            sur goatfc.fr, où AdMob n'existe pas. */}
+        {pseudoConfirmed && sc > 0 && !xpDoublee && pubPrete && (
+          <button disabled={pubEnCours} onClick={async function(){
+            setPubEnCours(true);
+            let gagne = false;
+            try { gagne = await montrerRecompensee(); } catch { gagne = false; }
+            setPubEnCours(false);
+            // On n'accorde QUE si le joueur est allé au bout. `montrerRecompensee`
+            // ne rend vrai que sur l'événement « Rewarded » du SDK, jamais sur la
+            // simple fermeture.
+            if (gagne) { setXpDoublee(true); addXp(sc); }
+          }} style={{...btn(pubEnCours?G.nuit:G.projecteur, pubEnCours?"rgba(242,231,206,.45)":G.encre, 19),
+            width:"100%",padding:"12px",gap:10,boxShadow:G.ombreL,cursor:pubEnCours?"default":"pointer"}}>
+            {pubEnCours
+              ? tr("Chargement…","Loading…","Lädt…","Caricamento…","Carregando…","Cargando…")
+              : "🎬 " + tr("Doubler mon XP (pub)","Double my XP (ad)","XP verdoppeln (Werbung)","Raddoppia gli XP (pub)","Dobrar meu XP (anúncio)","Duplicar mi XP (anuncio)")}
+          </button>
+        )}
+        {xpDoublee && (
+          <div style={{background:G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,
+            padding:"12px 16px",textAlign:"center"}}>
+            <div style={{...posterText(17,G.projecteur)}}>✨ {tr("XP doublée","XP doubled","XP verdoppelt","XP raddoppiati","XP dobrado","XP duplicada")}</div>
+            <div style={{fontSize:12,color:"rgba(255,255,255,.55)",marginTop:3}}>
+              +{sc} {tr("XP de plus pour ta collection","extra XP for your collection","XP mehr für deine Sammlung","XP in più per la collezione","XP a mais para sua coleção","XP más para tu colección")}
+            </div>
+          </div>
         )}
         {<button onClick={()=>{if(isChain)startChain();else startCompetition();}} style={{...btn(G.pelouse,G.white,22),width:"100%",padding:"12px",gap:10,boxShadow:G.ombreL}}>{Icon.ball(18,G.white)} {tr("REJOUER","PLAY AGAIN","NOCHMAL SPIELEN","GIOCA ANCORA","JOGAR DE NOVO","JUGAR OTRA VEZ")}</button>}
         <button onClick={()=>setScreen("home")} style={{...btn(G.nuit,G.white,17),width:"100%",padding:"10px"}}>{tr("↩ Accueil","↩ Home","↩ Start","↩ Home","↩ Início","↩ Inicio")}</button>
