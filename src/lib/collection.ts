@@ -280,28 +280,30 @@ export function newlyUnlocked(oldXp: number, newXp: number): Card[] {
 }
 
 /**
- * Carte du NIVEAU : la meilleure carte possédée à cette XP. C'est elle qui sert
- * de photo de profil par défaut, pour que chaque joueur en ait une sans rien
- * faire — et qu'elle progresse d'elle-même quand il monte.
+ * Carte du NIVEAU : la meilleure carte possédée à cette XP. C'est LA photo de
+ * profil du joueur, partout et sans exception — classement, salle, profil, VS,
+ * bouton d'accueil.
+ *
+ * ── IL N'Y A PLUS DE CHOIX, ET C'EST LE POINT ────────────────────────────────
+ *
+ * On pouvait avant choisir n'importe quelle carte débloquée comme badge, ce qui
+ * figeait sa photo sur elle. Deux défauts, et le second est le vrai :
+ *
+ *  • un joueur pouvait afficher « La Recrue » à 60 000 XP, si bien que sa photo
+ *    ne disait plus rien de son niveau — or c'est tout ce qu'on lui demande de
+ *    dire ;
+ *  • surtout, le badge ne bougeait plus. Passer un palier ne changeait rien à
+ *    l'écran, alors que la récompense EST le changement de tête.
+ *
+ * La carte suit donc l'XP, automatiquement. Franchir un palier remplace la
+ * photo de profil, sans rien à faire et sans possibilité de la figer.
+ *
+ * Corollaire : deux joueurs à la même XP ont la même carte. C'est voulu — la
+ * carte est un grade, pas une décoration.
  */
 export function levelCard(xp: number): Card {
   // Seules les cartes illustrées peuvent servir de photo de profil : sinon un
   // joueur très avancé se retrouverait avec un cadre vide.
   const owned = unlockedCards(xp).filter(hasArt);
   return owned[owned.length - 1] || CARDS[0]; // CARDS[0] est à 0 XP et illustrée
-}
-
-/**
- * Carte à afficher comme avatar : le badge choisi s'il est valide, sinon la
- * carte du niveau. Choisir un badge revient donc à figer sa photo de profil sur
- * une carte précise, au lieu de suivre automatiquement son niveau.
- */
-export function avatarCard(badgeId: string | null | undefined, xp: number): Card {
-  return badgeToShow(badgeId, xp) || levelCard(xp);
-}
-
-/** Badge valide seulement si la carte existe ET est débloquée à cette XP. */
-export function badgeToShow(badgeId: string | null | undefined, xp: number): Card | null {
-  const card = cardById(badgeId);
-  return card && isUnlocked(card, xp) && hasArt(card) ? card : null;
 }

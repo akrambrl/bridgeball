@@ -14,7 +14,7 @@ import { cadenceSalon } from "../lib/cadence";
 // parisDayOf / parisLastDays servaient au tableau de bord de suivi, parti dans
 // Tracking.jsx, qui les importe désormais lui-même.
 // Cartes à collectionner (débloquées par l'XP) et badge affiché à côté du pseudo.
-import { CARDS, RARITIES, avatarCard, badgeToShow, cardById, hasArt, isUnlocked, levelCard, newlyUnlocked, progressToNext, cardName, rarityLabel, rarityMeta, unlockedCards } from "../lib/collection";
+import { CARDS, RARITIES, cardById, hasArt, isUnlocked, levelCard, newlyUnlocked, progressToNext, cardName, rarityLabel, rarityMeta, unlockedCards } from "../lib/collection";
 import { WinBanner } from "./landing/WinBanner";
 // Barème de grades et drapeaux : définis une seule fois, partagés avec le desktop.
 import { GRADES, getGrade, gradeLabel, countryToFlag } from "../lib/leaderboard";
@@ -85,9 +85,10 @@ function readDailyRiddle() {
 // Colonnes lisibles de bb_pseudos (TOUTES sauf recovery_code, qui est masqué
 // côté public en Phase 2 sécurité). On sélectionne explicitement ces colonnes
 // au lieu de "*", car "*" inclurait recovery_code et serait refusé.
-// `badge` = carte de collection choisie (voir docs/supabase-badges.sql). Si la
-// colonne n'existe pas encore, PostgREST rejette TOUTE la requête : on la
-// demande donc à part (voir loadPlayerBadge) plutôt que de casser ce select.
+// `badge` n'y figure pas et n'y figurera plus : la carte affichée se déduit de
+// `xp` (voir lib/collection), la colonne ne sert plus à rien. La demander
+// coûterait de toute façon toute la requête si le schéma ne l'a pas — PostgREST
+// rejette le select entier sur une colonne inconnue.
 const PSEUDO_COLS = "id,player_id,pseudo,created_at,country,xp,streak_count,streak_last_date,streak_best,streak_freezes,last_notified_grade,xp_season,xp_season_month";
 async function sbFetch(path, options) {
   let res;
@@ -5942,7 +5943,6 @@ export default function LePont() {
   const [pseudoInput, setPseudoInput] = useState("");
   const [pseudoChecking, setPseudoChecking] = useState(false);
   const [pseudoMsg, setPseudoMsg] = useState("");
-  const [playerAvatar, setPlayerAvatar] = useState(null);
   // ── LA PUB RÉCOMPENSÉE DE FIN DE PARTIE ────────────────────────────────
   // `pubPrete` est un ÉTAT et non un appel direct à estDisponible() : la pub se
   // charge en tâche de fond, et une fonction lue au rendu ne redéclenche rien
@@ -5954,10 +5954,10 @@ export default function LePont() {
   const [playerXp, setPlayerXp] = useState(0); // XP cumulé (lifetime), chargé depuis Supabase au démarrage et incrémenté après chaque partie
   const [playerXpSeason, setPlayerXpSeason] = useState(0); // XP du mois en cours, reset à chaque début de mois
   // ─── Collection de cartes ───────────────────────────────────────────────────
-  // Les cartes possédées se DÉDUISENT de playerXp (voir lib/collection) : seul
-  // le badge choisi est stocké. Repli sur localStorage tant que la colonne
-  // `badge` n'existe pas côté Supabase (docs/supabase-badges.sql).
-  const [playerBadge, setPlayerBadge] = useState(function(){ try { return localStorage.getItem("bb_badge") || null; } catch (e) { return null; } });
+  // TOUT se déduit de playerXp (voir lib/collection) : les cartes possédées, et
+  // la carte affichée en photo de profil, qui est toujours la plus haute
+  // débloquée. Rien n'est stocké, donc rien ne peut se désynchroniser — et il
+  // n'y a plus de badge à choisir, la photo suit le niveau.
   const [showCollection, setShowCollection] = useState(false);
   const [cardPopup, setCardPopup] = useState(null);   // carte tout juste débloquée
   // Ouverture d'une carte, en trois temps — et c'est le JOUEUR qui déclenche :
@@ -5993,51 +5993,41 @@ export default function LePont() {
     setCardRevealEtape("toupie");
     toupieRef.current = setTimeout(function(){ setCardRevealEtape("revele"); }, TOUPIE_MS);
   }
-  const [badgeByPid, setBadgeByPid] = useState({});   // pid → {badge, xp} pour le classement
-  // Badge du joueur, lu à part du gros select (une colonne absente ferait
-  // échouer toute la requête, cf. PSEUDO_COLS).
-  useEffect(function(){
-    if (!playerId) return;
-    let stop = false;
-    (async function(){
-      const rows = await sbFetch("bb_pseudos?player_id=eq." + playerId + "&select=badge&limit=1");
-      if (stop || !Array.isArray(rows) || !rows.length) return; // colonne absente → on garde le choix local
-      const id = rows[0].badge || null;
-      setPlayerBadge(id);
-      try { id ? localStorage.setItem("bb_badge", id) : localStorage.removeItem("bb_badge"); } catch (e) {}
-    })();
-    return function(){ stop = true; };
-  }, [playerId]);
-  // Badges des autres joueurs. Une seule requête, plutôt que de faire circuler le
-  // champ dans toute l'agrégation du classement. `xp` sert à valider le badge
-  // (cf. badgeToShow).
+  // XP des autres joueurs — c'est elle, et elle seule, qui donne leur carte.
+  // Une seule requête, plutôt que de faire circuler le champ dans toute
+  // l'agrégation du classement.
   //
+  // ⚠️ ELLE NE DOIT PLUS FILTRER. Tant qu'un badge était choisi, la requête ne
+  // ramenait que les lignes `badge=not.is.null` : les autres joueurs n'avaient
+  // pas d'entrée et tombaient sur leurs initiales. Maintenant que la carte se
+  // déduit de l'XP, TOUT LE MONDE en a une — filtrer priverait de carte
+  // précisément ceux qui n'avaient jamais rien choisi, c'est-à-dire presque
+  // tout le monde.
   // ELLE NE PARTAIT QU'À L'OUVERTURE DU CLASSEMENT. La salle affichait donc des
-  // initiales même pour des joueurs qui ont choisi une carte : la vignette était
-  // la bonne, c'est la table qui était vide. Un défaut invisible en lecture — le
-  // composant a l'air correct, il n'a simplement rien à afficher.
+  // initiales là où une carte était attendue : la vignette était la bonne,
+  // c'est la table qui était vide. Un défaut invisible en lecture — le composant
+  // a l'air correct, il n'a simplement rien à afficher.
   //
   // La dépendance est le CODE de la salle et non l'objet `room` : celui-ci est
   // relu par le sondage toutes les quelques secondes et change d'identité à
   // chaque fois, ce qui relancerait la requête en boucle. Le code, lui, ne bouge
   // pas tant qu'on est dans la même salle — et change quand on en rejoint une
   // autre, ce qui est exactement le moment où il faut recharger.
+  const [xpByPid, setXpByPid] = useState({});   // pid → xp
   const codeSalle = room ? room.code : null;
   useEffect(function(){
     if (!showLeaderboard && !codeSalle) return;
     let stop = false;
     (async function(){
-      const rows = await sbFetch("bb_pseudos?select=player_id,badge,xp&badge=not.is.null&limit=2000");
+      const rows = await sbFetch("bb_pseudos?select=player_id,xp&limit=2000");
       if (stop || !Array.isArray(rows)) return;
       const map = {};
-      for (const r of rows) if (r.player_id) map[r.player_id] = { badge: r.badge, xp: r.xp || 0 };
-      setBadgeByPid(map);
+      for (const r of rows) if (r.player_id) map[r.player_id] = r.xp || 0;
+      setXpByPid(map);
     })();
     return function(){ stop = true; };
   }, [showLeaderboard, codeSalle]);
-  const [avatarUploading, setAvatarUploading] = useState(false);
   const [viewingAvatar, setViewingAvatar] = useState(null); // URL de la photo à visualiser en plein écran
-  const [cropState, setCropState] = useState(null); // {url, scale, x, y, naturalW, naturalH} — état du cropper
   const [pseudoConfirmed, setPseudoConfirmed] = useState(() => { try { const n = localStorage.getItem("bb_name"); return !!(n && n.trim().length >= 2); } catch { return false; } });
   // Charge mes défis ouverts en entrant sur l'accueil (pour la pastille de tentatives non vues)
   // NB: placé après la déclaration de pseudoConfirmed pour éviter une TDZ ReferenceError.
@@ -6108,19 +6098,6 @@ export default function LePont() {
 
   useEffect(() => {
     try {
-      const cachedAvatar = localStorage.getItem("bb_avatar_url");
-      if (cachedAvatar) setPlayerAvatar(cachedAvatar);
-      else {
-        // Try fetching from Supabase
-        const url = SB_URL + "/storage/v1/object/public/avatars/" + playerId + ".jpg";
-        fetch(url, { method: "HEAD" }).then(r => {
-          if (r.ok) {
-            const withBust = url + "?t=" + Date.now();
-            setPlayerAvatar(withBust);
-            try { localStorage.setItem("bb_avatar_url", withBust); } catch {}
-          }
-        }).catch(()=>{});
-      }
       const r = localStorage.getItem("bb_record"); if(r) setRecord(JSON.parse(r));
       const cr = localStorage.getItem("bb_chain_record"); if(cr) setChainRecord(JSON.parse(cr));
       const n = localStorage.getItem("bb_name"); if(n) setPlayerName(n);
@@ -6467,10 +6444,7 @@ export default function LePont() {
     });
     let myWins = 0, myLosses = 0, draws = 0;
     duelRows.forEach(x => { if((x.my||0)>(x.opp||0)) myWins++; else if((x.my||0)<(x.opp||0)) myLosses++; else draws++; });
-    const avatarUrl = SB_URL + "/storage/v1/object/public/avatars/" + id + ".jpg";
-    // Set data immediately — avatar will just 404 if no photo, <img> onError handles it
     setViewedProfileData({
-      avatar: avatarUrl,
       score: lbData ? lbData.score : 0,
       xp: lbData ? (lbData.xp || 0) : 0, // XP cumulée pour afficher le vrai grade du joueur
       rank: lbData ? leaderboard.findIndex(e => e.pid === id) + 1 : null,
@@ -6499,18 +6473,6 @@ export default function LePont() {
         // XP cumulée = source de vérité pour la carte "XP" et le grade,
         // quel que soit l'onglet du classement chargé.
         setViewedProfileData(function(prev){ return prev ? {...prev, xp: userData[0].xp || 0} : prev; });
-      }
-    } catch {}
-    // Carte choisie par le joueur, lue à part du select ci-dessus : la colonne
-    // `badge` peut être absente selon le schéma, et l'inclure ferait échouer
-    // toute la requête (même raison qu'au chargement du classement).
-    // Sans elle, le profil retombait sur la carte de NIVEAU alors que la ligne
-    // du classement affiche la carte choisie — deux cartes pour un même joueur.
-    try {
-      const badgeRows = await sbFetch("bb_pseudos?player_id=eq."+id+"&select=badge&limit=1");
-      if (Array.isArray(badgeRows) && badgeRows.length > 0) {
-        const chosen = badgeRows[0].badge || null;
-        setViewedProfileData(function(prev){ return prev ? {...prev, badge: chosen} : prev; });
       }
     } catch {}
     // Records réels depuis bb_scores (source de vérité) — indépendant du leaderboard
@@ -9876,9 +9838,9 @@ export default function LePont() {
     <button onClick={onClick} style={{...retourStyle,width:40,height:40,zIndex:10}}>←</button>
   );
 
-  // COMMENT L'APP MONTRE UN JOUEUR : sa carte de collection quand on la connaît
-  // — `badgeByPid` n'est rempli qu'après un passage par le classement — sinon
-  // une pastille d'or SOMBRE portant son initiale.
+  // COMMENT L'APP MONTRE UN JOUEUR : sa carte de niveau quand on connaît son XP
+  // — `xpByPid` n'est rempli qu'après un passage par le classement ou une salle —
+  // sinon une pastille d'or SOMBRE portant son initiale.
   //
   // Elle vivait dans le rendu de la liste d'amis, donc elle n'existait que là.
   // La salle, elle, dessinait des ronds VERTS avec l'initiale : le vocabulaire
@@ -9886,9 +9848,12 @@ export default function LePont() {
   // chose dans la même app, dont une périmée. Hissée ici, il n'y en a plus qu'une.
   const vignetteJoueur = function(pid, nom, taille){
     const t = taille || 44;
-    const info = badgeByPid[pid];
-    if (info) {
-      const c = avatarCard(info.badge, info.xp || 0);
+    // `!== undefined` et non la simple vérité : une XP de 0 est une valeur
+    // légitime — un joueur inscrit qui n'a pas encore marqué. Le tester comme un
+    // booléen le renverrait à ses initiales alors qu'il a droit à La Recrue.
+    const xp = xpByPid[pid];
+    if (xp !== undefined) {
+      const c = levelCard(xp);
       const rm = rarityMeta(c.rarity);
       return (
         <div className={rm.cls} style={{width:t,padding:2,borderRadius:G.rayonS,background:rm.frame,
@@ -10043,8 +10008,12 @@ export default function LePont() {
             <button onClick={function(){setCardPopup(null);}} style={{...btn(G.nuit,G.white,15),flex:1,padding:"13px 0"}}>
               {tr("Plus tard","Later","Später","Più tardi","Depois","Más tarde")}
             </button>
-            <button onClick={function(){ chooseBadge(cardPopup.id); setCardPopup(null); setShowCollection(true); }} style={{...btn(rm.color,G.encre,15),flex:1.4,padding:"13px 0"}}>
-              {tr("Mettre en badge","Use as badge","Als Abzeichen","Usa come badge","Usar como selo","Poner de insignia")}
+            {/* « Mettre en badge » n'a plus de sens : la carte est DÉJÀ portée
+                au moment où ce panneau s'ouvre, puisqu'elle vient d'être
+                débloquée et qu'on porte toujours la plus haute. Le bouton mène
+                donc où le joueur voudra aller ensuite : sa collection. */}
+            <button onClick={function(){ setCardPopup(null); setShowCollection(true); }} style={{...btn(rm.color,G.encre,15),flex:1.4,padding:"13px 0"}}>
+              {tr("Voir ma collection","View my collection","Meine Sammlung","La mia collezione","Minha coleção","Mi colección")}
             </button>
           </div>
         )}
@@ -11491,166 +11460,18 @@ export default function LePont() {
 
   // ── AVATAR CROPPER MODAL ──
   // Refs pour gestures (pas de re-render nécessaire pendant le drag/pinch)
-  const cropperGestureRef = useRef({mode:null,startX:0,startY:0,startOffsetX:0,startOffsetY:0,startDist:0,startScale:0});
+  // ── LA PHOTO DE PROFIL N'EXISTE PLUS ──────────────────────────────────────
+  //
+  // Il y avait ici 160 lignes de recadreur — glisser, pincer, exporter en JPEG,
+  // téléverser dans le seau `avatars` — et elles étaient DÉJÀ inatteignables :
+  // rien n'appelait `setCropState({...})`, rien n'affichait `playerAvatar`, et
+  // le profil consulté lisait une URL qu'aucun rendu ne consommait.
+  //
+  // La photo de profil est désormais la carte du niveau, et elle seule. Ce
+  // n'est pas une simplification de code : c'est la règle du jeu. La tête d'un
+  // joueur dit son nombre de points, elle ne peut donc pas être choisie — ni
+  // par une carte, ni par une image.
 
-  // Clamp offsets pour empêcher l'image de sortir du cadre (elle doit toujours "cover")
-  function clampCrop(state) {
-    const displayedW = state.naturalW * state.scale;
-    const displayedH = state.naturalH * state.scale;
-    const cs = state.cropSize;
-    let x = state.x, y = state.y;
-    // L'image doit couvrir le cadre : x ≤ 0 et x ≥ cs - displayedW
-    if (displayedW >= cs) { x = Math.min(0, Math.max(cs - displayedW, x)); } else { x = (cs - displayedW) / 2; }
-    if (displayedH >= cs) { y = Math.min(0, Math.max(cs - displayedH, y)); } else { y = (cs - displayedH) / 2; }
-    return {...state, x, y};
-  }
-
-  function onCropperStart(e) {
-    if (!cropState) return;
-    // Touch
-    if (e.touches) {
-      if (e.touches.length === 2) {
-        // Pinch
-        const dx = e.touches[0].clientX - e.touches[1].clientX;
-        const dy = e.touches[0].clientY - e.touches[1].clientY;
-        cropperGestureRef.current = {mode:"pinch", startDist:Math.hypot(dx,dy), startScale:cropState.scale, startOffsetX:cropState.x, startOffsetY:cropState.y};
-      } else if (e.touches.length === 1) {
-        cropperGestureRef.current = {mode:"drag", startX:e.touches[0].clientX, startY:e.touches[0].clientY, startOffsetX:cropState.x, startOffsetY:cropState.y};
-      }
-    } else {
-      // Mouse
-      cropperGestureRef.current = {mode:"drag", startX:e.clientX, startY:e.clientY, startOffsetX:cropState.x, startOffsetY:cropState.y};
-    }
-  }
-
-  function onCropperMove(e) {
-    const g = cropperGestureRef.current;
-    if (!g.mode || !cropState) return;
-    e.preventDefault();
-    if (g.mode === "drag") {
-      const point = e.touches ? e.touches[0] : e;
-      if (!point) return;
-      const nx = g.startOffsetX + (point.clientX - g.startX);
-      const ny = g.startOffsetY + (point.clientY - g.startY);
-      setCropState(clampCrop({...cropState, x:nx, y:ny}));
-    } else if (g.mode === "pinch" && e.touches && e.touches.length === 2) {
-      const dx = e.touches[0].clientX - e.touches[1].clientX;
-      const dy = e.touches[0].clientY - e.touches[1].clientY;
-      const dist = Math.hypot(dx, dy);
-      const ratio = dist / g.startDist;
-      const newScale = Math.max(cropState.minScale, Math.min(cropState.minScale * 5, g.startScale * ratio));
-      // Zoom vers le centre du cadre
-      const cs = cropState.cropSize;
-      const centerX = cs / 2, centerY = cs / 2;
-      const scaleRatio = newScale / g.startScale;
-      const nx = centerX - (centerX - g.startOffsetX) * scaleRatio;
-      const ny = centerY - (centerY - g.startOffsetY) * scaleRatio;
-      setCropState(clampCrop({...cropState, scale:newScale, x:nx, y:ny}));
-    }
-  }
-
-  function onCropperEnd() {
-    cropperGestureRef.current = {mode:null,startX:0,startY:0,startOffsetX:0,startOffsetY:0,startDist:0,startScale:0};
-  }
-
-  async function validateCrop() {
-    if (!cropState) return;
-    setAvatarUploading(true);
-    try {
-      const img = new Image();
-      await new Promise((resolve, reject) => {
-        img.onload = resolve;
-        img.onerror = () => reject(new Error("Image load failed"));
-        img.src = cropState.url;
-      });
-      // Canvas de sortie : 300x300 final
-      const OUT_SIZE = 300;
-      const canvas = document.createElement("canvas");
-      canvas.width = OUT_SIZE;
-      canvas.height = OUT_SIZE;
-      const ctx = canvas.getContext("2d");
-      // La zone visible dans le cadre correspond à :
-      // en coords display : (-x, -y) à (-x+cropSize, -y+cropSize)
-      // en coords natives de l'image : diviser par scale
-      const srcX = -cropState.x / cropState.scale;
-      const srcY = -cropState.y / cropState.scale;
-      const srcSize = cropState.cropSize / cropState.scale;
-      ctx.drawImage(img, srcX, srcY, srcSize, srcSize, 0, 0, OUT_SIZE, OUT_SIZE);
-      const blob = await new Promise(r => canvas.toBlob(r, "image/jpeg", 0.85));
-      if (!blob) throw new Error("Crop failed");
-      // Upload Supabase
-      const fileName = playerId + ".jpg";
-      const uploadRes = await fetch(SB_URL + "/storage/v1/object/avatars/" + fileName, {
-        method: "POST",
-        headers: {"apikey": SB_KEY, "Authorization": "Bearer " + SB_KEY, "Content-Type": "image/jpeg", "x-upsert": "true"},
-        body: blob
-      });
-      if (!uploadRes.ok) throw new Error("Upload failed: " + uploadRes.status);
-      const publicUrl = SB_URL + "/storage/v1/object/public/avatars/" + fileName + "?t=" + Date.now();
-      setPlayerAvatar(publicUrl);
-      try { localStorage.setItem("bb_avatar_url", publicUrl); } catch {}
-      setCropState(null);
-    } catch(err) {
-      alert((tr("Erreur upload : ","Upload error: ","Upload-Fehler: ","Errore di caricamento: ","Erro de upload: ","Error de subida: ")) + err.message);
-    }
-    setAvatarUploading(false);
-  }
-
-  const cropperModal = cropState && (
-    <div key="cropper" style={{position:"fixed",inset:0,zIndex:9998,background:"rgba(0,0,0,.96)",display:"flex",flexDirection:"column",animation:"fadeIn .2s ease"}}>
-      {/* Header */}
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 20px",borderBottom:G.traitFin}}>
-        <button onClick={()=>setCropState(null)} disabled={avatarUploading} style={{background:"none",border:"none",color:"rgba(255,255,255,.7)",fontSize:14,fontFamily:G.font,fontWeight:600,cursor:avatarUploading?"default":"pointer",padding:"8px 4px",opacity:avatarUploading?.4:1}}>{tr("Annuler","Cancel","Abbrechen","Annulla","Cancelar","Cancelar")}</button>
-        <div style={{...posterText(16),color:G.white,letterSpacing:1}}>{tr("AJUSTER LA PHOTO","ADJUST PHOTO","FOTO ANPASSEN","REGOLA FOTO","AJUSTAR FOTO","AJUSTAR LA FOTO")}</div>
-        <button onClick={validateCrop} disabled={avatarUploading} style={{background:"none",border:"none",color:avatarUploading?"rgba(79,208,122,.45)":G.pelouseClaire,fontSize:14,fontFamily:G.font,fontWeight:800,cursor:avatarUploading?"default":"pointer",padding:"8px 4px"}}>{avatarUploading?(tr("Sauvegarde...","Saving...","Speichern...","Salvataggio...","Salvando...","Guardando...")):(tr("Valider","Confirm","Bestätigen","Conferma","Confirmar","Validar"))}</button>
-      </div>
-      {/* Crop zone — centrée */}
-      <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",padding:"20px",touchAction:"none"}}>
-        <div
-          onTouchStart={onCropperStart}
-          onTouchMove={onCropperMove}
-          onTouchEnd={onCropperEnd}
-          onMouseDown={onCropperStart}
-          onMouseMove={onCropperMove}
-          onMouseUp={onCropperEnd}
-          onMouseLeave={onCropperEnd}
-          style={{position:"relative",width:cropState.cropSize,height:cropState.cropSize,maxWidth:"90vw",maxHeight:"90vw",overflow:"hidden",borderRadius:28,boxShadow:"0 0 0 2px rgba(255,255,255,.15), 0 0 0 9999px rgba(0,0,0,.5)",cursor:cropperGestureRef.current.mode==="drag"?"grabbing":"grab",touchAction:"none",userSelect:"none"}}
-        >
-          <img
-            src={cropState.url}
-            alt="crop"
-            draggable={false}
-            style={{position:"absolute",left:cropState.x,top:cropState.y,width:cropState.naturalW*cropState.scale,height:cropState.naturalH*cropState.scale,maxWidth:"none",maxHeight:"none",pointerEvents:"none",userSelect:"none"}}
-          />
-        </div>
-      </div>
-      {/* Zoom slider */}
-      <div style={{padding:"0 24px 24px",display:"flex",alignItems:"center",gap:12}}>
-        <span style={{fontSize:18,color:"rgba(255,255,255,.4)"}}>−</span>
-        <input
-          type="range"
-          min={cropState.minScale}
-          max={cropState.minScale * 5}
-          step={cropState.minScale / 100}
-          value={cropState.scale}
-          onChange={(e)=>{
-            const newScale = parseFloat(e.target.value);
-            // Zoom vers le centre du cadre
-            const cs = cropState.cropSize;
-            const centerX = cs / 2, centerY = cs / 2;
-            const scaleRatio = newScale / cropState.scale;
-            const nx = centerX - (centerX - cropState.x) * scaleRatio;
-            const ny = centerY - (centerY - cropState.y) * scaleRatio;
-            setCropState(clampCrop({...cropState, scale:newScale, x:nx, y:ny}));
-          }}
-          style={{flex:1,accentColor:G.pelouse,height:4}}
-        />
-        <span style={{fontSize:22,color:"rgba(255,255,255,.4)"}}>+</span>
-      </div>
-      {/* Hint */}
-      <div style={{textAlign:"center",padding:"0 20px 20px",fontSize:11,color:"rgba(255,255,255,.35)"}}>{tr("Glisse pour bouger · pince ou curseur pour zoomer","Drag to move · pinch or slider to zoom","Ziehen zum Bewegen · Pinch oder Regler zum Zoomen","Trascina per spostare · pizzica o cursore per lo zoom","Arraste para mover · pinça ou controle para zoom","Arrastra para mover · pellizca o usa el control para acercar")}</div>
-    </div>
-  );
 
   // ── HISTORIQUE DES DÉFIS ──
   if (showDuelHistory) {
@@ -11994,21 +11815,9 @@ export default function LePont() {
   }
 
   // ── COLLECTION DE CARTES ──
-  // Choisir une carte la met en badge ; recliquer la même l'enlève. Le choix est
-  // optimiste côté UI : la persistance Supabase peut échouer (colonne pas encore
-  // créée) sans rien casser, le badge reste alors visible pour son propriétaire.
-  async function chooseBadge(id) {
-    const next = playerBadge === id ? null : id;
-    setPlayerBadge(next);
-    try { next ? localStorage.setItem("bb_badge", next) : localStorage.removeItem("bb_badge"); } catch (e) {}
-    if (!playerId) return;
-    await sbFetch("bb_pseudos?player_id=eq." + playerId, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json", "Prefer": "return=minimal" },
-      body: JSON.stringify({ badge: next }),
-    });
-  }
-
+  // Il n'y a plus de carte à choisir : celle du niveau s'impose partout, et la
+  // grille ne sert donc qu'à voir. Les cartes restent des BOUTONS pour garder
+  // l'infobulle et le focus clavier, mais ils ne font plus rien.
   if (showCollection) {
     const possedees = unlockedCards(playerXp);
     const prochaine = progressToNext(playerXp);
@@ -12077,11 +11886,12 @@ export default function LePont() {
                 <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(92px,1fr))",gap:12}}>
                   {cartes.map(function(c){
                     const ouverte = isUnlocked(c, playerXp);
-                    const active = playerBadge === c.id;
+                    // Le liseré or ne dit plus « choisie » mais « c'est celle
+                    // que tu portes » — la plus haute débloquée.
+                    const active = c.id === levelCard(playerXp).id;
                     return (
                       <button
                         key={c.id}
-                        onClick={ouverte ? function(){ chooseBadge(c.id); } : undefined}
                         title={ouverte ? cardName(c) : (c.xp.toLocaleString("fr-FR") + " XP")}
                         className={ouverte && rar.cls ? rar.cls : undefined}
                         style={{
@@ -12089,7 +11899,7 @@ export default function LePont() {
                           borderRadius:G.rayon,overflow:"hidden",
                           /* le cadre EST le fond : le visuel s'inscrit dedans */
                           background:ouverte?rar.frame:G.nuit,
-                          cursor:ouverte?"pointer":"default",position:"relative",display:"block",
+                          cursor:"default",position:"relative",display:"block",
                           outline:active?"3px solid "+G.projecteur:"none",outlineOffset:2,transition:"outline .15s",
                         }}
                       >
@@ -12169,7 +11979,7 @@ export default function LePont() {
 
           {/* Accès à la collection de cartes */}
           {(function(){
-            const badge = badgeToShow(playerBadge, playerXp);
+            const badge = levelCard(playerXp);
             const possedees = unlockedCards(playerXp).length;
             return (
               <button onClick={function(){setShowAccount(false);setShowCollection(true);}} style={ligneCompte}>
@@ -12463,8 +12273,7 @@ export default function LePont() {
                       le liseré métallique est ce qui dit le niveau au premier
                       coup d'œil, s'en priver ici cassait la lecture. */}
                   {(function(){
-                    const b = badgeByPid[entry.pid];
-                    const c = avatarCard(b && b.badge, entry.xp || 0);
+                    const c = levelCard(entry.xp || 0);
                     const rm = rarityMeta(c.rarity);
                     return (
                       <div className={rm.cls} style={{width:44,padding:2,borderRadius:G.rayonS,background:rm.frame,
@@ -12559,14 +12368,12 @@ export default function LePont() {
             <div style={{fontSize:12,color:"rgba(255,255,255,.7)",fontWeight:700,letterSpacing:.8,textAlign:"center",marginBottom:16}}>{tr("Champions des saisons passées","Past season champions","Champions vergangener Saisons","Campioni delle stagioni passate","Campeões das temporadas passadas","Campeones de temporadas pasadas")}</div>
             {hallOfFame.length === 0 && <div style={{textAlign:"center",color:"rgba(255,255,255,.8)",padding:"22px 14px",fontSize:13.5,fontWeight:700,lineHeight:1.5,background:"rgba(245,194,43,.12)",border:G.traitFin,borderRadius:G.rayon,boxShadow:G.ombre}}>{tr("Pas encore de champion — la première saison est en cours !","No champion yet — the first season is ongoing!","Noch kein Champion — die erste Saison läuft!","Ancora nessun campione — la prima stagione è in corso!","Ainda sem campeão — a primeira temporada está em andamento!","Todavía no hay campeón — ¡la primera temporada está en marcha!")}</div>}
             {hallOfFame.map(function(s,i){
-              // La carte d'un champion, telle qu'il la porte : `badgeByPid` dit
-              // quelle carte il a CHOISIE, l'XP de la saison sert de repli sur
-              // la carte de son niveau. Même règle qu'au classement et sur les
-              // profils — un joueur ne doit pas changer de tête d'un écran à
-              // l'autre.
+              // La carte d'un champion : celle de son niveau, comme partout
+              // ailleurs. Un joueur ne doit pas changer de tête d'un écran à
+              // l'autre, et depuis que la carte se déduit de l'XP il ne le peut
+              // plus — c'était le seul moyen qu'il en avait.
               const carteDe = function(pid, xp, taille){
-                const b = badgeByPid[pid];
-                const c = avatarCard(b && b.badge, xp || 0);
+                const c = levelCard(xp || 0);
                 if (!c || !c.img) return null;
                 const rmc = rarityMeta(c.rarity);
                 return (
@@ -13344,12 +13151,11 @@ export default function LePont() {
                   Mon profil, dans la collection et au classement. Le liseré blanc
                   translucide et le halo vert LED ne disaient rien de son niveau. */}
               {(function(){
-                // `levelCard` ignore la carte que le joueur a CHOISIE et rend
-                // toujours celle de son niveau : le même joueur apparaissait
-                // donc avec deux avatars différents selon qu'on le regardait au
-                // classement ou sur son profil. `avatarCard` respecte le choix
-                // et ne retombe sur le niveau qu'à défaut.
-                const c = avatarCard(d.badge, d.xp || 0);
+                // La carte du niveau, la même qu'au classement et en salle.
+                // Le joueur apparaissait avant avec deux têtes différentes selon
+                // l'écran, parce qu'un seul des deux respectait son choix ; il
+                // n'y a plus de choix, donc plus d'écart possible.
+                const c = levelCard(d.xp || 0);
                 const rm = rarityMeta(c.rarity);
                 return (
                   <div className={rm.cls} style={{display:"inline-block",width:92,height:122,margin:"0 auto 14px",padding:3,borderRadius:G.rayon,background:rm.frame,border:G.traitFin,boxShadow:G.ombreL}}>
@@ -13526,7 +13332,7 @@ export default function LePont() {
             partout ailleurs. Et le halo vert LED sous la carte disparaît : le
             relief vient de l'ombre d'encre. */}
         {(function(){
-          const c = avatarCard(playerBadge, playerXp);
+          const c = levelCard(playerXp);
           const rm = rarityMeta(c.rarity);
           return (
             <div className={rm.cls} style={{display:"inline-block",width:116,height:154,margin:"0 auto 14px",position:"relative",padding:4,borderRadius:G.rayon,background:rm.frame,border:G.traitFin,boxShadow:G.ombreL}}>
@@ -13830,7 +13636,6 @@ export default function LePont() {
       {myRecoveryCodeModal}
       {reclamationModal}
       {avatarViewer}
-      {cropperModal}
       {installGuide}
     </div>
   );
@@ -14059,7 +13864,7 @@ export default function LePont() {
 <div onClick={function(){if(!pseudoConfirmed) setPseudoScreen(true); else setScreen("profile");}} style={{background:G.pelouse,border:G.traitFin,borderRadius:G.rayonS,width:34,height:45,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",boxShadow:"2px 2px 0 "+G.encre,overflow:"hidden"}}>
   {/* Bouton profil de l'accueil : la carte remplace l'initiale du pseudo. */}
   {/* Bouton profil de l'accueil : la carte, pas la photo uploadée. */}
-  <img src={avatarCard(playerBadge, playerXp).img} alt="" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top"}}/>
+  <img src={levelCard(playerXp).img} alt="" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top"}}/>
 </div>
 )}
           </div>
@@ -14536,7 +14341,7 @@ export default function LePont() {
               </div>
 
               <div style={{position:"relative",zIndex:1,display:"flex",alignItems:"flex-start",gap:10,width:"100%",maxWidth:380,marginBottom:28}}>
-                {camp(myName, null, avatarCard(playerBadge, playerXp), true)}
+                {camp(myName, null, levelCard(playerXp), true)}
                 {/* La colonne du VS est assez large pour que « ✓ TROUVÉ » tienne
                     sur une ligne : à 52 px le libellé se coupait après le ✓. */}
                 <div style={{display:"flex",flexDirection:"column",alignItems:"center",paddingTop:"22%",flexShrink:0,width:70}}>
@@ -16846,7 +16651,7 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
                 {/* Toi */}
                 <div style={{textAlign:"center"}}>
                   <div style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:52,height:52,borderRadius:G.rayonS,overflow:"hidden",background:G.pelouse,border:G.traitFin,marginBottom:8,marginInline:"auto"}}>
-                    <img src={avatarCard(playerBadge, playerXp).img} alt="" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top"}}/>
+                    <img src={levelCard(playerXp).img} alt="" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top"}}/>
                   </div>
                   <div style={{fontSize:11,color:"#bbb",letterSpacing:1,textTransform:"uppercase"}}>{playerName||"Toi"}</div>
                   <div style={{...posterText(1,win?G.pelouse:G.white,0),fontSize:28,marginTop:0}}>{myScore}</div>

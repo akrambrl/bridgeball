@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
-  CARDS, RARITIES, badgeToShow, cardById, isUnlocked, newlyUnlocked,
-  nextCard, progressToNext, rarityMeta, unlockedCards, levelCard, avatarCard,
+  CARDS, RARITIES, cardById, isUnlocked, newlyUnlocked,
+  nextCard, progressToNext, rarityMeta, unlockedCards, levelCard,
 } from "./collection";
 
 describe("catalogue", () => {
@@ -188,18 +188,11 @@ describe("newlyUnlocked", () => {
   });
 });
 
-describe("badgeToShow", () => {
-  it("refuse un badge dont la carte n'est pas débloquée", () => {
-    // Défense contre une valeur périmée en base (XP corrigée à la baisse) ou
-    // bricolée à la main : on n'affiche jamais une carte non méritée.
-    expect(badgeToShow("goat", 100)).toBeNull();
-    expect(badgeToShow("recrue", 0)!.id).toBe("recrue");
-  });
-
+describe("cardById", () => {
   it("ignore un identifiant inconnu ou vide", () => {
-    expect(badgeToShow("carte-supprimee", 999999)).toBeNull();
-    expect(badgeToShow(null, 999999)).toBeNull();
-    expect(badgeToShow("", 0)).toBeNull();
+    expect(cardById("carte-supprimee")).toBeNull();
+    expect(cardById(null)).toBeNull();
+    expect(cardById("")).toBeNull();
     expect(cardById("nawak")).toBeNull();
   });
 });
@@ -212,7 +205,7 @@ describe("rarityMeta", () => {
   });
 });
 
-describe("levelCard / avatarCard", () => {
+describe("levelCard — la photo de profil, et il n'y en a pas d'autre", () => {
   it("donne la MEILLEURE carte possédée, jamais la première", () => {
     expect(levelCard(0).id).toBe(CARDS[0].id);
     expect(levelCard(149).xp).toBe(100);
@@ -225,10 +218,11 @@ describe("levelCard / avatarCard", () => {
   });
 
   it("ne renvoie jamais rien, même à 0 ou sans XP", () => {
-    // C'est la photo de profil par défaut de TOUT le monde : elle doit exister.
+    // C'est la photo de profil de TOUT le monde : elle doit exister, y compris
+    // pour un compte qui vient d'être créé et n'a pas encore joué.
     for (const xp of [0, undefined as unknown as number, null as unknown as number, -5]) {
-      expect(avatarCard(null, xp)).toBeTruthy();
       expect(levelCard(xp)).toBeTruthy();
+      expect(levelCard(xp).img).toBeTruthy();
     }
   });
 
@@ -241,13 +235,23 @@ describe("levelCard / avatarCard", () => {
     }
   });
 
-  it("laisse le badge choisi primer sur la carte du niveau", () => {
-    expect(avatarCard("recrue", 17400).id).toBe("recrue");   // choix volontaire
-    expect(avatarCard(null, 17400).id).toBe(levelCard(17400).id);
+  it("change dès que le palier suivant est franchi", () => {
+    // C'est la promesse faite au joueur : passer un palier CHANGE sa tête. Le
+    // test vérifie l'XP juste avant et juste après chaque seuil — le seul
+    // moment où une erreur de comparaison (> au lieu de >=) se verrait.
+    for (const c of CARDS.slice(1)) {
+      expect(levelCard(c.xp - 1).id).not.toBe(c.id);
+      expect(levelCard(c.xp).id).toBe(c.id);
+    }
   });
 
-  it("retombe sur le niveau si le badge n'est plus mérité", () => {
-    // Cas réel : les paliers ont été relevés, le badge stocké n'est plus acquis.
-    expect(avatarCard("goat", 5000).id).toBe(levelCard(5000).id);
+  it("ne dépend QUE de l'XP", () => {
+    // Deux joueurs à la même XP portent la même carte, sans exception. C'est ce
+    // qui fait de la carte un grade et non une décoration : elle ne peut plus
+    // être choisie, ni figée, ni remplacée par une photo.
+    for (const xp of [0, 149, 4000, 55000, 250000]) {
+      expect(levelCard(xp).id).toBe(levelCard(xp).id);
+      expect(unlockedCards(xp).filter((c) => c.img).at(-1)!.id).toBe(levelCard(xp).id);
+    }
   });
 });
