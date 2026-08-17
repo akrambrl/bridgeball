@@ -32,8 +32,20 @@ const config: CapacitorConfig = {
   backgroundColor: "#F5C22B",
   ios: {
     backgroundColor: "#F5C22B",
-    contentInset: "always",
-    // Barre de statut en superposition gérée nativement (voir src/lib/native.ts)
+    // ── `never` ET NON `always` : UN SEUL DÉCALAGE, PAS DEUX ─────────────────
+    //
+    // `always` demande à WKWebView d'ajouter les marges de sécurité au contenu
+    // de sa vue défilante. Combiné à la barre d'état en superposition, ça faisait
+    // deux décalages pour un seul besoin : le contenu poussé de ~59 px en haut et
+    // ~34 px en bas, deux bandes d'or inertes, et une app qui « ne remplissait
+    // pas l'écran » — alors que le décor, en `position:fixed`, couvrait bien
+    // tout l'écran, ce qui rendait le défaut difficile à nommer.
+    //
+    // C'est la comparaison avec la PWA installée depuis goatfc.fr qui a servi de
+    // témoin : un navigateur n'a pas de `contentInset`, et elle remplissait
+    // l'écran. `never` + `overlay:false` (src/lib/native.ts) reproduisent
+    // exactement sa géométrie.
+    contentInset: "never",
   },
   android: {
     backgroundColor: "#F5C22B",
