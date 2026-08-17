@@ -3367,6 +3367,33 @@ if(typeof document!=="undefined"&&!document.getElementById("bb-css")){
        Les bandes de tonte disparaissent avec la pelouse : sur un aplat d'or,
        une rayure verticale ne raconte plus un terrain, elle salit le fond. */
     html,body,#root{background:${G.or}!important;min-height:100vh;min-height:100dvh;}
+    /* ── RYTHME VERTICAL DES ÉCRANS COURTS ──────────────────────────────────
+       L'accueil débordait de 85 px sur un iPhone SE ou 8 (375 × 667), mesuré
+       bandeau d'installation retiré. Et il ne pouvait PAS se résoudre en
+       laissant la carte du carrousel rétrécir : elle a un plancher de 230 px,
+       posé exprès pour ne pas être écrasée à 78 px dans le navigateur intégré
+       d'Instagram. Le débordement est la conséquence assumée de ce plancher.
+
+       Les 85 px sont donc pris sur tout le RESTE — marges, écarts, lettrage —
+       et seulement là où la place manque. D'où des variables plutôt que des
+       valeurs en dur : au-dessus de 740 px de haut, un iPhone 11 et plus récent
+       garde exactement la mise en page d'aujourd'hui, au pixel près.
+
+       740 px et non 700 : un écran de 852 px moins les ~190 px que rognent les
+       navigateurs intégrés d'Instagram et de X tombe à 662, et c'est justement
+       le cas où la carte touchait son plancher. Le seuil doit l'attraper.
+
+       Ces variables sont lues depuis des styles en ligne via var(), ce qui est
+       le seul moyen de faire dépendre un style JSX d'une media query sans
+       dupliquer la mise en page. */
+    :root{--pileGap:10px;--pileHaut:20px;--pileBas:28px;--logoMax:112px;--carteEncart:14px 14px 12px;--carteBouton:12px 16px;}
+    @media (max-height:740px){
+      /* --pileBas à 10 et non 6 : à 6, le pied de page (mentions légales,
+         règlement, numéro de version) frôlait le bord de l'écran. Les 4 px
+         reviennent à la carte du carrousel, qui reste au-dessus de son plancher
+         de 230 px — c'était la marge de manœuvre gagnée par le reste. */
+      :root{--pileGap:5px;--pileHaut:8px;--pileBas:10px;--logoMax:56px;--carteEncart:10px 12px 10px;--carteBouton:8px 14px;}
+    }
     /* box-sizing:border-box pour que ce padding se prenne DANS le min-height
        du dessus au lieu de s'y ajouter. Inerte tant que la balise viewport est
        posée sans viewport-fit=cover (l'env() vaut alors 0) ; c'est une des
@@ -13875,8 +13902,14 @@ export default function LePont() {
                    haut que prévu creuserait une bande d'or vide sous le
                    lettrage. Les deux maxima laissent l'image se poser dans la
                    boîte quel que soit son rapport. */
+                /* Le plafond est une variable : 112 px normalement, 56 px sous
+                   740 px de haut (cf. --logoMax). Sur un iPhone SE le lettrage
+                   mesurait 71 px, soit 15 px pris sur une page qui débordait
+                   déjà. Le plancher de 64 px passe donc à 48 px, sinon un
+                   `clamp` dont le minimum dépasse le maximum garde le minimum
+                   et la variable ne servirait à rien. */
                 <img src="/logo-mot.webp?v=1" onError={function(){setLogoMotAbsent(true);}}
-                  style={{maxWidth:"100%",maxHeight:"clamp(64px,19vw,112px)",width:"auto",height:"auto",
+                  style={{maxWidth:"100%",maxHeight:"clamp(48px,19vw,var(--logoMax))",width:"auto",height:"auto",
                     display:"block",margin:"0 auto"}} alt="GOAT FC"/>
               )}
             </div>
@@ -13936,7 +13969,14 @@ export default function LePont() {
           87 px sous l'en-tête de l'accueil et coupées en bas. Le flou portait
           2 px sur un fond de pelouse presque uni : personne ne le verra partir,
           alors que le décalage, lui, se voyait. */}
-      <div style={{...sheet,gap:10}}>
+      {/* `gap` et marges verticales passés en variables : elles se resserrent
+          sous 740 px de haut et ne bougent pas au-dessus (cf. --pileGap dans le
+          CSS). C'est ici que se prend l'essentiel des 85 px qui manquaient sur
+          un iPhone SE, la carte du carrousel ne pouvant pas descendre sous son
+          plancher. La marge horizontale de 18 px, elle, ne change pas : c'est la
+          hauteur qui manque, pas la largeur. */}
+      <div style={{...sheet,gap:"var(--pileGap)",
+        padding:"var(--pileHaut) 18px calc(var(--pileBas) + env(safe-area-inset-bottom))"}}>
 
         {/* Alerte streak en danger — bande supprimée pour gagner de la place verticale.
             L'info reste visible via le badge alerte rouge dans le header (cliquable pour le détail). */}
@@ -16060,8 +16100,8 @@ export default function LePont() {
         )}
 
         {/* Multijoueur - rejoindre */}
-        <div style={{background:G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,padding:"14px 14px 12px"}}>
-          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
+        <div style={{background:G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,padding:"var(--carteEncart)"}}>
+          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:"var(--pileGap)"}}>
             <span style={{fontSize:18}}>👥</span>
             <div>
               <div style={{...posterText(16,G.white),transformOrigin:"left"}}>{tr("Joue avec tes potes !","Play with friends!","Spiel mit deinen Freunden!","Gioca con i tuoi amici!","Jogue com seus amigos!","¡Juega con tus colegas!")}</div>
@@ -16121,7 +16161,7 @@ export default function LePont() {
 
         {/* Défis ouverts (salon de duels asynchrones) */}
         <button onClick={function(){requirePseudo(function(){setOpenTab("browse");setOpenDuelChooser(false);loadOpenDuels();loadMyOpenDuels();loadReceivedChallenges();setShowOpenDuels(true);});}}
-          style={{position:"relative",display:"flex",alignItems:"center",gap:12,padding:"12px 16px",background:G.maillot,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,cursor:"pointer",width:"100%",textAlign:"left"}}>
+          style={{position:"relative",display:"flex",alignItems:"center",gap:12,padding:"var(--carteBouton)",background:G.maillot,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,cursor:"pointer",width:"100%",textAlign:"left"}}>
           <div style={{width:28,height:28,borderRadius:"50%",background:G.projecteur,border:G.traitFin,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15}}>⚔️</div>
           <div style={{flex:1}}>
             <div style={{...posterText(16,G.white),transformOrigin:"left"}}>{tr("Défis ouverts ⚔️","Open challenges ⚔️","Offene Duelle ⚔️","Sfide aperte ⚔️","Desafios abertos ⚔️","Retos abiertos ⚔️")}</div>
