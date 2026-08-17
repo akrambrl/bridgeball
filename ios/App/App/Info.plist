@@ -16,6 +16,33 @@
 	<string>6.0</string>
 	<key>CFBundleName</key>
 	<string>$(PRODUCT_NAME)</string>
+	<!-- ══ ADMOB : SANS CETTE CLÉ, L'APP PLANTE AU LANCEMENT ══════════════════
+	     Le SDK Google Mobile Ads lève une exception au démarrage si
+	     GADApplicationIdentifier est absent ou mal formé — avant le premier
+	     écran, sur tous les iPhone. C'est l'exact pendant du meta-data
+	     com.google.android.gms.ads.APPLICATION_ID côté Android.
+
+	     C'est ici l'identifiant d'APPLICATION (avec un ~), PAS celui du bloc
+	     d'annonces (avec un /) : intervertir les deux redonne le même plantage.
+
+	     Valeur actuelle = l'identifiant de TEST public de Google pour iOS.
+	     À remplacer par celui de l'app iOS créée dans AdMob au moment de la
+	     mise en production, et pas avant : un clic sur sa propre vraie
+	     publicité fait fermer un compte AdMob définitivement.
+	     https://developers.google.com/admob/ios/test-ads -->
+	<key>GADApplicationIdentifier</key>
+	<string>ca-app-pub-3940256099942544~1458002511</string>
+	<!-- ══ APP TRACKING TRANSPARENCY ══════════════════════════════════════════
+	     Demander l'autorisation SANS cette phrase fait planter l'app : iOS
+	     l'exige pour afficher la fenêtre. Elle est donc aussi obligatoire que
+	     la clé au-dessus, simplement pour une autre raison.
+
+	     Le texte est en anglais parce que CFBundleDevelopmentRegion vaut `en`,
+	     donc c'est la langue de repli du bundle. Le traduire demande un
+	     fr.lproj/InfoPlist.strings ajouté aux ressources du projet Xcode —
+	     à faire depuis Xcode, pas à la main dans le .xcodeproj. -->
+	<key>NSUserTrackingUsageDescription</key>
+	<string>GOAT FC uses this to show you rewarded ads that fit your interests. Decline and you keep every feature — the ads are simply less relevant.</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>

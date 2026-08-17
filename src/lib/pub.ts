@@ -89,6 +89,23 @@ export async function initPub(): Promise<void> {
   if (!natif() || demarre) return;
   demarre = true;
   try {
+    // ── iOS : l'autorisation de suivi se demande AVANT d'initialiser ────────
+    //
+    // Sans elle, le SDK part sans l'IDFA et ne sert que du non-personnalisé,
+    // qui rapporte nettement moins. La demander après l'initialisation ne
+    // rattrape pas la première requête de pub, qui est justement celle qu'on
+    // préchargera dans la seconde qui suit.
+    //
+    // Le plugin ne fait rien sur Android, sur le web, et sur iOS 13 et
+    // antérieurs : l'appel est donc inconditionnel, et il ne lève pas. Il exige
+    // en revanche NSUserTrackingUsageDescription dans Info.plist — sans cette
+    // phrase, iOS fait planter l'app au moment d'afficher la fenêtre.
+    //
+    // Un refus n'est PAS un échec : on continue, avec des pubs moins ciblées.
+    // C'est aussi pour ça qu'on ne lit pas le statut derrière — il ne change
+    // rien à ce qu'on fait ensuite.
+    try { await AdMob.requestTrackingAuthorization(); } catch { /* refus, ou iOS trop ancien */ }
+
     await AdMob.initialize({ initializeForTesting: enModeTest() });
 
     // Le formulaire n'est montré QUE s'il est requis : le présenter à quelqu'un
