@@ -2,7 +2,7 @@ import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from
 import { createPortal } from "react-dom";
 import { PLAYERS, RETIRED_PLAYERS, GG_WC_WINNERS, GG_CL_WINNERS } from "../players.jsx";
 import { trackPlay, pingPresence, pingLive, trackTime } from "../lib/track";
-import { hapticSuccess, hapticError } from "../lib/native";
+import { hapticSuccess, hapticError, isNative } from "../lib/native";
 import { pickOpponent } from "../lib/opponents";
 import { G, posterText, posterTitre, posterLight, btn, fondCharte, areneCharte,
          retourStyle, retourCharte, fermerCharte, ligneCharte, pastilleCharte } from "../lib/charte.jsx";
@@ -3435,8 +3435,29 @@ function isIOS() {
 }
 
 // Détection : est-ce que l'app est installée sur l'écran d'accueil (standalone) ?
+//
+// ── LA COQUE NATIVE COMPTE, ET ELLE ÉCHOUAIT AUX DEUX TESTS ────────────────
+//
+// Dans une coque Capacitor, `display-mode` vaut « browser » et
+// `navigator.standalone` est indéfini : les deux conditions ci-dessous sont
+// fausses, alors que l'app est installée au sens le plus littéral — elle vient
+// de l'App Store.
+//
+// Elle passait donc pour une visite de navigateur, et six comportements en
+// dépendent : le bandeau « Installer GOAT FC » collé en haut de l'accueil,
+// l'invite spontanée au bout de trois jours de série, l'invite du guide, la
+// note « tu joues déjà depuis l'app installée », la mention « Déjà installée ✓ »
+// du profil, et le moment où l'on propose les notifications.
+//
+// Le bandeau était le plus visible : il proposait à quelqu'un qui vient de
+// télécharger l'app sur l'App Store de l'installer.
+//
+// On le corrige ICI et pas dans les six appels : « installée » est une
+// propriété de l'environnement, pas une condition à recopier six fois — et le
+// prochain appel l'aurait oubliée.
 function isStandalone() {
   if (typeof window === "undefined") return false;
+  if (isNative()) return true;
   return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
 }
 
