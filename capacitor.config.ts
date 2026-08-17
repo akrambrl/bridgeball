@@ -39,8 +39,21 @@ const config: CapacitorConfig = {
     backgroundColor: "#F5C22B",
   },
   plugins: {
+    // ── CE DÉLAI N'EST PLUS LA DURÉE DU SPLASH, C'EST SON FILET ──────────────
+    //
+    // Le splash est désormais masqué par masquerSplashNatif() dès que le jeu est
+    // peint (src/pages/Index.tsx). `launchShowDuration` ne sert donc plus qu'à
+    // garantir qu'il s'en aille même si ce code ne tourne pas — erreur JS au
+    // démarrage, bundle corrompu. C'est pour ça qu'on ne met PAS
+    // `launchAutoHide: false` : ce réglage transformerait n'importe quel plantage
+    // d'amorçage en app définitivement bloquée sur son écran de lancement.
+    //
+    // 700 ms était trop court dès qu'on a retiré l'affiche interne qui couvrait
+    // la suite : sur un téléphone lent, le splash partait avant le premier
+    // rendu et laissait voir un écran or vide. 2 500 ms n'est atteint que si
+    // l'app ne démarre pas.
     SplashScreen: {
-      launchShowDuration: 700,
+      launchShowDuration: 2500,
       backgroundColor: "#F5C22B",
       showSpinner: false,
     },

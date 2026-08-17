@@ -27,15 +27,30 @@ export async function initNative(): Promise<void> {
     try { await StatusBar.setOverlaysWebView({ overlay: true }); } catch {}
   } catch {}
   try {
-    // On masque le splash une fois l'app prête (petit délai pour éviter le flash).
-    setTimeout(() => { SplashScreen.hide().catch(() => {}); }, 400);
-  } catch {}
-  try {
     // Bouton retour matériel (Android) : ne pas quitter l'app par accident.
     App.addListener("backButton", ({ canGoBack }) => {
       if (canGoBack) window.history.back();
     });
   } catch {}
+}
+
+/**
+ * Efface l'écran de lancement natif. À appeler quand le jeu est MONTÉ et peint,
+ * pas depuis initNative() : initNative tourne avant createRoot().render(), donc
+ * tout délai posé ici serait une devinette sur le temps de premier affichage.
+ *
+ * C'était un setTimeout de 400 ms. Il tenait parce qu'une affiche plein écran
+ * dans l'app couvrait les 2 500 ms suivantes ; cette affiche a été retirée, et
+ * un splash qui s'efface avant le premier rendu laisserait un écran or vide.
+ *
+ * Le filet de sécurité reste dans capacitor.config.ts : `launchShowDuration`
+ * masque le splash de toute façon passé ce délai. Un appel manquant ou une
+ * erreur JS au démarrage ne peut donc pas bloquer l'app sur son écran de
+ * lancement — ce qui est exactement ce que produirait `launchAutoHide: false`.
+ */
+export function masquerSplashNatif(): void {
+  if (!isNative()) return;
+  SplashScreen.hide().catch(() => {});
 }
 
 // ── Retour haptique (no-op sur web) ──
