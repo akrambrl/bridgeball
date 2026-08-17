@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aide & assistance — GOAT FC</title>
+<meta name="description" content="Aide, contact et réponses aux questions fréquentes sur GOAT FC : récupérer son compte, classement mensuel, concours, suppression de compte.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
+<style>
+/* ── CHARTE « Olive et Tom », version OR — pages légales ───────────────────
+   Reprise de src/lib/charte.jsx. Le texte juridique n'est pas touché : seule
+   cette feuille change.
+
+   LA RÈGLE QUI COMMANDE TOUT LE RESTE, et qui vient des mesures de contraste
+   de la charte : SUR L'OR, SEULE L'ENCRE SE LIT. Le crème tombe à 1,4, le vert
+   clair à 1,2, le rouge à 2,8. Donc tout ce qui est posé sur le fond — texte,
+   liens, gras, titres — est à l'encre. À l'INVERSE, dans un panneau sombre,
+   tout se lit : crème 14,9 · or 11,0. D'où les règles contextuelles
+   `.box strong` et compagnie : la même emphase change de couleur selon ce
+   qu'elle a derrière elle.
+
+   La police du CORPS reste une pile système, et c'est délibéré : Anton et
+   Bebas Neue sont des lettrages d'affiche, illisibles sur quinze pages de
+   texte juridique. Le manga est dans le trait et l'ombre dure, pas dans
+   l'obligation de tout écrire en capitales condensées. */
+:root {
+  --encre:#081109;      /* le trait — noir à biais vert, jamais noir pur */
+  --or:#F5C22B;         /* LE FOND */
+  --or-sombre:#D9A21A;  /* la trame de points */
+  --creme:#F2E7CE;      /* le lettrage, DANS un panneau */
+  --nuit:#12160F;       /* l'écusson : le noir des panneaux */
+  --maillot:#D93A2B;    /* urgence */
+  --trait:3px solid #081109;
+  --trait-fin:2px solid #081109;
+  --ombre:4px 4px 0 #081109;
+}
+* { box-sizing:border-box; }
+body {
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  background:var(--or); color:var(--encre); margin:0; padding:0; line-height:1.7;
+  /* La trame sérigraphiée de la charte, en points d'or sombre et non de noir :
+     sur l'or, une trame noire grise le fond au lieu de le texturer. */
+  background-image:radial-gradient(circle,var(--or-sombre) 1.2px,transparent 1.5px);
+  background-size:7px 7px;
+}
+.container { max-width:780px; margin:0 auto; padding:40px 24px 80px; }
+header { padding:30px 0 20px; border-bottom:var(--trait); margin-bottom:30px; }
+
+/* Lettrage d'affiche : italique légère et ombre dure, SANS contour d'encre.
+   Le contour n'a de sens que pour du texte clair sur fond sombre ; posé sur
+   un titre déjà sombre, il bouche les contre-formes et rend le mot illisible. */
+h1 {
+  font-family:'Anton',Impact,'Haettenschweiler',sans-serif; font-weight:400;
+  font-size:clamp(30px,8vw,44px); line-height:1.05; margin:0 0 8px;
+  color:var(--encre); letter-spacing:.5px;
+  transform:skewX(-7deg); transform-origin:left center;
+  text-shadow:3px 3px 0 rgba(8,17,9,.18);
+}
+h2 {
+  font-family:'Anton',Impact,'Haettenschweiler',sans-serif; font-weight:400;
+  font-size:clamp(20px,5vw,26px); line-height:1.15;
+  margin:40px 0 12px; color:var(--encre); letter-spacing:.4px;
+  transform:skewX(-7deg); transform-origin:left center;
+}
+h3 { font-size:16px; font-weight:800; margin:22px 0 8px; color:var(--encre); }
+.subtitle { color:rgba(8,17,9,.62); font-size:14px; font-weight:600; }
+p, li { color:var(--encre); font-size:15px; }
+ul { padding-left:20px; }
+li { margin-bottom:6px; }
+strong { color:var(--encre); font-weight:800; }
+a { color:var(--encre); font-weight:700; text-decoration:underline; text-underline-offset:3px; }
+.email { color:var(--encre); font-weight:800; }
+hr { border:none; height:3px; background:var(--encre); margin:34px 0; border-radius:2px; }
+
+/* ── LES PANNEAUX ────────────────────────────────────────────────────────
+   Aplat de nuit, trait d'encre, ombre DURE — jamais de flou, jamais de verre.
+   Et le renversement des couleurs : à l'intérieur, l'or redevient lisible. */
+.box {
+  background:var(--nuit); color:var(--creme);
+  border:var(--trait); border-radius:18px; box-shadow:var(--ombre);
+  padding:16px 20px; margin:18px 0;
+}
+.box p, .box li { color:var(--creme); }
+.box strong, .box .email, .box a { color:var(--or); }
+
+.warning {
+  background:var(--nuit); color:var(--creme);
+  border:var(--trait); border-left:9px solid var(--maillot);
+  border-radius:18px; box-shadow:var(--ombre); padding:16px 20px; margin:18px 0;
+}
+.warning p, .warning li { color:var(--creme); }
+.warning strong { color:var(--or); }
+
+.last-updated {
+  background:var(--nuit); color:var(--creme);
+  border:var(--trait-fin); border-radius:12px; box-shadow:var(--ombre);
+  padding:8px 14px; font-size:13px; font-weight:700;
+  display:inline-block; margin-bottom:22px;
+}
+
+/* ── LES BOUTONS DE LANGUE ───────────────────────────────────────────────
+   L'actif est un aplat de NUIT et non d'or : un bouton or posé sur le fond or
+   disparaîtrait. C'est la règle de la charte pour une action principale. */
+.lang-switch { display:inline-flex; gap:10px; margin-top:16px; }
+.lang-switch button {
+  background:transparent; color:var(--encre);
+  border:var(--trait-fin); border-radius:12px; box-shadow:var(--ombre);
+  padding:7px 15px; cursor:pointer; font-weight:800; font-size:13px;
+  font-family:inherit; transition:transform .12s;
+}
+.lang-switch button:hover { transform:translate(-1px,-1px); }
+.lang-switch button:active { transform:translate(2px,2px); box-shadow:2px 2px 0 var(--encre); }
+.lang-switch button.active { background:var(--nuit); color:var(--creme); }
+
+footer {
+  margin-top:64px; padding-top:24px; border-top:var(--trait);
+  color:rgba(8,17,9,.62); font-size:13px; text-align:center; font-weight:600;
+}
+.hidden { display:none; }
+
+/* Le bouton de retour : un jeton de la charte, plus un verre flouté.
+   `backdrop-filter` a disparu — la charte est faite d'aplats opaques. */
+/* POSITION ABSOLUE ET NON FIXE, et c'est une correction et non un choix
+   d'origine : fixe, ce jeton reste collé en haut à gauche pendant tout le
+   défilement et RECOUVRE le premier mot de la ligne qui passe derrière lui —
+   sur quinze pages de texte juridique, ça fait quinze mots avalés. Il se pose
+   donc au haut du document et s'en va avec lui. Le retour reste offert deux
+   fois : ici en haut, et en toutes lettres dans le pied de page. */
+.back-fab {
+  position:absolute; top:14px; left:14px; z-index:100;
+  background:var(--nuit); color:var(--creme);
+  border:var(--trait); border-radius:50%;
+  width:44px; height:44px; cursor:pointer; font-size:20px;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:var(--ombre); text-decoration:none; transition:transform .12s;
+}
+.back-fab:hover { transform:translate(-1px,-1px); }
+.back-fab:active { transform:translate(2px,2px); box-shadow:2px 2px 0 var(--encre); }
+
+/* Le titre passe sous le bouton de retour sur petit écran : on lui laisse la place. */
+@media (max-width:600px) {
+  .container { padding-top:24px; }
+  header { padding-top:44px; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .back-fab, .lang-switch button { transition:none; }
+}
+</style>
+</head>
+<body>
+<a href="/" class="back-fab" aria-label="Retour à GOAT FC">←</a>
+<div class="container">
+
+<header>
+<h1>🛟 Aide &amp; assistance</h1>
+<div class="subtitle">GOAT FC — goatfc.fr</div>
+<div class="lang-switch">
+<button id="btn-fr" class="active" onclick="show('fr')">🇫🇷 Français</button>
+<button id="btn-en" onclick="show('en')">🇬🇧 English</button>
+</div>
+</header>
+
+<!-- ─────────── VERSION FRANÇAISE ─────────── -->
+<section id="content-fr">
+
+<div class="box">
+<p><strong>Une question, un bug, un joueur mal renseigné ?</strong></p>
+<p>Écris à <a class="email" href="mailto:contact@goatfc.online">contact@goatfc.online</a>. Une seule adresse, lue par la personne qui développe le jeu. Réponse sous 72 heures ouvrées.</p>
+<p>Pour un bug, dis-nous : ton <strong>pseudo</strong>, le <strong>mode de jeu</strong>, et ce que tu faisais juste avant. Ces trois lignes suffisent presque toujours à retrouver la cause.</p>
+</div>
+
+<h2>Signaler une fiche de joueur fausse</h2>
+<p>La base compte plusieurs milliers de carrières, tenues à jour à chaque mercato. Il y a des erreurs, et le jeu prévoit de les recevoir : en fin de partie, le bouton <strong>⚠️ Signaler</strong> envoie la question posée et la réponse attendue. C'est le chemin le plus rapide — plus rapide qu'un email, parce qu'il transmet le contexte tout seul.</p>
+<p>Les signalements sont relus par lot. Un club manquant, une nationalité inversée, un poste erroné : tout est utile.</p>
+
+<h2>J'ai perdu mon compte</h2>
+<p>GOAT FC n'utilise ni mot de passe ni adresse email : ton pseudo et ta progression vivent sur ton téléphone. C'est ce qui permet de jouer sans inscription — et ce qui fait qu'un téléphone changé ou une app réinstallée efface tout, sauf si tu as noté ton <strong>code de récupération</strong>.</p>
+<div class="warning">
+<p><strong>Ce code est le SEUL moyen de retrouver un compte.</strong> Il est affiché à la création du pseudo, et il reste consultable à tout moment dans <strong>Profil → Mon compte → Mon code de récupération</strong>. Note-le maintenant, pas le jour où tu en auras besoin : sans lui, personne — nous compris — ne peut rattacher une progression à quelqu'un.</p>
+</div>
+<p>Pour restaurer : à l'écran du pseudo, choisis <strong>« J'ai déjà un compte »</strong> et saisis le code.</p>
+
+<h2>Classement et concours</h2>
+<p>Le classement se remet à zéro le 1<sup>er</sup> de chaque mois, à minuit heure de Paris. Six modes y comptent — Le Pont, GOAT Mercato, Trouve le score, le Mercato du jour, Trouve le joueur et Trouve la série. <strong>GOAT GRID n'y compte pas</strong> : il a son propre tableau.</p>
+<p>Un lot est mis en jeu chaque mois pour la première place. Les conditions de participation, d'éligibilité et de remise sont dans le <a href="/reglement/">règlement du concours</a>, qui fait foi sur tout le reste.</p>
+<p>Le concours n'est ni organisé, ni parrainé, ni administré par Apple, Google, Instagram, TikTok ou l'éditeur du jeu mis en lot.</p>
+
+<h2>Supprimer mon compte et mes données</h2>
+<p>Dans l'app : <strong>Profil → Mon compte → Supprimer mon compte</strong>. La suppression est immédiate et définitive — pseudo, scores, séries, cartes, amis et défis. Elle ne se rattrape pas, y compris par nous.</p>
+<p>Si tu ne peux plus ouvrir l'app, écris-nous depuis l'adresse de ton choix en indiquant ton pseudo exact : nous supprimons le compte après une vérification simple.</p>
+
+<h2>Pourquoi des publicités ?</h2>
+<p>GOAT FC est gratuit, sans abonnement et sans achat intégré. Les seules publicités sont <strong>facultatives</strong> : tu les lances toi-même, en échange d'un bonus, et fermer la vidéo ne te coûte rien. Aucune publicité ne s'impose entre deux parties.</p>
+<p>Au premier lancement sur iPhone, iOS demande si l'app peut suivre ton activité. <strong>Refuser ne bloque aucune fonction</strong> : les publicités deviennent simplement moins ciblées.</p>
+
+<h2>Le jeu tourne mal</h2>
+<ul>
+<li><strong>L'app ne se lance pas</strong> — ferme-la complètement et relance. La progression est enregistrée à chaque partie, tu ne perds rien.</li>
+<li><strong>Le multijoueur ne trouve personne</strong> — le duel en direct demande un adversaire connecté au même moment. Les défis ouverts, eux, s'affrontent en différé : personne à attendre.</li>
+<li><strong>Un mot ne s'affiche pas dans ma langue</strong> — le jeu existe en six langues et la traduction avance mode par mode. Signale-le, c'est corrigé au passage suivant.</li>
+</ul>
+
+<hr>
+<p><a href="/privacy/">Politique de confidentialité</a> · <a href="/terms/">Conditions d'utilisation</a> · <a href="/reglement/">Règlement du concours</a></p>
+</section>
+
+<!-- ─────────── ENGLISH VERSION ─────────── -->
+<section id="content-en" class="hidden">
+
+<div class="box">
+<p><strong>A question, a bug, a player with wrong data?</strong></p>
+<p>Email <a class="email" href="mailto:contact@goatfc.online">contact@goatfc.online</a>. One address, read by the person who builds the game. Reply within 72 working hours.</p>
+<p>For a bug, tell us: your <strong>username</strong>, the <strong>game mode</strong>, and what you were doing just before. Those three lines are almost always enough to find the cause.</p>
+</div>
+
+<h2>Report a wrong player entry</h2>
+<p>The database holds several thousand careers, updated at every transfer window. Mistakes happen, and the game is built to hear about them: at the end of a round, the <strong>⚠️ Report</strong> button sends the question asked and the expected answer. It is the fastest route — faster than email, because it carries the context by itself.</p>
+<p>Reports are reviewed in batches. A missing club, a swapped nationality, a wrong position: all of it helps.</p>
+
+<h2>I lost my account</h2>
+<p>GOAT FC uses no password and no email address: your username and progress live on your phone. That is what lets you play without signing up — and what makes a new phone or a reinstalled app wipe everything, unless you wrote down your <strong>recovery code</strong>.</p>
+<div class="warning">
+<p><strong>That code is the ONLY way to recover an account.</strong> It is shown when you create your username, and stays available any time under <strong>Profile → My account → My recovery code</strong>. Write it down now, not the day you need it: without it, nobody — us included — can tie a progress record to a person.</p>
+</div>
+<p>To restore: on the username screen, pick <strong>"I already have an account"</strong> and enter the code.</p>
+
+<h2>Leaderboard and contest</h2>
+<p>The leaderboard resets on the 1st of each month, at midnight Paris time. Six modes count towards it — The Plug, GOAT Mercato, Guess the score, Daily Mercato, Find the player and Find the streak. <strong>GOAT GRID does not</strong>: it has its own board.</p>
+<p>A prize is offered every month for first place. Entry, eligibility and delivery terms are in the <a href="/reglement/">contest rules</a>, which prevail over everything else.</p>
+<p>The contest is not organised, sponsored or administered by Apple, Google, Instagram, TikTok, or the publisher of the game offered as a prize.</p>
+
+<h2>Delete my account and my data</h2>
+<p>In the app: <strong>Profile → My account → Delete my account</strong>. Deletion is immediate and permanent — username, scores, streaks, cards, friends and challenges. It cannot be undone, by us either.</p>
+<p>If you can no longer open the app, write to us from any address stating your exact username: we delete the account after a simple check.</p>
+
+<h2>Why ads?</h2>
+<p>GOAT FC is free, with no subscription and no in-app purchase. The only ads are <strong>optional</strong>: you start them yourself in exchange for a bonus, and closing the video costs you nothing. No ad ever appears between rounds on its own.</p>
+<p>On first launch on iPhone, iOS asks whether the app may track your activity. <strong>Declining blocks no feature</strong>: the ads simply become less relevant.</p>
+
+<h2>The game misbehaves</h2>
+<ul>
+<li><strong>The app won't start</strong> — close it fully and reopen. Progress is saved after every round, you lose nothing.</li>
+<li><strong>Multiplayer finds nobody</strong> — a live duel needs an opponent online at the same moment. Open challenges are played asynchronously: nobody to wait for.</li>
+<li><strong>A word isn't in my language</strong> — the game exists in six languages and translation advances mode by mode. Report it and it is fixed on the next pass.</li>
+</ul>
+
+<hr>
+<p><a href="/privacy/">Privacy policy</a> · <a href="/terms/">Terms of use</a> · <a href="/reglement/">Contest rules</a></p>
+</section>
+
+<footer>
+<p>GOAT FC · <a href="/">Retour au jeu</a></p>
+</footer>
+
+</div>
+
+<script>
+function show(lang) {
+  document.getElementById('content-fr').classList.toggle('hidden', lang !== 'fr');
+  document.getElementById('content-en').classList.toggle('hidden', lang !== 'en');
+  document.getElementById('btn-fr').classList.toggle('active', lang === 'fr');
+  document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+  document.documentElement.lang = lang;
+}
+if (navigator.language && navigator.language.startsWith('en')) show('en');
+</script>
+
+</body>
+</html>
