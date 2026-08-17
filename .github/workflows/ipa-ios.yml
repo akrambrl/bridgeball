@@ -32,14 +32,36 @@
 # LA CLÉ NE DOIT PASSER PAR AUCUN AUTRE CANAL que le formulaire des secrets :
 # elle permet de déposer des versions sur le compte, et de les retirer.
 #
-# ── CE WORKFLOW N'A JAMAIS TOURNÉ ──────────────────────────────────────────
+# ── IL TOURNE. CE QU'IL A FALLU ────────────────────────────────────────────
 #
-# Il ne peut pas l'être avant qu'un compte Apple Developer existe. Le premier
-# lancement est donc le premier vrai essai, exactement comme pour l'AAB — qui a
-# cassé sur un tiret double en 39 secondes. Deux garde-fous préventifs sont déjà
-# en place : le schéma partagé `App.xcscheme` est versionné (sans lui, xcodebuild
-# ne trouve aucun schéma sur un checkout neuf), et il n'y a pas de Podfile à
-# installer, Capacitor 8 étant passé à Swift Package Manager.
+# Sept passages avant le premier IPA valide, le 17 août 2026 : 8 min 33 s,
+# 16,1 Mo, `altool --validate-app` passé. Les six échecs, dans l'ordre, parce
+# que chacun cache un piège qui ne se devine pas :
+#
+#   1. profil de développement introuvable → le compte n'avait aucun appareil
+#      enregistré. Un profil de développement en exige un, un profil de
+#      distribution non — d'où le message « no devices », qui dit le TYPE de
+#      profil demandé et non ce qui manque au compte.
+#   2. CODE_SIGN_IDENTITY="Apple Distribution" → conflit avec la signature
+#      automatique. `archive` signe TOUJOURS en développement ; c'est
+#      `-exportArchive` qui re-signe en distribution. Mauvaise piste.
+#   3. CODE_SIGNING_ALLOWED=NO → l'app est bien re-signée à l'export, mais pas
+#      les frameworks embarqués, qui n'avaient aucune signature à reprendre.
+#      GoogleMobileAds et UserMessagingPlatform refusés. Mauvaise piste aussi.
+#   4. SDK iOS 18.5 refusé : App Store Connect exige le SDK iOS 26, donc
+#      Xcode 26, donc une image macos-26.
+#   5. « iOS 26.0 is not installed » : Xcode 26 ne livre plus les plateformes
+#      dans son paquet, elles se téléchargent à la demande.
+#   6. le même message, en deux minutes : le téléchargement était conditionné à
+#      `-showsdks | grep iphoneos`, qui répond « présent » plateforme absente.
+#
+# Ce qui a marché : appareil enregistré, archivage signé normalement, macos-26,
+# `-downloadPlatform iOS` inconditionnel, et un contrôle sur la DESTINATION.
+#
+# Deux garde-fous d'origine ont tenu et n'ont jamais eu à servir : le schéma
+# partagé `App.xcscheme` est versionné (sans lui, xcodebuild ne trouve aucun
+# schéma sur un checkout neuf), et il n'y a pas de Podfile à installer,
+# Capacitor 8 étant passé à Swift Package Manager.
 name: IPA iOS
 
 on:
