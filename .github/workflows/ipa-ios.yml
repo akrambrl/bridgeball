@@ -173,32 +173,42 @@ jobs:
           # l'identifiant à 10 caractères visible dans Membership details sur
           # developer.apple.com/account — et relance. Rien d'autre à changer.
           #
-          # ── CODE_SIGN_IDENTITY, ET LE MESSAGE D'APPLE QUI TROMPE ────────────
+          # ── ON N'ARCHIVE PAS SIGNÉ, ET C'EST LE FLUX D'APPLE ────────────────
           #
-          # Le premier vrai passage a échoué là-dessus, en exit 65 :
+          # Deux passages ont échoué ici avant d'y voir clair, et le second a
+          # corrigé le premier :
           #
-          #   error: Your team has no devices from which to generate a
-          #          provisioning profile.
-          #   error: No profiles for 'fr.goatfc.app' were found: Xcode couldn't
-          #          find any iOS App Development provisioning profiles.
+          #   1) error: No profiles for 'fr.goatfc.app' were found: Xcode couldn't
+          #      find any iOS App Development provisioning profiles.
+          #      error: Your team has no devices from which to generate a
+          #             provisioning profile.
           #
-          # Xcode cherchait un profil de DÉVELOPPEMENT pour un archivage. Le
-          # projet déclare CODE_SIGN_STYLE = Automatic sans CODE_SIGN_IDENTITY,
-          # et le défaut du SDK iOS est « Apple Development » : depuis
-          # l'interface, Xcode devine l'intention d'un archivage ; en ligne de
-          # commande, il suit le réglage.
+          #   2) error: App has conflicting provisioning settings. App is
+          #      automatically signed for DEVELOPMENT, but a conflicting code
+          #      signing identity Apple Distribution has been manually specified.
           #
-          # L'indice est la première erreur : seuls les profils de développement
-          # exigent des appareils enregistrés. Un profil de distribution, non.
+          # Le second message donne la clé du premier : en signature automatique,
+          # `archive` signe en DÉVELOPPEMENT, toujours, et c'est `-exportArchive`
+          # qui re-signe en distribution d'après `method: app-store-connect`.
+          # L'archive intermédiaire n'a jamais à porter la signature App Store.
           #
-          # ⚠️ NE PAS « corriger » en enregistrant un appareil, ce que le message
-          # d'Apple invite littéralement à faire. L'archivage passerait, et
-          # produirait un IPA de développement que l'App Store refuse — un
-          # aller-retour de vingt minutes pour rien.
+          # Le premier échec était donc légitime : un profil de développement
+          # exige au moins un appareil enregistré, et le compte n'en a aucun.
+          # Deux issues possibles :
           #
-          # Réglé sur la ligne de commande et non dans le projet : la
-          # configuration Release sert aussi aux constructions locales, qui, elles,
-          # doivent bien se signer en développement.
+          #   • enregistrer un appareil dans Certificates, Identifiers & Profiles —
+          #     ça marche, et contrairement à ce que ce commentaire affirmait dans
+          #     sa version précédente, l'IPA final serait bien sorti signé pour
+          #     l'App Store, puisque l'export re-signe ;
+          #   • ne pas signer l'archive du tout, et laisser l'export s'en charger.
+          #
+          # C'est la seconde qui est retenue : elle ne demande aucun appareil, donc
+          # rien à faire hors du dépôt, et elle ne consomme pas un des cent
+          # emplacements d'appareils de l'année.
+          #
+          # D'où CODE_SIGNING_ALLOWED=NO et ses deux compagnons. `-exportArchive`,
+          # lui, garde `-allowProvisioningUpdates` et la clé d'API : c'est là que
+          # le certificat de distribution et le profil sont créés au besoin.
           xcodebuild -project ios/App/App.xcodeproj \
             -scheme App \
             -configuration Release \
@@ -209,7 +219,9 @@ jobs:
             -authenticationKeyID "${KEY_ID}" \
             -authenticationKeyIssuerID "${ISSUER_ID}" \
             ${TEAM_ID:+DEVELOPMENT_TEAM="${TEAM_ID}"} \
-            CODE_SIGN_IDENTITY="Apple Distribution" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
             archive
 
       - name: Exporter l'IPA
