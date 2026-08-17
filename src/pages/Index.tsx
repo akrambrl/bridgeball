@@ -6,6 +6,7 @@ import { FindPlayer } from "@/components/landing/FindPlayer";
 import { tr } from "@/lib/lang";
 import { displayStreak } from "@/lib/streak";
 import { G, posterTitre, btn } from "@/lib/charte.jsx";
+import { masquerSplashNatif } from "@/lib/native";
 
 const BREAKPOINT = 768;
 
@@ -84,6 +85,20 @@ const Index = () => {
       else if (sessionStorage.getItem("bb_active_overlay") === "guess") sessionStorage.removeItem("bb_active_overlay");
     } catch { /* noop */ }
   }, [goatGuessOpen]);
+
+  // ── L'ÉCRAN DE LANCEMENT NATIF S'EFFACE QUAND L'ÉCRAN EST PEINT ────────────
+  //
+  // Ici et pas dans LePont : LePont ne rend que sous 768 px. Sur un iPad, c'est
+  // <Home /> qui s'affiche, et le splash serait resté jusqu'au délai de secours.
+  //
+  // Le double requestAnimationFrame attend une image RÉELLEMENT peinte : le
+  // premier s'exécute avant le rendu du navigateur, le second après. Sans lui on
+  // masquerait sur le commit React, soit une frame trop tôt — assez pour laisser
+  // voir un fond or vide sur un téléphone lent.
+  useEffect(() => {
+    const t = requestAnimationFrame(() => requestAnimationFrame(masquerSplashNatif));
+    return () => cancelAnimationFrame(t);
+  }, []);
 
   useEffect(() => {
     const mql = window.matchMedia(`(max-width: ${BREAKPOINT - 1}px)`);

@@ -54,8 +54,6 @@ const SORTIES = [
 // Le binaire épinglé par le projet n'est pas toujours celui que Playwright
 // cherche par défaut dans cet environnement : on laisse PLAYWRIGHT_CHROMIUM
 // pointer dessus au besoin.
-const afficheSplash = process.argv[3] ? resolve(process.argv[3]) : null;
-
 const navigateur = await chromium.launch(
   process.env.PLAYWRIGHT_CHROMIUM ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM } : {});
 const page = await navigateur.newPage();
@@ -87,30 +85,10 @@ for (const s of SORTIES) {
   writeFileSync(fichier, Buffer.from(data.split(",")[1], "base64"));
   console.log(String(s.taille).padStart(4) + "px  " + s.nom);
 }
-// ── Écran de démarrage ────────────────────────────────────────────────
-// Pas de version paysage produite ici : quand /splash-desktop.webp manque, le
-// CSS retombe sur l'affiche portrait entière posée sur son propre flou, ce qui
-// vaut mieux qu'un recadrage 16:9 qui couperait la couronne et le bas de
-// l'écusson. C'est un repli prévu, pas un accident.
-if (afficheSplash) {
-  if (!existsSync(afficheSplash)) { console.error("affiche introuvable :", afficheSplash); process.exit(1); }
-  const srcAffiche = "data:image/png;base64," + readFileSync(afficheSplash).toString("base64");
-  const data = await page.evaluate(async ({ src }) => {
-    const img = new Image(); img.src = src; await img.decode();
-    const L = 1080, H = 1920;
-    const c = document.createElement("canvas"); c.width = L; c.height = H;
-    const x = c.getContext("2d"); x.imageSmoothingQuality = "high";
-    // Cadrage « cover » : on garde le centre si les proportions diffèrent.
-    const e = Math.max(L / img.naturalWidth, H / img.naturalHeight);
-    const w = img.naturalWidth * e, h = img.naturalHeight * e;
-    x.drawImage(img, (L - w) / 2, (H - h) / 2, w, h);
-    // 0,72 et non 0,86 : la trame sérigraphiée et les lignes de vitesse sont
-    // très coûteuses en WebP, et le splash est ce qui bloque le premier
-    // affichage. À 0,86 le fichier doublait sans gain visible à l'œil.
-    return c.toDataURL("image/webp", 0.72);
-  }, { src: srcAffiche });
-  writeFileSync(join(racine, "public/splash.webp"), Buffer.from(data.split(",")[1], "base64"));
-  console.log("1080×1920  splash.webp");
-}
+// L'affiche de démarrage 1080×1920 était produite ici, depuis un second argument
+// facultatif. Elle alimentait l'écran de lancement INTERNE de l'app, retiré
+// depuis : il s'ajoutait au splash natif d'iOS pour faire ~3 s d'attente à
+// chaque ouverture. Le splash natif, lui, ne vient pas d'ici mais de
+// assets/splash.png, via `npx capacitor-assets generate`.
 
 await navigateur.close();
