@@ -23,6 +23,7 @@
     "ios:open": "npx cap open ios",
     "coque": "node scripts/coque-native.mjs",
     "coque:verifie": "node scripts/coque-native.mjs --verifie",
+    "splash": "node scripts/splash-natif.mjs",
     "store": "node scripts/visuels-store.mjs",
     "ios:visuels": "node scripts/visuels-ios.mjs",
     "charte": "node scripts/audit-charte.mjs",
