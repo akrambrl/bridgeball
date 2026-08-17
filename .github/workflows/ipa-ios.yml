@@ -65,7 +65,7 @@ concurrency:
 
 jobs:
   construire:
-    runs-on: macos-15
+    runs-on: macos-26
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v5
@@ -90,6 +90,44 @@ jobs:
 
       - name: Synchroniser Capacitor
         run: npx cap sync ios
+
+      - name: Choisir Xcode, et refuser de compiler pour rien
+        # Le troisième passage a compilé, archivé, exporté — puis s'est fait
+        # refuser à la validation :
+        #
+        #   ERROR: SDK version issue. This app was built with the iOS 18.5 SDK.
+        #          All iOS and iPadOS apps must be built with the iOS 26 SDK or
+        #          later, included in Xcode 26 or later.
+        #
+        # Vingt minutes de runner pour un verdict qui ne dépendait que de la
+        # version d'Xcode installée. Ce contrôle le rend immédiat, et il liste ce
+        # qu'il y a sur l'image : le jour où Apple relèvera encore le plancher,
+        # le journal dira quoi choisir au lieu de laisser chercher.
+        run: |
+          set -euo pipefail
+          echo "Xcode présents sur l'image :"
+          ls -d /Applications/Xcode*.app 2>/dev/null || echo "  (aucun)"
+          MEILLEUR=""
+          MEILLEURE_V=0
+          for app in /Applications/Xcode*.app; do
+            [ -d "$app" ] || continue
+            V=$(/usr/bin/plutil -extract CFBundleShortVersionString raw \
+                  "$app/Contents/Info.plist" 2>/dev/null || echo "0")
+            MAJ=${V%%.*}
+            echo "  $app → $V"
+            if [ "${MAJ:-0}" -gt "$MEILLEURE_V" ] 2>/dev/null; then
+              MEILLEURE_V=$MAJ
+              MEILLEUR=$app
+            fi
+          done
+          if [ -z "$MEILLEUR" ] || [ "$MEILLEURE_V" -lt 26 ]; then
+            echo "::error::Xcode 26 ou plus est exigé par App Store Connect ; le plus récent ici est ${MEILLEURE_V:-aucun}."
+            echo "Changer l'image du runner (runs-on) pour une qui l'embarque."
+            exit 1
+          fi
+          sudo xcode-select -s "$MEILLEUR"
+          xcodebuild -version
+          echo "Xcode $MEILLEURE_V sélectionné ✅"
 
       - name: Vérifier ce que xcodebuild va trouver
         # Le contrôle qui aurait évité le premier échec côté Android : on regarde
@@ -219,9 +257,6 @@ jobs:
             -authenticationKeyID "${KEY_ID}" \
             -authenticationKeyIssuerID "${ISSUER_ID}" \
             ${TEAM_ID:+DEVELOPMENT_TEAM="${TEAM_ID}"} \
-            CODE_SIGNING_ALLOWED=NO \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGN_IDENTITY="" \
             archive
 
       - name: Exporter l'IPA
