@@ -184,6 +184,48 @@ est le bon défaut.
   prendre à la source, sur la page « Configure SKAdNetwork » d'AdMob, le jour de
   la mise en production.
 
+## 🔑 Le premier IPA, dans l'ordre
+
+Le compte Apple Developer existant, il reste quatre gestes.
+
+**1. Enregistrer le Bundle ID.** `developer.apple.com/account` → Certificates,
+Identifiers & Profiles → **Identifiers → +** → App IDs → App → `fr.goatfc.app`.
+Sans lui, App Store Connect refuse de créer l'app à l'étape 3.
+
+**2. Créer la clé d'API.** App Store Connect → Utilisateurs et accès →
+Intégrations → Clés API → **+**. Rôle **Admin** : le workflow s'appuie sur
+`-allowProvisioningUpdates` pour créer lui-même certificat et profil, ce qu'un
+rôle App Manager ne permet pas — lui suffit à téléverser, pas à signer.
+
+Tu obtiens `KEY_ID`, `ISSUER_ID`, et le fichier `.p8`. **Le .p8 ne se télécharge
+qu'une fois.** Il ne doit passer par aucun autre canal que le formulaire des
+secrets GitHub : il permet de déposer des versions sur le compte, et de les
+retirer.
+
+**3. Créer l'app** dans App Store Connect → Mes apps → **+** → Bundle ID
+`fr.goatfc.app`. Le nom `GOAT FC` doit être libre sur l'App Store ; s'il est
+pris, il faut un variant, et c'est le nom affiché qu'on ne peut plus changer
+librement ensuite.
+
+**4. Lancer Actions → IPA iOS.** Premier vrai essai du pipeline.
+
+### Si l'archivage échoue sur la signature
+
+```
+error: Signing for "App" requires a development team.
+```
+
+Attendu : le projet est en `CODE_SIGN_STYLE = Automatic` mais ne porte aucun
+`DEVELOPMENT_TEAM` — il a été généré par Capacitor, jamais ouvert dans Xcode sur
+un compte. Avec une équipe unique, `-allowProvisioningUpdates` la déduit parfois
+seule de la clé d'API ; « parfois » ne se paramètre pas.
+
+Le correctif est un secret de plus, **facultatif** et lu seulement s'il existe :
+`APPSTORE_TEAM_ID`, l'identifiant à 10 caractères visible dans **Membership
+details** sur `developer.apple.com/account`. Renseigne-le, relance, rien d'autre
+à changer — le workflow l'injecte alors dans `xcodebuild` et dans le `teamID` des
+options d'export.
+
 ## ⚠️ Avant de soumettre — rappels
 
 - **RLS Supabase appliqué** (voir `docs/SECURITY-SUPABASE.md`) — Phase 1 + 2.
