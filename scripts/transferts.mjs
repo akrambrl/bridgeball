@@ -43,7 +43,18 @@ const ANNEE = arg("annee", String(new Date().getFullYear()));
 const FENETRE = arg("fenetre", "summer");        // summer | winter
 const ECRIRE = process.argv.includes("--ecrire");
 
-const PAYS = ["English", "Spanish", "Italian", "French", "German"];
+// Les cinq grands championnats ne suffisent pas, et c'est un joueur qui l'a
+// montré : il a signalé « N'Golo Kanté → Fenerbahçe » alors que la fiche
+// s'arrêtait à Al-Ittihad. Le transfert était réel, mais un mouvement
+// Arabie saoudite → Turquie n'apparaît dans AUCUNE des cinq listes. Tout ce
+// qui se joue hors de l'Europe de l'Ouest était donc invisible ici — or ce
+// sont précisément les fins de carrière, celles qui manquent le plus souvent
+// aux fiches.
+//
+// Les listes ajoutées n'existent pas toutes chaque année : `listeDe` répond
+// déjà « HTTP 404, liste ignorée » sans faire échouer le passage.
+const PAYS = ["English", "Spanish", "Italian", "French", "German",
+              "Portuguese", "Dutch", "Turkish", "Saudi Arabian", "Belgian"];
 
 // players.jsx porte l'extension .jsx sans contenir de JSX : Node refuse de
 // l'importer. Même contournement que dans audit-tirage.mjs.
@@ -81,7 +92,12 @@ async function listeDe(pays) {
   const out = [];
   let section = null;
   for (const ligne of texte.split("\n")) {
-    const t = ligne.match(/^===\s*(.+?)\s*===\s*$/);
+    // Les listes néerlandaise et belge rangent les clubs un niveau plus bas,
+    // en `==== Club ====`. Avec un motif figé à trois signes, le quatrième
+    // fuyait dans le nom : « =Antwerp= ». Le rapprochement tenait quand même —
+    // `cle()` ignore la ponctuation — mais la sortie affichait un club qui
+    // n'existe pas, et le prochain format aurait fini par casser la comparaison.
+    const t = ligne.match(/^={3,}\s*(.+?)\s*={3,}\s*$/);
     if (t) { section = lien(t[1]); continue; }
     const fp = ligne.match(/\{\{fs player\|(.*)$/i);
     if (!fp || !section) continue;
