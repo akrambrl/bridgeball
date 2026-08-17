@@ -172,6 +172,33 @@ jobs:
           # Si tu vois l'erreur ci-dessus, renseigne APPSTORE_TEAM_ID —
           # l'identifiant à 10 caractères visible dans Membership details sur
           # developer.apple.com/account — et relance. Rien d'autre à changer.
+          #
+          # ── CODE_SIGN_IDENTITY, ET LE MESSAGE D'APPLE QUI TROMPE ────────────
+          #
+          # Le premier vrai passage a échoué là-dessus, en exit 65 :
+          #
+          #   error: Your team has no devices from which to generate a
+          #          provisioning profile.
+          #   error: No profiles for 'fr.goatfc.app' were found: Xcode couldn't
+          #          find any iOS App Development provisioning profiles.
+          #
+          # Xcode cherchait un profil de DÉVELOPPEMENT pour un archivage. Le
+          # projet déclare CODE_SIGN_STYLE = Automatic sans CODE_SIGN_IDENTITY,
+          # et le défaut du SDK iOS est « Apple Development » : depuis
+          # l'interface, Xcode devine l'intention d'un archivage ; en ligne de
+          # commande, il suit le réglage.
+          #
+          # L'indice est la première erreur : seuls les profils de développement
+          # exigent des appareils enregistrés. Un profil de distribution, non.
+          #
+          # ⚠️ NE PAS « corriger » en enregistrant un appareil, ce que le message
+          # d'Apple invite littéralement à faire. L'archivage passerait, et
+          # produirait un IPA de développement que l'App Store refuse — un
+          # aller-retour de vingt minutes pour rien.
+          #
+          # Réglé sur la ligne de commande et non dans le projet : la
+          # configuration Release sert aussi aux constructions locales, qui, elles,
+          # doivent bien se signer en développement.
           xcodebuild -project ios/App/App.xcodeproj \
             -scheme App \
             -configuration Release \
@@ -182,6 +209,7 @@ jobs:
             -authenticationKeyID "${KEY_ID}" \
             -authenticationKeyIssuerID "${ISSUER_ID}" \
             ${TEAM_ID:+DEVELOPMENT_TEAM="${TEAM_ID}"} \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
             archive
 
       - name: Exporter l'IPA
