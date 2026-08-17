@@ -47,14 +47,40 @@ const ECRIRE = process.argv.includes("--ecrire");
 // montré : il a signalé « N'Golo Kanté → Fenerbahçe » alors que la fiche
 // s'arrêtait à Al-Ittihad. Le transfert était réel, mais un mouvement
 // Arabie saoudite → Turquie n'apparaît dans AUCUNE des cinq listes. Tout ce
-// qui se joue hors de l'Europe de l'Ouest était donc invisible ici — or ce
-// sont précisément les fins de carrière, celles qui manquent le plus souvent
-// aux fiches.
+// qui se joue hors de l'Europe de l'Ouest était donc invisible — or ce sont
+// précisément les fins de carrière, celles qui manquent le plus aux fiches.
 //
-// Les listes ajoutées n'existent pas toutes chaque année : `listeDe` répond
-// déjà « HTTP 404, liste ignorée » sans faire échouer le passage.
+// ── LA LISTE CI-DESSOUS N'EST PAS DEVINÉE ────────────────────────────────────
+//
+// Un premier élargissement avait ajouté Portugal, Turquie et Arabie saoudite.
+// Les trois répondaient 404 à chaque passage : ces listes N'EXISTENT PAS sur
+// Wikipédia en anglais. L'élargissement n'avait donc réellement apporté que les
+// Pays-Bas et la Belgique, sous trois avertissements qui semblaient anodins.
+//
+// Les 28 listes existantes ont été énumérées à la source, par
+// `intitle:"football transfers summer 2026"` sur l'API de recherche. Celles
+// retenues sont celles dont les clubs sont VRAIMENT dans players.jsx, compté
+// club par club :
+//
+//   Écosse      Celtic 88 fiches, Rangers 86
+//   Russie      Spartak 26, Zenit 25, CSKA 20, Dynamo 20
+//   Autriche    Salzburg 44
+//   Suisse      Basel 38
+//   Ukraine     Shakhtar 31
+//   Danemark    Copenhague 36
+//   Tchéquie    Slavia 38, Plzeň 19
+//
+// Écartées faute de présence dans la base : Arménie, Azerbaïdjan, Biélorussie,
+// Bulgarie, Kazakhstan, Lettonie, Lituanie, Mexique, Norvège, Pologne,
+// Roumanie, Slovaquie, Suède. Et « English women's », hors sujet ici.
+//
+// ⚠️ CE QUI RESTE AVEUGLE, ET QU'AUCUNE LISTE NE COUVRIRA : la Turquie, le
+// Portugal et l'Arabie saoudite. Le signalement qui a lancé tout ça reste donc
+// hors de portée de cet outil — les fins de carrière au Golfe et en Turquie ne
+// se trouveront qu'à la main, ou par les signalements des joueurs.
 const PAYS = ["English", "Spanish", "Italian", "French", "German",
-              "Portuguese", "Dutch", "Turkish", "Saudi Arabian", "Belgian"];
+              "Dutch", "Belgian", "Scottish", "Russian", "Austrian",
+              "Swiss", "Ukrainian", "Danish", "Czech"];
 
 // players.jsx porte l'extension .jsx sans contenir de JSX : Node refuse de
 // l'importer. Même contournement que dans audit-tirage.mjs.
