@@ -98,12 +98,10 @@ export const MatchmakingOverlay = ({ game, onFound, onCancel }: Props) => {
   const [dots, setDots] = useState(1);
   const opponentRef = useRef(pickOpponent());
   const myPseudoRef = useRef(getStoredPseudo());
-  // Photo de profil si le joueur en a une (même clé que le mobile), sinon
-  // visuel GOAT FC dérivé du pseudo.
-  const myPhotoRef = useRef<string | null>(
-    typeof window === "undefined" ? null : (() => { try { return localStorage.getItem("bb_avatar_url"); } catch { return null; } })()
-  );
-  const myAvatarRef = useRef(myPhotoRef.current || avatarFor(myPseudoRef.current));
+  // Visuel GOAT FC dérivé du pseudo. Il lisait avant `bb_avatar_url`, la photo
+  // téléversée : cette clé n'est plus jamais écrite, la photo de profil étant
+  // devenue la carte de niveau, que cet écran de recherche n'a pas à charger.
+  const myAvatarRef = useRef(avatarFor(myPseudoRef.current));
 
   useEffect(() => {
     if (phase !== "searching") return;
