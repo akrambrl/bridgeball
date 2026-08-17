@@ -127,6 +127,32 @@ jobs:
           fi
           sudo xcode-select -s "$MEILLEUR"
           xcodebuild -version
+
+          # ── XCODE 26 NE LIVRE PLUS LE SDK iOS DANS SON PAQUET ───────────────
+          #
+          # Le passage suivant l'a appris sèchement, en exit 70 :
+          #
+          #   xcodebuild: error: Unable to find a destination matching the
+          #               provided destination specifier: { generic:1, platform:iOS }
+          #     error: iOS 26.0 is not installed. Please download and install the
+          #            platform from Xcode > Settings > Components.
+          #
+          # Xcode 16 embarquait iPhoneOS.platform ; depuis Xcode 26, les
+          # plateformes sont des téléchargements à la demande. Sur une image de
+          # runner, il n'y a donc AUCUN SDK iOS tant qu'on ne le demande pas.
+          #
+          # C'est long — plusieurs gigaoctets, quelques minutes — mais c'est une
+          # fois par job et il n'y a pas d'alternative : sans SDK, pas de
+          # destination iOS, donc pas d'archive.
+          if xcodebuild -showsdks 2>/dev/null | grep -q "iphoneos"; then
+            echo "SDK iOS déjà présent ✅"
+          else
+            echo "SDK iOS absent — téléchargement de la plateforme…"
+            xcodebuild -downloadPlatform iOS || sudo xcodebuild -downloadPlatform iOS
+          fi
+          # Le journal garde la liste : c'est ce qui rendra le prochain refus de
+          # version lisible sans avoir à deviner ce que portait l'image.
+          xcodebuild -showsdks
           echo "Xcode $MEILLEURE_V sélectionné ✅"
 
       - name: Vérifier ce que xcodebuild va trouver
