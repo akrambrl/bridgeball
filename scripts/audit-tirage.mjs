@@ -525,3 +525,93 @@ const clubsParPoids = Object.entries(jeu.CLUB_INDEX)
   .slice(0, 15);
 console.log("  Les 15 clubs les plus fournis de la base qui ne sortent JAMAIS en Battle :");
 for (const [c, n] of clubsParPoids) console.log(`    ${String(n).padStart(3)} joueurs  ${c}`);
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Le poids d'UN joueur dans les tirages
+// ═══════════════════════════════════════════════════════════════════════════
+// Les sections ci-dessus mesurent la variété des QUESTIONS. Elles ne répondent
+// pas à « est-ce que ce joueur-là revient tout le temps ? », qui est une autre
+// question : dans The Plug, une même réponse dessert autant de paires qu'elle a
+// de couples de clubs cotés, et un joueur à sept clubs peut donc être la
+// solution de dix questions différentes sans qu'aucune ne se répète.
+//
+//     JOUEUR="Emerson Palmieri" node scripts/audit-tirage.mjs
+//
+// Trois mesures par mode, et la troisième est la seule qui compte vraiment :
+//   • combien de questions ce joueur peut résoudre ;
+//   • quelle part du vivier ça représente ;
+//   • sur combien il est la SEULE réponse — là, le joueur n'a pas le choix, et
+//     c'est ce qui donne l'impression qu'un nom « sort tout le temps ».
+titre("Le poids d'un joueur dans les tirages");
+
+const JOUEUR = process.env.JOUEUR || "Emerson Palmieri";
+const fiche = PLAYERS_CLEAN.find(p => p.name === JOUEUR);
+if (!fiche) {
+  console.log(`  ${JOUEUR} : absent de la base.`);
+} else {
+  const cotes = [...new Set(fiche.clubs.filter(c => jeu.PONT_CLUBS.has(c)))];
+  console.log(`  ${JOUEUR} — ${fiche.diff}, ${fiche.clubs.length} clubs`
+    + ` dont ${cotes.length} cotés pour The Plug`);
+  console.log(`     ${fiche.clubs.join(" · ")}`);
+  console.log(`     cotés : ${cotes.join(" · ")}`);
+
+  // ── The Plug ──
+  for (const diff of ["facile", "moyen", "expert"]) {
+    const pool = DB[diff] || [];
+    if (!pool.length) continue;
+    const sien = pool.filter(q => q.p.includes(JOUEUR));
+    const seul = sien.filter(q => q.p.length === 1);
+    console.log(`\n  THE PLUG ${diff} — vivier ${pool.length} paires`);
+    console.log(`     réponse possible de ${sien.length} paires (${pct(sien.length / pool.length)} du vivier)`);
+    console.log(`     SEULE réponse de ${seul.length} paires`
+      + (seul.length ? " : " + seul.map(q => q.c1 + " / " + q.c2).join(" · ") : ""));
+    // Le rang parmi tous les joueurs : un chiffre brut ne dit pas s'il est
+    // anormal. Sur un vivier de N paires et M réponses distinctes, la moyenne
+    // est mécaniquement supérieure à 1 — c'est au rang qu'on voit l'écart.
+    const parJoueur = new Map();
+    for (const q of pool) for (const nom of q.p) parJoueur.set(nom, (parJoueur.get(nom) || 0) + 1);
+    const classement = [...parJoueur.entries()].sort((a, b) => b[1] - a[1]);
+    const rang = classement.findIndex(([nom]) => nom === JOUEUR) + 1;
+    console.log(`     rang ${rang || "—"} sur ${classement.length} réponses distinctes`
+      + `  (tête : ${classement.slice(0, 5).map(([n, c]) => n + " ×" + c).join(", ")})`);
+  }
+
+  // ── The Mercato : il n'y a qu'un tirage, le joueur de départ ──
+  for (const diff of ["facile", "moyen"]) {
+    const pool = starterPool(diff);
+    const dedans = pool.some(p => p.name === JOUEUR);
+    const actifs = pool.filter(p => !isRetiredPlayer(p.name)).length;
+    console.log(`\n  THE MERCATO ${diff} — ${pool.length} starters possibles (${actifs} actifs)`);
+    if (!dedans) { console.log("     pas dans le vivier des starters"); continue; }
+    // 80 % des tirages piochent dans les actifs (cf. tirerMercato).
+    const part = isRetiredPlayer(JOUEUR) ? 0.2 / (pool.length - actifs) : 0.8 / actifs;
+    console.log(`     starter possible — ${pct(part)} des parties, soit 1 sur ${Math.round(1 / part)}`);
+  }
+
+  // ── Trouve le joueur ──
+  for (const diff of ["facile", "moyen"]) {
+    const pool = revealPools[diff];
+    const dedans = pool.some(p => p.name === JOUEUR);
+    const proba = diff === "facile" ? 0.7 : 0.3;
+    console.log(`\n  TROUVE LE JOUEUR ${diff} — ${pool.length} joueurs (tiré ${pct(proba)} du temps)`);
+    console.log(dedans
+      ? `     dans le vivier — ${pct(proba / pool.length)} des parties, soit 1 sur ${Math.round(pool.length / proba)}`
+      : "     pas dans le vivier");
+  }
+
+  // ── GOAT BATTLE ──
+  {
+    const retenues = [];
+    for (let i = 0; i < DUEL_CLUBS.length; i++) {
+      for (let j = i + 1; j < DUEL_CLUBS.length; j++) {
+        if (duelPaireRetenue(DUEL_CLUBS[i], DUEL_CLUBS[j])) retenues.push([DUEL_CLUBS[i], DUEL_CLUBS[j]]);
+      }
+    }
+    const sien = retenues.filter(([a, b]) => duelCommonPlayers(a, b).includes(JOUEUR));
+    const seul = sien.filter(([a, b]) => duelCommonPlayers(a, b).length === 1);
+    console.log(`\n  GOAT BATTLE — vivier ${retenues.length} paires retenues`);
+    console.log(`     réponse possible de ${sien.length} paires (${pct(sien.length / retenues.length)} du vivier)`);
+    console.log(`     SEULE réponse de ${seul.length} paires`
+      + (seul.length ? " : " + seul.map(([a, b]) => a + " / " + b).join(" · ") : ""));
+  }
+}
