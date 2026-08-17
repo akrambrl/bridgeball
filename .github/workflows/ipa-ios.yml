@@ -19,6 +19,12 @@
 #   APPSTORE_ISSUER_ID    l'identifiant d'émetteur, un UUID
 #   APPSTORE_PRIVATE_KEY  le CONTENU du fichier .p8, en-têtes comprises
 #
+# Un quatrième est FACULTATIF, et ne sert qu'en cas d'échec de signature :
+#
+#   APPSTORE_TEAM_ID      l'identifiant d'équipe (10 caractères), à ne renseigner
+#                         que si l'archivage se plaint de « requires a development
+#                         team ». Voir le commentaire de l'étape Archiver.
+#
 # Ces trois valeurs viennent d'App Store Connect → Utilisateurs et accès → Intégrations
 # → Clés API App Store Connect. Le .p8 ne se télécharge QU'UNE FOIS : perdu, il faut
 # révoquer la clé et en créer une autre. Voir docs/STORE-IOS.md.
@@ -141,6 +147,7 @@ jobs:
         env:
           KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
           ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
+          TEAM_ID: ${{ secrets.APPSTORE_TEAM_ID }}
         run: |
           set -euo pipefail
           # -project et non -workspace : il n'y a pas de .xcworkspace, Capacitor 8
@@ -149,6 +156,22 @@ jobs:
           # -allowProvisioningUpdates avec la clé d'API : Xcode crée ou récupère
           # lui-même le certificat de distribution et le profil. C'est ce qui évite
           # d'exporter un .p12 depuis un Mac qui n'a pas Xcode.
+          #
+          # ── DEVELOPMENT_TEAM, ET POURQUOI IL EST FACULTATIF ─────────────────
+          #
+          # Le projet est en CODE_SIGN_STYLE = Automatic mais ne porte AUCUN
+          # DEVELOPMENT_TEAM : il a été généré par Capacitor, jamais ouvert dans
+          # Xcode sur un compte. La signature automatique a besoin d'une équipe,
+          # et xcodebuild échoue alors sur :
+          #
+          #   error: Signing for "App" requires a development team.
+          #
+          # Avec un compte à équipe unique, -allowProvisioningUpdates la déduit
+          # parfois seul de la clé d'API. « Parfois » ne se paramètre pas : le
+          # secret est donc facultatif, et on ne l'injecte que s'il existe.
+          # Si tu vois l'erreur ci-dessus, renseigne APPSTORE_TEAM_ID —
+          # l'identifiant à 10 caractères visible dans Membership details sur
+          # developer.apple.com/account — et relance. Rien d'autre à changer.
           xcodebuild -project ios/App/App.xcodeproj \
             -scheme App \
             -configuration Release \
@@ -158,14 +181,20 @@ jobs:
             -authenticationKeyPath ~/.appstoreconnect/private_keys/AuthKey_${KEY_ID}.p8 \
             -authenticationKeyID "${KEY_ID}" \
             -authenticationKeyIssuerID "${ISSUER_ID}" \
+            ${TEAM_ID:+DEVELOPMENT_TEAM="${TEAM_ID}"} \
             archive
 
       - name: Exporter l'IPA
         env:
           KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
           ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
+          TEAM_ID: ${{ secrets.APPSTORE_TEAM_ID }}
         run: |
           set -euo pipefail
+          # Le plist est écrit en deux temps parce que la clé <teamID> ne doit
+          # PAS y figurer quand le secret est vide : un teamID vide fait échouer
+          # -exportArchive, là qu'un teamID absent le laisse déduire l'équipe.
+          # Un heredoc entre quotes n'interpole rien, d'où l'ajout après coup.
           cat > "${RUNNER_TEMP}/export.plist" <<'PLIST'
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -178,6 +207,10 @@ jobs:
           </dict>
           </plist>
           PLIST
+          if [ -n "${TEAM_ID:-}" ]; then
+            /usr/libexec/PlistBuddy -c "Add :teamID string ${TEAM_ID}" "${RUNNER_TEMP}/export.plist"
+            echo "teamID injecté dans les options d'export."
+          fi
           xcodebuild -exportArchive \
             -archivePath "${RUNNER_TEMP}/App.xcarchive" \
             -exportPath "${RUNNER_TEMP}/export" \
