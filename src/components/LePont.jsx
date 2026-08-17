@@ -3367,7 +3367,11 @@ if(typeof document!=="undefined"&&!document.getElementById("bb-css")){
        Les bandes de tonte disparaissent avec la pelouse : sur un aplat d'or,
        une rayure verticale ne raconte plus un terrain, elle salit le fond. */
     html,body,#root{background:${G.or}!important;min-height:100vh;min-height:100dvh;}
-    #root{padding-top:env(safe-area-inset-top);}
+    /* box-sizing:border-box pour que ce padding se prenne DANS le min-height
+       du dessus au lieu de s'y ajouter. Inerte tant que la balise viewport est
+       posée sans viewport-fit=cover (l'env() vaut alors 0) ; c'est une des
+       conditions à réunir avant de pouvoir l'activer. */
+    #root{padding-top:env(safe-area-inset-top);box-sizing:border-box;}
     /* VOILE DE LA BARRE D'ÉTAT.
        L'app tourne en black-translucent : le décor passe donc SOUS l'horloge et
        la batterie, mais ce mode force aussi le texte système en BLANC. Or le
@@ -5794,8 +5798,31 @@ export default function LePont() {
   // Lock viewport : empêche zoom utilisateur, scroll horizontal, overscroll
   // pour que l'app se comporte comme une app native en PWA sur téléphone
   useEffect(()=>{
-    // Viewport meta — écrase/complète celui de index.html
-    // NOTE: pas de viewport-fit=cover pour que le splash screen iOS s'affiche normalement
+    // ── PAS DE viewport-fit=cover, ET LA RAISON A ÉTÉ MESURÉE ───────────────
+    //
+    // index.html le déclare, cette ligne le retire. Ça a l'air d'un oubli, et
+    // c'en était peut-être un, mais le rétablir CASSE l'app aujourd'hui.
+    //
+    // Sans `cover`, iOS et Android font valoir 0 à tous les
+    // `env(safe-area-inset-*)`. Avec `cover`, ils valent la vraie encoche — et
+    // `#root` prend alors 59 px de padding sur un iPhone à encoche, tandis que
+    // HUIT écrans sont posés en `height:"100dvh"` : accueil, classement, amis,
+    // collection, compte, profil, salle, duel. Chacun réclame donc la hauteur
+    // ENTIÈRE de l'écran À L'INTÉRIEUR d'un conteneur déjà décalé.
+    //
+    // Mesuré sur un viewport de 393 × 852 en substituant 59 px aux env() : la
+    // page passe de 852 à 911 px de haut. Soixante pixels de défilement
+    // vertical parasite sur des écrans qui tiennent, plus un rebond en fin de
+    // course, sur tous les écrans à la fois.
+    //
+    // Passer à `cover` demande donc d'abord de sortir ces huit `100dvh` — soit
+    // une hauteur utile calculée une fois, soit un décalage porté par chaque
+    // écran au lieu de #root. Tant que ce n'est pas fait, `cover` est une
+    // régression, pas une correction.
+    //
+    // Le plein écran de la coque native est obtenu autrement, sans dépendre des
+    // env() : voir `contentInset` dans capacitor.config.ts et
+    // `setOverlaysWebView` dans src/lib/native.ts.
     let meta = document.querySelector('meta[name="viewport"]');
     if (!meta) { meta = document.createElement('meta'); meta.name = 'viewport'; document.head.appendChild(meta); }
     meta.setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no');
@@ -5803,8 +5830,10 @@ export default function LePont() {
     // iOS : mode web-app plein écran (fallback, iOS ignore manifest display)
     let appleCap = document.querySelector('meta[name="apple-mobile-web-app-capable"]');
     if (!appleCap) { appleCap = document.createElement('meta'); appleCap.name = 'apple-mobile-web-app-capable'; appleCap.content = 'yes'; document.head.appendChild(appleCap); }
-    // Retire toute balise status-bar-style=black-translucent qui serait dans index.html
-    // (cause du bug splash screen "trop haut")
+    // `black-translucent` ferait passer la page SOUS l'horloge, ce qui n'a de
+    // sens qu'avec les env() ci-dessus pour la décaler ensuite. Sans eux, le
+    // haut de l'accueil se retrouverait derrière l'heure et la batterie. La
+    // balise est donc retirée tant que `cover` n'est pas là.
     document.querySelectorAll('meta[name="apple-mobile-web-app-status-bar-style"]').forEach(m => m.remove());
 
     // Styles globaux pour bloquer scroll horizontal et overscroll rebound

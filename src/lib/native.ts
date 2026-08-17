@@ -22,9 +22,28 @@ export const isNative = (): boolean => {
 export async function initNative(): Promise<void> {
   if (!isNative()) return;
   try {
-    // Barre de statut : texte clair sur fond sombre, en superposition.
     await StatusBar.setStyle({ style: Style.Dark });
-    try { await StatusBar.setOverlaysWebView({ overlay: true }); } catch {}
+    // ── overlay:false — LA PAGE S'ARRÊTE SOUS L'HORLOGE, ET C'EST VOULU ──────
+    //
+    // En superposition (`true`), la vue web couvre l'écran entier, barre d'état
+    // comprise. Pour que le contenu ne passe pas DERRIÈRE l'heure, il faut
+    // ensuite le décaler — ce que la charte fait avec
+    // `env(safe-area-inset-top)`. Sauf que ces env() valent 0 : la balise
+    // viewport est posée sans `viewport-fit=cover`, et la remettre créerait 60 px
+    // de défilement parasite sur huit écrans (mesuré, cf. le commentaire dans
+    // src/components/LePont.jsx).
+    //
+    // Résultat sur iPhone : vue web plein écran, aucun décalage, et le
+    // `contentInset` de WKWebView qui décalait le contenu à sa place — d'où deux
+    // bandes d'or inertes en haut et en bas, l'app qui « ne remplissait pas
+    // l'écran » alors que la même page installée depuis goatfc.fr le remplissait.
+    //
+    // `false` donne exactement la géométrie de cette PWA : la vue web occupe la
+    // zone sûre, `100dvh` vaut donc la hauteur réellement disponible, et les huit
+    // écrans en `height:100dvh` tombent juste sans rien décaler. La barre d'état
+    // est peinte par le fond natif, déjà réglé sur l'or de la charte dans
+    // capacitor.config.ts.
+    try { await StatusBar.setOverlaysWebView({ overlay: false }); } catch {}
   } catch {}
   try {
     // Bouton retour matériel (Android) : ne pas quitter l'app par accident.
