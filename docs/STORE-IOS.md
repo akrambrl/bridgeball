@@ -25,6 +25,14 @@ vraie coque native, avec des **fonctions natives** et les assets **empaquetés**
 
 **Rien ne peut avancer avant le point 1**, pas même un essai du workflow.
 
+**Et le point 1 cache une décision.** Les 24-48 h annoncées valent pour une
+inscription en **Particulier** — et le vendeur affiché sous l'app est alors le
+nom d'état civil, Apple ne proposant pas de nom commercial libre aux comptes
+particuliers (contrairement à Play). Pour afficher `GOAT FC`, il faut une
+inscription en **Organisation** : entité immatriculée, site à son nom, et un
+**numéro D-U-N-S** — gratuit, mais jusqu'à 5 jours ouvrés, parfois deux
+semaines. C'est le seul délai du projet qu'on ne peut pas comprimer.
+
 **Et la bonne nouvelle :** Apple n'a **aucune** exigence équivalente aux 12 testeurs
 pendant 14 jours de Google. TestFlight interne est immédiat. À compte égal, iOS
 sort donc PLUS VITE qu'Android.
@@ -122,8 +130,12 @@ Apple les ajoute). Ton `public/icon-512.png` peut servir de base (à re-génére
   - **Pays via IP** (`ipapi.co`, tiers) → *Location (Coarse)*
   - Identifiant d'appareil anonyme + events → *Identifiers / Usage Data*
   - Tokens push (si activé)
-  - Indique : **pas de suivi publicitaire** (App Tracking Transparency non requis
-    tant que tu ne traques pas cross-app).
+  - **Publicité — cette ligne a changé.** Ce document affirmait « pas de suivi
+    publicitaire, App Tracking Transparency non requis ». C'était vrai jusqu'à
+    l'arrivée d'AdMob. Il faut désormais déclarer, dans les étiquettes de
+    confidentialité, **Identifiers → Third-Party Advertising** et
+    **Usage Data → Advertising Data**, et l'app demande l'autorisation ATT au
+    lancement. Refuser ne bloque rien : les pubs deviennent non personnalisées.
 - **Suppression de compte** : Apple l'exige → déjà présente in-app ✅.
 - **Politique de confidentialité** : `https://goatfc.fr/privacy/` — vérifiée
   vivante (HTTP 200). L'adresse de contact qui y figure est `contact@goatfc.online`.
@@ -138,6 +150,39 @@ capability **Push Notifications** + **Background Modes** dans Xcode, configure
 `bb_push_subscriptions`. À faire dans un second temps si besoin.
 
 ---
+
+## 📺 Publicités sur iOS — deux clés qui font planter l'app si elles manquent
+
+`ios/App/App/Info.plist` porte maintenant deux clés, et **l'absence de l'une ou
+l'autre fait planter l'app**, pour deux raisons différentes :
+
+| clé | sans elle |
+|---|---|
+| `GADApplicationIdentifier` | le SDK Google Mobile Ads lève au **démarrage**, avant le premier écran, sur tous les iPhone |
+| `NSUserTrackingUsageDescription` | iOS fait planter l'app au moment d'**afficher** la fenêtre d'autorisation |
+
+L'identifiant présent est celui de **TEST** de Google
+(`ca-app-pub-3940256099942544~1458002511`). À remplacer par celui de l'app iOS
+créée dans AdMob **au moment de passer en production, et pas avant** — un clic
+sur sa propre vraie publicité fait fermer un compte AdMob définitivement.
+
+C'est l'identifiant d'**application** (avec un `~`), jamais celui du **bloc
+d'annonces** (avec un `/`). Ce dernier va dans `src/lib/pub.ts`, champ
+`ID_REEL_RECOMPENSE.ios`, aujourd'hui vide — et vide veut dire mode test, ce qui
+est le bon défaut.
+
+**Deux points restés ouverts, volontairement :**
+
+- **La phrase ATT est en anglais.** `CFBundleDevelopmentRegion` vaut `en`, c'est
+  donc la langue de repli du bundle. La traduire demande un
+  `fr.lproj/InfoPlist.strings` ajouté aux ressources du projet — à faire depuis
+  Xcode, pas à la main dans le `.xcodeproj`.
+- **`SKAdNetworkItems` n'est pas renseigné.** Google publie une liste d'une
+  centaine d'identifiants de réseaux à coller dans le plist ; elle améliore
+  l'attribution, donc le revenu. Elle n'a pas été ajoutée ici parce qu'elle
+  change régulièrement et qu'une liste recopiée de mémoire serait fausse : à
+  prendre à la source, sur la page « Configure SKAdNetwork » d'AdMob, le jour de
+  la mise en production.
 
 ## ⚠️ Avant de soumettre — rappels
 
