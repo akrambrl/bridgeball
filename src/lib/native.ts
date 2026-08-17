@@ -18,6 +18,27 @@ export const isNative = (): boolean => {
   }
 };
 
+// Instant du chargement du module, donc au plus près du démarrage de l'app :
+// c'est depuis lui que se compte le plancher d'affichage du splash ci-dessous.
+const DEMARRAGE = Date.now();
+
+// ── POURQUOI UN PLANCHER, APRÈS EN AVOIR RETIRÉ UN DE 2 500 ms ──────────────
+//
+// Le splash natif est devenu INVISIBLE. Il se masque désormais sur la première
+// image peinte, et l'app se peint vite : l'écran de lancement passait en une
+// fraction de seconde, sur un visuel qui est le décor exact de l'accueil, à
+// l'or et aux lignes de vitesse près. Résultat, plus rien à voir — alors que
+// c'est le seul moment de marque de l'app.
+//
+// 600 ms et non 2 500 : ce n'est pas la même chose qu'une attente. C'est la
+// durée qu'il faut pour qu'un écran se lise, en dessous de laquelle il n'est
+// qu'un clignotement.
+//
+// Et ce plancher n'AJOUTE jamais rien à un démarrage lent : si la première
+// image arrive après 600 ms, le reste à attendre vaut zéro et le splash part
+// immédiatement. Il ne rallonge que les démarrages déjà rapides.
+const PLANCHER_SPLASH = 600;
+
 // À appeler une fois au démarrage de l'app (depuis main.tsx).
 export async function initNative(): Promise<void> {
   if (!isNative()) return;
@@ -69,7 +90,9 @@ export async function initNative(): Promise<void> {
  */
 export function masquerSplashNatif(): void {
   if (!isNative()) return;
-  SplashScreen.hide().catch(() => {});
+  const reste = Math.max(0, PLANCHER_SPLASH - (Date.now() - DEMARRAGE));
+  if (reste === 0) { SplashScreen.hide().catch(() => {}); return; }
+  setTimeout(() => { SplashScreen.hide().catch(() => {}); }, reste);
 }
 
 // ── Retour haptique (no-op sur web) ──
