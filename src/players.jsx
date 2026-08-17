@@ -1918,6 +1918,7 @@ export const PLAYERS = [
   { name:"Chris Waddle", clubs:["Newcastle", "Tottenham", "Marseille", "Sheffield Wednesday", "Falkirk", "Burnley", "Bradford City", "Sunderland", "Torquay United"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1960 },
   { name:"Enzo Francescoli", clubs:["Montevideo Wanderers", "River Plate", "Racing Club", "Racing Paris", "Cagliari Calcio", "Torino FC", "Marseille"], diff:"moyen", nationalities:["Uruguay"], positions:["attaquant"], birthYear:1961 },
   { name:"Dimitri Payet", clubs:["Nantes", "Saint-Etienne", "Lille", "Marseille", "West Ham", "Vasco da Gama"], diff:"facile", nationalities:["France"], positions:["milieu"], birthYear:1987 },
+  { name:"Faris Moumbagna", clubs:["Bethlehem Steel", "Kristiansund", "Sønderjyske", "Bodø/Glimt", "Marseille", "Cremonese"], diff:"expert", nationalities:["Cameroun"], positions:["attaquant"], birthYear:2000 },
   // Nice
   { name:"Dante", clubs:["Lille", "Borussia Mönchengladbach", "Bayern Munich", "Wolfsburg", "Nice"], diff:"moyen", nationalities:["Brésil"], positions:["defenseur"], birthYear:1983 },
   { name:"Justin Kluivert", clubs:["Ajax Amsterdam", "AS Roma", "RB Leipzig", "Nice", "Valencia", "Bournemouth"], diff:"moyen", nationalities:["Pays-Bas"], positions:["attaquant"], birthYear:1999 },
