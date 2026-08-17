@@ -3791,6 +3791,17 @@ export default function LePont() {
   const [ggLives, setGgLives] = useState(3);
   const [ggScore, setGgScore] = useState(0);
   const [ggGameOver, setGgGameOver] = useState(false); // true quand 0 vies OU grille pleine
+  // ── UNE VIE CONTRE UNE PUB, ET UNE SEULE PAR GRILLE ────────────────────────
+  //
+  // GOAT GRID écrit dans bb_gg_scores, PAS dans bb_scores : ce mode ne compte
+  // donc pas dans le classement mensuel, et une vie rachetée ne touche jamais au
+  // concours doté. C'est la raison pour laquelle la proposition est ici et pas
+  // dans GOAT Mercato, dont le score est classé.
+  //
+  // `ggVieRachetee` est PERSISTÉ. Sans ça, recharger la page remettrait le
+  // compteur à zéro et la relance deviendrait illimitée.
+  const [ggVieRachetee, setGgVieRachetee] = useState(false);
+  const [ggProposeVie, setGgProposeVie] = useState(false);
   const [ggSelectedCell, setGgSelectedCell] = useState(null); // { row, col } ou null
   const [ggGuess, setGgGuess] = useState("");
   const [ggFlash, setGgFlash] = useState(null); // null | 'ok' | 'ko'
@@ -4367,6 +4378,7 @@ export default function LePont() {
         lives: ggLives,
         score: ggScore,
         gameOver: ggGameOver,
+        vieRachetee: ggVieRachetee,
       };
       localStorage.setItem("goatfc_gg_state", JSON.stringify(state));
     } catch {}
@@ -5338,9 +5350,14 @@ export default function LePont() {
     if (saved) {
       setGgFilledCells(saved.filledCells || {});
       setGgUsedPlayers(new Set(saved.usedPlayers || []));
-      setGgLives(typeof saved.lives === "number" ? saved.lives : 3);
+      const viesSauvees = typeof saved.lives === "number" ? saved.lives : 3;
+      setGgLives(viesSauvees);
       setGgScore(saved.score || 0);
-      setGgGameOver(saved.gameOver || false);
+      // Zéro vie SANS game over ne peut venir que d'une fermeture pendant la
+      // proposition de vie. Restauré tel quel, la grille resterait injouable et
+      // ne se terminerait jamais : on la referme.
+      setGgGameOver(saved.gameOver || viesSauvees <= 0);
+      setGgVieRachetee(saved.vieRachetee || false);
     } else {
       // Nouvelle partie
       setGgFilledCells({});
@@ -5348,7 +5365,9 @@ export default function LePont() {
       setGgLives(3);
       setGgScore(0);
       setGgGameOver(false);
+      setGgVieRachetee(false);
     }
+    setGgProposeVie(false);
     setGgGuess("");
     setGgFlash(null);
     setGgSelectedCell(null);
@@ -5471,20 +5490,25 @@ export default function LePont() {
       setGgReportSent(false);
       
       if (newLives <= 0) {
-        // Game over
         setTimeout(function(){
-          setGgGameOver(true);
           setGgSelectedCell(null);
           setGgGuess("");
           setGgFlash(null);
           setGgFlashCell(null);
-          // 💾 Sauvegarder le score (sauf en mode test)
-          if (ggGrid && ggOverrideSeed === 0) {
-            const maxScore = ggGrid.cells.reduce(function(s,c){return s+(c.maxPoints||0);},0) + 100;
-            const pattern = ggBuildEmojiPattern(ggFilledCells, ggGrid);
-            const cellsCount = Object.keys(ggFilledCells).length;
-            ggSaveScore(ggScore, maxScore, 0, cellsCount, pattern);
+          // La proposition passe AVANT la fin de partie : c'est le seul instant
+          // où le joueur a une raison de regarder une publicité. Après l'écran
+          // de score, il n'en a plus aucune.
+          //
+          // Quatre conditions, et chacune écarte un cas où la proposition serait
+          // fausse : pas en duel (vies illimitées), pas deux fois sur la même
+          // grille, pas sur une grille de test dont le score ne part pas, et pas
+          // si aucune pub n'est chargée — proposer une récompense qu'on ne peut
+          // pas servir déçoit plus que ne rien proposer.
+          if (!isBattle && !ggVieRachetee && ggOverrideSeed === 0 && pubDisponible()) {
+            setGgProposeVie(true);
+            return;
           }
+          ggTerminer();
         }, 700);
       } else {
         setTimeout(function(){
@@ -5496,6 +5520,32 @@ export default function LePont() {
     }
   }
   
+  // Fin de partie de la grille. Extraite du décrément de vies parce qu'on y entre
+  // désormais par deux chemins : les vies épuisées, ou le refus de la vie offerte.
+  function ggTerminer() {
+    setGgProposeVie(false);
+    setGgGameOver(true);
+    if (ggGrid && ggOverrideSeed === 0) {
+      const maxScore = ggGrid.cells.reduce(function(s,c){return s+(c.maxPoints||0);},0) + 100;
+      const pattern = ggBuildEmojiPattern(ggFilledCells, ggGrid);
+      const cellsCount = Object.keys(ggFilledCells).length;
+      ggSaveScore(ggScore, maxScore, 0, cellsCount, pattern);
+    }
+  }
+
+  // On n'accorde la vie QUE si le joueur est allé au bout de la vidéo.
+  // `montrerRecompensee` rend faux sur fermeture anticipée comme sur erreur, et
+  // dans les deux cas la partie se termine — ce qu'elle allait faire de toute
+  // façon. Ce n'est donc pas une punition, c'est l'issue par défaut.
+  async function ggRegarderPourVie() {
+    let gagne = false;
+    try { gagne = await montrerRecompensee(); } catch { gagne = false; }
+    if (!gagne) { ggTerminer(); return; }
+    setGgVieRachetee(true);
+    setGgLives(1);
+    setGgProposeVie(false);
+  }
+
   // ─── GG : Suggestions autocomplete (≥3 lettres) ────────────
   function ggGetSuggestions(input) {
     if (!input || input.length < 3) return [];
@@ -15232,6 +15282,46 @@ export default function LePont() {
                   )}
 
                 </>
+              )}
+
+              {/* ── UNE VIE CONTRE UNE PUB ──────────────────────────────────
+                  Posé AVANT l'écran de score : à zéro vie, la partie n'est pas
+                  encore close, et c'est le seul moment où la proposition a du
+                  sens pour le joueur.
+                  Panneau de nuit sur voile d'encre, aplats cerclés, ombres dures
+                  — pas de verre, pas de voile translucide sur l'or. */}
+              {ggProposeVie && (
+                <div style={{position:"fixed",inset:0,zIndex:9997,background:"rgba(8,17,9,.82)",
+                  display:"flex",alignItems:"center",justifyContent:"center",padding:20,
+                  animation:"fadeIn .18s ease"}}>
+                  <div style={{width:"100%",maxWidth:340,background:G.nuit,border:G.trait,
+                    borderRadius:G.rayon,boxShadow:G.ombre,padding:"22px 20px",textAlign:"center"}}>
+                    <div style={{fontSize:40,lineHeight:1,marginBottom:10}}>
+                      <span style={{WebkitTextStroke:0,textShadow:"none"}}>💔</span>
+                    </div>
+                    <div style={{...posterText(28,G.projecteur),marginBottom:8}}>
+                      {tr("PLUS DE VIES","OUT OF LIVES","KEINE LEBEN","VITE ESAURITE","SEM VIDAS","SIN VIDAS")}
+                    </div>
+                    <div style={{fontSize:13.5,color:"rgba(255,255,255,.85)",lineHeight:1.5,marginBottom:18}}>
+                      {tr("Regarde une courte pub et continue avec une vie de plus. Une seule fois par grille.",
+                          "Watch a short ad and keep playing with one more life. Once per grid.",
+                          "Sieh einen kurzen Spot und spiele mit einem Leben weiter. Einmal pro Raster.",
+                          "Guarda un breve annuncio e continua con una vita in più. Una sola volta per griglia.",
+                          "Assista a um anúncio curto e continue com mais uma vida. Uma vez por grade.",
+                          "Mira un anuncio corto y sigue con una vida más. Una sola vez por cuadrícula.")}
+                    </div>
+                    <div style={{display:"flex",flexDirection:"column",gap:9}}>
+                      <button onClick={ggRegarderPourVie}
+                        style={{...btn(G.projecteur,G.encre,15),padding:"14px 0"}}>
+                        🎬 {tr("Une vie de plus","One more life","Ein Leben mehr","Una vita in più","Mais uma vida","Una vida más")}
+                      </button>
+                      <button onClick={ggTerminer}
+                        style={{...btn(G.nuit,"rgba(255,255,255,.8)",14),padding:"11px 0"}}>
+                        {tr("Voir mon score","See my score","Punktzahl ansehen","Vedi il punteggio","Ver minha pontuação","Ver mi puntuación")}
+                      </button>
+                    </div>
+                  </div>
+                </div>
               )}
 
               {/* Modal de saisie (clic sur une case vide) */}
