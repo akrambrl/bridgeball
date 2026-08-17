@@ -207,7 +207,17 @@ retirer.
 pris, il faut un variant, et c'est le nom affiché qu'on ne peut plus changer
 librement ensuite.
 
-**4. Lancer Actions → IPA iOS.** Premier vrai essai du pipeline.
+**4. Lancer Actions → IPA iOS.** Le pipeline a produit son premier IPA valide
+le 17 août 2026 — 8 min 33 s, 16,1 Mo, `altool --validate-app` passé.
+
+Il a fallu sept passages, et les pièges sont consignés dans l'en-tête de
+`.github/workflows/ipa-ios.yml`. Les deux qui coûtent le plus cher à retrouver :
+
+- **un appareil doit être enregistré** dans Certificates, Identifiers & Profiles.
+  L'archivage réclame un profil de DÉVELOPPEMENT — c'est l'export qui signe en
+  distribution — et un profil de développement exige au moins un appareil ;
+- **le runner doit porter Xcode 26 ET la plateforme iOS**, qui ne vient plus
+  dans le paquet Xcode et se télécharge à la demande.
 
 ### Si l'archivage échoue sur la signature
 
