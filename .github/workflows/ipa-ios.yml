@@ -130,29 +130,37 @@ jobs:
 
           # ── XCODE 26 NE LIVRE PLUS LE SDK iOS DANS SON PAQUET ───────────────
           #
-          # Le passage suivant l'a appris sèchement, en exit 70 :
+          # Xcode 16 embarquait iPhoneOS.platform ; depuis Xcode 26 les plateformes
+          # sont des téléchargements à la demande. Une image de runner n'en a donc
+          # aucune, et xcodebuild s'arrête sur :
           #
           #   xcodebuild: error: Unable to find a destination matching the
           #               provided destination specifier: { generic:1, platform:iOS }
-          #     error: iOS 26.0 is not installed. Please download and install the
-          #            platform from Xcode > Settings > Components.
+          #     error: iOS 26.0 is not installed.
           #
-          # Xcode 16 embarquait iPhoneOS.platform ; depuis Xcode 26, les
-          # plateformes sont des téléchargements à la demande. Sur une image de
-          # runner, il n'y a donc AUCUN SDK iOS tant qu'on ne le demande pas.
+          # ⚠️ ON NE CONDITIONNE PLUS LE TÉLÉCHARGEMENT À `-showsdks`. Un premier
+          # jet sautait l'étape quand `-showsdks` mentionnait « iphoneos » — ce
+          # qu'il fait même plateforme absente. Le job est reparti en deux minutes,
+          # sans rien télécharger, pour rééchouer exactement pareil. `-showsdks`
+          # ne répond donc PAS à la question posée.
           #
-          # C'est long — plusieurs gigaoctets, quelques minutes — mais c'est une
-          # fois par job et il n'y a pas d'alternative : sans SDK, pas de
-          # destination iOS, donc pas d'archive.
-          if xcodebuild -showsdks 2>/dev/null | grep -q "iphoneos"; then
-            echo "SDK iOS déjà présent ✅"
-          else
-            echo "SDK iOS absent — téléchargement de la plateforme…"
-            xcodebuild -downloadPlatform iOS || sudo xcodebuild -downloadPlatform iOS
+          # `-downloadPlatform` est idempotent : on l'appelle toujours, il ne
+          # retélécharge rien s'il n'y a rien à prendre. Et c'est la DESTINATION
+          # qu'on vérifie ensuite, puisque c'est elle qui manquait.
+          sudo xcodebuild -runFirstLaunch || true
+          xcodebuild -downloadPlatform iOS || sudo xcodebuild -downloadPlatform iOS
+          xcodebuild -showsdks || true
+
+          # Le contrôle qui a du sens : xcodebuild énumère-t-il une destination iOS
+          # utilisable ? « is not installed » dans cette sortie est exactement le
+          # message qui faisait tomber l'archivage vingt lignes plus loin.
+          xcodebuild -project ios/App/App.xcodeproj -scheme App -showdestinations \
+            > "${RUNNER_TEMP}/destinations.txt" 2>&1 || true
+          cat "${RUNNER_TEMP}/destinations.txt"
+          if grep -q "is not installed" "${RUNNER_TEMP}/destinations.txt"; then
+            echo "::error::La plateforme iOS reste absente après -downloadPlatform. Voir la liste ci-dessus."
+            exit 1
           fi
-          # Le journal garde la liste : c'est ce qui rendra le prochain refus de
-          # version lisible sans avoir à deviner ce que portait l'image.
-          xcodebuild -showsdks
           echo "Xcode $MEILLEURE_V sélectionné ✅"
 
       - name: Vérifier ce que xcodebuild va trouver
