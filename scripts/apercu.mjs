@@ -107,6 +107,28 @@ await ctx.route("**/rest/v1/**", async (route) => {
   if (url.includes("bb_scores")) {
     corps = JOUEURS.map((j, i) => ({ player_id:j.pid, player_name:j.nom, score:j.score,
       mode:i % 3 === 0 ? "chaine" : "pont", created_at:ilYaJours(i % 14) }));
+  } else if (url.includes("bb_duels")
+             && url.includes("select=challenger_id,challenger_score,opponent_score")) {
+    // ── LE BILAN EN DUEL DU PROFIL ────────────────────────────────────────
+    // Reconnu à sa projection, qui n'appartient qu'à `chargerMonBilanDuels` :
+    // une branche large sur « bb_duels » aurait changé ce que voient les écrans
+    // de salon et de défis, dont les aperçus sont déjà réglés.
+    //
+    // Sept duels dans l'ordre chronologique, terminant sur trois victoires : le
+    // panneau montre donc à la fois une série EN COURS (3) et une meilleure
+    // série strictement plus grande (4, au début), ce qui est le seul cas où
+    // l'on vérifie que les deux tuiles ne se recopient pas l'une l'autre.
+    // Un nul est glissé au milieu — il doit CASSER la série.
+    const R = [["V",320,210],["V",290,180],["V",260,240],["V",300,110],
+               ["N",250,250],["V",280,150],["V",310,190],["V",295,205]];
+    corps = R.map(([, mien, sien], i) => ({
+      challenger_id: "local", challenger_score: mien, opponent_score: sien,
+      created_at: ilYaJours(R.length - i),
+    }));
+    // La défaite qui coupe la série de tête doit venir AVANT les trois
+    // dernières victoires : on l'insère plutôt que de bricoler le tableau.
+    corps.splice(5, 0, { challenger_id: "p3", challenger_score: 400,
+      opponent_score: 120, created_at: ilYaJours(3) });
   } else if (url.includes("bb_duels")) {
     // DEFI=1 : un défi OUVERT relevable, avec un score à battre. C'est le seul
     // chemin vers l'écran de résultat de duel (`duelResult`) : on relève le défi,
@@ -2190,6 +2212,52 @@ if (ENCOCHE > 0) {
 
 const suffixe = LARGEUR > 900 ? "-pc" : "";
 const chemin = join(ici, "..", "apercu-" + ecran + suffixe + (ENCOCHE > 0 ? "-encoche" : "") + ".png");
+
+// ── LES PANNEAUX ÉCRASÉS PAR LA COLONNE FLEX ──────────────────────────────
+//
+// `shell` est une colonne flex de hauteur 100dvh : chaque panneau d'écran est
+// donc un élément de flex, et il se laisse COMPRIMER sous sa hauteur naturelle
+// dès que le contenu de l'écran déborde. Sans `overflow`, le contenu débordait
+// visiblement de sa boîte rétrécie et personne ne s'en apercevait. Avec
+// `overflow:hidden`, il est DÉCOUPÉ — et un panneau de deux rangées de 67 et
+// 61 px se retrouve réduit à un ruban de 6 px.
+//
+// C'est arrivé au bilan des duels du profil, et rien ne l'aurait signalé : ni
+// les tests, ni le build, ni une relecture du JSX. Seule une mesure du DOM le
+// voit. Le correctif est toujours le même — `flexShrink:0` sur le panneau — mais
+// il faut d'abord savoir qu'il manque.
+const ecrases = await page.evaluate(() => {
+  const out = [];
+  for (const e of document.querySelectorAll("div")) {
+    const st = getComputedStyle(e);
+    // On ne s'intéresse qu'à ceux qui DÉCOUPENT : ailleurs, le débordement se
+    // voit à l'œil et n'est pas silencieux.
+    if (st.overflow !== "hidden" && st.overflowY !== "hidden") continue;
+    // Un conteneur de défilement déborde par construction : c'est son métier.
+    if (st.overflowY === "auto" || st.overflowY === "scroll") continue;
+    if (st.position === "absolute" || st.position === "fixed") continue;
+    const perdu = e.scrollHeight - e.clientHeight;
+    if (perdu < 12 || e.clientHeight === 0) continue;
+    // Le rapport fait la différence entre un panneau écrasé et un débordement
+    // d'un ou deux pixels dû au lettrage penché.
+    if (e.scrollHeight / e.clientHeight < 1.5) continue;
+    out.push({
+      hauteur: e.clientHeight, contenu: e.scrollHeight,
+      flexShrink: st.flexShrink,
+      texte: (e.textContent || "").trim().replace(/\s+/g, " ").slice(0, 60),
+    });
+  }
+  return out.slice(0, 6);
+});
+if (ecrases.length) {
+  console.log("⚠️  PANNEAU ÉCRASÉ par la colonne flex — il manque flexShrink:0 :");
+  for (const p of ecrases) {
+    console.log("   " + p.hauteur + "px affichés pour " + p.contenu
+      + "px de contenu (flex-shrink " + p.flexShrink + ")  « " + p.texte + " »");
+  }
+} else {
+  console.log("aucun panneau écrasé par la colonne flex ✅");
+}
 await page.screenshot({ path:chemin, fullPage:false });
 console.log("écrit", chemin);
 await navigateur.close();

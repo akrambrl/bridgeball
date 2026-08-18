@@ -3831,14 +3831,41 @@ export default function LePont() {
   const [ggGameOver, setGgGameOver] = useState(false); // true quand 0 vies OU grille pleine
   // ── UNE VIE CONTRE UNE PUB, ET UNE SEULE PAR GRILLE ────────────────────────
   //
-  // GOAT GRID écrit dans bb_gg_scores, PAS dans bb_scores : ce mode ne compte
-  // donc pas dans le classement mensuel, et une vie rachetée ne touche jamais au
-  // concours doté. C'est la raison pour laquelle la proposition est ici et pas
-  // dans GOAT Mercato, dont le score est classé.
+  // ⚠️ CE COMMENTAIRE AFFIRMAIT LE CONTRAIRE, ET C'ÉTAIT FAUX.
+  //
+  // Il disait : « GOAT GRID écrit dans bb_gg_scores, PAS dans bb_scores : ce mode
+  // ne compte donc pas dans le classement mensuel, et une vie rachetée ne touche
+  // jamais au concours doté. » La pub a été placée ici sur cette phrase.
+  //
+  // Or `bb_classement_mois` fait un `union all` sur bb_gg_scores, sous le mode
+  // 'goatgrid'. Vérifié en base sur trois joueurs n'ayant AUCUN score dans
+  // bb_scores sur le mois : leur total au classement égalait exactement la somme
+  // normalisée de leurs grilles (309, 627 et 500 points). Onze joueurs sur 176
+  // étaient classés en août par la seule GOAT GRID.
+  //
+  // Autrement dit : regarder une pub achetait une vie, qui montait le score de la
+  // grille, qui rapportait des points au classement qui décide du lot. Ce n'est
+  // pas une pente théorique, c'était en production.
+  //
+  // LE CORRECTIF : la grille est marquée `vie_rachetee`, et la branche GOAT GRID
+  // du classement ignore ces lignes (docs/supabase-goatgrid-vie.sql). La pub
+  // reste, le revenu reste, et le joueur est prévenu AVANT de la lancer — un
+  // troc annoncé, pas une prime cachée.
+  //
+  // Ce que ce correctif ne fait PAS : empêcher un client modifié d'omettre le
+  // drapeau. C'est vrai de tous les scores écrits par l'app, et cela relève de
+  // l'authentification anonyme (tâche #13), pas d'ici.
   //
   // `ggVieRachetee` est PERSISTÉ. Sans ça, recharger la page remettrait le
   // compteur à zéro et la relance deviendrait illimitée.
   const [ggVieRachetee, setGgVieRachetee] = useState(false);
+  // Le drapeau doit être lu au moment de l'ÉCRITURE du score, et les deux appels
+  // à ggSaveScore partent de `setTimeout` : leur closure capture la valeur du
+  // rendu où le minuteur a été armé. Un ref évite d'avoir à raisonner sur quel
+  // rendu a armé quoi — c'est exactement le piège qui ferait enregistrer une
+  // grille rachetée comme honnête.
+  const ggVieRacheteeRef = React.useRef(false);
+  ggVieRacheteeRef.current = ggVieRachetee;
   const [ggProposeVie, setGgProposeVie] = useState(false);
   const [ggSelectedCell, setGgSelectedCell] = useState(null); // { row, col } ou null
   const [ggGuess, setGgGuess] = useState("");
@@ -4431,25 +4458,51 @@ export default function LePont() {
     
     try {
       const today = ggGetTodayDateStr();
-      // Upsert : on remplace l'ancien score si le joueur rejoue (mais devrait pas pouvoir)
-      await sbFetch("bb_gg_scores", {
+      const base = {
+        player_id: playerId,
+        player_name: playerName,
+        score: score,
+        max_score: maxScore,
+        lives_left: livesLeft,
+        cells_filled: cellsFilled,
+        pattern: pattern,
+        seed_date: today,
+      };
+      const envoyer = (corps) => sbFetch("bb_gg_scores", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Prefer": "resolution=merge-duplicates,return=minimal",
         },
-        body: JSON.stringify({
-          player_id: playerId,
-          player_name: playerName,
-          score: score,
-          max_score: maxScore,
-          lives_left: livesLeft,
-          cells_filled: cellsFilled,
-          pattern: pattern,
-          seed_date: today,
-        }),
+        body: JSON.stringify(corps),
       });
-      setGgScoreSaved(true);
+
+      // ── L'ORDRE DE DÉPLOIEMENT NE DOIT PAS COMPTER ────────────────────────
+      //
+      // `vie_rachetee` est lu au ref et non à l'état : voir le commentaire de
+      // ggVieRachetee. C'est cette colonne qui exclut la grille du classement
+      // mensuel côté serveur — le client ne fait que dire la vérité sur sa partie.
+      //
+      // Mais elle n'existe qu'après docs/supabase-goatgrid-vie.sql, et le site se
+      // déploie tout seul depuis main. Écrire une colonne absente fait répondre
+      // 400 à PostgREST, donc entre la mise en ligne et l'exécution du SQL, TOUTES
+      // les grilles du jour seraient perdues — sans un mot, puisque sbFetch rend
+      // `null` au lieu de lever. Une fenêtre de quelques minutes suffit à effacer
+      // la journée de dizaines de joueurs.
+      //
+      // D'où la seconde tentative sans la colonne. Elle ne coûte rien quand la
+      // migration est passée (le premier envoi réussit), et elle rend l'ordre
+      // indifférent : avant le SQL, la grille est enregistrée sans le drapeau,
+      // donc traitée comme honnête — exactement le comportement d'aujourd'hui.
+      let ok = await envoyer({ ...base, vie_rachetee: ggVieRacheteeRef.current });
+      if (ok === null) ok = await envoyer(base);
+
+      // `setGgScoreSaved(true)` UNIQUEMENT sur un vrai succès. Il était posé
+      // inconditionnellement : sbFetch ne lève pas, il rend `null`, donc le
+      // `catch` ne se déclenchait jamais et un score refusé était marqué comme
+      // sauvegardé — sans nouvelle tentative possible pour la grille du jour.
+      if (ok !== null) setGgScoreSaved(true);
+      else console.warn("GG score save refusé par Supabase");
     } catch (e) {
       console.warn("GG score save failed:", e);
     }
@@ -5542,7 +5595,19 @@ export default function LePont() {
           // grille, pas sur une grille de test dont le score ne part pas, et pas
           // si aucune pub n'est chargée — proposer une récompense qu'on ne peut
           // pas servir déçoit plus que ne rien proposer.
-          if (!isBattle && !ggVieRachetee && ggOverrideSeed === 0 && pubDisponible()) {
+          // `bb_pub_demo` fait APPARAÎTRE la proposition dans l'aperçu, où AdMob
+          // n'existe pas — exactement comme pour le bouton « doubler mon XP » de
+          // l'écran de fin, qui lit déjà ce drapeau. Sans lui cette modale
+          // n'était pas photographiable du tout, et sa charte restait corrigée à
+          // l'aveugle : c'est comme ça qu'un panneau écrasé y passerait inaperçu.
+          //
+          // Il ne donne rien : le clic passe quand même par montrerRecompensee(),
+          // qui rend faux hors coque native, donc la partie se termine comme si
+          // la pub avait été fermée. Et `ggVieRachetee` reste faux, donc la
+          // grille est enregistrée comme honnête — ce qu'elle est.
+          let pubDemo = false;
+          try { pubDemo = localStorage.getItem("bb_pub_demo") === "1"; } catch { pubDemo = false; }
+          if (!isBattle && !ggVieRachetee && ggOverrideSeed === 0 && (pubDisponible() || pubDemo)) {
             setGgProposeVie(true);
             return;
           }
@@ -6621,6 +6686,74 @@ export default function LePont() {
       setDuels(Array.isArray(data) ? data : []);
     } catch(e) { setDuels([]); }
   }
+
+  // ─── MON BILAN EN DUEL ──────────────────────────────────────────────────
+  //
+  // Le duel est ce que l'app a de plus fort, et il ne laissait AUCUNE trace : il
+  // rapporte exactement autant qu'une partie solo au classement, et la série de
+  // victoires ne s'affichait que quelques secondes après un duel gagné, jamais
+  // ailleurs. Un joueur qui enchaînait sept victoires n'avait rien à montrer le
+  // lendemain.
+  //
+  // POURQUOI PAS PLUS DE POINTS EN LIGNE, puisque c'est ce qu'on voulait
+  // encourager. Trois raisons, et elles tiennent toutes les trois :
+  //
+  //   • ça récompenserait la DISPONIBILITÉ, pas le talent : à ce volume de
+  //     joueurs, celui qui joue à 7 h du matin ne trouve personne, et il serait
+  //     puni pour un problème d'appariement qui n'est pas le sien ;
+  //   • ça défait le plafond du barème, dont tout l'intérêt est qu'aucun mode ne
+  //     soit plus rentable qu'un autre — sinon le classement dit quoi farmer ;
+  //   • le classement est RECALCULÉ depuis les scores, donc un multiplicateur
+  //     posé en cours de mois réécrirait rétroactivement un classement doté.
+  //
+  // Ce qui manquait n'était donc pas des points, c'était de la trace. D'où ce
+  // bilan : de la reconnaissance, aucun effet sur le concours.
+  //
+  // ⚠️ CE BILAN NE COMPTE QUE LES DUELS 1 CONTRE 1. Le V/N/D du classement, lui,
+  //    additionne duels ET parties en salle (voir loadLeaderboard) : les deux
+  //    chiffres peuvent donc différer, et c'est voulu. Mélanger les salles ici
+  //    rendrait la série de victoires incohérente — on ne « gagne » pas une
+  //    partie à huit de la même façon qu'un duel — et une série qui ne veut rien
+  //    dire ne vaut pas mieux que pas de série. Le titre du panneau dit « duels »
+  //    pour cette raison.
+  const [monBilanDuels, setMonBilanDuels] = useState(null);
+
+  async function chargerMonBilanDuels() {
+    if (!playerId) return;
+    try {
+      // Ordre CROISSANT : la série en cours se lit depuis la fin, et la
+      // meilleure série demande de parcourir l'historique dans le sens du temps.
+      const rows = await sbFetch("bb_duels?" + DUEL_FINI_SQL
+        + "&or=(challenger_id.eq." + playerId + ",opponent_id.eq." + playerId + ")"
+        + "&order=created_at.asc&select=challenger_id,challenger_score,opponent_score&limit=500");
+      if (!Array.isArray(rows)) return;
+      let v = 0, n = 0, d = 0, serie = 0, meilleure = 0;
+      for (const r of rows) {
+        const chezMoi = r.challenger_id === playerId;
+        const mien   = (chezMoi ? r.challenger_score : r.opponent_score) || 0;
+        const sien   = (chezMoi ? r.opponent_score : r.challenger_score) || 0;
+        if (mien > sien) { v++; serie++; if (serie > meilleure) meilleure = serie; }
+        else if (mien === sien) { n++; serie = 0; }  // un nul CASSE la série : ce
+        else { d++; serie = 0; }                     // n'est pas une victoire.
+      }
+      setMonBilanDuels({ v, n, d, serie, meilleure, total: rows.length });
+    } catch { /* le panneau reste masqué, il n'est pas essentiel */ }
+  }
+
+  // Rechargé à CHAQUE ouverture du profil, et pas une fois pour la session : un
+  // duel joué entre deux visites doit se voir. La requête est unique et bornée à
+  // 500 lignes, donc le coût est celui d'un aller-retour.
+  //
+  // `chargerMonBilanDuels` n'est pas dans les dépendances : la fonction est
+  // recréée à chaque rendu, l'y mettre relancerait la requête en boucle. C'est le
+  // piège habituel de ce motif, et la raison de ne dépendre que de ce qui change
+  // vraiment — l'écran affiché et l'identité du joueur.
+  const bilanRef = React.useRef(chargerMonBilanDuels);
+  bilanRef.current = chargerMonBilanDuels;
+  React.useEffect(function(){
+    if (screen !== "profile" || !playerId) return;
+    bilanRef.current();
+  }, [screen, playerId]);
 
   // ─── DÉFIS OUVERTS (asynchrones) ───
   // Un joueur poste un défi (mode + diff + son score) que N'IMPORTE QUI peut relever
@@ -13362,6 +13495,91 @@ export default function LePont() {
         })()}
       </div>
 
+      {/* ── MES DUELS ──────────────────────────────────────────────────────
+          Le pendant du panneau du dessus : celui-là dit la progression solo,
+          celui-ci dit le palmarès en ligne. Voir `chargerMonBilanDuels` pour la
+          raison de ne PAS avoir donné plus de points aux parties en ligne.
+
+          Masqué tant qu'aucun duel n'a été joué : un bilan 0/0/0 n'apprend rien
+          et occupe la place de la collection, qui est le vrai moteur au début.
+          Il apparaît donc au premier duel terminé — ce qui en fait aussi une
+          incitation à en jouer un. */}
+      {monBilanDuels && monBilanDuels.total > 0 && (
+        <>
+          {/* posterLight(…, G.encre) et non posterText(…, G.projecteur) : ces
+              quatre intertitres du profil — Mes duels, Ma collection,
+              Statistiques, Menu — sont posés à même l'arène DORÉE, pas sur un
+              panneau de nuit. En or sur l'or ils étaient illisibles : le contour
+              d'encre de posterText est fait pour du texte clair sur fond sombre,
+              et à 22 px ce contour mangeait la lettre. La charte tranche déjà —
+              « sur l'or, seule l'encre se lit » — et posterLight existe pour ça
+              (voir les intertitres de rareté de la collection, qui l'utilisent
+              depuis le début). Constaté sur capture, pas déduit. */}
+          <div style={{...posterLight(22,G.encre),zIndex:1,padding:"14px 18px 0"}}>
+            {tr("Mes duels","My duels","Meine Duelle","I miei duelli","Meus duelos","Mis duelos")}
+          </div>
+          {/* `flexShrink:0` EST INDISPENSABLE ICI, et l'oubli ne se voyait qu'à
+              l'écran : `shell` est une colonne flex de hauteur 100dvh, donc
+              chaque panneau du profil est un élément de flex qui se laisse
+              comprimer quand le contenu déborde. Les panneaux voisins n'ont pas
+              d'`overflow`, donc leur contenu débordait VISIBLEMENT de leur boîte
+              rétrécie et personne ne s'en apercevait ; celui-ci découpe, et la
+              compression devenait un ruban de 6 px de haut pour deux rangées de
+              67 et 61 px. Mesuré dans le DOM, pas déduit. */}
+          <div style={{zIndex:1,flexShrink:0,margin:"10px 18px 0",background:G.nuit,border:G.trait,
+            borderRadius:G.rayon,boxShadow:G.ombre,overflow:"hidden"}}>
+            {/* Mêmes tuiles V/N/D que sur le classement et sur la fiche d'un
+                autre joueur : trois colonnes séparées par le trait d'encre, le
+                chiffre en couleur sémantique, le libellé en capitales dessous. */}
+            <div style={{display:"flex"}}>
+              <div style={{flex:1,padding:"12px 0",textAlign:"center",borderRight:G.traitFin}}>
+                <div style={{...posterText(26,G.pelouse)}}>{monBilanDuels.v}</div>
+                <div style={{fontSize:11,color:"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase"}}>{tr("Victoires","Wins","Siege","Vittorie","Vitórias","Victorias")}</div>
+              </div>
+              <div style={{flex:1,padding:"12px 0",textAlign:"center",borderRight:G.traitFin}}>
+                <div style={{...posterText(26,G.projecteur)}}>{monBilanDuels.n}</div>
+                <div style={{fontSize:11,color:"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase"}}>{tr("Nuls","Draws","Remis","Pareggi","Empates","Empates")}</div>
+              </div>
+              <div style={{flex:1,padding:"12px 0",textAlign:"center"}}>
+                <div style={{...posterText(26,G.maillot)}}>{monBilanDuels.d}</div>
+                <div style={{fontSize:11,color:"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase"}}>{tr("Défaites","Losses","Niederlagen","Sconfitte","Derrotas","Derrotas")}</div>
+              </div>
+            </div>
+            {/* Les deux séries, séparées du bilan par le trait plein — le même
+                partage qu'entre une ligne de classement et son bandeau V/N/D. */}
+            <div style={{display:"flex",borderTop:G.trait,background:"rgba(0,0,0,.22)"}}>
+              <div style={{flex:1,padding:"11px 0",textAlign:"center",borderRight:G.traitFin}}>
+                <div style={{...posterText(20,monBilanDuels.serie>0?G.pelouse:"rgba(255,255,255,.45)")}}>
+                  {monBilanDuels.serie > 0 ? "🔥 " + monBilanDuels.serie : "—"}
+                </div>
+                <div style={{fontSize:10.5,color:"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase"}}>{tr("Série en cours","Current streak","Aktuelle Serie","Serie attuale","Sequência atual","Racha actual")}</div>
+              </div>
+              <div style={{flex:1,padding:"11px 0",textAlign:"center"}}>
+                <div style={{...posterText(20,G.white)}}>{monBilanDuels.meilleure}</div>
+                <div style={{fontSize:10.5,color:"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase"}}>{tr("Meilleure série","Best streak","Beste Serie","Miglior serie","Melhor sequência","Mejor racha")}</div>
+              </div>
+            </div>
+          </div>
+          {/* Dire que ce bilan ne pèse pas sur le classement, une fois, en petit :
+              sans ça, un joueur peut croire que ses victoires lui rapportent des
+              points et se plaindre de ne pas monter.
+
+              À L'ENCRE, et non en blanc translucide comme le reste des notes de
+              l'app : celles-là vivent sur un panneau de nuit, celle-ci est posée
+              à même l'arène dorée. Photographiée en blanc à 45 %, elle était
+              illisible — c'est la règle de la charte, « sur l'or, seule l'encre
+              se lit », et elle valait ici comme ailleurs. */}
+          <div style={{zIndex:1,padding:"7px 18px 0",fontSize:11.5,fontWeight:800,color:G.encre,lineHeight:1.4}}>
+            {tr("Le palmarès en duel ne compte pas dans le classement du mois — il se joue au meilleur score de chaque mode.",
+                "Your duel record doesn't count towards the monthly ranking — that runs on your best score in each mode.",
+                "Die Duell-Bilanz zählt nicht für die Monatsrangliste — dort zählt die beste Punktzahl pro Modus.",
+                "Il bilancio dei duelli non conta per la classifica del mese — conta il miglior punteggio di ogni modalità.",
+                "O histórico de duelos não conta para a classificação do mês — ela usa a melhor pontuação de cada modo.",
+                "El historial de duelos no cuenta para la clasificación del mes — esa usa tu mejor puntuación en cada modo.")}
+          </div>
+        </>
+      )}
+
       {/* Ma collection — dans le corps du profil (et plus seulement dans Mon
           compte) : c'est une récompense à montrer, pas un réglage. Aperçu des
           dernières cartes obtenues, la plus récente en tête. */}
@@ -13371,7 +13589,7 @@ export default function LePont() {
         const prochaine = progressToNext(playerXp);
         return (
           <>
-            <div style={{...posterText(22,G.projecteur),zIndex:1,padding:"14px 18px 0"}}>{tr("Ma collection","My collection","Meine Sammlung","La mia collezione","Minha coleção","Mi colección")}</div>
+            <div style={{...posterLight(22,G.encre),zIndex:1,padding:"14px 18px 0"}}>{tr("Ma collection","My collection","Meine Sammlung","La mia collezione","Minha coleção","Mi colección")}</div>
             <div onClick={function(){setShowCollection(true);}} style={{zIndex:1,margin:"10px 18px 8px",padding:"14px 16px",background:G.nuit,border:G.trait,borderRadius:G.rayon,boxShadow:G.ombre,cursor:"pointer"}}>
               <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
                 <span style={{...posterText(28,G.pelouse)}}>{possedees.length}</span>
@@ -13402,7 +13620,7 @@ export default function LePont() {
           resté hors charte. C'est la pastille et le chiffre qui portent la
           couleur — pelouse, ciel, projecteur — et le total des parties reste en
           blanc : il compte, il ne qualifie pas. */}
-      <div style={{...posterText(22,G.projecteur),zIndex:1,padding:"14px 18px 0"}}>{tr("Statistiques","Stats","Statistiken","Statistiche","Estatísticas","Estadísticas")}</div>
+      <div style={{...posterLight(22,G.encre),zIndex:1,padding:"14px 18px 0"}}>{tr("Statistiques","Stats","Statistiken","Statistiche","Estatísticas","Estadísticas")}</div>
       <div style={{zIndex:1,padding:"10px 18px 8px",display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
         {/* Record Plug */}
         <div style={{background:G.nuit,border:G.trait,borderRadius:G.rayon,padding:"14px 16px",boxShadow:G.ombre}}>
@@ -13454,7 +13672,7 @@ export default function LePont() {
           charte, celle de Mon compte : elles étaient en blanc à 5 % sur filet à
           10 %, sans trait ni ombre. Chaque pastille prend l'aplat de la couleur
           qui porte son sens. */}
-      <div style={{...posterText(22,G.projecteur),zIndex:1,padding:"10px 18px 0"}}>{tr("Menu","Menu","Menü","Menu","Menu","Menú")}</div>
+      <div style={{...posterLight(22,G.encre),zIndex:1,padding:"10px 18px 0"}}>{tr("Menu","Menu","Menü","Menu","Menu","Menú")}</div>
       <div style={{zIndex:1,padding:"10px 18px 8px",display:"flex",flexDirection:"column",gap:12}}>
         {/* Mes amis */}
         <button onClick={()=>{setShowFriends(true);setScreen("home");}} style={{...ligneCharte,padding:"15px 16px",fontSize:15,fontWeight:800,gap:13}}>
@@ -15219,13 +15437,32 @@ export default function LePont() {
                     <div style={{...posterText(28,G.projecteur),marginBottom:8}}>
                       {tr("PLUS DE VIES","OUT OF LIVES","KEINE LEBEN","VITE ESAURITE","SEM VIDAS","SIN VIDAS")}
                     </div>
-                    <div style={{fontSize:13.5,color:"rgba(255,255,255,.85)",lineHeight:1.5,marginBottom:18}}>
+                    <div style={{fontSize:13.5,color:"rgba(255,255,255,.85)",lineHeight:1.5,marginBottom:12}}>
                       {tr("Regarde une courte pub et continue avec une vie de plus. Une seule fois par grille.",
                           "Watch a short ad and keep playing with one more life. Once per grid.",
                           "Sieh einen kurzen Spot und spiele mit einem Leben weiter. Einmal pro Raster.",
                           "Guarda un breve annuncio e continua con una vita in più. Una sola volta per griglia.",
                           "Assista a um anúncio curto e continue com mais uma vida. Uma vez por grade.",
                           "Mira un anuncio corto y sigue con una vida más. Una sola vez por cuadrícula.")}
+                    </div>
+                    {/* ── LE TROC, ANNONCÉ AVANT ET NON APRÈS ──────────────────
+                        La grille reprise ne rapporte plus de points au classement
+                        mensuel : c'est ce qui rend la pub compatible avec un
+                        concours doté. Le dire ici est la moitié du correctif —
+                        l'autre moitié est côté serveur. Un joueur qui découvre
+                        après coup que sa grille ne compte pas a raison de se
+                        sentir lésé ; celui qui l'a lu avant a fait un choix.
+
+                        Sur l'encre, en olive et non en rouge : c'est une
+                        condition, pas un avertissement de danger. */}
+                    <div style={{fontSize:12,color:G.projecteur,lineHeight:1.45,marginBottom:18,
+                      background:"rgba(0,0,0,.28)",border:G.traitFin,borderRadius:G.rayonS,padding:"9px 11px"}}>
+                      {tr("⚠️ Cette grille ne comptera plus au classement du mois.",
+                          "⚠️ This grid will no longer count towards the monthly ranking.",
+                          "⚠️ Dieses Raster zählt nicht mehr für die Monatsrangliste.",
+                          "⚠️ Questa griglia non conterà più per la classifica del mese.",
+                          "⚠️ Esta grade não contará mais para a classificação do mês.",
+                          "⚠️ Esta cuadrícula ya no contará para la clasificación del mes.")}
                     </div>
                     <div style={{display:"flex",flexDirection:"column",gap:9}}>
                       <button onClick={ggRegarderPourVie}
