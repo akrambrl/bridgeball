@@ -52,13 +52,22 @@ const ID_TEST_RECOMPENSE = {
   ios: "ca-app-pub-3940256099942544/1712485313",
 };
 
-// À remplacer par les identifiants de l'unité « Récompensée » créée dans AdMob.
-// Laissés vides, le module reste en mode test — ce qui est le bon défaut : une
-// erreur de configuration ne coûte alors que des pubs non facturées, jamais un
-// compte fermé.
+// Les identifiants de l'unité « Récompensée » créée dans AdMob, un par
+// plateforme. Ce sont des identifiants de BLOC : ils portent une barre oblique.
+// Les confondre avec ceux d'APPLICATION (un tilde) fait planter l'app au
+// lancement — src/test/admob.test.ts refuse désormais cette inversion.
+//
+// Renseigner ces deux champs suffit à faire basculer TOUT le module : enModeTest()
+// devient faux, et initialize() part avec initializeForTesting: false. Il n'y a
+// pas d'autre interrupteur.
+//
+// Les vider remet le module en mode test, ce qui reste le bon repli — une erreur
+// de configuration ne coûte alors que des pubs non facturées, jamais un compte
+// fermé. Mais le test de cohérence exige alors que les quatre emplacements
+// repassent en test ensemble.
 const ID_REEL_RECOMPENSE = {
-  android: "",
-  ios: "",
+  android: "ca-app-pub-4450845101011880/5151840587",
+  ios: "ca-app-pub-4450845101011880/9506957915",
 };
 
 const estIos = () => Capacitor.getPlatform() === "ios";
