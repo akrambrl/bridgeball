@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from "react";
-import { PLAYERS, RETIRED_PLAYERS, GG_WC_WINNERS, GG_CL_WINNERS, GG_BALLON_DOR, GG_BALLON_DOR_MULTI, GG_SHIRT_10 } from "../../players.jsx";
+import { PLAYERS, RETIRED_PLAYERS, GG_WC_WINNERS, GG_CL_WINNERS, GG_BALLON_DOR, GG_BALLON_DOR_MULTI, GG_SHIRT_10 } from "../../lib/donnees";
 import { CLUB_COLORS } from "../LePont.jsx";
 import { trackPlay } from "../../lib/track";
 import { getLang, tr } from "@/lib/lang";

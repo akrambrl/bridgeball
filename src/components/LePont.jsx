@@ -1,6 +1,11 @@
 import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { PLAYERS, RETIRED_PLAYERS, GG_WC_WINNERS, GG_CL_WINNERS } from "../players.jsx";
+// Les données de jeu ne sont plus EMPAQUETÉES dans le JS : elles sont servies en
+// fichier et chargées au démarrage (src/lib/donnees.ts). Ces liaisons sont donc
+// VIVANTES et vides jusqu'à `chargerDonnees()` — d'où `initDerives()` plus bas,
+// qui construit les index une fois les données arrivées. Rien ne doit être
+// calculé sur elles au chargement de ce module.
+import { PLAYERS, RETIRED_PLAYERS, GG_WC_WINNERS, GG_CL_WINNERS } from "../lib/donnees";
 import { trackPlay, pingPresence, pingLive, trackTime } from "../lib/track";
 import { hapticSuccess, hapticError, isNative } from "../lib/native";
 import { pickOpponent } from "../lib/opponents";
@@ -998,19 +1003,14 @@ for (const diff of ["facile","moyen","expert"]) {
 }
 return db;
 }
-const PLAYERS_CLEAN = PLAYERS.filter(function(p){return p&&p.name&&p.clubs&&Array.isArray(p.clubs);});
+let PLAYERS_CLEAN = [];
 
 // Difficulté par joueur — sert à prioriser les joueurs "facile" comme bonne
 // réponse du QCM en mode AMATEUR (voir generateOptions).
-const PLAYER_DIFF = {};
-for (const p of PLAYERS_CLEAN) PLAYER_DIFF[p.name] = p.diff || "moyen";
+let PLAYER_DIFF = {};
 
 // Liste de tous les clubs uniques connus dans la base (pour autocomplete Mercato)
-const ALL_CLUBS_LIST = (function(){
-  const set = new Set();
-  for (const p of PLAYERS_CLEAN) for (const c of p.clubs) set.add(c);
-  return Array.from(set).sort();
-})();
+let ALL_CLUBS_LIST = [];
 
 
 function isRetiredPlayer(name) {
@@ -1821,14 +1821,7 @@ function getDailyPlayer(blacklist) {
   return pool[hash % pool.length];
 }
 
-const CLUB_INDEX = {};
-for (const p of PLAYERS_CLEAN) {
-  if(!p||!p.clubs)continue;
-  for (const c of p.clubs) {
-    if (!CLUB_INDEX[c]) CLUB_INDEX[c] = [];
-    if (!CLUB_INDEX[c].includes(p.name)) CLUB_INDEX[c].push(p.name);
-  }
-}
+let CLUB_INDEX = {};
 
 
 // ── FOOTBALL SVG ICONS ──
@@ -2198,7 +2191,39 @@ function matchClub(input,playerClubs){
 
 // Index nom → joueur : la sélection de la chaîne interroge des dizaines de noms
 // par coup, et un find() linéaire sur ~4800 entrées à chaque fois coûtait cher.
-const PLAYER_BY_NAME = new Map(PLAYERS_CLEAN.map(function(p){ return [p.name, p]; }));
+let PLAYER_BY_NAME = new Map();
+
+// ── LES CINQ INDEX, CONSTRUITS UNE FOIS LES DONNÉES ARRIVÉES ───────────────
+//
+// Ils étaient calculés au CHARGEMENT DU MODULE, ce qui était juste tant que
+// players.jsx était importé en dur. Les données venant maintenant d'un fichier,
+// ce calcul se ferait sur un tableau vide, et TOUT le jeu paraîtrait vide : pas
+// une erreur, pas un écran cassé — simplement aucun joueur, aucune paire, aucun
+// club. C'est le mode de défaillance le plus trompeur de ce refactor, et c'est
+// pour ça que src/test/donnees.test.ts vérifie que chacun est bien rempli.
+//
+// L'ordre compte : les quatre derniers dérivent de PLAYERS_CLEAN.
+export function initDerives() {
+  PLAYERS_CLEAN = PLAYERS.filter(function(p){return p&&p.name&&p.clubs&&Array.isArray(p.clubs);});
+
+  PLAYER_DIFF = {};
+  for (const p of PLAYERS_CLEAN) PLAYER_DIFF[p.name] = p.diff || "moyen";
+
+  const clubs = new Set();
+  for (const p of PLAYERS_CLEAN) for (const c of p.clubs) clubs.add(c);
+  ALL_CLUBS_LIST = Array.from(clubs).sort();
+
+  CLUB_INDEX = {};
+  for (const p of PLAYERS_CLEAN) {
+    if(!p||!p.clubs)continue;
+    for (const c of p.clubs) {
+      if (!CLUB_INDEX[c]) CLUB_INDEX[c] = [];
+      if (!CLUB_INDEX[c].includes(p.name)) CLUB_INDEX[c].push(p.name);
+    }
+  }
+
+  PLAYER_BY_NAME = new Map(PLAYERS_CLEAN.map(function(p){ return [p.name, p]; }));
+}
 function getPlayerClubs(name){const p=PLAYER_BY_NAME.get(name);return p?p.clubs:[];}
 
 // Vivier « facile » d'une liste de joueurs d'un même club, élargi si trop mince.

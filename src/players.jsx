@@ -743,7 +743,7 @@ export const PLAYERS = [
   { name:"Joaquín Panichelli", clubs:["River Plate", "Alavés", "Mirandés", "Strasbourg"], diff:"expert", nationalities:["Argentine"], positions:["attaquant"] , birthYear:2002 },
   // Premier League été 2025 - manquants
   { name:"João Pedro", clubs:["Fluminense", "Watford", "Brighton", "Chelsea"], diff:"moyen", nationalities:["Brésil"], positions:["attaquant"], birthYear:2001 },
-  { name:"Christian Nørgaard", clubs:["Brøndby", "Hamburg", "ACF Fiorentina", "Brentford", "Arsenal"], diff:"moyen", nationalities:["Danemark"], positions:["milieu"], birthYear:1994 },
+  
   { name:"Igor Jesus", clubs:["Cruzeiro", "Botafogo", "Nottingham Forest"], diff:"expert", nationalities:["Brésil"], positions:["attaquant"] , birthYear:2001 },
   { name:"Omari Hutchinson", clubs:["Chelsea", "Ipswich Town", "Nottingham Forest"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:2003 },
   { name:"Jhon Arias", clubs:["Llaneros", "Patriotas Boyacá", "Bolívar", "Independiente Santa Fe", "Fluminense", "Wolverhampton"], diff:"expert", nationalities:["Colombie"], positions:["attaquant"] , birthYear:1997 },
