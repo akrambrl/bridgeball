@@ -17,8 +17,17 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(
     (async () => {
       const keys = await caches.keys();
+      // ── CE CACHE-CI NE DOIT PAS ÊTRE PURGÉ ────────────────────────────────
+      // "goatfc-donnees" porte la base joueurs téléchargée depuis le site (voir
+      // src/lib/donnees.ts). Le purger à chaque activation — donc à chaque
+      // déploiement — ferait retomber TOUS les joueurs sur les données du paquet,
+      // en silence : l'app fonctionnerait, avec des transferts périmés et aucun
+      // moyen de s'en apercevoir. C'est le premier défaut trouvé en sortant les
+      // données du bundle, et il l'a été en lisant ce fichier AVANT d'écrire
+      // l'autre.
+      const A_GARDER = [CACHE_NAME, "goatfc-donnees"];
       await Promise.all(
-        keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))
+        keys.filter((k) => !A_GARDER.includes(k)).map((k) => caches.delete(k))
       );
       await self.clients.claim();
     })()

@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && node scripts/build-seo-pages.mjs",
+    "build": "npm run donnees && vite build && node scripts/build-seo-pages.mjs",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
@@ -35,7 +35,8 @@
     "merci": "node scripts/posts-merci.mjs",
     "sql:saisons": "node scripts/sql-saisons.essai.mjs",
     "sql:goatgrid": "node scripts/sql-goatgrid.essai.mjs",
-    "sql:auth": "node scripts/sql-auth.essai.mjs"
+    "sql:auth": "node scripts/sql-auth.essai.mjs",
+    "donnees": "npx tsx scripts/donnees-json.mjs"
   },
   "dependencies": {
     "@capacitor-community/admob": "^8.1.0",

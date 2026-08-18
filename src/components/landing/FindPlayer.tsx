@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { PLAYERS, RETIRED_PLAYERS, GG_WC_WINNERS, GG_CL_WINNERS, GG_BALLON_DOR, GG_SHIRT_10 } from "../../players.jsx";
+import { PLAYERS, RETIRED_PLAYERS, GG_WC_WINNERS, GG_CL_WINNERS, GG_BALLON_DOR, GG_SHIRT_10 } from "../../lib/donnees";
 import { CLUB_COLORS } from "../LePont.jsx";
 import { ANEC_ENTRAINEUR } from "./GoatGuess";
 import { getLang, nombre, tr } from "@/lib/lang";
@@ -37,7 +37,11 @@ const SB_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhbGpsc3JnY29sb2NvYWVnenJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1MDM3NzksImV4cCI6MjA5MTA3OTc3OX0.-SU8anuPhnpoa-PYhIHQqrcuOBsHxdtBJKRZuiGcGwM";
 
 const MAX_GUESSES = 6;
-const ALL = PLAYERS as Player[];
+// UNE FONCTION et non un alias de module : `PLAYERS` est une liaison vivante
+// remplie au démarrage (src/lib/donnees.ts), donc `const ALL = PLAYERS` figerait
+// le tableau VIDE d'avant le chargement — et l'écran ne proposerait plus aucun
+// joueur, sans erreur pour le signaler.
+const ALL = (): Player[] => PLAYERS as Player[];
 
 // Révélation puce par puce (suspens, façon « Who Are Ya »)
 const CHIP_STAGGER = 0.38; // secondes entre chaque puce (révélation plus lente)
@@ -53,7 +57,7 @@ const REVEAL_MS = Math.round((5 * CHIP_STAGGER + CHIP_DUR) * 1000) + 250; // 6 p
 // une notification qui décrit un autre joueur que le jeu est un mensonge visible
 // par tout le monde. Une seule implémentation, deux appelants.
 export function dailyPool(): Player[] {
-  return poolDevinette(ALL, RETIRED_PLAYERS) as Player[];
+  return poolDevinette(ALL(), RETIRED_PLAYERS) as Player[];
 }
 function dailyPlayer(): Player {
   return joueurDuJour(dailyPool(), parisDay()) as Player;
@@ -73,7 +77,7 @@ function chargerVus(): Set<string> {
     // renommée ou retirée resterait sinon dans la liste pour toujours et
     // rognerait le vivier sans qu'aucun cycle puisse l'en sortir.
     return nettoyerVus(JSON.parse(localStorage.getItem(VUS_KEY) || "[]"),
-      new Set(ALL.map(p => p.name)));
+      new Set(ALL().map(p => p.name)));
   } catch { return new Set(); }
 }
 function enregistrerVus(seen: Set<string>) {
@@ -85,8 +89,8 @@ function enregistrerVus(seen: Set<string>) {
 // (né en 1975+ → a joué après 2000), pas d'anciens.
 function randomPlayer(seen: Set<string>): Player {
   const inRange = (p: Player) => !!p.clubs && nbClubs(p) >= 3 && nbClubs(p) <= 9 && !!p.birthYear && (p.birthYear as number) >= MODERN_MIN_BY;
-  const facile = ALL.filter(p => p.diff === "facile" && inRange(p));
-  const moyen = ALL.filter(p => p.diff === "moyen" && inRange(p));
+  const facile = ALL().filter(p => p.diff === "facile" && inRange(p));
+  const moyen = ALL().filter(p => p.diff === "moyen" && inRange(p));
   const wantFacile = Math.random() < 0.7; // 70 % facile / 30 % moyen
   let pool = wantFacile ? facile : moyen;
   if (pool.length === 0) pool = wantFacile ? moyen : facile; // sécurité si un pool est vide
@@ -247,7 +251,7 @@ type Chip = { key: string; label: string; top: string; big?: boolean; state: Sta
 function findTeammates(answer: Player, n: number): string[] {
   const ay = answer.birthYear || 0;
   if (!ay) return [];
-  const cands = ALL.filter(p =>
+  const cands = ALL().filter(p =>
     p.name !== answer.name &&
     p.birthYear && Math.abs((p.birthYear as number) - ay) <= 4 &&
     p.clubs.some(c => answer.clubs.includes(c))
@@ -370,7 +374,7 @@ function loadSavedRound(raw: string | null): SavedRound | null {
   try {
     if (!raw) return null;
     const s = JSON.parse(raw);
-    const byName = (n: string) => ALL.find(p => p.name === n) || null;
+    const byName = (n: string) => ALL().find(p => p.name === n) || null;
     const answer = byName(s.answer);
     if (!answer) return null;
     const guesses = (s.guesses || []).map(byName).filter(Boolean) as Player[];
@@ -490,7 +494,7 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
     // dépliait que les accents combinants, donc Højbjerg, Ødegaard et Højlund
     // étaient introuvables sans taper le ø. On passe par le helper partagé,
     // qui gère ces lettres et retombe sur la tolérance aux fautes.
-    return chercheJoueurs(q, ALL, p => guessed.has(p.name))
+    return chercheJoueurs(q, ALL(), p => guessed.has(p.name))
       .sort((a, b) => (a.diff === "facile" ? -1 : 1) - (b.diff === "facile" ? -1 : 1))
       .slice(0, 6);
   }, [input, guesses]);
@@ -637,7 +641,7 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
   function randomGuess() {
     if (over || revealing) return;
     const guessed = new Set(guesses.map(g => g.name));
-    const pool = ALL.filter(p => !guessed.has(p.name) && (p.diff === "facile" || p.diff === "moyen") && p.clubs && p.clubs.length >= 2 && !!p.birthYear && (p.birthYear as number) >= MODERN_MIN_BY);
+    const pool = ALL().filter(p => !guessed.has(p.name) && (p.diff === "facile" || p.diff === "moyen") && p.clubs && p.clubs.length >= 2 && !!p.birthYear && (p.birthYear as number) >= MODERN_MIN_BY);
     if (pool.length === 0) return;
     submitGuess(pool[Math.floor(Math.random() * pool.length)]);
   }
