@@ -1,0 +1,11 @@
+/* Chaînes d'Info.plist visibles par l'utilisateur — version française.
+
+   L'app est jouée d'abord en France et son interface existe en six langues ;
+   la fenêtre système du suivi publicitaire, elle, restait en anglais. C'est la
+   PREMIÈRE phrase que voit un nouveau joueur français, et elle demandait une
+   autorisation dans une langue qu'il n'a pas choisie.
+
+   Le texte dit la même chose que la version anglaise, et surtout la même chose
+   que l'article 11 de la politique de confidentialité : refuser ne retire
+   aucune fonction. C'est vrai, et c'est ce qui fait accepter. */
+"NSUserTrackingUsageDescription" = "GOAT FC s'en sert pour te proposer des publicités récompensées qui collent à tes centres d'intérêt. Refuse, et tu gardes toutes les fonctions du jeu — les pubs seront simplement moins pertinentes.";
