@@ -83,6 +83,15 @@ jobs:
       - name: Construire les assets web
         run: npm run build
 
+      # Même raison que dans ipa-ios.yml : `apple-touch-startup-image` est un
+      # mécanisme de PWA iOS. Android a ses propres drawables de splash, et
+      # n'irait de toute façon pas lire un <link> d'Apple. 829 Ko en moins dans
+      # l'AAB, et le dossier reste dans le dépôt pour le site.
+      # AVANT `cap sync` : après, les fichiers sont déjà dans
+      # android/app/src/main/assets/public/.
+      - name: Retirer les écrans de lancement de la PWA du paquet
+        run: rm -rf dist/splash-ios
+
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
