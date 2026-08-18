@@ -19,6 +19,7 @@ import { WinBanner } from "./landing/WinBanner";
 // Barème de grades et drapeaux : définis une seule fois, partagés avec le desktop.
 import { countryToFlag } from "../lib/leaderboard";
 import { formatNombre } from "../lib/lang";
+import { initAuth, jetonAuth, authActive, lierCompte } from "../lib/auth";
 import { duelTermine } from "../lib/duel";
 // Réclamation du lot : les règles (qui peut réclamer, pour quel mois, ce qu'on
 // accepte comme saisie) et le tirage sûr du code de récupération.
@@ -93,10 +94,27 @@ function readDailyRiddle() {
 const PSEUDO_COLS = "id,player_id,pseudo,created_at,country,xp,streak_count,streak_last_date,streak_best,streak_freezes,xp_season,xp_season_month";
 async function sbFetch(path, options) {
   let res;
+  // ── LE JETON, QUAND IL Y EN A UN ──────────────────────────────────────────
+  //
+  // `jetonAuth()` rend null tant que la connexion anonyme n'est pas établie ET
+  // ÉPROUVÉE — voir src/lib/auth.ts. On retombe alors sur la clé publique, ce
+  // qui est exactement le comportement d'avant : l'app ne dépend donc pas de
+  // l'ordre dans lequel le SQL et ce code sont déployés.
+  //
+  // `apikey` reste la clé publique dans les deux cas : Supabase s'en sert pour
+  // router la requête vers le bon projet, et c'est `Authorization` seul qui
+  // porte l'identité. Les intervertir donnerait un 401 sans explication.
+  //
+  // Appelé à CHAQUE requête et non mis en cache : c'est getSession() qui
+  // rafraîchit un jeton expiré. Un jeton gardé en mémoire marcherait une heure,
+  // puis toutes les écritures échoueraient — en silence, puisque cette fonction
+  // avale les échecs en rendant null.
+  let porteur = SB_KEY;
+  try { porteur = (await jetonAuth()) || SB_KEY; } catch { porteur = SB_KEY; }
   try {
     res = await fetch(SB_URL + "/rest/v1/" + path, {
       ...options,
-      headers: Object.assign({"apikey":SB_KEY,"Authorization":"Bearer "+SB_KEY,"Content-Type":"application/json"},
+      headers: Object.assign({"apikey":SB_KEY,"Authorization":"Bearer "+porteur,"Content-Type":"application/json"},
         options&&options.method==="POST"?{"Prefer":"return=minimal"}:{},
         options&&options.headers?options.headers:{})
     });
@@ -6039,6 +6057,52 @@ export default function LePont() {
   const [tutorialStep, setTutorialStep] = useState(0);
   // Friends
   const [playerId] = useState(() => getPlayerId());
+
+  // ── COMPTE ANONYME : OUVRIR LA SESSION, PUIS LIER LE PSEUDO ───────────────
+  //
+  // Deux temps distincts, et ils ne peuvent pas être fusionnés :
+  //
+  //   1. `initAuth` ouvre la session et VÉRIFIE qu'elle est acceptée. Sans
+  //      vérification, un jeton refusé par le serveur — migration SQL pas encore
+  //      jouée — ferait échouer toutes les requêtes et l'app paraîtrait vide.
+  //      En cas de doute on reste sur la clé publique, donc rien ne change.
+  //
+  //   2. `lierCompte` déclare au serveur que ce pseudo appartient à ce compte.
+  //      Le code de récupération sert de preuve : les player_id étant publics,
+  //      une revendication sans preuve permettrait de voler le compte de tout
+  //      joueur pas encore mis à jour.
+  //
+  // Une fois lié, le serveur refuse toute écriture sous ce pseudo venant d'un
+  // autre compte — y compris d'un client sans jeton. C'est ça qui ferme
+  // l'usurpation, et ça se fait joueur par joueur, sans date à trancher.
+  //
+  // `bb_auth_lie` évite de rappeler la fonction à chaque lancement. On ne le
+  // pose QUE sur un succès : un « inconnu » (pseudo pas encore en base) ou un
+  // « code_invalide » doit pouvoir être retenté au lancement suivant, sinon un
+  // joueur qui confirme son pseudo plus tard ne serait jamais protégé.
+  React.useEffect(function(){
+    let annule = false;
+    (async function(){
+      await initAuth(SB_URL, SB_KEY);
+      if (annule || !authActive()) return;
+      let deja = false;
+      try { deja = localStorage.getItem("bb_auth_lie") === playerId; } catch { deja = false; }
+      if (deja) return;
+      let code = "";
+      try { code = localStorage.getItem("bb_recovery_code") || ""; } catch { code = ""; }
+      const etat = await lierCompte(playerId, code || null);
+      if (annule) return;
+      if (etat === "lie" || etat === "deja_lie") {
+        try { localStorage.setItem("bb_auth_lie", playerId); } catch { /* noop */ }
+      } else if (etat === "appartient_a_un_autre") {
+        // Le seul cas qui mérite une trace : ce pseudo est lié à un AUTRE
+        // appareil. C'est le comportement voulu après une récupération de compte
+        // ratée, mais c'est aussi ce qu'on verrait sur une tentative de vol.
+        console.info("[auth] pseudo déjà lié à un autre compte : " + playerId);
+      }
+    })();
+    return function(){ annule = true; };
+  }, [playerId]);
   // Ping "présence" (bb_events) — capte AUSSI les joueurs anonymes, 1× par jour/appareil.
   // Le drapeau anti-doublon n'est posé qu'après un POST réussi (voir pingPresence),
   // pour ne pas "perdre" un appareil dont le 1er ping de la journée aurait échoué.

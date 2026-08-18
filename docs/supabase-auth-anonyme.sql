@@ -60,6 +60,27 @@
 --
 --  On ÉTEND à `anon, authenticated` au lieu de basculer : les deux rôles
 --  fonctionnent, donc aucune version du client ne casse, dans aucun sens.
+--
+--  ── L'ÉTAPE QUI N'EST PAS DANS CE FICHIER ─────────────────────────────────
+--
+--  La connexion anonyme est un INTERRUPTEUR du tableau de bord, éteint par
+--  défaut. Relevé sur le projet au moment d'écrire ces lignes :
+--
+--      GET /auth/v1/settings  →  "anonymous_users": false
+--
+--  Tant qu'il est éteint, le client retombe sur la clé publique et RIEN ne
+--  change — c'est ce qui rend le déploiement du code sans risque. Pour activer :
+--
+--      Authentication → Sign In / Providers → Anonymous Sign-Ins → activer
+--
+--  L'ordre conseillé est : ce fichier d'abord, l'interrupteur ensuite. L'inverse
+--  fonctionne aussi — le client éprouve son jeton par une requête de contrôle et
+--  se replie si le serveur le refuse — mais autant ne pas compter dessus.
+--
+--  ⚠️ Un compte anonyme est un compte : la table auth.users grossira d'une ligne
+--     par appareil. Supabase les compte dans les utilisateurs actifs mensuels du
+--     palier gratuit (50 000), ce qui laisse une marge confortable, mais c'est à
+--     savoir avant de regarder la facture.
 -- ============================================================================
 
 
