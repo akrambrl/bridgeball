@@ -45,6 +45,63 @@ export function setLang(l: Lang): void {
   try { window.location.reload(); } catch { /* noop */ }
 }
 
+// ── LES GRANDS NOMBRES ────────────────────────────────────────────────────
+//
+// Le classement affichait « 33798 pts » : un mur de chiffres qu'on ne lit pas
+// d'un coup d'œil, alors que c'est justement le chiffre qui dit qui gagne.
+//
+// Ce qui existait avant était pire qu'absent, parce que c'était INCOHÉRENT :
+//
+//   • certains endroits appelaient `toLocaleString()` SANS argument, donc
+//     suivaient la langue du NAVIGATEUR et pas celle choisie dans l'app. Un
+//     téléphone en anglais affichait « 120,000 XP » au milieu d'une interface
+//     française — constaté sur capture, pas supposé ;
+//   • d'autres forçaient `"fr-FR"`, donc mettaient des espaces à la française
+//     dans les six langues, y compris en anglais où la virgule est la règle ;
+//   • le classement, lui, n'avait aucun formatage du tout.
+//
+// D'où une fonction PURE qui prend la langue en paramètre. Pure et non lectrice
+// de localStorage, pour deux raisons : elle est testable sans navigateur, et
+// dans LePont elle se branche sur l'état `lang` de React — donc l'affichage
+// change au changement de langue sans attendre un rechargement.
+const LOCALES: Record<Lang, string> = {
+  fr: "fr-FR",   // 33 798 — espace FINE INSÉCABLE (U+202F) : « 33 798 pts » ne
+                 // se coupe donc jamais en fin de ligne, ce qu'une espace
+                 // ordinaire ne garantirait pas.
+  en: "en-GB",   // 33,798 — la virgule, et pas l'espace : c'est la règle
+                 // anglaise, et le drapeau du sélecteur est 🇬🇧.
+  de: "de-DE",   // 33.798
+  it: "it-IT",   // 33.798
+  pt: "pt-PT",   // 33 798 — espace insécable (U+00A0). Le drapeau est 🇵🇹, donc
+                 // pt-PT et non pt-BR, qui grouperait avec un point.
+  es: "es-ES",   // 33.798
+};
+
+/**
+ * Un nombre écrit comme on l'écrit dans la langue affichée.
+ *
+ * À NOTER, et ce n'est pas un défaut : en italien, portugais et espagnol, les
+ * nombres à QUATRE chiffres ne sont pas groupés — 1000 reste « 1000 », et le
+ * groupement n'apparaît qu'à partir de 10 000. C'est la typographie correcte de
+ * ces langues (Intl applique `minimumGroupingDigits: 2`), et l'aligner sur le
+ * français serait une faute d'orthographe dans trois langues sur six.
+ */
+export function formatNombre(n: number, langue: Lang): string {
+  if (!Number.isFinite(n)) return "0";
+  try {
+    return new Intl.NumberFormat(LOCALES[langue] || "en-GB").format(n);
+  } catch {
+    // Un environnement sans ICU complet (rare, mais un WebView ancien peut
+    // l'être) : mieux vaut le nombre brut qu'une exception qui casse l'écran.
+    return String(n);
+  }
+}
+
+/** Version qui déduit la langue seule, pour les composants sans état de langue. */
+export function nombre(n: number): string {
+  return formatNombre(n, getLang());
+}
+
 export function tr(
   fr: string,
   en: string,

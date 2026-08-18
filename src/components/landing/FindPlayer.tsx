@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { PLAYERS, RETIRED_PLAYERS, GG_WC_WINNERS, GG_CL_WINNERS, GG_BALLON_DOR, GG_SHIRT_10 } from "../../players.jsx";
 import { CLUB_COLORS } from "../LePont.jsx";
 import { ANEC_ENTRAINEUR } from "./GoatGuess";
-import { getLang, tr } from "@/lib/lang";
+import { getLang, nombre, tr } from "@/lib/lang";
 import { nomPays } from "@/lib/vocabulaire";
 import { trackPlay } from "../../lib/track";
 import { isNative, hapticLight, hapticHeavy, hapticSuccess } from "@/lib/native";
@@ -896,7 +896,7 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
         {!daily && (
           <div style={{ display: "flex", justifyContent: "center", gap: 8, marginBottom: 12 }}>
             <span style={{ padding: "5px 12px", borderRadius: G.rayonS, background: G.maillot, border: G.traitFin, boxShadow: "2px 2px 0 " + G.encre, color: G.white, fontSize: 12, fontWeight: 900, letterSpacing: 1 }}>🔥 {tr("SÉRIE", "STREAK", "SERIE", "SERIE", "SÉRIE","RACHA")} : {streak}</span>
-            <span style={{ padding: "5px 12px", borderRadius: G.rayonS, background: G.projecteur, border: G.traitFin, boxShadow: "2px 2px 0 " + G.encre, color: G.encre, fontSize: 12, fontWeight: 900, letterSpacing: 1 }}>🏆 {tr("SCORE", "SCORE", "PUNKTE", "PUNTI", "PONTOS","PUNTUACIÓN")} : {score.toLocaleString("fr-FR")}</span>
+            <span style={{ padding: "5px 12px", borderRadius: G.rayonS, background: G.projecteur, border: G.traitFin, boxShadow: "2px 2px 0 " + G.encre, color: G.encre, fontSize: 12, fontWeight: 900, letterSpacing: 1 }}>🏆 {tr("SCORE", "SCORE", "PUNKTE", "PUNTI", "PONTOS","PUNTUACIÓN")} : {nombre(score)}</span>
           </div>
         )}
 
@@ -1078,7 +1078,7 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
             </div>
             {!won && <div style={{ ...posterText(24, G.projecteur), marginTop: 4 }}>{answer.name}</div>}
             {won && (
-              <div style={{ ...posterText(40, G.projecteur), marginTop: 10 }}>+{lastEarned.toLocaleString("fr-FR")} PTS</div>
+              <div style={{ ...posterText(40, G.projecteur), marginTop: 10 }}>+{nombre(lastEarned)} PTS</div>
             )}
             {/* Bandeau animé : séquence de but si trouvé, séquence de défaite
                 sinon. C'est le seul mode où gagner et perdre sont tous deux
@@ -1087,7 +1087,7 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
             <div style={{ fontSize: 14, fontWeight: 800, color: "#FF8A2A", marginTop: 6 }}>
               {daily
                 ? "🔥 " + tr("Série", "Streak", "Serie", "Serie", "Sequência","Racha") + " : " + dailyStreak + " " + tr(dailyStreak > 1 ? "jours" : "jour", dailyStreak > 1 ? "days" : "day", dailyStreak > 1 ? "Tage" : "Tag", dailyStreak > 1 ? "giorni" : "giorno", dailyStreak > 1 ? "dias" : "dia",dailyStreak > 1 ? "días" : "día") + (dailyStreak > 1 && dailyStreak === dailyBest ? "  ·  🏅 " + tr("Record !", "Best!", "Rekord!", "Record!", "Recorde!","¡Récord!") : "  ·  🏅 " + tr("Record", "Best", "Rekord", "Record", "Recorde","Récord") + " : " + dailyBest)
-                : (won ? "🔥 " + tr("Série", "Streak", "Serie", "Serie", "Sequência","Racha") + " : " + streak + "  ·  🏆 " + tr("Total", "Total", "Gesamt", "Totale", "Total","Total") + " : " + score.toLocaleString("fr-FR")
+                : (won ? "🔥 " + tr("Série", "Streak", "Serie", "Serie", "Sequência","Racha") + " : " + streak + "  ·  🏆 " + tr("Total", "Total", "Gesamt", "Totale", "Total","Total") + " : " + nombre(score)
                        : (streak === 0 ? tr("Série remise à zéro", "Streak reset", "Serie zurückgesetzt", "Serie azzerata", "Sequência zerada","Racha reiniciada") : ""))}
             </div>
 

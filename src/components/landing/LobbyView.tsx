@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { GameMode } from "@/pages/Home";
-import { tr } from "@/lib/lang";
+import { nombre, tr } from "@/lib/lang";
 import { fetchTopPlayers, type TopPlayer } from "@/lib/leaderboard";
 import { dailyRiddleDone } from "@/lib/streak";
 import { G, posterText, posterTitre, posterLight, btn, pastilleCharte } from "@/lib/charte.jsx";
@@ -543,7 +543,7 @@ export const LobbyView = ({ onPlay, onJoinRoom, onOpenDuels, onOpenFriends }: Pr
                   {p.name}
                 </span>
                 <span className="tabular-nums" style={{ ...posterText(1, G.projecteur, 0), fontSize:19 }}>
-                  {p.score.toLocaleString("fr-FR")}
+                  {nombre(p.score)}
                 </span>
               </li>
             ))}
