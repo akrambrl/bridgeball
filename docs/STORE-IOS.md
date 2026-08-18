@@ -409,3 +409,21 @@ possédé, loué ou contrôlé — la distinction que cette déclaration cherche
 est celle d'un établissement stable aux États-Unis.
 
 À réexaminer si le projet louait un jour des serveurs dédiés sur le sol américain.
+
+### Formulaire fiscal Brésil — à NE PAS envoyer
+
+Apple le propose dans la même liste, et il est **facultatif**. Il ne sert qu'à
+réduire la retenue à la source brésilienne sur les **VENTES** réalisées au Brésil.
+
+GOAT FC est gratuite et sans achat intégré : les ventes Apple au Brésil valent
+zéro, et un taux réduit sur zéro reste zéro. Les revenus brésiliens du jeu
+viendront de la **publicité**, donc de Google — que ce formulaire ne concerne pas.
+
+⚠️ Et il y a une raison positive de ne PAS l'envoyer : la page prévient
+qu'« une fois cette page envoyée, vous ne pourrez plus modifier les champs
+renseignés ». L'envoyer vide aujourd'hui condamnerait la possibilité de le
+remplir correctement le jour où un achat intégré rendrait le sujet réel. Le
+laisser intact garde l'option ouverte.
+
+Obtenir l'attestation de résidence fiscale française auprès du SIP demanderait par
+ailleurs une démarche, pour un bénéfice actuellement nul.
