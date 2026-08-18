@@ -20,7 +20,7 @@ jour). Trois promesses en une ligne.
 Devine le joueur qui relie deux clubs. 5 modes, un nouveau défi chaque jour.
 ```
 
-## Description complète — 2382 / 4000
+## Description complète — 2368 / 4000
 
 Trois choses volontairement ABSENTES, et il faut savoir pourquoi :
 
@@ -72,7 +72,7 @@ Un joueur mystère par jour, le même pour tout le monde, avec ses clubs et son 
 
 UNE COLLECTION À DÉBLOQUER
 
-Ton expérience débloque des grades et vingt-neuf cartes de collection. La dernière obtenue devient ta photo de profil. Affiche ton drapeau à côté de ton pseudo.
+Ton expérience débloque vingt-neuf cartes de collection. La dernière obtenue devient ta photo de profil. Affiche ton drapeau à côté de ton pseudo.
 
 SANS COMPTE, SANS FORMULAIRE
 

@@ -46,54 +46,25 @@ export function getCurrentSeason(): SeasonInfo {
   };
 }
 
-// ─── Grades ───────────────────────────────────────────────────────────────────
-// Partagés avec LePont (mobile), qui en avait sa propre copie : deux définitions
-// du même barème auraient fini par diverger.
-// Les cinq langues de l'app, et non plus seulement FR + EN : un joueur italien
-// lisait « Titulaire » au milieu d'une interface italienne. GOAT reste GOAT
-// partout, c'est le mot de la marque.
-// ─── Les seuils sont calés sur la collection (src/lib/collection.ts) ─────────
-// Le grade et la carte racontaient deux histoires différentes : on était « GOAT »
-// dès 10 000 XP alors que la carte « Le GOAT » demande 250 000. Chaque grade
-// commence désormais exactement là où commence un palier de rareté, et le
-// dernier tombe pile sur la carte qui porte son nom :
+// ── LES GRADES ONT ÉTÉ RETIRÉS ─────────────────────────────────────────────
 //
-//   Amateur   0        départ + bronze   (La Recrue → La Révélation)
-//   Espoir    1 200    début argent      (Le Titulaire)
-//   Titulaire 5 000    début or          (L'International)
-//   Légende   38 000   début diamant     (Le Roi)
-//   GOAT      250 000  la carte Le GOAT  (Maradona)
+// GRADES, Grade, gradeLabel et getGrade vivaient ici : cinq paliers nommés
+// Amateur, Espoir, Titulaire, Légende, GOAT, affichés en pastille à côté d'un
+// pseudo et en barre de progression.
 //
-// Toucher un `min` ici ne retire aucune carte — les deux barèmes sont
-// indépendants — mais change le grade affiché de TOUS les joueurs d'un coup.
-export const GRADES = [
-  { min: 250000, label: "GOAT",      labelEn: "GOAT",    labelDe: "GOAT",          labelIt: "GOAT",     labelPt: "GOAT", labelEs: "GOAT",     emoji: "🐐",  color: "#FFD700" },
-  { min: 38000,  label: "Légende",   labelEn: "Legend",  labelDe: "Legende",       labelIt: "Leggenda", labelPt: "Lenda", labelEs: "Leyenda",    emoji: "☄️",  color: "#FF6B35" },
-  { min: 5000,   label: "Titulaire", labelEn: "Starter", labelDe: "Stammspieler",  labelIt: "Titolare", labelPt: "Titular", labelEs: "Titular",  emoji: "🐺",  color: "#00B4D8" },
-  { min: 1200,   label: "Espoir",    labelEn: "Rookie",  labelDe: "Talent",        labelIt: "Promessa", labelPt: "Promessa", labelEs: "Promesa", emoji: "👦🏻", color: "#2EC4B6" },
-  { min: 0,      label: "Amateur",   labelEn: "Amateur", labelDe: "Amateur",       labelIt: "Amatore",  labelPt: "Amador", labelEs: "Amateur",   emoji: "🏖️", color: "#8D99AE" },
-];
-
-export type Grade = { min: number; label: string; emoji: string; color: string };
-
-/** Libellé d'un grade dans la langue courante. Exporté parce que les appelants
- *  qui manipulent une entrée BRUTE de GRADES (le palier SUIVANT, par exemple)
- *  en ont besoin sans passer par getGrade, qui part d'une XP. */
-export function gradeLabel(g: { label: string; labelEn?: string; labelDe?: string; labelIt?: string; labelPt?: string; labelEs?: string }): string {
-  const l = getLang();
-  if (l === "de") return g.labelDe || g.labelEn || g.label;
-  if (l === "it") return g.labelIt || g.labelEn || g.label;
-  if (l === "pt") return g.labelPt || g.labelEn || g.label;
-  if (l === "es") return g.labelEs || g.labelEn || g.label;
-  if (l === "en") return g.labelEn || g.label;
-  return g.label;
-}
-
-/** Grade correspondant à une XP cumulée. */
-export function getGrade(xp: number): Grade {
-  const g = GRADES.find((g) => xp >= g.min) || GRADES[GRADES.length - 1];
-  return { ...g, label: gradeLabel(g) };
-}
+// Ils faisaient DOUBLON avec les vingt-neuf cartes de collection, qui décrivent
+// la même montée d'XP. Le fichier de test qui surveillait leur alignement le
+// disait lui-même, et racontait comment les deux barèmes avaient déjà divergé au
+// point d'être absurdes : on était « GOAT » dès 10 000 XP quand la carte « Le
+// GOAT » en demandait 250 000.
+//
+// La collection a gagné parce qu'elle a un visuel, vingt-neuf paliers au lieu de
+// cinq, et que l'une de ses cartes est déjà la photo de profil du joueur. Tout ce
+// qui affichait un grade lit désormais `progressToNext` ou `levelCard`
+// (src/lib/collection.ts).
+//
+// `getLang` reste importé plus haut : d'autres fonctions de ce fichier s'en
+// servent.
 
 /** Code pays ISO 2 lettres → emoji drapeau ("" si code invalide). */
 export function countryToFlag(code: string | null | undefined): string {

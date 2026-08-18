@@ -3,7 +3,6 @@ import { tr } from "@/lib/lang";
 import {
   fetchTopPlayers,
   getCurrentSeason,
-  getGrade,
   countryToFlag,
   type LbMode,
   type TopPlayer,
@@ -115,7 +114,6 @@ export const LeaderboardView = () => {
         <div className="flex flex-col gap-1.5">
           {rows.map((p, i) => {
             const podium = i < 3 ? PODIUM[i] : null;
-            const grade = getGrade(p.xp);
             const flag = countryToFlag(p.country);
             return (
               <div
@@ -163,17 +161,6 @@ export const LeaderboardView = () => {
                       >
                         {flag && <span className="mr-1.5 text-[15px]">{flag}</span>}
                         {p.name}
-                      </span>
-                      <span
-                        className="text-[11px] font-bold px-2 py-0.5 tracking-wide whitespace-nowrap"
-                        style={{
-                          color: G.white,
-                          background: grade.color,
-                          borderRadius: 8,
-                          border: "1.5px solid " + G.encre,
-                        }}
-                      >
-                        {grade.emoji} {grade.label}
                       </span>
                     </div>
                   </div>

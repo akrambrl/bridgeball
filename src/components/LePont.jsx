@@ -17,7 +17,7 @@ import { cadenceSalon } from "../lib/cadence";
 import { CARDS, RARITIES, cardById, hasArt, isUnlocked, levelCard, newlyUnlocked, progressToNext, cardName, rarityLabel, rarityMeta, unlockedCards } from "../lib/collection";
 import { WinBanner } from "./landing/WinBanner";
 // Barème de grades et drapeaux : définis une seule fois, partagés avec le desktop.
-import { GRADES, getGrade, gradeLabel, countryToFlag } from "../lib/leaderboard";
+import { countryToFlag } from "../lib/leaderboard";
 import { duelTermine } from "../lib/duel";
 // Réclamation du lot : les règles (qui peut réclamer, pour quel mois, ce qu'on
 // accepte comme saisie) et le tirage sûr du code de récupération.
@@ -89,7 +89,7 @@ function readDailyRiddle() {
 // `xp` (voir lib/collection), la colonne ne sert plus à rien. La demander
 // coûterait de toute façon toute la requête si le schéma ne l'a pas — PostgREST
 // rejette le select entier sur une colonne inconnue.
-const PSEUDO_COLS = "id,player_id,pseudo,created_at,country,xp,streak_count,streak_last_date,streak_best,streak_freezes,last_notified_grade,xp_season,xp_season_month";
+const PSEUDO_COLS = "id,player_id,pseudo,created_at,country,xp,streak_count,streak_last_date,streak_best,streak_freezes,xp_season,xp_season_month";
 async function sbFetch(path, options) {
   let res;
   try {
@@ -228,16 +228,22 @@ function getCurrentSeason() {
   };
 }
 
-// Grade juste au-dessus du score donné (null si déjà GOAT). Sert à la « carotte »
-// de progression : X pts avant le prochain grade.
-function getNextGrade(score) {
-  let next = null;
-  for (let i = GRADES.length - 1; i >= 0; i--) { if (GRADES[i].min > score) { next = GRADES[i]; break; } }
-  if (!next) return null;
-  // `gradeLabel` connaît les six langues ; le tri FR/EN qui vivait ici affichait
-  // « Legend » à un joueur allemand alors que la table dit « Legende ».
-  return { ...next, label: gradeLabel(next) };
-}
+// ── LES GRADES SONT PARTIS, LA COLLECTION LES REMPLACE ─────────────────────
+//
+// Il y avait DEUX barèmes pour décrire la même progression : cinq grades
+// (Amateur, Espoir, Titulaire, Légende, GOAT) et vingt-neuf cartes de
+// collection. Le fichier de test qui les surveillait le disait lui-même — « deux
+// barèmes séparés qui décrivent la même progression » — et racontait comment ils
+// avaient déjà divergé au point d'être absurdes : on était « GOAT » dès 10 000 XP
+// quand la carte « Le GOAT » en demandait 250 000.
+//
+// Les cartes gagnent, et pour trois raisons : elles ont un visuel, elles ont
+// vingt-neuf paliers au lieu de cinq, et l'une d'elles est déjà la photo de
+// profil du joueur. Le grade n'était qu'un mot posé à côté d'un pseudo.
+//
+// `progressToNext` (src/lib/collection.ts) rend exactement ce que la « carotte »
+// de progression demandait à getNextGrade : la cible, ce qui manque, et un ratio
+// qui part du dernier palier atteint et non de zéro.
 // Paliers de chaîne (The Mercato) fêtés en grande pompe.
 const CHAIN_MILESTONES = {
   10: { emoji: "🔥", color: "#FF8A2A" },
@@ -3675,7 +3681,6 @@ export default function LePont() {
   const [showConfetti, setShowConfetti] = useState(false);
   // Modal de célébration quand l'utilisateur monte en grade
   // Stocke le nouveau grade complet {min, label, labelEn, emoji, color}
-  const [gradeUpPopup, setGradeUpPopup] = useState(null);
   const [combo, setCombo] = useState(0);
   const [maxCombo, setMaxCombo] = useState(0);
   const [comboFloat, setComboFloat] = useState(null);
@@ -6506,25 +6511,8 @@ export default function LePont() {
     else endChain();
   },[screen,timeLeft]);
 
-  // Quand l'utilisateur arrive sur l'écran home, on check s'il y a un grade up en attente
-  // Ça s'affiche 800ms après être revenu sur l'accueil pour un meilleur effet dramatique
-  useEffect(function(){
-    if(screen!=="home") return;
-    let timeoutId;
-    try {
-      const pending = localStorage.getItem("bb_pending_grade_up");
-      if(pending) {
-        const grade = JSON.parse(pending);
-        localStorage.removeItem("bb_pending_grade_up");
-        timeoutId = setTimeout(function(){
-          setGradeUpPopup(grade);
-          setShowConfetti(true);
-          setTimeout(function(){setShowConfetti(false);},4000);
-        },800);
-      }
-    } catch {}
-    return function(){ if(timeoutId) clearTimeout(timeoutId); };
-  },[screen, playerXp]);
+  // L'effet qui relisait `bb_pending_grade_up` au retour sur l'accueil est parti
+  // avec les grades. Le déblocage d'une CARTE, lui, se fête sur place (setCardPopup).
 
 
   // Leaderboard (localStorage)
@@ -8669,7 +8657,7 @@ export default function LePont() {
     for (let essai = 0; essai < 2 && !serveur; essai++) {
       try {
         const lu = await sbFetch("bb_pseudos?player_id=eq." + playerId +
-          "&select=xp,xp_season,xp_season_month,last_notified_grade&limit=1");
+          "&select=xp,xp_season,xp_season_month&limit=1");
         if (Array.isArray(lu) && lu.length > 0) serveur = lu[0];
       } catch (e) {}
     }
@@ -8720,28 +8708,20 @@ export default function LePont() {
       }
     } catch (e) { /* jamais bloquant pour l'XP */ }
 
-    // Détection de changement de grade
-    // On compare le grade actuel au grade "déjà notifié" (stocké en DB dans last_notified_grade)
-    // Ça permet de détecter les grade-ups même si :
-    // - playerXp local est désynchro (race condition au chargement)
-    // - l'user a raté la notif précédente (pas ouvert l'app)
-    // - plusieurs parties d'affilée sans revenir à l'accueil
-    // Les grades sont triés du plus haut (GOAT = 0) au plus bas (Joueur du dimanche = 4)
-    // Un user qui monte a un index qui DIMINUE
-    const oldGradeIdx = GRADES.findIndex(function(g){ return oldXp >= g.min; });
-    const newGradeIdx = GRADES.findIndex(function(g){ return newXp >= g.min; });
-    let hasLeveledUp = newGradeIdx < oldGradeIdx && newGradeIdx !== -1;
-    
-    // Double-check : si on vient de franchir un palier MAIS aussi si le grade stocké en DB
-    // n'est pas encore à jour (ex: user à 510 XP mais last_notified_grade=4), on force le popup
-    // (le grade notifié vient de la même lecture que le cumul, plus haut : une requête suffit)
-    const dbNotifiedGrade = serveur.last_notified_grade;
-    // Si le grade actuel (newGradeIdx) est plus haut que le grade notifié en DB (dbNotifiedGrade)
-    // → grade up à afficher
-    if (typeof dbNotifiedGrade === "number" && newGradeIdx < dbNotifiedGrade && newGradeIdx !== -1) {
-      hasLeveledUp = true;
-    }
-
+    // ── PLUS DE DÉTECTION DE GRADE ICI ────────────────────────────────────
+    //
+    // Ce bloc comparait l'index de grade avant/après et le confrontait à
+    // `last_notified_grade` lu en base, pour décider d'un popup de célébration
+    // et d'une notification aux amis.
+    //
+    // Le popup n'a jamais existé : `gradeUpModal` était construit et JAMAIS
+    // rendu — soixante-dix lignes de code mort, y compris ses animations.
+    // La célébration qui marche est juste au-dessus, sur les CARTES
+    // (`setCardPopup`), et elle a un visuel à montrer.
+    //
+    // La colonne `last_notified_grade` n'est donc plus ni lue ni écrite. Elle
+    // reste en base, inerte : la supprimer demanderait une migration pour
+    // gagner un entier par joueur.
     try {
       await sbFetch("bb_pseudos?player_id=eq." + playerId, {
         method: "PATCH",
@@ -8754,57 +8734,23 @@ export default function LePont() {
         //
         // ⚠️ C'est pour ça que le SQL s'applique APRÈS ce déploiement : un
         // privilège retiré sur une colonne fait échouer le PATCH ENTIER, donc
-        // l'XP, les grades et les cartes s'arrêteraient aussi.
+        // l'XP et les cartes s'arrêteraient aussi.
         //
         // `xp` reste envoyé, en connaissance de cause : il ne décide plus rien au
-        // classement, il ne sert qu'aux grades et aux cartes. Du cosmétique.
-        body: JSON.stringify({
-          xp: newXp,
-          ...(hasLeveledUp ? { last_notified_grade: newGradeIdx } : {})
-        })
+        // classement, il ne sert plus qu'aux cartes de collection. Du cosmétique.
+        body: JSON.stringify({ xp: newXp })
       });
     } catch(e) { /* silent - XP reste updaté en local */ }
 
-    // Si grade up, notifier les amis via Edge Function + afficher popup de célébration
-    if (hasLeveledUp) {
-      const newGrade = GRADES[newGradeIdx];
-      // Popup de célébration : on le déclenche avec un délai pour qu'il s'affiche
-      // quand l'utilisateur revient sur l'écran principal (l'écran de fin de partie
-      // est affiché d'abord, puis l'user clique "retour" → arrive sur home → popup)
-      // On utilise un event custom window pour que le popup s'affiche au bon moment
-      try { 
-        localStorage.setItem("bb_pending_grade_up", JSON.stringify({
-          min: newGrade.min,
-          label: newGrade.label,
-          // Les SIX libellés : la modale de montée de grade appelle gradeLabel
-          // sur cet objet relu du stockage. N'en garder que deux la faisait
-          // retomber sur l'anglais pour les quatre autres langues.
-          labelEn: newGrade.labelEn,
-          labelDe: newGrade.labelDe,
-          labelIt: newGrade.labelIt,
-          labelPt: newGrade.labelPt,
-          labelEs: newGrade.labelEs,
-          emoji: newGrade.emoji,
-          color: newGrade.color,
-          timestamp: Date.now()
-        }));
-      } catch {}
-      try {
-        fetch(SB_URL + "/functions/v1/send-grade-up-notification", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + SB_KEY,
-          },
-          body: JSON.stringify({
-            playerId: playerId,
-            pseudo: playerName || "Un pote",
-            newGradeLabel: newGrade.label,
-            newGradeEmoji: newGrade.emoji,
-          })
-        }).catch(function(){});
-      } catch(e) {}
-    }
+    // La notification aux amis « X est passé Légende » partait d'ici, vers
+    // l'Edge Function `send-grade-up-notification`. Elle disparaît avec les
+    // grades : son texte est composé côté serveur autour d'un nom de grade, donc
+    // impossible à réancrer sur une carte depuis ce fichier.
+    //
+    // ⚠️ La fonction reste déployée sur Supabase et n'est plus jamais appelée.
+    // La remettre en service demanderait de réécrire son message autour d'un nom
+    // de CARTE, ce qui rendrait la même mécanique de rétention avec un visuel en
+    // plus. À décider séparément.
   }
 
   // Les overlays « Trouve le joueur » (FindPlayer) tournent par-dessus LePont et
@@ -10125,74 +10071,6 @@ export default function LePont() {
     );
   })() : null;
 
-  const gradeUpModal = gradeUpPopup ? (() => {
-    const label = gradeLabel(gradeUpPopup);
-    const color = gradeUpPopup.color || G.pelouseClaire;
-    return (
-      <div style={{position:"fixed",inset:0,zIndex:600,background:"rgba(8,17,9,.86)",display:"flex",alignItems:"center",justifyContent:"center",padding:20,animation:"fadeUp .4s ease"}}>
-        {/* Rayons de lumière derrière le modal */}
-        <div style={{position:"absolute",inset:0,overflow:"hidden",pointerEvents:"none"}}>
-          {Array.from({length:12}).map(function(_,i){
-            const angle = (i*30);
-            return (
-              <div key={i} style={{
-                position:"absolute",
-                top:"50%",left:"50%",
-                width:"200vw",height:60,
-                background:`linear-gradient(90deg, transparent, ${color}22 30%, ${color}44 50%, ${color}22 70%, transparent)`,
-                transformOrigin:"center",
-                transform:`translate(-50%,-50%) rotate(${angle}deg)`,
-                animation:`gradeRayPulse 3s ease-in-out ${i*0.1}s infinite`,
-              }}/>
-            );
-          })}
-        </div>
-        <div style={{position:"relative",width:"100%",maxWidth:360,background:"rgba(10,15,10,.98)",borderRadius:28,padding:"36px 24px 28px",border:`2.5px solid ${color}`,boxShadow:`0 0 60px ${color}66, 0 20px 60px rgba(0,0,0,.6)`,textAlign:"center",animation:"gradeUpPop .6s cubic-bezier(.34,1.56,.64,1)"}}>
-          {/* Titre */}
-          <div style={{fontSize:11,color:"rgba(255,255,255,.5)",letterSpacing:3,fontWeight:800,marginBottom:6}}>
-            {tr("🎉 NOUVEAU GRADE 🎉","🎉 LEVEL UP 🎉","🎉 LEVEL UP 🎉","🎉 LIVELLO SU 🎉","🎉 SUBIU DE NÍVEL 🎉","🎉 NUEVO RANGO 🎉")}
-          </div>
-          <div style={{fontSize:14,color:"rgba(255,255,255,.75)",marginBottom:22}}>
-            {tr("Tu viens d'atteindre le grade","You just reached the rank","Du hast gerade den Rang erreicht","Hai appena raggiunto il grado","Você alcançou a patente","Acabas de alcanzar el rango")}
-          </div>
-          {/* Emoji géant avec pulse */}
-          <div style={{fontSize:90,lineHeight:1,marginBottom:12,animation:"gradeEmojiPulse 2s ease-in-out infinite",filter:`drop-shadow(0 0 30px ${color}99)`}}>
-            {gradeUpPopup.emoji}
-          </div>
-          {/* Label du grade */}
-          <div style={{...posterText(28),color:color,lineHeight:1.1,marginBottom:8,textShadow:`0 0 20px ${color}88`,letterSpacing:1}}>
-            {label.toUpperCase()}
-          </div>
-          {/* Min XP */}
-          <div style={{fontSize:13,color:"rgba(255,255,255,.5)",marginBottom:24,fontWeight:700}}>
-            {gradeUpPopup.min}+ XP
-          </div>
-          {/* Bouton fermer */}
-          <button
-            onClick={function(){setGradeUpPopup(null);}}
-            style={{width:"100%",padding:"15px",background:color,color:"#000",border:G.trait,borderRadius:G.rayon,cursor:"pointer",fontFamily:G.font,fontSize:15,fontWeight:800,boxShadow:G.ombre}}
-          >
-            {tr("CONTINUER","CONTINUE","WEITER","CONTINUA","CONTINUAR","CONTINUAR")} →
-          </button>
-        </div>
-        <style>{`
-          @keyframes gradeUpPop {
-            0% { transform:scale(.5); opacity:0; }
-            50% { transform:scale(1.05); }
-            100% { transform:scale(1); opacity:1; }
-          }
-          @keyframes gradeEmojiPulse {
-            0%, 100% { transform:scale(1) rotate(-3deg); }
-            50% { transform:scale(1.12) rotate(3deg); }
-          }
-          @keyframes gradeRayPulse {
-            0%, 100% { opacity:.3; }
-            50% { opacity:.7; }
-          }
-        `}</style>
-      </div>
-    );
-  })() : null;
 
   // La bande de verdict était en pastels d'infirmerie — vert d'eau, rose pâle,
   // crème — cerclés d'un filet fluo. C'est le contraire de la charte : sur
@@ -12351,9 +12229,6 @@ export default function LePont() {
                autres lignes : c'est déjà le langage des cadres de rareté des
                cartes, et c'est le seul qui tienne sur l'or. */
             const metal = i===0?G.projecteur:i===1?"#C8CDD4":i===2?"#CD7F32":null;
-            // Le grade affiché est basé sur l'XP cumulée totale du joueur (cohérent avec le profil)
-            // — pas le score de la partie (qui peut être trompeur)
-            const grade = getGrade(entry.xp || 0);
             return(
               <div key={i} onClick={()=>{ if(!isMe) { setShowLeaderboard(false); openUserProfile(entry.pid, entry.name, "leaderboard"); } }} style={{
                 /* Aplat + trait, jamais de dégradé : c'est ce qui fait le manga.
@@ -12391,10 +12266,10 @@ export default function LePont() {
                   <div style={{flex:1,minWidth:0}}>
                     <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3,flexWrap:"wrap"}}>
                       <span style={{...posterText(18,metal||(isMe?G.projecteur:G.white)),display:"inline-block",whiteSpace:"nowrap"}}>{entry.country && <span style={{marginRight:5,fontSize:15}}>{countryToFlag(entry.country)}</span>}{entry.name}{isMe?tr(" (toi)"," (you)"," (du)"," (tu)"," (você)"," (tú)"):""}</span>
-                      {/* Pastilles cerclées d'encre plutôt que des pilules molles :
-                          le trait est la signature de la charte, une pastille
-                          sans contour flottait sur l'aplat du podium. */}
-                      <span style={{fontSize:11,fontWeight:800,color:grade.color,background:grade.color+"22",borderRadius:G.rayonS,padding:"2px 8px",letterSpacing:.5,border:G.traitFin}}>{grade.emoji} {grade.label}</span>
+                      {/* La pastille de grade (« 🐺 Titulaire ») est retirée : la
+                          progression du joueur est déjà dite par sa carte, affichée
+                          en vignette juste à gauche de son pseudo. Deux vocabulaires
+                          pour la même chose, dont un sans visuel. */}
                       {entry.streak>=3 && <span style={{fontSize:11,fontWeight:800,color:G.maillot,background:"rgba(217,58,43,.22)",borderRadius:G.rayonS,padding:"2px 8px",border:G.traitFin}}>🔥 {entry.streak}</span>}
                     </div>
                     {lbMode==="saison"
@@ -13210,7 +13085,6 @@ export default function LePont() {
   // ── USER PROFILE SCREEN (other player) ──
   if(screen==="userProfile" && viewedProfile) {
     const d = viewedProfileData;
-    const grade = d ? getGrade(d.xp || 0) : null;
     return (
       /* Le profil d'un autre joueur — celui qu'on ouvre en tapant une ligne du
          classement — passe à la charte comme Mon profil : même pelouse, même
@@ -13250,14 +13124,6 @@ export default function LePont() {
                 );
               })()}
               <div style={{...posterText(30,G.white)}}>@{viewedProfile.name}</div>
-              {grade && (
-                /* Panneau sombre et non une teinte du grade : ces deux ecrans
-                   sont passes sur fond or, et un aplat translucide de la
-                   couleur du grade s'y delavait — l'orange de Legende sur du
-                   jaune ne se lisait plus. Sur nuit, la couleur du grade
-                   reprend tout son contraste. */
-                <div style={{marginTop:8,display:"inline-flex",alignItems:"center",gap:6,fontSize:11.5,fontWeight:800,color:grade.color,background:G.nuit,borderRadius:G.rayonS,border:G.traitFin,boxShadow:"2px 2px 0 "+G.encre,padding:"4px 12px",letterSpacing:1,textTransform:"uppercase"}}>{grade.emoji} {grade.label}</div>
-              )}
               {d.rank && (
                 <div style={{marginTop:10,fontSize:12.5,color:"rgba(255,255,255,.75)",fontWeight:700,letterSpacing:.8}}>{tr("Classement : #","Rank: #","Rang: #","Posizione: #","Posição: #","Clasificación: #")}{d.rank}</div>
               )}
@@ -13430,62 +13296,66 @@ export default function LePont() {
           );
         })()}
         <div style={{...posterText(32,G.white)}}>@{playerName||(tr("anonyme","anonymous","anonym","anonimo","anônimo","anónimo"))}</div>
-        {/* Pastille de grade cerclée d'encre et au rayon de la charte, comme celles
-            des lignes du classement : la pilule à filet coloré était le dernier
-            reste de l'ancien vocabulaire.
-            Panneau sombre et non une teinte du grade : cet écran est passé sur
-            fond or, et un aplat translucide s'y délavait — l'orange de Légende
-            posé sur du jaune ne se lisait plus. */}
-        {(() => { const g = getGrade(playerXp); return (
-          <div style={{display:"inline-flex",alignItems:"center",gap:6,marginTop:10,padding:"5px 14px",borderRadius:G.rayonS,background:G.nuit,border:G.traitFin,boxShadow:"2px 2px 0 "+G.encre,color:g.color,fontSize:11.5,fontWeight:800,letterSpacing:1.5,textTransform:"uppercase"}}>{g.emoji} {g.label}</div>
-        ); })()}
+        {/* La pastille de grade sous le pseudo est retirée. Ce qui dit la
+            progression, sur cet écran, c'est la carte affichée juste au-dessus —
+            elle EST la photo de profil — et le panneau de progression qui suit. */}
       </div>
 
-      {/* Niveau + XP progression */}
+      {/* ── PROGRESSION VERS LA PROCHAINE CARTE ────────────────────────────
+          Ce panneau affichait le grade, sa couleur, son emoji et « X XP avant
+          Légende ☄️ ». Il dit maintenant la même chose avec la carte à venir, ce
+          qui règle une incohérence que le fichier de test des grades avait déjà
+          relevée : les deux barèmes décrivaient la même montée avec des paliers
+          différents.
+
+          Le total d'XP RESTE affiché — c'est lui qui débloque les cartes, et le
+          retirer avec le grade aurait fait disparaître le seul chiffre de
+          progression de l'écran.
+
+          Vingt-neuf paliers au lieu de cinq : la barre avance visiblement plus
+          souvent, et la cible a un nom et un cadre de rareté. `progressToNext`
+          part du dernier palier atteint et non de zéro, sinon la jauge paraîtrait
+          immobile dans le haut du barème. */}
       <div style={{zIndex:1,padding:"0 18px 12px"}}>
         {(() => {
-          const grade = getGrade(playerXp);
-          // Trouver le prochain palier
-          const sorted = [...GRADES].sort((a,b)=>a.min-b.min);
-          const currentIdx = sorted.findIndex(g => g.min === grade.min);
-          const nextGrade = currentIdx < sorted.length-1 ? sorted[currentIdx+1] : null;
-          const progressPct = nextGrade
-            ? Math.min(100, ((playerXp - grade.min) / (nextGrade.min - grade.min)) * 100)
-            : 100;
+          const actuelle = levelCard(playerXp);
+          const meta = rarityMeta(actuelle.rarity);
+          const suite = progressToNext(playerXp);
           return (
             <div style={{background:G.nuit,border:G.trait,borderRadius:G.rayon,boxShadow:G.ombre,padding:"14px 16px"}}>
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
-                <div style={{display:"flex",alignItems:"center",gap:10}}>
-                  <span style={{fontSize:28}}>{grade.emoji}</span>
-                  <div>
-                    <div style={{fontSize:10,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.55)"}}>{tr("Niveau","Level","Level","Livello","Nível","Nivel")}</div>
-                    <div style={{...posterText(20,grade.color)}}>{grade.label}</div>
+                <div style={{display:"flex",alignItems:"center",gap:10,minWidth:0}}>
+                  {hasArt(actuelle) && <img src={actuelle.thumb} alt="" style={{width:34,height:45,objectFit:"cover",borderRadius:6,border:G.traitFin,flexShrink:0}}/>}
+                  <div style={{minWidth:0}}>
+                    <div style={{fontSize:10,fontWeight:800,letterSpacing:2,textTransform:"uppercase",color:"rgba(255,255,255,.5)"}}>{rarityLabel(meta)}</div>
+                    <div style={{...posterText(20,meta.color),overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{cardName(actuelle)}</div>
                   </div>
                 </div>
-                <div style={{textAlign:"right"}}>
+                <div style={{textAlign:"right",flexShrink:0}}>
                   <div style={{...posterText(26,G.white)}}>{playerXp.toLocaleString()}</div>
                   <div style={{fontSize:10,color:"rgba(255,255,255,.5)",fontWeight:800,letterSpacing:1}}>pts</div>
                 </div>
               </div>
-              {nextGrade ? (
+              {suite ? (
                 <>
-                  {/* La jauge passe à l'aplat cerclé d'encre : le dégradé de palier
-                      à palier et son halo appartenaient au vocabulaire LED. La
-                      couleur du grade en cours suffit à dire où on en est. */}
-                  <div style={{height:12,background:"rgba(8,17,9,.55)",border:G.traitFin,borderRadius:G.rayonS,overflow:"hidden",marginBottom:7}}>
-                    <div style={{height:"100%",width:progressPct+"%",background:grade.color,borderRight:progressPct>0&&progressPct<100?G.traitFin:"none",transition:"width .5s ease"}}/>
+                  {/* Aplat cerclé d'encre, jamais de dégradé : la couleur de la
+                      rareté en cours suffit à dire où on en est. */}
+                  <div style={{height:12,background:"rgba(8,17,9,.55)",border:G.traitFin,borderRadius:G.rayonS,overflow:"hidden",marginBottom:8}}>
+                    <div style={{height:"100%",width:Math.round(suite.ratio*100)+"%",background:meta.color,borderRight:suite.ratio>0&&suite.ratio<1?G.traitFin:"none"}}/>
                   </div>
                   <div style={{fontSize:11.5,color:"rgba(255,255,255,.7)",fontWeight:700,textAlign:"center"}}>
                     {(function(){
-                      const reste = (nextGrade.min - playerXp).toLocaleString();
-                      const cible = gradeLabel(nextGrade) + " " + nextGrade.emoji;
+                      const reste = suite.missing.toLocaleString();
+                      const cible = cardName(suite.card);
                       return tr(`${reste} XP avant ${cible}`, `${reste} XP to ${cible}`,
                         `${reste} XP bis ${cible}`, `${reste} XP prima di ${cible}`, `${reste} XP até ${cible}`,`${reste} XP para ${cible}`);
                     })()}
                   </div>
                 </>
               ) : (
-                <div style={{...posterText(20,grade.color),textAlign:"center"}}><span style={{WebkitTextStroke:0,textShadow:"none"}}>🏆</span> {tr("Niveau max atteint","Max level reached","Max-Level erreicht","Livello massimo raggiunto","Nível máximo atingido","Nivel máximo alcanzado")}</div>
+                <div style={{...posterText(20,meta.color),textAlign:"center"}}>
+                  <span style={{WebkitTextStroke:0,textShadow:"none"}}>🏆</span> {tr("Collection complète","Collection complete","Sammlung komplett","Collezione completa","Coleção completa","Colección completa")}
+                </div>
               )}
             </div>
           );
@@ -16414,28 +16284,25 @@ export default function LePont() {
         }
       </div>
 
-      {/* 🥕 CAROTTE DU PROCHAIN GRADE — progression live (playerXp + score en cours) */}
+      {/* 🥕 CAROTTE DE LA PROCHAINE CARTE — progression live (XP + score en cours)
+          Elle visait le prochain GRADE. Cinq paliers seulement : entre 5 000 et
+          38 000 XP, la barre ne bougeait pratiquement pas d'une partie à l'autre.
+          Les vingt-neuf cartes rendent la même promesse en la rendant atteignable.
+
+          Tout reste à l'encre, y compris le nom de la cible : la couleur d'une
+          rareté claire — l'or à #F5C22B, le diamant à #8FE9FF — disparaîtrait sur
+          le fond or, et la phrase se terminerait dans le vide. */}
       {(() => {
         const live = playerXp + chainScore;
-        const ng = getNextGrade(live);
-        if (!ng) return null;
-        const cur = getGrade(live);
-        const span = ng.min - cur.min;
-        const done = live - cur.min;
-        const pct = Math.max(0, Math.min(100, span > 0 ? (done / span) * 100 : 0));
-        const remain = Math.max(0, ng.min - live);
-        const carrot = tr(`Plus que ${remain} pts avant`, `${remain} pts to`, `Noch ${remain} Pkt bis`, `Ancora ${remain} pt a`, `Faltam ${remain} pts para`,`Faltan ${remain} pts para`);
+        const suite = progressToNext(live);
+        if (!suite) return null;
+        const meta = rarityMeta(suite.card.rarity);
+        const carrot = tr(`Plus que ${suite.missing} pts avant`, `${suite.missing} pts to`, `Noch ${suite.missing} Pkt bis`, `Ancora ${suite.missing} pt a`, `Faltam ${suite.missing} pts para`,`Faltan ${suite.missing} pts para`);
         return (
           <div style={{zIndex:2,padding:"0 16px 6px",maxWidth:420,margin:"0 auto",width:"100%",boxSizing:"border-box"}}>
-            {/* Encre : cette ligne est posée à nu sur la feuille, passée à l'or.
-                Le nom du grade suivant garde sa couleur, portée par le gras. */}
-            {/* Le nom du grade suivant etait peint de la couleur du grade. Celle de GOAT
-                est #FFD700 : sur l'or, il disparaissait purement et simplement — la
-                phrase se terminait dans le vide. Tout passe a l'encre ; c'est
-                l'emoji qui dit lequel. */}
-            <div style={{fontSize:10,fontWeight:800,letterSpacing:.5,color:"rgba(8,17,9,.72)",marginBottom:3,textAlign:"center"}}>{carrot} <span style={{color:"rgba(8,17,9,.9)"}}>{ng.emoji} {ng.label}</span></div>
+            <div style={{fontSize:10,fontWeight:800,letterSpacing:.5,color:"rgba(8,17,9,.72)",marginBottom:3,textAlign:"center"}}>{carrot} <span style={{color:"rgba(8,17,9,.9)"}}>{cardName(suite.card)}</span></div>
             <div style={{height:9,borderRadius:G.rayonS,background:"rgba(8,17,9,.55)",border:G.traitFin,overflow:"hidden"}}>
-              <div style={{height:"100%",width:pct+"%",background:ng.color,transition:"width .4s ease"}}/>
+              <div style={{height:"100%",width:Math.round(suite.ratio*100)+"%",background:meta.color,transition:"width .4s ease"}}/>
             </div>
           </div>
         );
@@ -16746,21 +16613,20 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
           );
         })()}
 
-        {/* 🥕 CAROTTE DU PROCHAIN GRADE — incite à relancer pour l'atteindre */}
+        {/* 🥕 CAROTTE DE LA PROCHAINE CARTE — incite à relancer pour l'atteindre.
+            Dans un panneau de nuit, donc le nom de la carte peut reprendre la
+            couleur de sa rareté : c'est sur l'or, deux écrans plus loin, qu'elle
+            se délave. */}
         {(() => {
-          const ng = getNextGrade(playerXp);
-          if (!ng) return null;
-          const cur = getGrade(playerXp);
-          const span = ng.min - cur.min;
-          const done = playerXp - cur.min;
-          const pct = Math.max(0, Math.min(100, span > 0 ? (done / span) * 100 : 0));
-          const remain = Math.max(0, ng.min - playerXp);
-          const carrot = tr(`Plus que ${remain} pts avant`, `${remain} pts to`, `Noch ${remain} Pkt bis`, `Ancora ${remain} pt a`, `Faltam ${remain} pts para`,`Faltan ${remain} pts para`);
+          const suite = progressToNext(playerXp);
+          if (!suite) return null;
+          const meta = rarityMeta(suite.card.rarity);
+          const carrot = tr(`Plus que ${suite.missing} pts avant`, `${suite.missing} pts to`, `Noch ${suite.missing} Pkt bis`, `Ancora ${suite.missing} pt a`, `Faltam ${suite.missing} pts para`,`Faltan ${suite.missing} pts para`);
           return (
             <div style={{marginTop:0,background:G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,padding:"9px 14px"}}>
-              <div style={{fontSize:12,fontWeight:800,color:"rgba(255,255,255,.85)",marginBottom:6,textAlign:"center"}}>{carrot} <span style={{color:ng.color}}>{ng.emoji} {ng.label}</span></div>
-              <div style={{height:7,borderRadius:4,background:G.nuit,overflow:"hidden"}}>
-                <div style={{height:"100%",width:pct+"%",background:`linear-gradient(90deg, ${ng.color}, #fff)`,borderRadius:4,transition:"width .5s ease"}}/>
+              <div style={{fontSize:12,fontWeight:800,color:"rgba(255,255,255,.85)",marginBottom:6,textAlign:"center"}}>{carrot} <span style={{color:meta.color}}>{cardName(suite.card)}</span></div>
+              <div style={{height:7,borderRadius:4,background:"rgba(8,17,9,.55)",overflow:"hidden"}}>
+                <div style={{height:"100%",width:Math.round(suite.ratio*100)+"%",background:meta.color,borderRadius:4}}/>
               </div>
             </div>
           );
@@ -16849,14 +16715,20 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
           </button>
           )}
           <button onClick={function(){
-            const grade = getGrade(playerXp);
+            // Le message annonçait « Grade : Titulaire 🐺 ». Il annonce la CARTE
+            // en cours, qui est aussi la photo de profil du joueur : ce qu'il
+            // partage et ce qu'on voit de lui deviennent la même chose.
+            // Pas d'emoji de grade en tête : la carte n'en a pas, elle a un
+            // visuel. Le ballon tient ce rôle, et il ne dépend d'aucun barème.
+            const carte = levelCard(playerXp);
+            const nom = cardName(carte);
             const mode = isChain?"The Mercato":"The Plug";
             const txt = tr(
-              `${grade.emoji} J'ai scoré ${sc} pts en mode ${mode} sur GOAT FC !\nGrade : ${grade.label}\nT'as le niveau ? 👇\nhttps://goatfc.fr`,
-              `${grade.emoji} I scored ${sc} pts in ${mode} mode on GOAT FC!\nRank: ${grade.label}\nCan you beat me? 👇\nhttps://goatfc.fr`,
-              `${grade.emoji} Ich habe ${sc} Pkt im Modus ${mode} auf GOAT FC erzielt!\nRang: ${grade.label}\nSchaffst du das? 👇\nhttps://goatfc.fr`,
-              `${grade.emoji} Ho fatto ${sc} pt in modalità ${mode} su GOAT FC!\nGrado: ${grade.label}\nCe la fai? 👇\nhttps://goatfc.fr`,
-              `${grade.emoji} Fiz ${sc} pts no modo ${mode} no GOAT FC!\nPatente: ${grade.label}\nVocê tem nível? 👇\nhttps://goatfc.fr`,`${grade.emoji} ¡He hecho ${sc} pts en el modo ${mode} en GOAT FC!\nRango: ${grade.label}\n¿Tienes nivel? 👇\nhttps://goatfc.fr`);
+              `⚽ J'ai scoré ${sc} pts en mode ${mode} sur GOAT FC !\nCarte : ${nom}\nT'as le niveau ? 👇\nhttps://goatfc.fr`,
+              `⚽ I scored ${sc} pts in ${mode} mode on GOAT FC!\nCard: ${nom}\nCan you beat me? 👇\nhttps://goatfc.fr`,
+              `⚽ Ich habe ${sc} Pkt im Modus ${mode} auf GOAT FC erzielt!\nKarte: ${nom}\nSchaffst du das? 👇\nhttps://goatfc.fr`,
+              `⚽ Ho fatto ${sc} pt in modalità ${mode} su GOAT FC!\nCarta: ${nom}\nCe la fai? 👇\nhttps://goatfc.fr`,
+              `⚽ Fiz ${sc} pts no modo ${mode} no GOAT FC!\nCarta: ${nom}\nVocê tem nível? 👇\nhttps://goatfc.fr`,`⚽ ¡He hecho ${sc} pts en el modo ${mode} en GOAT FC!\nCarta: ${nom}\n¿Tienes nivel? 👇\nhttps://goatfc.fr`);
             if(navigator.share){navigator.share({title:"GOAT FC",text:txt});}
             else{navigator.clipboard.writeText(txt).then(function(){alert(tr("Copié ! Colle-le où tu veux 📋","Copied! Paste it anywhere 📋","Kopiert! Füg es überall ein 📋","Copiato! Incollalo dove vuoi 📋","Copiado! Cole onde quiser 📋","¡Copiado! Pégalo donde quieras 📋"));});}
           }} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:4,padding:"8px 4px",background:G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,cursor:"pointer",color:G.white}}>
