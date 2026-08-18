@@ -330,3 +330,50 @@ peut rester **Particulier** — un auto-entrepreneur est une personne physique.
 ⚠️ Rien de tout ça ne se fait au nom de **Project X Paris**. C'est un employeur,
 pas une structure qu'on peut engager. Et la partie fiscale mérite d'être
 confirmée par un comptable ou l'URSSAF, pas par ce document.
+
+## Formulaire fiscal W-8BEN — les trois champs qui coincent
+
+Apple le réclame pour activer le contrat « Apps payantes ». À faire même si l'app
+est gratuite et sans achat intégré : ça n'a **aucun effet sur les revenus AdMob**
+(qui viennent de Google, pas d'Apple), mais ça évite de devoir le remplir en
+urgence le jour où un achat intégré est ajouté.
+
+Le formulaire est valable **trois ans**, et à refaire dans les 30 jours si l'une
+des déclarations devient fausse — changement d'adresse compris.
+
+### Ligne 5 — U.S. taxpayer identification number : LAISSER VIDE
+
+C'est le piège de ce formulaire. Le bouton « Download Form SS-4 » invite à
+demander un **EIN** américain, ce qui prend des semaines et n'est **pas
+nécessaire** : un résident français qui réclame les avantages de la convention
+fiscale renseigne son numéro fiscal étranger en ligne 6a, et rien en ligne 5.
+
+### Ligne 6a — Foreign Tax Identifying Number
+
+Le **numéro fiscal français**, 13 chiffres, celui qui figure sur l'avis
+d'imposition et dans l'espace particulier d'impots.gouv.fr. Il est **obligatoire**
+dès lors qu'on réclame la convention sans numéro américain.
+
+### Ligne 3 — Permanent Residence Address : le VRAI domicile
+
+À ne pas confondre avec l'adresse de domiciliation évoquée plus haut pour le
+statut de commerçant DSA. La ligne 3 exige la **résidence permanente réelle** :
+une adresse de domiciliation ou une boîte postale y invalide le formulaire. La
+ligne 4 (Mailing Address), elle, accepte autre chose.
+
+Ce sont donc deux adresses avec deux règles opposées, et c'est exactement là qu'on
+se trompe : l'adresse publiée sur la fiche App Store peut être une domiciliation,
+celle du W-8BEN non — mais elle n'est vue que par Apple et l'IRS.
+
+### Partie II — la convention France / États-Unis
+
+Ligne 9 : cocher la résidence fiscale en France.
+
+Ligne 10 : les revenus tirés de la vente d'applications sont des **redevances**,
+couvertes par l'**article 12** de la convention, au taux de **0 %**. Cocher
+« Income from the sale of applications ». L'encadré d'explication des conditions
+supplémentaires reste vide : le cas est le cas standard.
+
+⚠️ Vérifier l'article et le paragraphe sur le **« Form W-8BEN Tips Sheet »**
+téléchargeable depuis la page : Apple y donne la référence pays par pays, et c'est
+la source qui fait foi pour ce formulaire-là.
