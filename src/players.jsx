@@ -567,7 +567,7 @@ export const PLAYERS = [
   { name:"Mohamed Salah", clubs:["Basel", "Chelsea", "ACF Fiorentina", "AS Roma", "Liverpool", "Trabzonspor"], diff:"facile", nationalities:["Égypte"], positions:["attaquant"], birthYear:1992 },
   { name:"Kevin De Bruyne", clubs:["Genk", "Chelsea", "Werder Bremen", "Wolfsburg", "Manchester City", "SSC Napoli"], diff:"facile", nationalities:["Belgique"], positions:["milieu"], birthYear:1991 },
   { name:"İlkay Gündoğan", clubs:["Bochum", "Nürnberg", "Borussia Dortmund", "Manchester City", "Barcelona", "Galatasaray"], diff:"facile", nationalities:["Allemagne"], positions:["milieu"], birthYear:1990 },
-  { name:"Harry Kane", clubs:["Tottenham", "Leicester City", "Norwich City", "Millwall", "Bayern Munich"], diff:"facile", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1993 },
+  { name:"Harry Kane", clubs:["Tottenham", "Leyton Orient", "Millwall", "Norwich City", "Leicester City", "Bayern Munich"], diff:"facile", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1993 },
   { name:"Sergio Ramos", clubs:["Sevilla", "Real Madrid", "PSG", "Sevilla", "Monterrey"], diff:"facile", nationalities:["Espagne"], positions:["defenseur"], birthYear:1986 },
   { name:"Víctor Valdés", clubs:["Barcelona B", "Barcelona", "Manchester United", "Standard Liège", "Middlesbrough"], diff:"moyen", nationalities:["Espagne"], positions:["gardien"], birthYear:1982 },
   { name:"Joan Capdevila", clubs:["Espanyol", "Atletico Madrid", "Deportivo La Coruna", "Villarreal"], diff:"expert", nationalities:["Espagne"], positions:["defenseur"], birthYear:1978 },
