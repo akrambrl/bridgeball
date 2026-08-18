@@ -427,3 +427,64 @@ laisser intact garde l'option ouverte.
 
 Obtenir l'attestation de résidence fiscale française auprès du SIP demanderait par
 ailleurs une démarche, pour un bénéfice actuellement nul.
+
+## Candidature à la mise en vedette
+
+Gratuit, sans risque, et à déposer **6 à 8 semaines avant** la date de sortie
+visée : l'équipe éditoriale d'Apple planifie longtemps à l'avance. Pour un
+lancement au 1er octobre, mi-août est la bonne fenêtre.
+
+### Le texte, prêt à coller
+
+Écrit sans superlatif — les fiches éditoriales d'Apple n'en veulent pas, et Play
+les interdit carrément. Les chiffres sont RELEVÉS dans players.jsx.
+
+```
+GOAT FC pose une seule question, de six façons différentes : quel joueur relie
+ces deux clubs ?
+
+C'est un quiz de football pour ceux qui lisent les effectifs, pas seulement les
+affiches. La base compte 5 623 joueurs et 1 550 clubs de 125 nationalités, tenue
+à jour à chaque mercato par un script qui relit les listes de transferts semaine
+après semaine : une carrière fausse est un bug, et elle se corrige.
+
+La direction artistique est dessinée pour l'app, dans la lignée des mangas de
+football des années 80 — aplats d'or, trait d'encre, ombres dures, lignes de
+vitesse. Les 29 cartes de collection forment un seul personnage qui vieillit au
+fil de la progression : la dernière obtenue devient la photo de profil du joueur.
+
+Un joueur mystère par jour, le même pour tout le monde, avec une série à tenir.
+Un classement remis à zéro chaque mois. Des duels en direct, ou en différé contre
+les scores des autres. Six langues, aucune inscription : un pseudo et on joue.
+
+Développée par une seule personne, en France.
+```
+
+### Ce qui joue CONTRE cette candidature, et qu'il faut savoir
+
+Les éditeurs d'Apple pondèrent l'intégration à la plateforme. L'inventaire est
+court : haptique, barre d'état, splash, clavier. Aucun widget, aucune Live
+Activity, pas de Game Center, pas d'iCloud, **pas d'iPad** (choix documenté plus
+haut). Et la coque est web — ça se voit.
+
+Ces manques ne se comblent pas sans **Swift natif**, donc sans un Mac, que le
+projet n'a pas : toute la chaîne passe par GitHub Actions.
+
+Conclusion : la mise en vedette d'une première version est un coup à faible
+probabilité. La candidature coûte vingt minutes et ne peut rien abîmer — on la
+dépose, sans compter dessus pour le lancement.
+
+### Le levier qui vaut mieux que la candidature : les évènements in-app
+
+Les **évènements in-app** de l'App Store sont faits pour les compétitions à
+durée limitée. Le concours mensuel de GOAT FC en est un au sens littéral :
+fenêtre datée, ouvert à tous, entièrement dans l'app.
+
+Ils se configurent dans App Store Connect — pas une ligne de code — apparaissent
+sur la fiche produit, sont indexés dans la recherche, et sont eux-mêmes
+éligibles à la mise en vedette. Un évènement par mois, c'est douze occasions par
+an au lieu d'une.
+
+⚠️ À vérifier avant de s'y engager : les règles d'Apple sur les évènements in-app
+encadrent les **récompenses**. Un concours avec un lot en nature demande de relire
+ces conditions, pas de supposer qu'il passe.
