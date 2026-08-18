@@ -60,7 +60,7 @@
 import { chromium } from "playwright";
 import { fileURLToPath } from "node:url";
 import { dirname, join, resolve } from "node:path";
-import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, readdirSync, statSync, mkdirSync } from "node:fs";
 import sharp from "sharp";
 
 const racine = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -184,3 +184,85 @@ if (existsSync(resAndroid)) {
 
 const poids = (rel) => (statSync(join(racine, rel)).size / 1024).toFixed(0) + " Ko";
 console.log("maître :", poids("assets/splash.png"));
+
+// ── ET LES ÉCRANS DE LANCEMENT DE LA PWA iOS ───────────────────────────────
+//
+// Une PWA ajoutée à l'écran d'accueil depuis Safari n'a PAS accès au splash
+// natif ci-dessus : celui-là vit dans le paquet de l'app, qu'elle n'est pas.
+// Son seul mécanisme est `apple-touch-startup-image`, un <link> par taille
+// d'écran — et ce projet n'en déclarait aucun.
+//
+// Ça ne se voyait pas, parce que l'affiche interne de 2 500 ms tenait le rôle.
+// En la retirant, la PWA s'est retrouvée à démarrer sur un aplat d'or nu : le
+// jeu s'ouvre bien, mais sans un instant de marque.
+//
+// ── POURQUOI 8 COULEURS ET PAS 16 ──────────────────────────────────────────
+//
+// Ces images partent dans le SITE, donc dans dist/, donc — sans précaution —
+// dans le paquet des deux apps natives, qui n'en ont aucun usage. À 16 couleurs
+// un écran d'iPhone pèse 218 Ko, soit près de 4 Mo pour la série. À 8, il tombe
+// à 41 Ko : la trame sérigraphiée disparaît, les lignes de vitesse et le
+// lettrage restent, et l'image est plus propre qu'autre chose.
+//
+// La sécurité ne s'arrête pas là : les deux workflows suppriment ce dossier de
+// dist/ AVANT `cap sync`. Voir .github/workflows/ipa-ios.yml.
+//
+// ── PORTRAIT SEULEMENT, ET C'EST COHÉRENT ──────────────────────────────────
+//
+// Le manifeste déclare `"orientation": "portrait"`. Fournir des variantes
+// paysage serait fournir des écrans de lancement pour une orientation que l'app
+// n'adopte jamais. Un appareil lancé en paysage ne trouve aucune image et
+// retombe sur `background_color`, qui est déjà l'or de la charte.
+//
+// Les tailles sont en pixels CSS × densité. Elles ne se devinent pas : une
+// erreur d'un pixel sur device-width fait échouer la media query en silence,
+// et l'appareil retombe sur l'aplat sans que rien ne le signale.
+const APPAREILS = [
+  // iPhone
+  { l: 375, h: 667, d: 2, nom: "SE 2/3, 8" },
+  { l: 414, h: 736, d: 3, nom: "8 Plus" },
+  { l: 375, h: 812, d: 3, nom: "X, XS, 11 Pro, 12/13 mini" },
+  { l: 414, h: 896, d: 2, nom: "XR, 11" },
+  { l: 414, h: 896, d: 3, nom: "XS Max, 11 Pro Max" },
+  { l: 390, h: 844, d: 3, nom: "12, 13, 14, 16e" },
+  { l: 428, h: 926, d: 3, nom: "12/13 Pro Max, 14 Plus" },
+  { l: 393, h: 852, d: 3, nom: "14 Pro, 15, 15 Pro, 16" },
+  { l: 402, h: 874, d: 3, nom: "16 Pro" },
+  { l: 430, h: 932, d: 3, nom: "14 Pro Max, 15 Plus/Pro Max, 16 Plus" },
+  { l: 440, h: 956, d: 3, nom: "16 Pro Max" },
+  // iPad
+  { l: 768, h: 1024, d: 2, nom: "iPad 9.7\", mini" },
+  { l: 810, h: 1080, d: 2, nom: "iPad 10.2\"" },
+  { l: 820, h: 1180, d: 2, nom: "iPad Air 10.9\"" },
+  { l: 834, h: 1112, d: 2, nom: "iPad Pro 10.5\"" },
+  { l: 834, h: 1194, d: 2, nom: "iPad Pro 11\"" },
+  { l: 1024, h: 1366, d: 2, nom: "iPad Pro 12.9\"" },
+];
+
+const dossierPwa = join(racine, "public/splash-ios");
+mkdirSync(dossierPwa, { recursive: true });
+let poidsTotal = 0;
+const balises = [];
+for (const a of APPAREILS) {
+  const w = a.l * a.d, h = a.h * a.d;
+  const fichier = `splash-${w}x${h}.png`;
+  const png = await sharp(maitre)
+    .resize(w, h, { fit: "cover", position: "center" })
+    .png({ palette: true, colours: 8, dither: 0 })
+    .toBuffer();
+  writeFileSync(join(dossierPwa, fichier), png);
+  poidsTotal += png.length;
+  balises.push(
+    `<link rel="apple-touch-startup-image" href="/splash-ios/${fichier}"`
+    + ` media="(device-width: ${a.l}px) and (device-height: ${a.h}px)`
+    + ` and (-webkit-device-pixel-ratio: ${a.d}) and (orientation: portrait)">`);
+}
+console.log(`pwa  ${APPAREILS.length} écrans de lancement · ${(poidsTotal / 1024).toFixed(0)} Ko au total`);
+
+// Les balises sont IMPRIMÉES et non écrites dans index.html : ce fichier est
+// tenu à la main, et un script qui le réécrit finirait par y perdre un
+// commentaire. À recoller si la liste ci-dessus change.
+console.log("\n── à recoller dans index.html si APPAREILS change ──");
+for (let i = 0; i < balises.length; i++) {
+  console.log("    " + balises[i] + (APPAREILS[i].nom ? `<!-- ${APPAREILS[i].nom} -->` : ""));
+}

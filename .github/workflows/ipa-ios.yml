@@ -110,6 +110,21 @@ jobs:
       - name: Construire les assets web
         run: npm run build
 
+      # ── CE QUE LA COQUE N'A PAS À EMBARQUER ────────────────────────────────
+      # public/splash-ios/ contient les 17 écrans de lancement de la PWA, servis
+      # par `apple-touch-startup-image` à une page web ajoutée à l'écran
+      # d'accueil depuis Safari. Une app native n'utilise JAMAIS ce mécanisme :
+      # elle a son propre splash dans Splash.imageset.
+      #
+      # Sans cette ligne, ce sont 829 Ko de PNG inutiles dans l'IPA, sur un
+      # paquet qui en pèse 16. Le dossier n'est retiré que de dist/, jamais du
+      # dépôt : le site en a besoin.
+      #
+      # AVANT `cap sync`, et c'est tout l'intérêt : après, les fichiers sont
+      # déjà recopiés dans ios/App/App/public/ et il faudrait les y traquer.
+      - name: Retirer les écrans de lancement de la PWA du paquet
+        run: rm -rf dist/splash-ios
+
       - name: Synchroniser Capacitor
         run: npx cap sync ios
 
