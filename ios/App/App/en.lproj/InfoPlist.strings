@@ -1,0 +1,10 @@
+/* Chaînes d'Info.plist visibles par l'utilisateur — version anglaise.
+
+   Cette langue est le REPLI du bundle : CFBundleDevelopmentRegion vaut `en`.
+   La valeur en dur restée dans Info.plist ne sert plus qu'aux systèmes qui ne
+   trouveraient aucun .lproj ; c'est ce fichier qui gagne dès que la
+   localisation est enregistrée dans le projet Xcode. */
+
+/* Fenêtre App Tracking Transparency, au premier lancement. Sans cette phrase,
+   iOS FAIT PLANTER l'app au moment de l'afficher. */
+"NSUserTrackingUsageDescription" = "GOAT FC uses this to show you rewarded ads that fit your interests. Decline and you keep every feature — the ads are simply less relevant.";

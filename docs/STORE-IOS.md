@@ -467,12 +467,30 @@ court : haptique, barre d'état, splash, clavier. Aucun widget, aucune Live
 Activity, pas de Game Center, pas d'iCloud, **pas d'iPad** (choix documenté plus
 haut). Et la coque est web — ça se voit.
 
-Ces manques ne se comblent pas sans **Swift natif**, donc sans un Mac, que le
-projet n'a pas : toute la chaîne passe par GitHub Actions.
+**Correction d'une affirmation fausse de ce document** : il disait que ces manques
+ne se comblaient pas « sans un Mac, que le projet n'a pas ». Un Mac est
+disponible. La chaîne de RELEASE reste GitHub Actions — c'est le bon choix, elle
+est reproductible et elle ne dépend pas d'une machine — mais rien n'interdit
+d'ouvrir Xcode en local pour ajouter une cible native et la déboguer.
 
-Conclusion : la mise en vedette d'une première version est un coup à faible
-probabilité. La candidature coûte vingt minutes et ne peut rien abîmer — on la
-dépose, sans compter dessus pour le lancement.
+Ce qui change donc de statut, du moins cher au plus cher :
+
+| Chantier | Où ça se fait | Ce que ça vaut |
+|---|---|---|
+| Chaîne ATT en français (`fr.lproj/InfoPlist.strings`) | Xcode, 10 min | ferme une dette déjà consignée |
+| Support iPad | CSS et mise en page — **pas besoin du Mac** | lève un vrai malus éditorial |
+| Widget de la devinette du jour (WidgetKit) | cible Swift + App Group | le signal éditorial le plus fort pour une app d'habitude |
+| Game Center | Swift | apprécié d'Apple, mais fait doublon avec le classement du concours |
+
+Conclusion révisée : la mise en vedette d'une première version reste improbable
+SANS l'un de ces chantiers. Avec un widget et l'iPad, elle devient discutable.
+
+Mais pas dans les six semaines qui restent avant le 1er octobre, avec un build à
+refaire, les identifiants AdMob à passer en production et une domiciliation à
+obtenir. Le bon calendrier est ailleurs : déposer la candidature sur ce qui existe,
+et garder le widget pour la PREMIÈRE MISE À JOUR — « une mise à jour palpitante »
+est explicitement l'une des catégories de candidature, et novembre laisse le temps
+de le faire bien.
 
 ### Le levier qui vaut mieux que la candidature : les évènements in-app
 
@@ -488,3 +506,28 @@ an au lieu d'une.
 ⚠️ À vérifier avant de s'y engager : les règles d'Apple sur les évènements in-app
 encadrent les **récompenses**. Un concours avec un lot en nature demande de relire
 ces conditions, pas de supposer qu'il passe.
+
+### La chaîne ATT en français — les fichiers sont écrits, les deux clics restent
+
+`ios/App/App/fr.lproj/InfoPlist.strings` et son jumeau `en.lproj/` sont dans le
+dépôt, avec la phrase traduite. Ils ne font encore **rien** : un `.strings` qui
+n'est pas déclaré dans le projet Xcode est un fichier mort, et c'est le piège —
+on croit la traduction faite parce qu'on la voit dans le dépôt.
+
+Sur le Mac, dans Xcode :
+
+1. **File → Add Files to "App"…**, choisir les deux dossiers `fr.lproj` et
+   `en.lproj`, cocher la cible **App**, décocher « Copy items if needed » (ils sont
+   déjà au bon endroit) ;
+2. sélectionner le projet **App** dans le navigateur, onglet **Info** → section
+   **Localizations** → **+** → **French (fr)**. Sans cette étape, iOS ne cherche
+   même pas le dossier `fr.lproj` ;
+3. vérifier : ⌘R sur un simulateur réglé en français, l'app doit demander
+   l'autorisation de suivi **en français** au premier lancement.
+
+⚠️ La valeur en dur reste dans `Info.plist`, et c'est voulu : elle sert de repli
+si aucune localisation n'est trouvée. Une fois les `.strings` enregistrés, ce sont
+eux qui gagnent — la clé du plist n'est plus lue que par défaut.
+
+⚠️ `npx cap sync ios` ne touche pas au `.xcodeproj` sur ce point : l'ajout des
+localisations est une modification du projet, à commiter comme le reste.
