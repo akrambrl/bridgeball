@@ -4458,29 +4458,51 @@ export default function LePont() {
     
     try {
       const today = ggGetTodayDateStr();
-      // Upsert : on remplace l'ancien score si le joueur rejoue (mais devrait pas pouvoir)
-      await sbFetch("bb_gg_scores", {
+      const base = {
+        player_id: playerId,
+        player_name: playerName,
+        score: score,
+        max_score: maxScore,
+        lives_left: livesLeft,
+        cells_filled: cellsFilled,
+        pattern: pattern,
+        seed_date: today,
+      };
+      const envoyer = (corps) => sbFetch("bb_gg_scores", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Prefer": "resolution=merge-duplicates,return=minimal",
         },
-        body: JSON.stringify({
-          player_id: playerId,
-          player_name: playerName,
-          score: score,
-          max_score: maxScore,
-          lives_left: livesLeft,
-          cells_filled: cellsFilled,
-          pattern: pattern,
-          seed_date: today,
-          // Lu au ref et non à l'état : voir le commentaire de ggVieRachetee.
-          // C'est cette colonne qui exclut la grille du classement mensuel, côté
-          // serveur — le client ne fait que dire la vérité sur sa partie.
-          vie_rachetee: ggVieRacheteeRef.current,
-        }),
+        body: JSON.stringify(corps),
       });
-      setGgScoreSaved(true);
+
+      // ── L'ORDRE DE DÉPLOIEMENT NE DOIT PAS COMPTER ────────────────────────
+      //
+      // `vie_rachetee` est lu au ref et non à l'état : voir le commentaire de
+      // ggVieRachetee. C'est cette colonne qui exclut la grille du classement
+      // mensuel côté serveur — le client ne fait que dire la vérité sur sa partie.
+      //
+      // Mais elle n'existe qu'après docs/supabase-goatgrid-vie.sql, et le site se
+      // déploie tout seul depuis main. Écrire une colonne absente fait répondre
+      // 400 à PostgREST, donc entre la mise en ligne et l'exécution du SQL, TOUTES
+      // les grilles du jour seraient perdues — sans un mot, puisque sbFetch rend
+      // `null` au lieu de lever. Une fenêtre de quelques minutes suffit à effacer
+      // la journée de dizaines de joueurs.
+      //
+      // D'où la seconde tentative sans la colonne. Elle ne coûte rien quand la
+      // migration est passée (le premier envoi réussit), et elle rend l'ordre
+      // indifférent : avant le SQL, la grille est enregistrée sans le drapeau,
+      // donc traitée comme honnête — exactement le comportement d'aujourd'hui.
+      let ok = await envoyer({ ...base, vie_rachetee: ggVieRacheteeRef.current });
+      if (ok === null) ok = await envoyer(base);
+
+      // `setGgScoreSaved(true)` UNIQUEMENT sur un vrai succès. Il était posé
+      // inconditionnellement : sbFetch ne lève pas, il rend `null`, donc le
+      // `catch` ne se déclenchait jamais et un score refusé était marqué comme
+      // sauvegardé — sans nouvelle tentative possible pour la grille du jour.
+      if (ok !== null) setGgScoreSaved(true);
+      else console.warn("GG score save refusé par Supabase");
     } catch (e) {
       console.warn("GG score save failed:", e);
     }
