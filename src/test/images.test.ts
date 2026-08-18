@@ -37,8 +37,28 @@ const PNG_AUTORISES = new Set([
   "logo.png",                 // cité dans le JSON-LD de index.html
 ]);
 
+// ── LE SEUL DOSSIER QUI ÉCHAPPE À CE TEST, ET POURQUOI ────────────────────
+//
+// public/splash-ios/ contient les 17 écrans de lancement de la PWA iOS, servis
+// par `apple-touch-startup-image`. Deux raisons cumulées, et il faut les deux :
+//
+//  1. Apple ne lit ce mécanisme qu'en PNG. Les convertir en WebP, c'est parier
+//     sur un comportement non documenté dont l'échec est SILENCIEUX — la media
+//     query passe, l'image ne s'affiche pas, et personne ne le voit.
+//
+//  2. Ils ne sont PAS embarqués dans l'app. Les deux workflows suppriment
+//     dist/splash-ios avant `cap sync` (voir .github/workflows/ipa-ios.yml) :
+//     une app native n'utilise jamais ce mécanisme, elle a son propre splash
+//     dans Splash.imageset. La prémisse même de ce fichier — « public/ est ce
+//     que Capacitor empaquette » — ne s'applique donc pas à ce dossier.
+//
+// L'exemption est bornée par son propre test, plus bas : sans lui, ce dossier
+// deviendrait l'endroit où déposer un PNG pour échapper au contrôle.
+const HORS_PAQUET = "splash-ios/";
+
 describe("le poids embarqué dans l'app", () => {
-  const fichiers = tousLesFichiers(PUBLIC);
+  const tout = tousLesFichiers(PUBLIC);
+  const fichiers = tout.filter((f) => !f.chemin.startsWith(HORS_PAQUET));
   const noms = fichiers.map((f) => f.nom);
 
   it("aucun PNG de contenu ne réapparaît dans public/", () => {
@@ -70,6 +90,34 @@ describe("le poids embarqué dans l'app", () => {
     // sujet, pas après. Mesuré à ~8 Mo après conversion.
     const total = fichiers.reduce((s, f) => s + f.octets, 0);
     expect(Math.round(total / 1048576)).toBeLessThan(12);
+  });
+});
+
+// ── LA BORNE DE L'EXEMPTION ───────────────────────────────────────────────
+//
+// Le dossier ci-dessus échappe à l'interdiction du PNG. Sans ce contre-test, il
+// deviendrait la cachette : n'importe quelle illustration lourde y serait à
+// l'abri du contrôle qui protège le poids de l'app.
+//
+// Les deux règles répondent aux deux façons de détourner l'exemption : y déposer
+// AUTRE CHOSE que des écrans de lancement, ou en déposer trop.
+describe("les écrans de lancement de la PWA iOS", () => {
+  const dossier = join(PUBLIC, "splash-ios");
+
+  it("ne contient que des écrans de lancement nommés par leurs dimensions", () => {
+    if (!existsSync(dossier)) return;
+    const intrus = readdirSync(dossier).filter((n) => !/^splash-\d+x\d+\.png$/.test(n));
+    expect(intrus).toEqual([]);
+  });
+
+  it("tient sous 1 Mo au total", () => {
+    // 872 Ko mesurés pour 17 écrans, à 8 couleurs sans tramage. Le seuil doit
+    // gêner celui qui repasserait à 16 couleurs — la série ferait alors 3,7 Mo,
+    // pour une image que personne ne distinguerait de celle-ci.
+    if (!existsSync(dossier)) return;
+    const total = readdirSync(dossier)
+      .reduce((s, n) => s + statSync(join(dossier, n)).size, 0);
+    expect(Math.round(total / 1024)).toBeLessThan(1024);
   });
 });
 
