@@ -377,3 +377,35 @@ supplémentaires reste vide : le cas est le cas standard.
 ⚠️ Vérifier l'article et le paragraphe sur le **« Form W-8BEN Tips Sheet »**
 téléchargeable depuis la page : Apple y donne la référence pays par pays, et c'est
 la source qui fait foi pour ce formulaire-là.
+
+### Le second formulaire — « Certificate of Foreign Status »
+
+Apple en présente deux à la suite, et on croit s'être trompé de page. Le premier
+est le W-8BEN de l'IRS ; celui-ci est une déclaration **propre à Apple**, plus
+courte, rattachée au même contrat.
+
+Tout y est pré-rempli sauf deux choses :
+
+- **Type of Beneficial Owner** → `Individual/Sole proprietor`. Reste vrai même
+  après une immatriculation en micro-entreprise : un auto-entrepreneur est une
+  entreprise individuelle ;
+- **Title** → `Owner`. C'est la capacité en laquelle on signe, pas un titre
+  honorifique. Pour quelqu'un qui signe pour lui-même, `Owner` ou
+  `Sole Proprietor` ; cohérent avec le champ ci-dessus.
+
+**Permanent Residence** suit la même règle que la ligne 3 du W-8BEN : la résidence
+RÉELLE, pas une domiciliation.
+
+#### La phrase qu'il faut lire deux fois
+
+> *the beneficial owner does not have any employees in the United States and does
+> not own, lease, or control any equipment or other assets in the United States
+> that are used to derive revenue from Apple*
+
+Elle est vraie pour ce projet, mais elle mérite d'être comprise plutôt que
+cochée : GOAT FC s'appuie sur **Supabase (USA)** et **Vercel (USA)**, listés dans
+la politique de confidentialité. Ce sont des **services achetés**, pas du matériel
+possédé, loué ou contrôlé — la distinction que cette déclaration cherche à établir
+est celle d'un établissement stable aux États-Unis.
+
+À réexaminer si le projet louait un jour des serveurs dédiés sur le sol américain.
