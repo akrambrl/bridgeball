@@ -82,6 +82,46 @@ describe("l'artefact des données de jeu", () => {
     expect(PLAYER_BY_NAME.size).toBe(PLAYERS_CLEAN.length);
   });
 
+  it("chaque nom des ensembles correspond à un joueur de la base", () => {
+    // Les six ensembles — retraités, vainqueurs de Coupe du monde et de Ligue des
+    // champions, Ballons d'or, numéros 10 — servent de TEST D'APPARTENANCE sur les
+    // joueurs de la base. Un nom qui ne correspond à personne n'est donc jamais
+    // tiré : il est inerte. C'est pour ça qu'on l'appelle ici un fantôme et pas un
+    // bug de jeu.
+    //
+    // Sauf qu'un fantôme cache parfois une FAUTE D'ORTHOGRAPHE, et là le vrai
+    // joueur perd l'attribut. C'est ce qu'a trouvé ce test le jour où il a été
+    // écrit : GG_CL_WINNERS portait « Benny McCarthy » — deux fois, le Set
+    // dédoublonnant en silence — alors que la base connaît « Benni McCarthy ».
+    // Il a gagné la Ligue des champions avec Porto en 2004, et le critère de
+    // GOAT GRID ne le comptait pas.
+    //
+    // 21 fantômes ont été purgés à cette occasion : 20 alias non accentués de
+    // RETIRED_PLAYERS (« Zinedine Zidane », « Yaya Toure »…) dont la forme
+    // correcte était déjà présente, plus celui-là. Deux autres fautes du même
+    // genre — « Nicolas » pour Nicklas Bendtner, « Sean » pour Shaun
+    // Wright-Phillips — étaient sans conséquence, la bonne graphie y figurant
+    // aussi. Ce test ne fait pas la différence, et c'est voulu : il signale, on
+    // tranche.
+    const noms = new Set((source.PLAYERS as { name?: string }[]).map((p) => p?.name).filter(Boolean));
+    const ensembles: [string, Set<string>][] = [
+      ["RETIRED_PLAYERS", source.RETIRED_PLAYERS],
+      ["GG_CL_WINNERS", source.GG_CL_WINNERS],
+      ["GG_WC_WINNERS", source.GG_WC_WINNERS],
+      ["GG_BALLON_DOR", source.GG_BALLON_DOR],
+      ["GG_BALLON_DOR_MULTI", source.GG_BALLON_DOR_MULTI],
+      ["GG_SHIRT_10", source.GG_SHIRT_10],
+    ];
+    const fantomes: string[] = [];
+    for (const [nom, ens] of ensembles) {
+      for (const n of ens) if (!noms.has(n)) fantomes.push(`${nom} : « ${n} »`);
+    }
+    expect(
+      fantomes,
+      "ces noms ne correspondent à aucun joueur — soit une faute d'orthographe qui prive le vrai joueur de l'attribut, soit un alias mort à retirer",
+    ).toEqual([]);
+  });
+
   it("le décodage colonnaire ne mélange rien", () => {
     // Fiche par fiche contre la source, sur toute la base. Une erreur d'index
     // dans le décodeur donnerait à chaque joueur les nationalités du voisin, et
