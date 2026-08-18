@@ -6,6 +6,7 @@ import { createPortal } from "react-dom";
 // qui construit les index une fois les données arrivées. Rien ne doit être
 // calculé sur elles au chargement de ce module.
 import { PLAYERS, RETIRED_PLAYERS, GG_WC_WINNERS, GG_CL_WINNERS } from "../lib/donnees";
+import { DRAPEAUX } from "../lib/pays";
 import { trackPlay, pingPresence, pingLive, trackTime } from "../lib/track";
 import { hapticSuccess, hapticError, isNative } from "../lib/native";
 import { pickOpponent } from "../lib/opponents";
@@ -2822,13 +2823,16 @@ function ggGetCriterionColors(criterion) {
 // ─── Emoji du critère pour l'UI ──────────────────────────────
 function ggGetCriterionEmoji(criterion) {
   if (criterion.type === "nationality") {
-    const flags = {
-      "Brésil":"🇧🇷","Argentine":"🇦🇷","France":"🇫🇷","Allemagne":"🇩🇪","Espagne":"🇪🇸","Italie":"🇮🇹",
-      "Portugal":"🇵🇹","Angleterre":"🏴󠁧󠁢󠁥󠁮󠁧󠁿","Belgique":"🇧🇪","Pays-Bas":"🇳🇱","Croatie":"🇭🇷","Pologne":"🇵🇱",
-      "Maroc":"🇲🇦","Sénégal":"🇸🇳","Algérie":"🇩🇿","Côte d'Ivoire":"🇨🇮","Cameroun":"🇨🇲","Nigeria":"🇳🇬",
-      "Uruguay":"🇺🇾","Colombie":"🇨🇴","Chili":"🇨🇱","Mexique":"🇲🇽","États-Unis":"🇺🇸","Japon":"🇯🇵",
-    };
-    return flags[criterion.value] || "🌍";
+    // La table est partagée (src/lib/pays.ts). Celle qui vivait ici couvrait
+    // exactement les 24 nationalités de GG_NATIONALITY_POOL — donc sans trou
+    // aujourd'hui, mais c'était la QUATRIÈME copie de la même table dans le
+    // dépôt, et les trois autres avaient déjà divergé : 887 joueurs s'affichaient
+    // sans drapeau dans « Trouve le joueur ». Élargir le vivier ne demande
+    // désormais plus de penser aux drapeaux.
+    //
+    // Le repli reste le globe et non un code à trois lettres : sur une pastille
+    // de critère, « 🌍 » se lit mieux que « LIB ».
+    return DRAPEAUX[criterion.value] || "🌍";
   }
   if (criterion.type === "position") {
     return { gardien: "🥅", defenseur: "🛡️", milieu: "⚙️", attaquant: "⚔️" }[criterion.value] || "⚽";

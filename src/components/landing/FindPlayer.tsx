@@ -3,6 +3,7 @@ import { PLAYERS, RETIRED_PLAYERS, GG_WC_WINNERS, GG_CL_WINNERS, GG_BALLON_DOR, 
 import { CLUB_COLORS } from "../LePont.jsx";
 import { ANEC_ENTRAINEUR } from "./GoatGuess";
 import { getLang, nombre, tr } from "@/lib/lang";
+import { drapeau, continent } from "@/lib/pays";
 import { nomPays } from "@/lib/vocabulaire";
 import { trackPlay } from "../../lib/track";
 import { isNative, hapticLight, hapticHeavy, hapticSuccess } from "@/lib/native";
@@ -109,48 +110,14 @@ function clubColors(name: string): [string, string] {
 }
 
 // Drapeaux pour les nations foot courantes (données en français)
-const NAT_FLAG: Record<string, string> = {
-  France: "🇫🇷", Portugal: "🇵🇹", Argentine: "🇦🇷", Brésil: "🇧🇷", Espagne: "🇪🇸", Angleterre: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", Allemagne: "🇩🇪",
-  Italie: "🇮🇹", "Pays-Bas": "🇳🇱", Belgique: "🇧🇪", Croatie: "🇭🇷", Uruguay: "🇺🇾", Colombie: "🇨🇴", Maroc: "🇲🇦",
-  Algérie: "🇩🇿", Sénégal: "🇸🇳", "Côte d'Ivoire": "🇨🇮", Cameroun: "🇨🇲", Nigeria: "🇳🇬", Ghana: "🇬🇭", Danemark: "🇩🇰",
-  Suède: "🇸🇪", Norvège: "🇳🇴", Suisse: "🇨🇭", Pologne: "🇵🇱", "République tchèque": "🇨🇿", Serbie: "🇷🇸", Turquie: "🇹🇷",
-  Grèce: "🇬🇷", Mexique: "🇲🇽", Japon: "🇯🇵", "États-Unis": "🇺🇸", Mali: "🇲🇱", Écosse: "🏴󠁧󠁢󠁳󠁣󠁴󠁿", "Pays de Galles": "🏴󠁧󠁢󠁷󠁬󠁳󠁿",
-  Irlande: "🇮🇪", Autriche: "🇦🇹", Ukraine: "🇺🇦", Russie: "🇷🇺", Égypte: "🇪🇬", Gabon: "🇬🇦", Slovénie: "🇸🇮",
-  Tchéquie: "🇨🇿", "Corée du Sud": "🇰🇷", Équateur: "🇪🇨", Albanie: "🇦🇱", "RD Congo": "🇨🇩", Chili: "🇨🇱",
-  Tunisie: "🇹🇳", Slovaquie: "🇸🇰", "Irlande du Nord": "🇬🇧", Guinée: "🇬🇳", Hongrie: "🇭🇺", Roumanie: "🇷🇴",
-  "Bosnie-Herzégovine": "🇧🇦", Bosnie: "🇧🇦", Géorgie: "🇬🇪", Paraguay: "🇵🇾", Australie: "🇦🇺", "Macédoine du Nord": "🇲🇰",
-  Islande: "🇮🇸", Canada: "🇨🇦", Pérou: "🇵🇪", Iran: "🇮🇷", Togo: "🇹🇬", Bulgarie: "🇧🇬", Honduras: "🇭🇳",
-  "Afrique du Sud": "🇿🇦", Jamaïque: "🇯🇲", "Costa Rica": "🇨🇷", "Nouvelle-Zélande": "🇳🇿", "Burkina Faso": "🇧🇫",
-  Kosovo: "🇽🇰", Monténégro: "🇲🇪", Jordanie: "🇯🇴", Centrafrique: "🇨🇫", Kenya: "🇰🇪", Arménie: "🇦🇲", Soudan: "🇸🇩",
-  Ouzbékistan: "🇺🇿", Gambie: "🇬🇲", Angola: "🇦🇴", Qatar: "🇶🇦", Venezuela: "🇻🇪", Israël: "🇮🇱",
-  "République du Congo": "🇨🇬", Finlande: "🇫🇮", Biélorussie: "🇧🇾", Bénin: "🇧🇯", Oman: "🇴🇲",
-};
 // Le drapeau, puis le nom du pays DANS LA LANGUE DU JOUEUR : la base écrit
 // « Pays-Bas » parce que c'est sa clé, pas parce que c'est ce qu'il faut lire.
-function natLabel(nat: string): string { return (NAT_FLAG[nat] ? NAT_FLAG[nat] + " " : "") + nomPays(nat, getLang()); }
+function natLabel(nat: string): string { return drapeau(nat) + " " + nomPays(nat, getLang()); }
 
 // Continent (zone) de chaque nationalité foot → code court affiché dans la puce.
-const NAT_CONT: Record<string, string> = {
-  France: "EU", Portugal: "EU", Espagne: "EU", Angleterre: "EU", Allemagne: "EU", Italie: "EU",
-  "Pays-Bas": "EU", Belgique: "EU", Croatie: "EU", Danemark: "EU", Suède: "EU", Norvège: "EU",
-  Suisse: "EU", Pologne: "EU", "République tchèque": "EU", Serbie: "EU", Turquie: "EU", Grèce: "EU",
-  Écosse: "EU", "Pays de Galles": "EU", Irlande: "EU", "Irlande du Nord": "EU", Autriche: "EU", Ukraine: "EU", Russie: "EU",
-  Slovénie: "EU", Hongrie: "EU", Roumanie: "EU", Slovaquie: "EU", "Bosnie-Herzégovine": "EU", Bulgarie: "EU",
-  Islande: "EU", Finlande: "EU", Albanie: "EU", "Macédoine du Nord": "EU", Monténégro: "EU", Géorgie: "EU", Arménie: "EU",
-  Argentine: "AmS", Brésil: "AmS", Uruguay: "AmS", Colombie: "AmS", Chili: "AmS", Pérou: "AmS",
-  Paraguay: "AmS", Équateur: "AmS", Venezuela: "AmS", Bolivie: "AmS",
-  Mexique: "AmN", "États-Unis": "AmN", Canada: "AmN", "Costa Rica": "AmN", Honduras: "AmN", Panama: "AmN", Jamaïque: "AmN",
-  Maroc: "AF", Algérie: "AF", Sénégal: "AF", "Côte d'Ivoire": "AF", Cameroun: "AF", Nigeria: "AF",
-  Ghana: "AF", Mali: "AF", Égypte: "AF", Gabon: "AF", Tunisie: "AF", "Afrique du Sud": "AF",
-  "RD Congo": "AF", Congo: "AF", "Burkina Faso": "AF", Guinée: "AF", Togo: "AF", Angola: "AF", Kenya: "AF", Zambie: "AF", "Cap-Vert": "AF",
-  Japon: "AS", "Corée du Sud": "AS", Iran: "AS", "Arabie saoudite": "AS", Chine: "AS", Qatar: "AS",
-  Irak: "AS", "Émirats arabes unis": "AS", Ouzbékistan: "AS",
-  Australie: "OC", "Nouvelle-Zélande": "OC",
-  Tchéquie: "EU", Kosovo: "EU", Bosnie: "EU", Biélorussie: "EU", Israël: "EU",
-  Jordanie: "AS", Oman: "AS",
-  Centrafrique: "AF", Soudan: "AF", Gambie: "AF", "République du Congo": "AF", Bénin: "AF",
-};
-function continentOf(nat?: string): string { return (nat && NAT_CONT[nat]) || "?"; }
+// La table est partagée (src/lib/pays.ts) : voir l'en-tête de ce fichier pour
+// les 887 joueurs qui s'affichaient sans drapeau ni zone avant la fusion.
+const continentOf = continent;
 const NOW_Y = new Date().getFullYear();
 
 function posLabel(pos: string): string {
@@ -302,7 +269,7 @@ function computeChips(guess: Player, answer: Player): Chip[] {
     else { ageArrow = dAge > 0 ? "up" : "down"; ageState = Math.abs(dAge) <= 2 ? "close" : "no"; }
   }
   const clubState: State = shared >= 3 ? "ok" : shared >= 1 ? "close" : "no";
-  const flag = guess.nationalities[0] ? (NAT_FLAG[guess.nationalities[0]] || guess.nationalities[0].slice(0, 3).toUpperCase()) : "?";
+  const flag = drapeau(guess.nationalities[0]);
   // Dernier club (club « actuel » en fin de carrière) — comme la référence.
   const gLast = guess.clubs[guess.clubs.length - 1] || "";
   const aLast = answer.clubs[answer.clubs.length - 1] || "";
@@ -734,7 +701,7 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
     const midPick = mids.length > 2 ? [mids[0], mids[mids.length - 1]] : mids;
     const startYear = answer.birthYear ? answer.birthYear + 19 : 0;
     const decade = startYear ? Math.floor(startYear / 10) * 10 : null;
-    const flag = answer.nationalities[0] ? (NAT_FLAG[answer.nationalities[0]] || "🏴") : "";
+    const flag = answer.nationalities[0] ? drapeau(answer.nationalities[0]) : "";
     const mates = findTeammates(answer, 2);
     const out: string[] = [];
     if (answer.nationalities[0]) out.push(flag + " " + nomPays(answer.nationalities[0], getLang()) + " · " + posEmoji(answer.positions[0] || "") + " " + posLabel(answer.positions[0] || ""));
@@ -853,7 +820,7 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
   const confirmedKeys = new Set<string>(hintRevealed);
   guesses.forEach(g => computeChips(g, answer).forEach(c => { if (c.state === "ok") confirmedKeys.add(c.key); }));
   const aCont = continentOf(answer.nationalities[0]);
-  const aFlag = answer.nationalities[0] ? (NAT_FLAG[answer.nationalities[0]] || answer.nationalities[0].slice(0, 3).toUpperCase()) : "?";
+  const aFlag = drapeau(answer.nationalities[0]);
   const aAge = answer.birthYear ? NOW_Y - answer.birthYear : 0;
   const aLastClub = answer.clubs[answer.clubs.length - 1] || "";
   const [aLbg, aLfg] = clubColors(aLastClub);
@@ -1007,7 +974,7 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
                 {suggestions.map(s => (
                   <button key={s.name} {...handlersDeTap(() => submitGuess(s))} style={{ display: "flex", width: "100%", alignItems: "center", justifyContent: "space-between", gap: 8, padding: "11px 14px", background: "transparent", border: "none", borderBottom: "2px solid rgba(8,17,9,.55)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", textAlign: "left" }}>
                     <span>{s.name}</span>
-                    <span style={{ fontSize: 15 }}>{s.nationalities[0] && NAT_FLAG[s.nationalities[0]] ? NAT_FLAG[s.nationalities[0]] : ""}</span>
+                    <span style={{ fontSize: 15 }}>{s.nationalities[0] ? drapeau(s.nationalities[0]) : ""}</span>
                   </button>
                 ))}
               </div>
