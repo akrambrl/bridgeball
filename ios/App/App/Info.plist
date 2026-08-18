@@ -25,13 +25,21 @@
 	     C'est ici l'identifiant d'APPLICATION (avec un ~), PAS celui du bloc
 	     d'annonces (avec un /) : intervertir les deux redonne le même plantage.
 
-	     Valeur actuelle = l'identifiant de TEST public de Google pour iOS.
-	     À remplacer par celui de l'app iOS créée dans AdMob au moment de la
-	     mise en production, et pas avant : un clic sur sa propre vraie
-	     publicité fait fermer un compte AdMob définitivement.
+	     Valeur actuelle = l'identifiant de PRODUCTION de l'app iOS GOAT FC dans
+	     AdMob, relevé sur la page de création du bloc, où Google l'affiche à côté
+	     du logo Apple — donc la plateforme est prouvée et non déduite. Rien ne
+	     distingue autrement un identifiant iOS d'un identifiant Android : ils ont
+	     la même forme et le même éditeur, et les intervertir ferait planter les
+	     deux apps au lancement sans qu'aucun test ne puisse le voir.
+
+	     À PARTIR DE MAINTENANT, NE JAMAIS CLIQUER SUR SA PROPRE PUBLICITÉ. Un
+	     seul clic fait fermer un compte AdMob définitivement, et c'est le motif de
+	     fermeture le plus courant. Ouvrir la pub pour vérifier qu'elle charge puis
+	     la fermer ne pose pas de problème ; toucher son contenu, si. Pour tester
+	     vraiment, déclarer l'appareil dans AdMob → Paramètres → Appareils de test.
 	     https://developers.google.com/admob/ios/test-ads -->
 	<key>GADApplicationIdentifier</key>
-	<string>ca-app-pub-3940256099942544~1458002511</string>
+	<string>ca-app-pub-4450845101011880~4999952878</string>
 	<!-- ══ APP TRACKING TRANSPARENCY ══════════════════════════════════════════
 	     Demander l'autorisation SANS cette phrase fait planter l'app : iOS
 	     l'exige pour afficher la fenêtre. Elle est donc aussi obligatoire que
