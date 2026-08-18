@@ -252,3 +252,30 @@ Si Apple te met quand même un 4.2, mets en avant (et renforce au besoin) :
 - push natif (si tu l'ajoutes)
 - éventuellement : partage natif des scores (`@capacitor/share`), sauvegarde
   d'image de résultat — chaque touche native supplémentaire réduit le risque.
+
+## Chiffrement à l'export — réglé une fois pour toutes
+
+App Store Connect posait à **chaque build téléversé** la question « votre app
+utilise-t-elle un chiffrement ? », et laissait le build en attente tant qu'on n'y
+avait pas répondu à la main. Sur un projet qui déploie par workflow, c'est une
+intervention manuelle imposée à chaque fois — et surtout un build qu'on croit
+disponible dans TestFlight alors qu'il attend une réponse.
+
+`ITSAppUsesNonExemptEncryption` = `false` dans `ios/App/App/Info.plist` supprime
+la question. La valeur est vérifiée, pas supposée :
+
+- **aucune bibliothèque de chiffrement** dans les dépendances — ni forge, ni
+  tweetnacl, ni sodium, ni bcrypt ;
+- **aucun algorithme maison** : le seul appel à `crypto` du projet est
+  `crypto.randomUUID()` dans `src/hooks/useMultiplayer.ts`, qui fabrique un
+  identifiant aléatoire. Générer un UUID n'est pas chiffrer ;
+- **tout le réseau passe en HTTPS/TLS**, donc le chiffrement fourni par iOS.
+  C'est le cas exempté par la réglementation, et la raison pour laquelle la
+  réponse honnête est « non ».
+
+⚠️ La clé n'agit que sur les builds SUIVANTS. Un build déjà téléversé garde sa
+question en attente : il faut y répondre une dernière fois à la main.
+
+À rouvrir si l'app se met un jour à chiffrer elle-même quelque chose — stocker
+des données avec sa propre clé, par exemple. La valeur passerait à `true` et une
+déclaration d'exportation deviendrait obligatoire.

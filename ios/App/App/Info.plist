@@ -43,6 +43,32 @@
 	     à faire depuis Xcode, pas à la main dans le .xcodeproj. -->
 	<key>NSUserTrackingUsageDescription</key>
 	<string>GOAT FC uses this to show you rewarded ads that fit your interests. Decline and you keep every feature — the ads are simply less relevant.</string>
+	<!-- ══ CHIFFREMENT À L'EXPORT : LA QUESTION QU'ON NE VEUT PLUS VOIR ═══════
+	     Sans cette clé, App Store Connect pose à CHAQUE build téléversé la
+	     question « votre app utilise-t-elle un chiffrement ? », et le build reste
+	     bloqué en attente tant qu'on n'y a pas répondu à la main. Sur un projet
+	     qui déploie par workflow, c'est une intervention manuelle imposée à
+	     chaque fois — et un build qu'on croit disponible alors qu'il attend.
+
+	     `false` signifie : l'app n'utilise AUCUN chiffrement non exempté. C'est
+	     vérifié, pas supposé :
+
+	       • aucune bibliothèque de chiffrement dans les dépendances — ni forge,
+	         ni tweetnacl, ni sodium, ni bcrypt, rien ;
+	       • aucun algorithme maison : le seul appel à `crypto` du projet est
+	         `crypto.randomUUID()`, qui fabrique un identifiant aléatoire. Générer
+	         un UUID n'est pas chiffrer ;
+	       • tout le réseau passe en HTTPS/TLS, c'est-à-dire le chiffrement FOURNI
+	         PAR iOS. C'est exactement le cas exempté par la réglementation, et la
+	         raison pour laquelle la réponse honnête est « non ».
+
+	     À rouvrir si l'app se met un jour à chiffrer elle-même quelque chose —
+	     par exemple à stocker des données chiffrées avec sa propre clé. Dans ce
+	     cas la valeur passe à `true` et une déclaration d'exportation devient
+	     obligatoire.
+	     https://developer.apple.com/documentation/security/complying_with_encryption_export_regulations -->
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
