@@ -18,6 +18,7 @@ import { CARDS, RARITIES, cardById, hasArt, isUnlocked, levelCard, newlyUnlocked
 import { WinBanner } from "./landing/WinBanner";
 // Barème de grades et drapeaux : définis une seule fois, partagés avec le desktop.
 import { countryToFlag } from "../lib/leaderboard";
+import { formatNombre } from "../lib/lang";
 import { duelTermine } from "../lib/duel";
 // Réclamation du lot : les règles (qui peut réclamer, pour quel mois, ce qu'on
 // accepte comme saisie) et le tirage sûr du code de récupération.
@@ -6020,6 +6021,10 @@ export default function LePont() {
     setLang(l);
     try { localStorage.setItem("bb_lang", l); } catch {}
   };
+  // Les grands nombres, écrits comme on les écrit dans la langue AFFICHÉE. Voir
+  // formatNombre dans src/lib/lang.ts : `nb` est branché sur l'état `lang`, donc
+  // le classement se reformate au changement de langue sans rechargement.
+  const nb = (n) => formatNombre(Number(n) || 0, lang);
   // Helper i18n 6 langues : tr(français, anglais, allemand, italien, portugais, espagnol).
   // Une langue non encore fournie retombe sur l'anglais puis le français.
   const tr = (fr, en, de, it, pt, es) => {
@@ -11956,7 +11961,7 @@ export default function LePont() {
           {/* Encre : ce compteur est pose a nu sur la feuille, passee a l'or.
               Du blanc a 50 % n'y laisse rien. */}
           <div style={{fontSize:13,color:"rgba(8,17,9,.72)",marginTop:6,fontWeight:800}}>
-            {possedees.length}/{CARDS.length} · {playerXp.toLocaleString("fr-FR")} XP
+            {possedees.length}/{CARDS.length} · {nb(playerXp)} XP
           </div>
         </div>
 
@@ -11973,7 +11978,7 @@ export default function LePont() {
                 <div style={{height:"100%",width:Math.round(prochaine.ratio*100)+"%",minWidth:prochaine.ratio>0?6:0,background:G.pelouse,transition:"width .4s"}}/>
               </div>
               <div style={{fontSize:11.5,color:"rgba(255,255,255,.5)",fontWeight:600,marginTop:7}}>
-                {tr("Encore ","","","","","Faltan ")}{prochaine.missing.toLocaleString("fr-FR")} XP
+                {tr("Encore ","","","","","Faltan ")}{nb(prochaine.missing)} XP
               </div>
             </div>
           </div>
@@ -12007,7 +12012,7 @@ export default function LePont() {
                     return (
                       <button
                         key={c.id}
-                        title={ouverte ? cardName(c) : (c.xp.toLocaleString("fr-FR") + " XP")}
+                        title={ouverte ? cardName(c) : (nb(c.xp) + " XP")}
                         className={ouverte && rar.cls ? rar.cls : undefined}
                         style={{
                           padding:3,border:G.traitFin,boxShadow:ouverte?G.ombre:"none",
@@ -12030,7 +12035,7 @@ export default function LePont() {
                           {!ouverte && (
                             <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2}}>
                               <span style={{fontSize:18,lineHeight:1}}>🔒</span>
-                              <span style={{fontSize:10.5,fontWeight:800,color:"rgba(255,255,255,.85)"}}>{c.xp.toLocaleString("fr-FR")} XP</span>
+                              <span style={{fontSize:10.5,fontWeight:800,color:"rgba(255,255,255,.85)"}}>{nb(c.xp)} XP</span>
                             </div>
                           )}
                           {active && (
@@ -12410,7 +12415,7 @@ export default function LePont() {
                       : <div style={{fontSize:12,color:"rgba(255,255,255,.5)",marginTop:3}}>{entry.played} {entry.played>1?tr("parties","games","Spiele","partite","jogos","partidas"):tr("partie","game","Spiel","partita","jogo","partida")}</div>
                     }
                   </div>
-                  <div style={{...posterText(28,metal||G.white),flexShrink:0}}>{entry.score} <span style={{fontSize:12,color:"rgba(255,255,255,.35)"}}>pts</span></div>
+                  <div style={{...posterText(28,metal||G.white),flexShrink:0}}>{nb(entry.score)} <span style={{fontSize:12,color:"rgba(255,255,255,.35)"}}>pts</span></div>
                 </div>
                 {lbMode!=="saison" && (
                 /* Le bandeau V/N/D est séparé du corps de la ligne par un trait
@@ -12461,7 +12466,7 @@ export default function LePont() {
                       <div style={{...posterText(20,G.projecteur)}}>{s.champion_name}</div>
                       <div style={{fontSize:11,color:"rgba(255,255,255,.5)",fontWeight:700,letterSpacing:.8}}>{monthShort}</div>
                     </div>
-                    <div style={{...posterText(20,G.projecteur)}}>{s.champion_score} <span style={{fontSize:11,color:"rgba(255,255,255,.35)"}}>pts</span></div>
+                    <div style={{...posterText(20,G.projecteur)}}>{nb(s.champion_score)} <span style={{fontSize:11,color:"rgba(255,255,255,.35)"}}>pts</span></div>
                   </div>
                 );
               })}
@@ -12540,7 +12545,7 @@ export default function LePont() {
                       <div style={{fontSize:26,marginBottom:2}}>👑</div>
                       {carteDe(s.champion_id, s.champion_score, 44)}
                       <div style={{fontSize:14,fontWeight:800,color:G.encre,marginBottom:2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{s.champion_name}</div>
-                      <div style={{...posterLight(22,G.encre)}}>{s.champion_score}</div>
+                      <div style={{...posterLight(22,G.encre)}}>{nb(s.champion_score)}</div>
                       <div style={{fontSize:9,color:"rgba(8,17,9,.75)",letterSpacing:1,fontWeight:800}}>pts</div>
                     </div>
                     {/* 3rd */}
@@ -13465,7 +13470,7 @@ export default function LePont() {
                   </div>
                 </div>
                 <div style={{textAlign:"right",flexShrink:0}}>
-                  <div style={{...posterText(26,G.white)}}>{playerXp.toLocaleString()}</div>
+                  <div style={{...posterText(26,G.white)}}>{nb(playerXp)}</div>
                   <div style={{fontSize:10,color:"rgba(255,255,255,.5)",fontWeight:800,letterSpacing:1}}>pts</div>
                 </div>
               </div>
@@ -13478,7 +13483,7 @@ export default function LePont() {
                   </div>
                   <div style={{fontSize:11.5,color:"rgba(255,255,255,.7)",fontWeight:700,textAlign:"center"}}>
                     {(function(){
-                      const reste = suite.missing.toLocaleString();
+                      const reste = nb(suite.missing);
                       const cible = cardName(suite.card);
                       return tr(`${reste} XP avant ${cible}`, `${reste} XP to ${cible}`,
                         `${reste} XP bis ${cible}`, `${reste} XP prima di ${cible}`, `${reste} XP até ${cible}`,`${reste} XP para ${cible}`);
@@ -13595,7 +13600,7 @@ export default function LePont() {
                 <span style={{...posterText(28,G.pelouse)}}>{possedees.length}</span>
                 <span style={{fontSize:12.5,color:"rgba(255,255,255,.6)",fontWeight:700}}>/ {CARDS.length} {tr("cartes","cards","Karten","carte","cartas","cartas")}</span>
                 <span style={{flex:1}}/>
-                {prochaine && <span style={{fontSize:11,color:"rgba(255,255,255,.5)",fontWeight:700}}>{tr("encore","next in","noch","ancora","faltam","para")} {prochaine.missing.toLocaleString("fr-FR")} XP</span>}
+                {prochaine && <span style={{fontSize:11,color:"rgba(255,255,255,.5)",fontWeight:700}}>{tr("encore","next in","noch","ancora","faltam","para")} {nb(prochaine.missing)} XP</span>}
                 <span style={{color:"rgba(255,255,255,.45)",fontSize:15}}>›</span>
               </div>
               {/* Vignettes cerclées d'encre, liseré de rareté rentré dans le cadre :
@@ -15846,7 +15851,7 @@ export default function LePont() {
                                 <div style={{fontSize:10,color:"rgba(255,255,255,.4)",fontFamily:"monospace"}}>{entry.cells_filled}/9 · {"❤️".repeat(entry.lives_left)}{"💔".repeat(3-entry.lives_left)}</div>
                               </div>
                               <div style={{textAlign:"right"}}>
-                                <div style={{...posterText(15,G.projecteur),fontWeight:900}}>{entry.score}</div>
+                                <div style={{...posterText(15,G.projecteur),fontWeight:900}}>{nb(entry.score)}</div>
                                 <div style={{fontSize:9,color:"rgba(255,255,255,.4)"}}>/ {entry.max_score}</div>
                               </div>
                             </div>

@@ -12,7 +12,7 @@ import { MatchmakingOverlay } from "@/components/landing/MatchmakingOverlay";
 import { CountdownOverlay } from "@/components/landing/CountdownOverlay";
 import { GoatGuess } from "@/components/landing/GoatGuess";
 import { FindPlayer } from "@/components/landing/FindPlayer";
-import { tr } from "@/lib/lang";
+import { nombre, tr } from "@/lib/lang";
 import { trackTime } from "@/lib/track";
 import { G, posterText, btn, fondCharte, areneCharte } from "@/lib/charte.jsx";
 
@@ -446,7 +446,14 @@ function useTickerItems() {
           if (!r.player_name || seen.has(r.player_name)) continue;
           seen.add(r.player_name);
           const game = MODE_LABEL[r.mode] || r.mode;
-          built.push({ who: r.player_name, what: tr(`vient de scorer ${r.score.toLocaleString("fr-FR")} pts sur ${game} 🔥`, `just scored ${r.score.toLocaleString("en-GB")} pts on ${game} 🔥`, `hat gerade ${r.score.toLocaleString("de-DE")} Pkt bei ${game} erzielt 🔥`, `ha appena segnato ${r.score.toLocaleString("it-IT")} pt su ${game} 🔥`, `acabou de marcar ${r.score.toLocaleString("pt-BR")} pts no ${game} 🔥`,`acaba de marcar ${r.score.toLocaleString("es-ES")} pts en ${game} 🔥`) });
+          // Le score formaté UNE fois, et non six. `tr()` évalue ses six
+          // arguments avant d'en choisir un, donc les six appels à
+          // toLocaleString tournaient à chaque ligne du bandeau pour n'en garder
+          // qu'un. Et l'un d'eux était faux : le portugais passait par `pt-BR`,
+          // qui groupe avec un POINT, alors que le drapeau du sélecteur est 🇵🇹
+          // et que le reste de l'app suit pt-PT, qui groupe avec une espace.
+          const pts = nombre(r.score);
+          built.push({ who: r.player_name, what: tr(`vient de scorer ${pts} pts sur ${game} 🔥`, `just scored ${pts} pts on ${game} 🔥`, `hat gerade ${pts} Pkt bei ${game} erzielt 🔥`, `ha appena segnato ${pts} pt su ${game} 🔥`, `acabou de marcar ${pts} pts no ${game} 🔥`,`acaba de marcar ${pts} pts en ${game} 🔥`) });
           if (built.length >= 8) break;
         }
         if (built.length > 0) setItems(built);

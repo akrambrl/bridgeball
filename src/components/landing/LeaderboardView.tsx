@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { tr } from "@/lib/lang";
+import { nombre, tr } from "@/lib/lang";
 import {
   fetchTopPlayers,
   getCurrentSeason,
@@ -169,7 +169,7 @@ export const LeaderboardView = () => {
                     className="flex-shrink-0 tabular-nums"
                     style={{ ...posterText(1, podium ? podium.metal : G.white, 0), fontSize:28 }}
                   >
-                    {p.score.toLocaleString("fr-FR")}
+                    {nombre(p.score)}
                     <span
                       className="text-xs ml-1"
                       style={{ color: "rgba(255,255,255,.4)" }}
