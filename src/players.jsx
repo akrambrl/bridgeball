@@ -564,7 +564,7 @@ export const PLAYERS = [
   { name:"Cole Palmer", clubs:["Manchester City", "Chelsea"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:2002 },
   { name:"Robert Lewandowski", clubs:["Znicz Pruszkow", "Lech Poznań", "Borussia Dortmund", "Bayern Munich", "Barcelona", "Chicago Fire"], diff:"facile", nationalities:["Pologne"], positions:["attaquant"], birthYear:1988 },
   { name:"Karim Benzema", clubs:["Lyon", "Real Madrid", "Al Ittihad", "Al Hilal"], diff:"facile", nationalities:["France"], positions:["attaquant"], birthYear:1987 },
-  { name:"Mohamed Salah", clubs:["Basel", "Chelsea", "ACF Fiorentina", "AS Roma", "Liverpool", "Trabzonspor"], diff:"facile", nationalities:["Égypte"], positions:["attaquant"], birthYear:1992 },
+  { name:"Mohamed Salah", clubs:["Al Mokawloon", "Basel", "Chelsea", "ACF Fiorentina", "AS Roma", "Liverpool", "Trabzonspor"], diff:"facile", nationalities:["Égypte"], positions:["attaquant"], birthYear:1992 },
   { name:"Kevin De Bruyne", clubs:["Genk", "Chelsea", "Werder Bremen", "Wolfsburg", "Manchester City", "SSC Napoli"], diff:"facile", nationalities:["Belgique"], positions:["milieu"], birthYear:1991 },
   { name:"İlkay Gündoğan", clubs:["Bochum", "Nürnberg", "Borussia Dortmund", "Manchester City", "Barcelona", "Galatasaray"], diff:"facile", nationalities:["Allemagne"], positions:["milieu"], birthYear:1990 },
   { name:"Harry Kane", clubs:["Tottenham", "Leyton Orient", "Millwall", "Norwich City", "Leicester City", "Bayern Munich"], diff:"facile", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1993 },
@@ -1665,7 +1665,7 @@ export const PLAYERS = [
   { name:"Denzel Dumfries", clubs:["Sparta Rotterdam", "Heerenveen", "PSV Eindhoven", "Inter Milan", "Real Madrid"], diff:"moyen", nationalities:["Pays-Bas"], positions:["defenseur"], birthYear:1996 },
   { name:"Jeremie Frimpong", clubs:["Manchester City", "Celtic", "Bayer Leverkusen", "Liverpool"], diff:"moyen", nationalities:["Pays-Bas"], positions:["defenseur"], birthYear:2000 },
   { name:"Joshua Zirkzee", clubs:["Bayern Munich", "Parma FC", "Anderlecht", "Bologna FC", "Manchester United"], diff:"moyen", nationalities:["Pays-Bas"], positions:["attaquant"], birthYear:2001 },
-  { name:"Nathan Aké", clubs:["Feyenoord", "Chelsea", "Reading", "Watford", "Bournemouth", "Manchester City", "Fenerbahce"], diff:"facile", nationalities:["Pays-Bas"], positions:["defenseur"], birthYear:1995 },
+  { name:"Nathan Aké", clubs:["Chelsea", "Reading", "Watford", "Bournemouth", "Manchester City", "Fenerbahce"], diff:"facile", nationalities:["Pays-Bas"], positions:["defenseur"], birthYear:1995 },
   { name:"Bart Verbruggen", clubs:["NAC Breda", "Anderlecht", "Brighton"], diff:"expert", nationalities:["Pays-Bas"], positions:["gardien"] , birthYear:2002 },
   // Équipe nationale Italie 2026 (compléments)
   { name:"Davide Frattesi", clubs:["AS Roma", "Sassuolo", "Empoli FC", "Monza", "Inter Milan"], diff:"moyen", nationalities:["Italie"], positions:["milieu"], birthYear:1999 },
@@ -2116,7 +2116,7 @@ export const PLAYERS = [
   { name:"Dodi Lukébakio", clubs:["Anderlecht", "Toulouse", "Watford", "Charleroi", "Fortuna Düsseldorf", "Hertha Berlin", "Wolfsburg", "Sevilla", "Benfica"], diff:"moyen", nationalities:["Belgique"], positions:["milieu"], birthYear:1997 },
   { name:"Ansu Fati", clubs:["Barcelona", "Brighton", "Monaco"], diff:"moyen", nationalities:["Espagne"], positions:["attaquant"], birthYear:2002 },
   { name:"Georges Mikautadze", clubs:["Metz", "Ajaccio", "Seraing", "Lyon", "Ajax Amsterdam", "Villarreal"], diff:"moyen", nationalities:["Géorgie"], positions:["attaquant"], birthYear:2000 },
-  { name:"Aymeric Laporte", clubs:["Athletic Bilbao", "Bilbao Athletic", "Manchester City", "Al Nassr"], diff:"facile", nationalities:["Espagne"], positions:["defenseur"], birthYear:1994 },
+  { name:"Aymeric Laporte", clubs:["Bilbao Athletic", "Athletic Bilbao", "Manchester City", "Al Nassr", "Athletic Bilbao"], diff:"facile", nationalities:["Espagne"], positions:["defenseur"], birthYear:1994 },
   { name:"Manor Solomon", clubs:["Maccabi Petah Tikva", "Maccabi Tel Aviv", "Shakhtar Donetsk", "Fulham", "Tottenham", "Leeds United", "Villarreal", "ACF Fiorentina"], diff:"expert", nationalities:["Israël"], positions:["attaquant"] , birthYear:1999 },
   // Mercato Serie A 2025-26 - joueurs manquants
   { name:"Koni De Winter", clubs:["Juventus FC", "Sampdoria", "Empoli FC", "Genoa CFC", "AC Milan"], diff:"expert", nationalities:["Belgique"], positions:["defenseur"], birthYear:2002 },
