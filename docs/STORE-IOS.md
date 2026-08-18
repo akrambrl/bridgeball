@@ -279,3 +279,54 @@ question en attente : il faut y répondre une dernière fois à la main.
 À rouvrir si l'app se met un jour à chiffrer elle-même quelque chose — stocker
 des données avec sa propre clé, par exemple. La valeur passerait à `true` et une
 déclaration d'exportation deviendrait obligatoire.
+
+## Statut de commerçant (DSA) — le seul champ qui publie une adresse
+
+App Store Connect demande, pour distribuer dans l'Union européenne, de se
+déclarer **commerçant** ou **non-commerçant** au sens du règlement sur les
+services numériques (DSA).
+
+**GOAT FC est commerçant.** Le critère n'est pas le prix de l'app mais la
+finalité : une app gratuite **monétisée par la publicité** relève d'une activité
+commerciale. Le statut non-commerçant vise les apps distribuées sans aucune
+finalité de ce genre. Avec AdMob branché et un profil de paiement actif, la
+réponse honnête est « commerçant ».
+
+### ⚠️ CE QUE CE CHAMP DÉCLENCHE, ET QU'IL FAUT RÉGLER AVANT DE LE COCHER
+
+En se déclarant commerçant, on fournit une **adresse, un numéro de téléphone et
+un e-mail qui sont PUBLIÉS sur la page produit de l'App Store**, visibles de tous.
+
+Sur un compte Apple de type **Particulier**, ça veut dire l'adresse du DOMICILE
+et le numéro de téléphone PERSONNEL, affichés publiquement. Ce n'est pas
+réversible d'un clic : une fois la fiche en ligne, l'information a circulé.
+
+L'ordre à respecter est donc :
+
+1. **une adresse qui n'est pas le domicile** — société de domiciliation ou espace
+   de coworking qui fournit un siège. Compter quelques jours et ~15-30 €/mois.
+   C'est le seul élément à délai de cette étape ;
+2. **un numéro qui n'est pas la ligne personnelle**, si l'exposition gêne — une
+   seconde ligne ou un numéro VoIP suffit ;
+3. **l'e-mail** : `contact@goatfc.online`, déjà utilisé sur les pages légales et
+   la page d'assistance, donc déjà public. Rien à créer ;
+4. **puis seulement** cocher « commerçant » avec ces coordonnées.
+
+### Ne pas essayer de gagner deux semaines
+
+Se déclarer non-commerçant parce que le build tourne encore sur les identifiants
+de TEST d'AdMob — donc sans revenu — serait exact aujourd'hui et faux le jour de
+la mise en production. Apple restreint la disponibilité dans l'UE des comptes qui
+n'ont pas complété leur statut de commerçant : le risque n'est pas une amende, il
+est de voir l'app retirée du marché principal du jeu.
+
+### Le lien avec les revenus AdMob
+
+Les revenus publicitaires sont des revenus d'activité imposables. En France, le
+véhicule habituel est la **micro-entreprise (auto-entrepreneur)** : immatriculation
+gratuite, un SIREN, et une déclaration de commerçant cohérente. Le compte Apple
+peut rester **Particulier** — un auto-entrepreneur est une personne physique.
+
+⚠️ Rien de tout ça ne se fait au nom de **Project X Paris**. C'est un employeur,
+pas une structure qu'on peut engager. Et la partie fiscale mérite d'être
+confirmée par un comptable ou l'URSSAF, pas par ce document.
