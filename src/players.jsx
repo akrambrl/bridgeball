@@ -858,6 +858,11 @@ export const PLAYERS = [
   { name:"Andreas Pereira", clubs:["Manchester United", "Granada", "Valencia", "SS Lazio", "Flamengo", "Fulham", "Palmeiras"], diff:"moyen", nationalities:["Brésil"], positions:["attaquant"], birthYear:1996 },
   { name:"Rodrigo Muniz", clubs:["Flamengo", "Coritiba", "Fulham", "Middlesbrough"], diff:"expert", nationalities:["Brésil"], positions:["attaquant"] , birthYear:2001 },
   { name:"Emile Smith Rowe", clubs:["Arsenal", "RB Leipzig", "Huddersfield", "Fulham"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:2000 },
+  // Deux attaquants signalés absents, parcours relevés sur Wikipédia avant écriture.
+  // Mitroglou passe par Fulham, Benfica, Marseille, Galatasaray et le PSV : cinq
+  // clubs cotés, donc une réponse utile au Pont sur beaucoup de paires.
+  { name:"Kostas Mitroglou", clubs:["Borussia Mönchengladbach II", "Olympiacos", "Panionios", "Atromitos", "Fulham", "Benfica", "Marseille", "Galatasaray", "PSV Eindhoven", "Aris"], diff:"moyen", nationalities:["Grèce"], positions:["attaquant"], birthYear:1988 },
+  { name:"Giampaolo Pazzini", clubs:["Atalanta BC", "ACF Fiorentina", "Sampdoria", "Inter Milan", "AC Milan", "Hellas Verona", "Levante"], diff:"moyen", nationalities:["Italie"], positions:["attaquant"], birthYear:1984 },
   // Bournemouth
   { name:"Lloyd Kelly", clubs:["Bristol City", "Bournemouth", "Newcastle", "Juventus FC"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1998 },
   { name:"Marcus Tavernier", clubs:["Middlesbrough", "MK Dons", "Bournemouth"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"] , birthYear:1999 },
@@ -3161,7 +3166,7 @@ export const PLAYERS = [
   { name:"Sebastian Nanasi", clubs:["Malmö FF", "Strasbourg"], diff:"expert", nationalities:["Suède"], positions:["milieu"] , birthYear:2002 },
   { name:"Tyrhys Dolan", clubs:["Blackburn", "Espanyol"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"] , birthYear:2001 },
   { name:"Lautaro Blanco", clubs:["Rosario Central", "Elche", "Boca Juniors"], diff:"expert", nationalities:["Argentine"], positions:["defenseur"] , birthYear:1999 },
-  { name:"Amar Dedić", clubs:["Liefering", "Wolfsberger AC", "Salzburg", "Benfica", "Marseille"], diff:"moyen", nationalities:["Bosnie-Herzégovine"], positions:["defenseur"], birthYear:2002 },
+  { name:"Amar Dedić", clubs:["Liefering", "Wolfsberger AC", "Salzburg", "Marseille", "Benfica", "Newcastle"], diff:"moyen", nationalities:["Bosnie-Herzégovine"], positions:["defenseur"], birthYear:2002 },
   { name:"Erik Lira", clubs:["Pumas UNAM", "Cruz Azul"], diff:"expert", nationalities:["Mexique"], positions:["milieu"] , birthYear:2000 },
   { name:"Kristijan Jakić", clubs:["Lokomotiva Zagreb", "Dinamo Zagreb", "Eintracht Frankfurt", "Augsburg"], diff:"expert", nationalities:["Croatie"], positions:["milieu"] , birthYear:1997 },
   { name:"Toti", clubs:["Estoril", "Wolverhampton"], diff:"expert", nationalities:["Portugal"], positions:["defenseur"] , birthYear:1999 },
@@ -5969,7 +5974,7 @@ export const PLAYERS = [
   { name:"Luis Suárez Miramontes", clubs:["Deportivo La Coruna", "Barcelona", "Inter Milan", "Sampdoria"], diff:"moyen", nationalities:["Espagne"], positions:["milieu"], birthYear:1935 },
 ];
 
-export const RETIRED_PLAYERS = new Set([ "Esteban Cambiasso","Eusébio","Ezequiel Lavezzi","Fabien Barthez","Fabio Grosso","Fernando Redondo","Ferenc Puskás","Mehdi Benatia","Elano","Diego Milito","Dietmar Hamann","Dimitar Berbatov","Djibril Cissé","Dunga","Darren Bent","Daniele De Rossi","Christian Karembeu","Christophe Dugarry","Cristian Chivu","Bacary Sagna","Ben Foster","Bobby Charlton","Bobby Moore","Branislav Ivanović","Andrés Guardado","Antonio Valencia","Alfredo Di Stéfano","André Schürrle","Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe (Portugal)","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
+export const RETIRED_PLAYERS = new Set([ "Kostas Mitroglou","Giampaolo Pazzini","Esteban Cambiasso","Eusébio","Ezequiel Lavezzi","Fabien Barthez","Fabio Grosso","Fernando Redondo","Ferenc Puskás","Mehdi Benatia","Elano","Diego Milito","Dietmar Hamann","Dimitar Berbatov","Djibril Cissé","Dunga","Darren Bent","Daniele De Rossi","Christian Karembeu","Christophe Dugarry","Cristian Chivu","Bacary Sagna","Ben Foster","Bobby Charlton","Bobby Moore","Branislav Ivanović","Andrés Guardado","Antonio Valencia","Alfredo Di Stéfano","André Schürrle","Adriano Imperador","Alan Smith","Alessandro Costacurta","Alberto Gilardino","Adil Rami","Diego Maradona","Pelé","Zinédine Zidane","Michel Platini","Luis Figo","Raúl González","Romário","Ryan Giggs","Sergio Aguero","Mesut Özil","Gianluigi Buffon","Marek Hamšík","Pepe (Portugal)","Dimitri Payet","Diogo Jota","Aaron Ramsey","Abedi Pele","Alberto Mendez","Alessandro Del Piero","Alessandro Nesta",
   "Alexandru Maxim","Andre Schurrle","Andrea Pirlo","Andrés Iniesta","Andriy Shevchenko",
   "André Ayew","Andy Cole","Ángel Di Maria","Antonio Cassano","Arjen Robben",
   "Arturo Vidal","Ashley Cole","Axel Witsel","Aymen Abdennour","Bafetimbi Gomis",
