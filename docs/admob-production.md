@@ -21,7 +21,9 @@ sensible dans AdMob, c'est l'accès au compte — pas ces chaînes.
 
 ## Étape 1 — la console AdMob
 
-À faire sur https://admob.google.com, avec un compte Google **personnel**. Pas
+À faire sur **https://apps.admob.com**, avec un compte Google **personnel**.
+Attention à l'adresse : `admob.google.com` est la page commerciale de Google, pas
+la console — c'est `apps.admob.com` qui ouvre le tableau de bord. Pas
 d'adresse `@projectxparis.fr`, et rien au nom de Project X Paris : le compte
 AdMob est celui qui reçoit l'argent.
 
@@ -87,6 +89,14 @@ copier dans **Applications → app-ads.txt**.
 avant d'autoriser l'inventaire, et cette exploration peut prendre jusqu'à 24 h.
 Le publier maintenant, avant même que l'app soit en ligne, ne fait que gagner du
 temps.
+
+Une particularité du site, vérifiée : `goatfc.fr` redirige en 307 vers
+`www.goatfc.fr`. Ce n'est pas un problème ici — la spécification `app-ads.txt`
+autorise l'explorateur à suivre une redirection tant qu'elle reste sur le même
+domaine racine, ce qui est le cas. Le fichier sera donc trouvé par les deux
+adresses. En revanche, le champ « site web du développeur » des fiches App Store
+et Play doit désigner ce domaine et pas un autre : c'est de là que Google part
+pour trouver le fichier.
 
 Un fichier absent, ou qui désigne un autre éditeur, ne casse rien de visible : les
 pubs s'affichent, les enchérisseurs premium disparaissent, et le revenu s'écrase
@@ -178,5 +188,5 @@ refuse la fenêtre ATT — et la majorité refuse. Sans cette liste, les annonce
 ne voient plus ce que leur budget produit sur iOS et cessent d'enchérir.
 
 La liste bouge : Google ajoute et retire des réseaux. Elle se relit sur
-https://developers.google.com/admob/ios/ios14 et vaut d'être rafraîchie à
+https://developers.google.com/admob/ios/privacy/strategies et vaut d'être rafraîchie à
 l'occasion d'une mise à jour, pas plus souvent.

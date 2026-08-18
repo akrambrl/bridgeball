@@ -57,7 +57,8 @@
 	     moins, et rien ne le signale.
 
 	     Les 50 identifiants ci-dessous sont la liste publiée par Google pour
-	     AdMob, relevée sur https://developers.google.com/admob/ios/ios14 et
+	     AdMob, relevée sur
+	     https://developers.google.com/admob/ios/privacy/strategies et
 	     recopiée dans son ordre. Ce ne sont pas des secrets : ils sont les mêmes
 	     dans toutes les apps AdMob du monde, et lisibles dans n'importe quel
 	     bundle.
