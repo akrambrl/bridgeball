@@ -34,7 +34,8 @@
     "audit:fiches": "tsx scripts/audit-fiches.mjs",
     "merci": "node scripts/posts-merci.mjs",
     "sql:saisons": "node scripts/sql-saisons.essai.mjs",
-    "sql:goatgrid": "node scripts/sql-goatgrid.essai.mjs"
+    "sql:goatgrid": "node scripts/sql-goatgrid.essai.mjs",
+    "sql:auth": "node scripts/sql-auth.essai.mjs"
   },
   "dependencies": {
     "@capacitor-community/admob": "^8.1.0",
