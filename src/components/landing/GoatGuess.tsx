@@ -4,6 +4,7 @@ import { CLUB_COLORS } from "../LePont.jsx";
 import { trackPlay } from "../../lib/track";
 import { getLang, tr } from "@/lib/lang";
 import { nomPays } from "@/lib/vocabulaire";
+import { DRAPEAUX } from "@/lib/pays";
 import { G, posterText, btn, fondCharte, areneCharte } from "@/lib/charte.jsx";
 
 type Player = {
@@ -2226,30 +2227,10 @@ const LostView = ({
 
 // ── Carte joueur façon FUT ──────────────────────────────────────────
 // Drapeaux par nationalité (libellés français de players.jsx)
-const FLAGS: Record<string, string> = {
-  "Afrique du Sud":"🇿🇦","Albanie":"🇦🇱","Algérie":"🇩🇿","Allemagne":"🇩🇪","Angleterre":"🏴󠁧󠁢󠁥󠁮󠁧󠁿","Angola":"🇦🇴",
-  "Arabie saoudite":"🇸🇦","Argentine":"🇦🇷","Arménie":"🇦🇲","Australie":"🇦🇺","Autriche":"🇦🇹","Barbade":"🇧🇧",
-  "Belgique":"🇧🇪","Biélorussie":"🇧🇾","Bolivie":"🇧🇴","Bosnie":"🇧🇦","Bosnie-Herzégovine":"🇧🇦","Brésil":"🇧🇷",
-  "Bulgarie":"🇧🇬","Burkina Faso":"🇧🇫","Burundi":"🇧🇮","Bénin":"🇧🇯","Cameroun":"🇨🇲","Canada":"🇨🇦",
-  "Cap-Vert":"🇨🇻","Centrafrique":"🇨🇫","Chili":"🇨🇱","Chine":"🇨🇳","Chypre":"🇨🇾","Colombie":"🇨🇴",
-  "Comores":"🇰🇲","Corée du Sud":"🇰🇷","Costa Rica":"🇨🇷","Croatie":"🇭🇷","Curaçao":"🇨🇼","Côte d'Ivoire":"🇨🇮",
-  "Danemark":"🇩🇰","Dominique":"🇩🇲","Espagne":"🇪🇸","Estonie":"🇪🇪","Finlande":"🇫🇮","France":"🇫🇷",
-  "Gabon":"🇬🇦","Gambie":"🇬🇲","Ghana":"🇬🇭","Grenade":"🇬🇩","Grèce":"🇬🇷","Guinée équatoriale":"🇬🇶",
-  "Guinée":"🇬🇳","Guinée-Bissau":"🇬🇼","Géorgie":"🇬🇪","Haïti":"🇭🇹","Honduras":"🇭🇳","Hongrie":"🇭🇺",
-  "Indonésie":"🇮🇩","Iran":"🇮🇷","Irak":"🇮🇶","Irlande du Nord":"🇬🇧","Irlande":"🇮🇪","Islande":"🇮🇸","Israël":"🇮🇱",
-  "Italie":"🇮🇹","Jamaïque":"🇯🇲","Japon":"🇯🇵","Jordanie":"🇯🇴","Kenya":"🇰🇪","Kosovo":"🇽🇰",
-  "Lettonie":"🇱🇻","Liberia":"🇱🇷","Libye":"🇱🇾","Lituanie":"🇱🇹","Luxembourg":"🇱🇺","Macédoine du Nord":"🇲🇰",
-  "Mali":"🇲🇱","Malte":"🇲🇹","Maroc":"🇲🇦","Mauritanie":"🇲🇷","Mexique":"🇲🇽","Monténégro":"🇲🇪",
-  "Mozambique":"🇲🇿","Nigeria":"🇳🇬","Norvège":"🇳🇴","Nouvelle-Zélande":"🇳🇿","Oman":"🇴🇲","Ouzbékistan":"🇺🇿",
-  "Pakistan":"🇵🇰","Panama":"🇵🇦","Paraguay":"🇵🇾","Pays de Galles":"🏴󠁧󠁢󠁷󠁬󠁳󠁿","Pays-Bas":"🇳🇱","Pologne":"🇵🇱",
-  "Portugal":"🇵🇹","Pérou":"🇵🇪","Qatar":"🇶🇦","RD Congo":"🇨🇩","Roumanie":"🇷🇴","Russie":"🇷🇺",
-  "République Dominicaine":"🇩🇴","République dominicaine":"🇩🇴","République du Congo":"🇨🇬","Serbie":"🇷🇸",
-  "Sierra Leone":"🇸🇱","Slovaquie":"🇸🇰","Slovénie":"🇸🇮","Soudan":"🇸🇩","Suisse":"🇨🇭","Suriname":"🇸🇷",
-  "Suède":"🇸🇪","Syrie":"🇸🇾","Sénégal":"🇸🇳","Taïwan":"🇹🇼","Tchéquie":"🇨🇿","Togo":"🇹🇬",
-  "Trinité-et-Tobago":"🇹🇹","Tunisie":"🇹🇳","Turquie":"🇹🇷","Ukraine":"🇺🇦","Uruguay":"🇺🇾","Venezuela":"🇻🇪",
-  "Zambie":"🇿🇲","Zimbabwe":"🇿🇼","Écosse":"🏴󠁧󠁢󠁳󠁣󠁴󠁿","Égypte":"🇪🇬","Équateur":"🇪🇨","État de Palestine":"🇵🇸",
-  "États-Unis":"🇺🇸","Îles Féroé":"🇫🇴",
-};
+// La table des drapeaux est partagée (src/lib/pays.ts). Celle qui vivait ici
+// était la SEULE complète des trois du dépôt — c'est elle qui a servi de
+// référence pour combler les 37 trous de « Trouve le joueur ».
+const FLAGS = DRAPEAUX;
 const flagOf = (nat?: string) => (nat && FLAGS[nat]) || "🏳️";
 const POS_ABBR: Record<string, string> = { gardien: "GB", defenseur: "DEF", milieu: "MIL", attaquant: "BU" };
 // Note façon FUT : dérivée de la notoriété (diff) + variation stable par nom.
