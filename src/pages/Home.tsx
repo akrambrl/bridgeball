@@ -115,7 +115,7 @@ const Home = () => {
       // un mot. Un lien de défi qui ne mène pas au défi.
       try {
         const p = new URLSearchParams(window.location.search);
-        if (p.get("friends") === "1" || p.get("duels") === "1" || p.get("room")) setPlaying(true);
+        if (p.get("friends") === "1" || p.get("duels") === "1" || p.get("profil") === "1" || p.get("room")) setPlaying(true);
       } catch { /* noop */ }
       return;
     }
@@ -329,6 +329,22 @@ const Home = () => {
     setPlaying(true);
   };
 
+  // Ouvre l'écran de profil (LePont lit ?profil=1). Même mécanique que « Mes
+  // amis » et « Défis » juste au-dessus : la landing ne sait pas dessiner cet
+  // écran, elle monte celui qui sait.
+  //
+  // C'est le chemin qui MANQUAIT : l'en-tête d'ordinateur affichait le pseudo et
+  // un grade, et rien ne permettait de cliquer dessus. La collection de cartes
+  // était donc inatteignable sur PC.
+  const onOpenProfile = () => {
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set("profil", "1");
+      window.history.replaceState({}, "", url.toString());
+    } catch {}
+    setPlaying(true);
+  };
+
   return (
     <div className="relative min-h-screen overflow-x-hidden text-white flex flex-col"
       style={{ background: fondCharte, backgroundAttachment:"fixed",
@@ -350,7 +366,7 @@ const Home = () => {
         </span>
       </div>
 
-      <LobbyHeader active={tab} onChange={setTab} />
+      <LobbyHeader active={tab} onChange={setTab} onOpenProfile={onOpenProfile} />
 
       <main className="relative flex-1 z-10">
         {tab === "play" && <LobbyView onPlay={onPlay} onJoinRoom={onJoinRoom} onOpenDuels={onOpenDuels} onOpenFriends={onOpenFriends} />}

@@ -140,3 +140,38 @@ export async function fetchTopPlayers(top: number, mode: LbMode = "global"): Pro
       country: r.country || null,
     }));
 }
+
+// ── MON PROFIL, VU DEPUIS LA LANDING ───────────────────────────────────────
+//
+// L'en-tête d'ordinateur affichait l'INITIALE du pseudo et la mention « LVL 1 »
+// écrite en dur. Les deux étaient fausses au même titre : le grade de GOAT FC
+// n'est pas un numéro de niveau mais une CARTE, celle que `levelCard(xp)`
+// renvoie, et elle sert de photo de profil partout ailleurs — sur mobile, au
+// classement, sur l'écran de duel. Sur ordinateur, un joueur à 60 000 XP voyait
+// une lettre dans un rond et « LVL 1 ».
+//
+// L'XP ne vit pas en localStorage : elle est dans `bb_pseudos.xp` et LePont la
+// charge au démarrage. La landing doit donc la lire elle-même, et c'est ici que
+// se trouvent déjà l'URL et la clé publique du projet.
+//
+// Ne lève jamais : sans réseau, l'en-tête garde son pseudo local et n'affiche
+// pas de carte, ce qui est exactement ce qu'il faisait avant.
+export type MonProfil = { pseudo: string | null; xp: number };
+
+export async function fetchMonProfil(playerId: string): Promise<MonProfil | null> {
+  if (!playerId) return null;
+  try {
+    const url =
+      SB_URL +
+      "/rest/v1/bb_pseudos?player_id=eq." +
+      encodeURIComponent(playerId) +
+      "&select=pseudo,xp&limit=1";
+    const res = await fetch(url, { headers: { apikey: SB_KEY, Authorization: "Bearer " + SB_KEY } });
+    if (!res.ok) return null;
+    const rows = await res.json();
+    if (!Array.isArray(rows) || rows.length === 0) return null;
+    return { pseudo: rows[0].pseudo || null, xp: Number(rows[0].xp) || 0 };
+  } catch {
+    return null;
+  }
+}

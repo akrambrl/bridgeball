@@ -1,12 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import { tr, getLang, setLang, LANGS } from "@/lib/lang";
 import { G, posterText, btn, pastilleCharte } from "@/lib/charte.jsx";
+import { levelCard, rarityMeta, cardName, hasArt } from "@/lib/collection";
+import { fetchMonProfil } from "@/lib/leaderboard";
 
 export type TabKey = "play" | "tutos" | "leaderboard" | "faq" | "about";
 
 type Props = {
   active: TabKey;
   onChange: (t: TabKey) => void;
+  /** Ouvre l'écran de profil (monté par LePont). Sans lui, le bloc n'est pas
+   *  cliquable — c'était le défaut : un profil affiché mais inatteignable. */
+  onOpenProfile?: () => void;
 };
 
 const TAB_KEYS: TabKey[] = ["play", "tutos", "leaderboard", "faq", "about"];
@@ -91,8 +96,37 @@ const LangPicker = () => {
   );
 };
 
-export const LobbyHeader = ({ active, onChange }: Props) => {
-  const pseudo = getStoredPseudo();
+// L'identifiant d'appareil, posé par LePont et par le suivi. On ne le CRÉE pas
+// ici : un visiteur qui n'a jamais joué n'a rien à afficher, et lui fabriquer un
+// identifiant au seul passage sur la landing serait une écriture pour rien.
+function playerIdStocke(): string {
+  if (typeof window === "undefined") return "";
+  try { return localStorage.getItem("bb_player_id") || ""; } catch { return ""; }
+}
+
+export const LobbyHeader = ({ active, onChange, onOpenProfile }: Props) => {
+  const [pseudo, setPseudo] = useState(getStoredPseudo);
+  // `null` tant qu'on ne sait pas : on n'affiche PAS « La Recrue » par défaut,
+  // sinon un joueur avancé verrait sa carte de départ le temps du chargement,
+  // c'est-à-dire une fausse information au lieu d'une information absente.
+  const [xp, setXp] = useState<number | null>(null);
+
+  // L'XP vit dans bb_pseudos, pas en localStorage : la landing la lit elle-même.
+  // Un échec ne casse rien — on garde le pseudo local et pas de carte.
+  useEffect(() => {
+    let vivant = true;
+    const pid = playerIdStocke();
+    if (!pid) return;
+    fetchMonProfil(pid).then((p) => {
+      if (!vivant || !p) return;
+      setXp(p.xp);
+      if (p.pseudo) setPseudo(p.pseudo);
+    });
+    return () => { vivant = false; };
+  }, []);
+
+  const carte = xp === null ? null : levelCard(xp);
+  const meta = carte ? rarityMeta(carte.rarity) : null;
   const initial = pseudo.charAt(0).toUpperCase();
 
   return (
@@ -135,23 +169,58 @@ export const LobbyHeader = ({ active, onChange }: Props) => {
       <div className="flex items-center gap-3">
         <LangPicker />
 
-        {/* Profil compact */}
-        <div className="hidden md:flex items-center gap-2.5 pl-1.5 pr-3 py-1.5"
+        {/* ── PROFIL : UN BOUTON, LA VRAIE CARTE, LE VRAI GRADE ──────────────
+            Ce bloc était un <div> sans gestionnaire de clic. Il montrait donc un
+            profil que rien ne permettait d'ouvrir : sur ordinateur, la
+            collection de cartes — vingt-neuf paliers, la récompense de toute la
+            progression — n'était atteignable par AUCUN chemin.
+
+            Il montrait aussi deux choses fausses. L'initiale du pseudo dans un
+            rond, alors que la carte de niveau EST la photo de profil partout
+            ailleurs (mobile, classement, écran de duel). Et « LVL 1 » écrit en
+            dur : GOAT FC n'a pas de numéro de niveau, le grade est le nom de la
+            carte atteinte. Un joueur à 60 000 XP lisait « LVL 1 ».
+
+            La vignette prend son cadre de rareté, comme dans la collection et
+            sur l'écran de profil qu'elle ouvre. */}
+        <button
+          onClick={onOpenProfile}
+          disabled={!onOpenProfile}
+          aria-label={tr("Voir mon profil et mes cartes", "View my profile and cards", "Mein Profil und meine Karten", "Il mio profilo e le mie carte", "Meu perfil e minhas cartas", "Mi perfil y mis cartas")}
+          title={tr("Mon profil et mes cartes", "My profile and cards", "Mein Profil und meine Karten", "Il mio profilo e le mie carte", "Meu perfil e minhas cartas", "Mi perfil y mis cartas")}
+          className="hidden md:flex items-center gap-2.5 pl-1.5 pr-3 py-1.5 text-left transition-transform hover:scale-[1.03]"
           style={{ background:G.nuit, border:G.traitFin, borderRadius:G.rayonS,
-            boxShadow:"2px 2px 0 "+G.encre }}>
-          <div style={{ ...pastilleCharte(G.pelouse, 32), ...posterText(1, G.white, 0), fontSize:19,
-            width:32, height:32, display:"flex", alignItems:"center", justifyContent:"center" }}>
-            {initial}
-          </div>
-          <div className="flex flex-col leading-tight">
-            <span className="truncate max-w-[100px]" style={{ ...posterText(1, G.white, 0), fontSize:15 }}>
+            boxShadow:"2px 2px 0 "+G.encre, cursor: onOpenProfile ? "pointer" : "default" }}>
+          {carte && hasArt(carte) ? (
+            <span style={{ display:"block", width:34, height:44, flexShrink:0, padding:2,
+              borderRadius:8, background:meta!.frame, border:G.traitFin }}>
+              <img src={carte.thumb} alt="" style={{ width:"100%", height:"100%",
+                objectFit:"cover", objectPosition:"top", borderRadius:6, display:"block" }}/>
+            </span>
+          ) : (
+            <span style={{ ...pastilleCharte(G.pelouse, 32), ...posterText(1, G.white, 0), fontSize:19,
+              width:32, height:32, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+              {initial}
+            </span>
+          )}
+          <span className="flex flex-col leading-tight min-w-0">
+            <span className="truncate max-w-[110px]" style={{ ...posterText(1, G.white, 0), fontSize:15 }}>
               {pseudo}
             </span>
-            <span className="text-[10px] text-white/50 font-medium">
-              LVL 1
-            </span>
-          </div>
-        </div>
+            {/* Le grade, ou rien tant qu'on ne le connaît pas. Le nom de la carte
+                porte la couleur de sa rareté, comme sur l'écran de profil. */}
+            {carte && meta ? (
+              <span className="truncate max-w-[110px] text-[10px] font-bold uppercase"
+                style={{ letterSpacing:1, color:meta.color }}>
+                {cardName(carte)}
+              </span>
+            ) : (
+              <span className="text-[10px] text-white/50 font-medium">
+                {tr("Mon profil", "My profile", "Mein Profil", "Il mio profilo", "Meu perfil", "Mi perfil")}
+              </span>
+            )}
+          </span>
+        </button>
       </div>
     </header>
   );
