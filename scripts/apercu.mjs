@@ -467,9 +467,17 @@ if (!ecran.startsWith("tracking")) {
 // paramètre ne marche pas sur téléphone : il attend la confirmation du pseudo,
 // qui n'est pas encore arrivée au chargement, et on photographiait l'accueil.
 // L'écran Salle s'atteint par le CHAMP de l'accueil, « Code salle » + Rejoindre.
-// Le lien ?room=CODE devrait marcher aussi, mais il ne déclenche pas joinRoom
-// ici — aucun appel à bb_rooms ne part — alors que le champ, lui, emprunte le
-// chemin qu'un joueur suit vraiment. On photographie ce qu'ils font.
+// On photographie le CHAMP, pas le lien, et c'est un choix : les deux chemins
+// passent maintenant par le même aiguilleur (`rejoindreParCode`), donc le champ
+// les couvre tous les deux.
+//
+// Ce commentaire disait autrefois que le lien « ne déclenche pas joinRoom ici —
+// aucun appel à bb_rooms ne part », et c'était vrai : le constat était juste, la
+// conclusion — contourner — l'était moins. Le lien était cassé de quatre façons,
+// dont deux qui ne se voient pas dans cet aperçu (ordinateur, et nouveau joueur
+// sans pseudo). `REQUETE="room=2DE22N"` sur n'importe quel écran fait
+// maintenant partir les trois lectures, et src/test/lien-invitation.test.ts
+// tient les invariants.
 if (ecran === "salle") {
   const champ = page.getByPlaceholder(/code salle|room code/i).first();
   await champ.scrollIntoViewIfNeeded();
