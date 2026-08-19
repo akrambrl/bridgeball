@@ -101,13 +101,21 @@ const Home = () => {
       mode = new URLSearchParams(window.location.search).get("play");
     } catch { /* noop */ }
     if (!mode) {
-      // `?friends=1` et `?duels=1` sont lus par LePont, pas ici : il suffit de le
-      // monter. C'est exactement ce que font les boutons « Mes amis » et
-      // « Défis » du lobby. Sans cette branche, la notification de demande d'ami
-      // déposait sur le lobby sur ordinateur, alors que le paramètre était là.
+      // `?friends=1`, `?duels=1` et `?room=CODE` sont lus par LePont, pas ici :
+      // il suffit de le monter. C'est exactement ce que font les boutons « Mes
+      // amis » et « Défis » du lobby. Sans cette branche, la notification de
+      // demande d'ami déposait sur le lobby sur ordinateur, alors que le
+      // paramètre était là.
+      //
+      // `room` manquait à cette liste, et c'est le lien d'invitation lui-même :
+      // le bouton « Inviter des joueurs » de la salle partage
+      // `https://www.goatfc.fr/?room=CODE`. Ouvert sur un ordinateur ou un iPad,
+      // Index rendait <Home /> — LePont n'était jamais monté, donc PERSONNE ne
+      // lisait le paramètre, et le destinataire atterrissait sur l'accueil sans
+      // un mot. Un lien de défi qui ne mène pas au défi.
       try {
         const p = new URLSearchParams(window.location.search);
-        if (p.get("friends") === "1" || p.get("duels") === "1") setPlaying(true);
+        if (p.get("friends") === "1" || p.get("duels") === "1" || p.get("room")) setPlaying(true);
       } catch { /* noop */ }
       return;
     }

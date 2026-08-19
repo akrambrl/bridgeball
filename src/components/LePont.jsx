@@ -5863,8 +5863,15 @@ export default function LePont() {
       localStorage.setItem("bb_welcome_seen", "1");
       localStorage.setItem("bb_tutorial_done", "1");
     } catch (e) {}
-    // ?room=CODE : on laisse l'autre useEffect (ligne ~4220) lire le code
-    // et lancer joinRoom — pas besoin d'autre logique ici.
+    // ?room=CODE : c'est l'effet de montage qui lit le code, pose
+    // `pendingRoomCode` et laisse l'auto-join faire le reste. Rien d'autre ici.
+    //
+    // Mais on vient de forcer `bb_welcome_seen` et `bb_tutorial_done` à « 1 »
+    // juste au-dessus, et de lever `launchedFromLandingRef` : pour un NOUVEAU
+    // joueur — le cas normal d'une invitation — ces deux gestes lui retirent le
+    // tutoriel ET le bouton de profil, donc tout chemin vers la création de
+    // pseudo. L'auto-join ouvre désormais l'écran lui-même ; sans ça le bandeau
+    // « crée ton pseudo » restait une consigne sans porte.
     if (reqRoom && !play) {
       return;
     }
@@ -6196,6 +6203,13 @@ export default function LePont() {
   const [room, setRoom] = useState(null);
   const [roomInput, setRoomInput] = useState("");
   const [pendingRoomCode, setPendingRoomCode] = useState(null);
+  // Vrai quand la salle a été demandée par un LIEN et non par le champ de code.
+  // Ça change ce qu'il faut montrer en cas d'échec : `roomMsg` s'affiche sous la
+  // carte « Joue avec tes potes », tout en bas de l'accueil, là où l'utilisateur
+  // vient de taper le code et regarde déjà. Arrivé par un lien, il n'a rien tapé
+  // et ne regarde rien — un « Partie déjà lancée » à cet endroit-là est un échec
+  // muet, et c'est le cas le plus fréquent d'un lien qu'on ouvre trop tard.
+  const roomDepuisLienRef = useRef(false);
   const [roomMsg, setRoomMsg] = useState("");const [abandonNotif, setAbandonNotif] = useState("");
   const [showRoomCreate, setShowRoomCreate] = useState(false);
   const roomPollRef = useRef(null);
@@ -6409,6 +6423,7 @@ export default function LePont() {
       const roomCode = params.get("room");
       if (roomCode) {
         window.history.replaceState({}, "", window.location.pathname);
+        roomDepuisLienRef.current = true;
         setRoomInput(roomCode.toUpperCase());
         setPendingRoomCode(roomCode.toUpperCase());
       }
@@ -6631,12 +6646,29 @@ export default function LePont() {
     return function(){ stop = true; clearInterval(t); };
   }, [screen]);
 
-  // Auto-join room une fois le pseudo confirmé
+  // ── AUTO-JOIN DEPUIS UN LIEN D'INVITATION ──────────────────────────────────
+  //
+  // Le pseudo est nécessaire : sans lui on entrerait dans la salle sous le nom
+  // « Anonyme », et les deux autres modes refusent tout net. On attend donc qu'il
+  // soit confirmé — mais on ne peut pas se contenter d'attendre.
+  //
+  // CE QUI SE PASSAIT POUR UN NOUVEAU JOUEUR, c'est-à-dire pour tout destinataire
+  // d'une invitation qui n'a pas encore l'app : le bandeau lui disait « crée ton
+  // pseudo pour rejoindre automatiquement », et l'app ne lui en donnait AUCUN
+  // MOYEN. L'effet de lancement force `bb_welcome_seen` et `bb_tutorial_done` à
+  // « 1 » quand l'URL porte un paramètre, donc pas de tutoriel ; et le bouton de
+  // profil de l'en-tête — le seul chemin vers l'écran de pseudo depuis l'accueil
+  // — est masqué par `launchedFromLandingRef`, que ce même effet vient de lever.
+  // La consigne affichée était littéralement impossible à suivre.
+  //
+  // On ouvre donc l'écran de création nous-mêmes, et `pendingRoomCode` survit :
+  // la création confirme le pseudo, l'effet repasse, et la salle s'ouvre.
   useEffect(()=>{
-    if(pseudoConfirmed && pendingRoomCode) {
-      setPendingRoomCode(null);
-      setTimeout(function(){ joinRoom(pendingRoomCode); }, 500);
-    }
+    if(!pendingRoomCode) return;
+    if(!pseudoConfirmed) { setPseudoScreen(true); return; }
+    setPendingRoomCode(null);
+    // Les trois tables, comme le bouton « Rejoindre » de l'accueil.
+    setTimeout(function(){ rejoindreParCode(pendingRoomCode); }, 500);
   },[pseudoConfirmed, pendingRoomCode]);
   useEffect(()=>{comboRef.current=combo;},[combo]);
   useEffect(()=>{if(historyEndRef.current)historyEndRef.current.scrollIntoView({behavior:"smooth"});},[chainHistory]);
@@ -7325,6 +7357,57 @@ export default function LePont() {
     });
   }
 
+
+  // ── UN CODE DE SALLE, TROIS TABLES : UN SEUL AIGUILLEUR ────────────────────
+  //
+  // Un code à 6 caractères peut désigner trois choses différentes, et rien dans
+  // le code lui-même ne dit laquelle :
+  //
+  //   • `bb_duel_rooms` — GOAT DUEL (1 contre 1, temps réel)
+  //   • `bb_gg_rooms`   — GOAT BATTLE (la grille 3×3, jusqu'à 8)
+  //   • `bb_rooms`      — The Plug / The Mercato (jusqu'à 8)
+  //
+  // Il faut donc les interroger dans l'ordre, et c'est ce que faisait le bouton
+  // « Rejoindre » de l'accueil. Mais le lien d'invitation, lui, appelait
+  // `joinRoom()` DIRECTEMENT : il ne regardait que `bb_rooms`. Un code de GOAT
+  // DUEL ou de GOAT BATTLE reçu par lien répondait donc « Salle introuvable »,
+  // alors que le même code tapé à la main dans le champ juste à côté marchait.
+  //
+  // Les deux chemins passent maintenant par ici. C'était une logique dupliquée
+  // dont une seule copie avait les trois branches — la forme même du défaut.
+  async function rejoindreParCode(code) {
+    const clean = (code || "").trim().toUpperCase();
+    if (clean.length !== 6) {
+      setRoomMsg(tr("Code invalide","Invalid code","Ungültiger Code","Codice non valido","Código inválido","Código inválido"));
+      return false;
+    }
+    setRoomMsg("");
+    // 1. salon GOAT DUEL
+    try {
+      const dRoom = await sbFetch("bb_duel_rooms?code=eq."+clean+"&limit=1");
+      if (Array.isArray(dRoom) && dRoom.length > 0) {
+        setRoomInput(""); setDuelError(""); setDuelJoinCode(clean);
+        setDuelScreen("menu");
+        duelJoinRoom(clean);
+        return true;
+      }
+    } catch (e) { /* pas un salon duel → on continue */ }
+    // 2. room GOAT BATTLE
+    try {
+      const ggRoom = await sbFetch("bb_gg_rooms?code=eq."+clean+"&limit=1");
+      if (Array.isArray(ggRoom) && ggRoom.length > 0) {
+        setGgBattleCode(clean);
+        setGgBattleScreen("menu");
+        setRoomInput("");
+        // Petit délai pour que le state du menu se monte avant de rejoindre.
+        setTimeout(function(){ ggBattleJoinRoom(clean); }, 100);
+        return true;
+      }
+    } catch (e) { /* on tombe sur le fallback Plug/Mercato */ }
+    // 3. Plug / Mercato
+    await joinRoom(clean);
+    return true;
+  }
 
   // ── ROOM FUNCTIONS (multi up to 8) ──
   function makeRoomCode() {
@@ -12726,7 +12809,12 @@ export default function LePont() {
               Tant qu'on est seul dans la salle, c'est LA seule chose à faire —
               elle était reléguée dans un coin de l'en-tête, à 13 px. */}
           <button onClick={function(){
-            const link = "https://goatfc.fr?room="+room.code;
+            // Le domaine canonique, avec sa barre oblique : `goatfc.fr?room=…`
+            // marchait, mais au prix d'une redirection 307 vers
+            // `www.goatfc.fr/?room=…` — un aller-retour réseau sur un lien qu'on
+            // ouvre au doigt, parfois en 4G, et une occasion de plus de perdre
+            // la chaîne de requête en route.
+            const link = "https://www.goatfc.fr/?room="+room.code;
             const shareTitle = tr("GOAT FC — Rejoins ma salle !","GOAT FC — Join my room!","GOAT FC — Tritt meinem Raum bei!","GOAT FC — Entra nella mia stanza!","GOAT FC — Entre na minha sala!","GOAT FC — ¡Entra en mi sala!");
             const shareText = tr("Rejoins ma salle sur GOAT FC 🐐","Join my room on GOAT FC 🐐","Tritt meinem Raum auf GOAT FC bei 🐐","Entra nella mia stanza su GOAT FC 🐐","Entre na minha sala no GOAT FC 🐐","Entra en mi sala de GOAT FC 🐐");
             const copiedMsg = tr("Lien copié ! 📋","Link copied! 📋","Link kopiert! 📋","Link copiato! 📋","Link copiado! 📋","¡Enlace copiado! 📋");
@@ -14172,6 +14260,16 @@ export default function LePont() {
           <div style={{background:"rgba(42,155,78,.35)",border:G.traitFin,borderRadius:12,padding:"10px 14px",textAlign:"center"}}>
             <div style={{fontSize:13,fontWeight:800,color:G.pelouseClaire}}>🔗 {tr("Salle ","Room ","Raum ","Stanza ","Sala ","Sala ")}{pendingRoomCode}{tr(" en attente"," pending"," ausstehend"," in attesa"," pendente"," pendiente")}</div>
             <div style={{fontSize:11,color:"rgba(255,255,255,.5)",marginTop:2}}>{tr("Crée ton pseudo pour rejoindre automatiquement","Create your username to join automatically","Erstelle deinen Namen, um automatisch beizutreten","Crea il tuo nome per unirti automaticamente","Crie seu nome para entrar automaticamente","Crea tu nombre para entrar automáticamente")}</div>
+          </div>
+        )}
+        {/* Échec d'un lien d'invitation : salle introuvable, pleine, ou partie
+            déjà lancée. Dit ici, en haut, parce que l'arrivant n'a rien tapé et
+            ne saurait pas où chercher — avec le code sous les yeux pour qu'il
+            puisse au moins demander à celui qui l'a invité. */}
+        {roomDepuisLienRef.current && !pendingRoomCode && roomMsg && (
+          <div style={{background:"rgba(217,58,43,.32)",border:G.traitFin,borderRadius:12,padding:"10px 14px",textAlign:"center"}}>
+            <div style={{fontSize:13,fontWeight:800,color:"#FF3D57"}}>🔗 {roomMsg}</div>
+            <div style={{fontSize:11,color:"rgba(255,255,255,.55)",marginTop:2}}>{tr("Code","Code","Code","Codice","Código","Código")} {roomInput || "—"} · {tr("demande un nouveau lien à ton pote","ask your friend for a new link","frag deinen Kumpel nach einem neuen Link","chiedi un nuovo link al tuo amico","peça um novo link ao seu amigo","pídele un nuevo enlace a tu colega")}</div>
           </div>
         )}
         {/* Bannière installation app (iOS Safari / Android non installé) */}
@@ -16317,39 +16415,10 @@ export default function LePont() {
             <input value={roomInput} onChange={function(e){setRoomInput(e.target.value.toUpperCase());setRoomMsg("");}}
               placeholder={tr("Code salle","Room code","Raumcode","Codice stanza","Código da sala","Código de sala")} maxLength={6}
               style={{flex:1,padding:"10px 12px",borderRadius:G.rayonS,border:G.trait,background:"#061007",color:G.white,fontFamily:G.font,fontSize:14,fontWeight:700,letterSpacing:3,textTransform:"uppercase",outline:"none"}}/>
-            <button onClick={function(){requirePseudo(async function(){
-              const code = (roomInput||"").trim().toUpperCase();
-              if (code.length !== 6) { setRoomMsg(tr("Code invalide","Invalid code","Ungültiger Code","Codice non valido","Código inválido","Código inválido")); return; }
-              setRoomMsg("");
-              // Étape 0 : salon GOAT DUEL (Plug temps réel) ?
-              try {
-                const dRoom = await sbFetch("bb_duel_rooms?code=eq."+code+"&limit=1");
-                if (Array.isArray(dRoom) && dRoom.length > 0) {
-                  setRoomInput(""); setDuelError(""); setDuelJoinCode(code);
-                  setDuelScreen("menu");
-                  duelJoinRoom(code);
-                  return;
-                }
-              } catch (e) {
-                // pas un salon duel → on continue
-              }
-              // Étape 1 : essayer en priorité une room GOAT BATTLE
-              try {
-                const ggRoom = await sbFetch("bb_gg_rooms?code=eq."+code+"&limit=1");
-                if (Array.isArray(ggRoom) && ggRoom.length > 0) {
-                  // C'est une room Battle → ouvrir le menu battle puis rejoindre
-                  setGgBattleCode(code);
-                  setGgBattleScreen("menu");
-                  setRoomInput("");
-                  // Petit délai pour que le state du menu se monte avant de join
-                  setTimeout(function(){ ggBattleJoinRoom(code); }, 100);
-                  return;
-                }
-              } catch (e) {
-                // Si erreur, on tombe sur le fallback Plug/Mercato
-              }
-              // Étape 2 : fallback Plug/Mercato
-              joinRoom(code);
+            <button onClick={function(){requirePseudo(function(){
+              // Les trois tables sont interrogées par `rejoindreParCode`, partagé
+              // avec l'auto-join des liens d'invitation.
+              rejoindreParCode(roomInput);
             });}} style={{padding:"10px 16px",...btn(G.projecteur)}}>{tr("Rejoindre","Join","Beitreten","Entra","Entrar","Entrar")}</button>
           </div>
         </div>
