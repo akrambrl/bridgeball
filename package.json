@@ -36,7 +36,9 @@
     "sql:saisons": "node scripts/sql-saisons.essai.mjs",
     "sql:goatgrid": "node scripts/sql-goatgrid.essai.mjs",
     "sql:auth": "node scripts/sql-auth.essai.mjs",
-    "donnees": "npx tsx scripts/donnees-json.mjs"
+    "donnees": "npx tsx scripts/donnees-json.mjs",
+    "sql:charge": "node scripts/charge.essai.mjs",
+    "singe": "node scripts/singe.essai.mjs"
   },
   "dependencies": {
     "@capacitor-community/admob": "^8.1.0",
