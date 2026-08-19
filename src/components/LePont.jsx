@@ -5829,8 +5829,22 @@ export default function LePont() {
     const reqRoom = params.get("room");
     const reqDuels = params.get("duels");
     const reqFriends = params.get("friends");
-    if (!play && !reqRoom && !reqDuels && !reqFriends) return;
+    const reqProfil = params.get("profil");
+    if (!play && !reqRoom && !reqDuels && !reqFriends && !reqProfil) return;
     launchedFromLandingRef.current = true;
+    // ?profil=1 : l'écran de profil et sa collection de cartes. Sur ordinateur,
+    // ils n'étaient atteignables par aucun chemin — l'en-tête de la landing
+    // affichait le pseudo et un grade dans un <div> qu'on ne pouvait pas cliquer.
+    //
+    // `screen === "profile"` compte comme « dans le jeu » dans l'effet qui rend la
+    // main à la landing (voir plus bas) : sans ça, refermer le profil laissait
+    // l'accueil MOBILE de LePont affiché en plein écran d'ordinateur.
+    if (reqProfil === "1") {
+      try { localStorage.setItem("bb_welcome_seen","1"); localStorage.setItem("bb_tutorial_done","1"); } catch(e) {}
+      try { window.history.replaceState({}, "", window.location.pathname); } catch(e) {}
+      requirePseudo(function(){ setScreen("profile"); });
+      return;
+    }
     // ?duels=1 : ouvrir directement le salon de défis ouverts (pas de partie lancée)
     if (reqDuels === "1") {
       try { localStorage.setItem("bb_welcome_seen","1"); localStorage.setItem("bb_tutorial_done","1"); } catch(e) {}
@@ -5956,7 +5970,14 @@ export default function LePont() {
       // l'accueil MOBILE de LePont affiché en plein écran d'ordinateur au lieu
       // de rendre la main à la landing.
       ggModeChoice ||
-      !!ggBattleScreen;
+      !!ggBattleScreen ||
+      // Le PROFIL, ouvert depuis l'en-tête d'ordinateur (?profil=1). Il n'est pas
+      // une partie, mais il obéit à la même règle : c'est un écran de LePont
+      // ouvert par la landing, donc le refermer doit rendre la main à la landing.
+      // Sans cette ligne, le retour laissait l'accueil mobile de LePont étalé sur
+      // un écran d'ordinateur — le défaut décrit juste au-dessus pour la feuille
+      // « Choisis ton mode ».
+      screen === "profile";
     if (inGame) {
       wasInGameRef.current = true;
       return;
