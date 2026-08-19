@@ -1657,7 +1657,18 @@ function pickResultMessage(arr, seed) {
   return arr[idx];
 }
 
-const DB = buildPontDB();
+// ── CALCULÉ PAR initDerives(), PAS AU CHARGEMENT DU MODULE ─────────────────
+//
+// C'était `const DB = buildPontDB()`, évalué à l'import. Depuis que la base
+// joueurs est servie en fichier (src/lib/donnees.ts) et non plus importée,
+// PLAYERS_CLEAN est VIDE à cet instant : `DB` se construisait donc sur zéro
+// joueur, et The Plug ne démarrait plus du tout — « DB empty for diff: facile »
+// dans la console, et l'écran reste sur l'accueil quand on tape JOUER.
+//
+// L'en-tête de donnees.ts énonçait déjà la règle : « la seule contrainte est de
+// ne rien CALCULER sur ces données au chargement du module ». Cinq index ont été
+// déplacés dans initDerives() à ce moment-là ; ces deux-ci ont été oubliés.
+let DB = { facile: [], moyen: [], expert: [] };
 
 // Score "crédible" pour le bot adversaire en mode EN LIGNE (faux multi).
 // 50/50 win ou lose, variance proportionnelle au score utilisateur.
@@ -2224,7 +2235,23 @@ export function initDerives() {
   }
 
   PLAYER_BY_NAME = new Map(PLAYERS_CLEAN.map(function(p){ return [p.name, p]; }));
+
+  // ── ET LES DEUX VIVIERS DE QUESTIONS, DANS CET ORDRE ────────────────────
+  //
+  // Ils viennent APRÈS les cinq index, et ce n'est pas cosmétique :
+  // `buildPontDB()` lit PLAYERS_CLEAN, et `pairesRetenues()` lit CLUB_INDEX et
+  // PLAYER_DIFF. Les calculer avant donnerait des viviers vides — c'est-à-dire
+  // exactement le défaut qu'on répare ici, déplacé d'un cran.
+  DB = buildPontDB();
+  DUEL_PAIRES = pairesRetenues(DUEL_CLUBS, duelPaireRetenue);
 }
+
+/** Les deux viviers de questions, lus À L'APPEL et non capturés.
+ *
+ *  Une constante exportée aurait figé la valeur du moment de l'évaluation — donc
+ *  les tableaux vides — et le test aurait échoué en accusant le correctif. C'est
+ *  une fonction pour cette seule raison. */
+export const __viviers = () => ({ DB, DUEL_PAIRES });
 function getPlayerClubs(name){const p=PLAYER_BY_NAME.get(name);return p?p.clubs:[];}
 
 // Vivier « facile » d'une liste de joueurs d'un même club, élargi si trop mince.
@@ -2342,12 +2369,22 @@ function duelPaireRetenue(a, b){
   return communs.some(function(n){ return PLAYER_DIFF[n] === "facile"; });
 }
 
-// Toutes les paires retenues, calculées une fois. DUEL_CLUBS et CLUB_INDEX sont
-// figés au chargement, donc énumérer à chaque manche ne servirait à rien — et
-// surtout, tirer au hasard « jusqu'à tomber sur une paire jouable » ne permet pas
-// d'exclure les paires déjà vues : sur un vivier réduit, la boucle épuise ses 80
-// essais et retombe sur le repli, qui est toujours le même.
-const DUEL_PAIRES = pairesRetenues(DUEL_CLUBS, duelPaireRetenue);
+// Toutes les paires retenues, calculées UNE FOIS — mais par initDerives(), pas à
+// l'import. Énumérer à chaque manche ne servirait à rien, et surtout, tirer au
+// hasard « jusqu'à tomber sur une paire jouable » ne permet pas d'exclure les
+// paires déjà vues : sur un vivier réduit, la boucle épuise ses 80 essais et
+// retombe sur le repli, qui est toujours le même.
+//
+// ── CE REPLI EST JUSTEMENT CE QU'ON A SERVI PENDANT UN MOMENT ─────────────
+//
+// C'était `const DUEL_PAIRES = pairesRetenues(...)`, évalué à l'import, alors que
+// CLUB_INDEX et PLAYER_DIFF — dont il dépend — sont remplis par initDerives(),
+// donc plus tard. Le vivier était vide, et `duelRollPair()` retombait sur son
+// repli `["Real Madrid", "Barcelona"]` — commenté « ne devrait pas arriver ».
+// GOAT DUEL ne plantait donc pas : il proposait la MÊME AFFICHE à chaque manche,
+// indéfiniment. Mesuré : neuf lancements sur neuf. Un mode qui a l'air de marcher
+// est plus dur à repérer qu'un mode qui casse.
+let DUEL_PAIRES = [];
 
 // Mémoire des paires déjà posées. Elle vit ICI, dans le tireur, et non chez
 // l'appelant : les cinq sites de tirage (solo, partie rapide, manche suivante
