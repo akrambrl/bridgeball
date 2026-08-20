@@ -82,6 +82,8 @@ export const enModeTest = (): boolean =>
 
 let demarre = false;
 let peutServir = false;
+/** Le joueur a-t-il un consentement à reprendre ? Faux hors EEE. */
+let optionsDispo = false;
 let prete = false;
 let enChargement = false;
 
@@ -123,10 +125,49 @@ export async function initPub(): Promise<void> {
     if (infos.status === AdmobConsentStatus.REQUIRED && infos.isConsentFormAvailable) {
       infos = await AdMob.showConsentForm();
     }
+    // Le joueur est-il dans une zone où le consentement se pose ? REQUIRED avant
+    // l'affichage, OBTAINED après : dans les deux cas il a un consentement à
+    // reprendre. NOT_REQUIRED — hors EEE — n'a aucune option à gérer, et lui
+    // proposer un écran vide serait pire que de ne rien proposer.
+    optionsDispo = infos.status === AdmobConsentStatus.REQUIRED
+                || infos.status === AdmobConsentStatus.OBTAINED;
     peutServir = infos.canRequestAds !== false;
     if (peutServir) void precharger();
   } catch {
     peutServir = false;
+  }
+}
+
+/**
+ * Vrai quand il y a un consentement à reprendre, donc quand il faut proposer
+ * l'entrée « Confidentialité et publicité » dans l'écran Compte.
+ */
+export const confidentialiteReprenable = (): boolean => natif() && optionsDispo;
+
+/**
+ * ── LE LIEN DE RÉVOCATION, QU'EXIGE LE RGPD ET QUE LA BANNIÈRE PROMET ──────
+ *
+ * Un consentement doit pouvoir être retiré aussi facilement qu'il a été donné.
+ * Ce n'est pas une lecture militante du texte : le formulaire de Google le dit
+ * lui-même au joueur, en toutes lettres — « Look for a link or button in the app
+ * menu to manage or withdraw consent in privacy and cookie settings ». Sans
+ * cette entrée, la bannière promettait quelque chose qui n'existait pas, et
+ * l'écran de publication de la console AdMob le rappelle à chaque message publié.
+ *
+ * `showPrivacyOptionsForm()` affiche l'écran d'options rendu depuis la même
+ * configuration RGPD que la bannière : il n'y a donc rien à dessiner ici, et rien
+ * qui puisse diverger de ce que le joueur a vu au premier lancement.
+ *
+ * Rend faux si l'écran n'a pas pu s'ouvrir, pour que l'appelant le dise plutôt
+ * que de laisser un bouton sans effet.
+ */
+export async function ouvrirConfidentialite(): Promise<boolean> {
+  if (!natif()) return false;
+  try {
+    await AdMob.showPrivacyOptionsForm();
+    return true;
+  } catch {
+    return false;
   }
 }
 

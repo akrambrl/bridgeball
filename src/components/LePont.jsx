@@ -13,7 +13,8 @@ import { pickOpponent } from "../lib/opponents";
 import { G, posterText, posterTitre, posterLight, btn, fondCharte, areneCharte,
          retourStyle, retourCharte, fermerCharte, ligneCharte, pastilleCharte } from "../lib/charte.jsx";
 import { displayStreak } from "../lib/streak";
-import { estDisponible as pubDisponible, montrerRecompensee } from "../lib/pub";
+import { estDisponible as pubDisponible, montrerRecompensee,
+         confidentialiteReprenable, ouvrirConfidentialite } from "../lib/pub";
 import { normNom, normCompactNom, normPhoneticNom, levenshteinNom, seuilFuzzy, fuzzyNom } from "../lib/nom";
 import { cadenceSalon } from "../lib/cadence";
 // Jours calendaires « heure de Paris » — découpage temporel du tableau de bord.
@@ -12451,6 +12452,38 @@ export default function LePont() {
             <div style={{flex:1}}>{tr("Règlement du concours","Contest Rules","Teilnahmebedingungen","Regolamento del concorso","Regulamento do concurso","Bases del concurso")}</div>
             <span style={{fontSize:14,color:"rgba(255,255,255,.45)"}}>↗</span>
           </a>
+
+          {/* ── LE LIEN DE RÉVOCATION DU CONSENTEMENT PUBLICITAIRE ────────────
+              Le RGPD veut qu'un consentement se retire aussi facilement qu'il se
+              donne, et le formulaire de Google le PROMET au joueur : « look for a
+              link or button in the app menu to manage or withdraw consent ». Il
+              n'existait pas — la bannière annonçait donc une porte qui n'était
+              nulle part.
+
+              Uniquement dans la coque native, et uniquement là où le
+              consentement se pose (`confidentialiteReprenable`). Hors EEE le SDK
+              n'a aucune option à montrer, et une ligne qui ouvre un écran vide
+              est pire qu'une ligne absente.
+
+              L'écran lui-même est rendu par le SDK depuis la configuration RGPD
+              de la console : rien à dessiner ici, et rien qui puisse diverger de
+              ce que le joueur a vu au premier lancement. */}
+          {confidentialiteReprenable() && (
+            <div onClick={async function(){
+              const ok = await ouvrirConfidentialite();
+              if (!ok) setPseudoMsg(tr(
+                "Impossible d'ouvrir les options pour le moment.",
+                "Can't open privacy options right now.",
+                "Datenschutzoptionen lassen sich gerade nicht öffnen.",
+                "Impossibile aprire le opzioni adesso.",
+                "Não foi possível abrir as opções agora.",
+                "No se pueden abrir las opciones ahora mismo."));
+            }} style={{...ligneCompte,cursor:"pointer"}}>
+              <span style={{fontSize:18}}>🔒</span>
+              <div style={{flex:1}}>{tr("Confidentialité et publicité","Privacy and ads","Datenschutz und Werbung","Privacy e pubblicità","Privacidade e anúncios","Privacidad y anuncios")}</div>
+              <span style={{fontSize:14,color:"rgba(255,255,255,.45)"}}>›</span>
+            </div>
+          )}
 
           {/* Zone danger — panneau de nuit comme les autres : sur la pelouse
               éclairée, le rouge délavé à 14 % tournait au brun sale. C'est le
