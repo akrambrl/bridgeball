@@ -163,6 +163,38 @@ const ALIAS = {
   "deportivo a coruna": "deportivo la coruna", "heart of midlothian": "hearts",
   "hertha bsc": "hertha berlin", "royal antwerp": "antwerp",
   "union de santa fe": "union santa fe",
+
+  // ── LES DIX SUIVANTS ONT ÉTÉ LUS DANS LA SORTIE DU SCRIPT LUI-MÊME ────────
+  //
+  // Le mercato 2026 a rendu 2 079 mouvements et n'en a confirmé que DEUX. La
+  // troisième pile — « départ inconnu de la fiche » — en contenait onze qui
+  // n'étaient pas des homonymes du tout : le club de départ ÉTAIT dans la fiche,
+  // sous une autre graphie que celle de Wikipédia. « Union SG » contre « Union
+  // Saint-Gilloise », « Wolfsberg » contre « Wolfsberger AC », « AZ » contre
+  // « AZ Alkmaar ».
+  //
+  // Comme le club de départ est la pièce d'identité de ce script, une graphie
+  // non rapprochée ne fait pas rater un transfert : elle le range dans la pile
+  // du travail manuel, ce qui est plus coûteux qu'un oubli franc.
+  //
+  // Chaque paire ci-dessous a été éprouvée en calculant `cle()` des deux côtés,
+  // pas en la devinant, et la graphie de droite est celle que la base emploie
+  // déjà — vérifiée avec son décompte de joueurs.
+  "union sg": "union saintgilloise",        // 34 joueurs en base
+  "wolfsberg": "wolfsberger",               // 4
+  "az": "az alkmaar",                       // 58
+  "heracles almelo": "heracles",            // 11
+  "buriram united": "buriram",              // 4
+  "nec": "nec nijmegen",                    // 22
+  "al wahda": "alwahda",                    // 7
+  "zenit saint petersburg": "zenit",        // 25
+  "luzern": "lucerne",                      // 7
+  // Et celui-ci rapproche deux graphies DE LA BASE, pas seulement Wikipédia :
+  // « Plzeň » (19 joueurs) et « Viktoria Plzeň » (6) sont le même club, écrit de
+  // deux façons. Le test canonique ne les voyait pas — leurs clés diffèrent, le
+  // rabotage ne retirant pas « viktoria » — donc 25 joueurs étaient répartis sur
+  // deux clubs distincts aux yeux de GOAT MERCATO, qui enchaîne par le club.
+  "viktoria plzen": "plzen",
 };
 const cle = (s) => {
   const k = norm(s)
