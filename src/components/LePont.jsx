@@ -4141,8 +4141,34 @@ export default function LePont() {
       if(room.host_id===playerId){ duelRoomRef.current=room; setDuelRoom(room); setDuelScreen("lobby"); return; }
       if(room.guest_id && room.guest_id!==playerId){ setDuelError(tr("Salon complet","Room is full","Raum ist voll","Stanza piena","Sala cheia","Sala completa")); return; }
       if(room.state!=="lobby"){ setDuelError(tr("Partie déjà lancée","Already started","Bereits gestartet","Già iniziata","Já começou","Ya ha empezado")); return; }
-      await duelPatch(room.id, { guest_id:playerId, guest_name:playerName });
-      const fresh = Object.assign({}, room, { guest_id:playerId, guest_name:playerName });
+      // ── LA PLACE SE PREND EN UN SEUL GESTE ────────────────────────────────
+      //
+      // Le contrôle juste au-dessus lit une ligne qui a pu changer depuis. Avec
+      // deux invités partis en même temps sur le même code — un lien partagé
+      // dans un groupe, c'est le cas normal — les DEUX passaient le contrôle et
+      // les DEUX écrivaient : le second écrasait le premier, et le premier
+      // restait sur un salon qui l'avait oublié, sans un message. Mesuré au banc
+      // de charge (npm run sql:charge) : 2 invités sur 2 se croyaient entrés.
+      //
+      // Le filtre `guest_id=is.null` déplace le contrôle DANS l'écriture :
+      // Postgres ne met à jour la ligne que si la place est encore libre au
+      // moment de l'écriture. `return=representation` dit ce qui s'est passé —
+      // une ligne, c'est gagné ; un tableau vide, quelqu'un a été plus rapide.
+      //
+      // On ne peut pas faire pareil pour les salles à 8 : « ajouter au tableau »
+      // ne s'exprime pas dans un PATCH. Là, c'est une reprise (voir
+      // ggBattleJoinRoom et joinRoom).
+      const pris = await sbFetch("bb_duel_rooms?id=eq."+room.id+"&guest_id=is.null", {
+        method:"PATCH",
+        headers:{ "Content-Type":"application/json", "Prefer":"return=representation" },
+        body: JSON.stringify({ guest_id:playerId, guest_name:playerName,
+                               updated_at:new Date().toISOString() }),
+      });
+      if(!Array.isArray(pris) || pris.length===0){
+        setDuelError(tr("Salon complet","Room is full","Raum ist voll","Stanza piena","Sala cheia","Sala completa"));
+        return;
+      }
+      const fresh = Object.assign({}, room, pris[0]);
       duelRoomRef.current=fresh; setDuelRoom(fresh); setDuelScreen("lobby");
     } finally { setDuelBusy(false); }
   }
@@ -4734,18 +4760,31 @@ export default function LePont() {
         setGgBattleError(tr("Partie déjà en cours","Game already started","Spiel läuft bereits","Partita già in corso","Jogo já começou","La partida ya está en curso"));
         return;
       }
-      const players = Array.isArray(room.players) ? room.players : [];
-      // Si déjà dans la room, on rejoint juste
-      if (players.find(p => p.id === playerId)) {
-        setGgBattleRoom(room);
-        setGgBattleScreen("lobby");
-        return;
-      }
-      if (players.length >= 8) {
-        setGgBattleError(tr("Room pleine (8 max)","Room is full (8 max)","Raum ist voll (max. 8)","Stanza piena (max 8)","Sala cheia (8 máx)","Sala llena (8 máx.)"));
-        return;
-      }
-      players.push({
+      // ── SIX JOUEURS SUR SEPT ÉTAIENT PERDUS, ET NE LE SAVAIENT PAS ────────
+      //
+      // La colonne `players` est un TABLEAU ENTIER réécrit à chaque arrivée : on
+      // lit la liste, on s'y ajoute, on réécrit le tout. Entre la lecture et
+      // l'écriture il y a un aller-retour réseau, et pendant ce temps quelqu'un
+      // d'autre a pu écrire — sa version est alors écrasée. C'est la mise à jour
+      // perdue, et elle est invisible à un joueur seul.
+      //
+      // Cette fonction écrivait UNE FOIS, sans relire, puis ouvrait le salon
+      // quoi qu'il arrive. Mesuré au banc de charge (npm run sql:charge), sept
+      // arrivées simultanées sur une salle d'un joueur :
+      //
+      //     2 joueurs sur 8 en base — 6 PERDUS
+      //
+      // Et les six éjectés voyaient le salon avec leur nom dedans : ils
+      // attendaient une partie qui allait se lancer sans eux. Un salon GOAT
+      // BATTLE complet était donc pratiquement impossible à remplir.
+      //
+      // La reprise ci-dessous est celle de `joinRoom()` (The Plug), que le même
+      // banc mesure à 8/8 avec un à quatre essais. Elle ne supprime pas la
+      // collision : elle la RATTRAPE, en vérifiant après coup qu'on est bien
+      // dans la liste, ce qui est le seul moyen de le savoir. « Ajouter à un
+      // tableau » ne s'exprime pas dans un PATCH — un `guest_id=is.null` comme
+      // celui de GOAT DUEL n'est pas transposable ici.
+      const moi = {
         id: playerId,
         name: playerName,
         joined_at: new Date().toISOString(),
@@ -4754,13 +4793,52 @@ export default function LePont() {
         lives_left: 3,
         finished_at: null,
         finished_score: null,
-      });
-      await sbFetch("bb_gg_rooms?id=eq."+room.id, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json", "Prefer": "return=minimal" },
-        body: JSON.stringify({ players }),
-      });
-      setGgBattleRoom({ ...room, players });
+      };
+      let salle = room;
+      let entre = false;
+      for (let essai = 1; essai <= 5 && !entre; essai++) {
+        // Relire à chaque tentative : la liste a bougé depuis le dernier essai.
+        if (essai > 1) {
+          const frais = await sbFetch("bb_gg_rooms?code=eq."+code+"&limit=1");
+          if (!Array.isArray(frais) || frais.length === 0) {
+            setGgBattleError(tr("Room introuvable","Room not found","Raum nicht gefunden","Stanza non trovata","Sala não encontrada","Sala no encontrada"));
+            return;
+          }
+          salle = frais[0];
+          if (salle.state !== "lobby") {
+            setGgBattleError(tr("Partie déjà en cours","Game already started","Spiel läuft bereits","Partita già in corso","Jogo já começou","La partida ya está en curso"));
+            return;
+          }
+        }
+        const liste = Array.isArray(salle.players) ? salle.players : [];
+        if (liste.find((p) => p.id === playerId)) { entre = true; break; }
+        if (liste.length >= 8) {
+          setGgBattleError(tr("Room pleine (8 max)","Room is full (8 max)","Raum ist voll (max. 8)","Stanza piena (max 8)","Sala cheia (8 máx)","Sala llena (8 máx.)"));
+          return;
+        }
+        await sbFetch("bb_gg_rooms?id=eq."+salle.id, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json", "Prefer": "return=minimal" },
+          body: JSON.stringify({ players: [...liste, moi] }),
+        });
+        // La VÉRIFICATION, qui est tout l'objet de la reprise : mon ajout a-t-il
+        // survécu, ou un autre l'a-t-il écrasé pendant le trajet ?
+        await new Promise((ok) => setTimeout(ok, 200 + Math.random() * 300));
+        const verif = await sbFetch("bb_gg_rooms?id=eq."+salle.id+"&limit=1");
+        if (Array.isArray(verif) && verif.length > 0) {
+          const vl = Array.isArray(verif[0].players) ? verif[0].players : [];
+          if (vl.find((p) => p.id === playerId)) { salle = verif[0]; entre = true; break; }
+        }
+        // Attente croissante ET aléatoire : sans l'aléa, huit clients qui
+        // recommencent ensemble se recognent au tour suivant.
+        await new Promise((ok) => setTimeout(ok, 300 + essai * 200 + Math.random() * 200));
+      }
+      if (!entre) {
+        // Dire l'échec au lieu d'ouvrir un salon qui ne nous contient pas.
+        setGgBattleError(tr("Connexion impossible (réessaie)","Could not join (try again)","Beitritt fehlgeschlagen (nochmal)","Accesso non riuscito (riprova)","Não foi possível entrar (tente de novo)","No se ha podido entrar (inténtalo otra vez)"));
+        return;
+      }
+      setGgBattleRoom(salle);
       setGgBattleScreen("lobby");
     } catch (e) {
       setGgBattleError(tr("Erreur de connexion","Error joining room","Fehler beim Beitreten","Errore di accesso","Erro ao entrar","Error al entrar en la sala"));

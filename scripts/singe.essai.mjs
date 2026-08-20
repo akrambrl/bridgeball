@@ -132,13 +132,24 @@ for (const [cle, f] of Object.entries(FORMATS)) {
 
   const page = await ctx.newPage();
   const erreurs = [];
-  page.on("pageerror", (e) => erreurs.push({ type:"exception", txt:e.message.slice(0,200) }));
+  page.on("pageerror", (e) => {
+    // Même filtre que la console, pour la même raison : /_vercel/insights n'a
+    // pas d'équivalent local, et sa SyntaxError n'apprend rien sur l'app.
+    if (/Unexpected token '<'/.test(e.message)) return;
+    erreurs.push({ type:"exception", txt:e.message.slice(0,200) });
+  });
   page.on("console", (m) => {
     if (m.type() !== "error") return;
     const t = m.text();
-    // Le bruit connu et sans objet : ressources coupées exprès, et le JSON
-    // d'index.html que le harnais sert en repli pour toute route inconnue.
-    if (/net::ERR|Failed to load resource|Unexpected token '<'|favicon/i.test(t)) return;
+    // Le bruit du HARNAIS, et il faut savoir lequel :
+    //
+    //   • net::ERR / Failed to load — les ressources qu'on coupe exprès ;
+    //   • Unexpected token '<' — /_vercel/insights/script.js. Ce chemin n'existe
+    //     que sur Vercel ; en local le serveur de secours rend index.html, que le
+    //     navigateur essaie d'exécuter comme du JS. TRACÉ, pas supposé : la
+    //     première lecture du banc a compté 23 fois cette exception avant qu'un
+    //     window.onerror n'en donne le fichier et la ligne.
+    if (/net::ERR|Failed to load resource|Unexpected token '<'|favicon|_vercel/i.test(t)) return;
     erreurs.push({ type:"console", txt:t.slice(0,200) });
   });
 
@@ -202,25 +213,32 @@ for (const [cle, f] of Object.entries(FORMATS)) {
   });
   process.stdout.write("   " + cibles.length + " cliquables sur l'accueil\n");
 
-  // On reclique par NOM ACCESSIBLE, en repartant de l'accueil chaque fois : un
-  // index positionnel deviendrait faux dès le premier clic qui change l'arbre.
-  let teste = 0;
-  for (const nom of cibles) {
-    if (nom === "(sans nom)") continue;
+  // On clique par POSITION, en repartant de l'accueil avant chaque clic et en
+  // ré-énumérant à ce moment-là. Le nom accessible ne suffisait pas : sur
+  // téléphone, les cartes du carrousel sont des blocs sans libellé propre, et
+  // seuls 2 des 10 cliquables se retrouvaient — on croyait balayer l'accueil
+  // mobile alors qu'on n'en touchait qu'un cinquième.
+  //
+  // Repartir de l'accueil à chaque fois est indispensable : l'arbre change dès le
+  // premier clic, donc un index pris une fois pour toutes désignerait autre chose.
+  let teste = 0, ignores = 0;
+  for (let i = 0; i < cibles.length; i++) {
     await revenir();
+    const tous = page.locator("button, [role='button'], a[href]");
     let cible;
     try {
-      cible = page.getByRole("button", { name:nom, exact:false }).first();
-      if (await cible.count() === 0) cible = page.getByText(nom, { exact:false }).first();
-      if (await cible.count() === 0) continue;
+      if (await tous.count() <= i) { ignores++; continue; }
+      cible = tous.nth(i);
+      if (!(await cible.isVisible())) { ignores++; continue; }
       await cible.click({ timeout:2500 });
-    } catch { continue; }
+    } catch { ignores++; continue; }
     teste++;
     await page.waitForTimeout(1100);
-    const soucis = await observer("clic « " + nom + " »");
-    if (soucis.length) process.stdout.write("   ✗ « " + nom + " » → " + soucis[0] + "\n");
+    const soucis = await observer("clic n°" + (i + 1) + " « " + cibles[i] + " »");
+    if (soucis.length)
+      process.stdout.write("   ✗ n°" + (i + 1) + " « " + cibles[i] + " » → " + soucis[0] + "\n");
   }
-  process.stdout.write("   " + teste + " boutons cliqués\n");
+  process.stdout.write("   " + teste + " cliqués, " + ignores + " hors d'atteinte\n");
 
   // Les chemins d'URL, qui n'ont pas de bouton sur tous les formats.
   for (const req of ["play=pont","play=chaine","play=goatgrid","play=duel","play=guess",
