@@ -10416,6 +10416,36 @@ export default function LePont() {
     const voile   = cardRevealEtape === "voile";
     const toupie  = cardRevealEtape === "toupie";
     const revele  = cardRevealEtape === "revele";
+    // ── UNE SEULE COLONNE POUR LA CARTE ET LES BOUTONS ────────────────────
+    //
+    // La carte faisait `min(74vw, 260px)` et la rangée de boutons
+    // `width:100%, maxWidth:330`. Chaque bloc était parfaitement centré —
+    // mesuré, écart nul sur les trois formats — mais ils n'avaient pas la même
+    // largeur : les boutons débordaient la carte de 33 px de chaque côté, et
+    // c'est ce décalage-là qu'on lit comme un décentrage.
+    //
+    // MESURÉ sur 393, 375 et 360 px : la carte valait 263 partout, son plafond
+    // de 260 étant atteint dès le plus petit écran, tandis que la rangée suivait
+    // la largeur de l'écran (330, 330, 320).
+    //
+    // La valeur commune est un compromis entre deux contraintes réelles :
+    //
+    //   • le libellé le plus long, « Voir ma collection », mesure 129 px de
+    //     texte. Dans une fente à `flex:1.4` sur une rangée de 263, il ne lui
+    //     resterait que 19 px de respiration — le resserrement à la largeur de
+    //     l'ancienne carte était donc trop brutal ;
+    //   • la carte est en 3/4, donc chaque pixel de largeur en coûte 1,33 en
+    //     hauteur, et l'écran doit encore porter le titre, le nom, la pastille
+    //     de rareté et les boutons.
+    //
+    // 300 px donne 400 px de carte, 40 px de respiration au libellé, et tient
+    // sur un iPhone SE — vérifié, pas supposé.
+    const largeurColonne = "min(80vw, 300px)";
+    // Les deux halos derrière la carte, en proportion d'elle. Les rapports sont
+    // ceux d'avant — 340/263 et 320/263 — pour que l'effet ne change pas, mais
+    // ils suivent maintenant la carte au lieu de rester à un nombre fixe.
+    const auraLarge  = "calc(" + largeurColonne + " * 1.29)";
+    const eclatLarge = "calc(" + largeurColonne + " * 1.22)";
     // Quatorze éclats en éventail, direction portée par des variables CSS.
     const etincelles = Array.from({length:14}, function(_, i){
       const a = (i / 14) * Math.PI * 2;
@@ -10438,15 +10468,21 @@ export default function LePont() {
           opacity:revele?.5:toupie?1:.7,transition:"opacity .6s",
           background:"repeating-conic-gradient(from 0deg, "+rm.color+"22 0deg 7deg, transparent 7deg 20deg)",
           animation:"bbRayons "+(toupie?"4s":"22s")+" linear infinite"}}/>
-        {/* L'aura de rareté se charge derrière la carte pendant le tour. */}
+        {/* L'aura de rareté se charge derrière la carte pendant le tour.
+            Sa taille suit la COLONNE et non un nombre fixe : à 340 px en dur,
+            elle dépassait la carte de 38 px de chaque côté quand celle-ci en
+            faisait 263, et de 18 seulement depuis qu'elle en fait 303 — le halo
+            se resserrait au moment où la carte grandissait. En proportion, le
+            débord reste le même sur tous les écrans, ce qui est tout ce qu'on
+            demande à un halo. */}
         {toupie && (
-          <div aria-hidden="true" style={{position:"absolute",width:340,height:340,borderRadius:"50%",pointerEvents:"none",
+          <div aria-hidden="true" style={{position:"absolute",width:auraLarge,height:auraLarge,borderRadius:"50%",pointerEvents:"none",
             background:"radial-gradient(circle,"+rm.color+"aa 0%,"+rm.color+"33 45%,transparent 70%)",
             animation:"bbAura 1.5s ease-in forwards"}}/>
         )}
-        {/* Halo qui éclate à l'arrivée */}
+        {/* Halo qui éclate à l'arrivée — un peu plus serré que l'aura. */}
         {revele && (
-          <div aria-hidden="true" style={{position:"absolute",width:320,height:320,borderRadius:"50%",pointerEvents:"none",
+          <div aria-hidden="true" style={{position:"absolute",width:eclatLarge,height:eclatLarge,borderRadius:"50%",pointerEvents:"none",
             background:"radial-gradient(circle,"+rm.color+"cc 0%,transparent 65%)",animation:"bbEclat .8s ease-out forwards"}}/>
         )}
         {/* Étincelles */}
@@ -10467,7 +10503,7 @@ export default function LePont() {
         {/* `position:relative` INDISPENSABLE : la carte est en `inset:0`, et sans
             contexte de positionnement ici elle se résout contre l'overlay
             plein écran — elle couvre alors tout l'écran, sans cadre ni format. */}
-        <div style={{position:"relative",width:"min(74vw, 260px)",aspectRatio:"3 / 4",perspective:1200,zIndex:1,
+        <div style={{position:"relative",width:largeurColonne,aspectRatio:"3 / 4",perspective:1200,zIndex:1,
           animation:revele?"bbCarteRespire 3.4s ease-in-out infinite":"none"}}>
           <div className={rm.cls} style={{position:"absolute",inset:0,
             background:rm.frame,border:G.traitFin,borderRadius:G.rayon,
@@ -10504,7 +10540,7 @@ export default function LePont() {
         )}
 
         {revele && (
-          <div onClick={function(e){e.stopPropagation();}} style={{zIndex:1,display:"flex",gap:10,marginTop:22,width:"100%",maxWidth:330,
+          <div onClick={function(e){e.stopPropagation();}} style={{zIndex:1,display:"flex",gap:10,marginTop:22,width:largeurColonne,
             animation:"fadeUp .4s ease .15s both"}}>
             <button onClick={function(){setCardPopup(null);}} style={{...btn(G.nuit,G.white,15),flex:1,padding:"13px 0"}}>
               {tr("Plus tard","Later","Später","Più tardi","Depois","Más tarde")}
