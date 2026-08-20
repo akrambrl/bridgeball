@@ -70,9 +70,29 @@ describe("orthographe des clubs", () => {
   // Le préfixe n'est retiré que s'il RESTE quelque chose derrière : sans ça,
   // « Real Madrid » et « Madrid » se confondraient, et surtout on ne veut pas
   // qu'un club dont le nom entier EST le préfixe disparaisse.
-  const PREFIXES = /^(stade de|stade|real|sv|nk|hnk|msv|fsv|vfl|vfb|tsv|bsc|sk|ss|ssc|afc|cd|cf|ca|rc|sc|ac|as|fc|us|ud|sd)\s+/i;
+  // ── DEUX PRÉFIXES MANQUAIENT, ET LE MERCATO 2026 LES A RÉVÉLÉS ────────────
+  //
+  // `npm run transferts` a rapproché deux graphies que ces trois clés laissaient
+  // passer, parce que le préfixe en cause n'était pas une forme juridique :
+  //
+  //   • « Viktoria Plzeň » (6 joueurs) et « Plzeň » (19) — le même club, écrit
+  //     de deux façons DANS LA BASE. 25 joueurs répartis sur deux clubs aux yeux
+  //     du jeu : un joueur de « Viktoria Plzeň » ne répondait pas au critère
+  //     « Plzeň » de GOAT GRID, et GOAT MERCATO ne pouvait pas enchaîner entre
+  //     les deux moitiés.
+  //   • « Al-Wahda » (7) et « Wahda » (1) — le trait d'union suffisait à séparer.
+  //
+  // `viktoria` rejoint donc la liste, et un `al` initial est traité comme
+  // préfixe qu'il soit suivi d'un espace ou d'un trait d'union. Le garde-fou
+  // reste le même : on ne rabote que s'il RESTE au moins quatre lettres, sinon
+  // un club dont le nom entier est le préfixe disparaîtrait.
+  //
+  // Les vrais homonymes en Al- (Al Ahly / Al Ahli, Al Nassr / Al-Nasr) sont déjà
+  // dans DISTINCTS_ASSUMES sous leurs deux clés : le rabotage ne les confond pas
+  // entre eux, leurs racines différant après le préfixe.
+  const PREFIXES = /^(stade de|stade|real|viktoria|sv|nk|hnk|msv|fsv|vfl|vfb|tsv|bsc|sk|ss|ssc|afc|cd|cf|ca|rc|sc|ac|as|fc|us|ud|sd)\s+/i;
   const sansPrefixe = (s: string) => {
-    const court = squelette(s.replace(PREFIXES, ""));
+    const court = squelette(s.replace(PREFIXES, "").replace(/^al[\s-]+/i, ""));
     return court.length >= 4 ? court : squelette(s);
   };
 
