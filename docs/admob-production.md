@@ -168,6 +168,65 @@ téléphone, que le SDK écrit dans les journaux au premier lancement — donc e
 pratique elle demande Xcode ou `adb`. Tant que ce n'est pas en place, la règle
 simple est celle du paragraphe au-dessus.
 
+## Étape 4 — le message de consentement RGPD, et il n'est PAS optionnel
+
+Cette étape manquait à cette marche à suivre, et son absence ne fait aucun bruit.
+
+`src/lib/pub.ts` demande le consentement avant de charger la moindre pub :
+
+```js
+let infos = await AdMob.requestConsentInfo();
+if (infos.status === REQUIRED && infos.isConsentFormAvailable) {
+  infos = await AdMob.showConsentForm();
+}
+peutServir = infos.canRequestAds !== false;
+```
+
+Le SDK ne FOURNIT pas ce formulaire : il le récupère chez Google, et il n'existe
+que si un message a été **créé et publié** dans la console. Sans lui,
+`isConsentFormAvailable` reste faux.
+
+### Ce que ça coûte si on l'oublie
+
+Suivre la chaîne, parce qu'elle est entièrement silencieuse :
+
+    pas de message publié
+      → en zone RGPD, canRequestAds revient FAUX
+      → peutServir = false
+      → estDisponible() rend faux
+      → pubPrete reste faux
+      → les DEUX boutons de pub récompensée n'apparaissent jamais
+
+« Regarder pour une vie » dans GOAT GRID et « Doubler mon XP » en fin de partie
+sont donc absents pour **tous les joueurs européens**. Pas d'erreur, pas de
+journal, pas d'écran cassé : deux boutons qui ne s'affichent pas, et aucun
+revenu. C'est le genre de défaut qu'on met des semaines à remarquer, et qu'on
+attribue d'abord à un mauvais taux de remplissage.
+
+### La marche à suivre
+
+1. Console AdMob → **Confidentialité et messages** dans le menu de gauche
+2. Onglet **RGPD** → *Créer un message*
+3. Sélectionner les DEUX applications (iOS et Android)
+4. Choisir les langues — les six de l'app, au minimum le français et l'anglais
+5. Laisser Google dans la liste des partenaires publicitaires : c'est le défaut,
+   et le retirer viderait le consentement de son objet
+6. **PUBLIER.** Un message créé mais non publié ne compte pas, et c'est l'erreur
+   la plus facile à faire — l'écran ressemble à un enregistrement réussi.
+
+### Ne pas créer de message ATT
+
+Le même écran propose un message « ATT » ou « IDFA ». **Ne pas y toucher.**
+L'app appelle `requestTrackingAuthorization()` elle-même dans `initPub()`, avant
+d'initialiser le SDK ; un message Google en plus donnerait deux demandes à la
+suite au premier lancement.
+
+### Pour vérifier
+
+Le formulaire ne se montre qu'une fois : Google retient la réponse. Il faut donc
+**supprimer l'app du téléphone et la réinstaller** pour le revoir — comme pour la
+fenêtre ATT, qu'il suit immédiatement au lancement.
+
 ## Ce qui ne démarrera pas tout de suite
 
 Deux choses à savoir pour ne pas s'inquiéter sur de faux signaux :
