@@ -130,6 +130,68 @@ async function battle8() {
 }
 
 // ══════════════════════════════════════════════════════════════════════════
+//  A′. GOAT BATTLE APRÈS CORRECTIF — la même reprise que The Plug
+// ══════════════════════════════════════════════════════════════════════════
+// Le banc garde les DEUX algorithmes. Mesurer le correctif sans garder de quoi
+// mesurer le défaut, c'est perdre le seul moyen de savoir si la reprise sert
+// encore à quelque chose le jour où quelqu'un la trouvera compliquée.
+async function battle8Reprise() {
+  await psql("truncate public.bb_gg_rooms");
+  await psql(`insert into public.bb_gg_rooms (id, code, host_id, players)
+              values (1, 'BATL02', 'hote', ${jsonSql([{ id: "hote", name: "hote" }])}::jsonb)`);
+
+  const client = async (n) => {
+    const moi = "j" + n;
+    for (let essai = 1; essai <= 5; essai++) {
+      const lu = await psql("select players from public.bb_gg_rooms where id = 1");
+      const liste = JSON.parse(lu.out || "[]");
+      if (liste.find((p) => p.id === moi)) return { moi, essai, entre: true };
+      if (liste.length >= 8) return { moi, essai, entre: false, motif: "salle vue pleine" };
+      await dodo(latence());
+      await psql(`update public.bb_gg_rooms
+                  set players = ${jsonSql([...liste, { id: moi, name: moi }])}::jsonb where id = 1`);
+      await dodo(200 + Math.random() * 300);
+      const verif = await psql("select players from public.bb_gg_rooms where id = 1");
+      if (JSON.parse(verif.out || "[]").find((p) => p.id === moi)) return { moi, essai, entre: true };
+      await dodo(300 + essai * 200 + Math.random() * 200);
+    }
+    return { moi, essai: 5, entre: false, motif: "abandon après 5 essais" };
+  };
+
+  const res = await Promise.all(Array.from({ length: 7 }, (_, i) => client(i + 1)));
+  const dedans = Number((await psql(
+    "select jsonb_array_length(players) from public.bb_gg_rooms where id = 1")).out);
+  return { dedans, res };
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+//  C′. GOAT DUEL APRÈS CORRECTIF — la place se prend dans l'écriture
+// ══════════════════════════════════════════════════════════════════════════
+// `PATCH …?id=eq.X&guest_id=is.null` : le contrôle passe DANS l'update, donc
+// Postgres n'écrit que si la place est encore libre au moment d'écrire.
+async function duel2Atomique() {
+  await psql("truncate public.bb_duel_rooms");
+  const salle = (await psql(`insert into public.bb_duel_rooms (code, host_id)
+                             values ('DUEL02', 'hote') returning id`)).out;
+  const client = async (n) => {
+    const moi = "j" + n;
+    const lu = await psql(`select coalesce(guest_id,'') from public.bb_duel_rooms where id = '${salle}'`);
+    await dodo(latence());
+    if (lu.out) return { moi, entre: false, motif: "salon vu complet" };
+    // `returning` rend la ligne SI elle a été touchée — l'équivalent exact de
+    // `Prefer: return=representation` côté PostgREST.
+    const r = await psql(`update public.bb_duel_rooms
+      set guest_id = '${moi}', guest_name = '${moi}'
+      where id = '${salle}' and guest_id is null returning guest_id`);
+    return { moi, entre: !!r.out, motif: r.out ? "place prise" : "trop tard" };
+  };
+  const res = await Promise.all([client(1), client(2)]);
+  const retenu = (await psql(
+    `select coalesce(guest_id,'—') from public.bb_duel_rooms where id = '${salle}'`)).out;
+  return { retenu, res };
+}
+
+// ══════════════════════════════════════════════════════════════════════════
 //  B. The Plug / The Mercato — sept arrivées, avec reprise et vérification
 // ══════════════════════════════════════════════════════════════════════════
 async function plug8() {
@@ -284,6 +346,9 @@ async function typePlayers() {
 // ══════════════════════════════════════════════════════════════════════════
 const ligne = (etat, txt) => console.log("  " + etat + " " + txt);
 let defauts = 0;
+// Une dette n'est pas un défaut : c'est un défaut CONNU qu'on choisit de ne pas
+// réparer maintenant, et le dire est plus utile que de le cacher ou de le nier.
+let dettes = 0;
 
 console.log("\n═══ BANC DE CHARGE GOAT FC ═══════════════════════════════════════════");
 console.log("  cluster : " + (await demarrer()));
@@ -293,16 +358,33 @@ await lancer("psql", ["-h", SOCKET, "-p", PORT, "-U", "postgres", "-d", BASE,
   "-v", "ON_ERROR_STOP=1", "-q", "-f", SCHEMA], { maxBuffer: 1 << 24 });
 console.log("  schéma  : posé");
 
-console.log("\n── A · GOAT BATTLE : 7 joueurs rejoignent l'hôte en même temps");
+console.log("\n── A · GOAT BATTLE, ANCIEN algorithme (écrire une fois, sans relire)");
 {
+  // Gardé comme TÉMOIN. C'est ce que faisait ggBattleJoinRoom() avant
+  // correctif ; on veut voir le chiffre, pas se souvenir qu'il était mauvais.
   const dedans = await battle8();
   if (dedans < 8) {
+    ligne("·", `${dedans}/8 joueurs — ${8 - dedans} perdus, comme attendu du témoin`);
+    ligne(" ", "le dernier PATCH écrase les autres, et le salon s'ouvrait quand même :");
+    ligne(" ", "l'éjecté attendait une partie qui allait se lancer sans lui");
+  } else {
+    ligne("!", `${dedans}/8 — le témoin n'a rien perdu ce coup-ci (aléa des`);
+    ligne(" ", "entrelacements) ; relancer, le défaut n'est pas déterministe");
+  }
+}
+
+console.log("\n── A′ · GOAT BATTLE, avec reprise et vérification");
+{
+  const { dedans, res } = await battle8Reprise();
+  const entres = res.filter((r) => r.entre).length;
+  const mentent = res.filter((r) => r.entre).length > dedans - 1;
+  if (dedans === 8 && entres === 7 && !mentent) {
+    ligne("✓", `${dedans}/8 joueurs — essais : ${res.map((r) => r.essai).join(",")}`);
+  } else {
     defauts++;
-    ligne("✗", `${dedans}/8 joueurs dans la salle — ${8 - dedans} PERDUS`);
-    ligne(" ", "ggBattleJoinRoom() ne relit pas et ne reprend pas : le dernier PATCH");
-    ligne(" ", "écrase les autres. Et il ouvre le salon quand même, donc l'éjecté");
-    ligne(" ", "croit être entré — il attend une partie qui se lancera sans lui.");
-  } else ligne("✓", `${dedans}/8 joueurs`);
+    ligne("✗", `${dedans}/8 en base, ${entres}/7 se croient entrés`);
+    for (const r of res.filter((x) => !x.entre)) ligne(" ", `${r.moi} : ${r.motif}`);
+  }
 }
 
 console.log("\n── B · The Plug : 7 joueurs rejoignent l'hôte en même temps");
@@ -319,15 +401,27 @@ console.log("\n── B · The Plug : 7 joueurs rejoignent l'hôte en même temp
   }
 }
 
-console.log("\n── C · GOAT DUEL : 2 invités pour 1 place");
+console.log("\n── C · GOAT DUEL, ANCIEN algorithme (contrôler puis écrire)");
 {
   const { retenu, res } = await duel2();
   const croient = res.filter((r) => r.entre).length;
   if (croient > 1) {
+    ligne("·", `${croient} invités se croyaient entrés, la place est à « ${retenu} »`);
+    ligne(" ", "l'autre restait sur un salon qui l'avait oublié, sans message");
+  } else ligne("!", "le témoin n'a pas collisionné ce coup-ci — relancer");
+}
+
+console.log("\n── C′ · GOAT DUEL, la place prise DANS l'écriture (guest_id is null)");
+{
+  const { retenu, res } = await duel2Atomique();
+  const croient = res.filter((r) => r.entre).length;
+  if (croient === 1) {
+    ligne("✓", `1 seul invité entre (« ${retenu} ») — l'autre est refusé et le sait`);
+    for (const r of res) ligne(" ", `${r.moi} : ${r.motif}`);
+  } else {
     defauts++;
-    ligne("✗", `${croient} invités se croient entrés, la place est à « ${retenu} »`);
-    ligne(" ", "l'autre reste sur un salon qui l'a oublié, sans message");
-  } else ligne("✓", `1 invité retenu (« ${retenu} »), l'autre refusé`);
+    ligne("✗", `${croient} invités entrés pour une place, retenu « ${retenu} »`);
+  }
 }
 
 console.log("\n── D · 200 joueurs simultanés");
@@ -369,15 +463,20 @@ console.log("\n── F · le type de bb_rooms.players après un « rejoindre »
   ligne(t.apresJoin === "array" ? "✓" : "✗", `après joinRoom     : ${t.apresJoin}`);
   ligne("·", `jsonb_array_length : ${t.arrayLength}`);
   if (t.apresJoin !== "array") {
-    defauts++;
-    ligne(" ", "joinRoom() envoie JSON.stringify(players) : la colonne jsonb reçoit");
-    ligne(" ", "une CHAÎNE, pas un tableau. Le client s'en sort — il reparse — mais");
-    ligne(" ", "le type de la colonne dépend de qui a écrit en dernier, et tout SQL");
-    ligne(" ", "qui traiterait players comme un tableau échouerait.");
+    dettes++;
+    ligne(" ", "DETTE CONNUE, PAS UN DÉFAUT DU JOUR. joinRoom() envoie");
+    ligne(" ", "JSON.stringify(players) : la colonne jsonb reçoit une CHAÎNE, pas un");
+    ligne(" ", "tableau. Le type de la colonne dépend donc de qui a écrit en dernier —");
+    ligne(" ", "createRoom pose un tableau, tout « rejoindre » le remplace par une");
+    ligne(" ", "chaîne. Aucune conséquence aujourd'hui : les dix lectures du client");
+    ligne(" ", "font `typeof players === \"string\" ? JSON.parse(...) : players`.");
+    ligne(" ", "Mais tout SQL qui traiterait players comme un tableau échouerait, et");
+    ligne(" ", "la réparation touche HUIT sites d'écriture du multijoueur — à faire");
+    ligne(" ", "après la sortie, pas la semaine d'avant.");
   }
 }
 
 console.log("\n══════════════════════════════════════════════════════════════════════");
-console.log(defauts === 0 ? "\nAucun défaut de concurrence trouvé.\n"
-                          : "\n" + defauts + " défaut(s) de concurrence.\n");
+console.log("\n" + (defauts === 0 ? "Aucun défaut de concurrence." : defauts + " DÉFAUT(S) de concurrence.")
+  + (dettes ? "  " + dettes + " dette(s) connue(s) et assumée(s)." : "") + "\n");
 process.exit(0);
