@@ -27,6 +27,7 @@ import { WinBanner } from "./landing/WinBanner";
 import { countryToFlag } from "../lib/leaderboard";
 import { formatNombre } from "../lib/lang";
 import { initAuth, jetonAuth, authActive, lierCompte } from "../lib/auth";
+import { coffreSauver, coffreLire, coffreEffacer } from "../lib/coffre";
 import { duelTermine } from "../lib/duel";
 // Réclamation du lot : les règles (qui peut réclamer, pour quel mois, ce qu'on
 // accepte comme saisie) et le tirage sûr du code de récupération.
@@ -8116,6 +8117,10 @@ export default function LePont() {
         localStorage.setItem("bb_name", clean);
         if (finalRecoveryCode) localStorage.setItem("bb_recovery_code", finalRecoveryCode);
       } catch {}
+      // Le code part aussi dans le coffre de la plateforme (Trousseau iCloud /
+      // Block Store), le seul endroit qui survit à une désinstallation. Sans
+      // attendre : une sauvegarde qui traîne ne doit pas retarder la confirmation.
+      if (finalRecoveryCode) void coffreSauver(finalRecoveryCode);
       if (finalRecoveryCode) setRecoveryCode(finalRecoveryCode);
       setPseudoConfirmed(true);
       setPseudoScreen(false);
@@ -8160,6 +8165,9 @@ export default function LePont() {
         localStorage.setItem("bb_name", account.pseudo);
         localStorage.setItem("bb_recovery_code", code);
       } catch {}
+      // Ranger le code dans le coffre de CE téléphone : une récupération manuelle
+      // sur un nouvel appareil doit rendre les suivantes automatiques.
+      void coffreSauver(code);
       setRecoveryMsg(tr("✓ Compte récupéré ! Rechargement...","✓ Account recovered! Reloading...","✓ Konto wiederhergestellt! Wird neu geladen...","✓ Account recuperato! Ricaricamento...","✓ Conta recuperada! Recarregando...","✓ ¡Cuenta recuperada! Recargando..."));
       // Recharger la page pour réinitialiser tous les states avec le bon player_id
       setTimeout(()=>{ window.location.reload(); }, 1200);
@@ -8186,6 +8194,37 @@ export default function LePont() {
         }
       } catch {}
     }
+    // ── AVANT DE DEMANDER UN PSEUDO : LE COFFRE A-T-IL DÉJÀ UN COMPTE ? ──────
+    //
+    // Aucun compte local, mais peut-être un code rangé dans le Trousseau iCloud
+    // ou le Block Store — le cas d'une réinstallation ou d'un nouvel appareil.
+    // Si oui, on restaure en silence, et le joueur retrouve son pseudo sans
+    // avoir rien à retaper. C'est tout l'objet de la sauvegarde invisible.
+    //
+    // Chaque étape retombe proprement : pas de coffre, code périmé, ou serveur
+    // injoignable → on demande un pseudo comme avant. Le coffre ne peut
+    // qu'AJOUTER une récupération.
+    try {
+      const code = await coffreLire();
+      if (code) {
+        const found = await sbFetch("rpc/recover_account", {
+          method: "POST",
+          body: JSON.stringify({ p_code: code }),
+        });
+        if (Array.isArray(found) && found.length > 0) {
+          const account = found[0];
+          try {
+            localStorage.setItem("bb_player_id", account.player_id);
+            localStorage.setItem("bb_name", account.pseudo);
+            localStorage.setItem("bb_recovery_code", code);
+          } catch {}
+          // Recharger pour repartir avec le bon player_id, comme la
+          // récupération manuelle — surtout ne pas afficher l'écran de pseudo.
+          window.location.reload();
+          return;
+        }
+      }
+    } catch { /* pas de coffre, ou code périmé : on demande un pseudo */ }
     // No pseudo yet - show pseudo screen
     setPseudoScreen(true);
   }
@@ -8296,6 +8335,12 @@ export default function LePont() {
         }
         keysToRemove.forEach(function(k){ localStorage.removeItem(k); });
       } catch {}
+
+      // 3 bis. VIDER LE COFFRE, sinon la prochaine réinstallation ressusciterait
+      // le compte qu'on vient d'effacer : le code y survivrait à la suppression
+      // du localStorage et la restauration auto le relirait. On attend cette
+      // fois-ci — c'est une suppression, elle doit être complète avant le reload.
+      try { await coffreEffacer(); } catch {}
 
       // 4. Reload pour réinitialiser l'app entièrement
       window.location.href = "/";
