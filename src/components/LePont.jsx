@@ -11062,12 +11062,39 @@ export default function LePont() {
     </div>
   );
 
-  // ── AVATAR VIEWER MODAL (visualisation photo de profil en plein écran) ──
-  const avatarViewer = viewingAvatar && (
+  // ── LA CARTE EN GRAND, DANS UN PORTAIL VERS document.body ─────────────────
+  //
+  // Signalée décentrée sur iPhone, au tiers inférieur de l'écran, alors que le
+  // style — `position:fixed`, `inset:0`, centrage flex — est exact. Mesuré au
+  // navigateur en 393×852, avec ET sans encoche simulée : image à 20 px des deux
+  // bords horizontalement, 191 / 190 verticalement. Impossible à reproduire
+  // hors d'un vrai iPhone.
+  //
+  // C'est pour ça que ce composant part maintenant dans un PORTAIL, et le
+  // dépôt sait déjà pourquoi : `feedbackBar`, quelques centaines de lignes plus
+  // haut, porte la même correction avec la même explication —
+  //
+  //     « `position:fixed` ne se cale sur le viewport que s'il n'y a AUCUN
+  //       ancêtre transformé au-dessus. Il y en avait un dans The Plug, pas
+  //       dans The Mercato — d'où une bande collée en haut de l'écran ici et
+  //       flottant en plein milieu là. »
+  //
+  // Un `transform`, un `filter`, un `backdrop-filter` ou un `perspective` sur
+  // n'importe quel ancêtre suffit à faire de lui le bloc conteneur, et l'app en
+  // pose à plusieurs endroits — dont un `perspective:1200` sur la carte qui
+  // tourne. Sorti de l'arbre, le visualiseur ne dépend plus de l'écran qui
+  // l'ouvre : il se cale sur le viewport, toujours, partout.
+  //
+  // Les deux points de montage sont conservés : celui de l'écran d'un AUTRE
+  // joueur vit dans une branche à `return` anticipé, donc les deux ne peuvent
+  // jamais rendre en même temps — pas de doublon dans body. Vérifié : une seule
+  // copie à l'écran, à la profondeur 4.
+  const avatarViewer = viewingAvatar && typeof document !== "undefined" && createPortal(
     <div key="avatar-viewer" onClick={()=>setViewingAvatar(null)} style={{position:"fixed",inset:0,zIndex:9999,background:"rgba(8,17,9,.86)",display:"flex",alignItems:"center",justifyContent:"center",padding:"40px 20px",animation:"fadeIn .2s ease",cursor:"pointer"}}>
       <button onClick={(e)=>{e.stopPropagation();setViewingAvatar(null);}} style={{...retourStyle,position:"absolute",top:20,right:20,fontSize:22}}>✕</button>
       <img src={viewingAvatar} alt="avatar" onClick={(e)=>e.stopPropagation()} style={{maxWidth:"100%",maxHeight:"100%",borderRadius:20,objectFit:"contain",boxShadow:G.ombre,cursor:"default"}}/>
-    </div>
+    </div>,
+    document.body,
   );
 
   // ── DUEL CREATE MODAL (partagé entre écrans userProfile, friends, home, leaderboard) ──
