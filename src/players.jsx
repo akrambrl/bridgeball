@@ -344,7 +344,7 @@ export const PLAYERS = [
   { name:"James Milner", clubs:["Leeds United", "Swindon", "Newcastle", "Aston Villa", "Manchester City", "Liverpool", "Brighton"], diff:"moyen", nationalities:["Angleterre"], positions:["milieu"], birthYear:1986 },
   { name:"Matheus Cunha", clubs:["Sion", "RB Leipzig", "Hertha Berlin", "Atletico Madrid", "Wolverhampton", "Manchester United"], diff:"moyen", nationalities:["Brésil"], positions:["attaquant"], birthYear:1999 },
   { name:"Eberechi Eze", clubs:["QPR", "Crystal Palace", "Arsenal"], diff:"moyen", nationalities:["Angleterre"], positions:["milieu"], birthYear:1998 },
-  { name:"Diego Moreira", clubs:["Benfica B", "Benfica", "Chelsea", "Lyon", "Strasbourg", "AC Milan"], diff:"expert", nationalities:["Portugal"], positions:["attaquant"] , birthYear:2004 },
+  { name:"Diego Moreira", clubs:["Benfica B", "Benfica", "Chelsea", "Lyon", "Strasbourg", "AC Milan"], diff:"expert", nationalities:["Belgique"], positions:["attaquant"] , birthYear:2004 },
   { name:"Sidiki Chérif", clubs:["Angers", "Fenerbahce"], diff:"expert", nationalities:["Guinée"], positions:["attaquant"], birthYear:2006 },
   { name:"Senny Mayulu", clubs:["PSG"], diff:"expert", nationalities:["France"], positions:["milieu"], birthYear:2006 },
   { name:"Malick Fofana", clubs:["Gent", "Lyon", "PSG"], diff:"moyen", nationalities:["Belgique"], positions:["attaquant"], birthYear:2005 },
