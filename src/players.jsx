@@ -549,7 +549,7 @@ export const PLAYERS = [
   { name:"Franck Kessié", clubs:["Atalanta BC", "Cesena", "AC Milan", "Barcelona", "Al Ahli"], diff:"facile", nationalities:["Côte d'Ivoire"], positions:["attaquant"], birthYear:1996 },
   { name:"Mohamed Simakan", clubs:["Strasbourg", "RB Leipzig", "Al Nassr"], diff:"moyen", nationalities:["France"], positions:["defenseur"], birthYear:2000 },
   { name:"Houssem Aouar", clubs:["Lyon", "AS Roma", "Al Ittihad"], diff:"moyen", nationalities:["Algérie"], positions:["attaquant"], birthYear:1998 },
-  { name:"Amine Harit", clubs:["Nantes", "Schalke", "Marseille", "Istanbul Başakşehir"], diff:"moyen", nationalities:["Maroc"], positions:["attaquant"], birthYear:1997 },
+  { name:"Amine Harit", clubs:["Nantes", "Schalke", "Marseille", "Istanbul Başakşehir", "Marseille"], diff:"moyen", nationalities:["Maroc"], positions:["attaquant"], birthYear:1997 },
   { name:"Maxime Lopez", clubs:["Marseille", "Sassuolo", "ACF Fiorentina", "Paris FC"], diff:"moyen", nationalities:["France"], positions:["milieu"], birthYear:1997 },
   { name:"Valentin Rongier", clubs:["Nantes", "Marseille", "Rennes"], diff:"moyen", nationalities:["France"], positions:["milieu"], birthYear:1994 },
   { name:"Michy Batshuayi", clubs:["Standard Liège", "Marseille", "Chelsea", "Borussia Dortmund", "Valencia", "Crystal Palace", "Besiktas", "Fenerbahce", "Galatasaray", "Eintracht Frankfurt", "Abha"], diff:"facile", nationalities:["Belgique"], positions:["attaquant"], birthYear:1993 },
@@ -694,7 +694,7 @@ export const PLAYERS = [
   { name:"Evann Guessand", clubs:["Lyon", "Lausanne-Sport", "Nantes", "Nice", "Aston Villa", "Crystal Palace"], diff:"expert", nationalities:["France"], positions:["attaquant"] , birthYear:2001 },
   // Ligue 1 mercato hivernal janvier 2026
   { name:"Matt O'Riley", clubs:["Fulham", "MK Dons", "Celtic", "Brighton", "Marseille"], diff:"moyen", nationalities:["Danemark"], positions:["milieu"], birthYear:2000 },
-  { name:"Angel Gomes", clubs:["Manchester United", "Boavista", "Lille", "Marseille", "Wolverhampton"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:2000 },
+  { name:"Angel Gomes", clubs:["Manchester United", "Boavista", "Lille", "Marseille", "Wolverhampton", "Marseille"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:2000 },
   { name:"Ismaël Koné", clubs:["CF Montréal", "Watford", "Marseille", "Rennes", "Sassuolo"], diff:"expert", nationalities:["France"], positions:["defenseur"], birthYear:2002 },
   // Bundesliga + Liga mercato hivernal janvier 2026
   // Liga
@@ -2108,7 +2108,7 @@ export const PLAYERS = [
   { name:"Vitor Roque", clubs:["Athletico Paranaense", "Barcelona", "Real Betis", "Palmeiras"], diff:"moyen", nationalities:["Brésil"], positions:["attaquant"] , birthYear:2005 },
   { name:"Azzedine Ounahi", clubs:["Avranches", "Angers", "Marseille", "Leicester City", "Panathinaikos", "Girona"], diff:"moyen", nationalities:["Maroc"], positions:["attaquant"], birthYear:2000 },
   { name:"Arnaut Danjuma", clubs:["PSV Eindhoven", "Club Brugge", "Bournemouth", "Villarreal", "Tottenham", "Everton", "Girona", "Valencia"], diff:"moyen", nationalities:["Pays-Bas"], positions:["attaquant"], birthYear:1997 },
-  { name:"Neal Maupay", clubs:["Nice", "Saint-Etienne", "Brentford", "Brighton", "Everton", "Marseille", "Sevilla"], diff:"moyen", nationalities:["France"], positions:["attaquant"], birthYear:1996 },
+  { name:"Neal Maupay", clubs:["Nice", "Saint-Etienne", "Brentford", "Brighton", "Everton", "Marseille", "Sevilla", "Marseille"], diff:"moyen", nationalities:["France"], positions:["attaquant"], birthYear:1996 },
   { name:"Rodrigo Riquelme", clubs:["Atletico Madrid", "Bournemouth", "Mirandés", "Girona", "Real Betis"], diff:"expert", nationalities:["Espagne"], positions:["milieu"], birthYear:2000 },
   { name:"Johnny Cardoso", clubs:["Internacional", "Real Betis", "Atletico Madrid"], diff:"expert", nationalities:["États-Unis"], positions:["attaquant"], birthYear:2001 },
   { name:"Thiago Almada", clubs:["Vélez Sarsfield", "Atlanta United", "Botafogo", "Lyon", "Atletico Madrid", "River Plate"], diff:"moyen", nationalities:["Argentine"], positions:["milieu"], birthYear:2001 },
@@ -3458,7 +3458,7 @@ export const PLAYERS = [
   { name:"Imrân Louza", clubs:["Nantes", "Watford"], diff:"expert", nationalities:["Maroc"], positions:["milieu"] , birthYear:1999 },
   { name:"Bryan Reynolds", clubs:["FC Dallas", "AS Roma", "Kortrijk", "Westerlo", "Rennes"], diff:"expert", nationalities:["États-Unis"], positions:["defenseur"] , birthYear:2001 },
   { name:"Jack Clarke", clubs:["Leeds United", "Tottenham", "QPR", "Stoke City", "Sunderland", "Ipswich Town"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"] , birthYear:2000 },
-  { name:"Derek Cornelius", clubs:["Vancouver Whitecaps", "Panetolikos", "Malmö FF", "Marseille", "Rangers"], diff:"expert", nationalities:["Canada"], positions:["defenseur"], birthYear:1997 },
+  { name:"Derek Cornelius", clubs:["Vancouver Whitecaps", "Panetolikos", "Malmö FF", "Marseille", "Rangers", "Marseille"], diff:"expert", nationalities:["Canada"], positions:["defenseur"], birthYear:1997 },
   { name:"Kasper Høgh", clubs:["Sønderjyske", "AaB", "Midtjylland", "Horsens", "Bodø/Glimt"], diff:"expert", nationalities:["Danemark"], positions:["attaquant"], birthYear:2000 },
   { name:"Luca Pellegrini", clubs:["AS Roma", "Cagliari Calcio", "Genoa CFC", "Juventus FC", "Eintracht Frankfurt", "SS Lazio"], diff:"expert", nationalities:["Italie"], positions:["defenseur"], birthYear:1999 },
   { name:"Jurgen Ekkelenkamp", clubs:["Ajax Amsterdam", "Hertha Berlin", "Antwerp", "Udinese Calcio"], diff:"expert", nationalities:["Pays-Bas"], positions:["milieu"], birthYear:2000 },
