@@ -153,7 +153,7 @@ const norm = (s) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase()
 // refuse ; il vaut mieux rater un rapprochement que d'en inventer un.
 const ALIAS = {
   "paris saintgermain": "psg", "internazionale": "inter", "inter milan": "inter",
-  "tottenham hotspur": "tottenham", "newcastle united": "newcastle",
+  "tottenham hotspur": "tottenham", "newcastle united": "newcastle", "west ham united": "west ham",
   "wolverhampton wanderers": "wolves", "juventus fc": "juventus",
   "hamburger": "hamburg", "stade rennais": "rennes", "olympique lyonnais": "lyon",
   "olympique de marseille": "marseille", "sporting lisbon": "sporting cp",
