@@ -1344,7 +1344,7 @@ export const PLAYERS = [
   { name:"Stefan de Vrij", clubs:["Feyenoord", "SS Lazio", "Inter Milan", "Panathinaikos"], diff:"facile", nationalities:["Pays-Bas"], positions:["defenseur"], birthYear:1992 },
   { name:"Alessandro Bastoni", clubs:["Atalanta BC", "Parma FC", "Inter Milan"], diff:"facile", nationalities:["Italie"], positions:["defenseur"], birthYear:1999 },
   { name:"Ferran Torres", clubs:["Valencia Mestalla", "Valencia", "Manchester City", "Barcelona", "PSG"], diff:"facile", nationalities:["Espagne"], positions:["attaquant"], birthYear:2000 },
-  { name:"Alexis Sanchez", clubs:["Udinese Calcio", "Barcelona", "Arsenal", "Manchester United", "Inter Milan", "Marseille", "Sevilla"], diff:"facile", nationalities:["Chili"], positions:["milieu"], birthYear:1988 },
+  { name:"Alexis Sanchez", clubs:["Cobreloa", "Colo-Colo", "River Plate", "Udinese Calcio", "Barcelona", "Arsenal", "Manchester United", "Inter Milan", "Marseille", "Sevilla", "CF Montréal"], diff:"facile", nationalities:["Chili"], positions:["attaquant"], birthYear:1988 },
   { name:"Mesut Özil", clubs:["Schalke", "Werder Bremen", "Real Madrid", "Arsenal", "Fenerbahce", "Istanbul Başakşehir"], diff:"facile", nationalities:["Allemagne"], positions:["milieu"], birthYear:1988 },
   { name:"Per Mertesacker", clubs:["Werder Bremen", "Arsenal"], diff:"moyen", nationalities:["Allemagne"], positions:["defenseur"], birthYear:1984 },
   { name:"Lars Bender", clubs:["1860 Munich", "Bayer Leverkusen"], diff:"moyen", nationalities:["Allemagne"], positions:["attaquant"], birthYear:1989 },
