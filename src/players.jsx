@@ -121,33 +121,33 @@ export const PLAYERS = [
   { name:"Lamine Yamal", clubs:["Barcelona"], diff:"facile", nationalities:["Espagne"], positions:["attaquant"], birthYear:2007 },
   { name:"Micky van de Ven", clubs:["Volendam", "Wolfsburg", "Tottenham"], diff:"moyen", nationalities:["Pays-Bas"], positions:["defenseur"], birthYear:2001 },
   { name:"Mike Penders", clubs:["Genk", "Chelsea", "Strasbourg"], diff:"expert", nationalities:["Belgique"], positions:["gardien"], birthYear:2005 },
-  { name:"Nilson Angulo", clubs:["Sunderland"], diff:"expert", nationalities:["Équateur"], positions:["attaquant"] , birthYear:2003 },
-  { name:"Taiwo Awoniyi", clubs:["Liverpool", "FSV Frankfurt", "NEC Nijmegen", "Mouscron", "Gent", "Mainz", "Union Berlin", "Nottingham Forest"], diff:"moyen", nationalities:["Nigeria"], positions:["attaquant"] , birthYear:1997 },
+  { name:"Nilson Angulo", clubs:["LDU Quito", "Anderlecht", "Sunderland"], diff:"expert", nationalities:["Équateur"], positions:["attaquant"] , birthYear:2003 },
+  { name:"Taiwo Awoniyi", clubs:["Liverpool", "FSV Frankfurt", "NEC Nijmegen", "Mouscron", "Gent", "Mainz", "Union Berlin", "Nottingham Forest", "Coventry City"], diff:"moyen", nationalities:["Nigeria"], positions:["attaquant"] , birthYear:1997 },
   { name:"Taye Taiwo", clubs:["Lobi Stars", "Marseille", "AC Milan", "QPR", "Bursaspor", "Dynamo Kyiv", "Eskişehirspor", "Lausanne-Sport", "Hapoel Tel Aviv", "HJK Helsinki", "RoPS", "KuPS", "AC Oulu"], diff:"moyen", nationalities:["Nigeria"], positions:["defenseur"], birthYear:1985 },
-  { name:"Omar Marmoush", clubs:["Stuttgart", "Wolfsburg", "Eintracht Frankfurt", "Manchester City"], diff:"moyen", nationalities:["Égypte"], positions:["attaquant"], birthYear:1999 },
+  { name:"Omar Marmoush", clubs:["Stuttgart", "Wolfsburg", "Sankt Pauli", "Eintracht Frankfurt", "Manchester City"], diff:"moyen", nationalities:["Égypte"], positions:["attaquant"], birthYear:1999 },
   { name:"Patrick Dorgu", clubs:["Lecce", "Manchester United"], diff:"moyen", nationalities:["Danemark"], positions:["defenseur"], birthYear:2004 },
   // === Lot ligues secondaires ===
   // Eredivisie / Liga Portugal
-  { name:"Mauro Júnior", clubs:["PSV Eindhoven"], diff:"expert", nationalities:["Brésil"], positions:["defenseur"], birthYear:1998 },
-  { name:"Walter Benítez", clubs:["Quilmes", "Nice", "PSV Eindhoven"], diff:"expert", nationalities:["Argentine"], positions:["gardien"], birthYear:1993 },
+  { name:"Mauro Júnior", clubs:["Heracles", "PSV Eindhoven"], diff:"expert", nationalities:["Brésil"], positions:["defenseur"], birthYear:1999 },
+  { name:"Walter Benítez", clubs:["Quilmes", "Nice", "PSV Eindhoven", "Crystal Palace"], diff:"expert", nationalities:["Argentine"], positions:["gardien"], birthYear:1993 },
   // Homonyme désambiguïsé par la NATIONALITÉ et non par le club, comme
   // « Pepe (Portugal) » et « Luis Suárez (Espagne) ». Il s'appelait
   // « Pepê (Porto) », et ce nom donnait la réponse : dans The Mercato on doit
   // citer les clubs du joueur affiché, or il n'en a que deux — Grêmio et Porto.
   { name:"Pepê (Brésil)", clubs:["Grêmio", "Porto"], diff:"expert", nationalities:["Brésil"], positions:["attaquant"], birthYear:1997 },
-  { name:"Stephen Eustáquio", clubs:["Leixões", "Chaves", "Paços de Ferreira", "Cruz Azul", "Porto"], diff:"expert", nationalities:["Canada"], positions:["milieu"], birthYear:1996 },
-  { name:"Wendell", clubs:["Grêmio", "Bayer Leverkusen", "Porto"], diff:"expert", nationalities:["Brésil"], positions:["defenseur"], birthYear:1993 },
-  { name:"Anatoliy Trubin", clubs:["Shakhtar Donetsk", "Benfica", "Shakhtar Donetsk"], diff:"expert", nationalities:["Ukraine"], positions:["gardien"], birthYear:2001 },
+  { name:"Stephen Eustáquio", clubs:["Leixões", "Chaves", "Paços de Ferreira", "Cruz Azul", "Porto", "LAFC"], diff:"expert", nationalities:["Canada"], positions:["milieu"], birthYear:1996 },
+  { name:"Wendell", clubs:["Grêmio", "Bayer Leverkusen", "Porto", "São Paulo"], diff:"expert", nationalities:["Brésil"], positions:["defenseur"], birthYear:1993 },
+  { name:"Anatoliy Trubin", clubs:["Shakhtar Donetsk", "Benfica"], diff:"expert", nationalities:["Ukraine"], positions:["gardien"], birthYear:2001 },
   { name:"Nico González", clubs:["Barcelona", "Valencia", "Porto", "Manchester City"], diff:"expert", nationalities:["Espagne"], positions:["milieu"], birthYear:2002 },
   // MLS
-  { name:"Luciano Acosta", clubs:["Boca Juniors", "DC United", "FC Cincinnati", "FC Dallas"], diff:"expert", nationalities:["Argentine"], positions:["milieu"], birthYear:1994 },
+  { name:"Luciano Acosta", clubs:["Boca Juniors", "DC United", "Atlas", "FC Cincinnati", "FC Dallas", "Fluminense"], diff:"expert", nationalities:["Argentine"], positions:["milieu"], birthYear:1994 },
   { name:"Diego Luna", clubs:["El Paso Locomotive", "Real Salt Lake"], diff:"expert", nationalities:["États-Unis"], positions:["milieu"], birthYear:2003 },
   { name:"Maximiliano Moralez", clubs:["Racing Club", "Atalanta BC", "New York City FC"], diff:"expert", nationalities:["Argentine"], positions:["milieu"], birthYear:1987 },
-  { name:"Dejan Joveljić", clubs:["Red Star Belgrade", "Eintracht Frankfurt", "Anderlecht", "Wolfsburg", "LA Galaxy", "Sporting Kansas City"], diff:"expert", nationalities:["Serbie"], positions:["attaquant"], birthYear:1999 },
+  { name:"Dejan Joveljić", clubs:["Red Star Belgrade", "Eintracht Frankfurt", "Anderlecht", "Wolfsberger AC", "LA Galaxy", "Sporting Kansas City"], diff:"expert", nationalities:["Serbie"], positions:["attaquant"], birthYear:1999 },
   // J-League
   { name:"Yasuto Wakizaka", clubs:["Kawasaki Frontale"], diff:"expert", nationalities:["Japon"], positions:["milieu"], birthYear:1995 },
-  { name:"Shinnosuke Hatanaka", clubs:["Yokohama F. Marinos", "Borussia Mönchengladbach"], diff:"expert", nationalities:["Japon"], positions:["defenseur"], birthYear:1995 },
-  { name:"Anderson Lopes", clubs:["Coritiba", "Santos", "Hokkaido Consadole Sapporo", "Yokohama F. Marinos"], diff:"expert", nationalities:["Brésil"], positions:["attaquant"], birthYear:1994 },
+  { name:"Shinnosuke Hatanaka", clubs:["Tokyo Verdy", "Yokohama F. Marinos", "Cerezo Osaka"], diff:"expert", nationalities:["Japon"], positions:["defenseur"], birthYear:1995 },
+  { name:"Anderson Lopes", clubs:["Hokkaido Consadole Sapporo", "Yokohama F. Marinos", "Vissel Kobe"], diff:"expert", nationalities:["Brésil"], positions:["attaquant"], birthYear:1993 },
   { name:"Yoshinori Muto", clubs:["FC Tokyo", "Mainz", "Newcastle", "Eibar", "Vissel Kobe"], diff:"expert", nationalities:["Japon"], positions:["attaquant"], birthYear:1992 },
   { name:"Yuya Osako", clubs:["Kashima Antlers", "1860 Munich", "Köln", "Werder Bremen", "Vissel Kobe"], diff:"expert", nationalities:["Japon"], positions:["attaquant"], birthYear:1990 },
   { name:"Takuma Nishimura", clubs:["Vegalta Sendai", "Portimonense", "Yokohama F. Marinos"], diff:"expert", nationalities:["Japon"], positions:["attaquant"], birthYear:1996 },
