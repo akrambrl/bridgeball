@@ -92,6 +92,29 @@ const natif = (): boolean => {
 };
 
 /**
+ * Attend que l'app soit au premier plan (active), condition NÉCESSAIRE pour
+ * qu'iOS affiche la fenêtre ATT. Import dynamique : ne s'exécute qu'en natif,
+ * jamais sur le web ni dans les tests. Repli de 3 s : on ne bloque jamais
+ * l'initialisation de la pub, même si l'événement n'arrive pas.
+ */
+async function attendreActif(): Promise<void> {
+  try {
+    const { App: CapApp } = await import("@capacitor/app");
+    const etat = await CapApp.getState();
+    if (etat.isActive) return;
+    await new Promise<void>((resolve) => {
+      let fini = false;
+      let handle: { remove: () => void } | null = null;
+      const done = () => { if (!fini) { fini = true; handle?.remove?.(); resolve(); } };
+      void CapApp.addListener("appStateChange", (s: { isActive: boolean }) => {
+        if (s.isActive) done();
+      }).then((h) => { handle = h; if (fini) h.remove(); });
+      setTimeout(done, 3000);
+    });
+  } catch { /* pas de plugin App, ou web : on n'attend pas */ }
+}
+
+/**
  * Démarre le SDK et demande le consentement. À appeler une fois, au lancement,
  * à côté de initNative(). Ne lève jamais : une pub qui ne démarre pas ne doit
  * pas empêcher de jouer.
@@ -115,6 +138,17 @@ export async function initPub(): Promise<void> {
     // Un refus n'est PAS un échec : on continue, avec des pubs moins ciblées.
     // C'est aussi pour ça qu'on ne lit pas le statut derrière — il ne change
     // rien à ce qu'on fait ensuite.
+    //
+    // ── LA FENÊTRE ATT EXIGE QUE L'APP SOIT ACTIVE ──────────────────────────
+    //
+    // iOS n'affiche la demande d'autorisation de suivi que si l'app est au
+    // PREMIER PLAN et active. Or initPub() part au chargement du module, parfois
+    // avant que la coque n'ait fini de passer au premier plan : la demande
+    // échouait alors en silence — statut « refusé », aucune fenêtre — ce
+    // qu'Apple a signalé (« unable to locate the ATT permission request »). On
+    // attend donc l'état actif avant de demander, avec un repli de sécurité
+    // pour ne jamais bloquer l'initialisation.
+    await attendreActif();
     try { await AdMob.requestTrackingAuthorization(); } catch { /* refus, ou iOS trop ancien */ }
 
     await AdMob.initialize({ initializeForTesting: enModeTest() });

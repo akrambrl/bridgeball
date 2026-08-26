@@ -8028,7 +8028,7 @@ export default function LePont() {
   async function checkAndSavePseudo(pseudo) {
     const clean = pseudo.trim();
     if (clean.length < 3) { setPseudoMsg(tr("❌ Minimum 3 caractères","❌ Minimum 3 characters","❌ Mindestens 3 Zeichen","❌ Minimo 3 caratteri","❌ Mínimo 3 caracteres","❌ Mínimo 3 caracteres")); return; }
-    if (clean.length > 12) { setPseudoMsg(tr("❌ Maximum 12 caractères","❌ Maximum 12 characters","❌ Maximal 12 Zeichen","❌ Massimo 12 caratteri","❌ Máximo 12 caracteres","❌ Máximo 12 caracteres")); return; }
+    if (clean.length > 8) { setPseudoMsg(tr("❌ Maximum 8 caractères","❌ Maximum 8 characters","❌ Maximal 8 Zeichen","❌ Massimo 8 caratteri","❌ Máximo 8 caracteres","❌ Máximo 8 caracteres")); return; }
     if (/\s/.test(clean)) { setPseudoMsg(tr("❌ Pas d'espaces","❌ No spaces","❌ Keine Leerzeichen","❌ Niente spazi","❌ Sem espaços","❌ Sin espacios")); return; }
     if (!/^[a-zA-Z0-9_\-]+$/.test(clean)) { setPseudoMsg(tr("❌ Lettres, chiffres, _ et - uniquement","❌ Letters, digits, _ and - only","❌ Nur Buchstaben, Ziffern, _ und -","❌ Solo lettere, cifre, _ e -","❌ Apenas letras, números, _ e -","❌ Solo letras, números, _ y -")); return; }
     if (/^[_\-]/.test(clean) || /[_\-]$/.test(clean)) { setPseudoMsg(tr("❌ Ne peut pas commencer ou finir par _ ou -","❌ Cannot start or end with _ or -","❌ Darf nicht mit _ oder - beginnen oder enden","❌ Non può iniziare o finire con _ o -","❌ Não pode começar ou terminar com _ ou -","❌ No puede empezar ni terminar por _ o -")); return; }
@@ -13337,12 +13337,12 @@ export default function LePont() {
           onChange={function(e){setPseudoInput(e.target.value.toLowerCase().replace(/[^a-z0-9_.]/g,""));setPseudoMsg("");}}
           onKeyDown={function(e){if(e.key==="Enter")checkAndSavePseudo(pseudoInput);}}
           placeholder={tr("Ton pseudo unique...","Your unique username...","Dein einzigartiger Name...","Il tuo nome unico...","Seu nome único...","Tu nombre único...")}
-          maxLength={12}
+          maxLength={8}
           autoFocus
           style={{width:"100%",background:"rgba(8,17,9,.45)",border:G.traitFin,borderRadius:14,padding:"14px 16px",fontFamily:G.font,fontSize:17,color:G.white,outline:"none",boxSizing:"border-box",marginBottom:8,textAlign:"center"}}
         />
         {pseudoMsg && <div style={{fontSize:13,fontWeight:700,color:pseudoMsg.startsWith("❌")?"#FF3D57":G.pelouseClaire,marginBottom:8,textAlign:"center"}}>{pseudoMsg}</div>}
-        <div style={{fontSize:11,color:"rgba(255,255,255,.2)",marginBottom:16,textAlign:"center"}}>{tr("3–12 caractères · lettres, chiffres, _ et . · pas d'espaces","3–12 characters · letters, digits, _ and . · no spaces","3–12 Zeichen · Buchstaben, Ziffern, _ und . · keine Leerzeichen","3–12 caratteri · lettere, cifre, _ e . · niente spazi","3–12 caracteres · letras, números, _ e . · sem espaços","3–12 caracteres · letras, números, _ y . · sin espacios")}</div>
+        <div style={{fontSize:11,color:"rgba(255,255,255,.2)",marginBottom:16,textAlign:"center"}}>{tr("3–8 caractères · lettres, chiffres, _ et . · pas d'espaces","3–8 characters · letters, digits, _ and . · no spaces","3–8 Zeichen · Buchstaben, Ziffern, _ und . · keine Leerzeichen","3–8 caratteri · lettere, cifre, _ e . · niente spazi","3–8 caracteres · letras, números, _ e . · sem espaços","3–8 caracteres · letras, números, _ y . · sin espacios")}</div>
         <button
           onClick={function(){checkAndSavePseudo(pseudoInput);}}
           disabled={pseudoChecking||pseudoInput.trim().length<3}
