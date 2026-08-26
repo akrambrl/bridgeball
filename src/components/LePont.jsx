@@ -12843,7 +12843,15 @@ export default function LePont() {
                       le liseré métallique est ce qui dit le niveau au premier
                       coup d'œil, s'en priver ici cassait la lecture. */}
                   {(function(){
-                    const c = levelCard(entry.xp || 0);
+                    // Pour MA ligne, la carte se calcule sur `playerXp` — l'XP en
+                    // direct qui pilote déjà la photo de profil — et non sur
+                    // `entry.xp`, valeur relue depuis bb_pseudos au chargement du
+                    // classement. Les deux sources divergent (partie jouée depuis,
+                    // lecture décalée, id anonyme qui pointe une autre ligne), et
+                    // c'est ce qui faisait afficher au même joueur un grade au
+                    // profil et un grade INFÉRIEUR au classement. La source de
+                    // vérité pour soi est locale ; on l'utilise ici aussi.
+                    const c = levelCard(isMe ? playerXp : (entry.xp || 0));
                     const rm = rarityMeta(c.rarity);
                     return (
                       <div className={rm.cls} style={{width:44,padding:2,borderRadius:G.rayonS,background:rm.frame,
