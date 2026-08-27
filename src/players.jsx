@@ -719,28 +719,28 @@ export const PLAYERS = [
   { name:"Timothy Weah", clubs:["PSG", "Celtic", "Lille", "Juventus FC", "Marseille"], diff:"facile", nationalities:["États-Unis"], positions:["attaquant"], birthYear:2000 },
   { name:"Quentin Merlin", clubs:["Nantes", "Marseille", "Rennes"], diff:"expert", nationalities:["France"], positions:["defenseur"], birthYear:2002 },
   { name:"Geoffrey Kondogbia", clubs:["Lens", "Sevilla", "Monaco", "Inter Milan", "Valencia", "Atletico Madrid", "Marseille"], diff:"facile", nationalities:["Centrafrique"], positions:["milieu"], birthYear:1993 },
-  { name:"Gerónimo Rulli", clubs:["Estudiantes", "Manchester City", "Real Sociedad", "Montpellier", "Villarreal", "Ajax Amsterdam", "Marseille", "Manchester City"], diff:"facile", nationalities:["Argentine"], positions:["gardien"], birthYear:1992 },
+  { name:"Gerónimo Rulli", clubs:["Estudiantes", "Real Sociedad", "Montpellier", "Villarreal", "Ajax Amsterdam", "Marseille", "Manchester City"], diff:"facile", nationalities:["Argentine"], positions:["gardien"], birthYear:1992 },
   { name:"Lutsharel Geertruida", clubs:["Feyenoord", "RB Leipzig", "Sunderland"], diff:"moyen", nationalities:["Pays-Bas"], positions:["defenseur"], birthYear:2000 },
   { name:"Tochukwu Nnadi", clubs:["Zulte Waregem", "Marseille"], diff:"expert", nationalities:["Nigeria"], positions:["milieu"], birthYear:2003 },
   // Lyon - été 2025
-  { name:"Lucas Perri", clubs:["São Paulo", "Crystal Palace", "Lyon", "Botafogo", "Leeds United"], diff:"expert", nationalities:["Brésil"], positions:["gardien"] , birthYear:1997 },
-  { name:"Tanner Tessmann", clubs:["FC Dallas", "Venezia", "Lyon"], diff:"expert", nationalities:["États-Unis"], positions:["attaquant"] , birthYear:2001 },
+  { name:"Lucas Perri", clubs:["São Paulo", "Botafogo", "Lyon", "Leeds United"], diff:"expert", nationalities:["Brésil"], positions:["gardien"] , birthYear:1997 },
+  { name:"Tanner Tessmann", clubs:["FC Dallas", "Venezia", "Lyon"], diff:"expert", nationalities:["États-Unis"], positions:["milieu"] , birthYear:2001 },
   { name:"Hans Hateboer", clubs:["Groningen", "Atalanta BC", "Rennes", "Lyon"], diff:"expert", nationalities:["Pays-Bas"], positions:["defenseur"] , birthYear:1994 },
   // Lille - été 2025
   { name:"Bafodé Diakité", clubs:["Toulouse", "Lille", "Bournemouth"], diff:"expert", nationalities:["France"], positions:["defenseur"] , birthYear:2001 },
   { name:"Hákon Arnar Haraldsson", clubs:["FH", "Copenhagen", "Lille"], diff:"expert", nationalities:["Islande"], positions:["attaquant"] , birthYear:2003 },
-  { name:"Hamari Traoré", clubs:["Reims", "Rennes", "Real Sociedad", "Lille"], diff:"moyen", nationalities:["Mali"], positions:["defenseur"], birthYear:1992 },
+  { name:"Hamari Traoré", clubs:["Reims", "Rennes", "Real Sociedad", "Paris FC"], diff:"moyen", nationalities:["Mali"], positions:["defenseur"], birthYear:1992 },
   { name:"Amine Adli", clubs:["Toulouse", "Bayer Leverkusen", "Bournemouth"], diff:"moyen", nationalities:["Maroc"], positions:["attaquant"], birthYear:2000 },
-  { name:"Gabriel Gudmundsson", clubs:["Halmstads BK", "Groningen", "Lille", "Leeds United"], diff:"expert", nationalities:["Suède"], positions:["attaquant"] , birthYear:1999 },
+  { name:"Gabriel Gudmundsson", clubs:["Halmstads BK", "Groningen", "Lille", "Leeds United"], diff:"expert", nationalities:["Suède"], positions:["defenseur"] , birthYear:1999 },
   // Lens - été 2025
-  { name:"Mamadou Sangaré", clubs:["Yeelen Olympique", "Stade Briochin", "Salzburg", "Rapid Vienna", "Lens", "Brentford"], diff:"expert", nationalities:["Mali"], positions:["milieu"], birthYear:2002 },
+  { name:"Mamadou Sangaré", clubs:["Grazer AK", "Zulte Waregem", "Rapid Vienna", "Lens", "Brentford"], diff:"expert", nationalities:["Mali"], positions:["milieu"], birthYear:2002 },
   { name:"Samson Baidoo", clubs:["Salzburg", "Lens"], diff:"expert", nationalities:["Autriche"], positions:["defenseur"] , birthYear:2004 },
   // Monaco - été 2025
-  { name:"Stanis Idumbo", clubs:["Ajax Amsterdam", "Club Brugge", "Gent", "Sevilla", "Monaco"], diff:"expert", nationalities:["Belgique"], positions:["attaquant"], birthYear:2005 },
+  { name:"Stanis Idumbo", clubs:["Sevilla", "Monaco"], diff:"expert", nationalities:["Belgique"], positions:["attaquant"], birthYear:2005 },
   // Rennes - été 2025
   { name:"Sebastian Szymański", clubs:["Legia Warsaw", "Dynamo Moscow", "Feyenoord", "Fenerbahce", "Rennes"], diff:"moyen", nationalities:["Pologne"], positions:["milieu"], birthYear:1999 },
   // Strasbourg - été 2025
-  { name:"Joaquín Panichelli", clubs:["River Plate", "Alavés", "Mirandés", "Strasbourg"], diff:"expert", nationalities:["Argentine"], positions:["attaquant"] , birthYear:2002 },
+  { name:"Joaquín Panichelli", clubs:["Alavés", "Mirandés", "Strasbourg"], diff:"expert", nationalities:["Argentine"], positions:["attaquant"] , birthYear:2002 },
   // Premier League été 2025 - manquants
   { name:"João Pedro", clubs:["Fluminense", "Watford", "Brighton", "Chelsea"], diff:"moyen", nationalities:["Brésil"], positions:["attaquant"], birthYear:2001 },
   
