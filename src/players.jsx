@@ -684,38 +684,38 @@ export const PLAYERS = [
   { name:"Jack Harrison", clubs:["New York City FC", "Manchester City", "Middlesbrough", "Leeds United", "Everton", "ACF Fiorentina", "New England Revolution"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1996 },
   { name:"Daniele Rugani", clubs:["Empoli FC", "Juventus FC", "Rennes", "Cagliari Calcio", "Ajax Amsterdam", "ACF Fiorentina"], diff:"moyen", nationalities:["Italie"], positions:["defenseur"], birthYear:1994 },
   { name:"Bryan Zaragoza", clubs:["Granada", "Bayern Munich", "Osasuna", "Celta Vigo", "AS Roma", "Espanyol"], diff:"expert", nationalities:["Espagne"], positions:["attaquant"] , birthYear:2001 },
-  { name:"Simon Sohm", clubs:["Zurich", "Parma FC", "ACF Fiorentina", "Bologna FC"], diff:"expert", nationalities:["Suisse"], positions:["attaquant"] , birthYear:2001 },
+  { name:"Simon Sohm", clubs:["Zurich", "Parma FC", "ACF Fiorentina", "Bologna FC"], diff:"expert", nationalities:["Suisse"], positions:["milieu"] , birthYear:2001 },
   { name:"João Mário Neto", clubs:["Porto", "Juventus FC", "Bologna FC"], diff:"expert", nationalities:["Portugal"], positions:["defenseur"], birthYear:2000 },
-  { name:"Marco Brescianini", clubs:["AC Milan", "Virtus Entella", "Cosenza", "Frosinone", "Atalanta BC", "ACF Fiorentina"], diff:"expert", nationalities:["Italie"], positions:["milieu"], birthYear:2000 },
-  { name:"Emil Holm", clubs:["Spezia", "Atalanta BC", "Bologna FC", "Juventus FC"], diff:"expert", nationalities:["Suède"], positions:["defenseur"], birthYear:2000 },
+  { name:"Marco Brescianini", clubs:["AC Milan", "Virtus Entella", "Monza", "Cosenza", "Frosinone", "Atalanta BC", "ACF Fiorentina"], diff:"expert", nationalities:["Italie"], positions:["milieu"], birthYear:2000 },
+  { name:"Emil Holm", clubs:["IFK Göteborg", "Spezia", "Atalanta BC", "Bologna FC", "Juventus FC"], diff:"expert", nationalities:["Suède"], positions:["defenseur"], birthYear:2000 },
   // Premier League mercato hivernal janvier 2026
-  { name:"Brian Madjo", clubs:["Metz", "Aston Villa"], diff:"expert", nationalities:["Cameroun"], positions:["attaquant"], birthYear:2009 },
+  { name:"Brian Madjo", clubs:["Metz", "Aston Villa"], diff:"expert", nationalities:["Luxembourg"], positions:["attaquant"], birthYear:2009 },
   { name:"Alysson", clubs:["Grêmio", "Aston Villa"], diff:"expert", nationalities:["Brésil"], positions:["attaquant"] },
-  { name:"Evann Guessand", clubs:["Lyon", "Lausanne-Sport", "Nantes", "Nice", "Aston Villa", "Crystal Palace"], diff:"expert", nationalities:["France"], positions:["attaquant"] , birthYear:2001 },
+  { name:"Evann Guessand", clubs:["Lausanne-Sport", "Nantes", "Nice", "Aston Villa", "Crystal Palace"], diff:"expert", nationalities:["Côte d'Ivoire"], positions:["attaquant"] , birthYear:2001 },
   // Ligue 1 mercato hivernal janvier 2026
-  { name:"Matt O'Riley", clubs:["Fulham", "MK Dons", "Celtic", "Brighton", "Marseille"], diff:"moyen", nationalities:["Danemark"], positions:["milieu"], birthYear:2000 },
-  { name:"Angel Gomes", clubs:["Manchester United", "Boavista", "Lille", "Marseille", "Wolverhampton", "Marseille"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:2000 },
-  { name:"Ismaël Koné", clubs:["CF Montréal", "Watford", "Marseille", "Rennes", "Sassuolo"], diff:"expert", nationalities:["France"], positions:["defenseur"], birthYear:2002 },
+  { name:"Matt O'Riley", clubs:["MK Dons", "Celtic", "Brighton", "Marseille", "Brighton"], diff:"moyen", nationalities:["Danemark"], positions:["milieu"], birthYear:2000 },
+  { name:"Angel Gomes", clubs:["Manchester United", "Boavista", "Lille", "Marseille", "Wolverhampton"], diff:"moyen", nationalities:["Angleterre"], positions:["milieu"], birthYear:2000 },
+  { name:"Ismaël Koné", clubs:["CF Montréal", "Watford", "Marseille", "Rennes", "Sassuolo"], diff:"expert", nationalities:["Canada"], positions:["milieu"], birthYear:2002 },
   // Bundesliga + Liga mercato hivernal janvier 2026
   // Liga
-  { name:"Renato Veiga", clubs:["Sporting CP", "Basel", "Chelsea", "Juventus FC", "Villarreal"], diff:"moyen", nationalities:["Portugal"], positions:["defenseur"], birthYear:2003 },
+  { name:"Renato Veiga", clubs:["Sporting CP", "Augsburg", "Basel", "Chelsea", "Juventus FC", "Villarreal"], diff:"moyen", nationalities:["Portugal"], positions:["defenseur"], birthYear:2003 },
   { name:"Rodrigo Mendoza", clubs:["Elche", "Atletico Madrid"], diff:"expert", nationalities:["Espagne"], positions:["milieu"], birthYear:2005 },
-  { name:"Álvaro Fidalgo", clubs:["Real Madrid Castilla", "Club América", "Real Betis"], diff:"expert", nationalities:["Espagne"], positions:["attaquant"] , birthYear:1997 },
+  { name:"Álvaro Fidalgo", clubs:["Real Madrid Castilla", "Castellón", "Club América", "Real Betis"], diff:"expert", nationalities:["Mexique"], positions:["milieu"] , birthYear:1997 },
   // Bundesliga
-  { name:"Damion Downs", clubs:["Köln", "Southampton", "Werder Bremen"], diff:"expert", nationalities:["États-Unis"], positions:["attaquant"] , birthYear:2004 },
-  { name:"Albert Grønbæk", clubs:["Aalborg", "Bodø/Glimt", "Rennes", "Werder Bremen", "Hamburg"], diff:"expert", nationalities:["Danemark"], positions:["attaquant"] , birthYear:2001 },
+  { name:"Damion Downs", clubs:["Köln", "Southampton", "Hamburg"], diff:"expert", nationalities:["États-Unis"], positions:["attaquant"] , birthYear:2004 },
+  { name:"Albert Grønbæk", clubs:["AGF", "Bodø/Glimt", "Rennes", "Southampton", "Genoa CFC", "Hamburg"], diff:"expert", nationalities:["Danemark"], positions:["milieu"] , birthYear:2001 },
   // Saudi Pro League / MLS / Liga Portugal mercato hivernal janvier 2026
   // MLS - Inter Miami
   { name:"Sergio Reguilón", clubs:["Real Madrid Castilla", "Real Madrid", "Sevilla", "Tottenham", "Atletico Madrid", "Manchester United", "Brentford", "Inter Miami"], diff:"moyen", nationalities:["Espagne"], positions:["defenseur"], birthYear:1996 },
-  { name:"Dayne St. Clair", clubs:["Cavalry", "Minnesota United", "Inter Miami"], diff:"expert", nationalities:["Canada"], positions:["gardien"] , birthYear:1997 },
+  { name:"Dayne St. Clair", clubs:["Minnesota United", "Inter Miami"], diff:"expert", nationalities:["Canada"], positions:["gardien"] , birthYear:1997 },
   // Saudi Pro League - Al-Nassr departures
   // Liga Portugal - Sporting CP arrivals
   { name:"Luis Guilherme", clubs:["Palmeiras", "West Ham", "Sporting CP"], diff:"expert", nationalities:["Brésil"], positions:["attaquant"] , birthYear:2006 },
   // Mercato estival Ligue 1 été 2025 - manquants
   // OM
   { name:"Arthur Vermeeren", clubs:["Antwerp", "Atletico Madrid", "RB Leipzig", "Marseille"], diff:"expert", nationalities:["Belgique"], positions:["milieu"], birthYear:2005 },
-  { name:"Facundo Medina", clubs:["Talleres", "Estudiantes", "Lens", "Marseille", "Bayer Leverkusen"], diff:"expert", nationalities:["Argentine"], positions:["defenseur"], birthYear:1999 },
-  { name:"CJ Egan-Riley", clubs:["Manchester City", "Burnley", "Marseille"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:2003 },
+  { name:"Facundo Medina", clubs:["Talleres", "Lens", "Marseille", "Bayer Leverkusen"], diff:"expert", nationalities:["Argentine"], positions:["defenseur"], birthYear:1999 },
+  { name:"CJ Egan-Riley", clubs:["Manchester City", "Burnley", "Hibernian", "Marseille"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:2003 },
   { name:"Timothy Weah", clubs:["PSG", "Celtic", "Lille", "Juventus FC", "Marseille"], diff:"facile", nationalities:["États-Unis"], positions:["attaquant"], birthYear:2000 },
   { name:"Quentin Merlin", clubs:["Nantes", "Marseille", "Rennes"], diff:"expert", nationalities:["France"], positions:["defenseur"], birthYear:2002 },
   { name:"Geoffrey Kondogbia", clubs:["Lens", "Sevilla", "Monaco", "Inter Milan", "Valencia", "Atletico Madrid", "Marseille"], diff:"facile", nationalities:["Centrafrique"], positions:["milieu"], birthYear:1993 },
