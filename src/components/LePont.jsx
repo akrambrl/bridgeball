@@ -8650,6 +8650,15 @@ export default function LePont() {
           rank: i + 1,
           played: 0, wins:0, draws:0, losses:0, streak:0
         }; }));
+        // Les lots — pour le bandeau « lot en jeu » affiché EN COURS de saison.
+        // Le chemin Saison sortait ici sans jamais charger bb_lots, si bien que
+        // le bandeau ne pouvait s'allumer que sur l'onglet Global. On les charge
+        // donc aussi ici. Échec silencieux : la table peut ne pas exister, le
+        // classement reste affiché.
+        try {
+          const dotees = await sbFetch("bb_lots?select=season_number,rang,intitule&order=season_number.desc,rang");
+          if (Array.isArray(dotees)) setLots(dotees);
+        } catch (e) { /* pas de lots : le bandeau ne s'affiche pas, rien d'autre */ }
         return;
       }
       const isAmis = mode === "amis";
@@ -12753,6 +12762,56 @@ export default function LePont() {
                 <button onClick={function(){setShowHallOfFame(true);}} style={{...btn(G.projecteur,null,14),padding:"6px 12px",flexShrink:0}}>
                   🏅 Hall of Fame
                 </button>
+              </div>
+            );
+          })()}
+
+          {/* ── LE LOT EN JEU, ANNONCÉ PENDANT LA SAISON ──────────────────────
+              Le bandeau `monLot` plus haut n'apparaît qu'APRÈS la clôture, au
+              gagnant, pour réclamer. Résultat : pendant le mois, personne ne
+              sait qu'une place de 1er vaut une récompense — la carotte n'existe
+              qu'une fois la course finie. Ce bandeau-ci comble le trou : il dit,
+              EN COURS de saison, ce que remporte le 1er du mois, et s'adresse
+              directement au meneur quand c'est lui qui regarde.
+
+              Il se branche sur les lots DÉJÀ chargés (`lots`, depuis bb_lots,
+              sans filtre de saison) : on y cherche la ligne rang=1 de la saison
+              COURANTE. Tant qu'aucun lot n'est défini pour le mois, rien ne
+              s'affiche — pas de promesse creuse. Réservé à Saison/Monde : en
+              Amis, il n'y a pas de dotation. */}
+          {lbMode!=="amis" && lbSeasonScope!=="amis" && (()=>{
+            const saisonCourante = getCurrentSeason().num;
+            const lotEnJeu = (lots||[]).find(function(l){ return l && l.season_number===saisonCourante && l.rang===1; });
+            if (!lotEnJeu || !lotEnJeu.intitule) return null;
+            // Le meneur du moment, dans la portée affichée (monde). S'il n'y a
+            // pas encore de classement, personne n'est meneur : on reste sur le
+            // message général.
+            const meneur = leaderboard && leaderboard.length ? leaderboard[0] : null;
+            const jeSuisPremier = !!(meneur && meneur.pid && meneur.pid===playerId);
+            return (
+              <div style={{background:G.nuit,border:"2px solid "+G.or,borderRadius:G.rayon,
+                boxShadow:G.ombre,padding:"12px 14px",marginBottom:8,display:"flex",alignItems:"center",gap:12}}>
+                <div style={{fontSize:30,lineHeight:1,flexShrink:0}}>🏆</div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{...posterText(17,G.projecteur),lineHeight:1.1,marginBottom:3}}>
+                    {jeSuisPremier
+                      ? tr("TU ES 1ER — LE LOT EST À TOI","YOU'RE 1ST — THE PRIZE IS YOURS","DU BIST 1. — DER PREIS GEHÖRT DIR","SEI 1° — IL PREMIO È TUO","VOCÊ É O 1º — O PRÊMIO É SEU","ERES 1º — EL PREMIO ES TUYO")
+                      : tr("LE 1ER DU MOIS REMPORTE","THIS MONTH'S #1 WINS","DER MONATSERSTE GEWINNT","IL 1° DEL MESE VINCE","O 1º DO MÊS LEVA","EL 1º DEL MES SE LLEVA")}
+                  </div>
+                  <div style={{fontSize:12.5,fontWeight:700,color:G.creme,lineHeight:1.4}}>
+                    {lotEnJeu.intitule}
+                  </div>
+                  <div style={{fontSize:11,fontWeight:700,color:"rgba(242,231,206,.6)",marginTop:3}}>
+                    {jeSuisPremier
+                      ? tr("Tiens ta place jusqu'à la fin du mois pour le gagner.","Hold your spot until month's end to win it.","Halte deinen Platz bis Monatsende, um ihn zu gewinnen.","Tieni il tuo posto fino a fine mese per vincerlo.","Segure sua posição até o fim do mês para ganhá-lo.","Mantén tu puesto hasta fin de mes para ganarlo.")
+                      : tr("Termine 1er à la fin du mois et il est à toi.","Finish 1st at month's end and it's yours.","Beende den Monat als 1. und er gehört dir.","Finisci 1° a fine mese ed è tuo.","Termine em 1º no fim do mês e é seu.","Termina 1º a fin de mes y es tuyo.")}
+                    {" · "}
+                    <a href="/reglement" target="_blank" rel="noopener noreferrer"
+                      style={{color:G.projecteur,textDecoration:"underline",textUnderlineOffset:2}}>
+                      {tr("règlement","rules","Regeln","regolamento","regulamento","bases")}
+                    </a>
+                  </div>
+                </div>
               </div>
             );
           })()}
