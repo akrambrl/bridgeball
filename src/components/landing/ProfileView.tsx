@@ -19,7 +19,7 @@ import {
   rarityMeta,
   rarityLabel,
 } from "@/lib/collection";
-import { G, posterText, posterTitre, posterLight, btn } from "@/lib/charte.jsx";
+import { G, posterText, posterTitre, posterLight, btn, fondCharte, areneCharte } from "@/lib/charte.jsx";
 
 // ── LA PAGE PROFIL D'ORDINATEUR ─────────────────────────────────────────────
 //
@@ -79,7 +79,10 @@ export const ProfileView = ({ onClose }: { onClose: () => void }) => {
   );
 
   return (
-    <div className="fixed inset-0 z-50 overflow-auto" style={{ background: G.nuit }}>
+    <div className="fixed inset-0 z-50 overflow-auto" style={{ background: fondCharte, isolation: "isolate" }}>
+      {/* Le terrain doré de la charte, comme sur tout le site (lobby, classement,
+          profil mobile). Le fond nuit d'avant tranchait avec le reste. */}
+      {areneCharte}
       {/* En-tête collant : titre + fermeture, à l'encre, comme le reste des
           barres de la charte. */}
       <div className="sticky top-0 z-10 flex items-center justify-between px-5 lg:px-10 py-3"
@@ -94,7 +97,7 @@ export const ProfileView = ({ onClose }: { onClose: () => void }) => {
         </button>
       </div>
 
-      <div className="container max-w-4xl mx-auto px-6 lg:px-10 py-8 lg:py-10">
+      <div className="container relative z-10 max-w-4xl mx-auto px-6 lg:px-10 py-8 lg:py-10">
         {loading ? (
           <div className="py-24 text-center text-white/35 text-sm">
             {tr("Chargement…", "Loading…", "Laden…", "Caricamento…", "Carregando…", "Cargando…")}
@@ -129,7 +132,7 @@ export const ProfileView = ({ onClose }: { onClose: () => void }) => {
 
                   <div className="mt-4 flex items-baseline gap-2 justify-center lg:justify-start">
                     <span style={{ ...posterText(1, G.white, 0), fontSize: 40 }} className="tabular-nums">{nombre(xp)}</span>
-                    <span className="text-xs font-extrabold tracking-widest text-white/45">PTS</span>
+                    <span className="text-xs font-extrabold tracking-widest" style={{ color: "rgba(8,17,9,.55)" }}>PTS</span>
                   </div>
 
                   {/* Barre de progression vers la prochaine carte. */}
@@ -138,7 +141,7 @@ export const ProfileView = ({ onClose }: { onClose: () => void }) => {
                       <div style={{ height: 14, background: "rgba(8,17,9,.55)", border: G.traitFin, borderRadius: G.rayonS, overflow: "hidden" }}>
                         <div style={{ height: "100%", width: Math.round(suite.ratio * 100) + "%", background: meta.color }} />
                       </div>
-                      <div className="mt-2 text-[12px] font-bold text-white/60">
+                      <div className="mt-2 text-[12px] font-bold" style={{ color: "rgba(8,17,9,.72)" }}>
                         {(() => {
                           const reste = nombre(suite.missing);
                           const cible = cardName(suite.card);
@@ -166,7 +169,7 @@ export const ProfileView = ({ onClose }: { onClose: () => void }) => {
             {/* ── BILAN EN DUEL ──────────────────────────────────────────── */}
             {bilan && bilan.total > 0 && (
               <div className="mb-8">
-                <div style={{ ...posterLight(20, G.creme) }} className="mb-3">
+                <div style={{ ...posterLight(20, G.encre) }} className="mb-3">
                   {tr("Mes duels", "My duels", "Meine Duelle", "I miei duelli", "Meus duelos", "Mis duelos")}
                 </div>
                 <div className="overflow-hidden" style={{ background: G.nuit, border: G.trait, borderRadius: G.rayon, boxShadow: G.ombre }}>
@@ -195,7 +198,7 @@ export const ProfileView = ({ onClose }: { onClose: () => void }) => {
                     </div>
                   </div>
                 </div>
-                <p className="mt-2 text-[11px] text-white/40 leading-snug">
+                <p className="mt-2 text-[11px] leading-snug" style={{ color: "rgba(8,17,9,.6)" }}>
                   {tr("Le palmarès en duel ne compte pas dans le classement du mois — il se joue au meilleur score de chaque mode.",
                     "Duel record doesn't count toward the monthly leaderboard — that's decided by your best score in each mode.",
                     "Die Duellbilanz zählt nicht für die Monatsrangliste — die entscheidet dein Bestwert pro Modus.",
@@ -209,11 +212,11 @@ export const ProfileView = ({ onClose }: { onClose: () => void }) => {
             {/* ── COLLECTION ─────────────────────────────────────────────── */}
             <div>
               <div className="flex items-baseline gap-2 mb-3">
-                <span style={{ ...posterLight(20, G.creme) }}>
+                <span style={{ ...posterLight(20, G.encre) }}>
                   {tr("Ma collection", "My collection", "Meine Sammlung", "La mia collezione", "Minha coleção", "Mi colección")}
                 </span>
-                <span style={{ ...posterText(1, G.projecteur, 0), fontSize: 18 }} className="tabular-nums">{nbDebloquees}</span>
-                <span className="text-xs font-bold text-white/40">/ {CARDS.length} {tr("cartes", "cards", "Karten", "carte", "cartas", "cartas")}</span>
+                <span style={{ ...posterText(1, G.encre, 0), fontSize: 18 }} className="tabular-nums">{nbDebloquees}</span>
+                <span className="text-xs font-bold" style={{ color: "rgba(8,17,9,.5)" }}>/ {CARDS.length} {tr("cartes", "cards", "Karten", "carte", "cartas", "cartas")}</span>
               </div>
               <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-2.5">
                 {CARDS.map((c) => {
