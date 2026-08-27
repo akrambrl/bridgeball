@@ -584,7 +584,7 @@ const PrizeTicker = () => {
   const bloc = [0, 1, 2, 3];
   return (
     <div className="relative z-10 overflow-hidden" style={{ background: G.or, borderBottom: G.trait }}>
-      <div className="goat-marquee flex whitespace-nowrap py-2">
+      <div className="goat-marquee flex whitespace-nowrap py-2" style={{ animationDuration: "18s" }}>
         {[...bloc, ...bloc].map((_, i) => (
           <span key={i} className="flex items-center">
             <span style={{ fontSize: 15, marginRight: 8 }}>🏆</span>

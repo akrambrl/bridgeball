@@ -14491,7 +14491,7 @@ export default function LePont() {
         const message = quand + tr(" — LE 1ER REMPORTE "," — #1 WINS "," — DER 1. GEWINNT "," — IL 1° VINCE "," — O 1º LEVA "," — EL 1º SE LLEVA ") + lot.intitule;
         return (
           <div style={{zIndex:2,overflow:"hidden",background:G.or,borderBottom:G.trait}}>
-            <div className="goat-marquee" style={{display:"flex",whiteSpace:"nowrap",padding:"6px 0"}}>
+            <div className="goat-marquee" style={{display:"flex",whiteSpace:"nowrap",padding:"6px 0",animationDuration:"18s"}}>
               {[0,1,2,3].map(function(i){ return (
                 <span key={i} style={{display:"flex",alignItems:"center"}}>
                   <span style={{fontSize:13,margin:"0 6px"}}>🏆</span>
