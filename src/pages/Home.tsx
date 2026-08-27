@@ -14,6 +14,7 @@ import { CountdownOverlay } from "@/components/landing/CountdownOverlay";
 import { GoatGuess } from "@/components/landing/GoatGuess";
 import { FindPlayer } from "@/components/landing/FindPlayer";
 import { nombre, tr } from "@/lib/lang";
+import { fetchLotAAnnoncer, type LotAnnonce } from "@/lib/leaderboard";
 import { trackTime } from "@/lib/track";
 import { G, posterText, btn, fondCharte, areneCharte } from "@/lib/charte.jsx";
 
@@ -365,6 +366,9 @@ const Home = () => {
 
       <LobbyHeader active={tab} onChange={setTab} onOpenProfile={onOpenProfile} />
 
+      {/* Ruban doré du lot à gagner, en haut de l'accueil (onglet Jouer). */}
+      {tab === "play" && <PrizeTicker />}
+
       <main className="relative flex-1 z-10">
         {tab === "play" && <LobbyView onPlay={onPlay} onJoinRoom={onJoinRoom} onOpenDuels={onOpenDuels} onOpenFriends={onOpenFriends} />}
         {tab === "tutos" && <TutosView />}
@@ -544,6 +548,50 @@ const ForfeitOverlay = ({
         <div className="text-xs text-white/40 mt-6 tracking-widest font-display">
           {tr("RETOUR AU LOBBY...", "BACK TO LOBBY...", "ZURÜCK ZUR LOBBY...", "RITORNO ALLA LOBBY...", "VOLTANDO AO LOBBY...","VOLVIENDO AL VESTÍBULO...")}
         </div>
+      </div>
+    </div>
+  );
+};
+
+// ── LE BANDEAU DÉFILANT DU LOT ──────────────────────────────────────────────
+//
+// Un ruban doré en haut de l'accueil, qui fait défiler le lot à gagner — même
+// mécanique que le ticker des scores (`.goat-marquee`, contenu duplicé pour une
+// boucle sans couture). Il lit `fetchLotAAnnoncer` : lot du mois en cours, ou en
+// teaser celui du mois suivant. Rien tant qu'aucun lot n'est défini.
+const PrizeTicker = () => {
+  const [lot, setLot] = useState<LotAnnonce | null>(null);
+  useEffect(() => {
+    let alive = true;
+    fetchLotAAnnoncer().then((l) => { if (alive) setLot(l); }).catch(() => {});
+    return () => { alive = false; };
+  }, []);
+  if (!lot) return null;
+  // Le message répété dans le ruban. En teaser (mois pas commencé) on annonce le
+  // mois ; sinon « ce mois-ci ».
+  const quand = lot.upcoming
+    ? tr(`EN ${lot.monthLabel.toUpperCase()}`, `IN ${lot.monthLabel.toUpperCase()}`, `IM ${lot.monthLabel.toUpperCase()}`, `A ${lot.monthLabel.toUpperCase()}`, `EM ${lot.monthLabel.toUpperCase()}`, `EN ${lot.monthLabel.toUpperCase()}`)
+    : tr("CE MOIS-CI", "THIS MONTH", "DIESEN MONAT", "QUESTO MESE", "ESTE MÊS", "ESTE MES");
+  const message = tr(
+    `${quand} — LE 1ER DU CLASSEMENT REMPORTE ${lot.intitule}`,
+    `${quand} — THE #1 IN THE RANKINGS WINS ${lot.intitule}`,
+    `${quand} — DER 1. DER RANGLISTE GEWINNT ${lot.intitule}`,
+    `${quand} — IL 1° DELLA CLASSIFICA VINCE ${lot.intitule}`,
+    `${quand} — O 1º DO RANKING LEVA ${lot.intitule}`,
+    `${quand} — EL 1º DE LA CLASIFICACIÓN SE LLEVA ${lot.intitule}`,
+  );
+  // Répété plusieurs fois pour remplir la largeur, puis dupliqué pour la boucle.
+  const bloc = [0, 1, 2, 3];
+  return (
+    <div className="relative z-10 overflow-hidden" style={{ background: G.or, borderBottom: G.trait }}>
+      <div className="goat-marquee flex whitespace-nowrap py-2">
+        {[...bloc, ...bloc].map((_, i) => (
+          <span key={i} className="flex items-center">
+            <span style={{ fontSize: 15, marginRight: 8 }}>🏆</span>
+            <span style={{ ...posterText(1, G.encre, 0), fontSize: 15, letterSpacing: 0.5 }}>{message}</span>
+            <span style={{ color: "rgba(8,17,9,.35)", margin: "0 28px", fontWeight: 900 }}>•</span>
+          </span>
+        ))}
       </div>
     </div>
   );
