@@ -119,28 +119,29 @@ describe("l'accroche de la notification ne divulgue pas la réponse", () => {
 // fois, parce que le dernier élément est publié comme « 🏁 Dernier maillot ».
 // `clubs.length` n'est donc pas un nombre de clubs, et il l'était pris pour tel.
 describe("compter les clubs quand un club revient", () => {
-  const rulli = (PLAYERS as any[]).find((p) => p.name === "Gerónimo Rulli");
+  // Ginter est revenu à Fribourg : Fribourg → Dortmund → Gladbach → Fribourg.
+  // Quatre entrées, trois clubs. (Fixture stable : un vétéran au parcours figé.)
+  const ginter = (PLAYERS as any[]).find((p) => p.name === "Matthias Ginter");
   const zlatan = (PLAYERS as any[]).find((p) => p.name === "Zlatan Ibrahimović");
 
   it("ne compte pas deux fois un club où le joueur est revenu", () => {
-    // Rulli : Manchester City en 2016 puis de nouveau en 2026. Huit entrées,
-    // sept clubs.
-    expect(rulli.clubs.filter((c: string) => c === "Manchester City")).toHaveLength(2);
-    expect(rulli.clubs.length).toBe(8);
-    expect(nbClubs(rulli)).toBe(7);
+    expect(ginter.clubs.filter((c: string) => c === "SC Freiburg")).toHaveLength(2);
+    expect(ginter.clubs.length).toBe(4);
+    expect(nbClubs(ginter)).toBe(3);
   });
 
   it("garde la liste ORDONNÉE intacte : le dernier maillot reste le bon", () => {
     // Le piège de la déduplication : `new Set` conserve la PREMIÈRE occurrence,
-    // donc dédoublonner la liste ferait repasser Rulli pour un joueur de
-    // Marseille. Les comptes se dédoublonnent, la liste jamais.
-    expect(rulli.clubs[rulli.clubs.length - 1]).toBe("Manchester City");
-    expect(clubsDistincts(rulli)[clubsDistincts(rulli).length - 1]).toBe("Marseille");
+    // donc dédoublonner la liste ferait repasser Ginter pour un joueur de
+    // Mönchengladbach. Les comptes se dédoublonnent, la liste jamais : le
+    // dernier maillot publié reste bien Fribourg, son club actuel.
+    expect(ginter.clubs[ginter.clubs.length - 1]).toBe("SC Freiburg");
+    expect(clubsDistincts(ginter)[clubsDistincts(ginter).length - 1]).toBe("Borussia Mönchengladbach");
   });
 
   it("la notification annonce le nombre de clubs DIFFÉRENTS", () => {
-    expect(accrocheDevinette(rulli).corps).toContain("7 clubs");
-    expect(accrocheDevinette(rulli).corps).not.toContain("8 clubs");
+    expect(accrocheDevinette(ginter).corps).toContain("3 clubs");
+    expect(accrocheDevinette(ginter).corps).not.toContain("4 clubs");
   });
 
   it("un doublon n'exclut plus du vivier quotidien", () => {
