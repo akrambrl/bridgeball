@@ -2,10 +2,12 @@ import { useEffect, useState } from "react";
 import { nombre, tr } from "@/lib/lang";
 import {
   fetchTopPlayers,
+  fetchLotEnJeu,
   getCurrentSeason,
   countryToFlag,
   type LbMode,
   type TopPlayer,
+  type LotEnJeu,
 } from "@/lib/leaderboard";
 // Carte de niveau : même photo de profil que sur mobile.
 import { levelCard } from "@/lib/collection";
@@ -35,6 +37,9 @@ export const LeaderboardView = () => {
   const [mode, setMode] = useState<LbMode>("global");
   const [rows, setRows] = useState<TopPlayer[]>([]);
   const [loading, setLoading] = useState(true);
+  // Le lot mis en jeu ce mois-ci (rang 1 de la saison en cours), pour l'annoncer
+  // PENDANT la saison — la récompense était invisible sur PC jusqu'ici.
+  const [lot, setLot] = useState<LotEnJeu | null>(null);
 
   useEffect(() => {
     let alive = true;
@@ -46,6 +51,20 @@ export const LeaderboardView = () => {
   }, [mode]);
 
   const season = getCurrentSeason();
+
+  useEffect(() => {
+    let alive = true;
+    fetchLotEnJeu(season.num)
+      .then((l) => { if (alive) setLot(l); })
+      .catch(() => { if (alive) setLot(null); });
+    return () => { alive = false; };
+  }, [season.num]);
+
+  // Le meneur du moment, pour tutoyer le 1er quand c'est lui qui regarde.
+  let monPid = "";
+  try { monPid = localStorage.getItem("bb_player_id") || ""; } catch { /* pas de stockage */ }
+  const jeSuisPremier = !!(monPid && rows.length && rows[0].pid === monPid);
+
   const msLeft = season.end.getTime() - Date.now();
   const daysLeft = Math.max(0, Math.floor(msLeft / 86400000));
   const hoursLeft = Math.max(0, Math.floor((msLeft % 86400000) / 3600000));
@@ -85,6 +104,39 @@ export const LeaderboardView = () => {
           {tr("SAISON", "SEASON", "SAISON", "STAGIONE", "TEMPORADA","TEMPORADA")} {season.num}
         </div>
       </div>
+
+      {/* ── LE LOT EN JEU, ANNONCÉ PENDANT LA SAISON ──────────────────────────
+          Le classement d'ordinateur ne montrait aucune récompense : sur PC, le
+          1er ne savait pas qu'une place de tête valait un lot. Ce bandeau lit la
+          ligne rang=1 de la saison en cours (bb_lots) et l'annonce, en tutoyant
+          le meneur quand c'est lui qui regarde. Rien tant qu'aucun lot n'est
+          défini pour le mois — pas de promesse creuse. */}
+      {lot && (
+        <div className="flex items-center gap-3 mb-4 px-4 py-3"
+          style={{ background:G.nuit, border:"2px solid "+G.or, borderRadius:G.rayon, boxShadow:G.ombre }}>
+          <div style={{ fontSize:28, lineHeight:1, flexShrink:0 }}>🏆</div>
+          <div className="flex-1 min-w-0">
+            <div style={{ ...posterText(1, G.projecteur, 0), fontSize:16, lineHeight:1.1, marginBottom:3 }}>
+              {jeSuisPremier
+                ? tr("TU ES 1ER — LE LOT EST À TOI","YOU'RE 1ST — THE PRIZE IS YOURS","DU BIST 1. — DER PREIS GEHÖRT DIR","SEI 1° — IL PREMIO È TUO","VOCÊ É O 1º — O PRÊMIO É SEU","ERES 1º — EL PREMIO ES TUYO")
+                : tr("LE 1ER DU MOIS REMPORTE","THIS MONTH'S #1 WINS","DER MONATSERSTE GEWINNT","IL 1° DEL MESE VINCE","O 1º DO MÊS LEVA","EL 1º DEL MES SE LLEVA")}
+            </div>
+            <div style={{ fontSize:12.5, fontWeight:700, color:G.creme, lineHeight:1.4 }}>
+              {lot.intitule}
+            </div>
+            <div style={{ fontSize:11, fontWeight:700, color:"rgba(242,231,206,.6)", marginTop:3 }}>
+              {jeSuisPremier
+                ? tr("Tiens ta place jusqu'à la fin du mois pour le gagner.","Hold your spot until month's end to win it.","Halte deinen Platz bis Monatsende, um ihn zu gewinnen.","Tieni il tuo posto fino a fine mese per vincerlo.","Segure sua posição até o fim do mês para ganhá-lo.","Mantén tu puesto hasta fin de mes para ganarlo.")
+                : tr("Termine 1er à la fin du mois et il est à toi.","Finish 1st at month's end and it's yours.","Beende den Monat als 1. und er gehört dir.","Finisci 1° a fine mese ed è tuo.","Termine em 1º no fim do mês e é seu.","Termina 1º a fin de mes y es tuyo.")}
+              {" · "}
+              <a href="/reglement" target="_blank" rel="noopener noreferrer"
+                style={{ color:G.projecteur, textDecoration:"underline", textUnderlineOffset:2 }}>
+                {tr("règlement","rules","Regeln","regolamento","regulamento","bases")}
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Mêmes onglets que le mobile */}
       <div className="flex gap-2 mb-4">
