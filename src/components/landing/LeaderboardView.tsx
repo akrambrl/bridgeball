@@ -2,12 +2,12 @@ import { useEffect, useState } from "react";
 import { nombre, tr } from "@/lib/lang";
 import {
   fetchTopPlayers,
-  fetchLotEnJeu,
+  fetchLotAAnnoncer,
   getCurrentSeason,
   countryToFlag,
   type LbMode,
   type TopPlayer,
-  type LotEnJeu,
+  type LotAnnonce,
 } from "@/lib/leaderboard";
 // Carte de niveau : même photo de profil que sur mobile.
 import { levelCard } from "@/lib/collection";
@@ -37,9 +37,9 @@ export const LeaderboardView = () => {
   const [mode, setMode] = useState<LbMode>("global");
   const [rows, setRows] = useState<TopPlayer[]>([]);
   const [loading, setLoading] = useState(true);
-  // Le lot mis en jeu ce mois-ci (rang 1 de la saison en cours), pour l'annoncer
-  // PENDANT la saison — la récompense était invisible sur PC jusqu'ici.
-  const [lot, setLot] = useState<LotEnJeu | null>(null);
+  // Le lot à annoncer : celui du mois en cours, ou en teaser celui du mois
+  // suivant — la récompense était invisible sur PC jusqu'ici.
+  const [lot, setLot] = useState<LotAnnonce | null>(null);
 
   useEffect(() => {
     let alive = true;
@@ -54,7 +54,7 @@ export const LeaderboardView = () => {
 
   useEffect(() => {
     let alive = true;
-    fetchLotEnJeu(season.num)
+    fetchLotAAnnoncer()
       .then((l) => { if (alive) setLot(l); })
       .catch(() => { if (alive) setLot(null); });
     return () => { alive = false; };
@@ -117,7 +117,9 @@ export const LeaderboardView = () => {
           <div style={{ fontSize:28, lineHeight:1, flexShrink:0 }}>🏆</div>
           <div className="flex-1 min-w-0">
             <div style={{ ...posterText(1, G.projecteur, 0), fontSize:16, lineHeight:1.1, marginBottom:3 }}>
-              {jeSuisPremier
+              {lot.upcoming
+                ? tr(`EN ${lot.monthLabel.toUpperCase()} — LE 1ER REMPORTE`, `IN ${lot.monthLabel.toUpperCase()} — #1 WINS`, `IM ${lot.monthLabel.toUpperCase()} — DER 1. GEWINNT`, `A ${lot.monthLabel.toUpperCase()} — IL 1° VINCE`, `EM ${lot.monthLabel.toUpperCase()} — O 1º LEVA`, `EN ${lot.monthLabel.toUpperCase()} — EL 1º SE LLEVA`)
+                : jeSuisPremier
                 ? tr("TU ES 1ER — LE LOT EST À TOI","YOU'RE 1ST — THE PRIZE IS YOURS","DU BIST 1. — DER PREIS GEHÖRT DIR","SEI 1° — IL PREMIO È TUO","VOCÊ É O 1º — O PRÊMIO É SEU","ERES 1º — EL PREMIO ES TUYO")
                 : tr("LE 1ER DU MOIS REMPORTE","THIS MONTH'S #1 WINS","DER MONATSERSTE GEWINNT","IL 1° DEL MESE VINCE","O 1º DO MÊS LEVA","EL 1º DEL MES SE LLEVA")}
             </div>
@@ -125,7 +127,9 @@ export const LeaderboardView = () => {
               {lot.intitule}
             </div>
             <div style={{ fontSize:11, fontWeight:700, color:"rgba(242,231,206,.6)", marginTop:3 }}>
-              {jeSuisPremier
+              {lot.upcoming
+                ? tr(`Le concours démarre le 1er ${lot.monthLabel}.`, `The contest starts on the 1st of ${lot.monthLabel}.`, `Der Wettbewerb startet am 1. ${lot.monthLabel}.`, `Il concorso inizia il 1° ${lot.monthLabel}.`, `O concurso começa em 1º de ${lot.monthLabel}.`, `El concurso empieza el 1 de ${lot.monthLabel}.`)
+                : jeSuisPremier
                 ? tr("Tiens ta place jusqu'à la fin du mois pour le gagner.","Hold your spot until month's end to win it.","Halte deinen Platz bis Monatsende, um ihn zu gewinnen.","Tieni il tuo posto fino a fine mese per vincerlo.","Segure sua posição até o fim do mês para ganhá-lo.","Mantén tu puesto hasta fin de mes para ganarlo.")
                 : tr("Termine 1er à la fin du mois et il est à toi.","Finish 1st at month's end and it's yours.","Beende den Monat als 1. und er gehört dir.","Finisci 1° a fine mese ed è tuo.","Termine em 1º no fim do mês e é seu.","Termina 1º a fin de mes y es tuyo.")}
               {" · "}

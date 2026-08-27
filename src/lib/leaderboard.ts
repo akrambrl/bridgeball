@@ -167,6 +167,25 @@ export type MonProfil = { pseudo: string | null; xp: number; country: string | n
 // mois. Ne lève jamais : sans lot défini, le bandeau ne s'affiche simplement pas.
 export type LotEnJeu = { intitule: string };
 
+// Le lot À ANNONCER : celui du mois EN COURS s'il existe, sinon — en teaser —
+// celui du mois SUIVANT. Sert à donner envie de grimper avant même le début du
+// concours (« EN SEPTEMBRE : le 1er remporte… »). `upcoming` dit lequel des deux.
+export type LotAnnonce = { intitule: string; upcoming: boolean; monthLabel: string };
+
+export async function fetchLotAAnnoncer(): Promise<LotAnnonce | null> {
+  const s = getCurrentSeason();
+  const enCours = await fetchLotEnJeu(s.num);
+  if (enCours) return { intitule: enCours.intitule, upcoming: false, monthLabel: s.monthLabel };
+  const suivant = await fetchLotEnJeu(s.num + 1);
+  if (suivant) {
+    const paris = new Date(new Date().toLocaleString("en-US", { timeZone: "Europe/Paris" }));
+    const moisSuivant = (paris.getMonth() + 1) % 12;
+    const label = (getLang() === "fr" ? MONTHS_FR : MONTHS_EN)[moisSuivant];
+    return { intitule: suivant.intitule, upcoming: true, monthLabel: label };
+  }
+  return null;
+}
+
 export async function fetchLotEnJeu(seasonNumber: number): Promise<LotEnJeu | null> {
   if (!Number.isInteger(seasonNumber) || seasonNumber < 1) return null;
   try {
