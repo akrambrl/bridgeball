@@ -14471,6 +14471,39 @@ export default function LePont() {
           de pelouse — ligne médiane, rond central — qui n'a plus d'objet sur
           une arène. areneCharte, monté plus haut, porte désormais le décor. */}
 
+      {/* ── LE RUBAN DÉFILANT DU LOT ─────────────────────────────────────────
+          Le pendant mobile du ruban de l'accueil PC : un bandeau doré qui fait
+          défiler le lot à gagner (même mécanique .goat-marquee, contenu dupliqué
+          pour une boucle sans couture). Lot du mois en cours, ou en teaser celui
+          du mois suivant. Rien tant qu'aucun lot n'est défini. */}
+      {(()=>{
+        const saison = getCurrentSeason();
+        let lot = (lots||[]).find(function(l){ return l && l.season_number===saison.num && l.rang===1; });
+        let teaser = false, moisLabel = "";
+        if (!lot) {
+          const suiv = (lots||[]).find(function(l){ return l && l.season_number===saison.num+1 && l.rang===1; });
+          if (suiv) { lot = suiv; teaser = true; moisLabel = nomMois((saison.mois+1)%12, lang); }
+        }
+        if (!lot || !lot.intitule) return null;
+        const quand = teaser
+          ? tr("EN "+moisLabel.toUpperCase(),"IN "+moisLabel.toUpperCase(),"IM "+moisLabel.toUpperCase(),"A "+moisLabel.toUpperCase(),"EM "+moisLabel.toUpperCase(),"EN "+moisLabel.toUpperCase())
+          : tr("CE MOIS-CI","THIS MONTH","DIESEN MONAT","QUESTO MESE","ESTE MÊS","ESTE MES");
+        const message = quand + tr(" — LE 1ER REMPORTE "," — #1 WINS "," — DER 1. GEWINNT "," — IL 1° VINCE "," — O 1º LEVA "," — EL 1º SE LLEVA ") + lot.intitule;
+        return (
+          <div style={{zIndex:2,overflow:"hidden",background:G.or,borderBottom:G.trait}}>
+            <div className="goat-marquee" style={{display:"flex",whiteSpace:"nowrap",padding:"6px 0"}}>
+              {[0,1,2,3].map(function(i){ return (
+                <span key={i} style={{display:"flex",alignItems:"center"}}>
+                  <span style={{fontSize:13,margin:"0 6px"}}>🏆</span>
+                  <span style={{...posterText(1,G.encre,0),fontSize:13,letterSpacing:.3}}>{message}</span>
+                  <span style={{color:"rgba(8,17,9,.35)",margin:"0 20px",fontWeight:900}}>•</span>
+                </span>
+              ); })}
+            </div>
+          </div>
+        );
+      })()}
+
       {/* ── HEADER compact ── */}
       <div style={{zIndex:1,padding:"6px 20px 2px"}}>
         {/* Bandeau d'en-tête sans fond propre : l'arène passe dessous et ses
