@@ -79,18 +79,22 @@ describe("l'en-tête d'ordinateur", () => {
   });
 });
 
-describe("le chemin vers le profil, de la landing à LePont", () => {
-  it("la landing pose ?profil=1 et monte LePont", () => {
-    expect(home).toMatch(/searchParams\.set\("profil", "1"\)/);
+describe("le chemin vers le profil, sur ordinateur", () => {
+  // Le profil d'ordinateur n'est PLUS l'écran mobile de LePont monté en colonne
+  // (« il s'affichait mal »). C'est désormais ProfileView, une vraie page large.
+  it("la landing ouvre la page profil d'ordinateur (ProfileView)", () => {
+    expect(home, "ProfileView doit être importé").toMatch(/import \{ ProfileView \} from/);
     expect(home, "onOpenProfile doit être passé à l'en-tête").toMatch(/onOpenProfile=\{onOpenProfile\}/);
-    // Et au remontage (l'URL survit à un rechargement), la même branche que
-    // friends/duels/room doit remonter LePont.
-    const condition = home.match(/if\s*\(.*p\.get\("friends"\).*\)\s*setPlaying\(true\)/);
-    expect(condition).toBeTruthy();
-    expect(condition![0]).toContain('p.get("profil")');
+    expect(home, "le clic profil ouvre ProfileView, pas LePont").toMatch(/onOpenProfile = \(\) => setProfileOpen\(true\)/);
+    expect(home, "ProfileView doit être rendu quand profileOpen").toMatch(/profileOpen && <ProfileView/);
+    // Et au remontage (l'URL ?profil=1 survit à un rechargement / un lien), on
+    // rouvre la page profil d'ordinateur — pas LePont.
+    expect(home).toMatch(/p\.get\("profil"\) === "1"\) setProfileOpen\(true\)/);
   });
 
-  it("LePont lit le paramètre et ouvre l'écran", () => {
+  it("LePont sert toujours le profil sur mobile", () => {
+    // La landing ne passe plus par LePont pour le profil, mais LePont garde son
+    // propre écran profil pour le mobile (sous 768 px), inchangé.
     expect(lePont).toMatch(/params\.get\("profil"\)/);
     expect(lePont, "le profil doit exiger un pseudo, comme les autres écrans de compte")
       .toMatch(/requirePseudo\(function\(\)\{ setScreen\("profile"\); \}\)/);

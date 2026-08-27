@@ -156,7 +156,7 @@ export async function fetchTopPlayers(top: number, mode: LbMode = "global"): Pro
 //
 // Ne lève jamais : sans réseau, l'en-tête garde son pseudo local et n'affiche
 // pas de carte, ce qui est exactement ce qu'il faisait avant.
-export type MonProfil = { pseudo: string | null; xp: number };
+export type MonProfil = { pseudo: string | null; xp: number; country: string | null };
 
 // ── LE LOT EN JEU CE MOIS-CI ────────────────────────────────────────────────
 //
@@ -192,12 +192,82 @@ export async function fetchMonProfil(playerId: string): Promise<MonProfil | null
       SB_URL +
       "/rest/v1/bb_pseudos?player_id=eq." +
       encodeURIComponent(playerId) +
-      "&select=pseudo,xp&limit=1";
+      "&select=pseudo,xp,country&limit=1";
     const res = await fetch(url, { headers: { apikey: SB_KEY, Authorization: "Bearer " + SB_KEY } });
     if (!res.ok) return null;
     const rows = await res.json();
     if (!Array.isArray(rows) || rows.length === 0) return null;
-    return { pseudo: rows[0].pseudo || null, xp: Number(rows[0].xp) || 0 };
+    return { pseudo: rows[0].pseudo || null, xp: Number(rows[0].xp) || 0, country: rows[0].country || null };
+  } catch {
+    return null;
+  }
+}
+
+// ── LE BILAN EN DUEL, POUR LA PAGE PROFIL D'ORDINATEUR ──────────────────────
+//
+// Port fidèle de `chargerMonBilanDuels` (LePont) : la page profil d'ordinateur
+// n'existait pas, elle affichait l'écran mobile. Un nul CASSE la série — ce
+// n'est pas une victoire. Ordre croissant pour lire la série dans le sens du
+// temps. Ne lève jamais : sans réseau le panneau reste vide.
+export type BilanDuels = { v: number; n: number; d: number; serie: number; meilleure: number; total: number };
+
+export async function fetchBilanDuels(playerId: string): Promise<BilanDuels | null> {
+  if (!playerId) return null;
+  try {
+    const url =
+      SB_URL +
+      "/rest/v1/bb_duels?status=in.(complete,open_done)&or=(challenger_id.eq." +
+      playerId + ",opponent_id.eq." + playerId +
+      ")&order=created_at.asc&select=challenger_id,challenger_score,opponent_score&limit=500";
+    const res = await fetch(url, { headers: { apikey: SB_KEY, Authorization: "Bearer " + SB_KEY } });
+    if (!res.ok) return null;
+    const rows = await res.json();
+    if (!Array.isArray(rows)) return null;
+    let v = 0, n = 0, d = 0, serie = 0, meilleure = 0;
+    for (const r of rows) {
+      const chezMoi = r.challenger_id === playerId;
+      const mien = (chezMoi ? r.challenger_score : r.opponent_score) || 0;
+      const sien = (chezMoi ? r.opponent_score : r.challenger_score) || 0;
+      if (mien > sien) { v++; serie++; if (serie > meilleure) meilleure = serie; }
+      else if (mien === sien) { n++; serie = 0; }
+      else { d++; serie = 0; }
+    }
+    return { v, n, d, serie, meilleure, total: rows.length };
+  } catch {
+    return null;
+  }
+}
+
+// ── LES RECORDS SOLO + PARTIES JOUÉES ───────────────────────────────────────
+//
+// Port de la lecture de records de LePont : bb_scores est la source de vérité
+// (le classement global remplace le score par l'XP, on ne peut donc pas y lire
+// les records). Parties = Plug + Mercato (bb_scores) + GOAT Grid (table à part).
+export type ProfilStats = { played: number; bestPont: number; bestChaine: number };
+
+export async function fetchProfilStats(playerId: string): Promise<ProfilStats | null> {
+  if (!playerId) return null;
+  try {
+    const url =
+      SB_URL + "/rest/v1/bb_scores?player_id=eq." + encodeURIComponent(playerId) +
+      "&select=score,mode&order=score.desc&limit=1000";
+    const res = await fetch(url, { headers: { apikey: SB_KEY, Authorization: "Bearer " + SB_KEY } });
+    if (!res.ok) return null;
+    const scores = await res.json();
+    if (!Array.isArray(scores)) return null;
+    let ggCount = 0;
+    try {
+      const gg = await fetch(
+        SB_URL + "/rest/v1/bb_gg_scores?player_id=eq." + encodeURIComponent(playerId) + "&select=id&limit=1000",
+        { headers: { apikey: SB_KEY, Authorization: "Bearer " + SB_KEY } });
+      if (gg.ok) { const g = await gg.json(); if (Array.isArray(g)) ggCount = g.length; }
+    } catch { /* GOAT Grid non compté, le reste tient */ }
+    let bestPont = 0, bestChaine = 0;
+    for (const s of scores) {
+      if (s.mode === "pont" && s.score > bestPont) bestPont = s.score;
+      if (s.mode === "chaine" && s.score > bestChaine) bestChaine = s.score;
+    }
+    return { played: scores.length + ggCount, bestPont, bestChaine };
   } catch {
     return null;
   }

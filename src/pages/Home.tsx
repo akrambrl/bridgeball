@@ -4,6 +4,7 @@ import { LobbyHeader, type TabKey } from "@/components/landing/LobbyHeader";
 import { LobbyView } from "@/components/landing/LobbyView";
 import { TutosView } from "@/components/landing/TutosView";
 import { LeaderboardView } from "@/components/landing/LeaderboardView";
+import { ProfileView } from "@/components/landing/ProfileView";
 import { FaqView } from "@/components/landing/FaqView";
 import { AboutView } from "@/components/landing/AboutView";
 import { DifficultyModal, type Difficulty } from "@/components/landing/DifficultyModal";
@@ -22,6 +23,7 @@ export type GameMode = "pont" | "chaine" | "grid" | "guess" | "goatgrid" | "duel
 
 const Home = () => {
   const [playing, setPlaying] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const [tab, setTab] = useState<TabKey>("play");
   // 1) Choix Solo/Multi (pont/chaine seulement)
   const [pendingMode, setPendingMode] = useState<"pont" | "chaine" | null>(null);
@@ -115,7 +117,10 @@ const Home = () => {
       // un mot. Un lien de défi qui ne mène pas au défi.
       try {
         const p = new URLSearchParams(window.location.search);
-        if (p.get("friends") === "1" || p.get("duels") === "1" || p.get("profil") === "1" || p.get("room")) setPlaying(true);
+        // `profil=1` ouvre désormais la page profil d'ordinateur, pas l'écran
+        // mobile de LePont. Les autres (amis, défis, salle) restent dans LePont.
+        if (p.get("profil") === "1") setProfileOpen(true);
+        else if (p.get("friends") === "1" || p.get("duels") === "1" || p.get("room")) setPlaying(true);
       } catch { /* noop */ }
       return;
     }
@@ -329,21 +334,10 @@ const Home = () => {
     setPlaying(true);
   };
 
-  // Ouvre l'écran de profil (LePont lit ?profil=1). Même mécanique que « Mes
-  // amis » et « Défis » juste au-dessus : la landing ne sait pas dessiner cet
-  // écran, elle monte celui qui sait.
-  //
-  // C'est le chemin qui MANQUAIT : l'en-tête d'ordinateur affichait le pseudo et
-  // un grade, et rien ne permettait de cliquer dessus. La collection de cartes
-  // était donc inatteignable sur PC.
-  const onOpenProfile = () => {
-    try {
-      const url = new URL(window.location.href);
-      url.searchParams.set("profil", "1");
-      window.history.replaceState({}, "", url.toString());
-    } catch {}
-    setPlaying(true);
-  };
+  // Ouvre la page profil d'ORDINATEUR (ProfileView), une vraie page large à la
+  // charte — et non plus l'écran mobile de LePont monté en colonne de 520 px au
+  // milieu d'un grand fond jaune, qui « s'affichait mal » sur PC.
+  const onOpenProfile = () => setProfileOpen(true);
 
   return (
     <div className="relative min-h-screen overflow-x-hidden text-white flex flex-col"
@@ -365,6 +359,9 @@ const Home = () => {
           GOAT FC
         </span>
       </div>
+
+      {/* Page profil d'ordinateur : overlay plein écran, à la charte large. */}
+      {profileOpen && <ProfileView onClose={() => setProfileOpen(false)} />}
 
       <LobbyHeader active={tab} onChange={setTab} onOpenProfile={onOpenProfile} />
 
