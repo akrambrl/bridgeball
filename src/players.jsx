@@ -642,7 +642,7 @@ export const PLAYERS = [
   { name:"David Alaba", clubs:["Austria Wien", "Bayern Munich", "Hoffenheim", "Real Madrid"], diff:"moyen", nationalities:["Autriche"], positions:["defenseur"], birthYear:1992 },
   { name:"Andrew Robertson", clubs:["Queen's Park", "Dundee United", "Hull City", "Liverpool", "Tottenham"], diff:"moyen", nationalities:["Écosse"], positions:["defenseur"], birthYear:1994 },
   { name:"Frenkie de Jong", clubs:["Willem II", "Ajax Amsterdam", "Barcelona"], diff:"moyen", nationalities:["Pays-Bas"], positions:["milieu"], birthYear:1997 },
-  { name:"Donny van de Beek", clubs:["Ajax Amsterdam", "Manchester United", "Everton", "Girona", "Eintracht Frankfurt"], diff:"facile", nationalities:["Pays-Bas"], positions:["attaquant"], birthYear:1997 },
+  { name:"Donny van de Beek", clubs:["Ajax Amsterdam", "Manchester United", "Everton", "Eintracht Frankfurt", "Girona"], diff:"facile", nationalities:["Pays-Bas"], positions:["milieu"], birthYear:1997 },
   // Légendes historiques - ajouts
   { name:"Ferenc Puskás", clubs:["Honvéd", "Real Madrid"], diff:"moyen", nationalities:["Hongrie"], positions:["attaquant"], birthYear:1927 },
   { name:"Alfredo Di Stéfano", clubs:["Boca Juniors", "Huracán", "River Plate", "Millonarios", "Real Madrid", "Espanyol"], diff:"moyen", nationalities:["Espagne"], positions:["attaquant"], birthYear:1926 },
@@ -657,7 +657,7 @@ export const PLAYERS = [
   // Euro 2024
   { name:"Robin Le Normand", clubs:["Brest", "Real Sociedad", "Atletico Madrid"], diff:"expert", nationalities:["Espagne"], positions:["defenseur"], birthYear:1996 },
   { name:"Joselu", clubs:["Celta Vigo", "Hoffenheim", "Eintracht Frankfurt", "Hannover", "Stoke City", "Deportivo La Coruna", "Newcastle", "Alavés", "Espanyol", "Real Madrid", "Al-Gharafa"], diff:"facile", nationalities:["Espagne"], positions:["attaquant"], birthYear:1990 },
-  { name:"Robert Andrich", clubs:["Hertha Berlin", "Dynamo Dresden", "Wehen Wiesbaden", "Union Berlin", "Bayer Leverkusen"], diff:"expert", nationalities:["Allemagne"], positions:["milieu"] , birthYear:1994 },
+  { name:"Robert Andrich", clubs:["Hertha Berlin", "Dynamo Dresden", "Wehen Wiesbaden", "Heidenheim", "Union Berlin", "Bayer Leverkusen"], diff:"expert", nationalities:["Allemagne"], positions:["milieu"] , birthYear:1994 },
   // CAN 2025 Maroc
   { name:"Abderrazak Hamdallah", clubs:["Olympic Safi", "Aarhus", "Guangzhou R&F", "El Jaish", "Al-Rayyan", "Al Nassr", "Al Ittihad", "Al Shabab"], diff:"expert", nationalities:["Maroc"], positions:["attaquant"] , birthYear:1990 },
   { name:"Adam Masina", clubs:["Bologna FC", "Watford", "Udinese Calcio", "Torino FC"], diff:"expert", nationalities:["Maroc"], positions:["defenseur"] , birthYear:1994 },
@@ -665,25 +665,25 @@ export const PLAYERS = [
   { name:"Max-Alain Gradel", clubs:["Leicester City", "Bournemouth", "Saint-Etienne", "Toulouse", "Sivasspor", "Gaziantep"], diff:"expert", nationalities:["Côte d'Ivoire"], positions:["milieu"] , birthYear:1987 },
   // CAN 2025 Algérie
   { name:"Islam Slimani", clubs:["Belouizdad", "Sporting CP", "Leicester City", "Newcastle", "Fenerbahce", "Monaco", "Lyon", "Brest", "Anderlecht", "Mechelen", "Coritiba"], diff:"moyen", nationalities:["Algérie"], positions:["attaquant"], birthYear:1988 },
-  { name:"Rachid Ghezzal", clubs:["Lyon", "Monaco", "Leicester City", "ACF Fiorentina", "Besiktas", "Tigres UANL"], diff:"expert", nationalities:["Algérie"], positions:["attaquant"] , birthYear:1992 },
+  { name:"Rachid Ghezzal", clubs:["Lyon", "Monaco", "Leicester City", "ACF Fiorentina", "Besiktas", "Çaykur Rizespor", "Lyon"], diff:"expert", nationalities:["Algérie"], positions:["attaquant"] , birthYear:1992 },
   { name:"Ramy Bensebaini", clubs:["Lierse", "Montpellier", "Rennes", "Borussia Mönchengladbach", "Borussia Dortmund"], diff:"moyen", nationalities:["Algérie"], positions:["defenseur"], birthYear:1995 },
-  { name:"Youcef Belaïli", clubs:["USM Alger", "Espérance Tunis", "Angers", "Ahli Jeddah", "Qatar SC", "Brest", "MC Alger"], diff:"expert", nationalities:["Algérie"], positions:["milieu"] , birthYear:1992 },
+  { name:"Youcef Belaïli", clubs:["Espérance Tunis", "USM Alger", "Angers", "Ahli Jeddah", "Qatar SC", "Brest", "Ajaccio", "MC Alger", "Espérance Tunis"], diff:"expert", nationalities:["Algérie"], positions:["attaquant"] , birthYear:1992 },
   // CAN 2025 Nigeria
-  { name:"Kelechi Iheanacho", clubs:["Manchester City", "Leicester City", "Sevilla", "Middlesbrough"], diff:"moyen", nationalities:["Nigeria"], positions:["attaquant"], birthYear:1996 },
+  { name:"Kelechi Iheanacho", clubs:["Manchester City", "Leicester City", "Sevilla", "Middlesbrough", "Celtic", "Bursaspor"], diff:"moyen", nationalities:["Nigeria"], positions:["attaquant"], birthYear:1996 },
   // CAN 2025 Ghana
   { name:"Jordan Ayew", clubs:["Marseille", "Sochaux", "Lorient", "Aston Villa", "Swansea", "Crystal Palace", "Leicester City"], diff:"moyen", nationalities:["Ghana"], positions:["attaquant"], birthYear:1991 },
   { name:"Inaki Williams", clubs:["Bilbao Athletic", "Athletic Bilbao"], diff:"moyen", nationalities:["Ghana"], positions:["attaquant"], birthYear:1994 },
   // CDM 2022 France
-  { name:"Axel Disasi", clubs:["Paris FC", "Reims", "Monaco", "Chelsea", "Aston Villa", "West Ham"], diff:"moyen", nationalities:["France"], positions:["defenseur"], birthYear:1998 },
+  { name:"Axel Disasi", clubs:["Paris FC", "Reims", "Monaco", "Chelsea", "Aston Villa", "West Ham", "Crystal Palace"], diff:"moyen", nationalities:["France"], positions:["defenseur"], birthYear:1998 },
   // CDM 2022 Maroc (coach et autres)
   { name:"Walid Regragui", clubs:["Toulouse", "Ajaccio", "Racing Santander", "Dijon", "Grenoble", "Moghreb Tétouan"], diff:"expert", nationalities:["France"], positions:["defenseur"] , birthYear:1975 },
   { name:"Sofiane Boufal", clubs:["Angers", "Lille", "Southampton", "Celta Vigo", "Al-Rayyan", "Union Saint-Gilloise", "Le Havre"], diff:"moyen", nationalities:["Maroc"], positions:["attaquant"], birthYear:1993 },
-  { name:"Selim Amallah", clubs:["Standard Liège", "Mouscron", "Real Valladolid", "Fenerbahce", "Real Betis"], diff:"expert", nationalities:["Maroc"], positions:["attaquant"] , birthYear:1996 },
+  { name:"Selim Amallah", clubs:["Mouscron", "Standard Liège", "Real Valladolid", "Valencia"], diff:"expert", nationalities:["Maroc"], positions:["milieu"] , birthYear:1996 },
   // Serie A mercato hivernal janvier 2026
-  { name:"Edoardo Bove", clubs:["AS Roma", "ACF Fiorentina", "Watford"], diff:"expert", nationalities:["Italie"], positions:["attaquant"] , birthYear:2002 },
-  { name:"Jack Harrison", clubs:["Manchester United", "Manchester City", "Middlesbrough", "Leeds United", "Everton", "ACF Fiorentina"], diff:"moyen", nationalities:["Angleterre"], positions:["milieu"], birthYear:1996 },
-  { name:"Daniele Rugani", clubs:["Empoli FC", "Juventus FC", "Cagliari Calcio", "Rennes", "Ajax Amsterdam", "ACF Fiorentina"], diff:"moyen", nationalities:["Italie"], positions:["defenseur"], birthYear:1994 },
-  { name:"Bryan Zaragoza", clubs:["Granada", "Bayern Munich", "Osasuna", "Celta Vigo", "AS Roma"], diff:"expert", nationalities:["Espagne"], positions:["attaquant"] , birthYear:2001 },
+  { name:"Edoardo Bove", clubs:["AS Roma", "ACF Fiorentina", "Watford"], diff:"expert", nationalities:["Italie"], positions:["milieu"] , birthYear:2002 },
+  { name:"Jack Harrison", clubs:["New York City FC", "Manchester City", "Middlesbrough", "Leeds United", "Everton", "ACF Fiorentina", "New England Revolution"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1996 },
+  { name:"Daniele Rugani", clubs:["Empoli FC", "Juventus FC", "Rennes", "Cagliari Calcio", "Ajax Amsterdam", "ACF Fiorentina"], diff:"moyen", nationalities:["Italie"], positions:["defenseur"], birthYear:1994 },
+  { name:"Bryan Zaragoza", clubs:["Granada", "Bayern Munich", "Osasuna", "Celta Vigo", "AS Roma", "Espanyol"], diff:"expert", nationalities:["Espagne"], positions:["attaquant"] , birthYear:2001 },
   { name:"Simon Sohm", clubs:["Zurich", "Parma FC", "ACF Fiorentina", "Bologna FC"], diff:"expert", nationalities:["Suisse"], positions:["attaquant"] , birthYear:2001 },
   { name:"João Mário Neto", clubs:["Porto", "Juventus FC", "Bologna FC"], diff:"expert", nationalities:["Portugal"], positions:["defenseur"], birthYear:2000 },
   { name:"Marco Brescianini", clubs:["AC Milan", "Virtus Entella", "Cosenza", "Frosinone", "Atalanta BC", "ACF Fiorentina"], diff:"expert", nationalities:["Italie"], positions:["milieu"], birthYear:2000 },
