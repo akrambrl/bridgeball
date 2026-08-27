@@ -789,35 +789,35 @@ export const PLAYERS = [
   { name:"Claudio Echeverri", clubs:["River Plate", "Manchester City", "Bayer Leverkusen", "Girona", "Manchester City"], diff:"expert", nationalities:["Argentine"], positions:["attaquant"], birthYear:2006 },
   { name:"Matěj Kovář", clubs:["Swindon", "Burton Albion", "Sparta Prague", "Bayer Leverkusen", "PSV Eindhoven"], diff:"expert", nationalities:["Tchéquie"], positions:["gardien"], birthYear:2000 },
   { name:"Tomáš Čvančara", clubs:["Jablonec", "Sparta Prague", "Borussia Mönchengladbach", "Antalyaspor", "Celtic", "Borussia Mönchengladbach"], diff:"expert", nationalities:["Tchéquie"], positions:["attaquant"], birthYear:2000 },
-  { name:"Jonas Omlin", clubs:["Basel", "Montpellier", "Borussia Mönchengladbach", "Bayer Leverkusen"], diff:"expert", nationalities:["Suisse"], positions:["gardien"] , birthYear:1994 },
+  { name:"Jonas Omlin", clubs:["Basel", "Montpellier", "Borussia Mönchengladbach", "Basel"], diff:"expert", nationalities:["Suisse"], positions:["gardien"] , birthYear:1994 },
   // Premier League 2025/26 - Top missing players
   // Liverpool
   { name:"Joe Gomez", clubs:["Charlton", "Liverpool"], diff:"moyen", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1997 },
   { name:"Kostas Tsimikas", clubs:["Olympiacos", "Esbjerg", "Willem II", "Liverpool", "AS Roma"], diff:"expert", nationalities:["Grèce"], positions:["defenseur"], birthYear:1996 },
   { name:"Curtis Jones", clubs:["Liverpool"], diff:"moyen", nationalities:["Angleterre"], positions:["milieu"], birthYear:2001 },
-  { name:"Harvey Elliott", clubs:["Fulham", "Liverpool", "Blackburn"], diff:"moyen", nationalities:["Angleterre"], positions:["milieu"], birthYear:2003 },
+  { name:"Harvey Elliott", clubs:["Fulham", "Liverpool", "Blackburn", "Aston Villa"], diff:"moyen", nationalities:["Angleterre"], positions:["milieu"], birthYear:2003 },
   // Arsenal
   { name:"Martin Ødegaard", clubs:["Strømsgodset", "Real Madrid", "Heerenveen", "Vitesse", "Real Sociedad", "Arsenal"], diff:"facile", nationalities:["Norvège"], positions:["milieu"], birthYear:1998 },
   // Man City
-  { name:"Stefan Ortega", clubs:["Arminia Bielefeld", "Manchester City", "Olympiacos"], diff:"expert", nationalities:["Allemagne"], positions:["gardien"], birthYear:1992 },
+  { name:"Stefan Ortega", clubs:["Arminia Bielefeld", "1860 Munich", "Arminia Bielefeld", "Manchester City", "Nottingham Forest", "Olympiacos"], diff:"expert", nationalities:["Allemagne"], positions:["gardien"], birthYear:1992 },
   { name:"Rico Lewis", clubs:["Manchester City"], diff:"moyen", nationalities:["Angleterre"], positions:["defenseur"], birthYear:2004 },
-  { name:"Oscar Bobb", clubs:["Manchester City"], diff:"expert", nationalities:["Norvège"], positions:["attaquant"], birthYear:2003 },
+  { name:"Oscar Bobb", clubs:["Manchester City", "Fulham"], diff:"expert", nationalities:["Norvège"], positions:["attaquant"], birthYear:2003 },
   // Man United
   // Chelsea
-  { name:"Filip Jörgensen", clubs:["Villarreal", "Chelsea"], diff:"expert", nationalities:["Suède"], positions:["gardien"], birthYear:2002 },
-  { name:"Levi Colwill", clubs:["Chelsea", "Huddersfield", "Brighton"], diff:"moyen", nationalities:["Angleterre"], positions:["defenseur"], birthYear:2003 },
-  { name:"Trevoh Chalobah", clubs:["Chelsea", "Ipswich Town", "Huddersfield", "Lorient", "Como"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1999 },
-  { name:"Benoît Badiashile", clubs:["Monaco", "Chelsea"], diff:"moyen", nationalities:["France"], positions:["defenseur"], birthYear:2001 },
-  { name:"Romeo Lavia", clubs:["Anderlecht", "Manchester City", "Southampton", "Chelsea"], diff:"moyen", nationalities:["Belgique"], positions:["milieu"], birthYear:2004 },
+  { name:"Filip Jörgensen", clubs:["Villarreal", "Chelsea", "Strasbourg"], diff:"expert", nationalities:["Suède"], positions:["gardien"], birthYear:2002 },
+  { name:"Levi Colwill", clubs:["Huddersfield", "Brighton", "Chelsea"], diff:"moyen", nationalities:["Angleterre"], positions:["defenseur"], birthYear:2003 },
+  { name:"Trevoh Chalobah", clubs:["Ipswich Town", "Huddersfield", "Lorient", "Chelsea", "Crystal Palace", "Como"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1999 },
+  { name:"Benoît Badiashile", clubs:["Monaco", "Chelsea", "SSC Napoli"], diff:"moyen", nationalities:["France"], positions:["defenseur"], birthYear:2001 },
+  { name:"Romeo Lavia", clubs:["Manchester City", "Southampton", "Chelsea"], diff:"moyen", nationalities:["Belgique"], positions:["milieu"], birthYear:2004 },
   // Tottenham
-  { name:"Guglielmo Vicario", clubs:["Udinese Calcio", "Venezia", "Perugia", "Cagliari Calcio", "Empoli FC", "Tottenham"], diff:"moyen", nationalities:["Italie"], positions:["gardien"], birthYear:1996 },
+  { name:"Guglielmo Vicario", clubs:["Venezia", "Perugia", "Cagliari Calcio", "Empoli FC", "Tottenham", "Juventus FC"], diff:"moyen", nationalities:["Italie"], positions:["gardien"], birthYear:1996 },
   { name:"Radu Drăguşin", clubs:["Juventus FC", "Sampdoria", "Salernitana", "Genoa CFC", "Tottenham", "ACF Fiorentina"], diff:"expert", nationalities:["Roumanie"], positions:["defenseur"], birthYear:2002 },
   { name:"Djed Spence", clubs:["Middlesbrough", "Nottingham Forest", "Tottenham", "Rennes", "Leeds United", "Genoa CFC"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"] , birthYear:2000 },
   { name:"Dejan Kulusevski", clubs:["Atalanta BC", "Parma FC", "Juventus FC", "Tottenham"], diff:"moyen", nationalities:["Suède"], positions:["attaquant"], birthYear:2000 },
   // Newcastle
   { name:"Martin Dúbravka", clubs:["Žilina", "Esbjerg", "Sparta Prague", "Newcastle", "Manchester United", "Tottenham"], diff:"expert", nationalities:["Slovaquie"], positions:["gardien"], birthYear:1989 },
-  { name:"Sven Botman", clubs:["Ajax Amsterdam", "Heerenveen", "Lille", "Newcastle"], diff:"moyen", nationalities:["Pays-Bas"], positions:["defenseur"], birthYear:2000 },
-  { name:"Tino Livramento", clubs:["Chelsea", "Southampton", "Newcastle"], diff:"expert", nationalities:["Portugal"], positions:["defenseur"], birthYear:2002 },
+  { name:"Sven Botman", clubs:["Heerenveen", "Lille", "Newcastle"], diff:"moyen", nationalities:["Pays-Bas"], positions:["defenseur"], birthYear:2000 },
+  { name:"Tino Livramento", clubs:["Southampton", "Newcastle"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:2002 },
   { name:"Lewis Hall", clubs:["Chelsea", "Newcastle"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:2004 },
   { name:"Joelinton", clubs:["Sport Recife", "Hoffenheim", "Rapid Vienna", "Newcastle"], diff:"moyen", nationalities:["Brésil"], positions:["attaquant"], birthYear:1996 },
   { name:"Joe Willock", clubs:["Arsenal", "Newcastle"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1999 },
