@@ -12780,21 +12780,31 @@ export default function LePont() {
               s'affiche — pas de promesse creuse. Réservé à Saison/Monde : en
               Amis, il n'y a pas de dotation. */}
           {lbMode!=="amis" && lbSeasonScope!=="amis" && (()=>{
-            const saisonCourante = getCurrentSeason().num;
-            const lotEnJeu = (lots||[]).find(function(l){ return l && l.season_number===saisonCourante && l.rang===1; });
+            const saison = getCurrentSeason();
+            // Le lot du mois EN COURS s'il existe ; sinon, en TEASER, celui du
+            // mois SUIVANT (« EN SEPTEMBRE : le 1er remporte… ») pour donner
+            // envie de grimper avant le début du concours.
+            let lotEnJeu = (lots||[]).find(function(l){ return l && l.season_number===saison.num && l.rang===1; });
+            let teaser = false, moisLabel = "";
+            if (!lotEnJeu) {
+              const suiv = (lots||[]).find(function(l){ return l && l.season_number===saison.num+1 && l.rang===1; });
+              if (suiv) { lotEnJeu = suiv; teaser = true; moisLabel = nomMois((saison.mois+1)%12, lang); }
+            }
             if (!lotEnJeu || !lotEnJeu.intitule) return null;
             // Le meneur du moment, dans la portée affichée (monde). S'il n'y a
             // pas encore de classement, personne n'est meneur : on reste sur le
-            // message général.
+            // message général. En teaser (mois pas commencé), pas de tutoiement.
             const meneur = leaderboard && leaderboard.length ? leaderboard[0] : null;
-            const jeSuisPremier = !!(meneur && meneur.pid && meneur.pid===playerId);
+            const jeSuisPremier = !teaser && !!(meneur && meneur.pid && meneur.pid===playerId);
             return (
               <div style={{background:G.nuit,border:"2px solid "+G.or,borderRadius:G.rayon,
                 boxShadow:G.ombre,padding:"12px 14px",marginBottom:8,display:"flex",alignItems:"center",gap:12}}>
                 <div style={{fontSize:30,lineHeight:1,flexShrink:0}}>🏆</div>
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{...posterText(17,G.projecteur),lineHeight:1.1,marginBottom:3}}>
-                    {jeSuisPremier
+                    {teaser
+                      ? tr("EN "+moisLabel.toUpperCase()+" — LE 1ER REMPORTE","IN "+moisLabel.toUpperCase()+" — #1 WINS","IM "+moisLabel.toUpperCase()+" — DER 1. GEWINNT","A "+moisLabel.toUpperCase()+" — IL 1° VINCE","EM "+moisLabel.toUpperCase()+" — O 1º LEVA","EN "+moisLabel.toUpperCase()+" — EL 1º SE LLEVA")
+                      : jeSuisPremier
                       ? tr("TU ES 1ER — LE LOT EST À TOI","YOU'RE 1ST — THE PRIZE IS YOURS","DU BIST 1. — DER PREIS GEHÖRT DIR","SEI 1° — IL PREMIO È TUO","VOCÊ É O 1º — O PRÊMIO É SEU","ERES 1º — EL PREMIO ES TUYO")
                       : tr("LE 1ER DU MOIS REMPORTE","THIS MONTH'S #1 WINS","DER MONATSERSTE GEWINNT","IL 1° DEL MESE VINCE","O 1º DO MÊS LEVA","EL 1º DEL MES SE LLEVA")}
                   </div>
@@ -12802,7 +12812,9 @@ export default function LePont() {
                     {lotEnJeu.intitule}
                   </div>
                   <div style={{fontSize:11,fontWeight:700,color:"rgba(242,231,206,.6)",marginTop:3}}>
-                    {jeSuisPremier
+                    {teaser
+                      ? tr("Le concours démarre le 1er "+moisLabel+".","The contest starts on the 1st of "+moisLabel+".","Der Wettbewerb startet am 1. "+moisLabel+".","Il concorso inizia il 1° "+moisLabel+".","O concurso começa em 1º de "+moisLabel+".","El concurso empieza el 1 de "+moisLabel+".")
+                      : jeSuisPremier
                       ? tr("Tiens ta place jusqu'à la fin du mois pour le gagner.","Hold your spot until month's end to win it.","Halte deinen Platz bis Monatsende, um ihn zu gewinnen.","Tieni il tuo posto fino a fine mese per vincerlo.","Segure sua posição até o fim do mês para ganhá-lo.","Mantén tu puesto hasta fin de mes para ganarlo.")
                       : tr("Termine 1er à la fin du mois et il est à toi.","Finish 1st at month's end and it's yours.","Beende den Monat als 1. und er gehört dir.","Finisci 1° a fine mese ed è tuo.","Termine em 1º no fim do mês e é seu.","Termina 1º a fin de mes y es tuyo.")}
                     {" · "}
