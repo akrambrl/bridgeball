@@ -158,6 +158,33 @@ export async function fetchTopPlayers(top: number, mode: LbMode = "global"): Pro
 // pas de carte, ce qui est exactement ce qu'il faisait avant.
 export type MonProfil = { pseudo: string | null; xp: number };
 
+// ── LE LOT EN JEU CE MOIS-CI ────────────────────────────────────────────────
+//
+// bb_lots (season_number, rang, intitule) est publique en LECTURE. Le classement
+// d'ordinateur ne la lisait pas du tout : la récompense de fin de saison était
+// invisible sur PC, alors qu'elle s'annonce sur mobile. On lit ici la ligne
+// rang=1 de la saison DEMANDÉE (la saison en cours) pour l'annoncer pendant le
+// mois. Ne lève jamais : sans lot défini, le bandeau ne s'affiche simplement pas.
+export type LotEnJeu = { intitule: string };
+
+export async function fetchLotEnJeu(seasonNumber: number): Promise<LotEnJeu | null> {
+  if (!Number.isInteger(seasonNumber) || seasonNumber < 1) return null;
+  try {
+    const url =
+      SB_URL +
+      "/rest/v1/bb_lots?select=intitule&season_number=eq." +
+      seasonNumber +
+      "&rang=eq.1&limit=1";
+    const res = await fetch(url, { headers: { apikey: SB_KEY, Authorization: "Bearer " + SB_KEY } });
+    if (!res.ok) return null;
+    const rows = await res.json();
+    if (!Array.isArray(rows) || rows.length === 0 || !rows[0].intitule) return null;
+    return { intitule: String(rows[0].intitule) };
+  } catch {
+    return null;
+  }
+}
+
 export async function fetchMonProfil(playerId: string): Promise<MonProfil | null> {
   if (!playerId) return null;
   try {
