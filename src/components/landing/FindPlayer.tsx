@@ -511,15 +511,20 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
     // 2) Grand club : « J'ai porté le maillot de … »
     // Dédoublonné : sinon un club figurant deux fois avait deux fois plus de
     // chances d'être tiré comme « grand club » que les autres.
+    // PAS en devinette du jour : le parcours complet des clubs y est AFFICHÉ,
+    // donc « J'ai porté le maillot de Manchester United » ne dit rien qu'on ne
+    // voie déjà — ce n'est pas un indice. On le réserve à « Trouve le joueur »,
+    // où le parcours est caché.
     const bigs = [...new Set(clubs)].filter(c => BIG_CLUBS.has(c));
-    if (bigs.length) {
+    if (!daily && bigs.length) {
       const bc = bigs[hashStr(answer.name, 17) % bigs.length];
       clues.push(tr("J'ai porté le maillot de", "I wore the shirt of", "Ich trug das Trikot von", "Ho indossato la maglia del", "Vesti a camisa do","Vestí la camiseta de") + " " + bc + ".");
     }
 
-    // 3) Pays : « J'ai évolué en … »
+    // 3) Pays : « J'ai évolué en … » — également masqué en devinette du jour :
+    // les noms de clubs sont affichés, donc le pays s'en déduit directement.
     const countries = Array.from(new Set(clubs.map(c => CLUB_COUNTRY[c]).filter(Boolean)));
-    if (countries.length) {
+    if (!daily && countries.length) {
       const ci = COUNTRY_INFO[countries[hashStr(answer.name, 13) % countries.length]];
       if (ci) clues.push(tr("J'ai évolué " + ci.fr, "I played in " + ci.en, "Ich spielte in " + ci.de, "Ho giocato in " + ci.it, "Joguei em " + ci.pt,"Jugué en " + (ci.es || ci.en)) + ".");
     }
@@ -532,8 +537,10 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
     if (has(ANEC_ENTRAINEUR)) clues.push(tr("Je suis devenu entraîneur 👔", "I became a manager 👔", "Ich wurde Trainer 👔", "Sono diventato allenatore 👔", "Virei treinador 👔","Me hice entrenador 👔"));
     if (has(GG_SHIRT_10)) clues.push(tr("J'ai porté le mythique numéro 10 🔟", "I wore the iconic number 10 🔟", "Ich trug die legendäre Nummer 10 🔟", "Ho indossato la mitica maglia numero 10 🔟", "Usei a mítica camisa 10 🔟","Llevé el mítico número 10 🔟"));
 
-    // 5) Nombre de clubs
-    if (nbClubs(answer) >= 3) clues.push(tr("J'ai porté les couleurs de", "I wore the colours of", "Ich trug die Farben von", "Ho vestito i colori di", "Vesti as cores de","Defendí los colores de") + " " + nbClubs(answer) + " " + tr("clubs différents", "different clubs", "verschiedenen Klubs", "club diversi", "clubes diferentes","clubes diferentes") + ".");
+    // 5) Nombre de clubs — masqué en devinette du jour : les clubs sont affichés,
+    // il suffit de les compter. « J'ai porté les couleurs de 5 clubs » n'apprend
+    // rien quand les 5 clubs sont sous les yeux.
+    if (!daily && nbClubs(answer) >= 3) clues.push(tr("J'ai porté les couleurs de", "I wore the colours of", "Ich trug die Farben von", "Ho vestito i colori di", "Vesti as cores de","Defendí los colores de") + " " + nbClubs(answer) + " " + tr("clubs différents", "different clubs", "verschiedenen Klubs", "club diversi", "clubes diferentes","clubes diferentes") + ".");
 
     // 5) Décennie (repli)
     const startYear = answer.birthYear ? answer.birthYear + 19 : 0;
