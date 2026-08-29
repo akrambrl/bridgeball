@@ -848,14 +848,14 @@ export const PLAYERS = [
   { name:"Julio Enciso", clubs:["Libertad", "Brighton", "Ipswich Town", "Strasbourg"], diff:"expert", nationalities:["Paraguay"], positions:["attaquant"] , birthYear:2004 },
   // Brentford
   { name:"Mark Flekken", clubs:["Greuther Fürth", "Duisburg", "SC Freiburg", "Brentford", "Bayer Leverkusen"], diff:"expert", nationalities:["Pays-Bas"], positions:["gardien"] , birthYear:1993 },
-  { name:"Ethan Pinnock", clubs:["Dulwich Hamlet", "Forest Green Rovers", "Barnsley", "Brentford"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"] , birthYear:1993 },
+  { name:"Ethan Pinnock", clubs:["Dulwich Hamlet", "Forest Green Rovers", "Barnsley", "Brentford"], diff:"expert", nationalities:["Jamaïque"], positions:["defenseur"] , birthYear:1993 },
   { name:"Nathan Collins", clubs:["Stoke City", "Burnley", "Wolverhampton", "Brentford"], diff:"expert", nationalities:["Irlande"], positions:["defenseur"] , birthYear:2001 },
-  { name:"Mathias Jensen", clubs:["Nordsjælland", "Celta Vigo", "Brentford"], diff:"expert", nationalities:["Danemark"], positions:["attaquant"] , birthYear:1996 },
+  { name:"Mathias Jensen", clubs:["Nordsjælland", "Celta Vigo", "Brentford"], diff:"expert", nationalities:["Danemark"], positions:["milieu"] , birthYear:1996 },
   { name:"Fabio Carvalho", clubs:["Fulham", "Liverpool", "RB Leipzig", "Hull City", "Brentford"], diff:"expert", nationalities:["Portugal"], positions:["milieu"] , birthYear:2002 },
   // Fulham
   { name:"Antonee Robinson", clubs:["Everton", "Bolton", "Wigan Athletic", "Fulham"], diff:"moyen", nationalities:["États-Unis"], positions:["defenseur"], birthYear:1997 },
   { name:"Kenny Tete", clubs:["Ajax Amsterdam", "Lyon", "Fulham"], diff:"expert", nationalities:["Pays-Bas"], positions:["defenseur"], birthYear:1995 },
-  { name:"Andreas Pereira", clubs:["Manchester United", "Granada", "Valencia", "SS Lazio", "Flamengo", "Fulham", "Palmeiras"], diff:"moyen", nationalities:["Brésil"], positions:["attaquant"], birthYear:1996 },
+  { name:"Andreas Pereira", clubs:["Manchester United", "Granada", "Valencia", "SS Lazio", "Flamengo", "Fulham", "Palmeiras"], diff:"moyen", nationalities:["Brésil"], positions:["milieu"], birthYear:1996 },
   { name:"Rodrigo Muniz", clubs:["Flamengo", "Coritiba", "Fulham", "Middlesbrough"], diff:"expert", nationalities:["Brésil"], positions:["attaquant"] , birthYear:2001 },
   { name:"Emile Smith Rowe", clubs:["Arsenal", "RB Leipzig", "Huddersfield", "Fulham"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:2000 },
   // Deux attaquants signalés absents, parcours relevés sur Wikipédia avant écriture.
