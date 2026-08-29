@@ -1105,7 +1105,7 @@ export const PLAYERS = [
   { name:"Leny Yoro", clubs:["Lille", "Manchester United"], diff:"expert", nationalities:["France"], positions:["defenseur"], birthYear:2005 },
   { name:"Dominik Szoboszlai", clubs:["Liefering", "Salzburg", "RB Leipzig", "Liverpool"], diff:"moyen", nationalities:["Hongrie"], positions:["milieu"], birthYear:2000 },
   { name:"Phil Foden", clubs:["Manchester City"], diff:"facile", nationalities:["Angleterre"], positions:["attaquant"], birthYear:2000 },
-  { name:"Bruno Guimaraes", clubs:["Athletico Paranaense", "Lyon", "Newcastle", "Arsenal"], diff:"expert", nationalities:["Brésil"], positions:["attaquant"] , birthYear:1997 },
+  { name:"Bruno Guimaraes", clubs:["Athletico Paranaense", "Lyon", "Newcastle", "Arsenal"], diff:"expert", nationalities:["Brésil"], positions:["milieu"] , birthYear:1997 },
   { name:"Xavi Simons", clubs:["PSG", "PSV Eindhoven", "RB Leipzig", "Tottenham"], diff:"moyen", nationalities:["Pays-Bas"], positions:["milieu"], birthYear:2003 },
   { name:"Christopher Nkunku", clubs:["PSG", "RB Leipzig", "Chelsea", "AC Milan"], diff:"moyen", nationalities:["France"], positions:["attaquant"], birthYear:1997 },
   { name:"Evan Ferguson", clubs:["Bohemians", "Brighton", "West Ham", "AS Roma"], diff:"moyen", nationalities:["Irlande"], positions:["attaquant"], birthYear:2004 },
