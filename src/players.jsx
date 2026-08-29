@@ -1657,7 +1657,7 @@ export const PLAYERS = [
   { name:"Manuel Akanji", clubs:["Winterthur", "Basel", "Borussia Dortmund", "Manchester City", "Inter Milan"], diff:"moyen", nationalities:["Suisse"], positions:["defenseur"], birthYear:1995 },
   { name:"Yann Sommer", clubs:["Basel", "Grasshoppers", "Borussia Mönchengladbach", "Bayern Munich", "Inter Milan", "Club Brugge"], diff:"moyen", nationalities:["Suisse"], positions:["gardien"], birthYear:1988 },
   { name:"Breel Embolo", clubs:["Basel", "Schalke", "Borussia Mönchengladbach", "Monaco", "Rennes"], diff:"moyen", nationalities:["Suisse"], positions:["attaquant"], birthYear:1997 },
-  { name:"Remo Freuler", clubs:["Atalanta BC", "Nottingham Forest"], diff:"expert", nationalities:["Suisse"], positions:["attaquant"] , birthYear:1992 },
+  { name:"Remo Freuler", clubs:["Atalanta BC", "Nottingham Forest"], diff:"expert", nationalities:["Suisse"], positions:["milieu"] , birthYear:1992 },
   { name:"Zeki Amdouni", clubs:["Burnley", "Benfica"], diff:"expert", nationalities:["Suisse"], positions:["attaquant"], birthYear:2000 },
   // Équipe nationale Pays-Bas 2026 (compléments)
   { name:"Tijjani Reijnders", clubs:["PEC Zwolle", "AZ Alkmaar", "RKC Waalwijk", "AC Milan", "Manchester City"], diff:"moyen", nationalities:["Pays-Bas"], positions:["milieu"], birthYear:1998 },
