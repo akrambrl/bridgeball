@@ -1366,10 +1366,10 @@ export const PLAYERS = [
 { name:"Jaden Philogene", clubs:["Aston Villa", "Stoke City", "Cardiff City", "Hull City", "Ipswich Town"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"] , birthYear:2002 },
 { name:"Sverre Nypan", clubs:["Rosenborg", "Manchester City"], diff:"expert", nationalities:["Norvège"], positions:["attaquant"] , birthYear:2006 },
 { name:"Chido Obi-Martin", clubs:["Arsenal", "Manchester United"], diff:"expert", nationalities:["Danemark"], positions:["attaquant"], birthYear:2007 },
-{ name:"Felix Nmecha", clubs:["Manchester City", "Preston", "Anderlecht", "Wolfsburg", "Borussia Dortmund"], diff:"expert", nationalities:["Allemagne"], positions:["milieu"], birthYear:2000 },
+{ name:"Felix Nmecha", clubs:["Manchester City", "Wolfsburg", "Borussia Dortmund"], diff:"expert", nationalities:["Allemagne"], positions:["milieu"], birthYear:2000 },
 { name:"Nicola Zalewski", clubs:["AS Roma", "Inter Milan", "Atalanta BC"], diff:"expert", nationalities:["Pologne"], positions:["milieu"] , birthYear:2002 },
 { name:"Alessandro Buongiorno", clubs:["Torino FC", "SSC Napoli"], diff:"expert", nationalities:["Italie"], positions:["defenseur"] , birthYear:1999 },
-{ name:"Luka Sucic", clubs:["RB Salzburg", "RB Leipzig"], diff:"expert", nationalities:["Croatie"], positions:["attaquant"] , birthYear:2002 },
+{ name:"Luka Sucic", clubs:["RB Salzburg", "Real Sociedad"], diff:"expert", nationalities:["Croatie"], positions:["milieu"] , birthYear:2002 },
 // Légendes / joueurs connus
 { name:"Pelé", clubs:["Santos", "New York Cosmos"], diff:"facile", nationalities:["Brésil"], positions:["attaquant"], birthYear:1940 },
 { name:"Franz Beckenbauer", clubs:["Bayern Munich", "New York Cosmos", "Hamburg"], diff:"moyen", nationalities:["Allemagne"], positions:["defenseur"], birthYear:1945 },
@@ -1518,7 +1518,7 @@ export const PLAYERS = [
   { name:"Jakub Kamiński", clubs:["Lech Poznań", "Wolfsburg", "Köln", "Benfica"], diff:"moyen", nationalities:["Pologne"], positions:["milieu"], birthYear:2002 },
   { name:"Przemysław Frankowski", clubs:["Lens", "Rennes"], diff:"expert", nationalities:["Pologne"], positions:["defenseur"] , birthYear:1995 },
   // Équipe nationale Écosse 2026
-  { name:"Scott McTominay", clubs:["Manchester United", "SSC Napoli"], diff:"moyen", nationalities:["Angleterre"], positions:["milieu"], birthYear:1996 },
+  { name:"Scott McTominay", clubs:["Manchester United", "SSC Napoli"], diff:"moyen", nationalities:["Écosse"], positions:["milieu"], birthYear:1996 },
   { name:"Billy Gilmour", clubs:["Chelsea", "Norwich City", "Brighton", "SSC Napoli"], diff:"moyen", nationalities:["Angleterre"], positions:["milieu"], birthYear:2001 },
   { name:"Kieran Tierney", clubs:["Celtic", "Arsenal", "Real Sociedad"], diff:"moyen", nationalities:["Écosse"], positions:["defenseur"], birthYear:1997 },
   { name:"Aaron Hickey", clubs:["Hearts", "Bologna FC", "Brentford"], diff:"moyen", nationalities:["Écosse"], positions:["defenseur"], birthYear:2002 },
