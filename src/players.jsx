@@ -1690,7 +1690,7 @@ export const PLAYERS = [
   { name:"Anthony Gordon", clubs:["Everton", "Preston", "Newcastle", "Barcelona"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:2001 },
   // Équipe nationale Allemagne 2026 (compléments)
   { name:"Pascal Groß", clubs:["Karlsruher SC", "Hoffenheim", "Ingolstadt", "Brighton", "Borussia Dortmund"], diff:"expert", nationalities:["Allemagne"], positions:["milieu"], birthYear:1991 },
-  { name:"David Raum", clubs:["Hoffenheim", "RB Leipzig"], diff:"expert", nationalities:["Allemagne"], positions:["attaquant"] , birthYear:1998 },
+  { name:"David Raum", clubs:["Hoffenheim", "RB Leipzig"], diff:"expert", nationalities:["Allemagne"], positions:["defenseur"] , birthYear:1998 },
   // Équipe nationale Espagne 2026 (compléments)
   { name:"Pau Cubarsí", clubs:["Barcelona"], diff:"moyen", nationalities:["Espagne"], positions:["defenseur"], birthYear:2007 },
   { name:"Marc Cucurella", clubs:["Barcelona", "Eibar", "Getafe", "Brighton", "Chelsea", "Real Madrid"], diff:"moyen", nationalities:["Espagne"], positions:["defenseur"], birthYear:1998 },
