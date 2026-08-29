@@ -819,8 +819,8 @@ export const PLAYERS = [
   { name:"Sven Botman", clubs:["Heerenveen", "Lille", "Newcastle"], diff:"moyen", nationalities:["Pays-Bas"], positions:["defenseur"], birthYear:2000 },
   { name:"Tino Livramento", clubs:["Southampton", "Newcastle"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:2002 },
   { name:"Lewis Hall", clubs:["Chelsea", "Newcastle"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"], birthYear:2004 },
-  { name:"Joelinton", clubs:["Sport Recife", "Hoffenheim", "Rapid Vienna", "Newcastle"], diff:"moyen", nationalities:["Brésil"], positions:["attaquant"], birthYear:1996 },
-  { name:"Joe Willock", clubs:["Arsenal", "Newcastle"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1999 },
+  { name:"Joelinton", clubs:["Sport Recife", "Hoffenheim", "Rapid Vienna", "Newcastle"], diff:"moyen", nationalities:["Brésil"], positions:["milieu"], birthYear:1996 },
+  { name:"Joe Willock", clubs:["Arsenal", "Newcastle"], diff:"moyen", nationalities:["Angleterre"], positions:["milieu"], birthYear:1999 },
   { name:"Harvey Barnes", clubs:["Leicester City", "MK Dons", "Barnsley", "West Brom", "Newcastle"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1997 },
   { name:"Callum Wilson", clubs:["Coventry City", "Bournemouth", "Newcastle", "West Ham", "Brentford"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1992 },
   // Aston Villa
@@ -828,17 +828,17 @@ export const PLAYERS = [
   { name:"Ian Maatsen", clubs:["Chelsea", "Charlton", "Coventry City", "Burnley", "Borussia Dortmund", "Aston Villa"], diff:"moyen", nationalities:["Pays-Bas"], positions:["defenseur"], birthYear:2002 },
   { name:"Boubacar Kamara", clubs:["Marseille", "Aston Villa"], diff:"moyen", nationalities:["France"], positions:["defenseur"], birthYear:1999 },
   // West Ham
-  { name:"Kurt Zouma", clubs:["Saint-Etienne", "Chelsea", "Stoke City", "Everton", "West Ham", "Al-Orobah", "Palm City"], diff:"moyen", nationalities:["France"], positions:["defenseur"], birthYear:1994 },
+  { name:"Kurt Zouma", clubs:["Saint-Etienne", "Chelsea", "Stoke City", "Everton", "West Ham", "Al-Orobah"], diff:"moyen", nationalities:["France"], positions:["defenseur"], birthYear:1994 },
   { name:"Aaron Cresswell", clubs:["Tranmere", "Ipswich Town", "West Ham"], diff:"moyen", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1989 },
   { name:"Emerson Palmieri", clubs:["Santos", "Palermo", "AS Roma", "Chelsea", "Lyon", "West Ham", "Marseille"], diff:"facile", nationalities:["Italie"], positions:["defenseur"], birthYear:1994 },
   { name:"Max Kilman", clubs:["Wolverhampton", "Cheshunt", "Marlow", "Maidenhead", "West Ham"], diff:"moyen", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1997 },
-  { name:"Tomáš Souček", clubs:["Slavia Prague", "Liberec", "West Ham"], diff:"moyen", nationalities:["Tchéquie"], positions:["attaquant"] , birthYear:1995 },
+  { name:"Tomáš Souček", clubs:["Slavia Prague", "Liberec", "West Ham"], diff:"moyen", nationalities:["Tchéquie"], positions:["milieu"] , birthYear:1995 },
   // Crystal Palace
   { name:"Dean Henderson", clubs:["Manchester United", "Stockport", "Grimsby", "Shrewsbury", "Sheffield United", "Nottingham Forest", "Crystal Palace"], diff:"moyen", nationalities:["Angleterre"], positions:["gardien"], birthYear:1997 },
   { name:"Tyrick Mitchell", clubs:["Crystal Palace"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"] , birthYear:1999 },
-  { name:"Cheick Doucouré", clubs:["Lens", "Crystal Palace"], diff:"expert", nationalities:["Mali"], positions:["attaquant"] , birthYear:2000 },
-  { name:"Ismaïla Sarr", clubs:["Metz", "Rennes", "Watford", "Marseille", "Tottenham", "Crystal Palace"], diff:"moyen", nationalities:["Sénégal"], positions:["attaquant"], birthYear:1998 },
-  { name:"Jean-Philippe Mateta", clubs:["Châteauroux", "Lyon", "Le Havre", "Mainz", "Crystal Palace"], diff:"moyen", nationalities:["France"], positions:["milieu"], birthYear:1997 },
+  { name:"Cheick Doucouré", clubs:["Lens", "Crystal Palace"], diff:"expert", nationalities:["Mali"], positions:["milieu"] , birthYear:2000 },
+  { name:"Ismaïla Sarr", clubs:["Metz", "Rennes", "Watford", "Marseille", "Crystal Palace"], diff:"moyen", nationalities:["Sénégal"], positions:["attaquant"], birthYear:1998 },
+  { name:"Jean-Philippe Mateta", clubs:["Châteauroux", "Lyon", "Le Havre", "Mainz", "Crystal Palace"], diff:"moyen", nationalities:["France"], positions:["attaquant"], birthYear:1997 },
   { name:"Eddie Nketiah", clubs:["Chelsea", "Arsenal", "Leeds United", "Crystal Palace"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1999 },
   // Brighton
   { name:"Adam Webster", clubs:["Portsmouth", "Ipswich Town", "Bristol City", "Brighton"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"] , birthYear:1995 },
