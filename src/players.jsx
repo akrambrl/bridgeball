@@ -872,19 +872,19 @@ export const PLAYERS = [
   { name:"Jake O'Brien", clubs:["Cork City", "Crystal Palace", "Swindon", "RWD Molenbeek", "Lyon", "Everton"], diff:"expert", nationalities:["Irlande"], positions:["defenseur"] , birthYear:2001 },
   { name:"Jarrad Branthwaite", clubs:["Carlisle United", "Everton", "Blackburn", "PSV Eindhoven"], diff:"moyen", nationalities:["Angleterre"], positions:["defenseur"], birthYear:2002 },
   { name:"Dwight McNeil", clubs:["Burnley", "Everton"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1999 },
-  { name:"Beto", clubs:["Portimonense", "Udinese Calcio", "Everton"], diff:"expert", nationalities:["Portugal"], positions:["attaquant"], birthYear:1998 },
+  { name:"Beto", clubs:["Portimonense", "Udinese Calcio", "Everton"], diff:"expert", nationalities:["Guinée-Bissau"], positions:["attaquant"], birthYear:1998 },
   { name:"Idrissa Gueye", clubs:["Lille", "Aston Villa", "Everton", "PSG", "Everton", "Al Diriyah"], diff:"moyen", nationalities:["Sénégal"], positions:["milieu"], birthYear:1989 },
   // Wolves
   { name:"José Sá", clubs:["Porto", "Olympiacos", "Wolverhampton"], diff:"expert", nationalities:["Portugal"], positions:["gardien"], birthYear:1993 },
   { name:"João Gomes", clubs:["Flamengo", "Wolverhampton", "Aston Villa"], diff:"moyen", nationalities:["Brésil"], positions:["milieu"], birthYear:2001 },
-  { name:"Mario Lemina", clubs:["Marseille", "Juventus FC", "Southampton", "Galatasaray", "Fulham", "Nice", "Wolverhampton"], diff:"facile", nationalities:["Gabon"], positions:["attaquant"], birthYear:1993 },
+  { name:"Mario Lemina", clubs:["Marseille", "Juventus FC", "Southampton", "Galatasaray", "Fulham", "Nice", "Wolverhampton"], diff:"facile", nationalities:["Gabon"], positions:["milieu"], birthYear:1993 },
   { name:"Jørgen Strand Larsen", clubs:["Sarpsborg 08", "Groningen", "Celta Vigo", "Wolverhampton"], diff:"expert", nationalities:["Norvège"], positions:["attaquant"] , birthYear:2000 },
   // Nottingham Forest
   { name:"Matz Sels", clubs:["Gent", "Newcastle", "Anderlecht", "Strasbourg", "Nottingham Forest"], diff:"expert", nationalities:["Belgique"], positions:["gardien"] , birthYear:1992 },
-  { name:"Nicolas Domínguez", clubs:["Vélez Sarsfield", "Bologna FC", "Hellas Verona", "Nottingham Forest"], diff:"expert", nationalities:["Argentine"], positions:["attaquant"] , birthYear:1998 },
+  { name:"Nicolas Domínguez", clubs:["Vélez Sarsfield", "Bologna FC", "Hellas Verona", "Nottingham Forest"], diff:"expert", nationalities:["Argentine"], positions:["milieu"] , birthYear:1998 },
   // Leicester
   { name:"Mads Hermansen", clubs:["Brøndby", "Horsens", "Silkeborg", "Leicester City"], diff:"expert", nationalities:["Danemark"], positions:["gardien"] , birthYear:2000 },
-  { name:"Ricardo Pereira", clubs:["Porto", "Vitoria Guimaraes", "Nice", "Leicester City", "Al Shabab"], diff:"moyen", nationalities:["Portugal"], positions:["gardien"], birthYear:1993 },
+  { name:"Ricardo Pereira", clubs:["Porto", "Vitoria Guimaraes", "Nice", "Leicester City", "Al Shabab"], diff:"moyen", nationalities:["Portugal"], positions:["defenseur"], birthYear:1993 },
   { name:"Harry Winks", clubs:["Tottenham", "Sampdoria", "Leicester City", "Cagliari Calcio"], diff:"moyen", nationalities:["Angleterre"], positions:["milieu"], birthYear:1996 },
   { name:"Jari Litmanen", clubs:["Reipas Lahti", "HJK Helsinki", "MyPa", "Ajax Amsterdam", "Barcelona", "Liverpool", "Hansa Rostock", "Malmö FF"], diff:"moyen", nationalities:["Finlande"], positions:["attaquant"], birthYear:1971 },
   { name:"Alessandro Altobelli", clubs:["Brescia", "Inter Milan", "Juventus FC"], diff:"expert", nationalities:["Italie"], positions:["attaquant"], birthYear:1955 },
