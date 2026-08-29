@@ -1519,13 +1519,13 @@ export const PLAYERS = [
   { name:"Przemysław Frankowski", clubs:["Lens", "Rennes"], diff:"expert", nationalities:["Pologne"], positions:["defenseur"] , birthYear:1995 },
   // Équipe nationale Écosse 2026
   { name:"Scott McTominay", clubs:["Manchester United", "SSC Napoli"], diff:"moyen", nationalities:["Écosse"], positions:["milieu"], birthYear:1996 },
-  { name:"Billy Gilmour", clubs:["Chelsea", "Norwich City", "Brighton", "SSC Napoli"], diff:"moyen", nationalities:["Angleterre"], positions:["milieu"], birthYear:2001 },
+  { name:"Billy Gilmour", clubs:["Chelsea", "Norwich City", "Brighton", "SSC Napoli"], diff:"moyen", nationalities:["Écosse"], positions:["milieu"], birthYear:2001 },
   { name:"Kieran Tierney", clubs:["Celtic", "Arsenal", "Real Sociedad"], diff:"moyen", nationalities:["Écosse"], positions:["defenseur"], birthYear:1997 },
   { name:"Aaron Hickey", clubs:["Hearts", "Bologna FC", "Brentford"], diff:"moyen", nationalities:["Écosse"], positions:["defenseur"], birthYear:2002 },
-  { name:"John McGinn", clubs:["Aston Villa"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"] , birthYear:1994 },
-  { name:"Lewis Ferguson", clubs:["Bologna FC"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"] , birthYear:1999 },
-  { name:"Che Adams", clubs:["Birmingham City", "Southampton"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"] , birthYear:1996 },
-  { name:"Ryan Christie", clubs:["Bournemouth"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"] , birthYear:1995 },
+  { name:"John McGinn", clubs:["Aston Villa"], diff:"expert", nationalities:["Écosse"], positions:["milieu"] , birthYear:1994 },
+  { name:"Lewis Ferguson", clubs:["Bologna FC"], diff:"expert", nationalities:["Écosse"], positions:["milieu"] , birthYear:1999 },
+  { name:"Che Adams", clubs:["Birmingham City", "Southampton"], diff:"expert", nationalities:["Écosse"], positions:["attaquant"] , birthYear:1996 },
+  { name:"Ryan Christie", clubs:["Bournemouth"], diff:"expert", nationalities:["Écosse"], positions:["milieu"] , birthYear:1995 },
   // Équipe nationale Turquie 2026
   { name:"Kenan Yıldız", clubs:["Juventus FC"], diff:"expert", nationalities:["Turquie"], positions:["attaquant"], birthYear:2005 },
   { name:"Ferdi Kadıoğlu", clubs:["NEC Nijmegen", "Fenerbahce", "Brighton"], diff:"moyen", nationalities:["Turquie"], positions:["defenseur"], birthYear:1999 },
