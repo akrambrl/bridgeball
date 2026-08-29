@@ -1545,7 +1545,7 @@ export const PLAYERS = [
   { name:"Kasper Schmeichel", clubs:["Manchester City", "Darlington", "Bury", "Cardiff City", "Falkirk", "Coventry City", "Notts County", "Leeds United", "Leicester City", "Nice", "Anderlecht", "Celtic"], diff:"moyen", nationalities:["Danemark"], positions:["gardien"], birthYear:1986 },
   { name:"Joakim Mæhle", clubs:["Atalanta BC", "Wolfsburg"], diff:"expert", nationalities:["Danemark"], positions:["defenseur"] , birthYear:1997 },
   { name:"Gustav Isaksen", clubs:["Midtjylland", "SS Lazio"], diff:"expert", nationalities:["Danemark"], positions:["attaquant"] , birthYear:2001 },
-  { name:"Jesper Lindstrøm", clubs:["Eintracht Frankfurt", "Wolfsburg", "SSC Napoli"], diff:"expert", nationalities:["Danemark"], positions:["attaquant"] , birthYear:2000 },
+  { name:"Jesper Lindstrøm", clubs:["Eintracht Frankfurt", "SSC Napoli", "Everton", "Wolfsburg"], diff:"expert", nationalities:["Danemark"], positions:["attaquant"] , birthYear:2000 },
   // Équipe nationale Corée du Sud 2026
   { name:"Lee Kang-in", clubs:["Valencia Mestalla", "Valencia", "Mallorca", "PSG", "Atletico Madrid"], diff:"moyen", nationalities:["Corée du Sud"], positions:["milieu"], birthYear:2001 },
   { name:"Hwang Hee-chan", clubs:["Liefering", "Pohang Steelers", "Salzburg", "Hamburg", "RB Leipzig", "Wolverhampton"], diff:"moyen", nationalities:["Corée du Sud"], positions:["attaquant"], birthYear:1996 },
@@ -1555,9 +1555,9 @@ export const PLAYERS = [
   { name:"Takefusa Kubo", clubs:["FC Tokyo", "Yokohama F. Marinos", "Real Madrid", "Mallorca", "Villarreal", "Getafe", "Real Sociedad"], diff:"moyen", nationalities:["Japon"], positions:["attaquant"], birthYear:2001 },
   { name:"Wataru Endo", clubs:["Shonan Bellmare", "Urawa Red Diamonds", "Sint-Truiden", "Stuttgart", "Liverpool"], diff:"moyen", nationalities:["Japon"], positions:["milieu"], birthYear:1993 },
   { name:"Daichi Kamada", clubs:["Eintracht Frankfurt", "SS Lazio", "Crystal Palace"], diff:"moyen", nationalities:["Japon"], positions:["milieu"], birthYear:1996 },
-  { name:"Ao Tanaka", clubs:["Kawasaki Frontale", "Fortuna Düsseldorf", "Hamburg", "Leeds United"], diff:"moyen", nationalities:["Japon"], positions:["milieu"], birthYear:1998 },
+  { name:"Ao Tanaka", clubs:["Kawasaki Frontale", "Fortuna Düsseldorf", "Leeds United"], diff:"moyen", nationalities:["Japon"], positions:["milieu"], birthYear:1998 },
   { name:"Koki Machida", clubs:["Union Saint-Gilloise", "Hoffenheim"], diff:"expert", nationalities:["Japon"], positions:["defenseur"] , birthYear:1997 },
-  { name:"Zion Suzuki", clubs:["Sint-Truiden", "Parma FC"], diff:"expert", nationalities:["États-Unis"], positions:["gardien"] , birthYear:2002 },
+  { name:"Zion Suzuki", clubs:["Sint-Truiden", "Parma FC"], diff:"expert", nationalities:["Japon"], positions:["gardien"] , birthYear:2002 },
   // Équipe nationale États-Unis 2026
   { name:"Christian Pulisic", clubs:["Borussia Dortmund", "Chelsea", "AC Milan"], diff:"moyen", nationalities:["États-Unis"], positions:["attaquant"], birthYear:1998 },
   { name:"Weston McKennie", clubs:["Schalke", "Juventus FC", "Leeds United"], diff:"moyen", nationalities:["États-Unis"], positions:["milieu"], birthYear:1998 },
