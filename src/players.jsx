@@ -944,7 +944,7 @@ export const PLAYERS = [
   { name:"Mikel Oyarzabal", clubs:["Real Sociedad"], diff:"expert", nationalities:["Espagne"], positions:["attaquant"] , birthYear:1997 },
   { name:"Nico Williams", clubs:["Bilbao Athletic", "Athletic Bilbao"], diff:"moyen", nationalities:["Espagne"], positions:["attaquant"], birthYear:2002 },
   { name:"Mikel Merino", clubs:["Osasuna", "Borussia Dortmund", "Newcastle", "Real Sociedad", "Arsenal"], diff:"moyen", nationalities:["Espagne"], positions:["milieu"], birthYear:1996 },
-  { name:"Granit Xhaka", clubs:["Basel", "Borussia Mönchengladbach", "Arsenal", "Bayer Leverkusen", "Sunderland"], diff:"moyen", nationalities:["Suisse"], positions:["attaquant"], birthYear:1992 },
+  { name:"Granit Xhaka", clubs:["Basel", "Borussia Mönchengladbach", "Arsenal", "Bayer Leverkusen", "Sunderland"], diff:"moyen", nationalities:["Suisse"], positions:["milieu"], birthYear:1992 },
   { name:"Marco Reus", clubs:["Borussia Mönchengladbach", "Borussia Dortmund", "LA Galaxy"], diff:"moyen", nationalities:["Allemagne"], positions:["milieu"], birthYear:1989 },
   { name:"Mats Hummels", clubs:["Bayern Munich II", "Borussia Dortmund", "Bayern Munich", "AS Roma"], diff:"moyen", nationalities:["Allemagne"], positions:["defenseur"], birthYear:1988 },
   { name:"Sami Khedira", clubs:["Stuttgart", "Real Madrid", "Juventus FC", "Arsenal"], diff:"moyen", nationalities:["Allemagne"], positions:["milieu"], birthYear:1987 },
