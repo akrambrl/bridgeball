@@ -379,6 +379,7 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
   const [riddleCopied, setRiddleCopied] = useState(false);
   const [showRiddle, setShowRiddle] = useState(false); // aperçu de l'énigme « Qui suis-je ? »
   const [reportOpen, setReportOpen] = useState(false); // fenêtre « Signaler une erreur »
+  const [giveUpConfirm, setGiveUpConfirm] = useState(false); // pop-up « Donner la réponse ? »
   const [reportNote, setReportNote] = useState("");
   const [reportSent, setReportSent] = useState(false);
   const [showCareer, setShowCareer] = useState(false); // parcours caché par défaut (déduction pure)
@@ -618,6 +619,19 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
     const pool = ALL().filter(p => !guessed.has(p.name) && (p.diff === "facile" || p.diff === "moyen") && p.clubs && p.clubs.length >= 2 && !!p.birthYear && (p.birthYear as number) >= MODERN_MIN_BY);
     if (pool.length === 0) return;
     submitGuess(pool[Math.floor(Math.random() * pool.length)]);
+  }
+
+  // Donner la réponse (devinette du jour) : révèle le joueur mais SANS aucun
+  // point et la série retombe à zéro — c'est le prix de l'abandon. La fin de
+  // manche `over && !won` affiche déjà le nom (« C'était : … »). Confirmé par un
+  // pop-up d'avertissement avant d'être appelé.
+  function giveUp() {
+    if (over || revealing) return;
+    setGiveUpConfirm(false);
+    setStreak(0);
+    setWon(false);
+    setLastEarned(0);
+    setOver(true);
   }
 
   // Mode illimité : nouvelle manche avec un joueur au hasard. (Désactivé « du jour ».)
@@ -991,10 +1005,16 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
 
         {/* Signaler — dispo en cours de partie */}
         {!over && !revealing && (
-          <div style={{ display: "flex", justifyContent: "center", marginBottom: 4 }}>
+          <div style={{ display: "flex", justifyContent: "center", gap: 8, flexWrap: "wrap", marginBottom: 4 }}>
             <button onClick={openReport} style={{ padding: "8px 16px", borderRadius: G.rayonS, border: G.traitFin, boxShadow: "2px 2px 0 " + G.encre, background: G.nuit, color: G.maillot, fontSize: 12.5, fontWeight: 800, cursor: "pointer" }}>
               🚩 {tr("Signaler une erreur", "Report an error", "Fehler melden", "Segnala un errore", "Reportar erro","Reportar un error")}
             </button>
+            {/* Donner la réponse — uniquement « Devinette du jour », avec avertissement. */}
+            {daily && (
+              <button onClick={() => setGiveUpConfirm(true)} style={{ padding: "8px 16px", borderRadius: G.rayonS, border: G.traitFin, boxShadow: "2px 2px 0 " + G.encre, background: G.nuit, color: "rgba(255,255,255,.85)", fontSize: 12.5, fontWeight: 800, cursor: "pointer" }}>
+                🏳️ {tr("Donner la réponse", "Give up", "Antwort zeigen", "Mostra la risposta", "Mostrar a resposta","Mostrar la respuesta")}
+              </button>
+            )}
           </div>
         )}
 
@@ -1149,6 +1169,23 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
                 </button>
               </>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Donner la réponse — avertissement : zéro point et série remise à zéro */}
+      {giveUpConfirm && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 320, background: "rgba(0,0,0,.8)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }} onClick={() => setGiveUpConfirm(false)}>
+          <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 400, background: G.nuit, border: G.trait, borderRadius: G.rayonL, padding: "24px 20px", boxShadow: G.ombreL }}>
+            <div style={{ fontSize: 46, textAlign: "center", marginBottom: 6 }}>🏳️</div>
+            <div style={{ ...posterText(26, G.maillot), textAlign: "center", marginBottom: 10 }}>{tr("DONNER LA RÉPONSE ?", "GIVE UP?", "ANTWORT ZEIGEN?", "MOSTRA LA RISPOSTA?", "MOSTRAR A RESPOSTA?","¿MOSTRAR LA RESPUESTA?")}</div>
+            <div style={{ fontSize: 13.5, color: "rgba(255,255,255,.78)", textAlign: "center", marginBottom: 18, lineHeight: 1.45 }}>{tr("Si tu affiches la réponse, tu ne gagnes aucun point et ta série repart à zéro.", "If you reveal the answer, you earn no points and your streak resets to zero.", "Wenn du die Antwort zeigst, bekommst du keine Punkte und deine Serie beginnt bei null.", "Se mostri la risposta, non guadagni punti e la tua serie riparte da zero.", "Se você mostrar a resposta, não ganha pontos e sua sequência volta a zero.","Si muestras la respuesta, no ganas puntos y tu racha vuelve a cero.")}</div>
+            <button onClick={giveUp} style={{ ...btn(G.maillot, G.encre, 16), width: "100%", padding: "14px" }}>
+              {tr("Oui, montrer la réponse", "Yes, show the answer", "Ja, Antwort zeigen", "Sì, mostra la risposta", "Sim, mostrar a resposta","Sí, mostrar la respuesta")}
+            </button>
+            <button onClick={() => setGiveUpConfirm(false)} style={{ ...btn("rgba(8,17,9,.5)", G.white, 15), width: "100%", marginTop: 10, padding: "12px" }}>
+              {tr("Continuer à chercher", "Keep searching", "Weiter suchen", "Continua a cercare", "Continuar procurando","Seguir buscando")}
+            </button>
           </div>
         </div>
       )}
