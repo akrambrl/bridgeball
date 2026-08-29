@@ -1589,7 +1589,7 @@ export const PLAYERS = [
   { name:"Rafael Borré", clubs:["River Plate", "Eintracht Frankfurt"], diff:"expert", nationalities:["Colombie"], positions:["attaquant"] , birthYear:1995 },
   // Équipe nationale Mexique 2026
   { name:"Santiago Giménez", clubs:["Cruz Azul", "Feyenoord", "AC Milan"], diff:"moyen", nationalities:["Mexique"], positions:["attaquant"], birthYear:2001 },
-  { name:"Hirving Lozano", clubs:["Pachuca", "PSV Eindhoven", "SSC Napoli", "LAFC", "San Diego FC"], diff:"moyen", nationalities:["Mexique"], positions:["attaquant"], birthYear:1995 },
+  { name:"Hirving Lozano", clubs:["Pachuca", "PSV Eindhoven", "SSC Napoli", "San Diego FC", "LA Galaxy"], diff:"moyen", nationalities:["Mexique"], positions:["attaquant"], birthYear:1995 },
   { name:"Jorge Sánchez", clubs:["Ajax Amsterdam", "Porto"], diff:"expert", nationalities:["Mexique"], positions:["defenseur"], birthYear:1997 },
   { name:"César Montes", clubs:["Almería"], diff:"expert", nationalities:["Mexique"], positions:["defenseur"] , birthYear:1997 },
   { name:"Guillermo Ochoa", clubs:["Málaga", "Standard Liège"], diff:"expert", nationalities:["Mexique"], positions:["gardien"] , birthYear:1985 },
