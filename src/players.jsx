@@ -2072,11 +2072,11 @@ export const PLAYERS = [
   { name:"Dominic Calvert-Lewin", clubs:["Sheffield United", "Everton", "Leeds United"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1997 },
   // Stars en Arabie Saoudite + transferts récents
   { name:"Sadio Mané", clubs:["Metz", "Salzburg", "Southampton", "Liverpool", "Bayern Munich", "Al Nassr"], diff:"facile", nationalities:["Sénégal"], positions:["attaquant"], birthYear:1992 },
-  { name:"Marcelo Brozovic", clubs:["Lokomotiva Zagreb", "Dinamo Zagreb", "Inter Milan", "Al Nassr"], diff:"moyen", nationalities:["Croatie"], positions:["attaquant"], birthYear:1992 },
+  { name:"Marcelo Brozovic", clubs:["Lokomotiva Zagreb", "Dinamo Zagreb", "Inter Milan", "Al Nassr"], diff:"moyen", nationalities:["Croatie"], positions:["milieu"], birthYear:1992 },
   { name:"Douglas Luiz", clubs:["Vasco da Gama", "Manchester City", "Girona", "Aston Villa", "Juventus FC", "Nottingham Forest"], diff:"moyen", nationalities:["Brésil"], positions:["milieu"], birthYear:1998 },
   // Gros noms actifs manquants
   { name:"Allan Saint-Maximin", clubs:["Saint-Etienne", "Monaco", "Bastia", "Hannover", "Nice", "Newcastle", "Al Ahli", "Fenerbahce", "Club América", "Lens", "Charlotte FC"], diff:"moyen", nationalities:["France"], positions:["attaquant"], birthYear:1997 },
-  { name:"Neco Williams", clubs:["Liverpool", "Fulham", "Nottingham Forest"], diff:"moyen", nationalities:["Angleterre"], positions:["defenseur"], birthYear:2001 },
+  { name:"Neco Williams", clubs:["Liverpool", "Fulham", "Nottingham Forest"], diff:"moyen", nationalities:["Pays de Galles"], positions:["defenseur"], birthYear:2001 },
   // Joueurs manquants importants
   { name:"Édouard Mendy", clubs:["Le Havre", "Cherbourg", "Marseille", "Reims", "Rennes", "Chelsea", "Al Ahli"], diff:"facile", nationalities:["Sénégal"], positions:["gardien"], birthYear:1992 },
   { name:"Willy Caballero", clubs:["Boca Juniors", "Elche", "Málaga", "Manchester City", "Chelsea", "Southampton"], diff:"expert", nationalities:["Argentine"], positions:["gardien"], birthYear:1981 },
@@ -2084,7 +2084,7 @@ export const PLAYERS = [
   { name:"Antonio Rüdiger", clubs:["Stuttgart", "AS Roma", "Chelsea", "Real Madrid"], diff:"moyen", nationalities:["Allemagne"], positions:["defenseur"], birthYear:1993 },
   { name:"Ben Chilwell", clubs:["Leicester City", "Chelsea", "Crystal Palace", "Strasbourg"], diff:"moyen", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1996 },
   // Mercato hiver janvier 2026 - arrivées Ligue 1
-  { name:"Quinten Timber", clubs:["Ajax Amsterdam", "Utrecht", "Feyenoord", "Marseille"], diff:"moyen", nationalities:["Pays-Bas"], positions:["attaquant"], birthYear:2001 },
+  { name:"Quinten Timber", clubs:["Ajax Amsterdam", "Utrecht", "Feyenoord", "Marseille"], diff:"moyen", nationalities:["Pays-Bas"], positions:["milieu"], birthYear:2001 },
   { name:"Elye Wahi", clubs:["Montpellier", "Lens", "Marseille", "Eintracht Frankfurt", "Nice"], diff:"moyen", nationalities:["Côte d'Ivoire"], positions:["attaquant"], birthYear:2003 },
   { name:"Rémy Cabella", clubs:["Montpellier", "Newcastle", "Marseille", "Saint-Etienne", "Krasnodar", "Lille", "AEK Athens", "Nantes"], diff:"moyen", nationalities:["France"], positions:["milieu"], birthYear:1990 },
   { name:"Himad Abdelli", clubs:["Angers", "Marseille"], diff:"expert", nationalities:["Algérie"], positions:["milieu"], birthYear:1999 },
@@ -2092,7 +2092,7 @@ export const PLAYERS = [
   // Mercato hiver janvier 2026 - suite
   { name:"Roman Yaremchuk", clubs:["Dynamo Kyiv", "Gent", "Benfica", "Club Brugge", "Valencia", "Olympiacos", "Lyon"], diff:"moyen", nationalities:["Ukraine"], positions:["attaquant"], birthYear:1995 },
   { name:"Martín Satriano", clubs:["Nacional", "Inter Milan", "Brest", "Empoli FC", "Lens", "Lyon", "Getafe"], diff:"expert", nationalities:["Uruguay"], positions:["attaquant"] , birthYear:2001 },
-  { name:"Amadou Haidara", clubs:["Salzburg", "RB Leipzig", "Lens"], diff:"moyen", nationalities:["Mali"], positions:["attaquant"], birthYear:1998 },
+  { name:"Amadou Haidara", clubs:["Salzburg", "RB Leipzig", "Lens"], diff:"moyen", nationalities:["Mali"], positions:["milieu"], birthYear:1998 },
   { name:"Warmed Omari", clubs:["Rennes", "Eintracht Frankfurt", "Hamburg"], diff:"expert", nationalities:["France"], positions:["defenseur"] , birthYear:2000 },
   { name:"Jérémy Jacquet", clubs:["Rennes", "Liverpool"], diff:"expert", nationalities:["France"], positions:["defenseur"], birthYear:2005 },
   { name:"Ethan Nwaneri", clubs:["Arsenal", "Marseille"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:2007 },
