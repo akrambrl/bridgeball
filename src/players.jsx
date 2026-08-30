@@ -2133,9 +2133,9 @@ export const PLAYERS = [
   { name:"Noah Okafor", clubs:["Basel", "Salzburg", "AC Milan", "SSC Napoli", "Leeds United"], diff:"moyen", nationalities:["Suisse"], positions:["attaquant"], birthYear:2000 },
   { name:"Malick Thiaw", clubs:["Schalke", "AC Milan", "Newcastle"], diff:"moyen", nationalities:["Allemagne"], positions:["defenseur"], birthYear:2001 },
   { name:"Yunus Musah", clubs:["Valencia Mestalla", "Valencia", "AC Milan", "Atalanta BC"], diff:"moyen", nationalities:["États-Unis"], positions:["milieu"], birthYear:2002 },
-  { name:"Samuel Chukwueze", clubs:["Villarreal", "AC Milan", "Fulham"], diff:"moyen", nationalities:["Nigeria"], positions:["milieu"], birthYear:1999 },
+  { name:"Samuel Chukwueze", clubs:["Villarreal", "AC Milan", "Fulham"], diff:"moyen", nationalities:["Nigeria"], positions:["attaquant"], birthYear:1999 },
   { name:"Fabio Silva", clubs:["Porto", "Wolverhampton", "Anderlecht", "PSV Eindhoven", "Las Palmas", "Borussia Dortmund"], diff:"moyen", nationalities:["Portugal"], positions:["attaquant"], birthYear:2002 },
-  { name:"Nicolò Fagioli", clubs:["Juventus FC", "Cremonese", "ACF Fiorentina"], diff:"moyen", nationalities:["Italie"], positions:["attaquant"], birthYear:2001 },
+  { name:"Nicolò Fagioli", clubs:["Juventus FC", "Cremonese", "ACF Fiorentina"], diff:"moyen", nationalities:["Italie"], positions:["milieu"], birthYear:2001 },
   { name:"Robin Gosens", clubs:["Vitesse", "Heracles", "Atalanta BC", "Inter Milan", "Union Berlin", "ACF Fiorentina", "Schalke"], diff:"moyen", nationalities:["Allemagne"], positions:["defenseur"], birthYear:1994 },
   // Premier League 2025/26 - gros transferts 8 gros clubs
   // Liverpool
@@ -2150,7 +2150,7 @@ export const PLAYERS = [
   { name:"Diego Leon", clubs:["Cerro Porteño", "Manchester United"], diff:"expert", nationalities:["Paraguay"], positions:["defenseur"], birthYear:2007 },
   // Chelsea
   { name:"Jorrel Hato", clubs:["Sparta Rotterdam", "Ajax Amsterdam", "Chelsea"], diff:"moyen", nationalities:["Pays-Bas"], positions:["defenseur"], birthYear:2006 },
-  { name:"Dario Essugo", clubs:["Sporting CP", "Las Palmas", "Chelsea"], diff:"expert", nationalities:["Portugal"], positions:["attaquant"], birthYear:2005 },
+  { name:"Dario Essugo", clubs:["Sporting CP", "Las Palmas", "Chelsea"], diff:"expert", nationalities:["Portugal"], positions:["milieu"], birthYear:2005 },
   { name:"Mamadou Sarr", clubs:["Lyon", "Strasbourg", "Chelsea"], diff:"expert", nationalities:["Sénégal"], positions:["defenseur"], birthYear:2005 },
   { name:"Kendry Paez", clubs:["Independiente del Valle", "Strasbourg", "Chelsea"], diff:"expert", nationalities:["Équateur"], positions:["milieu"], birthYear:2007 },
   { name:"Facundo Buonanotte", clubs:["Rosario Central", "Brighton", "Leicester City", "Chelsea", "Leeds United"], diff:"moyen", nationalities:["Argentine"], positions:["attaquant"], birthYear:2004 },
@@ -2158,7 +2158,7 @@ export const PLAYERS = [
   // Manchester City
   // Newcastle
   { name:"Anthony Elanga", clubs:["Manchester United", "Nottingham Forest", "Newcastle"], diff:"moyen", nationalities:["Suède"], positions:["attaquant"], birthYear:2002 },
-  { name:"Jacob Ramsey", clubs:["Aston Villa", "Doncaster", "Newcastle"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:2001 },
+  { name:"Jacob Ramsey", clubs:["Aston Villa", "Doncaster", "Newcastle"], diff:"moyen", nationalities:["Angleterre"], positions:["milieu"], birthYear:2001 },
   { name:"Aaron Ramsdale", clubs:["Sheffield United", "Bournemouth", "Chesterfield", "Arsenal", "Southampton", "Newcastle"], diff:"moyen", nationalities:["Angleterre"], positions:["gardien"], birthYear:1998 },
   // PL 2025/26 - 2e batch (clubs hors top 8)
   // Tottenham
@@ -2173,7 +2173,7 @@ export const PLAYERS = [
   { name:"Michael Kayode", clubs:["Gozzano", "ACF Fiorentina", "Brentford"], diff:"expert", nationalities:["Italie"], positions:["defenseur"] , birthYear:2004 },
   { name:"Antoni Milambo", clubs:["Feyenoord", "Brentford"], diff:"expert", nationalities:["Pays-Bas"], positions:["milieu"], birthYear:2005 },
   // Everton
-  { name:"Kiernan Dewsbury-Hall", clubs:["Leicester City", "Blackpool", "Luton Town", "Chelsea", "Everton"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1998 },
+  { name:"Kiernan Dewsbury-Hall", clubs:["Leicester City", "Blackpool", "Luton Town", "Chelsea", "Everton"], diff:"moyen", nationalities:["Angleterre"], positions:["milieu"], birthYear:1998 },
   // Manchester City
   { name:"James Trafford", clubs:["Manchester City", "Accrington Stanley", "Bolton", "Burnley", "Leeds United"], diff:"moyen", nationalities:["Angleterre"], positions:["gardien"], birthYear:2002 },
   { name:"Marcus Bettinelli", clubs:["Fulham", "Middlesbrough", "Chelsea", "Manchester City"], diff:"expert", nationalities:["Angleterre"], positions:["gardien"], birthYear:1992 },
