@@ -2183,7 +2183,7 @@ export const PLAYERS = [
   { name:"Illia Zabarnyi", clubs:["Dynamo Kyiv", "Bournemouth", "PSG"], diff:"moyen", nationalities:["Ukraine"], positions:["defenseur"], birthYear:2002 },
   // Bundesliga 2025/26 - joueurs manquants
   // Bayer Leverkusen
-  { name:"Eliesse Ben Seghir", clubs:["Monaco", "Bayer Leverkusen"], diff:"expert", nationalities:["France"], positions:["attaquant"] , birthYear:2005 },
+  { name:"Eliesse Ben Seghir", clubs:["Monaco", "Bayer Leverkusen"], diff:"expert", nationalities:["Maroc"], positions:["attaquant"] , birthYear:2005 },
   { name:"Edmond Tapsoba", clubs:["Vitoria Guimaraes", "Bayer Leverkusen"], diff:"moyen", nationalities:["Burkina Faso"], positions:["defenseur"], birthYear:1999 },
   { name:"Lukas Hradecky", clubs:["Brondby", "Esbjerg", "Eintracht Frankfurt", "Bayer Leverkusen", "Monaco"], diff:"expert", nationalities:["Finlande"], positions:["gardien"] , birthYear:1989 },
   // RB Leipzig
@@ -2203,10 +2203,10 @@ export const PLAYERS = [
   { name:"Borja Sainz", clubs:["Athletic Bilbao", "Giresunspor", "Norwich City", "Porto"], diff:"expert", nationalities:["Espagne"], positions:["attaquant"], birthYear:2001 },
   { name:"Yann Karamoh", clubs:["Inter Milan", "Bordeaux", "Parma FC", "Torino FC", "Montpellier", "Porto"], diff:"moyen", nationalities:["Côte d'Ivoire"], positions:["attaquant"], birthYear:1998 },
   // Sporting CP
-  { name:"Giorgi Kochorashvili", clubs:["Levante", "Sporting CP"], diff:"expert", nationalities:["Géorgie"], positions:["attaquant"] , birthYear:1999 },
+  { name:"Giorgi Kochorashvili", clubs:["Levante", "Sporting CP"], diff:"expert", nationalities:["Géorgie"], positions:["milieu"] , birthYear:1999 },
   { name:"Francisco Trincão", clubs:["Braga", "Barcelona", "Wolverhampton", "Sporting CP"], diff:"moyen", nationalities:["Portugal"], positions:["attaquant"], birthYear:1999 },
   // Braga
-  { name:"Pau Víctor", clubs:["Girona", "Barcelona", "Braga"], diff:"expert", nationalities:["Dominique"], positions:["defenseur"] , birthYear:2001 },
+  { name:"Pau Víctor", clubs:["Girona", "Barcelona", "Braga"], diff:"expert", nationalities:["Espagne"], positions:["attaquant"] , birthYear:2001 },
   { name:"Mario Dorgeles", clubs:["Nordsjælland", "Braga"], diff:"expert", nationalities:["Côte d'Ivoire"], positions:["attaquant"], birthYear:2004 },
   // Eredivisie 2025/26 - nouveaux joueurs
   // Ajax
