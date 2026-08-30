@@ -1770,9 +1770,9 @@ export const PLAYERS = [
   { name:"Pape Matar Sarr", clubs:["Metz", "Tottenham"], diff:"moyen", nationalities:["Sénégal"], positions:["milieu"], birthYear:2002 },
   { name:"Krépin Diatta", clubs:["Sarpsborg 08", "Club Brugge", "Monaco"], diff:"moyen", nationalities:["Sénégal"], positions:["attaquant"], birthYear:1999 },
   { name:"Moussa Niakhaté", clubs:["Valenciennes", "Metz", "Mainz", "Nottingham Forest", "Lyon"], diff:"moyen", nationalities:["Sénégal"], positions:["defenseur"], birthYear:1996 },
-  { name:"Iliman Ndiaye", clubs:["Sheffield United", "Marseille"], diff:"moyen", nationalities:["France"], positions:["attaquant"], birthYear:2000 },
+  { name:"Iliman Ndiaye", clubs:["Sheffield United", "Marseille", "Everton"], diff:"moyen", nationalities:["Sénégal"], positions:["attaquant"], birthYear:2000 },
   { name:"Pape Gueye", clubs:["Le Havre", "Watford", "Marseille", "Villarreal"], diff:"expert", nationalities:["Sénégal"], positions:["milieu"], birthYear:1999 },
-  { name:"El Hadji Malick Diouf", clubs:["Stoke City", "Southampton"], diff:"expert", nationalities:["Sénégal"], positions:["defenseur"] , birthYear:2004 },
+  { name:"El Hadji Malick Diouf", clubs:["Tromsø", "Slavia Prague", "West Ham"], diff:"expert", nationalities:["Sénégal"], positions:["defenseur"] , birthYear:2004 },
   { name:"Ismail Jakobs", clubs:["Köln", "Monaco", "Galatasaray"], diff:"expert", nationalities:["Sénégal"], positions:["defenseur"] , birthYear:1999 },
   // Équipe nationale Algérie 2026
   { name:"Ismaël Bennacer", clubs:["Arsenal", "Empoli FC", "AC Milan", "Marseille", "Dinamo Zagreb"], diff:"moyen", nationalities:["Algérie"], positions:["milieu"], birthYear:1997 },
@@ -1781,7 +1781,7 @@ export const PLAYERS = [
   { name:"Aïssa Mandi", clubs:["Reims", "Real Betis", "Villarreal", "Lille", "Levante"], diff:"moyen", nationalities:["Algérie"], positions:["defenseur"], birthYear:1991 },
   { name:"Mohamed Amoura", clubs:["ES Sétif", "Lugano", "Union Saint-Gilloise", "Wolfsburg"], diff:"moyen", nationalities:["Algérie"], positions:["attaquant"], birthYear:2000 },
   { name:"Amine Gouiri", clubs:["Lyon", "Nice", "Rennes", "Marseille"], diff:"facile", nationalities:["Algérie"], positions:["attaquant"], birthYear:2000 },
-  { name:"Hicham Boudaoui", clubs:["Nice"], diff:"expert", nationalities:["Algérie"], positions:["attaquant"] , birthYear:1999 },
+  { name:"Hicham Boudaoui", clubs:["Paradou AC", "Nice"], diff:"expert", nationalities:["Algérie"], positions:["milieu"] , birthYear:1999 },
   { name:"Baghdad Bounedjah", clubs:["Al Sadd", "Al Shamal"], diff:"expert", nationalities:["Algérie"], positions:["attaquant"] , birthYear:1991 },
   // Équipe nationale Maroc 2026
   { name:"Nayef Aguerd", clubs:["FUS Rabat", "Dijon", "Rennes", "West Ham", "Real Sociedad", "Marseille"], diff:"moyen", nationalities:["Maroc"], positions:["defenseur"], birthYear:1996 },
