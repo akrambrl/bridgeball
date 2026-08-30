@@ -1974,7 +1974,7 @@ export const PLAYERS = [
   { name:"Marcelo", clubs:["Fluminense", "Real Madrid", "Fluminense"], diff:"facile", nationalities:["Brésil"], positions:["defenseur"], birthYear:1988 },
   { name:"Isco", clubs:["Valencia", "Málaga", "Real Madrid", "Sevilla", "Real Betis"], diff:"facile", nationalities:["Espagne"], positions:["milieu"], birthYear:1992 },
   { name:"Keylor Navas", clubs:["Levante", "Real Madrid", "PSG", "Nottingham Forest", "Pumas UNAM"], diff:"moyen", nationalities:["Costa Rica"], positions:["gardien"], birthYear:1986 },
-  { name:"Luca Zidane", clubs:["Real Madrid", "Racing Santander", "Rayo Vallecano", "Eibar", "Granada"], diff:"expert", nationalities:["France"], positions:["gardien"] , birthYear:1998 },
+  { name:"Luca Zidane", clubs:["Real Madrid", "Racing Santander", "Rayo Vallecano", "Eibar", "Granada"], diff:"expert", nationalities:["Algérie"], positions:["gardien"] , birthYear:1998 },
   { name:"Jesús Vallejo", clubs:["Real Zaragoza", "Real Madrid", "Eintracht Frankfurt", "Wolverhampton", "Granada"], diff:"expert", nationalities:["Espagne"], positions:["defenseur"] , birthYear:1997 },
   { name:"Borja Mayoral", clubs:["Real Madrid", "Wolfsburg", "Levante", "AS Roma", "Getafe"], diff:"expert", nationalities:["Espagne"], positions:["attaquant"] , birthYear:1997 },
   { name:"Kiko Casilla", clubs:["Espanyol", "Cádiz", "Real Madrid", "Leeds United", "Elche"], diff:"expert", nationalities:["Espagne"], positions:["gardien"] , birthYear:1986 },
@@ -2039,7 +2039,7 @@ export const PLAYERS = [
   { name:"Allan Marques", clubs:["Vasco da Gama", "Udinese Calcio", "SSC Napoli", "Everton", "Al-Wahda", "Botafogo"], diff:"moyen", nationalities:["Brésil"], positions:["milieu"], birthYear:1991 },
   // ── JOUEURS ACTUELS 2024-2026 (manques côté actuels) ──
   // Chelsea / Arsenal récents
-  { name:"Moisés Caicedo", clubs:["Independiente del Valle", "Brighton", "Beerschot", "Chelsea"], diff:"moyen", nationalities:["Équateur"], positions:["attaquant"], birthYear:2001 },
+  { name:"Moisés Caicedo", clubs:["Independiente del Valle", "Brighton", "Beerschot", "Chelsea"], diff:"moyen", nationalities:["Équateur"], positions:["milieu"], birthYear:2001 },
   { name:"Noni Madueke", clubs:["PSV Eindhoven", "Chelsea", "Arsenal"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:2002 },
   { name:"Callum Hudson-Odoi", clubs:["Chelsea", "Bayer Leverkusen", "Nottingham Forest"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:2000 },
   // Tottenham
