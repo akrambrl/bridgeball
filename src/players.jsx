@@ -2045,7 +2045,7 @@ export const PLAYERS = [
   // Tottenham
   { name:"James Maddison", clubs:["Coventry City", "Norwich City", "Leicester City", "Tottenham"], diff:"moyen", nationalities:["Angleterre"], positions:["milieu"], birthYear:1996 },
   { name:"Pedro Porro", clubs:["Girona", "Real Valladolid", "Manchester City", "Sporting CP", "Tottenham"], diff:"moyen", nationalities:["Espagne"], positions:["defenseur"], birthYear:1999 },
-  { name:"Yves Bissouma", clubs:["Lille", "Brighton", "Tottenham", "Galatasaray"], diff:"moyen", nationalities:["Mali"], positions:["attaquant"] , birthYear:1996 },
+  { name:"Yves Bissouma", clubs:["Lille", "Brighton", "Tottenham", "Galatasaray"], diff:"moyen", nationalities:["Mali"], positions:["milieu"] , birthYear:1996 },
   { name:"Dominic Solanke", clubs:["Chelsea", "Vitesse", "Liverpool", "Bournemouth", "Tottenham"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1997 },
   // Aston Villa récents
   { name:"Morgan Rogers", clubs:["Manchester City", "West Brom", "Bournemouth", "Lincoln City", "Middlesbrough", "Blackpool", "Aston Villa", "Chelsea"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:2002 },
@@ -2066,8 +2066,8 @@ export const PLAYERS = [
   { name:"Lucas Chevalier", clubs:["Lille", "Valenciennes", "PSG"], diff:"moyen", nationalities:["France"], positions:["gardien"], birthYear:2001 },
   { name:"Jamie Gittens", clubs:["Manchester City", "Borussia Dortmund", "Chelsea"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:2004 },
   // Stars manquantes identifiées lors de l'audit
-  { name:"Conor Gallagher", clubs:["Chelsea", "Charlton", "Swansea", "West Brom", "Crystal Palace", "Atletico Madrid", "Tottenham"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:2000 },
-  { name:"Arthur Melo", clubs:["Grêmio", "Barcelona", "Juventus FC", "Liverpool", "ACF Fiorentina", "Girona"], diff:"moyen", nationalities:["Brésil"], positions:["attaquant"], birthYear:1996 },
+  { name:"Conor Gallagher", clubs:["Chelsea", "Charlton", "Swansea", "West Brom", "Crystal Palace", "Atletico Madrid", "Tottenham"], diff:"moyen", nationalities:["Angleterre"], positions:["milieu"], birthYear:2000 },
+  { name:"Arthur Melo", clubs:["Grêmio", "Barcelona", "Juventus FC", "Liverpool", "ACF Fiorentina", "Girona"], diff:"moyen", nationalities:["Brésil"], positions:["milieu"], birthYear:1996 },
   { name:"Kalvin Phillips", clubs:["Leeds United", "Manchester City", "West Ham", "Ipswich Town"], diff:"moyen", nationalities:["Angleterre"], positions:["milieu"], birthYear:1995 },
   { name:"Dominic Calvert-Lewin", clubs:["Sheffield United", "Everton", "Leeds United"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1997 },
   // Stars en Arabie Saoudite + transferts récents
