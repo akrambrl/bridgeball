@@ -1793,7 +1793,7 @@ export const PLAYERS = [
   { name:"Bilal El Khannouss", clubs:["Genk", "Leicester City", "Stuttgart"], diff:"moyen", nationalities:["Maroc"], positions:["milieu"], birthYear:2004 },
   { name:"Brahim Díaz", clubs:["Málaga", "Manchester City", "Real Madrid", "AC Milan"], diff:"moyen", nationalities:["Maroc"], positions:["milieu"], birthYear:1999 },
   { name:"Ayoub El Kaabi", clubs:["Raja Casablanca", "Wydad Casablanca", "Hebei China Fortune", "Hatayspor", "Olympiacos"], diff:"expert", nationalities:["Maroc"], positions:["attaquant"] , birthYear:1993 },
-  { name:"Chemsdine Talbi", clubs:["Braga", "Strasbourg"], diff:"expert", nationalities:["Belgique"], positions:["attaquant"], birthYear:2005 },
+  { name:"Chemsdine Talbi", clubs:["Club Brugge", "Sunderland"], diff:"expert", nationalities:["Belgique"], positions:["attaquant"], birthYear:2005 },
   // Légendes manquantes
   { name:"Ronaldinho", clubs:["Grêmio", "PSG", "Barcelona", "AC Milan", "Flamengo", "Atlético Mineiro", "Querétaro", "Fluminense"], diff:"facile", nationalities:["Brésil"], positions:["attaquant"], birthYear:1980 },
   { name:"Ronaldo Nazário", clubs:["Cruzeiro", "PSV Eindhoven", "Barcelona", "Inter Milan", "Real Madrid", "AC Milan", "Corinthians"], diff:"facile", nationalities:["Brésil"], positions:["attaquant"], birthYear:1976 },
@@ -1901,7 +1901,7 @@ export const PLAYERS = [
   // Eintracht Frankfurt
   { name:"Makoto Hasebe", clubs:["Urawa Red Diamonds", "Wolfsburg", "Nuremberg", "Eintracht Frankfurt"], diff:"moyen", nationalities:["Japon"], positions:["milieu"], birthYear:1984 },
   { name:"Ante Rebić", clubs:["ACF Fiorentina", "Eintracht Frankfurt", "AC Milan", "Besiktas", "Lecce"], diff:"moyen", nationalities:["Croatie"], positions:["attaquant"], birthYear:1993 },
-  { name:"André Silva", clubs:["Porto B", "Porto", "AC Milan", "Sevilla", "Eintracht Frankfurt", "RB Leipzig", "Werder Bremen", "Elche", "Real Sociedad", "Porto"], diff:"moyen", nationalities:["Portugal"], positions:["attaquant"], birthYear:1995 },
+  { name:"André Silva", clubs:["Porto B", "Porto", "AC Milan", "Sevilla", "Eintracht Frankfurt", "RB Leipzig", "Real Sociedad", "Werder Bremen", "Elche"], diff:"moyen", nationalities:["Portugal"], positions:["attaquant"], birthYear:1995 },
   { name:"Alex Meier", clubs:["Hamburg", "Sankt Pauli", "Eintracht Frankfurt", "Western Sydney Wanderers"], diff:"moyen", nationalities:["Allemagne"], positions:["attaquant"], birthYear:1983 },
   { name:"Kevin-Prince Boateng", clubs:["Hertha Berlin", "Tottenham", "Borussia Dortmund", "Portsmouth", "AC Milan", "Genoa CFC", "Schalke", "Las Palmas", "Eintracht Frankfurt", "Sassuolo", "Barcelona", "ACF Fiorentina", "Besiktas", "Monza"], diff:"moyen", nationalities:["Ghana"], positions:["milieu"], birthYear:1987 },
   // ── LIGUE 1 : MONACO / PSG / OM / NICE / STRASBOURG / RENNES (+5 par club) ──
