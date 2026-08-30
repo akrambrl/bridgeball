@@ -1717,14 +1717,14 @@ export const PLAYERS = [
   { name:"Eric Maxim Choupo-Moting", clubs:["Hamburg", "Nuremberg", "Mainz", "Schalke", "Stoke City", "PSG", "Bayern Munich", "New York Red Bulls"], diff:"moyen", nationalities:["Cameroun"], positions:["attaquant"], birthYear:1989 },
   { name:"Vincent Aboubakar", clubs:["Coton Sport", "Valenciennes", "Lorient", "Porto", "Besiktas", "Al Nassr"], diff:"moyen", nationalities:["Cameroun"], positions:["attaquant"], birthYear:1992 },
   { name:"Karl Toko Ekambi", clubs:["Sochaux", "Angers", "Villarreal", "Lyon", "Rennes", "Abha"], diff:"moyen", nationalities:["Cameroun"], positions:["attaquant"], birthYear:1992 },
-  { name:"Christopher Wooh", clubs:["Lens", "Rennes"], diff:"expert", nationalities:["France"], positions:["defenseur"] , birthYear:2001 },
+  { name:"Christopher Wooh", clubs:["Lens", "Rennes"], diff:"expert", nationalities:["Cameroun"], positions:["defenseur"] , birthYear:2001 },
   { name:"Nathan Ngoumou", clubs:["Toulouse", "Borussia Mönchengladbach"], diff:"expert", nationalities:["Cameroun"], positions:["attaquant"] , birthYear:2000 },
   { name:"Martin Hongla", clubs:["Hellas Verona", "Granada"], diff:"expert", nationalities:["Cameroun"], positions:["milieu"] , birthYear:1998 },
   { name:"Jean Onana", clubs:["Lille", "Bordeaux", "Besiktas", "Marseille", "Genoa CFC"], diff:"expert", nationalities:["Cameroun"], positions:["milieu"], birthYear:2000 },
   // Équipe nationale Afrique du Sud 2026
   { name:"Lyle Foster", clubs:["Orlando Pirates", "Monaco", "Cercle Brugge", "Vitoria Guimaraes", "Westerlo", "Burnley"], diff:"moyen", nationalities:["Afrique du Sud"], positions:["attaquant"], birthYear:2000 },
   { name:"Percy Tau", clubs:["Mamelodi Sundowns", "Brighton", "Union Saint-Gilloise", "Club Brugge", "Anderlecht", "Al Ahly", "Qatar SC"], diff:"moyen", nationalities:["Afrique du Sud"], positions:["attaquant"], birthYear:1994 },
-  { name:"Bongani Zungu", clubs:["Amiens", "Rangers", "Kasımpaşa"], diff:"expert", nationalities:["Afrique du Sud"], positions:["attaquant"] , birthYear:1992 },
+  { name:"Bongani Zungu", clubs:["Amiens", "Rangers", "Kasımpaşa"], diff:"expert", nationalities:["Afrique du Sud"], positions:["milieu"] , birthYear:1992 },
   // Équipe nationale Égypte 2026
   { name:"Mohamed Elneny", clubs:["Al Mokawloon", "Basel", "Arsenal", "Besiktas", "Al-Jazira"], diff:"moyen", nationalities:["Égypte"], positions:["milieu"], birthYear:1992 },
   { name:"Mahmoud Trezeguet", clubs:["Al Ahly", "Anderlecht", "Royal Mouscron", "Kasımpaşa", "Aston Villa", "Istanbul Başakşehir", "Trabzonspor"], diff:"moyen", nationalities:["Égypte"], positions:["attaquant"], birthYear:1994 },
@@ -1737,7 +1737,7 @@ export const PLAYERS = [
   { name:"Calvin Bassey", clubs:["Rangers", "Ajax Amsterdam", "Fulham"], diff:"facile", nationalities:["Nigeria"], positions:["defenseur"], birthYear:1999 },
   { name:"Ola Aina", clubs:["Chelsea", "Hull City", "Torino FC", "Fulham", "Nottingham Forest"], diff:"moyen", nationalities:["Nigeria"], positions:["defenseur"], birthYear:1996 },
   { name:"Moses Simon", clubs:["Ajax Amsterdam", "Trenčín", "Gent", "Levante", "Nantes", "Paris FC"], diff:"moyen", nationalities:["Nigeria"], positions:["attaquant"], birthYear:1995 },
-  { name:"Maduka Okoye", clubs:["Watford", "Udinese Calcio"], diff:"expert", nationalities:["Allemagne"], positions:["gardien"] , birthYear:1999 },
+  { name:"Maduka Okoye", clubs:["Watford", "Udinese Calcio"], diff:"expert", nationalities:["Nigeria"], positions:["gardien"] , birthYear:1999 },
   { name:"William Troost-Ekong", clubs:["Udinese Calcio", "Watford", "Fulham"], diff:"expert", nationalities:["Pays-Bas"], positions:["defenseur"] , birthYear:1993 },
   { name:"Terem Moffi", clubs:["Lorient", "Nice", "Porto"], diff:"expert", nationalities:["Nigeria"], positions:["attaquant"], birthYear:1999 },
   // Équipe nationale RD Congo 2026
