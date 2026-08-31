@@ -6645,6 +6645,43 @@ export default function LePont() {
     return function() { vivant = false; };
   }, [screen, playerId, pseudoConfirmed]);
 
+  // ── PARRAINAGE : recaler l'XP du parrain sur son propre appareil ───────────
+  // L'XP de parrainage ne peut PAS être écrite par le serveur au moment où le
+  // filleul joue (bb_garde_identite interdit d'écrire la ligne d'un autre compte).
+  // C'est donc le parrain qui, à l'ouverture de l'app, relit ce qu'il a mérité
+  // (bb_parrainage_xp_total) et n'ajoute que l'écart non encore crédité — idempotent
+  // grâce à xp_parrain_credite. Ainsi le chiffre du profil ET le classement Global
+  // (qui lisent bb_pseudos.xp) reflètent le parrainage, sans double-compter l'XP de jeu.
+  useEffect(() => {
+    if (!pseudoConfirmed || !playerId) return;
+    let vivant = true;
+    (async function() {
+      try {
+        let tot = await sbFetch("rpc/bb_parrainage_xp_total", {
+          method: "POST", body: JSON.stringify({ p_parrain: playerId }),
+        });
+        if (Array.isArray(tot)) tot = tot[0];
+        if (tot && typeof tot === "object") tot = tot.bb_parrainage_xp_total ?? Object.values(tot)[0];
+        const total = Number(tot) || 0;
+        if (total <= 0) return;
+        const lu = await sbFetch("bb_pseudos?player_id=eq." + playerId + "&select=xp,xp_parrain_credite&limit=1");
+        const row = Array.isArray(lu) && lu[0] ? lu[0] : null;
+        if (!row) return;
+        const credite = Number(row.xp_parrain_credite) || 0;
+        const delta = total - credite;
+        if (delta <= 0) return;
+        const nouveau = (Number(row.xp) || 0) + delta;
+        await sbFetch("bb_pseudos?player_id=eq." + playerId, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json", "Prefer": "return=minimal" },
+          body: JSON.stringify({ xp: nouveau, xp_parrain_credite: total }),
+        });
+        if (vivant) setPlayerXp(function(prev) { return Math.max(prev || 0, nouveau); });
+      } catch (e) { /* réseau ou colonne absente : on réessaiera au prochain lancement */ }
+    })();
+    return function() { vivant = false; };
+  }, [pseudoConfirmed, playerId]);
+
 
   // Load pseudo silently on mount
   useEffect(() => {
