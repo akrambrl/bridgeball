@@ -2281,7 +2281,7 @@ export const PLAYERS = [
   // Seattle Sounders
   { name:"Obed Vargas", clubs:["Seattle Sounders", "Atletico Madrid"], diff:"expert", nationalities:["Mexique"], positions:["milieu"], birthYear:2005 },
   // LA Galaxy
-  { name:"Riqui Puig", clubs:["Barcelona", "LA Galaxy"], diff:"moyen", nationalities:["Espagne"], positions:["attaquant"], birthYear:1999 },
+  { name:"Riqui Puig", clubs:["Barcelona", "LA Galaxy"], diff:"moyen", nationalities:["Espagne"], positions:["milieu"], birthYear:1999 },
   // 🆕 Suggérés (Manchester United alumni)
   { name:"Louis Saha", clubs:["Metz", "Newcastle", "Fulham", "Manchester United", "Everton", "Tottenham", "Sunderland", "SS Lazio"], diff:"moyen", nationalities:["France"], positions:["attaquant"], birthYear:1978 },
   { name:"Alan Smith", clubs:["Leeds United", "Manchester United", "Newcastle", "MK Dons", "Notts County"], diff:"moyen", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1980 },
