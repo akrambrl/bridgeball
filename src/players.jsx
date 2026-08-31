@@ -2325,7 +2325,7 @@ export const PLAYERS = [
   { name:"Bryan Cristante", clubs:["AS Roma"], diff:"expert", nationalities:["Italie"], positions:["milieu"] , birthYear:1995 },
   { name:"Yannick Carrasco", clubs:["Monaco", "Atletico Madrid", "Dalian Pro", "Dalian Aerbin", "Al Shabab"], diff:"moyen", nationalities:["Belgique"], positions:["attaquant"] , birthYear:1993 },
   { name:"Otávio", clubs:["Internacional", "Vitoria Guimaraes", "Porto", "Al Nassr", "Al Qadsiah"], diff:"moyen", nationalities:["Portugal"], positions:["milieu"], birthYear:1995 },
-  { name:"Anderson Talisca", clubs:["Bahia", "Benfica", "Besiktas", "Guangzhou Evergrande", "Al Nassr", "Fenerbahce", "Guangzhou Evergrande"], diff:"moyen", nationalities:["Brésil"], positions:["milieu"], birthYear:1994 },
+  { name:"Anderson Talisca", clubs:["Bahia", "Benfica", "Besiktas", "Guangzhou Evergrande", "Al Nassr", "Fenerbahce"], diff:"moyen", nationalities:["Brésil"], positions:["milieu"], birthYear:1994 },
   { name:"Tim Kleindienst", clubs:["Energie Cottbus", "SC Freiburg", "Heidenheim", "Gent", "Borussia Mönchengladbach"], diff:"moyen", nationalities:["Allemagne"], positions:["attaquant"] , birthYear:1995 },
   { name:"Duván Zapata", clubs:["América de Cali", "Estudiantes", "SSC Napoli", "Udinese Calcio", "Sampdoria", "Atalanta BC", "Torino FC"], diff:"moyen", nationalities:["Colombie"], positions:["attaquant"], birthYear:1991 },
   { name:"Matteo Politano", clubs:["AS Roma", "Perugia", "Pescara", "Sassuolo", "Inter Milan", "SSC Napoli"], diff:"moyen", nationalities:["Italie"], positions:["attaquant"], birthYear:1993 },
