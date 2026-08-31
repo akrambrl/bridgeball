@@ -66,9 +66,20 @@ alter table public.bb_pseudos add column if not exists parrain_code text;
 
 -- Backfill des comptes existants. Fait une fois ; les relances ne retouchent pas
 -- les codes déjà posés (where … is null).
+--
+-- ⚠️ ON NEUTRALISE LES TRIGGERS LE TEMPS DU BACKFILL. Toucher bb_pseudos réveille
+-- le garde-fou d'identité (zz_garde_identite, correctif auth anonyme, un BEFORE
+-- UPDATE) : dans l'éditeur SQL auth.uid() est nul, donc il REFUSE de modifier une
+-- ligne déjà liée à un compte — « ce pseudo appartient a un autre compte ». Or ce
+-- backfill est un geste d'ADMINISTRATION, pas une écriture d'app : il n'usurpe
+-- personne, il ne fait qu'attribuer un code. `session_replication_role = replica`
+-- suspend les triggers pour cette session (réservé au superutilisateur — c'est le
+-- rôle de l'éditeur SQL de Supabase), et on le remet aussitôt à `origin`.
+set session_replication_role = replica;
 update public.bb_pseudos
    set parrain_code = public.bb_gen_parrain_code()
  where parrain_code is null;
+set session_replication_role = origin;
 
 -- Unicité du code. Index partiel : la colonne peut rester null le temps qu'un
 -- backfill concurrent tourne, sans casser la contrainte.
