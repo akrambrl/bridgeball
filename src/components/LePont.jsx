@@ -17524,8 +17524,17 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
           un plus grand en dessous. C'est ce que « mal structuré » désignait.
           Ici la boîte s'étire et la séquence s'étire AVEC elle (fill), donc la
           place libre devient de l'image et non du fond. */}
+      {/* `flex:"1 0 auto"` et non "1 1 auto" : le shrink DEVAIT rester à 0, sinon
+          sur un écran de fin chargé (score + near-miss + carotte + carte de duel +
+          boutons), le total dépasse 100dvh et le flex COMPRIME cet en-tête. Comme
+          `minHeight:0` l'autorise à passer SOUS sa hauteur de contenu et que la
+          cinématique a son propre `minHeight:170`, elle débordait de l'en-tête
+          rétréci et se posait PAR-DESSUS la carte de score en dessous (signalé en
+          capture). En interdisant le shrink, l'en-tête garde sa taille et c'est
+          l'écran qui défile — jamais un chevauchement. Le grow:1 reste, donc il
+          absorbe toujours le mou en s'agrandissant sur les écrans hauts. */}
       <div style={{zIndex:1,padding:"6px 12px 0",textAlign:"center",
-        flex:"1 1 auto",minHeight:0,display:"flex",flexDirection:"column",alignItems:"center"}}>
+        flex:"1 0 auto",minHeight:0,display:"flex",flexDirection:"column",alignItems:"center"}}>
         {/* C'est la SÉQUENCE qui absorbe le mou, pas un vide. Plafonner l'espace
             élastique du bas rangeait le surplus sous le dernier bouton, où il
             faisait décoller le contenu du bas de l'écran ; le donner à la
