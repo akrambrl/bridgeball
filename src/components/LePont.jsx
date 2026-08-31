@@ -13067,7 +13067,12 @@ export default function LePont() {
               {/* Séparateur et titre de section à l'encre : le filet blanc à 8 %
                   et le libellé gris ne se voyaient plus sur la pelouse. L'emoji
                   sort du contour, qui cernerait l'image de noir. */}
-              <div style={{...posterText(24,G.projecteur),marginBottom:10,textAlign:"center"}}>
+              {/* À L'ENCRE (posterLight), pas en projecteur : `G.projecteur` EST la
+                  teinte OR du fond, donc ce titre était peint or sur or —
+                  invisible, comme signalé en capture. Sur l'or, seule l'encre se
+                  lit ; posterLight garde l'italique d'affiche sans le contour qui
+                  n'a de sens que sur fond sombre. */}
+              <div style={{...posterLight(24,G.encre),marginBottom:10,textAlign:"center"}}>
                 <span style={{WebkitTextStroke:0,textShadow:"none"}}>🏛</span> HALL OF FAME
               </div>
               {hallOfFame.slice(0,5).map(function(s,i){
