@@ -2236,25 +2236,25 @@ export const PLAYERS = [
   { name:"Kerem Aktürkoğlu", clubs:["Galatasaray", "Benfica", "Fenerbahce"], diff:"expert", nationalities:["Turquie"], positions:["attaquant"], birthYear:1998 },
   { name:"Dorgeles Nene", clubs:["Liefering", "Salzburg", "Fenerbahce"], diff:"expert", nationalities:["Mali"], positions:["attaquant"] , birthYear:2003 },
   // Beşiktaş
-  { name:"Orkun Kökçü", clubs:["Feyenoord", "Benfica", "Besiktas"], diff:"moyen", nationalities:["Turquie"], positions:["attaquant"], birthYear:2000 },
-  { name:"David Jurásek", clubs:["Mladá Boleslav", "Slavia Prague", "Benfica", "Hoffenheim", "Besiktas"], diff:"expert", nationalities:["Tchéquie"], positions:["attaquant"], birthYear:2000 },
+  { name:"Orkun Kökçü", clubs:["Feyenoord", "Benfica", "Besiktas"], diff:"moyen", nationalities:["Turquie"], positions:["milieu"], birthYear:2000 },
+  { name:"David Jurásek", clubs:["Mladá Boleslav", "Slavia Prague", "Benfica", "Hoffenheim", "Besiktas"], diff:"expert", nationalities:["Tchéquie"], positions:["defenseur"], birthYear:2000 },
   { name:"Tiago Djaló", clubs:["AC Milan", "Sporting CP", "Lille", "Juventus FC", "Porto", "Besiktas"], diff:"expert", nationalities:["Portugal"], positions:["defenseur"], birthYear:2000 },
   // Saudi Pro League 2025/26 - nouveaux joueurs
   // Al Hilal
   { name:"Aleksandar Mitrović", clubs:["Partizan", "Anderlecht", "Newcastle", "Fulham", "Al Hilal", "Al-Rayyan"], diff:"moyen", nationalities:["Serbie"], positions:["attaquant"], birthYear:1994 },
-  { name:"Sergej Milinković-Savić", clubs:["Vojvodina", "Genk", "SS Lazio", "Al Hilal"], diff:"moyen", nationalities:["Serbie"], positions:["attaquant"], birthYear:1995 },
+  { name:"Sergej Milinković-Savić", clubs:["Vojvodina", "Genk", "SS Lazio", "Al Hilal"], diff:"moyen", nationalities:["Serbie"], positions:["milieu"], birthYear:1995 },
   { name:"Yusuf Akçiçek", clubs:["Fenerbahce", "Al Hilal"], diff:"expert", nationalities:["Turquie"], positions:["defenseur"] , birthYear:2006 },
   // Al Nassr
   // Al Ittihad
   { name:"Roger Fernandes", clubs:["Sporting CP", "Braga", "Al Ittihad"], diff:"expert", nationalities:["Portugal"], positions:["attaquant"], birthYear:2005 },
   // Al Ahli
-  { name:"Enzo Millot", clubs:["Monaco", "Stuttgart", "Al Ahli"], diff:"moyen", nationalities:["France"], positions:["attaquant"], birthYear:2002 },
+  { name:"Enzo Millot", clubs:["Monaco", "Stuttgart", "Al Ahli"], diff:"moyen", nationalities:["France"], positions:["milieu"], birthYear:2002 },
   { name:"Matheus Gonçalves", clubs:["Flamengo", "Al Ahli"], diff:"expert", nationalities:["Brésil"], positions:["attaquant"] },
   { name:"Valentin Atangana", clubs:["Reims", "Al Ahli"], diff:"expert", nationalities:["Cameroun"], positions:["milieu"] },
   // Al Qadsiah
   { name:"Yasser Al-Shahrani", clubs:["Al Hilal", "Al Qadsiah"], diff:"expert", nationalities:["Arabie saoudite"], positions:["defenseur"] , birthYear:1992 },
   // Neom FC
-  { name:"Abdoulaye Doucouré", clubs:["Rennes", "Granada", "Watford", "Everton", "NEOM SC"], diff:"moyen", nationalities:["France"], positions:["attaquant"], birthYear:1993 },
+  { name:"Abdoulaye Doucouré", clubs:["Rennes", "Granada", "Watford", "Everton", "NEOM SC"], diff:"moyen", nationalities:["Mali"], positions:["milieu"], birthYear:1993 },
   // MLS 2025/26 - nouveaux joueurs
   // LAFC
   { name:"Denis Bouanga", clubs:["Lorient", "Strasbourg", "Tours", "Nîmes", "Saint-Etienne", "LAFC"], diff:"moyen", nationalities:["Gabon"], positions:["attaquant"], birthYear:1994 },
@@ -2274,7 +2274,7 @@ export const PLAYERS = [
   // Philadelphia Union
   { name:"Milan Iloski", clubs:["Nordsjælland", "San Diego FC", "Philadelphia Union"], diff:"expert", nationalities:["États-Unis"], positions:["attaquant"], birthYear:1999 },
   // NYCFC
-  { name:"Nico Fernández Mercau", clubs:["San Lorenzo", "Elche", "New York City FC"], diff:"expert", nationalities:["Argentine"], positions:["attaquant"], birthYear:2000 },
+  { name:"Nico Fernández Mercau", clubs:["San Lorenzo", "Elche", "New York City FC"], diff:"expert", nationalities:["Argentine"], positions:["defenseur"], birthYear:2000 },
   // Real Salt Lake
   { name:"Rwan Cruz", clubs:["Santos", "Botafogo", "Real Salt Lake"], diff:"expert", nationalities:["Brésil"], positions:["attaquant"], birthYear:2001 },
   { name:"William Agada", clubs:["Sporting Kansas City", "Real Salt Lake"], diff:"expert", nationalities:["Nigeria"], positions:["attaquant"], birthYear:1999 },
