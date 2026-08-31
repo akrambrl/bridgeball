@@ -93,9 +93,40 @@ async function eprouver() {
   await psql(["-v", "type_score=numeric", "-f", SCHEMA_CLASSEMENT], base);
   await psql(["-f", FONCTIONS_CLASSEMENT], base);
   await psql(["-c", JEU], base);
+
+  // ── ON REPRODUIT LE GARDE-FOU D'IDENTITÉ DE LA PRODUCTION ─────────────────
+  // Le backfill du code touche bb_pseudos, ce qui réveille zz_garde_identite
+  // (correctif auth anonyme) : un BEFORE UPDATE qui refuse de modifier une ligne
+  // liée à un compte quand auth.uid() ne correspond pas. Dans l'éditeur SQL,
+  // auth.uid() est nul → il bloquait le déploiement (« ce pseudo appartient a un
+  // autre compte »). Le banc ne l'avait pas, donc ne l'avait pas vu. On le pose
+  // ici, avec un compte LIÉ, pour que le backfill DOIVE le contourner.
+  await psql(["-c", `
+    create schema if not exists auth;
+    create or replace function auth.uid() returns uuid language sql stable as $$ select null::uuid $$;
+    alter table public.bb_pseudos add column if not exists auth_uid uuid;
+    create or replace function public.g_ident() returns trigger language plpgsql as $$
+    begin
+      if tg_op = 'UPDATE' and old.auth_uid is not null
+         and old.auth_uid is distinct from auth.uid() then
+        raise exception 'ce pseudo appartient a un autre compte';
+      end if;
+      return new;
+    end $$;
+    drop trigger if exists zz_garde_identite on public.bb_pseudos;
+    create trigger zz_garde_identite before update on public.bb_pseudos
+      for each row execute function public.g_ident();
+    update public.bb_pseudos set auth_uid = gen_random_uuid() where player_id = 'parrain';
+  `], base);
+
   await psql(["-f", FICHIER], base);
   // Code connu pour des contrôles déterministes (le backfill en a posé un au hasard).
-  await psql(["-c", "update public.bb_pseudos set parrain_code = 'PARR01' where player_id = 'parrain'"], base);
+  // 'parrain' est lié (auth_uid), donc même geste d'admin que le backfill : on
+  // suspend les triggers le temps de forcer le code.
+  await psql(["-c",
+    "set session_replication_role = replica; "
+    + "update public.bb_pseudos set parrain_code = 'PARR01' where player_id = 'parrain'; "
+    + "set session_replication_role = origin;"], base);
 
   let bon = true;
   const dire = (ok, texte) => { if (!ok) bon = false; console.log((ok ? "✅ " : "❌ ") + texte); };
