@@ -120,6 +120,15 @@ async function eprouver() {
   `], base);
 
   await psql(["-f", FICHIER], base);
+  // Droits d'anon pour insérer un score : c'est LE point qui reproduit le bug de
+  // validation. Le trigger bb_parrainage_valide tourne sous le rôle qui insère le
+  // score ; s'il n'est pas SECURITY DEFINER, l'UPDATE de bb_parrainage est filtré
+  // par le RLS quand ce rôle est anon. En superutilisateur (postgres) le RLS est
+  // contourné et le bug reste invisible — c'est ce qui l'avait masqué.
+  await psql(["-c",
+    "grant insert, select on public.bb_scores to anon; "
+    + "grant usage, select on all sequences in schema public to anon;"], base);
+
   // Code connu pour des contrôles déterministes (le backfill en a posé un au hasard).
   // 'parrain' est lié (auth_uid), donc même geste d'admin que le backfill : on
   // suspend les triggers le temps de forcer le code.
@@ -161,9 +170,9 @@ async function eprouver() {
   dire(clsAvant === "0", "le parrain n'est pas au classement tant que rien n'est validé  (" + clsAvant + ")");
 
   // ── 6. PREMIÈRE PARTIE DU FILLEUL : VALIDÉ, +500 ──────────────────────────
-  // Insertion par le chemin normal (trigger de validation actif). Le garde-fou
-  // des scores impose created_at = now(), donc « ce mois-ci ».
-  await psql(["-c",
+  // Insertion EN TANT QU'ANON — c'est le rôle de l'app. C'est ici que le bug se
+  // révèle : sous RLS, un trigger non-SECURITY-DEFINER ne peut pas poser valide_at.
+  await psql(["-q", "-c", "set role anon", "-c",
     "insert into public.bb_scores (player_id, player_name, mode, score) "
     + "values ('filleul', 'lepote', 'pont', 800)"], base);
   const valide = await commeAnon(
