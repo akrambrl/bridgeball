@@ -6367,6 +6367,11 @@ export default function LePont() {
   const [showMyRecoveryCode, setShowMyRecoveryCode] = useState(false); // affichage du code depuis le profil
   const [recoveryConfirmed, setRecoveryConfirmed] = useState(false); // checkbox "j'ai noté mon code"
   const [pseudoInput, setPseudoInput] = useState("");
+  // Code de parrainage saisi à la main dans la modale de création (repli au lien
+  // ?p=CODE) : prérempli si un lien a déjà déposé un code. On l'écrit dans
+  // localStorage(bb_parrain_code) pour que l'effet de rattachement le reprenne,
+  // qu'il vienne du lien ou d'ici.
+  const [parrainSaisi, setParrainSaisi] = useState(function(){ try { return localStorage.getItem("bb_parrain_code") || ""; } catch { return ""; } });
   const [pseudoChecking, setPseudoChecking] = useState(false);
   const [pseudoMsg, setPseudoMsg] = useState("");
   // ── LA PUB RÉCOMPENSÉE DE FIN DE PARTIE ────────────────────────────────
@@ -6575,6 +6580,70 @@ export default function LePont() {
       }
     } catch {}
   }, []);
+
+  // ── PARRAINAGE : capture du code d'invitation (?p=CODE) ────────────────────
+  // Un lien goatfc.fr/?p=CODE amène un pote. On mémorise le code AU MONTAGE, à
+  // part des autres ?params (qui font des retours anticipés et un replaceState
+  // qui efface l'URL) : sans ça, un lien composé UNIQUEMENT de ?p= serait perdu.
+  // Le code attend en localStorage jusqu'à ce que le pote ait un pseudo (effet
+  // plus bas), pour que le rattachement se fasse sous SON player_id.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const code = new URLSearchParams(window.location.search).get("p");
+      if (code && code.trim() && !localStorage.getItem("bb_parrain_fait")) {
+        localStorage.setItem("bb_parrain_code", code.trim().slice(0, 40));
+      }
+    } catch (e) {}
+  }, []);
+
+  // ── PARRAINAGE : rattachement à la création du pseudo ──────────────────────
+  // Dès que le pote a un pseudo confirmé, on rattache une seule fois. Le serveur
+  // (bb_parrainer) refuse l'auto-parrainage, le code inconnu et le double
+  // rattachement ; quelle que soit sa réponse, on marque « fait » pour ne plus
+  // réessayer. Aucun point ne tombe ici : ils viennent quand le pote joue.
+  useEffect(() => {
+    if (!pseudoConfirmed || !playerId) return;
+    let code = null;
+    try {
+      if (localStorage.getItem("bb_parrain_fait")) return;
+      code = localStorage.getItem("bb_parrain_code");
+    } catch (e) { return; }
+    if (!code) return;
+    (async function() {
+      try {
+        await sbFetch("rpc/bb_parrainer", {
+          method: "POST",
+          body: JSON.stringify({ p_filleul_id: playerId, p_code: code }),
+        });
+      } catch (e) { /* réseau : on réessaiera au prochain lancement */ return; }
+      try {
+        localStorage.setItem("bb_parrain_fait", "1");
+        localStorage.removeItem("bb_parrain_code");
+      } catch (e) {}
+    })();
+  }, [pseudoConfirmed, playerId]);
+
+  // ── PARRAINAGE : résumé affiché sur le profil ──────────────────────────────
+  // {code, filleuls, filleuls_valides, points_mois}. Chargé à l'ouverture du
+  // profil ; jamais bloquant (le panneau se cache si le résumé n'arrive pas).
+  const [parrainInfo, setParrainInfo] = useState(null);
+  const [parrainCopie, setParrainCopie] = useState(false);
+  useEffect(() => {
+    if (screen !== "profile" || !playerId || !pseudoConfirmed) return;
+    let vivant = true;
+    (async function() {
+      try {
+        const r = await sbFetch("rpc/bb_parrainage_resume", {
+          method: "POST",
+          body: JSON.stringify({ p_player_id: playerId }),
+        });
+        const ligne = Array.isArray(r) ? r[0] : r;
+        if (vivant && ligne && ligne.code) setParrainInfo(ligne);
+      } catch (e) {}
+    })();
+    return function() { vivant = false; };
+  }, [screen, playerId, pseudoConfirmed]);
 
 
   // Load pseudo silently on mount
@@ -13422,6 +13491,21 @@ export default function LePont() {
         />
         {pseudoMsg && <div style={{fontSize:13,fontWeight:700,color:pseudoMsg.startsWith("❌")?"#FF3D57":G.pelouseClaire,marginBottom:8,textAlign:"center"}}>{pseudoMsg}</div>}
         <div style={{fontSize:11,color:"rgba(255,255,255,.2)",marginBottom:16,textAlign:"center"}}>{tr("3–8 caractères · lettres, chiffres, _ et . · pas d'espaces","3–8 characters · letters, digits, _ and . · no spaces","3–8 Zeichen · Buchstaben, Ziffern, _ und . · keine Leerzeichen","3–8 caratteri · lettere, cifre, _ e . · niente spazi","3–8 caracteres · letras, números, _ e . · sem espaços","3–8 caracteres · letras, números, _ y . · sin espacios")}</div>
+        {/* Code de parrainage — optionnel, montré tant que le joueur n'a pas déjà
+            un parrain. Prérempli si un lien ?p=CODE l'a déposé. */}
+        {(function(){ try { return !localStorage.getItem("bb_parrain_fait"); } catch { return true; } })() && (
+          <input
+            value={parrainSaisi}
+            onChange={function(e){
+              const v = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,12);
+              setParrainSaisi(v);
+              try { if (v) localStorage.setItem("bb_parrain_code", v); else localStorage.removeItem("bb_parrain_code"); } catch(err) {}
+            }}
+            placeholder={tr("Code de parrainage (optionnel)","Referral code (optional)","Empfehlungscode (optional)","Codice invito (facoltativo)","Código de convite (opcional)","Código de invitación (opcional)")}
+            maxLength={12}
+            style={{width:"100%",background:"rgba(8,17,9,.45)",border:G.traitFin,borderRadius:14,padding:"12px 16px",fontFamily:G.font,fontSize:14,letterSpacing:2,color:G.white,outline:"none",boxSizing:"border-box",marginBottom:16,textAlign:"center"}}
+          />
+        )}
         <button
           onClick={function(){checkAndSavePseudo(pseudoInput);}}
           disabled={pseudoChecking||pseudoInput.trim().length<3}
@@ -14036,6 +14120,77 @@ export default function LePont() {
           );
         })()}
       </div>
+
+      {/* ── PARRAINAGE ─────────────────────────────────────────────────────
+          Ramène un pote : 500 points quand il joue sa première partie, 50 par
+          partie ensuite. Les points comptent dans le classement du mois (crédités
+          côté serveur, cf. docs/supabase-parrainage.sql) ET dans l'XP. Le panneau
+          n'apparaît que si le résumé serveur a répondu — sinon il ne s'affiche
+          pas plutôt que de montrer un code vide. */}
+      {parrainInfo && parrainInfo.code && (() => {
+        const origine = (function(){ try { return window.location.origin; } catch { return "https://goatfc.fr"; } })();
+        const lien = origine + "/?p=" + parrainInfo.code;
+        const shareText = tr(
+          "Rejoins-moi sur GOAT FC, le quiz foot ! " + lien,
+          "Join me on GOAT FC, the football quiz! " + lien,
+          "Komm zu mir auf GOAT FC, dem Fußball-Quiz! " + lien,
+          "Raggiungimi su GOAT FC, il quiz sul calcio! " + lien,
+          "Junta-te a mim no GOAT FC, o quiz de futebol! " + lien,
+          "Únete a mí en GOAT FC, el quiz de fútbol! " + lien);
+        return (
+          <>
+            <div style={{...posterLight(22,G.encre),zIndex:1,padding:"14px 18px 0"}}>
+              {tr("Parrainage","Invite friends","Freunde einladen","Invita amici","Convidar amigos","Invitar amigos")}
+            </div>
+            <div style={{zIndex:1,flexShrink:0,margin:"10px 18px 0",background:G.nuit,border:G.trait,
+              borderRadius:G.rayon,boxShadow:G.ombre,padding:"14px 16px"}}>
+              <div style={{fontSize:12.5,color:"rgba(255,255,255,.72)",fontWeight:700,lineHeight:1.45,marginBottom:12}}>
+                {tr("Ramène un pote : +500 pts dès sa 1ʳᵉ partie, +50 pts par partie qu'il joue.",
+                    "Bring a friend: +500 pts on their 1st game, +50 pts per game they play.",
+                    "Bring einen Freund mit: +500 Pkt. beim 1. Spiel, +50 Pkt. pro Spiel.",
+                    "Porta un amico: +500 pt alla 1ª partita, +50 pt per ogni partita.",
+                    "Traga um amigo: +500 pts na 1ª partida, +50 pts por partida.",
+                    "Trae a un amigo: +500 pts en su 1ª partida, +50 pts por partida.")}
+              </div>
+              {/* Le code, gros, dans un aplat cerclé d'encre, avec le bouton partager/copier. */}
+              <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
+                <div style={{flex:1,background:"rgba(8,17,9,.55)",border:G.traitFin,borderRadius:G.rayonS,
+                  padding:"10px 12px",...posterText(24,G.projecteur),letterSpacing:3,textAlign:"center",overflow:"hidden"}}>
+                  {parrainInfo.code}
+                </div>
+                <button
+                  onClick={async function(){
+                    try {
+                      if (navigator.share) { await navigator.share({ text: shareText }); }
+                      else { await navigator.clipboard.writeText(lien); setParrainCopie(true); setTimeout(function(){setParrainCopie(false);},1800); }
+                    } catch (e) {}
+                  }}
+                  style={{...btn(G.projecteur,G.encre,13),flexShrink:0,whiteSpace:"nowrap",padding:"11px 14px"}}>
+                  {parrainCopie ? tr("✓ Copié","✓ Copied","✓ Kopiert","✓ Copiato","✓ Copiado","✓ Copiado")
+                    : (navigator.share ? tr("📤 Partager","📤 Share","📤 Teilen","📤 Condividi","📤 Compartilhar","📤 Compartir")
+                                       : tr("📋 Copier le lien","📋 Copy link","📋 Link kopieren","📋 Copia link","📋 Copiar link","📋 Copiar enlace"))}
+                </button>
+              </div>
+              {/* Deux tuiles : filleuls (dont validés) et points de parrainage du mois. */}
+              <div style={{display:"flex",border:G.traitFin,borderRadius:G.rayonS,overflow:"hidden"}}>
+                <div style={{flex:1,padding:"10px 0",textAlign:"center",borderRight:G.traitFin}}>
+                  <div style={{...posterText(24,G.white)}}>{nb(Number(parrainInfo.filleuls)||0)}</div>
+                  <div style={{fontSize:10.5,color:"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase"}}>
+                    {tr("Filleuls","Referrals","Geworben","Invitati","Convidados","Invitados")}
+                    {Number(parrainInfo.filleuls_valides)>0 ? " · " + nb(Number(parrainInfo.filleuls_valides)) + " ✓" : ""}
+                  </div>
+                </div>
+                <div style={{flex:1,padding:"10px 0",textAlign:"center"}}>
+                  <div style={{...posterText(24,G.projecteur)}}>{nb(Number(parrainInfo.points_mois)||0)}</div>
+                  <div style={{fontSize:10.5,color:"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase"}}>
+                    {tr("Pts ce mois","Pts this month","Pkt. Monat","Pt questo mese","Pts este mês","Pts este mes")}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        );
+      })()}
 
       {/* ── MES DUELS ──────────────────────────────────────────────────────
           Le pendant du panneau du dessus : celui-là dit la progression solo,
