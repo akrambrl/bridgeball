@@ -172,8 +172,15 @@ end $$;
 -- mêle pas. L'UPDATE ne touche que les filleuls non encore validés (index sur la
 -- PK + filtre valide_at is null) : coût nul pour l'immense majorité des scores,
 -- qui ne sont pas d'un filleul en attente.
+-- ⚠️ SECURITY DEFINER, ET C'EST INDISPENSABLE. Ce trigger tourne au moment où
+-- l'app insère un score, donc SOUS LE RÔLE anon. Or bb_parrainage a le RLS activé
+-- avec une SEULE policy (select) : sans SECURITY DEFINER, l'UPDATE ci-dessous est
+-- filtré par le RLS à 0 ligne — SANS erreur — et valide_at ne se pose jamais. Le
+-- filleul joue, personne n'est crédité. SECURITY DEFINER fait tourner la fonction
+-- sous son propriétaire (postgres), qui n'est pas soumis au RLS. L'écriture reste
+-- étroite (poser valide_at pour le joueur qui vient de marquer), donc sans risque.
 create or replace function public.bb_parrainage_valide()
-returns trigger language plpgsql as $$
+returns trigger language plpgsql security definer set search_path = public as $$
 begin
   update public.bb_parrainage
      set valide_at = now()
@@ -185,6 +192,15 @@ drop trigger if exists bb_parrainage_valide_trg on public.bb_scores;
 create trigger bb_parrainage_valide_trg
   after insert on public.bb_scores
   for each row execute function public.bb_parrainage_valide();
+
+-- RATTRAPAGE DES FILLEULS DÉJÀ RATTACHÉS QUI ONT DÉJÀ JOUÉ. Sans ça, un filleul
+-- qui a joué AVANT ce correctif resterait « non validé » jusqu'à sa prochaine
+-- partie. On les valide une fois, en datant sur leur première partie connue.
+update public.bb_parrainage p
+   set valide_at = s.premier
+  from (select player_id, min(created_at) as premier
+          from public.bb_scores group by player_id) s
+ where s.player_id = p.filleul_id and p.valide_at is null;
 
 
 -- ─── 5. LE CLASSEMENT, ÉTENDU AUX POINTS DE PARRAINAGE ──────────────────────
