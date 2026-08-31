@@ -13048,36 +13048,16 @@ export default function LePont() {
                           pour la même chose, dont un sans visuel. */}
                       {entry.streak>=3 && <span style={{fontSize:11,fontWeight:800,color:G.maillot,background:"rgba(217,58,43,.22)",borderRadius:G.rayonS,padding:"2px 8px",border:G.traitFin}}>🔥 {entry.streak}</span>}
                     </div>
-                    {lbMode==="saison"
-                      ? null
-                      : <div style={{fontSize:12,color:"rgba(255,255,255,.5)",marginTop:3}}>{entry.played} {entry.played>1?tr("parties","games","Spiele","partite","jogos","partidas"):tr("partie","game","Spiel","partita","jogo","partida")}</div>
-                    }
+                    {/* La ligne « X parties » et le bandeau V/N/D ont été retirés
+                        du classement : sur Global/Amis, le tableau est trié par XP
+                        cumulée et les joueurs de tête sont ajoutés depuis bb_pseudos
+                        SANS bilan de duels — played/wins/draws/losses valaient donc 0
+                        pour les meneurs, ce qui affichait « 0 partie · 0/0/0 » à des
+                        joueurs à 147 000 pts. Le bilan de duels reste sur le PROFIL
+                        (« Mes duels »), où il est calculé correctement. */}
                   </div>
                   <div style={{...posterText(28,metal||G.white),flexShrink:0}}>{nb(entry.score)} <span style={{fontSize:12,color:"rgba(255,255,255,.35)"}}>pts</span></div>
                 </div>
-                {lbMode!=="saison" && (
-                /* Le bandeau V/N/D est séparé du corps de la ligne par un trait
-                   d'encre plein — sur le podium comme ailleurs, c'est le même
-                   trait, seule la transparence du fond change. */
-                <div style={{display:"flex",borderTop:G.traitFin,background:"rgba(0,0,0,.22)"}}>
-                    {/* Sur les aplats du podium, les chiffres passent à l'encre :
-                        le vert et l'olive des couleurs sémantiques disparaissaient
-                        sur le jaune. Ce sont les libellés dessous qui portent le
-                        sens, la couleur n'y ajoutait rien. */}
-                    <div style={{flex:1,padding:"10px 0",textAlign:"center",borderRight:G.traitFin}}>
-                      <div style={{...posterText(22,G.pelouse)}}>{entry.wins||0}</div>
-                      <div style={{fontSize:11,color:"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase"}}>{tr("Victoires","Wins","Siege","Vittorie","Vitórias","Victorias")}</div>
-                    </div>
-                    <div style={{flex:1,padding:"10px 0",textAlign:"center",borderRight:G.traitFin}}>
-                      <div style={{...posterText(22,G.projecteur)}}>{entry.draws||0}</div>
-                      <div style={{fontSize:11,color:"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase"}}>{tr("Nuls","Draws","Remis","Pareggi","Empates","Empates")}</div>
-                    </div>
-                    <div style={{flex:1,padding:"10px 0",textAlign:"center"}}>
-                      <div style={{...posterText(22,G.maillot)}}>{entry.losses||0}</div>
-                      <div style={{fontSize:11,color:"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase"}}>{tr("Défaites","Losses","Niederlagen","Sconfitte","Derrotas","Derrotas")}</div>
-                    </div>
-                  </div>
-                )}
               </div>
             );
           })}
