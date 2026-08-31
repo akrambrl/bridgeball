@@ -92,6 +92,24 @@ create unique index if not exists bb_pseudos_parrain_code_idx
 -- parrain_code. C'est ce qui évite d'avoir à toucher le code d'inscription.
 alter table public.bb_pseudos alter column parrain_code set default public.bb_gen_parrain_code();
 
+-- Combien de points de parrainage sont DÉJÀ pliés dans l'XP de ce joueur. Sert à
+-- ne compter chaque point qu'une fois : le trigger (section 4) l'incrémente en
+-- même temps que l'XP, et le rattrapage (section 4 bis) ne rajoute que l'écart.
+alter table public.bb_pseudos add column if not exists xp_parrain_credite int not null default 0;
+
+-- L'app (rôle anon) doit pouvoir écrire cette colonne sur SA PROPRE ligne quand
+-- elle recale l'XP de parrainage (bb_garde_identite l'autorise pour sa ligne). Le
+-- droit d'écrire `xp` existe déjà ; on ajoute juste le compteur, colonne par
+-- colonne comme le reste (cf. supabase-auth-anonyme, section des grants).
+do $$ begin
+  if exists (select 1 from pg_roles where rolname = 'anon') then
+    grant update(xp_parrain_credite) on public.bb_pseudos to anon;
+  end if;
+  if exists (select 1 from pg_roles where rolname = 'authenticated') then
+    grant update(xp_parrain_credite) on public.bb_pseudos to authenticated;
+  end if;
+end $$;
+
 
 -- ─── 2. LA TABLE DES FILLEULS ───────────────────────────────────────────────
 -- Une ligne par filleul : chacun a AU PLUS un parrain, définitif (filleul_id est
@@ -179,6 +197,15 @@ end $$;
 -- filleul joue, personne n'est crédité. SECURITY DEFINER fait tourner la fonction
 -- sous son propriétaire (postgres), qui n'est pas soumis au RLS. L'écriture reste
 -- étroite (poser valide_at pour le joueur qui vient de marquer), donc sans risque.
+-- Ce trigger NE FAIT QUE VALIDER le filleul à sa première partie. Il NE CRÉDITE
+-- PAS l'XP du parrain ici, et c'est délibéré : l'XP vit dans bb_pseudos, protégé
+-- par bb_garde_identite (zz_garde_identite) qui INTERDIT d'écrire la ligne d'un
+-- autre compte lié. Or ce trigger tourne pendant l'insertion du score du FILLEUL,
+-- donc auth.uid() est celui du filleul : toucher la ligne du parrain lèverait
+-- « ce pseudo appartient à un autre compte » et FERAIT ÉCHOUER LA PARTIE. L'XP du
+-- parrain est donc recalée par SON PROPRE appareil (il a le droit d'écrire sa
+-- ligne), à partir de bb_parrainage_xp_total et de xp_parrain_credite.
+-- bb_parrainage, elle, n'est pas gardée par l'identité : la validation passe.
 create or replace function public.bb_parrainage_valide()
 returns trigger language plpgsql security definer set search_path = public as $$
 begin
@@ -193,14 +220,52 @@ create trigger bb_parrainage_valide_trg
   after insert on public.bb_scores
   for each row execute function public.bb_parrainage_valide();
 
--- RATTRAPAGE DES FILLEULS DÉJÀ RATTACHÉS QUI ONT DÉJÀ JOUÉ. Sans ça, un filleul
--- qui a joué AVANT ce correctif resterait « non validé » jusqu'à sa prochaine
--- partie. On les valide une fois, en datant sur leur première partie connue.
+
+-- ─── 4 bis. RATTRAPAGE DE L'EXISTANT ────────────────────────────────────────
+-- Total des points de parrainage MÉRITÉS à ce jour par un parrain — même barème
+-- que le trigger et le classement (bb_scores uniquement, comme le trigger).
+create or replace function public.bb_parrainage_xp_total(p_parrain text)
+returns bigint language sql stable security definer set search_path = public as $$
+  select
+    coalesce((select 500 * count(*) from public.bb_parrainage
+               where parrain_id = p_parrain and valide_at is not null), 0)
+    +
+    coalesce((select 50 * count(*) from (
+       select distinct pa.filleul_id,
+              (s.created_at at time zone 'Europe/Paris')::date as jour, s.mode
+         from public.bb_parrainage pa
+         join public.bb_scores s on s.player_id = pa.filleul_id
+        where pa.parrain_id = p_parrain and pa.valide_at is not null
+     ) b), 0)
+$$;
+
+revoke execute on function public.bb_parrainage_xp_total(text) from public;
+do $$ begin
+  if exists (select 1 from pg_roles where rolname = 'anon') then
+    grant execute on function public.bb_parrainage_xp_total(text) to anon;
+  end if;
+end $$;
+
+-- 1) Valider les filleuls déjà rattachés qui ont déjà joué (sinon ils resteraient
+--    « non validés » jusqu'à leur prochaine partie).
+-- 2) Recaler l'XP de chaque parrain sur ce qu'il a réellement mérité, en ne
+--    rajoutant que l'ÉCART non encore crédité (idempotent : rejouable sans double).
+-- On suspend les triggers : ces UPDATE touchent bb_pseudos, donc zz_garde_identite
+-- (auth.uid() nul dans l'éditeur SQL). Geste d'administration, remis à origin après.
+set session_replication_role = replica;
+
 update public.bb_parrainage p
    set valide_at = s.premier
   from (select player_id, min(created_at) as premier
           from public.bb_scores group by player_id) s
  where s.player_id = p.filleul_id and p.valide_at is null;
+
+update public.bb_pseudos ps
+   set xp = coalesce(ps.xp, 0) + (public.bb_parrainage_xp_total(ps.player_id) - ps.xp_parrain_credite),
+       xp_parrain_credite = public.bb_parrainage_xp_total(ps.player_id)
+ where public.bb_parrainage_xp_total(ps.player_id) > ps.xp_parrain_credite;
+
+set session_replication_role = origin;
 
 
 -- ─── 5. LE CLASSEMENT, ÉTENDU AUX POINTS DE PARRAINAGE ──────────────────────

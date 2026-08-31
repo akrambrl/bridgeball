@@ -182,6 +182,10 @@ async function eprouver() {
     "select filleuls_valides || '/' || points_mois from public.bb_parrainage_resume('parrain')", base);
   // 1 filleul validé ce mois = 500, + 1 seau (filleul, jour, 'pont') = 50 → 550.
   dire(resume6 === "1/550", "un filleul validé + sa partie = 550 points  (" + resume6 + ")");
+  // Le point CLÉ : l'insertion en tant qu'anon (parrain LIÉ) a réussi. Si le
+  // trigger avait tenté d'écrire la ligne du parrain, bb_garde_identite aurait
+  // levé « ce pseudo appartient à un autre compte » et l'insert aurait échoué —
+  // c'est ce qui cassait la partie du filleul. Qu'on arrive ici le prouve.
 
   // ── 7. PLUSIEURS (JOUR, MODE) : +50 CHACUN, SANS GONFLER ──────────────────
   // Deux modes de plus AUJOURD'HUI (nouveaux seaux) + un doublon de 'pont' dans
@@ -199,6 +203,32 @@ async function eprouver() {
   const cls7 = await commeAnon(
     "select points from public.bb_classement_courant() where player_id='parrain'", base);
   dire(cls7 === "650", "le classement crédite bien 650 au parrain  (" + cls7 + ")");
+
+  // ── XP : LE TOTAL MÉRITÉ, ET LE RATTRAPAGE IDEMPOTENT ─────────────────────
+  // bb_parrainage_xp_total = même barème que le classement (500 + 3×50 = 650).
+  const total = await commeAnon("select public.bb_parrainage_xp_total('parrain')", base);
+  dire(total === "650", "l'XP de parrainage méritée = 650  (" + total + ")");
+  // Rejouer le MÊME mode le même jour ne change pas le total (anti-farming). On
+  // désactive UNIQUEMENT le garde de cadence, pas le trigger de validation.
+  await psql(["-c",
+    "alter table public.bb_scores disable trigger bb_scores_garde_trg; "
+    + "insert into public.bb_scores (player_id, player_name, mode, score) "
+    + "values ('filleul', 'lepote', 'pont', 500); "
+    + "alter table public.bb_scores enable trigger bb_scores_garde_trg;"], base);
+  const totalBis = await commeAnon("select public.bb_parrainage_xp_total('parrain')", base);
+  dire(totalBis === "650", "rejouer le même mode le même jour ne change pas le total  (" + totalBis + ")");
+  // Le rattrapage (section 4 bis) recale l'XP sur l'écart non crédité : ici 650 - 0.
+  // On le rejoue une 2e fois pour prouver l'idempotence (aucun ajout).
+  const reconcile =
+    "update public.bb_pseudos ps "
+    + "set xp = coalesce(ps.xp,0) + (public.bb_parrainage_xp_total(ps.player_id) - ps.xp_parrain_credite), "
+    + "    xp_parrain_credite = public.bb_parrainage_xp_total(ps.player_id) "
+    + "where public.bb_parrainage_xp_total(ps.player_id) > ps.xp_parrain_credite;";
+  await psql(["-c", "set session_replication_role = replica; " + reconcile + " set session_replication_role = origin;"], base);
+  await psql(["-c", "set session_replication_role = replica; " + reconcile + " set session_replication_role = origin;"], base);
+  const xpFinal = await commeAnon(
+    "select coalesce(xp,0) || '/' || xp_parrain_credite from public.bb_pseudos where player_id='parrain'", base);
+  dire(xpFinal === "650/650", "le rattrapage recale l'XP à 650, sans double-compter  (" + xpFinal + ")");
 
   // ── 8. ANON NE PEUT PAS ÉCRIRE LA TABLE EN DIRECT ─────────────────────────
   dire(await refuse(
