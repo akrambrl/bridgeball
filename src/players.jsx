@@ -2761,7 +2761,7 @@ export const PLAYERS = [
   { name:"Juan Fernando Quintero", clubs:["Atlético Nacional", "Pescara", "Porto", "Rennes", "River Plate", "Shenzhen", "Junior", "Racing Club", "América de Cali"], diff:"moyen", nationalities:["Colombie"], positions:["milieu"], birthYear:1993 },
   { name:"Morgan Sanson", clubs:["Le Mans", "Montpellier", "Marseille", "Aston Villa", "Strasbourg", "Nice"], diff:"moyen", nationalities:["France"], positions:["milieu"], birthYear:1994 },
   { name:"Valentino Lazaro", clubs:["Salzburg", "Hertha Berlin", "Inter Milan", "Newcastle", "Borussia Mönchengladbach", "Benfica", "Torino FC"], diff:"moyen", nationalities:["Autriche"], positions:["milieu"], birthYear:1996 },
-  { name:"Rani Khedira", clubs:["Stuttgart", "RB Leipzig", "Augsburg", "Union Berlin"], diff:"expert", nationalities:["Tunisie"], positions:["milieu"] , birthYear:1994 },
+  { name:"Rani Khedira", clubs:["Stuttgart", "RB Leipzig", "Augsburg", "Union Berlin"], diff:"expert", nationalities:["Allemagne"], positions:["milieu"] , birthYear:1994 },
   { name:"Rodinei", clubs:["Avaí", "Athletico Paranaense", "Flamengo", "Olympiacos"], diff:"expert", nationalities:["Brésil"], positions:["defenseur"] , birthYear:1992 },
   { name:"Dominik Kohr", clubs:["Bayer Leverkusen", "Augsburg", "Eintracht Frankfurt", "Mainz"], diff:"expert", nationalities:["Allemagne"], positions:["defenseur"] , birthYear:1994 },
   { name:"Kevin", clubs:["Palmeiras", "Shakhtar Donetsk", "Fulham"], diff:"expert", nationalities:["Brésil"], positions:["milieu"] },
