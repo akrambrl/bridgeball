@@ -609,10 +609,29 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
           const total = score + earned;
           setScore(total);
           try { localStorage.setItem("bb_findplayer_pts", String(total)); } catch { /* noop */ }
-          // Devinette du jour : son propre mode, avec les points DU JOUR (une
-          // manche par jour). L'illimité garde "findscore" et son cumul.
-          if (daily) submitScore(earned, "devinette");
-          else submitScore(total, "findscore");
+          // Ce qui monte au classement Saison = les points DU JOUR (heure de
+          // Paris), jamais le cumul de toujours `bb_findplayer_pts` (qui reste,
+          // lui, l'affichage du bandeau).
+          // • Devinette : une manche par jour → les points du jour = `earned`,
+          //   sous son propre mode "devinette".
+          // • Trouve le joueur illimité : on ACCUMULE les points de la journée
+          //   et on envoie ce total sous "findscore". Le classement prend le
+          //   meilleur score du jour par mode : envoyer le cumul all-time
+          //   épinglait tout vétéran à 1000/jour dès la première manche (le
+          //   cumul dépasse vite la référence) et ne montait jamais avec
+          //   l'effort du jour. La référence 7500 reste calibrée pour un total
+          //   de session (médiane de prod ≈ 1900 → ~253 pts, comme un Plug).
+          if (daily) {
+            submitScore(earned, "devinette");
+          } else {
+            const dayKey = "bb_findscore_jour_" + parisDay();
+            let dayTotal = earned;
+            try {
+              dayTotal = (parseInt(localStorage.getItem(dayKey) || "0", 10) || 0) + earned;
+              localStorage.setItem(dayKey, String(dayTotal));
+            } catch { /* noop */ }
+            submitScore(dayTotal, "findscore");
+          }
           // Crédite l'XP dans le classement principal (LePont écoute cet event).
           try { window.dispatchEvent(new CustomEvent("goatfc:award-xp", { detail: { amount: earned } })); } catch { /* noop */ }
         } else {
