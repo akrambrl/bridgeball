@@ -1084,7 +1084,7 @@ export const PLAYERS = [
   { name:"Serge Gnabry", clubs:["Arsenal", "West Brom", "Werder Bremen", "Hoffenheim", "Bayern Munich"], diff:"moyen", nationalities:["Allemagne"], positions:["attaquant"], birthYear:1995 },
   { name:"Timo Werner", clubs:["Stuttgart", "RB Leipzig", "Chelsea", "Tottenham"], diff:"facile", nationalities:["Allemagne"], positions:["attaquant"], birthYear:1996 },
   // ── 2016-2026 ──
-  { name:"Ederson", clubs:["São Paulo", "Ribeirão", "Rio Ave", "Benfica", "Manchester City", "Galatasaray"], diff:"facile", nationalities:["Brésil"], positions:["gardien"], birthYear:1993 },
+  { name:"Ederson", clubs:["São Paulo", "Ribeirão", "Rio Ave", "Benfica", "Manchester City", "Fenerbahce"], diff:"facile", nationalities:["Brésil"], positions:["gardien"], birthYear:1993 },
   { name:"Marc-André ter Stegen", clubs:["Borussia Mönchengladbach", "Barcelona", "Girona"], diff:"moyen", nationalities:["Allemagne"], positions:["gardien"], birthYear:1992 },
   { name:"Kepa Arrizabalaga", clubs:["Athletic Bilbao", "Chelsea", "Real Madrid", "Bournemouth", "Arsenal"], diff:"moyen", nationalities:["Espagne"], positions:["gardien"], birthYear:1994 },
   { name:"Tommy Setford", clubs:["Ajax Amsterdam", "Arsenal"], diff:"expert", nationalities:["Angleterre"], positions:["gardien"], birthYear:2006 },
