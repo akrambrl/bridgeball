@@ -24,7 +24,7 @@ export const MODES_PAR_CLE = PLAY_MODES.reduce(function (acc, m) { acc[m.key] = 
 // événements : seuls les modes qui classent un score y écrivent. Sans cette
 // table, un filtre « The Plug » laissait passer tous les scores et le compteur
 // de parties ne bougeait pas.
-export const MODE_DU_SCORE = { pont: "pont", chaine: "chaine", findscore: "reveal" };
+export const MODE_DU_SCORE = { pont: "pont", chaine: "chaine", findscore: "reveal", devinette: "devinette" };
 
 // Base neutre de l'agrégation : aucun filtre, et la plage la PLUS LARGE, parce
 // qu'ici « vide » veut dire « ne restreint rien ». Ce n'est pas ce que le tableau
@@ -206,10 +206,10 @@ export function agregeTracking(data, filtres, jours) {
     if (r.day) (actifsParJour[r.day] = actifsParJour[r.day] || new Set()).add(r.player_id);
   }
   // Une partie se compte sur les ÉVÉNEMENTS quand ils existent, pas sur les
-  // scores. bb_scores ne reçoit que les modes qui classent un score — trois sur
+  // scores. bb_scores ne reçoit que les modes qui classent un score — quatre sur
   // sept (voir MODE_DU_SCORE) — donc compter les parties là revenait à afficher
-  // « 0 partie » tous les jours sous un filtre GOAT Battle, GOAT Grid, GOAT Guess
-  // ou Devinette, juste à côté d'un graphique qui en annonçait dix. Zéro par
+  // « 0 partie » tous les jours sous un filtre GOAT Battle, GOAT Grid ou GOAT
+  // Guess, juste à côté d'un graphique qui en annonçait dix. Zéro par
   // construction, jamais parce que personne n'avait joué.
   const partiesDe = aEvents ? toutEvents.filter(function (r) { return !!modeDeType(r.type); }) : toutScores;
   for (const r of partiesDe) { if (r.day) partiesParJour[r.day] = (partiesParJour[r.day] || 0) + 1; }
