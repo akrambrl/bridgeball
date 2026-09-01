@@ -2812,7 +2812,7 @@ export const PLAYERS = [
   { name:"Mërgim Vojvoda", clubs:["Standard Liège", "Mouscron", "Torino FC", "Como", "Udinese Calcio"], diff:"expert", nationalities:["Kosovo"], positions:["defenseur"] , birthYear:1995 },
   { name:"André da Silva", clubs:["Vitoria Guimaraes", "AC Milan", "Sporting CP", "Granada", "Reading", "PAOK", "Vasco da Gama", "Famalicão", "Elche"], diff:"expert", nationalities:["Portugal"], positions:["attaquant"], birthYear:1995 },
   { name:"Mattias Svanberg", clubs:["Malmö FF", "Bologna FC", "Wolfsburg"], diff:"moyen", nationalities:["Suède"], positions:["milieu"], birthYear:1999 },
-  { name:"Suat Serdar", clubs:["Mainz", "Schalke", "Hertha Berlin", "Hellas Verona"], diff:"moyen", nationalities:["Turquie"], positions:["milieu"] , birthYear:1997 },
+  { name:"Suat Serdar", clubs:["Mainz", "Schalke", "Hertha Berlin", "Hellas Verona"], diff:"moyen", nationalities:["Allemagne"], positions:["milieu"] , birthYear:1997 },
   { name:"Mouctar Diakhaby", clubs:["Lyon", "Valencia"], diff:"moyen", nationalities:["Guinée"], positions:["defenseur"], birthYear:1996 },
   { name:"Matheus Reis", clubs:["Rio Ave", "Marítimo", "Sporting CP"], diff:"expert", nationalities:["Brésil"], positions:["defenseur"] },
   { name:"Pepelu", clubs:["Valencia", "Levante", "Tondela"], diff:"expert", nationalities:["Espagne"], positions:["milieu"] , birthYear:1998 },
