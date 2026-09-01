@@ -2879,7 +2879,7 @@ export const PLAYERS = [
   { name:"Víctor Gómez", clubs:["Espanyol", "Mirandés", "Braga"], diff:"expert", nationalities:["Espagne"], positions:["defenseur"] , birthYear:2000 },
   { name:"Kiril Despodov", clubs:["Litex Lovech", "CSKA Sofia", "Cagliari Calcio", "Sturm Graz", "PAOK"], diff:"expert", nationalities:["Bulgarie"], positions:["attaquant"] , birthYear:1996 },
   { name:"Iñaki Peña", clubs:["Barcelona B", "Barcelona", "Galatasaray", "Elche", "Panathinaikos"], diff:"moyen", nationalities:["Espagne"], positions:["gardien"], birthYear:1999 },
-  { name:"Osame Sahraoui", clubs:["Vålerenga", "Heerenveen", "Lille"], diff:"expert", nationalities:["Maroc"], positions:["milieu"] , birthYear:2001 },
+  { name:"Osame Sahraoui", clubs:["Vålerenga", "Heerenveen", "Lille"], diff:"expert", nationalities:["Norvège"], positions:["milieu"] , birthYear:2001 },
   { name:"Saud Abdulhamid", clubs:["Al Ittihad", "Al Hilal", "AS Roma", "Lens"], diff:"expert", nationalities:["Arabie saoudite"], positions:["defenseur"] , birthYear:1999 },
   { name:"Amos Pieper", clubs:["Borussia Dortmund", "Arminia Bielefeld", "Werder Bremen"], diff:"expert", nationalities:["Allemagne"], positions:["defenseur"], birthYear:1998 },
   { name:"Tomáš Holeš", clubs:["Hradec Králové", "Slovan Liberec", "Jablonec", "Slavia Prague"], diff:"expert", nationalities:["Tchéquie"], positions:["defenseur"] , birthYear:1993 },
