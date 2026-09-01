@@ -441,13 +441,23 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
     return tries <= 1 ? 1000 : tries < 5 ? 500 : tries < 10 ? 200 : 100;
   }
 
-  async function submitScore(total: number) {
+  // Deux modes de score DISTINCTS, et c'est voulu :
+  // • "findscore" — le mode illimité « Trouve le joueur » : on envoie le CUMUL
+  //   `bb_findplayer_pts`, qui grossit tant qu'on enchaîne les manches.
+  // • "devinette" — la Devinette du jour : une seule manche par jour (verrou
+  //   `bb_devinette_<jour>`), donc on envoie les points DU JOUR, pas un cumul.
+  //   Son barème (reference = points max) rend la normalisation transparente :
+  //   les points affichés à la fin de la manche sont ceux qui tombent au
+  //   classement Saison, sans être noyés dans le seau de l'illimité. Le plafond
+  //   « meilleur score du jour × un par mode » du classement suffit à la
+  //   protéger — inutile d'inventer une limite ici.
+  async function submitScore(total: number, mode: string = "findscore") {
     const name = (() => { try { return localStorage.getItem("bb_name") || ""; } catch { return ""; } })();
     try {
       await fetch(SB_URL + "/rest/v1/bb_scores", {
         method: "POST",
         headers: { apikey: SB_KEY, Authorization: "Bearer " + SB_KEY, "Content-Type": "application/json", Prefer: "return=minimal" },
-        body: JSON.stringify({ player_id: playerId(), player_name: name || "Anonyme", score: total, mode: "findscore", diff: "all" }),
+        body: JSON.stringify({ player_id: playerId(), player_name: name || "Anonyme", score: total, mode, diff: "all" }),
         keepalive: true,
       });
     } catch { /* noop */ }
@@ -599,7 +609,10 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
           const total = score + earned;
           setScore(total);
           try { localStorage.setItem("bb_findplayer_pts", String(total)); } catch { /* noop */ }
-          submitScore(total);
+          // Devinette du jour : son propre mode, avec les points DU JOUR (une
+          // manche par jour). L'illimité garde "findscore" et son cumul.
+          if (daily) submitScore(earned, "devinette");
+          else submitScore(total, "findscore");
           // Crédite l'XP dans le classement principal (LePont écoute cet event).
           try { window.dispatchEvent(new CustomEvent("goatfc:award-xp", { detail: { amount: earned } })); } catch { /* noop */ }
         } else {

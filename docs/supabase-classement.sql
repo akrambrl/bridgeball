@@ -102,6 +102,12 @@ insert into public.bb_modes_bareme (mode, reference, score_min, score_max, libel
   ('pont',       1000, -600,  3000, 'GOAT Plug'),
   ('chaine',      500, -600,  2000, 'GOAT Mercato'),
   ('findscore',  7500,    0, 60000, 'Trouve le joueur — score'),
+  -- Devinette du jour : UNE manche par jour, points 100/200/500/1000 selon le
+  -- nombre d'essais (voir roundScore dans FindPlayer.tsx). reference = 1000 =
+  -- le maximum, donc la normalisation est l'identité : les points affichés à la
+  -- fin de la manche sont exactement ceux qui tombent au classement. Le plafond
+  -- « un score par jour et par mode » du classement suffit à empêcher le farm.
+  ('devinette',  1000,    0,  1000, 'Devinette du jour'),
   ('mercatoday',  700,    0,  2000, 'Mercato du jour'),
   ('findplayer',  600,    0,  3000, 'Trouve le joueur'),
   ('findstreak',   10,    0,   200, 'Trouve le joueur — série')

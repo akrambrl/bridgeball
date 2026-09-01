@@ -142,9 +142,9 @@ describe("un filtre de jeu restreint aussi les ACTIFS", () => {
 
 describe("« parties » ne se compte pas sur les scores", () => {
   it("compte les parties sur les ÉVÉNEMENTS, pour les sept modes", () => {
-    // bb_scores ne reçoit que trois modes sur sept (MODE_DU_SCORE). Compter les
-    // parties là affichait « 0 partie » sous GOAT Battle, GOAT Grid, GOAT Guess
-    // et Devinette — zéro par construction, jamais parce que personne n'a joué.
+    // bb_scores ne reçoit que quatre modes sur sept (MODE_DU_SCORE). Compter les
+    // parties là affichait « 0 partie » sous GOAT Battle, GOAT Grid et GOAT
+    // Guess — zéro par construction, jamais parce que personne n'a joué.
     const g = vue({ mode: "grid" });
     expect(g.parties).toBe(0);          // aucun score : c'est exact, et inutile
     expect(g.partiesVues).toBe(1);      // une partie a bien été lancée
