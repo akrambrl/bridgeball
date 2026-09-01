@@ -1302,7 +1302,7 @@ export const PLAYERS = [
   { name:"Sebastian Giovinco", clubs:["Juventus FC", "Toronto FC", "Al Hilal", "Sampdoria"], diff:"moyen", nationalities:["Italie"], positions:["attaquant"], birthYear:1987 },
   { name:"Javier Hernandez", clubs:["Guadalajara", "Manchester United", "Real Madrid", "Bayer Leverkusen", "West Ham", "Sevilla", "LA Galaxy"], diff:"moyen", nationalities:["Mexique"], positions:["attaquant"], birthYear:1988 },
   { name:"Carlos Vela", clubs:["Arsenal", "Real Sociedad", "LAFC"], diff:"expert", nationalities:["Mexique"], positions:["attaquant"] , birthYear:1989 },
-  { name:"Xherdan Shaqiri", clubs:["Bayern Munich", "Inter Milan", "Liverpool", "Chicago Fire"], diff:"moyen", nationalities:["Suisse"], positions:["attaquant"] , birthYear:1991 },
+  { name:"Xherdan Shaqiri", clubs:["Basel", "Bayern Munich", "Inter Milan", "Stoke City", "Liverpool", "Lyon", "Chicago Fire"], diff:"moyen", nationalities:["Suisse"], positions:["attaquant"] , birthYear:1991 },
   // Turquie supplémentaires
 
   { name:"Gregory Coupet", clubs:["Lyon"], diff:"expert", nationalities:["France"], positions:["gardien"] , birthYear:1972 },
