@@ -2846,7 +2846,7 @@ export const PLAYERS = [
   { name:"Pascal Struijk", clubs:["Ajax Amsterdam", "Leeds United", "Brighton"], diff:"moyen", nationalities:["Pays-Bas"], positions:["defenseur"], birthYear:1999 },
   { name:"Matteo Pessina", clubs:["AC Milan", "Lecce", "Hellas Verona", "Atalanta BC", "Monza"], diff:"moyen", nationalities:["Italie"], positions:["milieu"], birthYear:1997 },
   { name:"Kai Wagner", clubs:["Würzburger Kickers", "Philadelphia Union", "Birmingham City"], diff:"expert", nationalities:["Allemagne"], positions:["defenseur"] , birthYear:1997 },
-  { name:"Georgios Giakoumakis", clubs:["Veria", "Episkopi", "Platanias", "Asteras Tripolis", "AEK Athens", "VVV-Venlo", "Celtic", "CF Montréal", "Cruz Azul", "PAOK"], diff:"moyen", nationalities:["Grèce"], positions:["attaquant"], birthYear:1994 },
+  { name:"Georgios Giakoumakis", clubs:["Veria", "Episkopi", "Platanias", "Asteras Tripolis", "AEK Athens", "VVV-Venlo", "Celtic", "Atlanta United", "Cruz Azul", "PAOK"], diff:"moyen", nationalities:["Grèce"], positions:["attaquant"], birthYear:1994 },
   { name:"Jan-Niklas Beste", clubs:["Werder Bremen", "Heidenheim", "Benfica", "SC Freiburg"], diff:"expert", nationalities:["Allemagne"], positions:["milieu"], birthYear:1999 },
   { name:"Martín Ojeda", clubs:["Godoy Cruz", "Defensa y Justicia", "Vasco da Gama", "Orlando City"], diff:"expert", nationalities:["Argentine"], positions:["milieu"] , birthYear:1999 },
   { name:"Juan Miranda", clubs:["Barcelona", "Schalke", "Real Betis", "Bologna FC"], diff:"moyen", nationalities:["Espagne"], positions:["defenseur"], birthYear:2000 },
