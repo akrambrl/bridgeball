@@ -14549,6 +14549,15 @@ export default function LePont() {
     </div>
   );
 
+  // Y a-t-il un ruban de lot à afficher en haut de l'accueil ? (même règle que le
+  // ruban lui-même, plus bas.) Sert à décider si l'en-tête doit remonter sous
+  // l'encoche : avec le ruban au-dessus, il ne doit PAS — sinon il passe dessous.
+  const aRubanLot = (function(){
+    const s = getCurrentSeason();
+    const l = (lots||[]).find(function(x){return x&&x.season_number===s.num&&x.rang===1;})
+           || (lots||[]).find(function(x){return x&&x.season_number===s.num+1&&x.rang===1;});
+    return !!(l && l.intitule);
+  })();
   if(screen==="home") return (
     // L'accueil peignait ici son propre fond « match en nocturne », recopié à la
     // main. Il est passé sur `fondCharte` : c'était la dernière surface à rester
@@ -14702,9 +14711,14 @@ export default function LePont() {
              prend, il ne passe donc pas sous l'encoche.
              Bénéfice au passage : la barre d'état iOS est en black-translucent,
              c'est-à-dire en texte clair. Elle était posée sur l'or. */
-          marginTop:"calc(-14px - env(safe-area-inset-top))",
+          /* Sans ruban de lot, l'en-tête remonte sous l'encoche pour peindre l'or
+             jusqu'en haut. AVEC le ruban au-dessus (zIndex supérieur), remonter
+             le ferait passer SOUS le ruban, qui recouvrait alors son bouton de
+             droite (langue/menu) — signalé en capture. Dans ce cas il reste donc
+             sagement sous le ruban, sans remontée. */
+          marginTop:aRubanLot ? 0 : "calc(-14px - env(safe-area-inset-top))",
           marginLeft:-18,marginRight:-18,marginBottom:6,
-          paddingTop:"calc(14px + env(safe-area-inset-top))",
+          paddingTop:aRubanLot ? 8 : "calc(14px + env(safe-area-inset-top))",
           paddingLeft:18,paddingRight:18,paddingBottom:10}}>
           <div style={{flex:1,display:"flex",alignItems:"center"}}>
             {(function(){
