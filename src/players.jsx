@@ -1044,7 +1044,7 @@ export const PLAYERS = [
   { name:"Rui Costa", clubs:["ACF Fiorentina", "AC Milan"], diff:"expert", nationalities:["Portugal"], positions:["milieu"], birthYear:1972 },
   { name:"Deco", clubs:["Corinthians", "Alverca", "Benfica", "Porto", "Barcelona", "Chelsea", "Fluminense"], diff:"moyen", nationalities:["Portugal"], positions:["milieu"], birthYear:1977 },
   { name:"Nani", clubs:["Sporting CP", "Manchester United", "Sporting CP", "Valencia", "Sporting CP", "SS Lazio", "Orlando City", "Venezia", "Melbourne Victory", "Adana Demirspor", "Estrela Amadora"], diff:"moyen", nationalities:["Portugal"], positions:["attaquant"], birthYear:1986 },
-  { name:"Wesley Sneijder", clubs:["Ajax Amsterdam", "Real Madrid", "Inter Milan", "Galatasaray", "Nice"], diff:"facile", nationalities:["Pays-Bas"], positions:["milieu"], birthYear:1984 },
+  { name:"Wesley Sneijder", clubs:["Ajax Amsterdam", "Real Madrid", "Inter Milan", "Galatasaray", "Nice", "Al-Gharafa"], diff:"facile", nationalities:["Pays-Bas"], positions:["milieu"], birthYear:1984 },
   { name:"Arjen Robben", clubs:["Groningen", "PSV Eindhoven", "Chelsea", "Real Madrid", "Bayern Munich"], diff:"facile", nationalities:["Pays-Bas"], positions:["attaquant"], birthYear:1984 },
   { name:"Mark van Bommel", clubs:["PSV Eindhoven", "Barcelona", "Bayern Munich", "AC Milan"], diff:"expert", nationalities:["Pays-Bas"], positions:["milieu"], birthYear:1977 },
   { name:"Antony", clubs:["São Paulo", "Ajax Amsterdam", "Manchester United", "Real Betis"], diff:"moyen", nationalities:["Brésil"], positions:["attaquant"], birthYear:2000 },
