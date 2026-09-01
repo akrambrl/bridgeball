@@ -2993,7 +2993,7 @@ export const PLAYERS = [
   { name:"Lukas Kübler", clubs:["Sandhausen", "SC Freiburg"], diff:"expert", nationalities:["Allemagne"], positions:["defenseur"] , birthYear:1992 },
   { name:"Andrea Belotti", clubs:["AlbinoLeffe", "Palermo", "Torino FC", "AS Roma", "ACF Fiorentina", "Como", "Cagliari Calcio"], diff:"moyen", nationalities:["Italie"], positions:["attaquant"], birthYear:1993 },
   { name:"Omar Mascarell", clubs:["Real Madrid Castilla", "Derby County", "Sporting Gijón", "Eintracht Frankfurt", "Schalke", "Mallorca", "Elche"], diff:"expert", nationalities:["Guinée équatoriale"], positions:["milieu"] , birthYear:1993 },
-  { name:"Albert Rusnák", clubs:["Manchester City", "Oldham", "Brighton", "Birmingham City", "Akron Tolyatti", "Groningen", "Real Salt Lake", "Seattle Sounders"], diff:"expert", nationalities:["Slovaquie"], positions:["milieu"] , birthYear:1994 },
+  { name:"Albert Rusnák", clubs:["Manchester City", "Oldham", "Birmingham City", "Groningen", "Real Salt Lake", "Seattle Sounders"], diff:"expert", nationalities:["Slovaquie"], positions:["milieu"] , birthYear:1994 },
   { name:"Abdoulaye Touré", clubs:["Nantes", "Guingamp", "Lorient", "Le Havre"], diff:"expert", nationalities:["Guinée"], positions:["milieu"] , birthYear:1994 },
   { name:"Marc-Oliver Kempf", clubs:["SC Freiburg", "Stuttgart", "Hertha Berlin", "Como"], diff:"expert", nationalities:["Allemagne"], positions:["defenseur"] , birthYear:1995 },
   { name:"Matt Grimes", clubs:["Exeter City", "Swansea", "Coventry City"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"] , birthYear:1995 },
