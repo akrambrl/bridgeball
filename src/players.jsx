@@ -3166,7 +3166,7 @@ export const PLAYERS = [
   { name:"Sebastian Nanasi", clubs:["Malmö FF", "Strasbourg"], diff:"expert", nationalities:["Suède"], positions:["milieu"] , birthYear:2002 },
   { name:"Tyrhys Dolan", clubs:["Blackburn", "Espanyol"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"] , birthYear:2001 },
   { name:"Lautaro Blanco", clubs:["Rosario Central", "Elche", "Boca Juniors"], diff:"expert", nationalities:["Argentine"], positions:["defenseur"] , birthYear:1999 },
-  { name:"Amar Dedić", clubs:["Liefering", "Wolfsberger AC", "Salzburg", "Benfica"], diff:"moyen", nationalities:["Bosnie-Herzégovine"], positions:["defenseur"], birthYear:2002 },
+  { name:"Amar Dedić", clubs:["Liefering", "Wolfsberger AC", "Salzburg", "Marseille", "Benfica", "Newcastle"], diff:"moyen", nationalities:["Bosnie-Herzégovine"], positions:["defenseur"], birthYear:2002 },
   { name:"Erik Lira", clubs:["Pumas UNAM", "Cruz Azul"], diff:"expert", nationalities:["Mexique"], positions:["milieu"] , birthYear:2000 },
   { name:"Kristijan Jakić", clubs:["Lokomotiva Zagreb", "Dinamo Zagreb", "Eintracht Frankfurt", "Augsburg"], diff:"expert", nationalities:["Croatie"], positions:["milieu"] , birthYear:1997 },
   { name:"Toti", clubs:["Estoril", "Wolverhampton"], diff:"expert", nationalities:["Portugal"], positions:["defenseur"] , birthYear:1999 },
