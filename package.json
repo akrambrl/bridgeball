@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm run donnees && vite build && node scripts/build-seo-pages.mjs",
+    "build": "npm run donnees && vite build && node scripts/bump-sw.mjs && node scripts/build-seo-pages.mjs",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",

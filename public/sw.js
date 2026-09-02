@@ -1,10 +1,13 @@
 // GOAT FC — Service Worker pour push notifications + auto-update
 // À placer dans public/sw.js (ou racine du site)
 //
-// IMPORTANT : bumper CACHE_NAME à chaque deploy pour forcer le navigateur
-// à détecter un nouveau SW (les changements de fichier suffisent en théorie
-// mais ça garantit un install propre côté PWA mobile installée).
-const CACHE_NAME = "goatfc-v553-2026-08-15";
+// CACHE_NAME est RÉÉCRIT À CHAQUE BUILD DE PROD par scripts/bump-sw.mjs (avec le
+// SHA du commit), pour que le navigateur détecte un nouveau SW et déclenche le
+// rechargement auto (voir index.html : controllerchange → reload). La valeur
+// ci-dessous n'est qu'un défaut de développement : ne plus la figer à la main —
+// c'était la cause d'un bug où, restée au 15 août, aucune mise à jour n'atteignait
+// les PWA installées et les scores des nouveaux modes ne comptaient pas.
+const CACHE_NAME = "goatfc-2026-09-02-dev";
 
 // Install : on prend la main tout de suite sans attendre la fermeture des onglets
 self.addEventListener("install", (event) => {
