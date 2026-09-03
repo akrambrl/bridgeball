@@ -4390,7 +4390,7 @@ export const PLAYERS = [
   { name:"Omar Richards", clubs:["Reading", "Bayern Munich", "Nottingham Forest", "Rio Ave"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"] , birthYear:1998 },
   { name:"Matúš Bero", clubs:["Trenčín", "Slovan Liberec", "Trabzonspor", "Vitesse", "Bochum"], diff:"expert", nationalities:["Slovaquie"], positions:["milieu"] , birthYear:1995 },
   { name:"Aldair Quintana", clubs:["Atlético Nacional", "Independiente Santa Fe", "Independiente del Valle"], diff:"expert", nationalities:["Colombie"], positions:["gardien"], birthYear:1994 },
-  { name:"Dennis Geiger", clubs:["Hoffenheim", "Werder Bremen", "Aberdeen"], diff:"expert", nationalities:["Allemagne"], positions:["milieu"] , birthYear:1998 },
+  { name:"Dennis Geiger", clubs:["Hoffenheim", "Aberdeen"], diff:"expert", nationalities:["Allemagne"], positions:["milieu"] , birthYear:1998 },
   { name:"Brandon Thomas-Asante", clubs:["Salford City", "Walsall", "Forest Green", "MK Dons", "West Brom", "Coventry City"], diff:"expert", nationalities:["Ghana"], positions:["attaquant"] , birthYear:1998 },
   { name:"Abdoulaye Sissako", clubs:["Bordeaux B", "Bordeaux", "Excelsior", "Sint-Truiden"], diff:"expert", nationalities:["Mali"], positions:["milieu"] },
   { name:"Irvin Cardona", clubs:["Monaco", "Cercle Brugge", "Brest", "Augsburg", "Espanyol", "Saint-Etienne"], diff:"expert", nationalities:["Malte"], positions:["attaquant"] , birthYear:1997 },
