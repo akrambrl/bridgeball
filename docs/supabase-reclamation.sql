@@ -376,6 +376,43 @@ on conflict (season_number, rang) do update
   set intitule = excluded.intitule,
       ouvert_jusqu_a = excluded.ouvert_jusqu_a;
 
+-- ─── 7 bis. À PARTIR D'OCTOBRE : LES PLACES QUI TOURNENT ─────────────────────
+--
+-- Septembre (saison 6) reste un podium classique 1-2-3, tel qu'annoncé et déjà
+-- en cours : on n'y touche pas. À partir d'octobre, le concours change de forme
+-- pour relancer le milieu de tableau. Quand le meneur a pris trop d'avance, le
+-- 40e ne joue plus pour rien : le concours récompense désormais le 1er PLUS DEUX
+-- « PLACES CHANCEUSES » tirées ailleurs dans le classement, ET QUI CHANGENT
+-- CHAQUE MOIS. Le 7e et le 21e en octobre, deux autres en novembre, etc. — de
+-- quoi faire réfléchir : accélérer un peu pour viser une place, ou lever le pied
+-- pour ne pas la dépasser.
+--
+-- RIEN À CHANGER CÔTÉ FONCTION : bb_reclamer_lot RECALCULE le rang de chaque
+-- joueur et accepte n'importe quel rang qui a une ligne ici. Les places
+-- gagnantes vivent donc UNIQUEMENT dans la donnée ci-dessous — une ligne par
+-- place, comme pour le podium. Pour changer les numéros d'un mois, on change ces
+-- lignes, rien d'autre.
+--
+-- Saison 7 = OCTOBRE 2026. Délai : 30 jours après l'annonce (clôture du 1er nov.)
+-- ⚠️ Montants et numéros à confirmer avant le 1er octobre — l'app affiche déjà
+--    ces places (« Places chanceuses ce mois : 7ᵉ et 21ᵉ ») dès que ces lignes
+--    existent, et le règlement d'octobre doit décrire la même chose.
+insert into public.bb_lots (season_number, rang, intitule, ouvert_jusqu_a) values
+  (7,  1, 'EA SPORTS FC 27 — édition Ultimate, dématérialisée, sur la plateforme au choix du gagnant (109,99 €)', '2026-11-30 23:59:59+01'),
+  (7,  7, 'Place chanceuse 🍀 — carte cadeau dématérialisée de 50 €, enseigne au choix du gagnant', '2026-11-30 23:59:59+01'),
+  (7, 21, 'Place chanceuse 🍀 — carte cadeau dématérialisée de 30 €, enseigne au choix du gagnant', '2026-11-30 23:59:59+01')
+on conflict (season_number, rang) do update
+  set intitule = excluded.intitule,
+      ouvert_jusqu_a = excluded.ouvert_jusqu_a;
+
+-- Les mois suivants se déclarent PAREIL, en changeant les deux places chanceuses
+-- (le 1er reste l'ancre). Exemple pour novembre (saison 8) — à décider :
+--   insert into public.bb_lots (season_number, rang, intitule, ouvert_jusqu_a) values
+--     (8,  1, '…', '2026-12-31 23:59:59+01'),
+--     (8,  5, 'Place chanceuse 🍀 — …', '2026-12-31 23:59:59+01'),
+--     (8, 15, 'Place chanceuse 🍀 — …', '2026-12-31 23:59:59+01')
+--   on conflict (season_number, rang) do update set intitule = excluded.intitule, ouvert_jusqu_a = excluded.ouvert_jusqu_a;
+
 -- ─── 8. POUR LIRE LES RÉCLAMATIONS REÇUES ───────────────────────────────────
 -- Depuis le tableau de bord Supabase (qui n'est pas `anon`) :
 --

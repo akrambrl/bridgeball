@@ -27,6 +27,7 @@ const DISTINCTS_ASSUMES = new Set([
   // Vérifiés en ajoutant la clé « sans préfixe » : ce sont bien deux clubs.
   "AFC Wimbledon / Wimbledon",         // le club refondé en 2002, et le Wimbledon FC devenu MK Dons
   "Olimpia / CD Olimpia",              // Asunción (Paraguay) et Tegucigalpa (Honduras, Quioto)
+  "Köln / Viktoria Köln",              // le 1. FC Köln et le FC Viktoria Köln (3. Liga), deux clubs de la ville
 ]);
 
 const squelette = (s: string) =>

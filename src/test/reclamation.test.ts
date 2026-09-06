@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   moisDeLaSaison, saisonDuMois, saisonDoteeRecente, lotPourRang, rangDans,
-  libellePlace, medaille, emailPlausible, normaliserCode, codeValide,
+  libellePlace, medaille, placesDotees, emailPlausible, normaliserCode, codeValide,
   plateformeValide, enseigneValide, souhaitDuRang, manques,
   instagramValide, normaliserInstagram,
   tirerCode, ALPHABET_CODE, MOTIF_CODE,
@@ -117,21 +117,57 @@ describe("rangDans", () => {
   });
 });
 
-describe("libellés du podium", () => {
-  it("nomme les trois places dans les six langues", () => {
+describe("libellés des places", () => {
+  it("nomme les trois premières places dans les six langues", () => {
     expect(libellePlace(1, "fr")).toBe("1ʳᵉ place");
     expect(libellePlace(2, "en")).toBe("2nd place");
     expect(libellePlace(3, "es")).toBe("3er puesto");
   });
-  it("ne nomme rien au-delà du podium", () => {
-    expect(libellePlace(4, "fr")).toBe("");
-    expect(medaille(4)).toBe("");
+  // Le concours à places qui tournent récompense des rangs comme le 7ᵉ ou le
+  // 21ᵉ. Un libellé figé à trois places aurait affiché un vide là où il faut
+  // dire « tu as gagné » — l'ordinal est donc calculé, dans la forme de chaque
+  // langue.
+  it("nomme aussi les places chanceuses, avec l'ordinal de chaque langue", () => {
+    expect(libellePlace(7, "fr")).toBe("7ᵉ place");
+    expect(libellePlace(21, "fr")).toBe("21ᵉ place");
+    expect(libellePlace(21, "en")).toBe("21st place");
+    expect(libellePlace(11, "en")).toBe("11th place");   // 11/12/13 restent en th
+    expect(libellePlace(22, "en")).toBe("22nd place");
+    expect(libellePlace(7, "de")).toBe("7. Platz");
+    expect(libellePlace(7, "es")).toBe("7º puesto");
+  });
+  it("refuse ce qui n'est pas un rang", () => {
+    expect(libellePlace(0, "fr")).toBe("");
+    expect(libellePlace(-1, "fr")).toBe("");
+    expect(medaille(0)).toBe("");
   });
   it("retombe sur l'anglais pour une langue inconnue", () => {
     expect(libellePlace(1, "nl")).toBe("1st place");
+    expect(libellePlace(7, "nl")).toBe("7th place");
   });
-  it("les médailles", () => {
+  // Le podium garde ses métaux ; toute autre place récompensée porte le trèfle —
+  // le signe qu'on gagne sans être sur le podium.
+  it("les médailles, trèfle pour les places chanceuses", () => {
     expect([medaille(1), medaille(2), medaille(3)]).toEqual(["🥇", "🥈", "🥉"]);
+    expect([medaille(7), medaille(21)]).toEqual(["🍀", "🍀"]);
+  });
+});
+
+describe("placesDotees", () => {
+  const lots = [
+    { season_number: 7, rang: 1, intitule: "jeu" },
+    { season_number: 7, rang: 21, intitule: "carte" },
+    { season_number: 7, rang: 7, intitule: "carte" },
+    { season_number: 6, rang: 2, intitule: "carte" },
+  ];
+  it("rend les rangs de la saison, triés", () => {
+    expect(placesDotees(lots, 7)).toEqual([1, 7, 21]);
+    expect(placesDotees(lots, 6)).toEqual([2]);
+    expect(placesDotees(lots, 9)).toEqual([]);
+  });
+  it("ne casse pas sur des entrées absentes", () => {
+    expect(placesDotees(null as any, 7)).toEqual([]);
+    expect(placesDotees(lots, null as any)).toEqual([]);
   });
 });
 
