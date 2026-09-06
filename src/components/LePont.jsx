@@ -32,7 +32,7 @@ import { duelTermine } from "../lib/duel";
 // Réclamation du lot : les règles (qui peut réclamer, pour quel mois, ce qu'on
 // accepte comme saisie) et le tirage sûr du code de récupération.
 import { saisonDoteeRecente, lotPourRang, rangDans, moisDeLaSaison, libellePlace,
-         medaille, souhaitDuRang, manques, normaliserCode, normaliserInstagram,
+         medaille, placesDotees, souhaitDuRang, manques, normaliserCode, normaliserInstagram,
          tirerCode, PLATEFORMES } from "../lib/reclamation";
 import { prochainsTotauxXp } from "../lib/xp";
 // Règles de tirage anti-répétition, partagées avec « Trouve le joueur ».
@@ -12812,9 +12812,15 @@ export default function LePont() {
               boxShadow:G.ombre,padding:"18px 18px 16px",marginBottom:16,textAlign:"center"}}>
               <div style={{fontSize:36,lineHeight:1,marginBottom:6}}>{medaille(monLot.rang)}</div>
               <div style={{...posterText(24,G.encre),lineHeight:1.05,marginBottom:2}}>
+                {/* Trois messages, pas deux : le 1er a GAGNÉ, le 2e/3e sont sur
+                    le PODIUM, et toute autre place récompensée est une PLACE
+                    CHANCEUSE. Dire « podium » à un 7e serait faux — il gagne
+                    sans y être, c'est justement l'idée du concours. */}
                 {monLot.rang === 1
                   ? tr("TU AS GAGNÉ","YOU WON","DU HAST GEWONNEN","HAI VINTO","VOCÊ GANHOU","HAS GANADO")
-                  : tr("TU ES SUR LE PODIUM","YOU'RE ON THE PODIUM","DU BIST AUF DEM PODIUM","SEI SUL PODIO","VOCÊ ESTÁ NO PÓDIO","ESTÁS EN EL PODIO")}
+                  : monLot.rang <= 3
+                  ? tr("TU ES SUR LE PODIUM","YOU'RE ON THE PODIUM","DU BIST AUF DEM PODIUM","SEI SUL PODIO","VOCÊ ESTÁ NO PÓDIO","ESTÁS EN EL PODIO")
+                  : tr("PLACE CHANCEUSE 🍀","LUCKY PLACE 🍀","GLÜCKSPLATZ 🍀","POSTO FORTUNATO 🍀","LUGAR DA SORTE 🍀","PUESTO DE LA SUERTE 🍀")}
               </div>
               {/* Sur l'or, seule l'encre se lit : le crème y tombe à 1,4 de
                   contraste. Tout ce bandeau est donc à l'encre. */}
@@ -12897,6 +12903,17 @@ export default function LePont() {
               if (suiv) { lotEnJeu = suiv; teaser = true; moisLabel = nomMois((saison.mois+1)%12, lang); }
             }
             if (!lotEnJeu || !lotEnJeu.intitule) return null;
+            // ── LES PLACES CHANCEUSES DU MOIS ────────────────────────────────
+            // Le concours ne récompense plus qu'un podium contigu : depuis
+            // octobre, le 1er PLUS deux places tirées ailleurs (7ᵉ, 21ᵉ…), qui
+            // changent chaque mois. C'est ce qui redonne une cible à qui est
+            // loin du sommet. On lit ces rangs dans bb_lots (donc sans les coder
+            // en dur) et on n'affiche la ligne QUE si le mois en porte une hors
+            // podium (> 3) : un mois à podium classique (septembre : 1-2-3) doit
+            // rester exactement tel qu'il a été annoncé.
+            const saisonAffichee = teaser ? saison.num + 1 : saison.num;
+            const chanceuses = placesDotees(lots, saisonAffichee).filter(function(r){ return r > 1; });
+            const moisChanceux = chanceuses.some(function(r){ return r > 3; });
             // Le meneur du moment, dans la portée affichée (monde). S'il n'y a
             // pas encore de classement, personne n'est meneur : on reste sur le
             // message général. En teaser (mois pas commencé), pas de tutoiement.
@@ -12917,6 +12934,15 @@ export default function LePont() {
                   <div style={{fontSize:12.5,fontWeight:700,color:G.creme,lineHeight:1.4}}>
                     {lotEnJeu.intitule}
                   </div>
+                  {/* La carotte du milieu de tableau : quand un tricheur mène de
+                      loin, le 40e ne joue plus pour rien s'il vise le 7ᵉ. */}
+                  {moisChanceux && (
+                    <div style={{fontSize:11.5,fontWeight:800,color:G.projecteur,marginTop:4,lineHeight:1.35}}>
+                      🍀 {tr("Places chanceuses ce mois : ","Lucky places this month: ","Glücksplätze diesen Monat: ","Posti fortunati questo mese: ","Lugares da sorte este mês: ","Puestos de la suerte este mes: ")}
+                      {chanceuses.map(function(r){ return libellePlace(r, lang); }).join(tr(" et "," and "," und "," e "," e "," y "))}
+                      {tr(" — un lot aussi.","— a prize too."," — auch ein Preis."," — anche un premio."," — também um prêmio."," — también un premio.")}
+                    </div>
+                  )}
                   <div style={{fontSize:11,fontWeight:700,color:"rgba(242,231,206,.6)",marginTop:3}}>
                     {teaser
                       ? tr("Le concours démarre le 1er "+moisLabel+".","The contest starts on the 1st of "+moisLabel+".","Der Wettbewerb startet am 1. "+moisLabel+".","Il concorso inizia il 1° "+moisLabel+".","O concurso começa em 1º de "+moisLabel+".","El concurso empieza el 1 de "+moisLabel+".")

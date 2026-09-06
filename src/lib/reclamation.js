@@ -107,20 +107,61 @@ export function rangDans(classement, playerId) {
   return i === -1 ? null : i + 1;
 }
 
-/** Le libellé d'une place, dans les six langues de l'app. */
+/**
+ * Le libellé d'une place, dans les six langues de l'app, POUR N'IMPORTE QUEL RANG.
+ *
+ * Il ne s'arrête plus à trois. Depuis octobre 2026, le concours ne récompense
+ * plus un podium contigu (1-2-3) mais des « places chanceuses » qui changent
+ * chaque mois — le 1er, plus deux places tirées ailleurs dans le tableau, par
+ * exemple 7ᵉ et 21ᵉ. Un libellé figé à trois places aurait affiché un vide à
+ * la place du 7ᵉ, c'est-à-dire au moment précis où il faut lui dire qu'il a
+ * gagné. L'ordinal est donc CALCULÉ, avec la forme propre à chaque langue.
+ */
 export function libellePlace(rang, lang) {
-  const table = {
-    1: { fr: "1ʳᵉ place", en: "1st place", de: "1. Platz", it: "1º posto", pt: "1º lugar", es: "1er puesto" },
-    2: { fr: "2ᵉ place",  en: "2nd place", de: "2. Platz", it: "2º posto", pt: "2º lugar", es: "2º puesto" },
-    3: { fr: "3ᵉ place",  en: "3rd place", de: "3. Platz", it: "3º posto", pt: "3º lugar", es: "3er puesto" },
-  };
-  const l = table[rang];
-  return l ? (l[lang] || l.en) : "";
+  if (!Number.isInteger(rang) || rang < 1) return "";
+  const n = rang;
+  switch (lang) {
+    case "fr": return (n === 1 ? "1ʳᵉ" : n + "ᵉ") + " place";
+    case "de": return n + ". Platz";
+    case "it": return n + "º posto";
+    case "pt": return n + "º lugar";
+    case "es": return n + ((n === 1 || n === 3) ? "er" : "º") + " puesto";
+    case "en":
+    default: {
+      // Anglais : th partout, sauf 1st/2nd/3rd — mais 11/12/13 restent en th.
+      const d = n % 100;
+      const suf = (d >= 11 && d <= 13) ? "th"
+        : n % 10 === 1 ? "st" : n % 10 === 2 ? "nd" : n % 10 === 3 ? "rd" : "th";
+      return n + suf + " place";
+    }
+  }
 }
 
-/** La médaille d'une place. Rien au-delà du podium : il n'y a rien à fêter. */
+/**
+ * La médaille d'une place.
+ *
+ * Le podium garde ses trois métaux ; toute autre place récompensée est une
+ * PLACE CHANCEUSE, et porte le trèfle. Le trèfle n'est pas décoratif : il dit
+ * d'un coup d'œil qu'on n'est pas sur le podium mais qu'on gagne quand même —
+ * c'est toute l'idée du concours à places qui tournent.
+ */
 export function medaille(rang) {
-  return { 1: "🥇", 2: "🥈", 3: "🥉" }[rang] || "";
+  if (!Number.isInteger(rang) || rang < 1) return "";
+  return { 1: "🥇", 2: "🥈", 3: "🥉" }[rang] || "🍀";
+}
+
+/**
+ * Les rangs récompensés d'une saison, triés — pour annoncer, EN COURS de mois,
+ * quelles places rapportent un lot. Rendus depuis bb_lots (déjà public), c'est
+ * ce qui permet au bandeau de dire « places chanceuses : 7ᵉ et 21ᵉ » sans coder
+ * les numéros en dur : ils changent chaque mois, ils vivent dans la donnée.
+ */
+export function placesDotees(lots, saison) {
+  if (!Array.isArray(lots) || !Number.isInteger(saison)) return [];
+  return lots
+    .filter((l) => l && l.season_number === saison && Number.isInteger(l.rang))
+    .map((l) => l.rang)
+    .sort((a, b) => a - b);
 }
 
 /**
