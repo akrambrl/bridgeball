@@ -613,7 +613,7 @@ export const PLAYERS = [
   { name:"Rafael Leao", clubs:["Sporting CP", "Lille", "AC Milan"], diff:"moyen", nationalities:["Portugal"], positions:["attaquant"], birthYear:1999 },
   { name:"Pedri", clubs:["Las Palmas", "Barcelona"], diff:"moyen", nationalities:["Espagne"], positions:["milieu"], birthYear:2002 },
   { name:"Gavi", clubs:["Barcelona"], diff:"moyen", nationalities:["Espagne"], positions:["milieu"], birthYear:2004 },
-  { name:"Rodri", clubs:["Villarreal", "Atletico Madrid", "Manchester City"], diff:"facile", nationalities:["Espagne"], positions:["milieu"], birthYear:1996 },
+  { name:"Rodri", clubs:["Villarreal", "Atletico Madrid", "Manchester City", "Barcelona"], diff:"facile", nationalities:["Espagne"], positions:["milieu"], birthYear:1996 },
   { name:"Thomas Müller", clubs:["Bayern Munich", "Vancouver Whitecaps"], diff:"facile", nationalities:["Allemagne"], positions:["attaquant"], birthYear:1989 },
   { name:"Manuel Neuer", clubs:["Schalke", "Bayern Munich"], diff:"facile", nationalities:["Allemagne"], positions:["gardien"], birthYear:1986 },
   { name:"Sven Ulreich", clubs:["Stuttgart", "Bayern Munich", "Hamburg"], diff:"expert", nationalities:["Allemagne"], positions:["gardien"], birthYear:1988 },
