@@ -1,8 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, lazy, Suspense } from "react";
 import LePont from "@/components/LePont.jsx";
-import Home from "./Home";
-import { GoatGuess } from "@/components/landing/GoatGuess";
-import { FindPlayer } from "@/components/landing/FindPlayer";
+// LePont reste en import direct : c'est le premier écran sur mobile, l'audience
+// principale, et lui coller un fallback de chargement ajouterait un flash au
+// démarrage du jeu. Les trois écrans ci-dessous, eux, ne s'affichent JAMAIS au
+// premier rendu mobile — Home est réservé au desktop, et les deux overlays ne
+// s'ouvrent que sur clic. On les découpe donc en chunks chargés à la demande,
+// ce qui allège d'autant le bundle initial.
+const Home = lazy(() => import("./Home"));
+const GoatGuess = lazy(() => import("@/components/landing/GoatGuess").then(m => ({ default: m.GoatGuess })));
+const FindPlayer = lazy(() => import("@/components/landing/FindPlayer").then(m => ({ default: m.FindPlayer })));
 import { tr } from "@/lib/lang";
 import { displayStreak } from "@/lib/streak";
 import { G, posterTitre, btn } from "@/lib/charte.jsx";
@@ -157,24 +163,29 @@ const Index = () => {
   // c'est LePont qui valide le code, comme sur mobile.
   const wantsStats = tableauDeBordDemande();
 
-  if (!isMobile && !wantsStats) return <Home />;
+  if (!isMobile && !wantsStats) return <Suspense fallback={null}><Home /></Suspense>;
 
   return (
     <>
       <LePont />
-      {goatGuessOpen && <GoatGuess onClose={() => setGoatGuessOpen(false)} />}
-      {findPlayerOpen && <FindPlayer onClose={() => setFindPlayerOpen(false)} />}
-      {devinetteOpen && (
-        <FindPlayer
-          daily
-          onClose={() => {
-            setDevinetteOpen(false);
-            // LePont affiche l'état de la devinette (jouée ? série ?) sur
-            // l'accueil : il doit le relire à la fermeture de l'overlay.
-            window.dispatchEvent(new CustomEvent("goatfc:devinette-closed"));
-          }}
-        />
-      )}
+      {/* Les overlays sont en lazy : un Suspense les couvre le temps que leur
+          chunk arrive. fallback={null} — l'ouverture est déjà une action de
+          l'utilisateur, le petit délai réseau passe pour le temps d'ouverture. */}
+      <Suspense fallback={null}>
+        {goatGuessOpen && <GoatGuess onClose={() => setGoatGuessOpen(false)} />}
+        {findPlayerOpen && <FindPlayer onClose={() => setFindPlayerOpen(false)} />}
+        {devinetteOpen && (
+          <FindPlayer
+            daily
+            onClose={() => {
+              setDevinetteOpen(false);
+              // LePont affiche l'état de la devinette (jouée ? série ?) sur
+              // l'accueil : il doit le relire à la fermeture de l'overlay.
+              window.dispatchEvent(new CustomEvent("goatfc:devinette-closed"));
+            }}
+          />
+        )}
+      </Suspense>
       {devinettePrompt && !devinetteOpen && (
         <div onClick={() => setDevinettePrompt(false)} style={{ position: "fixed", inset: 0, zIndex: 400, background: "rgba(8,17,9,.86)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
           <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 360, background: G.nuit, border: G.trait, borderRadius: G.rayonL, padding: "26px 22px", textAlign: "center", boxShadow: G.ombreL }}>
