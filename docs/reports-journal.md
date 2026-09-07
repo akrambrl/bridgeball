@@ -7,6 +7,50 @@ revendication revient et on refait la vérification à zéro.
 
 ---
 
+## Passe du 7 septembre 2026 — signalements 60 → 173 (114 lignes)
+
+Passe déclenchée par l'audit des parties jouées. Répartition : 81 `gg_missed`,
+22 `chain_missed`, 11 `reveal_bug`. Chaque `gg_missed` a été rejouée contre la
+base **actuelle** avec la vraie logique de la grille (`ggPlayerMatchesCriterion`)
+pour trier les vrais refus des revendications erronées.
+
+Enseignement de la passe : l'écrasante majorité des `gg_missed` « ça match
+pourtant » étaient des **signalements périmés** — la fiche a été corrigée depuis
+par les lots d'enrichissement et le mercato (Jonathan David n'avait pas encore
+la Juve, Akliouche pas encore le PSG, etc.). Rejouées aujourd'hui, elles
+passent. On ne re-corrige rien : la donnée est déjà bonne.
+
+### Fondés (7)
+
+| id(s) | Signalement | Ce qui n'allait pas |
+|-------|-------------|---------------------|
+| gg | Platini — Juventus × Devenu entraîneur | `GG_COACHES` incomplet : sélectionneur de la France 1988-92, ajouté |
+| gg | Mihajlović — Inter × Devenu entraîneur | idem : Bologne, Milan, Torino, Serbie, ajouté |
+| gg | Cruyff — Barcelone × Devenu entraîneur | idem : Ajax, Dream Team du Barça, ajouté |
+| gg | Fàbregas — Chelsea × Devenu entraîneur | idem : entraîne le Côme depuis 2024, ajouté |
+| gg (×4) | Barcola — Liverpool × A joué en L1 | transfert PSG → Liverpool (été 2026, ~116 M€) manquant. Ajouté ; « A joué en L1 » couvert par Lyon |
+| chain (×2) | Delort — Ajaccio | AC Ajaccio (2010-13) manquant de la fiche. Ajouté |
+| — | Rodri — Barcelone (×2) | déjà corrigé (#817) avant cette passe |
+
+### Rejetés (les principaux)
+
+- **Stales confirmés périmés** (fiche déjà correcte aujourd'hui) : Bruno
+  Fernandes ×3 (Man Utd × milieu ✓), Jonathan David ×2 (Juve × attaquant ✓),
+  Pedro Porro, Thomas Partey, Riqui Puig, Donny van de Beek, Maghnes Akliouche.
+- **Erreurs de joueur** (le nom cité ne matche vraiment pas) : James Rodríguez
+  × Espagne (colombien), Sadio Mané × Arsenal (jamais joué), Thiago Silva ×
+  Barcelona, Robinho × Inter (c'était le Milan), Cristian Romero × Atlético
+  (confusion avec l'Atalanta), Matteo Gabbia × milieu (défenseur), Louis Saha ×
+  Crystal Palace, Schürrle × Bayern, Schillaci × Monaco… — tous corrects au refus.
+- **`reveal_bug` déjà bons** : Ederson est bien fiché au Fenerbahçe (pas
+  Galatasaray), Kessié milieu, Jorginho italien, Muriqi termine à Majorque,
+  Openda → Lyon (prêt confirmé pour 2026-27). Aucune correction nécessaire.
+
+Références : fr/en.wikipedia (infobox + palmarès), recoupées sur des sources de
+transfert (CBS, Goal, Juventus.com) pour les mouvements récents.
+
+---
+
 ## Passe du 8 août 2026 — signalements 27 → 59 (33 lignes)
 
 Re-vérification complète, y compris les id ≤ 46 déjà comptés comme traités :
