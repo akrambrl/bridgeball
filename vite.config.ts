@@ -27,4 +27,20 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        // Tout le tronc React (react, react-dom, react-router, react-query…) part
+        // dans un chunk « vendor » à part. Il change à chaque bump de dépendance,
+        // c'est-à-dire presque jamais, là où le code du jeu change à chaque
+        // déploiement : les séparer laisse le navigateur GARDER le vendor en cache
+        // d'une version à l'autre au lieu de le retélécharger avec l'app. Il se
+        // charge aussi EN PARALLÈLE du chunk applicatif au lieu d'être en série
+        // dans un seul gros fichier.
+        manualChunks(id) {
+          if (id.includes("node_modules")) return "vendor";
+        },
+      },
+    },
+  },
 });
