@@ -2499,6 +2499,12 @@ const GG_COACHES = new Set([
   "Xabi Alonso","Patrick Vieira","Diego Simeone","Roberto Mancini","Phillip Cocu","Fernando Hierro",
   "Freddie Ljungberg","Gary Neville","Paul Scholes","Nicky Butt","Andriy Shevchenko",
   "Alessandro Nesta","Marco van Basten","Michael Laudrup","Hristo Stoichkov",
+  // Ajoutés après triage des signalements « Devenu entraîneur ? » refusés à tort :
+  // quatre entraîneurs de tout premier plan qui manquaient à l'appel. Platini a
+  // dirigé l'équipe de France (1988-92), Mihajlović a entraîné Bologne, Milan,
+  // le Torino et la Serbie, Cruyff a bâti la Dream Team du Barça, et Fàbregas
+  // entraîne aujourd'hui le Côme.
+  "Michel Platini","Siniša Mihajlović","Johan Cruyff","Cesc Fabregas",
 ]);
 
 // ─── Scoring : pts selon DIFFICULTÉ DU JOUEUR CITÉ + bonus rareté combo ──
