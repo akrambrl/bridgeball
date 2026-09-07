@@ -5743,11 +5743,17 @@ export default function LePont() {
       if (!isBattle) setGgLives(newLives);
       setGgFlash("ko");
       setGgFlashCell({ row, col });
-      // Stocker la dernière réponse rejetée pour permettre le signalement
+      // Stocker la dernière réponse rejetée pour permettre le signalement.
+      // On garde AUSSI quel critère a matché et lequel non : la grande majorité
+      // des « ça devrait passer » venaient de joueurs qui validaient une seule
+      // des deux cases (James Rodríguez sur « Man City × Espagne » : le club oui,
+      // le pays non). Le montrer coupe le signalement à tort sans rien cacher.
       setGgLastRejected({
         playerName: player.name,
         rowCrit: cell.rowCriterion,
         colCrit: cell.colCriterion,
+        matchRow: matchesRow,
+        matchCol: matchesCol,
       });
       setGgReportSent(false);
       
@@ -16378,6 +16384,24 @@ export default function LePont() {
                             <>
                               <div style={{fontSize:11,color:G.creme,marginBottom:6,textAlign:"center"}}>
                                 <strong style={{color:G.maillot}}>{ggLastRejected.playerName}</strong> {tr("refusé ?","refused?","abgelehnt?","rifiutato?","recusado?","¿rechazado?")}
+                              </div>
+                              {/* Pédagogie : la case exige les DEUX critères. On montre
+                                  lequel passe (✅) et lequel non (❌) — le joueur voit
+                                  d'un coup d'œil que sa réponse ne validait qu'une moitié,
+                                  et ne signale plus à tort. */}
+                              <div style={{fontSize:10,color:G.pelouseClaire,letterSpacing:.5,textAlign:"center",marginBottom:5,textTransform:"uppercase",fontWeight:800}}>
+                                {tr("Il faut valider les DEUX","Must match BOTH","Beide müssen passen","Devono valere ENTRAMBI","Precisa validar os DOIS","Deben cumplirse LOS DOS")}
+                              </div>
+                              <div style={{display:"flex",flexDirection:"column",gap:4,marginBottom:8,fontSize:12,fontWeight:700}}>
+                                {[[ggLastRejected.matchRow,ggLastRejected.rowCrit],[ggLastRejected.matchCol,ggLastRejected.colCrit]].map(function(pair,i){
+                                  const ok=pair[0]; const crit=pair[1];
+                                  return (
+                                    <div key={i} style={{display:"flex",alignItems:"center",gap:6,padding:"5px 8px",borderRadius:8,background:ok?"rgba(74,143,72,.16)":"rgba(220,70,60,.14)",color:ok?G.pelouseClaire:"#ff8a7a"}}>
+                                      <span>{ok?"✅":"❌"}</span>
+                                      <span style={{textTransform:"uppercase",letterSpacing:.3}}>{crit.label}</span>
+                                    </div>
+                                  );
+                                })}
                               </div>
                               <button onClick={async function(){
                                 try {
