@@ -4193,6 +4193,25 @@ export default function LePont() {
     duelAnsweredRef.current=false;
   }
 
+  // Échappatoire pour l'hôte qui poireaute dans un salon vide : au lieu d'attendre
+  // qu'un ami rejoigne un code partagé (28 % de ces salons restaient « en attente »),
+  // il bascule sur un adversaire IA immédiat. On supprime d'abord la ligne du salon
+  // pour ne pas la laisser traîner, puis on emprunte EXACTEMENT le même chemin que
+  // le match rapide du menu (mmSearch → duelQuickStart) : le score du joueur part au
+  // classement comme d'habitude, le bot ne sert que d'adversaire à l'écran final.
+  async function duelWaitPlayBot(){
+    const r = duelRoomRef.current || duelRoom;
+    try{
+      if(r && r.id && r.id!=="LOCAL" && r.host_id===playerId){
+        await sbFetch("bb_duel_rooms?id=eq."+r.id, { method:"DELETE", headers:{ "Prefer":"return=minimal" } });
+      }
+    } catch(e){}
+    duelRoomRef.current=null; setDuelRoom(null); setDuelInput(""); setDuelError(""); setDuelFlash(null);
+    duelAnsweredRef.current=false;
+    setDuelScreen(null);
+    setMmSearch({ mode:"duel", opponent: pickOpponent(), phase:"searching" });
+  }
+
   async function duelHostStart(){
     const r = duelRoomRef.current || duelRoom;
     if(!r || r.host_id!==playerId || !r.guest_id) return;
@@ -11605,6 +11624,11 @@ export default function LePont() {
             <div style={{width:"100%",maxWidth:340,display:"flex",flexDirection:"column",gap:10,marginTop:4}}>
               {isHost ? bigBtn(tr("DÉMARRER","START","STARTEN","AVVIA","COMEÇAR","EMPEZAR"), duelHostStart, G.pelouse, !joined)
                       : <div style={{fontSize:13,color:"rgba(255,255,255,.5)",textAlign:"center",padding:"6px"}}>{tr("En attente que l'hôte lance la partie…","Waiting for the host to start…","Warte, bis der Host startet…","In attesa che l'host avvii la partita…","Aguardando o anfitrião iniciar…","Esperando a que el anfitrión lance la partida…")}</div>}
+              {/* Personne ne rejoint ? L'hôte ne reste pas coincé : adversaire IA
+                  immédiat, via le même match rapide que le menu. */}
+              {isHost && !joined && (
+                <button onClick={duelWaitPlayBot} style={{background:"rgba(255,214,0,.14)",border:G.traitFin,borderRadius:G.rayon,color:G.projecteur,padding:"12px 24px",cursor:"pointer",fontFamily:G.font,fontSize:14,fontWeight:800,letterSpacing:.3}}>🤖 {tr("Jouer contre un adversaire maintenant","Play an opponent now","Jetzt gegen einen Gegner spielen","Gioca contro un avversario ora","Jogar contra um adversário agora","Jugar contra un rival ahora")}</button>
+              )}
               <button onClick={duelLeaveRoom} style={{background:"none",border:G.traitFin,borderRadius:G.rayon,color:"rgba(255,255,255,.6)",padding:"12px 24px",cursor:"pointer",fontFamily:G.font,fontSize:13,fontWeight:700}}>{tr("Quitter","Leave","Verlassen","Esci","Sair","Salir")}</button>
             </div>
           </div>
