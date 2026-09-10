@@ -1278,6 +1278,7 @@ export const PLAYERS = [
   { name:"Rui Patricio", clubs:["Sporting CP", "Wolverhampton", "AS Roma"], diff:"moyen", nationalities:["Portugal"], positions:["gardien"], birthYear:1988 },
   { name:"Pepe Reina", clubs:["Barcelona", "Villarreal", "Liverpool", "SSC Napoli", "Bayern Munich", "AC Milan", "Aston Villa", "SS Lazio", "Villarreal", "Como"], diff:"moyen", nationalities:["Espagne"], positions:["gardien"], birthYear:1982 },
   { name:"Suso", clubs:["Liverpool", "Almería", "AC Milan", "Genoa CFC", "Sevilla", "Cádiz"], diff:"moyen", nationalities:["Espagne"], positions:["milieu"], birthYear:1993 },
+  { name:"Samu Castillejo", clubs:["Málaga", "Villarreal", "AC Milan", "Valencia", "Sassuolo", "Johor Darul Ta'zim"], diff:"moyen", nationalities:["Espagne"], positions:["attaquant"], birthYear:1995 },
   { name:"Kevin Gameiro", clubs:["Lorient", "PSG", "Sevilla", "Atletico Madrid", "Valencia"], diff:"expert", nationalities:["France"], positions:["attaquant"], birthYear:1987 },
   { name:"Nicolas Mahut", clubs:["Angers"], diff:"expert", nationalities:["France"], positions:["defenseur"] },
   { name:"Youri Djorkaeff", clubs:["PSG", "Inter Milan", "Bolton"], diff:"expert", nationalities:["France"], positions:["milieu"] , birthYear:1968 },
