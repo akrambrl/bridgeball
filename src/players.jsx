@@ -1127,7 +1127,6 @@ export const PLAYERS = [
   { name:"Romelu Lukaku", clubs:["Anderlecht", "Chelsea", "West Brom", "Everton", "Manchester United", "Inter Milan", "Chelsea", "Inter Milan", "AS Roma", "SSC Napoli", "Fenerbahce"], diff:"facile", nationalities:["Belgique"], positions:["attaquant"], birthYear:1993 },
   { name:"Carles Puyol", clubs:["Barcelona"], diff:"moyen", nationalities:["Espagne"], positions:["defenseur"], birthYear:1978 },
   { name:"José Manuel Pinto", clubs:["Real Betis", "Celta Vigo", "Barcelona"], diff:"expert", nationalities:["Espagne"], positions:["gardien"] , birthYear:1975 },
-  { name:"Aliaksandr Hleb", clubs:["BATE Borisov", "Stuttgart", "Arsenal", "Barcelona", "Birmingham City", "Wolfsburg", "Krylia Sovetov"], diff:"expert", nationalities:["Biélorussie"], positions:["milieu"] , birthYear:1981 },
   { name:"Bojan Krkić", clubs:["Barcelona", "AS Roma", "AC Milan", "Ajax Amsterdam", "Stoke City", "Mainz", "Alavés", "CF Montréal", "Vissel Kobe"], diff:"expert", nationalities:["Espagne"], positions:["attaquant"], birthYear:1990 },
   { name:"Adriano Correia", clubs:["Coritiba", "Sevilla", "Barcelona", "Besiktas"], diff:"expert", nationalities:["Brésil"], positions:["defenseur"] , birthYear:1984 },
   { name:"Jeffrén Suárez", clubs:["Barcelona", "Sporting CP", "Eintracht Frankfurt", "Birmingham City"], diff:"expert", nationalities:["Espagne"], positions:["attaquant"] , birthYear:1988 },
@@ -4933,7 +4932,7 @@ export const PLAYERS = [
   { name:"Marouane Chamakh", clubs:["Bordeaux", "Arsenal", "West Ham", "Crystal Palace", "Cardiff City"], diff:"moyen", nationalities:["Maroc"], positions:["attaquant"], birthYear:1984 },
   { name:"Jean Makoun", clubs:["Lille", "Lyon", "Aston Villa", "Olympiacos", "Rennes", "Antalyaspor"], diff:"expert", nationalities:["Cameroun"], positions:["milieu"], birthYear:1983 },
   { name:"Nikola Žigić", clubs:["Red Star Belgrade", "Racing Santander", "Valencia", "Birmingham City"], diff:"expert", nationalities:["Serbie"], positions:["attaquant"], birthYear:1980 },
-  { name:"Alexander Hleb", clubs:["Stuttgart", "Arsenal", "Barcelona", "Birmingham City", "Wolfsburg", "BATE Borisov", "Isloch"], diff:"moyen", nationalities:["Biélorussie"], positions:["milieu"], birthYear:1981 },
+  { name:"Alexander Hleb", clubs:["BATE Borisov", "Stuttgart", "Arsenal", "Barcelona", "Birmingham City", "Wolfsburg", "Krylia Sovetov", "Isloch"], diff:"moyen", nationalities:["Biélorussie"], positions:["milieu"], birthYear:1981 },
   { name:"Jean Beausejour", clubs:["Universidad de Chile", "Club América", "Birmingham City", "Wigan Athletic", "Colo-Colo"], diff:"expert", nationalities:["Chili"], positions:["milieu"], birthYear:1984 },
   { name:"Craig Gardner", clubs:["Aston Villa", "Birmingham City", "Sunderland", "West Brom"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"], birthYear:1986 },
   { name:"Matt Derbyshire", clubs:["Blackburn", "Olympiacos", "Birmingham City", "Nottingham Forest", "Rotherham United"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"], birthYear:1986 },
@@ -6428,7 +6427,7 @@ export const GG_CL_WINNERS = new Set([
   "Michael Carrick","Anderson","Darren Fletcher","Nani","Park Ji-sung","Owen Hargreaves","Darron Gibson",
   // 🇪🇸 Barcelona 2009
   "José Manuel Pinto","Gerard Piqué","Dani Alves","Éric Abidal","Seydou Keita",
-  "Sergio Busquets","Yaya Touré","Aliaksandr Hleb","Lionel Messi","Thierry Henry",
+  "Sergio Busquets","Yaya Touré","Alexander Hleb","Lionel Messi","Thierry Henry",
   "Pedro Rodríguez","Bojan Krkić",
   // 🇮🇹 Inter Milan 2010
   "Júlio César",
