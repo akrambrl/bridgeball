@@ -156,11 +156,12 @@ describe("compter les clubs quand un club revient", () => {
 
   it("et un doublon ne fait plus entrer un joueur à deux clubs", () => {
     // L'autre sens, tout aussi faux : le plancher de 3 clubs existe pour que
-    // l'énigme ait de la matière. Robbie Fowler a trois entrées pour deux clubs.
-    const fowler = (PLAYERS as any[]).find((p) => p.name === "Robbie Fowler");
-    expect(fowler.clubs.length).toBe(3);
-    expect(nbClubs(fowler)).toBe(2);
-    expect(POOL.some((p: any) => p.name === "Robbie Fowler")).toBe(false);
+    // l'énigme ait de la matière. Vítor Baía, revenu à Porto après Barcelone, a
+    // trois entrées pour deux clubs seulement (fixture figée : légende retraitée).
+    const baia = (PLAYERS as any[]).find((p) => p.name === "Vítor Baía");
+    expect(baia.clubs.length).toBe(3);
+    expect(nbClubs(baia)).toBe(2);
+    expect(POOL.some((p: any) => p.name === "Vítor Baía")).toBe(false);
   });
 
   it("tout le vivier a bien 3 à 9 clubs DIFFÉRENTS", () => {
