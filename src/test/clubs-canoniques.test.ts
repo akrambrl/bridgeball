@@ -42,6 +42,10 @@ const DISTINCTS_ASSUMES = new Set([
   // brésiliens distincts que la clé souple confond (double L réduit).
   "Villa Nova / Vila Nova",
   "Vila Nova / Villa Nova",
+  // FC Internacional de Madrid (années 1920, disparu) et le SC Internacional de
+  // Porto Alegre (Brésil) « Internacional » : le rabotage du préfixe FC les confond.
+  "FC Internacional / Internacional",
+  "Internacional / FC Internacional",
 ]);
 
 const squelette = (s: string) =>
