@@ -44,7 +44,7 @@ export function choisir(mot: Mot, lang?: string): string {
 const CODE_PAYS: Record<string, string> = {
   "Afrique du Sud": "ZA", "Albanie": "AL", "Algérie": "DZ", "Allemagne": "DE",
   "Angola": "AO", "Arabie saoudite": "SA", "Argentine": "AR", "Arménie": "AM",
-  "Australie": "AU", "Autriche": "AT", "Barbade": "BB", "Belgique": "BE",
+  "Antigua-et-Barbuda": "AG", "Australie": "AU", "Autriche": "AT", "Barbade": "BB", "Belgique": "BE",
   "Biélorussie": "BY", "Bolivie": "BO", "Bosnie-Herzégovine": "BA", "Brésil": "BR",
   "Bulgarie": "BG", "Burkina Faso": "BF", "Burundi": "BI", "Bénin": "BJ",
   "Cameroun": "CM", "Canada": "CA", "Cap-Vert": "CV", "Centrafrique": "CF",
@@ -54,6 +54,7 @@ const CODE_PAYS: Record<string, string> = {
   "Espagne": "ES", "Estonie": "EE", "Finlande": "FI", "France": "FR",
   "Gabon": "GA", "Gambie": "GM", "Ghana": "GH", "Gibraltar": "GI", "Grenade": "GD",
   "Grèce": "GR", "Guinée": "GN", "Guinée équatoriale": "GQ", "Guinée-Bissau": "GW", "Guyana": "GY",
+  "Guyane française": "GF",
   "Géorgie": "GE", "Haïti": "HT", "Honduras": "HN", "Hongrie": "HU",
   "Indonésie": "ID", "Irak": "IQ", "Iran": "IR", "Irlande": "IE",
   "Islande": "IS", "Israël": "IL", "Italie": "IT", "Jamaïque": "JM",
