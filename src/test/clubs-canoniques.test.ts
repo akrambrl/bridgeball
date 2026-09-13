@@ -34,6 +34,14 @@ const DISTINCTS_ASSUMES = new Set([
   // le 12 de Octubre de Itauguá (Paraguay) et le 9 de Octubre de Milagro (Équateur).
   "12 de Octubre / 9 de Octubre",
   "9 de Octubre / 12 de Octubre",
+  // Le Bohemians 1905 de Prague (Tchéquie) et le Bohemian FC « Bohemians » de
+  // Dublin (Irlande) : le squelette efface le « 1905 » et les rapproche à tort.
+  "Bohemians 1905 / Bohemians",
+  "Bohemians / Bohemians 1905",
+  // Vila Nova FC (Goiás) et Villa Nova AC (Nova Lima, Minas Gerais) : deux clubs
+  // brésiliens distincts que la clé souple confond (double L réduit).
+  "Villa Nova / Vila Nova",
+  "Vila Nova / Villa Nova",
 ]);
 
 const squelette = (s: string) =>
