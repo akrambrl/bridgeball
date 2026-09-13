@@ -29,6 +29,11 @@ const DISTINCTS_ASSUMES = new Set([
   "Olimpia / CD Olimpia",              // Asunción (Paraguay) et Tegucigalpa (Honduras, Quioto)
   "Köln / Viktoria Köln",              // le 1. FC Köln et le FC Viktoria Köln (3. Liga), deux clubs de la ville
   "Real Cartagena / Cartagena",        // Real Cartagena (Colombie, Higuita/Mondragón) et le FC Cartagena (Espagne)
+  // Le squelette efface les chiffres : « 12 de Octubre » et « 9 de Octubre » se
+  // réduisent tous deux à « deoctubre ». Ce sont pourtant deux clubs distincts —
+  // le 12 de Octubre de Itauguá (Paraguay) et le 9 de Octubre de Milagro (Équateur).
+  "12 de Octubre / 9 de Octubre",
+  "9 de Octubre / 12 de Octubre",
 ]);
 
 const squelette = (s: string) =>

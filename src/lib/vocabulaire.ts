@@ -53,7 +53,7 @@ const CODE_PAYS: Record<string, string> = {
   "Curaçao": "CW", "Côte d'Ivoire": "CI", "Danemark": "DK", "Dominique": "DM",
   "Espagne": "ES", "Estonie": "EE", "Finlande": "FI", "France": "FR",
   "Gabon": "GA", "Gambie": "GM", "Ghana": "GH", "Gibraltar": "GI", "Grenade": "GD",
-  "Grèce": "GR", "Guinée": "GN", "Guinée équatoriale": "GQ", "Guinée-Bissau": "GW",
+  "Grèce": "GR", "Guinée": "GN", "Guinée équatoriale": "GQ", "Guinée-Bissau": "GW", "Guyana": "GY",
   "Géorgie": "GE", "Haïti": "HT", "Honduras": "HN", "Hongrie": "HU",
   "Indonésie": "ID", "Irak": "IQ", "Iran": "IR", "Irlande": "IE",
   "Islande": "IS", "Israël": "IL", "Italie": "IT", "Jamaïque": "JM",
