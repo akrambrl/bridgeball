@@ -62,7 +62,7 @@ const CODE_PAYS: Record<string, string> = {
   "Lettonie": "LV", "Liberia": "LR", "Libye": "LY", "Lituanie": "LT",
   "Luxembourg": "LU", "Macédoine du Nord": "MK", "Mali": "ML", "Malte": "MT",
   "Maroc": "MA", "Mauritanie": "MR", "Mexique": "MX", "Monténégro": "ME",
-  "Mozambique": "MZ", "Nigeria": "NG", "Norvège": "NO", "Nouvelle-Zélande": "NZ",
+  "Mozambique": "MZ", "Nigeria": "NG", "Norvège": "NO", "Nouvelle-Calédonie": "NC", "Nouvelle-Zélande": "NZ",
   "Oman": "OM", "Ouzbékistan": "UZ", "Pakistan": "PK", "Panama": "PA",
   "Paraguay": "PY", "Pays-Bas": "NL", "Pologne": "PL", "Portugal": "PT",
   "Pérou": "PE", "Qatar": "QA", "RD Congo": "CD", "Roumanie": "RO",
