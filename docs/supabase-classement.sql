@@ -48,9 +48,10 @@
 --  sans avoir joué. Ce que ce fichier garantit, c'est qu'un tel score ne peut pas
 --  faire gagner : les points sont PLAFONNÉS par jour et par mode (section 3),
 --  donc réclamer 60 000 sur la devinette rapporte exactement autant que le
---  réussir honnêtement — 1000 points, une fois. Pour truquer un mois entier il
---  faudrait poser un bon score chaque jour dans chaque mode, ce qui est
---  détectable et, surtout, revient à jouer.
+--  réussir honnêtement — 1000 points, une fois. Le classement ne retenant que les
+--  K meilleurs JOURS (section 4), truquer un mois revient à poser un bon score
+--  plusieurs jours dans plusieurs modes — détectable (jours/modes joués, contrôle
+--  d) et, surtout, revient à jouer.
 --
 --  Le classement devient donc CRÉDIBLE ET CONTRÔLABLE, pas mathématiquement
 --  infalsifiable. Avant d'expédier un lot, passer la section 7.
@@ -239,14 +240,39 @@ $$;
 
 
 -- ─── 4. LE CLASSEMENT DU MOIS ───────────────────────────────────────────────
--- LA RÈGLE, en une phrase : pour chaque JOUR et chaque MODE, seul le MEILLEUR
--- score du joueur compte, et il rapporte au plus 1000 points.
---
--- Ce plafond est le cœur de la sécurité, et il n'est pas là par hasard :
+-- LA RÈGLE DE BASE : pour chaque JOUR et chaque MODE, seul le MEILLEUR score du
+-- joueur compte, et il rapporte au plus 1000 points. Ce plafond est le cœur de la
+-- sécurité :
 --   • un score gonflé ne rapporte pas plus qu'un très bon score honnête ;
 --   • rejouer vingt fois le même mode dans la journée ne rapporte rien de plus ;
---   • pour accumuler, il faut jouer plusieurs modes, plusieurs jours — c'est-à-dire
---     exactement le comportement qu'on veut encourager.
+--   • pour accumuler, il faut jouer plusieurs modes — le comportement voulu.
+--
+-- ── DEUX RÈGLES EN PLUS, POUR QUE LES DERNIERS ET LES NOUVEAUX REMONTENT ────
+-- Le problème : la première version SOMMAIT tous les jours du mois. Un joueur
+-- arrivé le 15 avait dix jours de retard IMPOSSIBLES à rattraper, et jouer des
+-- heures n'y changeait rien puisqu'un jour est plafonné. C'était injuste pour les
+-- retardataires et le bas de tableau.
+--
+--  A) MEILLEURS JOURS. On ne somme plus tous les jours mais les K MEILLEURS
+--     (K = 15, ~une demi-saison). Un joueur qui commence au milieu du mois et
+--     joue bien ses quinze jours atteint le MÊME plafond qu'un joueur présent
+--     tout le mois : les jours ratés en début de mois ne le condamnent plus.
+--     Au-delà de quinze jours, jouer encore ne se cumule pas à l'infini — ce qui
+--     remet nouveaux et réguliers à portée l'un de l'autre. C'est la moyenne des
+--     bons jours qui prime, pas le simple fait d'avoir été là chaque jour.
+--     Ce sont les POINTS BRUTS ci-dessous, et c'est EUX qui décident les rangs.
+--
+--  B) BONUS DE RATTRAPAGE. Par-dessus, plus un joueur est loin du 1er du mois,
+--     plus ses points affichés sont rehaussés (jusqu'à +50 % pour le fond de
+--     tableau, 0 % pour le leader). Le but est motivant : l'écart paraît
+--     rattrapable. C'est une fonction CROISSANTE des points bruts, donc elle ne
+--     change AUCUN rang — elle resserre seulement l'affichage. Un joueur ne double
+--     personne grâce au bonus ; il double en jouant (règle A). Le leader honnête
+--     reste leader.
+--
+-- K et le bonus sont des constantes en tête de la fonction : les régler, c'est
+-- relancer ce fichier (idempotent), sans redéploiement de l'app. Le classement
+-- étant recalculé depuis les scores, tout changement s'applique rétroactivement.
 --
 -- Les jours sont comptés en HEURE DE PARIS, comme le reste de l'app (la devinette
 -- du jour, les séries) : en UTC, une partie jouée à 23 h 30 tomberait le lendemain.
@@ -261,7 +287,12 @@ returns table (
   jours     bigint,
   modes     bigint
 ) language sql stable as $$
-  with journalier as (
+  with parametres as (
+    -- K = nombre de meilleurs jours retenus (règle A). Le bonus (règle B) plafonne
+    -- à +bonus_max pour le fond de tableau. Deux leviers, réglables ici.
+    select 15 as k, 0.5::numeric as bonus_max
+  ),
+  journalier as (
     -- Le meilleur score de chaque joueur, par jour de Paris et par mode.
     select s.player_id,
            (s.created_at at time zone 'Europe/Paris')::date as jour,
@@ -283,17 +314,56 @@ returns table (
       from public.bb_gg_scores g
      where to_char(g.created_at at time zone 'Europe/Paris', 'YYYY-MM') = p_mois
      group by 1, 2
+  ),
+  par_jour as (
+    -- Total d'un joueur POUR UN JOUR = somme de ses meilleurs par mode ce jour-là.
+    -- Jouer plusieurs modes dans la journée compte donc toujours ; c'est
+    -- l'accumulation SUR LES JOURS qui est plafonnée à K (règle A), pas la journée.
+    select player_id, jour, sum(pts) as pts_jour
+      from journalier
+     where pts > 0
+     group by 1, 2
+  ),
+  classe as (
+    -- Les jours de chaque joueur, du meilleur au moins bon.
+    select player_id, jour, pts_jour,
+           row_number() over (partition by player_id order by pts_jour desc, jour) as rang_jour
+      from par_jour
+  ),
+  brut as (
+    -- Points BRUTS = somme des K meilleurs jours (règle A). C'est ce total qui
+    -- décide les rangs. `jours` reste le nombre TOTAL de jours joués (indicateur
+    -- de régularité affiché dans l'app), pas le nombre retenu.
+    select c.player_id,
+           sum(c.pts_jour) filter (where c.rang_jour <= (select k from parametres))::bigint as pts_brut,
+           count(distinct c.jour)::bigint as jours
+      from classe c
+     group by 1
+  ),
+  modes_joues as (
+    select player_id, count(distinct mode)::bigint as modes
+      from journalier where pts > 0 group by 1
+  ),
+  sommet as (
+    -- Le meilleur total brut du mois : la référence du bonus de rattrapage.
+    select coalesce(max(pts_brut), 0)::numeric as top from brut
   )
-  select j.player_id,
+  select b.player_id,
          coalesce(p.pseudo, '?') as pseudo,
-         sum(j.pts)::bigint       as points,
-         count(distinct j.jour)::bigint  as jours,
-         count(distinct j.mode)::bigint  as modes
-    from journalier j
-    left join public.bb_pseudos p on p.player_id = j.player_id
-   where j.pts > 0
-   group by 1, 2
-   order by points desc, jours desc, pseudo asc
+         -- Règle B : rehausse d'autant plus qu'on est loin du sommet. Croissante
+         -- en pts_brut (dérivée minimale 1 - bonus_max > 0), donc elle préserve
+         -- l'ordre des rangs et ne fait que resserrer l'affichage.
+         round(b.pts_brut * (1 + pr.bonus_max
+               * greatest(0, so.top - b.pts_brut) / nullif(so.top, 0)))::bigint as points,
+         b.jours,
+         coalesce(m.modes, 0) as modes
+    from brut b
+    cross join parametres pr
+    cross join sommet so
+    left join public.bb_pseudos p on p.player_id = b.player_id
+    left join modes_joues m on m.player_id = b.player_id
+   where b.pts_brut > 0
+   order by points desc, b.jours desc, pseudo asc
 $$;
 
 -- Raccourci pour l'app : le mois EN COURS, heure de Paris.
