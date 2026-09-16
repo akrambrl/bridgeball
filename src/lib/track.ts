@@ -41,6 +41,102 @@ function detectOS(): "ios" | "android" | "other" {
   }
 }
 
+// D'OÙ VIENT LA VISITE — un jeton court et stable, pour le tableau de bord.
+//
+// Pourquoi ça existe : un pic de trafic sans source, c'est un pic qu'on ne peut
+// pas refaire. On lit deux indices, dans l'ordre de fiabilité :
+//
+//  1. LE NAVIGATEUR IN-APP. Ouvrir un lien depuis Instagram, TikTok, Snapchat…
+//     sur mobile ouvre un navigateur embarqué qui SIGNE son User-Agent
+//     (« Instagram », « musical_ly » pour TikTok, « FBAN » pour Facebook…).
+//     C'est le signal le plus solide : il survit même quand le référent est vide.
+//  2. LE RÉFÉRENT (document.referrer), quand il est là — souvent absent pour les
+//     navigateurs in-app et les messageries (WhatsApp, iMessage n'envoient rien),
+//     mais parlant pour un partage web ou une recherche Google.
+//
+// Faute des deux : "direct" (accès direct, marque-page, appli sans référent).
+// WhatsApp et iMessage tombent presque toujours ici — c'est une limite connue,
+// pas un bug : ces apps ouvrent le lien sans laisser de trace.
+function detectSource(): string {
+  try {
+    const ua = navigator.userAgent || "";
+    // 1) Navigateur in-app (le plus fiable pour le social)
+    if (/Instagram/i.test(ua)) return "instagram";
+    if (/(TikTok|musical_ly|BytedanceWebview|Bytedance)/i.test(ua)) return "tiktok";
+    if (/Snapchat/i.test(ua)) return "snapchat";
+    if (/(FBAN|FBAV|FB_IAB|FB4A)/i.test(ua)) return "facebook";
+    if (/(Messenger|MessengerLite)/i.test(ua)) return "messenger";
+    if (/(Twitter|TwitterAndroid)/i.test(ua)) return "x";
+    if (/Pinterest/i.test(ua)) return "pinterest";
+    if (/LinkedIn/i.test(ua)) return "linkedin";
+    // 2) Référent, quand présent
+    let ref = "";
+    try { ref = document.referrer || ""; } catch { /* noop */ }
+    if (ref) {
+      let host = "";
+      try { host = new URL(ref).hostname.toLowerCase().replace(/^www\./, ""); } catch { /* noop */ }
+      let ici = "";
+      try { ici = (location.hostname || "").toLowerCase().replace(/^www\./, ""); } catch { /* noop */ }
+      if (host && host === ici) return "direct"; // navigation interne, pas une source
+      const domaines: Array<[RegExp, string]> = [
+        [/(^|\.)instagram\.com$/, "instagram"],
+        [/(^|\.)tiktok\.com$/, "tiktok"],
+        [/(^|\.)snapchat\.com$/, "snapchat"],
+        [/(^|\.)(facebook\.com|fb\.me)$/, "facebook"],
+        [/(^|\.)(twitter\.com|x\.com|t\.co)$/, "x"],
+        [/(^|\.)(youtube\.com|youtu\.be)$/, "youtube"],
+        [/(^|\.)reddit\.com$/, "reddit"],
+        [/(^|\.)(whatsapp\.com|wa\.me)$/, "whatsapp"],
+        [/(^|\.)(discord\.com|discord\.gg)$/, "discord"],
+        [/(^|\.)pinterest\.[a-z.]+$/, "pinterest"],
+        [/(^|\.)linkedin\.com$/, "linkedin"],
+        [/(^|\.)bing\.com$/, "bing"],
+        [/(^|\.)google\./, "google"],
+      ];
+      for (const [re, nom] of domaines) if (re.test(host)) return nom;
+      if (host) return "ref:" + host.slice(0, 24); // un site tiers non listé : on garde son domaine
+    }
+    return "direct";
+  } catch {
+    return "direct";
+  }
+}
+
+// Ping de source "src_<canal>" — 1× par jour et par appareil, même verrou que le
+// ping d'ouverture (drapeau posé seulement APRÈS un POST réussi). Le référent
+// n'est fiable qu'au PREMIER chargement de la journée : c'est là qu'il pointe
+// encore la page qui a amené le visiteur, avant que la navigation interne ne
+// l'écrase. Une fois par jour suffit donc, et évite de gonfler la table.
+let srcInFlight = false;
+export function pingSource(): void {
+  try {
+    const today = new Date().toISOString().slice(0, 10);
+    if (localStorage.getItem("bb_src_day") === today) return;
+    if (srcInFlight) return;
+    srcInFlight = true;
+    fetch(SB_URL + "/rest/v1/bb_events", {
+      method: "POST",
+      headers: {
+        apikey: SB_KEY,
+        Authorization: "Bearer " + SB_KEY,
+        "Content-Type": "application/json",
+        Prefer: "return=minimal",
+      },
+      body: JSON.stringify({ player_id: getPlayerId(), type: "src_" + detectSource() }),
+      keepalive: true,
+    })
+      .then((res) => {
+        if (res && res.ok) {
+          try { localStorage.setItem("bb_src_day", today); } catch { /* noop */ }
+        }
+      })
+      .catch(() => { /* on réessaiera à la prochaine ouverture / partie */ })
+      .finally(() => { srcInFlight = false; });
+  } catch {
+    /* jamais bloquant */
+  }
+}
+
 // Battement de cœur "en ligne maintenant" — upsert d'UNE ligne par appareil dans
 // bb_presence (player_id = clé primaire). Le dashboard compte les appareils vus
 // dans les ~80 dernières secondes. Pas de gonflement de table (1 ligne / appareil).
@@ -107,8 +203,10 @@ export function pingPresence(): void {
 export function trackPlay(mode: PlayMode, online = false): void {
   try {
     // Jouer une partie garantit aussi que l'appareil (OS) est compté ce jour-là,
-    // même si le ping d'ouverture avait échoué (réseau, cache…).
+    // même si le ping d'ouverture avait échoué (réseau, cache…), et que sa source
+    // est enregistrée.
     pingPresence();
+    pingSource();
     const type = "play_" + mode + (online ? "_online" : "");
     fetch(SB_URL + "/rest/v1/bb_events", {
       method: "POST",

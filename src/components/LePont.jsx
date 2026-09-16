@@ -7,7 +7,7 @@ import { createPortal } from "react-dom";
 // calculé sur elles au chargement de ce module.
 import { PLAYERS, RETIRED_PLAYERS, GG_WC_WINNERS, GG_CL_WINNERS } from "../lib/donnees";
 import { DRAPEAUX } from "../lib/pays";
-import { trackPlay, pingPresence, pingLive, trackTime } from "../lib/track";
+import { trackPlay, pingPresence, pingSource, pingLive, trackTime } from "../lib/track";
 import { hapticSuccess, hapticError, isNative } from "../lib/native";
 import { pickOpponent } from "../lib/opponents";
 import { G, posterText, posterTitre, posterLight, btn, fondCharte, areneCharte,
@@ -6312,6 +6312,9 @@ export default function LePont() {
   // Le drapeau anti-doublon n'est posé qu'après un POST réussi (voir pingPresence),
   // pour ne pas "perdre" un appareil dont le 1er ping de la journée aurait échoué.
   useEffect(function(){ pingPresence(); }, []);
+  // D'où vient la visite (navigateur in-app / référent), 1× par jour/appareil —
+  // le référent n'est lisible qu'au premier chargement (voir pingSource).
+  useEffect(function(){ pingSource(); }, []);
   // Mesure du temps réellement passé dans l'app (voir trackTime).
   useEffect(function(){ trackTime(); }, []);
   // Battement "en ligne maintenant" : toutes les 30 s tant que l'app est visible.

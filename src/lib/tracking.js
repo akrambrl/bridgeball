@@ -196,6 +196,18 @@ export function agregeTracking(data, filtres, jours) {
   const os = { ios: 0, android: 0, other: 0 };
   for (const id in osParAppareil) { const o = osParAppareil[id]; if (os[o] !== undefined) os[o]++; else os.other++; }
 
+  // ── Sources — pings "src_<canal>", un appareil compté une fois ──
+  // D'où viennent les visites : Instagram, TikTok, recherche Google, lien
+  // direct… Un appareil ne compte qu'une fois (sa dernière source vue dans la
+  // fenêtre), comme l'OS. Ne remonte pas avant le déploiement qui l'a introduit.
+  const srcParAppareil = {};
+  for (const r of eventsW) { if (r.type && r.type.indexOf("src_") === 0) srcParAppareil[r.player_id] = r.type.slice(4) || "direct"; }
+  const sourcesMap = {};
+  for (const id in srcParAppareil) { const s = srcParAppareil[id]; sourcesMap[s] = (sourcesMap[s] || 0) + 1; }
+  const sources = Object.keys(sourcesMap)
+    .map(function (k) { return { source: k, n: sourcesMap[k] }; })
+    .sort(function (a, b) { return b.n - a.n || String(a.source).localeCompare(String(b.source)); });
+
   // ── Jour par jour — TOUJOURS les 14 jours, indépendamment de la plage, pour
   // que la vue reste lisible même en « 1 j ». Les autres filtres s'appliquent. ──
   const toutScores = (data.rawScores || []).filter(function (r) { return passeScore(r, false); });
@@ -243,6 +255,6 @@ export function agregeTracking(data, filtres, jours) {
     parMode: parMode, totalParties: totalParties, solo: solo, enLigne: enLigne,
     joueurs: joueurs, joueursInscrits: joueurs.filter(function (p) { return !!p.pseudo; }).length,
     sessions: sessions, tempsTotal: tempsTotal, tempsJoueurs: Object.keys(tempsParJoueur).length,
-    os: os, parJour: parJour, comptes: comptes,
+    os: os, sources: sources, parJour: parJour, comptes: comptes,
   };
 }
