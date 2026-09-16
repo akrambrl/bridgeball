@@ -29,6 +29,32 @@ const ENCRE = function (a) { return "rgba(8,17,9," + a + ")"; };
 // ses libellés avec lui.
 const PANNEAU = { background:G.nuit, border:G.trait, boxShadow:G.ombre, borderRadius:G.rayon };
 
+// Libellés des sources de trafic (jetons "src_<canal>" écrits par lib/track).
+// Un jeton inconnu ("ref:<domaine>", ou un canal ajouté plus tard) retombe sur
+// un rendu neutre : mieux vaut afficher le domaine brut que rien.
+const SOURCE_META = {
+  instagram: { label:"Instagram",    emoji:"📷", color:"#E4405F" },
+  tiktok:    { label:"TikTok",       emoji:"🎵", color:"#69C9D0" },
+  snapchat:  { label:"Snapchat",     emoji:"👻", color:"#F7D000" },
+  facebook:  { label:"Facebook",     emoji:"📘", color:"#1877F2" },
+  messenger: { label:"Messenger",    emoji:"💬", color:"#0084FF" },
+  x:         { label:"X / Twitter",  emoji:"🐦", color:"#4AA0EB" },
+  youtube:   { label:"YouTube",      emoji:"▶️", color:"#FF0000" },
+  reddit:    { label:"Reddit",       emoji:"👽", color:"#FF4500" },
+  whatsapp:  { label:"WhatsApp",     emoji:"🟢", color:"#25D366" },
+  discord:   { label:"Discord",      emoji:"🎮", color:"#5865F2" },
+  pinterest: { label:"Pinterest",    emoji:"📌", color:"#E60023" },
+  linkedin:  { label:"LinkedIn",     emoji:"💼", color:"#0A66C2" },
+  google:    { label:"Google",       emoji:"🔍", color:"#4285F4" },
+  bing:      { label:"Bing",         emoji:"🔎", color:"#00897B" },
+  direct:    { label:"Direct / inconnu", emoji:"🔗", color:"#9CA3AF" },
+};
+function metaSource(k) {
+  if (SOURCE_META[k]) return SOURCE_META[k];
+  if (k && k.indexOf("ref:") === 0) return { label: k.slice(4), emoji: "🌐", color: "#8CC0FF" };
+  return { label: k || "—", emoji: "🌐", color: "#9CA3AF" };
+}
+
 // ── Briques visuelles communes ───────────────────────────────────────────────
 function Titre(props) {
   return (
@@ -326,6 +352,58 @@ function RubriqueAudience(props) {
           </>
         )}
       </Bloc>
+      <Bloc titre={"🔎 Sources · " + v.plage + " j"}>
+        <SourcesBloc sources={v.sources}/>
+      </Bloc>
+    </>
+  );
+}
+
+// D'où viennent les visites — une barre nommée par canal, la plus forte en tête.
+// Le libellé au-dessus de la barre (et pas dans une colonne fixe) pour qu'un
+// domaine "ref:…" un peu long ne se fasse pas tronquer sur téléphone.
+function SourcesBloc(props) {
+  const sources = props.sources || [];
+  if (!sources.length) {
+    return (
+      <Vide>Aucune source encore mesurée. La détection ne remonte pas avant le
+            déploiement qui l'a introduite ; les partages par WhatsApp ou iMessage
+            arrivent en « direct » (ces apps n'envoient pas de référent).</Vide>
+    );
+  }
+  const total = sources.reduce(function (s, r) { return s + r.n; }, 0) || 1;
+  const max = Math.max(1, ...sources.map(function (r) { return r.n; }));
+  return (
+    <>
+      <Panneau padding={16}>
+        <div style={{display:"flex",flexDirection:"column",gap:12}}>
+          {sources.map(function (r, i) {
+            const m = metaSource(r.source);
+            const pct = Math.round(r.n / total * 100);
+            return (
+              <div key={r.source} style={{minWidth:0}}>
+                <div style={{display:"flex",alignItems:"baseline",gap:6,marginBottom:4}}>
+                  <span style={{fontSize:12.5}}>{m.emoji}</span>
+                  <span style={{fontSize:12.5,color:i===0?m.color:BLANC(.7),fontWeight:i===0?800:600,
+                                overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{m.label}</span>
+                  <span style={{flex:1}}/>
+                  <span style={{fontSize:13,color:"#fff",fontWeight:800,flexShrink:0}}>
+                    {r.n}<span style={{color:BLANC(.35),fontWeight:600,fontSize:11}}> · {pct}%</span>
+                  </span>
+                </div>
+                <div style={{height:22,background:"rgba(0,0,0,.45)",border:G.traitFin,
+                             borderRadius:G.rayonS,overflow:"hidden"}}>
+                  <div style={{height:"100%",width:Math.round(r.n/max*100)+"%",minWidth:r.n?8:0,
+                               background:m.color,opacity:i===0?1:.6,transition:"width .4s"}}/>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </Panneau>
+      <Note>Appareils uniques par canal d'arrivée. Navigateur in-app (Instagram,
+            TikTok…) et référent quand il existe ; sinon « direct ». WhatsApp et
+            iMessage n'envoient pas de référent : leurs visites tombent en « direct ».</Note>
     </>
   );
 }

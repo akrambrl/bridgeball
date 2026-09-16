@@ -32,6 +32,8 @@ const DONNEES = {
     ev("dev-42", "open_android", AUJ),
     ev("alice", "dur_600", AUJ),
     ev("dev-42", "dur_120", AUJ),
+    ev("alice", "src_instagram", AUJ),
+    ev("dev-42", "src_tiktok", AUJ),
   ],
   rawDuels: [AUJ, VIEUX],
   recent: [{ pseudo: "alice", country: "FR", created_at: "2026-08-10T08:00:00Z" },
@@ -101,6 +103,34 @@ describe("filtre de mode", () => {
     const g = vue({ mode: "grid" });
     expect(g.os.ios + g.os.android).toBe(2);
     expect(g.sessions).toBe(2);
+  });
+});
+
+describe("sources de trafic", () => {
+  it("compte un appareil par canal, le plus fort en tête", () => {
+    const s = vue().sources;
+    expect(s).toEqual([
+      { source: "instagram", n: 1 },
+      { source: "tiktok", n: 1 },
+    ]);
+  });
+
+  it("suit la plage : hors fenêtre, la source n'est plus comptée", () => {
+    // Les deux pings src_ sont d'aujourd'hui ; en plage 1 j ils restent, mais un
+    // src_ d'un vieux jour n'y serait pas.
+    const auj = vue({ plage: 1 }).sources;
+    expect(auj.reduce((t, r) => t + r.n, 0)).toBe(2);
+  });
+
+  it("suit le filtre de public comme l'OS", () => {
+    // dev-42 (tiktok) n'est pas inscrit : filtré sur les inscrits, il tombe.
+    expect(vue({ public: "inscrits" }).sources).toEqual([{ source: "instagram", n: 1 }]);
+    expect(vue({ public: "anonymes" }).sources).toEqual([{ source: "tiktok", n: 1 }]);
+  });
+
+  it("reste vide, sans planter, quand bb_events est absente", () => {
+    const s = agregeTracking({ ...DONNEES, hasEvents: false, rawEvents: null }, FILTRES_VIDES, JOURS)!;
+    expect(s.sources).toEqual([]);
   });
 });
 
