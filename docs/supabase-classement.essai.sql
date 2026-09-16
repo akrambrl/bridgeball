@@ -121,3 +121,28 @@ select j.pid, 6 + d, 9,
 -- Un score NÉGATIF (pénalités de pass) : il doit valoir 0 point, pas retirer.
 insert into public.bb_scores (player_id, player_name, mode, score, created_at)
 values ('p4','vice','pont',-450, date_trunc('month', now()) + interval '2 days');
+
+-- ─── DE QUOI ÉPROUVER LES DEUX RÈGLES DE REMONTÉE (section 4) ───────────────
+-- Tous ancrés au DÉBUT du mois (jours 1..20) pour rester dans le mois quel que
+-- soit le jour où le banc tourne. Score pont = 1000 = la référence, donc chaque
+-- jour vaut exactement 1000 points normalisés : les totaux sont prévisibles.
+insert into public.bb_pseudos (player_id, pseudo) values
+  ('pcap','assidu'), ('pref','quinze'), ('pbottom','dernier');
+
+-- RÈGLE A — MEILLEURS JOURS. `pcap` joue 20 jours, `pref` en joue 15, au même
+-- niveau. Au-delà de K=15 jours, jouer encore ne rapporte rien : les deux doivent
+-- finir à ÉGALITÉ de points (15 000 bruts), ce qui prouve le plafond des jours.
+insert into public.bb_scores (player_id, player_name, mode, score, created_at)
+select 'pcap','assidu','pont',1000,
+       date_trunc('month', now()) + (d || ' days')::interval + interval '12 hours'
+  from generate_series(0, 19) as d;
+insert into public.bb_scores (player_id, player_name, mode, score, created_at)
+select 'pref','quinze','pont',1000,
+       date_trunc('month', now()) + (d || ' days')::interval + interval '12 hours'
+  from generate_series(0, 14) as d;
+
+-- RÈGLE B — BONUS DE RATTRAPAGE. `pbottom` ne joue qu'UN jour, un mode, à la
+-- référence : 1000 points bruts. Loin du sommet (15 000), le bonus doit rehausser
+-- ses points AFFICHÉS au-dessus de 1000 sans jamais le faire passer devant.
+insert into public.bb_scores (player_id, player_name, mode, score, created_at)
+values ('pbottom','dernier','pont',1000, date_trunc('month', now()) + interval '12 hours');

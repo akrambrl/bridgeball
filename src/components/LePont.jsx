@@ -13029,6 +13029,26 @@ export default function LePont() {
               );})}
             </div>
           )}
+          {/* Comment on marque au classement du mois : les 15 meilleurs jours
+              comptent (arriver en cours de mois n'enferme plus en bas) et le bas
+              de tableau reçoit un bonus de remontée. Le dire, sinon la règle est
+              invisible et la remontée paraît impossible. Voir bb_classement_mois
+              dans docs/supabase-classement.sql. */}
+          {lbMode==="saison" && (
+            <div style={{display:"flex",gap:8,alignItems:"flex-start",marginBottom:10,padding:"9px 11px",background:G.nuit,border:G.traitFin,borderRadius:G.rayonS,boxShadow:G.ombre}}>
+              <span style={{fontSize:15,lineHeight:1.3}}>🚀</span>
+              <span style={{fontSize:11.5,color:"rgba(255,255,255,.78)",fontWeight:700,lineHeight:1.45}}>
+                {tr(
+                  "Tes 15 meilleurs jours du mois comptent. Arrive quand tu veux, joue bien : les derniers gagnent un bonus de remontée.",
+                  "Your 15 best days of the month count. Join anytime, play well: the bottom of the table gets a catch-up bonus.",
+                  "Deine 15 besten Tage des Monats zählen. Steig jederzeit ein, spiel gut: das Tabellenende bekommt einen Aufhol-Bonus.",
+                  "Contano i tuoi 15 giorni migliori del mese. Entra quando vuoi, gioca bene: chi è in fondo prende un bonus di rimonta.",
+                  "Cuentan tus 15 mejores días del mes. Únete cuando quieras, juega bien: los últimos reciben un bonus de remontada.",
+                  "Contam os teus 15 melhores dias do mês. Entra quando quiseres, joga bem: os últimos ganham um bónus de recuperação."
+                )}
+              </span>
+            </div>
+          )}
           {/* Les deux messages « rien à afficher » prennent le panneau de la
               charte : posés en texte gris sur la pelouse, ils passaient pour un
               chargement inachevé plutôt que pour une réponse. */}

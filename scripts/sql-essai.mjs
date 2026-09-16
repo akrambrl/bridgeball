@@ -144,6 +144,38 @@ const CONTROLES = [
           select (select points from avant)`,
     attendu: (v) => Number(v) > 0,
     dire: (v) => "p1 totalise " + v + " points" },
+
+  { nom: "règle A — au-delà de K=15 jours, jouer plus ne rapporte rien",
+    // pcap joue 20 jours à 1000/jour. Sans plafond de jours il totaliserait
+    // 20 000 ; avec les 15 meilleurs jours, exactement 15 000. Et comme il est en
+    // tête, le bonus de rattrapage vaut 1 : la valeur est donc lisible telle quelle.
+    sql: "select points from public.bb_classement_courant() where player_id='pcap'",
+    attendu: (v) => Number(v) === 15000,
+    dire: (v) => "pcap (20 jours joués) → " + v + " points (15 meilleurs jours × 1000)" },
+
+  { nom: "règle A — un joueur de 15 jours égale un joueur de 20 jours",
+    // La preuve que les jours ratés en début de mois ne condamnent plus : à
+    // niveau égal, quinze bons jours valent autant que vingt.
+    sql: `select (select points from public.bb_classement_courant() where player_id='pcap')
+               = (select points from public.bb_classement_courant() where player_id='pref')`,
+    attendu: (v) => v === "t",
+    dire: (v) => "pcap (20 j) == pref (15 j) : " + v },
+
+  { nom: "règle B — le bonus de rattrapage rehausse le fond de tableau",
+    // pbottom a 1000 points bruts (un jour, à la référence). Loin du sommet
+    // (15 000), le bonus doit le remonter au-dessus de 1000 — sans le faire
+    // passer devant, ce que vérifie le contrôle suivant.
+    sql: "select points from public.bb_classement_courant() where player_id='pbottom'",
+    attendu: (v) => Number(v) > 1000 && Number(v) < 1500,
+    dire: (v) => "pbottom : 1000 bruts → " + v + " affichés (bonus de remontée)" },
+
+  { nom: "règle B — le bonus ne change AUCUN rang (fonction croissante)",
+    // Le bas remonte à l'affichage mais ne double personne : on grimpe en jouant
+    // (règle A), pas grâce au bonus. pbottom reste sous pcap.
+    sql: `select (select points from public.bb_classement_courant() where player_id='pbottom')
+               < (select points from public.bb_classement_courant() where player_id='pcap')`,
+    attendu: (v) => v === "t",
+    dire: (v) => "pbottom < pcap : " + v },
 ];
 
 /** Ce que le garde-fou doit REFUSER, et par quel indice. */
