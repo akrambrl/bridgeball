@@ -1106,7 +1106,10 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
             <div style={{ fontSize: 14, color: "#fff", marginTop: 6 }}>
               {won ? tr("Trouvé en", "Found in", "Gefunden in", "Trovato in", "Encontrado em","Encontrado en") + " " + guesses.length + " " + tr("essai", "try", "Versuch", "tentativo", "tentativa","intento") + (guesses.length > 1 ? "s" : "") : tr("C'était", "It was", "Es war", "Era", "Era","Era") + " :"}
             </div>
-            {!won && <div style={{ ...posterText(24, G.projecteur), marginTop: 4 }}>{answer.name}</div>}
+            {/* Nom en BLANC (contour d'encre) et non en projecteur : le jaune
+                projecteur EST la teinte du fond de la charte, donc illisible posé
+                dessus. Le blanc contouré lit comme le titre « RATÉ ! » au-dessus. */}
+            {!won && <div style={{ ...posterText(24, G.white), marginTop: 4 }}>{answer.name}</div>}
             {won && (
               <div style={{ ...posterText(40, G.projecteur), marginTop: 10 }}>+{nombre(lastEarned)} PTS</div>
             )}
