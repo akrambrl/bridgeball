@@ -658,8 +658,15 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
   // manche `over && !won` affiche déjà le nom (« C'était : … »). Confirmé par un
   // pop-up d'avertissement avant d'être appelé.
   function giveUp() {
-    if (over || revealing) return;
+    // Toujours fermer le pop-up EN PREMIER. S'il fallait attendre le garde-fou
+    // ci-dessous, un clic sur « Oui, montrer la réponse » alors que la manche
+    // vient de se terminer (dernière tentative épuisée → `over`, ou révélation
+    // en cours → `revealing`) sortait avant de fermer : le pop-up restait alors
+    // affiché PAR-DESSUS la réponse, impossible à voir. Bug signalé.
     setGiveUpConfirm(false);
+    // Déjà révélé ou révélation en cours : le nom est (ou sera) à l'écran tout
+    // seul, rien d'autre à faire — surtout pas re-remettre la série à zéro.
+    if (over || revealing) return;
     setStreak(0);
     setWon(false);
     setLastEarned(0);
