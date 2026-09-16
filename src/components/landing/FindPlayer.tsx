@@ -670,6 +670,7 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
     setStreak(0);
     setWon(false);
     setLastEarned(0);
+    setShowCareer(true);
     setOver(true);
   }
 
@@ -702,14 +703,6 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
   // déduction reste entière, et aucun clic ne peut plus coûter la manche.
   function revealOneClue() {
     setCluesShown(n => Math.min(deviClues.length, n + 1));
-  }
-
-  // 🏳️ Abandonner : dévoile la réponse (fin de manche, série remise à zéro).
-  function giveUp() {
-    setStreak(0);
-    setWon(false);
-    setShowCareer(true);
-    setOver(true);
   }
 
   // Signaler une erreur de parcours sur le joueur mystère en cours (table bb_reports).
