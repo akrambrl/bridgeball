@@ -129,9 +129,16 @@ values ('p4','vice','pont',-450, date_trunc('month', now()) + interval '2 days')
 insert into public.bb_pseudos (player_id, pseudo) values
   ('pcap','assidu'), ('pref','quinze'), ('pbottom','dernier');
 
--- RÈGLE A — MEILLEURS JOURS. `pcap` joue 20 jours, `pref` en joue 15, au même
--- niveau. Au-delà de K=15 jours, jouer encore ne rapporte rien : les deux doivent
--- finir à ÉGALITÉ de points (15 000 bruts), ce qui prouve le plafond des jours.
+-- RÈGLE A + PLANCHER (section 4bis) — `pcap` joue 20 jours, `pref` en joue 15,
+-- au même niveau. TOUS ces scores sont insérés ICI, AVANT que le fichier (et
+-- donc le trigger du plancher) n'existe : c'est exactement la situation de
+-- « night » en production — des jours déjà cumulés SOUS L'ANCIENNE règle, au
+-- moment où la migration ponctuelle de la section 4bis s'applique.
+--   • Rule A seule plafonnerait pcap à 15 000 (K=15), comme pref.
+--   • Le PLANCHER fige pcap à son total ILLIMITÉ (20 000, tous les 20 jours) au
+--     moment de la migration : il ne doit JAMAIS redescendre à 15 000.
+--   • pref, qui n'a que 15 jours, n'a pas d'excédent : plancher == plafond de
+--     rule A (15 000), aucune différence visible pour lui.
 insert into public.bb_scores (player_id, player_name, mode, score, created_at)
 select 'pcap','assidu','pont',1000,
        date_trunc('month', now()) + (d || ' days')::interval + interval '12 hours'
@@ -142,7 +149,15 @@ select 'pref','quinze','pont',1000,
   from generate_series(0, 14) as d;
 
 -- RÈGLE B — BONUS DE RATTRAPAGE. `pbottom` ne joue qu'UN jour, un mode, à la
--- référence : 1000 points bruts. Loin du sommet (15 000), le bonus doit rehausser
--- ses points AFFICHÉS au-dessus de 1000 sans jamais le faire passer devant.
+-- référence : 1000 points bruts. Loin du sommet (20 000, désormais planché par
+-- pcap), le bonus doit rehausser ses points AFFICHÉS au-dessus de 1000 sans
+-- jamais le faire passer devant.
 insert into public.bb_scores (player_id, player_name, mode, score, created_at)
 values ('pbottom','dernier','pont',1000, date_trunc('month', now()) + interval '12 hours');
+
+-- `ptrigger` N'A AUCUN SCORE ICI, volontairement : il ne joue qu'APRÈS que le
+-- fichier (et donc le trigger du plancher) a été appliqué — voir sql-essai.mjs.
+-- Sans historique préalable, son plancher ne peut venir QUE du trigger, jamais
+-- de la migration ponctuelle : c'est ce qui isole le test du trigger de celui
+-- de la migration.
+insert into public.bb_pseudos (player_id, pseudo) values ('ptrigger','nouveau');
