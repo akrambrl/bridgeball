@@ -145,37 +145,51 @@ const CONTROLES = [
     attendu: (v) => Number(v) > 0,
     dire: (v) => "p1 totalise " + v + " points" },
 
-  { nom: "règle A — au-delà de K=15 jours, jouer plus ne rapporte rien",
-    // pcap joue 20 jours à 1000/jour. Sans plafond de jours il totaliserait
-    // 20 000 ; avec les 15 meilleurs jours, exactement 15 000. Et comme il est en
-    // tête, le bonus de rattrapage vaut 1 : la valeur est donc lisible telle quelle.
-    sql: "select points from public.bb_classement_courant() where player_id='pcap'",
+  { nom: "règle A seule (sans plancher) plafonnerait pcap à 15 000",
+    // Vérité de la fonction ISOLÉE, sans la migration du plancher : pcap joue
+    // 20 jours à 1000/jour, K=15 → exactement 15 000 bruts. C'est la valeur que
+    // rule A donnerait à un joueur qui n'aurait JAMAIS eu de plancher.
+    sql: "select public.bb_points_bruts_topk('pcap', to_char(now(), 'YYYY-MM'))",
     attendu: (v) => Number(v) === 15000,
-    dire: (v) => "pcap (20 jours joués) → " + v + " points (15 meilleurs jours × 1000)" },
+    dire: (v) => "bb_points_bruts_topk('pcap') → " + v + " (15 meilleurs jours × 1000)" },
 
-  { nom: "règle A — un joueur de 15 jours égale un joueur de 20 jours",
-    // La preuve que les jours ratés en début de mois ne condamnent plus : à
-    // niveau égal, quinze bons jours valent autant que vingt.
-    sql: `select (select points from public.bb_classement_courant() where player_id='pcap')
-               = (select points from public.bb_classement_courant() where player_id='pref')`,
+  { nom: "plancher (4bis) — pcap garde son ANCIEN total (20 000), pas le plafond de rule A",
+    // pcap a 20 jours DÉJÀ JOUÉS avant que le fichier (et le plancher) existent —
+    // exactement la situation de « night » en production. La migration ponctuelle
+    // a dû figer son plancher à l'ancien total ILLIMITÉ (20 000), et
+    // bb_classement_mois doit afficher CE total, pas les 15 000 de rule A seule.
+    sql: "select points from public.bb_classement_courant() where player_id='pcap'",
+    attendu: (v) => Number(v) === 20000,
+    dire: (v) => "pcap affiché → " + v + " (20 000 attendus : le plancher tient, pas de recul)" },
+
+  { nom: "plancher (4bis) — un joueur sans excédent (pref, 15 jours) n'est pas gonflé",
+    // pref n'a que 15 jours : illimité == rule A == 15 000 en BRUT (avant bonus).
+    // Le plancher ne fait QUE protéger un excédent, jamais gonfler un joueur qui
+    // n'en a pas. On compare au brut, pas à `points` (qui inclut le bonus de
+    // rattrapage, normal puisque pref n'est pas en tête).
+    sql: `select public.bb_points_bruts_topk('pref', to_char(now(), 'YYYY-MM'))
+               = coalesce((select points from public.bb_classement_hwm
+                            where player_id='pref' and mois = to_char(now(), 'YYYY-MM')), 0)`,
     attendu: (v) => v === "t",
-    dire: (v) => "pcap (20 j) == pref (15 j) : " + v },
+    dire: (v) => "brut(pref) == plancher(pref) : " + v + " (aucun excédent à protéger)" },
 
   { nom: "règle B — le bonus de rattrapage rehausse le fond de tableau",
     // pbottom a 1000 points bruts (un jour, à la référence). Loin du sommet
-    // (15 000), le bonus doit le remonter au-dessus de 1000 — sans le faire
-    // passer devant, ce que vérifie le contrôle suivant.
+    // (20 000, planché par pcap), le bonus doit le remonter au-dessus de 1000 —
+    // sans le faire passer devant, ce que vérifie le contrôle suivant.
     sql: "select points from public.bb_classement_courant() where player_id='pbottom'",
     attendu: (v) => Number(v) > 1000 && Number(v) < 1500,
     dire: (v) => "pbottom : 1000 bruts → " + v + " affichés (bonus de remontée)" },
 
   { nom: "règle B — le bonus ne change AUCUN rang (fonction croissante)",
     // Le bas remonte à l'affichage mais ne double personne : on grimpe en jouant
-    // (règle A), pas grâce au bonus. pbottom reste sous pcap.
+    // (règle A) ou en ayant déjà un plancher plus haut, pas grâce au bonus seul.
+    // pbottom reste sous pcap.
     sql: `select (select points from public.bb_classement_courant() where player_id='pbottom')
                < (select points from public.bb_classement_courant() where player_id='pcap')`,
     attendu: (v) => v === "t",
     dire: (v) => "pbottom < pcap : " + v },
+
 ];
 
 /** Ce que le garde-fou doit REFUSER, et par quel indice. */
@@ -281,6 +295,50 @@ async function eprouver(typeScore) {
   if (!classementOuvert) bon = false;
   console.log((classementOuvert ? "✅ " : "❌ ") + "anon peut toujours lire le classement"
     + (classementOuvert ? "" : "  ← l'onglet Saison serait vide"));
+
+  // ── LE PLANCHER (4bis) NE DOIT ÊTRE ÉCRIVABLE QUE PAR SON TRIGGER ────────
+  // Même piège que xp_season en son temps : si anon peut écrire directement sur
+  // bb_classement_hwm, n'importe qui pose son propre plancher à 999 999 999 et
+  // ne redescend plus jamais — le plancher deviendrait le nouveau compteur
+  // falsifiable que ce fichier existe justement pour supprimer.
+  let hwmInterdit = false;
+  try {
+    await psql(["-c", "set role anon; update public.bb_classement_hwm "
+      + "set points = 999999999 where player_id = 'pcap'"], base);
+  } catch (e) { hwmInterdit = /permission denied|denied for/i.test(String(e.message)); }
+  if (!hwmInterdit) bon = false;
+  console.log((hwmInterdit ? "✅ " : "❌ ") + "anon ne peut pas écrire directement sur le plancher"
+    + (hwmInterdit ? "" : "  ← ÉCRIT : n'importe qui se pose à 999 999 999"));
+
+  // Mais anon doit pouvoir le LIRE : bb_classement_mois le lit sous son identité.
+  let hwmLisible = true;
+  try {
+    await psql(["-tAc", "set role anon; select points from public.bb_classement_hwm "
+      + "where player_id = 'pcap'"], base);
+  } catch { hwmLisible = false; }
+  if (!hwmLisible) bon = false;
+  console.log((hwmLisible ? "✅ " : "❌ ") + "anon peut lire le plancher"
+    + (hwmLisible ? "" : "  ← bb_classement_mois échouerait à le lire"));
+
+  // ── LE TRIGGER FIGE LE PLANCHER D'UN NOUVEAU JOUEUR, SANS AVANTAGE ───────
+  // ptrigger n'a AUCUN score avant l'application du fichier : son premier score
+  // arrive maintenant, alors que le trigger existe déjà. Sans historique à
+  // figer, son plancher ne peut venir QUE du trigger — et doit valoir
+  // EXACTEMENT rule A (1000, un seul jour), aucun bonus caché.
+  //
+  // Deux requêtes séparées, PAS une CTE insert+lecture combinée : un WITH qui
+  // insère puis relit une table modifiée par un trigger déclenché en chaîne
+  // (bb_scores → trigger → bb_classement_hwm) s'exécute sur l'instantané pris
+  // au DÉBUT de la requête, donc AVANT l'effet du trigger — la lecture aurait
+  // pu ne rien voir. Deux commandes distinctes n'ont pas ce piège.
+  await psql(["-c", "insert into public.bb_scores (player_id, mode, score) "
+    + "values ('ptrigger','pont',1000)"], base);
+  const planchTrigger = (await psql(["-tAc", "select points from public.bb_classement_hwm "
+    + "where player_id = 'ptrigger'"], base)).trim();
+  const okPlanchTrigger = Number(planchTrigger) === 1000;
+  if (!okPlanchTrigger) bon = false;
+  console.log((okPlanchTrigger ? "✅ " : "❌ ") + "le trigger fige le plancher d'un nouveau joueur : "
+    + planchTrigger + " (attendu 1000, posé par le trigger seul)");
 
   // ── SECTION 6, LA PLUS PIÉGEUSE ─────────────────────────────────────────
   // Elle est commentée dans le fichier (elle attend le déploiement) : on

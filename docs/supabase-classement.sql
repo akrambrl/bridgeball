@@ -254,13 +254,13 @@ $$;
 -- retardataires et le bas de tableau.
 --
 --  A) MEILLEURS JOURS. On ne somme plus tous les jours mais les K MEILLEURS
---     (K = 15, ~une demi-saison). Un joueur qui commence au milieu du mois et
---     joue bien ses quinze jours atteint le MÊME plafond qu'un joueur présent
---     tout le mois : les jours ratés en début de mois ne le condamnent plus.
---     Au-delà de quinze jours, jouer encore ne se cumule pas à l'infini — ce qui
---     remet nouveaux et réguliers à portée l'un de l'autre. C'est la moyenne des
---     bons jours qui prime, pas le simple fait d'avoir été là chaque jour.
---     Ce sont les POINTS BRUTS ci-dessous, et c'est EUX qui décident les rangs.
+--     (K = 15, ~une demi-saison, voir `bb_parametre_k`). Un joueur qui commence
+--     au milieu du mois et joue bien ses quinze jours atteint le MÊME plafond
+--     qu'un joueur présent tout le mois : les jours ratés en début de mois ne le
+--     condamnent plus. Au-delà de quinze jours, jouer encore ne se cumule pas à
+--     l'infini — ce qui remet nouveaux et réguliers à portée l'un de l'autre.
+--     C'est la moyenne des bons jours qui prime, pas le simple fait d'avoir été
+--     là chaque jour.
 --
 --  B) BONUS DE RATTRAPAGE. Par-dessus, plus un joueur est loin du 1er du mois,
 --     plus ses points affichés sont rehaussés (jusqu'à +50 % pour le fond de
@@ -270,15 +270,52 @@ $$;
 --     personne grâce au bonus ; il double en jouant (règle A). Le leader honnête
 --     reste leader.
 --
--- K et le bonus sont des constantes en tête de la fonction : les régler, c'est
--- relancer ce fichier (idempotent), sans redéploiement de l'app. Le classement
--- étant recalculé depuis les scores, tout changement s'applique rétroactivement.
+-- Le bonus est une constante en tête de la fonction : la régler, c'est relancer
+-- ce fichier (idempotent), sans redéploiement de l'app. K vit dans
+-- `bb_parametre_k()`, seule source de vérité (section 4bis en dépend aussi).
 --
 -- Les jours sont comptés en HEURE DE PARIS, comme le reste de l'app (la devinette
 -- du jour, les séries) : en UTC, une partie jouée à 23 h 30 tomberait le lendemain.
 --
 -- GOAT GRID (bb_gg_scores) est inclus et se normalise tout seul : la table porte
 -- `max_score`, donc le pourcentage de grille remplie est la mesure naturelle.
+--
+-- ── LE PLANCHER (section 4bis, définie juste en dessous) ────────────────────
+-- Le passage à la règle A a fait chuter, LE JOUR MÊME de son application, le
+-- total affiché de joueurs qui avaient plus de K jours cumulés sous l'ANCIENNE
+-- règle (tout le mois, sans plafond) — signalé en production le 17 septembre
+-- 2026. `bb_classement_hwm` empêche ça : les points affichés ne redescendent
+-- jamais sous le plus haut total déjà montré, exactement comme l'XP de toujours
+-- (`src/lib/xp.ts`) ne redescend jamais. `brut` ci-dessous calcule le total
+-- SELON LA RÈGLE A, et c'est seulement au moment de le combiner au plancher
+-- (`avec_plancher`) que le pire des deux mondes est écarté.
+--
+-- ⚠️ `bb_parametre_k()` et la table `bb_classement_hwm` sont donc créées ICI,
+-- AVANT `bb_classement_mois` : une fonction SQL valide l'EXISTENCE de ce
+-- qu'elle appelle dès sa création, pas seulement à l'exécution — les définir
+-- après aurait arrêté le fichier en 42883 (« function … does not exist »), et
+-- c'est exactement ce qui s'est produit en l'écrivant.
+create or replace function public.bb_parametre_k()
+returns int language sql immutable as $$ select 15 $$;
+
+create table if not exists public.bb_classement_hwm (
+  player_id text not null,
+  mois      text not null,
+  points    bigint not null default 0,
+  primary key (player_id, mois)
+);
+alter table public.bb_classement_hwm enable row level security;
+-- Lisible par l'app (bb_classement_mois la lit SOUS L'IDENTITÉ de l'appelant,
+-- comme le barème section 1 — sans ce droit l'onglet Saison tombe en erreur).
+-- Jamais modifiable directement : voir le revoke à la fin de la section 4bis.
+drop policy if exists p_hwm_select on public.bb_classement_hwm;
+do $$ begin
+  if exists (select 1 from pg_roles where rolname = 'anon') then
+    create policy p_hwm_select on public.bb_classement_hwm for select to anon using (true);
+    grant select on public.bb_classement_hwm to anon;
+  end if;
+end $$;
+
 create or replace function public.bb_classement_mois(p_mois text)
 returns table (
   player_id text,
@@ -288,9 +325,10 @@ returns table (
   modes     bigint
 ) language sql stable as $$
   with parametres as (
-    -- K = nombre de meilleurs jours retenus (règle A). Le bonus (règle B) plafonne
-    -- à +bonus_max pour le fond de tableau. Deux leviers, réglables ici.
-    select 15 as k, 0.5::numeric as bonus_max
+    -- Le bonus (règle B) plafonne à +bonus_max pour le fond de tableau. K (règle
+    -- A) vient de `bb_parametre_k()`, pas d'ici — une seule source de vérité,
+    -- partagée avec le plancher de la section 4bis.
+    select public.bb_parametre_k() as k, 0.5::numeric as bonus_max
   ),
   journalier as (
     -- Le meilleur score de chaque joueur, par jour de Paris et par mode.
@@ -331,22 +369,35 @@ returns table (
       from par_jour
   ),
   brut as (
-    -- Points BRUTS = somme des K meilleurs jours (règle A). C'est ce total qui
-    -- décide les rangs. `jours` reste le nombre TOTAL de jours joués (indicateur
-    -- de régularité affiché dans l'app), pas le nombre retenu.
+    -- Points BRUTS SELON LA RÈGLE A = somme des K meilleurs jours. `jours` reste
+    -- le nombre TOTAL de jours joués (indicateur de régularité affiché dans
+    -- l'app), pas le nombre retenu.
     select c.player_id,
            sum(c.pts_jour) filter (where c.rang_jour <= (select k from parametres))::bigint as pts_brut,
            count(distinct c.jour)::bigint as jours
       from classe c
      group by 1
   ),
+  -- Le plancher : le plus haut total déjà montré à ce joueur ce mois-ci (voir
+  -- section 4bis). `coalesce` à 0 pour un joueur jamais vu par le plancher —
+  -- son brut de la règle A s'applique alors tel quel, aucun plancher à lui
+  -- opposer.
+  avec_plancher as (
+    select b.player_id, b.jours,
+           greatest(b.pts_brut, coalesce(h.points, 0))::bigint as pts_brut
+      from brut b
+      left join public.bb_classement_hwm h
+        on h.player_id = b.player_id and h.mois = p_mois
+  ),
   modes_joues as (
     select player_id, count(distinct mode)::bigint as modes
       from journalier where pts > 0 group by 1
   ),
   sommet as (
-    -- Le meilleur total brut du mois : la référence du bonus de rattrapage.
-    select coalesce(max(pts_brut), 0)::numeric as top from brut
+    -- Le meilleur total (après plancher) du mois : la référence du bonus de
+    -- rattrapage. Basé sur `avec_plancher`, pas sur `brut` seul, pour que le
+    -- bonus de chacun se compare à ce qui est RÉELLEMENT affiché au 1er.
+    select coalesce(max(pts_brut), 0)::numeric as top from avec_plancher
   )
   select b.player_id,
          coalesce(p.pseudo, '?') as pseudo,
@@ -357,7 +408,7 @@ returns table (
                * greatest(0, so.top - b.pts_brut) / nullif(so.top, 0)))::bigint as points,
          b.jours,
          coalesce(m.modes, 0) as modes
-    from brut b
+    from avec_plancher b
     cross join parametres pr
     cross join sommet so
     left join public.bb_pseudos p on p.player_id = b.player_id
@@ -365,6 +416,154 @@ returns table (
    where b.pts_brut > 0
    order by points desc, b.jours desc, pseudo asc
 $$;
+
+
+-- ─── 4bis. LE PLANCHER : CE QUI EST DÉJÀ ATTEINT NE REDESCEND JAMAIS ────────
+-- Signalé en production le 17 septembre 2026 : le passage à la règle A a fait
+-- chuter le total affiché de « night » de 20 774 à 12 994 points, le jour même
+-- où le fichier a été rappliqué — il avait cumulé plus de K jours sous l'ANCIENNE
+-- règle (tous les jours du mois, sans plafond), et ces jours en trop ont cessé
+-- de compter d'un coup. Un total qui recule ressemble à une triche côté serveur,
+-- même quand la cause est un changement de barème légitime.
+--
+-- ── LA RÈGLE ─────────────────────────────────────────────────────────────
+-- 1. UNE SEULE FOIS, à l'application de cette section, on fige pour chaque
+--    joueur actif ce mois-ci son total SELON L'ANCIENNE RÈGLE (tous les jours,
+--    sans plafond de K) — c'est le pire cas qu'un changement de barème ne doit
+--    jamais faire redescendre.
+-- 2. ENSUITE, à CHAQUE score inséré, le plancher ne monte que selon la RÈGLE A
+--    (les K meilleurs jours) — jamais selon l'ancienne règle illimitée. Sinon
+--    un acharné qui joue son 20e jour referait grimper son plancher au-delà de
+--    ce que K meilleurs jours autorise, et on aurait tout simplement RECONSTRUIT
+--    l'ancien défaut (le retardataire à nouveau impossible à rattraper) —
+--    seulement décalé de quelques jours au lieu de disparaître.
+--
+-- Le résultat : le plancher protège le total déjà vu AUJOURD'HUI, mais toute
+-- CROISSANCE FUTURE suit la même règle A que tout le monde, retardataires
+-- compris.
+--
+-- ── CE N'EST PAS UN COMPTEUR RÉOUVERT À LA TRICHE ───────────────────────────
+-- La seule écriture possible sur `bb_classement_hwm` vient du trigger
+-- ci-dessous, déclenché par une insertion RÉELLE dans `bb_scores` — donc déjà
+-- filtrée par `bb_scores_garde` (bornes, cadence, quota, section 2). `anon` n'a
+-- aucun droit d'écriture direct sur cette table (revoke plus bas) : impossible
+-- d'y poser 999 999 999 comme sur l'ancien `xp_season`.
+--
+-- `bb_parametre_k()` et la table `bb_classement_hwm` sont définies plus haut,
+-- juste avant `bb_classement_mois` — voir la remarque à cet endroit.
+
+-- Le total d'un joueur selon la RÈGLE A (les K meilleurs jours), pour un mois
+-- donné. Même logique que la CTE `brut` de `bb_classement_mois`, isolée ici
+-- pour être appelée PAR JOUEUR depuis le trigger de mise à jour du plancher.
+create or replace function public.bb_points_bruts_topk(p_player_id text, p_mois text)
+returns bigint language sql stable as $$
+  with journalier as (
+    select (s.created_at at time zone 'Europe/Paris')::date as jour,
+           public.bb_points_normalises(s.mode, max(s.score)::numeric) as pts
+      from public.bb_scores s
+     where s.player_id = p_player_id
+       and to_char(s.created_at at time zone 'Europe/Paris', 'YYYY-MM') = p_mois
+     group by 1, s.mode
+    union all
+    select (g.created_at at time zone 'Europe/Paris')::date as jour,
+           least(1000, greatest(0, round(1000.0 * max(g.score)
+                 / nullif(max(g.max_score), 0))))::int as pts
+      from public.bb_gg_scores g
+     where g.player_id = p_player_id
+       and to_char(g.created_at at time zone 'Europe/Paris', 'YYYY-MM') = p_mois
+     group by 1
+  ),
+  par_jour as (
+    select jour, sum(pts) as pts_jour from journalier where pts > 0 group by 1
+  ),
+  classe as (
+    select pts_jour, row_number() over (order by pts_jour desc, jour) as rang_jour
+      from par_jour
+  )
+  select coalesce(sum(pts_jour) filter (where rang_jour <= public.bb_parametre_k()), 0)::bigint
+    from classe
+$$;
+
+-- Le total d'un joueur selon L'ANCIENNE RÈGLE (tous les jours, sans plafond).
+-- Sert UNIQUEMENT à la migration ponctuelle ci-dessous, jamais au trigger
+-- courant — voir « LA RÈGLE » plus haut pour pourquoi les deux ne doivent pas
+-- se confondre.
+create or replace function public.bb_points_bruts_illimites(p_player_id text, p_mois text)
+returns bigint language sql stable as $$
+  with journalier as (
+    select (s.created_at at time zone 'Europe/Paris')::date as jour,
+           public.bb_points_normalises(s.mode, max(s.score)::numeric) as pts
+      from public.bb_scores s
+     where s.player_id = p_player_id
+       and to_char(s.created_at at time zone 'Europe/Paris', 'YYYY-MM') = p_mois
+     group by 1, s.mode
+    union all
+    select (g.created_at at time zone 'Europe/Paris')::date as jour,
+           least(1000, greatest(0, round(1000.0 * max(g.score)
+                 / nullif(max(g.max_score), 0))))::int as pts
+      from public.bb_gg_scores g
+     where g.player_id = p_player_id
+       and to_char(g.created_at at time zone 'Europe/Paris', 'YYYY-MM') = p_mois
+     group by 1
+  )
+  select coalesce(sum(pts), 0)::bigint
+    from (select jour, sum(pts) as pts from journalier where pts > 0 group by 1) par_jour
+$$;
+
+-- Le trigger qui fait monter le plancher : après CHAQUE score inséré (donc déjà
+-- passé par bb_scores_garde), on relit le total RÈGLE A du joueur pour ce mois
+-- et on ne garde que le plus grand des deux. SECURITY DEFINER : c'est lui qui a
+-- le droit d'écrire sur bb_classement_hwm, pas anon — voir le revoke plus bas.
+-- `set search_path` fixe : une fonction security definer sans ça est
+-- détournable en posant un objet de même nom dans un schéma placé avant public.
+create or replace function public.bb_classement_hwm_maj()
+returns trigger language plpgsql security definer set search_path = public as $$
+declare
+  m text := to_char(new.created_at at time zone 'Europe/Paris', 'YYYY-MM');
+  b bigint;
+begin
+  b := public.bb_points_bruts_topk(new.player_id, m);
+  insert into public.bb_classement_hwm (player_id, mois, points)
+  values (new.player_id, m, b)
+  on conflict (player_id, mois) do update
+    set points = greatest(bb_classement_hwm.points, excluded.points);
+  return null;
+end $$;
+
+drop trigger if exists bb_classement_hwm_trg on public.bb_scores;
+create trigger bb_classement_hwm_trg
+  after insert on public.bb_scores
+  for each row execute function public.bb_classement_hwm_maj();
+
+-- ── LA MIGRATION UNE FOIS, POUR LE MOIS EN COURS ────────────────────────────
+-- Fige le plancher de CHAQUE joueur ayant marqué ce mois-ci à son total SELON
+-- L'ANCIENNE RÈGLE (illimitée), évalué à l'instant où ce fichier est appliqué.
+-- Idempotent (`greatest`) : le rejouer ne fait jamais redescendre un plancher
+-- déjà posé, et n'a d'effet que sur le mois EN COURS — les mois déjà clôturés
+-- n'ont pas besoin de plancher.
+insert into public.bb_classement_hwm (player_id, mois, points)
+select s.player_id,
+       to_char(now() at time zone 'Europe/Paris', 'YYYY-MM'),
+       public.bb_points_bruts_illimites(s.player_id,
+         to_char(now() at time zone 'Europe/Paris', 'YYYY-MM'))
+  from (
+    select distinct player_id from public.bb_scores
+     where to_char(created_at at time zone 'Europe/Paris', 'YYYY-MM')
+         = to_char(now() at time zone 'Europe/Paris', 'YYYY-MM')
+  ) s
+on conflict (player_id, mois) do update
+  set points = greatest(bb_classement_hwm.points, excluded.points);
+
+-- ── ANON NE PEUT PAS ÉCRIRE DIRECTEMENT SUR LE PLANCHER ─────────────────────
+-- Même piège que la section 6 pour bb_pseudos : Supabase accorde par défaut
+-- l'INSERT/UPDATE/DELETE de table à `anon` sur tout le schéma public. Sans ce
+-- retrait, n'importe qui pourrait poser son propre plancher à 999 999 999 —
+-- exactement le défaut que ce fichier corrige déjà une fois pour xp_season.
+do $$ begin
+  if exists (select 1 from pg_roles where rolname = 'anon') then
+    revoke insert, update, delete on public.bb_classement_hwm from anon;
+  end if;
+end $$;
 
 -- Raccourci pour l'app : le mois EN COURS, heure de Paris.
 create or replace function public.bb_classement_courant()
