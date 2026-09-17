@@ -86,16 +86,26 @@ create table public.bb_seasons (
   ended_at       timestamptz
 );
 
--- Le rôle que Supabase donne au navigateur. Les politiques RLS et les `revoke`
--- du fichier le visent nommément ; sans lui, ces sections seraient sautées et
--- l'essai ne prouverait rien de la sécurité.
+-- Les deux rôles que Supabase donne au client. `anon` sert la clé publique
+-- nue ; `authenticated` sert les sessions de connexion anonyme
+-- (docs/supabase-auth-anonyme.sql) — et `sbFetch` (LePont.jsx) préfère CE
+-- second jeton dès qu'il existe, donc la plupart des appels réels tournent
+-- sous `authenticated`, pas `anon`. Les deux reçoivent ICI les mêmes
+-- privilèges par défaut que Supabase accorde à l'un comme à l'autre sur le
+-- schéma public — sans ce second rôle, l'essai ne peut PAS reproduire le
+-- défaut découvert le 17 septembre 2026 : une policy `to anon` seul rend une
+-- table invisible pour `authenticated`, silencieusement, et rien dans les
+-- contrôles ne l'aurait vu.
 do $$ begin
   if not exists (select 1 from pg_roles where rolname = 'anon') then
     create role anon nologin;
   end if;
+  if not exists (select 1 from pg_roles where rolname = 'authenticated') then
+    create role authenticated nologin;
+  end if;
 end $$;
-grant usage on schema public to anon;
-grant select, insert, update on all tables in schema public to anon;
+grant usage on schema public to anon, authenticated;
+grant select, insert, update on all tables in schema public to anon, authenticated;
 
 
 -- ─── DE QUOI FAIRE UN CLASSEMENT ────────────────────────────────────────────
