@@ -4317,7 +4317,7 @@ export const PLAYERS = [
   { name:"Akieme", clubs:["Sevilla Atlético", "Almería", "Eibar", "Reims"], diff:"expert", nationalities:["Espagne"], positions:["defenseur"], birthYear:1997 },
   { name:"Mauricio Martínez", clubs:["Defensa y Justicia", "Argentinos Juniors", "Sarmiento"], diff:"expert", nationalities:["Argentine"], positions:["milieu"], birthYear:1993 },
   { name:"Carlos González", clubs:["Cerro Porteño", "Querétaro", "Tigres", "Pachuca", "Atlas", "Estudiantes Tecos", "Newell's"], diff:"expert", nationalities:["Paraguay"], positions:["attaquant"] },
-  { name:"Jordan Siebatcheu", clubs:["Reims", "Châteauroux", "Rennes", "Young Boys", "Union Berlin", "Borussia Mönchengladbach"], diff:"expert", nationalities:["États-Unis"], positions:["attaquant"] , birthYear:1996 },
+  { name:"Jordan Siebatcheu", clubs:["Reims", "Châteauroux", "Rennes", "Young Boys", "Union Berlin", "Borussia Mönchengladbach", "Greuther Fürth"], diff:"expert", nationalities:["États-Unis"], positions:["attaquant"] , birthYear:1996 },
   { name:"Salvador Ichazo", clubs:["Defensor Sporting", "Atlanta United", "Sport Recife", "Independiente Medellín"], diff:"expert", nationalities:["Uruguay"], positions:["gardien"], birthYear:1992 },
   { name:"Bright Osayi-Samuel", clubs:["Blackpool", "QPR", "Fenerbahce", "Birmingham City"], diff:"expert", nationalities:["Nigeria"], positions:["defenseur"] , birthYear:1997 },
   { name:"Alexis Castro", clubs:["Tigre", "San Lorenzo", "Defensa y Justicia", "Tijuana", "Colón", "Tigre", "Nacional", "Estudiantes"], diff:"expert", nationalities:["Argentine"], positions:["milieu"] , birthYear:1994 },
