@@ -97,7 +97,16 @@ jobs:
           distribution: temurin
           java-version: "21"
 
+      # `packages` : PAR DÉFAUT l'action installe `tools platform-tools`. Google a
+      # retiré le paquet `tools` (l'ancien SDK Manager monolithique) du dépôt —
+      # il ne sert de toute façon pas à un build Gradle, qui ne dépend que de
+      # `platform-tools` + les plateformes/build-tools que `variables.gradle`
+      # demande. Sans cette ligne, l'action échoue à l'installer et le job
+      # s'arrête avant même de synchroniser Capacitor. Marché tel quel le
+      # 1er septembre 2026 ; cassé depuis côté Google, pas côté repo.
       - uses: android-actions/setup-android@v3
+        with:
+          packages: "platform-tools"
 
       - name: Synchroniser Capacitor
         run: npx cap sync android
