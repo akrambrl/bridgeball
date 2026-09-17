@@ -118,13 +118,23 @@ on conflict (mode) do update
 
 alter table public.bb_modes_bareme enable row level security;
 -- Lisible par l'app (elle peut vouloir afficher le barème), jamais modifiable.
--- Conditionnel : le rôle `anon` existe toujours sur Supabase, mais pas sur un
--- Postgres nu — et ce fichier doit pouvoir être rejoué ailleurs pour être testé,
--- ce qui est exactement comme il a été validé.
+-- Conditionnel : les deux rôles existent toujours ENSEMBLE sur Supabase, mais
+-- pas forcément sur un Postgres nu — et ce fichier doit pouvoir être rejoué
+-- ailleurs pour être testé, ce qui est exactement comme il a été validé.
+--
+-- ⚠️ `anon` ET `authenticated` : `bb_classement_mois` n'est pas SECURITY
+-- DEFINER, elle lit ce barème SOUS L'IDENTITÉ de l'appelant — et `sbFetch`
+-- (LePont.jsx) préfère le jeton de session dès qu'il existe
+-- (docs/supabase-auth-anonyme.sql), donc la plupart des appels tournent sous
+-- `authenticated`. Une policy `anon` seul rendait ce barème invisible pour
+-- `authenticated`, donc `bb_points_normalises` retombait à 0 pour ce rôle —
+-- une partie de ce qui a fait croire à un « bug » de classement le 17
+-- septembre 2026 (même défaut que docs/supabase-rls.sql).
 drop policy if exists p_bareme_select on public.bb_modes_bareme;
 do $$ begin
-  if exists (select 1 from pg_roles where rolname = 'anon') then
-    create policy p_bareme_select on public.bb_modes_bareme for select to anon using (true);
+  if exists (select 1 from pg_roles where rolname = 'anon')
+     and exists (select 1 from pg_roles where rolname = 'authenticated') then
+    create policy p_bareme_select on public.bb_modes_bareme for select to anon, authenticated using (true);
     -- Le GRANT en plus de la politique, et pas seulement la politique : une
     -- politique RLS n'accorde aucun privilège, elle ne fait que filtrer ce que
     -- le privilège autorise déjà. Sur Supabase le grant vient des privilèges par
@@ -132,7 +142,7 @@ do $$ begin
     -- `bb_classement_mois` n'est pas en SECURITY DEFINER : elle lit ce barème
     -- SOUS L'IDENTITÉ de l'appelant, donc sans ce droit l'onglet Saison tombe
     -- en erreur au lieu de s'afficher. L'écrire ici rend le fichier autonome.
-    grant select on public.bb_modes_bareme to anon;
+    grant select on public.bb_modes_bareme to anon, authenticated;
   end if;
 end $$;
 
@@ -308,11 +318,23 @@ alter table public.bb_classement_hwm enable row level security;
 -- Lisible par l'app (bb_classement_mois la lit SOUS L'IDENTITÉ de l'appelant,
 -- comme le barème section 1 — sans ce droit l'onglet Saison tombe en erreur).
 -- Jamais modifiable directement : voir le revoke à la fin de la section 4bis.
+--
+-- ⚠️ `anon` ET `authenticated` : `sbFetch` (LePont.jsx) préfère le jeton de
+-- session dès qu'il existe (docs/supabase-auth-anonyme.sql), donc la plupart
+-- des appels tournent sous `authenticated`, pas `anon`. Une policy `anon` seul
+-- rend la table INVISIBLE pour `authenticated` — silencieusement, sans erreur —
+-- et le plancher ne s'applique alors jamais pour un joueur connecté : `pts_brut`
+-- de `avec_plancher` retombe à la valeur SANS plancher pour ce rôle. C'est
+-- exactement le défaut qui a fait croire à un « bug » le 17 septembre 2026 (même
+-- défaut que docs/supabase-rls.sql, découvert par ce signalement).
+-- Les deux rôles sont vérifiés ENSEMBLE : `to anon, authenticated` échoue tout
+-- entier si l'un des deux manque (ex. un Postgres nu sans `authenticated`).
 drop policy if exists p_hwm_select on public.bb_classement_hwm;
 do $$ begin
-  if exists (select 1 from pg_roles where rolname = 'anon') then
-    create policy p_hwm_select on public.bb_classement_hwm for select to anon using (true);
-    grant select on public.bb_classement_hwm to anon;
+  if exists (select 1 from pg_roles where rolname = 'anon')
+     and exists (select 1 from pg_roles where rolname = 'authenticated') then
+    create policy p_hwm_select on public.bb_classement_hwm for select to anon, authenticated using (true);
+    grant select on public.bb_classement_hwm to anon, authenticated;
   end if;
 end $$;
 
@@ -554,14 +576,19 @@ select s.player_id,
 on conflict (player_id, mois) do update
   set points = greatest(bb_classement_hwm.points, excluded.points);
 
--- ── ANON NE PEUT PAS ÉCRIRE DIRECTEMENT SUR LE PLANCHER ─────────────────────
+-- ── NI ANON NI AUTHENTICATED NE PEUVENT ÉCRIRE DIRECTEMENT SUR LE PLANCHER ──
 -- Même piège que la section 6 pour bb_pseudos : Supabase accorde par défaut
--- l'INSERT/UPDATE/DELETE de table à `anon` sur tout le schéma public. Sans ce
--- retrait, n'importe qui pourrait poser son propre plancher à 999 999 999 —
--- exactement le défaut que ce fichier corrige déjà une fois pour xp_season.
+-- l'INSERT/UPDATE/DELETE de table à `anon` ET À `authenticated` sur tout le
+-- schéma public. Un revoke qui n'aurait visé qu'`anon` laisserait n'importe
+-- quelle session authentifiée (la plupart des joueurs, voir plus haut) poser
+-- son propre plancher à 999 999 999 — exactement le défaut que ce fichier
+-- corrige déjà une fois pour xp_season.
 do $$ begin
   if exists (select 1 from pg_roles where rolname = 'anon') then
     revoke insert, update, delete on public.bb_classement_hwm from anon;
+  end if;
+  if exists (select 1 from pg_roles where rolname = 'authenticated') then
+    revoke insert, update, delete on public.bb_classement_hwm from authenticated;
   end if;
 end $$;
 

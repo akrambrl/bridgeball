@@ -320,6 +320,39 @@ async function eprouver(typeScore) {
   console.log((hwmLisible ? "✅ " : "❌ ") + "anon peut lire le plancher"
     + (hwmLisible ? "" : "  ← bb_classement_mois échouerait à le lire"));
 
+  // ── LE VRAI BUG DE PRODUCTION DU 17 SEPTEMBRE 2026, REJOUÉ ICI ───────────
+  // `sbFetch` (LePont.jsx) préfère le jeton de session dès qu'il existe : la
+  // plupart des joueurs appellent donc SOUS LE RÔLE `authenticated`, pas
+  // `anon`. Une policy `to anon` seul sur bb_classement_hwm (ou bb_modes_bareme)
+  // rend ces tables invisibles pour `authenticated`, silencieusement — et
+  // « night » voyait 12 994 points en jeu contre 45 511 en lisant directement
+  // l'API avec la clé publique. Ce contrôle réclame le MÊME total pour les deux
+  // rôles ; sans le fix, `authenticated` retomberait à la valeur SANS plancher
+  // (pts_brut de rule A seule, bien en dessous de 20000).
+  // `.pop()` et non `.trim()` seul : `set role` produit sa propre ligne « SET »
+  // avant le résultat de la requête suivante, dans la même sortie psql.
+  const parAnon = (await psql(["-tAc", "set role anon; select points from "
+    + "public.bb_classement_courant() where player_id='pcap'"], base)).trim().split("\n").pop();
+  const parAuth = (await psql(["-tAc", "set role authenticated; select points from "
+    + "public.bb_classement_courant() where player_id='pcap'"], base)).trim().split("\n").pop();
+  const okMemeTotal = parAnon === parAuth && Number(parAnon) === 20000;
+  if (!okMemeTotal) bon = false;
+  console.log((okMemeTotal ? "✅ " : "❌ ") + "anon et authenticated voient le MÊME total pour pcap : "
+    + parAnon + " (anon) vs " + parAuth + " (authenticated)"
+    + (okMemeTotal ? "" : "  ← RÉGRESSION DU 17/09 : authenticated ne voit pas le plancher"));
+
+  // authenticated non plus ne peut pas écrire directement sur le plancher —
+  // même garde-fou que pour anon, testé pour le second rôle qui compte vraiment
+  // en production.
+  let hwmInterditAuth = false;
+  try {
+    await psql(["-c", "set role authenticated; update public.bb_classement_hwm "
+      + "set points = 999999999 where player_id = 'pcap'"], base);
+  } catch (e) { hwmInterditAuth = /permission denied|denied for/i.test(String(e.message)); }
+  if (!hwmInterditAuth) bon = false;
+  console.log((hwmInterditAuth ? "✅ " : "❌ ") + "authenticated ne peut pas non plus écrire sur le plancher"
+    + (hwmInterditAuth ? "" : "  ← ÉCRIT : n'importe quelle session connectée se pose à 999 999 999"));
+
   // ── LE TRIGGER FIGE LE PLANCHER D'UN NOUVEAU JOUEUR, SANS AVANTAGE ───────
   // ptrigger n'a AUCUN score avant l'application du fichier : son premier score
   // arrive maintenant, alors que le trigger existe déjà. Sans historique à
