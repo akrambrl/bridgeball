@@ -3017,7 +3017,7 @@ export const PLAYERS = [
   { name:"Óscar Romero", clubs:["Cerro Porteño", "Racing Club", "Sampdoria", "Shanghai Shenhua", "Boca Juniors", "Huracán"], diff:"expert", nationalities:["Paraguay"], positions:["milieu"] , birthYear:1992 },
   { name:"Sebastiano Luperto", clubs:["SSC Napoli", "Empoli FC", "Cagliari Calcio"], diff:"expert", nationalities:["Italie"], positions:["defenseur"] , birthYear:1996 },
   { name:"Josh Brownhill", clubs:["Preston", "Barnsley", "Bristol City", "Burnley", "Al Shabab"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"] , birthYear:1995 },
-  { name:"Deiver Machado", clubs:["Millonarios", "Lanús", "Gent", "Toulouse", "Lens"], diff:"expert", nationalities:["Colombie"], positions:["defenseur"] , birthYear:1993 },
+  { name:"Deiver Machado", clubs:["Millonarios", "Lanús", "Gent", "Toulouse", "Lens", "Nantes"], diff:"expert", nationalities:["Colombie"], positions:["defenseur"] , birthYear:1993 },
   { name:"Niclas Eliasson", clubs:["Falkenbergs", "AIK", "Norrköping", "Bristol City", "Nîmes", "AEK Athens"], diff:"expert", nationalities:["Suède"], positions:["milieu"] , birthYear:1995 },
   { name:"Elías Gómez", clubs:["Rosario Central", "Sportivo Las Heras", "Defensa y Justicia", "Argentinos Juniors", "River Plate", "Vélez Sarsfield"], diff:"expert", nationalities:["Argentine"], positions:["defenseur"] , birthYear:1994 },
   { name:"Sebastián Driussi", clubs:["River Plate", "Zenit", "Austin FC"], diff:"expert", nationalities:["Argentine"], positions:["attaquant"] , birthYear:1996 },
