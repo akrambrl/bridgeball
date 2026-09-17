@@ -2476,7 +2476,11 @@ const GG_LIGUE_MAP = {
     "Nancy","Sochaux","Bastia","Caen","Valenciennes","Dijon","Guingamp","Amiens","Grenoble","Nîmes","Le Mans","Sedan","Istres","Arles-Avignon","Boulogne","Laval","Paris FC"],
   "premier_league": ["Manchester United","Manchester City","Liverpool","Chelsea","Arsenal","Tottenham","Newcastle","Aston Villa","West Ham","Brighton","Crystal Palace","Brentford","Fulham","Wolverhampton","Everton","Leeds United","Leicester City","Southampton","Bournemouth","Nottingham Forest"],
   "liga": ["Real Madrid","Barcelona","Atletico Madrid","Sevilla","Valencia","Real Sociedad","Athletic Bilbao","Villarreal","Real Betis","Celta Vigo","Espanyol","Getafe","Osasuna","Mallorca","Cádiz","Almería","Girona","Las Palmas","Granada"],
-  "serie_a": ["Juventus FC","Inter Milan","AC Milan","AS Roma","SSC Napoli","Atalanta BC","SS Lazio","ACF Fiorentina","Torino FC","Bologna FC","Sassuolo","Udinese Calcio","Empoli FC","Genoa CFC","Cagliari Calcio","Hellas Verona","Lecce","Salernitana","Frosinone","Monza"],
+  "serie_a": ["Juventus FC","Inter Milan","AC Milan","AS Roma","SSC Napoli","Atalanta BC","SS Lazio","ACF Fiorentina","Torino FC","Bologna FC","Sassuolo","Udinese Calcio","Empoli FC","Genoa CFC","Cagliari Calcio","Hellas Verona","Lecce","Salernitana","Frosinone","Monza",
+    // Como : promu en Serie A pour la saison 2024-25. Son absence faisait
+    // échouer à tort "Manchester United × A joué en Serie A" pour Varane, qui a
+    // rejoint Como en juillet 2024 (signalements bb_reports #192/#193).
+    "Como"],
   "bundesliga": ["Bayern Munich","Borussia Dortmund","RB Leipzig","Bayer Leverkusen","Eintracht Frankfurt","Wolfsburg","Werder Bremen","Hoffenheim","Borussia Mönchengladbach","Köln","Union Berlin","Stuttgart","Mainz","Augsburg","Hertha Berlin","Schalke","Hamburg"],
 };
 

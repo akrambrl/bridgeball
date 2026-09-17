@@ -7,6 +7,63 @@ revendication revient et on refait la vérification à zéro.
 
 ---
 
+## Passe du 17 septembre 2026 — signalements 174 → 214 (41 lignes)
+
+Répartition : 22 `gg_missed`, 13 `chain_missed`, 4 `wrong_player_club`,
+2 `reveal_bug`. Vérification croisée Transfermarkt/Wikipedia (5 lots en
+parallèle par type de signalement).
+
+### Corrigés (6)
+
+| id | Revendication | Correction |
+|----|---------------|-----------|
+| 175 | Christopher Operi × Le Havre (Mercato) | club manquant, ajouté entre Auxerre et Istanbul Başakşehir (2022-2025) |
+| 182, 183 | Azor Matusiwa × Rennes (Mercato) | club manquant, ajouté entre Reims et Ipswich Town (transfert 22/01/2024) |
+| 177 | Jens Odgaard × Inter Milan (pont) | club en trop — seulement en jeunes/Primavera, 0 match pro ; retiré |
+| 206 | Christos Tzolis × Arsenal, attaquant (GOAT Grid) | fiché milieu, c'est un ailier/attaquant ; poste corrigé |
+| 192, 193 | Manchester United × A joué en Serie A, Varane (GOAT Grid) | pas une fiche fausse : Como (Serie A depuis 2024-25) manquait à `GG_LIGUE_MAP.serie_a` dans LePont.jsx |
+
+Trouvé au passage (hors périmètre du signalement, mais fiche fausse confirmée) :
+Savinho listait à tort "Tottenham", où il n'a jamais joué — retiré.
+
+### Rejetés (35)
+
+Aucune modification. Motifs principaux :
+- **Confusions entre joueurs similaires/homonymes** : Damien Delaney × Sevilla
+  (c'est Thomas Delaney qui y a joué, id 195) ; Jorginho × Lyon (c'est Lloris,
+  id 202) ; Samu Castillejo × Porto (c'est Samuel Omorodion dit "Samu", id 214) ;
+  Sávio (fiche 1974) × Man City (c'est Savinho, déjà fiché séparément, id 212) ;
+  Khephren Thuram × Inter Milan (c'est son frère Marcus, id 210) ; Carlos Bacca ×
+  Torino (confusion avec Immobile/Rodríguez, id 199).
+- **Transferts jamais conclus, seulement des rumeurs** : Tevez → AC Milan
+  (négociations avortées 2012, jamais signé, id 191).
+- **Nationalité sportive confondue avec l'origine du nom** : Jaminton Campaz est
+  colombien, pas argentin (id 201) ; Federico Macheda est italien, pas argentin
+  (id 208).
+- **Trophée gagné par un club/pays différent, ou hors période du joueur** :
+  Tomori parti de Chelsea avant leur sacre LDC 2021 (id 196) ; Inzaghi vainqueur
+  CDM 2006 mais jamais à l'Inter (à l'AC Milan, id 209) ; Disasi finaliste perdant
+  CDM 2022 (id 205) ; Camavinga débute en Bleu après la CDM 2018 (id 213) ; Porro
+  déjà reconnu vainqueur CDM mais jamais passé par Arsenal (id 200).
+- **Poste réel différent** : Declan Rice jamais à Tottenham (id 180) ; Harvey
+  Elliott est milieu, pas défenseur (id 194) ; Danilo Pereira jamais à la Juventus
+  (id 188) ; Upamecano n'a jamais joué en pro en France, débuts en Autriche
+  (id 190) ; Di Lorenzo jamais à l'AC Milan (id 198) ; Batistuta et Soulé bien
+  argentins mais jamais à l'AC Milan — Inter ou Roma, pas Milan (id 203, 204) ;
+  Wesley Fofana jamais à Man City (id 207).
+- **Club déjà correct côté fiche** (le pont ne produirait déjà pas cette
+  réponse) : Wilmots (id 178), Reyes (id 179), Cédric Soares (id 181), Belhadj ×
+  Sedan déjà présent (id 174).
+- **Bug d'affichage, pas une erreur de données** : Sterling (id 184) et Tevez
+  (id 185) — parcours vérifiés exacts, le pop-up « Donner la réponse » restait
+  affiché par-dessus la réponse (corrigé par la PR #844, avant ces deux
+  signalements du 11 septembre).
+- Autres clubs jamais joués : Rangers (Østigård, id 176), club colombien (Jesé,
+  id 186), Bačka Topola (Immobile, id 189), Lille (Lloris, id 197), Everton
+  (Lindegaard, id 211).
+
+---
+
 ## Passe du 7 septembre 2026 — signalements 60 → 173 (114 lignes)
 
 Passe déclenchée par l'audit des parties jouées. Répartition : 81 `gg_missed`,
