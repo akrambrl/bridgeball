@@ -177,12 +177,14 @@ est le bon défaut.
   donc la langue de repli du bundle. La traduire demande un
   `fr.lproj/InfoPlist.strings` ajouté aux ressources du projet — à faire depuis
   Xcode, pas à la main dans le `.xcodeproj`.
-- **`SKAdNetworkItems` n'est pas renseigné.** Google publie une liste d'une
-  centaine d'identifiants de réseaux à coller dans le plist ; elle améliore
-  l'attribution, donc le revenu. Elle n'a pas été ajoutée ici parce qu'elle
-  change régulièrement et qu'une liste recopiée de mémoire serait fausse : à
-  prendre à la source, sur la page « Configure SKAdNetwork » d'AdMob, le jour de
-  la mise en production.
+- **`SKAdNetworkItems` est renseigné** (50 identifiants dans `Info.plist`,
+  y compris celui de Google lui-même, `cstr6suwn9.skadnetwork`) — cette section
+  affirmait le contraire, c'était périmé. Comme le projet n'utilise QUE le SDK
+  Google direct (`@capacitor-community/admob`, pas de médiation Meta/Unity/
+  AppLovin/ironSource/Vungle), cette liste couvre ce qui compte. À RAFRAÎCHIR de
+  temps en temps depuis la page « Configure SKAdNetwork » d'AdMob si une
+  médiation est ajoutée un jour, ou si Google en retire/ajoute — voir le
+  commentaire au-dessus de la liste dans le plist.
 
 ## 🔑 Le premier IPA, dans l'ordre
 
