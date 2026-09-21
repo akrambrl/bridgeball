@@ -1,0 +1,53 @@
+# Notification « tu n'as pas joué depuis 3 jours ».
+#
+# Une fois par jour, comme la devinette : l'inactivité se mesure en jours, pas
+# en minutes, donc rien ne justifie un sondage plus serré. L'heure choisie
+# suit le même raisonnement documenté dans docs/NOTIFICATIONS.md pour la
+# devinette (midi à Paris) — décalée de quelques minutes pour ne pas partager
+# exactement le même créneau de cron que ce workflow-là.
+#
+# Mêmes secrets que les deux autres circuits : SB_SERVICE_KEY et
+# VAPID_PRIVATE_KEY. Demande aussi une colonne en base — voir
+# docs/NOTIFICATIONS.md.
+name: Notification relance inactivité
+
+on:
+  schedule:
+    - cron: "15 9 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Simuler sans rien envoyer ni marquer"
+        type: boolean
+        default: true
+
+# Deux exécutions simultanées marqueraient et enverraient en double.
+concurrency:
+  group: notif-inactivite
+  cancel-in-progress: false
+
+jobs:
+  envoyer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Installer les dépendances
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+        run: npm ci
+
+      - name: Envoyer
+        env:
+          SB_SERVICE_KEY: ${{ secrets.SB_SERVICE_KEY }}
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+          VAPID_SUBJECT: https://goatfc.fr
+        run: |
+          npx tsx scripts/notif-inactivite.mjs \
+            ${{ (github.event_name == 'workflow_dispatch' && inputs.dry_run) && '--dry-run' || '' }}

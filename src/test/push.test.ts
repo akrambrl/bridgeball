@@ -7,7 +7,9 @@
 import { describe, it, expect } from "vitest";
 import { abonnementUtilisable, dedupeAbonnements, decisionEnvoi, decisionFinale, tagDuJour,
          demandesANotifier, accrocheAmis, grouperPar, resumerCorps, repartitionHotes, pushARetransmettre, abonnementMortSelonCorps, corpsCleDUnAutreServeur,
-         ciblerAndroid, servaitParApple } from "../lib/push.js";
+         ciblerAndroid, servaitParApple,
+         acceptationsANotifier, accrocheAmiAccepte, derniereActivitePar, joueursARelancer,
+         accrocheRelanceInactivite, parisMoisCourant, evolutionPodium, accrocheDechu } from "../lib/push.js";
 
 const abo = (id: string, endpoint: string, created_at: string) =>
   ({ id, endpoint, p256dh: "cle", auth: "auth", created_at });
@@ -576,5 +578,179 @@ describe("ciblerAndroid", () => {
   it("une liste vide ou absente ne casse pas", () => {
     expect(ciblerAndroid([]).cibles.length).toBe(0);
     expect(ciblerAndroid(null as any).cibles.length).toBe(0);
+  });
+});
+
+describe("acceptationsANotifier", () => {
+  const acc = (id: string, o: any = {}) => ({
+    id, from_id: "f", from_name: "Machin", to_id: "t", to_name: "Toi",
+    status: "accepted", accepted_notified_at: null, ...o,
+  });
+
+  it("retient une acceptation jamais annoncée", () => {
+    expect(acceptationsANotifier([acc("1")]).map((a: any) => a.id)).toEqual(["1"]);
+  });
+
+  it("ignore une acceptation déjà annoncée", () => {
+    expect(acceptationsANotifier([acc("1", { accepted_notified_at: "2026-08-11T12:00:00Z" })])).toEqual([]);
+  });
+
+  it("supporte une table vide", () => {
+    expect(acceptationsANotifier([])).toEqual([]);
+    expect(acceptationsANotifier(null as any)).toEqual([]);
+  });
+});
+
+describe("accrocheAmiAccepte", () => {
+  const a = (nom: string | null) => ({ to_name: nom });
+
+  it("nomme la personne quand il n'y en a qu'une", () => {
+    expect(accrocheAmiAccepte([a("Karim")]).corps).toContain("Karim");
+    expect(accrocheAmiAccepte([a("Karim")]).corps).toContain("accepté");
+  });
+
+  it("regroupe plusieurs acceptations en UNE notification", () => {
+    const r = accrocheAmiAccepte([a("Karim"), a("Léa"), a("Sam")]);
+    expect(r.titre).toContain("3");
+    expect(r.corps).toContain("Karim");
+    expect(r.corps).toContain("2 autres");
+  });
+});
+
+describe("derniereActivitePar", () => {
+  it("garde la plus RÉCENTE date par joueur", () => {
+    const r = derniereActivitePar([
+      { player_id: "a", created_at: "2026-08-01T00:00:00Z" },
+      { player_id: "a", created_at: "2026-08-05T00:00:00Z" },
+      { player_id: "b", created_at: "2026-08-02T00:00:00Z" },
+    ]);
+    const parJoueur = new Map(r.map((x: any) => [x.player_id, x.derniere]));
+    expect(parJoueur.get("a")).toBe(new Date("2026-08-05T00:00:00Z").toISOString());
+    expect(parJoueur.get("b")).toBe(new Date("2026-08-02T00:00:00Z").toISOString());
+  });
+
+  it("ignore les dates illisibles et les lignes sans joueur", () => {
+    const r = derniereActivitePar([
+      { player_id: "a", created_at: "n'importe quoi" },
+      { player_id: null, created_at: "2026-08-01T00:00:00Z" },
+    ]);
+    expect(r).toEqual([]);
+  });
+
+  it("supporte une liste vide ou absente", () => {
+    expect(derniereActivitePar([])).toEqual([]);
+    expect(derniereActivitePar(null as any)).toEqual([]);
+  });
+});
+
+describe("joueursARelancer", () => {
+  const J = 86400000;
+  const maintenant = Date.parse("2026-08-15T12:00:00Z");
+  const act = (player_id: string, joursAvant: number) =>
+    ({ player_id, derniere: new Date(maintenant - joursAvant * J).toISOString() });
+
+  it("relance un joueur inactif depuis 3 jours ou plus, jamais relancé", () => {
+    const r = joueursARelancer([act("a", 3)], [], maintenant, 3 * J);
+    expect(r.map((x) => x.player_id)).toEqual(["a"]);
+  });
+
+  it("laisse tranquille un joueur inactif depuis moins de 3 jours", () => {
+    const r = joueursARelancer([act("a", 2)], [], maintenant, 3 * J);
+    expect(r).toEqual([]);
+  });
+
+  it("ne relance pas deux fois pour le MÊME épisode d'inactivité", () => {
+    // Le garde qui empêche la relance quotidienne à vie : sans lui, quelqu'un
+    // qui ne revient jamais recevrait « tu nous manques » chaque jour, pour
+    // toujours — le sondage tourne tous les jours, pas une fois par épisode.
+    const pseudos = [{ player_id: "a", relance_inactivite_at: new Date(maintenant - 1 * J).toISOString() }];
+    const r = joueursARelancer([act("a", 3)], pseudos, maintenant, 3 * J);
+    expect(r).toEqual([]);
+  });
+
+  it("relance à NOUVEAU si le joueur a rejoué depuis la dernière relance", () => {
+    // La dernière relance date d'AVANT la dernière partie connue : le joueur
+    // est revenu, puis reparti — un nouvel épisode d'inactivité, une nouvelle
+    // relance légitime.
+    const derniereActivite = maintenant - 3 * J;
+    const pseudos = [{ player_id: "a", relance_inactivite_at: new Date(derniereActivite - 10 * J).toISOString() }];
+    const r = joueursARelancer(
+      [{ player_id: "a", derniere: new Date(derniereActivite).toISOString() }], pseudos, maintenant, 3 * J);
+    expect(r.map((x) => x.player_id)).toEqual(["a"]);
+  });
+
+  it("supporte des listes vides ou absentes", () => {
+    expect(joueursARelancer([], [], maintenant, 3 * J)).toEqual([]);
+    expect(joueursARelancer(null as any, null as any, maintenant, 3 * J)).toEqual([]);
+  });
+});
+
+describe("accrocheRelanceInactivite", () => {
+  it("mentionne les 3 jours et rend toujours le même message", () => {
+    const a = accrocheRelanceInactivite();
+    expect(a.corps).toContain("3 jours");
+    expect(accrocheRelanceInactivite()).toEqual(a);
+  });
+});
+
+describe("parisMoisCourant", () => {
+  it("rend le mois au format YYYY-MM, en heure de Paris", () => {
+    // 23h59 UTC le 31 août est déjà le 1er septembre à Paris (été, UTC+2).
+    expect(parisMoisCourant(Date.parse("2026-08-31T23:59:00Z"))).toBe("2026-09");
+    expect(parisMoisCourant(Date.parse("2026-08-15T10:00:00Z"))).toBe("2026-08");
+  });
+});
+
+describe("evolutionPodium", () => {
+  const c = (player_id: string, rang: number, pseudo = player_id) => ({ player_id, pseudo, rang });
+
+  it("ne signale personne quand le podium n'a pas changé", () => {
+    const actuel = [c("a", 1), c("b", 2), c("c", 3)];
+    const precedent = [{ player_id: "a", rang: 1 }, { player_id: "b", rang: 2 }, { player_id: "c", rang: 3 }];
+    expect(evolutionPodium(actuel, precedent)).toEqual([]);
+  });
+
+  it("ne signale PAS un joueur qui change de rang en restant dans le podium", () => {
+    // Passer de 2e à 1er, c'est progresser, pas « perdre sa place ».
+    const actuel = [c("b", 1), c("a", 2), c("c", 3)];
+    const precedent = [{ player_id: "a", rang: 1 }, { player_id: "b", rang: 2 }, { player_id: "c", rang: 3 }];
+    expect(evolutionPodium(actuel, precedent)).toEqual([]);
+  });
+
+  it("signale un joueur sorti du podium, avec qui occupe désormais son rang", () => {
+    const actuel = [c("x", 1), c("y", 2), c("a", 3)];
+    const precedent = [{ player_id: "a", rang: 1 }, { player_id: "b", rang: 2 }, { player_id: "c", rang: 3 }];
+    const r = evolutionPodium(actuel, precedent);
+    expect(r.map((d: any) => d.player_id).sort()).toEqual(["b", "c"]);
+    const b = r.find((d: any) => d.player_id === "b");
+    expect(b.ancienRang).toBe(2);
+    expect(b.nouvelOccupant.player_id).toBe("y");
+  });
+
+  it("rend nouvelOccupant nul si le rang laissé n'est plus occupé", () => {
+    const actuel = [c("x", 1)];
+    const precedent = [{ player_id: "a", rang: 1 }, { player_id: "b", rang: 2 }];
+    const r = evolutionPodium(actuel, precedent);
+    const b = r.find((d: any) => d.player_id === "b");
+    expect(b.nouvelOccupant).toBeNull();
+  });
+
+  it("supporte des listes vides ou absentes", () => {
+    expect(evolutionPodium([], [])).toEqual([]);
+    expect(evolutionPodium(null as any, null as any)).toEqual([]);
+  });
+});
+
+describe("accrocheDechu", () => {
+  it("nomme le nouvel occupant quand il est connu", () => {
+    const a = accrocheDechu({ ancienRang: 2, nouvelOccupant: { player_id: "y", pseudo: "Karim" } });
+    expect(a.corps).toContain("Karim");
+    expect(a.corps).toContain("2e");
+  });
+
+  it("reste générique si le nouvel occupant est inconnu", () => {
+    const a = accrocheDechu({ ancienRang: 1, nouvelOccupant: null });
+    expect(a.corps).not.toContain("null");
+    expect(a.corps).toContain("1ère");
   });
 });

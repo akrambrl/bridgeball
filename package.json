@@ -19,6 +19,8 @@
     "sql:essai": "node scripts/sql-essai.mjs",
     "sql:pseudo": "node scripts/sql-pseudo-unique.essai.mjs",
     "notif:amis:sec": "tsx scripts/notif-amis.mjs --dry-run",
+    "notif:inactivite:sec": "tsx scripts/notif-inactivite.mjs --dry-run",
+    "notif:podium:sec": "tsx scripts/notif-podium.mjs --dry-run",
     "ios:sync": "npm run build && npx cap sync ios",
     "ios:open": "npx cap open ios",
     "coque": "node scripts/coque-native.mjs",
