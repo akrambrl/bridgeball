@@ -1004,7 +1004,7 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
 
         {/* Saisie */}
         {!over && !revealing && (
-          <div style={{ position: "relative", marginBottom: 8 }}>
+          <div style={{ position: "relative", marginBottom: 8, display: "flex", gap: 8, alignItems: "stretch" }}>
             <input
               ref={inputRef}
               value={input}
@@ -1017,10 +1017,28 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
               }}
               placeholder={tr("Rechercher un joueur…", "Search a player…", "Spieler suchen…", "Cerca un giocatore…", "Buscar um jogador…","Buscar un jugador…")}
               autoComplete="off"
-              style={{ width: "100%", boxSizing: "border-box", padding: "14px 60px 14px 16px", borderRadius: G.rayon, border: G.trait, boxShadow: G.ombre, background: G.nuit, color: "#fff", fontSize: 15, fontWeight: 700, outline: "none", scrollMarginTop: "calc(64px + env(safe-area-inset-top))" }}
+              style={{ flex: 1, minWidth: 0, boxSizing: "border-box", padding: "14px 16px", borderRadius: G.rayon, border: G.trait, boxShadow: G.ombre, background: G.nuit, color: "#fff", fontSize: 15, fontWeight: 700, outline: "none", scrollMarginTop: "calc(64px + env(safe-area-inset-top))" }}
             />
             {!daily && (
-            <button {...handlersDeTap(randomGuess)} title={tr("Joueur au hasard", "Random player", "Zufälliger Spieler", "Giocatore casuale", "Jogador aleatório","Jugador al azar")} aria-label={tr("Joueur au hasard", "Random player", "Zufälliger Spieler", "Giocatore casuale", "Jogador aleatório","Jugador al azar")} style={{ position: "absolute", right: 7, top: 7, bottom: 7, width: 46, borderRadius: G.rayonS, border: G.traitFin, background: G.projecteur, color: G.encre, fontSize: 20, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "2px 2px 0 " + G.encre }}>🎲</button>
+            // PAS handlersDeTap ici, à la différence des suggestions juste en
+            // dessous : ce gestionnaire existe pour EMPÊCHER la perte de focus
+            // (garder le clavier ouvert, voir lib/tap.js), exactement l'inverse
+            // de ce qu'il faut au dé. Le dé propose une réponse et la grille de
+            // résultat apparaît sous la saisie — un clavier resté ouvert la
+            // cache. Un `onClick` simple laisse le comportement par défaut du
+            // navigateur (l'input perd le focus), et le `blur()` explicite le
+            // garantit même si le champ était déjà focus avant le tap.
+            //
+            // Séparé de la saisie (bouton à CÔTÉ, plus par-dessus en absolu) :
+            // un bouton posé sur l'input restait perçu comme en faisant partie,
+            // ce qui laissait croire qu'il pouvait rouvrir le clavier — signalé.
+            <button
+              type="button"
+              onClick={() => { randomGuess(); try { inputRef.current?.blur(); } catch { /* noop */ } }}
+              title={tr("Joueur au hasard", "Random player", "Zufälliger Spieler", "Giocatore casuale", "Jogador aleatório","Jugador al azar")}
+              aria-label={tr("Joueur au hasard", "Random player", "Zufälliger Spieler", "Giocatore casuale", "Jogador aleatório","Jugador al azar")}
+              style={{ flexShrink: 0, width: 46, borderRadius: G.rayonS, border: G.traitFin, background: G.projecteur, color: G.encre, fontSize: 20, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "2px 2px 0 " + G.encre }}
+            >🎲</button>
             )}
             {suggestions.length > 0 && (
               <div style={{ position: "absolute", top: "100%", left: 0, right: 0, zIndex: 10, marginTop: 6, background: G.nuit, border: G.trait, borderRadius: G.rayon, maxHeight: "min(50vh, 320px)", overflowY: "auto", WebkitOverflowScrolling: "touch" as any, boxShadow: G.ombre }}>
