@@ -4,10 +4,13 @@
 //
 // Les quatre endroits, et ce que chacun porte :
 //
-//   src/lib/pub.ts                          ID_REEL_RECOMPENSE — le BLOC (avec /)
+//   src/lib/pub.ts                          ID_REEL_RECOMPENSE, ID_REEL_BANNIERE — les BLOCS (avec /)
 //   ios/App/App/Info.plist                  GADApplicationIdentifier — l'APP (avec ~)
 //   android/…/AndroidManifest.xml           APPLICATION_ID — l'APP (avec ~)
 //   public/app-ads.txt                      l'identifiant d'ÉDITEUR (pub-…)
+//
+// `ID_REEL_BANNIERE` a rejoint `ID_REEL_RECOMPENSE` dans le même fichier :
+// deux blocs, une seule règle de cohérence, voir plus bas.
 //
 // Les trois façons de se rater, toutes silencieuses :
 //
@@ -67,17 +70,19 @@ function idAppAndroid(): string {
  * des constantes privées de pub.ts, et les lire au texte résiste aussi à une
  * réécriture du module.
  */
-function blocsReels(): { android: string; ios: string } {
+function blocsReelsNommes(nomConstante: string): { android: string; ios: string } {
   const s = lire("src", "lib", "pub.ts");
-  const bloc = s.match(/const ID_REEL_RECOMPENSE\s*=\s*\{([\s\S]*?)\}/);
-  expect(bloc, "ID_REEL_RECOMPENSE introuvable dans src/lib/pub.ts").toBeTruthy();
+  const bloc = s.match(new RegExp("const " + nomConstante + "\\s*=\\s*\\{([\\s\\S]*?)\\}"));
+  expect(bloc, nomConstante + " introuvable dans src/lib/pub.ts").toBeTruthy();
   const champ = (nom: string) => {
     const m = bloc![1].match(new RegExp(nom + '\\s*:\\s*"([^"]*)"'));
-    expect(m, `champ ${nom} absent de ID_REEL_RECOMPENSE`).toBeTruthy();
+    expect(m, `champ ${nom} absent de ${nomConstante}`).toBeTruthy();
     return m![1].trim();
   };
   return { android: champ("android"), ios: champ("ios") };
 }
+const blocsReels = () => blocsReelsNommes("ID_REEL_RECOMPENSE");
+const blocsReelsBanniere = () => blocsReelsNommes("ID_REEL_BANNIERE");
 
 /** L'identifiant d'éditeur (les 16 chiffres) porté par un ID d'app ou de bloc. */
 const editeurDe = (id: string): string | null => {
@@ -87,8 +92,9 @@ const editeurDe = (id: string): string | null => {
 
 describe("AdMob — les quatre endroits restent cohérents", () => {
   const blocs = blocsReels();
+  const bannieres = blocsReelsBanniere();
   const apps = { ios: idAppIos(), android: idAppAndroid() };
-  const enProduction = Boolean(blocs.ios || blocs.android);
+  const enProduction = Boolean(blocs.ios || blocs.android || bannieres.ios || bannieres.android);
 
   it("les identifiants d'application ont la forme d'un identifiant d'application", () => {
     // C'est ce test qui attrape l'inversion `~` / `/`, la seule erreur de cette
@@ -100,7 +106,7 @@ describe("AdMob — les quatre endroits restent cohérents", () => {
   });
 
   it("les identifiants de bloc réels, s'ils sont posés, ont la forme d'un bloc", () => {
-    for (const [plateforme, id] of Object.entries(blocs)) {
+    for (const [plateforme, id] of Object.entries({ ...blocs, ...bannieres })) {
       if (!id) continue;
       expect(id, `${plateforme} : « ${id} » n'est pas un ID de bloc (il faut un /)`)
         .toMatch(FORME_BLOC);
@@ -108,9 +114,17 @@ describe("AdMob — les quatre endroits restent cohérents", () => {
   });
 
   it("on est soit entièrement en test, soit entièrement en production", () => {
-    // Les quatre valeurs, ramenées à une seule question : est-ce l'éditeur de
-    // test de Google ? Un mélange signifie qu'une des quatre modifications a été
-    // oubliée — et c'est exactement l'état qui ne se voit pas à l'usage.
+    // Les quatre valeurs D'ORIGINE, ramenées à une seule question : est-ce
+    // l'éditeur de test de Google ? Un mélange signifie qu'une des quatre
+    // modifications a été oubliée — et c'est exactement l'état qui ne se voit
+    // pas à l'usage.
+    //
+    // LA BANNIÈRE N'EN FAIT PAS PARTIE, volontairement : contrairement à ces
+    // quatre-là, posés ensemble pour le lancement, elle arrive APRÈS coup —
+    // la récompensée et les deux identifiants d'app sont déjà en production
+    // au moment où ce test est écrit, et la bannière doit pouvoir rester en
+    // test un moment sans que ça casse ce contrôle-ci. Voir le test dédié
+    // juste en dessous.
     const etat = {
       "bloc iOS": blocs.ios ? "production" : "test",
       "bloc Android": blocs.android ? "production" : "test",
@@ -120,6 +134,18 @@ describe("AdMob — les quatre endroits restent cohérents", () => {
     };
     const distincts = new Set(Object.values(etat));
     expect(distincts.size, "état mixte : " + JSON.stringify(etat, null, 2)).toBe(1);
+  });
+
+  it("la bannière : soit les deux blocs sont réels, soit aucun ne l'est", () => {
+    // Le même défaut que « n'en faire que la moitié », mais confiné à la
+    // bannière seule : un bloc réel avec l'autre resté en test servirait de
+    // vraies pubs sur une seule plateforme, sans qu'aucun message ne le dise.
+    const etat = {
+      "bannière iOS": bannieres.ios ? "production" : "test",
+      "bannière Android": bannieres.android ? "production" : "test",
+    };
+    const distincts = new Set(Object.values(etat));
+    expect(distincts.size, "bannière en état mixte : " + JSON.stringify(etat, null, 2)).toBe(1);
   });
 
   it("app-ads.txt annonce le même éditeur que les identifiants de l'app", () => {
@@ -144,7 +170,10 @@ describe("AdMob — les quatre endroits restent cohérents", () => {
       .toMatch(/^google\.com,\s*pub-\d{16},\s*DIRECT,\s*f08c47fec0942fa0$/);
 
     const editeurDeclare = google!.match(/pub-(\d{16})/)![1];
-    for (const [quoi, id] of Object.entries({ ...apps, "bloc ios": blocs.ios, "bloc android": blocs.android })) {
+    for (const [quoi, id] of Object.entries({
+      ...apps, "bloc ios": blocs.ios, "bloc android": blocs.android,
+      "bannière ios": bannieres.ios, "bannière android": bannieres.android,
+    })) {
       if (!id) continue;
       const e = editeurDe(id);
       if (!e) continue;
@@ -155,7 +184,12 @@ describe("AdMob — les quatre endroits restent cohérents", () => {
 
   it("en production, plus aucun identifiant de test ne subsiste", () => {
     if (!enProduction) return;
-    const partout = [...Object.values(apps), ...Object.values(blocs)].join(" ");
+    // Les valeurs de la bannière sont incluses ici même si elle reste en test
+    // (voir plus haut) : une chaîne VIDE ne contient jamais l'éditeur de
+    // test, donc ce contrôle ne force rien tant qu'elle n'est pas remplie —
+    // il ne fait qu'attraper un identifiant de test qui aurait été collé PAR
+    // ERREUR dans un champ censé être réel.
+    const partout = [...Object.values(apps), ...Object.values(blocs), ...Object.values(bannieres)].join(" ");
     expect(partout, "un identifiant de test de Google est resté")
       .not.toContain(EDITEUR_DE_TEST);
   });

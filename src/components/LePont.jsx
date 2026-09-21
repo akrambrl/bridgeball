@@ -14,7 +14,7 @@ import { G, posterText, posterTitre, posterLight, btn, fondCharte, areneCharte,
          retourStyle, retourCharte, fermerCharte, ligneCharte, pastilleCharte } from "../lib/charte.jsx";
 import { displayStreak } from "../lib/streak";
 import { estDisponible as pubDisponible, montrerRecompensee,
-         confidentialiteReprenable, ouvrirConfidentialite } from "../lib/pub";
+         confidentialiteReprenable, ouvrirConfidentialite, banniereVisible } from "../lib/pub";
 import { normNom, normCompactNom, normPhoneticNom, levenshteinNom, seuilFuzzy, fuzzyNom } from "../lib/nom";
 import { cadenceSalon } from "../lib/cadence";
 // Jours calendaires « heure de Paris » — découpage temporel du tableau de bord.
@@ -6931,6 +6931,17 @@ export default function LePont() {
     verifie();
     const t = setInterval(verifie, 700);
     return function(){ stop = true; clearInterval(t); };
+  }, [screen]);
+
+  // ── LA BANNIÈRE, EN BAS DE L'ACCUEIL SEULEMENT ─────────────────────────
+  // Discrète et jamais sollicitée, contrairement à la récompensée : elle
+  // suit l'écran affiché plutôt qu'un clic. Volontairement limitée à
+  // "home" pour ce premier déploiement — pas sur l'écran de jeu ni sur les
+  // écrans de fin, qui portent déjà le bouton de pub récompensée et où un
+  // second format ferait plus d'encombrement que de revenu. No-op hors
+  // coque native (`banniereVisible` le gère lui-même).
+  useEffect(function(){
+    void banniereVisible(screen === "home");
   }, [screen]);
 
   // ── AUTO-JOIN DEPUIS UN LIEN D'INVITATION ──────────────────────────────────
