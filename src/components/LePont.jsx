@@ -65,6 +65,11 @@ const duelFini = function(d){ return !!d && DUEL_FINI.indexOf(d.status) !== -1; 
 const SB_URL = "https://ialjlsrgcolocoaegzrc.supabase.co";
 const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhbGpsc3JnY29sb2NvYWVnenJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1MDM3NzksImV4cCI6MjA5MTA3OTc3OX0.-SU8anuPhnpoa-PYhIHQqrcuOBsHxdtBJKRZuiGcGwM";
 
+// Fiche App Store, en ligne depuis le 21 septembre 2026 — sert la bannière
+// d'install iOS ci-dessous, qui pointe vers le vrai store plutôt que vers le
+// mode d'emploi « écran d'accueil » une fois l'app native disponible.
+const APP_STORE_URL = "https://apps.apple.com/fr/app/goat-fc/id6802330074";
+
 
 // Code secret du tableau de bord privé : goatfc.fr/?stats=<CODE>
 const STATS_CODE = "akram-goat-2610";
@@ -14621,17 +14626,35 @@ export default function LePont() {
   );
 
   // ── BANNIÈRE DISCRÈTE D'INSTALL (iOS Safari / Android Chrome non installé) ──
-  // Reste visible en permanence pour les users qui n'ont pas encore installé
-  // Clic → ouvre le gros modal d'instructions
+  // Reste visible en permanence pour les users qui n'ont pas encore installé.
+  //
+  // Sur iOS, clic → App Store directement : depuis le 21 septembre 2026 l'app
+  // native y est en ligne, et c'est un vrai téléchargement en un geste plutôt
+  // que les quatre étapes manuelles du mode d'emploi PWA (Safari → Partager →
+  // Sur l'écran d'accueil → Ajouter) — sans compter que la native gagne de la
+  // pub AdMob que la PWA ne sert jamais. Un joueur qui a déjà ajouté la PWA à
+  // son écran d'accueil (`navigator.standalone`) voit encore cette bannière :
+  // ce n'est toujours pas l'app du store, et c'est justement elle qu'on veut
+  // lui faire migrer vers, pour la même raison.
+  //
+  // Ailleurs (Android non installé, via `deferredInstall`) → mode d'emploi PWA
+  // inchangé, en attendant que la fiche Play Store repasse l'examen Google.
   const installBanner = !isStandalone() && pseudoConfirmed && (isIOS() || deferredInstall) && (
-    <div onClick={function(){ installDismissedThisSession.current = false; setShowInstallPrompt(true); }} style={{position:"sticky",top:0,zIndex:40,margin:"0 -16px 12px",padding:"10px 16px",background:G.nuit,borderBottom:G.traitFin,cursor:"pointer",display:"flex",alignItems:"center",gap:10}}>
-      <span style={{fontSize:20,flexShrink:0}}>📲</span>
+    <div onClick={function(){
+      if (isIOS()) { window.open(APP_STORE_URL, "_blank"); return; }
+      installDismissedThisSession.current = false; setShowInstallPrompt(true);
+    }} style={{position:"sticky",top:0,zIndex:40,margin:"0 -16px 12px",padding:"10px 16px",background:G.nuit,borderBottom:G.traitFin,cursor:"pointer",display:"flex",alignItems:"center",gap:10}}>
+      <span style={{fontSize:20,flexShrink:0}}>{isIOS() ? "🍎" : "📲"}</span>
       <div style={{flex:1,minWidth:0}}>
         <div style={{fontSize:12,fontWeight:800,color:G.pelouseClaire,letterSpacing:.3,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
-          {tr("Installer GOAT FC","Install GOAT FC","GOAT FC installieren","Installa GOAT FC","Instalar GOAT FC","Instalar GOAT FC")}
+          {isIOS()
+            ? tr("GOAT FC est sur l'App Store","GOAT FC is on the App Store","GOAT FC ist im App Store","GOAT FC è sull'App Store","GOAT FC está na App Store","GOAT FC está en la App Store")
+            : tr("Installer GOAT FC","Install GOAT FC","GOAT FC installieren","Installa GOAT FC","Instalar GOAT FC","Instalar GOAT FC")}
         </div>
         <div style={{fontSize:10,color:"rgba(255,255,255,.55)",marginTop:1,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
-          {tr("Reçois les rappels et accède plus vite","Get daily reminders & faster access","Erhalte tägliche Erinnerungen & schnelleren Zugriff","Ricevi promemoria quotidiani e accesso più rapido","Receba lembretes diários e acesso mais rápido","Recibe recordatorios y entra más rápido")}
+          {isIOS()
+            ? tr("Téléchargement direct, sans passer par Safari","Direct download, no need for Safari","Direkter Download, kein Safari nötig","Download diretto, senza Safari","Download direto, sem precisar do Safari","Descarga directa, sin pasar por Safari")
+            : tr("Reçois les rappels et accède plus vite","Get daily reminders & faster access","Erhalte tägliche Erinnerungen & schnelleren Zugriff","Ricevi promemoria quotidiani e accesso più rapido","Receba lembretes diários e acesso mais rápido","Recibe recordatorios y entra más rápido")}
         </div>
       </div>
       <span style={{fontSize:18,color:G.pelouseClaire,flexShrink:0}}>→</span>
