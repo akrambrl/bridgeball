@@ -14641,6 +14641,14 @@ export default function LePont() {
   // Ailleurs (Android non installé, via `deferredInstall`) → mode d'emploi PWA
   // inchangé, garde `!isStandalone()` intacte, en attendant que la fiche Play
   // Store repasse l'examen Google.
+  //
+  // ── PLUS DE GARDE `pseudoConfirmed` ─────────────────────────────────────
+  // Elle vient de l'ancienne bannière PWA, où l'idée tenait : ne pas coller
+  // une invite à installer à quelqu'un qui n'a même pas encore essayé de
+  // jouer. Mais cette bannière-ci promet maintenant le VRAI téléchargement
+  // App Store, et un visiteur iPhone tout frais a justement intérêt à
+  // basculer vers la vraie app dès son arrivée, sans attendre d'avoir créé
+  // un pseudo sur le site.
   // ── LE STYLE : APLAT D'OR, PAS LE PANNEAU DE NUIT DES AUTRES LIGNES ────────
   // Toutes les lignes du profil (ligneCharte) sont sombres — exprès, pour que
   // CETTE bannière-là tranche : c'est une invite à agir, pas une entrée de
@@ -14653,7 +14661,7 @@ export default function LePont() {
   // Le reflet (`goat-shine`) est la seule animation : reprise telle quelle de
   // la classe déjà écrite pour « les bannières dégradées orange→or », posée
   // ici pour la première fois.
-  const installBanner = pseudoConfirmed && ((isIOS() && !isNative()) || (!isStandalone() && deferredInstall)) && (
+  const installBanner = ((isIOS() && !isNative()) || (!isStandalone() && deferredInstall)) && (
     <div onClick={function(){
       if (isIOS()) { window.open(APP_STORE_URL, "_blank"); return; }
       installDismissedThisSession.current = false; setShowInstallPrompt(true);
