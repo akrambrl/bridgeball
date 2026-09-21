@@ -6,12 +6,19 @@
 //     (bb_pseudos.xp). Après avoir agrégé bb_scores, le mobile écrase le score
 //     par `row.score = row.xp`, ajoute tous les joueurs qui ont de l'XP puis
 //     re-trie : le haut du tableau est donc exactement bb_pseudos trié par xp.
-//   • "saison" → XP du mois en cours (bb_pseudos.xp_season, filtré sur
-//     xp_season_month = mois courant).
-// Le desktop classait par meilleur score d'une partie (bb_scores) : d'où deux
-// classements totalement différents selon l'appareil. On reproduit ici les deux
-// requêtes du mobile. Toute modification doit rester alignée sur
-// loadLeaderboard côté mobile.
+//   • "saison" → RECALCULÉ PAR LE SERVEUR depuis bb_scores (RPC
+//     `bb_classement_courant`, voir docs/supabase-classement.sql). Cet onglet
+//     lisait autrefois `bb_pseudos.xp_season` — une colonne que le CLIENT
+//     écrivait lui-même (porte ouverte à la triche) et que LePont.jsx n'écrit
+//     plus du tout depuis la bascule au calcul serveur (17 septembre 2026,
+//     voir le commentaire sur addXp). La lire ici la montrait donc figée à 0
+//     pour quiconque n'avait pas déjà de l'XP de saison AVANT la bascule — un
+//     joueur signalé absent de l'onglet Saison alors qu'il avait joué tout le
+//     mois. Le desktop classait par ailleurs par meilleur score d'une partie
+//     (bb_scores) en mode global : d'où deux classements totalement différents
+//     selon l'appareil. On reproduit ici les requêtes RÉELLEMENT utilisées par
+//     le mobile aujourd'hui. Toute modification doit rester alignée sur
+//     loadLeaderboard côté mobile.
 
 import { getLang } from "./lang";
 
@@ -95,7 +102,6 @@ type PseudoRow = {
   player_id: string;
   pseudo: string | null;
   xp: number | null;
-  xp_season: number | null;
   country: string | null;
 };
 
@@ -103,39 +109,80 @@ type PseudoRow = {
 // NULL en premier côté Postgres, on ne peut donc pas se fier au `limit` seul.
 const FETCH_WINDOW = 300;
 
+type ClassementRow = {
+  player_id: string;
+  pseudo: string | null;
+  points: number | null;
+};
+
+/** Classement "saison" : points recalculés serveur, comme loadLeaderboard côté mobile. */
+async function fetchTopPlayersSaison(top: number): Promise<TopPlayer[]> {
+  const res = await fetch(SB_URL + "/rest/v1/rpc/bb_classement_courant", {
+    method: "POST",
+    headers: { apikey: SB_KEY, Authorization: "Bearer " + SB_KEY, "Content-Type": "application/json" },
+    body: "{}",
+  });
+  if (!res.ok) return [];
+  const rows: ClassementRow[] = await res.json();
+  if (!Array.isArray(rows)) return [];
+
+  const top50 = rows.filter((r) => r.player_id && (r.points || 0) > 0).slice(0, top);
+
+  // Le pays et l'XP (photo de profil) ne viennent pas du RPC — il ne renvoie
+  // que ce qui est vérifiable — mais de bb_pseudos, comme sur mobile.
+  let infos: Record<string, PseudoRow> = {};
+  try {
+    const ids = top50.map((r) => r.player_id).join(",");
+    if (ids) {
+      const p = await fetch(
+        SB_URL + "/rest/v1/bb_pseudos?select=player_id,xp,country&player_id=in.(" + encodeURIComponent(ids) + ")",
+        { headers: { apikey: SB_KEY, Authorization: "Bearer " + SB_KEY } }
+      );
+      if (p.ok) {
+        const rows2: PseudoRow[] = await p.json();
+        if (Array.isArray(rows2)) for (const r of rows2) infos[r.player_id] = r;
+      }
+    }
+  } catch { /* le classement s'affiche sans drapeau ni grade */ }
+
+  return top50.map((r, i) => ({
+    rank: i + 1,
+    pid: r.player_id,
+    name: r.pseudo || "?",
+    score: r.points || 0,
+    xp: infos[r.player_id]?.xp || 0,
+    country: infos[r.player_id]?.country || null,
+  }));
+}
+
 /**
  * Classement par XP, identique au mobile.
  * @param top nombre d'entrées renvoyées
- * @param mode "global" (XP cumulée, défaut) ou "saison" (XP du mois en cours)
+ * @param mode "global" (XP cumulée, défaut) ou "saison" (points recalculés serveur du mois en cours)
  */
 export async function fetchTopPlayers(top: number, mode: LbMode = "global"): Promise<TopPlayer[]> {
-  const seasonFilter =
-    mode === "saison" ? "&xp_season_month=eq." + getCurrentSeason().monthKey : "";
+  if (mode === "saison") return fetchTopPlayersSaison(top);
+
   const url =
     SB_URL +
-    "/rest/v1/bb_pseudos?select=player_id,pseudo,xp,xp_season,country&limit=" +
+    "/rest/v1/bb_pseudos?select=player_id,pseudo,xp,country&limit=" +
     FETCH_WINDOW +
-    "&order=" +
-    (mode === "saison" ? "xp_season" : "xp") +
-    ".desc" +
-    seasonFilter;
+    "&order=xp.desc";
 
   const res = await fetch(url, { headers: { apikey: SB_KEY, Authorization: "Bearer " + SB_KEY } });
   if (!res.ok) return [];
   const rows: PseudoRow[] = await res.json();
   if (!Array.isArray(rows)) return [];
 
-  const valueOf = (r: PseudoRow) => (mode === "saison" ? r.xp_season : r.xp) || 0;
-
   return rows
-    .filter((r) => r.player_id && valueOf(r) > 0)
-    .sort((a, b) => valueOf(b) - valueOf(a))
+    .filter((r) => r.player_id && (r.xp || 0) > 0)
+    .sort((a, b) => (b.xp || 0) - (a.xp || 0))
     .slice(0, top)
     .map((r, i) => ({
       rank: i + 1,
       pid: r.player_id,
       name: r.pseudo || "?",
-      score: valueOf(r),
+      score: r.xp || 0,
       xp: r.xp || 0,
       country: r.country || null,
     }));
