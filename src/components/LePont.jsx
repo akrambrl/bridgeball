@@ -14648,25 +14648,46 @@ export default function LePont() {
   // Ailleurs (Android non installé, via `deferredInstall`) → mode d'emploi PWA
   // inchangé, garde `!isStandalone()` intacte, en attendant que la fiche Play
   // Store repasse l'examen Google.
+  // ── LE STYLE : APLAT D'OR, PAS LE PANNEAU DE NUIT DES AUTRES LIGNES ────────
+  // Toutes les lignes du profil (ligneCharte) sont sombres — exprès, pour que
+  // CETTE bannière-là tranche : c'est une invite à agir, pas une entrée de
+  // menu parmi d'autres. L'or est LE fond de la charte (`G.or` = l'aplat du
+  // logo), donc rien de plus « voyant » dans ce vocabulaire ; le trait et
+  // l'ombre dure sont ceux de `btn`/`ligneCharte`, pour que l'objet reste
+  // reconnaissable comme un élément de LA charte et pas un encart étranger.
+  // Règle de la charte à respecter ici : SUR L'OR, SEULE L'ENCRE SE LIT — le
+  // titre et le sous-titre sont donc en `G.encre`, jamais en blanc/crème.
+  // Le reflet (`goat-shine`) est la seule animation : reprise telle quelle de
+  // la classe déjà écrite pour « les bannières dégradées orange→or », posée
+  // ici pour la première fois.
   const installBanner = pseudoConfirmed && ((isIOS() && !isNative()) || (!isStandalone() && deferredInstall)) && (
     <div onClick={function(){
       if (isIOS()) { window.open(APP_STORE_URL, "_blank"); return; }
       installDismissedThisSession.current = false; setShowInstallPrompt(true);
-    }} style={{position:"sticky",top:0,zIndex:40,margin:"0 -16px 12px",padding:"10px 16px",background:G.nuit,borderBottom:G.traitFin,cursor:"pointer",display:"flex",alignItems:"center",gap:10}}>
-      <span style={{fontSize:20,flexShrink:0}}>{isIOS() ? "🍎" : "📲"}</span>
-      <div style={{flex:1,minWidth:0}}>
-        <div style={{fontSize:12,fontWeight:800,color:G.pelouseClaire,letterSpacing:.3,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
+    }} style={{position:"sticky",top:0,zIndex:40,margin:"0 -16px 12px",padding:"12px 16px",
+      background:"linear-gradient(115deg,"+G.orSombre+" 0%,"+G.or+" 45%,"+G.orSombre+" 100%)",
+      borderBottom:G.trait,boxShadow:"0 4px 0 "+G.encre,cursor:"pointer",display:"flex",alignItems:"center",gap:12,
+      overflow:"hidden",isolation:"isolate"}}>
+      {/* Le reflet qui balaie l'aplat, en boucle lente : c'est lui qui fait
+          « vivant » plutôt que « posé là », sans réclamer d'attention en
+          continu comme le ferait un fond qui clignote. */}
+      <div className="goat-shine" aria-hidden="true" style={{position:"absolute",top:0,bottom:0,left:0,width:"45%",
+        background:"linear-gradient(100deg,transparent,rgba(255,255,255,.5),transparent)",
+        pointerEvents:"none",zIndex:0}}/>
+      <span style={{...pastilleCharte(G.nuit,38),position:"relative",zIndex:1}}>{isIOS() ? "🍎" : "📲"}</span>
+      <div style={{flex:1,minWidth:0,position:"relative",zIndex:1}}>
+        <div style={{...posterLight(16,G.encre),whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
           {isIOS()
             ? tr("GOAT FC est sur l'App Store","GOAT FC is on the App Store","GOAT FC ist im App Store","GOAT FC è sull'App Store","GOAT FC está na App Store","GOAT FC está en la App Store")
             : tr("Installer GOAT FC","Install GOAT FC","GOAT FC installieren","Installa GOAT FC","Instalar GOAT FC","Instalar GOAT FC")}
         </div>
-        <div style={{fontSize:10,color:"rgba(255,255,255,.55)",marginTop:1,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
+        <div style={{fontSize:11,fontWeight:700,color:"rgba(8,17,9,.7)",marginTop:2,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
           {isIOS()
             ? tr("Téléchargement direct, sans passer par Safari","Direct download, no need for Safari","Direkter Download, kein Safari nötig","Download diretto, senza Safari","Download direto, sem precisar do Safari","Descarga directa, sin pasar por Safari")
             : tr("Reçois les rappels et accède plus vite","Get daily reminders & faster access","Erhalte tägliche Erinnerungen & schnelleren Zugriff","Ricevi promemoria quotidiani e accesso più rapido","Receba lembretes diários e acesso mais rápido","Recibe recordatorios y entra más rápido")}
         </div>
       </div>
-      <span style={{fontSize:18,color:G.pelouseClaire,flexShrink:0}}>→</span>
+      <span style={{fontSize:20,color:G.encre,fontWeight:900,flexShrink:0,position:"relative",zIndex:1}}>→</span>
     </div>
   );
 
