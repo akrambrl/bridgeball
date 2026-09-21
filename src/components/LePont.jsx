@@ -14632,14 +14632,23 @@ export default function LePont() {
   // native y est en ligne, et c'est un vrai téléchargement en un geste plutôt
   // que les quatre étapes manuelles du mode d'emploi PWA (Safari → Partager →
   // Sur l'écran d'accueil → Ajouter) — sans compter que la native gagne de la
-  // pub AdMob que la PWA ne sert jamais. Un joueur qui a déjà ajouté la PWA à
-  // son écran d'accueil (`navigator.standalone`) voit encore cette bannière :
-  // ce n'est toujours pas l'app du store, et c'est justement elle qu'on veut
-  // lui faire migrer vers, pour la même raison.
+  // pub AdMob que la PWA ne sert jamais.
+  //
+  // ── LA PWA DÉJÀ INSTALLÉE EST LA CIBLE, PAS UNE EXCEPTION ──────────────────
+  // `isStandalone()` vaut vrai aussi bien pour la PWA ajoutée à l'écran
+  // d'accueil (`navigator.standalone`) que pour la vraie app native
+  // (`isNative()`) — c'est TOUT l'objet de cette fonction, écrit plus haut.
+  // Un premier jet de cette bannière gardait `!isStandalone()` comme garde
+  // commune aux deux plateformes : ça excluait purement et simplement tout
+  // joueur iPhone ayant déjà la PWA sur son écran d'accueil, qui est
+  // pourtant exactement le public qu'on veut faire basculer vers la native
+  // (ni l'un ni l'autre ne sert de pub AdMob avant ce déclic). Sur iOS, seule
+  // `isNative()` doit exclure — la PWA standalone reste concernée.
   //
   // Ailleurs (Android non installé, via `deferredInstall`) → mode d'emploi PWA
-  // inchangé, en attendant que la fiche Play Store repasse l'examen Google.
-  const installBanner = !isStandalone() && pseudoConfirmed && (isIOS() || deferredInstall) && (
+  // inchangé, garde `!isStandalone()` intacte, en attendant que la fiche Play
+  // Store repasse l'examen Google.
+  const installBanner = pseudoConfirmed && ((isIOS() && !isNative()) || (!isStandalone() && deferredInstall)) && (
     <div onClick={function(){
       if (isIOS()) { window.open(APP_STORE_URL, "_blank"); return; }
       installDismissedThisSession.current = false; setShowInstallPrompt(true);
