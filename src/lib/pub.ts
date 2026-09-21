@@ -31,8 +31,8 @@
 
 import { Capacitor } from "@capacitor/core";
 import {
-  AdMob, AdmobConsentStatus, RewardAdPluginEvents,
-  type AdMobRewardItem, type RewardAdOptions,
+  AdMob, AdmobConsentStatus, RewardAdPluginEvents, BannerAdPosition, BannerAdSize,
+  type AdMobRewardItem, type RewardAdOptions, type BannerAdOptions,
 } from "@capacitor-community/admob";
 
 // ── LES IDENTIFIANTS ──────────────────────────────────────────────────────
@@ -70,10 +70,40 @@ const ID_REEL_RECOMPENSE = {
   ios: "ca-app-pub-4450845101011880/9506957915",
 };
 
+// ── LA BANNIÈRE, DISCRÈTE ET NON SOLLICITÉE ────────────────────────────────
+//
+// Contrairement à la récompensée, le joueur ne la demande pas : posée en bas
+// de l'accueil, elle ne bloque jamais le jeu et ne réclame aucun tap. C'est
+// justement pour ça qu'elle reste au format le moins intrusif
+// (ADAPTIVE_BANNER, un simple bandeau) — jamais un interstitiel plein écran,
+// qui casserait la promesse déjà faite au vérificateur Apple : « Aucune
+// publicité n'est imposée » (docs/fiche-play.md, notes de vérification iOS).
+//
+// Même identifiants de TEST publics de Google tant que ID_REEL_BANNIERE est
+// vide, et même interdiction absolue de cliquer sur sa propre pub réelle.
+// https://developers.google.com/admob/android/test-ads
+// https://developers.google.com/admob/ios/test-ads
+const ID_TEST_BANNIERE = {
+  android: "ca-app-pub-3940256099942544/6300978111",
+  ios: "ca-app-pub-3940256099942544/2934735716",
+};
+
+// À remplir dans AdMob (un bloc « Bannière » par plateforme), comme pour la
+// récompensée — et couvert par le même test de cohérence
+// (src/test/admob.test.ts) : soit tous les blocs sont réels, soit aucun.
+const ID_REEL_BANNIERE = {
+  android: "",
+  ios: "",
+};
+
 const estIos = () => Capacitor.getPlatform() === "ios";
 const idRecompense = (): string => {
   const reel = estIos() ? ID_REEL_RECOMPENSE.ios : ID_REEL_RECOMPENSE.android;
   return reel || (estIos() ? ID_TEST_RECOMPENSE.ios : ID_TEST_RECOMPENSE.android);
+};
+const idBanniere = (): string => {
+  const reel = estIos() ? ID_REEL_BANNIERE.ios : ID_REEL_BANNIERE.android;
+  return reel || (estIos() ? ID_TEST_BANNIERE.ios : ID_TEST_BANNIERE.android);
 };
 
 /** Vrai quand on tourne dans la coque native ET que la pub peut être servie. */
@@ -258,4 +288,47 @@ export async function montrerRecompensee(): Promise<boolean> {
     void precharger();
   }
   return gagne;
+}
+
+// ── LA BANNIÈRE ─────────────────────────────────────────────────────────────
+//
+// Un seul appelant (LePont.jsx) : montre/cache la bannière selon l'écran
+// affiché, en gardant une référence à ce qui est réellement à l'écran
+// puisque AdMob, lui, ne le sait pas — `showBanner`/`hideBanner`/
+// `resumeBanner` ne sont QUE des ordres, jamais un état à relire.
+let banniereMontree = false;
+let banniereEnCours = false;
+
+/**
+ * Montre ou cache la bannière du bas d'écran, selon `voulu`. Une seule
+ * fonction plutôt que deux, pour que l'appelant n'ait qu'à refléter l'état
+ * qu'il veut (`banniereVisible(screen === "home")`) sans jamais avoir à
+ * savoir si la bannière a déjà été créée une première fois.
+ *
+ * `hideBanner`/`resumeBanner` cachent et remontrent la MÊME annonce déjà
+ * chargée — pas d'aller-retour réseau à chaque changement d'écran, et la
+ * bannière ne clignote pas en revenant sur l'accueil.
+ */
+export async function banniereVisible(voulu: boolean): Promise<void> {
+  if (!natif() || !peutServir || banniereEnCours) return;
+  banniereEnCours = true;
+  try {
+    if (voulu) {
+      if (banniereMontree) { await AdMob.resumeBanner(); return; }
+      const options: BannerAdOptions = {
+        adId: idBanniere(), adSize: BannerAdSize.ADAPTIVE_BANNER, position: BannerAdPosition.BOTTOM_CENTER,
+      };
+      await AdMob.showBanner(options);
+      banniereMontree = true;
+    } else if (banniereMontree) {
+      await AdMob.hideBanner();
+    }
+  } catch {
+    // Un échec de chargement (pas d'inventaire, pas de réseau) ne doit pas
+    // laisser croire qu'elle est montrée : le prochain passage à `true`
+    // retentera un vrai showBanner() plutôt qu'un resumeBanner() sans objet.
+    if (voulu) banniereMontree = false;
+  } finally {
+    banniereEnCours = false;
+  }
 }
