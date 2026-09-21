@@ -451,11 +451,27 @@ const Home = () => {
 const SB_URL_TICKER = "https://ialjlsrgcolocoaegzrc.supabase.co";
 const SB_KEY_TICKER = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhbGpsc3JnY29sb2NvYWVnenJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1MDM3NzksImV4cCI6MjA5MTA3OTc3OX0.-SU8anuPhnpoa-PYhIHQqrcuOBsHxdtBJKRZuiGcGwM";
 
-const MODE_LABEL: Record<string, string> = {
+// Les quatre valeurs RÉELLES de bb_scores.mode (voir MODE_DU_SCORE dans
+// lib/tracking.js) — "findscore" et "devinette" manquaient ici, donc un
+// joueur qui scorait sur "Trouve le joueur" ou la devinette du jour se
+// voyait afficher le nom de colonne brut dans le bandeau d'activité, au lieu
+// d'un nom de mode. "grid" reste inclus par prudence : GOAT Grid n'écrit pas
+// dans bb_scores aujourd'hui, mais un `|| r.mode` sans lui laisserait
+// resurgir le même défaut si ça change un jour.
+// Exporté pour src/test/mode-label.test.ts : le bug qui a manqué "findscore"
+// et "devinette" ne se serait vu qu'en base, jamais dans un test — d'où un
+// test qui verrouille chaque valeur RÉELLE de bb_scores.mode contre un nom
+// de colonne laissé passer brut.
+export const MODE_LABEL: Record<string, string> = {
   pont: "The Plug",
   chaine: "The Mercato",
   grid: "GOAT Grid",
+  findscore: "Trouve le joueur",
+  devinette: "Devinette du jour",
 };
+
+/** Le nom affiché d'un mode de bb_scores.mode — jamais la clé brute si elle est connue. */
+export const labelDuMode = (mode: string): string => MODE_LABEL[mode] || mode;
 
 function useTickerItems() {
   const [items, setItems] = useState<{ who: string; what: string }[]>([]);
@@ -470,7 +486,7 @@ function useTickerItems() {
         for (const r of rows) {
           if (!r.player_name || seen.has(r.player_name)) continue;
           seen.add(r.player_name);
-          const game = MODE_LABEL[r.mode] || r.mode;
+          const game = labelDuMode(r.mode);
           // Le score formaté UNE fois, et non six. `tr()` évalue ses six
           // arguments avant d'en choisir un, donc les six appels à
           // toLocaleString tournaient à chaque ligne du bandeau pour n'en garder
