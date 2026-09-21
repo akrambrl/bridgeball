@@ -22,26 +22,45 @@ Trois défauts côté client s'y ajoutaient :
 
 ## Ce qui existe maintenant
 
-Deux envoyeurs, un seul circuit.
+Quatre envoyeurs, un seul circuit.
 
 ```
 scripts/push-io.mjs          ← le circuit : lecture paginée, chiffrement,
-  │                             envoi, purge, marquage
+  │                             envoi, purge, marquage, RPC, upsert
   ├── notif-devinette.mjs    ← cron quotidien, même message pour tous
-  └── notif-amis.mjs         ← sondage /15 min, un message par destinataire
+  ├── notif-amis.mjs         ← sondage /15 min : demande reçue ET acceptée
+  ├── notif-inactivite.mjs   ← cron quotidien : 3 jours sans avoir joué
+  └── notif-podium.mjs       ← cron horaire : sorti du top 3 du mois
 ```
 
 Les **décisions** vivent dans `src/lib/push.js`, qui ne touche pas au réseau et se
 teste unitairement. `push-io.mjs` ne fait que des entrées-sorties. Sans cette
-séparation, le second envoyeur aurait recopié la lecture paginée, le
-chiffrement, la purge et la limite de parallélisme du premier — et les deux
+séparation, chaque envoyeur aurait recopié la lecture paginée, le
+chiffrement, la purge et la limite de parallélisme du premier — et tous
 auraient divergé au premier correctif.
 
-## Colonnes à créer
+### Le fetch mort qu'on a retiré du client
 
-`notif-amis.mjs` a besoin d'une colonne qui n'existe pas d'origine. **À lancer une
-fois** dans Supabase → SQL Editor, sinon le script s'arrête avec un message qui
-renvoie ici :
+`acceptRequest()` et l'envoi d'une demande (`LePont.jsx`) appelaient un `fetch`
+vers `/functions/v1/send-friend-notification`, une Edge Function qui n'a
+**jamais existé** côté serveur — sondée en direct : `HTTP 546`, jamais un
+succès. C'est exactement le défaut décrit en haut de ce document, resurgi une
+deuxième fois sur un autre chemin : un appel « best-effort » dont l'échec est
+avalé par un `.catch(() => {})` ne prévient jamais personne qu'il ne fait
+rien. Les deux appels (`type:"request"` et `type:"accepted"`) ont été retirés :
+`notif-amis.mjs` couvre maintenant les deux annonces, de façon fiable. Les
+deux autres appels du même genre (`duel_challenge`/`duel_new`/`duel_taken`,
+dans `postDefi`/`submitDuelScore`) sont **restés en l'état** — annoncer un défi
+en direct demande un déclenchement immédiat, donc une vraie Edge Function
+derrière un webhook Supabase, pas ce sondage ; voir « Ce que ça ne couvre
+pas » plus bas.
+
+## Colonnes et tables à créer
+
+**À lancer une fois** dans Supabase → SQL Editor, sinon le script concerné
+s'arrête avec un message qui renvoie ici.
+
+### `notif-amis.mjs` — demande reçue (déjà en place)
 
 ```sql
 alter table public.bb_friend_requests add column if not exists notified_at timestamptz;
@@ -52,8 +71,50 @@ remplace une notification **encore affichée**. Dès que l'utilisateur la balaie
 le sondage suivant en recrée une, avec vibration. Il faut une trace en base, et
 `bb_pseudos.last_notified_grade` posait déjà ce précédent.
 
-Aucune règle RLS à toucher : l'envoyeur utilise la clé `service_role`, qui les
-contourne. Le client, lui, n'écrit jamais cette colonne.
+### `notif-amis.mjs` — demande acceptée (nouveau)
+
+```sql
+alter table public.bb_friend_requests add column if not exists accepted_notified_at timestamptz;
+
+-- Backfill IMMÉDIAT et OBLIGATOIRE, dans la même session SQL : sans lui, la
+-- toute première exécution du script annoncerait à tout le monde, d'un coup,
+-- que sa demande a été acceptée — même celles d'il y a des mois. C'est le
+-- même risque que `notified_at` traite avec une fenêtre de 24 h côté demandes
+-- reçues, mais réglé ici une fois pour toutes plutôt qu'à chaque sondage :
+-- l'instant de l'acceptation elle-même n'est enregistré nulle part, donc
+-- aucune fenêtre d'âge n'est calculable après coup.
+update public.bb_friend_requests set accepted_notified_at = now()
+  where status = 'accepted' and accepted_notified_at is null;
+```
+
+### `notif-inactivite.mjs` — relance 3 jours (nouveau)
+
+```sql
+alter table public.bb_pseudos add column if not exists relance_inactivite_at timestamptz;
+```
+
+Le garde qui empêche la relance quotidienne à vie, tant qu'un joueur ne revient
+pas : voir `joueursARelancer` dans `src/lib/push.js`.
+
+### `notif-podium.mjs` — sorti du podium (nouveau)
+
+```sql
+create table if not exists public.bb_podium_suivi (
+  mois       text not null,
+  player_id  text not null,
+  rang       int not null,
+  vu_le      timestamptz not null default now(),
+  primary key (mois, player_id)
+);
+```
+
+Pas de RLS à activer : ni le client ne la lit ni ne l'écrit, seul le script (clé
+`service_role`) y touche. Pourquoi une table de suivi et non un calcul à la
+volée : voir l'en-tête de `scripts/notif-podium.mjs`.
+
+Aucune règle RLS à toucher pour les trois premiers cas non plus : les
+envoyeurs utilisent la clé `service_role`, qui les contourne. Le client
+n'écrit jamais ces colonnes.
 
 ## La devinette du jour
 
@@ -100,6 +161,69 @@ Deux détails qui comptent :
   simultanées se lisent comme du harcèlement.
 - **On ne marque que ce qui a été reçu.** Une panne passagère du service de push
   laisse la demande annonçable au prochain sondage, au lieu de la perdre.
+
+### La moitié qui manquait : la demande acceptée
+
+Le même script, le même sondage, la même table — mais l'autre sens. Une
+demande d'ami dit au **destinataire** qu'on veut être son ami ; rien ne disait
+à l'**expéditeur** que la personne a dit oui. Sans ça, il n'a aucun moyen de le
+savoir sans rouvrir l'app et vérifier lui-même.
+
+`acceptationsANotifier` filtre `status=accepted&accepted_notified_at=is.null` :
+pas de fenêtre d'âge, parce que le risque qu'elle couvre côté demandes reçues
+(un backlog de mois qui partirait d'un coup) est traité une fois pour toutes
+par le backfill de la migration — voir plus haut. Toute ligne qui arrive ici
+est donc forcément postérieure au déploiement.
+
+Les deux volets partagent la même liste d'abonnements (une seule lecture de
+`bb_push_subscriptions` pour les deux), mais s'envoient en **deux lots
+séparés** : une personne qui a reçu une demande ET vient de voir la sienne
+acceptée dans le même sondage doit recevoir **deux** notifications distinctes,
+pas une charge qui écrase l'autre.
+
+## Relance d'inactivité — 3 jours sans avoir joué
+
+Cron quotidien, un seul message, comme la devinette — sauf que le
+destinataire n'est pas « tout le monde », mais qui a été inactif juste ce
+qu'il faut, et jamais relancé pour cet épisode précis.
+
+**La dernière activité** vient de `bb_scores` ET `bb_gg_scores` (peu importe le
+mode, seule la date compte), réduite à une date par joueur
+(`derniereActivitePar`). La lecture porte sur une fenêtre glissante de 30
+jours — pas tout l'historique, qui ne cesse de grossir, et au-delà de ce délai
+une relance a de toute façon peu de chances de faire revenir quelqu'un.
+
+**Le garde contre la relance à vie** (`joueursARelancer`) : `relance_inactivite_at`
+n'autorise une nouvelle relance que si la dernière partie du joueur est
+**postérieure** à sa dernière relance. Sans lui, un cron qui tourne tous les
+jours renverrait « tu nous manques » tous les jours, pour toujours, à
+quiconque ne revient jamais — puisque « inactif depuis 3 jours ou plus » reste
+vrai indéfiniment. Dès que le joueur rejoue, sa nouvelle date d'activité
+dépasse la dernière relance enregistrée : un nouvel épisode d'inactivité pourra
+légitimement en déclencher une autre, plus tard.
+
+## Podium — sorti du top 3 du classement du mois
+
+Cron horaire : un classement qui change de tête plusieurs fois par jour
+mérite mieux qu'un passage quotidien, sans tourner en continu pour autant.
+
+« Perdre sa place » veut dire **sortir** du top 3, pas descendre dedans —
+passer de 2e à 1er est une progression, pas une chute, et ne doit rien
+déclencher. `evolutionPodium` (src/lib/push.js) le distingue en testant la
+PRÉSENCE dans le top 3 actuel, jamais l'égalité de rang.
+
+**Pourquoi une table de suivi** (`bb_podium_suivi`) : rien d'autre ne garde le
+top 3 « d'avant » nécessaire à la comparaison — le classement lui-même ne
+connaît que le présent. Elle est donc **réécrite à chaque passage** sur l'état
+observé, qu'il y ait ou non un déchu à annoncer : un déchu qu'on laisserait
+dans le suivi reviendrait identique au tour suivant et repartirait en
+notification indéfiniment, exactement le défaut que `notified_at` évite
+ailleurs — mais ici sans colonne de marquage possible, puisque la ligne
+elle-même doit disparaître.
+
+Le message nomme, quand c'est possible, qui occupe désormais l'ancien rang du
+déchu (`accrocheDechu`) — pas nécessairement « qui l'a dépassé » au sens
+causal, mais toujours qui tient sa place aujourd'hui.
 
 ## Mise en route — les deux secrets à créer
 
@@ -151,7 +275,24 @@ SB_SERVICE_KEY=... npm run notif:amis:sec
 ```
 
 Elle affiche les messages qui partiraient, sans envoyer ni marquer quoi que ce
-soit — donc sans consommer les demandes.
+soit — donc sans consommer les demandes. Même chose pour les deux nouveaux
+circuits :
+
+```bash
+SB_SERVICE_KEY=... npm run notif:inactivite:sec
+SB_SERVICE_KEY=... npm run notif:podium:sec
+```
+
+**Ce que `npm run notif:essai` NE couvre PAS.** Ces trois `--dry-run` (amis,
+inactivité, podium) restent la seule vérification avant un premier envoi
+réel : contrairement à la devinette et à l'ancien volet des amis, aucun banc
+d'essai avec faux Supabase et faux service de push n'a été construit pour
+l'acceptation, la relance ou le podium. La lecture paginée, le chiffrement et
+la purge sont bien exercés — ce sont ceux de `push-io.mjs`, partagés par les
+quatre — mais la logique propre à chacun (le backfill de migration, le
+ré-épisode d'inactivité, la réécriture du suivi de podium) n'est éprouvée que
+par les tests unitaires de `src/lib/push.js` et par ces essais en lecture
+contre la vraie base.
 
 Depuis GitHub : **Actions → Notification devinette → Run workflow**, en laissant
 `dry_run` coché.

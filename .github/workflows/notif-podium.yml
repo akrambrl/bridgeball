@@ -1,0 +1,53 @@
+# Notification « tu as perdu ta place sur le podium ».
+#
+# Cadence horaire : un classement qui change de tête plusieurs fois par jour
+# mérite mieux qu'un cron quotidien, mais pas au point de tourner en continu
+# sur un classement qui, l'essentiel du temps, ne bouge pas. Voir le
+# commentaire d'en-tête de scripts/notif-podium.mjs pour pourquoi la table de
+# suivi doit être réécrite à chaque passage, déchu ou pas.
+#
+# Mêmes secrets que les autres circuits : SB_SERVICE_KEY et VAPID_PRIVATE_KEY.
+# Demande aussi une table en base — voir docs/NOTIFICATIONS.md.
+name: Notification podium
+
+on:
+  schedule:
+    - cron: "0 * * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Simuler sans rien envoyer ni marquer"
+        type: boolean
+        default: true
+
+# Deux exécutions simultanées liraient le même suivi avant que l'une des deux
+# ne l'ait réécrit, et pourraient annoncer deux fois la même chute.
+concurrency:
+  group: notif-podium
+  cancel-in-progress: false
+
+jobs:
+  envoyer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Installer les dépendances
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+        run: npm ci
+
+      - name: Envoyer
+        env:
+          SB_SERVICE_KEY: ${{ secrets.SB_SERVICE_KEY }}
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+          VAPID_SUBJECT: https://goatfc.fr
+        run: |
+          npx tsx scripts/notif-podium.mjs \
+            ${{ (github.event_name == 'workflow_dispatch' && inputs.dry_run) && '--dry-run' || '' }}

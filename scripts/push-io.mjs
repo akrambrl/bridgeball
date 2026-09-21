@@ -72,6 +72,55 @@ export async function lireTout(table, requete) {
   }
 }
 
+/** Appelle une fonction RPC PostgREST (POST, corps JSON) et rend son tableau de lignes. */
+export async function postRpc(nom, corps) {
+  const res = await fetch(SB_URL + "/rest/v1/rpc/" + nom, {
+    method: "POST",
+    headers: entetes({ "Content-Type": "application/json" }),
+    body: JSON.stringify(corps || {}),
+  });
+  if (!res.ok) {
+    const texte = (await res.text()).slice(0, 300);
+    throw new Error("rpc " + nom + " : HTTP " + res.status + " " + texte);
+  }
+  return res.json();
+}
+
+/**
+ * Insère ou remplace des lignes par leur clé (naturelle ou primaire), en un
+ * seul POST — `Prefer: resolution=merge-duplicates` fait tenir lieu d'upsert.
+ * Sert au suivi du podium, qui n'a pas de colonne `id` à cibler comme
+ * `modifier`/`supprimer` : sa clé est (mois, player_id).
+ */
+export async function upsertLignes(table, lignes, dryRun) {
+  if (!lignes.length) return 0;
+  if (dryRun) { log("  (à blanc) " + lignes.length + " lignes à écrire dans " + table); return 0; }
+  const res = await fetch(SB_URL + "/rest/v1/" + table, {
+    method: "POST",
+    headers: entetes({ "Content-Type": "application/json", Prefer: "resolution=merge-duplicates,return=minimal" }),
+    body: JSON.stringify(lignes),
+  });
+  if (!res.ok) { log("  ⚠ écriture refusée sur " + table + " : HTTP " + res.status + " " + (await res.text()).slice(0, 200)); return 0; }
+  log("  " + lignes.length + " lignes écrites dans " + table);
+  return lignes.length;
+}
+
+/**
+ * Supprime toutes les lignes qui matchent un FILTRE PostgREST donné tel quel
+ * (ex. `"mois=neq.2026-09"`) — pour les tables sans colonne `id` à cibler,
+ * comme `supprimer` le fait. Sert au ménage du suivi de podium : effacer les
+ * lignes d'un mois révolu, ou celles des joueurs qui ne sont plus dans le
+ * top 3, n'a pas d'identifiant numérique à collectionner au préalable.
+ */
+export async function supprimerFiltre(table, filtre, raison, dryRun) {
+  if (dryRun) { log("  (à blanc) suppression sur " + table + " (" + filtre + ") — " + raison); return; }
+  const res = await fetch(SB_URL + "/rest/v1/" + table + "?" + filtre, {
+    method: "DELETE", headers: entetes({ Prefer: "return=minimal" }),
+  });
+  if (res.ok) log("  lignes supprimées sur " + table + " (" + filtre + ") — " + raison);
+  else log("  ⚠ suppression refusée : HTTP " + res.status);
+}
+
 /** Supprime des lignes par id, par paquets (l'URL serait trop longue sinon). */
 export async function supprimer(table, ids, raison, dryRun) {
   if (!ids.length) return 0;

@@ -230,6 +230,172 @@ export function accrocheAmis(demandes) {
 }
 
 /**
+ * Quelles demandes ACCEPTÉES annoncer à leur EXPÉDITEUR, et quoi dire.
+ *
+ * Différent de `demandesANotifier` : celui-là annonce au DESTINATAIRE qu'une
+ * demande est arrivée. Celui-ci annonce à l'EXPÉDITEUR (`from_id`) que la
+ * personne à qui il l'a envoyée a dit oui — la moitié du dialogue qui manquait,
+ * et sans laquelle on ne sait jamais si sa demande a été vue.
+ *
+ * Pas de fenêtre d'âge ici, contrairement à `demandesANotifier` : le risque
+ * qu'elle protège (toutes les demandes en attente depuis des mois qui
+ * partiraient d'un coup à la première exécution) est traité une fois pour
+ * toutes par la migration qui ajoute `accepted_notified_at` — voir
+ * docs/NOTIFICATIONS.md, qui la marque déjà remplie sur toutes les lignes
+ * acceptées avant le déploiement. Toute ligne lue ici est donc forcément une
+ * acceptation POSTÉRIEURE à cette migration.
+ *
+ * @param {Array} lignes de bb_friend_requests (déjà filtrées à
+ *   status=accepted&accepted_notified_at=is.null)
+ * @returns {Array} lignes à annoncer
+ */
+export function acceptationsANotifier(lignes) {
+  return (lignes || []).filter(function(l){ return !!l && !l.accepted_notified_at; });
+}
+
+/**
+ * Une notification par EXPÉDITEUR, même règle que `accrocheAmis` : plusieurs
+ * acceptations en même temps ne doivent pas devenir plusieurs notifications.
+ *
+ * @param {Array} acceptations du même expéditeur (`from_id`)
+ * @returns {{titre: string, corps: string}}
+ */
+export function accrocheAmiAccepte(acceptations) {
+  const noms = (acceptations || []).map(function(a){ return (a.to_name || "Quelqu'un").trim() || "Quelqu'un"; });
+  if (noms.length <= 1) {
+    return { titre: "Demande acceptée 🤝", corps: noms[0] + " a accepté ta demande d'ami. Défie-le !" };
+  }
+  const qui = noms.length === 2 ? noms[0] + " et " + noms[1] : noms[0] + " et " + (noms.length - 1) + " autres";
+  return { titre: noms.length + " demandes acceptées 🤝", corps: qui + " ont accepté ta demande d'ami. Défie-les !" };
+}
+
+/**
+ * Le dernier jour connu de chaque joueur, réduit depuis des lignes brutes
+ * (bb_scores et bb_gg_scores confondus — peu importe le mode, seule la date
+ * compte). Une seule passe, un seul Map : deux lectures séparées auraient
+ * demandé de fusionner deux résultats après coup pour le même effet.
+ *
+ * @param {Array} lignes {player_id, created_at}, toutes tables confondues
+ * @returns {Array<{player_id: string, derniere: string}>} derniere en ISO
+ */
+export function derniereActivitePar(lignes) {
+  const max = new Map();
+  for (const l of lignes || []) {
+    if (!l || !l.player_id) continue;
+    const t = Date.parse(l.created_at);
+    if (isNaN(t)) continue;
+    const cur = max.get(l.player_id);
+    if (cur === undefined || t > cur) max.set(l.player_id, t);
+  }
+  return [...max.entries()].map(function([player_id, derniere]){
+    return { player_id: player_id, derniere: new Date(derniere).toISOString() };
+  });
+}
+
+/**
+ * Qui relancer pour inactivité, et qui laisser tranquille.
+ *
+ * Le garde qui empêche la relance quotidienne à vie : `relance_inactivite_at`
+ * n'autorise une NOUVELLE relance que si le joueur a rejoué DEPUIS la
+ * précédente. Sans lui, quelqu'un qui ne revient jamais recevrait « tu nous
+ * manques » chaque jour, pour toujours — le sondage tournant tous les jours,
+ * pas une fois par épisode d'inactivité.
+ *
+ * @param {Array<{player_id, derniere}>} activites réduites par `derniereActivitePar`
+ * @param {Array<{player_id, relance_inactivite_at}>} pseudos lus de bb_pseudos
+ * @param {number} maintenant horodatage
+ * @param {number} seuilMs durée d'inactivité à partir de laquelle relancer
+ * @returns {Array<{player_id: string, derniere: number}>}
+ */
+export function joueursARelancer(activites, pseudos, maintenant, seuilMs) {
+  const relanceParJoueur = new Map();
+  for (const p of pseudos || []) {
+    if (!p || !p.player_id) continue;
+    const t = Date.parse(p.relance_inactivite_at);
+    relanceParJoueur.set(p.player_id, isNaN(t) ? 0 : t);
+  }
+  const aRelancer = [];
+  for (const a of activites || []) {
+    if (!a || !a.player_id) continue;
+    const derniere = Date.parse(a.derniere);
+    if (isNaN(derniere)) continue;
+    if (maintenant - derniere < seuilMs) continue;
+    // > et non >= : une relance posée EXACTEMENT à l'instant de la dernière
+    // partie (cas d'école, mais possible si les deux horodatages coïncident)
+    // ne doit pas bloquer la relance de CET épisode-ci.
+    if ((relanceParJoueur.get(a.player_id) || 0) > derniere) continue;
+    aRelancer.push({ player_id: a.player_id, derniere: derniere });
+  }
+  return aRelancer;
+}
+
+/** L'accroche de relance : un seul message, pas de nom ni de chiffre à faire varier. */
+export function accrocheRelanceInactivite() {
+  return {
+    titre: "On ne t'a pas vu depuis un moment 👀",
+    corps: "Ça fait 3 jours que tu n'as pas joué à GOAT FC. Ton classement du mois t'attend !",
+  };
+}
+
+/**
+ * Le mois calendaire parisien courant, au format "YYYY-MM" — même format que
+ * `to_char(now() at time zone 'Europe/Paris', 'YYYY-MM')` côté SQL
+ * (bb_classement_mois), pour que la clé du suivi de podium désigne exactement
+ * le même mois que celui que le serveur vient de calculer.
+ */
+export function parisMoisCourant(maintenant) {
+  const d = maintenant == null ? new Date() : new Date(maintenant);
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Paris", year: "numeric", month: "2-digit",
+  }).formatToParts(d);
+  let y = "", m = "";
+  for (const p of parts) { if (p.type === "year") y = p.value; else if (p.type === "month") m = p.value; }
+  return y + "-" + m;
+}
+
+/**
+ * Qui vient de PERDRE sa place dans le podium (top 3), entre le suivi
+ * enregistré au dernier passage et le classement actuel.
+ *
+ * « Perdre sa place » veut dire sortir du top 3, pas descendre DANS le top 3 :
+ * quelqu'un qui passe de 2e à 3e garde la sienne, et ne doit rien recevoir.
+ * C'est pour ça que le test porte sur la PRÉSENCE dans `actuelTop3`, pas sur
+ * l'égalité de rang.
+ *
+ * @param {Array<{player_id, pseudo, rang}>} actuelTop3 rang 1..3, dans l'ordre
+ * @param {Array<{player_id, rang}>} precedentTop3 lu de bb_podium_suivi
+ * @returns {Array<{player_id: string, ancienRang: number, nouvelOccupant: object|null}>}
+ */
+export function evolutionPodium(actuelTop3, precedentTop3) {
+  const parRangActuel = new Map();
+  const idsActuels = new Set();
+  for (const c of actuelTop3 || []) {
+    if (!c || !c.player_id) continue;
+    parRangActuel.set(c.rang, c);
+    idsActuels.add(c.player_id);
+  }
+  const dechus = [];
+  for (const p of precedentTop3 || []) {
+    if (!p || !p.player_id) continue;
+    if (idsActuels.has(p.player_id)) continue;
+    dechus.push({ player_id: p.player_id, ancienRang: p.rang, nouvelOccupant: parRangActuel.get(p.rang) || null });
+  }
+  return dechus;
+}
+
+const RANG_LABEL = { 1: "1ère", 2: "2e", 3: "3e" };
+
+/** L'accroche d'un déchu du podium — nomme qui a pris sa place, quand on le sait. */
+export function accrocheDechu(dechu) {
+  const rang = RANG_LABEL[dechu && dechu.ancienRang] || ((dechu && dechu.ancienRang) + "e");
+  const occupant = dechu && dechu.nouvelOccupant && (dechu.nouvelOccupant.pseudo || "").trim();
+  const corps = occupant
+    ? occupant + " occupe maintenant ta " + rang + " place. Rejoue pour la reprendre !"
+    : "Tu n'es plus dans le top 3 du classement du mois. Rejoue pour reprendre ta " + rang + " place !";
+  return { titre: "Tu as perdu ta place sur le podium 😱", corps: corps };
+}
+
+/**
  * Faut-il (re)transmettre cet endpoint à Supabase ?
  *
  * L'app garde en local l'endpoint déjà envoyé, pour ne pas ajouter une ligne à

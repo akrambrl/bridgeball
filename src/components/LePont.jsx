@@ -8595,14 +8595,12 @@ export default function LePont() {
         }
       } catch {}
       setSentRequests(function(prev){return [...prev, {id:"tmp-"+Date.now(), from_id:playerId, to_id:targetId, to_name:targetName, status:"pending"}];});
-      // Notif push à la cible (best-effort, ignore les erreurs)
-      try {
-        fetch(SB_URL + "/functions/v1/send-friend-notification", {
-          method: "POST",
-          headers: {"Content-Type":"application/json","Authorization":"Bearer "+SB_KEY},
-          body: JSON.stringify({to_id: targetId, from_name: playerName||"Quelqu'un", type:"request"})
-        }).catch(function(){});
-      } catch {}
+      // La notification au destinataire n'est PAS envoyée d'ici : ce fetch
+      // appelait `send-friend-notification`, une Edge Function qui n'a jamais
+      // existé côté serveur (sondé : HTTP 546, jamais un succès) — un reste de
+      // l'ancien système décrit dans docs/NOTIFICATIONS.md. La vraie annonce
+      // part du cron `scripts/notif-amis.mjs`, qui sonde bb_friend_requests et
+      // signe l'envoi avec la clé VAPID privée, absente du client.
     } catch(e) { setFriendMsg(tr("❌ Erreur réseau. Réessaie.","❌ Network error. Try again.","❌ Netzwerkfehler. Versuch's nochmal.","❌ Errore di rete. Riprova.","❌ Erro de rede. Tente de novo.","❌ Error de red. Inténtalo otra vez.")); }
   }
 
@@ -8628,14 +8626,9 @@ export default function LePont() {
       setFriendsList(newList);
       fetchFriendScores(newList);
       loadFriendRequests();
-      // Notif push à l'expéditeur de la demande pour lui dire qu'on a accepté (best-effort)
-      try {
-        fetch(SB_URL + "/functions/v1/send-friend-notification", {
-          method: "POST",
-          headers: {"Content-Type":"application/json","Authorization":"Bearer "+SB_KEY},
-          body: JSON.stringify({to_id: req.from_id, from_name: playerName||"Quelqu'un", type:"accepted"})
-        }).catch(function(){});
-      } catch {}
+      // Même remarque qu'à l'envoi de la demande : pas de fetch mort ici non
+      // plus. `scripts/notif-amis.mjs` annonce désormais l'acceptation à
+      // l'expéditeur (colonne `accepted_notified_at`), au prochain sondage.
     } catch(e) { console.error(e); }
   }
 
