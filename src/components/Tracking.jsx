@@ -352,6 +352,25 @@ function RubriqueAudience(props) {
           </>
         )}
       </Bloc>
+      <Bloc titre={"📲 App vs navigateur · " + v.plage + " j"}>
+        {v.appType.native + v.appType.web === 0 ? (
+          <Vide>Aucun signal encore mesuré. La distinction natif/navigateur ne remonte pas
+                avant le déploiement qui l'a introduite.</Vide>
+        ) : (
+          <>
+            <Panneau><Segments parts={[
+              { label:"⬇️ App téléchargée", n:v.appType.native, fond:G.projecteur, encre:G.encre, texte:G.projecteur },
+              { label:"🌐 Site / PWA", n:v.appType.web, fond:BLANC(.3), texte:BLANC(.7) },
+            ]}/></Panneau>
+            {v.osApp.ios.native + v.osApp.ios.web > 0 && (
+              <Note>🍎 iOS : {v.osApp.ios.native} depuis l'App Store · {v.osApp.ios.web} depuis Safari/PWA</Note>
+            )}
+            {v.osApp.android.native + v.osApp.android.web > 0 && (
+              <Note>🤖 Android : {v.osApp.android.native} depuis le Play Store · {v.osApp.android.web} depuis le navigateur</Note>
+            )}
+          </>
+        )}
+      </Bloc>
       <Bloc titre={"🔎 Sources · " + v.plage + " j"}>
         <SourcesBloc sources={v.sources}/>
       </Bloc>

@@ -196,6 +196,22 @@ export function agregeTracking(data, filtres, jours) {
   const os = { ios: 0, android: 0, other: 0 };
   for (const id in osParAppareil) { const o = osParAppareil[id]; if (os[o] !== undefined) os[o]++; else os.other++; }
 
+  // ── App vs navigateur — pings "app_native" / "app_web" (lib/track), un
+  // appareil compté une fois. Répond à la question posée après la sortie sur
+  // les stores : combien de joueurs ont vraiment téléchargé l'app plutôt que
+  // de rester sur le site ? Séparé du ping "open_<os>" au lieu d'être fondu
+  // dans son suffixe, pour ne rien changer à son parsing ci-dessus.
+  const appTypeParAppareil = {};
+  for (const r of eventsW) { if (r.type && r.type.indexOf("app_") === 0) appTypeParAppareil[r.player_id] = r.type.slice(4); }
+  const appType = { native: 0, web: 0 };
+  const osApp = { ios: { native: 0, web: 0 }, android: { native: 0, web: 0 }, other: { native: 0, web: 0 } };
+  for (const id in appTypeParAppareil) {
+    const a = appTypeParAppareil[id];
+    if (appType[a] !== undefined) appType[a]++;
+    const o = osParAppareil[id];
+    if (o && osApp[o] && osApp[o][a] !== undefined) osApp[o][a]++;
+  }
+
   // ── Sources — pings "src_<canal>", un appareil compté une fois ──
   // D'où viennent les visites : Instagram, TikTok, recherche Google, lien
   // direct… Un appareil ne compte qu'une fois (sa dernière source vue dans la
@@ -255,6 +271,6 @@ export function agregeTracking(data, filtres, jours) {
     parMode: parMode, totalParties: totalParties, solo: solo, enLigne: enLigne,
     joueurs: joueurs, joueursInscrits: joueurs.filter(function (p) { return !!p.pseudo; }).length,
     sessions: sessions, tempsTotal: tempsTotal, tempsJoueurs: Object.keys(tempsParJoueur).length,
-    os: os, sources: sources, parJour: parJour, comptes: comptes,
+    os: os, appType: appType, osApp: osApp, sources: sources, parJour: parJour, comptes: comptes,
   };
 }

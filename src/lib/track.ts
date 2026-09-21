@@ -10,6 +10,13 @@ const SB_URL = "https://ialjlsrgcolocoaegzrc.supabase.co";
 const SB_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhbGpsc3JnY29sb2NvYWVnenJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1MDM3NzksImV4cCI6MjA5MTA3OTc3OX0.-SU8anuPhnpoa-PYhIHQqrcuOBsHxdtBJKRZuiGcGwM";
 
+// `isNative()` tranche entre la vraie coque (App Store / Play Store, via
+// Capacitor) et un simple navigateur ou une PWA ajoutée à l'écran d'accueil.
+// `detectOS()` ci-dessous ne voit que l'OS, pas ça : un iPhone dans Safari et
+// un iPhone avec l'app téléchargée remontaient tous les deux "open_ios", sans
+// façon de savoir combien de joueurs ont vraiment installé l'app.
+import { isNative } from "./native";
+
 export type PlayMode = "pont" | "chaine" | "grid" | "guess" | "battle" | "reveal" | "devinette";
 
 // Récupère (ou crée) l'identifiant anonyme d'appareil — même clé que LePont.
@@ -173,6 +180,7 @@ export function pingPresence(): void {
     if (localStorage.getItem("bb_ping_day") === today) return;
     if (pingInFlight) return;
     pingInFlight = true;
+    const playerId = getPlayerId();
     fetch(SB_URL + "/rest/v1/bb_events", {
       method: "POST",
       headers: {
@@ -181,12 +189,28 @@ export function pingPresence(): void {
         "Content-Type": "application/json",
         Prefer: "return=minimal",
       },
-      body: JSON.stringify({ player_id: getPlayerId(), type: "open_" + detectOS() }),
+      body: JSON.stringify({ player_id: playerId, type: "open_" + detectOS() }),
       keepalive: true,
     })
       .then((res) => {
         if (res && res.ok) {
           try { localStorage.setItem("bb_ping_day", today); } catch { /* noop */ }
+          // Second ping, même jour : app native (App Store / Play Store) ou
+          // navigateur/PWA. Séparé de "open_<os>" plutôt que fusionné dans son
+          // suffixe pour ne pas casser l'agrégation existante — voir
+          // src/lib/tracking.js, qui lit "open_" comme "open_" + un OS et rien
+          // d'autre.
+          fetch(SB_URL + "/rest/v1/bb_events", {
+            method: "POST",
+            headers: {
+              apikey: SB_KEY,
+              Authorization: "Bearer " + SB_KEY,
+              "Content-Type": "application/json",
+              Prefer: "return=minimal",
+            },
+            body: JSON.stringify({ player_id: playerId, type: "app_" + (isNative() ? "native" : "web") }),
+            keepalive: true,
+          }).catch(() => { /* best-effort */ });
         }
       })
       .catch(() => { /* on réessaiera à la prochaine ouverture / partie */ })
