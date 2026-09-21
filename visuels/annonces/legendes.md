@@ -46,3 +46,32 @@ Règlement sur goatfc.fr/reglement · Sans obligation d'achat · Jeu non associ�
 
 #football #quizfoot #mercato #footballtiktok #concours #goatfc
 ```
+
+## disponible
+
+### Instagram
+
+```
+📱 C'EST FAIT — GOAT FC EST SUR L'APP STORE.
+
+Cinq façons de jouer, une devinette du jour, un classement mensuel qui se mérite, et des duels en direct contre tes potes.
+
+Android arrive très vite — patience, ça vient.
+
+👉 Cherche « GOAT FC » sur l'App Store, ou télécharge directement depuis goatfc.fr sur ton iPhone.
+
+#football #quizfoot #mercato #ligue1 #premierleague #applifoot #goatfc
+```
+
+### TikTok
+
+```
+GOAT FC est en ligne sur l'App Store 📱🍎
+
+5 modes, une devinette chaque jour, un classement du mois, des duels en direct.
+Android arrive très vite 👀
+
+Cherche « GOAT FC » sur l'App Store
+
+#football #quizfoot #mercato #footballtiktok #goatfc
+```
