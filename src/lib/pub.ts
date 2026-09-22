@@ -92,8 +92,8 @@ const ID_TEST_BANNIERE = {
 // récompensée — et couvert par le même test de cohérence
 // (src/test/admob.test.ts) : soit tous les blocs sont réels, soit aucun.
 const ID_REEL_BANNIERE = {
-  android: "",
-  ios: "",
+  android: "ca-app-pub-4450845101011880/4859265308",
+  ios: "ca-app-pub-4450845101011880/8570356168",
 };
 
 const estIos = () => Capacitor.getPlatform() === "ios";
