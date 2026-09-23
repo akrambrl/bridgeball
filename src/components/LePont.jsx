@@ -13062,6 +13062,32 @@ export default function LePont() {
               </span>
             </div>
           )}
+          {/* Signalé : les joueurs de tête qui jouent tous les jours voient un
+              score « figé » une fois leurs 15 meilleurs jours atteints — une
+              partie moyenne un jour déjà bien classé ne bouge rien, et sans
+              l'expliquer ça se lit comme un bug plutôt que comme un défi. On
+              ne touche pas à la règle (elle protège les retardataires, et le
+              règlement du concours vient d'être aligné dessus) : on rend juste
+              visible, pour CE joueur précis, qu'il a déjà tout verrouillé. */}
+          {lbMode==="saison" && (function(){
+            const moi = leaderboard.find(function(e){ return e.pid===playerId; });
+            if (!moi || (moi.jours||0) < 15) return null;
+            return (
+              <div style={{display:"flex",gap:8,alignItems:"flex-start",marginBottom:10,padding:"9px 11px",background:G.nuit,border:"1px solid "+G.projecteur,borderRadius:G.rayonS,boxShadow:G.ombre}}>
+                <span style={{fontSize:15,lineHeight:1.3}}>🏆</span>
+                <span style={{fontSize:11.5,color:"rgba(255,255,255,.78)",fontWeight:700,lineHeight:1.45}}>
+                  {tr(
+                    "Tes 15 meilleurs jours sont déjà comptés ce mois-ci : une partie moyenne ne fait plus rien monter. Pour progresser encore, bats l'un de ces 15 jours.",
+                    "Your 15 best days are already locked in this month: an average game won't move the total anymore. To climb further, beat one of those 15 days.",
+                    "Deine 15 besten Tage sind diesen Monat schon fest verbucht: ein durchschnittliches Spiel bewegt nichts mehr. Um weiter zu steigen, schlag einen dieser 15 Tage.",
+                    "I tuoi 15 giorni migliori sono già bloccati questo mese: una partita nella media non fa più salire nulla. Per progredire ancora, batti uno di quei 15 giorni.",
+                    "Os teus 15 melhores dias já estão fixados este mês: um jogo médio já não faz subir nada. Para progredir mais, bate um desses 15 dias.",
+                    "Tus 15 mejores días ya están fijados este mes: una partida media ya no hace subir nada. Para seguir progresando, supera uno de esos 15 días."
+                  )}
+                </span>
+              </div>
+            );
+          })()}
           {/* Les deux messages « rien à afficher » prennent le panneau de la
               charte : posés en texte gris sur la pelouse, ils passaient pour un
               chargement inachevé plutôt que pour une réponse. */}
