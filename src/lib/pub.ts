@@ -32,7 +32,8 @@
 import { Capacitor } from "@capacitor/core";
 import {
   AdMob, AdmobConsentStatus, RewardAdPluginEvents, BannerAdPosition, BannerAdSize,
-  type AdMobRewardItem, type RewardAdOptions, type BannerAdOptions,
+  BannerAdPluginEvents,
+  type AdMobRewardItem, type RewardAdOptions, type BannerAdOptions, type AdMobBannerSize,
 } from "@capacitor-community/admob";
 
 // ── LES IDENTIFIANTS ──────────────────────────────────────────────────────
@@ -298,6 +299,37 @@ export async function montrerRecompensee(): Promise<boolean> {
 // `resumeBanner` ne sont QUE des ordres, jamais un état à relire.
 let banniereMontree = false;
 let banniereEnCours = false;
+let ecouteTailleArmee = false;
+
+/**
+ * Pousse la hauteur RÉELLE de la bannière dans une variable CSS (`--bannerH`,
+ * `:root`), lue par la mise en page de l'accueil pour réserver la place en
+ * bas — sinon la bannière, un calque NATIF posé PAR-DESSUS la webview, cache
+ * ce qui se trouve dessous (signalé : elle cachait un bouton de l'accueil).
+ * `0` par défaut (voir le CSS), donc ne rien appeler laisse déjà la bonne
+ * valeur hors coque ou avant le premier chargement.
+ */
+function poserHauteurBanniere(px: number): void {
+  try { document.documentElement.style.setProperty("--bannerH", Math.max(0, px) + "px"); } catch { /* pas de DOM */ }
+}
+
+/**
+ * Écoute une fois la taille réelle et les échecs de chargement. Un échec
+ * après un `showBanner()` déjà résolu (réseau qui traîne, pas d'inventaire)
+ * laissait `banniereMontree` à `true` et la réserve à une hauteur fantôme :
+ * on remet les deux à zéro dans ce cas.
+ */
+function assurerEcouteTaille(): void {
+  if (ecouteTailleArmee) return;
+  ecouteTailleArmee = true;
+  void AdMob.addListener(BannerAdPluginEvents.SizeChanged, (taille: AdMobBannerSize) => {
+    poserHauteurBanniere(taille?.height || 0);
+  });
+  void AdMob.addListener(BannerAdPluginEvents.FailedToLoad, () => {
+    banniereMontree = false;
+    poserHauteurBanniere(0);
+  });
+}
 
 /**
  * Montre ou cache la bannière du bas d'écran, selon `voulu`. Une seule
@@ -314,6 +346,7 @@ export async function banniereVisible(voulu: boolean): Promise<void> {
   banniereEnCours = true;
   try {
     if (voulu) {
+      assurerEcouteTaille();
       if (banniereMontree) { await AdMob.resumeBanner(); return; }
       const options: BannerAdOptions = {
         adId: idBanniere(), adSize: BannerAdSize.ADAPTIVE_BANNER, position: BannerAdPosition.BOTTOM_CENTER,
@@ -322,12 +355,15 @@ export async function banniereVisible(voulu: boolean): Promise<void> {
       banniereMontree = true;
     } else if (banniereMontree) {
       await AdMob.hideBanner();
+      // Cachée tout de suite : ne pas attendre un hypothétique SizeChanged à 0
+      // avant de rendre l'espace qu'elle occupait à la mise en page.
+      poserHauteurBanniere(0);
     }
   } catch {
     // Un échec de chargement (pas d'inventaire, pas de réseau) ne doit pas
     // laisser croire qu'elle est montrée : le prochain passage à `true`
     // retentera un vrai showBanner() plutôt qu'un resumeBanner() sans objet.
-    if (voulu) banniereMontree = false;
+    if (voulu) { banniereMontree = false; poserHauteurBanniere(0); }
   } finally {
     banniereEnCours = false;
   }

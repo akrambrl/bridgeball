@@ -3494,7 +3494,7 @@ if(typeof document!=="undefined"&&!document.getElementById("bb-css")){
        Ces variables sont lues depuis des styles en ligne via var(), ce qui est
        le seul moyen de faire dépendre un style JSX d'une media query sans
        dupliquer la mise en page. */
-    :root{--pileGap:10px;--pileHaut:20px;--pileBas:28px;--logoMax:112px;--carteEncart:14px 14px 12px;--carteBouton:12px 16px;}
+    :root{--pileGap:10px;--pileHaut:20px;--pileBas:28px;--logoMax:112px;--carteEncart:14px 14px 12px;--carteBouton:12px 16px;--bannerH:0px;}
     @media (max-height:740px){
       /* --pileBas à 10 et non 6 : à 6, le pied de page (mentions légales,
          règlement, numéro de version) frôlait le bord de l'écran. Les 4 px
@@ -14983,8 +14983,13 @@ export default function LePont() {
           un iPhone SE, la carte du carrousel ne pouvant pas descendre sous son
           plancher. La marge horizontale de 18 px, elle, ne change pas : c'est la
           hauteur qui manque, pas la largeur. */}
+      {/* --bannerH : hauteur RÉELLE de la bannière AdMob (lib/pub.ts la pose sur
+          :root via SizeChanged, 0 hors coque ou bannière cachée). La bannière
+          est un calque NATIF posé PAR-DESSUS la webview, pas un élément du DOM
+          — sans cette réserve, elle recouvrait le bas de cette pile (signalé :
+          elle cachait un bouton de l'accueil). */}
       <div style={{...sheet,gap:"var(--pileGap)",
-        padding:"var(--pileHaut) 18px calc(var(--pileBas) + env(safe-area-inset-bottom))"}}>
+        padding:"var(--pileHaut) 18px calc(var(--pileBas) + var(--bannerH) + env(safe-area-inset-bottom))"}}>
 
         {/* Alerte streak en danger — bande supprimée pour gagner de la place verticale.
             L'info reste visible via le badge alerte rouge dans le header (cliquable pour le détail). */}
