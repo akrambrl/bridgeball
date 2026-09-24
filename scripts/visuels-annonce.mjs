@@ -74,6 +74,13 @@ const anton = b64(await readFile(join(ici, "polices", "anton-latin.woff2")), "fo
 const bebas = b64(await readFile(join(ici, "polices", "bebas-neue-latin.woff2")), "font/woff2");
 const motSymbole = b64(await readFile(join(racine, "public", "logo-mot.webp")), "image/webp");
 
+// Les VRAIS badges des stores — voir scripts/badges/LISEZ-MOI.md pour leur
+// provenance officielle. Ne servent que si une annonce porte `badges: true` :
+// tant qu'une fiche n'est pas acceptée, le visuel écrit « SUR iOS ET ANDROID »
+// en texte plutôt que de promettre un store qui n'existe pas encore.
+const badgeAppStore = b64(await readFile(join(ici, "badges", "app-store-fr.svg")), "image/svg+xml");
+const badgeGooglePlay = b64(await readFile(join(ici, "badges", "google-play-fr.png")), "image/png");
+
 // ── L'ARTWORK DU LOT, s'il est fourni ──────────────────────────────────────
 // Déposé à la main dans visuels/bruts/ (fc27.jpg, .png ou .webp), parce que c'est
 // une image de tiers : elle n'a pas à vivre dans public/, qui part dans le bundle
@@ -206,7 +213,9 @@ const ANNONCES = {
     vedette: "MAINTENANT",
     corps: "Cinq façons de jouer, une devinette chaque jour, un classement mensuel "
          + "avec un lot à gagner, et des duels en direct contre tes potes.",
-    appel: "Cherche « GOAT FC »",
+    // Les VRAIS badges plutôt que le bouton texte, puisque les deux fiches
+    // sont acceptées — voir la note sur `badges` plus haut dans le fichier.
+    badges: true,
     mentions: "App Store est une marque d'Apple Inc. Google Play est une marque de Google LLC.",
   },
 };
@@ -407,6 +416,14 @@ function page(a, f) {
     font-size:${story ? 25 : 21}px;letter-spacing:1.8px;color:${G.encre};
     background:${G.or};border:3px solid ${G.encre};border-radius:11px;
     padding:${story ? "11px 26px" : "9px 22px"};box-shadow:4px 4px 0 rgba(0,0,0,.5)}
+  /* Les VRAIS badges, à leurs proportions d'origine (jamais étirés) : une
+     hauteur commune, la largeur suit. filter:drop-shadow et non box-shadow
+     : les deux badges ont un fond transparent, une ombre en boîte
+     dessinerait un rectangle noir autour d'eux. */
+  .badges{display:flex;align-items:center;justify-content:center;
+    gap:${story ? 14 : 12}px;flex-wrap:wrap}
+  .badges img{height:${story ? 46 : 40}px;width:auto;display:block;
+    filter:drop-shadow(3px 3px 0 rgba(0,0,0,.5))}
   /* Les mentions ne sont pas décoratives : un concours annoncé sans règlement ni
      mention de non-affiliation aux plateformes est un concours attaquable. Assez
      petites pour ne pas prendre la vedette, assez grandes pour être lues — le
@@ -438,7 +455,12 @@ function page(a, f) {
         ? `<div class="cadreLot"><img src="${artLot.donnee}" alt="${a.vedette}"></div>`
         : `<div class="vedette">${a.vedette}</div>`}
       <div class="corps">${a.corps}</div>
-      <div class="appel">${a.appel}</div>
+      ${a.badges
+        ? `<div class="badges">
+             <img src="${badgeAppStore}" alt="Télécharger dans l'App Store">
+             <img src="${badgeGooglePlay}" alt="Disponible sur Google Play">
+           </div>`
+        : `<div class="appel">${a.appel}</div>`}
       <div class="mentions">${a.artwork && artLot
         ? a.mentions + " " + a.mentionsArtwork : a.mentions}</div>
     </div>
