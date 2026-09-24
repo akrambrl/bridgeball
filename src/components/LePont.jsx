@@ -5880,12 +5880,23 @@ export default function LePont() {
     const diffRank = { facile: 0, moyen: 1, expert: 2 };
     
     // Calcule le rang de match d'un nom :
+    // -1 = le nom entier EST la query (mononyme trouvé pile)
     // 0 = un mot APRÈS le premier commence par q (= nom de famille / particule)
     // 1 = le nom complet commence par q (= prénom)
     // 2 = un mot quelconque commence par q (cas mixte)
     // 3 = la query est juste contenue (substring)
+    //
+    // Le rang -1 existe à cause de « Rodri » : signalé introuvable en tapant
+    // son nom en entier, alors qu'il est bien dans la base. `slice(0, 5)` ne
+    // le voyait jamais — des dizaines de "* Rodríguez"/"* Rodrigues" décrochent
+    // le rang 0 (nom de famille qui commence par "rodri") et remplissaient déjà
+    // les 5 places avant que "Rodri" (rang 1, tombant dans la seule branche
+    // « le nom complet commence par q ») n'ait sa chance. Un mononyme qui
+    // correspond PILE à la saisie doit primer sur un nom de famille qui
+    // commence seulement par elle.
     function matchRank(name) {
       const nn = norm(name);
+      if (nn === q) return -1;
       const words = nn.split(" ");
       // Mot après le premier (nom de famille / particule)
       for (let i = 1; i < words.length; i++) {
