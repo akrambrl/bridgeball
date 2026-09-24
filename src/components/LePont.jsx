@@ -14858,8 +14858,15 @@ export default function LePont() {
           Le pendant mobile du ruban de l'accueil PC : un bandeau doré qui fait
           défiler le lot à gagner (même mécanique .goat-marquee, contenu dupliqué
           pour une boucle sans couture). Lot du mois en cours, ou en teaser celui
-          du mois suivant. Rien tant qu'aucun lot n'est défini. */}
-      {(()=>{
+          du mois suivant. Rien tant qu'aucun lot n'est défini.
+
+          Signalé : visible PAR-DESSUS GOAT GRID (et par le même mécanisme,
+          aurait recouvert GOAT Duel et le choix de mode BATTLE). Ces écrans
+          sont des OVERLAYS posés sur l'accueil — `screen` reste "home" pendant
+          qu'on y joue, ce bloc continuait donc de s'afficher. Même liste de
+          garde qu'ailleurs dans ce fichier (voir wasInGameRef) pour décider
+          qu'on n'est plus vraiment "sur l'accueil". */}
+      {!showGoatGrid && !duelScreen && !ggModeChoice && !ggBattleScreen && (()=>{
         const saison = getCurrentSeason();
         let lot = (lots||[]).find(function(l){ return l && l.season_number===saison.num && l.rang===1; });
         let teaser = false, moisLabel = "";
