@@ -73,6 +73,12 @@ const anton = b64(await readFile(join(ici, "polices", "anton-latin.woff2")), "fo
 // système : ils ne ressemblaient donc à l'app que par leurs titres.
 const bebas = b64(await readFile(join(ici, "polices", "bebas-neue-latin.woff2")), "font/woff2");
 const motSymbole = b64(await readFile(join(racine, "public", "logo-mot.webp")), "image/webp");
+// La VRAIE icône de l'app (celle du Springboard / du tiroir d'apps, et celle
+// qui apparaît sur la fiche du store) — pas le simple mot-symbole texte
+// ci-dessus. Sert quand une annonce porte `icone: true` : pour « GOAT FC est
+// sur les stores », montrer l'icône EXACTE que le lecteur va reconnaître en
+// cherchant l'app, plutôt qu'un texte stylisé qu'il ne reverra nulle part.
+const iconeApp = b64(await readFile(join(racine, "public", "icon-512.png")), "image/png");
 
 // Les VRAIS badges des stores — voir scripts/badges/LISEZ-MOI.md pour leur
 // provenance officielle. Ne servent que si une annonce porte `badges: true` :
@@ -216,6 +222,10 @@ const ANNONCES = {
     // Les VRAIS badges plutôt que le bouton texte, puisque les deux fiches
     // sont acceptées — voir la note sur `badges` plus haut dans le fichier.
     badges: true,
+    // La VRAIE icône plutôt que le mot-symbole texte, pour la même raison :
+    // c'est elle qu'il faut reconnaître dans les résultats de recherche du
+    // store, pas un lettrage qui n'y apparaît jamais.
+    icone: true,
     mentions: "App Store est une marque d'Apple Inc. Google Play est une marque de Google LLC.",
   },
 };
@@ -361,6 +371,16 @@ function page(a, f) {
     align-items:center;justify-content:center;gap:${story ? 11 : 10}px;
     padding:${story ? 26 : 32}px 30px ${story ? 20 : 32}px}
   .mot{width:${story ? 178 : 186}px;height:auto;display:block}
+  /* L'icône réelle de l'app, cadrée comme une tuile de store : coin arrondi à
+     la proportion d'un icône iOS/Android (≈22 %), trait d'encre et ombre
+     dure — le même vocabulaire que .cadreLot, pour qu'elle se lise comme UN
+     OBJET posé sur l'affiche plutôt que comme un fond qui continue. */
+  .iconeApp{width:${story ? 168 : 158}px;height:${story ? 168 : 158}px;
+    border-radius:${story ? 37 : 35}px;overflow:hidden;
+    border:${story ? 5 : 4}px solid ${G.encre};
+    box-shadow:${story ? 7 : 6}px ${story ? 7 : 6}px 0 rgba(0,0,0,.55);
+    line-height:0;flex-shrink:0}
+  .iconeApp img{width:100%;height:100%;display:block;object-fit:cover}
   .surligne{font-family:'Bebas Neue',Impact,sans-serif;font-weight:400;
     font-size:${story ? 18 : 16}px;letter-spacing:${story ? 3.6 : 3}px;color:${G.encre};
     text-transform:uppercase;text-align:center}
@@ -445,7 +465,9 @@ function page(a, f) {
     <div class="haut">
       ${decorOr}
       <div class="contenuHaut">
-        <img class="mot" src="${motSymbole}" alt="GOAT FC">
+        ${a.icone
+          ? `<div class="iconeApp"><img src="${iconeApp}" alt="GOAT FC"></div>`
+          : `<img class="mot" src="${motSymbole}" alt="GOAT FC">`}
         <div class="surligne">${a.surligne}</div>
         <div class="titre">${a.titre.map((l) => `<span>${l}</span>`).join("")}</div>
       </div>
