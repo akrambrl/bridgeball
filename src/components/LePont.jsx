@@ -18028,7 +18028,7 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
         {xpDoublee && (
           <div style={{background:G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,
             padding:"12px 16px",textAlign:"center"}}>
-            <div style={{...posterText(17,G.projecteur)}}>✨ {tr("XP doublée","XP doubled","XP verdoppelt","XP raddoppiati","XP dobrado","XP duplicada")}</div>
+            <div style={{...posterText(17,G.projecteur)}}>🎉 {tr("Bravo, tes points sont doublés !","Nice, your points are doubled!","Bravo, deine Punkte sind verdoppelt!","Bravo, i tuoi punti sono raddoppiati!","Boa, seus pontos foram dobrados!","¡Genial, tus puntos se han duplicado!")}</div>
             <div style={{fontSize:12,color:"rgba(255,255,255,.55)",marginTop:3}}>
               +{sc} {tr("XP de plus pour ta collection","extra XP for your collection","XP mehr für deine Sammlung","XP in più per la collezione","XP a mais para sua coleção","XP más para tu colección")}
             </div>
