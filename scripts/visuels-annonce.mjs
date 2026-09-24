@@ -195,6 +195,20 @@ const ANNONCES = {
     mentions: "App Store est une marque d'Apple Inc. Version Android en cours de "
             + "validation, disponible très prochainement.",
   },
+  partout: {
+    // Publiée le 24 septembre 2026 : la fiche Play Store est passée
+    // publique (vérifié : HTTP 200 sur une requête anonyme), donc l'annonce
+    // "disponible" ci-dessus tient sa promesse — Android arrive vraiment
+    // très vite, et on peut nommer les deux stores au lieu d'un seul.
+    fichier: "disponible-partout",
+    surligne: "C'EST OFFICIEL",
+    titre: ["DISPONIBLE", "SUR iOS ET ANDROID"],
+    vedette: "MAINTENANT",
+    corps: "Cinq façons de jouer, une devinette chaque jour, un classement mensuel "
+         + "avec un lot à gagner, et des duels en direct contre tes potes.",
+    appel: "Cherche « GOAT FC »",
+    mentions: "App Store est une marque d'Apple Inc. Google Play est une marque de Google LLC.",
+  },
 };
 
 // ── Les légendes ───────────────────────────────────────────────────────────
@@ -269,6 +283,22 @@ Android arrive très vite — patience, ça vient.
 Android arrive très vite 👀
 
 Cherche « GOAT FC » sur l'App Store
+
+#football #quizfoot #mercato #footballtiktok #goatfc`,
+  },
+  partout: {
+    instagram: `📱 C'EST OFFICIEL — GOAT FC EST SUR iOS ET ANDROID.
+
+Cinq façons de jouer, une devinette du jour, un classement mensuel qui se mérite — le podium de ce mois-ci repart avec un lot — et des duels en direct contre tes potes.
+
+👉 Cherche « GOAT FC » sur l'App Store ou le Play Store, ou lance-toi directement sur goatfc.fr.
+
+#football #quizfoot #mercato #ligue1 #premierleague #applifoot #goatfc`,
+    tiktok: `GOAT FC est maintenant sur iOS ET Android 📱🍎🤖
+
+5 modes, une devinette chaque jour, un classement du mois, des duels en direct.
+
+Cherche « GOAT FC » sur ton store
 
 #football #quizfoot #mercato #footballtiktok #goatfc`,
   },
