@@ -579,7 +579,13 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
     return uniq.slice(0, daily ? 4 : 5);
   }, [answer.name, daily]);
 
-  function submitGuess(p: Player) {
+  // `refocus` : redonne le focus au champ 50 ms après un essai FAUX, pour
+  // enchaîner sans retoucher l'écran — voulu quand on tape ou qu'on choisit
+  // une suggestion (handlersDeTap fait déjà pareil, sur `touchend`). Le dé
+  // (randomGuess) passe `false` : il vient de fermer le clavier exprès
+  // (blur() explicite, voir plus bas) et ce setTimeout le rouvrait 50 ms
+  // plus tard sans qu'aucun clic dessus n'y soit pour rien — signalé.
+  function submitGuess(p: Player, refocus: boolean = true) {
     if (over || revealing) return;
     const gs = [...guesses, p];
     const w = p.name === answer.name;
@@ -639,7 +645,7 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
         }
         setOver(true);
           }, daily ? 400 : REVEAL_MS);
-    } else {
+    } else if (refocus) {
       setTimeout(() => inputRef.current?.focus(), 50);
     }
   }
@@ -650,7 +656,7 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
     const guessed = new Set(guesses.map(g => g.name));
     const pool = ALL().filter(p => !guessed.has(p.name) && (p.diff === "facile" || p.diff === "moyen") && p.clubs && p.clubs.length >= 2 && !!p.birthYear && (p.birthYear as number) >= MODERN_MIN_BY);
     if (pool.length === 0) return;
-    submitGuess(pool[Math.floor(Math.random() * pool.length)]);
+    submitGuess(pool[Math.floor(Math.random() * pool.length)], false);
   }
 
   // Donner la réponse (devinette du jour) : révèle le joueur mais SANS aucun
