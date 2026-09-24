@@ -69,6 +69,11 @@ const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 // d'install iOS ci-dessous, qui pointe vers le vrai store plutôt que vers le
 // mode d'emploi « écran d'accueil » une fois l'app native disponible.
 const APP_STORE_URL = "https://apps.apple.com/fr/app/goat-fc/id6802330074";
+// Même fiche côté Android, en ligne depuis le 24 septembre 2026 — voir
+// installBanner plus bas, qui bascule Android du mode d'emploi PWA vers ce
+// lien direct maintenant que la fiche est publique (vérifié : HTTP 200,
+// titre "GOAT FC – Applications sur Google Play" sur une requête anonyme).
+const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=fr.goatfc.app";
 
 
 // Code secret du tableau de bord privé : goatfc.fr/?stats=<CODE>
@@ -14675,9 +14680,16 @@ export default function LePont() {
   // (ni l'un ni l'autre ne sert de pub AdMob avant ce déclic). Sur iOS, seule
   // `isNative()` doit exclure — la PWA standalone reste concernée.
   //
-  // Ailleurs (Android non installé, via `deferredInstall`) → mode d'emploi PWA
-  // inchangé, garde `!isStandalone()` intacte, en attendant que la fiche Play
-  // Store repasse l'examen Google.
+  // ── ANDROID BASCULE SUR LE MÊME PRINCIPE, DEPUIS QUE LA FICHE EST PUBLIQUE ──
+  // Avant le 24 septembre 2026, Android gardait le mode d'emploi PWA
+  // (`deferredInstall.prompt()`) : la fiche Play Store n'existait pas encore
+  // publiquement. Maintenant qu'elle l'est, `isAndroid() && !isNative()` suit
+  // exactement la même logique que iOS deux lignes plus haut — même raison
+  // (vrai téléchargement en un geste, pub AdMob que la PWA ne sert jamais).
+  //
+  // Le chemin `deferredInstall` (event `beforeinstallprompt`) reste pour les
+  // navigateurs desktop qui le déclenchent hors Android/iOS — un cas que la
+  // fiche du vrai store ne couvre pas, faute d'app native sur ordinateur.
   //
   // ── PLUS DE GARDE `pseudoConfirmed` ─────────────────────────────────────
   // Elle vient de l'ancienne bannière PWA, où l'idée tenait : ne pas coller
@@ -14698,9 +14710,10 @@ export default function LePont() {
   // Le reflet (`goat-shine`) est la seule animation : reprise telle quelle de
   // la classe déjà écrite pour « les bannières dégradées orange→or », posée
   // ici pour la première fois.
-  const installBanner = ((isIOS() && !isNative()) || (!isStandalone() && deferredInstall)) && (
+  const installBanner = (((isIOS() || isAndroid()) && !isNative()) || (!isStandalone() && deferredInstall)) && (
     <div onClick={function(){
       if (isIOS()) { window.open(APP_STORE_URL, "_blank"); return; }
+      if (isAndroid()) { window.open(PLAY_STORE_URL, "_blank"); return; }
       installDismissedThisSession.current = false; setShowInstallPrompt(true);
     }} style={{position:"sticky",top:0,zIndex:40,margin:"0 -16px 12px",padding:"12px 16px",
       background:"linear-gradient(115deg,"+G.orSombre+" 0%,"+G.or+" 45%,"+G.orSombre+" 100%)",
@@ -14712,16 +14725,20 @@ export default function LePont() {
       <div className="goat-shine" aria-hidden="true" style={{position:"absolute",top:0,bottom:0,left:0,width:"45%",
         background:"linear-gradient(100deg,transparent,rgba(255,255,255,.5),transparent)",
         pointerEvents:"none",zIndex:0}}/>
-      <span style={{...pastilleCharte(G.nuit,38),position:"relative",zIndex:1}}>{isIOS() ? "🍎" : "📲"}</span>
+      <span style={{...pastilleCharte(G.nuit,38),position:"relative",zIndex:1}}>{isIOS() ? "🍎" : isAndroid() ? "🤖" : "📲"}</span>
       <div style={{flex:1,minWidth:0,position:"relative",zIndex:1}}>
         <div style={{...posterLight(16,G.encre),whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
           {isIOS()
             ? tr("GOAT FC est sur l'App Store","GOAT FC is on the App Store","GOAT FC ist im App Store","GOAT FC è sull'App Store","GOAT FC está na App Store","GOAT FC está en la App Store")
+            : isAndroid()
+            ? tr("GOAT FC est sur le Play Store","GOAT FC is on the Play Store","GOAT FC ist im Play Store","GOAT FC è sul Play Store","GOAT FC está na Play Store","GOAT FC está en la Play Store")
             : tr("Installer GOAT FC","Install GOAT FC","GOAT FC installieren","Installa GOAT FC","Instalar GOAT FC","Instalar GOAT FC")}
         </div>
         <div style={{fontSize:11,fontWeight:700,color:"rgba(8,17,9,.7)",marginTop:2,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
           {isIOS()
             ? tr("Téléchargement direct, sans passer par Safari","Direct download, no need for Safari","Direkter Download, kein Safari nötig","Download diretto, senza Safari","Download direto, sem precisar do Safari","Descarga directa, sin pasar por Safari")
+            : isAndroid()
+            ? tr("Téléchargement direct, sans passer par Chrome","Direct download, no need for Chrome","Direkter Download, kein Chrome nötig","Download diretto, senza Chrome","Download direto, sem precisar do Chrome","Descarga directa, sin pasar por Chrome")
             : tr("Reçois les rappels et accède plus vite","Get daily reminders & faster access","Erhalte tägliche Erinnerungen & schnelleren Zugriff","Ricevi promemoria quotidiani e accesso più rapido","Receba lembretes diários e acesso mais rápido","Recibe recordatorios y entra más rápido")}
         </div>
       </div>
