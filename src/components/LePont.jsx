@@ -3607,6 +3607,18 @@ function isAndroid() {
   return /android/i.test(window.navigator.userAgent);
 }
 
+// L'ORIGINE À METTRE DANS UN LIEN PARTAGÉ (code de parrainage, code de salon
+// GOAT DUEL). `window.location.origin` ne lève JAMAIS dans la coque native —
+// il répond simplement "capacitor://localhost", une adresse qui n'existe que
+// sur l'appareil qui l'a envoyée. Un `try/catch` autour de `location.origin`
+// ne rattrape donc rien ici : signalé, un lien de parrainage partagé depuis
+// l'app envoyait exactement ce lien mort. Sur la coque, il faut donc TOUJOURS
+// le vrai domaine du site, jamais celui du webview.
+function origineWeb() {
+  if (isNative()) return "https://goatfc.fr";
+  try { return window.location.origin; } catch { return "https://goatfc.fr"; }
+}
+
 // Clé publique VAPID : elle identifie l'expéditeur auprès du service de push.
 // Sa moitié privée vit dans les secrets GitHub (voir docs/NOTIFICATIONS.md) et
 // ne doit jamais entrer dans le dépôt.
@@ -4089,7 +4101,7 @@ export default function LePont() {
   }, [duelScreen]);
   // Partage / copie du code de salon (Web Share si dispo, sinon presse-papiers)
   function duelShareCode(code){
-    const url = (function(){ try { return window.location.origin; } catch { return "https://goatfc.fr"; } })();
+    const url = origineWeb();
     const txt = tr(
       "Rejoins mon GOAT DUEL ! Code : "+code+" — "+url,
       "Join my GOAT DUEL! Code: "+code+" — "+url,
@@ -14290,7 +14302,7 @@ export default function LePont() {
           n'apparaît que si le résumé serveur a répondu — sinon il ne s'affiche
           pas plutôt que de montrer un code vide. */}
       {parrainInfo && parrainInfo.code && (() => {
-        const origine = (function(){ try { return window.location.origin; } catch { return "https://goatfc.fr"; } })();
+        const origine = origineWeb();
         const lien = origine + "/?p=" + parrainInfo.code;
         const shareText = tr(
           "Rejoins-moi sur GOAT FC, le quiz foot ! " + lien,
