@@ -8,7 +8,7 @@ import { createPortal } from "react-dom";
 import { PLAYERS, RETIRED_PLAYERS, GG_WC_WINNERS, GG_CL_WINNERS } from "../lib/donnees";
 import { DRAPEAUX } from "../lib/pays";
 import { trackPlay, pingPresence, pingSource, pingLive, trackTime } from "../lib/track";
-import { hapticSuccess, hapticError, isNative } from "../lib/native";
+import { hapticSuccess, hapticError, isNative, openExternalLink } from "../lib/native";
 import { pickOpponent } from "../lib/opponents";
 import { G, posterText, posterTitre, posterLight, btn, fondCharte, areneCharte,
          retourStyle, retourCharte, fermerCharte, ligneCharte, pastilleCharte } from "../lib/charte.jsx";
@@ -12742,13 +12742,19 @@ export default function LePont() {
           })()}
 
           {/* Liens légaux */}
-          <a href="/privacy" target="_blank" rel="noopener noreferrer" style={ligneCompte}>
+          {/* onClick : sur natif, `target="_blank"` ne fait rien (pas de fenêtre
+              à ouvrir dans la webview) — openExternalLink() route vers un
+              onglet système via @capacitor/browser. Sur le web, on laisse le
+              comportement natif du <a>, d'où l'absence de preventDefault. */}
+          <a href="/privacy" target="_blank" rel="noopener noreferrer" style={ligneCompte}
+            onClick={function(e){ if(isNative()){ e.preventDefault(); openExternalLink("https://goatfc.fr/privacy"); } }}>
             <span style={{fontSize:18}}>🔒</span>
             <div style={{flex:1}}>{tr("Politique de confidentialité","Privacy Policy","Datenschutzerklärung","Informativa sulla privacy","Política de Privacidade","Política de privacidad")}</div>
             <span style={{fontSize:14,color:"rgba(255,255,255,.45)"}}>↗</span>
           </a>
 
-          <a href="/terms" target="_blank" rel="noopener noreferrer" style={ligneCompte}>
+          <a href="/terms" target="_blank" rel="noopener noreferrer" style={ligneCompte}
+            onClick={function(e){ if(isNative()){ e.preventDefault(); openExternalLink("https://goatfc.fr/terms"); } }}>
             <span style={{fontSize:18}}>📄</span>
             <div style={{flex:1}}>{tr("Conditions générales","Terms of Service","Nutzungsbedingungen","Termini di servizio","Termos de Serviço","Términos y condiciones")}</div>
             <span style={{fontSize:14,color:"rgba(255,255,255,.45)"}}>↗</span>
@@ -12759,7 +12765,8 @@ export default function LePont() {
               cherche ses droits vient au profil, comme il vient y chercher ses
               CGU. C'est aussi ici qu'il trouve son code de récupération, dont le
               règlement fait la preuve d'identité au moment de réclamer le lot. */}
-          <a href="/reglement" target="_blank" rel="noopener noreferrer" style={ligneCompte}>
+          <a href="/reglement" target="_blank" rel="noopener noreferrer" style={ligneCompte}
+            onClick={function(e){ if(isNative()){ e.preventDefault(); openExternalLink("https://goatfc.fr/reglement"); } }}>
             <span style={{fontSize:18}}>🏆</span>
             <div style={{flex:1}}>{tr("Règlement du concours","Contest Rules","Teilnahmebedingungen","Regolamento del concorso","Regulamento do concurso","Bases del concurso")}</div>
             <span style={{fontSize:14,color:"rgba(255,255,255,.45)"}}>↗</span>
@@ -13640,9 +13647,11 @@ export default function LePont() {
             })()}
           </div>
           <div style={{display:"flex",gap:8,fontSize:11.5,marginBottom:16,justifyContent:"center"}}>
-            <a href="/privacy" target="_blank" rel="noopener noreferrer" style={{color:"rgba(242,231,206,.62)",textDecoration:"underline",textUnderlineOffset:3}}>{tr("Politique de confidentialité","Privacy Policy","Datenschutz","Privacy","Privacidade","Política de privacidad")}</a>
+            <a href="/privacy" target="_blank" rel="noopener noreferrer" style={{color:"rgba(242,231,206,.62)",textDecoration:"underline",textUnderlineOffset:3}}
+              onClick={function(e){ if(isNative()){ e.preventDefault(); openExternalLink("https://goatfc.fr/privacy"); } }}>{tr("Politique de confidentialité","Privacy Policy","Datenschutz","Privacy","Privacidade","Política de privacidad")}</a>
             <span style={{color:"rgba(242,231,206,.4)"}}>·</span>
-            <a href="/terms" target="_blank" rel="noopener noreferrer" style={{color:"rgba(242,231,206,.62)",textDecoration:"underline",textUnderlineOffset:3}}>{tr("CGU","Terms","AGB","Termini","Termos","Términos")}</a>
+            <a href="/terms" target="_blank" rel="noopener noreferrer" style={{color:"rgba(242,231,206,.62)",textDecoration:"underline",textUnderlineOffset:3}}
+              onClick={function(e){ if(isNative()){ e.preventDefault(); openExternalLink("https://goatfc.fr/terms"); } }}>{tr("CGU","Terms","AGB","Termini","Termos","Términos")}</a>
           </div>
           <button onClick={closeWelcome} style={{...btn(G.pelouse,G.white,17),width:"100%",padding:"13px"}}>
             {tr("J'ai compris 🐐","Got it 🐐","Verstanden 🐐","Ho capito 🐐","Entendi 🐐","Entendido 🐐")}
