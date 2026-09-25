@@ -4318,6 +4318,9 @@ export default function LePont() {
     const common = duelCommonPlayers(r.club_c1, r.club_c2);
     if(checkGuess(g, common)){
       duelAnsweredRef.current = true;
+      // vibrate() seul ne vibre jamais sur iOS (ni web ni webview natif) :
+      // hapticSuccess() couvre ce cas via @capacitor/haptics.
+      hapticSuccess();
       playSound("ok"); vibrate(30);
       // Affiche le NOM du joueur en gros (pour la vidéo) — nom canonique de la base,
       // avec les points gagnés (solo) pour ne pas empiler 2 overlays.
@@ -5730,6 +5733,12 @@ export default function LePont() {
     
     if (matchesRow && matchesCol) {
       // ✅ BONNE RÉPONSE — pts selon DIFFICULTÉ DU JOUEUR CITÉ
+      // GOAT GRID n'avait aucun retour haptique : seul le flash visuel de la
+      // case marquait le coup. hapticSuccess (natif) + vibrate (web Android)
+      // couvrent les deux plateformes, comme sur Plug/Mercato.
+      hapticSuccess();
+      playSound("ok");
+      vibrate(30);
       const playerPts = ggCalculatePointsForPlayer(player.diff, cell.totalCount);
       const playerRarity = ggGetRarityClass(playerPts);
       const newFilled = { ...ggFilledCells, [cellKey]: { name: player.name, pts: playerPts, rarity: playerRarity } };
