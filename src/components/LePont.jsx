@@ -6977,9 +6977,23 @@ export default function LePont() {
   // écrans de fin, qui portent déjà le bouton de pub récompensée et où un
   // second format ferait plus d'encombrement que de revenu. No-op hors
   // coque native (`banniereVisible` le gère lui-même).
+  //
+  // `screen === "home"` SEUL ne suffit pas : Classement, Amis, Collection,
+  // Compte, historique des défis, salon GOAT DUEL (room/waitingDuel) et
+  // salle d'attente sont des `return` anticipés qui s'affichent SANS jamais
+  // changer `screen` — signalé sur le Classement, où la bannière (un calque
+  // NATIF posé PAR-DESSUS la webview, donc jamais masqué par un simple
+  // z-index) restait visible par-dessus. GOAT GRID, GOAT DUEL en direct,
+  // GOAT BATTLE, le choix de mode et la recherche en ligne sont eux des
+  // OVERLAYS DANS le bloc "home" (même souci déjà réglé pour le ruban du
+  // lot, voir plus bas — même liste de garde ici).
+  const surAccueilPur = screen === "home"
+    && !showDuelHistory && !showFriends && !showCollection && !showAccount && !showLeaderboard
+    && !room && !waitingDuel && !waitingForRoom
+    && !showGoatGrid && !duelScreen && !ggModeChoice && !ggBattleScreen && !gameConfigModal && !mmSearch && !showDailyGame;
   useEffect(function(){
-    void banniereVisible(screen === "home");
-  }, [screen]);
+    void banniereVisible(surAccueilPur);
+  }, [surAccueilPur]);
 
   // ── AUTO-JOIN DEPUIS UN LIEN D'INVITATION ──────────────────────────────────
   //
