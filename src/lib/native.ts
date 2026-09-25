@@ -9,6 +9,7 @@ import { Haptics, ImpactStyle, NotificationType } from "@capacitor/haptics";
 import { StatusBar, Style } from "@capacitor/status-bar";
 import { SplashScreen } from "@capacitor/splash-screen";
 import { App } from "@capacitor/app";
+import { Browser } from "@capacitor/browser";
 
 export const isNative = (): boolean => {
   try {
@@ -115,4 +116,17 @@ export function hapticMedium(): void {
 export function hapticHeavy(): void {
   if (!isNative()) return;
   Haptics.impact({ style: ImpactStyle.Heavy }).catch(() => {});
+}
+
+// ── Ouverture d'un lien externe (CGU, confidentialité, règlement…) ──
+//
+// `<a target="_blank">` ne fait RIEN dans la webview Capacitor : il n'y a pas
+// de fenêtre à ouvrir, et l'app n'a pas de navigateur système intégré par
+// défaut. Un clic sur ces liens ne produisait donc aucune réaction — signalé
+// sur le règlement du concours, mais le même souci touchait CGU et
+// confidentialité. Sur le web, on laisse le comportement natif du navigateur
+// (l'appelant ne doit PAS faire preventDefault dans ce cas).
+export function openExternalLink(url: string): void {
+  if (!isNative()) return;
+  Browser.open({ url }).catch(() => {});
 }

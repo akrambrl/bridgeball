@@ -12,6 +12,7 @@ import {
 // Carte de niveau : même photo de profil que sur mobile.
 import { levelCard } from "@/lib/collection";
 import { G, posterText, posterTitre, posterLight, btn } from "@/lib/charte.jsx";
+import { isNative, openExternalLink } from "@/lib/native";
 
 // Plus aucune prop : le bouton « Tenter ma place » du bas était le seul appelant
 // de `onPlay`. Le classement se consulte, il ne lance plus de partie.
@@ -134,6 +135,7 @@ export const LeaderboardView = () => {
                 : tr("Termine 1er à la fin du mois et il est à toi.","Finish 1st at month's end and it's yours.","Beende den Monat als 1. und er gehört dir.","Finisci 1° a fine mese ed è tuo.","Termine em 1º no fim do mês e é seu.","Termina 1º a fin de mes y es tuyo.")}
               {" · "}
               <a href="/reglement" target="_blank" rel="noopener noreferrer"
+                onClick={(e) => { if (isNative()) { e.preventDefault(); openExternalLink("https://goatfc.fr/reglement"); } }}
                 style={{ color:G.projecteur, textDecoration:"underline", textUnderlineOffset:2 }}>
                 {tr("règlement","rules","Regeln","regolamento","regulamento","bases")}
               </a>
