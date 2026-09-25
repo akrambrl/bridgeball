@@ -1141,7 +1141,11 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
                 sinon. C'est le seul mode où gagner et perdre sont tous deux
                 sans ambiguïté. */}
             <WinBanner maxWidth={340} marginTop={12} lose={!won} />
-            <div style={{ fontSize: 14, fontWeight: 800, color: "#FF8A2A", marginTop: 6 }}>
+            {/* Blanc et non orange : cette ligne vit dans la même carte que
+                "RATÉ !" au-dessus, sur un rouge translucide posé sur l'aplat or
+                de la page (voir plus haut, même raisonnement que pour le nom du
+                joueur) — un orange dessus se lisait à peine. Signalé. */}
+            <div style={{ fontSize: 14, fontWeight: 800, color: "#fff", marginTop: 6 }}>
               {daily
                 ? "🔥 " + tr("Série", "Streak", "Serie", "Serie", "Sequência","Racha") + " : " + dailyStreak + " " + tr(dailyStreak > 1 ? "jours" : "jour", dailyStreak > 1 ? "days" : "day", dailyStreak > 1 ? "Tage" : "Tag", dailyStreak > 1 ? "giorni" : "giorno", dailyStreak > 1 ? "dias" : "dia",dailyStreak > 1 ? "días" : "día") + (dailyStreak > 1 && dailyStreak === dailyBest ? "  ·  🏅 " + tr("Record !", "Best!", "Rekord!", "Record!", "Recorde!","¡Récord!") : "  ·  🏅 " + tr("Record", "Best", "Rekord", "Record", "Recorde","Récord") + " : " + dailyBest)
                 : (won ? "🔥 " + tr("Série", "Streak", "Serie", "Serie", "Sequência","Racha") + " : " + streak + "  ·  🏆 " + tr("Total", "Total", "Gesamt", "Totale", "Total","Total") + " : " + nombre(score)
