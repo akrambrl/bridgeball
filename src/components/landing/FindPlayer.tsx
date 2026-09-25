@@ -909,7 +909,12 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
           tracés d'encre, grain de trame) : sans lui, le fond est un aplat nu. */}
       {areneCharte}
       {/* Header */}
-      <div style={{ position: "sticky", top: 0, zIndex: 5, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "calc(12px + env(safe-area-inset-top)) 16px 12px", background: G.encre, borderBottom: G.traitFin }}>
+      {/* `max(14px, env(...))` et non `calc(14px + env(...))` : c'est le seul
+          endroit du fichier qui additionnait au lieu de prendre le plus grand
+          des deux, et c'est aussi le seul écran signalé caché sous l'heure —
+          tous les en-têtes de LePont.jsx (Classement, Compte, Duel…) utilisent
+          déjà `max()`, jamais `calc()`, pour ce même padding. */}
+      <div style={{ position: "sticky", top: 0, zIndex: 5, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "max(14px, env(safe-area-inset-top)) 16px 12px", background: G.encre, borderBottom: G.traitFin }}>
         <button onClick={close} style={{ ...btn(G.nuit, G.white, 15), padding: "8px 12px", flexShrink: 0 }}>← {tr("QUITTER", "QUIT", "BEENDEN", "ESCI", "SAIR","SALIR")}</button>
         <div style={{ ...posterText(20, G.projecteur), textAlign: "center", flex: 1, minWidth: 0, lineHeight: 1.05 }}>{daily ? tr("DEVINETTE DU JOUR", "DAILY RIDDLE", "RÄTSEL DES TAGES", "INDOVINELLO DEL GIORNO", "ADIVINHA DO DIA","ADIVINANZA DEL DÍA") : tr("TROUVE LE JOUEUR", "GUESS THE PLAYER", "ERRATE DEN SPIELER", "INDOVINA IL GIOCATORE", "ADIVINHE O JOGADOR","ADIVINA EL JUGADOR")}</div>
         {(!over && !revealing && !daily) ? (
