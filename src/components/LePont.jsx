@@ -14941,7 +14941,16 @@ export default function LePont() {
           : tr("CE MOIS-CI","THIS MONTH","DIESEN MONAT","QUESTO MESE","ESTE MÊS","ESTE MES");
         const message = quand + tr(" — LE 1ER REMPORTE "," — #1 WINS "," — DER 1. GEWINNT "," — IL 1° VINCE "," — O 1º LEVA "," — EL 1º SE LLEVA ") + lot.intitule;
         return (
-          <div style={{zIndex:2,overflow:"hidden",background:G.or,borderBottom:G.trait}}>
+          // Le ruban est le premier contenu réel de l'accueil (avant lui, tout
+          // n'est que des modales fermées par défaut) : c'est donc À LUI, et
+          // non plus à l'en-tête, de remonter sous la barre d'état — l'en-tête
+          // ci-dessous ne le fait plus dès qu'un ruban est affiché (voir
+          // `aRubanLot` plus bas). Sans ce même traitement ici, le texte du
+          // ruban démarrait à ras du haut d'écran et se faisait couper par la
+          // barre d'état — signalé.
+          <div style={{zIndex:2,overflow:"hidden",background:G.or,borderBottom:G.trait,
+            marginTop:"calc(-14px - env(safe-area-inset-top))",
+            paddingTop:"calc(14px + env(safe-area-inset-top))"}}>
             <div className="goat-marquee" style={{display:"flex",whiteSpace:"nowrap",padding:"6px 0",animationDuration:"18s"}}>
               {[0,1,2,3].map(function(i){ return (
                 <span key={i} style={{display:"flex",alignItems:"center"}}>
