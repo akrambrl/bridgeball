@@ -17263,17 +17263,11 @@ export default function LePont() {
           </button>
         </div>
 
-        {/* Défis ouverts (salon de duels asynchrones) */}
-        <button onClick={function(){requirePseudo(function(){setOpenTab("browse");setOpenDuelChooser(false);loadOpenDuels();loadMyOpenDuels();loadReceivedChallenges();setShowOpenDuels(true);});}}
-          style={{position:"relative",display:"flex",alignItems:"center",gap:12,padding:"var(--carteBouton)",background:G.maillot,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,cursor:"pointer",width:"100%",textAlign:"left"}}>
-          <div style={{width:28,height:28,borderRadius:"50%",background:G.projecteur,border:G.traitFin,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15}}>⚔️</div>
-          <div style={{flex:1}}>
-            <div style={{...posterText(16,G.white),transformOrigin:"left"}}>{tr("Défis ouverts ⚔️","Open challenges ⚔️","Offene Duelle ⚔️","Sfide aperte ⚔️","Desafios abertos ⚔️","Retos abiertos ⚔️")}</div>
-            <div style={{fontSize:11,color:"rgba(255,255,255,.82)",fontWeight:800,marginTop:2}}>{openUnseenCount>0?tr(openUnseenCount+" tentative"+(openUnseenCount>1?"s":"")+" sur tes défis !", openUnseenCount+" new attempt"+(openUnseenCount>1?"s":"")+" on your challenges!", openUnseenCount+(openUnseenCount>1?" neue Versuche":" neuer Versuch")+" auf deine Duelle!", openUnseenCount+(openUnseenCount>1?" nuovi tentativi":" nuovo tentativo")+" sulle tue sfide!", openUnseenCount+(openUnseenCount>1?" novas tentativas":" nova tentativa")+" nos seus desafios!",openUnseenCount+(openUnseenCount>1?" intentos nuevos":" intento nuevo")+" en tus retos!"):tr("Bats les scores des autres — ou lance le tien","Beat other players' scores — or post yours","Schlag die Scores der anderen — oder poste deinen","Batti i punteggi degli altri — o lancia il tuo","Supere as pontuações dos outros — ou lance a sua","Supera las puntuaciones de otros — o pon la tuya")}</div>
-          </div>
-          {(openUnseenCount+receivedChallenges.length)>0 && <span style={{position:"absolute",top:8,right:28,background:G.maillot,color:"#fff",border:G.traitFin,borderRadius:"50%",minWidth:19,height:19,padding:"0 5px",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:900}}>{openUnseenCount+receivedChallenges.length}</span>}
-          <span style={{fontSize:16,color:"rgba(255,255,255,.85)",fontWeight:900}}>›</span>
-        </button>
+        {/* Bouton « Défis ouverts » retiré de l'accueil pour une mise en page
+            plus épurée et plus espacée — sur demande. Le salon de duels
+            asynchrones reste accessible autrement (notification de défi reçu,
+            setShowOpenDuels ailleurs dans le fichier) : rien n'a été supprimé
+            côté fonctionnel, seul CE point d'entrée disparaît. */}
 
         {/* GOAT BATTLE (grille 3×3 multijoueur) n'a pas de bouton dédié ici :
             il vit sous la carte GOAT GRID du carrousel, via le modal
