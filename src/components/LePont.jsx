@@ -15611,7 +15611,14 @@ export default function LePont() {
                       chaque côté. En noir elles coupaient l'écran en deux ; en
                       transparent, c'est fondCharte — posé sur le conteneur juste
                       au-dessus — qui les remplit, et l'or continue sans couture. */}
-                  <div style={{position:"relative",zIndex:1,width:"100%",aspectRatio:"1086 / 1448",flex:"0 0 auto",maxWidth:480,margin:"0 auto",overflow:"hidden",background:"transparent",borderBottom:G.trait}}>
+                  {/* Hauteur en dvh et non liée au ratio de l'image : sur les
+                      écrans les plus courts, une affiche calée sur son ratio
+                      (1086/1448, très haute) repoussait « Jouer seul » et
+                      « Entre potes » hors de l'écran, imposant un défilement
+                      pour lancer une partie. Un plafond fait toujours de la
+                      place aux boutons ; l'image reste entière (objectFit
+                      contain), juste plus petite sur les petits écrans. */}
+                  <div style={{position:"relative",zIndex:1,width:"100%",height:"26vh",maxHeight:230,minHeight:150,flex:"0 0 auto",maxWidth:480,margin:"0 auto",overflow:"hidden",background:"transparent",borderBottom:G.trait}}>
                     <img
                       src={isPont ? PLUG_CARD_IMG : MERCATO_CARD_IMG}
                       alt=""
