@@ -3859,6 +3859,10 @@ export default function LePont() {
   const [showHallOfFame, setShowHallOfFame] = useState(false);
   const [myLbRank, setMyLbRank] = useState(null);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
+  // Détail « mes 15 meilleurs jours » : null = jamais chargé, [] = chargé et
+  // vide (aucune partie ce mois-ci), un tableau = les jours du mois courant.
+  const [showMesJours, setShowMesJours] = useState(false);
+  const [mesJours, setMesJours] = useState(null);
   const [showAccount, setShowAccount] = useState(false);
   const [showWelcome, setShowWelcome] = useState(false); // Bannière de bienvenue RGPD au 1er lancement
   const [confirmDeleteAccount, setConfirmDeleteAccount] = useState(0); // 0=closed, 1=first warning, 2=final confirm
@@ -9050,6 +9054,21 @@ export default function LePont() {
     } catch(e) { setLeaderboard([]); }
   }
 
+  // ── « MES 15 MEILLEURS JOURS » — le détail que bb_classement_mois ne
+  // renvoie jamais (il n'expose qu'un total, jamais un historique par joueur :
+  // voir docs/supabase-classement.sql, section 4ter). `bb_mes_jours_courant`
+  // se retrouve lui-même depuis `auth.uid()`, aucun identifiant à lui passer.
+  async function loadMesJours() {
+    try {
+      const rows = await sbFetch("rpc/bb_mes_jours_courant", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: "{}"
+      });
+      setMesJours(Array.isArray(rows) ? rows : []);
+    } catch(e) { setMesJours([]); }
+  }
+
   // ── RÉCLAMER LE LOT ────────────────────────────────────────────────────
   //
   // Rien n'est décidé ici. Tout ce que cette fonction contrôle avant d'envoyer
@@ -11391,6 +11410,59 @@ export default function LePont() {
   );
 
   // ── HISTORY MODAL (historique des questions de la partie qui vient de finir) ──
+  // ── « MES 15 MEILLEURS JOURS » — le détail jour par jour, réclamé après
+  // qu'un joueur a demandé s'il pouvait le voir : jusqu'ici, seul le TOTAL
+  // (bb_classement_mois) était exposé, jamais quels jours précisément
+  // comptaient. `mesJours` vient de bb_mes_jours_courant (docs/supabase-
+  // classement.sql, section 4ter), qui se retrouve lui-même via auth.uid() —
+  // aucun joueur ne peut donc demander le détail d'un autre.
+  const mesJoursModal = showMesJours && (
+    <div key="mes-jours-modal" onClick={()=>setShowMesJours(false)} style={{position:"fixed",inset:0,zIndex:9999,background:"rgba(8,17,9,.86)",display:"flex",alignItems:"flex-end",justifyContent:"center",animation:"fadeIn .2s ease"}}>
+      <div onClick={(e)=>e.stopPropagation()} style={{background:G.nuit,borderTop:G.trait,borderRadius:G.rayonL+"px "+G.rayonL+"px 0 0",width:"100%",maxWidth:500,maxHeight:"88vh",display:"flex",flexDirection:"column",animation:"slideUp .3s ease",border:G.traitFin}}>
+        <div style={{padding:"18px 20px",borderBottom:G.traitFin,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+          <div>
+            <div style={{...posterText(22),color:G.white,letterSpacing:2}}>
+              {tr("MES JOURS CE MOIS-CI","MY DAYS THIS MONTH","MEINE TAGE DIESEN MONAT","I MIEI GIORNI QUESTO MESE","MEUS DIAS ESTE MÊS","MIS DÍAS ESTE MES")}
+            </div>
+            {Array.isArray(mesJours) && (
+              <div style={{fontSize:12,color:"rgba(255,255,255,.4)",marginTop:2}}>
+                {mesJours.length} {mesJours.length>1?tr("jours joués","days played","gespielte Tage","giorni giocati","dias jogados","días jugados"):tr("jour joué","day played","gespielter Tag","giorno giocato","dia jogado","día jugado")} · {tr("les 15 meilleurs comptent","the 15 best count","die 15 besten zählen","i 15 migliori contano","os 15 melhores contam","los 15 mejores cuentan")}
+              </div>
+            )}
+          </div>
+          <button onClick={()=>setShowMesJours(false)} style={{width:36,height:36,borderRadius:"50%",background:G.nuit,border:"none",color:G.white,fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+        </div>
+        <div style={{flex:1,overflowY:"auto",padding:"14px 16px"}}>
+          {mesJours === null ? (
+            <div style={{textAlign:"center",padding:"30px 10px",color:"rgba(255,255,255,.4)",fontSize:13}}>
+              {tr("Chargement…","Loading…","Wird geladen…","Caricamento…","Carregando…","Cargando…")}
+            </div>
+          ) : mesJours.length === 0 ? (
+            <div style={{textAlign:"center",padding:"30px 10px"}}>
+              <div style={{fontSize:30,marginBottom:6}}>⚽</div>
+              <div style={{...posterText(18,G.white)}}>{tr("Aucune partie ce mois-ci","No games this month","Noch keine Partie diesen Monat","Ancora nessuna partita questo mese","Ainda sem partidas este mês","Todavía sin partidas este mes")}</div>
+            </div>
+          ) : mesJours.map(function(j, i){
+            const locale = {fr:"fr-FR",en:"en-US",de:"de-DE",it:"it-IT",pt:"pt-PT",es:"es-ES"}[lang] || "fr-FR";
+            const libelle = new Date(j.jour + "T12:00:00").toLocaleDateString(locale, { weekday:"short", day:"numeric", month:"short" });
+            return (
+              <div key={j.jour} style={{display:"flex",alignItems:"center",gap:10,background:"rgba(8,17,9,.45)",borderRadius:14,padding:"11px 14px",marginBottom:8,border:"1px solid "+(j.retenu?G.pelouseClaire+"55":"rgba(255,255,255,.1)"),opacity:j.retenu?1:.55}}>
+                <div style={{width:24,fontSize:11,fontWeight:800,color:"rgba(255,255,255,.3)",flexShrink:0}}>#{i+1}</div>
+                <div style={{flex:1,fontSize:14,fontWeight:700,color:G.white,textTransform:"capitalize"}}>{libelle}</div>
+                <div style={{fontSize:16,fontWeight:800,color:j.retenu?G.pelouseClaire:"rgba(255,255,255,.4)"}}>{j.points} pts</div>
+                <div style={{fontSize:10,fontWeight:800,letterSpacing:.5,color:j.retenu?G.pelouseClaire:"rgba(255,255,255,.35)",minWidth:78,textAlign:"right"}}>
+                  {j.retenu
+                    ? "✓ "+tr("retenu","counted","gezählt","conta","conta","cuenta")
+                    : tr("hors top 15","not in top 15","nicht in Top 15","fuori top 15","fora do top 15","fuera del top 15")}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+
   const historyModal = showHistory && (
     <div key="history-modal" onClick={()=>setShowHistory(false)} style={{position:"fixed",inset:0,zIndex:9999,background:"rgba(8,17,9,.86)",display:"flex",alignItems:"flex-end",justifyContent:"center",animation:"fadeIn .2s ease"}}>
       <div onClick={(e)=>e.stopPropagation()} style={{background:G.nuit,borderTop:G.trait,borderRadius:G.rayonL+"px "+G.rayonL+"px 0 0",width:"100%",maxWidth:500,maxHeight:"88vh",display:"flex",flexDirection:"column",animation:"slideUp .3s ease",border:G.traitFin}}>
@@ -13120,6 +13192,12 @@ export default function LePont() {
               </span>
             </div>
           )}
+          {lbMode==="saison" && (
+            <button onClick={function(){ setShowMesJours(true); if (mesJours===null) loadMesJours(); }}
+              style={{width:"100%",padding:"9px 11px",marginBottom:10,background:"transparent",border:G.traitFin,borderRadius:G.rayonS,color:G.projecteur,fontFamily:G.font,fontSize:12,fontWeight:800,cursor:"pointer",textAlign:"center"}}>
+              {tr("📅 Voir le détail de mes jours","📅 See my day-by-day detail","📅 Meine Tage im Detail ansehen","📅 Vedi il dettaglio dei miei giorni","📅 Ver o detalhe dos meus dias","📅 Ver el detalle de mis días")} →
+            </button>
+          )}
           {/* Signalé : les joueurs de tête qui jouent tous les jours voient un
               score « figé » une fois leurs 15 meilleurs jours atteints — une
               partie moyenne un jour déjà bien classé ne bouge rien, et sans
@@ -13379,6 +13457,7 @@ export default function LePont() {
           unitaires ni la compilation ne pouvaient le voir : seul un rendu réel
           le montre. */}
       {reclamationModal}
+      {mesJoursModal}
       </>
     );
   }
