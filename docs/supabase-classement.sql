@@ -601,6 +601,89 @@ language sql stable as $$
 $$;
 
 
+-- ─── 4ter. MES JOURS, POUR MOI-MÊME SEULEMENT ───────────────────────────────
+--
+-- `bb_classement_mois` ne renvoie qu'un TOTAL par joueur : le détail
+-- jour par jour (quels jours comptent parmi les K meilleurs, lequel ne compte
+-- plus) n'était nulle part exposé — signalé, le joueur ne peut aujourd'hui que
+-- lire le texte expliquant la règle, jamais la voir appliquée à SES parties.
+--
+-- Le détail existe déjà : la CTE `journalier`/`par_jour`/`classe` de la section
+-- 4 le calcule à la volée pour TOUT LE MONDE avant de le réduire à un total.
+-- Cette fonction rejoue exactement la même logique, mais SCOPÉE À UN SEUL
+-- JOUEUR — le sien, jamais un autre :
+--
+--   • PAS DE `p_player_id` en paramètre. Si la fonction acceptait l'identité en
+--     entrée, n'importe qui pourrait lire le détail jour par jour de n'importe
+--     quel adversaire (que `bb_classement_mois` ne fait jamais fuiter, lui : il
+--     n'expose qu'un total, jamais un historique). Le joueur est retrouvé tout
+--     seul, depuis `auth.uid()` — comme `bb_garde_identite()` le fait déjà pour
+--     interdire de renommer le pseudo d'un autre (supabase-auth-anonyme.sql).
+--   • `moi` vide (compte jamais lié, ou anonyme non authentifié) → aucune ligne
+--     renvoyée, jamais une erreur : l'appelant voit un tableau vide, pas un
+--     joueur qui n'existe pas.
+--   • NI SECURITY DEFINER, ni policy à part : elle lit `bb_scores`/`bb_gg_scores`
+--     SOUS L'IDENTITÉ DE L'APPELANT, comme `bb_classement_mois` — mais avec un
+--     filtre `player_id = (select player_id from moi)` qui la rend même PLUS
+--     restrictive que la fonction publique dont elle réutilise la logique.
+create or replace function public.bb_mes_jours(p_mois text)
+returns table (
+  jour    date,
+  points  bigint,
+  retenu  boolean
+) language sql stable as $$
+  with moi as (
+    select player_id from public.bb_pseudos where auth_uid = auth.uid()
+  ),
+  parametres as (
+    select public.bb_parametre_k() as k
+  ),
+  journalier as (
+    -- Même calcul que la section 4, restreint à `moi` : un joueur non lié
+    -- (`moi` vide) ne matche jamais aucune ligne de `bb_scores`, ce qui suffit
+    -- à rendre le résultat vide sans avoir à tester `moi` séparément.
+    select s.player_id,
+           (s.created_at at time zone 'Europe/Paris')::date as jour,
+           s.mode,
+           public.bb_points_normalises(s.mode, max(s.score)::numeric) as pts
+      from public.bb_scores s
+     where s.player_id = (select player_id from moi)
+       and to_char(s.created_at at time zone 'Europe/Paris', 'YYYY-MM') = p_mois
+     group by 1, 2, 3
+    union all
+    select g.player_id,
+           (g.created_at at time zone 'Europe/Paris')::date as jour,
+           'goatgrid' as mode,
+           least(1000, greatest(0, round(1000.0 * max(g.score)
+                 / nullif(max(g.max_score), 0))))::int as pts
+      from public.bb_gg_scores g
+     where g.player_id = (select player_id from moi)
+       and to_char(g.created_at at time zone 'Europe/Paris', 'YYYY-MM') = p_mois
+     group by 1, 2
+  ),
+  par_jour as (
+    select jour, sum(pts) as pts_jour
+      from journalier
+     where pts > 0
+     group by 1
+  )
+  select j.jour, j.pts_jour::bigint as points,
+         (row_number() over (order by j.pts_jour desc, j.jour)
+            <= (select k from parametres)) as retenu
+    from par_jour j
+   order by j.jour desc
+$$;
+
+-- Raccourci pour l'app : le mois EN COURS, heure de Paris — même convention
+-- que `bb_classement_courant`.
+create or replace function public.bb_mes_jours_courant()
+returns table (jour date, points bigint, retenu boolean)
+language sql stable as $$
+  select * from public.bb_mes_jours(
+    to_char(now() at time zone 'Europe/Paris', 'YYYY-MM'))
+$$;
+
+
 -- ─── 5. LA CLÔTURE, RÉSERVÉE AU SERVEUR ─────────────────────────────────────
 -- `bb_seasons` n'est plus écrite par l'app. C'est une tâche planifiée qui appelle
 -- cette fonction avec la clé de service — voir .github/workflows/cloture-saison.yml.
