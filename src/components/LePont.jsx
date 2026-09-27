@@ -4103,6 +4103,233 @@ export default function LePont() {
       window.removeEventListener("focusin", onR); window.removeEventListener("focusout", onR);
     };
   }, [duelScreen]);
+  // ─── GOAT SESSION — salon programmé à 50 joueurs, 3 manches synchronisées ───
+  // Backend : docs/supabase-sessions.sql (bb_sessions, bb_rejoindre_session,
+  // bb_proposer_manche, bb_repondre_manche, bb_session_classement,
+  // bb_session_terminer). AUCUN hôte-arbitre ici, contrairement au duel 1v1
+  // ci-dessus : chaque téléphone se cale sur les horodatages PARTAGÉS de
+  // `session.rounds`, posés une seule fois côté serveur à l'ouverture du
+  // salon — voir l'en-tête du fichier SQL pour pourquoi ce choix.
+  const [goatSessionEcran, setGoatSessionEcran] = useState(null); // null | "liste" | "salon" | "jeu" | "fin"
+  const [goatSessionsAVenir, setGoatSessionsAVenir] = useState([]);
+  const [goatSessionActive, setGoatSessionActive] = useState(null); // ligne bb_sessions
+  const [goatSessionMaPlace, setGoatSessionMaPlace] = useState(null);
+  const [goatSessionErreur, setGoatSessionErreur] = useState("");
+  const [goatSessionErreurCode, setGoatSessionErreurCode] = useState("");
+  const [goatSessionManche, setGoatSessionManche] = useState(1);
+  const [goatSessionInput, setGoatSessionInput] = useState("");
+  const [goatSessionRepondu, setGoatSessionRepondu] = useState(false);
+  const [goatSessionResultatManche, setGoatSessionResultatManche] = useState(null); // null | "correct" | "faux"
+  const [goatSessionClassement, setGoatSessionClassement] = useState([]);
+  const [goatSessionNow, setGoatSessionNow] = useState(0);
+  const goatSessionTerminationRef = React.useRef(false); // évite d'appeler bb_session_terminer plusieurs fois
+
+  // Contenu d'une manche : proposé par le premier client qui l'atteint (voir
+  // bb_proposer_manche). Réutilise EXACTEMENT le tirage de GOAT DUEL —
+  // duelRollPair() pour "pont" — plutôt que d'écrire un second moteur.
+  //
+  // "chaine" (Mercato) : volontairement UNE seule question par manche (« un
+  // club où ce joueur a joué »), pas une chaîne à plusieurs sauts comme en
+  // solo — sinon il aurait fallu deux moteurs de manche complètement
+  // différents (l'un « bonne réponse la plus rapide gagne », l'autre
+  // « enchaîne le plus longtemps possible »). La vraie chaîne à sauts
+  // multiples reste le mode solo, inchangé.
+  // `startChain()` (mode chaîne solo) N'EST PAS un simple tirage : elle mute
+  // tout l'état de la partie solo/duel en cours (setScreen("chainGame"),
+  // remet score/combo à zéro, écrit dans localStorage…) et ne renvoie même
+  // pas le joueur choisi. L'appeler depuis GOAT SESSION corromprait une
+  // éventuelle partie en cours ailleurs, pour un `undefined.name` en prime.
+  // Ce tirage réimplémente juste le choix d'un joueur de départ valable
+  // (≥2 clubs, si possible reconnaissable), sans aucun effet de bord.
+  function goatSessionTirerJoueurDepart(){
+    const eligible = PLAYERS_CLEAN.filter(function(p){ return p.clubs && p.clubs.length >= 2; });
+    if (eligible.length === 0) return null;
+    const reconnaissable = eligible.filter(function(p){ return famousClubCount(p) >= 2; });
+    const pool = reconnaissable.length > 0 ? reconnaissable : eligible;
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+
+  function goatSessionGenererContenu(mode){
+    if (mode === "pont") {
+      const [c1, c2] = duelRollPair();
+      return { c1, c2 };
+    }
+    const depart = goatSessionTirerJoueurDepart();
+    return { joueur: depart ? depart.name : null };
+  }
+
+  // Vérifie une réponse selon le mode et le contenu de la manche — même
+  // logique de correction que GOAT DUEL / le mode chaîne solo, juste
+  // rebranchée sur les données stockées côté serveur.
+  function goatSessionVerifierReponse(mode, donnees, saisie){
+    if (!donnees || !saisie || saisie.trim().length < 2) return false;
+    if (mode === "pont") {
+      if (!donnees.c1 || !donnees.c2) return false;
+      return checkGuess(saisie, duelCommonPlayers(donnees.c1, donnees.c2));
+    }
+    if (!donnees.joueur) return false;
+    return !!matchClub(saisie, getPlayerClubs(donnees.joueur));
+  }
+
+  async function goatSessionChargerListe(){
+    const rows = await sbFetch("bb_sessions?statut=in.(a_venir,ouvert,complet,en_cours)&order=starts_at.asc&limit=5");
+    setGoatSessionsAVenir(Array.isArray(rows) ? rows : []);
+  }
+
+  async function goatSessionRejoindre(session){
+    setGoatSessionErreur(""); setGoatSessionErreurCode("");
+    const r = await sbFetch("rpc/bb_rejoindre_session", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ p_session_id: session.id })
+    });
+    const ligne = Array.isArray(r) ? r[0] : null;
+    const etat = ligne ? ligne.etat : null;
+    if (etat === "ok" || etat === "deja_inscrit") {
+      setGoatSessionMaPlace(ligne.place);
+      setGoatSessionActive(session);
+      setGoatSessionEcran(session.statut === "ouvert" ? "salon" : "jeu");
+      if (session.statut !== "ouvert") { setGoatSessionManche(1); setGoatSessionRepondu(false); }
+      return;
+    }
+    const messages = {
+      notifs_requises: tr("Active les notifications pour rejoindre cette session.","Enable notifications to join this session.","Aktiviere Benachrichtigungen, um teilzunehmen.","Attiva le notifiche per partecipare.","Ative as notificações para participar.","Activa las notificaciones para unirte."),
+      complet: tr("Cette session est déjà complète.","This session is already full.","Diese Session ist bereits voll.","Questa sessione è già al completo.","Esta sessão já está cheia.","Esta sesión ya está completa."),
+      compte_introuvable: tr("Il faut un pseudo pour rejoindre.","You need a nickname to join.","Du brauchst einen Spitznamen.","Serve un nickname per partecipare.","Você precisa de um apelido.","Necesitas un apodo."),
+      session_introuvable: tr("Cette session n'existe plus.","This session no longer exists.","Diese Session existiert nicht mehr.","Questa sessione non esiste più.","Esta sessão não existe mais.","Esta sesión ya no existe."),
+    };
+    setGoatSessionErreur(messages[etat] || tr("Erreur, réessaie.","Error, try again.","Fehler, versuch's nochmal.","Errore, riprova.","Erro, tente de novo.","Error, vuelve a intentar."));
+    setGoatSessionErreurCode(etat || "");
+  }
+
+  // Même parcours en 2 étapes que la bannière de notifications de l'accueil
+  // (requestNotifPermission puis subscribeToPush) — réutilisé tel quel plutôt
+  // que réinventé.
+  async function goatSessionActiverNotifs(){
+    const ok = await requestNotifPermission();
+    setNotifGranted(ok);
+    if (ok && playerId && pseudoConfirmed) {
+      await subscribeToPush(playerId, sbFetch);
+      setGoatSessionErreur(""); setGoatSessionErreurCode("");
+    }
+  }
+
+  function goatSessionRepondreManche(){
+    if (goatSessionRepondu || !goatSessionActive) return;
+    const round = (goatSessionActive.rounds||[])[goatSessionManche-1];
+    if (!round || !round.data) return;
+    const correct = goatSessionVerifierReponse(goatSessionActive.mode, round.data, goatSessionInput);
+    const tempsMs = Math.max(0, Date.now() - new Date(round.starts_at).getTime());
+    setGoatSessionRepondu(true);
+    setGoatSessionResultatManche(correct ? "correct" : "faux");
+    sbFetch("rpc/bb_repondre_manche", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ p_session_id: goatSessionActive.id, p_manche: goatSessionManche, p_correct: correct, p_temps_ms: Math.round(tempsMs) })
+    });
+  }
+
+  // Liste des sessions à venir : sondée pendant l'écran "liste" seulement.
+  useEffect(function(){
+    if (goatSessionEcran !== "liste") return;
+    goatSessionChargerListe();
+    const iv = setInterval(goatSessionChargerListe, 4000);
+    return function(){ clearInterval(iv); };
+  }, [goatSessionEcran]);
+
+  // Salle d'attente : sonde le compteur de places et bascule sur "jeu" dès
+  // que le salon est complet (rounds fixé côté serveur, voir bb_rejoindre_session).
+  useEffect(function(){
+    if (goatSessionEcran !== "salon" || !goatSessionActive) return;
+    let annule = false;
+    async function tick(){
+      const rows = await sbFetch("bb_sessions?id=eq."+goatSessionActive.id+"&select=*");
+      const s = Array.isArray(rows) && rows[0];
+      if (!s || annule) return;
+      setGoatSessionActive(s);
+      if (s.statut === "complet" || s.statut === "en_cours") {
+        setGoatSessionManche(1); setGoatSessionRepondu(false); setGoatSessionEcran("jeu");
+      }
+    }
+    tick();
+    const iv = setInterval(tick, 2000);
+    return function(){ annule = true; clearInterval(iv); };
+  }, [goatSessionEcran, goatSessionActive && goatSessionActive.id]);
+
+  // Écran de jeu : une seule boucle de fond toutes les 1,5s — relit la
+  // session (récupère le contenu qu'un AUTRE téléphone aurait proposé),
+  // propose le contenu de la manche si personne ne l'a encore fait, et
+  // rafraîchit le classement en direct. Pas de Supabase Realtime : sa
+  // fiabilité en prod n'est pas garantie aujourd'hui (docs/supabase-realtime.sql) —
+  // même cadence de sondage que les salons bb_rooms existants.
+  useEffect(function(){
+    if (goatSessionEcran !== "jeu" || !goatSessionActive) return;
+    let annule = false;
+    const proposeTente = new Set();
+    async function tick(){
+      const rows = await sbFetch("bb_sessions?id=eq."+goatSessionActive.id+"&select=*");
+      const s = Array.isArray(rows) && rows[0];
+      if (!s || annule) return;
+      setGoatSessionActive(s);
+      const idx = goatSessionManche - 1;
+      const round = (s.rounds||[])[idx];
+      if (round && !round.data && !proposeTente.has(idx) && Date.now() >= new Date(round.starts_at).getTime()) {
+        proposeTente.add(idx);
+        const contenu = goatSessionGenererContenu(s.mode);
+        await sbFetch("rpc/bb_proposer_manche", {
+          method:"POST", headers:{"Content-Type":"application/json"},
+          body: JSON.stringify({ p_session_id: s.id, p_manche: goatSessionManche, p_donnees: contenu })
+        });
+      }
+      const cl = await sbFetch("rpc/bb_session_classement", {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({ p_session_id: s.id })
+      });
+      if (Array.isArray(cl) && !annule) setGoatSessionClassement(cl);
+    }
+    tick();
+    const iv = setInterval(tick, 1500);
+    return function(){ annule = true; clearInterval(iv); };
+  }, [goatSessionEcran, goatSessionActive && goatSessionActive.id, goatSessionManche]);
+
+  // Horloge locale (0,25s) : fait vivre les décomptes et déclenche le
+  // passage à la manche suivante — jamais un aller-retour réseau pour ça,
+  // chaque téléphone lit les mêmes horodatages dans `rounds`.
+  useEffect(function(){
+    if (goatSessionEcran !== "jeu") return;
+    goatSessionTerminationRef.current = false;
+    const iv = setInterval(function(){ setGoatSessionNow(Date.now()); }, 250);
+    return function(){ clearInterval(iv); };
+  }, [goatSessionEcran]);
+
+  useEffect(function(){
+    if (goatSessionEcran !== "jeu" || !goatSessionActive || !goatSessionNow) return;
+    const rounds = goatSessionActive.rounds || [];
+    const round = rounds[goatSessionManche-1];
+    if (!round) return;
+    const finManche = new Date(round.ends_at).getTime();
+    // 2,5s après la fin officielle : le temps de lire "bonne/mauvaise réponse"
+    // avant d'enchaîner — pas un délai réseau, une pause volontaire.
+    if (goatSessionNow < finManche + 2500) return;
+    if (goatSessionManche < rounds.length) {
+      setGoatSessionManche(function(m){ return m+1; });
+      setGoatSessionRepondu(false); setGoatSessionInput(""); setGoatSessionResultatManche(null);
+      return;
+    }
+    if (goatSessionTerminationRef.current) return;
+    goatSessionTerminationRef.current = true;
+    (async function(){
+      await sbFetch("rpc/bb_session_terminer", {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({ p_session_id: goatSessionActive.id })
+      });
+      const cl = await sbFetch("rpc/bb_session_classement", {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({ p_session_id: goatSessionActive.id })
+      });
+      if (Array.isArray(cl)) setGoatSessionClassement(cl);
+      setGoatSessionEcran("fin");
+    })();
+  }, [goatSessionNow, goatSessionEcran, goatSessionManche, goatSessionActive]);
+
   // Partage / copie du code de salon (Web Share si dispo, sinon presse-papiers)
   function duelShareCode(code){
     const url = origineWeb();
@@ -11463,6 +11690,188 @@ export default function LePont() {
     </div>
   );
 
+  // ── GOAT SESSION — l'écran, en 4 sous-écrans ("liste"/"salon"/"jeu"/"fin") ──
+  const goatSessionModal = goatSessionEcran && (
+    <div key="goat-session-modal" style={{position:"fixed",inset:0,zIndex:9500,background:fondCharte,overflowY:"auto"}}>
+      {areneCharte}
+      {fermerCharte(function(){setGoatSessionEcran(null);setGoatSessionActive(null);setGoatSessionErreur("");}, 10)}
+      <div style={{position:"relative",zIndex:1,maxWidth:480,margin:"0 auto",padding:"24px 20px 40px",minHeight:"100dvh",display:"flex",flexDirection:"column"}}>
+        <div style={{textAlign:"center",marginBottom:20}}>
+          <div style={{...posterText(30,G.projecteur)}}>GOAT SESSION</div>
+        </div>
+
+        {goatSessionEcran === "liste" && (
+          <div style={{display:"flex",flexDirection:"column",gap:12}}>
+            {goatSessionErreur && (
+              <div style={{background:"rgba(217,58,43,.32)",borderRadius:G.rayonS,padding:"10px 14px",display:"flex",flexDirection:"column",gap:8,alignItems:"center"}}>
+                <div style={{color:"#FF3D57",fontSize:13,fontWeight:700,textAlign:"center"}}>{goatSessionErreur}</div>
+                {goatSessionErreurCode === "notifs_requises" && (
+                  <button onClick={goatSessionActiverNotifs} style={{...btn(G.projecteur,G.encre,13),padding:"9px 16px"}}>
+                    🔔 {tr("Activer les notifications","Enable notifications","Benachrichtigungen aktivieren","Attiva le notifiche","Ativar notificações","Activar notificaciones")}
+                  </button>
+                )}
+              </div>
+            )}
+            {goatSessionsAVenir.length === 0 && (
+              <div style={{textAlign:"center",padding:"30px 10px",color:"rgba(255,255,255,.4)"}}>
+                {tr("Aucune session programmée pour l'instant.","No scheduled session yet.","Noch keine geplante Session.","Nessuna sessione programmata per ora.","Nenhuma sessão agendada por enquanto.","Ninguna sesión programada por ahora.")}
+              </div>
+            )}
+            {goatSessionsAVenir.map(function(s){
+              const label = s.mode === "pont" ? "THE PLUG" : "THE MERCATO";
+              const indisponible = s.statut==="complet"||s.statut==="en_cours"||s.statut==="termine"||s.statut==="annule";
+              return (
+                <div key={s.id} style={{background:G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,padding:16,display:"flex",alignItems:"center",gap:12}}>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{...posterText(18,G.white)}}>{label}</div>
+                    <div style={{fontSize:12,color:"rgba(255,255,255,.5)",fontWeight:700,marginTop:2}}>
+                      {new Date(s.starts_at).toLocaleString(lang==="fr"?"fr-FR":"en-US",{weekday:"short",hour:"2-digit",minute:"2-digit"})}
+                      {" · "}{s.joined_count}/{s.capacite}
+                    </div>
+                  </div>
+                  <button onClick={function(){requirePseudo(function(){goatSessionRejoindre(s);});}}
+                    disabled={indisponible}
+                    style={{...btn(G.projecteur,G.encre,15),padding:"10px 16px",opacity:indisponible?.4:1,flexShrink:0}}>
+                    {indisponible ? tr("Complet","Full","Voll","Al completo","Cheio","Completo") : tr("Rejoindre","Join","Beitreten","Entra","Entrar","Entrar")}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {goatSessionEcran === "salon" && goatSessionActive && (
+          <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:16,marginTop:40}}>
+            <div style={{fontSize:48}}>⏳</div>
+            <div style={{...posterText(20,G.white),textAlign:"center"}}>
+              {tr("En attente que le salon se remplisse…","Waiting for the room to fill…","Warten, bis der Raum voll ist…","In attesa che la stanza si riempia…","Aguardando a sala encher…","Esperando a que la sala se llene…")}
+            </div>
+            <div style={{...posterText(44,G.projecteur)}}>{goatSessionActive.joined_count}/{goatSessionActive.capacite}</div>
+            {goatSessionMaPlace != null && (
+              <div style={{fontSize:13,color:"rgba(255,255,255,.5)"}}>#{goatSessionMaPlace}</div>
+            )}
+          </div>
+        )}
+
+        {goatSessionEcran === "jeu" && goatSessionActive && (function(){
+          const rounds = goatSessionActive.rounds || [];
+          const round = rounds[goatSessionManche-1];
+          if (!round) return (
+            <div style={{textAlign:"center",padding:"40px 10px",color:"rgba(255,255,255,.5)"}}>
+              {tr("Préparation…","Getting ready…","Wird vorbereitet…","Preparazione…","Preparando…","Preparando…")}
+            </div>
+          );
+          const startsAt = new Date(round.starts_at).getTime();
+          const endsAt = new Date(round.ends_at).getTime();
+          const pasCommencee = goatSessionNow < startsAt;
+          const secRestantes = Math.max(0, Math.ceil((endsAt - goatSessionNow)/1000));
+          return (
+            <div style={{display:"flex",flexDirection:"column",gap:16}}>
+              <div style={{textAlign:"center",fontSize:13,fontWeight:800,letterSpacing:2,color:G.projecteur,textTransform:"uppercase"}}>
+                {tr("Manche","Round","Runde","Turno","Rodada","Ronda")} {goatSessionManche}/{rounds.length}
+              </div>
+
+              {pasCommencee ? (
+                <div style={{textAlign:"center",padding:"30px 10px"}}>
+                  <div style={{...posterText(50,G.white)}}>{Math.max(0,Math.ceil((startsAt-goatSessionNow)/1000))}</div>
+                  <div style={{fontSize:13,color:"rgba(255,255,255,.5)",marginTop:6}}>
+                    {tr("La manche démarre…","Round starting…","Die Runde beginnt…","Il turno inizia…","A rodada começa…","La ronda empieza…")}
+                  </div>
+                </div>
+              ) : !round.data ? (
+                <div style={{textAlign:"center",padding:"30px 10px",color:"rgba(255,255,255,.5)"}}>
+                  {tr("Chargement de la manche…","Loading the round…","Runde wird geladen…","Caricamento del turno…","Carregando a rodada…","Cargando la ronda…")}
+                </div>
+              ) : (
+                <>
+                  <div style={{...posterText(32,G.projecteur),textAlign:"center"}}>{secRestantes}s</div>
+                  {goatSessionActive.mode === "pont" ? (
+                    <div style={{display:"flex",gap:10,justifyContent:"center"}}>
+                      {[round.data.c1, round.data.c2].map(function(club){
+                        const [bg,fg] = getClubColors(club);
+                        return (
+                          <div key={club} style={{flex:1,maxWidth:180,textAlign:"center",padding:"18px 10px",borderRadius:G.rayon,background:bg,color:fg,border:G.trait,boxShadow:G.ombre}}>
+                            <div style={{fontWeight:900,fontSize:15}}>{getClubDisplayName(club)}</div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div style={{textAlign:"center",padding:"18px 10px",borderRadius:G.rayon,background:G.nuit,border:G.trait,boxShadow:G.ombre}}>
+                      <div style={{fontSize:12,color:"rgba(255,255,255,.5)",fontWeight:700,marginBottom:6}}>
+                        {tr("Un club où il a joué :","A club he played for:","Ein Klub, für den er spielte:","Un club in cui ha giocato:","Um clube onde ele jogou:","Un club donde jugó:")}
+                      </div>
+                      <div style={{...posterText(20,G.white)}}>{round.data.joueur}</div>
+                    </div>
+                  )}
+
+                  {!goatSessionRepondu ? (
+                    <div style={{display:"flex",gap:8}}>
+                      <input value={goatSessionInput} onChange={function(e){setGoatSessionInput(e.target.value);}}
+                        onKeyDown={function(e){if(e.key==="Enter") goatSessionRepondreManche();}}
+                        placeholder={tr("Ta réponse","Your answer","Deine Antwort","La tua risposta","Sua resposta","Tu respuesta")}
+                        style={{flex:1,padding:"12px 14px",borderRadius:G.rayonS,border:G.trait,background:"#061007",color:G.white,fontFamily:G.font,fontSize:15,outline:"none"}}/>
+                      <button onClick={goatSessionRepondreManche} style={{...btn(G.projecteur,G.encre,15),padding:"12px 18px"}}>
+                        {tr("Valider","Submit","Bestätigen","Conferma","Confirmar","Confirmar")}
+                      </button>
+                    </div>
+                  ) : (
+                    <div style={{textAlign:"center",padding:"14px",borderRadius:G.rayonS,fontWeight:800,
+                      background: goatSessionResultatManche==="correct" ? "rgba(42,155,78,.32)" : "rgba(217,58,43,.32)",
+                      color: goatSessionResultatManche==="correct" ? G.pelouseClaire : "#FF3D57"}}>
+                      {goatSessionResultatManche==="correct"
+                        ? tr("✓ Bonne réponse !","✓ Correct!","✓ Richtig!","✓ Corretto!","✓ Correto!","✓ ¡Correcto!")
+                        : tr("✗ Réponse enregistrée","✗ Answer recorded","✗ Antwort gespeichert","✗ Risposta registrata","✗ Resposta registrada","✗ Respuesta registrada")}
+                    </div>
+                  )}
+                </>
+              )}
+
+              {goatSessionClassement.length > 0 && (
+                <div style={{marginTop:10}}>
+                  <div style={{fontSize:11,fontWeight:800,letterSpacing:1.5,color:"rgba(255,255,255,.4)",textTransform:"uppercase",marginBottom:8,textAlign:"center"}}>
+                    {tr("Classement en direct","Live standings","Live-Rangliste","Classifica in diretta","Classificação ao vivo","Clasificación en vivo")}
+                  </div>
+                  {goatSessionClassement.slice(0,5).map(function(row){
+                    const moi = row.player_id === playerId;
+                    return (
+                      <div key={row.player_id} style={{display:"flex",alignItems:"center",gap:8,padding:"7px 10px",background: moi ? "rgba(245,194,43,.16)" : "transparent",borderRadius:10,fontSize:13,fontWeight:moi?800:600,color:moi?G.projecteur:"rgba(255,255,255,.75)"}}>
+                        <div style={{width:24}}>#{row.rang}</div>
+                        <div style={{flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{row.pseudo}</div>
+                        <div>{row.manches_gagnees} 🏆</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        })()}
+
+        {goatSessionEcran === "fin" && (
+          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            <div style={{textAlign:"center",...posterText(26,G.projecteur),marginBottom:6}}>
+              {tr("SESSION TERMINÉE","SESSION OVER","SESSION BEENDET","SESSIONE TERMINATA","SESSÃO ENCERRADA","SESIÓN TERMINADA")}
+            </div>
+            {goatSessionClassement.map(function(row){
+              const moi = row.player_id === playerId;
+              return (
+                <div key={row.player_id} style={{display:"flex",alignItems:"center",gap:10,padding:"11px 14px",background: moi ? "rgba(245,194,43,.16)" : G.nuit,border: moi ? "1px solid "+G.projecteur : G.traitFin,borderRadius:G.rayonS}}>
+                  <div style={{width:28,fontWeight:900,color: row.rang===1?G.projecteur:row.rang===2?"#C9CDD3":row.rang===3?"#CD7F32":"rgba(255,255,255,.4)"}}>#{row.rang}</div>
+                  <div style={{flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",fontWeight:moi?800:600,color:moi?G.white:"rgba(255,255,255,.8)"}}>{row.pseudo}</div>
+                  <div style={{fontSize:13,color:"rgba(255,255,255,.5)",flexShrink:0}}>{row.manches_gagnees} 🏆</div>
+                </div>
+              );
+            })}
+            <button onClick={function(){setGoatSessionEcran(null);setGoatSessionActive(null);}} style={{...btn(G.nuit,G.white,16),width:"100%",padding:"14px",marginTop:10}}>
+              {tr("Fermer","Close","Schließen","Chiudi","Fechar","Cerrar")}
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
   const historyModal = showHistory && (
     <div key="history-modal" onClick={()=>setShowHistory(false)} style={{position:"fixed",inset:0,zIndex:9999,background:"rgba(8,17,9,.86)",display:"flex",alignItems:"flex-end",justifyContent:"center",animation:"fadeIn .2s ease"}}>
       <div onClick={(e)=>e.stopPropagation()} style={{background:G.nuit,borderTop:G.trait,borderRadius:G.rayonL+"px "+G.rayonL+"px 0 0",width:"100%",maxWidth:500,maxHeight:"88vh",display:"flex",flexDirection:"column",animation:"slideUp .3s ease",border:G.traitFin}}>
@@ -14913,6 +15322,7 @@ export default function LePont() {
       {recoveryInputModal}
       {myRecoveryCodeModal}
       {reclamationModal}
+      {goatSessionModal}
       {streakModal}
       {installGuide}
       {notifPrompt}
@@ -17401,6 +17811,20 @@ export default function LePont() {
             asynchrones reste accessible autrement (notification de défi reçu,
             setShowOpenDuels ailleurs dans le fichier) : rien n'a été supprimé
             côté fonctionnel, seul CE point d'entrée disparaît. */}
+
+        {/* GOAT SESSION — rendez-vous programmés à 50 joueurs (docs/supabase-sessions.sql).
+            Même style que la carte "Joue avec tes potes" juste au-dessus. */}
+        <button onClick={function(){requirePseudo(function(){setGoatSessionEcran("liste");});}}
+          style={{background:G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,padding:"var(--carteEncart)",display:"flex",alignItems:"center",gap:12,cursor:"pointer",textAlign:"left",width:"100%",fontFamily:G.font}}>
+          <span style={{fontSize:18}}>📅</span>
+          <div style={{flex:1}}>
+            <div style={{...posterText(16,G.white),transformOrigin:"left"}}>GOAT SESSION</div>
+            <div style={{fontSize:11,color:"rgba(255,255,255,.55)",fontWeight:700,marginTop:2}}>
+              {tr("Rendez-vous programmé, 50 joueurs, 3 manches","Scheduled meetup, 50 players, 3 rounds","Geplantes Treffen, 50 Spieler, 3 Runden","Appuntamento programmato, 50 giocatori, 3 turni","Encontro marcado, 50 jogadores, 3 rodadas","Cita programada, 50 jugadores, 3 rondas")}
+            </div>
+          </div>
+          <span style={{color:"rgba(255,255,255,.45)",fontSize:18}}>›</span>
+        </button>
 
         {/* GOAT BATTLE (grille 3×3 multijoueur) n'a pas de bouton dédié ici :
             il vit sous la carte GOAT GRID du carrousel, via le modal
