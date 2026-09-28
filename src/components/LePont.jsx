@@ -11761,7 +11761,11 @@ export default function LePont() {
       {fermerCharte(function(){setGoatSessionEcran(null);setGoatSessionActive(null);setGoatSessionErreur("");}, 10)}
       <div style={{position:"relative",zIndex:1,maxWidth:480,margin:"0 auto",padding:"24px 20px 40px",minHeight:"100dvh",display:"flex",flexDirection:"column"}}>
         <div style={{textAlign:"center",marginBottom:20}}>
-          <div style={{...posterText(30,G.projecteur)}}>GOAT SESSION</div>
+          {/* Posé directement sur fondCharte (l'or), pas dans un panneau : la
+              règle de la charte s'applique ("sur l'or, seule l'encre se lit"
+              — src/lib/charte.jsx). G.projecteur est la MÊME teinte que ce
+              fond, donc invisible ici — G.encre est le seul choix lisible. */}
+          <div style={{...posterText(30,G.encre)}}>GOAT SESSION</div>
         </div>
 
         {goatSessionEcran === "liste" && (
@@ -11854,7 +11858,11 @@ export default function LePont() {
           const secRestantes = Math.max(0, Math.ceil((endsAt - goatSessionNow)/1000));
           return (
             <div style={{display:"flex",flexDirection:"column",gap:16}}>
-              <div style={{textAlign:"center",fontSize:13,fontWeight:800,letterSpacing:2,color:G.projecteur,textTransform:"uppercase"}}>
+              {/* G.encre, pas G.projecteur : posé directement sur fondCharte
+                  (l'or), sans le contour automatique de posterText (réservé
+                  aux tailles ≥32px) — G.projecteur y serait aussi invisible
+                  que le titre plus haut, même bug. */}
+              <div style={{textAlign:"center",fontSize:13,fontWeight:800,letterSpacing:2,color:G.encre,textTransform:"uppercase"}}>
                 {tr("Manche","Round","Runde","Turno","Rodada","Ronda")} {goatSessionManche}/{rounds.length}
               </div>
 
@@ -11922,7 +11930,7 @@ export default function LePont() {
                   {goatSessionClassement.slice(0,5).map(function(row){
                     const moi = row.player_id === playerId;
                     return (
-                      <div key={row.player_id} style={{display:"flex",alignItems:"center",gap:8,padding:"7px 10px",background: moi ? "rgba(245,194,43,.16)" : "transparent",borderRadius:10,fontSize:13,fontWeight:moi?800:600,color:moi?G.projecteur:"rgba(255,255,255,.75)"}}>
+                      <div key={row.player_id} style={{display:"flex",alignItems:"center",gap:8,padding:"7px 10px",background: moi ? "rgba(245,194,43,.16)" : "transparent",borderRadius:10,fontSize:13,fontWeight:moi?800:600,color:moi?G.encre:"rgba(255,255,255,.75)"}}>
                         <div style={{width:24}}>#{row.rang}</div>
                         <div style={{flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{row.pseudo}</div>
                         <div>{row.manches_gagnees} 🏆</div>
@@ -11937,14 +11945,19 @@ export default function LePont() {
 
         {goatSessionEcran === "fin" && (
           <div style={{display:"flex",flexDirection:"column",gap:10}}>
-            <div style={{textAlign:"center",...posterText(26,G.projecteur),marginBottom:6}}>
+            <div style={{textAlign:"center",...posterText(26,G.encre),marginBottom:6}}>
               {tr("SESSION TERMINÉE","SESSION OVER","SESSION BEENDET","SESSIONE TERMINATA","SESSÃO ENCERRADA","SESIÓN TERMINADA")}
             </div>
             {goatSessionClassement.map(function(row){
               const moi = row.player_id === playerId;
               return (
                 <div key={row.player_id} style={{display:"flex",alignItems:"center",gap:10,padding:"11px 14px",background: moi ? "rgba(245,194,43,.16)" : G.nuit,border: moi ? "1px solid "+G.projecteur : G.traitFin,borderRadius:G.rayonS}}>
-                  <div style={{width:28,fontWeight:900,color: row.rang===1?G.projecteur:row.rang===2?"#C9CDD3":row.rang===3?"#CD7F32":"rgba(255,255,255,.4)"}}>#{row.rang}</div>
+                  {/* rang 1 sur MA propre ligne : le fond passe au surlignage
+                      or translucide (juste au-dessus), donc G.projecteur y
+                      camoufle le badge — même bug que le titre. Sur les
+                      lignes des autres (fond G.nuit, sombre), G.projecteur
+                      reste le bon choix. */}
+                  <div style={{width:28,fontWeight:900,color: row.rang===1?(moi?G.encre:G.projecteur):row.rang===2?"#C9CDD3":row.rang===3?"#CD7F32":"rgba(255,255,255,.4)"}}>#{row.rang}</div>
                   <div style={{flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",fontWeight:moi?800:600,color:moi?G.white:"rgba(255,255,255,.8)"}}>{row.pseudo}</div>
                   <div style={{fontSize:13,color:"rgba(255,255,255,.5)",flexShrink:0}}>{row.manches_gagnees} 🏆</div>
                 </div>
