@@ -20,10 +20,9 @@
 --      manches, la proposition de contenu (premier arrivé, verrouillé),
 --      les réponses, le classement de session. En polling REST (2-3s),
 --      PAS Supabase Realtime — son fonctionnement en prod n'est pas
---      garanti aujourd'hui (docs/supabase-realtime.sql). Rien à voir côté
---      app pour l'instant : cette partie est testable seule dans
---      l'éditeur SQL (section 12), l'écran de jeu client reste à écrire.
---   ⏳ Phase 2, l'écran de jeu React (à venir) : l'UI qui consomme tout ça.
+--      garanti aujourd'hui (docs/supabase-realtime.sql).
+--   ✅ Phase 2, l'écran de jeu React (LePont.jsx, goatSessionModal) : les
+--      4 écrans (liste, salon, jeu, fin), le polling, l'entrée notifs.
 --   ⏳ Phase 3 : l'ouverture à l'heure PILE (pg_cron + Edge Function, PAS
 --      les cron GitHub Actions existants — trop de retard observé, voir
 --      docs/NOTIFICATIONS.md) + l'envoi de la notification juste avant.
