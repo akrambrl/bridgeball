@@ -11781,7 +11781,12 @@ export default function LePont() {
               </div>
             )}
             {goatSessionsAVenir.length === 0 && (
-              <div style={{textAlign:"center",padding:"30px 10px",color:"rgba(255,255,255,.4)"}}>
+              // Posé directement sur fondCharte (l'or) : du blanc y tombe
+              // aussi bas que G.projecteur (charte.jsx — "sur l'or, seule
+              // l'encre se lit"). rgba(8,17,9,…) est la convention déjà
+              // utilisée ailleurs dans le fichier pour du texte secondaire
+              // sur ce même fond (ex. lignes 12927, 13519).
+              <div style={{textAlign:"center",padding:"30px 10px",color:"rgba(8,17,9,.62)"}}>
                 {tr("Aucune session programmée pour l'instant.","No scheduled session yet.","Noch keine geplante Session.","Nessuna sessione programmata per ora.","Nenhuma sessão agendada por enquanto.","Ninguna sesión programada por ahora.")}
               </div>
             )}
@@ -11822,12 +11827,12 @@ export default function LePont() {
         {goatSessionEcran === "salon" && goatSessionActive && (
           <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:16,marginTop:40}}>
             <div style={{fontSize:48}}>⏳</div>
-            <div style={{...posterText(20,G.white),textAlign:"center"}}>
+            <div style={{...posterText(20,G.encre),textAlign:"center"}}>
               {tr("En attente que le salon se remplisse…","Waiting for the room to fill…","Warten, bis der Raum voll ist…","In attesa che la stanza si riempia…","Aguardando a sala encher…","Esperando a que la sala se llene…")}
             </div>
             <div style={{...posterText(44,G.projecteur)}}>{goatSessionActive.joined_count}/{goatSessionActive.capacite}</div>
             {goatSessionMaPlace != null && (
-              <div style={{fontSize:13,color:"rgba(255,255,255,.5)"}}>#{goatSessionMaPlace}</div>
+              <div style={{fontSize:13,color:"rgba(8,17,9,.7)"}}>#{goatSessionMaPlace}</div>
             )}
             {goatSessionJoueurs.length > 0 && (
               <div style={{width:"100%",marginTop:8,background:G.nuit,border:G.trait,borderRadius:G.rayonS,padding:"10px 14px",display:"flex",flexDirection:"column",gap:6,maxHeight:260,overflowY:"auto"}}>
@@ -11848,7 +11853,7 @@ export default function LePont() {
           const rounds = goatSessionActive.rounds || [];
           const round = rounds[goatSessionManche-1];
           if (!round) return (
-            <div style={{textAlign:"center",padding:"40px 10px",color:"rgba(255,255,255,.5)"}}>
+            <div style={{textAlign:"center",padding:"40px 10px",color:"rgba(8,17,9,.7)"}}>
               {tr("Préparation…","Getting ready…","Wird vorbereitet…","Preparazione…","Preparando…","Preparando…")}
             </div>
           );
@@ -11869,12 +11874,12 @@ export default function LePont() {
               {pasCommencee ? (
                 <div style={{textAlign:"center",padding:"30px 10px"}}>
                   <div style={{...posterText(50,G.white)}}>{Math.max(0,Math.ceil((startsAt-goatSessionNow)/1000))}</div>
-                  <div style={{fontSize:13,color:"rgba(255,255,255,.5)",marginTop:6}}>
+                  <div style={{fontSize:13,color:"rgba(8,17,9,.7)",marginTop:6}}>
                     {tr("La manche démarre…","Round starting…","Die Runde beginnt…","Il turno inizia…","A rodada começa…","La ronda empieza…")}
                   </div>
                 </div>
               ) : !round.data ? (
-                <div style={{textAlign:"center",padding:"30px 10px",color:"rgba(255,255,255,.5)"}}>
+                <div style={{textAlign:"center",padding:"30px 10px",color:"rgba(8,17,9,.7)"}}>
                   {tr("Chargement de la manche…","Loading the round…","Runde wird geladen…","Caricamento del turno…","Carregando a rodada…","Cargando la ronda…")}
                 </div>
               ) : (
@@ -11924,13 +11929,13 @@ export default function LePont() {
 
               {goatSessionClassement.length > 0 && (
                 <div style={{marginTop:10}}>
-                  <div style={{fontSize:11,fontWeight:800,letterSpacing:1.5,color:"rgba(255,255,255,.4)",textTransform:"uppercase",marginBottom:8,textAlign:"center"}}>
+                  <div style={{fontSize:11,fontWeight:800,letterSpacing:1.5,color:"rgba(8,17,9,.62)",textTransform:"uppercase",marginBottom:8,textAlign:"center"}}>
                     {tr("Classement en direct","Live standings","Live-Rangliste","Classifica in diretta","Classificação ao vivo","Clasificación en vivo")}
                   </div>
                   {goatSessionClassement.slice(0,5).map(function(row){
                     const moi = row.player_id === playerId;
                     return (
-                      <div key={row.player_id} style={{display:"flex",alignItems:"center",gap:8,padding:"7px 10px",background: moi ? "rgba(245,194,43,.16)" : "transparent",borderRadius:10,fontSize:13,fontWeight:moi?800:600,color:moi?G.encre:"rgba(255,255,255,.75)"}}>
+                      <div key={row.player_id} style={{display:"flex",alignItems:"center",gap:8,padding:"7px 10px",background: moi ? "rgba(245,194,43,.16)" : "transparent",borderRadius:10,fontSize:13,fontWeight:moi?800:600,color:moi?G.encre:"rgba(8,17,9,.7)"}}>
                         <div style={{width:24}}>#{row.rang}</div>
                         <div style={{flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{row.pseudo}</div>
                         <div>{row.manches_gagnees} 🏆</div>
@@ -11957,9 +11962,9 @@ export default function LePont() {
                       camoufle le badge — même bug que le titre. Sur les
                       lignes des autres (fond G.nuit, sombre), G.projecteur
                       reste le bon choix. */}
-                  <div style={{width:28,fontWeight:900,color: row.rang===1?(moi?G.encre:G.projecteur):row.rang===2?"#C9CDD3":row.rang===3?"#CD7F32":"rgba(255,255,255,.4)"}}>#{row.rang}</div>
-                  <div style={{flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",fontWeight:moi?800:600,color:moi?G.white:"rgba(255,255,255,.8)"}}>{row.pseudo}</div>
-                  <div style={{fontSize:13,color:"rgba(255,255,255,.5)",flexShrink:0}}>{row.manches_gagnees} 🏆</div>
+                  <div style={{width:28,fontWeight:900,color: row.rang===1?(moi?G.encre:G.projecteur):row.rang===2?"#C9CDD3":row.rang===3?"#CD7F32":(moi?"rgba(8,17,9,.5)":"rgba(255,255,255,.4)")}}>#{row.rang}</div>
+                  <div style={{flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",fontWeight:moi?800:600,color:moi?G.encre:"rgba(255,255,255,.8)"}}>{row.pseudo}</div>
+                  <div style={{fontSize:13,color:moi?"rgba(8,17,9,.62)":"rgba(255,255,255,.5)",flexShrink:0}}>{row.manches_gagnees} 🏆</div>
                 </div>
               );
             })}
