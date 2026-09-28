@@ -11783,7 +11783,17 @@ export default function LePont() {
             )}
             {goatSessionsAVenir.map(function(s){
               const label = s.mode === "pont" ? "THE PLUG" : "THE MERCATO";
-              const indisponible = s.statut==="complet"||s.statut==="en_cours"||s.statut==="termine"||s.statut==="annule";
+              // "complet"/"en_cours" restent CLIQUABLES : un joueur déjà
+              // inscrit doit pouvoir revenir dans le jeu après coup —
+              // bb_rejoindre_session le reconnaît via "deja_inscrit", AVANT
+              // même de regarder le statut (section 2 de
+              // supabase-sessions.sql). Un bouton désactivé pour tout le
+              // monde le laisserait bloqué dehors, y compris quand c'est le
+              // filet de sécurité à 60s qui a fait passer la session à
+              // "complet". Seuls "termine" et "annule" sont de vrais
+              // culs-de-sac.
+              const indisponible = s.statut==="termine"||s.statut==="annule";
+              const dejaLancee = s.statut==="complet"||s.statut==="en_cours";
               return (
                 <div key={s.id} style={{background:G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,padding:16,display:"flex",alignItems:"center",gap:12}}>
                   <div style={{flex:1,minWidth:0}}>
@@ -11791,12 +11801,13 @@ export default function LePont() {
                     <div style={{fontSize:12,color:"rgba(255,255,255,.5)",fontWeight:700,marginTop:2}}>
                       {new Date(s.starts_at).toLocaleString(lang==="fr"?"fr-FR":"en-US",{weekday:"short",hour:"2-digit",minute:"2-digit"})}
                       {" · "}{s.joined_count}/{s.capacite}
+                      {dejaLancee && " · " + tr("déjà lancée","already started","schon gestartet","già iniziata","já começou","ya empezó")}
                     </div>
                   </div>
                   <button onClick={function(){requirePseudo(function(){goatSessionRejoindre(s);});}}
                     disabled={indisponible}
                     style={{...btn(G.projecteur,G.encre,15),padding:"10px 16px",opacity:indisponible?.4:1,flexShrink:0}}>
-                    {indisponible ? tr("Complet","Full","Voll","Al completo","Cheio","Completo") : tr("Rejoindre","Join","Beitreten","Entra","Entrar","Entrar")}
+                    {indisponible ? tr("Terminé","Ended","Beendet","Terminata","Terminada","Terminada") : tr("Rejoindre","Join","Beitreten","Entra","Entrar","Entrar")}
                   </button>
                 </div>
               );
