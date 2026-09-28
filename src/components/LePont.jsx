@@ -4233,6 +4233,15 @@ export default function LePont() {
       complet: tr("Cette session est déjà complète.","This session is already full.","Diese Session ist bereits voll.","Questa sessione è già al completo.","Esta sessão já está cheia.","Esta sesión ya está completa."),
       compte_introuvable: tr("Il faut un pseudo pour rejoindre.","You need a nickname to join.","Du brauchst einen Spitznamen.","Serve un nickname per partecipare.","Você precisa de um apelido.","Necesitas un apodo."),
       session_introuvable: tr("Cette session n'existe plus.","This session no longer exists.","Diese Session existiert nicht mehr.","Questa sessione non esiste più.","Esta sessão não existe mais.","Esta sesión ya no existe."),
+      // bb_rejoindre_session (section 2) renvoie 'statut_'+statut quand la
+      // session n'est plus "ouvert" — soit déjà lancée (le filet de sécurité
+      // à 60s ou les 50 places atteintes), soit terminée/annulée. Sans ces
+      // clés, l'erreur générique ci-dessous s'affichait pour un cas pourtant
+      // parfaitement identifié côté serveur.
+      statut_complet: tr("Cette session a déjà démarré.","This session has already started.","Diese Session hat schon begonnen.","Questa sessione è già iniziata.","Esta sessão já começou.","Esta sesión ya empezó."),
+      statut_en_cours: tr("Cette session est en cours.","This session is in progress.","Diese Session läuft gerade.","Questa sessione è in corso.","Esta sessão está em andamento.","Esta sesión está en curso."),
+      statut_termine: tr("Cette session est terminée.","This session has ended.","Diese Session ist beendet.","Questa sessione è terminata.","Esta sessão terminou.","Esta sesión ha terminado."),
+      statut_annule: tr("Cette session a été annulée.","This session was cancelled.","Diese Session wurde abgesagt.","Questa sessione è stata annullata.","Esta sessão foi cancelada.","Esta sesión fue cancelada."),
     };
     setGoatSessionErreur(messages[etat] || tr("Erreur, réessaie.","Error, try again.","Fehler, versuch's nochmal.","Errore, riprova.","Erro, tente de novo.","Error, vuelve a intentar."));
     setGoatSessionErreurCode(etat || "");
