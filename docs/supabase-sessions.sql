@@ -23,6 +23,10 @@
 --      garanti aujourd'hui (docs/supabase-realtime.sql).
 --   ✅ Phase 2, l'écran de jeu React (LePont.jsx, goatSessionModal) : les
 --      4 écrans (liste, salon, jeu, fin), le polling, l'entrée notifs.
+--   ✅ Démarrage forcé à 60s (section 13) : tant que la Phase 3 n'existe
+--      pas, un salon resté "ouvert" plus de 60s après son horaire prévu
+--      démarre quand même, avec qui est déjà là — sinon un salon qui ne se
+--      remplit jamais bloquerait ses joueurs indéfiniment.
 --   ⏳ Phase 3 : l'ouverture à l'heure PILE (pg_cron + Edge Function, PAS
 --      les cron GitHub Actions existants — trop de retard observé, voir
 --      docs/NOTIFICATIONS.md) + l'envoi de la notification juste avant.
@@ -511,3 +515,45 @@ grant select on public.bb_session_reponses to anon, authenticated;
 --
 -- d) Vérifier qu'on ne peut pas clôturer avant l'heure :
 --    select bb_session_terminer('<id>'); -- 'pas_encore_finie' si trop tôt
+
+
+-- ═══════════════════════════════════════════════════════════════════════
+-- 13. DÉMARRAGE FORCÉ — FILET DE SÉCURITÉ TANT QUE LA PHASE 3 N'EXISTE PAS
+-- ═══════════════════════════════════════════════════════════════════════
+--
+-- `bb_rejoindre_session` (section 2) ne fige `rounds` que quand la 50e
+-- place est prise. Sans la Phase 3 (ouverture/clôture par pg_cron à
+-- l'heure pile), un salon qui ne se remplit jamais resterait "ouvert" pour
+-- toujours et bloquerait qui a déjà rejoint dans la salle d'attente. Cette
+-- fonction est le filet : passé 60s après `starts_at`, elle démarre le
+-- salon avec qui est déjà là, quel que soit `joined_count`.
+--
+-- Appelée par N'IMPORTE QUEL client (liste ou salle d'attente, voir
+-- LePont.jsx), à chaque sondage — jamais un problème : le WHERE
+-- (`statut = 'ouvert'` ET la fenêtre de 60s dépassée) rend l'appel
+-- idempotent, comme le verrou de capacité de la section 2. Un appel
+-- prématuré, en double, ou par un compte qui n'a même pas rejoint la
+-- session ne fait jamais rien.
+create or replace function public.bb_forcer_debut_session(p_session_id uuid)
+returns boolean language plpgsql security definer
+set search_path = public as $$
+declare
+  v_ok boolean;
+begin
+  update public.bb_sessions
+     set statut = 'complet',
+         rounds = public.bb_calendrier_manches(now(), manches)
+   where id = p_session_id
+     and statut = 'ouvert'
+     and now() > starts_at + interval '60 seconds'
+  returning true into v_ok;
+
+  return coalesce(v_ok, false);
+end $$;
+
+-- Contrôle : créer une session dans le passé (starts_at déjà dépassé de
+-- plus de 60s) et vérifier qu'un seul joueur suffit à la faire démarrer :
+--   select bb_creer_session(now() - interval '2 minutes');
+--   select bb_rejoindre_session('<id>'); -- 1/50, reste "ouvert"
+--   select bb_forcer_debut_session('<id>'); -- true, statut passe à 'complet'
+--   select bb_forcer_debut_session('<id>'); -- false, déjà démarré (idempotent)

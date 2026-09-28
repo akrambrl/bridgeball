@@ -4122,6 +4122,8 @@ export default function LePont() {
   const [goatSessionResultatManche, setGoatSessionResultatManche] = useState(null); // null | "correct" | "faux"
   const [goatSessionClassement, setGoatSessionClassement] = useState([]);
   const [goatSessionNow, setGoatSessionNow] = useState(0);
+  const [goatSessionJoueurs, setGoatSessionJoueurs] = useState([]); // salle d'attente : qui est déjà là
+  const [goatSessionAccueilNow, setGoatSessionAccueilNow] = useState(0); // horloge dédiée au décompte affiché sur l'accueil
   const goatSessionTerminationRef = React.useRef(false); // évite d'appeler bb_session_terminer plusieurs fois
 
   // Contenu d'une manche : proposé par le premier client qui l'atteint (voir
@@ -4173,7 +4175,42 @@ export default function LePont() {
 
   async function goatSessionChargerListe(){
     const rows = await sbFetch("bb_sessions?statut=in.(a_venir,ouvert,complet,en_cours)&order=starts_at.asc&limit=5");
-    setGoatSessionsAVenir(Array.isArray(rows) ? rows : []);
+    const list = Array.isArray(rows) ? rows : [];
+    setGoatSessionsAVenir(list);
+    goatSessionForcerSiEnRetard(list);
+  }
+
+  // Filet de sécurité tant que la Phase 3 (ouverture par pg_cron à l'heure
+  // pile, voir l'en-tête du fichier SQL) n'existe pas : une session ouverte
+  // depuis plus de 60s après son horaire prévu sans avoir atteint 50
+  // joueurs démarre quand même, avec qui est déjà là — sinon un salon qui ne
+  // se remplit jamais bloquerait indéfiniment tout le monde dedans.
+  // `bb_forcer_debut_session` est gardée côté serveur (statut='ouvert' ET
+  // 60s dépassées dans le WHERE) : l'appeler en trop, en double, ou par un
+  // client qui n'a même pas rejoint la session ne fait jamais de mal.
+  function goatSessionForcerSiEnRetard(list){
+    const maintenant = Date.now();
+    (list||[]).forEach(function(s){
+      if (s.statut === "ouvert" && maintenant - new Date(s.starts_at).getTime() > 60000) {
+        sbFetch("rpc/bb_forcer_debut_session", {
+          method:"POST", headers:{"Content-Type":"application/json"},
+          body: JSON.stringify({ p_session_id: s.id })
+        });
+      }
+    });
+  }
+
+  // "2j 03h", "01h23", "12:34" selon l'écart — pour le décompte affiché sur
+  // la carte d'accueil.
+  function goatSessionFormatCompteur(ms){
+    const totalSec = Math.max(0, Math.floor(ms/1000));
+    const jours = Math.floor(totalSec/86400);
+    const heures = Math.floor((totalSec%86400)/3600);
+    const minutes = Math.floor((totalSec%3600)/60);
+    const secondes = totalSec%60;
+    if (jours > 0) return jours+"j "+String(heures).padStart(2,"0")+"h";
+    if (heures > 0) return String(heures).padStart(2,"0")+"h"+String(minutes).padStart(2,"0");
+    return String(minutes).padStart(2,"0")+":"+String(secondes).padStart(2,"0");
   }
 
   async function goatSessionRejoindre(session){
@@ -4235,11 +4272,24 @@ export default function LePont() {
     return function(){ clearInterval(iv); };
   }, [goatSessionEcran]);
 
+  // Décompte affiché sur la carte d'accueil : sondage plus espacé (l'écran
+  // d'accueil n'a pas besoin de la même fraîcheur qu'un salon en cours de
+  // remplissage) + une horloge à 1s séparée pour faire vivre le "dans
+  // 02:15" sans dépendre du réseau à chaque seconde.
+  useEffect(function(){
+    if (screen !== "home") return;
+    goatSessionChargerListe();
+    const ivReseau = setInterval(goatSessionChargerListe, 20000);
+    const ivHorloge = setInterval(function(){ setGoatSessionAccueilNow(Date.now()); }, 1000);
+    return function(){ clearInterval(ivReseau); clearInterval(ivHorloge); };
+  }, [screen]);
+
   // Salle d'attente : sonde le compteur de places et bascule sur "jeu" dès
   // que le salon est complet (rounds fixé côté serveur, voir bb_rejoindre_session).
   useEffect(function(){
     if (goatSessionEcran !== "salon" || !goatSessionActive) return;
     let annule = false;
+    setGoatSessionJoueurs([]);
     async function tick(){
       const rows = await sbFetch("bb_sessions?id=eq."+goatSessionActive.id+"&select=*");
       const s = Array.isArray(rows) && rows[0];
@@ -4247,7 +4297,21 @@ export default function LePont() {
       setGoatSessionActive(s);
       if (s.statut === "complet" || s.statut === "en_cours") {
         setGoatSessionManche(1); setGoatSessionRepondu(false); setGoatSessionEcran("jeu");
+        return;
       }
+      goatSessionForcerSiEnRetard([s]);
+
+      // Qui est déjà dans le salon : bb_session_joueurs n'a que des
+      // player_id, on va chercher les pseudos à côté (bb_pseudos est en
+      // lecture publique, voir supabase-rls.sql section « pseudos »).
+      const joueurs = await sbFetch("bb_session_joueurs?session_id=eq."+s.id+"&select=player_id,joined_at&order=joined_at.asc&limit=50");
+      if (!Array.isArray(joueurs) || annule) return;
+      const ids = joueurs.map(function(j){ return j.player_id; }).join(",");
+      const pseudos = ids ? await sbFetch("bb_pseudos?select=player_id,pseudo&player_id=in.("+encodeURIComponent(ids)+")") : [];
+      if (annule) return;
+      const pseudoDe = {};
+      if (Array.isArray(pseudos)) pseudos.forEach(function(p){ pseudoDe[p.player_id] = p.pseudo; });
+      setGoatSessionJoueurs(joueurs.map(function(j){ return { player_id: j.player_id, pseudo: pseudoDe[j.player_id] || "?" }; }));
     }
     tick();
     const iv = setInterval(tick, 2000);
@@ -11750,6 +11814,18 @@ export default function LePont() {
             {goatSessionMaPlace != null && (
               <div style={{fontSize:13,color:"rgba(255,255,255,.5)"}}>#{goatSessionMaPlace}</div>
             )}
+            {goatSessionJoueurs.length > 0 && (
+              <div style={{width:"100%",marginTop:8,background:G.nuit,border:G.trait,borderRadius:G.rayonS,padding:"10px 14px",display:"flex",flexDirection:"column",gap:6,maxHeight:260,overflowY:"auto"}}>
+                {goatSessionJoueurs.map(function(j,i){
+                  return (
+                    <div key={j.player_id} style={{display:"flex",alignItems:"center",gap:10,fontSize:13,color:"rgba(255,255,255,.75)",fontWeight:700}}>
+                      <span style={{width:20,textAlign:"right",color:"rgba(255,255,255,.4)"}}>{i+1}</span>
+                      <span>{j.pseudo}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
 
@@ -17813,18 +17889,30 @@ export default function LePont() {
             côté fonctionnel, seul CE point d'entrée disparaît. */}
 
         {/* GOAT SESSION — rendez-vous programmés à 50 joueurs (docs/supabase-sessions.sql).
-            Même style que la carte "Joue avec tes potes" juste au-dessus. */}
-        <button onClick={function(){requirePseudo(function(){setGoatSessionEcran("liste");});}}
-          style={{background:G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,padding:"var(--carteEncart)",display:"flex",alignItems:"center",gap:12,cursor:"pointer",textAlign:"left",width:"100%",fontFamily:G.font}}>
-          <span style={{fontSize:18}}>📅</span>
-          <div style={{flex:1}}>
-            <div style={{...posterText(16,G.white),transformOrigin:"left"}}>GOAT SESSION</div>
-            <div style={{fontSize:11,color:"rgba(255,255,255,.55)",fontWeight:700,marginTop:2}}>
-              {tr("Rendez-vous programmé, 50 joueurs, 3 manches","Scheduled meetup, 50 players, 3 rounds","Geplantes Treffen, 50 Spieler, 3 Runden","Appuntamento programmato, 50 giocatori, 3 turni","Encontro marcado, 50 jogadores, 3 rodadas","Cita programada, 50 jugadores, 3 rondas")}
-            </div>
-          </div>
-          <span style={{color:"rgba(255,255,255,.45)",fontSize:18}}>›</span>
-        </button>
+            Même style que la carte "Joue avec tes potes" juste au-dessus. Le
+            sous-titre affiche un décompte vers la prochaine session (état
+            posé par l'effet "screen === home" plus haut). */}
+        {(function(){
+          const enCours = goatSessionsAVenir.find(function(s){ return s.statut==="complet"||s.statut==="en_cours"; });
+          const prochaine = !enCours && goatSessionsAVenir.find(function(s){ return s.statut==="ouvert"||s.statut==="a_venir"; });
+          const sousTitre = enCours
+            ? tr("Une session est en cours…","A session is in progress…","Eine Session läuft gerade…","Una sessione è in corso…","Uma sessão está em andamento…","Una sesión está en curso…")
+            : prochaine
+              ? tr("Prochaine session dans ","Next session in ","Nächste Session in ","Prossima sessione tra ","Próxima sessão em ","Próxima sesión en ")
+                + goatSessionFormatCompteur(new Date(prochaine.starts_at).getTime() - (goatSessionAccueilNow || Date.now()))
+              : tr("Rendez-vous programmé, 50 joueurs, 3 manches","Scheduled meetup, 50 players, 3 rounds","Geplantes Treffen, 50 Spieler, 3 Runden","Appuntamento programmato, 50 giocatori, 3 turni","Encontro marcado, 50 jogadores, 3 rodadas","Cita programada, 50 jugadores, 3 rondas");
+          return (
+            <button onClick={function(){requirePseudo(function(){setGoatSessionEcran("liste");});}}
+              style={{background:G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,padding:"var(--carteEncart)",display:"flex",alignItems:"center",gap:12,cursor:"pointer",textAlign:"left",width:"100%",fontFamily:G.font}}>
+              <span style={{fontSize:18}}>📅</span>
+              <div style={{flex:1}}>
+                <div style={{...posterText(16,G.white),transformOrigin:"left"}}>GOAT SESSION</div>
+                <div style={{fontSize:11,color:"rgba(255,255,255,.55)",fontWeight:700,marginTop:2}}>{sousTitre}</div>
+              </div>
+              <span style={{color:"rgba(255,255,255,.45)",fontSize:18}}>›</span>
+            </button>
+          );
+        })()}
 
         {/* GOAT BATTLE (grille 3×3 multijoueur) n'a pas de bouton dédié ici :
             il vit sous la carte GOAT GRID du carrousel, via le modal
