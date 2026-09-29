@@ -965,7 +965,7 @@ export const PLAYERS = [
   { name:"Jerome Boateng", clubs:["Hertha Berlin", "Hamburg", "Manchester City", "Bayern Munich", "Lyon", "Salernitana", "LASK"], diff:"moyen", nationalities:["Allemagne"], positions:["defenseur"], birthYear:1988 },
   { name:"Jordi Alba", clubs:["Cornellà", "Gimnàstic de Tarragona", "Valencia", "Barcelona", "Inter Miami"], diff:"moyen", nationalities:["Espagne"], positions:["defenseur"], birthYear:1989 },
   { name:"Luke Shaw", clubs:["Southampton", "Manchester United"], diff:"moyen", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1995 },
-  { name:"Benjamin Pavard", clubs:["Lille", "Stuttgart", "Bayern Munich", "Inter Milan", "Marseille"], diff:"facile", nationalities:["France"], positions:["defenseur"], birthYear:1996 },
+  { name:"Benjamin Pavard", clubs:["Lille", "Stuttgart", "Bayern Munich", "Inter Milan", "Marseille", "Inter Milan"], diff:"facile", nationalities:["France"], positions:["defenseur"], birthYear:1996 },
   { name:"Presnel Kimpembe", clubs:["PSG"], diff:"moyen", nationalities:["France"], positions:["defenseur"], birthYear:1995 },
   { name:"John Stones", clubs:["Barnsley", "Everton", "Manchester City", "Inter Milan"], diff:"moyen", nationalities:["Angleterre"], positions:["defenseur"], birthYear:1994 },
   { name:"Arturo Vidal", clubs:["Colo-Colo", "Bayer Leverkusen", "Juventus FC", "Bayern Munich", "Barcelona", "Inter Milan", "Flamengo", "Athletico Paranaense", "Colo-Colo"], diff:"moyen", nationalities:["Chili"], positions:["milieu"], birthYear:1987 },
