@@ -575,3 +575,32 @@ export function ciblerAndroid(abonnes) {
   }
   return { cibles, apple, desaccords };
 }
+
+/**
+ * Répartit les abonnés entre les DEUX stores, pour une campagne « l'app est sur
+ * le store » — le message et le nom du store changent d'un côté à l'autre.
+ *
+ * Même règle que ciblerAndroid, et pour la même raison : le SERVICE de push est
+ * un fait, `platform` n'est qu'une déclaration. Service Apple → iPhone, sans
+ * discussion. Tout autre service → Android.
+ *
+ * Deux exclusions, parce qu'un message « télécharge l'app » ne doit jamais
+ * promettre ce qui n'existe pas :
+ *  • `platform` « desktop » : pas de fiche de store à ouvrir depuis un PC (le
+ *    contraire de ciblerAndroid, qui les garde pour recruter des testeurs) ;
+ *  • un endpoint illisible : on ne sait pas de quel store il s'agit.
+ * Un abonnement Apple déclaré « desktop » reste rangé côté iPhone : un Safari Mac
+ * passe par le même service et l'hôte ne le distingue pas d'un iPad. Le tri
+ * « desktop » ne s'applique donc qu'aux autres services.
+ */
+export function ciblerParStore(abonnes) {
+  const ios = [], android = [], ecartes = [];
+  for (const a of abonnes || []) {
+    const ep = a && a.endpoint;
+    if (hoteAbonnement(ep) === "?") { ecartes.push(a); continue; }
+    if (servaitParApple(ep)) { ios.push(a); continue; }
+    if (a && a.platform === "desktop") { ecartes.push(a); continue; }
+    android.push(a);
+  }
+  return { ios, android, ecartes };
+}

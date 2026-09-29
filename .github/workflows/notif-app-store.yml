@@ -1,0 +1,67 @@
+# Envoi UNIQUE : « GOAT FC est sur l'App Store / sur Google Play ».
+#
+# Vise les joueurs restés sur la PWA ou dans un navigateur — les seuls à avoir un
+# abonnement web push — pour les faire passer sur l'app native. Le texte diffère
+# selon le store (iPhone / Android) ; voir scripts/notif-app-store.mjs.
+#
+# ── PAS DE CRON, ET C'EST LE POINT ─────────────────────────────────────────
+#
+# Une annonce ne se répète pas : programmé, ce workflow redemanderait la même
+# chose indéfiniment. Il se déclenche donc à la main, une fois.
+#
+# ⚠️ RELANCER CE WORKFLOW RENVOIE LA NOTIFICATION. Rien ne mémorise qui a déjà été
+#    prévenu. Le tag est fixe (`app-store`), donc un second envoi REMPLACE la
+#    notification sur l'appareil au lieu de s'y empiler : le joueur est re-sonné
+#    une fois, il n'a pas une pile. À faire seulement si le premier envoi a échoué.
+#
+# ── LE MODE À BLANC EST LA VALEUR PAR DÉFAUT ───────────────────────────────
+#
+# `dry_run` vaut true à l'ouverture du formulaire. Un envoi de notification ne se
+# rattrape pas : il faut DÉCOCHER la case pour que ça parte, et le journal du
+# premier lancement dit exactement combien d'iPhone et d'Android seraient
+# touchés. On regarde, puis on décide.
+#
+# Secrets : SB_SERVICE_KEY et VAPID_PRIVATE_KEY, les mêmes que les autres envois.
+# Voir docs/NOTIFICATIONS.md.
+name: Notification app store
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Simuler sans rien envoyer (décocher pour envoyer POUR DE VRAI)"
+        type: boolean
+        default: true
+
+# Deux exécutions simultanées enverraient la notification en double.
+concurrency:
+  group: notif-app-store
+  cancel-in-progress: false
+
+jobs:
+  envoyer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Installer les dépendances
+        # Le dépôt embarque Playwright : sans cette variable, npm ci
+        # téléchargerait des navigateurs dont l'envoi n'a aucun besoin.
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+        run: npm ci
+
+      - name: Envoyer
+        env:
+          SB_SERVICE_KEY: ${{ secrets.SB_SERVICE_KEY }}
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+          VAPID_SUBJECT: https://goatfc.fr
+        run: |
+          npx tsx scripts/notif-app-store.mjs \
+            ${{ inputs.dry_run && '--dry-run' || '' }}

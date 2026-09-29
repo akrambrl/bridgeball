@@ -11796,6 +11796,29 @@ export default function LePont() {
                 )}
               </div>
             )}
+            {/* Joueurs en PWA / navigateur sur mobile : GOAT SESSION exige les
+                notifications, bien plus fiables dans l'app native (sur iPhone,
+                le push web ne marche qu'une fois la PWA ajoutée à l'écran
+                d'accueil). Carte sombre, donc texte clair — elle est posée sur
+                fondCharte mais porte son propre fond. Rien pour l'app native
+                ni pour le PC, qui n'ont pas de fiche de store à ouvrir. */}
+            {(isIOS() || isAndroid()) && !isNative() && (
+              <div onClick={function(){ window.open(isIOS() ? APP_STORE_URL : PLAY_STORE_URL, "_blank"); }}
+                style={{background:G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,padding:"14px 16px",display:"flex",alignItems:"center",gap:12,cursor:"pointer"}}>
+                <span style={{fontSize:24}}>📲</span>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{...posterText(16,G.white)}}>
+                    {tr("Passe sur l'app","Get the app","Hol dir die App","Passa all'app","Baixe o app","Pásate a la app")}
+                  </div>
+                  <div style={{fontSize:12,color:"rgba(255,255,255,.6)",fontWeight:700,marginTop:3}}>
+                    {tr("Les notifications y sont fiables : tu ne rates aucune session.","Notifications work reliably there: you never miss a session.","Benachrichtigungen funktionieren dort zuverlässig: keine Session verpassen.","Le notifiche lì sono affidabili: non perdi nessuna sessione.","As notificações são confiáveis lá: você não perde nenhuma sessão.","Las notificaciones funcionan bien allí: no te pierdes ninguna sesión.")}
+                  </div>
+                </div>
+                <span style={{...btn(G.projecteur,G.encre,13),padding:"8px 12px",flexShrink:0}}>
+                  {isIOS() ? "App Store" : "Google Play"}
+                </span>
+              </div>
+            )}
             {goatSessionsAVenir.length === 0 && (
               // Posé directement sur fondCharte (l'or) : du blanc y tombe
               // aussi bas que G.projecteur (charte.jsx — "sur l'or, seule
