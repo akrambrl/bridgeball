@@ -7,7 +7,7 @@
 import { describe, it, expect } from "vitest";
 import { abonnementUtilisable, dedupeAbonnements, decisionEnvoi, decisionFinale, tagDuJour,
          demandesANotifier, accrocheAmis, grouperPar, resumerCorps, repartitionHotes, pushARetransmettre, abonnementMortSelonCorps, corpsCleDUnAutreServeur,
-         ciblerAndroid, servaitParApple,
+         ciblerAndroid, ciblerParStore, servaitParApple,
          acceptationsANotifier, accrocheAmiAccepte, derniereActivitePar, joueursARelancer,
          accrocheRelanceInactivite, parisMoisCourant, evolutionPodium, accrocheDechu } from "../lib/push.js";
 
@@ -578,6 +578,56 @@ describe("ciblerAndroid", () => {
   it("une liste vide ou absente ne casse pas", () => {
     expect(ciblerAndroid([]).cibles.length).toBe(0);
     expect(ciblerAndroid(null as any).cibles.length).toBe(0);
+  });
+});
+
+// « L'app est sur le store » : le message change d'un store à l'autre, donc
+// se tromper de côté envoie « sur l'App Store » à quelqu'un qui n'a pas d'iPhone.
+// Même règle que ciblerAndroid : le SERVICE de push prime sur `platform`.
+describe("ciblerParStore", () => {
+  const ab = (endpoint: string, platform?: string) => ({ endpoint, platform } as any);
+  const APPLE = "https://web.push.apple.com/abc";
+  const FCM = "https://fcm.googleapis.com/fcm/send/abc";
+  const MOZ = "https://updates.push.services.mozilla.com/x";
+
+  it("range Apple côté iPhone et Google côté Android", () => {
+    const r = ciblerParStore([ab(APPLE, "ios"), ab(FCM, "android")]);
+    expect(r.ios.length).toBe(1);
+    expect(r.android.length).toBe(1);
+    expect(r.ecartes.length).toBe(0);
+  });
+
+  it("LE SERVICE PRIME : Apple + platform « android » reste iPhone", () => {
+    const r = ciblerParStore([ab(APPLE, "android")]);
+    expect(r.ios.length).toBe(1);
+    expect(r.android.length).toBe(0);
+  });
+
+  it("Google + platform « ios » va côté Android (le service ne se trompe pas)", () => {
+    const r = ciblerParStore([ab(FCM, "ios")]);
+    expect(r.android.length).toBe(1);
+    expect(r.ios.length).toBe(0);
+  });
+
+  it("écarte un navigateur de PC : pas de fiche de store à ouvrir", () => {
+    const r = ciblerParStore([ab(MOZ, "desktop"), ab(FCM, "desktop")]);
+    expect(r.ecartes.length).toBe(2);
+    expect(r.ios.length + r.android.length).toBe(0);
+  });
+
+  it("un Safari Mac (service Apple, « desktop ») reste côté iPhone, faute de pouvoir le distinguer", () => {
+    expect(ciblerParStore([ab(APPLE, "desktop")]).ios.length).toBe(1);
+  });
+
+  it("écarte un endpoint illisible plutôt que de deviner un store", () => {
+    const r = ciblerParStore([ab("pas une url"), ab("", "android"), null as any]);
+    expect(r.ecartes.length).toBe(3);
+    expect(r.ios.length + r.android.length).toBe(0);
+  });
+
+  it("une liste vide ou absente ne casse pas", () => {
+    expect(ciblerParStore([]).ios.length).toBe(0);
+    expect(ciblerParStore(null as any).android.length).toBe(0);
   });
 });
 
