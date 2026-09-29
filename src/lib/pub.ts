@@ -299,6 +299,11 @@ export async function montrerRecompensee(): Promise<boolean> {
 // `resumeBanner` ne sont QUE des ordres, jamais un état à relire.
 let banniereMontree = false;
 let banniereEnCours = false;
+// Le DERNIER état demandé pendant qu'un appel était en cours — voir banniereVisible.
+let demandeEnAttente: boolean | null = null;
+// Ce que l'appelant veut À CET INSTANT (montrée ou cachée), à jour même quand un
+// appel est en cours. Sert à l'écouteur de taille, voir assurerEcouteTaille.
+let banniereVoulue = false;
 let ecouteTailleArmee = false;
 
 /**
@@ -323,7 +328,18 @@ function assurerEcouteTaille(): void {
   if (ecouteTailleArmee) return;
   ecouteTailleArmee = true;
   void AdMob.addListener(BannerAdPluginEvents.SizeChanged, (taille: AdMobBannerSize) => {
-    poserHauteurBanniere(taille?.height || 0);
+    const h = taille?.height || 0;
+    // ── UNE ANNONCE QUI ARRIVE APRÈS QU'ON L'A RENVOYÉE ─────────────────────
+    //
+    // `showBanner` répond dès que la DEMANDE part, pas quand l'annonce est là :
+    // le plugin ne l'ajoute à l'écran (visible) qu'à sa réception, quelques
+    // secondes plus tard. Si le joueur a quitté l'accueil entre-temps, `hideBanner`
+    // n'a rien trouvé à cacher, et l'annonce s'affichait ensuite sur l'écran de
+    // jeu, par-dessus les boutons. On la cache donc dès qu'elle se signale, si
+    // plus personne ne la veut. `hideBanner` renverra une taille 0 : la réserve
+    // d'espace retombe d'elle-même.
+    if (h > 0 && !banniereVoulue) { void AdMob.hideBanner().catch(() => {}); return; }
+    poserHauteurBanniere(h);
   });
   void AdMob.addListener(BannerAdPluginEvents.FailedToLoad, () => {
     banniereMontree = false;
@@ -342,7 +358,19 @@ function assurerEcouteTaille(): void {
  * bannière ne clignote pas en revenant sur l'accueil.
  */
 export async function banniereVisible(voulu: boolean): Promise<void> {
-  if (!natif() || !peutServir || banniereEnCours) return;
+  if (!natif() || !peutServir) return;
+  banniereVoulue = voulu;
+  // ── UN ORDRE REÇU EN COURS DE ROUTE SE RETIENT, IL NE SE PERD PAS ────────
+  //
+  // `showBanner` peut mettre plusieurs secondes (chargement réseau de l'annonce).
+  // Un joueur qui lance une partie pendant ce temps déclenche `voulu = false`, et
+  // l'ancien `|| banniereEnCours → return` l'avalait sans trace : l'effet de
+  // l'appelant ne se relance que quand l'écran CHANGE, donc plus rien ne venait
+  // corriger. La bannière — un calque natif posé par-dessus la webview — restait
+  // alors affichée sur l'écran de jeu et sur celui de fin de partie, par-dessus
+  // les boutons (signalé en capture). On garde donc le dernier ordre et on le
+  // rejoue quand l'appel en cours se termine.
+  if (banniereEnCours) { demandeEnAttente = voulu; return; }
   banniereEnCours = true;
   try {
     if (voulu) {
@@ -366,5 +394,10 @@ export async function banniereVisible(voulu: boolean): Promise<void> {
     if (voulu) { banniereMontree = false; poserHauteurBanniere(0); }
   } finally {
     banniereEnCours = false;
+    // Rejouer seulement si le dernier ordre diffère de celui qu'on vient
+    // d'exécuter : sinon on bouclerait pour rien sur un simple doublon.
+    const suite = demandeEnAttente;
+    demandeEnAttente = null;
+    if (suite !== null && suite !== voulu) void banniereVisible(suite);
   }
 }

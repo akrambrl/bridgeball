@@ -68,10 +68,42 @@ export async function initNative(): Promise<void> {
     try { await StatusBar.setOverlaysWebView({ overlay: false }); } catch {}
   } catch {}
   try {
+    // Reprise de l'app (retour d'une feuille de partage, d'une pub plein écran,
+    // d'un autre appli) : voir recalerVueNative.
+    App.addListener("appStateChange", ({ isActive }) => { if (isActive) void recalerVueNative(); });
+  } catch {}
+  try {
     // Bouton retour matériel (Android) : ne pas quitter l'app par accident.
     App.addListener("backButton", ({ canGoBack }) => {
       if (canGoBack) window.history.back();
     });
+  } catch {}
+}
+
+/**
+ * Force iOS à recalculer le cadre de la webview sous la barre d'état.
+ *
+ * Avec `overlay:false`, le plugin StatusBar décale la webview d'une hauteur de
+ * barre d'état (`resizeWebView`). Il ne refait ce calcul qu'à l'apparition de la
+ * vue et à la rotation. Si quelque chose remet le cadre à zéro entre-temps — une
+ * feuille de partage, une pub plein écran, un retour d'une autre appli — plus
+ * rien ne le corrige : la page passe alors SOUS l'horloge, sans la bande noire, et
+ * le ruban du haut de l'accueil est coupé (signalé en capture, en revenant de
+ * partie sur l'accueil).
+ *
+ * Répéter `setOverlaysWebView(false)` ne sert à rien : le plugin sort tout de
+ * suite quand la valeur ne change pas (`if overlay == isOverlayingWebview`). Il
+ * faut donc BASCULER — vrai puis faux — pour que `resizeWebView` s'exécute.
+ *
+ * iOS seulement : sur Android la barre d'état se gère autrement, et le défaut
+ * n'y a pas été observé. Sans effet sur le web.
+ */
+export async function recalerVueNative(): Promise<void> {
+  if (!isNative()) return;
+  try {
+    if (Capacitor.getPlatform() !== "ios") return;
+    await StatusBar.setOverlaysWebView({ overlay: true });
+    await StatusBar.setOverlaysWebView({ overlay: false });
   } catch {}
 }
 

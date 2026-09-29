@@ -8,7 +8,7 @@ import { createPortal } from "react-dom";
 import { PLAYERS, RETIRED_PLAYERS, GG_WC_WINNERS, GG_CL_WINNERS } from "../lib/donnees";
 import { DRAPEAUX } from "../lib/pays";
 import { trackPlay, pingPresence, pingSource, pingLive, trackTime } from "../lib/track";
-import { hapticSuccess, hapticError, isNative, openExternalLink } from "../lib/native";
+import { hapticSuccess, hapticError, isNative, openExternalLink, recalerVueNative } from "../lib/native";
 import { pickOpponent } from "../lib/opponents";
 import { G, posterText, posterTitre, posterLight, btn, fondCharte, areneCharte,
          retourStyle, retourCharte, fermerCharte, ligneCharte, pastilleCharte } from "../lib/charte.jsx";
@@ -7301,9 +7301,21 @@ export default function LePont() {
   const surAccueilPur = screen === "home"
     && !showDuelHistory && !showFriends && !showCollection && !showAccount && !showLeaderboard
     && !room && !waitingDuel && !waitingForRoom
-    && !showGoatGrid && !duelScreen && !ggModeChoice && !ggBattleScreen && !gameConfigModal && !mmSearch && !showDailyGame;
+    && !showGoatGrid && !duelScreen && !ggModeChoice && !ggBattleScreen && !gameConfigModal && !mmSearch && !showDailyGame
+    // GOAT SESSION est une modale posée sur l'accueil : la bannière, calque natif,
+    // la recouvrirait par le bas comme le reste.
+    && !goatSessionEcran;
   useEffect(function(){
     void banniereVisible(surAccueilPur);
+  }, [surAccueilPur]);
+
+  // Retour sur l'accueil après une partie : on refait poser la webview sous la
+  // barre d'état (voir recalerVueNative). Pas au premier rendu — initNative()
+  // vient de la régler, la rebasculer au lancement ne ferait que clignoter.
+  const dejaSurAccueilRef = useRef(false);
+  useEffect(function(){
+    if (surAccueilPur && dejaSurAccueilRef.current) void recalerVueNative();
+    if (surAccueilPur) dejaSurAccueilRef.current = true;
   }, [surAccueilPur]);
 
   // ── AUTO-JOIN DEPUIS UN LIEN D'INVITATION ──────────────────────────────────
@@ -13747,7 +13759,7 @@ export default function LePont() {
           )}
           {lbMode==="saison" && (
             <button onClick={function(){ setShowMesJours(true); if (mesJours===null) loadMesJours(); }}
-              style={{width:"100%",padding:"9px 11px",marginBottom:10,background:"transparent",border:G.traitFin,borderRadius:G.rayonS,color:G.projecteur,fontFamily:G.font,fontSize:12,fontWeight:800,cursor:"pointer",textAlign:"center"}}>
+              style={{width:"100%",padding:"10px 12px",marginBottom:10,background:G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayonS,color:G.projecteur,fontFamily:G.font,fontSize:13,fontWeight:800,cursor:"pointer",textAlign:"center"}}>
               {tr("📅 Voir le détail de mes jours","📅 See my day-by-day detail","📅 Meine Tage im Detail ansehen","📅 Vedi il dettaglio dei miei giorni","📅 Ver o detalhe dos meus dias","📅 Ver el detalle de mis días")} →
             </button>
           )}
