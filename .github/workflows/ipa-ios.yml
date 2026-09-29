@@ -144,19 +144,29 @@ jobs:
           set -euo pipefail
           echo "Xcode présents sur l'image :"
           ls -d /Applications/Xcode*.app 2>/dev/null || echo "  (aucun)"
+          # ── LA VERSION COMPLÈTE, PAS LE MAJEUR SEULEMENT ────────────────────
+          #
+          # Le 29 septembre 2026, l'image portait Xcode 26.0.1 à 26.6. Comparer
+          # le seul majeur (26 partout) gardait la PREMIÈRE trouvée, la plus
+          # ancienne, et `-downloadPlatform iOS` y mourait sur
+          # « Unable to connect to simulator » (exit 70) au bout de deux minutes.
+          # `sort -V` range les versions comme un humain : 26.6 après 26.10.
           MEILLEUR=""
           MEILLEURE_V=0
+          LISTE=""
           for app in /Applications/Xcode*.app; do
             [ -d "$app" ] || continue
             V=$(/usr/bin/plutil -extract CFBundleShortVersionString raw \
                   "$app/Contents/Info.plist" 2>/dev/null || echo "0")
-            MAJ=${V%%.*}
             echo "  $app → $V"
-            if [ "${MAJ:-0}" -gt "$MEILLEURE_V" ] 2>/dev/null; then
-              MEILLEURE_V=$MAJ
-              MEILLEUR=$app
-            fi
+            LISTE="${LISTE}${V} ${app}"$'\n'
           done
+          DERNIERE=$(printf '%s' "$LISTE" | sed '/^$/d' | sort -V | tail -1)
+          if [ -n "$DERNIERE" ]; then
+            MEILLEUR=${DERNIERE#* }
+            MEILLEURE_V=${DERNIERE%% *}
+            MEILLEURE_V=${MEILLEURE_V%%.*}
+          fi
           if [ -z "$MEILLEUR" ] || [ "$MEILLEURE_V" -lt 26 ]; then
             echo "::error::Xcode 26 ou plus est exigé par App Store Connect ; le plus récent ici est ${MEILLEURE_V:-aucun}."
             echo "Changer l'image du runner (runs-on) pour une qui l'embarque."
