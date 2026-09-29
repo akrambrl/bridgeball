@@ -10080,7 +10080,7 @@ export default function LePont() {
     }
     
     queueRef.current = q;
-    setQueue(q); setQIdx(0); setScore(0); scoreRef.current=0; setRoundAnswers([]);
+    setQueue(q); setQIdx(0); setScore(0); scoreRef.current=0; setRoundAnswers([]); setChainHistory([]);
     setTimeLeft(ROUND_DURATION); setGuess(""); setFlash(null); setFeedback(null);
     // Toujours générer 4 options (boutons cliquables) pour toutes les difficultés
     // Pool des distracteurs : mix des 3 difficultés pour garantir des distracteurs variés et pertinents
@@ -10160,7 +10160,7 @@ export default function LePont() {
     setChainPlayer(start.name); setChainUsedClubs(new Set()); setChainUsedPlayers(usedP);
     setChainCount(0); chainCountRef.current=0; setChainScore(0); chainScoreRef.current=0;
     setChainMilestone(null); if(chainMsToRef.current) clearTimeout(chainMsToRef.current);
-    setChainLastClub(""); setChainLastPassed(false); setChainHistory([]); setChainOkClub(null); setGuess(""); setFlash(null); setFeedback(null); setChainLastRejected(null);
+    setRoundAnswers([]); setChainLastClub(""); setChainLastPassed(false); setChainHistory([]); setChainOkClub(null); setGuess(""); setFlash(null); setFeedback(null); setChainLastRejected(null);
     setTimeLeft(CHAIN_DURATION); setScore(0); scoreRef.current=0;
     setMyLbRank(null); setScreen("chainGame");
     setTimeout(()=>inputRef.current?.focus(),200);
@@ -12028,10 +12028,17 @@ export default function LePont() {
     </div>
   );
 
+  // Le récap montré suit la partie qu'on VIENT de jouer, pas ce qui traîne en
+  // mémoire : roundAnswers (Plug) n'était jamais vidée en lançant un Mercato, donc
+  // « Ma chaîne » ouvrait le récap d'une ancienne partie de Plug — signalé, il
+  // n'affichait qu'une réponse au lieu des liens de la chaîne.
+  const historiqueEstChaine = screen === "chainEnd" || screen === "chainGame" || !!(duelResult && duelResult.isChain);
+  const historiqueAfficheQuestions = roundAnswers.length > 0 && !historiqueEstChaine;
+  const historiqueAfficheChaine = chainHistory.length > 0 && (historiqueEstChaine || roundAnswers.length === 0);
   const historyModal = showHistory && (
     <div key="history-modal" onClick={()=>setShowHistory(false)} style={{position:"fixed",inset:0,zIndex:9999,background:"rgba(8,17,9,.86)",display:"flex",alignItems:"flex-end",justifyContent:"center",animation:"fadeIn .2s ease"}}>
       <div onClick={(e)=>e.stopPropagation()} style={{background:G.nuit,borderTop:G.trait,borderRadius:G.rayonL+"px "+G.rayonL+"px 0 0",width:"100%",maxWidth:500,maxHeight:"88vh",display:"flex",flexDirection:"column",animation:"slideUp .3s ease",border:G.traitFin}}>
-        {roundAnswers.length > 0 ? (
+        {historiqueAfficheQuestions ? (
           <>
             <div style={{padding:"18px 20px",borderBottom:G.traitFin,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
               <div>
@@ -12089,7 +12096,7 @@ export default function LePont() {
               })}
             </div>
           </>
-        ) : chainHistory.length > 0 ? (
+        ) : historiqueAfficheChaine ? (
           <>
             <div style={{padding:"18px 20px",borderBottom:G.traitFin,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
               <div>
@@ -16892,8 +16899,10 @@ export default function LePont() {
                           de l'encre est de 11,5. Le mot mis en avant se distingue par la
                           pelouse, seul aplat coloré qui tienne dans un mot cerclé d'encre. */}
                       <div onClick={ggTitleTap} style={{...posterText(30,G.encre),userSelect:"none",WebkitUserSelect:"none",WebkitTouchCallout:"none",cursor:"pointer"}}>GOAT <span style={{color:G.pelouse}}>GRID</span></div>
-                      {ggOverrideSeed > 0 && (
-                        <div style={{fontSize:9,color:ggDemo?G.pelouseClaire:G.projecteur,marginTop:2,letterSpacing:1.5,fontWeight:800}}>{ggDemo?"🎬 MODE DÉMO":"🔄 GRILLE TEST"}</div>
+                      {/* « 🔄 GRILLE TEST » retiré (grille imposée par ?seed=) : seul le
+                          mode démo garde son étiquette. */}
+                      {ggOverrideSeed > 0 && ggDemo && (
+                        <div style={{fontSize:9,color:G.pelouseClaire,marginTop:2,letterSpacing:1.5,fontWeight:800}}>🎬 MODE DÉMO</div>
                       )}
                     </>
                   )}
@@ -17500,9 +17509,6 @@ export default function LePont() {
                         </div>
                       </div>
 
-                      <div style={{fontSize:10.5,color:G.creme,opacity:.6,fontStyle:"italic",flexShrink:0}}>
-                        {tr("Nouvelle grille demain à minuit 🐐","New grid tomorrow at midnight 🐐","Neues Raster morgen um Mitternacht 🐐","Nuova griglia domani a mezzanotte 🐐","Nova grade amanhã à meia-noite 🐐","Nueva cuadrícula mañana a medianoche 🐐")}
-                      </div>
                     </div>
                   </div>
                 );
@@ -18704,28 +18710,6 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
             <div style={{fontSize:12,color:"rgba(255,255,255,.5)",marginBottom:10}}>{tr("Crée un pseudo pour apparaître au classement","Create a username to appear on the leaderboard","Erstelle einen Namen, um in der Rangliste zu erscheinen","Crea un nome per apparire in classifica","Crie um nome para aparecer no ranking","Crea un nombre para aparecer en la clasificación")}</div>
             <button onClick={()=>setPseudoScreen(true)} style={{...btn(G.projecteur,G.encre,16),padding:"9px 20px",margin:"0 auto"}}>{tr("Créer mon pseudo","Create username","Namen erstellen","Crea nome","Criar nome","Crear mi nombre")}</button>
           </div>
-        )}
-        {/* ── POSTER CE SCORE EN DÉFI ──
-            L'écran de fin est le seul endroit où un score existe. Jusqu'ici il
-            ne menait qu'au classement, et poster un défi demandait d'aller le
-            faire depuis le salon — d'où 22 joueurs sur 176 qui en avaient jamais
-            lancé un, et un top 3 responsable de la moitié des défis de l'app.
-            Caché pendant un duel : le score y part déjà à l'adversaire. */}
-        {pseudoConfirmed && sc > 0 && !activeDuelRef.current && (
-          defiPoste === sc ? (
-            <div style={{background:G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,
-              padding:"12px 16px",textAlign:"center"}}>
-              <div style={{...posterText(17,G.pelouseClaire)}}>⚡ {tr("Défi posté","Challenge posted","Herausforderung gepostet","Sfida pubblicata","Desafio publicado","Reto publicado")}</div>
-              <div style={{fontSize:12,color:"rgba(255,255,255,.5)",marginTop:3}}>{tr("Les autres vont tenter de battre tes ","Others will try to beat your ","Andere versuchen, deine ","Gli altri proveranno a battere i tuoi ","Os outros vão tentar bater seus ","Los demás intentarán batir tus ")}{sc} pts</div>
-            </div>
-          ) : (
-            <button onClick={function(){
-              posterDefi(mode, diff, totalRounds, sc, null, isChain ? chainHistory : roundAnswers)
-                .then(function(ok){ if (ok) setDefiPoste(sc); });
-            }} style={{...btn(G.maillot,G.white,20),width:"100%",padding:"12px",gap:10,boxShadow:G.ombreL}}>
-              ⚔️ {tr("Défier les autres avec ce score","Challenge others with this score","Andere mit diesem Score herausfordern","Sfida gli altri con questo punteggio","Desafie os outros com esta pontuação","Reta a los demás con esta puntuación")}
-            </button>
-          )
         )}
         {/* ── DOUBLER SON XP EN REGARDANT UNE PUB ──────────────────────────
             La SEULE récompense qu'on peut offrir sans toucher au concours.

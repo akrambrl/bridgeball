@@ -692,7 +692,10 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
     setRevealing(false);
     setShowCareer(false);
     setHintRevealed([]);
-    setCluesShown(1);
+    // 0 et non 1 : « Rejouer » offrait un indice d'office (signalé). Une nouvelle
+    // manche démarre comme la première, sans aucun indice — on le demande au
+    // bouton « Un indice » si on en veut un.
+    setCluesShown(0);
     trackPlay("reveal");
     setTimeout(() => inputRef.current?.focus(), 60);
   }
@@ -915,7 +918,7 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
           tous les en-têtes de LePont.jsx (Classement, Compte, Duel…) utilisent
           déjà `max()`, jamais `calc()`, pour ce même padding. */}
       <div style={{ position: "sticky", top: 0, zIndex: 5, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "max(14px, env(safe-area-inset-top)) 16px 12px", background: G.encre, borderBottom: G.traitFin }}>
-        <button onClick={close} style={{ ...btn(G.nuit, G.white, 15), padding: "8px 12px", flexShrink: 0 }}>← {tr("QUITTER", "QUIT", "BEENDEN", "ESCI", "SAIR","SALIR")}</button>
+        <button onClick={close} style={{ ...btn(G.projecteur, G.encre, 15), padding: "8px 12px", flexShrink: 0 }}>← {tr("QUITTER", "QUIT", "BEENDEN", "ESCI", "SAIR","SALIR")}</button>
         <div style={{ ...posterText(20, G.projecteur), textAlign: "center", flex: 1, minWidth: 0, lineHeight: 1.05 }}>{daily ? tr("DEVINETTE DU JOUR", "DAILY RIDDLE", "RÄTSEL DES TAGES", "INDOVINELLO DEL GIORNO", "ADIVINHA DO DIA","ADIVINANZA DEL DÍA") : tr("TROUVE LE JOUEUR", "GUESS THE PLAYER", "ERRATE DEN SPIELER", "INDOVINA IL GIOCATORE", "ADIVINHE O JOGADOR","ADIVINA EL JUGADOR")}</div>
         {(!over && !revealing && !daily) ? (
           <button onClick={playAgain} aria-label={tr("Changer de joueur (trop dur)", "Change player (too hard)", "Spieler wechseln (zu schwer)", "Cambia giocatore (troppo difficile)", "Trocar de jogador (difícil demais)","Cambiar de jugador (muy difícil)")} title={tr("Trop dur ? Change de joueur", "Too hard? Change player", "Zu schwer? Spieler wechseln", "Troppo difficile? Cambia", "Difícil? Troca de jogador","¿Muy difícil? Cambia de jugador")} style={{ ...btn(G.projecteur, G.encre, 14), padding: "8px 11px", whiteSpace: "nowrap", flexShrink: 0 }}>
@@ -1054,7 +1057,7 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
             {suggestions.length > 0 && (
               <div style={{ position: "absolute", top: "100%", left: 0, right: 0, zIndex: 10, marginTop: 6, background: G.nuit, border: G.trait, borderRadius: G.rayon, maxHeight: "min(50vh, 320px)", overflowY: "auto", WebkitOverflowScrolling: "touch" as any, boxShadow: G.ombre }}>
                 {suggestions.map(s => (
-                  <button key={s.name} {...handlersDeTap(() => submitGuess(s))} style={{ display: "flex", width: "100%", alignItems: "center", justifyContent: "space-between", gap: 8, padding: "11px 14px", background: "transparent", border: "none", borderBottom: "2px solid rgba(8,17,9,.55)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", textAlign: "left" }}>
+                  <button key={s.name} {...handlersDeTap(() => { submitGuess(s, false); try { inputRef.current?.blur(); } catch { /* noop */ } })} style={{ display: "flex", width: "100%", alignItems: "center", justifyContent: "space-between", gap: 8, padding: "11px 14px", background: "transparent", border: "none", borderBottom: "2px solid rgba(8,17,9,.55)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", textAlign: "left" }}>
                     <span>{s.name}</span>
                     <span style={{ fontSize: 15 }}>{s.nationalities[0] ? drapeau(s.nationalities[0]) : ""}</span>
                   </button>
@@ -1172,7 +1175,7 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
             </button>
 
 
-            <button onClick={openReport} style={{ marginTop: 12, background: "transparent", border: "none", color: "rgba(255,107,125,.85)", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>
+            <button onClick={openReport} style={{ marginTop: 12, padding: "9px 16px", background: G.nuit, border: G.traitFin, boxShadow: "2px 2px 0 " + G.encre, borderRadius: G.rayonS, color: "#FF8A98", fontSize: 12.5, fontWeight: 800, cursor: "pointer" }}>
               🚩 {tr("Signaler une erreur sur ce parcours", "Report an error on this career", "Fehler in diesem Verlauf melden", "Segnala un errore su questa carriera", "Reportar erro nesta carreira","Reportar un error en esta trayectoria")}
             </button>
           </div>

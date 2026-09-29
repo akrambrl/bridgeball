@@ -2233,14 +2233,6 @@ const LostView = ({
 const FLAGS = DRAPEAUX;
 const flagOf = (nat?: string) => (nat && FLAGS[nat]) || "🏳️";
 const POS_ABBR: Record<string, string> = { gardien: "GB", defenseur: "DEF", milieu: "MIL", attaquant: "BU" };
-// Note façon FUT : dérivée de la notoriété (diff) + variation stable par nom.
-// Purement cosmétique — pas une vraie note.
-const futRating = (p: Player) => {
-  let h = 0;
-  for (let i = 0; i < p.name.length; i++) h = (h * 31 + p.name.charCodeAt(i)) >>> 0;
-  const base = p.diff === "facile" ? 89 : p.diff === "moyen" ? 83 : 77;
-  return base + (h % 5);
-};
 // Les trois raretés, à la charte. L'or, l'argent et le bronze métalliques de
 // FUT étaient quatre dégradés superposés par carte : ils n'ont pas de place dans
 // une charte qui ne connaît que l'aplat. On garde le SENS (or = star, argent =
@@ -2296,7 +2288,6 @@ const PlayerRevealCard = ({
   player: Player;
   accent?: string;
 }) => {
-  const rating = futRating(player);
   const pos = POS_ABBR[player.positions[0]] || "?";
   const flag = flagOf(player.nationalities[0]);
   const tier = TIERS[player.diff] || TIERS.expert;
@@ -2347,13 +2338,13 @@ const PlayerRevealCard = ({
           {/* Voile d'encre : il assoit le lettrage quel que soit le maillot. */}
           <div className="absolute inset-0" style={{ background: "rgba(8,17,9,.42)" }} aria-hidden />
 
-          {/* Bloc haut : la note, puis le poste et le drapeau à côté d'elle.
-              Le médaillon central est parti avec son pictogramme de poste — un
-              petit bonhomme filaire posé dans une tuile n'avait rien à voir avec
-              le trait d'affiche du reste de la carte, et il occupait à lui seul
-              le tiers de la hauteur. Le poste est déjà dit par ses trois lettres. */}
+          {/* Bloc haut : le poste et le drapeau. La note FUT (89-93) a été
+              retirée à la demande : c'était une valeur décorative, pas un score
+              réel, et elle prêtait à confusion. Le médaillon central est parti
+              avec son pictogramme de poste — un petit bonhomme filaire posé dans
+              une tuile n'avait rien à voir avec le trait d'affiche du reste de la
+              carte. Le poste est déjà dit par ses trois lettres. */}
           <div className="relative flex items-end gap-3 mt-1">
-            <div style={{ ...posterText(52, G.white, 2.2) }}>{rating}</div>
             <div className="flex flex-col items-start pb-1.5">
               <div style={{ ...posterText(1, G.white, 1.2), fontSize: 17, letterSpacing: 2 }}>{pos}</div>
               <div className="text-2xl mt-0.5 leading-none">{flag}</div>
