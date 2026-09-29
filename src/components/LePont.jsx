@@ -190,6 +190,13 @@ async function sbCount(table, filter) {
   } catch (e) { return null; }
 }
 
+// Objet STABLE pour <Tracking sb={…}/> : Tracking relance tout son chargement
+// (~15 requêtes) dès que `sb` change d'identité. Un littéral d'objet posé dans
+// le JSX en fabriquait un neuf à chaque rendu de LePont — et le tableau de bord
+// est monté PAR-DESSUS l'accueil, donc toute horloge de l'accueil (décompte
+// GOAT SESSION, 1 s) l'annulait avant la fin : « Chargement… » sans fin.
+const SB_POUR_TRACKING = { fetch: sbFetch, fetchAll: sbFetchAll, count: sbCount };
+
 // Détecte l'OS mobile (pour le tracking) : "ios" | "android" | "other"
 function detectOS() {
   try {
@@ -15959,7 +15966,7 @@ export default function LePont() {
         {/* ── TABLEAU DE BORD PRIVÉ (?stats=CODE) ── */}
         {/* Rubriques, filtres et mise en page dans src/components/Tracking.jsx :
             le rendu tenait ici en 350 lignes d'une seule colonne de 520 px. */}
-        {statsMode && <Tracking sb={{ fetch: sbFetch, fetchAll: sbFetchAll, count: sbCount }}/>}
+        {statsMode && <Tracking sb={SB_POUR_TRACKING}/>}
 
         {/* ── HOME RULES MODAL ── */}
         {homeRulesModal && (() => {
