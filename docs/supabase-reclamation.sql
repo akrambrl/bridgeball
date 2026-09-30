@@ -232,18 +232,6 @@ begin
     return;
   end if;
 
-  -- 4.3 bis — Le compte Instagram, sans lequel les conditions de l'article 5.1
-  --           (abonnement, deux amis identifiés, partage en story) ne peuvent
-  --           pas être vérifiées. On contrôle qu'il y a un pseudo plausible, pas
-  --           qu'il existe : Instagram n'expose aucune interface publique
-  --           permettant de le savoir, et prétendre le vérifier ici serait un
-  --           contrôle de façade. La VRAIE vérification est manuelle, à la
-  --           remise — le règlement le dit ainsi.
-  if btrim(coalesce(p_instagram, '')) !~ '^@?[A-Za-z0-9._]{1,30}$' then
-    return query select 'refus'::text, 'instagram'::text;
-    return;
-  end if;
-
   -- 4.4 — CE COMPTE EST-IL SUR UN PODIUM DOTÉ ?
   --
   --       Le rang n'est PAS lu quelque part : il est RECALCULÉ, par
@@ -292,6 +280,20 @@ begin
     return;
   end if;
 
+  -- 4.4 bis — Le compte Instagram, EXIGÉ SEULEMENT POUR LE LANCEMENT (saison 6,
+  --           septembre 2026). Ces conditions — abonnement, deux amis identifiés,
+  --           partage en story — étaient propres au lancement ; dès octobre
+  --           (saison 7) il suffit de jouer et d'être classé sur une place dotée.
+  --           Il est donc contrôlé APRÈS la recherche du lot, car c'est elle qui
+  --           dit de quelle saison relève la réclamation. On vérifie la FORME du
+  --           pseudo, pas son existence : Instagram n'expose aucune interface
+  --           publique permettant de le savoir. À partir de la saison 7 un pseudo
+  --           fourni est tout de même rangé s'il est plausible, jamais exigé.
+  if v_num <= 6 and btrim(coalesce(p_instagram, '')) !~ '^@?[A-Za-z0-9._]{1,30}$' then
+    return query select 'refus'::text, 'instagram'::text;
+    return;
+  end if;
+
   -- 4.5 — Le délai de réclamation.
   if v_limite is not null and now() > v_limite then
     return query select 'refus'::text, 'delai_depasse'::text;
@@ -308,7 +310,7 @@ begin
       (v_num, v_rang, v_player, v_pseudo, btrim(p_email),
        -- Rangé SANS l'arobase, pour que « @toto » et « toto » ne fassent qu'un
        -- seul dossier à vérifier.
-       ltrim(btrim(p_instagram), '@'),
+       nullif(ltrim(btrim(coalesce(p_instagram, '')), '@'), ''),
        nullif(btrim(coalesce(p_plateforme, '')), ''), true);
   exception when unique_violation then
     return query select 'deja'::text,

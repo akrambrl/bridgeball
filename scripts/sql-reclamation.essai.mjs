@@ -270,6 +270,36 @@ async function eprouver() {
   dire(tard === "refus:delai_depasse", "après le délai, c'est refusé  (" + tard + ")");
   await psql(["-c", "update public.bb_lots set ouvert_jusqu_a = now() + interval '30 days'"], base);
 
+  // ── 8 bis. À PARTIR D'OCTOBRE, LE COMPTE INSTAGRAM N'EST PLUS EXIGÉ ───────
+  //     Les conditions Instagram (abonnement, 2 amis, story) étaient celles du
+  //     LANCEMENT (septembre, saison 6). Dès la saison 7, il suffit de jouer et
+  //     d'être classé sur une place dotée. Septembre, lui, reste bloquant : les
+  //     contrôles de la section 4 bis le prouvent.
+  await psql(["-c", "delete from public.bb_reclamations;"
+    + " alter table public.bb_scores disable trigger user;"
+    + " insert into public.bb_scores (player_id, player_name, mode, score, created_at)"
+    + " select 'quatre', 'sodinho2', 'pont', 900, timestamptz '2026-10-05 12:00:00+02' + (d || ' day')::interval"
+    + " from generate_series(0, 3) as d;"
+    + " alter table public.bb_scores enable trigger user;"
+    + " insert into public.bb_seasons (season_number, champion_id, champion_name, champion_score, mode, ended_at)"
+    + " values (7, 'quatre', 'sodinho2', 3600, 'global', now())"], base);
+  const octobreRang = await commeAnon(
+    "select player_id from public.bb_classement_mois('2026-10') order by points desc limit 1", base);
+  dire(octobreRang === "quatre",
+    "octobre : le seul joueur de la période est premier  (" + octobreRang + ")");
+  const sansInsta = await commeAnon(
+    "select etat || ':' || detail from public.bb_reclamer_lot("
+    + "'GOATFC-GGGG-HHHH', 'a@b.fr', '', 'Maillot Inter 2010', true)", base);
+  dire(/^ok:GOATFC-LOT-7-1-/.test(sansInsta),
+    "octobre : la réclamation passe SANS compte Instagram  (" + sansInsta + ")");
+  const rangeNul = await psql(["-tAc",
+    "select coalesce(instagram, 'NULL') from public.bb_reclamations where season_number = 7"], base);
+  dire(rangeNul.trim() === "NULL",
+    "octobre : l'absence de pseudo est rangée NULL, pas une chaîne vide  (" + rangeNul.trim() + ")");
+  await psql(["-c", "delete from public.bb_reclamations;"
+    + " delete from public.bb_seasons where season_number = 7;"
+    + " delete from public.bb_scores where created_at >= timestamptz '2026-10-01 00:00:00+02'"], base);
+
   // ── 9. LES DROITS — LE CŒUR DU BANC ───────────────────────────────────────
   //
   // La table contient des ADRESSES EMAIL. Si anon peut la lire, la fuite est

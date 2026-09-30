@@ -33,7 +33,7 @@ import { duelTermine } from "../lib/duel";
 // accepte comme saisie) et le tirage sûr du code de récupération.
 import { saisonDoteeRecente, lotPourRang, rangDans, moisDeLaSaison, libellePlace,
          medaille, placesDotees, souhaitDuRang, manques, normaliserCode, normaliserInstagram,
-         tirerCode, PLATEFORMES } from "../lib/reclamation";
+         instagramExige, tirerCode, PLATEFORMES } from "../lib/reclamation";
 import { prochainsTotauxXp } from "../lib/xp";
 // Règles de tirage anti-répétition, partagées avec « Trouve le joueur ».
 import { clePaire, pairesRetenues, tirerEnEvitant, memoriser } from "../lib/tirage.js";
@@ -9406,7 +9406,7 @@ export default function LePont() {
   // serveur, seule à pouvoir lire le code de récupération d'un compte.
   async function envoyerReclamation() {
     const code = normaliserCode(recForm.code);
-    const absents = manques({ ...recForm, code }, monLot ? monLot.rang : 1);
+    const absents = manques({ ...recForm, code }, monLot ? monLot.rang : 1, monLot ? monLot.saison : undefined);
     if (absents.length > 0) {
       setRecMsg(tr(
         "❌ Il manque : " + absents.join(", "),
@@ -9478,6 +9478,9 @@ export default function LePont() {
   const reclamationModal = reclamationOuverte ? (function(){
     const lot = monLot;
     const rang = lot ? lot.rang : 1;
+    const souhait = souhaitDuRang(rang, lot ? lot.saison : undefined);
+    // Le compte Instagram n'est demandé que pour le lancement (septembre 2026).
+    const veutInstagram = instagramExige(lot ? lot.saison : undefined);
     const champ = {width:"100%",background:"rgba(8,17,9,.45)",border:G.traitFin,borderRadius:14,
       padding:"13px 15px",fontFamily:G.font,fontSize:15,color:G.white,outline:"none",
       boxSizing:"border-box",marginBottom:10};
@@ -9573,6 +9576,8 @@ export default function LePont() {
                   choix — leur proposer « PlayStation / Xbox / PC » n'aurait
                   aucun sens, et une liste d'enseignes serait forcément
                   incomplète. C'est donc un champ libre. */}
+              {veutInstagram && (
+              <>
               <div style={{fontSize:11,color:"rgba(255,255,255,.5)",fontWeight:700,letterSpacing:1,marginBottom:6}}>
                 {tr("TON COMPTE INSTAGRAM","YOUR INSTAGRAM ACCOUNT","DEIN INSTAGRAM-KONTO","IL TUO ACCOUNT INSTAGRAM","SUA CONTA DO INSTAGRAM","TU CUENTA DE INSTAGRAM")}
               </div>
@@ -9591,13 +9596,17 @@ export default function LePont() {
                     "Serve para verificar as condições: seguir a conta, 2 amigos marcados no comentário e partilha no story. Uma conta GOAT FC é anónima, é a única ligação possível.",
                     "Sirve para comprobar las condiciones: seguir la cuenta, 2 amigos etiquetados en comentario y compartir en historia. Una cuenta GOAT FC es anónima, es el único vínculo posible.")}
               </div>
+              </>
+              )}
 
               <div style={{fontSize:11,color:"rgba(255,255,255,.5)",fontWeight:700,letterSpacing:1,marginBottom:8}}>
-                {souhaitDuRang(rang) === "plateforme"
+                {souhait === "plateforme"
                   ? tr("PLATEFORME","PLATFORM","PLATTFORM","PIATTAFORMA","PLATAFORMA","PLATAFORMA")
+                  : souhait === "maillot"
+                  ? tr("MAILLOT SOUHAITÉ","SHIRT YOU WANT","GEWÜNSCHTES TRIKOT","MAGLIA DESIDERATA","CAMISOLA DESEJADA","CAMISETA DESEADA")
                   : tr("ENSEIGNE SOUHAITÉE","PREFERRED RETAILER","GEWÜNSCHTE MARKE","INSEGNA DESIDERATA","LOJA DESEJADA","TIENDA DESEADA")}
               </div>
-              {souhaitDuRang(rang) === "plateforme" ? (
+              {souhait === "plateforme" ? (
                 <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:14}}>
                   {PLATEFORMES.map(function(p){
                     const actif = recForm.plateforme === p.cle;
@@ -9610,17 +9619,26 @@ export default function LePont() {
                 </div>
               ) : (
                 <>
-                  <input value={recForm.plateforme} maxLength={60}
+                  <input value={recForm.plateforme} maxLength={souhait === "maillot" ? 100 : 60}
                     onChange={function(e){setRecForm({...recForm,plateforme:e.target.value});setRecMsg("");}}
-                    placeholder={tr("Amazon, Fnac, Steam, PSN…","Amazon, Steam, PSN…","Amazon, Steam, PSN…","Amazon, Steam, PSN…","Amazon, Steam, PSN…","Amazon, Steam, PSN…")}
+                    placeholder={souhait === "maillot"
+                      ? tr("Ex. : Inter 2009-10, domicile, taille M","E.g. Inter 2009-10, home, size M","z. B. Inter 2009-10, Heim, Größe M","Es. Inter 2009-10, casa, taglia M","Ex.: Inter 2009-10, principal, tamanho M","Ej.: Inter 2009-10, local, talla M")
+                      : tr("Amazon, Fnac, Steam, PSN…","Amazon, Steam, PSN…","Amazon, Steam, PSN…","Amazon, Steam, PSN…","Amazon, Steam, PSN…","Amazon, Steam, PSN…")}
                     style={champ}/>
                   <div style={{fontSize:11.5,color:"rgba(255,255,255,.45)",lineHeight:1.5,marginBottom:14}}>
-                    {tr("Dis-nous où tu veux ta carte cadeau. Si l'enseigne n'est pas disponible, on te proposera l'équivalent le plus proche.",
-                        "Tell us where you'd like your gift card. If that retailer isn't available, we'll offer the closest equivalent.",
-                        "Sag uns, wo du deinen Gutschein möchtest. Ist die Marke nicht verfügbar, schlagen wir die nächstbeste vor.",
-                        "Dicci dove vuoi la tua carta regalo. Se l'insegna non è disponibile, ti proporremo l'equivalente più vicino.",
-                        "Diga onde quer seu vale-presente. Se a loja não estiver disponível, ofereceremos o equivalente mais próximo.",
-                        "Dinos dónde quieres tu tarjeta regalo. Si la tienda no está disponible, te ofreceremos el equivalente más cercano.")}
+                    {souhait === "maillot"
+                      ? tr("Le maillot de football de ton choix (jusqu'à 90 €) : club ou sélection, saison, taille. Livraison dans l'Union européenne ; on te demande l'adresse par email.",
+                          "The football shirt of your choice (up to €90): club or national team, season, size. Delivery within the European Union; we'll ask for your address by email.",
+                          "Das Fußballtrikot deiner Wahl (bis 90 €): Verein oder Nationalteam, Saison, Größe. Lieferung innerhalb der EU; die Adresse fragen wir per E-Mail ab.",
+                          "La maglia da calcio che vuoi (fino a 90 €): club o nazionale, stagione, taglia. Consegna nell'Unione europea; ti chiediamo l'indirizzo via email.",
+                          "A camisola de futebol à tua escolha (até 90 €): clube ou seleção, época, tamanho. Entrega na União Europeia; pedimos a morada por email.",
+                          "La camiseta de fútbol que elijas (hasta 90 €): club o selección, temporada, talla. Envío dentro de la Unión Europea; te pedimos la dirección por email.")
+                      : tr("Dis-nous où tu veux ta carte cadeau. Si l'enseigne n'est pas disponible, on te proposera l'équivalent le plus proche.",
+                          "Tell us where you'd like your gift card. If that retailer isn't available, we'll offer the closest equivalent.",
+                          "Sag uns, wo du deinen Gutschein möchtest. Ist die Marke nicht verfügbar, schlagen wir die nächstbeste vor.",
+                          "Dicci dove vuoi la tua carta regalo. Se l'insegna non è disponibile, ti proporremo l'equivalente più vicino.",
+                          "Diga onde quer seu vale-presente. Se a loja não estiver disponível, ofereceremos o equivalente mais próximo.",
+                          "Dinos dónde quieres tu tarjeta regalo. Si la tienda no está disponible, te ofreceremos el equivalente más cercano.")}
                   </div>
                 </>
               )}
