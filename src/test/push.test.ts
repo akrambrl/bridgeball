@@ -855,10 +855,15 @@ describe("gagnantsANotifier", () => {
 
 describe("accrocheGagnant", () => {
   const g = (rang: number) => ({ rang, mois: "2026-09", limite: "2026-10-31T22:59:59Z" });
-  it("dit la place, le mois et la date limite", () => {
+  it("le 1er est le GOAT du mois", () => {
     const { titre, corps } = accrocheGagnant(g(1));
-    expect(titre).toBe("🏆 Tu as gagné septembre !");
-    expect(corps).toBe("Bravo, tu finis à la 1re place du classement de septembre. Réclame ton lot dans l'app avant le 31 octobre !");
+    expect(titre).toBe("Bravo champion, tu es le GOAT du mois de Septembre 🔥🐐");
+    expect(corps).toBe("Réclame ton lot dans l'app avant le 31 octobre !");
+  });
+  it("le 2e dit sa place, le mois et la date limite", () => {
+    const { titre, corps } = accrocheGagnant(g(2));
+    expect(titre).toBe("🥈 Tu es sur le podium de septembre !");
+    expect(corps).toBe("Bravo, tu finis à la 2e place du classement de septembre. Réclame ton lot dans l'app avant le 31 octobre !");
   });
   it("distingue podium et place chanceuse", () => {
     expect(accrocheGagnant(g(2)).titre).toContain("podium");
@@ -867,8 +872,8 @@ describe("accrocheGagnant", () => {
   });
   it("ne casse pas sans mois ni date", () => {
     const { titre, corps } = accrocheGagnant({ rang: 1 });
-    expect(titre).toBe("🏆 Tu as gagné !");
-    expect(corps).toBe("Bravo, tu finis à la 1re place du classement. Réclame ton lot dans l'app !");
+    expect(titre).toBe("Bravo champion, tu es le GOAT du mois 🔥🐐");
+    expect(corps).toBe("Réclame ton lot dans l'app !");
   });
   it("nomDuMois et jourParis", () => {
     expect(nomDuMois("2026-10")).toBe("octobre");

@@ -465,16 +465,24 @@ export function gagnantsANotifier({ saisonsCloses, lots, classements, dejaNotifi
   return out;
 }
 
-/** L'accroche d'un gagnant : sa place, le mois, et jusqu'à quand réclamer. */
+/**
+ * L'accroche d'un gagnant : sa place, le mois, et jusqu'à quand réclamer.
+ *
+ * Le 1er est le GOAT du mois : son message est à part, dans les mots de la marque.
+ * Les autres places disent leur rang.
+ */
 export function accrocheGagnant(g) {
-  const rang = g && g.rang === 1 ? "1re" : ((g && g.rang) + "e");
   const mois = nomDuMois(g && g.mois);
   const jusqua = jourParis(g && g.limite);
-  const titre = g && g.rang === 1 ? "🏆 Tu as gagné" + (mois ? " " + mois : "") + " !"
-    : g && g.rang <= 3 ? "🥈 Tu es sur le podium" + (mois ? " de " + mois : "") + " !"
+  const reclamer = "Réclame ton lot dans l'app" + (jusqua ? " avant le " + jusqua : "") + " !";
+  if (g && g.rang === 1) {
+    const moisCap = mois ? mois.charAt(0).toUpperCase() + mois.slice(1) : "";
+    return { titre: "Bravo champion, tu es le GOAT du mois" + (moisCap ? " de " + moisCap : "") + " 🔥🐐", corps: reclamer };
+  }
+  const rang = (g && g.rang) + "e";
+  const titre = g && g.rang <= 3 ? "🥈 Tu es sur le podium" + (mois ? " de " + mois : "") + " !"
     : "🍀 Place chanceuse" + (mois ? " en " + mois : "") + " !";
-  const corps = "Bravo, tu finis à la " + rang + " place du classement" + (mois ? " de " + mois : "")
-    + ". Réclame ton lot dans l'app" + (jusqua ? " avant le " + jusqua : "") + " !";
+  const corps = "Bravo, tu finis à la " + rang + " place du classement" + (mois ? " de " + mois : "") + ". " + reclamer;
   return { titre: titre, corps: corps };
 }
 
