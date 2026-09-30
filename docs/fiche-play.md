@@ -64,7 +64,7 @@ GOAT GRID se joue aussi en versus, jusqu'à huit sur la même grille, en deux mi
 
 UN CLASSEMENT QUI SE MÉRITE
 
-Ton meilleur score du jour, dans chaque mode, rapporte des points — plafonnés. Rejouer vingt fois le même mode ne rapporte rien de plus : pour monter, il faut jouer plusieurs modes sur plusieurs jours. Le champion du mois entre au Hall of Fame.
+Chaque partie rapporte des points au classement du mois : plus tu joues, plus tu montes. Le champion du mois entre au Hall of Fame.
 
 LA DEVINETTE DU JOUR
 

@@ -244,6 +244,12 @@ const ROUND_DURATION = 90;
 // Saisons mensuelles : Saison 1 = Avril 2026, Saison 2 = Mai 2026, etc.
 const SEASON_START = new Date("2026-04-01T00:00:00Z"); // 1er avril 2026 = Saison 1
 
+// Premier mois classé au CUMUL DE TOUTES LES PARTIES : miroir de bb_debut_cumul()
+// dans docs/supabase-classement.sql (le serveur fait foi, cette constante ne sert
+// qu'à choisir le TEXTE affiché). Avant : meilleur score par jour et par mode, puis
+// 15 meilleurs jours. À partir de là : chaque partie compte, sans plafond de jours.
+const DEBUT_CLASSEMENT_CUMUL = "2026-10";
+
 function getCurrentSeason() {
   // Calcul basé sur les mois calendaires en timezone Paris
   const now = new Date();
@@ -13748,26 +13754,37 @@ export default function LePont() {
               );})}
             </div>
           )}
-          {/* Comment on marque au classement du mois : les 15 meilleurs jours
-              comptent (arriver en cours de mois n'enferme plus en bas) et le bas
-              de tableau reçoit un bonus de remontée. Le dire, sinon la règle est
-              invisible et la remontée paraît impossible. Voir bb_classement_mois
-              dans docs/supabase-classement.sql. */}
-          {lbMode==="saison" && (
-            <div style={{display:"flex",gap:8,alignItems:"flex-start",marginBottom:10,padding:"9px 11px",background:G.nuit,border:G.traitFin,borderRadius:G.rayonS,boxShadow:G.ombre}}>
-              <span style={{fontSize:15,lineHeight:1.3}}>🚀</span>
-              <span style={{fontSize:11.5,color:"rgba(255,255,255,.78)",fontWeight:700,lineHeight:1.45}}>
-                {tr(
-                  "Tes 15 meilleurs jours du mois comptent. Arrive quand tu veux, joue bien : les derniers gagnent un bonus de remontée.",
-                  "Your 15 best days of the month count. Join anytime, play well: the bottom of the table gets a catch-up bonus.",
-                  "Deine 15 besten Tage des Monats zählen. Steig jederzeit ein, spiel gut: das Tabellenende bekommt einen Aufhol-Bonus.",
-                  "Contano i tuoi 15 giorni migliori del mese. Entra quando vuoi, gioca bene: chi è in fondo prende un bonus di rimonta.",
-                  "Cuentan tus 15 mejores días del mes. Únete cuando quieras, juega bien: los últimos reciben un bonus de remontada.",
-                  "Contam os teus 15 melhores dias do mês. Entra quando quiseres, joga bem: os últimos ganham um bónus de recuperação."
-                )}
-              </span>
-            </div>
-          )}
+          {/* Comment on marque au classement du mois. Le texte suit la règle du MOIS
+              AFFICHÉ (DEBUT_CLASSEMENT_CUMUL) : jusqu'en septembre 2026, les 15
+              meilleurs jours comptent ; à partir d'octobre, chaque partie compte et
+              jouer beaucoup est récompensé. Dans les deux cas le bas de tableau reçoit
+              un bonus de remontée. Le dire, sinon la règle est invisible. Voir
+              bb_classement_mois dans docs/supabase-classement.sql. */}
+          {lbMode==="saison" && (function(){
+            const cumul = getCurrentSeason().monthKey >= DEBUT_CLASSEMENT_CUMUL;
+            return (
+              <div style={{display:"flex",gap:8,alignItems:"flex-start",marginBottom:10,padding:"9px 11px",background:G.nuit,border:G.traitFin,borderRadius:G.rayonS,boxShadow:G.ombre}}>
+                <span style={{fontSize:15,lineHeight:1.3}}>🚀</span>
+                <span style={{fontSize:11.5,color:"rgba(255,255,255,.78)",fontWeight:700,lineHeight:1.45}}>
+                  {cumul ? tr(
+                    "Chaque partie compte : plus tu joues, plus tu montes. Arrive quand tu veux — les derniers gagnent un bonus de remontée.",
+                    "Every game counts: the more you play, the higher you climb. Join anytime — the bottom of the table gets a catch-up bonus.",
+                    "Jede Partie zählt: je mehr du spielst, desto höher steigst du. Steig jederzeit ein — das Tabellenende bekommt einen Aufhol-Bonus.",
+                    "Ogni partita conta: più giochi, più sali. Entra quando vuoi — chi è in fondo prende un bonus di rimonta.",
+                    "Cada partida cuenta: cuanto más juegas, más subes. Únete cuando quieras — los últimos reciben un bonus de remontada.",
+                    "Cada partida conta: quanto mais jogas, mais sobes. Entra quando quiseres — os últimos ganham um bónus de recuperação."
+                  ) : tr(
+                    "Tes 15 meilleurs jours du mois comptent. Arrive quand tu veux, joue bien : les derniers gagnent un bonus de remontée.",
+                    "Your 15 best days of the month count. Join anytime, play well: the bottom of the table gets a catch-up bonus.",
+                    "Deine 15 besten Tage des Monats zählen. Steig jederzeit ein, spiel gut: das Tabellenende bekommt einen Aufhol-Bonus.",
+                    "Contano i tuoi 15 giorni migliori del mese. Entra quando vuoi, gioca bene: chi è in fondo prende un bonus di rimonta.",
+                    "Cuentan tus 15 mejores días del mes. Únete cuando quieras, juega bien: los últimos reciben un bonus de remontada.",
+                    "Contam os teus 15 melhores dias do mês. Entra quando quiseres, joga bem: os últimos ganham um bónus de recuperação."
+                  )}
+                </span>
+              </div>
+            );
+          })()}
           {lbMode==="saison" && (
             <button onClick={function(){ setShowMesJours(true); if (mesJours===null) loadMesJours(); }}
               style={{width:"100%",padding:"10px 12px",marginBottom:10,background:G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayonS,color:G.projecteur,fontFamily:G.font,fontSize:13,fontWeight:800,cursor:"pointer",textAlign:"center"}}>
@@ -13783,6 +13800,9 @@ export default function LePont() {
               visible, pour CE joueur précis, qu'il a déjà tout verrouillé. */}
           {lbMode==="saison" && (function(){
             const moi = leaderboard.find(function(e){ return e.pid===playerId; });
+            // Sous l'ancienne règle seulement : au cumul, aucune partie n'est « déjà
+            // comptée » au point de ne plus rien rapporter.
+            if (getCurrentSeason().monthKey >= DEBUT_CLASSEMENT_CUMUL) return null;
             if (!moi || (moi.jours||0) < 15) return null;
             return (
               <div style={{display:"flex",gap:8,alignItems:"flex-start",marginBottom:10,padding:"9px 11px",background:G.nuit,border:"1px solid "+G.projecteur,borderRadius:G.rayonS,boxShadow:G.ombre}}>
