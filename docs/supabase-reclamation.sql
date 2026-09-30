@@ -394,13 +394,15 @@ on conflict (season_number, rang) do update
 -- lignes, rien d'autre.
 --
 -- Saison 7 = OCTOBRE 2026. Délai : 30 jours après l'annonce (clôture du 1er nov.)
--- ⚠️ Montants et numéros à confirmer avant le 1er octobre — l'app affiche déjà
---    ces places (« Places chanceuses ce mois : 7ᵉ et 21ᵉ ») dès que ces lignes
---    existent, et le règlement d'octobre doit décrire la même chose.
+-- Confirmé le 30 septembre 2026, et décrit à l'identique dans le règlement
+-- (public/reglement/) : 1er = un maillot de foot officiel au choix, jusqu'à 90 €,
+-- livraison offerte dans l'UE ; 7e = carte cadeau dématérialisée de 30 € ; 21e =
+-- carte cadeau dématérialisée de 15 €, enseigne au choix du gagnant.
+-- L'app affiche « Places chanceuses ce mois : 7ᵉ et 21ᵉ » dès que ces lignes existent.
 insert into public.bb_lots (season_number, rang, intitule, ouvert_jusqu_a) values
-  (7,  1, 'EA SPORTS FC 27 — édition Ultimate, dématérialisée, sur la plateforme au choix du gagnant (109,99 €)', '2026-11-30 23:59:59+01'),
-  (7,  7, 'Place chanceuse 🍀 — carte cadeau dématérialisée de 50 €, enseigne au choix du gagnant', '2026-11-30 23:59:59+01'),
-  (7, 21, 'Place chanceuse 🍀 — carte cadeau dématérialisée de 30 €, enseigne au choix du gagnant', '2026-11-30 23:59:59+01')
+  (7,  1, 'Un maillot de foot officiel au choix du gagnant (jusqu''à 90 €), livraison offerte dans l''Union européenne', '2026-11-30 23:59:59+01'),
+  (7,  7, 'Place chanceuse 🍀 — carte cadeau dématérialisée de 30 €, enseigne au choix du gagnant', '2026-11-30 23:59:59+01'),
+  (7, 21, 'Place chanceuse 🍀 — carte cadeau dématérialisée de 15 €, enseigne au choix du gagnant', '2026-11-30 23:59:59+01')
 on conflict (season_number, rang) do update
   set intitule = excluded.intitule,
       ouvert_jusqu_a = excluded.ouvert_jusqu_a;
