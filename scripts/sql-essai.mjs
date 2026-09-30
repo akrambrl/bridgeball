@@ -21,7 +21,7 @@
 
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, rm, writeFile, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
@@ -83,7 +83,7 @@ const CONTROLES = [
     attendu: (v) => Number(v) >= 3,
     dire: (v) => v + " joueur(s) classé(s)" },
 
-  { nom: "les points sont PLAFONNÉS à 1000 par jour et par mode",
+  { nom: "les points d'UNE PARTIE sont plafonnés à 1000 (normalisation, comparable entre modes)",
     // Le plafond est le cœur de la sécurité : c'est lui, et non les bornes, qui
     // fait qu'un score gonflé ne rapporte pas plus qu'un très bon score.
     //
@@ -138,7 +138,7 @@ const CONTROLES = [
     attendu: (v) => Number(v) >= 4,
     dire: (v) => v + " modes pour p1 (dont goatgrid)" },
 
-  { nom: "rejouer le même mode le même jour ne rapporte rien de plus",
+  { nom: "un joueur qui a joué plusieurs modes plusieurs jours est classé (p1)",
     // Deux scores le même jour dans le même mode : seul le meilleur compte.
     sql: `with avant as (select points from public.bb_classement_courant() where player_id='p1')
           select (select points from avant)`,
@@ -154,6 +154,7 @@ const CONTROLES = [
     dire: (v) => "bb_points_bruts_topk('pcap') → " + v + " (15 meilleurs jours × 1000)" },
 
   { nom: "plancher (4bis) — pcap garde son ANCIEN total (20 000), pas le plafond de rule A",
+    seulement: "ancien",
     // pcap a 20 jours DÉJÀ JOUÉS avant que le fichier (et le plancher) existent —
     // exactement la situation de « night » en production. La migration ponctuelle
     // a dû figer son plancher à l'ancien total ILLIMITÉ (20 000), et
@@ -163,6 +164,7 @@ const CONTROLES = [
     dire: (v) => "pcap affiché → " + v + " (20 000 attendus : le plancher tient, pas de recul)" },
 
   { nom: "plancher (4bis) — un joueur sans excédent (pref, 15 jours) n'est pas gonflé",
+    seulement: "ancien",
     // pref n'a que 15 jours : illimité == rule A == 15 000 en BRUT (avant bonus).
     // Le plancher ne fait QUE protéger un excédent, jamais gonfler un joueur qui
     // n'en a pas. On compare au brut, pas à `points` (qui inclut le bonus de
@@ -192,6 +194,40 @@ const CONTROLES = [
 
 ];
 
+/** Les contrôles qui DISTINGUENT les deux règles (voir « CHANGEMENT DE RÈGLE » en tête du fichier). */
+const CONTROLES_REGLE = {
+  ancien: [
+    { nom: "AVANT octobre — 18 parties le même jour dans le même mode ne comptent que pour UNE (pgrind)",
+      // Le plafond « meilleur score par jour et par mode » : septembre 2026 se clôt
+      // dessous, et ne doit pas avoir bougé d'un point.
+      sql: "select points from public.bb_classement_courant() where player_id='pgrind'",
+      attendu: (v) => Number(v) > 1000 && Number(v) < 3000,
+      dire: (v) => "pgrind : 18 parties × 1000, un seul jour → " + v + " (1000 bruts + bonus, pas 18 000)" },
+    { nom: "AVANT octobre — bb_mes_jours ne retient que les 15 meilleurs jours (pcap en joue 20)",
+      sql: `select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-0000000000c1', false);
+            select count(*) filter (where retenu) || '/' || count(*)
+              from public.bb_mes_jours(to_char(now(),'YYYY-MM'))`,
+      attendu: (v) => v.endsWith("15/20"),
+      dire: (v) => "jours retenus : " + v + " (15/20 attendus)" },
+  ],
+  cumul: [
+    { nom: "À PARTIR d'octobre — chaque partie compte : 18 parties le même jour valent 18 000 (pgrind)",
+      sql: "select points from public.bb_classement_courant() where player_id='pgrind'",
+      attendu: (v) => Number(v) >= 18000 && Number(v) <= 20000,
+      dire: (v) => "pgrind : 18 parties × 1000 → " + v + " (18 000 bruts + bonus, contre ~1 475 à l'ancienne règle)" },
+    { nom: "À PARTIR d'octobre — plus de plafond de jours : bb_mes_jours retient les 20 jours de pcap",
+      sql: `select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-0000000000c1', false);
+            select count(*) filter (where retenu) || '/' || count(*)
+              from public.bb_mes_jours(to_char(now(),'YYYY-MM'))`,
+      attendu: (v) => v.endsWith("20/20"),
+      dire: (v) => "jours retenus : " + v + " (20/20 attendus)" },
+    { nom: "À PARTIR d'octobre — le plancher n'est plus posé (pas de ligne pour pcap)",
+      sql: "select count(*) from public.bb_classement_hwm where player_id='pcap'",
+      attendu: (v) => Number(v) === 0,
+      dire: (v) => v + " ligne(s) de plancher pour pcap (0 attendue : rien à protéger au cumul)" },
+  ],
+};
+
 /** Ce que le garde-fou doit REFUSER, et par quel indice. */
 const REFUS = [
   { nom: "un score au-dessus de la borne haute",
@@ -203,12 +239,13 @@ const REFUS = [
     indice: "cadence" },
 ];
 
-async function eprouver(typeScore) {
+async function eprouver(typeScore, regime) {
   const base = "essai_" + typeScore.replace(/\W/g, "");
   await psql(["-c", `drop database if exists ${base}`]);
   await psql(["-c", `create database ${base}`]);
   console.log("\n" + "═".repeat(70));
-  console.log("  bb_scores.score en " + typeScore.toUpperCase());
+  console.log("  bb_scores.score en " + typeScore.toUpperCase() + "  ·  règle : "
+    + (regime === "cumul" ? "CUMUL (à partir d'octobre 2026)" : "ANCIENNE (jusqu'à septembre 2026)"));
   console.log("═".repeat(70));
 
   await psql(["-v", "type_score=" + typeScore, "-f", SCHEMA, "-q"], base);
@@ -216,7 +253,18 @@ async function eprouver(typeScore) {
   // LE POINT DU CONTRÔLE : le fichier passe-t-il en entier ? C'est ici qu'il
   // s'arrêtait en 42883 sans que personne ne l'ait vu.
   try {
-    const sortie = await psql(["-f", FICHIER, "-q"], base);
+    // La date de bascule est REMPLACÉE dans une copie du fichier : l'essai ne
+    // doit pas dépendre du jour où on le lance (avant le 1er octobre les deux
+    // règles seraient éprouvées sous la même, après elles le seraient aussi).
+    const coupure = regime === "cumul" ? "2000-01" : "2999-01";
+    const source = await readFile(FICHIER, "utf8");
+    const cible = "select '2026-10' $$";
+    if (!source.includes(cible)) throw new Error("bb_debut_cumul() introuvable dans le fichier");
+    const copie = join(await mkdtemp(join(tmpdir(), "classement-")), "classement.sql");
+    // Une FONCTION de remplacement, pas une chaîne : dans String.replace, « $$ » veut
+    // dire « un seul $ », ce qui cassait les guillemets dollar du SQL.
+    await writeFile(copie, source.replace(cible, () => "select '" + coupure + "' $$"));
+    const sortie = await psql(["-f", copie, "-q"], base);
     const bruit = sortie.split("\n").filter((l) => /ERROR|FATAL/.test(l));
     if (bruit.length) throw new Error(bruit.join("\n"));
     console.log("✅ le fichier passe en entier");
@@ -227,8 +275,9 @@ async function eprouver(typeScore) {
   }
 
   let bon = true;
-  for (const c of CONTROLES) {
-    const v = (await psql(["-tAc", c.sql], base)).trim().split("\n")[0];
+  for (const c of CONTROLES.concat(CONTROLES_REGLE[regime])) {
+    if (c.seulement && c.seulement !== regime) continue;
+    const v = (await psql(["-tAc", c.sql], base)).trim().split("\n").pop();
     const ok = c.attendu(v);
     if (!ok) bon = false;
     console.log((ok ? "✅ " : "❌ ") + c.nom + " — " + c.dire(v));
@@ -242,6 +291,34 @@ async function eprouver(typeScore) {
     console.log((refuse && bonIndice ? "✅ " : "❌ ") + "refusé : " + r.nom
       + (refuse ? "" : "  ← ACCEPTÉ, ce qui est le défaut"));
   }
+
+  // ── LE QUOTA RELEVÉ À 2000 / 24 h ─────────────────────────────────────────
+  // Il valait 150. Un joueur qui enchaîne les parties toute la journée en fait
+  // quelques centaines : c'est LUI qu'on veut récompenser, et l'ancien quota
+  // l'aurait coupé. Le garde-fou est désactivé le temps de poser l'historique
+  // (procédure d'exploitation de la section 7) : le trigger impose created_at =
+  // now() et refuserait de charger 200 lignes d'un coup.
+  await psql(["-c", "alter table public.bb_scores disable trigger bb_scores_garde_trg;"
+    + " insert into public.bb_scores (player_id, mode, score, created_at)"
+    + "   select 'pquota','pont',0, now() - (n * interval '30 seconds')"
+    + "     from generate_series(1, 200) as n;"
+    + " alter table public.bb_scores enable trigger bb_scores_garde_trg"], base);
+  let apres150 = true;
+  try { await psql(["-c", "insert into public.bb_scores (player_id, mode, score) values ('pquota','pont',0)"], base); }
+  catch { apres150 = false; }
+  if (!apres150) bon = false;
+  console.log((apres150 ? "✅ " : "❌ ") + "la 201e partie en 24 h est ACCEPTÉE (l'ancien quota coupait à 150)");
+
+  await psql(["-c", "alter table public.bb_scores disable trigger bb_scores_garde_trg;"
+    + " insert into public.bb_scores (player_id, mode, score, created_at)"
+    + "   select 'pquota','pont',0, now() - (n * interval '30 seconds') - interval '1 hour'"
+    + "     from generate_series(1, 1900) as n;"
+    + " alter table public.bb_scores enable trigger bb_scores_garde_trg"], base);
+  let quotaTient = false, msgQuota = "";
+  try { await psql(["-c", "insert into public.bb_scores (player_id, mode, score) values ('pquota','pont',0)"], base); }
+  catch (e) { msgQuota = String(e.message); quotaTient = /quota/i.test(msgQuota); }
+  if (!quotaTient) bon = false;
+  console.log((quotaTient ? "✅ " : "❌ ") + "au-delà de 2000 parties en 24 h : refusé (garde-fou contre une boucle folle)");
 
   // La clôture : elle couronne, puis refuse le doublon.
   const c1 = (await psql(["-tAc",
@@ -368,10 +445,41 @@ async function eprouver(typeScore) {
     + "values ('ptrigger','pont',1000)"], base);
   const planchTrigger = (await psql(["-tAc", "select points from public.bb_classement_hwm "
     + "where player_id = 'ptrigger'"], base)).trim();
-  const okPlanchTrigger = Number(planchTrigger) === 1000;
+  // Ancienne règle : le trigger pose le plancher (1000). Au cumul il ne fait
+  // plus rien (rien à protéger) : aucune ligne.
+  const okPlanchTrigger = regime === "cumul" ? planchTrigger === "" : Number(planchTrigger) === 1000;
   if (!okPlanchTrigger) bon = false;
-  console.log((okPlanchTrigger ? "✅ " : "❌ ") + "le trigger fige le plancher d'un nouveau joueur : "
-    + planchTrigger + " (attendu 1000, posé par le trigger seul)");
+  console.log((okPlanchTrigger ? "✅ " : "❌ ") + "le trigger "
+    + (regime === "cumul" ? "ne pose plus de plancher au cumul : « " + planchTrigger + " » (rien attendu)"
+                          : "fige le plancher d'un nouveau joueur : " + planchTrigger + " (attendu 1000, posé par le trigger seul)"));
+
+  // ── AU CUMUL, LE TOTAL EST LA SOMME DES PARTIES — SANS PLAFOND DE JOURS ──
+  // `plate` joue 22 jours à 1000. À l'ancienne règle, il aurait été plafonné à
+  // 15 000 ; au cumul il vaut 22 000. Placé APRÈS les contrôles qui supposent
+  // que pcap (20 000) est en tête : plate prend le sommet, donc pas de bonus,
+  // donc EXACTEMENT 22 000. Historique posé garde-fou désactivé, comme plus haut.
+  if (regime === "cumul") {
+    await psql(["-c", "alter table public.bb_scores disable trigger bb_scores_garde_trg;"
+      + " insert into public.bb_pseudos (player_id, pseudo) values ('plate','tardif');"
+      + " insert into public.bb_scores (player_id, player_name, mode, score, created_at)"
+      + "   select 'plate','tardif','pont',1000,"
+      + "          date_trunc('month', now()) + (n || ' days')::interval + interval '18 hours'"
+      + "     from generate_series(0, 21) as n;"
+      + " alter table public.bb_scores enable trigger bb_scores_garde_trg"], base);
+    const plate = (await psql(["-tAc", "select points from public.bb_classement_courant() where player_id='plate'"], base)).trim();
+    const okPlate = Number(plate) === 22000;
+    if (!okPlate) bon = false;
+    console.log((okPlate ? "✅ " : "❌ ") + "22 jours à 1000 valent 22 000 au cumul : " + plate
+      + (okPlate ? "" : "  ← toujours plafonné à K jours ?"));
+
+    // Et un joueur qui joue h24 dépasse bien un joueur régulier : l'objet même
+    // de la décision.
+    const devant = (await psql(["-tAc", "select (select points from public.bb_classement_courant() where player_id='plate')"
+      + " > (select points from public.bb_classement_courant() where player_id='pcap')"], base)).trim();
+    const okDevant = devant === "t";
+    if (!okDevant) bon = false;
+    console.log((okDevant ? "✅ " : "❌ ") + "plus on joue, plus on monte : plate (22 jours) devant pcap (20 jours) : " + devant);
+  }
 
   // ── SECTION 6, LA PLUS PIÉGEUSE ─────────────────────────────────────────
   // Elle est commentée dans le fichier (elle attend le déploiement) : on
@@ -426,10 +534,12 @@ async function eprouver(typeScore) {
 
 console.log("cluster : " + await demarrer());
 let tout = true;
-for (const t of ["numeric", "double precision"]) {
-  if (!(await eprouver(t))) tout = false;
+for (const regime of ["ancien", "cumul"]) {
+  for (const t of ["numeric", "double precision"]) {
+    if (!(await eprouver(t, regime))) tout = false;
+  }
 }
 console.log("\n" + (tout
-  ? "✅ le fichier tient dans les deux cas de type."
+  ? "✅ le fichier tient dans les deux cas de type, sous l'ancienne règle ET au cumul."
   : "❌ au moins un contrôle échoue — NE PAS coller dans Supabase."));
 process.exit(tout ? 0 : 1);

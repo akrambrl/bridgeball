@@ -66,8 +66,20 @@ create table public.bb_pseudos (
   badge               text,
   recovery_code       text,
   xp_season           integer default 0,
-  xp_season_month     text
+  xp_season_month     text,
+  -- Ajoutée par docs/supabase-auth-anonyme.sql. bb_mes_jours la lit ; sans elle
+  -- le fichier s'arrêtait sur « column auth_uid does not exist » avant même
+  -- d'atteindre ce qu'on voulait éprouver.
+  auth_uid            uuid
 );
+
+-- `auth.uid()` de Supabase, réduit à ce que bb_mes_jours en attend : l'identité
+-- vient du réglage de session `request.jwt.claim.sub`, comme en production. Les
+-- essais le posent avec set_config() avant d'appeler la fonction.
+create schema if not exists auth;
+create or replace function auth.uid() returns uuid language sql stable as $$
+  select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid
+$$;
 
 -- PAS de contrainte d'unicité sur season_number, et c'est CONFORME à la
 -- production : la table y contient deux fois la saison 4, avec le même champion
@@ -105,6 +117,7 @@ do $$ begin
   end if;
 end $$;
 grant usage on schema public to anon, authenticated;
+grant usage on schema auth to anon, authenticated;
 grant select, insert, update on all tables in schema public to anon, authenticated;
 
 
@@ -171,3 +184,23 @@ values ('pbottom','dernier','pont',1000, date_trunc('month', now()) + interval '
 -- de la migration ponctuelle : c'est ce qui isole le test du trigger de celui
 -- de la migration.
 insert into public.bb_pseudos (player_id, pseudo) values ('ptrigger','nouveau');
+
+
+-- ─── DE QUOI DISTINGUER L'ANCIENNE RÈGLE DU CUMUL (octobre 2026) ────────────
+-- `pgrind` joue DIX-HUIT parties de Plug au maximum, TOUTES LE MÊME JOUR.
+--   • ancienne règle : un seul meilleur score par jour et par mode → 1000 points ;
+--   • cumul : chaque partie compte → 18 000 points.
+-- 18 000 et non davantage, exprès : sous le total de `pcap` (20 000), pour qu'il
+-- ne prenne pas la tête du classement et ne décale pas le bonus de rattrapage
+-- de tous les autres contrôles.
+-- Insérées AVANT le fichier : le trigger de cadence (10 s) n'existe pas encore.
+insert into public.bb_pseudos (player_id, pseudo) values ('pgrind','acharne');
+insert into public.bb_scores (player_id, player_name, mode, score, created_at)
+select 'pgrind','acharne','pont',1000,
+       date_trunc('month', now()) + interval '3 days' + (n || ' minutes')::interval + interval '9 hours'
+  from generate_series(0, 17) as n;
+
+-- `pcap` retrouvé par identité, pour bb_mes_jours (qui n'accepte pas de player_id).
+update public.bb_pseudos set auth_uid = '00000000-0000-0000-0000-0000000000c1'
+ where player_id = 'pcap';
+

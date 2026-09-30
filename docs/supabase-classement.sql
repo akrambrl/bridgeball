@@ -55,6 +55,26 @@
 --
 --  Le classement devient donc CRÉDIBLE ET CONTRÔLABLE, pas mathématiquement
 --  infalsifiable. Avant d'expédier un lot, passer la section 7.
+--
+--  ── ⚠️ CHANGEMENT DE RÈGLE À PARTIR DU MOIS D'OCTOBRE 2026 ─────────────────
+--  Décision produit du 30 septembre 2026 : le but est que les joueurs restent
+--  LONGTEMPS dans l'app, donc on cesse de plafonner. À partir du mois donné par
+--  `bb_debut_cumul()` ('2026-10'), le total d'un joueur est la SOMME DE TOUTES SES
+--  PARTIES du mois, chacune normalisée de 0 à 1000 (section 3) :
+--    • plus de « meilleur score par jour et par mode » ;
+--    • plus de « K meilleurs jours » ;
+--    • plus de plancher (le total ne peut que monter, il n'y a rien à protéger) ;
+--    • le quota d'écriture passe de 150 à 2000 scores par 24 h (section 2), sinon
+--      il aurait coupé exactement ceux qu'on veut récompenser.
+--  Les mois AVANT cette date gardent l'ancien calcul, à l'identique : la clôture
+--  de septembre 2026 se fait sous le règlement publié pour septembre.
+--
+--  CE QUE ÇA COÛTE, ET C'EST ASSUMÉ : les plafonds sont ce qui rendait un faux
+--  score inutile. Sans eux, quelqu'un qui poste en boucle des scores plausibles
+--  (un par 10 s et par mode, dans les bornes de la section 1) monte sans limite,
+--  et la seule défense restante est la cadence + le quota + la revue manuelle du
+--  gagnant (section 7, contrôle d). Pour un lot en argent, regarder le vainqueur
+--  avant d'expédier reste la seule vraie protection.
 -- ============================================================================
 
 
@@ -189,7 +209,12 @@ begin
   -- Cadence. Mesuré sur 1059 intervalles réels entre deux scores du même mode :
   -- médiane 278 s, 5e centile 90 s, et seulement 13 intervalles sous 10 s. Un
   -- plancher à 10 s ne gêne donc personne et arrête les doubles envois comme les
-  -- scripts. La borne haute journalière est à 150 quand le maximum observé est 65.
+  -- scripts. La borne haute journalière était à 150 quand le maximum observé était
+  -- 65 ; elle est relevée à 2000 avec le classement cumulatif d'octobre 2026 : un
+  -- joueur qui enchaîne des parties toute la journée en fait quelques centaines, et
+  -- c'est justement lui qu'on veut récompenser. 2000 reste un garde-fou contre une
+  -- boucle folle, pas une limite de jeu (un score par 10 s et par mode en permet
+  -- bien plus, mais aucun humain ne s'en approche).
   select count(*) into recent from public.bb_scores s
    where s.player_id = new.player_id and s.mode = new.mode
      and s.created_at > now() - interval '10 seconds';
@@ -200,7 +225,7 @@ begin
 
   select count(*) into dujour from public.bb_scores s
    where s.player_id = new.player_id and s.created_at > now() - interval '1 day';
-  if dujour >= 150 then
+  if dujour >= 2000 then
     raise exception 'trop de scores enregistres en 24 h (%)', dujour
       using errcode = 'check_violation', hint = 'quota';
   end if;
@@ -308,6 +333,13 @@ $$;
 create or replace function public.bb_parametre_k()
 returns int language sql immutable as $$ select 15 $$;
 
+-- Premier mois classé au CUMUL DE TOUTES LES PARTIES (voir l'en-tête du fichier).
+-- Un texte 'AAAA-MM' : la comparaison alphabétique est la comparaison de dates.
+-- Une seule source de vérité, lue par bb_classement_mois, bb_mes_jours et le
+-- trigger du plancher — le repousser d'un mois, c'est changer cette ligne.
+create or replace function public.bb_debut_cumul()
+returns text language sql immutable as $$ select '2026-10' $$;
+
 create table if not exists public.bb_classement_hwm (
   player_id text not null,
   mois      text not null,
@@ -350,9 +382,11 @@ returns table (
     -- Le bonus (règle B) plafonne à +bonus_max pour le fond de tableau. K (règle
     -- A) vient de `bb_parametre_k()`, pas d'ici — une seule source de vérité,
     -- partagée avec le plancher de la section 4bis.
-    select public.bb_parametre_k() as k, 0.5::numeric as bonus_max
+    select public.bb_parametre_k() as k, 0.5::numeric as bonus_max,
+           public.bb_debut_cumul() as debut
   ),
   journalier as (
+    -- ── AVANT le mois `debut` : l'ancienne règle ────────────────────────────
     -- Le meilleur score de chaque joueur, par jour de Paris et par mode.
     select s.player_id,
            (s.created_at at time zone 'Europe/Paris')::date as jour,
@@ -363,6 +397,7 @@ returns table (
            public.bb_points_normalises(s.mode, max(s.score)::numeric) as pts
       from public.bb_scores s
      where to_char(s.created_at at time zone 'Europe/Paris', 'YYYY-MM') = p_mois
+       and p_mois < (select debut from parametres)
      group by 1, 2, 3
     union all
     -- GOAT GRID : une grille par jour, normalisée par son propre maximum.
@@ -373,7 +408,30 @@ returns table (
                  / nullif(max(g.max_score), 0))))::int as pts
       from public.bb_gg_scores g
      where to_char(g.created_at at time zone 'Europe/Paris', 'YYYY-MM') = p_mois
+       and p_mois < (select debut from parametres)
      group by 1, 2
+    union all
+    -- ── À PARTIR du mois `debut` : CHAQUE PARTIE COMPTE ─────────────────────
+    -- Aucun `max`, aucun `group by` : une ligne de score = une ligne de points,
+    -- normalisée de 0 à 1000 par PARTIE (le plafond par partie reste : il garde
+    -- les modes comparables entre eux, voir la section 3). `par_jour` somme
+    -- ensuite tout ce qui a été joué dans la journée.
+    select s.player_id,
+           (s.created_at at time zone 'Europe/Paris')::date as jour,
+           s.mode,
+           public.bb_points_normalises(s.mode, s.score::numeric) as pts
+      from public.bb_scores s
+     where to_char(s.created_at at time zone 'Europe/Paris', 'YYYY-MM') = p_mois
+       and p_mois >= (select debut from parametres)
+    union all
+    select g.player_id,
+           (g.created_at at time zone 'Europe/Paris')::date as jour,
+           'goatgrid' as mode,
+           least(1000, greatest(0, round(1000.0 * g.score
+                 / nullif(g.max_score, 0))))::int as pts
+      from public.bb_gg_scores g
+     where to_char(g.created_at at time zone 'Europe/Paris', 'YYYY-MM') = p_mois
+       and p_mois >= (select debut from parametres)
   ),
   par_jour as (
     -- Total d'un joueur POUR UN JOUR = somme de ses meilleurs par mode ce jour-là.
@@ -394,8 +452,11 @@ returns table (
     -- Points BRUTS SELON LA RÈGLE A = somme des K meilleurs jours. `jours` reste
     -- le nombre TOTAL de jours joués (indicateur de régularité affiché dans
     -- l'app), pas le nombre retenu.
+    -- À partir du mois `debut`, TOUS les jours comptent : le filtre sur K ne
+    -- s'applique plus qu'à l'ancienne règle.
     select c.player_id,
-           sum(c.pts_jour) filter (where c.rang_jour <= (select k from parametres))::bigint as pts_brut,
+           sum(c.pts_jour) filter (where p_mois >= (select debut from parametres)
+                                      or c.rang_jour <= (select k from parametres))::bigint as pts_brut,
            count(distinct c.jour)::bigint as jours
       from classe c
      group by 1
@@ -405,8 +466,12 @@ returns table (
   -- son brut de la règle A s'applique alors tel quel, aucun plancher à lui
   -- opposer.
   avec_plancher as (
+    -- Le plancher n'a de sens que sous l'ancienne règle : au cumul, le total ne
+    -- redescend jamais de lui-même (on ne fait qu'ajouter des parties).
     select b.player_id, b.jours,
-           greatest(b.pts_brut, coalesce(h.points, 0))::bigint as pts_brut
+           greatest(b.pts_brut,
+                    case when p_mois >= (select debut from parametres)
+                         then 0 else coalesce(h.points, 0) end)::bigint as pts_brut
       from brut b
       left join public.bb_classement_hwm h
         on h.player_id = b.player_id and h.mois = p_mois
@@ -544,6 +609,10 @@ declare
   m text := to_char(new.created_at at time zone 'Europe/Paris', 'YYYY-MM');
   b bigint;
 begin
+  -- Au cumul (mois >= bb_debut_cumul), il n'y a rien à protéger : le total ne peut
+  -- que monter. Sortir tout de suite évite aussi de relire tout le mois du joueur
+  -- à CHAQUE score inséré — ce qui compterait vite avec des joueurs qui enchaînent.
+  if m >= public.bb_debut_cumul() then return null; end if;
   b := public.bb_points_bruts_topk(new.player_id, m);
   insert into public.bb_classement_hwm (player_id, mois, points)
   values (new.player_id, m, b)
@@ -572,6 +641,8 @@ select s.player_id,
     select distinct player_id from public.bb_scores
      where to_char(created_at at time zone 'Europe/Paris', 'YYYY-MM')
          = to_char(now() at time zone 'Europe/Paris', 'YYYY-MM')
+       -- Pas de plancher à poser sur un mois classé au cumul (voir plus haut).
+       and to_char(now() at time zone 'Europe/Paris', 'YYYY-MM') < public.bb_debut_cumul()
   ) s
 on conflict (player_id, mois) do update
   set points = greatest(bb_classement_hwm.points, excluded.points);
@@ -636,12 +707,13 @@ returns table (
     select player_id from public.bb_pseudos where auth_uid = auth.uid()
   ),
   parametres as (
-    select public.bb_parametre_k() as k
+    select public.bb_parametre_k() as k, public.bb_debut_cumul() as debut
   ),
   journalier as (
     -- Même calcul que la section 4, restreint à `moi` : un joueur non lié
     -- (`moi` vide) ne matche jamais aucune ligne de `bb_scores`, ce qui suffit
     -- à rendre le résultat vide sans avoir à tester `moi` séparément.
+    -- Ancienne règle (avant `debut`) : le meilleur score par jour et par mode.
     select s.player_id,
            (s.created_at at time zone 'Europe/Paris')::date as jour,
            s.mode,
@@ -649,6 +721,7 @@ returns table (
       from public.bb_scores s
      where s.player_id = (select player_id from moi)
        and to_char(s.created_at at time zone 'Europe/Paris', 'YYYY-MM') = p_mois
+       and p_mois < (select debut from parametres)
      group by 1, 2, 3
     union all
     select g.player_id,
@@ -659,7 +732,29 @@ returns table (
       from public.bb_gg_scores g
      where g.player_id = (select player_id from moi)
        and to_char(g.created_at at time zone 'Europe/Paris', 'YYYY-MM') = p_mois
+       and p_mois < (select debut from parametres)
      group by 1, 2
+    union all
+    -- Au cumul (à partir de `debut`) : chaque partie compte, même calcul que la
+    -- section 4.
+    select s.player_id,
+           (s.created_at at time zone 'Europe/Paris')::date as jour,
+           s.mode,
+           public.bb_points_normalises(s.mode, s.score::numeric) as pts
+      from public.bb_scores s
+     where s.player_id = (select player_id from moi)
+       and to_char(s.created_at at time zone 'Europe/Paris', 'YYYY-MM') = p_mois
+       and p_mois >= (select debut from parametres)
+    union all
+    select g.player_id,
+           (g.created_at at time zone 'Europe/Paris')::date as jour,
+           'goatgrid' as mode,
+           least(1000, greatest(0, round(1000.0 * g.score
+                 / nullif(g.max_score, 0))))::int as pts
+      from public.bb_gg_scores g
+     where g.player_id = (select player_id from moi)
+       and to_char(g.created_at at time zone 'Europe/Paris', 'YYYY-MM') = p_mois
+       and p_mois >= (select debut from parametres)
   ),
   par_jour as (
     select jour, sum(pts) as pts_jour
@@ -668,8 +763,10 @@ returns table (
      group by 1
   )
   select j.jour, j.pts_jour::bigint as points,
-         (row_number() over (order by j.pts_jour desc, j.jour)
-            <= (select k from parametres)) as retenu
+         -- Au cumul, TOUS les jours comptent : rien n'est « hors top ».
+         ((select debut from parametres) <= p_mois
+          or row_number() over (order by j.pts_jour desc, j.jour)
+               <= (select k from parametres)) as retenu
     from par_jour j
    order by j.jour desc
 $$;
