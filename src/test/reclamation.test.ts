@@ -3,7 +3,7 @@ import {
   moisDeLaSaison, saisonDuMois, saisonDoteeRecente, lotPourRang, rangDans,
   libellePlace, medaille, placesDotees, emailPlausible, normaliserCode, codeValide,
   plateformeValide, enseigneValide, souhaitDuRang, manques,
-  instagramValide, normaliserInstagram,
+  instagramValide, normaliserInstagram, instagramExige, maillotValide,
   tirerCode, ALPHABET_CODE, MOTIF_CODE,
 } from "../lib/reclamation";
 
@@ -260,6 +260,33 @@ describe("manques", () => {
       expect(manques({ ...bon, plateforme: rang === 1 ? "ps5" : "Fnac", instagram: "" }, rang))
         .toContain("instagram");
     }
+  });
+  // ── DEPUIS OCTOBRE, IL SUFFIT DE JOUER ──────────────────────────────────
+  // Les conditions Instagram (abonnement, 2 amis, story) étaient celles du
+  // LANCEMENT, la saison 6. Dès la saison 7 le compte n'est plus demandé.
+  it("Instagram n'est exigé que jusqu'à la saison 6 (le lancement)", () => {
+    expect(instagramExige(6)).toBe(true);
+    expect(instagramExige(7)).toBe(false);
+    expect(instagramExige(12)).toBe(false);
+    // Saison inconnue : on garde l'exigence, l'erreur reste du côté prudent.
+    expect(instagramExige(undefined)).toBe(true);
+  });
+  it("en saison 7, un formulaire sans compte Instagram est complet", () => {
+    for (const rang of [1, 7, 21]) {
+      expect(manques({ ...bon, plateforme: "Maillot Inter 2010", instagram: "" }, rang, 7)).toEqual([]);
+    }
+    // …et septembre le réclame toujours.
+    expect(manques({ ...bon, instagram: "" }, 1, 6)).toEqual(["instagram"]);
+  });
+  it("le 1er d'octobre choisit un MAILLOT, en texte libre — pas une plateforme", () => {
+    expect(souhaitDuRang(1, 7)).toBe("maillot");
+    expect(souhaitDuRang(1, 6)).toBe("plateforme");
+    expect(souhaitDuRang(7, 7)).toBe("enseigne");
+    expect(manques({ ...bon, plateforme: "ps5" }, 1, 7)).toEqual([]);
+    expect(manques({ ...bon, plateforme: "" }, 1, 7)).toEqual(["maillot"]);
+    expect(manques({ ...bon, plateforme: "A" }, 1, 7)).toEqual(["maillot"]);
+    expect(maillotValide("Inter 2009-10, domicile, taille M")).toBe(true);
+    expect(maillotValide("x".repeat(101))).toBe(false);
   });
   it("accepte la forme qu'Instagram s'impose, arobase optionnelle", () => {
     for (const v of ["toto", "@toto", "to.to_99", "a", "x".repeat(30)])

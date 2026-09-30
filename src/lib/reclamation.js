@@ -210,17 +210,31 @@ export const PLATEFORMES = [
   { cle: "autre", nom: "Autre" },
 ];
 
+// La dernière saison dont la réclamation exige le compte Instagram : la 6, le
+// lancement (septembre 2026). Ses conditions — abonnement, deux amis identifiés,
+// partage en story — étaient propres au lancement. Dès la saison 7 (octobre),
+// il suffit de jouer et d'être classé sur une place dotée.
+export const DERNIERE_SAISON_INSTAGRAM = 6;
+
+/** Le compte Instagram est-il exigé pour cette saison ? Inconnue → oui (prudence). */
+export function instagramExige(saison) {
+  return !Number.isInteger(saison) || saison <= DERNIERE_SAISON_INSTAGRAM;
+}
+
 /**
  * Ce qu'on demande au gagnant dépend de ce qu'il reçoit.
  *
- * Le premier reçoit un JEU : il choisit une plateforme, dans une liste fermée,
- * parce que le jeu n'existe que là. Les deuxième et troisième reçoivent une
- * CARTE CADEAU de l'enseigne de leur choix : leur proposer « PlayStation 5 /
- * Xbox / PC » n'aurait aucun sens, et une liste d'enseignes serait forcément
- * incomplète — c'est un champ libre.
+ * Saison 6 : le premier reçoit un JEU — il choisit une plateforme, dans une
+ * liste fermée, parce que le jeu n'existe que là. Les autres reçoivent une
+ * CARTE CADEAU de l'enseigne de leur choix : une liste d'enseignes serait
+ * forcément incomplète, c'est un champ libre.
+ *
+ * Dès la saison 7, le premier reçoit un MAILLOT de football de son choix : un
+ * champ libre aussi (club, saison, taille), la liste fermée n'aurait aucun sens.
  */
-export function souhaitDuRang(rang) {
-  return rang === 1 ? "plateforme" : "enseigne";
+export function souhaitDuRang(rang, saison) {
+  if (rang !== 1) return "enseigne";
+  return (Number.isInteger(saison) && saison > DERNIERE_SAISON_INSTAGRAM) ? "maillot" : "plateforme";
 }
 
 export function plateformeValide(cle) {
@@ -233,13 +247,20 @@ export function enseigneValide(valeur) {
   return v.length >= 2 && v.length <= 60;
 }
 
+/** Un maillot décrit à la main : club ou équipe, saison, taille — du texte libre. */
+export function maillotValide(valeur) {
+  const v = String(valeur || "").trim();
+  return v.length >= 2 && v.length <= 100;
+}
+
 /**
  * Un pseudo Instagram plausible.
  *
- * Le règlement (article 5.1) conditionne la remise à trois actions sur
- * Instagram : abonnement, deux amis identifiés en commentaire, partage en
- * story. Un compte GOAT FC étant anonyme, le pseudo Instagram est le SEUL
- * moyen de rapprocher le gagnant de ces trois actions.
+ * Pour la saison de LANCEMENT (septembre 2026), le règlement (article 5.1)
+ * conditionnait la remise à trois actions sur Instagram : abonnement, deux amis
+ * identifiés en commentaire, partage en story. Un compte GOAT FC étant
+ * anonyme, le pseudo Instagram était le SEUL moyen de rapprocher le gagnant de
+ * ces trois actions. Depuis la saison 7, ces conditions n'existent plus.
  *
  * On ne vérifie PAS que le compte existe : Instagram n'expose aucune interface
  * publique permettant de le savoir, et prétendre le faire ici serait un
@@ -262,15 +283,19 @@ export function normaliserInstagram(valeur) {
  * un écran qui dit « formulaire invalide » sans dire quoi fait recommencer à
  * l'aveugle.
  *
- * `rang` décide de la nature du troisième champ — voir souhaitDuRang.
+ * `rang` et `saison` décident de la nature du troisième champ — voir
+ * souhaitDuRang — et de l'obligation du compte Instagram — voir instagramExige.
  */
-export function manques({ code, email, instagram, plateforme, autorisation }, rang) {
+export function manques({ code, email, instagram, plateforme, autorisation }, rang, saison) {
   const out = [];
   if (!codeValide(code)) out.push("code");
   if (!emailPlausible(email)) out.push("email");
-  if (!instagramValide(instagram)) out.push("instagram");
-  if (souhaitDuRang(rang) === "plateforme") {
+  if (instagramExige(saison) && !instagramValide(instagram)) out.push("instagram");
+  const souhait = souhaitDuRang(rang, saison);
+  if (souhait === "plateforme") {
     if (!plateformeValide(plateforme)) out.push("plateforme");
+  } else if (souhait === "maillot") {
+    if (!maillotValide(plateforme)) out.push("maillot");
   } else if (!enseigneValide(plateforme)) out.push("enseigne");
   if (!autorisation) out.push("autorisation");
   return out;
