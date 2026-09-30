@@ -57,7 +57,8 @@ Dans ce cas, ne rien modifier — juste avancer le high-water mark.
 temps réel (mercatos récents) : ne jamais se fier à une connaissance interne
 potentiellement datée. Un transfert récent (prêt/achat de la dernière saison)
 est réel s'il est sur Transfermarkt. Exemple vécu : Pavard prêté à Marseille en
-sept. 2025 — retiré à tort car « connu » à l'Inter. **Ne corriger QUE le joueur
+sept. 2025 — retiré à tort car « connu » à l'Inter. Deuxième exemple : Savinho→Tottenham, retiré le 17 sept. 2026 alors que le
+transfert est officiel depuis le 25 août 2026. **Ne corriger QUE le joueur
 explicitement pointé par `given_answer`**, sauf si un autre joueur est confirmé
 faux via Transfermarkt. Dans le doute, ne pas toucher.
 

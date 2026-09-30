@@ -2526,6 +2526,10 @@ const GG_COACHES = new Set([
   // le Torino et la Serbie, Cruyff a bâti la Dream Team du Barça, et Fàbregas
   // entraîne aujourd'hui le Côme.
   "Michel Platini","Siniša Mihajlović","Johan Cruyff","Cesc Fabregas",
+  // Signalements #241, #245 et #246 (sept. 2026) : van Bronckhorst a entraîné
+  // Feyenoord, les Rangers et Beşiktaş ; Arbeloa a dirigé le Real Madrid de
+  // janvier à juin 2026, après avoir entraîné la Castilla.
+  "Giovanni van Bronckhorst","Álvaro Arbeloa",
 ]);
 
 // ─── Scoring : pts selon DIFFICULTÉ DU JOUEUR CITÉ + bonus rareté combo ──
