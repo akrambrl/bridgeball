@@ -32,7 +32,7 @@ import { duelTermine } from "../lib/duel";
 // Réclamation du lot : les règles (qui peut réclamer, pour quel mois, ce qu'on
 // accepte comme saisie) et le tirage sûr du code de récupération.
 import { saisonDoteeRecente, lotPourRang, rangDans, moisDeLaSaison, libellePlace,
-         medaille, placesDotees, souhaitDuRang, manques, normaliserCode, normaliserInstagram,
+         medaille, placesDotees, maPlaceDansLeClassement, souhaitDuRang, manques, normaliserCode, normaliserInstagram,
          instagramExige, tirerCode, PLATEFORMES } from "../lib/reclamation";
 import { prochainsTotauxXp } from "../lib/xp";
 // Règles de tirage anti-répétition, partagées avec « Trouve le joueur ».
@@ -3860,6 +3860,9 @@ export default function LePont() {
   const [chainLastClub, setChainLastClub] = useState("");
   const [chainLastPassed, setChainLastPassed] = useState(false); // true si le club lien a été passé (à cacher avec cadenas)
   const [leaderboard, setLeaderboard] = useState([]);
+  // Le classement du mois EN ENTIER (légers champs) : l'écran n'affiche que les 50
+  // premiers, mais chaque joueur doit pouvoir lire sa propre place.
+  const [classementComplet, setClassementComplet] = useState([]);
   const [hallOfFame, setHallOfFame] = useState([]);
   // Les saisons qui ont RÉELLEMENT porté un lot. Sans cette liste, dès la
   // deuxième saison tous les anciens champions verraient un bouton « réclamer »
@@ -9159,6 +9162,7 @@ export default function LePont() {
           // classement calculé sur l'ancienne colonne, qui serait faux ET
           // falsifiable. Un onglet vide se voit ; un faux classement, non.
           setLeaderboard([]);
+          setClassementComplet([]);
           return;
         }
         // Le pays et l'XP servent au drapeau et au grade : ils viennent de
@@ -9172,6 +9176,8 @@ export default function LePont() {
             if (Array.isArray(p)) for (const l of p) infos[l.player_id] = l;
           }
         } catch (e) { /* le classement s'affiche sans drapeau ni grade */ }
+        setClassementComplet(rows.map(function(r){ return {
+          player_id: r.player_id, pseudo: r.pseudo, points: r.points || 0, jours: r.jours || 0 }; }));
         setLeaderboard(rows.slice(0, 50).map(function(r, i) { return {
           name: r.pseudo || "?",
           pid: r.player_id,
@@ -13835,6 +13841,47 @@ export default function LePont() {
                     "Tus 15 mejores días ya están fijados este mes: una partida media ya no hace subir nada. Para seguir progresando, supera uno de esos 15 días."
                   )}
                 </span>
+              </div>
+            );
+          })()}
+          {/* ── TA PLACE, MÊME HORS DU TOP 50 ─────────────────────────────
+              La liste s'arrête à 50 lignes : au-delà, on ne se voit plus et on
+              ne sait pas où on en est. Cette carte lit le classement COMPLET. Elle
+              dit aussi ce qui manque pour la place dotée suivante — c'est la
+              raison de continuer à jouer. Encre sur fond or, comme le reste de
+              la charte. */}
+          {lbMode==="saison" && lbSeasonScope!=="amis" && (function(){
+            const saison = getCurrentSeason();
+            const place = maPlaceDansLeClassement(classementComplet, playerId, placesDotees(lots, saison.num));
+            if (!place) return null;
+            const dansLaListe = place.rang <= 50;
+            // Un joueur du top 50 se voit déjà surligné dans la liste : on ne lui
+            // répète sa place que s'il y a une marche à viser.
+            if (dansLaListe && !place.prochaine) return null;
+            const nf = function(n){ return Number(n).toLocaleString(lang === "en" ? "en-GB" : "fr-FR"); };
+            return (
+              <div style={{background:G.projecteur,border:G.trait,borderRadius:G.rayonS,boxShadow:G.ombre,padding:"10px 14px",marginBottom:10}}>
+                {!dansLaListe && (
+                  <div style={{...posterText(18,G.encre),lineHeight:1.15}}>
+                    {tr("Ta place : ","Your rank: ","Dein Platz: ","Il tuo posto: ","Teu lugar: ","Tu puesto: ")}
+                    {libellePlace(place.rang, lang)}
+                    <span style={{fontSize:12,fontWeight:800,color:"rgba(8,17,9,.7)"}}>
+                      {" "}{tr("sur "+nf(place.total),"of "+nf(place.total),"von "+nf(place.total),"su "+nf(place.total),"de "+nf(place.total),"de "+nf(place.total))}
+                    </span>
+                  </div>
+                )}
+                {place.prochaine && (
+                  <div style={{fontSize:12.5,fontWeight:800,color:"rgba(8,17,9,.82)",lineHeight:1.4,marginTop:dansLaListe?0:3}}>
+                    🍀 {tr(
+                      "À " + nf(place.prochaine.manque) + " points de la " + libellePlace(place.prochaine.rang, lang) + ", qui gagne un lot.",
+                      "" + nf(place.prochaine.manque) + " points from " + libellePlace(place.prochaine.rang, lang) + ", which wins a prize.",
+                      nf(place.prochaine.manque) + " Punkte bis zum " + libellePlace(place.prochaine.rang, lang) + ", der einen Preis gewinnt.",
+                      "A " + nf(place.prochaine.manque) + " punti dal " + libellePlace(place.prochaine.rang, lang) + ", che vince un premio.",
+                      "A " + nf(place.prochaine.manque) + " pontos do " + libellePlace(place.prochaine.rang, lang) + ", que ganha um prêmio.",
+                      "A " + nf(place.prochaine.manque) + " puntos del " + libellePlace(place.prochaine.rang, lang) + ", que gana un premio."
+                    )}
+                  </div>
+                )}
               </div>
             );
           })()}

@@ -165,6 +165,41 @@ export function placesDotees(lots, saison) {
 }
 
 /**
+ * La place d'un joueur dans le classement COMPLET — pas seulement dans les 50
+ * lignes affichées. L'écran ne montre que le haut du tableau ; un joueur classé
+ * 87ᵉ ne s'y voit pas et ne sait pas où il en est, alors que c'est lui qu'on veut
+ * voir continuer à jouer.
+ *
+ * Rend aussi l'écart avec la place dotée la plus proche AU-DESSUS de lui
+ * (« à 1 200 points de la 21ᵉ place »), ou `dotee: true` s'il en occupe déjà une.
+ * L'ordre est celui de `rangDans` et de `bb_reclamer_lot` (points, jours, pseudo).
+ *
+ * @param {Array<{player_id, pseudo, points, jours}>} classement
+ * @param {string} playerId
+ * @param {number[]} rangsDotes  rangs qui rapportent un lot ce mois-ci
+ * @returns {{rang, total, points, dotee, prochaine: {rang, manque}|null}|null}
+ */
+export function maPlaceDansLeClassement(classement, playerId, rangsDotes) {
+  if (!Array.isArray(classement) || !playerId) return null;
+  const tri = classement.filter(Boolean).slice().sort((a, b) =>
+    (b.points || 0) - (a.points || 0)
+    || (b.jours || 0) - (a.jours || 0)
+    || String(a.pseudo || "").localeCompare(String(b.pseudo || "")));
+  const i = tri.findIndex((r) => r.player_id === playerId);
+  if (i === -1) return null;
+  const rang = i + 1;
+  const points = tri[i].points || 0;
+  const dotes = (Array.isArray(rangsDotes) ? rangsDotes : []).filter((r) => Number.isInteger(r) && r >= 1);
+  const dotee = dotes.includes(rang);
+  // La plus proche place dotée AU-DESSUS : c'est la prochaine marche à viser.
+  const au_dessus = dotes.filter((r) => r < rang).sort((a, b) => b - a)[0];
+  const prochaine = (!dotee && au_dessus && tri[au_dessus - 1])
+    ? { rang: au_dessus, manque: Math.max(0, (tri[au_dessus - 1].points || 0) - points) }
+    : null;
+  return { rang, total: tri.length, points, dotee, prochaine };
+}
+
+/**
  * Une adresse email plausible.
  *
  * On ne cherche PAS à valider une adresse selon la RFC 5322 — c'est un
