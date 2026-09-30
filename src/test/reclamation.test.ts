@@ -3,7 +3,7 @@ import {
   moisDeLaSaison, saisonDuMois, saisonDoteeRecente, lotPourRang, rangDans,
   libellePlace, medaille, placesDotees, emailPlausible, normaliserCode, codeValide,
   plateformeValide, enseigneValide, souhaitDuRang, manques,
-  instagramValide, normaliserInstagram, instagramExige, maillotValide,
+  instagramValide, normaliserInstagram, instagramExige, maillotValide, maPlaceDansLeClassement,
   tirerCode, ALPHABET_CODE, MOTIF_CODE,
 } from "../lib/reclamation";
 
@@ -372,5 +372,45 @@ describe("tirerCode", () => {
     const vus = new Set<string>();
     for (let i = 0; i < 1000; i++) vus.add(tirerCode());
     expect(vus.size).toBe(1000);
+  });
+});
+
+// ── TA PLACE, MÊME HORS DU TOP 50 ─────────────────────────────────────────
+describe("maPlaceDansLeClassement", () => {
+  // 100 joueurs : p1 a 1000 points, p2 999, … p100 901.
+  const cl = Array.from({ length: 100 }, (_, i) => ({ player_id: "p" + (i + 1), pseudo: "j" + (i + 1), points: 1000 - i, jours: 5 }));
+  it("lit la place dans le classement COMPLET, y compris après la 50e", () => {
+    const m = maPlaceDansLeClassement(cl, "p87", [1, 7, 21]);
+    expect(m).toMatchObject({ rang: 87, total: 100, points: 914, dotee: false });
+  });
+  it("rend l'écart avec la place dotée la plus proche AU-DESSUS", () => {
+    // p87 : 914 points ; la 21e (p21) a 980.
+    expect(maPlaceDansLeClassement(cl, "p87", [1, 7, 21])!.prochaine).toEqual({ rang: 21, manque: 66 });
+    expect(maPlaceDansLeClassement(cl, "p10", [1, 7, 21])!.prochaine).toEqual({ rang: 7, manque: 3 });
+  });
+  it("sur une place dotée, dit qu'elle l'est et ne vise rien de plus", () => {
+    const m = maPlaceDansLeClassement(cl, "p7", [1, 7, 21])!;
+    expect(m.dotee).toBe(true);
+    expect(m.prochaine).toBeNull();
+  });
+  it("le 1er n'a rien à viser au-dessus", () => {
+    expect(maPlaceDansLeClassement(cl, "p1", [1, 7, 21])!.prochaine).toBeNull();
+  });
+  it("suit l'ordre du serveur : points, puis jours, puis pseudo — quel que soit l'ordre reçu", () => {
+    const melange = [
+      { player_id: "b", pseudo: "bb", points: 50, jours: 2 },
+      { player_id: "a", pseudo: "aa", points: 50, jours: 9 },
+      { player_id: "c", pseudo: "cc", points: 70, jours: 1 },
+    ];
+    expect(maPlaceDansLeClassement(melange, "a", [])!.rang).toBe(2);
+    expect(maPlaceDansLeClassement(melange, "b", [])!.rang).toBe(3);
+  });
+  it("rend null pour un joueur absent, un identifiant vide ou un classement invalide", () => {
+    expect(maPlaceDansLeClassement(cl, "inconnu", [1])).toBeNull();
+    expect(maPlaceDansLeClassement(cl, "", [1])).toBeNull();
+    expect(maPlaceDansLeClassement(null as any, "p1", [1])).toBeNull();
+  });
+  it("sans place dotée connue, pas d'écart annoncé", () => {
+    expect(maPlaceDansLeClassement(cl, "p87", [])!.prochaine).toBeNull();
   });
 });
