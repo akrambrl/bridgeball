@@ -30,7 +30,8 @@ scripts/push-io.mjs          ← le circuit : lecture paginée, chiffrement,
   ├── notif-devinette.mjs    ← cron quotidien, même message pour tous
   ├── notif-amis.mjs         ← sondage /15 min : demande reçue ET acceptée
   ├── notif-inactivite.mjs   ← cron quotidien : 3 jours sans avoir joué
-  └── notif-podium.mjs       ← cron horaire : sorti du top 3 du mois
+  ├── notif-podium.mjs       ← cron horaire : sorti du top 3 du mois
+  └── notif-gagnants.mjs    ← les 1er au 3 du mois : « bravo, réclame ton lot »
 ```
 
 Les **décisions** vivent dans `src/lib/push.js`, qui ne touche pas au réseau et se
@@ -111,6 +112,34 @@ create table if not exists public.bb_podium_suivi (
 Pas de RLS à activer : ni le client ne la lit ni ne l'écrit, seul le script (clé
 `service_role`) y touche. Pourquoi une table de suivi et non un calcul à la
 volée : voir l'en-tête de `scripts/notif-podium.mjs`.
+
+### `notif-gagnants.mjs` — « bravo, réclame ton lot » (nouveau)
+
+```sql
+create table if not exists public.bb_gagnants_notifies (
+  season_number int  not null,
+  player_id     text not null,
+  rang          int  not null,
+  notifie_le    timestamptz not null default now(),
+  primary key (season_number, player_id)
+);
+alter table public.bb_gagnants_notifies enable row level security;
+```
+
+Le règlement promet aux gagnants une notification ; rien ne l'envoyait. Le script
+relit, pour chaque saison close dotée d'un lot, le classement du mois
+(`bb_classement_mois`, la fonction qui sert aussi à réclamer) et prévient ceux qui
+occupent une place dotée et ne l'ont pas encore été. Un joueur n'est inscrit dans
+la table qu'APRÈS un envoi réussi : un gagnant sans notifications reste à
+prévenir, et le journal le liste (« À PRÉVENIR À LA MAIN »).
+
+La table n'a AUCUNE politique RLS : seul le script (clé `service_role`) y touche.
+Le `enable row level security` est là pour ça — sans lui, une table créée à la
+main dans le SQL Editor serait lisible avec la clé publique.
+
+Cadence : les 1er, 2 et 3 du mois à 08:00 UTC, soit 10 h à Paris en été. Pas à
+l'heure de la clôture (03:00 UTC) : une victoire annoncée à 5 h du matin est un
+réveil. Rejouer est sans risque, la table de suivi empêche tout doublon.
 
 Aucune règle RLS à toucher pour les trois premiers cas non plus : les
 envoyeurs utilisent la clé `service_role`, qui les contourne. Le client

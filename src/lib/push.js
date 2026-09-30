@@ -395,6 +395,89 @@ export function accrocheDechu(dechu) {
   return { titre: "Tu as perdu ta place sur le podium 😱", corps: corps };
 }
 
+const MOIS_FR = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet",
+  "août", "septembre", "octobre", "novembre", "décembre"];
+
+/** « 2026-09 » → « septembre ». Rend "" pour tout ce qui n'est pas un mois. */
+export function nomDuMois(mois) {
+  const m = /^\d{4}-(\d{2})$/.exec(String(mois || ""));
+  return m ? (MOIS_FR[Number(m[1]) - 1] || "") : "";
+}
+
+/** « 31 octobre » — le jour d'une date, en heure de Paris. "" si la date est illisible. */
+export function jourParis(iso) {
+  const t = Date.parse(iso);
+  if (!Number.isFinite(t)) return "";
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Paris", month: "2-digit", day: "2-digit",
+  }).formatToParts(new Date(t));
+  let j = "", m = "";
+  for (const p of parts) { if (p.type === "day") j = p.value; else if (p.type === "month") m = p.value; }
+  const jour = Number(j) === 1 ? "1er" : String(Number(j));
+  return jour + " " + (MOIS_FR[Number(m) - 1] || "");
+}
+
+/**
+ * Qui doit recevoir le « bravo, réclame ton lot » — et rien d'autre.
+ *
+ * Le RANG est RECALCULÉ ici depuis le classement du mois, dans le même ordre que
+ * `rangDans` (points, puis jours, puis pseudo) et que `bb_reclamer_lot` : un
+ * gagnant est celui qui PEUT réclamer, pas celui qu'un instantané a désigné. Si un
+ * tricheur est écarté après la clôture, le suivant devient gagnant et est
+ * prévenu à son tour — la clé de suivi est (saison, joueur), pas (saison, rang).
+ *
+ * Écartés : une saison non close (rien ne prouve que le mois est fini), un rang
+ * sans lot, un délai de réclamation dépassé (annoncer un lot qu'on ne peut plus
+ * réclamer est cruel), et ceux déjà prévenus.
+ *
+ * @param {object} p
+ * @param {number[]} p.saisonsCloses  numéros présents dans bb_seasons
+ * @param {Array<{season_number, rang, intitule, ouvert_jusqu_a}>} p.lots
+ * @param {Object<number, Array<{player_id, pseudo, points, jours}>>} p.classements par saison
+ * @param {Array<{season_number, player_id}>} p.dejaNotifies
+ * @param {Object<number, string>} p.mois  "AAAA-MM" par saison
+ * @param {number|Date} [p.maintenant]
+ */
+export function gagnantsANotifier({ saisonsCloses, lots, classements, dejaNotifies, mois, maintenant }) {
+  const t = maintenant == null ? Date.now() : new Date(maintenant).getTime();
+  const deja = new Set((dejaNotifies || []).map(function(d){ return d.season_number + "|" + d.player_id; }));
+  const out = [];
+  for (const saison of saisonsCloses || []) {
+    const lotsSaison = (lots || []).filter(function(l){ return l && l.season_number === saison; });
+    if (!lotsSaison.length) continue;
+    const tri = ((classements || {})[saison] || []).filter(Boolean).slice().sort(function(a, b){
+      return (b.points || 0) - (a.points || 0)
+        || (b.jours || 0) - (a.jours || 0)
+        || String(a.pseudo || "").localeCompare(String(b.pseudo || ""));
+    });
+    tri.forEach(function(c, i){
+      const lot = lotsSaison.find(function(l){ return l.rang === i + 1; });
+      if (!lot || !c.player_id) return;
+      const limite = lot.ouvert_jusqu_a ? Date.parse(lot.ouvert_jusqu_a) : NaN;
+      if (Number.isFinite(limite) && t > limite) return;
+      if (deja.has(saison + "|" + c.player_id)) return;
+      out.push({
+        season_number: saison, rang: i + 1, player_id: c.player_id, pseudo: c.pseudo || "",
+        intitule: lot.intitule || "", mois: (mois || {})[saison] || "", limite: lot.ouvert_jusqu_a || null,
+      });
+    });
+  }
+  return out;
+}
+
+/** L'accroche d'un gagnant : sa place, le mois, et jusqu'à quand réclamer. */
+export function accrocheGagnant(g) {
+  const rang = g && g.rang === 1 ? "1re" : ((g && g.rang) + "e");
+  const mois = nomDuMois(g && g.mois);
+  const jusqua = jourParis(g && g.limite);
+  const titre = g && g.rang === 1 ? "🏆 Tu as gagné" + (mois ? " " + mois : "") + " !"
+    : g && g.rang <= 3 ? "🥈 Tu es sur le podium" + (mois ? " de " + mois : "") + " !"
+    : "🍀 Place chanceuse" + (mois ? " en " + mois : "") + " !";
+  const corps = "Bravo, tu finis à la " + rang + " place du classement" + (mois ? " de " + mois : "")
+    + ". Réclame ton lot dans l'app" + (jusqua ? " avant le " + jusqua : "") + " !";
+  return { titre: titre, corps: corps };
+}
+
 /**
  * Faut-il (re)transmettre cet endpoint à Supabase ?
  *

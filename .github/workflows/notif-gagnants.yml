@@ -1,0 +1,54 @@
+# Notification « bravo, tu as gagné — réclame ton lot ».
+#
+# Le règlement promet que les gagnants sont prévenus par notification ; rien ne
+# l'envoyait. Ce déclencheur passe après la clôture de saison (le 1er à 03:00 UTC,
+# voir cloture-saison.yml), à 08:00 UTC — 10 h à Paris en été, 9 h en hiver : une
+# notification de victoire à 5 h du matin serait un réveil, pas une bonne nouvelle.
+#
+# Il tourne aussi les 2 et 3 du mois. C'est sans risque : la table de suivi
+# (bb_gagnants_notifies) empêche de prévenir quelqu'un deux fois, et ces passages
+# rattrapent une clôture retardée ou un envoi raté.
+#
+# Mêmes secrets que les autres circuits : SB_SERVICE_KEY et VAPID_PRIVATE_KEY.
+# Demande aussi une table en base — voir docs/NOTIFICATIONS.md.
+name: Notification gagnants
+
+on:
+  schedule:
+    - cron: "0 8 1-3 * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Simuler sans rien envoyer ni marquer"
+        type: boolean
+        default: true
+
+concurrency:
+  group: notif-gagnants
+  cancel-in-progress: false
+
+jobs:
+  envoyer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Installer les dépendances
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+        run: npm ci
+
+      - name: Envoyer
+        env:
+          SB_SERVICE_KEY: ${{ secrets.SB_SERVICE_KEY }}
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+          VAPID_SUBJECT: https://goatfc.fr
+        run: |
+          npx tsx scripts/notif-gagnants.mjs \
+            ${{ (github.event_name == 'workflow_dispatch' && inputs.dry_run) && '--dry-run' || '' }}

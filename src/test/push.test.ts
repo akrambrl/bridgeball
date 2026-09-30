@@ -9,7 +9,8 @@ import { abonnementUtilisable, dedupeAbonnements, decisionEnvoi, decisionFinale,
          demandesANotifier, accrocheAmis, grouperPar, resumerCorps, repartitionHotes, pushARetransmettre, abonnementMortSelonCorps, corpsCleDUnAutreServeur,
          ciblerAndroid, ciblerParStore, servaitParApple,
          acceptationsANotifier, accrocheAmiAccepte, derniereActivitePar, joueursARelancer,
-         accrocheRelanceInactivite, parisMoisCourant, evolutionPodium, accrocheDechu } from "../lib/push.js";
+         accrocheRelanceInactivite, parisMoisCourant, evolutionPodium, accrocheDechu,
+         gagnantsANotifier, accrocheGagnant, nomDuMois, jourParis } from "../lib/push.js";
 
 const abo = (id: string, endpoint: string, created_at: string) =>
   ({ id, endpoint, p256dh: "cle", auth: "auth", created_at });
@@ -802,5 +803,78 @@ describe("accrocheDechu", () => {
     const a = accrocheDechu({ ancienRang: 1, nouvelOccupant: null });
     expect(a.corps).not.toContain("null");
     expect(a.corps).toContain("1ère");
+  });
+});
+
+
+// ── « BRAVO, TU AS GAGNÉ » ────────────────────────────────────────────────
+// Le règlement promet une notification aux gagnants ; rien ne l'envoyait.
+describe("gagnantsANotifier", () => {
+  const lots = [
+    { season_number: 6, rang: 1, intitule: "un jeu", ouvert_jusqu_a: "2026-10-31T22:59:59Z" },
+    { season_number: 6, rang: 2, intitule: "carte 50", ouvert_jusqu_a: "2026-10-31T22:59:59Z" },
+    { season_number: 6, rang: 3, intitule: "carte 30", ouvert_jusqu_a: "2026-10-31T22:59:59Z" },
+  ];
+  const cl = { 6: [
+    { player_id: "b", pseudo: "bee", points: 800, jours: 9 },
+    { player_id: "a", pseudo: "ay", points: 900, jours: 9 },
+    { player_id: "d", pseudo: "dee", points: 500, jours: 9 },
+    { player_id: "c", pseudo: "cee", points: 700, jours: 9 },
+  ] };
+  const base = { saisonsCloses: [6], lots, classements: cl, dejaNotifies: [], mois: { 6: "2026-09" },
+                 maintenant: "2026-10-01T08:00:00Z" };
+
+  it("prévient les trois places dotées, rang recalculé (pas l'ordre reçu)", () => {
+    const g = gagnantsANotifier(base);
+    expect(g.map((x) => x.player_id + x.rang)).toEqual(["a1", "b2", "c3"]);
+  });
+  it("ne prévient pas le 4e, qui n'a aucun lot", () => {
+    expect(gagnantsANotifier(base).some((x) => x.player_id === "d")).toBe(false);
+  });
+  it("ne prévient jamais deux fois", () => {
+    const g = gagnantsANotifier({ ...base, dejaNotifies: [{ season_number: 6, player_id: "a" }] });
+    expect(g.map((x) => x.player_id)).toEqual(["b", "c"]);
+  });
+  it("un tricheur écarté fait passer le suivant : il est prévenu à son tour", () => {
+    const sansC = { 6: cl[6].filter((x) => x.player_id !== "c") };
+    const g = gagnantsANotifier({ ...base, classements: sansC,
+      dejaNotifies: [{ season_number: 6, player_id: "a" }, { season_number: 6, player_id: "b" },
+                     { season_number: 6, player_id: "c" }] });
+    expect(g.map((x) => x.player_id)).toEqual(["d"]);
+  });
+  it("n'annonce pas un lot dont le délai de réclamation est dépassé", () => {
+    expect(gagnantsANotifier({ ...base, maintenant: "2026-11-02T08:00:00Z" })).toEqual([]);
+  });
+  it("ignore une saison non close", () => {
+    expect(gagnantsANotifier({ ...base, saisonsCloses: [] })).toEqual([]);
+  });
+  it("ignore une saison sans lot", () => {
+    expect(gagnantsANotifier({ ...base, lots: [] })).toEqual([]);
+  });
+});
+
+describe("accrocheGagnant", () => {
+  const g = (rang: number) => ({ rang, mois: "2026-09", limite: "2026-10-31T22:59:59Z" });
+  it("dit la place, le mois et la date limite", () => {
+    const { titre, corps } = accrocheGagnant(g(1));
+    expect(titre).toBe("🏆 Tu as gagné septembre !");
+    expect(corps).toBe("Bravo, tu finis à la 1re place du classement de septembre. Réclame ton lot dans l'app avant le 31 octobre !");
+  });
+  it("distingue podium et place chanceuse", () => {
+    expect(accrocheGagnant(g(2)).titre).toContain("podium");
+    expect(accrocheGagnant(g(7)).titre).toContain("Place chanceuse");
+    expect(accrocheGagnant(g(21)).corps).toContain("21e place");
+  });
+  it("ne casse pas sans mois ni date", () => {
+    const { titre, corps } = accrocheGagnant({ rang: 1 });
+    expect(titre).toBe("🏆 Tu as gagné !");
+    expect(corps).toBe("Bravo, tu finis à la 1re place du classement. Réclame ton lot dans l'app !");
+  });
+  it("nomDuMois et jourParis", () => {
+    expect(nomDuMois("2026-10")).toBe("octobre");
+    expect(nomDuMois("n'importe quoi")).toBe("");
+    expect(jourParis("2026-11-30T22:59:59Z")).toBe("30 novembre");
+    expect(jourParis("2026-11-01T10:00:00Z")).toBe("1er novembre");
+    expect(jourParis("pas une date")).toBe("");
   });
 });
