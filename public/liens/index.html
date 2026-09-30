@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GOAT FC — Télécharge l'app</title>
+<meta name="description" content="GOAT FC, le quiz foot : télécharge l'app sur l'App Store et Google Play, ou joue sur goatfc.fr.">
+<meta name="robots" content="noindex,follow">
+<link rel="canonical" href="https://goatfc.fr/liens/">
+<meta property="og:title" content="GOAT FC — Télécharge l'app">
+<meta property="og:description" content="Le quiz foot. iOS, Android et web.">
+<meta property="og:image" content="https://goatfc.fr/og-share-v2.jpg">
+<link rel="icon" href="/favicon.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
+<style>
+/* Page « lien en bio » : une seule chose à faire, trois boutons.
+   Charte GOAT FC : SUR L'OR, SEULE L'ENCRE SE LIT. Les boutons sont donc des
+   panneaux sombres (où le crème se lit, 14,9) et tout ce qui est posé
+   directement sur le fond est à l'encre. */
+:root {
+  --encre:#081109; --or:#F5C22B; --or-sombre:#D9A21A; --creme:#F2E7CE; --nuit:#12160F;
+  --ombre:4px 4px 0 #081109;
+}
+* { box-sizing:border-box; }
+html, body { margin:0; min-height:100%; }
+body {
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  background:var(--or); color:var(--encre);
+  background-image:radial-gradient(circle,var(--or-sombre) 1.2px,transparent 1.5px);
+  background-size:7px 7px;
+  display:flex; justify-content:center;
+}
+main { width:100%; max-width:440px; padding:44px 20px 56px; display:flex; flex-direction:column; align-items:center; text-align:center; }
+.logo { width:112px; height:112px; border-radius:26px; border:3px solid var(--encre); box-shadow:var(--ombre); display:block; background:var(--nuit); }
+h1 {
+  font-family:'Anton',Impact,'Haettenschweiler',sans-serif; font-weight:400;
+  font-size:clamp(40px,12vw,54px); line-height:1.02; margin:22px 0 6px; letter-spacing:.5px;
+  transform:skewX(-7deg); text-shadow:3px 3px 0 rgba(8,17,9,.18);
+}
+.sous { margin:0 0 30px; font-size:16px; font-weight:700; color:rgba(8,17,9,.75); }
+.liens { width:100%; display:flex; flex-direction:column; gap:14px; }
+a.bouton {
+  display:flex; align-items:center; gap:14px; text-align:left; text-decoration:none;
+  background:var(--nuit); color:var(--creme);
+  border:3px solid var(--encre); border-radius:18px; box-shadow:var(--ombre);
+  padding:15px 18px; min-height:68px;
+  transition:transform .08s ease, box-shadow .08s ease;
+}
+a.bouton:active { transform:translate(3px,3px); box-shadow:1px 1px 0 var(--encre); }
+a.bouton:focus-visible { outline:3px solid var(--encre); outline-offset:3px; }
+.pastille { flex:0 0 auto; width:40px; height:40px; border-radius:12px; background:var(--or); color:var(--encre);
+  display:flex; align-items:center; justify-content:center; font-size:22px; }
+.texte { display:flex; flex-direction:column; min-width:0; }
+.petit { font-size:11.5px; font-weight:700; letter-spacing:1.4px; text-transform:uppercase; color:rgba(242,231,206,.72); }
+.gros { font-family:'Anton',Impact,'Haettenschweiler',sans-serif; font-size:23px; letter-spacing:.4px; line-height:1.15; color:var(--creme); }
+.fleche { margin-left:auto; font-size:22px; color:var(--or); font-weight:800; }
+.bas { margin-top:30px; font-size:12.5px; font-weight:600; color:rgba(8,17,9,.7); }
+@media (prefers-reduced-motion:reduce) { a.bouton { transition:none; } }
+</style>
+</head>
+<body>
+<main>
+  <img class="logo" src="/logo.webp" width="112" height="112" alt="GOAT FC">
+  <h1>GOAT FC</h1>
+  <p class="sous">Le quiz foot. Télécharge l'app.</p>
+
+  <nav class="liens" id="liens" aria-label="Liens GOAT FC">
+    <a class="bouton" id="ios" href="https://apps.apple.com/fr/app/goat-fc/id6802330074?ct=instagram_bio" rel="noopener">
+      <span class="pastille" aria-hidden="true">🍎</span>
+      <span class="texte"><span class="petit">Disponible sur</span><span class="gros">App Store</span></span>
+      <span class="fleche" aria-hidden="true">→</span>
+    </a>
+    <a class="bouton" id="android" href="https://play.google.com/store/apps/details?id=fr.goatfc.app&referrer=utm_source%3Dinstagram%26utm_medium%3Dbio" rel="noopener">
+      <span class="pastille" aria-hidden="true">▶</span>
+      <span class="texte"><span class="petit">Disponible sur</span><span class="gros">Google Play</span></span>
+      <span class="fleche" aria-hidden="true">→</span>
+    </a>
+    <a class="bouton" id="web" href="https://goatfc.fr/?utm_source=instagram&utm_medium=bio" rel="noopener">
+      <span class="pastille" aria-hidden="true">⚽</span>
+      <span class="texte"><span class="petit">Jouer tout de suite sur</span><span class="gros">goatfc.fr</span></span>
+      <span class="fleche" aria-hidden="true">→</span>
+    </a>
+  </nav>
+
+  <p class="bas">Gratuit · iOS, Android et web</p>
+</main>
+<script>
+/* Amélioration progressive : sur iPhone le bouton App Store passe en premier, sur
+   Android celui de Google Play. Sans JavaScript, l'ordre par défaut reste correct. */
+(function () {
+  try {
+    var ua = navigator.userAgent || "";
+    var liens = document.getElementById("liens");
+    var cible = /iPhone|iPad|iPod/i.test(ua) ? "ios" : /Android/i.test(ua) ? "android" : null;
+    if (cible && liens) liens.insertBefore(document.getElementById(cible), liens.firstChild);
+  } catch (e) { /* l'ordre par défaut suffit */ }
+})();
+</script>
+</body>
+</html>
