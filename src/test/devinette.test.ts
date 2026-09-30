@@ -53,12 +53,30 @@ describe("le joueur du jour", () => {
     // désormais revoir quelqu'un, jamais à moins de douze jours (test plus bas).
     // Les deux garanties ne peuvent pas coexister, c'est démontré en tête de
     // scripts/devinette-rotation.mjs.
+    //
+    // Le premier cycle a la taille du vivier AU JOUR OÙ LE CALENDRIER A ÉTÉ
+    // ÉCRIT : un joueur entré depuis prend sa place en fin de liste (voir
+    // scripts/devinette-rotation.mjs), pas dans ce cycle. Comparer aux
+    // POOL.length d'aujourd'hui cassait donc dès la première arrivée — Danilo Luiz,
+    // le 30 septembre 2026. On mesure la longueur réelle du premier cycle (la
+    // position du premier nom qui se répète), et on vérifie SÉPARÉMENT que tout le
+    // vivier figure quelque part dans le calendrier.
+    let longueur = 0;
+    const dansLeCycle = new Set<string>();
+    while (longueur < ROTATION.length && !dansLeCycle.has(ROTATION[longueur])) {
+      dansLeCycle.add(ROTATION[longueur]);
+      longueur++;
+    }
     const vus = new Set<string>();
-    for (let i = 0; i < POOL.length; i++) {
+    for (let i = 0; i < longueur; i++) {
       const jour = new Date((EPOQUE_JOUR + i) * 86400000).toISOString().slice(0, 10);
       vus.add(joueurDuJour(POOL, jour)!.name);
     }
-    expect(vus.size).toBe(POOL.length);
+    expect(vus.size).toBe(longueur);
+
+    const dansLeCalendrier = new Set<string>(ROTATION);
+    const absents = POOL.map((p: any) => p.name).filter((n: string) => !dansLeCalendrier.has(n));
+    expect(absents).toEqual([]);
   });
 
   it("survit à un vivier vide sans planter", () => {

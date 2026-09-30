@@ -1052,7 +1052,7 @@ export const PLAYERS = [
   { name:"Alejandro Garnacho", clubs:["Manchester United", "Chelsea", "Aston Villa"], diff:"moyen", nationalities:["Argentine"], positions:["attaquant"], birthYear:2004 },
   { name:"Kobbie Mainoo", clubs:["Manchester United"], diff:"moyen", nationalities:["Angleterre"], positions:["milieu"], birthYear:2005 },
   { name:"Dean Huijsen", clubs:["Juventus FC", "AS Roma", "Bournemouth", "Real Madrid"], diff:"moyen", nationalities:["Espagne"], positions:["defenseur"], birthYear:2005 },
-  { name:"Savinho", clubs:["Atlético Mineiro", "PSV Eindhoven", "Girona", "Manchester City"], diff:"moyen", nationalities:["Brésil"], positions:["attaquant"], birthYear:2004 },
+  { name:"Savinho", clubs:["Atlético Mineiro", "PSV Eindhoven", "Girona", "Manchester City", "Tottenham"], diff:"moyen", nationalities:["Brésil"], positions:["attaquant"], birthYear:2004 },
   { name:"Rayan Cherki", clubs:["Lyon", "Manchester City"], diff:"moyen", nationalities:["France"], positions:["milieu"], birthYear:2003 },
   { name:"Khephren Thuram", clubs:["Nice", "Juventus FC"], diff:"expert", nationalities:["France"], positions:["milieu"], birthYear:2001 },
   { name:"Manu Koné", clubs:["Toulouse", "Borussia Mönchengladbach", "AS Roma"], diff:"expert", nationalities:["France"], positions:["milieu"] , birthYear:2001 },
@@ -1780,7 +1780,7 @@ export const PLAYERS = [
   { name:"Rayan Aït-Nouri", clubs:["Angers", "Wolverhampton", "Manchester City"], diff:"moyen", nationalities:["Algérie"], positions:["defenseur"], birthYear:2001 },
   { name:"Youcef Atal", clubs:["Paradou AC", "Kortrijk", "Nice", "Adana Demirspor", "Al Sadd"], diff:"moyen", nationalities:["Algérie"], positions:["defenseur"], birthYear:1996 },
   { name:"Aïssa Mandi", clubs:["Reims", "Real Betis", "Villarreal", "Lille", "Levante"], diff:"moyen", nationalities:["Algérie"], positions:["defenseur"], birthYear:1991 },
-  { name:"Mohamed Amoura", clubs:["ES Sétif", "Lugano", "Union Saint-Gilloise", "Wolfsburg"], diff:"moyen", nationalities:["Algérie"], positions:["attaquant"], birthYear:2000 },
+  { name:"Mohamed Amoura", clubs:["ES Sétif", "Lugano", "Union Saint-Gilloise", "Wolfsburg", "Nice"], diff:"moyen", nationalities:["Algérie"], positions:["attaquant"], birthYear:2000 },
   { name:"Amine Gouiri", clubs:["Lyon", "Nice", "Rennes", "Marseille"], diff:"facile", nationalities:["Algérie"], positions:["attaquant"], birthYear:2000 },
   { name:"Hicham Boudaoui", clubs:["Paradou AC", "Nice"], diff:"expert", nationalities:["Algérie"], positions:["milieu"] , birthYear:1999 },
   { name:"Baghdad Bounedjah", clubs:["RCG Oran", "USM El Harrach", "Étoile du Sahel", "Al Sadd", "Al Shamal"], diff:"expert", nationalities:["Algérie"], positions:["attaquant"] , birthYear:1991 },
@@ -3833,6 +3833,7 @@ export const PLAYERS = [
   { name:"Melle Meulensteen", clubs:["Manchester United", "Preston", "RKC Waalwijk", "Vitesse", "Sampdoria", "Go Ahead Eagles"], diff:"expert", nationalities:["Pays-Bas"], positions:["milieu"], birthYear:1999 },
   { name:"Danny Namaso", clubs:["Reading", "Porto", "Auxerre"], diff:"expert", nationalities:["Angleterre"], positions:["attaquant"], birthYear:2000 },
   { name:"Danilo", clubs:["América Mineiro", "Palmeiras", "Twente", "Nottingham Forest", "Rangers"], diff:"expert", nationalities:["Brésil"], positions:["attaquant"] , birthYear:2001 },
+  { name:"Danilo Luiz", clubs:["América Mineiro", "Santos", "Porto", "Real Madrid", "Manchester City", "Juventus FC", "Flamengo"], diff:"facile", nationalities:["Brésil"], positions:["defenseur"], birthYear:1991 },
   { name:"Saša Kalajdžić", clubs:["Admira Wacker", "Stuttgart", "Wolverhampton", "LASK"], diff:"moyen", nationalities:["Autriche"], positions:["attaquant"], birthYear:1997 },
   { name:"Max Aarons", clubs:["Norwich City", "Bournemouth", "Valencia", "Rangers"], diff:"expert", nationalities:["Angleterre"], positions:["defenseur"] , birthYear:2000 },
   { name:"Flynn Downes", clubs:["Ipswich Town", "Swansea", "West Ham", "Crystal Palace", "Southampton"], diff:"expert", nationalities:["Angleterre"], positions:["milieu"] , birthYear:1999 },
@@ -4154,7 +4155,7 @@ export const PLAYERS = [
   { name:"Benjamin Stambouli", clubs:["Montpellier", "Tottenham", "PSG", "Schalke", "Adana Demirspor", "Reims", "Metz"], diff:"moyen", nationalities:["France"], positions:["milieu"], birthYear:1990 },
   { name:"Tim Ream", clubs:["New York Red Bulls", "Bolton", "Fulham", "Charlotte FC"], diff:"moyen", nationalities:["États-Unis"], positions:["defenseur"] , birthYear:1987 },
   { name:"Andy Nájar", clubs:["DC United", "Anderlecht", "LA Galaxy", "Nashville SC"], diff:"expert", nationalities:["Honduras"], positions:["defenseur"] , birthYear:1993 },
-  { name:"Nampalys Mendy", clubs:["Monaco", "Nice", "Leicester City", "Lens", "Al Ettifaq", "Watford"], diff:"moyen", nationalities:["Sénégal"], positions:["milieu"], birthYear:1992 },
+  { name:"Nampalys Mendy", clubs:["Monaco", "Nice", "Leicester City", "Lens", "Al Ettifaq", "Watford", "Metz"], diff:"moyen", nationalities:["Sénégal"], positions:["milieu"], birthYear:1992 },
   { name:"Jaroslav Zelený", clubs:["Mladá Boleslav", "Bohemians", "Sparta Prague"], diff:"expert", nationalities:["Tchéquie"], positions:["defenseur"], birthYear:1992 },
   { name:"Lucas Pérez", clubs:["Rayo Vallecano", "Karpaty Lviv", "Dynamo Kyiv", "PAOK", "Deportivo La Coruna", "Arsenal", "Deportivo La Coruna", "West Ham", "Alavés", "Elche", "Cádiz", "Deportivo La Coruna", "PSV Eindhoven", "Cádiz"], diff:"moyen", nationalities:["Espagne"], positions:["attaquant"], birthYear:1988 },
   { name:"José Campaña", clubs:["Sevilla Atlético", "Sevilla", "Crystal Palace", "Sampdoria", "Porto", "Porto B", "Levante", "Real Betis", "Mallorca", "Ceuta"], diff:"moyen", nationalities:["Espagne"], positions:["milieu"], birthYear:1993 },
@@ -6557,6 +6558,10 @@ export const GG_CL_WINNERS = new Set([
   // Breitner et Beckenbauer (Bayern 1974), Platini (Juventus 1985).
   "Johan Cruyff", "Marco van Basten", "Ruud Gullit", "Paul Breitner",
   "Michel Platini",
+  // Signalements bb_reports #216 et #219 (sept. 2026) : Di Stéfano, cinq Coupes des
+  // clubs champions de suite avec le Real (1956-60), absent du set faute de source
+  // avant 2000 ; Danilo (Real Madrid 2015-17, sacré en 2016 et 2017).
+  "Alfredo Di Stéfano","Danilo Luiz",
 ]);
 
 // ─── Vainqueurs du Ballon d'Or masculin (1956 → 2025, pas de Ballon d'Or 2020) ───

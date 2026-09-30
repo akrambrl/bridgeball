@@ -76,3 +76,72 @@ describe("signalements infondés (à ne pas satisfaire)", () => {
     expect(j("André Gomes").nationalities).not.toContain("Brésil");
   });
 });
+
+// ── Passe du 30 septembre 2026 : bb_reports #215 à #256 ──────────────────────
+// 42 signalements, 8 fondés. Chaque fait a été recoupé sur le web à la date du
+// jour (transferts d'été 2026 compris) : voir docs/reports-journal.md.
+describe("signalements #215-#256 fondés", () => {
+  it("Vainqueur LDC : Di Stéfano (#216) et Danilo (#219)", () => {
+    expect(GG_CL_WINNERS.has("Alfredo Di Stéfano")).toBe(true);
+    expect(GG_CL_WINNERS.has("Danilo Luiz")).toBe(true);
+  });
+
+  it("Danilo (né en 1991) existe, distinct de l'attaquant de 2001 (#219)", () => {
+    const d = j("Danilo Luiz");
+    expect(d.clubs).toContain("Real Madrid");
+    expect(d.clubs).toContain("Manchester City");
+    expect(d.birthYear).toBe(1991);
+    expect(j("Danilo").clubs).not.toContain("Real Madrid");
+  });
+
+  it("transferts de l'été 2026 : Savinho (#221, #256), Mendy (#234), Amoura (#236)", () => {
+    expect(j("Savinho").clubs).toContain("Tottenham");
+    expect(j("Nampalys Mendy").clubs).toContain("Metz");
+    expect(j("Mohamed Amoura").clubs).toContain("Nice");
+  });
+
+  it("le club le plus récent reste en dernier (colonne CLUB de GOAT Reveal)", () => {
+    expect(j("Savinho").clubs.at(-1)).toBe("Tottenham");
+    expect(j("Nampalys Mendy").clubs.at(-1)).toBe("Metz");
+    expect(j("Mohamed Amoura").clubs.at(-1)).toBe("Nice");
+    expect(j("Benjamin Pavard").clubs.at(-1)).toBe("Inter Milan");
+  });
+});
+
+describe("signalements #215-#256 infondés (à ne pas satisfaire)", () => {
+  it("ne fait pas champions du monde ceux qui ne le sont pas (#215, #226, #227, #248, #255)", () => {
+    for (const n of ["Dimitri Payet", "Mattéo Guendouzi", "Kingsley Coman", "Cristiano Ronaldo", "Paolo Maldini"]) {
+      expect(GG_WC_WINNERS.has(n), n).toBe(false);
+    }
+  });
+
+  it("ne fait pas vainqueurs de LDC Asencio (#217) ni Griezmann (#229)", () => {
+    // Asencio : premier match pro en novembre 2024, la LDC 2024 n'est pas la sienne.
+    for (const n of ["Raúl Asencio", "Antoine Griezmann"]) {
+      expect(GG_CL_WINNERS.has(n), n).toBe(false);
+    }
+  });
+
+  it("n'ajoute pas les clubs revendiqués à tort (#218, #220, #243, #247)", () => {
+    expect(j("Jesús Navas").clubs).not.toContain("Real Madrid");
+    expect(j("Matías Dituro").clubs).not.toContain("Inter Milan");
+    expect(j("Jens Odgaard").clubs).not.toContain("Arsenal"); // confondu avec Ødegaard
+    expect(j("Nicolás Tagliafico").clubs).not.toContain("Chelsea");
+  });
+
+  it("Marseille × Nottingham Forest (#238) : les quatre joueurs y sont bien passés", () => {
+    for (const n of ["Nuno Tavares", "Renan Lodi", "Brice Samba", "André Ayew"]) {
+      const c = j(n).clubs;
+      expect(c, n).toContain("Marseille");
+      expect(c, n).toContain("Nottingham Forest");
+    }
+  });
+
+  it("garde les postes et nationalités réels (#222, #223, #232, #239, #244)", () => {
+    expect(j("Ismael Saibari").positions).toEqual(["milieu"]);
+    expect(j("Kingsley Coman").positions).toEqual(["attaquant"]);
+    expect(j("Brahim Díaz").positions).toEqual(["milieu"]);
+    expect(j("Samuel Chukwueze").nationalities).not.toContain("Angleterre");
+    expect(j("Sergiño Dest").nationalities).not.toContain("Pays-Bas");
+  });
+});

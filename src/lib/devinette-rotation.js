@@ -500,4 +500,5 @@ export const ROTATION = [
   "Calvin Bassey",
   "İlkay Gündoğan",
   "Luka Modrić",
+  "Danilo Luiz",
 ];

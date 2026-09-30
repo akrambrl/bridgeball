@@ -7,6 +7,76 @@ revendication revient et on refait la vérification à zéro.
 
 ---
 
+## Passe du 30 septembre 2026 — signalements 215 → 256 (42 lignes)
+
+Répartition : 33 `gg_missed`, 4 `reveal_bug`, 4 `chain_missed`, 1
+`wrong_player_club`. Vérification sur le web à la date du jour (transferts d'été
+2026 compris) : la base + deux lots d'agents de recherche, puis recoupement
+personnel des cas qui renversaient une décision passée. Transfermarkt n'était
+pas consultable depuis l'environnement : clubs et dates viennent de Wikipedia,
+des sites officiels des clubs et de la presse.
+
+### Corrigés (10)
+
+| id | Revendication | Correction |
+|----|---------------|-----------|
+| 216 | Di Stéfano × Real Madrid, Vainqueur LDC (GOAT Grid) | cinq Coupes des clubs champions de suite (1956-60) ; ajouté à `GG_CL_WINNERS`, le set n'avait pas de source avant 2000 |
+| 219 | « Danilo » × Real Madrid, A joué en PL (GOAT Grid) | fiche manquante : seul l'attaquant de 2001 existait. Créé « Danilo Luiz » (né en 1991 : América Mineiro, Santos, Porto, Real Madrid, Man City, Juventus, Flamengo), aussi ajouté à `GG_CL_WINNERS` (2016, 2017) |
+| 221, 256 | Savinho × Tottenham (GOAT Grid) | transfert officiel le **25 août 2026**, 75 M£ + 10 M£ de bonus (tottenhamhotspur.com). **La passe du 17 septembre l'avait retiré à tort** ; Tottenham est remis en dernier club |
+| 234 | Nampalys Mendy × Metz (Mercato) | signé à Metz en 2026 (libre, après Watford) ; ajouté en dernier club |
+| 236 | Mohamed Amoura × Nice (Mercato) | prêt de Wolfsburg à Nice, début septembre 2026 ; ajouté en dernier club |
+| 241 | van Bronckhorst × Arsenal, Devenu entraîneur (GOAT Grid) | a entraîné Feyenoord, Guangzhou R&F, les Rangers, Beşiktaş ; ajouté à `GG_COACHES` |
+| 245, 246 | Arbeloa × Real Madrid, Devenu entraîneur (GOAT Grid) | entraîneur du Real Madrid de janvier à juin 2026 ; ajouté à `GG_COACHES` |
+| 228 | Pavard, « il est de nouveau à l'Inter » (Reveal) | fin de prêt à l'OM, option de 15 M€ non levée ; Inter Milan remis en dernier club (PR #905). Marseille reste dans sa carrière |
+
+### Rejetés (32)
+
+Aucune modification. Verdicts figés en négatif dans
+`src/test/goatgrid-signalements.test.ts`.
+
+| id | Revendication | Pourquoi non |
+|----|---------------|--------------|
+| 215 | Payet × Vainqueur CDM | n'a jamais été champion du monde |
+| 217 | Asencio × Vainqueur LDC | premier match pro en novembre 2024 ; le Real n'a gagné ni la LDC 2024-25 ni la 2025-26 (PSG) |
+| 218 | Jesús Navas × Real Madrid | Séville et Man City, jamais le Real |
+| 220 | Dituro × Inter | aucun lien avec l'Inter ni la Premier League |
+| 222 | Saibari × attaquant | milieu offensif (numéro 10) pour le Bayern et la Bundesliga |
+| 223 | Coman × milieu | ailier |
+| 224 | Daniel James × Chelsea | jamais à Chelsea |
+| 225 | Figo × Espagne | portugais |
+| 226, 227 | Guendouzi, Coman × Vainqueur CDM | ni l'un ni l'autre n'est champion du monde |
+| 229 | Griezmann × Vainqueur LDC | jamais gagné la LDC |
+| 230 | Juan Gabriel Rodríguez × Arsenal | Talleres, puis Atlético Tucumán ; aucun lien avec Arsenal |
+| 231 | Nkunku × défenseur | attaquant |
+| 232 | Brahim Díaz × attaquant | milieu offensif |
+| 233 | Weah « pas attaquant » | ailier / piston, rangé « attaquant » (la base n'a que quatre postes) |
+| 235 | Tielemans × Bundesliga | Anderlecht, Monaco, Leicester, Villa, Man United : jamais en Allemagne |
+| 237 | Ander Herrera × Barcelone | jamais à Barcelone (et espagnol) |
+| 238 | Marseille × Nottingham Forest (Nuno Tavares) | **fondé** : les quatre joueurs listés y sont passés (Tavares, Lodi, Samba, Ayew) ; Samba n'a joué qu'un match pro à l'OM (2014) mais compte |
+| 239 | Chukwueze × Angleterre | nigérian |
+| 240 | Juninho Paulista × Marseille | jamais à Marseille |
+| 242 | Ignacio Fernández « sta » | aucun club en « Sta » ; saisie tronquée |
+| 243 | Jens Odgaard × Arsenal | confondu avec Martin Ødegaard ; Odgaard est à Bologne |
+| 244 | Dest × Pays-Bas | sélection des États-Unis |
+| 247 | Tagliafico × Chelsea | Ajax puis Lyon, jamais Chelsea |
+| 248, 255 | Ronaldo, Maldini × Vainqueur CDM | ni l'un ni l'autre n'a gagné la Coupe du monde |
+| 249 | Weah × Fenerbahçe (Mercato) | PSG, Celtic, Lille, Juventus, Marseille |
+| 250 | Arthur × Juventus, Brésil | Arthur **Melo** est déjà valide (Juventus, brésilien) : le joueur a choisi l'homonyme « Arthur » |
+| 251 | Bernardo Silva × PSG, Brésil | portugais, jamais au PSG |
+| 252 | Valentín Barco × Vainqueur LDC | a signé à Chelsea (août 2026) mais n'a pas gagné la LDC |
+| 253 | Lucas Vázquez « MC, pas attaquant » | arrière droit / ailier, pas milieu central |
+| 254 | Pépé, croix jaune sur les anciens clubs | demande de fonctionnalité, pas une erreur de données |
+
+### Enseignements
+
+- **Deuxième erreur du même genre** après Pavard : Savinho→Tottenham avait été
+  jugé « jamais joué » le 17 septembre, alors que le transfert est officiel
+  depuis le 25 août. `docs/REPORT-TRIAGE.md` le disait déjà : ne jamais se fier à
+  une connaissance interne pour un transfert de la dernière saison.
+- **Les homonymes produisent la moitié des faux signalements** (Arthur / Arthur
+  Melo, Odgaard / Ødegaard, Sávio / Savinho, les deux Danilo). Piste : afficher
+  l'année de naissance ou le club dans la liste de suggestions de GOAT Grid.
+
 ## Passe du 17 septembre 2026 — signalements 174 → 214 (41 lignes)
 
 Répartition : 22 `gg_missed`, 13 `chain_missed`, 4 `wrong_player_club`,
