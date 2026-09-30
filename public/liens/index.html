@@ -41,7 +41,7 @@ h1 {
   transform:skewX(-7deg); text-shadow:3px 3px 0 rgba(8,17,9,.18);
 }
 .sous { margin:0 0 30px; font-size:16px; font-weight:700; color:rgba(8,17,9,.75); }
-.liens { width:100%; display:flex; flex-direction:column; gap:14px; }
+.liens { width:100%; display:flex; flex-direction:column; gap:12px; }
 a.bouton {
   display:flex; align-items:center; gap:14px; text-align:left; text-decoration:none;
   background:var(--nuit); color:var(--creme);
@@ -49,6 +49,13 @@ a.bouton {
   padding:15px 18px; min-height:68px;
   transition:transform .08s ease, box-shadow .08s ease;
 }
+a.badge { display:flex; justify-content:center; align-items:center; text-decoration:none; height:76px; }
+a.badge img { display:block; height:60px; width:auto; }
+/* Le PNG officiel de Google porte ses marges de sécurité : à 60 px le badge
+   visible paraît plus petit que celui d'Apple. On agrandit l'image, pas le badge. */
+a.badge img.gp { height:78px; }
+a.badge:focus-visible { outline:3px solid var(--encre); outline-offset:3px; border-radius:12px; }
+a.badge:active img { transform:translateY(2px); }
 a.bouton:active { transform:translate(3px,3px); box-shadow:1px 1px 0 var(--encre); }
 a.bouton:focus-visible { outline:3px solid var(--encre); outline-offset:3px; }
 .pastille { flex:0 0 auto; width:40px; height:40px; border-radius:12px; background:var(--or); color:var(--encre);
@@ -68,15 +75,13 @@ a.bouton:focus-visible { outline:3px solid var(--encre); outline-offset:3px; }
   <p class="sous">Le quiz foot. Télécharge l'app.</p>
 
   <nav class="liens" id="liens" aria-label="Liens GOAT FC">
-    <a class="bouton" id="ios" href="https://apps.apple.com/fr/app/goat-fc/id6802330074?ct=instagram_bio" rel="noopener">
-      <span class="pastille" aria-hidden="true">🍎</span>
-      <span class="texte"><span class="petit">Disponible sur</span><span class="gros">App Store</span></span>
-      <span class="fleche" aria-hidden="true">→</span>
+    <!-- Les badges OFFICIELS d'Apple et de Google, non modifiés : leurs chartes
+         d'utilisation interdisent de les redessiner. -->
+    <a class="badge" id="ios" href="https://apps.apple.com/fr/app/goat-fc/id6802330074?ct=instagram_bio" rel="noopener">
+      <img src="/liens/app-store.svg" height="60" alt="Télécharger dans l'App Store">
     </a>
-    <a class="bouton" id="android" href="https://play.google.com/store/apps/details?id=fr.goatfc.app&referrer=utm_source%3Dinstagram%26utm_medium%3Dbio" rel="noopener">
-      <span class="pastille" aria-hidden="true">▶</span>
-      <span class="texte"><span class="petit">Disponible sur</span><span class="gros">Google Play</span></span>
-      <span class="fleche" aria-hidden="true">→</span>
+    <a class="badge" id="android" href="https://play.google.com/store/apps/details?id=fr.goatfc.app&referrer=utm_source%3Dinstagram%26utm_medium%3Dbio" rel="noopener">
+      <img class="gp" src="/liens/google-play.png" height="78" alt="Disponible sur Google Play">
     </a>
     <a class="bouton" id="web" href="https://goatfc.fr/?utm_source=instagram&utm_medium=bio" rel="noopener">
       <span class="pastille" aria-hidden="true">⚽</span>
