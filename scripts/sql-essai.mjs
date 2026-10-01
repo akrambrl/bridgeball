@@ -194,6 +194,19 @@ const CONTROLES = [
 
 ];
 
+// Les deux contrôles ci-dessous valent pour les DEUX règles : un joueur sans pseudo
+// n'est jamais classé (voir `par_jour` dans docs/supabase-classement.sql).
+const CONTROLES_SANS_PSEUDO = [
+  { nom: "un joueur SANS pseudo n'est pas classé (panon, 30 000 points bruts)",
+    sql: "select count(*) from public.bb_classement_courant() where player_id='panon'",
+    attendu: (v) => Number(v) === 0,
+    dire: (v) => v + " ligne(s) pour panon (0 attendue : sans pseudo, pas de classement)" },
+  { nom: "aucune ligne « ? » dans le classement",
+    sql: "select count(*) from public.bb_classement_courant() where pseudo = '?'",
+    attendu: (v) => Number(v) === 0,
+    dire: (v) => v + " ligne(s) « ? » (0 attendue)" },
+];
+
 /** Les contrôles qui DISTINGUENT les deux règles (voir « CHANGEMENT DE RÈGLE » en tête du fichier). */
 const CONTROLES_REGLE = {
   ancien: [
@@ -275,7 +288,7 @@ async function eprouver(typeScore, regime) {
   }
 
   let bon = true;
-  for (const c of CONTROLES.concat(CONTROLES_REGLE[regime])) {
+  for (const c of CONTROLES.concat(CONTROLES_SANS_PSEUDO, CONTROLES_REGLE[regime])) {
     if (c.seulement && c.seulement !== regime) continue;
     const v = (await psql(["-tAc", c.sql], base)).trim().split("\n").pop();
     const ok = c.attendu(v);

@@ -405,6 +405,16 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
   // recharger la page ne doit pas coûter une partie. Limite atteinte : on referme
   // et LePont affiche l'invitation à passer sur l'app.
   useEffect(() => {
+    // Pas de pseudo, pas de partie : ce mode envoyait son score sous « Anonyme » et
+    // remplissait le classement de « ? » qui ne pouvaient ni être reconnus ni
+    // réclamer un lot. On referme et LePont ouvre la création du pseudo.
+    let nom = "";
+    try { nom = (localStorage.getItem("bb_name") || "").trim(); } catch { /* noop */ }
+    if (nom.length < 2) {
+      try { window.dispatchEvent(new CustomEvent("goatfc:pseudo-obligatoire")); } catch { /* noop */ }
+      onClose();
+      return;
+    }
     if (daily || saved) return;
     let storage: Storage | null = null;
     try { storage = localStorage; } catch { /* noop */ }
