@@ -210,6 +210,10 @@ const CONTROLES_SANS_PSEUDO = [
 /** Les contrôles qui DISTINGUENT les deux règles (voir « CHANGEMENT DE RÈGLE » en tête du fichier). */
 const CONTROLES_REGLE = {
   ancien: [
+    { nom: "AVANT octobre — plusieurs grilles le même jour ne comptent que pour UNE (pgrid)",
+      sql: "select points from public.bb_classement_courant() where player_id='pgrid'",
+      attendu: (v) => Number(v) >= 900 && Number(v) <= 1800,
+      dire: (v) => "pgrid : 4 grilles le même jour → " + v + " (une seule, 900 bruts + bonus)" },
     { nom: "AVANT octobre — 18 parties le même jour dans le même mode ne comptent que pour UNE (pgrind)",
       // Le plafond « meilleur score par jour et par mode » : septembre 2026 se clôt
       // dessous, et ne doit pas avoir bougé d'un point.
@@ -224,6 +228,13 @@ const CONTROLES_REGLE = {
       dire: (v) => "jours retenus : " + v + " (15/20 attendus)" },
   ],
   cumul: [
+    { nom: "À PARTIR d'octobre — chaque grille libre compte, SAUF celle jouée avec une vie rachetée (pgrid)",
+      // 3 grilles comptées (jour + 2 libres) × 900 = 2 700 bruts. La 3e libre, avec vie
+      // rachetée, est exclue : si elle comptait, on serait à 3 600 bruts (≈ 5 000 avec
+      // le bonus). Le bonus de rattrapage porte 2 700 à ≈ 3 900.
+      sql: "select points from public.bb_classement_courant() where player_id='pgrid'",
+      attendu: (v) => Number(v) >= 3000 && Number(v) <= 4500,
+      dire: (v) => "pgrid : 3 grilles comptées sur 4 → " + v + " (≈ 3 900 ; 5 000 si la vie rachetée comptait)" },
     { nom: "À PARTIR d'octobre — chaque partie compte : 18 parties le même jour valent 18 000 (pgrind)",
       sql: "select points from public.bb_classement_courant() where player_id='pgrind'",
       attendu: (v) => Number(v) >= 18000 && Number(v) <= 20000,
@@ -250,6 +261,18 @@ const REFUS = [
     sql: `insert into public.bb_scores (player_id, mode, score) values ('p8','pont',300);
           insert into public.bb_scores (player_id, mode, score) values ('p8','pont',310)`,
     indice: "cadence" },
+  // GOAT GRID LIBRE : plusieurs grilles par jour sont permises, mais pas la même deux
+  // fois, ni deux à moins de 20 s.
+  { nom: "la MÊME grille libre enregistrée deux fois (même joueur, même jour, même grille)",
+    sql: `insert into public.bb_gg_scores (player_id, score, max_score, seed_date, grille_id)
+          values ('pgrid', 1, 1000, (date_trunc('month', now()) + interval '6 days')::date, 'libre-1')`,
+    indice: "unique|duplicate|joueur_jour_grille" },
+  { nom: "deux grilles libres à moins de 20 s",
+    sql: `insert into public.bb_gg_scores (player_id, score, max_score, seed_date, grille_id)
+          values ('pcad', 500, 1000, current_date, 'a');
+          insert into public.bb_gg_scores (player_id, score, max_score, seed_date, grille_id)
+          values ('pcad', 500, 1000, current_date, 'b')`,
+    indice: "cadence|moins de 20 s" },
 ];
 
 async function eprouver(typeScore, regime) {
@@ -281,6 +304,16 @@ async function eprouver(typeScore, regime) {
     const bruit = sortie.split("\n").filter((l) => /ERROR|FATAL/.test(l));
     if (bruit.length) throw new Error(bruit.join("\n"));
     console.log("✅ le fichier passe en entier");
+    // Les grilles LIBRES de `pgrid`, posées maintenant que la contrainte « une par
+    // jour » a été remplacée. Le garde de cadence est suspendu le temps du semis : il
+    // impose created_at = now(), et il est éprouvé plus bas (REFUS).
+    await psql(["-c", `alter table public.bb_gg_scores disable trigger bb_gg_scores_garde_trg;
+      insert into public.bb_gg_scores (player_id, score, max_score, seed_date, vie_rachetee, grille_id, created_at)
+      select 'pgrid', 900, 1000, (date_trunc('month', now()) + interval '6 days')::date,
+             (n = 3), 'libre-' || n,
+             date_trunc('month', now()) + interval '6 days' + (n || ' hours')::interval + interval '9 hours'
+        from generate_series(1, 3) as n;
+      alter table public.bb_gg_scores enable trigger bb_gg_scores_garde_trg`], base);
   } catch (e) {
     console.log("❌ le fichier S'ARRÊTE :\n" + String(e.message).split("\n")
       .filter((l) => /ERROR|LINE|HINT|DETAIL/.test(l)).slice(0, 6).map((l) => "   " + l).join("\n"));

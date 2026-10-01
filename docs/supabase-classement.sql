@@ -370,6 +370,69 @@ do $$ begin
   end if;
 end $$;
 
+-- ─── 3 bis. GOAT GRID LIBRE : PLUSIEURS GRILLES PAR JOUR ───────────────────
+--
+-- La table n'acceptait qu'UNE ligne par joueur et par jour (contrainte
+-- bb_gg_scores_player_id_seed_date_key). La « grille libre » — une grille tirée au
+-- hasard, rejouable à volonté et qui compte au classement comme une partie — a
+-- besoin de plusieurs lignes dans la même journée. `grille_id` les distingue :
+-- vide pour la grille du jour (donc rien ne change pour elle), l'identifiant de la
+-- grille pour une grille libre.
+--
+-- `vie_rachetee` est posée ici aussi (docs/supabase-goatgrid-vie.sql la crée) :
+-- bb_classement_mois la lit, et Postgres vérifie le corps d'une fonction SQL à sa
+-- création — sans la colonne, le fichier s'arrêterait.
+alter table public.bb_gg_scores
+  add column if not exists vie_rachetee boolean not null default false;
+alter table public.bb_gg_scores
+  add column if not exists grille_id text not null default '';
+
+alter table public.bb_gg_scores drop constraint if exists bb_gg_scores_player_id_seed_date_key;
+do $$ begin
+  if not exists (select 1 from pg_constraint
+                  where conrelid = 'public.bb_gg_scores'::regclass
+                    and conname = 'bb_gg_scores_joueur_jour_grille_key') then
+    alter table public.bb_gg_scores
+      add constraint bb_gg_scores_joueur_jour_grille_key
+      unique (player_id, seed_date, grille_id);
+  end if;
+end $$;
+
+-- Cadence et quota des grilles LIBRES (la grille du jour est déjà limitée par
+-- l'unicité). Une grille se joue en plus d'une minute : deux envois à moins de
+-- vingt secondes sont un script. Le quota, lui, est un garde-fou contre une boucle
+-- folle, pas une limite de jeu. L'horodatage est imposé par le serveur, comme pour
+-- bb_scores : sans cela, on pouvait antidater une grille dans un mois clos.
+create or replace function public.bb_gg_scores_garde()
+returns trigger language plpgsql as $$
+declare recent int; dujour int;
+begin
+  new.created_at := now();
+  if coalesce(new.grille_id, '') = '' then return new; end if;
+
+  select count(*) into recent from public.bb_gg_scores g
+   where g.player_id = new.player_id
+     and g.created_at > now() - interval '20 seconds' and g.created_at <= now();
+  if recent > 0 then
+    raise exception 'grille deja enregistree il y a moins de 20 s'
+      using errcode = 'check_violation', hint = 'cadence';
+  end if;
+
+  select count(*) into dujour from public.bb_gg_scores g
+   where g.player_id = new.player_id and g.created_at > now() - interval '1 day';
+  if dujour >= 500 then
+    raise exception 'trop de grilles enregistrees en 24 h (%)', dujour
+      using errcode = 'check_violation', hint = 'quota';
+  end if;
+  return new;
+end $$;
+
+drop trigger if exists bb_gg_scores_garde_trg on public.bb_gg_scores;
+create trigger bb_gg_scores_garde_trg
+  before insert on public.bb_gg_scores
+  for each row execute function public.bb_gg_scores_garde();
+
+
 create or replace function public.bb_classement_mois(p_mois text)
 returns table (
   player_id text,
@@ -432,6 +495,11 @@ returns table (
       from public.bb_gg_scores g
      where to_char(g.created_at at time zone 'Europe/Paris', 'YYYY-MM') = p_mois
        and p_mois >= (select debut from parametres)
+       -- Une grille jouée avec une vie obtenue contre une publicité ne compte pas
+       -- (docs/supabase-goatgrid-vie.sql). Ce filtre avait disparu quand ce fichier
+       -- a remplacé la fonction ; on le remet, AU CUMUL SEULEMENT : septembre est
+       -- clos et annoncé, on n'y touche pas.
+       and not coalesce(g.vie_rachetee, false)
   ),
   par_jour as (
     -- Total d'un joueur POUR UN JOUR = somme de ses meilleurs par mode ce jour-là.
@@ -767,6 +835,7 @@ returns table (
      where g.player_id = (select player_id from moi)
        and to_char(g.created_at at time zone 'Europe/Paris', 'YYYY-MM') = p_mois
        and p_mois >= (select debut from parametres)
+       and not coalesce(g.vie_rachetee, false)
   ),
   par_jour as (
     select jour, sum(pts) as pts_jour

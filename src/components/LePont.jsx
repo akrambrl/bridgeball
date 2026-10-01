@@ -4033,6 +4033,9 @@ export default function LePont() {
   const [ggLeaderboardData, setGgLeaderboardData] = useState({ global: [], friends: [] });
   const [ggLeaderboardLoading, setGgLeaderboardLoading] = useState(false);
   const [ggScoreSaved, setGgScoreSaved] = useState(false);
+  // Identifiant de la GRILLE LIBRE en cours ("" = grille du jour). Une grille libre
+  // est tirée au hasard, rejouable à volonté, et compte au classement comme une partie.
+  const [ggLibreId, setGgLibreId] = useState("");
   // Statut de la grille du jour (pour l'accueil)
   const [ggTodayResult, setGgTodayResult] = useState(null); // { score, max_score, cells_filled } si déjà jouée
   const [ggRevealMode, setGgRevealMode] = useState(false); // true = on peut cliquer les cases pour voir les réponses possibles
@@ -4915,10 +4918,12 @@ export default function LePont() {
   const ggBattleStateRef = React.useRef({ filledCells: {}, score: 0, lives: 3, submitted: false });
   
   // Restaurer la grille du jour depuis localStorage
-  function ggLoadFromStorage() {
+  function ggLoadFromStorage(ignorerOverride) {
     try {
-      // Si on est en mode override, on ne charge pas la sauvegarde du jour (partie de test indépendante)
-      if (ggOverrideSeed) return null;
+      // Si on est en mode override, on ne charge pas la sauvegarde du jour (partie de test indépendante).
+      // `ignorerOverride` : on REVIENT à la grille du jour depuis une grille libre, dont
+      // l'état (`ggOverrideSeed`) n'est pas encore remis à zéro dans ce rendu.
+      if (ggOverrideSeed && !ignorerOverride) return null;
       const todaySeed = ggGetDailySeed();
       const saved = JSON.parse(localStorage.getItem("goatfc_gg_state") || "{}");
       if (saved.seed === todaySeed) return saved; // partie d'aujourd'hui en cours
@@ -4947,7 +4952,8 @@ export default function LePont() {
   // ─── Leaderboard GOAT GRID ────────────────────────────────────
   // Sauvegarde le score du jour dans Supabase (uniquement si vraie grille du jour)
   async function ggSaveScore(score, maxScore, livesLeft, cellsFilled, pattern) {
-    if (ggOverrideSeed > 0) return; // pas de save en mode test
+    // Pas de sauvegarde en mode test/démo — sauf pour une grille LIBRE, qui compte.
+    if (ggOverrideSeed > 0 && !ggLibreId) return;
     if (!playerId || !playerName) return;
     if (ggScoreSaved) return; // déjà sauvegardé
     
@@ -4962,6 +4968,10 @@ export default function LePont() {
         cells_filled: cellsFilled,
         pattern: pattern,
         seed_date: today,
+        // Grille libre : son identifiant la distingue de la grille du jour (même
+        // joueur, même date). Absent pour la grille du jour, dont la ligne est
+        // inchangée.
+        ...(ggLibreId ? { grille_id: ggLibreId } : {}),
       };
       const envoyer = (corps) => sbFetch("bb_gg_scores", {
         method: "POST",
@@ -5009,7 +5019,14 @@ export default function LePont() {
     try {
       const today = ggGetTodayDateStr();
       // Mondial : top 50 du jour
-      const globalData = await sbFetch(
+      // Le classement du jour ne compte QUE la grille du jour (grille_id vide) : les
+      // grilles libres partagent la même date. Avant que le SQL n'ait ajouté la
+      // colonne, le filtre est refusé : on retombe alors sur la requête d'avant.
+      const duJour = async function(url) {
+        const r = await sbFetch(url + "&grille_id=eq.");
+        return Array.isArray(r) ? r : await sbFetch(url);
+      };
+      const globalData = await duJour(
         "bb_gg_scores?seed_date=eq." + today + "&order=score.desc&limit=50"
       );
       // Amis : récupérer la liste des amis depuis localStorage puis filtrer
@@ -5019,12 +5036,12 @@ export default function LePont() {
         // Inclure aussi le joueur lui-même
         const allIds = [playerId, ...friendsIds].filter(Boolean);
         const idsParam = "(" + allIds.map(id => '"' + id + '"').join(",") + ")";
-        friendsData = await sbFetch(
+        friendsData = await duJour(
           "bb_gg_scores?seed_date=eq." + today + "&player_id=in." + idsParam + "&order=score.desc"
         );
       } else if (playerId) {
         // Sans amis : juste le joueur lui-même
-        friendsData = await sbFetch(
+        friendsData = await duJour(
           "bb_gg_scores?seed_date=eq." + today + "&player_id=eq." + playerId
         );
       }
@@ -5971,9 +5988,46 @@ export default function LePont() {
     if (r.count >= 5) { r.count = 0; ggToggleDemo(); }
   }
 
+  // ── GRILLE LIBRE ───────────────────────────────────────────────────────────
+  // Une grille tirée au hasard, rejouable à volonté, qui COMPTE au classement comme
+  // une partie (jusqu'à 1 000 points). La grille du jour reste le défi commun à
+  // tous. Sur le site, elle entre dans la limite de 3 parties par jour ; dans l'app,
+  // elle est illimitée. Il faut un pseudo : sans lui le score n'est pas enregistré.
+  function ggLancerLibre() {
+    if (ggDemo) return; // la démo vidéo n'enregistre rien
+    requirePseudo(function(){
+      if (!partieWebAutorisee()) return;
+      trackPlay("grid");
+      const newSeed = Math.floor(Math.random() * 2147483646) + 1;
+      const newGrid = ggGenerateGrid(newSeed);
+      setGgOverrideSeed(newSeed);
+      setGgLibreId(String(newSeed));
+      setGgVieRachetee(false);
+      setGgProposeVie(false);
+      setGgFilledCells({});
+      setGgUsedPlayers(new Set());
+      setGgLives(3);
+      setGgScore(0);
+      setGgGameOver(false);
+      setGgGuess("");
+      setGgFlash(null);
+      setGgSelectedCell(null);
+      setGgRevealMode(false);
+      setGgRevealCell(null);
+      setGgReviewMode(false);
+      setGgScoreSaved(false);
+      if (newGrid) { setGgGrid(newGrid); setGgError(false); }
+      else setGgError(true);
+      setShowGoatGrid(true);
+    });
+  }
+
   function ggStartGame() {
+    // Retour à la grille du jour : on quitte une éventuelle grille libre.
+    const quitteLibre = !!ggLibreId;
+    if (quitteLibre) { setGgLibreId(""); setGgOverrideSeed(ggIsDemo() ? GG_DEMO_SEED : 0); setGgScoreSaved(false); }
     trackPlay("grid");
-    const seed = ggOverrideSeed || ggGetDailySeed();
+    const seed = (quitteLibre ? (ggIsDemo() ? GG_DEMO_SEED : 0) : ggOverrideSeed) || ggGetDailySeed();
     const grid = ggGenerateGrid(seed);
     if (!grid) {
       setGgError(true);
@@ -5984,7 +6038,7 @@ export default function LePont() {
     setGgGrid(grid);
     
     // Restaurer la progression du jour si elle existe
-    const saved = ggLoadFromStorage();
+    const saved = ggLoadFromStorage(quitteLibre);
     if (saved) {
       setGgFilledCells(saved.filledCells || {});
       setGgUsedPlayers(new Set(saved.usedPlayers || []));
@@ -6101,7 +6155,7 @@ export default function LePont() {
           setGgLastRejected(null);
           setGgReportSent(false);
           // 💾 Sauvegarder le score (sauf en mode test)
-          if (ggGrid && ggOverrideSeed === 0) {
+          if (ggGrid && (ggOverrideSeed === 0 || ggLibreId)) {
             const maxScore = ggGrid.cells.reduce(function(s,c){return s+(c.maxPoints||0);},0) + 100;
             const pattern = ggBuildEmojiPattern(newFilled, ggGrid);
             ggSaveScore(finalScore, maxScore, ggLives, 9, pattern);
@@ -6166,7 +6220,7 @@ export default function LePont() {
           // grille est enregistrée comme honnête — ce qu'elle est.
           let pubDemo = false;
           try { pubDemo = localStorage.getItem("bb_pub_demo") === "1"; } catch { pubDemo = false; }
-          if (!isBattle && !ggVieRachetee && ggOverrideSeed === 0 && (pubDisponible() || pubDemo)) {
+          if (!isBattle && !ggVieRachetee && (ggOverrideSeed === 0 || ggLibreId) && (pubDisponible() || pubDemo)) {
             setGgProposeVie(true);
             return;
           }
@@ -6187,7 +6241,7 @@ export default function LePont() {
   function ggTerminer() {
     setGgProposeVie(false);
     setGgGameOver(true);
-    if (ggGrid && ggOverrideSeed === 0) {
+    if (ggGrid && (ggOverrideSeed === 0 || ggLibreId)) {
       const maxScore = ggGrid.cells.reduce(function(s,c){return s+(c.maxPoints||0);},0) + 100;
       const pattern = ggBuildEmojiPattern(ggFilledCells, ggGrid);
       const cellsCount = Object.keys(ggFilledCells).length;
@@ -16806,6 +16860,21 @@ export default function LePont() {
                   <div style={{fontSize:26,color:G.pelouseClaire,flexShrink:0,lineHeight:1}}>›</div>
                 </div>
 
+                {/* Carte LIBRE : une grille au hasard, à volonté, qui compte au classement
+                    comme une partie. La grille du jour (SOLO) reste le défi commun. */}
+                <div onClick={function(){setGgModeChoice(false);ggLancerLibre();}} style={{...ligneCharte,padding:"16px 14px 16px 16px",gap:14,alignItems:"center"}}>
+                  <div style={pastilleCharte(G.projecteur,54)}>🎲</div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontSize:10,fontWeight:800,letterSpacing:2.5,color:G.projecteur,textTransform:"uppercase"}}>{tr("Une grille au hasard","A random grid","Ein zufälliges Raster","Una griglia a caso","Uma grade aleatória","Una cuadrícula al azar")}</div>
+                    <div style={{...posterText(28,G.white),margin:"3px 0 9px"}}>{tr("LIBRE","FREE","FREI","LIBERA","LIVRE","LIBRE")}</div>
+                    <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+                      <span style={{fontSize:10.5,fontWeight:800,color:"rgba(255,255,255,.85)",background:"rgba(8,17,9,.5)",border:G.traitFin,padding:"4px 9px",borderRadius:G.rayonS,letterSpacing:.3}}>🔁 {tr("À volonté","As often as you like","Beliebig oft","Quante vuoi","À vontade","Las que quieras")}</span>
+                      <span style={{fontSize:10.5,fontWeight:800,color:"rgba(255,255,255,.85)",background:"rgba(8,17,9,.5)",border:G.traitFin,padding:"4px 9px",borderRadius:G.rayonS,letterSpacing:.3}}>🏆 {tr("Chaque grille compte","Every grid counts","Jedes Raster zählt","Ogni griglia conta","Cada grade conta","Cada cuadrícula cuenta")}</span>
+                    </div>
+                  </div>
+                  <div style={{fontSize:26,color:G.projecteur,flexShrink:0,lineHeight:1}}>›</div>
+                </div>
+
                 {/* Carte BATTLE */}
                 <div onClick={function(){setGgModeChoice(false);setGgBattleScreen("menu");setGgBattleError("");setGgBattleCode("");}} style={{...ligneCharte,padding:"16px 14px 16px 16px",gap:14,alignItems:"center"}}>
                   <div style={pastilleCharte(G.maillot,54)}>⚔️</div>
@@ -17776,25 +17845,7 @@ export default function LePont() {
                           </button>
                         )}
                         <div style={{display:"flex",gap:7}}>
-                        <button onClick={function(){
-                          const newSeed = Math.floor(Math.random() * 1000000) + 1;
-                          setGgOverrideSeed(newSeed);
-                          setGgFilledCells({});
-                          setGgUsedPlayers(new Set());
-                          setGgLives(3);
-                          setGgScore(0);
-                          setGgGameOver(false);
-                          setGgGuess("");
-                          setGgFlash(null);
-                          setGgSelectedCell(null);
-                          setGgRevealMode(false);
-                          setGgRevealCell(null);
-                          setGgReviewMode(false);
-                          setGgScoreSaved(false);
-                          const newGrid = ggGenerateGrid(newSeed);
-                          if (newGrid) { setGgGrid(newGrid); setGgError(false); }
-                          else setGgError(true);
-                        }} style={{...btn(G.projecteur,G.encre,14),flex:2,minWidth:0,padding:10,letterSpacing:.6}}>
+                        <button onClick={ggLancerLibre} style={{...btn(G.projecteur,G.encre,14),flex:2,minWidth:0,padding:10,letterSpacing:.6}}>
                           🔄 {tr("NOUVELLE GRILLE","NEW GRID","NEUES RASTER","NUOVA GRIGLIA","NOVA GRADE","NUEVA CUADRÍCULA")}
                         </button>
                         <button onClick={function(){setShowGoatGrid(false);}} style={{...btn(G.encre,G.creme,14),flex:1,minWidth:0,padding:10,letterSpacing:.6}}>
