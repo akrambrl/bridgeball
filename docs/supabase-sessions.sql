@@ -143,7 +143,7 @@ declare
   v_capacite int;
   v_n int;
 begin
-  select player_id into v_player_id from public.bb_pseudos where auth_uid = auth.uid();
+  v_player_id := public.bb_joueur_courant();
   if v_player_id is null then
     return query select 'compte_introuvable'::text, null::int; return;
   end if;
@@ -333,7 +333,7 @@ declare
   v_idx int := p_manche - 1; -- un tableau jsonb s'indexe à partir de 0
   v_ok boolean;
 begin
-  select player_id into v_player_id from public.bb_pseudos where auth_uid = auth.uid();
+  v_player_id := public.bb_joueur_courant();
   if v_player_id is null then return false; end if;
 
   -- Seuls les inscrits à CETTE session peuvent proposer son contenu —
@@ -377,7 +377,7 @@ declare
   v_idx int := p_manche - 1;
   v_ends_at timestamptz;
 begin
-  select player_id into v_player_id from public.bb_pseudos where auth_uid = auth.uid();
+  v_player_id := public.bb_joueur_courant();
   if v_player_id is null then return 'compte_introuvable'; end if;
 
   if not exists (select 1 from public.bb_session_joueurs
