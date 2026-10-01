@@ -487,6 +487,50 @@ export function accrocheGagnant(g) {
 }
 
 /**
+ * Quelles sessions faut-il rappeler MAINTENANT ?
+ *
+ * Une session est rappelée UNE fois (`rappel_envoye_le` vide), quand elle est encore ouverte
+ * et que son départ tombe dans la fenêtre [`apresMinMs`, `avantMaxMs`] à venir. Le plancher
+ * (5 min par défaut) évite d'écrire « ça commence dans 1 min » à des gens qui ne peuvent plus
+ * s'inscrire à temps ; le plafond (40 min) évite de prévenir trop tôt.
+ *
+ * Les déclencheurs GitHub peuvent avoir plusieurs dizaines de minutes de retard : un rappel qui
+ * arriverait après le départ n'est donc JAMAIS envoyé, plutôt que de réveiller les gens pour
+ * une session déjà commencée.
+ *
+ * @param {Array<{id, mode, starts_at, statut, rappel_envoye_le}>} sessions
+ * @param {number|Date} [maintenant]
+ */
+export function sessionsARappeler(sessions, maintenant, avantMaxMs, apresMinMs) {
+  const t = maintenant == null ? Date.now() : new Date(maintenant).getTime();
+  const max = Number.isFinite(avantMaxMs) ? avantMaxMs : 40 * 60 * 1000;
+  const min = Number.isFinite(apresMinMs) ? apresMinMs : 5 * 60 * 1000;
+  return (sessions || []).filter(function(s){
+    if (!s || s.statut !== "ouvert" || s.rappel_envoye_le) return false;
+    const debut = Date.parse(s.starts_at);
+    if (!Number.isFinite(debut)) return false;
+    const reste = debut - t;
+    return reste >= min && reste <= max;
+  });
+}
+
+/** Le rappel d'une session : l'heure de Paris, le mode tiré au sort, et le temps qu'il reste. */
+export function accrocheSession(session, maintenant) {
+  const t = maintenant == null ? Date.now() : new Date(maintenant).getTime();
+  const debut = Date.parse(session && session.starts_at);
+  const heure = Number.isFinite(debut)
+    ? new Intl.DateTimeFormat("fr-FR", { timeZone: "Europe/Paris", hour: "2-digit", minute: "2-digit" })
+        .format(new Date(debut)).replace(":", "h")
+    : "";
+  const minutes = Number.isFinite(debut) ? Math.max(1, Math.round((debut - t) / 60000)) : 0;
+  const mode = session && session.mode === "chaine" ? "GOAT Mercato" : "GOAT Plug";
+  const titre = "🏟️ GOAT SESSION" + (heure ? " à " + heure : " ce soir");
+  const quand = minutes > 0 ? "Ça commence dans " + minutes + " min. " : "";
+  const corps = quand + "Ce soir : " + mode + ". 50 places, 3 manches — réserve la tienne !";
+  return { titre: titre, corps: corps };
+}
+
+/**
  * Faut-il (re)transmettre cet endpoint à Supabase ?
  *
  * L'app garde en local l'endpoint déjà envoyé, pour ne pas ajouter une ligne à

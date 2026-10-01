@@ -6518,6 +6518,10 @@ export default function LePont() {
         // GOAT Duel : on ouvre son menu (solo / en ligne / entre potes),
         // exactement comme la carte du carrousel mobile.
         requirePseudo(function(){ setDuelError(""); setDuelJoinCode(""); setDuelScreen("menu"); });
+      } else if (play === "session") {
+        // Lien de la notification « GOAT SESSION ce soir » : la liste des sessions, comme la
+        // carte de l'accueil.
+        requirePseudo(function(){ setGoatSessionEcran("liste"); });
       }
     } catch (e) {
       console.warn("autostart failed:", e);
