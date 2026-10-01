@@ -12193,7 +12193,14 @@ export default function LePont() {
                       reste le bon choix. */}
                   <div style={{width:28,fontWeight:900,color: row.rang===1?(moi?G.encre:G.projecteur):row.rang===2?"#C9CDD3":row.rang===3?"#CD7F32":(moi?"rgba(8,17,9,.5)":"rgba(255,255,255,.4)")}}>#{row.rang}</div>
                   <div style={{flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",fontWeight:moi?800:600,color:moi?G.encre:"rgba(255,255,255,.8)"}}>{row.pseudo}</div>
-                  <div style={{fontSize:13,color:moi?"rgba(8,17,9,.62)":"rgba(255,255,255,.5)",flexShrink:0}}>{row.manches_gagnees} 🏆</div>
+                  <div style={{fontSize:13,color:moi?"rgba(8,17,9,.62)":"rgba(255,255,255,.5)",flexShrink:0}}>
+                    {/* Le bonus au classement du mois : 5 000 / 3 000 / 1 500 aux trois premiers, si la
+                        session a au moins 5 inscrits et si le joueur a une bonne réponse. */}
+                    {row.rang <= 3 && goatSessionClassement.length >= 5 && (row.bonnes_reponses||0) >= 1 && (
+                      <span style={{marginRight:8,fontWeight:900,color:moi?G.encre:G.projecteur}}>+{row.rang===1?"5 000":row.rang===2?"3 000":"1 500"} pts</span>
+                    )}
+                    {row.manches_gagnees} 🏆
+                  </div>
                 </div>
               );
             })}

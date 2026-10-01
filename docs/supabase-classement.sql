@@ -433,6 +433,61 @@ create trigger bb_gg_scores_garde_trg
   for each row execute function public.bb_gg_scores_garde();
 
 
+-- ─── 3 ter. GOAT SESSION : LE BONUS AU CLASSEMENT DU MOIS ──────────────────
+--
+-- Le vainqueur d'une session gagne 5 000 points, le 2e 3 000, le 3e 1 500 — un
+-- bonus HORS du barème normalisé (une partie rapporte 1 000 au plus), assumé comme
+-- tel : une session est un rendez-vous à 50 joueurs, deux par semaine.
+--
+-- LES POINTS NE SONT PAS ÉCRITS : ils sont CALCULÉS, comme tout le reste du
+-- classement, depuis les réponses enregistrées. Rien à distribuer, donc rien à
+-- oublier ni à rejouer si une session est corrigée.
+--
+-- GARDE-FOUS, parce que 5 000 points valent cinq parties parfaites :
+--   • au moins `bb_session_min_joueurs()` inscrits — deux amis dans un salon vide
+--     ne s'offrent pas 5 000 points ;
+--   • au moins une bonne réponse — un vainqueur qui n'a rien trouvé n'est pas un
+--     vainqueur ;
+--   • la session est FINIE (dernière manche close depuis 5 s), qu'un client ait ou
+--     non appelé bb_session_terminer — le statut n'est pas la preuve, l'horloge l'est.
+--
+-- Fonction plpgsql (et non sql) pour que ce fichier se pose AVANT docs/supabase-sessions.sql
+-- sans erreur : Postgres vérifie le corps d'une fonction SQL à sa création, pas celui
+-- d'une fonction plpgsql. Si les tables n'existent pas encore, elle ne rend rien.
+create or replace function public.bb_session_bonus(p_rang int)
+returns int language sql immutable as $$
+  select case p_rang when 1 then 5000 when 2 then 3000 when 3 then 1500 else 0 end
+$$;
+
+create or replace function public.bb_session_min_joueurs()
+returns int language sql immutable as $$ select 5 $$;
+
+create or replace function public.bb_points_sessions(p_mois text)
+returns table (player_id text, jour date, pts int)
+language plpgsql stable as $$
+begin
+  if to_regclass('public.bb_sessions') is null
+     or to_regclass('public.bb_session_joueurs') is null
+     or to_regclass('public.bb_session_reponses') is null then
+    return;
+  end if;
+  return query
+    select r.player_id,
+           (s.starts_at at time zone 'Europe/Paris')::date,
+           public.bb_session_bonus(r.rang)
+      from public.bb_sessions s
+      cross join lateral public.bb_session_classement(s.id) r
+     where to_char(s.starts_at at time zone 'Europe/Paris', 'YYYY-MM') = p_mois
+       and s.rounds is not null
+       and (s.rounds->-1->>'ends_at')::timestamptz < now() - interval '5 seconds'
+       and s.statut in ('complet', 'en_cours', 'termine')
+       and (select count(*) from public.bb_session_joueurs j where j.session_id = s.id)
+             >= public.bb_session_min_joueurs()
+       and r.rang <= 3
+       and r.bonnes_reponses >= 1;
+end $$;
+
+
 create or replace function public.bb_classement_mois(p_mois text)
 returns table (
   player_id text,
@@ -500,6 +555,12 @@ returns table (
        -- a remplacé la fonction ; on le remet, AU CUMUL SEULEMENT : septembre est
        -- clos et annoncé, on n'y touche pas.
        and not coalesce(g.vie_rachetee, false)
+    union all
+    -- GOAT SESSION : 5 000 / 3 000 / 1 500 points aux trois premiers de chaque session
+    -- (section 3 ter). Au cumul seulement.
+    select sp.player_id, sp.jour, 'goatsession' as mode, sp.pts
+      from public.bb_points_sessions(p_mois) sp
+     where p_mois >= (select debut from parametres)
   ),
   par_jour as (
     -- Total d'un joueur POUR UN JOUR = somme de ses meilleurs par mode ce jour-là.
@@ -836,6 +897,11 @@ returns table (
        and to_char(g.created_at at time zone 'Europe/Paris', 'YYYY-MM') = p_mois
        and p_mois >= (select debut from parametres)
        and not coalesce(g.vie_rachetee, false)
+    union all
+    select sp.player_id, sp.jour, 'goatsession' as mode, sp.pts
+      from public.bb_points_sessions(p_mois) sp
+     where sp.player_id = (select player_id from moi)
+       and p_mois >= (select debut from parametres)
   ),
   par_jour as (
     select jour, sum(pts) as pts_jour

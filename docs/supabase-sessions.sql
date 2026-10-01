@@ -30,8 +30,8 @@
 --   ⏳ Phase 3 : l'ouverture à l'heure PILE (pg_cron + Edge Function, PAS
 --      les cron GitHub Actions existants — trop de retard observé, voir
 --      docs/NOTIFICATIONS.md) + l'envoi de la notification juste avant.
---   ⏳ Phase 4 : les 5000 / 3000 / 1500 points, injectés dans
---      bb_classement_mois, à partir de bb_session_classement.
+--   ✅ Phase 4 : les 5000 / 3000 / 1500 points, CALCULÉS dans bb_classement_mois
+--      (supabase-classement.sql, section 3 ter) à partir de bb_session_classement.
 --
 -- ── POURQUOI PAS LE MÊME PATRON QUE bb_rooms ────────────────────────────
 --
@@ -234,6 +234,12 @@ begin
   -- aujourd'hui. `random() < 0.5` plutôt qu'un tableau + index : rien à
   -- tenir à jour si un 3e mode DUEL apparaît un jour (il faudra alors
   -- remplacer cette ligne, pas juste une constante).
+  -- Idempotente : un créneau a UNE session. Le créateur automatique
+  -- (scripts/creer-sessions.mjs) repasse tous les jours et ne doit jamais en doubler.
+  select id into v_id from public.bb_sessions
+   where starts_at = p_starts_at and statut <> 'annule' limit 1;
+  if v_id is not null then return v_id; end if;
+
   v_mode := case when random() < 0.5 then 'pont' else 'chaine' end;
 
   insert into public.bb_sessions (mode, starts_at, statut)
@@ -241,6 +247,24 @@ begin
   returning id into v_id;
 
   return v_id;
+end $$;
+
+-- ── LA CRÉATION EST RÉSERVÉE AU SERVEUR ───────────────────────────────────────
+-- Cette fonction n'avait AUCUN revoke : exécutable par `public`, donc par n'importe
+-- quel porteur de la clé publique (qui est dans l'app). N'importe qui pouvait créer
+-- des sessions à volonté. Elle ne se lance désormais qu'avec la clé de service
+-- (créateur automatique, ou éditeur SQL).
+revoke all on function public.bb_creer_session(timestamptz) from public;
+do $$ begin
+  if exists (select 1 from pg_roles where rolname = 'anon') then
+    execute 'revoke all on function public.bb_creer_session(timestamptz) from anon';
+  end if;
+  if exists (select 1 from pg_roles where rolname = 'authenticated') then
+    execute 'revoke all on function public.bb_creer_session(timestamptz) from authenticated';
+  end if;
+  if exists (select 1 from pg_roles where rolname = 'service_role') then
+    execute 'grant execute on function public.bb_creer_session(timestamptz) to service_role';
+  end if;
 end $$;
 
 
