@@ -81,6 +81,10 @@ create table if not exists public.bb_sessions (
 );
 create index if not exists bb_sessions_statut_idx on public.bb_sessions (statut, starts_at);
 
+-- Posé par scripts/notif-sessions.mjs au moment où le rappel « GOAT SESSION ce soir » part :
+-- c'est lui qui garantit UN seul rappel par session, même si le déclencheur passe deux fois.
+alter table public.bb_sessions add column if not exists rappel_envoye_le timestamptz;
+
 create table if not exists public.bb_session_joueurs (
   session_id  uuid not null references public.bb_sessions(id) on delete cascade,
   player_id   text not null,

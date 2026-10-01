@@ -31,7 +31,8 @@ scripts/push-io.mjs          ← le circuit : lecture paginée, chiffrement,
   ├── notif-amis.mjs         ← sondage /15 min : demande reçue ET acceptée
   ├── notif-inactivite.mjs   ← cron quotidien : 3 jours sans avoir joué
   ├── notif-podium.mjs       ← cron horaire : sorti du top 3 du mois
-  └── notif-gagnants.mjs    ← les 1er au 3 du mois : « bravo, réclame ton lot »
+  ├── notif-gagnants.mjs    ← les 1er au 3 du mois : « bravo, réclame ton lot »
+  └── notif-sessions.mjs    ← mer. et sam. de 16 h à 19 h UTC : « GOAT SESSION ce soir »
 ```
 
 Les **décisions** vivent dans `src/lib/push.js`, qui ne touche pas au réseau et se
@@ -140,6 +141,22 @@ main dans le SQL Editor serait lisible avec la clé publique.
 Cadence : les 1er, 2 et 3 du mois à 08:00 UTC, soit 10 h à Paris en été. Pas à
 l'heure de la clôture (03:00 UTC) : une victoire annoncée à 5 h du matin est un
 réveil. Rejouer est sans risque, la table de suivi empêche tout doublon.
+
+### `notif-sessions.mjs` — rappel « GOAT SESSION ce soir » (nouveau)
+
+```sql
+alter table public.bb_sessions add column if not exists rappel_envoye_le timestamptz;
+```
+
+Une notification, une seule fois par session, à tous les abonnés Web Push, dans les 40
+minutes avant le départ (plancher : 5 minutes). La session est « réclamée » par un UPDATE
+conditionnel (`rappel_envoye_le is null`) avant l'envoi : deux passages simultanés ne
+préviennent pas deux fois. Un rappel qui arriverait après le départ n'est jamais envoyé
+(les déclencheurs GitHub ont du retard). Le message dit les minutes restantes au moment de
+l'envoi. Le lien (`?play=session`) ouvre la liste des sessions.
+
+⚠️ **Web Push seulement.** L'app native n'a pas de plugin de push : ses joueurs ne reçoivent
+aucune notification, celle-ci comprise.
 
 Aucune règle RLS à toucher pour les trois premiers cas non plus : les
 envoyeurs utilisent la clé `service_role`, qui les contourne. Le client

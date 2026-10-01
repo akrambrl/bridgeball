@@ -883,3 +883,45 @@ describe("accrocheGagnant", () => {
     expect(jourParis("pas une date")).toBe("");
   });
 });
+
+// ── LE RAPPEL « GOAT SESSION CE SOIR » ────────────────────────────────────
+import { sessionsARappeler, accrocheSession } from "../lib/push.js";
+
+describe("sessionsARappeler", () => {
+  const T = Date.parse("2026-10-07T17:00:00Z");           // 19 h à Paris
+  const s = (minutes: number, o: any = {}) => ({ id: "s" + minutes, mode: "pont", statut: "ouvert",
+    rappel_envoye_le: null, starts_at: new Date(T + minutes * 60000).toISOString(), ...o });
+  it("rappelle une session qui commence dans la fenêtre de 5 à 40 minutes", () => {
+    expect(sessionsARappeler([s(30), s(10), s(40), s(5)], T).map((x) => x.id)).toEqual(["s30", "s10", "s40", "s5"]);
+  });
+  it("pas trop tôt, pas trop tard", () => {
+    expect(sessionsARappeler([s(41), s(120)], T)).toEqual([]);
+    expect(sessionsARappeler([s(4), s(1), s(-3)], T)).toEqual([]);
+  });
+  it("jamais deux fois : une session déjà rappelée est écartée", () => {
+    expect(sessionsARappeler([s(30, { rappel_envoye_le: "2026-10-07T16:40:00Z" })], T)).toEqual([]);
+  });
+  it("seulement les sessions ouvertes", () => {
+    expect(sessionsARappeler([s(30, { statut: "annule" }), s(30, { statut: "complet" })], T)).toEqual([]);
+  });
+  it("ne casse pas sur des données incomplètes", () => {
+    expect(sessionsARappeler(null as any, T)).toEqual([]);
+    expect(sessionsARappeler([null as any, { statut: "ouvert", starts_at: "n'importe quoi" }], T)).toEqual([]);
+  });
+});
+
+describe("accrocheSession", () => {
+  const T = Date.parse("2026-10-07T17:00:00Z");
+  it("donne l'heure de Paris, le mode et le temps restant", () => {
+    const { titre, corps } = accrocheSession({ mode: "chaine", starts_at: "2026-10-07T17:30:00Z" }, T);
+    expect(titre).toBe("🏟️ GOAT SESSION à 19h30");
+    expect(corps).toBe("Ça commence dans 30 min. Ce soir : GOAT Mercato. 50 places, 3 manches — réserve la tienne !");
+  });
+  it("l'heure d'hiver reste 19h30 à Paris", () => {
+    expect(accrocheSession({ mode: "pont", starts_at: "2026-11-04T18:30:00Z" }, Date.parse("2026-11-04T18:00:00Z")).titre)
+      .toBe("🏟️ GOAT SESSION à 19h30");
+  });
+  it("dit GOAT Plug pour le mode pont", () => {
+    expect(accrocheSession({ mode: "pont", starts_at: "2026-10-07T17:30:00Z" }, T).corps).toContain("GOAT Plug");
+  });
+});

@@ -1,0 +1,47 @@
+# Rappel « GOAT SESSION ce soir » : une notification, dans les 40 minutes avant le départ.
+#
+# Les sessions ont lieu le mercredi et le samedi à 19 h 30, heure de Paris, soit 17 h 30 UTC l'été et
+# 18 h 30 UTC l'hiver : on repasse toutes les ~10 minutes de 16 h à 19 h UTC ces deux jours. Les
+# minutes sont décalées (7, 17, 27…) parce que les déclencheurs pile à l'heure sont les plus en retard.
+# Un rappel qui arriverait après le départ n'est jamais envoyé (scripts/notif-sessions.mjs).
+#
+# Mêmes secrets que les autres circuits : SB_SERVICE_KEY et VAPID_PRIVATE_KEY.
+# SQL à jouer avant : la colonne rappel_envoye_le (docs/supabase-sessions.sql).
+name: Rappel sessions
+
+on:
+  schedule:
+    - cron: "7,17,27,37,47,57 16-18 * * 3,6"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Simuler sans rien envoyer ni marquer"
+        type: boolean
+        default: true
+
+concurrency:
+  group: notif-sessions
+  cancel-in-progress: false
+
+jobs:
+  envoyer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: npm
+      - name: Installer les dépendances
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+        run: npm ci
+      - name: Envoyer
+        env:
+          SB_SERVICE_KEY: ${{ secrets.SB_SERVICE_KEY }}
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+          VAPID_SUBJECT: https://goatfc.fr
+        run: |
+          npx tsx scripts/notif-sessions.mjs \
+            ${{ (github.event_name == 'workflow_dispatch' && inputs.dry_run) && '--dry-run' || '' }}
