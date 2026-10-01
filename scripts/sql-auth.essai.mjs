@@ -231,6 +231,17 @@ dire(!r.ok && /autre compte/.test(r.erreur || ""),
   "un TIERS sans le code reste refusé, même après le second appareil",
   "→ " + (r.erreur || "PASSÉ !"));
 
+// ── 6 ter. LE JOUEUR DE L'APPAREIL (GOAT Session et les fonctions par auth.uid()) ─
+const joueurDe = async (uid) => (await psql(["-tAc",
+  `select set_config('essai.uid', '${uid || ""}', false); select coalesce(public.bb_joueur_courant(), 'AUCUN')`],
+  BASE)).trim().split("\n").pop().trim();
+dire(await joueurDe(APP) === "AAA111", "bb_joueur_courant retrouve le joueur depuis le compte PRINCIPAL (l'app)");
+dire(await joueurDe(JULES) === "AAA111",
+  "bb_joueur_courant retrouve aussi le joueur depuis l'ANCIEN appareil (le site)",
+  "← sinon GOAT Session répondait « compte introuvable » sur l'appareil qui n'est plus principal");
+dire(await joueurDe(PIRATE) !== "AAA111", "bb_joueur_courant ne donne PAS ce joueur à un tiers");
+dire(await joueurDe(null) === "AUCUN", "bb_joueur_courant ne rend rien sans jeton");
+
 // ── 7. bb_pseudos EN UPDATE : PLUS GRAVE QU'UN FAUX SCORE ───────────────────
 r = await tenter(`update public.bb_pseudos set xp = 999999 where player_id = 'AAA111'`,
   { role: "authenticated", uid: PIRATE });

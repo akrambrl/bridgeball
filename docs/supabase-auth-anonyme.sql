@@ -292,6 +292,21 @@ create index if not exists bb_pseudos_appareils_player_idx
 alter table public.bb_pseudos_appareils enable row level security;
 revoke all on public.bb_pseudos_appareils from anon, authenticated;
 
+-- Le joueur de l'appareil qui appelle : le compte PRINCIPAL d'un pseudo, ou un des
+-- appareils déjà prouvés. Les fonctions qui retrouvent le joueur par auth.uid()
+-- (GOAT Session…) doivent passer par ici : elles cherchaient `bb_pseudos.auth_uid`
+-- seul, et un joueur qui change d'appareil — ou dont l'appareil n'est plus le
+-- principal — recevait « compte introuvable » alors que son compte existe.
+create or replace function public.bb_joueur_courant()
+returns text language sql stable security definer set search_path = public as $$
+  select coalesce(
+    (select player_id from public.bb_pseudos where auth_uid = auth.uid() limit 1),
+    (select player_id from public.bb_pseudos_appareils where auth_uid = auth.uid() limit 1)
+  )
+$$;
+revoke all on function public.bb_joueur_courant() from public;
+grant execute on function public.bb_joueur_courant() to anon, authenticated;
+
 create or replace function public.lier_compte(p_player_id text, p_code text)
 returns text language plpgsql security definer set search_path = public as $$
 declare l record; moi uuid := auth.uid(); code_ok boolean;
