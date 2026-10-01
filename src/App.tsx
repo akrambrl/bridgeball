@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Index from "./pages/Index.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import MiseAJour from "./components/MiseAJour";
 
 const queryClient = new QueryClient();
 
@@ -13,6 +14,8 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
+      {/* Mise à jour obligatoire ou conseillée : app native seulement (voir src/lib/version.ts). */}
+      <MiseAJour />
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
