@@ -13999,8 +13999,11 @@ export default function LePont() {
               {hallOfFame.slice(0,5).map(function(s,i){
 
                 let monthShort = tr("Saison "+s.season_number,"Season "+s.season_number,"Saison "+s.season_number,"Stagione "+s.season_number,"Temporada "+s.season_number,"Temporada "+s.season_number);
-                if (s.season_month) {
-                  const [y, m] = s.season_month.split("-");
+                // `season_month` est NULL sur les lignes écrites par la clôture
+                // serveur : le mois se déduit alors du numéro de saison.
+                const moisCle = s.season_month || moisDeLaSaison(s.season_number);
+                if (moisCle) {
+                  const [y, m] = moisCle.split("-");
                   monthShort = nomMois(parseInt(m,10)-1, lang, true) + " " + y.slice(2);
                 }
                 return (
@@ -14049,8 +14052,9 @@ export default function LePont() {
               // Transformer le monthKey "2026-04" en nom lisible
 
               let monthLabel = "";
-              if (s.season_month) {
-                const [y, m] = s.season_month.split("-");
+              const moisCle = s.season_month || moisDeLaSaison(s.season_number);
+              if (moisCle) {
+                const [y, m] = moisCle.split("-");
                 const mi = parseInt(m,10) - 1;
                 monthLabel = nomMois(mi, lang) + " " + y;
               }
