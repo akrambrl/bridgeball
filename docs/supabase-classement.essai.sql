@@ -45,7 +45,11 @@ create table public.bb_gg_scores (
   player_id  text not null,
   score      integer,
   max_score  integer,
-  created_at timestamptz not null default now()
+  seed_date  date not null default current_date,
+  created_at timestamptz not null default now(),
+  -- La contrainte de PRODUCTION avant la grille libre : une ligne par joueur et par
+  -- jour. Le fichier doit la remplacer.
+  constraint bb_gg_scores_player_id_seed_date_key unique (player_id, seed_date)
 );
 
 -- TOUTES les colonnes que l'app écrit, parce que la section 6 rend le droit
@@ -136,8 +140,9 @@ select j.pid, j.nom, m.mode, m.val + (d * 7),
        (values ('pont', 220), ('chaine', 130), ('findscore', 2000)) as m(mode, val),
        generate_series(0, 4) as d;
 
-insert into public.bb_gg_scores (player_id, score, max_score, created_at)
+insert into public.bb_gg_scores (player_id, score, max_score, seed_date, created_at)
 select j.pid, 6 + d, 9,
+       (date_trunc('month', now()) + (d || ' days')::interval)::date,
        date_trunc('month', now()) + (d || ' days')::interval + interval '15 hours'
   from (values ('p1'), ('p2'), ('p3')) as j(pid), generate_series(0, 3) as d;
 
@@ -208,6 +213,14 @@ insert into public.bb_scores (player_id, player_name, mode, score, created_at)
 select 'panon','Anonyme','pont',1000,
        date_trunc('month', now()) + interval '5 days' + (n || ' minutes')::interval + interval '9 hours'
   from generate_series(0, 29) as n;
+
+-- GOAT GRID LIBRE. `pgrid` joue sa grille du jour (900/1000). Les grilles LIBRES
+-- sont posées par le banc APRÈS l'application du fichier : avant lui, la table
+-- n'a que la contrainte d'avant (une ligne par joueur et par jour), qui les refuse.
+insert into public.bb_pseudos (player_id, pseudo) values ('pgrid','grilleur');
+insert into public.bb_gg_scores (player_id, score, max_score, seed_date, created_at)
+values ('pgrid', 900, 1000, (date_trunc('month', now()) + interval '6 days')::date,
+        date_trunc('month', now()) + interval '6 days' + interval '9 hours');
 
 -- `pcap` retrouvé par identité, pour bb_mes_jours (qui n'accepte pas de player_id).
 update public.bb_pseudos set auth_uid = '00000000-0000-0000-0000-0000000000c1'
