@@ -72,6 +72,8 @@ export async function initNative(): Promise<void> {
     // d'un autre appli) : voir recalerVueNative.
     App.addListener("appStateChange", ({ isActive }) => { if (isActive) void recalerVueNative(); });
   } catch {}
+  // Filet pour tout le reste : voir surveillerVueNative.
+  surveillerVueNative();
   try {
     // Bouton retour matériel (Android) : ne pas quitter l'app par accident.
     App.addListener("backButton", ({ canGoBack }) => {
@@ -105,6 +107,46 @@ export async function recalerVueNative(): Promise<void> {
     await StatusBar.setOverlaysWebView({ overlay: true });
     await StatusBar.setOverlaysWebView({ overlay: false });
   } catch {}
+}
+
+/**
+ * La webview est-elle remontée SOUS la barre d'état ?
+ *
+ * Sous la barre, la vue web occupe tout l'écran : `window.innerHeight` rejoint
+ * `screen.height`. Posée comme il faut (overlay désactivé), elle est plus basse
+ * d'une barre d'état. C'est la signature du défaut — l'en-tête passe sous l'horloge
+ * et le bouton retour n'est plus touchable (signalé sur l'écran Classement, après
+ * une pub plein écran).
+ *
+ * Pure, pour s'éprouver sans navigateur. Les valeurs nulles ou absentes (hors
+ * coque, test) ne déclenchent jamais rien.
+ */
+export function vueDecalee(innerHeight: number, screenHeight: number): boolean {
+  if (!(innerHeight > 0) || !(screenHeight > 0)) return false;
+  return innerHeight >= screenHeight - 1;
+}
+
+let surveillanceArmee = false;
+
+/**
+ * Surveille la webview et la remet en place dès qu'elle remonte sous la barre
+ * d'état — quelle que soit la cause (pub plein écran, feuille de partage, appli
+ * tierce). `recalerVueNative` ne servait qu'à deux moments précis (reprise de l'app,
+ * retour à l'accueil) : tout le reste passait entre les mailles. Le contrôle est un
+ * simple test de hauteurs, donc il peut tourner souvent sans rien coûter, et il ne
+ * touche la barre d'état QUE si le défaut est là — pas de clignotement sinon.
+ *
+ * iOS seulement, une seule fois.
+ */
+export function surveillerVueNative(): void {
+  if (surveillanceArmee || !isNative() || Capacitor.getPlatform() !== "ios") return;
+  surveillanceArmee = true;
+  const verifier = () => {
+    try { if (vueDecalee(window.innerHeight, window.screen.height)) void recalerVueNative(); } catch {}
+  };
+  try { setInterval(verifier, 2000); } catch {}
+  try { window.addEventListener("resize", verifier); } catch {}
+  try { document.addEventListener("visibilitychange", verifier); } catch {}
 }
 
 /**
