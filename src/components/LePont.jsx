@@ -31,6 +31,8 @@ import { coffreSauver, coffreLire, coffreEffacer } from "../lib/coffre";
 import { duelTermine } from "../lib/duel";
 // Invitation à créer un pseudo après une partie : quand la proposer, sans harceler.
 import { faut_il_inviter } from "../lib/pseudo-invite";
+// Limite de parties par jour sur le site (navigateur et PWA) : l'app n'en a pas.
+import { lancerPartieWeb, LIMITE_PARTIES_WEB } from "../lib/limite-web";
 // Réclamation du lot : les règles (qui peut réclamer, pour quel mois, ce qu'on
 // accepte comme saisie) et le tirage sûr du code de récupération.
 import { saisonDoteeRecente, lotPourRang, rangDans, moisDeLaSaison, libellePlace,
@@ -6440,7 +6442,7 @@ export default function LePont() {
       }
       if (play === "pont" || play === "plug") {
         setGameMode("pont");
-        startRound(1, reqDiff);
+        if (partieWebAutorisee()) startRound(1, reqDiff);
       } else if (play === "chaine" || play === "mercato") {
         setGameMode("chaine");
         startChain(reqDiff);
@@ -6765,6 +6767,9 @@ export default function LePont() {
   const [pseudoScreen, setPseudoScreen] = useState(false); // show pseudo creation screen
   // Pop-up « crée ton pseudo » proposé APRÈS une partie jouée sans compte.
   const [invitePseudo, setInvitePseudo] = useState(false);
+  // Pop-up « tes parties du jour sur le site sont jouées — passe sur l'app ».
+  const [limiteWeb, setLimiteWeb] = useState(false);
+  const [cleCopiee, setCleCopiee] = useState(false);
   // Code de récupération : stocké en localStorage après création pour retrouver son compte
   const [recoveryCode, setRecoveryCode] = useState(() => { try { return localStorage.getItem("bb_recovery_code") || ""; } catch { return ""; } });
   const [showRecoveryCodeModal, setShowRecoveryCodeModal] = useState(null); // {code:"GOATFC-XXXX-YYYY"} pour affichage après création
@@ -9862,6 +9867,13 @@ export default function LePont() {
     window.addEventListener("goatfc:pseudo-requis", onRequis);
     return function() { clearTimeout(t); window.removeEventListener("goatfc:pseudo-requis", onRequis); };
   }, []);
+  // « Trouve le joueur » vit dans un overlay hors de LePont : il prévient par
+  // événement quand la limite du site est atteinte.
+  React.useEffect(function() {
+    function onLimite() { setLimiteWeb(true); }
+    window.addEventListener("goatfc:limite-web", onLimite);
+    return function() { window.removeEventListener("goatfc:limite-web", onLimite); };
+  }, []);
   React.useEffect(function() {
     if (screen !== "final" && screen !== "chainEnd") return;
     const t = setTimeout(function(){ proposerPseudoRef.current && proposerPseudoRef.current(); }, 1200);
@@ -10159,7 +10171,19 @@ export default function LePont() {
     setTimeout(()=>inputRef.current?.focus(),200);
   }
 
+  // Trois parties par jour sur le site. Les duels et salons en ligne (un vrai
+  // adversaire attend) et l'app native n'ont pas de limite. Retourne false — et
+  // ouvre l'invitation à passer sur l'app — quand la limite est atteinte.
+  function partieWebAutorisee() {
+    if (activeDuelRef.current) return true;
+    let storage = null;
+    try { storage = localStorage; } catch (_) {}
+    if (lancerPartieWeb({ natif: isNative(), storage }).autorise) return true;
+    setLimiteWeb(true);
+    return false;
+  }
   function startChain(diffOverride) {
+    if (!partieWebAutorisee()) return;
     trackPlay("chaine", !!activeDuelRef.current); // en ligne si duel/salon actif
     setDefiPoste(null);
     roundStartTime.current = null;
@@ -10235,6 +10259,7 @@ export default function LePont() {
   }
 
   function startCompetition() {
+    if (!partieWebAutorisee()) return;
     trackPlay("pont", !!activeDuelRef.current); // en ligne si duel/salon actif
     setDefiPoste(null);
     setCombo(0); setMaxCombo(0); comboRef.current=0; lastAnswerTime.current=Date.now();
@@ -14455,6 +14480,103 @@ export default function LePont() {
 
 
   // ── PSEUDO MODAL (first time only) ──
+  // ── LE POP-UP « TES PARTIES DU JOUR SUR LE SITE SONT JOUÉES » ──────────────
+  // Posé au-dessus de tout (z-index 415). Il fait deux choses : envoyer vers
+  // l'app (badges officiels des stores) et permettre d'y RETROUVER SON COMPTE —
+  // la clé de récupération est affichée et copiable ici, pour être collée sur
+  // l'écran « J'ai déjà un compte » de l'app. Sans clé (pas encore de pseudo),
+  // il propose d'en créer un : c'est la création qui la fabrique.
+  function copierLaCle() {
+    const fin = function(){ setCleCopiee(true); setTimeout(function(){ setCleCopiee(false); }, 2500); };
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(recoveryCode).then(fin, fin); return; }
+    } catch (_) {}
+    try {
+      const ta = document.createElement("textarea");
+      ta.value = recoveryCode; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta);
+    } catch (_) {}
+    fin();
+  }
+  const limiteWebModal = limiteWeb && !isNative() ? (function(){
+    const badgeApple = (
+      <a href={APP_STORE_URL} target="_blank" rel="noopener noreferrer" style={{display:"block"}}>
+        <img src="/liens/app-store.svg" height="52" alt="App Store" style={{display:"block",height:52,width:"auto"}}/>
+      </a>);
+    const badgeGoogle = (
+      <a href={PLAY_STORE_URL} target="_blank" rel="noopener noreferrer" style={{display:"block"}}>
+        <img src="/liens/google-play.webp" alt="Google Play" style={{display:"block",height:68,width:"auto",margin:"-8px 0"}}/>
+      </a>);
+    const ordre = isAndroid() ? [badgeGoogle, badgeApple] : [badgeApple, badgeGoogle];
+    return (
+      <div style={{position:"fixed",inset:0,zIndex:415,background:"rgba(8,17,9,.9)",display:"flex",
+        alignItems:"center",justifyContent:"center",padding:16,overflowY:"auto"}}>
+        <div style={{width:"100%",maxWidth:380,background:G.nuit,borderRadius:28,padding:"26px 20px 18px",
+          border:G.traitFin,boxShadow:G.ombreL,textAlign:"center",maxHeight:"94dvh",overflowY:"auto"}}>
+          <div style={{fontSize:40,marginBottom:4}}>📲</div>
+          <div style={{...posterText(22,G.white),lineHeight:1.12,marginBottom:8}}>
+            {tr("Tes "+LIMITE_PARTIES_WEB+" parties du jour sont jouées","You've played your "+LIMITE_PARTIES_WEB+" games for today","Deine "+LIMITE_PARTIES_WEB+" Tagesspiele sind gespielt","Hai giocato le tue "+LIMITE_PARTIES_WEB+" partite di oggi","Você jogou suas "+LIMITE_PARTIES_WEB+" partidas de hoje","Has jugado tus "+LIMITE_PARTIES_WEB+" partidas de hoy")}
+          </div>
+          <div style={{fontSize:13.5,color:"rgba(242,231,206,.88)",lineHeight:1.5,marginBottom:14}}>
+            {tr("Le site est limité à "+LIMITE_PARTIES_WEB+" parties par jour. Passe sur l'app pour jouer sans limite et viser le maillot du mois.",
+                "The website is limited to "+LIMITE_PARTIES_WEB+" games a day. Get the app to play without limits and go for this month's shirt.",
+                "Die Website ist auf "+LIMITE_PARTIES_WEB+" Spiele pro Tag begrenzt. Hol dir die App, um unbegrenzt zu spielen und das Trikot des Monats zu holen.",
+                "Il sito è limitato a "+LIMITE_PARTIES_WEB+" partite al giorno. Passa all'app per giocare senza limiti e puntare alla maglia del mese.",
+                "O site está limitado a "+LIMITE_PARTIES_WEB+" partidas por dia. Baixe o app para jogar sem limites e disputar a camisa do mês.",
+                "La web está limitada a "+LIMITE_PARTIES_WEB+" partidas al día. Pásate a la app para jugar sin límites y optar a la camiseta del mes.")}
+          </div>
+
+          <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:8,marginBottom:16}}>
+            {ordre[0]}{ordre[1]}
+          </div>
+
+          {recoveryCode ? (
+            <div style={{background:"rgba(245,194,43,.12)",border:G.traitFin,borderRadius:16,padding:"12px 12px 14px",marginBottom:14}}>
+              <div style={{fontSize:11,color:G.projecteur,fontWeight:800,letterSpacing:1.2,marginBottom:6}}>
+                {tr("TA CLÉ DE RÉCUPÉRATION","YOUR RECOVERY KEY","DEIN WIEDERHERSTELLUNGSSCHLÜSSEL","LA TUA CHIAVE DI RECUPERO","SUA CHAVE DE RECUPERAÇÃO","TU CLAVE DE RECUPERACIÓN")}
+              </div>
+              <div style={{fontFamily:"ui-monospace, Menlo, monospace",fontSize:17,fontWeight:800,color:G.white,
+                letterSpacing:1.2,userSelect:"all",wordBreak:"break-all",marginBottom:10}}>{recoveryCode}</div>
+              <button onClick={copierLaCle} style={{...btn(cleCopiee?G.pelouse:G.projecteur,cleCopiee?G.white:G.encre,15),width:"100%",padding:"11px"}}>
+                {cleCopiee ? "✓ "+tr("Copiée","Copied","Kopiert","Copiata","Copiada","Copiada")
+                           : "📋 "+tr("Copier ma clé","Copy my key","Schlüssel kopieren","Copia la chiave","Copiar minha chave","Copiar mi clave")}
+              </button>
+              <div style={{fontSize:11.5,color:"rgba(242,231,206,.72)",lineHeight:1.5,marginTop:10}}>
+                {tr("Dans l'app, au moment de choisir ton pseudo, touche « J'ai déjà un compte » et colle ta clé : tu retrouves ton pseudo, ton XP et tes cartes. Ne la partage avec personne.",
+                    "In the app, when you're asked to choose a username, tap “I already have an account” and paste your key: you get your username, XP and cards back. Never share it with anyone.",
+                    "Tippe in der App bei der Namenswahl auf „Ich habe schon ein Konto“ und füge den Schlüssel ein: Name, XP und Karten sind wieder da. Teile ihn mit niemandem.",
+                    "Nell'app, quando scegli il nome, tocca «Ho già un account» e incolla la chiave: ritrovi nome, XP e carte. Non condividerla con nessuno.",
+                    "No app, ao escolher o nome, toque em «Já tenho uma conta» e cole a chave: recuperas o nome, o XP e as cartas. Não a partilhes com ninguém.",
+                    "En la app, al elegir tu nombre, toca «Ya tengo una cuenta» y pega la clave: recuperas tu nombre, tu XP y tus cartas. No la compartas con nadie.")}
+              </div>
+            </div>
+          ) : (
+            <div style={{background:"rgba(245,194,43,.12)",border:G.traitFin,borderRadius:16,padding:"12px 12px 14px",marginBottom:14}}>
+              <div style={{fontSize:12.5,color:"rgba(242,231,206,.85)",lineHeight:1.5,marginBottom:10}}>
+                {tr("Tu n'as pas encore de compte : crée ton pseudo pour recevoir ta clé de récupération et retrouver ta progression dans l'app.",
+                    "You don't have an account yet: create your username to get your recovery key and carry your progress to the app.",
+                    "Du hast noch kein Konto: Erstelle deinen Namen, um deinen Wiederherstellungsschlüssel zu erhalten und deinen Fortschritt in die App mitzunehmen.",
+                    "Non hai ancora un account: crea il tuo nome per ricevere la chiave di recupero e portare i progressi nell'app.",
+                    "Ainda não tens conta: cria o teu nome para receber a chave de recuperação e levar o teu progresso para o app.",
+                    "Aún no tienes cuenta: crea tu nombre para recibir tu clave de recuperación y llevar tu progreso a la app.")}
+              </div>
+              <button onClick={function(){ setLimiteWeb(false); setPseudoScreen(true); }}
+                style={{...btn(G.projecteur,G.encre,15),width:"100%",padding:"11px"}}>
+                {tr("Créer mon pseudo","Create my username","Namen erstellen","Crea il mio nome","Criar meu nome","Crear mi nombre")}
+              </button>
+            </div>
+          )}
+
+          <button onClick={function(){ setLimiteWeb(false); }}
+            style={{background:"none",border:"none",color:"rgba(242,231,206,.6)",fontFamily:G.font,fontSize:13,
+              fontWeight:700,cursor:"pointer",padding:"6px"}}>
+            {tr("Fermer","Close","Schließen","Chiudi","Fechar","Cerrar")}
+          </button>
+        </div>
+      </div>
+    );
+  })() : null;
+
   // ── LE POP-UP « CRÉE TON PSEUDO » ──────────────────────────────────────────
   // Posé AU-DESSUS de tout (z-index 410 : « Trouve le joueur » est à 200, la
   // création de pseudo à 400). Panneau sombre, où le crème se lit ; le bouton est
@@ -15519,6 +15641,7 @@ export default function LePont() {
 
       {pseudoModal}
       {invitePseudoModal}
+      {limiteWebModal}
       {recoveryCodeAfterCreationModal}
       {recoveryInputModal}
       {myRecoveryCodeModal}
@@ -15644,6 +15767,7 @@ export default function LePont() {
       {areneCharte}
       {pseudoModal}
       {invitePseudoModal}
+      {limiteWebModal}
       {recoveryCodeAfterCreationModal}
       {recoveryInputModal}
       {myRecoveryCodeModal}
@@ -18649,6 +18773,7 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
       {openNotifBanner}
       {pseudoModal}
       {invitePseudoModal}
+      {limiteWebModal}
       {recoveryCodeAfterCreationModal}
       {recoveryInputModal}
       {myRecoveryCodeModal}

@@ -15,6 +15,7 @@ import { chercheJoueurs } from "@/lib/nom";
 import { nettoyerVus } from "@/lib/tirage.js";
 import { parisDay, poolDevinette, joueurDuJour, MODERN_MIN_BY, nbClubs } from "@/lib/devinette.js";
 import { handlersDeTap } from "@/lib/tap.js";
+import { lancerPartieWeb } from "@/lib/limite-web.js";
 
 const SPELL_NAMES = Object.keys(CLUB_SPELLS);
 
@@ -398,6 +399,21 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
 
   useEffect(() => { trackPlay(daily ? "devinette" : "reveal"); }, []); // suivi dédié
 
+  // Sur le site, trois parties par jour (jamais dans l'app native, ni pour la
+  // Devinette du jour, qui est déjà limitée à une par jour). La première manche
+  // est comptée à l'ouverture, SAUF si on reprend une manche en cours (`saved`) :
+  // recharger la page ne doit pas coûter une partie. Limite atteinte : on referme
+  // et LePont affiche l'invitation à passer sur l'app.
+  useEffect(() => {
+    if (daily || saved) return;
+    let storage: Storage | null = null;
+    try { storage = localStorage; } catch { /* noop */ }
+    if (!lancerPartieWeb({ natif: isNative(), storage }).autorise) {
+      try { window.dispatchEvent(new CustomEvent("goatfc:limite-web")); } catch { /* noop */ }
+      onClose();
+    }
+  }, []);
+
   // Devinette du jour terminée → on enregistre la journée dans la série
   // quotidienne (idempotent : rejouer/recharger le même jour ne compte pas
   // deux fois). C'est ce qui fait revenir les joueurs chaque jour.
@@ -689,6 +705,13 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
   // Mode illimité : nouvelle manche avec un joueur au hasard. (Désactivé « du jour ».)
   function playAgain() {
     if (daily) return;
+    let storage: Storage | null = null;
+    try { storage = localStorage; } catch { /* noop */ }
+    if (!lancerPartieWeb({ natif: isNative(), storage }).autorise) {
+      try { window.dispatchEvent(new CustomEvent("goatfc:limite-web")); } catch { /* noop */ }
+      onClose();
+      return;
+    }
     setAnswer(randomPlayer(vus));
     setGuesses([]);
     setOver(false);
