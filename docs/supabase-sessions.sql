@@ -4,7 +4,7 @@
 --
 -- Deux rendez-vous par semaine (ex. mercredi 19h, samedi 16h, heure de
 -- Paris) : un salon de 50 places sur un mode GOAT DUEL tiré au sort (Plug ou
--- Mercato), 3 manches, réservé à qui a activé les notifications. Premier
+-- Mercato), 3 manches, ouvert à tous les joueurs ayant un pseudo. Premier
 -- arrivé, premier servi ; une fois 50 dedans, le salon se ferme et démarre.
 -- Le vainqueur touche 5000 points au classement, 3000 pour le 2e, 1500 pour
 -- le 3e — un vrai bonus HORS barème normalisé (section 4 de
@@ -170,9 +170,17 @@ begin
     return query select ('statut_'||v_statut)::text, null::int; return;
   end if;
 
-  if not exists (select 1 from public.bb_push_subscriptions where player_id = v_player_id) then
-    return query select 'notifs_requises'::text, null::int; return;
-  end if;
+  -- ── PLUS D'EXIGENCE DE NOTIFICATIONS POUR REJOINDRE ───────────────────────
+  -- Cette fonction refusait (« notifs_requises ») tout joueur absent de
+  -- bb_push_subscriptions. Or cette table ne contient que des abonnements Web Push
+  -- (navigateur / PWA) : l'app native (Capacitor) n'a pas de plugin de push, donc
+  -- AUCUN joueur de l'app ne pouvait s'y inscrire — et le bouton « Activer les
+  -- notifications » ne faisait rien. Les trois gagnants de septembre, joueurs
+  -- réguliers, n'avaient d'ailleurs aucun abonnement. La contrepartie (une
+  -- notification juste avant la session) n'existe pas non plus : la Phase 3 n'est
+  -- pas construite. Exiger ce qu'on ne peut ni obtenir ni utiliser ne protégeait
+  -- rien et excluait tout le monde. Les notifications restent proposées dans
+  -- l'écran ; elles ne conditionnent plus l'inscription.
 
   -- LE VERROU DE CAPACITÉ : un UPDATE sur une ligne unique. Deux joueurs
   -- qui arrivent à la microseconde près sont sérialisés par Postgres lui-
@@ -263,9 +271,8 @@ grant select on public.bb_sessions, public.bb_session_joueurs to anon, authentic
 --    ou en simulant l'auth.uid() — voir supabase-auth.essai.sql) :
 --    select * from public.bb_rejoindre_session('<id de la session>');
 --
--- c) Vérifier qu'un joueur SANS abonnement push est bien refusé :
---    select * from public.bb_rejoindre_session('<id>') ; -- doit renvoyer
---    'notifs_requises' pour un player_id absent de bb_push_subscriptions.
+-- c) Un joueur SANS abonnement push peut rejoindre (l'app native n'en a pas) :
+--    select * from public.bb_rejoindre_session('<id>') ; -- doit renvoyer 'ok'.
 --
 -- d) Vérifier qu'aucune écriture directe n'est possible :
 --    insert into public.bb_session_joueurs values ('<id>', 'triche', now());
