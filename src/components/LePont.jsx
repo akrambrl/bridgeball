@@ -29,6 +29,8 @@ import { formatNombre } from "../lib/lang";
 import { initAuth, jetonAuth, authActive, lierCompte } from "../lib/auth";
 import { coffreSauver, coffreLire, coffreEffacer } from "../lib/coffre";
 import { duelTermine } from "../lib/duel";
+// Invitation à créer un pseudo après une partie : quand la proposer, sans harceler.
+import { faut_il_inviter } from "../lib/pseudo-invite";
 // Réclamation du lot : les règles (qui peut réclamer, pour quel mois, ce qu'on
 // accepte comme saisie) et le tirage sûr du code de récupération.
 import { saisonDoteeRecente, lotPourRang, rangDans, moisDeLaSaison, libellePlace,
@@ -6761,6 +6763,8 @@ export default function LePont() {
 
   const [qTimeLeft, setQTimeLeft] = useState(5);
   const [pseudoScreen, setPseudoScreen] = useState(false); // show pseudo creation screen
+  // Pop-up « crée ton pseudo » proposé APRÈS une partie jouée sans compte.
+  const [invitePseudo, setInvitePseudo] = useState(false);
   // Code de récupération : stocké en localStorage après création pour retrouver son compte
   const [recoveryCode, setRecoveryCode] = useState(() => { try { return localStorage.getItem("bb_recovery_code") || ""; } catch { return ""; } });
   const [showRecoveryCodeModal, setShowRecoveryCodeModal] = useState(null); // {code:"GOATFC-XXXX-YYYY"} pour affichage après création
@@ -9833,6 +9837,36 @@ export default function LePont() {
     // de CARTE, ce qui rendrait la même mécanique de rétention avec un visuel en
     // plus. À décider séparément.
   }
+
+  // ── « CRÉE TON PSEUDO » APRÈS UNE PARTIE ──────────────────────────────────
+  // Beaucoup de joueurs du classement du mois apparaissent comme « ? » : ils jouent
+  // sans pseudo, donc sans pouvoir être reconnus — ni réclamer un lot. Deux
+  // sources : « Trouve le joueur » et la Devinette (qui envoient leur score sous
+  // « Anonyme » et préviennent par l'événement goatfc:pseudo-requis), et les
+  // écrans de fin de LePont (Plug, Mercato). La règle du répit (un quart d'heure
+  // entre deux invitations) est dans src/lib/pseudo-invite.js.
+  const pseudoConfirmedRef = React.useRef(pseudoConfirmed);
+  pseudoConfirmedRef.current = pseudoConfirmed;
+  const proposerPseudoRef = React.useRef(null);
+  proposerPseudoRef.current = function() {
+    let derniere = null;
+    try { derniere = localStorage.getItem("bb_invite_pseudo_at"); } catch (_) {}
+    if (!faut_il_inviter({ aPseudo: pseudoConfirmedRef.current, derniereInvitation: derniere })) return;
+    try { localStorage.setItem("bb_invite_pseudo_at", String(Date.now())); } catch (_) {}
+    setInvitePseudo(true);
+  };
+  React.useEffect(function() {
+    let t = null;
+    // Un court délai laisse le joueur lire son résultat avant de lui parler.
+    function onRequis() { clearTimeout(t); t = setTimeout(function(){ proposerPseudoRef.current && proposerPseudoRef.current(); }, 1200); }
+    window.addEventListener("goatfc:pseudo-requis", onRequis);
+    return function() { clearTimeout(t); window.removeEventListener("goatfc:pseudo-requis", onRequis); };
+  }, []);
+  React.useEffect(function() {
+    if (screen !== "final" && screen !== "chainEnd") return;
+    const t = setTimeout(function(){ proposerPseudoRef.current && proposerPseudoRef.current(); }, 1200);
+    return function() { clearTimeout(t); };
+  }, [screen]);
 
   // Les overlays « Trouve le joueur » (FindPlayer) tournent par-dessus LePont et
   // n'ont pas accès à addXp. Ils émettent goatfc:award-xp quand une manche est
@@ -14421,6 +14455,40 @@ export default function LePont() {
 
 
   // ── PSEUDO MODAL (first time only) ──
+  // ── LE POP-UP « CRÉE TON PSEUDO » ──────────────────────────────────────────
+  // Posé AU-DESSUS de tout (z-index 410 : « Trouve le joueur » est à 200, la
+  // création de pseudo à 400). Panneau sombre, où le crème se lit ; le bouton est
+  // en or avec l'encre, la seule combinaison lisible sur l'or.
+  const invitePseudoModal = invitePseudo && !pseudoConfirmed ? (
+    <div style={{position:"fixed",inset:0,zIndex:410,background:"rgba(8,17,9,.86)",display:"flex",
+      alignItems:"center",justifyContent:"center",padding:20}}>
+      <div style={{width:"100%",maxWidth:360,background:G.nuit,borderRadius:28,padding:"28px 22px 22px",
+        border:G.traitFin,boxShadow:G.ombreL,textAlign:"center"}}>
+        <div style={{fontSize:42,marginBottom:6}}>🏆</div>
+        <div style={{...posterText(24,G.white),lineHeight:1.1,marginBottom:10}}>
+          {tr("Ton score n'est pas à ton nom","Your score isn't under your name","Dein Score läuft nicht unter deinem Namen","Il tuo punteggio non è a tuo nome","Sua pontuação não está no seu nome","Tu puntuación no está a tu nombre")}
+        </div>
+        <div style={{fontSize:14,color:"rgba(242,231,206,.88)",lineHeight:1.55,marginBottom:18}}>
+          {tr("Sans compte, tu apparais comme « ? » au classement et tu ne peux pas recevoir de lot. Crée ton pseudo en 10 secondes pour jouer le concours du mois.",
+              "Without an account you show up as “?” on the leaderboard and can't receive a prize. Create your username in 10 seconds to enter this month's contest.",
+              "Ohne Konto erscheinst du in der Rangliste als „?“ und kannst keinen Preis erhalten. Erstelle in 10 Sekunden deinen Namen, um am Monatswettbewerb teilzunehmen.",
+              "Senza account compari come «?» in classifica e non puoi ricevere premi. Crea il tuo nome in 10 secondi per partecipare al concorso del mese.",
+              "Sem conta, apareces como «?» no ranking e não podes receber prémios. Cria o teu nome em 10 segundos para entrares no concurso do mês.",
+              "Sin cuenta apareces como «?» en la clasificación y no puedes recibir premios. Crea tu nombre en 10 segundos para entrar en el concurso del mes.")}
+        </div>
+        <button onClick={function(){ setInvitePseudo(false); setPseudoScreen(true); }}
+          style={{...btn(G.projecteur,G.encre,18),width:"100%",padding:"14px",marginBottom:10}}>
+          {tr("Créer mon pseudo","Create my username","Namen erstellen","Crea il mio nome","Criar meu nome","Crear mi nombre")}
+        </button>
+        <button onClick={function(){ setInvitePseudo(false); }}
+          style={{background:"none",border:"none",color:"rgba(242,231,206,.6)",fontFamily:G.font,fontSize:13,
+            fontWeight:700,cursor:"pointer",padding:"8px"}}>
+          {tr("Plus tard","Later","Später","Più tardi","Mais tarde","Más tarde")}
+        </button>
+      </div>
+    </div>
+  ) : null;
+
   const pseudoModal = pseudoScreen ? (
     <div style={{position:"fixed",inset:0,zIndex:400,background:"rgba(8,17,9,.86)",display:"flex",alignItems:"center",justifyContent:"center"}}>
       <div style={{width:"calc(100% - 40px)",maxWidth:360,background:G.nuit,borderRadius:28,padding:"32px 24px",border:G.traitFin,position:"relative"}}>
@@ -15450,6 +15518,7 @@ export default function LePont() {
       </div>
 
       {pseudoModal}
+      {invitePseudoModal}
       {recoveryCodeAfterCreationModal}
       {recoveryInputModal}
       {myRecoveryCodeModal}
@@ -15574,6 +15643,7 @@ export default function LePont() {
       background:fondCharte}}>
       {areneCharte}
       {pseudoModal}
+      {invitePseudoModal}
       {recoveryCodeAfterCreationModal}
       {recoveryInputModal}
       {myRecoveryCodeModal}
@@ -18578,6 +18648,7 @@ export default function LePont() {
 const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{...shell,animation:"fadeUp .4s ease",...ecranDefilant,background:fondCharte}} key={isChain?"chainEnd":"final"}>
       {openNotifBanner}
       {pseudoModal}
+      {invitePseudoModal}
       {recoveryCodeAfterCreationModal}
       {recoveryInputModal}
       {myRecoveryCodeModal}

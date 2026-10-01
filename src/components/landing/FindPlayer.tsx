@@ -461,6 +461,12 @@ export const FindPlayer = ({ onClose, daily = false }: { onClose: () => void; da
         keepalive: true,
       });
     } catch { /* noop */ }
+    // Sans pseudo, le score part sous « Anonyme » et le joueur apparaît au
+    // classement comme « ? ». LePont (qui possède le pseudo) lui propose d'en créer
+    // un ; c'est lui qui décide si le moment s'y prête.
+    if (!name.trim()) {
+      try { window.dispatchEvent(new CustomEvent("goatfc:pseudo-requis")); } catch { /* noop */ }
+    }
   }
 
 
