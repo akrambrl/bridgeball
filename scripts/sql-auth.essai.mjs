@@ -39,6 +39,7 @@ const BASE = "auth_essai";
 // Deux comptes anonymes simulés, et l'absence de compte.
 const JULES = "11111111-1111-1111-1111-111111111111";
 const PIRATE = "22222222-2222-2222-2222-222222222222";
+const APP = "33333333-3333-3333-3333-333333333333";   // le même joueur, sur un second appareil
 
 async function psql(args, base = "postgres") {
   const { stdout, stderr } = await lancer("psql",
@@ -175,8 +176,8 @@ dire(await lier("AAA111", "code-jules", JULES) === "lie",
   "lier_compte accepte le bon code, insensible à la casse");
 dire(await lier("AAA111", "CODE-JULES", JULES) === "deja_lie",
   "lier_compte est idempotent pour le propriétaire");
-dire(await lier("AAA111", "CODE-JULES", PIRATE) === "appartient_a_un_autre",
-  "lier_compte refuse un compte déjà lié à quelqu'un d'autre",
+dire(await lier("AAA111", "MAUVAIS", PIRATE) === "appartient_a_un_autre",
+  "lier_compte refuse un compte déjà lié à quelqu'un d'autre (sans le bon code)",
   "← c'est ce refus qui rend la protection durable");
 dire(await lier("CCC333", null, PIRATE) === "lie",
   "un compte SANS code de récupération est liable sans code",
@@ -200,6 +201,35 @@ dire(!r.ok && /autre compte/.test(r.erreur || ""),
 // Et le pseudo NON lié reste ouvert : la protection est bien progressive.
 r = await tenter(`insert into public.bb_scores (player_id, score, mode) values ('BBB222', 400, 'pont')`);
 dire(r.ok, "un pseudo encore non lié reste écrivable", r.ok ? "(progressif)" : "← " + r.erreur);
+
+// ── 6 bis. PASSER DU SITE À L'APP : LE BON CODE LIE LE NOUVEL APPAREIL ───────
+// Le bug du 1er octobre 2026 : le 1er du classement, passé du site à l'app,
+// récupérait son compte avec son code ; `lier_compte` répondait « appartient à un
+// autre » MÊME avec le bon code, et chacun de ses scores était refusé en silence.
+r = await tenter(`insert into public.bb_scores (player_id, score, mode) values ('AAA111', 800, 'pont')`,
+  { role: "authenticated", uid: APP });
+dire(!r.ok && /autre compte/.test(r.erreur || ""),
+  "AVANT le lien : le second appareil est bien refusé", "→ " + (r.erreur || "PASSÉ !"));
+
+dire(await lier("AAA111", "CODE-JULES", APP) === "lie",
+  "le BON CODE lie le second appareil du même joueur",
+  "← le cas site → app, qui bloquait les scores");
+dire(await lier("AAA111", "CODE-JULES", APP) === "deja_lie",
+  "le second appareil est ensuite reconnu (idempotent)");
+
+r = await tenter(`insert into public.bb_scores (player_id, score, mode) values ('AAA111', 810, 'pont')`,
+  { role: "authenticated", uid: APP });
+dire(r.ok, "le nouvel appareil (l'app) écrit enfin ses scores", r.ok ? "" : "← " + r.erreur);
+
+r = await tenter(`insert into public.bb_scores (player_id, score, mode) values ('AAA111', 820, 'chaine')`,
+  { role: "authenticated", uid: JULES });
+dire(r.ok, "l'ancien appareil (le site) peut TOUJOURS écrire", r.ok ? "" : "← " + r.erreur);
+
+r = await tenter(`insert into public.bb_scores (player_id, score, mode) values ('AAA111', 99999, 'pont')`,
+  { role: "authenticated", uid: PIRATE });
+dire(!r.ok && /autre compte/.test(r.erreur || ""),
+  "un TIERS sans le code reste refusé, même après le second appareil",
+  "→ " + (r.erreur || "PASSÉ !"));
 
 // ── 7. bb_pseudos EN UPDATE : PLUS GRAVE QU'UN FAUX SCORE ───────────────────
 r = await tenter(`update public.bb_pseudos set xp = 999999 where player_id = 'AAA111'`,

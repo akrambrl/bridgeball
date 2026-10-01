@@ -259,9 +259,42 @@ revoke all on function public.bb_bannir(text, text) from public, anon, authentic
 --
 -- SECURITY DEFINER parce qu'elle doit comparer recovery_code, que le rôle de
 -- l'appelant n'a pas le droit de lire. C'est la même raison que recover_account.
+-- ── LES APPAREILS D'UN MÊME JOUEUR ──────────────────────────────────────────
+--
+-- Un pseudo n'appartenait qu'à UN compte anonyme : celui du premier appareil à
+-- l'avoir lié. Or un compte anonyme est propre à un appareil. Un joueur qui passe
+-- du site (PWA) à l'app et RÉCUPÈRE son compte avec son code arrivait donc sur un
+-- nouvel appareil, avec un nouveau compte anonyme — et `lier_compte` répondait
+-- « appartient_a_un_autre » MÊME avec le bon code. Le garde-fou refusait ensuite
+-- chacun de ses scores (« ce pseudo appartient à un autre compte »), sans qu'il
+-- le voie : son score ne montait plus. Signalé le 1er octobre 2026 par le 1er du
+-- classement, passé du site à l'app.
+--
+-- Le code de récupération EST la preuve de propriété : quiconque le détient peut
+-- déjà reprendre le compte sur son appareil (recover_account, et le règlement le
+-- dit). Le refuser ici ne protégeait donc de rien, il bloquait seulement les
+-- propriétaires légitimes.
+--
+-- Règle : avec le bon code, l'appareil qui se présente devient le compte
+-- PRINCIPAL du pseudo (bb_pseudos.auth_uid), et l'ancien est conservé ici, où le
+-- garde-fou continue de l'autoriser à écrire. Le dernier appareil prouvé est celui
+-- que lisent les fonctions qui retrouvent le joueur par auth.uid() (sessions
+-- GOAT Session, classement). Sans le bon code, rien ne change : un tiers reste
+-- refusé, et les bannissements sont contrôlés avant tout.
+create table if not exists public.bb_pseudos_appareils (
+  auth_uid  uuid primary key,
+  player_id text not null
+);
+create index if not exists bb_pseudos_appareils_player_idx
+  on public.bb_pseudos_appareils (player_id);
+-- AUCUNE politique : invisible depuis l'app, comme bb_bannis. Seules les
+-- fonctions SECURITY DEFINER ci-dessous y touchent.
+alter table public.bb_pseudos_appareils enable row level security;
+revoke all on public.bb_pseudos_appareils from anon, authenticated;
+
 create or replace function public.lier_compte(p_player_id text, p_code text)
 returns text language plpgsql security definer set search_path = public as $$
-declare l record; moi uuid := auth.uid();
+declare l record; moi uuid := auth.uid(); code_ok boolean;
 begin
   if moi is null then return 'non_authentifie'; end if;
 
@@ -274,20 +307,45 @@ begin
     return 'banni';
   end if;
 
+  code_ok := l.recovery_code is not null and p_code is not null
+             and upper(btrim(p_code)) = upper(btrim(l.recovery_code));
+
   if l.auth_uid is not null then
-    -- Déjà lié : idempotent pour le propriétaire, refusé pour les autres. C'est
-    -- ce refus qui rend le lien définitif, et donc la protection durable.
+    -- Déjà lié : idempotent pour le propriétaire.
     if l.auth_uid = moi then return 'deja_lie'; end if;
-    return 'appartient_a_un_autre';
+
+    -- Un autre appareil du même joueur, déjà reconnu, qui ne présente pas le code.
+    if not code_ok and exists (select 1 from public.bb_pseudos_appareils
+                                where auth_uid = moi and player_id = p_player_id) then
+      return 'deja_lie';
+    end if;
+
+    -- Sans le bon code, un compte déjà lié reste refusé : c'est ce refus qui rend
+    -- la protection durable contre quelqu'un qui connaît seulement le player_id.
+    if not code_ok then return 'appartient_a_un_autre'; end if;
+
+    -- Le bon code : nouvel appareil du propriétaire. L'ancien principal reste
+    -- autorisé à écrire ; celui-ci devient le principal.
+    insert into public.bb_pseudos_appareils (auth_uid, player_id)
+    values (l.auth_uid, p_player_id)
+    on conflict (auth_uid) do update set player_id = excluded.player_id;
+    delete from public.bb_pseudos_appareils where auth_uid = moi;
+    -- Le garde-fou d'identité surveille aussi les UPDATE de bb_pseudos : il
+    -- refuserait CE changement de propriétaire, puisque l'appelant n'est pas encore
+    -- le propriétaire. Ce drapeau, posé pour la seule transaction en cours par ce
+    -- code de confiance (le client ne peut pas poser de réglage de session), le
+    -- laisse passer. Le banc d'essai l'a trouvé : sans lui, le lien échouait.
+    perform set_config('goatfc.lien_en_cours', '1', true);
+    update public.bb_pseudos set auth_uid = moi where player_id = p_player_id;
+    perform set_config('goatfc.lien_en_cours', '', true);
+    return 'lie';
   end if;
 
   -- Une ligne SANS code de récupération ne peut pas exiger de preuve. Elle est
   -- donc liable sans code — c'est le cas des comptes créés avant l'arrivée des
   -- codes, et ne pas les lier les laisserait vulnérables pour toujours.
-  if l.recovery_code is not null then
-    if p_code is null or upper(btrim(p_code)) <> upper(btrim(l.recovery_code)) then
-      return 'code_invalide';
-    end if;
+  if l.recovery_code is not null and not code_ok then
+    return 'code_invalide';
   end if;
 
   update public.bb_pseudos set auth_uid = moi where player_id = p_player_id;
@@ -317,12 +375,24 @@ begin
     raise exception 'compte banni';
   end if;
 
+  -- Changement de propriétaire décidé par lier_compte, après vérification du code.
+  if tg_table_name = 'bb_pseudos' and current_setting('goatfc.lien_en_cours', true) = '1' then
+    return new;
+  end if;
+
   select auth_uid into proprietaire from public.bb_pseudos where player_id = cible;
 
   -- Pas encore lié — ou pseudo inconnu : on laisse passer, comme aujourd'hui.
   if proprietaire is null then return new; end if;
 
-  if moi is null or moi <> proprietaire then
+  if moi is null then
+    raise exception 'ce pseudo appartient à un autre compte';
+  end if;
+  -- Le propriétaire courant, OU un appareil du même joueur déjà prouvé par son
+  -- code (voir bb_pseudos_appareils).
+  if moi <> proprietaire and not exists (
+       select 1 from public.bb_pseudos_appareils
+        where auth_uid = moi and player_id = cible) then
     raise exception 'ce pseudo appartient à un autre compte';
   end if;
   return new;
