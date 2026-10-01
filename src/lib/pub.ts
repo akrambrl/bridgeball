@@ -287,6 +287,11 @@ export async function montrerRecompensee(): Promise<boolean> {
     // La suivante se charge tout de suite : le joueur qui a accepté une fois
     // acceptera souvent la fois d'après.
     void precharger();
+    // Une pub plein écran peut remettre le cadre de la webview à zéro : la page
+    // repasse sous la barre d'état. On la repose une fois l'animation de fermeture
+    // finie. Import dynamique : ce module ne doit pas dépendre des plugins natifs
+    // au chargement (il est éprouvé sans eux).
+    setTimeout(() => { void import("./native").then((m) => m.recalerVueNative()).catch(() => {}); }, 500);
   }
   return gagne;
 }
