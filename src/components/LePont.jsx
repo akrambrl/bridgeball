@@ -8,7 +8,7 @@ import { createPortal } from "react-dom";
 import { PLAYERS, RETIRED_PLAYERS, GG_WC_WINNERS, GG_CL_WINNERS } from "../lib/donnees";
 import { DRAPEAUX } from "../lib/pays";
 import { trackPlay, pingPresence, pingSource, pingLive, trackTime } from "../lib/track";
-import { hapticSuccess, hapticError, isNative, openExternalLink, recalerVueNative } from "../lib/native";
+import { hapticSuccess, hapticError, hapticLight, hapticHeavy, isNative, openExternalLink, recalerVueNative } from "../lib/native";
 import { pickOpponent } from "../lib/opponents";
 import { G, posterText, posterTitre, posterLight, btn, fondCharte, areneCharte,
          retourStyle, retourCharte, fermerCharte, ligneCharte, pastilleCharte } from "../lib/charte.jsx";
@@ -6848,6 +6848,30 @@ export default function LePont() {
   // suivante. On sonde donc tant que l'écran de fin est affiché.
   const [pubPrete, setPubPrete] = useState(false);
   const [xpDoublee, setXpDoublee] = useState(false);   // déjà réclamée sur CETTE partie
+  // Le gain affiché pendant l'animation « XP doublé » : monte de 0 jusqu'au gain réel.
+  const [xpGain, setXpGain] = useState(0);
+  const xpAnimRef = useRef(null);
+  // Récompense de la pub : un compteur qui grimpe, des étincelles, et de la vibration
+  // (haptique natif sur iOS/Android, `navigator.vibrate` sur le web Android). Le
+  // joueur vient de regarder une pub : le moment où il touche sa récompense doit se
+  // sentir, pas se lire dans une ligne de texte.
+  function celebrerXpDouble(cible) {
+    try { clearInterval(xpAnimRef.current); } catch (_) {}
+    try { hapticSuccess(); } catch (_) {}
+    vibrate([40, 40, 40, 40, 120]);
+    const pas = Math.max(1, Math.ceil(cible / 22));
+    let v = 0, n = 0;
+    setXpGain(0);
+    xpAnimRef.current = setInterval(function(){
+      v = Math.min(cible, v + pas); n += 1;
+      setXpGain(v);
+      if (n % 4 === 0) { try { hapticLight(); } catch (_) {} }   // petit tic pendant la montée
+      if (v >= cible) {
+        clearInterval(xpAnimRef.current);
+        try { hapticHeavy(); } catch (_) {}                      // et le coup final
+      }
+    }, 45);
+  }
   const [pubEnCours, setPubEnCours] = useState(false);
   const [playerXp, setPlayerXp] = useState(0); // XP cumulé (lifetime), chargé depuis Supabase au démarrage et incrémenté après chaque partie
   const [playerXpSeason, setPlayerXpSeason] = useState(0); // XP du mois en cours, reset à chaque début de mois
@@ -7322,7 +7346,7 @@ export default function LePont() {
   // partie, pas pour la session.
   useEffect(function(){
     const surEcranDeFin = screen === "final" || screen === "chainEnd";
-    if (!surEcranDeFin) { setPubPrete(false); setXpDoublee(false); return; }
+    if (!surEcranDeFin) { setPubPrete(false); setXpDoublee(false); setXpGain(0); try { clearInterval(xpAnimRef.current); } catch (_) {} return; }
     let stop = false;
     // `bb_pub_demo` fait APPARAÎTRE le bouton dans l'aperçu, où AdMob n'existe
     // pas — même procédé que `bb_gg_demo` pour GOAT GRID. Il ne donne rien : le
@@ -7342,7 +7366,7 @@ export default function LePont() {
   // partie, pas pour la session.
   useEffect(function(){
     const surEcranDeFin = screen === "final" || screen === "chainEnd";
-    if (!surEcranDeFin) { setPubPrete(false); setXpDoublee(false); return; }
+    if (!surEcranDeFin) { setPubPrete(false); setXpDoublee(false); setXpGain(0); try { clearInterval(xpAnimRef.current); } catch (_) {} return; }
     let stop = false;
     // `bb_pub_demo` fait APPARAÎTRE le bouton dans l'aperçu, où AdMob n'existe
     // pas — même procédé que `bb_gg_demo` pour GOAT GRID. Il ne donne rien : le
@@ -19079,7 +19103,7 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
             // On n'accorde QUE si le joueur est allé au bout. `montrerRecompensee`
             // ne rend vrai que sur l'événement « Rewarded » du SDK, jamais sur la
             // simple fermeture.
-            if (gagne) { setXpDoublee(true); addXp(sc); }
+            if (gagne) { setXpDoublee(true); addXp(sc); celebrerXpDouble(sc); }
           }} style={{...btn(pubEnCours?G.nuit:G.projecteur, pubEnCours?"rgba(242,231,206,.45)":G.encre, 19),
             width:"100%",padding:"12px",gap:10,boxShadow:G.ombreL,cursor:pubEnCours?"default":"pointer"}}>
             {pubEnCours
@@ -19088,11 +19112,23 @@ const makeResultScreen = (sc, mode, isChain) => {    return (    <div style={{..
           </button>
         )}
         {xpDoublee && (
-          <div style={{background:G.nuit,border:G.trait,boxShadow:G.ombre,borderRadius:G.rayon,
-            padding:"12px 16px",textAlign:"center"}}>
-            <div style={{...posterText(17,G.projecteur)}}>🎉 {tr("Bravo, tes points sont doublés !","Nice, your points are doubled!","Bravo, deine Punkte sind verdoppelt!","Bravo, i tuoi punti sono raddoppiati!","Boa, seus pontos foram dobrados!","¡Genial, tus puntos se han duplicado!")}</div>
-            <div style={{fontSize:12,color:"rgba(255,255,255,.55)",marginTop:3}}>
-              +{sc} {tr("XP de plus pour ta collection","extra XP for your collection","XP mehr für deine Sammlung","XP in più per la collezione","XP a mais para sua coleção","XP más para tu colección")}
+          // Panneau de récompense : il apparaît d'un coup (popIn), le gain grimpe en
+          // direct, et des étincelles montent derrière — floatUp existe déjà pour les
+          // combos. Texte clair sur panneau sombre, seul usage lisible du crème et de l'or.
+          <div style={{position:"relative",overflow:"hidden",background:G.nuit,border:G.trait,boxShadow:G.ombre,
+            borderRadius:G.rayon,padding:"14px 16px 12px",textAlign:"center",animation:"popIn .45s ease"}}>
+            {["✨","⭐","🎉","✨","⭐","🎉"].map(function(e,i){
+              return <span key={i} aria-hidden="true" style={{position:"absolute",bottom:6,left:(8+i*16)+"%",fontSize:18,
+                opacity:0,animation:"floatUp 1.4s ease-out "+(i*0.12)+"s both",pointerEvents:"none"}}>{e}</span>;
+            })}
+            <div style={{...posterText(15,G.projecteur),letterSpacing:1.4,textTransform:"uppercase"}}>
+              {tr("XP doublé !","XP doubled!","XP verdoppelt!","XP raddoppiati!","XP dobrado!","¡XP duplicado!")} ×2
+            </div>
+            <div style={{...posterText(44,G.white),lineHeight:1.05,margin:"4px 0 2px"}}>
+              +{xpGain} <span style={{fontSize:20,color:G.projecteur}}>XP</span>
+            </div>
+            <div style={{fontSize:12,color:"rgba(255,255,255,.65)",fontWeight:700}}>
+              {tr("de plus pour ta collection de cartes","extra for your card collection","mehr für deine Kartensammlung","in più per la tua collezione di carte","a mais para a sua coleção de cartas","más para tu colección de cartas")}
             </div>
           </div>
         )}
