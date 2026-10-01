@@ -31,6 +31,7 @@ const ici = dirname(fileURLToPath(import.meta.url));
 const racine = join(ici, "..");
 const FICHIER = join(racine, "docs", "supabase-classement.sql");
 const SCHEMA = join(racine, "docs", "supabase-classement.essai.sql");
+const SESSIONS = join(racine, "docs", "supabase-sessions.sql");
 
 const PORT = process.env.PG_PORT || "5433";
 const PGBIN = process.env.PGBIN || "/usr/lib/postgresql/16/bin";
@@ -194,6 +195,23 @@ const CONTROLES = [
 
 ];
 
+// GOAT SESSION : le calcul du bonus ne dépend pas de la règle ; c'est le classement qui ne
+// l'utilise qu'au cumul (voir CONTROLES_REGLE).
+const CONTROLES_SESSION = [
+  { nom: "GOAT Session — 5 000 / 3 000 / 1 500 aux trois premiers d'une session de 5 inscrits",
+    sql: "select string_agg(player_id || ':' || pts, ',' order by pts desc, player_id) from public.bb_points_sessions(to_char(now() at time zone 'Europe/Paris','YYYY-MM'))",
+    attendu: (v) => v === "p1:5000,p2:3000,p3:1500",
+    dire: (v) => "bonus : " + v },
+  { nom: "GOAT Session — une session sous le seuil de 5 inscrits ne donne rien (B : 3 inscrits)",
+    sql: "select count(*) from public.bb_points_sessions(to_char(now() at time zone 'Europe/Paris','YYYY-MM')) ",
+    attendu: (v) => Number(v) === 3,
+    dire: (v) => v + " ligne(s) de bonus (3 attendues : la session A seule)" },
+  { nom: "GOAT Session — personne n'a de bonus sans bonne réponse (p4 : 1 réponse fausse, pgrid : aucune)",
+    sql: "select count(*) from public.bb_points_sessions(to_char(now() at time zone 'Europe/Paris','YYYY-MM')) where player_id in ('p4','pgrid')",
+    attendu: (v) => Number(v) === 0,
+    dire: (v) => v + " (0 attendu)" },
+];
+
 // Les deux contrôles ci-dessous valent pour les DEUX règles : un joueur sans pseudo
 // n'est jamais classé (voir `par_jour` dans docs/supabase-classement.sql).
 const CONTROLES_SANS_PSEUDO = [
@@ -210,6 +228,10 @@ const CONTROLES_SANS_PSEUDO = [
 /** Les contrôles qui DISTINGUENT les deux règles (voir « CHANGEMENT DE RÈGLE » en tête du fichier). */
 const CONTROLES_REGLE = {
   ancien: [
+    { nom: "AVANT octobre — le bonus de session n'existe pas (p1 ≈ 9 600 ; avec le bonus il dépasserait 14 000)",
+      sql: "select points from public.bb_classement_courant() where player_id='p1'",
+      attendu: (v) => Number(v) < 12000,
+      dire: (v) => "p1 : " + v + " points (< 12 000 : septembre ne bouge pas ; au cumul c'est ≈ 14 700)" },
     { nom: "AVANT octobre — plusieurs grilles le même jour ne comptent que pour UNE (pgrid)",
       sql: "select points from public.bb_classement_courant() where player_id='pgrid'",
       attendu: (v) => Number(v) >= 900 && Number(v) <= 1800,
@@ -228,6 +250,10 @@ const CONTROLES_REGLE = {
       dire: (v) => "jours retenus : " + v + " (15/20 attendus)" },
   ],
   cumul: [
+    { nom: "À PARTIR d'octobre — le bonus de session entre au classement (p1 gagne 5 000)",
+      sql: "select points from public.bb_classement_courant() where player_id='p1'",
+      attendu: (v) => Number(v) >= 5000,
+      dire: (v) => "p1 : " + v + " points (≥ 5 000 : son bonus de vainqueur de session)" },
     { nom: "À PARTIR d'octobre — chaque grille libre compte, SAUF celle jouée avec une vie rachetée (pgrid)",
       // 3 grilles comptées (jour + 2 libres) × 900 = 2 700 bruts. La 3e libre, avec vie
       // rachetée, est exclue : si elle comptait, on serait à 3 600 bruts (≈ 5 000 avec
@@ -304,6 +330,35 @@ async function eprouver(typeScore, regime) {
     const bruit = sortie.split("\n").filter((l) => /ERROR|FATAL/.test(l));
     if (bruit.length) throw new Error(bruit.join("\n"));
     console.log("✅ le fichier passe en entier");
+    // GOAT SESSION : le bonus 5 000 / 3 000 / 1 500. On pose les vraies tables, puis deux
+    // sessions FINIES ce mois-ci : A (5 inscrits : p1 gagne 2 manches, p2 en gagne 1, p3
+    // répond juste sans gagner, p4 et pgrid ne trouvent rien) et B (3 inscrits, sous le seuil
+    // de 5 : aucun bonus).
+    await psql(["-f", SESSIONS, "-q"], base);
+    await psql(["-c", `
+      insert into public.bb_sessions (id, mode, starts_at, statut, rounds, joined_count) values
+        ('aaaaaaaa-0000-0000-0000-000000000001', 'pont', date_trunc('month', now()) + interval '5 minutes', 'termine',
+         jsonb_build_array(
+           jsonb_build_object('n',1,'ends_at', date_trunc('month', now()) + interval '8 minutes'),
+           jsonb_build_object('n',2,'ends_at', date_trunc('month', now()) + interval '9 minutes'),
+           jsonb_build_object('n',3,'ends_at', date_trunc('month', now()) + interval '10 minutes')), 5),
+        ('bbbbbbbb-0000-0000-0000-000000000002', 'chaine', date_trunc('month', now()) + interval '1 hour', 'termine',
+         jsonb_build_array(
+           jsonb_build_object('n',1,'ends_at', date_trunc('month', now()) + interval '70 minutes')), 3);
+      insert into public.bb_session_joueurs (session_id, player_id) values
+        ('aaaaaaaa-0000-0000-0000-000000000001','p1'), ('aaaaaaaa-0000-0000-0000-000000000001','p2'),
+        ('aaaaaaaa-0000-0000-0000-000000000001','p3'), ('aaaaaaaa-0000-0000-0000-000000000001','p4'),
+        ('aaaaaaaa-0000-0000-0000-000000000001','pgrid'),
+        ('bbbbbbbb-0000-0000-0000-000000000002','p1'), ('bbbbbbbb-0000-0000-0000-000000000002','p2'),
+        ('bbbbbbbb-0000-0000-0000-000000000002','p3');
+      insert into public.bb_session_reponses (session_id, manche, player_id, correct, temps_ms) values
+        ('aaaaaaaa-0000-0000-0000-000000000001', 1, 'p1', true, 1000),
+        ('aaaaaaaa-0000-0000-0000-000000000001', 1, 'p2', true, 2000),
+        ('aaaaaaaa-0000-0000-0000-000000000001', 2, 'p1', true, 1500),
+        ('aaaaaaaa-0000-0000-0000-000000000001', 3, 'p2', true, 800),
+        ('aaaaaaaa-0000-0000-0000-000000000001', 3, 'p3', true, 900),
+        ('aaaaaaaa-0000-0000-0000-000000000001', 3, 'p4', false, 500),
+        ('bbbbbbbb-0000-0000-0000-000000000002', 1, 'p1', true, 700)`], base);
     // Les grilles LIBRES de `pgrid`, posées maintenant que la contrainte « une par
     // jour » a été remplacée. Le garde de cadence est suspendu le temps du semis : il
     // impose created_at = now(), et il est éprouvé plus bas (REFUS).
@@ -321,7 +376,7 @@ async function eprouver(typeScore, regime) {
   }
 
   let bon = true;
-  for (const c of CONTROLES.concat(CONTROLES_SANS_PSEUDO, CONTROLES_REGLE[regime])) {
+  for (const c of CONTROLES.concat(CONTROLES_SANS_PSEUDO, CONTROLES_SESSION, CONTROLES_REGLE[regime])) {
     if (c.seulement && c.seulement !== regime) continue;
     const v = (await psql(["-tAc", c.sql], base)).trim().split("\n").pop();
     const ok = c.attendu(v);

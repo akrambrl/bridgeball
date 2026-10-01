@@ -1,0 +1,39 @@
+# Crée les GOAT SESSION des prochaines semaines : chaque mercredi et samedi à 19 h 30, heure de Paris.
+#
+# Une session se créait à la main. Ce déclencheur repasse chaque jour et s'assure que chaque créneau
+# des 21 prochains jours a sa session. IDEMPOTENT : le repasser ne crée jamais de doublon.
+# Le retard habituel des déclencheurs GitHub n'a aucune conséquence ici (voir scripts/creer-sessions.mjs).
+#
+# Secret : SB_SERVICE_KEY (déjà créé pour les autres circuits).
+# SQL à jouer avant : docs/supabase-sessions.sql (bb_creer_session réservée à la clé de service).
+name: Créer les sessions
+
+on:
+  schedule:
+    - cron: "17 5 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Afficher les sessions qui seraient créées, sans rien écrire"
+        type: boolean
+        default: true
+
+concurrency:
+  group: creer-sessions
+  cancel-in-progress: false
+
+jobs:
+  creer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+      - name: Créer les sessions
+        env:
+          SB_SERVICE_KEY: ${{ secrets.SB_SERVICE_KEY }}
+        run: |
+          node scripts/creer-sessions.mjs \
+            ${{ (github.event_name == 'workflow_dispatch' && inputs.dry_run) && '--dry-run' || '' }}
