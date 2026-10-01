@@ -437,9 +437,21 @@ returns table (
     -- Total d'un joueur POUR UN JOUR = somme de ses meilleurs par mode ce jour-là.
     -- Jouer plusieurs modes dans la journée compte donc toujours ; c'est
     -- l'accumulation SUR LES JOURS qui est plafonnée à K (règle A), pas la journée.
-    select player_id, jour, sum(pts) as pts_jour
-      from journalier
-     where pts > 0
+    --
+    -- ── SEULS LES JOUEURS AVEC UN PSEUDO SONT CLASSÉS ───────────────────────
+    -- « Trouve le joueur » et la Devinette envoyaient leur score sous le nom
+    -- « Anonyme » sans pseudo réservé : ces joueurs remplissaient le haut du
+    -- tableau sous la forme d'un « ? » (signalé le 1er octobre 2026 — quatre des
+    -- sept premiers). Ils ne peuvent pas être reconnus, et surtout pas réclamer
+    -- un lot : le code de récupération vit dans bb_pseudos. Une place chanceuse
+    -- tombée sur un « ? » aurait été perdue pour tout le monde. Le règlement
+    -- (article 4) exige d'ailleurs un pseudo réservé. Le filtre est ICI, avant
+    -- tout calcul, pour que les rangs, le sommet du bonus de rattrapage et les
+    -- places dotées ne comptent que des joueurs identifiables.
+    select j.player_id, j.jour, sum(j.pts) as pts_jour
+      from journalier j
+     where j.pts > 0
+       and exists (select 1 from public.bb_pseudos p where p.player_id = j.player_id)
      group by 1, 2
   ),
   classe as (

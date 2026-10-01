@@ -9869,6 +9869,13 @@ export default function LePont() {
   }, []);
   // « Trouve le joueur » vit dans un overlay hors de LePont : il prévient par
   // événement quand la limite du site est atteinte.
+  // « Trouve le joueur » et la Devinette exigent un pseudo : sans lui l'overlay se
+  // referme et prévient ici, qui ouvre la création du pseudo.
+  React.useEffect(function() {
+    function onObligatoire() { setInvitePseudo(false); setPseudoScreen(true); }
+    window.addEventListener("goatfc:pseudo-obligatoire", onObligatoire);
+    return function() { window.removeEventListener("goatfc:pseudo-obligatoire", onObligatoire); };
+  }, []);
   React.useEffect(function() {
     function onLimite() { setLimiteWeb(true); }
     window.addEventListener("goatfc:limite-web", onLimite);

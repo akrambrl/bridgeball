@@ -200,6 +200,15 @@ select 'pgrind','acharne','pont',1000,
        date_trunc('month', now()) + interval '3 days' + (n || ' minutes')::interval + interval '9 hours'
   from generate_series(0, 17) as n;
 
+-- `panon` : AUCUN pseudo réservé (« Trouve le joueur » l'envoyait sous « Anonyme »).
+-- Il totalise plus que tout le monde : s'il était classé, il prendrait la tête, il
+-- décalerait le sommet du bonus de rattrapage de tous les autres, et occuperait
+-- une place dotée qu'il ne pourrait jamais réclamer. Il ne doit pas apparaître.
+insert into public.bb_scores (player_id, player_name, mode, score, created_at)
+select 'panon','Anonyme','pont',1000,
+       date_trunc('month', now()) + interval '5 days' + (n || ' minutes')::interval + interval '9 hours'
+  from generate_series(0, 29) as n;
+
 -- `pcap` retrouvé par identité, pour bb_mes_jours (qui n'accepte pas de player_id).
 update public.bb_pseudos set auth_uid = '00000000-0000-0000-0000-0000000000c1'
  where player_id = 'pcap';
